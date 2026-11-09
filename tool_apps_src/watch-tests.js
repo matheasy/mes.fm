@@ -39,10 +39,20 @@ eq(W.resumeAt({ s: 30 }, { pos: 200, dur: 600 }), 30, 'link t wins');
 eq(W.pct({ pos: 150, dur: 600 }), 25, 'pct');
 
 let s = W.shareUrl('https://mes.fm/watch', [a[0]], 42.7);
-eq(W.fromQuery(s.split('?')[1]), { links: ['https://www.youtube.com/watch?v=AAAAAAAAAAA'], t: 42 }, 'share one');
+eq(W.fromQuery(s.split('?')[1]), { links: ['https://www.youtube.com/watch?v=AAAAAAAAAAA'], t: 42, name: '' }, 'share one');
 s = W.shareUrl('https://mes.fm/watch', a);
 eq(W.fromQuery('?' + s.split('?')[1]).links.length, 3, 'share many');
 eq(W.atTime(a[0], 90.4), 'https://www.youtube.com/watch?v=AAAAAAAAAAA&t=90s', 'atTime');
 eq([W.fmt(65), W.fmt(3725)], ['1:05', '1:02:05'], 'fmt');
 eq(W.ago(0, 3 * 3600e3), '3 h ago', 'ago');
+// playlists, own lists, zoom
+let pm = W.parseMany('https://www.youtube.com/playlist?list=PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu https://youtu.be/dQw4w9WgXcQ?list=PLabcdefghij https://x.com/a?list=PLzzzzzzzzzz');
+eq(pm.playlists, ['PLai3U8-WIK0FfZ_7hUuyO7xN8lp5oaDiu', 'PLabcdefghij'], 'playlist ids, youtube only');
+eq(pm.items.filter(x => x.k === 'youtube').map(x => x.id), ['dQw4w9WgXcQ'], 'a playlist page adds no item, watch?v=&list= keeps its video');
+eq(W.playlistId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ'), '', 'radio mix ignored');
+let nl = W.newList('Fav', [W.item('https://youtu.be/dQw4w9WgXcQ')], 5); ok(nl.id && nl.items.length === 1 && W.findList([nl], nl.id) === nl, 'newList/findList');
+eq(W.clampZoom({ k: 2, x: 900, y: -900 }, 400, 225), { k: 2, x: 200, y: -112.5 }, 'clampZoom keeps it covering');
+eq(W.clampZoom({ k: 0.5, x: 10 }, 400, 225), { k: 1, x: 0, y: 0 }, 'no zoom out below 1');
+eq(W.fillZoom(1600, 720), 1.25, 'fill a 20:9 screen');
+s = W.shareUrl('https://mes.fm/watch', [a[0]], 0, 'My list'); eq(W.fromQuery(s.split('?')[1]).name, 'My list', 'named list link');
 console.log('watch tests ok:', n);

@@ -4,7 +4,8 @@
 	#wt [hidden] {display:none !important;}
 	.wt-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 	.wt-add {display:flex;flex-direction:column;gap:0.6em;}
-	.wt-in {width:100%;box-sizing:border-box;resize:none;min-height:2.6em;line-height:1.4;font-size:1em;}
+	.wt-in {width:100%;box-sizing:border-box;resize:none;min-height:2.6em;line-height:1.4;font-size:1em;overflow-y:auto;field-sizing:content;max-height:12em;}
+#wt .wt-in::placeholder {white-space:normal;text-overflow:clip;}
 	.wt-addrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;}
 	.wt-msg {color:var(--wt-muted);font-size:0.9em;}
 	.wt-mes {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;font-size:0.92em;color:var(--wt-muted);}
@@ -78,7 +79,36 @@
 		.wt-stage {border-radius:0.4em;}
 		.wt-b {height:2.5em;min-width:2.5em;}
 	}
-	/* dark mode */
+	
+/* zoom: the picture is scaled / moved inside its box; the layer catches pinch / drag only while zoom mode is on */
+.wt-stage > iframe, .wt-stage > video {transform:translate(var(--zx,0px),var(--zy,0px)) scale(var(--zk,1));transform-origin:50% 50%;}
+.wt-zov {position:absolute;inset:0;z-index:3;touch-action:none;cursor:grab;background:rgba(0,0,0,0.001);outline:2px dashed rgba(255,255,255,0.55);outline-offset:-4px;}
+.wt-zov:active {cursor:grabbing;}
+.wt-zpill {position:absolute;left:50%;bottom:0.7em;transform:translateX(-50%);display:flex;gap:0.25em;padding:0.3em;border-radius:999px;background:rgba(15,17,23,0.82);box-shadow:0 2px 10px rgba(0,0,0,0.4);cursor:default;}
+#wt .wt-zpill button {font:inherit;font-size:0.92em;min-width:2.5em;height:2.5em;padding:0 0.7em;border-radius:999px;border:0;background:rgba(255,255,255,0.12);color:#fff;cursor:pointer;white-space:nowrap;}
+#wt .wt-zpill button:hover {background:rgba(255,255,255,0.24);}
+#wt .wt-zpill .wt-zv {min-width:4em;font-variant-numeric:tabular-nums;font-weight:600;}
+#wt .wt-zpill .wt-zdone {background:var(--wt-acc);}
+#wt .wt-zhint {position:absolute;left:50%;top:0.6em;transform:translateX(-50%);margin:0;padding:0.25em 0.8em;border-radius:999px;background:rgba(15,17,23,0.75);color:#e6e9ee;font-size:0.82em;white-space:nowrap;pointer-events:none;}
+@media (max-width:480px) {#wt .wt-zhint {display:none;} #wt .wt-zpill button {padding:0 0.5em;min-width:2.3em;}}
+#wt .wt-player .wt-stage {overflow:hidden !important;}   /* the side-panel layout gives the stage overflow:auto; a zoomed picture must be cut, not scrolled */
+/* "+ List" menu */
+.wt-menu {position:fixed;z-index:2147483000;min-width:13em;max-width:min(22em,calc(100vw - 16px));max-height:60vh;overflow:auto;background:#fff;color:#1f2430;border:1px solid #d9dee6;border-radius:0.6em;box-shadow:0 8px 24px rgba(0,0,0,0.18);padding:0.35em;display:flex;flex-direction:column;font-size:15px;}
+.wt-menu[hidden] {display:none;}
+.wt-menu b {padding:0.35em 0.6em;font-size:0.85em;color:#5b6472;}
+.wt-menu button {font:inherit;text-align:left;background:none;border:0;border-radius:0.4em;padding:0.55em 0.6em;cursor:pointer;color:inherit;}
+.wt-menu button:hover {background:#eef1f5;}
+.wt-menu small {color:#5b6472;margin-left:0.3em;}
+.wt-menu [aria-checked="true"] {font-weight:600;}
+body.dark-mode .wt-menu {background:#232934;color:#e6e9ee;border-color:#343b47;}
+body.dark-mode .wt-menu b, body.dark-mode .wt-menu small {color:#a3abb8;}
+body.dark-mode .wt-menu button:hover {background:#2c3442;}
+/* my playlists */
+.wt-lback {display:flex;align-items:center;gap:0.6em;flex-wrap:wrap;margin-bottom:0.2em;}
+.wt-lback b {flex:1 1 auto;min-width:0;font-size:1.05em;word-break:break-word;}
+.wt-lcount {position:absolute;right:0;top:0;bottom:0;width:38%;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.9em;}
+html body.dark-mode #wt .wt-lcount {color:#fff;}
+/* dark mode */
 	html body.dark-mode #wt.wt {--wt-fg:#e6e9ee;--wt-muted:#a3abb8;--wt-line:#343b47;--wt-soft:#232934;--wt-hover:#2c3442;--wt-acc:#f06595;--wt-cur:#3a1f2b;--wt-curb:#7d3b57;}
 	html body.dark-mode #wt .wt-row {background:#1d222b;}
 	html body.dark-mode #wt .wt-b[aria-pressed="true"] {color:#fbbf24;}

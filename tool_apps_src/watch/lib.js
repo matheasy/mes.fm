@@ -34,10 +34,32 @@
 	W.key = function (it) { return it.k + ":" + (it.id || it.u); };
 	/* text with any number of links (lines, spaces, commas) -> {items, errors}; duplicates dropped */
 	W.parseMany = function (text) {
-		var parts = String(text || "").split(/[\s,]+/).filter(function (x) { return /[./]/.test(x); }), seen = {}, items = [], errors = [];
-		parts.forEach(function (p) { var it = W.item(p); if (it.err) { errors.push({ text: p, reason: it.err }); return; } if (seen[it.key]) return; seen[it.key] = 1; items.push(it); });
-		return { items: items, errors: errors };
+		var parts = String(text || "").split(/[\s,]+/).filter(function (x) { return /[./]/.test(x); }), seen = {}, items = [], errors = [], lists = [];
+		parts.forEach(function (p) {
+			var pl = W.playlistId(p);
+			if (pl && lists.indexOf(pl) < 0) lists.push(pl);
+			if (pl && !/[?&]v=|youtu\.be\/[\w-]{6}/.test(p)) return;   // a playlist page: its videos come from YouTube later
+			var it = W.item(p); if (it.err) { errors.push({ text: p, reason: it.err }); return; } if (seen[it.key]) return; seen[it.key] = 1; items.push(it);
+		});
+		return { items: items, errors: errors, playlists: lists };
 	};
+	/* YouTube playlist id in a link (list=PL..., OLAK..., UU...), or "" (radio mixes RD... are endless, so left out) */
+	W.playlistId = function (text) {
+		var t = String(text || ""); if (!/^(https?:\/\/)?([\w-]+\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be)\//i.test(t)) return "";
+		var m = /[?&#]list=([A-Za-z0-9_-]{10,64})/.exec(t);
+		if (!m || /^RD/.test(m[1])) return "";
+		return m[1];
+	};
+	/* ---------- my own named lists ---------- */
+	W.newList = function (name, items, now) { return { id: "l" + (now || Date.now()).toString(36) + Math.floor(Math.random() * 1e4).toString(36), name: String(name || "My list").slice(0, 80), items: (items || []).slice(0, W.MAX_LIST) }; };
+	W.findList = function (lists, id) { for (var i = 0; i < lists.length; i++) if (lists[i].id === id) return lists[i]; return null; };
+	/* zoom: clamp scale 1..4 and keep the picture covering the box (no empty edges while zoomed in) */
+	W.clampZoom = function (z, w, h) {
+		var k = Math.max(1, Math.min(4, +z.k || 1)), mx = (k - 1) * w / 2, my = (k - 1) * h / 2;
+		return { k: k, x: Math.max(-mx, Math.min(mx, +z.x || 0)), y: Math.max(-my, Math.min(my, +z.y || 0)) };
+	};
+	/* scale that makes a 16:9 picture fill a w x h box (crops the sides or top / bottom) */
+	W.fillZoom = function (w, h, ar) { ar = ar || 16 / 9; if (!w || !h) return 1; var box = w / h; return Math.round(Math.max(box / ar, ar / box) * 100) / 100; };
 	W.siteName = function (it) { return (Y.SITES && Y.SITES[it.k]) || "Video"; };
 	W.label = function (it) { if (it.t) return it.t; if (it.k === "youtube") return "YouTube video " + it.id; if (it.id) return W.siteName(it) + ": " + it.id; try { var u = new URL(it.u); return W.siteName(it) + " link: " + u.hostname.replace(/^www\./, "") + (u.pathname.length > 1 ? u.pathname.slice(0, 40) : ""); } catch (e) { return it.u; } };
 
@@ -72,17 +94,17 @@
 	W.pct = function (r) { return r && r.dur ? Math.max(0, Math.min(100, r.pos / r.dur * 100)) : 0; };
 
 	/* ---------- share links ---------- */
-	W.shareUrl = function (base, items, at) {
+	W.shareUrl = function (base, items, at, name) {
 		var u = items.map(function (x) { return x.u; });
-		var q = u.length === 1 ? "v=" + encodeURIComponent(u[0]) + (at ? "&t=" + Math.floor(at) : "") : "l=" + u.map(encodeURIComponent).join("|");
-		return base + "?" + q;
+		var q = u.length === 1 && !name ? "v=" + encodeURIComponent(u[0]) + (at ? "&t=" + Math.floor(at) : "") : "l=" + u.map(encodeURIComponent).join("|");
+		return base + "?" + q + (name ? "&n=" + encodeURIComponent(String(name).slice(0, 80)) : "");
 	};
 	/* query string -> {links: [...], t} */
 	W.fromQuery = function (search) {
 		var q = new URLSearchParams(String(search || "").replace(/^\?/, "")), links = [];
 		if (q.get("v")) links.push(q.get("v"));
 		if (q.get("l")) q.get("l").split("|").forEach(function (x) { if (x) links.push(x); });
-		return { links: links, t: Math.max(0, parseInt(q.get("t") || "0", 10) || 0) };
+		return { links: links, t: Math.max(0, parseInt(q.get("t") || "0", 10) || 0), name: (q.get("n") || "").slice(0, 80) };
 	};
 	/* the same video at a time: the site's own link with ?t= where the site has one */
 	W.atTime = function (it, t) {

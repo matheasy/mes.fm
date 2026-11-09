@@ -2,7 +2,7 @@
 	<div class="tu wt" id="wt">
 		<form class="tu-card wt-add" id="wt-form" autocomplete="off">
 			<label class="wt-sr" for="wt-in">Video links</label>
-			<textarea class="tu-input wt-in" id="wt-in" rows="1" spellcheck="false" inputmode="url" placeholder="Paste video links: YouTube, 3Speak, Odysee, Rumble…"></textarea>
+			<textarea class="tu-input wt-in" id="wt-in" rows="1" spellcheck="false" inputmode="url" placeholder="Paste video or playlist links"></textarea>
 			<div class="wt-addrow">
 				<button type="submit" class="tu-btn tu-btn--primary" id="wt-play">▶&#xFE0E; Play</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-qadd">+ Up next</button>
@@ -25,6 +25,8 @@
 						<button type="button" class="wt-b" id="wt-slower" aria-label="Slower">−</button><button type="button" class="wt-b wt-sv" id="wt-sv" aria-label="Normal speed">1×</button><button type="button" class="wt-b" id="wt-faster" aria-label="Faster">+</button>
 					</span>
 					<button type="button" class="wt-b" id="wt-star" title="Save for later" aria-pressed="false">☆</button>
+					<button type="button" class="wt-b" id="wt-addl" title="Add to one of my playlists" aria-haspopup="true">+ List</button>
+					<button type="button" class="wt-b" id="wt-zoom" title="Zoom in on the picture: pinch or drag, + / − (key Z)" aria-pressed="false">🔍&#xFE0E; Zoom</button>
 					<button type="button" class="wt-b" id="wt-copy" title="Copy a link to this spot in the video">🔗&#xFE0E; Link</button>
 					<a class="wt-b" id="wt-open" href="#" target="_blank" rel="noopener" title="Open it on its own site">↗&#xFE0E; Site</a>
 				</div>
@@ -37,6 +39,7 @@
 				<div class="wt-title" id="wt-title"></div>
 				<div class="wt-sub" id="wt-sub"></div>
 				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
+				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 			</div>
 		</section>
 
@@ -44,14 +47,18 @@
 			<div class="wt-tabs" role="tablist">
 				<button type="button" role="tab" class="wt-tab" data-tab="q" aria-selected="true">Up next <small id="wt-nq">0</small></button>
 				<button type="button" role="tab" class="wt-tab" data-tab="saved" aria-selected="false">Saved <small id="wt-ns">0</small></button>
+				<button type="button" role="tab" class="wt-tab" data-tab="lists" aria-selected="false">My playlists <small id="wt-nl">0</small></button>
 				<button type="button" role="tab" class="wt-tab" data-tab="hist" aria-selected="false">History <small id="wt-nh">0</small></button>
 			</div>
 			<div class="wt-list" id="wt-list" role="tabpanel"></div>
 			<div class="wt-lacts">
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-share">Copy a link to this list</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-lnew">+ New playlist from Up next</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-clear">Clear this list</button>
+				<label class="wt-check" id="wt-histwrap"><input type="checkbox" id="wt-histon" checked> Keep a history here (and where I stopped)</label>
 			</div>
 		</section>
+		<div class="wt-menu" id="wt-lmenu" role="menu" hidden></div>
 		<div class="tu-toast" id="wt-toast" role="status" aria-live="polite"></div>
 
 		<div class="tu-seo">
@@ -64,6 +71,10 @@
 				<dt>Rumble, BitChute and X</dt><dd>These play in the site's own small player, so the speed buttons and resume don't reach inside them. For Rumble use the <em>Embed</em> link (Share, then Embed): a normal rumble.com page link can't be played on another site, so the page offers to open it on Rumble instead.</dd>
 				<dt>Video files</dt><dd>A link straight to an .mp4, .webm or .mp3 file plays in the normal player, if the site that has the file allows it.</dd>
 			</dl>
+			<h3>Playlists</h3>
+			<p>Paste a YouTube playlist link (one with <em>list=</em> in it) and its videos are added, and kept under <em>My playlists</em> with the playlist's name. You can also build your own: press <em>+ List</em> under the video to add it to a playlist, or <em>+ New playlist from Up next</em>. Mix YouTube, 3Speak, Odysee and Rumble videos in the same playlist. YouTube sends at most 200 videos of a playlist this way.</p>
+			<h3>Zoom and full screen</h3>
+			<p>Press <em>Zoom</em> (or Z) and pinch with two fingers, drag, or use + and −, up to 400%. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
 			<h3>Keyboard shortcuts</h3>
 			<dl>
 				<dt>Space or K</dt><dd>Play / pause</dd>
@@ -71,10 +82,13 @@
 				<dt>S / D / R</dt><dd>Slower, faster, normal speed</dd>
 				<dt>N / Shift+N</dt><dd>Next, previous</dd>
 				<dt>W</dt><dd>Fill the window with the video</dd>
+				<dt>Z, + / −, 0</dt><dd>Zoom mode, zoom in / out, back to 100%</dd>
 			</dl>
 			<h3>Questions</h3>
 			<h4>Is anything sent to MES?</h4>
 			<p>No. Your lists, history and resume points are kept in this browser only. The videos come straight from the sites that host them, the same as on those sites.</p>
+			<h4>Will these videos show up in my YouTube history?</h4>
+			<p>Not while <em>Private</em> is ticked: the players are loaded without your sign-in cookies (YouTube's privacy-enhanced player, and a "credentialless" frame in Chrome, Edge, Brave and Opera), so YouTube, Rumble and BitChute don't know it is you. Untick it if you want them in your history.</p>
 			<h4>Does YouTube still count the view?</h4>
 			<p>Yes. It is YouTube's own player, so views, ads and the creator's earnings work as on youtube.com.</p>
 			<h4>How do I move my list to another computer or phone?</h4>

@@ -231,7 +231,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="1", lib_from=["youtube-audio"]),
+                  js_v="2", lib_from=["youtube-audio"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",

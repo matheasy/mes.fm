@@ -5,7 +5,8 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], rate: 1, tab: 'q', auto: true };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], rate: 1, tab: 'q', auto: true, priv: true, histOn: true, zoom: { k: 1, x: 0, y: 0 } };
+	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -18,7 +19,7 @@
 	var META = {}, metaBusy = 0, metaQ = [];
 	function setMeta(key, t, th) {
 		if (!t && !th) return; META[key] = { t: t, th: th };
-		[S.q, S.saved, S.hist].forEach(function (L) { L.forEach(function (x) { if (x.key === key) { if (t && !x.t) x.t = t; if (th && !x.th) x.th = th; } }); });
+		[S.q, S.saved, S.hist].concat(S.lists.map(function (l) { return l.items; })).forEach(function (L) { L.forEach(function (x) { if (x.key === key) { if (t && !x.t) x.t = t; if (th && !x.th) x.th = th; } }); });
 		if (cur && cur.key === key) { if (t && !cur.t) cur.t = t; if (th && !cur.th) cur.th = th; showMeta(); }
 		save(); renderListSoon();
 	}
@@ -73,15 +74,16 @@
 		if (yt) { try { yt.destroy(); } catch (e) {} yt = null; }
 		if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
 		if (vid) { try { vid.pause(); vid.removeAttribute('src'); vid.load(); } catch (e) {} vid = null; }
-		$('wt-stage').innerHTML = '';
+		setStage('');
 	}
+	function setStage(h) { $('wt-stage').innerHTML = h; zoomLayer(); }
 	function position() {
 		try { if (yt && yt.getCurrentTime) return { pos: yt.getCurrentTime() || 0, dur: yt.getDuration() || 0 }; } catch (e) {}
 		if (vid) return { pos: vid.currentTime || 0, dur: isFinite(vid.duration) ? vid.duration : 0 };
 		return null;
 	}
 	function remember() {
-		if (!cur) return; var p = position(); if (!p || (!p.pos && !p.dur)) return;
+		if (!cur || S.histOn === false) return; var p = position(); if (!p || (!p.pos && !p.dur)) return;
 		S.hist = W.touch(S.hist, cur, p.pos, p.dur); save(); if (S.tab === 'hist') renderListSoon();
 	}
 	window.addEventListener('pagehide', remember);
@@ -96,12 +98,20 @@
 		var g = ++gen; teardown();
 		var stage = $('wt-stage'), mode = W.mode(cur), start = opts.t != null ? opts.t : W.resumeAt(cur, histRec(cur));
 		showMeta(); renderList(); needMeta(cur);
-		S.hist = W.touch(S.hist, cur, start, (histRec(cur) || {}).dur || 0); save();
+		if (S.histOn !== false) { S.hist = W.touch(S.hist, cur, start, (histRec(cur) || {}).dur || 0); save(); }
 		if (mode === 'yt') {
-			var holder = document.createElement('div'); holder.id = 'wt-yt'; stage.appendChild(holder);
+			var holder;
+			if (S.priv) {
+				// our own frame, loaded without the person's cookies (credentialless: Chromium browsers), so nothing reaches their YouTube history
+				holder = document.createElement('iframe'); holder.id = 'wt-yt'; holder.setAttribute('credentialless', ''); try { holder.credentialless = true; } catch (e) {}
+				holder.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; holder.allowFullscreen = true; holder.title = W.label(cur);
+				holder.referrerPolicy = 'strict-origin-when-cross-origin';
+				holder.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(cur.id) + '?enablejsapi=1&rel=0&playsinline=1&iv_load_policy=3&autoplay=1&start=' + (start || 0) + '&origin=' + encodeURIComponent(location.origin);
+			} else { holder = document.createElement('div'); holder.id = 'wt-yt'; }
+			stage.appendChild(holder);
 			ensureYT().then(function () {
 				if (g !== gen) return;
-				yt = new YT.Player('wt-yt', { host: 'https://www.youtube-nocookie.com', videoId: cur.id, width: '100%', height: '100%',
+				yt = new YT.Player('wt-yt', { host: S.priv ? 'https://www.youtube-nocookie.com' : 'https://www.youtube.com', videoId: cur.id, width: '100%', height: '100%',
 					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3 },
 					events: {
 						onReady: function (e) { if (g !== gen) return; try { e.target.setPlaybackRate(W.ytSpeed(S.rate)); e.target.playVideo(); var d = e.target.getVideoData(); if (d && d.title) setMeta(cur.key, d.title, cur.th); } catch (x) {} syncSpeed(); },
@@ -111,14 +121,14 @@
 				saveT = setInterval(remember, 5000);
 			}, function (e) { if (g === gen) failed(e.message); });
 		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file') {
-			stage.innerHTML = '<p class="wt-loading">Loading the video…</p>';
+			setStage('<p class="wt-loading">Loading the video…</p>');
 			var src = mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : Promise.resolve({ url: cur.u, title: cur.t });
 			src.then(function (info) {
 				if (g !== gen) return;
 				if (info.title || info.thumb) setMeta(cur.key, info.title, info.thumb);
 				var v = document.createElement('video'); v.controls = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.preload = 'auto';
 				if (info.thumb) v.poster = info.thumb;
-				stage.innerHTML = ''; stage.appendChild(v); vid = v;
+				setStage(''); stage.appendChild(v); vid = v;
 				v.addEventListener('loadedmetadata', function () { if (start && start < (v.duration || 1e9) - 5) v.currentTime = start; v.playbackRate = S.rate; }, { once: true });
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
 				v.addEventListener('ratechange', function () { if (g === gen && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
@@ -135,21 +145,21 @@
 			}).catch(function (e) { if (g === gen) failed(e.message); });
 			saveT = setInterval(remember, 5000);
 		} else if (mode === 'embed') {
-			var f = document.createElement('iframe'); f.src = cur.e; f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.title = W.label(cur);
+			var f = document.createElement('iframe'); if (S.priv) { f.setAttribute('credentialless', ''); try { f.credentialless = true; } catch (e) {} } f.src = cur.e; f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.title = W.label(cur);
 			stage.appendChild(f);
 		} else {
-			stage.innerHTML = '<div class="wt-empty"><b>This link can\'t be played here.</b><span>' + (cur.k === 'rumble' ? 'Rumble only lets other sites play its <em>Embed</em> link (on Rumble: Share, then Embed). ' : cur.k === 'odysee' ? 'That is an Odysee channel, not a video. ' : '') +
-				'</span><a class="tu-btn tu-btn--primary" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a></div>';
+			setStage('<div class="wt-empty"><b>This link can\'t be played here.</b><span>' + (cur.k === 'rumble' ? 'Rumble only lets other sites play its <em>Embed</em> link (on Rumble: Share, then Embed). ' : cur.k === 'odysee' ? 'That is an Odysee channel, not a video. ' : '') +
+				'</span><a class="tu-btn tu-btn--primary" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a></div>');
 		}
 		syncSpeed();
 	}
 	function failed(text) {
 		var stage = $('wt-stage');
-		stage.innerHTML = '<div class="wt-empty"><b>' + esc(text) + '</b><a class="tu-btn tu-btn--ghost" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a>' +
-			(S.i < S.q.length - 1 ? '<button type="button" class="tu-btn tu-btn--primary" data-act="next">Play the next one ⏭&#xFE0E;</button>' : '') + '</div>';
+		setStage('<div class="wt-empty"><b>' + esc(text) + '</b><a class="tu-btn tu-btn--ghost" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a>' +
+			(S.i < S.q.length - 1 ? '<button type="button" class="tu-btn tu-btn--primary" data-act="next">Play the next one ⏭&#xFE0E;</button>' : '') + '</div>');
 	}
 	function ended() {
-		if (cur) { var p = position(); S.hist = W.touch(S.hist, cur, p ? p.dur : 0, p ? p.dur : 0); save(); }
+		if (cur && S.histOn !== false) { var p = position(); S.hist = W.touch(S.hist, cur, p ? p.dur : 0, p ? p.dur : 0); save(); }
 		if (S.auto && S.i < S.q.length - 1) go(1);
 		else { renderList(); toast(S.i < S.q.length - 1 ? 'Finished. Press ⏭ for the next one.' : 'That was the last one in Up next.'); }
 	}
@@ -201,22 +211,66 @@
 	$('wt-sv').onclick = function () { setRate(1); };
 
 	/* ---------- adding links ---------- */
-	function take(where) {
+	var taking = false;
+	function take(then) {
+		if (taking) return;
 		var r = W.parseMany($('wt-in').value);
-		if (!r.items.length) { msg(r.errors.length ? r.errors[0].reason : 'Paste a video link first.'); return null; }
-		msg(r.errors.length ? r.errors.length + ' link' + (r.errors.length > 1 ? 's' : '') + ' skipped (not a web link).' : '');
-		$('wt-in').value = ''; grow();
-		return r.items;
+		if (!r.items.length && !r.playlists.length) { msg(r.errors.length ? r.errors[0].reason : 'Paste a video link first.'); return; }
+		var skipped = r.errors.length ? r.errors.length + ' link' + (r.errors.length > 1 ? 's' : '') + ' skipped (not a web link).' : '';
+		msg(skipped); $('wt-in').value = ''; grow();
+		if (!r.playlists.length) { then(r.items); return; }
+		taking = true; msg('Getting the playlist from YouTube…');
+		var all = r.items.slice(), bad = 0, made = [];
+		r.playlists.reduce(function (pr, id) {
+			return pr.then(function () { return ytPlaylist(id).then(function (pl) {
+				all = W.add(all, pl.items);
+				// keep it under My playlists (refresh the one imported before, if any)
+				var old = S.lists.filter(function (l) { return l.src === id; })[0];
+				if (old) { old.items = pl.items; if (pl.title) old.name = pl.title; } else { var nl = W.newList(pl.title || 'YouTube playlist', pl.items); nl.src = id; S.lists.unshift(nl); }
+				made.push(pl.title || 'playlist');
+			}, function () { bad++; }); });
+		}, Promise.resolve()).then(function () {
+			taking = false; save();
+			msg((made.length ? 'Added "' + made.join('", "') + '" to My playlists. ' : '') + (bad ? bad + ' playlist' + (bad > 1 ? 's' : '') + ' could not be read (private, or a blocker stopped YouTube). ' : '') + skipped);
+			if (all.length) then(all); else renderList();
+		});
+	}
+	/* a YouTube playlist's video ids, from YouTube's own player (getPlaylist: up to 200), title from oEmbed */
+	function ytPlaylist(id) {
+		return ensureYT().then(function () {
+			return new Promise(function (res, rej) {
+				var box = document.createElement('div'), h = document.createElement('div'), done = false, pl;
+				box.style.cssText = 'position:fixed;left:-10000px;top:0;width:320px;height:180px;overflow:hidden;'; box.setAttribute('aria-hidden', 'true');
+				box.appendChild(h); document.body.appendChild(box);
+				var to = setTimeout(function () { fin(null); }, 20000);
+				function fin(ids) {
+					if (done) return; done = true; clearTimeout(to); try { pl.destroy(); } catch (e) {} box.remove();
+					if (!ids || !ids.length) { rej(new Error('no list')); return; }
+					var items = ids.map(function (v) { return W.item('https://www.youtube.com/watch?v=' + v); }).filter(function (x) { return !x.err; });
+					fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/playlist?list=' + id), { credentials: 'omit' })
+						.then(function (r) { return r.ok ? r.json() : null; }, function () { return null; })
+						.then(function (j) { res({ title: (j && j.title) || '', items: items }); });
+				}
+				pl = new YT.Player(h, { host: 'https://www.youtube-nocookie.com', width: 320, height: 180,
+					playerVars: { listType: 'playlist', list: id, autoplay: 0, mute: 1, playsinline: 1 },
+					events: {
+						onReady: function () { var n = 0; (function poll() { var ids = null; try { ids = pl.getPlaylist(); } catch (e) {} if (ids && ids.length) return fin(ids); if (++n > 60) return fin(null); setTimeout(poll, 250); })(); },
+						onError: function () { fin(null); }
+					} });
+			});
+		});
 	}
 	$('wt-form').addEventListener('submit', function (e) {
-		e.preventDefault(); var items = take(); if (!items) return;
-		var at = Math.max(0, S.i + 1), fresh = items.filter(function (x) { return W.indexOf(S.q, x.key) < 0; });
-		S.q = S.q.slice(); Array.prototype.splice.apply(S.q, [at, 0].concat(fresh));
-		play(items[0]); setTab('q');
+		e.preventDefault();
+		take(function (items) {
+			var at = Math.max(0, S.i + 1), fresh = items.filter(function (x) { return W.indexOf(S.q, x.key) < 0; });
+			S.q = S.q.slice(); Array.prototype.splice.apply(S.q, [at, 0].concat(fresh));
+			play(items[0]); setTab('q');
+		});
 	});
-	$('wt-qadd').onclick = function () { var items = take(); if (!items) return; S.q = W.add(S.q, items); save(); setTab('q'); showMeta(); toast(items.length + ' added to Up next'); };
-	$('wt-sadd').onclick = function () { var items = take(); if (!items) return; S.saved = W.add(S.saved, items, true); save(); setTab('saved'); toast(items.length === 1 ? 'Saved for later' : items.length + ' saved for later'); };
-	function grow() { var t = $('wt-in'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight + 2, 200) + 'px'; }
+	$('wt-qadd').onclick = function () { take(function (items) { S.q = W.add(S.q, items); save(); setTab('q'); showMeta(); toast(items.length + ' added to Up next'); }); };
+	$('wt-sadd').onclick = function () { take(function (items) { S.saved = W.add(S.saved, items, true); save(); setTab('saved'); toast(items.length === 1 ? 'Saved for later' : items.length + ' saved for later'); }); };
+	function grow() { var t = $('wt-in'); t.style.height = ''; if (!t.value) return; t.style.height = 'auto'; t.style.height = Math.min(Math.max(t.scrollHeight + 2, t.offsetHeight), 200) + 'px'; }
 	$('wt-in').addEventListener('input', grow);
 	$('wt-in').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('wt-form').requestSubmit ? $('wt-form').requestSubmit() : $('wt-play').click(); } });
 
@@ -243,16 +297,36 @@
 	});
 
 	/* ---------- lists ---------- */
-	function setTab(t) { S.tab = t; save(); document.querySelectorAll('.wt-tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === t)); }); renderList(); }
+	function setTab(t) { if (t !== 'lists') openList = null; S.tab = t; save(); document.querySelectorAll('.wt-tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.tab === t)); }); renderList(); }
 	document.querySelectorAll('.wt-tab').forEach(function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
-	function listOf(t) { return t === 'saved' ? S.saved : t === 'hist' ? S.hist : S.q; }
+	function listOf(t) { if (t === 'lists') { var l = openList && W.findList(S.lists, openList); return l ? l.items : S.lists; } return t === 'saved' ? S.saved : t === 'hist' ? S.hist : S.q; }
+	function inList() { return S.tab === 'lists' && openList && W.findList(S.lists, openList); }
 	var rlT = 0; function renderListSoon() { clearTimeout(rlT); rlT = setTimeout(renderList, 60); }
 	function renderList() {
-		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length;
-		var L = listOf(S.tab), box = $('wt-list'), now = Date.now();
-		if (!L.length) { box.innerHTML = '<p class="wt-none">' + (S.tab === 'q' ? 'Up next is empty. Paste links above and press <b>+ Up next</b>.' : S.tab === 'saved' ? 'Nothing saved yet. Press ☆ on a video to keep it for later.' : 'Videos you watch show up here, with where you stopped.') + '</p>'; $('wt-share').hidden = $('wt-clear').hidden = true; return; }
+		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length; $('wt-nl').textContent = S.lists.length;
+		var L = listOf(S.tab), box = $('wt-list'), now = Date.now(), ol = inList();
+		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol; $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
+		if (S.tab === 'lists' && !ol) {
+			$('wt-share').hidden = true; $('wt-clear').hidden = true;
+			box.innerHTML = !S.lists.length ? '<p class="wt-none">No playlists yet. Paste a YouTube playlist link above, press <b>+ List</b> under a video, or make one from Up next.</p>' :
+				S.lists.map(function (l, i) {
+					var th = (l.items.filter(function (x) { return x.th; })[0] || {}).th;
+					return '<div class="wt-row" data-i="' + i + '"><button type="button" class="wt-rmain" data-act="lopen" aria-label="Open ' + esc(l.name) + '">' +
+						'<span class="wt-th">' + (th ? '<img alt="" loading="lazy" src="' + esc(th) + '">' : '<span class="wt-thx">Playlist</span>') + '<span class="wt-lcount">' + l.items.length + '</span></span>' +
+						'<span class="wt-rtx"><b>' + esc(l.name) + '</b><small>' + l.items.length + ' video' + (l.items.length === 1 ? '' : 's') + (l.src ? ' · from YouTube' : '') + '</small></span></button>' +
+						'<span class="wt-racts"><button type="button" class="wt-b" data-act="lplay" title="Play all (replaces Up next)" aria-label="Play all">▶&#xFE0E;</button>' +
+						'<button type="button" class="wt-b" data-act="lqueue" title="Add all to Up next" aria-label="Add all to Up next">+</button>' +
+						'<button type="button" class="wt-b" data-act="lren" title="Rename" aria-label="Rename">✎&#xFE0E;</button>' +
+						'<button type="button" class="wt-b" data-act="lshare" title="Copy a link to this playlist" aria-label="Copy link">🔗&#xFE0E;</button>' +
+						'<button type="button" class="wt-b" data-act="ldel" title="Delete this playlist" aria-label="Delete">✕</button></span></div>';
+				}).join('');
+			return;
+		}
+		var head = ol ? '<div class="wt-lback"><button type="button" class="wt-b" data-lback>← My playlists</button><b>' + esc(ol.name) + '</b><button type="button" class="wt-b" data-lplayall>▶&#xFE0E; Play all</button></div>' : '';
+		if (!L.length) { box.innerHTML = head + '<p class="wt-none">' + (ol ? 'This playlist is empty. Press <b>+ List</b> under a video to add it here.' : S.tab === 'q' ? 'Up next is empty. Paste links above and press <b>+ Up next</b>.' : S.tab === 'saved' ? 'Nothing saved yet. Press ☆ on a video to keep it for later.' : 'Videos you watch show up here, with where you stopped.') + '</p>'; $('wt-share').hidden = $('wt-clear').hidden = true; return; }
 		$('wt-share').hidden = S.tab === 'hist'; $('wt-clear').hidden = false;
-		box.innerHTML = L.map(function (it, i) {
+		var movable = S.tab === 'q' || !!ol;
+		box.innerHTML = head + L.map(function (it, i) {
 			needMeta(it);
 			var h = S.tab === 'hist' ? it : histRec(it), p = W.pct(h), isCur = cur && cur.key === it.key, stared = W.indexOf(S.saved, it.key) >= 0;
 			var sub = [W.siteName(it)];
@@ -263,15 +337,36 @@
 				'<span class="wt-th">' + (it.th ? '<img alt="" loading="lazy" src="' + esc(it.th) + '">' : '<span class="wt-thx">' + esc(W.siteName(it)) + '</span>') + (p ? '<span class="wt-prog"><i style="width:' + p.toFixed(1) + '%"></i></span>' : '') + (isCur ? '<span class="wt-now">▶&#xFE0E; Playing</span>' : '') + '</span>' +
 				'<span class="wt-rtx"><b>' + esc(W.label(it)) + '</b><small>' + esc(sub.join(' · ')) + '</small></span></button>' +
 				'<span class="wt-racts">' +
-				(S.tab === 'q' ? '<button type="button" class="wt-b" data-act="up" title="Move up" aria-label="Move up"' + (i ? '' : ' disabled') + '>↑</button><button type="button" class="wt-b" data-act="down" title="Move down" aria-label="Move down"' + (i < L.length - 1 ? '' : ' disabled') + '>↓</button>' : '<button type="button" class="wt-b" data-act="queue" title="Add to Up next" aria-label="Add to Up next">+</button>') +
+				(movable ? (ol ? '<button type="button" class="wt-b" data-act="queue" title="Add to Up next" aria-label="Add to Up next">+</button>' : '') + '<button type="button" class="wt-b" data-act="up" title="Move up" aria-label="Move up"' + (i ? '' : ' disabled') + '>↑</button><button type="button" class="wt-b" data-act="down" title="Move down" aria-label="Move down"' + (i < L.length - 1 ? '' : ' disabled') + '>↓</button>' : '<button type="button" class="wt-b" data-act="queue" title="Add to Up next" aria-label="Add to Up next">+</button>') +
 				(S.tab !== 'saved' ? '<button type="button" class="wt-b" data-act="star" title="' + (stared ? 'Remove from Saved' : 'Save for later') + '" aria-pressed="' + stared + '">' + (stared ? '★' : '☆') + '</button>' : '') +
 				'<button type="button" class="wt-b" data-act="del" title="Remove from this list" aria-label="Remove">✕</button></span></div>';
 		}).join('');
 	}
+	function loadList(l, replace) {
+		if (!l.items.length) { toast('That playlist is empty'); return; }
+		if (replace) { S.q = l.items.slice(); S.i = -1; play(S.q[0]); setTab('q'); $('wt-player').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+		else { S.q = W.add(S.q, l.items); save(); showMeta(); toast(l.items.length + ' added to Up next'); renderList(); }
+	}
 	$('wt-list').addEventListener('click', function (e) {
+		if (e.target.closest('[data-lback]')) { openList = null; renderList(); return; }
+		if (e.target.closest('[data-lplayall]')) { var ol0 = inList(); if (ol0) loadList(ol0, true); return; }
 		var b = e.target.closest('[data-act]'), row = e.target.closest('.wt-row'); if (!b || !row) return;
 		var L = listOf(S.tab), i = +row.dataset.i, it = L[i], a = b.dataset.act; if (!it) return;
+		if (/^l(open|play|queue|ren|share|del)$/.test(a)) {
+			if (a === 'lopen') { openList = it.id; renderList(); return; }
+			if (a === 'lplay') { loadList(it, true); return; }
+			if (a === 'lqueue') { loadList(it, false); return; }
+			if (a === 'lren') { var nm = prompt('Name of this playlist:', it.name); if (nm && nm.trim()) it.name = nm.trim().slice(0, 80); }
+			if (a === 'lshare') { if (it.items.length) copy(W.shareUrl(location.origin + '/watch', it.items.slice(0, 50), 0, it.name)); return; }
+			if (a === 'ldel') { if (!confirm('Delete the playlist "' + it.name + '"? (The videos stay in your other lists.)')) return; S.lists = S.lists.filter(function (x) { return x.id !== it.id; }); }
+			save(); renderList(); return;
+		}
+		var ol = inList();
 		if (a === 'play') { if (S.tab !== 'q' && W.indexOf(S.q, it.key) < 0) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; it = c; } else if (S.tab !== 'q') it = S.q[W.indexOf(S.q, it.key)]; play(it); $('wt-player').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+		if (ol && (a === 'up' || a === 'down' || a === 'del')) {
+			if (a === 'del') ol.items = W.remove(ol.items, it.key); else ol.items = W.move(ol.items, i, i + (a === 'up' ? -1 : 1));
+			save(); renderList(); return;
+		}
 		if (a === 'up' || a === 'down') { var curKey = cur && cur.key; S.q = W.move(S.q, i, i + (a === 'up' ? -1 : 1)); S.i = curKey ? W.indexOf(S.q, curKey) : -1; }
 		else if (a === 'queue') { S.q = W.add(S.q, [it]); toast('Added to Up next'); }
 		else if (a === 'star') { if (W.indexOf(S.saved, it.key) >= 0) S.saved = W.remove(S.saved, it.key); else S.saved = W.add(S.saved, [it], true); }
@@ -282,12 +377,108 @@
 		save(); renderList(); showMeta();
 	});
 	$('wt-clear').onclick = function () {
-		var names = { q: 'Up next', saved: 'Saved', hist: 'History' };
+		var names = { q: 'Up next', saved: 'Saved', hist: 'History' }, ol = inList();
+		if (ol) { if (!confirm('Remove every video from "' + ol.name + '"?')) return; ol.items = []; save(); renderList(); return; }
 		if (!confirm('Clear ' + names[S.tab] + '?')) return;
 		if (S.tab === 'q') { S.q = cur ? [cur] : []; S.i = cur ? 0 : -1; } else if (S.tab === 'saved') S.saved = []; else S.hist = [];
 		save(); renderList(); showMeta();
 	};
-	$('wt-share').onclick = function () { var L = listOf(S.tab); if (L.length) copy(W.shareUrl(location.origin + '/watch', L.slice(0, 50))); };
+	$('wt-share').onclick = function () { var L = listOf(S.tab), ol = inList(); if (L.length) copy(W.shareUrl(location.origin + '/watch', L.slice(0, 50), 0, ol ? ol.name : '')); };
+	$('wt-lnew').onclick = function () {
+		var nm = prompt('Name of the new playlist:', 'My playlist ' + (S.lists.length + 1)); if (!nm || !nm.trim()) return;
+		var l = W.newList(nm.trim(), S.q.map(strip)); S.lists.unshift(l); openList = l.id; save(); renderList(); toast(l.items.length ? 'Playlist made from Up next' : 'Empty playlist made: press + List under a video to fill it');
+	};
+	$('wt-histon').onchange = function () { S.histOn = this.checked; save(); toast(this.checked ? 'History is on' : 'History is off: nothing new is kept'); };
+	$('wt-priv').checked = S.priv !== false;
+	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && W.mode(cur) !== 'hls' && W.mode(cur) !== 'odysee' && W.mode(cur) !== 'file') { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
+	function strip(it) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; return c; }
+
+	/* "+ List": add the playing video to one of my playlists */
+	function closeMenu() { $('wt-lmenu').hidden = true; document.removeEventListener('pointerdown', menuOut, true); }
+	function menuOut(e) { if (!e.target.closest('#wt-lmenu') && !e.target.closest('#wt-addl')) closeMenu(); }
+	$('wt-addl').onclick = function () {
+		var m = $('wt-lmenu'); if (!m.hidden) { closeMenu(); return; } if (!cur) return;
+		m.innerHTML = '<b>Add to a playlist</b>' + S.lists.map(function (l) { var has = W.indexOf(l.items, cur.key) >= 0; return '<button type="button" role="menuitem" data-l="' + esc(l.id) + '"' + (has ? ' aria-checked="true"' : '') + '>' + (has ? '✓ ' : '') + esc(l.name) + ' <small>' + l.items.length + '</small></button>'; }).join('') +
+			'<button type="button" role="menuitem" data-l="new">+ New playlist…</button>';
+		var r = this.getBoundingClientRect(), fs = document.fullscreenElement;
+		(fs && fs.contains(this) ? fs : document.body).appendChild(m);
+		m.hidden = false; m.style.left = Math.max(8, Math.min(window.innerWidth - m.offsetWidth - 8, r.left)) + 'px';
+		m.style.top = (r.bottom + m.offsetHeight + 8 < window.innerHeight ? r.bottom + 4 : Math.max(8, r.top - m.offsetHeight - 4)) + 'px';
+		setTimeout(function () { document.addEventListener('pointerdown', menuOut, true); }, 0);
+	};
+	$('wt-lmenu').addEventListener('click', function (e) {
+		var b = e.target.closest('[data-l]'); if (!b || !cur) return; var id = b.dataset.l, l;
+		if (id === 'new') { var nm = prompt('Name of the new playlist:', 'My playlist ' + (S.lists.length + 1)); if (!nm || !nm.trim()) return; l = W.newList(nm.trim(), []); S.lists.unshift(l); }
+		else l = W.findList(S.lists, id);
+		if (!l) return;
+		if (W.indexOf(l.items, cur.key) >= 0) { l.items = W.remove(l.items, cur.key); toast('Removed from "' + l.name + '"'); }
+		else { l.items = W.add(l.items, [strip(cur)]); toast('Added to "' + l.name + '"'); }
+		save(); closeMenu(); renderList();
+	});
+
+	/* ---------- zoom: scale / move the picture inside its box (pinch, drag, wheel, + / −) ---------- */
+	var zMode = false, zPtr = {}, zStart = null;
+	function stageBox() { var st = $('wt-stage'); return { w: st.clientWidth, h: st.clientHeight }; }
+	function zoomLayer() {
+		var st = $('wt-stage'); if (!st || st.querySelector('.wt-zov')) { applyZoom(); return; }
+		var ov = document.createElement('div'); ov.className = 'wt-zov'; ov.hidden = !zMode;
+		ov.innerHTML = '<div class="wt-zpill" role="toolbar" aria-label="Zoom">' +
+			'<button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100%">100%</button><button type="button" data-z="in" aria-label="Zoom in">+</button>' +
+			'<button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button><button type="button" data-z="done" class="wt-zdone">✓ Done</button></div>' +
+			'<p class="wt-zhint">Pinch or drag to zoom and move · double-tap = Fill / 100%</p>';
+		st.appendChild(ov); wireZoom(ov); applyZoom();
+	}
+	function applyZoom() {
+		var st = $('wt-stage'), b = stageBox(), z = W.clampZoom(S.zoom || {}, b.w, b.h); S.zoom = z;
+		st.style.setProperty('--zk', z.k); st.style.setProperty('--zx', z.x + 'px'); st.style.setProperty('--zy', z.y + 'px');
+		st.classList.toggle('wt-zoomed', z.k > 1.001);
+		var pct = Math.round(z.k * 100) + '%', v = st.querySelector('.wt-zv'); if (v) v.textContent = pct;
+		var zb = $('wt-zoom'); zb.innerHTML = '🔍&#xFE0E; ' + (z.k > 1.001 ? pct : 'Zoom'); zb.setAttribute('aria-pressed', String(zMode));
+		var ov = st.querySelector('.wt-zov'); if (ov) ov.hidden = !zMode;
+	}
+	var zSave = 0; function zoomTo(k, px, py) {
+		// keep the point (px, py) (from the box centre) still while the scale changes
+		var z = S.zoom || { k: 1, x: 0, y: 0 }; k = Math.max(1, Math.min(4, k)); px = px || 0; py = py || 0;
+		S.zoom = { k: k, x: px - (px - z.x) / z.k * k, y: py - (py - z.y) / z.k * k }; applyZoom();
+		clearTimeout(zSave); zSave = setTimeout(save, 400);
+	}
+	function fillK() { var b = stageBox(), ar = vid && vid.videoWidth ? vid.videoWidth / vid.videoHeight : 16 / 9; return W.fillZoom(b.w, b.h, ar); }
+	function setZMode(on) { zMode = on; if (on) toast('Pinch or drag on the picture · + / − · Done when finished'); applyZoom(); }
+	function wireZoom(ov) {
+		ov.querySelector('.wt-zpill').addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+		ov.addEventListener('click', function (e) {
+			var b = e.target.closest('[data-z]'); if (!b) return; var z = b.dataset.z, k = (S.zoom || {}).k || 1;
+			if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else if (z === 'fill') zoomTo(fillK()); else if (z === 'done') setZMode(false);
+		});
+		function rel(e) { var r = ov.getBoundingClientRect(); return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 }; }
+		var lastTap = 0;
+		ov.addEventListener('pointerdown', function (e) {
+			ov.setPointerCapture(e.pointerId); zPtr[e.pointerId] = rel(e);
+			var ids = Object.keys(zPtr), z = S.zoom || { k: 1, x: 0, y: 0 };
+			if (ids.length === 1) {
+				var now = Date.now(); if (now - lastTap < 320) { zoomTo(z.k > 1.05 ? 1 : fillK()); lastTap = 0; zStart = null; return; } lastTap = now;
+				zStart = { p: zPtr[ids[0]], z: z };
+			} else if (ids.length === 2) {
+				var a = zPtr[ids[0]], c = zPtr[ids[1]];
+				zStart = { mid: { x: (a.x + c.x) / 2, y: (a.y + c.y) / 2 }, d: Math.hypot(a.x - c.x, a.y - c.y) || 1, z: z };
+			}
+		});
+		ov.addEventListener('pointermove', function (e) {
+			if (!zPtr[e.pointerId] || !zStart) return; zPtr[e.pointerId] = rel(e);
+			var ids = Object.keys(zPtr), z0 = zStart.z;
+			if (ids.length === 1 && zStart.p) { var p = zPtr[ids[0]]; S.zoom = { k: z0.k, x: z0.x + p.x - zStart.p.x, y: z0.y + p.y - zStart.p.y }; }
+			else if (ids.length >= 2 && zStart.mid) {
+				var a = zPtr[ids[0]], c = zPtr[ids[1]], mid = { x: (a.x + c.x) / 2, y: (a.y + c.y) / 2 }, k = Math.max(1, Math.min(4, z0.k * (Math.hypot(a.x - c.x, a.y - c.y) || 1) / zStart.d));
+				S.zoom = { k: k, x: mid.x - (zStart.mid.x - z0.x) / z0.k * k, y: mid.y - (zStart.mid.y - z0.y) / z0.k * k };
+			}
+			applyZoom();
+		});
+		function up(e) { delete zPtr[e.pointerId]; var ids = Object.keys(zPtr); zStart = ids.length === 1 ? { p: zPtr[ids[0]], z: S.zoom } : null; clearTimeout(zSave); zSave = setTimeout(save, 400); }
+		ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
+		ov.addEventListener('wheel', function (e) { e.preventDefault(); var p = rel(e); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY), p.x, p.y); }, { passive: false });
+	}
+	$('wt-zoom').onclick = function () { setZMode(!zMode); };
+	if (window.ResizeObserver) new ResizeObserver(function () { applyZoom(); }).observe($('wt-stage'));
 
 	/* ---------- player bar ---------- */
 	$('wt-prev').onclick = function () { go(-1); };
@@ -320,6 +511,11 @@
 		else if (e.key === 'ArrowLeft' && cur) seekBy(-5); else if (e.key === 'ArrowRight' && cur) seekBy(5);
 		else if (k === 's' && cur && W.canSpeed(cur)) step(-1); else if (k === 'd' && cur && W.canSpeed(cur)) step(1); else if (k === 'r' && cur && W.canSpeed(cur)) setRate(1);
 		else if (k === 'n') go(e.shiftKey ? -1 : 1);
+		else if (k === 'z') setZMode(!zMode);
+		else if ((e.key === '+' || e.key === '=') && cur) zoomTo(((S.zoom || {}).k || 1) * 1.25);
+		else if ((e.key === '-' || e.key === '_') && cur) zoomTo(((S.zoom || {}).k || 1) / 1.25);
+		else if (k === '0' && cur) zoomTo(1);
+		else if (e.key === 'Escape' && zMode) setZMode(false);
 		else if (k === 'w') { var fb = $('wt-pbtns').querySelector('button'); if (fb) fb.click(); }
 		else used = false;
 		if (used) e.preventDefault();
@@ -327,7 +523,10 @@
 
 	/* ---------- start ---------- */
 	function boot() {
-		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns') });
+		// phones with a camera notch: without viewport-fit=cover the full-screen picture is pushed off centre by the notch's width
+		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
+		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { setTimeout(applyZoom, 60); } });
+		zoomLayer();
 		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q');
 		if (/[?&]debug=1/.test(location.search)) window.MESWatchDebug = { S: S, play: play, go: go, position: position, cur: function () { return cur; } };
 		var Q = W.fromQuery(location.search);
@@ -335,14 +534,16 @@
 			var r = W.parseMany(Q.links.join(' '));
 			if (r.items.length) {
 				S.q = W.add(r.items, S.q.filter(function (x) { return !r.items.some(function (y) { return y.key === x.key; }); }));
-				S.i = -1; save();
+				S.i = -1;
+				if (Q.name) { var nl = W.newList(Q.name, r.items); S.lists.unshift(nl); toast('Saved under My playlists: ' + Q.name); }
+				save();
 				// browsers only allow sound after a click, so the first video waits for the press of its own play button
 				play(S.q[0], Q.t ? { t: Q.t } : {});
 			}
 			try { history.replaceState(null, '', location.pathname); } catch (e) {}
 		} else if (S.i >= 0 && S.q[S.i]) {
 			cur = S.q[S.i]; showMeta(); renderList();
-			$('wt-stage').innerHTML = '<div class="wt-empty"><b>' + esc(W.label(cur)) + '</b><span>' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'You stopped at ' + W.fmt(histRec(cur).pos) + '.' : 'Ready to play.') + '</span><button type="button" class="tu-btn tu-btn--primary" id="wt-resume">▶&#xFE0E; ' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'Continue' : 'Play') + '</button></div>';
+			setStage('<div class="wt-empty"><b>' + esc(W.label(cur)) + '</b><span>' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'You stopped at ' + W.fmt(histRec(cur).pos) + '.' : 'Ready to play.') + '</span><button type="button" class="tu-btn tu-btn--primary" id="wt-resume">▶&#xFE0E; ' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'Continue' : 'Play') + '</button></div>');
 			$('wt-resume').onclick = function () { play(cur); };
 		}
 	}
