@@ -769,6 +769,53 @@
         window.addEventListener("orientationchange", function () { soon(500); });
     })();
 
+    /* Keep <details> drop-down menus on screen (2026-11-08). Many tool menus hang a box off the right edge of their
+       button (position:absolute; right:0). When the row wraps on a phone and the button lands at the left, the box ran
+       off the left side of the screen (Copy Text's "More"). On open, and on resize while open, any absolutely / fixed
+       positioned child of an open <details> is nudged sideways (CSS `translate`) so it stays 8px inside the window, and
+       never wider than the window. Pages need no change. */
+    (function keepMenusOnScreen() {
+        var M = 8;
+        function fit(d) {
+            for (var i = 0; i < d.children.length; i++) {
+                if (d.children[i].tagName !== "SUMMARY") fitEl(d.children[i]);
+            }
+        }
+        function fitEl(el) {
+            {
+                var cs = getComputedStyle(el);
+                if (cs.display === "none") return;
+                if (cs.position !== "absolute" && cs.position !== "fixed") return;
+                if (el.dataset.mesFit) { el.style.translate = ""; el.style.maxWidth = ""; }
+                var vw = document.documentElement.clientWidth || innerWidth;
+                if (el.offsetWidth > vw - 2 * M) { el.style.maxWidth = (vw - 2 * M) + "px"; el.dataset.mesFit = "1"; }
+                var r = el.getBoundingClientRect(), dx = 0;
+                if (r.left < M) dx = M - r.left;
+                else if (r.right > vw - M) dx = Math.max(M - r.left, vw - M - r.right);
+                if (dx) { el.style.translate = Math.round(dx) + "px 0"; el.dataset.mesFit = "1"; }
+            }
+        }
+        document.addEventListener("toggle", function (e) {
+            var d = e.target;
+            if (d && d.tagName === "DETAILS" && d.open) fit(d);
+        }, true);
+        /* Menus opened by a button (hidden attribute, role="menu": Word viewer, Gallery ...) */
+        function fitMenus() {
+            var m = document.querySelectorAll('[role="menu"]:not([hidden])');
+            for (var i = 0; i < m.length; i++) if (m[i].offsetParent || getComputedStyle(m[i]).position === "fixed") fitEl(m[i]);
+        }
+        document.addEventListener("click", function () { requestAnimationFrame(fitMenus); });
+        var t;
+        window.addEventListener("resize", function () {
+            clearTimeout(t);
+            t = setTimeout(function () {
+                var open = document.querySelectorAll("details[open]");
+                for (var i = 0; i < open.length; i++) fit(open[i]);
+                fitMenus();
+            }, 120);
+        });
+    })();
+
     /* Paid ad-free (mes.fm/premium): localStorage "mes-adfree" = {user, until, how, checked, off?}. The AdSense loaders,
        aside.js and bottom-ad.js skip ads while `until` is in the future. Re-check the payment on the chain once a day
        (/api/premium, edge-cached), so a cancelled subscription brings the ads back and a renewal extends `until`.
