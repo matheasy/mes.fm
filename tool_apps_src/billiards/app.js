@@ -595,7 +595,7 @@
 	}
 	function addHint() {
 		var h = document.createElement("div"); h.className = "bl-3dhint";
-		h.textContent = "Behind the cue: drag sideways to aim · other cameras: press where to aim · right-drag or two fingers: turn the camera · Ctrl + wheel / pinch: zoom";
+		h.textContent = "Behind the cue: drag sideways to aim, up / down to tilt the view (Page Up / Down) · other cameras: press where to aim · right-drag or two fingers: turn the camera · Ctrl + wheel / pinch: zoom";
 		box3.appendChild(h); setTimeout(function () { h.remove(); }, 7000);
 	}
 	segWire("bl-dim", function (v) { setDim(v); });
@@ -636,8 +636,12 @@
 		if (d3.kind === "orbit") { v3.orbit(e.clientX - d3.x, e.clientY - d3.y); d3.x = e.clientX; d3.y = e.clientY; syncCamSel(); draw(); return; }
 		if (d3.kind === "ball") { var w = v3.pick(e.clientX, e.clientY); if (w) { place = clampPlace(w[0] + d3.ox, w[1] + d3.oy); draw(); } return; }
 		if (d3.kind === "turn") {
-			var dx = e.clientX - d3.x;
-			if (Math.abs(dx) > 4) d3.moved = true;
+			// the first clear movement decides: sideways = aim, up / down = tilt the camera
+			var dx = e.clientX - d3.x, dy = e.clientY - d3.y;
+			if (!d3.axis && (Math.abs(dx) > 7 || Math.abs(dy) > 7)) d3.axis = Math.abs(dy) > Math.abs(dx) * 1.2 ? "y" : "x";
+			if (Math.abs(dx) > 4 || Math.abs(dy) > 4) d3.moved = true;
+			if (d3.axis === "y") { v3.tiltBy((d3.ly === undefined ? dy : dy - d3.ly) * 0.006); d3.ly = dy; draw(); return; }
+			if (d3.axis !== "x") return;
 			var per = (e.altKey ? 0.02 : 0.12) * 10000 * (d3.fine ? 0.25 : 1);
 			aim = (((d3.a0 + Math.round(dx * per)) % 3600000) + 3600000) % 3600000; renderAim(); draw(); return;
 		}
@@ -871,6 +875,7 @@
 		else if (k === "m") musToggle();
 		else if (k === "g") cycleGuide();
 		else if (k === "k") { if (S.dim === "3d") cycleCam(); }
+		else if ((e.key === "PageUp" || e.key === "PageDown") && S.dim === "3d" && v3) { e.preventDefault(); v3.tiltBy(e.key === "PageUp" ? 0.08 : -0.08); draw(); }
 	});
 
 	/* ---------- fill window / full screen (shared panel-view.js) ---------- */

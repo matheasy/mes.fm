@@ -1226,7 +1226,7 @@
 		this.cam.aspect = w / h; this.cam.updateProjectionMatrix();
 		this.render();
 	};
-	View.prototype.setCam = function (m) { this.camMode = m; this.render(); };
+	View.prototype.setCam = function (m) { this.camMode = m; this.tilt = 0; this.render(); };
 	View.prototype.zoom = function (f) { this.zoomF = Math.max(0.35, Math.min(3, this.zoomF * f)); if (this.camMode === "orbit") this.orb.d = Math.max(0.4, Math.min(9, this.orb.d * f)); this.render(); };
 	View.prototype.orbit = function (dx, dy) {
 		if (this.camMode !== "orbit") {   // start the orbit from where the camera is now
@@ -1237,7 +1237,12 @@
 		this.orb.th += dx * 0.008; this.orb.ph = Math.max(0.08, Math.min(1.5, this.orb.ph - dy * 0.006));
 		this.render();
 	};
-	View.prototype.reset = function () { this.zoomF = 1; this.orb = { th: -2.2, ph: 0.85, d: 3.2 }; this.render(); };
+	/** tilt the camera up (+) or down (-) in radians; the orbit camera uses its own angle */
+	View.prototype.tiltBy = function (dr) {
+		if (this.camMode === "orbit") { this.orb.ph = Math.max(0.08, Math.min(1.5, this.orb.ph - dr)); this.render(); return; }
+		this.tilt = Math.max(-0.27, Math.min(1.15, (this.tilt || 0) + dr)); this.render();
+	};
+	View.prototype.reset = function () { this.tilt = 0; this.zoomF = 1; this.orb = { th: -2.2, ph: 0.85, d: 3.2 }; this.render(); };
 	View.prototype.frame = function (info) { this.info = info; this.render(); };
 	View.prototype.pick = function (cx, cy) {
 		if (!this.T) return null;
@@ -1258,9 +1263,11 @@
 		var portrait = this.w < this.h * 0.95;
 		if (mode === "auto") mode = I && I.phase === "anim" ? "overview" : "behind";
 		if (mode === "behind") {
-			var back = 0.85 * z, high = 0.26 * z + R;
+			// tilt: the camera's angle above the cloth (about 17 degrees by default; dragging up / down changes it)
+			var ph = Math.max(0.03, Math.min(1.45, 0.297 + (this.tilt || 0))), rad = 0.889 * z * (1 + 0.35 * Math.max(0, ph - 0.297));
+			var back = rad * Math.cos(ph), high = rad * Math.sin(ph) + R, ahead = 0.55 * Math.cos(ph) * Math.cos(ph);
 			out.eye.set(c0[0] - d[0] * back, high, c0[1] - d[1] * back);
-			out.look.set(c0[0] + d[0] * 0.55, R * 0.6, c0[1] + d[1] * 0.55);
+			out.look.set(c0[0] + d[0] * ahead, R * 0.6, c0[1] + d[1] * ahead);
 		} else if (mode === "overhead") {
 			var fov = this.cam.fov * Math.PI / 180, asp = this.w / this.h;
 			var span = portrait ? Math.max(W / asp, L) : Math.max(L / asp, W);
@@ -1270,10 +1277,12 @@
 		} else if (mode === "overview") {
 			var sd = I && I.shotDir ? I.shotDir : d, sc0 = I && I.shotC0 ? I.shotC0 : c0;
 			var cx = sc0[0] * 0.4, cz = sc0[1] * 0.4, dist = (L * 0.62 + 0.6) * z;
-			out.eye.set(cx - sd[0] * dist, (L * 0.55 + 0.3) * z, cz - sd[1] * dist);
+			var hk = Math.max(0.15, 1 + (this.tilt || 0) * 1.6);
+			out.eye.set(cx - sd[0] * dist, (L * 0.55 + 0.3) * z * hk, cz - sd[1] * dist);
 			out.look.set(cx + sd[0] * 0.2, 0, cz + sd[1] * 0.2);
 		} else if (mode === "side") {
-			out.eye.set(0, (0.9 + L * 0.15) * z, (W / 2 + 1.1 + L * 0.25) * z); out.look.set(0, -0.05, 0);
+			var hs = Math.max(0.12, 1 + (this.tilt || 0) * 1.8);
+			out.eye.set(0, (0.9 + L * 0.15) * z * hs, (W / 2 + 1.1 + L * 0.25) * z); out.look.set(0, -0.05, 0);
 		} else {
 			var o = this.orb, tg = o.target || new THREE.Vector3(0, 0, 0);
 			out.look.copy(tg);
@@ -1424,7 +1433,7 @@
 			}
 			sign(g, "POOL", "#ff3d8b", 1.4, -X + 0.02, F + 2.2, 0.0, Math.PI / 2);
 			sign(g, "BAR", "#29b6f6", 1.0, 1.6, F + 2.6, -Z + 0.03, 0);
-			sign(g, "MES", "#ffd54f", 1.0, X - 0.02, F + 2.2, 0, -Math.PI / 2);
+			sign(g, "OPEN", "#ffd54f", 1.0, X - 0.02, F + 2.2, 0, -Math.PI / 2);
 			// a dartboard and a jukebox
 			var db = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.04, 32), std("#ffffff", 0.8, { map: tex(256, 256, function (c, w, h) {
 				for (var r = 8; r > 0; r--) { c.fillStyle = r % 2 ? "#1b1b1b" : "#e8dcc0"; c.beginPath(); c.arc(128, 128, r * 15, 0, 7); c.fill(); }
@@ -1464,7 +1473,7 @@
 			void rig;
 			var screen = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.0), new THREE.MeshBasicMaterial({ map: textTex(1024, 320, function (c, w, h) {
 				var gr = c.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, "#0d47a1"); gr.addColorStop(1, "#1565c0"); c.fillStyle = gr; c.fillRect(0, 0, w, h);
-				c.fillStyle = "#fff"; c.font = "800 120px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("MES OPEN", w / 2, h * 0.42);
+				c.fillStyle = "#fff"; c.font = "800 120px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("THE OPEN", w / 2, h * 0.42);
 				c.font = "600 54px system-ui,sans-serif"; c.fillStyle = "#ffd54f"; c.fillText(T.id === "snooker" ? "SNOOKER CHAMPIONSHIP" : "POOL CHAMPIONSHIP", w / 2, h * 0.8);
 			}) }));
 			screen.position.set(-X + 0.03, F + 2.9, 0); screen.rotation.y = Math.PI / 2; g.add(screen);
@@ -1561,41 +1570,152 @@
 			var cool = new THREE.PointLight("#9fc3ff", 1.3, 9, 1.2); cool.position.set(0, F + 2.4, 0); g.add(cool);
 			this.renderer.toneMappingExposure = 1.15;
 		} else if (name === "party") {
-			sc.background = new THREE.Color("#070310"); sc.fog = new THREE.Fog("#070310", 6, 15);
-			var conf = tex(512, 512, function (c, w, h) {
-				c.fillStyle = "#14101c"; c.fillRect(0, 0, w, h);
-				var cc = ["#ff4081", "#ffea00", "#00e5ff", "#76ff03", "#ff9100", "#e040fb"];
-				for (var k = 0; k < 900; k++) { c.fillStyle = cc[k % cc.length]; c.save(); c.translate(Math.random() * w, Math.random() * h); c.rotate(Math.random() * 3); c.fillRect(-4, -2, 8, 4); c.restore(); }
-			});
-			conf.wrapS = conf.wrapT = THREE.RepeatWrapping; conf.repeat.set(4, 4);
-			walls(g, X, Z, H, std("#33205a", 0.85), std("#ffffff", 0.85, { map: conf }));
-			// the disco ball
-			var tiles = tex(256, 128, function (c, w, h) { for (var y = 0; y < h; y += 8) for (var x = 0; x < w; x += 8) { var v = 120 + Math.random() * 135; c.fillStyle = "rgb(" + v + "," + v + "," + v + ")"; c.fillRect(x, y, 7, 7); } });
-			var disco = new THREE.Mesh(new THREE.SphereGeometry(0.3, 32, 20), std("#ffffff", 0.15, { map: tiles, metalness: 0.95 }));
-			disco.position.set(0, 1.9, 0); g.add(disco);
-			var cord = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 1.2, 4), std("#333", 0.5)); cord.position.set(0, 2.8, 0); g.add(cord);
-			this.anims.push(function (t) { disco.rotation.y = t * 0.6; });
-			// coloured moving lights
-			var pc = ["#ff2d95", "#00e5ff", "#ffea00", "#7c4dff"];
-			pc.forEach(function (cl, k) {
-				var pl = new THREE.PointLight(cl, 2.4, 6, 1.4); g.add(pl);
-				var bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshBasicMaterial({ color: cl })); g.add(bulb);
-				this.anims.push(function (t) { var a = t * (0.5 + k * 0.17) + k * 1.57; pl.position.set(Math.cos(a) * (T.L / 2 + 0.6), 1.3 + Math.sin(t * 1.3 + k) * 0.3, Math.sin(a) * (T.W / 2 + 0.5)); bulb.position.copy(pl.position); });
-			}, this);
-			// balloons and string lights
-			var bc = ["#ff4081", "#ffea00", "#00e5ff", "#76ff03", "#ff9100", "#e040fb", "#ffffff"];
-			for (i = 0; i < 22; i++) {
-				var ball = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), std(bc[i % bc.length], 0.3)); ball.scale.y = 1.2;
-				var bxp = (rnd() - 0.5) * (2 * X - 1), bzp = (rnd() < 0.5 ? -1 : 1) * (Z - 0.3 - rnd() * 0.8), byp = F + 2.4 + rnd() * 0.5;
-				ball.position.set(bxp, byp, bzp); g.add(ball);
-				(function (b, y0, ph) { this.anims.push(function (t) { b.position.y = y0 + Math.sin(t * 0.8 + ph) * 0.06; }); }).call(this, ball, byp, rnd() * 6);
+			// a night club: glowing dance floor, moving beams, lasers, a DJ booth, a dancing crowd and a disco ball
+			sc.background = new THREE.Color("#05020c"); sc.fog = new THREE.Fog("#05020c", 7, 17);
+			walls(g, X, Z, H, std("#1b1030", 0.7), std("#0d0a14", 0.35, { metalness: 0.3 }));
+			var self = this, tileCols = ["#ff2d95", "#00e5ff", "#ffea00", "#7c4dff", "#00e676", "#ff6d00"];
+			// LED dance floor around the table (tiles change colour)
+			var tiles2 = [], ts = 0.5, nx = Math.ceil((2 * X - 0.6) / ts), nz = Math.ceil((2 * Z - 0.6) / ts);
+			for (i = 0; i < nx; i++) for (j = 0; j < nz; j++) {
+				var tx = -X + 0.3 + ts / 2 + i * ts, tz = -Z + 0.3 + ts / 2 + j * ts;
+				if (Math.abs(tx) < T.L / 2 + 0.35 && Math.abs(tz) < T.W / 2 + 0.35) continue;    // not under the table
+				var tm = new THREE.Mesh(new THREE.PlaneGeometry(ts - 0.03, ts - 0.03), new THREE.MeshBasicMaterial({ color: tileCols[(i + j) % 6], transparent: true, opacity: 0.55 }));
+				tm.rotation.x = -Math.PI / 2; tm.position.set(tx, F + 0.004, tz); g.add(tm); tiles2.push({ m: tm, i: i, j: j });
 			}
-			for (i = 0; i < 40; i++) { var sb = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshBasicMaterial({ color: bc[i % 6] })); var u = i / 39; sb.position.set(-X + u * 2 * X, F + 2.9 - Math.sin(u * Math.PI) * 0.25, -Z + 0.05); g.add(sb); }
-			sign(g, "PARTY!", "#ff2d95", 1.6, 0, F + 2.25, Z - 0.03, Math.PI);
-			sign(g, "LET'S PLAY", "#00e5ff", 2.2, X - 0.03, F + 1.9, 0, -Math.PI / 2);
-			sign(g, "♪ ♫ ♪", "#ffea00", 1.4, -X + 0.03, F + 1.9, 0, Math.PI / 2);
-			var wash = new THREE.PointLight("#b388ff", 1.6, 12, 1); wash.position.set(0, F + 2.6, 0); g.add(wash);
-			this.renderer.toneMappingExposure = 1.25;
+			var lastT = 0;
+			this.anims.push(function (t) {
+				if (t - lastT < 0.45) return; lastT = t;
+				var step = Math.floor(t / 0.45);
+				tiles2.forEach(function (o) { o.m.material.color.set(tileCols[(o.i + o.j + step) % 6]); o.m.material.opacity = 0.3 + 0.45 * (((o.i * 7 + o.j * 3 + step) % 4) / 3); });
+			});
+			// beams of light from the ceiling (see-through cones) that swing
+			var beams = [];
+			for (i = 0; i < 6; i++) {
+				var bcol = tileCols[i % 6];
+				var cone = new THREE.Mesh(new THREE.ConeGeometry(0.55, 3.2, 24, 1, true), new THREE.MeshBasicMaterial({ color: bcol, transparent: true, opacity: 0.09, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+				var pivot = new THREE.Group(); pivot.position.set((i - 2.5) * (2 * X - 1) / 5, F + H - 0.1, (i % 2 ? -1 : 1) * (Z - 1.2));
+				cone.position.y = -1.6; pivot.add(cone); g.add(pivot);
+				var lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.18, 12), std("#222", 0.4, { metalness: 0.7 })); pivot.add(lamp);
+				beams.push({ p: pivot, k: i });
+			}
+			this.anims.push(function (t) { beams.forEach(function (b) { b.p.rotation.z = Math.sin(t * 0.9 + b.k) * 0.6; b.p.rotation.x = Math.cos(t * 0.7 + b.k * 1.3) * 0.5; }); });
+			// lasers across the room
+			var lasers = [];
+			for (i = 0; i < 5; i++) {
+				var lz = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 2 * X, 6), new THREE.MeshBasicMaterial({ color: i % 2 ? "#00ff88" : "#ff1744", transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
+				lz.rotation.z = Math.PI / 2; lz.position.set(0, F + 2.3 + i * 0.12, -Z + 1 + i * 0.2); g.add(lz); lasers.push(lz);
+			}
+			this.anims.push(function (t) { lasers.forEach(function (l, k) { l.rotation.y = Math.sin(t * 0.6 + k) * 0.35; l.visible = Math.sin(t * 3 + k * 2) > -0.3; }); });
+			// the DJ booth with a screen
+			box(g, 2.4, 1.0, 0.7, std("#111", 0.3, { metalness: 0.5 }), 0, F + 0.5, -Z + 0.6, true);
+			var dj = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.35), new THREE.MeshBasicMaterial({ map: tex(512, 80, function (c, w, h) { var gr = c.createLinearGradient(0, 0, w, 0); tileCols.forEach(function (cc, k) { gr.addColorStop(k / 5, cc); }); c.fillStyle = gr; c.fillRect(0, 0, w, h); c.fillStyle = "#000"; c.font = "800 50px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("DJ BOOTH", w / 2, h / 2 + 2); }) }));
+			dj.position.set(0, F + 0.7, -Z + 0.96); g.add(dj);
+			var djbody = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.45, 4, 8), std("#222", 0.8)); djbody.position.set(0, F + 1.25, -Z + 0.35); g.add(djbody);
+			var djhead = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 10), std("#c68642", 0.7)); djhead.position.set(0, F + 1.65, -Z + 0.35); g.add(djhead);
+			this.anims.push(function (t) { djhead.position.y = F + 1.65 + Math.abs(Math.sin(t * 4)) * 0.05; });
+			// a dancing crowd along the walls
+			var dancers = [], dshirts = ["#ff2d95", "#00e5ff", "#ffea00", "#ffffff", "#7c4dff", "#00e676", "#212121", "#ff6d00"], dskins = ["#f1c27d", "#c68642", "#8d5524", "#ffdbac", "#e0ac69"];
+			for (i = 0; i < 46; i++) {
+				var side = i % 4, u = rnd() * 2 - 1, px, pz;
+				if (side < 2) { px = u * (X - 0.6); pz = (side ? 1 : -1) * (Z - 0.5 - rnd() * 0.7); if (!side && Math.abs(px) < 1.4) continue; }
+				else { px = (side === 2 ? -1 : 1) * (X - 0.5 - rnd() * 0.7); pz = u * (Z - 0.6); }
+				dancers.push([px, pz, rnd() * 6, dshirts[i % dshirts.length], dskins[i % dskins.length]]);
+			}
+			var dB = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.17, 0.55, 4, 8), std("#ffffff", 0.8), dancers.length), dH = new THREE.InstancedMesh(new THREE.SphereGeometry(0.12, 10, 8), std("#ffffff", 0.7), dancers.length);
+			var m4 = new THREE.Matrix4(), c4 = new THREE.Color();
+			dancers.forEach(function (d0, k) { dB.setColorAt(k, c4.set(d0[3])); dH.setColorAt(k, c4.set(d0[4])); });
+			g.add(dB); g.add(dH);
+			this.anims.push(function (t) {
+				dancers.forEach(function (d0, k) {
+					var hop = Math.abs(Math.sin(t * 4.2 + d0[2])) * 0.12, sw = Math.sin(t * 2.1 + d0[2]) * 0.06;
+					m4.makeTranslation(d0[0] + sw, F + 0.45 + hop, d0[1]); dB.setMatrixAt(k, m4);
+					m4.makeTranslation(d0[0] + sw * 1.4, F + 0.98 + hop, d0[1]); dH.setMatrixAt(k, m4);
+				});
+				dB.instanceMatrix.needsUpdate = true; dH.instanceMatrix.needsUpdate = true;
+			});
+			// the disco ball with sparkles
+			var tiles3 = tex(256, 128, function (c, w, h) { for (var y = 0; y < h; y += 8) for (var x = 0; x < w; x += 8) { var v = 120 + Math.random() * 135; c.fillStyle = "rgb(" + v + "," + v + "," + v + ")"; c.fillRect(x, y, 7, 7); } });
+			var disco = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 20), std("#ffffff", 0.12, { map: tiles3, metalness: 1, emissive: "#333333" }));
+			disco.position.set(0, F + H - 0.6, 0); g.add(disco);
+			this.anims.push(function (t) { disco.rotation.y = t * 0.8; });
+			// coloured lights that move
+			["#ff2d95", "#00e5ff", "#ffea00", "#7c4dff"].forEach(function (cl, k) {
+				var pl = new THREE.PointLight(cl, 2.6, 7, 1.3); g.add(pl);
+				self.anims.push(function (t) { var a = t * (0.5 + k * 0.17) + k * 1.57; pl.position.set(Math.cos(a) * (T.L / 2 + 0.8), 1.2 + Math.sin(t * 1.3 + k) * 0.3, Math.sin(a) * (T.W / 2 + 0.7)); });
+			});
+			sign(g, "PARTY!", "#ff2d95", 1.4, 0, F + 2.35, Z - 0.03, Math.PI);
+			sign(g, "LET'S PLAY", "#00e5ff", 2.0, X - 0.03, F + 2.0, 0, -Math.PI / 2);
+			sign(g, "DANCE", "#ffea00", 1.4, -X + 0.03, F + 2.0, 0, Math.PI / 2);
+			this.renderer.toneMappingExposure = 1.2;
+		} else if (name === "stadium") {
+			// a big stadium at night: bleachers all around full of fans, floodlights and a big screen over the table
+			sc.background = new THREE.Color("#030612"); sc.fog = new THREE.Fog("#030612", 18, 60);
+			var self2 = this, R0 = Math.max(T.L, T.W) / 2 + 6.5, rows = 22, rowH = 0.45, rowD = 0.8, ell = 1.35;
+			var turf = new THREE.Mesh(new THREE.CircleGeometry(R0 * ell + 1, 64), std("#1b5e20", 0.95, { map: tex(256, 256, function (c, w, h) { for (var k2 = 0; k2 < 8; k2++) { c.fillStyle = k2 % 2 ? "#236b26" : "#1d5e21"; c.fillRect(0, k2 * h / 8, w, h / 8); } }) }));
+			turf.rotation.x = -Math.PI / 2; turf.scale.set(1, 1 / ell, 1); turf.position.y = F; turf.receiveShadow = true; g.add(turf);
+			var stage = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(T.L, T.W) / 2 + 1.2, Math.max(T.L, T.W) / 2 + 1.3, 0.1, 48), std("#0d1b3d", 0.6));
+			stage.scale.set(1, 1, 0.62); stage.position.y = F + 0.05; stage.receiveShadow = true; g.add(stage);
+			// the stands: rings of steps (an ellipse), each with a row of fans
+			var standMat = std("#2a3142", 0.8), fans = [], fshirts = ["#e53935", "#1e88e5", "#fdd835", "#43a047", "#ffffff", "#8e24aa", "#fb8c00", "#00acc1", "#212121"], fskins = ["#f1c27d", "#c68642", "#8d5524", "#ffdbac", "#e0ac69"];
+			for (var r3 = 0; r3 < rows; r3++) {
+				var rad3 = R0 + r3 * rowD, y3 = F + 0.3 + r3 * rowH;
+				var ring = new THREE.Mesh(new THREE.CylinderGeometry(rad3 + rowD, rad3 + rowD, rowH, 72, 1, true), standMat);
+				ring.scale.set(ell, 1, 1); ring.position.y = y3 - rowH / 2; g.add(ring);
+				var stepTop = new THREE.Mesh(new THREE.RingGeometry(rad3, rad3 + rowD, 72), standMat); stepTop.rotation.x = -Math.PI / 2; stepTop.scale.set(ell, 1, 1); stepTop.position.y = y3; g.add(stepTop);
+				var nSeat = Math.floor(2 * Math.PI * rad3 * 1.15 / 0.55);
+				for (var q2 = 0; q2 < nSeat; q2++) {
+					var ang = q2 / nSeat * Math.PI * 2;
+					if (Math.abs(Math.sin(ang)) < 0.12 && Math.cos(ang) > 0 && r3 < 6) continue;       // a tunnel on one side
+					if (rnd() < 0.12) continue;
+					fans.push([Math.cos(ang) * (rad3 + rowD * 0.45) * ell, y3, Math.sin(ang) * (rad3 + rowD * 0.45), ang, fshirts[Math.floor(rnd() * fshirts.length)], fskins[Math.floor(rnd() * fskins.length)]]);
+				}
+			}
+			var fB = new THREE.InstancedMesh(new THREE.CapsuleGeometry(0.15, 0.3, 3, 6), std("#ffffff", 0.9), fans.length), fH = new THREE.InstancedMesh(new THREE.SphereGeometry(0.11, 8, 6), std("#ffffff", 0.8), fans.length);
+			var m5 = new THREE.Matrix4(), c5 = new THREE.Color();
+			fans.forEach(function (f0, k) { fB.setColorAt(k, c5.set(f0[4])); fH.setColorAt(k, c5.set(f0[5])); m5.makeTranslation(f0[0], f0[1] + 0.3, f0[2]); fB.setMatrixAt(k, m5); m5.makeTranslation(f0[0], f0[1] + 0.62, f0[2]); fH.setMatrixAt(k, m5); });
+			g.add(fB); g.add(fH);
+			// a Mexican wave goes round now and then
+			var lastW = 0;
+			this.anims.push(function (t) {
+				if (t - lastW < 0.05) return; lastW = t;
+				var front = (t * 0.9) % (Math.PI * 2);
+				fans.forEach(function (f0, k) {
+					var dA = Math.abs(((f0[3] - front + Math.PI * 3) % (Math.PI * 2)) - Math.PI), up = dA < 0.35 ? (0.35 - dA) / 0.35 * 0.35 : 0;
+					m5.makeTranslation(f0[0], f0[1] + 0.3 + up, f0[2]); fB.setMatrixAt(k, m5);
+					m5.makeTranslation(f0[0], f0[1] + 0.62 + up, f0[2]); fH.setMatrixAt(k, m5);
+				});
+				fB.instanceMatrix.needsUpdate = true; fH.instanceMatrix.needsUpdate = true;
+			});
+			// floodlight towers
+			var topR = R0 + rows * rowD + 1.2, topY = F + rows * rowH + 5;
+			for (i = 0; i < 4; i++) {
+				var fa = Math.PI / 4 + i * Math.PI / 2, fx = Math.cos(fa) * topR * ell, fz = Math.sin(fa) * topR;
+				var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, topY - F, 8), std("#555", 0.5, { metalness: 0.6 })); pole.position.set(fx, (topY + F) / 2, fz); g.add(pole);
+				var head = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 0.3), new THREE.MeshBasicMaterial({ color: "#fffbe6" })); head.position.set(fx, topY, fz); head.lookAt(0, 0, 0); g.add(head);
+				var spot = new THREE.SpotLight("#fff6e0", 60, 60, 0.35, 0.5, 1.2); spot.position.set(fx, topY, fz); spot.target.position.set(0, 0, 0); g.add(spot); g.add(spot.target);
+			}
+			// the big screen hanging over the table (four sides)
+			var jt = tex(1024, 512, function (c, w, h) {
+				var gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#0d47a1"); gr.addColorStop(1, "#002171"); c.fillStyle = gr; c.fillRect(0, 0, w, h);
+				c.fillStyle = "#fff"; c.font = "800 130px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("LIVE", w / 2, h * 0.32);
+				c.fillStyle = "#ffd54f"; c.font = "700 96px system-ui,sans-serif"; c.fillText(T.id === "snooker" ? "SNOOKER" : "BILLIARDS", w / 2, h * 0.62);
+				c.fillStyle = "#90caf9"; c.font = "600 46px system-ui,sans-serif"; c.fillText("WORLD FINAL", w / 2, h * 0.86);
+			});
+			var cube = new THREE.Group(); cube.position.set(0, F + 7.5, 0); cube.scale.set(1.6, 1.6, 1.6); g.add(cube);
+			for (i = 0; i < 4; i++) { var face2 = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.2), new THREE.MeshBasicMaterial({ map: jt })); var fa2 = i * Math.PI / 2; face2.position.set(Math.sin(fa2) * 1.2, 0, Math.cos(fa2) * 1.2); face2.rotation.y = fa2; cube.add(face2); }
+			box(cube, 2.44, 1.24, 2.44, std("#111", 0.5), 0, 0, 0);
+			this.anims.push(function (t) { cube.rotation.y = t * 0.15; });
+			// ad boards round the stage
+			var ads = ["WORLD FINAL", "MES.FM", "BREAK & RUN", "GOOD LUCK!"];
+			for (i = 0; i < 8; i++) {
+				var aa = (i + 0.5) / 8 * Math.PI * 2, ar = R0 - 0.6;
+				var txt = ads[i % ads.length], pr = document.createElement("canvas").getContext("2d"); pr.font = "800 52px system-ui,sans-serif";
+				var bw = Math.ceil(pr.measureText(txt).width) + 60, bh = 100;
+				var bt = tex(bw, bh, function (c, w, h) { c.fillStyle = "#111"; c.fillRect(0, 0, w, h); c.fillStyle = "#4fc3f7"; c.font = "800 52px system-ui,sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(txt, w / 2, h / 2 + 2); });
+				var board = new THREE.Mesh(new THREE.PlaneGeometry(0.6 * bw / bh, 0.6), new THREE.MeshBasicMaterial({ map: bt, side: THREE.DoubleSide }));
+				board.position.set(Math.cos(aa) * ar * ell, F + 0.32, Math.sin(aa) * ar); board.lookAt(0, F + 0.32, 0); g.add(board);
+			}
+			this.renderer.toneMappingExposure = 1.15;
 		} else {
 			sc.background = new THREE.Color("#0c120f"); sc.fog = new THREE.Fog("#0c120f", 6, 14);
 			var fl = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), std("#2a211b", 0.9)); fl.rotation.x = -Math.PI / 2; fl.position.y = F; fl.receiveShadow = true; g.add(fl);
@@ -2205,7 +2325,7 @@
 	}
 	function addHint() {
 		var h = document.createElement("div"); h.className = "bl-3dhint";
-		h.textContent = "Behind the cue: drag sideways to aim · other cameras: press where to aim · right-drag or two fingers: turn the camera · Ctrl + wheel / pinch: zoom";
+		h.textContent = "Behind the cue: drag sideways to aim, up / down to tilt the view (Page Up / Down) · other cameras: press where to aim · right-drag or two fingers: turn the camera · Ctrl + wheel / pinch: zoom";
 		box3.appendChild(h); setTimeout(function () { h.remove(); }, 7000);
 	}
 	segWire("bl-dim", function (v) { setDim(v); });
@@ -2246,8 +2366,12 @@
 		if (d3.kind === "orbit") { v3.orbit(e.clientX - d3.x, e.clientY - d3.y); d3.x = e.clientX; d3.y = e.clientY; syncCamSel(); draw(); return; }
 		if (d3.kind === "ball") { var w = v3.pick(e.clientX, e.clientY); if (w) { place = clampPlace(w[0] + d3.ox, w[1] + d3.oy); draw(); } return; }
 		if (d3.kind === "turn") {
-			var dx = e.clientX - d3.x;
-			if (Math.abs(dx) > 4) d3.moved = true;
+			// the first clear movement decides: sideways = aim, up / down = tilt the camera
+			var dx = e.clientX - d3.x, dy = e.clientY - d3.y;
+			if (!d3.axis && (Math.abs(dx) > 7 || Math.abs(dy) > 7)) d3.axis = Math.abs(dy) > Math.abs(dx) * 1.2 ? "y" : "x";
+			if (Math.abs(dx) > 4 || Math.abs(dy) > 4) d3.moved = true;
+			if (d3.axis === "y") { v3.tiltBy((d3.ly === undefined ? dy : dy - d3.ly) * 0.006); d3.ly = dy; draw(); return; }
+			if (d3.axis !== "x") return;
 			var per = (e.altKey ? 0.02 : 0.12) * 10000 * (d3.fine ? 0.25 : 1);
 			aim = (((d3.a0 + Math.round(dx * per)) % 3600000) + 3600000) % 3600000; renderAim(); draw(); return;
 		}
@@ -2481,6 +2605,7 @@
 		else if (k === "m") musToggle();
 		else if (k === "g") cycleGuide();
 		else if (k === "k") { if (S.dim === "3d") cycleCam(); }
+		else if ((e.key === "PageUp" || e.key === "PageDown") && S.dim === "3d" && v3) { e.preventDefault(); v3.tiltBy(e.key === "PageUp" ? 0.08 : -0.08); draw(); }
 	});
 
 	/* ---------- fill window / full screen (shared panel-view.js) ---------- */
