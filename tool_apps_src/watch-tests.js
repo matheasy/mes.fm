@@ -59,4 +59,31 @@ s = W.shareUrl('https://mes.fm/watch', [a[0]], 0, 'My list'); eq(W.fromQuery(s.s
 eq(['@veritasium','https://www.youtube.com/@mes/videos','youtube.com/channel/UCUUBq1GPBvvGNz7dpgO14Ow','https://x.com/@mes','https://www.youtube.com/watch?v=dQw4w9WgXcQ','@a'].map(W.channelRef), ['@veritasium','@mes','UCUUBq1GPBvvGNz7dpgO14Ow','','',''], 'channelRef');
 let pc = W.parseMany('@veritasium https://youtu.be/dQw4w9WgXcQ youtube.com/@mes');
 eq([pc.channels, pc.items.length], [['@veritasium','@mes'], 1], 'parseMany channels');
+// sync merge
+const V = (id, t) => Object.assign(W.item('https://youtu.be/' + id), t ? { t } : {});
+const A = V('AAAAAAAAAAA'), B = V('BBBBBBBBBBB'), C = V('CCCCCCCCCCC'), Dv = V('DDDDDDDDDDD');
+let base = W.snap({ q: [A, B], saved: [A], lists: [{ id: 'l1', name: 'One', items: [A] }], chans: [{ k: '@x', n: 'X' }] });
+let mine = W.snap({ q: [A, B, C], saved: [], lists: [{ id: 'l1', name: 'One renamed', items: [A, C] }], chans: [{ k: '@x', n: 'X' }] });
+let theirs = W.snap({ q: [B, A, Dv], saved: [A, B], lists: [{ id: 'l1', name: 'One', items: [A, Dv] }, { id: 'l2', name: 'Two', items: [B] }], chans: [] });
+let mg = W.merge3(base, mine, theirs);
+eq(mg.q.map(x => x.id[0]).join(''), 'BCAD', 'merge q: their order, my new item after the one it followed');
+ok(mg.q.length === 4 && mg.q.some(x => x.id === 'CCCCCCCCCCC') && mg.q.some(x => x.id === 'DDDDDDDDDDD'), 'merge q keeps new items from both sides');
+eq(mg.saved.map(x => x.id), ['BBBBBBBBBBB'], 'merge saved: removed here stays removed, added there kept');
+eq(mg.chans, [], 'merge chans: removed there stays removed');
+eq(mg.lists.map(l => [l.id, l.name, l.items.map(x => x.id[0]).join('')]), [['l1', 'One renamed', 'ACD'], ['l2', 'Two', 'B']], 'merge lists: rename + items both sides + new list');
+ok(mg.lists[0].items.length === 3, 'list items from both sides');
+eq(W.merge3(base, base, theirs), theirs, 'mine untouched -> theirs');
+eq(W.merge3(base, mine, base), mine, 'theirs untouched -> mine');
+// history: newest wins, a delete only sticks if the other side did not watch it again
+const hb = [Object.assign({}, A, { pos: 10, dur: 100, at: 100 }), Object.assign({}, B, { pos: 5, dur: 100, at: 90 })];
+const hm = [Object.assign({}, A, { pos: 50, dur: 100, at: 200 })];                 // B removed here
+const ht = [Object.assign({}, B, { pos: 5, dur: 100, at: 90 }), Object.assign({}, A, { pos: 20, dur: 100, at: 150 })];
+let hh = W.merge3({ hist: hb }, { hist: hm }, { hist: ht }).hist;
+eq(hh.map(x => [x.id[0], x.pos]), [['A', 50]], 'history merge');
+ht[0].at = 300; hh = W.merge3({ hist: hb }, { hist: hm }, { hist: ht }).hist;
+eq(hh.map(x => x.id[0]), ['B', 'A'], 'watched again elsewhere -> kept');
+let ad = W.mergeAdd(W.snap({ q: [A], saved: [], lists: [], chans: [] }), W.snap({ q: [B], saved: [C], lists: [], chans: [{ k: '@y' }] }));
+eq([ad.added, ad.data.q.length], [3, 2], 'mergeAdd adds, removes nothing');
+eq(W.readFile(W.fileText(base)), base, 'file round trip');
+ok(W.readFile('') === null, 'empty file = nothing yet');
 console.log('watch tests ok:', n);

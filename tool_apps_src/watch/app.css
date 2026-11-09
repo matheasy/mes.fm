@@ -129,6 +129,30 @@ body.dark-mode .wt-menu button:hover {background:#2c3442;}
 .wt-lback b {flex:1 1 auto;min-width:0;font-size:1.05em;word-break:break-word;}
 .wt-lcount {position:absolute;right:0;top:0;bottom:0;width:38%;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.9em;}
 html body.dark-mode #wt .wt-lcount {color:#fff;}
+/* sync & backup */
+.wt-sync {display:flex;flex-direction:column;gap:0.8em;}
+.wt-shead {display:flex;justify-content:space-between;align-items:center;gap:0.5em;}
+.wt-shead h2 {margin:0;font-size:1.15em;}
+.wt-sbox {border:1px solid var(--wt-line);border-radius:0.7em;padding:0.8em 0.9em;background:var(--wt-soft);}
+.wt-sbox h3 {margin:0 0 0.35em;font-size:1.02em;}
+.wt-ssmall {color:var(--wt-muted);font-size:0.88em;line-height:1.45;margin:0.2em 0;}
+.wt-sstate {margin:0.5em 0;line-height:1.45;}
+.wt-sacts {display:flex;flex-wrap:wrap;gap:0.45em;margin:0.4em 0;}
+.wt-smsg {font-size:0.9em;margin:0.3em 0 0;color:var(--wt-muted);}
+.wt-smsg.is-err {color:#b42318;}
+.wt-smsg.is-ok {color:#15803d;}
+.wt-hwarn {font-size:0.88em;margin:0.4em 0;color:var(--wt-muted);line-height:1.45;}
+.wt-hwarn.is-open {color:#9a3412;}
+.wt-hlogin {display:flex;flex-wrap:wrap;gap:0.45em;}
+.wt-hlogin input {flex:1 1 12em;min-width:0;}
+.wt-hwho {display:inline-flex;align-items:center;gap:0.4em;}
+.wt-hwho img {border-radius:50%;}
+.wt-htbl {width:100%;font-size:0.9em;margin-top:0.5em;}
+.wt-hacts {display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;}
+.wt-tundo {font:inherit;font-weight:600;background:none;border:0;color:#fbbf24;cursor:pointer;text-decoration:underline;padding:0 0.2em;}
+html body.dark-mode #wt .wt-smsg.is-err {color:#f97066;}
+html body.dark-mode #wt .wt-smsg.is-ok {color:#4ade80;}
+html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 /* dark mode */
 	html body.dark-mode #wt.wt {--wt-fg:#e6e9ee;--wt-muted:#a3abb8;--wt-line:#343b47;--wt-soft:#232934;--wt-hover:#2c3442;--wt-acc:#f06595;--wt-cur:#3a1f2b;--wt-curb:#7d3b57;}
 	html body.dark-mode #wt .wt-row {background:#1d222b;}

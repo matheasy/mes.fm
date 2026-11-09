@@ -94,6 +94,21 @@ def _pt(slug, grade, subj, title, page_title, desc, tab):
     if slug != "practice-tests":
         d.update(js_path="practice-tests/js/practice-tests.js", brand=PT_BRAND, tab=tab)
     return d
+# MES Billiards (2026-11-09): one source (tool_apps_src/billiards: lib.js = MESBilliards physics + rules + computer + Hive protocol, also
+# mes.fm/api/_billiards-lib.js for api/billiards.js; app.js = the page, also its own Web Worker) for /billiards and the 8-ball, 9-ball and snooker pages.
+# data-start on #bl = the game a page opens with. Rebuild all four together, bump js_v on all.
+BL_PAGES = [("billiards", "All games"), ("8-ball", "8-Ball"), ("9-ball", "9-Ball"), ("snooker", "Snooker")]
+BL_BRAND = dict(slug="billiards", title="MES Billiards", tag="Pool and snooker with real physics: play the computer, a friend or online.")
+BL_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in BL_PAGES[1:])
+BL_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm) for sl, nm in BL_PAGES[1:])
+def _bl(slug, start, title, page_title, desc, tab, meta_desc):
+    fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", nm) for sl, nm in BL_PAGES)
+    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="1",
+             src="billiards", pre_js=["/main_js/hive.js?v=2"], nav_extra=BL_NAV_INFO, menu_extra=BL_NAV_MENU,
+             vars={"START": start, "FAM": fam, "SEO": "@seo/%s.html" % slug})
+    if slug != "billiards":
+        d.update(js_path="billiards/js/billiards.js", brand=BL_BRAND, tab=tab)
+    return d
 # MES GTA 6 Hub (2026-11-07): one source (tool_apps_src/gta: lib.js = MESGTA physics + countdown + download maths, also mes.fm/api/_gta-lib.js for the
 # news function api/gta-news.js; sim.js = the stunt jump simulator UI; app.js = hub / countdown / download / jump calculator) for the hub /gta and three pages.
 # data-page on #gt picks the page. Unofficial fan pages (no Rockstar art or names beyond the game title). Rebuild all four together, bump js_v on all.
@@ -231,7 +246,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="5", lib_from=["youtube-audio"]),
+                  js_v="7", lib_from=["youtube-audio"], js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=1"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -1206,6 +1221,18 @@ APPS = {
                   "Counting flashcards for toddlers and preschoolers: each number from 1 to 10 (or 20) big, with that many pictures to count, said and counted out loud, plus a Find the number game. Free, no ads.",
                   5, "#c2410c", "#9a3412", "#fff0e0"),
     # MES GTA 6 Hub (see GTA_BRAND above)
+    "billiards": _bl("billiards", "", "MES Billiards", "Billiards: Play 8-Ball, 9-Ball and Snooker Free Online",
+                "Free billiards with real physics: 8-ball, 9-ball, 10-ball and snooker against the computer at four levels, a friend on the same device, or online as a guest or on the Hive blockchain, plus practice racks and trick-shot challenges.", 0,
+                "Play 8-ball, 9-ball, 10-ball and snooker free: real ball physics with spin, a computer at four levels, a friend, or online and on Hive. No download."),
+    "8-ball": _bl("8-ball", "8", "MES 8-Ball Pool", "8-Ball Pool: Play Free Against the Computer or a Friend",
+                "Play 8-ball pool free in your browser: break, take solids or stripes and pot the 8, with real spin and cushion physics, a computer opponent at four levels, two players on one device, or online and on Hive.", 1,
+                "Play 8-ball pool free: solids or stripes, then the 8. Real spin and cushion physics, a computer at four levels, a friend, or online. No download."),
+    "9-ball": _bl("9-ball", "9", "MES 9-Ball Pool", "9-Ball Pool: Play Free Online With Real Physics",
+                "Play 9-ball pool free: hit the lowest ball first and pot the 9 to win, with real spin, combinations and cushion physics, against the computer, a friend or online. 10-ball is included too.", 2,
+                "Play 9-ball (and 10-ball) free: hit the lowest ball first, pot the 9 to win. Real spin and physics, a computer at four levels, a friend or online."),
+    "snooker": _bl("snooker", "S15", "MES Snooker", "Snooker: Play Free on a Full-Size 12-Foot Table",
+                "Play snooker free on a full-size 12-foot table: reds and colours, breaks, fouls and the black ball finish, with real spin and cushion physics, against the computer, a friend or online. Six-red snooker included.", 3,
+                "Play snooker free on a full-size table: reds, colours, breaks and fouls with real spin physics, against the computer, a friend or online. Six-red too."),
     "gta": _gta("gta", "hub", "MES GTA 6 Hub", "GTA 6 Hub: Countdown, Download Time and Stunt Jump Simulator (Unofficial)",
                 "Unofficial GTA 6 hub: a countdown to the exact unlock time in your time zone, a download time and storage calculator for the 212 GB install, a stunt jump simulator with real car physics, and the latest GTA headlines.", 0,
                 "Unofficial GTA 6 hub: countdown to your local unlock time, 212 GB download time and storage check, a real-physics stunt jump simulator and GTA news."),

@@ -132,6 +132,77 @@
 		if (d < 60) return "just now"; if (d < 3600) return Math.floor(d / 60) + " min ago"; if (d < 86400) return Math.floor(d / 3600) + " h ago";
 		var n = Math.floor(d / 86400); return n === 1 ? "yesterday" : n + " days ago";
 	};
+	/* ---------- sync (own cloud file) + Hive backup ---------- */
+	// what is shared between devices: the lists, not per-device settings (speed, zoom, ticks) or the playing position in Up next
+	var IT = ["k", "id", "u", "e", "s", "t", "th", "key"];
+	function slim(it, extra) { var o = {}; IT.concat(extra || []).forEach(function (f) { if (it[f] != null && it[f] !== "") o[f] = it[f]; }); return o; }
+	W.snap = function (S, withHist) {
+		var o = { v: 1, q: (S.q || []).map(function (x) { return slim(x); }), saved: (S.saved || []).map(function (x) { return slim(x); }),
+			lists: (S.lists || []).map(function (l) { var r = { id: l.id, name: l.name, items: (l.items || []).map(function (x) { return slim(x); }) }; if (l.src) r.src = l.src; return r; }),
+			chans: (S.chans || []).map(function (c) { return { k: c.k, n: c.n || "" }; }) };
+		if (withHist) o.hist = (S.hist || []).map(function (x) { return slim(x, ["pos", "dur", "at"]); });
+		return o;
+	};
+	W.snapCount = function (d) { d = d || {}; var n = (d.q || []).length + (d.saved || []).length + (d.chans || []).length; (d.lists || []).forEach(function (l) { n += (l.items || []).length; }); return n; };
+	function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+	function idx(list, kf) { var m = {}; (list || []).forEach(function (x) { m[kf(x)] = x; }); return m; }
+	// three-way merge of a keyed list: an item deleted on one side stays deleted, new items from both sides are kept,
+	// the other side's order wins and this side's new items are put back after the item they followed here
+	W.merge3List = function (base, mine, theirs, kf, pick) {
+		base = base || []; mine = mine || []; theirs = theirs || [];
+		if (same(mine, base)) return theirs.slice(); if (same(theirs, base)) return mine.slice();
+		var b = idx(base, kf), m = idx(mine, kf), t = idx(theirs, kf), out = [], seen = {};
+		theirs.forEach(function (x) { var k = kf(x); if (b[k] && !m[k]) return; out.push(m[k] && pick ? pick(m[k], x, b[k]) : m[k] || x); seen[k] = 1; });
+		var prev = null;
+		mine.forEach(function (x) {
+			var k = kf(x);
+			if (!seen[k] && !(b[k] && !t[k])) {
+				var at = 0; if (prev != null) { for (var i = 0; i < out.length; i++) if (kf(out[i]) === prev) { at = i + 1; break; } }
+				out.splice(at, 0, x); seen[k] = 1;
+			}
+			if (seen[k]) prev = k;
+		});
+		return out;
+	};
+	function itemPick(m, t) { var o = {}; for (var f in t) o[f] = t[f]; for (var g in m) if (m[g] != null && m[g] !== "") o[g] = m[g]; return o; }
+	function key(x) { return x.key; }
+	W.merge3 = function (base, mine, theirs) {
+		base = base || {}; mine = mine || {}; theirs = theirs || {};
+		var out = { v: 1 };
+		out.q = W.merge3List(base.q, mine.q, theirs.q, key, itemPick);
+		out.saved = W.merge3List(base.saved, mine.saved, theirs.saved, key, itemPick);
+		out.chans = W.merge3List(base.chans, mine.chans, theirs.chans, function (c) { return c.k; }, function (m, t) { return { k: m.k, n: m.n || t.n || "" }; });
+		var bl = idx(base.lists, function (l) { return l.id; });
+		out.lists = W.merge3List(base.lists, mine.lists, theirs.lists, function (l) { return l.id; }, function (m, t, b) {
+			var r = { id: m.id, name: b && m.name !== b.name ? m.name : t.name, items: W.merge3List(b ? b.items : [], m.items, t.items, key, itemPick) };
+			if (m.src || t.src) r.src = m.src || t.src; return r;
+		});
+		if (mine.hist || theirs.hist) {
+			var bh = idx(base.hist, key), mh = idx(mine.hist, key), th = idx(theirs.hist, key), h = [], ks = {};
+			(mine.hist || []).concat(theirs.hist || []).forEach(function (x) { ks[x.key] = 1; });
+			Object.keys(ks).forEach(function (k) {
+				var a = mh[k], c = th[k], b0 = bh[k];
+				if (b0 && (!a || !c)) { var left = a || c; if (!left || (left.at || 0) <= (b0.at || 0)) return; }   // removed on one side, untouched on the other
+				h.push(!a ? c : !c ? a : (a.at || 0) >= (c.at || 0) ? a : c);
+			});
+			h.sort(function (x, y) { return (y.at || 0) - (x.at || 0); });
+			out.hist = h.slice(0, W.MAX_HIST);
+		}
+		void bl; return out;
+	};
+	// a Hive backup loaded with "Add to mine": everything new is added, nothing of mine is removed
+	W.mergeAdd = function (mine, other) {
+		var r = W.merge3({ q: [], saved: [], lists: [], chans: [] }, mine, other), added = W.snapCount(r) - W.snapCount(mine);
+		r.hist = mine.hist; return { data: r, added: Math.max(0, added) };
+	};
+	W.fileText = function (data, dev) { return JSON.stringify({ app: "mes-watch", v: 1, saved: new Date().toISOString(), dev: dev || "", data: data }); };
+	W.readFile = function (text) {
+		if (!text || !String(text).trim()) return null;
+		var j = JSON.parse(text);
+		if (j && j.app === "mes-watch" && j.data) return j.data;
+		if (j && (j.q || j.saved || j.lists)) return j;
+		throw new Error("That file is not a MES Watch file.");
+	};
 	root.MESWatch = W;
 	if (typeof module !== "undefined" && module.exports) module.exports = W;
 })(typeof window !== "undefined" ? window : globalThis);

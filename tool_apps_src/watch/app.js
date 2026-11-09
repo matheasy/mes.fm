@@ -8,9 +8,14 @@
 	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
-	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+	var saveHooks = [];
+	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} saveHooks.forEach(function (f) { try { f(); } catch (x) {} }); }
 	function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-	function toast(t) { var x = $('wt-toast'); x.textContent = t; x.classList.add('tu-toast--show'); clearTimeout(x._t); x._t = setTimeout(function () { x.classList.remove('tu-toast--show'); }, 2200); }
+	function toast(t, undo) {
+		var x = $('wt-toast'); x.textContent = t;
+		if (undo) { var b = document.createElement('button'); b.type = 'button'; b.className = 'wt-tundo'; b.textContent = 'Undo'; b.onclick = function () { x.classList.remove('tu-toast--show'); undo(); }; x.appendChild(document.createTextNode(' ')); x.appendChild(b); }
+		x.classList.add('tu-toast--show'); clearTimeout(x._t); x._t = setTimeout(function () { x.classList.remove('tu-toast--show'); }, undo ? 6000 : 2200);
+	}
 	function msg(t) { $('wt-msg').textContent = t || ''; }
 	function copy(t) { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast('Link copied'); }, function () { window.prompt('Copy this link:', t); }); }
 	function loadScript(u) { return new Promise(function (res, rej) { var x = document.createElement('script'); x.src = u; x.onload = res; x.onerror = function () { rej(new Error('Could not load the player.')); }; document.head.appendChild(x); }); }
@@ -628,5 +633,14 @@
 			$('wt-resume').onclick = function () { play(cur); };
 		}
 	}
+	/* ☁ Sync & backup (sync.js): it reads / replaces the shared lists through this */
+	function applySnap(d) {
+		var ck = cur && cur.key;
+		S.q = d.q || []; S.saved = d.saved || []; S.lists = d.lists || []; S.chans = d.chans || []; if (d.hist) S.hist = d.hist;
+		S.i = ck ? W.indexOf(S.q, ck) : -1; if (S.i >= 0) cur = S.q[S.i];
+		if (openList && !W.findList(S.lists, openList)) openList = null;
+		save(); renderList(); renderChans(); showMeta();
+	}
+	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
 	if (document.readyState === 'complete') boot(); else window.addEventListener('load', boot);
 })();

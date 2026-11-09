@@ -436,6 +436,30 @@ body.dark-mode .wt-menu button:hover {background:#2c3442;}
 .wt-lback b {flex:1 1 auto;min-width:0;font-size:1.05em;word-break:break-word;}
 .wt-lcount {position:absolute;right:0;top:0;bottom:0;width:38%;background:rgba(0,0,0,0.7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.9em;}
 html body.dark-mode #wt .wt-lcount {color:#fff;}
+/* sync & backup */
+.wt-sync {display:flex;flex-direction:column;gap:0.8em;}
+.wt-shead {display:flex;justify-content:space-between;align-items:center;gap:0.5em;}
+.wt-shead h2 {margin:0;font-size:1.15em;}
+.wt-sbox {border:1px solid var(--wt-line);border-radius:0.7em;padding:0.8em 0.9em;background:var(--wt-soft);}
+.wt-sbox h3 {margin:0 0 0.35em;font-size:1.02em;}
+.wt-ssmall {color:var(--wt-muted);font-size:0.88em;line-height:1.45;margin:0.2em 0;}
+.wt-sstate {margin:0.5em 0;line-height:1.45;}
+.wt-sacts {display:flex;flex-wrap:wrap;gap:0.45em;margin:0.4em 0;}
+.wt-smsg {font-size:0.9em;margin:0.3em 0 0;color:var(--wt-muted);}
+.wt-smsg.is-err {color:#b42318;}
+.wt-smsg.is-ok {color:#15803d;}
+.wt-hwarn {font-size:0.88em;margin:0.4em 0;color:var(--wt-muted);line-height:1.45;}
+.wt-hwarn.is-open {color:#9a3412;}
+.wt-hlogin {display:flex;flex-wrap:wrap;gap:0.45em;}
+.wt-hlogin input {flex:1 1 12em;min-width:0;}
+.wt-hwho {display:inline-flex;align-items:center;gap:0.4em;}
+.wt-hwho img {border-radius:50%;}
+.wt-htbl {width:100%;font-size:0.9em;margin-top:0.5em;}
+.wt-hacts {display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;}
+.wt-tundo {font:inherit;font-weight:600;background:none;border:0;color:#fbbf24;cursor:pointer;text-decoration:underline;padding:0 0.2em;}
+html body.dark-mode #wt .wt-smsg.is-err {color:#f97066;}
+html body.dark-mode #wt .wt-smsg.is-ok {color:#4ade80;}
+html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 /* dark mode */
 	html body.dark-mode #wt.wt {--wt-fg:#e6e9ee;--wt-muted:#a3abb8;--wt-line:#343b47;--wt-soft:#232934;--wt-hover:#2c3442;--wt-acc:#f06595;--wt-cur:#3a1f2b;--wt-curb:#7d3b57;}
 	html body.dark-mode #wt .wt-row {background:#1d222b;}
@@ -591,6 +615,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .wt-menu button:hover{background:#191c20}
 	body.dark-mode .wt-menu small{color:#999da4}
 	body.dark-mode .wt-lcount{background:rgba(82,82,82,0.70)}
+	body.dark-mode .wt-smsg.is-err{color:#ec786f}
+	body.dark-mode .wt-smsg.is-ok{color:#73e89f}
+	body.dark-mode .wt-hwarn.is-open{color:#ee8d6d}
+	body.dark-mode .wt-tundo{color:#fcd05f}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -863,7 +891,30 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-share">Copy a link to this list</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-lnew">+ New playlist from Up next</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-clear">Clear this list</button>
+				<button type="button" class="tu-btn" id="wt-syncbtn" aria-expanded="false" aria-controls="wt-sync" title="Keep your lists the same on every device (your own cloud), or back them up to Hive">☁ Sync &amp; backup</button>
 				<label class="wt-check" id="wt-histwrap"><input type="checkbox" id="wt-histon" checked> Keep a history here (and where I stopped)</label>
+			</div>
+		</section>
+		<section class="tu-card wt-sync" id="wt-sync" hidden aria-label="Sync and backup">
+			<div class="wt-shead"><h2>☁ Sync &amp; backup</h2><button type="button" class="tu-btn tu-btn--ghost" id="wt-sync-close" aria-label="Close">✕</button></div>
+			<div class="wt-sbox">
+				<h3>Sync with your own cloud</h3>
+				<p class="wt-ssmall">One file, <code>mes-watch.json</code>, with your Up next, Saved, playlists, channels and history (and where you stopped). Your browser writes it straight to your own account; nothing goes through mes.fm. Pick the same place on your phone and it stays in step.</p>
+				<p id="wt-sync-state" class="wt-sstate"></p>
+				<div class="wt-sacts" id="wt-sync-acts"></div>
+				<p class="wt-smsg" id="wt-sync-msg" role="status" aria-live="polite"></p>
+			</div>
+			<div class="wt-sbox" id="wt-hive">
+				<h3>Back up to Hive</h3>
+				<p class="wt-ssmall">A permanent backup on your Hive account (Up next, Saved, playlists and channels; not history). Log in with Hive Keychain.</p>
+				<div id="wt-hive-user"></div>
+				<div id="wt-hive-main" hidden>
+					<label class="wt-check"><input type="checkbox" id="wt-hive-enc" checked> Encrypt with my memo key</label>
+					<p class="wt-hwarn" id="wt-hive-warn"></p>
+					<div class="wt-sacts"><button type="button" class="tu-btn tu-btn--primary" id="wt-hive-save">Back up now</button><button type="button" class="tu-btn" id="wt-hive-load">Show my backups</button></div>
+					<div id="wt-hive-list"></div>
+				</div>
+				<p class="wt-smsg" id="wt-hive-msg" role="status" aria-live="polite"></p>
 			</div>
 		</section>
 		<div class="wt-menu" id="wt-lmenu" role="menu" hidden></div>
@@ -902,7 +953,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h4>Does YouTube still count the view?</h4>
 			<p>Yes. It is YouTube's own player, so views, ads and the creator's earnings work as on youtube.com.</p>
 			<h4>How do I move my list to another computer or phone?</h4>
-			<p>Press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<p>Press <em>☁ Sync &amp; backup</em> and pick Dropbox, OneDrive, Google Drive or a file in a synced folder, then pick the same place on the other device: both stay in step from then on, including where you stopped in each video. Or press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<h4>Can I back up my lists to Hive?</h4>
+			<p>Yes: <em>☁ Sync &amp; backup</em> → <em>Back up to Hive</em>, encrypted with your own memo key by default. It is permanent; "Add to mine" brings back anything you don't have.</p>
 			<h4>Can I see my own videos from my computer here?</h4>
 			<p>Use the <a href="/gallery">MES Gallery</a> for photos and videos saved on your computer or phone.</p>
 		</div>
@@ -967,7 +1020,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/watch/js/watch.js?v=5" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=1" defer></script><script src="/watch/js/watch.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

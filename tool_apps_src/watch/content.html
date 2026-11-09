@@ -58,7 +58,30 @@
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-share">Copy a link to this list</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-lnew">+ New playlist from Up next</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-clear">Clear this list</button>
+				<button type="button" class="tu-btn" id="wt-syncbtn" aria-expanded="false" aria-controls="wt-sync" title="Keep your lists the same on every device (your own cloud), or back them up to Hive">☁ Sync &amp; backup</button>
 				<label class="wt-check" id="wt-histwrap"><input type="checkbox" id="wt-histon" checked> Keep a history here (and where I stopped)</label>
+			</div>
+		</section>
+		<section class="tu-card wt-sync" id="wt-sync" hidden aria-label="Sync and backup">
+			<div class="wt-shead"><h2>☁ Sync &amp; backup</h2><button type="button" class="tu-btn tu-btn--ghost" id="wt-sync-close" aria-label="Close">✕</button></div>
+			<div class="wt-sbox">
+				<h3>Sync with your own cloud</h3>
+				<p class="wt-ssmall">One file, <code>mes-watch.json</code>, with your Up next, Saved, playlists, channels and history (and where you stopped). Your browser writes it straight to your own account; nothing goes through mes.fm. Pick the same place on your phone and it stays in step.</p>
+				<p id="wt-sync-state" class="wt-sstate"></p>
+				<div class="wt-sacts" id="wt-sync-acts"></div>
+				<p class="wt-smsg" id="wt-sync-msg" role="status" aria-live="polite"></p>
+			</div>
+			<div class="wt-sbox" id="wt-hive">
+				<h3>Back up to Hive</h3>
+				<p class="wt-ssmall">A permanent backup on your Hive account (Up next, Saved, playlists and channels; not history). Log in with Hive Keychain.</p>
+				<div id="wt-hive-user"></div>
+				<div id="wt-hive-main" hidden>
+					<label class="wt-check"><input type="checkbox" id="wt-hive-enc" checked> Encrypt with my memo key</label>
+					<p class="wt-hwarn" id="wt-hive-warn"></p>
+					<div class="wt-sacts"><button type="button" class="tu-btn tu-btn--primary" id="wt-hive-save">Back up now</button><button type="button" class="tu-btn" id="wt-hive-load">Show my backups</button></div>
+					<div id="wt-hive-list"></div>
+				</div>
+				<p class="wt-smsg" id="wt-hive-msg" role="status" aria-live="polite"></p>
 			</div>
 		</section>
 		<div class="wt-menu" id="wt-lmenu" role="menu" hidden></div>
@@ -97,7 +120,9 @@
 			<h4>Does YouTube still count the view?</h4>
 			<p>Yes. It is YouTube's own player, so views, ads and the creator's earnings work as on youtube.com.</p>
 			<h4>How do I move my list to another computer or phone?</h4>
-			<p>Press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<p>Press <em>☁ Sync &amp; backup</em> and pick Dropbox, OneDrive, Google Drive or a file in a synced folder, then pick the same place on the other device: both stay in step from then on, including where you stopped in each video. Or press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<h4>Can I back up my lists to Hive?</h4>
+			<p>Yes: <em>☁ Sync &amp; backup</em> → <em>Back up to Hive</em>, encrypted with your own memo key by default. It is permanent; "Add to mine" brings back anything you don't have.</p>
 			<h4>Can I see my own videos from my computer here?</h4>
 			<p>Use the <a href="/gallery">MES Gallery</a> for photos and videos saved on your computer or phone.</p>
 		</div>
