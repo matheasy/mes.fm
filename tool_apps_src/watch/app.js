@@ -5,7 +5,7 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], rate: 1, tab: 'q', auto: true, priv: true, histOn: true, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], rate: 1, tab: 'q', auto: true, priv: true, histOn: true, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -152,6 +152,7 @@
 				'</span><a class="tu-btn tu-btn--primary" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a></div>');
 		}
 		syncSpeed();
+		if (S.pz !== false && !S.pzHint && /^(yt|hls|odysee|file)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
 	function failed(text) {
 		var stage = $('wt-stage');
@@ -434,7 +435,21 @@
 		st.classList.toggle('wt-zoomed', z.k > 1.001);
 		var pct = Math.round(z.k * 100) + '%', v = st.querySelector('.wt-zv'); if (v) v.textContent = pct;
 		var zb = $('wt-zoom'); zb.innerHTML = '🔍&#xFE0E; ' + (z.k > 1.001 ? pct : 'Zoom'); zb.setAttribute('aria-pressed', String(zMode));
-		var ov = st.querySelector('.wt-zov'); if (ov) ov.hidden = !zMode;
+		// the layer is always over a playing video (pinch / drag / double-tap zoom, tap = play / pause); it leaves the player's
+		// own control bar at the bottom free, except in zoom mode. Not over Rumble / BitChute / X: their play button is inside
+		// their own player, which a page can't press for you.
+		var ov = st.querySelector('.wt-zov'), touch = touchOn(), fill = $('wt-player').classList.contains('mes-pfill');
+		if (ov) {
+			ov.hidden = !(zMode || touch);
+			ov.classList.toggle('wt-zfull', zMode);
+			ov.style.touchAction = zMode || fill || z.k > 1.001 ? 'none' : 'pan-y';   // a swipe over the video still scrolls the page
+		}
+		st.classList.toggle('wt-ztouch', touch && !zMode);
+	}
+	function touchOn() {
+		if (S.pz === false || !cur) return false;
+		var m = W.mode(cur); if (!/^(yt|hls|odysee|file)$/.test(m)) return false;
+		return !!$('wt-stage').querySelector('iframe#wt-yt, video');
 	}
 	var zSave = 0; function zoomTo(k, px, py) {
 		// keep the point (px, py) (from the box centre) still while the scale changes
@@ -451,20 +466,23 @@
 			if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else if (z === 'fill') zoomTo(fillK()); else if (z === 'done') setZMode(false);
 		});
 		function rel(e) { var r = ov.getBoundingClientRect(); return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 }; }
-		var lastTap = 0;
+		var lastTap = null, tapT = 0, g = null;   // g = this gesture: start time / place, moved, more than one finger
 		ov.addEventListener('pointerdown', function (e) {
-			ov.setPointerCapture(e.pointerId); zPtr[e.pointerId] = rel(e);
+			try { ov.setPointerCapture(e.pointerId); } catch (x) {} zPtr[e.pointerId] = rel(e);
 			var ids = Object.keys(zPtr), z = S.zoom || { k: 1, x: 0, y: 0 };
 			if (ids.length === 1) {
-				var now = Date.now(); if (now - lastTap < 320) { zoomTo(z.k > 1.05 ? 1 : fillK()); lastTap = 0; zStart = null; return; } lastTap = now;
+				g = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false, multi: false };
 				zStart = { p: zPtr[ids[0]], z: z };
 			} else if (ids.length === 2) {
+				if (g) g.multi = true;
 				var a = zPtr[ids[0]], c = zPtr[ids[1]];
 				zStart = { mid: { x: (a.x + c.x) / 2, y: (a.y + c.y) / 2 }, d: Math.hypot(a.x - c.x, a.y - c.y) || 1, z: z };
 			}
 		});
 		ov.addEventListener('pointermove', function (e) {
 			if (!zPtr[e.pointerId] || !zStart) return; zPtr[e.pointerId] = rel(e);
+			if (g && !g.moved && Math.hypot(e.clientX - g.x, e.clientY - g.y) > 8) g.moved = true;
+			if (g && !g.moved) return;
 			var ids = Object.keys(zPtr), z0 = zStart.z;
 			if (ids.length === 1 && zStart.p) { var p = zPtr[ids[0]]; S.zoom = { k: z0.k, x: z0.x + p.x - zStart.p.x, y: z0.y + p.y - zStart.p.y }; }
 			else if (ids.length >= 2 && zStart.mid) {
@@ -473,12 +491,32 @@
 			}
 			applyZoom();
 		});
-		function up(e) { delete zPtr[e.pointerId]; var ids = Object.keys(zPtr); zStart = ids.length === 1 ? { p: zPtr[ids[0]], z: S.zoom } : null; clearTimeout(zSave); zSave = setTimeout(save, 400); }
+		function up(e) {
+			if (e.type === 'pointerup' && g && !g.moved && !g.multi && Date.now() - g.t < 400 && Object.keys(zPtr).length === 1) tap(e);
+			delete zPtr[e.pointerId];
+			if (!Object.keys(zPtr).length) g = null; var ids = Object.keys(zPtr); zStart = ids.length === 1 ? { p: zPtr[ids[0]], z: S.zoom } : null; clearTimeout(zSave); zSave = setTimeout(save, 400); }
 		ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
-		ov.addEventListener('wheel', function (e) { e.preventDefault(); var p = rel(e); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY), p.x, p.y); }, { passive: false });
+		// one tap = play / pause (after a moment, in case a second tap follows); two taps = Fill / back to 100%
+		function tap(e) {
+			var now = Date.now(), p = rel(e);
+			if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) {
+				clearTimeout(tapT); lastTap = null;
+				var k = (S.zoom || {}).k || 1; if (k > 1.05) zoomTo(1); else zoomTo(fillK(), p.x, p.y);
+				return;
+			}
+			lastTap = { t: now, x: e.clientX, y: e.clientY };
+			clearTimeout(tapT); tapT = setTimeout(function () { lastTap = null; if (!zMode) togglePlay(); }, 300);
+		}
+		ov.addEventListener('wheel', function (e) {
+			// plain wheel scrolls the page, unless the video fills the window or zoom mode is on; Ctrl + wheel / trackpad pinch always zooms
+			if (!(zMode || e.ctrlKey || $('wt-player').classList.contains('mes-pfill'))) return;
+			e.preventDefault(); var p = rel(e); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY), p.x, p.y); }, { passive: false });
 	}
 	$('wt-zoom').onclick = function () { setZMode(!zMode); };
 	if (window.ResizeObserver) new ResizeObserver(function () { applyZoom(); }).observe($('wt-stage'));
+	if (window.MutationObserver) new MutationObserver(function () { applyZoom(); }).observe($('wt-stage'), { childList: true });
+	$('wt-pz').checked = S.pz !== false;
+	$('wt-pz').onchange = function () { S.pz = this.checked; save(); applyZoom(); };
 
 	/* ---------- player bar ---------- */
 	$('wt-prev').onclick = function () { go(-1); };

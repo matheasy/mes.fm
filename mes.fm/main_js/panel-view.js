@@ -31,12 +31,19 @@
     '.mes-pside.mes-pright{grid-template-columns:minmax(0,1fr) var(--mes-pw,240px)}' +
     '.mes-pside.mes-pright>*{grid-column:2}.mes-pside.mes-pright>[data-mes-stage]{grid-column:1}' +
     '.mes-pside>.mes-ptools{display:flex;flex-wrap:wrap;gap:.35em;margin:0 0 .45em!important}' +
-    '.mes-pside.mes-pmini{grid-template-columns:auto minmax(0,1fr)!important}' +
-    '.mes-pside.mes-pmini.mes-pright{grid-template-columns:minmax(0,1fr) auto!important}' +
+    /* hidden panel = the stage gets everything; only a small tab on the panel's edge (and its X) is left */
+    '.mes-pside.mes-pmini{grid-template-columns:minmax(0,1fr)!important;padding:0!important}' +
     '.mes-pmini>*:not([data-mes-stage]):not(.mes-ptools){display:none!important}' +
-    '.mes-pside.mes-pmini>.mes-ptools{flex-direction:column;flex-wrap:nowrap;align-self:start;position:sticky;top:0;margin:0!important}' +
-    '.mes-pside.mes-pmini>[data-mes-stage]{grid-column:2}.mes-pside.mes-pmini.mes-pright>[data-mes-stage]{grid-column:1}' +
-    '.mes-pside.mes-pmini>.mes-ptools .mes-ptb{padding:.3em .5em}' +
+    '.mes-pside.mes-pmini>[data-mes-stage]{grid-column:1!important}' +
+    '.mes-pside.mes-pmini>.mes-ptools{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:30;flex-direction:column;flex-wrap:nowrap;gap:4px;margin:0!important;opacity:.55;transition:opacity .2s}' +
+    '.mes-pside.mes-pmini.mes-pright>.mes-ptools{left:auto;right:0;align-items:flex-end}' +
+    '.mes-pside.mes-pmini>.mes-ptools:hover,.mes-pside.mes-pmini>.mes-ptools:focus-within{opacity:1}' +
+    '.mes-pmini>.mes-ptools>.mes-pflip,.mes-pmini>.mes-ptools>.mes-pclose{display:none}' +
+    '.mes-pmini>.mes-ptools .mes-ptb{min-height:0;padding:0;width:26px;font-size:15px;line-height:1;border-radius:0 9px 9px 0;border-left:0}' +
+    '.mes-pmini>.mes-ptools .mes-phide{height:46px}.mes-pmini>.mes-ptools .mes-pgo{height:26px;font-size:13px}' +
+    '.mes-pmini.mes-pright>.mes-ptools .mes-ptb{border-radius:9px 0 0 9px;border-left:1px solid #b9c2cc;border-right:0}' +
+    '.mes-ptools>.mes-pgo{display:none}.mes-pmini>.mes-ptools>.mes-pgo{display:block}' +
+    '.mes-pgone>.mes-ptools{display:none!important}' +
     '.mes-ptools .mes-ptb{background:rgba(255,255,255,.92);min-height:34px}' +
     'body.dark-mode .mes-ptools .mes-ptb{background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555}';
   var st = document.createElement('style'); st.id = 'mes-panel-css'; st.textContent = css; document.head.appendChild(st);
@@ -54,8 +61,19 @@
     function mk(txt, title, fn) { var b = document.createElement('button'); b.type = 'button'; b.className = 'mes-ptb'; b.textContent = txt; b.title = title; b.addEventListener('click', fn); tools.appendChild(b); return b; }
     var q = { sec: sec, o: o, on: false };
     q.hide = mk('‹ Hide panel', 'Hide the controls: only the board stays', function () { SP.m = !SP.m; save(); sides.forEach(apply); });
+    q.hide.classList.add('mes-phide');
     q.flip = mk('⇄', 'Put the panel on the other side', function () { SP.r = !SP.r; save(); sides.forEach(apply); });
-    if (o.close) q.close = mk('✕', 'Close (Esc)', function () { o.close(); });
+    q.flip.classList.add('mes-pflip');
+    if (o.close) { q.close = mk('✕', 'Close (Esc)', function () { o.close(); }); q.close.classList.add('mes-pclose'); }
+    // the X on the small tab hides even the tab, until this full screen / Fill window is closed and opened again
+    // (or the very edge of the picture is tapped, so a phone without Esc can always get back)
+    q.go = mk('×', 'Hide this tab too (comes back next time, or tap the very edge)', function () { q.gone = true; q.apply(); });
+    q.go.classList.add('mes-pgo');
+    sec.addEventListener('pointerdown', function (e) {
+      if (!q.gone || !sec.classList.contains('mes-pmini')) return;
+      var r = sec.getBoundingClientRect(), d = SP.r ? r.right - e.clientX : e.clientX - r.left;
+      if (d >= 0 && d < 36) { q.gone = false; q.apply(); }
+    }, true);
     sec.insertBefore(tools, sec.firstChild === stage ? stage : sec.firstChild);
     function save() { try { localStorage.setItem(SKEY, JSON.stringify(SP)); } catch (e) {} }
     q.apply = function () {
@@ -65,7 +83,10 @@
       sec.classList.toggle('mes-pside', want);
       sec.classList.toggle('mes-pmini', want && SP.m);
       sec.classList.toggle('mes-pright', want && SP.r);
-      q.hide.textContent = SP.m ? '☰ Panel' : '‹ Hide panel';
+      if (!open) q.gone = false;
+      sec.classList.toggle('mes-pgone', want && SP.m && !!q.gone);
+      q.hide.textContent = SP.m ? (SP.r ? '‹' : '›') : '‹ Hide panel';
+      q.hide.title = SP.m ? 'Show the panel' : 'Hide the controls: only the board stays';
       q.hide.setAttribute('aria-pressed', SP.m ? 'true' : 'false');
       if (want) {
         var cs = getComputedStyle(sec), padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
