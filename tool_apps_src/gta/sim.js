@@ -28,14 +28,14 @@
 		gp: num(pick("gp", P0.c.gap), 20), pd: num(pick("pd", P0.c.pit || 0), 0), pt: pick("pt", P0.c.pitType || "ground") === "water" ? "water" : "ground",
 		l: pick("l", P0.c.land || "ramp"), la: num(pick("la", P0.c.landAngle || 25), 25), lh: num(pick("lh", P0.c.landHeight || 4), 4), pl: num(pick("pl", P0.c.plat || 12), 12),
 		gr: pick("gr", "earth"), ac: pick("ac", "0") === "1", u: pick("u", (navigator.language || "").toLowerCase() === "en-us" ? "i" : "m"),
-		view: pick("view", "2d") === "3d" ? "3d" : "2d", cam2: sv.cam2 || "auto", cam3: sv.cam3 || "auto", slow: num(sv.slow, 1), color: sv.color || "", pre: fromLink ? "" : (sv.pre || P0.id),
+		view: pick("view", "2d") === "3d" ? "3d" : "2d", cam2: sv.cam2 || "auto", cam3: sv.cam3 || "auto", ck: sv.ck || "full", slow: num(sv.slow, 1), color: sv.color || "", pre: fromLink ? "" : (sv.pre || P0.id),
 		stats: sv.stats !== false, edit: sv.edit !== false
 	};
 	if (!M.VEHICLES.some(function (v) { return v.id === S.v; })) S.v = P0.veh;
 	if (!/^(none|straight|curved)$/.test(S.r)) S.r = "straight"; if (!/^(ramp|platform|flat)$/.test(S.l)) S.l = "ramp"; if (!/^(earth|moon|mars|jupiter)$/.test(S.gr)) S.gr = "earth";
-	if (!/^(auto|whole|follow)$/.test(S.cam2)) S.cam2 = "auto"; if (!/^(auto|chase|side|orbit|landing|driver)$/.test(S.cam3)) S.cam3 = "auto";
+	if (!/^(auto|whole|follow)$/.test(S.cam2)) S.cam2 = "auto"; if (!/^(auto|chase|side|orbit|landing|driver)$/.test(S.cam3)) S.cam3 = "auto"; if (!/^(full|glass|off)$/.test(S.ck)) S.ck = "full";
 	var GRAV = { earth: [9.80665, 1.2, "Earth"], moon: [1.62, 0, "Moon (no air)"], mars: [3.71, 0.02, "Mars"], jupiter: [24.79, 0.16, "Jupiter (if it had a floor)"] };
-	function save() { var o = {}; "v k m r a h gp pd pt l la lh pl gr ac u view cam2 cam3 slow color pre stats edit".split(" ").forEach(function (k) { o[k] = S[k]; }); o.drawer = sv.drawer; sset(o); }
+	function save() { var o = {}; "v k m r a h gp pd pt l la lh pl gr ac u view cam2 cam3 ck slow color pre stats edit".split(" ").forEach(function (k) { o[k] = S[k]; }); o.drawer = sv.drawer; sset(o); }
 	function courseOpts() { return { ramp: S.r, angle: S.a, height: S.h, gap: S.gp, pit: S.pd, pitType: S.pt, land: S.l, landAngle: S.la, landHeight: S.lh, plat: S.pl }; }
 
 	/* ---------------- units ---------------- */
@@ -108,8 +108,10 @@
 		var sel = $("gj-camsel"), list = CAMS[S.view], cur = S.view === "3d" ? S.cam3 : S.cam2;
 		if (sel.getAttribute("data-for") !== S.view) { sel.innerHTML = list.map(function (c) { return '<option value="' + c[0] + '">' + c[1] + "</option>"; }).join(""); sel.setAttribute("data-for", S.view); }
 		sel.value = cur;
+		var ckSel = $("gj-ck"); if (ckSel) { ckSel.value = S.ck; ckSel.parentNode.hidden = !(S.view === "3d" && S.cam3 === "driver"); ckSel.options[0].textContent = veh && veh.bike ? "Handlebars + gauge" : "Wheel + dashboard"; ckSel.options[1].textContent = veh && veh.bike ? "Clear view" : "Windshield only"; }
 	}
-	$("gj-camsel").addEventListener("change", function (e) { if (S.view === "3d") S.cam3 = e.target.value; else S.cam2 = e.target.value; save(); camSnap = true; frame(); });
+	$("gj-camsel").addEventListener("change", function (e) { if (S.view === "3d") S.cam3 = e.target.value; else S.cam2 = e.target.value; save(); paintCamSel(); camSnap = true; frame(); });
+	$("gj-ck").addEventListener("change", function (e) { S.ck = e.target.value; save(); frame(); });
 	seg("gj-mode", "m", function () { reset(); }); seg("gj-ramp", "r"); seg("gj-land", "l");
 	seg("gj-units", "u", function () { paintInputs(); paintRuns(); paintRo(); drawCharts(); paintSweep(); drawSweep(); });
 	seg("gj-view", "view", function () { setView(); });
@@ -133,7 +135,7 @@
 	var co, veh, sim = null, running = false, acc = 0, lastT = 0, replay = null, runs = [], best = null, ghost = null, sweepData = null;
 	try { runs = JSON.parse(localStorage.getItem(KEY + ":runs") || "[]") || []; } catch (e) { runs = []; }
 	function simOpts() { var gg = GRAV[S.gr]; return { mode: S.m, kmh: S.k, g: gg[0], rho: gg[1], airControl: S.ac, approach: 140 }; }
-	function rebuild() { co = M.buildCourse(courseOpts()); veh = M.vehicle(S.v); if (r3) r3.setScene(co, veh, S.color || veh.color, GRAV[S.gr]); }
+	function rebuild() { co = M.buildCourse(courseOpts()); veh = M.vehicle(S.v); if (r3) r3.setScene(co, veh, S.color || veh.color, GRAV[S.gr]); paintCamSel(); }
 	function reset() { cancelAnimationFrame(replayTimer); rebuild(); sim = new M.Sim(co, veh, simOpts()); running = false; replay = null; acc = 0; $("gj-verdict").hidden = true; scrubSetup(); paintRun(); camSnap = true; paintRo(); frame(); }
 	function go() {
 		if (running) { running = false; paintRun(); return; }
@@ -338,7 +340,7 @@
 	}
 	function frame() {
 		if (!co || !sim) return; var st = stateNow();
-		if (S.view === "3d" && r3) { r3.draw(st, { sim: sim, co: co, veh: veh, cam: S.cam3, snap: camSnap, running: running, track: replay ? replay.track.slice(0, replay.i + 1) : sim.track }); camSnap = false; return; }
+		if (S.view === "3d" && r3) { r3.draw(st, { sim: sim, co: co, veh: veh, cam: S.cam3, cockpit: S.ck, mph: S.u === "i", snap: camSnap, running: running, track: replay ? replay.track.slice(0, replay.i + 1) : sim.track }); camSnap = false; return; }
 		if (!skyline) makeScenery();
 		updateCam(st);
 		var c = ctx; c.setTransform(dpr, 0, 0, dpr, 0, 0);

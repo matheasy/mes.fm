@@ -103,7 +103,7 @@ GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="4",
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="5",
              src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
@@ -457,7 +457,7 @@ APPS = {
                       tag="Save text once, copy it anytime, synced to your own cloud.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
                       desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
                       meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
-                      js_v="10", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3"]),
+                      js_v="11", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
@@ -1258,7 +1258,7 @@ APPS = {
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
                  meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
-                 js_v="2"),
+                 js_v="3", pre_js=["/main_js/cloud-files.js?v=1"]),
     # MES Spreadsheet Viewer & Editor (2026-10-30, mes.fm/excel): .xlsx / .xlsm / .xls / .ods / .csv / .tsv read and written by SheetJS CE 0.20.3 (Apache-2.0,
     # self-hosted in /main_js/sheetjs/0.20.3/, loaded on first open), virtualised grid, own formula engine + dependency recalc in lib.js (MESXL, node tests
     # tool_apps_src/excel-tests.js), sort / filter view, rows / columns / sheets, undo, print, recent files + autosave in IndexedDB "mes-excel". Nothing is uploaded.
@@ -1267,7 +1267,7 @@ APPS = {
                   tag="Open, view and edit spreadsheets in your browser.", accent="#1e7145", dark="#155a36", tint="#e1f1e7",
                   desc="Free online spreadsheet viewer and editor: open Excel files (.xlsx, .xlsm, .xls), LibreOffice .ods and CSV in your browser, with every sheet, number formats and formulas. Edit cells and simple formulas, find, sort and filter, add rows and columns, then save as .xlsx, .ods or CSV, or print to PDF. Fast with big files. Private: nothing is uploaded.",
                   meta_desc="Free spreadsheet viewer and editor: open Excel .xlsx / .xls, .ods and CSV files, edit cells and formulas, sort, filter, save as .xlsx or CSV. No upload.",
-                  js_v="5", js_parts=["formulas.js", "edit.js", "ooxml.js", "parts.js"]),
+                  js_v="6", js_parts=["formulas.js", "edit.js", "ooxml.js", "parts.js"], pre_js=["/main_js/cloud-files.js?v=1"]),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
