@@ -81,6 +81,32 @@ html.toc-hidden { --toc-w: var(--toc-wd); --toc-shift: 0px; }
   /* the mirror image (Jump to on the left, rail on the right): it used to keep the centred rail, which then sat on the article / off screen */
   html.jump-rail.page-theatre.aside-left:not(.toc-hidden):not(.aside-hidden) { --toc-w: min(2000px, calc(100vw - var(--toc-sw) - 420px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 350px) / 2); }
   html.jump-rail.page-theatre.aside-left:not(.toc-hidden):not(.aside-hidden) .mes-aside--rail { left: calc(var(--toc-ml) + var(--toc-sw) + 50px + var(--toc-w)); right: auto; }
+  /* Wide (2026-11-10): the centred layout reserved a sidebar-sized gutter on BOTH sides (plus the rail's 340px on rail pages), so on
+     windows under ~1620px (rail) / ~1280px Wide gave exactly 760px and the button did nothing. Same group layout as Theatre, capped at 1100px. */
+  html.page-wide:not(.page-theatre):not(.toc-hidden) { --toc-shift: 0px; --toc-w: min(1100px, calc(100vw - var(--toc-sw) - 90px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 20px) / 2); }
+  html.page-wide:not(.page-theatre):not(.toc-hidden) .container { margin-left: var(--toc-ml); margin-right: auto; }
+  html.page-wide:not(.page-theatre):not(.toc-hidden) .toc-sidebar { left: calc(var(--toc-ml) + var(--toc-w) + 30px); right: auto; }
+  html.page-wide.aside-left:not(.page-theatre):not(.toc-hidden) .container { margin-left: calc(var(--toc-ml) + var(--toc-sw) + 20px); }
+  html.page-wide.aside-left:not(.page-theatre):not(.toc-hidden) .toc-sidebar { left: var(--toc-ml); right: auto; padding-left: 0; padding-right: 16px; }
+  html.page-wide.toc-hidden:not(.page-theatre) { --toc-w: min(1100px, calc(100vw - 80px)); }
+  @media (min-width: 1500px) {
+    /* Jump to hidden, rail shown: rail + article as one centred group */
+    html.jump-rail.page-wide.toc-hidden:not(.page-theatre):not(.aside-hidden) { --toc-w: min(1100px, calc(100vw - 420px)); --toc-ml: calc((100vw - var(--toc-w) - 330px) / 2); }
+    html.jump-rail.page-wide.toc-hidden:not(.page-theatre):not(.aside-hidden):not(.aside-left) .container { margin-left: calc(var(--toc-ml) + 330px); margin-right: auto; }
+    html.jump-rail.page-wide.toc-hidden:not(.page-theatre):not(.aside-hidden):not(.aside-left) .mes-aside--rail { left: var(--toc-ml); right: auto; }
+    html.jump-rail.page-wide.toc-hidden.aside-left:not(.page-theatre):not(.aside-hidden) .container { margin-left: var(--toc-ml); margin-right: auto; }
+    html.jump-rail.page-wide.toc-hidden.aside-left:not(.page-theatre):not(.aside-hidden) .mes-aside--rail { left: calc(var(--toc-ml) + var(--toc-w) + 50px); right: auto; }
+    /* the floating "Show sidebar" tab would sit on the off-centre article; the one in the width switch stays */
+    html.jump-rail.page-wide.aside-hidden:not(.toc-hidden) > body > .mes-rail-show { display: none; }
+    /* rail hidden (pages that have one): leave room beside the article for the floating "Show sidebar" tab */
+    html.page-wide.aside-hidden:not(.page-theatre):not(.toc-hidden):has(> body > .mes-rail-show) { --toc-w: min(1100px, calc(100vw - var(--toc-sw) - 380px)); }
+    html.page-wide.aside-hidden:not(.page-theatre):not(.toc-hidden):not(.aside-left) > body > .mes-rail-show { right: auto; left: calc(var(--toc-ml) - 135px); }
+    html.page-wide.aside-hidden.aside-left:not(.page-theatre):not(.toc-hidden) > body > .mes-rail-show { right: auto; left: calc(var(--toc-ml) + var(--toc-sw) + var(--toc-w) + 70px); }
+    html.jump-rail.page-wide:not(.page-theatre):not(.toc-hidden):not(.aside-hidden):not(.aside-left) { --toc-w: min(1100px, calc(100vw - var(--toc-sw) - 420px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 350px) / 2 + 330px); }
+    html.jump-rail.page-wide:not(.page-theatre):not(.toc-hidden):not(.aside-hidden):not(.aside-left) .mes-aside--rail { left: calc(var(--toc-ml) - 330px); right: auto; }
+    html.jump-rail.page-wide.aside-left:not(.page-theatre):not(.toc-hidden):not(.aside-hidden) { --toc-w: min(1100px, calc(100vw - var(--toc-sw) - 420px)); --toc-ml: calc((100vw - var(--toc-w) - var(--toc-sw) - 350px) / 2); }
+    html.jump-rail.page-wide.aside-left:not(.page-theatre):not(.toc-hidden):not(.aside-hidden) .mes-aside--rail { left: calc(var(--toc-ml) + var(--toc-sw) + 50px + var(--toc-w)); right: auto; }
+  }
   html.page-theatre.toc-hidden > body > .toc-reopen { display: none; }
   /* small tab where the sidebar was, to bring it back */
   html.toc-hidden > body > .toc-reopen { display: inline-flex; align-items: center; gap: .35em; position: fixed; top: 90px; z-index: 12;
