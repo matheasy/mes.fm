@@ -136,9 +136,9 @@
 	var M = window.PDM, PD = window.PD = { M: M, doc: null, zoom: 1, tool: "select", sel: null, cur: 0, dirty: false, images: {}, S: { thumbs: true, win: null }, hooks: {}, clip: null };
 	var $ = PD.$ = function (id) { return document.getElementById(id); };
 	var KEY = "mes-pdf-editor:v1";
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; } } catch (e) {}
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; if (sv.dark) PD.S.dark = true; } } catch (e) {}
 	PD.S.prefs = PD.S.prefs || {};
-	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, prefs: PD.S.prefs })); } catch (e) {} };
+	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, dark: !!PD.S.dark, prefs: PD.S.prefs })); } catch (e) {} };
 	PD.on = function (n, f) { (PD.hooks[n] = PD.hooks[n] || []).push(f); }; PD.emit = function (n, a) { (PD.hooks[n] || []).forEach(function (f) { try { f(a); } catch (e) { console.error(e); } }); };
 	PD.toast = function (msg, ms) { var t = $("pd-toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(PD.toast._t); PD.toast._t = setTimeout(function () { t.classList.remove("show"); }, ms || 2200); };
 	PD.hint = function (s) { $("pd-hint").textContent = s || ""; };
@@ -844,8 +844,12 @@
 	/* page list and window mode */
 	function showThumbs() { $("pd-thumbbtn").setAttribute("aria-pressed", String(PD.S.thumbs)); $("pd-thumbs").classList.toggle("is-off", !PD.S.thumbs || !PD.doc); }
 	$("pd-thumbbtn").onclick = function () { PD.S.thumbs = !PD.S.thumbs; PD.saveS(); showThumbs(); if (PD.S.thumbs) PD.layout(); }; showThumbs(); PD.on("open", showThumbs);
-	function toggleWin(auto) { var on = !root.classList.contains("pd-win"); root.classList.toggle("pd-win", on); document.documentElement.classList.toggle("pd-win-on", on); $("pd-winbtn").setAttribute("aria-pressed", String(on)); if (!auto) { PD.S.win = on; PD.saveS(); } if (PD.doc) setTimeout(refit, 80); }
+	function winLabel(on) { var b = $("pd-winbtn"); b.innerHTML = on ? "&#10005; Exit full window" : "&#10530; Full window"; b.title = on ? "Back to the normal page (F or Esc)" : "Fill the browser window (F)"; }
+	function toggleWin(auto) { var on = !root.classList.contains("pd-win"); root.classList.toggle("pd-win", on); document.documentElement.classList.toggle("pd-win-on", on); $("pd-winbtn").setAttribute("aria-pressed", String(on)); winLabel(on); if (!auto) { PD.S.win = on; PD.saveS(); } if (PD.doc) setTimeout(refit, 80); }
 	$("pd-winbtn").onclick = function () { toggleWin(); };
+	/* Dark pages (saved with the other settings) */
+	function darkPages(on, save) { root.classList.toggle("pd-darkpg", on); var b = $("pd-darkbtn"); b.setAttribute("aria-pressed", String(on)); b.innerHTML = on ? "&#9680; Light pages" : "&#9680; Dark pages"; if (save) { PD.S.dark = on; PD.saveS(); } }
+	$("pd-darkbtn").onclick = function () { darkPages(!root.classList.contains("pd-darkpg"), true); }; darkPages(!!PD.S.dark);
 	$("pd-print").onclick = function () { PD.printPdf(); }; $("pd-export").onclick = function () { PD.exportDialog(); };
 	PD.fitMode = true; var oz = PD.setZoom; PD.setZoom = function (z) { PD.fitMode = false; oz.apply(PD, arguments); };
 	// a refit (window mode, width mode, sidebar, resize) keeps the zoom in 'fit width' mode; only the person's own zoom choice turns it off
@@ -857,9 +861,9 @@
 		if (mod && k === "z") { e.preventDefault(); e.shiftKey ? PD.redo() : PD.undo(); return; } if (mod && k === "y") { e.preventDefault(); PD.redo(); return; }
 		if (mod && k === "d") { e.preventDefault(); PD.duplicateSel(); return; } if (mod && k === "c") { if (PD.copySel()) e.preventDefault(); return; } if (mod && k === "s") { e.preventDefault(); PD.endEdit(); if (!(cloud && cloud.save(PD.doc))) PD.exportDialog(); return; } if (mod && k === "p") { if (PD.doc) { e.preventDefault(); PD.printPdf(); } return; } if (mod && k === "o") { e.preventDefault(); $("pd-file").click(); return; } if (mod) return;
 		if (e.key === "Delete" || e.key === "Backspace") { if (PD.selAnnot()) { e.preventDefault(); PD.removeSel(); } return; }
-		if (e.key === "Escape") { if (PD.selAnnot()) PD.select(null, null); else if (PD.tool !== "select") PD.setTool("select"); return; }
+		if (e.key === "Escape") { if (PD.selAnnot()) PD.select(null, null); else if (PD.tool !== "select") PD.setTool("select"); else if (root.classList.contains("pd-win")) toggleWin(); return; }
 		var step = e.shiftKey ? 10 : 1, mv = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }[e.key]; if (mv && PD.nudge(mv[0], mv[1])) { e.preventDefault(); return; }
-		if (k === "+" || k === "=") { PD.setZoom(PD.zoom * 1.2); return; } if (k === "-") { PD.setZoom(PD.zoom / 1.2); return; } if (k === "0") { var z = PD.fitWidth(); if (z) PD.setZoom(z); return; } if (k === "f") { toggleWin(); return; }
+		if (k === "+" || k === "=") { PD.setZoom(PD.zoom * 1.2); return; } if (k === "-") { PD.setZoom(PD.zoom / 1.2); return; } if (k === "0") { var z = PD.fitWidth(); if (z) PD.setZoom(z); return; } if (k === "f") { toggleWin(); return; } if (k === "d") { darkPages(!root.classList.contains("pd-darkpg"), true); return; }
 		PD.TOOLS.forEach(function (tl) { if (tl.key === k && PD.doc) PD.setTool(tl.id); });
 	});
 	/* the width mode (Standard / Wide / Theatre), the sidebar and Full window all change the room: keep a fit-to-width zoom fitted */

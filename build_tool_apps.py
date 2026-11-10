@@ -238,7 +238,7 @@ APPS = {
                      tag="How loud is that video, really?", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
                      desc="Free YouTube audio analyzer: measure any video's loudness in LUFS, true peak and loudness range, and see its waveform, spectrogram, silences and clipping. Works with YouTube, 3Speak, Rumble, Odysee, BitChute, X and your own audio or video files. Nothing is uploaded.",
                      meta_desc="Measure a YouTube video's loudness (LUFS, true peak, LRA) and see its waveform, spectrogram, silences and clipping. Also 3Speak, Rumble, Odysee and your own files.",
-                     js_v="2", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+                     js_v="3", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # MES Watch (2026-11-07, mes.fm/watch): a plain player for YouTube (IFrame API, nocookie), 3Speak (HLS) and Odysee (file) in our own <video>,
     # Rumble / BitChute / X embeds; Up next / Saved / History with resume, in localStorage mes-watch:v1. lib.js = MESWatch on top of
     # youtube-audio's MESYA.parseLink (lib_from). Tests: node tool_apps_src/watch-tests.js.
@@ -246,7 +246,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="11", lib_from=["youtube-audio"], js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=1"]),
+                  js_v="12", lib_from=["youtube-audio"], js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=1"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -937,7 +937,7 @@ APPS = {
     "pdf": dict(title="MES PDF Editor", page_title="Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online",
                 tag="Sign, fill in, annotate and redact PDFs in your browser.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                 desc="Free online PDF editor and signer: add a typed, drawn or uploaded signature, fill in forms, draw and highlight, add comments, edit text, black out private details, and rotate, delete or reorder pages. Private: your PDF never leaves your browser.",
-                js_v="7", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"], pre_js=["/main_js/cloud-files.js?v=1"]),
+                js_v="8", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"], pre_js=["/main_js/cloud-files.js?v=1"]),
     # PDF Tools family (2026-10-15): one script (tool_apps_src/pdf-tools/app.js, helpers lib.js = PT, tests tool_apps_src/pdf-tools-tests.js) and one content template; data-mode on #pt picks merge / split / organize / images / toimg / compress, vars.SEO = seo/<mode>.html. Same brand as the PDF editor (slug pdf). pdf.js + pdf-lib from cdnjs on first use; ZIPs use MESImg (lib_from image-converter).
     "merge-pdf": dict(title="Merge PDF", page_title="Merge PDF: Combine PDF Files Online for Free", tag="Combine PDFs into one file.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                     desc="Free online PDF merger: combine two or more PDF files into a single document, put them in any order, and pick which pages to use from each. Private: your files never leave your browser. No sign-up, no watermark.",
@@ -1165,7 +1165,7 @@ APPS = {
     "search-console": dict(title="MES Search Console", page_title="Search Console: Google and Bing Search Performance",
                 tag="Google and Bing search clicks, impressions and positions.", accent="#1a73e8", dark="#1557b0", tint="#e8f0fe",
                 desc="Private dashboard: Google Search Console and Bing Webmaster clicks, impressions, CTR and average position for mes.fm, by day, query, page, country and device.",
-                js_v="8", no_ads=True,
+                js_v="9", no_ads=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Dashboard (private, mes.fm/dashboard, behind the middleware.js password like /ads): stats, comments and notifications of @mes and
     # @mestruth on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive, read by api/dashboard.js (one adapter per platform; optional env

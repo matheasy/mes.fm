@@ -4,9 +4,9 @@
 	var M = window.PDM, PD = window.PD = { M: M, doc: null, zoom: 1, tool: "select", sel: null, cur: 0, dirty: false, images: {}, S: { thumbs: true, win: null }, hooks: {}, clip: null };
 	var $ = PD.$ = function (id) { return document.getElementById(id); };
 	var KEY = "mes-pdf-editor:v1";
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; } } catch (e) {}
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; if (sv.dark) PD.S.dark = true; } } catch (e) {}
 	PD.S.prefs = PD.S.prefs || {};
-	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, prefs: PD.S.prefs })); } catch (e) {} };
+	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, dark: !!PD.S.dark, prefs: PD.S.prefs })); } catch (e) {} };
 	PD.on = function (n, f) { (PD.hooks[n] = PD.hooks[n] || []).push(f); }; PD.emit = function (n, a) { (PD.hooks[n] || []).forEach(function (f) { try { f(a); } catch (e) { console.error(e); } }); };
 	PD.toast = function (msg, ms) { var t = $("pd-toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(PD.toast._t); PD.toast._t = setTimeout(function () { t.classList.remove("show"); }, ms || 2200); };
 	PD.hint = function (s) { $("pd-hint").textContent = s || ""; };

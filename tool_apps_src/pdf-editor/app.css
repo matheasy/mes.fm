@@ -44,9 +44,13 @@
 
 /* read aloud: an invisible text layer over each page (laid out at zoom 1, scaled with the page) that the MES Read Aloud engine highlights */
 .pd-page .pd-tl {position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;z-index:2;}
-.pd-page .pd-tl span {position:absolute;white-space:pre;color:transparent;line-height:1;transform-origin:0 0;font-family:sans-serif;}
-.pd-page .pd-tl span::highlight(mesra-sentence) {color:transparent;background-color:rgba(255,213,74,0.28);}
-.pd-page .pd-tl span::highlight(mesra-word) {color:transparent;background-color:rgba(255,190,0,0.55);}
+/* the reading layer must stay invisible: the site's dark-mode text rule (body.dark-mode .page-content :where(span ...)) has the same weight and came later, so it painted the layer grey over the page */
+#pd .pd-page .pd-tl span {position:absolute;white-space:pre;color:transparent !important;-webkit-text-fill-color:transparent !important;text-shadow:none !important;line-height:1;transform-origin:0 0;font-family:sans-serif;}
+#pd .pd-page .pd-tl span::highlight(mesra-sentence) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(255,213,74,0.28);}
+#pd .pd-page .pd-tl span::highlight(mesra-word) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(255,190,0,0.55);}
+/* Dark pages: the PDF's own picture of each page is inverted (hue turned back so colours stay close); what you add with the tools is drawn on its own layer and is not changed */
+#pd.pd-darkpg .pd-page {background:#161616;} #pd.pd-darkpg .pd-page .pd-c, #pd.pd-darkpg .pd-th canvas {filter:invert(0.92) hue-rotate(180deg);}
+#pd.pd-darkpg .pd-page .pd-tl span::highlight(mesra-sentence) {background-color:rgba(255,213,74,0.22);} #pd.pd-darkpg .pd-page .pd-tl span::highlight(mesra-word) {background-color:rgba(255,190,0,0.45);}
 
 html body.dark-mode #pd.pd {--pd-on:#d9363e;}
 html body.dark-mode #pd .pd-btn--primary, html body.dark-mode #pd .pd-seg button[aria-pressed="true"] {color:#fff;}

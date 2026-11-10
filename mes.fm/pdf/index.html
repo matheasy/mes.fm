@@ -351,9 +351,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 
 /* read aloud: an invisible text layer over each page (laid out at zoom 1, scaled with the page) that the MES Read Aloud engine highlights */
 .pd-page .pd-tl {position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;z-index:2;}
-.pd-page .pd-tl span {position:absolute;white-space:pre;color:transparent;line-height:1;transform-origin:0 0;font-family:sans-serif;}
-.pd-page .pd-tl span::highlight(mesra-sentence) {color:transparent;background-color:rgba(255,213,74,0.28);}
-.pd-page .pd-tl span::highlight(mesra-word) {color:transparent;background-color:rgba(255,190,0,0.55);}
+/* the reading layer must stay invisible: the site's dark-mode text rule (body.dark-mode .page-content :where(span ...)) has the same weight and came later, so it painted the layer grey over the page */
+#pd .pd-page .pd-tl span {position:absolute;white-space:pre;color:transparent !important;-webkit-text-fill-color:transparent !important;text-shadow:none !important;line-height:1;transform-origin:0 0;font-family:sans-serif;}
+#pd .pd-page .pd-tl span::highlight(mesra-sentence) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(255,213,74,0.28);}
+#pd .pd-page .pd-tl span::highlight(mesra-word) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(255,190,0,0.55);}
+/* Dark pages: the PDF's own picture of each page is inverted (hue turned back so colours stay close); what you add with the tools is drawn on its own layer and is not changed */
+#pd.pd-darkpg .pd-page {background:#161616;} #pd.pd-darkpg .pd-page .pd-c, #pd.pd-darkpg .pd-th canvas {filter:invert(0.92) hue-rotate(180deg);}
+#pd.pd-darkpg .pd-page .pd-tl span::highlight(mesra-sentence) {background-color:rgba(255,213,74,0.22);} #pd.pd-darkpg .pd-page .pd-tl span::highlight(mesra-word) {background-color:rgba(255,190,0,0.45);}
 
 html body.dark-mode #pd.pd {--pd-on:#d9363e;}
 html body.dark-mode #pd .pd-btn--primary, html body.dark-mode #pd .pd-seg button[aria-pressed="true"] {color:#fff;}
@@ -485,6 +489,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .pd-sigc button{background:rgba(82,82,82,0.60)}
 	body.dark-mode .pd-pad{border:2px dashed #646464}
 	body.dark-mode .pd-warn{color:#ffbd5c}
+	body.dark-mode #pd.pd-darkpg .pd-page{background:#525252}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -713,6 +718,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="pd-ib" id="pd-zin" title="Zoom in" aria-label="Zoom in">+</button>
 				<span class="pd-vsep"></span>
 				<button type="button" class="pd-ib pd-ib--txt" id="pd-thumbbtn" aria-pressed="true" title="Show or hide the page list">Pages</button>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-darkbtn" aria-pressed="false" title="Dark pages: show the PDF pages light-on-dark, easier on the eyes at night. Your downloads and prints are not changed (D)">&#9680; Dark pages</button>
 				<button type="button" class="pd-ib pd-ib--txt" id="pd-winbtn" aria-pressed="false" title="Fill the browser window (F)">&#10530; Full window</button>
 				<button type="button" class="pd-btn" id="pd-read" title="Read the PDF aloud, with each word highlighted on the page. Starts at the page you are on (Alt+Shift+R)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
 				<button type="button" class="pd-btn" id="pd-print" title="Print the edited PDF">Print</button>
@@ -833,7 +839,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=1" defer></script><script src="/pdf/js/pdf.js?v=7" defer></script>
+	<script src="/main_js/cloud-files.js?v=1" defer></script><script src="/pdf/js/pdf.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
