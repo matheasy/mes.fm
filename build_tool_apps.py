@@ -791,7 +791,7 @@ APPS = {
     "luders-bands": dict(title="Lüders Band Simulator", page_title="Lüders Bands: Simulator and Explanation (Yield Point, Plateau, Stretcher Strains)",
                       tag="Watch a yield band run along a steel bar.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
                       desc="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.",
-                      js_v="1", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="1", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",

@@ -1,0 +1,109 @@
+	/* MES Lüders Band Simulator. Colours are --lu-* custom properties; dark values restated under html body.dark-mode #lu.lu (the derived TOOL-DARK block would rewrite literals) */
+	#lu {--lu-ink:#1e2733;--lu-mut:#5b6573;--lu-line:#d5dbe3;--lu-card:#ffffff;--lu-soft:#f3f6f9;--lu-grid:#e3e8ee;--lu-bg:#ffffff;--lu-frame:#c3cad3;--lu-grip:#4b5563;--lu-gripl:#6b7686;
+		--lu-edge:#6b7686;--lu-arrow:#d4351c;--lu-front:#c2410c;--lu-sel:#7c3aed;--lu-curve:#2563eb;--lu-ghost:#9aa6b4;--lu-upper:#d4351c;--lu-lower:#0f766e;--lu-tipbg:rgba(255,255,255,0.95);--lu-good:#1f7a3d;
+		--lu-sheet:#eef2f6;--lu-circ:#64748b;--lu-ell:#2563eb;--lu-band:#c2410c;--lu-my:#d97706;}
+	html body.dark-mode #lu.lu {--lu-ink:#e5e9ef;--lu-mut:#aab4c0;--lu-line:#3a424d;--lu-card:#1f242b;--lu-soft:#262c34;--lu-grid:#323a45;--lu-bg:#1f242b;--lu-frame:#4a5361;--lu-grip:#5b6574;--lu-gripl:#7a8596;
+		--lu-edge:#8a95a5;--lu-arrow:#ff7b61;--lu-front:#fb923c;--lu-sel:#b794f6;--lu-curve:#7fb2ff;--lu-ghost:#6b7686;--lu-upper:#ff7b61;--lu-lower:#5eead4;--lu-tipbg:rgba(28,32,38,0.95);--lu-good:#6ee7a0;
+		--lu-sheet:#262c34;--lu-circ:#94a3b8;--lu-ell:#7fb2ff;--lu-band:#fb923c;--lu-my:#fbbf24;}
+	#lu {color:var(--lu-ink);}
+	#lu [hidden] {display:none !important;}
+	:where(#lu) :is(div, span, p, li, label, b, strong, em, i, small, sub, sup, td, th, h2, h3, h4, output, figcaption, figure) {color:inherit;}
+	#lu .tu-label, #lu .tu-field > label {text-transform:none;letter-spacing:0.01em;}
+	#lu .lu-lead {font-size:1.05em;line-height:1.55;margin:0 0 0.9em;}
+	#lu .lu-h {font-size:1.08em;margin:0 0 0.6em;padding:0;border:0;color:var(--lu-ink);}
+	#lu .lu-note {font-size:0.88em;color:var(--lu-mut);line-height:1.5;margin:0.4em 0;}
+	#lu .lu-view {padding:0.7em;margin-bottom:0.9em;}
+	#lu .lu-vbar {display:flex;flex-wrap:wrap;gap:0.5em 0.9em;align-items:center;margin-bottom:0.5em;}
+	#lu .lu-run {display:flex;flex-wrap:wrap;gap:0.45em;align-items:center;}
+	#lu .lu-go {min-width:7.5em;min-height:42px;font-weight:700;}
+	#lu .lu-run .tu-btn {min-height:42px;}
+	#lu .lu-spd {display:flex;align-items:center;gap:0.35em;font-size:0.85em;color:var(--lu-mut);}
+	#lu .lu-spd select {width:auto;min-height:40px;padding:0.4em 0.5em;}
+	#lu .lu-looks button, #lu .lu-units button {min-height:38px;}
+	#lu .lu-vbtns {margin-left:auto;}
+	#lu .lu-stage {position:relative;}
+	#lu .lu-specw {position:relative;}
+	#lu .lu-cv {display:block;width:100%;touch-action:pan-y;}
+	#lu .lu-tip {position:absolute;z-index:3;pointer-events:none;background:var(--lu-tipbg);border:1px solid var(--lu-line);border-radius:0.4em;padding:0.35em 0.55em;font-size:0.8em;line-height:1.4;box-shadow:0 2px 8px rgba(0,0,0,0.15);max-width:170px;}
+	#lu .lu-ro {display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:0.4em;margin:0.4em 0;}
+	#lu .lu-ro > div {background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:0.5em;padding:0.35em 0.5em;min-width:0;}
+	#lu .lu-ro span {display:block;font-size:0.72em;color:var(--lu-mut);}
+	#lu .lu-ro b {display:block;font-size:0.98em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+	#lu .lu-say {min-height:3em;margin:0.4em 0 0.6em;padding:0.55em 0.75em;border-left:4px solid var(--accent);background:var(--lu-soft);border-radius:0 0.5em 0.5em 0;line-height:1.5;font-size:0.95em;}
+	#lu .lu-plots {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0.7em;}
+	#lu .lu-plot {margin:0;min-width:0;}
+	#lu .lu-plot figcaption {font-weight:700;font-size:0.9em;margin:0 0 0.25em;}
+	#lu .lu-plot figcaption small {font-weight:400;color:var(--lu-mut);}
+	#lu .lu-try {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.7em;}
+	#lu .lu-try__l {font-size:0.85em;font-weight:700;color:var(--lu-mut);margin-right:0.2em;}
+	#lu .lu-try .tu-chip {min-height:38px;}
+	#lu .lu-grid2 {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0.9em;align-items:start;margin-bottom:0.9em;}
+	#lu .lu-sl {display:grid;grid-template-columns:minmax(8.5em,11em) minmax(0,1fr) minmax(5.5em,auto);align-items:center;gap:0.6em;margin:0.35em 0;}
+	#lu .lu-sl label {font-size:0.85em;font-weight:600;}
+	#lu .lu-sl input[type=range] {width:100%;min-width:0;height:34px;accent-color:var(--accent);}
+	#lu .lu-sl output {font-size:0.85em;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+	#lu .lu-opts {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;margin-top:0.7em;}
+	#lu .lu-ck {display:inline-flex;align-items:center;gap:0.4em;font-size:0.88em;cursor:pointer;min-height:34px;}
+	#lu .lu-ck input {width:18px;height:18px;accent-color:var(--accent);}
+	#lu .lu-sm {min-height:36px;font-size:0.88em;}
+	#lu .lu-agerow {align-items:flex-end;gap:0.7em;}
+	#lu .lu-agef {font-size:0.85em;color:var(--lu-mut);padding-bottom:0.6em;}
+	#lu .lu-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:0.6em 0 0.3em;}
+	#lu .lu-btns .tu-btn {min-height:42px;}
+	#lu .lu-btns .tu-btn:disabled {opacity:0.45;cursor:not-allowed;}
+	#lu .lu-micro {margin-bottom:0.9em;}
+	#lu .lu-mtop {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.4em;}
+	#lu .lu-mcv {border-radius:0.5em;border:1px solid var(--lu-line);}
+	#lu .lu-mcap {line-height:1.5;margin:0.5em 0 0.2em;min-height:3em;}
+	#lu .lu-angc {margin-bottom:0.9em;}
+	#lu .lu-anggrid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1em;align-items:start;}
+	#lu .lu-svg {display:block;width:100%;height:auto;touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+	#lu .lu-a-sheet {fill:var(--lu-sheet);stroke:var(--lu-line);}
+	#lu .lu-a-pull {fill:none;stroke:var(--lu-arrow);stroke-width:3;stroke-linecap:round;}
+	#lu .lu-a-circ {fill:none;stroke:var(--lu-circ);stroke-width:2;stroke-dasharray:3 4;}
+	#lu .lu-a-ell {fill:rgba(37,99,235,0.08);stroke:var(--lu-ell);stroke-width:2.5;}
+	#lu .lu-a-band {stroke:var(--lu-band);stroke-width:2;stroke-dasharray:8 6;}
+	#lu .lu-a-pt {fill:var(--lu-band);}
+	#lu .lu-a-my {stroke:var(--lu-my);stroke-width:3.5;stroke-linecap:round;cursor:grab;}
+	#lu .lu-a-my.lu-a-ok {stroke:var(--lu-good);}
+	#lu .lu-a-h {fill:var(--lu-my);stroke:var(--lu-card);stroke-width:3;cursor:grab;touch-action:none;}
+	#lu .lu-a-arc {fill:none;stroke:var(--lu-ink);stroke-width:1.5;}
+	#lu .lu-a-t {fill:var(--lu-ink);font:700 15px system-ui, sans-serif;}
+	#lu .lu-a-t2 {fill:var(--lu-mut);font:12px system-ui, sans-serif;}
+	#lu .lu-angout {line-height:1.5;}
+	#lu .lu-good {color:var(--lu-good);}
+	#lu .lu-photos {margin-bottom:0.9em;}
+	#lu .lu-gal {display:grid;grid-template-columns:repeat(auto-fill, minmax(15em, 1fr));gap:0.8em;}
+	#lu .lu-gal figure {margin:0;background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:0.6em;overflow:hidden;display:flex;flex-direction:column;}
+	#lu .lu-gal img {display:block;width:100% !important;height:12em !important;object-fit:cover;background:#000;}
+	#lu .lu-gal figcaption {font-size:0.82em;line-height:1.45;padding:0.5em 0.6em 0.6em;}
+	#lu .lu-gal figcaption small {display:block;color:var(--lu-mut);margin-top:0.25em;}
+	#lu .lu-gal a {color:var(--accent);}
+	#lu .lu-vid {display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0.9em;align-items:center;margin-top:1em;}
+	#lu .lu-yt {position:relative;display:block;width:100%;aspect-ratio:16/9;border:0;padding:0;background:#000;border-radius:0.6em;overflow:hidden;cursor:pointer;}
+	#lu .lu-yt img {width:100% !important;height:100% !important;object-fit:cover;opacity:0.9;}
+	#lu .lu-ytp {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border-radius:12px;background:#e62117;color:#fff;font-size:24px;line-height:48px;text-align:center;}
+	#lu .lu-ytf {width:100%;aspect-ratio:16/9;border:0;border-radius:0.6em;}
+	#lu .lu-fam {display:flex;flex-wrap:wrap;gap:0.4em 1em;font-size:0.9em;margin:1em 0;}
+	#lu .lu-fam__l {font-weight:700;}
+	.lu-lb {position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+	.lu-lb img {max-width:100% !important;max-height:82vh !important;width:auto !important;height:auto !important;object-fit:contain;}
+	.lu-lb p {color:#e5e9ef !important;font-size:0.9em;max-width:60em;text-align:center;margin:0.7em 0 0;}
+	.lu-lb p a {color:#93c5fd !important;}
+	.lu-lbx {position:absolute;top:10px;right:14px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,0.15);color:#fff;font-size:28px;cursor:pointer;}
+	/* fill window: the stage grows */
+	#lu .lu-view.mes-pfill .lu-stage {flex:1 1 auto;}
+	@media (max-width:900px) {
+		#lu .lu-grid2, #lu .lu-anggrid, #lu .lu-vid {grid-template-columns:minmax(0,1fr);}
+		#lu .lu-ro {grid-template-columns:repeat(3, minmax(0,1fr));}
+	}
+	@media (max-width:640px) {
+		#lu .lu-plots {grid-template-columns:minmax(0,1fr);}
+		#lu .lu-sl {grid-template-columns:minmax(0,1fr) auto;}
+		#lu .lu-sl input[type=range] {grid-column:1 / -1;grid-row:2;}
+		#lu .lu-vbtns {margin-left:0;}
+		#lu .lu-looks {flex-wrap:wrap;}
+	}
+	#lu .tu-eq {overflow-x:auto;margin:0.6em 0;padding:0.5em 0.8em;background:var(--lu-soft);border-radius:0.5em;text-align:center;}
+	#lu .lu-gal figure.lu-wide {grid-column:1 / -1;}
+	#lu .lu-gal figure.lu-wide img {height:auto !important;object-fit:contain;background:#fff;}

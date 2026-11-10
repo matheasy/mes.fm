@@ -1,0 +1,61 @@
+		<div class="tu-seo">
+			<h2>Lüders bands, explained</h2>
+			<p>A <strong>Lüders band</strong> (also called a Piobert-Lüders band, a yield band or, on pressed sheet, a <em>stretcher strain</em>) is a stripe of metal that has yielded while the metal on either side has not. It shows up in low-carbon steel and in aluminium-magnesium alloys just after yielding starts. The band is not a crack and not a weakness: it is simply the boundary between stretched and not-yet-stretched metal, and it moves.</p>
+			<p>The French artillery officer Guillaume Piobert saw these stripes on iron plates in the 1840s, and the German engineer W. Lüders described them on bent steel bars in 1860, which is where the name comes from. Their cause was only explained a century later, by Alan Cottrell and Bruce Bilby in 1949.</p>
+
+			<h3>What you see in a tensile test</h3>
+			<ol>
+				<li><strong>Elastic stretch.</strong> The force rises in a straight line. The whole bar stretches evenly, by a tenth of a percent or so.</li>
+				<li><strong>Upper yield point.</strong> Somewhere the bar suddenly gives: usually at a shoulder, where the change of width concentrates the stress, or at a scratch, notch or inclusion. The force drops.</li>
+				<li><strong>The Lüders plateau.</strong> A band forms where it gave. Its edges (the <em>fronts</em>) move along the bar at a steady speed while the force stays almost flat at the <em>lower yield stress</em>, with small wiggles. Behind a front the steel has stretched by the <em>Lüders strain</em> ε<sub>L</sub>, typically 1 to 3%; ahead of it, it has not stretched at all.</li>
+				<li><strong>Work hardening.</strong> When the fronts have crossed the whole gauge length the bar starts to harden evenly and the force rises again, as in any ductile metal.</li>
+			</ol>
+			<p>On a polished bar the band looks dull or frosted, because the stretched surface roughens at the grain scale. On hot-rolled steel the brittle mill scale cracks and flakes off along the band, which is how the bands were first noticed. In a strain map made by digital image correlation (DIC) the band is a sharp step of strain sliding along the bar.</p>
+
+			<h3>Why mild steel has an upper yield point</h3>
+			<p>Steel yields when <em>dislocations</em> (line defects in the crystal) glide. In low-carbon steel, small carbon and nitrogen atoms sit in the gaps of the iron crystal and gather around the dislocations, where there is more room: these clouds are called <strong>Cottrell atmospheres</strong>. They pin the dislocations. It takes a higher stress to tear a dislocation away from its atmosphere (the upper yield) than to keep a free one moving (the lower yield). Once some dislocations are free they multiply quickly, so the metal at that spot stretches a lot all at once: that is the drop and the start of the band.</p>
+			<p>Why does the band grow from its edges instead of starting everywhere? Right at a front, the stretched metal behind it pulls on the unstretched metal ahead of it, and this local stress concentration is enough to unpin the next grains at the lower yield stress. Everywhere else the steel would still need the full upper yield stress, which the bar no longer reaches. So the front marches on, grain by grain.</p>
+
+			<h3>The band speed</h3>
+			<p>During the plateau the force does not change, so neither does the elastic stretch of the bar or the machine. All of the crosshead travel goes into turning unstretched steel into stretched steel at the fronts. If the crosshead moves at speed V and there are n fronts, each moving at speed v:</p>
+			<div class="tu-eq"><span class="mes-tex">\(\displaystyle V = n\,v\,\varepsilon_L \quad\Longrightarrow\quad v = \frac{V}{n\,\varepsilon_L}\)</span></div>
+			<p>With V = 5 mm/min and ε<sub>L</sub> = 2% one front moves at 250 mm/min, fifty times faster than the crosshead. The plateau lasts</p>
+			<div class="tu-eq"><span class="mes-tex">\(\displaystyle t_{\text{plateau}} = \frac{L\,\varepsilon_L}{V}\)</span></div>
+			<p>for a gauge length L: 12 seconds for a 50 mm gauge at 5 mm/min. The simulator measures the front speed as the band moves and shows it next to this formula; in the space-time map each front is a straight line whose slope is the speed. A band that starts in the middle (try the notch) has two fronts, each moving at half the speed.</p>
+
+			<h3>Why the front leans at about 55°</h3>
+			<p>The stretched steel behind the front is longer and narrower than the steel ahead of it, yet the two have to stay joined along the front. That only works along a line whose length does not change. Pulling a sheet along x gives a strain ε along the pull and, because metal keeps its volume when it flows, a strain of about −ε/2 across the width. A line at angle θ to the pull stretches by</p>
+			<div class="tu-eq"><span class="mes-tex">\(\displaystyle \varepsilon_\theta = \varepsilon\cos^2\theta - \frac{\varepsilon}{2}\sin^2\theta = 0 \quad\Longrightarrow\quad \tan^2\theta = 2,\ \ \theta = 54.7^\circ\)</span></div>
+			<p>In real sheet the width strain depends on the plastic anisotropy (the Lankford value r: width strain = −ε r / (1 + r)), giving tan² θ = (1 + r) / r. Fronts in flat bars are usually seen at 50 to 55°. Round bars have no such line, so their fronts form cones and are much harder to see.</p>
+
+			<h3>The testing machine matters</h3>
+			<p>The machine and the bar act like two springs in series. When a slice of the bar yields, its sudden plastic stretch lets the machine spring back and the force drops. A <strong>stiff</strong> machine drops the force sharply and shows a tall, narrow upper yield peak. A <strong>soft</strong> machine stores more elastic energy, so the drop is spread out and the peak looks rounder. The upper yield also rises with the test speed and with any bending from badly aligned grips, and it is lowered by sharp shoulders. That is why standards report the lower yield stress (or the plateau) as the material property, and why the upper yield point varies so much from test to test.</p>
+
+			<h3>Strain ageing: the yield point comes back</h3>
+			<p>Unload a bar after the plateau and pull it again at once: it carries on hardening with no new yield point, because its dislocations are free. Wait, and carbon atoms diffuse back to the dislocations and pin them again. After a few weeks at room temperature (or minutes at 100 to 200 °C) the bar shows a new, higher upper yield point, a new plateau and new Lüders bands. This is <strong>strain ageing</strong>; its time scale follows the diffusion of carbon in iron (activation energy about 84 kJ/mol), and the pinned fraction grows roughly as t<sup>2/3</sup> (Cottrell and Bilby). Car makers turn it into an advantage with <em>bake-hardening</em> steels, which gain strength during the 20-minute paint bake at about 170 °C. The simulator's "Test, bake, test again" runs the whole experiment.</p>
+
+			<h3>Stretcher strains on pressed parts, and how they are avoided</h3>
+			<p>If annealed low-carbon sheet is pressed into a shallow part, the areas strained only into the plateau show irregular dull bands and ridges called stretcher strains (or "worms"). Paint does not hide them, so they ruin visible panels. Steel makers prevent them by:</p>
+			<ul>
+				<li><strong>Temper rolling (skin pass):</strong> a light 0.5 to 2% cold roll after annealing yields the whole sheet evenly, so it has no yield point when it reaches the press. The effect wears off as the sheet ages, so it should be used within weeks.</li>
+				<li><strong>Roller levelling</strong> just before pressing, which does the same at the press shop.</li>
+				<li><strong>Interstitial-free (IF) steels:</strong> titanium or niobium tie up all the carbon and nitrogen, so nothing pins the dislocations at all.</li>
+			</ul>
+			<p>Aluminium-magnesium (5000-series) sheet has the same problem: magnesium atoms pin dislocations like carbon does in steel, giving type A stretcher strains at yield and, later, the jerky <em>Portevin-Le Chatelier</em> bands that keep appearing during hardening. That is why 5000-series alloys are used for inner car panels and 6000-series for outer ones.</p>
+
+			<h3>How the simulator works</h3>
+			<p>The gauge length is cut into 160 thin slices. Each slice is <em>pinned</em> until the stress reaches its upper yield (a little lower near the shoulders and at any notch, and slightly different from slice to slice, as in real steel), then it stretches at about the lower yield stress until it reaches the Lüders strain, after which it follows a work-hardening curve. A slice next to a yielded one lets go at the lower yield. The machine pulls the crosshead at a steady speed, and the machine and the bar are treated as springs in series, so every bit of plastic stretch lowers the force. Nothing else is programmed in: the upper yield drop, the flat plateau with its small wiggles, the band speed and its formula, the effect of machine stiffness and the return of the yield point after ageing all come out of these rules. The numbers are typical values for each kind of metal (sources: Cottrell and Bilby 1949; Hall 1970, <em>Yield Point Phenomena in Metals and Alloys</em>; Butler 1962 on grain size and the Lüders strain; Hall-Petch constants for mild steel), not test data for a particular steel. The front angle and band speed are exact; the surface pictures are drawn to look like the real thing, with the thinning exaggerated so you can see it.</p>
+			<h3>Questions</h3>
+			<h4>Are Lüders bands a sign of damage?</h4>
+			<p>No. They show where the steel has yielded, that is all. In a structure, visible bands (or flaking mill scale or whitewash in a pattern) tell an inspector that the steel there was loaded past yield, which is worth knowing; the metal itself is not cracked.</p>
+			<h4>What is the difference between the upper and lower yield strength?</h4>
+			<p>The upper yield strength (R<sub>eH</sub> in ISO 6892-1) is the peak just before the drop; the lower yield strength (R<sub>eL</sub>) is the lowest stress during the plateau, ignoring the very first dip. The upper value depends strongly on the machine, the speed and the specimen, so design values are based on the lower yield or the plateau.</p>
+			<h4>What is the Lüders strain?</h4>
+			<p>The strain at which the plateau ends, i.e. how much each bit of steel stretches as a front passes. Typical values are 1 to 3% for mild steel; it is larger for finer grains and lower for coarse-grained or slightly prestrained steel.</p>
+			<h4>Why does my extensometer show a jump, or nothing, during the plateau?</h4>
+			<p>An extensometer only measures between its knife edges. While a front is outside them it reads no plastic strain; when the front crosses them it reads a fast jump. The force-crosshead curve looks smooth because it averages over the whole bar.</p>
+			<h4>Do Lüders bands happen in compression or bending?</h4>
+			<p>Yes. Lüders first saw them on bent bars, and they form wherever low-carbon steel yields: in bending they start at the surface where the stress is highest, and in pipes and pressure vessels they can run as helical bands.</p>
+			<h4>What are Hartmann lines?</h4>
+			<p>The same thing, named after Louis Hartmann, who studied the line patterns on yielded steel in the 1890s. On large structures they are often called slip lines or yield lines.</p>
+		</div>

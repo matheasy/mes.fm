@@ -1,0 +1,145 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu lu" id="lu">
+		<p class="lu-lead">Pull a bar of mild steel and, just after it starts to yield, a dull stripe appears at one end and creeps along the bar at a slant while the force stays flat. That stripe is a <strong>Lüders band</strong>. Press <strong>Start</strong> and watch one form, then add a notch, change the testing machine, or bake the bar and test it again.</p>
+
+		<!-- ============ THE TEST ============ -->
+		<div class="tu-card lu-view" id="lu-view">
+			<div class="lu-vbar" id="lu-vbar">
+				<div class="lu-run">
+					<button type="button" class="tu-btn lu-go" id="lu-go">▶ Start</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="lu-reset" title="Put a new bar in the machine (R)">↺ New bar</button>
+					<label class="lu-spd"><span>Speed</span><select id="lu-speed" class="tu-select" aria-label="Playback speed">
+						<option value="0.1">Slow motion ×0.1</option><option value="0.25">×0.25</option><option value="0.5">×0.5</option><option value="1" selected>Real time ×1</option><option value="2">×2</option><option value="5">×5</option><option value="20">×20</option>
+					</select></label>
+				</div>
+				<div class="tu-seg lu-looks" id="lu-look" role="group" aria-label="What the bar looks like">
+					<button type="button" data-v="polish" aria-pressed="true" title="A polished bar: the yielded steel turns dull (P)">Polished</button>
+					<button type="button" data-v="scale" aria-pressed="false" title="Hot-rolled bar with mill scale: the scale cracks off where the steel stretches">Mill scale</button>
+					<button type="button" data-v="strain" aria-pressed="false" title="A strain map, like digital image correlation (DIC)">Strain map</button>
+					<button type="button" data-v="rate" aria-pressed="false" title="Where the steel is stretching right now">Flowing now</button>
+				</div>
+				<span class="lu-vbtns"></span>
+			</div>
+			<div class="lu-stage" id="lu-stage">
+				<div class="lu-specw">
+					<canvas id="lu-spec" class="lu-cv" aria-label="The test bar in the grips of the testing machine"></canvas>
+					<div class="lu-tip" id="lu-tip" hidden></div>
+				</div>
+				<div class="lu-ro" id="lu-ro" aria-live="off">
+					<div><span>Stress</span><b id="lu-r-s">0</b></div>
+					<div><span>Strain</span><b id="lu-r-e">0</b></div>
+					<div><span>Time</span><b id="lu-r-t">0 s</b></div>
+					<div><span>Yielded</span><b id="lu-r-y">0%</b></div>
+					<div><span>Band fronts</span><b id="lu-r-f">0</b></div>
+					<div title="Measured speed of the band fronts, and the formula V / (fronts × εL)"><span>Front speed</span><b id="lu-r-v">–</b></div>
+				</div>
+				<p class="lu-say" id="lu-say" aria-live="polite"></p>
+				<div class="lu-plots">
+					<figure class="lu-plot"><figcaption>Force on the bar <small>(stress against strain)</small></figcaption><canvas id="lu-chart" class="lu-cv" aria-label="Stress-strain curve being drawn"></canvas></figure>
+					<figure class="lu-plot"><figcaption>Where and when it yielded <small>(position along the bar → , time ↓)</small></figcaption><canvas id="lu-kymo" class="lu-cv" aria-label="Space-time map of the plastic strain along the bar"></canvas></figure>
+				</div>
+			</div>
+			<div class="lu-try" id="lu-try" role="group" aria-label="Try this">
+				<span class="lu-try__l">Try this:</span>
+				<button type="button" class="tu-chip" data-try="notch">A notch in the middle</button>
+				<button type="button" class="tu-chip" data-try="soft">Soft machine</button>
+				<button type="button" class="tu-chip" data-try="stiff">Stiff machine</button>
+				<button type="button" class="tu-chip" data-try="fine">Fine grains</button>
+				<button type="button" class="tu-chip" data-try="age">Test, bake, test again</button>
+				<button type="button" class="tu-chip" data-try="if">IF steel: no bands</button>
+				<button type="button" class="tu-chip" data-try="almg">Aluminium-magnesium</button>
+			</div>
+		</div>
+
+		<!-- ============ SETTINGS ============ -->
+		<div class="lu-grid2">
+			<div class="tu-card lu-set">
+				<h2 class="lu-h">The bar and the machine</h2>
+				<div class="tu-field"><label for="lu-mat">Material</label><select id="lu-mat" class="tu-select"></select></div>
+				<p class="lu-note" id="lu-matnote"></p>
+				<div class="lu-sl" id="lu-gw"><label for="lu-g">Grain size</label><input type="range" id="lu-g" min="5" max="60" step="1"><output id="lu-gv"></output></div>
+				<div class="lu-sl"><label for="lu-eL">Lüders strain εL</label><input type="range" id="lu-eL" min="0.004" max="0.05" step="0.001"><output id="lu-eLv"></output></div>
+				<div class="lu-sl"><label for="lu-uy">Upper / lower yield</label><input type="range" id="lu-uy" min="1" max="1.25" step="0.005"><output id="lu-uyv"></output></div>
+				<div class="lu-sl"><label for="lu-k">Machine stiffness</label><input type="range" id="lu-k" min="0" max="100" step="1"><output id="lu-kv"></output></div>
+				<div class="lu-sl"><label for="lu-v">Crosshead speed</label><input type="range" id="lu-v" min="0" max="100" step="1"><output id="lu-vv"></output></div>
+				<div class="lu-sl"><label for="lu-sc">Unevenness of the steel</label><input type="range" id="lu-sc" min="0" max="1" step="0.05"><output id="lu-scv"></output></div>
+				<div class="lu-sl"><label for="lu-r">Anisotropy r (sets the angle)</label><input type="range" id="lu-r" min="0.3" max="3" step="0.05"><output id="lu-rv"></output></div>
+				<div class="lu-opts">
+					<label class="lu-ck"><input type="checkbox" id="lu-notchmode"> Click the bar to add a notch</label>
+					<button type="button" class="tu-btn tu-btn--ghost lu-sm" id="lu-clrnotch">Remove notches</button>
+					<label class="lu-ck"><input type="checkbox" id="lu-thin" checked> Show the thinning ×15</label>
+					<label class="lu-ck"><input type="checkbox" id="lu-ghost" checked> Keep the last curve to compare</label>
+					<div class="tu-seg lu-units" id="lu-units" role="group" aria-label="Units"><button type="button" data-v="mpa" aria-pressed="true">MPa</button><button type="button" data-v="ksi" aria-pressed="false">ksi</button></div>
+					<button type="button" class="tu-btn tu-btn--ghost lu-sm" id="lu-link">🔗 Copy link</button>
+				</div>
+			</div>
+			<div class="tu-card lu-agec">
+				<h2 class="lu-h">Unload, wait, pull again: strain ageing</h2>
+				<p class="lu-note">Stretch the bar past the plateau, take the load off, and pull it again. Straight away it just carries on hardening: the dislocations are free. Wait (or bake it) and the carbon atoms find them again: the yield point and a new Lüders band come back, higher than before.</p>
+				<div class="tu-row lu-agerow">
+					<div class="tu-field"><label for="lu-agesel">Before pulling again</label><select id="lu-agesel" class="tu-select">
+						<option value="0,20">Pull again straight away</option>
+						<option value="24,20">Wait 1 day at room temperature</option>
+						<option value="168,20">Wait 1 week at room temperature</option>
+						<option value="4380,20">Wait 6 months at room temperature</option>
+						<option value="1,100" selected>Bake 1 hour at 100 °C</option>
+						<option value="0.333,170">Paint bake: 20 minutes at 170 °C</option>
+					</select></div>
+					<output class="lu-agef" id="lu-agef"></output>
+				</div>
+				<div class="lu-btns">
+					<button type="button" class="tu-btn" id="lu-unload" disabled>Unload</button>
+					<button type="button" class="tu-btn" id="lu-reload" disabled>Pull again</button>
+				</div>
+				<p class="lu-note" id="lu-agemsg"></p>
+			</div>
+		</div>
+
+		<!-- ============ INSIDE THE METAL ============ -->
+		<div class="tu-card lu-micro">
+			<div class="lu-mtop"><h2 class="lu-h">Inside the metal: why there is an upper yield point</h2>
+				<label class="lu-ck"><input type="checkbox" id="lu-follow" checked> Follow the band front</label></div>
+			<canvas id="lu-mcv" class="lu-cv" aria-label="A dislocation held by carbon atoms, breaking free when the band front arrives"></canvas>
+			<p class="lu-mcap" id="lu-mcap"></p>
+			<p class="lu-note">Click anywhere on the bar above to watch that slice. Not to scale: a real dislocation line is about a millionth of a millimetre across, and millions of them break free together in each grain the front crosses.</p>
+		</div>
+
+		<!-- ============ THE ANGLE ============ -->
+		<div class="tu-card lu-angc">
+			<h2 class="lu-h">Why the band leans at about 55°</h2>
+			<div class="lu-anggrid">
+				<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle on the sheet stretches into an ellipse; the two lines through the points that did not move are the band directions"></svg>
+				<div>
+					<p>Draw a circle on the sheet, then stretch it: it becomes an ellipse, longer along the pull and narrower across. Only two directions keep their length, where the circle and the ellipse cross. The band front has to lie along one of them, because the stretched steel behind the front and the unstretched steel ahead of it must stay joined along the whole front without tearing or overlapping.</p>
+					<div class="lu-sl"><label for="lu-ar">Anisotropy r</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
+					<div class="lu-sl"><label for="lu-aa">Your line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="30"><output id="lu-aav"></output></div>
+					<p class="lu-angout" id="lu-angout"></p>
+					<p class="lu-note">Drag the orange handle (or the slider) to turn a line on the sheet and read how much it stretches. r is the Lankford value: how much a sheet thins in width compared with thickness. r = 1 is an evenly behaving metal and gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- ============ REAL PHOTOS ============ -->
+		<div class="tu-card lu-photos" id="lu-photos">
+			<h2 class="lu-h">What Lüders bands look like for real</h2>
+			<div class="lu-gal" id="lu-gal">{{PHOTOS}}</div>
+			<div class="lu-vid">
+				<button type="button" class="lu-yt" id="lu-yt" data-id="PHHJOaBW0sk" aria-label="Play the video: Luders Bands, by Prelude610 on YouTube"><img src="https://i.ytimg.com/vi/PHHJOaBW0sk/hqdefault.jpg" alt="" loading="lazy" width="480" height="360"><span class="lu-ytp">▶</span></button>
+				<p class="lu-note">Video: <a href="https://youtu.be/PHHJOaBW0sk" target="_blank" rel="noopener">“Luders Bands”</a> by <a href="https://www.youtube.com/@Prelude610" target="_blank" rel="noopener">Prelude610</a> on YouTube: a real test where you can see the band run along the bar while the force stays flat. Compare it with the simulator on the Polished setting.</p>
+			</div>
+		</div>
+
+		<div class="tu-toast" id="lu-toast" role="status" aria-live="polite"></div>
+		<nav class="lu-fam" aria-label="MES Mechanics of Materials">
+			<span class="lu-fam__l">More MES Mechanics of Materials:</span>
+			<a href="/materials">All tools</a>
+			<a href="/tensile-test-simulator">Tensile test simulator (the whole curve to fracture)</a>
+			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
+			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/bending-stress-calculator">Bending</a>
+			<a href="/materials?tab=table">Materials table</a>
+		</nav>
+{{SEO}}
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/mes-math.js" defer></script>

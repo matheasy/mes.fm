@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/brick-builder",
+   "title": "Brick Builder (3D building bricks)",
+   "icon": "/img/brick-builder-logo.png",
+   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
+   "added": "2026-11-10",
+   "kind": "tool"
+  },
+  {
    "href": "/draw",
    "title": "Draw (Drawing Pad)",
    "icon": "/img/draw-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Classic, ultimate, 3D, gomoku, Notakto and more, against the computer, a friend or someone online.",
    "added": "2026-11-06",
    "kind": "tool"
-  },
-  {
-   "href": "/font-finder",
-   "title": "Font Finder: What Font Is This?",
-   "icon": "/img/font-finder-logo.png",
-   "desc": "Drop or paste a picture and find the font among 2,000+ free fonts and the fonts on your computer, with your letters shown next to each match. Private: nothing is uploaded.",
-   "added": "2026-11-06",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/brick-builder",
+   "title": "Brick Builder (3D building bricks)",
+   "icon": "/img/brick-builder-logo.png",
+   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
+   "added": "2026-11-10",
+   "kind": "tool"
+  },
   {
    "href": "/draw",
    "title": "Draw (Drawing Pad)",
@@ -250,14 +258,6 @@
    "title": "Watch",
    "icon": "/img/watch-logo.png",
    "desc": "Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations or comments. Up next list, save for later, resume, speed.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
-   "href": "/gta",
-   "title": "GTA 6 Hub",
-   "icon": "/img/gta-logo.png",
-   "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
    "added": "2026-11-07",
    "kind": "tool"
   }

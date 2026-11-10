@@ -1,0 +1,1092 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- Lüders Band Simulator -- mes.fm/luders-bands -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/materials/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/luders-bands" />                    <title>Lüders Band Simulator | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#2f6690;color:white;}
+        .button {color:#2f6690;border:0.125em solid#2f6690;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#2f6690; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#2f6690; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#2f6690;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#2f6690;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#2f6690;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#22496a;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#2f6690;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#2f6690;border:0.125em solid#2f6690;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#22496a;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#2f6690;}
+        .dropdown-symbol--dark {color:#2f6690;}
+        .button--active {background-color:#2f6690;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#2f6690;--accent-dark:#22496a;--tint:#e1edf6;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e1edf6;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e1edf6;border-color:#e1edf6;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e1edf6;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e1edf6;border-color:#e1edf6;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e1edf6;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e1edf6;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#639fcc !important;--accent-dark:#639fcc !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Lüders Band Simulator. Colours are --lu-* custom properties; dark values restated under html body.dark-mode #lu.lu (the derived TOOL-DARK block would rewrite literals) */
+	#lu {--lu-ink:#1e2733;--lu-mut:#5b6573;--lu-line:#d5dbe3;--lu-card:#ffffff;--lu-soft:#f3f6f9;--lu-grid:#e3e8ee;--lu-bg:#ffffff;--lu-frame:#c3cad3;--lu-grip:#4b5563;--lu-gripl:#6b7686;
+		--lu-edge:#6b7686;--lu-arrow:#d4351c;--lu-front:#c2410c;--lu-sel:#7c3aed;--lu-curve:#2563eb;--lu-ghost:#9aa6b4;--lu-upper:#d4351c;--lu-lower:#0f766e;--lu-tipbg:rgba(255,255,255,0.95);--lu-good:#1f7a3d;
+		--lu-sheet:#eef2f6;--lu-circ:#64748b;--lu-ell:#2563eb;--lu-band:#c2410c;--lu-my:#d97706;}
+	html body.dark-mode #lu.lu {--lu-ink:#e5e9ef;--lu-mut:#aab4c0;--lu-line:#3a424d;--lu-card:#1f242b;--lu-soft:#262c34;--lu-grid:#323a45;--lu-bg:#1f242b;--lu-frame:#4a5361;--lu-grip:#5b6574;--lu-gripl:#7a8596;
+		--lu-edge:#8a95a5;--lu-arrow:#ff7b61;--lu-front:#fb923c;--lu-sel:#b794f6;--lu-curve:#7fb2ff;--lu-ghost:#6b7686;--lu-upper:#ff7b61;--lu-lower:#5eead4;--lu-tipbg:rgba(28,32,38,0.95);--lu-good:#6ee7a0;
+		--lu-sheet:#262c34;--lu-circ:#94a3b8;--lu-ell:#7fb2ff;--lu-band:#fb923c;--lu-my:#fbbf24;}
+	#lu {color:var(--lu-ink);}
+	#lu [hidden] {display:none !important;}
+	:where(#lu) :is(div, span, p, li, label, b, strong, em, i, small, sub, sup, td, th, h2, h3, h4, output, figcaption, figure) {color:inherit;}
+	#lu .tu-label, #lu .tu-field > label {text-transform:none;letter-spacing:0.01em;}
+	#lu .lu-lead {font-size:1.05em;line-height:1.55;margin:0 0 0.9em;}
+	#lu .lu-h {font-size:1.08em;margin:0 0 0.6em;padding:0;border:0;color:var(--lu-ink);}
+	#lu .lu-note {font-size:0.88em;color:var(--lu-mut);line-height:1.5;margin:0.4em 0;}
+	#lu .lu-view {padding:0.7em;margin-bottom:0.9em;}
+	#lu .lu-vbar {display:flex;flex-wrap:wrap;gap:0.5em 0.9em;align-items:center;margin-bottom:0.5em;}
+	#lu .lu-run {display:flex;flex-wrap:wrap;gap:0.45em;align-items:center;}
+	#lu .lu-go {min-width:7.5em;min-height:42px;font-weight:700;}
+	#lu .lu-run .tu-btn {min-height:42px;}
+	#lu .lu-spd {display:flex;align-items:center;gap:0.35em;font-size:0.85em;color:var(--lu-mut);}
+	#lu .lu-spd select {width:auto;min-height:40px;padding:0.4em 0.5em;}
+	#lu .lu-looks button, #lu .lu-units button {min-height:38px;}
+	#lu .lu-vbtns {margin-left:auto;}
+	#lu .lu-stage {position:relative;}
+	#lu .lu-specw {position:relative;}
+	#lu .lu-cv {display:block;width:100%;touch-action:pan-y;}
+	#lu .lu-tip {position:absolute;z-index:3;pointer-events:none;background:var(--lu-tipbg);border:1px solid var(--lu-line);border-radius:0.4em;padding:0.35em 0.55em;font-size:0.8em;line-height:1.4;box-shadow:0 2px 8px rgba(0,0,0,0.15);max-width:170px;}
+	#lu .lu-ro {display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:0.4em;margin:0.4em 0;}
+	#lu .lu-ro > div {background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:0.5em;padding:0.35em 0.5em;min-width:0;}
+	#lu .lu-ro span {display:block;font-size:0.72em;color:var(--lu-mut);}
+	#lu .lu-ro b {display:block;font-size:0.98em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+	#lu .lu-say {min-height:3em;margin:0.4em 0 0.6em;padding:0.55em 0.75em;border-left:4px solid var(--accent);background:var(--lu-soft);border-radius:0 0.5em 0.5em 0;line-height:1.5;font-size:0.95em;}
+	#lu .lu-plots {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0.7em;}
+	#lu .lu-plot {margin:0;min-width:0;}
+	#lu .lu-plot figcaption {font-weight:700;font-size:0.9em;margin:0 0 0.25em;}
+	#lu .lu-plot figcaption small {font-weight:400;color:var(--lu-mut);}
+	#lu .lu-try {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.7em;}
+	#lu .lu-try__l {font-size:0.85em;font-weight:700;color:var(--lu-mut);margin-right:0.2em;}
+	#lu .lu-try .tu-chip {min-height:38px;}
+	#lu .lu-grid2 {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0.9em;align-items:start;margin-bottom:0.9em;}
+	#lu .lu-sl {display:grid;grid-template-columns:minmax(8.5em,11em) minmax(0,1fr) minmax(5.5em,auto);align-items:center;gap:0.6em;margin:0.35em 0;}
+	#lu .lu-sl label {font-size:0.85em;font-weight:600;}
+	#lu .lu-sl input[type=range] {width:100%;min-width:0;height:34px;accent-color:var(--accent);}
+	#lu .lu-sl output {font-size:0.85em;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+	#lu .lu-opts {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;margin-top:0.7em;}
+	#lu .lu-ck {display:inline-flex;align-items:center;gap:0.4em;font-size:0.88em;cursor:pointer;min-height:34px;}
+	#lu .lu-ck input {width:18px;height:18px;accent-color:var(--accent);}
+	#lu .lu-sm {min-height:36px;font-size:0.88em;}
+	#lu .lu-agerow {align-items:flex-end;gap:0.7em;}
+	#lu .lu-agef {font-size:0.85em;color:var(--lu-mut);padding-bottom:0.6em;}
+	#lu .lu-btns {display:flex;gap:0.5em;flex-wrap:wrap;margin:0.6em 0 0.3em;}
+	#lu .lu-btns .tu-btn {min-height:42px;}
+	#lu .lu-btns .tu-btn:disabled {opacity:0.45;cursor:not-allowed;}
+	#lu .lu-micro {margin-bottom:0.9em;}
+	#lu .lu-mtop {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.4em;}
+	#lu .lu-mcv {border-radius:0.5em;border:1px solid var(--lu-line);}
+	#lu .lu-mcap {line-height:1.5;margin:0.5em 0 0.2em;min-height:3em;}
+	#lu .lu-angc {margin-bottom:0.9em;}
+	#lu .lu-anggrid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1em;align-items:start;}
+	#lu .lu-svg {display:block;width:100%;height:auto;touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+	#lu .lu-a-sheet {fill:var(--lu-sheet);stroke:var(--lu-line);}
+	#lu .lu-a-pull {fill:none;stroke:var(--lu-arrow);stroke-width:3;stroke-linecap:round;}
+	#lu .lu-a-circ {fill:none;stroke:var(--lu-circ);stroke-width:2;stroke-dasharray:3 4;}
+	#lu .lu-a-ell {fill:rgba(37,99,235,0.08);stroke:var(--lu-ell);stroke-width:2.5;}
+	#lu .lu-a-band {stroke:var(--lu-band);stroke-width:2;stroke-dasharray:8 6;}
+	#lu .lu-a-pt {fill:var(--lu-band);}
+	#lu .lu-a-my {stroke:var(--lu-my);stroke-width:3.5;stroke-linecap:round;cursor:grab;}
+	#lu .lu-a-my.lu-a-ok {stroke:var(--lu-good);}
+	#lu .lu-a-h {fill:var(--lu-my);stroke:var(--lu-card);stroke-width:3;cursor:grab;touch-action:none;}
+	#lu .lu-a-arc {fill:none;stroke:var(--lu-ink);stroke-width:1.5;}
+	#lu .lu-a-t {fill:var(--lu-ink);font:700 15px system-ui, sans-serif;}
+	#lu .lu-a-t2 {fill:var(--lu-mut);font:12px system-ui, sans-serif;}
+	#lu .lu-angout {line-height:1.5;}
+	#lu .lu-good {color:var(--lu-good);}
+	#lu .lu-photos {margin-bottom:0.9em;}
+	#lu .lu-gal {display:grid;grid-template-columns:repeat(auto-fill, minmax(15em, 1fr));gap:0.8em;}
+	#lu .lu-gal figure {margin:0;background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:0.6em;overflow:hidden;display:flex;flex-direction:column;}
+	#lu .lu-gal img {display:block;width:100% !important;height:12em !important;object-fit:cover;background:#000;}
+	#lu .lu-gal figcaption {font-size:0.82em;line-height:1.45;padding:0.5em 0.6em 0.6em;}
+	#lu .lu-gal figcaption small {display:block;color:var(--lu-mut);margin-top:0.25em;}
+	#lu .lu-gal a {color:var(--accent);}
+	#lu .lu-vid {display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0.9em;align-items:center;margin-top:1em;}
+	#lu .lu-yt {position:relative;display:block;width:100%;aspect-ratio:16/9;border:0;padding:0;background:#000;border-radius:0.6em;overflow:hidden;cursor:pointer;}
+	#lu .lu-yt img {width:100% !important;height:100% !important;object-fit:cover;opacity:0.9;}
+	#lu .lu-ytp {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border-radius:12px;background:#e62117;color:#fff;font-size:24px;line-height:48px;text-align:center;}
+	#lu .lu-ytf {width:100%;aspect-ratio:16/9;border:0;border-radius:0.6em;}
+	#lu .lu-fam {display:flex;flex-wrap:wrap;gap:0.4em 1em;font-size:0.9em;margin:1em 0;}
+	#lu .lu-fam__l {font-weight:700;}
+	.lu-lb {position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+	.lu-lb img {max-width:100% !important;max-height:82vh !important;width:auto !important;height:auto !important;object-fit:contain;}
+	.lu-lb p {color:#e5e9ef !important;font-size:0.9em;max-width:60em;text-align:center;margin:0.7em 0 0;}
+	.lu-lb p a {color:#93c5fd !important;}
+	.lu-lbx {position:absolute;top:10px;right:14px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,0.15);color:#fff;font-size:28px;cursor:pointer;}
+	/* fill window: the stage grows */
+	#lu .lu-view.mes-pfill .lu-stage {flex:1 1 auto;}
+	@media (max-width:900px) {
+		#lu .lu-grid2, #lu .lu-anggrid, #lu .lu-vid {grid-template-columns:minmax(0,1fr);}
+		#lu .lu-ro {grid-template-columns:repeat(3, minmax(0,1fr));}
+	}
+	@media (max-width:640px) {
+		#lu .lu-plots {grid-template-columns:minmax(0,1fr);}
+		#lu .lu-sl {grid-template-columns:minmax(0,1fr) auto;}
+		#lu .lu-sl input[type=range] {grid-column:1 / -1;grid-row:2;}
+		#lu .lu-vbtns {margin-left:0;}
+		#lu .lu-looks {flex-wrap:wrap;}
+	}
+	#lu .tu-eq {overflow-x:auto;margin:0.6em 0;padding:0.5em 0.8em;background:var(--lu-soft);border-radius:0.5em;text-align:center;}
+	#lu .lu-gal figure.lu-wide {grid-column:1 / -1;}
+	#lu .lu-gal figure.lu-wide img {height:auto !important;object-fit:contain;background:#fff;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #2f6690;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #2f6690; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(47,102,144,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content :where(sub,sup){color:inherit}
+	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#468dc3;--accent-dark:#468ac4}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #153045}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1a242b;border-color:#153045}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1a242b;border-color:#153045}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1a242b}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #lu{--lu-arrow:#e24027;--lu-front:#f15718;--lu-upper:#e24027;--lu-lower:#26e3d5;--lu-good:#3ccd6c;--lu-band:#f15718;--lu-my:#f88d11}
+	body.dark-mode #lu .lu-a-ell{fill:rgba(106,148,241,0.08)}
+	body.dark-mode #lu .lu-gal img{background:#525252}
+	body.dark-mode #lu .lu-yt{background:#525252}
+	body.dark-mode .lu-lb{background:rgba(82,82,82,0.88)}
+	body.dark-mode .lu-lbx{background:rgba(26,26,26,0.15)}
+	body.dark-mode #lu .lu-gal figure.lu-wide img{background:#1a1a1a}
+	/* TOOL-DARK:END */
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/luders-bands" />            <meta property="og:title" content="Lüders Band Simulator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/luders-bands/img/logo-big.png" />        <meta property="og:image:width" content="1200" />        <meta property="og:image:height" content="630" />
+        <meta property="og:description" content="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation." />
+
+        <meta name="description" content="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.">            <meta name="twitter:card" content="summary_large_image">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="Lüders Band Simulator">
+        <meta name="twitter:description" content="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.">
+        <meta name="twitter:image" content="https://mes.fm/luders-bands/img/logo-big.png">
+        <meta name="twitter:image:alt" content="Lüders Band Simulator">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "Lüders Band Simulator", "url": "https://mes.fm/luders-bands", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/materials" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/materials/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/materials" tabindex="-1">Mechanics of Materials</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/materials'><img height="88" width="88" id="logo" class="logo" alt="Lüders Band Simulator logo" src="/materials/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/materials'>
+                                    <p class="calculator-title">MES Mechanics of Materials</p>
+                                </a>
+                                <p class="tag-line">Stress, strain, shear, torsion and bending, with the pictures.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/materials'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/youngs-modulus-calculator'>Young's Modulus</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/tensile-test-simulator'>Tensile Test</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/shear-stress-calculator'>Shear &amp; Torsion</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/bending-stress-calculator'>Bending</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/luders-bands'>Lüders Bands</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/materials?tab=table'>Materials Table</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Lüders Bands: Simulator and Explanation (Yield Point, Plateau, Stretcher Strains)</h1>                                        <p class="page-description">Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu lu" id="lu">
+		<p class="lu-lead">Pull a bar of mild steel and, just after it starts to yield, a dull stripe appears at one end and creeps along the bar at a slant while the force stays flat. That stripe is a <strong>Lüders band</strong>. Press <strong>Start</strong> and watch one form, then add a notch, change the testing machine, or bake the bar and test it again.</p>
+
+		<!-- ============ THE TEST ============ -->
+		<div class="tu-card lu-view" id="lu-view">
+			<div class="lu-vbar" id="lu-vbar">
+				<div class="lu-run">
+					<button type="button" class="tu-btn lu-go" id="lu-go">▶ Start</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="lu-reset" title="Put a new bar in the machine (R)">↺ New bar</button>
+					<label class="lu-spd"><span>Speed</span><select id="lu-speed" class="tu-select" aria-label="Playback speed">
+						<option value="0.1">Slow motion ×0.1</option><option value="0.25">×0.25</option><option value="0.5">×0.5</option><option value="1" selected>Real time ×1</option><option value="2">×2</option><option value="5">×5</option><option value="20">×20</option>
+					</select></label>
+				</div>
+				<div class="tu-seg lu-looks" id="lu-look" role="group" aria-label="What the bar looks like">
+					<button type="button" data-v="polish" aria-pressed="true" title="A polished bar: the yielded steel turns dull (P)">Polished</button>
+					<button type="button" data-v="scale" aria-pressed="false" title="Hot-rolled bar with mill scale: the scale cracks off where the steel stretches">Mill scale</button>
+					<button type="button" data-v="strain" aria-pressed="false" title="A strain map, like digital image correlation (DIC)">Strain map</button>
+					<button type="button" data-v="rate" aria-pressed="false" title="Where the steel is stretching right now">Flowing now</button>
+				</div>
+				<span class="lu-vbtns"></span>
+			</div>
+			<div class="lu-stage" id="lu-stage">
+				<div class="lu-specw">
+					<canvas id="lu-spec" class="lu-cv" aria-label="The test bar in the grips of the testing machine"></canvas>
+					<div class="lu-tip" id="lu-tip" hidden></div>
+				</div>
+				<div class="lu-ro" id="lu-ro" aria-live="off">
+					<div><span>Stress</span><b id="lu-r-s">0</b></div>
+					<div><span>Strain</span><b id="lu-r-e">0</b></div>
+					<div><span>Time</span><b id="lu-r-t">0 s</b></div>
+					<div><span>Yielded</span><b id="lu-r-y">0%</b></div>
+					<div><span>Band fronts</span><b id="lu-r-f">0</b></div>
+					<div title="Measured speed of the band fronts, and the formula V / (fronts × εL)"><span>Front speed</span><b id="lu-r-v">–</b></div>
+				</div>
+				<p class="lu-say" id="lu-say" aria-live="polite"></p>
+				<div class="lu-plots">
+					<figure class="lu-plot"><figcaption>Force on the bar <small>(stress against strain)</small></figcaption><canvas id="lu-chart" class="lu-cv" aria-label="Stress-strain curve being drawn"></canvas></figure>
+					<figure class="lu-plot"><figcaption>Where and when it yielded <small>(position along the bar → , time ↓)</small></figcaption><canvas id="lu-kymo" class="lu-cv" aria-label="Space-time map of the plastic strain along the bar"></canvas></figure>
+				</div>
+			</div>
+			<div class="lu-try" id="lu-try" role="group" aria-label="Try this">
+				<span class="lu-try__l">Try this:</span>
+				<button type="button" class="tu-chip" data-try="notch">A notch in the middle</button>
+				<button type="button" class="tu-chip" data-try="soft">Soft machine</button>
+				<button type="button" class="tu-chip" data-try="stiff">Stiff machine</button>
+				<button type="button" class="tu-chip" data-try="fine">Fine grains</button>
+				<button type="button" class="tu-chip" data-try="age">Test, bake, test again</button>
+				<button type="button" class="tu-chip" data-try="if">IF steel: no bands</button>
+				<button type="button" class="tu-chip" data-try="almg">Aluminium-magnesium</button>
+			</div>
+		</div>
+
+		<!-- ============ SETTINGS ============ -->
+		<div class="lu-grid2">
+			<div class="tu-card lu-set">
+				<h2 class="lu-h">The bar and the machine</h2>
+				<div class="tu-field"><label for="lu-mat">Material</label><select id="lu-mat" class="tu-select"></select></div>
+				<p class="lu-note" id="lu-matnote"></p>
+				<div class="lu-sl" id="lu-gw"><label for="lu-g">Grain size</label><input type="range" id="lu-g" min="5" max="60" step="1"><output id="lu-gv"></output></div>
+				<div class="lu-sl"><label for="lu-eL">Lüders strain εL</label><input type="range" id="lu-eL" min="0.004" max="0.05" step="0.001"><output id="lu-eLv"></output></div>
+				<div class="lu-sl"><label for="lu-uy">Upper / lower yield</label><input type="range" id="lu-uy" min="1" max="1.25" step="0.005"><output id="lu-uyv"></output></div>
+				<div class="lu-sl"><label for="lu-k">Machine stiffness</label><input type="range" id="lu-k" min="0" max="100" step="1"><output id="lu-kv"></output></div>
+				<div class="lu-sl"><label for="lu-v">Crosshead speed</label><input type="range" id="lu-v" min="0" max="100" step="1"><output id="lu-vv"></output></div>
+				<div class="lu-sl"><label for="lu-sc">Unevenness of the steel</label><input type="range" id="lu-sc" min="0" max="1" step="0.05"><output id="lu-scv"></output></div>
+				<div class="lu-sl"><label for="lu-r">Anisotropy r (sets the angle)</label><input type="range" id="lu-r" min="0.3" max="3" step="0.05"><output id="lu-rv"></output></div>
+				<div class="lu-opts">
+					<label class="lu-ck"><input type="checkbox" id="lu-notchmode"> Click the bar to add a notch</label>
+					<button type="button" class="tu-btn tu-btn--ghost lu-sm" id="lu-clrnotch">Remove notches</button>
+					<label class="lu-ck"><input type="checkbox" id="lu-thin" checked> Show the thinning ×15</label>
+					<label class="lu-ck"><input type="checkbox" id="lu-ghost" checked> Keep the last curve to compare</label>
+					<div class="tu-seg lu-units" id="lu-units" role="group" aria-label="Units"><button type="button" data-v="mpa" aria-pressed="true">MPa</button><button type="button" data-v="ksi" aria-pressed="false">ksi</button></div>
+					<button type="button" class="tu-btn tu-btn--ghost lu-sm" id="lu-link">🔗 Copy link</button>
+				</div>
+			</div>
+			<div class="tu-card lu-agec">
+				<h2 class="lu-h">Unload, wait, pull again: strain ageing</h2>
+				<p class="lu-note">Stretch the bar past the plateau, take the load off, and pull it again. Straight away it just carries on hardening: the dislocations are free. Wait (or bake it) and the carbon atoms find them again: the yield point and a new Lüders band come back, higher than before.</p>
+				<div class="tu-row lu-agerow">
+					<div class="tu-field"><label for="lu-agesel">Before pulling again</label><select id="lu-agesel" class="tu-select">
+						<option value="0,20">Pull again straight away</option>
+						<option value="24,20">Wait 1 day at room temperature</option>
+						<option value="168,20">Wait 1 week at room temperature</option>
+						<option value="4380,20">Wait 6 months at room temperature</option>
+						<option value="1,100" selected>Bake 1 hour at 100 °C</option>
+						<option value="0.333,170">Paint bake: 20 minutes at 170 °C</option>
+					</select></div>
+					<output class="lu-agef" id="lu-agef"></output>
+				</div>
+				<div class="lu-btns">
+					<button type="button" class="tu-btn" id="lu-unload" disabled>Unload</button>
+					<button type="button" class="tu-btn" id="lu-reload" disabled>Pull again</button>
+				</div>
+				<p class="lu-note" id="lu-agemsg"></p>
+			</div>
+		</div>
+
+		<!-- ============ INSIDE THE METAL ============ -->
+		<div class="tu-card lu-micro">
+			<div class="lu-mtop"><h2 class="lu-h">Inside the metal: why there is an upper yield point</h2>
+				<label class="lu-ck"><input type="checkbox" id="lu-follow" checked> Follow the band front</label></div>
+			<canvas id="lu-mcv" class="lu-cv" aria-label="A dislocation held by carbon atoms, breaking free when the band front arrives"></canvas>
+			<p class="lu-mcap" id="lu-mcap"></p>
+			<p class="lu-note">Click anywhere on the bar above to watch that slice. Not to scale: a real dislocation line is about a millionth of a millimetre across, and millions of them break free together in each grain the front crosses.</p>
+		</div>
+
+		<!-- ============ THE ANGLE ============ -->
+		<div class="tu-card lu-angc">
+			<h2 class="lu-h">Why the band leans at about 55°</h2>
+			<div class="lu-anggrid">
+				<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle on the sheet stretches into an ellipse; the two lines through the points that did not move are the band directions"></svg>
+				<div>
+					<p>Draw a circle on the sheet, then stretch it: it becomes an ellipse, longer along the pull and narrower across. Only two directions keep their length, where the circle and the ellipse cross. The band front has to lie along one of them, because the stretched steel behind the front and the unstretched steel ahead of it must stay joined along the whole front without tearing or overlapping.</p>
+					<div class="lu-sl"><label for="lu-ar">Anisotropy r</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
+					<div class="lu-sl"><label for="lu-aa">Your line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="30"><output id="lu-aav"></output></div>
+					<p class="lu-angout" id="lu-angout"></p>
+					<p class="lu-note">Drag the orange handle (or the slider) to turn a line on the sheet and read how much it stretches. r is the Lankford value: how much a sheet thins in width compared with thickness. r = 1 is an evenly behaving metal and gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less.</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- ============ REAL PHOTOS ============ -->
+		<div class="tu-card lu-photos" id="lu-photos">
+			<h2 class="lu-h">What Lüders bands look like for real</h2>
+			<div class="lu-gal" id="lu-gal"><figure class="lu-wide"><a class="lu-ph" href="/luders-bands/img/rawdon-fig5-bar.jpg"><img src="/luders-bands/img/rawdon-fig5-bar.jpg" alt="A whole flat mild steel tensile bar covered in diagonal Lüders bands, with one diagonal strip still unmarked" loading="lazy" width="2000" height="326"></a>
+<figcaption><b>A whole bar, almost fully banded.</b> Mild steel specimen after it was loaded far enough to strain nearly the entire gauge length: dark slanted bands everywhere, and one diagonal strip in the middle that the fronts have not reached yet (compare the simulator just before the fronts meet).<small>Photo: H. S. Rawdon, “Strain markings in mild steel under tension”, <i>Bureau of Standards Journal of Research</i> 1 (1928) 467, RP15, fig. 5a. U.S. Government work, public domain. <a href="https://archive.org/details/jresv1n3p467" target="_blank" rel="noopener">Original scan</a>.</small></figcaption></figure>
+<figure><a class="lu-ph" href="/luders-bands/img/rawdon-fig3-wedges.jpg"><img src="/luders-bands/img/rawdon-fig3-wedges-sm.jpg" alt="Four photos of one end of a steel bar after four loadings, showing wedge-shaped strain markings growing from the fillet and spreading" loading="lazy" width="363" height="720"></a>
+<figcaption><b>Bands growing from the shoulder.</b> One end of the same bar after each of four loadings (A to D, top to bottom, life size): the first wedge-shaped markings start at the fillet, where the stress is concentrated, then multiply and spread across the bar.<small>Rawdon 1928, fig. 3. Public domain.</small></figcaption></figure>
+<figure><a class="lu-ph" href="/luders-bands/img/rawdon-fig9-macro.jpg"><img src="/luders-bands/img/rawdon-fig9-macro-sm.jpg" alt="Close-up of two wedge-shaped Lüders bands with branches at 45 degrees on low-carbon steel" loading="lazy" width="707" height="720"></a>
+<figcaption><b>Close-up of the wedges</b> (×2). Line a appeared at 28,600 psi (197 MPa), line b at 30,200 psi (208 MPa); held under load, the wedges widened and side branches grew at about 45°. Inside the bands the surface is rippled, which is why yielded steel looks dull.<small>Rawdon 1928, fig. 9a. Public domain.</small></figcaption></figure>
+<figure><a class="lu-ph" href="/luders-bands/img/rawdon-fig1-polish-scale.jpg"><img src="/luders-bands/img/rawdon-fig1-polish-scale-sm.jpg" alt="The same steel bar seen on a polished face with fine strain markings, and on the opposite face still covered in mill scale" loading="lazy" width="560" height="720"></a>
+<figcaption><b>Polished face and mill-scale face</b> of the same bar. A: the polished side shows the bands as a change of sheen (the simulator's “Polished” look). B: the other side kept its mill scale, where only faint cracked lines show at this early stage.<small>Rawdon 1928, fig. 1. Public domain.</small></figcaption></figure>
+<figure><a class="lu-ph" href="/luders-bands/img/qiu-2020-dic-band.jpg"><img src="/luders-bands/img/qiu-2020-dic-band-sm.jpg" alt="Six digital image correlation strain maps showing a Lüders band nucleating and growing at 55 degrees in hot-rolled steel" loading="lazy" width="354" height="720"></a>
+<figcaption><b>A band being born, measured.</b> Digital image correlation strain maps of hot-rolled steel, steps 1 to 6: a band nucleates in the red circle and grows across the specimen at 55° to the pull (compare the simulator's “Strain map” look).<small>H. Qiu, T. Inoue, R. Ueji, <a href="https://doi.org/10.3390/met10040530" target="_blank" rel="noopener"><i>Metals</i> 10 (2020) 530</a>, fig. 5a. CC BY 4.0, cropped.</small></figcaption></figure>
+<figure><a class="lu-ph" href="/luders-bands/img/cai-2016-almg-dic.jpg"><img src="/luders-bands/img/cai-2016-almg-dic-sm.jpg" alt="Strain maps of an aluminium-magnesium 5456 specimen: a Lüders band sweeping along it, then narrow Portevin-Le Chatelier bands" loading="lazy" width="659" height="720"></a>
+<figcaption><b>Aluminium-magnesium 5456.</b> Top: the Lüders band sweeps the gauge in about 17 seconds. Bottom: much later, narrow Portevin-Le Chatelier bands keep appearing and jumping while the alloy hardens (the jerky flow behind stretcher strains on Al-Mg car panels).<small>Y.-L. Cai, S.-L. Yang, S.-H. Fu, Q.-C. Zhang, <a href="https://doi.org/10.3390/met6050120" target="_blank" rel="noopener"><i>Metals</i> 6 (2016) 120</a>, fig. 3b, c. CC BY 4.0, cropped.</small></figcaption></figure>
+<figure><a class="lu-ph" href="/luders-bands/img/almatroushi-2025-curves.jpg"><img src="/luders-bands/img/almatroushi-2025-curves-sm.jpg" alt="Measured stress-strain curves of eight AISI 1524 steel specimens, each with a Lüders plateau near 275 MPa, some unloaded during the plateau" loading="lazy" width="720" height="596"></a>
+<figcaption><b>Real curves with a plateau.</b> Eight AISI 1524 steel tests: an upper yield, a flat Lüders plateau near 275 MPa up to about 5%, then hardening. Several were unloaded and reloaded during the plateau (the vertical lines).<small>M. Almatroushi, S. Pervaiz, W. A. Samad, <a href="https://doi.org/10.3390/alloys4030019" target="_blank" rel="noopener"><i>Alloys</i> 4 (2025) 19</a>, fig. 5. CC BY 4.0.</small></figcaption></figure></div>
+			<div class="lu-vid">
+				<button type="button" class="lu-yt" id="lu-yt" data-id="PHHJOaBW0sk" aria-label="Play the video: Luders Bands, by Prelude610 on YouTube"><img src="https://i.ytimg.com/vi/PHHJOaBW0sk/hqdefault.jpg" alt="" loading="lazy" width="480" height="360"><span class="lu-ytp">▶</span></button>
+				<p class="lu-note">Video: <a href="https://youtu.be/PHHJOaBW0sk" target="_blank" rel="noopener">“Luders Bands”</a> by <a href="https://www.youtube.com/@Prelude610" target="_blank" rel="noopener">Prelude610</a> on YouTube: a real test where you can see the band run along the bar while the force stays flat. Compare it with the simulator on the Polished setting.</p>
+			</div>
+		</div>
+
+		<div class="tu-toast" id="lu-toast" role="status" aria-live="polite"></div>
+		<nav class="lu-fam" aria-label="MES Mechanics of Materials">
+			<span class="lu-fam__l">More MES Mechanics of Materials:</span>
+			<a href="/materials">All tools</a>
+			<a href="/tensile-test-simulator">Tensile test simulator (the whole curve to fracture)</a>
+			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
+			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/bending-stress-calculator">Bending</a>
+			<a href="/materials?tab=table">Materials table</a>
+		</nav>
+		<div class="tu-seo">
+			<h2>Lüders bands, explained</h2>
+			<p>A <strong>Lüders band</strong> (also called a Piobert-Lüders band, a yield band or, on pressed sheet, a <em>stretcher strain</em>) is a stripe of metal that has yielded while the metal on either side has not. It shows up in low-carbon steel and in aluminium-magnesium alloys just after yielding starts. The band is not a crack and not a weakness: it is simply the boundary between stretched and not-yet-stretched metal, and it moves.</p>
+			<p>The French artillery officer Guillaume Piobert saw these stripes on iron plates in the 1840s, and the German engineer W. Lüders described them on bent steel bars in 1860, which is where the name comes from. Their cause was only explained a century later, by Alan Cottrell and Bruce Bilby in 1949.</p>
+
+			<h3>What you see in a tensile test</h3>
+			<ol>
+				<li><strong>Elastic stretch.</strong> The force rises in a straight line. The whole bar stretches evenly, by a tenth of a percent or so.</li>
+				<li><strong>Upper yield point.</strong> Somewhere the bar suddenly gives: usually at a shoulder, where the change of width concentrates the stress, or at a scratch, notch or inclusion. The force drops.</li>
+				<li><strong>The Lüders plateau.</strong> A band forms where it gave. Its edges (the <em>fronts</em>) move along the bar at a steady speed while the force stays almost flat at the <em>lower yield stress</em>, with small wiggles. Behind a front the steel has stretched by the <em>Lüders strain</em> ε<sub>L</sub>, typically 1 to 3%; ahead of it, it has not stretched at all.</li>
+				<li><strong>Work hardening.</strong> When the fronts have crossed the whole gauge length the bar starts to harden evenly and the force rises again, as in any ductile metal.</li>
+			</ol>
+			<p>On a polished bar the band looks dull or frosted, because the stretched surface roughens at the grain scale. On hot-rolled steel the brittle mill scale cracks and flakes off along the band, which is how the bands were first noticed. In a strain map made by digital image correlation (DIC) the band is a sharp step of strain sliding along the bar.</p>
+
+			<h3>Why mild steel has an upper yield point</h3>
+			<p>Steel yields when <em>dislocations</em> (line defects in the crystal) glide. In low-carbon steel, small carbon and nitrogen atoms sit in the gaps of the iron crystal and gather around the dislocations, where there is more room: these clouds are called <strong>Cottrell atmospheres</strong>. They pin the dislocations. It takes a higher stress to tear a dislocation away from its atmosphere (the upper yield) than to keep a free one moving (the lower yield). Once some dislocations are free they multiply quickly, so the metal at that spot stretches a lot all at once: that is the drop and the start of the band.</p>
+			<p>Why does the band grow from its edges instead of starting everywhere? Right at a front, the stretched metal behind it pulls on the unstretched metal ahead of it, and this local stress concentration is enough to unpin the next grains at the lower yield stress. Everywhere else the steel would still need the full upper yield stress, which the bar no longer reaches. So the front marches on, grain by grain.</p>
+
+			<h3>The band speed</h3>
+			<p>During the plateau the force does not change, so neither does the elastic stretch of the bar or the machine. All of the crosshead travel goes into turning unstretched steel into stretched steel at the fronts. If the crosshead moves at speed V and there are n fronts, each moving at speed v:</p>
+			<div class="tu-eq"><span class="mes-tex">\(\displaystyle V = n\,v\,\varepsilon_L \quad\Longrightarrow\quad v = \frac{V}{n\,\varepsilon_L}\)</span></div>
+			<p>With V = 5 mm/min and ε<sub>L</sub> = 2% one front moves at 250 mm/min, fifty times faster than the crosshead. The plateau lasts</p>
+			<div class="tu-eq"><span class="mes-tex">\(\displaystyle t_{\text{plateau}} = \frac{L\,\varepsilon_L}{V}\)</span></div>
+			<p>for a gauge length L: 12 seconds for a 50 mm gauge at 5 mm/min. The simulator measures the front speed as the band moves and shows it next to this formula; in the space-time map each front is a straight line whose slope is the speed. A band that starts in the middle (try the notch) has two fronts, each moving at half the speed.</p>
+
+			<h3>Why the front leans at about 55°</h3>
+			<p>The stretched steel behind the front is longer and narrower than the steel ahead of it, yet the two have to stay joined along the front. That only works along a line whose length does not change. Pulling a sheet along x gives a strain ε along the pull and, because metal keeps its volume when it flows, a strain of about −ε/2 across the width. A line at angle θ to the pull stretches by</p>
+			<div class="tu-eq"><span class="mes-tex">\(\displaystyle \varepsilon_\theta = \varepsilon\cos^2\theta - \frac{\varepsilon}{2}\sin^2\theta = 0 \quad\Longrightarrow\quad \tan^2\theta = 2,\ \ \theta = 54.7^\circ\)</span></div>
+			<p>In real sheet the width strain depends on the plastic anisotropy (the Lankford value r: width strain = −ε r / (1 + r)), giving tan² θ = (1 + r) / r. Fronts in flat bars are usually seen at 50 to 55°. Round bars have no such line, so their fronts form cones and are much harder to see.</p>
+
+			<h3>The testing machine matters</h3>
+			<p>The machine and the bar act like two springs in series. When a slice of the bar yields, its sudden plastic stretch lets the machine spring back and the force drops. A <strong>stiff</strong> machine drops the force sharply and shows a tall, narrow upper yield peak. A <strong>soft</strong> machine stores more elastic energy, so the drop is spread out and the peak looks rounder. The upper yield also rises with the test speed and with any bending from badly aligned grips, and it is lowered by sharp shoulders. That is why standards report the lower yield stress (or the plateau) as the material property, and why the upper yield point varies so much from test to test.</p>
+
+			<h3>Strain ageing: the yield point comes back</h3>
+			<p>Unload a bar after the plateau and pull it again at once: it carries on hardening with no new yield point, because its dislocations are free. Wait, and carbon atoms diffuse back to the dislocations and pin them again. After a few weeks at room temperature (or minutes at 100 to 200 °C) the bar shows a new, higher upper yield point, a new plateau and new Lüders bands. This is <strong>strain ageing</strong>; its time scale follows the diffusion of carbon in iron (activation energy about 84 kJ/mol), and the pinned fraction grows roughly as t<sup>2/3</sup> (Cottrell and Bilby). Car makers turn it into an advantage with <em>bake-hardening</em> steels, which gain strength during the 20-minute paint bake at about 170 °C. The simulator's "Test, bake, test again" runs the whole experiment.</p>
+
+			<h3>Stretcher strains on pressed parts, and how they are avoided</h3>
+			<p>If annealed low-carbon sheet is pressed into a shallow part, the areas strained only into the plateau show irregular dull bands and ridges called stretcher strains (or "worms"). Paint does not hide them, so they ruin visible panels. Steel makers prevent them by:</p>
+			<ul>
+				<li><strong>Temper rolling (skin pass):</strong> a light 0.5 to 2% cold roll after annealing yields the whole sheet evenly, so it has no yield point when it reaches the press. The effect wears off as the sheet ages, so it should be used within weeks.</li>
+				<li><strong>Roller levelling</strong> just before pressing, which does the same at the press shop.</li>
+				<li><strong>Interstitial-free (IF) steels:</strong> titanium or niobium tie up all the carbon and nitrogen, so nothing pins the dislocations at all.</li>
+			</ul>
+			<p>Aluminium-magnesium (5000-series) sheet has the same problem: magnesium atoms pin dislocations like carbon does in steel, giving type A stretcher strains at yield and, later, the jerky <em>Portevin-Le Chatelier</em> bands that keep appearing during hardening. That is why 5000-series alloys are used for inner car panels and 6000-series for outer ones.</p>
+
+			<h3>How the simulator works</h3>
+			<p>The gauge length is cut into 160 thin slices. Each slice is <em>pinned</em> until the stress reaches its upper yield (a little lower near the shoulders and at any notch, and slightly different from slice to slice, as in real steel), then it stretches at about the lower yield stress until it reaches the Lüders strain, after which it follows a work-hardening curve. A slice next to a yielded one lets go at the lower yield. The machine pulls the crosshead at a steady speed, and the machine and the bar are treated as springs in series, so every bit of plastic stretch lowers the force. Nothing else is programmed in: the upper yield drop, the flat plateau with its small wiggles, the band speed and its formula, the effect of machine stiffness and the return of the yield point after ageing all come out of these rules. The numbers are typical values for each kind of metal (sources: Cottrell and Bilby 1949; Hall 1970, <em>Yield Point Phenomena in Metals and Alloys</em>; Butler 1962 on grain size and the Lüders strain; Hall-Petch constants for mild steel), not test data for a particular steel. The front angle and band speed are exact; the surface pictures are drawn to look like the real thing, with the thinning exaggerated so you can see it.</p>
+			<h3>Questions</h3>
+			<h4>Are Lüders bands a sign of damage?</h4>
+			<p>No. They show where the steel has yielded, that is all. In a structure, visible bands (or flaking mill scale or whitewash in a pattern) tell an inspector that the steel there was loaded past yield, which is worth knowing; the metal itself is not cracked.</p>
+			<h4>What is the difference between the upper and lower yield strength?</h4>
+			<p>The upper yield strength (R<sub>eH</sub> in ISO 6892-1) is the peak just before the drop; the lower yield strength (R<sub>eL</sub>) is the lowest stress during the plateau, ignoring the very first dip. The upper value depends strongly on the machine, the speed and the specimen, so design values are based on the lower yield or the plateau.</p>
+			<h4>What is the Lüders strain?</h4>
+			<p>The strain at which the plateau ends, i.e. how much each bit of steel stretches as a front passes. Typical values are 1 to 3% for mild steel; it is larger for finer grains and lower for coarse-grained or slightly prestrained steel.</p>
+			<h4>Why does my extensometer show a jump, or nothing, during the plateau?</h4>
+			<p>An extensometer only measures between its knife edges. While a front is outside them it reads no plastic strain; when the front crosses them it reads a fast jump. The force-crosshead curve looks smooth because it averages over the whole bar.</p>
+			<h4>Do Lüders bands happen in compression or bending?</h4>
+			<p>Yes. Lüders first saw them on bent bars, and they form wherever low-carbon steel yields: in bending they start at the surface where the stress is highest, and in pipes and pressure vessels they can run as helical bands.</p>
+			<h4>What are Hartmann lines?</h4>
+			<p>The same thing, named after Louis Hartmann, who studied the line patterns on yielded steel in the 1890s. On large structures they are often called slip lines or yield lines.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/mes-math.js" defer></script>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/tensile-test-simulator"><img class="mes-aside__img mes-aside__img--logo" src="/tensile-test-simulator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Tensile Test Simulator: Stress-Strain Curve, Yield, UTS and Necking</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/waist-to-hip-ratio-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/waist-to-hip-ratio-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Waist-to-Hip Ratio Calculator: WHR, Waist-to-Height and Body Shape</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/materials">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/youngs-modulus-calculator">Young's Modulus Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/tensile-test-simulator">Tensile Test Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/shear-stress-calculator">Shear &amp; Torsion Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/bending-stress-calculator">Bending Stress &amp; Beam Calculator</a></li><li class="navbar__item"><a class="navbar__link" href="/luders-bands">Lüders Band Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/materials?tab=table">Materials Table</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:5
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/luders-bands/js/luders-bands.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>
