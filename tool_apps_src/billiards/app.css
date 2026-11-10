@@ -167,7 +167,7 @@
 	#bl .bl-3d .bl-3dmsg {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;font-weight:600;}
 	#bl .bl-dim button {min-height:38px;padding:0 0.8em;font-weight:700;}
 	#bl .bl-cam {min-height:38px;width:auto;font-size:0.88em;padding:0 0.5em;}
-	#bl .bl-3dhint {position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
+	#bl .bl-3dhint {position:absolute;left:10px;top:10px;max-width:calc(100% - 240px) !important;z-index:4;border-radius:12px !important;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
 	/* background music / video */
 	#bl .bl-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 	#bl .bl-muspanel {margin:0 0 0.6em;padding:0.6em 0.7em;border-radius:10px;background:var(--bl-cell);border:1px solid var(--bl-cardline);}
@@ -188,3 +188,36 @@
 	#bl .bl-mp.is-min .bl-mpv {padding-bottom:0;height:56px;}
 	#bl .bl-gbtn {min-width:7.5em;font-size:0.82em;}
 	#bl .bl-gbtn.is-off {border-color:var(--bl-bad);}
+	/* on-table controls: shown on touch screens and in Fill window / full screen */
+	#bl .bl-cv, #bl .bl-3d {transition:opacity 0.2s ease;}
+	#bl .bl-cv.is-fade, #bl .bl-3d.is-fade {opacity:0;}
+	#bl .bl-ov {display:block;position:absolute;inset:0;pointer-events:none;z-index:3;}
+	#bl .bl-ov > * {pointer-events:auto;}
+	#bl .bl-ov.is-wait .bl-opow, #bl .bl-ov.is-wait .bl-ohit, #bl .bl-ov.is-wait .bl-ospin {opacity:0.4;}
+	#bl .bl-otop {position:absolute;top:10px;right:10px;display:flex;gap:6px;}
+	#bl .bl-otop button {min-width:42px;min-height:42px;border-radius:10px;border:1px solid rgba(255,255,255,0.35);background:rgba(0,0,0,0.55);color:#fff;font:inherit;font-weight:700;cursor:pointer;}
+	#bl .bl-opow {position:absolute;right:12px;top:64px;bottom:96px;width:46px;border-radius:23px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.35);overflow:hidden;touch-action:none;cursor:ns-resize;}
+	#bl .bl-opowfill {position:absolute;left:0;right:0;top:0;height:35%;background:linear-gradient(180deg,#2f9e44,#f59f00 60%,#e03131);}
+	#bl .bl-opowt {position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:0.68em;font-weight:800;color:#fff;line-height:1.1;text-shadow:0 1px 2px #000;pointer-events:none;}
+	#bl .bl-opowv {position:absolute;left:0;right:0;top:6px;text-align:center;font-size:0.72em;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;}
+	#bl .bl-opow.is-drag {border-color:#fff;}
+	#bl .bl-ohit {position:absolute;right:10px;bottom:10px;width:78px;height:78px;border-radius:50%;border:3px solid rgba(255,255,255,0.85);background:#0f7a4a;color:#fff;font:inherit;font-weight:900;font-size:1.15em;line-height:1;cursor:pointer;touch-action:none;box-shadow:0 3px 10px rgba(0,0,0,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+	#bl .bl-ohit small {font-size:0.48em;font-weight:700;opacity:0.9;}
+	#bl .bl-ohit.is-charge {background:#e03131;transform:scale(1.06);}
+	#bl .bl-ospin {position:absolute;left:10px;bottom:10px;width:56px;height:56px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,0.7);background:rgba(0,0,0,0.4);cursor:pointer;}
+	#bl .bl-ospin canvas {width:100%;height:100%;display:block;}
+	#bl .bl-ospinpop {position:absolute;left:10px;bottom:76px;width:220px;padding:10px;border-radius:14px;background:rgba(20,24,28,0.94);color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;}
+	#bl .bl-ospinpop b, #bl .bl-ospinpop span {color:#fff;font-size:0.9em;}
+	#bl .bl-ospinpop canvas {width:150px;height:150px;touch-action:none;cursor:pointer;}
+	#bl .bl-ospinbtns {display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
+	#bl .bl-ospinbtns button {font:inherit;font-size:0.8em;min-height:34px;padding:0 0.6em;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:#2b3036;color:#fff;cursor:pointer;}
+	#bl .bl-ohelp {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(440px, calc(100% - 40px));max-height:calc(100% - 20px);overflow:auto;padding:14px 16px;border-radius:14px;background:rgba(20,24,28,0.95);color:#fff;font-size:0.92em;line-height:1.45;box-shadow:0 8px 30px rgba(0,0,0,0.6);}
+	#bl .bl-ohelp b, #bl .bl-ohelp li, #bl .bl-ohelp span {color:#fff;}
+	#bl .bl-ohelp ol {margin:0.5em 0 0.8em;padding-left:1.2em;}
+	#bl .bl-ohelp li {margin-bottom:0.35em;}
+	#bl .bl-ohelp .bl-o3d {opacity:0.85;}
+	@media (max-height:420px) {#bl .bl-ohit {width:64px;height:64px;} #bl .bl-opow {top:58px;bottom:80px;width:40px;} #bl .bl-otop button {min-width:38px;min-height:38px;}}
+	/* with a mouse, the full controls sit under the table: on-table power / HIT / spin only in Fill window and full screen */
+	@media (pointer:fine) {
+		#bl .bl-view:not(.mes-pfill) .bl-opow, #bl .bl-view:not(.mes-pfill) .bl-ohit, #bl .bl-view:not(.mes-pfill) .bl-ospin, #bl .bl-view:not(.mes-pfill) .bl-ospinpop {display:none;}
+	}

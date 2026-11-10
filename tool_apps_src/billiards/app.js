@@ -571,8 +571,15 @@
 		if (d === "3d" && !window.BL3D) d = "2d";
 		S.dim = d; save(); segSet("bl-dim", d);
 		$("bl-cam").hidden = $("bl-room").hidden = d !== "3d";
-		if (d === "2d") { box3.hidden = true; cv.hidden = false; relayout(); return; }
-		if (v3) { box3.hidden = false; cv.hidden = true; relayout(); return; }
+		ovDim();
+		if (d === "2d") {
+			if (v3 && !box3.hidden) {   // ease the 3D camera up to straight above, then fade over to the flat table
+				v3.forceTop = true; draw();
+				setTimeout(function () { fadeSwap(cv, box3, function () { v3.forceTop = false; relayout(); }); }, 420);
+			} else { box3.hidden = true; cv.hidden = false; relayout(); }
+			return;
+		}
+		if (v3) { fadeSwap(box3, cv, function () { relayout(); v3.flyFromTop(); draw(); }); return; }
 		if (v3busy) return;
 		v3busy = true;
 		box3.hidden = false; cv.hidden = true;
@@ -586,12 +593,22 @@
 			v3.roomName = S.room;
 			addHint();
 			relayout();
+			v3.flyFromTop(); draw();
 		}, function (e) {
 			v3busy = false; box3.innerHTML = ""; box3.hidden = true; cv.hidden = false;
 			S.dim = "2d"; save(); segSet("bl-dim", "2d"); $("bl-cam").hidden = $("bl-room").hidden = true;
 			if (!quiet) toast("The 3D view could not start (" + ((e && e.message) || "no WebGL") + "). Showing 2D.");
 			relayout();
 		});
+	}
+	function fadeSwap(showEl, hideEl, after) {
+		hideEl.classList.add("is-fade");
+		setTimeout(function () {
+			hideEl.hidden = true; hideEl.classList.remove("is-fade");
+			showEl.classList.add("is-fade"); showEl.hidden = false;
+			if (after) after();
+			requestAnimationFrame(function () { requestAnimationFrame(function () { showEl.classList.remove("is-fade"); }); });
+		}, 200);
 	}
 	function addHint() {
 		var h = document.createElement("div"); h.className = "bl-3dhint";
@@ -734,6 +751,72 @@
 		bar.addEventListener("pointerup", function () { dg = null; });
 	})();
 
+	/* ===================================================================== on-table controls (phones, Fill window, full screen) ===================================================================== */
+	var ov = document.createElement("div");
+	ov.className = "bl-ov"; ov.id = "bl-ov";
+	ov.innerHTML = '<div class="bl-otop"><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
+		'<div class="bl-opow" id="bl-opow" role="slider" aria-label="Power: drag down to pull the cue back, let go to shoot" aria-valuemin="1" aria-valuemax="100"><div class="bl-opowfill" id="bl-opowfill"></div><span class="bl-opowt">PULL<br>↓</span><span class="bl-opowv" id="bl-opowv"></span></div>' +
+		'<button type="button" class="bl-ospin" id="bl-ospin" title="Spin: where the cue hits the white ball"><canvas class="bl-spincv" width="96" height="96"></canvas></button>' +
+		'<button type="button" class="bl-ohit" id="bl-ohit" title="Tap to shoot at the set power, or hold to charge the power and let go">HIT<small>hold = charge</small></button>' +
+		'<div class="bl-ospinpop" id="bl-ospinpop" hidden><b>Spin</b><canvas class="bl-spincv" width="240" height="240"></canvas><span id="bl-ospinlab"></span><div class="bl-ospinbtns"><button type="button" data-sp="0,0">Centre</button><button type="button" data-sp="0,60">Follow</button><button type="button" data-sp="0,-60">Draw</button><button type="button" data-sp="-60,0">Left</button><button type="button" data-sp="60,0">Right</button><button type="button" data-sp="x">Done</button></div></div>' +
+		'<div class="bl-ohelp" id="bl-ohelp" hidden><b>How to shoot</b><ol><li><b>Aim:</b> press on the table and drag. The dotted line shows where the white ball goes.' + '<span class="bl-o3d"> In 3D behind the cue, drag sideways to aim and up / down to look higher or lower.</span></li>' +
+		'<li><b>Power:</b> pull the bar on the right <b>down</b> (like pulling the cue back) and <b>let go to shoot</b>. Or <b>hold HIT</b>: the power goes up and down, let go when it is right. A quick tap on HIT shoots at the power already set.</li>' +
+		'<li><b>Spin:</b> tap the little white ball (bottom left). Top = the white ball keeps rolling after the hit, bottom = it comes back, sides = side spin off the cushions.</li>' +
+		'<li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
+	stage.appendChild(ov);
+	drawSpin();
+	function ovDim() { if (!ov) return; var b = ov.querySelector('[data-ov="dim"]'); if (b) b.textContent = S.dim === "3d" ? "2D" : "3D"; ov.querySelector('[data-ov="cam"]').hidden = S.dim !== "3d"; }
+	ovDim();
+	function showHelp(on) { $("bl-ohelp").hidden = !on; if (!on) { S.helpSeen = 1; save(); } }
+	ov.addEventListener("click", function (e) {
+		var b = e.target.closest("[data-ov]"); if (!b) return;
+		var a = b.getAttribute("data-ov");
+		if (a === "dim") setDim(S.dim === "3d" ? "2d" : "3d");
+		else if (a === "cam") cycleCam();
+		else if (a === "help") showHelp($("bl-ohelp").hidden);
+		else if (a === "helpok") showHelp(false);
+		else if (a === "fill") panelBtn(0);
+	});
+	// the vertical power bar: drag down = more power, let go = shoot
+	var opow = $("bl-opow"), opDrag = false;
+	function opowFrom(e) { var r = opow.getBoundingClientRect(); power = Math.max(10, Math.min(1000, (e.clientY - r.top) / r.height * 1000)); renderPower(); need(); }
+	opow.addEventListener("pointerdown", function (e) { ensureAudio(); if (!canShoot()) return; opDrag = true; opow.classList.add("is-drag"); opow.setPointerCapture(e.pointerId); opowFrom(e); e.preventDefault(); e.stopPropagation(); });
+	opow.addEventListener("pointermove", function (e) { if (opDrag) opowFrom(e); });
+	opow.addEventListener("pointerup", function () { if (!opDrag) return; opDrag = false; opow.classList.remove("is-drag"); S.power = Math.round(power); save(); if (S.rel && canShoot() && power > 15) shoot(); });
+	opow.addEventListener("pointercancel", function () { opDrag = false; opow.classList.remove("is-drag"); });
+	// HIT: a tap shoots, holding charges (the power swings up and down) and letting go shoots
+	var hit = $("bl-ohit"), ch = null;
+	hit.addEventListener("pointerdown", function (e) {
+		ensureAudio();
+		if (anim) { skipAnim(); return; }
+		if (!canShoot()) return;
+		hit.setPointerCapture(e.pointerId); e.preventDefault();
+		ch = { t0: performance.now(), on: false };
+		ch.timer = setTimeout(function () {
+			if (!ch) return;
+			ch.on = true; ch.start = performance.now(); hit.classList.add("is-charge");
+			var tick = function () { if (!ch || !ch.on) return; var ph = ((performance.now() - ch.start) / 1500) % 2; power = 20 + 980 * (ph < 1 ? ph : 2 - ph); renderPower(); need(); requestAnimationFrame(tick); };
+			tick();
+		}, 230);
+	});
+	function hitEnd(fire) { if (!ch) return; clearTimeout(ch.timer); ch = null; hit.classList.remove("is-charge"); if (fire && canShoot()) { S.power = Math.round(power); save(); shoot(); } }
+	hit.addEventListener("pointerup", function () { hitEnd(true); });
+	hit.addEventListener("pointercancel", function () { hitEnd(false); });
+	// spin: the small ball opens a big picker
+	var spop = $("bl-ospinpop");
+	$("bl-ospin").addEventListener("click", function () { spop.hidden = !spop.hidden; drawSpin(); });
+	var bigSpin = spop.querySelector("canvas"), bsDrag = false;
+	bigSpin.addEventListener("pointerdown", function (e) { if (!canShoot()) return; bsDrag = true; bigSpin.setPointerCapture(e.pointerId); spinFrom(e, bigSpin); e.preventDefault(); });
+	bigSpin.addEventListener("pointermove", function (e) { if (bsDrag) spinFrom(e, bigSpin); });
+	bigSpin.addEventListener("pointerup", function () { bsDrag = false; });
+	spop.addEventListener("click", function (e) {
+		var b = e.target.closest("[data-sp]"); if (!b) return;
+		var v = b.getAttribute("data-sp");
+		if (v === "x") { spop.hidden = true; return; }
+		var p = v.split(","); spin = { x: +p[0], y: +p[1] }; drawSpin(); need();
+	});
+	if (!S.helpSeen) setTimeout(function () { showHelp(true); }, 600);
+
 	/* ===================================================================== input ===================================================================== */
 	var drag = null;
 	function evXY(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
@@ -799,6 +882,7 @@
 		var pc = Math.max(1, Math.round(power / 10));
 		$("bl-powfill").style.width = (power / 10) + "%"; $("bl-powknob").style.left = (power / 10) + "%";
 		$("bl-powv").textContent = pc + "%"; pow.setAttribute("aria-valuenow", pc);
+		var of = $("bl-opowfill"); if (of) { of.style.height = (power / 10) + "%"; $("bl-opowv").textContent = pc + "%"; }
 	}
 	function powFrom(e) { var r = pow.getBoundingClientRect(); power = Math.max(10, Math.min(1000, (e.clientX - r.left) / r.width * 1000)); renderPower(); need(); }
 	pow.addEventListener("pointerdown", function (e) { ensureAudio(); if (!canShoot() && !cpuAim) { if (!canShoot()) return; } powDrag = true; pow.classList.add("is-drag"); pow.setPointerCapture(e.pointerId); powFrom(e); e.preventDefault(); });
@@ -818,7 +902,16 @@
 	/* spin */
 	var spinCv = $("bl-spin"), sctx = spinCv.getContext("2d"), spinDrag = false;
 	function drawSpin() {
-		var g = sctx, W = spinCv.width, m = W / 2, R = W * 0.44;
+		[spinCv].concat(Array.prototype.slice.call(root.querySelectorAll(".bl-spincv"))).filter(Boolean).forEach(drawSpinOn);
+		var lab = [];
+		if (spin.y > 8) lab.push("Follow " + Math.round(spin.y) + "%"); else if (spin.y < -8) lab.push("Draw " + Math.round(-spin.y) + "%");
+		if (spin.x > 8) lab.push("Right " + Math.round(spin.x) + "%"); else if (spin.x < -8) lab.push("Left " + Math.round(-spin.x) + "%");
+		var txt = lab.length ? lab.join(", ") : "Centre (no spin)";
+		$("bl-spinl").textContent = txt;
+		var pl = $("bl-ospinlab"); if (pl) pl.textContent = txt;
+	}
+	function drawSpinOn(cvs) {
+		var g = cvs.getContext("2d"), W = cvs.width, m = W / 2, R = W * 0.44;
 		g.clearRect(0, 0, W, W);
 		var gr = g.createRadialGradient(m - R * 0.35, m - R * 0.4, R * 0.1, m, m, R);
 		gr.addColorStop(0, "#ffffff"); gr.addColorStop(1, "#c9ccd1");
@@ -830,13 +923,9 @@
 		var px = m + spin.x / 100 * R * 0.88, py = m - spin.y / 100 * R * 0.88;
 		g.fillStyle = "#e03131"; g.beginPath(); g.arc(px, py, W * 0.075, 0, 7); g.fill();
 		g.strokeStyle = "#fff"; g.lineWidth = 2; g.stroke();
-		var lab = [];
-		if (spin.y > 8) lab.push("Follow " + Math.round(spin.y) + "%"); else if (spin.y < -8) lab.push("Draw " + Math.round(-spin.y) + "%");
-		if (spin.x > 8) lab.push("Right " + Math.round(spin.x) + "%"); else if (spin.x < -8) lab.push("Left " + Math.round(-spin.x) + "%");
-		$("bl-spinl").textContent = lab.length ? lab.join(", ") : "Centre (no spin)";
 	}
-	function spinFrom(e) {
-		var r = spinCv.getBoundingClientRect(), R = r.width * 0.44 * 0.88;
+	function spinFrom(e, el) {
+		var r = (el || spinCv).getBoundingClientRect(), R = r.width * 0.44 * 0.88;
 		var x = (e.clientX - r.left - r.width / 2) / R * 100, y = -(e.clientY - r.top - r.height / 2) / R * 100, d = Math.hypot(x, y);
 		if (d > 100) { x = x / d * 100; y = y / d * 100; }
 		spin = { x: Math.trunc(x), y: Math.trunc(y) };
@@ -971,6 +1060,7 @@
 		$("bl-new").disabled = mode === "online" || mode === "hive";
 		$("bl-replay").disabled = !lastShow;
 		cv.classList.toggle("is-wait", !can);
+		if (ov) { ov.classList.toggle("is-wait", !can && !anim); $("bl-ohit").firstChild.nodeValue = anim ? "SKIP" : "HIT"; }
 		var sv = $("bl-hsave"), saveable = st.win && (mode === "cpu" || mode === "local" || mode === "solo") && st.win.p >= 0 && st.win.why !== "resign";
 		var key = st.v + ":" + st.seed + ":" + st.hist.length;
 		sv.hidden = !saveable; sv.disabled = !!S.saved[key];
@@ -1095,7 +1185,7 @@
 	/* ---------- rules ---------- */
 	function renderRules() {
 		var R = [
-			["How to play here", "<ul><li><b>Aim</b>: press on the table and drag; the cue follows your finger or mouse. Dragging far from the cue ball gives finer aim. The ⟲ ⟳ buttons and the arrow keys turn it a hair at a time.</li><li><b>Power</b>: drag along the power bar and let go to shoot (or press Shoot / Space).</li><li><b>Spin</b>: drag the red dot on the little white ball. Top = follow (the cue ball keeps rolling after the hit), bottom = draw (it comes back), left / right = side spin, which changes how it comes off the cushions.</li><li><b>Ball in hand</b>: drag the white ball to where you want it, then aim.</li><li><b>The guide</b>: the dotted line shows where the cue ball goes, the circle where it touches the first ball, the yellow line where that ball goes and the blue line where the cue ball heads off (before spin). A red circle means that ball is not allowed first.</li></ul>"],
+			["How to play here", "<ul><li><b>On a phone or in Fill window / full screen</b> the controls are on the table: pull the power bar on the right <b>down</b> and let go to shoot, or <b>hold HIT</b> (the power swings up and down) and let go; tap the little white ball for spin; 2D / 3D, camera and help sit top right.</li><li><b>Aim</b>: press on the table and drag; the cue follows your finger or mouse. Dragging far from the cue ball gives finer aim. The ⟲ ⟳ buttons and the arrow keys turn it a hair at a time.</li><li><b>Power</b>: drag along the power bar and let go to shoot (or press Shoot / Space).</li><li><b>Spin</b>: drag the red dot on the little white ball. Top = follow (the cue ball keeps rolling after the hit), bottom = draw (it comes back), left / right = side spin, which changes how it comes off the cushions.</li><li><b>Ball in hand</b>: drag the white ball to where you want it, then aim.</li><li><b>The guide</b>: the dotted line shows where the cue ball goes, the circle where it touches the first ball, the yellow line where that ball goes and the blue line where the cue ball heads off (before spin). A red circle means that ball is not allowed first.</li></ul>"],
 			["8-ball", "<ul><li>The first player breaks from behind the head string. If balls go in on the break the player carries on; the table stays <b>open</b>.</li><li>On an open table, the first ball you pot decides your group: <b>solids</b> (1-7) or <b>stripes</b> (9-15).</li><li>You must hit a ball of your group first, then pot one of your group or make any ball touch a cushion. Pot one of yours and you play again.</li><li>When your group is cleared, pot the <b>8</b> to win. Pot the 8 early, or in the same shot as a foul, and you lose. The 8 going in on the break is put back on its spot.</li><li><b>Fouls</b> (the cue ball goes in, no ball hit, the wrong ball first, no cushion after the hit) give the other player <b>ball in hand</b> anywhere on the table.</li><li>Here the shot is not called: any legal pot counts.</li></ul>"],
 			["9-ball and 10-ball", "<ul><li>Always hit the <b>lowest numbered</b> ball on the table first. Any ball you pot after a legal hit keeps you at the table.</li><li>Pot the 9 (10 in 10-ball) on a legal shot, even in a combination or on the break, and you win.</li><li>A foul gives the other player ball in hand anywhere; a 9 or 10 potted on a foul goes back on its spot.</li><li>No push-out and no three-foul rule here.</li></ul>"],
 			["Snooker", "<ul><li>15 reds (1 point each) and six colours: yellow 2, green 3, brown 4, blue 5, pink 6, black 7. Break off from the D.</li><li>Pot a red, then any colour (the colour you hit first is the one you nominate), then a red, and so on. Colours potted while reds remain come back on their spots.</li><li>When the reds are gone, pot the colours in order: yellow, green, brown, blue, pink, black.</li><li><b>Fouls</b> give the other player at least 4 points (or the value of the ball involved, up to 7): hitting the wrong ball first, potting a ball that isn't on, the cue ball going in, missing everything. After a foul the next player plays from where the cue ball stopped, or from the D if it went in.</li><li>The frame ends when the black goes in; a foul with only the black left also ends it. If the scores are level the black is re-spotted.</li><li>Not modelled here: free ball, the miss rule, touching balls and conceding (use New game).</li></ul>"],

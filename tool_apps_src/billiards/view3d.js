@@ -234,6 +234,13 @@
 		this.tilt = Math.max(-0.27, Math.min(1.15, (this.tilt || 0) + dr)); this.render();
 	};
 	View.prototype.reset = function () { this.tilt = 0; this.zoomF = 1; this.orb = { th: -2.2, ph: 0.85, d: 3.2 }; this.render(); };
+	/** start the camera from straight above (then it eases to the chosen view): a smooth way in from 2D */
+	View.prototype.flyFromTop = function () {
+		var keep = this.forceTop; this.forceTop = true;
+		var t = this.camTarget(); this.forceTop = keep;
+		this.cur.eye.copy(t.eye); this.cur.look.copy(t.look); this.cur.up.copy(t.up);
+		this.render();
+	};
 	View.prototype.frame = function (info) { this.info = info; this.render(); };
 	View.prototype.pick = function (cx, cy) {
 		if (!this.T) return null;
@@ -253,6 +260,7 @@
 		var c0 = I && I.c0 ? I.c0 : [-L / 4, 0], d = I && I.dir ? I.dir : [1, 0], R = T.R;
 		var portrait = this.w < this.h * 0.95;
 		if (mode === "auto") mode = I && I.phase === "anim" ? "overview" : "behind";
+		if (this.forceTop) mode = "overhead";
 		if (mode === "behind") {
 			// tilt: the camera's angle above the cloth (about 17 degrees by default; dragging up / down changes it)
 			var ph = Math.max(0.03, Math.min(1.45, 0.297 + (this.tilt || 0))), rad = 0.889 * z * (1 + 0.35 * Math.max(0, ph - 0.297));
