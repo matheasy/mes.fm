@@ -753,7 +753,7 @@
 },
 "/seo":{
 "added":"2026-10-23",
-"updated":"2026-10-24",
+"updated":"2026-11-09",
 "type":"Tool"
 },
 "/shapes-calculator":{
@@ -823,7 +823,7 @@
 },
 "/stats":{
 "added":"2026-09-24",
-"updated":"2026-11-07",
+"updated":"2026-11-09",
 "type":"Tool"
 },
 "/stopwatch":{

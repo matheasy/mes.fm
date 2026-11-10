@@ -884,6 +884,7 @@
         legend.push('<span class="gs-lchip" style="--lc:' + l.c + '"><i class="gs-key" style="border-color:' + l.c + '"></i>' + esc(lname(l)) +
           '<button type="button" data-lrm="' + esc(lkey(l)) + '" aria-label="Remove the line for ' + esc(lname(l)) + '" title="Remove">×</button></span>');
       });
+      if (LINES.length) legend.push('<button type="button" class="gs-lchip gs-lchip--tot gs-lclear" data-lclear title="Untick every row and show the totals again">✕ Clear ' + (LINES.length > 1 ? 'all ' + LINES.length : 'line') + '</button>');
     }
     // x labels
     var every = Math.ceil(xs.length / Math.max(2, Math.floor(iw / (model.hourly ? 46 : 60))));
@@ -984,10 +985,17 @@
     if (a && window.MESNotes) window.MESNotes.edit(a.dataset.nd);
     if (b && window.MESNotes) window.MESNotes.edit(null, b.dataset.nid);
   });
+  // untick every row: removes all row lines and brings the totals back
+  function clearLines() {
+    LINES = []; saveLines();
+    if (HIDETOT) { HIDETOT = false; SAVE('hidetot', '0'); }
+    renderTable(false); drawChart();
+  }
   $('gs-legend').addEventListener('click', function (e) {
     var rm = e.target.closest('button[data-lrm]'), tot = e.target.closest('button[data-tot]');
     if (rm) { LINES = LINES.filter(function (l) { return lkey(l) !== rm.dataset.lrm; }); saveLines(); renderTable(false); drawChart(); }
     if (tot) { HIDETOT = !HIDETOT; SAVE('hidetot', HIDETOT ? '1' : '0'); drawChart(); }
+    if (e.target.closest('button[data-lclear]')) clearLines();
     if (e.target.closest('button[data-rest]')) { REST = !REST; SAVE('rest', REST ? '1' : '0'); drawChart(); }
   });
   (function notesHook() {
@@ -1039,6 +1047,13 @@
     function set(o) { open = o; l.hidden = !o; s.hidden = o; b.setAttribute('aria-expanded', o ? 'true' : 'false'); b.classList.toggle('on', o); }
     b.addEventListener('click', function () { set(!open); try { localStorage.setItem('mes-gsc:tnote', open ? '1' : '0'); } catch (e) {} });
     el.appendChild(s); el.appendChild(l); el.appendChild(document.createTextNode(' ')); el.appendChild(b);
+    if (LINES.length && TSRC === 'google') {
+      var c = document.createElement('button'); c.type = 'button'; c.className = 'tu-chip gs-tn-clear';
+      c.textContent = '✕ Untick ' + (LINES.length > 1 ? 'all ' + LINES.length : 'row');
+      c.title = 'Untick every row (removes their lines from the chart)';
+      c.addEventListener('click', clearLines);
+      el.appendChild(document.createTextNode(' ')); el.appendChild(c);
+    }
     set(open);
   }
   function renderTable(resetPage) {
