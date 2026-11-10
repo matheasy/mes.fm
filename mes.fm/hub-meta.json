@@ -28,7 +28,7 @@
 },
 "/alarm-clock":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/archive":{
@@ -193,12 +193,12 @@
 },
 "/countdown-timer":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/countdown-to-date":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/crash-physics":{
@@ -443,7 +443,7 @@
 },
 "/interval-timer":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/julia-set-explorer":{
@@ -678,7 +678,7 @@
 },
 "/pomodoro-timer":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/practice-tests":{
@@ -858,7 +858,7 @@
 },
 "/stopwatch":{
 "added":"2026-10-06",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/storage":{
@@ -913,7 +913,7 @@
 },
 "/timer":{
 "added":"2026-08-31",
-"updated":"2026-11-06",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/timezone":{

@@ -598,9 +598,9 @@
 	}
 	function dpCtl(key) {
 		var m = /^([tsa]):(.+)$/.exec(key), n;
-		if (m && m[1] === "t") { var t = findTimer(m[2]); if (!t) return ""; return [["go", t.st === "run" ? "Pause" : t.st === "pause" ? "Resume" : t.st === "done" ? "Restart" : "Start"], ["add1", "+1 min"], ["reset", "Reset"]].map(ctlBtn).join(""); }
+		if (m && m[1] === "t") { var t = findTimer(m[2]); if (!t) return ""; return [["go", t.st === "run" ? "Pause" : t.st === "pause" ? "Resume" : t.st === "done" ? "Restart" : "Start"], ["add1", "+1 min"], ["edit", "\u270e Adjust"], ["reset", "Reset"]].map(ctlBtn).join(""); }
 		if (m && m[1] === "s") { var w = findSw(m[2]); if (!w) return ""; return [["go", w.st === "run" ? "Pause" : w.st === "pause" ? "Resume" : "Start"], ["lap", "Lap"], ["reset", "Reset"]].map(ctlBtn).join(""); }
-		if (m && m[1] === "a") { var a = findAlarm(m[2]); return a ? ctlBtn(["go", a.on ? "Turn off" : "Turn on"]) + ctlBtn(["cd", a.cd ? "Hide countdown" : "Show countdown"]) : ""; }
+		if (m && m[1] === "a") { var a = findAlarm(m[2]); return a ? ctlBtn(["go", a.on ? "Turn off" : "Turn on"]) + ctlBtn(["edit", "\u270e Change time"]) + ctlBtn(["cd", a.cd ? "Hide countdown" : "Show countdown"]) : ""; }
 		if (key === "po") return [["go", S.po.st === "run" ? "Pause" : S.po.st === "pause" ? "Resume" : "Start"], ["skip", "Skip"], ["reset", "Reset"]].map(ctlBtn).join("");
 		if (key === "iv") return [["go", S.iv.st === "run" ? "Pause" : S.iv.st === "pause" ? "Resume" : "Start"], ["reset", "Reset"]].map(ctlBtn).join("");
 		return "";
@@ -608,6 +608,7 @@
 	function ctlBtn(x) { return '<button type="button" data-act="' + x[0] + '">' + x[1] + "</button>"; }
 	function dpAct(key, act) {
 		var m = /^([tsa]):(.+)$/.exec(key), now = Date.now(); unlock();
+		if (act === "edit") { openEd(key); return; }
 		if (m && m[1] === "t") {
 			var t = findTimer(m[2]); if (!t) return;
 			if (act === "go") { if (t.st === "run") { t.rem = Math.max(0, t.end - now); t.st = "pause"; } else { if (t.st === "idle" || t.st === "done") { if (t.total <= 0) { toast("Set a time first"); return; } t.rem = t.total; } t.end = now + t.rem; t.st = "run"; } }
@@ -637,6 +638,99 @@
 		}
 		updateAwake(); updateTitle(); save(); renderDisplay();
 	}
+	/* ---------- adjust a timer / alarm without leaving the display ---------- */
+	var edKey = "";
+	function edFmt(ms) { return plain(ms, true); }
+	function edNow() {
+		var m = /^([ta]):(.+)$/.exec(edKey || ""); if (!m) return null;
+		if (m[1] === "t") { var t = findTimer(m[2]); return t ? { t: t } : null; }
+		var a = findAlarm(m[2]); return a ? { a: a } : null;
+	}
+	function openEd(key) {
+		if (!/^[ta]:/.test(key || "")) return;
+		edKey = key; var o = edNow(); if (!o) { edKey = ""; return; }
+		closePick(); var el = $("tm-dp-ed"), h;
+		var nb = function (d, txt) { return '<button type="button" data-ed="n" data-d="' + d + '">' + txt + "</button>"; };
+		if (o.t) {
+			var t = o.t, i = S.timers.indexOf(t);
+			h = '<div class="tm-dp__pt">Adjust ' + esc(t.label || "Timer " + (i + 1)) + '<button type="button" class="tm-dp__px" data-ed="x" aria-label="Close" title="Close (Esc)">✕</button></div>' +
+				'<div class="tm-ed__now"><span data-edl></span> <b data-edv></b></div>' +
+				'<div class="tm-ed__row tm-ed__nudge">' + nb(-300000, "−5 min") + nb(-60000, "−1 min") + nb(-10000, "−10 s") + nb(10000, "+10 s") + nb(60000, "+1 min") + nb(300000, "+5 min") + "</div>" +
+				'<label class="tm-ed__lab">Set to <input type="text" data-edin inputmode="text" autocomplete="off" placeholder="e.g. 25, 1:30, 1h 15m" aria-label="New time"></label>' +
+				'<div class="tm-ed__row tm-ed__pre">' + [1, 2, 5, 10, 15, 20, 25, 30, 45, 60].map(function (n) { return '<button type="button" data-ed="p" data-v="' + n * 60000 + '">' + (n === 60 ? "1 h" : n + " min") + "</button>"; }).join("") + "</div>" +
+				'<label class="tm-ed__lab">Label <input type="text" data-edlabel maxlength="60" autocomplete="off" value="' + esc(t.label) + '" placeholder="Timer ' + (i + 1) + '"></label>' +
+				'<div class="tm-ed__row tm-ed__end"><button type="button" class="tm-ed__go" data-ed="set">Set</button><button type="button" data-ed="x">Done</button></div>' +
+				'<p class="tm-ed__hint">Changes apply right away, even while it runs. Enter = Set, Esc = close.</p>';
+		} else {
+			var a = o.a, j = S.alarms.indexOf(a);
+			h = '<div class="tm-dp__pt">Change ' + esc(a.label || "Alarm " + (j + 1)) + '<button type="button" class="tm-dp__px" data-ed="x" aria-label="Close" title="Close (Esc)">✕</button></div>' +
+				'<div class="tm-ed__now"><span data-edl></span> <b data-edv></b></div>' +
+				'<label class="tm-ed__lab">Ring at <input type="time" data-edtime value="' + esc(a.time) + '" aria-label="Alarm time"></label>' +
+				'<div class="tm-ed__row tm-ed__nudge">' + nb(-60, "−1 h") + nb(-5, "−5 min") + nb(-1, "−1 min") + nb(1, "+1 min") + nb(5, "+5 min") + nb(60, "+1 h") + "</div>" +
+				'<div class="tm-ed__row tm-ed__pre"><button type="button" data-ed="in" data-v="5">In 5 min</button><button type="button" data-ed="in" data-v="15">In 15 min</button><button type="button" data-ed="in" data-v="30">In 30 min</button><button type="button" data-ed="in" data-v="60">In 1 h</button></div>' +
+				'<label class="tm-ed__lab">Label <input type="text" data-edlabel maxlength="60" autocomplete="off" value="' + esc(a.label) + '" placeholder="Alarm ' + (j + 1) + '"></label>' +
+				'<label class="tm-ed__chk"><input type="checkbox" data-eddaily' + (a.daily ? " checked" : "") + '> Every day</label>' +
+				'<div class="tm-ed__row tm-ed__end"><button type="button" class="tm-ed__go" data-ed="on">' + (a.on ? "Done" : "Turn on") + '</button>' + (a.on ? '<button type="button" data-ed="off">Turn off</button>' : '<button type="button" data-ed="x">Close</button>') + "</div>" +
+				'<p class="tm-ed__hint">The alarm moves as soon as you change the time. Esc = close.</p>';
+		}
+		el.innerHTML = h; el.hidden = false; edLive();
+		var f = el.querySelector("[data-edin], [data-edtime]"); if (f) { try { f.focus({ preventScroll: true }); } catch (x) { f.focus(); } }
+		if (!el._w) {
+			el._w = 1;
+			el.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.matches("[data-edin]")) { e.preventDefault(); edSet(); } else if (e.key === "Enter" && e.target.matches("input[type=text], input[type=time]")) { e.preventDefault(); closeEd(); } });
+			el.addEventListener("input", function (e) {
+				var o = edNow(); if (!o) return;
+				if (e.target.matches("[data-edlabel]")) { (o.t || o.a).label = e.target.value.slice(0, 60); dpKeys = ""; edDone(); }
+				else if (e.target.matches("[data-edtime]") && e.target.value) { o.a.time = e.target.value; if (o.a.on) { o.a.at = TM.nextAlarm(o.a.time, new Date()); o.a.snooze = 0; } edDone(); }
+			});
+			el.addEventListener("change", function (e) { var o = edNow(); if (o && o.a && e.target.matches("[data-eddaily]")) { o.a.daily = e.target.checked; edDone(); } });
+		}
+	}
+	function closeEd() { var el = $("tm-dp-ed"); if (el && !el.hidden) { el.hidden = true; el.innerHTML = ""; edKey = ""; return true; } edKey = ""; return false; }
+	function edDone() { if (S.timers.length) renderTimers(); if (S.alarms.length) renderAlarms(); updateAwake(); updateTitle(); save(); renderDisplay(); }
+	function edTimerSet(t, ms, rel) {
+		var now = Date.now(), cur = remaining(t);
+		if (rel) ms = cur + ms;
+		ms = Math.max(1000, Math.min(ms, 100 * 3600000 - 1000));
+		if (t.st === "done") { clearRingFor("t", t.id); t.st = "idle"; }
+		if (t.st === "run") { t.end = now + ms; t.total = rel ? Math.max(ms, t.total + (ms - cur)) : ms; }
+		else if (t.st === "pause") { t.rem = ms; t.total = rel ? Math.max(ms, t.total + (ms - cur)) : ms; }
+		else { t.total = t.rem = ms; }
+	}
+	function edAlarmShift(a, mins) {
+		var hm = (a.time || new Date().toTimeString().slice(0, 5)).split(":"), tot = ((+hm[0] * 60 + +hm[1] + mins) % 1440 + 1440) % 1440;
+		a.time = TM.pad(Math.floor(tot / 60)) + ":" + TM.pad(tot % 60);
+		if (a.on) { a.at = TM.nextAlarm(a.time, new Date()); a.snooze = 0; }
+		var f = document.querySelector("#tm-dp-ed [data-edtime]"); if (f) f.value = a.time;
+	}
+	function edSet() {
+		var o = edNow(), f = document.querySelector("#tm-dp-ed [data-edin]"); if (!o || !o.t || !f) return;
+		var ms = TM.parseDuration(f.value); if (ms == null || ms <= 0) { toast("Type a time such as 25, 1:30 or 1h 15m"); f.focus(); return; }
+		edTimerSet(o.t, ms, false); f.value = ""; edDone(); toast("Set to " + edFmt(ms));
+	}
+	function edClick(e) {
+		var b = e.target.closest("[data-ed]"); if (!b) return; unlock();
+		var o = edNow(), k = b.dataset.ed; if (k === "x") { closeEd(); return; } if (!o) { closeEd(); return; }
+		if (o.t) {
+			if (k === "n") edTimerSet(o.t, +b.dataset.d, true);
+			else if (k === "p") edTimerSet(o.t, +b.dataset.v, false);
+			else if (k === "set") { edSet(); return; }
+		} else {
+			var a = o.a;
+			if (k === "n") edAlarmShift(a, +b.dataset.d);
+			else if (k === "in") { var d = new Date(Date.now() + (+b.dataset.v) * 60000); a.time = TM.pad(d.getHours()) + ":" + TM.pad(d.getMinutes()); a.on = true; a.snooze = 0; a.at = TM.nextAlarm(a.time, new Date()); var f = document.querySelector("#tm-dp-ed [data-edtime]"); if (f) f.value = a.time; }
+			else if (k === "on") { if (!a.on) { if (!a.time) { toast("Pick a time first"); return; } a.on = true; a.snooze = 0; a.at = TM.nextAlarm(a.time, new Date()); } edDone(); closeEd(); return; }
+			else if (k === "off") { a.on = false; a.at = 0; a.snooze = 0; clearRingFor("a", a.id); edDone(); closeEd(); return; }
+		}
+		edDone();
+	}
+	function edLive() {
+		if (!edKey) return; var el = $("tm-dp-ed"); if (!el || el.hidden) return; var o = edNow(); if (!o) { closeEd(); return; }
+		var l = el.querySelector("[data-edl]"), v = el.querySelector("[data-edv]"), lt, vt;
+		if (o.t) { lt = o.t.st === "run" ? "Time left:" : o.t.st === "pause" ? "Paused at:" : "Starts from:"; vt = edFmt(remaining(o.t)); }
+		else { var nx = o.a.on ? alarmNext(o.a) : 0; lt = nx ? "Rings in:" : "Alarm is off"; vt = nx ? TM.human(nx - Date.now()) : ""; }
+		if (l.textContent !== lt) l.textContent = lt; if (v.textContent !== vt) v.textContent = vt;
+	}
 	function dpSelected(items) {
 		if (!S.display) return items.filter(function (i) { return i.state === "run" || i.state === "pause" || i.state === "done"; }).map(function (i) { return i.key; }).concat(items.filter(function (i) { return i.state === "idle" && /^[ts]:/.test(i.key); }).map(function (i) { return i.key; }).slice(0, 0));
 		return S.display;
@@ -644,13 +738,15 @@
 	function ensureDisplay() {
 		var el = $("tm-dp"); if (el) return el;
 		el = document.createElement("div"); el.id = "tm-dp"; el.className = "tm-dp"; el.hidden = true; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Timer display");
-		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn tm-dp__snd" data-d="snd" aria-pressed="false"></button><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__ring" id="tm-dp-ring" hidden><span></span><span class="tm-dp__rb"></span></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
+		el.innerHTML = '<div class="tm-dp__bar"><span class="tm-dp__hint" id="tm-dp-hint"></span><button type="button" class="tm-dp__btn tm-dp__snd" data-d="snd" aria-pressed="false"></button><button type="button" class="tm-dp__btn" data-d="pick">Choose timers</button><button type="button" class="tm-dp__btn" data-d="fs">⛶ Full screen</button><button type="button" class="tm-dp__btn" data-d="close">✕ Close</button></div><div class="tm-dp__ring" id="tm-dp-ring" hidden><span></span><span class="tm-dp__rb"></span></div><div class="tm-dp__pick" id="tm-dp-pick" hidden></div><div class="tm-dp__ed" id="tm-dp-ed" hidden role="dialog" aria-label="Adjust"></div><div class="tm-dp__grid" id="tm-dp-grid"></div>';
 		document.body.appendChild(el);
 		sortable($("tm-dp-grid"), ".tm-dp__tile", function (els) { var ks = []; els.forEach(function (x) { if (x.dataset.k === "alarms") ks = ks.concat((x.dataset.members || "").split(",").filter(Boolean)); else ks.push(x.dataset.k); }); S.display = ks.concat((S.display || []).filter(function (k) { return ks.indexOf(k) < 0; })); dpKeys = ""; save(); renderDisplay(); });
 		el.addEventListener("click", function (e) {
 			if (!e.target.closest('#tm-dp-pick, [data-d="pick"]')) closePick();   // a click anywhere outside the list closes it
 			var rb = e.target.closest("#tm-dp-ring [data-r]"); if (rb) { ringAct(rb.dataset.r); return; }
 			var mu = e.target.closest("[data-mute]"); if (mu) { toggleMute(mu.dataset.mute); return; }
+			if (e.target.closest("#tm-dp-ed")) { edClick(e); return; }
+			var et = e.target.closest("[data-edt]"); if (et) { var tt = et.closest(".tm-dp__tile"); openEd(et.dataset.gc || (tt && tt.dataset.k)); return; }
 			var ab = e.target.closest("[data-act]"); if (ab) { var tl = ab.closest(".tm-dp__tile"); if (tl) dpAct(ab.dataset.ak || tl.dataset.k, ab.dataset.act); return; }
 			var b = e.target.closest("[data-d]"); if (b) { if (b.dataset.d === "close") closeDisplay(); else if (b.dataset.d === "snd") toggleAllSound(); else if (b.dataset.d === "fs") toggleScreen(); else if (b.dataset.d === "pickclose") closePick(); else if (b.dataset.d === "pick") { var pk = $("tm-dp-pick"); pk.hidden = !pk.hidden; if (!pk.hidden) drawPick(); } return; }
 			if (e.target.matches("#tm-dp-pick input[type=checkbox]")) {
@@ -703,11 +799,12 @@
 		if (tile._sig !== sig) {
 			tile._sig = sig; var hero = rows[0].nx ? rows[0] : null;
 			tile.querySelector("[data-g]").innerHTML = '<div class="tm-dpg__now"><span class="tm-dpg__nl">Now</span> <span data-gnow></span></div>' +
-				(hero ? '<div class="tm-dpg__hero"><div class="tm-dp__l">' + esc(hero.i.label) + '</div><div class="tm-dpg__big" data-gc="' + esc(hero.i.key) + '"></div><div class="tm-dp__s">alarm ' + esc(hero.i.at12) + ' · next to ring</div>' + '<div class="tm-dp__ctl">' + ctlBtn(["go", "Turn off"]).replace("<button", '<button data-ak="' + esc(hero.i.key) + '"') + '</div></div>' : '<div class="tm-dpg__hero"><div class="tm-dp__l">All alarms are off</div></div>') +
-				'<div class="tm-dpg__rows">' + rows.filter(function (r) { return r !== (hero || {}); }).map(function (r) { return '<div class="tm-dpg__row' + (r.nx ? "" : " is-off") + '"><span class="tm-dpg__rl">' + esc(r.i.label) + '</span><span class="tm-dpg__rt">' + esc(r.i.at12) + '</span><span class="tm-dpg__rc" data-gc="' + esc(r.i.key) + '"></span><button type="button" data-act="go" data-ak="' + esc(r.i.key) + '">' + (r.nx ? "Turn off" : "Turn on") + '</button></div>'; }).join("") + '</div>';
+				(hero ? '<div class="tm-dpg__hero"><div class="tm-dp__l">' + esc(hero.i.label) + '</div><div class="tm-dpg__big" data-gc="' + esc(hero.i.key) + '"></div><div class="tm-dp__s">alarm ' + esc(hero.i.at12) + ' · next to ring</div>' + '<div class="tm-dp__ctl">' + ctlBtn(["go", "Turn off"]).replace("<button", '<button data-ak="' + esc(hero.i.key) + '"') + ctlBtn(["edit", "\u270e Change time"]).replace("<button", '<button data-ak="' + esc(hero.i.key) + '"') + '</div></div>' : '<div class="tm-dpg__hero"><div class="tm-dp__l">All alarms are off</div></div>') +
+				'<div class="tm-dpg__rows">' + rows.filter(function (r) { return r !== (hero || {}); }).map(function (r) { return '<div class="tm-dpg__row' + (r.nx ? "" : " is-off") + '"><span class="tm-dpg__rl">' + esc(r.i.label) + '</span><span class="tm-dpg__rt">' + esc(r.i.at12) + '</span><span class="tm-dpg__rc" data-gc="' + esc(r.i.key) + '"></span><button type="button" data-act="edit" data-ak="' + esc(r.i.key) + '" title="Change this alarm" aria-label="Change ' + esc(r.i.label) + '">\u270e</button><button type="button" data-act="go" data-ak="' + esc(r.i.key) + '">' + (r.nx ? "Turn off" : "Turn on") + '</button></div>'; }).join("") + '</div>';
 			var pk = tile.querySelector(".tm-tabpin"); if (pk) pk.remove();
 			if (hero) tile.insertAdjacentHTML("afterbegin", pinBtn(hero.i.key, "tm-tabpin--dp"));
 		}
+		var bg = tile.querySelector(".tm-dpg__big"); if (bg && !bg.hasAttribute("data-edt")) { bg.setAttribute("data-edt", ""); bg.setAttribute("role", "button"); bg.tabIndex = 0; bg.title = "Click to change this alarm"; }
 		tile.querySelector("[data-gnow]").textContent = new Date(now).toLocaleTimeString();
 		rows.forEach(function (r) { var el = tile.querySelector('[data-gc="' + r.i.key.replace(/"/g, "") + '"]'); if (el) { var v = r.nx ? alarmCd(r.a, true) : "off"; if (el.textContent !== v) el.textContent = v; } });
 	}
@@ -721,7 +818,7 @@
 			dpKeys = keys; grid.className = "tm-dp__grid tm-dp__n" + Math.min(shown.length, 9);
 			grid.innerHTML = shown.map(function (i) { var grip = shown.length > 1 ? '<button type="button" class="tm-grip" title="Drag to rearrange (or focus and use the arrow keys)" aria-label="Move ' + esc(i.label || "alarms") + ': drag, or use the arrow keys">\u283f</button>' : "";
 				if (i.kind === "AlarmGroup") return '<div class="tm-dp__tile tm-dp__group" data-k="alarms" data-members="' + esc(i.alarms.map(function (a) { return a.key; }).join(",")) + '">' + grip + muteBtn(i.alarms.map(function (a) { return a.key; }).join(",")) + '<div data-g></div></div>';
-				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + (i.kind === "Stopwatch" ? "" : muteBtn(i.key)) + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
+				return '<div class="tm-dp__tile" data-k="' + esc(i.key) + '">' + grip + pinBtn(i.key, "tm-tabpin--dp") + (i.kind === "Stopwatch" ? "" : muteBtn(i.key)) + '<div class="tm-dp__l">' + esc(i.label) + '</div><div class="tm-dp__t" data-t' + (/^[ta]:/.test(i.key) ? ' data-edt role="button" tabindex="0" title="Click to adjust"' : "") + '></div><div class="tm-dp__t2" data-t2></div><div class="tm-dp__s" data-s></div><div class="tm-dp__b"><i data-b></i></div><div class="tm-dp__ctl" data-ctl></div></div>'; }).join("");
 		}
 		shown.forEach(function (i) {
 			var tile = grid.querySelector('.tm-dp__tile[data-k="' + i.key.replace(/"/g, "") + '"]'); if (!tile) return;
@@ -731,7 +828,7 @@
 			var cl = tile.querySelector("[data-ctl]"), ch = dpCtl(i.key); if (cl._h !== ch) { cl._h = ch; cl.innerHTML = ch; }
 				var b = tile.querySelector(".tm-dp__b"); b.style.visibility = i.pct >= 0 ? "visible" : "hidden"; tile.querySelector("[data-b]").style.width = Math.max(0, Math.min(100, i.pct)).toFixed(1) + "%";
 		});
-		paintMute(); pickLive(items);
+		paintMute(); pickLive(items); edLive();
 	}
 	function openDisplay() {
 		var el = ensureDisplay(); dpOpen = true; dpKeys = ""; el.hidden = false; $("tm-dp-pick").hidden = true; document.body.classList.add("tm-dp-on");
@@ -739,8 +836,9 @@
 		renderDisplay(); drawRing(); updateDpFs(); if (S.fs === "screen") enterScreen();
 		if ("wakeLock" in navigator && !lock) navigator.wakeLock.request("screen").then(function (l) { lock = l; l.addEventListener("release", function () { lock = null; }); }, function () {});
 	}
-	function closeDisplay() { dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }
-	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dpOpen) { if (!closePick()) closeDisplay(); } else if (e.key === "Escape" && document.querySelector(".tm-fs")) toggleFull(document.querySelector(".tm-fs")); else if (e.key === "Escape" && winOn && !inScreen()) setWin(false); else if ((e.key === "d" || e.key === "D") && !/^(input|textarea|select)$/i.test(e.target.tagName || "") && !e.ctrlKey && !e.metaKey && !e.altKey) { dpOpen ? closeDisplay() : openDisplay(); } });
+	function closeDisplay() { closeEd(); dpOpen = false; var el = $("tm-dp"); if (el) el.hidden = true; document.body.classList.remove("tm-dp-on"); leaveScreen(); updateAwake(); }
+	document.addEventListener("keydown", function (e) { if (dpOpen && (e.key === "Enter" || e.key === " ") && e.target.closest && e.target.closest("[data-edt]")) { e.preventDefault(); e.stopImmediatePropagation(); var et = e.target.closest("[data-edt]"), tt = et.closest(".tm-dp__tile"); openEd(et.dataset.gc || (tt && tt.dataset.k)); return; } });
+	document.addEventListener("keydown", function (e) { if (e.key === "Escape" && dpOpen) { if (!closeEd() && !closePick()) closeDisplay(); } else if (e.key === "Escape" && document.querySelector(".tm-fs")) toggleFull(document.querySelector(".tm-fs")); else if (e.key === "Escape" && winOn && !inScreen()) setWin(false); else if ((e.key === "d" || e.key === "D") && !/^(input|textarea|select)$/i.test(e.target.tagName || "") && !e.ctrlKey && !e.metaKey && !e.altKey) { dpOpen ? closeDisplay() : openDisplay(); } });
 
 	/* ---------- full screen ---------- */
 	function inScreen() { return !!document.fullscreenElement; }
