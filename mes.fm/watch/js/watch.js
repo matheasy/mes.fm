@@ -531,6 +531,39 @@
 		if (!m || /^RD/.test(m[1])) return "";
 		return m[1];
 	};
+	/* ---------- YouTube Data API answers (signed in with Google: the person's own playlists) ---------- */
+	/* a playlistItems entry -> a list item (pv = private: YouTube never plays those on other sites; ul = unlisted), or null for a deleted video */
+	W.ytFromApi = function (pi) {
+		if (!pi) return null;
+		var sn = pi.snippet || {}, vid = (pi.contentDetails && pi.contentDetails.videoId) || (sn.resourceId && sn.resourceId.videoId) || "";
+		if (!/^[\w-]{11}$/.test(vid)) return null;
+		var ps = (pi.status && pi.status.privacyStatus) || "", title = String(sn.title || "");
+		if (title === "Deleted video" || ps === "privacyStatusUnspecified") return null;
+		var it = W.item("https://www.youtube.com/watch?v=" + vid); if (it.err) return null;
+		if (title && title !== "Private video") it.t = title.slice(0, 200);
+		var th = sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails.high || sn.thumbnails["default"]);
+		if (th && /^https:\/\//.test(th.url || "")) it.th = th.url;
+		if (ps === "private" || title === "Private video") it.pv = 1; else if (ps === "unlisted") it.ul = 1;
+		return it;
+	};
+	/* a playlists answer -> [{id, name, n, privacy, th}] */
+	W.ytListsFromApi = function (j) {
+		return ((j && j.items) || []).map(function (p) {
+			var sn = p.snippet || {}, th = sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails["default"]);
+			return { id: p.id, name: String(sn.title || "Playlist").slice(0, 80), n: (p.contentDetails && p.contentDetails.itemCount) || 0, privacy: (p.status && p.status.privacyStatus) || "", th: (th && th.url) || "" };
+		}).filter(function (p) { return /^[A-Za-z0-9_-]{10,64}$/.test(p.id || ""); });
+	};
+	/* a Google API error answer -> a plain sentence */
+	W.ytApiError = function (status, j) {
+		var e = (j && j.error) || {}, r = ((e.errors && e.errors[0]) || {}).reason || (e.details && e.details[0] && e.details[0].reason) || e.status || "";
+		if (status === 401) return "Google asks you to sign in again.";
+		if (/accessNotConfigured|SERVICE_DISABLED/i.test(r) || /has not been used|is disabled/i.test(e.message || "")) return "YouTube's API is not switched on for mes.fm yet.";
+		if (/quota/i.test(r)) return "YouTube's daily limit for mes.fm is used up. Try again tomorrow.";
+		if (/insufficientPermissions|ACCESS_TOKEN_SCOPE_INSUFFICIENT/i.test(r)) return "Google did not give access to your YouTube account. Sign in again and tick the YouTube box.";
+		if (/playlistNotFound|notFound/i.test(r)) return "YouTube could not find that playlist.";
+		if (/youtubeSignupRequired|channelNotFound/i.test(r)) return "This Google account has no YouTube channel yet.";
+		return "YouTube did not answer" + (status ? " (" + status + ")" : "") + ".";
+	};
 	/* ---------- my own named lists ---------- */
 	W.newList = function (name, items, now) { return { id: "l" + (now || Date.now()).toString(36) + Math.floor(Math.random() * 1e4).toString(36), name: String(name || "My list").slice(0, 80), items: (items || []).slice(0, W.MAX_LIST) }; };
 	W.findList = function (lists, id) { for (var i = 0; i < lists.length; i++) if (lists[i].id === id) return lists[i]; return null; };
@@ -753,11 +786,12 @@
 		function connectCloud(p) {
 			var prov = P()[p], go = function () {
 				msg("Looking for " + FNAME + " in " + NAMES[p] + "…");
-				return prov.list().then(function (files) {
+				var WDIR = p === "dropbox" ? "Watch" : "MES Apps/Watch";
+				return prov.list(WDIR).then(function (files) {
 					var f = files.filter(function (x) { return x.name === FNAME; })[0];
 					if (f) return start(p, null, f.ref, f.name);
 					// no file yet: write this browser's lists as the first copy
-					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(W.snap(api.S, true), dev())), "").then(function (w) {
+					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(W.snap(api.S, true), dev())), "", false, WDIR).then(function (w) {
 						st = { p: p, ref: w.ref, name: w.name || FNAME, ver: w.ver, base: W.snap(api.S, true), at: Date.now(), err: "", code: "" }; keep(); paint(); toast("Syncing with " + NAMES[p]);
 					});
 				}).then(function () { msg(""); }, function (e) { msg(e.message || String(e), "err"); });
@@ -924,6 +958,154 @@
 	};
 })();
 
+/* MES Watch: "Your YouTube playlists" (window.WTYouTube(api), called once by app.js).
+   Sign in with Google (Google Identity Services token client, read-only scope youtube.readonly) and bring in the person's own
+   playlists, private ones too, plus Liked videos and My uploads, through the YouTube Data API (1 quota unit per page of 50).
+   The access token lives only in this browser (localStorage "mes-watch:v1:yt" = {a, e, name}); it lasts an hour, then Google
+   asks again with one click. Nothing goes through mes.fm. Private videos come in marked (it.pv): YouTube never plays them on
+   other sites, so the player offers "Open on YouTube" for them.
+   Setup (Google Cloud project mes-copy-text, the same OAuth client as Copy Text's Google Drive sync, origin https://mes.fm):
+   APIs & Services -> enable "YouTube Data API v3". The scope is "sensitive": until Google verifies the app, sign-in shows an
+   "unverified app" warning and works for up to 100 people. window.MES_WATCH_YT overrides the client id (testing only). */
+(function () {
+	"use strict";
+	window.WTYouTube = function (api) {
+		var W = window.MESWatch, $ = function (id) { return document.getElementById(id); }, esc = api.esc, toast = api.toast;
+		var CLIENT = window.MES_WATCH_YT || "604980806442-dlqf3ur1qohoe67sc5i70qu4is9sfva9.apps.googleusercontent.com";
+		var SCOPE = "https://www.googleapis.com/auth/youtube.readonly", TK = "mes-watch:v1:yt", BASE = "https://www.googleapis.com/youtube/v3/";
+		var box = $("wt-ytacct"); if (!box) return {};
+		var lists = null, me = null, busy = "", err = "", gisP = null;
+		function tok(v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(TK) || "null"); if (v === null) localStorage.removeItem(TK); else localStorage.setItem(TK, JSON.stringify(v)); } catch (e) { return null; } }
+		function live() { var t = tok(); return t && t.a && t.e > Date.now() + 30000 ? t : null; }
+
+		function gis() {
+			if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+			return gisP || (gisP = new Promise(function (res, rej) {
+				var s = document.createElement("script"); s.src = "https://accounts.google.com/gsi/client"; s.async = true;
+				s.onload = function () { res(); }; s.onerror = function () { gisP = null; rej(new Error("Google's sign-in script did not load (a blocker may have stopped it).")); };
+				document.head.appendChild(s);
+			}));
+		}
+		/* a valid token; with ask, opens Google's window (must start inside a click) */
+		function ready(ask) {
+			var t = live(); if (t) return Promise.resolve(t.a);
+			if (!ask) return Promise.reject(new Error("Google asks you to confirm again (once an hour)."));
+			return gis().then(function () {
+				return new Promise(function (res, rej) {
+					var old = tok();
+					var c = google.accounts.oauth2.initTokenClient({ client_id: CLIENT, scope: SCOPE,
+						callback: function (j) {
+							if (j.error || !j.access_token) return rej(new Error(j.error_description || j.error || "Google sign-in failed."));
+							if (google.accounts.oauth2.hasGrantedAllScopes && !google.accounts.oauth2.hasGrantedAllScopes(j, SCOPE)) return rej(new Error("Google did not give access to your YouTube account. Sign in again and tick the YouTube box."));
+							tok({ a: j.access_token, e: Date.now() + (+j.expires_in || 3600) * 1000, name: (old && old.name) || "" }); res(j.access_token);
+						},
+						error_callback: function (e) { rej(new Error(e && e.type === "popup_failed_to_open" ? "The browser blocked Google's window: allow pop-ups for mes.fm." : "The Google window was closed.")); } });
+					c.requestAccessToken({ prompt: old ? "" : "consent" });
+				});
+			});
+		}
+		function call(path, params, ask) {
+			return ready(ask).then(function (a) {
+				var q = Object.keys(params).map(function (k) { return k + "=" + encodeURIComponent(params[k]); }).join("&");
+				return fetch(BASE + path + "?" + q, { headers: { Authorization: "Bearer " + a }, credentials: "omit" }).then(function (r) {
+					return r.json().catch(function () { return {}; }).then(function (j) {
+						if (r.ok) return j;
+						if (r.status === 401) tok(null);
+						throw new Error(W.ytApiError(r.status, j));
+					});
+				});
+			});
+		}
+		function playlistItems(id, ask) {
+			var out = [], skipped = 0;
+			function page(pt) {
+				var p = { part: "snippet,contentDetails,status", playlistId: id, maxResults: 50 }; if (pt) p.pageToken = pt;
+				return call("playlistItems", p, ask).then(function (j) {
+					(j.items || []).forEach(function (x) { var it = W.ytFromApi(x); if (it && W.indexOf(out, it.key) < 0) out.push(it); else if (!it) skipped++; });
+					if (j.nextPageToken && out.length < W.MAX_LIST) return page(j.nextPageToken);
+					return { items: out.slice(0, W.MAX_LIST), skipped: skipped, more: !!j.nextPageToken || out.length > W.MAX_LIST };
+				});
+			}
+			return page("");
+		}
+		function loadLists(ask) {
+			busy = "Getting your playlists from YouTube…"; err = ""; render();
+			return call("channels", { part: "snippet,contentDetails", mine: "true" }, ask).then(function (c) {
+				var ch = (c.items || [])[0], rel = (ch && ch.contentDetails && ch.contentDetails.relatedPlaylists) || {};
+				me = ch ? { name: (ch.snippet && ch.snippet.title) || "", th: ((ch.snippet && ch.snippet.thumbnails && ch.snippet.thumbnails["default"]) || {}).url || "" } : { name: "" };
+				var t = tok(); if (t) { t.name = me.name; tok(t); }
+				var out = [], extra = [];
+				if (rel.likes) extra.push({ id: rel.likes, name: "Liked videos", n: 0, privacy: "private", special: 1 });
+				if (rel.uploads) extra.push({ id: rel.uploads, name: "My uploads" + (me.name ? " (" + me.name + ")" : ""), n: 0, privacy: "", special: 1 });
+				function page(pt) {
+					var p = { part: "snippet,contentDetails,status", mine: "true", maxResults: 50 }; if (pt) p.pageToken = pt;
+					return call("playlists", p).then(function (j) { out = out.concat(W.ytListsFromApi(j)); if (j.nextPageToken && out.length < 500) return page(j.nextPageToken); });
+				}
+				return (ch ? page("") : Promise.resolve()).then(function () { lists = extra.concat(out); busy = ""; render(); });
+			}).catch(function (e) { busy = ""; err = e.message; render(); });
+		}
+		function imported(id) { for (var i = 0; i < api.S.lists.length; i++) if (api.S.lists[i].src === id) return api.S.lists[i]; return null; }
+		function bring(ps) {
+			var done = 0, pv = 0, cut = 0, bad = [];
+			busy = "Bringing in " + ps.length + " playlist" + (ps.length > 1 ? "s" : "") + "…"; err = ""; render();
+			return ps.reduce(function (pr, p) {
+				return pr.then(function () {
+					return playlistItems(p.id, true).then(function (r) {
+						api.upsertList(p.id, p.name, r.items); done++; pv += r.items.filter(function (x) { return x.pv; }).length; if (r.more) cut++;
+					}, function (e) { bad.push(p.name + ": " + e.message); });
+				});
+			}, Promise.resolve()).then(function () {
+				busy = ""; err = bad.join(" "); render(); api.changed();
+				if (done) toast((done === 1 ? '"' + ps[0].name + '" is' : done + " playlists are") + " in My playlists" + (pv ? " (" + pv + " private: those open on YouTube)" : "") + (cut ? ". Only the first " + W.MAX_LIST + " videos of a list are kept." : ""));
+			});
+		}
+		function render() {
+			var t = tok(), on = !!(t && t.a), L = lists;
+			var h = '<div class="wt-ythead"><b>▶&#xFE0E; Your YouTube playlists</b>';
+			if (!on) {
+				h += '<button type="button" class="tu-btn tu-btn--primary" data-yt="in">Sign in with Google</button></div>' +
+					'<p class="wt-ytnote">Bring in your own playlists (private ones too), your liked videos and your uploads. Read-only: mes.fm can\'t change anything on your YouTube. The sign-in stays in this browser; nothing goes to mes.fm. Private videos only play on youtube.com, so they open there.</p>';
+			} else {
+				h += '<span class="wt-ytwho">' + (t.name || (me && me.name) ? "Signed in as <b>" + esc(t.name || me.name) + "</b>" : "Signed in") + '</span>' +
+					'<button type="button" class="tu-btn tu-btn--ghost" data-yt="show">' + (L ? "↻ Refresh" : "Show my playlists") + '</button>' +
+					'<button type="button" class="tu-btn tu-btn--ghost" data-yt="out">Sign out</button></div>';
+			}
+			if (busy) h += '<p class="wt-ytmsg" role="status">' + esc(busy) + '</p>';
+			if (err) h += '<p class="wt-ytmsg wt-yterr" role="alert">' + esc(err) + (/sign in again|confirm again/i.test(err) ? ' <button type="button" class="wt-b" data-yt="in">Sign in</button>' : "") + '</p>';
+			if (on && L) {
+				if (!L.length) h += '<p class="wt-ytnote">No playlists on this YouTube account yet.</p>';
+				else {
+					h += '<div class="wt-ytrows">' + L.map(function (p, i) {
+						var have = imported(p.id), pr = p.privacy === "private" ? "🔒&#xFE0E; private" : p.privacy === "unlisted" ? "unlisted" : p.special ? "" : "public";
+						return '<div class="wt-ytrow"><span class="wt-ytname"><b>' + esc(p.name) + '</b><small>' + [p.n ? p.n + " video" + (p.n === 1 ? "" : "s") : "", pr, have ? "✓ in My playlists" : ""].filter(Boolean).join(" · ") + '</small></span>' +
+							'<button type="button" class="wt-b" data-yi="' + i + '" title="' + (have ? "Get the newest version from YouTube" : "Add to My playlists") + '">' + (have ? "↻ Update" : "+ Add") + '</button></div>';
+					}).join("") + '</div>' +
+					'<div class="wt-ytfoot"><button type="button" class="tu-btn tu-btn--ghost" data-yt="all">+ Add all ' + L.length + '</button></div>';
+				}
+			}
+			box.innerHTML = h;
+		}
+		box.addEventListener("click", function (e) {
+			var b = e.target.closest("[data-yt],[data-yi]"); if (!b || busy) return;
+			var a = b.getAttribute("data-yt");
+			if (a === "in" || a === "show") { err = ""; ready(true).then(function () { return loadLists(true); }, function (x) { err = x.message; render(); }); return; }
+			if (a === "out") {
+				var t = tok(); if (t && t.a && window.google && google.accounts && google.accounts.oauth2) try { google.accounts.oauth2.revoke(t.a, function () {}); } catch (x) {}
+				tok(null); lists = null; me = null; err = ""; render(); toast("Signed out of YouTube here. Your imported playlists stay."); return;
+			}
+			if (a === "all" && lists) { bring(lists.slice()); return; }
+			var i = b.getAttribute("data-yi"); if (i != null && lists && lists[+i]) bring([lists[+i]]);
+		});
+		// load Google's script early, so the click that signs in can open its window at once (pop-up blockers)
+		box.addEventListener("pointerenter", function () { gis().catch(function () {}); }, { once: true });
+		box.addEventListener("focusin", function () { gis().catch(function () {}); }, { once: true });
+		render();
+		return {
+			shown: function () { if (live() && !lists && !busy && !err) loadLists(false); }
+		};
+	};
+})();
+
 /* MES Watch -- mes.fm/watch. A plain player for YouTube (IFrame API, nocookie), 3Speak (HLS in our own <video>), Odysee (file in our own <video>),
    direct media files, and the own embed players of Rumble / BitChute / X. Lists (Up next, Saved, History with resume points) live in
    localStorage mes-watch:v1; nothing is sent to MES. */
@@ -1029,6 +1211,7 @@
 		var g = ++gen; teardown();
 		var stage = $('wt-stage'), mode = W.mode(cur), start = opts.t != null ? opts.t : W.resumeAt(cur, histRec(cur));
 		showMeta(); renderList(); needMeta(cur);
+		if (cur.pv && mode === 'yt') { failed('This video is private. YouTube only plays private videos on youtube.com, signed in to an account that may see it.'); syncSpeed(); return; }
 		if (S.histOn !== false) { S.hist = W.touch(S.hist, cur, start, (histRec(cur) || {}).dur || 0); save(); }
 		if (mode === 'yt') {
 			var holder;
@@ -1165,7 +1348,7 @@
 			}, function () { bad++; }); });
 		}, Promise.resolve()).then(function () {
 			taking = false; save();
-			msg((made.length ? 'Added "' + made.join('", "') + '" to My playlists. ' : '') + (bad ? bad + ' playlist' + (bad > 1 ? 's' : '') + ' could not be read (private, or a blocker stopped YouTube). ' : '') + skipped);
+			msg((made.length ? 'Added "' + made.join('", "') + '" to My playlists. ' : '') + (bad ? bad + ' playlist' + (bad > 1 ? 's' : '') + ' could not be read (private: sign in with Google under My playlists to bring in your own; or a blocker stopped YouTube). ' : '') + skipped);
 			if (all.length) then(all); else renderList();
 		});
 	}
@@ -1271,7 +1454,8 @@
 	function renderList() {
 		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length; $('wt-nl').textContent = S.lists.length;
 		var L = listOf(S.tab), box = $('wt-list'), now = Date.now(), ol = inList();
-		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol; $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
+		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol;
+		var yb = $('wt-ytacct'), ytOn = S.tab === 'lists' && !ol; if (yb) { if (ytOn && yb.hidden && ytApi && ytApi.shown) ytApi.shown(); yb.hidden = !ytOn; } $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
 		if (S.tab === 'lists' && !ol) {
 			$('wt-share').hidden = true; $('wt-clear').hidden = true;
 			box.innerHTML = !S.lists.length ? '<p class="wt-none">No playlists yet. Paste a YouTube playlist link above, press <b>+ List</b> under a video, or make one from Up next.</p>' :
@@ -1295,7 +1479,7 @@
 		box.innerHTML = head + L.map(function (it, i) {
 			needMeta(it);
 			var h = S.tab === 'hist' ? it : histRec(it), p = W.pct(h), isCur = cur && cur.key === it.key, stared = W.indexOf(S.saved, it.key) >= 0;
-			var sub = [W.siteName(it)];
+			var sub = [W.siteName(it)]; if (it.pv) sub.push('🔒\uFE0E private: opens on YouTube'); else if (it.ul) sub.push('unlisted');
 			if (h && h.dur) sub.push(W.done(h) ? 'watched' : W.fmt(h.pos) + ' of ' + W.fmt(h.dur));
 			if (S.tab === 'hist') sub.push(W.ago(it.at, now));
 			return '<div class="wt-row' + (isCur ? ' wt-cur' : '') + '" data-i="' + i + '">' +
@@ -1739,6 +1923,12 @@
 		if (openList && !W.findList(S.lists, openList)) openList = null;
 		save(); renderList(); renderChans(); showMeta();
 	}
+	function upsertList(src, name, items) {
+		var old = null; S.lists.forEach(function (l) { if (l.src === src) old = l; });
+		if (old) { old.items = items.slice(0, W.MAX_LIST); if (name) old.name = String(name).slice(0, 80); return old; }
+		var nl = W.newList(name || 'YouTube playlist', items); nl.src = src; S.lists.unshift(nl); return nl;
+	}
+	var ytApi = (window.WTYouTube && window.WTYouTube({ S: S, esc: esc, toast: toast, upsertList: upsertList, changed: function () { save(); renderList(); } })) || {};
 	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
 	if (document.readyState === 'complete') boot(); else window.addEventListener('load', boot);
 })();

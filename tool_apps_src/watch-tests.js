@@ -87,4 +87,16 @@ let ad = W.mergeAdd(W.snap({ q: [A], saved: [], lists: [], chans: [] }), W.snap(
 eq([ad.added, ad.data.q.length], [3, 2], 'mergeAdd adds, removes nothing');
 eq(W.readFile(W.fileText(base)), base, 'file round trip');
 ok(W.readFile('') === null, 'empty file = nothing yet');
+// YouTube Data API answers (signed in)
+const pv = W.ytFromApi({ snippet: { title: 'My secret', resourceId: { videoId: 'abcdefghijk' }, thumbnails: { medium: { url: 'https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg' } } }, contentDetails: { videoId: 'abcdefghijk' }, status: { privacyStatus: 'private' } });
+eq([pv.key, pv.t, pv.pv, pv.k], ['youtube:abcdefghijk', 'My secret', 1, 'youtube'], 'private item kept, marked');
+const other = W.ytFromApi({ snippet: { title: 'Private video', resourceId: { videoId: 'bbbbbbbbbbb' } }, status: { privacyStatus: 'private' } });
+eq([other.t, other.pv], ['', 1], "someone else's private video: no title, marked");
+eq(W.ytFromApi({ snippet: { title: 'Deleted video', resourceId: { videoId: 'ccccccccccc' } }, status: { privacyStatus: 'privacyStatusUnspecified' } }), null, 'deleted dropped');
+eq(W.ytFromApi({ snippet: { title: 'U', resourceId: { videoId: 'ddddddddddd' } }, status: { privacyStatus: 'unlisted' } }).ul, 1, 'unlisted marked');
+eq(W.ytFromApi({ snippet: { resourceId: { videoId: 'bad' } } }), null, 'bad id dropped');
+eq(W.ytListsFromApi({ items: [{ id: 'PLabcdefghij12', snippet: { title: 'Mine' }, contentDetails: { itemCount: 4 }, status: { privacyStatus: 'private' } }, { id: 'x' }] }).map(p => [p.name, p.n, p.privacy]), [['Mine', 4, 'private']], 'playlists answer');
+ok(/not switched on/.test(W.ytApiError(403, { error: { errors: [{ reason: 'accessNotConfigured' }] } })), 'API off message');
+ok(/sign in again/.test(W.ytApiError(401, {})), '401 message');
+ok(/limit/.test(W.ytApiError(403, { error: { errors: [{ reason: 'quotaExceeded' }] } })), 'quota message');
 console.log('watch tests ok:', n);

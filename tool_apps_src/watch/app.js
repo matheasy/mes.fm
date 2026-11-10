@@ -103,6 +103,7 @@
 		var g = ++gen; teardown();
 		var stage = $('wt-stage'), mode = W.mode(cur), start = opts.t != null ? opts.t : W.resumeAt(cur, histRec(cur));
 		showMeta(); renderList(); needMeta(cur);
+		if (cur.pv && mode === 'yt') { failed('This video is private. YouTube only plays private videos on youtube.com, signed in to an account that may see it.'); syncSpeed(); return; }
 		if (S.histOn !== false) { S.hist = W.touch(S.hist, cur, start, (histRec(cur) || {}).dur || 0); save(); }
 		if (mode === 'yt') {
 			var holder;
@@ -239,7 +240,7 @@
 			}, function () { bad++; }); });
 		}, Promise.resolve()).then(function () {
 			taking = false; save();
-			msg((made.length ? 'Added "' + made.join('", "') + '" to My playlists. ' : '') + (bad ? bad + ' playlist' + (bad > 1 ? 's' : '') + ' could not be read (private, or a blocker stopped YouTube). ' : '') + skipped);
+			msg((made.length ? 'Added "' + made.join('", "') + '" to My playlists. ' : '') + (bad ? bad + ' playlist' + (bad > 1 ? 's' : '') + ' could not be read (private: sign in with Google under My playlists to bring in your own; or a blocker stopped YouTube). ' : '') + skipped);
 			if (all.length) then(all); else renderList();
 		});
 	}
@@ -345,7 +346,8 @@
 	function renderList() {
 		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length; $('wt-nl').textContent = S.lists.length;
 		var L = listOf(S.tab), box = $('wt-list'), now = Date.now(), ol = inList();
-		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol; $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
+		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol;
+		var yb = $('wt-ytacct'), ytOn = S.tab === 'lists' && !ol; if (yb) { if (ytOn && yb.hidden && ytApi && ytApi.shown) ytApi.shown(); yb.hidden = !ytOn; } $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
 		if (S.tab === 'lists' && !ol) {
 			$('wt-share').hidden = true; $('wt-clear').hidden = true;
 			box.innerHTML = !S.lists.length ? '<p class="wt-none">No playlists yet. Paste a YouTube playlist link above, press <b>+ List</b> under a video, or make one from Up next.</p>' :
@@ -369,7 +371,7 @@
 		box.innerHTML = head + L.map(function (it, i) {
 			needMeta(it);
 			var h = S.tab === 'hist' ? it : histRec(it), p = W.pct(h), isCur = cur && cur.key === it.key, stared = W.indexOf(S.saved, it.key) >= 0;
-			var sub = [W.siteName(it)];
+			var sub = [W.siteName(it)]; if (it.pv) sub.push('🔒\uFE0E private: opens on YouTube'); else if (it.ul) sub.push('unlisted');
 			if (h && h.dur) sub.push(W.done(h) ? 'watched' : W.fmt(h.pos) + ' of ' + W.fmt(h.dur));
 			if (S.tab === 'hist') sub.push(W.ago(it.at, now));
 			return '<div class="wt-row' + (isCur ? ' wt-cur' : '') + '" data-i="' + i + '">' +
@@ -813,6 +815,12 @@
 		if (openList && !W.findList(S.lists, openList)) openList = null;
 		save(); renderList(); renderChans(); showMeta();
 	}
+	function upsertList(src, name, items) {
+		var old = null; S.lists.forEach(function (l) { if (l.src === src) old = l; });
+		if (old) { old.items = items.slice(0, W.MAX_LIST); if (name) old.name = String(name).slice(0, 80); return old; }
+		var nl = W.newList(name || 'YouTube playlist', items); nl.src = src; S.lists.unshift(nl); return nl;
+	}
+	var ytApi = (window.WTYouTube && window.WTYouTube({ S: S, esc: esc, toast: toast, upsertList: upsertList, changed: function () { save(); renderList(); } })) || {};
 	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
 	if (document.readyState === 'complete') boot(); else window.addEventListener('load', boot);
 })();

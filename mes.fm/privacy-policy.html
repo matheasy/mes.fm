@@ -650,6 +650,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	channels (not history) saved to your own Hive account, encrypted with your memo key unless you turn that off, and public and permanent either way.
 	</p>
 
+	<p id="watch-youtube">
+	<b>MES Watch: your YouTube playlists.</b> If you press <b>Sign in with Google</b> under My playlists, Google gives your browser a read-only access token
+	(scope <code>youtube.readonly</code>) for about an hour. Your browser uses it to ask YouTube's API for your channel name, your playlists (private ones included),
+	your liked videos and your uploads, and saves the playlists you choose (video ids, titles, thumbnails, and whether a video is private or unlisted) in this browser,
+	where they are kept like any other MES Watch playlist (and in your own sync file or Hive backup if you turned those on). The token is kept only in this browser and is
+	never sent to mes.fm; mes.fm cannot change anything on your YouTube account. <b>Sign out</b> forgets and revokes it, and you can also remove access at
+	<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>. MES Watch's use of information received from
+	Google APIs follows the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>,
+	including the Limited Use requirements.
+	</p>
+
 	<p id="cloud-files">
 	The same applies to the <b>☁ Cloud</b> button on the <a href="https://mes.fm/excel">Spreadsheet</a> and <a href="https://mes.fm/docx">Word</a> pages and the
 	<a href="https://mes.fm/pdf">PDF Editor</a>, and for the project file of the <a href="https://mes.fm/video">Video Editor</a>: a spreadsheet, document, PDF or video project you open from, or save to, a file on your computer or your Dropbox, OneDrive or Google Drive account is

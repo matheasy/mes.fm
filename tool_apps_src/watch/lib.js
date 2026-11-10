@@ -61,6 +61,39 @@
 		if (!m || /^RD/.test(m[1])) return "";
 		return m[1];
 	};
+	/* ---------- YouTube Data API answers (signed in with Google: the person's own playlists) ---------- */
+	/* a playlistItems entry -> a list item (pv = private: YouTube never plays those on other sites; ul = unlisted), or null for a deleted video */
+	W.ytFromApi = function (pi) {
+		if (!pi) return null;
+		var sn = pi.snippet || {}, vid = (pi.contentDetails && pi.contentDetails.videoId) || (sn.resourceId && sn.resourceId.videoId) || "";
+		if (!/^[\w-]{11}$/.test(vid)) return null;
+		var ps = (pi.status && pi.status.privacyStatus) || "", title = String(sn.title || "");
+		if (title === "Deleted video" || ps === "privacyStatusUnspecified") return null;
+		var it = W.item("https://www.youtube.com/watch?v=" + vid); if (it.err) return null;
+		if (title && title !== "Private video") it.t = title.slice(0, 200);
+		var th = sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails.high || sn.thumbnails["default"]);
+		if (th && /^https:\/\//.test(th.url || "")) it.th = th.url;
+		if (ps === "private" || title === "Private video") it.pv = 1; else if (ps === "unlisted") it.ul = 1;
+		return it;
+	};
+	/* a playlists answer -> [{id, name, n, privacy, th}] */
+	W.ytListsFromApi = function (j) {
+		return ((j && j.items) || []).map(function (p) {
+			var sn = p.snippet || {}, th = sn.thumbnails && (sn.thumbnails.medium || sn.thumbnails["default"]);
+			return { id: p.id, name: String(sn.title || "Playlist").slice(0, 80), n: (p.contentDetails && p.contentDetails.itemCount) || 0, privacy: (p.status && p.status.privacyStatus) || "", th: (th && th.url) || "" };
+		}).filter(function (p) { return /^[A-Za-z0-9_-]{10,64}$/.test(p.id || ""); });
+	};
+	/* a Google API error answer -> a plain sentence */
+	W.ytApiError = function (status, j) {
+		var e = (j && j.error) || {}, r = ((e.errors && e.errors[0]) || {}).reason || (e.details && e.details[0] && e.details[0].reason) || e.status || "";
+		if (status === 401) return "Google asks you to sign in again.";
+		if (/accessNotConfigured|SERVICE_DISABLED/i.test(r) || /has not been used|is disabled/i.test(e.message || "")) return "YouTube's API is not switched on for mes.fm yet.";
+		if (/quota/i.test(r)) return "YouTube's daily limit for mes.fm is used up. Try again tomorrow.";
+		if (/insufficientPermissions|ACCESS_TOKEN_SCOPE_INSUFFICIENT/i.test(r)) return "Google did not give access to your YouTube account. Sign in again and tick the YouTube box.";
+		if (/playlistNotFound|notFound/i.test(r)) return "YouTube could not find that playlist.";
+		if (/youtubeSignupRequired|channelNotFound/i.test(r)) return "This Google account has no YouTube channel yet.";
+		return "YouTube did not answer" + (status ? " (" + status + ")" : "") + ".";
+	};
 	/* ---------- my own named lists ---------- */
 	W.newList = function (name, items, now) { return { id: "l" + (now || Date.now()).toString(36) + Math.floor(Math.random() * 1e4).toString(36), name: String(name || "My list").slice(0, 80), items: (items || []).slice(0, W.MAX_LIST) }; };
 	W.findList = function (lists, id) { for (var i = 0; i < lists.length; i++) if (lists[i].id === id) return lists[i]; return null; };
