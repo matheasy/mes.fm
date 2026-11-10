@@ -119,6 +119,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("exif-viewer", "EXIF Viewer"),
     ("contraction-timer", "Contraction Timer"),
     ("bmr-calculator", "BMR Calculator"),
+    ("primes", "Prime Numbers"),   # also built by build_tool_apps.py
     ("relative-speed-calculator", "Relative Speed and Strength Calculator"),   # also built by build_tool_apps.py
     ("relative-time-calculator", "Relative Time Calculator"),   # also built by build_tool_apps.py
     ("practice-tests", "MES Practice Tests"),   # MES Practice Tests hub + four FSA-style test pages (built by build_tool_apps.py)

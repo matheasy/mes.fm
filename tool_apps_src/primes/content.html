@@ -1,0 +1,126 @@
+	<div class="tu" id="pm">
+		<div class="pm-tabs" id="pm-tabs" role="tablist" aria-label="Prime number tools">
+			<button type="button" role="tab" data-t="check">Is it prime?</button>
+			<button type="button" role="tab" data-t="gcd">Coprime, GCD &amp; LCM</button>
+			<button type="button" role="tab" data-t="sieve">Sieve of Eratosthenes</button>
+			<button type="button" role="tab" data-t="spiral">Prime spiral</button>
+			<button type="button" role="tab" data-t="list">List &amp; count primes</button>
+		</div>
+
+		<section class="pm-pane" data-pane="check">
+			<div class="tu-card">
+				<form class="pm-ask" id="pm-form" autocomplete="off">
+					<label for="pm-n" class="pm-lab">Type any whole number (or an expression like <code>2^61-1</code>, <code>10!+1</code>, <code>1e9+7</code>)</label>
+					<div class="pm-row"><input id="pm-n" class="tu-input tu-input--big" type="text" inputmode="numeric" spellcheck="false" value="97">
+						<button type="submit" class="tu-btn tu-btn--primary">Check</button>
+						<button type="button" class="tu-btn tu-btn--ghost pm-step" id="pm-dn" title="Previous number" aria-label="Previous number">−1</button>
+						<button type="button" class="tu-btn tu-btn--ghost pm-step" id="pm-up" title="Next number" aria-label="Next number">+1</button></div>
+					<div class="pm-ex" id="pm-ex"><span>Try:</span></div>
+				</form>
+				<p class="pm-err" id="pm-err" hidden></p>
+			</div>
+			<div id="pm-out"></div>
+		</section>
+
+		<section class="pm-pane" data-pane="gcd" hidden>
+			<div class="tu-card">
+				<form class="pm-ask" id="pm-gform" autocomplete="off">
+					<label for="pm-g" class="pm-lab">Two or more whole numbers, separated by spaces or commas</label>
+					<div class="pm-row"><input id="pm-g" class="tu-input tu-input--big" type="text" spellcheck="false" value="84, 120">
+						<button type="submit" class="tu-btn tu-btn--primary">Work it out</button></div>
+					<div class="pm-ex" id="pm-gex"><span>Try:</span></div>
+				</form>
+				<p class="pm-err" id="pm-gerr" hidden></p>
+			</div>
+			<div id="pm-gout"></div>
+		</section>
+
+		<section class="pm-pane" data-pane="sieve" hidden>
+			<div class="tu-card" id="pm-sv-card">
+				<div class="pm-head"><h2 class="pm-h">Watch the sieve find every prime</h2></div>
+				<div class="pm-ctl">
+					<label class="pm-inl">Up to <select id="pm-svn" class="tu-select"><option>30</option><option>50</option><option>100</option><option selected>120</option><option>200</option><option>300</option><option>500</option><option>1000</option></select></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="pm-svplay">▶ Play</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pm-svstep">Next prime ›</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pm-svall">Finish</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pm-svreset">Reset</button>
+					<label class="pm-inl">Speed <input type="range" id="pm-svspd" min="1" max="10" value="5"></label>
+				</div>
+				<p class="pm-status" id="pm-svstat" aria-live="polite"></p>
+				<div class="pm-grid" id="pm-svgrid"></div>
+				<div class="pm-legend" id="pm-svleg"></div>
+				<p class="tu-note">Click any number to check it in “Is it prime?”.</p>
+			</div>
+		</section>
+
+		<section class="pm-pane" data-pane="spiral" hidden>
+			<div class="tu-card" id="pm-sp-card">
+				<div class="pm-head"><h2 class="pm-h">Prime spiral</h2></div>
+				<div class="pm-ctl">
+					<div class="tu-seg" id="pm-spmode" role="group" aria-label="Spiral type"><button type="button" data-m="ulam">Ulam square</button><button type="button" data-m="sacks">Sacks round</button></div>
+					<label class="pm-inl"><span id="pm-spsl">Size</span> <input type="range" id="pm-spsize" min="1" max="100" value="45"></label>
+					<label class="pm-inl" id="pm-spstartw">Start at <input id="pm-spstart" class="tu-input pm-small" type="text" inputmode="numeric" value="1"></label>
+					<label class="pm-chk"><input type="checkbox" id="pm-sptwin"> Twin primes in orange</label>
+					<label class="pm-chk"><input type="checkbox" id="pm-speuler"> Euler's n² + n + 41</label>
+				</div>
+				<div class="pm-stage" id="pm-spstage"><canvas id="pm-spcv" aria-label="Prime spiral picture"></canvas><div class="pm-tip" id="pm-sptip" hidden></div></div>
+				<p class="pm-status" id="pm-spinfo"></p>
+			</div>
+		</section>
+
+		<section class="pm-pane" data-pane="list" hidden>
+			<div class="tu-card">
+				<h2 class="pm-h">Primes between two numbers</h2>
+				<form class="pm-row pm-wrap" id="pm-lform" autocomplete="off">
+					<label class="pm-inl">From <input id="pm-la" class="tu-input pm-mid" type="text" inputmode="numeric" value="1"></label>
+					<label class="pm-inl">To <input id="pm-lb" class="tu-input pm-mid" type="text" inputmode="numeric" value="100"></label>
+					<button type="submit" class="tu-btn tu-btn--primary">List them</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pm-lcopy">Copy list</button>
+				</form>
+				<p class="pm-err" id="pm-lerr" hidden></p>
+				<p class="pm-status" id="pm-lsum"></p>
+				<div class="pm-list" id="pm-llist"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="pm-h">The nth prime, and how many primes there are</h2>
+				<div class="pm-two">
+					<form id="pm-nform" class="pm-row pm-wrap" autocomplete="off"><label class="pm-inl">n = <input id="pm-nth" class="tu-input pm-mid" type="text" inputmode="numeric" value="1000"></label><button type="submit" class="tu-btn tu-btn--ghost">Find the nth prime</button></form>
+					<form id="pm-cform" class="pm-row pm-wrap" autocomplete="off"><label class="pm-inl">x = <input id="pm-cx" class="tu-input pm-mid" type="text" inputmode="numeric" value="1000000"></label><button type="submit" class="tu-btn tu-btn--ghost">Count primes up to x</button></form>
+				</div>
+				<p class="pm-status" id="pm-nres" aria-live="polite"></p>
+			</div>
+			<div class="tu-card" id="pm-ch-card">
+				<div class="pm-head"><h2 class="pm-h">How primes thin out</h2></div>
+				<div class="pm-ctl"><label class="pm-inl">Up to <select id="pm-chn" class="tu-select"><option value="1000">1,000</option><option value="10000">10,000</option><option value="100000" selected>100,000</option><option value="1000000">1,000,000</option><option value="10000000">10,000,000</option></select></label>
+					<div class="tu-seg" id="pm-chv" role="group" aria-label="Chart"><button type="button" data-v="count">Prime count π(x)</button><button type="button" data-v="gaps">Gaps between primes</button></div></div>
+				<div class="pm-chart" id="pm-chart"></div>
+				<p class="pm-status" id="pm-chinfo"></p>
+				<details class="pm-more"><summary>π(x) for powers of ten (known values)</summary><div class="tu-table-wrap"><table class="tu-table" id="pm-pitab"><thead><tr><th>x</th><th>π(x) primes up to x</th><th>x ÷ ln x</th><th>One in every</th></tr></thead><tbody></tbody></table></div></details>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Prime numbers, explained</h2>
+			<p>A <strong>prime number</strong> is a whole number greater than 1 whose only divisors are 1 and itself: 2, 3, 5, 7, 11, 13 … A number with more divisors is <strong>composite</strong>, and 1 is neither. Every whole number above 1 can be written as a product of primes in exactly one way (the <em>fundamental theorem of arithmetic</em>), which is why primes are called the building blocks of numbers.</p>
+			<h3>What this page does</h3>
+			<ul>
+				<li><strong>Is it prime?</strong> Checks any number up to 3,000 digits, gives its prime factorization with a factor tree, every divisor, the number of divisors, their sum, Euler's totient φ(n), the nearest primes, its position in the list of primes and special types (twin, Sophie Germain, Mersenne, emirp, perfect, Carmichael …).</li>
+				<li><strong>Coprime, GCD &amp; LCM</strong> finds the greatest common divisor and least common multiple of a list, says whether the numbers are coprime (relatively prime), draws their shared prime factors in a Venn diagram and shows Euclid's algorithm step by step.</li>
+				<li><strong>Sieve of Eratosthenes</strong> animates the 2,200-year-old method of crossing out multiples, and <strong>Prime spiral</strong> draws the Ulam and Sacks spirals where primes line up on diagonals.</li>
+				<li><strong>List &amp; count</strong> lists the primes in a range (even near 10¹³), finds the nth prime and compares the prime count π(x) with x / ln x and li(x).</li>
+			</ul>
+			<h3>How the checking works</h3>
+			<p>Small numbers are divided by every prime up to their square root: if none divides evenly, the number is prime (a divisor larger than √n always comes paired with one smaller). Big numbers use the <strong>Miller–Rabin test</strong> with the first 13 primes as bases, which is a proof for every number below 3.3 × 10²⁴. Above that, a number that passes 33 rounds is labelled a <em>probable prime</em>: no counterexample is known, but it is not a formal proof. Factoring uses trial division, then <strong>Pollard's rho</strong> method, which quickly finds factors up to about 15 digits; a number made of two huge primes (like the ones that protect RSA encryption) can't be split in a browser, and the page says so.</p>
+			<h3>Questions people ask</h3>
+			<dl>
+				<dt>Is 1 a prime number?</dt><dd>No. A prime needs exactly two different divisors, and 1 has only one. Leaving 1 out keeps every number's prime factorization unique.</dd>
+				<dt>What does coprime mean?</dt><dd>Two numbers are coprime (relatively prime) when their greatest common divisor is 1: they share no prime factor. 8 and 15 are coprime even though neither is prime.</dd>
+				<dt>Why is 2 the only even prime?</dt><dd>Every other even number is divisible by 2, so it has at least three divisors: 1, 2 and itself.</dd>
+				<dt>How many primes are there?</dt><dd>Infinitely many. Euclid's proof: multiply any list of primes together and add 1; the result is not divisible by any prime on the list, so some prime is missing from it.</dd>
+				<dt>What is the largest known prime?</dt><dd>A Mersenne prime, 2¹³⁶²⁷⁹⁸⁴¹ − 1, found in October 2024 by the GIMPS project. It has 41,024,320 digits.</dd>
+				<dt>How do I find the GCD by prime factors?</dt><dd>Write each number as primes, then multiply the primes they share, each to the smallest power it has in any of them. For the LCM, take every prime to its largest power.</dd>
+			</dl>
+			<p>Related: <a href="/calculator">Calculator</a> · <a href="/sum-of-integers-calculator">Sum of Integers</a> · <a href="/cas-calculator">CAS Calculator</a> · <a href="/enigma">Enigma Machine</a> · <a href="/calculators">More calculators</a></p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js" defer></script>
