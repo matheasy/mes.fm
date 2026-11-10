@@ -84,9 +84,10 @@
 						<label class="vd-speed" title="Playback speed of the preview only (Shift+&lt; slower, Shift+&gt; faster). The exported video keeps its normal speed."><span>Speed</span><select id="vd-speed" aria-label="Playback speed of the preview (does not change the video)"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option></select></label>
 						<span class="vd-time" id="vd-time"><input type="text" id="vd-tin" value="0:00;00" spellcheck="false" autocomplete="off" inputmode="text" aria-label="Playhead time: type a time and press Enter to go there" title="Type a time and press Enter to go there: 4:23;13, 1:02:03, 263, 2m30s, +10 or -5 (from here). Ctrl+G jumps here."> / <span id="vd-tdur">0:00;00</span></span>
 						<span class="vd-sp"></span>
-						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture">PNG</button>
-						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; Fill window</button>
-						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen (Shift+F)">&#9974; Full screen</button>
+						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl">PNG</span></button>
+						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; <span class="vd-lbl">Fill window</span></button>
+						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen (Shift+F)">&#9974; <span class="vd-lbl">Full screen</span></button>
+						<button type="button" class="vd-btn vd-sm" id="vd-barbtn" title="Size of these bars: Normal, Compact (one thin row each) or Minimal (the timeline tools hide; their keys still work). Key B. You can also drag an empty part of a bar up or down.">&#9636; <span class="vd-lbl" id="vd-barlbl">Normal</span></button>
 					</div>
 				</div>
 				<div class="vd-vgrip" id="vd-rgrip" role="separator" aria-orientation="vertical" aria-label="Properties width" tabindex="0" title="Drag to change the width (double-click: normal)"></div>
@@ -103,10 +104,10 @@
 				<button type="button" class="vd-btn vd-sm" id="vd-cutrange" title="Cut out the marked part on every track and close the gap" disabled>Cut out marked</button>
 				<button type="button" class="vd-btn vd-sm" id="vd-clearmarks" title="Clear the marks" disabled>&times;</button>
 				<span class="vd-div"></span>
-				<button type="button" class="vd-btn vd-sm" id="vd-addv" title="Add a video track">+ Video track</button>
-				<button type="button" class="vd-btn vd-sm" id="vd-adda" title="Add an audio track">+ Audio track</button>
-				<button type="button" class="vd-btn vd-sm" id="vd-sep" title="Put the sound of the selected video clips on its own audio track, linked to the video (Ctrl+Shift+A)">Separate video and audio</button>
-				<button type="button" class="vd-btn vd-sm" id="vd-wavemode" title="Waveform scale: dB shows quiet parts too, linear shows the spikes in proportion">Waveform: dB</button>
+				<button type="button" class="vd-btn vd-sm vd-xt" id="vd-addv" title="Add a video track">+ Video track</button>
+				<button type="button" class="vd-btn vd-sm vd-xt" id="vd-adda" title="Add an audio track">+ Audio track</button>
+				<button type="button" class="vd-btn vd-sm vd-xt" id="vd-sep" title="Put the sound of the selected video clips on its own audio track, linked to the video (Ctrl+Shift+A)">Separate video and audio</button>
+				<button type="button" class="vd-btn vd-sm vd-xt" id="vd-wavemode" title="Waveform scale: dB shows quiet parts too, linear shows the spikes in proportion">Waveform: dB</button>
 				<span class="vd-sp"></span>
 				<label class="vd-chk" title="Clips snap to the playhead, marks and each other (hold Alt to drag freely)"><input type="checkbox" id="vd-snapchk" checked> Snap</label>
 				<button type="button" class="vd-btn vd-ico vd-sm" id="vd-zout" title="Zoom out (-)" aria-label="Zoom out">&minus;</button>

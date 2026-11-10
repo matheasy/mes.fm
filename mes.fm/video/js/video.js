@@ -3861,6 +3861,7 @@
 			case "Delete": case "Backspace": VE.del(e.shiftKey); break;
 			case "i": case "I": mark("in"); break; case "o": case "O": mark("out"); break;
 			case "t": case "T": VE.addTitle(); break;
+			case "b": case "B": VE.cycleBar(); break;
 			case "f": case "F": if (e.shiftKey) $("vd-fs").click(); else setPv(!app.classList.contains("vd-pvfill")); break;
 			case "+": case "=": VE.tl.zoom(VE.pps * 1.5); break; case "-": case "_": VE.tl.zoom(VE.pps / 1.5); break;
 			case "w": case "W": setWin(!UI.win); break;
@@ -3997,11 +3998,39 @@
 	var pvT = 0;
 	function setPv(on) {
 		app.classList.toggle("vd-pvfill", on); document.documentElement.classList.toggle("vd-noscroll", on || UI.win);
-		$("vd-pvwin").setAttribute("aria-pressed", on); $("vd-pvwin").innerHTML = on ? "&#10006; Leave" : "&#10530; Fill window";
+		$("vd-pvwin").setAttribute("aria-pressed", on); $("vd-pvwin").innerHTML = on ? "&#10006; <span class=\"vd-lbl\">Leave</span>" : "&#10530; <span class=\"vd-lbl\">Fill window</span>";
 		setTimeout(function () { P.fit(); }, 30);
 		if (on) toast("The preview fills the window. Space plays, Esc leaves.", 3000);
 	}
 	$("vd-pvwin").onclick = function () { setPv(!app.classList.contains("vd-pvfill")); };
+
+	/* ---------- bar size: the playback bar + timeline tools take a lot of height when you only want to watch and cut.
+	   0 Normal, 1 Compact (one thin row each, seek bar beside the time, icons only), 2 Minimal (timeline tools hidden, keys
+	   still work). Button / key B, double-click an empty part of a bar, or drag an empty part down (thinner) / up (taller). */
+	var BAR_NAMES = ["Normal", "Compact", "Minimal"];
+	function setBar(n, quiet) {
+		n = Math.max(0, Math.min(2, n | 0)); UI.bar = n; saveUI();
+		app.classList.toggle("vd-bar1", n >= 1); app.classList.toggle("vd-bar2", n === 2);
+		$("vd-barlbl").textContent = BAR_NAMES[n]; $("vd-barbtn").setAttribute("aria-label", "Bar size: " + BAR_NAMES[n]);
+		setTimeout(function () { P.fit(); if (VE.tl && VE.tl.render) VE.tl.render(); }, 30);
+		if (!quiet) toast(n === 0 ? "Bars: normal size." : n === 1 ? "Bars: compact (B or a drag on an empty part of a bar changes it)." : "Bars: minimal. The timeline tools are hidden; S, Delete, I, O, + and - still work. Press B for normal.", 3500);
+	}
+	$("vd-barbtn").onclick = function () { setBar(((UI.bar | 0) + 1) % 3); };
+	setBar(UI.bar | 0, true);
+	VE.cycleBar = function () { setBar(((UI.bar | 0) + 1) % 3); };
+	[app.querySelector(".vd-transport"), app.querySelector(".vd-tools")].forEach(function (bar) {
+		if (!bar) return;
+		function empty(t) { return t === bar || (t.classList && (t.classList.contains("vd-sp") || t.classList.contains("vd-div"))); }
+		bar.addEventListener("dblclick", function (e) { if (empty(e.target)) setBar((UI.bar | 0) ? 0 : 1); });
+		bar.addEventListener("pointerdown", function (e) {
+			if (!empty(e.target) || e.button !== 0 || app.classList.contains("vd-pvfill")) return;
+			var y0 = e.clientY, start = UI.bar | 0, done = false;
+			bar.classList.add("is-drag");
+			function mv(ev) { if (done) return; var dy = ev.clientY - y0; if (Math.abs(dy) >= 22) { done = true; setBar(start + (dy > 0 ? 1 : -1)); } }
+			function up() { bar.classList.remove("is-drag"); window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up); }
+			window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+		});
+	});
 	app.querySelector(".vd-center").addEventListener("pointermove", function () { if (!app.classList.contains("vd-pvfill")) return; app.classList.add("vd-pvshow"); clearTimeout(pvT); pvT = setTimeout(function () { app.classList.remove("vd-pvshow"); }, 2200); });
 
 	/* ---------- layout: library rail, panel widths, timeline height ---------- */
