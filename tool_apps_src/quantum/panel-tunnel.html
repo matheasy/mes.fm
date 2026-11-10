@@ -1,1 +1,118 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">Fire a quantum particle (a wave packet) at a barrier that is <b>higher than its energy</b>. A ball would bounce back every time. The wave doesn&rsquo;t: part of it leaks through and keeps going on the far side. This is the real Schr&ouml;dinger equation, solved live as you watch. Drag the barrier&rsquo;s top or edge to reshape it.</p>
+<div class="qm-chips" id="qm-tu-presets" aria-label="Try this">
+	<button type="button" data-p="thin">Thin barrier</button>
+	<button type="button" data-p="thick">Thick barrier (almost nothing)</button>
+	<button type="button" data-p="above">Above the barrier (still reflects some)</button>
+	<button type="button" data-p="res">Resonant tunnelling</button>
+	<button type="button" data-p="alpha">Alpha decay</button>
+	<button type="button" data-p="stm">Scanning tunnelling microscope gap</button>
+	<button type="button" data-p="field">Field emission</button>
+	<button type="button" data-p="step">Step up</button>
+	<button type="button" data-p="well">Over a well</button>
+	<button type="button" data-p="proton">Proton, same 0.3 nm barrier</button>
+</div>
+<div class="qm-wrap qm-tu-wrap" id="qm-tu-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-tu-stage">
+		<canvas id="qm-tu-cv" aria-label="Wave packet and potential barrier. Drag the round handle to change the barrier height and the square handle to change its width." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-tu-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-tu-play" aria-pressed="false">Play</button>
+			<button type="button" id="qm-tu-step" title="Advance a little">Step</button>
+			<button type="button" id="qm-tu-reset" title="Start the packet again">Reset</button>
+			<select id="qm-tu-view" aria-label="How to draw the wave">
+				<option value="fill">|&psi;|&sup2;</option>
+				<option value="phase">Phase colours</option>
+				<option value="reim">Re &amp; Im</option>
+			</select>
+			<button type="button" id="qm-tu-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-tu-legend">
+		<span><i style="background:#8b7bff"></i>|&psi;|&sup2; (probability density)</span>
+		<span><i style="background:#5f6f93"></i>Potential V(x)</span>
+		<span><i style="background:#facc15"></i>Packet energy &lang;E&rang;</span>
+		<span><i style="background:#f97316"></i>A classical ball with the same energy</span>
+		<span><i style="background:#22d3ee"></i>Re &psi; / <i style="background:#f472b6"></i>Im &psi;</span>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span id="qm-tu-lr">Reflected</span><b id="qm-tu-rr">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-tu-li">Inside</span><b id="qm-tu-ri">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-tu-lt">Transmitted</span><b id="qm-tu-rt">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-tu-lx">Exact T for this packet</span><b id="qm-tu-rx">&ndash;</b></div>
+		<div class="qm-ro"><span>Packet energy &lang;E&rang;</span><b id="qm-tu-re">&ndash;</b></div>
+		<div class="qm-ro"><span>Barrier top V&#8320;</span><b id="qm-tu-rv">&ndash;</b></div>
+		<div class="qm-ro"><span>Decay length 1/&kappa;</span><b id="qm-tu-rk">&ndash;</b></div>
+		<div class="qm-ro"><span>Time</span><b id="qm-tu-rtime">0 fs</b></div>
+		<div class="qm-ro"><span>Classical ball</span><b id="qm-tu-rc">&ndash;</b></div>
+	</div>
+</div>
+<div class="qm-wrap qm-tu-twrap" id="qm-tu-twrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-tu-tstage">
+		<canvas id="qm-tu-tcv" aria-label="Exact transmission probability T(E) against energy. Click to set the packet energy." tabindex="0"></canvas>
+		<div class="qm-badge">Transmission T(E), exact (transfer matrix)</div>
+		<div class="qm-run">
+			<button type="button" id="qm-tu-log" aria-pressed="false" title="Logarithmic T axis">Log scale</button>
+			<button type="button" id="qm-tu-tfs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend">
+		<span><i style="background:#22d3ee"></i>T(E) of this potential</span>
+		<span><i style="background:rgba(250,204,21,0.55)"></i>Energies in the packet</span>
+		<span><i style="background:#f472b6"></i>Simulated (dot) vs exact average (ring)</span>
+		<span>Click the chart to set the energy.</span>
+	</div>
+</div>
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-tu-type">Potential</label>
+			<select id="qm-tu-type">
+				<option value="rect">Rectangular barrier</option>
+				<option value="double">Double barrier (resonant tunnelling)</option>
+				<option value="stepup">Step up</option>
+				<option value="stepdown">Step down</option>
+				<option value="well">Square well</option>
+				<option value="tri">Triangular barrier (field emission)</option>
+				<option value="alpha">Nucleus + Coulomb barrier (alpha decay)</option>
+			</select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-mass">Particle</label>
+			<select id="qm-tu-mass">
+				<option value="electron">Electron</option>
+				<option value="gaas">Electron in GaAs (0.067 m&#8337;)</option>
+				<option value="muon">Muon (207 m&#8337;)</option>
+				<option value="proton">Proton (1836 m&#8337;)</option>
+				<option value="custom">Custom mass</option>
+			</select></div>
+		<div class="tu-field" id="qm-tu-mcf" hidden><label class="tu-label" for="qm-tu-mc">Mass (electron masses)</label><input type="number" id="qm-tu-mc" min="0.01" max="100000" step="any" value="1"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-E">Packet energy E <span class="qm-val" id="qm-tu-Ev"></span></label><input type="range" id="qm-tu-E" min="0.02" max="5" step="0.01"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-V">Barrier height V&#8320; <span class="qm-val" id="qm-tu-Vv"></span></label><input type="range" id="qm-tu-V" min="0.05" max="6" step="0.01"></div>
+		<div class="tu-field" id="qm-tu-af"><label class="tu-label" for="qm-tu-a"><span id="qm-tu-al">Barrier width</span> <span class="qm-val" id="qm-tu-av"></span></label><input type="range" id="qm-tu-a" min="0" max="1000" step="1"></div>
+		<div class="tu-field" id="qm-tu-gf"><label class="tu-label" for="qm-tu-g">Gap between the barriers <span class="qm-val" id="qm-tu-gv"></span></label><input type="range" id="qm-tu-g" min="0.5" max="8" step="0.05"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-s">Packet width &sigma; <span class="qm-val" id="qm-tu-sv"></span></label><input type="range" id="qm-tu-s" min="0.8" max="10" step="0.1"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-sp">Speed <span class="qm-val" id="qm-tu-spv"></span></label><input type="range" id="qm-tu-sp" min="0" max="100" step="1"></div>
+	</div>
+	<div class="qm-row">
+		<label class="qm-check"><input type="checkbox" id="qm-tu-ball"> Show a classical ball</label>
+		<label class="qm-check"><input type="checkbox" id="qm-tu-mag"> Magnify the far side when little gets through</label>
+		<button type="button" class="tu-btn tu-btn--ghost" id="qm-tu-link">Copy link to this setup</button>
+	</div>
+	<p class="tu-note" id="qm-tu-scale"></p>
+</div>
+<div class="qm-explain">
+	<p><b>Why does the wave leak?</b> Inside a barrier that is higher than the particle&rsquo;s energy, the Schr&ouml;dinger equation has no wavy solution. Instead the wave dies away smoothly, like <b>e<sup>&minus;&kappa;x</sup></b>, with &kappa; = &radic;(2m(V&#8320;&minus;E))/&hbar;. It never jumps straight to zero, so if the barrier is thin some of the wave is still there on the far side, and from there it travels on as an ordinary wave. The chance of getting through falls off roughly like <b>e<sup>&minus;2&kappa;a</sup></b> for a barrier of width a: double the width and the chance is squared.</p>
+	<p><b>A ball would bounce back 100%.</b> Classically a particle with less energy than the barrier is always reflected, and a particle with more energy always gets over. Quantum mechanically both rules are broken: waves get through barriers that are too high, and part of a wave reflects even from a barrier it could climb (try &ldquo;Above the barrier&rdquo;).</p>
+	<p><b>The packet is not split into two particles.</b> |&psi;|&sup2; gives the probability of where you would find the particle if you looked. After the collision there are two lumps: if you put a detector on the far side, it clicks with probability T and the particle is then entirely there.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle i\hbar\,\frac{\partial \psi}{\partial t} = -\frac{\hbar^2}{2m}\frac{\partial^2 \psi}{\partial x^2} + V(x)\,\psi \)</div>
+	<div class="qm-eq__t">The time-dependent Schr&ouml;dinger equation that is being solved.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \psi(x) \propto e^{-\kappa x},\qquad \kappa = \frac{\sqrt{2m\,(V_0 - E)}}{\hbar} \)</div>
+	<div class="qm-eq__t">Inside a barrier higher than E the wave decays instead of oscillating.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle T = \left[\,1 + \frac{V_0^2\,\sinh^2(\kappa a)}{4E\,(V_0 - E)}\right]^{-1} \approx \frac{16E(V_0-E)}{V_0^2}\,e^{-2\kappa a} \)</div>
+	<div class="qm-eq__t">Exact transmission through a rectangular barrier of height V&#8320; and width a (the approximation is for thick barriers).</div>
+</div>
+<details class="tu-card qm-tu-how">
+	<summary><b>How the simulation works (and what is simplified)</b></summary>
+	<p>The wave is stored on a grid of 1,024 to 4,096 points and moved forward in tiny time steps with the <b>Crank-Nicolson method</b>: each step solves (1 + iH&Delta;t/2&hbar;)&psi;<sub>new</sub> = (1 &minus; iH&Delta;t/2&hbar;)&psi;<sub>old</sub>, a set of equations with only three diagonals that is solved in one sweep. The step is exactly unitary, so no probability is lost except at the two edges (outside the picture), where an absorbing layer quietly removes the wave, as if it flew off to infinity, and counts what it removed on each side. That is how &ldquo;Reflected&rdquo; and &ldquo;Transmitted&rdquo; keep counting after the lumps leave the picture. (The popular split-operator Fourier method was tried first: at a sudden jump in V its splitting error sprays a little of the wave into very high momenta, which is invisible for big transmissions but doubled tiny ones such as the STM gap.)</p>
+	<p>The chart below the simulation is computed separately and exactly, with the <b>transfer-matrix method</b> (matching &psi; and &psi;&prime; at every edge of a piecewise-constant potential; smooth shapes are cut into 600 thin slices). Because a packet contains a spread of energies, the fair comparison is the exact T averaged over that spread (the ring); the simulated dot lands on it when the run is over.</p>
+	<p>Units: energies in electronvolts (eV), times in femtoseconds (1 fs = 10<sup>&minus;15</sup> s). For an electron, lengths are in nanometres. For a heavier particle the same picture holds with every length shrunk by &radic;(m&#8337;/m), so a proton needs a barrier about 43 times thinner to tunnel as much. The &ldquo;alpha decay&rdquo; preset is the Gamow picture drawn at electron scale; real alpha decay has MeV energies and femtometre distances. This is a one-dimensional model: real barriers are three-dimensional, but the leaking works the same way.</p>
+</details>

@@ -1,1 +1,31 @@
-<div class="tu-seo"><h2>About</h2><p>Coming soon.</p></div>
+<div class="tu-seo">
+	<h2>Quantum tunnelling, simulated</h2>
+	<p>This page solves the Schr&ouml;dinger equation live in your browser. In the <b>Tunnelling</b> tab a wave packet (a moving electron, or any particle you choose) runs into a barrier that is higher than its energy. Classically it would always bounce back. In the simulation you can watch part of the wave get through, see exactly how much, and compare it with the exact transmission probability computed a second, independent way. The <b>Wells &amp; energy levels</b> tab finds the allowed energies of a trapped particle and lets you mix them to watch the particle move, including tunnelling back and forth in a double well. The <b>Calculators</b> tab works out de Broglie wavelengths, tunnelling probabilities and more from numbers you type.</p>
+
+	<h3>What is quantum tunnelling?</h3>
+	<p>A quantum particle is described by a wave. Where the potential energy is higher than the particle&rsquo;s energy, the wave does not stop dead at the edge: it fades away exponentially, as e<sup>&minus;&kappa;x</sup> with &kappa; = &radic;(2m(V&minus;E))/&hbar;. If the barrier is thin enough, some of the wave is still there on the other side and carries on. The probability of getting through is roughly e<sup>&minus;2&kappa;a</sup> for a barrier of width a, so it depends extremely strongly on the width, the height and the mass of the particle.</p>
+
+	<h3>Where tunnelling matters</h3>
+	<ul>
+		<li><b>Alpha decay:</b> an alpha particle rattles inside the nucleus and leaks through the Coulomb barrier a tiny bit at each hit. Because the leak is exponentially sensitive, half-lives range from microseconds to billions of years (George Gamow, 1928).</li>
+		<li><b>Scanning tunnelling microscope:</b> the current between a sharp tip and a surface changes by about an order of magnitude for every 0.1 nm of gap, which lets the microscope see single atoms.</li>
+		<li><b>Field emission and flash memory:</b> a strong electric field tilts the barrier into a triangle that electrons tunnel through.</li>
+		<li><b>Resonant tunnelling diodes:</b> two thin barriers with a gap between them let electrons through almost perfectly at special energies, and hardly at all in between.</li>
+		<li><b>Nuclear fusion in the Sun:</b> protons fuse at temperatures that would be far too low without tunnelling.</li>
+	</ul>
+
+	<h3>How the simulation is done</h3>
+	<p>The wave packet is evolved with the Crank-Nicolson method on a fine grid (exactly probability-conserving), with absorbing layers at the edges that count the reflected and transmitted parts as they leave. The exact transmission curve T(E) comes from the transfer-matrix method. The two agree, which you can check on the chart: the simulated dot lands on the exact average. The energy levels are found by finite differences with Sturm-sequence bisection, and are tested against the textbook answers (n&sup2; for a box, (n+&frac12;)&hbar;&omega; for a spring, Airy zeros for the quantum bouncer). Everything is one-dimensional; energies are in eV and times in femtoseconds.</p>
+
+	<h3>Questions</h3>
+	<h3>Does the particle borrow energy to get through?</h3>
+	<p>No. The total energy is the same before and after; the particle that comes out on the far side has the same energy it went in with. Inside the barrier the wave simply decays instead of oscillating. Saying it &ldquo;borrows&rdquo; energy is a popular picture, not what the equation does.</p>
+	<h3>How long does tunnelling take?</h3>
+	<p>That is a subtle question that physicists still discuss: different reasonable definitions of the &ldquo;tunnelling time&rdquo; give different answers, and experiments with atoms and light have measured some of them. The simulation shows the honest picture: the transmitted lump appears on the far side about when the front of the packet reaches the barrier, with no signal moving faster than allowed.</p>
+	<h3>Why does part of the wave reflect even when its energy is above the barrier?</h3>
+	<p>Any sudden change in the potential, up or down, partly reflects a wave, just as light partly reflects off a window. Only at special energies, where whole half-wavelengths fit in the barrier, does the reflection vanish completely.</p>
+	<h3>Why don&rsquo;t people walk through walls?</h3>
+	<p>The probability falls exponentially with mass and width. For an electron and a 1 nm barrier it can be a few percent; for a proton the same barrier is already practically closed; for a person and a wall the number is so small it has no meaning in practice.</p>
+	<h3>Is the wave the particle, or our knowledge of it?</h3>
+	<p>The simulation only uses the Schr&ouml;dinger equation, which every interpretation agrees on. In the Copenhagen view &psi; gives the probabilities of measurement results; in the pilot-wave (de Broglie-Bohm) view a real particle is guided by the wave; in the many-worlds view both outcomes happen in different branches. They all predict the same transmission probability you see here.</p>
+</div>

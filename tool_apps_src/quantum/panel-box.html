@@ -1,1 +1,95 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">Trap a particle in a well and it can only have certain energies: a ladder of <b>energy levels</b>, each with its own standing wave. Pick a well, then <b>click levels</b> to mix them. A single level just sits there; two or more slosh back and forth in time. In the double well the particle tunnels from one side to the other and back.</p>
+<div class="qm-chips" id="qm-bx-presets" aria-label="Try this">
+	<button type="button" data-p="inf">Infinite well (1 nm box)</button>
+	<button type="button" data-p="fin">Finite well</button>
+	<button type="button" data-p="ho">Harmonic oscillator</button>
+	<button type="button" data-p="dw">Double well: tunnelling</button>
+	<button type="button" data-p="morse">H&#8322; molecule (Morse)</button>
+	<button type="button" data-p="lin">Quantum bouncer</button>
+	<button type="button" data-p="custom">Draw your own</button>
+	<button type="button" data-p="slosh">Sloshing packet</button>
+</div>
+<div class="qm-wrap qm-bx-wrap" id="qm-bx-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-bx-stage">
+		<canvas id="qm-bx-cv" aria-label="Potential well with its energy levels and wavefunctions. Click a level to add it to the superposition." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-bx-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-bx-play" aria-pressed="false">Play</button>
+			<button type="button" id="qm-bx-clear" title="Unpick every level">Clear picks</button>
+			<select id="qm-bx-show" aria-label="What to draw on each level">
+				<option value="psi">&psi; on each level</option>
+				<option value="prob">|&psi;|&sup2; on each level</option>
+				<option value="none">Levels only</option>
+			</select>
+			<button type="button" id="qm-bx-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend">
+		<span><i style="background:#8ea0c8"></i>Potential V(x)</span>
+		<span><i style="background:#22d3ee"></i>Energy levels (click to pick)</span>
+		<span><i style="background:#8b7bff"></i>|&Psi;(x,t)|&sup2; of the picked levels, coloured by phase</span>
+		<span><i style="background:#facc15"></i>&lang;x&rang;, the average position</span>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Ground state E&#8321;</span><b id="qm-bx-r1">&ndash;</b></div>
+		<div class="qm-ro"><span>Spacing E&#8322; &minus; E&#8321;</span><b id="qm-bx-r2">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-bx-l3">Bound states</span><b id="qm-bx-r3">&ndash;</b></div>
+		<div class="qm-ro"><span>Picked levels</span><b id="qm-bx-r4">&ndash;</b></div>
+		<div class="qm-ro"><span>&lang;E&rang;</span><b id="qm-bx-r5">&ndash;</b></div>
+		<div class="qm-ro"><span>&lang;x&rang;</span><b id="qm-bx-r6">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-bx-l7">Period h/&Delta;E</span><b id="qm-bx-r7">&ndash;</b></div>
+		<div class="qm-ro"><span>Time</span><b id="qm-bx-r8">0 fs</b></div>
+	</div>
+</div>
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-bx-type">Potential</label>
+			<select id="qm-bx-type">
+				<option value="inf">Infinite square well</option>
+				<option value="fin">Finite square well</option>
+				<option value="ho">Harmonic oscillator</option>
+				<option value="dw">Double well</option>
+				<option value="morse">Morse (a molecule&rsquo;s bond)</option>
+				<option value="lin">Linear + floor (quantum bouncer)</option>
+				<option value="custom">Draw your own</option>
+			</select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-bx-mass">Particle</label>
+			<select id="qm-bx-mass">
+				<option value="electron">Electron</option>
+				<option value="gaas">Electron in GaAs (0.067 m&#8337;)</option>
+				<option value="muon">Muon (207 m&#8337;)</option>
+				<option value="proton">Proton (1836 m&#8337;)</option>
+				<option value="h2">H&#8322; vibration (reduced mass m&#8346;/2)</option>
+				<option value="custom">Custom mass</option>
+			</select></div>
+		<div class="tu-field" id="qm-bx-mcf" hidden><label class="tu-label" for="qm-bx-mc">Mass (electron masses)</label><input type="number" id="qm-bx-mc" min="0.01" max="100000" step="any" value="1"></div>
+	</div>
+	<div class="qm-grid" id="qm-bx-params" style="margin-top:0.8em"></div>
+	<div class="qm-row">
+		<span class="tu-field" style="flex:0 1 14em"><label class="tu-label" for="qm-bx-sp">Animation speed <span class="qm-val" id="qm-bx-spv"></span></label><input type="range" id="qm-bx-sp" min="0" max="100" step="1"></span>
+		<button type="button" class="tu-btn tu-btn--ghost" id="qm-bx-link">Copy link to this setup</button>
+	</div>
+	<p class="tu-note" id="qm-bx-note"></p>
+</div>
+<div class="tu-card">
+	<h3 class="qm-h3" style="margin-top:0">The energy ladder</h3>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-bx-table"><thead><tr><th>Pick</th><th>Level</th><th>Energy</th><th id="qm-bx-th4">E / E&#8321;</th><th>Gap to the next</th></tr></thead><tbody></tbody></table></div>
+</div>
+<div class="qm-explain">
+	<p><b>Why only certain energies?</b> A wave squeezed between walls must fit: in a box of width L only whole numbers of half-wavelengths fit, so the momentum and therefore the energy come in steps, E<sub>n</sub> = n&sup2;h&sup2;/(8mL&sup2;). Smaller box, bigger steps; heavier particle, smaller steps. That is why atoms (tiny boxes for light electrons) have sharp spectral lines, while a marble in a jar seems to have any energy at all.</p>
+	<p><b>The shape of the well sets the spacing.</b> Infinite well: gaps grow like n&sup2;. Harmonic oscillator (a spring): perfectly even steps of &hbar;&omega;, starting at &frac12;&hbar;&omega;, never at zero (the zero-point energy). Morse (a real chemical bond): steps that shrink until the molecule falls apart. Finite well: only a few levels fit below the rim, and the waves poke out into the walls a little: that is tunnelling again.</p>
+	<p><b>Why does a mix move?</b> Each level&rsquo;s wave turns in time at its own rate, e<sup>&minus;iE<sub>n</sub>t/&hbar;</sup>. On its own that turning is invisible (|&psi;|&sup2; stays put: a &ldquo;stationary state&rdquo;). Two levels together beat against each other, and the probability sloshes with period h/&Delta;E. In the double well the two lowest levels are almost equal, so the beat is slow: the particle sits in one well, then tunnels to the other and back, every h/&Delta;E. The ammonia maser works on exactly this flip-flop of the nitrogen atom.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle -\frac{\hbar^2}{2m}\,\psi''(x) + V(x)\,\psi(x) = E\,\psi(x) \)</div>
+	<div class="qm-eq__t">The time-independent Schr&ouml;dinger equation: its solutions are the levels shown.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle E_n^{\,\text{box}} = \frac{n^2 \pi^2 \hbar^2}{2 m L^2},\qquad E_n^{\,\text{spring}} = \left(n + \tfrac12\right)\hbar\omega \)</div>
+	<div class="qm-eq__t">Infinite well (n = 1, 2, 3, &hellip;) and harmonic oscillator (n = 0, 1, 2, &hellip;).</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \Psi(x,t) = \sum_n c_n\,\psi_n(x)\,e^{-iE_n t/\hbar},\qquad T_{\text{beat}} = \frac{h}{E_2 - E_1} \)</div>
+	<div class="qm-eq__t">A superposition, and the period at which two levels slosh.</div>
+</div>
+<details class="tu-card">
+	<summary><b>How the levels are found</b></summary>
+	<p>The well is cut into 600 to 1,200 grid points and the Schr&ouml;dinger equation becomes a large matrix whose only non-zero entries are on three diagonals (the second derivative becomes (&psi;<sub>i&minus;1</sub> &minus; 2&psi;<sub>i</sub> + &psi;<sub>i+1</sub>)/&Delta;x&sup2;). Its eigenvalues are the energies. They are found one by one by <b>Sturm-sequence bisection</b> (counting how many eigenvalues lie below a trial energy, and halving the interval 40-odd times), and each wave by <b>inverse iteration</b>. The test suite checks the results against the exact answers: n&sup2; for the box, (n+&frac12;)&hbar;&omega; for the spring, Airy-function zeros for the bouncer, the Morse formula, and the number of levels that fit in a finite well. Hard walls are placed at the ends of the picture; for wells that do not hold every level (finite, Morse), only the truly bound levels are shown.</p>
+	<p>The H&#8322; preset uses the usual Morse parameters for hydrogen (well depth about 4.75 eV, width parameter about 1.94 &Aring;&#8315;&sup1;, bond length 0.741 &Aring;) and the reduced mass of two protons. The model gives a first vibrational gap near 0.52 eV, close to the measured 0.516 eV, and 17 bound levels; real H&#8322; has 15 (v = 0 to 14), because a real bond is not exactly a Morse curve.</p>
+</details>
