@@ -178,3 +178,9 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 	html body.dark-mode #wt .wt-empty b, html body.dark-mode #wt .wt-empty a, html body.dark-mode #wt .wt-empty button {color:#fff;}
 	html body.dark-mode #wt .wt-empty {color:#cfd5de;}
 	html body.dark-mode #wt .wt-now {color:#fff;}
+
+/* zoom preview over a see-through panel (Fill window / full screen with the side panel showing) */
+#wt .wt-player.mes-pside.wt-zprev {padding:0 !important;overflow:hidden !important;}
+#wt .wt-player.mes-pside.wt-zprev > [data-mes-stage] {position:absolute !important;grid-column:1 / -1 !important;grid-row:1 / -1 !important;left:0 !important;top:0 !important;width:100% !important;height:var(--wt-zh, 100%) !important;max-height:none !important;z-index:1;}
+#wt .wt-player.mes-pside.wt-zprev > :not([data-mes-stage]) {position:relative;z-index:4;opacity:0.3 !important;pointer-events:none !important;}
+#wt .wt-player.mes-pside.wt-zprev > .mes-pgrip {display:none !important;}

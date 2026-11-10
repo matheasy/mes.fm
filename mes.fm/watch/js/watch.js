@@ -1433,7 +1433,18 @@
 		clearTimeout(zSave); zSave = setTimeout(save, 400);
 	}
 	function fillK() { var b = stageBox(), ar = vid && vid.videoWidth ? vid.videoWidth / vid.videoHeight : 16 / 9; return W.fillZoom(b.w, b.h, ar); }
-	function setZMode(on) { zMode = on; if (on) toast('Pinch or drag on the picture · + / − · Done when finished'); applyZoom(); }
+	function zprevH() { var pl = $('wt-player'); if (pl.classList.contains('wt-zprev')) pl.style.setProperty('--wt-zh', pl.clientHeight + 'px'); else pl.style.removeProperty('--wt-zh'); }
+	window.addEventListener('resize', function () { zprevH(); });
+	function setZMode(on) {
+		zMode = on;
+		// Fill window / full screen with the side panel showing: while zooming, the picture takes the whole window under a
+		// see-through panel, so what you frame is exactly what you get with the panel hidden
+		var pl = $('wt-player'), prev = on && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini');
+		pl.classList.toggle('wt-zprev', prev); if (prev) pl.scrollTop = 0; zprevH();
+		if (pl.__mesSide) requestAnimationFrame(function () { pl.__mesSide.apply(); applyZoom(); });   // panel padding changed: re-size the stage
+		if (on) toast(prev ? 'Zooming over the whole window (the panel is see-through) · Done when finished' : 'Pinch or drag on the picture · + / − · Done when finished');
+		applyZoom(); requestAnimationFrame(applyZoom);
+	}
 	function wireZoom(ov) {
 		ov.querySelector('.wt-zpill').addEventListener('pointerdown', function (e) { e.stopPropagation(); });
 		ov.addEventListener('click', function (e) {
@@ -1539,7 +1550,7 @@
 	function boot() {
 		// phones with a camera notch: without viewport-fit=cover the full-screen picture is pushed off centre by the notch's width
 		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
-		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { setTimeout(applyZoom, 60); } });
+		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { var pl = $('wt-player'); if (pl.classList.contains('wt-zprev') && (!pl.classList.contains('mes-pside') || pl.classList.contains('mes-pmini'))) pl.classList.remove('wt-zprev'); else if (zMode && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini')) pl.classList.add('wt-zprev'); zprevH(); setTimeout(applyZoom, 60); } });
 		zoomLayer();
 		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q'); paintCmBtn();
 		if (/[?&]debug=1/.test(location.search)) window.MESWatchDebug = { S: S, play: play, go: go, position: position, cur: function () { return cur; } };

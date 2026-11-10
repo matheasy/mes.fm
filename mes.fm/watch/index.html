@@ -486,6 +486,12 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 	html body.dark-mode #wt .wt-empty {color:#cfd5de;}
 	html body.dark-mode #wt .wt-now {color:#fff;}
 
+/* zoom preview over a see-through panel (Fill window / full screen with the side panel showing) */
+#wt .wt-player.mes-pside.wt-zprev {padding:0 !important;overflow:hidden !important;}
+#wt .wt-player.mes-pside.wt-zprev > [data-mes-stage] {position:absolute !important;grid-column:1 / -1 !important;grid-row:1 / -1 !important;left:0 !important;top:0 !important;width:100% !important;height:var(--wt-zh, 100%) !important;max-height:none !important;z-index:1;}
+#wt .wt-player.mes-pside.wt-zprev > :not([data-mes-stage]) {position:relative;z-index:4;opacity:0.3 !important;pointer-events:none !important;}
+#wt .wt-player.mes-pside.wt-zprev > .mes-pgrip {display:none !important;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1042,7 +1048,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=1" defer></script><script src="/watch/js/watch.js?v=12" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=1" defer></script><script src="/watch/js/watch.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
