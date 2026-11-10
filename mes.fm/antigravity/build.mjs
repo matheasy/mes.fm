@@ -62,6 +62,14 @@ const PAGES = [
     description:
       "Every MES #AntiGravity video in one place: Eric Laithwaite's gyroscope lectures, spinning wheels that precess with zero angular momentum or centripetal force, objects in rotation, and the gyrocompass corrections, with notes and links.",
   },
+  {
+    // Tile only: no page is written. The hand-built mirror of Part 6 (the "self-appointed PhD" document + both videos),
+    // made by build_antigravity6_article.py; icon = img/antigravity-6-rotation-defy-physics-icon.jpg (crop of the Part 6 thumbnail).
+    slug: "antigravity-6-rotation-defy-physics",
+    tileLabel: "Part 6: Objects in Rotation Defy Physics",
+    iconVersion: 1,
+    tileOnly: true,
+  },
 ];
 
 // ---------------------------------------------------------------------------

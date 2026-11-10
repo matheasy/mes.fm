@@ -256,7 +256,7 @@ SECTIONS = [
       R('MES Anti-Gravity hub', 'https://mes.fm/antigravity', 'Gyroscopes, spinning wheels and hidden science.'),
       R('All Anti-Gravity videos', 'https://mes.fm/antigravity-series', '', [('YouTube', 'https://mes.fm/antigravity-playlist'), ('BitChute', 'https://mes.fm/antigravity-bitchute'), ('Odysee', 'https://odysee.com/$/playlist/6e53d242296fd47f60c539a22612c4c237d76c23')]),
       R('Anti-Gravity: Hive links and notes', 'https://peakd.com/antigravity/@mes/series'),
-      R('Objects in Rotation Defy Mainstream Physics + MES Duality', 'https://peakd.com/antigravity/@mes/antigravity-part-6-video-1-objects-in-rotation-defy-mainstream-physics-mes-duality-concept'),
+      R('Objects in Rotation Defy Mainstream Physics + MES Duality', 'https://mes.fm/antigravity-6-rotation-defy-physics'),
       R('Correction to Gyrocompasses', 'https://youtu.be/JItGEGMwg90'),
       R('Anti-Gravity files (OneDrive)', 'https://mes.fm/antigravity-onedrive'),
     ]),
