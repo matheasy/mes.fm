@@ -177,7 +177,7 @@
         s.onload = function () {
             if (window.FastCommentsUI) {
                 var dark = /(^|\s)dark(-mode)?(\s|$)/.test(document.body.className);
-                window.FastCommentsUI(target, { tenantId: TENANT_ID, hasDarkBackground: dark });
+                window.FastCommentsUI(target, { tenantId: TENANT_ID, hasDarkBackground: dark, customCSS: ".comment-input{resize:vertical;min-height:100px;max-height:none}" /* reply box: drag its corner to make it taller */ });
             }
         };
         document.head.appendChild(s);

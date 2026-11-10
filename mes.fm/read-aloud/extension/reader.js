@@ -223,7 +223,55 @@
   }
 
   // mode: 'selection' | 'page' | 'auto' (selection if there is one, else page). Returns false if there is nothing to read.
-  function collect(mode, pre) {
+  // ---- comments below the article ----
+  // The article root rarely holds the comments, so in page mode the comment section that is open on screen is read after it:
+  // mes.fm's Hive comments tab (drawn into the page) and FastComments widgets (an iframe from fastcomments.com: its text comes from the
+  // same public endpoint the widget itself calls, fetched before reading starts, and a box is drawn over the widget while it is read).
+  function fcFrames() {
+    var out = [];
+    document.querySelectorAll('iframe[src*="fastcomments.com/embed"]').forEach(function (f) {
+      var c = RA.fcConfig(f.src);
+      if (c && f.getClientRects().length && f.getBoundingClientRect().height > 40) out.push({ frame: f, cfg: c });
+    });
+    return out;
+  }
+  function fetchComments() {
+    var fr = fcFrames();
+    if (!fr.length) return Promise.resolve([]);
+    return Promise.all(fr.map(function (x) {
+      var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
+      return fetch(RA.fcApiUrl(x.cfg), { credentials: 'omit', signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { clearTimeout(tm); return { frame: x.frame, paras: RA.fcParas(j) }; })
+        .catch(function () { clearTimeout(tm); return { frame: x.frame, paras: [] }; });
+    }));
+  }
+  // mes.fm's "Hive comments" tab: only who wrote each reply and what it says (not the sort / log-in / vote / payout controls)
+  function hiveItems(root) {
+    var pane = document.getElementById('mes-hive-comments'), out = [];
+    if (!pane || (root && root.contains(pane)) || skipped(pane, false) || !visible(pane)) return out;
+    var list = pane.querySelector('.mhc-list');
+    if (!list) return out;
+    var cs = list.querySelectorAll('.mhc-c');
+    if (!cs.length) { list.querySelectorAll('.mhc-empty').forEach(function (e) { out = out.concat(textNodes(e, null, false)); }); return out; }
+    out.push({ node: null, t: cs.length === 1 ? '1 Hive comment.' : cs.length + ' Hive comments.', base: 0, b: 'hv' });
+    cs.forEach(function (c) {
+      var who = c.querySelector(':scope > .mhc-b > .mhc-h > a'), body = c.querySelector(':scope > .mhc-b > .mhc-body');
+      if (who) out = out.concat(textNodes(who, null, false));
+      if (body) out = out.concat(textNodes(body, null, true));
+    });
+    return out;
+  }
+  function commentItems(root, fc) {
+    var out = hiveItems(root);
+    (fc || []).forEach(function (x, k) {
+      if (!x.frame.isConnected) return;
+      x.paras.forEach(function (t, i) { out.push({ node: null, t: t, base: 0, b: 'fc' + k + ':' + i, box: x.frame }); });
+    });
+    return out;
+  }
+
+  function collect(mode, pre, fc) {
     memo = [new Map(), new Map()]; vmemo = new Map(); st.shadows = [];
     var sel = window.getSelection(), items, startPos = 0, caret = null;
     var hasSel = sel && sel.rangeCount && !sel.isCollapsed && /\S/.test(sel.toString());
@@ -241,8 +289,10 @@
       else return false;
     } else {
       if (sel && sel.rangeCount && sel.isCollapsed && sel.anchorNode && sel.anchorNode.nodeType === 3) caret = { node: sel.anchorNode, off: sel.anchorOffset };
-      items = textNodes(pickRoot(), null, true);
-      if (!items.length && P.scope !== 'page') items = textNodes(document.body, null, true);
+      var root = pickRoot();
+      items = textNodes(root, null, true);
+      if (!items.length && P.scope !== 'page') { root = document.body; items = textNodes(root, null, true); }
+      items = items.concat(commentItems(root, fc));
       if (P.readTitle && document.title) items.unshift({ node: null, t: document.title, base: 0, b: -1 });
     }
     if (!items.length) return false;
@@ -558,6 +608,11 @@
           go();
           if (how === 'dom') setTimeout(function () { setStatus('Read from the part of the Doc that is loaded. For the whole Doc, allow Google Docs in the toolbar popup.'); st.noticeUntil = Date.now() + 8000; }, 50);
         });
+        return;
+      }
+      var pageMode = mode === 'page' || (mode === 'auto' && !hasSel);
+      if (pageMode && !window.__mesraSource && fcFrames().length) {
+        fetchComments().then(function (fc) { if (!collect(mode, null, fc)) { showNothing(); return; } go(); });
         return;
       }
       if (!collect(mode)) { showNothing(); return; }

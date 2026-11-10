@@ -253,7 +253,48 @@
     return true;
   }
 
-  var api = { docsId: docsId, docsItems: docsItems, docsInfo: docsInfo, docsUrls: docsUrls, docsHtmlParas: docsHtmlParas, parasToItems: parasToItems, decodeEntities: decodeEntities,
+  /* ---- FastComments ----
+     The FastComments widget is an iframe from fastcomments.com, so its text is out of the page's (and the reader's) reach. Its src
+     carries the widget config (tenantId, urlId), and the same public endpoint the widget itself calls returns the comments as JSON. */
+  function fcConfig(src) {
+    var m = /^https:\/\/(?:[\w-]+\.)?fastcomments\.com\/embed\?(.*)$/.exec(String(src || ''));
+    if (!m) return null;
+    var cfg = null;
+    m[1].split('&').forEach(function (kv) {
+      var i = kv.indexOf('='); if (i < 0 || kv.slice(0, i) !== 'config') return;
+      try { cfg = JSON.parse(decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' '))); } catch (e) { cfg = null; }
+    });
+    if (!cfg || !/^[\w-]{3,40}$/.test(String(cfg.tenantId || '')) || !cfg.urlId) return null;
+    return { tenant: String(cfg.tenantId), urlId: String(cfg.urlId) };
+  }
+  function fcApiUrl(c) { return 'https://fastcomments.com/comments/' + encodeURIComponent(c.tenant) + '/?urlId=' + encodeURIComponent(c.urlId); }
+  // comment HTML -> paragraphs of plain text (line breaks / block ends split; tags dropped; entities decoded)
+  function htmlParas(html) {
+    var t = String(html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|li|blockquote|h[1-6]|pre)>/gi, '\n').replace(/<[^>]*>/g, '');
+    return decodeEntities(t).split(/\n+/).map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+  }
+  // the endpoint's answer -> paragraphs in reading order: top-level comments in the order given (the widget's own sort), each followed
+  // by its replies, oldest first, nested. Every comment opens with who wrote it.
+  function fcParas(json) {
+    var list = json && json.status === 'success' && Array.isArray(json.comments) ? json.comments : [];
+    list = list.filter(function (c) { return c && !c.isSpam && !c.isDeleted && (c.commentHTML || c.comment); });
+    if (!list.length) return [];
+    var byId = {}, kids = {}, roots = [];
+    list.forEach(function (c) { byId[c._id] = c; });
+    list.forEach(function (c) { if (c.parentId && byId[c.parentId]) (kids[c.parentId] = kids[c.parentId] || []).push(c); else roots.push(c); });
+    var out = [list.length === 1 ? '1 comment.' : list.length + ' comments.'];
+    function name(c) { return String(c.commenterName || 'Someone').trim() || 'Someone'; }
+    function walk(c, parent, depth) {
+      if (depth > 30) return;
+      out.push(parent ? name(c) + ' replied to ' + name(parent) + ':' : name(c) + ' wrote:');
+      htmlParas(c.commentHTML || c.comment).forEach(function (p) { out.push(p); });
+      (kids[c._id] || []).slice().sort(function (a, b) { return String(a.date || '') < String(b.date || '') ? -1 : 1; }).forEach(function (k) { walk(k, c, depth + 1); });
+    }
+    roots.forEach(function (c) { walk(c, null, 0); });
+    return out;
+  }
+
+  var api = { fcConfig: fcConfig, fcApiUrl: fcApiUrl, fcParas: fcParas, htmlParas: htmlParas, docsId: docsId, docsItems: docsItems, docsInfo: docsInfo, docsUrls: docsUrls, docsHtmlParas: docsHtmlParas, parasToItems: parasToItems, decodeEntities: decodeEntities,
               isPdfUrl: isPdfUrl, isDocxUrl: isDocxUrl, pdfParas: pdfParas, pdfRepeats: pdfRepeats, voiceGroups: voiceGroups, voiceKind: voiceKind, speechHelp: speechHelp, voiceMatches: voiceMatches, fold: fold, defaultConfig: defaultConfig, builtins: builtins, normConfig: normConfig, merge: merge, profileById: profileById, resolveProfile: resolveProfile,
               uid: uid, contrastText: contrastText, buildText: buildText, locate: locate, posOf: posOf };
   root.MESRA = api;

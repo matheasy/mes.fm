@@ -89,4 +89,15 @@ eq(/Android/.test(R.speechHelp('Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/
 eq(/Android/.test(R.speechHelp('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/130')), false, 'no Android tip on a Mac');
 eq(/Spoken Content/.test(R.speechHelp('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/130')), true, 'macOS tip');
 eq(/Speech/.test(R.speechHelp('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130')), true, 'Windows tip');
+// 1.9.5: FastComments widget text (its iframe is out of reach; read from the widget's own endpoint)
+{ const src = 'https://fastcomments.com/embed?config=' + encodeURIComponent(JSON.stringify({ tenantId: '1RGmGBEjdU', urlId: 'https://mes.fm/puzzles/missing-dollar-puzzle', pageTitle: 'x & y' })) + '&wId=comment-ui';
+  eq(R.fcConfig(src), { tenant: '1RGmGBEjdU', urlId: 'https://mes.fm/puzzles/missing-dollar-puzzle' }, 'fcConfig from the iframe src');
+  eq(R.fcConfig('https://evil.com/embed?config=%7B%7D'), null, 'fcConfig: only fastcomments.com');
+  eq(R.fcApiUrl(R.fcConfig(src)), 'https://fastcomments.com/comments/1RGmGBEjdU/?urlId=https%3A%2F%2Fmes.fm%2Fpuzzles%2Fmissing-dollar-puzzle', 'fcApiUrl');
+  const J = { status: 'success', comments: [
+    { _id: 'r1', commenterName: 'MES', commentHTML: 'Thanks, John!<br /><br />See <a href="https://x">this</a> &amp; that.', parentId: 'p1', date: '2026-11-10T18:12:22Z' },
+    { _id: 'p1', commenterName: 'John A.', commentHTML: 'The amount is $35.', date: '2026-11-10T00:09:07Z' },
+    { _id: 's', commenterName: 'Spam', commentHTML: 'buy', isSpam: true }] };
+  eq(R.fcParas(J), ['2 comments.', 'John A. wrote:', 'The amount is $35.', 'MES replied to John A.:', 'Thanks, John!', 'See this & that.'], 'fcParas: threads, replies under their parent, spam dropped');
+  eq(R.fcParas({ status: 'failed' }), [], 'fcParas: nothing on a failed answer'); }
 console.log(bad ? bad + ' FAILED of ' + n : 'all ' + n + ' checks passed'); process.exit(bad ? 1 : 0);

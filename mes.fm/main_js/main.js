@@ -61,7 +61,7 @@ $(document).ready(function() {
             s.src = "https://cdn.fastcomments.com/js/embed.min.js";
             s.onload = function() {
                 if(window.FastCommentsUI)
-                    window.FastCommentsUI(target, { tenantId: "1RGmGBEjdU", hasDarkBackground: /(^|\s)dark(-mode)?(\s|$)/.test(document.body.className) });
+                    window.FastCommentsUI(target, { tenantId: "1RGmGBEjdU", customCSS: ".comment-input{resize:vertical;min-height:100px;max-height:none}" /* reply box: drag its corner to make it taller */, hasDarkBackground: /(^|\s)dark(-mode)?(\s|$)/.test(document.body.className) });
             };
             document.head.appendChild(s);
         }
