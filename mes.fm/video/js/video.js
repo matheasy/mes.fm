@@ -3074,8 +3074,8 @@
 		var s = P.speed, fps = VE.P.fps, L = V.SPEED_PRESETS.slice(), min = V.speedMin(fps), h = "";
 		if (L.indexOf(min) < 0) L.unshift(min);
 		if (!L.some(function (x) { return Math.abs(x - s) < 1e-9; })) { L.push(s); L.sort(function (a, b) { return a - b; }); }
-		L.forEach(function (x) { h += '<option value="' + x + '"' + (Math.abs(x - s) < 1e-9 ? " selected" : "") + ">" + V.speedLabel(x, fps) + (Math.abs(x - min) < 1e-9 ? " (1 frame/s)" : "") + "</option>"; });
-		spSel.innerHTML = h + '<option value="type">Type a speed…</option>';
+		L.forEach(function (x) { h += '<option value="' + x + '"' + (Math.abs(x - s) < 1e-9 ? " selected" : "") + ">" + V.speedLabel(x, fps) + "</option>"; });
+		spSel.innerHTML = h + '<option value="type" title="Type any speed: 2.35, 300%, 1/2 or 5 fps">Type…</option>';
 		spSel.classList.toggle("is-on", Math.abs(s - 1) > 1e-9);
 		$("vd-spdn").disabled = s <= min + 1e-9; $("vd-spup").disabled = s >= V.SPEED_MAX - 1e-9;
 	}

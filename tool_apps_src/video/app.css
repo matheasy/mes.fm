@@ -247,3 +247,4 @@
 	#vd .vd-speed .vd-spb {min-width:26px;min-height:30px;padding:0 0.35em;font-size:1.05em;line-height:1;}
 	#vd .vd-speed .vd-spin {width:6.5em;min-height:30px;padding:0.2em 0.35em;} #vd .vd-speed select[hidden], #vd .vd-speed .vd-spin[hidden] {display:none;}
 	#vd .vd.vd-bar1 .vd-speed .vd-spb {min-width:22px;min-height:26px;} #vd .vd.vd-bar1 .vd-speed .vd-spin {min-height:26px;font-size:0.82em;}
+	#vd .vd-speed select {width:5.6em;min-width:0;padding-right:0.2em;} #vd .vd-speed .vd-spin {width:5.6em;}
