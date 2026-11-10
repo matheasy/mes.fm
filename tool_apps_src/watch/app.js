@@ -51,7 +51,7 @@
 		}).then(function (j) {
 			var u = j && (j.videoUrl || j.videoUrlFallback1 || j.videoUrlFallback2);
 			if (!u) throw new Error('3Speak has no video for that link.');
-			return { url: u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
+			return { url: (window.MESYA && MESYA.speakUrl) ? MESYA.speakUrl(u) : u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
 		});
 	}
 	function odyseeInfo(uri) {
@@ -138,7 +138,7 @@
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
 				v.addEventListener('ratechange', function () { if (g === gen && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
 				v.addEventListener('error', function () { if (g === gen) failed('This browser could not play the video file.'); });
-				if (mode === 'hls' && !v.canPlayType('application/vnd.apple.mpegurl')) {
+				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
 						if (g !== gen) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.');
 						hls = new Hls(); hls.loadSource(info.url); hls.attachMedia(v);

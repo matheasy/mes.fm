@@ -53,10 +53,10 @@
 			return out("youtube", yt, "https://www.youtube-nocookie.com/embed/" + yt + "?rel=0&playsinline=1&autoplay=0" + (st ? "&start=" + st : ""),
 				{ watch: "https://www.youtube.com/watch?v=" + yt + (st ? "&t=" + st + "s" : ""), start: st });
 		}
-		/* 3Speak: 3speak.tv/watch?v=user/permlink, play.3speak.tv/watch|embed?v=user/permlink */
+		/* 3Speak: 3speak.tv/watch?v=user/permlink, 3speak.tv/@user/permlink (new site), play.3speak.tv/watch|embed?v=user/permlink */
 		if (/(^|\.)3speak\.(tv|co|online)$/.test(h)) {
-			var v3 = q.get("v") || ((m = p.match(/^\/(?:watch|embed)\/([a-z0-9.-]{3,16}\/[a-z0-9-]+)/i)) ? m[1] : "");
-			if (!/^[a-z0-9.-]{3,16}\/[a-z0-9-]{1,255}$/i.test(v3)) return { ok: false, reason: "That 3Speak link has no video in it (it should end in ?v=user/permlink)." };
+			var v3 = q.get("v") || ((m = p.match(/^\/(?:(?:watch|embed|video|v)\/)?@?([a-z0-9.-]{3,16}\/[a-z0-9-]+)\/?$/i)) ? m[1] : "");
+			if (!/^[a-z0-9.-]{3,16}\/[a-z0-9-]{1,255}$/i.test(v3)) return { ok: false, reason: "That 3Speak link has no video in it (it should look like 3speak.tv/@user/video or end in ?v=user/permlink)." };
 			return out("3speak", v3, "https://play.3speak.tv/embed?v=" + v3, { watch: "https://3speak.tv/watch?v=" + v3 });
 		}
 		/* Rumble: only /embed/<id>/ links can be embedded (the id in a normal rumble.com/v... page link is a different one) */
@@ -103,6 +103,16 @@
 		return out;
 	};
 	/* the rendition with the smallest bandwidth (the sound is the same in every one) */
+	/* 3Speak's embed API (Nov 2026) answers with its relay play.3speak.tv/hls?u=<real manifest>; newer Chrome tries to play HLS itself and
+	   fails on that relay, so use the real (CORS-open) address inside it; anything else is returned as it is */
+	Y.speakUrl = function (u) {
+		var m = /^https:\/\/play\.3speak\.tv\/hls\?u=([^&#]+)/.exec(String(u || ""));
+		if (!m) return u;
+		try { var d = decodeURIComponent(m[1]); return /^https:\/\/[a-z0-9.-]+\/[^\s"'<>]+\.m3u8(\?[^\s"'<>]*)?$/i.test(d) ? d : u; } catch (e) { return u; }
+	};
+	/* play HLS with hls.js wherever Media Source exists (native HLS only where it doesn't: iPhone Safari); Chrome now says "maybe" to HLS
+	   but fails on some streams */
+	Y.hlsNative = function (v, w) { w = w || (typeof window !== "undefined" ? window : {}); return !(w.MediaSource || w.ManagedMediaSource) && !!(v && v.canPlayType && v.canPlayType("application/vnd.apple.mpegurl")); };
 	Y.lightest = function (vs) { return (vs || []).slice().sort(function (a, b) { return (a.bw || 9e15) - (b.bw || 9e15); })[0] || null; };
 	/* MPEG-TS bytes -> the AAC (ADTS) bytes of its first audio stream, or null when it has none */
 	Y.tsAudio = function (u8, st) {
@@ -967,7 +977,7 @@
 		}).then(function (j) {
 			var u = j && (j.videoUrl || j.videoUrlFallback1 || j.videoUrlFallback2);
 			if (!u) throw new Error('3Speak has no video for that link.');
-			return { url: u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
+			return { url: (window.MESYA && MESYA.speakUrl) ? MESYA.speakUrl(u) : u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
 		});
 	}
 	function odyseeInfo(uri) {
@@ -1054,7 +1064,7 @@
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
 				v.addEventListener('ratechange', function () { if (g === gen && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
 				v.addEventListener('error', function () { if (g === gen) failed('This browser could not play the video file.'); });
-				if (mode === 'hls' && !v.canPlayType('application/vnd.apple.mpegurl')) {
+				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
 						if (g !== gen) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.');
 						hls = new Hls(); hls.loadSource(info.url); hls.attachMedia(v);

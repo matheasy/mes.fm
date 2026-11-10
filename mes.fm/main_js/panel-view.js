@@ -45,14 +45,20 @@
     '.mes-ptools>.mes-pgo{display:none}.mes-pmini>.mes-ptools>.mes-pgo{display:block}' +
     '.mes-pgone>.mes-ptools{display:none!important}' +
     '.mes-ptools .mes-ptb{background:rgba(255,255,255,.92);min-height:34px}' +
-    'body.dark-mode .mes-ptools .mes-ptb{background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555}';
+    'body.dark-mode .mes-ptools .mes-ptb{background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555}' +
+    '.mes-pgrip{display:none}' +
+    '.mes-pside:not(.mes-pmini)>.mes-pgrip{display:block;position:absolute;grid-column:auto!important;grid-row:auto!important;top:0;bottom:0;width:14px;margin:0!important;z-index:25;cursor:col-resize;touch-action:none;background:transparent;border:0;padding:0}' +
+    '.mes-pgrip::after{content:"";position:absolute;left:5px;top:50%;width:4px;height:44px;margin-top:-22px;border-radius:3px;background:rgba(128,128,128,.45);transition:background .15s,height .15s,margin .15s}' +
+    '.mes-pgrip:hover::after,.mes-pgrip:focus-visible::after,.mes-pdrag>.mes-pgrip::after{background:#1d6fd1;height:84px;margin-top:-42px}' +
+    'body.dark-mode .mes-pgrip:hover::after,body.dark-mode .mes-pgrip:focus-visible::after,body.dark-mode .mes-pdrag>.mes-pgrip::after{background:#6ea8fe}' +
+    '.mes-pgrip:focus{outline:none}.mes-pdrag,.mes-pdrag *{cursor:col-resize!important;user-select:none!important}.mes-pdrag iframe,.mes-pdrag video{pointer-events:none!important}';
   var st = document.createElement('style'); st.id = 'mes-panel-css'; st.textContent = css; document.head.appendChild(st);
   var open = null; // the card in Fill window / full screen
   var fsEl = function () { return document.fullscreenElement || document.webkitFullscreenElement || null; };
   var canFs = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
   /* ---- side panel layout ---- */
-  var SKEY = 'mes-panel:side', SP = { r: false, m: false };
-  try { var sp0 = JSON.parse(localStorage.getItem(SKEY) || 'null'); if (sp0) { SP.r = !!sp0.r; SP.m = !!sp0.m; } } catch (e) {}
+  var SKEY = 'mes-panel:side', SP = { r: false, m: false, w: 0 };
+  try { var sp0 = JSON.parse(localStorage.getItem(SKEY) || 'null'); if (sp0) { SP.r = !!sp0.r; SP.m = !!sp0.m; SP.w = +sp0.w > 0 ? Math.round(+sp0.w) : 0; } } catch (e) {}
   var sides = [];
   function side(sec, o) {
     if (!sec || !o || !o.stage || sec.__mesSide) return sec && sec.__mesSide;
@@ -75,6 +81,44 @@
       if (d >= 0 && d < 36) { q.gone = false; q.apply(); }
     }, true);
     sec.insertBefore(tools, sec.firstChild === stage ? stage : sec.firstChild);
+    // drag the line between the panel and the picture to make the panel wider / narrower (double-click = automatic width)
+    var grip = document.createElement('button'); grip.type = 'button'; grip.className = 'mes-pgrip';
+    grip.title = 'Drag to change the panel width (double-click: automatic, arrow keys work too)';
+    grip.setAttribute('aria-label', 'Panel width'); grip.setAttribute('role', 'separator'); grip.setAttribute('aria-orientation', 'vertical');
+    sec.appendChild(grip);
+    function geo() {
+      var r = sec.getBoundingClientRect(), cs = getComputedStyle(sec);
+      return { r: r, pl: parseFloat(cs.paddingLeft) || 0, pr: parseFloat(cs.paddingRight) || 0, gap: parseFloat(cs.columnGap) || 12 };
+    }
+    function maxW(w) { return Math.max(160, Math.min(w * 0.7, w - 200)); }
+    function setW(px, done) {
+      SP.w = Math.round(Math.max(160, Math.min(maxW(sec.clientWidth), px)));
+      sides.forEach(apply);
+      if (done) save();
+      if (!q.raf) q.raf = requestAnimationFrame(function () { q.raf = 0; try { window.dispatchEvent(new Event('resize')); } catch (e) {} if (o.onChange) { try { o.onChange(true); } catch (e) {} } });
+    }
+    grip.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return; e.preventDefault();
+      try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+      sec.classList.add('mes-pdrag');
+      var g = geo();
+      function mv(ev) { setW(SP.r ? g.r.right - g.pr - ev.clientX - g.gap / 2 : ev.clientX - g.r.left - g.pl - g.gap / 2); }
+      function up(ev) {
+        grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up);
+        sec.classList.remove('mes-pdrag'); save();
+      }
+      grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up);
+    });
+    function autoAgain() { SP.w = 0; save(); sides.forEach(apply); try { window.dispatchEvent(new Event('resize')); } catch (e) {} if (o.onChange) { try { o.onChange(true); } catch (e) {} } }
+    grip.addEventListener('dblclick', autoAgain);
+    grip.addEventListener('keydown', function (e) {
+      var k = e.key, cur = SP.w || autoW(sec.clientWidth), step = e.shiftKey ? 60 : 20, d = 0;
+      if (k === 'ArrowLeft') d = SP.r ? step : -step; else if (k === 'ArrowRight') d = SP.r ? -step : step;
+      else if (k === 'Home') { e.preventDefault(); setW(160, true); return; } else if (k === 'End') { e.preventDefault(); setW(maxW(sec.clientWidth), true); return; }
+      else if (k === 'Enter') { e.preventDefault(); autoAgain(); return; }
+      if (d) { e.preventDefault(); setW(cur + d, true); }
+    });
+    q.grip = grip;
     function save() { try { localStorage.setItem(SKEY, JSON.stringify(SP)); } catch (e) {} }
     q.apply = function () {
       var open = !!(o.open && o.open()), w = sec.clientWidth, h = sec.clientHeight;
@@ -90,10 +134,15 @@
       q.hide.setAttribute('aria-pressed', SP.m ? 'true' : 'false');
       if (want) {
         var cs = getComputedStyle(sec), padV = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-        sec.style.setProperty('--mes-pw', Math.round(Math.max(190, Math.min(320, w * 0.3))) + 'px');
+        var pw = SP.w ? Math.round(Math.max(160, Math.min(maxW(w), SP.w))) : autoW(w);
+        sec.style.setProperty('--mes-pw', pw + 'px');
+        if (getComputedStyle(sec).position === 'static') { sec.style.position = 'relative'; q.pos = true; }
+        var gg = geo(), gx = (SP.r ? gg.r.width - gg.pr - pw - gg.gap / 2 : gg.pl + pw + gg.gap / 2) - 7;
+        grip.style.left = Math.round(gx) + 'px';
+        grip.setAttribute('aria-valuenow', pw); grip.setAttribute('aria-valuemin', 160); grip.setAttribute('aria-valuemax', Math.round(maxW(w)));
         stage.style.height = Math.max(120, h - padV) + 'px';
         sec.style.setProperty('--mes-sh', Math.max(120, h - padV) + 'px');
-      } else { stage.style.height = ''; sec.style.removeProperty('--mes-pw'); sec.style.removeProperty('--mes-sh'); }
+      } else { if (q.pos) { sec.style.position = ''; q.pos = false; } stage.style.height = ''; sec.style.removeProperty('--mes-pw'); sec.style.removeProperty('--mes-sh'); }
       q.on = want;
       var now = q.on + '|' + sec.classList.contains('mes-pmini') + '|' + sec.classList.contains('mes-pright');
       if (now !== was && o.onChange) { try { o.onChange(want); } catch (e) {} }
@@ -108,6 +157,7 @@
     return q;
   }
   function apply(q) { q.apply(); }
+  function autoW(w) { return Math.round(Math.max(190, Math.min(320, w * 0.3))); }
   function changed(p) {
     if (p.sec.__mesSide) p.sec.__mesSide.apply(); try { if (p.opts.onChange) p.opts.onChange(p.sec.classList.contains('mes-pfill')); } catch (e) {} try { window.dispatchEvent(new Event('resize')); } catch (e) {} }
   function paint(p) {

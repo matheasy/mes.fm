@@ -203,7 +203,7 @@
 		var j = await r.json();
 		var u = j && (j.videoUrl || j.videoUrlFallback1 || j.videoUrlFallback2);
 		if (!u) throw new Error('3Speak has no video for that link' + (j && j.status ? ' (status: ' + j.status + ')' : '') + '.');
-		return { url: u, title: j.title || L.id };
+		return { url: Y.speakUrl(u), title: j.title || L.id };
 	}
 	async function play3speak(L, fr) {
 		fr.innerHTML = '<p class="ya-loading">Loading the 3Speak video…</p>';
@@ -213,7 +213,7 @@
 			var v = document.createElement('video'); v.controls = true; v.playsInline = true; v.preload = 'metadata'; v.title = info.title;
 			fr.innerHTML = ''; fr.appendChild(v); pageVid = v; watchVid(v);
 			sizeNote3speak(L, info);
-			if (v.canPlayType('application/vnd.apple.mpegurl')) v.src = info.url;
+			if (Y.hlsNative(v)) v.src = info.url;
 			else { await loadScript(HLS_URL); if (link !== L) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.'); hls = new Hls(); hls.loadSource(info.url); hls.attachMedia(v); }
 		} catch (e) { if (link === L) { fr.className = 'ya-frame ya-frame--none'; fr.innerHTML = '<p>' + esc(e.message) + ' <a href="' + esc(L.watch) + '" target="_blank" rel="noopener">Open it on 3Speak ↗</a></p>'; } }
 	}

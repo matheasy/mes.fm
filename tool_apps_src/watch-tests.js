@@ -8,6 +8,7 @@ eq([it.k, it.id, it.s, W.mode(it)], ['youtube', 'dQw4w9WgXcQ', 65, 'yt'], 'youtu
 ok(it.th.includes('dQw4w9WgXcQ'), 'yt thumb');
 it = W.item('youtube.com/shorts/dQw4w9WgXcQ'); eq(W.mode(it), 'yt', 'shorts');
 it = W.item('https://3speak.tv/watch?v=mes/abcdefgh'); eq([it.k, it.id, W.mode(it)], ['3speak', 'mes/abcdefgh', 'hls'], '3speak');
+it = W.item('https://3speak.tv/@cahlen/wizards-log---november-8th-310'); eq([it.k, it.id], ['3speak', 'cahlen/wizards-log---november-8th-310'], '3speak new @user/permlink link');
 it = W.item('https://odysee.com/@mestruth:9/my-video:3'); eq([W.mode(it), it.id], ['odysee', '@mestruth:9/my-video:3'], 'odysee video');
 it = W.item('https://odysee.com/@mestruth:9'); eq(W.mode(it), 'open', 'odysee channel = open');
 it = W.item('https://rumble.com/embed/v4abc12/'); eq(W.mode(it), 'embed', 'rumble embed');

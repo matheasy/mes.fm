@@ -148,5 +148,11 @@ for (const sr of [48000, 44100]) {
   ok(Y.lbryUrl('@mestruth:9/911-plane-compilation-fumes:7') === 'lbry://@mestruth#9/911-plane-compilation-fumes#7' && Y.lbryUrl('video-name:a') === 'lbry://video-name#a', 'odysee path -> lbry url');
 }
 
+// 3Speak links / addresses (Nov 2026 site + relay)
+ok(Y.parseLink('https://3speak.tv/@cahlen/wizards-log---november-8th-310').id === 'cahlen/wizards-log---november-8th-310', '3speak @user/permlink');
+ok(!Y.parseLink('https://3speak.tv/@cahlen').ok, '3speak profile link is not a video');
+ok(Y.speakUrl('https://play.3speak.tv/hls?u=https%3A%2F%2Fhotipfs-3speak-1.b-cdn.net%2Fipfs%2FQm1%2Fmanifest.m3u8') === 'https://hotipfs-3speak-1.b-cdn.net/ipfs/Qm1/manifest.m3u8', 'relay unwrapped');
+ok(Y.speakUrl('https://play.3speak.tv/hls?u=javascript%3Aalert(1)').indexOf('play.3speak.tv') > 0, 'odd relay target kept as is');
+ok(!Y.hlsNative({ canPlayType: () => 'maybe' }, { MediaSource: 1 }) && Y.hlsNative({ canPlayType: () => 'maybe' }, {}), 'hls.js when Media Source exists');
 console.log(pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
