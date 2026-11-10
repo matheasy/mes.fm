@@ -380,7 +380,7 @@
 		if (anim && anim.shotDir) { info.shotDir = anim.shotDir; info.shotC0 = anim.shotC0; }
 		if (aiming && S.guide !== "off" && !cpuAim) info.guide = guideShapes(c0);
 		if ((aiming && ons[0]) || (anim && anim.strike !== undefined)) {
-			var pull = anim && anim.strike !== undefined ? (0.03 + 0.17 * power / 1000) * (1 - anim.strike) : 0.03 + 0.17 * power / 1000;
+			var pull = anim && anim.strike !== undefined ? (0.03 + 0.27 * power / 1000) * (1 - anim.strike) : 0.03 + 0.27 * power / 1000;
 			info.cue = { x: c0[0], y: c0[1], dx: d.x, dy: d.y, pull: pull, el: elev };
 		}
 		if (aiming && st.bih && place) info.place = { x: place[0], y: place[1], ok: B.placeOk(st, place[0], place[1]) };
@@ -473,7 +473,7 @@
 	}
 	function drawCue(g, c0) {
 		var d = B.dirOf(aim), R = st.T.R, k = LY.k;
-		var pull = anim && anim.strike !== undefined ? (0.03 + 0.17 * power / 1000) * (1 - anim.strike) : 0.03 + 0.17 * power / 1000;
+		var pull = anim && anim.strike !== undefined ? (0.03 + 0.27 * power / 1000) * (1 - anim.strike) : 0.03 + 0.27 * power / 1000;
 		var s0 = R + 0.006 + pull, len = 1.45;
 		var a = w2s(c0[0] - d.x * s0, c0[1] - d.y * s0), b = w2s(c0[0] - d.x * (s0 + len), c0[1] - d.y * (s0 + len));
 		var ang = Math.atan2(b[1] - a[1], b[0] - a[0]), L = Math.hypot(b[0] - a[0], b[1] - a[1]), w0 = 0.0065 * k, w1 = 0.015 * k;
