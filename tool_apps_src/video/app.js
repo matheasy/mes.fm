@@ -177,10 +177,48 @@
 	/* ---------- transport ---------- */
 	var P = VE.preview;
 	$("vd-play").onclick = function () { P.toggle(); };
-	var spSel = $("vd-speed");
-	if (spSel) { spSel.value = String(UI.speed || 1); P.speed = +spSel.value || 1; spSel.onchange = function () { P.setSpeed(+spSel.value); }; }
-	VE.on("speed", function (s) { UI.speed = s; saveUI(); if (spSel) { spSel.value = String(s); spSel.classList.toggle("is-on", s !== 1); } if (s !== 1) toast("Preview speed " + s + "× (the exported video is not changed)"); });
-	if (spSel) spSel.classList.toggle("is-on", P.speed !== 1);
+	// speed: - / + in 0.05 steps (hold = keeps going and speeds up), a preset list, "Type a speed..." for any value from 1 frame / s to 45x
+	var spSel = $("vd-speed"), spIn = $("vd-spin");
+	function fillSpeed() {
+		var s = P.speed, fps = VE.P.fps, L = V.SPEED_PRESETS.slice(), min = V.speedMin(fps), h = "";
+		if (L.indexOf(min) < 0) L.unshift(min);
+		if (!L.some(function (x) { return Math.abs(x - s) < 1e-9; })) { L.push(s); L.sort(function (a, b) { return a - b; }); }
+		L.forEach(function (x) { h += '<option value="' + x + '"' + (Math.abs(x - s) < 1e-9 ? " selected" : "") + ">" + V.speedLabel(x, fps) + (Math.abs(x - min) < 1e-9 ? " (1 frame/s)" : "") + "</option>"; });
+		spSel.innerHTML = h + '<option value="type">Type a speed…</option>';
+		spSel.classList.toggle("is-on", Math.abs(s - 1) > 1e-9);
+		$("vd-spdn").disabled = s <= min + 1e-9; $("vd-spup").disabled = s >= V.SPEED_MAX - 1e-9;
+	}
+	P.speed = V.clampSpeed(UI.speed || 1, VE.P.fps); fillSpeed();
+	spSel.onchange = function () {
+		if (spSel.value !== "type") return P.setSpeed(+spSel.value);
+		spSel.value = String(P.speed); spSel.hidden = true; spIn.hidden = false; spIn.value = V.speedLabel(P.speed, VE.P.fps).replace("×", ""); spIn.focus(); spIn.select();
+	};
+	function closeIn() { spIn.hidden = true; spSel.hidden = false; }
+	spIn.addEventListener("keydown", function (e) {
+		e.stopPropagation();
+		if (e.key === "Escape") { e.preventDefault(); closeIn(); spSel.focus(); return; }
+		if (e.key !== "Enter") return;
+		e.preventDefault(); var v = V.parseSpeed(spIn.value, VE.P.fps);
+		if (v == null) { toast("Type a speed like 2.35, 300%, 1/2 or 5 fps (from 1 frame per second up to 45×)."); return; }
+		closeIn(); P.setSpeed(v); spSel.focus();
+	});
+	spIn.addEventListener("blur", function () { setTimeout(closeIn, 120); });
+	// hold - / +: one step at once, then repeats after 0.4 s; 0.05 steps for the first second, then 0.25, then 1
+	[["vd-spdn", -1], ["vd-spup", 1]].forEach(function (b) {
+		var el = $(b[0]), t0 = 0, tm = 0, held = false;
+		function stop() { clearTimeout(tm); tm = 0; }
+		function rep() { var dt = performance.now() - t0; P.nudgeSpeed(b[1], dt > 2600 ? 1 : dt > 1400 ? 0.25 : 0.05); tm = setTimeout(rep, 90); }
+		el.addEventListener("pointerdown", function (e) { if (e.button !== 0 || el.disabled) return; e.preventDefault(); held = true; t0 = performance.now(); P.nudgeSpeed(b[1]); tm = setTimeout(rep, 420); });
+		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
+		el.addEventListener("click", function (e) { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });   // keyboard Enter / Space
+	});
+	var spToastT = 0;
+	VE.on("speed", function (s) {
+		UI.speed = s; saveUI(); fillSpeed();
+		clearTimeout(spToastT);
+		spToastT = setTimeout(function () { if (Math.abs(s - 1) > 1e-9) toast("Preview speed " + V.speedLabel(s, VE.P.fps) + (s > 16 + 1e-9 || s < 0.0625 - 1e-9 ? ": the browser can't play this fast or slow, so frames are skipped and there is no sound" : "") + " (the exported video is not changed)", 3500); }, 250);
+	});
+	VE.on("change", function () { if (P.speed < V.speedMin(VE.P.fps) - 1e-9) P.setSpeed(P.speed); else fillSpeed(); });
 	// previous / next clip edge (Camtasia: Ctrl+Alt+Left / Right)
 	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
 	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture

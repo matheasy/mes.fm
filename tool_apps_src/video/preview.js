@@ -55,14 +55,17 @@
 		stopClean(); VE.emit("pause"); sync(); draw();
 	};
 	P.toggle = function () { if (P.playing && !P.rev) P.pause(); else P.play(P.speed); };
-	// preview playback speed (0.25x-4x): the edit and the export are not changed; video / audio elements keep their pitch at this speed
-	P.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
+	// preview playback speed (1 frame / s up to 45x): the edit and the export are not changed; video / audio elements keep their pitch at this
+	// speed. Browsers only play media at 1/16x-16x, so outside that the clips are shown by seeking frame after frame, without sound ("jump" mode).
 	P.setSpeed = function (s) {
-		s = Math.max(0.25, Math.min(4, +s || 1)); P.speed = s;
+		s = V.clampSpeed(s, VE.P.fps); P.speed = s;
 		if (P.playing && !P.rev) { P.pause(); P.play(s); }
 		VE.emit("speed", s);
 	};
-	P.stepSpeed = function (dir) { var L = P.SPEEDS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; P.setSpeed(L[Math.max(0, Math.min(L.length - 1, i + dir))]); };
+	P.stepSpeed = function (dir) { var L = V.SPEED_PRESETS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; var n = dir > 0 ? (L[i] > P.speed + 1e-9 ? L[i] : L[Math.min(L.length - 1, i + 1)]) : (i > 0 ? L[i - 1] : V.speedMin(VE.P.fps)); P.setSpeed(n); };
+	P.nudgeSpeed = function (dir, inc) { P.setSpeed(V.stepSpeed(P.speed, dir, VE.P.fps, inc)); };
+	function jumpRate(pr) { return pr > 16 + 1e-9 || pr < 0.0625 - 1e-9; }
+	P.jumping = function () { return P.playing && jumpRate(P.rate); };
 	P.seek = function (t) {
 		var was = P.playing && !P.rev; if (P.playing) P.pause();
 		VE.t = Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0)));
@@ -96,7 +99,12 @@
 			var e = elFor(c); if (!e) return; want[c.id] = 1;
 			var m = VE.media(c.media), active = V.active(c, t), src = V.srcAt(c, Math.max(t, s0));
 			if (src < 0) src = 0; if (m && m.dur && src > m.dur - 0.01) src = m.dur - 0.01;
-			if (playing && active) {
+			var jump = playing && active && jumpRate((c.speed || 1) * P.rate);
+			if (jump) {   // faster than 16x or slower than 1/16x: no sound, the frame at the playhead is sought again as soon as the last seek is done
+				if (!e.el.paused) e.el.pause();
+				var jf = (m && m.fps) || 30;
+				if (!e.el.seeking && Math.abs(e.el.currentTime - src) > 0.5 / jf) setTime(e, src);
+			} else if (playing && active) {
 				var pr = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
 				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
 				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
@@ -108,7 +116,7 @@
 				var fps = (m && m.fps) || 30;
 				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
-			if (e.gain && ac) { var g = playing && active && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
+			if (e.gain && ac) { var g = playing && active && !jump && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
 		Object.keys(els).forEach(function (k) { if (!want[k] && now - els[k].used > 4000) release(k); else if (!want[k]) { els[k].el.pause(); if (els[k].gain && ac) els[k].gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); } });
 		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
@@ -131,6 +139,7 @@
 		var list = p.clips.filter(function (c) { return c.clean && c.clean.key && VE.hasSound(c) && V.end(c) > t; });
 		for (var j = 0; j < list.length; j++) {
 			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (gen !== cleanGen || !P.playing || P.rev) return; if (!cp) continue;
+			if (jumpRate((c.speed || 1) * P.rate)) continue;   // jump mode plays no sound
 			var buf = cleanBufs[c.clean.key];
 			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;

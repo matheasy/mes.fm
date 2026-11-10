@@ -326,5 +326,15 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	ok(sm.total === 2 && sm.in === 1 && sm.out.length === 1, "summary counts");
 	ok(V.MEDIA_EXT.test("a.MOV") && !V.MEDIA_EXT.test("notes.txt"), "media endings");
 }
+{   // preview speed: 0.05 steps, 1 frame / s to 45x, typed speeds
+	ok(V.stepSpeed(1, 1, 30) === 1.05 && V.stepSpeed(1, -1, 30) === 0.95, "0.05 steps");
+	ok(V.stepSpeed(1.23, 1, 30) === 1.25 && V.stepSpeed(1.23, -1, 30) === 1.2, "steps snap to the 0.05 grid");
+	ok(Math.abs(V.stepSpeed(0.05, -1, 30) - 1 / 30) < 1e-9 && V.stepSpeed(1 / 30, 1, 30) === 0.05, "below 0.05 = 1 frame per second, and back");
+	ok(V.stepSpeed(45, 1, 30) === 45 && V.stepSpeed(44.98, 1, 30) === 45, "never above 45x");
+	ok(V.stepSpeed(3, 1, 30, 1) === 4, "bigger steps while holding");
+	ok(V.parseSpeed("3x", 30) === 3 && V.parseSpeed("2.35", 30) === 2.35 && V.parseSpeed("300%", 30) === 3 && V.parseSpeed("1/2", 30) === 0.5, "typed speeds");
+	ok(Math.abs(V.parseSpeed("5 fps", 25) - 0.2) < 1e-9 && V.parseSpeed("100", 30) === 45 && V.parseSpeed("abc", 30) === null && V.parseSpeed("0", 30) === null, "fps, clamping, junk");
+	ok(V.speedLabel(1 / 30, 30) === "1 fps" && V.speedLabel(2.35, 30) === "2.35×", "labels");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

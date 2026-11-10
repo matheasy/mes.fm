@@ -728,6 +728,34 @@
 		var f = Math.floor(t * fps + 1e-6), fr = f % Math.round(fps), s = Math.floor(f / Math.round(fps)), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60;
 		return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (x < 10 ? "0" : "") + x + ";" + (fr < 10 ? "0" : "") + fr;
 	};
+	/* preview playback speed (preview only, never the export): from 1 source frame per second (1 / fps) up to 45x */
+	V.SPEED_MAX = 45;
+	V.speedMin = function (fps) { return 1 / (fps || 30); };
+	V.clampSpeed = function (s, fps) { s = +s; if (!isFinite(s) || s <= 0) return 1; return Math.max(V.speedMin(fps), Math.min(V.SPEED_MAX, s)); };
+	// one press of - / +: steps of inc (0.05 by default) on a 0.05 grid; below 0.05 the next step down is 1 frame per second
+	V.stepSpeed = function (s, dir, fps, inc) {
+		inc = inc || 0.05; var min = V.speedMin(fps), n;
+		if (dir > 0 && s < 0.05 - 1e-9) n = 0.05;
+		else n = dir > 0 ? Math.floor(s / inc + 1e-9) * inc + inc : Math.ceil(s / inc - 1e-9) * inc - inc;   // the next grid value up / down
+		if (dir < 0 && n < 0.05 - 1e-9) n = min;
+		return V.clampSpeed(Math.round(n * 1e6) / 1e6, fps);
+	};
+	// typed speeds: 3, 3x, 3×, 2.5, 300%, 1/2, 1 fps, 12fps (frames per second of the source)
+	V.parseSpeed = function (txt, fps) {
+		var t = String(txt || "").trim().toLowerCase().replace(/,/g, ".").replace(/\s+/g, ""), m;
+		if (!t) return null;
+		if ((m = /^(\d+(?:\.\d+)?)(?:fps|f\/s|frames?(?:\/s|persecond)?)$/.exec(t))) return V.clampSpeed(+m[1] / (fps || 30), fps);
+		if ((m = /^(\d+(?:\.\d+)?)%$/.exec(t))) return +m[1] > 0 ? V.clampSpeed(+m[1] / 100, fps) : null;
+		if ((m = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)[x×]?$/.exec(t))) return +m[2] > 0 && +m[1] > 0 ? V.clampSpeed(+m[1] / +m[2], fps) : null;
+		if ((m = /^[x×]?(\d+(?:\.\d+)?)[x×]?$/.exec(t))) return +m[1] > 0 ? V.clampSpeed(+m[1], fps) : null;
+		return null;
+	};
+	V.speedLabel = function (s, fps) {
+		fps = fps || 30; var f = s * fps;
+		if (s < 0.05 - 1e-9) return (Math.round(f * 100) / 100) + " fps";
+		return (Math.round(s * 1000) / 1000) + "×";
+	};
+	V.SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 12, 16, 24, 32, 45];
 	V.short = function (t) { if (!(t >= 0)) t = 0; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1); };
 	V.parseTime = function (s, fps) {
 		s = String(s || "").trim(); if (!s) return null;

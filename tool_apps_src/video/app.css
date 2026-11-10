@@ -244,3 +244,6 @@
 	#vd .vd.vd-bar1.vd-lblon .vd-transport .vd-lbl, #vd .vd.vd-bar1.vd-lblon .vd-speed > span {display:inline;} #vd .vd.vd-bar1.vd-lblon #vd-snap .vd-ic1 {display:none;}
 	#vd .vd.vd-bar1.vd-xton .vd-tools .vd-xt {display:inline-block;}
 	#vd .vd.vd-bar1.vd-lblmid #vd-pvwin .vd-lbl, #vd .vd.vd-bar1.vd-lblmid #vd-fs .vd-lbl {display:inline;}
+	#vd .vd-speed .vd-spb {min-width:26px;min-height:30px;padding:0 0.35em;font-size:1.05em;line-height:1;}
+	#vd .vd-speed .vd-spin {width:6.5em;min-height:30px;padding:0.2em 0.35em;} #vd .vd-speed select[hidden], #vd .vd-speed .vd-spin[hidden] {display:none;}
+	#vd .vd.vd-bar1 .vd-speed .vd-spb {min-width:22px;min-height:26px;} #vd .vd.vd-bar1 .vd-speed .vd-spin {min-height:26px;font-size:0.82em;}

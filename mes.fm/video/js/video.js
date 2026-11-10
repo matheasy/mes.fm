@@ -1117,6 +1117,34 @@
 		var f = Math.floor(t * fps + 1e-6), fr = f % Math.round(fps), s = Math.floor(f / Math.round(fps)), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60;
 		return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (x < 10 ? "0" : "") + x + ";" + (fr < 10 ? "0" : "") + fr;
 	};
+	/* preview playback speed (preview only, never the export): from 1 source frame per second (1 / fps) up to 45x */
+	V.SPEED_MAX = 45;
+	V.speedMin = function (fps) { return 1 / (fps || 30); };
+	V.clampSpeed = function (s, fps) { s = +s; if (!isFinite(s) || s <= 0) return 1; return Math.max(V.speedMin(fps), Math.min(V.SPEED_MAX, s)); };
+	// one press of - / +: steps of inc (0.05 by default) on a 0.05 grid; below 0.05 the next step down is 1 frame per second
+	V.stepSpeed = function (s, dir, fps, inc) {
+		inc = inc || 0.05; var min = V.speedMin(fps), n;
+		if (dir > 0 && s < 0.05 - 1e-9) n = 0.05;
+		else n = dir > 0 ? Math.floor(s / inc + 1e-9) * inc + inc : Math.ceil(s / inc - 1e-9) * inc - inc;   // the next grid value up / down
+		if (dir < 0 && n < 0.05 - 1e-9) n = min;
+		return V.clampSpeed(Math.round(n * 1e6) / 1e6, fps);
+	};
+	// typed speeds: 3, 3x, 3×, 2.5, 300%, 1/2, 1 fps, 12fps (frames per second of the source)
+	V.parseSpeed = function (txt, fps) {
+		var t = String(txt || "").trim().toLowerCase().replace(/,/g, ".").replace(/\s+/g, ""), m;
+		if (!t) return null;
+		if ((m = /^(\d+(?:\.\d+)?)(?:fps|f\/s|frames?(?:\/s|persecond)?)$/.exec(t))) return V.clampSpeed(+m[1] / (fps || 30), fps);
+		if ((m = /^(\d+(?:\.\d+)?)%$/.exec(t))) return +m[1] > 0 ? V.clampSpeed(+m[1] / 100, fps) : null;
+		if ((m = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)[x×]?$/.exec(t))) return +m[2] > 0 && +m[1] > 0 ? V.clampSpeed(+m[1] / +m[2], fps) : null;
+		if ((m = /^[x×]?(\d+(?:\.\d+)?)[x×]?$/.exec(t))) return +m[1] > 0 ? V.clampSpeed(+m[1], fps) : null;
+		return null;
+	};
+	V.speedLabel = function (s, fps) {
+		fps = fps || 30; var f = s * fps;
+		if (s < 0.05 - 1e-9) return (Math.round(f * 100) / 100) + " fps";
+		return (Math.round(s * 1000) / 1000) + "×";
+	};
+	V.SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 12, 16, 24, 32, 45];
 	V.short = function (t) { if (!(t >= 0)) t = 0; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1); };
 	V.parseTime = function (s, fps) {
 		s = String(s || "").trim(); if (!s) return null;
@@ -2050,14 +2078,17 @@
 		stopClean(); VE.emit("pause"); sync(); draw();
 	};
 	P.toggle = function () { if (P.playing && !P.rev) P.pause(); else P.play(P.speed); };
-	// preview playback speed (0.25x-4x): the edit and the export are not changed; video / audio elements keep their pitch at this speed
-	P.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
+	// preview playback speed (1 frame / s up to 45x): the edit and the export are not changed; video / audio elements keep their pitch at this
+	// speed. Browsers only play media at 1/16x-16x, so outside that the clips are shown by seeking frame after frame, without sound ("jump" mode).
 	P.setSpeed = function (s) {
-		s = Math.max(0.25, Math.min(4, +s || 1)); P.speed = s;
+		s = V.clampSpeed(s, VE.P.fps); P.speed = s;
 		if (P.playing && !P.rev) { P.pause(); P.play(s); }
 		VE.emit("speed", s);
 	};
-	P.stepSpeed = function (dir) { var L = P.SPEEDS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; P.setSpeed(L[Math.max(0, Math.min(L.length - 1, i + dir))]); };
+	P.stepSpeed = function (dir) { var L = V.SPEED_PRESETS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; var n = dir > 0 ? (L[i] > P.speed + 1e-9 ? L[i] : L[Math.min(L.length - 1, i + 1)]) : (i > 0 ? L[i - 1] : V.speedMin(VE.P.fps)); P.setSpeed(n); };
+	P.nudgeSpeed = function (dir, inc) { P.setSpeed(V.stepSpeed(P.speed, dir, VE.P.fps, inc)); };
+	function jumpRate(pr) { return pr > 16 + 1e-9 || pr < 0.0625 - 1e-9; }
+	P.jumping = function () { return P.playing && jumpRate(P.rate); };
 	P.seek = function (t) {
 		var was = P.playing && !P.rev; if (P.playing) P.pause();
 		VE.t = Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0)));
@@ -2091,7 +2122,12 @@
 			var e = elFor(c); if (!e) return; want[c.id] = 1;
 			var m = VE.media(c.media), active = V.active(c, t), src = V.srcAt(c, Math.max(t, s0));
 			if (src < 0) src = 0; if (m && m.dur && src > m.dur - 0.01) src = m.dur - 0.01;
-			if (playing && active) {
+			var jump = playing && active && jumpRate((c.speed || 1) * P.rate);
+			if (jump) {   // faster than 16x or slower than 1/16x: no sound, the frame at the playhead is sought again as soon as the last seek is done
+				if (!e.el.paused) e.el.pause();
+				var jf = (m && m.fps) || 30;
+				if (!e.el.seeking && Math.abs(e.el.currentTime - src) > 0.5 / jf) setTime(e, src);
+			} else if (playing && active) {
 				var pr = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
 				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
 				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
@@ -2103,7 +2139,7 @@
 				var fps = (m && m.fps) || 30;
 				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
-			if (e.gain && ac) { var g = playing && active && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
+			if (e.gain && ac) { var g = playing && active && !jump && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
 		Object.keys(els).forEach(function (k) { if (!want[k] && now - els[k].used > 4000) release(k); else if (!want[k]) { els[k].el.pause(); if (els[k].gain && ac) els[k].gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); } });
 		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
@@ -2126,6 +2162,7 @@
 		var list = p.clips.filter(function (c) { return c.clean && c.clean.key && VE.hasSound(c) && V.end(c) > t; });
 		for (var j = 0; j < list.length; j++) {
 			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (gen !== cleanGen || !P.playing || P.rev) return; if (!cp) continue;
+			if (jumpRate((c.speed || 1) * P.rate)) continue;   // jump mode plays no sound
 			var buf = cleanBufs[c.clean.key];
 			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;
@@ -3031,10 +3068,48 @@
 	/* ---------- transport ---------- */
 	var P = VE.preview;
 	$("vd-play").onclick = function () { P.toggle(); };
-	var spSel = $("vd-speed");
-	if (spSel) { spSel.value = String(UI.speed || 1); P.speed = +spSel.value || 1; spSel.onchange = function () { P.setSpeed(+spSel.value); }; }
-	VE.on("speed", function (s) { UI.speed = s; saveUI(); if (spSel) { spSel.value = String(s); spSel.classList.toggle("is-on", s !== 1); } if (s !== 1) toast("Preview speed " + s + "× (the exported video is not changed)"); });
-	if (spSel) spSel.classList.toggle("is-on", P.speed !== 1);
+	// speed: - / + in 0.05 steps (hold = keeps going and speeds up), a preset list, "Type a speed..." for any value from 1 frame / s to 45x
+	var spSel = $("vd-speed"), spIn = $("vd-spin");
+	function fillSpeed() {
+		var s = P.speed, fps = VE.P.fps, L = V.SPEED_PRESETS.slice(), min = V.speedMin(fps), h = "";
+		if (L.indexOf(min) < 0) L.unshift(min);
+		if (!L.some(function (x) { return Math.abs(x - s) < 1e-9; })) { L.push(s); L.sort(function (a, b) { return a - b; }); }
+		L.forEach(function (x) { h += '<option value="' + x + '"' + (Math.abs(x - s) < 1e-9 ? " selected" : "") + ">" + V.speedLabel(x, fps) + (Math.abs(x - min) < 1e-9 ? " (1 frame/s)" : "") + "</option>"; });
+		spSel.innerHTML = h + '<option value="type">Type a speed…</option>';
+		spSel.classList.toggle("is-on", Math.abs(s - 1) > 1e-9);
+		$("vd-spdn").disabled = s <= min + 1e-9; $("vd-spup").disabled = s >= V.SPEED_MAX - 1e-9;
+	}
+	P.speed = V.clampSpeed(UI.speed || 1, VE.P.fps); fillSpeed();
+	spSel.onchange = function () {
+		if (spSel.value !== "type") return P.setSpeed(+spSel.value);
+		spSel.value = String(P.speed); spSel.hidden = true; spIn.hidden = false; spIn.value = V.speedLabel(P.speed, VE.P.fps).replace("×", ""); spIn.focus(); spIn.select();
+	};
+	function closeIn() { spIn.hidden = true; spSel.hidden = false; }
+	spIn.addEventListener("keydown", function (e) {
+		e.stopPropagation();
+		if (e.key === "Escape") { e.preventDefault(); closeIn(); spSel.focus(); return; }
+		if (e.key !== "Enter") return;
+		e.preventDefault(); var v = V.parseSpeed(spIn.value, VE.P.fps);
+		if (v == null) { toast("Type a speed like 2.35, 300%, 1/2 or 5 fps (from 1 frame per second up to 45×)."); return; }
+		closeIn(); P.setSpeed(v); spSel.focus();
+	});
+	spIn.addEventListener("blur", function () { setTimeout(closeIn, 120); });
+	// hold - / +: one step at once, then repeats after 0.4 s; 0.05 steps for the first second, then 0.25, then 1
+	[["vd-spdn", -1], ["vd-spup", 1]].forEach(function (b) {
+		var el = $(b[0]), t0 = 0, tm = 0, held = false;
+		function stop() { clearTimeout(tm); tm = 0; }
+		function rep() { var dt = performance.now() - t0; P.nudgeSpeed(b[1], dt > 2600 ? 1 : dt > 1400 ? 0.25 : 0.05); tm = setTimeout(rep, 90); }
+		el.addEventListener("pointerdown", function (e) { if (e.button !== 0 || el.disabled) return; e.preventDefault(); held = true; t0 = performance.now(); P.nudgeSpeed(b[1]); tm = setTimeout(rep, 420); });
+		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
+		el.addEventListener("click", function (e) { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });   // keyboard Enter / Space
+	});
+	var spToastT = 0;
+	VE.on("speed", function (s) {
+		UI.speed = s; saveUI(); fillSpeed();
+		clearTimeout(spToastT);
+		spToastT = setTimeout(function () { if (Math.abs(s - 1) > 1e-9) toast("Preview speed " + V.speedLabel(s, VE.P.fps) + (s > 16 + 1e-9 || s < 0.0625 - 1e-9 ? ": the browser can't play this fast or slow, so frames are skipped and there is no sound" : "") + " (the exported video is not changed)", 3500); }, 250);
+	});
+	VE.on("change", function () { if (P.speed < V.speedMin(VE.P.fps) - 1e-9) P.setSpeed(P.speed); else fillSpeed(); });
 	// previous / next clip edge (Camtasia: Ctrl+Alt+Left / Right)
 	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
 	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture
