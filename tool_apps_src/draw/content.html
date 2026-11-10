@@ -1,0 +1,153 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu dr" id="dr">
+		<div class="dr-view" id="dr-view">
+			<div class="dr-bar" id="dr-bar">
+				<input id="dr-name" class="dr-name" type="text" maxlength="80" value="Untitled drawing" aria-label="Drawing name" autocomplete="off" spellcheck="false">
+				<span class="dr-grp" role="group" aria-label="Drawing">
+					<button type="button" class="dr-b" id="dr-new" title="Start a new blank drawing (your current one stays in My drawings)">＋ New</button>
+					<button type="button" class="dr-b dr-ic" id="dr-undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10h-2"/></svg></button>
+					<button type="button" class="dr-b dr-ic" id="dr-redo" title="Redo (Ctrl+Y or Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="m15 7 5 5-5 5M20 12H9a5 5 0 0 0 0 10h2"/></svg></button>
+				</span>
+				<span class="dr-grp" role="group" aria-label="Zoom">
+					<button type="button" class="dr-b dr-ic" id="dr-zout" title="Zoom out (-)" aria-label="Zoom out">−</button>
+					<button type="button" class="dr-b dr-zl" id="dr-zfit" title="Fit the page in the window (0)">100%</button>
+					<button type="button" class="dr-b dr-ic" id="dr-zin" title="Zoom in (+)" aria-label="Zoom in">＋</button>
+				</span>
+				<span class="dr-grp" role="group" aria-label="Page and export">
+					<button type="button" class="dr-b" id="dr-pagebtn" aria-expanded="false" aria-controls="dr-pagepop" title="Page size, paper and background colour">📄 Page</button>
+					<button type="button" class="dr-b dr-b--pri" id="dr-expbtn" aria-expanded="false" aria-controls="dr-exppop" title="Download as PNG, JPEG or SVG, copy, or open in the Photo Editor (Ctrl+E)">⬇ Export</button>
+					<button type="button" class="dr-b" id="dr-sidebtn" aria-pressed="true" title="Show or hide the side panel (shapes, emoji, templates...)">▤ Panel</button>
+				</span>
+			</div>
+
+			<div class="dr-pop" id="dr-pagepop" hidden>
+				<div class="dr-poprow">
+					<label class="dr-f"><span>Page size</span><select id="dr-size" class="tu-select"></select></label>
+					<label class="dr-f dr-f--n"><span>Width</span><input id="dr-w" class="tu-input" type="number" min="16" max="8000" inputmode="numeric"></label>
+					<label class="dr-f dr-f--n"><span>Height</span><input id="dr-h" class="tu-input" type="number" min="16" max="8000" inputmode="numeric"></label>
+					<label class="dr-f"><span>Paper</span><select id="dr-paper" class="tu-select"></select></label>
+					<label class="dr-f dr-f--c"><span>Background</span><input id="dr-bgc" type="color" value="#ffffff"></label>
+					<label class="dr-chk"><input type="checkbox" id="dr-bgt"> Transparent</label>
+					<button type="button" class="dr-b" id="dr-pageok">Done</button>
+				</div>
+				<p class="dr-pnote">Changing the size keeps everything where it is (measured from the top left). Paper lines are a guide: they are not erased by the eraser, and you can leave them out of the export.</p>
+			</div>
+
+			<div class="dr-pop" id="dr-exppop" hidden>
+				<div class="dr-poprow">
+					<div class="dr-f"><span>Format</span><div class="tu-seg" id="dr-fmt" role="group" aria-label="Format"><button type="button" data-v="png" aria-pressed="true">PNG</button><button type="button" data-v="jpeg" aria-pressed="false">JPEG</button><button type="button" data-v="svg" aria-pressed="false">SVG</button></div></div>
+					<div class="dr-f"><span>Size</span><div class="tu-seg" id="dr-scale" role="group" aria-label="Size"><button type="button" data-v="0.5" aria-pressed="false">½×</button><button type="button" data-v="1" aria-pressed="true">1×</button><button type="button" data-v="2" aria-pressed="false">2×</button><button type="button" data-v="4" aria-pressed="false">4×</button></div></div>
+					<div class="dr-f"><span>What</span><div class="tu-seg" id="dr-what" role="group" aria-label="What to export"><button type="button" data-v="page" aria-pressed="true">Whole page</button><button type="button" data-v="trim" aria-pressed="false">Trim to the drawing</button><button type="button" data-v="sel" aria-pressed="false">Only what's selected</button></div></div>
+				</div>
+				<div class="dr-poprow">
+					<label class="dr-chk"><input type="checkbox" id="dr-xbg" checked> Background colour</label>
+					<label class="dr-chk"><input type="checkbox" id="dr-xpaper" checked> Paper lines</label>
+					<span class="dr-xinfo" id="dr-xinfo"></span>
+				</div>
+				<div class="dr-poprow dr-xbtns">
+					<button type="button" class="dr-b dr-b--pri" id="dr-xdl">⬇ Download</button>
+					<button type="button" class="dr-b" id="dr-xcopy">📋 Copy image</button>
+					<button type="button" class="dr-b" id="dr-xphoto" title="Open the picture in the MES Photo Editor in a new tab (nothing is uploaded)">🖼 Edit in Photo Editor</button>
+					<button type="button" class="dr-b" id="dr-xsave" title="A file you can open here again later, on any computer, with every part still editable">💾 Save as .mesdraw file</button>
+					<button type="button" class="dr-b" id="dr-xopen" title="Open a .mesdraw file, or add a picture">📂 Open file…</button>
+					<input type="file" id="dr-file" accept=".mesdraw,.json,image/*" hidden multiple>
+				</div>
+			</div>
+
+			<div class="dr-opts" id="dr-opts">
+				<div class="dr-og">
+					<button type="button" class="dr-sw dr-swmain" id="dr-cbtn" title="Colour (lines, text, paint bucket)" aria-label="Choose colour"><span id="dr-cdot"></span></button>
+					<input type="color" id="dr-c" class="dr-hidcol" value="#1e1e1e" aria-label="Colour">
+					<div class="dr-pal" id="dr-pal" role="group" aria-label="Colours"></div>
+				</div>
+				<div class="dr-og" data-for="brush shape text select">
+					<label class="dr-chk" title="Fill shapes (and put a box behind text)"><input type="checkbox" id="dr-fon"> Fill</label>
+					<button type="button" class="dr-sw" id="dr-fbtn" title="Fill colour" aria-label="Choose fill colour"><span id="dr-fdot"></span></button>
+					<input type="color" id="dr-f" class="dr-hidcol" value="#ffd43b" aria-label="Fill colour">
+				</div>
+				<div class="dr-og" data-for="brush eraser shape select">
+					<label class="dr-rng"><span id="dr-wl">Size</span><input type="range" id="dr-w2" min="1" max="120" value="6"><output id="dr-wv">6</output></label>
+				</div>
+				<div class="dr-og" data-for="brush shape text select img">
+					<label class="dr-rng"><span>Opacity</span><input type="range" id="dr-o" min="5" max="100" value="100"><output id="dr-ov">100%</output></label>
+				</div>
+				<div class="dr-og" data-for="brush">
+					<select id="dr-brush" class="dr-sel" aria-label="Brush" title="Brush"></select>
+					<select id="dr-sym" class="dr-sel" aria-label="Symmetry" title="Symmetry: draw one line, get mirror copies">
+						<option value="off">No symmetry</option><option value="mx">Mirror ↔</option><option value="my">Mirror ↕</option><option value="m4">Mirror 4 ways</option><option value="r6">Radial 6</option><option value="r8">Radial 8</option><option value="r12">Radial 12</option><option value="k12">Kaleidoscope</option>
+					</select>
+					<label class="dr-rng dr-rng--s" title="Smooths shaky lines"><span>Smooth</span><input type="range" id="dr-smooth" min="0" max="100" value="50"></label>
+				</div>
+				<div class="dr-og" data-for="eraser">
+					<div class="tu-seg dr-seg" id="dr-emode" role="group" aria-label="Eraser"><button type="button" data-v="rub" aria-pressed="true" title="Rubs out whatever is under it">Rub out</button><button type="button" data-v="obj" aria-pressed="false" title="Removes a whole line, shape or text you touch">Whole strokes</button></div>
+				</div>
+				<div class="dr-og" data-for="shape">
+					<button type="button" class="dr-b" id="dr-kind" title="Pick another shape (in the side panel)">▭ Rectangle</button>
+					<label class="dr-chk"><input type="checkbox" id="dr-dash"> Dashed</label>
+				</div>
+				<div class="dr-og" data-for="text">
+					<select id="dr-font" class="dr-sel" aria-label="Font" title="Font"></select>
+					<label class="dr-rng dr-rng--n"><span>Size</span><input type="number" id="dr-fs" min="6" max="600" value="48" class="dr-num"></label>
+					<button type="button" class="dr-b dr-ic dr-tg" id="dr-bold" aria-pressed="false" title="Bold"><b>B</b></button>
+					<button type="button" class="dr-b dr-ic dr-tg" id="dr-ital" aria-pressed="false" title="Italic"><i>I</i></button>
+					<div class="tu-seg dr-seg" id="dr-al" role="group" aria-label="Alignment"><button type="button" data-v="l" aria-pressed="true" title="Left">⇤</button><button type="button" data-v="c" aria-pressed="false" title="Centre">↔</button><button type="button" data-v="r" aria-pressed="false" title="Right">⇥</button></div>
+					<label class="dr-chk" title="An outline around the letters (meme style)"><input type="checkbox" id="dr-son"> Outline</label>
+					<input type="color" id="dr-sc" value="#000000" aria-label="Outline colour" class="dr-mini">
+				</div>
+				<div class="dr-og dr-selacts" id="dr-selacts" hidden>
+					<button type="button" class="dr-b" id="dr-dup" title="Duplicate (Ctrl+D)">⧉ Duplicate</button>
+					<button type="button" class="dr-b dr-ic" id="dr-front" title="Bring to front (Ctrl+])" aria-label="Bring to front">⤒</button>
+					<button type="button" class="dr-b dr-ic" id="dr-back" title="Send to back (Ctrl+[)" aria-label="Send to back">⤓</button>
+					<button type="button" class="dr-b dr-ic" id="dr-fliph" title="Flip left-right" aria-label="Flip left-right">⇋</button>
+					<button type="button" class="dr-b dr-ic" id="dr-flipv" title="Flip upside down" aria-label="Flip upside down">⥮</button>
+					<button type="button" class="dr-b" id="dr-group" title="Group (Ctrl+G) / Ungroup (Ctrl+Shift+G)">Group</button>
+					<button type="button" class="dr-b dr-b--del" id="dr-del" title="Delete (Delete key)">🗑 Delete</button>
+				</div>
+			</div>
+
+			<div class="dr-main" id="dr-main">
+				<div class="dr-tools" id="dr-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
+				<div class="dr-stage" id="dr-stage">
+					<canvas id="dr-cv" tabindex="0" aria-label="Drawing area"></canvas>
+					<textarea id="dr-ted" class="dr-ted" hidden spellcheck="true" aria-label="Type your text"></textarea>
+					<div class="dr-tip" id="dr-tip" aria-live="polite"></div>
+				</div>
+				<div class="dr-side" id="dr-side">
+					<div class="dr-tabs" id="dr-tabs" role="tablist" aria-label="Side panel">
+						<button type="button" role="tab" data-t="shapes" aria-selected="true">Shapes</button><button type="button" role="tab" data-t="emoji" aria-selected="false" tabindex="-1">Emoji</button><button type="button" role="tab" data-t="symbols" aria-selected="false" tabindex="-1">Symbols</button><button type="button" role="tab" data-t="tpl" aria-selected="false" tabindex="-1">Templates</button><button type="button" role="tab" data-t="mine" aria-selected="false" tabindex="-1">My drawings</button>
+					</div>
+					<div class="dr-pane" id="dr-p-shapes" role="tabpanel"></div>
+					<div class="dr-pane" id="dr-p-emoji" role="tabpanel" hidden></div>
+					<div class="dr-pane" id="dr-p-symbols" role="tabpanel" hidden></div>
+					<div class="dr-pane" id="dr-p-tpl" role="tabpanel" hidden></div>
+					<div class="dr-pane" id="dr-p-mine" role="tabpanel" hidden></div>
+				</div>
+			</div>
+			<p class="dr-status" id="dr-status"></p>
+		</div>
+		<p class="tu-note dr-keys"><b>Tips:</b> hold <kbd>Shift</kbd> for straight lines, squares and circles, <kbd>Alt</kbd> to draw a shape from its centre. <kbd>Space</kbd> + drag (or two fingers) moves around, <kbd>Ctrl</kbd> + wheel or pinch zooms. Keys: <kbd>V</kbd> select, <kbd>B</kbd> brush, <kbd>E</kbd> eraser, <kbd>S</kbd> shape, <kbd>R</kbd> rectangle, <kbd>O</kbd> circle, <kbd>A</kbd> arrow, <kbd>L</kbd> line, <kbd>T</kbd> text, <kbd>F</kbd> paint bucket, <kbd>I</kbd> colour picker, <kbd>H</kbd> hand, <kbd>[</kbd> <kbd>]</kbd> size. Everything is saved in this browser as you go; nothing is uploaded.</p>
+		<div class="tu-toast dr-toast" id="dr-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>A free drawing pad in your browser</h2>
+			<p>Sketch, doodle, draw diagrams, make a quick icon or a YouTube thumbnail, or colour in a page with a child: MES Draw works on a computer, a tablet with a stylus or a phone, with no install and no account. Every line, shape, emoji and word stays its own piece, so you can move it, resize it, turn it, recolour it or delete it later.</p>
+			<h3>What you can do</h3>
+			<dl>
+				<dt>Brushes</dt><dd>Pen (thinner when you move fast, or by pressure with a stylus), marker, pencil, highlighter, calligraphy, neon and spray. Symmetry turns one line into mirror or kaleidoscope copies.</dd>
+				<dt>Shapes</dt><dd>30 shapes: rectangles, circles, arrows, stars, hearts, speech and thought bubbles, clouds, check marks, cubes and more, with or without a fill, solid or dashed.</dd>
+				<dt>Emoji and symbols</dt><dd>Hundreds of emoji and symbols (arrows, maths, Greek letters, stars, music) to stamp on the page and resize: handy for stickers and icons.</dd>
+				<dt>Text</dt><dd>Any font on your computer, bold, italic, alignment, a box behind it or a meme-style outline.</dd>
+				<dt>Templates and examples</dt><dd>Grid, dot, lined, graph and music paper; comic strips, storyboards, mind maps, flowcharts, Venn diagrams, a coordinate plane, planners; thumbnail, app icon, meme, birthday card, certificate and poster designs; drawings to change (house, flower, rocket...) and colouring pages to fill with the paint bucket.</dd>
+				<dt>Saving</dt><dd>Every drawing is kept in this browser (My drawings). Download it as a PNG (with a see-through background if you like), JPEG or SVG, copy it, open it in the MES Photo Editor, or save a .mesdraw file to keep working on it on another computer.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is my drawing uploaded anywhere?</dt><dd>No. It is drawn and saved in your own browser. Clearing your browser's site data removes it, so download a file for anything you want to keep for good.</dd>
+				<dt>How do I erase only part of a line?</dt><dd>Use the eraser in "Rub out" mode. "Whole strokes" removes the whole line, shape or text you touch. To remove one thing exactly, select it and press Delete.</dd>
+				<dt>How do I make a sticker or icon with a see-through background?</dt><dd>Open Page and tick Transparent (or start from the "Transparent" or "App icon" template), then Export as PNG with "Trim to the drawing".</dd>
+				<dt>Can I draw with an Apple Pencil or a Wacom pen?</dt><dd>Yes, the pen brush follows the pressure. Once you have used a pen, a finger on the screen moves the page instead of drawing, so your palm doesn't leave marks.</dd>
+			</dl>
+			<p>Related: <a href="/photo">Photo Editor</a> for editing pictures, <a href="/emoji">Emoji Copier</a>, <a href="/symbols">Symbol Copier</a>, <a href="/copy-text">Copy Text</a>, <a href="/fonts">Font Preview</a>, <a href="/2d-graphing-calculator">2D Graphing Calculator</a> and <a href="/kids">MES Kids</a>.</p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js" defer></script>

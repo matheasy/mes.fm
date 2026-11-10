@@ -712,6 +712,14 @@ APPS = {
                           nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/time-dilation-explained'>Explained</a></li>", menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/time-dilation-explained\">Time Dilation Explained</a></li>"),
     # Photo Editor: layers, selections, text labels, arrows / callouts / step badges, retouch, adjustments, PSD, all in the browser (canvas). lib.js = MESPixel (pure pixel maths, node-tested:
     # tool_apps_src/photo-editor-tests.js), js_parts = engine (core.js layers / history / selection) + tools + dialogs; lib_from = image-converter's lib (MESImg: formats, zip). Wide page, always-dark workspace.
+    # MES Draw (2026-11-10, mes.fm/draw): a vector drawing pad (brushes incl. pressure pen / symmetry, 30 shapes, text, emoji + symbols,
+    # templates / examples / colouring pages, select-move-resize-rotate, PNG / JPEG / SVG export, .mesdraw files, drawings kept in IndexedDB
+    # "mes-draw"). lib.js = MESDraw (pure; node tool_apps_src/draw-tests.js), app.js = UI. lib_from image-converter for the Photo Editor hand-over.
+    "draw": dict(title="MES Draw", page_title="Drawing Pad: Draw, Sketch and Doodle Online Free",
+                 tag="Sketch, doodle, diagram and colour in, right in your browser.", accent="#7048e8", dark="#5235b8", tint="#ede8fd",
+                 desc="Free online drawing pad: sketch with a pen, marker, pencil, highlighter, calligraphy, neon or spray brush, add 30 shapes, arrows, text, emoji and symbols, start from templates (grid and lined paper, comic strips, mind maps, flowcharts, thumbnails, icons) or colouring pages, then download a PNG, JPEG or SVG. No sign-up; drawings stay in your browser.",
+                 meta_desc="Free drawing pad: brushes, shapes, text, emoji, templates and colouring pages. Export PNG, JPEG or SVG. No sign-up, saved in your browser.",
+                 js_v="1", lib_from=["image-converter"]),
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
@@ -1376,12 +1384,6 @@ APPS = {
                       desc="Free online 3D modeling app for beginners and 3D printing: add boxes, cylinders, spheres, 3D text and more, cut holes, group shapes, revolve and extrude your own drawings, start from templates like a name keychain, phone stand or gear, check that it fits your printer and is watertight, estimate filament and cost, and export STL, 3MF, OBJ or GLB. Runs in your browser: nothing is uploaded.",
                       meta_desc="Free online 3D modeler for beginners: build models from shapes, holes and 3D text, check them for 3D printing and export STL or 3MF. Runs in your browser, nothing uploaded.",
                       js_v="2", js_parts=["templates.js"], lib_from=["image-converter"]),
-    # MES Brick Builder (2026-11-10): 3D building-brick simulator with example builds, bridges and a simple strength test. lib = MESBrick (tests: node tool_apps_src/brick-builder-tests.js), examples in templates.js
-    "brick-builder": dict(title="MES Brick Builder", page_title="Brick Builder: Free 3D Building Brick Simulator with Bridges and Strength Test",
-                      tag="Build with virtual bricks in 3D. Test how strong your bridge is.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
-                      desc="Free virtual brick builder in your browser: stack bricks, plates, slopes, arches and wheels in 3D, start from 20+ example builds for kids (house, car, rocket, castle) and engineering (beam, arch and cantilever bridges, crane, corbel arch), follow them step by step, put weights on your build and find its breaking load, then take the parts list or an STL file. No sign-up, nothing to install.",
-                      meta_desc="Free 3D brick builder: stack virtual bricks, start from example builds for kids and bridges, test how much weight your build holds, follow steps and get a parts list.",
-                      js_v="1", js_parts=["templates.js"]),
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
