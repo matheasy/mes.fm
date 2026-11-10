@@ -492,6 +492,19 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 #wt .wt-player.mes-pside.wt-zprev > :not([data-mes-stage]) {position:relative;z-index:4;opacity:0.3 !important;pointer-events:none !important;}
 #wt .wt-player.mes-pside.wt-zprev > .mes-pgrip {display:none !important;}
 
+/* our own control bar while zoomed in (the player's own bar is scaled / moved with the picture) */
+.wt-stage.wt-hasctl .wt-zov {bottom:46px !important;}
+.wt-ctl {position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;flex-wrap:nowrap;box-sizing:border-box;align-items:center;gap:0.35em;padding:0.35em 0.6em;
+	background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.55));color:#fff;font-size:0.9rem;transition:opacity 0.25s;}
+.wt-ctl[hidden] {display:none !important;}
+.wt-ctl.wt-cidle {opacity:0;}
+#wt .wt-ctl button {font:inherit;min-width:2.4em;height:2.2em;padding:0 0.5em;border:0;border-radius:999px;background:rgba(255,255,255,0.14);color:#fff;cursor:pointer;line-height:1;white-space:nowrap;}
+#wt .wt-ctl button:hover, #wt .wt-ctl button:focus-visible {background:rgba(255,255,255,0.28);}
+#wt .wt-ctl .wt-cplay {min-width:2.6em;font-weight:700;}
+#wt .wt-ctl .wt-ctime {color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap;padding:0 0.3em;}
+#wt .wt-ctl .wt-cseek {flex:1 1 0;width:auto !important;display:block;min-width:3em;padding:0;border:0;box-shadow:none;height:1.6em;margin:0;accent-color:var(--wt-acc);cursor:pointer;background:transparent;}
+@media (max-width:480px) {#wt .wt-ctl [data-c="back"], #wt .wt-ctl [data-c="fwd"] {display:none;} #wt .wt-ctl .wt-ctime {font-size:0.85em;}}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -642,6 +655,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .wt-smsg.is-ok{color:#73e89f}
 	body.dark-mode .wt-hwarn.is-open{color:#ee8d6d}
 	body.dark-mode .wt-tundo{color:#fcd05f}
+	body.dark-mode .wt-ctl{background:linear-gradient(to top, rgba(82,82,82,0.85), rgba(82,82,82,0.55))}
+	body.dark-mode #wt .wt-ctl button{background:rgba(26,26,26,0.14)}
+	body.dark-mode #wt .wt-ctl button:hover,body.dark-mode #wt .wt-ctl button:focus-visible{background:rgba(26,26,26,0.28)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -899,6 +915,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="wt-sub" id="wt-sub"></div>
 				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
 				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
+				<label class="wt-check"><input type="checkbox" id="wt-zctl" checked> When zoomed in, show a play / seek bar under the picture (the player's own bar moves with the zoom)</label>
 				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 			</div>
 			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
@@ -1048,7 +1065,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=1" defer></script><script src="/watch/js/watch.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=1" defer></script><script src="/watch/js/watch.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

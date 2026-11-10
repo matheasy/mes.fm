@@ -931,7 +931,7 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, cm: false, pz: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	var saveHooks = [];
@@ -1399,7 +1399,71 @@
 		mini.innerHTML = '<button type="button" data-z="in" title="Zoom in (+)" aria-label="Zoom in">+</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100% (0)">100%</button><button type="button" data-z="out" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button>';
 		mini.addEventListener('click', function (e) { var b = e.target.closest('[data-z]'); if (!b) return; var z = b.dataset.z, k = (S.zoom || {}).k || 1; if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else zoomTo(fillK()); });
 		mini.addEventListener('wheel', function (e) { e.preventDefault(); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY)); }, { passive: false });
-		st.appendChild(mini); applyZoom();
+		st.appendChild(mini); ctlBar(st); applyZoom();
+	}
+	/* our own control bar while zoomed in: the zoom scales the player's own controls with the picture (YouTube's bar moves off
+	   the screen), and a page can't separate them, so this one sits at the bottom of the box, unscaled */
+	var ctlT = 0, ctlHide = 0;
+	function ctlBar(st) {
+		var c = document.createElement('div'); c.className = 'wt-ctl'; c.hidden = true; c.setAttribute('role', 'toolbar'); c.setAttribute('aria-label', 'Player');
+		c.innerHTML = '<button type="button" data-c="play" class="wt-cplay" aria-label="Play or pause (K)">▶&#xFE0E;</button>' +
+			'<button type="button" data-c="back" aria-label="Back 10 seconds" title="Back 10 s">−10</button>' +
+			'<button type="button" data-c="fwd" aria-label="Forward 10 seconds" title="Forward 10 s">+10</button>' +
+			'<span class="wt-ctime">0:00 / 0:00</span>' +
+			'<input type="range" class="wt-cseek" min="0" max="1000" step="1" value="0" aria-label="Seek">' +
+			'<button type="button" data-c="mute" class="wt-cmute" aria-label="Mute or unmute">🔊&#xFE0E;</button>';
+		['pointerdown', 'dblclick', 'wheel', 'touchstart'].forEach(function (ev) { c.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
+		c.addEventListener('click', function (e) {
+			var b = e.target.closest('[data-c]'); if (!b) return; var k = b.dataset.c;
+			if (k === 'play') togglePlay(); else if (k === 'back') seekBy(-10); else if (k === 'fwd') seekBy(10);
+			else if (k === 'mute') {
+				try { if (yt && yt.isMuted) { if (yt.isMuted()) yt.unMute(); else yt.mute(); } else if (vid) vid.muted = !vid.muted; } catch (x) {}
+			}
+			setTimeout(ctlTick, 60); ctlWake();
+		});
+		var sk = c.querySelector('.wt-cseek'), dragging = false;
+		sk.addEventListener('input', function () {
+			dragging = true; var p = position(); if (!p || !p.dur) return; var t = p.dur * sk.value / 1000;
+			c.querySelector('.wt-ctime').textContent = W.fmt(t) + ' / ' + W.fmt(p.dur); ctlWake();
+		});
+		sk.addEventListener('change', function () {
+			dragging = false; var p = position(); if (!p || !p.dur) return; var t = p.dur * sk.value / 1000;
+			try { if (yt && yt.seekTo) yt.seekTo(t, true); else if (vid) vid.currentTime = t; } catch (x) {}
+			setTimeout(ctlTick, 120);
+		});
+		c.__drag = function () { return dragging; };
+		st.appendChild(c);
+		st.addEventListener('pointermove', ctlWake); st.addEventListener('pointerdown', ctlWake, true);
+	}
+	function playing() {
+		try { if (yt && yt.getPlayerState) return yt.getPlayerState() === 1; } catch (e) {}
+		return !!(vid && !vid.paused && !vid.ended);
+	}
+	function ctlWake() {
+		var c = document.querySelector('#wt-stage .wt-ctl'); if (!c || c.hidden) return;
+		c.classList.remove('wt-cidle'); clearTimeout(ctlHide);
+		ctlHide = setTimeout(function () { if (playing() && !c.matches(':hover, :focus-within')) c.classList.add('wt-cidle'); }, 2600);
+	}
+	function ctlTick() {
+		var c = document.querySelector('#wt-stage .wt-ctl'); if (!c || c.hidden) return;
+		var p = position() || { pos: 0, dur: 0 }, on = playing();
+		c.querySelector('.wt-cplay').innerHTML = on ? '❚❚' : '▶&#xFE0E;';
+		if (!c.__drag()) {
+			c.querySelector('.wt-ctime').textContent = W.fmt(p.pos) + ' / ' + (p.dur ? W.fmt(p.dur) : '0:00');
+			var sk = c.querySelector('.wt-cseek'); sk.value = p.dur ? Math.round(p.pos / p.dur * 1000) : 0;
+			sk.style.setProperty('--p', (p.dur ? p.pos / p.dur * 100 : 0) + '%');
+		}
+		var m = false; try { m = yt && yt.isMuted ? yt.isMuted() : !!(vid && vid.muted); } catch (e) {}
+		c.querySelector('.wt-cmute').innerHTML = m ? '🔇&#xFE0E;' : '🔊&#xFE0E;';
+		if (!on) c.classList.remove('wt-cidle');
+	}
+	function ctlSync(st, z) {
+		var c = st.querySelector('.wt-ctl'); if (!c) return;
+		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
+		if (c.hidden === !want) { if (want) ctlTick(); return; }
+		c.hidden = !want; st.classList.toggle('wt-hasctl', want); clearInterval(ctlT);
+		if (vid) vid.controls = !want;   // the video's own bar would show, scaled and moved, under ours
+		if (want) { ctlTick(); ctlWake(); ctlT = setInterval(ctlTick, 300); }
 	}
 	var finePtr = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)') : null;
 	if (finePtr && finePtr.addEventListener) finePtr.addEventListener('change', function () { applyZoom(); });
@@ -1419,6 +1483,7 @@
 			ov.style.touchAction = zMode || fill || z.k > 1.001 ? 'none' : 'pan-y';   // a swipe over the video still scrolls the page
 		}
 		st.classList.toggle('wt-ztouch', touch && !zMode);
+		ctlSync(st, z);
 	}
 	function touchOn() {
 		if (S.pz === false || !cur) return false;
@@ -1503,6 +1568,8 @@
 	if (window.MutationObserver) new MutationObserver(function () { applyZoom(); }).observe($('wt-stage'), { childList: true });
 	$('wt-pz').checked = S.pz !== false;
 	$('wt-pz').onchange = function () { S.pz = this.checked; save(); applyZoom(); };
+	$('wt-zctl').checked = S.zctl !== false;
+	$('wt-zctl').onchange = function () { S.zctl = this.checked; save(); applyZoom(); };
 
 	/* ---------- player bar ---------- */
 	$('wt-prev').onclick = function () { go(-1); };
