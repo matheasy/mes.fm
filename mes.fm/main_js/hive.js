@@ -584,14 +584,72 @@
         if (u && u.via === "hiveauth") return Promise.resolve(hasSession() ? hasShim : null);
         return extension(wait);
     }
+    /* ---------- Keychain 4 (Nov 2026): same page API, new limits ----------
+       Keychain 4.x keeps window.hive_keychain and every request* call as before (checked against 4.1.2 from the Chrome Web Store),
+       but its background now refuses a request when mes.fm already has 5 requests waiting for an answer ("request_limit"), when the
+       same request is sent twice ("request_pending"), when a request is over 256 KB, or when it cannot tell which tab sent it
+       ("invalid_sender"). A refused request answers at once with a short technical message, so every answer from the extension goes
+       through kcExplain(), which replaces those messages with what the person should do. The page's own code is unchanged. */
+    var KC_LIMIT_MSG = "Hive Keychain already has requests from mes.fm waiting for an answer (it allows 5 at a time). Open the Keychain window " +
+        "(or its icon in the browser toolbar), approve or reject what is waiting there, then try again.";
+    function kcExplain(r) {
+        if (!r || r.success) return r;
+        var code = String(r.error && (r.error.code || r.error) || ""), m = String(r.message || "");
+        var nice = /size limit/i.test(m) ? "This is too big for one Hive Keychain request. Try a smaller amount of data."
+            : code === "request_limit" || /request limit exceeded/i.test(m) ? KC_LIMIT_MSG
+            : code === "request_pending" || /already pending/i.test(m) ? "Hive Keychain is already showing this request. Answer it in the Keychain window first."
+            : code === "invalid_sender" ? "Hive Keychain could not tell which tab sent the request. Reload the page and try again."
+            : code === "incomplete" && /invalid request/i.test(m) ? "Hive Keychain refused the request as incomplete. Reload the page and try again; if it keeps happening, tell us."
+            : "";
+        if (nice) { r.rawMessage = m; r.message = nice; r.kcCode = code || "limit"; }
+        return r;
+    }
+    function kcError(r, fallback) {
+        r = kcExplain(r);
+        var e = new Error((r && (r.message || (r.error && (r.error.message || r.error)))) || fallback || "Cancelled");
+        e.code = r && r.error === "user_cancel" ? "cancel" : r && r.kcCode ? "kc_" + r.kcCode : "fail";
+        e.response = r;
+        return e;
+    }
+    /* the extension's object with every request*() callback passed through kcExplain() (cached per injected object) */
+    var wrapped = null, wrappedOf = null;
+    function wrapKC(k) {
+        if (!k) return k;
+        if (wrappedOf === k) return wrapped;
+        var w = {};
+        Object.keys(k).forEach(function (name) {
+            var f = k[name];
+            if (typeof f !== "function") return;
+            if (!/^request/.test(name)) { w[name] = f.bind(k); return; }
+            w[name] = function () {
+                var a = Array.prototype.slice.call(arguments).map(function (x) {
+                    return typeof x === "function" ? function (r) { return x(kcExplain(r)); } : x;
+                });
+                return f.apply(k, a);
+            };
+        });
+        w.raw = k;
+        wrapped = w; wrappedOf = k;
+        return w;
+    }
+    /* Keychain's content script runs once the page has loaded and injects hive_keychain about 0.3 s later (measured with 4.1.2),
+       so wait until 2.5 s after the load event (or `wait` ms when given) before deciding it is not installed. */
+    function sinceLoad() {
+        try {
+            if (root.document && root.document.readyState !== "complete") return -1;
+            var n = root.performance && root.performance.getEntriesByType && root.performance.getEntriesByType("navigation")[0];
+            if (n && n.loadEventEnd) return root.performance.now() - n.loadEventEnd;
+        } catch (e) {}
+        return 1e9;
+    }
     function extension(wait) {
-        if (root.hive_keychain) return Promise.resolve(root.hive_keychain);
-        /* the extension injects hive_keychain shortly after the page loads */
+        if (root.hive_keychain) return Promise.resolve(wrapKC(root.hive_keychain));
         return new Promise(function (res) {
-            var t0 = Date.now(), ms = wait == null ? 1500 : wait;
+            var t0 = Date.now(), ms = wait == null ? null : wait;
             (function poll() {
-                if (root.hive_keychain) return res(root.hive_keychain);
-                if (Date.now() - t0 >= ms) return res(null);
+                if (root.hive_keychain) return res(wrapKC(root.hive_keychain));
+                var sl = sinceLoad(), budget = ms != null ? ms : (sl < 0 ? 15000 : Math.max(400, 2500 - sl));
+                if (Date.now() - t0 >= budget) return res(null);
                 setTimeout(poll, 100);
             })();
         });
@@ -605,7 +663,7 @@
             return new Promise(function (res, rej) {
                 fn(k, function (r) {
                     if (r && r.success) res(r);
-                    else { var e = new Error((r && (r.message || (r.error && (r.error.message || r.error)))) || "Cancelled"); e.code = r && r.error === "user_cancel" ? "cancel" : "fail"; e.response = r; rej(e); }
+                    else rej(kcError(r));
                 });
             });
         });
@@ -636,7 +694,7 @@
             return new Promise(function (res, rej) {
                 k.requestSignBuffer(name, msg, "Posting", function (r) {
                     if (r && r.success) res(r);
-                    else { var e = new Error((r && (r.message || (r.error && (r.error.message || r.error)))) || "Cancelled"); e.code = r && r.error === "user_cancel" ? "cancel" : "fail"; e.response = r; rej(e); }
+                    else rej(kcError(r));
                 }, null, "Log in to mes.fm");
             }).then(function (r) {
                 var s = ls(); if (s) try { s.removeItem(LS_HAS); } catch (e) {}
@@ -644,8 +702,7 @@
             });
         }
         if (opt.via === "hiveauth") return viaHas();
-        var t = root.performance && root.performance.now ? root.performance.now() : 0;
-        return extension(t > 3000 ? 0 : 1500).then(function (k) {
+        return extension().then(function (k) {
             if (k) return viaExt(k);
             if (opt.via === "keychain") throw noSigner();
             return viaHas();
@@ -718,7 +775,7 @@
         timeAgo: timeAgo, money: money, replyPermlink: replyPermlink,
         user: user, login: login, logout: logout, onChange: onChange, keychain: keychain, hasKeychain: hasKeychain, signer: signer,
         post: post, vote: vote, transfer: transfer, recurrentTransfer: recurrentTransfer, helpHtml: helpHtml,
-        via: via, memoOk: memoOk, extension: extension, NO_MEMO: NO_MEMO,
+        via: via, memoOk: memoOk, extension: extension, NO_MEMO: NO_MEMO, kcExplain: kcExplain, kcError: kcError, wrapKC: wrapKC,
         hiveAuth: { HOST: HAS_HOST, md5: md5, evpKdf: evpKdf, aesEncrypt: aesEncrypt, aesDecrypt: aesDecrypt, link: hasLink, ops: opsFor,
             describe: describeOps, session: hasSession, shim: hasShim, request: hasRequest, auth: hasAuth, uuid: uuid4, _state: HAS }
     };

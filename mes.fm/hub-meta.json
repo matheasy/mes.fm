@@ -188,7 +188,7 @@
 },
 "/copy-text":{
 "added":"2026-10-03",
-"updated":"2026-11-08",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/countdown-timer":{
@@ -283,7 +283,7 @@
 },
 "/emoji":{
 "added":"2026-09-17",
-"updated":"2026-11-08",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/enigma":{
@@ -388,12 +388,12 @@
 },
 "/gta":{
 "added":"2026-11-07",
-"updated":"2026-11-09",
+"updated":"2026-11-10",
 "type":"Game"
 },
 "/gta-stunt-jump-simulator":{
 "added":"2026-11-07",
-"updated":"2026-11-09",
+"updated":"2026-11-10",
 "type":"Simulation"
 },
 "/heart-rate-zone-calculator":{
@@ -468,7 +468,7 @@
 },
 "/latex":{
 "added":"2026-09-06",
-"updated":"2026-10-25",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/letter-recognition":{
@@ -878,7 +878,7 @@
 },
 "/symbols":{
 "added":"2026-09-15",
-"updated":"2026-10-21",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/tdee-calculator":{

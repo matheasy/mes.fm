@@ -289,5 +289,30 @@ print("ok")`;
     assert.strictEqual(execFileSync('python3', ['-c', py]).toString().trim(), 'ok');
   });
 
+  await t('Keychain 4: refused requests get plain advice, success and cancel untouched', async () => {
+    const lim = H.kcExplain({ success: false, error: 'request_limit', message: 'Request limit exceeded.', request_id: 6 });
+    assert.ok(/5 at a time/.test(lim.message) && lim.rawMessage === 'Request limit exceeded.' && lim.kcCode === 'request_limit');
+    assert.ok(/already showing/.test(H.kcExplain({ success: false, error: 'request_pending', message: 'Request already pending.' }).message));
+    assert.ok(/too big/.test(H.kcExplain({ success: false, error: 'request_limit', message: 'Request size limit exceeded.' }).message));
+    assert.ok(/Reload/.test(H.kcExplain({ success: false, error: 'invalid_sender', message: 'x' }).message));
+    const c = H.kcExplain({ success: false, error: 'user_cancel', message: 'Request was canceled by the user.' });
+    assert.strictEqual(c.message, 'Request was canceled by the user.');
+    const ok = { success: true, result: { id: 'abc' } }; assert.strictEqual(H.kcExplain(ok), ok);
+    const e = H.kcError({ success: false, error: 'request_limit', message: 'Request limit exceeded.' });
+    assert.strictEqual(e.code, 'kc_request_limit'); assert.strictEqual(H.kcError({ success: false, error: 'user_cancel' }).code, 'cancel');
+  });
+  await t('Keychain 4: the wrapped extension object passes every callback through kcExplain', async () => {
+    const calls = [];
+    const fake = { current_id: 1, requestCustomJson(a, id, key, json, msg, cb) { calls.push([a, id, key, json, msg]); cb({ success: false, error: 'request_limit', message: 'Request limit exceeded.' }); },
+      requestHandshake(cb) { cb(); }, dispatchCustomEvent() { return this.current_id; } };
+    const w = H.wrapKC(fake);
+    assert.strictEqual(H.wrapKC(fake), w, 'cached');
+    let got; w.requestCustomJson('mes', 'mes_gtamap', 'Posting', '{}', 'x', (r) => { got = r; });
+    assert.deepStrictEqual(calls[0], ['mes', 'mes_gtamap', 'Posting', '{}', 'x']);
+    assert.ok(/5 at a time/.test(got.message));
+    let hs = false; w.requestHandshake(() => { hs = true; }); assert.ok(hs);
+    assert.strictEqual(w.dispatchCustomEvent(), 1, 'helpers keep the real object as this');
+    assert.strictEqual(w.raw, fake);
+  });
   console.log(pass + ' hive tests passed' + (process.exitCode ? ' (with failures)' : ''));
 })();

@@ -421,3 +421,30 @@
 	html body.dark-mode #gt .gm-st--d {background:#ffb547;color:#2b1a00;}
 	html body.dark-mode #gt .gm-vb--dn.is-on {background:#ff6b6b;color:#2a0b0b;}
 	html body.dark-mode #gt .gm-chip.is-on {background:#c2185b;border-color:#c2185b;color:#fff;} html body.dark-mode #gt .gm-chip.is-on small {color:#ffe0ee;}
+	/* map: Hive sign-in, badges, explorers */
+	.gm-hive {padding:0.6em 0.75em;border-bottom:1px solid var(--gm-line);font-size:0.86em;}
+	.gm-hive:empty {display:none;}
+	.gm-hrow {display:flex;align-items:center;gap:0.45em;flex-wrap:wrap;margin:0.2em 0;}
+	.gm-hrow img {border-radius:50%;flex:none;}
+	.gm-hrow input {flex:1;min-width:8em;font:inherit;padding:0.4em 0.55em;border-radius:0.45em;border:1px solid var(--gm-line);background:var(--gt-deep);color:var(--gm-ink);}
+	.gm-hlog summary {cursor:pointer;} .gm-hlog summary small {color:var(--gm-dim);}
+	.gm-hive .tu-note {color:var(--gm-dim);font-size:0.9em;margin:0.3em 0 0;}
+	.gm-pinh {fill:#e31337;stroke:#fff;stroke-width:2;}
+	.gm-st--h {background:#e31337;color:#fff;}
+	html body.dark-mode #gt .gm-st--h {background:#e31337;color:#fff;}
+	.gm-pby {margin:0 0 0.4em;font-size:0.82em;color:var(--gm-dim);}
+	#gt .gm-pby a, #gt .gm-by {color:#ff9ccc;}
+	.gm-by {display:inline-flex;align-items:center;gap:0.25em;font-weight:700;text-decoration:none;}
+	.gm-by img {border-radius:50%;}
+	.gm-hc {display:block;font-size:0.7em;color:var(--gm-dim);line-height:1;}
+	.gm-vb.is-on .gm-hc {color:inherit;}
+	.gm-fhive {font-size:0.82em;color:var(--gm-ink);background:rgba(227,19,55,0.18);border:1px solid rgba(227,19,55,0.5);border-radius:0.45em;padding:0.4em 0.55em;margin:0.6em 0 0;}
+	.gm-exp {margin-top:0.8em;font-size:0.88em;}
+	.gm-exp summary {cursor:pointer;font-weight:700;}
+	.gm-explist {list-style:none;margin:0.4em 0 0;padding:0;display:flex;flex-direction:column;gap:0.25em;counter-reset:ex;}
+	.gm-explist button {cursor:pointer;font:inherit;width:100%;display:flex;align-items:center;gap:0.45em;text-align:left;padding:0.35em 0.5em;border-radius:0.5em;border:1px solid transparent;background:var(--gm-card2);color:var(--gm-ink);}
+	.gm-explist button::before {counter-increment:ex;content:counter(ex);min-width:1.3em;color:var(--gm-dim);font-weight:700;}
+	.gm-explist button:hover {border-color:var(--gt-pink);}
+	.gm-explist img {border-radius:50%;}
+	.gm-explist small {margin-left:auto;color:var(--gm-dim);}
+	#gt .gm-exp .tu-note {color:var(--gm-dim);font-size:0.85em;}

@@ -1,7 +1,10 @@
 /* MES GTA 6 community map (mes.fm/gta-6-map, #gt[data-page="map"]): an original rough fan sketch of Leonida with pins people add
    (secrets, animals, fishing spots ...) and up / down votes. Data: mes.fm/api/gta-map.js; validation + ordering = MESGTA.MAP (lib.js).
    On 127.0.0.1 / localhost (no /api) or with ?mock=1 an in-browser stand-in (localStorage "mes-gta-map:mock") answers instead.
-   State: localStorage "mes-gta-map:v1" = {vid, mine:{id: key}, votes:{id: 1|-1}, sort, ver, cats, grid, labels}. Debug: window.MESGTAMapDebug. */
+   State: localStorage "mes-gta-map:v1" = {vid, mine:{id: key}, votes:{id: 1|-1}, hvotes:{id: 1|-1}, hsign, sort, ver, cats, grid, labels}.
+   Hive (optional): sign in through main_js/hive.js (MESHive: Keychain extension 4.x, or the Keychain phone app through HiveAuth);
+   then a pin or a vote is signed as one custom_json (MESGTA.MAP.HIVE_ID) and only the account + transaction id go to the API,
+   which checks the operation on the chain. Debug: window.MESGTAMapDebug. */
 (function () {
 	"use strict";
 	var root = document.getElementById("gt");
@@ -15,7 +18,7 @@
 	var S = load();
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	if (!/^[a-f0-9]{32}$/.test(S.vid || "")) { var b = new Uint8Array(16); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach(function (_, i) { b[i] = Math.random() * 256; }); S.vid = Array.prototype.map.call(b, function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join(""); save(); }
-	S.mine = S.mine || {}; S.votes = S.votes || {}; S.cats = S.cats || [];
+	S.mine = S.mine || {}; S.votes = S.votes || {}; S.hvotes = S.hvotes || {}; S.cats = S.cats || []; if (S.hsign == null) S.hsign = true;
 	var T0 = Date.now();
 	function toast(m) { var t = $("gj-toast"); if (!t) return; t.textContent = m; t.classList.add("is-on"); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("is-on"); }, 3600); }
 	var ICON = { secret: "🤫", animal: "🦌", fishing: "🎣", gem: "💎", egg: "🥚", collect: "⭐", activity: "🎯", vehicle: "🚗", stunt: "🏁", other: "📍" };
@@ -176,13 +179,24 @@
 			}
 			return d;
 		},
+		hive: function (d, b) {
+			var rec = b.mockRec; if (!rec) return { error: "that operation is not on the chain yet" };
+			if (b.act === "hpin") { var c = MAP.pinFromRecord(rec); if (c.error) return { error: c.error }; var id = "mk" + Math.random().toString(36).slice(2, 8); d.p[id] = Object.assign(c.pin, { c: Date.now(), up: 0, dn: 0, own: 1, ha: b.acct, trx: b.trx }); mock.put(d); return { id: id, key: S.vid.split("").reverse().join(""), pin: Object.assign({ id: id }, d.p[id]) }; }
+			var vt = MAP.voteFromRecord(rec); if (vt.error) return { error: vt.error };
+			var p = d.p[vt.id]; if (!p) return { error: "pin not found" }; if (p.own || p.ha === b.acct) return { error: "you can’t vote on your own pin" };
+			d.hv = d.hv || {}; var k = vt.id + "|" + b.acct, prev = d.hv[k] || 0, g = d.v[vt.id] || 0;
+			if (g === 1) p.up--; if (g === -1) p.dn--; d.v[vt.id] = 0;
+			p.hup = p.hup || 0; p.hdn = p.hdn || 0; if (prev === 1) p.hup--; if (prev === -1) p.hdn--; if (vt.v === 1) p.hup++; if (vt.v === -1) p.hdn++; d.hv[k] = vt.v; mock.put(d);
+			return { up: p.up, dn: p.dn, hup: p.hup, hdn: p.hdn, mine: vt.v, hive: true };
+		},
 		call: function (body) {
 			var d = mock.db();
 			return new Promise(function (res) { setTimeout(function () { res(mock.answer(d, body)); }, 120); });
 		},
 		answer: function (d, b) {
-			if (!b) { return { pins: Object.keys(d.p).map(function (id) { var p = d.p[id]; return Object.assign({ id: id }, p); }).filter(function (p) { return p.up - p.dn > -5; }), now: Date.now() }; }
+			if (!b) { return { pins: Object.keys(d.p).map(function (id) { var p = d.p[id]; return Object.assign({ id: id }, p); }).filter(function (p) { return MAP.scoreOf(p) > -5; }), now: Date.now() }; }
 			if (b.act === "new") { var c = MAP.cleanPin(b); if (c.error) return { error: c.error }; var id = "mk" + Math.random().toString(36).slice(2, 8); var key = S.vid.split("").reverse().join(""); d.p[id] = Object.assign(c.pin, { c: Date.now(), up: 0, dn: 0, own: 1 }); mock.put(d); return { id: id, key: key, pin: Object.assign({ id: id }, d.p[id]) }; }
+			if (b.act === "hpin" || b.act === "hvote") return mock.hive(d, b);
 			var p = d.p[b.id]; if (!p) return { error: "pin not found" };
 			if (b.act === "vote") { if (p.own) return { error: "you can’t vote on your own pin" }; var prev = d.v[b.id] || 0; if (prev === 1) p.up--; if (prev === -1) p.dn--; if (b.v === 1) p.up++; if (b.v === -1) p.dn++; d.v[b.id] = b.v; mock.put(d); return { up: p.up, dn: p.dn, mine: b.v }; }
 			if (b.act === "report") return { ok: true };
@@ -208,15 +222,16 @@
 	/* ======================= pins on the map ======================= */
 	function pinG(p, parent, cls) {
 		var g = el("g", { "class": "gm-pin " + (cls || ""), "data-x": p.x, "data-y": p.y }, parent);
-		var st = MAP.pinStatus(p.up, p.dn);
+		var st = MAP.statusOf(p);
 		el("path", { d: "M0,0 C-4,-9 -15,-14 -15,-26 A15,15 0 1 1 15,-26 C15,-14 4,-9 0,0 Z", "class": "gm-pinb", fill: catColor(p.cat) }, g);
 		if (st === "verified") el("circle", { cx: 11, cy: -37, r: 6.5, "class": "gm-pinv" }, g);
 		if (st === "disputed") el("circle", { cx: 11, cy: -37, r: 6.5, "class": "gm-pind" }, g);
+		if (p.ha) el("circle", { cx: -11, cy: -37, r: 5.5, "class": "gm-pinh" }, g);
 		var t = el("text", { x: 0, y: -21, "text-anchor": "middle", "class": "gm-pini" }, g); t.textContent = ICON[p.cat] || "📍";
 		return g;
 	}
 	function shown() {
-		var list = MAP.filterPins(PINS, { q: $("gm-q").value, cats: S.cats, verified: S.ver });
+		var list = MAP.filterPins(PINS, { q: $("gm-q").value, cats: S.cats, verified: S.ver, hive: S.hiveOnly });
 		if (S.mineOnly) list = list.filter(function (p) { return S.mine[p.id]; });
 		return MAP.sortPins(list, S.sort || "top");
 	}
@@ -230,20 +245,23 @@
 
 	/* ======================= pin card ======================= */
 	var openId = null;
+	function hiveBadge(p) { return MAP.hiveOk(p) ? ' <span class="gm-st gm-st--h" title="At least 2 Hive accounts say it\'s real">Hive ✓</span>' : ""; }
+	function byLine(p) { return p.ha ? '<a class="gm-by" href="https://peakd.com/@' + esc(p.ha) + '" target="_blank" rel="noopener">' + (MOCK ? "" : '<img alt="" src="' + esc(avatar(p.ha)) + '" width="18" height="18" loading="lazy">') + "@" + esc(p.ha) + "</a>" : ""; }
 	function statusText(st) { return { verified: '<span class="gm-st gm-st--v">✓ Verified</span>', disputed: '<span class="gm-st gm-st--d">Disputed</span>', "new": '<span class="gm-st gm-st--n">New</span>' }[st] || ""; }
 	function ago(ms) { var s = (Date.now() - ms) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; }
 	function openPin(id, keep) {
 		var p = byId[id]; if (!p) return;
 		openId = id; $("gm-ask").hidden = true;
-		var mine = S.mine[id], v = S.votes[id] || 0, st = MAP.pinStatus(p.up, p.dn), pop = $("gm-pop");
+		var mine = S.mine[id] || (p.ha && p.ha === me()), v = (signing() ? S.hvotes[me() + "|" + id] : S.votes[id]) || 0, st = MAP.statusOf(p), pop = $("gm-pop"), sc = MAP.scoreOf(p), hu = p.hup || 0, hd = p.hdn || 0;
 		pop.innerHTML = '<button type="button" class="gm-x" data-a="close" aria-label="Close">×</button>' +
-			'<p class="gm-pk"><span class="gm-dot" style="background:' + catColor(p.cat) + '"></span>' + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + " · " + gridRef(p.x, p.y) + " " + statusText(st) + "</p>" +
+			'<p class="gm-pk"><span class="gm-dot" style="background:' + catColor(p.cat) + '"></span>' + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + " · " + gridRef(p.x, p.y) + " " + statusText(st) + hiveBadge(p) + "</p>" +
 			"<h3>" + esc(p.title) + "</h3>" + (p.desc ? '<p class="gm-pd">' + esc(p.desc).replace(/\n/g, "<br>") + "</p>" : "") +
 			(p.clip ? '<a class="gm-clip" href="https://www.youtube.com/watch?v=' + esc(p.clip) + '" target="_blank" rel="noopener"><img src="https://i.ytimg.com/vi/' + esc(p.clip) + '/mqdefault.jpg" alt="" loading="lazy" width="160" height="90"><span>▶ Watch the clip</span></a>' : "") +
-			'<div class="gm-votes">' + (mine ? '<span class="gm-own">Your pin · ' + (p.up - p.dn >= 0 ? "+" : "") + (p.up - p.dn) + " (" + p.up + " up, " + p.dn + " down)</span>" :
-				'<button type="button" class="gm-vb gm-vb--up' + (v === 1 ? " is-on" : "") + '" data-a="up" aria-pressed="' + (v === 1) + '" title="It\'s real">▲ <b>' + p.up + "</b></button>" +
-				'<button type="button" class="gm-vb gm-vb--dn' + (v === -1 ? " is-on" : "") + '" data-a="dn" aria-pressed="' + (v === -1) + '" title="Fake / not there">▼ <b>' + p.dn + "</b></button>" +
-				'<span class="gm-vh">' + (v ? "Click again to take your vote back" : "Is it real?") + "</span>") + "</div>" +
+			(p.ha ? '<p class="gm-pby">Added by ' + byLine(p) + (p.trx && !/^mock/.test(p.trx) ? ' · <a href="https://hivehub.dev/tx/' + esc(p.trx) + '" target="_blank" rel="noopener">on Hive</a>' : "") + "</p>" : "") +
+			'<div class="gm-votes">' + (mine ? '<span class="gm-own">Your pin · score ' + (sc >= 0 ? "+" : "") + sc + " (" + p.up + " up, " + p.dn + " down" + (hu || hd ? "; Hive " + hu + " up, " + hd + " down" : "") + ")</span>" :
+				'<button type="button" class="gm-vb gm-vb--up' + (v === 1 ? " is-on" : "") + '" data-a="up" aria-pressed="' + (v === 1) + '" title="It\'s real">▲ <b>' + (p.up + hu) + "</b>" + (hu ? '<small class="gm-hc">' + hu + " Hive</small>" : "") + "</button>" +
+				'<button type="button" class="gm-vb gm-vb--dn' + (v === -1 ? " is-on" : "") + '" data-a="dn" aria-pressed="' + (v === -1) + '" title="Fake / not there">▼ <b>' + (p.dn + hd) + "</b>" + (hd ? '<small class="gm-hc">' + hd + " Hive</small>" : "") + "</button>" +
+				'<span class="gm-vh">' + (signing() ? "Signed with Hive as @" + esc(me()) + " (counts double)" : v ? "Click again to take your vote back" : "Is it real?") + "</span>") + "</div>" +
 			'<p class="gm-pf">Added ' + ago(p.c) + ' · <button type="button" class="gm-lnk" data-a="share">Copy link</button>' +
 			(mine ? ' · <button type="button" class="gm-lnk" data-a="del">Delete my pin</button>' : ' · <button type="button" class="gm-lnk" data-a="report">Report</button>') + "</p>";
 		pop.hidden = false; placePop();
@@ -278,11 +296,16 @@
 		if (a === "close") return closePop();
 		if (!p) return;
 		if (a === "up" || a === "dn") {
-			var want = a === "up" ? 1 : -1, cur = S.votes[id] || 0, v = cur === want ? 0 : want;
+			var want = a === "up" ? 1 : -1, cur = (signing() ? S.hvotes[me() + "|" + id] : S.votes[id]) || 0, v = cur === want ? 0 : want;
 			if (Date.now() - T0 < 900) return;
-			call({ act: "vote", id: id, vid: S.vid, v: v, t: Date.now() - T0 }).then(function (d) {
+			var job = signing() ? signed("hvote", MAP.hiveVoteJson(id, v), (v === 1 ? "Vote real: " : v === -1 ? "Vote fake: " : "Take back my vote on: ") + p.title.slice(0, 60), b)
+				: call({ act: "vote", id: id, vid: S.vid, v: v, t: Date.now() - T0 });
+			job.then(function (d) {
+				if (!d) return;
 				if (d.error) { toast(d.error); return; }
-				p.up = d.up; p.dn = d.dn; if (d.mine) S.votes[id] = d.mine; else delete S.votes[id]; save();
+				p.up = d.up; p.dn = d.dn; if (d.hup != null) { p.hup = d.hup; p.hdn = d.hdn; }
+				var store = d.hive ? S.hvotes : S.votes, sk = d.hive ? me() + "|" + id : id; if (d.hive) delete S.votes[id];
+				if (d.mine) store[sk] = d.mine; else delete store[sk]; save();
 				drawPins(); renderList(); openPin(id, true);
 				if (v) toast(v === 1 ? "Thanks: marked real" : "Thanks: marked fake");
 			});
@@ -320,13 +343,13 @@
 		save(); drawPins(); renderList();
 	});
 	function renderList() {
-		chips();
+		chips(); renderExplorers();
 		var list = shown(), ol = $("gm-list");
 		$("gm-count").textContent = PINS.length ? list.length + (list.length === 1 ? " pin" : " pins") + (list.length < PINS.length ? " of " + PINS.length : "") : "No pins yet: be the first! Click the map to add one.";
 		ol.innerHTML = list.slice(0, 300).map(function (p) {
-			var st = MAP.pinStatus(p.up, p.dn), sc = p.up - p.dn;
+			var st = MAP.statusOf(p), sc = MAP.scoreOf(p);
 			return '<li data-id="' + p.id + '"' + (p.id === openId ? ' class="is-open"' : "") + '><button type="button"><span class="gm-li-i" style="background:' + catColor(p.cat) + '">' + (ICON[p.cat] || "📍") + "</span>" +
-				'<span class="gm-li-t"><b>' + esc(p.title) + "</b><small>" + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + (S.mine[p.id] ? " · yours" : "") + " " + statusText(st) + "</small></span>" +
+				'<span class="gm-li-t"><b>' + esc(p.title) + "</b><small>" + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + (p.ha ? " · @" + esc(p.ha) : "") + (S.mine[p.id] ? " · yours" : "") + " " + statusText(st) + hiveBadge(p) + "</small></span>" +
 				'<span class="gm-li-s' + (sc > 0 ? " is-pos" : sc < 0 ? " is-neg" : "") + '">' + (sc > 0 ? "+" : "") + sc + "</span></button></li>";
 		}).join("");
 	}
@@ -334,6 +357,13 @@
 	var qT; $("gm-q").addEventListener("input", function () { clearTimeout(qT); qT = setTimeout(function () { drawPins(); renderList(); }, 120); });
 	$("gm-sort").value = S.sort || "top"; $("gm-sort").addEventListener("change", function () { S.sort = this.value; save(); renderList(); });
 	$("gm-ver").checked = !!S.ver; $("gm-ver").addEventListener("change", function () { S.ver = this.checked; save(); drawPins(); renderList(); });
+	$("gm-hiveonly").checked = !!S.hiveOnly; $("gm-hiveonly").addEventListener("change", function () { S.hiveOnly = this.checked; save(); drawPins(); renderList(); });
+	function renderExplorers() {
+		var ex = MAP.explorers(PINS).slice(0, 20), ol = $("gm-explist");
+		$("gm-exp").hidden = !ex.length;
+		ol.innerHTML = ex.map(function (e) { return '<li><button type="button" data-acct="' + esc(e.acct) + '">' + (MOCK ? "" : '<img alt="" src="' + esc(avatar(e.acct)) + '" width="22" height="22" loading="lazy">') + "<b>@" + esc(e.acct) + "</b><small>" + e.verified + " verified · " + e.pins + (e.pins === 1 ? " pin" : " pins") + "</small></button></li>"; }).join("");
+	}
+	$("gm-explist").addEventListener("click", function (e) { var b = e.target.closest("[data-acct]"); if (!b) return; $("gm-q").value = "@" + b.getAttribute("data-acct"); S.hiveOnly = false; $("gm-hiveonly").checked = false; drawPins(); renderList(); });
 	$("gm-mineonly").checked = !!S.mineOnly; $("gm-mineonly").addEventListener("change", function () { S.mineOnly = this.checked; save(); drawPins(); renderList(); });
 
 	/* ======================= add mode ======================= */
@@ -355,7 +385,9 @@
 		applyView(); updWhere();
 		if (window.innerWidth < 900 && !$("gm-ftitle").value) setTimeout(function () { $("gm-form").scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 60);
 	}
-	function updWhere() { $("gm-where").innerHTML = draft ? "<b>1.</b> Spot picked: " + gridRef(draft.x, draft.y) + " (" + esc($("gm-freg").value) + "). Click again to move it." : "<b>1.</b> Click the map where it is."; $("gm-where").classList.toggle("is-done", !!draft); }
+	function updWhere() {
+		var fh = $("gm-fhive");
+		if (fh) { fh.hidden = !signing(); fh.innerHTML = signing() ? "This pin will be signed on Hive as <b>@" + esc(me()) + "</b>: a public, permanent record. mes.fm can hide it from the map but not erase it from the blockchain." : ""; } $("gm-where").innerHTML = draft ? "<b>1.</b> Spot picked: " + gridRef(draft.x, draft.y) + " (" + esc($("gm-freg").value) + "). Click again to move it." : "<b>1.</b> Click the map where it is."; $("gm-where").classList.toggle("is-done", !!draft); }
 	$("gm-fcat").innerHTML = MAP.PIN_CATS.map(function (c) { return '<button type="button" class="gm-chip" role="radio" aria-checked="false" data-c="' + c[0] + '"><span>' + ICON[c[0]] + "</span> " + esc(c[1]) + "</button>"; }).join("");
 	$("gm-fcat").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-c]"); if (!b) return; fcat = b.getAttribute("data-c");
@@ -372,6 +404,21 @@
 		if (!fcat) { err.textContent = "Pick what kind of thing it is."; return; }
 		var body = { act: "new", x: draft.x, y: draft.y, cat: fcat, title: $("gm-ftitle").value, desc: $("gm-fdesc").value, region: $("gm-freg").value, clip: $("gm-fclip").value.trim(), vid: S.vid, t: Date.now() - T0 };
 		if ($("gm-fhp").value) body.hp = $("gm-fhp").value;
+		if (signing() && !body.hp) {
+			var hc = MAP.cleanPin({ x: body.x, y: body.y, cat: body.cat, title: body.title, desc: body.desc, region: body.region, clip: body.clip });
+			if (hc.error) { err.textContent = hc.error.charAt(0).toUpperCase() + hc.error.slice(1) + "."; return; }
+			$("gm-fsave").disabled = true;
+			signed("hpin", MAP.hivePinJson(hc.pin), "Pin on the GTA 6 map: " + hc.pin.title, $("gm-fsave"), err).then(function (d) {
+				$("gm-fsave").disabled = false;
+				if (!d) return;
+				if (d.error) { err.textContent = d.error.charAt(0).toUpperCase() + d.error.slice(1) + "."; return; }
+				err.textContent = "";
+				S.mine[d.id] = d.key; save();
+				if (d.pin) { PINS.push(d.pin); byId[d.id] = d.pin; }
+				$("gm-fcancel").onclick(); drawPins(); renderList(); openPin(d.id); toast("Pinned and signed on Hive as @" + me() + ".");
+			});
+			return;
+		}
 		var chk = MAP.cleanPin({ x: body.x, y: body.y, cat: body.cat, title: body.title, desc: body.desc, region: body.region, clip: body.clip });
 		if (chk.error) { err.textContent = chk.error.charAt(0).toUpperCase() + chk.error.slice(1) + "."; return; }
 		$("gm-fsave").disabled = true;
@@ -384,15 +431,79 @@
 		});
 	});
 
+	/* ======================= Hive (optional) ======================= */
+	var HV = window.MESHive || null, MOCKACCT = "mes-gta-map:mockacct";
+	function me() { var u = HV && HV.user && HV.user(); if (u) return u.name; if (MOCK) try { return sessionStorage.getItem(MOCKACCT) || ""; } catch (e) {} return ""; }
+	function signing() { return !!me() && S.hsign !== false; }
+	function avatar(n) { return HV && HV.avatar ? HV.avatar(n, "small") : "https://images.hive.blog/u/" + encodeURIComponent(n) + "/avatar/small"; }
+	function realUser() { return !!(HV && HV.user && HV.user()); }
+	function renderHive() {
+		var box = $("gm-hive"), u = me(); if (!box) return;
+		if (u) {
+			box.innerHTML = '<div class="gm-hrow">' + (realUser() ? '<img alt="" src="' + esc(avatar(u)) + '" width="26" height="26">' : "") + "<b>@" + esc(u) + '</b><button type="button" class="gm-lnk" data-h="out">Log out</button></div>' +
+				'<label class="gm-chk"><input type="checkbox" data-h="sign"' + (S.hsign !== false ? " checked" : "") + "> Sign my pins and votes with Hive (votes count double)</label>";
+			box.querySelector('[data-h="out"]').onclick = function () { if (realUser()) HV.logout(); else try { sessionStorage.removeItem(MOCKACCT); } catch (e) {} renderHive(); updWhere(); if (openId) openPin(openId, true); };
+			box.querySelector('[data-h="sign"]').onchange = function () { S.hsign = this.checked; save(); updWhere(); if (openId) openPin(openId, true); };
+		} else {
+			box.innerHTML = '<details class="gm-hlog"><summary><b>Sign in with Hive</b> <small>(optional: your name on pins, votes count double)</small></summary>' +
+				'<div class="gm-hrow"><input type="text" data-h="user" placeholder="Hive username" autocomplete="username" spellcheck="false" aria-label="Hive username"><button type="button" class="tu-btn" data-h="in">Log in</button></div>' +
+				'<p class="tu-note">' + (MOCK ? "Test copy: any username works and nothing is signed." : "Hive Keychain (the extension, or the Keychain phone app) proves the account is yours by signing a message. Your keys never leave Keychain.") + '</p><div data-h="help"></div></details>';
+			var inp = box.querySelector('[data-h="user"]'), btn = box.querySelector('[data-h="in"]');
+			var go = function () {
+				var n = (inp.value || "").trim().replace(/^@/, "").toLowerCase();
+				if (!/^[a-z][a-z0-9.-]{2,15}$/.test(n)) { toast("That is not a Hive username."); return; }
+				if (MOCK && !(HV && HV.hasKeychain && HV.hasKeychain())) { try { sessionStorage.setItem(MOCKACCT, n); } catch (e) {} renderHive(); updWhere(); return; }
+				if (!HV) { toast("The Hive helpers did not load: reload the page."); return; }
+				btn.disabled = true; btn.textContent = "Check Keychain…";
+				HV.login(n).then(function () { toast("Signed in as @" + n + "."); renderHive(); updWhere(); if (openId) openPin(openId, true); }, function (e) {
+					btn.disabled = false; btn.textContent = "Log in";
+					toast((e && e.message) || "Could not log in.");
+					if (e && e.code === "nokeychain" && HV.helpHtml) box.querySelector('[data-h="help"]').innerHTML = HV.helpHtml();
+				});
+			};
+			btn.onclick = go; inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); go(); } });
+		}
+	}
+	if (HV && HV.onChange) HV.onChange(function () { renderHive(); renderList(); updWhere(); });
+	/* sign one custom_json, then let the API check it on the chain (it retries while the block is not in yet) */
+	function signed(act, json, label, btn, msgEl) {
+		var u = me(), say = function (t) { if (msgEl) msgEl.textContent = t; else toast(t); };
+		say("Waiting for Hive Keychain…");
+		var p = MOCK && !realUser() ? Promise.resolve({ trx: "mock" + Date.now().toString(16), mockRec: JSON.parse(json) }) : (HV ? HV.keychain() : Promise.resolve(null)).then(function (kc) {
+			if (!kc) { var e = new Error("Hive Keychain is not available in this browser. Log in again, or untick “Sign my pins and votes with Hive”."); e.code = "nokeychain"; throw e; }
+			return new Promise(function (ok, no) {
+				kc.requestCustomJson(u, MAP.HIVE_ID, "Posting", json, label, function (r) {
+					if (r && r.success) { var x = r.result || {}; ok({ trx: String(x.id || x.tx_id || x.trx_id || "").toLowerCase() }); }
+					else no(HV.kcError ? HV.kcError(r, "Cancelled in Keychain") : new Error((r && r.message) || "Cancelled in Keychain"));
+				});
+			});
+		});
+		return p.then(function (res) {
+			if (!res.trx) return { error: "Keychain did not return a transaction id" };
+			say("Signed. Checking it on the Hive blockchain…");
+			return (function check(tries) {
+				return call({ act: act, acct: u, trx: res.trx, vid: S.vid, mockRec: res.mockRec }).then(function (d) {
+					if (d && d.error && /not on the chain yet/.test(d.error) && tries < 8) { say("Waiting for the next Hive block… (" + (tries + 1) + ")"); return new Promise(function (r) { setTimeout(r, 3500); }).then(function () { return check(tries + 1); }); }
+					if (msgEl && !(d && d.error)) msgEl.textContent = "";
+					return d;
+				});
+			})(0);
+		}, function (e) {
+			say((e && e.message) || "Not signed.");
+			if (btn) btn.disabled = false;
+			return null;
+		});
+	}
+
 	/* ======================= fill window, start ======================= */
 	function boot() {
 		if (window.MESPanel) window.MESPanel.add($("gm-view"), { bar: $("gm-bar").querySelector(".gm-tools"), stage: stage, onChange: function () { setTimeout(applyView, 30); } });
 		else setTimeout(boot, 150);
 	}
-	drawBase(); fit(); setMode("explore"); renderList(); boot();
+	drawBase(); fit(); setMode("explore"); renderList(); renderHive(); boot();
 	window.addEventListener("resize", function () { applyView(); });
 	var want = new URLSearchParams(location.search).get("pin");
 	refresh().then(function () { if (want && byId[want]) { centreOn(byId[want].x, byId[want].y, 3); openPin(want, true); } });
 	setInterval(function () { if (!document.hidden && mode === "explore" && !drag) refresh(true); }, 60000);
-	window.MESGTAMapDebug = { V: V, S: S, pins: function () { return PINS; }, refresh: refresh, setDraft: setDraft, setMode: setMode, openPin: openPin, mapPt: mapPt, mock: mock };
+	window.MESGTAMapDebug = { me: me, signing: signing, signed: signed, V: V, S: S, pins: function () { return PINS; }, refresh: refresh, setDraft: setDraft, setMode: setMode, openPin: openPin, mapPt: mapPt, mock: mock };
 })();

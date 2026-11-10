@@ -370,6 +370,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	secret keys that let you delete your own pins are kept only in your own browser.
 	</p>
 
+	<p>
+	If you sign in with Hive on the map, a pin or vote you sign is also written to the public Hive blockchain as a small record
+	(custom_json <code>mes_gtamap</code>) from your Hive account, and the pin shows your Hive name. Anyone can read that record and it
+	cannot be deleted from the blockchain; mes.fm can only hide the pin from its own map. Signing happens in Hive Keychain; your keys
+	never reach mes.fm, and our server only reads the public record to check it.
+	</p>
+
 	<h2 class="mini-title">Polls</h2>
 
 	<p>

@@ -2,7 +2,17 @@
 process.env.UPSTASH_REDIS_REST_URL = "http://redis.test"; process.env.UPSTASH_REDIS_REST_TOKEN = "t";
 const fs = require("fs"), path = require("path");
 const store = new Map();
+const chain = [];   // fake Hive account history: [index, {trx_id, timestamp, op}]
+function hiveOp(acct, json, ageMs, extra) {
+  const trx = (Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2) + '0'.repeat(40)).slice(0, 40);
+  chain.push([chain.length, { trx_id: trx, timestamp: new Date(Date.now() - (ageMs || 0)).toISOString().slice(0, 19), op: ['custom_json', Object.assign({ id: 'mes_gtamap', required_auths: [], required_posting_auths: [acct], json }, extra || {})] }]);
+  return trx;
+}
 global.fetch = async (url, opts) => {
+  if (/^https:\/\/api\./.test(url) || /hive/.test(url)) {
+    const q = JSON.parse(opts.body), acct = q.params[0];
+    return { json: async () => ({ result: chain.filter((e) => e[1].op[1].required_posting_auths.includes(acct)) }) };
+  }
   const cmds = JSON.parse(opts.body);
   const hash = (k) => { if (!store.has(k)) store.set(k, new Map()); return store.get(k); };
   const out = cmds.map((c) => {
@@ -15,6 +25,8 @@ global.fetch = async (url, opts) => {
       case "HSETNX": { const h = hash(k); if (h.has(a)) return { result: 0 }; h.set(a, String(b)); return { result: 1 }; }
       case "HINCRBY": { const h = hash(k); const v = (Number(h.get(a)) || 0) + Number(b); h.set(a, String(v)); return { result: v }; }
       case "HGETALL": { const h = store.get(k); const r = []; if (h instanceof Map) for (const [x, y] of h) r.push(x, y); return { result: r }; }
+      case "HEXISTS": { const h = store.get(k); return { result: h instanceof Map && h.has(a) ? 1 : 0 }; }
+      case "SET": { if (c.includes("NX") && store.has(k)) return { result: null }; store.set(k, a); return { result: "OK" }; }
       case "HLEN": { const h = store.get(k); return { result: h instanceof Map ? h.size : 0 }; }
       case "HDEL": { const h = store.get(k); return { result: h instanceof Map && h.delete(a) ? 1 : 0 }; }
       case "SADD": { if (!store.has(k)) store.set(k, new Set()); const s = store.get(k); const had = s.has(a); s.add(a); return { result: had ? 0 : 1 }; }
@@ -104,6 +116,30 @@ const NEW = { act: "new", x: 812.34, y: 745, cat: "secret", title: "  Rooftop   
   { const { req, res } = mk("POST", { body: NEW, headers: { origin: "https://evil.example" } }); await h(req, res); eq(res.code, 403, "other sites can't post"); }
   delete process.env.VERCEL_ENV;
   { const { req, res } = mk("POST", { body: "x=1", headers: { "content-type": "application/x-www-form-urlencoded" } }); await h(req, res); eq(res.code, 415, "json only"); }
+  /* ---- Hive */
+  delete process.env.GTA_MAP_ADMIN_KEY;
+  eq(M.statusOf({ up: 1, dn: 0, hup: 2, hdn: 0 }), "verified", "two Hive up votes + one guest = +5 weighted");
+  eq(M.hiveOk({ hup: 2, hdn: 0 }), true, "verified on Hive"); eq(M.hiveOk({ hup: 2, hdn: 1 }), false, "one in three fake is too many");
+  eq(M.explorers([{ ha: "bob", up: 9, dn: 0 }, { ha: "bob", up: 0, dn: 0 }, { ha: "amy", up: 1, dn: 0 }, { up: 50 }]).map((e) => e.acct + e.verified + "/" + e.pins), ["bob1/2", "amy0/1"], "explorers");
+  eq(M.parseHistory([[0, { trx_id: "a", timestamp: "2026-11-10T10:00:00", op: ["custom_json", { id: "mes_gtamap", required_auths: ["eve"], required_posting_auths: [], json: "{}" }] }]], "eve"), [], "active-key ops ignored");
+  const pinJson = M.hivePinJson({ x: 400, y: 300, cat: "animal", title: "Panther on the levee", desc: "night only", region: "Grassrivers", clip: "" });
+  let trx = hiveOp("alice", pinJson);
+  r = await post({ act: "hpin", acct: "alice", trx, vid: vid(80) }, "10.8.0.1"); eq(r.code, 200, "Hive pin saved");
+  const hid = r.body.id; eq([r.body.pin.ha, r.body.pin.trx], ["alice", trx], "pin carries account + transaction");
+  r = await post({ act: "hpin", acct: "alice", trx, vid: vid(80) }, "10.8.0.1"); eq(r.code, 409, "same transaction can't be used twice");
+  r = await post({ act: "hpin", acct: "alice", trx: "f".repeat(40), vid: vid(80) }); eq(r.code, 404, "transaction not on chain yet -> 404 (page retries)");
+  r = await post({ act: "hpin", acct: "bob", trx: hiveOp("bob", pinJson, 3 * 3600e3), vid: vid(81) }); eq(r.code, 422, "operation older than 2 hours refused");
+  r = await post({ act: "hpin", acct: "bob", trx: hiveOp("bob", M.hivePinJson({ x: 1, y: 1, cat: "gem", title: "see www.spam.com" })), vid: vid(81) }); eq(r.code, 422, "same text rules on chain pins");
+  r = await post({ act: "hvote", acct: "alice", trx: hiveOp("alice", M.hiveVoteJson(hid, 1)), vid: vid(80) }); eq(r.code, 409, "can't Hive-vote your own pin");
+  // a guest vote from Bob's browser, then Bob votes with Hive: the guest vote is replaced
+  r = await post({ act: "vote", id: hid, vid: vid(82), v: 1, t: 2000 }); eq([r.body.up, r.body.dn], [1, 0], "guest vote first");
+  r = await post({ act: "hvote", acct: "bob", trx: hiveOp("bob", M.hiveVoteJson(hid, 1)), vid: vid(82) }); eq([r.body.up, r.body.hup, r.body.hive], [0, 1, true], "Hive vote replaces that browser's guest vote");
+  r = await post({ act: "vote", id: hid, vid: vid(82), v: 1, t: 2000 }); eq(r.code, 409, "that browser can't add a guest vote again");
+  r = await post({ act: "hvote", acct: "bob", trx: hiveOp("bob", M.hiveVoteJson(hid, -1)), vid: vid(82) }); eq([r.body.hup, r.body.hdn], [0, 1], "Hive vote changed");
+  r = await post({ act: "hvote", acct: "carl", trx: hiveOp("carl", M.hiveVoteJson(hid, 1)), vid: vid(83) }); eq([r.body.hup, r.body.hdn], [1, 1], "second account");
+  r = await post({ act: "hvote", acct: "dan", trx: hiveOp("dan", JSON.stringify({ v: 1, a: "vote", id: "nope", vt: 1 })), vid: vid(84) }); eq(r.code, 422, "bad vote record");
+  r = await list(); const lp = r.body.pins.find((p) => p.id === hid); eq([lp.ha, lp.hup, lp.hdn], ["alice", 1, 1], "list shows the account and Hive votes");
+  r = await post({ act: "hpin", acct: "Bad!", trx, vid: vid(80) }); eq(r.code, 400, "bad account name");
   console.log(f ? "gta-map-tests: " + f + " of " + n + " FAILED" : "gta-map-tests: " + n + " checks passed");
   process.exit(f ? 1 : 0);
 })();

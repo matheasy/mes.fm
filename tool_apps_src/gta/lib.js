@@ -497,7 +497,10 @@
 		var m = s.match(/^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[?&#].*)?$/);
 		return m ? m[1] : null;
 	}
-	/* verdict from the votes: "verified" | "disputed" | "fake" | "new" | "" */
+	/* Votes: guest votes count 1, votes signed with Hive (p.hup / p.hdn) count HIVE_W. wv(p) = weighted {u, d}. */
+	var HIVE_W = 2;
+	function wv(p) { return { u: (p.up || 0) + HIVE_W * (p.hup || 0), d: (p.dn || 0) + HIVE_W * (p.hdn || 0) }; }
+	/* verdict from the (weighted) votes: "verified" | "disputed" | "fake" | "new" | "" */
 	function pinStatus(up, dn) {
 		up = up || 0; dn = dn || 0; var n = up + dn, s = up - dn;
 		if (s <= -5) return "fake";
@@ -506,32 +509,77 @@
 		if (n < 3) return "new";
 		return "";
 	}
+	function statusOf(p) { var w = wv(p); return pinStatus(w.u, w.d); }
+	/* "Verified on Hive": at least 2 Hive accounts say it's real and at most 1 in 4 Hive votes say fake */
+	function hiveOk(p) { var u = p.hup || 0, d = p.hdn || 0; return u >= 2 && d * 3 <= u; }
 	/* Wilson lower bound (95%) of the share of up votes: a fair "top" order that does not favour pins with one vote */
 	function pinRank(up, dn) {
 		var n = (up || 0) + (dn || 0); if (!n) return 0;
 		var z = 1.96, p = up / n;
 		return (p + z * z / (2 * n) - z * Math.sqrt((p * (1 - p) + z * z / (4 * n)) / n)) / (1 + z * z / n);
 	}
+	function rankOf(p) { var w = wv(p); return pinRank(w.u, w.d); }
+	function scoreOf(p) { var w = wv(p); return w.u - w.d; }
 	function sortPins(list, how) {
 		var a = list.slice();
 		if (how === "new") a.sort(function (p, q) { return q.c - p.c; });
-		else if (how === "disputed") a.sort(function (p, q) { return (Math.min(q.up, q.dn) - Math.min(p.up, p.dn)) || (q.up + q.dn - p.up - p.dn); });
-		else a.sort(function (p, q) { return (pinRank(q.up, q.dn) - pinRank(p.up, p.dn)) || (q.up - q.dn - p.up + p.dn) || (q.c - p.c); });
+		else if (how === "disputed") a.sort(function (p, q) { var x = wv(p), y = wv(q); return (Math.min(y.u, y.d) - Math.min(x.u, x.d)) || (y.u + y.d - x.u - x.d); });
+		else a.sort(function (p, q) { return (rankOf(q) - rankOf(p)) || (scoreOf(q) - scoreOf(p)) || (q.c - p.c); });
 		return a;
 	}
 	function filterPins(list, f) {
 		f = f || {}; var q = String(f.q || "").toLowerCase().trim(), words = q ? q.split(/\s+/) : [];
 		return list.filter(function (p) {
 			if (f.cats && f.cats.length && f.cats.indexOf(p.cat) < 0) return false;
-			if (f.verified && pinStatus(p.up, p.dn) !== "verified") return false;
+			if (f.verified && statusOf(p) !== "verified" && !hiveOk(p)) return false;
+			if (f.hive && !p.ha) return false;
 			if (f.region && p.region !== f.region) return false;
-			if (words.length) { var t = (p.title + " " + p.desc + " " + p.region + " " + catName(p.cat)).toLowerCase(); for (var i = 0; i < words.length; i++) if (t.indexOf(words[i]) < 0) return false; }
+			if (words.length) { var t = (p.title + " " + p.desc + " " + p.region + " " + catName(p.cat) + (p.ha ? " @" + p.ha : "")).toLowerCase(); for (var i = 0; i < words.length; i++) if (t.indexOf(words[i]) < 0) return false; }
 			return true;
 		});
 	}
+	/* top explorers: Hive accounts by verified finds, then total score, then pins */
+	function explorers(list) {
+		var by = {};
+		list.forEach(function (p) {
+			if (!p.ha) return;
+			var e = by[p.ha] || (by[p.ha] = { acct: p.ha, pins: 0, verified: 0, score: 0 });
+			e.pins++; e.score += scoreOf(p); if (statusOf(p) === "verified" || hiveOk(p)) e.verified++;
+		});
+		return Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return (b.verified - a.verified) || (b.score - a.score) || (b.pins - a.pins) || (a.acct < b.acct ? -1 : 1); });
+	}
+	/* ---------- Hive records (custom_json id HIVE_ID, posting key) ---------- */
+	var HIVE_ID = "mes_gtamap";
+	function hivePinJson(pin) { return JSON.stringify({ v: 1, a: "pin", x: pin.x, y: pin.y, cat: pin.cat, title: pin.title, desc: pin.desc || "", region: pin.region || "", clip: pin.clip || "", m: pin.m || MAP_V }); }
+	function hiveVoteJson(id, v) { return JSON.stringify({ v: 1, a: "vote", id: id, vt: v }); }
+	/* account history entries -> [{trx, ts, acct, rec}] of HIVE_ID ops signed with acct's posting authority only */
+	function parseHistory(entries, acct) {
+		var out = [];
+		(entries || []).forEach(function (e) {
+			var x = e && e[1] || {}, op = x.op;
+			if (!op || op[0] !== "custom_json" || !op[1] || op[1].id !== HIVE_ID) return;
+			var auths = op[1].required_posting_auths || [];
+			if (auths.length !== 1 || auths[0] !== acct || (op[1].required_auths || []).length) return;
+			var j; try { j = typeof op[1].json === "string" ? JSON.parse(op[1].json) : op[1].json; } catch (er) { return; }
+			if (!j || typeof j !== "object" || j.v !== 1) return;
+			out.push({ trx: x.trx_id || "", ts: Date.parse(String(x.timestamp || "") + (/Z$/.test(x.timestamp || "") ? "" : "Z")) || 0, acct: acct, rec: j });
+		});
+		return out;
+	}
+	/* a Hive pin record -> {pin} or {error} (same rules as a guest pin) */
+	function pinFromRecord(rec) {
+		if (!rec || rec.a !== "pin") return { error: "that is not a pin" };
+		return cleanPin({ x: rec.x, y: rec.y, cat: rec.cat, title: rec.title, desc: rec.desc, region: rec.region, clip: rec.clip });
+	}
+	function voteFromRecord(rec) {
+		if (!rec || rec.a !== "vote" || typeof rec.id !== "string" || !/^[a-z0-9]{8}$/.test(rec.id) || [1, -1, 0].indexOf(rec.vt) < 0) return { error: "that is not a vote" };
+		return { id: rec.id, v: rec.vt };
+	}
 	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
 	var MAP = { MAP_V: MAP_V, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
-		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD };
+		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD,
+		HIVE_W: HIVE_W, wv: wv, statusOf: statusOf, hiveOk: hiveOk, scoreOf: scoreOf, explorers: explorers,
+		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord };
 
 	var API = { G0: G0, FACTS: FACTS, VEHICLES: VEHICLES, vehicle: vehicle, bodyShape: bodyShape, PRESETS: PRESETS, COURSE_DEF: COURSE_DEF, buildCourse: buildCourse, groundAt: groundAt, rayHit: rayHit, closest: closest, inside: inside,
 		Sim: Sim, simulate: simulate, sweepOne: sweepOne, summarize: summarize,
