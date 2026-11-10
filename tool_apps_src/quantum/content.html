@@ -1,0 +1,38 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu qm" id="qm" data-views="{{VIEWS}}" data-page="{{PAGE}}">
+		<nav class="qm-fam" aria-label="Quantum Lab pages">{{FAM}}</nav>
+		<div class="qm-tabs" role="tablist" aria-label="Quantum simulators">
+			<button type="button" role="tab" data-tab="tunnel" aria-selected="false">Tunnelling</button>
+			<button type="button" role="tab" data-tab="box" aria-selected="false">Wells &amp; energy levels</button>
+			<button type="button" role="tab" data-tab="slit" aria-selected="false">Double slit</button>
+			<button type="button" role="tab" data-tab="uncert" aria-selected="false">Uncertainty</button>
+			<button type="button" role="tab" data-tab="ent" aria-selected="false">Entanglement &amp; Bell test</button>
+			<button type="button" role="tab" data-tab="sg" aria-selected="false">Stern-Gerlach</button>
+			<button type="button" role="tab" data-tab="atom" aria-selected="false">Hydrogen atom</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Calculators</button>
+		</div>
+		<section data-panel="tunnel" role="tabpanel" hidden>{{P_TUNNEL}}</section>
+		<section data-panel="box" role="tabpanel" hidden>{{P_BOX}}</section>
+		<section data-panel="slit" role="tabpanel" hidden>{{P_SLIT}}</section>
+		<section data-panel="uncert" role="tabpanel" hidden>{{P_UNCERT}}</section>
+		<section data-panel="ent" role="tabpanel" hidden>{{P_ENT}}</section>
+		<section data-panel="sg" role="tabpanel" hidden>{{P_SG}}</section>
+		<section data-panel="atom" role="tabpanel" hidden>{{P_ATOM}}</section>
+		<section data-panel="calc" role="tabpanel" hidden>{{P_CALC}}</section>
+
+		<div class="tu-card qm-more">
+			<h2 class="qm-h2">More quantum and wave pages on MES</h2>
+			<div class="qm-links">
+				<a href="/photoelectric-effect-simulator">Photoelectric effect<span>Light comes in packets: measure Planck&rsquo;s constant</span></a>
+				<a href="/spin-half">Spin-&frac12; Lab<span>The belt trick: why spin needs 720&deg;</span></a>
+				<a href="/spin-simulator">Spin &amp; angular momentum<span>Neutron interferometer, Einstein-de Haas</span></a>
+				<a href="/spin-wave-field">Spin Wave Field<span>A double slit drawn with a crowd of turning people</span></a>
+				<a href="/hologram">Hologram Simulator<span>Interference you can record and play back</span></a>
+				<a href="/negative-index">Light &amp; Metamaterials<span>Diffraction, gratings, negative refraction</span></a>
+				<a href="/redshift-simulator">Redshift &amp; Blueshift<span>Doppler, gravity and the expanding universe</span></a>
+				<a href="/atomic-clock-simulator">Atomic Clock Simulator<span>Ramsey fringes and the Bloch sphere</span></a>
+			</div>
+		</div>
+{{SEO}}
+	</div>
+	<script src="/main_js/mes-math.js" defer></script>

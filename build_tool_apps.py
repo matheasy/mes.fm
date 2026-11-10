@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics", "quantum", "quantum-tunneling", "quantum-double-slit", "quantum-entanglement", "hydrogen-atom", "quantum-calculator"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -123,6 +123,25 @@ def _gta(slug, page, title, page_title, desc, tab, meta_desc):
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
         d.update(js_path="gta/js/gta.js", brand=GTA_BRAND, tab=tab)
+    return d
+# MES Quantum Lab (2026-11-10): ONE source (tool_apps_src/quantum: lib.js = MESQ core (FFT, constants, formatting, tab registry), lib-<x>.js = pure physics
+# (node tests tool_apps_src/quantum-<x>-tests.js), ui-<x>.js = one simulator each, panel-<x>.html = its markup, app.js = tab router) and one served script
+# quantum/js/quantum.js for six pages; data-views on #qm picks the tabs. Rebuild all six together, bump js_v on all. Stage boxes .qm-wrap get the stage-ctl View bar.
+QM_BRAND = dict(slug="quantum", title="MES Quantum Lab", tag="Tunnelling, the double slit, entanglement and the atom, live.")
+QM_PAGES = [("quantum", "Quantum Lab"), ("quantum-tunneling", "Tunnelling"), ("quantum-double-slit", "Double Slit"), ("quantum-entanglement", "Entanglement"), ("hydrogen-atom", "Hydrogen Atom"), ("quantum-calculator", "Calculators")]
+QM_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in QM_PAGES[1:])
+QM_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">Quantum %s</a></li>' % (sl, nm) for sl, nm in QM_PAGES[1:])
+QM_PARTS = ["lib-tunnel.js", "lib-slit.js", "lib-ent.js", "lib-atom.js", "ui-tunnel.js", "ui-box.js", "ui-slit.js", "ui-uncert.js", "ui-ent.js", "ui-sg.js", "ui-atom.js", "ui-calc.js"]
+def _qm(slug, views, title, page_title, tag, desc, tab, meta_desc=None):
+    fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", nm) for sl, nm in QM_PAGES)
+    v = {"VIEWS": views, "PAGE": slug, "FAM": fam, "SEO": "@seo/%s.html" % slug}
+    for p in ("tunnel", "box", "slit", "uncert", "ent", "sg", "atom", "calc"):
+        v["P_" + p.upper()] = "@panel-%s.html" % p
+    d = dict(title=title, page_title=page_title, tag=tag, accent="#5b3fd6", dark="#4329b0", tint="#ece8fd", desc=desc, js_v="1",
+             src="quantum", js_parts=QM_PARTS, nav_extra=QM_NAV_INFO, menu_extra=QM_NAV_MENU, vars=v)
+    if meta_desc: d["meta_desc"] = meta_desc
+    if slug != "quantum":
+        d.update(js_path="quantum/js/quantum.js", brand=QM_BRAND, tab=tab)
     return d
 APPS = {
     "earth-curvature-calculator": dict(title="MES Earth Curvature Calculator", page_title="Earth Curvature Calculator",
@@ -601,6 +620,24 @@ APPS = {
                             js_v="1"),
     # Spin-1/2 Lab (2026-11-03): the belt / plate trick with ribbons and an untangling move at 720 deg, five pictures of "back after 720 deg", the spin-1/2 torus,
     # a twisted elastic sheet (lib.js = MESHalf, node-tested: tool_apps_src/spin-half-tests.js). Inspired by Chantal Roth's Mechanical Universe; boxes .sh-wrap get the View bar.
+    "quantum": _qm("quantum", "tunnel,box,slit,uncert,ent,sg,atom,calc", "MES Quantum Lab", "Quantum Mechanics Simulator: Tunnelling, Double Slit, Entanglement, Hydrogen Atom",
+                   QM_BRAND["tag"], "A free quantum mechanics lab in your browser: watch a wave packet tunnel through a barrier, see the energy levels of wells, fire electrons one at a time through a double slit (with pilot-wave paths), run a Bell test on entangled pairs, send atoms through Stern-Gerlach magnets, explore hydrogen orbitals, and use quantum calculators. Real equations, solved live.", 0,
+                   "Free quantum mechanics simulator: tunnelling, energy levels, the double slit, a Bell test on entangled pairs, Stern-Gerlach, hydrogen orbitals and calculators."),
+    "quantum-tunneling": _qm("quantum-tunneling", "tunnel,box,calc", "Quantum Tunneling Simulator", "Quantum Tunneling Simulator: Wave Packet Through a Barrier",
+                   "Watch a wave go through a wall it cannot climb.", "A free quantum tunnelling simulator: a wave packet solving the time-dependent Schrödinger equation hits a barrier, step, well or double barrier, and part of it gets through. Live transmission and reflection, the exact transmission curve, energy levels of wells, alpha decay and the tunnelling calculator.", 1,
+                   "Free quantum tunneling simulator: a wave packet hits a barrier and part of it gets through. Transmission, reflection, wells, energy levels and a calculator."),
+    "quantum-double-slit": _qm("quantum-double-slit", "slit,uncert", "Double Slit Experiment Simulator", "Double Slit Experiment Simulator: Electrons One at a Time, Which-Path and Pilot Waves",
+                   "One particle at a time, and the stripes still build up.", "A free double-slit experiment simulator: send electrons, neutrons, buckyballs or photons through two slits one at a time and watch the interference pattern build up dot by dot; turn on a which-path detector and the stripes go away; see Bohmian pilot-wave paths; and explore the uncertainty principle with wave packets.", 2,
+                   "Free double slit experiment simulator: particles arrive one at a time and build stripes; which-path detector, pilot-wave paths and the uncertainty principle."),
+    "quantum-entanglement": _qm("quantum-entanglement", "ent,sg", "Quantum Entanglement Simulator", "Quantum Entanglement and Bell Test Simulator: Spooky Action at a Distance",
+                   "Spooky action at a distance, measured.", "A free quantum entanglement simulator: make entangled pairs, set Alice's and Bob's detectors, and run a Bell (CHSH) test against a local hidden-variable model. See the correlations break the classical limit of 2, why no message can travel faster than light, and Stern-Gerlach magnets in a row.", 3,
+                   "Free quantum entanglement simulator: run a Bell (CHSH) test on entangled pairs against hidden variables, see why no signal goes faster than light, and Stern-Gerlach."),
+    "hydrogen-atom": _qm("hydrogen-atom", "atom,calc", "Hydrogen Atom Orbitals", "Hydrogen Atom Simulator: Orbitals, Energy Levels and Spectral Lines",
+                   "Orbitals, energy levels and the colours of hydrogen.", "A free hydrogen atom simulator: draw the 1s, 2p, 3d, 4f and any other orbital as a cloud or a 3D surface, see the radial probability, energy levels, electron jumps and the Lyman, Balmer and Paschen lines with their real colours.", 4,
+                   "Free hydrogen atom simulator: orbitals as clouds or 3D shapes, radial probability, energy levels, electron jumps and the Balmer lines in colour."),
+    "quantum-calculator": _qm("quantum-calculator", "calc", "Quantum Calculators", "Quantum Physics Calculator: de Broglie Wavelength, Photon Energy, Tunneling, Uncertainty",
+                   "de Broglie, photons, tunnelling and uncertainty.", "Free quantum physics calculators: de Broglie wavelength, photon energy from wavelength or frequency, the Heisenberg uncertainty principle, tunnelling probability through a barrier, particle in a box energy levels, the Bohr model and hydrogen spectral lines. Every formula shown.", 5,
+                   "Free quantum physics calculators: de Broglie wavelength, photon energy, uncertainty principle, tunneling probability, particle in a box and the Bohr model."),
     "spin-half": dict(title="MES Spin-½ Lab", page_title="Spin-½ Lab: The Belt Trick, 720° and the Dirac String",
                       tag="One turn tangles. Two turns untangle.", accent="#a21caf", dark="#86198f", tint="#fae8ff",
                       desc="A free interactive spin-1/2 lab: Dirac's belt trick in 3D, where a ball tied to a wall by ribbons is tangled after 360 degrees but can be untangled after 720; five pictures of why a spinor needs two turns; a torus coloured by phase; and an elastic sheet that lies flat again only after 720 degrees. With quaternions, live readouts and the maths.",
