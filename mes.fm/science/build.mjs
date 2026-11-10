@@ -299,6 +299,15 @@ const PAGES = [
     tileLabel: "Spin Wave Field",
   },
   {
+    // Tile only: links to the MES Quantum Lab (tunnelling, double slit, entanglement, hydrogen atom). Icon = img/quantum-icon.jpg (Gemini art).
+    slug: "quantum",
+    section: "tools",
+    href: "/quantum",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Quantum Lab",
+  },
+  {
     // Tile only: links to the Heart Simulator. Icon = img/heart-simulator-icon.jpg (placeholder until Grok tile art lands; same file name).
     slug: "heart-simulator",
     section: "tools",
