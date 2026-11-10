@@ -1,1 +1,24 @@
-<div class="tu-seo"><h2>About</h2><p>Coming soon.</p></div>
+<div class="tu-seo">
+<h2>About the hydrogen atom simulator</h2>
+<p>Hydrogen is the one atom whose Schr&ouml;dinger equation can be solved exactly, so every picture on this page is the real answer, not an artist&rsquo;s sketch. Pick an orbital (1s, 2p, 3d, 4f, or any n, l, m up to n = 7) and see it three ways: a slice through the atom coloured by the sign or phase of the wavefunction, a 3D cloud of random positions drawn from |&psi;|&sup2; that you can turn with the mouse or a finger, and the radial probability P(r) with the most likely radius and the average radius marked.</p>
+<h3>What the quantum numbers mean</h3>
+<ul>
+<li><b>n</b> (1, 2, 3, ...) sets the energy, E<sub>n</sub> = &minus;13.6 eV / n&sup2;, and the size: the orbital grows roughly as n&sup2;a<sub>0</sub>.</li>
+<li><b>l</b> (0 to n &minus; 1) is the angular momentum and the shape: s, p, d, f. It is also the number of angular nodes (planes or cones where &psi; = 0).</li>
+<li><b>m</b> (&minus;l to l) is the orientation. The real orbitals chemists draw (p<sub>x</sub>, d<sub>xy</sub>, d<sub>z&sup2;</sub>, ...) are sums and differences of the +m and &minus;m states; tick &ldquo;Complex m states&rdquo; to see the e<sup>im&phi;</sup> states themselves, whose phase winds m times around the z axis.</li>
+<li>The number of radial nodes (spheres where &psi; = 0) is n &minus; l &minus; 1.</li>
+</ul>
+<h3>Energy levels and spectral lines</h3>
+<p>Click a level in the energy diagram and the electron jumps there. Going down it emits a photon whose energy equals the gap, going up it has to absorb one. The jumps that end on n = 2 are the Balmer series, the visible lines of hydrogen: H&alpha; 656.3 nm (red), H&beta; 486.1 nm (cyan), H&gamma; 434.0 nm and H&delta; 410.2 nm (violet), wavelengths in air. Jumps to n = 1 (Lyman) are ultraviolet, jumps to n = 3 (Paschen) infrared. You can switch between air and vacuum wavelengths and turn the reduced-mass correction on or off, and try the ions He&#8314; and Li&sup2;&#8314;, whose levels are Z&sup2; times deeper.</p>
+<h3>What is simplified</h3>
+<p>The page uses the non-relativistic Schr&ouml;dinger equation with a point nucleus. Electron spin, fine structure, the Lamb shift and hyperfine splitting (the 21 cm line) are left out; they change the energies by around one part in ten thousand or less, far smaller than anything you can see here.</p>
+<h3>Questions</h3>
+<h3>Why is the 1s orbital most likely at exactly one Bohr radius?</h3>
+<p>The density |&psi;|&sup2; is largest at the nucleus, but there is very little volume there. The radial probability P(r) = r&sup2;R(r)&sup2; multiplies by the area of a sphere of radius r, and for 1s that product peaks at r = a<sub>0</sub> = 52.9 pm. The average distance is larger, 1.5 a<sub>0</sub>, because the tail reaches far out.</p>
+<h3>Was Bohr&rsquo;s model wrong?</h3>
+<p>Bohr&rsquo;s circular orbits give the right energies for hydrogen, which is why they explain the line colours, but the orbits are not real: a 1s electron has zero angular momentum and does not circle at all, and the model cannot handle atoms with more electrons. The radius n&sup2;a<sub>0</sub> survives in quantum mechanics as the most likely radius of the orbitals with l = n &minus; 1 (2p, 3d, 4f, ...).</p>
+<h3>Where is the electron really?</h3>
+<p>Quantum mechanics only gives the probability of finding it at each place when you look. Interpretations differ on what lies behind that (the Copenhagen view, pilot waves, many worlds), but they all predict the same clouds and the same spectral lines shown here.</p>
+<h3>Why do the colours mean plus and minus?</h3>
+<p>The wavefunction of a real orbital is a real number that is positive in some lobes and negative in others. The sign matters when atoms bond (lobes of the same sign overlap to form a bond), even though the probability |&psi;|&sup2; does not depend on it.</p>
+</div>

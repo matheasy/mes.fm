@@ -117,7 +117,7 @@
 	#qm .qm-at-sw {display:inline-block;width:0.9em;height:0.9em;border-radius:50%;vertical-align:-0.1em;border:1px solid rgba(255,255,255,0.4);}
 	#qm #qm-at-lcv {cursor:pointer;}
 	#qm #qm-at-stage .qm-run select {max-width:9em;}
-	@media (max-width:600px) { #qm #qm-at-stage .qm-run, #qm #qm-at-lstage .qm-run {top:auto;bottom:0.4em;} #qm .qm-at-spin select {max-width:10em;} }
+	@media (max-width:600px) { #qm #qm-at-lstage .qm-run {top:0.4em;bottom:auto;left:auto;} #qm .qm-at-spin select {max-width:10em;} }
 
 	/* ===== calc (Calculators) ===== */
 	#qm .qm-ca-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,30em),1fr));gap:1em;align-items:start;}
@@ -165,3 +165,9 @@
 	@media (max-width:600px) {
 		#qm .qm-tu-wrap .qm-run select, #qm .qm-bx-wrap .qm-run select {max-width:9.5em;}
 	}
+	#qm #qm-ds-badge {top:auto;bottom:0.5em;max-width:58%;}
+	@media (max-width:600px) { #qm #qm-ds-badge {bottom:auto;top:0.4em;max-width:62%;font-size:0.72em;} }
+	#qm .qm-chips sub, #qm .qm-chips sup, #qm .qm-at-name sub, #qm .qm-ro sub, #qm .qm-check sup {color:inherit;}
+	#qm .qm-ca-plug, #qm .qm-ca-say, #qm .qm-ca-rd:not(.qm-ca-bad) {color:var(--qm-ink);}
+	#qm .qm-ca-rd:not(.qm-ca-bad) {color:var(--qm-mut);}
+	#qm .qm-at-name {color:var(--qm-mut);}

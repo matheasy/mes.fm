@@ -1,1 +1,86 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">Quick quantum numbers, live as you type. Type a value with its unit (<b>500 nm</b>, <b>2 eV</b>, <b>1e-10 m</b>, <b>0.5c</b>, <b>25 °C</b>) or pick the unit from the menu. Each card shows the formula, your numbers plugged in, and what the answer means.</p>
+<div class="qm-chips" id="qm-ca-jump" aria-label="Jump to a calculator">
+	<button type="button" data-c="db">de Broglie</button><button type="button" data-c="ph">Photon</button><button type="button" data-c="un">Uncertainty</button><button type="button" data-c="tu">Tunnelling</button>
+	<button type="button" data-c="bx">Particle in a box</button><button type="button" data-c="bo">Bohr model</button><button type="button" data-c="ry">Spectral lines</button><button type="button" data-c="co">Compton</button>
+	<button type="button" data-c="bb">Blackbody</button><button type="button" data-c="th">Thermal wavelength</button>
+</div>
+<div class="qm-ca-grid">
+
+<section class="tu-card qm-ca-card" id="qm-ca-db" data-card="db">
+	<h3 class="qm-h3">de Broglie wavelength</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda = \frac{h}{p}, \qquad p = \frac{\sqrt{K^2 + 2Kmc^2}}{c} \;\approx\; \sqrt{2mK}, \qquad K = qV \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-ph" data-card="ph">
+	<h3 class="qm-h3">Photon energy, wavelength and frequency</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle E = h f = \frac{hc}{\lambda}, \qquad E\,[\text{eV}] \approx \frac{1239.84}{\lambda\,[\text{nm}]}, \qquad p = \frac{E}{c} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-un" data-card="un">
+	<h3 class="qm-h3">Heisenberg uncertainty</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \Delta x\,\Delta p \ge \frac{\hbar}{2}, \qquad \Delta v \ge \frac{\hbar}{2m\,\Delta x}, \qquad \Delta E\,\Delta t \gtrsim \frac{\hbar}{2} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-tu" data-card="tu">
+	<h3 class="qm-h3">Tunnelling through a rectangular barrier</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle T = \left[1 + \frac{V^2\sinh^2(\kappa a)}{4E(V-E)}\right]^{-1}, \quad \kappa = \frac{\sqrt{2m(V-E)}}{\hbar}, \qquad T \approx \frac{16E(V-E)}{V^2}\,e^{-2\kappa a} \)</div></div>
+	<div class="qm-ca-chart"><canvas class="qm-ca-cv" aria-label="Transmission against barrier width"></canvas></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-bx" data-card="bx">
+	<h3 class="qm-h3">Particle in a box (and dye colours)</h3>
+	<div class="qm-chips qm-ca-pre"><button type="button" data-p='{"mode":"lv","part":"e","L":"1 nm","n1":"1","n2":"2"}'>Electron in 1 nm</button><button type="button" data-p='{"mode":"dye","L":"0.578 nm","N":"4"}'>Butadiene (4 &pi; electrons)</button><button type="button" data-p='{"mode":"lv","part":"n","L":"10 fm","n1":"1","n2":"2"}'>Neutron in a nucleus-sized box</button></div>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle E_n = \frac{n^2 h^2}{8 m L^2}, \qquad \Delta E_{\text{HOMO}\to\text{LUMO}} = \frac{h^2 (N+1)}{8 m_e L^2}, \qquad \lambda = \frac{hc}{\Delta E} \)</div></div>
+	<div class="qm-ca-chart qm-ca-chart--sm"><canvas class="qm-ca-cv" aria-label="Energy levels in the box"></canvas></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-bo" data-card="bo">
+	<h3 class="qm-h3">Bohr model (hydrogen-like ions)</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle r_n = \frac{n^2 a_0}{Z}\frac{m_e}{\mu}, \qquad v_n = \frac{Z\alpha c}{n}, \qquad E_n = -\frac{13.6\ \text{eV}\,Z^2}{n^2}\frac{\mu}{m_e}, \qquad L = n\hbar \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-ry" data-card="ry">
+	<h3 class="qm-h3">Rydberg formula and spectral line finder</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \frac{1}{\lambda} = R_\infty \frac{\mu}{m_e} Z^2 \left( \frac{1}{n_1^2} - \frac{1}{n_2^2} \right), \qquad R_\infty = 10\,973\,731.568\ \text{m}^{-1} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-co" data-card="co">
+	<h3 class="qm-h3">Compton scattering</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda' - \lambda = \frac{h}{mc}\,(1 - \cos\theta), \qquad \frac{h}{m_e c} = 2.426\ \text{pm} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-bb" data-card="bb">
+	<h3 class="qm-h3">Blackbody radiation</h3>
+	<div class="qm-chips qm-ca-pre"><button type="button" data-p='{"T":"5772 K"}'>The Sun's surface</button><button type="button" data-p='{"T":"2700 K"}'>Warm-white bulb</button><button type="button" data-p='{"T":"37 °C"}'>Human body</button><button type="button" data-p='{"T":"2.725 K"}'>Cosmic microwave background</button></div>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda_{\text{peak}} = \frac{b}{T}, \quad b = 2.898\times10^{-3}\ \text{m K}, \qquad j = \sigma T^4, \quad B_\lambda = \frac{2hc^2}{\lambda^5}\frac{1}{e^{hc/\lambda k_B T} - 1} \)</div></div>
+	<div class="qm-ca-chart"><canvas class="qm-ca-cv" aria-label="Planck spectrum"></canvas></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-th" data-card="th">
+	<h3 class="qm-h3">Thermal de Broglie wavelength</h3>
+	<div class="qm-chips qm-ca-pre"><button type="button" data-p='{"part":"He","T":"300 K","n":"2.45e25 /m3"}'>Helium gas, room temperature</button><button type="button" data-p='{"part":"e","T":"300 K","n":"8.5e28 /m3"}'>Electrons in copper</button><button type="button" data-p='{"part":"Rb","T":"100 nK","n":"1e20 /m3"}'>Ultracold rubidium (BEC range)</button></div>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda_{\text{th}} = \frac{h}{\sqrt{2\pi m k_B T}}, \qquad n\lambda_{\text{th}}^3 \ll 1 \text{ classical gas}, \quad n\lambda_{\text{th}}^3 \gtrsim 1 \text{ quantum gas} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+</div>
+<p class="tu-note">Constants: CODATA 2018 (h, e and c are exact in SI). Non-relativistic formulas are used where the card says so; the de Broglie card is fully relativistic. The tunnelling and box cards are idealized models (flat barrier, infinitely high walls).</p>

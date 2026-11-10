@@ -1,1 +1,115 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">The electron in a hydrogen atom is not a little ball on an orbit. It is a standing wave &psi;<sub>nlm</sub> around the proton, and |&psi;|&sup2; tells you where you are likely to find it. Every picture below is drawn from the <b>exact</b> solution of the Schr&ouml;dinger equation for hydrogen, computed live in your browser.</p>
+
+<div class="tu-card qm-at-pick">
+	<div class="qm-chips" id="qm-at-chips" aria-label="Orbitals">
+		<button type="button" data-o="1,0,0">1s</button>
+		<button type="button" data-o="2,0,0">2s</button>
+		<button type="button" data-o="2,1,0">2p<sub>z</sub></button>
+		<button type="button" data-o="2,1,1">2p<sub>x</sub></button>
+		<button type="button" data-o="3,0,0">3s</button>
+		<button type="button" data-o="3,1,0">3p<sub>z</sub></button>
+		<button type="button" data-o="3,2,0">3d<sub>z&sup2;</sub></button>
+		<button type="button" data-o="3,2,-2">3d<sub>xy</sub></button>
+		<button type="button" data-o="3,2,2">3d<sub>x&sup2;&minus;y&sup2;</sub></button>
+		<button type="button" data-o="4,0,0">4s</button>
+		<button type="button" data-o="4,3,0">4f<sub>z&sup3;</sub></button>
+		<button type="button" data-o="4,3,-2">4f<sub>xyz</sub></button>
+		<button type="button" data-o="4,3,3">4f<sub>x(x&sup2;&minus;3y&sup2;)</sub></button>
+		<button type="button" data-o="5,2,0">5d<sub>z&sup2;</sub></button>
+		<button type="button" data-o="6,3,0">6f<sub>z&sup3;</sub></button>
+	</div>
+	<div class="qm-row qm-at-nlm">
+		<label class="qm-at-spin">n <select id="qm-at-n" aria-label="Principal quantum number n"></select></label>
+		<label class="qm-at-spin">l <select id="qm-at-l" aria-label="Angular momentum quantum number l"></select></label>
+		<label class="qm-at-spin">m <select id="qm-at-m" aria-label="Magnetic quantum number m"></select></label>
+		<label class="qm-check"><input type="checkbox" id="qm-at-cplx"> Complex m states (e<sup>im&phi;</sup>)</label>
+		<label class="qm-at-spin">Atom <select id="qm-at-z" aria-label="Nucleus"><option value="1">Hydrogen (Z = 1)</option><option value="2">He&#8314; (Z = 2)</option><option value="3">Li&#178;&#8314; (Z = 3)</option></select></label>
+	</div>
+	<p class="qm-at-name" id="qm-at-name" aria-live="polite"></p>
+</div>
+
+<div class="qm-wrap" id="qm-at-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-at-stage">
+		<canvas id="qm-at-cv" aria-label="Hydrogen orbital picture"></canvas>
+		<div class="qm-badge" id="qm-at-badge"></div>
+		<div class="qm-run">
+			<button type="button" data-v="slice" aria-pressed="true" title="Probability density in a flat slice">Slice</button>
+			<button type="button" data-v="cloud" aria-pressed="false" title="3D cloud of points drawn from |&psi;|&sup2;: drag to turn">3D cloud</button>
+			<button type="button" data-v="radial" aria-pressed="false" title="Radial probability P(r)">Radial</button>
+			<select id="qm-at-plane" aria-label="Slice plane"><option value="xz">x-z plane</option><option value="xy">x-y plane</option><option value="yz">y-z plane</option></select>
+			<button type="button" id="qm-at-fs" title="Full screen">&#x26F6; Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-at-legend"></div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Energy E<sub>n</sub></span><b id="qm-at-ro-e">&ndash;</b></div>
+		<div class="qm-ro"><span>Most likely radius</span><b id="qm-at-ro-rmp">&ndash;</b></div>
+		<div class="qm-ro"><span>Average radius &lang;r&rang;</span><b id="qm-at-ro-rav">&ndash;</b></div>
+		<div class="qm-ro"><span>Radial nodes</span><b id="qm-at-ro-rn">&ndash;</b></div>
+		<div class="qm-ro"><span>Angular nodes</span><b id="qm-at-ro-an">&ndash;</b></div>
+		<div class="qm-ro"><span>Under the pointer</span><b id="qm-at-ro-hov">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-at-zoom">Zoom <span class="qm-val" id="qm-at-zoom-v"></span></label><input type="range" id="qm-at-zoom" min="0.4" max="3" step="0.05" value="1"></div>
+		<div class="tu-field qm-at-only-slice"><label class="tu-label" for="qm-at-off">Slice position (along the third axis) <span class="qm-val" id="qm-at-off-v"></span></label><input type="range" id="qm-at-off" min="-1" max="1" step="0.01" value="0"></div>
+		<div class="tu-field qm-at-only-slice"><label class="tu-label" for="qm-at-gam">Contrast (show the faint outer parts) <span class="qm-val" id="qm-at-gam-v"></span></label><input type="range" id="qm-at-gam" min="0.15" max="1" step="0.05" value="0.5"></div>
+		<div class="tu-field qm-at-only-cloud"><label class="tu-label" for="qm-at-pts">Points in the cloud <span class="qm-val" id="qm-at-pts-v"></span></label><input type="range" id="qm-at-pts" min="2000" max="40000" step="1000" value="12000"></div>
+	</div>
+	<div class="qm-row">
+		<label class="qm-check qm-at-only-cloud"><input type="checkbox" id="qm-at-spinon" checked> Turn slowly</label>
+		<label class="qm-check qm-at-only-slice"><input type="checkbox" id="qm-at-nodes" checked> Mark the nodes (where &psi; = 0)</label>
+		<label class="qm-check qm-at-only-radial"><input type="checkbox" id="qm-at-showR"> Also draw R(r) itself</label>
+		<button type="button" class="tu-btn" id="qm-at-resample">New random cloud</button>
+		<button type="button" class="tu-btn" id="qm-at-link">Copy link</button>
+	</div>
+	<p class="tu-note" id="qm-at-hint"></p>
+</div>
+
+<div class="qm-explain">
+	<p><b>What you see.</b> A slice shows |&psi;|&sup2; in one flat plane through the atom: brighter = more likely. The colour is the <b>sign</b> of the wave (orange +, blue &minus;), or with complex m states its <b>phase</b> (the colour wheel turns m times around the z axis). The 3D cloud is a set of random &ldquo;where was the electron found?&rdquo; dots, drawn exactly from |&psi;|&sup2;. The radial view adds up all directions: P(r) = r&sup2;R&sup2; is the chance of finding the electron at distance r.</p>
+	<p><b>Nodes.</b> The wave is zero on n &minus; 1 surfaces: n &minus; l &minus; 1 spheres (radial nodes) and l cones or planes (angular nodes). More nodes = more wiggles = higher energy, just like a guitar string.</p>
+</div>
+<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \psi_{n l m}(r,\theta,\varphi) = R_{n l}(r)\,Y_{l}^{m}(\theta,\varphi) \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle R_{n l}(r) = \sqrt{\left(\tfrac{2Z}{n a_0}\right)^{3}\frac{(n-l-1)!}{2n\,(n+l)!}}\;e^{-\rho/2}\rho^{\,l}\,L_{n-l-1}^{2l+1}(\rho) \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \rho = \frac{2Zr}{n a_0}, \qquad \langle r\rangle = \frac{a_0}{2Z}\left[3n^2 - l(l+1)\right], \qquad P(r) = r^2 R_{nl}(r)^2 \)</div>
+	<div class="qm-eq__t">L is an associated Laguerre polynomial, Y a spherical harmonic. The real orbitals (p<sub>x</sub>, d<sub>xy</sub>, ...) are the sums and differences of the m and &minus;m states that chemists draw. Spin and the small fine-structure corrections are left out.</div>
+</div>
+
+<h3 class="qm-h3">Energy levels, jumps and the colours of hydrogen</h3>
+<p class="qm-lead">The electron sits on one level. <b>Click another level</b> to make it jump: going down it sends out a photon, going up it must absorb one. The photon&rsquo;s energy is the gap between the levels, so its wavelength is fixed. That is why hydrogen glows in a few sharp colours.</p>
+<div class="qm-chips" id="qm-at-jchips">
+	<button type="button" data-j="3,2">H&alpha; red (3&rarr;2)</button>
+	<button type="button" data-j="4,2">H&beta; cyan (4&rarr;2)</button>
+	<button type="button" data-j="5,2">H&gamma; (5&rarr;2)</button>
+	<button type="button" data-j="6,2">H&delta; (6&rarr;2)</button>
+	<button type="button" data-j="2,1">Lyman &alpha; UV (2&rarr;1)</button>
+	<button type="button" data-j="4,3">Paschen &alpha; IR (4&rarr;3)</button>
+	<button type="button" data-j="1,2">Absorb (1&rarr;2)</button>
+	<button type="button" data-j="1,0">Ionize from 1s</button>
+</div>
+<div class="qm-wrap" id="qm-at-lwrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-at-lstage">
+		<canvas id="qm-at-lcv" aria-label="Energy level diagram and spectrum: click a level to make the electron jump" tabindex="0"></canvas>
+		<div class="qm-run"><button type="button" id="qm-at-lfs" title="Full screen">&#x26F6; Full screen</button></div>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Jump</span><b id="qm-at-ro-j">&ndash;</b></div>
+		<div class="qm-ro"><span>Photon energy</span><b id="qm-at-ro-de">&ndash;</b></div>
+		<div class="qm-ro"><span>Wavelength</span><b id="qm-at-ro-lam">&ndash;</b></div>
+		<div class="qm-ro"><span>Frequency</span><b id="qm-at-ro-f">&ndash;</b></div>
+		<div class="qm-ro"><span>Series / band</span><b id="qm-at-ro-ser">&ndash;</b></div>
+	</div>
+</div>
+<div class="qm-row">
+	<label class="qm-check"><input type="checkbox" id="qm-at-air" checked> Wavelengths in air (as measured in a lab)</label>
+	<label class="qm-check"><input type="checkbox" id="qm-at-red" checked> Use the reduced mass (the nucleus moves a little too)</label>
+</div>
+<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle E_n = -\frac{13.6\ \text{eV}\,Z^2}{n^2}\cdot\frac{\mu}{m_e} \)</div><div class="qm-eq__f mes-tex">\( \displaystyle \frac{1}{\lambda} = R_\infty\frac{\mu}{m_e}Z^2\left(\frac{1}{n_1^2} - \frac{1}{n_2^2}\right) \)</div><div class="qm-eq__f mes-tex">\( \displaystyle E_\gamma = h f = \frac{hc}{\lambda} \)</div>
+	<div class="qm-eq__t">Air bends light a little, so a wavelength measured in air is about 0.03% shorter than in vacuum: H&alpha; is 656.28 nm in air and 656.47 nm in vacuum. The reduced mass &mu; = m<sub>e</sub>M/(m<sub>e</sub>+M) shifts every line by about 0.05%.</div>
+</div>
+<div class="qm-explain">
+	<p><b>Bohr&rsquo;s model and the quantum cloud.</b> Bohr (1913) pictured the electron on circular orbits of radius n&sup2;a<sub>0</sub> and got these energies exactly right, which is why the line colours match. But it fails elsewhere: it gives the ground state angular momentum &hbar; (the real value is 0: a 1s electron does not circle at all), it cannot explain line brightness or atoms with more electrons, and it says nothing about the shapes above. In the full theory the radius n&sup2;a<sub>0</sub> survives only as the most likely radius of the orbitals with l = n &minus; 1 (try 2p, 3d, 4f in the radial view: the peak sits exactly at 4, 9, 16 a<sub>0</sub>).</p>
+</div>
