@@ -78,7 +78,7 @@
 			c.strokeStyle = "rgba(40,20,8,0.25)"; c.lineWidth = 1;
 			for (var i = 0; i < 26; i++) { c.beginPath(); var y = Math.random() * h; c.moveTo(0, y); for (var x = 0; x <= w; x += 32) c.lineTo(x, y + Math.sin(x / 60 + i) * 3); c.stroke(); }
 		});
-		woodTex.wrapS = THREE.RepeatWrapping; woodTex.repeat.set(3, 1);
+		woodTex.wrapS = woodTex.wrapT = THREE.RepeatWrapping; woodTex.repeat.set(3, 1);
 		var woodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.45, metalness: 0.05 });
 		// cloth with pocket holes (shape in the XY plane, y = -table y, then laid flat)
 		var G = window.MESBilliards.geometry(T), pk = [];
@@ -100,27 +100,32 @@
 			m.position.set((sg[0] + sg[2]) / 2 - nx * cush / 2, hc / 2, (sg[1] + sg[3]) / 2 - ny * cush / 2);
 			m.castShadow = true; m.receiveShadow = true; g.add(m);
 		});
-		// wooden rails (with a gap over each pocket)
-		var rails = [[0, -W - cush - wood / 2, T.L + 2 * (cush + wood), wood, "x"], [0, W + cush + wood / 2, T.L + 2 * (cush + wood), wood, "x"], [-L - cush - wood / 2, 0, wood, T.W + 2 * cush, "z"], [L + cush + wood / 2, 0, wood, T.W + 2 * cush, "z"]];
-		rails.forEach(function (r) {
-			var m = new THREE.Mesh(new THREE.BoxGeometry(r[2], hw + 0.16, r[3]), woodMat);
-			m.position.set(r[0], (hw - 0.16) / 2, r[1]); m.castShadow = true; m.receiveShadow = true; g.add(m);
-		});
-		// a strip of cloth-coloured top between the cushions and the rails, so the corners look closed
-		var lip = new THREE.MeshStandardMaterial({ color: clothCol.clone().multiplyScalar(0.7), roughness: 0.9 });
-		[[0, -W - cush / 2, T.L + 2 * cush, cush], [0, W + cush / 2, T.L + 2 * cush, cush], [-L - cush / 2, 0, cush, T.W], [L + cush / 2, 0, cush, T.W]].forEach(function (r) {
-			var m = new THREE.Mesh(new THREE.BoxGeometry(r[2], 0.004, r[3]), lip); m.position.set(r[0], -0.002, r[1]); g.add(m);
-		});
-		// pockets: black tube + brass ring + leather drop
+		// wooden rails: one frame with the real pocket openings cut out (the inside edge follows the cushions and goes round
+		// each pocket hole), so a pocket is a hole in the rail and the cloth, not a tube standing on it
+		var ix = L + cush, iz = W + cush, ox = L + cush + wood, oz = W + cush + wood;
+		var frame = new THREE.Shape();
+		frame.moveTo(-ox, -oz); frame.lineTo(ox, -oz); frame.lineTo(ox, oz); frame.lineTo(-ox, oz); frame.lineTo(-ox, -oz);
+		var hole = new THREE.Path(), N = 1440;
+		for (var k = 0; k <= N; k++) {
+			var th = -k / N * Math.PI * 2, cs = Math.cos(th), sn = Math.sin(th);
+			var tr = Math.min(Math.abs(cs) > 1e-9 ? ix / Math.abs(cs) : 1e9, Math.abs(sn) > 1e-9 ? iz / Math.abs(sn) : 1e9);
+			pk.forEach(function (pp) {   // shape coordinates: y = -table y
+				var cx = pp[0], cy = -pp[1], r = pp[2] * 1.02, bb = cx * cs + cy * sn, disc = bb * bb - (cx * cx + cy * cy - r * r);
+				if (disc > 0) { var ex = bb + Math.sqrt(disc); if (ex > tr) tr = ex; }
+			});
+			if (k === 0) hole.moveTo(tr * cs, tr * sn); else hole.lineTo(tr * cs, tr * sn);
+		}
+		frame.holes.push(hole);
+		var fh = hw + 0.16, fgeo = new THREE.ExtrudeGeometry(frame, { depth: fh, bevelEnabled: false, steps: 1 });
+		var fmesh = new THREE.Mesh(fgeo, woodMat);
+		fmesh.rotation.x = -Math.PI / 2; fmesh.position.y = -0.16; fmesh.castShadow = true; fmesh.receiveShadow = true; g.add(fmesh);
+		woodTex.repeat.set(1.5, 1.5);
+		// the pocket drop below each hole (only seen through the hole)
 		var black = new THREE.MeshStandardMaterial({ color: "#050505", roughness: 1, side: THREE.DoubleSide });
-		var brass = new THREE.MeshStandardMaterial({ color: "#c9a24a", roughness: 0.3, metalness: 0.85 });
 		pk.forEach(function (p) {
-			var tube = new THREE.Mesh(new THREE.CylinderGeometry(p[2], p[2] * 0.92, 0.14, 28, 1, true), black);
-			tube.position.set(p[0], -0.07, p[1]); g.add(tube);
-			var bot = new THREE.Mesh(new THREE.CircleGeometry(p[2], 24), black); bot.rotation.x = -Math.PI / 2; bot.position.set(p[0], -0.13, p[1]); g.add(bot);
-			var ring = new THREE.Mesh(new THREE.TorusGeometry(p[2] * 1.02, 0.006, 8, 32), brass); ring.rotation.x = Math.PI / 2; ring.position.set(p[0], hw + 0.002, p[1]);
-			g.add(ring);
-			var cap = new THREE.Mesh(new THREE.CylinderGeometry(p[2] * 1.12, p[2] * 1.12, hw, 28, 1, true, 0, Math.PI * 2), black); cap.position.set(p[0], hw / 2, p[1]); g.add(cap);
+			var tube = new THREE.Mesh(new THREE.CylinderGeometry(p[2] * 1.02, p[2] * 0.9, 0.16, 28, 1, true), black);
+			tube.position.set(p[0], -0.08, p[1]); g.add(tube);
+			var bot = new THREE.Mesh(new THREE.CircleGeometry(p[2], 24), black); bot.rotation.x = -Math.PI / 2; bot.position.set(p[0], -0.15, p[1]); g.add(bot);
 		});
 		// diamonds (sights) on the rails
 		var dmat = new THREE.MeshStandardMaterial({ color: "#f3e7c8", roughness: 0.4, metalness: 0.2 });
