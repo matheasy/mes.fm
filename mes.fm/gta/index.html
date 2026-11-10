@@ -793,6 +793,17 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gm-my {margin:0.8em 0 0.4em;}
 	.gm-my summary {cursor:pointer;font-weight:700;}
 	.gm-my summary small {font-weight:400;color:var(--gm-dim);margin-left:0.4em;}
+	/* the map card is dark in both themes: undo the derived TOOL-DARK twins of the rules above */
+	html body.dark-mode #gt .gm-st--k {background:#ffe14d;color:#1d1630;}
+	html body.dark-mode #gt .gm-pink {fill:#ffe14d;stroke:#1d1630;}
+	html body.dark-mode #gt .gm-pinm {fill:#1d1630;stroke:#fff;}
+	html body.dark-mode #gt .gm-pinf {fill:#16a34a;stroke:#fff;}
+	html body.dark-mode #gt .gm-pinfk {stroke:#fff;}
+	html body.dark-mode #gt .gm-clb {stroke:#fff;}
+	html body.dark-mode #gt .gm-cl:hover .gm-clb, html body.dark-mode #gt .gm-cl:focus .gm-clb {stroke:#ffe14d;}
+	html body.dark-mode #gt .gm-fb {border:2px solid #16a34a;color:#4ade80;}
+	html body.dark-mode #gt .gm-fb.is-on {background:#16a34a;color:#fff;}
+	html body.dark-mode #gt .gm-nextb:hover {border-color:#ffe14d;}
 
 
 	@media print {
@@ -1326,7 +1337,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=12" defer></script>
+	<script src="/gta/js/gta.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
