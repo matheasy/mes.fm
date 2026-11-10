@@ -100,18 +100,18 @@
  ],
  "tools": [
   {
-   "href": "/brick-builder",
-   "title": "Brick Builder (3D building bricks)",
-   "icon": "/img/brick-builder-logo.png",
-   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
-   "added": "2026-11-10",
-   "kind": "tool"
-  },
-  {
    "href": "/draw",
    "title": "Draw (Drawing Pad)",
    "icon": "/img/draw-logo.png",
    "desc": "Sketch with pens, markers and spray, add shapes, arrows, text, emoji and symbols, start from templates or colouring pages, then download PNG or SVG.",
+   "added": "2026-11-10",
+   "kind": "tool"
+  },
+  {
+   "href": "/brick-builder",
+   "title": "Brick Builder (3D building bricks)",
+   "icon": "/img/brick-builder-logo.png",
+   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
    "added": "2026-11-10",
    "kind": "tool"
   },
@@ -198,18 +198,18 @@
  ],
  "latest": [
   {
-   "href": "/brick-builder",
-   "title": "Brick Builder (3D building bricks)",
-   "icon": "/img/brick-builder-logo.png",
-   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
-   "added": "2026-11-10",
-   "kind": "tool"
-  },
-  {
    "href": "/draw",
    "title": "Draw (Drawing Pad)",
    "icon": "/img/draw-logo.png",
    "desc": "Sketch with pens, markers and spray, add shapes, arrows, text, emoji and symbols, start from templates or colouring pages, then download PNG or SVG.",
+   "added": "2026-11-10",
+   "kind": "tool"
+  },
+  {
+   "href": "/brick-builder",
+   "title": "Brick Builder (3D building bricks)",
+   "icon": "/img/brick-builder-logo.png",
+   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
    "added": "2026-11-10",
    "kind": "tool"
   },
