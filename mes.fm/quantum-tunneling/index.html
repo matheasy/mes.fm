@@ -308,7 +308,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* MES Quantum Lab: shared look. Simulator stages are dark in both themes; their colours are --qm-* custom properties (restated for dark mode at the end,
 	   because the derived TOOL-DARK block rewrites literal colours and custom-property values). Hand-written dark rules need the "html body.dark-mode #qm.qm" prefix. */
 	.tu [hidden] {display:none !important;}
-	:where(#qm) :is(div, span, p, li, label, b, strong, em, small, td, th, figcaption, article, h3, h4, dt, dd) {color:inherit;}
+	:where(#qm) :is(div, span, p, li, label, b, strong, em, small, table, thead, tbody, tr, td, th, figcaption, article, h3, h4, dt, dd) {color:inherit;}
 	.qm {--qm-bg:#070a14;--qm-line:#273049;--qm-text:#e7ebf6;--qm-dim:#9aa6c0;--qm-ro:#0c1020;--qm-soft:#f4f3fd;--qm-edge:#d9d6f3;--qm-ink:#1f1b3a;--qm-mut:#5b5875;--qm-ok:#15803d;--qm-bad:#b91c1c;--qm-warn:#a16207;--qm-c1:#22d3ee;--qm-c2:#f472b6;--qm-c3:#facc15;--qm-c4:#a3e635;}
 	.qm-fam {display:flex;flex-wrap:wrap;gap:0.35em;margin:0 0 0.9em;}
 	.qm-fam a {display:inline-block;padding:0.3em 0.85em;border-radius:1em;border:1px solid var(--qm-edge);background:var(--qm-soft);color:var(--qm-ink);text-decoration:none;font-size:0.88em;font-weight:600;}
@@ -376,6 +376,112 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #qm.qm {--qm-bg:#070a14;--qm-line:#2f3854;--qm-text:#e7ebf6;--qm-dim:#a3aec7;--qm-ro:#0c1020;--qm-soft:#24233a;--qm-edge:#3b3a5c;--qm-ink:#e6e4f7;--qm-mut:#b3b0cc;--qm-ok:#4ade80;--qm-bad:#f87171;--qm-warn:#fbbf24;}
 	html body.dark-mode #qm.qm .qm-eq {background:#1b1b2c;}
 	html body.dark-mode #qm.qm .qm-fam a[aria-current="page"], html body.dark-mode #qm.qm .qm-chips button[aria-pressed="true"] {color:#fff;}
+	/* ===== tab "ent": entanglement & Bell test ===== */
+	#qm .qm-en-angles {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.5em 1.2em;margin:0.9em 0 0.3em;}
+	#qm .qm-en-ang {display:flex;align-items:center;gap:0.5em;min-width:0;}
+	#qm .qm-en-ang label {flex:0 0 4.2em;font-size:0.92em;}
+	#qm .qm-en-ang input[type=range] {flex:1 1 auto;min-width:0;}
+	#qm .qm-en-ang input[type=number] {flex:0 0 4.8em;width:4.8em;padding:0.25em 0.35em;}
+	#qm .qm-en-free .qm-en-only-chsh {display:none;}
+	#qm .qm-en-meter {margin:0.2em 0 1em;padding-top:2.4em;}
+	#qm .qm-en-meter__bar {position:relative;height:1.1em;border-radius:0.55em;background:var(--qm-soft);border:1px solid var(--qm-edge);}
+	#qm .qm-en-meter__bar > i {position:absolute;left:0;top:0;bottom:0;border-radius:0.55em;background:#94a3b8;transition:width 0.25s;}
+	#qm .qm-en-meter__bar > i.qm-en-meter__over {background:var(--accent);}
+	#qm .qm-en-meter__bar > i.qm-en-meter__err {background:rgba(0,0,0,0.28);border-radius:0;transition:none;}
+	#qm .qm-en-meter__mk {position:absolute;top:-0.35em;bottom:-0.35em;width:2px;margin-left:-1px;background:var(--qm-bad);}
+	#qm .qm-en-meter__mk--q {background:var(--qm-ok);}
+	#qm .qm-en-meter__mk em {position:absolute;bottom:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-size:0.74em;font-weight:700;color:var(--qm-bad);padding-bottom:0.15em;}
+	#qm .qm-en-meter__mk--q em {color:var(--qm-ok);bottom:auto;top:100%;padding:0.15em 0 0;}
+	#qm .qm-en-meter__axis {display:flex;justify-content:space-between;font-size:0.75em;color:var(--qm-mut);margin-top:1.6em;}
+	#qm .qm-en-lists {display:grid;gap:0.35em;margin:0.6em 0;}
+	#qm .qm-en-lists > div {display:flex;gap:0.6em;align-items:baseline;min-width:0;}
+	#qm .qm-en-lists b {flex:0 0 6.5em;font-size:0.88em;}
+	#qm .qm-en-lists code {flex:1 1 auto;min-width:0;overflow-x:auto;white-space:pre;font-size:0.95em;padding:0.2em 0.45em;border-radius:0.35em;background:var(--qm-soft);color:var(--qm-ink);border:1px solid var(--qm-edge);}
+	#qm .qm-en-ul {margin:0.3em 0 0.8em;padding-left:1.2em;line-height:1.5;}
+	#qm .qm-en-ul li {margin:0.25em 0;}
+	@media (max-width:600px) {
+		#qm .qm-en-meter__mk em {font-size:0.66em;}
+		#qm .qm-en-meter__mk:not(.qm-en-meter__mk--q) em {transform:translateX(-85%);}
+		#qm .qm-en-meter__mk--q em {transform:translateX(-30%);}
+		#qm .qm-en-lists b {flex-basis:4.6em;}
+	}
+	html body.dark-mode #qm.qm .qm-en-meter__bar > i.qm-en-meter__err {background:rgba(255,255,255,0.3);}
+	/* ===== tab "sg": Stern-Gerlach ===== */
+	#qm .qm-sg-mags {display:grid;gap:0.5em;margin:0.9em 0 0.4em;}
+	#qm .qm-sg-mrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.6em;padding:0.45em 0.6em;border:1px solid var(--qm-edge);border-radius:0.5em;background:var(--qm-soft);}
+	#qm .qm-sg-mrow b {flex:0 0 5em;font-size:0.92em;}
+	#qm .qm-sg-mrow input[type=range] {flex:1 1 8em;min-width:6em;}
+	#qm .qm-sg-mrow input[type=number] {flex:0 0 4.4em;width:4.4em;padding:0.25em 0.35em;}
+	#qm .qm-sg-mrow select {flex:1 1 15em;min-width:0;max-width:100%;}
+
+	/* ===== atom (Hydrogen atom) ===== */
+	#qm .qm-at-nlm {gap:0.6em 1.1em;}
+	#qm .qm-at-spin {display:inline-flex;align-items:center;gap:0.35em;font-weight:600;font-size:0.95em;}
+	#qm .qm-at-spin select {font:inherit;font-weight:400;padding:0.25em 0.4em;border-radius:0.4em;border:1px solid var(--qm-edge);background:var(--qm-soft);color:var(--qm-ink);max-width:12em;}
+	#qm .qm-at-name {margin:0.4em 0 0;font-size:0.95em;color:var(--qm-mut);}
+	#qm .qm-at-name b {color:var(--qm-ink);font-size:1.12em;}
+	#qm .qm-chips sub {font-size:0.75em;}
+	#qm .qm-at-sw {display:inline-block;width:0.9em;height:0.9em;border-radius:50%;vertical-align:-0.1em;border:1px solid rgba(255,255,255,0.4);}
+	#qm #qm-at-lcv {cursor:pointer;}
+	#qm #qm-at-stage .qm-run select {max-width:9em;}
+	@media (max-width:600px) { #qm #qm-at-lstage .qm-run {top:0.4em;bottom:auto;left:auto;} #qm .qm-at-spin select {max-width:10em;} }
+
+	/* ===== calc (Calculators) ===== */
+	#qm .qm-ca-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,30em),1fr));gap:1em;align-items:start;}
+	#qm .qm-ca-card {margin:0;min-width:0;scroll-margin-top:70px;}
+	#qm .qm-ca-card .qm-h3 {margin-top:0;}
+	#qm .qm-ca-g {grid-template-columns:repeat(auto-fit,minmax(12em,1fr));gap:0.6em 0.9em;}
+	#qm .qm-ca-g select, #qm .qm-ca-g input {width:100%;box-sizing:border-box;}
+	#qm .qm-ca-in {display:flex;gap:0.3em;}
+	#qm .qm-ca-in input {flex:1 1 auto;min-width:0;}
+	#qm .qm-ca-in select {flex:0 0 auto;width:auto !important;max-width:7em;}
+	#qm .qm-ca-rd {display:block;min-height:1.2em;font-size:0.78em;color:var(--qm-mut);margin-top:0.15em;overflow-wrap:anywhere;}
+	#qm .qm-ca-rd.qm-ca-bad {color:var(--qm-bad);font-weight:600;}
+	#qm .qm-ca-res {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;margin:0.6em 0 0.4em;}
+	#qm .qm-ca-ro {display:flex;flex-direction:column;gap:0.1em;padding:0.45em 0.6em;border:1px solid var(--qm-edge);border-radius:0.45em;background:var(--qm-soft);min-width:0;}
+	#qm .qm-ca-ro span {font-size:0.72em;font-weight:700;color:var(--qm-mut);}
+	#qm .qm-ca-ro b {font-weight:500;color:var(--qm-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+	#qm .qm-ca-ro b b {font-weight:700;}
+	#qm .qm-ca-plug {font-size:0.85em;margin:0.5em 0;padding:0.45em 0.6em;border-radius:0.4em;background:var(--qm-soft);font-family:ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere;}
+	#qm .qm-ca-plug span {font-family:system-ui,sans-serif;font-weight:700;color:var(--qm-mut);}
+	#qm .qm-ca-say {margin:0.4em 0;line-height:1.5;font-size:0.93em;}
+	#qm .qm-ca-stale .qm-ca-res, #qm .qm-ca-stale .qm-ca-plug {opacity:0.45;}
+	#qm .qm-ca-sw {display:inline-block;width:0.95em;height:0.95em;border-radius:50%;vertical-align:-0.12em;border:1px solid rgba(0,0,0,0.25);margin-left:0.2em;}
+	#qm .qm-ca-chart {position:relative;height:170px;margin:0.4em 0;}
+	#qm .qm-ca-chart--sm {height:150px;}
+	#qm .qm-ca-chart canvas {position:absolute;inset:0;width:100%;height:100%;display:block;}
+	#qm .qm-ca-lines td, #qm .qm-ca-lines th {padding:0.3em 0.5em;}
+	#qm .qm-ca-card .qm-eq {font-size:0.92em;}
+	html body.dark-mode #qm.qm .qm-ca-sw {border-color:rgba(255,255,255,0.35);}
+	/* ---------- slit + uncert tabs (Double slit, Uncertainty) ---------- */
+	#qm .qm-ds-wallhit {position:absolute;z-index:1;touch-action:none;cursor:grab;border-radius:0.3em;}
+	#qm .qm-ds-wallhit:hover {background:rgba(250,204,21,0.08);}
+	#qm .qm-un-slitcv {display:block;width:100%;height:150px;border-radius:0.5em;border:1px solid var(--qm-line);margin:0.6em 0 0;}
+	#qm .qm-un-ro2 {border-radius:0 0 0.5em 0.5em;border:1px solid var(--qm-line);border-top:0;}
+	#qm #qm-un-tab th {width:60%;font-weight:600;}
+	#qm #qm-ds-wrap .qm-run, #qm #qm-un-wrap .qm-run {max-width:62%;}
+	@media (max-width:600px) { #qm #qm-ds-wrap .qm-run, #qm #qm-un-wrap .qm-run {max-width:100%;} #qm #qm-ds-wrap .qm-run button, #qm #qm-un-wrap .qm-run button {font-size:0.75em;padding:0 0.5em;} }
+	@media (max-width:600px) { #qm #qm-en-tbl th, #qm #qm-en-tbl td {white-space:nowrap;} }
+	/* ---- tab: tunnel (Tunnelling) + box (Wells & energy levels) ---- */
+	#qm .qm-tu-twrap .qm-stage canvas {cursor:crosshair;}
+	#qm .qm-tu-how summary, #qm [data-panel="box"] details summary {cursor:pointer;}
+	#qm .qm-tu-how p, #qm [data-panel="box"] details p {line-height:1.55;}
+	#qm #qm-bx-table td:first-child, #qm #qm-bx-table th:first-child {width:3em;}
+	#qm #qm-bx-table input {width:1.1em;height:1.1em;cursor:pointer;}
+	#qm #qm-tu-scale, #qm #qm-bx-note {margin:0.4em 0 0;line-height:1.5;}
+	@media (max-width:600px) {
+		#qm .qm-tu-wrap .qm-run select, #qm .qm-bx-wrap .qm-run select {max-width:9.5em;}
+	}
+	#qm #qm-ds-badge {top:auto;bottom:0.5em;max-width:58%;}
+	@media (max-width:600px) { #qm #qm-ds-badge {bottom:auto;top:0.4em;max-width:62%;font-size:0.72em;} }
+	#qm .qm-chips sub, #qm .qm-chips sup, #qm .qm-at-name sub, #qm .qm-ro sub, #qm .qm-check sup {color:inherit;}
+	#qm .qm-ca-plug, #qm .qm-ca-say, #qm .qm-ca-rd:not(.qm-ca-bad) {color:var(--qm-ink);}
+	#qm .qm-ca-rd:not(.qm-ca-bad) {color:var(--qm-mut);}
+	#qm .qm-at-name {color:var(--qm-mut);}
+
+	/* dark mode: TOOL-DARK lightens --accent, so filled (selected) buttons need their own fill or white text loses contrast */
+	html body.dark-mode #qm.qm .qm-chips button[aria-pressed="true"], html body.dark-mode #qm.qm .qm-run button[aria-pressed="true"], html body.dark-mode #qm.qm .qm-fam a[aria-current="page"] {background:#5b3fd6;border-color:#7c63f0;color:#fff;}
+	html body.dark-mode #qm.qm button[aria-pressed="true"] {color:#fff;}
 
 
 	@media print {
@@ -415,6 +521,96 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #5b3fd6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #5b3fd6; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(91,63,214,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content :where(sub,sup){color:inherit}
+	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent-dark:#5638d1}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #120646}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#151126;border-color:#120646}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#151126;border-color:#120646}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#151126}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .qm{--qm-bg:#4a65c0;--qm-line:#5f73aa;--qm-ro:#4d63bc;--qm-ink:#6358b1;--qm-ok:#2ddc6e;--qm-bad:#df2a2a;--qm-warn:#f59914}
+	body.dark-mode .qm-eq{background:#1a1a1a}
+	body.dark-mode #qm .qm-en-meter__bar > i{background:#212731}
+	body.dark-mode #qm .qm-en-meter__bar > i.qm-en-meter__err{background:rgba(82,82,82,0.28)}
+	body.dark-mode #qm .qm-at-sw{border:1px solid rgba(51,51,51,0.40)}
+	body.dark-mode #qm .qm-ca-sw{border:1px solid rgba(76,76,76,0.25)}
+	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -590,11 +786,24 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    </head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/quantum'><img height="88" width="88" id="logo" class="logo" alt="Quantum Tunneling Simulator logo" src="/quantum/img/logo.png?v=2"></a>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/quantum" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/quantum/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/quantum" tabindex="-1">Quantum Lab</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/quantum'><img height="88" width="88" id="logo" class="logo" alt="Quantum Tunneling Simulator logo" src="/quantum/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/quantum'>
                                     <p class="calculator-title">MES Quantum Lab</p>
@@ -605,14 +814,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/quantum'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-tunneling'>Tunnelling</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-double-slit'>Double Slit</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-entanglement'>Entanglement</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/hydrogen-atom'>Hydrogen Atom</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-calculator'>Calculators</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/quantum'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-tunneling'>Tunnelling</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-double-slit'>Double Slit</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-entanglement'>Entanglement</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/hydrogen-atom'>Hydrogen Atom</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-calculator'>Quantum Calculators</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Quantum Tunneling Simulator: Wave Packet Through a Barrier</h1>                                        <p class="page-description">A free quantum tunnelling simulator: a wave packet solving the time-dependent Schrödinger equation hits a barrier, step, well or double barrier, and part of it gets through. Live transmission and reflection, the exact transmission curve, energy levels of wells, alpha decay and the tunnelling calculator.</p>                                    	<div id="main-content">
+                                    <h1 class="page-title">Quantum Tunneling Simulator: Wave Packet Through a Barrier</h1>                                        <p class="page-description">A free quantum tunnelling simulator: a wave packet solving the time-dependent Schrödinger equation hits a barrier, step, well or double barrier, and part of it gets through. Live transmission and reflection, the exact transmission curve, energy levels of wells, alpha decay and the tunnelling calculator.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu qm" id="qm" data-views="tunnel,box,calc" data-page="quantum-tunneling">
 		<nav class="qm-fam" aria-label="Quantum Lab pages"><a href="/quantum">Quantum Lab</a><a href="/quantum-tunneling" aria-current="page">Tunnelling</a><a href="/quantum-double-slit">Double Slit</a><a href="/quantum-entanglement">Entanglement</a><a href="/hydrogen-atom">Hydrogen Atom</a><a href="/quantum-calculator">Calculators</a></nav>
@@ -626,14 +835,830 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 			<button type="button" role="tab" data-tab="atom" aria-selected="false">Hydrogen atom</button>
 			<button type="button" role="tab" data-tab="calc" aria-selected="false">Calculators</button>
 		</div>
-		<section data-panel="tunnel" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="box" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="slit" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="uncert" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="ent" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="sg" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="atom" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
-		<section data-panel="calc" role="tabpanel" hidden><p class="tu-note">This simulator is being built.</p></section>
+		<section data-panel="tunnel" role="tabpanel" hidden><p class="qm-lead">Fire a quantum particle (a wave packet) at a barrier that is <b>higher than its energy</b>. A ball would bounce back every time. The wave doesn&rsquo;t: part of it leaks through and keeps going on the far side. This is the real Schr&ouml;dinger equation, solved live as you watch. Drag the barrier&rsquo;s top or edge to reshape it.</p>
+<div class="qm-chips" id="qm-tu-presets" aria-label="Try this">
+	<button type="button" data-p="thin">Thin barrier</button>
+	<button type="button" data-p="thick">Thick barrier (almost nothing)</button>
+	<button type="button" data-p="above">Above the barrier (still reflects some)</button>
+	<button type="button" data-p="res">Resonant tunnelling</button>
+	<button type="button" data-p="alpha">Alpha decay</button>
+	<button type="button" data-p="stm">Scanning tunnelling microscope gap</button>
+	<button type="button" data-p="field">Field emission</button>
+	<button type="button" data-p="step">Step up</button>
+	<button type="button" data-p="well">Over a well</button>
+	<button type="button" data-p="proton">Proton, same 0.3 nm barrier</button>
+</div>
+<div class="qm-wrap qm-tu-wrap" id="qm-tu-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-tu-stage">
+		<canvas id="qm-tu-cv" aria-label="Wave packet and potential barrier. Drag the round handle to change the barrier height and the square handle to change its width." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-tu-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-tu-play" aria-pressed="false">Play</button>
+			<button type="button" id="qm-tu-step" title="Advance a little">Step</button>
+			<button type="button" id="qm-tu-reset" title="Start the packet again">Reset</button>
+			<select id="qm-tu-view" aria-label="How to draw the wave">
+				<option value="fill">|&psi;|&sup2;</option>
+				<option value="phase">Phase colours</option>
+				<option value="reim">Re &amp; Im</option>
+			</select>
+			<button type="button" id="qm-tu-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-tu-legend">
+		<span><i style="background:#8b7bff"></i>|&psi;|&sup2; (probability density)</span>
+		<span><i style="background:#5f6f93"></i>Potential V(x)</span>
+		<span><i style="background:#facc15"></i>Packet energy &lang;E&rang;</span>
+		<span><i style="background:#f97316"></i>A classical ball with the same energy</span>
+		<span><i style="background:#22d3ee"></i>Re &psi; / <i style="background:#f472b6"></i>Im &psi;</span>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span id="qm-tu-lr">Reflected</span><b id="qm-tu-rr">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-tu-li">Inside</span><b id="qm-tu-ri">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-tu-lt">Transmitted</span><b id="qm-tu-rt">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-tu-lx">Exact T for this packet</span><b id="qm-tu-rx">&ndash;</b></div>
+		<div class="qm-ro"><span>Packet energy &lang;E&rang;</span><b id="qm-tu-re">&ndash;</b></div>
+		<div class="qm-ro"><span>Barrier top V&#8320;</span><b id="qm-tu-rv">&ndash;</b></div>
+		<div class="qm-ro"><span>Decay length 1/&kappa;</span><b id="qm-tu-rk">&ndash;</b></div>
+		<div class="qm-ro"><span>Time</span><b id="qm-tu-rtime">0 fs</b></div>
+		<div class="qm-ro"><span>Classical ball</span><b id="qm-tu-rc">&ndash;</b></div>
+	</div>
+</div>
+<div class="qm-wrap qm-tu-twrap" id="qm-tu-twrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-tu-tstage">
+		<canvas id="qm-tu-tcv" aria-label="Exact transmission probability T(E) against energy. Click to set the packet energy." tabindex="0"></canvas>
+		<div class="qm-badge">Transmission T(E), exact (transfer matrix)</div>
+		<div class="qm-run">
+			<button type="button" id="qm-tu-log" aria-pressed="false" title="Logarithmic T axis">Log scale</button>
+			<button type="button" id="qm-tu-tfs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend">
+		<span><i style="background:#22d3ee"></i>T(E) of this potential</span>
+		<span><i style="background:rgba(250,204,21,0.55)"></i>Energies in the packet</span>
+		<span><i style="background:#f472b6"></i>Simulated (dot) vs exact average (ring)</span>
+		<span>Click the chart to set the energy.</span>
+	</div>
+</div>
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-tu-type">Potential</label>
+			<select id="qm-tu-type">
+				<option value="rect">Rectangular barrier</option>
+				<option value="double">Double barrier (resonant tunnelling)</option>
+				<option value="stepup">Step up</option>
+				<option value="stepdown">Step down</option>
+				<option value="well">Square well</option>
+				<option value="tri">Triangular barrier (field emission)</option>
+				<option value="alpha">Nucleus + Coulomb barrier (alpha decay)</option>
+			</select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-mass">Particle</label>
+			<select id="qm-tu-mass">
+				<option value="electron">Electron</option>
+				<option value="gaas">Electron in GaAs (0.067 m&#8337;)</option>
+				<option value="muon">Muon (207 m&#8337;)</option>
+				<option value="proton">Proton (1836 m&#8337;)</option>
+				<option value="custom">Custom mass</option>
+			</select></div>
+		<div class="tu-field" id="qm-tu-mcf" hidden><label class="tu-label" for="qm-tu-mc">Mass (electron masses)</label><input type="number" id="qm-tu-mc" min="0.01" max="100000" step="any" value="1"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-E">Packet energy E <span class="qm-val" id="qm-tu-Ev"></span></label><input type="range" id="qm-tu-E" min="0.02" max="5" step="0.01"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-V">Barrier height V&#8320; <span class="qm-val" id="qm-tu-Vv"></span></label><input type="range" id="qm-tu-V" min="0.05" max="6" step="0.01"></div>
+		<div class="tu-field" id="qm-tu-af"><label class="tu-label" for="qm-tu-a"><span id="qm-tu-al">Barrier width</span> <span class="qm-val" id="qm-tu-av"></span></label><input type="range" id="qm-tu-a" min="0" max="1000" step="1"></div>
+		<div class="tu-field" id="qm-tu-gf"><label class="tu-label" for="qm-tu-g">Gap between the barriers <span class="qm-val" id="qm-tu-gv"></span></label><input type="range" id="qm-tu-g" min="0.5" max="8" step="0.05"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-s">Packet width &sigma; <span class="qm-val" id="qm-tu-sv"></span></label><input type="range" id="qm-tu-s" min="0.8" max="10" step="0.1"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-tu-sp">Speed <span class="qm-val" id="qm-tu-spv"></span></label><input type="range" id="qm-tu-sp" min="0" max="100" step="1"></div>
+	</div>
+	<div class="qm-row">
+		<label class="qm-check"><input type="checkbox" id="qm-tu-ball"> Show a classical ball</label>
+		<label class="qm-check"><input type="checkbox" id="qm-tu-mag"> Magnify the far side when little gets through</label>
+		<button type="button" class="tu-btn tu-btn--ghost" id="qm-tu-link">Copy link to this setup</button>
+	</div>
+	<p class="tu-note" id="qm-tu-scale"></p>
+</div>
+<div class="qm-explain">
+	<p><b>Why does the wave leak?</b> Inside a barrier that is higher than the particle&rsquo;s energy, the Schr&ouml;dinger equation has no wavy solution. Instead the wave dies away smoothly, like <b>e<sup>&minus;&kappa;x</sup></b>, with &kappa; = &radic;(2m(V&#8320;&minus;E))/&hbar;. It never jumps straight to zero, so if the barrier is thin some of the wave is still there on the far side, and from there it travels on as an ordinary wave. The chance of getting through falls off roughly like <b>e<sup>&minus;2&kappa;a</sup></b> for a barrier of width a: double the width and the chance is squared.</p>
+	<p><b>A ball would bounce back 100%.</b> Classically a particle with less energy than the barrier is always reflected, and a particle with more energy always gets over. Quantum mechanically both rules are broken: waves get through barriers that are too high, and part of a wave reflects even from a barrier it could climb (try &ldquo;Above the barrier&rdquo;).</p>
+	<p><b>The packet is not split into two particles.</b> |&psi;|&sup2; gives the probability of where you would find the particle if you looked. After the collision there are two lumps: if you put a detector on the far side, it clicks with probability T and the particle is then entirely there.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle i\hbar\,\frac{\partial \psi}{\partial t} = -\frac{\hbar^2}{2m}\frac{\partial^2 \psi}{\partial x^2} + V(x)\,\psi \)</div>
+	<div class="qm-eq__t">The time-dependent Schr&ouml;dinger equation that is being solved.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \psi(x) \propto e^{-\kappa x},\qquad \kappa = \frac{\sqrt{2m\,(V_0 - E)}}{\hbar} \)</div>
+	<div class="qm-eq__t">Inside a barrier higher than E the wave decays instead of oscillating.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle T = \left[\,1 + \frac{V_0^2\,\sinh^2(\kappa a)}{4E\,(V_0 - E)}\right]^{-1} \approx \frac{16E(V_0-E)}{V_0^2}\,e^{-2\kappa a} \)</div>
+	<div class="qm-eq__t">Exact transmission through a rectangular barrier of height V&#8320; and width a (the approximation is for thick barriers).</div>
+</div>
+<details class="tu-card qm-tu-how">
+	<summary><b>How the simulation works (and what is simplified)</b></summary>
+	<p>The wave is stored on a grid of 1,024 to 4,096 points and moved forward in tiny time steps with the <b>Crank-Nicolson method</b>: each step solves (1 + iH&Delta;t/2&hbar;)&psi;<sub>new</sub> = (1 &minus; iH&Delta;t/2&hbar;)&psi;<sub>old</sub>, a set of equations with only three diagonals that is solved in one sweep. The step is exactly unitary, so no probability is lost except at the two edges (outside the picture), where an absorbing layer quietly removes the wave, as if it flew off to infinity, and counts what it removed on each side. That is how &ldquo;Reflected&rdquo; and &ldquo;Transmitted&rdquo; keep counting after the lumps leave the picture. (The popular split-operator Fourier method was tried first: at a sudden jump in V its splitting error sprays a little of the wave into very high momenta, which is invisible for big transmissions but doubled tiny ones such as the STM gap.)</p>
+	<p>The chart below the simulation is computed separately and exactly, with the <b>transfer-matrix method</b> (matching &psi; and &psi;&prime; at every edge of a piecewise-constant potential; smooth shapes are cut into 600 thin slices). Because a packet contains a spread of energies, the fair comparison is the exact T averaged over that spread (the ring); the simulated dot lands on it when the run is over.</p>
+	<p>Units: energies in electronvolts (eV), times in femtoseconds (1 fs = 10<sup>&minus;15</sup> s). For an electron, lengths are in nanometres. For a heavier particle the same picture holds with every length shrunk by &radic;(m&#8337;/m), so a proton needs a barrier about 43 times thinner to tunnel as much. The &ldquo;alpha decay&rdquo; preset is the Gamow picture drawn at electron scale; real alpha decay has MeV energies and femtometre distances. This is a one-dimensional model: real barriers are three-dimensional, but the leaking works the same way.</p>
+</details></section>
+		<section data-panel="box" role="tabpanel" hidden><p class="qm-lead">Trap a particle in a well and it can only have certain energies: a ladder of <b>energy levels</b>, each with its own standing wave. Pick a well, then <b>click levels</b> to mix them. A single level just sits there; two or more slosh back and forth in time. In the double well the particle tunnels from one side to the other and back.</p>
+<div class="qm-chips" id="qm-bx-presets" aria-label="Try this">
+	<button type="button" data-p="inf">Infinite well (1 nm box)</button>
+	<button type="button" data-p="fin">Finite well</button>
+	<button type="button" data-p="ho">Harmonic oscillator</button>
+	<button type="button" data-p="dw">Double well: tunnelling</button>
+	<button type="button" data-p="morse">H&#8322; molecule (Morse)</button>
+	<button type="button" data-p="lin">Quantum bouncer</button>
+	<button type="button" data-p="custom">Draw your own</button>
+	<button type="button" data-p="slosh">Sloshing packet</button>
+</div>
+<div class="qm-wrap qm-bx-wrap" id="qm-bx-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-bx-stage">
+		<canvas id="qm-bx-cv" aria-label="Potential well with its energy levels and wavefunctions. Click a level to add it to the superposition." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-bx-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-bx-play" aria-pressed="false">Play</button>
+			<button type="button" id="qm-bx-clear" title="Unpick every level">Clear picks</button>
+			<select id="qm-bx-show" aria-label="What to draw on each level">
+				<option value="psi">&psi; on each level</option>
+				<option value="prob">|&psi;|&sup2; on each level</option>
+				<option value="none">Levels only</option>
+			</select>
+			<button type="button" id="qm-bx-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend">
+		<span><i style="background:#8ea0c8"></i>Potential V(x)</span>
+		<span><i style="background:#22d3ee"></i>Energy levels (click to pick)</span>
+		<span><i style="background:#8b7bff"></i>|&Psi;(x,t)|&sup2; of the picked levels, coloured by phase</span>
+		<span><i style="background:#facc15"></i>&lang;x&rang;, the average position</span>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Ground state E&#8321;</span><b id="qm-bx-r1">&ndash;</b></div>
+		<div class="qm-ro"><span>Spacing E&#8322; &minus; E&#8321;</span><b id="qm-bx-r2">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-bx-l3">Bound states</span><b id="qm-bx-r3">&ndash;</b></div>
+		<div class="qm-ro"><span>Picked levels</span><b id="qm-bx-r4">&ndash;</b></div>
+		<div class="qm-ro"><span>&lang;E&rang;</span><b id="qm-bx-r5">&ndash;</b></div>
+		<div class="qm-ro"><span>&lang;x&rang;</span><b id="qm-bx-r6">&ndash;</b></div>
+		<div class="qm-ro"><span id="qm-bx-l7">Period h/&Delta;E</span><b id="qm-bx-r7">&ndash;</b></div>
+		<div class="qm-ro"><span>Time</span><b id="qm-bx-r8">0 fs</b></div>
+	</div>
+</div>
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-bx-type">Potential</label>
+			<select id="qm-bx-type">
+				<option value="inf">Infinite square well</option>
+				<option value="fin">Finite square well</option>
+				<option value="ho">Harmonic oscillator</option>
+				<option value="dw">Double well</option>
+				<option value="morse">Morse (a molecule&rsquo;s bond)</option>
+				<option value="lin">Linear + floor (quantum bouncer)</option>
+				<option value="custom">Draw your own</option>
+			</select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-bx-mass">Particle</label>
+			<select id="qm-bx-mass">
+				<option value="electron">Electron</option>
+				<option value="gaas">Electron in GaAs (0.067 m&#8337;)</option>
+				<option value="muon">Muon (207 m&#8337;)</option>
+				<option value="proton">Proton (1836 m&#8337;)</option>
+				<option value="h2">H&#8322; vibration (reduced mass m&#8346;/2)</option>
+				<option value="custom">Custom mass</option>
+			</select></div>
+		<div class="tu-field" id="qm-bx-mcf" hidden><label class="tu-label" for="qm-bx-mc">Mass (electron masses)</label><input type="number" id="qm-bx-mc" min="0.01" max="100000" step="any" value="1"></div>
+	</div>
+	<div class="qm-grid" id="qm-bx-params" style="margin-top:0.8em"></div>
+	<div class="qm-row">
+		<span class="tu-field" style="flex:0 1 14em"><label class="tu-label" for="qm-bx-sp">Animation speed <span class="qm-val" id="qm-bx-spv"></span></label><input type="range" id="qm-bx-sp" min="0" max="100" step="1"></span>
+		<button type="button" class="tu-btn tu-btn--ghost" id="qm-bx-link">Copy link to this setup</button>
+	</div>
+	<p class="tu-note" id="qm-bx-note"></p>
+</div>
+<div class="tu-card">
+	<h3 class="qm-h3" style="margin-top:0">The energy ladder</h3>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-bx-table"><thead><tr><th>Pick</th><th>Level</th><th>Energy</th><th id="qm-bx-th4">E / E&#8321;</th><th>Gap to the next</th></tr></thead><tbody></tbody></table></div>
+</div>
+<div class="qm-explain">
+	<p><b>Why only certain energies?</b> A wave squeezed between walls must fit: in a box of width L only whole numbers of half-wavelengths fit, so the momentum and therefore the energy come in steps, E<sub>n</sub> = n&sup2;h&sup2;/(8mL&sup2;). Smaller box, bigger steps; heavier particle, smaller steps. That is why atoms (tiny boxes for light electrons) have sharp spectral lines, while a marble in a jar seems to have any energy at all.</p>
+	<p><b>The shape of the well sets the spacing.</b> Infinite well: gaps grow like n&sup2;. Harmonic oscillator (a spring): perfectly even steps of &hbar;&omega;, starting at &frac12;&hbar;&omega;, never at zero (the zero-point energy). Morse (a real chemical bond): steps that shrink until the molecule falls apart. Finite well: only a few levels fit below the rim, and the waves poke out into the walls a little: that is tunnelling again.</p>
+	<p><b>Why does a mix move?</b> Each level&rsquo;s wave turns in time at its own rate, e<sup>&minus;iE<sub>n</sub>t/&hbar;</sup>. On its own that turning is invisible (|&psi;|&sup2; stays put: a &ldquo;stationary state&rdquo;). Two levels together beat against each other, and the probability sloshes with period h/&Delta;E. In the double well the two lowest levels are almost equal, so the beat is slow: the particle sits in one well, then tunnels to the other and back, every h/&Delta;E. The ammonia maser works on exactly this flip-flop of the nitrogen atom.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle -\frac{\hbar^2}{2m}\,\psi''(x) + V(x)\,\psi(x) = E\,\psi(x) \)</div>
+	<div class="qm-eq__t">The time-independent Schr&ouml;dinger equation: its solutions are the levels shown.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle E_n^{\,\text{box}} = \frac{n^2 \pi^2 \hbar^2}{2 m L^2},\qquad E_n^{\,\text{spring}} = \left(n + \tfrac12\right)\hbar\omega \)</div>
+	<div class="qm-eq__t">Infinite well (n = 1, 2, 3, &hellip;) and harmonic oscillator (n = 0, 1, 2, &hellip;).</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \Psi(x,t) = \sum_n c_n\,\psi_n(x)\,e^{-iE_n t/\hbar},\qquad T_{\text{beat}} = \frac{h}{E_2 - E_1} \)</div>
+	<div class="qm-eq__t">A superposition, and the period at which two levels slosh.</div>
+</div>
+<details class="tu-card">
+	<summary><b>How the levels are found</b></summary>
+	<p>The well is cut into 600 to 1,200 grid points and the Schr&ouml;dinger equation becomes a large matrix whose only non-zero entries are on three diagonals (the second derivative becomes (&psi;<sub>i&minus;1</sub> &minus; 2&psi;<sub>i</sub> + &psi;<sub>i+1</sub>)/&Delta;x&sup2;). Its eigenvalues are the energies. They are found one by one by <b>Sturm-sequence bisection</b> (counting how many eigenvalues lie below a trial energy, and halving the interval 40-odd times), and each wave by <b>inverse iteration</b>. The test suite checks the results against the exact answers: n&sup2; for the box, (n+&frac12;)&hbar;&omega; for the spring, Airy-function zeros for the bouncer, the Morse formula, and the number of levels that fit in a finite well. Hard walls are placed at the ends of the picture; for wells that do not hold every level (finite, Morse), only the truly bound levels are shown.</p>
+	<p>The H&#8322; preset uses the usual Morse parameters for hydrogen (well depth about 4.75 eV, width parameter about 1.94 &Aring;&#8315;&sup1;, bond length 0.741 &Aring;) and the reduced mass of two protons. The model gives a first vibrational gap near 0.52 eV, close to the measured 0.516 eV, and 17 bound levels; real H&#8322; has 15 (v = 0 to 14), because a real bond is not exactly a Morse curve.</p>
+</details></section>
+		<section data-panel="slit" role="tabpanel" hidden><p class="qm-lead">Send particles at a wall with slits. <b>Left:</b> the wave, solved live from the Schr&ouml;dinger equation (brightness = how likely the particle is there, colour = the wave&rsquo;s phase). <b>Right:</b> the detector screen far away, where each particle lands as <b>one dot</b>. One dot tells you almost nothing; thousands of them draw the stripes.</p>
+<div class="qm-chips" id="qm-ds-pre" aria-label="Try this">
+	<button type="button" data-p="electron">Electrons (50 keV)</button>
+	<button type="button" data-p="oneatatime">One electron at a time</button>
+	<button type="button" data-p="neutron">Neutrons</button>
+	<button type="button" data-p="c60">C&#8326;&#8320; buckyballs</button>
+	<button type="button" data-p="light">Light (Young)</button>
+	<button type="button" data-p="single">Single slit</button>
+	<button type="button" data-p="grating">Five slits (grating)</button>
+	<button type="button" data-p="which">Which-path detector on</button>
+	<button type="button" data-p="bohm">Pilot-wave paths</button>
+</div>
+<div class="qm-wrap" id="qm-ds-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-ds-stage">
+		<canvas id="qm-ds-cv" aria-label="Wave passing the slits and the detector screen"></canvas>
+		<div class="qm-ds-wallhit" id="qm-ds-hit" title="Drag a slit edge to change the width, drag the middle of a slit to change the separation" aria-hidden="true"></div>
+		<div class="qm-badge" id="qm-ds-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-ds-play" aria-pressed="true">Pause</button>
+			<button type="button" id="qm-ds-again">Send a new wave</button>
+			<button type="button" id="qm-ds-bohm" aria-pressed="false">Paths</button>
+			<button type="button" id="qm-ds-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-ds-legend">
+		<span>Brightness = |&psi;|&sup2; (how likely)</span>
+		<span><i style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"></i>colour = phase of &psi;</span>
+		<span><i style="background:#9aa6c0"></i>wall (drag the slits)</span>
+		<span><i style="background:#facc15"></i>dots = single arrivals</span>
+		<span><i style="background:#22d3ee"></i>bars = count, line = prediction</span>
+	</div>
+	<div class="qm-readouts" id="qm-ds-ro">
+		<div class="qm-ro"><span>Wavelength &lambda; = h/p</span><b id="qm-ds-r-lam">&ndash;</b></div>
+		<div class="qm-ro"><span>Speed</span><b id="qm-ds-r-v">&ndash;</b></div>
+		<div class="qm-ro"><span>Fringe spacing &lambda;L/d</span><b id="qm-ds-r-fr">&ndash;</b></div>
+		<div class="qm-ro"><span>Central hump 2&lambda;L/a</span><b id="qm-ds-r-env">&ndash;</b></div>
+		<div class="qm-ro"><span>Stripes per hump</span><b id="qm-ds-r-per">&ndash;</b></div>
+		<div class="qm-ro"><span>Fringe visibility</span><b id="qm-ds-r-vis">&ndash;</b></div>
+		<div class="qm-ro"><span>Particles detected</span><b id="qm-ds-r-n">0</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-ds-part">Particle</label>
+			<select id="qm-ds-part" class="tu-input"><option value="electron">Electron</option><option value="neutron">Neutron</option><option value="c60">C&#8326;&#8320; buckyball (720 u)</option><option value="photon">Photon (light)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-E">Energy: <span class="qm-val" id="qm-ds-Ev">&ndash;</span></label>
+			<input type="range" id="qm-ds-E" min="0" max="1000" step="1"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-n">Number of slits: <span class="qm-val" id="qm-ds-nv">2</span></label>
+			<input type="range" id="qm-ds-n" min="1" max="8" step="1" value="2"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-a">Slit width a: <span class="qm-val" id="qm-ds-av">&ndash;</span></label>
+			<input type="range" id="qm-ds-a" min="-90" max="-25" step="0.5"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-d">Slit separation d: <span class="qm-val" id="qm-ds-dv">&ndash;</span></label>
+			<input type="range" id="qm-ds-d" min="-85" max="-20" step="0.5"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-L">Distance to the screen L: <span class="qm-val" id="qm-ds-Lv">&ndash;</span></label>
+			<input type="range" id="qm-ds-L" min="-2" max="1.3" step="0.01"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-rate">Particles per second: <span class="qm-val" id="qm-ds-ratev">&ndash;</span></label>
+			<input type="range" id="qm-ds-rate" min="0" max="3.7" step="0.01"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-view">Screen view</label>
+			<select id="qm-ds-view" class="tu-input"><option value="wide">Wide (centre + side humps)</option><option value="mid">Centre hump</option><option value="zoom">Zoom on a few stripes</option></select></div>
+	</div>
+	<div class="qm-row">
+		<button type="button" class="tu-btn" id="qm-ds-one">Fire one particle</button>
+		<button type="button" class="tu-btn" id="qm-ds-clear">Clear the screen</button>
+		<label class="qm-check"><input type="checkbox" id="qm-ds-curve" checked> Show the prediction</label>
+		<label class="qm-check"><input type="checkbox" id="qm-ds-sound"> Click on each arrival</label>
+		<button type="button" class="tu-btn" id="qm-ds-link">Copy link to this setup</button>
+	</div>
+	<h3 class="qm-h3">Which-path detector</h3>
+	<div class="qm-row">
+		<label class="qm-check"><input type="checkbox" id="qm-ds-wp"> Put a detector at the slits that tells which slit each particle went through</label>
+	</div>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-ds-D">How well it can tell (distinguishability D): <span class="qm-val" id="qm-ds-Dv">1</span></label>
+			<input type="range" id="qm-ds-D" min="0" max="1" step="0.01" value="1"></div>
+	</div>
+	<p class="tu-note" id="qm-ds-wpnote">With D = 1 every particle is marked with its slit: the stripes vanish and the screen shows two single-slit humps added together. With a weaker detector the stripes fade to visibility V = &radic;(1 &minus; D&sup2;).</p>
+	<h3 class="qm-h3">Wave picture</h3>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-ds-col">Colours</label>
+			<select id="qm-ds-col" class="tu-input"><option value="phase">Phase as colour</option><option value="heat">Brightness only</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-spd">Speed</label>
+			<select id="qm-ds-spd" class="tu-input"><option value="1">Slow</option><option value="2" selected>Normal</option><option value="4">Fast</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-res">Detail</label>
+			<select id="qm-ds-res" class="tu-input"><option value="128">128 &times; 128 (phones)</option><option value="256">256 &times; 256</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-who">Pilot-wave paths start</label>
+			<select id="qm-ds-who" class="tu-input"><option value="slits">In line with the slits</option><option value="all">Anywhere in the wave</option></select></div>
+	</div>
+</div>
+
+<div class="qm-explain">
+	<p><b>What you are seeing.</b> The wave goes through <em>both</em> slits; behind the wall the two parts overlap, and where crest meets crest the wave is strong, where crest meets trough it cancels. Each particle is still detected at one single spot. Where it lands is random, but the chance of each spot follows the wave&rsquo;s brightness, so the stripes appear only after many particles.</p>
+	<p><b>Dark stripes</b> are where the paths from the two slits differ by half a wavelength: d&nbsp;sin&theta; = (m + &frac12;)&lambda;. The whole pattern sits inside the hump of a single slit, whose first zero is at a&nbsp;sin&theta; = &lambda;.</p>
+	<p><b>Pilot-wave paths</b> (the de Broglie&ndash;Bohm interpretation) draw one possible path for each particle, steered by the wave with velocity v = (&hbar;/m)&nbsp;Im(&nabla;&psi;/&psi;). Starting points are drawn at random from |&psi;|&sup2;, and the paths bunch into the bright stripes. Standard quantum mechanics predicts the same dots without saying what path the particle took; interpretations differ on that question, not on the measured pattern.</p>
+	<p><b>Honest scaling.</b> Real experiments have slits tens of thousands of wavelengths apart, so the stripes are very close together. The wave picture keeps the real <em>shape</em> (the ratio d&nbsp;:&nbsp;a and the number of slits, so the same number of stripes per hump) but draws the wavelength much bigger so you can see it. The screen on the right uses your real numbers. The wall in the picture is a high potential step a few cells thick; real slits are thin plates.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle \lambda = \frac{h}{p}, \qquad I(\theta) \propto \operatorname{sinc}^2\!\Big(\frac{\pi a \sin\theta}{\lambda}\Big)\,\cos^2\!\Big(\frac{\pi d \sin\theta}{\lambda}\Big) \)</div>
+	<div class="qm-eq__t">de Broglie wavelength and the far-field (Fraunhofer) pattern of two slits of width a, centres d apart. For N slits the cos&sup2; becomes [sin(N&gamma;)/(N sin&gamma;)]&sup2; with &gamma; = &pi;d&thinsp;sin&theta;/&lambda;.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \Delta y = \frac{\lambda L}{d}, \qquad V = \sqrt{1 - D^2} \)</div>
+	<div class="qm-eq__t">Fringe spacing on a screen at distance L, and fringe visibility with a which-path detector of distinguishability D.</div>
+</div>
+<p class="tu-note" id="qm-ds-note"></p></section>
+		<section data-panel="uncert" role="tabpanel" hidden><p class="qm-lead">A wave packet and its momentum are two views of the same wave: one is the Fourier transform of the other. <b>Squeeze the packet</b> (slider, or drag sideways on the left picture) and watch the momentum spread out. The product &Delta;x&middot;&Delta;p can never go below &hbar;/2, and only the Gaussian reaches it.</p>
+<div class="qm-chips" id="qm-un-shape" aria-label="Packet shape">
+	<button type="button" data-s="gauss">Gaussian</button>
+	<button type="button" data-s="flat">Flat-top</button>
+	<button type="button" data-s="two">Two humps</button>
+	<button type="button" data-s="tri">Triangle</button>
+</div>
+<div class="qm-wrap" id="qm-un-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-un-stage">
+		<canvas id="qm-un-cv" aria-label="Position and momentum distributions of the wave packet"></canvas>
+		<div class="qm-run">
+			<button type="button" id="qm-un-go">Let it go</button>
+			<button type="button" id="qm-un-reset">Reset</button>
+			<button type="button" id="qm-un-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend">
+		<span><i style="background:#22d3ee"></i>|&psi;(x)|&sup2; position</span>
+		<span><i style="background:#f472b6"></i>|&phi;(p)|&sup2; momentum</span>
+		<span><i style="background:#facc15"></i>&plusmn;&Delta; (one standard deviation)</span>
+		<span><i style="background:#a3e635"></i>&Delta;x(t): simulation (dots) and formula (line)</span>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>&Delta;x (position spread)</span><b id="qm-un-r-dx">&ndash;</b></div>
+		<div class="qm-ro"><span>&Delta;p (momentum spread)</span><b id="qm-un-r-dp">&ndash;</b></div>
+		<div class="qm-ro"><span>&Delta;x &middot; &Delta;p</span><b id="qm-un-r-pr">&ndash;</b></div>
+		<div class="qm-ro"><span>Compared with &hbar;/2</span><b id="qm-un-r-ratio">&ndash;</b></div>
+		<div class="qm-ro"><span>Time t</span><b id="qm-un-r-t">0</b></div>
+		<div class="qm-ro"><span>&Delta;x(t) formula</span><b id="qm-un-r-f">&ndash;</b></div>
+	</div>
+</div>
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-un-w">Packet width: <span class="qm-val" id="qm-un-wv">&ndash;</span></label>
+			<input type="range" id="qm-un-w" min="-0.5" max="0.85" step="0.005"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-k">Push (average momentum p&#8320;): <span class="qm-val" id="qm-un-kv">0</span></label>
+			<input type="range" id="qm-un-k" min="-3" max="3" step="0.05" value="0"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-spd">Time speed: <span class="qm-val" id="qm-un-spdv">1&times;</span></label>
+			<input type="range" id="qm-un-spd" min="-1" max="1" step="0.05" value="0"></div>
+	</div>
+	<div class="qm-row">
+		<label class="qm-check"><input type="checkbox" id="qm-un-reim"> Show the real part of &psi; (the wiggles)</label>
+		<button type="button" class="tu-btn" id="qm-un-link">Copy link</button>
+	</div>
+	<p class="tu-note">Units in this picture: lengths in a unit u, momentum in &hbar;/u, time in m&middot;u&sup2;/&hbar; (so &hbar; = m = 1). The calculators below use real units.</p>
+</div>
+<div class="qm-explain">
+	<p><b>Why it happens.</b> To make a short, sharp bump you have to add up waves of many different wavelengths, and wavelength is momentum (p = h/&lambda;). A long, smooth wave needs only a few. So a packet that is well located (small &Delta;x) has a wide spread of momenta (large &Delta;p). This is a property of waves, not of clumsy measuring.</p>
+	<p><b>Let it go.</b> A free packet keeps its momentum spread, so its fast parts run ahead of its slow parts and it spreads out. For any packet whose shape starts out real, &Delta;x(t)&sup2; = &Delta;x&#8320;&sup2; + (&Delta;p&nbsp;t/m)&sup2;; for the Gaussian, &Delta;p = &hbar;/(2&Delta;x&#8320;), which gives the formula below. The narrower you make it, the faster it spreads.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle \Delta x\,\Delta p \;\ge\; \frac{\hbar}{2}, \qquad \Delta x(t) = \Delta x_0\sqrt{1+\left(\frac{\hbar t}{2m\,\Delta x_0^{2}}\right)^{2}} \)</div>
+	<div class="qm-eq__t">Heisenberg&rsquo;s uncertainty relation (&Delta; = standard deviation), and the free spreading of a Gaussian packet.</div>
+</div>
+
+<div class="tu-card">
+	<h3 class="qm-h3">Single slit: a narrow slit spreads the beam</h3>
+	<p class="tu-note">Squeezing the beam sideways (slit width a, so &Delta;y &asymp; a) forces a sideways momentum spread &Delta;p<sub>y</sub> &sim; h/a, so the beam fans out by about &lambda;/a.</p>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-un-sa">Slit width a: <span class="qm-val" id="qm-un-sav">&ndash;</span></label>
+			<input type="range" id="qm-un-sa" min="-10" max="-5" step="0.01" value="-7"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-sE">Electron energy: <span class="qm-val" id="qm-un-sEv">&ndash;</span></label>
+			<input type="range" id="qm-un-sE" min="0" max="5" step="0.01" value="2"></div>
+	</div>
+	<canvas id="qm-un-slitcv" class="qm-un-slitcv" aria-label="A beam fanning out after a slit"></canvas>
+	<div class="qm-readouts qm-un-ro2">
+		<div class="qm-ro"><span>Wavelength &lambda;</span><b id="qm-un-s-lam">&ndash;</b></div>
+		<div class="qm-ro"><span>First dark angle (sin&theta; = &lambda;/a)</span><b id="qm-un-s-th">&ndash;</b></div>
+		<div class="qm-ro"><span>Sideways &Delta;p<sub>y</sub> &ge; &hbar;/2&Delta;y</span><b id="qm-un-s-dp">&ndash;</b></div>
+		<div class="qm-ro"><span>Spread on a screen 1 m away</span><b id="qm-un-s-w">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<h3 class="qm-h3">Real-scale calculator</h3>
+	<div class="qm-chips" id="qm-un-ex" aria-label="Examples"></div>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-un-m">Mass (kg)</label><input type="text" inputmode="decimal" id="qm-un-m" class="tu-input"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-x">Position known to &Delta;x (m)</label><input type="text" inputmode="decimal" id="qm-un-x" class="tu-input"></div>
+	</div>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-un-tab"><tbody></tbody></table></div>
+	<p class="tu-note" id="qm-un-say"></p>
+</div></section>
+		<section data-panel="ent" role="tabpanel" hidden><p class="qm-lead">A source in the middle sends out pairs of <b>entangled</b> particles. Alice (left) and Bob (right) each turn a dial and get a result of <b>+1</b> or <b>&minus;1</b> for every particle. Each list on its own looks like coin flips, but compare the two lists and the results match far more strongly than any &ldquo;the answers were decided at the source&rdquo; story allows. Run the <b>CHSH test</b> and watch the number <i>S</i> go above the classical limit of 2.</p>
+<div class="qm-chips" id="qm-en-pre" aria-label="Try this">
+	<button type="button" data-p="chsh">Bell test, best angles</button>
+	<button type="button" data-p="same">Same angle: perfect match</button>
+	<button type="button" data-p="perp">Photons 90&deg; apart</button>
+	<button type="button" data-p="bell">Hidden variables try (Bell 1964)</button>
+	<button type="button" data-p="malus">Shared polarization model</button>
+	<button type="button" data-p="el">Electron spins</button>
+</div>
+<div class="qm-wrap" id="qm-en-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-en-stage">
+		<canvas id="qm-en-cv" aria-label="Entangled pairs flying from a source to Alice and Bob. Drag a dial to turn it." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-en-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-en-play" aria-pressed="true">Pause</button>
+			<button type="button" id="qm-en-one">1 pair</button>
+			<button type="button" id="qm-en-burst">+10,000</button>
+			<button type="button" id="qm-en-reset">Reset</button>
+			<button type="button" id="qm-en-fs">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-en-leg"><span><i style="background:#4ade80"></i>+1 lamp</span><span><i style="background:#f87171"></i>&minus;1 lamp</span><span>Drag a dial (or use the boxes below) to turn it</span></div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Pairs measured</span><b id="qm-en-n">0</b></div>
+		<div class="qm-ro"><span>CHSH S (measured)</span><b id="qm-en-s">&ndash;</b></div>
+		<div class="qm-ro"><span>Compared with 2</span><b id="qm-en-sig">&ndash;</b></div>
+		<div class="qm-ro"><span>S expected (this model)</span><b id="qm-en-st">&ndash;</b></div>
+		<div class="qm-ro"><span>Alice +1 / Bob +1</span><b id="qm-en-m">&ndash;</b></div>
+		<div class="qm-ro"><span>Same result</span><b id="qm-en-same">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-en-type">Pairs</label>
+			<select id="qm-en-type" class="tu-input"><option value="ph">Photons, polarization (|HH&rang; + |VV&rang;)</option><option value="el">Electrons, spin singlet (|&uarr;&darr;&rang; &minus; |&darr;&uarr;&rang;)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-en-model">Where the results come from</label>
+			<select id="qm-en-model" class="tu-input"><option value="q">Quantum mechanics (entangled pair)</option><option value="bell">Local hidden variable: Bell&rsquo;s 1964 model</option><option value="malus">Local hidden variable: shared polarization + Malus&rsquo;s law</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-en-mode">Settings</label>
+			<select id="qm-en-mode" class="tu-input"><option value="chsh">CHSH test: each side picks one of its two angles at random</option><option value="free">Fixed dials (turn them yourself)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-en-rate">Pairs per second: <span class="qm-val" id="qm-en-ratev">20</span></label>
+			<input type="range" id="qm-en-rate" min="0" max="100" value="40" class="tu-input"></div>
+	</div>
+	<div class="qm-en-angles" id="qm-en-angles">
+		<div class="qm-en-ang"><label for="qm-en-a0">Alice <b>a</b></label><input type="range" id="qm-en-a0r" min="0" max="180" step="0.5" aria-label="Alice angle a"><input type="number" id="qm-en-a0" step="0.5" class="tu-input"><span>&deg;</span></div>
+		<div class="qm-en-ang qm-en-only-chsh"><label for="qm-en-a1">Alice <b>a&prime;</b></label><input type="range" id="qm-en-a1r" min="0" max="180" step="0.5" aria-label="Alice angle a prime"><input type="number" id="qm-en-a1" step="0.5" class="tu-input"><span>&deg;</span></div>
+		<div class="qm-en-ang"><label for="qm-en-b0">Bob <b>b</b></label><input type="range" id="qm-en-b0r" min="0" max="180" step="0.5" aria-label="Bob angle b"><input type="number" id="qm-en-b0" step="0.5" class="tu-input"><span>&deg;</span></div>
+		<div class="qm-en-ang qm-en-only-chsh"><label for="qm-en-b1">Bob <b>b&prime;</b></label><input type="range" id="qm-en-b1r" min="0" max="180" step="0.5" aria-label="Bob angle b prime"><input type="number" id="qm-en-b1" step="0.5" class="tu-input"><span>&deg;</span></div>
+	</div>
+	<div class="qm-row">
+		<button type="button" class="tu-btn" id="qm-en-opt">Use the best angles</button>
+		<button type="button" class="tu-btn" id="qm-en-link">Copy link to this setup</button>
+		<label class="qm-check"><input type="checkbox" id="qm-en-fly" checked> Show the particles flying</label>
+	</div>
+	<p class="tu-note" id="qm-en-angnote"></p>
+</div>
+
+<h3 class="qm-h3">The CHSH scoreboard</h3>
+<div class="tu-card">
+	<div class="qm-en-meter" id="qm-en-meter" aria-hidden="true">
+		<div class="qm-en-meter__bar"><i id="qm-en-mfill"></i><i class="qm-en-meter__err" id="qm-en-merr"></i>
+			<span class="qm-en-meter__mk" style="left:50%"><em>2 = classical limit</em></span>
+			<span class="qm-en-meter__mk qm-en-meter__mk--q" style="left:70.71%"><em>2&radic;2 &asymp; 2.83 = quantum maximum</em></span>
+		</div>
+		<div class="qm-en-meter__axis"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div>
+	</div>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-en-tbl">
+		<thead><tr><th>Settings</th><th>Angle apart</th><th>Pairs</th><th>++ / +&minus; / &minus;+ / &minus;&minus;</th><th>E measured</th><th>E expected</th></tr></thead>
+		<tbody></tbody>
+	</table></div>
+	<p class="tu-note">E = (same &minus; different) / pairs, between &minus;1 (always opposite) and +1 (always the same). <i>S</i> = |E(a,b) &minus; E(a,b&prime;) + E(a&prime;,b) + E(a&prime;,b&prime;)|. The &plusmn; is one standard error (&radic;((1 &minus; E&sup2;)/N) for each E, added in quadrature for S), so with more pairs the measured S settles on the expected one.</p>
+</div>
+
+<h3 class="qm-h3">Correlation against the angle between the dials</h3>
+<div class="qm-wrap" id="qm-en-pwrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-en-pstage">
+		<canvas id="qm-en-plot" aria-label="Correlation E against the angle between Alice's and Bob's dials: quantum curve, hidden-variable curves and measured points"></canvas>
+		<div class="qm-run"><button type="button" id="qm-en-pfs">Full screen</button></div>
+	</div>
+	<div class="qm-legend"><span><i style="background:#22d3ee"></i>Quantum: <span id="qm-en-qf">cos 2(b &minus; a)</span></span><span><i style="background:#facc15"></i>Bell&rsquo;s 1964 model (straight lines)</span><span><i style="background:#f472b6"></i>Shared polarization + Malus</span><span><i style="background:#fff"></i>Measured here (&plusmn; 1 error)</span></div>
+</div>
+<p class="tu-note">The quantum curve and the straight-line hidden-variable curve touch at 0&deg;, 45&deg; and 90&deg; (photons) but differ in between: the best CHSH angles sit exactly where the gap is largest. Every pair you measure adds a point at its own angle difference, so use &ldquo;Fixed dials&rdquo; and turn a dial to fill in the curve.</p>
+
+<h3 class="qm-h3">No faster-than-light messages</h3>
+<div class="tu-card qm-en-ns">
+	<p>Can Alice send Bob a message by choosing her angle? Look at Bob&rsquo;s results <b>split by what Alice chose</b>:</p>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-en-nst">
+		<thead><tr><th></th><th>Pairs</th><th>Bob got +1</th><th>Alice got +1</th></tr></thead>
+		<tbody></tbody>
+	</table></div>
+	<p>Bob&rsquo;s +1 rate stays at 50% whatever Alice does (the small wobble is chance and shrinks as pairs pile up). That is true for every angle, exactly: on his own, Bob only ever sees a fair coin. The pattern appears only when the two lists are brought together and compared, and that comparison has to travel by ordinary means, no faster than light. So entanglement gives correlation without signalling.</p>
+	<div class="qm-en-lists" aria-live="off">
+		<div><b>Alice&rsquo;s list</b><code id="qm-en-la">&nbsp;</code></div>
+		<div><b>Bob&rsquo;s list</b><code id="qm-en-lb">&nbsp;</code></div>
+		<div><b>Compared</b><code id="qm-en-lc">&nbsp;</code></div>
+	</div>
+	<p class="tu-note">The last 24 pairs, newest on the right. &ldquo;=&rdquo; means the two results were the same, &ldquo;&ne;&rdquo; different. In CHSH mode the small letters show which angle each side used.</p>
+</div>
+
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle |\Phi^+\rangle = \tfrac{1}{\sqrt2}\big(|HH\rangle + |VV\rangle\big) \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle P(\text{same}) = \cos^2(a-b),\qquad E(a,b) = \cos 2(a-b) \)</div>
+	<div class="qm-eq__t">Polarization-entangled photons. Each photon alone passes a polarizer half the time, at any angle.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle |\Psi^-\rangle = \tfrac{1}{\sqrt2}\big(|{\uparrow\downarrow}\rangle - |{\downarrow\uparrow}\rangle\big),\qquad E(a,b) = -\cos(a-b) \)</div>
+	<div class="qm-eq__t">The spin singlet: measured along the same direction the two spins are always opposite.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle S = \big|E(a,b) - E(a,b') + E(a',b) + E(a',b')\big| \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle S_{\text{local}} \le 2,\qquad S_{\text{quantum}} \le 2\sqrt2 \approx 2.83 \)</div>
+	<div class="qm-eq__t">The CHSH inequality (Clauser, Horne, Shimony, Holt, 1969) and Tsirelson&rsquo;s bound (1980).</div>
+</div>
+
+<div class="qm-explain">
+	<p><b>Why 2 is the limit for hidden variables.</b> Suppose each pair leaves the source carrying instructions: &ldquo;if your dial is at a, say +1; at a&prime;, say &minus;1&rdquo;, and so on, and that Alice&rsquo;s answer cannot depend on Bob&rsquo;s dial (locality). Then for each single pair the four products A(a)B(b) &minus; A(a)B(b&prime;) + A(a&prime;)B(b) + A(a&prime;)B(b&prime;) = A(a)[B(b) &minus; B(b&prime;)] + A(a&prime;)[B(b) + B(b&prime;)]. One bracket is 0 and the other is &plusmn;2, so every pair contributes exactly +2 or &minus;2, and the average can never be bigger than 2. Bell&rsquo;s 1964 model (each pair carries a random hidden angle; each side answers + if its dial is within 45&deg; of it for photons, 90&deg; for spins) reaches exactly 2 at the best angles, which is as well as any local model can do there. Quantum mechanics reaches 2&radic;2.</p>
+	<p><b>What this simulation is.</b> The quantum source draws each pair&rsquo;s two results together from the joint probabilities above, with a seeded random number generator. That is the honest way to reproduce quantum predictions on one computer; it is not a model of how nature does it. The two hidden-variable sources really are local: Alice&rsquo;s answer is computed from her own dial and the shared hidden angle only. Detectors here are perfect and every pair is counted, which real experiments had to work hard to approach (see the loopholes below).</p>
+</div>
+
+<h3 class="qm-h3">The real experiments</h3>
+<div class="qm-tablewrap"><table class="qm-table">
+	<thead><tr><th>Year</th><th>Who</th><th>What they did</th></tr></thead>
+	<tbody>
+		<tr><td>1935</td><td>Einstein, Podolsky, Rosen</td><td>Argued that quantum mechanics must be incomplete: perfectly correlated far-apart particles should carry their answers with them.</td></tr>
+		<tr><td>1964</td><td>John Bell</td><td>Showed that any such local hidden-variable theory must obey an inequality that quantum mechanics breaks, so the question could be tested.</td></tr>
+		<tr><td>1969</td><td>Clauser, Horne, Shimony, Holt</td><td>The CHSH form of the inequality (the S &le; 2 used here), suited to real detectors.</td></tr>
+		<tr><td>1972</td><td>Freedman &amp; Clauser (Berkeley)</td><td>Photon pairs from a calcium atomic cascade: the inequality was violated by about six standard deviations, in agreement with quantum mechanics.</td></tr>
+		<tr><td>1982</td><td>Aspect, Grangier, Roger; Aspect, Dalibard, Roger (Orsay)</td><td>Two-channel polarizers gave S = 2.697 &plusmn; 0.015 against the quantum prediction of 2.70. A second experiment switched the settings while the photons were in flight.</td></tr>
+		<tr><td>1998</td><td>Weihs, Zeilinger and colleagues (Innsbruck)</td><td>Settings chosen by fast random generators at each end, far enough apart that no light-speed signal could connect them in time.</td></tr>
+		<tr><td>2015</td><td>Hensen et al. (Delft)</td><td>Electron spins in diamond 1.3 km apart, &ldquo;loophole-free&rdquo;: S = 2.42 &plusmn; 0.20 from 245 heralded trials.</td></tr>
+		<tr><td>2015</td><td>Giustina et al. (Vienna) and Shalm et al. (NIST, Boulder)</td><td>Photon pairs with high-efficiency detectors and fast random settings, also closing the locality and detection loopholes together (they used the Clauser-Horne / Eberhard form of the inequality).</td></tr>
+		<tr><td>2022</td><td>Nobel Prize in Physics</td><td>Alain Aspect, John Clauser and Anton Zeilinger, &ldquo;for experiments with entangled photons, establishing the violation of Bell inequalities and pioneering quantum information science&rdquo;.</td></tr>
+	</tbody>
+</table></div>
+
+<h3 class="qm-h3">Loopholes, one line each</h3>
+<ul class="qm-en-ul">
+	<li><b>Locality loophole:</b> if the settings are chosen too slowly, a light-speed signal could tell one side what the other picked. Fix: choose settings at random after the particles leave, far enough apart.</li>
+	<li><b>Detection (fair-sampling) loophole:</b> if many particles go undetected, the counted ones might be a biased sample. Fix: detect a large enough fraction of all pairs.</li>
+	<li><b>Freedom-of-choice loophole:</b> the &ldquo;random&rdquo; settings might be correlated with the hidden variables. Narrowed by using quantum random generators, distant starlight and even human choices.</li>
+	<li><b>Memory loophole:</b> hidden variables could use earlier trials; handled by statistics that don&rsquo;t assume independent trials.</li>
+</ul>
+
+<h3 class="qm-h3">What does it mean? (interpretations)</h3>
+<div class="qm-explain">
+	<p>The experiments settle that no theory with <b>local</b> hidden variables and freely chosen settings matches nature. They do not say which assumption to give up, and physicists still disagree:</p>
+	<p><b>Non-locality</b> (e.g. de Broglie-Bohm pilot-wave theory, collapse theories): the measurement on one side really does affect the other, but in a way that cannot be used to send messages. <b>Copenhagen-style views</b>: there were no definite values before measurement; the quantum state is a tool for predicting results. <b>Many worlds</b>: every outcome happens, and the correlation shows up when the branches of Alice and Bob meet. <b>Superdeterminism</b>: the settings were never independent of the particles, so the inequality&rsquo;s assumption fails. Each fits all the data here; the simulator only shows the predictions.</p>
+</div></section>
+		<section data-panel="sg" role="tabpanel" hidden><p class="qm-lead">A <b>Stern-Gerlach magnet</b> has an uneven magnetic field that pushes a magnetic atom up or down depending on which way its tiny magnet points. Classically you would expect a smear. Silver atoms make <b>two spots</b>. Line up to four magnets, turn each one, block an output or recombine them, and fire atoms one at a time to see the quantum rules at work.</p>
+<div class="qm-chips" id="qm-sg-pre" aria-label="Try this">
+	<button type="button" data-p="1922">1922 original</button>
+	<button type="button" data-p="zz">Z then Z</button>
+	<button type="button" data-p="zx">Z then X</button>
+	<button type="button" data-p="zxz">Z, X, Z</button>
+	<button type="button" data-p="coh">Z, X recombined, Z</button>
+	<button type="button" data-p="peek">&hellip;recombined but watched</button>
+	<button type="button" data-p="z60">Z then 60&deg;</button>
+	<button type="button" data-p="s1">Spin 1: three beams</button>
+</div>
+<div class="qm-wrap" id="qm-sg-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-sg-stage">
+		<canvas id="qm-sg-cv" aria-label="Atoms flying from an oven through a chain of Stern-Gerlach magnets to a screen. Drag the dial above a magnet to turn it." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-sg-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-sg-one">Fire 1 atom</button>
+			<button type="button" id="qm-sg-beam" aria-pressed="false">Beam on</button>
+			<button type="button" id="qm-sg-k">+1,000</button>
+			<button type="button" id="qm-sg-reset">Clear screen</button>
+			<button type="button" id="qm-sg-fs">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend"><span>Drag the dial over a magnet to turn it (up = Z, right = X)</span><span>Click an output to block it / let it through</span><span><i style="background:#facc15"></i>arrow under each gap: the beam&rsquo;s spin (shorter = less certain)</span></div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Atoms fired</span><b id="qm-sg-n">0</b></div>
+		<div class="qm-ro"><span>Reached the screen</span><b id="qm-sg-thr">&ndash;</b></div>
+		<div class="qm-ro"><span>Expected</span><b id="qm-sg-thrt">&ndash;</b></div>
+		<div class="qm-ro"><span>Screen spots (measured)</span><b id="qm-sg-spots">&ndash;</b></div>
+		<div class="qm-ro"><span>Screen spots (expected)</span><b id="qm-sg-spotst">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-sg-spin">Particles</label>
+			<select id="qm-sg-spin" class="tu-input"><option value="1">Silver atoms (spin &frac12;: two beams)</option><option value="2">Spin-1 particles (three beams)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-sg-src">Source</label>
+			<select id="qm-sg-src" class="tu-input"><option value="oven">Hot oven: spins in every direction</option><option value="z">Prepared: spin up along Z</option><option value="x">Prepared: spin up along X</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-sg-rate">Beam: atoms per second <span class="qm-val" id="qm-sg-ratev">20</span></label>
+			<input type="range" id="qm-sg-rate" min="0" max="100" value="40" class="tu-input"></div>
+		<div class="tu-field"><span class="tu-label">Magnets in the row</span>
+			<div class="qm-row" style="margin:0"><button type="button" class="tu-btn" id="qm-sg-minus" aria-label="Remove a magnet">&minus;</button><b id="qm-sg-cnt" class="qm-val">2</b><button type="button" class="tu-btn" id="qm-sg-plus" aria-label="Add a magnet">+</button></div></div>
+	</div>
+	<div id="qm-sg-mags" class="qm-sg-mags"></div>
+	<div class="qm-row">
+		<label class="qm-check" id="qm-sg-clwrap"><input type="checkbox" id="qm-sg-cl"> Show what classical physics predicts (one magnet only)</label>
+		<button type="button" class="tu-btn" id="qm-sg-link">Copy link to this setup</button>
+	</div>
+</div>
+
+<h3 class="qm-h3">Amplitudes, step by step</h3>
+<div class="tu-card">
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-sg-tbl">
+		<thead><tr><th>Magnet</th><th>Angle</th><th>Beam arriving</th><th>Amplitudes</th><th>Probabilities</th><th>Atoms arriving (of all)</th></tr></thead>
+		<tbody></tbody>
+	</table></div>
+	<p class="tu-note">An amplitude is the number whose square is the probability. For spin &frac12; turned by an angle &theta; from the beam&rsquo;s own spin direction the amplitudes are cos(&theta;/2) and sin(&theta;/2), so the chances are cos&sup2;(&theta;/2) and sin&sup2;(&theta;/2). A beam from the hot oven has no single spin direction (a 50/50 mixture), so it has no amplitudes, only probabilities.</p>
+</div>
+
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle |{+}\theta\rangle = \cos\tfrac{\theta}{2}\,|{\uparrow}\rangle + \sin\tfrac{\theta}{2}\,|{\downarrow}\rangle \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle P({+}\theta \mid {\uparrow}) = \cos^2\tfrac{\theta}{2} \)</div>
+	<div class="qm-eq__t">Spin &frac12;: a magnet turned by &theta; from the spin passes cos&sup2;(&theta;/2) of the atoms to its + output. At 90&deg; (Z then X) that is &frac12;; at 180&deg; it is 0.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle d^{1}(\theta) = \begin{pmatrix} \frac{1+\cos\theta}{2} & -\frac{\sin\theta}{\sqrt2} & \frac{1-\cos\theta}{2} \\ \frac{\sin\theta}{\sqrt2} & \cos\theta & -\frac{\sin\theta}{\sqrt2} \\ \frac{1-\cos\theta}{2} & \frac{\sin\theta}{\sqrt2} & \frac{1+\cos\theta}{2} \end{pmatrix} \)</div>
+	<div class="qm-eq__t">Spin 1 (Wigner d-matrix): from +1 along Z, a magnet at 90&deg; gives &frac14;, &frac12;, &frac14; into its +1, 0 and &minus;1 beams.</div>
+</div>
+
+<div class="qm-explain">
+	<p><b>Z then Z:</b> atoms that came out &ldquo;up&rdquo; from the first magnet all come out up again. The answer is repeatable.</p>
+	<p><b>Z then X:</b> a magnet turned 90&deg; splits them 50/50. Knowing the spin along Z tells you nothing about X.</p>
+	<p><b>Z, X, Z:</b> keep only the up-along-X atoms, then measure Z again: half come out <i>down</i>, although every one of them was up along Z two magnets earlier. Measuring X wiped out the Z information.</p>
+	<p><b>Recombined:</b> if the X magnet&rsquo;s two beams are brought back together with nothing recording which one an atom took (a careful &ldquo;Stern-Gerlach interferometer&rdquo;, very hard in practice), the original spin comes back intact and the last magnet sends every atom up. Put a detector on the paths (&ldquo;watched&rdquo;) and the 50/50 split returns: it is the which-path record, not the magnet, that destroys the information.</p>
+	<p><b>What is drawn.</b> The magnets are drawn side on, splitting beams up and down whatever their angle, with the angle shown on each dial; the passing beam is re-centred before the next magnet. The spot sizes and spacing are schematic. The probabilities are exact quantum mechanics; each atom&rsquo;s path is picked at random from them.</p>
+</div>
+
+<h3 class="qm-h3">The 1922 experiment</h3>
+<div class="qm-explain">
+	<p>Otto Stern and Walther Gerlach sent a beam of silver atoms from an oven through an uneven magnetic field in Frankfurt in 1922 and collected them on a glass plate. Classical physics expected the atoms&rsquo; magnets to point every which way and paint a continuous band. Instead the deposit split into two separate parts. At the time it was read as proof of Bohr and Sommerfeld&rsquo;s &ldquo;space quantization&rdquo;; the real reason, the electron&rsquo;s spin (a silver atom&rsquo;s magnetism comes from one unpaired electron), was only proposed by Uhlenbeck and Goudsmit in 1925. Chains of magnets like the ones above are the classic thought experiments used to teach spin (Feynman, Sakurai); with spin-&frac12; atoms the two spots are the whole story.</p>
+</div></section>
+		<section data-panel="atom" role="tabpanel" hidden><p class="qm-lead">The electron in a hydrogen atom is not a little ball on an orbit. It is a standing wave &psi;<sub>nlm</sub> around the proton, and |&psi;|&sup2; tells you where you are likely to find it. Every picture below is drawn from the <b>exact</b> solution of the Schr&ouml;dinger equation for hydrogen, computed live in your browser.</p>
+
+<div class="tu-card qm-at-pick">
+	<div class="qm-chips" id="qm-at-chips" aria-label="Orbitals">
+		<button type="button" data-o="1,0,0">1s</button>
+		<button type="button" data-o="2,0,0">2s</button>
+		<button type="button" data-o="2,1,0">2p<sub>z</sub></button>
+		<button type="button" data-o="2,1,1">2p<sub>x</sub></button>
+		<button type="button" data-o="3,0,0">3s</button>
+		<button type="button" data-o="3,1,0">3p<sub>z</sub></button>
+		<button type="button" data-o="3,2,0">3d<sub>z&sup2;</sub></button>
+		<button type="button" data-o="3,2,-2">3d<sub>xy</sub></button>
+		<button type="button" data-o="3,2,2">3d<sub>x&sup2;&minus;y&sup2;</sub></button>
+		<button type="button" data-o="4,0,0">4s</button>
+		<button type="button" data-o="4,3,0">4f<sub>z&sup3;</sub></button>
+		<button type="button" data-o="4,3,-2">4f<sub>xyz</sub></button>
+		<button type="button" data-o="4,3,3">4f<sub>x(x&sup2;&minus;3y&sup2;)</sub></button>
+		<button type="button" data-o="5,2,0">5d<sub>z&sup2;</sub></button>
+		<button type="button" data-o="6,3,0">6f<sub>z&sup3;</sub></button>
+	</div>
+	<div class="qm-row qm-at-nlm">
+		<label class="qm-at-spin">n <select id="qm-at-n" aria-label="Principal quantum number n"></select></label>
+		<label class="qm-at-spin">l <select id="qm-at-l" aria-label="Angular momentum quantum number l"></select></label>
+		<label class="qm-at-spin">m <select id="qm-at-m" aria-label="Magnetic quantum number m"></select></label>
+		<label class="qm-check"><input type="checkbox" id="qm-at-cplx"> Complex m states (e<sup>im&phi;</sup>)</label>
+		<label class="qm-at-spin">Atom <select id="qm-at-z" aria-label="Nucleus"><option value="1">Hydrogen (Z = 1)</option><option value="2">He&#8314; (Z = 2)</option><option value="3">Li&#178;&#8314; (Z = 3)</option></select></label>
+	</div>
+	<p class="qm-at-name" id="qm-at-name" aria-live="polite"></p>
+</div>
+
+<div class="qm-wrap" id="qm-at-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-at-stage">
+		<canvas id="qm-at-cv" aria-label="Hydrogen orbital picture"></canvas>
+		<div class="qm-badge" id="qm-at-badge"></div>
+		<div class="qm-run">
+			<button type="button" data-v="slice" aria-pressed="true" title="Probability density in a flat slice">Slice</button>
+			<button type="button" data-v="cloud" aria-pressed="false" title="3D cloud of points drawn from |&psi;|&sup2;: drag to turn">3D cloud</button>
+			<button type="button" data-v="radial" aria-pressed="false" title="Radial probability P(r)">Radial</button>
+			<select id="qm-at-plane" aria-label="Slice plane"><option value="xz">x-z plane</option><option value="xy">x-y plane</option><option value="yz">y-z plane</option></select>
+			<button type="button" id="qm-at-fs" title="Full screen">&#x26F6; Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-at-legend"></div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Energy E<sub>n</sub></span><b id="qm-at-ro-e">&ndash;</b></div>
+		<div class="qm-ro"><span>Most likely radius</span><b id="qm-at-ro-rmp">&ndash;</b></div>
+		<div class="qm-ro"><span>Average radius &lang;r&rang;</span><b id="qm-at-ro-rav">&ndash;</b></div>
+		<div class="qm-ro"><span>Radial nodes</span><b id="qm-at-ro-rn">&ndash;</b></div>
+		<div class="qm-ro"><span>Angular nodes</span><b id="qm-at-ro-an">&ndash;</b></div>
+		<div class="qm-ro"><span>Under the pointer</span><b id="qm-at-ro-hov">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-at-zoom">Zoom <span class="qm-val" id="qm-at-zoom-v"></span></label><input type="range" id="qm-at-zoom" min="0.4" max="3" step="0.05" value="1"></div>
+		<div class="tu-field qm-at-only-slice"><label class="tu-label" for="qm-at-off">Slice position (along the third axis) <span class="qm-val" id="qm-at-off-v"></span></label><input type="range" id="qm-at-off" min="-1" max="1" step="0.01" value="0"></div>
+		<div class="tu-field qm-at-only-slice"><label class="tu-label" for="qm-at-gam">Contrast (show the faint outer parts) <span class="qm-val" id="qm-at-gam-v"></span></label><input type="range" id="qm-at-gam" min="0.15" max="1" step="0.05" value="0.5"></div>
+		<div class="tu-field qm-at-only-cloud"><label class="tu-label" for="qm-at-pts">Points in the cloud <span class="qm-val" id="qm-at-pts-v"></span></label><input type="range" id="qm-at-pts" min="2000" max="40000" step="1000" value="12000"></div>
+	</div>
+	<div class="qm-row">
+		<label class="qm-check qm-at-only-cloud"><input type="checkbox" id="qm-at-spinon" checked> Turn slowly</label>
+		<label class="qm-check qm-at-only-slice"><input type="checkbox" id="qm-at-nodes" checked> Mark the nodes (where &psi; = 0)</label>
+		<label class="qm-check qm-at-only-radial"><input type="checkbox" id="qm-at-showR"> Also draw R(r) itself</label>
+		<button type="button" class="tu-btn" id="qm-at-resample">New random cloud</button>
+		<button type="button" class="tu-btn" id="qm-at-link">Copy link</button>
+	</div>
+	<p class="tu-note" id="qm-at-hint"></p>
+</div>
+
+<div class="qm-explain">
+	<p><b>What you see.</b> A slice shows |&psi;|&sup2; in one flat plane through the atom: brighter = more likely. The colour is the <b>sign</b> of the wave (orange +, blue &minus;), or with complex m states its <b>phase</b> (the colour wheel turns m times around the z axis). The 3D cloud is a set of random &ldquo;where was the electron found?&rdquo; dots, drawn exactly from |&psi;|&sup2;. The radial view adds up all directions: P(r) = r&sup2;R&sup2; is the chance of finding the electron at distance r.</p>
+	<p><b>Nodes.</b> The wave is zero on n &minus; 1 surfaces: n &minus; l &minus; 1 spheres (radial nodes) and l cones or planes (angular nodes). More nodes = more wiggles = higher energy, just like a guitar string.</p>
+</div>
+<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \psi_{n l m}(r,\theta,\varphi) = R_{n l}(r)\,Y_{l}^{m}(\theta,\varphi) \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle R_{n l}(r) = \sqrt{\left(\tfrac{2Z}{n a_0}\right)^{3}\frac{(n-l-1)!}{2n\,(n+l)!}}\;e^{-\rho/2}\rho^{\,l}\,L_{n-l-1}^{2l+1}(\rho) \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \rho = \frac{2Zr}{n a_0}, \qquad \langle r\rangle = \frac{a_0}{2Z}\left[3n^2 - l(l+1)\right], \qquad P(r) = r^2 R_{nl}(r)^2 \)</div>
+	<div class="qm-eq__t">L is an associated Laguerre polynomial, Y a spherical harmonic. The real orbitals (p<sub>x</sub>, d<sub>xy</sub>, ...) are the sums and differences of the m and &minus;m states that chemists draw. Spin and the small fine-structure corrections are left out.</div>
+</div>
+
+<h3 class="qm-h3">Energy levels, jumps and the colours of hydrogen</h3>
+<p class="qm-lead">The electron sits on one level. <b>Click another level</b> to make it jump: going down it sends out a photon, going up it must absorb one. The photon&rsquo;s energy is the gap between the levels, so its wavelength is fixed. That is why hydrogen glows in a few sharp colours.</p>
+<div class="qm-chips" id="qm-at-jchips">
+	<button type="button" data-j="3,2">H&alpha; red (3&rarr;2)</button>
+	<button type="button" data-j="4,2">H&beta; cyan (4&rarr;2)</button>
+	<button type="button" data-j="5,2">H&gamma; (5&rarr;2)</button>
+	<button type="button" data-j="6,2">H&delta; (6&rarr;2)</button>
+	<button type="button" data-j="2,1">Lyman &alpha; UV (2&rarr;1)</button>
+	<button type="button" data-j="4,3">Paschen &alpha; IR (4&rarr;3)</button>
+	<button type="button" data-j="1,2">Absorb (1&rarr;2)</button>
+	<button type="button" data-j="1,0">Ionize from 1s</button>
+</div>
+<div class="qm-wrap" id="qm-at-lwrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-at-lstage">
+		<canvas id="qm-at-lcv" aria-label="Energy level diagram and spectrum: click a level to make the electron jump" tabindex="0"></canvas>
+		<div class="qm-run"><button type="button" id="qm-at-lfs" title="Full screen">&#x26F6; Full screen</button></div>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Jump</span><b id="qm-at-ro-j">&ndash;</b></div>
+		<div class="qm-ro"><span>Photon energy</span><b id="qm-at-ro-de">&ndash;</b></div>
+		<div class="qm-ro"><span>Wavelength</span><b id="qm-at-ro-lam">&ndash;</b></div>
+		<div class="qm-ro"><span>Frequency</span><b id="qm-at-ro-f">&ndash;</b></div>
+		<div class="qm-ro"><span>Series / band</span><b id="qm-at-ro-ser">&ndash;</b></div>
+	</div>
+</div>
+<div class="qm-row">
+	<label class="qm-check"><input type="checkbox" id="qm-at-air" checked> Wavelengths in air (as measured in a lab)</label>
+	<label class="qm-check"><input type="checkbox" id="qm-at-red" checked> Use the reduced mass (the nucleus moves a little too)</label>
+</div>
+<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle E_n = -\frac{13.6\ \text{eV}\,Z^2}{n^2}\cdot\frac{\mu}{m_e} \)</div><div class="qm-eq__f mes-tex">\( \displaystyle \frac{1}{\lambda} = R_\infty\frac{\mu}{m_e}Z^2\left(\frac{1}{n_1^2} - \frac{1}{n_2^2}\right) \)</div><div class="qm-eq__f mes-tex">\( \displaystyle E_\gamma = h f = \frac{hc}{\lambda} \)</div>
+	<div class="qm-eq__t">Air bends light a little, so a wavelength measured in air is about 0.03% shorter than in vacuum: H&alpha; is 656.28 nm in air and 656.47 nm in vacuum. The reduced mass &mu; = m<sub>e</sub>M/(m<sub>e</sub>+M) shifts every line by about 0.05%.</div>
+</div>
+<div class="qm-explain">
+	<p><b>Bohr&rsquo;s model and the quantum cloud.</b> Bohr (1913) pictured the electron on circular orbits of radius n&sup2;a<sub>0</sub> and got these energies exactly right, which is why the line colours match. But it fails elsewhere: it gives the ground state angular momentum &hbar; (the real value is 0: a 1s electron does not circle at all), it cannot explain line brightness or atoms with more electrons, and it says nothing about the shapes above. In the full theory the radius n&sup2;a<sub>0</sub> survives only as the most likely radius of the orbitals with l = n &minus; 1 (try 2p, 3d, 4f in the radial view: the peak sits exactly at 4, 9, 16 a<sub>0</sub>).</p>
+</div></section>
+		<section data-panel="calc" role="tabpanel" hidden><p class="qm-lead">Quick quantum numbers, live as you type. Type a value with its unit (<b>500 nm</b>, <b>2 eV</b>, <b>1e-10 m</b>, <b>0.5c</b>, <b>25 °C</b>) or pick the unit from the menu. Each card shows the formula, your numbers plugged in, and what the answer means.</p>
+<div class="qm-chips" id="qm-ca-jump" aria-label="Jump to a calculator">
+	<button type="button" data-c="db">de Broglie</button><button type="button" data-c="ph">Photon</button><button type="button" data-c="un">Uncertainty</button><button type="button" data-c="tu">Tunnelling</button>
+	<button type="button" data-c="bx">Particle in a box</button><button type="button" data-c="bo">Bohr model</button><button type="button" data-c="ry">Spectral lines</button><button type="button" data-c="co">Compton</button>
+	<button type="button" data-c="bb">Blackbody</button><button type="button" data-c="th">Thermal wavelength</button>
+</div>
+<div class="qm-ca-grid">
+
+<section class="tu-card qm-ca-card" id="qm-ca-db" data-card="db">
+	<h3 class="qm-h3">de Broglie wavelength</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda = \frac{h}{p}, \qquad p = \frac{\sqrt{K^2 + 2Kmc^2}}{c} \;\approx\; \sqrt{2mK}, \qquad K = qV \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-ph" data-card="ph">
+	<h3 class="qm-h3">Photon energy, wavelength and frequency</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle E = h f = \frac{hc}{\lambda}, \qquad E\,[\text{eV}] \approx \frac{1239.84}{\lambda\,[\text{nm}]}, \qquad p = \frac{E}{c} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-un" data-card="un">
+	<h3 class="qm-h3">Heisenberg uncertainty</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \Delta x\,\Delta p \ge \frac{\hbar}{2}, \qquad \Delta v \ge \frac{\hbar}{2m\,\Delta x}, \qquad \Delta E\,\Delta t \gtrsim \frac{\hbar}{2} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-tu" data-card="tu">
+	<h3 class="qm-h3">Tunnelling through a rectangular barrier</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle T = \left[1 + \frac{V^2\sinh^2(\kappa a)}{4E(V-E)}\right]^{-1}, \quad \kappa = \frac{\sqrt{2m(V-E)}}{\hbar}, \qquad T \approx \frac{16E(V-E)}{V^2}\,e^{-2\kappa a} \)</div></div>
+	<div class="qm-ca-chart"><canvas class="qm-ca-cv" aria-label="Transmission against barrier width"></canvas></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-bx" data-card="bx">
+	<h3 class="qm-h3">Particle in a box (and dye colours)</h3>
+	<div class="qm-chips qm-ca-pre"><button type="button" data-p='{"mode":"lv","part":"e","L":"1 nm","n1":"1","n2":"2"}'>Electron in 1 nm</button><button type="button" data-p='{"mode":"dye","L":"0.578 nm","N":"4"}'>Butadiene (4 &pi; electrons)</button><button type="button" data-p='{"mode":"lv","part":"n","L":"10 fm","n1":"1","n2":"2"}'>Neutron in a nucleus-sized box</button></div>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle E_n = \frac{n^2 h^2}{8 m L^2}, \qquad \Delta E_{\text{HOMO}\to\text{LUMO}} = \frac{h^2 (N+1)}{8 m_e L^2}, \qquad \lambda = \frac{hc}{\Delta E} \)</div></div>
+	<div class="qm-ca-chart qm-ca-chart--sm"><canvas class="qm-ca-cv" aria-label="Energy levels in the box"></canvas></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-bo" data-card="bo">
+	<h3 class="qm-h3">Bohr model (hydrogen-like ions)</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle r_n = \frac{n^2 a_0}{Z}\frac{m_e}{\mu}, \qquad v_n = \frac{Z\alpha c}{n}, \qquad E_n = -\frac{13.6\ \text{eV}\,Z^2}{n^2}\frac{\mu}{m_e}, \qquad L = n\hbar \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-ry" data-card="ry">
+	<h3 class="qm-h3">Rydberg formula and spectral line finder</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \frac{1}{\lambda} = R_\infty \frac{\mu}{m_e} Z^2 \left( \frac{1}{n_1^2} - \frac{1}{n_2^2} \right), \qquad R_\infty = 10\,973\,731.568\ \text{m}^{-1} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-co" data-card="co">
+	<h3 class="qm-h3">Compton scattering</h3>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda' - \lambda = \frac{h}{mc}\,(1 - \cos\theta), \qquad \frac{h}{m_e c} = 2.426\ \text{pm} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-bb" data-card="bb">
+	<h3 class="qm-h3">Blackbody radiation</h3>
+	<div class="qm-chips qm-ca-pre"><button type="button" data-p='{"T":"5772 K"}'>The Sun's surface</button><button type="button" data-p='{"T":"2700 K"}'>Warm-white bulb</button><button type="button" data-p='{"T":"37 °C"}'>Human body</button><button type="button" data-p='{"T":"2.725 K"}'>Cosmic microwave background</button></div>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda_{\text{peak}} = \frac{b}{T}, \quad b = 2.898\times10^{-3}\ \text{m K}, \qquad j = \sigma T^4, \quad B_\lambda = \frac{2hc^2}{\lambda^5}\frac{1}{e^{hc/\lambda k_B T} - 1} \)</div></div>
+	<div class="qm-ca-chart"><canvas class="qm-ca-cv" aria-label="Planck spectrum"></canvas></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+<section class="tu-card qm-ca-card" id="qm-ca-th" data-card="th">
+	<h3 class="qm-h3">Thermal de Broglie wavelength</h3>
+	<div class="qm-chips qm-ca-pre"><button type="button" data-p='{"part":"He","T":"300 K","n":"2.45e25 /m3"}'>Helium gas, room temperature</button><button type="button" data-p='{"part":"e","T":"300 K","n":"8.5e28 /m3"}'>Electrons in copper</button><button type="button" data-p='{"part":"Rb","T":"100 nK","n":"1e20 /m3"}'>Ultracold rubidium (BEC range)</button></div>
+	<div class="qm-ca-fields"></div>
+	<div class="qm-eq"><div class="qm-eq__f mes-tex">\( \displaystyle \lambda_{\text{th}} = \frac{h}{\sqrt{2\pi m k_B T}}, \qquad n\lambda_{\text{th}}^3 \ll 1 \text{ classical gas}, \quad n\lambda_{\text{th}}^3 \gtrsim 1 \text{ quantum gas} \)</div></div>
+	<div class="qm-ca-out"></div>
+</section>
+
+</div>
+<p class="tu-note">Constants: CODATA 2018 (h, e and c are exact in SI). Non-relativistic formulas are used where the card says so; the de Broglie card is fully relativistic. The tunnelling and box cards are idealized models (flat barrier, infinitely high walls).</p></section>
 
 		<div class="tu-card qm-more">
 			<h2 class="qm-h2">More quantum and wave pages on MES</h2>
@@ -648,14 +1673,51 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 				<a href="/atomic-clock-simulator">Atomic Clock Simulator<span>Ramsey fringes and the Bloch sphere</span></a>
 			</div>
 		</div>
-<div class="tu-seo"><h2>About</h2><p>Coming soon.</p></div>
+<div class="tu-seo">
+	<h2>Quantum tunnelling, simulated</h2>
+	<p>This page solves the Schr&ouml;dinger equation live in your browser. In the <b>Tunnelling</b> tab a wave packet (a moving electron, or any particle you choose) runs into a barrier that is higher than its energy. Classically it would always bounce back. In the simulation you can watch part of the wave get through, see exactly how much, and compare it with the exact transmission probability computed a second, independent way. The <b>Wells &amp; energy levels</b> tab finds the allowed energies of a trapped particle and lets you mix them to watch the particle move, including tunnelling back and forth in a double well. The <b>Calculators</b> tab works out de Broglie wavelengths, tunnelling probabilities and more from numbers you type.</p>
+
+	<h3>What is quantum tunnelling?</h3>
+	<p>A quantum particle is described by a wave. Where the potential energy is higher than the particle&rsquo;s energy, the wave does not stop dead at the edge: it fades away exponentially, as e<sup>&minus;&kappa;x</sup> with &kappa; = &radic;(2m(V&minus;E))/&hbar;. If the barrier is thin enough, some of the wave is still there on the other side and carries on. The probability of getting through is roughly e<sup>&minus;2&kappa;a</sup> for a barrier of width a, so it depends extremely strongly on the width, the height and the mass of the particle.</p>
+
+	<h3>Where tunnelling matters</h3>
+	<ul>
+		<li><b>Alpha decay:</b> an alpha particle rattles inside the nucleus and leaks through the Coulomb barrier a tiny bit at each hit. Because the leak is exponentially sensitive, half-lives range from microseconds to billions of years (George Gamow, 1928).</li>
+		<li><b>Scanning tunnelling microscope:</b> the current between a sharp tip and a surface changes by about an order of magnitude for every 0.1 nm of gap, which lets the microscope see single atoms.</li>
+		<li><b>Field emission and flash memory:</b> a strong electric field tilts the barrier into a triangle that electrons tunnel through.</li>
+		<li><b>Resonant tunnelling diodes:</b> two thin barriers with a gap between them let electrons through almost perfectly at special energies, and hardly at all in between.</li>
+		<li><b>Nuclear fusion in the Sun:</b> protons fuse at temperatures that would be far too low without tunnelling.</li>
+	</ul>
+
+	<h3>How the simulation is done</h3>
+	<p>The wave packet is evolved with the Crank-Nicolson method on a fine grid (exactly probability-conserving), with absorbing layers at the edges that count the reflected and transmitted parts as they leave. The exact transmission curve T(E) comes from the transfer-matrix method. The two agree, which you can check on the chart: the simulated dot lands on the exact average. The energy levels are found by finite differences with Sturm-sequence bisection, and are tested against the textbook answers (n&sup2; for a box, (n+&frac12;)&hbar;&omega; for a spring, Airy zeros for the quantum bouncer). Everything is one-dimensional; energies are in eV and times in femtoseconds.</p>
+
+	<h3>Questions</h3>
+	<h3>Does the particle borrow energy to get through?</h3>
+	<p>No. The total energy is the same before and after; the particle that comes out on the far side has the same energy it went in with. Inside the barrier the wave simply decays instead of oscillating. Saying it &ldquo;borrows&rdquo; energy is a popular picture, not what the equation does.</p>
+	<h3>How long does tunnelling take?</h3>
+	<p>That is a subtle question that physicists still discuss: different reasonable definitions of the &ldquo;tunnelling time&rdquo; give different answers, and experiments with atoms and light have measured some of them. The simulation shows the honest picture: the transmitted lump appears on the far side about when the front of the packet reaches the barrier, with no signal moving faster than allowed.</p>
+	<h3>Why does part of the wave reflect even when its energy is above the barrier?</h3>
+	<p>Any sudden change in the potential, up or down, partly reflects a wave, just as light partly reflects off a window. Only at special energies, where whole half-wavelengths fit in the barrier, does the reflection vanish completely.</p>
+	<h3>Why don&rsquo;t people walk through walls?</h3>
+	<p>The probability falls exponentially with mass and width. For an electron and a 1 nm barrier it can be a few percent; for a proton the same barrier is already practically closed; for a person and a wall the number is so small it has no meaning in practice.</p>
+	<h3>Is the wave the particle, or our knowledge of it?</h3>
+	<p>The simulation only uses the Schr&ouml;dinger equation, which every interpretation agrees on. In the Copenhagen view &psi; gives the probabilities of measurement results; in the pilot-wave (de Broglie-Bohm) view a real particle is guided by the wave; in the many-worlds view both outcomes happen in different branches. They all predict the same transmission probability you see here.</p>
+</div>
 	</div>
 	<script src="/main_js/mes-math.js" defer></script>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
-                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
-                        </div>
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/quantum-double-slit"><img class="mes-aside__img mes-aside__img--logo" src="/quantum-double-slit/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Double Slit Experiment Simulator: Electrons One at a Time, Which-Path and Pilot Waves</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/gematria"><img class="mes-aside__img mes-aside__img--logo" src="/gematria/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Gematria Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
@@ -704,6 +1766,60 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
 	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/quantum/js/quantum.js?v=1" defer></script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 </html>

@@ -129,7 +129,7 @@ def _gta(slug, page, title, page_title, desc, tab, meta_desc):
 # quantum/js/quantum.js for six pages; data-views on #qm picks the tabs. Rebuild all six together, bump js_v on all. Stage boxes .qm-wrap get the stage-ctl View bar.
 QM_BRAND = dict(slug="quantum", title="MES Quantum Lab", tag="Tunnelling, the double slit, entanglement and the atom, live.")
 QM_PAGES = [("quantum", "Quantum Lab"), ("quantum-tunneling", "Tunnelling"), ("quantum-double-slit", "Double Slit"), ("quantum-entanglement", "Entanglement"), ("hydrogen-atom", "Hydrogen Atom"), ("quantum-calculator", "Calculators")]
-QM_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in QM_PAGES[1:])
+QM_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Calculators", "Quantum Calculators")) for sl, nm in QM_PAGES[1:])
 QM_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">Quantum %s</a></li>' % (sl, nm) for sl, nm in QM_PAGES[1:])
 QM_PARTS = ["lib-tunnel.js", "lib-slit.js", "lib-ent.js", "lib-atom.js", "ui-tunnel.js", "ui-box.js", "ui-slit.js", "ui-uncert.js", "ui-ent.js", "ui-sg.js", "ui-atom.js", "ui-calc.js"]
 def _qm(slug, views, title, page_title, tag, desc, tab, meta_desc=None):

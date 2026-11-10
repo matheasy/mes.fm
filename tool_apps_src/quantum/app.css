@@ -1,7 +1,7 @@
 	/* MES Quantum Lab: shared look. Simulator stages are dark in both themes; their colours are --qm-* custom properties (restated for dark mode at the end,
 	   because the derived TOOL-DARK block rewrites literal colours and custom-property values). Hand-written dark rules need the "html body.dark-mode #qm.qm" prefix. */
 	.tu [hidden] {display:none !important;}
-	:where(#qm) :is(div, span, p, li, label, b, strong, em, small, td, th, figcaption, article, h3, h4, dt, dd) {color:inherit;}
+	:where(#qm) :is(div, span, p, li, label, b, strong, em, small, table, thead, tbody, tr, td, th, figcaption, article, h3, h4, dt, dd) {color:inherit;}
 	.qm {--qm-bg:#070a14;--qm-line:#273049;--qm-text:#e7ebf6;--qm-dim:#9aa6c0;--qm-ro:#0c1020;--qm-soft:#f4f3fd;--qm-edge:#d9d6f3;--qm-ink:#1f1b3a;--qm-mut:#5b5875;--qm-ok:#15803d;--qm-bad:#b91c1c;--qm-warn:#a16207;--qm-c1:#22d3ee;--qm-c2:#f472b6;--qm-c3:#facc15;--qm-c4:#a3e635;}
 	.qm-fam {display:flex;flex-wrap:wrap;gap:0.35em;margin:0 0 0.9em;}
 	.qm-fam a {display:inline-block;padding:0.3em 0.85em;border-radius:1em;border:1px solid var(--qm-edge);background:var(--qm-soft);color:var(--qm-ink);text-decoration:none;font-size:0.88em;font-weight:600;}
@@ -171,3 +171,7 @@
 	#qm .qm-ca-plug, #qm .qm-ca-say, #qm .qm-ca-rd:not(.qm-ca-bad) {color:var(--qm-ink);}
 	#qm .qm-ca-rd:not(.qm-ca-bad) {color:var(--qm-mut);}
 	#qm .qm-at-name {color:var(--qm-mut);}
+
+	/* dark mode: TOOL-DARK lightens --accent, so filled (selected) buttons need their own fill or white text loses contrast */
+	html body.dark-mode #qm.qm .qm-chips button[aria-pressed="true"], html body.dark-mode #qm.qm .qm-run button[aria-pressed="true"], html body.dark-mode #qm.qm .qm-fam a[aria-current="page"] {background:#5b3fd6;border-color:#7c63f0;color:#fff;}
+	html body.dark-mode #qm.qm button[aria-pressed="true"] {color:#fff;}
