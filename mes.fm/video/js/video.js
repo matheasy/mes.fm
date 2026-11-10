@@ -4012,9 +4012,26 @@
 		n = Math.max(0, Math.min(2, n | 0)); UI.bar = n; saveUI();
 		app.classList.toggle("vd-bar1", n >= 1); app.classList.toggle("vd-bar2", n === 2);
 		$("vd-barlbl").textContent = BAR_NAMES[n]; $("vd-barbtn").setAttribute("aria-label", "Bar size: " + BAR_NAMES[n]);
-		setTimeout(function () { P.fit(); if (VE.tl && VE.tl.render) VE.tl.render(); }, 30);
+		fitBars(); setTimeout(function () { fitBars(); P.fit(); if (VE.tl && VE.tl.render) VE.tl.render(); }, 30);
 		if (!quiet) toast(n === 0 ? "Bars: normal size." : n === 1 ? "Bars: compact (B or a drag on an empty part of a bar changes it)." : "Bars: minimal. The timeline tools are hidden; S, Delete, I, O, + and - still work. Press B for normal.", 3500);
 	}
+	// Compact keeps the bars one row high but still shows the words (and the extra timeline buttons) when the row has room;
+	// they are dropped only when they would make the play row wrap or the tools row scroll
+	function fitBars() {
+		app.classList.remove("vd-lblon", "vd-lblmid", "vd-xton");
+		if (!app.classList.contains("vd-bar1")) return;
+		var tr = app.querySelector(".vd-transport"), tools = app.querySelector(".vd-tools"), play = $("vd-play");
+		function wraps() { var top = play.offsetTop; return [].some.call(tr.children, function (c) { return c.offsetParent && Math.abs(c.offsetTop - top) > 6; }); }
+		// all words, else only Fill window / Full screen, else icons only
+		if (!wraps()) { app.classList.add("vd-lblon"); if (wraps()) { app.classList.remove("vd-lblon"); app.classList.add("vd-lblmid"); if (wraps()) app.classList.remove("vd-lblmid"); } }
+		if (tools && !app.classList.contains("vd-bar2")) { app.classList.add("vd-xton"); if (tools.scrollWidth > tools.clientWidth + 1) app.classList.remove("vd-xton"); }
+	}
+	var fitT = 0, lastW = "";
+	if (window.ResizeObserver) new ResizeObserver(function () {
+		var w = app.querySelector(".vd-transport").clientWidth + "x" + app.querySelector(".vd-tools").clientWidth;
+		if (w === lastW) return; lastW = w; clearTimeout(fitT); fitT = setTimeout(fitBars, 60);
+	}).observe(app.querySelector(".vd-center"));
+	window.addEventListener("resize", function () { clearTimeout(fitT); fitT = setTimeout(fitBars, 60); });
 	$("vd-barbtn").onclick = function () { setBar(((UI.bar | 0) + 1) % 3); };
 	setBar(UI.bar | 0, true);
 	VE.cycleBar = function () { setBar(((UI.bar | 0) + 1) % 3); };
