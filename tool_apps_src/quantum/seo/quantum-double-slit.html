@@ -1,1 +1,32 @@
-<div class="tu-seo"><h2>About</h2><p>Coming soon.</p></div>
+<div class="tu-seo">
+<h2>The double slit experiment, live in your browser</h2>
+<p>This free simulator shows the most famous experiment in quantum physics two ways at once. On the left, the wave of a particle is solved live from the Schr&ouml;dinger equation as it hits a wall with one, two or more slits. On the right, a detector screen far away records particles <strong>one at a time</strong>, each as a single dot. Each dot lands at a random place, but the chance of each place follows the wave, so after a few hundred or thousand dots the familiar light and dark stripes appear.</p>
+
+<h3>What you can do</h3>
+<ul>
+<li>Pick a real particle: electrons, neutrons, C<sub>60</sub> buckyballs or photons, and set its energy. The page works out the de Broglie wavelength &lambda; = h/p (with relativity for fast electrons) and the stripe spacing &lambda;L/d on a screen at distance L, in real units.</li>
+<li>Change the slit width, the slit separation and the number of slits, with the sliders or by dragging the slits in the picture. One slit gives a single wide hump; two slits give stripes inside that hump; five or more slits give the sharp bright lines of a diffraction grating.</li>
+<li>Set how many particles arrive per second, from one at a time (with an optional click per arrival) to thousands per second, and watch the histogram turn into the predicted curve.</li>
+<li>Switch on a <strong>which-path detector</strong>. When it marks every particle with the slit it used, the stripes disappear and the screen shows two single-slit humps added together. A weaker detector leaves fainter stripes, with visibility V = &radic;(1 &minus; D&sup2;).</li>
+<li>Show <strong>pilot-wave paths</strong>: the trajectories of the de Broglie&ndash;Bohm interpretation, where each particle follows the velocity v = (&hbar;/m)&nbsp;Im(&nabla;&psi;/&psi;) set by the wave.</li>
+</ul>
+
+<h3>How the simulator works</h3>
+<p>The wave picture uses the split-operator method: the wave function on a 256&nbsp;&times;&nbsp;256 grid (128&nbsp;&times;&nbsp;128 on phones) is moved forward in small time steps with fast Fourier transforms, with absorbing edges so waves leave the box instead of bouncing back. The wall is a high potential barrier a few cells thick. Real slits are tens of thousands of wavelengths apart, which could never be drawn, so the picture keeps the real <em>shape</em> (the ratio of separation to width and the number of slits) and draws the wavelength larger. The detector screen uses the exact far-field (Fraunhofer) pattern for your real numbers, I(&theta;) &prop; sinc&sup2;(&pi;a&thinsp;sin&theta;/&lambda;)&nbsp;cos&sup2;(&pi;d&thinsp;sin&theta;/&lambda;), and draws each arrival at random from it.</p>
+
+<h3>Real experiments</h3>
+<p>Thomas Young showed interference of light around 1801. Claus J&ouml;nsson made real double slits for electrons in 1961, and in 1989 Akira Tonomura&rsquo;s team at Hitachi filmed single electrons building up the stripes one dot at a time. Neutrons were sent through a double slit by Anton Zeilinger and colleagues in the 1980s, and in 1999 Markus Arndt, Zeilinger and colleagues showed interference of C<sub>60</sub> molecules, 60 carbon atoms each, through a grating with a 100&nbsp;nm period. The presets use typical values in the style of these experiments, not the exact apparatus.</p>
+
+<h3>Uncertainty tab</h3>
+<p>The second tab shows a wave packet next to its momentum distribution (they are a Fourier pair). Squeeze the packet and the momentum spreads; the product &Delta;x&middot;&Delta;p never goes below &hbar;/2, and only a Gaussian reaches that limit. Release it and it spreads as &Delta;x(t)&sup2; = &Delta;x&#8320;&sup2; + (&Delta;p&nbsp;t/m)&sup2;, compared live with the formula. A real-scale calculator shows why an electron in an atom moves at hundreds of km/s while a baseball&rsquo;s uncertainty is far too small to notice.</p>
+
+<h3>Questions</h3>
+<h3>Does the particle go through both slits?</h3>
+<p>The wave goes through both slits, and the measured pattern can only be explained by both parts overlapping. What the particle &ldquo;really&rdquo; does between source and screen depends on the interpretation: in the Copenhagen view the question has no answer without a measurement; in the de Broglie&ndash;Bohm (pilot-wave) view the particle goes through one slit and the wave through both; in the many-worlds view all possibilities happen. All of them predict the same dots.</p>
+<h3>Why do the stripes vanish when you watch which slit?</h3>
+<p>Any detector that can tell the slits apart leaves a mark that is different for the two paths, so the two parts of the wave can no longer interfere. Partial information gives partial stripes: the visibility V and the distinguishability D obey V&sup2; + D&sup2; &le; 1.</p>
+<h3>Why are electron stripes so close together?</h3>
+<p>A 50&nbsp;keV electron has a wavelength of about 5&nbsp;picometres, so even with slits a micrometre apart the stripes on a screen 1&nbsp;m away are only a few micrometres apart. Real electron experiments magnify the pattern with electron lenses.</p>
+<h3>Is the pattern different if particles are sent one at a time?</h3>
+<p>No. Even when only one particle is in the apparatus at a time, the dots still build up the same interference stripes. Each particle interferes with itself, not with the others.</p>
+</div>

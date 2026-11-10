@@ -1,1 +1,83 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">A wave packet and its momentum are two views of the same wave: one is the Fourier transform of the other. <b>Squeeze the packet</b> (slider, or drag sideways on the left picture) and watch the momentum spread out. The product &Delta;x&middot;&Delta;p can never go below &hbar;/2, and only the Gaussian reaches it.</p>
+<div class="qm-chips" id="qm-un-shape" aria-label="Packet shape">
+	<button type="button" data-s="gauss">Gaussian</button>
+	<button type="button" data-s="flat">Flat-top</button>
+	<button type="button" data-s="two">Two humps</button>
+	<button type="button" data-s="tri">Triangle</button>
+</div>
+<div class="qm-wrap" id="qm-un-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-un-stage">
+		<canvas id="qm-un-cv" aria-label="Position and momentum distributions of the wave packet"></canvas>
+		<div class="qm-run">
+			<button type="button" id="qm-un-go">Let it go</button>
+			<button type="button" id="qm-un-reset">Reset</button>
+			<button type="button" id="qm-un-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend">
+		<span><i style="background:#22d3ee"></i>|&psi;(x)|&sup2; position</span>
+		<span><i style="background:#f472b6"></i>|&phi;(p)|&sup2; momentum</span>
+		<span><i style="background:#facc15"></i>&plusmn;&Delta; (one standard deviation)</span>
+		<span><i style="background:#a3e635"></i>&Delta;x(t): simulation (dots) and formula (line)</span>
+	</div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>&Delta;x (position spread)</span><b id="qm-un-r-dx">&ndash;</b></div>
+		<div class="qm-ro"><span>&Delta;p (momentum spread)</span><b id="qm-un-r-dp">&ndash;</b></div>
+		<div class="qm-ro"><span>&Delta;x &middot; &Delta;p</span><b id="qm-un-r-pr">&ndash;</b></div>
+		<div class="qm-ro"><span>Compared with &hbar;/2</span><b id="qm-un-r-ratio">&ndash;</b></div>
+		<div class="qm-ro"><span>Time t</span><b id="qm-un-r-t">0</b></div>
+		<div class="qm-ro"><span>&Delta;x(t) formula</span><b id="qm-un-r-f">&ndash;</b></div>
+	</div>
+</div>
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-un-w">Packet width: <span class="qm-val" id="qm-un-wv">&ndash;</span></label>
+			<input type="range" id="qm-un-w" min="-0.5" max="0.85" step="0.005"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-k">Push (average momentum p&#8320;): <span class="qm-val" id="qm-un-kv">0</span></label>
+			<input type="range" id="qm-un-k" min="-3" max="3" step="0.05" value="0"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-spd">Time speed: <span class="qm-val" id="qm-un-spdv">1&times;</span></label>
+			<input type="range" id="qm-un-spd" min="-1" max="1" step="0.05" value="0"></div>
+	</div>
+	<div class="qm-row">
+		<label class="qm-check"><input type="checkbox" id="qm-un-reim"> Show the real part of &psi; (the wiggles)</label>
+		<button type="button" class="tu-btn" id="qm-un-link">Copy link</button>
+	</div>
+	<p class="tu-note">Units in this picture: lengths in a unit u, momentum in &hbar;/u, time in m&middot;u&sup2;/&hbar; (so &hbar; = m = 1). The calculators below use real units.</p>
+</div>
+<div class="qm-explain">
+	<p><b>Why it happens.</b> To make a short, sharp bump you have to add up waves of many different wavelengths, and wavelength is momentum (p = h/&lambda;). A long, smooth wave needs only a few. So a packet that is well located (small &Delta;x) has a wide spread of momenta (large &Delta;p). This is a property of waves, not of clumsy measuring.</p>
+	<p><b>Let it go.</b> A free packet keeps its momentum spread, so its fast parts run ahead of its slow parts and it spreads out. For any packet whose shape starts out real, &Delta;x(t)&sup2; = &Delta;x&#8320;&sup2; + (&Delta;p&nbsp;t/m)&sup2;; for the Gaussian, &Delta;p = &hbar;/(2&Delta;x&#8320;), which gives the formula below. The narrower you make it, the faster it spreads.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle \Delta x\,\Delta p \;\ge\; \frac{\hbar}{2}, \qquad \Delta x(t) = \Delta x_0\sqrt{1+\left(\frac{\hbar t}{2m\,\Delta x_0^{2}}\right)^{2}} \)</div>
+	<div class="qm-eq__t">Heisenberg&rsquo;s uncertainty relation (&Delta; = standard deviation), and the free spreading of a Gaussian packet.</div>
+</div>
+
+<div class="tu-card">
+	<h3 class="qm-h3">Single slit: a narrow slit spreads the beam</h3>
+	<p class="tu-note">Squeezing the beam sideways (slit width a, so &Delta;y &asymp; a) forces a sideways momentum spread &Delta;p<sub>y</sub> &sim; h/a, so the beam fans out by about &lambda;/a.</p>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-un-sa">Slit width a: <span class="qm-val" id="qm-un-sav">&ndash;</span></label>
+			<input type="range" id="qm-un-sa" min="-10" max="-5" step="0.01" value="-7"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-sE">Electron energy: <span class="qm-val" id="qm-un-sEv">&ndash;</span></label>
+			<input type="range" id="qm-un-sE" min="0" max="5" step="0.01" value="2"></div>
+	</div>
+	<canvas id="qm-un-slitcv" class="qm-un-slitcv" aria-label="A beam fanning out after a slit"></canvas>
+	<div class="qm-readouts qm-un-ro2">
+		<div class="qm-ro"><span>Wavelength &lambda;</span><b id="qm-un-s-lam">&ndash;</b></div>
+		<div class="qm-ro"><span>First dark angle (sin&theta; = &lambda;/a)</span><b id="qm-un-s-th">&ndash;</b></div>
+		<div class="qm-ro"><span>Sideways &Delta;p<sub>y</sub> &ge; &hbar;/2&Delta;y</span><b id="qm-un-s-dp">&ndash;</b></div>
+		<div class="qm-ro"><span>Spread on a screen 1 m away</span><b id="qm-un-s-w">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<h3 class="qm-h3">Real-scale calculator</h3>
+	<div class="qm-chips" id="qm-un-ex" aria-label="Examples"></div>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-un-m">Mass (kg)</label><input type="text" inputmode="decimal" id="qm-un-m" class="tu-input"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-un-x">Position known to &Delta;x (m)</label><input type="text" inputmode="decimal" id="qm-un-x" class="tu-input"></div>
+	</div>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-un-tab"><tbody></tbody></table></div>
+	<p class="tu-note" id="qm-un-say"></p>
+</div>

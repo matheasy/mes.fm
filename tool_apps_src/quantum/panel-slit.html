@@ -1,1 +1,103 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">Send particles at a wall with slits. <b>Left:</b> the wave, solved live from the Schr&ouml;dinger equation (brightness = how likely the particle is there, colour = the wave&rsquo;s phase). <b>Right:</b> the detector screen far away, where each particle lands as <b>one dot</b>. One dot tells you almost nothing; thousands of them draw the stripes.</p>
+<div class="qm-chips" id="qm-ds-pre" aria-label="Try this">
+	<button type="button" data-p="electron">Electrons (50 keV)</button>
+	<button type="button" data-p="oneatatime">One electron at a time</button>
+	<button type="button" data-p="neutron">Neutrons</button>
+	<button type="button" data-p="c60">C&#8326;&#8320; buckyballs</button>
+	<button type="button" data-p="light">Light (Young)</button>
+	<button type="button" data-p="single">Single slit</button>
+	<button type="button" data-p="grating">Five slits (grating)</button>
+	<button type="button" data-p="which">Which-path detector on</button>
+	<button type="button" data-p="bohm">Pilot-wave paths</button>
+</div>
+<div class="qm-wrap" id="qm-ds-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-ds-stage">
+		<canvas id="qm-ds-cv" aria-label="Wave passing the slits and the detector screen"></canvas>
+		<div class="qm-ds-wallhit" id="qm-ds-hit" title="Drag a slit edge to change the width, drag the middle of a slit to change the separation" aria-hidden="true"></div>
+		<div class="qm-badge" id="qm-ds-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-ds-play" aria-pressed="true">Pause</button>
+			<button type="button" id="qm-ds-again">Send a new wave</button>
+			<button type="button" id="qm-ds-bohm" aria-pressed="false">Paths</button>
+			<button type="button" id="qm-ds-fs" title="Full screen">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-ds-legend">
+		<span>Brightness = |&psi;|&sup2; (how likely)</span>
+		<span><i style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"></i>colour = phase of &psi;</span>
+		<span><i style="background:#9aa6c0"></i>wall (drag the slits)</span>
+		<span><i style="background:#facc15"></i>dots = single arrivals</span>
+		<span><i style="background:#22d3ee"></i>bars = count, line = prediction</span>
+	</div>
+	<div class="qm-readouts" id="qm-ds-ro">
+		<div class="qm-ro"><span>Wavelength &lambda; = h/p</span><b id="qm-ds-r-lam">&ndash;</b></div>
+		<div class="qm-ro"><span>Speed</span><b id="qm-ds-r-v">&ndash;</b></div>
+		<div class="qm-ro"><span>Fringe spacing &lambda;L/d</span><b id="qm-ds-r-fr">&ndash;</b></div>
+		<div class="qm-ro"><span>Central hump 2&lambda;L/a</span><b id="qm-ds-r-env">&ndash;</b></div>
+		<div class="qm-ro"><span>Stripes per hump</span><b id="qm-ds-r-per">&ndash;</b></div>
+		<div class="qm-ro"><span>Fringe visibility</span><b id="qm-ds-r-vis">&ndash;</b></div>
+		<div class="qm-ro"><span>Particles detected</span><b id="qm-ds-r-n">0</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-ds-part">Particle</label>
+			<select id="qm-ds-part" class="tu-input"><option value="electron">Electron</option><option value="neutron">Neutron</option><option value="c60">C&#8326;&#8320; buckyball (720 u)</option><option value="photon">Photon (light)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-E">Energy: <span class="qm-val" id="qm-ds-Ev">&ndash;</span></label>
+			<input type="range" id="qm-ds-E" min="0" max="1000" step="1"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-n">Number of slits: <span class="qm-val" id="qm-ds-nv">2</span></label>
+			<input type="range" id="qm-ds-n" min="1" max="8" step="1" value="2"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-a">Slit width a: <span class="qm-val" id="qm-ds-av">&ndash;</span></label>
+			<input type="range" id="qm-ds-a" min="-90" max="-25" step="0.5"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-d">Slit separation d: <span class="qm-val" id="qm-ds-dv">&ndash;</span></label>
+			<input type="range" id="qm-ds-d" min="-85" max="-20" step="0.5"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-L">Distance to the screen L: <span class="qm-val" id="qm-ds-Lv">&ndash;</span></label>
+			<input type="range" id="qm-ds-L" min="-2" max="1.3" step="0.01"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-rate">Particles per second: <span class="qm-val" id="qm-ds-ratev">&ndash;</span></label>
+			<input type="range" id="qm-ds-rate" min="0" max="3.7" step="0.01"></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-view">Screen view</label>
+			<select id="qm-ds-view" class="tu-input"><option value="wide">Wide (centre + side humps)</option><option value="mid">Centre hump</option><option value="zoom">Zoom on a few stripes</option></select></div>
+	</div>
+	<div class="qm-row">
+		<button type="button" class="tu-btn" id="qm-ds-one">Fire one particle</button>
+		<button type="button" class="tu-btn" id="qm-ds-clear">Clear the screen</button>
+		<label class="qm-check"><input type="checkbox" id="qm-ds-curve" checked> Show the prediction</label>
+		<label class="qm-check"><input type="checkbox" id="qm-ds-sound"> Click on each arrival</label>
+		<button type="button" class="tu-btn" id="qm-ds-link">Copy link to this setup</button>
+	</div>
+	<h3 class="qm-h3">Which-path detector</h3>
+	<div class="qm-row">
+		<label class="qm-check"><input type="checkbox" id="qm-ds-wp"> Put a detector at the slits that tells which slit each particle went through</label>
+	</div>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-ds-D">How well it can tell (distinguishability D): <span class="qm-val" id="qm-ds-Dv">1</span></label>
+			<input type="range" id="qm-ds-D" min="0" max="1" step="0.01" value="1"></div>
+	</div>
+	<p class="tu-note" id="qm-ds-wpnote">With D = 1 every particle is marked with its slit: the stripes vanish and the screen shows two single-slit humps added together. With a weaker detector the stripes fade to visibility V = &radic;(1 &minus; D&sup2;).</p>
+	<h3 class="qm-h3">Wave picture</h3>
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-ds-col">Colours</label>
+			<select id="qm-ds-col" class="tu-input"><option value="phase">Phase as colour</option><option value="heat">Brightness only</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-spd">Speed</label>
+			<select id="qm-ds-spd" class="tu-input"><option value="1">Slow</option><option value="2" selected>Normal</option><option value="4">Fast</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-res">Detail</label>
+			<select id="qm-ds-res" class="tu-input"><option value="128">128 &times; 128 (phones)</option><option value="256">256 &times; 256</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-ds-who">Pilot-wave paths start</label>
+			<select id="qm-ds-who" class="tu-input"><option value="slits">In line with the slits</option><option value="all">Anywhere in the wave</option></select></div>
+	</div>
+</div>
+
+<div class="qm-explain">
+	<p><b>What you are seeing.</b> The wave goes through <em>both</em> slits; behind the wall the two parts overlap, and where crest meets crest the wave is strong, where crest meets trough it cancels. Each particle is still detected at one single spot. Where it lands is random, but the chance of each spot follows the wave&rsquo;s brightness, so the stripes appear only after many particles.</p>
+	<p><b>Dark stripes</b> are where the paths from the two slits differ by half a wavelength: d&nbsp;sin&theta; = (m + &frac12;)&lambda;. The whole pattern sits inside the hump of a single slit, whose first zero is at a&nbsp;sin&theta; = &lambda;.</p>
+	<p><b>Pilot-wave paths</b> (the de Broglie&ndash;Bohm interpretation) draw one possible path for each particle, steered by the wave with velocity v = (&hbar;/m)&nbsp;Im(&nabla;&psi;/&psi;). Starting points are drawn at random from |&psi;|&sup2;, and the paths bunch into the bright stripes. Standard quantum mechanics predicts the same dots without saying what path the particle took; interpretations differ on that question, not on the measured pattern.</p>
+	<p><b>Honest scaling.</b> Real experiments have slits tens of thousands of wavelengths apart, so the stripes are very close together. The wave picture keeps the real <em>shape</em> (the ratio d&nbsp;:&nbsp;a and the number of slits, so the same number of stripes per hump) but draws the wavelength much bigger so you can see it. The screen on the right uses your real numbers. The wall in the picture is a high potential step a few cells thick; real slits are thin plates.</p>
+</div>
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle \lambda = \frac{h}{p}, \qquad I(\theta) \propto \operatorname{sinc}^2\!\Big(\frac{\pi a \sin\theta}{\lambda}\Big)\,\cos^2\!\Big(\frac{\pi d \sin\theta}{\lambda}\Big) \)</div>
+	<div class="qm-eq__t">de Broglie wavelength and the far-field (Fraunhofer) pattern of two slits of width a, centres d apart. For N slits the cos&sup2; becomes [sin(N&gamma;)/(N sin&gamma;)]&sup2; with &gamma; = &pi;d&thinsp;sin&theta;/&lambda;.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle \Delta y = \frac{\lambda L}{d}, \qquad V = \sqrt{1 - D^2} \)</div>
+	<div class="qm-eq__t">Fringe spacing on a screen at distance L, and fringe visibility with a which-path detector of distinguishability D.</div>
+</div>
+<p class="tu-note" id="qm-ds-note"></p>
