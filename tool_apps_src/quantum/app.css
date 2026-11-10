@@ -69,3 +69,99 @@
 	html body.dark-mode #qm.qm {--qm-bg:#070a14;--qm-line:#2f3854;--qm-text:#e7ebf6;--qm-dim:#a3aec7;--qm-ro:#0c1020;--qm-soft:#24233a;--qm-edge:#3b3a5c;--qm-ink:#e6e4f7;--qm-mut:#b3b0cc;--qm-ok:#4ade80;--qm-bad:#f87171;--qm-warn:#fbbf24;}
 	html body.dark-mode #qm.qm .qm-eq {background:#1b1b2c;}
 	html body.dark-mode #qm.qm .qm-fam a[aria-current="page"], html body.dark-mode #qm.qm .qm-chips button[aria-pressed="true"] {color:#fff;}
+	/* ===== tab "ent": entanglement & Bell test ===== */
+	#qm .qm-en-angles {display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:0.5em 1.2em;margin:0.9em 0 0.3em;}
+	#qm .qm-en-ang {display:flex;align-items:center;gap:0.5em;min-width:0;}
+	#qm .qm-en-ang label {flex:0 0 4.2em;font-size:0.92em;}
+	#qm .qm-en-ang input[type=range] {flex:1 1 auto;min-width:0;}
+	#qm .qm-en-ang input[type=number] {flex:0 0 4.8em;width:4.8em;padding:0.25em 0.35em;}
+	#qm .qm-en-free .qm-en-only-chsh {display:none;}
+	#qm .qm-en-meter {margin:0.2em 0 1em;padding-top:2.4em;}
+	#qm .qm-en-meter__bar {position:relative;height:1.1em;border-radius:0.55em;background:var(--qm-soft);border:1px solid var(--qm-edge);}
+	#qm .qm-en-meter__bar > i {position:absolute;left:0;top:0;bottom:0;border-radius:0.55em;background:#94a3b8;transition:width 0.25s;}
+	#qm .qm-en-meter__bar > i.qm-en-meter__over {background:var(--accent);}
+	#qm .qm-en-meter__bar > i.qm-en-meter__err {background:rgba(0,0,0,0.28);border-radius:0;transition:none;}
+	#qm .qm-en-meter__mk {position:absolute;top:-0.35em;bottom:-0.35em;width:2px;margin-left:-1px;background:var(--qm-bad);}
+	#qm .qm-en-meter__mk--q {background:var(--qm-ok);}
+	#qm .qm-en-meter__mk em {position:absolute;bottom:100%;left:50%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-size:0.74em;font-weight:700;color:var(--qm-bad);padding-bottom:0.15em;}
+	#qm .qm-en-meter__mk--q em {color:var(--qm-ok);bottom:auto;top:100%;padding:0.15em 0 0;}
+	#qm .qm-en-meter__axis {display:flex;justify-content:space-between;font-size:0.75em;color:var(--qm-mut);margin-top:1.6em;}
+	#qm .qm-en-lists {display:grid;gap:0.35em;margin:0.6em 0;}
+	#qm .qm-en-lists > div {display:flex;gap:0.6em;align-items:baseline;min-width:0;}
+	#qm .qm-en-lists b {flex:0 0 6.5em;font-size:0.88em;}
+	#qm .qm-en-lists code {flex:1 1 auto;min-width:0;overflow-x:auto;white-space:pre;font-size:0.95em;padding:0.2em 0.45em;border-radius:0.35em;background:var(--qm-soft);color:var(--qm-ink);border:1px solid var(--qm-edge);}
+	#qm .qm-en-ul {margin:0.3em 0 0.8em;padding-left:1.2em;line-height:1.5;}
+	#qm .qm-en-ul li {margin:0.25em 0;}
+	@media (max-width:600px) {
+		#qm .qm-en-meter__mk em {font-size:0.66em;}
+		#qm .qm-en-meter__mk:not(.qm-en-meter__mk--q) em {transform:translateX(-85%);}
+		#qm .qm-en-meter__mk--q em {transform:translateX(-30%);}
+		#qm .qm-en-lists b {flex-basis:4.6em;}
+	}
+	html body.dark-mode #qm.qm .qm-en-meter__bar > i.qm-en-meter__err {background:rgba(255,255,255,0.3);}
+	/* ===== tab "sg": Stern-Gerlach ===== */
+	#qm .qm-sg-mags {display:grid;gap:0.5em;margin:0.9em 0 0.4em;}
+	#qm .qm-sg-mrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.6em;padding:0.45em 0.6em;border:1px solid var(--qm-edge);border-radius:0.5em;background:var(--qm-soft);}
+	#qm .qm-sg-mrow b {flex:0 0 5em;font-size:0.92em;}
+	#qm .qm-sg-mrow input[type=range] {flex:1 1 8em;min-width:6em;}
+	#qm .qm-sg-mrow input[type=number] {flex:0 0 4.4em;width:4.4em;padding:0.25em 0.35em;}
+	#qm .qm-sg-mrow select {flex:1 1 15em;min-width:0;max-width:100%;}
+
+	/* ===== atom (Hydrogen atom) ===== */
+	#qm .qm-at-nlm {gap:0.6em 1.1em;}
+	#qm .qm-at-spin {display:inline-flex;align-items:center;gap:0.35em;font-weight:600;font-size:0.95em;}
+	#qm .qm-at-spin select {font:inherit;font-weight:400;padding:0.25em 0.4em;border-radius:0.4em;border:1px solid var(--qm-edge);background:var(--qm-soft);color:var(--qm-ink);max-width:12em;}
+	#qm .qm-at-name {margin:0.4em 0 0;font-size:0.95em;color:var(--qm-mut);}
+	#qm .qm-at-name b {color:var(--qm-ink);font-size:1.12em;}
+	#qm .qm-chips sub {font-size:0.75em;}
+	#qm .qm-at-sw {display:inline-block;width:0.9em;height:0.9em;border-radius:50%;vertical-align:-0.1em;border:1px solid rgba(255,255,255,0.4);}
+	#qm #qm-at-lcv {cursor:pointer;}
+	#qm #qm-at-stage .qm-run select {max-width:9em;}
+	@media (max-width:600px) { #qm #qm-at-stage .qm-run, #qm #qm-at-lstage .qm-run {top:auto;bottom:0.4em;} #qm .qm-at-spin select {max-width:10em;} }
+
+	/* ===== calc (Calculators) ===== */
+	#qm .qm-ca-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,30em),1fr));gap:1em;align-items:start;}
+	#qm .qm-ca-card {margin:0;min-width:0;scroll-margin-top:70px;}
+	#qm .qm-ca-card .qm-h3 {margin-top:0;}
+	#qm .qm-ca-g {grid-template-columns:repeat(auto-fit,minmax(12em,1fr));gap:0.6em 0.9em;}
+	#qm .qm-ca-g select, #qm .qm-ca-g input {width:100%;box-sizing:border-box;}
+	#qm .qm-ca-in {display:flex;gap:0.3em;}
+	#qm .qm-ca-in input {flex:1 1 auto;min-width:0;}
+	#qm .qm-ca-in select {flex:0 0 auto;width:auto !important;max-width:7em;}
+	#qm .qm-ca-rd {display:block;min-height:1.2em;font-size:0.78em;color:var(--qm-mut);margin-top:0.15em;overflow-wrap:anywhere;}
+	#qm .qm-ca-rd.qm-ca-bad {color:var(--qm-bad);font-weight:600;}
+	#qm .qm-ca-res {display:grid;grid-template-columns:repeat(auto-fit,minmax(10em,1fr));gap:0.5em;margin:0.6em 0 0.4em;}
+	#qm .qm-ca-ro {display:flex;flex-direction:column;gap:0.1em;padding:0.45em 0.6em;border:1px solid var(--qm-edge);border-radius:0.45em;background:var(--qm-soft);min-width:0;}
+	#qm .qm-ca-ro span {font-size:0.72em;font-weight:700;color:var(--qm-mut);}
+	#qm .qm-ca-ro b {font-weight:500;color:var(--qm-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+	#qm .qm-ca-ro b b {font-weight:700;}
+	#qm .qm-ca-plug {font-size:0.85em;margin:0.5em 0;padding:0.45em 0.6em;border-radius:0.4em;background:var(--qm-soft);font-family:ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere;}
+	#qm .qm-ca-plug span {font-family:system-ui,sans-serif;font-weight:700;color:var(--qm-mut);}
+	#qm .qm-ca-say {margin:0.4em 0;line-height:1.5;font-size:0.93em;}
+	#qm .qm-ca-stale .qm-ca-res, #qm .qm-ca-stale .qm-ca-plug {opacity:0.45;}
+	#qm .qm-ca-sw {display:inline-block;width:0.95em;height:0.95em;border-radius:50%;vertical-align:-0.12em;border:1px solid rgba(0,0,0,0.25);margin-left:0.2em;}
+	#qm .qm-ca-chart {position:relative;height:170px;margin:0.4em 0;}
+	#qm .qm-ca-chart--sm {height:150px;}
+	#qm .qm-ca-chart canvas {position:absolute;inset:0;width:100%;height:100%;display:block;}
+	#qm .qm-ca-lines td, #qm .qm-ca-lines th {padding:0.3em 0.5em;}
+	#qm .qm-ca-card .qm-eq {font-size:0.92em;}
+	html body.dark-mode #qm.qm .qm-ca-sw {border-color:rgba(255,255,255,0.35);}
+	/* ---------- slit + uncert tabs (Double slit, Uncertainty) ---------- */
+	#qm .qm-ds-wallhit {position:absolute;z-index:1;touch-action:none;cursor:grab;border-radius:0.3em;}
+	#qm .qm-ds-wallhit:hover {background:rgba(250,204,21,0.08);}
+	#qm .qm-un-slitcv {display:block;width:100%;height:150px;border-radius:0.5em;border:1px solid var(--qm-line);margin:0.6em 0 0;}
+	#qm .qm-un-ro2 {border-radius:0 0 0.5em 0.5em;border:1px solid var(--qm-line);border-top:0;}
+	#qm #qm-un-tab th {width:60%;font-weight:600;}
+	#qm #qm-ds-wrap .qm-run, #qm #qm-un-wrap .qm-run {max-width:62%;}
+	@media (max-width:600px) { #qm #qm-ds-wrap .qm-run, #qm #qm-un-wrap .qm-run {max-width:100%;} #qm #qm-ds-wrap .qm-run button, #qm #qm-un-wrap .qm-run button {font-size:0.75em;padding:0 0.5em;} }
+	@media (max-width:600px) { #qm #qm-en-tbl th, #qm #qm-en-tbl td {white-space:nowrap;} }
+	/* ---- tab: tunnel (Tunnelling) + box (Wells & energy levels) ---- */
+	#qm .qm-tu-twrap .qm-stage canvas {cursor:crosshair;}
+	#qm .qm-tu-how summary, #qm [data-panel="box"] details summary {cursor:pointer;}
+	#qm .qm-tu-how p, #qm [data-panel="box"] details p {line-height:1.55;}
+	#qm #qm-bx-table td:first-child, #qm #qm-bx-table th:first-child {width:3em;}
+	#qm #qm-bx-table input {width:1.1em;height:1.1em;cursor:pointer;}
+	#qm #qm-tu-scale, #qm #qm-bx-note {margin:0.4em 0 0;line-height:1.5;}
+	@media (max-width:600px) {
+		#qm .qm-tu-wrap .qm-run select, #qm .qm-bx-wrap .qm-run select {max-width:9.5em;}
+	}

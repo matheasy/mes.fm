@@ -1,1 +1,144 @@
-<p class="tu-note">This simulator is being built.</p>
+<p class="qm-lead">A source in the middle sends out pairs of <b>entangled</b> particles. Alice (left) and Bob (right) each turn a dial and get a result of <b>+1</b> or <b>&minus;1</b> for every particle. Each list on its own looks like coin flips, but compare the two lists and the results match far more strongly than any &ldquo;the answers were decided at the source&rdquo; story allows. Run the <b>CHSH test</b> and watch the number <i>S</i> go above the classical limit of 2.</p>
+<div class="qm-chips" id="qm-en-pre" aria-label="Try this">
+	<button type="button" data-p="chsh">Bell test, best angles</button>
+	<button type="button" data-p="same">Same angle: perfect match</button>
+	<button type="button" data-p="perp">Photons 90&deg; apart</button>
+	<button type="button" data-p="bell">Hidden variables try (Bell 1964)</button>
+	<button type="button" data-p="malus">Shared polarization model</button>
+	<button type="button" data-p="el">Electron spins</button>
+</div>
+<div class="qm-wrap" id="qm-en-wrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-en-stage">
+		<canvas id="qm-en-cv" aria-label="Entangled pairs flying from a source to Alice and Bob. Drag a dial to turn it." tabindex="0"></canvas>
+		<div class="qm-badge" id="qm-en-badge"></div>
+		<div class="qm-run">
+			<button type="button" id="qm-en-play" aria-pressed="true">Pause</button>
+			<button type="button" id="qm-en-one">1 pair</button>
+			<button type="button" id="qm-en-burst">+10,000</button>
+			<button type="button" id="qm-en-reset">Reset</button>
+			<button type="button" id="qm-en-fs">Full screen</button>
+		</div>
+	</div>
+	<div class="qm-legend" id="qm-en-leg"><span><i style="background:#4ade80"></i>+1 lamp</span><span><i style="background:#f87171"></i>&minus;1 lamp</span><span>Drag a dial (or use the boxes below) to turn it</span></div>
+	<div class="qm-readouts">
+		<div class="qm-ro"><span>Pairs measured</span><b id="qm-en-n">0</b></div>
+		<div class="qm-ro"><span>CHSH S (measured)</span><b id="qm-en-s">&ndash;</b></div>
+		<div class="qm-ro"><span>Compared with 2</span><b id="qm-en-sig">&ndash;</b></div>
+		<div class="qm-ro"><span>S expected (this model)</span><b id="qm-en-st">&ndash;</b></div>
+		<div class="qm-ro"><span>Alice +1 / Bob +1</span><b id="qm-en-m">&ndash;</b></div>
+		<div class="qm-ro"><span>Same result</span><b id="qm-en-same">&ndash;</b></div>
+	</div>
+</div>
+
+<div class="tu-card">
+	<div class="qm-grid">
+		<div class="tu-field"><label class="tu-label" for="qm-en-type">Pairs</label>
+			<select id="qm-en-type" class="tu-input"><option value="ph">Photons, polarization (|HH&rang; + |VV&rang;)</option><option value="el">Electrons, spin singlet (|&uarr;&darr;&rang; &minus; |&darr;&uarr;&rang;)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-en-model">Where the results come from</label>
+			<select id="qm-en-model" class="tu-input"><option value="q">Quantum mechanics (entangled pair)</option><option value="bell">Local hidden variable: Bell&rsquo;s 1964 model</option><option value="malus">Local hidden variable: shared polarization + Malus&rsquo;s law</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-en-mode">Settings</label>
+			<select id="qm-en-mode" class="tu-input"><option value="chsh">CHSH test: each side picks one of its two angles at random</option><option value="free">Fixed dials (turn them yourself)</option></select></div>
+		<div class="tu-field"><label class="tu-label" for="qm-en-rate">Pairs per second: <span class="qm-val" id="qm-en-ratev">20</span></label>
+			<input type="range" id="qm-en-rate" min="0" max="100" value="40" class="tu-input"></div>
+	</div>
+	<div class="qm-en-angles" id="qm-en-angles">
+		<div class="qm-en-ang"><label for="qm-en-a0">Alice <b>a</b></label><input type="range" id="qm-en-a0r" min="0" max="180" step="0.5" aria-label="Alice angle a"><input type="number" id="qm-en-a0" step="0.5" class="tu-input"><span>&deg;</span></div>
+		<div class="qm-en-ang qm-en-only-chsh"><label for="qm-en-a1">Alice <b>a&prime;</b></label><input type="range" id="qm-en-a1r" min="0" max="180" step="0.5" aria-label="Alice angle a prime"><input type="number" id="qm-en-a1" step="0.5" class="tu-input"><span>&deg;</span></div>
+		<div class="qm-en-ang"><label for="qm-en-b0">Bob <b>b</b></label><input type="range" id="qm-en-b0r" min="0" max="180" step="0.5" aria-label="Bob angle b"><input type="number" id="qm-en-b0" step="0.5" class="tu-input"><span>&deg;</span></div>
+		<div class="qm-en-ang qm-en-only-chsh"><label for="qm-en-b1">Bob <b>b&prime;</b></label><input type="range" id="qm-en-b1r" min="0" max="180" step="0.5" aria-label="Bob angle b prime"><input type="number" id="qm-en-b1" step="0.5" class="tu-input"><span>&deg;</span></div>
+	</div>
+	<div class="qm-row">
+		<button type="button" class="tu-btn" id="qm-en-opt">Use the best angles</button>
+		<button type="button" class="tu-btn" id="qm-en-link">Copy link to this setup</button>
+		<label class="qm-check"><input type="checkbox" id="qm-en-fly" checked> Show the particles flying</label>
+	</div>
+	<p class="tu-note" id="qm-en-angnote"></p>
+</div>
+
+<h3 class="qm-h3">The CHSH scoreboard</h3>
+<div class="tu-card">
+	<div class="qm-en-meter" id="qm-en-meter" aria-hidden="true">
+		<div class="qm-en-meter__bar"><i id="qm-en-mfill"></i><i class="qm-en-meter__err" id="qm-en-merr"></i>
+			<span class="qm-en-meter__mk" style="left:50%"><em>2 = classical limit</em></span>
+			<span class="qm-en-meter__mk qm-en-meter__mk--q" style="left:70.71%"><em>2&radic;2 &asymp; 2.83 = quantum maximum</em></span>
+		</div>
+		<div class="qm-en-meter__axis"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span></div>
+	</div>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-en-tbl">
+		<thead><tr><th>Settings</th><th>Angle apart</th><th>Pairs</th><th>++ / +&minus; / &minus;+ / &minus;&minus;</th><th>E measured</th><th>E expected</th></tr></thead>
+		<tbody></tbody>
+	</table></div>
+	<p class="tu-note">E = (same &minus; different) / pairs, between &minus;1 (always opposite) and +1 (always the same). <i>S</i> = |E(a,b) &minus; E(a,b&prime;) + E(a&prime;,b) + E(a&prime;,b&prime;)|. The &plusmn; is one standard error (&radic;((1 &minus; E&sup2;)/N) for each E, added in quadrature for S), so with more pairs the measured S settles on the expected one.</p>
+</div>
+
+<h3 class="qm-h3">Correlation against the angle between the dials</h3>
+<div class="qm-wrap" id="qm-en-pwrap" data-mes-free="1">
+	<div class="qm-stage" id="qm-en-pstage">
+		<canvas id="qm-en-plot" aria-label="Correlation E against the angle between Alice's and Bob's dials: quantum curve, hidden-variable curves and measured points"></canvas>
+		<div class="qm-run"><button type="button" id="qm-en-pfs">Full screen</button></div>
+	</div>
+	<div class="qm-legend"><span><i style="background:#22d3ee"></i>Quantum: <span id="qm-en-qf">cos 2(b &minus; a)</span></span><span><i style="background:#facc15"></i>Bell&rsquo;s 1964 model (straight lines)</span><span><i style="background:#f472b6"></i>Shared polarization + Malus</span><span><i style="background:#fff"></i>Measured here (&plusmn; 1 error)</span></div>
+</div>
+<p class="tu-note">The quantum curve and the straight-line hidden-variable curve touch at 0&deg;, 45&deg; and 90&deg; (photons) but differ in between: the best CHSH angles sit exactly where the gap is largest. Every pair you measure adds a point at its own angle difference, so use &ldquo;Fixed dials&rdquo; and turn a dial to fill in the curve.</p>
+
+<h3 class="qm-h3">No faster-than-light messages</h3>
+<div class="tu-card qm-en-ns">
+	<p>Can Alice send Bob a message by choosing her angle? Look at Bob&rsquo;s results <b>split by what Alice chose</b>:</p>
+	<div class="qm-tablewrap"><table class="qm-table" id="qm-en-nst">
+		<thead><tr><th></th><th>Pairs</th><th>Bob got +1</th><th>Alice got +1</th></tr></thead>
+		<tbody></tbody>
+	</table></div>
+	<p>Bob&rsquo;s +1 rate stays at 50% whatever Alice does (the small wobble is chance and shrinks as pairs pile up). That is true for every angle, exactly: on his own, Bob only ever sees a fair coin. The pattern appears only when the two lists are brought together and compared, and that comparison has to travel by ordinary means, no faster than light. So entanglement gives correlation without signalling.</p>
+	<div class="qm-en-lists" aria-live="off">
+		<div><b>Alice&rsquo;s list</b><code id="qm-en-la">&nbsp;</code></div>
+		<div><b>Bob&rsquo;s list</b><code id="qm-en-lb">&nbsp;</code></div>
+		<div><b>Compared</b><code id="qm-en-lc">&nbsp;</code></div>
+	</div>
+	<p class="tu-note">The last 24 pairs, newest on the right. &ldquo;=&rdquo; means the two results were the same, &ldquo;&ne;&rdquo; different. In CHSH mode the small letters show which angle each side used.</p>
+</div>
+
+<div class="qm-eq">
+	<div class="qm-eq__f mes-tex">\( \displaystyle |\Phi^+\rangle = \tfrac{1}{\sqrt2}\big(|HH\rangle + |VV\rangle\big) \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle P(\text{same}) = \cos^2(a-b),\qquad E(a,b) = \cos 2(a-b) \)</div>
+	<div class="qm-eq__t">Polarization-entangled photons. Each photon alone passes a polarizer half the time, at any angle.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle |\Psi^-\rangle = \tfrac{1}{\sqrt2}\big(|{\uparrow\downarrow}\rangle - |{\downarrow\uparrow}\rangle\big),\qquad E(a,b) = -\cos(a-b) \)</div>
+	<div class="qm-eq__t">The spin singlet: measured along the same direction the two spins are always opposite.</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle S = \big|E(a,b) - E(a,b') + E(a',b) + E(a',b')\big| \)</div>
+	<div class="qm-eq__f mes-tex">\( \displaystyle S_{\text{local}} \le 2,\qquad S_{\text{quantum}} \le 2\sqrt2 \approx 2.83 \)</div>
+	<div class="qm-eq__t">The CHSH inequality (Clauser, Horne, Shimony, Holt, 1969) and Tsirelson&rsquo;s bound (1980).</div>
+</div>
+
+<div class="qm-explain">
+	<p><b>Why 2 is the limit for hidden variables.</b> Suppose each pair leaves the source carrying instructions: &ldquo;if your dial is at a, say +1; at a&prime;, say &minus;1&rdquo;, and so on, and that Alice&rsquo;s answer cannot depend on Bob&rsquo;s dial (locality). Then for each single pair the four products A(a)B(b) &minus; A(a)B(b&prime;) + A(a&prime;)B(b) + A(a&prime;)B(b&prime;) = A(a)[B(b) &minus; B(b&prime;)] + A(a&prime;)[B(b) + B(b&prime;)]. One bracket is 0 and the other is &plusmn;2, so every pair contributes exactly +2 or &minus;2, and the average can never be bigger than 2. Bell&rsquo;s 1964 model (each pair carries a random hidden angle; each side answers + if its dial is within 45&deg; of it for photons, 90&deg; for spins) reaches exactly 2 at the best angles, which is as well as any local model can do there. Quantum mechanics reaches 2&radic;2.</p>
+	<p><b>What this simulation is.</b> The quantum source draws each pair&rsquo;s two results together from the joint probabilities above, with a seeded random number generator. That is the honest way to reproduce quantum predictions on one computer; it is not a model of how nature does it. The two hidden-variable sources really are local: Alice&rsquo;s answer is computed from her own dial and the shared hidden angle only. Detectors here are perfect and every pair is counted, which real experiments had to work hard to approach (see the loopholes below).</p>
+</div>
+
+<h3 class="qm-h3">The real experiments</h3>
+<div class="qm-tablewrap"><table class="qm-table">
+	<thead><tr><th>Year</th><th>Who</th><th>What they did</th></tr></thead>
+	<tbody>
+		<tr><td>1935</td><td>Einstein, Podolsky, Rosen</td><td>Argued that quantum mechanics must be incomplete: perfectly correlated far-apart particles should carry their answers with them.</td></tr>
+		<tr><td>1964</td><td>John Bell</td><td>Showed that any such local hidden-variable theory must obey an inequality that quantum mechanics breaks, so the question could be tested.</td></tr>
+		<tr><td>1969</td><td>Clauser, Horne, Shimony, Holt</td><td>The CHSH form of the inequality (the S &le; 2 used here), suited to real detectors.</td></tr>
+		<tr><td>1972</td><td>Freedman &amp; Clauser (Berkeley)</td><td>Photon pairs from a calcium atomic cascade: the inequality was violated by about six standard deviations, in agreement with quantum mechanics.</td></tr>
+		<tr><td>1982</td><td>Aspect, Grangier, Roger; Aspect, Dalibard, Roger (Orsay)</td><td>Two-channel polarizers gave S = 2.697 &plusmn; 0.015 against the quantum prediction of 2.70. A second experiment switched the settings while the photons were in flight.</td></tr>
+		<tr><td>1998</td><td>Weihs, Zeilinger and colleagues (Innsbruck)</td><td>Settings chosen by fast random generators at each end, far enough apart that no light-speed signal could connect them in time.</td></tr>
+		<tr><td>2015</td><td>Hensen et al. (Delft)</td><td>Electron spins in diamond 1.3 km apart, &ldquo;loophole-free&rdquo;: S = 2.42 &plusmn; 0.20 from 245 heralded trials.</td></tr>
+		<tr><td>2015</td><td>Giustina et al. (Vienna) and Shalm et al. (NIST, Boulder)</td><td>Photon pairs with high-efficiency detectors and fast random settings, also closing the locality and detection loopholes together (they used the Clauser-Horne / Eberhard form of the inequality).</td></tr>
+		<tr><td>2022</td><td>Nobel Prize in Physics</td><td>Alain Aspect, John Clauser and Anton Zeilinger, &ldquo;for experiments with entangled photons, establishing the violation of Bell inequalities and pioneering quantum information science&rdquo;.</td></tr>
+	</tbody>
+</table></div>
+
+<h3 class="qm-h3">Loopholes, one line each</h3>
+<ul class="qm-en-ul">
+	<li><b>Locality loophole:</b> if the settings are chosen too slowly, a light-speed signal could tell one side what the other picked. Fix: choose settings at random after the particles leave, far enough apart.</li>
+	<li><b>Detection (fair-sampling) loophole:</b> if many particles go undetected, the counted ones might be a biased sample. Fix: detect a large enough fraction of all pairs.</li>
+	<li><b>Freedom-of-choice loophole:</b> the &ldquo;random&rdquo; settings might be correlated with the hidden variables. Narrowed by using quantum random generators, distant starlight and even human choices.</li>
+	<li><b>Memory loophole:</b> hidden variables could use earlier trials; handled by statistics that don&rsquo;t assume independent trials.</li>
+</ul>
+
+<h3 class="qm-h3">What does it mean? (interpretations)</h3>
+<div class="qm-explain">
+	<p>The experiments settle that no theory with <b>local</b> hidden variables and freely chosen settings matches nature. They do not say which assumption to give up, and physicists still disagree:</p>
+	<p><b>Non-locality</b> (e.g. de Broglie-Bohm pilot-wave theory, collapse theories): the measurement on one side really does affect the other, but in a way that cannot be used to send messages. <b>Copenhagen-style views</b>: there were no definite values before measurement; the quantum state is a tool for predicting results. <b>Many worlds</b>: every outcome happens, and the correlation shows up when the branches of Alice and Bob meet. <b>Superdeterminism</b>: the settings were never independent of the particles, so the inequality&rsquo;s assumption fails. Each fits all the data here; the simulator only shows the predictions.</p>
+</div>

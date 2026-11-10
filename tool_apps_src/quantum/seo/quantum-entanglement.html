@@ -1,1 +1,22 @@
-<div class="tu-seo"><h2>About</h2><p>Coming soon.</p></div>
+<div class="tu-seo">
+	<h2>Quantum entanglement and the Bell test, explained</h2>
+	<p>Two particles are <b>entangled</b> when they share one quantum state, so that neither has a definite answer of its own but their answers are linked. This simulator lets you run the experiment that tells entanglement apart from ordinary, pre-arranged correlation: the <b>Bell test</b>, in the CHSH form used in real laboratories.</p>
+	<h3>How to use the simulator</h3>
+	<ul>
+		<li>Pick photon pairs (polarization) or electron pairs (spin). Alice and Bob each have a dial: a polarizer for photons, a Stern-Gerlach magnet for electrons. Drag a dial to turn it.</li>
+		<li>In <b>CHSH mode</b> each side picks one of two angles at random for every pair. The scoreboard counts the results for the four combinations and works out <i>S</i> with its error bar.</li>
+		<li>Switch the source to a <b>local hidden-variable model</b>, where each pair carries its answers from the start. However many pairs you run, <i>S</i> stays at or below 2. The quantum source goes to about 2.83.</li>
+		<li>The correlation plot shows how strongly the results agree as the angle between the dials changes, for quantum mechanics and for both hidden-variable models, with your own measured points on top.</li>
+		<li>The <b>Stern-Gerlach</b> tab lines up to four magnets: Z then Z, Z then X, Z then X then Z, recombined beams and spin-1 particles.</li>
+	</ul>
+	<h3>What is the CHSH inequality?</h3>
+	<p>It is a version of Bell&rsquo;s theorem by Clauser, Horne, Shimony and Holt (1969). Measure correlations E for two settings on each side and combine them: S = |E(a,b) &minus; E(a,b&prime;) + E(a&prime;,b) + E(a&prime;,b&prime;)|. If the results are fixed in advance by local hidden variables, S can never exceed 2. Quantum mechanics predicts up to 2&radic;2 (Tsirelson&rsquo;s bound), reached at angles 22.5&deg; apart for photons.</p>
+	<h3>Does entanglement send signals faster than light?</h3>
+	<p>No. Each side on its own sees perfectly random +1 and &minus;1 results, 50/50 at every setting, whatever the other side does; the simulator shows Bob&rsquo;s results split by Alice&rsquo;s choice so you can check. The correlation only appears when the two lists are compared, and that needs an ordinary signal.</p>
+	<h3>Is this a real quantum computer?</h3>
+	<p>No. The page draws each pair&rsquo;s results from the exact quantum probabilities with a random number generator, which reproduces what the experiments measure. It is a teaching model with perfect detectors; real tests have to deal with losses and timing, which is what the 2015 &ldquo;loophole-free&rdquo; experiments in Delft, Vienna and at NIST did.</p>
+	<h3>Who won the Nobel Prize for this?</h3>
+	<p>Alain Aspect, John Clauser and Anton Zeilinger shared the 2022 Nobel Prize in Physics for experiments with entangled photons that established the violation of Bell inequalities.</p>
+	<h3>What does the Stern-Gerlach experiment show?</h3>
+	<p>In 1922 Otto Stern and Walther Gerlach sent silver atoms through an uneven magnetic field and found two separate spots instead of a continuous smear: the atoms&rsquo; magnetism comes in two values only. Chains of magnets show the other quantum rules: a repeated measurement gives the same answer, a turned magnet gives cos&sup2;(&theta;/2) odds, and measuring X erases what was known about Z.</p>
+</div>
