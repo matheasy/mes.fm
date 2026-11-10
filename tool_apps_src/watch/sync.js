@@ -74,11 +74,12 @@
 		function connectCloud(p) {
 			var prov = P()[p], go = function () {
 				msg("Looking for " + FNAME + " in " + NAMES[p] + "…");
-				return prov.list().then(function (files) {
+				var WDIR = p === "dropbox" ? "Watch" : "MES Apps/Watch";
+				return prov.list(WDIR).then(function (files) {
 					var f = files.filter(function (x) { return x.name === FNAME; })[0];
 					if (f) return start(p, null, f.ref, f.name);
 					// no file yet: write this browser's lists as the first copy
-					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(W.snap(api.S, true), dev())), "").then(function (w) {
+					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(W.snap(api.S, true), dev())), "", false, WDIR).then(function (w) {
 						st = { p: p, ref: w.ref, name: w.name || FNAME, ver: w.ver, base: W.snap(api.S, true), at: Date.now(), err: "", code: "" }; keep(); paint(); toast("Syncing with " + NAMES[p]);
 					});
 				}).then(function () { msg(""); }, function (e) { msg(e.message || String(e), "err"); });

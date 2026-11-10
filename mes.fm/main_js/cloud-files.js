@@ -3,9 +3,11 @@
  * document into bytes). Same ideas as Copy Text's ☁ Sync (tool_apps_src/copy-text/sync.js), but for whole files:
  *   file      a file on this computer, e.g. inside the OneDrive / Dropbox / Google Drive / iCloud folder, which the service's
  *             desktop app uploads (File System Access API: Chrome, Edge, Opera on a computer; Brave behind its flag).
- *   dropbox / onedrive / gdrive   the account itself, with the SAME app registrations and the SAME saved sign-in as Copy Text
- *             (tokens in localStorage "mes-copytext:v1:tok:<p>"): connecting once works on every page. Files live in the
- *             service's MES app folder, sub-folder "Documents" (Google: the hidden app-data space, seen only through MES pages).
+ *   dropbox / onedrive / gdrive   the account itself, with the SAME app registrations as Copy Text. Each page saves into
+ *             its own folder, default "MES Apps/<App>" (cfg.folder), which the person can browse / change (prefs.dirs[p]).
+ *             OneDrive = Files.ReadWrite (whole drive, so the folder is a normal one; token "mes-cloud:tok:onedrive"),
+ *             Google = drive.file (only files this app made, shown in My Drive; token "mes-cloud:tok:gdrive"),
+ *             Dropbox = its app folder Apps/MES Copy Text (the app's type can't change), folder inside it; token shared with Copy Text.
  *             Those apps only allow https://mes.fm/copy-text as the sign-in return address, so Dropbox / Microsoft sign-in
  *             runs in a pop-up that lands on /copy-text, which hands the code back (localStorage "mes-cloud:code:<state>",
  *             the relay at the top of copy-text/sync.js) and closes. Google's token pop-up needs no relay.
@@ -22,6 +24,7 @@
 		// a file name the services accept: no slashes / control characters / reserved Windows characters, not empty, <= 200 chars
 		safeName: function (n, fallbackExt) {
 			var s = String(n || "").replace(/[\u0000-\u001f\u007f]/g, "").replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().replace(/^\.+/, "");
+			s = s.replace(/(\.[A-Za-z0-9]{1,8})\1+$/i, "$1");
 			if (!s) s = "Untitled";
 			if (fallbackExt && !H.extOf(s)) s += "." + fallbackExt.replace(/^\./, "");
 			if (s.length > 200) { var e = H.extOf(s); s = s.slice(0, 190).trim() + (e ? "." + e : ""); }
@@ -39,7 +42,11 @@
 	if (typeof window === "undefined" || typeof document === "undefined") return;
 
 	var CLOUD = Object.assign({ dropbox: "iii9nua0gtgi3t6", onedrive: "294df2de-6d61-4c56-a0c1-c79cd09a2e8e", gdrive: "604980806442-dlqf3ur1qohoe67sc5i70qu4is9sfva9.apps.googleusercontent.com" }, window.MES_CT_CLOUD || {});
-	var RELAY = "https://mes.fm/copy-text", TOK = "mes-copytext:v1:tok:", DIR = "Documents";
+	var RELAY = "https://mes.fm/copy-text", DIR = "MES Apps";
+	function tokKey(p) { return p === "dropbox" ? "mes-copytext:v1:tok:dropbox" : "mes-cloud:tok:" + p; }
+	function segs(f) { return String(f == null ? DIR : f).split("/").map(function (x) { return x.trim(); }).filter(Boolean); }
+	function encPath(f) { return segs(f).map(encodeURIComponent).join("/"); }
+	function gq(s) { return String(s).replace(/\\/g, "\\\\").replace(/'/g, "\\'"); }
 	var MOCK = /[?&]cloudmock=1\b/.test(location.search) || !!window.MES_CLOUD_MOCK;
 	function err(code, msg) { var e = new Error(msg); e.code = code; return e; }
 	function b64url(buf) { return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
@@ -72,8 +79,8 @@
 		});
 	}
 
-	/* ---------- sign-in (tokens shared with Copy Text) ---------- */
-	function tok(p, v) { return v === undefined ? ls(TOK + p) : ls(TOK + p, v); }
+	/* ---------- sign-in ---------- */
+	function tok(p, v) { return v === undefined ? ls(tokKey(p)) : ls(tokKey(p), v); }
 	function tokenCall(url, body) {
 		return fetch(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form(body) }).then(function (r) {
 			return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || !j.access_token) throw err("auth", j.error_description || j.error || "Sign-in failed (" + r.status + ")."); return j; });
@@ -154,19 +161,22 @@
 			}
 		},
 		dropbox: {
-			name: "Dropbox", where: function (l) { return "Dropbox → Apps → MES Copy Text → " + DIR + " → " + (l ? l.name : ""); },
+			name: "Dropbox", root: ["Apps", "MES Copy Text"], where: function (l) { return "Dropbox › Apps › MES Copy Text › " + segs(l && l.dir).join(" › ") + " › " + (l ? l.name : ""); },
 			ok: function () { return !!CLOUD.dropbox; },
 			authUrl: function (ch, st) { return "https://www.dropbox.com/oauth2/authorize?" + form({ client_id: CLOUD.dropbox, response_type: "code", code_challenge: ch, code_challenge_method: "S256", redirect_uri: RELAY, token_access_type: "offline", state: st }); },
 			exchange: function (code, v) { return tokenCall("https://api.dropboxapi.com/oauth2/token", { grant_type: "authorization_code", code: code, client_id: CLOUD.dropbox, code_verifier: v, redirect_uri: RELAY }); },
 			refresh: function (r) { return tokenCall("https://api.dropboxapi.com/oauth2/token", { grant_type: "refresh_token", refresh_token: r, client_id: CLOUD.dropbox }); },
 			api: function (path, body) { return authed("dropbox", "https://api.dropboxapi.com/2/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); },
-			list: function () {
-				return P.dropbox.api("files/list_folder", { path: "/" + DIR, limit: 500 }).then(function (r) {
+			kids: function (folder) {
+				var f = segs(folder).join("/");
+				return P.dropbox.api("files/list_folder", { path: f ? "/" + f : "", limit: 500 }).then(function (r) {
 					if (r.status === 409) return [];
 					if (!r.ok) return failed(r, "Reading Dropbox");
-					return r.json().then(function (j) { return (j.entries || []).filter(function (e) { return e[".tag"] === "file"; }).map(function (e) { return { ref: e.id, name: e.name, size: e.size, mod: Date.parse(e.server_modified) || 0, ver: e.rev }; }); });
+					return r.json().then(function (j) { return j.entries || []; });
 				});
 			},
+			list: function (folder) { return P.dropbox.kids(folder).then(function (a) { return a.filter(function (e) { return e[".tag"] === "file"; }).map(function (e) { return { ref: e.id, name: e.name, size: e.size, mod: Date.parse(e.server_modified) || 0, ver: e.rev }; }); }); },
+			dirs: function (folder) { return P.dropbox.kids(folder).then(function (a) { return a.filter(function (e) { return e[".tag"] === "folder"; }).map(function (e) { return e.name; }).sort(); }); },
 			meta: function (ref) {
 				return P.dropbox.api("files/get_metadata", { path: ref }).then(function (r) {
 					if (r.status === 409) throw err("gone", "The file is no longer in Dropbox.");
@@ -183,10 +193,10 @@
 					});
 				});
 			},
-			write: function (ref, name, bytes, ver) {
+			write: function (ref, name, bytes, ver, ask, folder) {
 				if (bytes.length > 140e6) return Promise.reject(err("other", "Files over 140 MB can't be saved to Dropbox from here."));
 				var mode = ref && ver ? { ".tag": "update", update: ver } : { ".tag": "add" };
-				var arg = JSON.stringify({ path: ref || "/" + DIR + "/" + name, mode: mode, autorename: false, mute: true }).replace(/[\u007f-￿]/g, function (c) { return "\\u" + ("000" + c.charCodeAt(0).toString(16)).slice(-4); });
+				var arg = JSON.stringify({ path: ref || "/" + segs(folder).concat([name]).join("/"), mode: mode, autorename: false, mute: true }).replace(/[\u007f-￿]/g, function (c) { return "\\u" + ("000" + c.charCodeAt(0).toString(16)).slice(-4); });
 				return authed("dropbox", "https://content.dropboxapi.com/2/files/upload", { method: "POST", headers: { "Content-Type": "application/octet-stream", "Dropbox-API-Arg": arg }, body: bytes }).then(function (r) {
 					if (r.status === 409) throw err(ref ? "conflict" : "exists", ref ? "changed" : "A file called " + name + " is already there.");
 					if (!r.ok) return failed(r, "Saving to Dropbox");
@@ -195,20 +205,34 @@
 			}
 		},
 		onedrive: {
-			name: "OneDrive", where: function (l) { return "OneDrive → Apps → MES Copy Text → " + DIR + " → " + (l ? l.name : ""); },
+			name: "OneDrive", root: [], where: function (l) { return "OneDrive › " + segs(l && l.dir).join(" › ") + " › " + (l ? l.name : ""); },
 			ok: function () { return !!CLOUD.onedrive; },
-			ms: "https://login.microsoftonline.com/common/oauth2/v2.0/", scope: "Files.ReadWrite.AppFolder offline_access",
+			ms: "https://login.microsoftonline.com/common/oauth2/v2.0/", scope: "Files.ReadWrite offline_access",
 			g: "https://graph.microsoft.com/v1.0/me/drive/",
 			authUrl: function (ch, st) { return this.ms + "authorize?" + form({ client_id: CLOUD.onedrive, response_type: "code", redirect_uri: RELAY, response_mode: "query", scope: this.scope, code_challenge: ch, code_challenge_method: "S256", state: st }); },
 			exchange: function (code, v) { return tokenCall(P.onedrive.ms + "token", { client_id: CLOUD.onedrive, grant_type: "authorization_code", code: code, redirect_uri: RELAY, code_verifier: v, scope: P.onedrive.scope }); },
 			refresh: function (r) { return tokenCall(P.onedrive.ms + "token", { client_id: CLOUD.onedrive, grant_type: "refresh_token", refresh_token: r, scope: P.onedrive.scope }); },
-			path: function (name) { return P.onedrive.g + "special/approot:/" + DIR + "/" + encodeURIComponent(name) + ":"; },
-			list: function () {
-				return authed("onedrive", P.onedrive.g + "special/approot:/" + DIR + ":/children?$select=id,name,size,eTag,lastModifiedDateTime,file&$top=500").then(function (r) {
+			at: function (folder) { var f = encPath(folder); return P.onedrive.g + (f ? "root:/" + f + ":" : "root"); },
+			path: function (name, folder) { return P.onedrive.g + "root:/" + segs(folder).concat([name]).map(encodeURIComponent).join("/") + ":"; },
+			kids: function (folder) {
+				return authed("onedrive", P.onedrive.at(folder) + "/children?$select=id,name,size,eTag,lastModifiedDateTime,file,folder&$top=500").then(function (r) {
 					if (r.status === 404) return [];
 					if (!r.ok) return failed(r, "Reading OneDrive");
-					return r.json().then(function (j) { return (j.value || []).filter(function (e) { return e.file; }).map(function (e) { return { ref: e.id, name: e.name, size: e.size, mod: Date.parse(e.lastModifiedDateTime) || 0, ver: e.eTag }; }); });
+					return r.json().then(function (j) { return j.value || []; });
 				});
+			},
+			list: function (folder) { return P.onedrive.kids(folder).then(function (a) { return a.filter(function (e) { return e.file; }).map(function (e) { return { ref: e.id, name: e.name, size: e.size, mod: Date.parse(e.lastModifiedDateTime) || 0, ver: e.eTag }; }); }); },
+			dirs: function (folder) { return P.onedrive.kids(folder).then(function (a) { return a.filter(function (e) { return e.folder; }).map(function (e) { return e.name; }).sort(); }); },
+			// make the folder (and its parents) if missing; 409 = already there
+			mkdirs: function (folder) {
+				var s = segs(folder), i = 0;
+				function next() {
+					if (i >= s.length) return Promise.resolve();
+					var parent = s.slice(0, i), name = s[i++];
+					return authed("onedrive", P.onedrive.at(parent.join("/")) + "/children", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name, folder: {}, "@microsoft.graph.conflictBehavior": "fail" }) })
+						.then(function (r) { if (!r.ok && r.status !== 409) return failed(r, "Making the folder"); }).then(next);
+				}
+				return next();
 			},
 			meta: function (ref) {
 				return authed("onedrive", P.onedrive.g + "items/" + encodeURIComponent(ref) + "?$select=id,name,eTag").then(function (r) {
@@ -232,15 +256,20 @@
 				if (!r.ok) return failed(r, "Saving to OneDrive");
 				return r.json().then(function (j) { return { ref: j.id, ver: j.eTag, name: j.name }; });
 			},
-			write: function (ref, name, bytes, ver) {
+			write: function (ref, name, bytes, ver, ask, folder) {
+				var me = P.onedrive, h = { "Content-Type": "application/octet-stream" };
+				if (!ref) return me.mkdirs(folder).then(function () { return me.put(ref, name, bytes, ver, folder); });
+				return me.put(ref, name, bytes, ver, folder);
+			},
+			put: function (ref, name, bytes, ver, folder) {
 				var me = P.onedrive, h = { "Content-Type": "application/octet-stream" };
 				if (ref && ver) h["If-Match"] = ver;
 				if (bytes.length <= 4e6) {
-					var url = ref ? me.g + "items/" + encodeURIComponent(ref) + "/content" : me.path(name) + "/content?@microsoft.graph.conflictBehavior=fail";
+					var url = ref ? me.g + "items/" + encodeURIComponent(ref) + "/content" : me.path(name, folder) + "/content?@microsoft.graph.conflictBehavior=fail";
 					return authed("onedrive", url, { method: "PUT", headers: h, body: bytes }).then(me.done);
 				}
 				// bigger than 4 MB: an upload session, sent in 5 MB pieces (multiples of 320 KiB)
-				var surl = ref ? me.g + "items/" + encodeURIComponent(ref) + "/createUploadSession" : me.path(name) + "/createUploadSession";
+				var surl = ref ? me.g + "items/" + encodeURIComponent(ref) + "/createUploadSession" : me.path(name, folder) + "/createUploadSession";
 				var sh = { "Content-Type": "application/json" }; if (ref && ver) sh["If-Match"] = ver;
 				return authed("onedrive", surl, { method: "POST", headers: sh, body: JSON.stringify({ item: { "@microsoft.graph.conflictBehavior": ref ? "replace" : "fail" } }) }).then(function (r) {
 					if (r.status === 412) throw err("conflict", "changed");
@@ -261,7 +290,7 @@
 			}
 		},
 		gdrive: {
-			name: "Google Drive", where: function (l) { return "Google Drive (MES app storage) → " + (l ? l.name : ""); },
+			name: "Google Drive", root: [], where: function (l) { return "Google Drive › " + segs(l && l.dir).join(" › ") + " › " + (l ? l.name : ""); },
 			ok: function () { return !!CLOUD.gdrive; },
 			lib: null,
 			gis: function () {
@@ -276,7 +305,7 @@
 			signIn: function (again) {
 				return this.gis().then(function () {
 					return new Promise(function (res, rej) {
-						var c = google.accounts.oauth2.initTokenClient({ client_id: CLOUD.gdrive, scope: "https://www.googleapis.com/auth/drive.appdata",
+						var c = google.accounts.oauth2.initTokenClient({ client_id: CLOUD.gdrive, scope: "https://www.googleapis.com/auth/drive.file",
 							callback: function (j) { if (j.error || !j.access_token) return rej(err("auth", j.error_description || j.error || "Google sign-in failed.")); res(saveTok("gdrive", j).a); },
 							error_callback: function (e) { rej(err("auth", (e && e.message) || "The Google window was closed.")); } });
 						c.requestAccessToken({ prompt: again ? "" : "consent" });
@@ -284,11 +313,43 @@
 				});
 			},
 			api: "https://www.googleapis.com/drive/v3/files", up: "https://www.googleapis.com/upload/drive/v3/files",
-			list: function () {
-				return authed("gdrive", P.gdrive.api + "?" + form({ spaces: "appDataFolder", q: "'appDataFolder' in parents and trashed=false", fields: "files(id,name,size,version,modifiedTime)", pageSize: 500 })).then(function (r) {
+			FOLDER: "application/vnd.google-apps.folder", ids: {},
+			q: function (q) {
+				return authed("gdrive", P.gdrive.api + "?" + form({ q: q + " and trashed=false", fields: "files(id,name,size,version,modifiedTime,mimeType)", pageSize: 500, spaces: "drive" })).then(function (r) {
 					if (!r.ok) return failed(r, "Reading Google Drive");
-					return r.json().then(function (j) { return (j.files || []).map(function (f) { return { ref: f.id, name: f.name, size: +f.size || 0, mod: Date.parse(f.modifiedTime) || 0, ver: f.id + ":" + f.version }; }); });
+					return r.json().then(function (j) { return j.files || []; });
 				});
+			},
+			// folder path -> id (only folders this app made are visible to it); create = make the missing ones
+			dirId: function (folder, create) {
+				var me = P.gdrive, s = segs(folder), key = s.join("/");
+				if (me.ids[key]) return Promise.resolve(me.ids[key]);
+				var parent = "root", i = 0;
+				function next() {
+					if (i >= s.length) { me.ids[key] = parent; return parent; }
+					var nm = s[i++], sub = s.slice(0, i).join("/");
+					if (me.ids[sub]) { parent = me.ids[sub]; return next(); }
+					return me.q("name='" + gq(nm) + "' and '" + parent + "' in parents and mimeType='" + me.FOLDER + "'").then(function (a) {
+						if (a.length) { parent = me.ids[sub] = a[0].id; return next(); }
+						if (!create) return null;
+						return authed("gdrive", me.api + "?fields=id", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: nm, mimeType: me.FOLDER, parents: [parent] }) }).then(function (r) {
+							if (!r.ok) return failed(r, "Making the folder");
+							return r.json().then(function (j) { parent = me.ids[sub] = j.id; return next(); });
+						});
+					});
+				}
+				return Promise.resolve().then(next);
+			},
+			list: function (folder) {
+				var me = P.gdrive;
+				return me.dirId(folder, false).then(function (id) {
+					if (!id) return [];
+					return me.q("'" + id + "' in parents and mimeType!='" + me.FOLDER + "'").then(function (a) { return a.map(function (f) { return { ref: f.id, name: f.name, size: +f.size || 0, mod: Date.parse(f.modifiedTime) || 0, ver: f.id + ":" + f.version }; }); });
+				});
+			},
+			dirs: function (folder) {
+				var me = P.gdrive;
+				return me.dirId(folder, false).then(function (id) { if (!id) return []; return me.q("'" + id + "' in parents and mimeType='" + me.FOLDER + "'").then(function (a) { return a.map(function (f) { return f.name; }).sort(); }); });
 			},
 			meta: function (ref) {
 				return authed("gdrive", P.gdrive.api + "/" + encodeURIComponent(ref) + "?fields=id,name,version,trashed").then(function (r) {
@@ -306,13 +367,13 @@
 					});
 				});
 			},
-			write: function (ref, name, bytes, ver) {
-				var me = P.gdrive;
+			write: function (ref, name, bytes, ver, ask, folder) {
+				var me = P.gdrive, dir = null;
 				var check = ref ? me.head(ref).then(function (now) { if (ver && now !== ver) throw err("conflict", "changed"); }) :
-					me.list().then(function (all) { if (all.some(function (f) { return f.name === name; })) throw err("exists", "A file called " + name + " is already there."); });
+					me.list(folder).then(function (all) { if (all.some(function (f) { return f.name === name; })) throw err("exists", "A file called " + name + " is already there."); return me.dirId(folder, true).then(function (id) { dir = id; }); });
 				return check.then(function () {
 					// resumable upload: one code path for any size; metadata first, then the bytes to the address Google gives back
-					var meta = ref ? {} : { name: name, parents: ["appDataFolder"] };
+					var meta = ref ? {} : { name: name, parents: [dir] };
 					return authed("gdrive", me.up + (ref ? "/" + encodeURIComponent(ref) : "") + "?uploadType=resumable&fields=id,name,version", { method: ref ? "PATCH" : "POST", headers: { "Content-Type": "application/json; charset=UTF-8", "X-Upload-Content-Type": "application/octet-stream" }, body: JSON.stringify(meta) });
 				}).then(function (r) {
 					if (!r.ok) return failed(r, "Saving to Google Drive");
@@ -347,14 +408,15 @@
 			ok: function () { return true; },
 			connect: function () { ls("mes-cloud:mock:on:" + p, 1); return wait(); },
 			disconnect: function () { ls("mes-cloud:mock:on:" + p, null); },
-			list: function () { var o = all(); return wait(Object.keys(o).map(function (k) { var f = o[k]; return { ref: k, name: f.name, size: f.size, mod: f.mod, ver: "v" + f.v }; })); },
+			list: function (folder) { var o = all(), d = segs(folder).join("/"); return wait(Object.keys(o).filter(function (k) { return (o[k].dir || DIR) === d; }).map(function (k) { var f = o[k]; return { ref: k, name: f.name, size: f.size, mod: f.mod, ver: "v" + f.v }; })); },
+			dirs: function (folder) { var o = all(), d = segs(folder).join("/"), out = {}; Object.keys(o).forEach(function (k) { var x = (o[k].dir || DIR) + "/"; if (x.indexOf(d ? d + "/" : "") === 0) { var rest = x.slice(d ? d.length + 1 : 0).split("/")[0]; if (rest) out[rest] = 1; } }); (ls(K + ":dirs") || []).forEach(function (x) { if (x.indexOf(d ? d + "/" : "") === 0) { var r2 = x.slice(d ? d.length + 1 : 0).split("/")[0]; if (r2) out[r2] = 1; } }); return wait(Object.keys(out).sort()); },
 			head: function (ref) { var f = all()[ref]; return f ? wait("v" + f.v) : Promise.reject(err("gone", "The file is gone.")); },
 			read: function (ref) { var f = all()[ref]; return f ? wait({ bytes: unb64(f.b), ver: "v" + f.v, name: f.name }) : Promise.reject(err("gone", "The file is gone.")); },
-			write: function (ref, name, bytes, ver) {
-				var o = all();
+			write: function (ref, name, bytes, ver, ask, folder) {
+				var o = all(), d = segs(folder).join("/");
 				if (ref) { var f = o[ref]; if (!f) return Promise.reject(err("gone", "The file is gone.")); if (ver && "v" + f.v !== ver) return Promise.reject(err("conflict", "changed")); }
-				else if (Object.keys(o).some(function (k) { return o[k].name === name; })) return Promise.reject(err("exists", "A file called " + name + " is already there."));
-				var id = ref || "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), g = o[id] || { v: 0, name: name };
+				else if (Object.keys(o).some(function (k) { return o[k].name === name && (o[k].dir || DIR) === d; })) return Promise.reject(err("exists", "A file called " + name + " is already there."));
+				var id = ref || "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), g = o[id] || { v: 0, name: name, dir: d };
 				g.v++; g.b = b64(bytes); g.size = bytes.length; g.mod = Date.now(); o[id] = g;
 				try { put(o); } catch (e) { return Promise.reject(err("other", "Mock storage is full.")); }
 				return wait({ ref: id, ver: "v" + g.v, name: g.name });
@@ -397,6 +459,11 @@
 		"#mcl-dlg label.mcl-tick{display:inline-flex;align-items:center;gap:.35em;font-size:.92em;cursor:pointer}",
 		"#mcl-dlg .mcl-note{font-size:.86em;opacity:.8}#mcl-dlg .mcl-err{color:#a3271b;font-size:.9em}#mcl-dlg .mcl-warn{background:#fff4d6;border:1px solid #efd58a;border-radius:8px;padding:.5em .7em;font-size:.9em}",
 		"#mcl-dlg .mcl-where{font-size:.86em;opacity:.8;word-break:break-word}",
+		"#mcl-dlg .mcl-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.25em;font-size:.95em;margin:.2em 0 .4em}#mcl-dlg .mcl-cr{font:inherit;background:none;border:0;padding:.15em .3em;border-radius:5px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}#mcl-dlg .mcl-cr:hover{background:#eef3fb}#mcl-dlg .mcl-cr.is-here{font-weight:700;text-decoration:none}#mcl-dlg .mcl-crx{opacity:.7}",
+		"#mcl-dlg .mcl-subs{display:flex;flex-wrap:wrap;gap:.35em;margin:.2em 0 .3em}#mcl-dlg .mcl-sub{font:inherit;font-size:.88em;padding:.3em .6em;border:1px solid #d5dde8;border-radius:8px;background:none;cursor:pointer}#mcl-dlg .mcl-sub:hover{border-color:#3b6fd8}",
+		"#mcl-dlg .mcl-acts--sm{margin-top:0}#mcl-dlg .mcl-acts--sm .mcl-b{font-size:.85em;padding:.25em .4em}#mcl-dlg .mcl-foot{display:flex;gap:.3em;justify-content:flex-end;margin-top:.4em}#mcl-dlg .mcl-foot .mcl-b{font-size:.82em;opacity:.8}",
+		"#mcl-dlg .mcl-extra{margin-top:.9em;border-top:1px solid #d5dde8;padding-top:.7em}#mcl-dlg .mcl-extra p{margin:.25em 0}",
+		"body.dark-mode #mcl-dlg .mcl-cr:hover{background:#2a3441}body.dark-mode #mcl-dlg .mcl-sub{border-color:#3b4654}body.dark-mode #mcl-dlg .mcl-extra{border-color:#3b4654}",
 		"body.dark-mode .mcl-btn{background:#232a33;color:#e6edf5;border-color:#56616f}body.dark-mode .mcl-btn:hover{border-color:#7aa2f0;color:#a9c4ff}",
 		"body.dark-mode .mcl-chip.is-ok{background:#163522;color:#a8e3bb;border-color:#2b6b42}body.dark-mode .mcl-chip.is-due{background:#3a2f0f;color:#f2d68a;border-color:#6d5a1c}body.dark-mode .mcl-chip.is-err{background:#3d1714;color:#f6b4ac;border-color:#7a2b23}",
 		"body.dark-mode #mcl-dlg .mcl-box{background:#1d232b;color:#e6edf5}",
@@ -415,7 +482,7 @@
 	   open(bytes, name, replaceDoc) -> Promise<doc>, dirty(doc), saved(doc, name), writeName(name) -> name this page can write (e.g. .xls -> .xlsx), toast(msg) */
 	function attach(cfg) {
 		addCss();
-		var PREF = "mes-cloud:" + cfg.app, prefs = Object.assign({ auto: true, tab: "" }, ls(PREF) || {});
+		var PREF = "mes-cloud:" + cfg.app, prefs = Object.assign({ auto: true, tab: "", dirs: {} }, ls(PREF) || {});
 		function savePrefs() { ls(PREF, prefs); }
 		var btn = document.createElement("button"); btn.type = "button"; btn.className = cfg.btnClass || "mcl-btn"; btn.id = "mcl-btn-" + cfg.app;
 		btn.innerHTML = '<span aria-hidden="true">☁</span> Cloud'; btn.title = "Open from or save to OneDrive, Dropbox, Google Drive or a synced folder";
@@ -431,7 +498,7 @@
 		function setL(d, l) { if (d) d.__mcl = l; }
 		function recent() { return ls(PREF + ":recent") || []; }
 		function addRecent(l) {
-			var item = { p: l.p, ref: l.p === "file" ? "h:" + l.hid : l.ref, name: l.name, t: Date.now() };
+			var item = { p: l.p, ref: l.p === "file" ? "h:" + l.hid : l.ref, name: l.name, t: Date.now(), dir: l.dir };
 			ls(PREF + ":recent", H.pushRecent(recent(), item, 12));
 		}
 		function provName(p) { return P[p] ? P[p].name : p; }
@@ -487,13 +554,14 @@
 		}
 
 		/* ----- opening ----- */
-		function openFrom(p, ref, name, replace) {
+		function openFrom(p, ref, name, replace, dir) {
 			busy = "Opening " + name + "…"; lastErr = null; paint();
 			return P[p].read(ref, true).then(function (r) {
 				return Promise.resolve(cfg.open(r.bytes, r.name || name, replace)).then(function (d) {
 					if (!d) throw err("other", "The page could not open " + (r.name || name) + ".");
 					var wn = cfg.writeName ? cfg.writeName(r.name || name) : r.name || name;
 					var l = { p: p, ref: ref, name: r.name || name, ver: r.ver, at: Date.now() };
+					if (p !== "file") l.dir = dir != null ? dir : (replace && L(replace) && L(replace).dir) || dirOf(p);
 					if (p === "file") l.hid = ref.__mclId || null;
 					if (wn !== l.name) { l = null; toast("Opened " + (r.name || name) + ". This format can't be saved back, so saving will make " + wn + "."); }
 					setL(d, l);
@@ -521,8 +589,8 @@
 			var d = cfg.doc(); if (!d) return;
 			name = H.safeName(cfg.writeName ? cfg.writeName(name) : name, cfg.defExt);
 			busy = "Saving " + name + " to " + provName(p) + "…"; lastErr = null; paint();
-			return Promise.resolve().then(function () { return cfg.bytes(d, name); }).then(function (bytes) { return P[p].write(null, name, u8of(bytes), null); }).then(function (w) {
-				var l = { p: p, ref: w.ref, name: w.name || name, ver: w.ver, at: Date.now() };
+			return Promise.resolve().then(function () { return cfg.bytes(d, name); }).then(function (bytes) { return P[p].write(null, name, u8of(bytes), null, false, dirOf(p)); }).then(function (w) {
+				var l = { p: p, ref: w.ref, name: w.name || name, ver: w.ver, at: Date.now(), dir: dirOf(p) };
 				setL(d, l); addRecent(l); cfg.saved(d, l.name); listCache[p] = null;
 				busy = ""; toast("Saved to " + provName(p) + ": " + l.name); paint();
 			}).catch(function (e) {
@@ -561,7 +629,7 @@
 				}).catch(function (e) { lastErr = e.message; paint(); });
 			}
 			if (!signedIn(r.p)) { prefs.tab = r.p; savePrefs(); lastErr = "Connect " + provName(r.p) + " first, then open the file."; paint(); return; }
-			return openFrom(r.p, r.ref, r.name);
+			return openFrom(r.p, r.ref, r.name, null, r.dir);
 		}
 
 		/* ----- conflict ----- */
@@ -582,88 +650,90 @@
 		}
 
 		/* ----- the dialog ----- */
+		function defDir(p) { var d = segs(cfg.folder || DIR + "/" + (cfg.title || cfg.what)); return p === "dropbox" ? d.slice(-1).join("/") : d.join("/"); }
+		function dirOf(p) { var x = prefs.dirs && prefs.dirs[p]; return x != null ? x : defDir(p); }
+		function setDir(p, d) { prefs.dirs = prefs.dirs || {}; prefs.dirs[p] = segs(d).join("/"); savePrefs(); listCache[p] = null; listErr[p] = null; }
 		function curBox() {
 			var d = cfg.doc(), l = L(d), h = "";
-			if (!d) return '<div class="mcl-cur"><p>No ' + esc(cfg.what) + " open yet. Open one from your cloud below, or open a file on this page first and come back to save it.</p></div>";
-			if (!l) {
-				return '<div class="mcl-cur"><p><b>' + esc(cfg.name(d)) + "</b> is only on this device. Save it to one of the places below and every change is saved there" + (prefs.auto ? " automatically" : " when you press Save") + ".</p></div>";
-			}
+			if (!d) return "";
+			if (!l) return '<div class="mcl-cur"><p><b>' + esc(cfg.name(d)) + "</b> · not saved to the cloud yet</p></div>";
 			var cls = "", st;
 			if (saving) st = "⟳ Saving…";
-			else if (l.code === "conflict") { cls = "is-err"; st = "⚠ This file was changed somewhere else since you opened it. What should happen?"; }
-			else if (l.code === "gone") { cls = "is-err"; st = "⚠ " + esc(l.err); }
-			else if (l.code === "auth" || l.code === "perm") { cls = "is-err"; st = "⚠ " + esc(l.err); }
-			else if (l.code === "offline") { cls = "is-due"; st = "⚠ Can't reach " + esc(provName(l.p)) + " right now. Your changes are kept here; press Save now when you are back online."; }
+			else if (l.code === "conflict") { cls = "is-err"; st = "⚠ Changed somewhere else. Which one do you keep?"; }
+			else if (l.code === "offline") { cls = "is-due"; st = "⚠ Offline: not saved yet"; }
 			else if (l.code) { cls = "is-err"; st = "⚠ " + esc(l.err); }
-			else if (l.remote) { cls = "is-due"; st = cfg.dirty(d) ? "⚠ Someone (or another device) changed this file too. Saving will ask what to keep." : "⚠ This file was changed somewhere else."; }
-			else if (cfg.dirty(d)) { cls = "is-due"; st = "● Changes not saved yet" + (prefs.auto ? " (saving in a moment)" : ""); }
-			else st = "✓ Saved" + (l.at ? " · " + H.ago(l.at) : "");
-			h += '<div class="mcl-cur ' + cls + '"><p><b>' + esc(l.name) + "</b> is linked to " + esc(l.p === "file" ? "a file on this computer" : provName(l.p)) + '.</p><p class="mcl-where">' + esc(P[l.p].where(l)) + "</p><p>" + st + "</p>";
+			else if (l.remote) { cls = "is-due"; st = "⚠ A newer version is there"; }
+			else if (cfg.dirty(d)) { cls = "is-due"; st = "● Not saved yet"; }
+			else st = "✓ Saved" + (l.at ? " " + H.ago(l.at) : "");
+			h += '<div class="mcl-cur ' + cls + '"><p>' + st + ' <span class="mcl-where">· ' + esc(P[l.p].where(l)) + "</span></p>";
 			h += '<div class="mcl-acts">';
-			if (l.code === "conflict") h += '<button type="button" class="mcl-b mcl-b--p" data-a="mine">Keep mine (replace theirs)</button><button type="button" class="mcl-b" data-a="theirs">Open theirs</button><button type="button" class="mcl-b" data-a="copy">Save mine as a copy</button>';
+			if (l.code === "conflict") h += '<button type="button" class="mcl-b mcl-b--p" data-a="mine">Keep mine</button><button type="button" class="mcl-b" data-a="theirs">Open theirs</button><button type="button" class="mcl-b" data-a="copy">Save mine as a copy</button>';
 			else if (l.code === "auth" && l.p !== "file") h += '<button type="button" class="mcl-b mcl-b--p" data-a="relog">Sign in again</button>';
-			else if (l.remote && !cfg.dirty(d)) h += '<button type="button" class="mcl-b mcl-b--p" data-a="theirs">Open the newer version</button><button type="button" class="mcl-b" data-a="now">Save mine over it</button>';
+			else if (l.remote && !cfg.dirty(d)) h += '<button type="button" class="mcl-b mcl-b--p" data-a="theirs">Open the newer one</button><button type="button" class="mcl-b" data-a="now">Save mine over it</button>';
 			else h += '<button type="button" class="mcl-b mcl-b--p" data-a="now"' + (saving ? " disabled" : "") + ">Save now</button>";
-			h += '<label class="mcl-tick"><input type="checkbox" data-a="auto"' + (prefs.auto ? " checked" : "") + "> Save automatically after each change</label>";
+			h += '<label class="mcl-tick"><input type="checkbox" data-a="auto"' + (prefs.auto ? " checked" : "") + "> Auto-save</label>";
 			h += '<button type="button" class="mcl-b mcl-b--g" data-a="unlink">Unlink</button></div></div>';
 			return h;
 		}
 		function provPane(p) {
 			var d = cfg.doc(), h = "", nm = d ? H.safeName(cfg.writeName ? cfg.writeName(cfg.name(d)) : cfg.name(d), cfg.defExt) : "";
 			if (p === "file") {
-				h += "<p>Use a file on this computer. Inside your <b>OneDrive</b>, <b>Dropbox</b>, <b>Google Drive</b> or <b>iCloud Drive</b> folder, the service's own app uploads every change, and the file stays exactly where you see it in that service.</p>";
-				if (!P.file.ok()) return h + '<p class="mcl-warn">' + esc(noFsText()) + "</p>";
-				h += '<div class="mcl-acts"><button type="button" class="mcl-b mcl-b--p" data-a="fopen">Open a file on this computer…</button>' + (d ? '<button type="button" class="mcl-b" data-a="fsave">Save this ' + esc(cfg.what) + " as a file…</button>" : "") + "</div>";
-				h += '<p class="mcl-note">After a browser restart, the browser asks once more for your OK to use the file.</p>';
+				if (!P.file.ok()) return '<p class="mcl-warn">' + esc(noFsText()) + "</p>";
+				h += '<div class="mcl-acts"><button type="button" class="mcl-b mcl-b--p" data-a="fopen">Open…</button>' + (d ? '<button type="button" class="mcl-b" data-a="fsave">Save as…</button>' : "") + "</div>";
+				h += '<p class="mcl-note">Save it inside your OneDrive, Dropbox or iCloud folder and it syncs by itself.</p>';
 				return h;
 			}
 			var pr = P[p];
 			if (!pr.ok()) return "<p>Not available.</p>";
 			if (!signedIn(p)) {
-				h += "<p>Connect your " + esc(pr.name) + " account to open and save " + esc(cfg.what) + "s on any device, phones too. " + (p === "gdrive" ? "Files go in MES's own private storage in your Google Drive (they don't show in your Drive's file list; open them here on any device)." : "Files go in <b>Apps → MES Copy Text → " + DIR + "</b> in your " + esc(pr.name) + ".") + "</p>";
 				if (!MOCK && location.hostname !== "mes.fm" && p !== "gdrive") h += '<p class="mcl-warn">Signing in only works on mes.fm itself.</p>';
-				h += '<div class="mcl-acts"><button type="button" class="mcl-b mcl-b--p" data-a="connect" data-p="' + p + '">Connect ' + esc(pr.name) + "</button></div>";
-				h += '<p class="mcl-note">Already connected on the Copy Text page? Then this is connected too. The sign-in stays in this browser; mes.fm never sees your files.</p>';
-				return h;
+				return h + '<div class="mcl-acts"><button type="button" class="mcl-b mcl-b--p" data-a="connect" data-p="' + p + '">Connect ' + esc(pr.name) + "</button></div>";
 			}
-			if (d) h += '<div class="mcl-row"><input type="text" id="mcl-name" value="' + esc(nm) + '" aria-label="File name"><button type="button" class="mcl-b mcl-b--p" data-a="savehere" data-p="' + p + '">Save this ' + esc(cfg.what) + " here</button></div>";
-			h += "<h3>Open a " + esc(cfg.what) + " from " + esc(pr.name) + "</h3>";
-			var lst = listCache[p];
-			if (listErr[p]) h += '<p class="mcl-err">' + esc(listErr[p]) + '</p><div class="mcl-acts"><button type="button" class="mcl-b" data-a="relist" data-p="' + p + '">Try again</button>' + (/sign|auth|ran out|confirm/i.test(listErr[p]) ? '<button type="button" class="mcl-b" data-a="connect" data-p="' + p + '">Sign in again</button>' : "") + "</div>";
-			else if (!lst) h += '<p class="mcl-note">Loading the list…</p>';
+			var dir = dirOf(p), s = segs(dir), c = listCache[p], ok = c && c.dir === dir;
+			// the folder: click a part to go up, a sub-folder to go in
+			h += '<div class="mcl-crumbs"><span aria-hidden="true">📁</span> <button type="button" class="mcl-cr" data-a="cd" data-p="' + p + '" data-d="">' + esc(pr.name) + "</button>" + (pr.root || []).map(function (x) { return ' › <span class="mcl-crx">' + esc(x) + "</span>"; }).join("");
+			s.forEach(function (x, i) { h += ' › <button type="button" class="mcl-cr' + (i === s.length - 1 ? " is-here" : "") + '" data-a="cd" data-p="' + p + '" data-d="' + esc(s.slice(0, i + 1).join("/")) + '">' + esc(x) + "</button>"; });
+			h += "</div>";
+			if (ok && c.dirs.length) h += '<div class="mcl-subs">' + c.dirs.map(function (x) { return '<button type="button" class="mcl-sub" data-a="cd" data-p="' + p + '" data-d="' + esc(s.concat([x]).join("/")) + '">📁 ' + esc(x) + "</button>"; }).join("") + "</div>";
+			h += '<div class="mcl-acts mcl-acts--sm"><button type="button" class="mcl-b mcl-b--g" data-a="mkdir" data-p="' + p + '">+ New folder</button>' + (dir !== defDir(p) ? '<button type="button" class="mcl-b mcl-b--g" data-a="cd" data-p="' + p + '" data-d="' + esc(defDir(p)) + '">Back to ' + esc(defDir(p)) + "</button>" : "") + "</div>";
+			if (d) h += '<div class="mcl-row"><input type="text" id="mcl-name" value="' + esc(nm) + '" aria-label="File name"><button type="button" class="mcl-b mcl-b--p" data-a="savehere" data-p="' + p + '">Save here</button></div>';
+			if (listErr[p]) h += '<p class="mcl-err">' + esc(listErr[p]) + '</p><div class="mcl-acts"><button type="button" class="mcl-b" data-a="relist" data-p="' + p + '">Try again</button>' + (/sign|auth|ran out|confirm|401|403/i.test(listErr[p]) ? '<button type="button" class="mcl-b" data-a="connect" data-p="' + p + '">Sign in again</button>' : "") + "</div>";
+			else if (!ok) h += '<p class="mcl-note">Loading…</p>';
 			else {
-				var fs = H.filesFor(lst, cfg.exts);
-				if (!fs.length) h += '<p class="mcl-note">No ' + esc(cfg.what) + "s here yet." + (d ? " Save this one with the button above." : "") + "</p>";
-				else h += '<ul class="mcl-list">' + fs.map(function (f) { return '<li><button type="button" class="mcl-item" data-a="openf" data-p="' + p + '" data-ref="' + esc(f.ref) + '" data-n="' + esc(f.name) + '"><b>' + esc(f.name) + "</b><small>" + esc(H.fmtBytes(f.size)) + (f.mod ? " · " + esc(new Date(f.mod).toLocaleString()) : "") + "</small></button></li>"; }).join("") + "</ul>";
-				h += '<div class="mcl-acts"><button type="button" class="mcl-b mcl-b--g" data-a="relist" data-p="' + p + '">Refresh</button></div>';
+				var fs = H.filesFor(c.files, cfg.exts);
+				if (fs.length) h += '<ul class="mcl-list">' + fs.map(function (f) { return '<li><button type="button" class="mcl-item" data-a="openf" data-p="' + p + '" data-ref="' + esc(f.ref) + '" data-n="' + esc(f.name) + '"><b>' + esc(f.name) + "</b><small>" + esc(H.fmtBytes(f.size)) + (f.mod ? " · " + esc(new Date(f.mod).toLocaleString()) : "") + "</small></button></li>"; }).join("") + "</ul>";
+				else h += '<p class="mcl-note">No ' + esc(cfg.what) + "s in this folder.</p>";
 			}
-			h += '<p class="mcl-where">Where: ' + esc(p === "gdrive" ? "Google Drive, MES's private app storage" : pr.name + " → Apps → MES Copy Text → " + DIR) + '. <button type="button" class="mcl-b mcl-b--g" data-a="disconnect" data-p="' + p + '">Disconnect ' + esc(pr.name) + "</button></p>";
+			h += '<p class="mcl-foot"><button type="button" class="mcl-b mcl-b--g" data-a="relist" data-p="' + p + '">Refresh</button><button type="button" class="mcl-b mcl-b--g" data-a="disconnect" data-p="' + p + '">Disconnect ' + esc(pr.name) + "</button></p>";
 			return h;
 		}
-		var TABS = [["onedrive", "OneDrive"], ["dropbox", "Dropbox"], ["gdrive", "Google Drive"], ["file", "Synced folder / this computer"]];
+		var TABS = [["onedrive", "OneDrive"], ["dropbox", "Dropbox"], ["gdrive", "Google Drive"], ["file", "This computer"]];
 		function paintDlg() {
 			if (dlg.hidden || dlg.__owner !== cfg.app) return;
 			var tabs = TABS.filter(function (t) { return t[0] === "file" || P[t[0]].ok(); });
 			if (!tabs.some(function (t) { return t[0] === prefs.tab; })) prefs.tab = tabs.filter(function (t) { return t[0] !== "file" && signedIn(t[0]); }).map(function (t) { return t[0]; })[0] || (P.file.ok() ? "file" : tabs[0][0]);
-			var h = '<div class="mcl-box"><h2><span aria-hidden="true">☁</span> Cloud files <button type="button" class="mcl-x" data-a="close" aria-label="Close">×</button></h2>' + curBox();
+			var h = '<div class="mcl-box"><h2><span aria-hidden="true">☁</span> Cloud <button type="button" class="mcl-x" data-a="close" aria-label="Close">×</button></h2>' + curBox();
 			if (busy) h += '<p class="mcl-note">⟳ ' + esc(busy) + (pending ? ' <button type="button" class="mcl-b mcl-b--g" data-a="cancel">Cancel</button>' : "") + "</p>";
 			if (lastErr) h += '<p class="mcl-err">⚠ ' + esc(lastErr) + "</p>";
 			h += '<div class="mcl-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" class="mcl-tab" role="tab" data-a="tab" data-p="' + t[0] + '" aria-selected="' + (t[0] === prefs.tab) + '">' + esc(t[1]) + (t[0] !== "file" && signedIn(t[0]) ? '<span class="mcl-dot" title="Connected"></span>' : "") + "</button>"; }).join("") + "</div>";
 			h += '<div class="mcl-pane" role="tabpanel">' + provPane(prefs.tab) + "</div>";
+			if (cfg.extra) { var ex = cfg.extra(); if (ex) h += '<div class="mcl-extra">' + ex + "</div>"; }
 			var rc = recent();
-			if (rc.length) h += "<h3>Recent cloud files</h3><ul class=\"mcl-list\">" + rc.map(function (r, i) { return '<li><button type="button" class="mcl-item" data-a="recent" data-i="' + i + '"><b>' + esc(r.name) + "</b><small>" + esc(r.p === "file" ? "this computer" : provName(r.p)) + " · " + esc(H.ago(r.t)) + '</small></button><button type="button" class="mcl-forget" data-a="forget" data-i="' + i + '">Forget</button></li>'; }).join("") + "</ul>";
-			h += '<p class="mcl-note">Nothing goes through mes.fm: your browser reads and writes the file in your own storage. If the file is changed on another device, you are asked before anything is replaced.</p></div>';
+			if (rc.length) h += "<h3>Recent</h3><ul class=\"mcl-list\">" + rc.slice(0, 6).map(function (r, i) { return '<li><button type="button" class="mcl-item" data-a="recent" data-i="' + i + '"><b>' + esc(r.name) + "</b><small>" + esc(r.p === "file" ? "this computer" : provName(r.p)) + " · " + esc(H.ago(r.t)) + '</small></button><button type="button" class="mcl-forget" data-a="forget" data-i="' + i + '" aria-label="Forget">×</button></li>'; }).join("") + "</ul>";
+			h += "</div>";
 			var fo = document.activeElement, fid = fo && dlg.contains(fo) ? fo.getAttribute("data-a") + "|" + (fo.getAttribute("data-p") || "") + "|" + (fo.id || "") : "";
 			var nameVal = document.getElementById("mcl-name"); nameVal = nameVal ? nameVal.value : null;
 			dlg.innerHTML = h;
 			if (nameVal != null && document.getElementById("mcl-name")) document.getElementById("mcl-name").value = nameVal;
 			if (fid) { var parts = fid.split("|"), el = parts[2] ? document.getElementById(parts[2]) : dlg.querySelector('[data-a="' + parts[0] + '"]' + (parts[1] ? '[data-p="' + parts[1] + '"]' : "")); if (el) el.focus(); }
-			if (prefs.tab !== "file" && signedIn(prefs.tab) && !listCache[prefs.tab] && !listErr[prefs.tab]) loadList(prefs.tab);
+			var tp = prefs.tab;
+			if (tp !== "file" && signedIn(tp) && !(listCache[tp] && listCache[tp].dir === dirOf(tp)) && !listErr[tp]) loadList(tp);
 		}
 		function loadList(p) {
-			if (loadList[p]) return; loadList[p] = 1;
-			Promise.resolve().then(function () { return P[p].list(); }).then(function (a) { listCache[p] = a; listErr[p] = null; }, function (e) { listErr[p] = e.message || String(e); })
-				.then(function () { loadList[p] = 0; paintDlg(); });
+			var dir = dirOf(p), key = p + "|" + dir;
+			if (loadList[key]) return; loadList[key] = 1;
+			Promise.all([P[p].list(dir), P[p].dirs ? P[p].dirs(dir) : []]).then(function (a) { if (dirOf(p) === dir) { listCache[p] = { dir: dir, files: a[0], dirs: a[1] }; listErr[p] = null; } }, function (e) { listErr[p] = e.message || String(e); })
+				.then(function () { loadList[key] = 0; paintDlg(); });
 		}
 		function open() { dlg.__owner = cfg.app; dlg.hidden = false; btn.setAttribute("aria-expanded", "true"); paintDlg(); var f = dlg.querySelector(".mcl-box .mcl-b--p, .mcl-box .mcl-tab"); if (f) f.focus(); }
 		function close() { if (dlg.__owner !== cfg.app) return; dlg.hidden = true; btn.setAttribute("aria-expanded", "false"); btn.focus({ preventScroll: true }); }
@@ -681,7 +751,10 @@
 					function (x) { busy = ""; if (x.code !== "abort") lastErr = x.message; paintDlg(); });
 			}
 			else if (a === "cancel") { if (pending) pending.cancel(); }
-			else if (a === "disconnect") { if (confirm("Disconnect " + provName(p) + " in this browser?\n\nThis also disconnects it on the Copy Text page. Your files stay where they are.")) { P[p].disconnect(); listCache[p] = null; paintDlg(); paint(); } }
+			else if (a === "disconnect") { if (confirm("Disconnect " + provName(p) + " in this browser? Your files stay where they are.")) { P[p].disconnect(); listCache[p] = null; paintDlg(); paint(); } }
+			else if (a === "cd") { setDir(p, b.getAttribute("data-d")); paintDlg(); }
+			else if (a === "mkdir") { var nf = prompt("New folder name:"); nf = nf && H.safeName(nf).replace(/\./g, " ").trim(); if (nf) { setDir(p, dirOf(p) + "/" + nf); paintDlg(); } }
+			else if (a === "x") { if (cfg.onExtra) cfg.onExtra(b.getAttribute("data-x"), b); }
 			else if (a === "relist") { listCache[p] = null; listErr[p] = null; paintDlg(); }
 			else if (a === "openf") { if (!confirmLeave(d)) return; openFrom(p, b.getAttribute("data-ref"), b.getAttribute("data-n")); }
 			else if (a === "savehere") { var nm = document.getElementById("mcl-name"); saveNew(p, nm ? nm.value : cfg.name(d)); }

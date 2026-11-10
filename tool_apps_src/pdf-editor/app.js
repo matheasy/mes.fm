@@ -120,7 +120,7 @@
 	   flattened save, like the Download dialog's default, so a redaction never leaves the hidden words in the cloud copy. */
 	function hasBlack() { return PD.doc.pages.some(function (p) { return p.annots.some(function (a) { return a.t === "rect" && /^#0{6}$/.test(a.fill || "") && !a.alpha; }); }); }
 	var cloud = window.MESCloud ? window.MESCloud.attach({
-		app: "pdf", what: "PDF", defExt: "pdf", btnClass: "pd-btn", before: $("pd-name"), replaces: true, toast: function (m) { PD.toast(m, 3500); },
+		app: "pdf", folder: "MES Apps/PDF", what: "PDF", defExt: "pdf", btnClass: "pd-btn", before: $("pd-name"), replaces: true, toast: function (m) { PD.toast(m, 3500); },
 		exts: [".pdf"],
 		accept: [{ description: "PDF", accept: { "application/pdf": [".pdf"] } }],
 		doc: function () { return PD.doc; },

@@ -753,7 +753,7 @@
 	V.speedLabel = function (s, fps) {
 		fps = fps || 30; var f = s * fps;
 		if (s < 0.05 - 1e-9) return (Math.round(f * 100) / 100) + " fps";
-		return (Math.round(s * 1000) / 1000) + "×";
+		return s.toFixed(2) + "×";   // always 2 decimals so the box doesn't jump: 11.30×
 	};
 	V.SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 12, 16, 24, 32, 45];
 	V.short = function (t) { if (!(t >= 0)) t = 0; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1); };

@@ -243,7 +243,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-11-08",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -293,7 +293,7 @@
 },
 "/excel":{
 "added":"2026-10-30",
-"updated":"2026-11-08",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/exif-viewer":{
@@ -628,7 +628,7 @@
 },
 "/pdf":{
 "added":"2026-10-15",
-"updated":"2026-11-09",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/pdf-tools":{
@@ -963,7 +963,7 @@
 },
 "/video":{
 "added":"2026-10-28",
-"updated":"2026-11-09",
+"updated":"2026-11-10",
 "type":"Tool"
 },
 "/videospeed":{

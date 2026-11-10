@@ -362,6 +362,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-mi.is-sel {border-color:var(--vd-sel);background:#0f2a3d;} #vd .vd-mi.is-wait {cursor:progress;}
 	#vd .vd-mth {width:56px;height:32px;border-radius:0.25em;display:block;} #vd .vd-mt {min-width:0;} #vd .vd-mn {font-weight:700;font-size:0.85em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} #vd .vd-mm {font-size:0.75em;color:var(--vd-dim);overflow-wrap:anywhere;}
 	#vd .vd-mact {display:flex;flex-direction:column;gap:0.2em;} #vd .vd-mact .vd-btn {min-height:26px;min-width:28px;padding:0;}
+	#vd .vd-miss {margin:0 0 0.5em;display:flex;flex-direction:column;gap:0.4em;} #vd .vd-miss[hidden] {display:none;}
+	#vd .vd-missg {border:1px solid #b45309;background:#3a2a10;border-radius:0.5em;padding:0.45em 0.55em;font-size:0.85em;color:#fde68a;} #vd .vd-missg b {display:block;margin-bottom:0.35em;color:#fde68a;}
+	#vd .vd-missr {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;} #vd .vd-missr select {flex:1 1 9em;min-width:0;background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.4em;padding:0.25em;font:inherit;color-scheme:dark;}
 	#vd .vd-mbar {display:block;height:4px;background:var(--vd-line);border-radius:2px;margin-top:2px;overflow:hidden;} #vd .vd-mbar i {display:block;height:100%;background:var(--vd-sel);}
 	#vd .vd-bad {color:var(--vd-bad);} #vd .vd-empty {color:var(--vd-dim);font-size:0.85em;text-align:center;margin:1em 0;}
 	#vd .vd-binfoot {display:flex;gap:0.3em;flex-wrap:wrap;margin-top:0.4em;} #vd .vd-hint {font-size:0.78em;color:var(--vd-dim);margin:0.5em 0 0;}
@@ -456,6 +459,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* the page's dark theme must not touch this always-dark workspace: the derived TOOL-DARK block rewrites these colours, so restate them
 	   (selectors starting with html are skipped by add_tool_page_controls.py's derive step) */
 	html body.dark-mode #vd .vd {--vd-acc:#e11d48;--vd-video:#1d4ed8;--vd-audio:#047857;--vd-text:#b45309;}
+	html body.dark-mode #vd .vd-missg {border-color:#b45309;background:#3a2a10;color:#fde68a;} html body.dark-mode #vd .vd-missg b {color:#fde68a;}
 	html body.dark-mode #vd .vd-rail {background:#0d1118;} html body.dark-mode #vd .vd-card:hover {background:#252e3d;} html body.dark-mode #vd .vd-card .vd-cv {background:#0b0e13;}
 	html body.dark-mode #vd .vd-hgrip i {background:#4b5563;} html body.dark-mode #vd .vd.vd-pvfill .vd-center, html body.dark-mode #vd .vd-stagewrap:fullscreen, html body.dark-mode #vd #vd-canvas, html body.dark-mode #vd .vd-xvid {background:#000;}
 	html body.dark-mode #vd .vd.vd-pvfill .vd-transport {background:rgba(17,21,28,0.88);} html body.dark-mode #vd .vd-tl {background:#0b0e13;}
@@ -554,7 +558,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-speed .vd-spb {min-width:26px;min-height:30px;padding:0 0.35em;font-size:1.05em;line-height:1;}
 	#vd .vd-speed .vd-spin {width:6.5em;min-height:30px;padding:0.2em 0.35em;} #vd .vd-speed select[hidden], #vd .vd-speed .vd-spin[hidden] {display:none;}
 	#vd .vd.vd-bar1 .vd-speed .vd-spb {min-width:22px;min-height:26px;} #vd .vd.vd-bar1 .vd-speed .vd-spin {min-height:26px;font-size:0.82em;}
-	#vd .vd-speed select {width:5.6em;min-width:0;padding-right:0.2em;} #vd .vd-speed .vd-spin {width:5.6em;}
+	#vd .vd-speed select {width:5.1em;min-width:0;padding:0.25em 0.15em;font-variant-numeric:tabular-nums;} #vd .vd-speed .vd-spin {width:5.1em;font-variant-numeric:tabular-nums;}
 
 
 	@media print {
@@ -684,6 +688,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-hgrip i{background:#46505d}
 	body.dark-mode #vd .vd.vd-pvfill .vd-center{background:#525252}
 	body.dark-mode #vd .vd.vd-pvfill .vd-transport{background:rgba(62,76,102,0.88)}
+	body.dark-mode #vd .vd-missg{border:1px solid #f3700c}
 	body.dark-mode #vd .vd-stagewrap:fullscreen{background:#525252}
 	body.dark-mode #vd #vd-canvas{background:#525252}
 	body.dark-mode #vd #vd-tin:hover{border-color:rgba(51,51,51,0.25);background:rgba(26,26,26,0.05)}
@@ -1155,7 +1160,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=1" defer></script><script src="/video/js/video.js?v=18" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

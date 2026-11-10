@@ -334,7 +334,7 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	ok(V.stepSpeed(3, 1, 30, 1) === 4, "bigger steps while holding");
 	ok(V.parseSpeed("3x", 30) === 3 && V.parseSpeed("2.35", 30) === 2.35 && V.parseSpeed("300%", 30) === 3 && V.parseSpeed("1/2", 30) === 0.5, "typed speeds");
 	ok(Math.abs(V.parseSpeed("5 fps", 25) - 0.2) < 1e-9 && V.parseSpeed("100", 30) === 45 && V.parseSpeed("abc", 30) === null && V.parseSpeed("0", 30) === null, "fps, clamping, junk");
-	ok(V.speedLabel(1 / 30, 30) === "1 fps" && V.speedLabel(2.35, 30) === "2.35×", "labels");
+	ok(V.speedLabel(1 / 30, 30) === "1 fps" && V.speedLabel(2.35, 30) === "2.35×" && V.speedLabel(11.3, 30) === "11.30×", "labels");
 }
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

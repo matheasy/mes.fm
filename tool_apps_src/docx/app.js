@@ -649,7 +649,7 @@
 	};
 	/* ---------- ☁ Cloud: open from / keep saved to OneDrive, Dropbox, Google Drive or a synced folder (/main_js/cloud-files.js) ---------- */
 	var cloud = window.MESCloud ? window.MESCloud.attach({
-		app: "docx", what: "document", defExt: "docx", btnClass: "dx-btn", before: $("dx-tabs"), toast: toast,
+		app: "docx", folder: "MES Apps/Word", what: "document", defExt: "docx", btnClass: "dx-btn", before: $("dx-tabs"), toast: toast,
 		exts: [".docx", ".docm", ".dotx"],
 		accept: [{ description: "Word document", accept: { "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"] } }],
 		doc: function () { return cur; },

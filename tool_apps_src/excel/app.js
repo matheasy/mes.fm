@@ -1378,7 +1378,7 @@
 		return xlsxBytes(e === "xlsm" ? "xlsm" : "xlsx").then(function (res) { return res.bytes instanceof Uint8Array ? res.bytes : new Uint8Array(res.bytes); });
 	}
 	var cloud = window.MESCloud ? window.MESCloud.attach({
-		app: "excel", what: "spreadsheet", defExt: "xlsx", btnClass: "xl-btn", before: $("xl-fname"), replaces: true, toast: toast,
+		app: "excel", folder: "MES Apps/Excel", what: "spreadsheet", defExt: "xlsx", btnClass: "xl-btn", before: $("xl-fname"), replaces: true, toast: toast,
 		exts: [".xlsx", ".xlsm", ".xls", ".xlsb", ".ods", ".csv", ".tsv"],
 		accept: [{ description: "Spreadsheet", accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"], "application/vnd.ms-excel.sheet.macroEnabled.12": [".xlsm"], "application/vnd.ms-excel": [".xls"], "application/vnd.oasis.opendocument.spreadsheet": [".ods"], "text/csv": [".csv"], "text/tab-separated-values": [".tsv"] } }],
 		doc: function () { return wb ? file : null; },

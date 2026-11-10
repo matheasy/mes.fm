@@ -448,6 +448,14 @@
 		m.file = file; m.state = "working"; m.status = "Opening..."; m.size = file.size; if (m.origName === file.name) { m.converted = false; m.thumbTimes = null; }
 		VE.prepare(m, true); return true;
 	};
+	// point every clip that uses media `from` at media `to` (a missing file replaced by one already in the bin)
+	VE.repoint = function (from, to) {
+		var n = 0;
+		VE.P.clips.forEach(function (c) { if (c.media === from) { c.media = to; n++; } });
+		var old = VE.media(from); if (old && old.state === "missing") { VE.bin = VE.bin.filter(function (x) { return x !== old; }); VE.idbDel("blobs", "m:" + from).catch(function () { }); }
+		if (n) VE.commit("Connect media"); VE.emit("bin");
+		return n;
+	};
 	VE.clearAll = async function () {
 		VE.bin.forEach(function (m) { if (m.url) try { URL.revokeObjectURL(m.url); } catch (e) { /* ignore */ } });
 		VE.bin = []; VE.P = V.newProject(); VE.sel = []; VE.t = 0; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(VE.P)); VE.cleanCache = {}; VE.levelCache = {}; envCache = {}; preCache = {};

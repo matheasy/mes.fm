@@ -1142,7 +1142,7 @@
 	V.speedLabel = function (s, fps) {
 		fps = fps || 30; var f = s * fps;
 		if (s < 0.05 - 1e-9) return (Math.round(f * 100) / 100) + " fps";
-		return (Math.round(s * 1000) / 1000) + "×";
+		return s.toFixed(2) + "×";   // always 2 decimals so the box doesn't jump: 11.30×
 	};
 	V.SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 12, 16, 24, 32, 45];
 	V.short = function (t) { if (!(t >= 0)) t = 0; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1); };
@@ -2013,6 +2013,14 @@
 		m.file = file; m.state = "working"; m.status = "Opening..."; m.size = file.size; if (m.origName === file.name) { m.converted = false; m.thumbTimes = null; }
 		VE.prepare(m, true); return true;
 	};
+	// point every clip that uses media `from` at media `to` (a missing file replaced by one already in the bin)
+	VE.repoint = function (from, to) {
+		var n = 0;
+		VE.P.clips.forEach(function (c) { if (c.media === from) { c.media = to; n++; } });
+		var old = VE.media(from); if (old && old.state === "missing") { VE.bin = VE.bin.filter(function (x) { return x !== old; }); VE.idbDel("blobs", "m:" + from).catch(function () { }); }
+		if (n) VE.commit("Connect media"); VE.emit("bin");
+		return n;
+	};
 	VE.clearAll = async function () {
 		VE.bin.forEach(function (m) { if (m.url) try { URL.revokeObjectURL(m.url); } catch (e) { /* ignore */ } });
 		VE.bin = []; VE.P = V.newProject(); VE.sel = []; VE.t = 0; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(VE.P)); VE.cleanCache = {}; VE.levelCache = {}; envCache = {}; preCache = {};
@@ -2424,7 +2432,7 @@
 				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic track: clips close up with no gaps (click to turn off)" : "Make this track magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +
 				(canDel ? '<button type="button" data-tact="del" title="Delete this empty track">&times;</button>' : "") + "</span>" + (h >= 70 && tr.kind === "a" ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
-				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? "T  " + (c.text && c.text.s || "").split("\n")[0] : m ? m.name : "(missing)";
+				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? "T  " + (c.text && c.text.s || "").split("\n")[0] : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
 				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
@@ -2931,6 +2939,44 @@
 		else if (m.kind === "audio" && m.peaks) { g.fillStyle = "#7dd3fc"; for (var x = 0; x < 96; x++) { var v = m.peaks[Math.floor(x / 96 * m.peaks.length)] / 255 * 24; g.fillRect(x, 27 - v, 1, v * 2 + 1); } }
 		else { g.fillStyle = "#94a3b8"; g.font = "bold 12px Arial"; g.textAlign = "center"; g.fillText(m.kind === "audio" ? "SOUND" : (C.extOf(m.name) || "").toUpperCase(), 48, 31); }
 	}
+	/* clips whose file is missing: pick a file from the bin (or your computer) and every one of them uses it */
+	function missGroups() {
+		var g = {}, out = [];
+		VE.P.clips.forEach(function (c) {
+			if (c.type === "text" || !c.media) return; var m = VE.media(c.media); if (m && m.state !== "missing") return;
+			var x = g[c.media]; if (!x) { x = g[c.media] = { id: c.media, m: m, n: 0, end: 0, img: c.type === "image" }; out.push(x); }
+			x.n++; x.end = Math.max(x.end, c.out || 0);
+		});
+		return out;
+	}
+	function missCands(gr) { return VE.bin.filter(function (m) { return m.state === "ready" && (gr.img ? m.kind === "image" : m.kind !== "image"); }); }
+	function missGuess(gr, cands) {
+		var best = null, bs = -1, nm = gr.m && (gr.m.origName || gr.m.name);
+		cands.forEach(function (m) { var sc = (nm && (m.name === nm || m.origName === nm) ? 100 : 0) + (m.dur && m.dur >= gr.end - 0.2 ? 10 : 0) + (gr.m && gr.m.dur && m.dur && Math.abs(m.dur - gr.m.dur) < 1 ? 20 : 0); if (sc > bs) { bs = sc; best = m; } });
+		return best;
+	}
+	var missEl = document.createElement("div"); missEl.id = "vd-miss"; missEl.className = "vd-miss"; var bh = app.querySelector(".vd-binhead"); bh.parentNode.insertBefore(missEl, bh.nextSibling);   // first, so it is seen even in a short panel
+	var missFile = document.createElement("input"); missFile.type = "file"; missFile.hidden = true; missFile.accept = "video/*,audio/*,image/*,.avi,.mkv,.wmv,.flv,.mts,.m2ts"; document.body.appendChild(missFile);
+	function renderMiss() {
+		var gs = missGroups();
+		missEl.hidden = !gs.length; if (!gs.length) { missEl.innerHTML = ""; return; }
+		missEl.innerHTML = gs.map(function (gr) {
+			var cands = missCands(gr), g = missGuess(gr, cands);
+			return '<div class="vd-missg"><b>⚠ ' + gr.n + " clip" + (gr.n > 1 ? "s" : "") + " can't find " + esc(gr.m ? gr.m.origName || gr.m.name : gr.n > 1 ? "their file" : "its file") + "</b>" +
+				'<div class="vd-missr">' + (cands.length ? '<select data-ms="' + gr.id + '" aria-label="Use this file">' + cands.map(function (m) { return '<option value="' + m.id + '"' + (m === g ? " selected" : "") + ">" + esc(m.name) + "</option>"; }).join("") + '</select><button type="button" class="vd-btn vd-sm vd-primary" data-mc="' + gr.id + '">Use it</button>' : "") +
+				'<button type="button" class="vd-btn vd-sm" data-mf="' + gr.id + '">' + (cands.length ? "Other file…" : "Choose the file…") + "</button></div></div>";
+		}).join("");
+	}
+	missEl.addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return; var id;
+		if ((id = b.getAttribute("data-mc"))) { var sel = missEl.querySelector('select[data-ms="' + id + '"]'), to = sel && VE.media(sel.value); if (to) { var n = VE.repoint(id, to.id); toast(n + " clip" + (n > 1 ? "s" : "") + " now use " + to.name + "."); } }
+		else if ((id = b.getAttribute("data-mf"))) { missFile.dataset.id = id; missFile.click(); }
+	});
+	missFile.onchange = function () {
+		var f = missFile.files && missFile.files[0], id = missFile.dataset.id; missFile.value = ""; if (!f || !id) return;
+		VE.addFiles([f]).then(function (out) { var m = out[0]; if (m && m.state === "ready") { var n = VE.repoint(id, m.id); toast(n + " clip" + (n > 1 ? "s" : "") + " now use " + m.name + "."); } });
+	};
+	VE.on("bin", renderMiss); VE.on("change", renderMiss); VE.on("mediaReady", renderMiss);
 	VE.on("bin", renderBin);
 	VE.on("binItem", function (m) { var el = $("vd-binlist").querySelector('[data-mid="' + m.id + '"]'); if (!el) return renderBin(); var tmp = document.createElement("div"); tmp.innerHTML = binRow(m); el.replaceWith(tmp.firstChild); paintThumb(m); $("vd-addsel").disabled = !Object.keys(binSel).length; });
 	VE.on("thumbs", function (m) { paintThumb(m); });
@@ -3217,7 +3263,7 @@
 	VE.on("change", function (label) { rev++; if (label === "restore") { proj.savedRev = rev; cloudRev = rev; } projState(); if (cloud) cloud.changed(vdoc); renderSync(); });   // the autosave coming back is not a new change
 	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur }; }) }; }
 	function projBlob() { return new Blob([JSON.stringify(projData(), null, 1)], { type: "application/json" }); }
-	function projFileName() { return (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + ".mesvideo"; }
+	function projFileName() { return (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-").replace(/(\.mesvideo)+$/i, "") + ".mesvideo"; }
 	function linkProject(h, lm) {
 		proj.h = h || null; proj.name = h ? h.name : ""; proj.lm = lm || 0; proj.savedRev = h ? rev : -1;
 		if (h) cloudUnlink();   // one place to save to at a time
@@ -3416,7 +3462,7 @@
 			}
 			h += '<span class="vd-sp"></span><button type="button" class="vd-btn vd-sm vd-ico" data-sy="rescan" title="Look through the folder again" aria-label="Look through the folder again">&#8635;</button><button type="button" class="vd-btn vd-sm vd-ico" data-sy="unlink" title="Stop using this folder" aria-label="Stop using this folder">&times;</button>';
 		}
-		el.innerHTML = h;
+		el.innerHTML = h; if (cloud && !document.getElementById("mcl-dlg").hidden) cloud.refresh();
 	}
 	$("vd-sync").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-sy]"); if (!b) return; var a = b.getAttribute("data-sy");
@@ -3434,11 +3480,11 @@
 	var vdoc = { name: "" }, cloudRev = -1, CKEY = "mes-video-editor:cloud";
 	function cloudKeep() {
 		var l = cloud && cloud.link(vdoc);
-		try { if (!l) localStorage.removeItem(CKEY); else localStorage.setItem(CKEY, JSON.stringify({ p: l.p, ref: l.p === "file" ? null : l.ref, hid: l.hid || null, name: l.name, ver: l.ver })); } catch (e) { /* ignore */ }
+		try { if (!l) localStorage.removeItem(CKEY); else localStorage.setItem(CKEY, JSON.stringify({ p: l.p, ref: l.p === "file" ? null : l.ref, hid: l.hid || null, name: l.name, ver: l.ver, dir: l.dir })); } catch (e) { /* ignore */ }
 	}
 	function cloudUnlink() { if (vdoc.__mcl) { vdoc = { name: "" }; cloudRev = -1; cloudKeep(); if (cloud) cloud.refresh(); } }
 	var cloud = window.MESCloud ? window.MESCloud.attach({
-		app: "video", what: "video project", defExt: "mesvideo", btnClass: "vd-btn", before: $("vd-projst"), replaces: true, toast: toast,
+		app: "video", folder: "MES Apps/Video", what: "video project", defExt: "mesvideo", btnClass: "vd-btn", before: $("vd-projst"), replaces: true, toast: toast,
 		exts: [".mesvideo"], accept: [{ description: "MES Video Editor project", accept: { "application/json": [".mesvideo"] } }],
 		doc: function () { return vdoc; },
 		name: function (d) { return d.name || projFileName(); },
@@ -3447,13 +3493,24 @@
 			return openProjectText(new TextDecoder().decode(u8), name, null, 0, true).then(function (ok) { if (!ok) return null; vdoc = { name: name }; cloudRev = rev; setTimeout(function () { cloudKeep(); projState(); }, 0); return vdoc; });
 		},
 		dirty: function () { return cloudRev !== rev; },
-		saved: function (d, name) { d.name = name; cloudRev = rev; if (proj.h) linkProject(null); cloudKeep(); projState(); var w = mediaWarnText(); if (w) toast("Saved." + w, 9000); else if (!mdir.h && VE.bin.length) toast("Saved the project file. The videos don't go with it: keep them in a synced folder and link it (Media → Link my media folder).", 9000); }
+		saved: function (d, name) { d.name = name; cloudRev = rev; if (proj.h) linkProject(null); cloudKeep(); projState(); var w = mediaWarnText(); if (w) toast("Saved." + w, 9000); },
+		// under the tabs: where the videos themselves are (they never go into the project file)
+		extra: function () {
+			var k = VE.bin.filter(function (m) { return m.kind !== "text"; }).length; if (!k) return "";
+			if (!mdir.h) return '<p><b>Your videos</b> stay in their own files. <button type="button" class="mcl-b" data-a="x" data-x="link">&#128193; Link the folder they are in</button></p><p class="mcl-note">Use a folder OneDrive syncs: on another computer, link the same folder and everything is found.</p>';
+			var sm = mdir.idx ? V.mediaSyncSummary(VE.bin, mdir.idx) : null, miss = sm ? sm.out.length + sm.differs.length : 0;
+			return '<p><b>Videos:</b> &#128193; ' + esc(mdir.h.name) + " · " + (!sm ? '<button type="button" class="mcl-b" data-a="x" data-x="allow">Allow access</button>' : miss ? "⚠ " + miss + " not in this folder " + '<button type="button" class="mcl-b mcl-b--p" data-a="x" data-x="copy">Copy them in</button>' : "✓ all " + sm.total + " found") + ' <button type="button" class="mcl-b mcl-b--g" data-a="x" data-x="link">Change</button></p>';
+		},
+		onExtra: function (a) {
+			var done = function () { if (cloud) cloud.refresh(); };
+			if (a === "link") linkFolder().then(done); else if (a === "copy") copyIntoFolder().then(done); else if (a === "allow") rescan(true).then(function (ok) { if (ok) return relinkFromFolder(false); }).then(done);
+		}
 	}) : null;
 	// a cloud link survives a reload (the autosaved project here is the same one)
 	(function () {
 		var k = null; try { k = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) { /* ignore */ }
 		if (!k || !cloud) return;
-		function put(ref) { vdoc = { name: k.name, __mcl: { p: k.p, ref: ref, name: k.name, ver: k.ver, at: Date.now(), hid: k.hid || undefined } }; cloudRev = rev; cloud.refresh(); projState(); }
+		function put(ref) { vdoc = { name: k.name, __mcl: { p: k.p, ref: ref, name: k.name, ver: k.ver, at: Date.now(), hid: k.hid || undefined, dir: k.dir } }; cloudRev = rev; cloud.refresh(); projState(); }
 		if (k.p !== "file") return put(k.ref);
 		if (!k.hid || !window.indexedDB) return;
 		var q = indexedDB.open("mes-cloud", 1);
