@@ -4,7 +4,8 @@
       penalty contacts for the body so it can crash, slide and flip) on a course of ramps, gaps and landings.
    2. Jump calculator (closed-form projectile + a drag integrator).
    3. Release countdown (midnight in any time zone, needs CK from the clock lib when present) and download / storage maths.
-   Byte-identical copy at mes.fm/api/_gta-lib.js (the news function uses parseRss): cp after editing. */
+   4. Community map: pin validation, vote verdicts and ordering (MAP; also used by api/gta-map.js).
+   Byte-identical copy at mes.fm/api/_gta-lib.js (the news function uses parseRss, the map function MAP): cp after editing. */
 (function (root) {
 	"use strict";
 	var G0 = 9.80665, RAD = Math.PI / 180;
@@ -450,11 +451,93 @@
 		["Eurogamer", "https://www.eurogamer.net/feed"], ["Rock Paper Shotgun", "https://www.rockpapershotgun.com/feed"], ["Kotaku", "https://kotaku.com/rss"], ["IGN", "https://feeds.feedburner.com/ign/games-all"],
 		["Polygon", "https://www.polygon.com/rss/index.xml"], ["VGC", "https://www.videogameschronicle.com/feed/"], ["GamesRadar+", "https://www.gamesradar.com/feeds/all/"], ["PC Gamer", "https://www.pcgamer.com/rss/"]];
 
+
+	/* ======================= community map (mes.fm/gta-6-map, api/gta-map.js) ======================= */
+	/* Map coordinates are 0..1000 on both axes of the map picture (MAP_V = its version: a new picture gets a new number,
+	   and pins keep the version they were made on). Regions are the names Rockstar has published; the picture is a rough fan sketch. */
+	var MAP_V = 1;
+	var PIN_CATS = [["secret", "Secret", "#c2185b"], ["animal", "Animal", "#2e7d32"], ["fishing", "Fishing", "#0277bd"], ["gem", "Hidden gem", "#f9a825"],
+		["egg", "Easter egg", "#7b1fa2"], ["collect", "Collectible", "#ef6c00"], ["activity", "Activity", "#00838f"], ["vehicle", "Vehicle", "#455a64"],
+		["stunt", "Stunt jump", "#d84315"], ["other", "Other", "#6d4c41"]];
+	var REGIONS = ["Vice City", "Leonida Keys", "Grassrivers", "Port Gellhorn", "Ambrosia", "Mount Kalaga", "Somewhere else"];
+	var BAD = /\b(n[i1!]gg(a|er|uh)s?|f[a@]gg?(ot|s)?|r[e3]t[a@]rds?|k[i1]kes?|ch[i1]nks?|sp[i1]cs?|tr[a@]nn(y|ies))\b/i;
+	function pinText(v, max, lines) {
+		if (typeof v !== "string") return null;
+		var s = v.replace(lines ? /[\u0000-\u0009\u000b-\u001f\u007f]/g : /[\u0000-\u001f\u007f]/g, " ").replace(/[​-‏‪-‮⁦-⁩]/g, "");
+		s = lines ? s.replace(/[ \t]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim() : s.replace(/\s+/g, " ").trim();
+		return s.length <= max ? s : null;
+	}
+	/* links are not allowed (spam); a YouTube / Twitch clip id is fine only through the "clip" field below */
+	function hasLink(s) { return /https?:|www\.|\b[a-z0-9-]{2,}\.(com|net|org|io|gg|ly|me|tv|co|xyz|ru|info|biz|fm|app|link|site|shop|top)\b/i.test(s); }
+	/* validate a new pin: returns {pin} or {error} */
+	function cleanPin(b) {
+		var allowed = ["act", "x", "y", "cat", "title", "desc", "region", "clip", "vid", "t", "hp", "m"];
+		for (var k in b) if (allowed.indexOf(k) < 0) return { error: "unknown field " + String(k).slice(0, 20) };
+		var x = b.x, y = b.y;
+		if (typeof x !== "number" || typeof y !== "number" || !(x >= 0 && x <= 1000 && y >= 0 && y <= 1000)) return { error: "pick a spot on the map" };
+		if (!PIN_CATS.some(function (c) { return c[0] === b.cat; })) return { error: "pick a type" };
+		var title = pinText(b.title, 70, false);
+		if (title === null) return { error: "the title is too long (70 characters at most)" };
+		if (title.length < 3) return { error: "give it a short title" };
+		var desc = b.desc === undefined || b.desc === "" ? "" : pinText(b.desc, 600, true);
+		if (desc === null) return { error: "the description is too long (600 characters at most)" };
+		if (hasLink(title) || hasLink(desc)) return { error: "links are not allowed (paste a YouTube video id in the clip box instead)" };
+		if (BAD.test(title) || BAD.test(desc)) return { error: "please keep it friendly" };
+		var region = b.region === undefined || b.region === "" ? "" : b.region;
+		if (region && REGIONS.indexOf(region) < 0) return { error: "pick a region from the list" };
+		var clip = b.clip === undefined || b.clip === "" ? "" : clipId(b.clip);
+		if (clip === null) return { error: "the clip must be a YouTube link or video id" };
+		return { pin: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, cat: b.cat, title: title, desc: desc, region: region, clip: clip, m: MAP_V } };
+	}
+	/* YouTube link / id -> 11-character id; "" stays ""; anything else null */
+	function clipId(v) {
+		if (typeof v !== "string") return null;
+		var s = v.trim(); if (!s) return "";
+		if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+		var m = s.match(/^(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[?&#].*)?$/);
+		return m ? m[1] : null;
+	}
+	/* verdict from the votes: "verified" | "disputed" | "fake" | "new" | "" */
+	function pinStatus(up, dn) {
+		up = up || 0; dn = dn || 0; var n = up + dn, s = up - dn;
+		if (s <= -5) return "fake";
+		if (s >= 5 && up >= 0.75 * n) return "verified";
+		if (n >= 4 && up < 0.6 * n) return "disputed";
+		if (n < 3) return "new";
+		return "";
+	}
+	/* Wilson lower bound (95%) of the share of up votes: a fair "top" order that does not favour pins with one vote */
+	function pinRank(up, dn) {
+		var n = (up || 0) + (dn || 0); if (!n) return 0;
+		var z = 1.96, p = up / n;
+		return (p + z * z / (2 * n) - z * Math.sqrt((p * (1 - p) + z * z / (4 * n)) / n)) / (1 + z * z / n);
+	}
+	function sortPins(list, how) {
+		var a = list.slice();
+		if (how === "new") a.sort(function (p, q) { return q.c - p.c; });
+		else if (how === "disputed") a.sort(function (p, q) { return (Math.min(q.up, q.dn) - Math.min(p.up, p.dn)) || (q.up + q.dn - p.up - p.dn); });
+		else a.sort(function (p, q) { return (pinRank(q.up, q.dn) - pinRank(p.up, p.dn)) || (q.up - q.dn - p.up + p.dn) || (q.c - p.c); });
+		return a;
+	}
+	function filterPins(list, f) {
+		f = f || {}; var q = String(f.q || "").toLowerCase().trim(), words = q ? q.split(/\s+/) : [];
+		return list.filter(function (p) {
+			if (f.cats && f.cats.length && f.cats.indexOf(p.cat) < 0) return false;
+			if (f.verified && pinStatus(p.up, p.dn) !== "verified") return false;
+			if (f.region && p.region !== f.region) return false;
+			if (words.length) { var t = (p.title + " " + p.desc + " " + p.region + " " + catName(p.cat)).toLowerCase(); for (var i = 0; i < words.length; i++) if (t.indexOf(words[i]) < 0) return false; }
+			return true;
+		});
+	}
+	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
+	var MAP = { MAP_V: MAP_V, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
+		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD };
+
 	var API = { G0: G0, FACTS: FACTS, VEHICLES: VEHICLES, vehicle: vehicle, bodyShape: bodyShape, PRESETS: PRESETS, COURSE_DEF: COURSE_DEF, buildCourse: buildCourse, groundAt: groundAt, rayHit: rayHit, closest: closest, inside: inside,
 		Sim: Sim, simulate: simulate, sweepOne: sweepOne, summarize: summarize,
 		projectile: projectile, speedNeeded: speedNeeded, bestAngle: bestAngle, dragFlight: dragFlight, speedNeededDrag: speedNeededDrag,
 		CITIES: CITIES, offsetMin: offsetMin, zoned: zoned, midnight: midnight, parts: parts, unlockTimes: unlockTimes,
 		SPEED_UNITS: SPEED_UNITS, downloadSeconds: downloadSeconds, durationText: durationText, CONSOLES: CONSOLES, CONNECTIONS: CONNECTIONS,
-		parseRss: parseRss, aboutGta: aboutGta, NEWS_FEEDS: NEWS_FEEDS, decode: decode };
+		parseRss: parseRss, aboutGta: aboutGta, NEWS_FEEDS: NEWS_FEEDS, decode: decode, MAP: MAP };
 	if (typeof module !== "undefined" && module.exports) module.exports = API; else root.MESGTA = API;
 })(typeof window !== "undefined" ? window : this);

@@ -1,0 +1,65 @@
+		<div class="gm-mode" role="tablist" aria-label="Map mode">
+			<button type="button" role="tab" class="gm-modebtn" data-mode="explore" aria-selected="true"><b>Explore pins</b><small>See what people found, vote it true or fake</small></button>
+			<button type="button" role="tab" class="gm-modebtn" data-mode="add" aria-selected="false"><b>＋ Add a secret</b><small>Click the map where it is, then tell us about it</small></button>
+		</div>
+		<div class="gm-wrap" id="gm-view">
+			<div class="gm-bar" id="gm-bar">
+				<span class="gm-hint" id="gm-hint">Drag to move · Ctrl + scroll or pinch to zoom · click a pin to open it</span>
+				<span class="gm-tools">
+					<button type="button" class="gm-tb" id="gm-zin" title="Zoom in (+)" aria-label="Zoom in">+</button>
+					<button type="button" class="gm-tb" id="gm-zout" title="Zoom out (−)" aria-label="Zoom out">−</button>
+					<button type="button" class="gm-tb" id="gm-fit" title="Show the whole map (0)">Fit</button>
+					<label class="gm-tbl"><input type="checkbox" id="gm-grid" checked> Grid</label>
+					<label class="gm-tbl"><input type="checkbox" id="gm-labels" checked> Names</label>
+				</span>
+			</div>
+			<div class="gm-stage" id="gm-stage">
+				<svg class="gm-svg" id="gm-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Rough fan map of Leonida with pins">
+					<rect class="gm-sea" x="-3000" y="-3000" width="7000" height="7000"/>
+					<g id="gm-vp">
+						<g id="gm-base"></g>
+						<g id="gm-gridg"></g>
+						<g id="gm-names"></g>
+						<g id="gm-pins"></g>
+						<g id="gm-draft"></g>
+					</g>
+				</svg>
+				<div class="gm-pop" id="gm-pop" hidden></div>
+				<div class="gm-ask" id="gm-ask" hidden><span>Add a pin here?</span><button type="button" class="tu-btn" id="gm-askyes">＋ Add a secret</button><button type="button" class="gm-x" id="gm-askno" aria-label="Close">×</button></div>
+				<div class="gm-status" id="gm-status" role="status"></div>
+			</div>
+			<div class="gm-side" id="gm-side">
+				<section class="gm-panel" data-panel="explore">
+					<div class="gm-search"><input type="search" id="gm-q" placeholder="Search pins (deer, fishing, Vice City…)" aria-label="Search pins"></div>
+					<div class="gm-chips" id="gm-cats" aria-label="Types"></div>
+					<div class="gm-row">
+						<label>Sort <select id="gm-sort"><option value="top">Top rated</option><option value="new">Newest</option><option value="disputed">Disputed</option></select></label>
+						<label class="gm-chk"><input type="checkbox" id="gm-ver"> Verified only</label>
+						<label class="gm-chk"><input type="checkbox" id="gm-mineonly"> Mine</label>
+					</div>
+					<p class="gm-count" id="gm-count"></p>
+					<ol class="gm-list" id="gm-list"></ol>
+				</section>
+				<section class="gm-panel" data-panel="add" hidden>
+					<form id="gm-form" autocomplete="off">
+						<p class="gm-step" id="gm-where"><b>1.</b> Click the map where it is.</p>
+						<p class="gm-step"><b>2.</b> What is it?</p>
+						<div class="gm-chips gm-chips--pick" id="gm-fcat" role="radiogroup" aria-label="Type"></div>
+						<label class="gm-lab">Title <input type="text" id="gm-ftitle" maxlength="70" placeholder="e.g. White alligator at sunrise" required></label>
+						<label class="gm-lab">How to find it <small>(optional)</small><textarea id="gm-fdesc" maxlength="600" rows="4" placeholder="When it shows up, what to do, what you get…"></textarea></label>
+						<label class="gm-lab">Region <select id="gm-freg"></select></label>
+						<label class="gm-lab">YouTube clip <small>(optional, link or video id)</small><input type="text" id="gm-fclip" placeholder="https://youtu.be/…"></label>
+						<label class="gm-hp" aria-hidden="true">Leave empty <input type="text" id="gm-fhp" tabindex="-1"></label>
+						<p class="tu-note">No links in the text, keep it friendly. Anyone can vote; pins voted down to −5 disappear.</p>
+						<div class="gm-actions"><button type="submit" class="tu-btn" id="gm-fsave">Pin it</button><button type="button" class="tu-btn tu-btn--ghost" id="gm-fcancel">Cancel</button></div>
+						<p class="gm-ferr" id="gm-ferr" role="alert"></p>
+					</form>
+				</section>
+			</div>
+		</div>
+		<div class="tu-card gm-note">
+			<h2 class="gt-h">About this map</h2>
+			<p>The picture is a <b>rough fan sketch</b> of Leonida made from the region names Rockstar has published. It is not the game's map and the places are approximate. Once GTA 6 is out (November 19, 2026) it will be redrawn from the real game, and every pin keeps its region, so nothing gets lost.</p>
+			<p><b>Verified</b> = at least 5 more up votes than down votes and 3 out of 4 votes up. <b>Disputed</b> = people disagree. You get one vote per pin and can change it any time. You can delete your own pins from this browser.</p>
+		</div>
+		<script src="/main_js/panel-view.js" defer></script>
