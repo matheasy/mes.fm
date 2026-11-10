@@ -232,6 +232,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("compress-pdf", "Compress PDF", "/pdf"),   # PDF Tools family page (brand option in build_tool_apps.py)
     ("pdf", "PDF Editor"),   # also built by build_tool_apps.py (wide page, always-dark workspace, pdf.js + pdf-lib)
     ("3d-studio", "MES 3D Studio"),
+    ("brick-builder", "MES Brick Builder"),
     ("photo", "Photo Editor"),   # also built by build_tool_apps.py (wide page, always-dark editor workspace)
     ("audio", "Audio Editor"),   # also built by build_tool_apps.py (always-dark editor workspace, MESDenoise)
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
