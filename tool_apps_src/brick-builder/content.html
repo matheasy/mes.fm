@@ -1,0 +1,153 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+	<div class="tu bb" id="bb" data-start="{{START}}">
+		<div class="bb-bar" id="bb-bar" role="toolbar" aria-label="Brick Builder tools">
+			<div class="bb-grp">
+				<button type="button" class="bb-b bb-b--pri" data-act="examples" title="Ready-made builds to start from or learn from">📚 Examples</button>
+				<button type="button" class="bb-b" data-act="new" title="Start with an empty baseplate">✚ New</button>
+				<button type="button" class="bb-b" data-act="open" title="Open a saved build (.json)">📂 Open</button>
+				<button type="button" class="bb-b" data-act="save" title="Save the build as a file (Ctrl+S)">💾 Save</button>
+				<button type="button" class="bb-b" data-act="share" title="Copy a link to this build">🔗 Share link</button>
+				<button type="button" class="bb-b bb-b--crash" data-act="crash" title="Crash your build, or a ready-made car, into a wall">💥 Crash test</button>
+			</div>
+			<div class="bb-grp">
+				<button type="button" class="bb-ib" data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+				<button type="button" class="bb-ib" data-act="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+				<button type="button" class="bb-b" data-act="rotate" title="Turn the brick a quarter turn (R)">⟳ Turn</button>
+			</div>
+			<div class="bb-grp" role="group" aria-label="What a click does">
+				<button type="button" class="bb-b bb-tool" data-tool="build" title="Add bricks (B). Shift-click removes one.">🧱 Build</button>
+				<button type="button" class="bb-b bb-tool" data-tool="paint" title="Click a brick to give it the chosen colour (P)">🎨 Paint</button>
+				<button type="button" class="bb-b bb-tool" data-tool="remove" title="Click a brick to take it off (X)">✖ Remove</button>
+				<button type="button" class="bb-b bb-tool" data-tool="pick" title="Click a brick to use the same part and colour (I)">💧 Pick</button>
+				<button type="button" class="bb-b bb-tool" data-tool="load" title="Click a brick to put a weight on it, or take it off (W)">⚖ Weight</button>
+			</div>
+			<div class="bb-grp bb-grp--r">
+				<button type="button" class="bb-b" data-act="shot" title="Save a picture of the view">📷 PNG</button>
+				<button type="button" class="bb-b" data-act="stl" title="Download an STL file for a 3D printer">⬇ STL</button>
+				<button type="button" class="bb-b" data-act="fill" id="bb-fillbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ Fill window</button>
+				<button type="button" class="bb-b" data-act="full" id="bb-fsbtn" title="Full screen (Shift+F)">⛶ Full screen</button>
+				<button type="button" class="bb-b" data-act="help" title="How it works and keyboard shortcuts (?)">? Help</button>
+			</div>
+		</div>
+
+		<div class="bb-main">
+			<aside class="bb-left" aria-label="Parts and colours">
+				<div class="bb-panel">
+					<div class="bb-ph">Colour <span class="bb-cname" id="bb-cname"></span></div>
+					<div class="bb-colors" id="bb-colors" role="radiogroup" aria-label="Colour"></div>
+				</div>
+				<div class="bb-panel bb-panel--grow">
+					<div class="bb-ph">Parts</div>
+					<div class="bb-cats" id="bb-cats" role="tablist" aria-label="Kinds of parts"></div>
+					<input type="search" class="bb-in" id="bb-psearch" placeholder="Find a part… (2x4, slope, arch)" aria-label="Find a part">
+					<div class="bb-parts" id="bb-parts" role="listbox" aria-label="Parts"></div>
+				</div>
+			</aside>
+
+			<div class="bb-stage" id="bb-stage">
+				<div class="bb-view" id="bb-view" tabindex="0" aria-label="3D building area: click to add a brick, drag to turn the view, right-drag or two fingers to move it, wheel or pinch to zoom">
+					<div class="bb-labels" id="bb-labels" aria-hidden="true"></div>
+					<div class="bb-vtools" role="group" aria-label="Views">
+						<button type="button" class="bb-vb" data-view="iso" title="3D view (0)">3D</button>
+						<button type="button" class="bb-vb" data-view="top" title="From the top (7)">Top</button>
+						<button type="button" class="bb-vb" data-view="front" title="From the front (1)">Front</button>
+						<button type="button" class="bb-vb" data-view="side" title="From the side (3)">Side</button>
+						<button type="button" class="bb-vb" data-view="fit" title="Zoom to the build (.)">⌖ Fit</button>
+					</div>
+					<div class="bb-chip" id="bb-chip" aria-live="polite"></div>
+					<div class="bb-loading" id="bb-loading"><div><span class="bb-spin"></span> Loading the 3D engine…</div></div>
+					<div class="bb-empty" id="bb-empty" hidden>
+						<div class="bb-empty-in">
+							<b>Start building!</b>
+							<span>Pick a part and a colour on the left, then click the baseplate. Or open an example.</span>
+							<div><button type="button" class="bb-b bb-b--pri" data-act="examples">📚 Open an example</button></div>
+							<small>Drag to turn the view · right-drag to move · scroll to zoom · R turns the brick</small>
+						</div>
+					</div>
+				</div>
+				<div class="bb-status" id="bb-status" aria-live="polite"></div>
+			</div>
+
+			<aside class="bb-right" aria-label="Strength test, steps and parts list">
+				<div class="bb-tabs" role="tablist">
+					<button type="button" class="bb-tab" data-tab="test" role="tab" aria-selected="true">Strength</button>
+					<button type="button" class="bb-tab" data-tab="steps" role="tab" aria-selected="false">Steps</button>
+					<button type="button" class="bb-tab" data-tab="list" role="tab" aria-selected="false">Parts list</button>
+					<button type="button" class="bb-tab" data-tab="set" role="tab" aria-selected="false">Settings</button>
+					<button type="button" class="bb-tab bb-tab--crash" data-tab="crash" role="tab" aria-selected="false">💥 Crash</button>
+				</div>
+				<div class="bb-tp" id="bb-tp-test" role="tabpanel">
+					<div id="bb-chal"></div>
+					<label class="bb-ck"><input type="checkbox" id="bb-stress"> Show stress colours <span class="bb-legend"><i style="background:#3b82f6"></i>fine <i style="background:#eab308"></i>working hard <i style="background:#ef4444"></i>breaks</span></label>
+					<label class="bb-ck"><input type="checkbox" id="bb-anch"> Stuck to the baseplate</label>
+					<label class="bb-row">Stud grip
+						<select id="bb-grip"><option value="normal">Normal</option><option value="strong">Tight (new bricks)</option><option value="none">None: balance only</option></select></label>
+					<label class="bb-row">Weight tool puts
+						<select id="bb-lw"><option>10</option><option>50</option><option>100</option><option selected>200</option><option>500</option><option>1000</option><option>2000</option></select> g</label>
+					<div class="bb-res" id="bb-res"></div>
+					<div class="bb-tbox">
+						<div class="bb-ph">Breaking test</div>
+						<div id="bb-btest" class="bb-small">Click a brick with the ⚖ Weight tool (or pick one below), then find out how much it can hold.</div>
+						<div class="bb-btns"><button type="button" class="bb-b bb-b--pri" id="bb-break">Find the breaking load</button> <button type="button" class="bb-b" id="bb-clearw">Take all weights off</button></div>
+						<div id="bb-bres" class="bb-bres" aria-live="polite"></div>
+					</div>
+					<details class="bb-how"><summary>How is the strength worked out?</summary>
+						<p>Every part's weight (and any weight you add) flows down through the parts under it to the baseplate. Two things can go wrong:</p>
+						<ul><li><b>Overhang:</b> when the weight carried by a part sits past the edge of what it rests on, the studs have to pull to stop it tipping. Each stud grips with about 1.5 newtons; more studs further from the edge hold more.</li>
+						<li><b>Bending:</b> a part that spans a gap bends like a beam. Parts stacked on top over the gap bend with it, so a deck three plates thick is far stiffer than one plate. If it sags more than 1/40 of the span, the studs pop off.</li></ul>
+						<p>Smooth tiles and the sloped faces have no studs, so nothing on them is held. It is a simple model for learning, not an engineering tool: real bricks also stretch, twist and wear out.</p>
+					</details>
+				</div>
+				<div class="bb-tp" id="bb-tp-steps" role="tabpanel" hidden>
+					<p class="bb-small">The building steps are the order the parts were added. Step through an example to build it with real bricks.</p>
+					<div class="bb-stepnow" id="bb-stepnow"></div>
+					<input type="range" id="bb-step" min="0" max="0" value="0" aria-label="Step">
+					<div class="bb-btns">
+						<button type="button" class="bb-b" id="bb-sprev" aria-label="Previous step">◀ Back</button>
+						<button type="button" class="bb-b bb-b--pri" id="bb-snext">Next ▶</button>
+						<button type="button" class="bb-b" id="bb-splay">▶ Play</button>
+						<button type="button" class="bb-b" id="bb-sall">Show all</button>
+					</div>
+					<button type="button" class="bb-b" id="bb-ssort" title="Put the steps in order from the bottom up">↕ Sort steps bottom-up</button>
+				</div>
+				<div class="bb-tp" id="bb-tp-list" role="tabpanel" hidden>
+					<div id="bb-sum" class="bb-small"></div>
+					<div id="bb-bom"></div>
+					<div class="bb-btns"><button type="button" class="bb-b" id="bb-bomcopy">Copy the list</button> <button type="button" class="bb-b" id="bb-bomcsv">Download CSV</button></div>
+				</div>
+				<div class="bb-tp" id="bb-tp-crash" role="tabpanel" hidden>
+					<label class="bb-row">Vehicle <select id="bb-cveh"></select></label>
+					<button type="button" class="bb-b" id="bb-cturn" title="Turn the vehicle a quarter turn if it drives sideways">⟳ Turn the vehicle</button>
+					<label class="bb-row">Crash into <select id="bb-ctgt"><option value="concrete">Concrete wall</option><option value="bricks">Brick wall</option><option value="headon">Another one, head-on</option><option value="foam">Foam wall (soft)</option></select></label>
+					<label class="bb-row">Speed <b id="bb-cspdv"></b></label>
+					<input type="range" id="bb-cspd" min="2" max="40" step="1" aria-label="Speed in km/h">
+					<label class="bb-row">Stud grip <select id="bb-cgrip"><option value="loose">Loose (old bricks)</option><option value="normal">Normal</option><option value="tight">Tight (new bricks)</option></select></label>
+					<label class="bb-row">Play it <select id="bb-cslow"><option value="1">at real speed</option><option value="0.25">in slow motion</option><option value="0.08">in super slow motion</option></select></label>
+					<label class="bb-row">Camera <select id="bb-ccam"><option value="follow">Follow the car</option><option value="side">From the side</option><option value="top">From above</option><option value="free">Free (drag to turn)</option></select></label>
+					<label class="bb-ck"><input type="checkbox" id="bb-csnd"> Crash sounds</label>
+					<div class="bb-btns"><button type="button" class="bb-b bb-b--pri bb-b--go" id="bb-cgo">💥 Go!</button> <button type="button" class="bb-b" id="bb-creset">↺ Put it back</button></div>
+					<div class="bb-small" id="bb-cstat" aria-live="polite"></div>
+					<div id="bb-cres"></div>
+					<details class="bb-how"><summary>How does it decide what breaks?</summary>
+						<p>When the front hits, every part has to be stopped in a few thousandths of a second. That takes a force (its mass times how fast it slows down), and the force has to reach the wall through the bricks in front of it or through stud joints.</p>
+						<ul><li>Pushing on the brick in front is free: plastic does not break by being squeezed.</li><li>Each stud joint holds about 1.5 newtons sideways (less for old, loose bricks). If a joint has to hold more, it lets go and everything on the far side flies off.</li><li>Pieces that fly off can break again when they hit the road or the wall.</li></ul>
+						<p>So a car built from tall stacks held by one or two studs smashes at low speed, while one built from overlapping plates and bricks survives. Faster crashes and harder walls (concrete stops it fastest, foam slowest) break more. A simple model for fun and learning: real bricks also crack and bend.</p>
+					</details>
+				</div>
+				<div class="bb-tp" id="bb-tp-set" role="tabpanel" hidden>
+					<label class="bb-row">Baseplate size <select id="bb-size"><option value="16">16 x 16 studs</option><option value="32">32 x 32 studs</option><option value="48">48 x 48 studs</option></select></label>
+					<label class="bb-row">Baseplate colour <select id="bb-bcol"><option value="3">Green</option><option value="6">Light grey</option><option value="1">Blue</option><option value="10">Tan</option><option value="4">White</option><option value="5">Black</option></select></label>
+					<label class="bb-ck"><input type="checkbox" id="bb-shadow"> Shadows</label>
+					<label class="bb-ck"><input type="checkbox" id="bb-ghost"> Show the brick before it is placed</label>
+					<label class="bb-ck"><input type="checkbox" id="bb-studs"> Show studs on the baseplate</label>
+					<p class="bb-small">Your build is saved in this browser by itself. Use Save to keep a file, or Share link to send it to someone.</p>
+				</div>
+			</aside>
+		</div>
+		<input type="file" id="bb-file" accept=".json,application/json" hidden>
+		<div class="bb-dlgw" id="bb-dlgw" hidden><div class="bb-dlg" id="bb-dlg" role="dialog" aria-modal="true"></div></div>
+		<div class="bb-toast" id="bb-toast" role="status" aria-live="polite"></div>
+
+{{SEO}}
+	</div>
