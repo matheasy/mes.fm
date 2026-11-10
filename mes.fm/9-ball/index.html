@@ -526,13 +526,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-height:420px) {#bl .bl-ohit {width:64px;height:64px;} #bl .bl-opow {top:58px;bottom:80px;width:40px;} #bl .bl-otop button {min-width:38px;min-height:38px;}}
 	/* with a mouse, the full controls sit under the table: on-table power / HIT / spin only in Fill window and full screen */
 	@media (pointer:fine) {
-		#bl .bl-view:not(.mes-pfill) .bl-opow, #bl .bl-view:not(.mes-pfill) .bl-ohit, #bl .bl-view:not(.mes-pfill) .bl-ospin, #bl .bl-view:not(.mes-pfill) .bl-ospinpop {display:none;}
+		#bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-opow, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ohit, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ospin, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ospinpop {display:none;}
 	}
 	#bl .bl-elevwrap {display:flex;flex-direction:column;gap:0.15em;font-size:0.82em;color:var(--bl-sub);min-width:8.5em;}
 	#bl .bl-elevwrap b {color:var(--bl-ink);}
 	#bl .bl-elev {width:100%;accent-color:#0f7a4a;}
 	#bl .bl-oelev {display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;font-size:0.82em;color:#fff;}
 	#bl .bl-oelev b {color:#ffd54f;}
+	#bl.bl-ov-off .bl-opow, #bl.bl-ov-off .bl-ohit, #bl.bl-ov-off .bl-ospin, #bl.bl-ov-off .bl-ospinpop {display:none !important;}
+	#bl .bl-opill {position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;font-weight:700;font-size:0.9em;padding:0.4em 0.9em;border-radius:999px;white-space:nowrap;max-width:calc(100% - 220px);overflow:hidden;text-overflow:ellipsis;pointer-events:none;}
 
 
 	@media print {
@@ -679,6 +681,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #bl .bl-ospinbtns button{border:1px solid rgba(51,51,51,0.30);background:#48515b}
 	body.dark-mode #bl .bl-ohelp{background:rgba(68,82,95,0.95)}
 	body.dark-mode #bl .bl-oelev b{color:#ffd85c}
+	body.dark-mode #bl .bl-opill{background:rgba(82,82,82,0.75)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -921,6 +924,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<div class="tu-seg" id="bl-orient" role="group" aria-labelledby="bl-orient-l"><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="across" aria-pressed="false">Across</button><button type="button" data-v="upright" aria-pressed="false">Upright</button></div></div>
 						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-speed-l">Shot speed</span>
 							<div class="tu-seg" id="bl-speed" role="group" aria-labelledby="bl-speed-l"><button type="button" data-v="0.5" aria-pressed="false">Slow</button><button type="button" data-v="1" aria-pressed="true">Normal</button><button type="button" data-v="2" aria-pressed="false">Fast</button></div></div>
+						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-ovm-l">Buttons on the table</span>
+							<div class="tu-seg" id="bl-ovm" role="group" aria-labelledby="bl-ovm-l" title="Power bar, HIT and spin on the table itself. Auto = on phones and tablets, and in Fill window / full screen."><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="always" aria-pressed="false">Always</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
 						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-cloth-l">Cloth</span>
 							<div class="tu-seg" id="bl-cloth" role="group" aria-labelledby="bl-cloth-l"><button type="button" data-v="green" aria-pressed="true">Green</button><button type="button" data-v="blue" aria-pressed="false">Blue</button><button type="button" data-v="red" aria-pressed="false">Red</button><button type="button" data-v="grey" aria-pressed="false">Grey</button></div></div>
 						<div class="bl-checks">
@@ -982,7 +987,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="bl-shoot" id="bl-shoot" title="Take the shot (Space)">Shoot</button>
 				</div>
 			</div>
-			<p class="tu-note bl-keys">Drag on the table to aim (the further from the cue ball you drag, the finer the aim), then pull the power bar and let go. <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>J</kbd> / <kbd>Shift</kbd>+<kbd>J</kbd> raise / lower the cue (jump shots), <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>V</kbd> 2D / 3D, <kbd>K</kbd> camera, <kbd>Page Up</kbd> <kbd>Page Down</kbd> tilt the 3D view, <kbd>M</kbd> music, <kbd>G</kbd> guide full / short / off, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
+			<p class="tu-note bl-keys">Drag on the table to aim, then press on the cue stick, <b>pull it back and let go</b> to shoot (or use the power bar). <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>J</kbd> / <kbd>Shift</kbd>+<kbd>J</kbd> raise / lower the cue (jump shots), <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>V</kbd> 2D / 3D, <kbd>K</kbd> camera, <kbd>Page Up</kbd> <kbd>Page Down</kbd> tilt the 3D view, <kbd>M</kbd> music, <kbd>G</kbd> guide full / short / off, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
 		</section>
 
 		<section id="bl-p-online" role="tabpanel" aria-label="Play online" hidden>
@@ -1117,7 +1122,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:2
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=7" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

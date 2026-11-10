@@ -1799,7 +1799,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "8", opp: "cpu", lv: "medium", me: "first", alt: 0, guide: "full", orient: "auto", speed: "1", cloth: "green", snd: true, rel: true, nums: false,
-		names: ["", ""], mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
+		names: ["", ""], ovm: "auto", mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k0 in saved) S[k0] = saved[k0]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -2405,6 +2405,7 @@
 		if (e.button === 2 || e.shiftKey || !canShoot()) { d3 = { kind: "orbit", x: e.clientX, y: e.clientY }; return; }
 		var w = v3.pick(e.clientX, e.clientY), c = cueXY();
 		if (st.bih && w && Math.hypot(w[0] - c[0], w[1] - c[1]) < st.T.R * 3) { d3 = { kind: "ball", ox: c[0] - w[0], oy: c[1] - w[1] }; return; }
+		if (onCue(w)) { d3 = pullStart(e.clientX, e.clientY); return; }
 		if (behindMode() && S.cam !== "orbit") { d3 = { kind: "turn", x: e.clientX, y: e.clientY, a0: aim, moved: false, w: w }; return; }
 		var onTable = w && Math.abs(w[0]) < st.T.L / 2 + 0.2 && Math.abs(w[1]) < st.T.W / 2 + 0.2;
 		if (onTable) { d3 = { kind: "aim" }; setAimTo(w); }
@@ -2434,10 +2435,12 @@
 			var per = (e.altKey ? 0.02 : 0.12) * 10000 * (d3.fine ? 0.25 : 1);
 			aim = (((d3.a0 + Math.round(dx * per)) % 3600000) + 3600000) % 3600000; renderAim(); draw(); return;
 		}
+		if (d3.kind === "pull") { pullMove(d3, e.clientX, e.clientY); return; }
 		if (d3.kind === "aim") { var w2 = v3.pick(e.clientX, e.clientY); if (w2) setAimTo(w2); }
 	});
 	function end3(e) {
 		delete pts3[e.pointerId];
+		if (d3 && d3.kind === "pull") { var dp = d3; d3 = null; pullEnd(dp); render(); return; }
 		if (d3 && d3.kind === "turn" && !d3.moved && d3.w) {
 			// a tap on a ball aims straight at it
 			var w = d3.w, best = -1, bd = 1e9;
@@ -2528,11 +2531,12 @@
 	ov.className = "bl-ov"; ov.id = "bl-ov";
 	ov.innerHTML = '<div class="bl-otop"><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
 		'<div class="bl-opow" id="bl-opow" role="slider" aria-label="Power: drag down to pull the cue back, let go to shoot" aria-valuemin="1" aria-valuemax="100"><div class="bl-opowfill" id="bl-opowfill"></div><span class="bl-opowt">PULL<br>↓</span><span class="bl-opowv" id="bl-opowv"></span></div>' +
+		'<div class="bl-opill" id="bl-opill" hidden></div>' +
 		'<button type="button" class="bl-ospin" id="bl-ospin" title="Spin: where the cue hits the white ball"><canvas class="bl-spincv" width="96" height="96"></canvas></button>' +
 		'<button type="button" class="bl-ohit" id="bl-ohit" title="Tap to shoot at the set power, or hold to charge the power and let go">HIT<small>hold = charge</small></button>' +
 		'<div class="bl-ospinpop" id="bl-ospinpop" hidden><b>Spin</b><canvas class="bl-spincv" width="240" height="240"></canvas><span id="bl-ospinlab"></span><label class="bl-oelev">Cue up (jump): <b class="bl-elevv">flat</b><input type="range" class="bl-elev" min="0" max="60" step="1" value="0" aria-label="Cue elevation for jump shots"></label><div class="bl-ospinbtns"><button type="button" data-sp="0,0">Centre</button><button type="button" data-sp="0,60">Follow</button><button type="button" data-sp="0,-60">Draw</button><button type="button" data-sp="-60,0">Left</button><button type="button" data-sp="60,0">Right</button><button type="button" data-sp="x">Done</button></div></div>' +
 		'<div class="bl-ohelp" id="bl-ohelp" hidden><b>How to shoot</b><ol><li><b>Aim:</b> press on the table and drag. The dotted line shows where the white ball goes.' + '<span class="bl-o3d"> In 3D behind the cue, drag sideways to aim and up / down to look higher or lower.</span></li>' +
-		'<li><b>Power:</b> pull the bar on the right <b>down</b> (like pulling the cue back) and <b>let go to shoot</b>. Or <b>hold HIT</b>: the power goes up and down, let go when it is right. A quick tap on HIT shoots at the power already set.</li>' +
+		'<li><b>Shoot (easiest):</b> press on the <b>cue stick</b> (or the white ball) and <b>pull back</b>. The further you pull, the harder the shot. <b>Let go to shoot</b>, or slide back to where you started to cancel.</li><li><b>Or:</b> pull the bar on the right <b>down</b> (like pulling the cue back) and <b>let go to shoot</b>. Or <b>hold HIT</b>: the power goes up and down, let go when it is right. A quick tap on HIT shoots at the power already set.</li>' +
 		'<li><b>Spin:</b> tap the little white ball (bottom left). Top = the white ball keeps rolling after the hit, bottom = it comes back, sides = side spin off the cushions.</li>' +
 		'<li><b>Jump shot:</b> in the spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
 	stage.appendChild(ov);
@@ -2589,6 +2593,28 @@
 	});
 	if (!S.helpSeen) setTimeout(function () { showHelp(true); }, 600);
 
+	/* ---------- grab the cue and pull it back: the further you pull, the harder; let go to shoot, slide back to cancel ---------- */
+	function onCue(w) {
+		if (!w || !canShoot()) return false;
+		var c = cueXY(), d = B.dirOf(aim), rx = w[0] - c[0], ry = w[1] - c[1], R = st.T.R;
+		if (!st.bih && Math.hypot(rx, ry) < R * 2.3) return true;              // the white ball itself
+		var along = -(rx * d.x + ry * d.y), lat = Math.abs(rx * d.y - ry * d.x);   // the stick behind it
+		return along > R * 1.2 && along < 1.2 && lat < Math.max(0.05, R * 1.8);
+	}
+	function pullStart(x, y) { ensureAudio(); return { kind: "pull", sx: x, sy: y, p0: power, dist: 0 }; }
+	function pullMove(d, x, y) {
+		d.dist = Math.hypot(x - d.sx, y - d.sy);
+		var sz = Math.min(stage.clientWidth || 400, stage.clientHeight || 300);
+		power = Math.max(10, Math.min(1000, d.dist / (0.42 * sz) * 1000));
+		renderPower(); pullTip(d.dist > 12 ? "Power " + Math.round(power / 10) + "% · let go to shoot · slide back to cancel" : "Slide away from the ball to pull the cue back"); need();
+	}
+	function pullEnd(d) {
+		pullTip("");
+		if (d.dist > 12 && power >= 25 && canShoot()) { S.power = Math.round(power); save(); shoot(); }
+		else { power = d.p0; renderPower(); need(); }
+	}
+	function pullTip(t) { var el = $("bl-opill"); if (!el) return; el.textContent = t; el.hidden = !t; }
+
 	/* ===================================================================== input ===================================================================== */
 	var drag = null;
 	function evXY(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
@@ -2602,6 +2628,8 @@
 		if (st.bih && Math.hypot(w[0] - c[0], w[1] - c[1]) < st.T.R * 2.4) {
 			drag = { kind: "ball", ox: c[0] - w[0], oy: c[1] - w[1] };
 			cv.classList.add("is-dragball");
+		} else if (onCue(w)) {
+			drag = pullStart(e.clientX, e.clientY);
 		} else {
 			drag = { kind: "aim" };
 			setAimTo(w);
@@ -2617,9 +2645,10 @@
 		if (drag.kind === "ball") {
 			place = clampPlace(w[0] + drag.ox, w[1] + drag.oy);
 			need();
-		} else setAimTo(w);
+		} else if (drag.kind === "pull") pullMove(drag, e.clientX, e.clientY);
+		else setAimTo(w);
 	});
-	function endDrag() { if (drag) { drag = null; cv.classList.remove("is-dragball"); render(); } }
+	function endDrag() { if (drag) { var d0 = drag; drag = null; cv.classList.remove("is-dragball"); if (d0.kind === "pull") pullEnd(d0); render(); } }
 	cv.addEventListener("pointerup", endDrag);
 	cv.addEventListener("pointercancel", endDrag);
 	function clampPlace(x, y) {
@@ -2882,7 +2911,7 @@
 	function syncSetup() {
 		$("bl-game").value = S.game;
 		segSet("bl-opp", S.opp); segSet("bl-lv", S.lv); segSet("bl-me", S.me); segSet("bl-ofirst", S.ofirst);
-		segSet("bl-guide", S.guide); segSet("bl-orient", S.orient); segSet("bl-speed", S.speed); segSet("bl-cloth", S.cloth);
+		segSet("bl-guide", S.guide); segSet("bl-orient", S.orient); segSet("bl-speed", S.speed); segSet("bl-cloth", S.cloth); segSet("bl-ovm", S.ovm || "auto");
 		$("bl-snd").checked = S.snd; $("bl-rel").checked = S.rel; $("bl-nums").checked = S.nums;
 		$("bl-n1").value = S.names[0] || ""; $("bl-n2").value = S.names[1] || "";
 		$("bl-name").value = S.name || ""; $("bl-opub").checked = S.opub !== false;
@@ -2903,6 +2932,9 @@
 	guideBtn();
 	segWire("bl-orient", function (v) { S.orient = v; save(); relayout(); });
 	segWire("bl-speed", function (v) { S.speed = v; save(); });
+	segWire("bl-ovm", function (v) { S.ovm = v; save(); ovMode(); });
+	function ovMode() { root.classList.toggle("bl-ov-always", S.ovm === "always"); root.classList.toggle("bl-ov-off", S.ovm === "off"); }
+	ovMode();
 	segWire("bl-cloth", function (v) { S.cloth = v; save(); staticCv = null; need(); });
 	$("bl-snd").addEventListener("change", function () { S.snd = this.checked; save(); if (S.snd) ensureAudio(); });
 	$("bl-rel").addEventListener("change", function () { S.rel = this.checked; save(); });
@@ -2969,7 +3001,7 @@
 	/* ---------- rules ---------- */
 	function renderRules() {
 		var R = [
-			["How to play here", "<ul><li><b>Jump shots</b>: raise the cue with the Cue up slider (J / Shift+J). From about 30° the white ball hops over a ball in its way: give it some power and room (a ball's width or two of space). Very hard and steep shots can send it off the table (a foul, ball in hand). Jump shots are allowed in every game here.</li><li><b>On a phone or in Fill window / full screen</b> the controls are on the table: pull the power bar on the right <b>down</b> and let go to shoot, or <b>hold HIT</b> (the power swings up and down) and let go; tap the little white ball for spin; 2D / 3D, camera and help sit top right.</li><li><b>Aim</b>: press on the table and drag; the cue follows your finger or mouse. Dragging far from the cue ball gives finer aim. The ⟲ ⟳ buttons and the arrow keys turn it a hair at a time.</li><li><b>Power</b>: drag along the power bar and let go to shoot (or press Shoot / Space).</li><li><b>Spin</b>: drag the red dot on the little white ball. Top = follow (the cue ball keeps rolling after the hit), bottom = draw (it comes back), left / right = side spin, which changes how it comes off the cushions.</li><li><b>Ball in hand</b>: drag the white ball to where you want it, then aim.</li><li><b>The guide</b>: the dotted line shows where the cue ball goes, the circle where it touches the first ball, the yellow line where that ball goes and the blue line where the cue ball heads off (before spin). A red circle means that ball is not allowed first.</li></ul>"],
+			["How to play here", "<ul><li><b>Shooting</b>: press on the cue stick (or the white ball), pull back and let go: the further you pull, the harder it hits. Slide back to the start to cancel.</li><li><b>Jump shots</b>: raise the cue with the Cue up slider (J / Shift+J). From about 30° the white ball hops over a ball in its way: give it some power and room (a ball's width or two of space). Very hard and steep shots can send it off the table (a foul, ball in hand). Jump shots are allowed in every game here.</li><li><b>On a phone or in Fill window / full screen</b> the controls are on the table: pull the power bar on the right <b>down</b> and let go to shoot, or <b>hold HIT</b> (the power swings up and down) and let go; tap the little white ball for spin; 2D / 3D, camera and help sit top right.</li><li><b>Aim</b>: press on the table and drag; the cue follows your finger or mouse. Dragging far from the cue ball gives finer aim. The ⟲ ⟳ buttons and the arrow keys turn it a hair at a time.</li><li><b>Power</b>: drag along the power bar and let go to shoot (or press Shoot / Space).</li><li><b>Spin</b>: drag the red dot on the little white ball. Top = follow (the cue ball keeps rolling after the hit), bottom = draw (it comes back), left / right = side spin, which changes how it comes off the cushions.</li><li><b>Ball in hand</b>: drag the white ball to where you want it, then aim.</li><li><b>The guide</b>: the dotted line shows where the cue ball goes, the circle where it touches the first ball, the yellow line where that ball goes and the blue line where the cue ball heads off (before spin). A red circle means that ball is not allowed first.</li></ul>"],
 			["8-ball", "<ul><li>The first player breaks from behind the head string. If balls go in on the break the player carries on; the table stays <b>open</b>.</li><li>On an open table, the first ball you pot decides your group: <b>solids</b> (1-7) or <b>stripes</b> (9-15).</li><li>You must hit a ball of your group first, then pot one of your group or make any ball touch a cushion. Pot one of yours and you play again.</li><li>When your group is cleared, pot the <b>8</b> to win. Pot the 8 early, or in the same shot as a foul, and you lose. The 8 going in on the break is put back on its spot.</li><li><b>Fouls</b> (the cue ball goes in, no ball hit, the wrong ball first, no cushion after the hit) give the other player <b>ball in hand</b> anywhere on the table.</li><li>Here the shot is not called: any legal pot counts.</li></ul>"],
 			["9-ball and 10-ball", "<ul><li>Always hit the <b>lowest numbered</b> ball on the table first. Any ball you pot after a legal hit keeps you at the table.</li><li>Pot the 9 (10 in 10-ball) on a legal shot, even in a combination or on the break, and you win.</li><li>A foul gives the other player ball in hand anywhere; a 9 or 10 potted on a foul goes back on its spot.</li><li>No push-out and no three-foul rule here.</li></ul>"],
 			["Snooker", "<ul><li>15 reds (1 point each) and six colours: yellow 2, green 3, brown 4, blue 5, pink 6, black 7. Break off from the D.</li><li>Pot a red, then any colour (the colour you hit first is the one you nominate), then a red, and so on. Colours potted while reds remain come back on their spots.</li><li>When the reds are gone, pot the colours in order: yellow, green, brown, blue, pink, black.</li><li><b>Fouls</b> give the other player at least 4 points (or the value of the ball involved, up to 7): hitting the wrong ball first, potting a ball that isn't on, the cue ball going in, missing everything. After a foul the next player plays from where the cue ball stopped, or from the D if it went in.</li><li>The frame ends when the black goes in; a foul with only the black left also ends it. If the scores are level the black is re-spotted.</li><li>Not modelled here: free ball, the miss rule, touching balls and conceding (use New game).</li></ul>"],
