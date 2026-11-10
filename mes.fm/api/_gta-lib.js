@@ -575,11 +575,72 @@
 		if (!rec || rec.a !== "vote" || typeof rec.id !== "string" || !/^[a-z0-9]{8}$/.test(rec.id) || [1, -1, 0].indexOf(rec.vt) < 0) return { error: "that is not a vote" };
 		return { id: rec.id, v: rec.vt };
 	}
+	/* ---------- known places: a starter layer written by MES (our own words) from the trailers and Rockstar's region descriptions.
+	   Spots are approximate on our sketch (x, y in 0..1000); they move to the real spot when the map is redrawn after launch.
+	   Not votable, never stored on the server. [id, x, y, cat, title, description, region] ---------- */
+	var PLACES = [
+		["k-vc-beach", 868, 690, "gem", "Vice Beach", "The ocean-front strip with art-deco hotels and neon signs, seen in both trailers.", "Vice City"],
+		["k-vc-downtown", 822, 636, "other", "Downtown Vice City", "The high-rise city centre seen from the water and the air in the trailers.", "Vice City"],
+		["k-vc-night", 832, 716, "activity", "Nightlife district", "Clubs, parties and crowded streets after dark, as shown in the trailers.", "Vice City"],
+		["k-vc-marina", 852, 772, "vehicle", "Marina and yachts", "Boats, yachts and speedboats around the city's waterfront, as shown in the trailers.", "Vice City"],
+		["k-vc-bridges", 798, 600, "stunt", "Bay bridges", "Long road bridges between the mainland and the beach islands.", "Vice City"],
+		["k-keys-bridge", 618, 920, "stunt", "Overseas bridges", "A chain of islands joined by long road bridges heading south-west.", "Leonida Keys"],
+		["k-keys-fish", 660, 905, "fishing", "Shallow-water fishing", "Clear, shallow water around the islands: a natural spot for fishing and boats.", "Leonida Keys"],
+		["k-keys-boats", 700, 885, "vehicle", "Island boat traffic", "Boats are the quickest way between the islands.", "Leonida Keys"],
+		["k-keys-end", 452, 957, "gem", "End of the Keys", "The last small islands at the far end of the chain.", "Leonida Keys"],
+		["k-gr-airboat", 642, 652, "vehicle", "Airboats", "Airboats skimming through the wetlands, as shown in the trailers.", "Grassrivers"],
+		["k-gr-gators", 600, 600, "animal", "Alligators", "Alligators were shown in the trailers: expect them near the water.", "Grassrivers"],
+		["k-gr-river", 575, 612, "fishing", "Swamp river fishing", "Slow rivers and channels winding through the wetlands.", "Grassrivers"],
+		["k-gr-birds", 700, 700, "animal", "Wetland birds", "Herons and other water birds in the swamp.", "Grassrivers"],
+		["k-am-town", 700, 300, "other", "Ambrosia town", "A small inland town; Rockstar's region description puts its sugar industry here.", "Ambrosia"],
+		["k-am-bikers", 760, 250, "activity", "Biker hangouts", "Rockstar's description of Ambrosia mentions bikers: look for their bars and clubhouses.", "Ambrosia"],
+		["k-am-fields", 640, 360, "gem", "Cane fields", "Farmland and sugar cane fields around the town.", "Ambrosia"],
+		["k-am-lake", 650, 465, "fishing", "Inland lake", "A lake on our sketch inland; good water for fishing and boats.", "Ambrosia"],
+		["k-mk-hunt", 500, 175, "animal", "Hunting grounds", "Mount Kalaga National Park is the wild north: forests, wildlife and hunting.", "Mount Kalaga"],
+		["k-mk-trails", 590, 200, "vehicle", "Off-road trails", "Dirt roads and trails through the park for trucks, ATVs and bikes.", "Mount Kalaga"],
+		["k-mk-river", 440, 215, "fishing", "Mountain rivers", "Rivers in the national park for quiet fishing.", "Mount Kalaga"],
+		["k-mk-view", 470, 150, "gem", "Park lookout", "High ground in the north with views over the park.", "Mount Kalaga"],
+		["k-pg-town", 210, 205, "other", "Port Gellhorn", "Rockstar describes a run-down port town on the Gulf coast, past its best days.", "Port Gellhorn"],
+		["k-pg-docks", 300, 150, "fishing", "Gulf docks", "Docks and piers on the Gulf coast.", "Port Gellhorn"],
+		["k-pg-beach", 130, 225, "gem", "Gulf beaches", "Quieter beaches along the Gulf coast west of the town.", "Port Gellhorn"]
+	].map(function (r) { return { id: r[0], x: r[1], y: r[2], cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
+	/* group pins that sit closer than r map units (greedy, densest first): [{x, y, ids, pins}] (one entry = a single pin) */
+	function clusterPins(list, r) {
+		var out = [], used = {}, r2 = r * r, a = list.slice();
+		a.forEach(function (p) { p._n = 0; list.forEach(function (q) { var dx = p.x - q.x, dy = p.y - q.y; if (dx * dx + dy * dy <= r2) p._n++; }); });
+		a.sort(function (p, q) { return q._n - p._n; });
+		a.forEach(function (p) {
+			if (used[p.id]) return;
+			var g = [p]; used[p.id] = 1;
+			a.forEach(function (q) { if (used[q.id]) return; var dx = p.x - q.x, dy = p.y - q.y; if (dx * dx + dy * dy <= r2) { g.push(q); used[q.id] = 1; } });
+			var sx = 0, sy = 0; g.forEach(function (q) { sx += q.x; sy += q.y; delete q._n; });
+			out.push({ x: sx / g.length, y: sy / g.length, ids: g.map(function (q) { return q.id; }), pins: g });
+		});
+		a.forEach(function (p) { delete p._n; });
+		return out;
+	}
+	/* the next pin in list order after curId that is not in found (wraps round); null when every pin is found */
+	function nextUnfound(list, found, curId) {
+		var n = list.length; if (!n) return null;
+		var start = 0; for (var i = 0; i < n; i++) if (list[i].id === curId) { start = i + 1; break; }
+		for (var j = 0; j < n; j++) { var p = list[(start + j) % n]; if (!(found && found[p.id])) return p; }
+		return null;
+	}
+	/* a private marker (kept only in the browser): {m} or {error} */
+	function cleanMarker(b) {
+		var x = b && b.x, y = b && b.y;
+		if (typeof x !== "number" || typeof y !== "number" || !(x >= 0 && x <= 1000 && y >= 0 && y <= 1000)) return { error: "pick a spot on the map" };
+		var title = pinText(b.title, 70, false); if (title === null) return { error: "the title is too long (70 characters at most)" }; if (title.length < 1) return { error: "give it a short title" };
+		var note = b.desc ? pinText(b.desc, 2000, true) : ""; if (note === null) return { error: "the note is too long (2,000 characters at most)" };
+		var cat = PIN_CATS.some(function (c) { return c[0] === b.cat; }) ? b.cat : "other";
+		return { m: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, cat: cat, title: title, desc: note, region: REGIONS.indexOf(b.region) >= 0 ? b.region : "" } };
+	}
 	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
 	var MAP = { MAP_V: MAP_V, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
 		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD,
 		HIVE_W: HIVE_W, wv: wv, statusOf: statusOf, hiveOk: hiveOk, scoreOf: scoreOf, explorers: explorers,
-		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord };
+		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord,
+		PLACES: PLACES, clusterPins: clusterPins, nextUnfound: nextUnfound, cleanMarker: cleanMarker };
 
 	var API = { G0: G0, FACTS: FACTS, VEHICLES: VEHICLES, vehicle: vehicle, bodyShape: bodyShape, PRESETS: PRESETS, COURSE_DEF: COURSE_DEF, buildCourse: buildCourse, groundAt: groundAt, rayHit: rayHit, closest: closest, inside: inside,
 		Sim: Sim, simulate: simulate, sweepOne: sweepOne, summarize: summarize,

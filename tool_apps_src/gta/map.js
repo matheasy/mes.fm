@@ -1,7 +1,10 @@
 /* MES GTA 6 community map (mes.fm/gta-6-map, #gt[data-page="map"]): an original rough fan sketch of Leonida with pins people add
    (secrets, animals, fishing spots ...) and up / down votes. Data: mes.fm/api/gta-map.js; validation + ordering = MESGTA.MAP (lib.js).
    On 127.0.0.1 / localhost (no /api) or with ?mock=1 an in-browser stand-in (localStorage "mes-gta-map:mock") answers instead.
-   State: localStorage "mes-gta-map:v1" = {vid, mine:{id: key}, votes:{id: 1|-1}, hvotes:{id: 1|-1}, hsign, sort, ver, cats, grid, labels}.
+   State: localStorage "mes-gta-map:v1" = {vid, mine:{id: key}, votes:{id: 1|-1}, hvotes:{"acct|id": 1|-1}, hsign, sort, ver, cats, grid, labels,
+   found:{id: ms} (pins ticked "Found it"), notes:{id: text} (private notes), my:[private markers, kind "m"], places (show MES known places), hideFound}.
+   Three kinds of pins share one list: community pins (from the API), known places (MAP.PLACES, kind "k", read-only) and private markers (kind "m",
+   only in this browser). Pins closer than ~36 screen px are drawn as one numbered bubble (MAP.clusterPins); click it to zoom in.
    Hive (optional): sign in through main_js/hive.js (MESHive: Keychain extension 4.x, or the Keychain phone app through HiveAuth);
    then a pin or a vote is signed as one custom_json (MESGTA.MAP.HIVE_ID) and only the account + transaction id go to the API,
    which checks the operation on the chain. Debug: window.MESGTAMapDebug. */
@@ -19,6 +22,7 @@
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	if (!/^[a-f0-9]{32}$/.test(S.vid || "")) { var b = new Uint8Array(16); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach(function (_, i) { b[i] = Math.random() * 256; }); S.vid = Array.prototype.map.call(b, function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join(""); save(); }
 	S.mine = S.mine || {}; S.votes = S.votes || {}; S.hvotes = S.hvotes || {}; S.cats = S.cats || []; if (S.hsign == null) S.hsign = true;
+	S.found = S.found || {}; S.notes = S.notes || {}; S.my = Array.isArray(S.my) ? S.my : []; if (S.places == null) S.places = true;
 	var T0 = Date.now();
 	function toast(m) { var t = $("gj-toast"); if (!t) return; t.textContent = m; t.classList.add("is-on"); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("is-on"); }, 3600); }
 	var ICON = { secret: "🤫", animal: "🦌", fishing: "🎣", gem: "💎", egg: "🥚", collect: "⭐", activity: "🎯", vehicle: "🚗", stunt: "🏁", other: "📍" };
@@ -79,8 +83,11 @@
 
 	/* ======================= view: pan and zoom ======================= */
 	var V = { z: 1, tx: 0, ty: 0 }, ZMIN = 1, ZMAX = 8;
+	var lastZ = 0;
+	function unit() { return 1000 / Math.max(160, Math.min(stage.clientWidth || 600, stage.clientHeight || 600)); }
 	function applyView() {
 		V.z = Math.max(ZMIN, Math.min(ZMAX, V.z));
+		if (lastZ && Math.abs(Math.log(V.z / lastZ)) > 0.08) { drawPins(); return; }
 		var lim = 1000 * (V.z - 1); V.tx = Math.min(80, Math.max(-lim - 80, V.tx)); V.ty = Math.min(80, Math.max(-lim - 80, V.ty));
 		$("gm-vp").setAttribute("transform", "translate(" + V.tx.toFixed(2) + "," + V.ty.toFixed(2) + ") scale(" + V.z.toFixed(4) + ")");
 		var u = 1000 / Math.max(160, Math.min(stage.clientWidth || 600, stage.clientHeight || 600)), k = (0.95 * u / V.z).toFixed(4);   /* u = map units per screen px: pins keep their size on screen */
@@ -103,7 +110,7 @@
 		if (e.target.closest(".gm-pop, .gm-ask")) return;
 		ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
 		var ids = Object.keys(ptrs);
-		if (ids.length === 1) drag = { x: e.clientX, y: e.clientY, tx: V.tx, ty: V.ty, moved: false, pin: e.target.closest("[data-pin]") };
+		if (ids.length === 1) drag = { x: e.clientX, y: e.clientY, tx: V.tx, ty: V.ty, moved: false, pin: e.target.closest("[data-pin]"), cl: e.target.closest("[data-cl]") };
 		else if (ids.length === 2) { var a = ptrs[ids[0]], b2 = ptrs[ids[1]]; drag = { pinch: Math.hypot(a.x - b2.x, a.y - b2.y), z: V.z, moved: true }; }
 		try { stage.setPointerCapture(e.pointerId); } catch (er) { /* fine */ }
 	});
@@ -128,6 +135,7 @@
 		var d = drag; if (Object.keys(ptrs).length) return;
 		drag = null; stage.classList.remove("is-drag");
 		if (!d || d.moved || d.pinch) return;
+		if (d.cl) { openCluster(d.cl); return; }
 		if (d.pin) { openPin(d.pin.getAttribute("data-pin")); return; }
 		var p = mapPt(e.clientX, e.clientY);
 		if (p.x < 0 || p.y < 0 || p.x > 1000 || p.y > 1000) return;
@@ -147,6 +155,7 @@
 	$("gm-fit").onclick = fit;
 	stage.tabIndex = 0;
 	stage.addEventListener("keydown", function (e) {
+		if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
 		var k = e.key, step = 60;
 		if (k === "+" || k === "=") zoomAt(1.4); else if (k === "-" || k === "_") zoomAt(1 / 1.4); else if (k === "0") fit();
 		else if (k === "ArrowLeft") { V.tx += step; applyView(); } else if (k === "ArrowRight") { V.tx -= step; applyView(); }
@@ -210,10 +219,13 @@
 		return fetch(API, o).then(function (r) { return r.json().catch(function () { return { error: "the server did not answer (" + r.status + ")" }; }); }, function () { return { error: "no connection, try again" }; });
 	}
 	var PINS = [], byId = {};
+	function myPins() { return S.my.map(function (m) { return Object.assign({ kind: "m", up: 0, dn: 0 }, m); }); }
+	function allPins() { return PINS.concat(S.places !== false ? MAP.PLACES : [], myPins()); }
+	function index() { byId = {}; PINS.forEach(function (p) { byId[p.id] = p; }); MAP.PLACES.forEach(function (p) { byId[p.id] = p; }); myPins().forEach(function (p) { byId[p.id] = p; }); }
 	function refresh(quiet) {
 		return call(null).then(function (d) {
 			if (d.error) { if (!quiet) $("gm-count").textContent = d.error === "not set up" ? "The pin store isn’t switched on yet." : "Could not load the pins: " + d.error; return; }
-			PINS = d.pins || []; byId = {}; PINS.forEach(function (p) { byId[p.id] = p; });
+			PINS = d.pins || []; index();
 			Object.keys(S.mine).forEach(function (id) { if (!byId[id] && !quiet) { /* deleted or hidden: keep the key a while */ } });
 			drawPins(); renderList(); if (openId && byId[openId]) openPin(openId, true);
 		});
@@ -221,27 +233,54 @@
 
 	/* ======================= pins on the map ======================= */
 	function pinG(p, parent, cls) {
-		var g = el("g", { "class": "gm-pin " + (cls || ""), "data-x": p.x, "data-y": p.y }, parent);
-		var st = MAP.statusOf(p);
+		var g = el("g", { "class": "gm-pin " + (cls || "") + (p.kind ? " gm-pin--" + p.kind : "") + (S.found[p.id] ? " gm-pin--found" : ""), "data-x": p.x, "data-y": p.y }, parent);
+		var st = p.kind ? "" : MAP.statusOf(p);
 		el("path", { d: "M0,0 C-4,-9 -15,-14 -15,-26 A15,15 0 1 1 15,-26 C15,-14 4,-9 0,0 Z", "class": "gm-pinb", fill: catColor(p.cat) }, g);
 		if (st === "verified") el("circle", { cx: 11, cy: -37, r: 6.5, "class": "gm-pinv" }, g);
 		if (st === "disputed") el("circle", { cx: 11, cy: -37, r: 6.5, "class": "gm-pind" }, g);
 		if (p.ha) el("circle", { cx: -11, cy: -37, r: 5.5, "class": "gm-pinh" }, g);
+		if (p.kind === "k") el("path", { d: "M-11,-44 l6,6 l-6,6 l-6,-6 Z", "class": "gm-pink" }, g);
+		if (p.kind === "m") el("rect", { x: -17, y: -43, width: 11, height: 9, rx: 2, "class": "gm-pinm" }, g);
+		if (S.found[p.id]) { el("circle", { cx: 0, cy: 3, r: 7, "class": "gm-pinf" }, g); el("path", { d: "M-3.5,3 l2.5,2.6 l4.8,-5", "class": "gm-pinfk" }, g); }
 		var t = el("text", { x: 0, y: -21, "text-anchor": "middle", "class": "gm-pini" }, g); t.textContent = ICON[p.cat] || "📍";
 		return g;
 	}
-	function shown() {
-		var list = MAP.filterPins(PINS, { q: $("gm-q").value, cats: S.cats, verified: S.ver, hive: S.hiveOnly });
-		if (S.mineOnly) list = list.filter(function (p) { return S.mine[p.id]; });
+	function shownAll() {
+		var list = MAP.filterPins(allPins(), { q: $("gm-q").value, cats: S.cats, verified: S.ver, hive: S.hiveOnly });
+		if (S.mineOnly) list = list.filter(function (p) { return S.mine[p.id] || p.kind === "m"; });
 		return MAP.sortPins(list, S.sort || "top");
 	}
+	function shown() { var l = shownAll(); return S.hideFound ? l.filter(function (p) { return !S.found[p.id]; }) : l; }
 	function drawPins() {
 		var g = $("gm-pins"); g.innerHTML = "";
-		var list = shown().slice().sort(function (a, b) { return a.y - b.y; });   /* lower pins drawn on top */
-		list.forEach(function (p) { var e = pinG(p, g); e.setAttribute("data-pin", p.id); e.setAttribute("tabindex", "0"); e.setAttribute("role", "button"); e.setAttribute("aria-label", p.title); if (p.id === openId) e.classList.add("is-open"); });
+		lastZ = V.z;
+		var list = shown().filter(function (p) { return p.id !== openId; }), open = openId && byId[openId];
+		var groups = MAP.clusterPins(list, 34 * unit() / V.z).sort(function (a, b) { return a.y - b.y; });   /* lower pins drawn on top */
+		groups.forEach(function (c) {
+			if (c.ids.length === 1) { pinOn(c.pins[0], g); return; }
+			var cats = {}; c.pins.forEach(function (p) { cats[p.cat] = 1; }); var one = Object.keys(cats).length === 1;
+			var e = el("g", { "class": "gm-cl", "data-x": c.x, "data-y": c.y, "data-cl": c.ids.join(","), tabindex: "0", role: "button", "aria-label": c.ids.length + " pins here: zoom in" }, g);
+			el("circle", { r: 15 + Math.min(7, c.ids.length), "class": "gm-clb", fill: one ? catColor(c.pins[0].cat) : "#2b2350" }, e);
+			var t = el("text", { y: 5, "text-anchor": "middle", "class": "gm-clt" }, e); t.textContent = c.ids.length;
+		});
+		if (open && list.length !== shown().length) pinOn(open, g);
 		applyView();
 	}
-	$("gm-pins").addEventListener("keydown", function (e) { var p = e.target.closest("[data-pin]"); if (p && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openPin(p.getAttribute("data-pin")); } });
+	function pinOn(p, g) { var e = pinG(p, g); e.setAttribute("data-pin", p.id); e.setAttribute("tabindex", "0"); e.setAttribute("role", "button"); e.setAttribute("aria-label", p.title); if (p.id === openId) e.classList.add("is-open"); return e; }
+	function openCluster(node) {
+		var ids = node.getAttribute("data-cl").split(","), xs = [], ys = [];
+		ids.forEach(function (id) { var p = byId[id]; if (p) { xs.push(p.x); ys.push(p.y); } });
+		if (!xs.length) return;
+		var w = Math.max(20, Math.max.apply(null, xs) - Math.min.apply(null, xs)), h = Math.max(20, Math.max.apply(null, ys) - Math.min.apply(null, ys));
+		var z = Math.min(ZMAX, Math.max(V.z * 2, 600 / Math.max(w, h)));
+		if (V.z >= ZMAX - 0.01) { openPin(ids[0]); return; }
+		V.z = z; V.tx = 500 - (Math.min.apply(null, xs) + w / 2) * z; V.ty = 500 - (Math.min.apply(null, ys) + h / 2) * z; applyView();
+	}
+	$("gm-pins").addEventListener("keydown", function (e) {
+		if (e.key !== "Enter" && e.key !== " ") return;
+		var c = e.target.closest("[data-cl]"), p = e.target.closest("[data-pin]");
+		if (c) { e.preventDefault(); openCluster(c); } else if (p) { e.preventDefault(); openPin(p.getAttribute("data-pin")); }
+	});
 
 	/* ======================= pin card ======================= */
 	var openId = null;
@@ -251,26 +290,59 @@
 	function ago(ms) { var s = (Date.now() - ms) / 1000; if (s < 90) return "just now"; if (s < 5400) return Math.round(s / 60) + " min ago"; if (s < 129600) return Math.round(s / 3600) + " h ago"; return Math.round(s / 86400) + " days ago"; }
 	function openPin(id, keep) {
 		var p = byId[id]; if (!p) return;
-		openId = id; $("gm-ask").hidden = true;
-		var mine = S.mine[id] || (p.ha && p.ha === me()), v = (signing() ? S.hvotes[me() + "|" + id] : S.votes[id]) || 0, st = MAP.statusOf(p), pop = $("gm-pop"), sc = MAP.scoreOf(p), hu = p.hup || 0, hd = p.hdn || 0;
-		pop.innerHTML = '<button type="button" class="gm-x" data-a="close" aria-label="Close">×</button>' +
-			'<p class="gm-pk"><span class="gm-dot" style="background:' + catColor(p.cat) + '"></span>' + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + " · " + gridRef(p.x, p.y) + " " + statusText(st) + hiveBadge(p) + "</p>" +
-			"<h3>" + esc(p.title) + "</h3>" + (p.desc ? '<p class="gm-pd">' + esc(p.desc).replace(/\n/g, "<br>") + "</p>" : "") +
-			(p.clip ? '<a class="gm-clip" href="https://www.youtube.com/watch?v=' + esc(p.clip) + '" target="_blank" rel="noopener"><img src="https://i.ytimg.com/vi/' + esc(p.clip) + '/mqdefault.jpg" alt="" loading="lazy" width="160" height="90"><span>▶ Watch the clip</span></a>' : "") +
-			(p.ha ? '<p class="gm-pby">Added by ' + byLine(p) + (p.trx && !/^mock/.test(p.trx) ? ' · <a href="https://hivehub.dev/tx/' + esc(p.trx) + '" target="_blank" rel="noopener">on Hive</a>' : "") + "</p>" : "") +
-			'<div class="gm-votes">' + (mine ? '<span class="gm-own">Your pin · score ' + (sc >= 0 ? "+" : "") + sc + " (" + p.up + " up, " + p.dn + " down" + (hu || hd ? "; Hive " + hu + " up, " + hd + " down" : "") + ")</span>" :
-				'<button type="button" class="gm-vb gm-vb--up' + (v === 1 ? " is-on" : "") + '" data-a="up" aria-pressed="' + (v === 1) + '" title="It\'s real">▲ <b>' + (p.up + hu) + "</b>" + (hu ? '<small class="gm-hc">' + hu + " Hive</small>" : "") + "</button>" +
-				'<button type="button" class="gm-vb gm-vb--dn' + (v === -1 ? " is-on" : "") + '" data-a="dn" aria-pressed="' + (v === -1) + '" title="Fake / not there">▼ <b>' + (p.dn + hd) + "</b>" + (hd ? '<small class="gm-hc">' + hd + " Hive</small>" : "") + "</button>" +
-				'<span class="gm-vh">' + (signing() ? "Signed with Hive as @" + esc(me()) + " (counts double)" : v ? "Click again to take your vote back" : "Is it real?") + "</span>") + "</div>" +
-			'<p class="gm-pf">Added ' + ago(p.c) + ' · <button type="button" class="gm-lnk" data-a="share">Copy link</button>' +
-			(mine ? ' · <button type="button" class="gm-lnk" data-a="del">Delete my pin</button>' : ' · <button type="button" class="gm-lnk" data-a="report">Report</button>') + "</p>";
+		var wasClustered = openId !== id; openId = id; $("gm-ask").hidden = true;
+		var k = p.kind || "", pop = $("gm-pop"), fd = S.found[id];
+		var head = '<button type="button" class="gm-x" data-a="close" aria-label="Close">×</button>' +
+			'<p class="gm-pk"><span class="gm-dot" style="background:' + catColor(p.cat) + '"></span>' + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + " · " + gridRef(p.x, p.y) + " " +
+			(k === "k" ? '<span class="gm-st gm-st--k">MES guide</span>' : k === "m" ? '<span class="gm-st gm-st--m">🔒 Only you</span>' : statusText(MAP.statusOf(p)) + hiveBadge(p)) + "</p>";
+		var found = '<div class="gm-fr"><button type="button" class="gm-fb' + (fd ? " is-on" : "") + '" data-a="found" aria-pressed="' + !!fd + '">' + (fd ? "✓ Found" : "☐ Mark as found") + "</button>" +
+			(fd ? '<small>' + ago(fd) + "</small>" : "") + "</div>";
+		var note = k === "m" ? "" : '<details class="gm-note"' + (S.notes[id] ? " open" : "") + '><summary>📝 My note' + (S.notes[id] ? "" : " (only you see it)") + '</summary><textarea data-a="note" rows="3" maxlength="2000" placeholder="Only saved in this browser">' + esc(S.notes[id] || "") + "</textarea></details>";
+		var body;
+		if (k === "m") {
+			body = '<div class="gm-medit"><input type="text" data-a="mtitle" maxlength="70" value="' + esc(p.title) + '" aria-label="Title">' +
+				'<textarea data-a="mnote" rows="4" maxlength="2000" placeholder="Your note (only saved in this browser)">' + esc(p.desc || "") + "</textarea></div>" + found +
+				'<p class="gm-pf">Private marker · saved ' + ago(p.c) + ' · <button type="button" class="gm-lnk" data-a="mshare">Share it as a public pin</button> · <button type="button" class="gm-lnk" data-a="mdel">Delete</button></p>';
+		} else if (k === "k") {
+			body = "<h3>" + esc(p.title) + '</h3><p class="gm-pd">' + esc(p.desc) + "</p>" + found + note +
+				'<p class="gm-pf">Approximate spot on our sketch, from the trailers and Rockstar’s region descriptions. It moves to the real spot when the map is redrawn after launch.</p>';
+		} else {
+			var mine = S.mine[id] || (p.ha && p.ha === me()), v = (signing() ? S.hvotes[me() + "|" + id] : S.votes[id]) || 0, sc = MAP.scoreOf(p), hu = p.hup || 0, hd = p.hdn || 0;
+			body = "<h3>" + esc(p.title) + "</h3>" + (p.desc ? '<p class="gm-pd">' + esc(p.desc).replace(/\n/g, "<br>") + "</p>" : "") +
+				(p.clip ? '<a class="gm-clip" href="https://www.youtube.com/watch?v=' + esc(p.clip) + '" target="_blank" rel="noopener"><img src="https://i.ytimg.com/vi/' + esc(p.clip) + '/mqdefault.jpg" alt="" loading="lazy" width="160" height="90"><span>▶ Watch the clip</span></a>' : "") +
+				(p.ha ? '<p class="gm-pby">Added by ' + byLine(p) + (p.trx && !/^mock/.test(p.trx) ? ' · <a href="https://hivehub.dev/tx/' + esc(p.trx) + '" target="_blank" rel="noopener">on Hive</a>' : "") + "</p>" : "") +
+				'<div class="gm-votes">' + (mine ? '<span class="gm-own">Your pin · score ' + (sc >= 0 ? "+" : "") + sc + " (" + p.up + " up, " + p.dn + " down" + (hu || hd ? "; Hive " + hu + " up, " + hd + " down" : "") + ")</span>" :
+					'<button type="button" class="gm-vb gm-vb--up' + (v === 1 ? " is-on" : "") + '" data-a="up" aria-pressed="' + (v === 1) + '" title="It\'s real">▲ <b>' + (p.up + hu) + "</b>" + (hu ? '<small class="gm-hc">' + hu + " Hive</small>" : "") + "</button>" +
+					'<button type="button" class="gm-vb gm-vb--dn' + (v === -1 ? " is-on" : "") + '" data-a="dn" aria-pressed="' + (v === -1) + '" title="Fake / not there">▼ <b>' + (p.dn + hd) + "</b>" + (hd ? '<small class="gm-hc">' + hd + " Hive</small>" : "") + "</button>" +
+					'<span class="gm-vh">' + (signing() ? "Signed with Hive as @" + esc(me()) + " (counts double)" : v ? "Click again to take your vote back" : "Is it real?") + "</span>") + "</div>" + found + note +
+				'<p class="gm-pf">Added ' + ago(p.c) + ' · <button type="button" class="gm-lnk" data-a="share">Copy link</button>' +
+				(mine ? ' · <button type="button" class="gm-lnk" data-a="del">Delete my pin</button>' : ' · <button type="button" class="gm-lnk" data-a="report">Report</button>') + "</p>";
+		}
+		pop.innerHTML = head + body;
 		pop.hidden = false; placePop();
+		if (wasClustered && !keep) drawPins();
 		Array.prototype.forEach.call(document.querySelectorAll("#gm-pins > g"), function (g) { g.classList.toggle("is-open", g.getAttribute("data-pin") === id); });
 		Array.prototype.forEach.call(document.querySelectorAll("#gm-list li"), function (li) { li.classList.toggle("is-open", li.getAttribute("data-id") === id); });
-		if (!keep) { var u = new URL(location.href); u.searchParams.set("pin", id); history.replaceState(null, "", u); }
+		if (!keep && k !== "m") { var u = new URL(location.href); u.searchParams.set("pin", id); history.replaceState(null, "", u); }
+	}
+	function saveMy(id, f) { S.my.forEach(function (m) { if (m.id === id) f(m); }); save(); index(); }
+	var noteT;
+	$("gm-pop").addEventListener("input", function (e) {
+		var a = e.target.getAttribute("data-a"), id = openId; if (!id) return;
+		clearTimeout(noteT);
+		noteT = setTimeout(function () {
+			if (a === "note") { var t = e.target.value.trim(); if (t) S.notes[id] = e.target.value.slice(0, 2000); else delete S.notes[id]; save(); renderList(); }
+			else if (a === "mtitle" && e.target.value.trim()) { saveMy(id, function (m) { m.title = e.target.value.trim().slice(0, 70); }); drawPins(); renderList(); }
+			else if (a === "mnote") saveMy(id, function (m) { m.desc = e.target.value.slice(0, 2000); });
+		}, 400);
+	});
+	function toggleFound(id) {
+		if (S.found[id]) delete S.found[id]; else S.found[id] = Date.now();
+		save(); drawPins(); renderList(); if (byId[id] && openId === id) openPin(id, true);
 	}
 	function closePop() {
-		openId = null; $("gm-pop").hidden = true;
+		var had = openId; openId = null; $("gm-pop").hidden = true;
+		if (had) drawPins();
 		Array.prototype.forEach.call(document.querySelectorAll(".is-open"), function (e) { if (e.closest("#gm-pins, #gm-list")) e.classList.remove("is-open"); });
 		var u = new URL(location.href); if (u.searchParams.has("pin")) { u.searchParams.delete("pin"); history.replaceState(null, "", u); }
 	}
@@ -295,6 +367,9 @@
 		var a = b.getAttribute("data-a"), id = openId, p = byId[id];
 		if (a === "close") return closePop();
 		if (!p) return;
+		if (a === "found") return toggleFound(id);
+		if (a === "mdel") { if (!confirm("Delete your private marker “" + p.title + "”?")) return; S.my = S.my.filter(function (m) { return m.id !== id; }); delete S.found[id]; save(); index(); closePop(); drawPins(); renderList(); toast("Marker deleted"); return; }
+		if (a === "mshare") { var m = p; closePop(); setMode("add"); setPriv(false); $("gm-ftitle").value = m.title; $("gm-fdesc").value = m.desc || ""; pickCat(m.cat); setDraft(m.x, m.y); toast("Check the details, then press Pin it to share it with everyone."); return; }
 		if (a === "up" || a === "dn") {
 			var want = a === "up" ? 1 : -1, cur = (signing() ? S.hvotes[me() + "|" + id] : S.votes[id]) || 0, v = cur === want ? 0 : want;
 			if (Date.now() - T0 < 900) return;
@@ -332,8 +407,8 @@
 
 	/* ======================= list ======================= */
 	function chips() {
-		var counts = {}; PINS.forEach(function (p) { counts[p.cat] = (counts[p.cat] || 0) + 1; });
-		$("gm-cats").innerHTML = '<button type="button" class="gm-chip' + (!S.cats.length ? " is-on" : "") + '" data-c="">All <small>' + PINS.length + "</small></button>" +
+		var all = allPins(), counts = {}; all.forEach(function (p) { counts[p.cat] = (counts[p.cat] || 0) + 1; });
+		$("gm-cats").innerHTML = '<button type="button" class="gm-chip' + (!S.cats.length ? " is-on" : "") + '" data-c="">All <small>' + all.length + "</small></button>" +
 			MAP.PIN_CATS.map(function (c) { return '<button type="button" class="gm-chip' + (S.cats.indexOf(c[0]) >= 0 ? " is-on" : "") + (counts[c[0]] ? "" : " is-empty") + '" data-c="' + c[0] + '" aria-pressed="' + (S.cats.indexOf(c[0]) >= 0) + '"><span class="gm-dot" style="background:' + c[2] + '"></span>' + esc(c[1]) + " <small>" + (counts[c[0]] || 0) + "</small></button>"; }).join("");
 	}
 	$("gm-cats").addEventListener("click", function (e) {
@@ -343,14 +418,16 @@
 		save(); drawPins(); renderList();
 	});
 	function renderList() {
-		chips(); renderExplorers();
-		var list = shown(), ol = $("gm-list");
-		$("gm-count").textContent = PINS.length ? list.length + (list.length === 1 ? " pin" : " pins") + (list.length < PINS.length ? " of " + PINS.length : "") : "No pins yet: be the first! Click the map to add one.";
+		chips(); renderExplorers(); myCount();
+		var list = shown(), base = shownAll(), all = allPins(), ol = $("gm-list"), nf = base.filter(function (p) { return S.found[p.id]; }).length;
+		$("gm-count").textContent = all.length ? list.length + (list.length === 1 ? " pin" : " pins") + (list.length < all.length ? " of " + all.length : "") + (PINS.length ? "" : " · no community pins yet: be the first!") : "No pins yet: be the first! Click the map to add one.";
+		var pr = $("gm-prog"); if (pr) { pr.hidden = !base.length; $("gm-progt").textContent = "Found " + nf + " of " + base.length + (S.cats.length || $("gm-q").value ? " in this list" : ""); $("gm-progb").style.width = (base.length ? 100 * nf / base.length : 0).toFixed(1) + "%"; }
 		ol.innerHTML = list.slice(0, 300).map(function (p) {
-			var st = MAP.statusOf(p), sc = MAP.scoreOf(p);
-			return '<li data-id="' + p.id + '"' + (p.id === openId ? ' class="is-open"' : "") + '><button type="button"><span class="gm-li-i" style="background:' + catColor(p.cat) + '">' + (ICON[p.cat] || "📍") + "</span>" +
-				'<span class="gm-li-t"><b>' + esc(p.title) + "</b><small>" + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + (p.ha ? " · @" + esc(p.ha) : "") + (S.mine[p.id] ? " · yours" : "") + " " + statusText(st) + hiveBadge(p) + "</small></span>" +
-				'<span class="gm-li-s' + (sc > 0 ? " is-pos" : sc < 0 ? " is-neg" : "") + '">' + (sc > 0 ? "+" : "") + sc + "</span></button></li>";
+			var k = p.kind, st = k ? "" : MAP.statusOf(p), sc = MAP.scoreOf(p), f = S.found[p.id];
+			return '<li data-id="' + p.id + '" class="' + (p.id === openId ? "is-open" : "") + (f ? " is-found" : "") + '"><button type="button"><span class="gm-li-i" style="background:' + catColor(p.cat) + '">' + (ICON[p.cat] || "📍") + "</span>" +
+				'<span class="gm-li-t"><b>' + esc(p.title) + "</b><small>" + esc(MAP.catName(p.cat)) + (p.region ? " · " + esc(p.region) : "") + (p.ha ? " · @" + esc(p.ha) : "") + (S.mine[p.id] ? " · yours" : "") + (S.notes[p.id] ? " · 📝" : "") + " " +
+				(k === "k" ? '<span class="gm-st gm-st--k">MES guide</span>' : k === "m" ? '<span class="gm-st gm-st--m">🔒 Only you</span>' : statusText(st) + hiveBadge(p)) + "</small></span>" +
+				(f ? '<span class="gm-li-f" title="Found">✓</span>' : k ? "" : '<span class="gm-li-s' + (sc > 0 ? " is-pos" : sc < 0 ? " is-neg" : "") + '">' + (sc > 0 ? "+" : "") + sc + "</span>") + "</button></li>";
 		}).join("");
 	}
 	$("gm-list").addEventListener("click", function (e) { var li = e.target.closest("li[data-id]"); if (!li) return; var p = byId[li.getAttribute("data-id")]; if (!p) return; centreOn(p.x, p.y); openPin(p.id); if (window.innerWidth < 900) stage.scrollIntoView({ behavior: "smooth", block: "center" }); });
@@ -364,6 +441,33 @@
 		ol.innerHTML = ex.map(function (e) { return '<li><button type="button" data-acct="' + esc(e.acct) + '">' + (MOCK ? "" : '<img alt="" src="' + esc(avatar(e.acct)) + '" width="22" height="22" loading="lazy">') + "<b>@" + esc(e.acct) + "</b><small>" + e.verified + " verified · " + e.pins + (e.pins === 1 ? " pin" : " pins") + "</small></button></li>"; }).join("");
 	}
 	$("gm-explist").addEventListener("click", function (e) { var b = e.target.closest("[data-acct]"); if (!b) return; $("gm-q").value = "@" + b.getAttribute("data-acct"); S.hiveOnly = false; $("gm-hiveonly").checked = false; drawPins(); renderList(); });
+	function flag(id, key, def) { var c = $(id); if (!c) return; c.checked = S[key] == null ? def : !!S[key]; c.addEventListener("change", function () { S[key] = c.checked; save(); if (openId && !byId[openId]) closePop(); drawPins(); renderList(); }); }
+	flag("gm-places", "places", true); flag("gm-hidefound", "hideFound", false);
+	$("gm-next").onclick = function () {
+		var p = MAP.nextUnfound(shownAll(), S.found, openId);
+		if (!p) { toast("You have found everything in this list!"); return; }
+		centreOn(p.x, p.y, 3); openPin(p.id);
+	};
+	/* my map: backup / restore of finds, notes and private markers (nothing leaves the browser otherwise) */
+	function myCount() { var m = $("gm-mycount"); if (m) m.textContent = S.my.length + " private " + (S.my.length === 1 ? "marker" : "markers") + " · " + Object.keys(S.found).length + " found · " + Object.keys(S.notes).length + (Object.keys(S.notes).length === 1 ? " note" : " notes"); }
+	$("gm-backup").onclick = function () {
+		var blob = new Blob([JSON.stringify({ app: "mes-gta-map", v: 1, saved: new Date().toISOString(), found: S.found, notes: S.notes, my: S.my }, null, 1)], { type: "application/json" });
+		var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "gta-6-map-my-finds.json"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+	};
+	$("gm-restore").onclick = function () { $("gm-restorefile").click(); };
+	$("gm-restorefile").onchange = function () {
+		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
+		f.text().then(function (t) {
+			var d; try { d = JSON.parse(t); } catch (e) { d = null; }
+			if (!d || d.app !== "mes-gta-map") { toast("That is not a GTA 6 map backup file."); return; }
+			var n = 0;
+			Object.keys(d.found || {}).forEach(function (id) { if (!S.found[id] && typeof d.found[id] === "number") { S.found[id] = d.found[id]; n++; } });
+			Object.keys(d.notes || {}).forEach(function (id) { if (!S.notes[id] && typeof d.notes[id] === "string") { S.notes[id] = d.notes[id].slice(0, 2000); n++; } });
+			var have = {}; S.my.forEach(function (m) { have[m.id] = 1; });
+			(Array.isArray(d.my) ? d.my : []).forEach(function (m) { if (!m || have[m.id] || !/^m-[a-z0-9]{4,12}$/.test(m.id || "")) return; var c = MAP.cleanMarker(m); if (c.error) return; S.my.push(Object.assign(c.m, { id: m.id, c: m.c || Date.now() })); n++; });
+			save(); index(); drawPins(); renderList(); toast(n ? "Added " + n + " things from the backup." : "Nothing new in that backup.");
+		});
+	};
 	$("gm-mineonly").checked = !!S.mineOnly; $("gm-mineonly").addEventListener("change", function () { S.mineOnly = this.checked; save(); drawPins(); renderList(); });
 
 	/* ======================= add mode ======================= */
@@ -387,20 +491,39 @@
 	}
 	function updWhere() {
 		var fh = $("gm-fhive");
-		if (fh) { fh.hidden = !signing(); fh.innerHTML = signing() ? "This pin will be signed on Hive as <b>@" + esc(me()) + "</b>: a public, permanent record. mes.fm can hide it from the map but not erase it from the blockchain." : ""; } $("gm-where").innerHTML = draft ? "<b>1.</b> Spot picked: " + gridRef(draft.x, draft.y) + " (" + esc($("gm-freg").value) + "). Click again to move it." : "<b>1.</b> Click the map where it is."; $("gm-where").classList.toggle("is-done", !!draft); }
+		if (fh) { fh.hidden = priv || !signing(); fh.innerHTML = signing() ? "This pin will be signed on Hive as <b>@" + esc(me()) + "</b>: a public, permanent record. mes.fm can hide it from the map but not erase it from the blockchain." : ""; } $("gm-where").innerHTML = draft ? "<b>1.</b> Spot picked: " + gridRef(draft.x, draft.y) + " (" + esc($("gm-freg").value) + "). Click again to move it." : "<b>1.</b> Click the map where it is."; $("gm-where").classList.toggle("is-done", !!draft); }
 	$("gm-fcat").innerHTML = MAP.PIN_CATS.map(function (c) { return '<button type="button" class="gm-chip" role="radio" aria-checked="false" data-c="' + c[0] + '"><span>' + ICON[c[0]] + "</span> " + esc(c[1]) + "</button>"; }).join("");
-	$("gm-fcat").addEventListener("click", function (e) {
-		var b = e.target.closest("[data-c]"); if (!b) return; fcat = b.getAttribute("data-c");
-		Array.prototype.forEach.call(this.querySelectorAll("[data-c]"), function (x) { var on = x === b; x.classList.toggle("is-on", on); x.setAttribute("aria-checked", on); });
+	function pickCat(c) {
+		fcat = c;
+		Array.prototype.forEach.call($("gm-fcat").querySelectorAll("[data-c]"), function (x) { var on = x.getAttribute("data-c") === c; x.classList.toggle("is-on", on); x.setAttribute("aria-checked", on); });
 		if (draft) setDraft(draft.x, draft.y);
-	});
+	}
+	$("gm-fcat").addEventListener("click", function (e) { var b = e.target.closest("[data-c]"); if (b) pickCat(b.getAttribute("data-c")); });
+	var priv = false;
+	function setPriv(on) {
+		priv = !!on;
+		Array.prototype.forEach.call(document.querySelectorAll("#gm-who [data-who]"), function (b) { var sel = (b.getAttribute("data-who") === "me") === priv; b.classList.toggle("is-on", sel); b.setAttribute("aria-checked", sel); });
+		root.classList.toggle("gm-priv", priv);
+		$("gm-fsave").textContent = priv ? "Save my marker" : "Pin it";
+		$("gm-fdlab").firstChild.nodeValue = priv ? "My note " : "How to find it ";
+		updWhere();
+	}
+	$("gm-who").addEventListener("click", function (e) { var b = e.target.closest("[data-who]"); if (b) setPriv(b.getAttribute("data-who") === "me"); });
 	$("gm-freg").innerHTML = MAP.REGIONS.map(function (r) { return "<option>" + esc(r) + "</option>"; }).join("");
 	$("gm-freg").addEventListener("change", function () { this.dataset.touched = "1"; updWhere(); });
-	$("gm-fcancel").onclick = function () { $("gm-form").reset(); fcat = ""; delete $("gm-freg").dataset.touched; Array.prototype.forEach.call($("gm-fcat").querySelectorAll(".is-on"), function (x) { x.classList.remove("is-on"); }); $("gm-ferr").textContent = ""; setMode("explore"); };
+	$("gm-fcancel").onclick = function () { $("gm-form").reset(); fcat = ""; setPriv(false); delete $("gm-freg").dataset.touched; Array.prototype.forEach.call($("gm-fcat").querySelectorAll(".is-on"), function (x) { x.classList.remove("is-on"); }); $("gm-ferr").textContent = ""; setMode("explore"); };
 	$("gm-form").addEventListener("submit", function (e) {
 		e.preventDefault();
 		var err = $("gm-ferr"); err.textContent = "";
 		if (!draft) { err.textContent = "Click the map first to put the pin where it is."; return; }
+		if (priv) {
+			var mk = MAP.cleanMarker({ x: draft.x, y: draft.y, cat: fcat || "other", title: $("gm-ftitle").value, desc: $("gm-fdesc").value, region: $("gm-freg").value });
+			if (mk.error) { err.textContent = mk.error.charAt(0).toUpperCase() + mk.error.slice(1) + "."; return; }
+			var mid = "m-" + Math.random().toString(36).slice(2, 10).replace(/[^a-z0-9]/g, "0");
+			S.my.push(Object.assign(mk.m, { id: mid, c: Date.now() })); save(); index();
+			$("gm-fcancel").onclick(); drawPins(); renderList(); openPin(mid); toast("Saved. Only you can see this marker.");
+			return;
+		}
 		if (!fcat) { err.textContent = "Pick what kind of thing it is."; return; }
 		var body = { act: "new", x: draft.x, y: draft.y, cat: fcat, title: $("gm-ftitle").value, desc: $("gm-fdesc").value, region: $("gm-freg").value, clip: $("gm-fclip").value.trim(), vid: S.vid, t: Date.now() - T0 };
 		if ($("gm-fhp").value) body.hp = $("gm-fhp").value;

@@ -140,6 +140,18 @@ const NEW = { act: "new", x: 812.34, y: 745, cat: "secret", title: "  Rooftop   
   r = await post({ act: "hvote", acct: "dan", trx: hiveOp("dan", JSON.stringify({ v: 1, a: "vote", id: "nope", vt: 1 })), vid: vid(84) }); eq(r.code, 422, "bad vote record");
   r = await list(); const lp = r.body.pins.find((p) => p.id === hid); eq([lp.ha, lp.hup, lp.hdn], ["alice", 1, 1], "list shows the account and Hive votes");
   r = await post({ act: "hpin", acct: "Bad!", trx, vid: vid(80) }); eq(r.code, 400, "bad account name");
+  // ---- known places, clusters, next not found, private markers
+  eq(M.PLACES.length >= 20, true, "starter places");
+  eq(new Set(M.PLACES.map((p) => p.id)).size, M.PLACES.length, "place ids unique");
+  M.PLACES.forEach((p) => { eq(/^k-[a-z0-9-]+$/.test(p.id) && p.kind === "k" && M.REGIONS.includes(p.region) && M.PIN_CATS.some((c) => c[0] === p.cat) && p.x >= 0 && p.x <= 1000 && p.y >= 0 && p.y <= 1000, true, "place ok " + p.id); eq(M.hasLink(p.title + " " + p.desc), false, "no link in " + p.id); });
+  const cl = M.clusterPins([{ id: "a", x: 0, y: 0 }, { id: "b", x: 5, y: 0 }, { id: "c", x: 200, y: 0 }], 10);
+  eq(cl.length, 2, "two groups"); eq(cl.find((g) => g.ids.length === 2).x, 2.5, "group centre");
+  eq(M.clusterPins([{ id: "a", x: 0, y: 0 }, { id: "b", x: 5, y: 0 }], 1).length, 2, "no merge when far");
+  const ls = [{ id: "a" }, { id: "b" }, { id: "c" }];
+  eq(M.nextUnfound(ls, { a: 1 }, null).id, "b", "first unfound"); eq(M.nextUnfound(ls, {}, "c").id, "a", "wraps"); eq(M.nextUnfound(ls, { a: 1, b: 1, c: 1 }, "a"), null, "all found");
+  eq(M.cleanMarker({ x: 10, y: 20, title: "My stash", desc: "note", cat: "nope" }).m.cat, "other", "marker cat falls back");
+  eq(!!M.cleanMarker({ x: 10, y: 20, title: "" }).error, true, "marker needs a title");
+  eq(!!M.cleanMarker({ x: 1e4, y: 0, title: "x" }).error, true, "marker on the map");
   console.log(f ? "gta-map-tests: " + f + " of " + n + " FAILED" : "gta-map-tests: " + n + " checks passed");
   process.exit(f ? 1 : 0);
 })();

@@ -39,22 +39,33 @@
 						<label class="gm-chk"><input type="checkbox" id="gm-mineonly"> Mine</label>
 						<label class="gm-chk" title="Only pins added by a Hive account"><input type="checkbox" id="gm-hiveonly"> Hive</label>
 					</div>
+						<div class="gm-row">
+							<label class="gm-chk" title="Starter places written by MES from the trailers"><input type="checkbox" id="gm-places"> Known places</label>
+							<label class="gm-chk"><input type="checkbox" id="gm-hidefound"> Hide found</label>
+						</div>
+						<div class="gm-prog" id="gm-prog" hidden>
+							<div class="gm-progbar" aria-hidden="true"><span id="gm-progb"></span></div>
+							<span id="gm-progt"></span>
+							<button type="button" class="gm-nextb" id="gm-next" title="Jump to the next pin you haven't found">Next not found ›</button>
+						</div>
 					<p class="gm-count" id="gm-count"></p>
 					<ol class="gm-list" id="gm-list"></ol>
-					<details class="gm-exp" id="gm-exp"><summary>Top explorers (Hive)</summary><ol class="gm-explist" id="gm-explist"></ol><p class="tu-note">Hive accounts ranked by their pins that are Verified, then by votes. Sign in with Hive and add pins to get on it.</p></details>
+					<details class="gm-my"><summary>My map <small id="gm-mycount"></small></summary><p class="tu-note">Your finds, notes and private markers are saved in this browser only, free and with no limit. Download a backup to move them to another browser or device.</p><div class="gm-actions"><button type="button" class="tu-btn tu-btn--ghost" id="gm-backup">Download backup</button><button type="button" class="tu-btn tu-btn--ghost" id="gm-restore">Restore a backup</button><input type="file" id="gm-restorefile" accept=".json,application/json" hidden></div></details>
+						<details class="gm-exp" id="gm-exp"><summary>Top explorers (Hive)</summary><ol class="gm-explist" id="gm-explist"></ol><p class="tu-note">Hive accounts ranked by their pins that are Verified, then by votes. Sign in with Hive and add pins to get on it.</p></details>
 				</section>
 				<section class="gm-panel" data-panel="add" hidden>
 					<form id="gm-form" autocomplete="off">
 						<p class="gm-step" id="gm-where"><b>1.</b> Click the map where it is.</p>
-						<p class="gm-step"><b>2.</b> What is it?</p>
+						<div class="gm-who" id="gm-who" role="radiogroup" aria-label="Who sees it"><button type="button" class="gm-chip is-on" role="radio" aria-checked="true" data-who="all">🌍 Everyone <small>(others vote on it)</small></button><button type="button" class="gm-chip" role="radio" aria-checked="false" data-who="me">🔒 Only me <small>(private marker)</small></button></div>
+							<p class="gm-step"><b>2.</b> What is it?</p>
 						<div class="gm-chips gm-chips--pick" id="gm-fcat" role="radiogroup" aria-label="Type"></div>
 						<label class="gm-lab">Title <input type="text" id="gm-ftitle" maxlength="70" placeholder="e.g. White alligator at sunrise" required></label>
-						<label class="gm-lab">How to find it <small>(optional)</small><textarea id="gm-fdesc" maxlength="600" rows="4" placeholder="When it shows up, what to do, what you get…"></textarea></label>
+						<label class="gm-lab" id="gm-fdlab">How to find it <small>(optional)</small><textarea id="gm-fdesc" maxlength="600" rows="4" placeholder="When it shows up, what to do, what you get…"></textarea></label>
 						<label class="gm-lab">Region <select id="gm-freg"></select></label>
-						<label class="gm-lab">YouTube clip <small>(optional, link or video id)</small><input type="text" id="gm-fclip" placeholder="https://youtu.be/…"></label>
+						<label class="gm-lab gm-pubonly">YouTube clip <small>(optional, link or video id)</small><input type="text" id="gm-fclip" placeholder="https://youtu.be/…"></label>
 						<p class="gm-fhive" id="gm-fhive" hidden></p>
 						<label class="gm-hp" aria-hidden="true">Leave empty <input type="text" id="gm-fhp" tabindex="-1"></label>
-						<p class="tu-note">No links in the text, keep it friendly. Anyone can vote; pins voted down to −5 disappear.</p>
+						<p class="tu-note gm-pubonly">No links in the text, keep it friendly. Anyone can vote; pins voted down to −5 disappear.</p><p class="tu-note gm-privonly">Private markers stay in this browser: nobody else sees them, and there is no limit.</p>
 						<div class="gm-actions"><button type="submit" class="tu-btn" id="gm-fsave">Pin it</button><button type="button" class="tu-btn tu-btn--ghost" id="gm-fcancel">Cancel</button></div>
 						<p class="gm-ferr" id="gm-ferr" role="alert"></p>
 					</form>
@@ -64,6 +75,8 @@
 		<div class="tu-card gm-note">
 			<h2 class="gt-h">About this map</h2>
 			<p>The picture is a <b>rough fan sketch</b> of Leonida made from the region names Rockstar has published. It is not the game's map and the places are approximate. Once GTA 6 is out (November 19, 2026) it will be redrawn from the real game, and every pin keeps its region, so nothing gets lost.</p>
+			<p><b>Your own map, free:</b> tick <b>Found</b> on any pin to track your progress (Hide found and Next not found help you sweep a region), add a private note to any pin, or drop <b>private markers</b> only you can see. No account and no limit; it is all kept in this browser, with a backup file to move it.</p>
+			<p><b>Known places</b> (the pins with a yellow ◆) are a starter guide written by MES from the trailers and Rockstar’s region descriptions; they are approximate until the real map is drawn.</p>
 			<p><b>Verified</b> = at least 5 more up votes than down votes and 3 out of 4 votes up. <b>Disputed</b> = people disagree. You get one vote per pin and can change it any time. You can delete your own pins from this browser.</p>
 			<p><b>Hive (optional):</b> sign in with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a> (the browser extension, or the Keychain phone app) and your pins carry your Hive name, your votes count double, and pins that at least 2 Hive accounts vote real get a <b>Hive ✓</b> badge. Each signed pin or vote is a small public, permanent record on the Hive blockchain (custom_json <code>mes_gtamap</code>, posting key only, no HIVE spent). mes.fm can hide a pin from the map but cannot erase it from the blockchain.</p>
 		</div>

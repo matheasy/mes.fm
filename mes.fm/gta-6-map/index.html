@@ -755,6 +755,44 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gm-explist img {border-radius:50%;}
 	.gm-explist small {margin-left:auto;color:var(--gm-dim);}
 	#gt .gm-exp .tu-note {color:var(--gm-dim);font-size:0.85em;}
+	/* map: found / known / private / clusters / progress (2026-11-10) */
+	.gm-pink {fill:#ffe14d;stroke:#1d1630;stroke-width:1.6;}
+	.gm-pinm {fill:#1d1630;stroke:#fff;stroke-width:1.6;}
+	.gm-pin--k .gm-pinb {stroke:#ffe14d;}
+	.gm-pin--m .gm-pinb {stroke-dasharray:4 2.5;}
+	.gm-pin--found .gm-pinb {opacity:0.55;}
+	.gm-pinf {fill:#16a34a;stroke:#fff;stroke-width:1.8;}
+	.gm-pinfk {fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+	.gm-cl {cursor:pointer;}
+	.gm-clb {stroke:#fff;stroke-width:3;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.45));}
+	.gm-cl:hover .gm-clb, .gm-cl:focus .gm-clb {stroke:#ffe14d;}
+	.gm-cl:focus {outline:none;}
+	.gm-clt {fill:#fff;font:700 14px system-ui, sans-serif;pointer-events:none;}
+	#gt .gm-st--k {background:#ffe14d;color:#1d1630;}
+	#gt .gm-st--m {background:#3a2f5c;color:#f3eefa;}
+	.gm-fr {display:flex;align-items:center;gap:0.6em;margin:0.5em 0;}
+	#gt .gm-fb {cursor:pointer;font:inherit;font-weight:600;padding:0.35em 0.8em;border-radius:999px;border:2px solid #16a34a;background:transparent;color:#4ade80;}
+	#gt .gm-fb.is-on {background:#16a34a;color:#fff;}
+	.gm-fr small {color:var(--gm-dim);font-size:0.78em;}
+	.gm-note {margin:0.3em 0 0.5em;font-size:0.9em;}
+	.gm-note summary {cursor:pointer;color:var(--gm-dim);}
+	#gt .gm-note textarea, #gt .gm-medit input, #gt .gm-medit textarea {width:100%;box-sizing:border-box;margin-top:0.35em;font:inherit;padding:0.4em 0.5em;border-radius:0.5em;border:1px solid var(--gm-line);background:var(--gm-card2);color:var(--gm-ink);resize:vertical;}
+	#gt .gm-medit input {font-weight:700;font-size:1.05em;}
+	.gm-prog {display:flex;align-items:center;flex-wrap:wrap;gap:0.4em 0.7em;margin:0.2em 0 0.5em;font-size:0.85em;}
+	.gm-progbar {flex:1 1 100%;height:6px;border-radius:3px;background:var(--gm-line);overflow:hidden;}
+	.gm-progbar span {display:block;height:100%;width:0;background:#16a34a;transition:width .3s;}
+	#gt .gm-nextb {margin-left:auto;cursor:pointer;font:inherit;font-weight:600;padding:0.3em 0.75em;border-radius:999px;border:1px solid var(--gm-line);background:var(--gm-card2);color:var(--gm-ink);}
+	#gt .gm-nextb:hover {border-color:#ffe14d;}
+	#gm-list li.is-found .gm-li-t b {opacity:0.7;}
+	.gm-li-f {flex:0 0 auto;width:1.6em;height:1.6em;border-radius:50%;background:#16a34a;color:#fff;display:grid;place-items:center;font-weight:700;font-size:0.85em;}
+	.gm-who {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 0.6em;}
+	.gm-who small {opacity:0.75;font-size:0.8em;}
+	.gm-privonly {display:none;}
+	.gt.gm-priv .gm-privonly {display:block;}
+	.gt.gm-priv .gm-pubonly {display:none;}
+	.gm-my {margin:0.8em 0 0.4em;}
+	.gm-my summary {cursor:pointer;font-weight:700;}
+	.gm-my summary small {font-weight:400;color:var(--gm-dim);margin-left:0.4em;}
 
 
 	@media print {
@@ -948,6 +986,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .gm-search input::placeholder,body.dark-mode .gm-lab input::placeholder,body.dark-mode .gm-lab textarea::placeholder{color:#9b97a5}
 	body.dark-mode .gm-pinh{fill:#f26880;stroke:#333333}
 	body.dark-mode .gm-fhive{border:1px solid rgba(235,20,57,0.50)}
+	body.dark-mode .gm-pink{fill:#ffe35c;stroke:#6a50af}
+	body.dark-mode .gm-pinm{fill:#9f8fcc;stroke:#333333}
+	body.dark-mode .gm-pin--k .gm-pinb{stroke:#ccaa00}
+	body.dark-mode .gm-pinf{fill:#6fec9d;stroke:#333333}
+	body.dark-mode .gm-pinfk{stroke:#333333}
+	body.dark-mode .gm-clb{stroke:#333333}
+	body.dark-mode .gm-cl:hover .gm-clb,body.dark-mode .gm-cl:focus .gm-clb{stroke:#ccaa00}
+	body.dark-mode #gt .gm-st--k{color:#9f8fcc}
+	body.dark-mode #gt .gm-fb{border:2px solid #1ee166;color:#75e69e}
+	body.dark-mode #gt .gm-nextb:hover{border-color:#ccaa00}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1204,22 +1252,33 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<label class="gm-chk"><input type="checkbox" id="gm-mineonly"> Mine</label>
 						<label class="gm-chk" title="Only pins added by a Hive account"><input type="checkbox" id="gm-hiveonly"> Hive</label>
 					</div>
+						<div class="gm-row">
+							<label class="gm-chk" title="Starter places written by MES from the trailers"><input type="checkbox" id="gm-places"> Known places</label>
+							<label class="gm-chk"><input type="checkbox" id="gm-hidefound"> Hide found</label>
+						</div>
+						<div class="gm-prog" id="gm-prog" hidden>
+							<div class="gm-progbar" aria-hidden="true"><span id="gm-progb"></span></div>
+							<span id="gm-progt"></span>
+							<button type="button" class="gm-nextb" id="gm-next" title="Jump to the next pin you haven't found">Next not found ›</button>
+						</div>
 					<p class="gm-count" id="gm-count"></p>
 					<ol class="gm-list" id="gm-list"></ol>
-					<details class="gm-exp" id="gm-exp"><summary>Top explorers (Hive)</summary><ol class="gm-explist" id="gm-explist"></ol><p class="tu-note">Hive accounts ranked by their pins that are Verified, then by votes. Sign in with Hive and add pins to get on it.</p></details>
+					<details class="gm-my"><summary>My map <small id="gm-mycount"></small></summary><p class="tu-note">Your finds, notes and private markers are saved in this browser only, free and with no limit. Download a backup to move them to another browser or device.</p><div class="gm-actions"><button type="button" class="tu-btn tu-btn--ghost" id="gm-backup">Download backup</button><button type="button" class="tu-btn tu-btn--ghost" id="gm-restore">Restore a backup</button><input type="file" id="gm-restorefile" accept=".json,application/json" hidden></div></details>
+						<details class="gm-exp" id="gm-exp"><summary>Top explorers (Hive)</summary><ol class="gm-explist" id="gm-explist"></ol><p class="tu-note">Hive accounts ranked by their pins that are Verified, then by votes. Sign in with Hive and add pins to get on it.</p></details>
 				</section>
 				<section class="gm-panel" data-panel="add" hidden>
 					<form id="gm-form" autocomplete="off">
 						<p class="gm-step" id="gm-where"><b>1.</b> Click the map where it is.</p>
-						<p class="gm-step"><b>2.</b> What is it?</p>
+						<div class="gm-who" id="gm-who" role="radiogroup" aria-label="Who sees it"><button type="button" class="gm-chip is-on" role="radio" aria-checked="true" data-who="all">🌍 Everyone <small>(others vote on it)</small></button><button type="button" class="gm-chip" role="radio" aria-checked="false" data-who="me">🔒 Only me <small>(private marker)</small></button></div>
+							<p class="gm-step"><b>2.</b> What is it?</p>
 						<div class="gm-chips gm-chips--pick" id="gm-fcat" role="radiogroup" aria-label="Type"></div>
 						<label class="gm-lab">Title <input type="text" id="gm-ftitle" maxlength="70" placeholder="e.g. White alligator at sunrise" required></label>
-						<label class="gm-lab">How to find it <small>(optional)</small><textarea id="gm-fdesc" maxlength="600" rows="4" placeholder="When it shows up, what to do, what you get…"></textarea></label>
+						<label class="gm-lab" id="gm-fdlab">How to find it <small>(optional)</small><textarea id="gm-fdesc" maxlength="600" rows="4" placeholder="When it shows up, what to do, what you get…"></textarea></label>
 						<label class="gm-lab">Region <select id="gm-freg"></select></label>
-						<label class="gm-lab">YouTube clip <small>(optional, link or video id)</small><input type="text" id="gm-fclip" placeholder="https://youtu.be/…"></label>
+						<label class="gm-lab gm-pubonly">YouTube clip <small>(optional, link or video id)</small><input type="text" id="gm-fclip" placeholder="https://youtu.be/…"></label>
 						<p class="gm-fhive" id="gm-fhive" hidden></p>
 						<label class="gm-hp" aria-hidden="true">Leave empty <input type="text" id="gm-fhp" tabindex="-1"></label>
-						<p class="tu-note">No links in the text, keep it friendly. Anyone can vote; pins voted down to −5 disappear.</p>
+						<p class="tu-note gm-pubonly">No links in the text, keep it friendly. Anyone can vote; pins voted down to −5 disappear.</p><p class="tu-note gm-privonly">Private markers stay in this browser: nobody else sees them, and there is no limit.</p>
 						<div class="gm-actions"><button type="submit" class="tu-btn" id="gm-fsave">Pin it</button><button type="button" class="tu-btn tu-btn--ghost" id="gm-fcancel">Cancel</button></div>
 						<p class="gm-ferr" id="gm-ferr" role="alert"></p>
 					</form>
@@ -1229,6 +1288,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card gm-note">
 			<h2 class="gt-h">About this map</h2>
 			<p>The picture is a <b>rough fan sketch</b> of Leonida made from the region names Rockstar has published. It is not the game's map and the places are approximate. Once GTA 6 is out (November 19, 2026) it will be redrawn from the real game, and every pin keeps its region, so nothing gets lost.</p>
+			<p><b>Your own map, free:</b> tick <b>Found</b> on any pin to track your progress (Hide found and Next not found help you sweep a region), add a private note to any pin, or drop <b>private markers</b> only you can see. No account and no limit; it is all kept in this browser, with a backup file to move it.</p>
+			<p><b>Known places</b> (the pins with a yellow ◆) are a starter guide written by MES from the trailers and Rockstar’s region descriptions; they are approximate until the real map is drawn.</p>
 			<p><b>Verified</b> = at least 5 more up votes than down votes and 3 out of 4 votes up. <b>Disputed</b> = people disagree. You get one vote per pin and can change it any time. You can delete your own pins from this browser.</p>
 			<p><b>Hive (optional):</b> sign in with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a> (the browser extension, or the Keychain phone app) and your pins carry your Hive name, your votes count double, and pins that at least 2 Hive accounts vote real get a <b>Hive ✓</b> badge. Each signed pin or vote is a small public, permanent record on the Hive blockchain (custom_json <code>mes_gtamap</code>, posting key only, no HIVE spent). mes.fm can hide a pin from the map but cannot erase it from the blockchain.</p>
 		</div>
@@ -1310,7 +1371,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:4
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=11" defer></script>
+	<script src="/gta/js/gta.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
