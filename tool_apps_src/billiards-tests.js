@@ -80,6 +80,30 @@ eq(B.pointsLeft(B.create("S6", "q")), 75, "75 with six reds");
 	eq([bad, stuck], [0, 0], "240 random shots: balls stay on the cloth and everything stops (max " + maxSteps + " steps)");
 })();
 
+// 4b. jump shots
+(function () {
+	eq(B.sparse(B.sstr({ a: 5, p: 500, sx: 0, sy: -30, e: 40 })), { a: 5, p: 500, sx: 0, sy: -30, e: 40 }, "jump: shot string keeps the elevation");
+	eq(B.sparse(B.sstr({ a: 5, p: 500, sx: 0, sy: 0, bx: -100, by: 50, e: 12 })).e, 12, "jump: elevation with ball in hand");
+	eq(B.sparse("5~dw~0~0~1p"), null, "jump: elevation over 60 degrees refused");
+	eq(B.sstr({ a: 5, p: 500, sx: 0, sy: 0, e: 0 }), "5~dw~0~0", "jump: no elevation = the old format");
+	// a blocker right in front of the cue ball: a level shot hits it, a jump shot clears it and hits the target behind
+	function setup() { const s = B.create("C1", "j"); s.n = 3; s.x = [0, 0.3, 0.95]; s.y = [0, 0, 0]; s.on = [1, 1, 1]; s.k = [0, 3, 1]; return s; }
+	const flat = B.simulate(setup(), { a: 0, p: 450, sx: 0, sy: 0 }, {});
+	const firstFlat = flat.ev.find((e) => e.e === "hit");
+	eq(firstFlat && firstFlat.b, 1, "jump: a level shot hits the blocker");
+	const jump = B.simulate(setup(), { a: 0, p: 450, sx: 0, sy: 0, e: 45 }, { frames: true });
+	const firstJump = jump.ev.find((e) => e.e === "hit");
+	eq(firstJump && firstJump.b, 2, "jump: a 45 degree jump shot clears the blocker and hits the ball behind");
+	ok(jump.ev.some((e) => e.e === "land"), "jump: the cue ball lands (and bounces)");
+	let top = 0; jump.frames.forEach((f) => { top = Math.max(top, f[3]); });
+	ok(top > 0.05 && top < 0.4, "jump: a believable height (" + top.toFixed(3) + " m)");
+	// a hard steep shot from near a cushion leaves the table: a foul, the cue ball comes back in hand
+	const off = B.create("8", "o"); off.brk = false; off.bih = false; off.x[0] = 1.1; off.y[0] = 0.3;
+	const r = B.apply(off, { a: B.angleOf(1, 0.2), p: 1000, sx: 0, sy: 0, e: 60 });
+	ok(r.cueOff && /jumped off/.test(r.foul) && off.bih, "jump: the cue ball jumping off the table is a foul with ball in hand (" + r.foul + ")");
+	const back = B.replay("8", "o", []); void back;
+})();
+
 // 5. rules
 (function () {
 	// 8-ball: missing every ball is a foul -> ball in hand for the other player

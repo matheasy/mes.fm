@@ -190,19 +190,22 @@
 	/* ======================================================= shot strings ======================================================= */
 	function i36(n) { return (n < 0 ? "-" : "") + Math.abs(n).toString(36); }
 	function p36(s) { if (!/^-?[0-9a-z]{1,7}$/.test(s)) return NaN; var neg = s[0] === "-", v = parseInt(neg ? s.slice(1) : s, 36); return neg ? -v : v; }
-	B.sstr = function (o) { var f = [i36(o.a), i36(o.p), i36(o.sx || 0), i36(o.sy || 0)]; if (o.bx !== undefined && o.bx !== null) f.push(i36(o.bx), i36(o.by)); return f.join("~"); };
+	// optional last field: cue elevation in whole degrees (jump shots), only written when > 0 (so older shot strings stay the same)
+	B.sstr = function (o) { var f = [i36(o.a), i36(o.p), i36(o.sx || 0), i36(o.sy || 0)]; if (o.bx !== undefined && o.bx !== null) f.push(i36(o.bx), i36(o.by)); if (o.e) f.push(i36(o.e)); return f.join("~"); };
 	B.sparse = function (str) {
 		var f = String(str || "").split("~");
-		if (f.length !== 4 && f.length !== 6) return null;
+		if (f.length < 4 || f.length > 7) return null;
 		var n = f.map(p36);
 		for (var i = 0; i < n.length; i++) if (isNaN(n[i])) return null;
 		var o = { a: n[0], p: n[1], sx: n[2], sy: n[3] };
 		if (o.a < 0 || o.a >= 3600000 || o.p < 1 || o.p > 1000 || o.sx < -100 || o.sx > 100 || o.sy < -100 || o.sy > 100) return null;
 		if (o.sx * o.sx + o.sy * o.sy > 10000) return null;            // the tip must touch the ball (inside the circle)
-		if (f.length === 6) { o.bx = n[4]; o.by = n[5]; if (Math.abs(o.bx) > 30000 || Math.abs(o.by) > 30000) return null; }
+		if (f.length >= 6) { o.bx = n[4]; o.by = n[5]; if (Math.abs(o.bx) > 30000 || Math.abs(o.by) > 30000) return null; }
+		if (f.length === 5 || f.length === 7) { o.e = n[f.length - 1]; if (o.e < 1 || o.e > B.EMAX) return null; }
 		return o;
 	};
-	B.VMAX = 9;   // cue ball speed at full power, m/s
+	B.VMAX = 9;
+	B.EMAX = 60;   // the steepest cue elevation (degrees)   // cue ball speed at full power, m/s
 	B.speedOf = function (p) { return B.VMAX * p / 1000; };
 	B.powerFor = function (v) { return Math.max(1, Math.min(1000, Math.round(v * 1000 / B.VMAX))); };
 
@@ -247,16 +250,23 @@
 		opts = opts || {};
 		var T = s.T, G = geometry(T), n = s.n, R = T.R, i, j;
 		var x = new Float64Array(n), y = new Float64Array(n), vx = new Float64Array(n), vy = new Float64Array(n),
-			wx = new Float64Array(n), wy = new Float64Array(n), wz = new Float64Array(n), on = new Uint8Array(n), mv = new Uint8Array(n);
+			wx = new Float64Array(n), wy = new Float64Array(n), wz = new Float64Array(n), on = new Uint8Array(n), mv = new Uint8Array(n),
+			z = new Float64Array(n), vz = new Float64Array(n);    // height of the ball's bottom above the cloth (jump shots)
 		for (i = 0; i < n; i++) { x[i] = s.x[i]; y[i] = s.y[i]; on[i] = s.on[i]; }
 		// the cue strike
 		var sc = dsc(shot.a), dxs = sc[1], dys = sc[0], v0 = B.speedOf(shot.p);
 		var top = 1.25 * v0 * (shot.sy / 100) / R, side = -1.25 * v0 * (shot.sx / 100) / R;
 		vx[0] = dxs * v0; vy[0] = dys * v0; wx[0] = -dys * top; wy[0] = dxs * top; wz[0] = side; mv[0] = 1;
+		if (shot.e) {
+			// an elevated cue drives the ball down into the slate, which throws it up: part of the speed goes up, some is lost
+			var es = dsc(shot.e * 10000), up = v0 * es[0] * 0.48, keep = es[1] * 0.92 + 0.08 * (1 - es[0]);
+			vx[0] *= keep; vy[0] *= keep;
+			if (up > 0.3) { vz[0] = up; z[0] = 1e-9; }
+		}
 		var ev = [], frames = opts.frames ? [] : null, step = 0, t = 0, maxSteps = Math.round(MAXT / DT);
 		var fs = T.mus * GRAV * DT, rs = T.mur * GRAV * DT, zs = 35 * DT, e = T.e, eb = T.eb, R2 = 4 * R * R, invR = 1 / R;
 		var railX = G.L - R - 0.004, railY = G.W - R - 0.004;
-		function frame() { var f = new Float32Array(n * 3); for (var q = 0; q < n; q++) { f[q * 3] = x[q]; f[q * 3 + 1] = y[q]; f[q * 3 + 2] = on[q]; } frames.push(f); }
+		function frame() { var f = new Float32Array(n * 4); for (var q = 0; q < n; q++) { f[q * 4] = x[q]; f[q * 4 + 1] = y[q]; f[q * 4 + 2] = on[q]; f[q * 4 + 3] = z[q]; } frames.push(f); }
 		if (frames) frame();
 		var anyMoving = true;
 		while (anyMoving && step < maxSteps) {
@@ -264,6 +274,15 @@
 			anyMoving = false;
 			for (i = 0; i < n; i++) {
 				if (!on[i] || !mv[i]) continue;
+				var air = z[i] > 0 || vz[i] !== 0;
+				if (air) {
+					// in the air: gravity only; on landing it bounces (lower each time) until it stays on the cloth
+					vz[i] -= GRAV * DT; z[i] += vz[i] * DT;
+					if (z[i] <= 0) {
+						if (vz[i] < -0.4) { ev.push({ t: t, e: "land", a: i, v: -vz[i] }); vz[i] = -vz[i] * 0.42; z[i] = 1e-9; vx[i] *= 0.95; vy[i] *= 0.95; }
+						else { z[i] = 0; vz[i] = 0; }
+					}
+				} else {
 				// cloth friction
 				var ux = vx[i] - R * wy[i], uy = vy[i] + R * wx[i], us = Math.sqrt(ux * ux + uy * uy);
 				if (us > 1e-9) {
@@ -280,11 +299,15 @@
 				}
 				if (wz[i] > zs) wz[i] -= zs; else if (wz[i] < -zs) wz[i] += zs; else wz[i] = 0;
 				if (vx[i] === 0 && vy[i] === 0 && wx[i] === 0 && wy[i] === 0) { mv[i] = 0; wz[i] = 0; continue; }
+				}
 				x[i] += vx[i] * DT; y[i] += vy[i] * DT;
 				anyMoving = true;
 				// cushions + jaws (only near the edge)
 				var px = x[i], py = y[i];
-				if (px > railX || px < -railX || py > railY || py < -railY) {
+				if (z[i] > 1.15 * R) {
+					// high enough to clear the cushions: past the rails it has left the table
+					if (px > G.L + R || px < -G.L - R || py > G.W + R || py < -G.W - R) { on[i] = 0; mv[i] = 0; vx[i] = vy[i] = vz[i] = wx[i] = wy[i] = wz[i] = 0; z[i] = 0; ev.push({ t: t, e: "off", a: i }); }
+				} else if (px > railX || px < -railX || py > railY || py < -railY) {
 					var hit = false;
 					for (j = 0; j < 6 && !hit; j++) {
 						var sg = G.segs[j], nx = sg[4], ny = sg[5];
@@ -318,9 +341,9 @@
 					if (!on[j] || (!mv[i] && !mv[j])) continue;
 					var ddx = x[j] - x[i]; if (ddx >= 2 * R || ddx <= -2 * R) continue;
 					var ddy = y[j] - y[i]; if (ddy >= 2 * R || ddy <= -2 * R) continue;
-					var d2 = ddx * ddx + ddy * ddy;
-					if (d2 >= R2 || d2 === 0) continue;
-					var d = Math.sqrt(d2), cx = ddx / d, cy = ddy / d;
+					var ddz = z[j] - z[i], h2 = ddx * ddx + ddy * ddy, d2 = h2 + ddz * ddz;    // a ball in the air can pass over another
+					if (d2 >= R2 || h2 === 0) continue;
+					var hd = Math.sqrt(h2), d = Math.sqrt(d2), cx = ddx / hd, cy = ddy / hd;
 					var rel = (vx[i] - vx[j]) * cx + (vy[i] - vy[j]) * cy;
 					if (rel > 0) {
 						var J = (1 + eb) * 0.5 * rel;
@@ -409,7 +432,7 @@
 	B.isLegal = function (s, shot) {
 		if (!shot || s.win) return false;
 		var chk = B.sparse(B.sstr(shot));     // every field a whole number in range
-		if (!chk || chk.a !== shot.a || chk.p !== shot.p || chk.sx !== (shot.sx || 0) || chk.sy !== (shot.sy || 0)) return false;
+		if (!chk || chk.a !== shot.a || chk.p !== shot.p || chk.sx !== (shot.sx || 0) || chk.sy !== (shot.sy || 0) || (chk.e || 0) !== (shot.e || 0)) return false;
 		var has = shot.bx !== undefined && shot.bx !== null;
 		if (s.bih !== has) return false;
 		if (has && !B.placeOk(s, shot.bx / 10000, shot.by / 10000)) return false;
@@ -457,16 +480,20 @@
 		s.hist.push(B.sstr(shot));
 		s.shots[p]++;
 		// what happened
-		var first = -1, tFirst = 0, railAfter = false, pots = [], cuePot = false;
+		var first = -1, tFirst = 0, railAfter = false, pots = [], cuePot = false, cueOff = false, offs = [];
 		sim.ev.forEach(function (e) {
 			if (e.e === "hit" && first < 0 && (e.a === 0 || e.b === 0)) { first = e.a === 0 ? e.b : e.a; tFirst = e.t; }
 			else if (e.e === "rail" && first >= 0 && e.t >= tFirst) railAfter = true;
 			else if (e.e === "pot") { if (e.a === 0) cuePot = true; else pots.push(e.a); }
+			else if (e.e === "off") { if (e.a === 0) { cuePot = true; cueOff = true; } else offs.push(e.a); }
 		});
 		var res = { sim: sim, foul: "", msg: "", pots: pots, cue: cuePot, first: first, cont: false, player: p };
 		var wasBreak = s.brk;
 		s.brk = false; s.bih = false;
 		var opp = s.np === 2 ? 1 - p : p;
+		// balls that jumped off the table come back: pool balls to the foot spot, snooker colours to their spots (a red stays off)
+		offs.forEach(function (id) { if (s.g.table === "snooker") { if (s.k[id] >= 2) respotSnk(s, id); } else respotPool(s, id); });
+		res.offs = offs.slice(); res.cueOff = cueOff;
 		var K = function (id) { return s.k[id]; };
 		if (type === "8") rules8();
 		else if (type === "9" || type === "10") rules9();
@@ -489,7 +516,8 @@
 			var groupBefore = gr && before.some(function (o, id) { return o && id > 0 && B.groupOf(K(id)) === gr; });
 			var objPots = pots.filter(function (id) { return K(id) !== 8; });
 			if (wasBreak) {
-				if (cuePot) res.foul = "the cue ball went in on the break";
+				if (offs.length || cueOff) res.foul = (cueOff ? "the cue ball" : "a ball") + " jumped off the table";
+				else if (cuePot) res.foul = "the cue ball went in on the break";
 				else if (first < 0) res.foul = "no ball was hit";
 				if (eight) { respotPool(s, pots.filter(function (id) { return K(id) === 8; })[0]); res.msg = "The 8 went in on the break: it goes back on its spot. "; }
 				s.open = true;
@@ -498,7 +526,8 @@
 				else { res.msg += "Nothing went in. The table is open."; passTurn(false); }
 				return;
 			}
-			if (cuePot) res.foul = "the cue ball went in";
+			if (offs.length || cueOff) res.foul = (cueOff ? "the cue ball" : "a ball") + " jumped off the table";
+			else if (cuePot) res.foul = "the cue ball went in";
 			else if (first < 0) res.foul = "no ball was hit";
 			else if (s.open && K(first) === 8) res.foul = "the 8 was hit first on an open table";
 			else if (!s.open && targets.indexOf(first) < 0) res.foul = "the wrong ball was hit first (" + (gr === "s" ? "a solid" : "a stripe") + (groupBefore ? "" : " or the 8") + " should be hit first)";
@@ -522,7 +551,8 @@
 		function rules9() {
 			var money = type === "9" ? 9 : 10, low = targets[0];
 			var mPot = pots.some(function (id) { return K(id) === money; });
-			if (cuePot) res.foul = "the cue ball went in";
+			if (offs.length || cueOff) res.foul = (cueOff ? "the cue ball" : "a ball") + " jumped off the table";
+			else if (cuePot) res.foul = "the cue ball went in";
 			else if (first < 0) res.foul = "no ball was hit";
 			else if (first !== low) res.foul = "the " + K(low) + " had to be hit first";
 			else if (!wasBreak && !railAfter && !pots.length) res.foul = "no ball touched a cushion after the hit";
@@ -541,7 +571,8 @@
 				if (onBall === "colour") return id !== nominated;
 				return K(id) !== onBall;
 			});
-			if (cuePot) res.foul = "the cue ball went in";
+			if (offs.length || cueOff) res.foul = (cueOff ? "the cue ball" : "a ball") + " jumped off the table";
+			else if (cuePot) res.foul = "the cue ball went in";
 			else if (first < 0) res.foul = "no ball was hit";
 			else if (!legalFirst) res.foul = "the " + B.SNK_NAMES[K(first)] + " was hit first (" + (onBall === "red" ? "a red" : onBall === "colour" ? "a colour" : "the " + B.SNK_NAMES[onBall]) + " was on)";
 			else if (badPots.length) res.foul = "the " + B.SNK_NAMES[K(badPots[0])] + " went in";

@@ -221,3 +221,8 @@
 	@media (pointer:fine) {
 		#bl .bl-view:not(.mes-pfill) .bl-opow, #bl .bl-view:not(.mes-pfill) .bl-ohit, #bl .bl-view:not(.mes-pfill) .bl-ospin, #bl .bl-view:not(.mes-pfill) .bl-ospinpop {display:none;}
 	}
+	#bl .bl-elevwrap {display:flex;flex-direction:column;gap:0.15em;font-size:0.82em;color:var(--bl-sub);min-width:8.5em;}
+	#bl .bl-elevwrap b {color:var(--bl-ink);}
+	#bl .bl-elev {width:100%;accent-color:#0f7a4a;}
+	#bl .bl-oelev {display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;font-size:0.82em;color:#fff;}
+	#bl .bl-oelev b {color:#ffd54f;}

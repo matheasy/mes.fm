@@ -75,6 +75,7 @@
 						<canvas id="bl-spin" width="128" height="128" aria-label="Cue ball spin: drag the red dot. Keys W A S D move it, C centres it." tabindex="0"></canvas>
 						<span class="bl-spinl" id="bl-spinl">Centre</span>
 					</div>
+					<label class="bl-elevwrap" title="Raise the cue for a jump shot (J / Shift+J)"><span>Cue up: <b class="bl-elevv">flat</b></span><input type="range" class="bl-elev" min="0" max="60" step="1" value="0" aria-label="Cue elevation for jump shots"></label>
 					<div class="bl-powwrap">
 						<div class="bl-powlab"><span>Power</span><b id="bl-powv">35%</b></div>
 						<div class="bl-pow" id="bl-pow" role="slider" tabindex="0" aria-label="Shot power" aria-valuemin="1" aria-valuemax="100" aria-valuenow="35"><div class="bl-powfill" id="bl-powfill"></div><div class="bl-powknob" id="bl-powknob"></div></div>
@@ -88,7 +89,7 @@
 					<button type="button" class="bl-shoot" id="bl-shoot" title="Take the shot (Space)">Shoot</button>
 				</div>
 			</div>
-			<p class="tu-note bl-keys">Drag on the table to aim (the further from the cue ball you drag, the finer the aim), then pull the power bar and let go. <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>V</kbd> 2D / 3D, <kbd>K</kbd> camera, <kbd>Page Up</kbd> <kbd>Page Down</kbd> tilt the 3D view, <kbd>M</kbd> music, <kbd>G</kbd> guide full / short / off, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
+			<p class="tu-note bl-keys">Drag on the table to aim (the further from the cue ball you drag, the finer the aim), then pull the power bar and let go. <span class="bl-bihnote">With ball in hand, drag the white ball to place it.</span> Keys: <kbd>←</kbd> <kbd>→</kbd> aim (<kbd>Shift</kbd> = bigger steps), <kbd>↑</kbd> <kbd>↓</kbd> power, <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> spin, <kbd>J</kbd> / <kbd>Shift</kbd>+<kbd>J</kbd> raise / lower the cue (jump shots), <kbd>Space</kbd> shoot, <kbd>R</kbd> replay, <kbd>U</kbd> undo, <kbd>N</kbd> new game, <kbd>V</kbd> 2D / 3D, <kbd>K</kbd> camera, <kbd>Page Up</kbd> <kbd>Page Down</kbd> tilt the 3D view, <kbd>M</kbd> music, <kbd>G</kbd> guide full / short / off, <kbd>F</kbd> full screen. Your games and settings stay in this browser.</p>
 		</section>
 
 		<section id="bl-p-online" role="tabpanel" aria-label="Play online" hidden>

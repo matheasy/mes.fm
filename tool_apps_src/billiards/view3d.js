@@ -313,11 +313,11 @@
 					}
 				}
 				this.prev[i] = [x, z];
-				m.position.set(x, this.T.R, z); m.quaternion.copy(this.quats[i]);
+				m.position.set(x, this.T.R + (I.zs ? I.zs[i] || 0 : 0), z); m.quaternion.copy(this.quats[i]);
 			}
 			// the cue stick
 			if (I.cue) {
-				var c = I.cue, el = 0.09, pull = c.pull, s0 = this.T.R + 0.006 + pull, half = 0.725;
+				var c = I.cue, el = Math.max(0.09, (c.el || 0) * Math.PI / 180), pull = c.pull, s0 = this.T.R + 0.006 + pull, half = 0.725;
 				var cosE = Math.cos(el), sinE = Math.sin(el), mid = s0 + half;
 				this.cue.position.set(c.x - c.dx * mid * cosE, this.T.R + mid * sinE, c.y - c.dy * mid * cosE);
 				var axis = new THREE.Vector3(c.dx * cosE, -sinE, c.dy * cosE).normalize();   // from butt to tip
