@@ -98,3 +98,15 @@ body.dark-mode #bm .bm-yout {fill:#fff;stroke:#1a1a1a;}
 	#bm-wchart svg.is-live {cursor:crosshair;touch-action:none;}
 	#bm-wchart svg.is-live .bm-you {r:9px;}
 	body.dark-mode #bm .bm-charthint {color:#aab3bf;}
+/* Phones: BMI | BMI Prime side by side, then the (long) healthy weight and Ponderal index full width */
+@media (max-width: 600px) {
+	#bm #bm-hero {grid-template-columns:repeat(2,minmax(0,1fr));gap:0.55em;}
+	#bm #bm-hero .tu-stat {padding:0.6em 0.7em;}
+	#bm #bm-hero .tu-stat__label {font-size:0.66em;}
+	#bm #bm-hero .tu-stat__value {font-size:1.3em;}
+	#bm #bm-hero .tu-stat__sub {font-size:0.78em;}
+	#bm #bm-hero .tu-stat:nth-child(2) {order:3;grid-column:1/-1;}
+	#bm #bm-hero .tu-stat:nth-child(3) {order:2;}
+	#bm #bm-hero .tu-stat:nth-child(4) {order:4;grid-column:1/-1;}
+}
+@media (max-width: 300px) { #bm #bm-hero {grid-template-columns:1fr;} }
