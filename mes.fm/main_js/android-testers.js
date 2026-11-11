@@ -26,7 +26,9 @@
     gpa: { name: "MES GPA Calculator", pkg: "fm.mes.gpacalculator", key: "gpacalculatorAppBannerHidden",
       ios: "https://apps.apple.com/us/app/id6824052607" },
     fitness: { name: "MES Fitness Calculators", pkg: "fm.mes.fitnesscalculators", key: "fitnesscalculatorsAppBannerHidden",
-      ios: "https://apps.apple.com/us/app/id6824113713", extra: " (13 health and training calculators in one app)" }
+      ios: "https://apps.apple.com/us/app/id6824113713", extra: " (13 health and training calculators in one app)" },
+    openlimits: { name: "MES Open Limits", pkg: "fm.mes.openlimits", key: "openlimitsAppBannerHidden",
+      ios: "", extra: " (limit how many times a day you open your apps)" }
   };
   function joinUrl(a) { return "https://play.google.com/apps/testing/" + a.pkg; }
   function ext(href, text) { return '<a href="' + href + '" target="_blank" rel="noopener">' + text + "</a>"; }
