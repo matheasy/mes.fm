@@ -109,6 +109,8 @@
 
     function applySize() {
         targets.forEach(function (el) { el.style.fontSize = (STEPS[index] / 100) + "em"; });
+        /* --mes-ts on <html>: pages scale text inside drawings (SVG labels in viewBox units) with calc(Npx * var(--mes-ts, 1)) */
+        try { document.documentElement.style.setProperty("--mes-ts", String(STEPS[index] / 100)); } catch (e) {}
         downBtn.disabled = index === 0;
         upBtn.disabled = index === STEPS.length - 1;
         try { localStorage.setItem("articleFontScale", String(STEPS[index])); } catch (e) {}

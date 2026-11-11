@@ -38,10 +38,11 @@
 	#lu .lu-try__l {font-size:0.85em;font-weight:700;color:var(--lu-mut);margin-right:0.2em;}
 	#lu .lu-try .tu-chip {min-height:38px;}
 	#lu .lu-grid2 {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0.9em;align-items:start;margin-bottom:0.9em;}
-	#lu .lu-sl {display:grid;grid-template-columns:minmax(8.5em,11em) minmax(0,1fr) minmax(5.5em,auto);align-items:center;gap:0.6em;margin:0.35em 0;}
-	#lu .lu-sl label {font-size:0.85em;font-weight:600;}
-	#lu .lu-sl input[type=range] {width:100%;min-width:0;height:34px;accent-color:var(--accent);}
-	#lu .lu-sl output {font-size:0.85em;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+	/* label | range | value; wraps (range on its own line) when the text is large instead of squashing the range to nothing */
+	#lu .lu-sl {display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 0.6em;margin:0.35em 0;}
+	#lu .lu-sl label {flex:0 0 10em;max-width:100%;font-size:0.85em;font-weight:600;}
+	#lu .lu-sl input[type=range] {flex:1 1 9em;width:auto;min-width:9em;height:34px;accent-color:var(--accent);margin:0;}
+	#lu .lu-sl output {flex:0 0 auto;min-width:4em;margin-left:auto;font-size:0.85em;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
 	#lu .lu-opts {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;margin-top:0.7em;}
 	#lu .lu-ck {display:inline-flex;align-items:center;gap:0.4em;font-size:0.88em;cursor:pointer;min-height:34px;}
 	#lu .lu-ck input {width:18px;height:18px;accent-color:var(--accent);}
@@ -68,8 +69,30 @@
 	#lu .lu-a-my.lu-a-ok {stroke:var(--lu-good);}
 	#lu .lu-a-h {fill:var(--lu-my);stroke:var(--lu-card);stroke-width:3;cursor:grab;touch-action:none;}
 	#lu .lu-a-arc {fill:none;stroke:var(--lu-ink);stroke-width:1.5;}
-	#lu .lu-a-t {fill:var(--lu-ink);font:700 15px system-ui, sans-serif;}
-	#lu .lu-a-t2 {fill:var(--lu-mut);font:12px system-ui, sans-serif;}
+	#lu .lu-a-t {fill:var(--lu-ink);font:700 15px system-ui, sans-serif;paint-order:stroke;stroke:var(--lu-sheet);stroke-width:4px;stroke-linejoin:round;}
+	#lu .lu-a-t2 {fill:var(--lu-mut);font:13px system-ui, sans-serif;}
+	#lu .lu-a-h.lu-a-ok {fill:var(--lu-good);}
+	#lu .lu-legend {list-style:none;margin:0.5em 0 0;padding:0;font-size:0.88em;line-height:1.45;color:var(--lu-mut);}
+	#lu .lu-legend li {display:flex;align-items:center;gap:0.55em;margin:0.2em 0;}
+	#lu .lu-key {flex:0 0 1.8em;height:0;border-top:2.5px solid;}
+	#lu .lu-key--circ {border-top:2px dotted var(--lu-circ);}
+	#lu .lu-key--ell {border-color:var(--lu-ell);}
+	#lu .lu-key--band {border-top:2px dashed var(--lu-band);}
+	#lu .lu-key--my {border-color:var(--lu-my);border-top-width:4px;}
+	#lu .lu-steps {margin:0 0 0.7em;padding-left:1.4em;line-height:1.55;}
+	#lu .lu-steps li {margin:0 0 0.45em;}
+	#lu .lu-tryit {margin:0.2em 0 0.4em;line-height:1.5;}
+	#lu .lu-meter {position:relative;display:block;height:0.75em;margin:0.3em 0 0.15em;background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:999px;overflow:hidden;}
+	#lu .lu-meter__z {position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--lu-mut);}
+	#lu .lu-meter__b {position:absolute;top:0;bottom:0;transition:left .12s, width .12s;}
+	#lu .lu-meter__b--up {background:var(--lu-arrow);}
+	#lu .lu-meter__b--dn {background:var(--lu-ell);}
+	#lu .lu-meter__b--ok {background:var(--lu-good);margin-left:-1%;}
+	#lu .lu-meter__k {display:flex;justify-content:space-between;font-size:0.75em;color:var(--lu-mut);margin-bottom:0.35em;}
+	#lu .lu-angtxt {display:block;}
+	#lu .lu-more {margin-top:0.8em;border-top:1px solid var(--lu-line);padding-top:0.6em;}
+	#lu .lu-more summary {cursor:pointer;font-weight:600;color:var(--accent);}
+	#lu .lu-more p {line-height:1.55;margin:0.5em 0;}
 	#lu .lu-angout {line-height:1.5;}
 	#lu .lu-good {color:var(--lu-good);}
 	#lu .lu-photos {margin-bottom:0.9em;}
@@ -99,8 +122,8 @@
 	}
 	@media (max-width:640px) {
 		#lu .lu-plots {grid-template-columns:minmax(0,1fr);}
-		#lu .lu-sl {grid-template-columns:minmax(0,1fr) auto;}
-		#lu .lu-sl input[type=range] {grid-column:1 / -1;grid-row:2;}
+		#lu .lu-sl label {flex:1 1 auto;}
+		#lu .lu-sl input[type=range] {order:3;flex-basis:100%;}
 		#lu .lu-vbtns {margin-left:0;}
 		#lu .lu-looks {flex-wrap:wrap;}
 	}

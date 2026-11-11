@@ -107,14 +107,32 @@
 		<!-- ============ THE ANGLE ============ -->
 		<div class="tu-card lu-angc">
 			<h2 class="lu-h">Why the band leans at about 55°</h2>
+			<p class="lu-lead"><b>The short answer:</b> the band front is a seam. Behind it the steel has already stretched; ahead of it the steel has not. Both sides are the same piece of metal, so the seam has to be a line that comes out the <b>same length</b> whether you measure it on the stretched side or the unstretched side. Only a line tilted about 55° from the pull does that.</p>
 			<div class="lu-anggrid">
-				<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle on the sheet stretches into an ellipse; the two lines through the points that did not move are the band directions"></svg>
 				<div>
-					<p>Draw a circle on the sheet, then stretch it: it becomes an ellipse, longer along the pull and narrower across. Only two directions keep their length, where the circle and the ellipse cross. The band front has to lie along one of them, because the stretched steel behind the front and the unstretched steel ahead of it must stay joined along the whole front without tearing or overlapping.</p>
-					<div class="lu-sl"><label for="lu-ar">Anisotropy r</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
-					<div class="lu-sl"><label for="lu-aa">Your line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="30"><output id="lu-aav"></output></div>
-					<p class="lu-angout" id="lu-angout"></p>
-					<p class="lu-note">Drag the orange handle (or the slider) to turn a line on the sheet and read how much it stretches. r is the Lankford value: how much a sheet thins in width compared with thickness. r = 1 is an evenly behaving metal and gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less.</p>
+					<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle drawn on the sheet is pulled into an ellipse. The two dashed lines through the points where they cross are the band directions."></svg>
+					<ul class="lu-legend">
+						<li><span class="lu-key lu-key--circ"></span>A circle drawn on the sheet before pulling</li>
+						<li><span class="lu-key lu-key--ell"></span>The same circle after pulling (stretch exaggerated)</li>
+						<li><span class="lu-key lu-key--band"></span>Where they cross: lines that did not change length = band directions</li>
+						<li><span class="lu-key lu-key--my"></span>Your test line: drag the yellow dot</li>
+					</ul>
+				</div>
+				<div>
+					<ol class="lu-steps">
+						<li><b>Pulling makes the bar longer.</b> A line drawn along the pull gets longer.</li>
+						<li><b>It also makes the bar narrower</b> (the extra length has to come from somewhere). A line drawn straight across gets shorter.</li>
+						<li><b>In between, one tilt does neither.</b> It gains as much from the stretching as it loses from the narrowing, so its length does not change. For ordinary steel that tilt is 54.7°, and the seam can only run that way without tearing or wrinkling.</li>
+					</ol>
+					<p class="lu-tryit"><b>Try it:</b> turn the yellow test line and watch whether it grows or shrinks. When it keeps its length it turns <b class="lu-good">green</b>, right on top of a dashed band line.</p>
+					<div class="lu-sl"><label for="lu-aa">Turn the test line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="20"><output id="lu-aav"></output></div>
+					<div class="lu-angout" id="lu-angout" aria-live="polite"></div>
+					<details class="lu-more">
+						<summary>The maths, and why some sheets lean a bit less</summary>
+						<p>Stretch the bar by a strain ε. Its volume stays the same, so the width and thickness share the shrinking: the width gets narrower by ε/2. A line at angle θ from the pull then changes length by ε (cos²θ − ½ sin²θ). That is zero when tan²θ = 2, so θ = 54.7°.</p>
+						<p>Some rolled sheets thin more in width than in thickness. The ratio is the <b>r value</b> (Lankford value). The width then shrinks by ε·r/(1 + r) and the band angle is tan²θ = (1 + r) / r. r = 1 gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less (about 52°).</p>
+						<div class="lu-sl"><label for="lu-ar">Sheet r value</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
+					</details>
 				</div>
 			</div>
 		</div>

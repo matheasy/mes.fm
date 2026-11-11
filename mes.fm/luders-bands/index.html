@@ -345,10 +345,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#lu .lu-try__l {font-size:0.85em;font-weight:700;color:var(--lu-mut);margin-right:0.2em;}
 	#lu .lu-try .tu-chip {min-height:38px;}
 	#lu .lu-grid2 {display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0.9em;align-items:start;margin-bottom:0.9em;}
-	#lu .lu-sl {display:grid;grid-template-columns:minmax(8.5em,11em) minmax(0,1fr) minmax(5.5em,auto);align-items:center;gap:0.6em;margin:0.35em 0;}
-	#lu .lu-sl label {font-size:0.85em;font-weight:600;}
-	#lu .lu-sl input[type=range] {width:100%;min-width:0;height:34px;accent-color:var(--accent);}
-	#lu .lu-sl output {font-size:0.85em;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+	/* label | range | value; wraps (range on its own line) when the text is large instead of squashing the range to nothing */
+	#lu .lu-sl {display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 0.6em;margin:0.35em 0;}
+	#lu .lu-sl label {flex:0 0 10em;max-width:100%;font-size:0.85em;font-weight:600;}
+	#lu .lu-sl input[type=range] {flex:1 1 9em;width:auto;min-width:9em;height:34px;accent-color:var(--accent);margin:0;}
+	#lu .lu-sl output {flex:0 0 auto;min-width:4em;margin-left:auto;font-size:0.85em;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
 	#lu .lu-opts {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;margin-top:0.7em;}
 	#lu .lu-ck {display:inline-flex;align-items:center;gap:0.4em;font-size:0.88em;cursor:pointer;min-height:34px;}
 	#lu .lu-ck input {width:18px;height:18px;accent-color:var(--accent);}
@@ -375,8 +376,30 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#lu .lu-a-my.lu-a-ok {stroke:var(--lu-good);}
 	#lu .lu-a-h {fill:var(--lu-my);stroke:var(--lu-card);stroke-width:3;cursor:grab;touch-action:none;}
 	#lu .lu-a-arc {fill:none;stroke:var(--lu-ink);stroke-width:1.5;}
-	#lu .lu-a-t {fill:var(--lu-ink);font:700 15px system-ui, sans-serif;}
-	#lu .lu-a-t2 {fill:var(--lu-mut);font:12px system-ui, sans-serif;}
+	#lu .lu-a-t {fill:var(--lu-ink);font:700 15px system-ui, sans-serif;paint-order:stroke;stroke:var(--lu-sheet);stroke-width:4px;stroke-linejoin:round;}
+	#lu .lu-a-t2 {fill:var(--lu-mut);font:13px system-ui, sans-serif;}
+	#lu .lu-a-h.lu-a-ok {fill:var(--lu-good);}
+	#lu .lu-legend {list-style:none;margin:0.5em 0 0;padding:0;font-size:0.88em;line-height:1.45;color:var(--lu-mut);}
+	#lu .lu-legend li {display:flex;align-items:center;gap:0.55em;margin:0.2em 0;}
+	#lu .lu-key {flex:0 0 1.8em;height:0;border-top:2.5px solid;}
+	#lu .lu-key--circ {border-top:2px dotted var(--lu-circ);}
+	#lu .lu-key--ell {border-color:var(--lu-ell);}
+	#lu .lu-key--band {border-top:2px dashed var(--lu-band);}
+	#lu .lu-key--my {border-color:var(--lu-my);border-top-width:4px;}
+	#lu .lu-steps {margin:0 0 0.7em;padding-left:1.4em;line-height:1.55;}
+	#lu .lu-steps li {margin:0 0 0.45em;}
+	#lu .lu-tryit {margin:0.2em 0 0.4em;line-height:1.5;}
+	#lu .lu-meter {position:relative;display:block;height:0.75em;margin:0.3em 0 0.15em;background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:999px;overflow:hidden;}
+	#lu .lu-meter__z {position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--lu-mut);}
+	#lu .lu-meter__b {position:absolute;top:0;bottom:0;transition:left .12s, width .12s;}
+	#lu .lu-meter__b--up {background:var(--lu-arrow);}
+	#lu .lu-meter__b--dn {background:var(--lu-ell);}
+	#lu .lu-meter__b--ok {background:var(--lu-good);margin-left:-1%;}
+	#lu .lu-meter__k {display:flex;justify-content:space-between;font-size:0.75em;color:var(--lu-mut);margin-bottom:0.35em;}
+	#lu .lu-angtxt {display:block;}
+	#lu .lu-more {margin-top:0.8em;border-top:1px solid var(--lu-line);padding-top:0.6em;}
+	#lu .lu-more summary {cursor:pointer;font-weight:600;color:var(--accent);}
+	#lu .lu-more p {line-height:1.55;margin:0.5em 0;}
 	#lu .lu-angout {line-height:1.5;}
 	#lu .lu-good {color:var(--lu-good);}
 	#lu .lu-photos {margin-bottom:0.9em;}
@@ -406,8 +429,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	}
 	@media (max-width:640px) {
 		#lu .lu-plots {grid-template-columns:minmax(0,1fr);}
-		#lu .lu-sl {grid-template-columns:minmax(0,1fr) auto;}
-		#lu .lu-sl input[type=range] {grid-column:1 / -1;grid-row:2;}
+		#lu .lu-sl label {flex:1 1 auto;}
+		#lu .lu-sl input[type=range] {order:3;flex-basis:100%;}
 		#lu .lu-vbtns {margin-left:0;}
 		#lu .lu-looks {flex-wrap:wrap;}
 	}
@@ -864,14 +887,32 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<!-- ============ THE ANGLE ============ -->
 		<div class="tu-card lu-angc">
 			<h2 class="lu-h">Why the band leans at about 55°</h2>
+			<p class="lu-lead"><b>The short answer:</b> the band front is a seam. Behind it the steel has already stretched; ahead of it the steel has not. Both sides are the same piece of metal, so the seam has to be a line that comes out the <b>same length</b> whether you measure it on the stretched side or the unstretched side. Only a line tilted about 55° from the pull does that.</p>
 			<div class="lu-anggrid">
-				<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle on the sheet stretches into an ellipse; the two lines through the points that did not move are the band directions"></svg>
 				<div>
-					<p>Draw a circle on the sheet, then stretch it: it becomes an ellipse, longer along the pull and narrower across. Only two directions keep their length, where the circle and the ellipse cross. The band front has to lie along one of them, because the stretched steel behind the front and the unstretched steel ahead of it must stay joined along the whole front without tearing or overlapping.</p>
-					<div class="lu-sl"><label for="lu-ar">Anisotropy r</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
-					<div class="lu-sl"><label for="lu-aa">Your line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="30"><output id="lu-aav"></output></div>
-					<p class="lu-angout" id="lu-angout"></p>
-					<p class="lu-note">Drag the orange handle (or the slider) to turn a line on the sheet and read how much it stretches. r is the Lankford value: how much a sheet thins in width compared with thickness. r = 1 is an evenly behaving metal and gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less.</p>
+					<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle drawn on the sheet is pulled into an ellipse. The two dashed lines through the points where they cross are the band directions."></svg>
+					<ul class="lu-legend">
+						<li><span class="lu-key lu-key--circ"></span>A circle drawn on the sheet before pulling</li>
+						<li><span class="lu-key lu-key--ell"></span>The same circle after pulling (stretch exaggerated)</li>
+						<li><span class="lu-key lu-key--band"></span>Where they cross: lines that did not change length = band directions</li>
+						<li><span class="lu-key lu-key--my"></span>Your test line: drag the yellow dot</li>
+					</ul>
+				</div>
+				<div>
+					<ol class="lu-steps">
+						<li><b>Pulling makes the bar longer.</b> A line drawn along the pull gets longer.</li>
+						<li><b>It also makes the bar narrower</b> (the extra length has to come from somewhere). A line drawn straight across gets shorter.</li>
+						<li><b>In between, one tilt does neither.</b> It gains as much from the stretching as it loses from the narrowing, so its length does not change. For ordinary steel that tilt is 54.7°, and the seam can only run that way without tearing or wrinkling.</li>
+					</ol>
+					<p class="lu-tryit"><b>Try it:</b> turn the yellow test line and watch whether it grows or shrinks. When it keeps its length it turns <b class="lu-good">green</b>, right on top of a dashed band line.</p>
+					<div class="lu-sl"><label for="lu-aa">Turn the test line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="20"><output id="lu-aav"></output></div>
+					<div class="lu-angout" id="lu-angout" aria-live="polite"></div>
+					<details class="lu-more">
+						<summary>The maths, and why some sheets lean a bit less</summary>
+						<p>Stretch the bar by a strain ε. Its volume stays the same, so the width and thickness share the shrinking: the width gets narrower by ε/2. A line at angle θ from the pull then changes length by ε (cos²θ − ½ sin²θ). That is zero when tan²θ = 2, so θ = 54.7°.</p>
+						<p>Some rolled sheets thin more in width than in thickness. The ratio is the <b>r value</b> (Lankford value). The width then shrinks by ε·r/(1 + r) and the band angle is tan²θ = (1 + r) / r. r = 1 gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less (about 52°).</p>
+						<div class="lu-sl"><label for="lu-ar">Sheet r value</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
+					</details>
 				</div>
 			</div>
 		</div>
@@ -1032,7 +1073,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:5
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/luders-bands/js/luders-bands.js?v=1" defer></script>
+	<script src="/luders-bands/js/luders-bands.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -62,7 +62,8 @@
 		return out + seg(h.slice(last));
 	}
 	function tile(label, val, sub, cls) { return "<div class='tu-stat" + (cls ? " " + cls : "") + "'><div class='tu-stat__label'>" + sym(subH(label)) + "</div><div class='tu-stat__value'>" + val + "</div><div class='tu-stat__sub'>" + subH(sub || "") + "</div></div>"; }
-	function tx(x, y, s, cls, anchor, extra) { return "<text x='" + r1(x) + "' y='" + r1(y) + "' class='" + (cls || "mt-t") + "'" + (anchor ? " text-anchor='" + anchor + "'" : "") + (extra || "") + ">" + subS(esc(s)) + "</text>"; }
+	/* long sentences (> 30 characters) get mt-tl: they already fill the drawing's width, so they do not grow with A+ (short labels do, via --mes-ts) */
+	function tx(x, y, s, cls, anchor, extra) { return "<text x='" + r1(x) + "' y='" + r1(y) + "' class='" + (cls || "mt-t") + (String(s).length > 30 ? " mt-tl" : "") + "'" + (anchor ? " text-anchor='" + anchor + "'" : "") + (extra || "") + ">" + subS(esc(s)) + "</text>"; }
 	function svgPt(svg, ev) { var p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; var m = svg.getScreenCTM(); return m ? p.matrixTransform(m.inverse()) : { x: 0, y: 0 }; }
 	var MARK = "<marker id='@' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0 L10,5 L0,10 z' class='mt-dimar'/></marker>";
 	function dimV(x, y1, y2, mk) { return "<line x1='" + r1(x) + "' y1='" + r1(y1) + "' x2='" + r1(x) + "' y2='" + r1(y2) + "' class='mt-dim' marker-start='url(#" + mk + ")' marker-end='url(#" + mk + ")'/>"; }

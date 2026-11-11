@@ -390,6 +390,9 @@
     if (cv.__w !== w || cv.__h !== h || cv.__d !== DPR) { cv.width = Math.round(w * DPR); cv.height = Math.round(h * DPR); cv.style.height = h + "px"; cv.__w = w; cv.__h = h; cv.__d = DPR; }
     var c = cv.getContext("2d"); c.setTransform(DPR, 0, 0, DPR, 0, 0); return { c: c, w: w, h: h };
   }
+  /* text size: the header A- / A+ sets font-size on #main-content (in em); drawings follow it (capped so the plots keep room) */
+  function TXS() { var m = document.getElementById("main-content"), v = m ? parseFloat(m.style.fontSize) : NaN; return v > 0 ? Math.min(1.8, Math.max(0.75, v)) : 1; }
+  function fnt(n, bold) { return (bold ? "bold " : "") + Math.round(n * TXS()) + "px system-ui, sans-serif"; }
   function css(name) { return getComputedStyle(root).getPropertyValue(name).trim() || "#888"; }
   function isDark() { return document.body.classList.contains("dark-mode"); }
 
@@ -484,9 +487,9 @@
     c.fillStyle = css("--lu-bg");
     S.notches.forEach(function (nx) { var xi = pos[0] + (pos[N] - pos[0]) * nx; c.beginPath(); c.moveTo(xi - 5, yc - gh / 2 - 1); c.lineTo(xi + 5, yc - gh / 2 - 1); c.lineTo(xi, yc - gh / 2 + 7); c.closePath(); c.fill(); c.strokeStyle = css("--lu-edge"); c.stroke(); c.beginPath(); c.moveTo(xi - 5, yc + gh / 2 + 1); c.lineTo(xi + 5, yc + gh / 2 + 1); c.lineTo(xi, yc + gh / 2 - 7); c.closePath(); c.fill(); c.stroke(); });
     /* gauge marks */
-    c.fillStyle = css("--lu-mut"); c.font = "11px system-ui, sans-serif"; c.textAlign = "center";
+    c.fillStyle = css("--lu-mut"); c.font = fnt(11); c.textAlign = "center";
     c.fillRect(x0, yc + sh / 2 + 4, 1, 8); c.fillRect(x1 - 1, yc + sh / 2 + 4, 1, 8);
-    c.textAlign = S.thin && sim.P > 0 ? "left" : "center"; c.fillText("gauge length " + p.Lg + " mm", S.thin && sim.P > 0 ? x0 + 4 : (x0 + x1) / 2, yc + sh / 2 + 14);
+    c.textAlign = S.thin && sim.P > 0 ? "left" : "center"; c.fillText("gauge length " + p.Lg + " mm", S.thin && sim.P > 0 ? x0 + 4 : (x0 + x1) / 2, yc + sh / 2 + 14 * TXS());
     /* crosshead arrow */
     c.strokeStyle = css("--lu-arrow"); c.fillStyle = css("--lu-arrow"); c.lineWidth = 2.5;
     var ax = Math.min(w - 8, x1 + shW + gripW + 4);
@@ -497,7 +500,7 @@
     /* front markers */
     var fr = sim.fronts();
     if (sim.phase === "luders" || (fr.length && fr.length < 6)) {
-      c.font = "bold 11px system-ui, sans-serif"; c.textAlign = "center";
+      c.font = fnt(11, 1); c.textAlign = "center";
       fr.forEach(function (f) {
         var fx = pos[0] + (pos[N] - pos[0]) * f.x, ty = yc - gh / 2 - 10;
         c.fillStyle = css("--lu-front"); c.strokeStyle = css("--lu-front"); c.lineWidth = 2;
@@ -509,7 +512,7 @@
     /* selected slice */
     var si = microIdx();
     if (si >= 0) { var sx = (pos[si] + pos[si + 1]) / 2, sy = yc + gh / 2 + 3; c.fillStyle = css("--lu-sel"); c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx - 6, sy + 9); c.lineTo(sx + 6, sy + 9); c.closePath(); c.fill(); }
-    if (S.thin && sim.P > 0) { c.font = "10px system-ui, sans-serif"; c.textAlign = "left"; c.fillStyle = css("--lu-mut"); c.textAlign = "right"; c.fillText("thinning drawn ×15", x1, yc + sh / 2 + 14); }
+    if (S.thin && sim.P > 0) { c.font = fnt(10); c.textAlign = "left"; c.fillStyle = css("--lu-mut"); c.textAlign = "right"; c.fillText("thinning drawn ×15", x1, yc + sh / 2 + 14 * TXS()); }
   }
   function rgbStr(a) { return "rgb(" + a[0] + "," + a[1] + "," + a[2] + ")"; }
 
@@ -519,18 +522,18 @@
     var cv = $("lu-chart"), stageH = stageHeight(), hh = stageH ? Math.max(170, stageH * 0.42) : 260;
     var F = fit(cv, Math.round(hh)), c = F.c, w = F.w, h = F.h;
     c.clearRect(0, 0, w, h);
-    var mL = 48, mR = 12, mT = 12, mB = 34, pw = w - mL - mR, ph = h - mT - mB;
+    var mL = Math.round(48 * TXS()), mR = 12, mT = 12, mB = Math.round(34 * TXS()), pw = w - mL - mR, ph = h - mT - mB;
     var xMax = Math.max(endStrain, sim.strain() * 1.02), yMax = Math.max(sim.p.sL * sim.p.uy * 1.12, sim.maxS * 1.08, 50);
     if (ghost) ghost.pts.forEach(function (pt) { if (pt[0] > xMax) xMax = pt[0]; if (pt[1] * 1.05 > yMax) yMax = pt[1] * 1.05; });
     var X = function (e) { return mL + e / xMax * pw; }, Y = function (s) { return mT + ph - s / yMax * ph; };
     chartGeo = { X: X, Y: Y, mL: mL, mT: mT, pw: pw, ph: ph, xMax: xMax, yMax: yMax, w: w, h: h };
     /* grid */
-    c.strokeStyle = css("--lu-grid"); c.lineWidth = 1; c.font = "11px system-ui, sans-serif"; c.fillStyle = css("--lu-mut");
+    c.strokeStyle = css("--lu-grid"); c.lineWidth = 1; c.font = fnt(11); c.fillStyle = css("--lu-mut");
     var ys = niceStep(S.units === "ksi" ? yMax * L.MPA_KSI : yMax, 5), u = S.units === "ksi" ? 1 / L.MPA_KSI : 1;
     c.textAlign = "right";
     for (var v = 0; v * u <= yMax + 1e-9; v += ys) { var yy = Y(v * u); c.beginPath(); c.moveTo(mL, yy); c.lineTo(mL + pw, yy); c.stroke(); c.fillText(v, mL - 5, yy + 4); }
     var xs = niceStep(xMax * 100, 6); c.textAlign = "center";
-    for (v = 0; v / 100 <= xMax + 1e-9; v += xs) { var xx = X(v / 100); c.beginPath(); c.moveTo(xx, mT); c.lineTo(xx, mT + ph); c.stroke(); c.fillText(+v.toFixed(2) + "%", xx, mT + ph + 14); }
+    for (v = 0; v / 100 <= xMax + 1e-9; v += xs) { var xx = X(v / 100); c.beginPath(); c.moveTo(xx, mT); c.lineTo(xx, mT + ph); c.stroke(); c.fillText(+v.toFixed(2) + "%", xx, mT + ph + 14 * TXS()); }
     c.fillText("strain (extensometer on the gauge length)", mL + pw / 2, h - 3);
     c.save(); c.translate(11, mT + ph / 2); c.rotate(-Math.PI / 2); c.fillText("stress, " + (S.units === "ksi" ? "ksi" : "MPa"), 0, 0); c.restore();
     /* ghost */
@@ -545,16 +548,16 @@
       var by = Y(sm.plateau || sim.p.sL) + 22, xa = X(up.strain), xb = X(sim.ludersEnd.strain);
       c.strokeStyle = css("--lu-front"); c.fillStyle = css("--lu-front"); c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(xa, by - 4); c.lineTo(xa, by); c.lineTo(xb, by); c.lineTo(xb, by - 4); c.stroke();
-      c.textAlign = "center"; c.font = "bold 11px system-ui, sans-serif"; c.fillText("Lüders plateau: εL ≈ " + L.pct(sm.ludersStrain, 2), Math.max(mL + 80, (xa + xb) / 2), by + 14);
+      c.textAlign = "center"; c.font = fnt(11, 1); c.fillText("Lüders plateau: εL ≈ " + L.pct(sm.ludersStrain, 2), Math.max(mL + 80, (xa + xb) / 2), by + 14);
     }
     /* curve */
     c.strokeStyle = css("--lu-curve"); c.lineWidth = 2.2; line(c, sim.curve, X, Y);
-    if (up) { c.fillStyle = css("--lu-upper"); c.beginPath(); c.arc(X(up.strain), Y(up.s), 4, 0, 7); c.fill(); c.textAlign = "left"; c.font = "11px system-ui, sans-serif"; c.fillText("upper yield " + fS(up.s), X(up.strain) + 7, Y(up.s) - 2); }
+    if (up) { c.fillStyle = css("--lu-upper"); c.beginPath(); c.arc(X(up.strain), Y(up.s), 4, 0, 7); c.fill(); c.textAlign = "left"; c.font = fnt(11); c.fillText("upper yield " + fS(up.s), X(up.strain) + 7, Y(up.s) - 2); }
     var e = sim.strain(); c.fillStyle = css("--lu-curve"); c.beginPath(); c.arc(X(e), Y(sim.s), 4.5, 0, 7); c.fill();
     /* hover */
     if (hoverE != null) {
       var best = null; sim.curve.forEach(function (pt) { if (!best || Math.abs(pt[0] - hoverE) < Math.abs(best[0] - hoverE)) best = pt; });
-      if (best) { c.strokeStyle = css("--lu-mut"); c.setLineDash([2, 3]); c.beginPath(); c.moveTo(X(best[0]), mT); c.lineTo(X(best[0]), mT + ph); c.stroke(); c.setLineDash([]); var tx = L.pct(best[0], 2) + "  ·  " + fS(best[1]); c.font = "bold 11px system-ui, sans-serif"; var tw = c.measureText(tx).width + 10, bx = Math.min(mL + pw - tw, Math.max(mL, X(best[0]) + 6)); c.fillStyle = css("--lu-tipbg"); c.fillRect(bx, mT + 18, tw, 18); c.fillStyle = css("--lu-ink"); c.textAlign = "left"; c.fillText(tx, bx + 5, mT + 31); }
+      if (best) { c.strokeStyle = css("--lu-mut"); c.setLineDash([2, 3]); c.beginPath(); c.moveTo(X(best[0]), mT); c.lineTo(X(best[0]), mT + ph); c.stroke(); c.setLineDash([]); var tx = L.pct(best[0], 2) + "  ·  " + fS(best[1]); c.font = fnt(11, 1); var tw = c.measureText(tx).width + 10, bx = Math.min(mL + pw - tw, Math.max(mL, X(best[0]) + 6)); c.fillStyle = css("--lu-tipbg"); c.fillRect(bx, mT + 18, tw, 18); c.fillStyle = css("--lu-ink"); c.textAlign = "left"; c.fillText(tx, bx + 5, mT + 31); }
     }
   }
   function line(c, pts, X, Y) { c.beginPath(); for (var i = 0; i < pts.length; i++) { var x = X(pts[i][0]), y = Y(pts[i][1]); if (i) c.lineTo(x, y); else c.moveTo(x, y); } c.stroke(); }
@@ -566,7 +569,7 @@
     var cv = $("lu-kymo"), stageH = stageHeight(), hh = stageH ? Math.max(170, stageH * 0.42) : 260;
     var F = fit(cv, Math.round(hh)), c = F.c, w = F.w, h = F.h;
     c.clearRect(0, 0, w, h);
-    var mL = 40, mR = 10, mT = 8, mB = 30, pw = w - mL - mR, ph = h - mT - mB, N = sim.p.N;
+    var mL = Math.round(40 * TXS()), mR = 10, mT = 8, mB = Math.round(30 * TXS()), pw = w - mL - mR, ph = h - mT - mB, N = sim.p.N;
     var tMax = Math.max(estTotal(), sim.t * 1.02, 1);
     c.fillStyle = isDark() ? "#11151c" : "#eef2f6"; c.fillRect(mL, mT, pw, ph);
     if (kymo.length > 1) {
@@ -583,17 +586,17 @@
       c.imageSmoothingEnabled = true;
     }
     c.strokeStyle = css("--lu-grid"); c.strokeRect(mL + 0.5, mT + 0.5, pw - 1, ph - 1);
-    c.fillStyle = css("--lu-mut"); c.font = "11px system-ui, sans-serif"; c.textAlign = "right";
+    c.fillStyle = css("--lu-mut"); c.font = fnt(11); c.textAlign = "right";
     var ts = niceStep(tMax, 5);
     for (var t = 0; t <= tMax; t += ts) { var y = mT + ph * t / tMax; c.fillText(t >= 60 ? (t / 60).toFixed(1) + "m" : Math.round(t) + "s", mL - 4, y + 4); }
-    c.textAlign = "center"; c.fillText("0", mL, mT + ph + 14); c.fillText(sim.p.Lg + " mm", mL + pw - 12, mT + ph + 14); c.fillText("position along the gauge length", mL + pw / 2, h - 3);
+    c.textAlign = "center"; c.fillText("0", mL, mT + ph + 14 * TXS()); c.fillText(sim.p.Lg + " mm", mL + pw - 12, mT + ph + 14 * TXS()); c.fillText("position along the gauge length", mL + pw / 2, h - 3);
     /* predicted slope line for the first band */
     if (sim.events.length && sim.events[0].type === "nucleate" && !sim.agedTimes) {
       var e0 = sim.events[0], vth = L.bandSpeed(sim.p.V / 60, sim.p.eL, e0.x > 0.06 && e0.x < 0.94 ? 2 : 1), xs = mL + pw * e0.x, ys = mT + ph * e0.t / tMax;
       c.strokeStyle = css("--lu-front"); c.setLineDash([4, 4]); c.lineWidth = 1.2;
       [1, -1].forEach(function (dirn) { if ((dirn > 0 && e0.x > 0.94) || (dirn < 0 && e0.x < 0.06)) return; var dist = dirn > 0 ? (1 - e0.x) * sim.p.Lg : e0.x * sim.p.Lg, dtt = dist / vth; c.beginPath(); c.moveTo(xs, ys); c.lineTo(xs + dirn * pw * dist / sim.p.Lg, ys + ph * dtt / tMax); c.stroke(); });
       c.setLineDash([]);
-      c.fillStyle = css("--lu-front"); c.textAlign = "left"; c.font = "bold 11px system-ui, sans-serif";
+      c.fillStyle = css("--lu-front"); c.textAlign = "left"; c.font = fnt(11, 1);
       c.fillText("dashed: v = V ÷ (fronts × εL)", mL + 6, mT + ph - 8);
     }
     var nowY = mT + ph * sim.t / tMax; c.strokeStyle = css("--lu-curve"); c.lineWidth = 1; c.beginPath(); c.moveTo(mL, nowY); c.lineTo(mL + pw, nowY); c.stroke();
@@ -836,33 +839,32 @@
   /* ---- front-angle figure ---- */
   var angDrag = false;
   function drawAngle() {
-    var svg = $("lu-ang"), r = +$("lu-ar").value, th = L.frontAngle(r), my = +$("lu-aa").value;
-    $("lu-arv").textContent = r.toFixed(2); $("lu-aav").textContent = my.toFixed(1) + "°";
+    var svg = $("lu-ang"), r = +$("lu-ar").value, th = L.frontAngle(r), my = +$("lu-aa").value, k = TXS();
+    $("lu-arv").textContent = r.toFixed(2) + " → " + th.toFixed(1) + "°"; $("lu-aav").textContent = my.toFixed(1) + "°";
     var cx = 220, cy = 150, R0 = 90, e = 0.32, ax = R0 * (1 + e), ay = R0 * (1 - e * r / (1 + r));
     function P(deg, len) { var t = deg * Math.PI / 180; return [cx + Math.cos(t) * len, cy - Math.sin(t) * len]; }
-    var lines = "";
-    [th, -th, 180 - th, 180 + th].forEach(function () {});
     var g = '<rect x="10" y="10" width="420" height="280" rx="10" class="lu-a-sheet"/>';
     g += '<path d="M24,150 h34 M24,150 l8,-6 M24,150 l8,6 M416,150 h-34 M416,150 l-8,-6 M416,150 l-8,6" class="lu-a-pull"/>';
+    g += '<text x="41" y="' + (150 - 12) + '" text-anchor="middle" class="lu-a-t2" style="font-size:' + Math.round(13 * k) + 'px">pull</text><text x="399" y="' + (150 - 12) + '" text-anchor="middle" class="lu-a-t2" style="font-size:' + Math.round(13 * k) + 'px">pull</text>';
     g += '<circle cx="' + cx + '" cy="' + cy + '" r="' + R0 + '" class="lu-a-circ"/>';
     g += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + ax + '" ry="' + ay + '" class="lu-a-ell"/>';
     [th, -th].forEach(function (d) { var a = P(d, 135), b = P(d + 180, 135); g += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" class="lu-a-band"/>'; });
-    /* crossing points */
     [th, -th, 180 - th, 180 + th].forEach(function (d) { var q = P(d, R0); g += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="5" class="lu-a-pt"/>'; });
-    /* the user's line: from centre, length on the circle and after stretching */
-    var str = Math.sqrt(Math.pow(Math.cos(my * Math.PI / 180) * (1 + e), 2) + Math.pow(Math.sin(my * Math.PI / 180) * (1 - e * r / (1 + r)), 2)) - 1;
+    var lineE = L.lineStrain(my, r), ok = Math.abs(lineE) < 0.02;
     var h1 = P(my, R0), h0 = P(my + 180, R0);
-    var ok = Math.abs(my - th) < 1.2;
     g += '<line x1="' + h0[0] + '" y1="' + h0[1] + '" x2="' + h1[0] + '" y2="' + h1[1] + '" class="lu-a-my' + (ok ? ' lu-a-ok' : '') + '"/>';
-    g += '<circle cx="' + h1[0] + '" cy="' + h1[1] + '" r="10" class="lu-a-h" id="lu-ah"/>';
+    g += '<circle cx="' + h1[0] + '" cy="' + h1[1] + '" r="11" class="lu-a-h' + (ok ? ' lu-a-ok' : '') + '" id="lu-ah"/>';
     g += '<path d="M' + (cx + 34) + ',' + cy + ' A34,34 0 0 0 ' + P(th, 34)[0] + ',' + P(th, 34)[1] + '" class="lu-a-arc"/>';
-    g += '<text x="' + (cx + 40) + '" y="' + (cy - 12) + '" class="lu-a-t">' + th.toFixed(1) + '°</text>';
-    g += '<text x="24" y="32" class="lu-a-t2">before (circle) · after stretching (ellipse, exaggerated)</text>';
-    g += '<text x="24" y="282" class="lu-a-t2">dashed: lines that do not stretch = band directions</text>';
+    g += '<text x="24" y="' + Math.round(26 + 12 * k) + '" class="lu-a-t" style="font-size:' + Math.round(15 * k) + 'px">band: ' + th.toFixed(1) + '° from the pull</text>';
+    g += '<text x="' + (cx + 40) + '" y="' + (cy - 8) + '" class="lu-a-t lu-a-th" style="font-size:' + Math.round(14 * k) + 'px">θ</text>';
     svg.innerHTML = g;
-    var sP = Math.abs(str) < 0.002 ? "0.0%" : (str > 0 ? "+" : "") + (str / e * 1).toFixed(2) + " × the pull strain";
-    var lineE = L.lineStrain(my, r);
-    $("lu-angout").innerHTML = "At <b>" + my.toFixed(1) + "°</b> the line " + (Math.abs(lineE) < 0.02 ? "<b class='lu-good'>keeps its length: a band front can lie here.</b>" : lineE > 0 ? "<b>stretches</b> by " + (lineE * 100).toFixed(0) + "% of the pull strain." : "<b>shortens</b> by " + (-lineE * 100).toFixed(0) + "% of the pull strain.") + " Band angle for r = " + r.toFixed(2) + ": <b>" + th.toFixed(1) + "°</b> (tan²θ = (1 + r) / r).";
+    /* readout: grows / shrinks, with a centre-zero meter */
+    var pc = Math.round(Math.abs(lineE) * 100), w = Math.min(50, Math.abs(lineE) * 50);
+    var meter = '<span class="lu-meter" aria-hidden="true"><span class="lu-meter__z"></span><span class="lu-meter__b' + (ok ? ' lu-meter__b--ok' : lineE > 0 ? ' lu-meter__b--up' : ' lu-meter__b--dn') + '" style="left:' + (lineE >= 0 ? 50 : 50 - w) + '%;width:' + Math.max(ok ? 2 : 0, w) + '%"></span></span><span class="lu-meter__k" aria-hidden="true"><span>shrinks</span><span>same length</span><span>grows</span></span>';
+    var txt = ok ? "<b class='lu-good'>Same length. This is where the band front can run.</b> It lines up with a dashed line."
+      : lineE > 0 ? "the line <b>gets longer</b> (by " + pc + "% of the pull). Too close to the pull direction: turn it more upright."
+      : "the line <b>gets shorter</b> (by " + pc + "% of the pull). Too far from the pull direction: turn it back towards the pull.";
+    $("lu-angout").innerHTML = meter + '<span class="lu-angtxt">At <b>' + my.toFixed(1) + "°</b> from the pull: " + txt + "</span>";
   }
   $("lu-ar").addEventListener("input", drawAngle);
   $("lu-aa").addEventListener("input", drawAngle);
@@ -903,6 +905,7 @@
   var rt = null; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(drawAll, 60); });
   if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(drawAll, 60); }).observe(root);
   new MutationObserver(function () { drawAll(); drawAngle(); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+  var mcEl = document.getElementById("main-content"); if (mcEl) new MutationObserver(function () { drawAll(); drawAngle(); }).observe(mcEl, { attributes: true, attributeFilter: ["style"] });
 
   syncUI(); newSim(false); drawAngle();
   requestAnimationFrame(frame); requestAnimationFrame(microLoop);
