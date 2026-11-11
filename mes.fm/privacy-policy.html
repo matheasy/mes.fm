@@ -377,7 +377,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	never reach mes.fm, and our server only reads the public record to check it.
 	</p>
 
-	<h2 class="mini-title">Polls</h2>
+	<h2 class="mini-title" id="polls">Polls (website and app)</h2>
 
 	<p>
 	When you make a poll with <a href="https://mes.fm/polls">MES Polls</a>, we store its question, description, options and
@@ -387,6 +387,11 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	votes from one network, a salted, one-way hash of your internet (IP) address with a count of votes from it; your IP address
 	itself is never stored, and nobody, including the poll's maker, can see who voted for what. The list of polls you made and
 	the secret keys that let you close or delete them are kept only in your own browser.
+	</p>
+
+	<p>
+	The MES Polls app for iPhone and Android works the same way: it talks to the same mes.fm poll service, keeps your list of polls
+	and their keys only on your phone, and has no account, no ads and no analytics.
 	</p>
 
 	<p>
@@ -607,6 +612,15 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	which apps you use. If Android backup is on, your settings may be included in your own Google backup.
 	</p>
 
+	<h2 class="mini-title" id="timer-app">MES Timer app (Android and iPhone)</h2>
+
+	<p>
+	The MES Timer app keeps your countdowns, stopwatches, alarms, Pomodoro and interval settings only on your phone. When you leave
+	the app, it asks your phone to show a notification at the time each running timer or alarm is due, so it still alerts you with
+	the screen locked; those notifications are made on the phone and nothing is sent to mes.fm or anyone else. The app has no account,
+	no ads and no analytics.
+	</p>
+
 	<h2 class="mini-title" id="browser-extensions">MES browser extensions (Chrome, Brave, Edge)</h2>
 
 	<p>
@@ -717,7 +731,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	</p>
 	
 	<p>
-	This document was last updated on Nov 8, 2026
+	This document was last updated on Nov 11, 2026
 	</p>
 
 	<p class="generated-by">
