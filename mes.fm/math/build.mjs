@@ -551,7 +551,7 @@ SECTIONS.push({
     { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk", title: "DJW playlist on YouTube", standalone: true },
     ...DJW_VIDEOS.map((v, i) => {
       const cats = DJW_CATEGORIES.filter((c) => c.test(v.title)).map((c) => c.id);
-      const yt = `https://www.youtube.com/watch?v=${v.id}&list=${DJW_PL}&index=${i + 1}`;
+      const yt = `https://www.youtube.com/watch?v=${v.id}`;
       return {
         href: yt,
         links: [{ label: "YouTube", href: yt }],

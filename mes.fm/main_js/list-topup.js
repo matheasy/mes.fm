@@ -87,11 +87,10 @@
     s = Math.round(s || 0); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
     return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x;
   }
-  // pl = playlist id: the link opens the video inside that playlist (list= + index= of its place in it), like the snapshot's links.
-  function ytItem(v, skipRe, pl) {
+  function ytItem(v, skipRe) {
     if (!v || !/^[A-Za-z0-9_-]{11}$/.test(v.id || '') || v.short) return null;
     if (skipRe && skipRe.test(v.title || '')) return null;
-    var href = 'https://www.youtube.com/watch?v=' + v.id + (pl ? '&list=' + pl + (v.pos ? '&index=' + v.pos : '') : '');
+    var href = 'https://www.youtube.com/watch?v=' + v.id;
     var views = typeof v.views === 'number' ? v.views : null;
     var meta = v.published ? 'Uploaded ' + fmtDate(v.published) : v.dur ? fmtDur(v.dur) : 'Added to the playlist';
     return {
@@ -162,7 +161,7 @@
     var q = cfg.pl ? 'pl=' + encodeURIComponent(cfg.pl) : 'ch=' + encodeURIComponent(cfg.ch || 'mes');
     return timeoutFetch('/api/yt-latest?' + q, {}, 12000)
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (j) { return (j.items || []).map(function (v) { return ytItem(v, skip, cfg.pl); }).filter(Boolean); });
+      .then(function (j) { return (j.items || []).map(function (v) { return ytItem(v, skip); }).filter(Boolean); });
   }
   api.fetchHive = fetchHive; api.fetchYt = fetchYt;
 
