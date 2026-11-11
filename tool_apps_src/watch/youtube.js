@@ -73,7 +73,6 @@
 			busy = "Getting your playlists from YouTube…"; err = ""; noch = false; render();
 			return call("channels", { part: "snippet,contentDetails", mine: "true" }, ask).then(function (c) {
 				var ch = (c.items || [])[0], rel = (ch && ch.contentDetails && ch.contentDetails.relatedPlaylists) || {};
-				noch = !ch;
 				me = ch ? { name: (ch.snippet && ch.snippet.title) || "", th: ((ch.snippet && ch.snippet.thumbnails && ch.snippet.thumbnails["default"]) || {}).url || "" } : { name: "" };
 				var t = tok(); if (t) { t.name = me.name; tok(t); }
 				var out = [], extra = [];
@@ -83,7 +82,11 @@
 					var p = { part: "snippet,contentDetails,status", mine: "true", maxResults: 50 }; if (pt) p.pageToken = pt;
 					return call("playlists", p).then(function (j) { out = out.concat(W.ytListsFromApi(j)); if (j.nextPageToken && out.length < 500) return page(j.nextPageToken); });
 				}
-				return (ch ? page("") : Promise.resolve()).then(function () { lists = extra.concat(out); busy = ""; render(); });
+				// no channel: still ask for the account's own playlists (YouTube keeps them on the account), and its liked videos ("LL")
+				if (!ch) extra.push({ id: "LL", name: "Liked videos", n: 0, privacy: "private", special: 1 });
+				return page("").catch(function (e) { if (ch) throw e; }).then(function () {
+					noch = !ch && !out.length; lists = extra.concat(out); busy = ""; render();
+				});
 			}).catch(function (e) { busy = ""; err = e.message; render(); });
 		}
 		function imported(id) { for (var i = 0; i < api.S.lists.length; i++) if (api.S.lists[i].src === id) return api.S.lists[i]; return null; }
@@ -116,8 +119,8 @@
 			if (busy) h += '<p class="wt-ytmsg" role="status">' + esc(busy) + '</p>';
 			if (err) h += '<p class="wt-ytmsg wt-yterr" role="alert">' + esc(err) + (/sign in again|confirm again/i.test(err) ? ' <button type="button" class="wt-b" data-yt="in">Sign in</button>' : "") + '</p>';
 			if (on && L) {
-				if (noch) h += '<p class="wt-ytmsg wt-yterr" role="alert">This Google sign-in has no YouTube channel, so there are no playlists to show. If your channel is a Brand Account (a channel with its own name), sign in again and pick <b>the channel</b> in Google\'s "Choose an account or brand account" step, not your plain Google account.</p>';
-				else if (!L.length) h += '<p class="wt-ytnote">No playlists on this YouTube account yet.</p>';
+				if (noch) h += '<p class="wt-ytmsg wt-yterr" role="alert">YouTube listed no playlists of your own for this Google sign-in (it has no channel). If they belong to a channel with its own name (a Brand Account), press Switch channel and pick <b>that channel</b> in Google&#39;s "Choose an account or brand account" step.</p>';
+				if (!L.length) h += '<p class="wt-ytnote">No playlists on this YouTube account yet.</p>';
 				else {
 					h += '<div class="wt-ytrows">' + L.map(function (p, i) {
 						var have = imported(p.id), pr = p.privacy === "private" ? "🔒&#xFE0E; private" : p.privacy === "unlisted" ? "unlisted" : p.special ? "" : "public";
