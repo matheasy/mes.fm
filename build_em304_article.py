@@ -69,6 +69,28 @@ CHILDREN = [
                 ("Odysee", "https://odysee.com/@mes:8/mechanics-materials-review:1"),
                 ("BitChute", "https://www.bitchute.com/video/m8QRoHi2RV9p/"),
                 ("Telegram", "https://t.me/meslinks/35686")]),
+    dict(slug="em-304-failure-temperature-columbia", permlink="em-304-exam-problem-failure-698", youtube="bHyGhXQw2zM",
+         title="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia",
+         notes=["Problem 1 of EM 304 – Test #1 – February 6, 2003",
+                "Solution to Part (a): Maximum temperature without failure",
+                "Solution to part (b): Where it fails first",
+                "Solution to part (c): Stress state at the failure temperature",
+                "Solution to part (d): Volume-element sketches",
+                "Summary of the Engineering Logic"],
+         fix={
+              'Three questions: Determine maximum temperature of the aluminum tube before failure, first failure lo\n': 'Three questions: Determine maximum temperature of the aluminum tube before failure, first failure location, stress states at the three volume elements, and draw these stress state diagrams.\n',
+              'Location descriptions: Point A is inside the top plate, B is the surface between the plate and tube,\n': 'Location descriptions: Point A is inside the top plate, B is the surface between the plate and tube, Point C is the outer surface of the aluminum tube.\n',
+              'Thermal expansion properties: Support plates are idealized as perfectly rigid and non-expanding, whi\n': 'Thermal expansion properties: Support plates are idealized as perfectly rigid and non-expanding, while the aluminum tube uses the 2014-T6 aluminum alloy properties.\n',
+              'The aluminum tube is assumed to be of constant length, which means the thermal expansion displacemen\n': 'The aluminum tube is assumed to be of constant length, which means the thermal expansion displacement is equal to the resulting compressive displacement.\n',
+              'Plates are idealized as rigid and non-expanding, so we have to scale up the temperature of the alumi\n': 'Plates are idealized as rigid and non-expanding, so we have to scale up the temperature of the aluminum tube by the ratio of the plate to tube compressive strength limits and obtain failure temperature of 515.9 °F at point B.\n',
+              'By equilibrium, we obtain a formula for the compressive stress in the tube as a function of the shea\n': 'By equilibrium, we obtain a formula for the compressive stress in the tube as a function of the shear stress in the plate and the ratio of the shear area to compressive area\n',
+              'Solution to (b): It fails at point A first, shear in the plate, because its failure temperature is t\n': 'Solution to (b): It fails at point A first, shear in the plate, because its failure temperature is the lowest\n',
+              'Obtain compressive stress in the aluminum from the shear stress in the plate using our earlier deriv\n': 'Obtain compressive stress in the aluminum from the shear stress in the plate using our earlier derived formula, and get 27.8 ksi, which is also the uniaxial compressive stress at point C and bearing stress at point B. This stress is well below the plate and tube allowable compressive stresses\n',
+              'Summary of the Engineering Logic: Compressive stress in the tube causes failure in shear at the plat\n': 'Summary of the Engineering Logic: Compressive stress in the tube causes failure in shear at the plate, even though the compressive stress is far below its strength limit\n'},
+         links=[("Rumble", "https://rumble.com/v7i69g0-em-304-exam-problem-failure-temperature-of-the-space-shuttle-columbia.html"),
+                ("Odysee", "https://odysee.com/@mes:8/em-304-failure-temperature-columbia:c"),
+                ("BitChute", "https://www.bitchute.com/video/398VBStUrIHX/"),
+                ("Telegram", "https://t.me/meslinks/35702")]),
 ]
 CHILD_SRC = os.path.join(SRC, "children")
 
@@ -288,10 +310,10 @@ def child_data(c):
     return meta, body
 
 def notes_md(main_md, headings):
-    """The `## heading` sections of the full article (each up to the next `#`/`##` heading), joined."""
+    """The `#` / `## heading` sections of the full article (each up to the next `#`/`##` heading), joined."""
     out = []
     for h in headings:
-        m = re.search(r"^##\s+" + re.escape(h) + r"\s*$([\s\S]*?)(?=^#{1,2}\s)", main_md, re.M)
+        m = re.search(r"^#{1,2}\s+" + re.escape(h) + r"\s*$([\s\S]*?)(?=^#{1,2}\s)", main_md, re.M)
         if not m:
             raise SystemExit(f"notes section not found in em304_src/post.md: {h!r}")
         out.append(f"## {h}\n" + re.sub(r"(\s*^---\s*)+\Z", "", m.group(1).rstrip(), flags=re.M) + "\n")

@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia. In this video, I solve Problem 1 of the EM 304 test that Dr. Judy Wood gave her students on February 6, 2003, five days after the Space Shuttle Columbia disaster. If a thermal tile is lost...">
+  <meta name="author" content="MES">
+  <link rel="canonical" href="https://mes.fm/em-304-failure-temperature-columbia" />
+  <!-- OG-TAGS:START -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:url" content="https://mes.fm/em-304-failure-temperature-columbia">
+  <meta property="og:title" content="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia">
+  <meta property="og:description" content="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia. In this video, I solve Problem 1 of the EM 304 test that Dr. Judy Wood gave her students on February 6, 2003, five days after the Space Shuttle Columbia disaster. If a thermal tile is lost...">
+  <meta property="og:image" content="https://mes.fm/em-304-failure-temperature-columbia/img/share.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@MathEasySolns">
+  <meta name="twitter:title" content="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia">
+  <meta name="twitter:description" content="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia. In this video, I solve Problem 1 of the EM 304 test that Dr. Judy Wood gave her students on February 6, 2003, five days after the Space Shuttle Columbia disaster. If a thermal tile is lost...">
+  <meta name="twitter:image" content="https://mes.fm/em-304-failure-temperature-columbia/img/share.jpg">
+  <!-- OG-TAGS:END -->
+  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
+  <title>EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia | Math Easy Solutions</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0 20px 60px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.light { background-color: #ffffff; color: #222222; }
+    body.light a { color: #1a6fb0; }
+    body.dark { background-color: #1a1a1a; color: #eeeeee; }
+    body.dark a { color: #6cb6f5; }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .ad-slot {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 16px;
+    }
+
+
+    .site-brand { display: flex; align-items: center; gap: 1.5em; min-width: 0; }
+    .site-brand-logo-link { display: block; flex: 0 0 auto; }
+    .site-brand-logo { display: block; width: 88px; height: 88px; border-radius: 0.35em; flex: 0 0 auto; }
+    .site-brand-text { min-width: 0; }
+    .site-brand-title { display: block; font-size: 1.8em; font-weight: 400; line-height: 1.15; margin-bottom: 0.3em; text-decoration: none; }
+    .site-brand-tag { font-size: 1.2em; margin: 0; line-height: 1.3; }
+    body.light .site-brand-title { color: #222222; }
+    body.dark .site-brand-title { color: #eeeeee; }
+    body.light .site-brand-tag { color: #555555; }
+    body.dark .site-brand-tag { color: #b8b8b8; }
+    .header-controls { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-left: auto; }
+    .header-icon-btn {
+      flex: 0 0 auto; width: 2.2em; height: 2.2em; padding: 0; border-radius: 50%;
+      cursor: pointer; font-family: inherit; font-size: 0.85em; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(0, 0, 0, 0.15); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .header-icon-btn:disabled { opacity: 0.4; cursor: default; }
+    body.light .header-icon-btn { background-color: #3a3d52; color: #ffffff; border-color: rgba(255, 255, 255, 0.35); }
+    body.dark .header-icon-btn { background-color: #2e2e2e; color: #eeeeee; border-color: rgba(255, 255, 255, 0.25); }
+    @media (max-width: 600px) { .site-brand { gap: 0.75em; } .site-brand-logo { width: 64px; height: 64px; } .site-brand-tag { font-size: 0.95em; } .site-brand-title { font-size: 1.3em; } }
+
+    /* Shared mes.fm site navigation: hamburger + dropdown (#navbar-button /
+       #navbar, toggled by /main_js/main.js) and the blue primary nav bar
+       (#info-bar), same markup/behaviour as mes.fm/math. Colors are set on
+       #id selectors so the body.light/body.dark "a" color rules don't win. */
+    .hamburger-btn {
+      flex: 0 0 auto; width: 44px; height: 44px; padding: 0; margin: 0 0 0 4px;
+      background: transparent; border: none; cursor: pointer; font-size: 0;
+    }
+    .hamburger-btn::before {
+      content: ""; display: block; margin: 0 auto;
+      width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+      box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+    }
+    body.light .hamburger-btn { color: #277bb6; }
+    body.dark .hamburger-btn { color: #6cb6f5; }
+    #navbar { display: none; }
+    #navbar.hide {
+      display: flex; flex-direction: column; box-sizing: border-box;
+      position: absolute; top: 100%; right: 0; z-index: 30;
+      width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+      background-color: #277bb6; border-radius: 0.25em;
+      box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.3);
+      list-style: none; margin: 0; padding: 0;
+    }
+    #navbar li, #info-bar { list-style: none; margin: 0; padding: 0; }
+    #navbar .navbar__item:hover { cursor: pointer; }
+    #navbar .navbar__link { display: block; color: #ffffff; padding: 0.7em 1em 0.7em 1.4em; text-decoration: none; }
+    #navbar .navbar__link--first { padding-top: 0.8em; }
+    #navbar .navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab) { background-color: #346689; }
+    #navbar .dropdown-symbol { margin-left: 1em; color: #ffffff; }
+    #navbar .navbar__dropdown-container { background-color: #eef0ff; margin: 0; padding: 0; }
+    #navbar .navbar__dropdown-container.hide { display: none; }
+    #navbar .navbar__dropdown-item { color: #222222; }
+    #navbar .navbar__dropdown-item:hover { text-decoration: underline; }
+    #navbar .navbar__item--social { order: 999; padding: 1em 1.6em 1em 1.4em; border-top: 1px solid rgba(255, 255, 255, 0.25); }
+    #navbar .social-container { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+    #navbar .social__text { color: #ffffff; margin: 0; font-style: italic; }
+    #navbar .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; list-style: none; }
+    .social__link { height: 2em; width: 2em; display: block; }
+    .social__fb { background: url(/main_img/social-sprites.png) 0 0; }
+    .social__insta { background: url(/main_img/social-sprites.png) -4em 0; }
+    .social__pin { background: url(/main_img/social-sprites.png) -6em 0; }
+    .social__twitter { background: url(/main_img/social-sprites.png) -8em 0; }
+    .social__yt { background: url(/main_img/social-sprites.png) -10em 0; }
+    .social__patreon { background: url(/main_img/social-sprites.png) -12em 0; }
+    .social__hive { background: url(/main_img/social-sprites.png) -16em 0; }
+    .social__telegram { background: url(/main_img/social-sprites.png) -18em 0; }
+    #navbar .navbar__link.active-tab, #info-bar .info-bar__item__text.active-tab { background-color: #eef0ff; color: #222222; }
+
+    .info-bar-container { margin-top: 12px; }
+    .info-bar { display: flex; flex-wrap: wrap; background-color: #277bb6; box-shadow: 0.2em 0.2em 0.5em rgba(0, 0, 0, 0.35); }
+    #info-bar .info-bar__item__text { display: block; text-align: center; padding: 0.7em 1em; font-size: 0.9em; color: #ffffff; text-decoration: none; }
+    #info-bar .info-bar__item__text:hover:not(.active-tab) { background-color: #346689; }
+    @media (max-width: 600px) {
+      .info-bar { justify-content: center; }
+      #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
+    }
+
+    .site-link {
+      font-size: 0.9em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin: 0.4em 0 0.1em;
+    }
+
+    .page-subtitle {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin-bottom: 1.4em;
+    }
+
+    article p {
+      margin: 0 0 1em;
+    }
+
+    .source-list {
+      margin: 0 0 1.2em;
+      padding-left: 1.3em;
+    }
+
+    .source-list li {
+      margin: 0 0 0.5em;
+    }
+
+    .source-list li ul {
+      margin: 0.4em 0 0;
+      padding-left: 1.3em;
+    }
+
+    .video-embed {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.6em 0 1.2em;
+      transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
+        height 0.25s ease, padding-top 0.25s ease, border-radius 0.25s ease;
+    }
+
+    .video-embed video,
+    .video-embed iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode {
+      width: 100vw;
+      max-width: 100vw;
+      left: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      padding-top: 0;
+      height: min(85vh, 56.25vw);
+      border-radius: 0;
+      background: #000;
+    }
+
+    .video-embed.theater-mode video {
+      object-fit: contain;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .video-badge:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .theater-toggle-btn {
+      position: absolute;
+      top: 46px;
+      right: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      font-weight: bold;
+      border: 0;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 999px;
+      z-index: 2;
+    }
+
+    .theater-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .video-embed .video-badge,
+    .video-embed .theater-toggle-btn {
+      transition: opacity 0.3s ease;
+    }
+
+    .video-embed.controls-hidden .video-badge,
+    .video-embed.controls-hidden .theater-toggle-btn {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .timestamps {
+      margin: 0 0 1.4em;
+      font-size: 0.92em;
+    }
+
+    .timestamps summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 0.6em;
+    }
+
+    .timestamps ul {
+      margin: 0.3em 0;
+      padding-left: 1.3em;
+    }
+
+    .timestamps li {
+      margin: 0 0 0.35em;
+    }
+
+    .written-solution {
+      margin: 0 0 1.6em;
+    }
+
+    .written-solution > summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.15em;
+      margin-bottom: 0.4em;
+    }
+
+    .written-solution .ws-note {
+      font-size: 0.85em;
+      opacity: 0.75;
+      margin: 0.4em 0 1.2em;
+    }
+
+    .written-solution h3 {
+      font-size: 1.05em;
+      margin: 1.4em 0 0.4em;
+    }
+
+    .written-solution p { margin: 0 0 1em; }
+
+    .sol-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      display: block;
+      margin: 0.6em 0 1.2em;
+      cursor: zoom-in;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 2147483647;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 120px;
+    }
+
+    .lightbox-overlay.open { display: flex; }
+
+    .lightbox-image {
+      width: 100vw;
+      max-width: 100vw;
+      max-height: calc(100vh - 120px);
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-controls {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lightbox-counter {
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.85em;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .lightbox-close:hover,
+    .lightbox-prev:hover,
+    .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
+
+    .lightbox-close {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 1.3em;
+      z-index: 2147483647;
+    }
+
+    .lightbox-prev,
+    .lightbox-next {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      font-size: 1.4em;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-overlay { padding-bottom: 100px; }
+      .lightbox-image { max-height: calc(100vh - 100px); }
+      .lightbox-controls { bottom: 32px; }
+      .lightbox-prev, .lightbox-next { width: 38px; height: 38px; font-size: 1.2em; }
+      .lightbox-close { width: 36px; height: 36px; }
+    }
+
+    .retrieved-note {
+      font-size: 0.85em;
+      opacity: 0.7;
+      margin-top: 0.4em;
+    }
+
+    hr {
+      margin: 2em 0;
+      opacity: 0.3;
+    }
+
+    .site-footer-note {
+      font-size: 0.8em;
+      opacity: 0.6;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.4em; }
+      body { padding: 0 12px 40px; }
+    }
+
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
+
+    /* "Part of" strip under the nav bar: links back to the full main article
+       page (playlist + written notes) at this problem's section. */
+    .part-of { margin: 14px 0 0; padding: 0.55em 0.9em; border-radius: 6px; font-size: 0.9em; border: 1px solid rgba(128, 128, 128, 0.4); }
+    .part-of a { font-weight: bold; }
+
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the byline and the video timestamps scale -- headings, buttons and the
+       video stay fixed. rem so nested lists don't compound. */
+    .container article :is(p, li, blockquote):not(.video-embed *) { font-size: calc(1rem * var(--ts, 1)); }
+    .container article .timestamps li { font-size: calc(0.92rem * var(--ts, 1)); }
+    .container article .written-solution .ws-note { font-size: calc(0.85rem * var(--ts, 1)); }
+    .page-subtitle { font-size: calc(0.85rem * var(--ts, 1)); }
+  /* Site footer -- same links/markup as mes.fm/math and mes.fm/911, in
+       this page family's own blue accent (#277bb6, matching .hamburger-btn/
+       .info-bar above) and sized to this family's 760px .container (911
+       uses 1180px for its own wider card-grid page). */
+    .footer { max-width: 760px; margin: 2.5em auto 0; padding: 2em; background-color: #277bb6; border-radius: 0.35em; }
+    .footer__item-container { display: table; width: 100%; margin-bottom: 1.6em; }
+    .footer__item { display: table-cell; }
+    .footer__item--extra-padding { padding-left: 2.5em; }
+    .footer .footer__text { color: #ffffff; line-height: 1.5; text-decoration: none; }
+    .footer .footer__text--title { display: inline-block; margin-bottom: 1.6em; font-size: 1.3em; font-style: italic; }
+    .footer__text--extra-info { float: right; }
+    .footer .footer__text:not(.footer__text--copyright):hover { text-decoration: underline; cursor: pointer; }
+    .footer__separator, #copyright-year { color: #ffffff; }
+    @media (max-width: 600px) {
+      .footer { padding: 1.25em 0.75em; }
+      .footer__item-container { display: block; }
+      .footer__item { display: block; margin-bottom: 0.75em; }
+      .footer__item--extra-padding { padding-left: 0; }
+      .footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+    }
+    /* Floating compact header bar: once the real top-bar + nav scroll out of
+       view, a slim fixed bar (small logo, title, as many nav links as fit)
+       slides in, and the header-controls + hamburger are pinned into its
+       right end. Ported from mes.fm/math's version (see its build.mjs) --
+       this template's top-bar is already a clean flex row (no
+       position:absolute/table-cell legacy layout to fight), so no special
+       centering workarounds are needed here.
+
+       Hidden by default via the inline style="display:none" on the element
+       itself (not just this stylesheet's "display: none" below) -- some
+       browser extensions strip or neutralize cosmetic-looking CSS for
+       elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+       pattern), which left an earlier version's raw unstyled markup visible
+       above the real header on mes.fm/math. The inline attribute is a
+       fallback the JS clears itself, independent of this stylesheet
+       surviving intact. */
+    #compact-nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+      display: none; align-items: center; gap: 12px;
+      padding: 0 172px 0 12px; box-sizing: border-box;
+      background: #ffffff; border-bottom: 3px solid #277bb6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      transform: translateY(-110%); transition: transform 0.2s ease;
+    }
+    #compact-nav.is-visible { display: flex; }
+    body.is-stuck #compact-nav { transform: none; }
+    #compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+    #compact-nav .compact-nav-title {
+      flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em;
+      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+    #compact-nav .compact-nav-links li { flex: 0 0 auto; }
+    #compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; text-decoration: none; white-space: nowrap; }
+    #compact-nav .compact-nav-links a:hover { background: rgba(39,123,182,0.12); }
+    body.light #compact-nav .compact-nav-title { color: #1a1a1a; }
+    body.dark #compact-nav { background: #1a1a1a; }
+    body.dark #compact-nav .compact-nav-title { color: #eeeeee; }
+    body.light #compact-nav .compact-nav-links a { color: #277bb6; }
+    body.dark #compact-nav .compact-nav-links a { color: #6cb6f5; }
+    body.is-stuck .header-controls { position: fixed !important; top: 13px; right: 60px; margin-left: 0; z-index: 20; }
+    body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; margin: 0; z-index: 20; }
+    body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+    @media (max-width: 700px) {
+      #compact-nav .compact-nav-title { display: none; }
+      #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+    }
+    @media (max-width: 480px) {
+      #compact-nav { padding-right: 160px; gap: 8px; }
+      body.is-stuck .header-controls { right: 56px; }
+    }
+    /* MOBILE-HEADER-CONTROLS-ROW: on phones the A-/A+/moon controls sit on their own row
+       under the brand (absolute, so sticking into the floating bar doesn't reflow), which
+       leaves the title/tagline the full width instead of a ~130px sliver. */
+    /* Also: a long unbroken URL in the article text (e.g. a 70-char grok.com share link on
+       Problems Plus 5) made the whole page wider than a phone, so it scrolled sideways. */
+    article { overflow-wrap: anywhere; }
+    @media (max-width: 480px) {
+      .top-bar { padding-bottom: 44px; }
+      .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
+      body.is-stuck .header-controls { bottom: auto; }
+    }
+
+    /* build_em304_article.py clip pages */
+    .em-notes h2 { margin-top: 1.2em; }
+    .em-notes img { max-width: 100%; height: auto; border-radius: 4px; }
+    .em-notes blockquote { margin: 1em 0; padding: 0.4em 1em; border-left: 4px solid #277bb6; background: rgba(39,123,182,0.07); }
+    body.dark .em-notes blockquote { border-left-color: #6cb6f5; background: rgba(108,182,245,0.08); }
+    article a.ts-link { font-variant-numeric: tabular-nums; font-weight: 600; }
+    article { overflow-wrap: anywhere; }
+</style>
+  <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+  <meta name="mes:hive" content="mes/em-304-exam-problem-failure-698">
+<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+<body class="dark">
+
+  <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/math" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
+  <a class="compact-nav-title" href="/math" tabindex="-1">MES Math Tutorials</a>
+  <ul class="compact-nav-links">
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+
+
+
+  <div class="container has-aside">
+    <div class="top-bar">
+      <div class="site-brand">
+        <a class="site-brand-logo-link" href="/math"><img class="site-brand-logo" src="https://mes.fm/img/logo-mark.png" width="88" height="88" alt="MES Math Tutorials logo"></a>
+        <div class="site-brand-text"><a class="site-brand-title" href="/math">MES Math Tutorials</a><p class="site-brand-tag">Free math tutorials by Math Easy Solutions.</p></div>
+      </div>
+      <div class="header-controls">
+        <button id="textSizeDown" class="header-icon-btn" type="button" aria-label="Decrease text size" title="Decrease text size">A&minus;</button>
+        <button id="textSizeUp" class="header-icon-btn" type="button" aria-label="Increase text size" title="Increase text size">A+</button>
+        <button id="themeToggle" class="header-icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">&#127769;</button>
+      </div>
+      <button id="navbar-button" class="hamburger-btn" type="button" aria-label="Site navigation" aria-haspopup="true"></button>
+      <ul id="navbar" class="navbar" role="navigation" aria-label="Site menu">
+        <li class="navbar__item navbar__item--social"><div class="social-container"><p class="social__text">Follow us!</p><ul class="social">
+            <li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+            <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li>
+            <li class="social__logo social__fb"><a class="social__link" href="https://www.facebook.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__twitter"><a class="social__link" href="https://twitter.com/MathEasySolns" target="_blank"></a></li>
+            <li class="social__logo social__insta"><a class="social__link" href="https://instagram.com/matheasysolutions" target="_blank"></a></li>
+            <li class="social__logo social__pin"><a class="social__link" href="https://www.pinterest.com/matheasysolns" target="_blank"></a></li>
+            <li class="social__logo social__yt"><a class="social__link" href="https://www.youtube.com/user/MathEasySolutions" target="_blank"></a></li>
+            <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
+          </ul></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/puzzles">Puzzles</a></li>
+        <li class="navbar__item"><a target="_self" class="navbar__link" href="/memes">Memes</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="navbar__item"><a target="_blank" rel="nofollow" class="navbar__link" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="navbar__item"><a target="_blank" class="navbar__link" href="/donate">Donate</a></li>
+        <li class="navbar__item"><a class="navbar__link" href="/contact">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="info-bar-container" role="navigation" aria-label="Primary">
+      <ul id="info-bar" class="info-bar">
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="https://mes.fm/math">Math Tutorials</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/calculators">Calculators</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/tools">Tools</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href="/mobile-apps">Mobile Apps</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/browser'>Extensions</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/puzzles">Puzzles</a></li>
+        <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href="/memes">Memes</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="https://teespring.com/stores/mes-store">Store</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target="_blank" href="/donate">Donate</a></li>
+        <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href="/contact">Contact Us</a></li>
+        <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
+      </ul>
+    </div>
+    <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="/space-shuttle-columbia">Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</a> &middot; <a href="/space-shuttle-columbia#problem-1-of-em-304-test-1-february-6-2003">Problem 1 of EM 304 – Test #1 – February 6, 2003</a> &middot; <a href="/space-shuttle-columbia#solution-to-part-a-maximum-temperature-without-failure">Solution to Part (a): Maximum temperature without failure</a> &middot; <a href="/space-shuttle-columbia#solution-to-part-b-where-it-fails-first">Solution to part (b): Where it fails first</a> &middot; <a href="/space-shuttle-columbia#solution-to-part-c-stress-state-at-the-failure-temperature">Solution to part (c): Stress state at the failure temperature</a> &middot; <a href="/space-shuttle-columbia#solution-to-part-d-volume-element-sketches">Solution to part (d): Volume-element sketches</a> &middot; <a href="/space-shuttle-columbia#summary-of-the-engineering-logic">Summary of the Engineering Logic</a></div>
+
+    <h1>EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia</h1>
+    <div class="page-subtitle">Video &middot; November 11, 2026 &middot; mirrored from the <a href="https://peakd.com/hive-128780/@mes/em-304-exam-problem-failure-698">Hive blockchain</a></div>
+
+    <article>
+      <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
+        <video id="qVideo" controls playsinline preload="metadata" poster="https://images.3speak.tv/images/1794373115840-43fed6b8e5161c17.webp"></video>
+        <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>
+        <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>
+        <a class="video-badge" href="https://3speak.tv/watch?v=mes/5g1rd6rm" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
+      </div>
+
+<p>In this video, I solve Problem 1 of the EM 304 test that Dr. Judy Wood gave her students on February 6, 2003, five days after the Space Shuttle Columbia disaster. If a thermal tile is lost, how hot can an aluminum tube held between two rigid support plates get before something fails? I check three candidates: compression in the aluminum tube (442.2 °F), bearing on the plate at the tube end (515.9 °F), and shear in the plate around the tube (205.03 °F). The shear stress in the plate arises due to the compressive stress in the tube that the plate is connected to. Since the temperature of 205 °F is the lowest, the failure occurs first as shear in the plate, even though the corresponding compressive stress in the tube (27.8 ksi) is far less than its strength limit of 60 ksi.</p>
+<p>Watch on: <a href="https://mes.fm/em-304-failure-temperature-columbia">Notes</a> · <a href="https://youtu.be/bHyGhXQw2zM">YouTube</a> · <a href="https://rumble.com/v7i69g0-em-304-exam-problem-failure-temperature-of-the-space-shuttle-columbia.html">Rumble</a> · <a href="https://odysee.com/@mes:8/em-304-failure-temperature-columbia:c">Odysee</a> · <a href="https://www.bitchute.com/video/398VBStUrIHX/">BitChute</a> · <a href="https://t.me/meslinks/35702">Telegram</a></p>
+<p>Timestamps:</p>
+<ul>
+<li><a class="ts-link" data-t="0" href="https://youtu.be/bHyGhXQw2zM?t=0">0:00</a> Problem 1 of EM 304 on February 6, 2003: Possible cause of failure is the loss of a thermal tile</li>
+<li><a class="ts-link" data-t="61" href="https://youtu.be/bHyGhXQw2zM?t=61">1:01</a> Problem assumptions: Aluminum tube is heated uniformly while the remaining structure is at 0° F</li>
+<li><a class="ts-link" data-t="206" href="https://youtu.be/bHyGhXQw2zM?t=206">3:26</a> Given three volume elements to examine the corresponding stresses and temperatures at failure</li>
+<li><a class="ts-link" data-t="380" href="https://youtu.be/bHyGhXQw2zM?t=380">6:20</a> Material properties for the support plates and aluminum tube</li>
+<li><a class="ts-link" data-t="573" href="https://youtu.be/bHyGhXQw2zM?t=573">9:33</a> Three questions: Determine maximum temperature of the aluminum tube before failure, first failure location, stress states at the three volume elements, and draw these stress state diagrams.</li>
+<li><a class="ts-link" data-t="677" href="https://youtu.be/bHyGhXQw2zM?t=677">11:17</a> Location descriptions: Point A is inside the top plate, B is the surface between the plate and tube, Point C is the outer surface of the aluminum tube.</li>
+<li><a class="ts-link" data-t="722" href="https://youtu.be/bHyGhXQw2zM?t=722">12:02</a> Solution: I used Dr. Judy Wood&#39;s solution key and Grok AI&#39;s assistance in this solution</li>
+<li><a class="ts-link" data-t="740" href="https://youtu.be/bHyGhXQw2zM?t=740">12:20</a> Thermal expansion properties: Support plates are idealized as perfectly rigid and non-expanding, while the aluminum tube uses the 2014-T6 aluminum alloy properties.</li>
+<li><a class="ts-link" data-t="758" href="https://youtu.be/bHyGhXQw2zM?t=758">12:38</a> Strength limits of the plates and tube. Note that ksi = kips per square inch = 1000 psi</li>
+<li><a class="ts-link" data-t="892" href="https://youtu.be/bHyGhXQw2zM?t=892">14:52</a> Solution to (a): Maximum temperature without failure</li>
+<li><a class="ts-link" data-t="1053" href="https://youtu.be/bHyGhXQw2zM?t=1053">17:33</a> The aluminum tube is assumed to be of constant length, which means the thermal expansion displacement is equal to the resulting compressive displacement.</li>
+<li><a class="ts-link" data-t="1217" href="https://youtu.be/bHyGhXQw2zM?t=1217">20:17</a> Equation for thermal displacement involving the coefficient of linear thermal expansion</li>
+<li><a class="ts-link" data-t="1341" href="https://youtu.be/bHyGhXQw2zM?t=1341">22:21</a> Equation for Young&#39;s Modulus and compressive stress</li>
+<li><a class="ts-link" data-t="1470" href="https://youtu.be/bHyGhXQw2zM?t=1470">24:30</a> Rearrange to obtain our temperature increase formula (and force that develops in the tube)</li>
+<li><a class="ts-link" data-t="1636" href="https://youtu.be/bHyGhXQw2zM?t=1636">27:16</a> Candidate 1: Aluminum tube in compression (point C)</li>
+<li><a class="ts-link" data-t="1747" href="https://youtu.be/bHyGhXQw2zM?t=1747">29:07</a> Maximum temperature at failure at point C is 442.2 °F</li>
+<li><a class="ts-link" data-t="1924" href="https://youtu.be/bHyGhXQw2zM?t=1924">32:04</a> Candidate 2: Plate bearing at the tube end (point B)</li>
+<li><a class="ts-link" data-t="2080" href="https://youtu.be/bHyGhXQw2zM?t=2080">34:40</a> Plates are idealized as rigid and non-expanding, so we have to scale up the temperature of the aluminum tube by the ratio of the plate to tube compressive strength limits and obtain failure temperature of 515.9 °F at point B.</li>
+<li><a class="ts-link" data-t="2147" href="https://youtu.be/bHyGhXQw2zM?t=2147">35:47</a> Candidate 3: Shear at the plate connection (point A)</li>
+<li><a class="ts-link" data-t="2239" href="https://youtu.be/bHyGhXQw2zM?t=2239">37:19</a> Free body diagram of the shear stress in the plate due to the compressive stress in the tube</li>
+<li><a class="ts-link" data-t="2547" href="https://youtu.be/bHyGhXQw2zM?t=2547">42:27</a> &quot;Unrolling&quot; the circular shear stress to obtain a rectangle corresponding to the shear area</li>
+<li><a class="ts-link" data-t="2740" href="https://youtu.be/bHyGhXQw2zM?t=2740">45:40</a> By equilibrium, we obtain a formula for the compressive stress in the tube as a function of the shear stress in the plate and the ratio of the shear area to compressive area</li>
+<li><a class="ts-link" data-t="2940" href="https://youtu.be/bHyGhXQw2zM?t=2940">49:00</a> Temperature at failure at point A is 205.03 °F</li>
+<li><a class="ts-link" data-t="3210" href="https://youtu.be/bHyGhXQw2zM?t=3210">53:30</a> Solution to (b): It fails at point A first, shear in the plate, because its failure temperature is the lowest</li>
+<li><a class="ts-link" data-t="3273" href="https://youtu.be/bHyGhXQw2zM?t=3273">54:33</a> Solution to part (c): Stress state at the failure temperature</li>
+<li><a class="ts-link" data-t="3346" href="https://youtu.be/bHyGhXQw2zM?t=3346">55:46</a> Obtain compressive stress in the aluminum from the shear stress in the plate using our earlier derived formula, and get 27.8 ksi, which is also the uniaxial compressive stress at point C and bearing stress at point B. This stress is well below the plate and tube allowable compressive stresses</li>
+<li><a class="ts-link" data-t="3542" href="https://youtu.be/bHyGhXQw2zM?t=3542">59:02</a> Solution to (d): Volume-element sketches</li>
+<li><a class="ts-link" data-t="3578" href="https://youtu.be/bHyGhXQw2zM?t=3578">59:38</a> Note: The &quot;1 + 2&quot; are actually points Dr. Judy Wood gives when grading tests</li>
+<li><a class="ts-link" data-t="3810" href="https://youtu.be/bHyGhXQw2zM?t=3810">1:03:30</a> Shear stress diagram needs to have arrows be in equilibrium aka not rotating</li>
+<li><a class="ts-link" data-t="3962" href="https://youtu.be/bHyGhXQw2zM?t=3962">1:06:02</a> Summary of the Engineering Logic: Compressive stress in the tube causes failure in shear at the plate, even though the compressive stress is far below its strength limit</li>
+</ul>
+<p>Notes and playlists:</p>
+<ul>
+<li>Full video: <a href="https://mes.fm/space-shuttle-columbia">https://mes.fm/space-shuttle-columbia</a></li>
+<li>Playlist: <a href="https://www.youtube.com/playlist?list=PLEJOImrX4SIc">https://www.youtube.com/playlist?list=PLEJOImrX4SIc</a></li>
+<li><a href="https://mes.fm/math">https://mes.fm/math</a></li>
+</ul>
+
+      <details class="written-solution em-notes" open>
+        <summary>Notes: Problem 1 of EM 304 – Test #1 – February 6, 2003, Solution to Part (a): Maximum temperature without failure, Solution to part (b): Where it fails first, Solution to part (c): Stress state at the failure temperature, Solution to part (d): Volume-element sketches, Summary of the Engineering Logic</summary>
+        <p class="ws-note">Written notes &mdash; mirrored from <a href="/space-shuttle-columbia">Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</a>, which has the full video and the complete solution.</p>
+<h2>Problem 1 of EM 304 – Test #1 – February 6, 2003</h2>
+<p>Last Saturday (February 1, 2003), the space shuttle Columbia disintegrated during re-entry through the Earth&#39;s atmosphere.</p>
+<p>One possible cause could be the loss of thermal tiles…</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23viTJdMkBe88YERb79A5czTteU6yFgWqVyMKP4fg8uX7Fz8rQU73tNtJ3mgDfDff9WE1.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoKC593zaCenMUyUtW4GTE5xAY4tyND6KYFZjKEHHrCUJopEyBxE8WiPz1dVzQakXCL.png" alt="image.png"></p>
+<ul>
+<li>Assume tiles were lost in the localized zone shown below, exposing just <u>one</u> of the many aluminum stiffening tubes, connected to both the top and bottom <strong>framework</strong> of the wing.</li>
+<li>Assume the remaining structure is completely insulated from the heat and remains at 0°F.</li>
+<li>Assume the one exposed tube is <u>heated uniformly</u>.</li>
+<li>At 0°F, the aluminum tube is stress free and there are no gaps.<ul>
+<li>Heat shields insulate the structure from temperature variations, as shown below.</li>
+</ul>
+</li>
+<li>Assume the top and bottom of the <strong>framework</strong> is made of a solid plate.</li>
+</ul>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/48Pxf1tvTYEP3JFnckfmJkcRFWEap7M5zxSvtWuMsprJcGY3T5EqCi2exQKaxjXs6T.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFuVRWVNCpS5szvg7riSYTfrghG7wMBNwNChrzKm15W87YLTm6wFS4Mb5NhwV52unKX.png" alt="image.png"></p>
+<p>Material properties:</p>
+<ul>
+<li><strong>L = <u>constant</u></strong><ul>
+<li>Note this is the length of the aluminum tube within the structural support surfaces (support plates) as shown in the earlier figure above.</li>
+</ul>
+</li>
+<li>Δtmax = <a target="_blank" rel="noopener" href="https://mes.fm/unit-conversion/?c=temperature&v=3000&f=f&t=c">3,000°F (maximum possible)</a><ul>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Space_Shuttle_Columbia_disaster">From wiki</a>: During re-entry, the thermal protection system (TPS) experienced temperatures up to <a target="_blank" rel="noopener" href="https://mes.fm/unit-conversion/?c=temperature&v=3000&f=f&t=c">3,000 °F (1,648 °C)</a>, but had to keep the orbiter vehicle&#39;s aluminum skin temperature below 350 °F (180 °C).</li>
+</ul>
+</li>
+</ul>
+<p><u>Top and Bottom plates:</u></p>
+<ul>
+<li>α<sub>plate</sub> = 0.00 με/°F</li>
+<li>E<sub>plate</sub> = ∞, <strong>G</strong> = ∞, <strong>v</strong> = 0 (rigid)</li>
+<li>τ<sub>max</sub> = 10.2 ksi</li>
+<li>σ<sub>max</sub> = 104 ksi (tension)</li>
+<li>σ<sub>max</sub> = 74 ksi (compression)</li>
+</ul>
+<p>Aluminum (2014-T6):</p>
+<ul>
+<li>α<sub>al</sub> = 12.8 με/°F</li>
+<li>E<sub>al</sub> = 10.6 Msi, <strong>G</strong> = 3.9 Msi, <strong>v</strong> = 0.34</li>
+<li>τ<sub>max</sub> = 19 ksi</li>
+<li>σ<sub>max</sub> = 60 ksi (tension)</li>
+<li>σ<sub>max</sub> = 60 ksi (compression)</li>
+</ul>
+<p>Given the properties above:</p>
+<p>(a) Determine the maximum temperature of the aluminum tube without causing failure at point A, B, or C. </p>
+<ul>
+<li>Note: Failure may occur in the plate or the tube.</li>
+</ul>
+<p>(b) Where is it most likely to fail first (choose location A, B, or C). Why?</p>
+<ul>
+<li>Justify your answer with calculations.</li>
+</ul>
+<p>(c) Using your answer from part (a), calculate the stress state in locations A, B, and C at the failure temperature. </p>
+<p>(d) Show these stresses (from part (c)) on each of the volume elements (A, B, and C) provided on above, representing the state of stress at each of the three locations.</p>
+<p>Note: Volume elements C, B, and A are provided below.</p>
+<p><u>Location descriptions:</u></p>
+<ul>
+<li>Point A: zone of material inside top plate</li>
+<li>Point B: surface of plate facing tube end, and surface of tube end facing plate</li>
+<li>Point C: zone of material in outer surface of the aluminum tube.</li>
+</ul>
+<h2>Solution to Part (a): Maximum temperature without failure</h2>
+<blockquote>
+<p>Determine the maximum temperature of the aluminum tube without causing failure at point A, B, or C. </p>
+<p>Note: Failure may occur in the plate or the tube.</p>
+</blockquote>
+<p>Let&#39;s look at locations A, B, and C in the earlier given diagrams, also shown below.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/48Pxf1tvTYEP3JFnckfmJkcRFWEap7M5zxSvtWuMsprJcGY3T5EqCi2exQKaxjXs6T.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uFuVRWVNCpS5szvg7riSYTfrghG7wMBNwNChrzKm15W87YLTm6wFS4Mb5NhwV52unKX.png" alt="image.png">
+	
+We are given that the one aluminum tube is exposed and heated uniformly while the top and bottom support plates (and the rest of the structure) stay at 0 °F.</p>
+<p>At 0 °F the aluminum tube is stress-free and there are no gaps.</p>
+<p>The plates are modeled as rigid (E = ∞, G = ∞, v = 0, α = 0), so the length L of the tube is fixed.</p>
+<p>Only the exposed tube wants to expand due to thermal expansion; the rigid plates prevent that expansion, producing compressive force in the tube and equal-and-opposite reactions on the plates.</p>
+<p>Failure can occur in the aluminum tube or in the plates (bearing or shear).</p>
+<p>Because L is constant:</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHbg1MP4ByMPrjdkJkDFyz7FDLtZNXySwdLQeoVy1q1SZWDwe9s7ycWomGU121KS6Q4.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHb6kphfZHZYRywP7Ps2JpzCRyXVSZEJBs3kD9qzy3RbkT1kamvaM7khUfySiQp4mVc.png" alt="image.png"></p>
+<h3>Candidate 1: Aluminum tube in compression (point C)</h3>
+<p>If the first failure is aluminum in compression, then the maximum temperature is:</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eo6SAAzW3kpoCfMTUefdTEZyudfjh8nGEXySUPW5bYg2x7Ku5dNSCUZ2Fd3gqVzD6dS.png" alt="image.png">
+	
+<a target="_blank" rel="noopener" href="https://mes.fm/calculator?q=60000%2F(10.6*12.8)">Calculation check</a>:</p>
+<blockquote>
+<p>60,000/(10.6*12.8) = 442.217 </p>
+</blockquote>
+<h3>Candidate 2: Plate bearing at the tube end (point B)</h3>
+<p>The support plate&#39;s compressive allowable stress is given as σ<sub>max</sub> = 70 ksi.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zGwRkHd6UWLdHMB9CNATf9ZwtTdTVp2EEjH2i5BojBYMVq7MoZka8VdFjtjkrRSAyCa.png" alt="image.png"></p>
+<p>If the point at B fails, then the compressive stress is greater than 70 ksi.</p>
+<p>But we have already checked the point at C, which has a compressive strength of 60 ksi in the aluminum tube, thus the aluminum controls as it would fail before the plate does.</p>
+<p>Since the support plates are idealized as rigid and non-expanding, we can&#39;t just plug in α = 0 and E = ∞ into the earlier ΔT formula to obtain the temperature at this higher stress.</p>
+<p>As the aluminum tube expands due to thermal expansion, this expansion imposes stress on the support plate as well.</p>
+<p>Thus, we can obtain the maximum temperature that the support plate will fail at by simply scaling up our earlier maximum temperature by the ratio of the compressive strength of the support plate to the aluminum tube.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23viTTuZXQXQNL56k66EUFS7Hj8VhyDu5P4h6iVAQYFTN8hLQEgaS4RVdWaxA21R7LNQr.png" alt="image.png"></p>
+<p>Note again that the aluminum tube at point C will fail before this temperature is reached at point B in the support plate.</p>
+<p><a target="_blank" rel="noopener" href="https://mes.fm/calculator?q=70%2F60*442.217">Calculation check</a>:</p>
+<blockquote>
+<p>70/60 * 442.217 = 515.9198 </p>
+</blockquote>
+<h3>Candidate 3: Shear at the plate connection (point A)</h3>
+<p>First note that we are told to assume that the &quot;remaining structure is completely insulated from the heat and remains at 0 °F&quot;.</p>
+<p>The skin of the wing, aka the support plate, is not affected by the temperature, but it is affected by the thermally expanding aluminum tube.</p>
+<p>This thermal expansion of the aluminum tube causes shear stress on the support plate, at the point A.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EocDFcDJgDFyLvzGmo3xpGJrfRG8otXNbwSrBhbefSSuoP4sTqHSYa6V8Co3KBFf69Y.png" alt="image.png"></p>
+<p>Thus, by equilibrium:</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmmf7kj9j3K89tJKbDLu5LkNAs5igDRVCY8MFK9nCfpDuEBTXpgoTf8376fqG81yuP7.png" alt="image.png"></p>
+<p>Recall that the maximum allowable compressive stress in the aluminum is 60 ksi, while the maximum allowable shear stress in the support plate is 10.2 ksi.</p>
+<p>Thus we can now obtain the corresponding temperature increase of the aluminum tube that would cause the support plate to fail in shear. </p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23twA2Y16xvTDMQ28Sht1NXepASfVXg51mUKnxXovawUevuymmMYvwkKaEdq27Gu24Gdi.png" alt="image.png"></p>
+<p><a target="_blank" rel="noopener" href="https://mes.fm/calculator?q=10200%2F(10.6*12.8)*(0.3%2F0.11)">Calculation check</a>:</p>
+<blockquote>
+<p>10,200/(10.6<em>12.8)</em>(0.3/0.11) = 205.0279 </p>
+</blockquote>
+<p>This is the lowest temperature rise!</p>
+<p>Therefore the maximum allowable temperature of the tube is 205 °F.</p>
+<h2>Solution to part (b): Where it fails first</h2>
+<blockquote>
+<p>Where is it most likely to fail first (choose location A, B, or C). Why?</p>
+<p>Justify your answer with calculations.</p>
+<p>The three candidate temperatures are approximately:</p>
+</blockquote>
+<ul>
+<li><strong>A: 205 °F</strong></li>
+<li>B: 442 °F</li>
+<li>C: 516 °F</li>
+</ul>
+<p>Thus the failure occurs first at point A, which is shear in the support plate at the tube connection.</p>
+<h2>Solution to part (c): Stress state at the failure temperature</h2>
+<blockquote>
+<p>(c) Using your answer from part (a), calculate the stress state in locations A, B, and C at the failure temperature. </p>
+</blockquote>
+<p>We can use our earlier equation relating aluminum compressive stress to the plate shear stress:</p>
+<blockquote>
+<p>Note that Dr. Judy Wood used the stress-strain-temperature equation to obtain this corresponding compressive stress, both choices work.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u6YQciGwZmraQENy6khxiYT1Eu8ydFAtcJbcdUPys9XZEk2ANAyowtm51a6PPHW7Lse.png" alt="image.png"></p>
+<p><a target="_blank" rel="noopener" href="https://mes.fm/calculator?q=10.2*(.3%2F.11)">Calculation check</a>:</p>
+<blockquote>
+<p>10.2*(0.3/0.11) = 27.8182 </p>
+</blockquote>
+<p>At point C (outer surface of the aluminum tube), we have uniaxial compression of 27.8 ksi.</p>
+<p>At point B (interface): the same compressive force acts as bearing stress on the plate and as axial stress on the tube end.</p>
+<p>Because the force is limited by shear capacity at A, the bearing stress is well below the plate allowable (70 ksi).</p>
+<p>At point A (inside the plate), the stress state is pure shear at the maximum allowable shear stress in the plate, which was given as 10.2 ksi.</p>
+<h2>Solution to part (d): Volume-element sketches</h2>
+<blockquote>
+<p>(d) Show these stresses (from part (c)) on <u>each</u> of the volume elements (A, B, and C) provided below, representing the state of stress at each of the three locations.</p>
+<p>Note: Volume elements C, B, and A are provided below.</p>
+<p>On the provided volume elements, the stresses at ΔT = 205 °F are shown below:</p>
+</blockquote>
+<blockquote>
+<p><strong>Note:</strong> The &quot;1 + 2&quot; are actually points Dr. Judy Wood gives when grading tests.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23u6YysEwv9iFgFwrvAxQrnSHDLn5nxQbkVamrJvBBMU1V6tqNTQokCaVyWvjTTsazhgA.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Ep1ckdzPbkRfYxsSFAWR4o26ugmJVrU6ybNBCmj6AA8X61PNxPxW8NpBGM1TsLhACM7.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wXNkV5q1S8vThHX1Bk9aoSVDeSDxFpmvZwSVghyXbtyukqNnGuamrFXMqe3Agt549Ke.png" alt="image.png"></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EonrNfNrQ8FiDanT1mRRe3b6j3svFnwj8A4hJrdN9DyQEGbw5NQsuhxtSuNjkUqnnFG.png" alt="image.png"></p>
+<h2>Summary of the Engineering Logic</h2>
+<p>Because the plates are rigid, the aluminum tube develops compressive stress linearly with temperature.</p>
+<p>The connection, however, can transmit only a limited shear force before the plate fails in shear.</p>
+<p>That force limit is reached at only 205 °F, which is well before the aluminum itself reaches its 60 ksi compressive yield.</p>
+<p>Hence the first failure is shear at the plate-to-tube interface (point A).</p>
+      </details>
+
+      <ul class="source-list">
+        <li>Watch on: <a href="https://3speak.tv/watch?v=mes/5g1rd6rm" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtu.be/bHyGhXQw2zM" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://rumble.com/v7i69g0-em-304-exam-problem-failure-temperature-of-the-space-shuttle-columbia.html" target="_blank" rel="noopener">Rumble</a> &middot; <a href="https://odysee.com/@mes:8/em-304-failure-temperature-columbia:c" target="_blank" rel="noopener">Odysee</a> &middot; <a href="https://www.bitchute.com/video/398VBStUrIHX/" target="_blank" rel="noopener">BitChute</a> &middot; <a href="https://t.me/meslinks/35702" target="_blank" rel="noopener">Telegram</a></li>
+        <li>Full video and written notes: <a href="/space-shuttle-columbia">Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</a></li>
+        <li>Playlist: <a href="https://www.youtube.com/playlist?list=PLEJOImrX4SIc" target="_blank" rel="noopener">Space Shuttle Columbia Disaster YouTube playlist</a></li>
+        <li>More math: <a href="https://mes.fm/math">mes.fm/math</a></li>
+      </ul>
+
+      <img loading="lazy" src="https://images.3speak.tv/images/1794372636679-d2d7e42831803816.webp" alt="EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia" style="max-width:100%;height:auto;border-radius:4px;display:block;margin:1.2em 0;">
+      <hr>
+
+      <a class="source-link" href="https://peakd.com/hive-128780/@mes/em-304-exam-problem-failure-698" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text and image retrieved from the Hive blockchain on November 11, 2026.</div>
+    </article>
+    <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
+    <div id="comments-button" class="mes-comments-toggle">Comments</div>
+    <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+<!-- MES-COLS-END --></div><aside id="mes-aside" class="mes-aside" data-aside-family="space-shuttle-columbia" aria-label="More like this"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/mechanics-materials-review"><span class="mes-aside__text"><span class="mes-aside__name">Review of Mechanics of Materials: Strain, Stress, Shear, Thermal Expansion</span><span class="mes-aside__tag">Article</span></span></a></li><li><a class="mes-aside__card" href="/columbia-disaster-introduction"><span class="mes-aside__text"><span class="mes-aside__name">Introduction and Space Shuttle Columbia Disaster News Footage</span><span class="mes-aside__tag">Article</span></span></a></li><li><a class="mes-aside__card" href="/space-shuttle-columbia"><span class="mes-aside__text"><span class="mes-aside__name">Exam Problem by Dr. Judy Wood: Space Shuttle Columbia Disaster</span><span class="mes-aside__tag">Collection</span></span></a></li><li><a class="mes-aside__card" href="/math"><span class="mes-aside__text"><span class="mes-aside__name">MES Math Tutorials</span><span class="mes-aside__tag">Explore</span></span></a></li></ul></div></aside></div><!-- /MES-COLS-END -->
+
+    <script src="/main_js/comments.js?v=1.0.1" defer></script>
+
+
+    <hr>
+
+    <div id="footer" class="footer" role="contentinfo">
+      <div class="footer__item-container">
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="/calculators">Calculators</a>
+        </div>
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="/tools">Tools</a>
+        </div>
+        <div class="footer__item footer__item--extra-padding">
+          <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
+        </div>
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+        </div>
+      </div>
+      <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+      <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+      <a class="footer__text" target="_blank" href="/donate">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+      <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+    <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
+  </div>
+
+  <div class="lightbox-overlay" id="lightboxOverlay" google-side-rail-overlap="false" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-zoom-controls" id="lightboxZoomControls">
+      <button class="lightbox-zoom-btn" id="lightboxZoomOut" type="button" aria-label="Zoom out">&minus;</button>
+      <span class="lightbox-zoom-level" id="lightboxZoomLevel">100%</span>
+      <button class="lightbox-zoom-btn" id="lightboxZoomIn" type="button" aria-label="Zoom in">+</button>
+    </div>
+    <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close image viewer">&times;</button>
+    <img class="lightbox-image" id="lightboxImage" src="" alt="">
+    <div class="lightbox-controls" id="lightboxControls">
+      <button class="lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">&#8249;</button>
+      <div class="lightbox-counter" id="lightboxCounter"></div>
+      <button class="lightbox-next" id="lightboxNext" type="button" aria-label="Next image">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+
+    function setTheme(isDark) {
+      if (isDark) {
+        body.classList.add('dark');
+        body.classList.remove('light');
+        themeToggle.textContent = '☀️';
+        try { localStorage.setItem('theme', 'dark'); } catch (e) {}
+      } else {
+        body.classList.add('light');
+        body.classList.remove('dark');
+        themeToggle.textContent = '🌙';
+        try { localStorage.setItem('theme', 'light'); } catch (e) {}
+      }
+    }
+
+    let saved;
+    try { saved = localStorage.getItem('theme'); } catch (e) { saved = null; }
+    setTheme(saved !== 'light');
+
+    themeToggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
+  </script>
+
+  <script>
+    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below,
+    // see main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also
+    // moves the sidebar below). Height is capped at min(85vh, 56.25vw) in theater mode so ultra-wide
+    // viewports don't get a comically tall player. Only one mode is active at a time.
+    (function () {
+      var embed = document.getElementById('videoEmbed');
+      var wideBtn = document.getElementById('wideToggle');
+      var theaterBtn = document.getElementById('theaterToggle');
+      if (!embed || !wideBtn || !theaterBtn) return;
+      var mode = 'default';
+
+      function apply() {
+        embed.classList.toggle('theater-mode', mode === 'theater');
+        document.body.classList.toggle('video-wide', mode === 'wide');
+        document.body.classList.toggle('video-theater', mode === 'theater');
+        wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
+        wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
+        theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
+        theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
+        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
+        // it to recompute once the width/height transition above has settled.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
+      }
+
+      function setMode(next) {
+        mode = mode === next ? 'default' : next;
+        apply();
+      }
+
+      wideBtn.addEventListener('click', function () { setMode('wide'); });
+      theaterBtn.addEventListener('click', function () { setMode('theater'); });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && mode !== 'default') setMode(mode);
+      });
+    })();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script src="/main_js/video-speed-hold.js?v=1" defer></script>
+  <script src="/main_js/video-chapters.js?v=1" defer></script>
+  <script>
+    // clip player (build_em304_article.py): the 3Speak manifest is resolved at RUNTIME from play.3speak.tv/api/embed
+    // (a re-upload keeps working without a rebuild); if 3Speak fails, the player swaps itself for the YouTube embed.
+    // Timestamp links (a.ts-link[data-t]) seek whichever player is showing.
+    (function () {
+      var SLUG = 'mes/5g1rd6rm', YT_ID = 'bHyGhXQw2zM';
+      var embed = document.getElementById('videoEmbed');
+      var video = document.getElementById('qVideo');
+      if (!embed || !video) return;
+      var fellBack = false, frame = null;
+      function toYouTube(start) {
+        if (fellBack) return;
+        fellBack = true;
+        frame = document.createElement('iframe');
+        // enablejsapi: main_js/video-chapters.js drives this iframe through the YouTube IFrame API (chapter bar, seeking)
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?enablejsapi=1&origin=' + encodeURIComponent(location.origin) +
+          (start ? '&start=' + start + '&autoplay=1' : '');
+        frame.title = 'YouTube video';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        frame.allowFullscreen = true;
+        embed.replaceChild(frame, video);
+        var badge = embed.querySelector('.video-badge');
+        if (badge) { badge.href = 'https://youtu.be/' + YT_ID; badge.innerHTML = 'View on YouTube &nearr;'; }
+        embed.classList.remove('controls-hidden');
+      }
+      function play(src) {
+        if (!src) { toYouTube(); return; }
+        if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.ERROR, function (e, data) { if (data && data.fatal) toYouTube(); });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+          video.addEventListener('error', function () { toYouTube(); });
+        } else {
+          toYouTube();
+        }
+      }
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { play(d && d.success !== false && d.videoUrl); })
+        .catch(function () { toYouTube(); });
+
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a.ts-link[data-t]');
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;
+        e.preventDefault();
+        var t = parseInt(a.getAttribute('data-t'), 10) || 0;
+        // video-chapters.js seeks whichever player is showing (the <video> or the YouTube iframe, without reloading it)
+        if (window.MESChapters && window.MESChapters.seek(t, embed)) return;
+        var y = embed.getBoundingClientRect().top + window.pageYOffset - 70;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        if (fellBack) {
+          if (frame) frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID + '?enablejsapi=1&start=' + t + '&autoplay=1';
+          return;
+        }
+        try { video.currentTime = t; } catch (err) {}
+        var p = video.play(); if (p && p.catch) p.catch(function () {});
+      });
+    })();
+  </script>
+
+  <script>
+    // image-lightbox: click any figure in the written solution (or the thumbnail)
+    // to pop it out full-viewport, with prev/next via on-screen arrows and keys.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) { controlsEl.style.display = 'none'; }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function () { open(index); });
+      });
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
+  <script>
+    // lightbox-zoom: adds +/- zoom and drag-to-pan on top of the existing
+    // image lightbox. Purely additive -- it only touches the #lightboxZoom*
+    // elements it creates itself, resetting whenever #lightboxImage's src
+    // or #lightboxOverlay's open state changes, so it works the same
+    // regardless of how this page's own lightbox open/prev/next logic runs.
+    (function () {
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var zoomOutBtn = document.getElementById('lightboxZoomOut');
+      var zoomInBtn = document.getElementById('lightboxZoomIn');
+      var zoomLevelEl = document.getElementById('lightboxZoomLevel');
+      if (!overlay || !imageEl || !zoomOutBtn || !zoomInBtn || !zoomLevelEl) return;
+
+      var ZOOM_STEPS = [1, 1.5, 2, 2.5, 3, 3.5, 4];
+      var zoomIndex = 0;
+      var panX = 0, panY = 0;
+      var dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+      function applyTransform() {
+        imageEl.style.transform = 'translate(' + panX + 'px, ' + panY + 'px) scale(' + ZOOM_STEPS[zoomIndex] + ')';
+        imageEl.classList.toggle('zoomed', zoomIndex > 0);
+        zoomLevelEl.textContent = Math.round(ZOOM_STEPS[zoomIndex] * 100) + '%';
+        zoomOutBtn.disabled = zoomIndex === 0;
+        zoomInBtn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
+      }
+
+      function zoomTo(index) {
+        zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index));
+        if (zoomIndex === 0) { panX = 0; panY = 0; }
+        applyTransform();
+      }
+
+      function resetZoom() {
+        dragging = false;
+        imageEl.classList.remove('dragging');
+        zoomTo(0);
+      }
+
+      zoomOutBtn.addEventListener('click', function () { zoomTo(zoomIndex - 1); });
+      zoomInBtn.addEventListener('click', function () { zoomTo(zoomIndex + 1); });
+
+      imageEl.addEventListener('dblclick', function () {
+        zoomTo(zoomIndex > 0 ? 0 : 2);
+      });
+
+      imageEl.addEventListener('mousedown', function (e) {
+        if (zoomIndex === 0) return;
+        dragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        panStartX = panX;
+        panStartY = panY;
+        imageEl.classList.add('dragging');
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        panX = panStartX + (e.clientX - dragStartX);
+        panY = panStartY + (e.clientY - dragStartY);
+        applyTransform();
+      });
+
+      window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        imageEl.classList.remove('dragging');
+      });
+
+      imageEl.addEventListener('touchstart', function (e) {
+        if (zoomIndex === 0 || e.touches.length !== 1) return;
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX;
+        panStartY = panY;
+      }, { passive: true });
+
+      imageEl.addEventListener('touchmove', function (e) {
+        if (!dragging || e.touches.length !== 1) return;
+        panX = panStartX + (e.touches[0].clientX - dragStartX);
+        panY = panStartY + (e.touches[0].clientY - dragStartY);
+        applyTransform();
+      }, { passive: true });
+
+      imageEl.addEventListener('touchend', function () { dragging = false; });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === '+' || e.key === '=') zoomTo(zoomIndex + 1);
+        else if (e.key === '-' || e.key === '_') zoomTo(zoomIndex - 1);
+      });
+
+      new MutationObserver(resetZoom).observe(imageEl, { attributes: true, attributeFilter: ['src'] });
+      new MutationObserver(function () {
+        if (overlay.classList.contains('open')) resetZoom();
+      }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+      applyTransform();
+    })();
+  </script>
+  <script>
+    // text-size control: same STEPS / 'articleFontScale' key as
+    // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
+    // which only prose (paragraphs/lists/tables), the byline and the Jump To
+    // navigation multiply into their font-size -- headings, chapter titles
+    // ("Playlist"), cards and buttons stay fixed.
+    (function () {
+      var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
+      var body = document.body;
+      var downBtn = document.getElementById('textSizeDown');
+      var upBtn = document.getElementById('textSizeUp');
+      if (!body || !downBtn || !upBtn) return;
+      var index;
+      try { index = STEPS.indexOf(parseFloat(localStorage.getItem('articleFontScale'))); } catch (e) { index = -1; }
+      if (index === -1) index = STEPS.indexOf(100);
+      function apply() {
+        body.style.setProperty('--ts', String(STEPS[index] / 100));
+        downBtn.disabled = index === 0;
+        upBtn.disabled = index === STEPS.length - 1;
+        try { localStorage.setItem('articleFontScale', String(STEPS[index])); } catch (e) {}
+      }
+      downBtn.addEventListener('click', function () { index = Math.max(0, index - 1); apply(); });
+      upBtn.addEventListener('click', function () { index = Math.min(STEPS.length - 1, index + 1); apply(); });
+      apply();
+    })();
+  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.3"></script>
+  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link (MES.fm) is kept longest, so drop from the one
+  // before it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical to mes.fm/math's version.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+</html>

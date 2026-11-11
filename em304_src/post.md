@@ -447,6 +447,8 @@ At point A (inside the plate), the stress state is pure shear at the maximum all
 	
 On the provided volume elements, the stresses at ΔT = 205 °F are shown below:
 
+>**Note:** The "1 + 2" are actually points Dr. Judy Wood gives when grading tests.
+
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23u6YysEwv9iFgFwrvAxQrnSHDLn5nxQbkVamrJvBBMU1V6tqNTQokCaVyWvjTTsazhgA.png)
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/Ep1ckdzPbkRfYxsSFAWR4o26ugmJVrU6ybNBCmj6AA8X61PNxPxW8NpBGM1TsLhACM7.png)
