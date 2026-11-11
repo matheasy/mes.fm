@@ -328,8 +328,18 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .cp-menu-box .cp-danger {color:#b3261e;}
 	.tu .cp-status {margin:0.3em 0 0.8em;}
 	.tu .cp-status.cp-warn {color:#9a5200;font-weight:700;}
-	.tu .cp-grid {display:block;column-width:19em;column-gap:0.8em;}
-	.tu .cp-grid > .cp-note {break-inside:avoid;margin-bottom:0.8em;}
+	.tu .cp-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(min(19em,100%),1fr));grid-auto-rows:4px;column-gap:0.8em;row-gap:0;align-items:start;}
+	.tu .cp-grid > .cp-note {position:relative;margin:0;}
+	.tu .cp-grid > .cp-empty {grid-column:1 / -1;grid-row:span 40;}
+	/* drag the right edge to change a box's width (whole columns) */
+	.tu .cp-wgrip {position:absolute;top:0.6em;bottom:0.6em;right:-0.62em;width:0.9em;cursor:ew-resize;touch-action:none;z-index:2;border-radius:0.4em;display:flex;align-items:center;justify-content:center;}
+	.tu .cp-wgrip::before {content:"";width:4px;height:2.6em;max-height:60%;border-radius:2px;background:#9aa3af;opacity:0;transition:opacity 0.15s,background 0.15s;}
+	.tu .cp-note:hover > .cp-wgrip::before, .tu .cp-wgrip:focus-visible::before {opacity:0.75;}
+	.tu .cp-wgrip:hover::before, .tu .cp-note.is-wide-drag > .cp-wgrip::before {opacity:1;background:var(--accent);height:5em;}
+	.tu .cp-wgrip:focus-visible {outline:2px solid var(--accent);}
+	.tu .cp-note.is-wide-drag {box-shadow:0 0 0 2px var(--accent);user-select:none;}
+	.tu .cp-grid[data-cols="1"] .cp-wgrip {display:none;}
+	@media (pointer:coarse) { .tu .cp-wgrip::before {opacity:0.45;} .tu .cp-wgrip {width:1.4em;right:-0.85em;} }
 	.tu .cp-note {display:flex;flex-direction:column;gap:0.45em;min-width:0;background:#fffdf5;border:1px solid #e8dfc2;border-left:5px solid #d8b84a;border-radius:0.5em;padding:0.65em 0.75em;transition:box-shadow 0.15s,background 0.3s;}
 	.tu .cp-note:hover {box-shadow:0 0.2em 0.8em rgba(0,0,0,0.12);}
 	.tu .cp-note.c-x {background:#fff;border-color:#dfe4ea;border-left-color:#aab2bd;}
@@ -405,7 +415,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #cp .cp-bname {background:#333;color:#ccc;}
 	body.dark-mode #cp .cp-sw {border-color:#262626;}
 	@media (max-width:600px) {
-		.tu .cp-grid {column-width:auto;column-count:1;}
+		.tu .cp-grid {grid-template-columns:minmax(0,1fr);}
 		.tu .cp-grip {display:none;}
 	}
 	.tu #cp-file {display:none !important;}
@@ -434,9 +444,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cp-show-pos {font-size:0.95em;font-variant-numeric:tabular-nums;min-width:3.2em;text-align:center;}
 	.cp-show-title {font-size:1.05em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;color:inherit;}
 	.cp-show-sp {flex:1 1 0;}
-	.cp-show-box {flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:2vh 4vw;overflow:hidden;touch-action:pan-y;}
-	.cp-show-box.is-scroll {align-items:flex-start;overflow:auto;}
-	.cp-show-t {display:inline-block;max-width:100%;margin:0;white-space:pre-wrap;overflow-wrap:normal;word-break:normal;line-height:1.25;font-weight:600;color:inherit;user-select:text;}
+	.cp-show-box {flex:1 1 auto;min-height:0;display:flex;padding:2vh 4vw;overflow:auto;touch-action:pan-x pan-y;}
+	.cp-show-box > .cp-show-t {margin:auto;}
+	.cp-show-t {display:inline-block;max-width:100%;white-space:pre-wrap;overflow-wrap:normal;word-break:normal;line-height:1.25;font-weight:600;color:inherit;user-select:text;}
 	.cp-show-t.is-nowrap {white-space:pre;}
 	/* fitting never splits a word ("Vancouve / r"): only a chosen size or a text too long even at the smallest size may */
 	.cp-show-box.is-scroll .cp-show-t, .cp-show-t.is-fixed {overflow-wrap:break-word;}
@@ -457,6 +467,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.cp-show-sz {order:7;} .cp-show-sp {order:8;}
 		.cp-show-copy {order:9;} .cp-show-b[data-a="theme"] {order:10;} .cp-show-b[data-a="fs"] {order:11;}
 	}
+	.tu .cp-foot .cp-read-btn[aria-busy="true"] {opacity:0.5;cursor:progress;}
 	.tu .cp-foot .cp-show-btn {font-size:1.15em;font-weight:700;line-height:1;}
 	/* note buttons: one tidy row on phones, the size line drops below them */
 	@media (max-width:480px) {
@@ -487,28 +498,34 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .cp-hive-msg.is-ok {color:#1d6b36;}
 	.tu .cp-hive-msg.is-err {color:#a3261b;}
 	.tu .cp-hive-list {overflow-x:auto;}
-	.tu .cp-hive-tbl {width:100%;font-size:0.92em;}
-	.tu .cp-hive-tbl td {vertical-align:middle;}
-	.tu .cp-hive-rowacts {white-space:normal;}
-	.tu .cp-hive-rowacts .tu-btn {padding:0.3em 0.65em;font-size:0.9em;margin:0.15em 0;}
+	.tu .cp-hb-bar {display:flex;align-items:center;gap:0.8em;flex-wrap:wrap;padding:0.3em 0;border-bottom:1px solid #e3e7ec;}
+	.tu .cp-hb-all {display:inline-flex;align-items:center;gap:0.4em;font-size:0.9em;cursor:pointer;}
+	.tu .cp-hb-bar .tu-btn {padding:0.3em 0.7em;font-size:0.88em;}
+	.tu .cp-hb-bar .tu-btn[disabled] {opacity:0.45;cursor:default;}
+	.tu .cp-hb {list-style:none;margin:0;padding:0;}
+	.tu .cp-hb-row {display:flex;align-items:center;gap:0.6em;padding:0.4em 0.2em;border-bottom:1px solid #e3e7ec;}
+	.tu .cp-hb-row.is-on {background:#fbf1d9;}
+	.tu .cp-hb-ck, .tu .cp-hb-all input {width:1.2em;height:1.2em;flex:0 0 auto;cursor:pointer;margin:0;}
+	.tu .cp-hb-when {flex:1 1 auto;min-width:0;display:flex;flex-direction:column;line-height:1.3;}
+	.tu .cp-hb-when b {font-weight:600;font-size:0.95em;}
+	.tu .cp-hb-when small {font-size:0.78em;color:#6b7480;}
+	.tu .cp-hb-acts {display:flex;gap:0.3em;flex:0 0 auto;}
+	.tu .cp-hb-acts .tu-btn {padding:0.3em 0.6em;font-size:0.85em;}
+	body.dark-mode #cp .cp-hb-row, body.dark-mode #cp .cp-hb-bar {border-color:#3a3a3a;}
+	body.dark-mode #cp .cp-hb-row.is-on {background:#2b2711;}
+	body.dark-mode #cp .cp-hb-when small {color:#a0a8b3;}
+	body.dark-mode #cp .cp-hb-when b {color:#e4e4e4;}
 	.tu .cp-hive-new {font-size:0.8em;background:#fbf1d9;color:#5c3a04;border-radius:1em;padding:0.05em 0.5em;}
 	.tu .cp-hive-tx {font-size:0.85em;}
 	.tu .cp-hive-more {margin-top:0.6em;}
 	.tu .cp-hive-more summary {cursor:pointer;font-weight:600;}
 	.tu .cp-hive-more li {margin:0.35em 0;line-height:1.45;}
 	.tu .cp-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
-	@media (max-width:760px) {
-		.tu .cp-hive-tbl thead {display:none;}
-		.tu .cp-hive-tbl tr {display:flex;flex-wrap:wrap;gap:0.2em 0.8em;padding:0.5em 0;border-bottom:1px solid #e3e7ec;}
-		.tu .cp-hive-tbl td {border:0;padding:0;}
-		.tu .cp-hive-tbl td.cp-hive-rowacts {flex:1 1 100%;}
-	}
 	body.dark-mode #cp .cp-hive-warn {background:#16301f;color:#bfe8cc;border-left-color:#4caf6e;}
 	body.dark-mode #cp .cp-hive-warn.is-open {background:#3a1714;color:#ffc9c2;border-left-color:#ff6b5c;}
 	body.dark-mode #cp .cp-hive-msg.is-ok {color:#8fe0a8;}
 	body.dark-mode #cp .cp-hive-msg.is-err {color:#ff9a8f;}
 	body.dark-mode #cp .cp-hive-new {background:#3d2e10;color:#f5d58a;}
-	body.dark-mode #cp .cp-hive-tbl tr {border-bottom-color:#3a3a3a;}
 	body.dark-mode #cp .cp-hive-intro, body.dark-mode #cp .cp-hive-more li, body.dark-mode #cp .cp-hive-enc, body.dark-mode #cp .cp-hive-title {color:#e4e4e4;}
 	.tu .cp-hive .mh-help {font-size:0.92em;margin:0.8em 0 0;padding:0.7em 0.9em;border-left:3px solid #e0a100;background:#fff8e6;border-radius:0 6px 6px 0;line-height:1.5;}
 	body.dark-mode #cp .cp-hive .mh-help {background:#2b2412;border-color:#c99100;color:#e4e4e4;}
@@ -533,6 +550,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #cp .cp-syncstate.is-err, body.dark-mode #cp .cp-syncbtn.is-err, body.dark-mode #cp .cp-sync-err {color:#ff9b91;}
 	body.dark-mode #cp .cp-sync-opt {background:#2a2418;border-color:#5a4a2a;color:#eee;}
 	body.dark-mode #cp .cp-sync-where {color:#d8c8a4;}
+
+/* what to back up (boards) */
+#cp .cp-bksel {margin:0.4em 0 0.7em;}
+#cp .cp-bksel summary {cursor:pointer;}
+#cp .cp-bkrows {display:flex;flex-wrap:wrap;gap:0.3em 1em;margin:0.5em 0 0.2em;}
+#cp .cp-bkrow {display:inline-flex;align-items:center;gap:0.35em;cursor:pointer;}
+#cp .cp-bkrow small {opacity:0.7;}
 
 
 	@media print {
@@ -572,144 +596,6 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.footer__item--extra-padding { padding-left: 0; }
 		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
 	}
-/* Floating compact header bar: once the full header + nav scroll out of
-   view, a slim fixed bar (small logo, title, as many nav links as fit)
-   slides in, and the hamburger is pinned into its right end. Toggled by
-   the compact-nav script below. Ported from mes.fm/math's version (see
-   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
-
-   Hidden by default via the inline style="display:none" on the element
-   itself (not just this stylesheet's "display: none" below) -- some
-   browser extensions strip or neutralize cosmetic-looking CSS for
-   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
-   pattern), which left an earlier version's raw unstyled markup visible
-   above the real header on mes.fm/math. The inline attribute is a
-   fallback the JS clears itself, independent of this stylesheet
-   surviving intact. */
-#compact-nav {
-  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
-  display: none; align-items: center; gap: 12px;
-  padding: 0 80px 0 12px; box-sizing: border-box;
-  background: #ffffff; border-bottom: 3px solid #a16207;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-  transform: translateY(-110%); transition: transform 0.2s ease;
-}
-#compact-nav.is-visible { display: flex; }
-body.is-stuck #compact-nav { transform: none; }
-#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
-#compact-nav .compact-nav-title {
-  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
-  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
-#compact-nav .compact-nav-links li { flex: 0 0 auto; }
-#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #a16207; text-decoration: none; white-space: nowrap; }
-#compact-nav .compact-nav-links a:hover { background: rgba(161,98,7,0.12); }
-body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
-body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
-@media (max-width: 700px) {
-  #compact-nav .compact-nav-title { display: none; }
-  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
-}
-@media (max-width: 480px) {
-  #compact-nav { padding-right: 70px; gap: 8px; }
-}
-
-	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
-	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
-	body.dark-mode .page-content :where(sub,sup){color:inherit}
-	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
-	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
-	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
-	body.dark-mode .tu{--accent:#f59914;--accent-dark:#f59914}
-	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #543e09}
-	body.dark-mode .tu h3{color:#d1d6dc}
-	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-card--tint{background:#322a17;border-color:#543e09}
-	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
-	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
-	body.dark-mode .tu-suffix span{color:#989ca4}
-	body.dark-mode .tu-btn{background:#1a1a1a}
-	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
-	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
-	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
-	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
-	body.dark-mode .tu-seg button:hover{background:#16191d}
-	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
-	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
-	body.dark-mode .tu-stat--hero{background:#322a17;border-color:#543e09}
-	body.dark-mode .tu-stat__label{color:#9a9aa2}
-	body.dark-mode .tu-stat__value{color:#d1d6dc}
-	body.dark-mode .tu-stat__sub{color:#9a9ea4}
-	body.dark-mode .tu-pos{color:#7dde9d !important}
-	body.dark-mode .tu-neg{color:#e87973 !important}
-	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
-	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
-	body.dark-mode .tu-table tr.is-active td{background:#322a17}
-	body.dark-mode .tu-note{color:#9a9da3}
-	body.dark-mode .tu-toast{background:#3c4f67}
-	body.dark-mode .tu-seo{border-top:1px solid #333333}
-	body.dark-mode .tu-svg-line{stroke:#394a60}
-	body.dark-mode .tu-svg-text{fill:#cccccc}
-	body.dark-mode .tu-svg-grid{stroke:#28323e}
-	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
-	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
-	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
-	body.dark-mode .tu .cp-boards{border-bottom:2px solid #543e09}
-	body.dark-mode .tu .cp-tab{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
-	body.dark-mode .tu .cp-n{background:rgba(82,82,82,0.08)}
-	body.dark-mode .tu .cp-tab[aria-selected="true"] .cp-n{background:rgba(26,26,26,0.25)}
-	body.dark-mode .tu .cp-menu-box{background:#1a1a1a;border:1px solid #3a424d}
-	body.dark-mode .tu .cp-menu-box button{color:#cccccc}
-	body.dark-mode .tu .cp-menu-box button:hover{background:#322a17}
-	body.dark-mode .tu .cp-menu-box .cp-danger{color:#e87973}
-	body.dark-mode .tu .cp-status.cp-warn{color:#ffb35c}
-	body.dark-mode .tu .cp-note{background:#25200e;border:1px solid #625425;border-left:5px solid #a88a24}
-	body.dark-mode .tu .cp-note.c-x{background:#1a1a1a;border-color:#28323e;border-left-color:#4f5966}
-	body.dark-mode .tu .cp-note.c-y{background:#25220e;border-color:#796719;border-left-color:#e3ba1c}
-	body.dark-mode .tu .cp-note.c-g{background:#151e16;border-color:#2a5231;border-left-color:#48b768}
-	body.dark-mode .tu .cp-note.c-b{background:#111822;border-color:#18335a;border-left-color:#275aa5}
-	body.dark-mode .tu .cp-note.c-p{background:#181122;border-color:#2f1a54;border-left-color:#5c2d9f}
-	body.dark-mode .tu .cp-note.c-r{background:#221311;border-color:#5a221b;border-left-color:#a52f27}
-	body.dark-mode .tu .cp-grip{color:#989da4}
-	body.dark-mode .tu .cp-title{color:#d1d6dc}
-	body.dark-mode .tu .cp-title i{color:#9a9da3}
-	body.dark-mode .tu .cp-bname{background:#191c20;color:#9d9da6}
-	body.dark-mode .tu .cp-dyn{background:#322a17}
-	body.dark-mode .tu .cp-ibtn{color:#979da5}
-	body.dark-mode .tu .cp-ibtn:hover{color:#ffdb5c}
-	body.dark-mode .tu .cp-ibtn[aria-pressed="true"]{color:#ffd65c}
-	body.dark-mode .tu .cp-body:hover{background:rgba(82,82,82,0.04)}
-	body.dark-mode .tu .cp-body pre{color:#dddddd}
-	body.dark-mode .tu .cp-count{color:#999da3}
-	body.dark-mode .tu .cp-meta{color:#9a9da2}
-	body.dark-mode .tu .cp-hs.is-on{color:#7be0a7}
-	body.dark-mode .tu .cp-hs.is-off{color:#f7a364}
-	body.dark-mode .tu .cp-hivestate.is-due{color:#f19d6a}
-	body.dark-mode .tu .cp-hivestate.is-ok{color:#7be0a7}
-	body.dark-mode .tu .cp-sw{border:2px solid #333333}
-	body.dark-mode .tu .cp-sw.c-x{background:#1a1a1a}
-	body.dark-mode .tu .cp-move{color:#9a9aa2}
-	body.dark-mode .tu .cp-empty{color:#9a9da3;border:2px dashed #28323e}
-	body.dark-mode .tu .cp-sp-row{border-top:1px solid #29323d}
-	body.dark-mode .tu .cp-hive-warn{border-left:4px solid #41be6d;background:#19241c;color:#8ad1a2}
-	body.dark-mode .tu .cp-hive-warn.is-open{border-left-color:#d03e2f;background:#251311;color:#e97c72}
-	body.dark-mode .tu .cp-hive-msg.is-ok{color:#7fdc9d}
-	body.dark-mode .tu .cp-hive-msg.is-err{color:#e87c73}
-	body.dark-mode .tu .cp-hive-new{background:#322a17;color:#f8be63}
-	body.dark-mode .tu .cp-hive-tbl tr{border-bottom:1px solid #29323d}
-	body.dark-mode .tu .cp-hive .mh-help{border-left:3px solid #ffb700;background:#28210f}
-	body.dark-mode .tu .cp-syncstate.is-ok{color:#7be0a7}
-	body.dark-mode .tu .cp-syncstate.is-due{color:#f19d6a}
-	body.dark-mode .tu .cp-syncstate.is-err{color:#ec786f}
-	body.dark-mode .tu .cp-syncbtn.is-ok{color:#7be0a7;border-color:#408c5a}
-	body.dark-mode .tu .cp-syncbtn.is-due{color:#f19d6a;border-color:#ac7420}
-	body.dark-mode .tu .cp-syncbtn.is-err{color:#ec786f;border-color:#8d2a21}
-	body.dark-mode .tu .cp-sync-opt{border:1px solid #6c582a;background:#251d0e}
-	body.dark-mode .tu .cp-sync-where{color:#b9b0a0}
-	body.dark-mode .tu .cp-sync-err{color:#ec786f}
-	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
@@ -885,24 +771,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    </head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
-  <a href="/copy-text" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/copy-text/img/logo.png?v=2"></a>
-  <a class="compact-nav-title" href="/copy-text" tabindex="-1">Copy Text</a>
-  <ul class="compact-nav-links">
-    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
-    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
-    <li><a href="/tools" tabindex="-1">Tools</a></li>
-    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
-    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
-    <li><a href="/memes" tabindex="-1">Memes</a></li>
-    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
-  </ul>
-</div>
-<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/copy-text'><img height="88" width="88" id="logo" class="logo" alt="MES Copy Text logo" src="/copy-text/img/logo.png?v=2"></a>
+            <!-- End Google Tag Manager (noscript) -->        <div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/copy-text'><img height="88" width="88" id="logo" class="logo" alt="MES Copy Text logo" src="/copy-text/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/copy-text'>
                                     <p class="calculator-title">MES Copy Text</p>
@@ -920,7 +793,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Copy Text</h1>                                        <p class="page-description">Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Copy Text</h1>                                        <p class="page-description">Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.</p>                                    	<div id="main-content">
 	<div class="tu" id="cp">
 		<div class="tu-card cp-add">
 			<div class="tu-field">
@@ -972,6 +845,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<h2 class="cp-hive-title">☁ Save online &amp; sync</h2>
 				<button type="button" class="tu-btn tu-btn--ghost cp-hive-close" id="cp-sync-close" aria-label="Close the sync panel">✕</button>
 			</div>
+			<div class="cp-bksel" data-bksel></div>
 			<div id="cp-sync-body"></div>
 		</div>
 
@@ -980,7 +854,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<h2 class="cp-hive-title">☁ Back up to Hive</h2>
 				<button type="button" class="tu-btn tu-btn--ghost cp-hive-close" id="cp-hive-close" aria-label="Close the Hive backup panel">✕</button>
 			</div>
-			<p class="cp-hive-intro">Save all your boards to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load them on any computer or phone with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a>: the browser extension, or the Keychain phone app (no extension needed: approve in the app). No mes.fm account and no server: the backup is written to the Hive blockchain from your browser, signed in Keychain. Your keys never leave Keychain.</p>
+			<p class="cp-hive-intro">Save your boards (all, or the ones you tick) to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load them on any computer or phone with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a>: the browser extension, or the Keychain phone app (no extension needed: approve in the app). No mes.fm account and no server: the backup is written to the Hive blockchain from your browser, signed in Keychain. Your keys never leave Keychain.</p>
+			<div class="cp-bksel" data-bksel></div>
 			<div class="cp-hive-user" id="cp-hive-user"></div>
 			<div id="cp-hive-main" hidden>
 				<label class="cp-hive-enc"><input type="checkbox" id="cp-hive-encrypt" checked> <span><b>Encrypt</b> (recommended): only you can read it, with your Hive memo key</span></label>
@@ -1037,15 +912,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
-                                        <div id="fastcomments-widget"></div>                                    </div>
-<!-- MES-BOTTOM-AD -->
-<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
-<!-- /MES-BOTTOM-AD -->
-                            </div>
-                        <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/translate"><img class="mes-aside__img mes-aside__img--logo" src="/translate/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Translate Text and Pictures</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/9-ball"><img class="mes-aside__img mes-aside__img--logo" src="/9-ball/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">9-Ball Pool: Play Free Online With Real Physics</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
-<!-- /MES-ASIDE -->
-</div>
+                                        <div id="fastcomments-widget"></div>                                    </div>                            </div>
+                        </div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
@@ -1093,61 +961,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/copy-text/js/copy-text.js?v=11" defer></script>
-            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
-  // Floating compact header bar (see #compact-nav CSS): appears once the
-  // header + nav bar have scrolled off the top; nav links that don't fit
-  // are dropped from the right, least important first, rather than
-  // wrapping. The last link is kept longest, so drop from the one before
-  // it first. Visibility is driven from here via the inline style
-  // attribute (not just a CSS class) so the bar stays hidden even if the
-  // stylesheet rules for it get stripped -- see the CSS comment above
-  // #compact-nav. Identical across every page that has this bar.
-  (function () {
-    var bar = document.getElementById('compact-nav');
-    var nav = document.querySelector('.info-bar-container');
-    var links = bar && bar.querySelector('.compact-nav-links');
-    if (!bar || !nav || !links) return;
-    var items = Array.prototype.slice.call(links.children);
-    var stuck = false, ticking = false, hideTimer;
-
-    function fit() {
-      items.forEach(function (li) { li.style.display = ''; });
-      var order = items.slice(0, -1).reverse();
-      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
-        order[i].style.display = 'none';
-      }
-      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
-    }
-
-    function update() {
-      ticking = false;
-      var now = nav.getBoundingClientRect().bottom < 0;
-      if (now === stuck) return;
-      stuck = now;
-      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
-      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
-        a.tabIndex = stuck ? 0 : -1;
-      });
-      if (stuck) {
-        clearTimeout(hideTimer);
-        bar.style.display = 'flex';
-        fit();
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
-        });
-      } else {
-        document.body.classList.remove('is-stuck');
-        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
-      }
-    }
-
-    window.addEventListener('scroll', function () {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    }, { passive: true });
-    window.addEventListener('resize', function () { if (stuck) fit(); });
-    update();
-  })();
-</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=4" defer></script><script src="/copy-text/js/copy-text.js?v=13" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script></body>
 
 </html>

@@ -335,6 +335,20 @@
             return kcCall(function (k, done) { k.requestBroadcast(account, [customJson(account, tombstone(app, name, saveId))], "Posting", done, null, "Hide a Hive save"); });
         });
     }
+    /* hide several saves at once: up to OPS_PER_TX tombstones per transaction (one Keychain prompt each), TX_GAP_MS apart */
+    function forgetMany(app, name, saveIds, onProgress) {
+        var account, groups = [];
+        for (var i = 0; i < saveIds.length; i += OPS_PER_TX) groups.push(saveIds.slice(i, i + OPS_PER_TX));
+        var done = 0;
+        return groups.reduce(function (p, g, gi) {
+            return p.then(function () {
+                account = account || need();
+                return (gi ? sleep(TX_GAP_MS) : Promise.resolve()).then(function () {
+                    return kcCall(function (k, cb) { k.requestBroadcast(account, g.map(function (id) { return customJson(account, tombstone(app, name, id)); }), "Posting", cb, null, g.length > 1 ? "Hide " + g.length + " Hive saves" : "Hide a Hive save"); });
+                }).then(function () { done += g.length; if (onProgress) onProgress(done, saveIds.length); });
+            });
+        }, Promise.resolve()).then(function () { return done; });
+    }
     function explorer(trx) { return "https://hivehub.dev/tx/" + encodeURIComponent(trx); }
 
     var api = {
@@ -342,7 +356,7 @@
         b64: b64, unb64: unb64, hex: hex, unhex: unhex, okName: okName, newSaveId: newSaveId,
         chunkJsons: chunkJsons, buildTxs: buildTxs, customJson: customJson, tombstone: tombstone, assemble: assemble,
         pack: pack, unpack: unpack,
-        SINCE: SINCE, save: save, list: list, load: load, forget: forget, canEncrypt: canEncrypt, rcPercent: rcPercent, explorer: explorer
+        SINCE: SINCE, save: save, list: list, load: load, forget: forget, forgetMany: forgetMany, canEncrypt: canEncrypt, rcPercent: rcPercent, explorer: explorer
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     root.MESHiveStore = root.MESHiveStore || api;
