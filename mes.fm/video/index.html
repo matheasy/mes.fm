@@ -479,6 +479,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-vz:hover, #vd .vd-vz:focus-within, #vd .vd-stagewrap:hover .vd-vz {opacity:1;}
 	#vd .vd-vz .vd-btn {min-height:28px;padding:0.15em 0.5em;font-size:0.8em;} #vd .vd-vz .vd-ico {min-width:28px;}
 	#vd .vd-vz select {min-height:28px;padding:0.1em 0.3em;font-size:0.8em;}
+	#vd .vd-vzbox {display:inline-flex;align-items:stretch;border:1px solid var(--vd-line);border-radius:0.4em;background:var(--vd-in);overflow:hidden;}
+	#vd .vd-vzbox:focus-within {border-color:var(--vd-sel);}
+	#vd .vd-vzpct {width:4.6em;min-height:28px;border:0;background:transparent;color:var(--vd-fg);font:inherit;font-size:0.82em;text-align:right;padding:0 0.2em 0 0.45em;font-variant-numeric:tabular-nums;outline:none;}
+	#vd .vd-vzbox select {width:1.7em;min-width:1.7em;border:0;border-left:1px solid var(--vd-line);border-radius:0;color:transparent;padding:0;cursor:pointer;-webkit-appearance:none;appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23e6e9ef' stroke-width='1.6'/%3E%3C/svg%3E") center/0.7em no-repeat;}
+	#vd .vd-vzbox select:hover {background-color:var(--vd-btnh);}
+	#vd .vd-vzbox select option {color:var(--vd-fg);background:var(--vd-in);}
+	#vd .vd-sec1 {font-size:0.74em;font-weight:700;min-width:34px;padding:0 0.35em;letter-spacing:-0.02em;}
 	html body.dark-mode #vd .vd-vz {background:rgba(13,17,23,0.78);}
 	#vd .vd.vd-pvfill .vd-vz {top:8px;right:8px;}
 	@media (max-width:560px) { #vd .vd-vz #vd-vzdim, #vd .vd-vz #vd-vz100 {display:none;} }
@@ -559,6 +566,26 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-speed .vd-spin {width:6.5em;min-height:30px;padding:0.2em 0.35em;} #vd .vd-speed select[hidden], #vd .vd-speed .vd-spin[hidden] {display:none;}
 	#vd .vd.vd-bar1 .vd-speed .vd-spb {min-width:22px;min-height:26px;} #vd .vd.vd-bar1 .vd-speed .vd-spin {min-height:26px;font-size:0.82em;}
 	#vd .vd-speed select {width:5.1em;min-width:0;padding:0.25em 0.15em;font-variant-numeric:tabular-nums;} #vd .vd-speed .vd-spin {width:5.1em;font-variant-numeric:tabular-nums;}
+
+	#vd .vd-dlg .vd-cmp-dn {display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;margin:0.5em 0;padding:0.5em 0.7em;border:1px solid #3b4556;border-radius:0.5em;background:rgba(251,191,36,0.06);}
+	#vd .vd-dlg .vd-cmp-dn input[type=range] {flex:1 1 12em;min-width:9em;accent-color:#fbbf24;}
+	#vd .vd-dlg .vd-cmp-dn output {min-width:3em;font-weight:700;color:#fde68a;font-variant-numeric:tabular-nums;}
+	#vd .vd-dlg .vd-cmp-dn .vd-sub {flex-basis:100%;}
+	#vd .vd-dlg .vd-cmp-rbtn.vd-primary {background:#b45309;border-color:#d97706;}
+	#vd .vd-dlg .vd-q {width:22px;height:22px;min-height:0;padding:0;border-radius:50%;border:1px solid #4b5566;background:#273041;color:#e6e9ef;font:700 12px/20px Arial,sans-serif;cursor:pointer;margin-left:-0.2em;}
+	#vd .vd-dlg .vd-q[aria-expanded=true] {background:#38bdf8;color:#0b1220;border-color:#38bdf8;}
+	#vd .vd-dlg .vd-cmp-help {margin:0.4em 0;padding:0.6em 0.8em;border-left:3px solid #38bdf8;background:rgba(56,189,248,0.08);border-radius:0.3em;font-size:0.9em;}
+	#vd .vd-dlg .vd-cmp-help p {margin:0.25em 0;}
+	#vd .vd-tedit {position:absolute;z-index:3;margin:0;box-sizing:border-box;border:1px dashed #38bdf8;outline:2px solid rgba(56,189,248,0.35);outline-offset:1px;resize:none;overflow:hidden;transform-origin:50% 50%;user-select:text;-webkit-user-select:text;word-break:break-word;overflow-wrap:anywhere;}
+	#vd .vd-tedit::selection {background:rgba(56,189,248,0.45);}
+	#vd .vd-fontpick {position:relative;} #vd .vd-fontbtn {width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:0.4em;background:var(--vd-in);font-size:1em;min-height:32px;padding:0.2em 0.5em;}
+	#vd .vd-fontpop {position:absolute;z-index:40;left:0;right:-6em;top:100%;margin-top:3px;background:var(--vd-panel);border:1px solid var(--vd-line);border-radius:0.5em;box-shadow:0 12px 30px rgba(0,0,0,0.55);padding:0.4em;}
+	#vd .vd-fontpop input {width:100%;box-sizing:border-box;background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.35em;padding:0.35em 0.5em;font:inherit;font-size:0.9em;}
+	#vd .vd-fontlist {max-height:16em;overflow:auto;margin-top:0.35em;} #vd .vd-fontlist h5 {margin:0.5em 0.3em 0.15em;font-size:0.72em;color:var(--vd-dim);text-transform:uppercase;letter-spacing:0.05em;font-family:Arial,sans-serif;}
+	#vd .vd-fontlist button {display:block;width:100%;text-align:left;background:none;border:0;color:var(--vd-fg);padding:0.3em 0.45em;border-radius:0.3em;font-size:1.05em;cursor:pointer;}
+	#vd .vd-fontlist button:hover, #vd .vd-fontlist button.is-act {background:var(--vd-btnh);} #vd .vd-fontlist button[aria-selected=true] {outline:1px solid var(--vd-sel);}
+	#vd .vd-fontlist .vd-fg {font-size:0.7em;color:var(--vd-dim);margin-left:0.4em;font-family:Arial,sans-serif;}
+	#vd .vd-fck {display:flex;flex-direction:column;justify-content:flex-start;} #vd .vd-fck input {width:18px;height:18px;margin:0.45em 0 0;accent-color:var(--vd-sel);}
 
 
 	@media print {
@@ -723,6 +750,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-sync-t.is-warn{color:#fcd05f}
 	body.dark-mode #vd .vd-msync.is-in{color:#75e69e}
 	body.dark-mode #vd .vd-msync.is-warn{color:#fcd05f}
+	body.dark-mode #vd .vd-dlg .vd-cmp-dn{border:1px solid #3e495b}
+	body.dark-mode #vd .vd-dlg .vd-cmp-rbtn.vd-primary{border-color:#f88807}
+	body.dark-mode #vd .vd-dlg .vd-q{background:#3d4b66}
+	body.dark-mode #vd .vd-dlg .vd-q[aria-expanded=true]{color:#86a0d5;border-color:#078bc5}
+	body.dark-mode #vd .vd-dlg .vd-cmp-help{border-left:3px solid #078bc5}
+	body.dark-mode #vd .vd-tedit{border:1px dashed #078bc5;outline:2px solid rgba(7,139,197,0.35)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1002,9 +1035,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas>
 						<div class="vd-vz" id="vd-vz" role="toolbar" aria-label="Preview zoom">
 							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it">Fit</button>
-							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom the preview out (Ctrl + wheel, pinch)" aria-label="Zoom the preview out">&minus;</button>
-							<select id="vd-vzsel" aria-label="Preview zoom" title="Preview zoom: 100% = one video pixel per screen pixel"></select>
-							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom the preview in (Ctrl + wheel, pinch)" aria-label="Zoom the preview in">+</button>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom out 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview out 1%">&minus;</button>
+							<span class="vd-vzbox"><input type="text" id="vd-vzpct" class="vd-vzpct" value="100%" spellcheck="false" autocomplete="off" inputmode="decimal" aria-label="Preview zoom in percent: type a number and press Enter" title="Type a zoom and press Enter: 82, 150% or 1.5x. 100% = one video pixel per screen pixel. Up / Down arrows = 1% (Shift = 10%)."><select id="vd-vzsel" aria-label="Preview zoom presets" title="Preview zoom presets"></select></span>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom in 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview in 1%">+</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-vzguide" aria-pressed="false" title="Safe-area guides (title safe 80%, action safe 90%), thirds and the centre (G)">Guides</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-vzdim" aria-pressed="true" title="Darken what is outside the frame (it is never in the video)">Dim outside</button>
 						</div>
@@ -1013,9 +1046,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="vd-seek" id="vd-seek" role="slider" tabindex="0" aria-label="Position in the video" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00;00" title="Drag to move through the video (arrow keys: a frame, Shift: 1 s, Page Up / Down: 10 s)"><div class="vd-seek-tr"><i class="vd-seek-mk" id="vd-seek-mk"></i><i class="vd-seek-fill" id="vd-seek-fill"></i><span class="vd-seek-ticks" id="vd-seek-ticks"></span></div><b class="vd-seek-th" id="vd-seek-th"></b><span class="vd-seek-tip" id="vd-seek-tip" hidden></span></div>
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="2" height="10"/><path d="M9 3v10L4.5 8zM14 3v10L9.5 8z"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="prevclip" title="Previous clip edge (Up arrow, or Ctrl+Alt+Left as in Camtasia)" aria-label="Previous clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3" width="1.8" height="10"/><path d="M12.5 3v10L6.5 8z"/></svg></button>
+						<button type="button" class="vd-btn vd-ico vd-sec1" data-tp="back1s" title="One second back (Shift+Left; hold to keep going)" aria-label="One second back">&minus;1s</button>
 						<button type="button" class="vd-btn vd-ico" data-tp="back" title="One frame back (Left arrow or ,; hold to keep stepping; Shift = 1 s)" aria-label="One frame back"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 3v10L3.5 8z"/><rect x="10.5" y="3" width="2.4" height="10" rx="0.4"/></svg></button>
 						<button type="button" class="vd-btn vd-ico vd-play" id="vd-play" title="Play / pause (Space)" aria-label="Play"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11L13.5 8z"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="fwd" title="One frame forward (Right arrow or .; hold to keep stepping; Shift = 1 s)" aria-label="One frame forward"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.1" y="3" width="2.4" height="10" rx="0.4"/><path d="M6.5 3v10l6-5z"/></svg></button>
+						<button type="button" class="vd-btn vd-ico vd-sec1" data-tp="fwd1s" title="One second forward (Shift+Right; hold to keep going)" aria-label="One second forward">+1s</button>
 						<button type="button" class="vd-btn vd-ico" data-tp="nextclip" title="Next clip edge (Down arrow, or Ctrl+Alt+Right as in Camtasia)" aria-label="Next clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3v10l6-5z"/><rect x="10.7" y="3" width="1.8" height="10"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="end" title="To the end (End)" aria-label="To the end"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10l4.5-5zM7 3v10l4.5-5z"/><rect x="12" y="3" width="2" height="10"/></svg></button>
 						<span class="vd-speed" role="group" aria-label="Preview playback speed (does not change the video)" title="Playback speed of the preview only. The exported video keeps its normal speed. - / + = 0.05 steps (hold to go faster), Shift+&lt; / Shift+&gt; = the next preset. From 1 frame per second to 45&times;; above 16&times; or below 1/16&times; frames are skipped and there is no sound."><span>Speed</span><button type="button" class="vd-btn vd-ico vd-spb" id="vd-spdn" aria-label="Slower by 0.05">&minus;</button><select id="vd-speed" aria-label="Preview playback speed"></select><input type="text" id="vd-spin" class="vd-spin" hidden spellcheck="false" autocomplete="off" aria-label="Type a speed: 2.35, 300%, 1/2 or 5 fps"><button type="button" class="vd-btn vd-ico vd-spb" id="vd-spup" aria-label="Faster by 0.05">+</button></span>
@@ -1160,7 +1195,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=19" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=20" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

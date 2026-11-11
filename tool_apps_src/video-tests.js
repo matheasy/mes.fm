@@ -336,5 +336,19 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	ok(Math.abs(V.parseSpeed("5 fps", 25) - 0.2) < 1e-9 && V.parseSpeed("100", 30) === 45 && V.parseSpeed("abc", 30) === null && V.parseSpeed("0", 30) === null, "fps, clamping, junk");
 	ok(V.speedLabel(1 / 30, 30) === "1 fps" && V.speedLabel(2.35, 30) === "2.35×" && V.speedLabel(11.3, 30) === "11.30×", "labels");
 }
+
+{ // typed zoom, 1% nudges, word wrap, noise-removal strength blend
+	eq([V.parseZoom("82"), V.parseZoom("82%"), V.parseZoom(" 1.5x"), V.parseZoom("150 %"), V.parseZoom("abc"), V.parseZoom("1"), V.parseZoom("5000")], [82, 82, 150, 150, null, null, null], "parseZoom");
+	eq([V.zoomNudge(82, 1), V.zoomNudge(82, -1), V.zoomNudge(82.4, 1), V.zoomNudge(82.4, -1), V.zoomNudge(2, -1)], [83, 81, 83, 82, 2], "zoomNudge");
+	const mw = (t) => t.length;   // one unit per character
+	eq(V.wrapText(mw, "Note: The 1 + 2 are actually points", 12), ["Note: The 1", "+ 2 are", "actually", "points"], "wrap words");
+	eq(V.wrapText(mw, "short\nline two", 20), ["short", "line two"], "own line breaks kept");
+	eq(V.wrapText(mw, "abcdefghij", 4), ["abcd", "efgh", "ij"], "long word broken");
+	eq(V.wrapText(mw, "no wrap at all here", 0), ["no wrap at all here"], "wrap 0 = off");
+	const dry = new Float32Array([1, 1]), wet = new Float32Array([0, 0]);
+	eq(Array.from(V.dnBlend(wet, dry, 1)), [0, 0], "full strength = cleaned"); eq(Array.from(V.dnBlend(wet, dry, 0)), [1, 1], "0 = original");
+	near(V.dnBlend(wet, dry, 0.5)[0], 0.1, 1e-6, "50% keeps -20 dB of the noise");
+	ok(V.TEXT_DEFAULT.wrap > 0 && V.TEXT_DEFAULT.lh > 1, "titles wrap by default");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

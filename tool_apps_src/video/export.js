@@ -61,7 +61,7 @@
 		await VE.loadScript(VE.LIB.mp4);
 		var p = VE.P, W = o.w, H = o.h, fps = o.fps, a = o.a || 0, b = o.b || V.duration(p), N = Math.max(1, Math.round((b - a) * fps)), failed = null, t00 = performance.now();
 		if (!(b > a)) throw new Error("There is nothing to export: the timeline is empty.");
-		if (o.onProgress) o.onProgress(0, "Analysing the sound for the audio effects..."); await VE.ensureAllFx();
+		if (o.onProgress) o.onProgress(0, "Loading fonts and analysing the sound for the audio effects..."); await VE.ensureFonts(); await VE.ensureAllFx();
 		var missing = p.clips.filter(function (c) { if (c.type === "text") return false; var m = VE.media(c.media); return !m || m.state !== "ready"; });
 		if (missing.length) throw new Error("Some clips' media is missing or still being prepared (" + missing.map(function (c) { var m = VE.media(c.media); return m ? m.name : "?"; }).filter(function (x, i, s) { return s.indexOf(x) === i; }).slice(0, 3).join(", ") + "). Wait for it, or add the file again.");
 		var cfg = { codec: V.avcCodec(W, H, fps), width: W, height: H, bitrate: V.bitrate(W, H, fps, o.quality), bitrateMode: "variable", framerate: fps, latencyMode: "quality", avc: { format: "avc" } }, sup = null;
@@ -108,7 +108,7 @@
 					var m2 = VE.media(cl.media); if (!m2) return null;
 					if (m2.kind === "image") return { img: m2.bitmap, w: m2.w, h: m2.h };
 					var f = frames[cl.id]; return f ? { img: f, w: m2.w, h: m2.h, rot: m2.rot || 0 } : null;
-				});
+				}, { export: true });
 				var vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
 				venc.encode(vf, { keyFrame: i % keyEvery === 0 }); vf.close();
 				while (!failed && venc.encodeQueueSize > 4) await sig.wait(200);
@@ -138,10 +138,10 @@
 	};
 	// one frame at project size from the preview's current state (PNG "snapshot")
 	VE.snapshot = async function () {
-		var p = VE.P, c = document.createElement("canvas"); c.width = p.w; c.height = p.h;
+		await VE.ensureFonts(); var p = VE.P, c = document.createElement("canvas"); c.width = p.w; c.height = p.h;
 		var layers = V.layersAt(p, VE.t), frames = {}, readers = [];
 		for (var j = 0; j < layers.length; j++) { var cl = layers[j].clip; if (cl.type !== "video") continue; var m = VE.media(cl.media); if (!m || !m.vt) continue; var rd = new VReader(m); readers.push(rd); frames[cl.id] = await rd.frameAt(layers[j].src); }
-		VE.draw(c.getContext("2d"), p.w, p.h, VE.t, function (cl) { var m = VE.media(cl.media); if (!m) return null; if (m.kind === "image") return { img: m.bitmap, w: m.w, h: m.h }; var f = frames[cl.id]; return f ? { img: f, w: m.w, h: m.h, rot: m.rot || 0 } : null; });
+		VE.draw(c.getContext("2d"), p.w, p.h, VE.t, function (cl) { var m = VE.media(cl.media); if (!m) return null; if (m.kind === "image") return { img: m.bitmap, w: m.w, h: m.h }; var f = frames[cl.id]; return f ? { img: f, w: m.w, h: m.h, rot: m.rot || 0 } : null; }, { export: true });
 		readers.forEach(function (r) { r.close(); });
 		return new Promise(function (r) { c.toBlob(r, "image/png"); });
 	};

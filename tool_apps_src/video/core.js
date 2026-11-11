@@ -364,7 +364,7 @@
 		var L = V.layersAt(VE.P, t);
 		for (var j = 0; j < L.length; j++) {
 			var c = L[j].clip, pos = L[j].pos || V.posAt(c, t); ctx.globalAlpha = L[j].alpha;
-			if (c.type === "text") { drawText(ctx, c, W, H, pos); continue; }
+			if (c.type === "text") { if (VE.editingTextId !== c.id || opt.export) drawText(ctx, c, W, H, pos); continue; }
 			var s = src(c, L[j].src); if (!s || !s.img) continue;
 			var r = V.place(s.w, s.h, pos, W, H), turned = !!pos.rot;
 			if (turned) { ctx.save(); ctx.translate(r.dx + r.dw / 2, r.dy + r.dh / 2); ctx.rotate(pos.rot * Math.PI / 180); ctx.translate(-(r.dx + r.dw / 2), -(r.dy + r.dh / 2)); }
@@ -385,30 +385,75 @@
 		if (t.canvas.width !== w || t.canvas.height !== h) { t.canvas.width = w; t.canvas.height = h; }
 		return t;
 	};
-	// a title: lines of text in a rounded box, centred at (x, y); returns its rectangle on the frame
+	// a title: lines of text in a rounded box, centred at (x, y); returns its rectangle on the frame.
+	// Long lines wrap at the box width (T.wrap x frame width x size); T.ls = letter spacing (em), T.lh = line height (x the text size)
+	VE.textFont = function (T, px) { return (T.italic ? "italic " : "") + (T.bold ? "700 " : "400 ") + px + "px " + (T.font || "Arial, sans-serif"); };
+	function setFont(ctx, T, px) { ctx.font = VE.textFont(T, px); if ("letterSpacing" in ctx) ctx.letterSpacing = ((T.ls || 0) * px).toFixed(2) + "px"; }
+	function unsetFont(ctx) { if ("letterSpacing" in ctx) ctx.letterSpacing = "0px"; }
 	function textBox(ctx, c, W, H, pos) {
 		pos = pos || c;
-		var T = c.text || V.TEXT_DEFAULT, px = Math.max(4, T.size * H * (pos.scale || 1)), lines = String(T.s || "").split("\n");
-		ctx.font = (T.italic ? "italic " : "") + (T.bold ? "700 " : "400 ") + px + "px " + (T.font || "Arial, sans-serif");
-		var wmax = 0; lines.forEach(function (l) { wmax = Math.max(wmax, ctx.measureText(l).width); });
-		var lh = px * 1.22, pad = px * 0.4, bw = wmax + pad * 2, bh = lines.length * lh + pad * 1.2;
-		return { px: px, lines: lines, lh: lh, pad: pad, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, T: T };
+		var T = c.text || V.TEXT_DEFAULT, sc = pos.scale || 1, px = Math.max(4, T.size * H * sc);
+		setFont(ctx, T, px);
+		var pad = px * 0.4, wrapW = T.wrap > 0 ? T.wrap * W * sc : 0, inner = wrapW ? Math.max(px, wrapW - pad * 2) : 0;
+		var meas = function (l) { return ctx.measureText(l).width; }, lines = V.wrapText(meas, T.s, inner);
+		var wmax = 0; lines.forEach(function (l) { wmax = Math.max(wmax, meas(l)); });
+		unsetFont(ctx);
+		var lh = px * (T.lh > 0 ? T.lh : 1.22), bw = Math.max(wmax, px * 0.6) + pad * 2, bh = lines.length * lh + pad * 1.2;
+		return { px: px, lines: lines, lh: lh, pad: pad, wrapW: wrapW, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, T: T };
 	}
 	function drawText(ctx, c, W, H, pos) {
 		var b = textBox(ctx, c, W, H, pos), T = b.T, rot = pos && pos.rot;
 		if (rot) { ctx.save(); ctx.translate(b.dx + b.dw / 2, b.dy + b.dh / 2); ctx.rotate(rot * Math.PI / 180); ctx.translate(-(b.dx + b.dw / 2), -(b.dy + b.dh / 2)); }
 		if (T.bgOn) { ctx.save(); ctx.globalAlpha *= T.bgOp == null ? 0.55 : T.bgOp; ctx.fillStyle = T.bg || "#000"; roundRect(ctx, b.dx, b.dy, b.dw, b.dh, b.px * 0.25); ctx.fill(); ctx.restore(); }
-		ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
-		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad : b.dx + b.dw / 2;
+		setFont(ctx, T, b.px); ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
+		// letter spacing adds space after the last letter too: shift so centred / right-aligned lines stay put
+		var lsx = "letterSpacing" in ctx ? (T.ls || 0) * b.px : 0;
+		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad + lsx : b.dx + b.dw / 2 + lsx / 2;
 		b.lines.forEach(function (l, k) {
 			var y = b.dy + b.pad * 0.6 + b.lh * (k + 0.5);
 			if (T.shadow) { ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = b.px * 0.12; ctx.shadowOffsetY = b.px * 0.05; ctx.fillStyle = T.color; ctx.fillText(l, x, y); ctx.restore(); }
 			if (T.outline > 0) { ctx.lineWidth = T.outline * b.px * 0.08; ctx.strokeStyle = T.ocolor || "#000"; ctx.lineJoin = "round"; ctx.strokeText(l, x, y); }
 			ctx.fillStyle = T.color || "#fff"; ctx.fillText(l, x, y);
 		});
+		unsetFont(ctx);
 		if (rot) ctx.restore();
 		return b;
 	}
+	VE.editingTextId = null;
+	/* ---------- fonts for titles: ones every computer has, plus Google Fonts (loaded when picked; the export waits for them) ---------- */
+	VE.FONTS = [
+		["Arial", "Arial, Helvetica, sans-serif", null, "Sans-serif"], ["Helvetica", "Helvetica, Arial, sans-serif", null, "Sans-serif"], ["Verdana", "Verdana, sans-serif", null, "Sans-serif"],
+		["Tahoma", "Tahoma, Verdana, sans-serif", null, "Sans-serif"], ["Trebuchet", "'Trebuchet MS', sans-serif", null, "Sans-serif"], ["System", "system-ui, sans-serif", null, "Sans-serif"],
+		["Roboto", "'Roboto', sans-serif", "Roboto", "Sans-serif"], ["Open Sans", "'Open Sans', sans-serif", "Open Sans", "Sans-serif"], ["Montserrat", "'Montserrat', sans-serif", "Montserrat", "Sans-serif"],
+		["Lato", "'Lato', sans-serif", "Lato", "Sans-serif"], ["Poppins", "'Poppins', sans-serif", "Poppins", "Sans-serif"], ["Inter", "'Inter', sans-serif", "Inter", "Sans-serif"],
+		["Nunito", "'Nunito', sans-serif", "Nunito", "Sans-serif"], ["Raleway", "'Raleway', sans-serif", "Raleway", "Sans-serif"], ["Source Sans 3", "'Source Sans 3', sans-serif", "Source Sans 3", "Sans-serif"],
+		["Georgia", "Georgia, serif", null, "Serif"], ["Times", "'Times New Roman', Times, serif", null, "Serif"], ["Palatino", "Palatino, 'Palatino Linotype', 'Book Antiqua', serif", null, "Serif"],
+		["Merriweather", "'Merriweather', serif", "Merriweather", "Serif"], ["Playfair Display", "'Playfair Display', serif", "Playfair Display", "Serif"], ["Lora", "'Lora', serif", "Lora", "Serif"], ["Roboto Slab", "'Roboto Slab', serif", "Roboto Slab", "Serif"],
+		["Impact", "Impact, 'Arial Black', sans-serif", null, "Bold display"], ["Oswald", "'Oswald', sans-serif", "Oswald", "Bold display"], ["Bebas Neue", "'Bebas Neue', sans-serif", "Bebas Neue", "Bold display"],
+		["Anton", "'Anton', sans-serif", "Anton", "Bold display"], ["Archivo Black", "'Archivo Black', sans-serif", "Archivo Black", "Bold display"], ["Bangers", "'Bangers', cursive", "Bangers", "Bold display"],
+		["Comic Sans", "'Comic Sans MS', 'Comic Sans', cursive", null, "Handwriting"], ["Caveat", "'Caveat', cursive", "Caveat", "Handwriting"], ["Kalam", "'Kalam', cursive", "Kalam", "Handwriting"],
+		["Permanent Marker", "'Permanent Marker', cursive", "Permanent Marker", "Handwriting"], ["Dancing Script", "'Dancing Script', cursive", "Dancing Script", "Handwriting"], ["Pacifico", "'Pacifico', cursive", "Pacifico", "Handwriting"], ["Lobster", "'Lobster', cursive", "Lobster", "Handwriting"],
+		["Courier", "'Courier New', Courier, monospace", null, "Monospace"], ["Source Code Pro", "'Source Code Pro', monospace", "Source Code Pro", "Monospace"], ["JetBrains Mono", "'JetBrains Mono', monospace", "JetBrains Mono", "Monospace"]
+	];
+	VE.fontInfo = function (stack) { stack = String(stack || ""); for (var i = 0; i < VE.FONTS.length; i++) if (VE.FONTS[i][1] === stack) return VE.FONTS[i]; var g = /^'([^']+)'/.exec(stack); return [g ? g[1] : stack.split(",")[0].replace(/['"]/g, ""), stack, null, ""]; };
+	var gLinked = {};
+	function googleLink(fam) {
+		if (gLinked[fam]) return; gLinked[fam] = true;
+		var l = document.createElement("link"); l.rel = "stylesheet";
+		l.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(fam).replace(/%20/g, "+") + ":ital,wght@0,400;0,700;1,400;1,700&display=swap";
+		l.onerror = function () { l.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(fam).replace(/%20/g, "+") + "&display=swap"; l.onerror = null; };
+		document.head.appendChild(l);
+	}
+	VE.linkFont = function (stack) { var f = VE.fontInfo(stack); if (f[2]) googleLink(f[2]); return f; };
+	// load the faces a title uses (bold / italic as set); resolves when ready or after 5 s
+	VE.ensureFont = function (T) {
+		var f = VE.linkFont(T.font); if (!f[2] || !document.fonts || !document.fonts.load) return Promise.resolve();
+		var spec = (T.italic ? "italic " : "") + (T.bold ? "700 " : "400 ") + "40px '" + f[2] + "'";
+		return Promise.race([document.fonts.load(spec, (T.s || "Aa").slice(0, 200)).catch(function () {}), new Promise(function (r) { setTimeout(r, 5000); })]);
+	};
+	VE.ensureFonts = function () { return Promise.all(VE.P.clips.filter(function (c) { return c.type === "text" && c.text; }).map(function (c) { return VE.ensureFont(c.text); })); };
+	if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", function () { if (VE.preview && VE.preview.draw) VE.preview.draw(); if (VE.tl && VE.tl.render) { /* timeline text uses page fonts */ } });
+   // the title being typed in the preview: drawn by the text box instead
 	function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 	// rectangle of a clip on a W x H frame (for selecting / dragging in the preview)
 	// pos = the animated position to use (default: the one at the playhead); the result carries .rot (degrees, about its centre)

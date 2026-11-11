@@ -9,7 +9,8 @@
 	V.clamp = function (x, a, b) { return x < a ? a : x > b ? b : x; };
 
 	/* ---------- project ---------- */
-	V.TEXT_DEFAULT = { s: "Your title", font: "Arial, Helvetica, sans-serif", size: 0.09, color: "#ffffff", bgOn: true, bg: "#000000", bgOp: 0.55, bold: true, italic: false, align: "center", shadow: true, outline: 0, ocolor: "#000000" };
+	V.TEXT_DEFAULT = { s: "Your title", font: "Arial, Helvetica, sans-serif", size: 0.09, color: "#ffffff", bgOn: true, bg: "#000000", bgOp: 0.55, bold: true, italic: false, align: "center", shadow: true, outline: 0, ocolor: "#000000", wrap: 0.8, ls: 0, lh: 1.22 };
+	// wrap: box width for automatic line breaks as a share of the frame width at scale 1 (0 = only your own line breaks); ls = letter spacing in em; lh = line height (x the text size)
 	V.newProject = function (o) {
 		o = o || {};
 		return { v: 1, name: o.name || "Untitled video", w: o.w || 1920, h: o.h || 1080, fps: o.fps || 30, bg: "#000000",
@@ -514,6 +515,40 @@
 	// zoom to k2 keeping the stage point (px, py) over the same frame point
 	V.viewZoomAt = function (v, k2, px, py) { var fx = (px - v.ox) / v.k, fy = (py - v.oy) / v.k; return { k: k2, ox: px - fx * k2, oy: py - fy * k2 }; };
 	V.ZOOM_STEPS = [0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 1, 1.25, 1.5, 2, 3, 4, 6, 8];
+	// typed preview zoom: "82", "82%", "1.5x" / "1.5×" -> percent (2..4000) or null
+	V.parseZoom = function (txt) {
+		var t = String(txt == null ? "" : txt).trim().toLowerCase().replace(/\s+/g, "").replace(",", ".");
+		var m = /^(\d+(?:\.\d+)?|\.\d+)(%|x|×)?$/.exec(t); if (!m) return null;
+		var v = +m[1]; if (m[2] === "x" || m[2] === "×") v *= 100;
+		return isFinite(v) && v >= 2 && v <= 4000 ? Math.round(v * 10) / 10 : null;
+	};
+	// - / + on the zoom: 1% steps, landing on whole percents
+	V.zoomNudge = function (pct, dir, step) { step = step || 1; var r = dir > 0 ? Math.floor(pct / step + 1e-6) * step + step : Math.ceil(pct / step - 1e-6) * step - step; return V.clamp(r, 2, 4000); };
+	// automatic line breaks: lines of text no wider than maxW (measure(str) -> width); your own line breaks are kept; 0 / no maxW = none
+	V.wrapText = function (measure, s, maxW) {
+		var out = [];
+		String(s == null ? "" : s).split("\n").forEach(function (para) {
+			if (!(maxW > 0) || measure(para) <= maxW) { out.push(para); return; }
+			var words = para.split(/( +)/), line = "";
+			for (var i = 0; i < words.length; i++) {
+				var w = words[i]; if (!w) continue;
+				var tryL = line + w;
+				if (measure(tryL.replace(/ +$/, "")) <= maxW || !line.trim()) {
+					if (!line.trim() && measure(w) > maxW && w.trim()) {   // one word wider than the box: break it by letters
+						var part = line;
+						for (var j = 0; j < w.length; j++) { if (part && measure(part + w[j]) > maxW) { out.push(part); part = ""; } part += w[j]; }
+						line = part;
+					} else line = tryL;
+				} else { out.push(line.replace(/ +$/, "")); line = /^ +$/.test(w) ? "" : w; }
+			}
+			out.push(line.replace(/ +$/, ""));
+		});
+		return out;
+	};
+	// noise-removal strength 0..1 -> how much of the original is mixed back (same rule as MESDenoise.mix): 1 = none, 0 = all of it
+	V.dnLim = function (s) { s = V.clamp(s == null ? 1 : +s, 0, 1); return s >= 0.995 ? 0 : Math.pow(10, -2 * s); };
+	// sound at strength s from the original (dry) and the fully cleaned sound (wet)
+	V.dnBlend = function (wet, dry, s) { var lim = V.dnLim(s), n = Math.min(wet.length, dry.length), y = new Float32Array(wet.length); for (var i = 0; i < n; i++) y[i] = s <= 0 ? dry[i] : wet[i] * (1 - lim) + dry[i] * lim; return y; };
 	// rotate point (x, y) by deg degrees about (cx, cy)
 	V.rotPt = function (x, y, cx, cy, deg) { var a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), dx = x - cx, dy = y - cy; return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c }; };
 

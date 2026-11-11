@@ -42,6 +42,7 @@
 	/* ---------- clock ---------- */
 	P.time = function () { return P.playing ? P.t0 + (performance.now() - P.p0) / 1000 * P.rate * (P.rev ? -1 : 1) : VE.t; };
 	P.play = function (rate) {
+		if (ed) P.endEdit();
 		var d = V.duration(VE.P); if (!d) return;
 		if (VE.t >= d - 1e-3) VE.t = 0;
 		audio(); P.rate = rate || 1; P.rev = false; P.t0 = VE.t; P.p0 = performance.now(); P.playing = true;
@@ -207,6 +208,8 @@
 		var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2;
 		return [[r.dx, r.dy], [r.dx + r.dw, r.dy], [r.dx + r.dw, r.dy + r.dh], [r.dx, r.dy + r.dh]].map(function (q) { var p = V.rotPt(q[0], q[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; });
 	}
+	// middle of the left and right edges of a title: drag to set the width where its lines wrap
+	function sideHandles(r) { var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2; return [[r.dx, cy], [r.dx + r.dw, cy]].map(function (q) { var p = V.rotPt(q[0], q[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; }); }
 	function rotHandle(r) { var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2, p = V.rotPt(cx, r.dy - 28 * dpr / view.k, cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; }
 	function paint() {
 		if (!needDraw) return; needDraw = false;
@@ -214,6 +217,7 @@
 		ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.fillStyle = pasteboard(); ctx.fillRect(0, 0, CW, CH);
 		ctx.setTransform(k, 0, 0, k, fx, fy); ctx.imageSmoothingQuality = k < 0.6 ? "medium" : "high";
 		VE.draw(ctx, PW, PH, VE.t, source);
+		if (ed) place();
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		// dim everything outside the frame: what hangs over the edge is still visible, but clearly not in the video
 		ctx.save(); ctx.beginPath(); ctx.rect(0, 0, CW, CH); ctx.rect(fx, fy, fw, fh); ctx.fillStyle = VS.dim ? "rgba(6,8,12,0.66)" : "rgba(6,8,12,0.25)"; ctx.fill("evenodd");
@@ -242,6 +246,8 @@
 				ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(rh.x, rh.y); ctx.stroke();
 				ctx.fillStyle = "#38bdf8"; cs.forEach(function (q) { ctx.fillRect(q.x - hs, q.y - hs, hs * 2, hs * 2); });
 				ctx.beginPath(); ctx.arc(rh.x, rh.y, hs, 0, Math.PI * 2); ctx.fillStyle = "#0c4a6e"; ctx.fill(); ctx.stroke();
+				if (c.type === "text") sideHandles(r).forEach(function (q) { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate((r.rot || 0) * Math.PI / 180); ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 1.5 * dpr; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr, 3.5 * dpr); else ctx.rect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr); ctx.fill(); ctx.stroke(); ctx.restore(); });
+				if (drag && drag.mode === "wrap" && drag.c === c) { var T0 = c.text, lab = T0.wrap > 0 ? "Box width " + Math.round(T0.wrap * 100) + "% · lines wrap" : "No wrapping"; ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var lw2 = ctx.measureText(lab).width, lx = (cs[0].x + cs[1].x) / 2 - lw2 / 2, ly = Math.min(cs[0].y, cs[1].y) - 34 * dpr; ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(lx - 5 * dpr, ly - 15 * dpr, lw2 + 10 * dpr, 18 * dpr); ctx.fillStyle = "#e0f2fe"; ctx.fillText(lab, lx, ly); }
 				var rel = VE.t - c.start, run = c.anims && V.animRunning(c, rel, 0.5 / VE.P.fps), own = c.anims && !run && V.animEndingAt(c, rel, 0.5 / VE.P.fps);
 				if (run || own) { ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var tx = run ? "Inside an animation: move the playhead to its start or end to change it" : "At the end of \u201c" + V.animName(own) + "\u201d: moving it sets where the animation ends"; var tw = ctx.measureText(tx).width; var bx = 10 * dpr, by = CH - 8 * dpr; /* bottom left of the stage, clear of the zoom bar */ ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(bx - 4 * dpr, by - 15 * dpr, tw + 8 * dpr, 17 * dpr); ctx.fillStyle = run ? "#fca5a5" : "#fde68a"; ctx.fillText(tx, bx, by); }
 				ctx.restore();
@@ -313,6 +319,7 @@
 			if (r0) {
 				var rh = rotHandle(r0); if (Math.hypot(pt.cx - rh.x, pt.cy - rh.y) < tol * 1.4) { hitC = sel; mode = "turn"; }
 				if (!hitC) corners(r0).forEach(function (q) { if (Math.abs(pt.cx - q.x) < tol && Math.abs(pt.cy - q.y) < tol) { hitC = sel; mode = "corner"; } });
+				if (!hitC && sel.type === "text") sideHandles(r0).forEach(function (q) { if (Math.abs(pt.cx - q.x) < tol * 1.2 && Math.abs(pt.cy - q.y) < tol * 1.8) { hitC = sel; mode = "wrap"; } });
 			}
 		}
 		if (!hitC) for (var j = L.length - 1; j >= 0; j--) { var c = L[j].clip, tr = V.track(VE.P, c.track); if (tr && tr.lock) continue; var r = VE.rectOf(ctx, c, PW, PH, L[j].pos); if (r && inside(r, pt)) { hitC = c; break; } }
@@ -341,7 +348,11 @@
 		if (!drag) { if (!P.playing && !pick) cv.style.cursor = P.space ? "grab" : ""; return; }
 		if (drag.pan) { var b2 = cv.getBoundingClientRect(), sx = cv.width / Math.max(1, b2.width); view.ox = drag.ox + (e.clientX - drag.x) * sx; view.oy = drag.oy + (e.clientY - drag.y) * sx; draw(); return; }
 		var pt = toFrame(e), c = drag.c, rel = drag.rel, tol = drag.tol; drag.moved = true;
-		if (drag.mode === "corner") V.setPropAt(c, rel, "scale", V.clamp(Math.round(drag.s0 * Math.hypot(pt.x - drag.cx, pt.y - drag.cy) / drag.d0 * 1000) / 1000, 0.02, 20), tol);
+		if (drag.mode === "wrap") {
+			var T = c.text, pp = V.rotPt(pt.x, pt.y, drag.cx, drag.cy, -(drag.r0 || 0)), half = Math.abs(pp.x - drag.cx), sc = Math.max(0.01, drag.s0 || 1);
+			T.wrap = V.clamp(Math.round(2 * half / (VE.P.w * sc) * 1000) / 1000, 0.05, 4); VE.emit("live"); draw(); return;
+		}
+		else if (drag.mode === "corner") V.setPropAt(c, rel, "scale", V.clamp(Math.round(drag.s0 * Math.hypot(pt.x - drag.cx, pt.y - drag.cy) / drag.d0 * 1000) / 1000, 0.02, 20), tol);
 		else if (drag.mode === "turn") { var ang = drag.r0 + (Math.atan2(pt.y - drag.cy, pt.x - drag.cx) - drag.a0) * 180 / Math.PI; if (!e.shiftKey) ang = Math.round(ang / 5) * 5; if (!e.shiftKey && Math.abs(ang % 90) < 3) ang = Math.round(ang / 90) * 90; V.setPropAt(c, rel, "rot", Math.round(ang * 100) / 100, tol); }
 		else {
 			var nx = drag.x0 + (pt.x - drag.p0.x) / VE.P.w, ny = drag.y0 + (pt.y - drag.p0.y) / VE.P.h;
@@ -354,11 +365,56 @@
 		if (e && e.pointerType === "touch") { delete touches[e.pointerId]; if (pinch && Object.keys(touches).length < 2) pinch = null; }
 		if (pick && pick.p0) { var r = pick.r, cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(r && r.w > 8 ? r : null); return; }
 		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space ? "grab" : ""; return; }
-		if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
+		if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit("Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
 		drag = null;
 	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
-	cv.addEventListener("dblclick", function () { var c = VE.selected()[0]; if (c && c.type === "text") VE.emit("editText", c); });
+	cv.addEventListener("dblclick", function (e) { var c = VE.selected()[0]; if (c && c.type === "text" && V.active(c, VE.t)) P.editText(c, e); });
+
+	/* ---------- type a title straight into the picture ---------- */
+	// a text box laid over the title (same font, size, spacing, colours, turned with it); the canvas leaves that title out while you type
+	var ed = null;
+	P.editing = function () { return ed ? ed.c : null; };
+	P.editText = function (c, ev) {
+		if (!c || c.type !== "text") return; if (ed) P.endEdit();
+		if (!V.active(c, VE.t)) { VE.emit("notice", "Move the playhead over the title to type in it."); return; }
+		if (P.playing) P.pause();
+		var ta = document.createElement("textarea"); ta.className = "vd-tedit"; ta.spellcheck = true; ta.setAttribute("aria-label", "Title text: Esc or click outside when done");
+		ta.value = c.text.s || ""; wrap.appendChild(ta);
+		ed = { c: c, ta: ta, before: ta.value }; VE.editingTextId = c.id; VE.sel = [c.id]; VE.emit("select");
+		ta.addEventListener("input", function () { c.text.s = ta.value; place(); VE.emit("live"); draw(); });
+		ta.addEventListener("keydown", function (e) {
+			e.stopPropagation();
+			if (e.key === "Escape" || (e.key === "Enter" && (e.ctrlKey || e.metaKey))) { e.preventDefault(); P.endEdit(); }
+		});
+		["pointerdown", "dblclick", "wheel"].forEach(function (k) { ta.addEventListener(k, function (e) { e.stopPropagation(); }); });
+		ta.addEventListener("blur", function () { setTimeout(function () { if (ed && ed.ta === ta && document.activeElement !== ta) P.endEdit(); }, 0); });
+		place(); draw(); ta.focus();
+		if (ev && ev.type === "dblclick") { ta.select(); } else ta.select();
+		if (VE.ensureFont) VE.ensureFont(c.text).then(function () { if (ed && ed.c === c) place(); });
+	};
+	P.endEdit = function () {
+		if (!ed) return; var e0 = ed; ed = null; VE.editingTextId = null;
+		if (e0.ta.parentNode) e0.ta.parentNode.removeChild(e0.ta);
+		if (e0.c.text.s !== e0.before) VE.commit("Title text"); else draw();
+	};
+	function place() {
+		if (!ed) return; var c = ed.c, ta = ed.ta, T = c.text;
+		if (!V.active(c, VE.t) || VE.P.clips.indexOf(c) < 0) { P.endEdit(); return; }
+		var r = VE.rectOf(ctx, c, VE.P.w, VE.P.h); if (!r) return;
+		var cb = cv.getBoundingClientRect(), wb = wrap.getBoundingClientRect(), s = cb.width / Math.max(1, cv.width), k = view.k * s;
+		var bw = (r.wrapW > 0 ? Math.max(r.wrapW, r.dw) : r.dw + r.px) * k, bh = r.dh * k, cx = cb.left - wb.left + (view.ox + (r.dx + r.dw / 2) * view.k) * s, cy = cb.top - wb.top + (view.oy + (r.dy + r.dh / 2) * view.k) * s;
+		var st = ta.style, bgA = T.bgOn ? (T.bgOp == null ? 0.55 : T.bgOp) : 0, hex = (T.bg || "#000000").replace("#", ""), rgb = [0, 2, 4].map(function (i) { return parseInt(hex.substr(i, 2), 16) || 0; });
+		st.width = bw + "px"; st.minHeight = bh + "px"; st.height = bh + "px";
+		st.left = (cx - bw / 2) + "px"; st.top = (cy - bh / 2) + "px";
+		st.font = VE.textFont(T, r.px * k); st.lineHeight = (r.lh * k) + "px"; st.letterSpacing = ((T.ls || 0) * r.px * k) + "px";
+		st.padding = (r.pad * 0.6 * k) + "px " + (r.pad * k) + "px"; st.textAlign = T.align || "center"; st.color = T.color || "#fff"; st.caretColor = T.color || "#fff";
+		st.whiteSpace = r.wrapW > 0 ? "pre-wrap" : "pre"; st.background = "rgba(" + rgb.join(",") + "," + bgA + ")"; st.borderRadius = (r.px * 0.25 * k) + "px";
+		st.textShadow = T.outline > 0 ? "0 0 " + Math.max(1, T.outline * r.px * k * 0.05) + "px " + (T.ocolor || "#000") : T.shadow ? "0 " + (r.px * k * 0.05) + "px " + (r.px * k * 0.12) + "px rgba(0,0,0,0.6)" : "none";
+		st.transform = r.rot ? "rotate(" + r.rot + "deg)" : "";
+		if (ta.scrollHeight > ta.clientHeight + 1) { st.height = ta.scrollHeight + "px"; st.top = (cy - ta.scrollHeight / 2) + "px"; }
+	}
+	P.placeEditor = place;
 	cv.addEventListener("wheel", function (e) {
 		var q = canvasPt(e);
 		if (e.ctrlKey || e.metaKey) { e.preventDefault(); isFit = false; view = V.viewZoomAt(view, V.clamp(view.k * Math.pow(1.0018, -e.deltaY), 0.02, 40), q.x, q.y); draw(); return; }   // trackpad pinch arrives as Ctrl + wheel
