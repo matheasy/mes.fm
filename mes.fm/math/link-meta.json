@@ -1,4 +1,47 @@
 {
+  "https://mes.fm/math-qa-74-luders-bands": {
+    "image": "https://mes.fm/math-qa-74-luders-bands/img/thumbnail.jpg",
+    "watchLinks": [
+      {
+        "label": "YouTube",
+        "href": "https://youtube.com/live/Ru8CRD3UBAo"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/c/MathEasySolutions"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mes:8/MES-Math-QA-74-Luders-Bands"
+      },
+      {
+        "label": "BitChute",
+        "href": "https://www.bitchute.com/channel/1B8tfwAKfSbU"
+      },
+      {
+        "label": "X",
+        "href": "https://x.com/MathEasySolns"
+      },
+      {
+        "label": "Twitch",
+        "href": "https://www.twitch.tv/matheasysolutions"
+      }
+    ],
+    "namedLinks": [
+      {
+        "label": "Simulator",
+        "href": "https://mes.fm/luders-bands"
+      },
+      {
+        "label": "See more",
+        "href": "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-"
+      },
+      {
+        "label": "More math",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
   "https://mes.fm/math-qa-1-special-birthday-stream": {
     "image": "https://i.ytimg.com/vi/sVbnX7EUVIc/maxresdefault.jpg",
     "watchLinks": [
