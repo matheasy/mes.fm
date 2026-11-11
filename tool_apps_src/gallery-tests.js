@@ -183,4 +183,16 @@ t('formatters + paths', function () {
 	assert.deepStrictEqual([s.images, s.videos, s.bytes, s.first, s.last], [1, 1, 30, 5, 9]);
 	assert.strictEqual(G.plural(1, 'photo'), '1 photo'); assert.strictEqual(G.plural(1200, 'photo'), '1,200 photos');
 });
+t('hidden files and duplicates', function () {
+	var a = it('x.jpg', { size: 10, mtime: 1 }), b = it('x.jpg', { size: 10, mtime: 2 }), c = it('y.jpg', { size: 11, mtime: 3 }), d = it('z.jpg', { size: 10, mtime: 0, folder: 'f' });
+	assert.notStrictEqual(G.hideKey(a), G.hideKey(b)); assert.ok(G.sameFile(a, it('x.jpg', { size: 10, mtime: 1 })));
+	var H = {}; H[G.hideKey(a)] = 1;
+	assert.deepStrictEqual(G.filterItems([a, b, c], { hidden: H }).map(function (x) { return x.mtime; }), [2, 3]);
+	assert.deepStrictEqual(G.filterItems([a, b, c], { hidden: H, kind: 'hidden' }), [a]);
+	assert.strictEqual(G.sizeBuckets([a, b, c, d]).length, 1);
+	a.hash = b.hash = d.hash = 'h'; c.hash = 'h';
+	var sets = G.dupSets([a, b, c, d]);
+	assert.strictEqual(sets.length, 1); assert.strictEqual(sets[0][0], d); assert.strictEqual(sets[0].length, 3);
+	d._dup = 1; d._dupN = 3; assert.strictEqual(G.groupItems([d], 'dup')[0].label, 'Same picture: 3 copies');
+});
 console.log(n + ' test groups passed' + (process.exitCode ? ' (with failures above)' : ''));

@@ -149,6 +149,10 @@ var MESGallery = (function () {
 		return items.filter(function (it) {
 			if (kind === 'image' && it.kind !== 'image') return false;
 			if (kind === 'video' && it.kind !== 'video') return false;
+			var hid = !!(opt.hidden && opt.hidden[hideKey(it)]);
+			if (kind === 'hidden') { if (!hid) return false; }
+			else if (hid) return false;
+			if (kind === 'dups' && !it._dup) return false;
 			var rt = r[it.rkey] || {};
 			if (kind === 'fav' && !rt.f) return false;
 			if (opt.minRating && (rt.r || 0) < opt.minRating) return false;
@@ -172,7 +176,8 @@ var MESGallery = (function () {
 		var map = {}, out = [];
 		items.forEach(function (it) {
 			var k, label, d;
-			if (by === 'folder') { k = it.folder || ''; label = k || 'Top folder'; }
+			if (by === 'dup') { k = 'd' + (it._dup || 0); label = 'Same picture: ' + (it._dupN || 2) + ' copies'; }
+			else if (by === 'folder') { k = it.folder || ''; label = k || 'Top folder'; }
 			else if (by === 'type') { k = it.kind; label = it.kind === 'video' ? 'Videos' : 'Photos'; }
 			else if (by === 'ext') { k = it.ext || '?'; label = (it.ext || 'no ending').toUpperCase(); }
 			else {
@@ -349,6 +354,26 @@ var MESGallery = (function () {
 	}
 	function mp(w, h) { return w && h ? Math.round(w * h / 1e5) / 10 + ' MP' : ''; }
 	function thumbKey(it, px) { return [it.path || it.name, it.size, it.mtime, px || 480].join('|'); }
+	/* hidden files: keyed by where the file is + size + modified time, so two copies of one picture can be hidden one at a time */
+	function hideKey(it) { return [it.path || it.name, it.size || 0, it.mtime || 0].join('|'); }
+	/* same file added twice (dropped twice, opened again): same path, size and time */
+	function sameFile(a, b) { return hideKey(a) === hideKey(b); }
+	/* sizes that occur more than once = the only files that can be duplicates */
+	function sizeBuckets(items) {
+		var m = {}; items.forEach(function (it) { (m[it.size] = m[it.size] || []).push(it); });
+		return Object.keys(m).map(function (k) { return m[k]; }).filter(function (g) { return g.length > 1 && g[0].size > 0; });
+	}
+	/* items each carrying .hash -> sets of 2+ with the same hash; inside a set the one to keep comes first (oldest date, then shortest path) */
+	function dupSets(items) {
+		var m = {}, out = [];
+		items.forEach(function (it) { if (it.hash) (m[it.size + ':' + it.hash] = m[it.size + ':' + it.hash] || []).push(it); });
+		Object.keys(m).forEach(function (k) {
+			var g = m[k]; if (g.length < 2) return;
+			g.sort(function (a, b) { return ((a.mtime || 0) - (b.mtime || 0)) || ((a.path || '').length - (b.path || '').length) || natCmp(a.path || '', b.path || ''); });
+			out.push(g);
+		});
+		return out;
+	}
 	function rateKey(name, size) { return (name || '') + '|' + (size || 0); }
 	/* "Holiday/2024/IMG_1.jpg" -> folder "Holiday/2024" (the top folder you opened is left out) */
 	function splitPath(rel, dropTop) {
@@ -371,6 +396,6 @@ var MESGallery = (function () {
 		natCmp: natCmp, SORTS: SORTS, sortItems: sortItems, filterItems: filterItems, groupItems: groupItems, justify: justify, masonry: masonry, squares: squares, layout: layout,
 		visible: visible, fitScale: fitScale, clampPan: clampPan, zoomAbout: zoomAbout, SPEEDS: SPEEDS, speedStep: speedStep, fmtSpeed: fmtSpeed, abCheck: abCheck, setAB: setAB,
 		posterTime: posterTime, nextIndex: nextIndex, SLIDE: SLIDE, fmtBytes: fmtBytes, fmtDur: fmtDur, fmtTime: fmtTime, fmtDate: fmtDate, mp: mp, thumbKey: thumbKey,
-		rateKey: rateKey, splitPath: splitPath, summary: summary, plural: plural, MONTHS: MONTHS, hashStr: hashStr };
+		rateKey: rateKey, hideKey: hideKey, sameFile: sameFile, sizeBuckets: sizeBuckets, dupSets: dupSets, splitPath: splitPath, summary: summary, plural: plural, MONTHS: MONTHS, hashStr: hashStr };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery;

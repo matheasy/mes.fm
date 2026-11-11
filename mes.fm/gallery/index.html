@@ -356,15 +356,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.mg-prog[hidden] {display:none;}
 	.mg-progbar {flex:0 0 8em;height:5px;border-radius:3px;background:var(--mg-tile);overflow:hidden;}
 	.mg-progbar span {display:block;height:100%;width:0;background:var(--mg-prog);transition:width 0.25s;}
-	.mg-scroll {position:relative;height:calc(100vh - 150px);min-height:440px;overflow-y:auto;overflow-x:hidden;padding:6px;outline:none;overscroll-behavior:contain;}
+	.mg-scroll {position:relative;height:auto;max-height:calc(100vh - 150px);min-height:180px;overflow-y:auto;overflow-x:hidden;padding:6px;outline:none;overscroll-behavior:contain;}
 	.mg-canvas {position:relative;width:100%;}
 	.mg-empty {position:absolute;inset:3em 1em auto;text-align:center;color:var(--mg-muted);font-size:1.05em;}
 	.mg-empty[hidden] {display:none;}
 	/* fill window: the app covers the browser window (above ads and the floating bar), Esc leaves */
 	.mg-app.mg-fill {position:fixed;inset:0;z-index:2147483000;border-radius:0;border:0;}
-	.mg-app.mg-fill .mg-scroll {height:auto;flex:1 1 auto;min-height:0;}
+	.mg-app.mg-fill .mg-scroll {height:auto;max-height:none;flex:1 1 auto;min-height:0;}
 	.mg-app:fullscreen {position:fixed;inset:0;border-radius:0;}
-	.mg-app:fullscreen .mg-scroll {height:auto;flex:1 1 auto;}
+	.mg-app:fullscreen .mg-scroll {height:auto;max-height:none;flex:1 1 auto;}
 	html.mg-lock, html.mg-lock body {overflow:hidden !important;}
 	/* tiles */
 	.mg-t {position:absolute;left:0;top:0;overflow:hidden;border-radius:6px;background:var(--mg-tile);cursor:zoom-in;padding:0;border:0;margin:0;display:block;font:inherit;color:inherit;contain:strict;}
@@ -398,6 +398,28 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.mg-li .mg-hb.mg-on {color:var(--mg-heart);background:transparent;}
 	@media (max-width:640px) {.mg-li .mg-lc.mg-lx, .mg-li .mg-lc.mg-ld {display:none;}}
 	/* group headings */
+	/* hide button, selection, duplicate marks */
+	.mg-xb {position:absolute;top:4px;left:4px;width:30px;height:30px;border-radius:50%;border:0;background:var(--mg-shade);color:var(--mg-on);font-size:14px;line-height:30px;cursor:pointer;opacity:0;transition:opacity 0.2s, transform 0.15s;padding:0;z-index:2;}
+	.mg-t:hover .mg-xb, .mg-t:focus-within .mg-xb {opacity:1;}
+	.mg-xb:hover {background:#b42318;}
+	@media (hover:none) {.mg-xb {opacity:0.85;width:28px;height:28px;line-height:28px;}}
+	.mg-li .mg-xb {position:static;opacity:0.75;background:transparent;color:var(--mg-muted);flex:0 0 34px;width:34px;height:34px;line-height:34px;}
+	.mg-li .mg-xb:hover {opacity:1;color:#fff;}
+	.mg-selmode .mg-xb, .mg-selmode .mg-hb {display:none;}
+	.mg-pick {position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,0.35);color:transparent;font-size:14px;line-height:20px;text-align:center;font-weight:700;display:none;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,0.4);}
+	.mg-selmode .mg-pick {display:block;}
+	.mg-picked .mg-pick {background:var(--mg-sel);border-color:#fff;color:#fff;}
+	.mg-picked {outline:3px solid var(--mg-sel);outline-offset:-3px;}
+	.mg-picked img {transform:scale(0.92);}
+	.mg-li .mg-pick {position:static;flex:0 0 24px;margin-left:0.3em;}
+	.mg-keep {position:absolute;left:6px;bottom:6px;background:#15803d;color:#fff;font-size:0.75em;font-weight:600;padding:0.1em 0.5em;border-radius:1em;pointer-events:none;}
+	.mg-li .mg-keep {position:static;flex:0 0 auto;margin-right:0.4em;}
+	.mg-bar2 {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 1em;padding:0.5em 0.8em;margin:0.2em 0 0.3em;border-radius:0.6em;background:var(--mg-honest);border:1px solid var(--mg-honestb);line-height:1.4;}
+	.mg-bar2[hidden] {display:none;}
+	.mg-bar2-acts {display:flex;flex-wrap:wrap;gap:0.4em;margin-left:auto;}
+	.mg-toast.mg-act {pointer-events:auto;display:flex;align-items:center;gap:0.9em;}
+	.mg-toast button {background:none;border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:0.4em;padding:0.25em 0.75em;cursor:pointer;font:inherit;font-weight:600;flex:0 0 auto;}
+	.mg-toast button:hover {background:rgba(255,255,255,0.15);}
 	.mg-h {position:absolute;left:0;right:0;display:flex;align-items:flex-end;gap:0.6em;padding:0 0.2em 0.45em;font-weight:600;color:var(--mg-head);font-size:1.02em;}
 	.mg-h small {font-weight:400;color:var(--mg-muted);font-size:0.85em;}
 	.mg-h button {margin-left:auto;background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;font-size:0.85em;font-weight:500;padding:0.2em 0.4em;border-radius:0.3em;}
@@ -408,7 +430,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:600px) {
 		.mg-acts .mg-ico span {display:none;}
 		.mg-bar {padding:0.5em;}
-		.mg-scroll {height:calc(100vh - 210px);min-height:360px;padding:3px;}
+		.mg-scroll {max-height:calc(100vh - 210px);min-height:160px;padding:3px;}
 		.mg-sel {font-size:0.86em;}
 		.mg-seg button {padding:0.35em 0.55em;}
 	}
@@ -703,6 +725,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #mg code{background:rgba(82,82,82,0.16)}
 	body.dark-mode .mg-dropart span:nth-child(3){background:linear-gradient(160deg, #312456 0%, #7c3aed 55%, #1e1b4b 56%, #312e81 100%)}
 	body.dark-mode .mg-hb.mg-on{background:rgba(26,26,26,0.92)}
+	body.dark-mode .mg-pick{border:2px solid #333333;background:rgba(82,82,82,0.35)}
+	body.dark-mode .mg-picked .mg-pick{border-color:#333333}
+	body.dark-mode .mg-toast button{border:1px solid rgba(51,51,51,0.50)}
+	body.dark-mode .mg-toast button:hover{background:rgba(26,26,26,0.15)}
 	body.dark-mode .mgv{--mv-bg:#6078a9;--mv-panel2:#5f76aa}
 	body.dark-mode .mgv-top{background:linear-gradient(rgba(82,82,82,0.72), rgba(82,82,82,0.00))}
 	body.dark-mode .mgv-b[aria-pressed="true"]{color:#9489d2}
@@ -966,6 +992,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" role="menuitem" data-act="files">🖼️ Open photos or videos</button>
 						<button type="button" role="menuitem" data-act="add">➕ Add more files to this view</button>
 						<button type="button" role="menuitem" data-act="rescan" id="mg-rescan">🔄 Look for new files</button>
+						<button type="button" role="menuitem" data-act="dups">🔍 Find duplicates</button>
+						<button type="button" role="menuitem" data-act="unhideall">↺ Show every hidden file again</button>
 						<button type="button" role="menuitem" data-act="close">✕ Close this folder</button>
 						<button type="button" role="menuitem" data-act="clearcache">🧹 Forget saved thumbnails</button>
 					</div>
@@ -973,7 +1001,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="mg-row mg-row2">
 					<div class="mg-search"><input class="tu-input" type="search" id="mg-q" placeholder="Search names and folders…" autocomplete="off" spellcheck="false" aria-label="Search names and folders"></div>
 					<div class="tu-seg mg-seg" role="group" aria-label="Show" id="mg-kind">
-						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button>
+						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button><button type="button" data-kind="dups" aria-pressed="false" title="Pictures that are here more than once" hidden>Copies</button><button type="button" data-kind="hidden" aria-pressed="false" title="Files you hid: open one and press ↺ to show it again" hidden>Hidden</button>
 					</div>
 					<label class="mg-sel">Group <select class="tu-input" id="mg-group">
 						<option value="none">None</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="folder">Folder</option><option value="type">Photos / videos</option>
@@ -989,6 +1017,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<label class="mg-size" id="mg-sizelab"><span aria-hidden="true">▫</span><input type="range" id="mg-size" min="80" max="440" step="10" value="200" aria-label="Thumbnail size"><span aria-hidden="true">◻</span></label>
 					<label class="mg-chk mg-chk2"><input type="checkbox" id="mg-names"> Names</label>
+					<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selbtn" aria-pressed="false" title="Pick several files to hide at once (or Ctrl / Cmd-click a picture)">☑ Select</button>
+				</div>
+				<div class="mg-bar2" id="mg-selbar" hidden>
+					<span id="mg-selcount"></span>
+					<span class="mg-bar2-acts">
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selall">Select all showing</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selnone">Clear</button>
+						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-selhide" disabled>✕ Hide selected</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selcancel">Cancel</button>
+					</span>
+				</div>
+				<div class="mg-bar2" id="mg-dupbar" hidden>
+					<span id="mg-duptext"></span>
+					<span class="mg-bar2-acts">
+						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-duphide">✕ Hide the extra copies</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-dupdone">Done</button>
+					</span>
 				</div>
 				<div class="mg-prog" id="mg-prog" hidden><span class="mg-progbar"><span id="mg-progfill"></span></span><span id="mg-progtext"></span></div>
 			</div>
@@ -1100,7 +1145,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gallery/js/gallery.js?v=2" defer></script>
+	<script src="/gallery/js/gallery.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

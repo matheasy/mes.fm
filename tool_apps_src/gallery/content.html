@@ -35,6 +35,8 @@
 						<button type="button" role="menuitem" data-act="files">🖼️ Open photos or videos</button>
 						<button type="button" role="menuitem" data-act="add">➕ Add more files to this view</button>
 						<button type="button" role="menuitem" data-act="rescan" id="mg-rescan">🔄 Look for new files</button>
+						<button type="button" role="menuitem" data-act="dups">🔍 Find duplicates</button>
+						<button type="button" role="menuitem" data-act="unhideall">↺ Show every hidden file again</button>
 						<button type="button" role="menuitem" data-act="close">✕ Close this folder</button>
 						<button type="button" role="menuitem" data-act="clearcache">🧹 Forget saved thumbnails</button>
 					</div>
@@ -42,7 +44,7 @@
 				<div class="mg-row mg-row2">
 					<div class="mg-search"><input class="tu-input" type="search" id="mg-q" placeholder="Search names and folders…" autocomplete="off" spellcheck="false" aria-label="Search names and folders"></div>
 					<div class="tu-seg mg-seg" role="group" aria-label="Show" id="mg-kind">
-						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button>
+						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button><button type="button" data-kind="dups" aria-pressed="false" title="Pictures that are here more than once" hidden>Copies</button><button type="button" data-kind="hidden" aria-pressed="false" title="Files you hid: open one and press ↺ to show it again" hidden>Hidden</button>
 					</div>
 					<label class="mg-sel">Group <select class="tu-input" id="mg-group">
 						<option value="none">None</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="folder">Folder</option><option value="type">Photos / videos</option>
@@ -58,6 +60,23 @@
 					</div>
 					<label class="mg-size" id="mg-sizelab"><span aria-hidden="true">▫</span><input type="range" id="mg-size" min="80" max="440" step="10" value="200" aria-label="Thumbnail size"><span aria-hidden="true">◻</span></label>
 					<label class="mg-chk mg-chk2"><input type="checkbox" id="mg-names"> Names</label>
+					<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selbtn" aria-pressed="false" title="Pick several files to hide at once (or Ctrl / Cmd-click a picture)">☑ Select</button>
+				</div>
+				<div class="mg-bar2" id="mg-selbar" hidden>
+					<span id="mg-selcount"></span>
+					<span class="mg-bar2-acts">
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selall">Select all showing</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selnone">Clear</button>
+						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-selhide" disabled>✕ Hide selected</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-selcancel">Cancel</button>
+					</span>
+				</div>
+				<div class="mg-bar2" id="mg-dupbar" hidden>
+					<span id="mg-duptext"></span>
+					<span class="mg-bar2-acts">
+						<button type="button" class="tu-btn tu-btn--primary mg-sm" id="mg-duphide">✕ Hide the extra copies</button>
+						<button type="button" class="tu-btn tu-btn--ghost mg-sm" id="mg-dupdone">Done</button>
+					</span>
 				</div>
 				<div class="mg-prog" id="mg-prog" hidden><span class="mg-progbar"><span id="mg-progfill"></span></span><span id="mg-progtext"></span></div>
 			</div>

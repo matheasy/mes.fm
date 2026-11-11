@@ -262,6 +262,10 @@ var MESGallery = (function () {
 		return items.filter(function (it) {
 			if (kind === 'image' && it.kind !== 'image') return false;
 			if (kind === 'video' && it.kind !== 'video') return false;
+			var hid = !!(opt.hidden && opt.hidden[hideKey(it)]);
+			if (kind === 'hidden') { if (!hid) return false; }
+			else if (hid) return false;
+			if (kind === 'dups' && !it._dup) return false;
 			var rt = r[it.rkey] || {};
 			if (kind === 'fav' && !rt.f) return false;
 			if (opt.minRating && (rt.r || 0) < opt.minRating) return false;
@@ -285,7 +289,8 @@ var MESGallery = (function () {
 		var map = {}, out = [];
 		items.forEach(function (it) {
 			var k, label, d;
-			if (by === 'folder') { k = it.folder || ''; label = k || 'Top folder'; }
+			if (by === 'dup') { k = 'd' + (it._dup || 0); label = 'Same picture: ' + (it._dupN || 2) + ' copies'; }
+			else if (by === 'folder') { k = it.folder || ''; label = k || 'Top folder'; }
 			else if (by === 'type') { k = it.kind; label = it.kind === 'video' ? 'Videos' : 'Photos'; }
 			else if (by === 'ext') { k = it.ext || '?'; label = (it.ext || 'no ending').toUpperCase(); }
 			else {
@@ -462,6 +467,26 @@ var MESGallery = (function () {
 	}
 	function mp(w, h) { return w && h ? Math.round(w * h / 1e5) / 10 + ' MP' : ''; }
 	function thumbKey(it, px) { return [it.path || it.name, it.size, it.mtime, px || 480].join('|'); }
+	/* hidden files: keyed by where the file is + size + modified time, so two copies of one picture can be hidden one at a time */
+	function hideKey(it) { return [it.path || it.name, it.size || 0, it.mtime || 0].join('|'); }
+	/* same file added twice (dropped twice, opened again): same path, size and time */
+	function sameFile(a, b) { return hideKey(a) === hideKey(b); }
+	/* sizes that occur more than once = the only files that can be duplicates */
+	function sizeBuckets(items) {
+		var m = {}; items.forEach(function (it) { (m[it.size] = m[it.size] || []).push(it); });
+		return Object.keys(m).map(function (k) { return m[k]; }).filter(function (g) { return g.length > 1 && g[0].size > 0; });
+	}
+	/* items each carrying .hash -> sets of 2+ with the same hash; inside a set the one to keep comes first (oldest date, then shortest path) */
+	function dupSets(items) {
+		var m = {}, out = [];
+		items.forEach(function (it) { if (it.hash) (m[it.size + ':' + it.hash] = m[it.size + ':' + it.hash] || []).push(it); });
+		Object.keys(m).forEach(function (k) {
+			var g = m[k]; if (g.length < 2) return;
+			g.sort(function (a, b) { return ((a.mtime || 0) - (b.mtime || 0)) || ((a.path || '').length - (b.path || '').length) || natCmp(a.path || '', b.path || ''); });
+			out.push(g);
+		});
+		return out;
+	}
 	function rateKey(name, size) { return (name || '') + '|' + (size || 0); }
 	/* "Holiday/2024/IMG_1.jpg" -> folder "Holiday/2024" (the top folder you opened is left out) */
 	function splitPath(rel, dropTop) {
@@ -484,7 +509,7 @@ var MESGallery = (function () {
 		natCmp: natCmp, SORTS: SORTS, sortItems: sortItems, filterItems: filterItems, groupItems: groupItems, justify: justify, masonry: masonry, squares: squares, layout: layout,
 		visible: visible, fitScale: fitScale, clampPan: clampPan, zoomAbout: zoomAbout, SPEEDS: SPEEDS, speedStep: speedStep, fmtSpeed: fmtSpeed, abCheck: abCheck, setAB: setAB,
 		posterTime: posterTime, nextIndex: nextIndex, SLIDE: SLIDE, fmtBytes: fmtBytes, fmtDur: fmtDur, fmtTime: fmtTime, fmtDate: fmtDate, mp: mp, thumbKey: thumbKey,
-		rateKey: rateKey, splitPath: splitPath, summary: summary, plural: plural, MONTHS: MONTHS, hashStr: hashStr };
+		rateKey: rateKey, hideKey: hideKey, sameFile: sameFile, sizeBuckets: sizeBuckets, dupSets: dupSets, splitPath: splitPath, summary: summary, plural: plural, MONTHS: MONTHS, hashStr: hashStr };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery;
 
@@ -503,7 +528,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	var KEY = 'mes-gallery:v1';
 	var P = { view: 'justified', size: 200, group: 'month', sort: 'date', dir: -1, kind: 'all', sub: true, names: false, slide: 4, fit: 'fit', pct: 100, noUp: false, vol: 1, muted: false, strip: true, info: false, loopAll: false, vidFull: true, lastRate: 1.5, fill: false };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); for (var k in sv) if (k in P) P[k] = sv[k]; } catch (e) {}
-	function save() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} }
+	if (P.kind === 'hidden' || P.kind === 'dups') P.kind = 'all';
+	function save() { try { var o = Object.assign({}, P); if (o.kind === 'hidden' || o.kind === 'dups') o.kind = 'all'; localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
 
 	/* ---------------- IndexedDB: thumbs (blobs), meta (sizes / dates), kv (folder handle, ratings) ---------------- */
 	var dbp = null;
@@ -538,12 +564,22 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	var rtTimer = 0;
 	function saveRT() { clearTimeout(rtTimer); rtTimer = setTimeout(function () { iput('kv', 'ratings', RT); }, 300); }
 	function rating(it) { return RT[it.rkey] || {}; }
+	/* hidden files: {hideKey: time hidden}; the files themselves are never touched */
+	var HID = {}, hidTimer = 0;
+	iget('kv', 'hidden').then(function (v) { if (v && typeof v === 'object') { HID = v; if (ALL.length) refresh(true); } });
+	function saveHID() { clearTimeout(hidTimer); hidTimer = setTimeout(function () { iput('kv', 'hidden', HID); }, 200); }
+	function isHidden(it) { return !!HID[G.hideKey(it)]; }
+	function hiddenCount() { var n = 0; for (var i = 0; i < ALL.length; i++) if (HID[G.hideKey(ALL[i])]) n++; return n; }
 	function setRating(it, patch) { var r = Object.assign({}, RT[it.rkey] || {}, patch); if (!r.f && !r.r) delete RT[it.rkey]; else RT[it.rkey] = r; saveRT(); }
 
 	/* ---------------- toast ---------------- */
 	var toastEl = el('div', 'mg-toast'), toastT = 0;
 	toastEl.setAttribute('role', 'status'); document.body.appendChild(toastEl);
-	function toast(msg, ms) { toastEl.textContent = msg; toastEl.classList.add('mg-show'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('mg-show'); }, ms || 2600); }
+	function toast(msg, ms, action) {
+		toastEl.textContent = msg; toastEl.classList.toggle('mg-act', !!action);
+		if (action) { var b = el('button', '', esc(action.label)); b.type = 'button'; b.onclick = function () { toastEl.classList.remove('mg-show'); action.fn(); }; toastEl.appendChild(b); }
+		toastEl.classList.add('mg-show'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('mg-show'); }, ms || (action ? 6000 : 2600));
+	}
 
 	/* ---------------- opening ---------------- */
 	var ALL = [], VIEW = [], LAY = null, uid = 0, rootName = '', rootHandle = null, scanGen = 0;
@@ -570,7 +606,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	}
 	function begin(name) {
 		scanGen++; stopQueues(); closeViewer(true);
-		ALL = []; VIEW = []; rootName = name || 'Photos';
+		ALL = []; VIEW = []; rootName = name || 'Photos'; seenKeys = new Set(); SEL.clear(); setSelMode(false); DUPN = 0; if (P.kind === 'hidden' || P.kind === 'dups') P.kind = 'all';
 		thumbURL.forEach(function (u) { URL.revokeObjectURL(u); }); thumbURL.clear(); thumbOrder = [];
 		$('mg-start').hidden = true; $('mg-app').hidden = false; $('mg-name').textContent = rootName;
 		$('mg-canvas').innerHTML = ''; rendered.clear(); heads.clear();
@@ -584,7 +620,11 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		if (!ALL.length) { refresh(); return; }
 		refresh(); metaPass(gen);
 	}
-	function addItems(list, gen) { if (gen !== scanGen) return; for (var i = 0; i < list.length; i++) if (list[i]) ALL.push(list[i]); }
+	var seenKeys = new Set();
+	function addItems(list, gen) {
+		if (gen !== scanGen) return;
+		for (var i = 0; i < list.length; i++) { var it = list[i]; if (!it) continue; var k = G.hideKey(it); if (seenKeys.has(k)) continue; seenKeys.add(k); ALL.push(it); }
+	}
 
 	/* File System Access: walk the folder (16 at a time), collect File objects */
 	function scanHandle(dir, gen, prefix) {
@@ -708,6 +748,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		else if (a === 'add') { $('mg-fileinput').dataset.append = '1'; $('mg-fileinput').click(); }
 		else if (a === 'rescan') { if (rootHandle) openHandle(rootHandle); else toast('Open the folder again to look for new files.'); }
 		else if (a === 'close') { begin(''); $('mg-app').hidden = true; $('mg-start').hidden = false; P.fill = false; applyFill(); }
+		else if (a === 'dups') findDups();
+		else if (a === 'unhideall') { var hs = ALL.filter(isHidden); if (!hs.length) { toast('Nothing is hidden in this folder.'); return; } setHidden(hs, false); }
 		else if (a === 'clearcache') { Promise.all([iclear('thumbs'), iclear('meta')]).then(function () { toast('Saved thumbnails forgotten. Favourites and ratings are kept.'); }); }
 	});
 
@@ -768,23 +810,33 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	/* ---------------- filtering, sorting, layout ---------------- */
 	function aspectOf(it) { return it.ar || (it.kind === 'video' ? 16 / 9 : 4 / 3); }
 	function refresh(keep) {
-		var list = G.filterItems(ALL, { q: $('mg-q').value, kind: P.kind }, RT);
+		var nh = hiddenCount();
+		if (P.kind === 'hidden' && !nh) P.kind = 'all';
+		if (P.kind === 'dups' && !DUPN) P.kind = 'all';
+		var kb = $('mg-kind').querySelector('[data-kind=hidden]'); kb.hidden = !nh && P.kind !== 'hidden'; kb.textContent = 'Hidden ' + nh;
+		var db2 = $('mg-kind').querySelector('[data-kind=dups]'); db2.hidden = !DUPN; db2.textContent = 'Copies ' + DUPN;
+		syncBar(); syncSel();
+		var list = G.filterItems(ALL, { q: $('mg-q').value, kind: P.kind, hidden: HID }, RT);
 		VIEW = G.sortItems(list, P.sort, P.dir, RT, 7);
+		if (P.kind === 'dups') VIEW.sort(function (a, b) { return (a._dup - b._dup) || (a._dupI - b._dupI); });
 		VIEW.forEach(function (it, i) { it.vi = i; });
-		var s = G.summary(ALL), st = [];
+		var s = G.summary(ALL.filter(function (it) { return !isHidden(it); })), st = [];
 		if (s.images) st.push(G.plural(s.images, 'photo'));
 		if (s.videos) st.push(G.plural(s.videos, 'video'));
 		st.push(G.fmtBytes(s.bytes));
 		if (s.first && s.last) { var a = new Date(s.first).getFullYear(), b = new Date(s.last).getFullYear(); st.push(a === b ? '' + a : a + '–' + b); }
-		if (VIEW.length !== ALL.length) st.push(G.plural(VIEW.length, 'match') .replace('matchs', 'matches') + ' showing');
+		if (VIEW.length !== ALL.length - nh && P.kind !== 'hidden') st.push(G.plural(VIEW.length, 'match') .replace('matchs', 'matches') + ' showing');
+		if (nh) st.push(nh.toLocaleString() + ' hidden');
 		$('mg-stats').textContent = '· ' + st.join(' · ');
+		$('mg-dupbar').hidden = P.kind !== 'dups';
 		var em = $('mg-empty');
 		if (!ALL.length) { em.hidden = false; em.textContent = scanGen && $('mg-prog').hidden ? 'No photos or videos here. Try another folder, or tick "Include subfolders".' : ''; }
-		else if (!VIEW.length) { em.hidden = false; em.textContent = P.kind === 'fav' ? 'No favourites yet: tap ♥ on a picture to add it.' : 'Nothing matches your search.'; }
+		else if (!VIEW.length) { em.hidden = false; em.textContent = P.kind === 'fav' ? 'No favourites yet: tap ♥ on a picture to add it.' : P.kind === 'hidden' ? 'Nothing is hidden.' : ALL.every(isHidden) ? 'Everything here is hidden. Press "Hidden" above to see them again.' : 'Nothing matches your search.'; }
 		else em.hidden = true;
+		if (lastKind !== P.kind) { lastKind = P.kind; rendered.forEach(function (n) { n.remove(); }); rendered.clear(); }
 		relayout(!!keep);
 	}
-	var relayT = 0;
+	var relayT = 0, lastKind = P.kind;
 	function relayoutSoon() { if (relayT) return; relayT = setTimeout(function () { relayT = 0; if (P.sort === 'date' || P.sort === 'dims' || P.sort === 'duration' || /^(day|month|year)$/.test(P.group)) refresh(true); else relayout(true); }, 300); }
 	function scrollW() { var sc = $('mg-scroll'); return sc.clientWidth - 12; }
 	function relayout(keep) {
@@ -793,7 +845,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 			var vis = G.visible(LAY.tiles, sc.scrollTop, sc.scrollTop + 10);
 			if (vis.length) { anchor = LAY.tiles[vis[0]].it; off = LAY.tiles[vis[0]].y - sc.scrollTop; }
 		}
-		var groups = G.groupItems(VIEW, P.group);
+		var groups = G.groupItems(VIEW, P.kind === 'dups' ? 'dup' : P.group);
 		var gap = P.view === 'list' ? 0 : P.size < 130 ? 3 : 5;
 		LAY = G.layout(groups, { width: scrollW(), size: P.view === 'square' ? P.size * 0.85 : P.size, gap: gap, view: P.view, headH: 44, listH: 56 }, aspectOf);
 		LAY.groups = groups;
@@ -843,18 +895,22 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	}
 	function tileInner(it, isList) {
 		var r = rating(it), heart = '<button type="button" class="mg-hb' + (r.f ? ' mg-on' : '') + '" data-fav="1" aria-label="Favourite" aria-pressed="' + (!!r.f) + '" tabindex="-1">♥</button>';
+		var hid = isHidden(it), xb = '<button type="button" class="mg-xb" data-hide="1" tabindex="-1" title="' + (hid ? 'Show it again' : 'Hide from the gallery (Delete). The file is not deleted.') + '" aria-label="' + (hid ? 'Show again' : 'Hide') + '">' + (hid ? '↺' : '✕') + '</button>';
+		var keep = P.kind === 'dups' && it._dupI === 0 ? '<span class="mg-keep">Oldest copy</span>' : '';
+		var pick = '<span class="mg-pick" aria-hidden="true">✓</span>';
+		heart = xb + heart;
 		var th = thumbURL.get(it.id), img = th ? '<img alt="" src="' + th + '" class="mg-in" draggable="false">' : '<img alt="" draggable="false">';
 		var ph = it.bad ? '<span class="mg-ph"><b>' + (it.kind === 'video' ? '🎞' : '🖼') + '</b>' + esc((it.ext || '').toUpperCase()) + '<br>' + (it.bad === 'video-err' ? 'can\'t play here' : 'can\'t show here') + '</span>' : it.nothumb ? '<span class="mg-ph"><b>🎞</b>' + esc((it.ext || '').toUpperCase()) + '</span>' : '';
 		if (isList) {
 			return '<span class="mg-lt">' + img + ph.replace('<br>', ' ') + '</span><span class="mg-lname">' + esc(it.name) + '<small>' + esc(it.folder || rootName) + '</small></span>' +
 				'<span class="mg-lc mg-lx">' + (it.kind === 'video' ? (it.dur ? G.fmtDur(it.dur) : 'video') : (it.w ? it.w + '×' + it.h : '')) + '</span>' +
-				'<span class="mg-lc mg-ld">' + G.fmtDate(G.dateOf(it), true) + '</span><span class="mg-lc mg-ls">' + G.fmtBytes(it.size) + '</span>' + heart;
+				'<span class="mg-lc mg-ld">' + G.fmtDate(G.dateOf(it), true) + '</span><span class="mg-lc mg-ls">' + G.fmtBytes(it.size) + '</span>' + keep + heart + pick;
 		}
 		return img + ph + (it.kind === 'video' ? '<span class="mg-badge">' + (it.dur ? G.fmtDur(it.dur) : '') + '</span>' : '') + (r.r ? '<span class="mg-stars">' + '★'.repeat(r.r) + '</span>' : '') +
-			'<span class="mg-nm">' + esc(it.name) + '</span>' + heart;
+			'<span class="mg-nm">' + esc(it.name) + '</span>' + keep + heart + pick;
 	}
 	function makeTile(it, isList) {
-		var n = el('div', 'mg-t' + (isList ? ' mg-li' : '') + (it.kind === 'video' ? ' mg-hasbadge' : ''));
+		var n = el('div', 'mg-t' + (isList ? ' mg-li' : '') + (it.kind === 'video' ? ' mg-hasbadge' : '') + (SEL.has(it.id) ? ' mg-picked' : ''));
 		n.setAttribute('role', 'listitem'); n.tabIndex = 0; n.dataset.id = it.id; n.dataset.view = isList ? 'l' : 't';
 		n.setAttribute('aria-label', it.name + (it.kind === 'video' ? ', video' : ''));
 		n.innerHTML = tileInner(it, isList);
@@ -869,12 +925,16 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		if (pl) { var g = LAY.groups[+pl.dataset.play]; if (g && g.items.length) { openViewer(g.items[0].vi, null); startSlide(); } return; }
 		var t = e.target.closest('.mg-t'); if (!t) return;
 		var it = byId(+t.dataset.id); if (!it) return;
+		if (e.target.closest('[data-hide]')) { setHidden([it], !isHidden(it)); return; }
 		if (e.target.closest('[data-fav]')) { var on = !rating(it).f; setRating(it, { f: on ? 1 : 0 }); updateTile(t, it); if (P.kind === 'fav' || P.sort === 'rating') refresh(); return; }
+		if (selMode || e.ctrlKey || e.metaKey || e.shiftKey) { pickClick(it, e.shiftKey); return; }
 		openViewer(it.vi, t);
 	});
 	cvs.addEventListener('keydown', function (e) {
 		var t = e.target.closest('.mg-t'); if (!t) return;
-		if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); var it = byId(+t.dataset.id); if (it) openViewer(it.vi, t); }
+		var it0 = byId(+t.dataset.id);
+		if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!it0) return; if (selMode) pickClick(it0, e.shiftKey); else openViewer(it0.vi, t); }
+		else if ((e.key === 'Delete' || e.key === 'Backspace') && it0) { e.preventDefault(); var list = SEL.size ? selItems() : [it0]; setHidden(list, P.kind !== 'hidden'); }
 	});
 	var raf = 0;
 	$('mg-scroll').addEventListener('scroll', function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; render(false); }); }, { passive: true });
@@ -1041,11 +1101,108 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		if (V.open || e.defaultPrevented) return;
 		if ($('mg-app').hidden) return;
 		var tag = (e.target.tagName || '').toLowerCase(); if (tag === 'input' || tag === 'select' || tag === 'textarea') { if (e.key === 'Escape' && e.target.id === 'mg-q' && e.target.value) { e.target.value = ''; refresh(); } return; }
+		if (e.key === 'Escape' && selMode) { setSelMode(false); return; }
+		if ((e.key === 'Delete' || e.key === 'Backspace') && SEL.size) { e.preventDefault(); setHidden(selItems(), P.kind !== 'hidden'); return; }
+		if ((e.key === 'a' || e.key === 'A') && (e.ctrlKey || e.metaKey) && selMode) { e.preventDefault(); selectAll(); return; }
 		if (e.key === 'Escape' && P.fill) { P.fill = false; save(); applyFill(); setTimeout(function () { relayout(true); }, 30); }
 		else if ((e.key === 'w' || e.key === 'W') && !e.ctrlKey && !e.metaKey) { $('mg-fill').click(); }
 		else if ((e.key === 'p' || e.key === 'P') && !e.ctrlKey && !e.metaKey) $('mg-play').click();
 		else if (e.key === '/' ) { e.preventDefault(); $('mg-q').focus(); }
 	});
+
+	/* ================= hiding, selecting, duplicates ================= */
+	var SEL = new Set(), selMode = false, lastPick = null, DUPN = 0;
+	function selItems() { return ALL.filter(function (it) { return SEL.has(it.id); }); }
+	function setHidden(list, on, quiet) {
+		if (!list.length) return;
+		var t = Date.now(), changed = [];
+		list.forEach(function (it) { var k = G.hideKey(it); if (on && !HID[k]) { HID[k] = t; changed.push(it); } else if (!on && HID[k]) { delete HID[k]; changed.push(it); } });
+		if (!changed.length) return;
+		saveHID(); SEL.clear(); refresh(true);
+		if (quiet) return;
+		var n = changed.length, what = n === 1 ? '"' + changed[0].name + '"' : n.toLocaleString() + ' files';
+		toast(on ? 'Hidden ' + what + '. The file' + (n === 1 ? ' is' : 's are') + ' still on your computer.' : what + ' showing again.', 0, { label: 'Undo', fn: function () { setHidden(changed, !on, true); } });
+	}
+	function setSelMode(on) {
+		selMode = !!on; if (!on) SEL.clear();
+		var b = $('mg-selbtn'); if (b) { b.setAttribute('aria-pressed', String(selMode)); b.textContent = selMode ? '✓ Done selecting' : '☑ Select'; }
+		$('mg-canvas').classList.toggle('mg-selmode', selMode);
+		syncSel();
+		rendered.forEach(function (n, id) { n.classList.toggle('mg-picked', SEL.has(id)); });
+	}
+	function syncSel() {
+		var bar = $('mg-selbar'); if (!bar) return;
+		bar.hidden = !selMode;
+		var n = SEL.size;
+		$('mg-selcount').textContent = n ? n.toLocaleString() + ' selected' : 'Click pictures to select them (Shift-click picks a range)';
+		$('mg-selhide').disabled = !n; $('mg-selhide').textContent = P.kind === 'hidden' ? '↺ Show again' : '✕ Hide selected';
+	}
+	function pickClick(it, range) {
+		if (!selMode) setSelMode(true);
+		if (range && lastPick && VIEW.indexOf(lastPick) >= 0) {
+			var a = VIEW.indexOf(lastPick), b = VIEW.indexOf(it), lo = Math.min(a, b), hi = Math.max(a, b);
+			for (var i = lo; i <= hi; i++) SEL.add(VIEW[i].id);
+		} else { if (SEL.has(it.id)) SEL.delete(it.id); else SEL.add(it.id); lastPick = it; }
+		rendered.forEach(function (n, id) { n.classList.toggle('mg-picked', SEL.has(id)); });
+		syncSel();
+	}
+	function selectAll() { if (!selMode) setSelMode(true); VIEW.forEach(function (it) { SEL.add(it.id); }); rendered.forEach(function (n, id) { n.classList.toggle('mg-picked', SEL.has(id)); }); syncSel(); }
+	$('mg-selbtn').onclick = function () { setSelMode(!selMode); };
+	$('mg-selall').onclick = selectAll;
+	$('mg-selnone').onclick = function () { SEL.clear(); rendered.forEach(function (n) { n.classList.remove('mg-picked'); }); syncSel(); };
+	$('mg-selhide').onclick = function () { setHidden(selItems(), P.kind !== 'hidden'); syncSel(); };
+	$('mg-selcancel').onclick = function () { setSelMode(false); };
+	function viewerHide() {
+		var it = V.it; if (!it) return;
+		var on = !isHidden(it), i = V.i;
+		setHidden([it], on);
+		if (!VIEW.length) { closeViewer(); return; }
+		show(Math.min(i, VIEW.length - 1), 1);
+	}
+	/* duplicates: only files of the same size can match; those are compared by SHA-256 (whole file up to 48 MB, else its first and last 4 MB) */
+	var dupBusy = false;
+	function hashOf(it) {
+		if (it.hash) return Promise.resolve(it.hash);
+		var f = it.file, M = 4 * 1048576, p = f.size <= 48 * 1048576 ? f.arrayBuffer() : Promise.all([f.slice(0, M).arrayBuffer(), f.slice(f.size - M).arrayBuffer()]).then(function (a) { var u = new Uint8Array(2 * M); u.set(new Uint8Array(a[0]), 0); u.set(new Uint8Array(a[1]), M); return u.buffer; });
+		return p.then(function (buf) { return crypto.subtle.digest('SHA-256', buf); }).then(function (h) {
+			var b = new Uint8Array(h), s = ''; for (var i = 0; i < 12; i++) s += (b[i] < 16 ? '0' : '') + b[i].toString(16);
+			it.hash = s; return s;
+		}, function () { return null; });
+	}
+	function findDups() {
+		if (dupBusy) return;
+		if (!(window.crypto && crypto.subtle)) { toast('This browser cannot compare files here.'); return; }
+		var cands = [].concat.apply([], G.sizeBuckets(ALL.filter(function (it) { return !isHidden(it); })));
+		ALL.forEach(function (it) { delete it._dup; delete it._dupI; delete it._dupN; });
+		if (!cands.length) { DUPN = 0; toast('No duplicates: no two files are the same size.'); refresh(); return; }
+		dupBusy = true; var done = 0, i = 0, active = 0, gen = scanGen;
+		progress('Comparing ' + cands.length.toLocaleString() + ' files of the same size…', 0);
+		return new Promise(function (res) {
+			function pump() {
+				if (gen !== scanGen) { dupBusy = false; progress(null); return res(); }
+				while (active < 3 && i < cands.length) { active++; hashOf(cands[i++]).then(function () { active--; done++; progress('Comparing files: ' + done.toLocaleString() + ' of ' + cands.length.toLocaleString(), done / cands.length); pump(); }); }
+				if (!active && i >= cands.length) fin();
+			}
+			function fin() {
+				dupBusy = false; progress(null);
+				var sets = G.dupSets(cands), extra = 0, bytes = 0;
+				sets.forEach(function (g, si) { g.forEach(function (it, j) { it._dup = si + 1; it._dupI = j; it._dupN = g.length; if (j) { extra++; bytes += it.size; } }); });
+				DUPN = extra;
+				if (!sets.length) { toast('No duplicates found among ' + ALL.length.toLocaleString() + ' files.'); refresh(); return res(); }
+				$('mg-duptext').textContent = sets.length.toLocaleString() + (sets.length === 1 ? ' picture is' : ' pictures are') + ' here more than once: ' + G.plural(extra, 'extra copy').replace('copys', 'copies') + ', ' + G.fmtBytes(bytes) + '. The oldest copy of each is marked.';
+				P.kind = 'dups'; refresh(); $('mg-scroll').scrollTop = 0;
+				res();
+			}
+			pump();
+		});
+	}
+	$('mg-duphide').onclick = function () {
+		var extra = ALL.filter(function (it) { return it._dup && it._dupI > 0 && !isHidden(it); });
+		DUPN = 0; ALL.forEach(function (it) { delete it._dup; delete it._dupI; delete it._dupN; });
+		P.kind = 'all'; setHidden(extra, true);
+		if (!extra.length) refresh();
+	};
+	$('mg-dupdone').onclick = function () { P.kind = 'all'; refresh(); };
 
 	/* ================= the viewer ================= */
 	var V = { open: false, i: -1, it: null, media: null, natW: 0, natH: 0, s: 1, x: 0, y: 0, rot: 0, fitS: 1, url: null, ab: {}, slide: false, rotMap: {} };
@@ -1059,6 +1216,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 			'<button type="button" class="mgv-b mgv-x" data-a="close" title="Close (Esc)" aria-label="Close">✕</button>' +
 			'<div class="mgv-tt"><b id="mgv-name"></b><small id="mgv-sub"></small></div>' +
 			'<button type="button" class="mgv-b mgv-heart mgv-hidesm" data-a="fav" title="Favourite (H)" aria-label="Favourite" aria-pressed="false">♥</button>' +
+			'<button type="button" class="mgv-b" data-a="hide" id="mgv-hideb" title="Hide from the gallery (Delete). The file is not deleted." aria-label="Hide">⊘<span class="mgv-hidesm"> Hide</span></button>' +
 			'<button type="button" class="mgv-b mgv-hidesm" data-a="rotl" title="Rotate left (Shift+R)" aria-label="Rotate left">⟲</button>' +
 			'<button type="button" class="mgv-b" data-a="rotr" title="Rotate right (R)" aria-label="Rotate right">⟳</button>' +
 			'<button type="button" class="mgv-b mgv-zoom" data-a="sizemenu" title="Size: fit, fill, 100%, custom" aria-haspopup="true" id="mgv-zoom">Fit</button>' +
@@ -1329,6 +1487,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		else if (a === 'prev') go(-1);
 		else if (a === 'next') go(1);
 		else if (a === 'fav') { var on = !rating(V.it).f; setRating(V.it, { f: on ? 1 : 0 }); syncFav(); fillInfo(); refreshTileOf(V.it); osd(on ? '♥ Favourite' : 'Not a favourite'); }
+		else if (a === 'hide') viewerHide();
 		else if (a === 'rotr' || a === 'rotl') { V.rot = ((V.rot + (a === 'rotr' ? 90 : -90)) % 360 + 360) % 360; V.rotMap[V.it.id] = V.rot; fitNow(true); }
 		else if (a === 'sizemenu') { var p = vq('mgv-sizepop'); syncSizePop(); p.hidden = !p.hidden; vq('mgv-speedpop').hidden = true; }
 		else if (a === 'slide') { if (V.slide) stopSlide(); else startSlide(); }
@@ -1495,6 +1654,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 			case 'i': case 'I': act('info'); break;
 			case 't': case 'T': act('strip'); break;
 			case 'h': case 'H': act('fav'); break;
+			case 'Delete': case 'Backspace': e.preventDefault(); act('hide'); break;
 			case '?': act('help'); break;
 			case 'p': case 'P': act('slide'); break;
 			case ' ': if (isV) act('play'); else act('slide'); break;
