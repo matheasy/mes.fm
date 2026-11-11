@@ -1,0 +1,60 @@
+# XcodeGen spec for the MES Timer iOS project (run `xcodegen generate` here after editing).
+# Capacitor (SPM mode) only rewrites CapApp-SPM/Package.swift on `npx cap sync`, never this project, so the two coexist.
+name: App
+options:
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: BS5YQPDA5X
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "2"
+    SWIFT_VERSION: "5.0"
+packages:
+  CapApp-SPM:
+    path: CapApp-SPM
+targets:
+  App:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes: ["Info.plist", "public", "public/**"]
+      - path: App/public
+        type: folder
+        buildPhase: resources
+      - Shared
+    dependencies:
+      - package: CapApp-SPM
+      - target: TimerWidget
+        embed: true
+        codeSign: true
+    configFiles:
+      Debug: ../debug.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.timer
+        INFOPLIST_FILE: App/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        OTHER_SWIFT_FLAGS: "$(inherited)"
+  TimerWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "16.2"
+    sources:
+      - TimerWidget
+      - Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.timer.widget
+        INFOPLIST_FILE: TimerWidget/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        SKIP_INSTALL: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
