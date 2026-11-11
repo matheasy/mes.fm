@@ -23,7 +23,9 @@ const MIN_OPEN = 60 * 1000;
 const MIN_MS = 1200;                      // ms on the page before a vote counts
 const ID_RE = /^[a-z0-9]{8}$/;
 const HEX_RE = /^[a-f0-9]{32}$/;
-const ORIGINS = /^https:\/\/(www\.)?mes\.fm$/;
+const ORIGINS = /^(https:\/\/(www\.)?mes\.fm|capacitor:\/\/localhost|https:\/\/localhost)$/;
+// the MES Polls iPhone / Android app (Capacitor) calls from capacitor://localhost (iOS) or https://localhost (Android): CORS for those only
+const APP_ORIGINS = /^(capacitor:\/\/localhost|https:\/\/localhost)$/;
 const ID_ABC = 'abcdefghjkmnpqrstuvwxyz23456789';
 const SH = ['always', 'voted', 'closed'];
 
@@ -123,6 +125,15 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Robots-Tag', 'noindex');
+  const origin = String(req.headers.origin || '');
+  if (APP_ORIGINS.test(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Max-Age', '86400');
+  }
+  if (req.method === 'OPTIONS') { res.status(APP_ORIGINS.test(origin) ? 204 : 405).end(); return; }
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) { res.status(503).json({ error: 'not set up' }); return; }
   try {
     const now = Date.now();
