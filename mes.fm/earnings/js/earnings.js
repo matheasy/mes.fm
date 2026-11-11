@@ -41,6 +41,20 @@
   try { MODE = localStorage.getItem('mes-ads:mode') || 'tot'; } catch (e) {}
   if (!/^(tot|pk|both)$/.test(MODE)) MODE = 'tot';
   var shows = function (m) { return !m || MODE === 'both' || MODE === m; };
+  // Totals tiles: fold to one summary line, and "More numbers" (clicks, cost per click, impressions; hidden by default on phones)
+  var TFOLD = false, TMORE = null;
+  try { TFOLD = localStorage.getItem('mes-ads:tfold') === '1'; var tm = localStorage.getItem('mes-ads:tmore'); if (tm === '0' || tm === '1') TMORE = tm === '1'; } catch (e) {}
+  function moreOn() { return TMORE === null ? !window.matchMedia('(max-width: 600px)').matches : TMORE; }
+  function paintTiles() {
+    var box = $('ad-tiles'), fb = $('ad-tfold'), mb = $('ad-tmore'), n = box.querySelectorAll('.ad-x').length;
+    box.hidden = TFOLD; $('ad-tsum').hidden = !TFOLD;
+    box.classList.toggle('ad-few', !moreOn());
+    fb.textContent = (TFOLD ? '▸' : '▾') + ' Totals'; fb.setAttribute('aria-expanded', TFOLD ? 'false' : 'true');
+    mb.hidden = TFOLD || !n; mb.setAttribute('aria-pressed', moreOn() ? 'true' : 'false');
+    mb.textContent = moreOn() ? 'Fewer numbers' : 'More numbers (' + n + ')';
+  }
+  $('ad-tfold').onclick = function () { TFOLD = !TFOLD; try { localStorage.setItem('mes-ads:tfold', TFOLD ? '1' : '0'); } catch (e) {} paintTiles(); };
+  $('ad-tmore').onclick = function () { TMORE = !moreOn(); try { localStorage.setItem('mes-ads:tmore', TMORE ? '1' : '0'); } catch (e) {} paintTiles(); };
   // Colour code: revenue blue (.rv), costs red (.cs), profit green / red (.pos / .neg); counts stay neutral.
   var R = function (h) { return h === '–' ? h : '<span class="rv">' + h + '</span>'; };
   var PM = function (h) { return h === '–' ? h : '<span class="pm">' + h + '</span>'; }; // MES Premium (HBD) income: gold
@@ -258,11 +272,15 @@
       tile((net < 0 ? '−' : '') + money(Math.abs(net)), 'earnings + Premium − spend', net >= 0 ? 'pos' : 'neg'));
     if (shows('pk')) T.push(tile(R(perK(t.rev, t.pv)), 'AdSense earned per 1,000 views'), tile(C(perK(t.spend, t.pv)), 'ad spend per 1,000 views'),
       tile((net < 0 ? '−' : '') + perK(Math.abs(net), t.pv), 'net per 1,000 views (with Premium)', net >= 0 ? 'pos' : 'neg'));
-    T.push(tile(int(t.pv), 'page views (AdSense)'), tile(int(t.clicks), 'ad clicks bought'), tile(C(cpc(t.spend, t.clicks)), 'average cost per click'),
-      tile(t.spend ? (inc / t.spend).toFixed(2) + '×' : '–', 'earnings + Premium ÷ spend', t.spend ? (inc >= t.spend ? 'pos' : 'neg') : ''));
-    T.push(tile(int(t.imp), 'ad impressions bought'));
-    if (MODE === 'both') T.push(tile(t.pv ? (t.clicks / t.pv * 1000).toFixed(1) : '–', 'ad clicks per 1,000 views'));
+    T.push(tile(int(t.pv), 'page views (AdSense)'),
+      tile(t.spend ? (inc / t.spend).toFixed(2) + '×' : '–', 'earnings + Premium ÷ spend', t.spend ? (inc >= t.spend ? 'pos' : 'neg') : ''),
+      tile(int(t.clicks), 'ad clicks bought', 'ad-x'), tile(C(cpc(t.spend, t.clicks)), 'average cost per click', 'ad-x'));
+    T.push(tile(int(t.imp), 'ad impressions bought', 'ad-x'));
+    if (MODE === 'both') T.push(tile(t.pv ? (t.clicks / t.pv * 1000).toFixed(1) : '–', 'ad clicks per 1,000 views', 'ad-x'));
     $('ad-tiles').innerHTML = T.join('');
+    $('ad-tsum').innerHTML = 'Earned ' + R(money(inc)) + ' · Spent ' + C(money(t.spend)) + ' · Net <b class="' + (net >= 0 ? 'pos' : 'neg') + '">' +
+      (net < 0 ? '−' : '+') + money(Math.abs(net)) + '</b> · ' + int(t.pv) + ' views';
+    paintTiles();
     drawChart();
     if (VS) drawVs();
 

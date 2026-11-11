@@ -410,9 +410,20 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ad .ad-tiles .tu-stat small.ad-up {color:var(--ad-good);font-weight:700;font-size:0.75em;}
 	#ad .ad-tiles .tu-stat small.ad-dn {color:var(--ad-bad);font-weight:700;font-size:0.75em;}
 	.ad-t th small {display:block;text-transform:none;letter-spacing:0;font-weight:400;margin:0;}
+	/* Totals bar: fold to one line / More numbers */
+	.ad-tbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.8em;margin:0.6em 0 0.5em;}
+	#ad .ad-tmore {margin-left:auto;}
+	.ad-tsum {font-size:0.95em;line-height:1.4;}
+	#ad .ad-tsum .pos {color:var(--ad-good);} #ad .ad-tsum .neg {color:var(--ad-bad);}
+	#ad .ad-tiles.ad-few .ad-x {display:none;}
+	#ad .ad-tiles[hidden] {display:none;}
+	#ad #ad-tiles {margin-top:0;}
 	@media (max-width: 600px) {
-		#ad #ad-vstiles {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.5em;}
-		#ad #ad-vstiles .tu-stat__value {font-size:1.25em;}
+		#ad .ad-tiles {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.45em;}
+		#ad .ad-tiles .tu-stat {padding:0.5em 0.65em;}
+		#ad .ad-tiles .tu-stat__value {font-size:1.2em;margin:0.05em 0;}
+		#ad .ad-tiles .tu-stat__label {font-size:0.64em;letter-spacing:0.02em;line-height:1.25;}
+		#ad .ad-tbar {font-size:0.92em;}
 	}
 	/* in-cell bars (app.js column option b): a thin bar under the number, full cell width, anchored right like the numbers,
 	   so the tables can be scanned by eye without getting wider on phones; MES Premium income = gold */
@@ -645,6 +656,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<p class="tu-note ad-meta" id="ad-meta" role="status">Loading…</p>
 		<noscript><p class="tu-note">This page needs JavaScript.</p></noscript>
 		<div class="tu-card ad-setup" id="ad-setup" hidden></div>
+		<div class="ad-tbar" id="ad-tbar"><button type="button" class="tu-chip ad-tfold" id="ad-tfold" aria-expanded="true" aria-controls="ad-tiles">▾ Totals</button><span class="ad-tsum" id="ad-tsum" hidden></span><button type="button" class="tu-chip ad-tmore" id="ad-tmore" aria-pressed="false">More numbers</button></div>
 		<div class="tu-stats ad-tiles" id="ad-tiles"></div>
 
 		<section class="tu-card ad-sec">
@@ -775,7 +787,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=14" defer></script>
+	<script src="/earnings/js/earnings.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
