@@ -12,8 +12,16 @@
         }
       ],
       "missing": [
-        { "type": "cookie", "key": "karo_layout", "value": "desktop" },
-        { "type": "cookie", "key": "karo_wide", "value": "1" }
+        {
+          "type": "cookie",
+          "key": "karo_layout",
+          "value": "desktop"
+        },
+        {
+          "type": "cookie",
+          "key": "karo_wide",
+          "value": "1"
+        }
       ],
       "destination": "/m",
       "permanent": false
@@ -28,8 +36,16 @@
         }
       ],
       "missing": [
-        { "type": "cookie", "key": "karo_layout", "value": "desktop" },
-        { "type": "cookie", "key": "karo_wide", "value": "1" }
+        {
+          "type": "cookie",
+          "key": "karo_layout",
+          "value": "desktop"
+        },
+        {
+          "type": "cookie",
+          "key": "karo_wide",
+          "value": "1"
+        }
       ],
       "destination": "/m/:page",
       "permanent": false
@@ -38,10 +54,25 @@
   "headers": [
     {
       "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "karo.mes.fm"
+        }
+      ],
       "headers": [
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/((?!media/|fonts/|video/|assets/).*)",
+      "headers": [
+        {
+          "key": "Vary",
+          "value": "User-Agent"
         }
       ]
     },

@@ -1,3 +1,24 @@
+/* FREE-FONTS: free look-alikes for Wix-only fonts (swap_fonts.py) */
+@font-face{font-family:'avenir-lt-w01_35-light1475496';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/nunitosans-300.woff2') format('woff2')}
+@font-face{font-family:'avenir-lt-w05_35-light';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/nunitosans-300.woff2') format('woff2')}
+@font-face{font-family:'avenir-lt-w01_85-heavy1475544';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/nunitosans-800.woff2') format('woff2')}
+@font-face{font-family:'avenir-lt-w05_85-heavy';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/nunitosans-800.woff2') format('woff2')}
+@font-face{font-family:'din-next-w01-light';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/barlow-300.woff2') format('woff2')}
+@font-face{font-family:'din-next-w02-light';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/barlow-300.woff2') format('woff2')}
+@font-face{font-family:'din-next-w10-light';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/free/barlow-300.woff2') format('woff2')}
+@font-face{font-family:'arial-w01-black';font-style:normal;font-weight:400;font-display:swap;src:local('Arial Black'),local('ArialBlack'),url('/fonts/free/archivoblack-400.woff2') format('woff2')}
+@font-face{font-family:'arial-w02-black';font-style:normal;font-weight:400;font-display:swap;src:local('Arial Black'),local('ArialBlack'),url('/fonts/free/archivoblack-400.woff2') format('woff2')}
+@font-face{font-family:'arial-w10-black';font-style:normal;font-weight:400;font-display:swap;src:local('Arial Black'),local('ArialBlack'),url('/fonts/free/archivoblack-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-w01-light';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue Light'),local('HelveticaNeue-Light'),local('Helvetica Light'),url('/fonts/free/arimo-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-w01-roman';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue'),local('Helvetica'),local('Arial'),url('/fonts/free/arimo-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-w01-bold';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue Bold'),local('HelveticaNeue-Bold'),local('Helvetica Bold'),local('Arial Bold'),url('/fonts/free/arimo-700.woff2') format('woff2')}
+@font-face{font-family:'helvetica-w02-light';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue Light'),local('HelveticaNeue-Light'),local('Helvetica Light'),url('/fonts/free/arimo-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-w02-roman';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue'),local('Helvetica'),local('Arial'),url('/fonts/free/arimo-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-w02-bold';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue Bold'),local('HelveticaNeue-Bold'),local('Helvetica Bold'),local('Arial Bold'),url('/fonts/free/arimo-700.woff2') format('woff2')}
+@font-face{font-family:'helvetica-lt-w10-light';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue Light'),local('HelveticaNeue-Light'),local('Helvetica Light'),url('/fonts/free/arimo-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-lt-w10-roman';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue'),local('Helvetica'),local('Arial'),url('/fonts/free/arimo-400.woff2') format('woff2')}
+@font-face{font-family:'helvetica-lt-w10-bold';font-style:normal;font-weight:400;font-display:swap;src:local('Helvetica Neue Bold'),local('HelveticaNeue-Bold'),local('Helvetica Bold'),local('Arial Bold'),url('/fonts/free/arimo-700.woff2') format('woff2')}
+/* /FREE-FONTS */
 /* Static mirror helpers: replaces what Wix's runtime did with JavaScript. */
 
 /* Slideshow (testimonials): every slide is in the page, one shown at a time */
