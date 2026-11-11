@@ -266,6 +266,9 @@ def main() -> None:
     js = js.replace('href=\\"/timer\\"', 'href=\\"%s/timer\\" target=\\"_blank\\"' % EXT)
     js = js.replace("location.origin", '"%s"' % EXT)
     js = js.replace("in this browser", "on this device").replace("this tab", "the app")
+    # the alarm card's browser-only warning: inside the app alarms ring even when it is closed (native.js)
+    js = js.replace('<p class="tu-note"><b>Keep this page open.</b> The alarm rings from your browser, so the tab has to stay open (a background tab is fine) and your computer awake. On a phone, a countdown timer with the screen kept awake is more reliable.</p>',
+                    '<p class="tu-note">Alarms ring even when MES Timer is closed or the phone is locked, as long as alerts are on in Settings below.</p>')
     (WWW / "js" / "timer.js").write_text(js, encoding="utf-8")
     for n in LIBS:
         shutil.copy(SITE / "main_js" / n, WWW / "js" / n)
