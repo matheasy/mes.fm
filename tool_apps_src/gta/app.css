@@ -334,6 +334,10 @@
 	.gm-land {fill:var(--gm-land);}
 	.gm-reg {opacity:0.55;}
 	.gm-hit {opacity:0;}
+	#gt .gm-prenote {margin:0 0 0.8em;padding:0.65em 0.9em;border-radius:10px;border:1px solid #f0b429;background:#fff6dc;color:#4a3500;font-size:0.95em;line-height:1.45;}
+	#gt .gm-prenote b {color:#4a3500;}
+	html body.dark-mode #gt .gm-prenote {background:#3a2e0c;border-color:#8a6a1a;color:#ffe9a8;}
+	html body.dark-mode #gt .gm-prenote b {color:#ffe9a8;}
 	.gm-pic {image-rendering:auto;}
 	.gm-coast {fill:none;stroke:var(--gm-coast);stroke-width:3;vector-effect:non-scaling-stroke;}
 	.gm-water {fill:var(--gm-water);}

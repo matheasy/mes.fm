@@ -641,6 +641,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gm-land {fill:var(--gm-land);}
 	.gm-reg {opacity:0.55;}
 	.gm-hit {opacity:0;}
+	#gt .gm-prenote {margin:0 0 0.8em;padding:0.65em 0.9em;border-radius:10px;border:1px solid #f0b429;background:#fff6dc;color:#4a3500;font-size:0.95em;line-height:1.45;}
+	#gt .gm-prenote b {color:#4a3500;}
+	html body.dark-mode #gt .gm-prenote {background:#3a2e0c;border-color:#8a6a1a;color:#ffe9a8;}
+	html body.dark-mode #gt .gm-prenote b {color:#ffe9a8;}
 	.gm-pic {image-rendering:auto;}
 	.gm-coast {fill:none;stroke:var(--gm-coast);stroke-width:3;vector-effect:non-scaling-stroke;}
 	.gm-water {fill:var(--gm-water);}
@@ -986,6 +990,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #gt .gh-tile b{color:#dbd7e0}
 	body.dark-mode #gt .gt-fam a{color:#ee6da3}
 	body.dark-mode .gt{--gm-sea:#328bd7;--gm-sea2:#3188d8;--gm-water:#4493c5;--gm-name:#7057b2;--gm-card:#654fba;--gm-card2:#6650b9;--gm-line:#705dac}
+	body.dark-mode #gt .gm-prenote{border:1px solid #bf890d;background:#302812;color:#ffd15c}
+	body.dark-mode #gt .gm-prenote b{color:#ffd15c}
 	body.dark-mode .gm-block{fill:#a498a1}
 	body.dark-mode .gm-pinb{stroke:#333333}
 	body.dark-mode .gm-pinv{stroke:#333333}
@@ -1334,7 +1340,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=15" defer></script>
+	<script src="/gta/js/gta.js?v=16" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

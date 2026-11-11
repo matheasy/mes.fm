@@ -641,6 +641,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gm-land {fill:var(--gm-land);}
 	.gm-reg {opacity:0.55;}
 	.gm-hit {opacity:0;}
+	#gt .gm-prenote {margin:0 0 0.8em;padding:0.65em 0.9em;border-radius:10px;border:1px solid #f0b429;background:#fff6dc;color:#4a3500;font-size:0.95em;line-height:1.45;}
+	#gt .gm-prenote b {color:#4a3500;}
+	html body.dark-mode #gt .gm-prenote {background:#3a2e0c;border-color:#8a6a1a;color:#ffe9a8;}
+	html body.dark-mode #gt .gm-prenote b {color:#ffe9a8;}
 	.gm-pic {image-rendering:auto;}
 	.gm-coast {fill:none;stroke:var(--gm-coast);stroke-width:3;vector-effect:non-scaling-stroke;}
 	.gm-water {fill:var(--gm-water);}
@@ -986,6 +990,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #gt .gh-tile b{color:#dbd7e0}
 	body.dark-mode #gt .gt-fam a{color:#ee6da3}
 	body.dark-mode .gt{--gm-sea:#328bd7;--gm-sea2:#3188d8;--gm-water:#4493c5;--gm-name:#7057b2;--gm-card:#654fba;--gm-card2:#6650b9;--gm-line:#705dac}
+	body.dark-mode #gt .gm-prenote{border:1px solid #bf890d;background:#302812;color:#ffd15c}
+	body.dark-mode #gt .gm-prenote b{color:#ffd15c}
 	body.dark-mode .gm-block{fill:#a498a1}
 	body.dark-mode .gm-pinb{stroke:#333333}
 	body.dark-mode .gm-pinv{stroke:#333333}
@@ -1224,6 +1230,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gt" id="gt" data-page="map">
 		<nav class="gt-fam" aria-label="GTA 6 tools"><a href="/gta">GTA 6 Hub</a><a href="/gta-stunt-jump-simulator">Stunt Jump Simulator</a><a href="/gta-6-countdown">Countdown</a><a href="/gta-6-download-time">Download Time</a><a href="/gta-6-map" aria-current="page">Map</a></nav>
+		<p class="gm-prenote" role="note"><b>🗺️ Preview map.</b> This is a painted fan map of Leonida made before release, so roads, towns and coastlines are not the real ones yet. On launch day (November 19, 2026) it will be fully redrawn from the game with real streets, highways and places you can zoom into. Your pins move over with it.</p>
 		<div class="gm-mode" role="tablist" aria-label="Map mode">
 			<button type="button" role="tab" class="gm-modebtn" data-mode="explore" aria-selected="true"><b>Explore pins</b><small>See what people found, vote it true or fake</small></button>
 			<button type="button" role="tab" class="gm-modebtn" data-mode="add" aria-selected="false"><b>＋ Add a secret</b><small>Click the map where it is, then tell us about it</small></button>
@@ -1240,7 +1247,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</span>
 			</div>
 			<div class="gm-stage" id="gm-stage">
-				<svg class="gm-svg" id="gm-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Rough fan map of Leonida with pins">
+				<svg class="gm-svg" id="gm-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Painted fan map of Leonida with pins">
 					<rect class="gm-sea" x="-3000" y="-3000" width="7000" height="7000"/>
 					<g id="gm-vp">
 						<g id="gm-base"></g>
@@ -1300,7 +1307,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 		<div class="tu-card gm-note">
 			<h2 class="gt-h">About this map</h2>
-			<p>The picture is a <b>rough fan sketch</b> of Leonida made from the region names Rockstar has published. It is not the game's map and the places are approximate. Once GTA 6 is out (November 19, 2026) it will be redrawn from the real game, and every pin keeps its region, so nothing gets lost.</p>
+			<p>The picture is a <b>painted fan map</b> of Leonida, our own art made from the region names Rockstar has published. It is not the game's map: the roads, towns and coastlines are made up and the places are approximate. Once GTA 6 is out (November 19, 2026) the map will be fully redrawn from the real game, with streets, highways and deep zoom, and every pin moves over and keeps its region, so nothing gets lost.</p>
 			<p><b>Your own map, free:</b> tick <b>Found</b> on any pin to track your progress (Hide found and Next not found help you sweep a region), add a private note to any pin, or drop <b>private markers</b> only you can see. No account and no limit; it is all kept in this browser, with a backup file to move it.</p>
 			<p><b>Known places</b> (the pins with a yellow ◆) are a starter guide written by MES from the trailers and Rockstar’s region descriptions; they are approximate until the real map is drawn.</p>
 			<p><b>Verified</b> = at least 5 more up votes than down votes and 3 out of 4 votes up. <b>Disputed</b> = people disagree. You get one vote per pin and can change it any time. You can delete your own pins from this browser.</p>
@@ -1317,7 +1324,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>Choose <b>Add a secret</b> (or click any empty spot on the map), click where the thing is, pick what kind of thing it is, give it a short title and say how to find it. You can add a YouTube clip that shows it. Your pin appears for everyone right away.</p>
 			<h3>Questions</h3>
 			<dl>
-				<dt>Is this the real GTA 6 map?</dt><dd>Not yet. Until the game comes out on November 19, 2026, the picture is a rough fan sketch of Leonida using the region names Rockstar has published (Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia and Mount Kalaga). After launch it will be redrawn from the game, and pins keep their region.</dd>
+				<dt>Is this the real GTA 6 map?</dt><dd>Not yet. Until the game comes out on November 19, 2026, the picture is a painted fan map of Leonida (made-up roads and towns) using the region names Rockstar has published (Vice City, Leonida Keys, Grassrivers, Port Gellhorn, Ambrosia and Mount Kalaga). On launch day it will be fully redrawn from the game with real streets, highways and deep zoom, and pins move over with it.</dd>
 				<dt>When is a pin "Verified"?</dt><dd>When it has at least 5 more up votes than down votes and at least three out of four votes are up. A pin that falls to −5 is hidden.</dd>
 				<dt>Do I need an account?</dt><dd>No. Your browser remembers your votes and the pins you added, so you can change a vote or delete your own pin later from the same browser.</dd>
 				<dt>Can I post links?</dt><dd>Only a YouTube clip in its own box. Other links are blocked to keep spam off the map. Use Report on anything rude or nonsense: pins reported from several networks are hidden.</dd>
@@ -1384,7 +1391,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:4
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=15" defer></script>
+	<script src="/gta/js/gta.js?v=16" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
