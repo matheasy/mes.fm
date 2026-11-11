@@ -950,7 +950,7 @@
     // members
     var E = model.members, br = sim ? sim.e : null;
     var order = E.map(function (e, i) { return i; }).sort(function (a, b) { return (B.MATS[E[a].m].road ? 1 : 0) - (B.MATS[E[b].m].road ? 1 : 0); });
-    order.forEach(function (i) {
+    var drawMember = function (i) {
       var e = E[i], M = B.MATS[e.m], pa = nodePos(e.a), pb = nodePos(e.b), A = w2s(pa[0], pa[1]), Bp = w2s(pb[0], pb[1]);
       var si = B.sizeInfo(e.m, e.s), wpx = M.cable ? Math.max(1.5, si.b * cam.s * 3) : Math.max(2.5, Math.min(22, si.b * cam.s * 1.2));
       if (br && br[i].broken) {
@@ -978,7 +978,11 @@
       }
       if (!sim && ana && ana.members[i] && ana.members[i].tooLong) { c.strokeStyle = 'rgba(220,30,30,0.9)'; c.lineWidth = 2; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(A[0], A[1]); c.lineTo(Bp[0], Bp[1]); c.stroke(); c.setLineDash([]); }
       if (i === hover.m || i === sel || i === hlRow) { c.strokeStyle = i === sel ? '#1d6fd1' : 'rgba(29,111,209,0.6)'; c.lineWidth = wpx + 6; c.globalAlpha = 0.45; c.beginPath(); c.moveTo(A[0], A[1]); c.lineTo(Bp[0], Bp[1]); c.stroke(); c.globalAlpha = 1; }
-    });
+    };
+    var isRoad = function (i) { return !!B.MATS[E[i].m].road; };
+    order.filter(isRoad).forEach(drawMember);
+    if (sim) sim.veh.forEach(function (v) { drawVeh(v); });
+    order.filter(function (i) { return !isRoad(i); }).forEach(drawMember);
     // joints
     model.nodes.forEach(function (n, i) {
       var p = nodePos(i), s = w2s(p[0], p[1]), anc = sim ? sim.fixed[i] : B.ground(model, n.x, n.y);
@@ -992,8 +996,6 @@
       c.beginPath(); c.arc(s[0], s[1], i === hover.n ? r + 2 : r, 0, 7); c.fill();
       if (ana && ana.err === 'mech' && ana.mechNode === i && !sim) { c.strokeStyle = '#e33'; c.lineWidth = 2; c.beginPath(); c.arc(s[0], s[1], r + 7 + 3 * Math.sin(performance.now() / 150), 0, 7); c.stroke(); }
     });
-    // vehicles
-    if (sim) sim.veh.forEach(function (v) { drawVeh(v); });
     // effects
     var nowT = sim ? sim.t : 0;
     fx = fx.filter(function (f) { return nowT - f.t < 1.4; });
@@ -1024,7 +1026,7 @@
     c.fillStyle = 'rgba(15,20,30,0.82)'; c.fillRect(x, y - 15, w, 20); c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(txt, x + 6, y);
   }
   // AI-drawn side-view sprites (img/veh-<type>.png); wheel centres + ground line measured per picture so the wheels sit on the axles
-  var SPR = /*SPRITES*/{}/*END*/, sprImg = {};
+  var SPR = /*SPRITES*/{"car":{"w":600,"h":186,"wheels":[0.205,0.8117],"ground":1.0},"suv":{"w":600,"h":223,"wheels":[0.1958,0.81],"ground":1.0},"bus":{"w":600,"h":192,"wheels":[0.2442,0.7683],"ground":1.0},"fire":{"w":600,"h":221,"wheels":[0.2058,0.8058],"ground":1.0},"truck":{"w":900,"h":231,"wheels":[0.0983,0.1733,0.5478,0.6217,0.9039],"ground":1.0}}/*END*/, sprImg = {};
   Object.keys(SPR).forEach(function (k) { var im = new Image(); im.onload = function () { sprImg[k] = im; dirty(); }; im.src = '/bridge-builder/img/veh-' + k + '.png?v=1'; });
   function drawSprite(v) {
     var sp = SPR[v.type], im = sprImg[v.type]; if (!sp || !im) return false;
