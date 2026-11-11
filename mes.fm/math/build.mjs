@@ -205,7 +205,7 @@ const SECTIONS = [
     items: [
       { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-", title: "Playlist", standalone: true },
       // extraLinks: appended after the platform links (X is not in PLATFORM_ORDER; the simulator link is one of the post's own links).
-      { href: "https://mes.fm/math-qa-74-luders-bands", title: "74: What are Lüders bands?", extraLinks: [{ label: "X", href: "https://x.com/MathEasySolns" }, { label: "Twitch", href: "https://www.twitch.tv/matheasysolutions" }, { label: "Simulator", href: "https://mes.fm/luders-bands" }] },
+      { href: "https://mes.fm/math-qa-74-luders-bands", title: "74: What are Lüders bands?", extraLinks: [{ label: "X", href: "https://x.com/i/broadcasts/2XybbzYglvzdle" }, { label: "Twitch", href: "https://www.twitch.tv/matheasysolutions" }, { label: "Simulator", href: "https://mes.fm/luders-bands" }] },
       { href: "https://mes.fm/math-qa-73-thermal-expansion", title: "73: What is Thermal Expansion?", extraLinks: [{ label: "X", href: "https://x.com/i/broadcasts/1yJAPwZnPyDGb" }, { label: "Twitch", href: "https://www.twitch.tv/matheasysolutions" }, { label: "Calculator", href: "https://mes.fm/materials" }] },
       { href: "https://mes.fm/math-qa-72-ground-rod", title: "72: What is a Ground Rod and how to find it in your house?", extraLinks: [{ label: "X", href: "https://x.com/i/broadcasts/1jxXgBQPgEoJZ" }, { label: "Simulator", href: "https://mes.fm/grounding-rod-simulator" }] },
       { href: "https://mes.fm/math-qa-71-conservation-angular-momentum", title: "71: What is the Conservation of Angular Momentum?", playlistHref: "https://youtube.com/live/glW2rC5Ew5I" },
