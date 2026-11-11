@@ -455,7 +455,15 @@
 	/* ======================= community map (mes.fm/gta-6-map, api/gta-map.js) ======================= */
 	/* Map coordinates are 0..1000 on both axes of the map picture (MAP_V = its version: a new picture gets a new number,
 	   and pins keep the version they were made on). Regions are the names Rockstar has published; the picture is a rough fan sketch. */
-	var MAP_V = 1;
+	var MAP_V = 2;
+	/* v1 = the first hand-drawn sketch; v2 = the painted picture (img/leonida-map.jpg), laid out from that sketch.
+	   upgradeXY moves a v1 spot onto the v2 picture (least-squares affine from 10 landmarks, ~20 units off at worst). */
+	var V1TO2 = [1.050354, -0.031565, -18.8582, 0.001665, 1.025151, -65.0559];
+	function upgradeXY(x, y, m) {
+		if (m >= 2) return { x: x, y: y };
+		var a = V1TO2, nx = a[0] * x + a[1] * y + a[2], ny = a[3] * x + a[4] * y + a[5];
+		return { x: Math.round(Math.max(0, Math.min(1000, nx)) * 10) / 10, y: Math.round(Math.max(0, Math.min(1000, ny)) * 10) / 10 };
+	}
 	var PIN_CATS = [["secret", "Secret", "#c2185b"], ["animal", "Animal", "#2e7d32"], ["fishing", "Fishing", "#0277bd"], ["gem", "Hidden gem", "#f9a825"],
 		["egg", "Easter egg", "#7b1fa2"], ["collect", "Collectible", "#ef6c00"], ["activity", "Activity", "#00838f"], ["vehicle", "Vehicle", "#455a64"],
 		["stunt", "Stunt jump", "#d84315"], ["other", "Other", "#6d4c41"]];
@@ -576,7 +584,7 @@
 		return { id: rec.id, v: rec.vt };
 	}
 	/* ---------- known places: a starter layer written by MES (our own words) from the trailers and Rockstar's region descriptions.
-	   Spots are approximate on our sketch (x, y in 0..1000); they move to the real spot when the map is redrawn after launch.
+	   Spots are approximate (x, y in 0..1000 of the v1 sketch, moved onto the picture by upgradeXY); they move to the real spot when the map is redrawn after launch.
 	   Not votable, never stored on the server. [id, x, y, cat, title, description, region] ---------- */
 	var PLACES = [
 		["k-vc-beach", 868, 690, "gem", "Vice Beach", "The ocean-front strip with art-deco hotels and neon signs, seen in both trailers.", "Vice City"],
@@ -603,7 +611,7 @@
 		["k-pg-town", 210, 205, "other", "Port Gellhorn", "Rockstar describes a run-down port town on the Gulf coast, past its best days.", "Port Gellhorn"],
 		["k-pg-docks", 300, 150, "fishing", "Gulf docks", "Docks and piers on the Gulf coast.", "Port Gellhorn"],
 		["k-pg-beach", 130, 225, "gem", "Gulf beaches", "Quieter beaches along the Gulf coast west of the town.", "Port Gellhorn"]
-	].map(function (r) { return { id: r[0], x: r[1], y: r[2], cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
+	].map(function (r) { var u = upgradeXY(r[1], r[2], 1); return { id: r[0], x: u.x, y: u.y, cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
 	/* group pins that sit closer than r map units (greedy, densest first): [{x, y, ids, pins}] (one entry = a single pin) */
 	function clusterPins(list, r) {
 		var out = [], used = {}, r2 = r * r, a = list.slice();
@@ -636,7 +644,7 @@
 		return { m: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, cat: cat, title: title, desc: note, region: REGIONS.indexOf(b.region) >= 0 ? b.region : "" } };
 	}
 	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
-	var MAP = { MAP_V: MAP_V, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
+	var MAP = { MAP_V: MAP_V, upgradeXY: upgradeXY, V1TO2: V1TO2, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
 		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD,
 		HIVE_W: HIVE_W, wv: wv, statusOf: statusOf, hiveOk: hiveOk, scoreOf: scoreOf, explorers: explorers,
 		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord,

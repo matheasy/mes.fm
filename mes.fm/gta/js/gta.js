@@ -521,7 +521,15 @@
 	/* ======================= community map (mes.fm/gta-6-map, api/gta-map.js) ======================= */
 	/* Map coordinates are 0..1000 on both axes of the map picture (MAP_V = its version: a new picture gets a new number,
 	   and pins keep the version they were made on). Regions are the names Rockstar has published; the picture is a rough fan sketch. */
-	var MAP_V = 1;
+	var MAP_V = 2;
+	/* v1 = the first hand-drawn sketch; v2 = the painted picture (img/leonida-map.jpg), laid out from that sketch.
+	   upgradeXY moves a v1 spot onto the v2 picture (least-squares affine from 10 landmarks, ~20 units off at worst). */
+	var V1TO2 = [1.050354, -0.031565, -18.8582, 0.001665, 1.025151, -65.0559];
+	function upgradeXY(x, y, m) {
+		if (m >= 2) return { x: x, y: y };
+		var a = V1TO2, nx = a[0] * x + a[1] * y + a[2], ny = a[3] * x + a[4] * y + a[5];
+		return { x: Math.round(Math.max(0, Math.min(1000, nx)) * 10) / 10, y: Math.round(Math.max(0, Math.min(1000, ny)) * 10) / 10 };
+	}
 	var PIN_CATS = [["secret", "Secret", "#c2185b"], ["animal", "Animal", "#2e7d32"], ["fishing", "Fishing", "#0277bd"], ["gem", "Hidden gem", "#f9a825"],
 		["egg", "Easter egg", "#7b1fa2"], ["collect", "Collectible", "#ef6c00"], ["activity", "Activity", "#00838f"], ["vehicle", "Vehicle", "#455a64"],
 		["stunt", "Stunt jump", "#d84315"], ["other", "Other", "#6d4c41"]];
@@ -642,7 +650,7 @@
 		return { id: rec.id, v: rec.vt };
 	}
 	/* ---------- known places: a starter layer written by MES (our own words) from the trailers and Rockstar's region descriptions.
-	   Spots are approximate on our sketch (x, y in 0..1000); they move to the real spot when the map is redrawn after launch.
+	   Spots are approximate (x, y in 0..1000 of the v1 sketch, moved onto the picture by upgradeXY); they move to the real spot when the map is redrawn after launch.
 	   Not votable, never stored on the server. [id, x, y, cat, title, description, region] ---------- */
 	var PLACES = [
 		["k-vc-beach", 868, 690, "gem", "Vice Beach", "The ocean-front strip with art-deco hotels and neon signs, seen in both trailers.", "Vice City"],
@@ -669,7 +677,7 @@
 		["k-pg-town", 210, 205, "other", "Port Gellhorn", "Rockstar describes a run-down port town on the Gulf coast, past its best days.", "Port Gellhorn"],
 		["k-pg-docks", 300, 150, "fishing", "Gulf docks", "Docks and piers on the Gulf coast.", "Port Gellhorn"],
 		["k-pg-beach", 130, 225, "gem", "Gulf beaches", "Quieter beaches along the Gulf coast west of the town.", "Port Gellhorn"]
-	].map(function (r) { return { id: r[0], x: r[1], y: r[2], cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
+	].map(function (r) { var u = upgradeXY(r[1], r[2], 1); return { id: r[0], x: u.x, y: u.y, cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
 	/* group pins that sit closer than r map units (greedy, densest first): [{x, y, ids, pins}] (one entry = a single pin) */
 	function clusterPins(list, r) {
 		var out = [], used = {}, r2 = r * r, a = list.slice();
@@ -702,7 +710,7 @@
 		return { m: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, cat: cat, title: title, desc: note, region: REGIONS.indexOf(b.region) >= 0 ? b.region : "" } };
 	}
 	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
-	var MAP = { MAP_V: MAP_V, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
+	var MAP = { MAP_V: MAP_V, upgradeXY: upgradeXY, V1TO2: V1TO2, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
 		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD,
 		HIVE_W: HIVE_W, wv: wv, statusOf: statusOf, hiveOk: hiveOk, scoreOf: scoreOf, explorers: explorers,
 		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord,
@@ -1766,6 +1774,8 @@
 	if (!/^[a-f0-9]{32}$/.test(S.vid || "")) { var b = new Uint8Array(16); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach(function (_, i) { b[i] = Math.random() * 256; }); S.vid = Array.prototype.map.call(b, function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join(""); save(); }
 	S.mine = S.mine || {}; S.votes = S.votes || {}; S.hvotes = S.hvotes || {}; S.cats = S.cats || []; if (S.hsign == null) S.hsign = true;
 	S.found = S.found || {}; S.notes = S.notes || {}; S.my = Array.isArray(S.my) ? S.my : []; if (S.places == null) S.places = true;
+	(function () { var ch = false; S.my.forEach(function (m) { if (!(m.m >= 2)) { var u = MAP.upgradeXY(m.x, m.y, m.m || 1); m.x = u.x; m.y = u.y; m.m = MAP.MAP_V; ch = true; } }); if (ch) save(); })();
+	function upPins(list) { (list || []).forEach(function (p) { if (!(p.m >= 2)) { var u = MAP.upgradeXY(p.x, p.y, p.m || 1); p.x = u.x; p.y = u.y; } }); return list || []; }
 	var T0 = Date.now();
 	function toast(m) { var t = $("gj-toast"); if (!t) return; t.textContent = m; t.classList.add("is-on"); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("is-on"); }, 3600); }
 	var ICON = { secret: "🤫", animal: "🦌", fishing: "🎣", gem: "💎", egg: "🥚", collect: "⭐", activity: "🎯", vehicle: "🚗", stunt: "🏁", other: "📍" };
@@ -1787,7 +1797,19 @@
 		["Leonida Keys", 540, 900, null, null]];
 	var ROADS = ["M150,210 C300,205 450,190 600,180 C700,175 800,190 870,200", "M760,180 C780,300 820,420 840,560 C850,640 845,720 830,780",
 		"M600,180 C590,280 600,380 620,470 C640,560 700,640 780,700", "M745,860 C700,890 620,920 520,945 C470,955 430,960 400,962"];
+	/* the v1 shapes above are moved onto the painted v2 picture (affine), so region hit tests and names line up */
+	function upPath(d) { var a = MAP.V1TO2, i = 0, prev = 0; return d.replace(/-?\d+(\.\d+)?/g, function (n) { var v = +n; if (i++ % 2 === 0) { prev = v; return "\u0000" + n; } var x = prev, y = v; return (Math.round((a[0] * x + a[1] * y + a[2]) * 10) / 10) + "," + (Math.round((a[3] * x + a[4] * y + a[5]) * 10) / 10); }).replace(/\u0000-?\d+(\.\d+)?,/g, ""); }
+	LAND = upPath(LAND); LAKE = upPath(LAKE);
+	REG.forEach(function (r) { var u = MAP.upgradeXY(r[1], r[2], 1); r[1] = u.x; r[2] = u.y; if (r[3]) r[3] = upPath(r[3]); });
+	var PAINTED = "/gta-6-map/img/leonida-map.jpg?v=1";
 	function drawBase() {
+		var g = $("gm-base"); g.innerHTML = "";
+		/* painted picture (MAP_V 2); the vector regions stay as invisible hit areas */
+		el("image", { href: PAINTED, x: 0, y: 0, width: 1000, height: 1000, preserveAspectRatio: "none", "class": "gm-pic" }, g);
+		REG.forEach(function (r) { if (r[3]) el("path", { d: r[3], "class": "gm-reg gm-hit", fill: r[4] }, g); });
+		return drawGrid();
+	}
+	function drawSketch() {
 		var g = $("gm-base"); g.innerHTML = "";
 		el("path", { d: LAND, "class": "gm-land" }, g);
 		ISLES.forEach(function (i) { el("ellipse", { cx: i[0], cy: i[1], rx: i[2], ry: i[3], "class": "gm-land" }, g); });
@@ -1800,6 +1822,9 @@
 		/* city blocks for Vice City */
 		for (var r = 0; r < 4; r++) for (var c = 0; c < 3; c++) el("rect", { x: 805 + c * 16, y: 650 + r * 18, width: 11, height: 13, rx: 1.5, "class": "gm-block" }, g);
 		el("path", { d: LAND, "class": "gm-coast" }, g);
+		drawGrid();
+	}
+	function drawGrid() {
 		var n = $("gm-names"); n.innerHTML = "";
 		REG.forEach(function (r) { var t = el("text", { x: r[1], y: r[2], "class": "gm-name", "text-anchor": "middle" }, n); t.textContent = r[0]; });
 		var gg = $("gm-gridg"); gg.innerHTML = "";
@@ -1968,7 +1993,7 @@
 	function refresh(quiet) {
 		return call(null).then(function (d) {
 			if (d.error) { if (!quiet) $("gm-count").textContent = d.error === "not set up" ? "The pin store isn’t switched on yet." : "Could not load the pins: " + d.error; return; }
-			PINS = d.pins || []; index();
+			PINS = upPins(d.pins); index();
 			Object.keys(S.mine).forEach(function (id) { if (!byId[id] && !quiet) { /* deleted or hidden: keep the key a while */ } });
 			drawPins(); renderList(); if (openId && byId[openId]) openPin(openId, true);
 		});
