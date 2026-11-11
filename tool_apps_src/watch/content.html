@@ -29,6 +29,7 @@
 					<button type="button" class="wt-b" id="wt-star" title="Save for later" aria-pressed="false">☆</button>
 					<button type="button" class="wt-b" id="wt-addl" title="Add to one of my playlists" aria-haspopup="true">+ List</button>
 					<button type="button" class="wt-b" id="wt-zoom" title="Zoom in on the picture: pinch or drag, + / − (key Z)" aria-pressed="false">🔍&#xFE0E; Zoom</button>
+ 					<button type="button" class="wt-b wt-ccb" id="wt-cc" aria-pressed="false" title="Show or hide captions (Shift+C)">CC</button>
 					<button type="button" class="wt-b" id="wt-copy" title="Copy a link to this spot in the video">🔗&#xFE0E; Link</button>
 					<button type="button" class="wt-b" id="wt-cmbtn" aria-pressed="false" aria-controls="wt-cm" title="Show or hide the video's comments (C)">💬&#xFE0E; Comments</button>
 					<a class="wt-b" id="wt-open" href="#" target="_blank" rel="noopener" title="Open it on its own site">↗&#xFE0E; Site</a>
@@ -44,6 +45,7 @@
 				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
 				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
 				<label class="wt-check"><input type="checkbox" id="wt-zctl" checked> When zoomed in, show a play / seek bar under the picture (the player's own bar moves with the zoom)</label>
+				<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
 				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 			</div>
 			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
@@ -68,6 +70,11 @@
 		</section>
 		<section class="tu-card wt-sync" id="wt-sync" hidden aria-label="Sync and backup">
 			<div class="wt-shead"><h2>☁ Sync &amp; backup</h2><button type="button" class="tu-btn tu-btn--ghost" id="wt-sync-close" aria-label="Close">✕</button></div>
+			<div class="wt-sbox" id="wt-bksel">
+				<h3>What to back up</h3>
+				<p class="wt-ssmall" id="wt-bknote"></p>
+				<div id="wt-bkrows"></div>
+			</div>
 			<div class="wt-sbox">
 				<h3>Sync with your own cloud</h3>
 				<p class="wt-ssmall">One file, <code>mes-watch.json</code>, with your Up next, Saved, playlists, channels and history (and where you stopped). Your browser writes it straight to your own account; nothing goes through mes.fm. Pick the same place on your phone and it stays in step.</p>
@@ -107,6 +114,8 @@
 			<p>Press <em>+ Channel</em> and paste a YouTube channel link (youtube.com/@name) or just @name, or paste the channel link in the box above. It gets its own chip under <em>Latest from</em> showing its 15 newest uploads (newest first; tick <em>Shorts</em> to include them). Add them all to Up next, or keep them as one of your playlists. Your channels are kept in this browser only; × on a chip removes it.</p>
 			<h3>Zoom and full screen</h3>
 			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. With a mouse, the player is left alone at 100% (click, double-click and dragging the captions work as on YouTube): zoom with the small + / − / Fill strip on the right of the video, or the + and − keys, then drag to move around. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
+			<h3>Captions and 2× on a phone</h3>
+			<p>The <em>CC</em> button under the video (and on the play bar while zoomed in) turns YouTube's captions on and off, in your language when the video has it. Use it when the picture is zoomed: the player's own CC button moves with the zoom and can't be pressed. Press and hold the picture to play at 2× while you hold, like the YouTube app, without YouTube's bar popping up.</p>
 			<h3>Keyboard shortcuts</h3>
 			<dl>
 				<dt>Space or K</dt><dd>Play / pause</dd>
@@ -115,6 +124,7 @@
 				<dt>N / Shift+N</dt><dd>Next, previous</dd>
 				<dt>W</dt><dd>Fill the window with the video</dd>
 				<dt>C</dt><dd>Show / hide the comments</dd>
+				<dt>Shift+C</dt><dd>Captions on / off</dd>
 				<dt>Z, + / −, 0</dt><dd>Zoom mode, zoom in / out, back to 100%</dd>
 			</dl>
 			<h3>Questions</h3>
@@ -128,10 +138,16 @@
 			<p>Yes. It is YouTube's own player, so views, ads and the creator's earnings work as on youtube.com.</p>
 			<h4>How do I move my list to another computer or phone?</h4>
 			<p>Press <em>☁ Sync &amp; backup</em> and pick Dropbox, OneDrive, Google Drive or a file in a synced folder, then pick the same place on the other device: both stay in step from then on, including where you stopped in each video. Or press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<h4>Can I keep several lists?</h4>
+			<p>Yes: on the Up next tab press <em>💾 Save Up next as a playlist</em>; it is kept under <em>My playlists</em>, and Up next can then be cleared for something else. Play any playlist again with ▶ (or + to add it to Up next).</p>
+			<h4>Can I choose what is backed up?</h4>
+			<p>Yes: <em>☁ Sync &amp; backup</em> → <em>What to back up</em>. Untick Up next, Saved, channels, history or any playlist, and it stays on this device only: it is not put in the cloud file or the Hive backup, and the copy on your other devices is left alone.</p>
+			<h4>What about the tracking codes in shared links?</h4>
+			<p>Links people share often carry a code saying who shared it (YouTube's <code>si=</code>, <code>utm_…</code>, Rumble's <code>pub=</code>, X's <code>s=</code>). MES Watch removes them from the links it keeps and copies. Tick <em>Keep the sites' tracking codes</em> to keep them.</p>
 			<h4>Can I back up my lists to Hive?</h4>
 			<p>Yes: <em>☁ Sync &amp; backup</em> → <em>Back up to Hive</em>, encrypted with your own memo key by default. It is permanent; "Add to mine" brings back anything you don't have.</p>
 			<h4>Can I see my own videos from my computer here?</h4>
 			<p>Use the <a href="/gallery">MES Gallery</a> for photos and videos saved on your computer or phone.</p>
 		</div>
 	</div>
-	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/panel-view.js?v=2" defer></script>

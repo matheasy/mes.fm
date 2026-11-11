@@ -99,4 +99,26 @@ eq(W.ytListsFromApi({ items: [{ id: 'PLabcdefghij12', snippet: { title: 'Mine' }
 ok(/not switched on/.test(W.ytApiError(403, { error: { errors: [{ reason: 'accessNotConfigured' }] } })), 'API off message');
 ok(/sign in again/.test(W.ytApiError(401, {})), '401 message');
 ok(/limit/.test(W.ytApiError(403, { error: { errors: [{ reason: 'quotaExceeded' }] } })), 'quota message');
+// tracking codes
+eq(W.item('https://rumble.com/embed/v5abc/?pub=4&utm_source=x').u, 'https://rumble.com/embed/v5abc/', 'rumble pub + utm dropped');
+eq(W.item('https://x.com/mes/status/123?s=20&t=abc').u, 'https://x.com/mes/status/123', 'x s / t dropped');
+eq(W.item('https://odysee.com/@mestruth:9/vid:3?r=abc&src=twitter').u, 'https://odysee.com/@mestruth:9/vid:3', 'odysee referral dropped');
+eq(W.clean('https://example.com/a.mp4?sig=1&utm_source=z#x'), 'https://example.com/a.mp4?sig=1#x', 'file link keeps its own params');
+eq(W.item('https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=x&t=30').s, 30, 'youtube start kept');
+W.keepTrack = true; eq(W.item('https://x.com/mes/status/123?s=20').u, 'https://x.com/mes/status/123?s=20', 'keep when asked'); W.keepTrack = false;
+// what to back up
+(function () {
+	var mine = { q: [{ key: 'a' }], saved: [{ key: 's' }], chans: [], hist: [{ key: 'h' }], lists: [{ id: 'L1', name: 'one', items: [] }, { id: 'L2', name: 'two', items: [{ key: 'x' }] }] };
+	var sel = { hist: false, saved: false, off: { L2: 1 } };
+	var p = W.pick(mine, sel); ok(p.part && !p.saved && !p.hist && p.lists.length === 1 && p.q.length === 1, 'pick leaves out unticked parts');
+	ok(W.pick(mine, {}) === mine, 'pick: nothing unticked = everything');
+	var remote = { q: [], saved: [{ key: 'r' }], hist: [{ key: 'rh' }], lists: [{ id: 'L2', name: 'two remote', items: [] }, { id: 'L3', name: 'three', items: [] }], chans: [] };
+	var merged = W.merge3({ q: [], saved: [], lists: [], chans: [], hist: [] }, W.mask(mine, remote, sel), remote);
+	eq(merged.saved, [{ key: 'r' }], 'other copy of an unticked part untouched');
+	eq(W.findList(merged.lists, 'L2').name, 'two remote', 'other copy of an unticked playlist untouched');
+	var back = W.mask(merged, mine, sel);
+	eq(back.saved, [{ key: 's' }], 'unticked part here not replaced'); eq(W.findList(back.lists, 'L2').items.length, 1, 'unticked playlist here not replaced');
+	ok(!!W.findList(back.lists, 'L3'), 'new playlist from the other device arrives');
+	var rep = W.replaceWith(mine, p); eq(rep.saved, [{ key: 's' }], 'replace with a partial backup keeps what it lacks'); ok(!!W.findList(rep.lists, 'L2'), 'replace keeps unticked playlist');
+})();
 console.log('watch tests ok:', n);

@@ -25,11 +25,24 @@
 		var L = Y.parseLink(text);
 		if (!L.ok) return { err: L.reason };
 		try { if (!/\./.test(new URL(L.watch).hostname)) return { err: "That is not a web link." }; } catch (e) { return { err: "That is not a web link." }; }
-		var it = { k: L.kind, id: L.id || null, u: L.watch, e: L.embed || null, s: L.start || 0, t: "", th: "" };
+		var it = { k: L.kind, id: L.id || null, u: W.keepTrack ? L.watch : W.clean(L.watch), e: L.embed || null, s: L.start || 0, t: "", th: "" };
 		if (L.kind === "direct") { it.id = L.watch; it.t = L.file || "Media file"; }
 		it.key = W.key(it);
 		if (it.k === "youtube") it.th = "https://i.ytimg.com/vi/" + it.id + "/mqdefault.jpg";
 		return it;
+	};
+	/* tracking codes the sites add to shared links (who shared it, from which app): dropped unless W.keepTrack is set.
+	   Only known names are removed, so a signed file link keeps everything it needs. */
+	W.keepTrack = false;
+	var TRACK = /^(utm_[a-z_]+|si|fbclid|gclid|gbraid|wbraid|dclid|msclkid|igshid|igsh|mc_cid|mc_eid|yclid|twclid|ttclid|_hsenc|_hsmi|mkt_tok|ref_src|ref_url|share_id|feature|pp|ab_channel|embeds_referring_euri|embeds_referring_origin|source_ve_path)$/i;
+	var TRACK_HOST = { "x.com": /^(s|t)$/, "twitter.com": /^(s|t)$/, "odysee.com": /^(r|src)$/, "rumble.com": /^(pub|e9s|mref|mc)$/, "bitchute.com": /^(list|randomize)$/, "3speak.tv": /^(ref)$/ };
+	W.clean = function (u) {
+		var x; try { x = new URL(u); } catch (e) { return u; }
+		var host = x.hostname.replace(/^(www|m|mobile)\./, ""), extra = TRACK_HOST[host], ks = [];
+		x.searchParams.forEach(function (v, k) { if (TRACK.test(k) || (extra && extra.test(k))) ks.push(k); });
+		if (!ks.length) return u;
+		ks.forEach(function (k) { x.searchParams.delete(k); });
+		return x.toString().replace(/\?(#|$)/, "$1");
 	};
 	W.key = function (it) { return it.k + ":" + (it.id || it.u); };
 	/* text with any number of links (lines, spaces, commas) -> {items, errors}; duplicates dropped */
@@ -227,6 +240,39 @@
 	W.mergeAdd = function (mine, other) {
 		var r = W.merge3({ q: [], saved: [], lists: [], chans: [] }, mine, other), added = W.snapCount(r) - W.snapCount(mine);
 		r.hist = mine.hist; return { data: r, added: Math.max(0, added) };
+	};
+	/* ---------- what goes into the cloud file / Hive backup (chosen per device) ----------
+	   sel = {q, saved, chans, hist: false = left out; off: {listId: 1} = playlists left out}; anything not named is included */
+	var PARTS = ["q", "saved", "chans", "hist"];
+	W.selOn = function (sel, part) { return !sel || sel[part] !== false; };
+	W.listOn = function (sel, id) { return !(sel && sel.off && sel.off[id]); };
+	W.partial = function (sel) { return !!sel && (PARTS.some(function (p) { return sel[p] === false; }) || Object.keys(sel.off || {}).length > 0); };
+	/* the snapshot with the left-out parts removed (a Hive backup); part: 1 marks it as not everything */
+	W.pick = function (snap, sel) {
+		if (!W.partial(sel)) return snap;
+		var o = { v: snap.v || 1, part: 1 };
+		PARTS.forEach(function (p) { if (snap[p] && W.selOn(sel, p)) o[p] = snap[p]; });
+		o.lists = (snap.lists || []).filter(function (l) { return W.listOn(sel, l.id); });
+		return o;
+	};
+	/* target with its left-out parts taken from source instead (missing in source = dropped): sync merges only what is chosen,
+	   so the other device's copy of a left-out list is never touched, and this device's copy is never replaced */
+	W.mask = function (target, source, sel) {
+		if (!W.partial(sel)) return target;
+		source = source || {}; var o = {}; for (var k in target) o[k] = target[k]; delete o.part;
+		PARTS.forEach(function (p) { if (!W.selOn(sel, p)) { if (source[p]) o[p] = source[p]; else delete o[p]; } });
+		var src = idx(source.lists, function (l) { return l.id; }), out = [], seen = {};
+		(target.lists || []).forEach(function (l) { if (W.listOn(sel, l.id)) out.push(l); else if (src[l.id]) { out.push(src[l.id]); } seen[l.id] = 1; });
+		(source.lists || []).forEach(function (l) { if (!seen[l.id] && !W.listOn(sel, l.id)) out.push(l); });
+		o.lists = out; return o;
+	};
+	/* "Replace" with a backup that is only part of everything: what it doesn't carry stays as it is here */
+	W.replaceWith = function (mine, backup) {
+		var o = {}; for (var k in mine) o[k] = mine[k];
+		["q", "saved", "chans"].forEach(function (p) { if (backup[p]) o[p] = backup[p]; });
+		var have = idx(backup.lists, function (l) { return l.id; });
+		o.lists = (backup.lists || []).concat(backup.part ? (mine.lists || []).filter(function (l) { return !have[l.id]; }) : []);
+		return o;
 	};
 	W.fileText = function (data, dev) { return JSON.stringify({ app: "mes-watch", v: 1, saved: new Date().toISOString(), dev: dev || "", data: data }); };
 	W.readFile = function (text) {

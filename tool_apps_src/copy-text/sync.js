@@ -291,20 +291,23 @@
 					return Promise.resolve(prov.ready(ask)).then(function () { return prov.read(); }).then(function (remote) {
 						var rs = null;
 						if (remote) { try { rs = CTLib.parseFile(remote.text); } catch (e) { throw err("other", (prov.short === "the sync file" ? P.file.label() : prov.name + "'s " + FILE) + " is not a Copy Text sync file. Pick another file, or disconnect."); } }
-						var st = app.state(), local = CTLib.snapshot(st), lsig = CTLib.sig(local), rsig = rs ? CTLib.sig(rs.data) : null;
+						var st = app.state(), off = OFF(), full = CTLib.snapshot(st), local = mine(full, rs ? rs.data : null, off), lsig = CTLib.sig(local), rsig = rs ? CTLib.sig(rs.data) : null;
 						var what = CTLib.plan(rec.bsig || null, lsig, rsig), next = null, write = null, apply = null;
 						if (what === "same") next = local;
 						else if (what === "push") { next = local; write = local; }
 						else {
 							var m = what === "pull" ? rs.data : CTLib.merge3(rec.base || null, local, rs.data);
-							if (CTLib.sig(m) !== lsig) { apply = CTLib.fromSnap(m, st, app.uid); m = CTLib.snapshot(apply); }  // normalised as it will be stored here
+							if (CTLib.sig(m) !== lsig) {
+								var keepMine = CTLib.maskBoards(m, full, off);   // boards left out of the sync stay as they are here
+								if (CTLib.sig(keepMine) !== CTLib.sig(full)) { apply = CTLib.fromSnap(keepMine, st, app.uid); m = CTLib.maskBoards(CTLib.snapshot(apply), m, off); }  // normalised as it will be stored here
+							}
 							next = m; if (CTLib.sig(m) !== rsig) write = m;
 						}
 						if (apply && app.busy()) { again = true; apply = null; write = null; next = null; }  // a note is being edited: try again after
 						var done = write ? prov.write(CTLib.fileText(write, dev), remote ? remote.ver : null) : Promise.resolve({ ver: remote ? remote.ver : null });
 						return done.then(function (w) {
 							// texts added while the file was being written: keep the old base so the next round merges them in
-							if (CTLib.sig(CTLib.snapshot(app.state())) !== lsig) { again = true; return; }
+							if (CTLib.sig(mine(CTLib.snapshot(app.state()), rs ? rs.data : null, off)) !== lsig) { again = true; return; }
 							if (apply) {
 								var before = CTLib.count(local);
 								app.apply(apply);
@@ -332,7 +335,10 @@
 			});
 		}
 		function schedule(ms) { clearTimeout(timer); if (rec && rec.p) timer = setTimeout(function () { syncNow(false); }, ms); }
-		function dirty() { return !!(rec && rec.p && rec.bsig !== CTLib.sig(CTLib.snapshot(app.state()))); }
+		function dirty() { return !!(rec && rec.p && rec.bsig !== CTLib.sig(mine(CTLib.snapshot(app.state()), rec.base || null, OFF()))); }
+		/* boards left out of the sync (localStorage mes-copytext:v1:bkoff, by name): this side carries the other copy's version of them */
+		function OFF() { try { return JSON.parse(localStorage.getItem("mes-copytext:v1:bkoff") || "{}") || {}; } catch (e) { return {}; } }
+		function mine(full, other, off) { if (!CTLib.anyOff(off)) return full; return other ? CTLib.maskBoards(full, other, off) : (function (x) { delete x.part; return x; })(CTLib.pickBoards(full, off)); }
 
 		/* ---------- status line + button ---------- */
 		function provName() { return rec && P[rec.p] ? (rec.p === "file" ? (rec.label || FILE) : P[rec.p].name) : ""; }

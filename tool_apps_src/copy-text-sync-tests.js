@@ -82,4 +82,18 @@ t("ago", () => {
 	assert.strictEqual(CT.ago(0, 120000), "2 minutes ago");
 	assert.strictEqual(CT.ago(0, 3 * 86400000), "3 days ago");
 });
+t("which boards are backed up", function () {
+	var full = { v: 1, boards: [{ name: "A", notes: [{ title: "", text: "a" }] }, { name: "B", notes: [{ title: "", text: "b" }] }] };
+	var off = { B: 1 }, p = CT.pickBoards(full, off);
+	assert.deepStrictEqual(p.boards.map(function (b) { return b.name; }), ["A"]); assert.strictEqual(p.part, 1);
+	assert.strictEqual(CT.pickBoards(full, {}), full);
+	var remote = { v: 1, boards: [{ name: "A", notes: [] }, { name: "B", notes: [{ title: "", text: "bR" }] }] };
+	var local = CT.maskBoards(full, remote, off);
+	assert.strictEqual(local.boards[1].notes[0].text, "bR", "the other copy of an unticked board is not touched");
+	var back = CT.maskBoards(CT.merge3(remote, local, remote), full, off);
+	assert.strictEqual(back.boards[1].notes[0].text, "b", "this device keeps its own unticked board");
+	assert.strictEqual(back.boards[0].notes[0].text, "a");
+	var rep = CT.replacePart(full, { v: 1, part: 1, boards: [{ name: "A", notes: [] }] });
+	assert.deepStrictEqual(rep.boards.map(function (b) { return b.name; }), ["A", "B"], "replace with a partial backup keeps the other boards");
+});
 console.log("copy-text sync: " + n + " groups passed");

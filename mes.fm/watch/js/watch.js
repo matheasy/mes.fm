@@ -495,11 +495,24 @@
 		var L = Y.parseLink(text);
 		if (!L.ok) return { err: L.reason };
 		try { if (!/\./.test(new URL(L.watch).hostname)) return { err: "That is not a web link." }; } catch (e) { return { err: "That is not a web link." }; }
-		var it = { k: L.kind, id: L.id || null, u: L.watch, e: L.embed || null, s: L.start || 0, t: "", th: "" };
+		var it = { k: L.kind, id: L.id || null, u: W.keepTrack ? L.watch : W.clean(L.watch), e: L.embed || null, s: L.start || 0, t: "", th: "" };
 		if (L.kind === "direct") { it.id = L.watch; it.t = L.file || "Media file"; }
 		it.key = W.key(it);
 		if (it.k === "youtube") it.th = "https://i.ytimg.com/vi/" + it.id + "/mqdefault.jpg";
 		return it;
+	};
+	/* tracking codes the sites add to shared links (who shared it, from which app): dropped unless W.keepTrack is set.
+	   Only known names are removed, so a signed file link keeps everything it needs. */
+	W.keepTrack = false;
+	var TRACK = /^(utm_[a-z_]+|si|fbclid|gclid|gbraid|wbraid|dclid|msclkid|igshid|igsh|mc_cid|mc_eid|yclid|twclid|ttclid|_hsenc|_hsmi|mkt_tok|ref_src|ref_url|share_id|feature|pp|ab_channel|embeds_referring_euri|embeds_referring_origin|source_ve_path)$/i;
+	var TRACK_HOST = { "x.com": /^(s|t)$/, "twitter.com": /^(s|t)$/, "odysee.com": /^(r|src)$/, "rumble.com": /^(pub|e9s|mref|mc)$/, "bitchute.com": /^(list|randomize)$/, "3speak.tv": /^(ref)$/ };
+	W.clean = function (u) {
+		var x; try { x = new URL(u); } catch (e) { return u; }
+		var host = x.hostname.replace(/^(www|m|mobile)\./, ""), extra = TRACK_HOST[host], ks = [];
+		x.searchParams.forEach(function (v, k) { if (TRACK.test(k) || (extra && extra.test(k))) ks.push(k); });
+		if (!ks.length) return u;
+		ks.forEach(function (k) { x.searchParams.delete(k); });
+		return x.toString().replace(/\?(#|$)/, "$1");
 	};
 	W.key = function (it) { return it.k + ":" + (it.id || it.u); };
 	/* text with any number of links (lines, spaces, commas) -> {items, errors}; duplicates dropped */
@@ -698,6 +711,39 @@
 		var r = W.merge3({ q: [], saved: [], lists: [], chans: [] }, mine, other), added = W.snapCount(r) - W.snapCount(mine);
 		r.hist = mine.hist; return { data: r, added: Math.max(0, added) };
 	};
+	/* ---------- what goes into the cloud file / Hive backup (chosen per device) ----------
+	   sel = {q, saved, chans, hist: false = left out; off: {listId: 1} = playlists left out}; anything not named is included */
+	var PARTS = ["q", "saved", "chans", "hist"];
+	W.selOn = function (sel, part) { return !sel || sel[part] !== false; };
+	W.listOn = function (sel, id) { return !(sel && sel.off && sel.off[id]); };
+	W.partial = function (sel) { return !!sel && (PARTS.some(function (p) { return sel[p] === false; }) || Object.keys(sel.off || {}).length > 0); };
+	/* the snapshot with the left-out parts removed (a Hive backup); part: 1 marks it as not everything */
+	W.pick = function (snap, sel) {
+		if (!W.partial(sel)) return snap;
+		var o = { v: snap.v || 1, part: 1 };
+		PARTS.forEach(function (p) { if (snap[p] && W.selOn(sel, p)) o[p] = snap[p]; });
+		o.lists = (snap.lists || []).filter(function (l) { return W.listOn(sel, l.id); });
+		return o;
+	};
+	/* target with its left-out parts taken from source instead (missing in source = dropped): sync merges only what is chosen,
+	   so the other device's copy of a left-out list is never touched, and this device's copy is never replaced */
+	W.mask = function (target, source, sel) {
+		if (!W.partial(sel)) return target;
+		source = source || {}; var o = {}; for (var k in target) o[k] = target[k]; delete o.part;
+		PARTS.forEach(function (p) { if (!W.selOn(sel, p)) { if (source[p]) o[p] = source[p]; else delete o[p]; } });
+		var src = idx(source.lists, function (l) { return l.id; }), out = [], seen = {};
+		(target.lists || []).forEach(function (l) { if (W.listOn(sel, l.id)) out.push(l); else if (src[l.id]) { out.push(src[l.id]); } seen[l.id] = 1; });
+		(source.lists || []).forEach(function (l) { if (!seen[l.id] && !W.listOn(sel, l.id)) out.push(l); });
+		o.lists = out; return o;
+	};
+	/* "Replace" with a backup that is only part of everything: what it doesn't carry stays as it is here */
+	W.replaceWith = function (mine, backup) {
+		var o = {}; for (var k in mine) o[k] = mine[k];
+		["q", "saved", "chans"].forEach(function (p) { if (backup[p]) o[p] = backup[p]; });
+		var have = idx(backup.lists, function (l) { return l.id; });
+		o.lists = (backup.lists || []).concat(backup.part ? (mine.lists || []).filter(function (l) { return !have[l.id]; }) : []);
+		return o;
+	};
 	W.fileText = function (data, dev) { return JSON.stringify({ app: "mes-watch", v: 1, saved: new Date().toISOString(), dev: dev || "", data: data }); };
 	W.readFile = function (text) {
 		if (!text || !String(text).trim()) return null;
@@ -743,13 +789,14 @@
 		function ref() { return st.p === "file" ? handle : st.ref; }
 		function round(ask, tries) {
 			tries = tries || 0;
-			var prov = P()[st.p], local = W.snap(api.S, true);
+			var prov = P()[st.p], full = W.snap(api.S, true), sel = api.S.bk, local = full;
 			if (st.p === "file" && !handle) return Promise.reject(Object.assign(new Error("Open the file again."), { code: "perm" }));
 			return prov.read(ref(), ask).then(function (r) {
 				var text = new TextDecoder().decode(r.bytes), remote = W.readFile(text);
+				local = remote ? W.mask(full, remote, sel) : W.pick(full, sel); delete local.part;   // left-out parts: the other copy is never touched
 				var merged = remote ? W.merge3(st.base || (remote ? { q: [], saved: [], lists: [], chans: [], hist: [] } : null), local, remote) : local;
 				var write = !remote || JSON.stringify(merged) !== JSON.stringify(remote);
-				var done = function (ver) { st.ver = ver; st.base = merged; st.at = Date.now(); st.err = ""; st.code = ""; keep(); if (JSON.stringify(merged) !== JSON.stringify(local)) api.apply(merged); paint(); };
+				var done = function (ver) { st.ver = ver; st.base = merged; st.at = Date.now(); st.err = ""; st.code = ""; keep(); var back = W.mask(merged, full, sel); if (JSON.stringify(back) !== JSON.stringify(full)) api.apply(back); paint(); };
 				if (!write) { done(r.ver); return; }
 				var bytes = new TextEncoder().encode(W.fileText(merged, dev()));
 				return prov.write(ref(), st.name || FNAME, bytes, r.ver, ask).then(function (w) { if (w && w.ref && st.p !== "file") st.ref = w.ref; done(w.ver); }, function (e) {
@@ -791,8 +838,9 @@
 					var f = files.filter(function (x) { return x.name === FNAME; })[0];
 					if (f) return start(p, null, f.ref, f.name);
 					// no file yet: write this browser's lists as the first copy
-					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(W.snap(api.S, true), dev())), "", false, WDIR).then(function (w) {
-						st = { p: p, ref: w.ref, name: w.name || FNAME, ver: w.ver, base: W.snap(api.S, true), at: Date.now(), err: "", code: "" }; keep(); paint(); toast("Syncing with " + NAMES[p]);
+					var first = W.pick(W.snap(api.S, true), api.S.bk); delete first.part;
+					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(first, dev())), "", false, WDIR).then(function (w) {
+						st = { p: p, ref: w.ref, name: w.name || FNAME, ver: w.ver, base: first, at: Date.now(), err: "", code: "" }; keep(); paint(); toast("Syncing with " + NAMES[p]);
 					});
 				}).then(function () { msg(""); }, function (e) { msg(e.message || String(e), "err"); });
 			};
@@ -836,7 +884,30 @@
 				'<button type="button" class="tu-btn" data-s="now"' + (busy ? " disabled" : "") + ">Sync now</button>" +
 				'<button type="button" class="tu-btn tu-btn--ghost" data-s="stop">Stop syncing</button>';
 		}
-		$("wt-syncbtn").onclick = function () { var p = $("wt-sync"), open = p.hidden; p.hidden = !open; this.setAttribute("aria-expanded", String(open)); if (open) { paint(); paintHive(); p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } };
+		/* ---------- what to back up (both the cloud file and Hive) ---------- */
+		function paintSel() {
+			var box = $("wt-bkrows"); if (!box) return;
+			var S = api.S, sel = S.bk || {}, row = function (key, label, n, on, note) {
+				return '<label class="wt-check wt-bkrow"><input type="checkbox" data-bk="' + esc(key) + '"' + (on ? " checked" : "") + "> " + esc(label) + ' <small>' + n + "</small>" + (note ? ' <em class="wt-ssmall">' + esc(note) + "</em>" : "") + "</label>";
+			};
+			box.innerHTML = '<div class="wt-bkgrp">' + row("q", "Up next", S.q.length, W.selOn(sel, "q")) + row("saved", "Saved", S.saved.length, W.selOn(sel, "saved")) +
+				row("chans", "My channels", S.chans.length, W.selOn(sel, "chans")) + row("hist", "History and where I stopped", S.hist.length, W.selOn(sel, "hist"), "(cloud sync only)") + "</div>" +
+				(S.lists.length ? '<div class="wt-bkgrp"><b>Playlists</b>' + S.lists.map(function (l) { return row("l:" + l.id, l.name, l.items.length, W.listOn(sel, l.id)); }).join("") + "</div>" : '<p class="wt-ssmall">No playlists yet.</p>') +
+				'<div class="wt-sacts"><button type="button" class="tu-btn tu-btn--ghost" data-bkall="1">Tick all</button><button type="button" class="tu-btn tu-btn--ghost" data-bkall="0">Untick all</button></div>';
+			$("wt-bknote").textContent = W.partial(sel) ? "Only the ticked parts are synced and backed up. What you untick stays as it is in the other copy." : "Everything is synced and backed up. Untick what you want to keep on this device only.";
+		}
+		$("wt-bkrows") && $("wt-bkrows").addEventListener("change", function (e) {
+			var c = e.target.closest("[data-bk]"); if (!c) return; var S = api.S, k = c.dataset.bk, sel = S.bk = S.bk || {};
+			if (k.indexOf("l:") === 0) { sel.off = sel.off || {}; if (c.checked) delete sel.off[k.slice(2)]; else sel.off[k.slice(2)] = 1; }
+			else if (c.checked) delete sel[k]; else sel[k] = false;
+			api.save(); paintSel(); if (st && st.p) later(800);
+		});
+		$("wt-bkrows") && $("wt-bkrows").addEventListener("click", function (e) {
+			var b = e.target.closest("[data-bkall]"); if (!b) return; var S = api.S;
+			if (b.dataset.bkall === "1") S.bk = {}; else { S.bk = { q: false, saved: false, chans: false, hist: false, off: {} }; S.lists.forEach(function (l) { S.bk.off[l.id] = 1; }); }
+			api.save(); paintSel(); if (st && st.p) later(800);
+		});
+		$("wt-syncbtn").onclick = function () { var p = $("wt-sync"), open = p.hidden; p.hidden = !open; this.setAttribute("aria-expanded", String(open)); if (open) { paintSel(); paint(); paintHive(); p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } };
 		$("wt-sync-close").onclick = function () { $("wt-sync").hidden = true; $("wt-syncbtn").setAttribute("aria-expanded", "false"); };
 		$("wt-sync").addEventListener("click", function (e) {
 			var b = e.target.closest("[data-s]"); if (!b) return; var a = b.dataset.s;
@@ -885,8 +956,8 @@
 		function errText(e) { return (e && (e.message || e.error)) || String(e); }
 		function hiveSave() {
 			if (hbusy) return;
-			var data = W.snap(api.S, false), n = W.snapCount(data);
-			if (!n) { hmsg("There is nothing to back up yet.", "err"); return; }
+			var data = W.pick(W.snap(api.S, false), api.S.bk), n = W.snapCount(data);
+			if (!n) { hmsg(W.partial(api.S.bk) ? "Nothing is ticked under \u201cWhat to back up\u201d (or the ticked lists are empty)." : "There is nothing to back up yet.", "err"); return; }
 			var enc = encOn();
 			if (!enc && !confirm("Back up WITHOUT encryption?\n\nAll your video links, playlists and channels will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
 			hbusyOn(true);
@@ -926,7 +997,7 @@
 				var mine = W.snap(api.S, true), undo = JSON.stringify(mine);
 				if (mode === "replace") {
 					if (!confirm("Replace your Up next, Saved, playlists and channels here with this backup (" + W.snapCount(data) + " items)? History stays. You can undo right after.")) { hmsg(""); return; }
-					data.hist = mine.hist; api.apply(data);
+					api.apply(W.replaceWith(mine, data));
 					toast("Replaced with the Hive backup", function () { api.apply(JSON.parse(undo)); });
 					hmsg("Loaded the backup.", "ok");
 				} else {
@@ -1113,9 +1184,17 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, cc: false, keepTrack: false, bk: {}, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
+	if (!S.bk || typeof S.bk !== 'object') S.bk = {};
+	W.keepTrack = !!S.keepTrack;
+	/* links saved before tracking codes were dropped (si=, utm_..., Rumble pub=, X s= / t=): clean them once */
+	function cleanAll() {
+		var f = function (L) { (L || []).forEach(function (x) { if (x && x.u) { var c = W.clean(x.u); if (c !== x.u) { x.u = c; if (x.k === 'direct' || !x.id) { x.id = x.k === 'direct' ? c : x.id; x.key = W.key(x); } } } }); };
+		f(S.q); f(S.saved); f(S.hist); (S.lists || []).forEach(function (l) { f(l.items); });
+	}
+	if (!S.keepTrack) cleanAll();
 	var saveHooks = [];
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} saveHooks.forEach(function (f) { try { f(); } catch (x) {} }); }
 	function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -1220,16 +1299,17 @@
 				holder = document.createElement('iframe'); holder.id = 'wt-yt'; holder.setAttribute('credentialless', ''); try { holder.credentialless = true; } catch (e) {}
 				holder.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; holder.allowFullscreen = true; holder.title = W.label(cur);
 				holder.referrerPolicy = 'strict-origin-when-cross-origin';
-				holder.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(cur.id) + '?enablejsapi=1&rel=0&playsinline=1&iv_load_policy=3&autoplay=1&start=' + (start || 0) + '&origin=' + encodeURIComponent(location.origin);
+				holder.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(cur.id) + '?enablejsapi=1&rel=0&playsinline=1&iv_load_policy=3&autoplay=1' + (S.cc ? '&cc_load_policy=1' : '') + '&start=' + (start || 0) + '&origin=' + encodeURIComponent(location.origin);
 			} else { holder = document.createElement('div'); holder.id = 'wt-yt'; }
 			stage.appendChild(holder);
 			ensureYT().then(function () {
 				if (g !== gen) return;
 				yt = new YT.Player('wt-yt', { host: S.priv ? 'https://www.youtube-nocookie.com' : 'https://www.youtube.com', videoId: cur.id, width: '100%', height: '100%',
-					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3 },
+					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3, cc_load_policy: S.cc ? 1 : 0 },
 					events: {
 						onReady: function (e) { if (g !== gen) return; try { e.target.setPlaybackRate(W.ytSpeed(S.rate)); e.target.playVideo(); var d = e.target.getVideoData(); if (d && d.title) setMeta(cur.key, d.title, cur.th); } catch (x) {} syncSpeed(); },
 						onStateChange: function (e) { if (g === gen && e.data === 0) ended(); },
+						onApiChange: function () { if (g === gen && S.cc) ccPick(false); },
 						onError: function (e) { if (g === gen) failed(e && (e.data === 100 || e.data === 5) ? 'YouTube says this video is unavailable (removed or private).' : 'YouTube would not play this video here (the owner may have turned off playing on other sites).'); }
 					} });
 				saveT = setInterval(remember, 5000);
@@ -1245,7 +1325,8 @@
 				setStage(''); stage.appendChild(v); vid = v;
 				v.addEventListener('loadedmetadata', function () { if (start && start < (v.duration || 1e9) - 5) v.currentTime = start; v.playbackRate = S.rate; }, { once: true });
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
-				v.addEventListener('ratechange', function () { if (g === gen && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
+				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); } });
+				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
 				v.addEventListener('error', function () { if (g === gen) failed('This browser could not play the video file.'); });
 				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
@@ -1321,7 +1402,45 @@
 		$('wt-sv').textContent = (+shown.toFixed(2)) + '×'; $('wt-speed').classList.toggle('wt-off', !ok);
 		['wt-slower', 'wt-faster', 'wt-sv'].forEach(function (id) { $(id).disabled = !ok; });
 		$('wt-speed').title = ok ? 'Speed: S slower, D faster, R normal' : 'This site\'s own player has its own speed setting';
+		paintCC();
 	}
+
+	/* ---------- captions: our own CC button (YouTube's is out of reach while the picture is zoomed, or under the touch layer) ---------- */
+	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file') && !!(vid && vid.textTracks && vid.textTracks.length)); }
+	function paintCC() {
+		var on = !!S.cc, ok = ccAble();
+		[$('wt-cc')].concat([].slice.call(document.querySelectorAll('#wt-stage [data-c="cc"]'))).forEach(function (b) {
+			if (!b) return; b.setAttribute('aria-pressed', String(on)); b.disabled = !ok;
+			b.title = ok ? (on ? 'Hide captions (Shift+C)' : 'Show captions / subtitles (Shift+C)') : 'This player has no captions the page can switch';
+		});
+	}
+	function ccPick(say) {
+		if (!yt || !yt.getOption) return;
+		try {
+			var tl = yt.getOption('captions', 'tracklist') || [], want = (navigator.language || 'en').slice(0, 2).toLowerCase(), t = null;
+			if (!tl.length) { if (say) toast('No captions for this video (or YouTube has not sent them yet)'); return; }
+			tl.forEach(function (x) { if (!t && String(x.languageCode || '').slice(0, 2).toLowerCase() === want) t = x; });
+			t = t || tl[0]; yt.setOption('captions', 'track', { languageCode: t.languageCode });
+			if (say) toast('Captions: ' + (t.displayName || t.languageName || t.languageCode));
+		} catch (e) {}
+	}
+	function applyCC(quiet) {
+		if (yt && yt.loadModule) {
+			try {
+				if (S.cc) { yt.loadModule('captions'); setTimeout(function () { ccPick(!quiet); }, 700); }
+				else { yt.setOption('captions', 'track', {}); yt.unloadModule('captions'); }
+			} catch (e) {}
+			return;
+		}
+		if (vid && vid.textTracks) {
+			var tt = vid.textTracks, best = -1, want = (navigator.language || 'en').slice(0, 2);
+			for (var i = 0; i < tt.length; i++) if (/subtitles|captions/.test(tt[i].kind) && (best < 0 || String(tt[i].language).slice(0, 2) === want)) best = i;
+			for (var j = 0; j < tt.length; j++) tt[j].mode = S.cc && j === best ? 'showing' : 'disabled';
+			if (S.cc && best < 0 && !quiet) toast('This video has no captions');
+		}
+	}
+	function toggleCC() { if (!ccAble()) { toast('This player has no captions the page can switch'); return; } S.cc = !S.cc; save(); applyCC(false); paintCC(); if (!S.cc) toast('Captions off'); }
+	$('wt-cc').onclick = toggleCC;
 	$('wt-slower').onclick = function () { step(-1); };
 	$('wt-faster').onclick = function () { step(1); };
 	$('wt-sv').onclick = function () { setRate(1); };
@@ -1454,7 +1573,8 @@
 	function renderList() {
 		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length; $('wt-nl').textContent = S.lists.length;
 		var L = listOf(S.tab), box = $('wt-list'), now = Date.now(), ol = inList();
-		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol;
+		$('wt-lnew').hidden = S.tab === 'hist' || !!ol;
+		$('wt-lnew').textContent = S.tab === 'saved' ? '💾\uFE0E Save Saved as a playlist' : S.tab === 'q' ? '💾\uFE0E Save Up next as a playlist' : '+ New playlist from Up next';
 		var yb = $('wt-ytacct'), ytOn = S.tab === 'lists' && !ol; if (yb) { if (ytOn && yb.hidden && ytApi && ytApi.shown) ytApi.shown(); yb.hidden = !ytOn; } $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
 		if (S.tab === 'lists' && !ol) {
 			$('wt-share').hidden = true; $('wt-clear').hidden = true;
@@ -1535,10 +1655,14 @@
 	};
 	$('wt-share').onclick = function () { var L = listOf(S.tab), ol = inList(); if (L.length) copy(W.shareUrl(location.origin + '/watch', L.slice(0, 50), 0, ol ? ol.name : '')); };
 	$('wt-lnew').onclick = function () {
-		var nm = prompt('Name of the new playlist:', 'My playlist ' + (S.lists.length + 1)); if (!nm || !nm.trim()) return;
-		var l = W.newList(nm.trim(), S.q.map(strip)); S.lists.unshift(l); openList = l.id; save(); renderList(); toast(l.items.length ? 'Playlist made from Up next' : 'Empty playlist made: press + List under a video to fill it');
+		var nm = prompt('Name of the new playlist:', (cur && S.tab === 'q' && cur.t ? cur.t.slice(0, 40) + ' and more' : 'My playlist ' + (S.lists.length + 1))); if (!nm || !nm.trim()) return;
+		var from = S.tab === 'saved' ? S.saved : S.q, l = W.newList(nm.trim(), from.map(strip)); S.lists.unshift(l); save();
+		if (S.tab === 'lists') { openList = l.id; renderList(); } else renderList();
+		toast(l.items.length ? 'Saved as the playlist "' + l.name + '" (My playlists). Up next can now be cleared or changed.' : 'Empty playlist made: press + List under a video to fill it');
 	};
 	$('wt-histon').onchange = function () { S.histOn = this.checked; save(); toast(this.checked ? 'History is on' : 'History is off: nothing new is kept'); };
+	$('wt-track').checked = !!S.keepTrack;
+	$('wt-track').onchange = function () { S.keepTrack = this.checked; W.keepTrack = S.keepTrack; if (!S.keepTrack) cleanAll(); save(); renderList(); showMeta(); toast(S.keepTrack ? 'New links keep their tracking codes' : 'Tracking codes are removed from links'); };
 	$('wt-priv').checked = S.priv !== false;
 	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && W.mode(cur) !== 'hls' && W.mode(cur) !== 'odysee' && W.mode(cur) !== 'file') { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
 	function strip(it) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; return c; }
@@ -1567,7 +1691,24 @@
 	});
 
 	/* ---------- zoom: scale / move the picture inside its box (pinch, drag, wheel, + / −) ---------- */
-	var zMode = false, zPtr = {}, zStart = null;
+	var zMode = false, zPtr = {}, zStart = null, holdOn = null;
+	/* press and hold the picture = 2x while held (like the YouTube app); our layer gets the touch, so YouTube's own bar stays hidden */
+	function holdStart() {
+		if (holdOn || !cur || !W.canSpeed(cur) || !playing()) return false;
+		holdOn = { prev: S.rate };
+		try { if (yt && yt.setPlaybackRate) yt.setPlaybackRate(2); else if (vid) vid.playbackRate = Math.max(2, S.rate); } catch (e) {}
+		var st = $('wt-stage'), b = st.querySelector('.wt-hold');
+		if (!b) { b = document.createElement('div'); b.className = 'wt-hold'; b.setAttribute('aria-hidden', 'true'); st.appendChild(b); }
+		b.textContent = '2× ▶▶\uFE0E'; b.hidden = false;
+		if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) {}
+		return true;
+	}
+	function holdEnd() {
+		if (!holdOn) return; var prev = holdOn.prev;
+		try { if (yt && yt.setPlaybackRate) yt.setPlaybackRate(W.ytSpeed(prev)); else if (vid) vid.playbackRate = prev; } catch (e) {}
+		setTimeout(function () { holdOn = null; }, 50);
+		var b = document.querySelector('#wt-stage .wt-hold'); if (b) b.hidden = true;
+	}
 	function stageBox() { var st = $('wt-stage'); return { w: st.clientWidth, h: st.clientHeight }; }
 	function zoomLayer() {
 		var st = $('wt-stage'); if (!st || st.querySelector('.wt-zov')) { applyZoom(); return; }
@@ -1589,17 +1730,18 @@
 	   the screen), and a page can't separate them, so this one sits at the bottom of the box, unscaled */
 	var ctlT = 0, ctlHide = 0;
 	function ctlBar(st) {
-		var c = document.createElement('div'); c.className = 'wt-ctl'; c.hidden = true; c.setAttribute('role', 'toolbar'); c.setAttribute('aria-label', 'Player');
+		var c = document.createElement('div'); c.className = 'wt-zbar'; c.hidden = true; c.setAttribute('role', 'toolbar'); c.setAttribute('aria-label', 'Player');
 		c.innerHTML = '<button type="button" data-c="play" class="wt-cplay" aria-label="Play or pause (K)">▶&#xFE0E;</button>' +
 			'<button type="button" data-c="back" aria-label="Back 10 seconds" title="Back 10 s">−10</button>' +
 			'<button type="button" data-c="fwd" aria-label="Forward 10 seconds" title="Forward 10 s">+10</button>' +
 			'<span class="wt-ctime">0:00 / 0:00</span>' +
 			'<input type="range" class="wt-cseek" min="0" max="1000" step="1" value="0" aria-label="Seek">' +
+			'<button type="button" data-c="cc" class="wt-ccb" aria-label="Captions" aria-pressed="false">CC</button>' +
 			'<button type="button" data-c="mute" class="wt-cmute" aria-label="Mute or unmute">🔊&#xFE0E;</button>';
 		['pointerdown', 'dblclick', 'wheel', 'touchstart'].forEach(function (ev) { c.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
 		c.addEventListener('click', function (e) {
 			var b = e.target.closest('[data-c]'); if (!b) return; var k = b.dataset.c;
-			if (k === 'play') togglePlay(); else if (k === 'back') seekBy(-10); else if (k === 'fwd') seekBy(10);
+			if (k === 'cc') toggleCC(); else if (k === 'play') togglePlay(); else if (k === 'back') seekBy(-10); else if (k === 'fwd') seekBy(10);
 			else if (k === 'mute') {
 				try { if (yt && yt.isMuted) { if (yt.isMuted()) yt.unMute(); else yt.mute(); } else if (vid) vid.muted = !vid.muted; } catch (x) {}
 			}
@@ -1616,7 +1758,7 @@
 			setTimeout(ctlTick, 120);
 		});
 		c.__drag = function () { return dragging; };
-		st.appendChild(c);
+		st.appendChild(c); paintCC();
 		st.addEventListener('pointermove', ctlWake); st.addEventListener('pointerdown', ctlWake, true);
 	}
 	function playing() {
@@ -1624,12 +1766,12 @@
 		return !!(vid && !vid.paused && !vid.ended);
 	}
 	function ctlWake() {
-		var c = document.querySelector('#wt-stage .wt-ctl'); if (!c || c.hidden) return;
+		var c = document.querySelector('#wt-stage .wt-zbar'); if (!c || c.hidden) return;
 		c.classList.remove('wt-cidle'); clearTimeout(ctlHide);
 		ctlHide = setTimeout(function () { if (playing() && !c.matches(':hover, :focus-within')) c.classList.add('wt-cidle'); }, 2600);
 	}
 	function ctlTick() {
-		var c = document.querySelector('#wt-stage .wt-ctl'); if (!c || c.hidden) return;
+		var c = document.querySelector('#wt-stage .wt-zbar'); if (!c || c.hidden) return;
 		var p = position() || { pos: 0, dur: 0 }, on = playing();
 		c.querySelector('.wt-cplay').innerHTML = on ? '❚❚' : '▶&#xFE0E;';
 		if (!c.__drag()) {
@@ -1642,7 +1784,7 @@
 		if (!on) c.classList.remove('wt-cidle');
 	}
 	function ctlSync(st, z) {
-		var c = st.querySelector('.wt-ctl'); if (!c) return;
+		var c = st.querySelector('.wt-zbar'); if (!c) return;
 		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
 		if (c.hidden === !want) { if (want) ctlTick(); return; }
 		c.hidden = !want; st.classList.toggle('wt-hasctl', want); clearInterval(ctlT);
@@ -1706,16 +1848,19 @@
 			try { ov.setPointerCapture(e.pointerId); } catch (x) {} zPtr[e.pointerId] = rel(e);
 			var ids = Object.keys(zPtr), z = S.zoom || { k: 1, x: 0, y: 0 };
 			if (ids.length === 1) {
-				g = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false, multi: false };
+				g = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false, multi: false, held: false };
 				zStart = { p: zPtr[ids[0]], z: z };
+				var gg = g; clearTimeout(g.ht);
+				if (!zMode && e.pointerType !== 'mouse') g.ht = setTimeout(function () { if (g === gg && !gg.moved && !gg.multi && Object.keys(zPtr).length === 1 && holdStart()) gg.held = true; }, 450);
 			} else if (ids.length === 2) {
-				if (g) g.multi = true;
+				if (g) { g.multi = true; clearTimeout(g.ht); if (g.held) { holdEnd(); g.held = false; } }
 				var a = zPtr[ids[0]], c = zPtr[ids[1]];
 				zStart = { mid: { x: (a.x + c.x) / 2, y: (a.y + c.y) / 2 }, d: Math.hypot(a.x - c.x, a.y - c.y) || 1, z: z };
 			}
 		});
 		ov.addEventListener('pointermove', function (e) {
 			if (!zPtr[e.pointerId] || !zStart) return; zPtr[e.pointerId] = rel(e);
+			if (g && g.held) return;   // holding for 2x: sliding the finger doesn't move the picture
 			if (g && !g.moved && Math.hypot(e.clientX - g.x, e.clientY - g.y) > 8) g.moved = true;
 			if (g && !g.moved) return;
 			var ids = Object.keys(zPtr), z0 = zStart.z;
@@ -1727,10 +1872,13 @@
 			applyZoom();
 		});
 		function up(e) {
+			if (g) clearTimeout(g.ht);
+			if (g && g.held) { holdEnd(); delete zPtr[e.pointerId]; if (!Object.keys(zPtr).length) g = null; zStart = null; return; }
 			if (e.type === 'pointerup' && g && !g.moved && !g.multi && Date.now() - g.t < 400 && Object.keys(zPtr).length === 1) tap(e);
 			delete zPtr[e.pointerId];
 			if (!Object.keys(zPtr).length) g = null; var ids = Object.keys(zPtr); zStart = ids.length === 1 ? { p: zPtr[ids[0]], z: S.zoom } : null; clearTimeout(zSave); zSave = setTimeout(save, 400); }
 		ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
+		ov.addEventListener('contextmenu', function (e) { if (e.pointerType !== 'mouse' || (g && g.held)) e.preventDefault(); });
 		// one tap = play / pause (after a moment, in case a second tap follows); two taps = Fill / back to 100%
 		function tap(e) {
 			var now = Date.now(), p = rel(e);
@@ -1787,6 +1935,7 @@
 		else if (k === 's' && cur && W.canSpeed(cur)) step(-1); else if (k === 'd' && cur && W.canSpeed(cur)) step(1); else if (k === 'r' && cur && W.canSpeed(cur)) setRate(1);
 		else if (k === 'n') go(e.shiftKey ? -1 : 1);
 		else if (k === 'z') setZMode(!zMode);
+		else if (k === 'c' && e.shiftKey) toggleCC();
 		else if (k === 'c') $('wt-cmbtn').click();
 		else if ((e.key === '+' || e.key === '=') && cur) zoomTo(((S.zoom || {}).k || 1) * 1.25);
 		else if ((e.key === '-' || e.key === '_') && cur) zoomTo(((S.zoom || {}).k || 1) / 1.25);
@@ -1929,6 +2078,6 @@
 		var nl = W.newList(name || 'YouTube playlist', items); nl.src = src; S.lists.unshift(nl); return nl;
 	}
 	var ytApi = (window.WTYouTube && window.WTYouTube({ S: S, esc: esc, toast: toast, upsertList: upsertList, changed: function () { save(); renderList(); } })) || {};
-	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
+	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, save: save, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
 	if (document.readyState === 'complete') boot(); else window.addEventListener('load', boot);
 })();

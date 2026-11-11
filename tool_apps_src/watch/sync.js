@@ -31,13 +31,14 @@
 		function ref() { return st.p === "file" ? handle : st.ref; }
 		function round(ask, tries) {
 			tries = tries || 0;
-			var prov = P()[st.p], local = W.snap(api.S, true);
+			var prov = P()[st.p], full = W.snap(api.S, true), sel = api.S.bk, local = full;
 			if (st.p === "file" && !handle) return Promise.reject(Object.assign(new Error("Open the file again."), { code: "perm" }));
 			return prov.read(ref(), ask).then(function (r) {
 				var text = new TextDecoder().decode(r.bytes), remote = W.readFile(text);
+				local = remote ? W.mask(full, remote, sel) : W.pick(full, sel); delete local.part;   // left-out parts: the other copy is never touched
 				var merged = remote ? W.merge3(st.base || (remote ? { q: [], saved: [], lists: [], chans: [], hist: [] } : null), local, remote) : local;
 				var write = !remote || JSON.stringify(merged) !== JSON.stringify(remote);
-				var done = function (ver) { st.ver = ver; st.base = merged; st.at = Date.now(); st.err = ""; st.code = ""; keep(); if (JSON.stringify(merged) !== JSON.stringify(local)) api.apply(merged); paint(); };
+				var done = function (ver) { st.ver = ver; st.base = merged; st.at = Date.now(); st.err = ""; st.code = ""; keep(); var back = W.mask(merged, full, sel); if (JSON.stringify(back) !== JSON.stringify(full)) api.apply(back); paint(); };
 				if (!write) { done(r.ver); return; }
 				var bytes = new TextEncoder().encode(W.fileText(merged, dev()));
 				return prov.write(ref(), st.name || FNAME, bytes, r.ver, ask).then(function (w) { if (w && w.ref && st.p !== "file") st.ref = w.ref; done(w.ver); }, function (e) {
@@ -79,8 +80,9 @@
 					var f = files.filter(function (x) { return x.name === FNAME; })[0];
 					if (f) return start(p, null, f.ref, f.name);
 					// no file yet: write this browser's lists as the first copy
-					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(W.snap(api.S, true), dev())), "", false, WDIR).then(function (w) {
-						st = { p: p, ref: w.ref, name: w.name || FNAME, ver: w.ver, base: W.snap(api.S, true), at: Date.now(), err: "", code: "" }; keep(); paint(); toast("Syncing with " + NAMES[p]);
+					var first = W.pick(W.snap(api.S, true), api.S.bk); delete first.part;
+					return prov.write(null, FNAME, new TextEncoder().encode(W.fileText(first, dev())), "", false, WDIR).then(function (w) {
+						st = { p: p, ref: w.ref, name: w.name || FNAME, ver: w.ver, base: first, at: Date.now(), err: "", code: "" }; keep(); paint(); toast("Syncing with " + NAMES[p]);
 					});
 				}).then(function () { msg(""); }, function (e) { msg(e.message || String(e), "err"); });
 			};
@@ -124,7 +126,30 @@
 				'<button type="button" class="tu-btn" data-s="now"' + (busy ? " disabled" : "") + ">Sync now</button>" +
 				'<button type="button" class="tu-btn tu-btn--ghost" data-s="stop">Stop syncing</button>';
 		}
-		$("wt-syncbtn").onclick = function () { var p = $("wt-sync"), open = p.hidden; p.hidden = !open; this.setAttribute("aria-expanded", String(open)); if (open) { paint(); paintHive(); p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } };
+		/* ---------- what to back up (both the cloud file and Hive) ---------- */
+		function paintSel() {
+			var box = $("wt-bkrows"); if (!box) return;
+			var S = api.S, sel = S.bk || {}, row = function (key, label, n, on, note) {
+				return '<label class="wt-check wt-bkrow"><input type="checkbox" data-bk="' + esc(key) + '"' + (on ? " checked" : "") + "> " + esc(label) + ' <small>' + n + "</small>" + (note ? ' <em class="wt-ssmall">' + esc(note) + "</em>" : "") + "</label>";
+			};
+			box.innerHTML = '<div class="wt-bkgrp">' + row("q", "Up next", S.q.length, W.selOn(sel, "q")) + row("saved", "Saved", S.saved.length, W.selOn(sel, "saved")) +
+				row("chans", "My channels", S.chans.length, W.selOn(sel, "chans")) + row("hist", "History and where I stopped", S.hist.length, W.selOn(sel, "hist"), "(cloud sync only)") + "</div>" +
+				(S.lists.length ? '<div class="wt-bkgrp"><b>Playlists</b>' + S.lists.map(function (l) { return row("l:" + l.id, l.name, l.items.length, W.listOn(sel, l.id)); }).join("") + "</div>" : '<p class="wt-ssmall">No playlists yet.</p>') +
+				'<div class="wt-sacts"><button type="button" class="tu-btn tu-btn--ghost" data-bkall="1">Tick all</button><button type="button" class="tu-btn tu-btn--ghost" data-bkall="0">Untick all</button></div>';
+			$("wt-bknote").textContent = W.partial(sel) ? "Only the ticked parts are synced and backed up. What you untick stays as it is in the other copy." : "Everything is synced and backed up. Untick what you want to keep on this device only.";
+		}
+		$("wt-bkrows") && $("wt-bkrows").addEventListener("change", function (e) {
+			var c = e.target.closest("[data-bk]"); if (!c) return; var S = api.S, k = c.dataset.bk, sel = S.bk = S.bk || {};
+			if (k.indexOf("l:") === 0) { sel.off = sel.off || {}; if (c.checked) delete sel.off[k.slice(2)]; else sel.off[k.slice(2)] = 1; }
+			else if (c.checked) delete sel[k]; else sel[k] = false;
+			api.save(); paintSel(); if (st && st.p) later(800);
+		});
+		$("wt-bkrows") && $("wt-bkrows").addEventListener("click", function (e) {
+			var b = e.target.closest("[data-bkall]"); if (!b) return; var S = api.S;
+			if (b.dataset.bkall === "1") S.bk = {}; else { S.bk = { q: false, saved: false, chans: false, hist: false, off: {} }; S.lists.forEach(function (l) { S.bk.off[l.id] = 1; }); }
+			api.save(); paintSel(); if (st && st.p) later(800);
+		});
+		$("wt-syncbtn").onclick = function () { var p = $("wt-sync"), open = p.hidden; p.hidden = !open; this.setAttribute("aria-expanded", String(open)); if (open) { paintSel(); paint(); paintHive(); p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } };
 		$("wt-sync-close").onclick = function () { $("wt-sync").hidden = true; $("wt-syncbtn").setAttribute("aria-expanded", "false"); };
 		$("wt-sync").addEventListener("click", function (e) {
 			var b = e.target.closest("[data-s]"); if (!b) return; var a = b.dataset.s;
@@ -173,8 +198,8 @@
 		function errText(e) { return (e && (e.message || e.error)) || String(e); }
 		function hiveSave() {
 			if (hbusy) return;
-			var data = W.snap(api.S, false), n = W.snapCount(data);
-			if (!n) { hmsg("There is nothing to back up yet.", "err"); return; }
+			var data = W.pick(W.snap(api.S, false), api.S.bk), n = W.snapCount(data);
+			if (!n) { hmsg(W.partial(api.S.bk) ? "Nothing is ticked under \u201cWhat to back up\u201d (or the ticked lists are empty)." : "There is nothing to back up yet.", "err"); return; }
 			var enc = encOn();
 			if (!enc && !confirm("Back up WITHOUT encryption?\n\nAll your video links, playlists and channels will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
 			hbusyOn(true);
@@ -214,7 +239,7 @@
 				var mine = W.snap(api.S, true), undo = JSON.stringify(mine);
 				if (mode === "replace") {
 					if (!confirm("Replace your Up next, Saved, playlists and channels here with this backup (" + W.snapCount(data) + " items)? History stays. You can undo right after.")) { hmsg(""); return; }
-					data.hist = mine.hist; api.apply(data);
+					api.apply(W.replaceWith(mine, data));
 					toast("Replaced with the Hive backup", function () { api.apply(JSON.parse(undo)); });
 					hmsg("Loaded the backup.", "ok");
 				} else {

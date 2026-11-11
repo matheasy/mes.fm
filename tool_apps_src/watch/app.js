@@ -5,9 +5,17 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, cc: false, keepTrack: false, bk: {}, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
+	if (!S.bk || typeof S.bk !== 'object') S.bk = {};
+	W.keepTrack = !!S.keepTrack;
+	/* links saved before tracking codes were dropped (si=, utm_..., Rumble pub=, X s= / t=): clean them once */
+	function cleanAll() {
+		var f = function (L) { (L || []).forEach(function (x) { if (x && x.u) { var c = W.clean(x.u); if (c !== x.u) { x.u = c; if (x.k === 'direct' || !x.id) { x.id = x.k === 'direct' ? c : x.id; x.key = W.key(x); } } } }); };
+		f(S.q); f(S.saved); f(S.hist); (S.lists || []).forEach(function (l) { f(l.items); });
+	}
+	if (!S.keepTrack) cleanAll();
 	var saveHooks = [];
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} saveHooks.forEach(function (f) { try { f(); } catch (x) {} }); }
 	function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -112,16 +120,17 @@
 				holder = document.createElement('iframe'); holder.id = 'wt-yt'; holder.setAttribute('credentialless', ''); try { holder.credentialless = true; } catch (e) {}
 				holder.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; holder.allowFullscreen = true; holder.title = W.label(cur);
 				holder.referrerPolicy = 'strict-origin-when-cross-origin';
-				holder.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(cur.id) + '?enablejsapi=1&rel=0&playsinline=1&iv_load_policy=3&autoplay=1&start=' + (start || 0) + '&origin=' + encodeURIComponent(location.origin);
+				holder.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(cur.id) + '?enablejsapi=1&rel=0&playsinline=1&iv_load_policy=3&autoplay=1' + (S.cc ? '&cc_load_policy=1' : '') + '&start=' + (start || 0) + '&origin=' + encodeURIComponent(location.origin);
 			} else { holder = document.createElement('div'); holder.id = 'wt-yt'; }
 			stage.appendChild(holder);
 			ensureYT().then(function () {
 				if (g !== gen) return;
 				yt = new YT.Player('wt-yt', { host: S.priv ? 'https://www.youtube-nocookie.com' : 'https://www.youtube.com', videoId: cur.id, width: '100%', height: '100%',
-					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3 },
+					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3, cc_load_policy: S.cc ? 1 : 0 },
 					events: {
 						onReady: function (e) { if (g !== gen) return; try { e.target.setPlaybackRate(W.ytSpeed(S.rate)); e.target.playVideo(); var d = e.target.getVideoData(); if (d && d.title) setMeta(cur.key, d.title, cur.th); } catch (x) {} syncSpeed(); },
 						onStateChange: function (e) { if (g === gen && e.data === 0) ended(); },
+						onApiChange: function () { if (g === gen && S.cc) ccPick(false); },
 						onError: function (e) { if (g === gen) failed(e && (e.data === 100 || e.data === 5) ? 'YouTube says this video is unavailable (removed or private).' : 'YouTube would not play this video here (the owner may have turned off playing on other sites).'); }
 					} });
 				saveT = setInterval(remember, 5000);
@@ -137,7 +146,8 @@
 				setStage(''); stage.appendChild(v); vid = v;
 				v.addEventListener('loadedmetadata', function () { if (start && start < (v.duration || 1e9) - 5) v.currentTime = start; v.playbackRate = S.rate; }, { once: true });
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
-				v.addEventListener('ratechange', function () { if (g === gen && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
+				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); } });
+				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
 				v.addEventListener('error', function () { if (g === gen) failed('This browser could not play the video file.'); });
 				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
@@ -213,7 +223,45 @@
 		$('wt-sv').textContent = (+shown.toFixed(2)) + '×'; $('wt-speed').classList.toggle('wt-off', !ok);
 		['wt-slower', 'wt-faster', 'wt-sv'].forEach(function (id) { $(id).disabled = !ok; });
 		$('wt-speed').title = ok ? 'Speed: S slower, D faster, R normal' : 'This site\'s own player has its own speed setting';
+		paintCC();
 	}
+
+	/* ---------- captions: our own CC button (YouTube's is out of reach while the picture is zoomed, or under the touch layer) ---------- */
+	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file') && !!(vid && vid.textTracks && vid.textTracks.length)); }
+	function paintCC() {
+		var on = !!S.cc, ok = ccAble();
+		[$('wt-cc')].concat([].slice.call(document.querySelectorAll('#wt-stage [data-c="cc"]'))).forEach(function (b) {
+			if (!b) return; b.setAttribute('aria-pressed', String(on)); b.disabled = !ok;
+			b.title = ok ? (on ? 'Hide captions (Shift+C)' : 'Show captions / subtitles (Shift+C)') : 'This player has no captions the page can switch';
+		});
+	}
+	function ccPick(say) {
+		if (!yt || !yt.getOption) return;
+		try {
+			var tl = yt.getOption('captions', 'tracklist') || [], want = (navigator.language || 'en').slice(0, 2).toLowerCase(), t = null;
+			if (!tl.length) { if (say) toast('No captions for this video (or YouTube has not sent them yet)'); return; }
+			tl.forEach(function (x) { if (!t && String(x.languageCode || '').slice(0, 2).toLowerCase() === want) t = x; });
+			t = t || tl[0]; yt.setOption('captions', 'track', { languageCode: t.languageCode });
+			if (say) toast('Captions: ' + (t.displayName || t.languageName || t.languageCode));
+		} catch (e) {}
+	}
+	function applyCC(quiet) {
+		if (yt && yt.loadModule) {
+			try {
+				if (S.cc) { yt.loadModule('captions'); setTimeout(function () { ccPick(!quiet); }, 700); }
+				else { yt.setOption('captions', 'track', {}); yt.unloadModule('captions'); }
+			} catch (e) {}
+			return;
+		}
+		if (vid && vid.textTracks) {
+			var tt = vid.textTracks, best = -1, want = (navigator.language || 'en').slice(0, 2);
+			for (var i = 0; i < tt.length; i++) if (/subtitles|captions/.test(tt[i].kind) && (best < 0 || String(tt[i].language).slice(0, 2) === want)) best = i;
+			for (var j = 0; j < tt.length; j++) tt[j].mode = S.cc && j === best ? 'showing' : 'disabled';
+			if (S.cc && best < 0 && !quiet) toast('This video has no captions');
+		}
+	}
+	function toggleCC() { if (!ccAble()) { toast('This player has no captions the page can switch'); return; } S.cc = !S.cc; save(); applyCC(false); paintCC(); if (!S.cc) toast('Captions off'); }
+	$('wt-cc').onclick = toggleCC;
 	$('wt-slower').onclick = function () { step(-1); };
 	$('wt-faster').onclick = function () { step(1); };
 	$('wt-sv').onclick = function () { setRate(1); };
@@ -346,7 +394,8 @@
 	function renderList() {
 		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length; $('wt-nl').textContent = S.lists.length;
 		var L = listOf(S.tab), box = $('wt-list'), now = Date.now(), ol = inList();
-		$('wt-lnew').hidden = S.tab !== 'lists' || !!ol;
+		$('wt-lnew').hidden = S.tab === 'hist' || !!ol;
+		$('wt-lnew').textContent = S.tab === 'saved' ? '💾\uFE0E Save Saved as a playlist' : S.tab === 'q' ? '💾\uFE0E Save Up next as a playlist' : '+ New playlist from Up next';
 		var yb = $('wt-ytacct'), ytOn = S.tab === 'lists' && !ol; if (yb) { if (ytOn && yb.hidden && ytApi && ytApi.shown) ytApi.shown(); yb.hidden = !ytOn; } $('wt-histwrap').hidden = S.tab !== 'hist'; $('wt-histon').checked = S.histOn !== false;
 		if (S.tab === 'lists' && !ol) {
 			$('wt-share').hidden = true; $('wt-clear').hidden = true;
@@ -427,10 +476,14 @@
 	};
 	$('wt-share').onclick = function () { var L = listOf(S.tab), ol = inList(); if (L.length) copy(W.shareUrl(location.origin + '/watch', L.slice(0, 50), 0, ol ? ol.name : '')); };
 	$('wt-lnew').onclick = function () {
-		var nm = prompt('Name of the new playlist:', 'My playlist ' + (S.lists.length + 1)); if (!nm || !nm.trim()) return;
-		var l = W.newList(nm.trim(), S.q.map(strip)); S.lists.unshift(l); openList = l.id; save(); renderList(); toast(l.items.length ? 'Playlist made from Up next' : 'Empty playlist made: press + List under a video to fill it');
+		var nm = prompt('Name of the new playlist:', (cur && S.tab === 'q' && cur.t ? cur.t.slice(0, 40) + ' and more' : 'My playlist ' + (S.lists.length + 1))); if (!nm || !nm.trim()) return;
+		var from = S.tab === 'saved' ? S.saved : S.q, l = W.newList(nm.trim(), from.map(strip)); S.lists.unshift(l); save();
+		if (S.tab === 'lists') { openList = l.id; renderList(); } else renderList();
+		toast(l.items.length ? 'Saved as the playlist "' + l.name + '" (My playlists). Up next can now be cleared or changed.' : 'Empty playlist made: press + List under a video to fill it');
 	};
 	$('wt-histon').onchange = function () { S.histOn = this.checked; save(); toast(this.checked ? 'History is on' : 'History is off: nothing new is kept'); };
+	$('wt-track').checked = !!S.keepTrack;
+	$('wt-track').onchange = function () { S.keepTrack = this.checked; W.keepTrack = S.keepTrack; if (!S.keepTrack) cleanAll(); save(); renderList(); showMeta(); toast(S.keepTrack ? 'New links keep their tracking codes' : 'Tracking codes are removed from links'); };
 	$('wt-priv').checked = S.priv !== false;
 	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && W.mode(cur) !== 'hls' && W.mode(cur) !== 'odysee' && W.mode(cur) !== 'file') { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
 	function strip(it) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; return c; }
@@ -459,7 +512,24 @@
 	});
 
 	/* ---------- zoom: scale / move the picture inside its box (pinch, drag, wheel, + / −) ---------- */
-	var zMode = false, zPtr = {}, zStart = null;
+	var zMode = false, zPtr = {}, zStart = null, holdOn = null;
+	/* press and hold the picture = 2x while held (like the YouTube app); our layer gets the touch, so YouTube's own bar stays hidden */
+	function holdStart() {
+		if (holdOn || !cur || !W.canSpeed(cur) || !playing()) return false;
+		holdOn = { prev: S.rate };
+		try { if (yt && yt.setPlaybackRate) yt.setPlaybackRate(2); else if (vid) vid.playbackRate = Math.max(2, S.rate); } catch (e) {}
+		var st = $('wt-stage'), b = st.querySelector('.wt-hold');
+		if (!b) { b = document.createElement('div'); b.className = 'wt-hold'; b.setAttribute('aria-hidden', 'true'); st.appendChild(b); }
+		b.textContent = '2× ▶▶\uFE0E'; b.hidden = false;
+		if (navigator.vibrate) try { navigator.vibrate(12); } catch (e) {}
+		return true;
+	}
+	function holdEnd() {
+		if (!holdOn) return; var prev = holdOn.prev;
+		try { if (yt && yt.setPlaybackRate) yt.setPlaybackRate(W.ytSpeed(prev)); else if (vid) vid.playbackRate = prev; } catch (e) {}
+		setTimeout(function () { holdOn = null; }, 50);
+		var b = document.querySelector('#wt-stage .wt-hold'); if (b) b.hidden = true;
+	}
 	function stageBox() { var st = $('wt-stage'); return { w: st.clientWidth, h: st.clientHeight }; }
 	function zoomLayer() {
 		var st = $('wt-stage'); if (!st || st.querySelector('.wt-zov')) { applyZoom(); return; }
@@ -481,17 +551,18 @@
 	   the screen), and a page can't separate them, so this one sits at the bottom of the box, unscaled */
 	var ctlT = 0, ctlHide = 0;
 	function ctlBar(st) {
-		var c = document.createElement('div'); c.className = 'wt-ctl'; c.hidden = true; c.setAttribute('role', 'toolbar'); c.setAttribute('aria-label', 'Player');
+		var c = document.createElement('div'); c.className = 'wt-zbar'; c.hidden = true; c.setAttribute('role', 'toolbar'); c.setAttribute('aria-label', 'Player');
 		c.innerHTML = '<button type="button" data-c="play" class="wt-cplay" aria-label="Play or pause (K)">▶&#xFE0E;</button>' +
 			'<button type="button" data-c="back" aria-label="Back 10 seconds" title="Back 10 s">−10</button>' +
 			'<button type="button" data-c="fwd" aria-label="Forward 10 seconds" title="Forward 10 s">+10</button>' +
 			'<span class="wt-ctime">0:00 / 0:00</span>' +
 			'<input type="range" class="wt-cseek" min="0" max="1000" step="1" value="0" aria-label="Seek">' +
+			'<button type="button" data-c="cc" class="wt-ccb" aria-label="Captions" aria-pressed="false">CC</button>' +
 			'<button type="button" data-c="mute" class="wt-cmute" aria-label="Mute or unmute">🔊&#xFE0E;</button>';
 		['pointerdown', 'dblclick', 'wheel', 'touchstart'].forEach(function (ev) { c.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
 		c.addEventListener('click', function (e) {
 			var b = e.target.closest('[data-c]'); if (!b) return; var k = b.dataset.c;
-			if (k === 'play') togglePlay(); else if (k === 'back') seekBy(-10); else if (k === 'fwd') seekBy(10);
+			if (k === 'cc') toggleCC(); else if (k === 'play') togglePlay(); else if (k === 'back') seekBy(-10); else if (k === 'fwd') seekBy(10);
 			else if (k === 'mute') {
 				try { if (yt && yt.isMuted) { if (yt.isMuted()) yt.unMute(); else yt.mute(); } else if (vid) vid.muted = !vid.muted; } catch (x) {}
 			}
@@ -508,7 +579,7 @@
 			setTimeout(ctlTick, 120);
 		});
 		c.__drag = function () { return dragging; };
-		st.appendChild(c);
+		st.appendChild(c); paintCC();
 		st.addEventListener('pointermove', ctlWake); st.addEventListener('pointerdown', ctlWake, true);
 	}
 	function playing() {
@@ -516,12 +587,12 @@
 		return !!(vid && !vid.paused && !vid.ended);
 	}
 	function ctlWake() {
-		var c = document.querySelector('#wt-stage .wt-ctl'); if (!c || c.hidden) return;
+		var c = document.querySelector('#wt-stage .wt-zbar'); if (!c || c.hidden) return;
 		c.classList.remove('wt-cidle'); clearTimeout(ctlHide);
 		ctlHide = setTimeout(function () { if (playing() && !c.matches(':hover, :focus-within')) c.classList.add('wt-cidle'); }, 2600);
 	}
 	function ctlTick() {
-		var c = document.querySelector('#wt-stage .wt-ctl'); if (!c || c.hidden) return;
+		var c = document.querySelector('#wt-stage .wt-zbar'); if (!c || c.hidden) return;
 		var p = position() || { pos: 0, dur: 0 }, on = playing();
 		c.querySelector('.wt-cplay').innerHTML = on ? '❚❚' : '▶&#xFE0E;';
 		if (!c.__drag()) {
@@ -534,7 +605,7 @@
 		if (!on) c.classList.remove('wt-cidle');
 	}
 	function ctlSync(st, z) {
-		var c = st.querySelector('.wt-ctl'); if (!c) return;
+		var c = st.querySelector('.wt-zbar'); if (!c) return;
 		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
 		if (c.hidden === !want) { if (want) ctlTick(); return; }
 		c.hidden = !want; st.classList.toggle('wt-hasctl', want); clearInterval(ctlT);
@@ -598,16 +669,19 @@
 			try { ov.setPointerCapture(e.pointerId); } catch (x) {} zPtr[e.pointerId] = rel(e);
 			var ids = Object.keys(zPtr), z = S.zoom || { k: 1, x: 0, y: 0 };
 			if (ids.length === 1) {
-				g = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false, multi: false };
+				g = { t: Date.now(), x: e.clientX, y: e.clientY, moved: false, multi: false, held: false };
 				zStart = { p: zPtr[ids[0]], z: z };
+				var gg = g; clearTimeout(g.ht);
+				if (!zMode && e.pointerType !== 'mouse') g.ht = setTimeout(function () { if (g === gg && !gg.moved && !gg.multi && Object.keys(zPtr).length === 1 && holdStart()) gg.held = true; }, 450);
 			} else if (ids.length === 2) {
-				if (g) g.multi = true;
+				if (g) { g.multi = true; clearTimeout(g.ht); if (g.held) { holdEnd(); g.held = false; } }
 				var a = zPtr[ids[0]], c = zPtr[ids[1]];
 				zStart = { mid: { x: (a.x + c.x) / 2, y: (a.y + c.y) / 2 }, d: Math.hypot(a.x - c.x, a.y - c.y) || 1, z: z };
 			}
 		});
 		ov.addEventListener('pointermove', function (e) {
 			if (!zPtr[e.pointerId] || !zStart) return; zPtr[e.pointerId] = rel(e);
+			if (g && g.held) return;   // holding for 2x: sliding the finger doesn't move the picture
 			if (g && !g.moved && Math.hypot(e.clientX - g.x, e.clientY - g.y) > 8) g.moved = true;
 			if (g && !g.moved) return;
 			var ids = Object.keys(zPtr), z0 = zStart.z;
@@ -619,10 +693,13 @@
 			applyZoom();
 		});
 		function up(e) {
+			if (g) clearTimeout(g.ht);
+			if (g && g.held) { holdEnd(); delete zPtr[e.pointerId]; if (!Object.keys(zPtr).length) g = null; zStart = null; return; }
 			if (e.type === 'pointerup' && g && !g.moved && !g.multi && Date.now() - g.t < 400 && Object.keys(zPtr).length === 1) tap(e);
 			delete zPtr[e.pointerId];
 			if (!Object.keys(zPtr).length) g = null; var ids = Object.keys(zPtr); zStart = ids.length === 1 ? { p: zPtr[ids[0]], z: S.zoom } : null; clearTimeout(zSave); zSave = setTimeout(save, 400); }
 		ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
+		ov.addEventListener('contextmenu', function (e) { if (e.pointerType !== 'mouse' || (g && g.held)) e.preventDefault(); });
 		// one tap = play / pause (after a moment, in case a second tap follows); two taps = Fill / back to 100%
 		function tap(e) {
 			var now = Date.now(), p = rel(e);
@@ -679,6 +756,7 @@
 		else if (k === 's' && cur && W.canSpeed(cur)) step(-1); else if (k === 'd' && cur && W.canSpeed(cur)) step(1); else if (k === 'r' && cur && W.canSpeed(cur)) setRate(1);
 		else if (k === 'n') go(e.shiftKey ? -1 : 1);
 		else if (k === 'z') setZMode(!zMode);
+		else if (k === 'c' && e.shiftKey) toggleCC();
 		else if (k === 'c') $('wt-cmbtn').click();
 		else if ((e.key === '+' || e.key === '=') && cur) zoomTo(((S.zoom || {}).k || 1) * 1.25);
 		else if ((e.key === '-' || e.key === '_') && cur) zoomTo(((S.zoom || {}).k || 1) / 1.25);
@@ -821,6 +899,6 @@
 		var nl = W.newList(name || 'YouTube playlist', items); nl.src = src; S.lists.unshift(nl); return nl;
 	}
 	var ytApi = (window.WTYouTube && window.WTYouTube({ S: S, esc: esc, toast: toast, upsertList: upsertList, changed: function () { save(); renderList(); } })) || {};
-	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
+	if (window.WTSync) window.WTSync({ S: S, esc: esc, toast: toast, save: save, apply: applySnap, onSave: function (f) { saveHooks.push(f); } });
 	if (document.readyState === 'complete') boot(); else window.addEventListener('load', boot);
 })();

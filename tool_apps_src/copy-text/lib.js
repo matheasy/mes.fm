@@ -123,6 +123,25 @@
 		st.boards.forEach(function (b) { if (b.name === curName) st.cur = b.id; });
 		return st;
 	}
+	/* ---------- which boards are backed up / synced (chosen per browser, by board name; off = {name: 1}) ---------- */
+	function anyOff(off) { return !!off && Object.keys(off).length > 0; }
+	function pickBoards(snap, off) {   // a backup / first sync file: only the ticked boards (part: 1 = not everything)
+		if (!anyOff(off)) return snap;
+		var o = snapshot({ boards: (snap.boards || []).filter(function (b) { return !off[b.name]; }) }); o.part = 1; return o;
+	}
+	function maskBoards(target, source, off) {   // left-out boards come from source (the other copy), so a sync never touches them
+		if (!anyOff(off)) return target;
+		var src = {}, seen = {}, out = [];
+		(source && source.boards || []).forEach(function (b) { if (!src[b.name]) src[b.name] = b; });
+		(target.boards || []).forEach(function (b) { seen[b.name] = 1; if (!off[b.name]) out.push(b); else if (src[b.name]) out.push(src[b.name]); });
+		(source && source.boards || []).forEach(function (b) { if (!seen[b.name] && off[b.name]) { out.push(b); seen[b.name] = 1; } });
+		return snapshot({ boards: out });
+	}
+	function replacePart(mine, data) {   // "Replace" with a backup of only some boards: boards it doesn't have stay as they are
+		if (!data.part) return data;
+		var have = {}; (data.boards || []).forEach(function (b) { have[b.name] = 1; });
+		return snapshot({ boards: (data.boards || []).concat((mine.boards || []).filter(function (b) { return !have[b.name]; })) });
+	}
 	function ago(ms, now) {
 		var s = Math.max(0, Math.round(((now || Date.now()) - ms) / 1000));
 		if (s < 45) return "just now";
@@ -131,7 +150,7 @@
 		var d = Math.round(s / 86400); return d + (d === 1 ? " day ago" : " days ago");
 	}
 	var api = { hash: hash, record: record, status: status, COLORS: COLORS, snapshot: snapshot, merge: merge, replace: replace, count: count,
-		sig: sig, fileText: fileText, parseFile: parseFile, plan: plan, merge3: merge3, fromSnap: fromSnap, ago: ago };
+		sig: sig, fileText: fileText, parseFile: parseFile, plan: plan, merge3: merge3, fromSnap: fromSnap, ago: ago, pickBoards: pickBoards, maskBoards: maskBoards, replacePart: replacePart, anyOff: anyOff };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	root.CTLib = api;
 })(typeof window !== "undefined" ? window : globalThis);

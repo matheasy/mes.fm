@@ -494,16 +494,16 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 
 /* our own control bar while zoomed in (the player's own bar is scaled / moved with the picture) */
 .wt-stage.wt-hasctl .wt-zov {bottom:46px !important;}
-.wt-ctl {position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;flex-wrap:nowrap;box-sizing:border-box;align-items:center;gap:0.35em;padding:0.35em 0.6em;
+.wt-zbar {position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;flex-wrap:nowrap;box-sizing:border-box;align-items:center;gap:0.35em;padding:0.35em 0.6em;
 	background:linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.55));color:#fff;font-size:0.9rem;transition:opacity 0.25s;}
-.wt-ctl[hidden] {display:none !important;}
-.wt-ctl.wt-cidle {opacity:0;}
-#wt .wt-ctl button {font:inherit;min-width:2.4em;height:2.2em;padding:0 0.5em;border:0;border-radius:999px;background:rgba(255,255,255,0.14);color:#fff;cursor:pointer;line-height:1;white-space:nowrap;}
-#wt .wt-ctl button:hover, #wt .wt-ctl button:focus-visible {background:rgba(255,255,255,0.28);}
-#wt .wt-ctl .wt-cplay {min-width:2.6em;font-weight:700;}
-#wt .wt-ctl .wt-ctime {color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap;padding:0 0.3em;}
-#wt .wt-ctl .wt-cseek {flex:1 1 0;width:auto !important;display:block;min-width:3em;padding:0;border:0;box-shadow:none;height:1.6em;margin:0;accent-color:var(--wt-acc);cursor:pointer;background:transparent;}
-@media (max-width:480px) {#wt .wt-ctl [data-c="back"], #wt .wt-ctl [data-c="fwd"] {display:none;} #wt .wt-ctl .wt-ctime {font-size:0.85em;}}
+.wt-zbar[hidden] {display:none !important;}
+.wt-zbar.wt-cidle {opacity:0;}
+#wt .wt-zbar button {font:inherit;min-width:2.4em;height:2.2em;padding:0 0.5em;border:0;border-radius:999px;background:rgba(255,255,255,0.14);color:#fff;cursor:pointer;line-height:1;white-space:nowrap;}
+#wt .wt-zbar button:hover, #wt .wt-zbar button:focus-visible {background:rgba(255,255,255,0.28);}
+#wt .wt-zbar .wt-cplay {min-width:2.6em;font-weight:700;}
+#wt .wt-zbar .wt-ctime {color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap;padding:0 0.3em;}
+#wt .wt-zbar .wt-cseek {flex:1 1 0;width:auto !important;display:block;min-width:3em;padding:0;border:0;box-shadow:none;height:1.6em;margin:0;accent-color:var(--wt-acc);cursor:pointer;background:transparent;}
+@media (max-width:480px) {#wt .wt-zbar [data-c="back"], #wt .wt-zbar [data-c="fwd"] {display:none;} #wt .wt-zbar .wt-ctime {font-size:0.85em;}}
 	/* Your YouTube playlists (youtube.js) */
 	.wt-yt {border:1px solid var(--wt-line);background:var(--wt-soft);border-radius:0.6em;padding:0.6em 0.8em;margin-bottom:0.7em;color:var(--wt-fg);}
 	.wt-ythead {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;}
@@ -518,6 +518,16 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 	.wt-ytname small {color:var(--wt-muted);}
 	.wt-ytfoot {margin-top:0.5em;}
 	body.dark-mode #wt .wt-yterr {color:#ff8a80;}
+	/* What to back up */
+	.wt-bkgrp {display:flex;flex-direction:column;gap:0.1em;margin:0.3em 0 0.4em;}
+	.wt-bkgrp > b {font-size:0.92em;margin-top:0.3em;}
+	.wt-bkrow {color:var(--wt-fg) !important;}
+	.wt-bkrow small {color:var(--wt-muted);}
+	/* hold the picture for 2x (like the YouTube app) */
+	.wt-hold {position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:7;background:rgba(0,0,0,0.65);color:#fff;border-radius:999px;padding:0.3em 0.9em;font-weight:700;pointer-events:none;font-size:0.95rem;}
+	.wt-hold[hidden] {display:none;}
+	#wt .wt-b[aria-pressed="true"].wt-ccb {background:var(--wt-acc);border-color:var(--wt-acc);color:#fff;}
+	html body.dark-mode #wt .wt-b[aria-pressed="true"].wt-ccb {color:#14101a;}
 
 
 	@media print {
@@ -669,10 +679,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .wt-smsg.is-ok{color:#73e89f}
 	body.dark-mode .wt-hwarn.is-open{color:#ee8d6d}
 	body.dark-mode .wt-tundo{color:#fcd05f}
-	body.dark-mode .wt-ctl{background:linear-gradient(to top, rgba(82,82,82,0.85), rgba(82,82,82,0.55))}
-	body.dark-mode #wt .wt-ctl button{background:rgba(26,26,26,0.14)}
-	body.dark-mode #wt .wt-ctl button:hover,body.dark-mode #wt .wt-ctl button:focus-visible{background:rgba(26,26,26,0.28)}
+	body.dark-mode .wt-zbar{background:linear-gradient(to top, rgba(82,82,82,0.85), rgba(82,82,82,0.55))}
+	body.dark-mode #wt .wt-zbar button{background:rgba(26,26,26,0.14)}
+	body.dark-mode #wt .wt-zbar button:hover,body.dark-mode #wt .wt-zbar button:focus-visible{background:rgba(26,26,26,0.28)}
 	body.dark-mode .wt-yterr{color:#ec786f}
+	body.dark-mode .wt-hold{background:rgba(82,82,82,0.65)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -916,6 +927,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="wt-b" id="wt-star" title="Save for later" aria-pressed="false">☆</button>
 					<button type="button" class="wt-b" id="wt-addl" title="Add to one of my playlists" aria-haspopup="true">+ List</button>
 					<button type="button" class="wt-b" id="wt-zoom" title="Zoom in on the picture: pinch or drag, + / − (key Z)" aria-pressed="false">🔍&#xFE0E; Zoom</button>
+ 					<button type="button" class="wt-b wt-ccb" id="wt-cc" aria-pressed="false" title="Show or hide captions (Shift+C)">CC</button>
 					<button type="button" class="wt-b" id="wt-copy" title="Copy a link to this spot in the video">🔗&#xFE0E; Link</button>
 					<button type="button" class="wt-b" id="wt-cmbtn" aria-pressed="false" aria-controls="wt-cm" title="Show or hide the video's comments (C)">💬&#xFE0E; Comments</button>
 					<a class="wt-b" id="wt-open" href="#" target="_blank" rel="noopener" title="Open it on its own site">↗&#xFE0E; Site</a>
@@ -931,6 +943,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
 				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
 				<label class="wt-check"><input type="checkbox" id="wt-zctl" checked> When zoomed in, show a play / seek bar under the picture (the player's own bar moves with the zoom)</label>
+				<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
 				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 			</div>
 			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
@@ -955,6 +968,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 		<section class="tu-card wt-sync" id="wt-sync" hidden aria-label="Sync and backup">
 			<div class="wt-shead"><h2>☁ Sync &amp; backup</h2><button type="button" class="tu-btn tu-btn--ghost" id="wt-sync-close" aria-label="Close">✕</button></div>
+			<div class="wt-sbox" id="wt-bksel">
+				<h3>What to back up</h3>
+				<p class="wt-ssmall" id="wt-bknote"></p>
+				<div id="wt-bkrows"></div>
+			</div>
 			<div class="wt-sbox">
 				<h3>Sync with your own cloud</h3>
 				<p class="wt-ssmall">One file, <code>mes-watch.json</code>, with your Up next, Saved, playlists, channels and history (and where you stopped). Your browser writes it straight to your own account; nothing goes through mes.fm. Pick the same place on your phone and it stays in step.</p>
@@ -994,6 +1012,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>Press <em>+ Channel</em> and paste a YouTube channel link (youtube.com/@name) or just @name, or paste the channel link in the box above. It gets its own chip under <em>Latest from</em> showing its 15 newest uploads (newest first; tick <em>Shorts</em> to include them). Add them all to Up next, or keep them as one of your playlists. Your channels are kept in this browser only; × on a chip removes it.</p>
 			<h3>Zoom and full screen</h3>
 			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. With a mouse, the player is left alone at 100% (click, double-click and dragging the captions work as on YouTube): zoom with the small + / − / Fill strip on the right of the video, or the + and − keys, then drag to move around. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
+			<h3>Captions and 2× on a phone</h3>
+			<p>The <em>CC</em> button under the video (and on the play bar while zoomed in) turns YouTube's captions on and off, in your language when the video has it. Use it when the picture is zoomed: the player's own CC button moves with the zoom and can't be pressed. Press and hold the picture to play at 2× while you hold, like the YouTube app, without YouTube's bar popping up.</p>
 			<h3>Keyboard shortcuts</h3>
 			<dl>
 				<dt>Space or K</dt><dd>Play / pause</dd>
@@ -1002,6 +1022,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dt>N / Shift+N</dt><dd>Next, previous</dd>
 				<dt>W</dt><dd>Fill the window with the video</dd>
 				<dt>C</dt><dd>Show / hide the comments</dd>
+				<dt>Shift+C</dt><dd>Captions on / off</dd>
 				<dt>Z, + / −, 0</dt><dd>Zoom mode, zoom in / out, back to 100%</dd>
 			</dl>
 			<h3>Questions</h3>
@@ -1015,13 +1036,19 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>Yes. It is YouTube's own player, so views, ads and the creator's earnings work as on youtube.com.</p>
 			<h4>How do I move my list to another computer or phone?</h4>
 			<p>Press <em>☁ Sync &amp; backup</em> and pick Dropbox, OneDrive, Google Drive or a file in a synced folder, then pick the same place on the other device: both stay in step from then on, including where you stopped in each video. Or press <em>Copy a link to this list</em> and open that link on the other device.</p>
+			<h4>Can I keep several lists?</h4>
+			<p>Yes: on the Up next tab press <em>💾 Save Up next as a playlist</em>; it is kept under <em>My playlists</em>, and Up next can then be cleared for something else. Play any playlist again with ▶ (or + to add it to Up next).</p>
+			<h4>Can I choose what is backed up?</h4>
+			<p>Yes: <em>☁ Sync &amp; backup</em> → <em>What to back up</em>. Untick Up next, Saved, channels, history or any playlist, and it stays on this device only: it is not put in the cloud file or the Hive backup, and the copy on your other devices is left alone.</p>
+			<h4>What about the tracking codes in shared links?</h4>
+			<p>Links people share often carry a code saying who shared it (YouTube's <code>si=</code>, <code>utm_…</code>, Rumble's <code>pub=</code>, X's <code>s=</code>). MES Watch removes them from the links it keeps and copies. Tick <em>Keep the sites' tracking codes</em> to keep them.</p>
 			<h4>Can I back up my lists to Hive?</h4>
 			<p>Yes: <em>☁ Sync &amp; backup</em> → <em>Back up to Hive</em>, encrypted with your own memo key by default. It is permanent; "Add to mine" brings back anything you don't have.</p>
 			<h4>Can I see my own videos from my computer here?</h4>
 			<p>Use the <a href="/gallery">MES Gallery</a> for photos and videos saved on your computer or phone.</p>
 		</div>
 	</div>
-	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/panel-view.js?v=2" defer></script>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
                                                                         <div id="comments-button" class="hide-div-button button">Comments</div>
                                     <div id="comments-box" class="hide">
@@ -1081,7 +1108,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/watch/js/watch.js?v=16" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=3" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/watch/js/watch.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -15,6 +15,7 @@
     '.mes-pbtn,.mes-ptb{font:inherit;font-size:.82em;line-height:1.2;padding:.3em .7em;border-radius:999px;border:1px solid #b9c2cc;background:transparent;color:inherit;cursor:pointer;white-space:nowrap}' +
     '.mes-pbtn:hover,.mes-ptb:hover{background:rgba(128,128,128,.12)}' +
     '.mes-pbtn[aria-pressed="true"]{background:#1d6fd1;border-color:#1d6fd1;color:#fff}' +
+    '.mes-pbtn.mes-presume{background:#1d6fd1;border-color:#1d6fd1;color:#fff;font-weight:700;animation:mesPres 1.4s ease-in-out infinite}@keyframes mesPres{50%{box-shadow:0 0 0 6px rgba(29,111,209,.35)}}' +
     'body.dark-mode .mes-pbtn,body.dark-mode .mes-ptb{border-color:#555;color:#e3e7ec}' +
     'body.dark-mode .mes-pbtn[aria-pressed="true"]{background:#6ea8fe;border-color:#6ea8fe;color:#111}' +
     '.mes-pfill{position:fixed!important;inset:0!important;z-index:2147483000!important;margin:0!important;max-width:none!important;width:auto!important;height:auto!important;' +
@@ -165,9 +166,10 @@
     p.fill.setAttribute('aria-pressed', on && !fs ? 'true' : 'false');
     p.fill.textContent = on && !fs ? '✕ Close' : '⤢ Fill window';
     p.fill.title = on && !fs ? 'Back to the page (Esc)' : 'Cover the browser window with this card (Esc closes)';
-    if (p.fs) { p.fs.setAttribute('aria-pressed', fs ? 'true' : 'false'); p.fs.textContent = fs ? '✕ Exit full screen' : '⛶ Full screen'; }
+    if (p.fs) { p.fs.setAttribute('aria-pressed', fs ? 'true' : 'false'); p.fs.textContent = fs ? '✕ Exit full screen' : resumeP === p ? '⛶ Back to full screen' : '⛶ Full screen'; p.fs.classList.toggle('mes-presume', resumeP === p && !fs); }
   }
   function setFill(p, on) {
+    if (!on && resumeP === p) { resumeP = null; fsP = null; }
     if (on && open && open !== p) setFill(open, false);
     p.sec.classList.toggle('mes-pfill', on);
     document.documentElement.classList.toggle('mes-pfill-on', on);
@@ -178,8 +180,28 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && open && !fsEl()) { e.preventDefault(); var p = open; setFill(p, false); try { p.fill.focus({ preventScroll: true }); } catch (x) {} }
   });
+  /* phones: locking the screen (or switching apps) ends full screen, and a page may only ask for it again after a tap. So the card
+     stays covering the window, a "Back to full screen" pill shows, and the next tap anywhere puts it back on the whole screen. */
+  var fsP = null, hidAt = 0, visAt = 0, resumeP = null;
+  function armResume(p) {
+    resumeP = p; p.sec.classList.add('mes-pfill'); document.documentElement.classList.add('mes-pfill-on'); open = p; paint(p); changed(p);
+  }
+  function tryResume() {
+    var p = resumeP; if (!p || fsEl()) return; resumeP = null;
+    if (!p.sec.classList.contains('mes-pfill')) { paint(p); return; }
+    try { var r = (p.sec.requestFullscreen || p.sec.webkitRequestFullscreen).call(p.sec); if (r && r.catch) r.catch(function () { paint(p); }); } catch (e) {}
+    paint(p);
+  }
+  document.addEventListener('pointerup', function () { if (resumeP && !document.hidden) tryResume(); }, true);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { hidAt = Date.now(); return; }
+    visAt = Date.now(); var el = fsEl(); if (fsP && el !== fsP.sec && !resumeP) armResume(fsP);
+  });
   function onFs() {
     var el = fsEl();
+    if (fsP && el !== fsP.sec && (document.hidden || Date.now() - hidAt < 2500 || Date.now() - visAt < 2500)) { var lost = fsP; fsP = null; armResume(lost); fsP = lost; return; }
+    fsP = el && el.__mesPanel ? el.__mesPanel : null;
+    if (el) resumeP = null;
     if (open && el !== open.sec) { var p = open; open = null; p.sec.classList.remove('mes-pfill'); document.documentElement.classList.remove('mes-pfill-on'); paint(p); changed(p); }
     if (el && el.__mesPanel) { var q = el.__mesPanel; q.sec.classList.add('mes-pfill'); open = q; paint(q); changed(q); }
   }
