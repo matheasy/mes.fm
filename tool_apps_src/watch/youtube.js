@@ -14,7 +14,7 @@
 		var CLIENT = window.MES_WATCH_YT || "604980806442-dlqf3ur1qohoe67sc5i70qu4is9sfva9.apps.googleusercontent.com";
 		var SCOPE = "https://www.googleapis.com/auth/youtube.readonly", TK = "mes-watch:v1:yt", BASE = "https://www.googleapis.com/youtube/v3/";
 		var box = $("wt-ytacct"); if (!box) return {};
-		var lists = null, me = null, busy = "", err = "", gisP = null;
+		var lists = null, me = null, busy = "", err = "", gisP = null, noch = false;
 		function tok(v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(TK) || "null"); if (v === null) localStorage.removeItem(TK); else localStorage.setItem(TK, JSON.stringify(v)); } catch (e) { return null; } }
 		function live() { var t = tok(); return t && t.a && t.e > Date.now() + 30000 ? t : null; }
 
@@ -27,8 +27,8 @@
 			}));
 		}
 		/* a valid token; with ask, opens Google's window (must start inside a click) */
-		function ready(ask) {
-			var t = live(); if (t) return Promise.resolve(t.a);
+		function ready(ask, pick) {
+			var t = live(); if (t && !pick) return Promise.resolve(t.a);
 			if (!ask) return Promise.reject(new Error("Google asks you to confirm again (once an hour)."));
 			return gis().then(function () {
 				return new Promise(function (res, rej) {
@@ -40,7 +40,8 @@
 							tok({ a: j.access_token, e: Date.now() + (+j.expires_in || 3600) * 1000, name: (old && old.name) || "" }); res(j.access_token);
 						},
 						error_callback: function (e) { rej(new Error(e && e.type === "popup_failed_to_open" ? "The browser blocked Google's window: allow pop-ups for mes.fm." : "The Google window was closed.")); } });
-					c.requestAccessToken({ prompt: old ? "" : "consent" });
+					// pick = show Google's account / Brand Account (channel) chooser again
+					c.requestAccessToken({ prompt: pick ? "select_account consent" : old ? "" : "consent" });
 				});
 			});
 		}
@@ -69,9 +70,10 @@
 			return page("");
 		}
 		function loadLists(ask) {
-			busy = "Getting your playlists from YouTube…"; err = ""; render();
+			busy = "Getting your playlists from YouTube…"; err = ""; noch = false; render();
 			return call("channels", { part: "snippet,contentDetails", mine: "true" }, ask).then(function (c) {
 				var ch = (c.items || [])[0], rel = (ch && ch.contentDetails && ch.contentDetails.relatedPlaylists) || {};
+				noch = !ch;
 				me = ch ? { name: (ch.snippet && ch.snippet.title) || "", th: ((ch.snippet && ch.snippet.thumbnails && ch.snippet.thumbnails["default"]) || {}).url || "" } : { name: "" };
 				var t = tok(); if (t) { t.name = me.name; tok(t); }
 				var out = [], extra = [];
@@ -108,12 +110,14 @@
 			} else {
 				h += '<span class="wt-ytwho">' + (t.name || (me && me.name) ? "Signed in as <b>" + esc(t.name || me.name) + "</b>" : "Signed in") + '</span>' +
 					'<button type="button" class="tu-btn tu-btn--ghost" data-yt="show">' + (L ? "↻ Refresh" : "Show my playlists") + '</button>' +
+					'<button type="button" class="' + (noch ? "tu-btn tu-btn--primary" : "tu-btn tu-btn--ghost") + '" data-yt="pick" title="Sign in with another Google account or another YouTube channel (Brand Account)">Switch channel</button>' +
 					'<button type="button" class="tu-btn tu-btn--ghost" data-yt="out">Sign out</button></div>';
 			}
 			if (busy) h += '<p class="wt-ytmsg" role="status">' + esc(busy) + '</p>';
 			if (err) h += '<p class="wt-ytmsg wt-yterr" role="alert">' + esc(err) + (/sign in again|confirm again/i.test(err) ? ' <button type="button" class="wt-b" data-yt="in">Sign in</button>' : "") + '</p>';
 			if (on && L) {
-				if (!L.length) h += '<p class="wt-ytnote">No playlists on this YouTube account yet.</p>';
+				if (noch) h += '<p class="wt-ytmsg wt-yterr" role="alert">This Google sign-in has no YouTube channel, so there are no playlists to show. If your channel is a Brand Account (a channel with its own name), sign in again and pick <b>the channel</b> in Google\'s "Choose an account or brand account" step, not your plain Google account.</p>';
+				else if (!L.length) h += '<p class="wt-ytnote">No playlists on this YouTube account yet.</p>';
 				else {
 					h += '<div class="wt-ytrows">' + L.map(function (p, i) {
 						var have = imported(p.id), pr = p.privacy === "private" ? "🔒&#xFE0E; private" : p.privacy === "unlisted" ? "unlisted" : p.special ? "" : "public";
@@ -129,9 +133,14 @@
 			var b = e.target.closest("[data-yt],[data-yi]"); if (!b || busy) return;
 			var a = b.getAttribute("data-yt");
 			if (a === "in" || a === "show") { err = ""; ready(true).then(function () { return loadLists(true); }, function (x) { err = x.message; render(); }); return; }
+			if (a === "pick") {
+				var o = tok(); if (o && o.a && window.google && google.accounts && google.accounts.oauth2) try { google.accounts.oauth2.revoke(o.a, function () {}); } catch (x) {}
+				tok(null); lists = null; me = null; err = ""; render();
+				ready(true, true).then(function () { return loadLists(true); }, function (x) { err = x.message; render(); }); return;
+			}
 			if (a === "out") {
 				var t = tok(); if (t && t.a && window.google && google.accounts && google.accounts.oauth2) try { google.accounts.oauth2.revoke(t.a, function () {}); } catch (x) {}
-				tok(null); lists = null; me = null; err = ""; render(); toast("Signed out of YouTube here. Your imported playlists stay."); return;
+				tok(null); lists = null; me = null; noch = false; err = ""; render(); toast("Signed out of YouTube here. Your imported playlists stay."); return;
 			}
 			if (a === "all" && lists) { bring(lists.slice()); return; }
 			var i = b.getAttribute("data-yi"); if (i != null && lists && lists[+i]) bring([lists[+i]]);
