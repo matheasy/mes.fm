@@ -83,16 +83,22 @@
   }
   // One /api/yt-latest entry -> an item; null for Shorts and for titles the page leaves out (cfg.skip: e.g. livestream replays, which the
   // channel's Videos tab and therefore the snapshot do not list).
-  function ytItem(v, skipRe) {
+  function fmtDur(s) {
+    s = Math.round(s || 0); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+    return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x;
+  }
+  // pl = playlist id: the link opens the video inside that playlist (list= + index= of its place in it), like the snapshot's links.
+  function ytItem(v, skipRe, pl) {
     if (!v || !/^[A-Za-z0-9_-]{11}$/.test(v.id || '') || v.short) return null;
     if (skipRe && skipRe.test(v.title || '')) return null;
-    var href = 'https://www.youtube.com/watch?v=' + v.id;
+    var href = 'https://www.youtube.com/watch?v=' + v.id + (pl ? '&list=' + pl + (v.pos ? '&index=' + v.pos : '') : '');
     var views = typeof v.views === 'number' ? v.views : null;
+    var meta = v.published ? 'Uploaded ' + fmtDate(v.published) : v.dur ? fmtDur(v.dur) : 'Added to the playlist';
     return {
       key: v.id, title: v.title || v.id, href: href, date: String(v.published || '').slice(0, 10), tags: [],
       image: 'https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg', yt: v.id,   // main_js/yt-thumbs.js upgrades it to maxresdefault
-      meta: 'Uploaded ' + fmtDate(v.published) + (views != null ? ' · ' + fmtViews(views) : ''),
-      v: views || 0, d: 0, links: [['YouTube', href]],
+      meta: meta + (views != null ? ' · ' + fmtViews(views) : ''),
+      v: views || 0, d: v.dur || 0, links: [['YouTube', href]],
     };
   }
   function esc(s) {
@@ -129,7 +135,7 @@
   }
 
   var api = { compileCats: compileCats, catsFor: catsFor, pickNew: pickNew, plainText: plainText, wordCount: wordCount, hiveItem: hiveItem, ytItem: ytItem,
-    cardHtml: cardHtml, rowHtml: rowHtml, number: number, ago: ago, statusText: statusText, fmtDate: fmtDate, CACHE_MS: CACHE_MS, HIVE_NODES: HIVE_NODES };
+    cardHtml: cardHtml, rowHtml: rowHtml, number: number, ago: ago, statusText: statusText, fmtDate: fmtDate, fmtDur: fmtDur, CACHE_MS: CACHE_MS, HIVE_NODES: HIVE_NODES };
 
   // ---- sources (browser) ----------------------------------------------------------------------------------------------------------------------
   function timeoutFetch(url, opts, ms) {
@@ -153,9 +159,10 @@
   }
   function fetchYt(cfg) {
     var skip = cfg.skip ? new RegExp(cfg.skip.re, cfg.skip.fl || '') : null;
-    return timeoutFetch('/api/yt-latest?ch=' + encodeURIComponent(cfg.ch || 'mes'), {}, 12000)
+    var q = cfg.pl ? 'pl=' + encodeURIComponent(cfg.pl) : 'ch=' + encodeURIComponent(cfg.ch || 'mes');
+    return timeoutFetch('/api/yt-latest?' + q, {}, 12000)
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (j) { return (j.items || []).map(function (v) { return ytItem(v, skip); }).filter(Boolean); });
+      .then(function (j) { return (j.items || []).map(function (v) { return ytItem(v, skip, cfg.pl); }).filter(Boolean); });
   }
   api.fetchHive = fetchHive; api.fetchYt = fetchYt;
 

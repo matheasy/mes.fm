@@ -53,6 +53,49 @@ async function isShort(id) {
   }
 }
 
+// ?pl=<playlist id>: the playlist's own page (YouTube's RSS feeds answered 404 / 500 in Nov 2026), first ~100 entries in playlist order, with each
+// entry's position (1-based) and duration. Only PL / UU / OL ids pass the pattern check, and the id only lands in youtube.com/playlist?list=.
+const RE_PL = /^(?:PL|UU|OL|FL)[A-Za-z0-9_-]{10,40}$/;
+function durSec(t) {
+  const p = String(t || '').trim().split(':').map(Number);
+  if (!p.length || p.some((n) => !Number.isFinite(n))) return 0;
+  return p.reduce((a, n) => a * 60 + n, 0);
+}
+function walk(o, key, out) {
+  if (Array.isArray(o)) { for (const v of o) walk(v, key, out); }
+  else if (o && typeof o === 'object') { for (const k in o) { if (k === key) out.push(o[k]); walk(o[k], key, out); } }
+  return out;
+}
+// ytInitialData of a playlist page -> [{id, title, dur, pos}] (old playlistVideoRenderer and the newer lockupViewModel shapes).
+function parsePlaylist(html) {
+  const m = /var ytInitialData = (\{[\s\S]*?\});<\/script>/.exec(String(html));
+  if (!m) return [];
+  let d; try { d = JSON.parse(m[1]); } catch (e) { return []; }
+  const out = [], seen = {};
+  const add = (id, title, dur) => {
+    if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id) || seen[id]) return;
+    seen[id] = 1; out.push({ id, title: title || id, dur: dur || 0, pos: out.length + 1 });
+  };
+  walk(d, 'playlistVideoRenderer', []).forEach((r) => {
+    const t = r.title && (r.title.simpleText || (r.title.runs || []).map((x) => x.text).join(''));
+    add(r.videoId, t, +r.lengthSeconds || 0);
+  });
+  walk(d, 'lockupViewModel', []).forEach((l) => {
+    if (l.contentType && l.contentType !== 'LOCKUP_CONTENT_TYPE_VIDEO') return;
+    const md = l.metadata && l.metadata.lockupMetadataViewModel;
+    const badge = walk(l.contentImage, 'thumbnailBadgeViewModel', [])[0];
+    add(l.contentId, md && md.title && md.title.content, badge ? durSec(badge.text) : 0);
+  });
+  return out;
+}
+async function buildPlaylist(pl) {
+  const res = await fetch('https://www.youtube.com/playlist?list=' + pl, { headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36', 'Accept-Language': 'en' } });
+  if (!res.ok) throw new Error('playlist HTTP ' + res.status);
+  const items = parsePlaylist(await res.text());
+  if (!items.length) throw new Error('empty playlist');
+  return { playlist: pl, fetched: new Date().toISOString(), items };
+}
+
 const RE_ID = /^UC[A-Za-z0-9_-]{22}$/, RE_HANDLE = /^@[A-Za-z0-9._-]{3,30}$/;
 function validKey(k) { return Object.prototype.hasOwnProperty.call(CHANNELS, k) || RE_ID.test(k) || RE_HANDLE.test(k); }
 
@@ -82,6 +125,17 @@ async function build(key) {
 module.exports = async (req, res) => {
   const fail = (code, body) => { res.setHeader('Cache-Control', 'no-store'); res.status(code).json(body); };
   const q = (req && req.query) || {};
+  if (typeof q.pl === 'string' && q.pl) {
+    if (!RE_PL.test(q.pl)) return fail(400, { error: 'bad playlist' });
+    try {
+      const data = await buildPlaylist(q.pl);
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=1800, stale-while-revalidate=86400');
+      return res.status(200).send(JSON.stringify(data));
+    } catch (e) {
+      return fail(502, { error: 'playlist unavailable' });
+    }
+  }
   const key = typeof q.ch === 'string' && q.ch ? q.ch : 'mes';
   if (!validKey(key)) return fail(400, { error: 'unknown channel' });
   try {
@@ -94,6 +148,8 @@ module.exports = async (req, res) => {
   }
 };
 module.exports.parseFeed = parseFeed;
+module.exports.parsePlaylist = parsePlaylist;
+module.exports.buildPlaylist = buildPlaylist;
 module.exports.CHANNELS = CHANNELS;
 module.exports.validKey = validKey;
 module.exports.build = build;

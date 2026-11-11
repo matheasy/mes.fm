@@ -536,6 +536,7 @@ const DJW_CATEGORIES = [
   { id: "media", label: "Media & Interviews", test: (t) => /tucker|coast to coast|joyce riley|theo chalmers|charlie rose|jon snow|clyde lewis|alex jones|kim hill|pbd|patrick bet|interview|show|livestream|trailer|yeadon|geraldo|senator|perry mason|corriher/i.test(t) },
   { id: "animals", label: "Animals & Everyday", test: (t) => /chicken|chick\b|rooster|falcon|bird|albatross|geese|squirrel|rabbit|cat fishing|flower|pest|chloe|ants?\b|soccer/i.test(t) },
 ];
+const DJW_PL = "PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk";
 const DJW_VIDEOS = JSON.parse(readFileSync(join(__dirname, "djw-youtube-videos.json"), "utf8"));
 SECTIONS.push({
   id: "djwYoutube",
@@ -550,7 +551,7 @@ SECTIONS.push({
     { href: "https://www.youtube.com/playlist?list=PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk", title: "DJW playlist on YouTube", standalone: true },
     ...DJW_VIDEOS.map((v, i) => {
       const cats = DJW_CATEGORIES.filter((c) => c.test(v.title)).map((c) => c.id);
-      const yt = `https://www.youtube.com/watch?v=${v.id}&list=PLai3U8-WIK0HdmnNqdqxhSSd5jNSUtvKk`;
+      const yt = `https://www.youtube.com/watch?v=${v.id}&list=${DJW_PL}&index=${i + 1}`;
       return {
         href: yt,
         links: [{ label: "YouTube", href: yt }],
@@ -564,7 +565,16 @@ SECTIONS.push({
       };
     }),
   ],
+});// Runtime top-up from the playlist itself (api/yt-latest.js?pl=, which reads the playlist page): videos added to the top of the playlist since
+// djw-youtube-videos.json was written show first with a "New" badge, plus a "Check for new videos" button. The snapshot: `python3
+// update_youtube_lists.py --only=djw --apply`, then this build.
+const DJW_TOPUP_CATS = catSpec(DJW_CATEGORIES);
+checkCats(SECTIONS.find((s) => s.id === "djwYoutube").items.filter((i) => !i.standalone), DJW_TOPUP_CATS);
+const DJW_TOPUP_HTML = topupScripts({
+  section: "djwYoutube", source: "yt", pl: DJW_PL, noun: "video", nouns: "videos", count: DJW_VIDEOS.length,
+  known: DJW_VIDEOS.slice(0, 40).map((v) => v.id), cats: DJW_TOPUP_CATS,
 });
+
 
 const FILTER_CSS = `/* Search box + category chips (same look as the chips on mes.fm/calculators). */
 .ls-filter { margin: 0 0 1em; }
@@ -2795,7 +2805,7 @@ var MES_Vars = {
 <script src="/main_js/main.js?v=1.0.3"></script>
 <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script>
-${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "djwYoutube" ? '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "truthYoutube" ? TRUTH_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
+${page.sectionId === "mathYoutube" ? YT_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "djwYoutube" ? DJW_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}${page.sectionId === "truthYoutube" ? TRUTH_TOPUP_HTML + "\n" + '<script src="/main_js/yt-thumbs.js?v=1" defer></script>' + "\n" : ""}<script src="/main_js/site-search.js?v=1" defer></script><!-- HUB-THEATRE-JS --><script src="/main_js/hub-theatre.js?v=1" defer></script><!-- /HUB-THEATRE-JS -->${hasLinkPref ? LP_SCRIPT : ""}</body>
 </html>
 `;
 }
