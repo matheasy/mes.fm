@@ -123,6 +123,8 @@
 			{ label: "Apply", primary: true, act: function (m) { done = true; PE.savedParams[def.id] = f.get(); pv.apply(def.title); m.close(); } }] });
 	}
 	PE.savedParams = {};
+	/* Camtasia-style "Remove a colour": the colour comes from the last magic-wand click when there is one */
+	PE.removeColorDialog = function (hex) { var def = PE.ADJUST.filter(function (x) { return x.id === "keycolor"; })[0]; if (!def) return; if (hex) { PE.savedParams.keycolor = Object.assign({}, PE.savedParams.keycolor || {}, { c: hex }); } if (PE.sel && PE.toolId === "wand") { PE.selClear ? PE.selClear() : (PE.sel = null); PE.invalidateOverlay(); } adjustDialog(def); };
 	PE.adjustDialog = adjustDialog;
 
 	function P2(k, label, min, max, val, step, unit) { return { k: k, label: label, type: "range", min: min, max: max, val: val, def: val, step: step || 1, unit: unit }; }
@@ -138,7 +140,7 @@
 		{ id: "invert", title: "Invert colours", params: [], fn: function (d) { P.invert(d); } },
 		{ id: "gray", title: "Black & white", params: [], fn: function (d) { P.grayscale(d); } },
 		{ id: "sepia", title: "Sepia", params: [], fn: function (d) { P.sepia(d); } },
-		{ id: "keycolor", title: "Make a colour transparent", params: [{ k: "c", label: "Colour", type: "color", val: "#ffffff" }, P2("tol", "Tolerance", 0, 255, 30), P2("soft", "Soft edge", 0, 128, 20)], fn: function (d, w, h, p) { var c = P.hexToRgb(p.c); for (var i = 0; i < d.length; i += 4) { var df = Math.max(Math.abs(d[i] - c[0]), Math.abs(d[i + 1] - c[1]), Math.abs(d[i + 2] - c[2])); var a = Math.min(1, Math.max(0, (df - p.tol) / (p.soft + 1))); d[i + 3] *= a; } } }
+		{ id: "keycolor", title: "Remove a colour (make it see-through)", params: [{ k: "c", label: "Colour to remove", type: "color", val: "#ffffff", help: "Click the swatch and use its eyedropper to pick the colour from the picture (the white background of a scan, a green screen ...)." }, P2("tol", "Tolerance", 0, 255, 30), P2("soft", "Soft edge", 0, 128, 20), { k: "defringe", label: "Defringe (clean edges)", type: "check", val: true, def: true, help: "Takes the removed colour out of the half see-through edge pixels too, so dark lines on white keep no white halo when you put them on another background." }], fn: function (d, w, h, p) { var c = P.hexToRgb(p.c); for (var i = 0; i < d.length; i += 4) { var df = Math.max(Math.abs(d[i] - c[0]), Math.abs(d[i + 1] - c[1]), Math.abs(d[i + 2] - c[2])); var a = Math.min(1, Math.max(0, (df - p.tol) / (p.soft + 1))); if (a < 1 && p.defringe) { if (a <= 0.004) a = 0; else for (var j = 0; j < 3; j++) d[i + j] = Math.max(0, Math.min(255, (d[i + j] - (1 - a) * c[j]) / a)); } d[i + 3] *= a; } } }
 	];
 	PE.FILTERS = [
 		{ id: "blur", title: "Gaussian Blur", params: [P2("r", "Radius", 0.5, 100, 6, 0.5, "px")], scaleKeys: ["r"], fn: function (d, w, h, p) { P.gaussianBlur(d, w, h, p.r); } },

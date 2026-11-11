@@ -45,7 +45,7 @@
 		var tmr = 0, token = 0, cur = null;
 		function upd() { clearTimeout(tmr); tmr = setTimeout(draw, 160); }
 		function get() { var v = f.get(); v.tex = ta.value; return v; }
-		function draw() { var my = ++token, v = get(); if (!v.tex.trim()) { prev.innerHTML = ""; err.textContent = ""; cur = null; return; } PE.renderEquation(v, 1).then(function (r) { if (my !== token) return; cur = v; err.textContent = ""; r.canvas.style.maxWidth = "100%"; r.canvas.style.maxHeight = "9em"; prev.innerHTML = ""; prev.appendChild(r.canvas); }).catch(function (e) { if (my !== token) return; err.textContent = e.message; }); }
+		function draw() { var my = ++token, v = get(); if (!v.tex.trim()) { prev.innerHTML = ""; err.textContent = ""; cur = null; return; } PE.renderEquation(v, 1).then(function (r) { if (my !== token) return; cur = v; err.textContent = ""; r.canvas.style.maxWidth = "100%"; r.canvas.style.maxHeight = "9em"; prev.innerHTML = ""; prev.appendChild(r.canvas); var ink = MESPixel.hexToRgb(v.bgOn ? v.bg : v.color); prev.classList.toggle("pe-eqprev--light", ink[0] * 0.299 + ink[1] * 0.587 + ink[2] * 0.114 < 110); }).catch(function (e) { if (my !== token) return; err.textContent = e.message; }); }
 		ta.addEventListener("input", upd); ta.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); go(); } });
 		var m = PE.modal({ title: edit ? "Edit equation" : "Insert equation (LaTeX)", wide: true, body: wrap, noFocus: true, buttons: [{ label: "Cancel", act: function (mm) { mm.close(); } }, { label: edit ? "Update" : "Insert", primary: true, act: function () { go(); } }] });
 		setTimeout(function () { ta.focus(); ta.select(); }, 30); draw();

@@ -298,8 +298,8 @@
 	function rr(x, bx, by, bw, bh, r) { r = Math.min(r, bw / 2, bh / 2); x.moveTo(bx + r, by); x.arcTo(bx + bw, by, bx + bw, by + bh, r); x.arcTo(bx + bw, by + bh, bx, by + bh, r); x.arcTo(bx, by + bh, bx, by, r); x.arcTo(bx, by, bx + bw, by, r); x.closePath(); }
 	function contrast(hex) { var c = P.hexToRgb(hex); return (c[0] * 0.299 + c[1] * 0.587 + c[2] * 0.114) > 150 ? "#111111" : "#ffffff"; }
 	function norm(a, b, sq) { var x1 = b.x, y1 = b.y; if (sq) { var d = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)); x1 = a.x + Math.sign(b.x - a.x || 1) * d; y1 = a.y + Math.sign(b.y - a.y || 1) * d; } return { x: Math.min(a.x, x1), y: Math.min(a.y, y1), w: Math.abs(x1 - a.x), h: Math.abs(y1 - a.y), x1: x1, y1: y1 }; }
-	function drawShape(x, kind, a, b, o, sq) {
-		var fg = PE.fg, bg = PE.bg, sw = o.width, r = norm(a, b, sq);
+	function drawShape(x, kind, a, b, o, sq, fg, bg) {
+		fg = fg || PE.fg; bg = bg || PE.bg; var sw = o.width, r = norm(a, b, sq);
 		x.lineJoin = "round"; x.lineCap = "round"; x.lineWidth = sw;
 		if (o.shadow) { x.shadowColor = "rgba(0,0,0,0.45)"; x.shadowBlur = 8; x.shadowOffsetX = 2; x.shadowOffsetY = 3; }
 		if (kind === "line" || kind === "arrow") {
@@ -332,22 +332,31 @@
 	var KINDS = [["rect", "Rectangle"], ["round", "Rounded box"], ["ellipse", "Ellipse"], ["line", "Line"], ["arrow", "Arrow"], ["callout", "Callout bubble"], ["badge", "Step number"], ["highlight", "Highlight"], ["redact", "Blur / hide area"]];
 	var KNAMES = {}; KINDS.forEach(function (k) { KNAMES[k[0]] = k[1]; });
 	PE.defTool({ id: "shape", name: "Shapes & Annotations", key: "u", icon: "▭", opts: { kind: "rect", fill: false, stroke: true, width: 6, radius: 12, opacity: 100, newLayer: true, shadow: false, badge: 56, next: 1, redact: "pixelate", amount: 14 },
-		ui: [{ k: "kind", label: "Shape", type: "select", options: KINDS }, { k: "stroke", label: "Outline", type: "check", hideFor: ["line", "arrow", "badge", "highlight", "redact"] }, { k: "fill", label: "Fill (background colour)", type: "check", hideFor: ["line", "arrow", "badge", "highlight", "redact"] }, { k: "width", label: "Line width", type: "range", min: 1, max: 80, step: 1, unit: "px", hideFor: ["badge", "highlight", "redact"] }, { k: "radius", label: "Corner radius", type: "range", min: 0, max: 120, step: 1, unit: "px", showFor: ["round", "callout"] },
+		ui: [{ type: "note", when: function () { return !!shapeTarget(); }, label: "✎ Editing the selected shape: changes apply to it. Drag on the picture to draw a new one." }, { k: "kind", label: "Shape", type: "select", options: KINDS }, { k: "fgc", label: "Colour", type: "color", hideFor: ["redact"], help: "The outline, line, arrow, highlight and step-number colour (the same as the foreground colour in the Colour panel)." }, { k: "bgc", label: "Fill colour", type: "color", showFor: ["rect", "round", "ellipse", "callout", "badge"], help: "The fill colour of boxes and bubbles, and the ring of a step number (the same as the background colour in the Colour panel)." }, { k: "stroke", label: "Outline", type: "check", hideFor: ["line", "arrow", "badge", "highlight", "redact"] }, { k: "fill", label: "Fill (background colour)", type: "check", hideFor: ["line", "arrow", "badge", "highlight", "redact"] }, { k: "width", label: "Line width", type: "range", min: 1, max: 80, step: 1, unit: "px", hideFor: ["badge", "highlight", "redact"] }, { k: "radius", label: "Corner radius", type: "range", min: 0, max: 120, step: 1, unit: "px", showFor: ["round", "callout"] },
 			{ k: "badge", label: "Badge size", type: "range", min: 20, max: 200, step: 2, unit: "px", showFor: ["badge"] }, { k: "next", label: "Next number", type: "number", showFor: ["badge"] },
 			{ k: "redact", label: "Hide with", type: "seg", options: [["pixelate", "Pixelate"], ["blur", "Blur"], ["solid", "Solid"]], showFor: ["redact"] }, { k: "amount", label: "Strength", type: "range", min: 4, max: 60, step: 1, showFor: ["redact"] },
 			{ k: "opacity", label: "Opacity", type: "range", min: 5, max: 100, step: 1, unit: "%", hideFor: ["redact"] }, { k: "shadow", label: "Drop shadow", type: "check", hideFor: ["redact", "highlight"] }, { k: "newLayer", label: "On a new layer", type: "check", hideFor: ["redact"] }],
 		hint: "Drag to draw (Shift = square / straight). Outline uses the foreground colour, fill uses the background colour. Step numbers: just click. Each lands on its own layer so you can move or delete it.",
+		optsTarget: function () { var L = shapeTarget(); return L ? L.shape.o : null; },
+		optGet: function (k) { var L = shapeTarget(); if (k === "fgc") return L ? L.shape.fg : PE.fg; if (k === "bgc") return L ? L.shape.bg : PE.bg; if (!L) return undefined; if (k === "kind") return L.shape.kind; if (k === "opacity") return Math.round(L.opacity * 100); if (k === "newLayer") return PE.opt.shape.newLayer; return L.shape.o[k] !== undefined ? L.shape.o[k] : undefined; },
+		onopt: function (k, v) { var L = shapeTarget(); if (!L) return; var s = L.shape; delete s.o.kind; delete s.o.opacity; delete s.o.newLayer; delete s.o.fgc; delete s.o.bgc;
+			if (k === "kind") { if (v === "redact" || (v === "badge") !== (s.kind === "badge")) { PE.toast(v === "redact" ? "Blur / hide area makes a new layer: drag on the picture" : "Draw a new step number by clicking on the picture"); return; } s.kind = v; L.name = KNAMES[v]; if (v === "highlight") L.blend = "multiply"; else if (L.blend === "multiply") L.blend = "normal"; PE.emit("layers"); }
+			else if (k === "opacity") { L.opacity = v / 100; PE.invalidate(); PE.later("shape", function () { PE.commit("Shape opacity"); }, 500); return; }
+			else if (k === "fgc") s.fg = v; else if (k === "bgc") s.bg = v; else if (k === "newLayer") return;
+			PE.shapeRender(L); PE.later("shape", function () { PE.commit("Edit shape"); }, 500); },
 		down: function (e) { var o = PE.opt.shape; sh = { a: e, b: e, sq: false }; if (o.kind === "badge") { sh.b = e; } },
 		move: function (e) { if (sh) { sh.b = e; sh.sq = e.shift; PE.invalidateOverlay(); } },
 		up: function (e) {
 			var s = sh; sh = null; if (!s) return; var o = PE.opt.shape, kind = o.kind, a = s.a, b = s.b;
-			if (kind !== "badge" && Math.hypot(b.x - a.x, b.y - a.y) < 3) return;
+			if (kind !== "badge" && Math.hypot(b.x - a.x, b.y - a.y) < 3) { var hit = PE.layerAt(a.x, a.y); if (hit && hit.shape && hit.id !== PE.doc.activeId) { PE.setActive(hit.id); PE.toast("Selected \u201c" + hit.name + "\u201d: change its settings in the bar above"); } return; }
 			var box = shapeBox(kind, a, b, o, s.sq);
 			if (kind === "redact") { redact(box, norm(a, b, s.sq), o); return; }
 			var c = mk(box.w, box.h), x = c.getContext("2d"); x.translate(-box.x, -box.y); drawShape(x, kind, a, b, o, s.sq); x.setTransform(1, 0, 0, 1, 0, 0);
 			var op = o.opacity / 100;
 			if (PE.sel) PE.restrictToSel(x, box.x, box.y, box.w, box.h);
-			if (o.newLayer || !PE.active()) { var L = PE.makeLayer({ canvas: c, x: box.x, y: box.y, name: KNAMES[kind] }); L.opacity = op; if (kind === "highlight") L.blend = "multiply"; PE.addLayer(L); PE.commit("Add " + KNAMES[kind].toLowerCase()); }
+			if (o.newLayer || !PE.active()) { var L = PE.makeLayer({ canvas: c, x: box.x, y: box.y, name: KNAMES[kind] }); L.opacity = op; if (kind === "highlight") L.blend = "multiply";
+				if (!PE.sel) L.shape = { v: 1, kind: kind, a: { x: a.x - box.x, y: a.y - box.y }, b: { x: b.x - box.x, y: b.y - box.y }, sq: !!s.sq, fg: PE.fg, bg: PE.bg, o: { fill: o.fill, stroke: o.stroke, width: o.width, radius: o.radius, shadow: o.shadow, badge: o.badge, next: o.next } };   // kept so the shape can be changed later (line width, colours, corners ...)
+				PE.addLayer(L); PE.commit("Add " + KNAMES[kind].toLowerCase()); }
 			else { var A = PE.active(); if (!PE.prepare(A)) return; PE.paintInto(A, c, box.x, box.y, { alpha: op }); PE.commit(KNAMES[kind]); }
 			if (kind === "badge") { PE.opt.shape.next++; PE.emit("opts", "shape"); }
 		},
@@ -356,6 +365,21 @@
 			if (kind === "redact") { var r = norm(sh.a, sh.b, sh.sq); x.setLineDash([6 / v.zoom, 5 / v.zoom]); x.lineWidth = 1.5 / v.zoom; x.strokeStyle = "#ff3d3d"; x.fillStyle = "rgba(255,61,61,0.15)"; x.fillRect(r.x, r.y, r.w, r.h); x.strokeRect(r.x, r.y, r.w, r.h); }
 			else drawShape(x, kind, sh.a, sh.b, o, sh.sq); x.restore();
 		}, cancel: function () { sh = null; } });
+	/* the shape being edited: the active layer, when it still remembers how it was drawn */
+	function shapeTarget() { var L = PE.doc && PE.active(); return L && L.shape && !L.locked ? L : null; }
+	PE.shapeTarget = shapeTarget;
+	/* redraw a shape layer from its settings, keeping it where it is on the picture (also when it was moved, scaled or turned) */
+	PE.shapeRender = function (L) {
+		var s = L.shape; if (!s) return; var o = s.o, box = shapeBox(s.kind, s.a, s.b, o, s.sq), c = mk(Math.max(1, box.w), Math.max(1, box.h)), x = c.getContext("2d");
+		x.translate(-box.x, -box.y); drawShape(x, s.kind, s.a, s.b, o, s.sq, s.fg, s.bg);
+		var ow = L.canvas.width, oh = L.canvas.height, dx = (box.x + box.w / 2 - ow / 2) * L.sx, dy = (box.y + box.h / 2 - oh / 2) * L.sy, cs = Math.cos(L.rot), sn = Math.sin(L.rot);
+		L.cx += cs * dx - sn * dy; L.cy += sn * dx + cs * dy;
+		if (L.mask) { var m = mk(c.width, c.height), mx = m.getContext("2d"); mx.fillStyle = "#fff"; mx.fillRect(0, 0, m.width, m.height); mx.drawImage(L.mask, -box.x, -box.y); L.mask = m; }
+		if (L.crop) L.crop = P.shiftCrop(L.crop, -box.x, -box.y, c.width, c.height);
+		s.a = { x: s.a.x - box.x, y: s.a.y - box.y }; s.b = { x: s.b.x - box.x, y: s.b.y - box.y };
+		L.canvas = c; L.rev++; PE.invalidate(); PE.invalidateOverlay();
+	};
+	PE.on("opts", function (id) { if (id !== "shape") return; var o = PE.opt.shape; if (shapeTarget()) { o.fgc = o.bgc = null; return; } if (o.fgc && o.fgc !== PE.fg) PE.setFg(o.fgc); if (o.bgc && o.bgc !== PE.bg) PE.setBg(o.bgc); o.fgc = o.bgc = null; });
 	function redact(box, r, o) {
 		var x0 = Math.max(0, Math.floor(r.x)), y0 = Math.max(0, Math.floor(r.y)), x1 = Math.min(PE.doc.w, Math.ceil(r.x + r.w)), y1 = Math.min(PE.doc.h, Math.ceil(r.y + r.h)), w = x1 - x0, h = y1 - y0; if (w < 2 || h < 2) return;
 		var flat = PE.flatten(), c = mk(w, h), x = c.getContext("2d"); x.drawImage(flat, x0, y0, w, h, 0, 0, w, h);
