@@ -851,7 +851,7 @@
 
   // ---------- canvas / camera ----------
   var stage = $('#bz-stage'), cv = $('#bz-c'), ctx = cv.getContext('2d'), W = 600, H = 360, DPR = 1;
-  var cam = {s: 10, cx: 15, cy: 2};
+  var cam = {s: 10, cx: 15, cy: 2}, normalH = 320;
   function w2s(x, y) { return [(x - cam.cx) * cam.s + W / 2, H / 2 - (y - cam.cy) * cam.s]; }
   function s2w(px, py) { return [(px - W / 2) / cam.s + cam.cx, cam.cy - (py - H / 2) / cam.s]; }
   function fit() {
@@ -863,7 +863,10 @@
   }
   function resize() {
     var view = $('#bz-view'), full = view.classList.contains('mes-pfill');
+    if (!full) { stage.style.minHeight = ''; if (stage.clientHeight > 0) normalH = stage.clientHeight; }
     stage.style.height = full && view.classList.contains('mes-pside') ? (view.clientHeight - 24) + 'px' : '';
+    // Fill window must never make the picture smaller than it was on the page
+    if (full && !view.classList.contains('mes-pside')) stage.style.minHeight = Math.min(normalH, view.clientHeight - 40) + 'px';
     DPR = Math.min(2, window.devicePixelRatio || 1);
     var w = stage.clientWidth, h = stage.clientHeight;
     if (!w || !h) return;
@@ -998,7 +1001,7 @@
     });
     // effects
     var nowT = sim ? sim.t : 0;
-    fx = fx.filter(function (f) { return nowT - f.t < 1.4; });
+    fx = sim ? fx.filter(function (f) { return nowT - f.t < 1.4 && nowT >= f.t; }) : [];
     fx.forEach(function (f) {
       var s = w2s(f.x, f.y), age = nowT - f.t;
       if (f.kind === 'snap') { c.strokeStyle = 'rgba(255,200,60,' + (1 - age / 1.4) + ')'; c.lineWidth = 2; for (var q = 0; q < 8; q++) { var an = q * 0.785 + f.r, l = 6 + age * 60; c.beginPath(); c.moveTo(s[0] + Math.cos(an) * l * 0.4, s[1] + Math.sin(an) * l * 0.4); c.lineTo(s[0] + Math.cos(an) * l, s[1] + Math.sin(an) * l); c.stroke(); } }
@@ -1390,6 +1393,7 @@
 
   // ---------- test runs ----------
   var resEl = $('#bz-result');
+  stage.appendChild(resEl); // the result card floats over the picture, so it never takes height from it
   function startTest() {
     if (sim) stopTest();
     if (!ana) reanalyze(true);
@@ -1405,7 +1409,7 @@
     resizeChart(); dirty();
   }
   function stopTest() {
-    sim = null; paused = false;
+    sim = null; paused = false; fx = []; resEl.hidden = true;
     $('#bz-go').hidden = false; $('#bz-stop').hidden = true; $('#bz-pause').hidden = true;
     $('#bz-bar').classList.remove('is-off'); $('#bz-chartw').hidden = true;
     refresh(); dirty();
@@ -1438,7 +1442,7 @@
   }
   // live chart
   var ch = $('#bz-chart'), cctx = ch.getContext('2d'), CW = 600, CH = 120;
-  function resizeChart() { CW = ch.parentNode.clientWidth || 600; CH = 120; var d = Math.min(2, window.devicePixelRatio || 1); ch.width = CW * d; ch.height = CH * d; ch.style.height = CH + 'px'; cctx.setTransform(d, 0, 0, d, 0, 0); }
+  function resizeChart() { CW = ch.parentNode.clientWidth || 600; CH = $('#bz-view').classList.contains('mes-pfill') ? 80 : 120; var d = Math.min(2, window.devicePixelRatio || 1); ch.width = CW * d; ch.height = CH * d; ch.style.height = CH + 'px'; cctx.setTransform(d, 0, 0, d, 0, 0); }
   function drawChart() {
     var c = cctx, dk = dark(); c.clearRect(0, 0, CW, CH);
     c.fillStyle = dk ? '#151a23' : '#f6f8fb'; c.fillRect(0, 0, CW, CH);
