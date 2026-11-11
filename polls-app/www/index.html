@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>MES Polls</title>
+<style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#3b5bdb;color:white;}
+        .button {color:#3b5bdb;border:0.125em solid#3b5bdb;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#3b5bdb; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#3b5bdb; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#3b5bdb;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#3b5bdb;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#3b5bdb;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#2c47b0;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#3b5bdb;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#3b5bdb;border:0.125em solid#3b5bdb;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#2c47b0;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#3b5bdb;}
+        .dropdown-symbol--dark {color:#3b5bdb;}
+        .button--active {background-color:#3b5bdb;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+
+
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#3b5bdb;--accent-dark:#2c47b0;--tint:#e7ecfb;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e7ecfb;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e7ecfb;border-color:#e7ecfb;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e7ecfb;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e7ecfb;border-color:#e7ecfb;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e7ecfb;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e7ecfb;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#8095e8 !important;--accent-dark:#8095e8 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	.pl {--pl-ink:#1f2430;--pl-muted:#566070;--pl-line:#cfd6e0;--pl-card:#ffffff;--pl-soft:#f3f5f9;--pl-track:#e6eaf0;--pl-on:#eef2fd;--pl-acc:#3b5bdb;--pl-bad:#b42318;}
+	:where(#pl) :is(div, span, p, label, dd, dt, li, legend, summary, strong, h2, h3) {color:inherit;}
+	#pl {color:var(--pl-ink);}
+	.pl-b0{background:#3b6fe0}.pl-b1{background:#e0457b}.pl-b2{background:#12a17a}.pl-b3{background:#e08a12}.pl-b4{background:#8b5cf6}
+	.pl-b5{background:#0ea5c4}.pl-b6{background:#dc4b3a}.pl-b7{background:#6aa312}.pl-b8{background:#c43fd0}.pl-b9{background:#64748b}
+	.pl-s0{stroke:#3b6fe0}.pl-s1{stroke:#e0457b}.pl-s2{stroke:#12a17a}.pl-s3{stroke:#e08a12}.pl-s4{stroke:#8b5cf6}
+	.pl-s5{stroke:#0ea5c4}.pl-s6{stroke:#dc4b3a}.pl-s7{stroke:#6aa312}.pl-s8{stroke:#c43fd0}.pl-s9{stroke:#64748b}
+	#pl [hidden] {display:none !important;}
+	#pl .pl-q {font-size:1.55em;font-weight:700;line-height:1.25;margin:0.1em 0 0.35em;padding:0;border:0;overflow-wrap:anywhere;color:var(--pl-ink);}
+	#pl h3.pl-q {font-size:1.3em;}
+	.pl-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+	.pl-hp {position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+	.pl-mocknote {background:#fff7e0;border:1px solid #f0d58a;border-radius:0.5em;padding:0.5em 0.8em;}
+	.pl-msg {font-weight:600;}
+	.pl-msg--warn {border-color:#e8b4ad;background:#fdf1ef;}
+	.pl-card {position:relative;}
+	.pl-bar {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:center;justify-content:space-between;margin-bottom:0.6em;}
+	.pl-chips {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	.pl-chip {display:inline-block;font-size:0.85em;padding:0.18em 0.65em;border-radius:999px;background:var(--pl-soft);border:1px solid var(--pl-line);color:var(--pl-muted);}
+	.pl-chip--open {background:#e5f6ec;border-color:#9fd6b4;color:#11603a;font-weight:700;}
+	.pl-chip--closed {background:#f1f2f4;border-color:#b8bec8;color:#3b4250;font-weight:700;}
+	.pl-chip--own {background:var(--pl-on);border-color:#b5c4f2;color:#2c47b0;}
+	.pl-cd {font-variant-numeric:tabular-nums;color:var(--pl-ink);}
+	.pl-ph {color:var(--pl-muted) !important;font-style:italic;}
+	.pl-d {white-space:pre-line;margin:0 0 0.6em;color:var(--pl-muted);overflow-wrap:anywhere;line-height:1.5;}
+	.pl-hint {margin:0 0 0.5em;font-size:0.92em;color:var(--pl-muted);}
+	.pl-opts {display:flex;flex-direction:column;gap:0.45em;margin:0;}
+	.pl-opt {display:flex;align-items:center;gap:0.7em;padding:0.7em 0.9em;min-height:48px;box-sizing:border-box;border:2px solid var(--pl-line);border-radius:0.65em;background:var(--pl-card);cursor:pointer;line-height:1.3;transition:border-color .12s, background .12s;}
+	.pl-opt:hover {border-color:var(--pl-acc);}
+	.pl-opt.pl-on {border-color:var(--pl-acc);background:var(--pl-on);}
+	.pl-opt.pl-off {opacity:0.55;cursor:not-allowed;}
+	.pl-opt input {width:1.2em;height:1.2em;margin:0;flex:none;accent-color:var(--pl-acc);}
+	.pl-opt input:focus-visible {outline:2px solid var(--pl-acc);outline-offset:2px;}
+	.pl-mark {width:0.45em;align-self:stretch;border-radius:0.3em;flex:none;}
+	.pl-otext {flex:1 1 auto;overflow-wrap:anywhere;font-size:1.05em;font-weight:500;}
+	.pl-vrow {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin-top:0.5em;}
+	.pl-vote {min-width:8em;min-height:46px;font-size:1.1em;}
+	.pl-sel {font-size:0.9em;color:var(--pl-muted);}
+	.pl-res {display:grid;grid-template-columns:minmax(0,1fr) 11em;gap:0.8em 1.4em;align-items:center;margin:0.4em 0 0.2em;}
+	.pl-bars {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.7em;min-width:0;}
+	.pl-btop {display:flex;justify-content:space-between;gap:0.8em;align-items:baseline;margin-bottom:0.25em;}
+	.pl-blab {display:inline-flex;align-items:center;gap:0.45em;flex-wrap:wrap;overflow-wrap:anywhere;min-width:0;}
+	.pl-sw {display:inline-block;width:0.8em;height:0.8em;border-radius:0.2em;flex:none;}
+	.pl-bnum {white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--pl-muted);}
+	.pl-bnum strong {color:var(--pl-ink);font-size:1.05em;}
+	.pl-track {height:0.9em;border-radius:999px;background:var(--pl-track);overflow:hidden;}
+	.pl-fill {height:100%;border-radius:999px;min-width:0;transition:width .5s ease;}
+	.pl-lead .pl-blab {font-weight:700;}
+	.pl-you {font-size:0.75em;font-weight:700;padding:0.05em 0.5em;border-radius:999px;background:var(--pl-on);color:#2c47b0;border:1px solid #b5c4f2;}
+	.pl-side {display:flex;justify-content:center;}
+	.pl-donut {width:100%;max-width:11em;height:auto;display:block;}
+	.pl-donut-bg {fill:none;stroke:var(--pl-track);stroke-width:18;}
+	.pl-slice {fill:none;stroke-width:18;}
+	.pl-donut-n {font-size:22px;font-weight:800;text-anchor:middle;fill:var(--pl-ink);}
+	.pl-donut-l {font-size:10px;text-anchor:middle;fill:var(--pl-muted);}
+	.pl-tot {grid-column:1 / -1;margin:0.2em 0 0;color:var(--pl-muted);font-size:0.95em;}
+	.pl-hidden {padding:0.9em 1em;border:1px dashed var(--pl-line);border-radius:0.6em;background:var(--pl-soft);margin:0.4em 0;}
+	.pl-yours {margin:0.6em 0 0;font-size:0.95em;}
+	.pl-change {margin-top:0.7em;}
+	.pl-peek {margin-top:0.9em;}
+	.pl-peek summary {cursor:pointer;font-weight:600;color:var(--pl-acc);}
+	.pl-peek .pl-res {margin-top:0.6em;}
+	.pl-loading {color:var(--pl-muted);}
+	.pl-actions {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:1em;}
+	.pl .pl-danger {color:var(--pl-bad);border-color:#e8b4ad;}
+	.pl-qr {margin-top:0.8em;}
+	.pl-qrimg {background:#fff;padding:0.6em;border-radius:0.5em;display:inline-block;width:min(16em, 70vw);line-height:0;}
+	.pl-qrimg svg {width:100%;height:auto;}
+	.pl-qrimg svg rect[fill="#ffffff"], .pl-qrimg svg path {shape-rendering:crispEdges;}
+	/* maker */
+	.pl-make-wrap {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1em;align-items:start;}
+	.pl-prev-card {position:sticky;top:64px;}
+	.pl-big {font-size:1.12em;}
+	.pl-det {margin:0.6em 0 0.2em;}
+	.pl-det summary {cursor:pointer;color:var(--pl-acc);font-weight:600;font-size:0.95em;}
+	.pl-det .tu-field {margin-top:0.4em;}
+	.pl-olab {display:flex;justify-content:space-between;align-items:baseline;margin:1em 0 0.35em;}
+	.pl-lab {font-weight:700;}
+	.pl-count {font-size:0.85em;color:var(--pl-muted);}
+	.pl-olist {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.4em;}
+	.pl-oitem {display:flex;align-items:center;gap:0.4em;}
+	.pl-oitem .tu-input {flex:1 1 auto;min-width:0;}
+	.pl-oitem .pl-sw {height:1.9em;width:0.4em;}
+	.pl .pl-ib {font:inherit;flex:none;width:40px;height:40px;border-radius:0.45em;border:1px solid var(--pl-line);background:var(--pl-card);color:var(--pl-muted);cursor:pointer;}
+	.pl .pl-ib:hover:not(:disabled) {border-color:var(--pl-acc);color:var(--pl-acc);}
+	.pl .pl-ib:disabled {opacity:0.35;cursor:default;}
+	.pl-orow {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:0.6em;align-items:center;}
+	.pl-pastebox {margin-top:0.6em;}
+	.pl-pastebox label {display:block;font-size:0.92em;margin-bottom:0.3em;}
+	.pl-pastebox textarea {width:100%;box-sizing:border-box;}
+	.pl-fs {border:0;padding:0;margin:1.2em 0 0;min-width:0;}
+	.pl-fs legend {font-weight:700;padding:0;margin-bottom:0.45em;}
+	.pl-seg {display:flex;flex-wrap:wrap;gap:0.4em;}
+	.pl-seg label {display:inline-flex;align-items:center;gap:0.45em;padding:0.5em 0.85em;min-height:42px;box-sizing:border-box;border:2px solid var(--pl-line);border-radius:999px;cursor:pointer;background:var(--pl-card);}
+	.pl-seg label:has(input:checked) {border-color:var(--pl-acc);background:var(--pl-on);font-weight:600;}
+	.pl-seg input {accent-color:var(--pl-acc);margin:0;}
+	.pl-seg--sm {gap:0;border:1px solid var(--pl-line);border-radius:999px;overflow:hidden;}
+	.pl-seg--sm button {font:inherit;font-size:0.88em;border:0;background:transparent;color:var(--pl-muted);padding:0.35em 0.9em;cursor:pointer;min-height:34px;}
+	.pl-seg--sm button[aria-pressed="true"] {background:var(--pl-acc);color:#fff;}
+	.pl-inline {display:flex;align-items:center;gap:0.5em;margin-top:0.55em;flex-direction:row;}
+	.pl-inline label {margin:0;}
+	.pl-inline select {width:auto;}
+	.pl-endrow {margin-top:0.6em;}
+	.pl-endrow.tu-row {align-items:flex-end;}
+	.pl-chiprow {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	.pl-zone {margin:0.4em 0 0;}
+	.pl-endnote {margin:0.5em 0 0;}
+	.pl-check {display:flex;align-items:center;gap:0.5em;margin-top:0.7em;cursor:pointer;}
+	.pl-check input {width:1.15em;height:1.15em;accent-color:var(--pl-acc);}
+	.pl-err {color:var(--pl-bad);font-weight:600;margin:0.9em 0 0;}
+	.pl-create {margin-top:1.1em;}
+	.pl-go {min-height:48px;font-size:1.12em;padding-left:1.4em;padding-right:1.4em;}
+	.pl-demo {margin:0.5em 0 0;font-style:italic;}
+	.pl-done {border:2px solid #9fd6b4;background:#f1faf4;}
+	.pl-done h3 {margin:0 0 0.6em;}
+	.pl-link {display:flex;gap:0.5em;align-items:stretch;}
+	.pl-link .tu-input {flex:1 1 auto;min-width:0;font-size:1.05em;}
+	/* my polls */
+	.pl-mlist {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+	.pl-mrow {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0.2em 1em;align-items:center;padding:0.65em 0;border-bottom:1px solid var(--pl-line);}
+	.pl-mrow:last-child {border-bottom:0;}
+	.pl-mq {font-weight:600;overflow-wrap:anywhere;}
+	.pl-minfo {grid-column:1;font-size:0.88em;color:var(--pl-muted);}
+	.pl-mbtns {grid-column:2;grid-row:1 / span 2;display:flex;flex-wrap:wrap;gap:0.35em;justify-content:flex-end;}
+	.pl-mbtns .tu-btn {font-size:0.88em;padding:0.35em 0.75em;}
+	.pl-gone .pl-mq {color:var(--pl-muted);text-decoration:line-through;}
+	/* Hive polls */
+	.pl-where {margin-top:0;}
+	.pl-wherenote {margin:0.45em 0 0;}
+	.pl-hive {margin-top:1.2em;padding:1em;border:2px solid #e3b2b2;border-radius:0.7em;background:#fff6f6;}
+	.pl-hwarn {margin:0 0 0.8em;line-height:1.5;}
+	.pl-hwho {display:flex;flex-wrap:wrap;align-items:center;gap:0.45em;margin:0.2em 0 0.6em;}
+	.pl-hav {border-radius:50%;vertical-align:middle;}
+	.pl .pl-hlo {font-size:0.85em;padding:0.25em 0.7em;}
+	.pl-hrow {margin:0.2em 0 0.3em;flex-wrap:wrap;}
+	.pl-hrow .tu-input {flex:1 1 12em;}
+	.pl-hnote {margin:0.2em 0 0.8em;}
+	#pl-hextra {margin-top:0.9em;}
+	#pl-hextra .pl-hlogin {padding:0.7em 0.9em;border:1px solid var(--pl-line);border-radius:0.6em;background:var(--pl-soft);margin-bottom:0.6em;}
+	#pl-hextra .pl-hlogin .tu-note {margin-bottom:0;}
+	.pl-hsrc {margin:0.4em 0;}
+	.pl-hlinks {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.5em 0;}
+	.pl-hlinks .tu-btn {font-size:0.88em;padding:0.35em 0.8em;}
+	#pl a.pl-chip, #pl .pl-hlinks a {text-decoration:none;}
+	.pl-chip--hive {background:#fde8e8;border-color:#e3a3a3;color:#9b1c1c;font-weight:700;}
+	.pl-voters summary {cursor:pointer;font-weight:600;color:var(--pl-acc);}
+	.pl-vlist {list-style:none;margin:0.5em 0 0;padding:0;max-height:22em;overflow:auto;border:1px solid var(--pl-line);border-radius:0.5em;}
+	.pl-vlist li {display:grid;grid-template-columns:minmax(7em,auto) minmax(0,1fr) auto;gap:0.2em 0.8em;padding:0.45em 0.7em;border-bottom:1px solid var(--pl-line);align-items:baseline;}
+	.pl-vlist li:last-child {border-bottom:0;}
+	.pl-vname {font-weight:600;overflow-wrap:anywhere;}
+	.pl-vch {overflow-wrap:anywhere;}
+	.pl-vsrc {font-size:0.8em;color:var(--pl-muted);white-space:nowrap;}
+	.pl-vsrc--justsent {color:#8a5a00;font-weight:700;}
+	.pl-vskip {opacity:0.75;}
+	@media (max-width: 560px) { .pl-vlist li {grid-template-columns:minmax(0,1fr) auto;} .pl-vlist .pl-vch {grid-column:1 / -1;grid-row:2;} }
+	/* fill window / full screen */
+	#pl-view.mes-pfill {font-size:1.25em;}
+	#pl-view.mes-pfill .pl-q {font-size:2.1em;}
+	#pl .pl-donut-full {fill:none;stroke-width:18;}
+	#pl-view.mes-pfill .pl-res {grid-template-columns:minmax(0,1fr) min(32vh, 18em);}
+	#pl-view.mes-pfill .pl-donut {max-width:none;}
+	#pl-view.mes-pfill .pl-track {height:1.4em;}
+	#pl-view.mes-pfill .pl-actions, #pl-view.mes-pfill #pl-vnote, #pl-view.mes-pfill .pl-hlinks, #pl-view.mes-pfill .pl-hlogin {display:none;}
+	@media (max-width: 860px) {
+		.pl-make-wrap {grid-template-columns:minmax(0,1fr);}
+		.pl-prev-card {position:static;}
+	}
+	@media (max-width: 560px) {
+		.pl-res {grid-template-columns:minmax(0,1fr);}
+		.pl-donut {max-width:8.5em;}
+		#pl .pl-q {font-size:1.3em;}
+		.pl-mrow {grid-template-columns:minmax(0,1fr);}
+		.pl-mbtns {grid-column:1;grid-row:auto;justify-content:flex-start;}
+		.pl-link {flex-wrap:wrap;}
+		#pl-view.mes-pfill .pl-res {grid-template-columns:minmax(0,1fr);}
+	}
+	body.dark-mode #pl.pl {--pl-ink:#e6e9ef;--pl-muted:#a9b2bf;--pl-line:#465062;--pl-card:#232832;--pl-soft:#2a303b;--pl-track:#343b48;--pl-on:#28345a;--pl-acc:#8ea6ff;--pl-bad:#ff9b8f;}
+	body.dark-mode #pl.pl {color:var(--pl-ink);}
+	body.dark-mode #pl .pl-chip--open {background:#173a28;border-color:#2f7a52;color:#9ce6bc;}
+	body.dark-mode #pl .pl-chip--closed {background:#2d323b;border-color:#59616f;color:#d5dae2;}
+	body.dark-mode #pl .pl-chip--own, body.dark-mode #pl .pl-you {background:#28345a;border-color:#4b5f9e;color:#c6d3ff;}
+	body.dark-mode #pl .pl-msg--warn {background:#3a2321;border-color:#7a3f38;}
+	body.dark-mode #pl .pl-mocknote {background:#3a3218;border-color:#7a6a2c;color:#f2e2b0;}
+	body.dark-mode #pl .pl-done {background:#16291e;border-color:#2f7a52;}
+	body.dark-mode #pl .pl-seg--sm button[aria-pressed="true"] {background:#8ea6ff;color:#111;}
+	body.dark-mode #pl .pl-danger {border-color:#7a3f38;}
+	body.dark-mode #pl .pl-opt, body.dark-mode #pl .pl-seg label, body.dark-mode #pl .pl-ib {background:var(--pl-card);color:var(--pl-ink);}
+	body.dark-mode #pl .pl-opt.pl-on, body.dark-mode #pl .pl-seg label:has(input:checked) {background:var(--pl-on);}
+	/* the derived dark block would remap the option colours: keep them the same in both themes */
+	body.dark-mode #pl .pl-s0{stroke:#3b6fe0}body.dark-mode #pl .pl-b0{background:#3b6fe0}
+	body.dark-mode #pl .pl-s1{stroke:#e0457b}body.dark-mode #pl .pl-b1{background:#e0457b}
+	body.dark-mode #pl .pl-s2{stroke:#12a17a}body.dark-mode #pl .pl-b2{background:#12a17a}
+	body.dark-mode #pl .pl-s3{stroke:#e08a12}body.dark-mode #pl .pl-b3{background:#e08a12}
+	body.dark-mode #pl .pl-s4{stroke:#8b5cf6}body.dark-mode #pl .pl-b4{background:#8b5cf6}
+	body.dark-mode #pl .pl-s5{stroke:#0ea5c4}body.dark-mode #pl .pl-b5{background:#0ea5c4}
+	body.dark-mode #pl .pl-s6{stroke:#dc4b3a}body.dark-mode #pl .pl-b6{background:#dc4b3a}
+	body.dark-mode #pl .pl-s7{stroke:#6aa312}body.dark-mode #pl .pl-b7{background:#6aa312}
+	body.dark-mode #pl .pl-s8{stroke:#c43fd0}body.dark-mode #pl .pl-b8{background:#c43fd0}
+	body.dark-mode #pl .pl-s9{stroke:#64748b}body.dark-mode #pl .pl-b9{background:#64748b}
+	body.dark-mode #pl .pl-hive {background:#2a1a1c;border-color:#7a3f45;}
+	body.dark-mode #pl .pl-chip--hive {background:#3a1f22;border-color:#7a3f45;color:#ffc2c2;}
+	body.dark-mode #pl .pl-vsrc--justsent {color:#f2c46b;}
+	body.dark-mode #pl-view.mes-pfill {background:#1a1a1a !important;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #3b5bdb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #3b5bdb; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(59,91,219,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content :where(sub,sup){color:inherit}
+	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent-dark:#3b59ce}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #0b1944}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#141927;border-color:#0b1944}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#141927;border-color:#0b1944}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#141927}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .pl{--pl-bad:#e23427}
+	body.dark-mode .pl-b9{background:#444f5f}
+	body.dark-mode .pl-s0{stroke:#1c4bb0}
+	body.dark-mode .pl-s1{stroke:#af1d50}
+	body.dark-mode .pl-s2{stroke:#1ae5ae}
+	body.dark-mode .pl-s3{stroke:#ec9113}
+	body.dark-mode .pl-s4{stroke:#420bc1}
+	body.dark-mode .pl-s5{stroke:#11c8ee}
+	body.dark-mode .pl-s6{stroke:#ad2e1f}
+	body.dark-mode .pl-s7{stroke:#95e619}
+	body.dark-mode .pl-s8{stroke:#9a28a4}
+	body.dark-mode .pl-mocknote{background:#2d2611;border:1px solid #a27d15}
+	body.dark-mode .pl-msg--warn{border-color:#7a2d22;background:#221311}
+	body.dark-mode .pl-chip--open{background:#1a2820;border-color:#388455;color:#74e6b0}
+	body.dark-mode .pl-chip--closed{background:#1a1b1d;border-color:#444c58;color:#b4b8bf}
+	body.dark-mode .pl-chip--own{border-color:#152c75;color:#7c90de}
+	body.dark-mode .pl-you{color:#7c90de;border:1px solid #152c75}
+	body.dark-mode .pl .pl-danger{border-color:#7a2d22}
+	body.dark-mode .pl-qrimg{background:#1a1a1a}
+	body.dark-mode .pl-done{border:2px solid #388455;background:#141f18}
+	body.dark-mode .pl-hive{border:2px solid #722a2a;background:#250e0e}
+	body.dark-mode .pl-chip--hive{background:#261111;border-color:#832828;color:#e67575}
+	body.dark-mode .pl-vsrc--justsent{color:#ffc65c}
+	/* TOOL-DARK:END */
+</style>
+<style>
+html,body{margin:0;padding:0;background:#fff;overscroll-behavior-y:none;}
+html,body,button,a,input,label,summary{touch-action:manipulation;} /* no double-tap zoom when tapping A+ repeatedly */
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;
+  -webkit-text-size-adjust:100%;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+#status-cover{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top);background:#3b5bdb;z-index:2147483000;pointer-events:none;}
+body.dark-mode #status-cover{background:#22378a;}
+/* full header (scrolls away) */
+#app-bar{display:flex;align-items:center;gap:.8em;background:#3b5bdb;color:#fff;
+  padding:calc(env(safe-area-inset-top) + .8em) 1em .9em 1em;box-shadow:0 1px 6px rgba(0,0,0,.25);}
+#app-bar img{width:64px;height:64px;border-radius:15px;background:#fff;flex:none;}
+#app-bar .t{flex:1;min-width:0;color:#fff;}
+#app-bar .name{font-size:1.45em;font-weight:700;line-height:1.1;color:#fff;}
+#app-bar .tag{font-size:.82em;line-height:1.3;margin-top:.25em;opacity:.95;color:#fff;}
+.hb{all:unset;cursor:pointer;color:#fff;font-weight:600;text-align:center;box-sizing:border-box;}
+#menu-btn{width:44px;height:44px;border:1.5px solid rgba(255,255,255,.75);border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+#menu-btn svg{width:22px;height:22px;stroke:#fff;}
+/* floating compact bar: appears once the full header has scrolled away; can be hidden */
+#cbar{position:fixed;left:0;right:0;top:env(safe-area-inset-top);z-index:2147482000;display:flex;align-items:center;gap:.4em;
+  background:#3b5bdb;color:#fff;padding:.4em .6em .4em .8em;box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transform:translateY(-140%);transition:transform .2s ease;visibility:hidden;}
+#cbar.show{transform:translateY(0);visibility:visible;}
+body.dark-mode #cbar{background:#22378a;}
+#cbar img{width:28px;height:28px;border-radius:7px;background:#fff;flex:none;}
+#cbar .cn{flex:1;min-width:0;font-weight:700;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+#cbar .hb{border:1.5px solid rgba(255,255,255,.7);border-radius:999px;padding:.35em .6em;min-width:2.1em;font-size:.88em;}
+#cbar .hb.ic{padding:.3em;width:2.2em;height:2.2em;display:flex;align-items:center;justify-content:center;border-radius:10px;}
+#cbar .hb.ic svg{width:18px;height:18px;stroke:#fff;}
+.js-theme .sun{display:none;}
+body.dark-mode .js-theme .sun{display:inline-flex;}
+body.dark-mode .js-theme .moon{display:none;}
+.js-theme span{display:inline-flex;align-items:center;justify-content:center;}
+#menu .btn.ic{padding:.3em .75em;}
+#menu .btn.ic svg{width:20px;height:20px;stroke:#2b44b0;}
+body.dark-mode #menu .btn.ic svg{stroke:#a9bcff;}
+#ctab{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 4px);z-index:2147482000;background:#3b5bdb;color:#fff;border-radius:0 0 10px 10px;
+  padding:.2em 1.1em .3em;font-size:.95em;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3);display:none;cursor:pointer;}
+body.dark-mode #ctab{background:#22378a;}
+body.cbar-hidden.past #ctab{display:block;}
+body.cbar-hidden #cbar{display:none;}
+/* burger menu */
+#menu{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 66px);z-index:2147483001;width:min(20em,calc(100vw - 20px));background:#fff;color:#222;border-radius:14px;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);padding:.5em 0;display:none;max-height:calc(100vh - env(safe-area-inset-top) - 90px);overflow:auto;}
+#menu.open{display:block;}
+#menu .row{display:flex;align-items:center;justify-content:space-between;padding:.6em 1em;gap:.6em;font-size:.95em;color:#222;}
+#menu .row b{color:#222;}
+#menu .btn{border:1.5px solid #3b5bdb;color:#2b44b0;border-radius:999px;padding:.35em .8em;font-weight:700;}
+#menu a{display:block;padding:.7em 1em;color:#2b44b0;font-weight:600;text-decoration:none;border-top:1px solid #eee;font-size:.95em;}
+#menu .sec{padding:.5em 1em .2em;font-size:.72em;letter-spacing:.06em;text-transform:uppercase;color:#777;border-top:1px solid #eee;}
+#menu-scrim{position:fixed;inset:0;z-index:2147483000;display:none;}
+#menu-scrim.open{display:block;}
+body.dark-mode #menu{background:#23262b;color:#e6e6e6;}
+body.dark-mode #menu .row,body.dark-mode #menu .row b{color:#e6e6e6;}
+body.dark-mode #menu a{color:#a9bcff;border-top-color:#3a3e45;}
+body.dark-mode #menu .sec{color:#9aa0a8;border-top-color:#3a3e45;}
+body.dark-mode #menu .btn{border-color:#a9bcff;color:#a9bcff;}
+#app-main{max-width:46em;margin:0 auto;padding:1em 1em 0 1em;}
+#app-foot{max-width:46em;margin:0 auto;padding:1.2em 1em calc(env(safe-area-inset-bottom) + 2em) 1em;font-size:.85em;line-height:1.5;color:#555;}
+#app-foot p{margin:0 0 .8em 0;color:inherit;}
+#app-foot a{color:#2b44b0;font-weight:600;}
+#app-foot .links a{margin-right:1.1em;}
+body.dark-mode{background:#16181c;color:#e6e6e6;}
+body.dark-mode #app-bar{background:#22378a;}
+body.dark-mode #app-foot,body.dark-mode #app-foot p{color:#b9bdc4;}
+body.dark-mode #app-foot a{color:#a9bcff;}
+.tu .tu-seo{display:none;}
+#app-foot strong{color:inherit;}
+/* big text sizes (zoom): let table headings and cells wrap so the tables fit the card instead of scrolling sideways */
+.tu .tu-table th,.tu .tu-table td{white-space:normal;padding:.5em .35em;overflow-wrap:anywhere;}
+.tu .tu-table td:last-child,.tu .tu-table th:last-child{min-width:5.5em;}
+.tu .tu-chip small{color:inherit;}
+/* the page's reset paints every bare div/span/b/strong #333, and the web build leaves dark mode to display-controls.js;
+   :where() keeps this at type-selector specificity so any class that sets its own colour (category colours, chips) still wins */
+:where(body.dark-mode #pl) :is(div,span,b,strong,p,li,small,label,td,th,i,em,output,legend,h2,h3,h4,dt,dd){color:#e6e6e6;}
+</style>
+</head>
+<body>
+<div id="status-cover"></div>
+<header id="app-bar" role="banner">
+  <img src="img/logo.png" alt="" width="64" height="64">
+  <div class="t"><div class="name">MES Polls</div><div class="tag">Make a poll in seconds, share the link, watch the votes come in live. No sign-up for you or your voters.</div></div>
+  <button id="menu-btn" class="hb js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div id="cbar" role="toolbar" aria-label="Quick controls">
+  <img src="img/logo.png" alt="" width="28" height="28">
+  <div class="cn">MES Polls</div>
+  <button class="hb js-down" type="button" aria-label="Smaller text">A&minus;</button>
+  <button class="hb js-up" type="button" aria-label="Larger text">A+</button>
+  <button class="hb ic js-theme" type="button" aria-label="Switch between light and dark mode"><span class="moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span class="sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button>
+  <button class="hb ic js-menu" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <button id="cbar-hide" class="hb" type="button" aria-label="Hide this bar">&#9650;</button>
+</div>
+<div id="ctab" role="button" aria-label="Show the quick controls bar">&#9660;</div>
+<div id="menu-scrim"></div>
+<nav id="menu" aria-label="Menu">
+  <div class="row"><b>Text size</b><span><button class="hb btn js-down" type="button">A&minus;</button> <button class="hb btn js-up" type="button">A+</button></span></div>
+  <div class="row"><b>Theme</b><button class="hb btn ic js-theme" type="button" aria-label="Switch between light and dark mode"><span class="moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><span class="sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span></button></div>
+  <a href="index.html">New poll</a>
+  <div class="sec">About</div>
+  <a href="https://mes.fm/polls" target="_blank" rel="noopener">MES Polls website</a>
+  <a href="https://mes.fm/privacy-policy#polls" target="_blank" rel="noopener">Privacy Policy</a>
+  <a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact us</a>
+</nav>
+<main id="app-main">
+<div class="tu pl" id="pl">
+		<p class="tu-card pl-msg" id="pl-msg" role="status" hidden></p>
+
+		<section class="tu-card pl-card" id="pl-view" hidden aria-labelledby="pl-q">
+			<div class="pl-bar" id="pl-vbar"><span class="pl-chips" id="pl-status"></span></div>
+			<div id="pl-poll"></div>
+			<div id="pl-hextra" hidden></div>
+			<div class="pl-actions" id="pl-vact">
+				<button type="button" class="tu-btn" id="pl-copy">🔗 Copy link</button>
+				<button type="button" class="tu-btn" id="pl-qrbtn">QR code</button>
+				<button type="button" class="tu-btn" id="pl-share" hidden>Share…</button>
+				<button type="button" class="tu-btn" id="pl-close" hidden>Close the poll now</button>
+				<button type="button" class="tu-btn pl-danger" id="pl-del" hidden>Delete the poll</button>
+			</div>
+			<div class="pl-qr" id="pl-qr" hidden></div>
+			<p class="tu-note" id="pl-vnote"></p>
+		</section>
+
+		<h2 id="pl-mine-h" hidden>My polls</h2>
+		<div class="tu-card" id="pl-mine-card" hidden>
+			<div id="pl-mine"></div>
+			<p class="tu-note" style="margin-bottom:0;">This list and the keys that let you close or delete your polls are kept only on this device. To manage a poll from another computer, open it there with the link from <strong>Copy manager link</strong>.</p>
+		</div>
+
+		<h2 id="pl-make-h">Make a poll</h2>
+		<div class="pl-make-wrap">
+			<div class="tu-card pl-make" id="pl-make">
+				<fieldset class="pl-fs pl-where">
+					<legend>Where should the poll live?</legend>
+					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="Where the poll lives">
+						<label><input type="radio" name="pl-where" value="mes" checked> On mes.fm (no account needed)</label>
+						<label><input type="radio" name="pl-where" value="hive"> On Hive (Hive accounts vote)</label>
+					</div>
+					<p class="tu-note pl-wherenote" id="pl-wherenote">Anyone with the link can vote, no sign-up.</p>
+				</fieldset>
+				<div class="tu-field"><label for="pl-mq">Question</label><input id="pl-mq" class="tu-input pl-big" type="text" maxlength="200" autocomplete="off" placeholder="e.g. Where should we eat on Friday?"></div>
+				<details class="pl-det" id="pl-mddet"><summary>Add a description (optional)</summary>
+					<div class="tu-field"><label for="pl-md" class="pl-sr">Description</label><textarea id="pl-md" class="tu-input" rows="2" maxlength="600" placeholder="More detail, rules, a date..."></textarea></div>
+				</details>
+				<div class="pl-olab"><span class="pl-lab">Options</span><span class="pl-count" id="pl-ocount"></span></div>
+				<ol class="pl-olist" id="pl-olist"></ol>
+				<div class="pl-orow">
+					<button type="button" class="tu-btn" id="pl-oadd">+ Add an option</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pl-opaste">Paste a list…</button>
+				</div>
+				<div class="pl-pastebox" id="pl-pastebox" hidden>
+					<label for="pl-ptext">One option per line (or separated by commas)</label>
+					<textarea id="pl-ptext" class="tu-input" rows="4" placeholder="Pizza&#10;Sushi&#10;Tacos"></textarea>
+					<div class="pl-orow"><button type="button" class="tu-btn tu-btn--primary" id="pl-puse">Use these options</button><button type="button" class="tu-btn tu-btn--ghost" id="pl-pcancel">Cancel</button></div>
+				</div>
+
+				<fieldset class="pl-fs">
+					<legend>How many can people pick?</legend>
+					<div class="pl-seg" role="radiogroup" aria-label="Single or multiple choice">
+						<label><input type="radio" name="pl-kind" value="one" checked> One option</label>
+						<label><input type="radio" name="pl-kind" value="many"> Several</label>
+					</div>
+					<div class="tu-field pl-inline" id="pl-maxwrap" hidden><label for="pl-max">At most</label><select id="pl-max" class="tu-input"></select></div>
+				</fieldset>
+
+				<fieldset class="pl-fs">
+					<legend>When does voting end?</legend>
+					<div class="pl-seg" role="radiogroup" aria-label="When voting ends">
+						<label id="pl-endmanual"><input type="radio" name="pl-end" value="manual" checked> When I close it</label>
+						<label><input type="radio" name="pl-end" value="after"> After a while</label>
+						<label><input type="radio" name="pl-end" value="at"> At a date and time</label>
+					</div>
+					<div class="tu-row pl-endrow" id="pl-afterrow" hidden>
+						<div class="tu-field" style="flex:0 1 7em;"><label for="pl-dur">Open for</label><input id="pl-dur" class="tu-input" type="number" min="1" max="999" step="1" value="1" inputmode="numeric"></div>
+						<div class="tu-field" style="flex:0 1 9em;"><label for="pl-unit">&nbsp;</label><select id="pl-unit" class="tu-input"><option value="min">minutes</option><option value="hour">hours</option><option value="day" selected>days</option><option value="week">weeks</option></select></div>
+						<div class="pl-chiprow"><button type="button" class="tu-chip" data-dur="15,min">15 min</button><button type="button" class="tu-chip" data-dur="1,hour">1 hour</button><button type="button" class="tu-chip" data-dur="1,day">1 day</button><button type="button" class="tu-chip" data-dur="1,week">1 week</button></div>
+					</div>
+					<div class="pl-endrow" id="pl-atrow" hidden>
+						<div class="tu-row">
+							<div class="tu-field" style="flex:1 1 10em;"><label for="pl-date">Date</label><input id="pl-date" class="tu-input" type="date"></div>
+							<div class="tu-field" style="flex:1 1 10em;"><label for="pl-time">Time</label><input id="pl-time" class="tu-input" type="time"></div>
+						</div>
+						<p class="tu-note pl-zone" id="pl-zone"></p>
+					</div>
+					<p class="tu-note pl-endnote" id="pl-endnote"></p>
+				</fieldset>
+
+				<fieldset class="pl-fs">
+					<legend>Who sees the results?</legend>
+					<div class="pl-seg pl-seg--wrap" role="radiogroup" aria-label="When results are shown">
+						<label><input type="radio" name="pl-sh" value="always" checked> Everyone, any time</label>
+						<label><input type="radio" name="pl-sh" value="voted"> People who have voted</label>
+						<label id="pl-shclosed"><input type="radio" name="pl-sh" value="closed"> Everyone, once it closes</label>
+					</div>
+					<label class="pl-check"><input type="checkbox" id="pl-ch"> Let people change their vote</label>
+				</fieldset>
+
+				<div class="pl-hive" id="pl-hive" hidden>
+					<p class="pl-hwarn"><strong>This publishes a real post on the Hive blockchain</strong> from your account, using the open polls format that PeakD, Ecency and HiveHub show as a poll. The question, choices and end time can never be changed afterwards (you can still edit the post text), and posts on Hive cannot be deleted.</p>
+					<div class="pl-hlogin" id="pl-hlogin"></div>
+					<div class="tu-field"><label for="pl-htitle">Post title</label><input id="pl-htitle" class="tu-input" type="text" maxlength="255" autocomplete="off"></div>
+					<div class="tu-row" style="align-items:flex-end;margin-top:0.6em;">
+						<div class="tu-field" style="flex:2 1 14em;"><label for="pl-htags">Tags (the first one is the main tag)</label><input id="pl-htags" class="tu-input" type="text" autocomplete="off" placeholder="polls hive"></div>
+						<div class="tu-field" style="flex:1 1 10em;"><label for="pl-hcomm">Community (optional)</label><input id="pl-hcomm" class="tu-input" type="text" autocomplete="off" placeholder="hive-123456"></div>
+					</div>
+					<div class="tu-row" style="align-items:center;margin-top:0.6em;">
+						<div class="tu-field pl-inline"><label for="pl-hage">Only count accounts at least</label><input id="pl-hage" class="tu-input" type="number" min="0" max="3650" step="1" value="0" inputmode="numeric" style="width:6em;"><span>days old</span></div>
+						<label class="pl-check"><input type="checkbox" id="pl-hdecline"> Decline payout for this post</label>
+					</div>
+					<div class="tu-field" style="margin-top:0.6em;"><label for="pl-hbody">Post text (markdown)</label><textarea id="pl-hbody" class="tu-input" rows="9"></textarea></div>
+					<div class="pl-orow"><button type="button" class="tu-btn tu-btn--ghost" id="pl-hbodyreset">Write the text for me again</button><span class="tu-note" id="pl-hbodynote" style="margin:0;"></span></div>
+				</div>
+
+				<p class="pl-err" id="pl-err" role="alert" hidden></p>
+				<div class="pl-orow pl-create">
+					<button type="button" class="tu-btn tu-btn--primary pl-go" id="pl-go">Create the poll</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="pl-reset">Start again</button>
+				</div>
+				<p class="tu-note" id="pl-gonote" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
+			</div>
+
+			<div class="tu-card pl-prev-card" id="pl-prev-card">
+				<div class="pl-bar"><span class="pl-lab">Preview</span>
+					<span class="pl-seg pl-seg--sm" role="group" aria-label="Preview"><button type="button" data-pv="vote" aria-pressed="true">Voting</button><button type="button" data-pv="res" aria-pressed="false">Results</button></span>
+				</div>
+				<div id="pl-prev"></div>
+			</div>
+		</div>
+
+		<div class="tu-card pl-done" id="pl-done" hidden>
+			<h3 id="pl-dh">Your poll is ready</h3>
+			<div class="pl-link"><input id="pl-dlink" class="tu-input" type="text" readonly aria-label="Link to the poll"><button type="button" class="tu-btn tu-btn--primary" id="pl-dcopy">Copy link</button></div>
+			<div class="pl-actions">
+				<a class="tu-btn" id="pl-dopen">Open the poll</a>
+				<button type="button" class="tu-btn" id="pl-dtext">Copy text for a post</button>
+				<button type="button" class="tu-btn" id="pl-dqr">QR code</button>
+				<button type="button" class="tu-btn" id="pl-dmgr">Copy manager link</button>
+				<a class="tu-btn" id="pl-dpeakd" target="_blank" rel="noopener" hidden>View on PeakD</a>
+				<button type="button" class="tu-btn tu-btn--ghost" id="pl-dnew">Make another poll</button>
+			</div>
+			<div class="pl-qr" id="pl-dqrbox" hidden></div>
+			<p class="tu-note" id="pl-dnote" style="margin-bottom:0;">You can close or delete it from <strong>My polls</strong> on this page. The <strong>manager link</strong> carries your secret key: keep it to yourself, it lets anyone who has it close or delete the poll.</p>
+		</div>
+
+		<h2>Open a poll</h2>
+		<div class="tu-card">
+			<div class="pl-link"><input id="pl-goid" class="tu-input" type="text" autocomplete="off" placeholder="Paste a poll link: mes.fm/v/ab3defgh or a PeakD poll post" aria-label="Poll link"><button type="button" class="tu-btn" id="pl-goopen">Open</button></div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A free poll maker with no sign-up</h2>
+			<p>Type a question and a few answers, press <strong>Create the poll</strong>, and share the short link (mes.fm/v/...). Anyone who opens it can vote with one tap and see the results as bars and a pie chart, updated live every few seconds while the poll is open. Use it in a group chat, a class, a livestream, a club or a family decision.</p>
+			<h3>Choices you can make</h3>
+			<dl>
+				<dt>One option or several</dt><dd>A single-choice poll takes one answer; a multiple-choice poll lets people tick up to the number you choose.</dd>
+				<dt>When voting ends</dt><dd>Keep it open until you close it yourself, close it after a set time (15 minutes, a day, a week ...), or at a date and time you pick. An open poll closes by itself after a year.</dd>
+				<dt>Who sees the results</dt><dd>Everyone at any time, only people who have voted (so nobody just follows the crowd), or nobody until voting ends.</dd>
+				<dt>Changing a vote</dt><dd>Off by default; turn it on if people may change their mind while the poll is open.</dd>
+			</dl>
+			<h3>How one vote per person works (and its limits)</h3>
+			<p>There are no accounts, so the page gives each browser a random number and lets it vote once per poll. A few votes are allowed from the same network (a school, an office or a phone network share one internet address), and then that network is full for that poll. This stops casual repeat voting. It cannot stop someone who clears their browser data or uses several devices or networks, so do not use these polls for anything that needs a real election.</p>
+			<h3>Polls on Hive</h3>
+			<p>Choose <strong>On Hive</strong> to publish the poll as a post from your Hive account in the open polls format that PeakD, Ecency and HiveHub use, so it shows up as a poll there too. Hive accounts vote with Hive Keychain (a free "custom_json" operation signed with the posting key, no fee). This page counts the votes itself: it asks PeakD's open polls node who voted, then reads each vote from its block on the Hive blockchain and applies the poll's rules (votes after the end time do not count, an account's latest vote wins unless changes are off, the minimum account age). You can open any Hive poll here by pasting its PeakD link.</p>
+			<h3>Privacy</h3>
+			<p>The poll (question, options, settings) and the vote counts are stored on our server until 60 days after the poll closes, then they are deleted. We keep which browser number picked which option (so it cannot vote twice) but never your name, and your internet address only as a scrambled code used to count votes per network. Your list of polls and the keys to manage them stay in your own browser. See the <a href="https://mes.fm/privacy-policy" target="_blank" rel="noopener">privacy policy</a>.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Can I edit a poll after making it?</dt><dd>No, so nobody can change the question under the voters. Close or delete it and make a new one.</dd>
+				<dt>Can I see who voted for what?</dt><dd>No. Only the totals are shown, to everyone including you.</dd>
+				<dt>Why does it say my network already voted?</dt><dd>Each poll takes a few votes per internet address. On shared Wi-Fi, try your phone's mobile data.</dd>
+			</dl>
+			<p>Counting down to the result? Make a <a href="https://mes.fm/reminder" target="_blank" rel="noopener">reminder link</a> for the closing time. Picking a winner at random instead? Try the <a href="https://mes.fm/random-number-generator" target="_blank" rel="noopener">random number generator</a> or the <a href="https://mes.fm/dice-roller" target="_blank" rel="noopener">dice roller</a>.</p>
+		</div>
+	</div>
+	
+</main>
+<div id="app-foot">
+  <p><strong>How it works.</strong> A poll is saved on mes.fm and gets a short link (mes.fm/v/&hellip;) that anyone can open in a browser to vote: your voters do not need the app. Polls are not listed anywhere and are hidden from search engines. Each phone or browser votes once.</p>
+  <p><strong>Privacy.</strong> No accounts and no ads. The polls you made and the ones you voted on are remembered only on this device. Votes are stored with a random device id that is kept only as a one-way hash.</p>
+  <p class="links"><a href="https://mes.fm/privacy-policy#polls" target="_blank" rel="noopener">Privacy Policy</a><a href="https://mes.fm/contact" target="_blank" rel="noopener">Contact</a><a href="https://mes.fm/polls" target="_blank" rel="noopener">Website</a></p>
+  <p>Version 1.0 &middot; Math Easy Solutions &middot; mes.fm</p>
+</div>
+<script src="js/hive.js"></script>
+<script src="js/panel-view.js"></script>
+<script src="js/time-input.js"></script>
+<script src="js/when-parse.js"></script>
+<script src="js/polls.js"></script>
+<script>
+(function(){
+  var b=document.body, KS="mes-polls-app:textscale", KT="mes-polls-app:theme", KH="mes-polls-app:cbarhide";
+  var steps=[0.85,1,1.15,1.3,1.5,1.75], i=1;
+  try{ var v=parseInt(localStorage.getItem(KS),10); if(v>=0&&v<steps.length) i=v; }catch(e){}
+  var m=document.getElementById("app-main"), f=document.getElementById("app-foot");
+  function all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function applyScale(){ m.style.fontSize=(16*steps[i])+'px'; f.style.fontSize=(13.6*steps[i])+'px';
+    all(".js-down").forEach(function(e){ e.style.opacity=i===0?".4":"1"; }); all(".js-up").forEach(function(e){ e.style.opacity=i===steps.length-1?".4":"1"; });
+    try{localStorage.setItem(KS,i);}catch(e){} }
+  all(".js-down").forEach(function(e){ e.addEventListener("click",function(){ if(i>0){i--;applyScale();} }); });
+  all(".js-up").forEach(function(e){ e.addEventListener("click",function(){ if(i<steps.length-1){i++;applyScale();} }); });
+  applyScale();
+  function pref(){ try{ var v=localStorage.getItem(KT); if(v) return v; }catch(e){} return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
+  function applyTheme(v){ b.classList.toggle("dark-mode",v==="dark"); b.classList.toggle("dark",v==="dark"); }
+  applyTheme(pref());
+  all(".js-theme").forEach(function(e){ e.addEventListener("click",function(){ var v=b.classList.contains("dark-mode")?"light":"dark"; try{localStorage.setItem(KT,v);}catch(e){} applyTheme(v); }); });
+  var menu=document.getElementById("menu"), scrim=document.getElementById("menu-scrim");
+  function toggleMenu(open){ menu.classList.toggle("open",open); scrim.classList.toggle("open",open); }
+  all(".js-menu").forEach(function(e){ e.addEventListener("click",function(ev){ ev.stopPropagation(); toggleMenu(!menu.classList.contains("open")); }); });
+  scrim.addEventListener("click",function(){ toggleMenu(false); });
+  menu.addEventListener("click",function(ev){ if(ev.target.tagName==="A") toggleMenu(false); });
+  var cbar=document.getElementById("cbar"), bar=document.getElementById("app-bar");
+  try{ if(localStorage.getItem(KH)==="1") b.classList.add("cbar-hidden"); }catch(e){}
+  document.getElementById("cbar-hide").addEventListener("click",function(){ b.classList.add("cbar-hidden"); try{localStorage.setItem(KH,"1");}catch(e){} });
+  document.getElementById("ctab").addEventListener("click",function(){ b.classList.remove("cbar-hidden"); try{localStorage.setItem(KH,"0");}catch(e){} });
+  function onScroll(){ var past=bar.getBoundingClientRect().bottom<0; cbar.classList.toggle("show",past); b.classList.toggle("past",past); }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+})();
+</script>
+</body>
+</html>

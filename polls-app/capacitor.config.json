@@ -1,0 +1,9 @@
+{
+  "appId": "fm.mes.polls",
+  "appName": "MES Polls",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#3b5bdb"
+  }
+}
