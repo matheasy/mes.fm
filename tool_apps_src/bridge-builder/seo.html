@@ -1,0 +1,44 @@
+<h2>How bridges hold up: trusses, tension and compression</h2>
+<p>A bridge has one job: carry its own weight and the traffic on it to the ground at the ends. A <strong>truss</strong> does it with straight members joined at pins. Each member can only <strong>pull</strong> (tension) or <strong>push</strong> (compression); it is never asked to bend. That is why trusses are made of <strong>triangles</strong>: a triangle cannot change shape without one of its sides getting longer or shorter, while a square can fold flat. Draw a road on its own between the banks and the simulator marks the loose joint in red: with pins, it folds.</p>
+<div class="bz-eq" role="math" aria-label="Key equations">
+	<div><span class="bz-eq__n">member force and stiffness</span><span class="mes-tex">\(\displaystyle N = \frac{EA}{L}\,\Delta L, \qquad \sigma = \frac{N}{A}\)</span></div>
+	<div><span class="bz-eq__n">buckling (Euler, combined with crushing by Rankine)</span><span class="mes-tex">\(\displaystyle P_{cr} = \frac{\pi^2 E I}{L^2}, \qquad \frac{1}{P_c} = \frac{1}{f_c A} + \frac{1}{P_{cr}}\)</span></div>
+	<div><span class="bz-eq__n">the whole truss</span><span class="mes-tex">\(\displaystyle \mathbf{K}\,\mathbf{u} = \mathbf{F}, \qquad \mathbf{K} = \sum_{\text{members}} \frac{EA}{L}\begin{bmatrix} \mathbf{c}\mathbf{c}^{T} & -\mathbf{c}\mathbf{c}^{T} \\ -\mathbf{c}\mathbf{c}^{T} & \mathbf{c}\mathbf{c}^{T}\end{bmatrix}\)</span></div>
+	<div><span class="bz-eq__n">chord force of a simple truss (uniform load w, span L, height h)</span><span class="mes-tex">\(\displaystyle N_{\text{chord}} \approx \frac{w L^2}{8 h}\)</span></div>
+	<div><span class="bz-eq__n">natural frequencies and vortex shedding</span><span class="mes-tex">\(\displaystyle \mathbf{K}\boldsymbol{\phi} = \omega^2 \mathbf{M}\boldsymbol{\phi}, \qquad f_s = \frac{\mathrm{St}\, U}{D}\)</span></div>
+</div>
+<p>The last-but-one formula is the key to cheap bridges: the force in the top and bottom chords falls as the truss gets <strong>deeper</strong>, so the chords can be smaller. But the diagonals and verticals get longer, and every extra piece has to be cut, drilled, lifted and bolted. Most real steel trusses end up between about span/6 and span/10 deep. Use <b>Find the cheapest</b> to watch that trade-off for your own site.</p>
+
+<h3>The bridge types</h3>
+<ul>
+	<li><strong>Warren</strong>: equal triangles, diagonals alternate between tension and compression. Few pieces.</li>
+	<li><strong>Pratt</strong>: verticals plus diagonals that slope down towards the middle, so the long diagonals are in <em>tension</em> and only the short verticals push. Good for steel.</li>
+	<li><strong>Howe</strong>: the mirror image, long diagonals in compression. It suited timber, which is happy being squeezed.</li>
+	<li><strong>K truss and Parker (camelback)</strong>: shorter compression members, or a curved top chord that is deepest where the bending is biggest.</li>
+	<li><strong>Deck truss and deck arch</strong>: the structure sits under the road, so it needs a deep gorge. An arch pushes its weight into the cliff faces, almost all in compression, which is why stone and concrete arches work.</li>
+	<li><strong>Network tied arch</strong>: an arch above the road with crossing hangers; the road itself is the tie that holds the arch ends together.</li>
+	<li><strong>Cable-stayed and suspension</strong>: towers and steel cables, the cheapest way past about 100 to 200 m. Cables carry huge pulls for their weight but cannot push, so the simulator lets them go slack.</li>
+</ul>
+
+<h3>What the simulator calculates</h3>
+<ul>
+	<li><strong>Member forces</strong> by the direct stiffness method, the same matrix method engineering software uses, for the bridge's own weight (members, a 1.5 t/m concrete deck for the steel road, joints) plus the traffic you choose. The traffic is moved across the bridge in small steps and every member keeps its worst pull and worst push (influence lines).</li>
+	<li><strong>Strength</strong>: a member fails in tension when the stress reaches the material strength, and in compression when it buckles (Euler) or crushes, combined with the Rankine formula. The <b>safety factor</b> divides the strength: at 1.5 a member may only use two-thirds of it.</li>
+	<li><strong>Auto-size</strong> is a fully stressed design: every member gets the smallest catalogue size that passes, the weight is recalculated, and it repeats until nothing changes.</li>
+	<li><strong>Vibration</strong>: the natural frequencies and mode shapes come from the stiffness and mass matrices (subspace iteration). Cable tension adds geometric stiffness, so a suspension or cable-stayed bridge is stiffer because its cables are pulled tight.</li>
+	<li><strong>Wind</strong> blowing across the bridge lifts the deck and sheds vortices from its edges at about <i>f</i> = 0.12 <i>U</i> / <i>D</i>. When that frequency is near a natural frequency the vortices lock on and the deck bounces. (The famous 1940 Tacoma Narrows collapse was a different, twisting instability called flutter; this flat side view cannot twist, and sideways wind is carried by deck bracing that is not drawn.)</li>
+	<li><strong>Earthquakes</strong> move every anchor with a made-up ground motion: filtered random shaking with the Kanai-Tajimi spectrum (firm or soft ground), a single near-fault pulse, or a sine wave at the bridge's own frequency. The member check uses an equivalent static load: the peak ground acceleration times a design-spectrum amplification of up to 2.5 for stiff structures.</li>
+	<li><strong>The live test</strong> is a separate time-step simulation: every joint is a mass, every member a spring with a little damping, and vehicles push down where their axles are. A member that goes past its strength snaps or buckles and is removed, and the rest of the bridge has to cope (or not).</li>
+</ul>
+
+<h3>Costs</h3>
+<p>Prices are rough 2026 figures, there to make the trade-offs real: fabricated steel about $7/kg, glulam timber $4/kg, cable $14/kg, concrete $0.80/kg (about $1,900 per cubic metre in place), a concrete deck slab $1,200 per metre, $900 per piece and $800 per joint for cutting, connections and lifting, and $12,000 per foundation on the bank or $50,000 in the river. Real projects add design, approaches, bearings, painting, traffic management and much more.</p>
+
+<h3>Questions</h3>
+<dl>
+	<dt>Why does my bridge say a joint can move?</dt><dd>A joint held by only two members in a straight line, or a rectangle without a diagonal, can swing about its pins. Add a diagonal so it becomes triangles.</dd>
+	<dt>Why do the cheapest designs still pass?</dt><dd>Auto-size checks every member against the strongest load case it sees: traffic in every position, wind up and down, and the earthquake both ways, all times the safety factor.</dd>
+	<dt>Why did my bridge break in the test when the check said it passed?</dt><dd>Moving vehicles bounce the bridge and the earthquake can resonate with it, so the forces in the test can be higher than the static ones. With a safety factor of 1 there is no margin for that.</dd>
+	<dt>Can I use this to design a real bridge?</dt><dd>No. It is a teaching model: pin joints, a flat 2D side view, typical material values and simple load cases. Real bridges are designed by licensed engineers to codes such as AASHTO, Eurocode or CSA S6, with fatigue, connections, bearings, deck bending, lateral bracing and many more checks.</dd>
+</dl>
+<p>Everything runs on your device and nothing is uploaded. <a href="/bending-stress-calculator">Bending Stress &amp; Beam Calculator</a> · <a href="/materials">Mechanics of Materials</a> · <a href="/brick-builder">Brick Builder</a> · <a href="/crash-physics">Crash Physics</a> · <a href="/tools">More MES tools</a></p>

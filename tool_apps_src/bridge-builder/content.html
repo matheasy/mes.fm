@@ -1,0 +1,131 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu bz" id="bz">
+		<p class="tu-note bz-lead">Draw a bridge out of steel, timber, cables and concrete, then <b>drive traffic over it</b>, blow <b>wind</b> across it and shake it with an <b>earthquake</b>. Every member is checked for pulling and buckling, and the cost is counted as you build. Can you find the <b>cheapest bridge that still holds</b>?</p>
+
+		<section class="bz-view" id="bz-view" aria-label="Bridge editor and simulator">
+			<div class="bz-bar" id="bz-bar" role="toolbar" aria-label="Building tools">
+				<div class="bz-seg" id="bz-tools" role="group" aria-label="Tool">
+					<button type="button" data-tool="build" aria-pressed="true" title="Draw members: drag from a joint (B)">✏️ Build</button>
+					<button type="button" data-tool="move" aria-pressed="false" title="Drag joints around (M)">✋ Move</button>
+					<button type="button" data-tool="select" aria-pressed="false" title="Tap a member to see and change it (S)">👆 Select</button>
+					<button type="button" data-tool="delete" aria-pressed="false" title="Tap a member or joint to remove it (D)">🗑 Delete</button>
+				</div>
+				<div class="bz-mats" id="bz-mats" role="group" aria-label="Material"></div>
+				<div class="bz-size" role="group" aria-label="Member size">
+					<button type="button" id="bz-sminus" title="Smaller ([)" aria-label="Smaller size">−</button>
+					<span id="bz-sizel" aria-live="polite"></span>
+					<button type="button" id="bz-splus" title="Bigger (])" aria-label="Bigger size">+</button>
+				</div>
+				<div class="bz-seg" role="group" aria-label="Edit">
+					<button type="button" id="bz-undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+					<button type="button" id="bz-redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+					<button type="button" id="bz-auto" class="bz-hot" title="Pick the cheapest size for every member that still passes">⚡ Auto-size</button>
+					<button type="button" id="bz-colours" aria-pressed="false" title="Colour members by how hard they work">🎨 Stress</button>
+				</div>
+			</div>
+			<div class="bz-stage" id="bz-stage">
+				<canvas id="bz-c" role="img" aria-label="Side view of the bridge over the gorge. Drag to draw members."></canvas>
+				<div class="bz-badge" id="bz-badge"></div>
+				<div class="bz-run">
+					<button type="button" id="bz-go" class="bz-go">▶ Run test</button>
+					<button type="button" id="bz-stop" hidden>■ Back to building</button>
+					<button type="button" id="bz-pause" hidden aria-pressed="false">❚❚ Pause</button>
+					<select id="bz-slow" aria-label="Playback speed" title="Playback speed"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">0.1×</option><option value="2">2×</option><option value="4">4×</option></select>
+				</div>
+				<div class="bz-zoom"><button type="button" id="bz-zin" aria-label="Zoom in">+</button><button type="button" id="bz-zout" aria-label="Zoom out">−</button><button type="button" id="bz-fit" title="Fit the bridge (F)">Fit</button><button type="button" id="bz-png" title="Save a picture" aria-label="Save as PNG">📷</button></div>
+				<div class="bz-info" id="bz-info" hidden></div>
+				<div class="bz-tip" id="bz-tip"></div>
+			</div>
+			<div class="bz-readouts" id="bz-ro"></div>
+			<div class="bz-chart" id="bz-chartw" hidden><canvas id="bz-chart" role="img" aria-label="Chart of mid-span movement and ground shaking over time"></canvas></div>
+			<div class="bz-result" id="bz-result" hidden aria-live="polite"></div>
+		</section>
+
+		<div class="bz-tabs" role="tablist" aria-label="Bridge panels">
+			<button type="button" role="tab" data-tab="build" aria-selected="true">🏗 Start a bridge</button>
+			<button type="button" role="tab" data-tab="test" aria-selected="false">🚗 Test it</button>
+			<button type="button" role="tab" data-tab="check" aria-selected="false">📋 Check members</button>
+			<button type="button" role="tab" data-tab="cheap" aria-selected="false">💲 Find the cheapest</button>
+			<button type="button" role="tab" data-tab="levels" aria-selected="false">🏆 Challenges</button>
+		</div>
+
+		<section class="tu-card bz-panel" data-panel="build" role="tabpanel">
+			<div class="bz-cols">
+				<fieldset class="bz-fs"><legend>The site</legend>
+					<label class="tu-field"><span class="tu-label">Gap to cross (span): <b id="bz-span-v"></b></span><input type="range" id="bz-span" min="8" max="240" step="1"></label>
+					<label class="tu-field"><span class="tu-label">Depth of the gorge to the river bed: <b id="bz-gap-v"></b></span><input type="range" id="bz-gap" min="4" max="80" step="1"></label>
+					<p class="tu-note">Joints you put on the banks, the cliff faces or the river bed become <b>anchors</b> (foundations). A bank anchor costs <span id="bz-ca1"></span>, one in the river <span id="bz-ca2"></span>.</p>
+				</fieldset>
+				<fieldset class="bz-fs"><legend>Start from a design</legend>
+					<label class="tu-field"><span class="tu-label">Type</span><select id="bz-type" class="tu-select"></select></label>
+					<label class="tu-field"><span class="tu-label">Height: <b id="bz-depth-v"></b></span><input type="range" id="bz-depth" min="1" max="80" step="0.5"></label>
+					<label class="tu-field"><span class="tu-label">Panels: <b id="bz-pan-v"></b></span><input type="range" id="bz-pan" min="2" max="40" step="1"></label>
+					<div class="bz-row"><button type="button" class="tu-btn" id="bz-make">Build this design</button><label class="bz-chk"><input type="checkbox" id="bz-makeauto" checked> auto-size it</label><button type="button" class="tu-btn tu-btn--ghost" id="bz-clear">Clear everything</button></div>
+					<div class="bz-thumbs" id="bz-thumbs" role="group" aria-label="Bridge types"></div>
+				</fieldset>
+			</div>
+			<details class="bz-how"><summary>How to build</summary>
+				<ul>
+					<li><b>Build</b> (✏️): press on a joint or anywhere and drag; let go to make a member. Joints snap to a 0.5 m grid (hold Shift to place freely). The dashed circle shows the longest piece of that material.</li>
+					<li>The <b>road</b> must reach from one bank to the other: use a road material (dark steel or timber deck) for it. Cars only drive on road members.</li>
+					<li>Joints are <b>pins</b>, like a real truss: a member can only pull or push. A road on its own folds up, so brace it with <b>triangles</b>.</li>
+					<li><b>Move</b> (✋) drags joints, <b>Select</b> (👆) shows a member's force and lets you change it, <b>Delete</b> removes. Two fingers, the right mouse button or Space + drag pans; Ctrl + wheel or pinch zooms.</li>
+					<li>Keys: B M S D tools, 1-6 materials, [ ] size, Ctrl+Z undo, Space runs the test, F fits the view.</li>
+				</ul>
+			</details>
+		</section>
+
+		<section class="tu-card bz-panel" data-panel="test" role="tabpanel" hidden>
+			<div class="bz-cols">
+				<fieldset class="bz-fs"><legend>🚗 Traffic</legend>
+					<label class="tu-field"><span class="tu-label">Vehicle</span><select id="bz-veh" class="tu-select"></select></label>
+					<label class="tu-field"><span class="tu-label">How many: <b id="bz-nveh-v"></b></span><input type="range" id="bz-nveh" min="0" max="20" step="1"></label>
+					<label class="tu-field"><span class="tu-label">Gap between them: <b id="bz-vgap-v"></b></span><input type="range" id="bz-vgap" min="1" max="40" step="1"></label>
+					<label class="tu-field"><span class="tu-label">Speed: <b id="bz-speed-v"></b></span><input type="range" id="bz-speed" min="5" max="130" step="5"></label>
+				</fieldset>
+				<fieldset class="bz-fs"><legend>💨 Wind across the bridge</legend>
+					<label class="tu-field"><span class="tu-label">Wind speed: <b id="bz-wind-v"></b></span><input type="range" id="bz-wind" min="0" max="70" step="1"></label>
+					<label class="tu-field"><span class="tu-label">Gustiness: <b id="bz-gust-v"></b></span><input type="range" id="bz-gust" min="0" max="50" step="1"></label>
+					<label class="bz-chk"><input type="checkbox" id="bz-vortex" checked> Vortex shedding (the deck can start to bounce)</label>
+					<p class="tu-note" id="bz-windnote"></p>
+				</fieldset>
+				<fieldset class="bz-fs"><legend>🌋 Earthquake</legend>
+					<label class="tu-field"><span class="tu-label">Peak ground acceleration: <b id="bz-pga-v"></b></span><input type="range" id="bz-pga" min="0" max="1.2" step="0.05"></label>
+					<label class="tu-field"><span class="tu-label">Kind of shaking</span><select id="bz-qtype" class="tu-select"></select></label>
+					<label class="tu-field"><span class="tu-label">Strong shaking lasts: <b id="bz-qdur-v"></b></span><input type="range" id="bz-qdur" min="2" max="30" step="1"></label>
+					<label class="bz-chk"><input type="checkbox" id="bz-qvert"> Up-and-down shaking too</label>
+				</fieldset>
+			</div>
+			<div class="bz-row"><button type="button" class="tu-btn" id="bz-go2">▶ Run the test</button><span class="tu-note">The same settings are used by the member check and Auto-size, so the bridge is designed for what you test it with.</span></div>
+			<div class="bz-modes"><h3 class="bz-h">How it vibrates</h3><p class="tu-note">Every structure has natural frequencies. Shaking at one of them (wind, marching, an earthquake) makes the movement grow: that is <b>resonance</b>. Tap a mode to watch it.</p><div class="bz-row" id="bz-modes"></div></div>
+		</section>
+
+		<section class="tu-card bz-panel" data-panel="check" role="tabpanel" hidden>
+			<div class="bz-row">
+				<label class="tu-field bz-inl"><span class="tu-label">Safety factor</span><select id="bz-sf" class="tu-select"><option value="1">1.0 (no margin)</option><option value="1.25">1.25</option><option value="1.5">1.5</option><option value="1.75">1.75</option><option value="2">2.0</option></select></label>
+				<button type="button" class="tu-btn" id="bz-auto2">⚡ Auto-size every member</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="bz-csv">Copy as a table</button>
+			</div>
+			<div class="bz-summary" id="bz-summary"></div>
+			<div class="bz-costbar" id="bz-costbar"></div>
+			<div class="bz-tablewrap"><table class="tu-table bz-table" id="bz-table"></table></div>
+		</section>
+
+		<section class="tu-card bz-panel" data-panel="cheap" role="tabpanel" hidden>
+			<p class="tu-note">Every bridge type at several heights, each one auto-sized for this site and the traffic, wind and earthquake set in <b>Test it</b>, then priced. The usual lesson: deeper trusses need lighter chords, but more and longer pieces cost money too.</p>
+			<div class="bz-row"><button type="button" class="tu-btn" id="bz-findcheap">💲 Find the cheapest design</button><span id="bz-cheapst" class="tu-note" aria-live="polite"></span></div>
+			<div class="bz-cheapchart" id="bz-cheapchart"></div>
+			<div class="bz-tablewrap"><table class="tu-table bz-table" id="bz-cheaptab"></table></div>
+		</section>
+
+		<section class="tu-card bz-panel" data-panel="levels" role="tabpanel" hidden>
+			<p class="tu-note">Build a bridge that carries the traffic (and survives the wind or the earthquake) for less than the budget. ★ = it holds, ★★ = under 90 % of the budget, ★★★ = under 75 %.</p>
+			<div class="bz-levels" id="bz-levels"></div>
+		</section>
+
+		<div class="bz-row bz-share"><button type="button" class="tu-btn tu-btn--ghost" id="bz-link">🔗 Copy a link to this bridge</button><button type="button" class="tu-btn tu-btn--ghost" id="bz-json">💾 Save file</button><label class="tu-btn tu-btn--ghost bz-file">📂 Open file<input type="file" id="bz-open" accept=".json,.mesbridge,application/json" hidden></label></div>
+
+		<div class="tu-seo">{{SEO}}</div>
+		<script src="/main_js/panel-view.js?v=1" defer></script>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>

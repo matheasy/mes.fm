@@ -247,6 +247,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("grounding-rod-simulator", "Ground Rod Simulator"),
     ("double-pendulum", "Double Pendulum"),
     ("crash-physics", "Crash Physics"),
+    ("bridge-builder", "Bridge Builder"),
     ("gta", "MES GTA 6 Hub"),   # MES GTA 6 Hub + three pages (build_tool_apps.py, src tool_apps_src/gta)
     ("gta-stunt-jump-simulator", "MES GTA 6 Hub", "/gta"),
     ("gta-6-countdown", "MES GTA 6 Hub", "/gta"),

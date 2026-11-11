@@ -664,6 +664,13 @@ APPS = {
                             tag="What happens when it hits?", accent="#b4321f", dark="#8f2416", tint="#fbe7e2",
                             desc="Free impact and crash physics simulator: pick what flies (material, shape, size, speed, angle) and what it hits (material, thickness) to see whether it bounces, sticks, shatters or goes through, the exit speed, ballistic limit and thickness needed to stop it. Crash cars into walls or each other, or drop eggs and phones, with g-forces, crush and injury risk.",
                             js_v="1"),
+    # MES Bridge Builder (2026-11-11): 2D pin-jointed truss editor + stiffness-method analysis, influence-line traffic envelope, wind / quake load cases, auto-size,
+    # cheapest-design search, vibration modes and a live explicit-dynamics test (cars, wind, earthquake, members snap / buckle). lib.js = MESBridge (tests tool_apps_src/bridge-builder-tests.js).
+    "bridge-builder": dict(title="MES Bridge Builder", page_title="Bridge Builder: Free Truss Bridge Simulator and Calculator",
+                            tag="Design it, price it, drive over it, shake it.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
+                            desc="Free bridge simulator and truss calculator: draw a bridge from steel, timber, cables and concrete or start from Warren, Pratt, Howe, K, arch, cable-stayed and suspension designs, see every member's force and buckling check, auto-size it to the cheapest safe design, then drive cars, buses and trucks over it, blow wind across it and shake it with an earthquake.",
+                            meta_desc="Free bridge simulator: build truss, arch and cable bridges, check every member, auto-size for the lowest cost, then test with traffic, wind and earthquakes.",
+                            js_v="1", vars={"SEO": "@seo.html"}),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
