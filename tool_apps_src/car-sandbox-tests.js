@@ -74,4 +74,15 @@ ok(ev2.indexOf("lap") < 0, "shortcut lap rejected " + ev2.join(","));
 var st3 = C.lapNew(), ev3 = []; [10, 5, L - 5, L - 10].forEach(function (sv, i) { var p4 = C.trackPoint(sv), n4 = C.trackNearest(p4.x, p4.z); C.lapStep(st3, n4.s, n4.d, i).forEach(function (e) { ev3.push(e.t); }); });
 ok(ev3.indexOf("wrong") >= 0, "wrong way");
 ok(C.fmtLap(61.234) === "1:01.23" && C.fmtLap(9.5) === "0:09.50", "lap format");
+// ghost poses
+var gh = [C.ghostSample(0, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0, w: 1 }), C.ghostSample(1, { x: 10, y: 2, z: -4 }, { x: 0, y: Math.SQRT1_2, z: 0, w: Math.SQRT1_2 })];
+var gp = C.ghostPose(gh, 0.5); near(gp.x, 5, 1e-9, "ghost x"); near(gp.z, -2, 1e-9, "ghost z"); near(Math.hypot.apply(null, gp.q), 1, 1e-9, "ghost q unit");
+ok(C.ghostPose(gh, 1.5) === null && C.ghostPose([], 0) === null, "ghost out of range");
+// stunts
+ok(C.stuntName(-2 * Math.PI, 0, 0).name === "backflip", "backflip " + C.stuntName(-2 * Math.PI, 0, 0).name);
+ok(C.stuntName(4.1 * Math.PI, 0, 0).name === "Double front flip", "double front flip");
+ok(C.stuntName(0, 0, 2.1 * Math.PI).name === "barrel roll", "barrel roll");
+ok(C.stuntName(0, 2 * Math.PI, 0).name === "360° spin", "360");
+ok(C.stuntName(0.5, 0.4, 0.3).name === "", "no stunt for wobbles");
+ok(C.stuntName(-6.4, 3.3, 0).name === "backflip + 180", "flip + 180");
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

@@ -120,6 +120,26 @@
 		} else { st.valid = false; if (sec === (st.sec + n - 1) % n) ev.push({ t: "wrong" }); }
 		st.sec = sec; return ev;
 	};
+	/* ghost of the best lap: samples [t, x, y, z, qx, qy, qz, qw]; pose at time t (linear position, normalised linear quaternion blend) */
+	C.ghostPose = function (g, t) {
+		if (!g || !g.length || t < g[0][0] || t > g[g.length - 1][0]) return null;
+		var lo = 0, hi = g.length - 1; while (hi - lo > 1) { var m = (lo + hi) >> 1; if (g[m][0] <= t) lo = m; else hi = m; }
+		var a = g[lo], b = g[hi], f = b[0] > a[0] ? (t - a[0]) / (b[0] - a[0]) : 0, dot = a[4] * b[4] + a[5] * b[5] + a[6] * b[6] + a[7] * b[7], sg = dot < 0 ? -1 : 1, q = [], n = 0, i;
+		for (i = 4; i < 8; i++) { q.push(a[i] + (b[i] * sg - a[i]) * f); n += q[i - 4] * q[i - 4]; }
+		n = Math.sqrt(n) || 1;
+		return { x: a[1] + (b[1] - a[1]) * f, y: a[2] + (b[2] - a[2]) * f, z: a[3] + (b[3] - a[3]) * f, q: [q[0] / n, q[1] / n, q[2] / n, q[3] / n] };
+	};
+	C.ghostSample = function (t, p, q) { var r2 = function (v) { return Math.round(v * 100) / 100; }, r3 = function (v) { return Math.round(v * 1000) / 1000; }; return [r2(t), r2(p.x), r2(p.y), r2(p.z), r3(q.x), r3(q.y), r3(q.z), r3(q.w)]; };
+	/* stunt name from the turns made in the air (radians about the car's own x = pitch, y = yaw, z = roll; + pitch = nose down = front flip) */
+	C.stuntName = function (pitch, yaw, roll) {
+		function n(a) { return Math.floor(Math.abs(a) / (2 * Math.PI) + 0.2); }
+		var parts = [], words = ["", "", "Double ", "Triple ", "Quadruple "];
+		var fp = n(pitch), fr = n(roll), fy = Math.floor(Math.abs(yaw) / Math.PI + 0.15);
+		if (fp) parts.push((words[fp] !== undefined ? words[fp] : fp + "x ") + (pitch > 0 ? "front flip" : "backflip"));
+		if (fr) parts.push((words[fr] !== undefined ? words[fr] : fr + "x ") + "barrel roll");
+		if (fy >= 2) parts.push(fy * 180 + "° spin"); else if (fy === 1 && (fp || fr)) parts.push("180");
+		return { name: parts.join(" + "), turns: fp + fr + Math.floor(fy / 2) };
+	};
 	C.fmtLap = function (t) { if (t == null || !isFinite(t)) return "–"; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(2); };
 	C.lapKey = function (world, car, g) { return world + "|" + car + "|" + (+g).toFixed(2); };
 
@@ -337,7 +357,10 @@
 	function load(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v && typeof v === "object" ? Object.assign(d, v) : d; } catch (e) { return d; } }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var usLocale = /^en-(US|LR|MM)/.test(navigator.language || "");
-	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true });
+	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true } });
+	if (!S.show || typeof S.show !== "object") S.show = { info: true, lap: true, speed: true, msg: true, ghost: true };
+	if (S.ghost === false) { S.show.ghost = false; delete S.ghost; }
+	if (typeof S.vol !== "number") S.vol = 0.7;
 	var REC = load(RKEY, { top: 0, jump: 0, air: 0, crash: 0, laps: {} }); if (!REC.laps) REC.laps = {};
 	var Q = C.parseQuery(location.search);
 	if (Q.world) { S.world = Q.world; S.g = null; S.car = null; }
@@ -430,10 +453,10 @@
 		/* the player's car at the start, then the computer cars */
 		var start = startPose(0);
 		cars.push(makeCar(S.car && C.CARS[S.car] ? S.car : W.car, S.color || null, start, true));
-		player = 0; lapReset();
+		player = 0; lapReset(); if (ghostMesh) { scene.remove(ghostMesh); ghostMesh = null; } ghostKey = ""; ghost = null;
 		setTraffic(S.traffic);
 		camSnap = true;
-		updateGravityUI(); updateHud(true);
+		updateGravityUI(); updateHud(true); applyShow();
 	}
 	function startPose(i) {
 		if (W.track) { var p = C.trackPoint(i ? 30 + i * 16 : -8), lane = (i % 2 ? 1 : -1) * (i ? 3.5 : 0); return { x: p.x + Math.cos(p.dir) * lane, z: p.z - Math.sin(p.dir) * lane, yaw: p.dir }; }
@@ -894,6 +917,7 @@
 		else if (k === "o") spawnKind(C.OBJ_ORDER[(Math.random() * C.OBJ_ORDER.length) | 0]);
 		else if (k === "p") togglePause();
 		else if (k === "h") horn();
+		else if (k === "m") { setSound(!S.sound); toast(S.sound ? "Sound on" : "Sound off"); }
 		else if (k === "f" && !e.ctrlKey && !e.metaKey) { var b = view.querySelector(".mes-pbtn"); if (b) b.click(); }
 		else if (k === "escape") { kbActive = false; }
 	});
@@ -990,23 +1014,45 @@
 
 	/* ===================== simulation step ===================== */
 	var simT = 0, lap = C.lapNew(), wrongT = 0, autoPilot = false;
-	function lapReset() { lap = C.lapNew(); }
+	function lapReset() { lap = C.lapNew(); ghostRec = []; }
+	/* ---------- ghost of the best lap (stored per world | car | gravity in localStorage mes-car-sandbox:ghost:<key>) ---------- */
+	var GKEY = "mes-car-sandbox:ghost:", ghostRec = [], ghost = null, ghostKey = "", ghostMesh = null, ghostMat = null;
+	function ghostLoad() {
+		var k = lapKey(); if (!W || !W.track || k === ghostKey) return; ghostKey = k;
+		try { ghost = JSON.parse(localStorage.getItem(GKEY + k)); } catch (e) { ghost = null; }
+		ghostBuild();
+	}
+	function ghostBuild() {
+		if (ghostMesh) { scene.remove(ghostMesh); ghostMesh.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); ghostMesh = null; }
+		if (!ghost || !W.track || !cars[player]) return;
+		ghostMat = ghostMat || new THREE.MeshBasicMaterial({ color: 0x7fd3ff, transparent: true, opacity: 0.3, depthWrite: false });
+		var vis = makeCarMesh(C.CARS[cars[player].type], "#7fd3ff");
+		vis.group.traverse(function (o) { if (o.isMesh) { o.material = ghostMat; o.castShadow = o.receiveShadow = false; } });
+		vis.flame.visible = false; ghostMesh = vis.group; ghostMesh.visible = false; scene.add(ghostMesh);
+	}
+	function ghostSave(rec) {
+		ghost = rec; try { localStorage.setItem(GKEY + lapKey(), JSON.stringify(rec)); } catch (e) { /* storage full: the ghost lasts until the page closes */ }
+		if (!ghostMesh) ghostBuild();
+	}
 	function lapKey() { var c = cars[player]; return c ? C.lapKey(S.world, c.type, gravity) : ""; }
 	function lapTick(c, t) {
 		if (!W.track) return;
 		var n = C.trackNearest(t.x, t.z);
 		C.lapStep(lap, n.s, n.d, simT).forEach(function (e) {
 			var best = REC.laps[lapKey()];
-			if (e.t === "start") toast("Lap timer started: go!");
+			if (e.t === "start") { toast("Lap timer started: go!" + (ghost && S.show.ghost !== false ? " Race your ghost" : "")); ghostRec = []; }
 			else if (e.t === "sector") { var b = best && best.splits[e.n - 1], dd = b != null ? e.time - b : null; toast("Sector " + e.n + ": " + C.fmtLap(e.time) + (dd != null ? "  (" + (dd <= 0 ? "−" : "+") + Math.abs(dd).toFixed(2) + ")" : "")); }
 			else if (e.t === "lap") {
 				var isBest = !best || e.time < best.time;
-				if (isBest) { REC.laps[lapKey()] = { time: e.time, splits: e.splits }; saveRec(); }
+				if (isBest) { REC.laps[lapKey()] = { time: e.time, splits: e.splits }; saveRec(); var r = c.body.rotation(); ghostRec.push(C.ghostSample(e.time, t, r)); ghostSave(ghostRec); }
+				ghostRec = [];
 				toast("Lap " + lap.laps + ": " + C.fmtLap(e.time) + (isBest ? (best ? "  · new best by " + (best.time - e.time).toFixed(2) + " s!" : "  · first lap set!") : "  (+" + (e.time - best.time).toFixed(2) + ")"));
 				sfx("pop", 1);
 			}
 			else if (e.t === "wrong" && simT - wrongT > 4) { wrongT = simT; toast("Wrong way! Laps run the other way round"); }
 		});
+		/* record this lap at 20 samples a second for a possible new ghost */
+		if (lap.t0 != null && lap.valid && ghostRec.length < 6000 && (Math.round(simT * 60) % 3 === 0)) ghostRec.push(C.ghostSample(simT - lap.t0, t, c.body.rotation()));
 	}
 	function step(dt) {
 		var pin = readInput();
@@ -1081,9 +1127,18 @@
 	/* air time + jump distance for the player */
 	function trackAir(c, t, lv) {
 		var air = !c.anyContact;
-		if (air && !c.air) c.air = { t0: simT, x: t.x, z: t.z, y: t.y };
+		if (air && !c.air) c.air = { t0: simT, x: t.x, z: t.z, y: t.y, p: 0, yw: 0, r: 0 };
+		if (air && c.air) { /* turns in the car's own frame, for stunts */ var av = c.body.angvel(), rq = c.body.rotation(); tmpQ.set(rq.x, rq.y, rq.z, rq.w).invert(); var w = new THREE.Vector3(av.x, av.y, av.z).applyQuaternion(tmpQ); c.air.p += w.x / 60; c.air.yw += w.y / 60; c.air.r += w.z / 60; }
 		if (!air && c.air) {
 			var tAir = simT - c.air.t0, dist = Math.hypot(t.x - c.air.x, t.z - c.air.z);
+			var st = C.stuntName(c.air.p, c.air.yw, c.air.r), upright = upOf(c).y > 0.5;
+			if (st.name) {
+				var best = "";
+				if (upright && st.turns > (REC.stuntTurns || 0)) { REC.stuntTurns = st.turns; REC.stunt = st.name; saveRec(); best = " · new stunt record!"; }
+				toast((upright ? "🏆 " + st.name.charAt(0).toUpperCase() + st.name.slice(1) + "! Landed it" : "💥 " + st.name + ", but you didn't land it") + " · " + C.fmtDist(dist, S.units) + ", " + tAir.toFixed(1) + " s" + best);
+				if (upright) sfx("pop", 1);
+				c.air = null; return;
+			}
 			if (tAir > 0.6 && dist > 6) {
 				var rec = "";
 				if (dist > REC.jump) { REC.jump = dist; rec = " · new record!"; }
@@ -1156,7 +1211,7 @@
 		try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
 		var o1 = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain(), master = ac.createGain();
 		o1.type = "sawtooth"; o2.type = "square"; lp.type = "lowpass"; lp.frequency.value = 600; g.gain.value = 0; master.gain.value = 0.5;
-		o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master); master.connect(ac.destination); o1.start(); o2.start();
+		master.gain.value = 0.5 * S.vol; o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master); master.connect(ac.destination); o1.start(); o2.start();
 		eng = { o1: o1, o2: o2, lp: lp, g: g, master: master };
 		noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
 	}
@@ -1224,7 +1279,7 @@
 		$("cs-dmg").style.width = c.damage + "%"; $("cs-dmg").style.background = c.damage > 75 ? "#e03131" : c.damage > 40 ? "#f08c00" : "#37b24d";
 		$("cs-hdmg").textContent = Math.round(c.damage) + "%";
 		$("cs-hcar").textContent = C.CARS[c.type].name + (cars.length > 1 ? " (" + (player + 1) + "/" + cars.length + ")" : "");
-		var lb = $("cs-lap"); lb.hidden = !W.track;
+		var lb = $("cs-lap"); lb.hidden = !W.track; ghostLoad();
 		if (W.track) {
 			var best = REC.laps[lapKey()];
 			$("cs-lapnow").textContent = lap.t0 != null && lap.valid ? "Lap " + (lap.laps + 1) + " · " + C.fmtLap(simT - lap.t0) : (lap.t0 != null ? "Lap not counted · cross the line again" : "Cross the start line to start the timer");
@@ -1232,7 +1287,7 @@
 		}
 		$("cs-air").textContent = c.air ? "In the air " + (simT - c.air.t0).toFixed(1) + " s" : "";
 		var bl = REC.laps[lapKey()];
-		$("cs-rec").textContent = (W.track ? "Best lap here (" + C.CARS[c.type].name + ", " + gravity.toFixed(2) + " m/s²): " + C.fmtLap(bl && bl.time) + " · " : "") + "Top " + C.fmtSpeed(REC.top, S.units) + " · longest jump " + C.fmtDist(REC.jump, S.units) + " · most air " + REC.air.toFixed(1) + " s · biggest crash " + REC.crash.toFixed(0) + " g";
+		$("cs-rec").textContent = (W.track ? "Best lap here (" + C.CARS[c.type].name + ", " + gravity.toFixed(2) + " m/s²): " + C.fmtLap(bl && bl.time) + " · " : "") + "Top " + C.fmtSpeed(REC.top, S.units) + " · longest jump " + C.fmtDist(REC.jump, S.units) + " · most air " + REC.air.toFixed(1) + " s · biggest crash " + REC.crash.toFixed(0) + " g" + (REC.stunt ? " · best stunt: " + REC.stunt : "");
 	}
 
 	/* ===================== main loop ===================== */
@@ -1270,6 +1325,10 @@
 			}
 		});
 		objs.forEach(function (o) { var t = o.body.translation(), r = o.body.rotation(); o.mesh.position.set(t.x, t.y, t.z); o.mesh.quaternion.set(r.x, r.y, r.z, r.w); });
+		if (ghostMesh) {
+			var gp = S.show.ghost !== false && lap.t0 != null && lap.valid ? C.ghostPose(ghost, simT - lap.t0) : null;
+			ghostMesh.visible = !!gp; if (gp) { ghostMesh.position.set(gp.x, gp.y, gp.z); ghostMesh.quaternion.set(gp.q[0], gp.q[1], gp.q[2], gp.q[3]); }
+		}
 		var c = cars[player];
 		if (c && sunLight.userData.dir) { var t2 = c.body.translation(); sunLight.target.position.set(t2.x, t2.y, t2.z); sunLight.position.set(t2.x, t2.y, t2.z).addScaledVector(sunLight.userData.dir, 150); }
 		if (skyGroup) skyGroup.position.copy(camera.position);
@@ -1278,12 +1337,25 @@
 	function togglePause() { paused = !paused; $("cs-pause").textContent = paused ? "▶ Play" : "❚❚ Pause"; toast(paused ? "Paused" : "Playing"); }
 	function switchCar(dir) {
 		if (cars.length < 2) { toast("Add computer cars to switch between them"); return; }
-		cars[player].ai = true; player = (player + dir + cars.length) % cars.length; cars[player].ai = false; camSnap = true; lapReset();
+		cars[player].ai = true; player = (player + dir + cars.length) % cars.length; cars[player].ai = false; camSnap = true; lapReset(); ghostKey = "";
 		toast("Now driving: " + C.CARS[cars[player].type].name);
 	}
 
 	/* ===================== UI wiring ===================== */
 	function opt(sel, list, val) { sel.innerHTML = list.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === val ? " selected" : "") + ">" + o[1] + "</option>"; }).join(""); }
+	function setSound(on) { S.sound = !!on; save(); if (S.sound) initAudio(); else if (eng) eng.g.gain.value = 0; syncSoundUI(); }
+	function setVolume(v) { S.vol = Math.max(0, Math.min(1, v)); save(); if (eng) eng.master.gain.setTargetAtTime(0.5 * S.vol, ac.currentTime, 0.03); if (S.vol > 0 && !S.sound) { S.sound = true; initAudio(); } syncSoundUI(); }
+	function syncSoundUI() {
+		root.querySelectorAll("[data-snd]").forEach(function (b) { b.checked = !!S.sound; });
+		root.querySelectorAll("[data-vol]").forEach(function (b) { if (document.activeElement !== b) b.value = Math.round(S.vol * 100); });
+		root.querySelectorAll("[data-volnum]").forEach(function (b) { b.textContent = Math.round(S.vol * 100) + "%"; });
+		var m = $("cs-mute"); m.textContent = !S.sound || S.vol === 0 ? "🔇" : S.vol < 0.4 ? "🔉" : "🔊"; m.setAttribute("aria-pressed", String(!S.sound));
+	}
+	function applyShow() {
+		["info", "lap", "speed", "msg"].forEach(function (k) { root.classList.toggle("cs-hide-" + k, S.show[k] === false); });
+		root.querySelectorAll("[data-show]").forEach(function (b) { b.checked = S.show[b.dataset.show] !== false; });
+		var hud = root.querySelector(".cs-hud"); if (hud) hud.hidden = S.show.info === false && (S.show.lap === false || !(W && W.track));
+	}
 	function setupUI() {
 		opt($("cs-world"), C.WORLD_ORDER.map(function (w) { return [w, C.WORLDS[w].name]; }), S.world);
 		opt($("cs-car"), [["", "Best for this world"]].concat(C.CAR_ORDER.map(function (k) { return [k, C.CARS[k].name]; })), S.car || "");
@@ -1321,14 +1393,24 @@
 		$("cs-repair").addEventListener("click", function () { cars.forEach(repair); toast("All cars repaired"); });
 		$("cs-pause").addEventListener("click", togglePause);
 		$("cs-slow").checked = !!S.slow; $("cs-slow").addEventListener("change", function () { S.slow = this.checked; save(); });
-		$("cs-snd").checked = !!S.sound; $("cs-snd").addEventListener("change", function () { S.sound = this.checked; save(); if (S.sound) initAudio(); else if (eng) eng.g.gain.value = 0; });
+		/* sound + what to show: the same controls on the picture (⚙) and in the panel stay in step */
+		root.addEventListener("change", function (e) {
+			var t = e.target;
+			if (t.matches("[data-snd]")) setSound(t.checked);
+			else if (t.matches("[data-show]")) { S.show[t.dataset.show] = t.checked; save(); applyShow(); }
+		});
+		root.addEventListener("input", function (e) { if (e.target.matches("[data-vol]")) setVolume(+e.target.value / 100); });
+		$("cs-mute").addEventListener("click", function () { setSound(!S.sound); toast(S.sound ? "Sound on" : "Sound off"); });
+		$("cs-optbtn").addEventListener("click", function () { var p = $("cs-pop"); p.hidden = !p.hidden; this.setAttribute("aria-expanded", String(!p.hidden)); });
+		$("cs-popx").addEventListener("click", function () { $("cs-pop").hidden = true; $("cs-optbtn").setAttribute("aria-expanded", "false"); });
+		applyShow(); syncSoundUI();
 		$("cs-units").value = S.units; $("cs-units").addEventListener("change", function () { S.units = this.value; save(); updateGravityUI(); updateHud(true); });
 		$("cs-shadow").checked = !!S.shadows; $("cs-shadow").addEventListener("change", function () { S.shadows = this.checked; save(); sunLight.castShadow = S.shadows; });
 		$("cs-dmgon").checked = !!S.damage; $("cs-dmgon").addEventListener("change", function () { S.damage = this.checked; save(); });
 		$("cs-touchsel").value = S.touch; $("cs-touchsel").addEventListener("change", function () { S.touch = this.value; save(); showTouch(); });
 		$("cs-png").addEventListener("click", function () { render(); var a = document.createElement("a"); a.download = "mes-car-sandbox.png"; a.href = renderer.domElement.toDataURL("image/png"); a.click(); });
 		$("cs-link").addEventListener("click", function () { var u = location.origin + location.pathname + "?" + C.query(S); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast("Link copied"); }, function () { prompt("Copy this link", u); }); });
-		$("cs-recclear").addEventListener("click", function () { REC = { top: 0, jump: 0, air: 0, crash: 0, laps: {} }; saveRec(); updateHud(true); });
+		$("cs-recclear").addEventListener("click", function () { REC = { top: 0, jump: 0, air: 0, crash: 0, laps: {} }; try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(GKEY) === 0) localStorage.removeItem(k); }); } catch (e) { /* ignore */ } ghost = null; ghostKey = ''; ghostBuild(); saveRec(); updateHud(true); });
 		$("cs-helpbtn").addEventListener("click", function () { var h = $("cs-help"); h.hidden = !h.hidden; S.help = !h.hidden; save(); });
 		$("cs-helpx").addEventListener("click", function () { $("cs-help").hidden = true; S.help = false; save(); });
 		$("cs-help").hidden = !S.help;
@@ -1340,7 +1422,7 @@
 	function swapPlayerCar() {
 		var old = cars[player], t = old.body.translation(), f = fwdOf(old);
 		var c = makeCar(S.car && C.CARS[S.car] ? S.car : W.car, S.color, { x: t.x, z: t.z, yaw: Math.atan2(f.x, f.z) }, true);
-		removeCar(old); cars[player] = c; c.id = player; camSnap = true; lapReset(); updateHud(true);
+		removeCar(old); cars[player] = c; c.id = player; camSnap = true; lapReset(); ghostKey = ""; updateHud(true);
 	}
 	function syncUrl() { try { history.replaceState(null, "", location.pathname + "?" + C.query(S)); } catch (e) { /* ignore */ } }
 
@@ -1363,6 +1445,7 @@
 		run: function (sec, inp) { var saved = touch; touch = Object.assign({ th: 0, br: 0, l: 0, r: 0, hb: 0, boost: 0 }, inp || {}); for (var i = 0; i < sec * 60; i++) advance(1 / 60); touch = saved; render(); return this.state(); },
 		/* let the computer drive the player's car (testing the lap timer): MESCarSandbox.auto(seconds) */
 		auto: function (sec) { var a = S.ai; S.ai = "cruise"; autoPilot = true; for (var i = 0; i < sec * 60; i++) advance(1 / 60); autoPilot = false; S.ai = a; render(); return { laps: lap.laps, last: lap.last, best: REC.laps[lapKey()], hud: $("cs-lapnow").textContent + " | " + $("cs-lapbest").textContent, toast: $("cs-toast").textContent }; },
+		car: function () { return cars[player]; }, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
 		render: function () { render(); }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();

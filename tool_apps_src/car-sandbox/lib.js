@@ -120,6 +120,26 @@
 		} else { st.valid = false; if (sec === (st.sec + n - 1) % n) ev.push({ t: "wrong" }); }
 		st.sec = sec; return ev;
 	};
+	/* ghost of the best lap: samples [t, x, y, z, qx, qy, qz, qw]; pose at time t (linear position, normalised linear quaternion blend) */
+	C.ghostPose = function (g, t) {
+		if (!g || !g.length || t < g[0][0] || t > g[g.length - 1][0]) return null;
+		var lo = 0, hi = g.length - 1; while (hi - lo > 1) { var m = (lo + hi) >> 1; if (g[m][0] <= t) lo = m; else hi = m; }
+		var a = g[lo], b = g[hi], f = b[0] > a[0] ? (t - a[0]) / (b[0] - a[0]) : 0, dot = a[4] * b[4] + a[5] * b[5] + a[6] * b[6] + a[7] * b[7], sg = dot < 0 ? -1 : 1, q = [], n = 0, i;
+		for (i = 4; i < 8; i++) { q.push(a[i] + (b[i] * sg - a[i]) * f); n += q[i - 4] * q[i - 4]; }
+		n = Math.sqrt(n) || 1;
+		return { x: a[1] + (b[1] - a[1]) * f, y: a[2] + (b[2] - a[2]) * f, z: a[3] + (b[3] - a[3]) * f, q: [q[0] / n, q[1] / n, q[2] / n, q[3] / n] };
+	};
+	C.ghostSample = function (t, p, q) { var r2 = function (v) { return Math.round(v * 100) / 100; }, r3 = function (v) { return Math.round(v * 1000) / 1000; }; return [r2(t), r2(p.x), r2(p.y), r2(p.z), r3(q.x), r3(q.y), r3(q.z), r3(q.w)]; };
+	/* stunt name from the turns made in the air (radians about the car's own x = pitch, y = yaw, z = roll; + pitch = nose down = front flip) */
+	C.stuntName = function (pitch, yaw, roll) {
+		function n(a) { return Math.floor(Math.abs(a) / (2 * Math.PI) + 0.2); }
+		var parts = [], words = ["", "", "Double ", "Triple ", "Quadruple "];
+		var fp = n(pitch), fr = n(roll), fy = Math.floor(Math.abs(yaw) / Math.PI + 0.15);
+		if (fp) parts.push((words[fp] !== undefined ? words[fp] : fp + "x ") + (pitch > 0 ? "front flip" : "backflip"));
+		if (fr) parts.push((words[fr] !== undefined ? words[fr] : fr + "x ") + "barrel roll");
+		if (fy >= 2) parts.push(fy * 180 + "° spin"); else if (fy === 1 && (fp || fr)) parts.push("180");
+		return { name: parts.join(" + "), turns: fp + fr + Math.floor(fy / 2) };
+	};
 	C.fmtLap = function (t) { if (t == null || !isFinite(t)) return "–"; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(2); };
 	C.lapKey = function (world, car, g) { return world + "|" + car + "|" + (+g).toFixed(2); };
 

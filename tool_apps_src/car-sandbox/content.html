@@ -19,11 +19,25 @@
 				</div>
 				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
 				<div class="cs-sbtns">
+					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
+					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
 					<button type="button" id="cs-camreset" title="Back to the normal camera angle (double-click the picture)" hidden>↺ View</button>
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
 				</div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
+				<div class="cs-pop" id="cs-pop" hidden>
+					<b>Sound</b>
+					<label class="cs-prow"><input type="checkbox" data-snd> Sound on</label>
+					<label class="cs-prow">Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"><span data-volnum></span></label>
+					<b>Show on screen</b>
+					<label class="cs-prow"><input type="checkbox" data-show="info"> Car, gravity, g-force, damage</label>
+					<label class="cs-prow"><input type="checkbox" data-show="lap"> Lap timer</label>
+					<label class="cs-prow"><input type="checkbox" data-show="speed"> Speedometer</label>
+					<label class="cs-prow"><input type="checkbox" data-show="msg"> Messages (jumps, crashes, laps)</label>
+					<label class="cs-prow"><input type="checkbox" data-show="ghost"> Ghost of my best lap</label>
+					<button type="button" class="cs-mini" id="cs-popx">Close</button>
+				</div>
 				<div class="cs-help" id="cs-help">
 					<button type="button" class="cs-helpx" id="cs-helpx" aria-label="Close">×</button>
 					<b>How to drive</b>
@@ -31,8 +45,9 @@
 						<li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or the arrow keys · <kbd>S</kbd> at a stop = reverse</li>
 						<li><kbd>Space</kbd> handbrake (drift) · <kbd>Shift</kbd> boost</li>
 						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
-						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best</li>
-						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>P</kbd> pause</li>
+						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
+						<li>Flip or roll in the air and land on your wheels for a stunt</li>
+						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
 						<li>In the air, the pedals tip the nose and steering rolls the car</li>
 						<li>Drag the picture to look around · a game controller works too</li>
 					</ul>
@@ -75,11 +90,20 @@
 					</div>
 					<div class="cs-checks">
 						<label><input type="checkbox" id="cs-slow"> Slow motion</label>
-						<label><input type="checkbox" id="cs-snd"> Sound</label>
+						<label><input type="checkbox" id="cs-snd" data-snd> Sound</label>
+						<label>Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"> <span data-volnum></span></label>
 						<label><input type="checkbox" id="cs-dmgon"> Dents &amp; damage</label>
+						<label><input type="checkbox" data-show="ghost"> Ghost of my best lap</label>
 						<label><input type="checkbox" id="cs-shadow"> Shadows</label>
 						<label>Speed in <select id="cs-units" class="tu-select"><option value="kmh">km/h</option><option value="mph">mph</option></select></label>
 						<label>Touch buttons <select id="cs-touchsel" class="tu-select"><option value="auto">Automatic</option><option value="on">Always</option><option value="off">Off</option></select></label>
+					</div>
+					<div class="cs-ch cs-ch2">Show on screen</div>
+					<div class="cs-checks">
+						<label><input type="checkbox" data-show="info"> Car &amp; g-force box</label>
+						<label><input type="checkbox" data-show="lap"> Lap timer</label>
+						<label><input type="checkbox" data-show="speed"> Speedometer</label>
+						<label><input type="checkbox" data-show="msg"> Messages</label>
 					</div>
 					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn tu-btn--ghost" id="cs-png">📷 Save picture</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-link">🔗 Copy link</button></div>
 				</div>
@@ -111,8 +135,10 @@
 				<dd>No: Jupiter has no solid surface. That world is an imaginary flat surface with Jupiter's gravity (24.8 m/s²), so you can feel how heavy everything gets. The suspension squashes, jumps are short and crashes hurt.</dd>
 				<dt>Does it work on a phone?</dt>
 				<dd>Yes. Touch buttons appear on touch screens (steer on the left, pedals on the right), and "Fill window" makes the picture fill the screen. A game controller (gamepad) works on computers.</dd>
+				<dt>How do the lap timer and the ghost work?</dt>
+				<dd>On the test track, crossing the chequered line starts the timer. A lap only counts if you go round all four quarters in order. Your best lap is kept for each car and gravity, and a see-through ghost car replays it while you drive, so you can see exactly where you gain or lose time.</dd>
 				<dt>Is anything saved or uploaded?</dt>
-				<dd>Only your settings and records, in your own browser. Nothing is uploaded.</dd>
+				<dd>Only your settings, records and best-lap ghosts, in your own browser. Nothing is uploaded.</dd>
 			</dl>
 		</div>
 	</div>
