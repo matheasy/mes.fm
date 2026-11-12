@@ -1,4 +1,4 @@
-# MES Read Aloud 1.9.5
+# MES Read Aloud 1.10.0
 
 Upload `store.zip`; images: `icon-128.png` (store icon), `screenshot-*.png`, `promo-440x280.png`.
 

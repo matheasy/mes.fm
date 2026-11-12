@@ -1,4 +1,4 @@
-# MES Text Size 1.2.1
+# MES Text Size 1.2.2
 
 Upload `store.zip`; images: `icon-128.png` (store icon), `screenshot-*.png`, `promo-440x280.png`.
 

@@ -13,3 +13,6 @@ node_modules/
 # Google Ads bulk-upload files (contain the Ads account id; kept local)
 google-ads/*-upload.csv
 google-ads/make_*_campaigns.py
+
+# App Store review videos (uploaded to Apple, not kept in git)
+*/store/review-recording.mp4
