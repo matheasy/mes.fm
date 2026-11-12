@@ -190,11 +190,11 @@
 		try { fc.cv.getContext("2d").drawImage(el, 0, 0, w, h); fc.at = el.currentTime; fc.t = now; } catch (x) { /* not ready */ }
 	}
 	P.lastFrame = function () { return null; };
-	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true };
+	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true, bar: true };
 	try { Object.assign(VS, JSON.parse(localStorage.getItem(VKEY)) || {}); } catch (e) { /* ignore */ }
-	function saveVS() { try { localStorage.setItem(VKEY, JSON.stringify({ guides: VS.guides, dim: VS.dim })); } catch (e) { /* ignore */ } }
-	var view = { k: 1, ox: 0, oy: 0 }, isFit = true, dpr = 1, pattern = null, pick = null;
-	P.view = function () { return { k: view.k, ox: view.ox, oy: view.oy, fit: isFit, dpr: dpr, pct: Math.round(view.k / dpr * 1000) / 10 }; };
+	function saveVS() { try { localStorage.setItem(VKEY, JSON.stringify({ guides: VS.guides, dim: VS.dim, bar: VS.bar })); } catch (e) { /* ignore */ } }
+	var view = { k: 1, ox: 0, oy: 0 }, isFit = true, fitClear = false, dpr = 1, pattern = null, pick = null;
+	P.view = function () { return { k: view.k, ox: view.ox, oy: view.oy, fit: isFit && !fitClear, fitClear: isFit && fitClear, dpr: dpr, pct: Math.round(view.k / dpr * 1000) / 10 }; };
 	function draw() { needDraw = true; if (!P.playing) requestAnimationFrame(paint); else paint(); }
 	P.draw = draw;
 	function pasteboard() {
@@ -272,13 +272,20 @@
 		var cxF = ow ? (ow / 2 - view.ox) / view.k : 0, cyF = oh ? (oh / 2 - view.oy) / view.k : 0;
 		cv.style.width = bw + "px"; cv.style.height = bh + "px";
 		if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
-		if (isFit || !ow) view = V.viewFit(pw, ph, VE.P.w, VE.P.h, Math.round(14 * d));
+		if (isFit || !ow) {
+			var m = Math.round(14 * d), top = fitClear ? clearTop() * d : 0;
+			if (top > m) { view = V.viewFit(pw, ph - top + m, VE.P.w, VE.P.h, m); view.oy += top - m; }   // "Fit clear": the frame starts below the zoom bar
+			else view = V.viewFit(pw, ph, VE.P.w, VE.P.h, m);
+		}
 		else { view.k = view.k / dpr * d; view.ox = pw / 2 - cxF * view.k; view.oy = ph / 2 - cyF * view.k; }
 		dpr = d; draw();
 	}
 	P.fit = fit;
 	if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap); else window.addEventListener("resize", fit);
-	P.zoomFit = function () { isFit = true; fit(); };
+	// how far down the zoom bar reaches inside the stage (CSS px)
+	function clearTop() { var bar = document.getElementById("vd-vz"); if (!bar || bar.offsetParent === null) return 0; var a = bar.getBoundingClientRect(), b = wrap.getBoundingClientRect(); return Math.max(0, a.bottom - b.top + 6); }
+	P.zoomFit = function (clear) { isFit = true; fitClear = !!clear; fit(); };
+	P.barShown = function (on) { if (on != null) { VS.bar = !!on; saveVS(); if (isFit && fitClear) requestAnimationFrame(fit); } return VS.bar !== false; };
 	// zoom to pct (100 = one frame pixel per screen pixel) around a stage point (canvas px; default the middle)
 	P.zoomTo = function (pct, px, py) {
 		var k2 = V.clamp(pct / 100 * dpr, 0.02, 40); isFit = false;
@@ -305,7 +312,7 @@
 	wrap.addEventListener("pointerenter", function () { P.hover = true; }); wrap.addEventListener("pointerleave", function () { P.hover = false; });
 	P.spaceDown = function () { if (!P.space) { P.space = { used: false }; cv.style.cursor = "grab"; } };
 	document.addEventListener("keyup", function (e) { if (e.key !== " " || !P.space) return; var used = P.space.used; P.space = null; cv.style.cursor = ""; if (!used) P.toggle(); });
-	function startPan(e) { drag = { pan: true, x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy }; isFit = false; cv.style.cursor = "grabbing"; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
+	function startPan(e) { drag = { pan: true, x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy }; isFit = false; fitClear = false; cv.style.cursor = "grabbing"; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
 	cv.addEventListener("pointerdown", function (e) {
 		if (e.pointerType === "touch") { touches[e.pointerId] = canvasPt(e); var ids = Object.keys(touches); if (ids.length === 2) { if (drag && drag.c && drag.moved) VE.commit(drag.corner ? "Resize" : "Move"); drag = null; var a = touches[ids[0]], b = touches[ids[1]]; pinch = { d: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, v: Object.assign({}, view) }; isFit = false; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; } }
 		if (e.button === 1 || (P.space && e.button === 0)) { if (P.space) P.space.used = true; startPan(e); return; }

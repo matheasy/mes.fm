@@ -64,7 +64,9 @@
 				<div class="vd-center">
 					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas>
 						<div class="vd-vz" id="vd-vz" role="toolbar" aria-label="Preview zoom">
-							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it">Fit</button>
+							<button type="button" class="vd-btn vd-sm vd-ico vd-vzhide" id="vd-vzhide" aria-expanded="true" title="Hide these buttons" aria-label="Hide the preview zoom buttons">&#8250;</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it (these buttons may cover its top corner)">Fit</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzfit2" title="Fit the frame below these buttons, so nothing covers it (a little smaller)">Fit clear</button>
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom out 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview out 1%">&minus;</button>
 							<span class="vd-vzbox"><input type="text" id="vd-vzpct" class="vd-vzpct" value="100%" spellcheck="false" autocomplete="off" inputmode="decimal" aria-label="Preview zoom in percent: type a number and press Enter" title="Type a zoom and press Enter: 82, 150% or 1.5x. 100% = one video pixel per screen pixel. Up / Down arrows = 1% (Shift = 10%)."><select id="vd-vzsel" aria-label="Preview zoom presets" title="Preview zoom presets"></select></span>
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom in 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview in 1%">+</button>
@@ -136,7 +138,7 @@
 					<dt>&larr; &rarr; or , .</dt><dd>One frame (hold to keep stepping; Shift: 1 second)</dd><dt>&uarr; &darr;, Ctrl+Alt+&larr; &rarr;</dt><dd>Previous / next clip edge (start or end of a clip, or a mark), as in Camtasia</dd><dt>Home / End</dt><dd>Start / end</dd><dt>Ctrl+G</dt><dd>Type a time to go to (also click the time under the preview)</dd>
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
-					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
+					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+X / C / V</dt><dd>Cut / copy / paste clips (paste goes to the playhead; right-click a track for &ldquo;Paste here&rdquo;)</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>Alt+&uarr; / &darr;</dt><dd>Move the selected clips up / down a track (or drag them; several clips move together)</dd><dt>Right-click</dt><dd>Menu for a clip, an empty spot or a track</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
 					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>

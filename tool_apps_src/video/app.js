@@ -152,8 +152,136 @@
 	});
 	document.addEventListener("paste", function (e) {
 		if (/input|textarea|select/i.test((document.activeElement || {}).tagName || "")) return;
-		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); importFiles(fs); }
+		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); importFiles(fs); return; }
+		var ae = document.activeElement; if (ae && ae !== document.body && !app.contains(ae)) return;
+		if (readClip()) { e.preventDefault(); VE.paste(); }   // Ctrl+V with copied clips
 	});
+
+	/* ---------- clip clipboard: cut / copy / paste (kept in this browser, so it also works between tabs and projects that share the media) ---------- */
+	var CLIPKEY = "mes-video-editor:clipboard", clipMem = null;
+	function readClip() { if (clipMem) return clipMem; try { var c = JSON.parse(localStorage.getItem(CLIPKEY)); if (c && c.clips && c.clips.length) return (clipMem = c); } catch (e) { /* ignore */ } return null; }
+	window.addEventListener("storage", function (e) { if (e.key === CLIPKEY) clipMem = null; });
+	VE.copy = function (quiet) {
+		var list = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).map(function (id) { return V.clip(VE.P, id); }).filter(Boolean);
+		if (!list.length) { toast("Select a clip first (click it; Shift-click adds more)."); return false; }
+		var t0 = Math.min.apply(null, list.map(function (c) { return c.start; }));
+		clipMem = { t0: t0, at: Date.now(), clips: list.map(function (c) {
+			var tr = V.track(VE.P, c.track), kind = V.kindFor(c.type), same = VE.P.tracks.filter(function (t) { return t.kind === kind; });
+			return { c: JSON.parse(JSON.stringify(c)), row: same.indexOf(tr) };
+		}) };
+		try { localStorage.setItem(CLIPKEY, JSON.stringify(clipMem)); } catch (e) { /* too big: kept in this tab only */ }
+		if (!quiet) toast("Copied " + list.length + " clip" + (list.length === 1 ? "" : "s") + ". Ctrl+V pastes at the playhead (right-click a track: Paste here).");
+		return true;
+	};
+	VE.cut = function () { if (!VE.copy(true)) return; var n = clipMem.clips.length; VE.del(false); toast("Cut " + n + " clip" + (n === 1 ? "" : "s") + ". Ctrl+V pastes them at the playhead."); };
+	// paste at time at (default the playhead); onTrack = the track that was right-clicked (the copied clips move there, keeping their rows relative to each other)
+	VE.paste = function (at, onTrack) {
+		var cb = readClip(); if (!cb) { toast("Nothing copied yet: select clips and press Ctrl+C (or right-click → Copy)."); return; }
+		var items = cb.clips.filter(function (q) { return q.c.type === "text" || VE.media(q.c.media); });
+		if (!items.length) { toast("The copied clips use media that is not in this project's Media bin. Import the same files first."); return; }
+		var t = at != null ? at : VE.t, links = {}, made = [], added = 0, kinds = { v: VE.P.tracks.filter(function (x) { return x.kind === "v"; }), a: VE.P.tracks.filter(function (x) { return x.kind === "a"; }) };
+		// row offset per kind: the right-clicked track takes the top copied row of its kind
+		var off = { v: 0, a: 0 };
+		if (onTrack) { var k0 = onTrack.kind, rows0 = items.filter(function (q) { return V.kindFor(q.c.type) === k0; }).map(function (q) { return Math.max(0, q.row); }); if (rows0.length) off[k0] = kinds[k0].indexOf(onTrack) - Math.min.apply(null, rows0); }
+		var placed = [];
+		items.forEach(function (q) {
+			var d = JSON.parse(JSON.stringify(q.c)), kind = V.kindFor(d.type), list = kinds[kind];
+			d.id = V.uid("c"); d.start = Math.max(0, t + (q.c.start - cb.t0));
+			if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L"));
+			var want = list[V.clamp((q.row < 0 ? 0 : q.row) + off[kind], 0, list.length - 1)], dur = V.dur(d), tr = null;
+			function free(x) { return x && !x.lock && (x.mag || (V.canPlace(VE.P, x.id, d.start, dur) && !placed.some(function (o) { return o.track === x.id && o.start < d.start + dur - 1e-6 && d.start < o.start + V.dur(o) - 1e-6; }))); }
+			if (free(want)) tr = want; else for (var j = 0; j < list.length && !tr; j++) if (free(list[j])) tr = list[j];
+			if (!tr) { tr = VE.addTrack(kind, want); list.splice(list.indexOf(want) + (kind === "v" ? 0 : 1), 0, tr); added++; }
+			d.track = tr.id; placed.push(d);
+		});
+		placed.forEach(function (d) { VE.P.clips.push(d); made.push(d.id); var tr = V.track(VE.P, d.track); if (tr.mag) V.magnetInsert(VE.P, tr.id, d.id, d.start); });
+		V.syncLinks(VE.P); VE.sel = made; VE.commit("Paste");
+		var skipped = cb.clips.length - items.length;
+		toast("Pasted " + made.length + " clip" + (made.length === 1 ? "" : "s") + (added ? " (" + added + " new track" + (added === 1 ? "" : "s") + ": there was no room on the others)" : "") + (skipped ? ". " + skipped + " skipped: their media is not in this project." : "."));
+	};
+	// move the selected clips one track up (-1) or down (1); a new track is made past the top video / bottom sound track. Linked partners of the other kind stay.
+	VE.moveRow = function (dir) {
+		var sel = targets().filter(function (c) { var tr = V.track(VE.P, c.track); return tr && !tr.lock; });
+		if (!sel.length) { toast("Select a clip first."); return; }
+		var snap = JSON.stringify(VE.P), ids = {}; sel.forEach(function (c) { ids[c.id] = 1; });
+		var plan = [];
+		["v", "a"].forEach(function (kind) {
+			var mine = sel.filter(function (c) { return V.kindFor(c.type) === kind; }); if (!mine.length) return;
+			var list = VE.P.tracks.filter(function (x) { return x.kind === kind; });
+			var idx = mine.map(function (c) { return list.indexOf(V.track(VE.P, c.track)); }), lo = Math.min.apply(null, idx), hi = Math.max.apply(null, idx);
+			if (lo + dir < 0) { var nt = VE.addTrack(kind, list[0], "above"); list.unshift(nt); idx = idx.map(function (i) { return i + 1; }); }
+			else if (hi + dir >= list.length) { var nb = VE.addTrack(kind, list[list.length - 1], "below"); list.push(nb); }
+			mine.forEach(function (c, i) { plan.push([c, list[idx[i] + dir]]); });
+		});
+		var bad = plan.some(function (q) { return q[1].lock; });
+		plan.forEach(function (q) { q[0].track = q[1].id; });
+		if (!bad) bad = plan.some(function (q) { return !q[1].mag && !V.canPlace(VE.P, q[1].id, q[0].start, V.dur(q[0]), ids); });
+		if (bad) { VE.P = JSON.parse(snap); VE.tl.render(); toast("There is no room on that track (clips on one track cannot overlap): move the clips sideways first, or make that track magnetic."); return; }
+		plan.forEach(function (q) { if (q[1].mag) V.magnetInsert(VE.P, q[1].id, q[0].id, q[0].start); });
+		VE.commit(dir < 0 ? "Move up a track" : "Move down a track");
+	};
+	VE.moveTrack = function (tr, dir) {
+		var list = VE.P.tracks, i = list.indexOf(tr), j = i + dir; if (i < 0 || j < 0 || j >= list.length || list[j].kind !== tr.kind) return;
+		list.splice(i, 1); list.splice(j, 0, tr); VE.commit("Move track");
+	};
+
+	/* ---------- right-click menu on the timeline ---------- */
+	var ctxEl = null;
+	function ctxClose() { if (ctxEl) { ctxEl.remove(); ctxEl = null; } }
+	VE.ctxMenu = function (x, y, info) {
+		ctxClose();
+		var c = info.clip, tr = info.track || (c && V.track(VE.P, c.track)), sel = targets(), cb = readClip(), mac = /Mac|iP/.test(navigator.platform || ""), K = mac ? "⌘" : "Ctrl+", items = [];
+		function it(label, key, fn, off) { items.push({ l: label, k: key || "", f: fn, off: !!off }); }
+		function sep() { if (items.length && items[items.length - 1] !== "-") items.push("-"); }
+		var tname = tr ? tr.name : "";
+		if (c) {
+			it("Cut", K + "X", VE.cut); it("Copy", K + "C", function () { VE.copy(); });
+			it("Paste at the playhead", K + "V", function () { VE.paste(); }, !cb);
+			it("Duplicate", K + "D", VE.duplicate);
+			sep();
+			it("Split at the playhead", "S", VE.split, !(V.active(c, VE.t) && VE.t > c.start));
+			it("Delete", "Del", function () { VE.del(false); }); it("Ripple delete (close the gap)", "Shift+Del", function () { VE.del(true); });
+			sep();
+			it("Move up a track", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a track", "Alt+↓", function () { VE.moveRow(1); });
+			sep();
+			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
+			else if (c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
+			it("Select everything on " + tname, "", function () { VE.sel = V.onTrack(VE.P, tr.id).map(function (q) { return q.id; }); VE.emit("select"); });
+		} else if (tr) {
+			it("Paste here (" + V.short(info.t) + ", " + tname + ")", "", function () { VE.paste(info.t, tr); }, !cb || tr.lock);
+			it("Paste at the playhead", K + "V", function () { VE.paste(); }, !cb);
+			if (!info.head && tr.kind === "v") it("Add a title here", "", function () { VE.addTitle(null, info.t, tr.id); }, tr.lock);
+			it("Select everything on " + tname, "", function () { VE.sel = V.onTrack(VE.P, tr.id).map(function (q) { return q.id; }); VE.emit("select"); }, !V.onTrack(VE.P, tr.id).length);
+			sep();
+			it("Rename track…", "", function () { var nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename track"); } });
+			it("Add a " + (tr.kind === "v" ? "video" : "sound") + " track above", "", function () { VE.addTrack(tr.kind, tr, "above"); VE.commit("Add track"); });
+			it("Add a " + (tr.kind === "v" ? "video" : "sound") + " track below", "", function () { VE.addTrack(tr.kind, tr, "below"); VE.commit("Add track"); });
+			var li = VE.P.tracks.indexOf(tr), up = VE.P.tracks[li - 1], dn = VE.P.tracks[li + 1];
+			it("Move this track up", "", function () { VE.moveTrack(tr, -1); }, !(up && up.kind === tr.kind));
+			it("Move this track down", "", function () { VE.moveTrack(tr, 1); }, !(dn && dn.kind === tr.kind));
+			var same = VE.P.tracks.filter(function (q) { return q.kind === tr.kind; }).length;
+			it("Delete this track", "", function () { VE.P.tracks = VE.P.tracks.filter(function (q) { return q !== tr; }); VE.commit("Delete track"); }, same < 2 || V.onTrack(VE.P, tr.id).length > 0);
+		} else {
+			it("Paste at the playhead", K + "V", function () { VE.paste(); }, !cb);
+		}
+		if (items[items.length - 1] === "-") items.pop();
+		var el = document.createElement("div"); el.className = "vd-ctx"; el.setAttribute("role", "menu");
+		el.innerHTML = items.map(function (q, i) { return q === "-" ? '<hr role="separator">' : '<button type="button" role="menuitem" data-i="' + i + '"' + (q.off ? " disabled" : "") + "><span>" + esc(q.l) + "</span><kbd>" + esc(q.k) + "</kbd></button>"; }).join("");
+		app.appendChild(el); ctxEl = el;
+		var r = el.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight;
+		el.style.left = Math.max(4, Math.min(x, W - r.width - 4)) + "px"; el.style.top = Math.max(4, y + r.height > H - 4 ? y - r.height : y) + "px";
+		el.addEventListener("click", function (e) { var b = e.target.closest("button[data-i]"); if (!b || b.disabled) return; var q = items[+b.getAttribute("data-i")]; ctxClose(); q.f(); });
+		el.addEventListener("keydown", function (e) {
+			var bs = [].slice.call(el.querySelectorAll("button:not([disabled])")), i = bs.indexOf(document.activeElement);
+			if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); (bs[(i + (e.key === "ArrowDown" ? 1 : bs.length - 1)) % bs.length] || bs[0]).focus(); }
+			else if (e.key === "Escape") { e.preventDefault(); ctxClose(); }
+			e.stopPropagation();
+		});
+		var first = el.querySelector("button:not([disabled])"); if (first) first.focus({ preventScroll: true });
+	};
+	document.addEventListener("pointerdown", function (e) { if (ctxEl && !ctxEl.contains(e.target)) ctxClose(); }, true);
+	window.addEventListener("blur", ctxClose); window.addEventListener("resize", ctxClose);
+	document.addEventListener("scroll", function (e) { if (ctxEl && !ctxEl.contains(e.target)) ctxClose(); }, true);
 
 	/* ---------- clip operations ---------- */
 	function targets() { var s = VE.selected(); return s; }
@@ -1230,6 +1358,8 @@
 		if (mod && (k === "e" || k === "E")) { e.preventDefault(); openExport(); return; }
 		if (mod && (k === "i" || k === "I")) { e.preventDefault(); $("vd-file").click(); return; }
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }
+		if (mod && !e.shiftKey && !e.altKey && /^[cx]$/i.test(k) && !String(window.getSelection && window.getSelection() || "")) { if (VE.selected().length) { e.preventDefault(); if (/x/i.test(k)) VE.cut(); else VE.copy(); } return; }
+		if (e.altKey && !mod && (k === "ArrowUp" || k === "ArrowDown")) { e.preventDefault(); VE.moveRow(k === "ArrowUp" ? -1 : 1); return; }
 		if (mod && e.shiftKey && (k === "a" || k === "A")) { e.preventDefault(); VE.separate(VE.selected()); return; }
 		if (mod && (k === "a" || k === "A")) { e.preventDefault(); VE.sel = VE.P.clips.map(function (c) { return c.id; }); VE.emit("select"); return; }
 		if ((mod || e.ctrlKey) && e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.goEdit(k === "ArrowRight" ? 1 : -1); return; }
@@ -1667,7 +1797,7 @@
 		vzs.value = "";
 		if (document.activeElement !== vzIn) vzIn.value = (Math.round(v.pct * 10) / 10) + "%";
 		vzIn.title = (v.fit ? "Fitted to the preview. " : "") + "Type a zoom and press Enter: 82, 150% or 1.5x. 100% = one video pixel per screen pixel. Up / Down arrows = 1% (Shift = 10%).";
-		$("vd-vzfit").setAttribute("aria-pressed", v.fit); $("vd-vzguide").setAttribute("aria-pressed", P.guides()); $("vd-vzdim").setAttribute("aria-pressed", P.dimOutside());
+		$("vd-vzfit").setAttribute("aria-pressed", v.fit); $("vd-vzfit2").setAttribute("aria-pressed", v.fitClear); $("vd-vzguide").setAttribute("aria-pressed", P.guides()); $("vd-vzdim").setAttribute("aria-pressed", P.dimOutside());
 	}
 	var vzLast = "";
 	VE.on("view", function () { var v = P.view(), k = v.fit + "|" + v.pct; if (k !== vzLast) { vzLast = k; vzRender(); } });
@@ -1684,6 +1814,11 @@
 	});
 	vzIn.addEventListener("blur", function () { vzRender(); });
 	$("vd-vzfit").onclick = function () { P.zoomFit(); };
+	$("vd-vzfit2").onclick = function () { P.zoomFit(true); };
+	// › hides the zoom bar down to this one button, ‹ brings it back (remembered)
+	function vzBar(on) { var b = $("vd-vz"), t = $("vd-vzhide"); b.classList.toggle("is-min", !on); t.innerHTML = on ? "&#8250;" : "&#8249;"; t.setAttribute("aria-expanded", on); t.title = on ? "Hide these buttons" : "Show the zoom buttons (Fit, zoom, Guides)"; t.setAttribute("aria-label", t.title); }
+	$("vd-vzhide").onclick = function () { var on = !P.barShown(); P.barShown(on); vzBar(on); };
+	vzBar(P.barShown());
 	// - / +: 1% a click; hold = keeps going, 1% steps for the first second, then 5%, then 25%
 	[["vd-vzout", -1], ["vd-vzin", 1]].forEach(function (q) {
 		var el = $(q[0]), t0 = 0, tm = 0, held = false;

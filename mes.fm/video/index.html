@@ -404,7 +404,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-thead {position:sticky;left:0;z-index:6;width:150px;flex:0 0 150px;background:var(--vd-panel);border-right:1px solid var(--vd-line);padding:0.2em 0.35em;display:flex;flex-direction:column;justify-content:center;gap:0.1em;}
 	#vd .vd-tname {font-size:0.8em;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;} #vd .vd-tbtns {display:flex;gap:1px;flex-wrap:wrap;} #vd .vd-tsub {font-size:0.68em;color:var(--vd-dim);}
 	#vd .vd-tbtns svg {vertical-align:middle;}
-	#vd .vd-rgrip {position:absolute;left:0;right:0;bottom:-3px;height:7px;cursor:row-resize;z-index:7;touch-action:none;} #vd .vd-rgrip:hover {background:linear-gradient(transparent 2px,var(--vd-sel) 2px,var(--vd-sel) 4px,transparent 4px);}
+	#vd .vd-rgrip {position:absolute;left:0;right:0;top:-3px;height:7px;cursor:row-resize;z-index:7;touch-action:none;} #vd .vd-rgrip:hover {background:linear-gradient(transparent 2px,var(--vd-sel) 2px,var(--vd-sel) 4px,transparent 4px);}
 	#vd .vd-tbtns button {background:transparent;border:0;cursor:pointer;font-size:0.85em;min-width:25px;min-height:24px;border-radius:0.3em;padding:0;color:var(--vd-dim);} #vd .vd-tbtns button:hover {background:var(--vd-btnh);} #vd .vd-tbtns button[aria-pressed="true"] {color:var(--vd-acc2);}
 	#vd .vd-lane {position:relative;flex:1;}
 	#vd .vd-clip {position:absolute;top:2px;bottom:2px;border-radius:5px;overflow:hidden;background:var(--vd-video);border:1px solid rgba(255,255,255,0.25);cursor:grab;touch-action:none;}
@@ -488,6 +488,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-sec1 {font-size:0.74em;font-weight:700;min-width:34px;padding:0 0.35em;letter-spacing:-0.02em;}
 	html body.dark-mode #vd .vd-vz {background:rgba(13,17,23,0.78);}
 	#vd .vd.vd-pvfill .vd-vz {top:8px;right:8px;}
+	#vd .vd-vz.is-min > :not(.vd-vzhide) {display:none;} #vd .vd-vz.is-min {opacity:0.7;}
+	#vd .vd-vz .vd-vzhide {min-width:22px;padding:0.15em 0.3em;font-size:0.95em;}
+	#vd .vd-ctx {position:fixed;z-index:2147483600;min-width:15em;max-width:22em;background:#151b24;color:#e6e9ef;border:1px solid #2b3442;border-radius:0.55em;padding:0.3em;box-shadow:0 12px 32px rgba(0,0,0,0.55);font-size:0.86em;}
+	#vd .vd-ctx button {display:flex;width:100%;align-items:center;gap:1.2em;justify-content:space-between;background:transparent;border:0;color:#e6e9ef;font:inherit;text-align:left;padding:0.42em 0.7em;border-radius:0.35em;cursor:pointer;}
+	#vd .vd-ctx button:hover:not([disabled]), #vd .vd-ctx button:focus-visible {background:#1f6feb;color:#fff;outline:none;}
+	#vd .vd-ctx button[disabled] {color:#6b7380;cursor:default;}
+	#vd .vd-ctx kbd {font:inherit;font-size:0.85em;color:#9aa4b2;background:none;border:0;padding:0;box-shadow:none;}
+	#vd .vd-ctx button:hover:not([disabled]) kbd, #vd .vd-ctx button:focus-visible kbd {color:#dbeafe;}
+	#vd .vd-ctx hr {border:0;border-top:1px solid #2b3442;margin:0.3em 0.2em;}
+	html body.dark-mode #vd .vd-ctx, html body.dark-mode #vd .vd-ctx button {color:#e6e9ef;} html body.dark-mode #vd .vd-ctx {background:#151b24;border-color:#2b3442;} html body.dark-mode #vd .vd-ctx button[disabled] {color:#6b7380;}
 	@media (max-width:560px) { #vd .vd-vz #vd-vzdim, #vd .vd-vz #vd-vz100 {display:none;} }
 	/* animations: arrows on the timeline clips */
 	#vd .vd-an-mk {position:absolute;height:12px;z-index:3;cursor:grab;display:block;touch-action:none;}
@@ -739,6 +749,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-linkrow{border:1px solid #358cca}
 	body.dark-mode #vd .vd-stagewrap #vd-canvas{background:#404d63}
 	body.dark-mode #vd .vd-vz{background:rgba(59,77,104,0.78)}
+	body.dark-mode #vd .vd-ctx{background:#3c4d67;border:1px solid #3c495d}
+	body.dark-mode #vd .vd-ctx button[disabled]{color:#9a9da2}
+	body.dark-mode #vd .vd-ctx kbd{color:#989da5}
+	body.dark-mode #vd .vd-ctx hr{border-top:1px solid #3c495d}
 	body.dark-mode #vd .vd-an-mk b{border-left:9px solid #caaa02}
 	body.dark-mode #vd .vd-an-mk.is-sel b{border-left-color:#078bc5}
 	body.dark-mode #vd .vd-seek-tr{background:rgba(33,39,49,0.28)}
@@ -1034,7 +1048,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="vd-center">
 					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas>
 						<div class="vd-vz" id="vd-vz" role="toolbar" aria-label="Preview zoom">
-							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it">Fit</button>
+							<button type="button" class="vd-btn vd-sm vd-ico vd-vzhide" id="vd-vzhide" aria-expanded="true" title="Hide these buttons" aria-label="Hide the preview zoom buttons">&#8250;</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it (these buttons may cover its top corner)">Fit</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-vzfit2" title="Fit the frame below these buttons, so nothing covers it (a little smaller)">Fit clear</button>
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom out 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview out 1%">&minus;</button>
 							<span class="vd-vzbox"><input type="text" id="vd-vzpct" class="vd-vzpct" value="100%" spellcheck="false" autocomplete="off" inputmode="decimal" aria-label="Preview zoom in percent: type a number and press Enter" title="Type a zoom and press Enter: 82, 150% or 1.5x. 100% = one video pixel per screen pixel. Up / Down arrows = 1% (Shift = 10%)."><select id="vd-vzsel" aria-label="Preview zoom presets" title="Preview zoom presets"></select></span>
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom in 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview in 1%">+</button>
@@ -1106,7 +1122,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<dt>&larr; &rarr; or , .</dt><dd>One frame (hold to keep stepping; Shift: 1 second)</dd><dt>&uarr; &darr;, Ctrl+Alt+&larr; &rarr;</dt><dd>Previous / next clip edge (start or end of a clip, or a mark), as in Camtasia</dd><dt>Home / End</dt><dd>Start / end</dd><dt>Ctrl+G</dt><dd>Type a time to go to (also click the time under the preview)</dd>
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
-					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
+					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+X / C / V</dt><dd>Cut / copy / paste clips (paste goes to the playhead; right-click a track for &ldquo;Paste here&rdquo;)</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>Alt+&uarr; / &darr;</dt><dd>Move the selected clips up / down a track (or drag them; several clips move together)</dd><dt>Right-click</dt><dd>Menu for a clip, an empty spot or a track</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
 					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
@@ -1195,7 +1211,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=22" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=23" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
