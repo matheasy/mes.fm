@@ -54,8 +54,9 @@
 		var d = "M50 6 C64 4 72 14 82 18 C94 24 96 38 92 50 C98 62 92 76 80 82 C70 92 58 96 46 92 C32 96 18 90 12 78 C4 66 6 52 10 42 C6 28 16 14 28 12 C36 6 42 8 50 6 Z";
 		return '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="' + d + '" fill="' + hex + '"' + ring + '/><ellipse cx="34" cy="30" rx="10" ry="6" fill="rgba(255,255,255,.35)"/></svg>';
 	}
+	function cpic(e) { var p = S.pics === "photo" && K.COUNT_PH[e]; return p ? '<img class="kd-cimg" src="' + p + '" alt="" draggable="false">' : esc(e); }
 	function countHtml(it) {
-		var s = ""; for (var i = 0; i < it.n; i++) s += "<span>" + it.cp + "</span>";
+		var s = "", c = cpic(it.cp); for (var i = 0; i < it.n; i++) s += "<span>" + c + "</span>";
 		return '<span class="kd-count' + (it.n <= 5 ? " kd-count--big" : "") + '" style="grid-template-columns:repeat(' + Math.min(5, it.n) + ',1fr)">' + s + "</span>";
 	}
 	function picHtml(it) {
@@ -68,7 +69,7 @@
 	}
 	// math page: a group of pictures to count (gone = the last ones crossed out), a number, an operator, a "?" box or a shape
 	function groupHtml(e, n, gone) {
-		var s = ""; for (var i = 0; i < n; i++) s += gone && i >= n - gone ? '<span class="kd-gone"><i>' + esc(e) + "</i></span>" : "<span>" + esc(e) + "</span>";
+		var s = ""; for (var i = 0; i < n; i++) s += gone && i >= n - gone ? '<span class="kd-gone"><i>' + cpic(e) + "</i></span>" : "<span>" + cpic(e) + "</span>";
 		var cols = n <= 3 ? n : n <= 4 ? 2 : n <= 6 ? 3 : n <= 10 ? 5 : 5;
 		return '<span class="kd-grp" style="grid-template-columns:repeat(' + cols + ',1fr)">' + s + "</span>";
 	}
@@ -331,7 +332,7 @@
 	$("kd-fwd").addEventListener("click", function () { unlock(); go(1); });
 	$("kd-shuf").addEventListener("click", function () { unlock(); shuffleNow(); });
 	// Real photos or cartoon (emoji) pictures for the animals: toolbar button + Grown-ups setting
-	function picsUi() { var b = $("kd-pics"); if (!b) return; var ph = S.pics === "photo"; b.setAttribute("aria-pressed", ph ? "true" : "false"); b.querySelector(".kd-tl").textContent = ph ? "Real photos" : "Cartoon"; b.firstElementChild.textContent = ph ? "📷" : "🐶"; b.hidden = !K.ITEMS.some(function (it) { return it.ph && MODE.cats.indexOf(it.cat) >= 0; }); }
+	function picsUi() { var b = $("kd-pics"); if (!b) return; var ph = S.pics === "photo"; b.setAttribute("aria-pressed", ph ? "true" : "false"); b.querySelector(".kd-tl").textContent = ph ? "Real photos" : "Cartoon"; b.firstElementChild.textContent = ph ? "📷" : "🐶"; b.hidden = !(MODE.cats.indexOf("numbers") >= 0 || K.ITEMS.some(function (it) { return it.ph && MODE.cats.indexOf(it.cat) >= 0; })); }
 	if ($("kd-pics")) $("kd-pics").addEventListener("click", function () { S.pics = S.pics === "photo" ? "cartoon" : "photo"; save(); picsUi(); render(false); var o = $("kd-o-pics"); if (o) [].forEach.call(o.children, function (c) { c.setAttribute("aria-checked", c.getAttribute("data-v") === S.pics ? "true" : "false"); }); toast(S.pics === "photo" ? "Real photos" : "Cartoon pictures"); });
 	$("kd-mute").addEventListener("click", function () { S.mute = !S.mute; save(); var c = $("kd-o-mute"); if (c) c.checked = S.mute; muteUi(); toast(S.mute ? "Sound off" : "Sound on"); });
 	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); armAdv(); });

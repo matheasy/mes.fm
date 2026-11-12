@@ -127,6 +127,9 @@
 	var PH = {}; Object.keys(PHOTOS).forEach(function (c) { PHOTOS[c].split(" ").forEach(function (k) { PH[c + ":" + k] = "/kids/img/" + c + "/" + k + ".jpg?v=1"; }); });
 	var ABC_PH = { apple: "food:apple", ball: "things:ball", cat: "animals:cat", dog: "animals:dog", egg: "food:egg", fish: "animals:fish", grapes: "food:grapes", lion: "animals:lion", moon: "things:moon", orange: "food:orange", pig: "animals:pig", rainbow: "things:rainbow", sun: "things:sun", tree: "things:tree", umbrella: "things:umbrella", zebra: "animals:zebra", nose: "body:nose" };
 	ITEMS.forEach(function (it) { var p = PH[it.id] || (it.cat === "letters" && PH[ABC_PH[it.ex]]); if (p) it.ph = p; });
+	// Counting pictures (number cards + math page): small AI cut-outs on transparent, mes.fm/kids/img/count/<name>.png, used when S.pics = "photo"
+	var COUNT_PH = {}; [["🍎", "apple"], ["⭐", "star"], ["🐞", "ladybug"], ["🎈", "balloon"], ["🐟", "fish"], ["🌸", "flower"], ["🍓", "strawberry"], ["🚗", "car"], ["🐥", "chick"], ["🍪", "cookie"], ["🦆", "duck"], ["🧁", "cupcake"]]
+		.forEach(function (p) { COUNT_PH[p[0]] = "/kids/img/count/" + p[1] + ".png?v=1"; });
 	var BY_ID = {}; ITEMS.forEach(function (it) { BY_ID[it.id] = it; });
 
 	// Each page = a mode: which categories it can show (and which are on by default).
@@ -468,7 +471,7 @@
 	// Cards in order (ABC, numbers) or shuffled (the rest), unless the grown-up chose
 	function orderFor(s, mode) { return (s.ord && s.ord[mode]) || ((MODES[mode] || {}).order ? "order" : "shuffle"); }
 
-	var api = { orderFor: orderFor, CATS: CATS, ITEMS: ITEMS, BY_ID: BY_ID, SOUNDS: SOUNDS, MODES: MODES, NUMW: NUMW, DEFAULTS: DEFAULTS,
+	var api = { COUNT_PH: COUNT_PH, orderFor: orderFor, CATS: CATS, ITEMS: ITEMS, BY_ID: BY_ID, SOUNDS: SOUNDS, MODES: MODES, NUMW: NUMW, DEFAULTS: DEFAULTS,
 		rng: rng, shuffle: shuffle, reshuffle: reshuffle, deck: deck, step: step, quizChoices: quizChoices, hasSound: hasSound,
 		caseWord: caseWord, label: label, subLabel: subLabel, speakText: speakText, findPrompt: findPrompt, praise: praise, cheer: cheer, gentle: gentle,
 		soundFor: soundFor, keyToId: keyToId, filterVoices: filterVoices, pickVoice: pickVoice, voiceScore: voiceScore, vKey: vKey, STYLES: STYLES, styleText: styleText,

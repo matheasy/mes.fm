@@ -224,3 +224,5 @@
 
 	#kd #kd-mute[aria-pressed="true"] {border-color:var(--kd-no);}
 	#kd .kd-tbtn[hidden] {display:none;}
+	#kd .kd-cimg {width:1em;height:1em;display:block;object-fit:contain;-webkit-user-drag:none;user-select:none;}
+	#kd .kd-gone i .kd-cimg {display:inline-block;vertical-align:top;}
