@@ -273,7 +273,31 @@
         else if (!on && cur != null) { root.removeAttribute("data-mes-text-scale"); fire(null); }
         function fire(x) { try { document.dispatchEvent(new CustomEvent("mes-text-scale", { detail: { scale: x || 100 } })); } catch (e) { /* ignore */ } }
     }
-    document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[id^="textSize"]')) setTimeout(textScaleMark, 0); }, true);
+    /* Something else overriding the page's own A- / A+: a text-size extension (an MES Text Size older than 1.2, or any other) writes px font
+       sizes with !important into the style="" of every text element, so the em-based page scale never reaches them and A+ seems dead. After an
+       A- / A+ click (and on load while the saved size is not 100), count such inline sizes in the content; 5 or more = say so once per tab. A
+       1.2+ MES Text Size steps aside on the marker above, so its sizes are gone by the time this looks (400 ms). Page scripts never write
+       !important inline font sizes, so they can't trigger it. */
+    var tsWarned = false;
+    function textScaleBlocked() {
+        if (tsWarned || !document.querySelector('[id^="textSize"]')) return;
+        var v = null; try { v = parseFloat(localStorage.getItem("articleFontScale")); } catch (e) { /* ignore */ }
+        if (!isFinite(v) || v === 100) return;
+        try { if (sessionStorage.getItem("mes-ts-blocked") === "1") return; } catch (e) { /* ignore */ }
+        var root = document.querySelector("#main-content, article, .container, main") || document.body, n = 0, seen = 0;
+        var list = root.querySelectorAll("p, li, td, span, a, div, h2, h3, summary, b, strong");
+        for (var i = 0; i < list.length && seen < 400; i++) {
+            var st = list[i].style; if (!st) continue; seen++;
+            if (st.getPropertyPriority("font-size") === "important" && /px$/.test(st.getPropertyValue("font-size"))) n++;
+            if (n >= 5) break;
+        }
+        if (n < 5) return;
+        tsWarned = true; try { sessionStorage.setItem("mes-ts-blocked", "1"); } catch (e) { /* ignore */ }
+        favToast("A browser extension is setting the text size on this page, so A- / A+ can't change it. Set the extension to 100% here, or update MES Text Size (1.2+ steps aside by itself).",
+            [{ label: "Get MES Text Size", href: "/text-size" }]);
+    }
+    document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('[id^="textSize"]')) { setTimeout(textScaleMark, 0); setTimeout(textScaleBlocked, 400); } }, true);
+    window.addEventListener("load", function () { setTimeout(textScaleBlocked, 1500); });
     window.addEventListener("storage", function (e) { if (e.key === "articleFontScale") setTimeout(textScaleMark, 0); });
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", textScaleMark); else textScaleMark();
 

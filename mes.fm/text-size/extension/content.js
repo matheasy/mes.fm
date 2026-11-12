@@ -157,6 +157,17 @@
         var add = [];
         for (var i = 0; i < list.length; i++) {
           var m = list[i];
+          if (m.type === 'attributes') {
+            /* the page rewrote style="" of a scaled element (React re-render, an auto-growing textarea setting its height on every key):
+               that wipes our size, so the text box jumped back to normal while typing. Put it back; if the page wrote its own font size,
+               take that as the element's new original. Our own write sets the same value again, so the second round is a no-op. */
+            var t = m.target;
+            if (!live.has(t)) continue;
+            var o = orig.get(t), want = T.scaled(o.fs, level), cur = t.style.getPropertyValue('font-size');
+            if (cur === want + 'px') continue;
+            if (cur && cur !== o.inl.fs) { orig.delete(t); live.delete(t); add.push(t); } else putInline(t, o, true);
+            continue;
+          }
           if (m.type === 'characterData') { var p = m.target.parentElement; if (p && !live.has(p) && wanted(p)) add.push(p); continue; }
           if (m.target.nodeType === 1 && !live.has(m.target) && wanted(m.target)) add.push(m.target);   // an empty element that just got its text
           for (var j = 0; j < m.addedNodes.length; j++) if (m.addedNodes[j].nodeType === 1) elementsIn(m.addedNodes[j], add);
@@ -165,7 +176,7 @@
         if (add.length <= SYNC_MAX) process(add);
         else { for (var k = 0; k < add.length; k++) queue.push(add[k]); schedule(); }
       });
-      observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+      observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style'] });
     }
   }
 
