@@ -1,0 +1,21 @@
+// node tool_apps_src/narration-tests.js — pure helpers of mes.fm/main_js/narrate.js
+const N = require("../mes.fm/main_js/narrate.js");
+let ok = 0, bad = 0; const t = (c, m) => { if (c) ok++; else { bad++; console.log("FAIL", m); } };
+let s = N.split("One. Two? Three!\n\nFour [pause 2.5] five.", 260);
+t(s.length === 4 && s[0].text === "One. Two? Three!" && s[0].para && s[1].text === "Four" && s[2].pause === 2.5 && s[3].text === "five.", "split paragraphs + pause " + JSON.stringify(s));
+t(N.split("a [pause] b")[1].pause === 1, "bare pause = 1 s");
+t(N.split("x [Pause 99s] y")[1].pause === 30, "pause capped at 30 s");
+const long = "This is a sentence. ".repeat(30); s = N.split(long, 150); t(s.every(x => x.text.length <= 150) && s.map(x => x.text).join(" ").replace(/\s+/g, " ").trim() === long.trim(), "chunks under the limit, text kept");
+const runon = ("word ".repeat(80)).trim(); s = N.split(runon, 100); t(s.every(x => x.text.length <= 100) && s.map(x => x.text).join(" ") === runon, "run-on sentence cut at spaces");
+t(N.split("").length === 0 && N.split("  \n\n ").length === 0, "empty script");
+const a = new Float32Array(2400 * 10); for (let i = 9600; i < 14400; i++) a[i] = Math.sin(i) * 0.5;
+const tr = N.trim(a, 24000, 0.01, 0); t(tr.length > 4000 && tr.length <= 4800, "trim silence " + tr.length);
+t(N.trim(new Float32Array(100), 24000).length === 0, "all silence -> empty");
+const j = N.join([{ audio: new Float32Array(10).fill(1), gap: 0.001 }, { audio: new Float32Array(5).fill(1), gap: 0 }], 24000);
+t(j.length === 10 + 24 + 5 && j[12] === 0 && j[34] === 1, "join with gaps");
+const w = N.wav(new Float32Array([0, 1, -1]), 24000); const v = new DataView(w);
+t(w.byteLength === 50 && v.getUint32(24, true) === 24000 && v.getInt16(46, true) === 32767 && v.getInt16(48, true) === -32768, "wav header + samples");
+const r = N.resample(new Float32Array(48000).fill(0.5), 48000, 24000); t(r.length === 24000 && Math.abs(r[100] - 0.5) < 1e-6, "resample");
+t(Math.abs(Math.max(...N.peakNormalize(new Float32Array([0.1, -0.2]), 0.8).map(Math.abs)) - 0.8) < 1e-6, "peak normalise");
+t(N.VOICES.length === 28 && new Set(N.VOICES.map(v => v[0])).size === 28, "28 unique voices");
+console.log(ok + " passed, " + bad + " failed"); process.exit(bad ? 1 : 0);

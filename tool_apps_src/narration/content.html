@@ -1,0 +1,90 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu nr" id="nr">
+		<p class="nr-honest"><b>Type it, hear it:</b> turn a script into a voice-over with a ready-made voice, or with <b>your own voice</b> from a short recording. Everything runs in this browser: your text and your voice never leave this computer.</p>
+
+		<div class="tu-card">
+			<div class="nr-tabs" role="tablist" aria-label="Voice">
+				<button type="button" role="tab" class="nr-tab" id="nr-tab-stock" aria-selected="true" data-eng="kokoro">Ready-made voices</button>
+				<button type="button" role="tab" class="nr-tab" id="nr-tab-clone" aria-selected="false" data-eng="clone">My own voice</button>
+			</div>
+
+			<div class="nr-pane" id="nr-pane-stock">
+				<div class="nr-row">
+					<div class="tu-field"><label class="tu-label" for="nr-voice">Voice</label><select class="tu-select" id="nr-voice"></select></div>
+					<button type="button" class="tu-btn tu-btn--ghost" id="nr-hear">▶ Hear this voice</button>
+					<div class="tu-field tu-field--sm"><label class="tu-label" for="nr-speed">Speed <b id="nr-speedv">1.00×</b></label><input type="range" id="nr-speed" min="0.6" max="1.6" step="0.05" value="1"></div>
+				</div>
+				<label class="nr-ck"><input type="checkbox" id="nr-gpu"> Use the graphics chip (faster on most computers, ~330 MB download instead of ~90 MB)</label>
+				<p class="tu-note">28 English voices (American and British) from the Kokoro model (Apache-2.0). The first use downloads the voice model once; after that it works offline.</p>
+			</div>
+
+			<div class="nr-pane" id="nr-pane-clone" hidden>
+				<div class="nr-warn" id="nr-cwarn"></div>
+				<div class="nr-voices" id="nr-voices" role="radiogroup" aria-label="My voices"></div>
+				<details class="nr-add" id="nr-add">
+					<summary>+ Add a voice</summary>
+					<p class="tu-note">Record or upload <b>10 to 20 seconds</b> of clear speech: one person, no music, a quiet room, speaking the way you want the narration to sound. Read this out loud, for example:</p>
+					<blockquote class="nr-read">“Hello, and welcome back. Today we are going to work through a few examples step by step, so grab a pencil and some paper. If you get stuck, pause the video and try it yourself first.”</blockquote>
+					<div class="nr-row">
+						<button type="button" class="tu-btn tu-btn--primary" id="nr-rec">● Record</button>
+						<label class="tu-btn tu-btn--ghost nr-file">Upload a clip<input type="file" id="nr-upload" accept="audio/*,video/*" hidden></label>
+						<span class="nr-rect" id="nr-rect" aria-live="polite"></span>
+					</div>
+					<div class="nr-sample" id="nr-sample" hidden>
+						<audio id="nr-sampleplay" controls></audio>
+						<div class="nr-row">
+							<div class="tu-field"><label class="tu-label" for="nr-vname">Name</label><input class="tu-input" id="nr-vname" type="text" maxlength="40" value="My voice"></div>
+							<button type="button" class="tu-btn tu-btn--primary" id="nr-vsave">Save this voice</button>
+						</div>
+						<label class="nr-ck"><input type="checkbox" id="nr-consent"> This is my own voice, or the speaker has said I may use it.</label>
+					</div>
+				</details>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="nr-exag">Expressiveness <b id="nr-exagv">0.50</b></label><input type="range" id="nr-exag" min="0.25" max="1.2" step="0.05" value="0.5"></div>
+				<p class="tu-note">Uses Chatterbox (Resemble AI, MIT licence), English only. It copies the sound of the voice from your sample; each take comes out a little different, so a line you don't like can be made again.</p>
+			</div>
+		</div>
+
+		<div class="tu-card">
+			<div class="nr-scripthead"><label class="tu-label" for="nr-text">Script</label><span class="nr-count" id="nr-count"></span></div>
+			<textarea class="tu-input nr-text" id="nr-text" rows="9" spellcheck="true" placeholder="Type or paste what should be said.&#10;&#10;A blank line starts a new paragraph (a longer pause). Type [pause 2] for a 2-second pause."></textarea>
+			<div class="nr-row">
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="nr-gap">Pause between sentences <b id="nr-gapv">0.25 s</b></label><input type="range" id="nr-gap" min="0" max="1.5" step="0.05" value="0.25"></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="nr-pgap">Pause between paragraphs <b id="nr-pgapv">0.70 s</b></label><input type="range" id="nr-pgap" min="0" max="3" step="0.05" value="0.7"></div>
+			</div>
+			<div class="nr-row">
+				<button type="button" class="tu-btn tu-btn--primary nr-go" id="nr-go">🗣 Make the narration</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="nr-stop" hidden>Stop</button>
+			</div>
+			<div class="nr-prog" id="nr-prog" hidden><div class="nr-bar"><i id="nr-barfill"></i></div><span id="nr-progt" aria-live="polite"></span></div>
+		</div>
+
+		<div class="tu-card" id="nr-out" hidden>
+			<h2 class="nr-h">Your narration <span class="nr-dur" id="nr-dur"></span></h2>
+			<audio id="nr-play" controls class="nr-audio"></audio>
+			<ol class="nr-pieces" id="nr-pieces"></ol>
+			<div class="nr-row nr-dl">
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="nr-fmt">Format</label><select class="tu-select" id="nr-fmt"><option value="mp3">MP3</option><option value="m4a">M4A (AAC)</option><option value="wav">WAV (no compression)</option></select></div>
+				<div class="tu-field tu-field--sm"><label class="tu-label" for="nr-kbps">Quality</label><select class="tu-select" id="nr-kbps"><option value="64">64 kbps (small)</option><option value="96">96 kbps</option><option value="128" selected>128 kbps</option><option value="160">160 kbps</option></select></div>
+				<div class="tu-field"><label class="tu-label" for="nr-fname">File name</label><input class="tu-input" id="nr-fname" type="text" value="narration"></div>
+				<button type="button" class="tu-btn tu-btn--primary" id="nr-dl">⬇ Download</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="nr-tovideo">🎬 Add to the Video Editor</button>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>How the narration tool works</h2>
+			<p>Type or paste a script and press <b>Make the narration</b>. The text is cut into sentences, each one is spoken by a voice model running in your browser, and the pieces are joined with the pauses you choose. Listen to each line on its own, make any line again, then download the whole thing as MP3, M4A or WAV, or drop it straight into the <a href="/video">MES Video Editor</a>.</p>
+			<h3>Ready-made voices</h3>
+			<p>28 English voices (American and British, men and women) from the open Kokoro-82M model. The first time, the model (about 90 MB) is downloaded and kept by the browser; it then works offline on any computer, and on most phones too (more slowly).</p>
+			<h3>Your own voice</h3>
+			<p>Record or upload 10 to 20 seconds of your speech once, save it, and every script after that can be read in a voice that sounds like you. This uses the open Chatterbox model by Resemble AI (MIT licence). It is big (about 1.5 GB, downloaded once) and needs a computer with a graphics chip the browser can use (WebGPU: Chrome, Edge, Brave or Opera on Windows, Mac or ChromeOS). Without one it still works, but very slowly.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is my voice uploaded anywhere?</dt><dd>No. The recording is kept in this browser (IndexedDB) and the voice model runs here. Delete a voice with its × button.</dd>
+				<dt>How do I get a better copy of my voice?</dt><dd>Use a clean, close recording with no echo or music, 10 to 20 seconds long, spoken in the style you want. Try a few samples and keep the best one.</dd>
+				<dt>Can I use someone else's voice?</dt><dd>Only with their permission. Copying a person's voice without consent to mislead people is wrong and in many places illegal.</dd>
+				<dt>Which languages work?</dt><dd>English. Other languages are read with English pronunciation.</dd>
+				<dt>How do I add pauses?</dt><dd>A blank line starts a new paragraph (a longer pause). Type <code>[pause]</code> for 1 second or <code>[pause 2.5]</code> for 2.5 seconds anywhere in the text.</dd>
+			</dl>
+		</div>
+	</div>

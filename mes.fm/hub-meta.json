@@ -586,6 +586,11 @@
 "updated":"2026-10-14",
 "type":"Calculator"
 },
+"/narration":{
+"added":"2026-11-12",
+"updated":"2026-11-12",
+"type":"Tool"
+},
 "/nba-picks":{
 "added":"2026-10-26",
 "updated":"2026-11-06",

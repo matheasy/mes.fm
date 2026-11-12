@@ -1,0 +1,51 @@
+#nr .nr-honest {margin:0 0 1em;line-height:1.5;}
+#nr .nr-tabs {display:flex;gap:0.3em;margin-bottom:0.9em;border-bottom:1px solid #d5d9e0;}
+#nr .nr-tab {font:inherit;font-weight:600;padding:0.55em 1em;border:1px solid transparent;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:transparent;color:#4b5563;cursor:pointer;margin-bottom:-1px;}
+#nr .nr-tab[aria-selected="true"] {background:#fff;border-color:#d5d9e0;color:#6d28d9;}
+#nr .nr-row {display:flex;flex-wrap:wrap;gap:0.6em 1em;align-items:flex-end;margin:0.5em 0;}
+#nr .nr-row .tu-field {margin:0;min-width:12em;}
+#nr .nr-ck {display:flex;gap:0.5em;align-items:flex-start;margin:0.6em 0;line-height:1.4;}
+#nr .nr-ck input {margin-top:0.25em;}
+#nr .nr-warn {padding:0.65em 0.85em;border-radius:0.5em;background:#f5f3ff;border:1px solid #ddd6fe;color:#3b0764;margin-bottom:0.8em;line-height:1.45;}
+#nr .nr-warn.is-bad {background:#fff7ed;border-color:#fed7aa;color:#7c2d12;}
+#nr .nr-voices {display:flex;flex-direction:column;gap:0.35em;margin-bottom:0.6em;}
+#nr .nr-vrow {display:flex;align-items:center;gap:0.4em;padding:0.35em 0.6em;border:1px solid #e1e5eb;border-radius:0.5em;}
+#nr .nr-vrow.is-on {border-color:#7c3aed;background:#faf5ff;}
+#nr .nr-vrow label {flex:1;display:flex;gap:0.5em;align-items:center;cursor:pointer;}
+#nr .nr-vrow small {color:#6b7280;}
+#nr .nr-sm {padding:0.2em 0.6em;min-height:32px;font-size:0.9em;}
+#nr .nr-add {margin:0.6em 0 1em;border:1px dashed #c4b5fd;border-radius:0.6em;padding:0.5em 0.85em;}
+#nr .nr-add summary {cursor:pointer;font-weight:600;color:#6d28d9;}
+#nr .nr-read {margin:0.6em 0;padding:0.6em 0.9em;border-left:3px solid #7c3aed;background:#faf5ff;font-style:italic;line-height:1.5;}
+#nr .nr-file {cursor:pointer;}
+#nr #nr-rec.is-rec {background:#dc2626;border-color:#dc2626;color:#fff;}
+#nr .nr-rect {color:#4b5563;}
+#nr .nr-sample audio, #nr .nr-audio {width:100%;margin:0.5em 0;}
+#nr .nr-scripthead {display:flex;justify-content:space-between;align-items:baseline;gap:1em;flex-wrap:wrap;}
+#nr .nr-count {color:#6b7280;font-size:0.88em;}
+#nr .nr-text {width:100%;min-height:10em;resize:vertical;line-height:1.55;font-size:1.05em;}
+#nr .nr-go {font-size:1.05em;padding:0.6em 1.3em;}
+#nr .nr-prog {display:flex;flex-direction:column;gap:0.3em;margin-top:0.6em;}
+#nr .nr-bar {height:8px;background:#ede9fe;border-radius:4px;overflow:hidden;}
+#nr .nr-bar i {display:block;height:100%;width:0;background:#7c3aed;transition:width .25s;}
+#nr #nr-progt {color:#4b5563;font-size:0.9em;}
+#nr .nr-h {margin:0 0 0.4em;font-size:1.2em;}
+#nr .nr-dur {color:#6b7280;font-weight:400;font-size:0.85em;}
+#nr .nr-pieces {list-style:none;margin:0.4em 0 0.8em;padding:0;max-height:22em;overflow:auto;border:1px solid #e1e5eb;border-radius:0.5em;}
+#nr .nr-pieces li {display:flex;gap:0.6em;align-items:center;padding:0.35em 0.55em;border-bottom:1px solid #eef0f3;}
+#nr .nr-pieces li:last-child {border-bottom:0;}
+#nr .nr-ptext {flex:1;line-height:1.4;}
+#nr .nr-dl {border-top:1px solid #eef0f3;padding-top:0.7em;}
+body.dark-mode #nr.nr .nr-tabs {border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-tab {color:#cbd5e1;}
+body.dark-mode #nr.nr .nr-tab[aria-selected="true"] {background:#1f2430;border-color:#3a4150;color:#c4b5fd;}
+body.dark-mode #nr.nr .nr-warn {background:#2a1f45;border-color:#5b3fa0;color:#ede9fe;}
+body.dark-mode #nr.nr .nr-warn.is-bad {background:#3a2414;border-color:#9a4a16;color:#fed7aa;}
+body.dark-mode #nr.nr .nr-vrow {border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-vrow.is-on {border-color:#a78bfa;background:#2a1f45;}
+body.dark-mode #nr.nr .nr-vrow small, body.dark-mode #nr.nr .nr-count, body.dark-mode #nr.nr .nr-dur, body.dark-mode #nr.nr #nr-progt, body.dark-mode #nr.nr .nr-rect {color:#aab3c2;}
+body.dark-mode #nr.nr .nr-add {border-color:#5b3fa0;} body.dark-mode #nr.nr .nr-add summary {color:#c4b5fd;}
+body.dark-mode #nr.nr .nr-read {background:#2a1f45;border-color:#a78bfa;color:#ede9fe;}
+body.dark-mode #nr.nr .nr-bar {background:#2a1f45;}
+body.dark-mode #nr.nr .nr-pieces, body.dark-mode #nr.nr .nr-pieces li, body.dark-mode #nr.nr .nr-dl {border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-ptext {color:#e5e7eb;}

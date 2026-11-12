@@ -245,6 +245,13 @@ APPS = {
                   desc="Free online party invitations with RSVP: pick a theme, add the date, place and details, send one short link by text, WhatsApp or email, and guests reply Going, Maybe or Can't go with no app or account. Plus-ones, guest limit with a waitlist, reply-by date, questions, a what-to-bring list, updates to guests, calendar buttons and a guest list download.",
                   meta_desc="Free party invitation maker with RSVP: themes, one short link, Going / Maybe / Can't go replies, plus-ones, waitlist, what to bring. No sign-up for anyone.",
                   js_v="2"),
+    # MES Narration (2026-11-12, mes.fm/narration): text -> voice-over in the browser. Engine = /main_js/narrate.js + narrate-worker.js (shared with
+    # the Video Editor's Narration button): Kokoro-82M stock voices (Apache-2.0, kokoro-js 1.2.1) or Chatterbox (Resemble AI, MIT, Transformers.js 4.3.2)
+    # copying the visitor's own voice from a 10-20 s sample (IndexedDB "mes-narrate"; ~1.5 GB model, WebGPU). Tests tool_apps_src/narration-tests.js.
+    "narration": dict(title="MES Narration", page_title="Text to Speech in Your Own Voice: Free Narration Tool (MP3, M4A, WAV)",
+                 tag="Type it. Hear it. In your own voice.", accent="#6d28d9", dark="#4c1d95", tint="#ede9fe",
+                 desc="Free text to speech narration tool: type a script and get a voice-over in 28 natural English voices or in your own voice from a 15-second sample. Runs in your browser, nothing uploaded. Download MP3, M4A or WAV, or add it to the MES Video Editor.",
+                 js_v="1", pre_js=["/main_js/voice-picker.js?v=1", "/main_js/tab-progress.js?v=1", "/main_js/narrate.js?v=1"]),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",

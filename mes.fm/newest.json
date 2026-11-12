@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/narration",
+   "title": "Narration",
+   "icon": "/img/narration-logo.png",
+   "desc": "Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
+  {
    "href": "/car-sandbox",
    "title": "Car Sandbox",
    "icon": "/img/car-sandbox-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
    "added": "2026-11-07",
    "kind": "tool"
-  },
-  {
-   "href": "/connect-four",
-   "title": "Connect Four",
-   "icon": "/img/connect-four-logo.png",
-   "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
-   "added": "2026-11-07",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/narration",
+   "title": "Narration",
+   "icon": "/img/narration-logo.png",
+   "desc": "Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
   {
    "href": "/car-sandbox",
    "title": "Car Sandbox",
@@ -250,14 +258,6 @@
    "title": "Prime Numbers",
    "icon": "/img/primes-logo.png",
    "desc": "Is it prime? Prime factors, divisors, coprime, GCD and LCM, the sieve and the prime spiral.",
-   "added": "2026-11-10",
-   "kind": "calculator"
-  },
-  {
-   "href": "/quantum-calculator",
-   "title": "Quantum Calculators",
-   "icon": "/img/quantum-logo.png",
-   "desc": "de Broglie wavelength, photon energy, the uncertainty principle, tunnelling probability, particle in a box, the Bohr model, Compton shift and blackbody radiation, with every formula shown.",
    "added": "2026-11-10",
    "kind": "calculator"
   }
