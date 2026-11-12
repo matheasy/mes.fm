@@ -1557,7 +1557,12 @@
 		} else if (name === "tournament") {
 			sc.background = new THREE.Color("#04060c"); sc.fog = new THREE.Fog("#04060c", 8, 22);
 			X += 1.5; Z += 2.2;
-			walls(g, X, Z, H + 2, std("#0b0f1a", 0.9), std("#101010", 0.6));
+			var arenaWall = std("#0b0f1a", 0.9);
+			walls(g, X, Z, H + 2, arenaWall, std("#101010", 0.6));
+			imgTex(this, "arena.jpg", function (tx) {   // a dark arena full of people behind the seats
+				tx.wrapS = THREE.MirroredRepeatWrapping; tx.repeat.set(1.2, 1);
+				arenaWall.color.set("#8a8a8a"); arenaWall.map = tx; arenaWall.emissive.set("#ffffff"); arenaWall.emissiveMap = tx; arenaWall.emissiveIntensity = 0.25; arenaWall.needsUpdate = true;
+			});
 			var carpet = new THREE.Mesh(new THREE.PlaneGeometry(T.L + 3, T.W + 3), std("#1a237e", 0.95)); carpet.rotation.x = -Math.PI / 2; carpet.position.y = F + 0.002; carpet.receiveShadow = true; g.add(carpet);
 			// tiered seats with a crowd on both long sides
 			var seatMat = std("#20263a", 0.8), crowd = [], tones = ["#f1c27d", "#c68642", "#8d5524", "#ffdbac", "#e0ac69"], shirts = ["#e53935", "#1e88e5", "#fdd835", "#43a047", "#ffffff", "#8e24aa", "#212121", "#fb8c00"];
@@ -1576,6 +1581,22 @@
 				mtx.makeTranslation(p[0], p[1] + 0.27, p[2]); heads.setMatrixAt(k, mtx); heads.setColorAt(k, col.set(tones[Math.floor(rnd() * tones.length)]));
 			});
 			g.add(bodies); g.add(heads);
+			// the arena photo laid on both slopes of seats (it shows rows of people), replacing the drawn figures once loaded
+			var selfT = this, seatPics = [];
+			[-1, 1].forEach(function (side) {
+				var zb = side * (T.W / 2 + 2.1), yb = F + 0.05, zt = side * (T.W / 2 + 2.4 + 4 * 0.6 + 0.35), yt = F + 0.2 + 4 * 0.38 + 1.05;
+				var dz = Math.abs(zt - zb), dy = yt - yb, hgt = Math.sqrt(dz * dz + dy * dy);
+				var mat = std("#ffffff", 0.9, { emissive: "#ffffff", emissiveIntensity: 0.3 });
+				var pl = new THREE.Mesh(new THREE.PlaneGeometry(T.L + 3.4, hgt), mat);
+				pl.position.set(0, (yb + yt) / 2, (zb + zt) / 2);
+				pl.lookAt(0, (yb + yt) / 2 + dz, (zb + zt) / 2 - side * dy);
+				pl.visible = false; g.add(pl); seatPics.push(pl);
+			});
+			imgTex(this, "arena.jpg", function (tx) {
+				var t2 = tx.clone(); t2.needsUpdate = true;
+				seatPics.forEach(function (pl) { pl.material.map = t2; pl.material.emissiveMap = t2; pl.material.needsUpdate = true; pl.visible = true; });
+				bodies.visible = heads.visible = false; selfT.render();
+			});
 			// the light rig over the table and a big screen
 			var rig = box(g, T.L + 0.6, 0.08, T.W + 0.5, std("#111", 0.5, { metalness: 0.6 }), 0, 1.35, 0);
 			var panel = new THREE.Mesh(new THREE.PlaneGeometry(T.L + 0.4, T.W + 0.3), new THREE.MeshBasicMaterial({ color: "#ffffff" })); panel.rotation.x = Math.PI / 2; panel.position.set(0, 1.305, 0); g.add(panel);
@@ -1801,10 +1822,16 @@
 			var m5 = new THREE.Matrix4(), c5 = new THREE.Color();
 			fans.forEach(function (f0, k) { fB.setColorAt(k, c5.set(f0[4])); fH.setColorAt(k, c5.set(f0[5])); m5.makeTranslation(f0[0], f0[1] + 0.3, f0[2]); fB.setMatrixAt(k, m5); m5.makeTranslation(f0[0], f0[1] + 0.62, f0[2]); fH.setMatrixAt(k, m5); });
 			g.add(fB); g.add(fH);
-			// a Mexican wave goes round now and then
+			// the arena photo wrapped round the sloped stands (rows of real-looking people), replacing the drawn fans once loaded
+			var standR0 = R0, standR1 = R0 + rows * rowD, standY0 = F + 0.4, standY1 = F + 0.3 + rows * rowH + 0.9;
+			var crowdMat = new THREE.MeshBasicMaterial({ color: "#c4c4c4", side: THREE.DoubleSide });
+			var crowdCone = new THREE.Mesh(new THREE.CylinderGeometry(standR1 - 0.05, standR0 - 0.05, standY1 - standY0, 96, 1, true), crowdMat);
+			crowdCone.scale.set(ell, 1, 1); crowdCone.position.y = (standY0 + standY1) / 2; crowdCone.visible = false; g.add(crowdCone);
+			imgTex(this, "arena.jpg", function (tx) { tx.wrapS = THREE.MirroredRepeatWrapping; tx.repeat.set(11, 1); crowdMat.map = tx; crowdMat.needsUpdate = true; crowdCone.visible = true; fB.visible = fH.visible = false; });
+			// a Mexican wave goes round now and then (the drawn fans only)
 			var lastW = 0;
 			this.anims.push(function (t) {
-				if (t - lastW < 0.05) return; lastW = t;
+				if (t - lastW < 0.05 || !fB.visible) return; lastW = t;
 				var front = (t * 0.9) % (Math.PI * 2);
 				fans.forEach(function (f0, k) {
 					var dA = Math.abs(((f0[3] - front + Math.PI * 3) % (Math.PI * 2)) - Math.PI), up = dA < 0.35 ? (0.35 - dA) / 0.35 * 0.35 : 0;
@@ -1815,6 +1842,12 @@
 			});
 			// floodlight towers
 			var topR = R0 + rows * rowD + 1.2, topY = F + rows * rowH + 5;
+			// a night city skyline all the way round, beyond the stands
+			var skyR = topR * ell + 30, skyH = 34;
+			var skyMat = new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.BackSide, fog: false, transparent: true, opacity: 0 });
+			var skyline = new THREE.Mesh(new THREE.CylinderGeometry(skyR, skyR, skyH, 64, 1, true), skyMat);
+			skyline.position.y = F + rows * rowH + 5 + skyH / 2; g.add(skyline);   // the buildings start just above the top row as seen from the table
+			imgTex(this, "skyline.jpg", function (tx) { tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(3, 1); skyMat.map = tx; skyMat.opacity = 1; skyMat.transparent = false; skyMat.needsUpdate = true; });
 			for (i = 0; i < 4; i++) {
 				var fa = Math.PI / 4 + i * Math.PI / 2, fx = Math.cos(fa) * topR * ell, fz = Math.sin(fa) * topR;
 				var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, topY - F, 8), std("#555", 0.5, { metalness: 0.6 })); pole.position.set(fx, (topY + F) / 2, fz); g.add(pole);
