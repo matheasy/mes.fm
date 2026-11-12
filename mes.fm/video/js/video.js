@@ -3460,19 +3460,33 @@
 	$("vd-projfile").onchange = function () { var f = this.files[0]; this.value = ""; if (f) askOpenProject(f); };
 	function isProjectFile(f) { return /\.mesvideo$/i.test(f.name || ""); }
 	// another project is open (clips or media in it): say so before replacing it
-	function askOpenProject(f, h) {
+	// the text is read before the question: a File snapshot goes stale if the file changes meanwhile (OneDrive / Dropbox touching it),
+	// and the browser then refuses to read it ("could not be read") after the person clicks Open without saving
+	async function readProjectFile(f, h) {
+		try { return { txt: await f.text(), f: f }; }
+		catch (e) {
+			var hh = h && typeof h.then === "function" ? await h.catch(function () { return null; }) : h;
+			if (hh && hh.getFile) { var f2 = await hh.getFile(); return { txt: await f2.text(), f: f2 }; }
+			throw e;
+		}
+	}
+	async function askOpenProject(f0, h) {
+		var rd; try { rd = await readProjectFile(f0, h); } catch (e) { toast("Could not read " + (f0.name || "the project file") + ": " + (e && e.message || e) + " Try opening it again.", 9000); return; }
+		var f = rd.f, txt = rd.txt;
+		function go() { return openProjectText(txt, f.name, h, f.lastModified, false); }
 		var n = VE.P.clips.length, nm = VE.bin.length;
-		if (!n && !nm) return openProject(f, h);
+		if (!n && !nm) return go();
 		dialog("<h3>Open " + esc(f.name) + "?</h3><p class=\"vd-dtxt\">A project is already open: <b>" + esc(VE.P.name || "Untitled video") + "</b> (" + n + " clip" + (n === 1 ? "" : "s") + ", " + nm + " media file" + (nm === 1 ? "" : "s") + "). Opening the new one replaces it in this browser. Its media files stay in the library only if the new project uses them.</p>" +
 			"<p class=\"vd-dtxt\">Save a project file of the current one first if you want to come back to it.</p>" +
 			"<div class=\"vd-dlgact\"><button type=\"button\" class=\"vd-btn vd-primary\" id=\"vd-op-save\">Save current, then open</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-op-go\">Open without saving</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-op-no\">Cancel</button></div>");
-		$("vd-op-save").onclick = async function () { closeDialog(); if (await saveProject()) openProject(f, h); };
-		$("vd-op-go").onclick = function () { closeDialog(); openProject(f, h); };
+		$("vd-op-save").onclick = async function () { closeDialog(); if (await saveProject()) go(); };
+		$("vd-op-go").onclick = function () { closeDialog(); go(); };
 		$("vd-op-no").onclick = closeDialog;
 	}
 	function openProject(f, h) { return f.text().then(function (txt) { return openProjectText(txt, f.name, h, f.lastModified, false); }); }
 	// opens a project's text; h = the local file it came from (linked for Ctrl+S), cloud = it came through the ☁ Cloud button
 	function openProjectText(txt, name, h, lm, cloud) {
+		toast("Opening " + (name || "the project") + "…", 60000);
 		return Promise.resolve().then(async function () {
 			var d = JSON.parse(txt); if (!d || d.format !== "mes-video") throw new Error("This is not a MES Video Editor project file.");
 			P.pause(); var p = V.normalize(d.project), keep = {};
@@ -3491,6 +3505,7 @@
 			var hh = h && typeof h.then === "function" ? await h.catch(function () { return null; }) : h;   // a dropped file's handle arrives as a promise
 			if (hh && hh.kind === "file") linkProject(hh, lm); else linkProject(null);
 			if (!cloud) cloudUnlink();
+			if (mdir.h && VE.bin.some(function (m) { return m.state === "missing"; })) toast("Project opened. Looking for its media files in " + mdir.h.name + "… (a big folder can take a while)", 120000);
 			var got = await relinkFromFolder(false);
 			var miss = VE.bin.filter(function (m) { return m.state === "missing"; }).length;
 			toast((got ? "Found " + got + " media file" + (got > 1 ? "s" : "") + " in your media folder. " : "") + (miss ? miss + " media file" + (miss > 1 ? "s are" : " is") + " missing: " + (mdir.h ? "they are not in " + mdir.h.name + ". " : "") + "drop them in (same names) to relink" + (mdir.h ? "." : ", or link the folder they are in (Media → Link my media folder).") : "Project opened."), 9000);
