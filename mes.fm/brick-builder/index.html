@@ -457,14 +457,37 @@ html body.dark-mode #bb .bb-tab[aria-selected="true"] {color:#fdba74;}
 html body.dark-mode #bb .bb-how summary {color:#fdba74;}
 html body.dark-mode #bb .tu-seo {background:#1f252e;color:#e5e7eb;}
 html body.dark-mode #bb .tu-seo h2, html body.dark-mode #bb .tu-seo h3, html body.dark-mode #bb .tu-seo dt {color:#f3f4f6;}
-#bb .bb-b--crash {border-color:#dc2626;}
+/* Build | Smash switch and smash mode */
+#bb .bb-mode {display:inline-flex;border:2px solid var(--bb-accd);border-radius:10px;overflow:hidden;flex:none;}
+#bb .bb-mb {font:inherit;font-size:0.95em;font-weight:700;background:var(--bb-panel);color:var(--bb-text);border:0;padding:0.45em 0.95em;cursor:pointer;min-height:38px;white-space:nowrap;}
+#bb .bb-mb + .bb-mb {border-left:2px solid var(--bb-accd);}
+#bb .bb-mb[aria-pressed="true"] {background:var(--bb-accd);color:var(--bb-acct);}
+#bb .bb-mb:not([aria-pressed="true"]):hover {background:var(--bb-sel);}
+#bb .bb-mb:focus-visible {outline:2px solid var(--bb-acc);outline-offset:-3px;}
 #bb .bb-b--go {font-size:1.05em;padding:0.5em 1.1em;}
-#bb .bb-tab--crash {flex:1.3;}
-#bb.bb-crashing .bb-left {opacity:0.45;pointer-events:none;}
+#bb .bb-sbar, #bb .bb-smsg {display:none;}
+#bb.bb-smash .bb-bonly, #bb.bb-smash .bb-left, #bb.bb-smash .bb-tabs {display:none !important;}
+#bb.bb-smash .bb-main {grid-template-columns:minmax(0, 1fr) minmax(16em, 21em);}
+#bb.bb-smash .bb-right {grid-column:2;grid-row:1;}
+#bb.bb-smash #bb-tp-crash {border-top:1px solid var(--bb-line);border-radius:9px;margin-top:0;max-height:none;}
+#bb.bb-smash .bb-sbar {display:flex;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);gap:6px;flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100% - 16px);}
+#bb.bb-smash .bb-sbar .bb-b {box-shadow:0 2px 8px var(--bb-shadow);}
+#bb.bb-smash .bb-sbar .bb-b:not(.bb-b--pri) {background:var(--bb-glass);}
+#bb.bb-smash .bb-smsg:not(:empty) {display:block;position:absolute;left:50%;top:12px;transform:translateX(-50%);max-width:calc(100% - 24px);text-align:center;font-weight:700;font-size:1.05em;padding:0.5em 1em;border-radius:10px;background:var(--bb-glass);box-shadow:0 2px 10px var(--bb-shadow);pointer-events:none;}
+#bb .bb-smsg--bad {color:var(--bb-bad);}
+#bb .bb-smsg--good {color:var(--bb-ok);}
+#bb .bb-cmodes {display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+#bb .bb-cm {font:inherit;background:var(--bb-panel2);color:var(--bb-text);border:2px solid var(--bb-line);border-radius:10px;padding:7px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;line-height:1.2;}
+#bb .bb-cm span {font-size:1.5em;line-height:1.1;}
+#bb .bb-cm b {font-size:0.9em;}
+#bb .bb-cm small {font-size:0.74em;color:var(--bb-dim);}
+#bb .bb-cm:hover {border-color:var(--bb-acc);}
+#bb .bb-cm[aria-checked="true"] {border-color:var(--bb-accd);background:var(--bb-sel);box-shadow:0 0 0 1px var(--bb-accd) inset;}
+#bb .bb-cm:focus-visible {outline:2px solid var(--bb-acc);outline-offset:1px;}
 #bb.bb-crashing .bb-vtools, #bb.bb-crashing .bb-chip, #bb.bb-crashing .bb-empty {display:none !important;}
 #bb.bb-crashing .bb-canvas {cursor:grab;}
-@media (max-width:1100px) {#bb.bb-crashing .bb-left {display:none;} #bb.bb-crashing .bb-main {grid-template-columns:minmax(0, 1fr) minmax(14em, 17em);} #bb.bb-crashing .bb-right {grid-column:2;grid-row:1;} #bb.bb-crashing .bb-tp {max-height:none;} }
-@media (max-width:700px) {#bb.bb-crashing .bb-right {order:2;} #bb.bb-crashing .bb-main {display:flex;} }
+@media (max-width:700px) {#bb.bb-smash .bb-main {display:flex;} #bb.bb-smash .bb-right {order:2;} #bb.bb-smash .bb-sbar .bb-b {font-size:0.8em;padding:0.4em 0.6em;} #bb .bb-mb {padding:0.45em 0.7em;}}
+@media (max-height:520px) and (orientation:landscape) {#bb.bb-fill.bb-smash .bb-right {display:flex;grid-column:2;overflow:auto;}}
 
 
 	@media print {
@@ -594,7 +617,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #bb .bb-swd{border:1px solid rgba(76,76,76,0.25)}
 	body.dark-mode #bb .bb-exi{background:#1c2630}
 	body.dark-mode #bb .bb-toast{background:#3e5266}
-	body.dark-mode #bb .bb-b--crash{border-color:#b01c1c}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -811,20 +833,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 	<div class="tu bb" id="bb" data-start="">
 		<div class="bb-bar" id="bb-bar" role="toolbar" aria-label="Brick Builder tools">
-			<div class="bb-grp">
+			<div class="bb-mode" role="group" aria-label="Build or smash">
+				<button type="button" class="bb-mb" data-mode="build" aria-pressed="true" title="Build with bricks">🧱 Build</button>
+				<button type="button" class="bb-mb bb-mb--smash" data-mode="smash" aria-pressed="false" title="Smash what you built: ram it, swing a wrecking ball, drop it or crash it">💥 Smash</button>
+			</div>
+			<div class="bb-grp bb-bonly">
 				<button type="button" class="bb-b bb-b--pri" data-act="examples" title="Ready-made builds to start from or learn from">📚 Examples</button>
 				<button type="button" class="bb-b" data-act="new" title="Start with an empty baseplate">✚ New</button>
 				<button type="button" class="bb-b" data-act="open" title="Open a saved build (.json)">📂 Open</button>
 				<button type="button" class="bb-b" data-act="save" title="Save the build as a file (Ctrl+S)">💾 Save</button>
 				<button type="button" class="bb-b" data-act="share" title="Copy a link to this build">🔗 Share link</button>
-				<button type="button" class="bb-b bb-b--crash" data-act="crash" title="Crash your build, or a ready-made car, into a wall">💥 Crash test</button>
 			</div>
-			<div class="bb-grp">
+			<div class="bb-grp bb-bonly">
 				<button type="button" class="bb-ib" data-act="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
 				<button type="button" class="bb-ib" data-act="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
 				<button type="button" class="bb-b" data-act="rotate" title="Turn the brick a quarter turn (R)">⟳ Turn</button>
 			</div>
-			<div class="bb-grp" role="group" aria-label="What a click does">
+			<div class="bb-grp bb-bonly" role="group" aria-label="What a click does">
 				<button type="button" class="bb-b bb-tool" data-tool="build" title="Add bricks (B). Shift-click removes one.">🧱 Build</button>
 				<button type="button" class="bb-b bb-tool" data-tool="paint" title="Click a brick to give it the chosen colour (P)">🎨 Paint</button>
 				<button type="button" class="bb-b bb-tool" data-tool="remove" title="Click a brick to take it off (X)">✖ Remove</button>
@@ -833,7 +858,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="bb-grp bb-grp--r">
 				<button type="button" class="bb-b" data-act="shot" title="Save a picture of the view">📷 PNG</button>
-				<button type="button" class="bb-b" data-act="stl" title="Download an STL file for a 3D printer">⬇ STL</button>
+				<button type="button" class="bb-b bb-bonly" data-act="stl" title="Download an STL file for a 3D printer">⬇ STL</button>
 				<button type="button" class="bb-b" data-act="fill" id="bb-fillbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ Fill window</button>
 				<button type="button" class="bb-b" data-act="full" id="bb-fsbtn" title="Full screen (Shift+F)">⛶ Full screen</button>
 				<button type="button" class="bb-b" data-act="help" title="How it works and keyboard shortcuts (?)">? Help</button>
@@ -865,6 +890,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" class="bb-vb" data-view="fit" title="Zoom to the build (.)">⌖ Fit</button>
 					</div>
 					<div class="bb-chip" id="bb-chip" aria-live="polite"></div>
+					<div class="bb-smsg" id="bb-smsg" aria-live="polite"></div>
+					<div class="bb-sbar" role="group" aria-label="Smash">
+						<button type="button" class="bb-b bb-b--pri bb-b--go" id="bb-sgo">💥 Smash it!</button>
+						<button type="button" class="bb-b" id="bb-sagain">↺ Put it back</button>
+						<button type="button" class="bb-b" data-mode="build" id="bb-sback">🧱 Back to building</button>
+					</div>
 					<div class="bb-loading" id="bb-loading"><div><span class="bb-spin"></span> Loading the 3D engine…</div></div>
 					<div class="bb-empty" id="bb-empty" hidden>
 						<div class="bb-empty-in">
@@ -884,7 +915,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="bb-tab" data-tab="steps" role="tab" aria-selected="false">Steps</button>
 					<button type="button" class="bb-tab" data-tab="list" role="tab" aria-selected="false">Parts list</button>
 					<button type="button" class="bb-tab" data-tab="set" role="tab" aria-selected="false">Settings</button>
-					<button type="button" class="bb-tab bb-tab--crash" data-tab="crash" role="tab" aria-selected="false">💥 Crash</button>
 				</div>
 				<div class="bb-tp" id="bb-tp-test" role="tabpanel">
 					<div id="bb-chal"></div>
@@ -926,22 +956,39 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="bb-btns"><button type="button" class="bb-b" id="bb-bomcopy">Copy the list</button> <button type="button" class="bb-b" id="bb-bomcsv">Download CSV</button></div>
 				</div>
 				<div class="bb-tp" id="bb-tp-crash" role="tabpanel" hidden>
-					<label class="bb-row">Vehicle <select id="bb-cveh"></select></label>
-					<button type="button" class="bb-b" id="bb-cturn" title="Turn the vehicle a quarter turn if it drives sideways">⟳ Turn the vehicle</button>
-					<label class="bb-row">Crash into <select id="bb-ctgt"><option value="concrete">Concrete wall</option><option value="bricks">Brick wall</option><option value="headon">Another one, head-on</option><option value="foam">Foam wall (soft)</option></select></label>
-					<label class="bb-row">Speed <b id="bb-cspdv"></b></label>
-					<input type="range" id="bb-cspd" min="2" max="40" step="1" aria-label="Speed in km/h">
-					<label class="bb-row">Stud grip <select id="bb-cgrip"><option value="loose">Loose (old bricks)</option><option value="normal">Normal</option><option value="tight">Tight (new bricks)</option></select></label>
-					<label class="bb-row">Play it <select id="bb-cslow"><option value="1">at real speed</option><option value="0.25">in slow motion</option><option value="0.08">in super slow motion</option></select></label>
-					<label class="bb-row">Camera <select id="bb-ccam"><option value="follow">Follow the car</option><option value="side">From the side</option><option value="top">From above</option><option value="free">Free (drag to turn)</option></select></label>
-					<label class="bb-ck"><input type="checkbox" id="bb-csnd"> Crash sounds</label>
-					<div class="bb-btns"><button type="button" class="bb-b bb-b--pri bb-b--go" id="bb-cgo">💥 Go!</button> <button type="button" class="bb-b" id="bb-creset">↺ Put it back</button></div>
+					<div class="bb-ph">How do you want to smash it?</div>
+					<div class="bb-cmodes" id="bb-cmodes" role="radiogroup" aria-label="How to smash it">
+						<button type="button" class="bb-cm" data-cmode="hit" role="radio"><span>🚚</span><b>Ram it</b><small>A truck drives into it</small></button>
+						<button type="button" class="bb-cm" data-cmode="ball" role="radio"><span>⚫</span><b>Wrecking ball</b><small>Swing a heavy ball</small></button>
+						<button type="button" class="bb-cm" data-cmode="drop" role="radio"><span>⬇️</span><b>Drop it</b><small>From high up</small></button>
+						<button type="button" class="bb-cm" data-cmode="drive" role="radio"><span>🏎️</span><b>Crash a car</b><small>Drive it into a wall</small></button>
+					</div>
+					<label class="bb-row" data-for="hit ball drop">What gets smashed <select id="bb-ctar"></select></label>
+					<label class="bb-row" data-for="hit">Ram it with <select id="bb-cram"></select></label>
+					<label class="bb-row" data-for="hit">Weight in the truck <select id="bb-cload"><option value="0">None</option><option value="100">100 g</option><option value="200">200 g</option><option value="500">500 g</option><option value="1000">1 kg</option></select></label>
+					<label class="bb-row" data-for="drive">Car <select id="bb-cveh"></select></label>
+					<label class="bb-row" data-for="drive">Crash into <select id="bb-ctgt"><option value="concrete">Concrete wall</option><option value="bricks">Brick wall</option><option value="headon">Another one, head-on</option><option value="foam">Foam wall (soft)</option></select></label>
+					<button type="button" class="bb-b" id="bb-cturn" data-for="drive" title="Turn the car a quarter turn if it drives sideways">⟳ Turn the car</button>
+					<label class="bb-row" data-for="hit drive">Speed <b id="bb-cspdv"></b></label>
+					<input type="range" id="bb-cspd" min="2" max="60" step="1" aria-label="Speed in km/h" data-for="hit drive">
+					<label class="bb-row" data-for="ball">Ball <select id="bb-cball"><option value="s">Small (60 g)</option><option value="m">Big (250 g)</option><option value="l">Huge (900 g)</option></select></label>
+					<label class="bb-row" data-for="ball">Swing from <b id="bb-cswingv"></b></label>
+					<input type="range" id="bb-cswing" min="15" max="90" step="1" aria-label="How high the ball starts, in degrees" data-for="ball">
+					<label class="bb-row" data-for="drop">Height <b id="bb-cdropv"></b></label>
+					<input type="range" id="bb-cdrop" min="10" max="1000" step="10" aria-label="Drop height in centimetres" data-for="drop">
+					<div class="bb-btns"><button type="button" class="bb-b bb-b--pri bb-b--go" id="bb-cgo">💥 Smash it!</button> <button type="button" class="bb-b" id="bb-creset">↺ Put it back</button></div>
 					<div class="bb-small" id="bb-cstat" aria-live="polite"></div>
 					<div id="bb-cres"></div>
+					<details class="bb-how"><summary>More options</summary>
+						<label class="bb-row">Stud grip <select id="bb-cgrip"><option value="loose">Loose (old bricks)</option><option value="normal">Normal</option><option value="tight">Tight (new bricks)</option></select></label>
+						<label class="bb-row">Play it <select id="bb-cslow"><option value="1">at real speed</option><option value="0.25">in slow motion</option><option value="0.08">in super slow motion</option></select></label>
+						<label class="bb-row">Camera <select id="bb-ccam"><option value="follow">Automatic</option><option value="side">From the side</option><option value="top">From above</option><option value="free">Free (drag to turn)</option></select></label>
+						<label class="bb-ck"><input type="checkbox" id="bb-csnd"> Crash sounds</label>
+					</details>
 					<details class="bb-how"><summary>How does it decide what breaks?</summary>
-						<p>When the front hits, every part has to be stopped in a few thousandths of a second. That takes a force (its mass times how fast it slows down), and the force has to reach the wall through the bricks in front of it or through stud joints.</p>
-						<ul><li>Pushing on the brick in front is free: plastic does not break by being squeezed.</li><li>Each stud joint holds about 1.5 newtons sideways (less for old, loose bricks). If a joint has to hold more, it lets go and everything on the far side flies off.</li><li>Pieces that fly off can break again when they hit the road or the wall.</li></ul>
-						<p>So a car built from tall stacks held by one or two studs smashes at low speed, while one built from overlapping plates and bricks survives. Faster crashes and harder walls (concrete stops it fastest, foam slowest) break more. A simple model for fun and learning: real bricks also crack and bend.</p>
+						<p>Whatever hits your build pushes on the bricks it touches. That push has to go down to the baseplate through the stud joints. Each stud joint holds about 1.5 newtons sideways (less for old, loose bricks); if a joint has to hold more, it lets go and the bricks on the far side fly off.</p>
+						<ul><li>A heavier or faster truck, a bigger ball or a higher swing pushes harder.</li><li>Walls with overlapping (staggered) bricks pass the push along many studs, so they hold better than stacks.</li><li>When a car crashes, every part of the car has to be stopped too, so tall stacks held by one or two studs fly off first. Pieces can break again when they land.</li></ul>
+						<p>A simple model for fun and learning: real bricks also crack and bend.</p>
 					</details>
 				</div>
 				<div class="bb-tp" id="bb-tp-set" role="tabpanel" hidden>
@@ -993,7 +1040,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/brick-crash-test"><img class="mes-aside__img mes-aside__img--logo" src="/brick-crash-test/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Brick Crash Test: Smash Your Brick Car into a Wall (Free 3D Simulator)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/days-between-dates-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/days-between-dates-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Days Between Dates Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/brick-crash-test"><img class="mes-aside__img mes-aside__img--logo" src="/brick-crash-test/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Brick Crash Test: Smash Your Brick Builds with a Truck, Wrecking Ball or Drop (Free 3D Simulator)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/days-between-dates-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/days-between-dates-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Days Between Dates Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1043,7 +1090,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/brick-builder/js/brick-builder.js?v=2" defer></script>
+	<script src="/brick-builder/js/brick-builder.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

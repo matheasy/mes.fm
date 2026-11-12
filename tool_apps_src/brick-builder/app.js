@@ -9,7 +9,7 @@
 	var T, OrbitControls, BGU;
 	var KEY = 'mes-brick-builder:v1', BKEY = 'mes-brick-builder:build';
 	var S = { part: 'b2x4', color: 0, rot: 0, tool: 'build', cat: 'brick', size: 32, bcol: 3, shadow: true, ghost: true, studs: true, stress: false, anchored: true, grip: 'normal', lw: 200, tab: 'test' };
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); for (var k in sv) if (k in S || /^c[a-z]+$/.test(k) || k === 'btab') S[k] = sv[k]; } catch (e) {}
 	if (!M.BY[S.part]) S.part = 'b2x4';
 	function saveS() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -602,7 +602,16 @@
 		['test', 'steps', 'list', 'set', 'crash'].forEach(function (x) { $('bb-tp-' + x).hidden = x !== t; });
 		if (t !== 'steps' && stepN != null) { if (playT) play(); setStep(null); }
 		if (t === 'crash') { wantCrash = true; if (crash && !crash.active()) crash.enter(); }
-		else { wantCrash = false; if (crash && crash.active()) crash.exit(); }
+		else { S.btab = t; saveS(); wantCrash = false; if (crash && crash.active()) crash.exit(); }
+	}
+	// the two big modes: build with bricks, or smash what you built
+	function mode(m) {
+		var sm = m === 'smash';
+		root.classList.toggle('bb-smash', sm);
+		Array.prototype.forEach.call(root.querySelectorAll('.bb-mb'), function (b) { b.setAttribute('aria-pressed', (b.dataset.mode === 'smash') === sm ? 'true' : 'false'); });
+		if (sm) { if (stepN != null) { if (playT) play(); setStep(null); } tab('crash'); }
+		else tab(S.btab && S.btab !== 'crash' && S.btab !== 'steps' ? S.btab : 'test');
+		if (sm && window.innerWidth < 700) $('bb-view').scrollIntoView({ block: 'nearest' });
 	}
 	function syncControls() {
 		$('bb-stress').checked = S.stress; $('bb-anch').checked = S.anchored; $('bb-grip').value = S.grip; $('bb-lw').value = String(S.lw);
@@ -611,10 +620,12 @@
 	}
 	function wire() {
 		root.querySelector('.bb-bar').addEventListener('click', function (e) {
-			var b = e.target.closest('[data-act],[data-tool]'); if (!b) return;
+			var b = e.target.closest('[data-act],[data-tool],[data-mode]'); if (!b) return;
+			if (b.dataset.mode) return mode(b.dataset.mode);
 			if (b.dataset.tool) return setTool(b.dataset.tool);
 			act(b.dataset.act);
 		});
+		$('bb-sback').addEventListener('click', function () { mode('build'); });
 		$('bb-empty').addEventListener('click', function (e) { if (e.target.closest('[data-act=examples]')) examplesDlg(); });
 		root.querySelector('.bb-vtools').addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (b && T) setView(b.dataset.view); });
 		root.querySelector('.bb-tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) tab(b.dataset.tab); });
@@ -655,6 +666,7 @@
 			if (ctrl || e.altKey) return;
 			if (k === 'Escape' && root.classList.contains('bb-fill') && !document.fullscreenElement) { fill(false); return; }
 			if (crash && crash.active() && (k === ' ' || k === 'g')) { e.preventDefault(); crash.go(); return; }
+			if (root.classList.contains('bb-smash')) { if (k === 'b' || k === 'Escape' && !root.classList.contains('bb-fill')) { e.preventDefault(); mode('build'); } else if (k === 'f') fill(); else if (k === 'F') full(); return; }
 			if (S.tab === 'steps' && stepN != null && (k === 'ArrowRight' || k === 'ArrowLeft')) { e.preventDefault(); setStep(stepN + (k === 'ArrowRight' ? 1 : -1)); return; }
 			var map = { r: function () { act('rotate'); }, R: function () { act('rotate'); }, b: function () { setTool('build'); }, p: function () { setTool('paint'); }, x: function () { setTool('remove'); }, i: function () { setTool('pick'); }, w: function () { setTool('load'); },
 				f: function () { fill(); }, F: function () { full(); }, '?': help, '[': function () { S.color = (S.color + M.COLORS.length - 1) % M.COLORS.length; saveS(); markPalette(); updateGhostMat(); }, ']': function () { S.color = (S.color + 1) % M.COLORS.length; saveS(); markPalette(); updateGhostMat(); },
@@ -671,13 +683,13 @@
 		else if (a === 'undo') undo(); else if (a === 'redo') redo();
 		else if (a === 'rotate') { S.rot = (S.rot + 1) & 3; saveS(); if (ghost && ghost.visible && hover) { var h = hover; placeMesh(ghost, { t: S.part, x: h.x, y: h.y, z: h.z, r: S.rot }); dirty = true; } toast('Turned: ' + ['0°', '90°', '180°', '270°'][S.rot], 900); }
 		else if (a === 'shot') shot(); else if (a === 'stl') stl();
-		else if (a === 'crash') { tab('crash'); if (window.innerWidth < 1100) $('bb-tp-crash').scrollIntoView({ block: 'nearest' }); }
+		else if (a === 'crash') mode('smash');
 		else if (a === 'fill') fill(); else if (a === 'full') full(); else if (a === 'help') help();
 	}
 
 	// ---------- start ----------
 	function start() {
-		buildPalette(); wire(); syncControls(); setTool(S.tool); if (root.dataset.start === 'crash') S.tab = 'crash'; tab(S.tab === 'steps' ? 'test' : S.tab);
+		buildPalette(); wire(); syncControls(); setTool(S.tool); mode(root.dataset.start === 'crash' ? 'smash' : 'build');
 		if (!(root.requestFullscreen || root.webkitRequestFullscreen)) $('bb-fsbtn').hidden = true;
 		var h = /#b=([A-Za-z0-9_-]+)/.exec(location.hash), saved = null;
 		try { saved = JSON.parse(localStorage.getItem(BKEY) || 'null'); } catch (e) {}
