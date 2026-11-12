@@ -1501,7 +1501,7 @@ APPS = {
                 tag="Play chess in 2D or 3D, against anyone.", accent="#7a4a1e", dark="#5a3514", tint="#f5ead9",
                 desc="Play chess free against the computer at four levels, a friend on the same device, or someone online as a guest or on the Hive blockchain (live or correspondence), on a 2D board or a 3D board in a chess club, tournament hall, park or space. Chess960, King of the Hill and Three-check, clocks, hints, analysis, PGN and FEN.",
                 meta_desc="Free chess: play the computer at four levels, a friend, or online as a guest or on Hive. 2D or 3D boards, Chess960, clocks, hints, PGN and FEN.",
-                js_v="1", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
+                js_v="2", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "connect-four": dict(title="MES Connect Four", page_title="Connect Four: Play Free Against the Computer, a Friend or Online",
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",

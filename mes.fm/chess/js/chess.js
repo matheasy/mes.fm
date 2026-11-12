@@ -1055,7 +1055,7 @@
 	var M = 18;    // squares per metre (a 5.5 cm square): room furniture is sized in metres * M
 
 	var ROOMS = [{ id: "club", name: "Chess club" }, { id: "tournament", name: "Tournament hall" }, { id: "park", name: "Park table" },
-		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "dark", name: "Plain (fastest)" }];
+		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
 	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
@@ -1319,6 +1319,7 @@
 		var th, ph, d = fit * z;
 		if (mode === "top") { th = this.flip ? -Math.PI / 2 : Math.PI / 2; ph = 0.001; d = fit * 0.98 * z; }
 		else if (mode === "side") { th = 0; ph = 0.95; d = fit * 1.05 * z; }
+		else if (mode === "eye") { th = this.flip ? -Math.PI / 2 : Math.PI / 2; ph = 1.13; d = fit * 0.78 * z; }   // low, like sitting at the board: shows the venue
 		else { var black = mode === "black" || (mode === "auto" && this.flip); th = black ? -Math.PI / 2 : Math.PI / 2; ph = 0.86; d = fit * 0.92 * z; }
 		th += this.free.yaw; ph = Math.max(0.001, Math.min(1.45, ph + this.free.pitch));
 		out.eye.set(d * Math.sin(ph) * Math.cos(th), d * Math.cos(ph), d * Math.sin(ph) * Math.sin(th));
@@ -1424,6 +1425,38 @@
 		var sh = cyl(g, 1.5, 3, 3, std("#f3e5c0", 0.9, { emissive: glow ? "#ffcf80" : "#000000", emissiveIntensity: 0.6, side: THREE.DoubleSide }), x, F + H, z, 24); sh.material.side = THREE.DoubleSide;
 	}
 
+	/* AI-painted backdrops (mes.fm/chess/img/bg-<room>.jpg): two big pictures, one behind each player's side, so the far view is a real scene.
+	   v0..v1 = the vertical slice of the picture to use (0 = bottom). Loaded once and kept; nothing breaks if a file is missing. */
+	var bgCache = {};
+	/** a copy of the picture (the v0..v1 slice) whose left / right (and top) edges fade out, so it blends into the sky behind it */
+	function faded(t, o) {
+		var img = t.image, W = img.width, Hh = img.height, y0 = Math.round(Hh * (1 - (o.v1 || 1))), h = Math.round(Hh * ((o.v1 || 1) - (o.v0 || 0)));
+		var c = document.createElement("canvas"); c.width = W; c.height = h;
+		var x = c.getContext("2d"); x.drawImage(img, 0, y0, W, h, 0, 0, W, h);
+		x.globalCompositeOperation = "destination-in";
+		var gx = x.createLinearGradient(0, 0, W, 0); gx.addColorStop(0, "rgba(0,0,0,0)"); gx.addColorStop(0.18, "#000"); gx.addColorStop(0.82, "#000"); gx.addColorStop(1, "rgba(0,0,0,0)");
+		x.fillStyle = gx; x.fillRect(0, 0, W, h);
+		if (o.fadeTop) { var gy = x.createLinearGradient(0, 0, 0, h); gy.addColorStop(0, "rgba(0,0,0,0)"); gy.addColorStop(0.2, "#000"); gy.addColorStop(1, "#000"); x.fillStyle = gy; x.fillRect(0, 0, W, h); }
+		var ct = new THREE.CanvasTexture(c); ct.colorSpace = THREE.SRGBColorSpace; ct.anisotropy = 4;
+		return ct;
+	}
+	function backdrop(view, g, file, o) {
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + file;
+		function make(t) {
+			if (view.room !== g) return;
+			[-1, 1].forEach(function (side) {
+				var tt = o.fade ? faded(t, o) : t.clone(); tt.needsUpdate = true;
+				if (!o.fade) { tt.offset.set(0, o.v0 || 0); tt.repeat.set(1, (o.v1 || 1) - (o.v0 || 0)); }
+				var m = new THREE.Mesh(new THREE.PlaneGeometry(o.w, o.h), new THREE.MeshBasicMaterial({ map: tt, fog: false, color: o.tint || "#ffffff", transparent: !!o.fade, depthWrite: !o.fade }));
+				m.position.set(0, o.y, side * o.d); m.rotation.y = side < 0 ? 0 : Math.PI;
+				g.add(m);
+			});
+			view.render();
+		}
+		if (bgCache[url]) return make(bgCache[url]);
+		new THREE.TextureLoader().load(url, function (t) { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; bgCache[url] = t; make(t); }, undefined, function () {});
+	}
+
 	View.prototype.setRoom = function (name) {
 		if (!ROOMS.some(function (r) { return r.id === name; })) name = "club";
 		this.roomName = name;
@@ -1478,7 +1511,8 @@
 			var clock = box(g, 1.6, 2.2, 4.2, std("#202020", 0.5), 9.5, F + 14.6, 0, true);
 			var ct = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.4), new THREE.MeshBasicMaterial({ map: signTex("05:00  04:58", "#7CFF8A", "#0a0a0a", 256, 80, "700 34px ui-monospace,monospace") })); ct.position.set(10.35, F + 14.8, 0); ct.rotation.y = Math.PI / 2; g.add(ct);
 			var scr = new THREE.Mesh(new THREE.PlaneGeometry(80, 24), new THREE.MeshBasicMaterial({ map: signTex("MES CHESS OPEN · ROUND 5", "#ffffff", "#1d3557", 1024, 300) }));
-			scr.position.set(0, F + 60, -138); g.add(scr);
+			scr.position.set(0, F + 104, -137); scr.scale.set(0.6, 0.6, 1); g.add(scr);
+			backdrop(this, g, "bg-tournament.jpg", { w: 280, h: 157, d: 139.5, y: F + 78.5, tint: "#d8d8d8" });
 			// spectators behind a rope (instanced, they sway a little)
 			var n = 140, bodyG = new THREE.CylinderGeometry(1.6, 2.2, 9, 8), headG = new THREE.SphereGeometry(1.6, 10, 8);
 			var bodies = new THREE.InstancedMesh(bodyG, std("#ffffff", 0.9), n), heads = new THREE.InstancedMesh(headG, std("#ffffff", 0.8), n), spots = [], mt = new THREE.Matrix4(), cc = new THREE.Color();
@@ -1520,6 +1554,7 @@
 			var post = std("#1f2a22", 0.5, { metalness: 0.4 });
 			cyl(g, 0.5, 0.8, 55, post, -26, F + 27.5, -24, 10);
 			var lampHead = new THREE.Mesh(new THREE.SphereGeometry(2.4, 14, 10), new THREE.MeshBasicMaterial({ color: "#fff6d8" })); lampHead.position.set(-26, F + 57, -24); g.add(lampHead);
+			backdrop(this, g, "bg-park.jpg", { w: 900, h: 503, d: 400, y: 10 - 503 / 3 + 503 / 2, fade: true });
 			this.key.intensity = 2.3; this.key.color.set("#fff8ea"); this.key.position.set(-9, 18, 4);
 		} else if (name === "home") {
 			scene.background = new THREE.Color("#2b2620"); scene.fog = null;
@@ -1537,9 +1572,69 @@
 				c.fillStyle = "#4b7a3a"; c.fillRect(0, h - 30, w, 30); c.strokeStyle = "#f4efe6"; c.lineWidth = 8; c.strokeRect(4, 4, w - 8, h - 8); c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2, h); c.moveTo(0, h / 2); c.lineTo(w, h / 2); c.stroke();
 			}) }));
 			win.position.set(69.5, F + 28, 0); win.rotation.y = -Math.PI / 2; g.add(win);
+			// the painted garden view (AI art) replaces the drawn sky once it has loaded; a real frame goes over it
+			new THREE.TextureLoader().load((window.MES_CHESS_IMG || "/chess/img/") + "bg-home.jpg", function (t) {
+				if (self.room !== g) return;
+				t.colorSpace = THREE.SRGBColorSpace; t.offset.set(0, 0.06); t.repeat.set(1, 0.88);
+				win.material.map = t; win.material.needsUpdate = true; self.render();
+			}, undefined, function () {});
+			var wf = std("#f4efe6", 0.6);
+			box(g, 0.8, 1.2, 31, wf, 69.2, F + 38, 0); box(g, 0.8, 1.2, 31, wf, 69.2, F + 18, 0); box(g, 0.8, 21, 1.2, wf, 69.2, F + 28, -15); box(g, 0.8, 21, 1.2, wf, 69.2, F + 28, 15);
+			box(g, 0.6, 20, 0.7, wf, 69.2, F + 28, 0); box(g, 0.6, 0.7, 30, wf, 69.2, F + 28, 0);
 			bookshelf(g, -69, F, 10, Math.PI / 2, 21); plant(g, 55, F, -48); lamp(g, -50, F, -45, 32, true);
 			var pl2 = light(new THREE.PointLight("#ffe0b0", 120, 90, 1.5)); pl2.position.set(-50, F + 34, -42);
 			this.key.position.set(12, 16, 3); this.key.intensity = 1.6;
+		} else if (name === "screens") {
+			// walls of video-call screens with fans watching, like the 2020 "virtual crowd" broadcasts; now and then a few of them cheer
+			scene.background = new THREE.Color("#05070d"); scene.fog = new THREE.Fog("#05070d", 120, 260);
+			F = table(g, std("#1c1f26", 0.6), std("#111318", 0.7), 18, 16, 13.5);
+			var X5 = 72, Z5 = 62, H5 = 54;
+			walls(g, X5, Z5, H5, F, std("#0a0d16", 0.9), std("#121212", 0.5));
+			var skins = ["#f1c27d", "#c68642", "#8d5524", "#ffdbac", "#e0ac69", "#5c3a21"], hairs = ["#2b1b10", "#000000", "#7a4b1c", "#d9b25a", "#b3471e", "#888888"];
+			var bgs = ["#3f51b5", "#00897b", "#6d4c41", "#455a64", "#8e24aa", "#c0ca33", "#1e88e5", "#5d4037", "#37474f", "#ad1457", "#2e7d32", "#ef6c00"];
+			var shirts = ["#e53935", "#1e88e5", "#fdd835", "#43a047", "#ffffff", "#8e24aa", "#212121", "#fb8c00", "#00acc1"];
+			var names = ["Sam", "Alex", "Jo", "Kim", "Lee", "Pat", "Max", "Ana", "Tom", "Mia", "Raj", "Zoe", "Ben", "Ivy", "Leo", "Ava"];
+			var face = function (k, cheer) {
+				var rr = rng(k * 7919 + 17), bg = bgs[k % bgs.length], skin = skins[(rr() * skins.length) | 0], hair = hairs[(rr() * hairs.length) | 0], shirt = shirts[(rr() * shirts.length) | 0], nm = names[k % names.length];
+				var t2 = tex(256, 160, function (c, w, h) {
+					var gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, bg); gr.addColorStop(1, "#111"); c.fillStyle = gr; c.fillRect(0, 0, w, h);
+					c.fillStyle = "rgba(255,255,255,0.12)"; c.fillRect(20, 20, 60, 40); c.fillRect(180, 30, 50, 70);
+					c.fillStyle = shirt; c.beginPath(); c.ellipse(128, 168, 70, 50, 0, 0, 7); c.fill();
+					if (cheer) { c.strokeStyle = skin; c.lineWidth = 16; c.lineCap = "round"; c.beginPath(); c.moveTo(70, 130); c.lineTo(45, 40); c.moveTo(186, 130); c.lineTo(211, 40); c.stroke(); }
+					c.fillStyle = skin; c.beginPath(); c.arc(128, 82, 36, 0, 7); c.fill();
+					c.fillStyle = hair; c.beginPath(); c.arc(128, 72, 37, Math.PI, 0); c.fill();
+					c.fillStyle = "#111"; c.beginPath(); c.arc(116, 82, 4, 0, 7); c.arc(140, 82, 4, 0, 7); c.fill();
+					c.strokeStyle = "#5a1a1a"; c.lineWidth = 3; c.beginPath();
+					if (cheer) { c.fillStyle = "#5a1a1a"; c.ellipse(128, 100, 9, 8, 0, 0, 7); c.fill(); } else { c.arc(128, 94, 10, 0.2, Math.PI - 0.2); c.stroke(); }
+					c.fillStyle = "rgba(0,0,0,0.55)"; c.fillRect(6, h - 26, 70, 20); c.fillStyle = "#fff"; c.font = "600 14px system-ui,sans-serif"; c.textBaseline = "middle"; c.fillText(nm, 12, h - 16);
+					c.strokeStyle = cheer ? "#4caf50" : "rgba(0,0,0,0)"; c.lineWidth = 6; c.strokeRect(3, 3, w - 6, h - 6);
+				});
+				t2.userData.keep = false; return t2;
+			};
+			var NF = 16, calm = [], loud = [], scr = [], sw = 11, sh = 7, gap = 1.1, i5;
+			for (i5 = 0; i5 < NF; i5++) { calm.push(face(i5, false)); loud.push(face(i5, true)); }
+			var wallOf = function (len, place) {
+				var cols = Math.floor((len - 6) / (sw + gap)), rows = 6;
+				for (var r2 = 0; r2 < rows; r2++) for (var c2 = 0; c2 < cols; c2++) {
+					var u = (c2 - (cols - 1) / 2) * (sw + gap), y = F + 8 + r2 * (sh + gap), k = (r() * NF) | 0;
+					var m = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshBasicMaterial({ map: calm[k] }));
+					place(m, u, y); g.add(m); scr.push({ m: m, k: k, t: 0 });
+				}
+			};
+			wallOf(2 * X5, function (m, u, y) { m.position.set(u, y, -Z5 + 0.3); });
+			wallOf(2 * X5, function (m, u, y) { m.position.set(u, y, Z5 - 0.3); m.rotation.y = Math.PI; });
+			wallOf(2 * Z5, function (m, u, y) { m.position.set(-X5 + 0.3, y, u); m.rotation.y = Math.PI / 2; });
+			wallOf(2 * Z5, function (m, u, y) { m.position.set(X5 - 0.3, y, u); m.rotation.y = -Math.PI / 2; });
+			var lastT = 0;
+			anims.push(function (t) {
+				if (t - lastT < 0.6) return; lastT = t;
+				scr.forEach(function (o) {
+					if (o.t && t > o.t) { o.m.material.map = calm[o.k]; o.t = 0; }
+					else if (!o.t && Math.random() < 0.035) { o.m.material.map = loud[o.k]; o.t = t + 1 + Math.random() * 2; }
+				});
+			});
+			var pl5 = light(new THREE.PointLight("#c9d8ff", 140, 120, 1.4)); pl5.position.set(0, F + 40, 0);
+			this.key.intensity = 1.4; this.key.color.set("#eef3ff");
 		} else if (name === "space") {
 			scene.background = new THREE.Color("#02030a"); scene.fog = null;
 			var starG = new THREE.BufferGeometry(), pts = [];
@@ -1547,8 +1642,9 @@
 			starG.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
 			var stars = new THREE.Points(starG, new THREE.PointsMaterial({ color: "#ffffff", size: 1.4, sizeAttenuation: false })); g.add(stars);
 			var planet = new THREE.Mesh(new THREE.SphereGeometry(60, 48, 32), std("#ffffff", 0.9, { map: tex(512, 256, function (c, w, h) { for (var y = 0; y < h; y += 4) { var v = Math.sin(y * 0.09) * 30 + Math.random() * 15; c.fillStyle = "rgb(" + (170 + v) + "," + (110 + v * 0.6) + "," + (70 + v * 0.3) + ")"; c.fillRect(0, y, w, 4); } }) }));
-			planet.position.set(-140, -40, -220); g.add(planet);
-			var ringM = new THREE.Mesh(new THREE.RingGeometry(80, 120, 64), new THREE.MeshBasicMaterial({ color: "#d9c39a", transparent: true, opacity: 0.35, side: THREE.DoubleSide })); ringM.position.copy(planet.position); ringM.rotation.x = 1.2; ringM.rotation.y = 0.3; g.add(ringM);
+			planet.position.set(-140, -40, -220);
+			backdrop(this, g, "bg-space.jpg", { w: 1100, h: 461, d: 430, y: 60, v0: 0.25, v1: 1, fade: true, fadeTop: true });
+			var ringM = new THREE.Mesh(new THREE.RingGeometry(80, 120, 64), new THREE.MeshBasicMaterial({ color: "#d9c39a", transparent: true, opacity: 0.35, side: THREE.DoubleSide })); ringM.position.copy(planet.position); ringM.rotation.x = 1.2; ringM.rotation.y = 0.3;
 			var edge = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.06, 9.5), new THREE.MeshBasicMaterial({ color: "#3fa9ff", transparent: true, opacity: 0.7 })); edge.position.y = -0.36; g.add(edge);
 			var glow = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshBasicMaterial({ map: tex(128, 128, function (c, w, h) { var gr = c.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w / 2); gr.addColorStop(0, "rgba(63,169,255,0.5)"); gr.addColorStop(1, "rgba(63,169,255,0)"); c.fillStyle = gr; c.fillRect(0, 0, w, h); }), transparent: true, depthWrite: false }));
 			glow.rotation.x = -Math.PI / 2; glow.position.y = -0.5; g.add(glow);

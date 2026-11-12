@@ -907,7 +907,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<span class="tu-seg ch-seg" id="ch-dim" role="group" aria-label="2D or 3D"><button type="button" data-v="2d" aria-pressed="true">2D</button><button type="button" data-v="3d" aria-pressed="false">3D</button></span>
 					<label class="ch-3donly">Room <select id="ch-room" class="tu-select ch-sel"></select></label>
 					<label class="ch-3donly">Pieces <select id="ch-set" class="tu-select ch-sel"></select></label>
-					<label class="ch-3donly">Camera <select id="ch-cam" class="tu-select ch-sel"><option value="auto">My side</option><option value="top">From above</option><option value="side">From the side</option><option value="white">White's side</option><option value="black">Black's side</option><option value="orbit">Free (drag)</option></select></label>
+					<label class="ch-3donly">Camera <select id="ch-cam" class="tu-select ch-sel"><option value="auto">My side</option><option value="eye">Player's eye (see the room)</option><option value="top">From above</option><option value="side">From the side</option><option value="white">White's side</option><option value="black">Black's side</option><option value="orbit">Free (drag)</option></select></label>
 					<label class="ch-2donly">Board <select id="ch-theme" class="tu-select ch-sel"><option value="green">Green</option><option value="wood">Wood</option><option value="blue">Blue</option><option value="grey">Grey</option><option value="purple">Purple</option></select></label>
 					<label>Colours <select id="ch-pcol" class="tu-select ch-sel" title="Piece colours: pick a pair that is easy for you to see"><option value="auto">White and black</option><option value="cream">Cream and brown</option><option value="red">White and red</option><option value="green">White and green</option><option value="blueorange">Orange and blue (colour-blind friendly)</option><option value="yellowpurple">Yellow and purple</option><option value="goldsilver">Gold and silver</option></select></label>
 					<button type="button" class="ch-vb ch-3donly" id="ch-view3" title="Back to the normal camera (or double-click the board)">⟲ Reset view</button>
@@ -1094,7 +1094,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=1" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
