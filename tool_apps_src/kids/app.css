@@ -195,6 +195,8 @@
 	#kd .kd-te {font-size:3em;line-height:1.1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
 	#kd .kd-te--abc {font-family:var(--kd-font);font-weight:900;letter-spacing:.08em;color:var(--kd-abc);}
 	#kd .kd-te svg {display:block;width:3em;height:1em;}
+	#kd .kd-te--ph {display:flex;gap:.12em;font-size:3em;}
+	#kd .kd-te--ph img {width:1.05em;height:1.05em;border-radius:.18em;object-fit:cover;box-shadow:0 .03em .1em rgba(0,0,0,.3);}
 	#kd .kd-t1 {background:var(--kd-c0);} #kd .kd-t2 {background:var(--kd-c2);} #kd .kd-t3 {background:var(--kd-c1);} #kd .kd-t4 {background:var(--kd-c3);} #kd .kd-t5 {background:var(--kd-c4);}
 	#kd .kd-hubinfo {margin-top:1.2em;border:1px solid var(--kd-line);border-radius:1em;padding:.4em 1.1em .6em;background:var(--kd-card);}
 	#kd .kd-hubinfo h2 {font-size:1.25em;margin:.4em 0;}

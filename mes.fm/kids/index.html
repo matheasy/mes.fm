@@ -502,6 +502,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-te {font-size:3em;line-height:1.1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
 	#kd .kd-te--abc {font-family:var(--kd-font);font-weight:900;letter-spacing:.08em;color:var(--kd-abc);}
 	#kd .kd-te svg {display:block;width:3em;height:1em;}
+	#kd .kd-te--ph {display:flex;gap:.12em;font-size:3em;}
+	#kd .kd-te--ph img {width:1.05em;height:1.05em;border-radius:.18em;object-fit:cover;box-shadow:0 .03em .1em rgba(0,0,0,.3);}
 	#kd .kd-t1 {background:var(--kd-c0);} #kd .kd-t2 {background:var(--kd-c2);} #kd .kd-t3 {background:var(--kd-c1);} #kd .kd-t4 {background:var(--kd-c3);} #kd .kd-t5 {background:var(--kd-c4);}
 	#kd .kd-hubinfo {margin-top:1.2em;border:1px solid var(--kd-line);border-radius:1em;padding:.4em 1.1em .6em;background:var(--kd-card);}
 	#kd .kd-hubinfo h2 {font-size:1.25em;margin:.4em 0;}
@@ -718,10 +720,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">MES Kids: Free Learning Games for Toddlers (No Ads)</h1>                                        <p class="page-description">Free talking flashcards for toddlers and young kids: animals with real animal sounds, ABC, shapes and colours, numbers and counting, with a gentle What's this? game. Big bright cards, kid-proof full screen, no ads, nothing uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu kd" id="kd" data-mode="hub" data-page-modes="3">
 		<div class="kd-hub">
-			<a class="kd-tile kd-t1" href="/kids-flashcards"><span class="kd-te" aria-hidden="true">🐶🍎🚗</span><b>Flashcards</b><span>Animals, colours, shapes, food, things and more, shuffled</span></a>
-			<a class="kd-tile kd-t2" href="/kids-animal-sounds"><span class="kd-te" aria-hidden="true">🐮🐷🦁</span><b>Animal Sounds</b><span>Real recordings of 30 animals</span></a>
+			<a class="kd-tile kd-t1" href="/kids-flashcards"><span class="kd-te kd-te--ph" aria-hidden="true"><img src="/kids/img/animals/dog.jpg?v=1" alt="" loading="lazy" width="96" height="96"><img src="/kids/img/food/apple.jpg?v=1" alt="" loading="lazy" width="96" height="96"><img src="/kids/img/vehicles/car.jpg?v=1" alt="" loading="lazy" width="96" height="96"></span><b>Flashcards</b><span>Animals, colours, shapes, food, things and more, shuffled</span></a>
+			<a class="kd-tile kd-t2" href="/kids-animal-sounds"><span class="kd-te kd-te--ph" aria-hidden="true"><img src="/kids/img/animals/cow.jpg?v=1" alt="" loading="lazy" width="96" height="96"><img src="/kids/img/animals/pig.jpg?v=1" alt="" loading="lazy" width="96" height="96"><img src="/kids/img/animals/lion.jpg?v=1" alt="" loading="lazy" width="96" height="96"></span><b>Animal Sounds</b><span>Real recordings of 30 animals</span></a>
 			<a class="kd-tile kd-t3" href="/kids-abc"><span class="kd-te kd-te--abc" aria-hidden="true">A B C</span><b>ABC</b><span>A is for apple, B is for ball...</span></a>
-			<a class="kd-tile kd-t4" href="/kids-shapes"><span class="kd-te" aria-hidden="true"><svg viewBox="0 0 120 40" width="120" height="40"><circle cx="20" cy="20" r="16" fill="#e53935"/><rect x="45" y="5" width="30" height="30" rx="3" fill="#1e88e5"/><polygon points="100,4 117,36 83,36" fill="#fdd835"/></svg></span><b>Shapes &amp; Colours</b><span>Circle, square, star, red, blue, green...</span></a>
+			<a class="kd-tile kd-t4" href="/kids-shapes"><span class="kd-te kd-te--ph" aria-hidden="true"><img src="/kids/img/shapes/circle.jpg?v=1" alt="" loading="lazy" width="96" height="96"><img src="/kids/img/shapes/square.jpg?v=1" alt="" loading="lazy" width="96" height="96"><img src="/kids/img/shapes/triangle.jpg?v=1" alt="" loading="lazy" width="96" height="96"></span><b>Shapes &amp; Colours</b><span>Circle, square, star, red, blue, green...</span></a>
 			<a class="kd-tile kd-t5" href="/kids-numbers"><span class="kd-te kd-te--abc" aria-hidden="true">1 2 3</span><b>Numbers</b><span>Count from 1 to 10 (or 20) with pictures</span></a>
 			<a class="kd-tile kd-t6" href="/kids-math"><span class="kd-te kd-te--abc" aria-hidden="true">1 + 2</span><b>Math</b><span>Count, more or less, add, take away and patterns, for ages 2 to 7</span></a>
 		</div>
@@ -732,6 +734,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><b>"What's this?"</b> The page says a word and your child picks the right picture from 2, 3 or 4. Wrong taps just say what that picture is and try again: there is no losing.</li>
 				<li><b>Settings are hidden from little fingers:</b> hold the ⚙️ Grown-ups button for 2 seconds to choose categories, letter case, show or hide the word, the voice, speed and pitch.</li>
 				<li><b>Sound on or off:</b> the 🔊 Sound on / 🔇 Sound off button (or the grown-ups' settings) turns every voice and animal recording off; the words and pictures still show. It is hidden in Fill window and Full screen, so little fingers can't change it.</li>
+				<li><b>Real photos or cartoon pictures:</b> every card shows a real photo (shapes as wooden toy shapes, colours as paint splashes); the 📷 button switches to the cartoon emoji pictures instead.</li>
 				<li><b>Kid-proof screen:</b> Fill window or Full screen hides everything else; to leave, hold ✕ for 2 seconds.</li>
 				<li><b>No ads, no sign-up, nothing uploaded.</b> Settings stay in this browser. The voice is your device's own speech voice.</li>
 			</ul>
@@ -802,7 +805,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/kids/js/kids.js?v=9" defer></script>
+	<script src="/kids/js/kids.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
