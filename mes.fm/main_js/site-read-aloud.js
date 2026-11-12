@@ -1592,7 +1592,21 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.tb{position:relative;height:var(--tbh,150px);min-height:56px;overflow:auto;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
     '.tgr{height:14px;cursor:ns-resize;touch-action:none;display:flex;align-items:center;justify-content:center;background:#25272b;border-top:1px solid #3a3c41}.tgr::before{content:"";width:44px;height:4px;border-radius:2px;background:#6a7078}.tgr:hover::before,.tgr:focus-visible::before,.tgr.on::before{background:#cfd3d8}.tgr:focus-visible{outline:none;background:#2f3237}.tpe.on{background:#1a4d6b}.tp.on{display:flex;flex-direction:column}.p.tgu .tgr{order:-1;border-top:0;border-bottom:1px solid #3a3c41}' +
     '.rap{max-width:200px;min-width:120px}.p.min .rap{display:none}' + (window.MESRAPick ? MESRAPick.css : '') +
-    '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}';
+    '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}' +
+    // vertical player: the controls in a column at the side of the page, the text box beside them (left of the controls when docked right)
+    '.ori.on{background:#1a4d6b}.p.pip .ori{display:none}' +
+    '.p.vert{display:grid;grid-template-columns:auto;grid-template-rows:auto minmax(0,1fr);column-gap:8px;width:auto;max-height:calc((100vh - 24px) / var(--z,1));padding:8px}' +
+    '.p.vert:not(.moved){left:auto;right:12px;top:50%;bottom:auto;transform:translateY(-50%)}.p.vert.dl:not(.moved){right:auto;left:12px}' +
+    '.p.vert .bar,.p.vert .row{grid-column:1}.p.vert .bar{grid-row:1;margin:0 0 4px}' +
+    '.p.vert .row{grid-row:2;display:grid;grid-template-columns:repeat(3,34px);grid-auto-flow:row dense;gap:4px;align-content:start;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin}' +
+    '.p.vert .row>button{min-width:0;width:34px;padding:0}.p.vert .row>.grip,.p.vert .row>select,.p.vert .row>.rap,.p.vert .row>.st,.p.vert .row>.lay,.p.vert .row>.rs,.p.vert .row>.dml{grid-column:1 / -1;width:auto;max-width:none;min-width:0;margin:0}' +
+    '.p.vert .row>.volr{grid-column:span 2;width:100%;margin:0}.p.vert .row>.st{text-align:center;font-size:11px;min-height:14px}.p.vert .row>.dml{justify-content:center}.p.vert .row>.rate{font-size:12px}.p.vert .row>.grip{height:22px;letter-spacing:0}.p.vert .row>.lay,.p.vert .row>.rs{font-size:11px;height:auto;min-height:28px;padding:3px 4px;white-space:normal}' +
+    '.p.vert .tpe{display:none}.p.vert .btip{top:20px;bottom:auto;transform:none;left:0!important;max-width:240px}.p.vert:not(.vl) .btip{left:auto!important;right:0}' +
+    '.p.vert.vt{grid-template-columns:auto auto;height:calc((100vh - 24px) / var(--z,1))}' +
+    '.p.vert.vt .tp{grid-column:1;grid-row:1 / span 2;margin:0;width:var(--tbw,380px);min-height:0;position:relative}' +
+    '.p.vert.vt .bar,.p.vert.vt .row{grid-column:2}.p.vert.vt.vl .tp{grid-column:2}.p.vert.vt.vl .bar,.p.vert.vt.vl .row{grid-column:1}' +
+    '.p.vert .tb{flex:1;height:auto;padding-left:20px}.p.vert .th{padding-left:16px}.p.vert.vl .tb{padding-left:12px;padding-right:20px}.p.vert.vl .th{padding-left:6px;padding-right:16px}' +
+    '.p.vert .tgr,.p.vert.tgu .tgr{position:absolute;left:0;top:0;bottom:0;width:12px;height:auto;cursor:ew-resize;border:0;background:transparent;z-index:2}.p.vert .tgr::before{width:4px;height:44px}.p.vert.vl .tgr{left:auto;right:0}.p.vert .tgr:hover,.p.vert .tgr.on,.p.vert .tgr:focus-visible{background:rgba(255,255,255,.07)}';
 
   function buildUi() {
     if (ui) { ui.host.remove(); ui = null; }
@@ -1608,7 +1622,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       '<button class="tsm" title="Smaller text on the page" aria-label="Smaller text">A&minus;</button><button class="tsp" title="Larger text on the page" aria-label="Larger text">A+</button>' +
       '<button class="tpb" title="Show / hide the text being read in a box above the player" aria-label="Show or hide the text box"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M4 6h16M4 11h16M4 16h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button><button class="vol" title="Mute / unmute"></button><input class="volr" type="range" min="0" max="1" step="0.05" title="Volume" aria-label="Volume">' +
       '<select class="voice" title="Voice"></select><select class="setup" title="Setup"></select>' +
-      '<span class="st" aria-live="polite"></span><button class="lay" hidden></button><button class="rs" hidden title="Stop and read the text you just highlighted on the page">Read selection</button><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button><a class="dml" href="https://mes.fm/dark-mode" target="_blank" rel="noopener" title="Like the dark page? MES Dark Mode (free extension) keeps pages dark even after you close this player">Dark Mode<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div>';
+      '<span class="st" aria-live="polite"></span><button class="lay" hidden></button><button class="rs" hidden title="Stop and read the text you just highlighted on the page">Read selection</button><button class="ori" aria-pressed="false"></button><button class="hl" title="Turn highlighting on / off (H)"><i>ab</i></button><button class="dk" title="Dark / light page: inverts the page colours (pictures and video keep theirs). Remembered for this site." aria-label="Dark or light page">&#9680;</button><button class="pip-b" title="Pop out into a floating window you can move anywhere, even outside the browser" aria-label="Pop out"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="11" width="8" height="6" fill="currentColor"/></svg></button><button class="gear" title="Settings">&#9881;</button><button class="mini" title="Minimise to a small bar (M)">&#9662;</button><button class="x" title="Close (Esc)">&times;</button><a class="dml" href="https://mes.fm/dark-mode" target="_blank" rel="noopener" title="Like the dark page? MES Dark Mode (free extension) keeps pages dark even after you close this player">Dark Mode<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div></div>';
     var q = function (c) { return sh.querySelector(c); };
     if (window.__mesraSite) { var gearBtn = sh.querySelector('.gear'); if (gearBtn) gearBtn.style.display = 'none'; }   // the site player has no options page
     ui = { host: h, sh: sh, p: q('.p'), fill: q('.fill'), bar: q('.bar'), thumb: q('.thumb'), btip: q('.btip'), lay: q('.lay'), pl: q('.pl'), rate: q('.rate'), voice: q('.voice'), setup: q('.setup'), st: q('.st'), hl: q('.hl'), rs: q('.rs'), dk: q('.dk'), mini: q('.mini'), grip: q('.grip'), vol: q('.vol'), volr: q('.volr'), pipb: q('.pip-b'), tp: q('.tp'), tb: q('.tb'), tl: q('.tl'), tpb: q('.tpb'), wEls: null, curW: null, curS: null, tkey: 0 };
@@ -1634,6 +1648,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.tgr.addEventListener('pointerdown', function (e) {
       if (e.button > 0) return;
       tg0 = { y: e.clientY, h: ui.tb.getBoundingClientRect().height / uiZoom, up: tbUp() };
+      if (vertOn()) tg0 = { vert: true, x: e.clientX, w: ui.tp.getBoundingClientRect().width / uiZoom, left: !ui.p.classList.contains('vl'), pos: uiPos ? { x: uiPos.x, y: uiPos.y } : null };
       ui.tgr.classList.add('on');
       try { ui.tgr.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
       e.preventDefault();
@@ -1641,6 +1656,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.tgr.addEventListener('pointermove', function (e) {
       if (!tg0) return;
       if (!(e.buttons & 1)) { endTg(); return; }
+      if (tg0.vert) { tbwDrag(tg0, (e.clientX - tg0.x) / uiZoom); return; }
       // a player docked at the bottom grows upward, so dragging the grip up makes the box taller there
       var d = (e.clientY - tg0.y) / uiZoom;
       uiTbH = tbClamp(tg0.h + (tg0.up ? -d : d)); uiTbBig = false; tbApply();
@@ -1649,9 +1665,16 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.tgr.addEventListener('pointerup', endTg);
     ui.tgr.addEventListener('pointercancel', endTg);
     ui.tgr.addEventListener('lostpointercapture', endTg);
-    ui.tgr.ondblclick = function () { uiTbH = null; uiTbBig = false; tbApply(); saveUi(); };
+    ui.tgr.ondblclick = function () { if (vertOn()) { uiTbW = null; vertApply(); if (uiPos) place(uiPos, true); saveUi(); return; } uiTbH = null; uiTbBig = false; tbApply(); saveUi(); };
     ui.tgr.addEventListener('keydown', function (e) {
       var k = e.key, cur = ui.tb.getBoundingClientRect().height / uiZoom, n = null;
+      if (vertOn()) {
+        var wl = !ui.p.classList.contains('vl'), cw = ui.tp.getBoundingClientRect().width / uiZoom, nw = null, st0 = e.shiftKey ? 80 : 24;
+        if (k === 'ArrowLeft' || k === 'ArrowRight') nw = cw + ((k === 'ArrowLeft') === wl ? st0 : -st0);
+        else if (k === 'Home') nw = TBW_MIN; else if (k === 'End') nw = tbwMax();
+        if (nw == null) return;
+        e.preventDefault(); e.stopPropagation(); tbwDrag({ w: cw, left: wl, pos: uiPos ? { x: uiPos.x, y: uiPos.y } : null }, wl ? cw - nw : nw - cw); saveUi(); return;
+      }
       if (k === 'ArrowUp' || k === 'ArrowDown') n = cur + ((k === 'ArrowDown') !== tbUp() ? 1 : -1) * (e.shiftKey ? 80 : 24);
       else if (k === 'Home') n = TB_MIN; else if (k === 'End') n = tbMax();
       else if (k === 'Enter') { uiTbBig = !uiTbBig; tbApply(); saveUi(); e.preventDefault(); e.stopPropagation(); return; }
@@ -1730,6 +1753,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.volr.onchange = function () { if (st.playing) restartSoon(); };   // the voice reads the new volume from the next sentence on, so restart the current one
     ui.vol.onclick = function () { if (P.volume > 0) { lastVol = P.volume; P.volume = 0; } else P.volume = lastVol || 1; paintVol(); saveSettings(); if (st.playing) restartSoon(); };
     ui.mini.onclick = toggleMini;
+    ui.ori = q('.ori'); ui.ori.onclick = toggleVert;
     ui.grip.ondblclick = function () { place(null); };
     // drag the player anywhere by its grip or any empty part of it
     var drag = null;
@@ -1769,7 +1793,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     rz.ondblclick = function () { setZoom(1); saveUi(); };
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
-    applyZoom(); tbApply(); place(uiPos, true); ui.p.classList.toggle('min', uiMin); fillMini();
+    applyZoom(); ui.p.classList.toggle('min', uiMin); tbApply(); place(uiPos, true); fillMini();
     if (pipWin) mountPip();
   }
 
@@ -1815,7 +1839,8 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     if (!ui) return;
     var on = panelVisible();
     ui.tp.classList.toggle('on', on); ui.tpb.classList.toggle('on', on);
-    ui.tpb.title = on ? 'Hide the text box' : 'Show the text being read in a box above the player';
+    ui.tpb.title = on ? 'Hide the text box' : 'Show the text being read in a box ' + (vertOn() ? 'beside' : 'above') + ' the player';
+    vertApply(); if (uiPos) place(uiPos, true);
     if (!on) return;
     ui.tl.textContent = hasDomText() ? 'Text being read' : st.docs ? 'Text of this Google Doc (Google Docs draws its pages itself, so the words are followed here)' : 'Text being read (the page cannot highlight text inside a text box, so it is shown here)';
     var ps = ui.p.style;
@@ -1832,9 +1857,10 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   function tbMax() { return Math.max(TB_DEF, Math.round(window.innerHeight * 0.85 / uiZoom) - 90); }
   function tbClamp(h) { return Math.round(Math.max(TB_MIN, Math.min(tbMax(), h))); }
   function tbHeight() { return uiTbBig ? tbClamp(Math.max(window.innerHeight * 0.6 / uiZoom, (uiTbH || TB_DEF) + 120)) : tbClamp(uiTbH || TB_DEF); }
-  function tbUp() { return !!ui && !ui.p.classList.contains('moved') && !ui.p.classList.contains('top'); }
+  function tbUp() { return !!ui && !ui.p.classList.contains('moved') && !ui.p.classList.contains('top') && !ui.p.classList.contains('vert'); }
   function tbApply() {
     if (!ui || !ui.tpe) return;
+    vertApply();
     var h = tbHeight();
     ui.p.style.setProperty('--tbh', h + 'px');
     ui.p.classList.toggle('tgu', tbUp());   // the grip sits on the edge that moves: the top one while the player is docked at the bottom
@@ -1864,7 +1890,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
   function mountPip() {
     if (!ui || !pipWin) return;
-    ui.p.classList.add('pip');
+    ui.p.classList.add('pip'); vertApply();
     pipWin.document.body.appendChild(ui.host);
     fillUi();
   }
@@ -1872,7 +1898,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   function onPipHide() {
     if (!pipWin) return;
     pipWin = null;
-    if (ui) { ui.p.classList.remove('pip'); (document.body || document.documentElement).appendChild(ui.host); place(uiPos, true); fillUi(); }
+    if (ui) { ui.p.classList.remove('pip'); (document.body || document.documentElement).appendChild(ui.host); vertApply(); place(uiPos, true); fillUi(); }
   }
   function closePip() { if (!pipWin) return; var w = pipWin; pipWin = null; try { w.close(); } catch (e) { /* ignore */ } }
 
@@ -1889,19 +1915,20 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   // player position + minimised state, remembered per browser (not per site)
-  var uiPos = null, uiZoom = 1, uiMin = false, hlPrev = null, uiDark = {}, uiTbH = null, uiTbBig = false;
+  var uiPos = null, uiZoom = 1, uiMin = false, hlPrev = null, uiDark = {}, uiTbH = null, uiTbBig = false, uiVert = false, uiSide = 'r', uiTbW = null;
   function loadUi(cb) {
-    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiDark = u.dark || {}; uiTbH = Number(u.tbh) > 0 ? Number(u.tbh) : null; uiTbBig = !!u.tbBig; } tbApply(); setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
+    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiDark = u.dark || {}; uiTbH = Number(u.tbh) > 0 ? Number(u.tbh) : null; uiTbBig = !!u.tbBig; uiVert = !!u.vert; uiSide = u.side === 'l' ? 'l' : 'r'; uiTbW = Number(u.tbw) > 0 ? Number(u.tbw) : null; } tbApply(); setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
   }
   loadUi();
-  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, min: uiMin, dark: uiDark, tbh: uiTbH, tbBig: uiTbBig } }); } catch (e) { /* ignore */ } }
+  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, min: uiMin, dark: uiDark, tbh: uiTbH, tbBig: uiTbBig, vert: uiVert, side: uiSide, tbw: uiTbW } }); } catch (e) { /* ignore */ } }
   function place(pt, keep) {
     if (!ui || pipWin) return;
-    if (!pt) { uiPos = null; ui.p.classList.remove('moved'); ui.p.classList.toggle('tgu', tbUp()); if (!keep) saveUi(); return; }
+    if (!pt) { uiPos = null; ui.p.classList.remove('moved'); ui.p.classList.toggle('tgu', tbUp()); vertApply(); if (!keep) saveUi(); return; }
     var br = ui.p.getBoundingClientRect(), w = br.width || 300, h2 = br.height || 60;
     var x = Math.max(8, Math.min(window.innerWidth - w - 8, pt.x)), y = Math.max(8, Math.min(window.innerHeight - h2 - 8, pt.y));
     uiPos = { x: x, y: y };
     ui.p.style.setProperty('--x', x / uiZoom + 'px'); ui.p.style.setProperty('--y', y / uiZoom + 'px'); ui.p.classList.add('moved'); ui.p.classList.remove('tgu');
+    if (vertOn()) ui.p.classList.toggle('vl', x + w / 2 < window.innerWidth / 2);
   }
   function applyZoom() { if (ui) ui.p.style.setProperty('--z', String(uiZoom)); }
   function setZoom(z) {
@@ -1911,7 +1938,49 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
   window.addEventListener('resize', function () { if (ui) tbApply(); if (ui && uiPos) place(uiPos, true); });
   function fillMini() { if (ui) { ui.mini.innerHTML = uiMin ? '&#9652;' : '&#9662;'; ui.mini.title = uiMin ? 'Show the full player (M)' : 'Minimise to a small bar (M)'; } }
-  function toggleMini() { uiMin = !uiMin; if (ui) { ui.p.classList.toggle('min', uiMin); fillMini(); if (uiPos) place(uiPos, true); } saveUi(); }
+  function toggleMini() { uiMin = !uiMin; if (ui) { ui.p.classList.toggle('min', uiMin); fillMini(); vertApply(); if (uiPos) place(uiPos, true); } saveUi(); }
+  // vertical / horizontal player. Vertical = the controls in a column docked at the side of the page (the side the player was nearer to),
+  // the text box beside them at full height, its width set by the grip on its outer edge. Kept with the position in mesraUi.
+  var TBW_MIN = 200, TBW_DEF = 380;
+  function vertOn() { return !!ui && uiVert && !pipWin; }
+  function tbwMax() { return Math.max(TBW_DEF, Math.round(window.innerWidth * 0.8 / uiZoom) - 150); }
+  function tbwClamp(w) { return Math.round(Math.max(TBW_MIN, Math.min(tbwMax(), w))); }
+  function tbwDrag(t, d) {
+    var nw = tbwClamp(t.w + (t.left ? -d : d));
+    uiTbW = nw; vertApply();
+    // a moved player is pinned by its left edge: when the grip is on the left, move the player so the right side stays put
+    if (t.pos) place(t.left ? { x: t.pos.x - (nw - t.w) * uiZoom, y: t.pos.y } : t.pos, true);
+  }
+  var ORI_V = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8h4M10 12h4M10 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  var ORI_H = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12h.01M12 12h.01M16 12h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+  function vertApply() {
+    if (!ui) return;
+    var v = vertOn(), p = ui.p;
+    p.classList.toggle('vert', v);
+    p.classList.toggle('vt', v && !uiMin && ui.tp.classList.contains('on'));
+    p.classList.toggle('dl', v && uiSide === 'l');
+    if (!v) p.classList.remove('vl');
+    else if (!uiPos) p.classList.toggle('vl', uiSide === 'l');
+    else { var r = p.getBoundingClientRect(); p.classList.toggle('vl', r.left + r.width / 2 < window.innerWidth / 2); }
+    p.style.setProperty('--tbw', tbwClamp(uiTbW || TBW_DEF) + 'px');
+    if (ui.tgr) {
+      ui.tgr.setAttribute('aria-orientation', v ? 'vertical' : 'horizontal');
+      ui.tgr.setAttribute('aria-label', v ? 'Text box width: drag, or use the Left and Right arrow keys' : 'Text box height: drag, or use the Up and Down arrow keys');
+      ui.tgr.title = v ? 'Drag to make the text box wider or narrower (double-click: normal width)' : 'Drag to make the text box taller or shorter (double-click: normal height)';
+    }
+    if (ui.ori) {
+      ui.ori.innerHTML = uiVert ? ORI_H : ORI_V; ui.ori.classList.toggle('on', uiVert); ui.ori.setAttribute('aria-pressed', uiVert ? 'true' : 'false');
+      ui.ori.title = uiVert ? 'Horizontal player: back to a bar across the page (V)' : 'Vertical player: the controls in a column at the side of the page, the text box beside them (V)';
+      ui.ori.setAttribute('aria-label', uiVert ? 'Horizontal player' : 'Vertical player');
+    }
+  }
+  function toggleVert() {
+    if (!ui || pipWin) return;
+    if (!uiVert) { var r = ui.p.getBoundingClientRect(); uiSide = r.left + r.width / 2 < window.innerWidth / 2 - 4 ? 'l' : 'r'; }
+    uiVert = !uiVert;
+    place(null, true); tbApply(); saveUi();
+    setStatus(uiVert ? 'Vertical player (V switches back)' : 'Horizontal player');
+  }
   // dark / light page: one stylesheet that inverts the page (hue kept) and flips pictures, video and our own player back, while the player is open.
   // It steps aside for the MES Dark Mode extension: two inverts cancel out, so it is never added while that one darkens the page, and that one
   // removes ours (and fires 'mesra-dark-yield') when it switches on.
@@ -2024,6 +2093,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     else if (k === 'Escape') stopAll();
     else if (k === 'h' || k === 'H') toggleHighlight();
     else if (k === 'm' || k === 'M') toggleMini();
+    else if (k === 'v' || k === 'V') toggleVert();
     else used = false;
     if (used) { e.preventDefault(); e.stopImmediatePropagation(); }
   }
