@@ -407,6 +407,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-sbtns button[aria-pressed="true"] {background:rgba(224,49,49,0.8);}
 	html body.dark-mode #cs .cs-pop {background:rgba(12,16,24,0.9);color:#f2f5fa;}
 	html body.dark-mode #cs .cs-pop b, html body.dark-mode #cs .cs-prow {color:#f2f5fa;}
+	.cs-replay {position:absolute;left:0.6em;right:0.6em;bottom:0.6em;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;background:rgba(12,16,24,0.82);color:var(--cs-ink);border:1px solid var(--cs-line);border-radius:0.6em;padding:0.4em 0.6em;font-size:0.85em;backdrop-filter:blur(6px);}
+	.cs-replay button, .cs-replay select {font:inherit;cursor:pointer;background:rgba(255,255,255,0.1);color:var(--cs-ink);border:1px solid var(--cs-line);border-radius:0.4em;padding:0.25em 0.6em;}
+	.cs-replay select option {color:#111;}
+	.cs-replay input[type=range] {flex:1 1 8em;min-width:6em;}
+	.cs-rplabel {color:#ff6b6b;font-weight:800;letter-spacing:0.05em;animation:csBlink 1.2s infinite;}
+	@keyframes csBlink {50% {opacity:0.35;}}
+	.cs-rptime {font-variant-numeric:tabular-nums;min-width:3.6em;color:var(--cs-ink);}
+	.cs-replaying .cs-touch, .cs-replaying .cs-speedo, .cs-replaying .cs-help, .cs-replaying .cs-hud {display:none !important;}
+	html body.dark-mode #cs .cs-replay {background:rgba(12,16,24,0.82);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-replay button, html body.dark-mode #cs .cs-replay select, html body.dark-mode #cs .cs-rptime {color:#f2f5fa;background:rgba(255,255,255,0.1);}
 
 
 	@media print {
@@ -542,6 +552,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-touch button.on{border-color:#333333}
 	body.dark-mode .cs-gpre button,body.dark-mode .cs-objs button{background:#1a1a1a}
 	body.dark-mode .cs-paint button{border:2px solid rgba(76,76,76,0.20)}
+	body.dark-mode .cs-replay button,body.dark-mode .cs-replay select{background:rgba(26,26,26,0.10)}
+	body.dark-mode .cs-replay select option{color:#eeeeee}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -775,6 +787,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
 				<div class="cs-sbtns">
+					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
+					<button type="button" id="cs-night" title="Night driving (N)" aria-label="Night driving" aria-pressed="false">🌙</button>
 					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
 					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
@@ -782,6 +796,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
 				</div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
+				<div class="cs-replay" id="cs-replay" hidden>
+					<span class="cs-rplabel">● REPLAY</span>
+					<button type="button" id="cs-rpplay" aria-label="Play or pause the replay">❚❚</button>
+					<input type="range" id="cs-rpbar" min="0" max="1000" step="1" value="0" aria-label="Replay position">
+					<span id="cs-rptime" class="cs-rptime"></span>
+					<select id="cs-rpspeed" aria-label="Replay speed"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">⅒×</option></select>
+					<select id="cs-rpcam" aria-label="Replay camera"><option value="tv">TV cameras</option><option value="chase">Chase</option><option value="orbit">Orbit (drag)</option></select>
+					<button type="button" id="cs-rpx">✕ Back to driving</button>
+				</div>
 				<div class="cs-pop" id="cs-pop" hidden>
 					<b>Sound</b>
 					<label class="cs-prow"><input type="checkbox" data-snd> Sound on</label>
@@ -803,6 +826,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
 						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
+						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night driving</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
 						<li>In the air, the pedals tip the nose and steering rolls the car</li>
 						<li>Drag the picture to look around · a game controller works too</li>
@@ -839,6 +863,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="cs-card">
 					<div class="cs-ch">Car &amp; view</div>
 					<div class="cs-row cs-wrapb">
+						<button type="button" class="tu-btn tu-btn--ghost" onclick="document.getElementById('cs-rpbtn').click()">🎬 Instant replay (Y)</button>
 						<button type="button" class="tu-btn" id="cs-reset">↺ Back on wheels (R)</button>
 						<button type="button" class="tu-btn tu-btn--ghost" id="cs-start">⟲ To the start</button>
 						<button type="button" class="tu-btn tu-btn--ghost" id="cs-repair">🔧 Repair all</button>
@@ -846,6 +871,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="cs-checks">
 						<label><input type="checkbox" id="cs-slow"> Slow motion</label>
+						<label><input type="checkbox" data-night> Night driving</label>
 						<label><input type="checkbox" id="cs-snd" data-snd> Sound</label>
 						<label>Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"> <span data-volnum></span></label>
 						<label><input type="checkbox" id="cs-dmgon"> Dents &amp; damage</label>
@@ -893,6 +919,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>Yes. Touch buttons appear on touch screens (steer on the left, pedals on the right), and "Fill window" makes the picture fill the screen. A game controller (gamepad) works on computers.</dd>
 				<dt>How do the lap timer and the ghost work?</dt>
 				<dd>On the test track, crossing the chequered line starts the timer. A lap only counts if you go round all four quarters in order. Your best lap is kept for each car and gravity, and a see-through ghost car replays it while you drive, so you can see exactly where you gain or lose time.</dd>
+				<dt>Can I watch a crash again?</dt>
+				<dd>Yes: the last 12 seconds of every car and object are always kept. Press Y (or the 🎬 button) for an instant replay with TV cameras, a chase camera or an orbit you can drag, in slow motion if you like, and drag the bar to any moment.</dd>
+				<dt>What does night driving change?</dt>
+				<dd>The sun goes down, stars come out, the lamp posts along the track glow and your car’s headlights light the road. On the Moon the only light left is earthshine (sunlight reflected off the Earth), so the headlights matter a lot.</dd>
 				<dt>Is anything saved or uploaded?</dt>
 				<dd>Only your settings, records and best-lap ghosts, in your own browser. Nothing is uploaded.</dd>
 			</dl>

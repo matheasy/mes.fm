@@ -100,3 +100,13 @@
 	.cs-sbtns button[aria-pressed="true"] {background:rgba(224,49,49,0.8);}
 	html body.dark-mode #cs .cs-pop {background:rgba(12,16,24,0.9);color:#f2f5fa;}
 	html body.dark-mode #cs .cs-pop b, html body.dark-mode #cs .cs-prow {color:#f2f5fa;}
+	.cs-replay {position:absolute;left:0.6em;right:0.6em;bottom:0.6em;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:0.4em;background:rgba(12,16,24,0.82);color:var(--cs-ink);border:1px solid var(--cs-line);border-radius:0.6em;padding:0.4em 0.6em;font-size:0.85em;backdrop-filter:blur(6px);}
+	.cs-replay button, .cs-replay select {font:inherit;cursor:pointer;background:rgba(255,255,255,0.1);color:var(--cs-ink);border:1px solid var(--cs-line);border-radius:0.4em;padding:0.25em 0.6em;}
+	.cs-replay select option {color:#111;}
+	.cs-replay input[type=range] {flex:1 1 8em;min-width:6em;}
+	.cs-rplabel {color:#ff6b6b;font-weight:800;letter-spacing:0.05em;animation:csBlink 1.2s infinite;}
+	@keyframes csBlink {50% {opacity:0.35;}}
+	.cs-rptime {font-variant-numeric:tabular-nums;min-width:3.6em;color:var(--cs-ink);}
+	.cs-replaying .cs-touch, .cs-replaying .cs-speedo, .cs-replaying .cs-help, .cs-replaying .cs-hud {display:none !important;}
+	html body.dark-mode #cs .cs-replay {background:rgba(12,16,24,0.82);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-replay button, html body.dark-mode #cs .cs-replay select, html body.dark-mode #cs .cs-rptime {color:#f2f5fa;background:rgba(255,255,255,0.1);}
