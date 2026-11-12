@@ -114,13 +114,15 @@
 	]);
 
 	// Real photos (AI-made in Grok / ChatGPT / Gemini, 2026-11-11): mes.fm/kids/img/<cat>/<key>.jpg, shown when S.pics = "photo".
-	// Animals, food, things and vehicles all have one; ABC cards reuse a photo whose word matches (apple, ball, cat ...).
+	// Every card has one except numbers (shapes = wooden toy shapes, colours = paint splashes, so the picture still teaches the shape / colour); ABC cards reuse a photo whose word matches (apple, ball, cat ...).
 	var PHOTOS = {
 		animals: "dog cat cow pig sheep goat horse chicken rooster duck goose turkey owl crow dove bird peacock eagle frog bee cricket elephant lion tiger bear wolf monkey whale bison deer snake crocodile mouse rabbit fish turtle giraffe zebra penguin butterfly octopus fox",
 		food: "apple banana strawberry grapes orange watermelon carrot corn broccoli bread cheese egg milk cookie cake pizza pear cherries",
 		things: "ball teddy book cup shoe hat sock spoon bed chair key clock balloon present umbrella house tree flower sun moon rainbow star",
 		vehicles: "car bus truck firetruck police ambulance train plane boat bike tractor helicopter rocket motorbike",
-		body: "eye ear nose mouth hand foot tooth arm leg"
+		body: "eye ear nose mouth hand foot tooth arm leg",
+		colours: "red orange yellow green blue purple pink brown black white grey",   // paint splashes
+		shapes: "circle square triangle rectangle oval star heart diamond pentagon hexagon crescent arrow"   // wooden toy shapes (side counts checked by eye)
 	};
 	var PH = {}; Object.keys(PHOTOS).forEach(function (c) { PHOTOS[c].split(" ").forEach(function (k) { PH[c + ":" + k] = "/kids/img/" + c + "/" + k + ".jpg?v=1"; }); });
 	var ABC_PH = { apple: "food:apple", ball: "things:ball", cat: "animals:cat", dog: "animals:dog", egg: "food:egg", fish: "animals:fish", grapes: "food:grapes", lion: "animals:lion", moon: "things:moon", orange: "food:orange", pig: "animals:pig", rainbow: "things:rainbow", sun: "things:sun", tree: "things:tree", umbrella: "things:umbrella", zebra: "animals:zebra", nose: "body:nose" };
