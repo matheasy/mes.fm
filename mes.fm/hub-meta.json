@@ -156,6 +156,11 @@
 "updated":"2026-11-11",
 "type":"Calculator"
 },
+"/chess":{
+"added":"2026-11-12",
+"updated":"2026-11-12",
+"type":"Game"
+},
 "/clock":{
 "added":"2026-10-06",
 "updated":"2026-10-21",
