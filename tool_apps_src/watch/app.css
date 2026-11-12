@@ -230,3 +230,25 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 	.wt-hold[hidden] {display:none;}
 	#wt .wt-b[aria-pressed="true"].wt-ccb {background:var(--wt-acc);border-color:var(--wt-acc);color:#fff;}
 	html body.dark-mode #wt .wt-b[aria-pressed="true"].wt-ccb {color:#14101a;}
+
+/* Up next beside the picture: only in Fill window / full screen with the side panel showing */
+.wt-pq {display:none;}
+.wt-player.mes-pside:not(.mes-pmini) .wt-pq {display:flex;flex-direction:column;gap:0.35em;margin-top:0.7em;border-top:1px solid var(--wt-line);padding-top:0.55em;}
+.wt-pqh {display:flex;align-items:center;justify-content:space-between;gap:0.4em;}
+.wt-pqh small {font-weight:400;color:var(--wt-muted);}
+.wt-pqh span {display:flex;gap:0.3em;}
+.wt-pql {display:flex;flex-direction:column;gap:0.3em;max-height:min(60vh, 26em);overflow:auto;overscroll-behavior:contain;padding-right:2px;}
+.wt-pqi {display:flex;gap:0.5em;align-items:center;text-align:left;font:inherit;color:var(--wt-fg);background:var(--wt-soft);border:1px solid var(--wt-line);border-radius:0.5em;padding:0.3em;cursor:pointer;width:100%;}
+.wt-pqi:hover {background:var(--wt-hover);}
+.wt-pqi.wt-cur {background:var(--wt-cur);border-color:var(--wt-curb);}
+.wt-pqth {position:relative;flex:0 0 5.2em;aspect-ratio:16/9;border-radius:0.3em;overflow:hidden;background:#000;}
+.wt-pqth img {width:100% !important;height:100% !important;object-fit:cover;display:block;max-width:none !important;}
+.wt-pqth i {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;color:#fff;background:rgba(0,0,0,0.45);}
+.wt-pqt {min-width:0;display:flex;flex-direction:column;}
+.wt-pqt b {font-size:0.85em;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.wt-pqt small {font-size:0.75em;color:var(--wt-muted);}
+/* comment replies */
+.wt-cmrb {font:inherit;background:none;border:0;padding:0;color:var(--wt-acc);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.wt-cmr {margin:0.5em 0 0 0.9em;padding-left:0.7em;border-left:2px solid var(--wt-line);}
+.wt-cmr .wt-cml {gap:0.6em;}
+.wt-cmr .wt-cmrb {margin-top:0.4em;}

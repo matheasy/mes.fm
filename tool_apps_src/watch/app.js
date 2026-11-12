@@ -390,8 +390,39 @@
 	document.querySelectorAll('.wt-tab').forEach(function (b) { b.onclick = function () { setTab(b.dataset.tab); }; });
 	function listOf(t) { if (t === 'lists') { var l = openList && W.findList(S.lists, openList); return l ? l.items : S.lists; } return t === 'saved' ? S.saved : t === 'hist' ? S.hist : S.q; }
 	function inList() { return S.tab === 'lists' && openList && W.findList(S.lists, openList); }
+	/* the Up next list beside the picture (Fill window / full screen with the side panel showing) */
+	function renderPq() {
+		var box = $('wt-pq'); if (!box) return;
+		$('wt-pqn').textContent = S.q.length;
+		var L = S.q, ci = cur ? W.indexOf(L, cur.key) : -1;
+		$('wt-pql').innerHTML = !L.length ? '<p class="wt-none">Up next is empty.</p>' : L.map(function (it, i) {
+			var h = histRec(it), sub = W.siteName(it) + (h && h.dur ? ' · ' + (W.done(h) ? 'watched' : W.fmt(h.pos) + ' / ' + W.fmt(h.dur)) : '');
+			return '<button type="button" class="wt-pqi' + (i === ci ? ' wt-cur' : '') + '" data-pq="' + i + '"' + (i === ci ? ' aria-current="true"' : '') + '>' +
+				'<span class="wt-pqth">' + (it.th ? '<img alt="" loading="lazy" src="' + esc(it.th) + '">' : '') + (i === ci ? '<i>▶&#xFE0E;</i>' : '') + '</span>' +
+				'<span class="wt-pqt"><b>' + esc(W.label(it)) + '</b><small>' + esc(sub) + '</small></span></button>';
+		}).join('');
+		if (ci >= 0 && !box._userScroll) { var el = $('wt-pql').children[ci]; if (el) requestAnimationFrame(function () { var l = $('wt-pql'); l.scrollTop = Math.max(0, el.offsetTop - l.offsetTop - l.clientHeight / 2 + el.offsetHeight / 2); }); }
+	}
+	$('wt-pql').addEventListener('click', function (e) { var b = e.target.closest('[data-pq]'); if (!b) return; var it = S.q[+b.dataset.pq]; if (it) play(it); });
+	$('wt-pql').addEventListener('scroll', function () { var box = $('wt-pq'); box._userScroll = true; clearTimeout(box._us); box._us = setTimeout(function () { box._userScroll = false; }, 4000); }, { passive: true });
+	$('wt-pqup').onclick = function () { $('wt-pql').scrollBy({ top: -$('wt-pql').clientHeight * 0.8, behavior: 'smooth' }); };
+	$('wt-pqdn').onclick = function () { $('wt-pql').scrollBy({ top: $('wt-pql').clientHeight * 0.8, behavior: 'smooth' }); };
+
+	/* undo for removals: a copy of the lists from just before, put back as it was */
+	function snap() { return JSON.stringify({ q: S.q, saved: S.saved, hist: S.hist, lists: S.lists }); }
+	function undoTo(copyOf, what) {
+		toast(what, function () {
+			var d = JSON.parse(copyOf), ck = cur && cur.key;
+			S.q = d.q; S.saved = d.saved; S.hist = d.hist; S.lists = d.lists;
+			S.i = ck ? W.indexOf(S.q, ck) : -1; if (S.i >= 0) cur = S.q[S.i];
+			if (openList && !W.findList(S.lists, openList)) openList = null;
+			save(); renderList(); showMeta(); toast('Put back');
+		});
+	}
+
 	var rlT = 0; function renderListSoon() { clearTimeout(rlT); rlT = setTimeout(renderList, 60); }
 	function renderList() {
+		renderPq();
 		$('wt-nq').textContent = S.q.length; $('wt-ns').textContent = S.saved.length; $('wt-nh').textContent = S.hist.length; $('wt-nl').textContent = S.lists.length;
 		var L = listOf(S.tab), box = $('wt-list'), now = Date.now(), ol = inList();
 		$('wt-lnew').hidden = S.tab === 'hist' || !!ol;
@@ -449,19 +480,21 @@
 			if (a === 'lqueue') { loadList(it, false); return; }
 			if (a === 'lren') { var nm = prompt('Name of this playlist:', it.name); if (nm && nm.trim()) it.name = nm.trim().slice(0, 80); }
 			if (a === 'lshare') { if (it.items.length) copy(W.shareUrl(location.origin + '/watch', it.items.slice(0, 50), 0, it.name)); return; }
-			if (a === 'ldel') { if (!confirm('Delete the playlist "' + it.name + '"? (The videos stay in your other lists.)')) return; S.lists = S.lists.filter(function (x) { return x.id !== it.id; }); }
+			if (a === 'ldel') { var bk0 = snap(); S.lists = S.lists.filter(function (x) { return x.id !== it.id; }); save(); renderList(); undoTo(bk0, 'Deleted the playlist "' + it.name + '"'); return; }
 			save(); renderList(); return;
 		}
 		var ol = inList();
 		if (a === 'play') { if (S.tab !== 'q' && W.indexOf(S.q, it.key) < 0) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; it = c; } else if (S.tab !== 'q') it = S.q[W.indexOf(S.q, it.key)]; play(it); $('wt-player').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
 		if (ol && (a === 'up' || a === 'down' || a === 'del')) {
-			if (a === 'del') ol.items = W.remove(ol.items, it.key); else ol.items = W.move(ol.items, i, i + (a === 'up' ? -1 : 1));
+			if (a === 'del') { var bk1 = snap(); ol.items = W.remove(ol.items, it.key); save(); renderList(); undoTo(bk1, 'Removed from "' + ol.name + '"'); return; } ol.items = W.move(ol.items, i, i + (a === 'up' ? -1 : 1));
 			save(); renderList(); return;
 		}
 		if (a === 'up' || a === 'down') { var curKey = cur && cur.key; S.q = W.move(S.q, i, i + (a === 'up' ? -1 : 1)); S.i = curKey ? W.indexOf(S.q, curKey) : -1; }
 		else if (a === 'queue') { S.q = W.add(S.q, [it]); toast('Added to Up next'); }
 		else if (a === 'star') { if (W.indexOf(S.saved, it.key) >= 0) S.saved = W.remove(S.saved, it.key); else S.saved = W.add(S.saved, [it], true); }
 		else if (a === 'del') {
+			var bk2 = snap(), lname = { q: 'Up next', saved: 'Saved', hist: 'History' }[S.tab];
+			setTimeout(function () { undoTo(bk2, 'Removed from ' + lname); }, 0);
 			if (S.tab === 'q') { var ck = cur && cur.key; S.q = W.remove(S.q, it.key); S.i = ck ? W.indexOf(S.q, ck) : -1; }
 			else if (S.tab === 'saved') S.saved = W.remove(S.saved, it.key); else S.hist = W.remove(S.hist, it.key);
 		}
@@ -469,8 +502,9 @@
 	});
 	$('wt-clear').onclick = function () {
 		var names = { q: 'Up next', saved: 'Saved', hist: 'History' }, ol = inList();
-		if (ol) { if (!confirm('Remove every video from "' + ol.name + '"?')) return; ol.items = []; save(); renderList(); return; }
-		if (!confirm('Clear ' + names[S.tab] + '?')) return;
+		var bk3 = snap();
+		if (ol) { ol.items = []; save(); renderList(); undoTo(bk3, 'Emptied "' + ol.name + '"'); return; }
+		setTimeout(function () { undoTo(bk3, names[S.tab] + ' cleared'); }, 0);
 		if (S.tab === 'q') { S.q = cur ? [cur] : []; S.i = cur ? 0 : -1; } else if (S.tab === 'saved') S.saved = []; else S.hist = [];
 		save(); renderList(); showMeta();
 	};
@@ -719,6 +753,8 @@
 	$('wt-zoom').onclick = function () { setZMode(!zMode); };
 	if (window.ResizeObserver) new ResizeObserver(function () { applyZoom(); }).observe($('wt-stage'));
 	if (window.MutationObserver) new MutationObserver(function () { applyZoom(); }).observe($('wt-stage'), { childList: true });
+	$('wt-opts').open = !!S.opts;
+	$('wt-opts').addEventListener('toggle', function () { if (S.opts !== $('wt-opts').open) { S.opts = $('wt-opts').open; save(); } });
 	$('wt-pz').checked = S.pz !== false;
 	$('wt-pz').onchange = function () { S.pz = this.checked; save(); applyZoom(); };
 	$('wt-zctl').checked = S.zctl !== false;
@@ -804,23 +840,43 @@
 		t = t.trim(); var long = t.length > 900;
 		return { html: esc(long ? t.slice(0, 900) + '…' : t).replace(/\n{3,}/g, '\n\n').replace(/\n/g, '<br>'), long: long };
 	}
-	function cmRow(c, site) {
-		var tx = cmText(c.text, c.md);
+	function cmRow(c, site, idx) {
+		var tx = cmText(c.text, c.md), canOpen = idx != null && c.rep;
 		return '<li class="wt-cmi"><div class="wt-cmh"><b>' + esc(c.author || 'Someone') + '</b>' + (c.creator ? ' <span class="wt-cmc">creator</span>' : '') + (c.when ? ' <span class="wt-cmw">' + esc(c.when) + '</span>' : '') + '</div>' +
 			'<div class="wt-cmt">' + tx.html + '</div><div class="wt-cmf">' + [
 				c.likes ? '♥ ' + c.likes.toLocaleString() : '',
-				c.replies ? (c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' : '') + c.replies + (c.replies === 1 ? ' reply' : ' replies') + (c.url ? ' ↗&#xFE0E;</a>' : '') : '',
+				c.replies ? (canOpen ? '<button type="button" class="wt-cmrb" data-cmrep="' + idx + '" aria-expanded="' + !!c.rOpen + '">' + (c.rOpen ? '▴ Hide ' : '▾ ') + c.replies.toLocaleString() + (c.replies === 1 ? ' reply' : ' replies') + '</button>' : (c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">' : '') + c.replies + (c.replies === 1 ? ' reply' : ' replies') + (c.url ? ' ↗&#xFE0E;</a>' : '')) : '',
 				tx.long && c.url ? '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">Read all on ' + esc(site) + ' ↗&#xFE0E;</a>' : ''
-			].filter(Boolean).join(' · ') + '</div></li>';
+			].filter(Boolean).join(' · ') + '</div>' + (canOpen && c.rOpen ? cmReplies(c, site, idx) : '') + '</li>';
+	}
+	function cmReplies(c, site, idx) {
+		return '<div class="wt-cmr">' + (c.rItems && c.rItems.length ? '<ul class="wt-cml">' + c.rItems.map(function (x) { return cmRow(x, site); }).join('') + '</ul>' : '') +
+			(c.rErr ? '<p class="wt-cmmsg">' + esc(c.rErr) + (c.url ? ' <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on ' + esc(site) + ' ↗&#xFE0E;</a>' : '') + '</p>' : '') +
+			(c.rBusy ? '<p class="wt-cmmsg">Loading replies…</p>' : c.rMore ? '<button type="button" class="wt-cmrb" data-cmrmore="' + idx + '">More replies</button>' : '') + '</div>';
+	}
+	function cmLoadReplies(c, more) {
+		var g = cmGen; c.rBusy = true; c.rErr = ''; cmPaint();
+		c.rep(more ? c.rMore : null).then(function (r) {
+			if (g !== cmGen) return; c.rBusy = false;
+			c.rItems = (more ? c.rItems || [] : []).concat(r.items); c.rMore = r.more || null;
+			if (!c.rItems.length) c.rErr = 'No replies could be shown here.';
+			cmPaint();
+		}, function () { if (g !== cmGen) return; c.rBusy = false; c.rErr = 'Could not load the replies right now.'; cmPaint(); });
 	}
 	function cmPaint() {
 		var box = $('wt-cm'), c = cmState; if (!c) return;
 		var head = '<div class="wt-cmhead"><b>Comments' + (c.count != null ? ' (' + Number(c.count).toLocaleString() + ')' : '') + '</b><span class="wt-cmsrc">from ' + esc(c.site) + '</span>' +
 			(cur ? '<a class="wt-cmopen" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Reply on ' + esc(c.site) + ' ↗&#xFE0E;</a>' : '') + '</div>';
-		box.innerHTML = head + (c.msg ? '<p class="wt-cmmsg">' + c.msg + '</p>' : '') + (c.items.length ? '<ul class="wt-cml">' + c.items.map(function (x) { return cmRow(x, c.site); }).join('') + '</ul>' : '') +
+		box.innerHTML = head + (c.msg ? '<p class="wt-cmmsg">' + c.msg + '</p>' : '') + (c.items.length ? '<ul class="wt-cml">' + c.items.map(function (x, i) { return cmRow(x, c.site, i); }).join('') + '</ul>' : '') +
 			(c.more ? '<button type="button" class="tu-btn tu-btn--ghost wt-cmmore" data-cmmore' + (c.busy ? ' disabled' : '') + '>' + (c.busy ? 'Loading…' : 'Load more') + '</button>' : (c.busy ? '<p class="wt-cmmsg">Loading…</p>' : ''));
 	}
-	$('wt-cm').addEventListener('click', function (e) { if (e.target.closest('[data-cmmore]') && cmState && cmState.more && !cmState.busy) cmState.more(); });
+	$('wt-cm').addEventListener('click', function (e) {
+		if (e.target.closest('[data-cmmore]') && cmState && cmState.more && !cmState.busy) { cmState.more(); return; }
+		var b = e.target.closest('[data-cmrep],[data-cmrmore]'); if (!b || !cmState) return;
+		var c = cmState.items[+(b.dataset.cmrep || b.dataset.cmrmore)]; if (!c || !c.rep || c.rBusy) return;
+		if (b.dataset.cmrmore != null) { cmLoadReplies(c, true); return; }
+		c.rOpen = !c.rOpen; if (c.rOpen && !c.rItems) cmLoadReplies(c, false); else cmPaint();
+	});
 	function hivePost(author, permlink) {
 		var nodes = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://api.openhive.network'];
 		function tryN(i) {
@@ -842,11 +898,17 @@
 				fetch('/api/yt-comments?v=' + encodeURIComponent(it.id) + (c ? '&c=' + encodeURIComponent(c) + '&ver=' + encodeURIComponent(ver) : '')).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) {
 					if (g !== cmGen) return;
 					if (j.count != null) cmState.count = j.count;
-					cmState.items = cmState.items.concat((j.items || []).map(function (x) { return { author: x.author, creator: x.creator, when: x.when, text: x.text, likes: x.likes, replies: x.replies, url: 'https://www.youtube.com/watch?v=' + it.id + '&lc=' + x.id }; }));
+					cmState.items = cmState.items.concat((j.items || []).map(function (x) { return { author: x.author, creator: x.creator, when: x.when, text: x.text, likes: x.likes, replies: x.replies, url: 'https://www.youtube.com/watch?v=' + it.id + '&lc=' + x.id, rep: x.rt ? ytRep(x.rt, j.ver) : null }; }));
 					cmState.more = j.next ? function () { ytPage(j.next, j.ver); } : null;
 					if (!cmState.items.length) cmState.msg = j.off ? 'Comments are turned off for this video.' : 'No comments yet.';
 					done();
 				}).catch(function () { fail('Could not load the comments right now.'); });
+			};
+			var ytRep = function (rt, ver) {
+				return function (tok) {
+					return fetch('/api/yt-comments?r=1&v=' + encodeURIComponent(it.id) + '&c=' + encodeURIComponent(tok || rt) + '&ver=' + encodeURIComponent(ver)).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+						.then(function (j) { return { items: (j.items || []).map(function (x) { return { author: x.author, creator: x.creator, when: x.when, text: x.text, likes: x.likes, url: 'https://www.youtube.com/watch?v=' + it.id + '&lc=' + x.id }; }), more: j.next || null }; });
+				};
 			};
 			ytPage();
 		} else if (it.k === '3speak') {
@@ -857,7 +919,9 @@
 				var top = Object.keys(all).map(function (k) { return all[k]; }).filter(function (p) { return p.depth === 1 && p.parent_author === ap[0] && p.parent_permlink === ap[1]; })
 					.sort(function (a, b) { return (b.net_votes || (b.stats || {}).total_votes || 0) - (a.net_votes || (a.stats || {}).total_votes || 0) || String(b.created).localeCompare(String(a.created)); });
 				cmState.count = top.length; cmState.site = '3Speak (Hive)';
-				cmState.items = top.map(function (p) { return { author: '@' + p.author, creator: p.author === ap[0], when: W.ago(Date.parse(p.created + 'Z')), text: p.body, md: true, likes: (p.stats || {}).total_votes || 0, replies: p.children || 0, url: 'https://peakd.com/@' + p.author + '/' + p.permlink }; });
+				var hiveRow = function (p) { return { author: '@' + p.author, creator: p.author === ap[0], when: W.ago(Date.parse(p.created + 'Z')), text: p.body, md: true, likes: (p.stats || {}).total_votes || 0, replies: p.children || 0, url: 'https://peakd.com/@' + p.author + '/' + p.permlink }; };
+				var kids = function (p) { return Object.keys(all).map(function (k) { return all[k]; }).filter(function (q) { return q.parent_author === p.author && q.parent_permlink === p.permlink; }).sort(function (a, b) { return String(a.created).localeCompare(String(b.created)); }); };
+				cmState.items = top.map(function (p) { var r = hiveRow(p); if (r.replies) r.rep = function () { return Promise.resolve({ items: kids(p).map(function (q) { var x = hiveRow(q); x.creator = q.author === ap[0]; return x; }) }); }; return r; });
 				if (!top.length) cmState.msg = 'No comments yet.';
 				done();
 			}).catch(function () { fail('Could not reach Hive for the comments right now.'); });
@@ -866,13 +930,21 @@
 			fetch('https://api.na-backend.odysee.com/api/v1/proxy?m=resolve', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'resolve', params: { urls: [uri] }, id: 1 }) })
 				.then(function (r) { return r.json(); }).then(function (j) {
 					var c = j && j.result && j.result[uri]; if (!c || !c.claim_id) throw new Error();
+					var odRep = function (pid) {
+						return function (tok) {
+							var p2 = tok || 1;
+							return fetch('https://comments.odysee.tv/api/v2?m=comment.List', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'comment.List', params: { claim_id: c.claim_id, parent_id: pid, page: p2, page_size: 20, sort_by: 0, top_level: false } }) })
+								.then(function (r) { return r.json(); }).then(function (k) { var r = (k && k.result) || {};
+									return { items: (r.items || []).map(function (x) { return { author: x.channel_name || 'Anonymous', creator: !!x.is_creator, when: x.timestamp ? W.ago(x.timestamp * 1000) : '', text: x.comment, md: true, likes: 0, url: it.u + '?lc=' + x.comment_id }; }), more: r.total_pages && p2 < r.total_pages ? p2 + 1 : null }; });
+						};
+					};
 					var pg = 0, odPage = function () {
 						pg++; cmState.busy = true; cmPaint();
 						fetch('https://comments.odysee.tv/api/v2?m=comment.List', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'comment.List', params: { claim_id: c.claim_id, page: pg, page_size: 20, sort_by: 3, top_level: true } }) })
 							.then(function (r) { return r.json(); }).then(function (k) {
 								if (g !== cmGen) return; var r = (k && k.result) || {};
 								if (r.total_items != null) cmState.count = r.total_items;
-								cmState.items = cmState.items.concat((r.items || []).map(function (x) { return { author: x.channel_name || 'Anonymous', creator: !!x.is_creator, when: x.timestamp ? W.ago(x.timestamp * 1000) : '', text: x.comment, md: true, likes: 0, replies: x.replies || 0, url: it.u + '?lc=' + x.comment_id }; }));
+								cmState.items = cmState.items.concat((r.items || []).map(function (x) { return { author: x.channel_name || 'Anonymous', creator: !!x.is_creator, when: x.timestamp ? W.ago(x.timestamp * 1000) : '', text: x.comment, md: true, likes: 0, replies: x.replies || 0, url: it.u + '?lc=' + x.comment_id, rep: x.replies ? odRep(x.comment_id) : null }; }));
 								cmState.more = r.total_pages && pg < r.total_pages ? odPage : null;
 								if (!cmState.items.length) cmState.msg = 'No comments yet.';
 								done();
