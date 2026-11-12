@@ -860,8 +860,11 @@
 	};
 
 	/* ---------- undo ---------- */
-	V.History = function (max) { this.max = max || 200; this.stack = []; this.i = -1; };
-	V.History.prototype.push = function (s) { if (this.i >= 0 && this.stack[this.i] === s) return; this.stack = this.stack.slice(0, this.i + 1); this.stack.push(s); if (this.stack.length > this.max) this.stack.shift(); this.i = this.stack.length - 1; };
+	V.History = function (max) { this.max = max || 200; this.stack = []; this.labels = []; this.i = -1; };
+	V.History.prototype.push = function (s, label) { if (this.i >= 0 && this.stack[this.i] === s) return; this.stack = this.stack.slice(0, this.i + 1); this.labels = this.labels.slice(0, this.i + 1); this.stack.push(s); this.labels.push(label || ""); if (this.stack.length > this.max) { this.stack.shift(); this.labels.shift(); } this.i = this.stack.length - 1; };
+	// name of the step Undo would take back / Redo would bring back ("" when unknown)
+	V.History.prototype.undoLabel = function () { return this.i > 0 ? this.labels[this.i] || "" : ""; };
+	V.History.prototype.redoLabel = function () { return this.i < this.stack.length - 1 ? this.labels[this.i + 1] || "" : ""; };
 	V.History.prototype.undo = function () { if (this.i <= 0) return null; this.i--; return this.stack[this.i]; };
 	V.History.prototype.redo = function () { if (this.i >= this.stack.length - 1) return null; this.i++; return this.stack[this.i]; };
 	V.History.prototype.canUndo = function () { return this.i > 0; };

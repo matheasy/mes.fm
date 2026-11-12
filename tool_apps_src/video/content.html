@@ -7,6 +7,7 @@
 					<div class="vd-pop" id="vd-filemenu" hidden role="menu">
 						<button type="button" role="menuitem" data-act="import">Import videos, sound, pictures&hellip; <kbd>Ctrl+I</kbd></button>
 						<button type="button" role="menuitem" data-act="title">Add a title <kbd>T</kbd></button>
+						<button type="button" role="menuitem" data-act="narrate">Add narration from text&hellip; <kbd>N</kbd></button>
 						<hr>
 						<button type="button" role="menuitem" data-act="saveproj">Save project file (.mesvideo) <kbd>Ctrl+S</kbd></button>
 						<button type="button" role="menuitem" data-act="saveprojas">Save project as&hellip; <kbd>Ctrl+Shift+S</kbd></button>
@@ -17,6 +18,10 @@
 						<button type="button" role="menuitem" data-act="export">Export MP4&hellip; <kbd>Ctrl+E</kbd></button>
 						<a role="menuitem" href="/convert-video" target="_blank" rel="noopener">Video Converter (AVI, MKV, WMV to MP4)</a>
 					</div>
+				</div>
+				<div class="vd-menu">
+					<button type="button" class="vd-btn" id="vd-editbtn" aria-haspopup="true" aria-expanded="false">Edit &#9662;</button>
+					<div class="vd-pop vd-pop--edit" id="vd-editmenu" hidden role="menu"></div>
 				</div>
 				<button type="button" class="vd-btn vd-ico" id="vd-undo" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button>
 				<button type="button" class="vd-btn vd-ico" id="vd-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
@@ -70,6 +75,7 @@
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom out 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview out 1%">&minus;</button>
 							<span class="vd-vzbox"><input type="text" id="vd-vzpct" class="vd-vzpct" value="100%" spellcheck="false" autocomplete="off" inputmode="decimal" aria-label="Preview zoom in percent: type a number and press Enter" title="Type a zoom and press Enter: 82, 150% or 1.5x. 100% = one video pixel per screen pixel. Up / Down arrows = 1% (Shift = 10%)."><select id="vd-vzsel" aria-label="Preview zoom presets" title="Preview zoom presets"></select></span>
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzin" title="Zoom in 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview in 1%">+</button>
+							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzhand" aria-pressed="false" title="Hand: drag anywhere in the preview to move the view, even over a clip (H). Or hold Space and drag, or drag with the middle mouse button." aria-label="Hand tool: drag to move the view">&#9995;</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-vzguide" aria-pressed="false" title="Safe-area guides (title safe 80%, action safe 90%), thirds and the centre (G)">Guides</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-vzdim" aria-pressed="true" title="Darken what is outside the frame (it is never in the video)">Dim outside</button>
 						</div>
@@ -88,6 +94,7 @@
 						<span class="vd-speed" role="group" aria-label="Preview playback speed (does not change the video)" title="Playback speed of the preview only. The exported video keeps its normal speed. - / + = 0.05 steps (hold to go faster), Shift+&lt; / Shift+&gt; = the next preset. From 1 frame per second to 45&times;; above 16&times; or below 1/16&times; frames are skipped and there is no sound."><span>Speed</span><button type="button" class="vd-btn vd-ico vd-spb" id="vd-spdn" aria-label="Slower by 0.05">&minus;</button><select id="vd-speed" aria-label="Preview playback speed"></select><input type="text" id="vd-spin" class="vd-spin" hidden spellcheck="false" autocomplete="off" aria-label="Type a speed: 2.35, 300%, 1/2 or 5 fps"><button type="button" class="vd-btn vd-ico vd-spb" id="vd-spup" aria-label="Faster by 0.05">+</button></span>
 						<span class="vd-time" id="vd-time"><input type="text" id="vd-tin" value="0:00;00" spellcheck="false" autocomplete="off" inputmode="text" aria-label="Playhead time: type a time and press Enter to go there" title="Type a time and press Enter to go there: 4:23;13, 1:02:03, 263, 2m30s, +10 or -5 (from here). Ctrl+G jumps here."> / <span id="vd-tdur">0:00;00</span></span>
 						<span class="vd-sp"></span>
+						<button type="button" class="vd-btn vd-sm vd-ico" id="vd-undo2" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button><button type="button" class="vd-btn vd-sm vd-ico" id="vd-redo2" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
 						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl">PNG</span></button>
 						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; <span class="vd-lbl">Fill window</span></button>
 						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen (Shift+F)">&#9974; <span class="vd-lbl">Full screen</span></button>
@@ -113,7 +120,7 @@
 				<button type="button" class="vd-btn vd-sm vd-xt" id="vd-sep" title="Put the sound of the selected video clips on its own audio track, linked to the video (Ctrl+Shift+A)">Separate video and audio</button>
 				<button type="button" class="vd-btn vd-sm vd-xt" id="vd-wavemode" title="Waveform scale: dB shows quiet parts too, linear shows the spikes in proportion">Waveform: dB</button>
 				<span class="vd-sp"></span>
-				<label class="vd-chk" title="Clips snap to the playhead, marks and each other (hold Alt to drag freely)"><input type="checkbox" id="vd-snapchk" checked> Snap</label>
+				<label class="vd-chk" title="Snap: clips on the timeline snap to the playhead, marks and each other, and pictures in the preview snap to the frame edges, its middle and the other pictures (pink guide). Hold Alt while dragging to do the opposite."><input type="checkbox" id="vd-snapchk" checked> Snap</label>
 				<button type="button" class="vd-btn vd-ico vd-sm" id="vd-zout" title="Zoom out (-)" aria-label="Zoom out">&minus;</button>
 				<input type="range" id="vd-zoom" min="0" max="1000" aria-label="Timeline zoom">
 				<button type="button" class="vd-btn vd-ico vd-sm" id="vd-zin" title="Zoom in (+)" aria-label="Zoom in">+</button>
@@ -139,7 +146,7 @@
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+X / C / V</dt><dd>Cut / copy / paste clips (paste goes to the playhead; right-click a track for &ldquo;Paste here&rdquo;)</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>Arrows after clicking the preview</dt><dd>Move the selected picture or title 1 pixel (Shift: 10); click the timeline to get the frame-stepping arrows back</dd><dt>Alt+&uarr; / &darr;</dt><dd>Move the selected clips up / down a track (or drag them; several clips move together)</dd><dt>Right-click</dt><dd>Menu for a clip, an empty spot or a track</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
-					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>H or &#9995;</dt><dd>Hand: drag moves the preview view (also Space + drag, even over a clip)</dd><dt>N</dt><dd>Add narration from text</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
 			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>

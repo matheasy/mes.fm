@@ -193,7 +193,7 @@
 	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true, bar: true };
 	try { Object.assign(VS, JSON.parse(localStorage.getItem(VKEY)) || {}); } catch (e) { /* ignore */ }
 	function saveVS() { try { localStorage.setItem(VKEY, JSON.stringify({ guides: VS.guides, dim: VS.dim, bar: VS.bar })); } catch (e) { /* ignore */ } }
-	var view = { k: 1, ox: 0, oy: 0 }, isFit = true, fitClear = false, dpr = 1, pattern = null, pick = null;
+	var guides = null, view = { k: 1, ox: 0, oy: 0 }, isFit = true, fitClear = false, dpr = 1, pattern = null, pick = null;
 	P.view = function () { return { k: view.k, ox: view.ox, oy: view.oy, fit: isFit && !fitClear, fitClear: isFit && fitClear, dpr: dpr, pct: Math.round(view.k / dpr * 1000) / 10 }; };
 	function draw() { needDraw = true; if (!P.playing) requestAnimationFrame(paint); else paint(); }
 	P.draw = draw;
@@ -235,6 +235,12 @@
 			ctx.fillStyle = "rgba(56,189,248,0.95)"; ctx.fillText("title safe 80%", fx + fw * 0.1 + 4 * dpr, fy + fh * 0.1 + 3 * dpr);
 		}
 		ctx.restore();
+		if (guides && drag && drag.mode === "move") {   // snap guide lines across the whole stage
+			ctx.save(); ctx.strokeStyle = "#f472b6"; ctx.lineWidth = Math.max(1, dpr); ctx.setLineDash([]); ctx.beginPath();
+			if (guides.x != null) { var gxp = Math.round(fx + guides.x * k) + 0.5; ctx.moveTo(gxp, 0); ctx.lineTo(gxp, CH); }
+			if (guides.y != null) { var gyp = Math.round(fy + guides.y * k) + 0.5; ctx.moveTo(0, gyp); ctx.lineTo(CW, gyp); }
+			ctx.stroke(); ctx.restore();
+		}
 		// selection frame (turned with the clip), corner handles and the turn handle
 		var sel = VE.selected().filter(function (c) { return c.type !== "audio" && V.active(c, VE.t); });
 		if (sel.length && !P.playing && !pick) {
@@ -311,11 +317,21 @@
 	P.hover = false; P.space = null;
 	wrap.addEventListener("pointerenter", function () { P.hover = true; }); wrap.addEventListener("pointerleave", function () { P.hover = false; });
 	P.spaceDown = function () { if (!P.space) { P.space = { used: false }; cv.style.cursor = "grab"; } };
+	// Space is watched here too (capture phase, whatever has the keyboard focus, except while typing), so Space + drag always pans,
+	// even over a clip, while playing, or with a button / time box focused
+	var spaceHeld = false;
+	function typing(t) { return t && (/^(TEXTAREA|SELECT)$/.test(t.tagName) || (t.tagName === "INPUT" && !/^(checkbox|radio|range|button)$/i.test(t.type)) || t.isContentEditable); }
+	window.addEventListener("keydown", function (e) { if (e.key === " " && !typing(e.target)) spaceHeld = true; }, true);
+	window.addEventListener("keyup", function (e) { if (e.key === " ") spaceHeld = false; }, true);
+	window.addEventListener("blur", function () { spaceHeld = false; });
+	// hand tool: every drag in the preview moves the view (the zoom bar's ✋ button, key H)
+	P.hand = false;
+	P.setHand = function (on) { P.hand = !!on; cv.style.cursor = P.hand ? "grab" : ""; VE.emit("view"); };
 	document.addEventListener("keyup", function (e) { if (e.key !== " " || !P.space) return; var used = P.space.used; P.space = null; cv.style.cursor = ""; if (!used) P.toggle(); });
 	function startPan(e) { drag = { pan: true, x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy }; isFit = false; fitClear = false; cv.style.cursor = "grabbing"; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
 	cv.addEventListener("pointerdown", function (e) {
 		if (e.pointerType === "touch") { touches[e.pointerId] = canvasPt(e); var ids = Object.keys(touches); if (ids.length === 2) { if (drag && drag.c && drag.moved) VE.commit(drag.corner ? "Resize" : "Move"); drag = null; var a = touches[ids[0]], b = touches[ids[1]]; pinch = { d: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, v: Object.assign({}, view) }; isFit = false; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; } }
-		if (e.button === 1 || (P.space && e.button === 0)) { if (P.space) P.space.used = true; startPan(e); return; }
+		if (e.button === 1 || ((P.space || spaceHeld || P.hand) && e.button === 0)) { if (P.space) P.space.used = true; startPan(e); return; }
 		if (e.button > 0) return;
 		var pt = toFrame(e);
 		if (pick) { pick.p0 = pt; pick.r = null; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; }
@@ -340,6 +356,12 @@
 		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
 		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
 		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false };
+		if (mode === "move") {   // snap targets: the frame's edges and middle, and the edges / middles of the other pictures showing now
+			var rb = VE.rectOf(ctx, hitC, PW, PH, pos);
+			if (rb) { drag.bw = rb.dw; drag.bh = rb.dh; drag.bx = rb.dx + rb.dw / 2 - cxp; drag.by = rb.dy + rb.dh / 2 - cyp; }
+			drag.tx = [0, PW / 2, PW]; drag.ty = [0, PH / 2, PH];
+			L.forEach(function (l) { if (l.clip === hitC) return; var ro = VE.rectOf(ctx, l.clip, PW, PH, l.pos); if (!ro || ro.rot) return; drag.tx.push(ro.dx, ro.dx + ro.dw / 2, ro.dx + ro.dw); drag.ty.push(ro.dy, ro.dy + ro.dh / 2, ro.dy + ro.dh); });
+		}
 		cv.setPointerCapture(e.pointerId); e.preventDefault(); draw();
 	});
 	cv.addEventListener("pointermove", function (e) {
@@ -352,7 +374,7 @@
 			var q = toFrame(e), W = VE.P.w, H = VE.P.h, w = Math.max(Math.abs(q.x - pick.p0.x), Math.abs(q.y - pick.p0.y) * W / H);
 			pick.r = V.frameRect(Math.min(q.x, pick.p0.x) + Math.abs(q.x - pick.p0.x) / 2, Math.min(q.y, pick.p0.y) + Math.abs(q.y - pick.p0.y) / 2, Math.max(8, w), W, H); draw(); return;
 		}
-		if (!drag) { if (!P.playing && !pick) cv.style.cursor = P.space ? "grab" : ""; return; }
+		if (!drag) { if (!pick) cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
 		if (drag.pan) { var b2 = cv.getBoundingClientRect(), sx = cv.width / Math.max(1, b2.width); view.ox = drag.ox + (e.clientX - drag.x) * sx; view.oy = drag.oy + (e.clientY - drag.y) * sx; draw(); return; }
 		var pt = toFrame(e), c = drag.c, rel = drag.rel, tol = drag.tol; drag.moved = true;
 		if (drag.mode === "wrap") {
@@ -363,7 +385,16 @@
 		else if (drag.mode === "turn") { var ang = drag.r0 + (Math.atan2(pt.y - drag.cy, pt.x - drag.cx) - drag.a0) * 180 / Math.PI; if (!e.shiftKey) ang = Math.round(ang / 5) * 5; if (!e.shiftKey && Math.abs(ang % 90) < 3) ang = Math.round(ang / 90) * 90; V.setPropAt(c, rel, "rot", Math.round(ang * 100) / 100, tol); }
 		else {
 			var nx = drag.x0 + (pt.x - drag.p0.x) / VE.P.w, ny = drag.y0 + (pt.y - drag.p0.y) / VE.P.h;
-			if (!e.altKey) { if (Math.abs(nx - 0.5) < 0.012) nx = 0.5; if (Math.abs(ny - 0.5) < 0.012) ny = 0.5; }
+			// Snap (the timeline's Snap box; Alt = the opposite while dragging): the box's left / middle / right and top / middle / bottom
+			// stick to the frame and the other pictures within ~7 screen pixels, with a pink guide line
+			var snapOn = (VE.tl.snap !== false) !== !!e.altKey; guides = null;
+			if (snapOn && drag.bw) {
+				var th = 7 * dpr / view.k, gx = null, gy = null;
+				function best(c0, half, list) { var b = null; [-half, 0, half].forEach(function (o) { list.forEach(function (L0) { var d = L0 - (c0 + o); if (Math.abs(d) <= th && (!b || Math.abs(d) < Math.abs(b.d))) b = { d: d, at: L0 }; }); }); return b; }
+				var bxs = best(nx * VE.P.w + drag.bx, drag.bw / 2, drag.tx), bys = best(ny * VE.P.h + drag.by, drag.bh / 2, drag.ty);
+				if (bxs) { nx += bxs.d / VE.P.w; gx = bxs.at; } if (bys) { ny += bys.d / VE.P.h; gy = bys.at; }
+				if (gx != null || gy != null) guides = { x: gx, y: gy };
+			}
 			V.setPropAt(c, rel, "x", Math.round(nx * 10000) / 10000, tol); V.setPropAt(c, rel, "y", Math.round(ny * 10000) / 10000, tol);
 		}
 		VE.emit("live"); draw();
@@ -371,8 +402,8 @@
 	function end(e) {
 		if (e && e.pointerType === "touch") { delete touches[e.pointerId]; if (pinch && Object.keys(touches).length < 2) pinch = null; }
 		if (pick && pick.p0) { var r = pick.r, cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(r && r.w > 8 ? r : null); return; }
-		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space ? "grab" : ""; return; }
-		if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit("Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
+		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
+		guides = null; if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit("Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
 		drag = null;
 	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);

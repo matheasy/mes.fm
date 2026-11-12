@@ -19,11 +19,11 @@
 	// every change to the project goes through commit(): it records an undo step, saves (debounced) and redraws
 	VE.commit = function (label) {
 		V.applyMagnets(VE.P);
-		VE.hist.push(JSON.stringify(VE.P)); VE.dirty = true; VE.lastLabel = label || "";
+		VE.hist.push(JSON.stringify(VE.P), label); VE.dirty = true; VE.lastLabel = label || "";
 		VE.save(); VE.emit("change", label);
 	};
-	VE.undo = function () { var s = VE.hist.undo(); if (s) { VE.P = JSON.parse(s); VE.sel = VE.sel.filter(function (id) { return V.clip(VE.P, id); }); VE.save(); VE.emit("change", "undo"); } };
-	VE.redo = function () { var s = VE.hist.redo(); if (s) { VE.P = JSON.parse(s); VE.save(); VE.emit("change", "redo"); } };
+	VE.undo = function () { if (VE.flushPending) VE.flushPending(); var lab = VE.hist.undoLabel(), s = VE.hist.undo(); if (s && lab) VE.emit("notice", "Undid: " + lab); if (s) { VE.P = JSON.parse(s); VE.sel = VE.sel.filter(function (id) { return V.clip(VE.P, id); }); VE.save(); VE.emit("change", "undo"); } };
+	VE.redo = function () { var lab = VE.hist.redoLabel(), s = VE.hist.redo(); if (s && lab) VE.emit("notice", "Redid: " + lab); if (s) { VE.P = JSON.parse(s); VE.save(); VE.emit("change", "redo"); } };
 	VE.selected = function () { return VE.sel.map(function (id) { return V.clip(VE.P, id); }).filter(Boolean); };
 
 	/* ---------- IndexedDB ---------- */

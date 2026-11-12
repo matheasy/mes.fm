@@ -1249,8 +1249,11 @@
 	};
 
 	/* ---------- undo ---------- */
-	V.History = function (max) { this.max = max || 200; this.stack = []; this.i = -1; };
-	V.History.prototype.push = function (s) { if (this.i >= 0 && this.stack[this.i] === s) return; this.stack = this.stack.slice(0, this.i + 1); this.stack.push(s); if (this.stack.length > this.max) this.stack.shift(); this.i = this.stack.length - 1; };
+	V.History = function (max) { this.max = max || 200; this.stack = []; this.labels = []; this.i = -1; };
+	V.History.prototype.push = function (s, label) { if (this.i >= 0 && this.stack[this.i] === s) return; this.stack = this.stack.slice(0, this.i + 1); this.labels = this.labels.slice(0, this.i + 1); this.stack.push(s); this.labels.push(label || ""); if (this.stack.length > this.max) { this.stack.shift(); this.labels.shift(); } this.i = this.stack.length - 1; };
+	// name of the step Undo would take back / Redo would bring back ("" when unknown)
+	V.History.prototype.undoLabel = function () { return this.i > 0 ? this.labels[this.i] || "" : ""; };
+	V.History.prototype.redoLabel = function () { return this.i < this.stack.length - 1 ? this.labels[this.i + 1] || "" : ""; };
 	V.History.prototype.undo = function () { if (this.i <= 0) return null; this.i--; return this.stack[this.i]; };
 	V.History.prototype.redo = function () { if (this.i >= this.stack.length - 1) return null; this.i++; return this.stack[this.i]; };
 	V.History.prototype.canUndo = function () { return this.i > 0; };
@@ -1619,11 +1622,11 @@
 	// every change to the project goes through commit(): it records an undo step, saves (debounced) and redraws
 	VE.commit = function (label) {
 		V.applyMagnets(VE.P);
-		VE.hist.push(JSON.stringify(VE.P)); VE.dirty = true; VE.lastLabel = label || "";
+		VE.hist.push(JSON.stringify(VE.P), label); VE.dirty = true; VE.lastLabel = label || "";
 		VE.save(); VE.emit("change", label);
 	};
-	VE.undo = function () { var s = VE.hist.undo(); if (s) { VE.P = JSON.parse(s); VE.sel = VE.sel.filter(function (id) { return V.clip(VE.P, id); }); VE.save(); VE.emit("change", "undo"); } };
-	VE.redo = function () { var s = VE.hist.redo(); if (s) { VE.P = JSON.parse(s); VE.save(); VE.emit("change", "redo"); } };
+	VE.undo = function () { if (VE.flushPending) VE.flushPending(); var lab = VE.hist.undoLabel(), s = VE.hist.undo(); if (s && lab) VE.emit("notice", "Undid: " + lab); if (s) { VE.P = JSON.parse(s); VE.sel = VE.sel.filter(function (id) { return V.clip(VE.P, id); }); VE.save(); VE.emit("change", "undo"); } };
+	VE.redo = function () { var lab = VE.hist.redoLabel(), s = VE.hist.redo(); if (s && lab) VE.emit("notice", "Redid: " + lab); if (s) { VE.P = JSON.parse(s); VE.save(); VE.emit("change", "redo"); } };
 	VE.selected = function () { return VE.sel.map(function (id) { return V.clip(VE.P, id); }).filter(Boolean); };
 
 	/* ---------- IndexedDB ---------- */
@@ -2304,7 +2307,7 @@
 	var VKEY = "mes-video-editor:view", VS = { guides: false, dim: true, bar: true };
 	try { Object.assign(VS, JSON.parse(localStorage.getItem(VKEY)) || {}); } catch (e) { /* ignore */ }
 	function saveVS() { try { localStorage.setItem(VKEY, JSON.stringify({ guides: VS.guides, dim: VS.dim, bar: VS.bar })); } catch (e) { /* ignore */ } }
-	var view = { k: 1, ox: 0, oy: 0 }, isFit = true, fitClear = false, dpr = 1, pattern = null, pick = null;
+	var guides = null, view = { k: 1, ox: 0, oy: 0 }, isFit = true, fitClear = false, dpr = 1, pattern = null, pick = null;
 	P.view = function () { return { k: view.k, ox: view.ox, oy: view.oy, fit: isFit && !fitClear, fitClear: isFit && fitClear, dpr: dpr, pct: Math.round(view.k / dpr * 1000) / 10 }; };
 	function draw() { needDraw = true; if (!P.playing) requestAnimationFrame(paint); else paint(); }
 	P.draw = draw;
@@ -2346,6 +2349,12 @@
 			ctx.fillStyle = "rgba(56,189,248,0.95)"; ctx.fillText("title safe 80%", fx + fw * 0.1 + 4 * dpr, fy + fh * 0.1 + 3 * dpr);
 		}
 		ctx.restore();
+		if (guides && drag && drag.mode === "move") {   // snap guide lines across the whole stage
+			ctx.save(); ctx.strokeStyle = "#f472b6"; ctx.lineWidth = Math.max(1, dpr); ctx.setLineDash([]); ctx.beginPath();
+			if (guides.x != null) { var gxp = Math.round(fx + guides.x * k) + 0.5; ctx.moveTo(gxp, 0); ctx.lineTo(gxp, CH); }
+			if (guides.y != null) { var gyp = Math.round(fy + guides.y * k) + 0.5; ctx.moveTo(0, gyp); ctx.lineTo(CW, gyp); }
+			ctx.stroke(); ctx.restore();
+		}
 		// selection frame (turned with the clip), corner handles and the turn handle
 		var sel = VE.selected().filter(function (c) { return c.type !== "audio" && V.active(c, VE.t); });
 		if (sel.length && !P.playing && !pick) {
@@ -2422,11 +2431,21 @@
 	P.hover = false; P.space = null;
 	wrap.addEventListener("pointerenter", function () { P.hover = true; }); wrap.addEventListener("pointerleave", function () { P.hover = false; });
 	P.spaceDown = function () { if (!P.space) { P.space = { used: false }; cv.style.cursor = "grab"; } };
+	// Space is watched here too (capture phase, whatever has the keyboard focus, except while typing), so Space + drag always pans,
+	// even over a clip, while playing, or with a button / time box focused
+	var spaceHeld = false;
+	function typing(t) { return t && (/^(TEXTAREA|SELECT)$/.test(t.tagName) || (t.tagName === "INPUT" && !/^(checkbox|radio|range|button)$/i.test(t.type)) || t.isContentEditable); }
+	window.addEventListener("keydown", function (e) { if (e.key === " " && !typing(e.target)) spaceHeld = true; }, true);
+	window.addEventListener("keyup", function (e) { if (e.key === " ") spaceHeld = false; }, true);
+	window.addEventListener("blur", function () { spaceHeld = false; });
+	// hand tool: every drag in the preview moves the view (the zoom bar's ✋ button, key H)
+	P.hand = false;
+	P.setHand = function (on) { P.hand = !!on; cv.style.cursor = P.hand ? "grab" : ""; VE.emit("view"); };
 	document.addEventListener("keyup", function (e) { if (e.key !== " " || !P.space) return; var used = P.space.used; P.space = null; cv.style.cursor = ""; if (!used) P.toggle(); });
 	function startPan(e) { drag = { pan: true, x: e.clientX, y: e.clientY, ox: view.ox, oy: view.oy }; isFit = false; fitClear = false; cv.style.cursor = "grabbing"; cv.setPointerCapture(e.pointerId); e.preventDefault(); }
 	cv.addEventListener("pointerdown", function (e) {
 		if (e.pointerType === "touch") { touches[e.pointerId] = canvasPt(e); var ids = Object.keys(touches); if (ids.length === 2) { if (drag && drag.c && drag.moved) VE.commit(drag.corner ? "Resize" : "Move"); drag = null; var a = touches[ids[0]], b = touches[ids[1]]; pinch = { d: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)), m: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, v: Object.assign({}, view) }; isFit = false; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; } }
-		if (e.button === 1 || (P.space && e.button === 0)) { if (P.space) P.space.used = true; startPan(e); return; }
+		if (e.button === 1 || ((P.space || spaceHeld || P.hand) && e.button === 0)) { if (P.space) P.space.used = true; startPan(e); return; }
 		if (e.button > 0) return;
 		var pt = toFrame(e);
 		if (pick) { pick.p0 = pt; pick.r = null; cv.setPointerCapture(e.pointerId); e.preventDefault(); return; }
@@ -2451,6 +2470,12 @@
 		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
 		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
 		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false };
+		if (mode === "move") {   // snap targets: the frame's edges and middle, and the edges / middles of the other pictures showing now
+			var rb = VE.rectOf(ctx, hitC, PW, PH, pos);
+			if (rb) { drag.bw = rb.dw; drag.bh = rb.dh; drag.bx = rb.dx + rb.dw / 2 - cxp; drag.by = rb.dy + rb.dh / 2 - cyp; }
+			drag.tx = [0, PW / 2, PW]; drag.ty = [0, PH / 2, PH];
+			L.forEach(function (l) { if (l.clip === hitC) return; var ro = VE.rectOf(ctx, l.clip, PW, PH, l.pos); if (!ro || ro.rot) return; drag.tx.push(ro.dx, ro.dx + ro.dw / 2, ro.dx + ro.dw); drag.ty.push(ro.dy, ro.dy + ro.dh / 2, ro.dy + ro.dh); });
+		}
 		cv.setPointerCapture(e.pointerId); e.preventDefault(); draw();
 	});
 	cv.addEventListener("pointermove", function (e) {
@@ -2463,7 +2488,7 @@
 			var q = toFrame(e), W = VE.P.w, H = VE.P.h, w = Math.max(Math.abs(q.x - pick.p0.x), Math.abs(q.y - pick.p0.y) * W / H);
 			pick.r = V.frameRect(Math.min(q.x, pick.p0.x) + Math.abs(q.x - pick.p0.x) / 2, Math.min(q.y, pick.p0.y) + Math.abs(q.y - pick.p0.y) / 2, Math.max(8, w), W, H); draw(); return;
 		}
-		if (!drag) { if (!P.playing && !pick) cv.style.cursor = P.space ? "grab" : ""; return; }
+		if (!drag) { if (!pick) cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
 		if (drag.pan) { var b2 = cv.getBoundingClientRect(), sx = cv.width / Math.max(1, b2.width); view.ox = drag.ox + (e.clientX - drag.x) * sx; view.oy = drag.oy + (e.clientY - drag.y) * sx; draw(); return; }
 		var pt = toFrame(e), c = drag.c, rel = drag.rel, tol = drag.tol; drag.moved = true;
 		if (drag.mode === "wrap") {
@@ -2474,7 +2499,16 @@
 		else if (drag.mode === "turn") { var ang = drag.r0 + (Math.atan2(pt.y - drag.cy, pt.x - drag.cx) - drag.a0) * 180 / Math.PI; if (!e.shiftKey) ang = Math.round(ang / 5) * 5; if (!e.shiftKey && Math.abs(ang % 90) < 3) ang = Math.round(ang / 90) * 90; V.setPropAt(c, rel, "rot", Math.round(ang * 100) / 100, tol); }
 		else {
 			var nx = drag.x0 + (pt.x - drag.p0.x) / VE.P.w, ny = drag.y0 + (pt.y - drag.p0.y) / VE.P.h;
-			if (!e.altKey) { if (Math.abs(nx - 0.5) < 0.012) nx = 0.5; if (Math.abs(ny - 0.5) < 0.012) ny = 0.5; }
+			// Snap (the timeline's Snap box; Alt = the opposite while dragging): the box's left / middle / right and top / middle / bottom
+			// stick to the frame and the other pictures within ~7 screen pixels, with a pink guide line
+			var snapOn = (VE.tl.snap !== false) !== !!e.altKey; guides = null;
+			if (snapOn && drag.bw) {
+				var th = 7 * dpr / view.k, gx = null, gy = null;
+				function best(c0, half, list) { var b = null; [-half, 0, half].forEach(function (o) { list.forEach(function (L0) { var d = L0 - (c0 + o); if (Math.abs(d) <= th && (!b || Math.abs(d) < Math.abs(b.d))) b = { d: d, at: L0 }; }); }); return b; }
+				var bxs = best(nx * VE.P.w + drag.bx, drag.bw / 2, drag.tx), bys = best(ny * VE.P.h + drag.by, drag.bh / 2, drag.ty);
+				if (bxs) { nx += bxs.d / VE.P.w; gx = bxs.at; } if (bys) { ny += bys.d / VE.P.h; gy = bys.at; }
+				if (gx != null || gy != null) guides = { x: gx, y: gy };
+			}
 			V.setPropAt(c, rel, "x", Math.round(nx * 10000) / 10000, tol); V.setPropAt(c, rel, "y", Math.round(ny * 10000) / 10000, tol);
 		}
 		VE.emit("live"); draw();
@@ -2482,8 +2516,8 @@
 	function end(e) {
 		if (e && e.pointerType === "touch") { delete touches[e.pointerId]; if (pinch && Object.keys(touches).length < 2) pinch = null; }
 		if (pick && pick.p0) { var r = pick.r, cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(r && r.w > 8 ? r : null); return; }
-		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space ? "grab" : ""; return; }
-		if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit("Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
+		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
+		guides = null; if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit("Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
 		drag = null;
 	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
@@ -3256,6 +3290,7 @@
 
 	/* ---------- clip clipboard: cut / copy / paste (kept in this browser, so it also works between tabs and projects that share the media) ---------- */
 	var CLIPKEY = "mes-video-editor:clipboard", clipMem = null;
+	function readClipAny() { return readClip(); }
 	function readClip() { if (clipMem) return clipMem; try { var c = JSON.parse(localStorage.getItem(CLIPKEY)); if (c && c.clips && c.clips.length) return (clipMem = c); } catch (e) { /* ignore */ } return null; }
 	window.addEventListener("storage", function (e) { if (e.key === CLIPKEY) clipMem = null; });
 	VE.copy = function (quiet) {
@@ -3425,8 +3460,10 @@
 	$("vd-addv").onclick = function () { VE.addTrack("v"); VE.commit("Add video track"); };
 	$("vd-adda").onclick = function () { VE.addTrack("a"); VE.commit("Add audio track"); };
 	$("vd-addtitle").onclick = function () { VE.addTitle(); };
-	$("vd-undo").onclick = VE.undo; $("vd-redo").onclick = VE.redo;
-	$("vd-snapchk").onchange = function () { VE.tl.snap = this.checked; };
+	$("vd-undo").onclick = VE.undo; $("vd-redo").onclick = VE.redo; $("vd-undo2").onclick = VE.undo; $("vd-redo2").onclick = VE.redo;
+	// one Snap setting for the timeline and the preview (remembered); Alt while dragging does the opposite
+	VE.tl.snap = UI.snap !== false; $("vd-snapchk").checked = VE.tl.snap;
+	$("vd-snapchk").onchange = function () { VE.tl.snap = this.checked; UI.snap = this.checked; saveUI(); };
 
 	/* ---------- zoom ---------- */
 	var zr = $("vd-zoom");
@@ -3582,7 +3619,43 @@
 		var b = e.target.closest("[data-act]"); if (!b) return; fm.hidden = true; var a = b.getAttribute("data-act");
 		if (a === "import") $("vd-file").click(); else if (a === "title") VE.addTitle(); else if (a === "saveproj") saveProject(); else if (a === "saveprojas") saveProject(true); else if (a === "openproj") pickProject();
 		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) { P.pause(); VE.clearAll().then(function () { if (mdir.h) VE.idbPut("kv", "mediadir", mdir.h).catch(function () { }); }); linkProject(null); cloudUnlink(); } }
-		else if (a === "snapshot") snapshot(); else if (a === "export") openExport();
+		else if (a === "snapshot") snapshot(); else if (a === "export") openExport(); else if (a === "narrate") openNarrate();
+	});
+
+	/* ---------- Edit menu: every common edit in one place, with the shortcut and what Undo / Redo would do ---------- */
+	var em = $("vd-editmenu"), mac = /Mac|iP/.test(navigator.platform || ""), MK = mac ? "⌘" : "Ctrl+";
+	function editItems() {
+		var sel = VE.selected(), has = sel.length > 0, cb = (function () { try { return !!readClipAny(); } catch (e) { return false; } })(), c0 = sel[0], tr0 = c0 && V.track(VE.P, c0.track);
+		var ul = VE.hist.undoLabel(), rl = VE.hist.redoLabel(), inClip = VE.P.clips.some(function (c) { return VE.t > c.start && VE.t < V.end(c); });
+		return [
+			["undo", "Undo" + (ul ? " " + ul.toLowerCase() : ""), MK + "Z", !VE.hist.canUndo()], ["redo", "Redo" + (rl ? " " + rl.toLowerCase() : ""), MK + (mac ? "⇧Z" : "Y"), !VE.hist.canRedo()], "-",
+			["cut", "Cut", MK + "X", !has], ["copy", "Copy", MK + "C", !has], ["paste", "Paste at the playhead", MK + "V", !cb], ["dup", "Duplicate", MK + "D", !has], "-",
+			["del", "Delete", "Del", !has], ["ripple", "Ripple delete (close the gap)", "Shift+Del", !has], ["split", "Split at the playhead", "S", !inClip], ["cutrange", "Cut out the marked part (I to O)", "", !marksOk()], "-",
+			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this track"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
+			["up", "Move up a track", "Alt+↑", !has], ["down", "Move down a track", "Alt+↓", !has], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], "-",
+			["narrate", "Add narration from text…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
+		];
+	}
+	function renderEdit() {
+		em.innerHTML = editItems().map(function (q) { return q === "-" ? "<hr>" : '<button type="button" role="menuitem" data-ea="' + q[0] + '"' + (q[3] ? " disabled" : "") + ">" + esc(q[1]) + (q[2] ? " <kbd>" + esc(q[2]) + "</kbd>" : "") + "</button>"; }).join("");
+	}
+	$("vd-editbtn").onclick = function (e) { e.stopPropagation(); fm.hidden = true; if (em.hidden) renderEdit(); em.hidden = !em.hidden; this.setAttribute("aria-expanded", !em.hidden); var f = em.querySelector("button:not([disabled])"); if (!em.hidden && f) f.focus({ preventScroll: true }); };
+	document.addEventListener("click", function (e) { if (!em.hidden && !e.target.closest(".vd-menu")) { em.hidden = true; $("vd-editbtn").setAttribute("aria-expanded", "false"); } });
+	em.addEventListener("keydown", function (e) { var bs = [].slice.call(em.querySelectorAll("button:not([disabled])")), i = bs.indexOf(document.activeElement); if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); e.stopPropagation(); (bs[(i + (e.key === "ArrowDown" ? 1 : bs.length - 1)) % bs.length] || bs[0]).focus(); } else if (e.key === "Escape") { e.stopPropagation(); em.hidden = true; $("vd-editbtn").focus(); } });
+	em.addEventListener("click", function (e) {
+		var b = e.target.closest("[data-ea]"); if (!b || b.disabled) return; em.hidden = true; $("vd-editbtn").setAttribute("aria-expanded", "false");
+		var a = b.getAttribute("data-ea"), sel = VE.selected(), c0 = sel[0];
+		({
+			undo: VE.undo, redo: VE.redo, cut: VE.cut, copy: function () { VE.copy(); }, paste: function () { VE.paste(); }, dup: VE.duplicate,
+			del: function () { VE.del(false); }, ripple: function () { VE.del(true); }, split: VE.split, cutrange: function () { $("vd-cutrange").click(); },
+			all: function () { VE.sel = VE.P.clips.map(function (c) { return c.id; }); VE.emit("select"); },
+			track: function () { VE.sel = V.onTrack(VE.P, c0.track).map(function (c) { return c.id; }); VE.emit("select"); },
+			after: function () { VE.sel = VE.P.clips.filter(function (c) { return V.end(c) > VE.t + 1e-6; }).map(function (c) { return c.id; }); VE.emit("select"); },
+			none: function () { VE.sel = []; VE.emit("select"); },
+			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); },
+			sep: function () { if (c0.link) { V.unlink(VE.P, c0.id); VE.commit("Unlink"); } else VE.separate(sel); },
+			narrate: openNarrate, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },
+		})[a]();
 	});
 	/* ---------- project file: like the Photo Editor, a project opened from or saved to a file stays linked to it, so Ctrl+S writes
 	   that same file again (no new name each time). Needs the File System Access API (Chrome, Edge, Opera on a computer; Brave behind
@@ -4067,7 +4140,10 @@
 	var fontT = 0; VE.on("change", function () { clearTimeout(fontT); fontT = setTimeout(function () { VE.ensureFonts().then(function () { VE.preview.draw(); }); }, 200); });
 	VE.on("editText", function (c) { VE.sel = [c.id]; renderInsp(); var ta = $("vd-ttext"); if (ta) { ta.focus(); ta.select(); } });
 	function updateButtons() {
-		$("vd-undo").disabled = !VE.hist.canUndo(); $("vd-redo").disabled = !VE.hist.canRedo();
+		$("vd-undo").disabled = $("vd-undo2").disabled = !VE.hist.canUndo(); $("vd-redo").disabled = $("vd-redo2").disabled = !VE.hist.canRedo();
+		var ul = VE.hist.undoLabel(), rl = VE.hist.redoLabel();
+		["vd-undo", "vd-undo2"].forEach(function (id) { $(id).title = (ul ? "Undo " + ul.toLowerCase() : "Undo") + " (Ctrl+Z)"; });
+		["vd-redo", "vd-redo2"].forEach(function (id) { $(id).title = (rl ? "Redo " + rl.toLowerCase() : "Redo") + " (Ctrl+Shift+Z)"; });
 		$("vd-cutrange").disabled = !marksOk(); $("vd-clearmarks").disabled = !(VE.P.marks && (VE.P.marks.in != null || VE.P.marks.out != null));
 		var nm = $("vd-name"); if (document.activeElement !== nm) nm.value = VE.P.name;
 		$("vd-sep").disabled = !VE.selected().some(function (c) { return c.type === "video" && VE.hasSound(c); });
@@ -4446,8 +4522,13 @@
 
 	/* ---------- arrow keys after clicking the preview: move the selected picture / title (1 video pixel, Shift = 10) ---------- */
 	VE.kbFocus = "tl";
-	document.addEventListener("pointerdown", function (e) { if (!app.contains(e.target)) return; VE.kbFocus = e.target.closest("#vd-canvas") ? "pv" : "tl"; }, true);
+	// a click on the preview or the timeline takes the keyboard away from a text box (else Ctrl+Z / arrows went to that box)
+	document.addEventListener("pointerdown", function (e) {
+		if (!app.contains(e.target)) return; var pv = !!e.target.closest("#vd-canvas"); VE.kbFocus = pv ? "pv" : "tl";
+		var ae = document.activeElement; if ((pv || e.target.closest("#vd-tlscroll")) && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && ae !== e.target) ae.blur();
+	}, true);
 	var nudgeT = 0;
+	VE.flushPending = function () { if (nudgeT) { clearTimeout(nudgeT); nudgeT = 0; VE.commit("Nudge"); } };
 	function nudgeTargets() { return VE.selected().filter(function (c) { var tr = V.track(VE.P, c.track); return c.type !== "audio" && !(tr && tr.lock) && V.active(c, VE.t); }); }
 	VE.nudge = function (dx, dy) {
 		var list = nudgeTargets(); if (!list.length) return false;
@@ -4460,7 +4541,7 @@
 		});
 		if (blocked) toast("The playhead is inside an animation: move it to the animation's start or end to move the clip there.");
 		VE.emit("live"); VE.preview.draw();
-		clearTimeout(nudgeT); nudgeT = setTimeout(function () { VE.commit("Nudge"); }, 450);   // one undo step for a burst of presses
+		clearTimeout(nudgeT); nudgeT = setTimeout(function () { nudgeT = 0; VE.commit("Nudge"); }, 450);   // one undo step for a burst of presses
 		return true;
 	};
 
@@ -4493,6 +4574,7 @@
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
 			case "g": case "G": $("vd-vzguide").click(); break;
+			case "h": case "H": P.setHand(!P.hand); break;
 			case "k": case "K": P.pause(); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
 			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else VE.stepFrame(1); break;
@@ -4506,6 +4588,7 @@
 			case "Delete": case "Backspace": VE.del(e.shiftKey); break;
 			case "i": case "I": mark("in"); break; case "o": case "O": mark("out"); break;
 			case "t": case "T": VE.addTitle(); break;
+			case "n": case "N": openNarrate(); break;
 			case "b": case "B": VE.cycleBar(); break;
 			case "f": case "F": if (e.shiftKey) $("vd-fs").click(); else setPv(!app.classList.contains("vd-pvfill")); break;
 			case "+": case "=": VE.tl.zoom(VE.pps * 1.5); break; case "-": case "_": VE.tl.zoom(VE.pps / 1.5); break;
@@ -4954,14 +5037,78 @@
 		el.addEventListener("click", function () { if (held) { held = false; return; } nudge(1); });   // keyboard Enter / Space
 	});
 	$("vd-vzguide").onclick = function () { P.guides(!P.guides()); vzRender(); };
+	$("vd-vzhand").onclick = function () { P.setHand(!P.hand); };
+	VE.on("view", function () { $("vd-vzhand").setAttribute("aria-pressed", !!P.hand); });
 	$("vd-vzdim").onclick = function () { P.dimOutside(!P.dimOutside()); vzRender(); };
 	vzRender();
+
+	/* ---------- narration from text (MES Narration engine /main_js/narrate.js, loaded on first use): the speech lands as a sound clip at the playhead ---------- */
+	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "" };
+	try { Object.assign(NS, JSON.parse(localStorage.getItem(NKEY)) || {}); } catch (e) { /* ignore */ }
+	function loadNarrate() { if (window.MESNarrate) return Promise.resolve(window.MESNarrate); return new Promise(function (res, rej) { var sc = document.createElement("script"); sc.src = "/main_js/narrate.js?v=1"; sc.onload = function () { res(window.MESNarrate); }; sc.onerror = function () { rej(new Error("Could not load the narration engine.")); }; document.head.appendChild(sc); }); }
+	function addAudioFile(file, at) {
+		return importFiles([file]).then(function (ms) {
+			var m = ms && ms[0]; if (!m) throw new Error("The sound could not be added.");
+			return new Promise(function (res) { (function wait(n) { if (m.state === "ready" || n > 200) res(m); else setTimeout(function () { wait(n + 1); }, 100); })(0); });
+		}).then(function (m) { if (m.state !== "ready") throw new Error("The sound could not be read."); return VE.tl.placeMedia(m, null, null, at); });
+	}
+	function openNarrate() {
+		loadNarrate().then(function (N) {
+			return N.listVoices().catch(function () { return []; }).then(function (mine) {
+				var vopt = N.VOICES.map(function (v) { return '<option value="k:' + v[0] + '">' + esc(v[1]) + " (" + esc(v[2]) + ")</option>"; }).join("");
+				var mopt = mine.map(function (v) { return '<option value="c:' + v.id + '">' + esc(v.name) + "</option>"; }).join("");
+				var cur = NS.eng === "clone" && NS.cvoice ? "c:" + NS.cvoice : "k:" + NS.voice;
+				dialog('<h3>Add narration from text</h3><p class="vd-sub">Type the script; it is spoken in this browser and added as a sound clip at the playhead (' + esc(V.tc(VE.t, VE.P.fps)) + '). A blank line = a longer pause, <code>[pause 2]</code> = 2 seconds.</p>' +
+					'<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true"></textarea>' +
+					'<div class="vd-grid"><label>Voice<select id="vd-nv"><optgroup label="Ready-made voices">' + vopt + "</optgroup>" + (mopt ? '<optgroup label="My voices (copied from my recordings)">' + mopt + "</optgroup>" : "") + "</select></label>" +
+					'<label>Speed (ready-made voices) <input type="range" id="vd-nsp" min="0.6" max="1.6" step="0.05"></label></div>' +
+					'<p class="vd-sub">' + (mopt ? "My voices use a 1.5 GB model the first time (needs a computer with WebGPU). " : "") + 'To add your own voice, record it once on <a href="/narration" target="_blank" rel="noopener">MES Narration</a> (My own voice → Add a voice): it shows up here after.</p>' +
+					'<div class="vd-nprog" id="vd-nprog" hidden><div class="vd-nbar"><i id="vd-nbf"></i></div><span id="vd-npt"></span></div>' +
+					'<div class="vd-row"><button type="button" class="vd-btn vd-primary" id="vd-ngo">🗣 Make it and add it</button><button type="button" class="vd-btn" id="vd-nclose">Close</button></div>');
+				var ta = $("vd-nt"), sel = $("vd-nv"), sp = $("vd-nsp");
+				ta.value = NS.text || ""; sel.value = cur; if (!sel.value) sel.value = "k:af_heart"; sp.value = NS.speed;
+				function keep() { NS.text = ta.value; var v = sel.value; if (v[0] === "c") { NS.eng = "clone"; NS.cvoice = v.slice(2); } else { NS.eng = "kokoro"; NS.voice = v.slice(2); } NS.speed = +sp.value; try { localStorage.setItem(NKEY, JSON.stringify(NS)); } catch (e) { /* ignore */ } }
+				ta.oninput = sel.onchange = sp.oninput = keep;
+				ta.addEventListener("keydown", function (e) { e.stopPropagation(); });
+				$("vd-nclose").onclick = closeDialog;
+				$("vd-ngo").onclick = function () {
+					keep(); var text = ta.value.trim(); if (!text) { ta.focus(); return; }
+					var b = this, at = VE.t; b.disabled = true; $("vd-nprog").hidden = false;
+					function prog(f, t) { $("vd-nbf").style.width = Math.round(f * 100) + "%"; $("vd-npt").textContent = t; }
+					N.speak(text, { engine: NS.eng, voice: NS.eng === "clone" ? NS.cvoice : NS.voice, speed: NS.speed, exaggeration: NS.exag, gap: NS.gap, paraGap: NS.pgap,
+						onProgress: function (f, L, T) { prog(f, "Downloading the voice model, one time only: " + (T ? Math.round(L / 1048576) + " of " + Math.round(T / 1048576) + " MB" : Math.round(f * 100) + "%")); },
+						onPiece: function (i, n) { prog(n ? i / n : 0, i < n ? "Speaking line " + (i + 1) + " of " + n + "…" : "Adding it to the timeline…"); } })
+					.then(function (r) {
+						var name = "Narration " + text.replace(/\s+/g, " ").slice(0, 32).replace(/[\\/:*?"<>|]+/g, "") + ".wav", f = new File([N.wav(r.audio, r.sr)], name, { type: "audio/wav" });
+						return addAudioFile(f, at);
+					}).then(function (c) { closeDialog(); if (c) { VE.sel = [c.id]; VE.emit("select"); } toast("Narration added at " + V.tc(at, VE.P.fps) + " on " + ((V.track(VE.P, c.track) || {}).name || "a sound track") + ". It is also in Media, so you can drag it again."); },
+						function (e) { b.disabled = false; prog(0, "Could not make it: " + e.message); });
+				};
+				setTimeout(function () { ta.focus(); }, 40);
+			});
+		}, function (e) { toast(e.message); });
+	}
+	$("vd-narr") && ($("vd-narr").onclick = openNarrate);
 
 	/* ---------- start ---------- */
 	VE.hist.push(JSON.stringify(VE.P));
 	VE.restore().then(function (had) {
 		renderBin(); renderInsp(); updateButtons(); VE.tl.render(); VE.preview.fit(); timeText();
 		if (had) { toast("Your last project is back."); setTimeout(function () { if (V.duration(VE.P)) VE.tl.fit(); }, 400); }
+		receiveHandoff();
 	});
+	// sound handed over by another MES page (MES Narration's "Add to the Video Editor"): added at the playhead
+	function receiveHandoff() {
+		var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m) return;
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) { /* ignore */ }
+		var got = null;
+		handoffDb().then(function (db) { return new Promise(function (res, rej) { var t = db.transaction("h", "readwrite"), st = t.objectStore("h"), g = st.get(m[1]); g.onsuccess = function () { got = g.result || null; if (got) st.delete(m[1]); }; t.oncomplete = function () { db.close(); res(); }; t.onerror = function () { rej(t.error); }; }); })
+			.then(function () {
+				if (!got || !got.files || !got.files.length) return;
+				var chain = Promise.resolve();
+				got.files.forEach(function (f) { if (!f.blob) return; chain = chain.then(function () { return addAudioFile(new File([f.blob], f.name || "narration.wav", { type: f.type || "audio/wav" }), VE.t); }); });
+				return chain.then(function () { toast("Added " + got.files.length + " file" + (got.files.length === 1 ? "" : "s") + " from MES Narration at the playhead."); });
+			}).catch(function (e) { toast("Could not take the handed-over file: " + (e && e.message || e)); });
+	}
 	window.MESVideoEditor = VE;   // for testing from the console
 })();
