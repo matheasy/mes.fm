@@ -167,7 +167,7 @@
 	#bl .bl-3d .bl-3dmsg {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;font-weight:600;}
 	#bl .bl-dim button {min-height:38px;padding:0 0.8em;font-weight:700;}
 	#bl .bl-cam {min-height:38px;width:auto;font-size:0.88em;padding:0 0.5em;}
-	#bl .bl-3dhint {position:absolute;left:10px;top:10px;max-width:calc(100% - 240px) !important;z-index:2;border-radius:12px !important;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
+	#bl .bl-3dhint {position:absolute;left:10px;top:54px;max-width:calc(100% - 240px) !important;z-index:2;border-radius:12px !important;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
 	/* background music / video */
 	#bl .bl-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 	#bl .bl-muspanel {margin:0 0 0.6em;padding:0.6em 0.7em;border-radius:10px;background:var(--bl-cell);border:1px solid var(--bl-cardline);}

@@ -413,6 +413,20 @@
 		}
 		return m;
 	}
+	// the jukebox's outline traced from its picture (x across, y up, 0..1), so the 3D cabinet has the picture's exact shape
+	var JUKE_OUTLINE = [[0.94,0.002],[0.998,0.012],[0.995,0.174],[0.99,0.186],[0.985,0.198],[0.985,0.209],[0.98,0.221],[0.982,0.558],[0.995,0.57],[0.98,0.581],[0.968,0.593],[0.995,0.605],[0.98,0.616],[0.968,0.628],[0.995,0.64],[0.985,0.651],[0.98,0.663],[0.972,0.744],[0.968,0.756],[0.962,0.767],[0.958,0.779],[0.95,0.791],[0.945,0.802],[0.938,0.814],[0.928,0.826],[0.918,0.837],[0.91,0.849],[0.898,0.86],[0.885,0.872],[0.87,0.884],[0.855,0.895],[0.838,0.907],[0.82,0.919],[0.8,0.93],[0.775,0.942],[0.748,0.953],[0.718,0.965],[0.71,0.977],[0.67,0.988],[0.528,1.0],[0.47,1.0],[0.328,0.988],[0.288,0.977],[0.28,0.965],[0.248,0.953],[0.222,0.942],[0.198,0.93],[0.178,0.919],[0.16,0.907],[0.142,0.895],[0.128,0.884],[0.112,0.872],[0.1,0.86],[0.09,0.849],[0.08,0.837],[0.07,0.826],[0.06,0.814],[0.052,0.802],[0.048,0.791],[0.04,0.779],[0.035,0.767],[0.03,0.756],[0.025,0.744],[0.02,0.663],[0.012,0.651],[0.002,0.64],[0.03,0.628],[0.018,0.616],[0.002,0.605],[0.03,0.593],[0.018,0.581],[0.002,0.57],[0.015,0.558],[0.018,0.221],[0.012,0.209],[0.008,0.186],[0.002,0.174],[0.0,0.012],[0.055,0.002]];
+	function jukebox3d(view, g, x, z, ry) {
+		var w = 0.96, h = w * 602 / 400, d = 0.5, sh = new THREE.Shape();
+		JUKE_OUTLINE.forEach(function (p, i) { var px = (p[0] - 0.5) * w, py = p[1] * h; if (i) sh.lineTo(px, py); else sh.moveTo(px, py); });
+		var geo = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 2 });
+		var t = imgTex(view, "jukebox.jpg");
+		t.repeat.set(1 / w, 1 / h); t.offset.set(0.5, 0);           // the caps' UVs are in metres: map the picture onto the outline
+		var face = std("#ffffff", 0.35, { map: t, emissive: "#ffffff", emissiveMap: t, emissiveIntensity: 0.55 });
+		var side = std("#b8561a", 0.4, { emissive: "#ff7a1a", emissiveIntensity: 0.35 });
+		var m = new THREE.Mesh(geo, [face, side]);
+		m.position.set(x, -0.89, z); m.rotation.y = ry; m.castShadow = true; m.receiveShadow = true; g.add(m);
+		return m;
+	}
 	function walls(g, X, Z, H, mat, floorMat) {
 		var fl = new THREE.Mesh(new THREE.PlaneGeometry(2 * X + 2, 2 * Z + 2), floorMat); fl.rotation.x = -Math.PI / 2; fl.position.y = -0.89; fl.receiveShadow = true; g.add(fl);
 		var y = -0.89 + H / 2;
@@ -474,8 +488,8 @@
 				c.fillStyle = "#c62828"; c.beginPath(); c.arc(128, 128, 8, 0, 7); c.fill();
 			}) }));
 			db.rotation.x = Math.PI / 2; db.position.set(-1.8, F + 1.75, Z - 0.03); db.rotation.z = Math.PI; g.add(db);
-			// the jukebox: a lit picture standing in front of the wall, with its own warm glow
-			picture(this, g, "jukebox.webp", 0.96, 1.44, 1.95, F + 0.72, Z - 0.3, Math.PI, { glow: true });
+			// the jukebox: a 3D cabinet in the picture's shape, its front the picture, glowing sides
+			jukebox3d(this, g, 1.95, Z - 0.03, Math.PI);
 			var jl = new THREE.PointLight("#ff9a3c", 1.1, 2.6, 1.6); jl.position.set(1.95, F + 1.0, Z - 0.75); g.add(jl);
 			var warm = new THREE.PointLight("#ffb36b", 2.2, 9, 1.2); warm.position.set(0, F + 2.6, -Z + 1.2); g.add(warm);
 			var pink = new THREE.PointLight("#ff3d8b", 1.2, 5, 1.5); pink.position.set(-X + 0.5, F + 2.2, 0); g.add(pink);
@@ -529,6 +543,7 @@
 				c.strokeStyle = "#f5f0e6"; c.lineWidth = 8; c.strokeRect(0, 0, w, h); c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2, h); c.moveTo(0, h / 2); c.lineTo(w, h / 2); c.stroke();
 			}) }));
 			win.position.set(1.3, F + 1.45, -Z + 0.02); g.add(win);
+			imgTex(this, "window.jpg", function (tx) { win.material.map = tx; win.material.needsUpdate = true; });
 			var sofa = std("#3e5c76", 0.9);
 			box(g, 2.2, 0.45, 0.85, sofa, -1.2, F + 0.32, -Z + 0.6, true); box(g, 2.2, 0.55, 0.22, sofa, -1.2, F + 0.75, -Z + 0.15, true);
 			box(g, 0.22, 0.6, 0.85, sofa, -2.38, F + 0.45, -Z + 0.6, true); box(g, 0.22, 0.6, 0.85, sofa, -0.02, F + 0.45, -Z + 0.6, true);
@@ -547,6 +562,8 @@
 				c.fillStyle = "#fff3c4"; c.beginPath(); c.arc(140, 40, 14, 0, 7); c.fill();
 			}) }));
 			pic.position.set(X - 0.02, F + 1.8, 0.3); pic.rotation.y = -Math.PI / 2; g.add(pic);
+			var picFr = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), std("#6d4c33", 0.5)); picFr.position.set(X - 0.024, F + 1.8, 0.3); picFr.rotation.y = -Math.PI / 2; g.add(picFr);
+			imgTex(this, "painting.jpg", function (tx) { pic.material.map = tx; pic.material.needsUpdate = true; });
 			var sun = new THREE.PointLight("#fff1dc", 1.6, 9, 1.2); sun.position.set(0.6, F + 2.2, -Z + 0.8); g.add(sun);
 			this.renderer.toneMappingExposure = 1.15;
 		} else if (name === "screens") {
@@ -583,7 +600,9 @@
 				for (var r2 = 0; r2 < rows; r2++) for (var c2 = 0; c2 < cols; c2++) {
 					var u = (c2 - (cols - 1) / 2) * (sw + gap), y = F + 0.75 + r2 * (sh + gap);
 					var k = Math.floor(rnd() * NF), m = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshBasicMaterial({ map: calm[k] }));
-					place(m, u, y); g.add(m); scr.push({ m: m, k: k, t: 0 });
+					var fr = new THREE.Mesh(new THREE.PlaneGeometry(sw + 0.05, sh + 0.05), new THREE.MeshBasicMaterial({ color: "#4caf50" }));
+					fr.position.z = -0.004; fr.visible = false; m.add(fr);
+					place(m, u, y); g.add(m); scr.push({ m: m, k: k, t: 0, fr: fr });
 				}
 			}
 			wallOf(2 * X, function (m, u, y) { m.position.set(u, y, -Z + 0.03); });
@@ -592,12 +611,20 @@
 			wallOf(2 * Z, function (m, u, y) { m.position.set(X - 0.03, y, u); m.rotation.y = -Math.PI / 2; });
 			// a dark frame behind each wall of screens
 			box(g, 2 * X - 0.2, 4 * (sh + gap) + 0.1, 0.02, frameMat, 0, F + 0.75 + 1.5 * (sh + gap), -Z + 0.015);
-			var last = 0;
+			var last = 0, useImg = false;
+			imgTex(this, "fans.jpg", function (tx) {   // 16 illustrated fans (one picture, 4 x 4): each screen shows one tile
+				for (var q = 0; q < NF; q++) {
+					var tt = tx.clone(); tt.repeat.set(0.25, 0.25); tt.offset.set((q % 4) * 0.25, 0.75 - Math.floor(q / 4) * 0.25); tt.needsUpdate = true;
+					calm[q] = loud[q] = tt;
+				}
+				useImg = true;
+				scr.forEach(function (o) { o.m.material.map = calm[o.k]; o.m.material.color.set("#c8c8c8"); o.m.material.needsUpdate = true; });
+			});
 			this.anims.push(function (t) {    // every so often a few fans cheer (and stop again)
 				if (t - last < 0.6) return; last = t;
 				scr.forEach(function (o) {
-					if (o.t && t > o.t) { o.m.material.map = calm[o.k]; o.t = 0; }
-					else if (!o.t && Math.random() < 0.035) { o.m.material.map = loud[o.k]; o.t = t + 1 + Math.random() * 2; }
+					if (o.t && t > o.t) { o.m.material.map = calm[o.k]; o.t = 0; if (useImg) { o.fr.visible = false; o.m.material.color.set("#c8c8c8"); o.m.scale.set(1, 1, 1); } }
+					else if (!o.t && Math.random() < 0.035) { o.m.material.map = loud[o.k]; o.t = t + 1 + Math.random() * 2; if (useImg) { o.fr.visible = true; o.m.material.color.set("#ffffff"); o.m.scale.set(1.05, 1.05, 1); } }
 				});
 			});
 			sign(g, "LIVE", "#ff1744", 0.8, -X + 0.4, F + 0.45, -Z + 0.05, 0);
@@ -606,7 +633,12 @@
 		} else if (name === "party") {
 			// a night club: glowing dance floor, moving beams, lasers, a DJ booth, a dancing crowd and a disco ball
 			sc.background = new THREE.Color("#05020c"); sc.fog = new THREE.Fog("#05020c", 7, 17);
-			walls(g, X, Z, H, std("#1b1030", 0.7), std("#0d0a14", 0.35, { metalness: 0.3 }));
+			var clubWall = std("#1b1030", 0.7);
+			walls(g, X, Z, H, clubWall, std("#0d0a14", 0.35, { metalness: 0.3 }));
+			imgTex(this, "mural.jpg", function (tx) {
+				tx.wrapS = THREE.MirroredRepeatWrapping; tx.repeat.set(1.5, 1);
+				clubWall.color.set("#9a8fb0"); clubWall.map = tx; clubWall.emissive.set("#ffffff"); clubWall.emissiveMap = tx; clubWall.emissiveIntensity = 0.55; clubWall.needsUpdate = true;
+			});
 			var self = this, tileCols = ["#ff2d95", "#00e5ff", "#ffea00", "#7c4dff", "#00e676", "#ff6d00"];
 			// LED dance floor around the table (tiles change colour)
 			var tiles2 = [], ts = 0.5, nx = Math.ceil((2 * X - 0.6) / ts), nz = Math.ceil((2 * Z - 0.6) / ts);
