@@ -5,6 +5,25 @@
 const TF = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2/+esm";
 const KJS = "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm";
 const KOKORO = "onnx-community/Kokoro-82M-v1.0-ONNX", CHATTER = "onnx-community/chatterbox-ONNX";
+// Pinned model versions (Hugging Face commit ids, tested 2026-11-12): every download of these repos is sent to that exact commit instead of
+// "main", so a later change or deletion on Hugging Face cannot quietly break the page. kokoro-js has no version option and fetches its
+// voices from .../resolve/main/ itself, so the pinning is done here on fetch() for both libraries. To move to a newer version: test it,
+// then change the id (visitors download the model once more).
+const PIN = {
+	"onnx-community/Kokoro-82M-v1.0-ONNX": "1939ad2a8e416c0acfeecc08a694d14ef25f2231",
+	"onnx-community/chatterbox-ONNX": "3cab09af388d3f02bba43443fce88c1f4525ac43",
+};
+function pinUrl(u) {
+	for (const repo in PIN) { const a = "https://huggingface.co/" + repo + "/resolve/main/"; if (u.startsWith(a)) return "https://huggingface.co/" + repo + "/resolve/" + PIN[repo] + "/" + u.slice(a.length); }
+	return u;
+}
+const rawFetch = self.fetch.bind(self);
+self.fetch = (input, init) => {
+	if (typeof input === "string") return rawFetch(pinUrl(input), init);
+	if (input instanceof URL) return rawFetch(pinUrl(input.href), init);
+	if (input && input.url && pinUrl(input.url) !== input.url) return rawFetch(new Request(pinUrl(input.url), input), init);
+	return rawFetch(input, init);
+};
 let kok = null, model = null, proc = null, T = null;
 const spk = new Map();   // voice id -> encoded speaker (computed once per voice)
 
@@ -52,6 +71,7 @@ const ops = {
 		return { audio: new Float32Array(wav.data), sr: 24000 };
 	},
 	async forget(a) { spk.delete(a.voiceId); return {}; },
+	async urls() { return { urls: (self.performance && performance.getEntriesByType ? performance.getEntriesByType("resource") : []).map((e) => e.name).filter((u) => u.indexOf("huggingface.co") >= 0) }; },   // for checking the pinning
 };
 
 self.onmessage = async (e) => {

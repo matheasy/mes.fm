@@ -89,7 +89,7 @@
 	var W = {}, seq = 0, pending = {};
 	function worker(engine) {
 		if (W[engine]) return W[engine];
-		var w = new Worker("/main_js/narrate-worker.js?v=1", { type: "module", name: "mes-narrate-" + engine });
+		var w = new Worker("/main_js/narrate-worker.js?v=2", { type: "module", name: "mes-narrate-" + engine });
 		w.onmessage = function (e) { var d = e.data, p = pending[d.id]; if (!p) return; if (d.progress) { if (p.onProgress) p.onProgress(d.progress); return; } delete pending[d.id]; if (d.ok) p.res(d.r); else p.rej(new Error(d.error)); };
 		w.onerror = function (e) { Object.keys(pending).forEach(function (k) { if (pending[k].engine === engine) { pending[k].rej(new Error(e.message || "The speech engine stopped")); delete pending[k]; } }); W[engine] = null; };
 		return (W[engine] = w);
@@ -197,5 +197,5 @@
 	function deleteVoice(id) { cache.forEach(function (v, k) { if (k.indexOf("clone|" + id + "|") === 0) cache.delete(k); }); if (W.clone) call("clone", "forget", { voiceId: id }).catch(function () {}); return tx("readwrite", function (s) { return s.delete(id); }); }
 	function info() { return call("kokoro", "info"); }
 
-	root.MESNarrate = Object.assign({}, pure, { load: load, speak: speak, speakOne: speakOne, forget: forget, encode: encode, decodeSample: decodeSample, listVoices: listVoices, getVoice: getVoice, saveVoice: saveVoice, deleteVoice: deleteVoice, info: info, isLoaded: function (e) { return !!loaded[e]; }, CLONE_MB: 1500, KOKORO_MB: 92 });
+	root.MESNarrate = Object.assign({}, pure, { load: load, speak: speak, speakOne: speakOne, forget: forget, encode: encode, decodeSample: decodeSample, listVoices: listVoices, getVoice: getVoice, saveVoice: saveVoice, deleteVoice: deleteVoice, info: info, workerUrls: function (e) { return call(e || "kokoro", "urls"); }, isLoaded: function (e) { return !!loaded[e]; }, CLONE_MB: 1500, KOKORO_MB: 92 });
 })(typeof window !== "undefined" ? window : this);
