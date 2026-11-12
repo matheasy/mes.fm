@@ -2568,7 +2568,7 @@
 		p.tracks.forEach(function (tr) {
 			var h = V.rowH(tr), canDel = (tr.kind === "v" ? nV : nA) > 1 && !p.clips.some(function (c) { return c.track === tr.id; });
 			html += '<div class="vd-trow vd-trow--' + tr.kind + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + (tr.mag ? " is-mag" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
-				'<div class="vd-thead"><span class="vd-tname" title="Double-click to rename">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
+				'<div class="vd-thead"><span class="vd-tname" title="Double-click to rename. Drag the empty part of this header up or down to move the track; right-click for more">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
 				(tr.kind === "v" ? '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' this track">' + (tr.hide ? "&#128065;&#824;" : "&#128065;") + "</button>" : "") +
 				'<button type="button" data-tact="mute" aria-pressed="' + !!tr.mute + '" title="' + (tr.mute ? "Unmute" : "Mute") + ' this track">' + (tr.mute ? "&#128263;" : "&#128266;") + "</button>" +
 				'<button type="button" data-tact="lock" aria-pressed="' + !!tr.lock + '" title="' + (tr.lock ? "Unlock" : "Lock") + ' this track">' + (tr.lock ? "&#128274;" : "&#128275;") + "</button>" +
@@ -2710,7 +2710,12 @@
 		var tb = e.target.closest("[data-tact]"); if (tb) return trackAction(tb);
 		var rg = e.target.closest("[data-rgrip]");
 		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
-		if (e.target.closest(".vd-thead")) return;
+		var th = e.target.closest(".vd-thead");
+		if (th) {   // drag a track's header up / down to reorder the tracks (video tracks stay among video tracks, sound among sound)
+			if (e.target.closest("button, .vd-tname")) return;
+			var hrow = th.closest(".vd-trow"); drag = { mode: "track", tr: V.track(VE.P, hrow.getAttribute("data-track")), y0: e.clientY, moved: false, row: hrow };
+			inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
+		}
 		var mk = e.target.closest(".vd-an-mk");
 		if (mk) {
 			var mc = V.clip(VE.P, mk.closest(".vd-clip").getAttribute("data-id")), ma = mc && (mc.anims || []).filter(function (x) { return x.id === mk.getAttribute("data-aid"); })[0];
@@ -2752,6 +2757,13 @@
 			else { var st = drag.t0 + dta, s1 = snapRel(st), s2 = snapRel(st + drag.d0) - drag.d0; st = Math.abs(s1 - st) <= Math.abs(s2 - st) ? s1 : s2; aa.t = V.clamp(st, lo, Math.max(lo, len - drag.d0)); }
 			aa.t = Math.round(aa.t * 1e4) / 1e4; aa.d = Math.round(aa.d * 1e4) / 1e4;
 			T.render(); VE.preview.draw(); VE.emit("live"); return;
+		}
+		if (drag.mode === "track") {
+			if (!drag.moved && Math.abs(e.clientY - drag.y0) < 4) return; drag.moved = true; drag.row.classList.add("is-tdrag");
+			var list = VE.P.tracks, me = drag.tr, cur = list.indexOf(me), tgt = null;
+			rows.querySelectorAll(".vd-trow").forEach(function (r) { var b = r.getBoundingClientRect(); if (e.clientY >= b.top && e.clientY < b.bottom) tgt = V.track(VE.P, r.getAttribute("data-track")); });
+			if (tgt && tgt !== me && tgt.kind === me.kind) { var j = list.indexOf(tgt); list.splice(cur, 1); list.splice(j, 0, me); T.render(); drag.row = rows.querySelector('.vd-trow[data-track="' + me.id + '"]'); if (drag.row) drag.row.classList.add("is-tdrag"); }
+			return;
 		}
 		if (drag.mode === "rowh") { drag.moved = true; drag.tr.h = V.clamp(Math.round(drag.h0 - (e.clientY - drag.y0)), V.ROW_MIN, V.ROW_MAX); T.render(); return; }
 		var dx = e.clientX - drag.x0; if (!drag.moved && Math.abs(dx) < 3 && drag.mode === "move" && !rowAt(e.clientY, drag.c)) return;
@@ -2821,6 +2833,7 @@
 		if (!drag) return;
 		var d = drag; drag = null;
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Track height"); return; }
+		if (d.mode === "track") { if (d.moved) VE.commit("Move track"); else T.render(); return; }
 		if (d.mode === "anim") {
 			if (d.moved) { d.c.anims = V.cleanAnims(d.c.anims); VE.commit(d.edge ? "Animation length" : "Move animation"); }
 			else VE.preview.seek(Math.min(V.end(d.c) - 1e-3, d.c.start + d.a.t + d.a.d));   // a click jumps to its end, ready to drag the clip there in the preview

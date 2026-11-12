@@ -596,6 +596,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-fontlist button:hover, #vd .vd-fontlist button.is-act {background:var(--vd-btnh);} #vd .vd-fontlist button[aria-selected=true] {outline:1px solid var(--vd-sel);}
 	#vd .vd-fontlist .vd-fg {font-size:0.7em;color:var(--vd-dim);margin-left:0.4em;font-family:Arial,sans-serif;}
 	#vd .vd-fck {display:flex;flex-direction:column;justify-content:flex-start;} #vd .vd-fck input {width:18px;height:18px;margin:0.45em 0 0;accent-color:var(--vd-sel);}
+	#vd .vd-thead {cursor:grab;} #vd .vd-thead button, #vd .vd-thead .vd-tname {cursor:pointer;} #vd .vd-trow.is-tdrag {outline:2px solid var(--vd-sel);outline-offset:-2px;z-index:8;} #vd .vd-trow.is-tdrag .vd-thead {cursor:grabbing;background:#1f2a3a;}
 
 
 	@media print {
@@ -1211,7 +1212,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=23" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=24" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

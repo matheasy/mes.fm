@@ -289,3 +289,4 @@
 	#vd .vd-fontlist button:hover, #vd .vd-fontlist button.is-act {background:var(--vd-btnh);} #vd .vd-fontlist button[aria-selected=true] {outline:1px solid var(--vd-sel);}
 	#vd .vd-fontlist .vd-fg {font-size:0.7em;color:var(--vd-dim);margin-left:0.4em;font-family:Arial,sans-serif;}
 	#vd .vd-fck {display:flex;flex-direction:column;justify-content:flex-start;} #vd .vd-fck input {width:18px;height:18px;margin:0.45em 0 0;accent-color:var(--vd-sel);}
+	#vd .vd-thead {cursor:grab;} #vd .vd-thead button, #vd .vd-thead .vd-tname {cursor:pointer;} #vd .vd-trow.is-tdrag {outline:2px solid var(--vd-sel);outline-offset:-2px;z-index:8;} #vd .vd-trow.is-tdrag .vd-thead {cursor:grabbing;background:#1f2a3a;}
