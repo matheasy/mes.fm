@@ -5072,7 +5072,7 @@ var MESPixel = (function () {
 		L = L || PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; }
 		if (PE.isGroup(L)) { PE.toast("Select a layer (not a group) to give it a layer style"); return; }
 		if (L.locked) { PE.toast("This layer is locked"); return; }
-		var id = L.id, cur = function () { return PE.layerById(id); }, d = PE.doc, done = false;
+		var id = L.id, cur = function () { return PE.layerById(id); }, d = PE.doc, done = false, cancelled = false;
 		var old = { fx: clone(L.fx), blend: L.blend, opacity: L.opacity, light: d.light ? Object.assign({}, d.light) : null };
 		var F = P.fxNorm(L.fx), st = { blend: L.blend, opacity: L.opacity }, lt = Object.assign({ angle: 120, alt: 30 }, d.light || {});
 		var sel = focus === "glow" ? "oglow" : focus || null;
@@ -5142,11 +5142,18 @@ var MESPixel = (function () {
 		live(); select(sel);
 		var avoid = null; try { var bx = PE.bounds(L), q0 = PE.toScreen(bx.x, bx.y), q1 = PE.toScreen(bx.x + bx.w, bx.y + bx.h), orr = PE.els.over.getBoundingClientRect(); avoid = { left: orr.left + Math.min(q0.x, q1.x), right: orr.left + Math.max(q0.x, q1.x) }; } catch (e) {}
 		var m = PE.modal({ title: "Layer style: " + L.name, body: wrap, float: true, avoid: avoid, wide: true, cls: "pe-dlg--lstyle", key: "lstyle", noFocus: true,
-			onClose: function () { if (!done) { var Lc = cur(); if (Lc) { Lc.fx = old.fx; Lc.blend = old.blend; Lc.opacity = old.opacity; } d.light = old.light; d.layers.forEach(function (x) { x._fxc = null; }); PE.invalidate(); } },
+			/* round 12: only the Cancel button throws the changes away. The window shows its changes live, so closing it any other way (the ✕, Esc, another
+			 * window opening) keeps what you see, as one undo step (a subscriber lost her bevel settings every time she closed it with the ✕) */
+			onClose: function () {
+				if (done) return; done = true; var Lc = cur();
+				if (cancelled) { if (Lc) { Lc.fx = old.fx; Lc.blend = old.blend; Lc.opacity = old.opacity; } d.light = old.light; d.layers.forEach(function (x) { x._fxc = null; }); PE.invalidate(); return; }
+				var changed = !Lc ? false : JSON.stringify([Lc.fx || null, Lc.blend, Lc.opacity, d.light || null]) !== JSON.stringify([old.fx || null, old.blend, old.opacity, old.light || null]);
+				if (changed) { PE.commit("Layer style"); PE.emit("layers"); }
+			},
 			buttons: [
 				{ label: "Remove style", title: "Switch every effect off and remove the style", act: function (mm) { done = true; var Lc = cur(); if (Lc) { Lc.fx = null; Lc.blend = old.blend; Lc.opacity = old.opacity; PE.commit("Remove layer style"); PE.emit("layers"); } mm.close(); } },
 				{ label: "Copy style", title: "Copy this style to paste it on other layers (right-click a layer → Paste layer style)", act: function () { fxClip = clone(F); PE.toast("Layer style copied"); } },
-				{ label: "Cancel", act: function (mm) { mm.close(); } },
+				{ label: "Cancel", title: "Put the style back the way it was before this window opened", act: function (mm) { cancelled = true; mm.close(); } },
 				{ label: "OK", primary: true, act: function (mm) { done = true; live(); PE.commit("Layer style"); PE.emit("layers"); mm.close(); } }] });
 		return m;
 	};

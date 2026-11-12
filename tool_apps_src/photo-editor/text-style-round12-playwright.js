@@ -32,5 +32,17 @@ const launch = () => BR === "brave" ? pw.chromium.launch({ executablePath: BRAVE
   console.log("dialog switch");
   const has = await pg.evaluate(async () => { PE.dlgLayerStyle(PE.active(), "blend"); await new Promise(r => setTimeout(r, 200)); const t = [...document.querySelectorAll(".pe-dlg label, .pe-dlg .pe-row")].map(e => e.textContent).join(" | "); const box = [...document.querySelectorAll(".pe-dlg input[type=checkbox]")].find(i => /letters only/i.test(i.closest(".pe-row") ? i.closest(".pe-row").textContent : "")); return { found: /letters only/i.test(t), checked: box ? box.checked : null }; });
   ok(has.found && has.checked === true, "Blending options shows the switch, ticked by default");
+  console.log("closing the Layer style window keeps the changes (only Cancel reverts)");
+  const tryClose = async (how) => {
+    await pg.evaluate(async () => { document.querySelectorAll(".pe-modal").forEach(m => m.remove()); PE.newDoc(500, 200, "#808080", "t"); await new Promise(r => setTimeout(r, 100)); const o = Object.assign(JSON.parse(JSON.stringify(PE.TEXTDEF)), { str: "Bevel", size: 90, bold: true, color: "#3366ff" }); const L = PE.makeLayer({ type: "text", name: "T", text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = 250; L.cy = 100; PE.addLayer(L); PE.setActive(L.id); PE.commit("t"); PE.dlgLayerStyle(L); await new Promise(r => setTimeout(r, 200)); });
+    await pg.click(".pe-dlg--lstyle .pe-ls-name >> text=Bevel and emboss"); await pg.waitForTimeout(150);
+    await pg.evaluate(() => { const r = [...document.querySelectorAll(".pe-dlg--lstyle .pe-row")].find(x => /^\s*Size/.test(x.textContent)); const i = r.querySelector("input[type=range]"); i.value = 17; i.dispatchEvent(new Event("input", { bubbles: true })); i.dispatchEvent(new Event("change", { bubbles: true })); });
+    await pg.waitForTimeout(150);
+    if (how === "x") await pg.click(".pe-dlg--lstyle .pe-x"); else if (how === "esc") await pg.keyboard.press("Escape"); else await pg.click(".pe-dlg--lstyle .pe-dlg-f button >> text=" + how);
+    await pg.waitForTimeout(200);
+    return pg.evaluate(() => { const L = PE.active(), f = L.fx; const r = { open: !!document.querySelector(".pe-dlg--lstyle"), on: !!(f && f.bevel && f.bevel.on), size: f && f.bevel ? f.bevel.size : null }; PE.undo(); const f2 = PE.active().fx; r.afterUndo = !!(f2 && f2.bevel && f2.bevel.on); return r; });
+  };
+  for (const how of ["x", "esc", "OK"]) { const r = await tryClose(how); ok(!r.open && r.on && r.size === 17 && !r.afterUndo, `closed with ${how}: bevel kept (size ${r.size}), one Undo removes it`); }
+  { const r = await tryClose("Cancel"); ok(!r.open && !r.on, "Cancel puts it back the way it was"); }
   await b.close(); console.log(FAIL.length ? "\n" + FAIL.length + " FAILED" : "\nall passed");
 })();
