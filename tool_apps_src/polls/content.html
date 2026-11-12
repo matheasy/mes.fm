@@ -11,7 +11,22 @@
 				<button type="button" class="tu-btn" id="pl-share" hidden>Share…</button>
 				<button type="button" class="tu-btn" id="pl-close" hidden>Close the poll now</button>
 				<button type="button" class="tu-btn pl-danger" id="pl-del" hidden>Delete the poll</button>
+				<button type="button" class="tu-btn tu-btn--ghost pl-rep" id="pl-report" hidden>⚑ Report</button>
 			</div>
+			<form class="pl-repbox" id="pl-repbox" hidden>
+				<p class="pl-replab"><strong>Report this poll</strong>: what is wrong with it?</p>
+				<div class="pl-repr" role="radiogroup" aria-label="Reason">
+					<label><input type="radio" name="pl-r" value="spam"> Spam or scam</label>
+					<label><input type="radio" name="pl-r" value="hate"> Hate or harassment</label>
+					<label><input type="radio" name="pl-r" value="sexual"> Sexual content</label>
+					<label><input type="radio" name="pl-r" value="violence"> Violence or threats</label>
+					<label><input type="radio" name="pl-r" value="personal"> Someone's private information</label>
+					<label><input type="radio" name="pl-r" value="other"> Something else</label>
+				</div>
+				<label class="pl-rephide"><input type="checkbox" id="pl-rephide" checked> Also hide this poll on this device</label>
+				<div class="pl-orow"><button type="submit" class="tu-btn tu-btn--primary" id="pl-repsend">Send report</button><button type="button" class="tu-btn tu-btn--ghost" id="pl-repcancel">Cancel</button></div>
+				<p class="tu-note" style="margin-bottom:0;">Reports are anonymous. A poll reported by several people is hidden until we review it. For anything urgent, <a href="https://mes.fm/contact?subject=Poll%20report">contact us</a>.</p>
+			</form>
 			<div class="pl-qr" id="pl-qr" hidden></div>
 			<p class="tu-note" id="pl-vnote"></p>
 		</section>
@@ -112,6 +127,7 @@
 					<button type="button" class="tu-btn tu-btn--ghost" id="pl-reset">Start again</button>
 				</div>
 				<p class="tu-note" id="pl-gonote" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
+				<p class="tu-note pl-rules" style="margin-bottom:0;">Keep it respectful: no hate, harassment, sexual content, threats or other people's private information. Anyone can report a poll, and polls that break these rules are removed (<a href="https://mes.fm/privacy-policy#poll-rules">rules and privacy</a>).</p>
 			</div>
 
 			<div class="tu-card pl-prev-card" id="pl-prev-card">

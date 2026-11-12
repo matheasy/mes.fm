@@ -19,6 +19,10 @@ global.fetch = async (url, opts) => {
       case "HSETNX": { const h = hash(k); if (h.has(a)) return { result: 0 }; h.set(a, String(b)); return { result: 1 }; }
       case "HINCRBY": { const h = hash(k); const v = (Number(h.get(a)) || 0) + Number(b); h.set(a, String(v)); return { result: v }; }
       case "HGETALL": { const h = store.get(k); const r = []; if (h instanceof Map) for (const [x, y] of h) r.push(x, y); return { result: r }; }
+      case "HLEN": { const h = store.get(k); return { result: h instanceof Map ? h.size : 0 }; }
+      case "ZINCRBY": { const z = hash(k); const v = (Number(z.get(b)) || 0) + Number(a); z.set(b, String(v)); return { result: String(v) }; }
+      case "ZREM": { const z = store.get(k); return { result: z instanceof Map && z.delete(a) ? 1 : 0 }; }
+      case "ZREVRANGE": { const z = store.get(k); const r = []; if (z instanceof Map) [...z].sort((x, y) => y[1] - x[1]).slice(Number(a), Number(b) + 1).forEach(([m, sc]) => r.push(m, sc)); return { result: r }; }
       case "DEL": { let n = 0; for (const x of c.slice(1)) if (store.delete(x)) n++; return { result: n }; }
       default: throw new Error("fake redis: " + op);
     }
@@ -196,6 +200,40 @@ const P = { act: "new", q: "  Best   pizza topping? ", d: "Line 1\n\n\n\nLine 2"
   eq(H.parse({ author: "me", permlink: bp.permlink, created: new Date(now).toISOString(), json_metadata: bp.meta }).choices, ["Mon", "Tue"], "our post parses back");
   eq(H.buildPost(Object.assign({}, draft, { community: "hive-104500" }), now).parentPermlink, "hive-104500", "community is the parent");
   eq("max_choices_voted" in JSON.parse(H.buildPost(Object.assign({}, draft, { max: 1 }), now).meta), false, "single choice leaves max out");
+
+  // ---- moderation: slur filter, reports, hiding, review queue
+  const T = h._test;
+  for (const [q, want] of [["you n1gger", true], ["F A G", true], ["dumb retards", true], ["sp1c", true], ["n.i.g.g.a", true], ["Wetback", true],
+    ["Best pizza topping?", false], ["fire retardant", false], ["raccoon", false], ["Niagara Falls", false], ["snigger", false], ["spicy food", false], ["bigger gerbil", false]])
+    eq(T.hasSlur({ q, d: "", o: ["a", "b"] }), want, "slur filter: " + q);
+  r = await post(Object.assign({}, P, { o: ["Cheese", "k1kes"] })); eq(r.code, 400, "poll with a slur in an option refused");
+  r = await post(Object.assign({}, P, { q: "Which raccoon is cuter?" })); eq(r.code, 200, "normal poll accepted");
+  const rid = r.body.id, rkey = r.body.key;
+  const R = (i, rr, ip) => post({ act: "report", id: rid, vid: vid(500 + i), r: rr }, ip ? { headers: { "x-forwarded-for": ip } } : undefined);
+  r = await R(1, "rude"); eq(r.code, 400, "report needs a known reason");
+  r = await post({ act: "report", id: rid, vid: "x", r: "spam" }); eq(r.code, 400, "report needs a browser id");
+  r = await R(1, "spam", "9.9.9.1"); eq([r.code, r.body.hidden], [200, false], "first report");
+  r = await R(1, "hate", "9.9.9.1"); eq(r.body.again, true, "same browser reports once");
+  r = await R(2, "spam", "9.9.9.1"); eq(r.body.hidden, false, "second browser on the same network does not count twice");
+  r = await R(3, "hate", "9.9.9.2"); eq(r.body.hidden, false, "two networks: still shown");
+  r = await R(4, "hate", "9.9.9.3"); eq(r.body.hidden, true, "three networks hide it");
+  r = await get(rid); eq([r.code, r.body.hidden], [410, true], "hidden poll answers 410");
+  r = await post({ act: "vote", id: rid, vid: vid(900), picks: [0], t: 5000 }); eq(r.code, 410, "no votes on a hidden poll");
+  r = await post({ act: "peek", id: rid, vid: vid(900) }); eq(r.code, 410, "others can't peek");
+  r = await post({ act: "peek", id: rid, key: rkey }); eq([r.code, r.body.poll.hidden], [200, true], "the maker still sees it, marked hidden");
+  r = await post({ act: "report", id: "zzzzzzzz", vid: vid(1), r: "spam" }); eq(r.code, 404, "report unknown poll");
+  r = await post({ act: "reported", admin: "x".repeat(40) }); eq(r.code, 403, "queue closed without POLL_ADMIN_KEY");
+  process.env.POLL_ADMIN_KEY = "a".repeat(40);
+  r = await post({ act: "reported", admin: "b".repeat(40) }); eq(r.code, 403, "wrong admin key");
+  r = await post({ act: "reported", admin: "a".repeat(40) }); eq(r.code, 200, "queue");
+  eq(r.body.polls.length, 1, "one reported poll"); eq(r.body.polls[0].why, { spam: 2, hate: 2 }, "reasons counted"); eq(r.body.polls[0].hidden, true, "shown as hidden");
+  r = await post({ act: "mod", id: rid, admin: "a".repeat(40), do: "ok" }); eq(r.body.hidden, false, "moderator keeps it");
+  r = await get(rid); eq(r.code, 200, "visible again");
+  r = await post({ act: "reported", admin: "a".repeat(40) }); eq(r.body.polls.length, 0, "queue cleared");
+  r = await post({ act: "mod", id: rid, admin: "a".repeat(40), do: "hide" }); r = await get(rid); eq(r.code, 410, "moderator hides");
+  r = await post({ act: "mod", id: rid, admin: "a".repeat(40), do: "del" }); r = await get(rid); eq(r.code, 404, "moderator deletes");
+  r = await post({ act: "mod", id: rid, admin: "a".repeat(40), do: "dance" }); eq(r.code, 404, "gone poll");
+  delete process.env.POLL_ADMIN_KEY;
 
   delete process.env.UPSTASH_REDIS_REST_URL; r = await get(id); eq(r.code, 503, "503 without Redis");
   console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);

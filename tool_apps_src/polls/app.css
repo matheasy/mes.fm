@@ -63,6 +63,13 @@
 	.pl-loading {color:var(--pl-muted);}
 	.pl-actions {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:1em;}
 	.pl .pl-danger {color:var(--pl-bad);border-color:#e8b4ad;}
+	.pl .pl-rep {margin-left:auto;}
+	.pl-repbox {margin-top:1em;padding:0.9em 1em;border:1px solid #e3c9a3;border-radius:10px;background:#fff8ef;}
+	.pl-replab {margin:0 0 0.6em;}
+	.pl-repr {display:grid;grid-template-columns:repeat(auto-fill,minmax(14em,1fr));gap:0.35em 1em;margin-bottom:0.7em;}
+	.pl-repr label, .pl-rephide {display:flex;align-items:center;gap:0.45em;cursor:pointer;min-height:32px;}
+	.pl-rephide {margin-bottom:0.6em;}
+	.pl-unhide {margin-left:0.6em;}
 	.pl-qr {margin-top:0.8em;}
 	.pl-qrimg {background:#fff;padding:0.6em;border-radius:0.5em;display:inline-block;width:min(16em, 70vw);line-height:0;}
 	.pl-qrimg svg {width:100%;height:auto;}
@@ -184,6 +191,7 @@
 	body.dark-mode #pl .pl-done {background:#16291e;border-color:#2f7a52;}
 	body.dark-mode #pl .pl-seg--sm button[aria-pressed="true"] {background:#8ea6ff;color:#111;}
 	body.dark-mode #pl .pl-danger {border-color:#7a3f38;}
+	body.dark-mode #pl .pl-repbox {background:#2a2219;border-color:#5c4630;color:#eee;}
 	body.dark-mode #pl .pl-opt, body.dark-mode #pl .pl-seg label, body.dark-mode #pl .pl-ib {background:var(--pl-card);color:var(--pl-ink);}
 	body.dark-mode #pl .pl-opt.pl-on, body.dark-mode #pl .pl-seg label:has(input:checked) {background:var(--pl-on);}
 	/* the derived dark block would remap the option colours: keep them the same in both themes */

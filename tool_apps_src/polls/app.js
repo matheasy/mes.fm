@@ -20,10 +20,10 @@
 	}
 
 	/* ---------- saved state ---------- */
-	var S = { vid: "", mine: [], voted: {} };
+	var S = { vid: "", mine: [], voted: {}, hide: {} };
 	function rnd() { var a = new Uint8Array(16); (window.crypto || window.msCrypto).getRandomValues(a); return Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join(""); }
 	function load() {
-		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { if (/^[a-f0-9]{32}$/.test(s.vid)) S.vid = s.vid; if (Array.isArray(s.mine)) S.mine = s.mine.filter(function (m) { return m && (/^[a-z0-9]{8}$/.test(m.id) || (m.hive && P.hive.ref(m.hive))); }).slice(0, 100); if (s.voted && typeof s.voted === "object") S.voted = s.voted; } } catch (e) {}
+		try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { if (/^[a-f0-9]{32}$/.test(s.vid)) S.vid = s.vid; if (Array.isArray(s.mine)) S.mine = s.mine.filter(function (m) { return m && (/^[a-z0-9]{8}$/.test(m.id) || (m.hive && P.hive.ref(m.hive))); }).slice(0, 100); if (s.voted && typeof s.voted === "object") S.voted = s.voted; if (s.hide && typeof s.hide === "object") S.hide = s.hide; } } catch (e) {}
 		if (!S.vid) S.vid = rnd();
 	}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -43,7 +43,7 @@
 		var db; try { db = JSON.parse(localStorage.getItem("mes-polls:mock") || "{}"); } catch (e) { db = {}; }
 		var now = Date.now(), put = function () { localStorage.setItem("mes-polls:mock", JSON.stringify(db)); };
 		function pub(x, show) { var p = x.p, open = !p.x && now < (p.cl || p.c + 366 * 864e5); var o = { id: x.id, q: p.q, d: p.d, o: p.o, m: p.m, cl: p.cl, sh: p.sh, ch: p.ch, c: p.c, x: p.x, open: open, closes: p.x || p.cl || p.c + 366 * 864e5, now: now, v: x.v }; if (show || p.sh === "always" || !open) o.n = x.n.slice(); return o; }
-		if (method === "GET") { var g = db[id]; return g ? Object.assign({ _code: 200 }, pub(g)) : { _code: 404, error: "poll not found" }; }
+		if (method === "GET") { var g = db[id]; if (g && g.hid) return { _code: 410, error: "this poll was hidden after reports", hidden: true }; return g ? Object.assign({ _code: 200 }, pub(g)) : { _code: 404, error: "poll not found" }; }
 		if (b.act === "new") {
 			var probs = P.problems({ q: b.q, o: b.o, cl: b.cl }); if (probs.length) return { _code: 400, error: probs[0] };
 			var nid = rnd().replace(/[^a-z0-9]/g, "").slice(0, 8), key = rnd();
@@ -60,6 +60,7 @@
 			b.picks.forEach(function (i) { x.n[i]++; }); x.b[b.vid] = b.picks.slice().sort(); put();
 			return { _code: 200, ok: true, mine: x.b[b.vid], changed: !!prev, poll: pub(x, x.p.sh !== "closed") };
 		}
+		if (b.act === "report") { x.r = x.r || {}; var again = !!x.r[b.vid]; x.r[b.vid] = b.r; if (Object.keys(x.r).length >= 3) x.hid = now; put(); return { _code: 200, ok: true, again: again, hidden: !!x.hid }; }
 		var owner = b.key === x.k;
 		if (b.act === "peek") { var mine = x.b[b.vid] || null; return { _code: 200, poll: pub(x, owner || (mine && x.p.sh === "voted")), mine: mine, owner: owner }; }
 		if (!owner) return { _code: 403, error: "only the person who made this poll can do that" };
@@ -216,7 +217,9 @@
 		if (V.owner && V.ownerView && showForm && p.n) { $("pl-poll").appendChild(results(p, null)); }
 		$("pl-close").hidden = !(V.owner && open);
 		$("pl-del").hidden = !V.owner;
+		$("pl-report").hidden = V.owner;
 		var note = [];
+		if (p.hidden) note.push("This poll is hidden from everyone else because people reported it. You can still see it because you made it.");
 		if (open && p.ch) note.push("You can change your vote while the poll is open.");
 		if (open && !p.ch && !V.mine) note.push("You can vote once.");
 		if (p.sh === "voted") note.push("Results are shown to people who have voted.");
@@ -238,6 +241,7 @@
 		var p = V.poll, usePeek = V.key || (p ? p.sh === "voted" && V.mine : V.mine);
 		var req = usePeek ? api("POST", { act: "peek", id: V.id, vid: S.vid, key: V.key || undefined }) : api("GET", null, V.id);
 		return req.then(function (j) {
+			if (j._code === 410) { V.poll = null; $("pl-view").hidden = true; msg("This poll was hidden because several people reported it. We review reported polls and remove the ones that break the rules.", "warn"); stopTimers(); return; }
 			if (j._code === 404) { V.poll = null; $("pl-view").hidden = true; msg("This poll does not exist any more: it was deleted, or it closed more than 60 days ago.", "warn"); stopTimers(); var m = mineOf(V.id); if (m) { m.gone = true; save(); renderMine(); } return; }
 			if (j._code !== 200) return;
 			accept(j);
@@ -265,7 +269,15 @@
 			paintView();
 		});
 	}
-	function openPoll(id) {
+	function openPoll(id, force) {
+		if (S.hide[id] && !force && !mineOf(id)) {
+			stopTimers(); V.id = id; V.poll = null; $("pl-view").hidden = true;
+			msg("You hid this poll on this device.", "");
+			var b = el("button", "tu-btn pl-unhide", "Show it anyway"); b.type = "button";
+			b.addEventListener("click", function () { delete S.hide[id]; save(); openPoll(id, true); });
+			$("pl-msg").appendChild(b);
+			return Promise.resolve();
+		}
 		V.id = id; V.mine = Array.isArray(S.voted[id]) ? S.voted[id] : null; var m = mineOf(id); V.key = m && m.key || ""; V.owner = !!V.key;
 		$("pl-view").hidden = false; msg("");
 		$("pl-poll").innerHTML = '<p class="pl-loading">Loading the poll…</p>';
@@ -279,6 +291,22 @@
 		if (navigator.share) { $("pl-share").hidden = false; $("pl-share").addEventListener("click", function () { navigator.share({ title: V.poll ? V.poll.q : "Poll", text: V.poll ? V.poll.q : "", url: curLink() }).catch(function () {}); }); }
 		$("pl-close").addEventListener("click", function () { if (confirm("Close this poll now? Nobody can vote after this, and it cannot be opened again.")) manage(V.id, "close"); });
 		$("pl-del").addEventListener("click", function () { if (confirm("Delete this poll and all its votes for good?")) manage(V.id, "del"); });
+		var rb = $("pl-repbox");
+		$("pl-report").addEventListener("click", function () { rb.hidden = !rb.hidden; if (!rb.hidden) { var f = rb.querySelector("input[type=radio]"); if (f) f.focus(); } });
+		$("pl-repcancel").addEventListener("click", function () { rb.hidden = true; });
+		rb.addEventListener("submit", function (e) {
+			e.preventDefault();
+			var c = rb.querySelector("input[name=pl-r]:checked");
+			if (!c) { toast("Pick what is wrong with it"); return; }
+			var id = V.id, hide = $("pl-rephide").checked, btn = $("pl-repsend"); btn.disabled = true;
+			api("POST", { act: "report", id: id, vid: S.vid, r: c.value }).then(function (j) {
+				btn.disabled = false;
+				if (j._code !== 200) { toast(j.error ? j.error.charAt(0).toUpperCase() + j.error.slice(1) : "Could not send the report, try again"); return; }
+				rb.hidden = true; c.checked = false;
+				if (hide) { S.hide[id] = Date.now(); save(); stopTimers(); V.poll = null; $("pl-view").hidden = true; msg("Thanks, your report was sent. This poll is now hidden on this device.", ""); }
+				else toast(j.again ? "You already reported this poll" : "Thanks, your report was sent");
+			});
+		});
 		var hp = el("input"); hp.type = "text"; hp.id = "pl-hp"; hp.name = "website"; hp.tabIndex = -1; hp.autocomplete = "off"; hp.className = "pl-hp"; hp.setAttribute("aria-hidden", "true"); root.appendChild(hp);
 		function panel() { if (window.MESPanel) window.MESPanel.add($("pl-view"), { bar: $("pl-vbar") }); }
 		if (window.MESPanel) panel(); else document.addEventListener("DOMContentLoaded", panel);
@@ -605,7 +633,7 @@
 		$("pl-poll").innerHTML = '<p class="pl-loading">Loading the poll from Hive…</p>';
 		var meta = document.querySelector('meta[name="robots"]'); if (!meta) { meta = el("meta"); meta.name = "robots"; document.head.appendChild(meta); } meta.content = "noindex";
 		$("pl-make-h").textContent = "Make your own poll";
-		$("pl-close").hidden = $("pl-del").hidden = true;
+		$("pl-close").hidden = $("pl-del").hidden = $("pl-report").hidden = true; $("pl-repbox").hidden = true;
 		var tries = 0;
 		function getPost() {
 			return rpc("condenser_api.get_content", [ref.author, ref.permlink]).then(function (post) {

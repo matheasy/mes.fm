@@ -370,6 +370,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.pl-loading {color:var(--pl-muted);}
 	.pl-actions {display:flex;flex-wrap:wrap;gap:0.5em;margin-top:1em;}
 	.pl .pl-danger {color:var(--pl-bad);border-color:#e8b4ad;}
+	.pl .pl-rep {margin-left:auto;}
+	.pl-repbox {margin-top:1em;padding:0.9em 1em;border:1px solid #e3c9a3;border-radius:10px;background:#fff8ef;}
+	.pl-replab {margin:0 0 0.6em;}
+	.pl-repr {display:grid;grid-template-columns:repeat(auto-fill,minmax(14em,1fr));gap:0.35em 1em;margin-bottom:0.7em;}
+	.pl-repr label, .pl-rephide {display:flex;align-items:center;gap:0.45em;cursor:pointer;min-height:32px;}
+	.pl-rephide {margin-bottom:0.6em;}
+	.pl-unhide {margin-left:0.6em;}
 	.pl-qr {margin-top:0.8em;}
 	.pl-qrimg {background:#fff;padding:0.6em;border-radius:0.5em;display:inline-block;width:min(16em, 70vw);line-height:0;}
 	.pl-qrimg svg {width:100%;height:auto;}
@@ -491,6 +498,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #pl .pl-done {background:#16291e;border-color:#2f7a52;}
 	body.dark-mode #pl .pl-seg--sm button[aria-pressed="true"] {background:#8ea6ff;color:#111;}
 	body.dark-mode #pl .pl-danger {border-color:#7a3f38;}
+	body.dark-mode #pl .pl-repbox {background:#2a2219;border-color:#5c4630;color:#eee;}
 	body.dark-mode #pl .pl-opt, body.dark-mode #pl .pl-seg label, body.dark-mode #pl .pl-ib {background:var(--pl-card);color:var(--pl-ink);}
 	body.dark-mode #pl .pl-opt.pl-on, body.dark-mode #pl .pl-seg label:has(input:checked) {background:var(--pl-on);}
 	/* the derived dark block would remap the option colours: keep them the same in both themes */
@@ -648,6 +656,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .pl-chip--own{border-color:#152c75;color:#7c90de}
 	body.dark-mode .pl-you{color:#7c90de;border:1px solid #152c75}
 	body.dark-mode .pl .pl-danger{border-color:#7a2d22}
+	body.dark-mode .pl-repbox{border:1px solid #835e28;background:#251b0e}
 	body.dark-mode .pl-qrimg{background:#1a1a1a}
 	body.dark-mode .pl-done{border:2px solid #388455;background:#141f18}
 	body.dark-mode .pl-hive{border:2px solid #722a2a;background:#250e0e}
@@ -878,7 +887,22 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn" id="pl-share" hidden>Share…</button>
 				<button type="button" class="tu-btn" id="pl-close" hidden>Close the poll now</button>
 				<button type="button" class="tu-btn pl-danger" id="pl-del" hidden>Delete the poll</button>
+				<button type="button" class="tu-btn tu-btn--ghost pl-rep" id="pl-report" hidden>⚑ Report</button>
 			</div>
+			<form class="pl-repbox" id="pl-repbox" hidden>
+				<p class="pl-replab"><strong>Report this poll</strong>: what is wrong with it?</p>
+				<div class="pl-repr" role="radiogroup" aria-label="Reason">
+					<label><input type="radio" name="pl-r" value="spam"> Spam or scam</label>
+					<label><input type="radio" name="pl-r" value="hate"> Hate or harassment</label>
+					<label><input type="radio" name="pl-r" value="sexual"> Sexual content</label>
+					<label><input type="radio" name="pl-r" value="violence"> Violence or threats</label>
+					<label><input type="radio" name="pl-r" value="personal"> Someone's private information</label>
+					<label><input type="radio" name="pl-r" value="other"> Something else</label>
+				</div>
+				<label class="pl-rephide"><input type="checkbox" id="pl-rephide" checked> Also hide this poll on this device</label>
+				<div class="pl-orow"><button type="submit" class="tu-btn tu-btn--primary" id="pl-repsend">Send report</button><button type="button" class="tu-btn tu-btn--ghost" id="pl-repcancel">Cancel</button></div>
+				<p class="tu-note" style="margin-bottom:0;">Reports are anonymous. A poll reported by several people is hidden until we review it. For anything urgent, <a href="https://mes.fm/contact?subject=Poll%20report">contact us</a>.</p>
+			</form>
 			<div class="pl-qr" id="pl-qr" hidden></div>
 			<p class="tu-note" id="pl-vnote"></p>
 		</section>
@@ -979,6 +1003,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn tu-btn--ghost" id="pl-reset">Start again</button>
 				</div>
 				<p class="tu-note" id="pl-gonote" style="margin-bottom:0;">Anyone with the link can vote. Polls are not listed anywhere and are not shown in search engines.</p>
+				<p class="tu-note pl-rules" style="margin-bottom:0;">Keep it respectful: no hate, harassment, sexual content, threats or other people's private information. Anyone can report a poll, and polls that break these rules are removed (<a href="https://mes.fm/privacy-policy#poll-rules">rules and privacy</a>).</p>
 			</div>
 
 			<div class="tu-card pl-prev-card" id="pl-prev-card">
@@ -1047,7 +1072,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/mic-test"><img class="mes-aside__img mes-aside__img--logo" src="/mic-test/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/julia-set-explorer"><img class="mes-aside__img mes-aside__img--logo" src="/julia-set-explorer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Julia Set Explorer: Drag c and Watch the Fractal Change</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/party"><img class="mes-aside__img mes-aside__img--logo" src="/party/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Party Invitations and RSVP: Free Online Invite Maker, No Sign-Up</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/julia-set-explorer"><img class="mes-aside__img mes-aside__img--logo" src="/julia-set-explorer/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Julia Set Explorer: Drag c and Watch the Fractal Change</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1097,7 +1122,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/polls/js/polls.js?v=2" defer></script>
+	<script src="/polls/js/polls.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

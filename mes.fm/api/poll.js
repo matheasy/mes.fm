@@ -6,6 +6,13 @@
 // POST {act:"vote", id, vid, picks:[i,..], t, hp} -> {ok, mine, poll}   (vid = random 32-hex browser id; only a hash of it is stored)
 // POST {act:"peek", id, vid?, key?}                -> {poll, mine}   (results for a voter of an "after you vote" poll, or for the creator)
 // POST {act:"close", id, key}  /  {act:"del", id, key}
+// POST {act:"report", id, vid, r}                 -> {ok, hidden}   (r = REASONS; one report per browser; REPORT_HIDE networks hide the poll)
+// POST {act:"reported", admin}                    -> {polls:[..]}   (review queue, newest reports first; env POLL_ADMIN_KEY, >= 32 characters)
+// POST {act:"mod", id, admin, do:"hide"|"unhide"|"del"|"ok"}   (ok = keep the poll and clear its reports)
+//
+// Moderation (App Store guideline 1.2): new polls whose text contains a slur are refused (BLOCK); anyone can report a poll; once
+// REPORT_HIDE different networks have reported it, it is hidden (GET answers 410, voting stops) until a moderator looks at it.
+// Reported poll ids sit in the sorted set poll:reported (score = reports) for review.
 //
 // Poll fields: q question (<= 200), d description (<= 600), o 2-20 options (<= 100 each, no duplicates), m = most picks a voter may make
 // (1 = single choice), cl = closing time in ms (0 = open until the creator closes it; such polls close by themselves after a year),
@@ -16,7 +23,19 @@
 const crypto = require('crypto');
 
 const IP_POLL = 4;
-const LIM = { w: 40, n: 12, v: 120, p: 1500 };
+const LIM = { w: 40, n: 12, v: 120, p: 1500, r: 30 };
+const REPORT_HIDE = 3;
+const REASONS = ['spam', 'hate', 'sexual', 'violence', 'personal', 'other'];
+// slurs only (not swear words): a poll whose question, description or options contain one is refused
+const BLOCK = /(^|[^a-z])(n+i+g+(?:e+r+|a+h?|u+h)s?|f+a+g+(?:o+t+)?s?|k+i+k+e+s?|s+p+i+c+k?s?|w+e+t+b+a+c+k+s?|t+r+a+n+n+(?:y|i+e)s?|r+e+t+a+r+d+s?|g+o+o+k+s?)(?=$|[^a-z])/;
+const LEET = { '1': 'i', '!': 'i', '|': 'i', '3': 'e', '0': 'o', '@': 'a', '4': 'a', '$': 's', '5': 's', '7': 't' };
+function slurText(t) {
+  let s = String(t || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[1!|30@4$57]/g, (c) => LEET[c]);
+  s = s.replace(/[._*~+-]/g, ' ');
+  // letters spelled out one at a time ("n i g g e r") are joined back up
+  return s.replace(/(?:^|\s)((?:[a-z] ){2,}[a-z])(?=\s|$)/g, (m, run) => m.replace(run, run.replace(/ /g, '')));
+}
+function hasSlur(p) { return [p.q, p.d].concat(p.o).some((t) => BLOCK.test(slurText(t))); }
 const KEEP = 60 * 86400 * 1000;           // after closing
 const MAX_OPEN = 366 * 86400 * 1000;      // a poll can be open at most this long
 const MIN_OPEN = 60 * 1000;
@@ -142,6 +161,7 @@ module.exports = async (req, res) => {
       if (!ID_RE.test(id)) { res.status(404).json({ error: 'poll not found' }); return; }
       const g = await getPoll(id);
       if (!g) { res.setHeader('Cache-Control', 'public, s-maxage=10'); res.status(404).json({ error: 'poll not found' }); return; }
+      if (g.p.hid) { res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30'); res.status(410).json({ error: 'this poll was hidden after reports', hidden: true }); return; }
       const out = publicPoll(id, g.p, g.cnt, now, false);
       res.setHeader('Cache-Control', out.open ? 'public, max-age=0, s-maxage=3, stale-while-revalidate=10' : 'public, max-age=0, s-maxage=300, stale-while-revalidate=3600');
       res.status(200).json(out);
@@ -159,6 +179,7 @@ module.exports = async (req, res) => {
     if (act === 'new') {
       const c = cleanPoll(b, now);
       if (c.error) { res.status(400).json({ error: c.error }); return; }
+      if (hasSlur(c.poll)) { res.status(400).json({ error: 'please keep polls respectful: your poll contains a word we do not allow' }); return; }
       if (await limited('n', ipH)) { res.status(429).json({ error: 'too many new polls from your network, try again in an hour' }); return; }
       const key = crypto.randomBytes(16).toString('hex');
       const p = Object.assign(c.poll, { h: sha('k|' + key) });
@@ -171,8 +192,44 @@ module.exports = async (req, res) => {
       return;
     }
 
+    if (act === 'reported' || act === 'mod') {
+      const ak = process.env.POLL_ADMIN_KEY || '';
+      if (ak.length < 32 || typeof b.admin !== 'string' || b.admin.length !== ak.length ||
+        !crypto.timingSafeEqual(Buffer.from(b.admin), Buffer.from(ak))) { res.status(403).json({ error: 'not allowed' }); return; }
+      if (act === 'reported') {
+        const [z] = await redis([['ZREVRANGE', 'poll:reported', 0, 49, 'WITHSCORES']]);
+        const arr = (z && z.result) || [], list = [];
+        for (let i = 0; i + 1 < arr.length; i += 2) {
+          const pid = arr[i], g = ID_RE.test(pid) ? await getPoll(pid) : null;
+          if (!g) { await redis([['ZREM', 'poll:reported', pid]]); continue; }
+          const [rr] = await redis([['HGETALL', 'poll:' + pid + ':r']]);
+          const why = {}; const rv = (rr && rr.result) || [];
+          for (let j = 1; j < rv.length; j += 2) why[rv[j]] = (why[rv[j]] || 0) + 1;
+          list.push({ id: pid, reports: Number(arr[i + 1]) || 0, why, hidden: !!g.p.hid, q: g.p.q, d: g.p.d, o: g.p.o, c: g.p.c });
+        }
+        res.status(200).json({ polls: list });
+        return;
+      }
+    }
+
     const id = String(b.id || '');
     if (!ID_RE.test(id)) { res.status(404).json({ error: 'poll not found' }); return; }
+
+    if (act === 'mod') {
+      const g = await getPoll(id);
+      if (!g) { await redis([['ZREM', 'poll:reported', id]]); res.status(404).json({ error: 'poll not found' }); return; }
+      const K = 'poll:' + id, p = g.p, exp = expiresSec(p);
+      if (b.do === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]); res.status(200).json({ ok: true }); return; }
+      if (b.do === 'hide') { p.hid = p.hid || now; await redis([['SET', K, JSON.stringify(p), 'EXAT', exp]]); res.status(200).json({ ok: true, hidden: true }); return; }
+      if (b.do === 'unhide' || b.do === 'ok') {
+        delete p.hid;
+        await redis([['SET', K, JSON.stringify(p), 'EXAT', exp], ['DEL', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]);
+        res.status(200).json({ ok: true, hidden: false });
+        return;
+      }
+      res.status(400).json({ error: 'bad moderation action' });
+      return;
+    }
 
     if (act === 'vote') {
       if (b.hp) { res.status(200).json({ ok: true }); return; }           // honeypot: pretend it worked
@@ -182,6 +239,7 @@ module.exports = async (req, res) => {
       const g = await getPoll(id);
       if (!g) { res.status(404).json({ error: 'poll not found' }); return; }
       const p = g.p;
+      if (p.hid) { res.status(410).json({ error: 'this poll was hidden after reports', hidden: true }); return; }
       if (!isOpen(p, now)) { res.status(409).json({ error: 'this poll is closed', poll: publicPoll(id, p, g.cnt, now, false) }); return; }
       const picks = parsePicks(b.picks, p);
       if (!picks) { res.status(400).json({ error: p.m === 1 ? 'pick one option' : 'pick 1 to ' + p.m + ' options' }); return; }
@@ -217,13 +275,16 @@ module.exports = async (req, res) => {
       const g = await getPoll(id);
       if (!g) { res.status(404).json({ error: 'poll not found' }); return; }
       const owner = HEX_RE.test(String(b.key || '')) && sha('k|' + b.key) === g.p.h;
+      if (g.p.hid && !owner) { res.status(410).json({ error: 'this poll was hidden after reports', hidden: true }); return; }
       let mine = null;
       if (HEX_RE.test(String(b.vid || ''))) {
         const [r] = await redis([['HGET', 'poll:' + id + ':b', sha('pv|' + b.vid).slice(0, 32)]]);
         if (r && r.result) mine = String(r.result).split(',').map(Number);
       }
       const show = owner || (!!mine && g.p.sh === 'voted');
-      res.status(200).json({ poll: publicPoll(id, g.p, g.cnt, now, show), mine, owner });
+      const pp = publicPoll(id, g.p, g.cnt, now, show);
+      if (g.p.hid) pp.hidden = true;
+      res.status(200).json({ poll: pp, mine, owner });
       return;
     }
 
@@ -234,7 +295,7 @@ module.exports = async (req, res) => {
       if (!g) { res.status(404).json({ error: 'poll not found' }); return; }
       if (sha('k|' + b.key) !== g.p.h) { res.status(403).json({ error: 'only the person who made this poll can do that' }); return; }
       const K = 'poll:' + id;
-      if (act === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip']]); res.status(200).json({ ok: true }); return; }
+      if (act === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]); res.status(200).json({ ok: true }); return; }
       const p = g.p;
       if (!p.x) p.x = Math.min(now, closesAt(p));
       const exp = expiresSec(p);
@@ -242,10 +303,33 @@ module.exports = async (req, res) => {
       res.status(200).json({ ok: true, poll: publicPoll(id, p, g.cnt, now, true) });
       return;
     }
+    if (act === 'report') {
+      if (b.hp) { res.status(200).json({ ok: true }); return; }
+      const vid = String(b.vid || '');
+      if (!HEX_RE.test(vid)) { res.status(400).json({ error: 'bad browser id' }); return; }
+      if (!REASONS.includes(b.r)) { res.status(400).json({ error: 'pick a reason' }); return; }
+      if (await limited('r', ipH)) { res.status(429).json({ error: 'too many reports from your network, try again later' }); return; }
+      const g = await getPoll(id);
+      if (!g) { res.status(404).json({ error: 'poll not found' }); return; }
+      const K = 'poll:' + id, exp = expiresSec(g.p), bid = sha('pv|' + vid).slice(0, 32);
+      const [nx] = await redis([['HSETNX', K + ':r', bid, b.r]]);
+      if (!nx || nx.result !== 1) { res.status(200).json({ ok: true, again: true, hidden: !!g.p.hid }); return; }
+      const out = await redis([['HINCRBY', K + ':rip', ipH, 1], ['HLEN', K + ':rip'], ['ZINCRBY', 'poll:reported', 1, id],
+        ['EXPIREAT', K + ':r', exp], ['EXPIREAT', K + ':rip', exp]]);
+      const nets = Number(out[1] && out[1].result) || 0;
+      let hidden = !!g.p.hid;
+      if (!hidden && nets >= REPORT_HIDE) {
+        const p = g.p; p.hid = now; hidden = true;
+        await redis([['SET', K, JSON.stringify(p), 'EXAT', exp]]);
+      }
+      res.status(200).json({ ok: true, hidden });
+      return;
+    }
+
     res.status(400).json({ error: 'unknown action' });
   } catch (e) {
     res.status(500).json({ error: 'error' });
   }
 };
 
-module.exports._test = { cleanPoll, counts, publicPoll, parsePicks, isOpen, closesAt, text, IP_POLL, LIM, KEEP, MAX_OPEN };
+module.exports._test = { hasSlur, REASONS, REPORT_HIDE, cleanPoll, counts, publicPoll, parsePicks, isOpen, closesAt, text, IP_POLL, LIM, KEEP, MAX_OPEN };
