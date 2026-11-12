@@ -855,28 +855,45 @@
     g += '<line x1="' + h0[0] + '" y1="' + h0[1] + '" x2="' + h1[0] + '" y2="' + h1[1] + '" class="lu-a-my' + (ok ? ' lu-a-ok' : '') + '"/>';
     g += '<circle cx="' + h1[0] + '" cy="' + h1[1] + '" r="11" class="lu-a-h' + (ok ? ' lu-a-ok' : '') + '" id="lu-ah"/>';
     g += '<path d="M' + (cx + 34) + ',' + cy + ' A34,34 0 0 0 ' + P(th, 34)[0] + ',' + P(th, 34)[1] + '" class="lu-a-arc"/>';
-    g += '<text x="24" y="' + Math.round(26 + 12 * k) + '" class="lu-a-t" style="font-size:' + Math.round(15 * k) + 'px">band: ' + th.toFixed(1) + '° from the pull</text>';
     g += '<text x="' + (cx + 40) + '" y="' + (cy - 8) + '" class="lu-a-t lu-a-th" style="font-size:' + Math.round(14 * k) + 'px">θ</text>';
     svg.innerHTML = g;
     /* readout: grows / shrinks, with a centre-zero meter */
     var pc = Math.round(Math.abs(lineE) * 100), w = Math.min(50, Math.abs(lineE) * 50);
     var meter = '<span class="lu-meter" aria-hidden="true"><span class="lu-meter__z"></span><span class="lu-meter__b' + (ok ? ' lu-meter__b--ok' : lineE > 0 ? ' lu-meter__b--up' : ' lu-meter__b--dn') + '" style="left:' + (lineE >= 0 ? 50 : 50 - w) + '%;width:' + Math.max(ok ? 2 : 0, w) + '%"></span></span><span class="lu-meter__k" aria-hidden="true"><span>shrinks</span><span>same length</span><span>grows</span></span>';
-    var txt = ok ? "<b class='lu-good'>Same length. This is where the band front can run.</b> It lines up with a dashed line."
-      : lineE > 0 ? "the line <b>gets longer</b> (by " + pc + "% of the pull). Too close to the pull direction: turn it more upright."
-      : "the line <b>gets shorter</b> (by " + pc + "% of the pull). Too far from the pull direction: turn it back towards the pull.";
-    $("lu-angout").innerHTML = meter + '<span class="lu-angtxt">At <b>' + my.toFixed(1) + "°</b> from the pull: " + txt + "</span>";
+    var txt = ok ? "<b class='lu-good'>Same length: the band front can run here.</b>"
+      : lineE > 0 ? "<b>Gets longer</b> by " + pc + "% of the pull. Turn it more upright."
+      : "<b>Gets shorter</b> by " + pc + "% of the pull. Turn it back towards the pull.";
+    $("lu-angout").innerHTML = meter + '<span class="lu-angtxt">' + txt + "</span>";
+    $("lu-angst").innerHTML = 'Band: ' + th.toFixed(1) + '° · test line: ' + my.toFixed(1) + '° ' + (ok ? '<span class="lu-good">✓ on the band</span>' : lineE > 0 ? '(grows)' : '(shrinks)');
   }
   $("lu-ar").addEventListener("input", drawAngle);
   $("lu-aa").addEventListener("input", drawAngle);
   var angSvg = $("lu-ang");
-  angSvg.addEventListener("pointerdown", function (e) { if (e.target.id === "lu-ah" || e.target.classList.contains("lu-a-my")) { angDrag = true; angSvg.setPointerCapture(e.pointerId); e.preventDefault(); } });
+  angSvg.addEventListener("pointerdown", function (e) { if (e.target.id === "lu-ah" || e.target.classList.contains("lu-a-my")) { stopSweep(); angDrag = true; angSvg.setPointerCapture(e.pointerId); e.preventDefault(); } });
   angSvg.addEventListener("pointermove", function (e) {
-    if (!angDrag) return; var r = angSvg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * 440 - 220, y = 150 - (e.clientY - r.top) / r.height * 300;
+    if (!angDrag) return; var pt = angSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; pt = pt.matrixTransform(angSvg.getScreenCTM().inverse()); var x = pt.x - 220, y = 150 - pt.y;
     var d = Math.atan2(y, x) * 180 / Math.PI; if (d < 0) d += 180; if (d > 90) d = 180 - d;
-    $("lu-aa").value = Math.round(d * 2) / 2; drawAngle();
+    $("lu-aa").value = Math.round(d * 10) / 10; drawAngle();
   });
   angSvg.addEventListener("pointerup", function () { angDrag = false; });
   $("lu-ar").value = S.r;
+  /* sweep, snap, width, fill window for the 55° figure */
+  var sweepT = 0, sweepDir = 1;
+  function stopSweep() { if (sweepT) { clearInterval(sweepT); sweepT = 0; $("lu-asweep").textContent = "▶ Sweep"; } }
+  $("lu-asweep").addEventListener("click", function () {
+    if (sweepT) return stopSweep();
+    this.textContent = "❚❚ Stop";
+    sweepT = setInterval(function () { var a = $("lu-aa"), v = +a.value + sweepDir * 0.5; if (v >= 90) { v = 90; sweepDir = -1; } if (v <= 0) { v = 0; sweepDir = 1; } a.value = v; drawAngle(); }, 40);
+  });
+  $("lu-asnap").addEventListener("click", function () { stopSweep(); $("lu-aa").value = Math.round(L.frontAngle(+$("lu-ar").value) * 10) / 10; drawAngle(); });
+  $("lu-aa").addEventListener("pointerdown", stopSweep);
+  var awide = 0; try { awide = +localStorage.getItem("mes-luders:awide") || 0; } catch (e) {}
+  function setWide(w) { awide = w; $("lu-angview").classList.toggle("lu-awide-on", !!w); [].forEach.call(document.querySelectorAll("#lu .lu-awide button"), function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-w") === w)); }); try { localStorage.setItem("mes-luders:awide", w); } catch (e) {} }
+  [].forEach.call(document.querySelectorAll("#lu .lu-awide button"), function (b) { b.addEventListener("click", function () { setWide(+b.getAttribute("data-w")); }); });
+  setWide(awide);
+  function addAngPanel() { var v = $("lu-angview"); if (window.MESPanel && !v.__mesPanel) { window.MESPanel.add(v, { bar: v.querySelector(".lu-angbtns"), onChange: function () { setTimeout(drawAngle, 40); } }); } }
+  if (document.readyState === "complete") addAngPanel(); else window.addEventListener("load", addAngPanel);
+  setTimeout(addAngPanel, 1500);
 
   /* ---- video: load on click ---- */
   var yt = $("lu-yt");
@@ -899,7 +916,7 @@
   function toast(msg) { var el = $("lu-toast"); el.textContent = msg; el.classList.add("tu-toast--show"); clearTimeout(tt); tt = setTimeout(function () { el.classList.remove("tu-toast--show"); }, 2600); }
 
   /* ---- fill window / full screen ---- */
-  function addPanel() { if (window.MESPanel && !$("lu-view").__mesPanel) { $("lu-view").__mesPanel = 1; window.MESPanel.add($("lu-view"), { bar: $("lu-vbar").querySelector(".lu-vbtns"), stage: $("lu-stage"), onChange: function () { setTimeout(drawAll, 40); } }); } }
+  function addPanel() { if (window.MESPanel && !$("lu-view").__mesPanel) { window.MESPanel.add($("lu-view"), { bar: $("lu-vbar").querySelector(".lu-vbtns"), stage: $("lu-stage"), onChange: function () { setTimeout(drawAll, 40); } }); } }
   if (document.readyState === "complete") addPanel(); else window.addEventListener("load", addPanel);
   setTimeout(addPanel, 1500);
   var rt = null; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(drawAll, 60); });

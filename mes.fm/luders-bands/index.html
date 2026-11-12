@@ -437,6 +437,33 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#lu .tu-eq {overflow-x:auto;margin:0.6em 0;padding:0.5em 0.8em;background:var(--lu-soft);border-radius:0.5em;text-align:center;}
 	#lu .lu-gal figure.lu-wide {grid-column:1 / -1;}
 	#lu .lu-gal figure.lu-wide img {height:auto !important;object-fit:contain;background:#fff;}
+	/* 55° figure: one display box with the slider + meter on it (Normal / Wide / Fill window / Full screen) */
+	#lu .lu-angview {max-width:640px;margin:0.4em auto 0.8em;padding:0.5em;background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:0.7em;}
+	#lu .lu-angview.lu-awide-on {max-width:none;}
+	#lu .lu-angbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.6em;margin-bottom:0.4em;}
+	#lu .lu-angst {font-weight:700;font-size:0.92em;flex:1 1 12em;font-variant-numeric:tabular-nums;}
+	#lu .lu-angbtns {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	#lu .lu-abtn {padding:0.3em 0.65em;font-size:0.85em;min-height:0;}
+	#lu .lu-angstage {position:relative;display:flex;flex-direction:column;background:var(--lu-sheet);border:1px solid var(--lu-line);border-radius:0.6em;overflow:hidden;}
+	#lu .lu-angstage .lu-svg {flex:1 1 auto;min-height:0;}
+	#lu .lu-angstage .lu-a-sheet {stroke:none;}
+	#lu .lu-angctl {padding:0.3em 0.7em 0.5em;border-top:1px solid var(--lu-line);}
+	#lu .lu-asl {display:flex;align-items:center;gap:0.6em;}
+	#lu .lu-asl label {flex:0 0 auto;font-size:0.82em;font-weight:600;color:var(--lu-mut);}
+	#lu .lu-asl input[type=range] {flex:1 1 auto;min-width:6em;height:30px;margin:0;accent-color:var(--lu-my);}
+	#lu .lu-asl output {flex:0 0 3.6em;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+	#lu .lu-angctl .lu-meter {margin:0.15em 0 0.1em;}
+	#lu .lu-angctl .lu-meter__k {margin-bottom:0.15em;}
+	#lu .lu-angctl .lu-angtxt {font-size:0.88em;line-height:1.4;min-height:2.8em;}
+	#lu .lu-angview .lu-legend {display:flex;flex-wrap:wrap;gap:0.15em 1.1em;font-size:0.8em;margin:0.45em 0 0;}
+	#lu .lu-angview .lu-legend li {margin:0;}
+	#lu .lu-angview.mes-pfill {max-width:none;display:flex;flex-direction:column;margin:0;border-radius:0;}
+	#lu .lu-angview.mes-pfill .lu-angstage {flex:1 1 auto;min-height:0;}
+	#lu .lu-angview.mes-pfill .lu-svg {height:100%;}
+	#lu .lu-angview.mes-pfill .lu-awide {display:none;}
+	#lu .lu-anggrid {margin-top:0.4em;}
+	@media (max-width:700px) { #lu .lu-awide {display:none;} }
+	@media (max-width:520px) { #lu .lu-asl label {display:none;} #lu .lu-angview {padding:0.35em;} }
 
 
 	@media print {
@@ -888,32 +915,41 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card lu-angc">
 			<h2 class="lu-h">Why the band leans at about 55°</h2>
 			<p class="lu-lead"><b>The short answer:</b> the band front is a seam. Behind it the steel has already stretched; ahead of it the steel has not. Both sides are the same piece of metal, so the seam has to be a line that comes out the <b>same length</b> whether you measure it on the stretched side or the unstretched side. Only a line tilted about 55° from the pull does that.</p>
-			<div class="lu-anggrid">
-				<div>
+			<div class="lu-angview" id="lu-angview">
+				<div class="lu-angbar">
+					<span class="lu-angst" id="lu-angst" aria-live="polite"></span>
+					<span class="lu-angbtns">
+						<button type="button" class="tu-btn tu-btn--ghost lu-abtn" id="lu-asweep" title="Turn the test line slowly from 0° to 90° and back">▶ Sweep</button>
+						<button type="button" class="tu-btn tu-btn--ghost lu-abtn" id="lu-asnap" title="Put the test line on the band direction">Snap to band</button>
+						<span class="tu-seg lu-awide" role="group" aria-label="Figure width"><button type="button" data-w="0" aria-pressed="true">Normal</button><button type="button" data-w="1" aria-pressed="false">Wide</button></span>
+					</span>
+				</div>
+				<div class="lu-angstage" id="lu-angstage">
 					<svg id="lu-ang" class="lu-svg" viewBox="0 0 440 300" role="img" aria-label="A circle drawn on the sheet is pulled into an ellipse. The two dashed lines through the points where they cross are the band directions."></svg>
-					<ul class="lu-legend">
-						<li><span class="lu-key lu-key--circ"></span>A circle drawn on the sheet before pulling</li>
-						<li><span class="lu-key lu-key--ell"></span>The same circle after pulling (stretch exaggerated)</li>
-						<li><span class="lu-key lu-key--band"></span>Where they cross: lines that did not change length = band directions</li>
-						<li><span class="lu-key lu-key--my"></span>Your test line: drag the yellow dot</li>
-					</ul>
+					<div class="lu-angctl">
+						<div class="lu-asl"><label for="lu-aa">Turn the test line</label><input type="range" id="lu-aa" min="0" max="90" step="0.1" value="20"><output id="lu-aav"></output></div>
+						<div class="lu-angout" id="lu-angout" aria-live="polite"></div>
+					</div>
 				</div>
-				<div>
-					<ol class="lu-steps">
-						<li><b>Pulling makes the bar longer.</b> A line drawn along the pull gets longer.</li>
-						<li><b>It also makes the bar narrower</b> (the extra length has to come from somewhere). A line drawn straight across gets shorter.</li>
-						<li><b>In between, one tilt does neither.</b> It gains as much from the stretching as it loses from the narrowing, so its length does not change. For ordinary steel that tilt is 54.7°, and the seam can only run that way without tearing or wrinkling.</li>
-					</ol>
-					<p class="lu-tryit"><b>Try it:</b> turn the yellow test line and watch whether it grows or shrinks. When it keeps its length it turns <b class="lu-good">green</b>, right on top of a dashed band line.</p>
-					<div class="lu-sl"><label for="lu-aa">Turn the test line</label><input type="range" id="lu-aa" min="0" max="90" step="0.5" value="20"><output id="lu-aav"></output></div>
-					<div class="lu-angout" id="lu-angout" aria-live="polite"></div>
-					<details class="lu-more">
-						<summary>The maths, and why some sheets lean a bit less</summary>
-						<p>Stretch the bar by a strain ε. Its volume stays the same, so the width and thickness share the shrinking: the width gets narrower by ε/2. A line at angle θ from the pull then changes length by ε (cos²θ − ½ sin²θ). That is zero when tan²θ = 2, so θ = 54.7°.</p>
-						<p>Some rolled sheets thin more in width than in thickness. The ratio is the <b>r value</b> (Lankford value). The width then shrinks by ε·r/(1 + r) and the band angle is tan²θ = (1 + r) / r. r = 1 gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less (about 52°).</p>
-						<div class="lu-sl"><label for="lu-ar">Sheet r value</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
-					</details>
-				</div>
+				<ul class="lu-legend">
+					<li><span class="lu-key lu-key--circ"></span>circle before pulling</li>
+					<li><span class="lu-key lu-key--ell"></span>after pulling (exaggerated)</li>
+					<li><span class="lu-key lu-key--band"></span>band directions (no length change)</li>
+					<li><span class="lu-key lu-key--my"></span>test line: drag the dot or the slider</li>
+				</ul>
+			</div>
+			<div class="lu-anggrid">
+				<ol class="lu-steps">
+					<li><b>Pulling makes the bar longer.</b> A line drawn along the pull gets longer.</li>
+					<li><b>It also makes the bar narrower</b> (the extra length has to come from somewhere). A line drawn straight across gets shorter.</li>
+					<li><b>In between, one tilt does neither.</b> It gains as much from the stretching as it loses from the narrowing, so its length does not change. For ordinary steel that tilt is 54.7°, and the seam can only run that way without tearing or wrinkling.</li>
+				</ol>
+				<details class="lu-more">
+					<summary>The maths, and why some sheets lean a bit less</summary>
+					<p>Stretch the bar by a strain ε. Its volume stays the same, so the width and thickness share the shrinking: the width gets narrower by ε/2. A line at angle θ from the pull then changes length by ε (cos²θ − ½ sin²θ). That is zero when tan²θ = 2, so θ = 54.7°.</p>
+					<p>Some rolled sheets thin more in width than in thickness. The ratio is the <b>r value</b> (Lankford value). The width then shrinks by ε·r/(1 + r) and the band angle is tan²θ = (1 + r) / r. r = 1 gives 54.7°; deep-drawing steels have r ≈ 1.6 to 2, so their bands lean a little less (about 52°).</p>
+					<div class="lu-sl"><label for="lu-ar">Sheet r value</label><input type="range" id="lu-ar" min="0.3" max="3" step="0.05" value="1"><output id="lu-arv"></output></div>
+				</details>
 			</div>
 		</div>
 
@@ -1073,7 +1109,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:5
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/luders-bands/js/luders-bands.js?v=3" defer></script>
+	<script src="/luders-bands/js/luders-bands.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
