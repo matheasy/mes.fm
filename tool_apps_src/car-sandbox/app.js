@@ -13,14 +13,14 @@
 	function load(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v && typeof v === "object" ? Object.assign(d, v) : d; } catch (e) { return d; } }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var usLocale = /^en-(US|LR|MM)/.test(navigator.language || "");
-	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, night: false, vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true } });
+	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, night: false, weather: "clear", vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true } });
 	if (!S.show || typeof S.show !== "object") S.show = { info: true, lap: true, speed: true, msg: true, ghost: true };
 	if (S.ghost === false) { S.show.ghost = false; delete S.ghost; }
 	if (typeof S.vol !== "number") S.vol = 0.7;
 	var REC = load(RKEY, { top: 0, jump: 0, air: 0, crash: 0, laps: {} }); if (!REC.laps) REC.laps = {};
 	var Q = C.parseQuery(location.search);
 	if (Q.world) { S.world = Q.world; S.g = null; S.car = null; }
-	if (Q.car) S.car = Q.car; if (Q.g != null) S.g = Q.g; if (Q.traffic != null) S.traffic = Q.traffic; if (Q.ai) S.ai = Q.ai;
+	if (Q.car) S.car = Q.car; if (Q.g != null) S.g = Q.g; if (Q.traffic != null) S.traffic = Q.traffic; if (Q.ai) S.ai = Q.ai; if (Q.weather) S.weather = Q.weather;
 	if (!C.WORLDS[S.world]) S.world = "earth";
 
 	var THREE = null, RAPIER = null;
@@ -88,7 +88,7 @@
 		if (worldGroup) { scene.remove(worldGroup); worldGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (m) { if (m.map) m.map.dispose(); m.dispose(); }); } }); }
 		if (skyGroup) scene.remove(skyGroup);
 		cars.forEach(function (c) { scene.remove(c.group); }); objs.forEach(function (o) { scene.remove(o.mesh); });
-		cars = []; objs = []; statics = []; parts.clear(); lampMat = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
+		cars = []; objs = []; statics = []; parts.clear(); lampMat = null; groundMat = trackMat = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
 		if (phys) { phys.free(); phys = null; }
 	}
 
@@ -122,16 +122,78 @@
 		if (n) sd.set(-sd.x, Math.max(0.35, sd.y), -sd.z).normalize(); /* moonlight / earthshine from the other side */
 		sunLight.userData.dir = sd;
 		sunLight.color.set(n ? (W.planet === "earth" ? "#9fc0ff" : "#a9bdf5") : W.sunCol);
-		sunLight.intensity = n ? (W.planet === "earth" ? 0.55 : 0.4) : (W.amb < 0.3 ? 3.2 : 2.4);
+		var X = wx(), ov = X.over;
+		sunLight.intensity = (n ? (W.planet === "earth" ? 0.55 : 0.4) : (W.amb < 0.3 ? 3.2 : 2.4)) * (1 - ov * 0.65);
 		hemi.color.set(n ? 0x1d2a48 : (W.amb < 0.3 ? 0x8899aa : W.sky[1])); hemi.groundColor.set(n ? 0x050608 : W.ground[0]); hemi.intensity = n ? 0.12 : W.amb;
 		renderer.toneMappingExposure = n ? 1.25 : (W.amb < 0.3 ? 0.95 : 1.0);
-		scene.fog = W.fog ? new THREE.Fog(n ? "#05070d" : W.fog[0], n ? W.fog[1] * 0.6 : W.fog[1], n ? W.fog[2] * 0.7 : W.fog[2]) : null;
+		var fc = n ? "#05070d" : (X.fogCol || (W.fog && W.fog[0]) || "#000"), f1 = W.fog ? W.fog[1] : 300, f2 = W.fog ? W.fog[2] : 900;
+		scene.fog = W.fog || X.fogCol ? new THREE.Fog(fc, f1 * (n ? 0.6 : 1) * Math.max(0.05, X.fog), f2 * (n ? 0.7 : 1) * X.fog) : null;
+		if (!n && ov) hemi.intensity = W.amb * (1 + ov * 0.4); /* flat grey light under clouds */
+		hemiBase = hemi.intensity;
+		applyGround(); buildWeather();
 		sunLight.castShadow = !!S.shadows;
 		if (lampMat) lampMat.emissiveIntensity = n ? 3 : 0;
 		if (skyGroup) { scene.remove(skyGroup); skyGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); }
 		buildSky();
 		var b = $("cs-night"); if (b) { b.setAttribute("aria-pressed", String(n)); b.textContent = n ? "☀️" : "🌙"; }
 		root.querySelectorAll("[data-night]").forEach(function (x) { x.checked = n; });
+	}
+	/* ---------- weather ---------- */
+	function wx() { return C.WEATHER[C.weatherFor(S.world).indexOf(S.weather) >= 0 ? S.weather : "clear"]; }
+	var hemiBase = 0.5, groundMat = null, trackMat = null, groundMap = null, snowMap = null, wxObj = null, rainSnd = null, nextBolt = 0, flash = 0;
+	function applyGround() {
+		var X = wx();
+		if (groundMat) {
+			if (X.snowy) { snowMap = snowMap || canvasTex(256, 256, function (g, w, h) { var r = C.rng(8), id = g.createImageData(w, h); for (var i = 0; i < w * h; i++) { var v = 232 + (r() - 0.5) * 26 + (C.noise((i % w) / 20, Math.floor(i / w) / 20, 3) - 0.5) * 30; id.data[i * 4] = v - 6; id.data[i * 4 + 1] = v - 2; id.data[i * 4 + 2] = Math.min(255, v + 8); id.data[i * 4 + 3] = 255; } g.putImageData(id, 0, 0); }, [1, 1]); groundMat.map = snowMap; groundMat.color.set(S.world === "mars" ? "#f2e2d2" : "#ffffff"); }
+			else { groundMat.map = groundMap; groundMat.color.set(X.p === "rain" ? "#b5b5b5" : "#ffffff"); }
+			groundMat.needsUpdate = true;
+		}
+		if (trackMat) { var wet = X.p === "rain"; trackMat.roughness = wet ? 0.28 : 0.85; trackMat.metalness = wet ? 0.25 : 0; trackMat.color.set(X.snowy ? "#d9dde3" : wet ? "#8a8a8a" : (W.g > 20 ? "#c8b89a" : "#ffffff")); }
+	}
+	function buildWeather() {
+		if (wxObj) { scene.remove(wxObj); wxObj.geometry.dispose(); wxObj = null; }
+		var X = wx(); if (!X.p) return;
+		var n = X.n, rain = X.p === "rain", pos = new Float32Array(n * (rain ? 6 : 3)), cam = camera.position, r = C.rng(4);
+		var P = new Float32Array(n * 3); for (var i = 0; i < n; i++) { P[i * 3] = cam.x + (r() - 0.5) * WXB; P[i * 3 + 1] = cam.y + (r() - 0.5) * WXH; P[i * 3 + 2] = cam.z + (r() - 0.5) * WXB; }
+		var geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+		if (rain) wxObj = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xc8d6e4, transparent: true, opacity: 0.7, depthWrite: false }));
+		else wxObj = new THREE.Points(geo, new THREE.PointsMaterial({ color: X.p === "dust" ? 0xc98a55 : 0xffffff, size: X.p === "dust" ? 0.16 : 0.28, transparent: true, opacity: X.p === "dust" ? 0.55 : 0.95, depthWrite: false, map: flakeTex(), alphaTest: 0.05 }));
+		wxObj.frustumCulled = false; wxObj.userData = { P: P, X: X, phase: new Float32Array(n).map(function () { return r() * 6.28; }) }; scene.add(wxObj);
+	}
+	var WXB = 50, WXH = 26, flakeT = null;
+	function flakeTex() { return flakeT || (flakeT = canvasTex(32, 32, function (g) { var gr = g.createRadialGradient(16, 16, 1, 16, 16, 15); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.5, "rgba(255,255,255,0.7)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); })); }
+	function stepWeather(dt) {
+		if (!wxObj) return;
+		var U = wxObj.userData, X = U.X, P = U.P, n = X.n, pos = wxObj.geometry.attributes.position.array, cam = camera.position, rain = X.p === "rain", t = performance.now() / 1000;
+		var wind = X.wind, fall = X.fall * Math.min(1.6, Math.sqrt(Math.max(0.3, gravity) / 9.81)), hb = WXB / 2, hh = WXH / 2;
+		for (var i = 0; i < n; i++) {
+			var k = i * 3, sw = X.p === "snow" ? Math.sin(t * 1.3 + U.phase[i]) * 0.6 : 0;
+			P[k] += (wind + sw) * dt; P[k + 1] -= fall * dt; P[k + 2] += (X.p === "dust" ? wind * 0.3 : sw * 0.6) * dt;
+			if (X.p === "dust") P[k + 1] += Math.sin(t * 2 + U.phase[i]) * dt * 1.5;
+			var dx = P[k] - cam.x, dy = P[k + 1] - cam.y, dz = P[k + 2] - cam.z;
+			if (dx > hb) P[k] -= WXB; else if (dx < -hb) P[k] += WXB;
+			if (dz > hb) P[k + 2] -= WXB; else if (dz < -hb) P[k + 2] += WXB;
+			if (dy < -hh) P[k + 1] += WXH; else if (dy > hh) P[k + 1] -= WXH;
+			if (rain) { var j = i * 6; pos[j] = P[k]; pos[j + 1] = P[k + 1]; pos[j + 2] = P[k + 2]; pos[j + 3] = P[k] - wind * 0.045; pos[j + 4] = P[k + 1] + fall * 0.045; pos[j + 5] = P[k + 2]; }
+			else { pos[k] = P[k]; pos[k + 1] = P[k + 1]; pos[k + 2] = P[k + 2]; }
+		}
+		wxObj.geometry.attributes.position.needsUpdate = true;
+		/* lightning */
+		if (X.lightning && !replay) {
+			if (simT > nextBolt) { nextBolt = simT + 5 + Math.random() * 10; flash = 0.35; setTimeout(function () { sfx("thunder", 0.6 + Math.random() * 0.4); }, 600 + Math.random() * 2400); }
+			if (flash > 0) { flash -= dt; hemi.intensity = (flash % 0.12 > 0.06 ? 4 : 0.6); if (flash <= 0) hemi.intensity = hemiBase; }
+		}
+	}
+	function rainSound() {
+		if (!ac || !noiseBuf) return; var X = wx(), on = S.sound && !document.hidden && stageVisible() && (X.p === "rain" || X.p === "dust");
+		if (on && !rainSnd) { var src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = noiseBuf; src.loop = true; f.type = X.p === "dust" ? "lowpass" : "bandpass"; f.frequency.value = X.p === "dust" ? 500 : 1600; g.gain.value = 0; src.connect(f); f.connect(g); g.connect(eng.master); src.start(); rainSnd = { src: src, g: g, f: f }; }
+		if (rainSnd) { rainSnd.g.gain.setTargetAtTime(on ? (X.n > 6000 ? 0.32 : 0.2) : 0, ac.currentTime, 0.3); if (!on && rainSnd.g.gain.value < 0.01) { rainSnd.src.stop(); rainSnd = null; } }
+	}
+	function setWeather(k) {
+		if (C.weatherFor(S.world).indexOf(k) < 0) { toast(W.rho ? "Not on this world" : "No air on " + W.name.replace(/ \(.*/, "") + ", so no weather"); return; }
+		S.weather = k; save(); applyLighting(); updateGravityUI(); syncUrl();
+		var X = wx(); $("cs-wx").value = k;
+		toast(X.name + (X.grip < 1 ? ": tyre grip " + Math.round(X.grip * 100) + "% of dry, so brake earlier" : ""));
 	}
 	function setNight(on) { S.night = !!on; save(); applyLighting(); toast(S.night ? (W.stars ? "Night: only the light of the " + (W.planet === "earth" ? "Earth" : "stars") + " and your headlights" : "Night driving: headlights on") : "Daytime"); }
 	/* headlights: two real spot lights on the player's car (only at night) + faint beams */
@@ -153,19 +215,20 @@
 
 	function buildSky() {
 		skyGroup = new THREE.Group(); scene.add(skyGroup);
-		var skyC = S.night ? NIGHT_SKY[S.world] || ["#000", "#050810"] : W.sky;
+		var skyC = S.night ? NIGHT_SKY[S.world] || ["#000", "#050810"] : W.sky, X0 = wx();
+		if (X0.over) { var grey = S.world === "mars" ? ["#8f6a4c", "#c79a72"] : X0.snowy ? ["#9aa4b0", "#d5dbe2"] : ["#4f5863", "#8b949e"]; skyC = [new THREE.Color(skyC[0]).lerp(new THREE.Color(S.night ? "#0a0c10" : grey[0]), X0.over).getStyle(), new THREE.Color(skyC[1]).lerp(new THREE.Color(S.night ? "#111419" : grey[1]), X0.over).getStyle()]; }
 		var geo = new THREE.SphereGeometry(1800, 32, 16), col = [], top = new THREE.Color(skyC[0]), hor = new THREE.Color(skyC[1]), p = geo.attributes.position;
 		for (var i = 0; i < p.count; i++) { var t = Math.max(0, p.getY(i) / 1800); var c = hor.clone().lerp(top, Math.pow(t, 0.55)); col.push(c.r, c.g, c.b); }
 		geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
 		skyGroup.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })));
 		var sd = new THREE.Vector3(W.sun[0], W.sun[1], W.sun[2]).normalize();
 		var sunTex = canvasTex(128, 128, function (g) { var gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, "rgba(255,255,250,1)"); gr.addColorStop(0.18, "rgba(255,250,230,0.95)"); gr.addColorStop(0.4, "rgba(255,230,180,0.25)"); gr.addColorStop(1, "rgba(255,220,160,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
-		var sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, fog: false, depthWrite: false, transparent: true })); sun.position.copy(sd).multiplyScalar(1500); sun.scale.setScalar(W.amb < 0.3 ? 120 : 260); sun.visible = !S.night; skyGroup.add(sun);
+		var sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, fog: false, depthWrite: false, transparent: true })); sun.position.copy(sd).multiplyScalar(1500); sun.scale.setScalar(W.amb < 0.3 ? 120 : 260); sun.visible = !S.night && X0.over < 0.55; skyGroup.add(sun);
 		if (S.night && !W.stars) { /* a moon in the sky */
 			var mt = canvasTex(128, 128, function (g) { var gr = g.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, "rgba(235,240,255,1)"); gr.addColorStop(0.42, "rgba(220,228,250,1)"); gr.addColorStop(0.5, "rgba(180,200,255,0.25)"); gr.addColorStop(1, "rgba(150,180,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); g.fillStyle = "rgba(160,170,190,.5)"; [[52, 50, 9], [74, 70, 7], [60, 78, 5]].forEach(function (c) { g.beginPath(); g.arc(c[0], c[1], c[2], 0, 7); g.fill(); }); });
 			var moonS = new THREE.Sprite(new THREE.SpriteMaterial({ map: mt, fog: false, depthWrite: false, transparent: true })); moonS.position.copy(sunLight.userData.dir || new THREE.Vector3(0, 1, 0)).multiplyScalar(1500); moonS.scale.setScalar(150); skyGroup.add(moonS);
 		}
-		if (W.stars || S.night) {
+		if ((W.stars || S.night) && X0.over < 0.55) {
 			var r = C.rng(99), pts = [];
 			for (var k = 0; k < 2500; k++) { var u = r() * 2 - 1, a = r() * Math.PI * 2, s = Math.sqrt(1 - u * u); if (u < -0.05) continue; pts.push(Math.cos(a) * s * 1700, u * 1700, Math.sin(a) * s * 1700); }
 			var sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
@@ -206,7 +269,8 @@
 		geo.setIndex(idx); geo.computeVertexNormals();
 		var tex = new THREE.TextureLoader().load("/car-sandbox/img/tex-" + TX[0] + ".jpg?v=1", function () { /* drawn on the next frame */ });
 		tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-		var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 0.97, metalness: 0 }));
+		groundMap = tex; groundMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 0.97, metalness: 0 });
+		var mesh = new THREE.Mesh(geo, groundMat);
 		mesh.receiveShadow = true; worldGroup.add(mesh);
 		/* physics */
 		var body = phys.createRigidBody(RAPIER.RigidBodyDesc.fixed());
@@ -229,7 +293,8 @@
 			g.putImageData(id, 0, 0); g.fillStyle = "#f2f2f2"; g.fillRect(3, 0, 5, h); g.fillRect(w - 8, 0, 5, h); g.fillRect(w / 2 - 2, 0, 4, h * 0.45);
 		});
 		tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.RepeatWrapping;
-		var m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -2 }));
+		trackMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -2 });
+		var m = new THREE.Mesh(geo, trackMat);
 		if (W.g > 20) m.material.color.set("#c8b89a");
 		m.receiveShadow = true; worldGroup.add(m);
 		/* start line */
@@ -616,6 +681,7 @@
 		keys[k] = true;
 		if (k === "y") { replayStart(); return; }
 		if (k === "n") { setNight(!S.night); return; }
+		if (k === "k") { var wl = C.weatherFor(S.world); if (wl.length < 2) { setWeather("rain"); return; } setWeather(wl[(wl.indexOf(S.weather) + 1) % wl.length]); return; }
 		if (k === "r") { resetCar(cars[player], true); toast("Back on its wheels"); }
 		else if (k === "c") cycleCam(1);
 		else if (k === "tab") { e.preventDefault(); switchCar(e.shiftKey ? -1 : 1); }
@@ -666,7 +732,7 @@
 		if (mode === "park") return { th: 0, br: 0.4, st: 0, hb: 1, boost: 0 };
 		if (mode === "chase" && me !== c) { var mt = me.body.translation(), mv = me.body.linvel(); target = { x: mt.x + mv.x * 0.6, z: mt.z + mv.z * 0.6 }; }
 		else target = C.cruiseTarget(S.world, t.x, t.z, c.lane, 16 + Math.abs(v) * 0.8);
-		var o = C.aiDrive({ x: t.x, z: t.z, yaw: yaw, v: v }, target.x, target.z, { vmax: Math.min(d.vmax * 0.75, mode === "chase" ? 40 : 24) * Math.min(1, Math.sqrt(Math.max(0.3, Math.abs(gravity)) / 9.81) * 1.2 + 0.25), aggr: mode === "chase" });
+		var o = C.aiDrive({ x: t.x, z: t.z, yaw: yaw, v: v }, target.x, target.z, { vmax: Math.min(d.vmax * 0.75, mode === "chase" ? 40 : 24) * Math.min(1, Math.sqrt(Math.max(0.3, Math.abs(gravity)) / 9.81) * 1.2 + 0.25) * Math.sqrt(wx().grip), aggr: mode === "chase" });
 		/* stuck: back off for a moment */
 		if (c.revT > 0) { c.revT -= dt; return { th: 0, br: 1, st: -o.steer, hb: 0, boost: 0, rev: true }; }
 		if (Math.abs(v) < 0.8 && o.throttle > 0.3) { c.stuckT += dt; if (c.stuckT > 2.2) { c.stuckT = 0; c.revT = 1.6; } } else c.stuckT = 0;
@@ -687,7 +753,7 @@
 		var maxSt = d.steer / (1 + Math.abs(v) / 22);
 		c.steer += (inp.st * maxSt - c.steer) * Math.min(1, dt * (inp.st ? 7 : 9));
 		c.veh.setWheelSteering(0, c.steer); c.veh.setWheelSteering(1, c.steer);
-		var grip = gripOf(d), drive = d.drive === "awd" ? [0, 1, 2, 3] : d.drive === "fwd" ? [0, 1] : [2, 3], i;
+		var grip = gripOf(d) * wx().grip, drive = d.drive === "awd" ? [0, 1, 2, 3] : d.drive === "fwd" ? [0, 1] : [2, 3], i;
 		var eng = [0, 0, 0, 0];
 		var wantRev = inp.br > 0 && v < 0.6 && !inp.th, braking = inp.br > 0 && v >= 0.6, braking2 = inp.th > 0 && v < -0.6;
 		var power = C.engineForce(d.F, v, d.vmax, inp.boost) * (1 - dmg * 0.6) * (d.drive === "awd" ? 0.5 : 1);
@@ -707,12 +773,21 @@
 		var lv = c.body.linvel(), sp = Math.hypot(lv.x, lv.y, lv.z), rho = S.world === "earth" || S.world === "jupiter" ? W.rho : W.rho;
 		c.body.resetForces(true);
 		if (sp > 0.5) { var fd = C.dragForce(rho, d.cdA * (1 + dmg * 0.4), sp) + (anyContact ? d.mass * Math.abs(gravity) * 0.012 : 0), k2 = -fd / sp; c.body.addForce({ x: lv.x * k2, y: lv.y * k2, z: lv.z * k2 }, true); }
-		/* air control: a little pitch / roll with the pedals and steering while flying (it makes jumps playable) */
-		if (!anyContact) c.airT = (c.airT || 0) + dt; else c.airT = 0;
-		if (!anyContact && c === cars[player] && c.airT > 0.3 && simT - c.born > 1.5 && (inp.th || inp.br || inp.st)) {
-			var ax = (inp.th - inp.br) * 0.8, az = -inp.st * 0.8, Ix = d.mass * (d.h * d.h + d.l * d.l) / 12;
-			var r = c.body.rotation(); tmpQ.set(r.x, r.y, r.z, r.w); var tq = new THREE.Vector3(ax * Ix, 0, az * Ix).applyQuaternion(tmpQ);
-			c.body.addTorque({ x: tq.x, y: tq.y, z: tq.z }, true);
+		/* air control: pitch with the pedals, roll with the steering while flying. Keys already held when the car left the ground are
+		   ignored until released and pressed again (holding the gas off a ramp must not flip the car), and the control aims at a modest
+		   turning rate (it pushes only towards that rate), so it can never spin the car up without limit. With no keys: pure physics. */
+		if (!anyContact) c.airT = (c.airT || 0) + dt; else { c.airT = 0; c.airHeld = null; }
+		if (!anyContact && !c.airHeld) c.airHeld = { th: !!inp.th, br: !!inp.br, st: !!inp.st };
+		if (c.airHeld) { if (!inp.th) c.airHeld.th = false; if (!inp.br) c.airHeld.br = false; if (!inp.st) c.airHeld.st = false; }
+		if (!anyContact && c === cars[player] && c.airT > 0.15 && simT - c.born > 1.5) {
+			var pth = c.airHeld.th ? 0 : inp.th, pbr = c.airHeld.br ? 0 : inp.br, pst = c.airHeld.st ? 0 : inp.st;
+			if (pth || pbr || pst) {
+				var r = c.body.rotation(); tmpQ.set(r.x, r.y, r.z, r.w); var av = c.body.angvel(), qi = tmpQ.clone().invert(), w = new THREE.Vector3(av.x, av.y, av.z).applyQuaternion(qi);
+				var Ix = d.mass * (d.h * d.h + d.l * d.l) / 12 * 1.4, Iz = d.mass * (d.w * d.w + d.h * d.h) / 12 * 1.4, RATE = 1.8, K = 3;
+				var tx = (pth || pbr) ? Ix * K * ((pth - pbr) * RATE - w.x) : 0, tz = pst ? Iz * K * (-pst * RATE - w.z) : 0;
+				var tq = new THREE.Vector3(tx, 0, tz).applyQuaternion(tmpQ);
+				c.body.addTorque({ x: tq.x, y: tq.y, z: tq.z }, true);
+			}
 		}
 		c.flame.visible = !!inp.boost && inp.th > 0;
 		var brk = (inp.br > 0 && v > 0.5) || (inp.th > 0 && v < -0.5) || inp.hb;
@@ -856,9 +931,14 @@
 			if (t.y < -60 || t.y > 4000 && gravity > 0.5) resetCar(c, false);
 			if (ci === player) { trackAir(c, t, lv); lapTick(c, t); }
 			/* dust behind wheels on dusty worlds, smoke from wrecks */
+			var XW = wx();
+			if (W.track && (XW.p === "rain" || XW.snowy) && c.anyContact && Math.hypot(lv.x, lv.z) > 5 && Math.random() < 0.7) {
+				var wj = 2 + ((Math.random() * 2) | 0), cq = c.veh.wheelContactPoint(wj);
+				if (cq) parts.burst(cq.x, cq.y + 0.15, cq.z, XW.snowy ? 2 : 1, { speed: 1.2, vx: -lv.x * 0.12, vy: Math.hypot(lv.x, lv.z) * 0.12, vz: -lv.z * 0.12, life: 0.9, size: XW.snowy ? 0.1 : 0.07, cols: XW.snowy ? ["#ffffff", "#e6edf5"] : ["#c9d6e3", "#9fb2c4"], drag: 2, grow: 1.5, bounce: 0 });
+			}
 			if (!W.track && c.anyContact && Math.hypot(lv.x, lv.z) > 4 && Math.random() < 0.5) {
 				var wi = 2 + ((Math.random() * 2) | 0), cp = c.veh.wheelContactPoint(wi);
-				if (cp) parts.burst(cp.x, cp.y + 0.1, cp.z, 1, { speed: 1.5, vx: -lv.x * 0.15, vy: Math.hypot(lv.x, lv.z) * 0.18, vz: -lv.z * 0.15, life: W.rho ? 1.5 : 4, size: 0.12, cols: [W.ground[1], W.ground[0]], drag: W.rho ? 1.2 : 0, grow: W.rho ? 1.2 : 0.2, bounce: 0.05 });
+				if (cp) parts.burst(cp.x, cp.y + 0.1, cp.z, 1, { speed: 1.5, vx: -lv.x * 0.15, vy: Math.hypot(lv.x, lv.z) * 0.18, vz: -lv.z * 0.15, life: W.rho ? 1.5 : 4, size: 0.12, cols: XW.snowy ? ["#ffffff", "#f0e6dc"] : [W.ground[1], W.ground[0]], drag: W.rho ? 1.2 : 0, grow: W.rho ? 1.2 : 0.2, bounce: 0.05 });
 			}
 			if (c.damage > 60) { c.smokeT -= dt; if (c.smokeT < 0) { c.smokeT = 0.08 + (100 - c.damage) / 300; var fw = fwdOf(c); parts.burst(t.x + fw.x * c.d.l * 0.35, t.y + c.d.h * 0.6, t.z + fw.z * c.d.l * 0.35, 1, { speed: 0.4, vy: 1.6, life: 2.4, size: 0.4, cols: c.damage > 90 ? ["#222", "#333"] : ["#666", "#888"], grav: gravity > 0.5 ? -0.05 : 0, drag: 0.8, grow: 1.6, bounce: 0 }); } }
 		});
@@ -1007,8 +1087,9 @@
 		var src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(), now = ac.currentTime;
 		src.buffer = noiseBuf; src.playbackRate.value = kind === "glass" ? 1.6 : 1;
 		f.type = kind === "glass" ? "highpass" : "lowpass"; f.frequency.value = { crash: 900, thud: 180, glass: 3000, splat: 500, pop: 1200 }[kind] || 800;
-		var dur = { crash: 0.45, thud: 0.18, glass: 0.6, splat: 0.25, pop: 0.06 }[kind] || 0.2;
-		g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(Math.max(0.001, (kind === "pop" ? 0.15 : 0.55) * amt * (W.rho ? 1 : 0.35)), now + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+		var dur = { crash: 0.45, thud: 0.18, glass: 0.6, splat: 0.25, pop: 0.06, thunder: 2.6 }[kind] || 0.2;
+		if (kind === "thunder") { f.frequency.value = 140; src.playbackRate.value = 0.5; src.loop = true; }
+		g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(Math.max(0.001, (kind === "pop" ? 0.15 : kind === "thunder" ? 0.9 : 0.55) * amt * (W.rho ? 1 : 0.35)), now + (kind === "thunder" ? 0.25 : 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 		src.connect(f); f.connect(g); g.connect(eng.master); src.start(now); src.stop(now + dur + 0.05);
 	}
 	function horn() {
@@ -1036,7 +1117,7 @@
 		$("cs-g").value = g <= 30 ? g : 30; $("cs-gnum").value = +g.toFixed(2);
 		$("cs-gname").textContent = (nm ? nm + " · " : "") + (g / C.G0).toFixed(2) + " × Earth";
 		document.querySelectorAll("#cs-gpre button").forEach(function (b) { b.setAttribute("aria-pressed", Math.abs(+b.dataset.g - g) < 0.005 ? "true" : "false"); });
-		var st = C.stopDist(27.78, 1, g), jp = C.jump(25, 0.35, g);
+		var st = C.stopDist(27.78, wx().grip, g), jp = C.jump(25, 0.35, g);
 		$("cs-gfacts").textContent = g > 0 ? "At this gravity a car stopping from 100 km/h needs about " + C.fmtDist(st, S.units) + ", and a 90 km/h jump off a 20° ramp flies about " + C.fmtDist(jp.range, S.units) + " for " + jp.time.toFixed(1) + " s." : "Zero gravity: nothing pushes the tyres onto the ground, so there is no grip at all. Anything you bump floats away forever.";
 		$("cs-hgrav").textContent = gFlip > 0 ? "↑ gravity!" : (nm || (g / C.G0).toFixed(2) + " g") + " · " + g.toFixed(2) + " m/s²";
 	}
@@ -1079,6 +1160,7 @@
 		render();
 	}
 	function advance(dt) {
+		stepWeather(paused && !replay ? 0 : dt * (S.slow ? 0.25 : 1) * (replay ? replay.speed * (replay.playing ? 1 : 0) : 1)); rainSound();
 		if (replay) { replayAdvance(dt); if (skyGroup) skyGroup.position.copy(camera.position); headlights(); return; }
 		if (!paused) {
 			acc += dt * (S.slow ? 0.25 : 1);
@@ -1140,6 +1222,9 @@
 		opt($("cs-world"), C.WORLD_ORDER.map(function (w) { return [w, C.WORLDS[w].name]; }), S.world);
 		opt($("cs-car"), [["", "Best for this world"]].concat(C.CAR_ORDER.map(function (k) { return [k, C.CARS[k].name]; })), S.car || "");
 		opt($("cs-cam"), CAMS, S.cam);
+		function wxOpts() { opt($("cs-wx"), Object.keys(C.WEATHER).map(function (k) { return [k, C.WEATHER[k].icon + " " + C.WEATHER[k].name]; }), C.weatherFor(S.world).indexOf(S.weather) >= 0 ? S.weather : "clear"); Array.prototype.forEach.call($("cs-wx").options, function (o) { o.disabled = C.weatherFor(S.world).indexOf(o.value) < 0; }); }
+		wxOpts(); $("cs-world").addEventListener("change", wxOpts);
+		$("cs-wx").addEventListener("change", function () { setWeather(this.value); });
 		$("cs-wdesc").textContent = C.WORLDS[S.world].desc;
 		$("cs-world").addEventListener("change", function () { S.world = this.value; S.g = null; S.car = null; $("cs-car").value = ""; save(); $("cs-wdesc").textContent = C.WORLDS[S.world].desc; buildWorld(); syncUrl(); });
 		$("cs-car").addEventListener("change", function () { S.car = this.value || null; save(); swapPlayerCar(); syncUrl(); });
@@ -1233,7 +1318,7 @@
 		run: function (sec, inp) { var saved = touch; touch = Object.assign({ th: 0, br: 0, l: 0, r: 0, hb: 0, boost: 0 }, inp || {}); for (var i = 0; i < sec * 60; i++) advance(1 / 60); touch = saved; render(); return this.state(); },
 		/* let the computer drive the player's car (testing the lap timer): MESCarSandbox.auto(seconds) */
 		auto: function (sec) { var a = S.ai; S.ai = "cruise"; autoPilot = true; for (var i = 0; i < sec * 60; i++) advance(1 / 60); autoPilot = false; S.ai = a; render(); return { laps: lap.laps, last: lap.last, best: REC.laps[lapKey()], hud: $("cs-lapnow").textContent + " | " + $("cs-lapbest").textContent, toast: $("cs-toast").textContent }; },
-		car: function () { return cars[player]; }, replay: function () { replayStart(); return replay ? { len: replay.len, frames: replay.frames.length } : null; }, replayStep: function (sec) { for (var i = 0; i < sec * 60; i++) advance(1 / 60); render(); return replay ? replay.t : null; }, night: setNight, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
+		car: function () { return cars[player]; }, replay: function () { replayStart(); return replay ? { len: replay.len, frames: replay.frames.length } : null; }, replayStep: function (sec) { for (var i = 0; i < sec * 60; i++) advance(1 / 60); render(); return replay ? replay.t : null; }, night: setNight, weather: setWeather, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
 		render: function () { render(); }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();

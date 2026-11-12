@@ -85,4 +85,12 @@ ok(C.stuntName(0, 0, 2.1 * Math.PI).name === "barrel roll", "barrel roll");
 ok(C.stuntName(0, 2 * Math.PI, 0).name === "360° spin", "360");
 ok(C.stuntName(0.5, 0.4, 0.3).name === "", "no stunt for wobbles");
 ok(C.stuntName(-6.4, 3.3, 0).name === "backflip + 180", "flip + 180");
+// weather
+C.WORLD_ORDER.forEach(function (w) { var l = C.weatherFor(w); ok(l[0] === "clear" && l.every(function (k) { return C.WEATHER[k]; }), "weather list " + w); });
+ok(C.weatherFor("moon").length === 1 && C.weatherFor("ceres").length === 1, "no weather without air");
+ok(C.weatherFor("mars").indexOf("dust") >= 0 && C.weatherFor("earth").indexOf("rain") >= 0, "weather per world");
+Object.keys(C.WEATHER).forEach(function (k) { var x = C.WEATHER[k]; ok(x.grip > 0 && x.grip <= 1 && x.fog > 0 && x.fog <= 1, "weather " + k); });
+near(C.stopDist(27.78, C.WEATHER.snow.grip, 9.81) / C.stopDist(27.78, 1, 9.81), 1 / 0.32, 1e-9, "snow stops 3x longer");
+ok(C.parseQuery("w=earth&wx=snow").weather === "snow" && C.parseQuery("wx=nope").weather === undefined, "wx query");
+ok(C.query({ world: "earth", weather: "rain" }).indexOf("wx=rain") >= 0 && C.query({ world: "moon", weather: "rain" }).indexOf("wx") < 0, "wx in links only where possible");
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

@@ -60,6 +60,21 @@
 	C.CAR_ORDER = ["sports", "suv", "truck", "bus", "monster", "buggy", "rover", "kart"];
 	C.PAINT = ["#d62828", "#2b6cb0", "#f2b705", "#16a34a", "#7b2cbf", "#ff8800", "#e5e5e5", "#222222", "#0ea5e9", "#db2777"];
 
+	/* ---------- weather ----------
+	   grip = share of dry tyre grip (wet asphalt ~0.7, packed snow ~0.3), fog = fog distance factor, over = how overcast (0-1),
+	   p = particles ("rain" streaks, "snow" flakes, "dust"), n = how many, fall = falling speed m/s, wind = sideways drift m/s. */
+	C.WEATHER = {
+		clear: { name: "Clear", icon: "☀️", grip: 1, fog: 1, over: 0, p: null },
+		rain: { name: "Rain", icon: "🌧️", grip: 0.7, fog: 0.4, over: 0.65, p: "rain", n: 4500, fall: 9, wind: 1.5, fogCol: "#8d969f" },
+		storm: { name: "Thunderstorm", icon: "⛈️", grip: 0.6, fog: 0.28, over: 0.85, p: "rain", n: 7500, fall: 11, wind: 5, fogCol: "#5d656e", lightning: true },
+		snow: { name: "Snow", icon: "🌨️", grip: 0.32, fog: 0.33, over: 0.6, p: "snow", n: 6500, fall: 1.3, wind: 1.2, fogCol: "#d8dee6", snowy: true },
+		fog: { name: "Thick fog", icon: "🌫️", grip: 0.9, fog: 0.09, over: 0.5, p: null, fogCol: "#b4bcc4" },
+		dust: { name: "Dust storm", icon: "🌪️", grip: 0.8, fog: 0.12, over: 0.6, p: "dust", n: 5000, fall: 0.4, wind: 14, fogCol: "#c98a55" },
+		co2snow: { name: "CO₂ snow (Mars poles)", icon: "❄️", grip: 0.4, fog: 0.4, over: 0.4, p: "snow", n: 4500, fall: 0.6, wind: 2, fogCol: "#e6d3c0", snowy: true }
+	};
+	/* which weather each world can have (no air = no weather) */
+	C.weatherFor = function (wid) { var W = C.WORLDS[wid]; if (!W || !W.rho) return ["clear"]; if (wid === "mars") return ["clear", "dust", "co2snow"]; return ["clear", "rain", "storm", "snow", "fog"]; };
+
 	/* ---------- seeded randomness + noise ---------- */
 	C.rng = function (seed) { var s = (seed >>> 0) || 1; return function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 	function hash2(ix, iz, seed) { var h = Math.imul(ix, 374761393) + Math.imul(iz, 668265263) + Math.imul(seed, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
@@ -335,9 +350,10 @@
 		var g = parseFloat(p.get("g")); if (isFinite(g) && g >= 0 && g <= 300) o.g = g;
 		var t = parseInt(p.get("cars"), 10); if (t >= 0 && t <= 12) o.traffic = t;
 		if (["cruise", "chase", "park"].indexOf(p.get("ai")) >= 0) o.ai = p.get("ai");
+		if (C.WEATHER[p.get("wx")]) o.weather = p.get("wx");
 		return o;
 	};
-	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); return p.toString(); };
+	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); return p.toString(); };
 
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCar = C;
 })(typeof window !== "undefined" ? window : this);
