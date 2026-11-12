@@ -1483,12 +1483,38 @@
 		c.fillStyle = "rgba(15,10,30,0.72)"; c.fillRect(bx, by, w + 10, 18); c.fillStyle = "#fff"; c.fillText(label, bx + 5, by + 13);
 	}
 	function bodyPt(st, bx, by) { var cs = Math.cos(st.th), sn = Math.sin(st.th); return [wx(st.x + bx * cs - by * sn), wy(st.y + bx * sn + by * cs)]; }
+	/* AI-made side views (Gemini, 2026-11-11) for the car bodies: mes.fm/gta-stunt-jump-simulator/img/cars/<body>.png, facing +x.
+	   [w, h, rear wheel x, front wheel x, wheel centre y, wheel radius] in image pixels; the wheels stay code-drawn (they spin and ride the suspension).
+	   A picked colour re-tints the picture ("color" blend keeps its shading). Falls back to the drawn outline until the picture loads. */
+	var SPR = {"hatch":[298,109,51,236,84,24],"coupe":[311,98,59.5,248.5,73,24],"super":[320,87,57.5,245,61.5,24.5],"muscle":[319,102,69,256.5,76.5,24.5],"suv":[312,129,68,255.5,103,25],"pickup":[315,138,71.5,259,105,32],"monster":[306,185,65,252,133,51]}, sprImg = {}, sprTint = {};
+	function sprite(body) {
+		var m = SPR[body]; if (!m) return null; var im = sprImg[body];
+		if (!im) { im = sprImg[body] = new Image(); im.onload = function () { if (!running) frame(); }; im.src = "/gta-stunt-jump-simulator/img/cars/" + body + ".png?v=1"; }
+		return im.complete && im.naturalWidth ? { m: m, img: im } : null;
+	}
+	function tinted(body, im, col) {
+		if (!col) return im; var key = body + col; if (sprTint[key]) return sprTint[key];
+		var cv = document.createElement("canvas"); cv.width = im.naturalWidth; cv.height = im.naturalHeight; var x = cv.getContext("2d");
+		x.drawImage(im, 0, 0); x.globalCompositeOperation = "color"; x.fillStyle = col; x.fillRect(0, 0, cv.width, cv.height); x.globalCompositeOperation = "destination-in"; x.drawImage(im, 0, 0);
+		return (sprTint[key] = cv);
+	}
+	function drawSprite(c, st, sp, wheels) {
+		var v = veh, m = sp.m, s = cam.s, k = v.wb / (m[3] - m[2]), rs = m[5] * k, dy = rs - v.r, r0 = sim.ax[0].bx;
+		var bx0 = r0 - m[2] * k, by0 = v.r - v.hcg + dy + m[4] * k;
+		c.save(); c.translate(wx(st.x), wy(st.y)); c.rotate(-st.th);
+		c.fillStyle = "#0b0b0e"; [m[2], m[3]].forEach(function (u) { c.beginPath(); c.arc((bx0 + u * k) * s, -(by0 - m[4] * k) * s, rs * 1.03 * s, 0, 7); c.fill(); });
+		c.drawImage(tinted(v.body, sp.img, S.color && S.color !== v.color ? S.color : ""), bx0 * s, -by0 * s, m[0] * k * s, m[1] * k * s);
+		c.restore();
+		var up = [-Math.sin(st.th), Math.cos(st.th)];
+		wheels.forEach(function (w) { drawWheel(c, { x: w.x + up[0] * dy, y: w.y + up[1] * dy, ang: w.ang }, rs); });
+	}
 	function drawVehicle(c, st) {
 		var v = veh, sh = sim.shape, col = S.color || v.color, cs = Math.cos(st.th), sn = Math.sin(st.th), dnx = sn, dny = -cs;
 		var gy = M.groundAt(co, st.x).y, alt = st.y - gy; if (gy > -1e8) { c.fillStyle = "rgba(0,0,0," + clamp(0.35 - alt * 0.02, 0.05, 0.35) + ")"; c.beginPath(); c.ellipse(wx(st.x), wy(gy) - 1, Math.max(0.1, v.len * 0.5 * cam.s * (1 + alt * 0.03)), Math.max(1.5, 0.18 * cam.s), 0, 0, 7); c.fill(); }
 		var wheels = sim.ax.map(function (A, i) { var att = [st.x + A.bx * cs - A.ya * sn, st.y + A.bx * sn + A.ya * cs], d = A.L0 - (st.comp[i] || 0); return { x: att[0] + dnx * d, y: att[1] + dny * d, ax: att, ang: st.ang[i] }; });
 		c.strokeStyle = "#555"; c.lineWidth = Math.max(1, v.r * 0.18 * cam.s); wheels.forEach(function (w) { c.beginPath(); c.moveTo(wx(w.ax[0]), wy(w.ax[1])); c.lineTo(wx(w.x), wy(w.y)); c.stroke(); });
 		if (v.bike) { drawBike(c, st, wheels, col); return; }
+		var sp = sprite(v.body); if (sp) { drawSprite(c, st, sp, wheels); return; }
 		c.beginPath(); sh.pts.forEach(function (p, i) { var q = bodyPt(st, p[0], p[1]); if (i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]); }); c.closePath();
 		var top = bodyPt(st, 0, v.ht - v.hcg), bot = bodyPt(st, 0, -v.hcg + sh.gc), grd = c.createLinearGradient(top[0], top[1], bot[0], bot[1]);
 		grd.addColorStop(0, shade(col, 1.25)); grd.addColorStop(0.55, col); grd.addColorStop(1, shade(col, 0.55)); c.fillStyle = grd; c.fill();
