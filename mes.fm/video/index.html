@@ -596,7 +596,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-fontlist button:hover, #vd .vd-fontlist button.is-act {background:var(--vd-btnh);} #vd .vd-fontlist button[aria-selected=true] {outline:1px solid var(--vd-sel);}
 	#vd .vd-fontlist .vd-fg {font-size:0.7em;color:var(--vd-dim);margin-left:0.4em;font-family:Arial,sans-serif;}
 	#vd .vd-fck {display:flex;flex-direction:column;justify-content:flex-start;} #vd .vd-fck input {width:18px;height:18px;margin:0.45em 0 0;accent-color:var(--vd-sel);}
-	#vd .vd-thead {cursor:grab;} #vd .vd-thead button, #vd .vd-thead .vd-tname {cursor:pointer;} #vd .vd-trow.is-tdrag {outline:2px solid var(--vd-sel);outline-offset:-2px;z-index:8;} #vd .vd-trow.is-tdrag .vd-thead {cursor:grabbing;background:#1f2a3a;}
+	#vd .vd-thead {cursor:grab;} #vd .vd-thead button, #vd .vd-thead .vd-tname {cursor:pointer;} #vd .vd-thead {padding-left:16px;} #vd .vd-tgrip {position:absolute;left:3px;top:50%;width:9px;height:16px;margin-top:-8px;cursor:grab;opacity:0.45;background:radial-gradient(circle,#c9d1dc 1.3px,transparent 1.6px) 0 0/4.5px 5.3px;transition:opacity .12s;} #vd .vd-thead:hover .vd-tgrip {opacity:0.95;}
+	#vd #vd-rows.is-tdragging .vd-trow {transition:transform .16s ease;} #vd #vd-rows.is-tdragging .vd-trow.is-tdrag {transition:none;}
+	#vd .vd-trow.is-tdrag {z-index:9;box-shadow:0 10px 28px rgba(0,0,0,0.6),0 0 0 2px var(--vd-sel);opacity:0.96;cursor:grabbing;} #vd .vd-trow.is-tdrag .vd-thead {cursor:grabbing;background:#1f2a3a;} #vd .vd-trow.is-tdrag .vd-tgrip {opacity:1;}
 
 
 	@media print {
@@ -771,6 +773,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-dlg .vd-q[aria-expanded=true]{color:#86a0d5;border-color:#078bc5}
 	body.dark-mode #vd .vd-dlg .vd-cmp-help{border-left:3px solid #078bc5}
 	body.dark-mode #vd .vd-tedit{border:1px dashed #078bc5;outline:2px solid rgba(7,139,197,0.35)}
+	body.dark-mode #vd .vd-tgrip{background:radial-gradient(circle,#363b42 1.3px,transparent 1.6px) 0 0/4.5px 5.3px}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1212,7 +1215,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=24" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=26" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

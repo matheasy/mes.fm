@@ -289,4 +289,6 @@
 	#vd .vd-fontlist button:hover, #vd .vd-fontlist button.is-act {background:var(--vd-btnh);} #vd .vd-fontlist button[aria-selected=true] {outline:1px solid var(--vd-sel);}
 	#vd .vd-fontlist .vd-fg {font-size:0.7em;color:var(--vd-dim);margin-left:0.4em;font-family:Arial,sans-serif;}
 	#vd .vd-fck {display:flex;flex-direction:column;justify-content:flex-start;} #vd .vd-fck input {width:18px;height:18px;margin:0.45em 0 0;accent-color:var(--vd-sel);}
-	#vd .vd-thead {cursor:grab;} #vd .vd-thead button, #vd .vd-thead .vd-tname {cursor:pointer;} #vd .vd-trow.is-tdrag {outline:2px solid var(--vd-sel);outline-offset:-2px;z-index:8;} #vd .vd-trow.is-tdrag .vd-thead {cursor:grabbing;background:#1f2a3a;}
+	#vd .vd-thead {cursor:grab;} #vd .vd-thead button, #vd .vd-thead .vd-tname {cursor:pointer;} #vd .vd-thead {padding-left:16px;} #vd .vd-tgrip {position:absolute;left:3px;top:50%;width:9px;height:16px;margin-top:-8px;cursor:grab;opacity:0.45;background:radial-gradient(circle,#c9d1dc 1.3px,transparent 1.6px) 0 0/4.5px 5.3px;transition:opacity .12s;} #vd .vd-thead:hover .vd-tgrip {opacity:0.95;}
+	#vd #vd-rows.is-tdragging .vd-trow {transition:transform .16s ease;} #vd #vd-rows.is-tdragging .vd-trow.is-tdrag {transition:none;}
+	#vd .vd-trow.is-tdrag {z-index:9;box-shadow:0 10px 28px rgba(0,0,0,0.6),0 0 0 2px var(--vd-sel);opacity:0.96;cursor:grabbing;} #vd .vd-trow.is-tdrag .vd-thead {cursor:grabbing;background:#1f2a3a;} #vd .vd-trow.is-tdrag .vd-tgrip {opacity:1;}

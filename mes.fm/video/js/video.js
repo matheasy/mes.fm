@@ -2568,7 +2568,7 @@
 		p.tracks.forEach(function (tr) {
 			var h = V.rowH(tr), canDel = (tr.kind === "v" ? nV : nA) > 1 && !p.clips.some(function (c) { return c.track === tr.id; });
 			html += '<div class="vd-trow vd-trow--' + tr.kind + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + (tr.mag ? " is-mag" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
-				'<div class="vd-thead"><span class="vd-tname" title="Double-click to rename. Drag the empty part of this header up or down to move the track; right-click for more">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
+				'<div class="vd-thead"><span class="vd-tgrip" title="Drag to move this track up or down" aria-hidden="true"></span><span class="vd-tname" title="Double-click to rename. Drag the empty part of this header up or down to move the track; right-click for more">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
 				(tr.kind === "v" ? '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' this track">' + (tr.hide ? "&#128065;&#824;" : "&#128065;") + "</button>" : "") +
 				'<button type="button" data-tact="mute" aria-pressed="' + !!tr.mute + '" title="' + (tr.mute ? "Unmute" : "Mute") + ' this track">' + (tr.mute ? "&#128263;" : "&#128266;") + "</button>" +
 				'<button type="button" data-tact="lock" aria-pressed="' + !!tr.lock + '" title="' + (tr.lock ? "Unlock" : "Lock") + ' this track">' + (tr.lock ? "&#128274;" : "&#128275;") + "</button>" +
@@ -2712,8 +2712,10 @@
 		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		var th = e.target.closest(".vd-thead");
 		if (th) {   // drag a track's header up / down to reorder the tracks (video tracks stay among video tracks, sound among sound)
-			if (e.target.closest("button, .vd-tname")) return;
-			var hrow = th.closest(".vd-trow"); drag = { mode: "track", tr: V.track(VE.P, hrow.getAttribute("data-track")), y0: e.clientY, moved: false, row: hrow };
+			if (e.target.closest("button, .vd-tname") && !e.target.closest(".vd-tgrip")) return;
+			var hrow = th.closest(".vd-trow"), all = [].slice.call(rows.querySelectorAll(".vd-trow"));
+			drag = { mode: "track", tr: V.track(VE.P, hrow.getAttribute("data-track")), y0: e.clientY, moved: false, row: hrow, all: all, from: all.indexOf(hrow), to: all.indexOf(hrow),
+				rects: all.map(function (r) { var b = r.getBoundingClientRect(); return { top: b.top, h: b.height, kind: V.track(VE.P, r.getAttribute("data-track")).kind }; }) };
 			inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
 		}
 		var mk = e.target.closest(".vd-an-mk");
@@ -2759,10 +2761,17 @@
 			T.render(); VE.preview.draw(); VE.emit("live"); return;
 		}
 		if (drag.mode === "track") {
-			if (!drag.moved && Math.abs(e.clientY - drag.y0) < 4) return; drag.moved = true; drag.row.classList.add("is-tdrag");
-			var list = VE.P.tracks, me = drag.tr, cur = list.indexOf(me), tgt = null;
-			rows.querySelectorAll(".vd-trow").forEach(function (r) { var b = r.getBoundingClientRect(); if (e.clientY >= b.top && e.clientY < b.bottom) tgt = V.track(VE.P, r.getAttribute("data-track")); });
-			if (tgt && tgt !== me && tgt.kind === me.kind) { var j = list.indexOf(tgt); list.splice(cur, 1); list.splice(j, 0, me); T.render(); drag.row = rows.querySelector('.vd-trow[data-track="' + me.id + '"]'); if (drag.row) drag.row.classList.add("is-tdrag"); }
+			// the grabbed row follows the pointer; the rows it passes slide out of its way; the order changes on release
+			var dy0 = e.clientY - drag.y0; if (!drag.moved && Math.abs(dy0) < 4) return;
+			if (!drag.moved) { drag.moved = true; rows.classList.add("is-tdragging"); drag.row.classList.add("is-tdrag"); }
+			var R = drag.rects, f = drag.from, me = R[f], kind = drag.tr.kind, lo = f, hi = f;
+			while (lo > 0 && R[lo - 1].kind === kind) lo--; while (hi < R.length - 1 && R[hi + 1].kind === kind) hi++;
+			var minDy = R[lo].top - me.top, maxDy = R[hi].top + R[hi].h - (me.top + me.h), dy = V.clamp(dy0, minDy, maxDy), to = f;
+			var topY = me.top + dy, botY = topY + me.h;   // passing half of a neighbour (with the grabbed row's top going up, its bottom going down) swaps them
+			for (var i = lo; i <= hi; i++) { if (i < f && topY < R[i].top + R[i].h / 2) { to = i; break; } }
+			for (var j = hi; j >= lo; j--) { if (j > f && botY > R[j].top + R[j].h / 2) { to = j; break; } }
+			drag.to = to; drag.row.style.transform = "translateY(" + dy + "px)";
+			drag.all.forEach(function (r, k) { if (k === f) return; var sh = (to < f && k >= to && k < f) ? me.h : (to > f && k > f && k <= to) ? -me.h : 0; r.style.transform = sh ? "translateY(" + sh + "px)" : ""; });
 			return;
 		}
 		if (drag.mode === "rowh") { drag.moved = true; drag.tr.h = V.clamp(Math.round(drag.h0 - (e.clientY - drag.y0)), V.ROW_MIN, V.ROW_MAX); T.render(); return; }
@@ -2833,7 +2842,12 @@
 		if (!drag) return;
 		var d = drag; drag = null;
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Track height"); return; }
-		if (d.mode === "track") { if (d.moved) VE.commit("Move track"); else T.render(); return; }
+		if (d.mode === "track") {
+			rows.classList.remove("is-tdragging"); d.all.forEach(function (r) { r.style.transform = ""; });
+			if (d.moved && d.to !== d.from) { var tg = V.track(VE.P, d.all[d.to].getAttribute("data-track")), L = VE.P.tracks; L.splice(L.indexOf(d.tr), 1); L.splice(L.indexOf(tg) + (d.to > d.from ? 1 : 0), 0, d.tr); VE.commit("Move track"); }
+			else T.render();
+			return;
+		}
 		if (d.mode === "anim") {
 			if (d.moved) { d.c.anims = V.cleanAnims(d.c.anims); VE.commit(d.edge ? "Animation length" : "Move animation"); }
 			else VE.preview.seek(Math.min(V.end(d.c) - 1e-3, d.c.start + d.a.t + d.a.d));   // a click jumps to its end, ready to drag the clip there in the preview
