@@ -121,6 +121,47 @@
 		var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || new URLSearchParams(location.search).has("mock");
 		fetch(local ? "/gta/data/news-sample.json" : "/api/gta-news").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { allNews = (d.items || []).filter(function (n) { return /^https?:\/\//.test(n.link); }); paintNews(); })
 			.catch(function () { $("gh-news").innerHTML = '<li class="gh-load">Could not load the headlines right now.</li>'; $("gh-more").hidden = true; });
+
+		/* GTA Radio: the list is static HTML (data-3s / data-yt / data-sp on each button); nothing loads from 3Speak / YouTube / Spotify until Play. */
+		(function () {
+			var list = $("gm-list"); if (!list) return;
+			var SRC = {"3s": "3Speak", yt: "YouTube", sp: "Spotify"}, cur = null, src = null, mkey = "mes-gta:music";
+			function pick(b) { var o = {}; try { o = JSON.parse(localStorage.getItem(mkey) || "{}"); } catch (e) {} return b.getAttribute("data-" + o.src) ? o.src : (b.dataset["3s"] ? "3s" : "yt"); }
+			function url(k, v) {
+				if (k === "3s") return "https://play.3speak.tv/embed?v=" + encodeURIComponent(v).replace("%2F", "/") + "&autoplay=true";
+				if (k === "yt") return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(v) + "?autoplay=1&rel=0";
+				return "https://open.spotify.com/embed/album/" + encodeURIComponent(v) + "?utm_source=generator&theme=0";
+			}
+			function link(t, h) { return h ? '<a href="' + esc(h) + '" target="_blank" rel="noopener">' + t + "</a>" : ""; }
+			function show(b, play) {
+				cur = b; src = pick(b);
+				[].forEach.call(list.querySelectorAll(".gm-item"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+				$("gm-title").textContent = b.querySelector("b").textContent; $("gm-note").textContent = b.getAttribute("data-note") || "";
+				var d = b.dataset, seg = "";
+				["3s", "yt", "sp"].forEach(function (k) { if (d[k]) seg += '<button type="button" data-k="' + k + '" aria-pressed="' + (k === src) + '">' + SRC[k] + "</button>"; });
+				$("gm-src").innerHTML = seg; $("gm-src").hidden = seg.split("<button").length < 3;
+				$("gm-links").innerHTML = [link("Hive post", d.hive), d["3s"] && link("3Speak", "https://3speak.tv/watch?v=" + d["3s"]), d.yt && link("YouTube", "https://www.youtube.com/watch?v=" + d.yt), d.sp && link("Spotify", "https://open.spotify.com/album/" + d.sp), link("Apple Music", d.apple), link("Amazon Music", d.amazon), link("Deezer", d.deezer)].filter(Boolean).join(" · ");
+				if (play) load(); else poster();
+			}
+			function poster() {
+				var img = cur.querySelector("img").getAttribute("src").replace("/320x0/", "/640x0/").replace("/mqdefault.", "/hqdefault.");
+				$("gm-screen").className = "gm-screen";
+				$("gm-screen").innerHTML = '<button type="button" class="gm-poster" id="gm-poster"><img src="' + esc(img) + '" alt=""><span class="gm-play" aria-hidden="true">▶</span><span class="gm-ptxt">Play on ' + SRC[src] + "</span></button>";
+				$("gm-poster").addEventListener("click", load);
+			}
+			function load() {
+				var v = cur.dataset[src], sp = src === "sp";
+				$("gm-screen").className = "gm-screen" + (sp ? " is-sp" : "");
+				$("gm-screen").innerHTML = '<iframe src="' + esc(url(src, v)) + '" title="' + esc(cur.querySelector("b").textContent) + '" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+			}
+			list.addEventListener("click", function (e) { var b = e.target.closest(".gm-item"); if (b) show(b, cur !== b || !$("gm-screen").querySelector("iframe")); });
+			$("gm-src").addEventListener("click", function (e) {
+				var b = e.target.closest("button[data-k]"); if (!b) return;
+				try { localStorage.setItem(mkey, JSON.stringify({src: b.getAttribute("data-k")})); } catch (er) {}
+				var playing = !!$("gm-screen").querySelector("iframe"); show(cur, playing);
+			});
+			show(list.querySelector(".gm-item"), false);
+		})();
 	}
 
 	/* ---------------- countdown ---------------- */

@@ -520,6 +520,54 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gh-next {margin-top:0.9em;}
 	@media (max-width:480px) {.gh-cd__n {min-width:3em;} .gh-cd__n b {font-size:1.5em;} .gh-date {font-size:1.35em;} .gh-dl {grid-template-columns:minmax(0,1fr);}}
 
+	/* ---- GTA Radio (hub) ---- always dark, like the hero */
+	.gt .gm {margin-top:0.9em;background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:var(--gt-ink);}
+	.gt .gm a {color:#ffb3d4;} .gt .gm a:hover {color:#fff;}
+	.gm-head {display:flex;align-items:center;justify-content:space-between;gap:0.6em;}
+	.gt .gm .gt-h {color:#fff;}
+	.gm-onair {font-size:0.72em;font-weight:800;letter-spacing:0.14em;color:#fff;background:#e0245e;padding:0.25em 0.6em;border-radius:0.3em;box-shadow:0 0 14px rgba(255,79,163,0.7);}
+	.gt .gm .gm-intro, .gt .gm .tu-note {color:#d9cfe8;}
+	.gm-body {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:1em;align-items:start;margin-top:0.6em;}
+	@media (max-width:820px) {.gm-body {grid-template-columns:minmax(0,1fr);}}
+	.gm-screen {position:relative;aspect-ratio:16/9;border-radius:0.7em;overflow:hidden;background:#0d0920;border:1px solid #3a2f5c;}
+	.gm-screen.is-sp {aspect-ratio:auto;height:352px;background:transparent;border:0;}
+	.gm-screen iframe {position:absolute;inset:0;width:100%;height:100%;border:0;}
+	.gm-poster {position:absolute;inset:0;width:100%;padding:0;border:0;cursor:pointer;background:#0d0920;display:block;}
+	.gm-poster img {width:100% !important;height:100% !important;max-width:none !important;object-fit:cover;opacity:0.82;transition:opacity 0.2s;}
+	.gm-poster:hover img {opacity:1;}
+	.gm-play {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:2.6em;height:2.6em;border-radius:50%;background:rgba(224,36,94,0.92);color:#fff;font-size:1.6em;display:flex;align-items:center;justify-content:center;padding-left:0.12em;box-shadow:0 6px 24px rgba(0,0,0,0.5);}
+	.gm-ptxt {position:absolute;left:0.7em;bottom:0.6em;background:rgba(10,6,25,0.75);color:#fff;font-weight:700;font-size:0.85em;padding:0.25em 0.65em;border-radius:1em;}
+	.gm-bar {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.5em;margin-top:0.6em;}
+	.gm-bar b {color:#fff;font-size:1.05em;}
+	.gt .gm .gm-src {background:rgba(10,6,25,0.45);border-color:rgba(255,255,255,0.25);}
+	.gt .gm .gm-src button {color:#f2e6f7;border-right-color:rgba(255,255,255,0.18);}
+	.gt .gm .gm-src button[aria-pressed="true"] {background:#ff4fa3;color:#fff;}
+	.gt .gm .gm-note {margin:0.4em 0 0.2em;color:#e6dcf2;font-size:0.93em;}
+	.gt .gm .gm-links {margin:0;font-size:0.88em;color:#b8afcc;}
+	.gm-list {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.45em;max-height:28em;overflow-y:auto;}
+	.gm-item {display:flex;gap:0.7em;align-items:center;width:100%;text-align:left;cursor:pointer;font:inherit;padding:0.45em;border-radius:0.6em;border:1px solid rgba(255,255,255,0.12);background:rgba(10,6,25,0.35);color:var(--gt-ink);}
+	.gm-item:hover {border-color:#ff4fa3;}
+	.gm-item[aria-pressed="true"] {background:rgba(255,79,163,0.18);border-color:#ff4fa3;}
+	.gm-item img {width:6em !important;height:3.375em !important;max-width:none !important;object-fit:cover;border-radius:0.4em;flex:0 0 auto;}
+	.gm-item b {display:block;color:#fff;font-size:0.95em;line-height:1.3;}
+	.gm-item small {display:block;color:#c9bfda;font-size:0.8em;line-height:1.35;margin-top:0.1em;}
+	.gm-free small::before {content:"\266A  ";color:#7ee0a8;}
+	.gt .gm .gm-h3 {color:#fff;font-size:1.05em;margin:1.2em 0 0.5em;}
+	.gm-games {display:grid;grid-template-columns:repeat(auto-fill,minmax(19em,1fr));gap:0.5em;align-items:start;}
+	.gm-game {border:1px solid rgba(255,255,255,0.14);border-radius:0.6em;background:rgba(10,6,25,0.35);padding:0.5em 0.75em;}
+	.gm-game summary {cursor:pointer;font-weight:700;color:#fff;display:flex;justify-content:space-between;gap:0.5em;}
+	.gm-game summary small {font-weight:400;color:#b8afcc;}
+	.gt .gm .gm-game p {margin:0.4em 0 0;font-size:0.88em;color:#d9cfe8;}
+	.gm-chips {display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.5em;}
+	.gt .gm .gm-chip {font-size:0.8em;padding:0.25em 0.6em;border-radius:1em;border:1px solid rgba(255,255,255,0.22);color:#f3eefa;text-decoration:none;background:rgba(255,255,255,0.05);}
+	.gt .gm .gm-chip:hover {border-color:#ff4fa3;color:#fff;background:rgba(255,79,163,0.2);}
+
+	html body.dark-mode #gt.gt .gm {background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:#f3eefa;}
+	html body.dark-mode #gt.gt .gm .gm-chip {text-decoration:none;border:1px solid rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);color:#f3eefa;}
+	html body.dark-mode #gt.gt .gm .gm-game, html body.dark-mode #gt.gt .gm .gm-item {border:1px solid rgba(255,255,255,0.14);background:rgba(10,6,25,0.35);}
+	html body.dark-mode #gt.gt .gm .gm-item[aria-pressed="true"] {background:rgba(255,79,163,0.18);border-color:#ff4fa3;}
+	html body.dark-mode #gt.gt .gm .gm-screen {background:#0d0920;border:1px solid #3a2f5c;} html body.dark-mode #gt.gt .gm .gm-screen.is-sp {border:0;background:transparent;}
+	html body.dark-mode #gt.gt .gm a {color:#ffb3d4;}
 	/* ---- countdown ---- */
 	.gc-main {position:relative;text-align:center;padding:1.2em 1em 1.4em;border-radius:0.9em;background:radial-gradient(ellipse at 70% 110%,#ff9d4d 0%,#d14b6b 25%,#5a1f6b 55%,#1b1446 85%);color:var(--gt-ink);overflow:hidden;}
 	.gc-bar {display:flex;flex-wrap:wrap;gap:0.5em;justify-content:space-between;align-items:center;}
@@ -972,6 +1020,19 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .gh-list span{color:#9d9aa2}
 	body.dark-mode .gh-load{color:#9d9aa2}
 	body.dark-mode .gh-dl dt{color:#b5b0bb}
+	body.dark-mode .gt .gm{border-color:#6a56a9}
+	body.dark-mode .gm-screen{border:1px solid #6a56a9}
+	body.dark-mode .gt .gm .gm-src{border-color:rgba(51,51,51,0.25)}
+	body.dark-mode .gt .gm .gm-src button{border-right-color:rgba(51,51,51,0.18)}
+	body.dark-mode .gt .gm .gm-links{color:#9a93a9}
+	body.dark-mode .gm-item{border:1px solid rgba(51,51,51,0.12)}
+	body.dark-mode .gm-item:hover{border-color:#cc0061}
+	body.dark-mode .gm-item[aria-pressed="true"]{border-color:#cc0061}
+	body.dark-mode .gm-item small{color:#9b91ab}
+	body.dark-mode .gm-game{border:1px solid rgba(51,51,51,0.14)}
+	body.dark-mode .gm-game summary small{color:#9a93a9}
+	body.dark-mode .gt .gm .gm-chip{border:1px solid rgba(51,51,51,0.22);background:rgba(26,26,26,0.05)}
+	body.dark-mode .gt .gm .gm-chip:hover{border-color:#cc0061}
 	body.dark-mode .gc-main .tu-seg{border-color:rgba(51,51,51,0.25)}
 	body.dark-mode .gc-main .tu-seg button{border-right-color:rgba(51,51,51,0.18)}
 	body.dark-mode .gc-main .tu-seg button:hover{background:rgba(26,26,26,0.08)}
@@ -1391,7 +1452,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:4
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=17" defer></script>
+	<script src="/gta/js/gta.js?v=18" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
