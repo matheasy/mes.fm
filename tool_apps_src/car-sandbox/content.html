@@ -1,0 +1,116 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script src="/main_js/panel-view.js" defer></script>
+	<div class="tu cs" id="cs">
+		<section class="cs-view" id="cs-view" aria-label="Car sandbox">
+			<div class="cs-top" id="cs-pbar">
+				<label class="cs-sel"><span>World</span><select id="cs-world" class="tu-select"></select></label>
+				<label class="cs-sel"><span>Car</span><select id="cs-car" class="tu-select"></select></label>
+				<label class="cs-sel"><span>Camera</span><select id="cs-cam" class="tu-select"></select></label>
+			</div>
+			<div class="cs-stage" id="cs-stage">
+				<div class="cs-load" id="cs-load">Loading…</div>
+				<div class="cs-hud" aria-live="off">
+					<div class="cs-hcar" id="cs-hcar"></div>
+					<div class="cs-hrow"><span>Gravity</span><b id="cs-hgrav"></b></div>
+					<div class="cs-hrow"><span>Felt</span><b id="cs-hg">1.0 g</b><span>peak</span><b id="cs-hpeak">0 g</b></div>
+					<div class="cs-hrow"><span>Damage</span><i class="cs-dbar"><i id="cs-dmg"></i></i><b id="cs-hdmg">0%</b></div>
+					<div class="cs-air" id="cs-air"></div>
+				</div>
+				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
+				<div class="cs-sbtns">
+					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
+					<button type="button" id="cs-camreset" title="Back to the normal camera angle (double-click the picture)" hidden>↺ View</button>
+					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
+				</div>
+				<div class="cs-toast" id="cs-toast" role="status"></div>
+				<div class="cs-help" id="cs-help">
+					<button type="button" class="cs-helpx" id="cs-helpx" aria-label="Close">×</button>
+					<b>How to drive</b>
+					<ul>
+						<li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or the arrow keys · <kbd>S</kbd> at a stop = reverse</li>
+						<li><kbd>Space</kbd> handbrake (drift) · <kbd>Shift</kbd> boost</li>
+						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
+						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>P</kbd> pause</li>
+						<li>In the air, the pedals tip the nose and steering rolls the car</li>
+						<li>Drag the picture to look around · a game controller works too</li>
+					</ul>
+				</div>
+				<div class="cs-touch" id="cs-touch" hidden>
+					<div class="cs-tl"><button type="button" id="cs-t-left" aria-label="Steer left">◀</button><button type="button" id="cs-t-right" aria-label="Steer right">▶</button></div>
+					<div class="cs-tr"><div class="cs-tcol"><button type="button" id="cs-t-boost" class="cs-t-sm" aria-label="Boost">⚡</button><button type="button" id="cs-t-hb" class="cs-t-sm" aria-label="Handbrake">HB</button></div><button type="button" id="cs-t-brake" aria-label="Brake or reverse">⏷</button><button type="button" id="cs-t-gas" aria-label="Accelerate">⏶</button></div>
+				</div>
+			</div>
+			<div class="cs-panel">
+				<div class="cs-card">
+					<div class="cs-ch">Gravity <span class="cs-gname" id="cs-gname"></span></div>
+					<div class="cs-gpre" id="cs-gpre" role="group" aria-label="Gravity presets"></div>
+					<div class="cs-grow"><input type="range" id="cs-g" min="0" max="30" step="0.01" aria-label="Gravity in metres per second squared"><input type="number" id="cs-gnum" class="tu-input" min="0" max="300" step="0.01" aria-label="Gravity (m/s²)"><span>m/s²</span></div>
+					<div class="cs-row"><button type="button" class="tu-btn tu-btn--ghost" id="cs-flip">↕ Flip gravity for 2.5 s (G)</button></div>
+					<p class="tu-note" id="cs-gfacts"></p>
+				</div>
+				<div class="cs-card">
+					<div class="cs-ch">Other cars</div>
+					<label class="cs-lab">Computer cars: <b id="cs-tnum">3</b><input type="range" id="cs-traffic" min="0" max="12" step="1"></label>
+					<label class="cs-lab">They should <select id="cs-ai" class="tu-select"></select></label>
+					<div class="cs-row"><button type="button" class="tu-btn tu-btn--ghost" id="cs-switch">⇄ Drive another car (Tab)</button></div>
+					<div class="cs-ch cs-ch2">Paint</div>
+					<div class="cs-paint" id="cs-paint"></div>
+				</div>
+				<div class="cs-card cs-card--wide">
+					<div class="cs-ch">Drop things in front of the car</div>
+					<div class="cs-objs" id="cs-objs"></div>
+					<div class="cs-ch cs-ch2">Set-ups</div>
+					<div class="cs-objs" id="cs-lays"></div>
+					<div class="cs-row"><button type="button" class="tu-btn tu-btn--ghost" id="cs-clear">Clear all objects</button></div>
+				</div>
+				<div class="cs-card">
+					<div class="cs-ch">Car &amp; view</div>
+					<div class="cs-row cs-wrapb">
+						<button type="button" class="tu-btn" id="cs-reset">↺ Back on wheels (R)</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cs-start">⟲ To the start</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cs-repair">🔧 Repair all</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cs-pause">❚❚ Pause</button>
+					</div>
+					<div class="cs-checks">
+						<label><input type="checkbox" id="cs-slow"> Slow motion</label>
+						<label><input type="checkbox" id="cs-snd"> Sound</label>
+						<label><input type="checkbox" id="cs-dmgon"> Dents &amp; damage</label>
+						<label><input type="checkbox" id="cs-shadow"> Shadows</label>
+						<label>Speed in <select id="cs-units" class="tu-select"><option value="kmh">km/h</option><option value="mph">mph</option></select></label>
+						<label>Touch buttons <select id="cs-touchsel" class="tu-select"><option value="auto">Automatic</option><option value="on">Always</option><option value="off">Off</option></select></label>
+					</div>
+					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn tu-btn--ghost" id="cs-png">📷 Save picture</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-link">🔗 Copy link</button></div>
+				</div>
+				<div class="cs-card cs-card--wide">
+					<div class="cs-ch">Your records <button type="button" class="cs-mini" id="cs-recclear">clear</button></div>
+					<p class="cs-rec" id="cs-rec"></p>
+					<p class="tu-note" id="cs-wdesc"></p>
+				</div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>A free 3D car sandbox with real physics</h2>
+			<p>Drive a sports car, SUV, pickup, bus, monster truck, dune buggy, go-kart or lunar rover around an Earth test track, across the craters of the Moon, over the dunes of Mars or on the dwarf planet Ceres. Fly off ramps, loop the loop, ride the half pipe, crash into the computer cars and knock over crate pyramids, brick walls, dominoes, bowling pins and watermelons. Change gravity at any time, from zero to the Sun's, or flip it upside down for a few seconds.</p>
+			<h3>What is really simulated</h3>
+			<p>Every car is a rigid body with four suspension springs, and every loose object has its own mass, friction and bounce (the physics engine is <a href="https://rapier.rs" rel="noopener">Rapier</a>, running in your browser). Two things make the worlds feel different, and both are real physics:</p>
+			<ul>
+				<li><b>Grip comes from weight.</b> A tyre can only push sideways or brake with a force of about its friction coefficient times the load on it. On the Moon a car weighs one sixth of what it does on Earth, so it brakes and corners six times more weakly: stopping from 100 km/h takes about 39 m on Earth and about 240 m on the Moon. Astronauts drove the Apollo rovers at about 10 to 15 km/h for exactly this reason.</li>
+				<li><b>Jumps scale with 1 / g.</b> Leave a ramp at the same speed and angle and you fly six times as far and six times as long on the Moon, and 35 times as far on Ceres. The dust thrown up by the wheels follows the same arcs, and on airless worlds it falls straight back without drifting.</li>
+			</ul>
+			<p>There is also air drag (none on the Moon and Ceres, very little on Mars), rolling resistance, a tapering engine force, and crashes: when a car's velocity changes much faster than gravity and its springs could do it, that is an impact. The felt g-force is shown, the body dents where it was hit, and the engine gets weaker as the damage goes up.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why does the car slide so much on the Moon?</dt>
+				<dd>Because friction is proportional to the force pressing the tyres down, and that force is the car's weight. Less gravity means less weight, so less grip, while the car's mass (its resistance to changing direction) is the same.</dd>
+				<dt>What happens at zero gravity?</dt>
+				<dd>Nothing holds the tyres on the ground, so there is no grip at all: the engine can't push and the car just keeps drifting. Bump an object and it floats away in a straight line forever.</dd>
+				<dt>Is the Jupiter world real?</dt>
+				<dd>No: Jupiter has no solid surface. That world is an imaginary flat surface with Jupiter's gravity (24.8 m/s²), so you can feel how heavy everything gets. The suspension squashes, jumps are short and crashes hurt.</dd>
+				<dt>Does it work on a phone?</dt>
+				<dd>Yes. Touch buttons appear on touch screens (steer on the left, pedals on the right), and "Fill window" makes the picture fill the screen. A game controller (gamepad) works on computers.</dd>
+				<dt>Is anything saved or uploaded?</dt>
+				<dd>Only your settings and records, in your own browser. Nothing is uploaded.</dd>
+			</dl>
+		</div>
+	</div>

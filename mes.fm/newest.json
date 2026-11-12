@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-11",
+ "generated": "2026-11-12",
  "calculators": [
   {
    "href": "/luders-bands",
@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/car-sandbox",
+   "title": "Car Sandbox",
+   "icon": "/img/car-sandbox-logo.png",
+   "desc": "Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/chess",
+   "title": "Chess",
+   "icon": "/img/chess-logo.png",
+   "desc": "Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
+  {
    "href": "/bridge-builder",
    "title": "Bridge Builder",
    "icon": "/img/bridge-builder-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.",
    "added": "2026-11-07",
    "kind": "tool"
-  },
-  {
-   "href": "/minesweeper",
-   "title": "Minesweeper",
-   "icon": "/img/minesweeper-logo.png",
-   "desc": "Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
-   "href": "/maps",
-   "title": "Maps: Projections, Globe & Capitals",
-   "icon": "/img/maps-logo.png",
-   "desc": "Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.",
-   "added": "2026-11-07",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/car-sandbox",
+   "title": "Car Sandbox",
+   "icon": "/img/car-sandbox-logo.png",
+   "desc": "Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
+  {
+   "href": "/chess",
+   "title": "Chess",
+   "icon": "/img/chess-logo.png",
+   "desc": "Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
   {
    "href": "/bridge-builder",
    "title": "Bridge Builder",
@@ -244,22 +260,6 @@
    "desc": "de Broglie wavelength, photon energy, the uncertainty principle, tunnelling probability, particle in a box, the Bohr model, Compton shift and blackbody radiation, with every formula shown.",
    "added": "2026-11-10",
    "kind": "calculator"
-  },
-  {
-   "href": "/quantum",
-   "title": "Quantum Lab",
-   "icon": "/img/quantum-logo.png",
-   "desc": "Watch a wave packet tunnel through a barrier, build double-slit stripes one particle at a time, run a Bell test on entangled pairs, send atoms through Stern-Gerlach magnets and explore hydrogen orbitals.",
-   "added": "2026-11-10",
-   "kind": "tool"
-  },
-  {
-   "href": "/billiards",
-   "title": "Billiards: 8-Ball, 9-Ball & Snooker",
-   "icon": "/img/billiards-logo.png",
-   "desc": "Pool and snooker with real spin physics, against the computer, a friend or a Hive player, plus trick-shot challenges.",
-   "added": "2026-11-09",
-   "kind": "tool"
   }
  ]
 }

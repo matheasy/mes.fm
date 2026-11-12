@@ -1,0 +1,88 @@
+	/* MES Car Sandbox. Stage colours are custom properties, restated for dark mode at the end (the derived TOOL-DARK block would rewrite literals). */
+	#cs [hidden] {display:none !important;}
+	.cs {--cs-ink:#f2f5fa;--cs-dim:#b7c0cf;--cs-glass:rgba(12,16,24,0.62);--cs-line:rgba(255,255,255,0.18);--cs-card:#f6f8fb;--cs-cardline:#dde3ea;--cs-text:#1d2430;}
+	:where(#cs) :is(div, span, p, label, b, i, li, ul, small, section) {color:inherit;}
+	.cs-view {display:flex;flex-direction:column;gap:0.6em;}
+	.cs-top {display:flex;flex-wrap:wrap;align-items:flex-end;gap:0.5em 0.8em;}
+	.cs-sel {display:flex;flex-direction:column;gap:0.15em;font-size:0.85em;font-weight:600;color:var(--cs-text);}
+	.cs-sel select {min-width:10em;}
+	.cs-top .mes-pbtns {margin-left:auto;}
+	.cs-stage {position:relative;width:100%;aspect-ratio:16/9;min-height:320px;max-height:78vh;background:#0b0e14;border-radius:0.6em;overflow:hidden;user-select:none;-webkit-user-select:none;}
+	.cs-canvas {position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none;}
+	.cs-canvas:focus-visible {box-shadow:inset 0 0 0 3px #4dabf7;}
+	.mes-pfill .cs-stage {flex:1 1 auto;aspect-ratio:auto;max-height:none;min-height:200px;border-radius:0.4em;}
+	.mes-pside .cs-stage {height:var(--mes-sh, 100vh);aspect-ratio:auto;max-height:none;}
+	.cs-load {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1em;color:var(--cs-ink);font-weight:600;background:radial-gradient(circle at 50% 40%, #233046, #0b0e14);z-index:5;}
+	.cs-hud {position:absolute;left:0.6em;top:0.6em;background:var(--cs-glass);color:var(--cs-ink);border-radius:0.55em;padding:0.45em 0.7em;font-size:0.8em;line-height:1.45;pointer-events:none;min-width:12em;backdrop-filter:blur(4px);}
+	.cs-hcar {font-weight:700;font-size:1.05em;margin-bottom:0.15em;}
+	.cs-hrow {display:flex;align-items:center;gap:0.4em;}
+	.cs-hrow span {color:var(--cs-dim);font-size:0.9em;}
+	.cs-hrow b {font-variant-numeric:tabular-nums;color:var(--cs-ink);}
+	.cs-dbar {display:inline-block;width:5.5em;height:0.5em;border-radius:1em;background:rgba(255,255,255,0.15);overflow:hidden;}
+	.cs-dbar i {display:block;height:100%;width:0;background:#37b24d;transition:width .2s;}
+	.cs-air {font-weight:700;color:#ffd43b;min-height:0;}
+	.cs-air:empty {display:none;}
+	.cs-speedo {position:absolute;right:0.8em;bottom:0.7em;color:var(--cs-ink);text-align:right;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.6);line-height:1;}
+	.cs-speedo b {font-size:2.6em;font-weight:800;font-variant-numeric:tabular-nums;color:var(--cs-ink);}
+	.cs-speedo span {display:block;font-size:0.85em;color:var(--cs-dim);font-weight:600;}
+	.cs-sbtns {position:absolute;right:0.6em;top:0.6em;display:flex;gap:0.3em;}
+	.cs-sbtns button {cursor:pointer;font:inherit;font-size:0.9em;min-width:2.3em;height:2.3em;padding:0 0.6em;border-radius:0.5em;border:1px solid var(--cs-line);background:var(--cs-glass);color:var(--cs-ink);}
+	.cs-sbtns button:hover {border-color:#fff;}
+	.cs-toast {position:absolute;left:50%;top:16%;transform:translate(-50%,-6px);background:var(--cs-glass);color:var(--cs-ink);padding:0.45em 1em;border-radius:2em;font-weight:700;font-size:0.92em;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;max-width:86%;text-align:center;backdrop-filter:blur(4px);}
+	.cs-toast.show {opacity:1;transform:translate(-50%,0);}
+	.cs-help {position:absolute;left:50%;bottom:0.7em;transform:translateX(-50%);background:var(--cs-glass);color:var(--cs-ink);border-radius:0.6em;padding:0.55em 2.2em 0.55em 0.9em;font-size:0.8em;max-width:min(36em, 92%);backdrop-filter:blur(4px);}
+	.cs-help ul {margin:0.3em 0 0;padding-left:1.1em;}
+	.cs-help li {margin:0.1em 0;color:var(--cs-ink);}
+	.cs-help kbd {display:inline-block;min-width:1.4em;text-align:center;padding:0 0.3em;border-radius:0.25em;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.25);color:var(--cs-ink);font:inherit;font-size:0.9em;}
+	.cs-helpx {position:absolute;right:0.3em;top:0.2em;cursor:pointer;border:0;background:transparent;color:var(--cs-ink);font-size:1.3em;line-height:1;}
+	.cs-has-touch .cs-help {display:none;}
+	.cs-touch {position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;align-items:flex-end;padding:0.6em;pointer-events:none;}
+	.cs-touch > div {display:flex;gap:0.5em;align-items:flex-end;pointer-events:auto;}
+	.cs-touch button {width:4.2em;height:4.2em;border-radius:1em;border:2px solid rgba(255,255,255,0.35);background:rgba(12,16,24,0.45);color:#fff;font-size:1.15em;touch-action:none;-webkit-tap-highlight-color:transparent;}
+	.cs-touch button.on {background:rgba(77,171,247,0.7);border-color:#fff;}
+	.cs-touch .cs-t-sm {width:3em;height:3em;font-size:0.85em;}
+	.cs-tcol {display:flex;flex-direction:column;gap:0.4em;}
+	#cs-t-gas {height:5.4em;}
+	.cs-has-touch .cs-speedo {bottom:auto;top:0.6em;right:50%;transform:translateX(50%);}
+	.cs-has-touch .cs-speedo b {font-size:1.8em;}
+	@media (max-width:640px) {
+		.cs-hud {font-size:0.68em;min-width:0;}
+		.cs-hrow:nth-child(4), .cs-hcar {display:none;}
+		.cs-touch button {width:3.3em;height:3.3em;font-size:1em;}
+		#cs-t-gas {height:4.4em;}
+		.cs-touch .cs-t-sm {width:2.6em;height:2.6em;}
+		.cs-touch {padding:0.4em;}
+		.cs-sel select {min-width:8em;}
+	}
+	.cs-panel {display:grid;grid-template-columns:repeat(auto-fit, minmax(17em, 1fr));gap:0.7em;}
+	.mes-pside .cs-panel {grid-template-columns:1fr;}
+	.cs-card {background:var(--cs-card);border:1px solid var(--cs-cardline);border-radius:0.6em;padding:0.7em 0.8em;color:var(--cs-text);min-width:0;}
+	.cs-card--wide {grid-column:1 / -1;}
+	.cs-ch {font-weight:700;margin-bottom:0.45em;display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;}
+	.cs-ch2 {margin-top:0.7em;}
+	.cs-gname {font-weight:500;font-size:0.88em;opacity:0.8;}
+	.cs-gpre, .cs-objs {display:flex;flex-wrap:wrap;gap:0.3em;}
+	.cs-gpre button, .cs-objs button {cursor:pointer;font:inherit;font-size:0.85em;padding:0.3em 0.65em;border-radius:2em;border:1px solid var(--cs-cardline);background:#fff;color:var(--cs-text);}
+	.cs-gpre button:hover, .cs-objs button:hover {border-color:var(--accent);}
+	.cs-gpre button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.cs-grow {display:flex;align-items:center;gap:0.5em;margin:0.6em 0 0.3em;}
+	.cs-grow input[type=range] {flex:1;min-width:6em;}
+	.cs-grow input[type=number] {width:5.5em;}
+	.cs-row {display:flex;gap:0.4em;margin-top:0.5em;}
+	.cs-wrapb {flex-wrap:wrap;}
+	.cs-lab {display:flex;flex-direction:column;gap:0.2em;margin-bottom:0.5em;font-size:0.92em;}
+	.cs-checks {display:flex;flex-wrap:wrap;gap:0.4em 1em;margin-top:0.6em;font-size:0.9em;}
+	.cs-checks label {display:inline-flex;align-items:center;gap:0.35em;}
+	.cs-paint {display:flex;flex-wrap:wrap;gap:0.35em;}
+	.cs-paint button {width:1.9em;height:1.9em;border-radius:50%;border:2px solid rgba(0,0,0,0.2);cursor:pointer;}
+	.cs-paint button:hover {transform:scale(1.12);}
+	.cs-rec {margin:0 0 0.3em;font-variant-numeric:tabular-nums;}
+	.cs-mini {cursor:pointer;font:inherit;font-size:0.75em;font-weight:500;padding:0.1em 0.55em;border-radius:1em;border:1px solid var(--cs-cardline);background:transparent;color:inherit;}
+	.tu-note#cs-gfacts {margin:0.4em 0 0;}
+	html body.dark-mode #cs.cs {--cs-card:#20242b;--cs-cardline:#3a414c;--cs-text:#e6eaf0;}
+	html body.dark-mode #cs .cs-gpre button, html body.dark-mode #cs .cs-objs button {background:#2a3038;color:#e6eaf0;border-color:#3a414c;}
+	html body.dark-mode #cs .cs-gpre button[aria-pressed="true"] {background:#ff8a50;border-color:#ff8a50;color:#111;}
+	html body.dark-mode #cs .cs-sel {color:#e6eaf0;}
+	html body.dark-mode #cs .cs-mini {color:#e6eaf0;border-color:#3a414c;}
+	html body.dark-mode #cs .cs-hud, html body.dark-mode #cs .cs-toast, html body.dark-mode #cs .cs-help, html body.dark-mode #cs .cs-sbtns button {background:rgba(12,16,24,0.62);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-speedo b, html body.dark-mode #cs .cs-hrow b, html body.dark-mode #cs .cs-help li, html body.dark-mode #cs .cs-load {color:#f2f5fa;}
