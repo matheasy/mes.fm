@@ -2994,11 +2994,16 @@
 		return (S.names[p] || "").trim() || "Player " + (p + 1);
 	}
 	function youAre(p) { return mode === "solo" || (mode === "cpu" && p === human) || (mode === "online" && p === on.seat) || (mode === "hive" && hv.R && hv.R.players[p] === hMe()); }
-	function miniBall(kind, gone) {
-		var snooker = st.g.table === "snooker", col = ballColor(kind, snooker), stripe = !snooker && kind > 8;
-		var bg = stripe ? "linear-gradient(#f8f8f2 0 26%, " + col + " 26% 74%, #f8f8f2 74%)" : col;
-		var txt = !snooker && kind > 0 ? '<span style="background:#fff;border-radius:50%;width:0.95em;height:0.95em;display:inline-flex;align-items:center;justify-content:center;line-height:1;color:#111">' + kind + "</span>" : "";
-		return '<span class="bl-mb' + (gone ? " is-gone" : "") + '" style="background:' + bg + '" title="' + (snooker ? B.SNK_NAMES[kind] : "Ball " + kind) + '">' + txt + "</span>";
+	function miniBall(kind, gone) {   // a small ball as SVG; two-digit numbers are squeezed to fit their white circle
+		var snooker = st.g.table === "snooker", col = ballColor(kind, snooker), stripe = !snooker && kind > 8, id = "blmb" + (++gicN);
+		var body = stripe ? '<clipPath id="' + id + '"><circle cx="10" cy="10" r="9.4"/></clipPath><circle cx="10" cy="10" r="9.4" fill="#f8f8f2"/><rect x="0" y="3.2" width="20" height="13.6" fill="' + col + '" clip-path="url(#' + id + ')"/>'
+			: '<circle cx="10" cy="10" r="9.4" fill="' + col + '"/>';
+		var num = "";
+		if (!snooker && kind > 0) {
+			var two = kind > 9;
+			num = '<circle cx="10" cy="10" r="' + (two ? 6.3 : 5.6) + '" fill="#fff"/><text x="10" y="10.2" text-anchor="middle" dominant-baseline="central" font-family="system-ui,Arial,sans-serif" font-weight="800" font-size="' + (two ? 8.2 : 9) + '" fill="#111"' + (two ? ' textLength="9.6" lengthAdjust="spacingAndGlyphs"' : "") + ">" + kind + "</text>";
+		}
+		return '<svg class="bl-mb' + (gone ? " is-gone" : "") + '" viewBox="0 0 20 20" role="img" aria-label="' + (snooker ? B.SNK_NAMES[kind] : "Ball " + kind) + '"><title>' + (snooker ? B.SNK_NAMES[kind] : "Ball " + kind) + "</title>" + body + num + '<circle cx="10" cy="10" r="9.4" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="1"/></svg>';
 	}
 	/* a plain solid or striped ball (no number) for "your group": the same colour for both, so only solid vs stripe differs */
 	function groupIcon(g) {

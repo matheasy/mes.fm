@@ -349,7 +349,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#bl .bl-pl .bl-turnd {width:0.6em;height:0.6em;border-radius:50%;background:transparent;flex:0 0 auto;}
 	#bl .bl-pl.is-turn .bl-turnd {background:var(--bl-ok);}
 	#bl .bl-balls {display:flex;flex-wrap:wrap;gap:2px;}
-	#bl .bl-mb {width:1.15em;height:1.15em;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.62em;font-weight:800;color:#111;position:relative;box-shadow:inset -1px -1px 2px rgba(0,0,0,0.35);}
+	#bl .bl-mb {width:1.45em;height:1.45em;flex:0 0 auto;display:inline-block;vertical-align:middle;}
 	#bl .bl-mb.is-gone {opacity:0.22;}
 	#bl .bl-vbtns {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
 	#bl .bl-vb {cursor:pointer;font:inherit;font-size:0.88em;font-weight:600;min-height:38px;padding:0.3em 0.75em;border-radius:8px;border:1px solid var(--bl-cardline);background:var(--bl-cell);color:var(--bl-ink);}
@@ -544,7 +544,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#bl .bl-ochip .bl-cwho {font-weight:800;}
 	#bl .bl-ochip .bl-cwho.is-you {color:#8ce99a;}
 	#bl .bl-ochip .bl-cbih {background:#f59f00;color:#111;border-radius:6px;padding:0 6px;font-size:0.92em;}
-	#bl .bl-ochip .bl-mb {font-size:1.3em;width:1.15em;height:1.15em;flex:0 0 auto;}
+	#bl .bl-ochip .bl-mb {width:1.6em;height:1.6em;}
 	#bl .bl-ov.is-narrow .bl-ochip {top:60px;max-width:calc(100% - 82px);}
 	#bl .bl-ov.is-spinpop .bl-ochip {display:none;}
 	#bl .bl-otop .bl-oguide {font-size:0.8em;padding:0 0.6em;white-space:nowrap;}
@@ -742,7 +742,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #bl{--bl-ok:#44c55e;--bl-bad:#d53535;--bl-stage:#60a985;--bl-pow1:#42c75b;--bl-pow2:#ffa90a;--bl-acc:#25e48e;--bl-accl:#25e48e}
 	body.dark-mode #bl .bl-tabs{border-bottom:2px solid #1a452d}
-	body.dark-mode #bl .bl-mb{color:#eeeeee}
 	body.dark-mode #bl #bl-hsave{border-color:#eb1439;color:#f3687f}
 	body.dark-mode #bl .bl-think{background:rgba(82,82,82,0.72)}
 	body.dark-mode #bl .bl-think span{border:2px solid #333333}
@@ -1218,7 +1217,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=19" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=21" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
