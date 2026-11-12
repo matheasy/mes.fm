@@ -103,7 +103,7 @@ BL_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__t
 BL_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm) for sl, nm in BL_PAGES[1:])
 def _bl(slug, start, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", nm) for sl, nm in BL_PAGES)
-    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="15",
+    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="17",
              src="billiards", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"], nav_extra=BL_NAV_INFO, menu_extra=BL_NAV_MENU,
              vars={"START": start, "FAM": fam, "SEO": "@seo/%s.html" % slug})
     if slug != "billiards":

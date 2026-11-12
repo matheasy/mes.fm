@@ -610,6 +610,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* 2D <-> 3D: a still picture of the old view fades out over the new one (the stage clips it while it does) */
 	#bl .bl-stage.is-snap {overflow:hidden;}
 	#bl .bl-stage > .bl-snap {position:absolute;z-index:2;pointer-events:none;border-radius:8px;}
+	/* group icons: plain solid / striped balls */
+	#bl .bl-gic {width:1.25em;height:1.25em;flex:0 0 auto;vertical-align:-0.25em;}
+	#bl .bl-ochip .bl-gic {width:1.6em;height:1.6em;}
+	#bl .bl-grpl .bl-gic {width:1.3em;height:1.3em;margin-right:0.3em;vertical-align:-0.3em;}
+	#bl .bl-grpl.is-open .bl-gic {margin-right:0.15em;}
+	#bl .bl-cic {display:inline-flex;align-items:center;gap:3px;}
+	#bl .bl-cic i {font-style:normal;font-size:0.82em;opacity:0.85;margin:0 2px;}
+	#bl .bl-cic:empty {display:none;}
 
 
 	@media print {
@@ -1212,7 +1220,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=15" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -1143,6 +1143,15 @@
 		var txt = !snooker && kind > 0 ? '<span style="background:#fff;border-radius:50%;width:0.95em;height:0.95em;display:inline-flex;align-items:center;justify-content:center;line-height:1;color:#111">' + kind + "</span>" : "";
 		return '<span class="bl-mb' + (gone ? " is-gone" : "") + '" style="background:' + bg + '" title="' + (snooker ? B.SNK_NAMES[kind] : "Ball " + kind) + '">' + txt + "</span>";
 	}
+	/* a plain solid or striped ball (no number) for "your group": the same colour for both, so only solid vs stripe differs */
+	function groupIcon(g) {
+		var c = "#d62828";
+		return '<svg class="bl-gic" viewBox="0 0 20 20" aria-hidden="true">' + (g === "s"
+			? '<circle cx="10" cy="10" r="9" fill="' + c + '"/>'
+			: '<clipPath id="blgc' + (++gicN) + '"><circle cx="10" cy="10" r="9"/></clipPath><circle cx="10" cy="10" r="9" fill="#f8f8f2"/><rect x="0" y="5.2" width="20" height="9.6" fill="' + c + '" clip-path="url(#blgc' + gicN + ')"/>') +
+			'<circle cx="7" cy="6.5" r="2.4" fill="#fff" opacity="0.45"/><circle cx="10" cy="10" r="9" fill="none" stroke="rgba(0,0,0,0.45)" stroke-width="1.2"/></svg>';
+	}
+	var gicN = 0;
 	function renderPlayers() {
 		var box = $("bl-players"), t = st.g.type, h = "";
 		if (st.np === 1) {
@@ -1158,8 +1167,8 @@
 				var gr = st.grp[p];
 				if (gr) {
 					var list = gr === "s" ? [1, 2, 3, 4, 5, 6, 7] : [9, 10, 11, 12, 13, 14, 15];
-					extra = '<span class="bl-grpl">' + (gr === "s" ? "Solids" : "Stripes") + "</span>" + '<span class="bl-balls">' + list.map(function (kk) { var id = st.k.indexOf(kk); return miniBall(kk, id < 0 || !st.on[id]); }).join("") + miniBall(8, false) + "</span>";
-				} else extra = '<span class="bl-grpl is-open">' + (st.brk ? "break" : "open table") + "</span>";
+					extra = '<span class="bl-grpl">' + groupIcon(gr) + (gr === "s" ? "Solids" : "Stripes") + "</span>" + '<span class="bl-balls">' + list.map(function (kk) { var id = st.k.indexOf(kk); return miniBall(kk, id < 0 || !st.on[id]); }).join("") + miniBall(8, false) + "</span>";
+				} else extra = '<span class="bl-grpl is-open">' + (st.brk ? "break" : groupIcon("s") + groupIcon("t") + "open table") + "</span>";
 			} else if (t === "S") {
 				sc = '<span class="bl-ps">' + st.score[p] + "</span>";
 				if (turn && st.run) extra = '<span class="bl-pg">break ' + st.run + "</span>";
@@ -1182,10 +1191,10 @@
 		if (t === "8") {
 			if (st.brk) return { txt: "Break", balls: [] };
 			var gr = st.grp[p];
-			if (!gr) return { txt: "Open table: pot any ball but the 8 to get its group", balls: [] };
+			if (!gr) return { txt: "Open table:", after: "your first pot decides", balls: ["s", "t"], open: true };
 			var left = B.ballsLeft(st, gr), name = gr === "s" ? "Solids" : "Stripes";
 			if (!left) return { txt: name + " done: pot the 8", balls: [8] };
-			return { txt: name + (gr === "s" ? " (1-7)" : " (9-15)") + " · " + left + " left", balls: [gr === "s" ? 3 : 11] };
+			return { txt: name + (gr === "s" ? " (1-7)" : " (9-15)") + " · " + left + " left", balls: [gr] };
 		}
 		if (t === "9" || t === "10") {
 			var tg = B.targets(st);
@@ -1211,7 +1220,10 @@
 			var who = st.np === 1 ? "" : mode === "local" ? esc(nameOf(p)) : youAre(p) ? "You" : mode === "cpu" ? "Computer" : esc(nameOf(p));
 			var tt = targetText(p);
 			h = (who ? '<span class="bl-cwho' + (youAre(p) && mode !== "local" ? " is-you" : "") + '">' + who + "</span>" : "") +
-				tt.balls.map(function (kk) { return miniBall(kk, false); }).join("") + '<span class="bl-ctxt">' + esc(tt.txt) + "</span>" +
+				(function () {
+					var ic = '<span class="bl-cic">' + tt.balls.map(function (kk) { return kk === "s" || kk === "t" ? groupIcon(kk) : miniBall(kk, false); }).join(tt.open ? "<i>or</i>" : "") + "</span>", tx = '<span class="bl-ctxt">' + esc(tt.txt) + "</span>";
+					return tt.open ? tx + ic + '<span class="bl-ctxt">· ' + esc(tt.after) + "</span>" : ic + tx;
+				})() +
 				(st.bih && !st.brk && !anim && isHumanTurn() ? '<span class="bl-cbih">ball in hand</span>' : "");
 		}
 		el.innerHTML = h;
