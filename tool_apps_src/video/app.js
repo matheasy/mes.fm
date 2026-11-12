@@ -217,13 +217,13 @@
 		var bad = plan.some(function (q) { return q[1].lock; });
 		plan.forEach(function (q) { q[0].track = q[1].id; });
 		if (!bad) bad = plan.some(function (q) { return !q[1].mag && !V.canPlace(VE.P, q[1].id, q[0].start, V.dur(q[0]), ids); });
-		if (bad) { VE.P = JSON.parse(snap); VE.tl.render(); toast("There is no room on that track (clips on one track cannot overlap): move the clips sideways first, or make that track magnetic."); return; }
+		if (bad) { VE.P = JSON.parse(snap); VE.tl.render(); toast("There is no room on that layer (clips on one layer cannot overlap): move the clips sideways first, or make that layer magnetic."); return; }
 		plan.forEach(function (q) { if (q[1].mag) V.magnetInsert(VE.P, q[1].id, q[0].id, q[0].start); });
-		VE.commit(dir < 0 ? "Move up a track" : "Move down a track");
+		VE.commit(dir < 0 ? "Move up a layer" : "Move down a layer");
 	};
 	VE.moveTrack = function (tr, dir) {
 		var list = VE.P.tracks, i = list.indexOf(tr), j = i + dir; if (i < 0 || j < 0 || j >= list.length || list[j].kind !== tr.kind) return;
-		list.splice(i, 1); list.splice(j, 0, tr); VE.commit("Move track");
+		list.splice(i, 1); list.splice(j, 0, tr); VE.commit("Move layer");
 	};
 
 	/* ---------- right-click menu on the timeline ---------- */
@@ -243,7 +243,7 @@
 			it("Split at the playhead", "S", VE.split, !(V.active(c, VE.t) && VE.t > c.start));
 			it("Delete", "Del", function () { VE.del(false); }); it("Ripple delete (close the gap)", "Shift+Del", function () { VE.del(true); });
 			sep();
-			it("Move up a track", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a track", "Alt+↓", function () { VE.moveRow(1); });
+			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });
 			sep();
 			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
 			else if (c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
@@ -254,14 +254,14 @@
 			if (!info.head && tr.kind === "v") it("Add a title here", "", function () { VE.addTitle(null, info.t, tr.id); }, tr.lock);
 			it("Select everything on " + tname, "", function () { VE.sel = V.onTrack(VE.P, tr.id).map(function (q) { return q.id; }); VE.emit("select"); }, !V.onTrack(VE.P, tr.id).length);
 			sep();
-			it("Rename track…", "", function () { var nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename track"); } });
-			it("Add a " + (tr.kind === "v" ? "video" : "sound") + " track above", "", function () { VE.addTrack(tr.kind, tr, "above"); VE.commit("Add track"); });
-			it("Add a " + (tr.kind === "v" ? "video" : "sound") + " track below", "", function () { VE.addTrack(tr.kind, tr, "below"); VE.commit("Add track"); });
+			it("Rename layer…", "", function () { var nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename layer"); } });
+			it("Add a layer above", "", function () { VE.addTrack("v", tr, "above"); VE.commit("Add layer"); });
+			it("Add a layer below", "", function () { VE.addTrack("v", tr, "below"); VE.commit("Add layer"); });
 			var li = VE.P.tracks.indexOf(tr), up = VE.P.tracks[li - 1], dn = VE.P.tracks[li + 1];
-			it("Move this track up", "", function () { VE.moveTrack(tr, -1); }, !(up && up.kind === tr.kind));
-			it("Move this track down", "", function () { VE.moveTrack(tr, 1); }, !(dn && dn.kind === tr.kind));
+			it("Move this layer up", "", function () { VE.moveTrack(tr, -1); }, !up);
+			it("Move this layer down", "", function () { VE.moveTrack(tr, 1); }, !dn);
 			var same = VE.P.tracks.filter(function (q) { return q.kind === tr.kind; }).length;
-			it("Delete this track", "", function () { VE.P.tracks = VE.P.tracks.filter(function (q) { return q !== tr; }); VE.commit("Delete track"); }, same < 2 || V.onTrack(VE.P, tr.id).length > 0);
+			it("Delete this layer", "", function () { VE.P.tracks = VE.P.tracks.filter(function (q) { return q !== tr; }); VE.commit("Delete layer"); }, same < 2 || V.onTrack(VE.P, tr.id).length > 0);
 		} else {
 			it("Paste at the playhead", K + "V", function () { VE.paste(); }, !cb);
 		}
@@ -326,8 +326,7 @@
 	$("vd-in").onclick = function () { mark("in"); }; $("vd-out").onclick = function () { mark("out"); };
 	$("vd-clearmarks").onclick = function () { VE.P.marks = { in: null, out: null }; VE.commit("Clear marks"); };
 	$("vd-cutrange").onclick = function () { if (!marksOk()) return; var m = VE.P.marks; V.removeRange(VE.P, m.in, m.out, function () { return V.uid("c"); }); VE.P.marks = { in: null, out: null }; VE.preview.seek(m.in); VE.commit("Cut out marked part"); };
-	$("vd-addv").onclick = function () { VE.addTrack("v"); VE.commit("Add video track"); };
-	$("vd-adda").onclick = function () { VE.addTrack("a"); VE.commit("Add audio track"); };
+	$("vd-addv").onclick = function () { VE.addTrack("v"); VE.commit("Add layer"); };
 	$("vd-addtitle").onclick = function () { VE.addTitle(); };
 	$("vd-undo").onclick = VE.undo; $("vd-redo").onclick = VE.redo; $("vd-undo2").onclick = VE.undo; $("vd-redo2").onclick = VE.redo;
 	// one Snap setting for the timeline and the preview (remembered); Alt while dragging does the opposite
@@ -500,8 +499,8 @@
 			["undo", "Undo" + (ul ? " " + ul.toLowerCase() : ""), MK + "Z", !VE.hist.canUndo()], ["redo", "Redo" + (rl ? " " + rl.toLowerCase() : ""), MK + (mac ? "⇧Z" : "Y"), !VE.hist.canRedo()], "-",
 			["cut", "Cut", MK + "X", !has], ["copy", "Copy", MK + "C", !has], ["paste", "Paste at the playhead", MK + "V", !cb], ["dup", "Duplicate", MK + "D", !has], "-",
 			["del", "Delete", "Del", !has], ["ripple", "Ripple delete (close the gap)", "Shift+Del", !has], ["split", "Split at the playhead", "S", !inClip], ["cutrange", "Cut out the marked part (I to O)", "", !marksOk()], "-",
-			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this track"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
-			["up", "Move up a track", "Alt+↑", !has], ["down", "Move down a track", "Alt+↓", !has], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], "-",
+			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this layer"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
+			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], "-",
 			["narrate", "Add narration from text…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
 		];
 	}
@@ -521,7 +520,7 @@
 			track: function () { VE.sel = V.onTrack(VE.P, c0.track).map(function (c) { return c.id; }); VE.emit("select"); },
 			after: function () { VE.sel = VE.P.clips.filter(function (c) { return V.end(c) > VE.t + 1e-6; }).map(function (c) { return c.id; }); VE.emit("select"); },
 			none: function () { VE.sel = []; VE.emit("select"); },
-			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); },
+			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); }, addlayer: function () { VE.addTrack("v", c0 ? V.track(VE.P, c0.track) : null, "above"); VE.commit("Add layer"); },
 			sep: function () { if (c0.link) { V.unlink(VE.P, c0.id); VE.commit("Unlink"); } else VE.separate(sel); },
 			narrate: openNarrate, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },
 		})[a]();
@@ -953,7 +952,7 @@
 		on("vd-i-scopy", "click", function () { copyText(clipName(c) + ": " + V.srcText(c, VE.P.fps), "Copied: " + V.srcText(c, VE.P.fps)); });
 		on("vd-i-scopyall", "click", copyAllSources);
 		function setNum(id, fn, label) { on(id, "change", function () { var v = parseFloat(this.value); if (!isFinite(v)) return renderInsp(); fn(v); VE.commit(label); }); }
-		setNum("vd-i-start", function (v) { var s = Math.max(0, v); if (V.canPlace(VE.P, c.track, s, V.dur(c), (function () { var o = {}; o[c.id] = 1; return o; })())) c.start = s; else toast("There is no room there on this track."); }, "Move");
+		setNum("vd-i-start", function (v) { var s = Math.max(0, v); if (V.canPlace(VE.P, c.track, s, V.dur(c), (function () { var o = {}; o[c.id] = 1; return o; })())) c.start = s; else toast("There is no room there on this layer."); }, "Move");
 		setNum("vd-i-dur", function (v) { var r = V.trim(c, "r", c.start + Math.max(0.05, v), { mediaDur: VE.mediaDur(c), hi: nextStart(c), minDur: 1 / VE.P.fps }); Object.assign(c, r); }, "Length");
 		setNum("vd-i-fin", function (v) { c.fin = V.clamp(v, 0, V.dur(c)); }, "Fade in"); setNum("vd-i-fout", function (v) { c.fout = V.clamp(v, 0, V.dur(c)); }, "Fade out");
 		setNum("vd-i-xin", function (v) { var prev = V.prevTouching(VE.P, c); c.xin = prev ? V.clamp(v, 0, Math.min(V.dur(prev), V.dur(c))) : 0; if (!prev && v > 0) toast("Put this clip right after another clip on the same track first."); }, "Cross-fade");
@@ -1474,9 +1473,9 @@
 		var vids = (list || []).filter(function (c) { return c.type === "video" && VE.hasSound(c) && !(V.track(VE.P, c.track) || {}).lock; });
 		if (!vids.length) { toast("Select a video clip that has sound first."); return; }
 		var made = [];
-		vids.forEach(function (c) { var a = V.separateAudio(VE.P, c.id, V.uid("c"), V.uid("L"), function () { return VE.addTrack("a"); }); if (a) made.push(a.id); });
+		vids.forEach(function (c) { var a = V.separateAudio(VE.P, c.id, V.uid("c"), V.uid("L"), function (vc) { return VE.addTrack("a", V.track(VE.P, vc.track), "below"); }); if (a) made.push(a.id); });
 		VE.sel = made; VE.commit("Separate video and audio");
-		toast("The sound is now its own clip on an audio track, linked to the video: moving, trimming, splitting or deleting one does the other too (Alt + drag moves just one). Drag the bottom edge of the track to make the waveform taller.", 9000);
+		toast("The sound is now its own clip on the layer below, linked to the video: moving, trimming, splitting or deleting one does the other too (Alt + drag moves just one). Drag the bottom edge of the track to make the waveform taller.", 9000);
 	};
 	$("vd-sep").onclick = function () { VE.separate(VE.selected()); };
 	function linkSection(c) {

@@ -16,16 +16,15 @@
 		var p = VE.P, dur = V.duration(p), total = Math.max(dur + 20, (sc.clientWidth - HEAD) / VE.pps + 5);
 		inner.style.width = (HEAD + total * VE.pps) + "px";
 		var html = "", sel = {}; VE.sel.forEach(function (i) { sel[i] = 1; });
-		var nV = p.tracks.filter(function (t) { return t.kind === "v"; }).length, nA = p.tracks.length - nV;
 		p.tracks.forEach(function (tr) {
-			var h = V.rowH(tr), canDel = (tr.kind === "v" ? nV : nA) > 1 && !p.clips.some(function (c) { return c.track === tr.id; });
-			html += '<div class="vd-trow vd-trow--' + tr.kind + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + (tr.mag ? " is-mag" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
-				'<div class="vd-thead"><span class="vd-tgrip" title="Drag to move this track up or down" aria-hidden="true"></span><span class="vd-tname" title="Double-click to rename. Drag the empty part of this header up or down to move the track; right-click for more">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
-				(tr.kind === "v" ? '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' this track">' + (tr.hide ? "&#128065;&#824;" : "&#128065;") + "</button>" : "") +
-				'<button type="button" data-tact="mute" aria-pressed="' + !!tr.mute + '" title="' + (tr.mute ? "Unmute" : "Mute") + ' this track">' + (tr.mute ? "&#128263;" : "&#128266;") + "</button>" +
-				'<button type="button" data-tact="lock" aria-pressed="' + !!tr.lock + '" title="' + (tr.lock ? "Unlock" : "Lock") + ' this track">' + (tr.lock ? "&#128274;" : "&#128275;") + "</button>" +
-				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic track: clips close up with no gaps (click to turn off)" : "Make this track magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +
-				(canDel ? '<button type="button" data-tact="del" title="Delete this empty track">&times;</button>' : "") + "</span>" + (h >= 70 && tr.kind === "a" ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
+			var h = V.rowH(tr, p), canDel = p.tracks.length > 1 && !p.clips.some(function (c) { return c.track === tr.id; }), snd = V.soundOnly(p, tr), hasSnd = p.clips.some(function (c) { return c.track === tr.id && (c.type === "audio" || (c.type === "video" && VE.hasSound(c))); });
+			html += '<div class="vd-trow vd-trow--' + (snd ? "a" : "v") + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + (tr.mag ? " is-mag" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
+				'<div class="vd-thead"><span class="vd-tgrip" title="Drag to move this layer up or down" aria-hidden="true"></span><span class="vd-tname" title="Double-click to rename. Drag the empty part of this header up or down to move the layer; right-click for more">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
+				(snd ? "" : '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' the pictures on this layer">' + (tr.hide ? "&#128065;&#824;" : "&#128065;") + "</button>") +
+				'<button type="button" data-tact="mute" aria-pressed="' + !!tr.mute + '" title="' + (tr.mute ? "Unmute" : "Mute") + ' this layer">' + (tr.mute ? "&#128263;" : "&#128266;") + "</button>" +
+				'<button type="button" data-tact="lock" aria-pressed="' + !!tr.lock + '" title="' + (tr.lock ? "Unlock" : "Lock") + ' this layer">' + (tr.lock ? "&#128274;" : "&#128275;") + "</button>" +
+				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic layer: clips close up with no gaps (click to turn off)" : "Make this layer magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +
+				(canDel ? '<button type="button" data-tact="del" title="Delete this empty layer">&times;</button>' : "") + "</span>" + (h >= 70 && hasSnd ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
 				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? "T  " + (c.text && c.text.s || "").split("\n")[0] : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
 				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
@@ -34,7 +33,7 @@
 					'<canvas class="vd-cc" data-h="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" + (V.hasSource(c) && w >= 150 && h >= 40 ? '<span class="vd-cst">' + VE.esc(V.srcText(c, p.fps)) + "</span>" : "") +
 					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
 			});
-			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag the top edge to make this track taller or shorter (double-click: normal height)"></i></div>';
+			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag the top edge to make this layer taller or shorter (double-click: normal height)"></i></div>';
 		});
 		rows.innerHTML = html;
 		rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el, true); });
@@ -163,9 +162,9 @@
 		if (e.button > 0) return;
 		var tb = e.target.closest("[data-tact]"); if (tb) return trackAction(tb);
 		var rg = e.target.closest("[data-rgrip]");
-		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
+		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr, VE.P), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		var th = e.target.closest(".vd-thead");
-		if (th) {   // drag a track's header up / down to reorder the tracks (video tracks stay among video tracks, sound among sound)
+		if (th) {   // drag a layer's header up / down to reorder the layers
 			if (e.target.closest("button, .vd-tname") && !e.target.closest(".vd-tgrip")) return;
 			var hrow = th.closest(".vd-trow"), all = [].slice.call(rows.querySelectorAll(".vd-trow"));
 			drag = { mode: "track", tr: V.track(VE.P, hrow.getAttribute("data-track")), y0: e.clientY, moved: false, row: hrow, all: all, from: all.indexOf(hrow), to: all.indexOf(hrow),
@@ -295,10 +294,10 @@
 	function finish() {
 		if (!drag) return;
 		var d = drag; drag = null;
-		if (d.mode === "rowh") { if (d.moved) VE.commit("Track height"); return; }
+		if (d.mode === "rowh") { if (d.moved) VE.commit("Layer height"); return; }
 		if (d.mode === "track") {
 			rows.classList.remove("is-tdragging"); d.all.forEach(function (r) { r.style.transform = ""; });
-			if (d.moved && d.to !== d.from) { var tg = V.track(VE.P, d.all[d.to].getAttribute("data-track")), L = VE.P.tracks; L.splice(L.indexOf(d.tr), 1); L.splice(L.indexOf(tg) + (d.to > d.from ? 1 : 0), 0, d.tr); VE.commit("Move track"); }
+			if (d.moved && d.to !== d.from) { var tg = V.track(VE.P, d.all[d.to].getAttribute("data-track")), L = VE.P.tracks; L.splice(L.indexOf(d.tr), 1); L.splice(L.indexOf(tg) + (d.to > d.from ? 1 : 0), 0, d.tr); VE.commit("Move layer"); }
 			else T.render();
 			return;
 		}
@@ -308,7 +307,7 @@
 			return;
 		}
 		if (d.mode === "scrub" || !d.moved) { T.render(); return; }
-		if (d.bad) { VE.P = JSON.parse(d.snap); T.render(); VE.emit("live"); VE.emit("notice", "There is no room there: clips on one track cannot overlap (turn on the magnet of a track to have clips close up instead)."); return; }
+		if (d.bad) { VE.P = JSON.parse(d.snap); T.render(); VE.emit("live"); VE.emit("notice", "There is no room there: clips on one layer cannot overlap (turn on the magnet of a layer to have clips close up instead)."); return; }
 		VE.commit(d.mode === "trim" ? "Trim" : "Move");
 	}
 	// right-click: a menu for the clip / empty spot / track header (built in app.js)
@@ -325,14 +324,14 @@
 	T.markSel = markSel;
 	function trackAction(b) {
 		var row = b.closest(".vd-trow"), tr = V.track(VE.P, row.getAttribute("data-track")), a = b.getAttribute("data-tact");
-		if (a === "del") { VE.P.tracks = VE.P.tracks.filter(function (x) { return x !== tr; }); VE.commit("Delete track"); return; }
+		if (a === "del") { VE.P.tracks = VE.P.tracks.filter(function (x) { return x !== tr; }); VE.commit("Delete layer"); return; }
 		tr[a] = !tr[a];
 		if (a === "mag" && tr.mag) VE.emit("notice", tr.name + " is magnetic: its clips close up to the left with no gaps.");
 		VE.commit(a === "hide" ? "Hide track" : a === "mute" ? "Mute track" : a === "mag" ? (tr.mag ? "Magnetic track on" : "Magnetic track off") : "Lock track");
 	}
 	rows.addEventListener("dblclick", function (e) {
-		var rg = e.target.closest("[data-rgrip]"); if (rg) { var gt = V.track(VE.P, rg.getAttribute("data-rgrip")); delete gt.h; VE.commit("Track height"); return; }
-		var n = e.target.closest(".vd-tname"); if (n) { var tr = V.track(VE.P, n.closest(".vd-trow").getAttribute("data-track")), nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename track"); } return; }
+		var rg = e.target.closest("[data-rgrip]"); if (rg) { var gt = V.track(VE.P, rg.getAttribute("data-rgrip")); delete gt.h; VE.commit("Layer height"); return; }
+		var n = e.target.closest(".vd-tname"); if (n) { var tr = V.track(VE.P, n.closest(".vd-trow").getAttribute("data-track")), nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename layer"); } return; }
 		var ce = e.target.closest(".vd-clip"); if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c && c.type === "text") VE.emit("editText", c); }
 	});
 
@@ -340,17 +339,17 @@
 	// place media m at the time under clientX on the row under clientY (or the first fitting track); returns the new clip
 	T.placeMedia = function (m, clientX, clientY, atTime) {
 		var type = m.kind === "image" ? "image" : m.kind === "audio" ? "audio" : "video", kind = V.kindFor(type);
-		var t = atTime != null ? atTime : clientX != null ? x2t(clientX) : VE.t, tr = null;
+		var t = atTime != null ? atTime : clientX != null ? x2t(clientX) : VE.t, tr = null, isSnd = type === "audio";
 		if (clientY != null) { var row = null; rows.querySelectorAll(".vd-trow").forEach(function (r) { var b = r.getBoundingClientRect(); if (clientY >= b.top && clientY < b.bottom) row = r; }); if (row) { var q = V.track(VE.P, row.getAttribute("data-track")); if (q && q.kind === kind && !q.lock) tr = q; } }
 		var dur = type === "image" ? 5 : m.dur;
-		var tracks = tr ? [tr] : VE.P.tracks.filter(function (x) { return x.kind === kind && !x.lock; });
-		if (kind === "v" && !tr) tracks = tracks.slice().reverse();   // pictures go on the lowest free video track first
+		// no layer under the pointer: the lowest free layer that already holds the same sort of clip (sound with sound, pictures with pictures) or nothing
+		var tracks = tr ? [tr] : VE.P.tracks.filter(function (x) { if (x.lock) return false; var cs = V.onTrack(VE.P, x.id); return !cs.length || cs.every(function (q) { return (q.type === "audio") === isSnd; }); }).reverse();
 		var c = V.clipDefaults({ id: V.uid("c"), type: type, media: m.id, track: null, start: 0, in: 0, out: dur });
 		for (var j = 0; j < tracks.length; j++) {
 			if (tracks[j].mag) { c.track = tracks[j].id; c.start = Math.max(0, t); break; }
 			var s = V.fitOnTrack(VE.P, tracks[j].id, Math.max(0, t), dur); if (s != null && (tr || Math.abs(s - t) < 1e-6)) { c.track = tracks[j].id; c.start = s; break; }
 		}
-		if (!c.track) { var nt = VE.addTrack(kind); c.track = nt.id; c.start = Math.max(0, t); }
+		if (!c.track) { var nt = VE.addTrack(isSnd ? "a" : "v"); c.track = nt.id; c.start = Math.max(0, t); }
 		if (type === "image" && m.w && m.h) c.scale = Math.min(1, 1 / Math.min(VE.P.w / m.w, VE.P.h / m.h));   // a picture comes in at its own pixel size (at most the frame)
 		VE.P.clips.push(c); VE.sel = [c.id];
 		if (V.track(VE.P, c.track).mag) V.magnetInsert(VE.P, c.track, c.id, c.start);
@@ -361,7 +360,8 @@
 	// append clips one after another at the end of a track (merging many videos in order)
 	T.appendAll = function (list) {
 		var vid = list.filter(function (m) { return m.kind !== "audio"; }), aud = list.filter(function (m) { return m.kind === "audio"; });
-		var vtr = VE.P.tracks.filter(function (x) { return x.kind === "v" && !x.lock; }).slice(-1)[0], atr = VE.P.tracks.filter(function (x) { return x.kind === "a" && !x.lock; })[0];
+		function pick(snd) { return VE.P.tracks.filter(function (x) { if (x.lock) return false; var cs = V.onTrack(VE.P, x.id); return cs.length ? cs.every(function (q) { return (q.type === "audio") === snd; }) : true; }).slice(-1)[0]; }
+		var vtr = pick(false), atr = pick(true); if (atr === vtr) atr = null;
 		[[vid, vtr], [aud, atr]].forEach(function (q) {
 			if (!q[0].length) return; var tr = q[1] || VE.addTrack(q[0][0].kind === "audio" ? "a" : "v");
 			var at = V.onTrack(VE.P, tr.id).reduce(function (a, c) { return Math.max(a, V.end(c)); }, 0);
@@ -374,11 +374,11 @@
 		VE.commit("Add " + list.length + " clips");
 	};
 	function setProjectFromMedia(m) { VE.P.w = Math.max(2, Math.round(m.w / 2) * 2); VE.P.h = Math.max(2, Math.round(m.h / 2) * 2); VE.P.fps = Math.round((m.fps || 30) * 100) / 100 > 59 ? 60 : Math.abs(m.fps - 29.97) < 0.005 ? 29.97 : Math.max(10, Math.round(m.fps || 30)); VE.emit("notice", "The project took the size of the first video: " + VE.P.w + "×" + VE.P.h + ", " + VE.P.fps + " fps (change it under Project)."); }
-	// a new track with a name not in use yet ("Video 3"); next to = put it just above (video) / below (sound) that track instead of at the top / bottom
+	// a new layer named "Layer N" (the next free number); kind "a" = meant for sound: it goes at the bottom (or below nextTo), else at the top (or above nextTo)
 	VE.addTrack = function (kind, nextTo, where) {
-		var base = kind === "v" ? "Video " : "Audio ", used = {}; VE.P.tracks.forEach(function (t) { used[t.name] = 1; });
-		var n = 1; while (used[base + n]) n++;
-		var tr = { id: V.uid(kind), kind: kind, name: base + n }, at = nextTo ? VE.P.tracks.indexOf(nextTo) : -1;
+		var used = {}; VE.P.tracks.forEach(function (t) { used[t.name] = 1; });
+		var n = VE.P.tracks.length + 1; while (used["Layer " + n]) n++;
+		var tr = { id: V.uid("L"), kind: "v", name: "Layer " + n }, at = nextTo ? VE.P.tracks.indexOf(nextTo) : -1;
 		if (at >= 0) VE.P.tracks.splice((where || (kind === "v" ? "above" : "below")) === "above" ? at : at + 1, 0, tr);
 		else if (kind === "v") VE.P.tracks.splice(0, 0, tr); else VE.P.tracks.push(tr);
 		return tr;

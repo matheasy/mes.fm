@@ -14,7 +14,7 @@
 	V.newProject = function (o) {
 		o = o || {};
 		return { v: 1, name: o.name || "Untitled video", w: o.w || 1920, h: o.h || 1080, fps: o.fps || 30, bg: "#000000",
-			tracks: [{ id: "v1", kind: "v", name: "Video 1" }, { id: "v2", kind: "v", name: "Video 2" }, { id: "a1", kind: "a", name: "Audio 1" }], clips: [], marks: { in: null, out: null } };
+			tracks: [{ id: "v1", kind: "v", name: "Layer 3" }, { id: "v2", kind: "v", name: "Layer 2" }, { id: "a1", kind: "v", name: "Layer 1" }], clips: [], marks: { in: null, out: null } };
 	};
 	V.clipDefaults = function (c) {
 		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
@@ -29,17 +29,24 @@
 		var q = V.newProject(p);
 		q.name = String(p.name || q.name).slice(0, 120); q.bg = /^#[0-9a-f]{6}$/i.test(p.bg || "") ? p.bg : "#000000";
 		q.w = V.clamp(Math.round(+p.w || 1920), 16, 7680) & ~1; q.h = V.clamp(Math.round(+p.h || 1080), 16, 4320) & ~1; q.fps = V.clamp(+p.fps || 30, 1, 120);
-		if (Array.isArray(p.tracks) && p.tracks.length) q.tracks = p.tracks.filter(function (t) { return t && t.id && (t.kind === "v" || t.kind === "a"); }).map(function (t) { var o = { id: String(t.id), kind: t.kind, name: String(t.name || "Track").slice(0, 40), mute: !!t.mute, hide: !!t.hide, lock: !!t.lock, mag: !!t.mag }; if (isFinite(t.h) && t.h > 0) o.h = V.clamp(Math.round(t.h), V.ROW_MIN, V.ROW_MAX); return o; });
+		// every track is a "layer" that can hold anything (video, pictures, titles, sound); old video / audio tracks keep their order,
+		// and their default names ("Video 2", "Audio 1") become "Layer N", counted from the bottom like Camtasia
+		if (Array.isArray(p.tracks) && p.tracks.length) {
+			q.tracks = p.tracks.filter(function (t) { return t && t.id && (t.kind === "v" || t.kind === "a"); }).map(function (t) { var o = { id: String(t.id), kind: "v", name: String(t.name || "Layer").slice(0, 40), mute: !!t.mute, hide: !!t.hide, lock: !!t.lock, mag: !!t.mag }; if (isFinite(t.h) && t.h > 0) o.h = V.clamp(Math.round(t.h), V.ROW_MIN, V.ROW_MAX); return o; });
+			var nT = q.tracks.length; q.tracks.forEach(function (t, i) { if (/^(Video|Audio|Track) \d+$/.test(t.name)) t.name = "Layer " + (nT - i); });
+		}
 		var ids = {}; q.tracks.forEach(function (t) { ids[t.id] = t; });
 		q.clips = (Array.isArray(p.clips) ? p.clips : []).filter(function (c) { return c && c.id && ids[c.track] && isFinite(c.start) && isFinite(c.in) && isFinite(c.out) && c.out > c.in; }).map(function (c) { return V.clipDefaults(JSON.parse(JSON.stringify(c))); });
 		q.marks = { in: p.marks && isFinite(p.marks.in) ? p.marks.in : null, out: p.marks && isFinite(p.marks.out) ? p.marks.out : null };
 		return q;
 	};
 	V.ROW_MIN = 28; V.ROW_MAX = 420; V.ROW_DEFAULT = { v: 62, a: 84 };
-	V.rowH = function (tr) { return tr && tr.h ? V.clamp(tr.h, V.ROW_MIN, V.ROW_MAX) : V.ROW_DEFAULT[tr && tr.kind === "a" ? "a" : "v"]; };
+	// default height: taller when the layer holds only sound (room for the waveform); p optional
+	V.soundOnly = function (p, tr) { if (!p || !tr) return false; var any = false; for (var i = 0; i < p.clips.length; i++) { var c = p.clips[i]; if (c.track !== tr.id) continue; if (c.type !== "audio") return false; any = true; } return any; };
+	V.rowH = function (tr, p) { return tr && tr.h ? V.clamp(tr.h, V.ROW_MIN, V.ROW_MAX) : V.ROW_DEFAULT[tr && (tr.kind === "a" || V.soundOnly(p, tr)) ? "a" : "v"]; };
 	V.track = function (p, id) { for (var j = 0; j < p.tracks.length; j++) if (p.tracks[j].id === id) return p.tracks[j]; return null; };
 	V.clip = function (p, id) { for (var j = 0; j < p.clips.length; j++) if (p.clips[j].id === id) return p.clips[j]; return null; };
-	V.kindFor = function (type) { return type === "audio" ? "a" : "v"; };
+	V.kindFor = function () { return "v"; };   // layers hold anything: one kind for every clip
 
 	/* ---------- clip timing ---------- */
 	V.dur = function (c) { return (c.out - c.in) / (c.speed || 1); };
@@ -205,10 +212,10 @@
 	V.layersAt = function (p, t) {
 		var out = [];
 		for (var j = p.tracks.length - 1; j >= 0; j--) {
-			var tr = p.tracks[j]; if (tr.kind !== "v" || tr.hide) continue;
+			var tr = p.tracks[j]; if (tr.hide) continue;
 			var cs = V.onTrack(p, tr.id);
 			for (var k = 0; k < cs.length; k++) {
-				var c = cs[k]; if (!V.active(c, t)) continue;
+				var c = cs[k]; if (c.type === "audio" || !V.active(c, t)) continue;
 				var pos = V.posAt(c, t), a = V.envelope(c, t) * pos.op; if (a <= 0.001) continue;
 				out.push({ clip: c, src: Math.max(0, V.srcAt(c, t)), alpha: Math.min(1, a), pos: pos });
 			}
@@ -603,9 +610,10 @@
 	// "Separate video and audio": the video's sound becomes its own clip on an audio track (one where it fits, else makeTrack()), linked to it
 	V.separateAudio = function (p, id, newId, linkId, makeTrack) {
 		var c = V.clip(p, id); if (!c || c.type !== "video" || c.noAudio) return null;
-		var d = V.dur(c), tr = null, as = p.tracks.filter(function (t) { return t.kind === "a" && !t.lock; });
+		// the sound goes on the first free layer below the video (else makeTrack(c) makes one)
+		var d = V.dur(c), tr = null, at = p.tracks.indexOf(V.track(p, c.track)), as = p.tracks.slice(at + 1).filter(function (t) { return !t.lock; });
 		for (var j = 0; j < as.length; j++) if (as[j].mag ? !V.onTrack(p, as[j].id).length : V.canPlace(p, as[j].id, c.start, d)) { tr = as[j]; break; }
-		if (!tr) tr = makeTrack ? makeTrack() : null; if (!tr) return null;
+		if (!tr) tr = makeTrack ? makeTrack(c) : null; if (!tr) return null;
 		var a = V.clipDefaults({ id: newId, type: "audio", media: c.media, track: tr.id, start: c.start, in: c.in, out: c.out, speed: c.speed, vol: c.vol, mute: c.mute, fin: c.fin, fout: c.fout, xin: c.xin,
 			clean: c.clean ? JSON.parse(JSON.stringify(c.clean)) : null, lufs: c.lufs, afx: c.afx ? JSON.parse(JSON.stringify(c.afx)) : null, link: linkId });
 		c.link = linkId; c.noAudio = true; c.clean = null; c.afx = null; c.lufs = null;

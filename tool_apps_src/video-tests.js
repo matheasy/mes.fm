@@ -159,7 +159,7 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	const v = clip({ id: "v", start: 2, in: 1, out: 9, vol: 0.5, afx: { level: { on: true } } }), p = proj([v]);
 	let made = 0;
 	const a = V.separateAudio(p, "v", "a", "L1", () => { made++; const t = { id: "a9", kind: "a", name: "Audio 9" }; p.tracks.push(t); return t; });
-	ok(a && a.type === "audio" && a.track === "a1" && made === 0, "the sound goes to the free audio track");
+	ok(a && a.type === "audio" && a.track === "v2" && made === 0, "the sound goes to the first free layer below the video");
 	eq([a.start, a.in, a.out, a.vol, a.link, v.link, v.noAudio, !!a.afx, v.afx], [2, 1, 9, 0.5, "L1", "L1", true, true, null], "audio clip copies timing, volume and effects; video goes silent");
 	near(V.gainAt(p, v, 3), 0, 0, "the video clip itself makes no sound now"); near(V.gainAt(p, a, 3), 0.5, 1e-9, "the audio clip does");
 	eq(V.withLinks(p, ["v"]).sort(), ["a", "v"], "selecting one selects its partner");
@@ -170,8 +170,13 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	const b2 = V.clip(p, "a"); b2.vol = 0.8; p.clips = p.clips.filter(c => r.indexOf(c.id) < 0); V.joinAudio(p, "v"); const v2 = V.clip(p, "v"); ok(!V.clip(p, "a") && !v2.noAudio && v2.vol === 0.8 && v2.link === null, "join puts the sound back");
 	ok(V.separateAudio(p, "v", "z", "L2") && V.unlink(p, "v") && v2.link === null && V.clip(p, "z").link === null, "unlink");
 	const q = proj([clip({ id: "v", start: 0, out: 4 }), clip({ id: "o", type: "audio", track: "a1", start: 1, out: 2 })]);
-	const a2 = V.separateAudio(q, "v", "a", "L", () => { const t = { id: "a2", kind: "a" }; q.tracks.push(t); return t; });
-	eq(a2.track, "a2", "audio track busy there: a new one is made");
+	q.clips.push(clip({ id: "o2", track: "v2", start: 0, out: 3 }));
+	const a2 = V.separateAudio(q, "v", "a", "L", () => { const t = { id: "a2", kind: "v" }; q.tracks.push(t); return t; });
+	eq(a2.track, "a2", "every layer below busy there: a new one is made");
+	const lg = V.normalize({ tracks: [{ id: "v1", kind: "v", name: "Video 2" }, { id: "x", kind: "v", name: "B-roll" }, { id: "a1", kind: "a", name: "Audio 1" }], clips: [{ id: "s", type: "audio", track: "a1", start: 0, in: 0, out: 2 }] });
+	eq(lg.tracks.map(t => t.kind + ":" + t.name), ["v:Layer 3", "v:B-roll", "v:Layer 1"], "old tracks become layers (own names kept)");
+	ok(V.soundOnly(lg, lg.tracks[2]) && V.rowH(lg.tracks[2], lg) === V.ROW_DEFAULT.a && V.rowH(lg.tracks[0], lg) === V.ROW_DEFAULT.v, "a sound-only layer is taller");
+	ok(V.layersAt({ tracks: lg.tracks, clips: [V.clipDefaults({ id: "s", type: "audio", track: "a1", start: 0, in: 0, out: 2 })] }, 1).length === 0, "sound clips are never drawn");
 	const m = proj([clip({ id: "v", start: 3, out: 4 }), clip({ id: "w", start: 0, out: 2 })]); m.tracks[0].mag = true;
 	V.separateAudio(m, "v", "va", "LL"); V.applyMagnets(m); eq([V.clip(m, "v").start, V.clip(m, "va").start], [2, 2], "partner follows a packed video");
 }
