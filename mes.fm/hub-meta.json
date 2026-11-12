@@ -3,7 +3,7 @@
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
-"updated":"2026-10-23",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/3d-fluid-simulator":{
@@ -88,7 +88,7 @@
 },
 "/bmi-calculator-kids":{
 "added":"2026-10-27",
-"updated":"2026-11-02",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/bmicalculator":{
@@ -148,7 +148,7 @@
 },
 "/cas-calculator":{
 "added":"2026-10-02",
-"updated":"2026-10-23",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/clock":{
@@ -178,7 +178,7 @@
 },
 "/connect-four":{
 "added":"2026-11-07",
-"updated":"2026-11-07",
+"updated":"2026-11-11",
 "type":"Game"
 },
 "/contraction-timer":{
@@ -238,7 +238,7 @@
 },
 "/derivative-calculator":{
 "added":"2026-10-02",
-"updated":"2026-10-23",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/dice-roller":{
@@ -388,7 +388,7 @@
 },
 "/grounding-rod-simulator":{
 "added":"2026-10-14",
-"updated":"2026-10-14",
+"updated":"2026-11-11",
 "type":"Simulation"
 },
 "/gta":{
@@ -443,7 +443,7 @@
 },
 "/integral-calculator":{
 "added":"2026-10-02",
-"updated":"2026-10-23",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/interval-timer":{
@@ -508,7 +508,7 @@
 },
 "/magnetic-isopotentials":{
 "added":"2026-10-25",
-"updated":"2026-10-25",
+"updated":"2026-11-11",
 "type":"Simulation"
 },
 "/mandelbrot":{
@@ -533,7 +533,7 @@
 },
 "/matrix-calculator":{
 "added":"2026-10-19",
-"updated":"2026-10-20",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/maxwell-vortices":{
@@ -553,12 +553,12 @@
 },
 "/michelson-morley-experiment":{
 "added":"2026-10-09",
-"updated":"2026-11-01",
+"updated":"2026-11-11",
 "type":"Simulation"
 },
 "/minesweeper":{
 "added":"2026-11-07",
-"updated":"2026-11-07",
+"updated":"2026-11-11",
 "type":"Game"
 },
 "/mlb-picks":{
@@ -688,7 +688,7 @@
 },
 "/practice-tests":{
 "added":"2026-11-02",
-"updated":"2026-11-03",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/pregnancy-calorie-calculator":{
@@ -903,7 +903,7 @@
 },
 "/tic-tac-toe":{
 "added":"2026-11-06",
-"updated":"2026-11-07",
+"updated":"2026-11-11",
 "type":"Game"
 },
 "/time-calculator":{
@@ -938,7 +938,7 @@
 },
 "/trigonometry":{
 "added":"2026-10-18",
-"updated":"2026-10-18",
+"updated":"2026-11-11",
 "type":"Calculator"
 },
 "/typing-test":{
