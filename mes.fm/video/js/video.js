@@ -1215,9 +1215,9 @@
 	};
 	// ruler: a tick every "step" seconds so labels are at least minPx apart
 	V.tickStep = function (pps, minPx) {
-		var steps = [1 / 30, 1 / 10, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+		var steps = [1 / 30, 1 / 10, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 10800, 21600, 43200];
 		for (var j = 0; j < steps.length; j++) if (steps[j] * pps >= (minPx || 70)) return steps[j];
-		return 7200;
+		return 86400;
 	};
 	V.frameSnap = function (t, fps) { return Math.round(t * fps) / fps; };
 
@@ -1607,7 +1607,7 @@
 	var VE = window.VE = { V: V };
 	VE.LIB = { box: "https://cdn.jsdelivr.net/npm/mp4box@0.5.2/dist/mp4box.all.min.js", mp4: "https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.js" };
 	VE.loadScript = E.loadScript;
-	VE.P = V.newProject(); VE.bin = []; VE.sel = []; VE.t = 0; VE.pps = 60; VE.hist = new V.History(200);
+	VE.P = V.newProject(); VE.bin = []; VE.sel = []; VE.t = 0; VE.pps = 60; VE.PPS_MIN = 0.01; VE.hist = new V.History(200);
 	VE.esc = function (s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
 	VE.media = function (id) { for (var j = 0; j < VE.bin.length; j++) if (VE.bin[j].id === id) return VE.bin[j]; return null; };
 	VE.signal = function () { var w = []; return { wait: function (ms) { return new Promise(function (r) { var t = setTimeout(done, ms || 250); function done() { clearTimeout(t); r(); } w.push(done); }); }, wake: function () { var a = w; w = []; for (var j = 0; j < a.length; j++) a[j](); } }; };
@@ -2612,6 +2612,8 @@
 		cv.style.display = ""; cv.style.left = a + "px"; cv.style.width = W + "px"; cv.style.right = "auto";
 		cv.width = Math.min(16384, Math.round(W * dpr)); cv.height = Math.round(H * dpr); cv._a = a; cv._b = b;
 		var g = cv.getContext("2d"); g.setTransform(cv.width / W, 0, 0, dpr, -a * cv.width / W, 0); g.clearRect(a, 0, W, H);
+		var tiny = w < 26;   // squeezed far out: plain coloured block (pictures / waveform come back when zoomed in)
+		if (tiny) return;
 		if (c.type === "video" && m && m.thumbImg && m.thumbTimes) {
 			var th = H - (VE.hasSound(c) ? 18 : 0), tw = Math.max(8, th * m.thumbW / m.thumbH);
 			for (var x = Math.floor(a / tw) * tw; x < b; x += tw) {
@@ -2691,11 +2693,11 @@
 	sc.addEventListener("scroll", function () { drawRuler(); if (!scrollRaf) scrollRaf = requestAnimationFrame(repaintVisible); });
 	T.zoom = function (pps, aroundClientX) {
 		var old = VE.pps, b = sc.getBoundingClientRect(), ax = aroundClientX == null ? b.left + HEAD + (sc.clientWidth - HEAD) / 2 : aroundClientX, at = x2t(ax);
-		VE.pps = V.clamp(pps, 1, 600); T.render();
+		VE.pps = V.clamp(pps, VE.PPS_MIN || 0.01, 600); T.render();
 		sc.scrollLeft = Math.max(0, HEAD + at * VE.pps - (ax - b.left));
 		VE.emit("zoom", VE.pps); if (old !== VE.pps) { /* slider follows */ }
 	};
-	T.fit = function () { var d = V.duration(VE.P) || 10; T.zoom((sc.clientWidth - HEAD - 30) / d); sc.scrollLeft = 0; };
+	T.fit = function () { var d = V.duration(VE.P) || 10; T.zoom((sc.clientWidth - HEAD - 30) / d); sc.scrollLeft = 0; };   // works for any length: the zoom goes down to ~10 hours across the screen
 	sc.addEventListener("wheel", function (e) {
 		if (!(e.ctrlKey || e.metaKey)) return;
 		e.preventDefault(); T.zoom(VE.pps * Math.pow(1.0015, -e.deltaY), e.clientX);
@@ -3428,8 +3430,10 @@
 
 	/* ---------- zoom ---------- */
 	var zr = $("vd-zoom");
-	function z2s(v) { return Math.pow(10, v / 1000 * Math.log10(600) * 1); }
-	function s2z(p) { return Math.round(Math.log10(Math.max(1, p)) / Math.log10(600) * 1000); }
+	// log scale from VE.PPS_MIN (about 10 hours across a screen) to 600 px a second
+	var ZL0 = Math.log10(VE.PPS_MIN), ZL1 = Math.log10(600);
+	function z2s(v) { return Math.pow(10, ZL0 + v / 1000 * (ZL1 - ZL0)); }
+	function s2z(p) { return Math.round((Math.log10(Math.max(VE.PPS_MIN, p)) - ZL0) / (ZL1 - ZL0) * 1000); }
 	zr.value = s2z(VE.pps);
 	zr.addEventListener("input", function () { VE.tl.zoom(z2s(+zr.value)); });
 	VE.on("zoom", function (p) { zr.value = s2z(p); });
@@ -4440,6 +4444,26 @@
 	$("vd-modal").addEventListener("click", function (e) { if (e.target === this) closeDialog(); });
 	$("vd-export").onclick = openExport;
 
+	/* ---------- arrow keys after clicking the preview: move the selected picture / title (1 video pixel, Shift = 10) ---------- */
+	VE.kbFocus = "tl";
+	document.addEventListener("pointerdown", function (e) { if (!app.contains(e.target)) return; VE.kbFocus = e.target.closest("#vd-canvas") ? "pv" : "tl"; }, true);
+	var nudgeT = 0;
+	function nudgeTargets() { return VE.selected().filter(function (c) { var tr = V.track(VE.P, c.track); return c.type !== "audio" && !(tr && tr.lock) && V.active(c, VE.t); }); }
+	VE.nudge = function (dx, dy) {
+		var list = nudgeTargets(); if (!list.length) return false;
+		var tol = 0.5 / VE.P.fps, blocked = false;
+		list.forEach(function (c) {
+			var rel = VE.t - c.start; if (c.anims && V.animRunning && V.animRunning(c, rel, tol)) { blocked = true; return; }
+			var pos = V.posAt(c, VE.t);
+			if (dx) V.setPropAt(c, rel, "x", Math.round((pos.x + dx / VE.P.w) * 10000) / 10000, tol);
+			if (dy) V.setPropAt(c, rel, "y", Math.round((pos.y + dy / VE.P.h) * 10000) / 10000, tol);
+		});
+		if (blocked) toast("The playhead is inside an animation: move it to the animation's start or end to move the clip there.");
+		VE.emit("live"); VE.preview.draw();
+		clearTimeout(nudgeT); nudgeT = setTimeout(function () { VE.commit("Nudge"); }, 450);   // one undo step for a burst of presses
+		return true;
+	};
+
 	/* ---------- keyboard ---------- */
 	document.addEventListener("keydown", function (e) {
 		var tg = e.target, tn = (tg && tg.tagName) || "";
@@ -4461,6 +4485,10 @@
 		if (mod && (k === "g" || k === "G")) { e.preventDefault(); tin.focus(); return; }
 		if (mod && (k === "Home" || k === "End")) { e.preventDefault(); P.seek(k === "Home" ? 0 : V.duration(VE.P)); VE.tl.reveal(VE.t); return; }
 		if (mod || e.altKey) return;
+		if (VE.kbFocus === "pv" && /^Arrow(Left|Right|Up|Down)$/.test(k)) {
+			var st = e.shiftKey ? 10 : 1;
+			if (VE.nudge(k === "ArrowLeft" ? -st : k === "ArrowRight" ? st : 0, k === "ArrowUp" ? -st : k === "ArrowDown" ? st : 0)) { e.preventDefault(); return; }
+		}
 		var h = true;
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view

@@ -826,9 +826,9 @@
 	};
 	// ruler: a tick every "step" seconds so labels are at least minPx apart
 	V.tickStep = function (pps, minPx) {
-		var steps = [1 / 30, 1 / 10, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600];
+		var steps = [1 / 30, 1 / 10, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 10800, 21600, 43200];
 		for (var j = 0; j < steps.length; j++) if (steps[j] * pps >= (minPx || 70)) return steps[j];
-		return 7200;
+		return 86400;
 	};
 	V.frameSnap = function (t, fps) { return Math.round(t * fps) / fps; };
 
