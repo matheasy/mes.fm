@@ -2057,11 +2057,12 @@
 	function cmPaint() {
 		var box = $('wt-cm'), c = cmState; if (!c) return;
 		var head = '<div class="wt-cmhead"><b>Comments' + (c.count != null ? ' (' + Number(c.count).toLocaleString() + ')' : '') + '</b><span class="wt-cmsrc">from ' + esc(c.site) + '</span>' +
-			(cur ? '<a class="wt-cmopen" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Reply on ' + esc(c.site) + ' ↗&#xFE0E;</a>' : '') + '</div>';
+			(cur ? '<a class="wt-cmopen" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Reply on ' + esc(c.site) + ' ↗&#xFE0E;</a>' : '') + '<button type="button" class="wt-b wt-cmhide" data-cmhide title="Hide the comments (C)">▴ Hide</button></div>';
 		box.innerHTML = head + (c.msg ? '<p class="wt-cmmsg">' + c.msg + '</p>' : '') + (c.items.length ? '<ul class="wt-cml">' + c.items.map(function (x, i) { return cmRow(x, c.site, i); }).join('') + '</ul>' : '') +
-			(c.more ? '<button type="button" class="tu-btn tu-btn--ghost wt-cmmore" data-cmmore' + (c.busy ? ' disabled' : '') + '>' + (c.busy ? 'Loading…' : 'Load more') + '</button>' : (c.busy ? '<p class="wt-cmmsg">Loading…</p>' : ''));
+			(c.more ? '<button type="button" class="tu-btn tu-btn--ghost wt-cmmore" data-cmmore' + (c.busy ? ' disabled' : '') + '>' + (c.busy ? 'Loading…' : 'Load more') + '</button>' : (c.busy ? '<p class="wt-cmmsg">Loading…</p>' : '')) + (c.items.length > 3 ? '<button type="button" class="wt-b wt-cmhide wt-cmhide2" data-cmhide>▴ Hide comments</button>' : '');
 	}
 	$('wt-cm').addEventListener('click', function (e) {
+		if (e.target.closest('[data-cmhide]')) { var cm = $('wt-cm'), top = cm.getBoundingClientRect().top; $('wt-cmbtn').click(); if (top < 0) $('wt-player').scrollIntoView({ block: 'nearest' }); return; }
 		if (e.target.closest('[data-cmmore]') && cmState && cmState.more && !cmState.busy) { cmState.more(); return; }
 		var b = e.target.closest('[data-cmrep],[data-cmrmore]'); if (!b || !cmState) return;
 		var c = cmState.items[+(b.dataset.cmrep || b.dataset.cmrmore)]; if (!c || !c.rep || c.rBusy) return;
