@@ -44,6 +44,13 @@ const PAGES = [
       "Every #MESExperiments video in one place: gyroscopes rising on needles and ice, magnets falling through copper tubes, Faraday's paradox, Schauberger's rising egg, with Hive notes and BitChute, Odysee and 3Speak links.",
   },
   {
+    // Tile only: the hand-built article made by build_gyrotop_article.py; icon = img/gyrotop-angular-momentum-icon.jpg (crop of its thumbnail).
+    slug: "gyrotop-angular-momentum",
+    tileLabel: "GyroTop & Angular Momentum",
+    iconVersion: 1,
+    tileOnly: true,
+  },
+  {
     slug: "experiments-draft",
     sectionId: "experiments-draft",
     tileLabel: "Draft Experiments",
