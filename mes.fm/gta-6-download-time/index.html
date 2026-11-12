@@ -521,7 +521,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:480px) {.gh-cd__n {min-width:3em;} .gh-cd__n b {font-size:1.5em;} .gh-date {font-size:1.35em;} .gh-dl {grid-template-columns:minmax(0,1fr);}}
 
 	/* ---- GTA Radio (hub) ---- always dark, like the hero */
-	.gt .gm {margin-top:0.9em;background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:var(--gt-ink);}
+	.gt .gm {margin-top:0;background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:var(--gt-ink);}
 	.gt .gm a {color:#ffb3d4;} .gt .gm a:hover {color:#fff;}
 	.gm-head {display:flex;align-items:center;justify-content:space-between;gap:0.6em;}
 	.gt .gm .gt-h {color:#fff;}
@@ -559,8 +559,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gm-game summary small {font-weight:400;color:#b8afcc;}
 	.gt .gm .gm-game p {margin:0.4em 0 0;font-size:0.88em;color:#d9cfe8;}
 	.gm-chips {display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.5em;}
-	.gt .gm .gm-chip {font-size:0.8em;padding:0.25em 0.6em;border-radius:1em;border:1px solid rgba(255,255,255,0.22);color:#f3eefa;text-decoration:none;background:rgba(255,255,255,0.05);}
+	.gt .gm .gm-chip {cursor:pointer;font-family:inherit;font-size:0.8em;padding:0.25em 0.6em;border-radius:1em;border:1px solid rgba(255,255,255,0.22);color:#f3eefa;text-decoration:none;background:rgba(255,255,255,0.05);}
 	.gt .gm .gm-chip:hover {border-color:#ff4fa3;color:#fff;background:rgba(255,79,163,0.2);}
+	.gt .gm .gm-chip[aria-pressed="true"], html body.dark-mode #gt.gt .gm .gm-chip[aria-pressed="true"] {background:#ff4fa3;border-color:#ff4fa3;color:#fff;font-weight:700;}
 
 	html body.dark-mode #gt.gt .gm {background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:#f3eefa;}
 	html body.dark-mode #gt.gt .gm .gm-chip {text-decoration:none;border:1px solid rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);color:#f3eefa;}
@@ -1033,6 +1034,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .gm-game summary small{color:#9a93a9}
 	body.dark-mode .gt .gm .gm-chip{border:1px solid rgba(51,51,51,0.22);background:rgba(26,26,26,0.05)}
 	body.dark-mode .gt .gm .gm-chip:hover{border-color:#cc0061}
+	body.dark-mode .gt .gm .gm-chip[aria-pressed="true"]{border-color:#cc0061}
 	body.dark-mode .gc-main .tu-seg{border-color:rgba(51,51,51,0.25)}
 	body.dark-mode .gc-main .tu-seg button{border-right-color:rgba(51,51,51,0.18)}
 	body.dark-mode .gc-main .tu-seg button:hover{background:rgba(26,26,26,0.08)}
@@ -1280,7 +1282,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/gta'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-stunt-jump-simulator'>Stunt Jump</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-6-countdown'>Countdown</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-6-download-time'>Download Time</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-6-map'>Map</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/gta'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-stunt-jump-simulator'>Stunt Jump</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-6-countdown'>Countdown</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-6-download-time'>Download Time</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-6-map'>Map</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/gta-music'>Music</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
@@ -1290,7 +1292,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">GTA 6 Download Time and Storage Calculator (212 GB)</h1>                                        <p class="page-description">How long will GTA 6 take to download? Enter your internet speed to see the time for the 212 GB install, when it finishes if you start at preload, and whether it fits on your PS5 or Xbox Series X|S.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gt" id="gt" data-page="download">
-		<nav class="gt-fam" aria-label="GTA 6 tools"><a href="/gta">GTA 6 Hub</a><a href="/gta-stunt-jump-simulator">Stunt Jump Simulator</a><a href="/gta-6-countdown">Countdown</a><a href="/gta-6-download-time" aria-current="page">Download Time</a><a href="/gta-6-map">Map</a></nav>
+		<nav class="gt-fam" aria-label="GTA 6 tools"><a href="/gta">GTA 6 Hub</a><a href="/gta-stunt-jump-simulator">Stunt Jump Simulator</a><a href="/gta-6-countdown">Countdown</a><a href="/gta-6-download-time" aria-current="page">Download Time</a><a href="/gta-6-map">Map</a><a href="/gta-music">Music</a></nav>
 		<div class="tu-card gd-in">
 			<div class="gj-grid">
 				<div class="tu-field"><span class="tu-label" id="gd-size-l">Download size</span><div class="gj-pair"><input id="gd-size" class="tu-input" inputmode="decimal" value="212" aria-labelledby="gd-size-l"><span class="gj-u">GB</span></div><span class="tu-note">Rockstar says about 212 GB. A day-one patch would add to it.</span></div>
@@ -1359,7 +1361,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/gta">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-stunt-jump-simulator">GTA 6 Stunt Jump Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-6-countdown">GTA 6 Countdown</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-6-download-time">GTA 6 Download Time</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-6-map">GTA 6 Map</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/gta">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-stunt-jump-simulator">GTA 6 Stunt Jump Simulator</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-6-countdown">GTA 6 Countdown</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-6-download-time">GTA 6 Download Time</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-6-map">GTA 6 Map</a></li><li class="navbar__item"><a class="navbar__link" href="/gta-music">GTA 6 Music</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
@@ -1401,7 +1403,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=18" defer></script>
+	<script src="/gta/js/gta.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

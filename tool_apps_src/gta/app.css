@@ -214,7 +214,7 @@
 	@media (max-width:480px) {.gh-cd__n {min-width:3em;} .gh-cd__n b {font-size:1.5em;} .gh-date {font-size:1.35em;} .gh-dl {grid-template-columns:minmax(0,1fr);}}
 
 	/* ---- GTA Radio (hub) ---- always dark, like the hero */
-	.gt .gm {margin-top:0.9em;background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:var(--gt-ink);}
+	.gt .gm {margin-top:0;background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:var(--gt-ink);}
 	.gt .gm a {color:#ffb3d4;} .gt .gm a:hover {color:#fff;}
 	.gm-head {display:flex;align-items:center;justify-content:space-between;gap:0.6em;}
 	.gt .gm .gt-h {color:#fff;}
@@ -252,8 +252,9 @@
 	.gm-game summary small {font-weight:400;color:#b8afcc;}
 	.gt .gm .gm-game p {margin:0.4em 0 0;font-size:0.88em;color:#d9cfe8;}
 	.gm-chips {display:flex;flex-wrap:wrap;gap:0.35em;margin-top:0.5em;}
-	.gt .gm .gm-chip {font-size:0.8em;padding:0.25em 0.6em;border-radius:1em;border:1px solid rgba(255,255,255,0.22);color:#f3eefa;text-decoration:none;background:rgba(255,255,255,0.05);}
+	.gt .gm .gm-chip {cursor:pointer;font-family:inherit;font-size:0.8em;padding:0.25em 0.6em;border-radius:1em;border:1px solid rgba(255,255,255,0.22);color:#f3eefa;text-decoration:none;background:rgba(255,255,255,0.05);}
 	.gt .gm .gm-chip:hover {border-color:#ff4fa3;color:#fff;background:rgba(255,79,163,0.2);}
+	.gt .gm .gm-chip[aria-pressed="true"], html body.dark-mode #gt.gt .gm .gm-chip[aria-pressed="true"] {background:#ff4fa3;border-color:#ff4fa3;color:#fff;font-weight:700;}
 
 	html body.dark-mode #gt.gt .gm {background:linear-gradient(160deg,#1b1446 0%,#2a1650 55%,#4a1a5c 100%);border-color:#3a2f5c;color:#f3eefa;}
 	html body.dark-mode #gt.gt .gm .gm-chip {text-decoration:none;border:1px solid rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);color:#f3eefa;}

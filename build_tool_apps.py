@@ -113,12 +113,12 @@ def _bl(slug, start, title, page_title, desc, tab, meta_desc):
 # news function api/gta-news.js; sim.js = the stunt jump simulator UI; app.js = hub / countdown / download / jump calculator) for the hub /gta and three pages.
 # data-page on #gt picks the page. Unofficial fan pages (no Rockstar art or names beyond the game title). Rebuild all four together, bump js_v on all.
 GTA_BRAND = dict(slug="gta", title="MES GTA 6 Hub", tag="Unofficial GTA 6 tools: countdown, download time and a stunt jump simulator.")
-GTA_PAGES = [("gta", "Hub"), ("gta-stunt-jump-simulator", "Stunt Jump Simulator"), ("gta-6-countdown", "Countdown"), ("gta-6-download-time", "Download Time"), ("gta-6-map", "Map")]
+GTA_PAGES = [("gta", "Hub"), ("gta-stunt-jump-simulator", "Stunt Jump Simulator"), ("gta-6-countdown", "Countdown"), ("gta-6-download-time", "Download Time"), ("gta-6-map", "Map"), ("gta-music", "Music")]
 GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Stunt Jump Simulator", "Stunt Jump")) for sl, nm in GTA_PAGES[1:])
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="18",
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="19",
              src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js", "map.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
@@ -1313,6 +1313,9 @@ APPS = {
     "gta-6-map": _gta("gta-6-map", "map", "GTA 6 Map", "GTA 6 Map: Secrets, Animals, Fishing Spots and Hidden Gems (Community Pins)",
                 "A free community GTA 6 map: click the map to pin a secret, a rare animal, a fishing spot, an Easter egg or a hidden gem, and vote other players' pins real or fake so the best finds rise to the top.", 4,
                 "Community GTA 6 map: pin secrets, rare animals, fishing spots and hidden gems, and vote other players' finds real or fake. Free, no sign-up."),
+    "gta-music": _gta("gta-music", "music", "GTA Radio & Music", "GTA Radio & Music: Copyright-Free GTA Albums, Trailers and Every Game's Stations",
+                "Listen to music for GTA fans: Panda Beats' copyright-free Grand Theft Panda album made for GTA 6 on 3Speak, YouTube or Spotify, the songs in the GTA VI trailers, and the radio stations of every GTA game.", 5,
+                "GTA music: the copyright-free Grand Theft Panda album made for GTA 6 (3Speak, YouTube, Spotify), the GTA VI trailer songs and every GTA game's radio stations."),
     "practice-tests": _pt("practice-tests", 0, "", "MES Practice Tests", "Free FSA Practice Tests: Grade 4 and 7 Numeracy and Reading (B.C.)",
                   "Free FSA-style practice tests for B.C. Grade 4 and Grade 7: numeracy with new random numbers every time and reading passages with multiple-choice and written questions. Full test, quick 10 or one topic, results by topic and every answer explained. No sign-up.", 0),
     "fsa-grade-4-numeracy": _pt("fsa-grade-4-numeracy", 4, "numeracy", "Grade 4 Numeracy Practice Test", "Grade 4 Numeracy Practice Test (FSA Style): Free, New Questions Every Time",
