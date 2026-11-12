@@ -449,8 +449,8 @@ t("round 11: text box encloses the drawn pixels (textFrameBox)", () => {
 	assert.strictEqual(P.textFrameBox(lay, { x: 0, y: 0, w: 0, h: 0 }, 3).u0, 37, "empty ink ignored"); });
 t("round 11: textHold keeps a text drawn in a font this browser cannot draw", () => {
 	const base = { web: true, available: false, failed: false, real: true, font: "'Press Start 2P', cursive" };
-	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: undefined })), true, "reopened project: pixels assumed in its font");
-	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: base.font, failed: true })), true, "drawn in this very font: kept even when loading failed");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: undefined })), true, "reopened project: pixels assumed in its font"); assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: undefined, failed: true })), false, "round 12: reopened project whose font never comes: editable");
+	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: base.font, failed: true })), false, "round 12: font failed (or cannot load): editable again, never stuck");
 	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "Georgia, serif" })), true, "font just picked, still loading: old look kept");
 	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "Georgia, serif", failed: true })), false, "just picked and failed: fallback");
 	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "" })), false, "already a fallback: redraw is no loss");

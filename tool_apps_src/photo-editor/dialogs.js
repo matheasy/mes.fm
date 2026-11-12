@@ -75,6 +75,18 @@
 		openModal = m; var f = body.querySelector("input,select,button"); if (f && !o.noFocus) setTimeout(function () { f.focus(); }, 30); return m;
 	};
 	PE.modalOpen = function () { return !!openModal; };
+	/* round 12: painting, erasing, fills, filters or Delete on a TEXT layer: ask, instead of quietly turning it into a picture (its words could no longer be
+	 * edited, and a subscriber found a text layer that "no longer responds as a text layer") */
+	PE.askRasterize = function (L) {
+		if (!L || L.type !== "text") return; var w = el("div");
+		w.innerHTML = "<p style=\"margin:0 0 .6em\"><b>" + esc(L.name || "This layer") + "</b> is a text layer, so its words, font and size can still be changed.</p>" +
+			"<p style=\"margin:0 0 .6em\">Painting, erasing, filling, filters and Delete only work on picture layers. To keep the text editable, paint on a new layer above it. " +
+			"Turning the text into a picture (rasterize) can be undone with Undo, but after that the words can no longer be edited.</p>";
+		PE.modal({ title: "This is a text layer", body: w, buttons: [
+			{ label: "Cancel", act: function (m) { m.close(); } },
+			{ label: "Turn it into a picture", title: "Rasterize: the words become pixels and can no longer be edited (Undo brings the text back)", act: function (m) { m.close(); if (L.type !== "text") return; PE.rasterize(L); PE.emit("layers"); PE.commit("Rasterize text"); PE.toast("\u201c" + (L.name || "Layer") + "\u201d is a picture layer now: do it again. Undo (Ctrl+Z) brings the text back.", 5000); } },
+			{ label: "Paint on a new layer", primary: true, title: "Adds an empty layer above the text and selects it; the text stays editable", act: function (m) { m.close(); PE.setActive(L.id); PE.newRasterLayer(); PE.toast("New empty layer added above the text: paint on it. The text layer stays editable.", 4500); } }] });
+	};
 	/* params: [{k,label,type:range|check|select|color|number|seg,min,max,step,val,unit,options}] -> {el,get()} */
 	PE.form = function (params, onChange) {
 		var root = el("div", "pe-form"), inputs = {};

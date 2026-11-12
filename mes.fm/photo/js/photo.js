@@ -447,10 +447,12 @@ var MESPixel = (function () {
 	 * cannot draw right now and the pixels on the layer are worth keeping: drawn in this very font (drawn = the font string they were drawn with, undefined
 	 * = not known, e.g. a reopened project, undo, PSD: assumed to be this font), or in another real font while the new one is still loading (a font just
 	 * picked: the old look stays until it arrives; once its load has failed the fallback is used). drawn === "" = drawn in a fallback already: no loss.
-	 * Without this the text silently switched to the browser's default font when the box was dragged. o = {web, available, failed, real, drawn, font} */
+	 * Without this the text silently switched to the browser's default font when the box was dragged. o = {web, available, failed, real, drawn, font}
+	 * Round 12: failed = the font failed to load, cannot be loaded (a font file not loaded again) or has been loading for over 10 s: then the text is
+	 * editable again (a subscriber's text layer stopped responding for good when its font never arrived). */
 	function textHold(o) {
 		if (!o || !o.web || o.available || !o.real || o.drawn === "") return false;
-		return o.drawn === undefined || o.drawn === o.font || !o.failed;
+		return !o.failed;   // round 12: never for good: once the font has failed (or can't be loaded at all) the text is editable again, in a stand-in font
 	}
 	/* round 11: the font families of a text stack that are the same font as a font file named `name` (old projects stored the file's own name, round 10
 	 * a letters-only alias plus the name): used to point those texts at the file again when it is loaded */
@@ -1125,6 +1127,7 @@ var MESPixel = (function () {
 		if (!L) { if (!quiet) PE.toast("Add or open an image first"); return false; }
 		if (L.locked) { if (!quiet) PE.toast("This layer is locked"); return false; }
 		if (PE.isGroup(L)) { if (!quiet) PE.toast("This is a group: select a layer inside it"); return false; }
+		if (L.type === "text" && !quiet) { PE.askRasterize(L); return false; }   // round 12: painting / filters / Delete used to turn a text layer into a picture without a word
 		L.eq = null; L.shape = null;
 		if (L.type === "text") { PE.rasterize(L); PE.emit("layers"); }
 		PE.bake(L); if (!noGrow) PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h }); return true;
@@ -1176,9 +1179,23 @@ var MESPixel = (function () {
 	PE.fontFailed = function (name, yes) { if (yes === undefined) return !!fontFailed[famKey(name)]; if (yes) fontFailed[famKey(name)] = 1; else delete fontFailed[famKey(name)]; };
 	if (document.fonts && document.fonts.addEventListener) ["loadingdone", "loadingerror"].forEach(function (ev) { document.fonts.addEventListener(ev, function () { PE.fontForget(); }); });
 	/* the family to wait for when a text layer must keep its pixels (P.textHold), else null */
+	var pendSince = {};
+	function gaveUp(fam) {   // round 12: nothing will make this font appear by itself (or it has had 10 s): edits go ahead in a stand-in font
+		var k = famKey(fam), F = window.MESFontCat; if (fontFailed[k] || !(F && F.googleCat && F.googleCat(fam))) return true;
+		if (!pendSince[k]) { pendSince[k] = Date.now(); setTimeout(function () { PE.fontForget(); }, 10500); return false; } return Date.now() - pendSince[k] > 10000;
+	}
 	PE.textFontHold = function (L) {
-		var t = L && L.text, F = window.MESFontCat; if (!t || !F) return null; var fam = F.familyOf(t.font), c = L.canvas;
-		return P.textHold({ web: isWebFam(fam), available: PE.fontAvailable(t.font), failed: !!fontFailed[famKey(fam)], real: !!(c && c.width > 4 && c.height > 4), drawn: L._drawnFont, font: t.font }) ? fam : null;
+		var t = L && L.text, F = window.MESFontCat; if (!t || !F) return null; var fam = F.familyOf(t.font), c = L.canvas, web = isWebFam(fam), av = PE.fontAvailable(t.font);
+		if (av) delete pendSince[famKey(fam)];
+		return P.textHold({ web: web, available: av, failed: !web || av ? false : gaveUp(fam), real: !!(c && c.width > 4 && c.height > 4), drawn: L._drawnFont, font: t.font }) ? fam : null;
+	};
+	/* round 12: a text drawn in a stand-in font because its own font is missing: say so (its font setting is kept, so loading the font brings it back) */
+	var missT = {};
+	PE.fontMissingNote = function (t) {
+		var F = window.MESFontCat; if (!F || !t || PE.fontAvailable(t.font)) return; var fam = F.familyOf(t.font), k = famKey(fam); if (!isWebFam(fam)) return;
+		var now = Date.now(); if (missT[k] && now - missT[k] < 15000) return; missT[k] = now;
+		var nm = fam; if (/^mesfile/i.test(fam)) { var n2 = F.splitStack(t.font)[1]; if (n2 && !/^(serif|sans-serif|monospace|cursive)$/i.test(n2)) nm = n2; }
+		PE.toast("The font \u201c" + nm + "\u201d is not available in this browser, so this text uses a stand-in font for now. Its font setting is kept: " + (/^mesfile/i.test(fam) ? "load the font file again (Text tool \u2192 Load font file\u2026)" : "it changes back when the font loads") + ", or pick another font.", 7000);
 	};
 	/* say (at most every few seconds) why the text cannot change yet, and start loading a Google font */
 	var needT = {};
@@ -1254,6 +1271,7 @@ var MESPixel = (function () {
 	PE.renderText = function (L) {
 		// round 11: a text whose pixels were drawn in a web font this browser has not got (yet) keeps them: drawing it again now would switch it to the default font
 		var held = PE.textFontHold(L); if (held) { PE.fontNeeded(held); return false; }
+		if (L._drawnFont !== "" && L.canvas && L.canvas.width > 4) PE.fontMissingNote(L.text);
 		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
 		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
@@ -2648,12 +2666,12 @@ var MESPixel = (function () {
 	}
 	function canMoveText(L) { return !!(L && L.type === "text" && L.text && !PE.isLockedDeep(L) && PE.effVisible(L)); }
 	PE.textMoveHit = function (L, e) {
-		if (!canMoveText(L)) return false; var sp = scrOf(e), g = moveGrip(L); if (Math.hypot(g.x - sp.x, g.y - sp.y) < 13) return true;
-		if (e.ctrl && nearFrame(L, e, 0)) return true;
+		if (!canMoveText(L)) return false; var sp = scrOf(e), g = moveGrip(L); if (Math.hypot(g.x - sp.x, g.y - sp.y) < 13) return "grip";
+		if (e.ctrl && nearFrame(L, e, 0)) return "ctrl";
 		var f = frameOf(L), q = PE.toLayerPt(L, e.x, e.y), k = 1 / Math.max(1e-6, PE.view.zoom * Math.abs(L.sx)), ky = 1 / Math.max(1e-6, PE.view.zoom * Math.abs(L.sy));
 		if (!(q.x >= f.u0 - 9 * k && q.x <= f.u1 + 9 * k && q.y >= f.v0 - 9 * ky && q.y <= f.v1 + 9 * ky)) return false;
-		var inner = 6, wS = (f.u1 - f.u0) / k, hS = (f.v1 - f.v0) / ky; if (wS < 40 || hS < 24) inner = -2;   // a small text: only just outside its outline, so clicks on the letters still place the caret
-		return !(q.x > f.u0 + inner * k && q.x < f.u1 - inner * k && q.y > f.v0 + inner * ky && q.y < f.v1 - inner * ky);
+		var inner = 3, wS = (f.u1 - f.u0) / k, hS = (f.v1 - f.v0) / ky; if (wS < 40 || hS < 24) inner = -2;   // a small text: only just outside its outline, so clicks on the letters still place the caret
+		return (q.x > f.u0 + inner * k && q.x < f.u1 - inner * k && q.y > f.v0 + inner * ky && q.y < f.v1 - inner * ky) ? false : "edge";
 	};
 	PE.drawTextMoveGrip = function (x, L) {
 		if (!canMoveText(L)) return; var g = moveGrip(L); x.save(); x.fillStyle = "#fff"; x.strokeStyle = "#1a73e8"; x.lineWidth = 1.75; x.beginPath(); x.arc(g.x, g.y, 10, 0, Math.PI * 2); x.fill(); x.stroke();
@@ -2766,11 +2784,11 @@ var MESPixel = (function () {
 			if (tmv) { var dx = e.x - tmv.x0, dy = e.y - tmv.y0; if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; } if (!tmv.moved && Math.hypot(e.sx - tmv.sx, e.sy - tmv.sy) < 2) return; tmv.L.cx = tmv.cx + dx; tmv.L.cy = tmv.cy + dy; tmv.moved = true; PE.invalidate(); if (te && te.L === tmv.L) placeEditor(); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } if (te) PE.focusText(); return; } if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
+		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } else if (m0.how !== "grip") { m0.ev._noMove = true; PE.tools.text.down(m0.ev); tdrag = null; } if (te) PE.focusText(); return; }   /* round 12: a click on the outline that did not move still edits the text */ if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
 			var A0 = te ? te.L : PE.active(), hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
-			if (A0 && PE.textMoveHit(A0, e)) { tmv = { L: A0, x0: e.x, y0: e.y, sx: e.sx, sy: e.sy, cx: A0.cx, cy: A0.cy, moved: false }; tdrag = null; return; }
+			var mh = !e._noMove && A0 && PE.textMoveHit(A0, e); if (mh) { tmv = { L: A0, how: mh, ev: e, x0: e.x, y0: e.y, sx: e.sx, sy: e.sy, cx: A0.cx, cy: A0.cy, moved: false }; tdrag = null; return; }
 			var hit = hitText(e, te ? te.L : PE.active());
 			if (te && hit === te.L) {
 				var idx = indexAt(hit, e.x, e.y), ta = editor();
@@ -2959,6 +2977,18 @@ var MESPixel = (function () {
 		openModal = m; var f = body.querySelector("input,select,button"); if (f && !o.noFocus) setTimeout(function () { f.focus(); }, 30); return m;
 	};
 	PE.modalOpen = function () { return !!openModal; };
+	/* round 12: painting, erasing, fills, filters or Delete on a TEXT layer: ask, instead of quietly turning it into a picture (its words could no longer be
+	 * edited, and a subscriber found a text layer that "no longer responds as a text layer") */
+	PE.askRasterize = function (L) {
+		if (!L || L.type !== "text") return; var w = el("div");
+		w.innerHTML = "<p style=\"margin:0 0 .6em\"><b>" + esc(L.name || "This layer") + "</b> is a text layer, so its words, font and size can still be changed.</p>" +
+			"<p style=\"margin:0 0 .6em\">Painting, erasing, filling, filters and Delete only work on picture layers. To keep the text editable, paint on a new layer above it. " +
+			"Turning the text into a picture (rasterize) can be undone with Undo, but after that the words can no longer be edited.</p>";
+		PE.modal({ title: "This is a text layer", body: w, buttons: [
+			{ label: "Cancel", act: function (m) { m.close(); } },
+			{ label: "Turn it into a picture", title: "Rasterize: the words become pixels and can no longer be edited (Undo brings the text back)", act: function (m) { m.close(); if (L.type !== "text") return; PE.rasterize(L); PE.emit("layers"); PE.commit("Rasterize text"); PE.toast("\u201c" + (L.name || "Layer") + "\u201d is a picture layer now: do it again. Undo (Ctrl+Z) brings the text back.", 5000); } },
+			{ label: "Paint on a new layer", primary: true, title: "Adds an empty layer above the text and selects it; the text stays editable", act: function (m) { m.close(); PE.setActive(L.id); PE.newRasterLayer(); PE.toast("New empty layer added above the text: paint on it. The text layer stays editable.", 4500); } }] });
+	};
 	/* params: [{k,label,type:range|check|select|color|number|seg,min,max,step,val,unit,options}] -> {el,get()} */
 	PE.form = function (params, onChange) {
 		var root = el("div", "pe-form"), inputs = {};
@@ -5291,7 +5321,8 @@ var MESPixel = (function () {
 				var q = F.quote(name); return Promise.all(["16px " + q, "bold 16px " + q, "italic 16px " + q].map(function (s) { return document.fonts.load(s).catch(function () {}); })).then(function () { return true; });
 			}); }).catch(function () { return next(); });
 		}
-		loading[k] = next().then(function (ok) { delete loading[k]; if (PE.fontFailed) PE.fontFailed(name, !ok); if (PE.fontForget) PE.fontForget(); if (ok) { loaded[k] = true; } rerender(name); return ok; }); return loading[k];   // round 11: a failed load lets held texts fall back (P.textHold)
+		var cap = new Promise(function (res) { setTimeout(function () { res(false); }, 12000); });   // round 12: a load that hangs counts as failed
+		loading[k] = Promise.race([next(), cap]).then(function (ok) { delete loading[k]; if (PE.fontFailed) PE.fontFailed(name, !ok); if (PE.fontForget) PE.fontForget(); if (ok) { loaded[k] = true; } rerender(name); return ok; }); return loading[k];   // round 11: a failed load lets held texts fall back (P.textHold)
 	};
 	/* a font finished loading: every text layer that uses it is drawn again (no undo step: the text itself did not change) */
 	function rerender(name) {

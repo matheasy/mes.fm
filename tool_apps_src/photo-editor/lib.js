@@ -329,10 +329,12 @@ var MESPixel = (function () {
 	 * cannot draw right now and the pixels on the layer are worth keeping: drawn in this very font (drawn = the font string they were drawn with, undefined
 	 * = not known, e.g. a reopened project, undo, PSD: assumed to be this font), or in another real font while the new one is still loading (a font just
 	 * picked: the old look stays until it arrives; once its load has failed the fallback is used). drawn === "" = drawn in a fallback already: no loss.
-	 * Without this the text silently switched to the browser's default font when the box was dragged. o = {web, available, failed, real, drawn, font} */
+	 * Without this the text silently switched to the browser's default font when the box was dragged. o = {web, available, failed, real, drawn, font}
+	 * Round 12: failed = the font failed to load, cannot be loaded (a font file not loaded again) or has been loading for over 10 s: then the text is
+	 * editable again (a subscriber's text layer stopped responding for good when its font never arrived). */
 	function textHold(o) {
 		if (!o || !o.web || o.available || !o.real || o.drawn === "") return false;
-		return o.drawn === undefined || o.drawn === o.font || !o.failed;
+		return !o.failed;   // round 12: never for good: once the font has failed (or can't be loaded at all) the text is editable again, in a stand-in font
 	}
 	/* round 11: the font families of a text stack that are the same font as a font file named `name` (old projects stored the file's own name, round 10
 	 * a letters-only alias plus the name): used to point those texts at the file again when it is loaded */

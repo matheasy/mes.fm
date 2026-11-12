@@ -2,7 +2,7 @@
  *
  * Run (from any folder that has playwright installed, e.g. `npm i playwright@1.49.1 && npx playwright install firefox`):
  *   cd mes.fm && python3 -m http.server 8445 --bind 127.0.0.1 &        # serve the built site
- *   node tool_apps_src/photo-editor/text-regression-playwright.js [firefox|chromium|chrome] [baseUrl]
+ *   node tool_apps_src/photo-editor/text-regression-playwright.js [firefox|chromium|chrome|brave] [baseUrl]
  * (NODE_PATH=<folder>/node_modules if playwright is installed elsewhere.)
  *
  * Screenshots go to the system temp folder (text-regression-<browser>-*.png).
@@ -16,7 +16,8 @@ const pw = require("playwright");
 const BR = process.argv[2] || "firefox", BASE = process.argv[3] || "http://127.0.0.1:8445";
 const FAIL = []; const ok = (c, m) => { console.log((c ? "  ok   " : "  FAIL ") + m); if (!c) FAIL.push(m); };
 const ADS = /googlesyndication|doubleclick|google\.com\/recaptcha|adservice|fastcomments|googletagmanager/;
-async function launch() { return BR === "chrome" ? pw.chromium.launch({ channel: "chrome" }) : pw[BR].launch(); }
+const BRAVE = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser";
+async function launch() { return BR === "brave" ? pw.chromium.launch({ executablePath: BRAVE }) : BR === "chrome" ? pw.chromium.launch({ channel: "chrome" }) : pw[BR].launch(); }
 async function openPage(b, blockFonts) {
   const ctx = await b.newContext({ viewport: { width: 1400, height: 900 } }), pg = await ctx.newPage();
   await pg.route(ADS, r => r.abort()); if (blockFonts) await pg.route(/fonts\.googleapis\.com|fonts\.gstatic\.com/, r => r.abort());

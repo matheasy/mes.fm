@@ -179,12 +179,12 @@
 	}
 	function canMoveText(L) { return !!(L && L.type === "text" && L.text && !PE.isLockedDeep(L) && PE.effVisible(L)); }
 	PE.textMoveHit = function (L, e) {
-		if (!canMoveText(L)) return false; var sp = scrOf(e), g = moveGrip(L); if (Math.hypot(g.x - sp.x, g.y - sp.y) < 13) return true;
-		if (e.ctrl && nearFrame(L, e, 0)) return true;
+		if (!canMoveText(L)) return false; var sp = scrOf(e), g = moveGrip(L); if (Math.hypot(g.x - sp.x, g.y - sp.y) < 13) return "grip";
+		if (e.ctrl && nearFrame(L, e, 0)) return "ctrl";
 		var f = frameOf(L), q = PE.toLayerPt(L, e.x, e.y), k = 1 / Math.max(1e-6, PE.view.zoom * Math.abs(L.sx)), ky = 1 / Math.max(1e-6, PE.view.zoom * Math.abs(L.sy));
 		if (!(q.x >= f.u0 - 9 * k && q.x <= f.u1 + 9 * k && q.y >= f.v0 - 9 * ky && q.y <= f.v1 + 9 * ky)) return false;
-		var inner = 6, wS = (f.u1 - f.u0) / k, hS = (f.v1 - f.v0) / ky; if (wS < 40 || hS < 24) inner = -2;   // a small text: only just outside its outline, so clicks on the letters still place the caret
-		return !(q.x > f.u0 + inner * k && q.x < f.u1 - inner * k && q.y > f.v0 + inner * ky && q.y < f.v1 - inner * ky);
+		var inner = 3, wS = (f.u1 - f.u0) / k, hS = (f.v1 - f.v0) / ky; if (wS < 40 || hS < 24) inner = -2;   // a small text: only just outside its outline, so clicks on the letters still place the caret
+		return (q.x > f.u0 + inner * k && q.x < f.u1 - inner * k && q.y > f.v0 + inner * ky && q.y < f.v1 - inner * ky) ? false : "edge";
 	};
 	PE.drawTextMoveGrip = function (x, L) {
 		if (!canMoveText(L)) return; var g = moveGrip(L); x.save(); x.fillStyle = "#fff"; x.strokeStyle = "#1a73e8"; x.lineWidth = 1.75; x.beginPath(); x.arc(g.x, g.y, 10, 0, Math.PI * 2); x.fill(); x.stroke();
@@ -297,11 +297,11 @@
 			if (tmv) { var dx = e.x - tmv.x0, dy = e.y - tmv.y0; if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; } if (!tmv.moved && Math.hypot(e.sx - tmv.sx, e.sy - tmv.sy) < 2) return; tmv.L.cx = tmv.cx + dx; tmv.L.cy = tmv.cy + dy; tmv.moved = true; PE.invalidate(); if (te && te.L === tmv.L) placeEditor(); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } if (te) PE.focusText(); return; } if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
+		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } else if (m0.how !== "grip") { m0.ev._noMove = true; PE.tools.text.down(m0.ev); tdrag = null; } if (te) PE.focusText(); return; }   /* round 12: a click on the outline that did not move still edits the text */ if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
 			var A0 = te ? te.L : PE.active(), hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
-			if (A0 && PE.textMoveHit(A0, e)) { tmv = { L: A0, x0: e.x, y0: e.y, sx: e.sx, sy: e.sy, cx: A0.cx, cy: A0.cy, moved: false }; tdrag = null; return; }
+			var mh = !e._noMove && A0 && PE.textMoveHit(A0, e); if (mh) { tmv = { L: A0, how: mh, ev: e, x0: e.x, y0: e.y, sx: e.sx, sy: e.sy, cx: A0.cx, cy: A0.cy, moved: false }; tdrag = null; return; }
 			var hit = hitText(e, te ? te.L : PE.active());
 			if (te && hit === te.L) {
 				var idx = indexAt(hit, e.x, e.y), ta = editor();

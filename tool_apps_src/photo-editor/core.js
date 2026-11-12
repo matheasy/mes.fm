@@ -125,6 +125,7 @@
 		if (!L) { if (!quiet) PE.toast("Add or open an image first"); return false; }
 		if (L.locked) { if (!quiet) PE.toast("This layer is locked"); return false; }
 		if (PE.isGroup(L)) { if (!quiet) PE.toast("This is a group: select a layer inside it"); return false; }
+		if (L.type === "text" && !quiet) { PE.askRasterize(L); return false; }   // round 12: painting / filters / Delete used to turn a text layer into a picture without a word
 		L.eq = null; L.shape = null;
 		if (L.type === "text") { PE.rasterize(L); PE.emit("layers"); }
 		PE.bake(L); if (!noGrow) PE.growLayer(L, { x: 0, y: 0, w: PE.doc.w, h: PE.doc.h }); return true;
@@ -176,9 +177,23 @@
 	PE.fontFailed = function (name, yes) { if (yes === undefined) return !!fontFailed[famKey(name)]; if (yes) fontFailed[famKey(name)] = 1; else delete fontFailed[famKey(name)]; };
 	if (document.fonts && document.fonts.addEventListener) ["loadingdone", "loadingerror"].forEach(function (ev) { document.fonts.addEventListener(ev, function () { PE.fontForget(); }); });
 	/* the family to wait for when a text layer must keep its pixels (P.textHold), else null */
+	var pendSince = {};
+	function gaveUp(fam) {   // round 12: nothing will make this font appear by itself (or it has had 10 s): edits go ahead in a stand-in font
+		var k = famKey(fam), F = window.MESFontCat; if (fontFailed[k] || !(F && F.googleCat && F.googleCat(fam))) return true;
+		if (!pendSince[k]) { pendSince[k] = Date.now(); setTimeout(function () { PE.fontForget(); }, 10500); return false; } return Date.now() - pendSince[k] > 10000;
+	}
 	PE.textFontHold = function (L) {
-		var t = L && L.text, F = window.MESFontCat; if (!t || !F) return null; var fam = F.familyOf(t.font), c = L.canvas;
-		return P.textHold({ web: isWebFam(fam), available: PE.fontAvailable(t.font), failed: !!fontFailed[famKey(fam)], real: !!(c && c.width > 4 && c.height > 4), drawn: L._drawnFont, font: t.font }) ? fam : null;
+		var t = L && L.text, F = window.MESFontCat; if (!t || !F) return null; var fam = F.familyOf(t.font), c = L.canvas, web = isWebFam(fam), av = PE.fontAvailable(t.font);
+		if (av) delete pendSince[famKey(fam)];
+		return P.textHold({ web: web, available: av, failed: !web || av ? false : gaveUp(fam), real: !!(c && c.width > 4 && c.height > 4), drawn: L._drawnFont, font: t.font }) ? fam : null;
+	};
+	/* round 12: a text drawn in a stand-in font because its own font is missing: say so (its font setting is kept, so loading the font brings it back) */
+	var missT = {};
+	PE.fontMissingNote = function (t) {
+		var F = window.MESFontCat; if (!F || !t || PE.fontAvailable(t.font)) return; var fam = F.familyOf(t.font), k = famKey(fam); if (!isWebFam(fam)) return;
+		var now = Date.now(); if (missT[k] && now - missT[k] < 15000) return; missT[k] = now;
+		var nm = fam; if (/^mesfile/i.test(fam)) { var n2 = F.splitStack(t.font)[1]; if (n2 && !/^(serif|sans-serif|monospace|cursive)$/i.test(n2)) nm = n2; }
+		PE.toast("The font \u201c" + nm + "\u201d is not available in this browser, so this text uses a stand-in font for now. Its font setting is kept: " + (/^mesfile/i.test(fam) ? "load the font file again (Text tool \u2192 Load font file\u2026)" : "it changes back when the font loads") + ", or pick another font.", 7000);
 	};
 	/* say (at most every few seconds) why the text cannot change yet, and start loading a Google font */
 	var needT = {};
@@ -254,6 +269,7 @@
 	PE.renderText = function (L) {
 		// round 11: a text whose pixels were drawn in a web font this browser has not got (yet) keeps them: drawing it again now would switch it to the default font
 		var held = PE.textFontHold(L); if (held) { PE.fontNeeded(held); return false; }
+		if (L._drawnFont !== "" && L.canvas && L.canvas.width > 4) PE.fontMissingNote(L.text);
 		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
 		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
