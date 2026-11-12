@@ -167,7 +167,7 @@
 	#bl .bl-3d .bl-3dmsg {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;font-weight:600;}
 	#bl .bl-dim button {min-height:38px;padding:0 0.8em;font-weight:700;}
 	#bl .bl-cam {min-height:38px;width:auto;font-size:0.88em;padding:0 0.5em;}
-	#bl .bl-3dhint {position:absolute;left:10px;top:10px;max-width:calc(100% - 240px) !important;z-index:4;border-radius:12px !important;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
+	#bl .bl-3dhint {position:absolute;left:10px;top:10px;max-width:calc(100% - 240px) !important;z-index:2;border-radius:12px !important;background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:0.3em 0.7em;border-radius:999px;pointer-events:none;max-width:calc(100% - 20px);}
 	/* background music / video */
 	#bl .bl-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 	#bl .bl-muspanel {margin:0 0 0.6em;padding:0.6em 0.7em;border-radius:10px;background:var(--bl-cell);border:1px solid var(--bl-cardline);}
@@ -219,12 +219,84 @@
 	@media (max-height:420px) {#bl .bl-ohit {width:64px;height:64px;} #bl .bl-opow {top:58px;bottom:80px;width:40px;} #bl .bl-otop button {min-width:38px;min-height:38px;}}
 	/* with a mouse, the full controls sit under the table: on-table power / HIT / spin only in Fill window and full screen */
 	@media (pointer:fine) {
-		#bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-opow, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ohit, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ospin, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ospinpop {display:none;}
+		#bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-opow, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ohit, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ospin, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ospinpop, #bl:not(.bl-ov-always) .bl-view:not(.mes-pfill) .bl-ojog {display:none;}
 	}
 	#bl .bl-elevwrap {display:flex;flex-direction:column;gap:0.15em;font-size:0.82em;color:var(--bl-sub);min-width:8.5em;}
 	#bl .bl-elevwrap b {color:var(--bl-ink);}
 	#bl .bl-elev {width:100%;accent-color:#0f7a4a;}
 	#bl .bl-oelev {display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;font-size:0.82em;color:#fff;}
 	#bl .bl-oelev b {color:#ffd54f;}
-	#bl.bl-ov-off .bl-opow, #bl.bl-ov-off .bl-ohit, #bl.bl-ov-off .bl-ospin, #bl.bl-ov-off .bl-ospinpop {display:none !important;}
+	#bl.bl-ov-off .bl-opow, #bl.bl-ov-off .bl-ohit, #bl.bl-ov-off .bl-ospin, #bl.bl-ov-off .bl-ospinpop, #bl.bl-ov-off .bl-ojog {display:none !important;}
 	#bl .bl-opill {position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;font-weight:700;font-size:0.9em;padding:0.4em 0.9em;border-radius:999px;white-space:nowrap;max-width:calc(100% - 220px);overflow:hidden;text-overflow:ellipsis;pointer-events:none;}
+	/* ---- 2026-11-12: status chip, aim strip, spin picker, fade while dragging, full screen layouts ---- */
+	#bl .bl-stage, #bl .bl-ov, #bl .bl-ov * {-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;}
+	#bl .bl-ov > * {transition:opacity 0.18s ease;}
+	#bl .bl-ov.is-viewdrag > :not(.bl-opill):not(.bl-ochip) {opacity:0.1 !important;pointer-events:none !important;}
+	#bl .bl-ochip {position:absolute;left:10px;top:10px;max-width:calc(100% - 300px);min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:3px 7px;padding:5px 10px;border-radius:12px;background:rgba(0,0,0,0.66);color:#fff;font-size:0.84em;font-weight:600;line-height:1.25;pointer-events:none;box-shadow:0 1px 6px rgba(0,0,0,0.35);}
+	#bl .bl-ochip b, #bl .bl-ochip span {color:#fff;}
+	#bl .bl-ochip .bl-cwho {font-weight:800;}
+	#bl .bl-ochip .bl-cwho.is-you {color:#8ce99a;}
+	#bl .bl-ochip .bl-cbih {background:#f59f00;color:#111;border-radius:6px;padding:0 6px;font-size:0.92em;}
+	#bl .bl-ochip .bl-mb {font-size:1.3em;width:1.15em;height:1.15em;flex:0 0 auto;}
+	#bl .bl-ov.is-narrow .bl-ochip {top:60px;max-width:calc(100% - 82px);}
+	#bl .bl-ov.is-spinpop .bl-ochip {display:none;}
+	#bl .bl-otop .bl-oguide {font-size:0.8em;padding:0 0.6em;white-space:nowrap;}
+	#bl .bl-otop .bl-oguide.is-off {border-color:#ff8787;color:#ffc9c9;}
+	#bl .bl-otop button[disabled] {opacity:0.6;cursor:default;}
+	#bl .bl-pl {flex-wrap:wrap;}
+	#bl .bl-grpl {font-size:0.8em;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;padding:0.05em 0.45em;border-radius:6px;background:var(--bl-cellh);white-space:nowrap;}
+	#bl .bl-grpl.is-open {font-weight:700;text-transform:none;letter-spacing:0;color:var(--bl-sub);background:transparent;padding:0;}
+	/* the aim strip: drag left / right */
+	#bl .bl-jog {position:relative;height:40px;border-radius:20px;background:rgba(0,0,0,0.52);border:1px solid rgba(255,255,255,0.4);overflow:hidden;touch-action:none;cursor:ew-resize;box-sizing:border-box;}
+	#bl .bl-jogt {position:absolute;inset:0;background:linear-gradient(90deg, rgba(255,255,255,0.7) 2px, transparent 2px) 0 50% / 18px 44% repeat-x;-webkit-mask-image:linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);mask-image:linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);pointer-events:none;}
+	#bl .bl-jogm {position:absolute;left:50%;top:5px;bottom:5px;width:3px;margin-left:-1.5px;border-radius:2px;background:#ffd43b;pointer-events:none;}
+	#bl .bl-jogl {position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:0.62em;font-weight:800;color:#fff;letter-spacing:0.02em;text-shadow:0 1px 2px #000;pointer-events:none;white-space:nowrap;}
+	#bl .bl-jog.is-drag {border-color:#fff;background:rgba(0,0,0,0.72);}
+	#bl .bl-jog:focus-visible {outline:3px solid var(--bl-cur);outline-offset:2px;}
+	#bl .bl-ojog {position:absolute;left:76px;right:100px;bottom:16px;max-width:420px;margin:0 auto;}
+	#bl .bl-pjog {width:100%;}
+	#bl .bl-ujog {flex:1 1 10em;max-width:18em;min-width:8em;background:var(--bl-cellh);border-color:var(--bl-cardline);}
+	#bl .bl-ujog .bl-jogt {background-image:linear-gradient(90deg, rgba(110,120,135,0.65) 2px, transparent 2px);}
+	#bl .bl-ujog .bl-aimv {position:relative;z-index:1;display:flex;align-items:center;justify-content:center;height:100%;}
+	#bl .bl-ujog .bl-aimv::before {content:"";}
+	#bl .bl-aimrow .bl-ujog .bl-aimv {color:var(--bl-ink);font-weight:700;min-width:0;}
+	#bl .bl-ujog .bl-jogm {opacity:0.55;}
+	/* the spin picker: never taller than the table, placed out of the cue's way (⇄ moves it to the other side) */
+	#bl .bl-ospinpop {display:block;left:10px;top:10px;bottom:auto;width:clamp(250px, calc(100% - 270px), 340px);max-height:calc(100% - 100px);overflow:auto;padding:8px 10px 10px;box-sizing:border-box;background:rgba(20,24,28,0.9);box-shadow:0 6px 22px rgba(0,0,0,0.5);}
+	#bl .bl-ospinpop.is-right {left:auto;right:68px;}
+	#bl .bl-ov.is-narrow .bl-ospinpop {top:60px;width:min(340px, calc(100% - 84px));max-height:calc(100% - 146px);}
+	#bl .bl-sphead {display:flex;align-items:center;gap:6px;margin:0 0 6px;}
+	#bl .bl-sphead b {flex:1 1 auto;font-size:0.92em;}
+	#bl .bl-sphead button {font:inherit;font-size:0.85em;min-width:34px;min-height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:#2b3036;color:#fff;cursor:pointer;}
+	#bl .bl-spbody {display:flex;gap:10px;align-items:flex-start;}
+	#bl .bl-spl {display:flex;flex-direction:column;align-items:center;gap:4px;flex:0 0 auto;}
+	#bl .bl-ospinpop .bl-spl canvas {width:118px;height:118px;}
+	#bl .bl-spl span {font-size:0.78em;text-align:center;max-width:120px;}
+	#bl .bl-spr {flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:8px;}
+	#bl .bl-spr .bl-ospinbtns {display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:4px;}
+	#bl .bl-spr .bl-ospinbtns button {padding:0 0.3em;}
+	#bl .bl-spr .bl-oelev {align-items:stretch;text-align:left;}
+	#bl .bl-ov.is-narrow .bl-spbody {flex-direction:column;align-items:stretch;}
+	#bl .bl-ov.is-narrow .bl-spl {flex-direction:row;justify-content:center;gap:10px;}
+	#bl .bl-ov.is-narrow .bl-ospinpop .bl-spl canvas {width:104px;height:104px;}
+	/* Fill window / full screen: the controls are on the table, so the panel only holds the game buttons and the status */
+	#bl:not(.bl-ov-off) .bl-view.mes-pfill .bl-ctl {display:none;}
+	#bl .bl-view.mes-pfill .bl-stage {flex:1 1 0;min-height:180px;overflow:hidden;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-vbar {flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:0.3em;margin-bottom:0.25em;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-players {flex:0 0 auto;flex-wrap:nowrap;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-pl {flex:1 1 0;padding:0.2em 0.45em;font-size:0.85em;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-pnext {display:none;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) #bl-pbar {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:1px;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) #bl-pbar::-webkit-scrollbar {display:none;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) #bl-pbar > *, #bl .bl-view.mes-pfill:not(.mes-pside) #bl-pbar .mes-pbtns {flex:0 0 auto;flex-wrap:nowrap;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-vb, #bl .bl-view.mes-pfill:not(.mes-pside) .mes-pbtn {white-space:nowrap;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-msg {display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:0.88em;min-height:0;margin-bottom:0.3em;}
+	#bl .bl-view.mes-pfill:not(.mes-pside) .bl-online-bar {padding:0.3em 0.5em;margin-bottom:0.3em;font-size:0.88em;}
+	#bl .bl-view.mes-pside .bl-vbtns, #bl .bl-view.mes-pside .mes-pbtns {grid-template-columns:repeat(2, minmax(0, 1fr));}
+	#bl .bl-view.mes-pside .bl-vbtns > *, #bl .bl-view.mes-pside .mes-pbtns > * {min-width:0;}
+	#bl .bl-view.mes-pside .bl-dim, #bl .bl-view.mes-pside .bl-cam {grid-column:1 / -1;width:100%;min-width:0;}
+	#bl .bl-view.mes-pside .bl-dim {display:flex;} #bl .bl-view.mes-pside .bl-dim button {flex:1 1 0;}
+	#bl .bl-view.mes-pside .bl-pl .bl-pn {white-space:normal;overflow-wrap:anywhere;}
+	#bl .bl-view.mes-pside .bl-online-bar {flex-direction:column;align-items:stretch;}
+	#bl .bl-view.mes-pside .bl-online-bar .bl-vbtns {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));}
+	#bl .bl-view.mes-pside .bl-msg {font-size:0.88em;}

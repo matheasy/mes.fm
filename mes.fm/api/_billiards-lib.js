@@ -923,6 +923,7 @@
 			o.v = j.v; o.f = ["host", "guest", "random"].indexOf(j.f) >= 0 ? j.f : "host";
 			if (j.to !== undefined) { if (!H.ACCT_RE.test(String(j.to))) return null; o.to = j.to; }
 			if (j.re !== undefined && /^[a-z][a-z0-9.-]{2,15}\/[a-z0-9]{8}$/.test(String(j.re))) o.re = j.re;
+			if (j.ng === 1) o.ng = 1;   // no aiming guide for either player
 			return o;
 		}
 		if (a === "rec") {
@@ -943,7 +944,7 @@
 		}
 		return null;
 	};
-	H.json = function (o) { var c = {}; for (var k in o) if (["a", "g", "v", "f", "to", "re", "h", "n", "m", "c", "o", "s", "w", "sd"].indexOf(k) >= 0) c[k] = o[k]; return JSON.stringify(c); };
+	H.json = function (o) { var c = {}; for (var k in o) if (["a", "g", "v", "f", "to", "re", "h", "n", "m", "c", "o", "s", "w", "sd", "ng"].indexOf(k) >= 0) c[k] = o[k]; return JSON.stringify(c); };
 	H.newGid = function (r) { var A = "abcdefghijkmnpqrstuvwxyz23456789", s = ""; r = r || Math.random; for (var i = 0; i < 8; i++) s += A[(r() * A.length) | 0]; return s; };
 	function order(a, b) { return (a.block || Infinity) - (b.block || Infinity) || (a.acct === b.acct ? a.i - b.i : a.trx < b.trx ? -1 : a.trx > b.trx ? 1 : 0) || (a.ts - b.ts); }
 	H.order = order;

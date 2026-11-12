@@ -923,6 +923,7 @@
 			o.v = j.v; o.f = ["host", "guest", "random"].indexOf(j.f) >= 0 ? j.f : "host";
 			if (j.to !== undefined) { if (!H.ACCT_RE.test(String(j.to))) return null; o.to = j.to; }
 			if (j.re !== undefined && /^[a-z][a-z0-9.-]{2,15}\/[a-z0-9]{8}$/.test(String(j.re))) o.re = j.re;
+			if (j.ng === 1) o.ng = 1;   // no aiming guide for either player
 			return o;
 		}
 		if (a === "rec") {
@@ -943,7 +944,7 @@
 		}
 		return null;
 	};
-	H.json = function (o) { var c = {}; for (var k in o) if (["a", "g", "v", "f", "to", "re", "h", "n", "m", "c", "o", "s", "w", "sd"].indexOf(k) >= 0) c[k] = o[k]; return JSON.stringify(c); };
+	H.json = function (o) { var c = {}; for (var k in o) if (["a", "g", "v", "f", "to", "re", "h", "n", "m", "c", "o", "s", "w", "sd", "ng"].indexOf(k) >= 0) c[k] = o[k]; return JSON.stringify(c); };
 	H.newGid = function (r) { var A = "abcdefghijkmnpqrstuvwxyz23456789", s = ""; r = r || Math.random; for (var i = 0; i < 8; i++) s += A[(r() * A.length) | 0]; return s; };
 	function order(a, b) { return (a.block || Infinity) - (b.block || Infinity) || (a.acct === b.acct ? a.i - b.i : a.trx < b.trx ? -1 : a.trx > b.trx ? 1 : 0) || (a.ts - b.ts); }
 	H.order = order;
@@ -1804,7 +1805,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "8", opp: "cpu", lv: "medium", me: "first", alt: 0, guide: "full", orient: "auto", speed: "1", cloth: "green", snd: true, rel: true, nums: false,
-		names: ["", ""], ovm: "auto", mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
+		names: ["", ""], ovm: "auto", mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", ong: 0, opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k0 in saved) S[k0] = saved[k0]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -2022,7 +2023,10 @@
 		var ah;
 		if (fill) ah = Math.max(160, stage.clientHeight - 12);
 		else ah = Math.max(220, window.innerHeight - (up ? 250 : 200));
-		var kk = Math.min(aw / dimX, ah / dimY);
+		// in 2D, keep the table clear of the on-table buttons (power bar on the right, HIT / aim strip below, the top row)
+		var ovOn = ov && S.dim !== "3d" && getComputedStyle($("bl-opow")).display !== "none";
+		var kk = ovOn ? Math.min((aw - 62) / dimX, (ah - 58) / dimY) : Math.min(aw / dimX, ah / dimY);
+		cv.style.margin = ovOn ? "0 62px 58px 0" : "";
 		var w = Math.floor(dimX * kk), h = Math.floor(dimY * kk), dpr = Math.min(2.5, window.devicePixelRatio || 1);
 		cv.style.width = w + "px"; cv.style.height = h + "px";
 		cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
@@ -2034,6 +2038,11 @@
 			v3.size(Math.floor(aw), Math.floor(Math.max(200, h3)));
 		}
 		draw();
+		// the on-table buttons switch to a compact layout on small tables
+		if (!ov) return;
+		var sr = stage.getBoundingClientRect();
+		ov.classList.toggle("is-narrow", sr.width < 520);
+		ov.classList.toggle("is-short", sr.height < 520);
 	}
 	function w2s(x, y) { return LY.up ? [LY.cx + y * LY.k, LY.cy - x * LY.k] : [LY.cx + x * LY.k, LY.cy + y * LY.k]; }
 	function s2w(px, py) { return LY.up ? [(LY.cy - py) / LY.k, (px - LY.cx) / LY.k] : [(px - LY.cx) / LY.k, (py - LY.cy) / LY.k]; }
@@ -2152,7 +2161,7 @@
 		if (aiming && st.bih && place) { xs[0] = place[0]; ys[0] = place[1]; ons[0] = 1; }
 		var c0 = [xs[0], ys[0]], d = B.dirOf(aim), info = { xs: xs, ys: ys, ons: ons, zs: P.zs, c0: c0, dir: [d.x, d.y], phase: anim ? "anim" : "aim" };
 		if (anim && anim.shotDir) { info.shotDir = anim.shotDir; info.shotC0 = anim.shotC0; }
-		if (aiming && S.guide !== "off" && !cpuAim) info.guide = guideShapes(c0);
+		if (aiming && effGuide() !== "off" && !cpuAim) info.guide = guideShapes(c0);
 		if ((aiming && ons[0]) || (anim && anim.strike !== undefined)) {
 			var pull = anim && anim.strike !== undefined ? (0.03 + 0.27 * power / 1000) * (1 - anim.strike) : 0.03 + 0.27 * power / 1000;
 			info.cue = { x: c0[0], y: c0[1], dx: d.x, dy: d.y, pull: pull, el: elev };
@@ -2183,7 +2192,7 @@
 		for (i = 0; i < n; i++) if (ons[i]) { var p = w2s(xs[i], ys[i]), zo = zs[i] * k * 0.9, sh = 1 / (1 + zs[i] * 6); g.globalAlpha = sh; g.beginPath(); g.ellipse(p[0] + R * k * 0.22 + zo, p[1] + R * k * 0.28 + zo, R * k * 0.98, R * k * 0.9, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
 		// the guide (under the balls)
 		var c0 = [xs[0], ys[0]];
-		if (aiming && S.guide !== "off" && !cpuAim) drawGuide(g, c0);
+		if (aiming && effGuide() !== "off" && !cpuAim) drawGuide(g, c0);
 		// balls
 		var order = []; for (i = 0; i < n; i++) if (ons[i]) order.push(i);
 		order.sort(function (a, b) { return zs[a] - zs[b]; });    // balls in the air are drawn on top, a little bigger (closer to you)
@@ -2216,7 +2225,7 @@
 	/* the aiming guide as plain shapes in table metres (drawn by the 2D canvas and by the 3D view):
 	   lines [x1, y1, x2, y2, colour, width (m), dashed], rings [x, y, r, colour, dashed] */
 	function guideShapes(c0) {
-		var d = B.dirOf(aim), gd = B.guide(st, c0[0], c0[1], d.x, d.y), R = st.T.R, short = S.guide === "short";
+		var d = B.dirOf(aim), gd = B.guide(st, c0[0], c0[1], d.x, d.y), R = st.T.R, short = effGuide() === "short";
 		var maxLen = short ? 0.32 : 9, out = { lines: [], rings: [] };
 		var endT = gd.kind === "none" ? 0.5 : Math.min(gd.t, maxLen);
 		out.lines.push([c0[0], c0[1], c0[0] + d.x * endT, c0[1] + d.y * endT, "rgba(255,255,255,0.75)", 0.004, true]);
@@ -2421,6 +2430,7 @@
 		if (!v3 || !pts3[e.pointerId]) return;
 		pts3[e.pointerId] = [e.clientX, e.clientY];
 		if (!d3) return;
+		if (!d3.faded && (d3.kind !== "turn" || d3.axis)) { d3.faded = true; viewDrag(true); }
 		if (d3.kind === "two") {
 			var ids = Object.keys(pts3); if (ids.length < 2) return;
 			var a = pts3[ids[0]], b = pts3[ids[1]], dist = Math.hypot(a[0] - b[0], a[1] - b[1]), mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
@@ -2445,6 +2455,7 @@
 	});
 	function end3(e) {
 		delete pts3[e.pointerId];
+		if (!Object.keys(pts3).length) viewDrag(false);
 		if (d3 && d3.kind === "pull") { var dp = d3; d3 = null; pullEnd(dp); render(); return; }
 		if (d3 && d3.kind === "turn" && !d3.moved && d3.w) {
 			// a tap on a ball aims straight at it
@@ -2534,16 +2545,22 @@
 	/* ===================================================================== on-table controls (phones, Fill window, full screen) ===================================================================== */
 	var ov = document.createElement("div");
 	ov.className = "bl-ov"; ov.id = "bl-ov";
-	ov.innerHTML = '<div class="bl-otop"><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
+	ov.innerHTML = '<div class="bl-ochip" id="bl-ochip" aria-live="polite"></div>' +
+		'<div class="bl-otop"><button type="button" data-ov="guide" class="bl-oguide" title="Aiming guide: full, short or off (G)">Guide</button><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
 		'<div class="bl-opow" id="bl-opow" role="slider" aria-label="Power: drag down to pull the cue back, let go to shoot" aria-valuemin="1" aria-valuemax="100"><div class="bl-opowfill" id="bl-opowfill"></div><span class="bl-opowt">PULL<br>↓</span><span class="bl-opowv" id="bl-opowv"></span></div>' +
 		'<div class="bl-opill" id="bl-opill" hidden></div>' +
-		'<button type="button" class="bl-ospin" id="bl-ospin" title="Spin: where the cue hits the white ball"><canvas class="bl-spincv" width="96" height="96"></canvas></button>' +
+		'<button type="button" class="bl-ospin" id="bl-ospin" title="Spin: drag the red dot, or tap for the big picker and jump shots"><canvas class="bl-spincv" width="96" height="96"></canvas></button>' +
+		'<div class="bl-jog bl-ojog" id="bl-ojog" role="slider" tabindex="0" aria-label="Aim: drag left or right to turn the cue (slow = fine, fast = big turns)"><span class="bl-jogt"></span><span class="bl-jogm"></span><span class="bl-jogl">◀ drag to aim ▶</span></div>' +
 		'<button type="button" class="bl-ohit" id="bl-ohit" title="Tap to shoot at the set power, or hold to charge the power and let go">HIT<small>hold = charge</small></button>' +
-		'<div class="bl-ospinpop" id="bl-ospinpop" hidden><b>Spin</b><canvas class="bl-spincv" width="240" height="240"></canvas><span id="bl-ospinlab"></span><label class="bl-oelev">Cue up (jump): <b class="bl-elevv">flat</b><input type="range" class="bl-elev" min="0" max="60" step="1" value="0" aria-label="Cue elevation for jump shots"></label><div class="bl-ospinbtns"><button type="button" data-sp="0,0">Centre</button><button type="button" data-sp="0,60">Follow</button><button type="button" data-sp="0,-60">Draw</button><button type="button" data-sp="-60,0">Left</button><button type="button" data-sp="60,0">Right</button><button type="button" data-sp="x">Done</button></div></div>' +
-		'<div class="bl-ohelp" id="bl-ohelp" hidden><b>How to shoot</b><ol><li><b>Aim:</b> press on the table and drag. The dotted line shows where the white ball goes.' + '<span class="bl-o3d"> In 3D behind the cue, drag sideways to aim and up / down to look higher or lower.</span></li>' +
+		'<div class="bl-ospinpop" id="bl-ospinpop" hidden><div class="bl-sphead"><b>Spin &amp; jump</b><button type="button" data-sp="flip" title="Move this box to the other side">⇄</button><button type="button" data-sp="x" title="Close">✕</button></div>' +
+		'<div class="bl-spbody"><div class="bl-spl"><canvas class="bl-spincv" width="240" height="240"></canvas><span id="bl-ospinlab"></span></div>' +
+		'<div class="bl-spr"><div class="bl-ospinbtns"><button type="button" data-sp="0,0">Centre</button><button type="button" data-sp="0,60">Follow</button><button type="button" data-sp="0,-60">Draw</button><button type="button" data-sp="-60,0">Left</button><button type="button" data-sp="60,0">Right</button><button type="button" data-sp="x">Done</button></div>' +
+		'<label class="bl-oelev">Cue up (jump): <b class="bl-elevv">flat</b><input type="range" class="bl-elev" min="0" max="60" step="1" value="0" aria-label="Cue elevation for jump shots"></label>' +
+		'<div class="bl-jog bl-pjog" role="slider" tabindex="0" aria-label="Aim: drag left or right to turn the cue"><span class="bl-jogt"></span><span class="bl-jogm"></span><span class="bl-jogl">◀ aim ▶</span></div></div></div></div>' +
+		'<div class="bl-ohelp" id="bl-ohelp" hidden><b>How to shoot</b><ol><li><b>Aim:</b> drag the <b>aim strip</b> at the bottom left or right (slowly = a hair at a time), or press on the table and drag. The dotted line shows where the white ball goes.' + '<span class="bl-o3d"> In 3D behind the cue, dragging on the table sideways also aims, up / down looks higher or lower.</span></li>' +
 		'<li><b>Shoot (easiest):</b> press on the <b>cue stick</b> (or the white ball) and <b>pull back</b>. The further you pull, the harder the shot. <b>Let go to shoot</b>, or slide back to where you started to cancel.</li><li><b>Or:</b> pull the bar on the right <b>down</b> (like pulling the cue back) and <b>let go to shoot</b>. Or <b>hold HIT</b>: the power goes up and down, let go when it is right. A quick tap on HIT shoots at the power already set.</li>' +
-		'<li><b>Spin:</b> tap the little white ball (bottom left). Top = the white ball keeps rolling after the hit, bottom = it comes back, sides = side spin off the cushions.</li>' +
-		'<li><b>Jump shot:</b> in the spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
+		'<li><b>Spin:</b> drag the red dot on the little white ball (bottom left), or tap it for the big picker. Top = the white ball keeps rolling after the hit, bottom = it comes back, sides = side spin off the cushions.</li>' +
+		'<li><b>Jump shot:</b> in the big spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Guide:</b> the Guide button top right switches the aiming line full / short / off.</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
 	stage.appendChild(ov);
 	drawSpin();
 	function ovDim() { if (!ov) return; var b = ov.querySelector('[data-ov="dim"]'); if (b) b.textContent = S.dim === "3d" ? "2D" : "3D"; ov.querySelector('[data-ov="cam"]').hidden = S.dim !== "3d"; }
@@ -2554,10 +2571,16 @@
 		var a = b.getAttribute("data-ov");
 		if (a === "dim") setDim(S.dim === "3d" ? "2d" : "3d");
 		else if (a === "cam") cycleCam();
+		else if (a === "guide") cycleGuide();
 		else if (a === "help") showHelp($("bl-ohelp").hidden);
 		else if (a === "helpok") showHelp(false);
 		else if (a === "fill") panelBtn(0);
 	});
+	// no text selection / "Copy, Select all" menu when a button is held down (HIT charges by holding)
+	ov.addEventListener("contextmenu", function (e) { if (!e.target.closest("input")) e.preventDefault(); });
+	ov.addEventListener("selectstart", function (e) { if (!e.target.closest("input")) e.preventDefault(); });
+	// while the table / camera is being dragged, the buttons fade and ignore touches (so a finger can't hit HIT by accident)
+	function viewDrag(on) { ov.classList.toggle("is-viewdrag", !!on); }
 	// the vertical power bar: drag down = more power, let go = shoot
 	var opow = $("bl-opow"), opDrag = false;
 	function opowFrom(e) { var r = opow.getBoundingClientRect(); power = Math.max(10, Math.min(1000, (e.clientY - r.top) / r.height * 1000)); renderPower(); need(); }
@@ -2583,19 +2606,62 @@
 	function hitEnd(fire) { if (!ch) return; clearTimeout(ch.timer); ch = null; hit.classList.remove("is-charge"); if (fire && canShoot()) { S.power = Math.round(power); save(); shoot(); } }
 	hit.addEventListener("pointerup", function () { hitEnd(true); });
 	hit.addEventListener("pointercancel", function () { hitEnd(false); });
-	// spin: the small ball opens a big picker
-	var spop = $("bl-ospinpop");
-	$("bl-ospin").addEventListener("click", function () { spop.hidden = !spop.hidden; drawSpin(); });
+	// spin: drag on the small ball sets the spin straight away; a tap opens the big picker (spin, jump, fine aim)
+	var spop = $("bl-ospinpop"), ospin = $("bl-ospin"), osd = null;
+	function spinPop(on) { spop.hidden = !on; ov.classList.toggle("is-spinpop", on); spop.classList.toggle("is-right", !!S.spRight); drawSpin(); }
+	ospin.addEventListener("pointerdown", function (e) { if (e.button > 0) return; osd = { x: e.clientX, y: e.clientY, moved: false }; ospin.setPointerCapture(e.pointerId); e.preventDefault(); });
+	ospin.addEventListener("pointermove", function (e) {
+		if (!osd) return;
+		if (!osd.moved && Math.hypot(e.clientX - osd.x, e.clientY - osd.y) > 5) osd.moved = true;
+		if (osd.moved && canShoot()) spinFrom(e, ospin.querySelector("canvas"));
+	});
+	ospin.addEventListener("pointerup", function () { var d = osd; osd = null; if (d && !d.moved) spinPop(spop.hidden); });
+	ospin.addEventListener("pointercancel", function () { osd = null; });
+	ospin.addEventListener("click", function (e) { e.preventDefault(); });
 	var bigSpin = spop.querySelector("canvas"), bsDrag = false;
 	bigSpin.addEventListener("pointerdown", function (e) { if (!canShoot()) return; bsDrag = true; bigSpin.setPointerCapture(e.pointerId); spinFrom(e, bigSpin); e.preventDefault(); });
 	bigSpin.addEventListener("pointermove", function (e) { if (bsDrag) spinFrom(e, bigSpin); });
 	bigSpin.addEventListener("pointerup", function () { bsDrag = false; });
+	bigSpin.addEventListener("dblclick", function () { spin = { x: 0, y: 0 }; drawSpin(); need(); });
 	spop.addEventListener("click", function (e) {
 		var b = e.target.closest("[data-sp]"); if (!b) return;
 		var v = b.getAttribute("data-sp");
-		if (v === "x") { spop.hidden = true; return; }
+		if (v === "x") { spinPop(false); return; }
+		if (v === "flip") { S.spRight = !S.spRight; save(); spinPop(true); return; }
 		var p = v.split(","); spin = { x: +p[0], y: +p[1] }; drawSpin(); need();
 	});
+
+	/* ---------- the aim strip ("jog"): drag left / right to turn the cue. Slow = a hair at a time, fast = big turns. ---------- */
+	function makeJog(el) {
+		var jd = null, tk = el.querySelector(".bl-jogt");
+		el.addEventListener("pointerdown", function (e) {
+			if (e.button > 0) return;
+			ensureAudio();
+			if (!canShoot()) { if (anim) skipAnim(); return; }
+			jd = { x: e.clientX, t: performance.now(), acc: 0 };
+			el.setPointerCapture(e.pointerId); el.classList.add("is-drag"); e.preventDefault(); e.stopPropagation();
+		});
+		el.addEventListener("pointermove", function (e) {
+			if (!jd) return;
+			var now = performance.now(), dx = e.clientX - jd.x, dt = Math.max(8, now - jd.t), v = Math.abs(dx) / dt;   // px per ms
+			// 0.025 degrees per pixel when slow (40 px = 1 degree), up to ~0.4 degrees per pixel on a quick swipe
+			var degPx = 0.025 + 0.38 * Math.pow(Math.min(1, v / 2.2), 2) * (e.shiftKey ? 0.2 : 1);
+			nudgeAim(Math.round(dx * degPx * 10000));
+			jd.acc += dx; jd.x = e.clientX; jd.t = now;
+			jogPaint();
+		});
+		var up = function () { if (!jd) return; jd = null; el.classList.remove("is-drag"); };
+		el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+		el.addEventListener("keydown", function (e) {
+			if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+			e.preventDefault(); e.stopPropagation();
+			if (canShoot()) nudgeAim((e.key === "ArrowLeft" ? -1 : 1) * (e.shiftKey ? 10000 : 500));
+		});
+		jogs.push(tk);
+	}
+	var jogs = [];
+	function jogPaint() { var off = ((aim / 10000) * 18) % 36; jogs.forEach(function (t) { if (t) t.style.backgroundPositionX = (-off).toFixed(1) + "px"; }); }
+	root.querySelectorAll(".bl-jog").forEach(makeJog);
 	if (!S.helpSeen) setTimeout(function () { showHelp(true); }, 600);
 
 	/* ---------- grab the cue and pull it back: the further you pull, the harder; let go to shoot, slide back to cancel ---------- */
@@ -2643,6 +2709,7 @@
 	});
 	cv.addEventListener("pointermove", function (e) {
 		var p = evXY(e), w = s2w(p[0], p[1]);
+		if (drag && !drag.faded) { drag.faded = true; viewDrag(true); }
 		if (!drag) {
 			if (canShoot() && st.bih && LY) { var c = cueXY(); cv.classList.toggle("is-place", Math.hypot(w[0] - c[0], w[1] - c[1]) < st.T.R * 2.4); }
 			return;
@@ -2653,7 +2720,7 @@
 		} else if (drag.kind === "pull") pullMove(drag, e.clientX, e.clientY);
 		else setAimTo(w);
 	});
-	function endDrag() { if (drag) { var d0 = drag; drag = null; cv.classList.remove("is-dragball"); if (d0.kind === "pull") pullEnd(d0); render(); } }
+	function endDrag() { viewDrag(false); if (drag) { var d0 = drag; drag = null; cv.classList.remove("is-dragball"); if (d0.kind === "pull") pullEnd(d0); render(); } }
 	cv.addEventListener("pointerup", endDrag);
 	cv.addEventListener("pointercancel", endDrag);
 	function clampPlace(x, y) {
@@ -2674,7 +2741,7 @@
 		renderAim(); need();
 	}
 	function nudgeAim(units) { aim = ((aim + units) % 3600000 + 3600000) % 3600000; renderAim(); need(); }
-	function renderAim() { $("bl-aimv").textContent = (((360 - aim / 10000) % 360 + 360) % 360).toFixed(2) + "°"; }
+	function renderAim() { $("bl-aimv").textContent = (((360 - aim / 10000) % 360 + 360) % 360).toFixed(2) + "°"; jogPaint(); }
 	// fine aim buttons (hold to repeat)
 	root.querySelectorAll(".bl-fine").forEach(function (b) {
 		var t = null, rep = function (first) { nudgeAim(+b.getAttribute("data-fine") * (window.event && window.event.shiftKey ? 5000 : 500)); t = setTimeout(rep, first ? 380 : 60); };
@@ -2827,8 +2894,8 @@
 				var gr = st.grp[p];
 				if (gr) {
 					var list = gr === "s" ? [1, 2, 3, 4, 5, 6, 7] : [9, 10, 11, 12, 13, 14, 15];
-					extra = '<span class="bl-balls">' + list.map(function (kk) { var id = st.k.indexOf(kk); return miniBall(kk, id < 0 || !st.on[id]); }).join("") + miniBall(8, false) + "</span>";
-				} else extra = '<span class="bl-pg">open table</span>';
+					extra = '<span class="bl-grpl">' + (gr === "s" ? "Solids" : "Stripes") + "</span>" + '<span class="bl-balls">' + list.map(function (kk) { var id = st.k.indexOf(kk); return miniBall(kk, id < 0 || !st.on[id]); }).join("") + miniBall(8, false) + "</span>";
+				} else extra = '<span class="bl-grpl is-open">' + (st.brk ? "break" : "open table") + "</span>";
 			} else if (t === "S") {
 				sc = '<span class="bl-ps">' + st.score[p] + "</span>";
 				if (turn && st.run) extra = '<span class="bl-pg">break ' + st.run + "</span>";
@@ -2837,13 +2904,54 @@
 		}
 		if (t === "9" || t === "10") {
 			var tg = B.targets(st);
-			if (tg.length && !st.win) h += '<div class="bl-pl"><span class="bl-pg">Hit first:</span>' + miniBall(st.k[tg[0]], false) + '<span class="bl-balls">' + st.k.map(function (kk, id) { return id > 0 && st.on[id] && id !== tg[0] ? miniBall(kk, false) : ""; }).join("") + "</span></div>";
+			if (tg.length && !st.win) h += '<div class="bl-pl bl-pnext"><span class="bl-grpl">Next: ' + st.k[tg[0]] + "</span>" + miniBall(st.k[tg[0]], false) + '<span class="bl-balls">' + st.k.map(function (kk, id) { return id > 0 && st.on[id] && id !== tg[0] ? miniBall(kk, false) : ""; }).join("") + "</span></div>";
 		}
 		if (t === "S" && !st.win) {
 			var on = B.snookerOn(st), onTxt = on === "red" ? "a red" : on === "colour" ? "any colour" : "the " + B.SNK_NAMES[on];
 			h += '<div class="bl-pl"><span class="bl-pg">On: <b>' + onTxt + "</b> · " + B.pointsLeft(st) + " points left</span></div>";
 		}
 		box.innerHTML = h;
+	}
+	/* what the shooter has to do, as words: stripes / solids / open table, the ball to hit first, the ball "on" in snooker */
+	function targetText(p) {
+		var t = st.g.type;
+		if (t === "8") {
+			if (st.brk) return { txt: "Break", balls: [] };
+			var gr = st.grp[p];
+			if (!gr) return { txt: "Open table: pot any ball but the 8 to get its group", balls: [] };
+			var left = B.ballsLeft(st, gr), name = gr === "s" ? "Solids" : "Stripes";
+			if (!left) return { txt: name + " done: pot the 8", balls: [8] };
+			return { txt: name + (gr === "s" ? " (1-7)" : " (9-15)") + " · " + left + " left", balls: [gr === "s" ? 3 : 11] };
+		}
+		if (t === "9" || t === "10") {
+			var tg = B.targets(st);
+			if (!tg.length) return { txt: "", balls: [] };
+			var kk = st.k[tg[0]];
+			return { txt: (st.brk ? "Break: hit the " : "Hit the ") + kk + " first · the " + t + " wins", balls: [kk] };
+		}
+		if (t === "S") {
+			var on1 = B.snookerOn(st);
+			return { txt: "On: " + (on1 === "red" ? "a red" : on1 === "colour" ? "any colour" : "the " + B.SNK_NAMES[on1]) + " · " + st.score[0] + "–" + st.score[1], balls: [] };
+		}
+		var left2 = B.ballsLeft(st);
+		return { txt: left2 + " ball" + (left2 === 1 ? "" : "s") + " left", balls: [] };
+	}
+	function renderChip() {
+		var el = $("bl-ochip"); if (!el || !st) return;
+		var h = "";
+		if (st.win) {
+			var w = st.win.p;
+			h = st.np === 1 ? esc(st.msg || "Done") : youAre(w) && mode !== "local" ? "<b>You win!</b>" : "<b>" + esc(nameOf(w)) + " wins</b>";
+		} else {
+			var p = anim && anim.item && anim.item.res ? anim.item.res.player : st.turn;
+			var who = st.np === 1 ? "" : mode === "local" ? esc(nameOf(p)) : youAre(p) ? "You" : mode === "cpu" ? "Computer" : esc(nameOf(p));
+			var tt = targetText(p);
+			h = (who ? '<span class="bl-cwho' + (youAre(p) && mode !== "local" ? " is-you" : "") + '">' + who + "</span>" : "") +
+				tt.balls.map(function (kk) { return miniBall(kk, false); }).join("") + '<span class="bl-ctxt">' + esc(tt.txt) + "</span>" +
+				(st.bih && !st.brk && !anim && isHumanTurn() ? '<span class="bl-cbih">ball in hand</span>' : "");
+		}
+		el.innerHTML = h;
+		el.hidden = !h;
 	}
 	function renderMsg() {
 		var el = $("bl-msg"), m = st.msg || "", tail = "";
@@ -2870,7 +2978,7 @@
 		root.classList.toggle("bl-incpu", mode === "cpu" || (effOpp() === "cpu" && mode !== "online" && mode !== "hive"));
 		root.classList.toggle("bl-inlocal", effOpp() === "local");
 		root.classList.toggle("bl-solo", B.game(S.game) && B.game(S.game).np === 1);
-		renderPlayers(); renderMsg(); renderAim(); renderPower();
+		renderPlayers(); renderMsg(); renderAim(); renderPower(); renderChip(); guideBtn();
 		var can = canShoot();
 		$("bl-shoot").disabled = !can && !anim;
 		$("bl-shoot").textContent = anim ? "Skip ▸▸" : "Shoot";
@@ -2915,7 +3023,7 @@
 	function segWire(id, fn) { $(id).addEventListener("click", function (e) { var b = e.target.closest("button[data-v]"); if (!b || b.disabled) return; segSet(id, b.getAttribute("data-v")); fn(b.getAttribute("data-v")); }); }
 	function syncSetup() {
 		$("bl-game").value = S.game;
-		segSet("bl-opp", S.opp); segSet("bl-lv", S.lv); segSet("bl-me", S.me); segSet("bl-ofirst", S.ofirst);
+		segSet("bl-opp", S.opp); segSet("bl-lv", S.lv); segSet("bl-me", S.me); segSet("bl-ofirst", S.ofirst); segSet("bl-ong", S.ong ? 1 : 0);
 		segSet("bl-guide", S.guide); segSet("bl-orient", S.orient); segSet("bl-speed", S.speed); segSet("bl-cloth", S.cloth); segSet("bl-ovm", S.ovm || "auto");
 		$("bl-snd").checked = S.snd; $("bl-rel").checked = S.rel; $("bl-nums").checked = S.nums;
 		$("bl-n1").value = S.names[0] || ""; $("bl-n2").value = S.names[1] || "";
@@ -2929,10 +3037,20 @@
 	segWire("bl-lv", function (v) { S.lv = v; save(); if (mode === "cpu" && st.hist.length && !st.win) toast("The new level plays from the computer's next shot."); render(); });
 	segWire("bl-me", function (v) { S.me = v; save(); newGame(true); });
 	segWire("bl-ofirst", function (v) { S.ofirst = v; save(); });
+	segWire("bl-ong", function (v) { S.ong = v === "1" ? 1 : 0; save(); });
 	segWire("bl-guide", function (v) { S.guide = v; save(); guideBtn(); need(); });
 	var GLAB = { full: "Guide: Full", "short": "Guide: Short", off: "Guide: Off" };
-	function guideBtn() { var b = $("bl-gbtn"); b.textContent = GLAB[S.guide] || GLAB.full; b.classList.toggle("is-off", S.guide === "off"); b.setAttribute("aria-label", b.textContent + " (press to change)"); }
-	function cycleGuide() { var o = ["full", "short", "off"]; S.guide = o[(o.indexOf(S.guide) + 1) % 3]; save(); segSet("bl-guide", S.guide); guideBtn(); need(); toast(S.guide === "off" ? "Guide off: aim by eye." : S.guide === "short" ? "Short guide: only the first part of the line." : "Full guide."); }
+	function noGuide() { return (mode === "online" && on.g && !!on.g.ng) || (mode === "hive" && hv.R && hv.R.open && !!hv.R.open.ng); }
+	function effGuide() { return noGuide() ? "off" : S.guide; }
+	function guideBtn() {
+		var ng = noGuide(), b = $("bl-gbtn"), eg = effGuide();
+		b.textContent = ng ? "Guide: off (this game)" : GLAB[S.guide] || GLAB.full; b.classList.toggle("is-off", eg === "off"); b.disabled = ng;
+		b.setAttribute("aria-label", ng ? "No aiming guide in this game: both players play without it" : b.textContent + " (press to change)");
+		var o = ov && ov.querySelector('[data-ov="guide"]');
+		if (o) { o.textContent = ng ? "No guide" : eg === "short" ? "Guide: short" : eg === "off" ? "Guide: off" : "Guide"; o.classList.toggle("is-off", eg === "off"); o.disabled = ng; o.title = ng ? "No aiming guide in this game (set by the player who made it)" : "Aiming guide: full, short or off (G)"; }
+		var segB = $("bl-guide").querySelectorAll("button"); for (var i = 0; i < segB.length; i++) segB[i].disabled = ng;
+	}
+	function cycleGuide() { if (noGuide()) return toast("This game is played without the aiming guide, for both players."); var o = ["full", "short", "off"]; S.guide = o[(o.indexOf(S.guide) + 1) % 3]; save(); segSet("bl-guide", S.guide); guideBtn(); need(); toast(S.guide === "off" ? "Guide off: aim by eye." : S.guide === "short" ? "Short guide: only the first part of the line." : "Full guide."); }
 	$("bl-gbtn").addEventListener("click", cycleGuide);
 	guideBtn();
 	segWire("bl-orient", function (v) { S.orient = v; save(); relayout(); });
@@ -3006,13 +3124,13 @@
 	/* ---------- rules ---------- */
 	function renderRules() {
 		var R = [
-			["How to play here", "<ul><li><b>Shooting</b>: press on the cue stick (or the white ball), pull back and let go: the further you pull, the harder it hits. Slide back to the start to cancel.</li><li><b>Jump shots</b>: raise the cue with the Cue up slider (J / Shift+J). From about 30° the white ball hops over a ball in its way: give it some power and room (a ball's width or two of space). Very hard and steep shots can send it off the table (a foul, ball in hand). Jump shots are allowed in every game here.</li><li><b>On a phone or in Fill window / full screen</b> the controls are on the table: pull the power bar on the right <b>down</b> and let go to shoot, or <b>hold HIT</b> (the power swings up and down) and let go; tap the little white ball for spin; 2D / 3D, camera and help sit top right.</li><li><b>Aim</b>: press on the table and drag; the cue follows your finger or mouse. Dragging far from the cue ball gives finer aim. The ⟲ ⟳ buttons and the arrow keys turn it a hair at a time.</li><li><b>Power</b>: drag along the power bar and let go to shoot (or press Shoot / Space).</li><li><b>Spin</b>: drag the red dot on the little white ball. Top = follow (the cue ball keeps rolling after the hit), bottom = draw (it comes back), left / right = side spin, which changes how it comes off the cushions.</li><li><b>Ball in hand</b>: drag the white ball to where you want it, then aim.</li><li><b>The guide</b>: the dotted line shows where the cue ball goes, the circle where it touches the first ball, the yellow line where that ball goes and the blue line where the cue ball heads off (before spin). A red circle means that ball is not allowed first.</li></ul>"],
+			["How to play here", "<ul><li><b>Shooting</b>: press on the cue stick (or the white ball), pull back and let go: the further you pull, the harder it hits. Slide back to the start to cancel.</li><li><b>Jump shots</b>: raise the cue with the Cue up slider (J / Shift+J). From about 30° the white ball hops over a ball in its way: give it some power and room (a ball's width or two of space). Very hard and steep shots can send it off the table (a foul, ball in hand). Jump shots are allowed in every game here.</li><li><b>On a phone or in Fill window / full screen</b> the controls are on the table: pull the power bar on the right <b>down</b> and let go to shoot, or <b>hold HIT</b> (the power swings up and down) and let go; tap the little white ball for spin; 2D / 3D, camera and help sit top right.</li><li><b>Aim</b>: press on the table and drag; the cue follows your finger or mouse. Dragging far from the cue ball gives finer aim. For fine aiming drag the <b>aim strip</b> (under the table, or at the bottom of the table on a phone and in Fill window) left or right: slowly = a hair at a time, a quick swipe = a big turn. The ⟲ ⟳ buttons and the arrow keys turn it a hair at a time.</li><li><b>Power</b>: drag along the power bar and let go to shoot (or press Shoot / Space).</li><li><b>Spin</b>: drag the red dot on the little white ball. Top = follow (the cue ball keeps rolling after the hit), bottom = draw (it comes back), left / right = side spin, which changes how it comes off the cushions.</li><li><b>Ball in hand</b>: drag the white ball to where you want it, then aim.</li><li><b>The guide</b>: the dotted line shows where the cue ball goes, the circle where it touches the first ball, the yellow line where that ball goes and the blue line where the cue ball heads off (before spin). A red circle means that ball is not allowed first.</li></ul>"],
 			["8-ball", "<ul><li>The first player breaks from behind the head string. If balls go in on the break the player carries on; the table stays <b>open</b>.</li><li>On an open table, the first ball you pot decides your group: <b>solids</b> (1-7) or <b>stripes</b> (9-15).</li><li>You must hit a ball of your group first, then pot one of your group or make any ball touch a cushion. Pot one of yours and you play again.</li><li>When your group is cleared, pot the <b>8</b> to win. Pot the 8 early, or in the same shot as a foul, and you lose. The 8 going in on the break is put back on its spot.</li><li><b>Fouls</b> (the cue ball goes in, no ball hit, the wrong ball first, no cushion after the hit) give the other player <b>ball in hand</b> anywhere on the table.</li><li>Here the shot is not called: any legal pot counts.</li></ul>"],
 			["9-ball and 10-ball", "<ul><li>Always hit the <b>lowest numbered</b> ball on the table first. Any ball you pot after a legal hit keeps you at the table.</li><li>Pot the 9 (10 in 10-ball) on a legal shot, even in a combination or on the break, and you win.</li><li>A foul gives the other player ball in hand anywhere; a 9 or 10 potted on a foul goes back on its spot.</li><li>No push-out and no three-foul rule here.</li></ul>"],
 			["Snooker", "<ul><li>15 reds (1 point each) and six colours: yellow 2, green 3, brown 4, blue 5, pink 6, black 7. Break off from the D.</li><li>Pot a red, then any colour (the colour you hit first is the one you nominate), then a red, and so on. Colours potted while reds remain come back on their spots.</li><li>When the reds are gone, pot the colours in order: yellow, green, brown, blue, pink, black.</li><li><b>Fouls</b> give the other player at least 4 points (or the value of the ball involved, up to 7): hitting the wrong ball first, potting a ball that isn't on, the cue ball going in, missing everything. After a foul the next player plays from where the cue ball stopped, or from the D if it went in.</li><li>The frame ends when the black goes in; a foul with only the black left also ends it. If the scores are level the black is re-spotted.</li><li>Not modelled here: free ball, the miss rule, touching balls and conceding (use New game).</li></ul>"],
 			["Practice and challenges", "<p>Practice racks are just you and the balls: no turns, no fouls, and the cue ball comes back in hand anywhere if it goes in. The Challenges tab has set shots (straight pots, cuts, banks, combinations, draw, follow) with a limited number of shots.</p>"],
 			["How the physics works", "<p>Every ball slides, then rolls, with real cloth friction: a ball hit without spin slides first and then starts to roll, which is why a stun shot stops dead on a straight hit at short range and follows through from further away. Top and back spin come from where the cue hits the cue ball, and side spin changes the angle off the cushions. Balls collide with a small loss of energy, cushions bounce at about three quarters of the speed, and the pocket jaws can rattle a ball out. The simulation runs 2,000 steps per second of table time and only uses arithmetic that gives exactly the same answer in every browser and on the server, so online and Hive games always agree.</p>"],
-			["Online and Hive", "<p>Guest games: make one on the Play online tab and send the link. Hive games: every shot is a custom_json operation (id <code>mes_pool</code>) signed with your posting key; both browsers replay the shots from the chain. A player who is away for five minutes on their turn can lose by a claim. You can also save the result of a game against the computer, a friend or a practice clear to your Hive account (self-reported, but the shots are checked by replaying them).</p>"]
+			["Online and Hive", "<p>Guest games: make one on the Play online tab and send the link. Pick <b>No guide for both</b> there to play without the aiming line: it is switched off for both players for the whole game (also for Hive games). Hive games: every shot is a custom_json operation (id <code>mes_pool</code>) signed with your posting key; both browsers replay the shots from the chain. A player who is away for five minutes on their turn can lose by a claim. You can also save the result of a game against the computer, a friend or a practice clear to your Hive account (self-reported, but the shots are checked by replaying them).</p>"]
 		];
 		$("bl-rules").innerHTML = R.map(function (r) { return '<div class="bl-rule"><h3>' + r[0] + "</h3>" + r[1] + "</div>"; }).join("");
 	}
@@ -3065,7 +3183,7 @@
 		if (mode === "online" || mode === "hive") return toast("You are already in an online game.");
 		S.name = ($("bl-name").value || "").trim().slice(0, 24); save();
 		var b = this; b.disabled = true;
-		api("POST", { act: "new", v: onlineV(), name: myName(), pub: $("bl-opub").checked, first: S.ofirst }).then(function (r) {
+		api("POST", { act: "new", v: onlineV(), name: myName(), pub: $("bl-opub").checked, first: S.ofirst, ng: S.ong ? 1 : 0 }).then(function (r) {
 			b.disabled = false;
 			if (r.error) return toast(r.error);
 			startOnline(r);
@@ -3093,11 +3211,11 @@
 		box.hidden = false;
 		var g = on.g, other = g.names[1 - on.seat], h = "";
 		if (g.status === "wait") {
-			h = '<span><span class="bl-dot"></span>Waiting for a player. Send them this link:</span><span class="bl-vbtns"><button type="button" class="bl-vb bl-vb--main" data-o="copy">🔗 Copy invite link</button>' +
+			h = '<span><span class="bl-dot"></span>Waiting for a player' + (g.ng ? " (no aiming guide in this game)" : "") + '. Send them this link:</span><span class="bl-vbtns"><button type="button" class="bl-vb bl-vb--main" data-o="copy">🔗 Copy invite link</button>' +
 				(navigator.share ? '<button type="button" class="bl-vb" data-o="share">Share…</button>' : "") + '<button type="button" class="bl-vb" data-o="cancel">Cancel game</button></span>';
 		} else {
 			var away = g.status === "play" && st.turn !== on.seat && (g.idle || 0) > 180000;
-			h = '<span><span class="bl-dot' + (on.fails > 2 ? " is-off" : "") + '"></span>Online vs <b>' + esc(other || "?") + "</b> · " + esc(B.describe(g.v)) + (on.fails > 2 ? " (reconnecting…)" : "") + '</span><span class="bl-vbtns">';
+			h = '<span><span class="bl-dot' + (on.fails > 2 ? " is-off" : "") + '"></span>Online vs <b>' + esc(other || "?") + "</b> · " + esc(B.describe(g.v)) + (g.ng ? " · no guide" : "") + (on.fails > 2 ? " (reconnecting…)" : "") + '</span><span class="bl-vbtns">';
 			if (g.status === "play") {
 				if (away) h += '<button type="button" class="bl-vb bl-vb--main" data-o="claim">Claim the win (they are away)</button>';
 				h += '<button type="button" class="bl-vb" data-o="resign">Resign</button>';
@@ -3198,7 +3316,7 @@
 			var list = (r.open || []).filter(function (o) { return o.id !== on.id; });
 			if (!list.length) { box.innerHTML = '<p class="bl-sub">No open games right now. Make one above, it will show up here for others.</p>'; return; }
 			box.innerHTML = '<ul class="bl-lob">' + list.map(function (o) {
-				return '<li><span class="bl-lobn">' + esc(o.name || "Guest") + ' <span class="bl-lobv">· ' + esc(B.describe(o.v)) + " · " + firstText(o.first) + " · " + ago(o.age) + '</span></span><button type="button" class="tu-btn tu-btn--primary" data-join="' + esc(o.id) + '">Join</button></li>';
+				return '<li><span class="bl-lobn">' + esc(o.name || "Guest") + ' <span class="bl-lobv">· ' + esc(B.describe(o.v)) + " · " + firstText(o.first) + (o.ng ? " · no guide" : "") + " · " + ago(o.age) + '</span></span><button type="button" class="tu-btn tu-btn--primary" data-join="' + esc(o.id) + '">Join</button></li>';
 			}).join("") + "</ul>";
 		});
 	}
@@ -3300,6 +3418,7 @@
 		var to = ($("bl-hto").value || "").trim().replace(/^@/, "").toLowerCase();
 		if (to && (!H.ACCT_RE.test(to) || to === me)) return toast(to === me ? "You can't challenge yourself." : "That isn't a Hive username.");
 		var obj = { a: "open", g: H.newGid(), v: onlineV(), f: S.ofirst };
+		if (S.ong) obj.ng = 1;
 		if (to) obj.to = to;
 		var b = $("bl-hcreate"); b.disabled = true;
 		HA.send(obj, to ? "Challenge @" + to + " to " + B.describe(obj.v) : "Open a " + B.describe(obj.v) + " game").then(function (r) {
@@ -3430,14 +3549,14 @@
 		var h, link = '<span class="bl-chain">On Hive · game <a href="https://hivehub.dev/@' + esc(hv.host) + '" target="_blank" rel="noopener">@' + esc(hv.host) + "</a>/" + esc(hv.gid) + "</span>";
 		if (!R || !R.open) h = '<span><span class="bl-dot is-off"></span>Reading the game from Hive…</span><span class="bl-vbtns"><button type="button" class="bl-vb" data-h="leave">Leave</button></span>';
 		else if (R.status === "wait") {
-			h = '<span><span class="bl-dot"></span>' + (R.open.to ? "Waiting for @" + esc(R.open.to) + " to accept" : "Waiting for someone on Hive to join") + " · " + esc(B.describe(R.open.v)) + ".</span>" + link + '<span class="bl-vbtns">' +
+			h = '<span><span class="bl-dot"></span>' + (R.open.to ? "Waiting for @" + esc(R.open.to) + " to accept" : "Waiting for someone on Hive to join") + " · " + esc(B.describe(R.open.v)) + (R.open.ng ? " · no aiming guide" : "") + ".</span>" + link + '<span class="bl-vbtns">' +
 				(me && me !== hv.host && (!R.open.to || R.open.to === me) ? '<button type="button" class="bl-vb bl-vb--main" data-h="join">Join this game</button>' : "") +
 				'<button type="button" class="bl-vb' + (me === hv.host ? " bl-vb--main" : "") + '" data-h="copy">🔗 Copy invite link</button>' + (hv.host === me ? '<button type="button" class="bl-vb" data-h="cancel">Cancel game</button>' : "") + '<button type="button" class="bl-vb" data-h="leave">Leave</button></span>';
 		} else if (R.status === "cancelled" || R.status === "expired") {
 			h = "<span>This Hive game was " + (R.status === "cancelled" ? "cancelled" : "never joined (open games last an hour)") + '.</span><span class="bl-vbtns"><button type="button" class="bl-vb" data-h="leave">Close</button></span>';
 		} else {
 			var other = hiveOther(), mine = R.players.indexOf(me) >= 0;
-			h = '<span><span class="bl-dot' + (Date.now() - hv.lastErr < 10000 ? " is-off" : "") + '"></span>' + (mine ? "Hive game vs <b>@" + esc(other) + "</b>" : "Watching <b>@" + esc(R.players[0]) + "</b> vs <b>@" + esc(R.players[1]) + "</b>") + " · " + esc(B.describe(R.open.v)) + (hv.pending.some(function (p) { return p.a === "sh"; }) ? " · your shot is on its way to the chain…" : "") + "</span>" + link + '<span class="bl-vbtns">';
+			h = '<span><span class="bl-dot' + (Date.now() - hv.lastErr < 10000 ? " is-off" : "") + '"></span>' + (mine ? "Hive game vs <b>@" + esc(other) + "</b>" : "Watching <b>@" + esc(R.players[0]) + "</b> vs <b>@" + esc(R.players[1]) + "</b>") + " · " + esc(B.describe(R.open.v)) + (R.open.ng ? " · no guide" : "") + (hv.pending.some(function (p) { return p.a === "sh"; }) ? " · your shot is on its way to the chain…" : "") + "</span>" + link + '<span class="bl-vbtns">';
 			if (R.status === "play" && mine) {
 				if (R.turnAcct !== me && Date.now() > R.canClaimAt) h += '<button type="button" class="bl-vb bl-vb--main" data-h="claim">Claim the win (away 5 min)</button>';
 				h += '<button type="button" class="bl-vb" data-h="resign">Resign</button>';
@@ -3469,6 +3588,7 @@
 		if (a === "rematch" && R) {
 			var other = hiveOther(), iWasFirst = R.players[0] === hMe();
 			var obj = { a: "open", g: H.newGid(), v: R.open.v, f: iWasFirst ? "guest" : "host", to: other, re: hv.host + "/" + hv.gid };
+			if (R.open.ng) obj.ng = 1;
 			HA.send(obj, "Offer @" + other + " a billiards rematch").then(function (r) { hiveEnter(hMe(), obj.g, [pend(obj, r.trx)]); toast("Rematch offered: @" + other + " sees an Accept button."); }, function (e2) { toast(e2.message); });
 		}
 	});
@@ -3499,7 +3619,7 @@
 			var list = r.open || [];
 			if (!list.length) { box.innerHTML = '<p class="bl-sub">No open Hive games right now.' + (me ? " Make one above." : " Log in to make one.") + "</p>"; return; }
 			box.innerHTML = '<ul class="bl-lob">' + list.map(function (o) {
-				return '<li><span class="bl-lobn">@' + esc(o.host) + ' <span class="bl-lobv">· ' + esc(B.describe(o.v)) + " · " + firstText(o.f) + " · " + ago(o.age) + '</span></span><button type="button" class="tu-btn tu-btn--primary" data-hjoin="' + esc(o.host + "/" + o.g) + '">' + (o.host === me ? "Open" : "Join") + "</button></li>";
+				return '<li><span class="bl-lobn">@' + esc(o.host) + ' <span class="bl-lobv">· ' + esc(B.describe(o.v)) + " · " + firstText(o.f) + (o.ng ? " · no guide" : "") + " · " + ago(o.age) + '</span></span><button type="button" class="tu-btn tu-btn--primary" data-hjoin="' + esc(o.host + "/" + o.g) + '">' + (o.host === me ? "Open" : "Join") + "</button></li>";
 			}).join("") + "</ul>";
 		});
 	}
@@ -3545,8 +3665,8 @@
 	function mockApi(method, b, query) {
 		var db; try { db = JSON.parse(localStorage.getItem("mes-billiards:mock") || "{}"); } catch (e) { db = {}; }
 		var now = Date.now(), put = function () { localStorage.setItem("mes-billiards:mock", JSON.stringify(db)); };
-		var pub = function (g) { return { id: g.id, v: g.v, seed: g.seed, names: g.names, shots: g.shots, status: g.status, win: g.win, round: g.round, pub: g.pub, first: g.first, idle: now - g.at }; };
-		if (method === "GET" && /hlobby/.test(query)) return { open: Object.keys(db).filter(function (k) { return /^h:/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return !g.joiners.length && !g.cancelled && !g.to && now - g.ts < 3600000; }).map(function (g) { return { host: g.host, g: g.g, v: g.v, f: g.f, age: now - g.ts }; }) };
+		var pub = function (g) { return { id: g.id, v: g.v, seed: g.seed, names: g.names, shots: g.shots, status: g.status, win: g.win, round: g.round, pub: g.pub, first: g.first, ng: g.ng || 0, idle: now - g.at }; };
+		if (method === "GET" && /hlobby/.test(query)) return { open: Object.keys(db).filter(function (k) { return /^h:/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return !g.joiners.length && !g.cancelled && !g.to && now - g.ts < 3600000; }).map(function (g) { return { host: g.host, g: g.g, v: g.v, f: g.f, ng: g.ng || 0, age: now - g.ts }; }) };
 		if (method === "GET" && /hrecent/.test(query)) return { games: Object.keys(db).filter(function (k) { return /^h:/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return g.joiners.length; }).map(function (g) { return { host: g.host, g: g.g, v: g.v, guest: g.joiners[0], age: now - g.ts }; }), recs: (db._recs || []).map(function (o) { return { acct: o.acct, v: o.v, res: o.res, trx: o.trx, age: now - o.ts }; }) };
 		if (method === "GET" && /hg=/.test(query)) { var hk = "h:" + decodeURIComponent((/hg=([^&]+)/.exec(query) || [])[1] || ""); return { joiners: db[hk] ? db[hk].joiners : [] }; }
 		if (method === "POST" && b.act === "hrec") {
@@ -3566,14 +3686,14 @@
 				if (!op) return { error: "That operation is not on the chain yet: wait a few seconds." };
 				var db2; try { db2 = JSON.parse(localStorage.getItem("mes-billiards:mock") || "{}"); } catch (e) { db2 = {}; }
 				var k2 = "h:" + b.host + "/" + b.g;
-				if (want === "open") db2[k2] = db2[k2] || { host: b.host, g: b.g, v: op.v, f: op.f, to: op.to || null, ts: op.ts, joiners: [], cancelled: false };
+				if (want === "open") db2[k2] = db2[k2] || { host: b.host, g: b.g, v: op.v, f: op.f, ng: op.ng || 0, to: op.to || null, ts: op.ts, joiners: [], cancelled: false };
 				else if (db2[k2]) { if (want === "join" && db2[k2].joiners.indexOf(who) < 0) db2[k2].joiners.push(who); if (want === "cancel") db2[k2].cancelled = true; }
 				localStorage.setItem("mes-billiards:mock", JSON.stringify(db2));
 				return { ok: true, joiners: db2[k2] ? db2[k2].joiners : [] };
 			});
 		}
 		if (method === "GET") {
-			if (/lobby/.test(query)) return { open: Object.keys(db).filter(function (k) { return !/^h:|^_/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return g.status === "wait" && g.pub && now - g.created < 1800000; }).map(function (g) { return { id: g.id, v: g.v, name: g.names[g.tok[0] ? 0 : 1], first: g.first, age: now - g.created }; }) };
+			if (/lobby/.test(query)) return { open: Object.keys(db).filter(function (k) { return !/^h:|^_/.test(k); }).map(function (k) { return db[k]; }).filter(function (g) { return g.status === "wait" && g.pub && now - g.created < 1800000; }).map(function (g) { return { id: g.id, v: g.v, name: g.names[g.tok[0] ? 0 : 1], first: g.first, ng: g.ng || 0, age: now - g.created }; }) };
 			var id = (/id=([a-z0-9]+)/.exec(query) || [])[1], g0 = db[id];
 			return g0 ? { g: pub(g0) } : { error: "Game not found (it may have expired)." };
 		}
@@ -3582,7 +3702,7 @@
 			if (!B.onlineGame(b.v)) return { error: "Unknown game." };
 			var nid = Math.random().toString(36).slice(2, 10).replace(/[^a-z0-9]/g, "a"), key = Math.random().toString(36).slice(2), hs = b.first === "guest" ? 1 : b.first === "random" ? (Math.random() < 0.5 ? 0 : 1) : 0;
 			var names = [null, null], tok = [null, null]; names[hs] = b.name; tok[hs] = key;
-			db[nid] = { id: nid, v: b.v, seed: nid, names: names, tok: tok, shots: [], status: "wait", win: null, round: 0, pub: !!b.pub, first: b.first, created: now, at: now };
+			db[nid] = { id: nid, v: b.v, seed: nid, names: names, tok: tok, shots: [], status: "wait", win: null, round: 0, pub: !!b.pub, first: b.first, ng: b.ng ? 1 : 0, created: now, at: now };
 			put(); return { g: pub(db[nid]), key: key, seat: hs };
 		}
 		if (!g) return { error: "Game not found (it may have expired)." };
@@ -3676,6 +3796,7 @@
 	window.MESBilliardsDebug = {
 		state: function () { return { v: st.v, seed: st.seed, shots: st.hist.length, turn: st.turn, win: st.win, mode: mode, bih: st.bih, msg: st.msg, busy: busy, anim: !!anim, score: st.score, layout: LY && { w: LY.w, h: LY.h, up: LY.up } }; },
 		shoot: function (a, p, sx, sy) { aim = a; power = p; spin = { x: sx || 0, y: sy || 0 }; shoot(); },
+		fire: function (p) { power = p; shoot(); },
 		aimAt: function (id) { var c = cueXY(); aim = B.angleOf(st.x[id] - c[0], st.y[id] - c[1]); need(); },
 		finishAnim: function () { while (anim) { var dn = anim.done; anim = null; if (dn) dn(); if (queue.length) { var it = queue.shift(); anim = { done: it.done }; } } render(); draw(); },
 		st: function () { return st; }

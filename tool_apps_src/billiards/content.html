@@ -83,7 +83,7 @@
 						<div class="bl-pow" id="bl-pow" role="slider" tabindex="0" aria-label="Shot power" aria-valuemin="1" aria-valuemax="100" aria-valuenow="35"><div class="bl-powfill" id="bl-powfill"></div><div class="bl-powknob" id="bl-powknob"></div></div>
 						<div class="bl-aimrow">
 							<button type="button" class="bl-vb bl-fine" data-fine="-1" title="Aim a hair to the left (Left arrow; Shift = more)">⟲</button>
-							<span class="bl-aimv" id="bl-aimv">0.00°</span>
+							<div class="bl-jog bl-ujog" role="slider" tabindex="0" aria-label="Aim: drag left or right to turn the cue (slow = fine, fast = big turns)" title="Drag left or right to aim: slowly for a hair at a time"><span class="bl-jogt"></span><span class="bl-jogm"></span><span class="bl-aimv" id="bl-aimv">0.00°</span></div>
 							<button type="button" class="bl-vb bl-fine" data-fine="1" title="Aim a hair to the right (Right arrow; Shift = more)">⟳</button>
 							<button type="button" class="bl-vb bl-gbtn" id="bl-gbtn" title="Aiming guide: full, short or off (G). Off is the real test.">Guide: Full</button>
 						</div>
@@ -102,6 +102,8 @@
 					<div class="tu-field bl-f-name"><label for="bl-name">Your name</label><input id="bl-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
 					<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-ofirst-l">Who breaks</span>
 						<div class="tu-seg" id="bl-ofirst" role="group" aria-labelledby="bl-ofirst-l"><button type="button" data-v="host" aria-pressed="true">Me</button><button type="button" data-v="guest" aria-pressed="false">The other player</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+					<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-ong-l">Aiming guide</span>
+						<div class="tu-seg" id="bl-ong" role="group" aria-labelledby="bl-ong-l" title="No guide = the aiming line is switched off for both players for the whole game, so it is a fair test of aim"><button type="button" data-v="0" aria-pressed="true">Each player chooses</button><button type="button" data-v="1" aria-pressed="false">No guide for both</button></div></div>
 				</div>
 				<label class="bl-chk"><input type="checkbox" id="bl-opub" checked> List my game under "Open games" so anyone can join</label>
 				<p class="bl-ogame">Game: <b id="bl-ovar"></b> <button type="button" class="bl-linkbtn" id="bl-ochange">change</button></p>
@@ -119,7 +121,7 @@
 					<div class="tu-row">
 						<div class="tu-field bl-f-name"><label for="bl-hto">Challenge an account (optional)</label><input id="bl-hto" class="tu-input" maxlength="17" autocomplete="off" spellcheck="false" placeholder="@username, or leave empty"></div>
 					</div>
-					<p class="bl-ogame">Game: <b id="bl-hvar"></b> · who breaks: the setting above.</p>
+					<p class="bl-ogame">Game: <b id="bl-hvar"></b> · who breaks and the aiming guide: the settings above.</p>
 					<p><button type="button" class="tu-btn tu-btn--primary" id="bl-hcreate">Make a Hive game</button></p>
 					<p class="tu-note">Empty = an open game anyone on Hive can join from the list below (it stays open for an hour). With a name, only that account can join: send them the link.</p>
 				</div>

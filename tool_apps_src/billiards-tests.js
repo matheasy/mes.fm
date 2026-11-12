@@ -192,6 +192,8 @@ eq(B.pointsLeft(B.create("S6", "q")), 75, "75 with six reds");
 	op("carl", { a: "sh", h: "alice", g: "abcdefgh", n: s.hist.length, m: "0~64~0~0" });
 	eq(H.build("alice", "abcdefgh", ops, 1e12 + 2e5).s.hist.length, s.hist.length, "hive: shots from a third account are ignored");
 	eq(H.clean({ a: "open", g: "abcdefgh", v: "P8" }), null, "hive: practice games can't be opened");
+	eq([H.clean({ a: "open", g: "abcdefgh", v: "8", ng: 1 }).ng, H.clean({ a: "open", g: "abcdefgh", v: "8", ng: "yes" }).ng], [1, undefined], "hive: the no-guide flag is kept only as 1");
+	eq(JSON.parse(H.json({ a: "open", g: "abcdefgh", v: "8", f: "host", ng: 1 })).ng, 1, "hive: the no-guide flag is written into the operation");
 	// self-reported result that replays
 	const solo = B.create("C1", "s1"); const dx = solo.x[1] - solo.x[0], dy = solo.y[1] - solo.y[0];
 	B.apply(solo, { a: B.angleOf(dx, dy), p: 100, sx: 0, sy: 0 });
@@ -235,6 +237,8 @@ eq(B.pointsLeft(B.create("S6", "q")), 75, "75 with six reds");
 	eq(r.code, 200, "api: new"); const id = r.body.g.id, ka = r.body.key;
 	eq([r.body.seat, r.body.g.names[0], r.body.g.tok, r.body.g.st], [0, "Aliceb", undefined, undefined], "api: seat, clean name, no secrets or state in the answer");
 	eq((await post({ act: "new", v: "P8", name: "x" })).code, 400, "api: practice games are not online games");
+	const rng = await post({ act: "new", v: "9", name: "Ng", pub: true, first: "host", ng: 1 }, "3.3.3.3");
+	eq([rng.body.g.ng, r.body.g.ng], [1, 0], "api: a no-guide game says so, a normal one does not");
 	r = await post({ act: "join", id, name: "Bob" }, "2.2.2.2"); const kb = r.body.key;
 	eq([r.code, r.body.seat, r.body.g.status], [200, 1, "play"], "api: join");
 	const s = B.create("8", id);

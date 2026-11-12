@@ -5,7 +5,7 @@
 //
 // GET  ?id=<id>                         -> {g}            the game (no keys)
 // GET  ?lobby=1                         -> {open:[...]}   public games waiting for a player (newest first, <= 30)
-// POST {act:"new", v, name, pub, first} -> {g, key, seat} first = "host" | "guest" | "random" (who plays first, i.e. seat 0)
+// POST {act:"new", v, name, pub, first, ng} -> {g, key, seat} first = "host" | "guest" | "random" (who plays first, i.e. seat 0); ng = 1: no aiming guide for either player
 // POST {act:"join", id, name}           -> {g, key, seat}
 // POST {act:"shot", id, key, n, m}      -> {g}            n = number of shots the client had (stops double sends), m = shot string (see lib.js)
 // POST {act:"resign"|"leave"|"claim"|"rematch"|"cancel", id, key}
@@ -56,7 +56,7 @@ function name(v) {
   return s || 'Guest';
 }
 function pub(g, now) {
-  return { id: g.id, v: g.v, seed: g.seed, names: g.names, shots: g.shots, status: g.status, win: g.win, round: g.round, pub: g.pub, first: g.first, idle: now - g.at };
+  return { id: g.id, v: g.v, seed: g.seed, names: g.names, shots: g.shots, status: g.status, win: g.win, round: g.round, pub: g.pub, first: g.first, ng: g.ng ? 1 : 0, idle: now - g.at };
 }
 function send(res, code, obj) { res.setHeader('Cache-Control', 'no-store'); res.status(code).json(obj); }
 
@@ -115,7 +115,7 @@ async function hiveHandler(req, res, b, now, ip) {
   let g = cur[0] && cur[0].result ? JSON.parse(cur[0].result) : null;
   if (want === 'open') {
     if (now - op.ts > T.hive.OPEN_S * 1000) return send(res, 409, { error: 'That game is too old.' });
-    if (!g) g = { host: b.host, g: b.g, v: op.v, f: op.f, to: op.to || null, ts: op.ts, joiners: [], cancelled: false };
+    if (!g) g = { host: b.host, g: b.g, v: op.v, f: op.f, ng: op.ng ? 1 : 0, to: op.to || null, ts: op.ts, joiners: [], cancelled: false };
     const cmds = [['SET', key, JSON.stringify(g), 'EX', 6 * 3600]];
     if (!g.to && !g.joiners.length && !g.cancelled) cmds.push(['ZADD', 'blh:lobby', op.ts, `${b.host}/${b.g}`], ['ZREMRANGEBYSCORE', 'blh:lobby', 0, now - T.hive.OPEN_S * 1000]);
     await redis(cmds);
@@ -147,7 +147,7 @@ async function handler(req, res) {
       ((got[0] && got[0].result) || []).forEach((v, i) => {
         const g = v && JSON.parse(v);
         if (!g || g.joiners.length || g.cancelled || now - g.ts > T.hive.OPEN_S * 1000) { stale.push(ids[i]); return; }
-        open.push({ host: g.host, g: g.g, v: g.v, f: g.f, age: now - g.ts });
+        open.push({ host: g.host, g: g.g, v: g.v, f: g.f, ng: g.ng ? 1 : 0, age: now - g.ts });
       });
       if (stale.length) await redis([['ZREM', 'blh:lobby', ...stale]]);
       return send(res, 200, { open });
@@ -177,7 +177,7 @@ async function handler(req, res) {
       vals.forEach((v, i) => {
         const g = v && JSON.parse(v);
         if (!g || g.status !== 'wait' || !g.pub || now - g.created > LOBBY_MAX_AGE) { stale.push(ids[i]); return; }
-        if (open.length < 30) open.push({ id: g.id, v: g.v, name: g.names[g.tok[0] ? 0 : 1], first: g.first, age: now - g.created });
+        if (open.length < 30) open.push({ id: g.id, v: g.v, name: g.names[g.tok[0] ? 0 : 1], first: g.first, ng: g.ng ? 1 : 0, age: now - g.created });
       });
       if (stale.length) await redis([['ZREM', 'bl:lobby', ...stale]]);
       res.setHeader('Cache-Control', 'no-store');
@@ -206,7 +206,7 @@ async function handler(req, res) {
     const key = newKey(), names = [null, null], tok = [null, null];
     names[seat] = name(b.name); tok[seat] = sha(key);
     let id = newId();
-    const g = { id, v: b.v, seed: id, names, tok, shots: [], st: T.pack(T.create(b.v, id)), status: 'wait', win: null, round: 0, pub: b.pub !== false, first, created: now, at: now };
+    const g = { id, v: b.v, seed: id, names, tok, shots: [], st: T.pack(T.create(b.v, id)), status: 'wait', win: null, round: 0, pub: b.pub !== false, first, ng: b.ng ? 1 : 0, created: now, at: now };
     const cmds = [['SET', `bl:g:${id}`, JSON.stringify(g), 'EX', TTL, 'NX']];
     if (g.pub) cmds.push(['ZADD', 'bl:lobby', now, id], ['ZREMRANGEBYSCORE', 'bl:lobby', 0, now - LOBBY_MAX_AGE]);
     const r = await redis(cmds);
