@@ -55,8 +55,16 @@
 	/* Fill window / full screen: the picture takes all the room the bar and title leave */
 	.wt-player.mes-pfill .wt-stage {flex:1 1 auto;aspect-ratio:auto;max-height:none;min-height:0;border-radius:0.3em;}
 	.wt-player.mes-pfill .wt-meta {flex:0 0 auto;}
-	.wt-player.mes-pfill .wt-check {display:none;}
-	@media (max-height:520px) {.wt-player.mes-pfill .wt-meta {display:none;} .wt-player.mes-pfill .wt-bar {margin-bottom:0.3em;}}
+	.wt-opts {margin-top:0.35em;}
+	.wt-opts > summary {cursor:pointer;display:inline-flex;align-items:center;gap:0.3em;font-size:0.9em;color:var(--wt-muted);padding:0.3em 0.75em;border:1px solid var(--wt-line, rgba(128,128,128,0.35));border-radius:99em;list-style:none;user-select:none;}
+	.wt-opts > summary::-webkit-details-marker {display:none;}
+	.wt-opts > summary::after {content:"▾";font-size:0.8em;}
+	.wt-opts[open] > summary::after {content:"▴";}
+	.wt-optsb {display:flex;flex-direction:column;gap:0.15em;padding:0.2em 0 0.1em;}
+	.wt-check input {flex:0 0 auto;}
+	/* Fill window: no options under the picture (it would take its room), but in the side panel they are there */
+	.wt-player.mes-pfill:not(.mes-pside) .wt-opts, .wt-player.mes-pside.mes-pmini .wt-opts {display:none;}
+	@media (max-height:520px) {.wt-player.mes-pfill:not(.mes-pside) .wt-meta, .wt-player.mes-pside.mes-pmini .wt-meta {display:none;} .wt-player.mes-pfill .wt-bar {margin-bottom:0.3em;}}
 	/* lists */
 	.wt-tabs {display:flex;gap:0.3em;border-bottom:1px solid var(--wt-line);margin-bottom:0.6em;overflow-x:auto;}
 	.wt-tab {font:inherit;background:none;border:0;border-bottom:3px solid transparent;padding:0.5em 0.8em;cursor:pointer;color:var(--wt-muted);white-space:nowrap;}
@@ -78,7 +86,8 @@
 	.wt-rtx small {color:var(--wt-muted);font-size:0.82em;}
 	.wt-racts {display:flex;gap:0.25em;flex:0 0 auto;}
 	.wt-racts .wt-b {min-width:2.1em;height:2.1em;padding:0;}
-	.wt-lacts {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.7em;}
+	.wt-lacts {display:flex;gap:0.5em;flex-wrap:wrap;margin:0 0 0.7em;}
+	.wt-lacts:not(:has(> :not([hidden]))) {display:none;}
 	@media (max-width:600px) {
 		.wt-lgrid {grid-template-columns:repeat(2, minmax(0, 1fr));}
 		.wt-th {flex-basis:6.5em;width:6.5em;}

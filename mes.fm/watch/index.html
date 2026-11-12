@@ -362,8 +362,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* Fill window / full screen: the picture takes all the room the bar and title leave */
 	.wt-player.mes-pfill .wt-stage {flex:1 1 auto;aspect-ratio:auto;max-height:none;min-height:0;border-radius:0.3em;}
 	.wt-player.mes-pfill .wt-meta {flex:0 0 auto;}
-	.wt-player.mes-pfill .wt-check {display:none;}
-	@media (max-height:520px) {.wt-player.mes-pfill .wt-meta {display:none;} .wt-player.mes-pfill .wt-bar {margin-bottom:0.3em;}}
+	.wt-opts {margin-top:0.35em;}
+	.wt-opts > summary {cursor:pointer;display:inline-flex;align-items:center;gap:0.3em;font-size:0.9em;color:var(--wt-muted);padding:0.3em 0.75em;border:1px solid var(--wt-line, rgba(128,128,128,0.35));border-radius:99em;list-style:none;user-select:none;}
+	.wt-opts > summary::-webkit-details-marker {display:none;}
+	.wt-opts > summary::after {content:"▾";font-size:0.8em;}
+	.wt-opts[open] > summary::after {content:"▴";}
+	.wt-optsb {display:flex;flex-direction:column;gap:0.15em;padding:0.2em 0 0.1em;}
+	.wt-check input {flex:0 0 auto;}
+	/* Fill window: no options under the picture (it would take its room), but in the side panel they are there */
+	.wt-player.mes-pfill:not(.mes-pside) .wt-opts, .wt-player.mes-pside.mes-pmini .wt-opts {display:none;}
+	@media (max-height:520px) {.wt-player.mes-pfill:not(.mes-pside) .wt-meta, .wt-player.mes-pside.mes-pmini .wt-meta {display:none;} .wt-player.mes-pfill .wt-bar {margin-bottom:0.3em;}}
 	/* lists */
 	.wt-tabs {display:flex;gap:0.3em;border-bottom:1px solid var(--wt-line);margin-bottom:0.6em;overflow-x:auto;}
 	.wt-tab {font:inherit;background:none;border:0;border-bottom:3px solid transparent;padding:0.5em 0.8em;cursor:pointer;color:var(--wt-muted);white-space:nowrap;}
@@ -385,7 +393,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.wt-rtx small {color:var(--wt-muted);font-size:0.82em;}
 	.wt-racts {display:flex;gap:0.25em;flex:0 0 auto;}
 	.wt-racts .wt-b {min-width:2.1em;height:2.1em;padding:0;}
-	.wt-lacts {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.7em;}
+	.wt-lacts {display:flex;gap:0.5em;flex-wrap:wrap;margin:0 0 0.7em;}
+	.wt-lacts:not(:has(> :not([hidden]))) {display:none;}
 	@media (max-width:600px) {
 		.wt-lgrid {grid-template-columns:repeat(2, minmax(0, 1fr));}
 		.wt-th {flex-basis:6.5em;width:6.5em;}
@@ -657,6 +666,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .wt-empty{color:#959ca7;background:linear-gradient(135deg,#3d4966,#3e4965)}
 	body.dark-mode #wt .wt-empty .tu-btn--ghost{border-color:rgba(51,51,51,0.55)}
 	body.dark-mode #wt .wt-empty .tu-btn--ghost:hover{background:rgba(26,26,26,0.12)}
+	body.dark-mode .wt-opts > summary{border:1px solid var(--wt-line, rgba(107,107,107,0.35))}
 	body.dark-mode .wt-row{background:#1a1a1a}
 	body.dark-mode .wt-th{background:#454d5e}
 	body.dark-mode .wt-prog{background:rgba(26,26,26,0.35)}
@@ -940,11 +950,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="wt-meta">
 				<div class="wt-title" id="wt-title"></div>
 				<div class="wt-sub" id="wt-sub"></div>
-				<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
-				<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
-				<label class="wt-check"><input type="checkbox" id="wt-zctl" checked> When zoomed in, show a play / seek bar under the picture (the player's own bar moves with the zoom)</label>
-				<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
-				<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
+				<details class="wt-opts" id="wt-opts"><summary>⚙&#xFE0E; Options</summary>
+					<div class="wt-optsb">
+						<label class="wt-check"><input type="checkbox" id="wt-auto" checked> Play the next one automatically</label>
+						<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
+						<label class="wt-check"><input type="checkbox" id="wt-zctl" checked> When zoomed in, show a play / seek bar under the picture (the player's own bar moves with the zoom)</label>
+						<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
+						<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
+					</div>
+				</details>
 			</div>
 			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
 		</section>
@@ -957,7 +971,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" role="tab" class="wt-tab" data-tab="hist" aria-selected="false">History <small id="wt-nh">0</small></button>
 			</div>
 			<div class="wt-yt" id="wt-ytacct" hidden></div>
-			<div class="wt-list" id="wt-list" role="tabpanel"></div>
 			<div class="wt-lacts">
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-share">Copy a link to this list</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-lnew">+ New playlist from Up next</button>
@@ -965,6 +978,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn" id="wt-syncbtn" aria-expanded="false" aria-controls="wt-sync" title="Keep your lists the same on every device (your own cloud), or back them up to Hive">☁ Sync &amp; backup</button>
 				<label class="wt-check" id="wt-histwrap"><input type="checkbox" id="wt-histon" checked> Keep a history here (and where I stopped)</label>
 			</div>
+			<div class="wt-list" id="wt-list" role="tabpanel"></div>
 		</section>
 		<section class="tu-card wt-sync" id="wt-sync" hidden aria-label="Sync and backup">
 			<div class="wt-shead"><h2>☁ Sync &amp; backup</h2><button type="button" class="tu-btn tu-btn--ghost" id="wt-sync-close" aria-label="Close">✕</button></div>
