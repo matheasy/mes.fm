@@ -730,7 +730,7 @@ APPS = {
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="52", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
+                         js_v="53", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
@@ -806,7 +806,7 @@ APPS = {
     "luders-bands": dict(title="Lüders Band Simulator", page_title="Lüders Bands: Simulator and Explanation (Yield Point, Plateau, Stretcher Strains)",
                       tag="Watch a yield band run along a steel bar.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
                       desc="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.",
-                      js_v="3", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="4", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Photoelectric Effect Simulator: light on a metal, electrons, stopping voltage, I-V and KE-vs-f graphs, and a "measure h" lab. lib.js node-tested (tool_apps_src/photoelectric-effect-tests.js). Normal-width page with the sidebar (Wide by default); opensearch.xml lets browsers add it as a search engine.
     "photoelectric-effect-simulator": dict(title="MES Photoelectric Effect Simulator", page_title="Photoelectric Effect Simulator",
                             tag="Light knocks electrons out of metal.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
