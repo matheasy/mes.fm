@@ -127,8 +127,9 @@
 				pane.appendChild(g); return;
 			}
 			if (k === "blend") {
-				var fb = PE.form([{ k: "blend", label: "Blend mode", type: "select", options: PE.BLENDS, val: st.blend }, R("opacity", "Opacity", 0, 100, Math.round(st.opacity * 100), "%"), R("fill", "Fill opacity", 0, 100, Math.round(F.fill * 100), "%", H.fill),
-					R("angle", "Global light angle", -180, 180, lt.angle, "°", H.gl), R("alt", "Global light altitude", 0, 90, lt.alt, "°", H.alt)], function () { var v = fb.get(); st.blend = v.blend; st.opacity = P.clamp(v.opacity / 100, 0, 1); F.fill = P.clamp(v.fill / 100, 0, 1); lt.angle = v.angle; lt.alt = v.alt; live(); });
+				var isTxt = !!(cur() && cur().type === "text");
+				var fb = PE.form([{ k: "blend", label: "Blend mode", type: "select", options: PE.BLENDS, val: st.blend }, R("opacity", "Opacity", 0, 100, Math.round(st.opacity * 100), "%"), R("fill", "Fill opacity", 0, 100, Math.round(F.fill * 100), "%", H.fill)].concat(isTxt ? [{ k: "tall", label: "Text: style the letters only (not the text's own Outline, Shadow or Box)", type: "check", val: !F.tall, help: "On (normal): the effects follow the letters. Off: they also cover the outline, shadow and background box set in the Text tool, as if the text were a picture." }] : []).concat([
+					R("angle", "Global light angle", -180, 180, lt.angle, "°", H.gl), R("alt", "Global light altitude", 0, 90, lt.alt, "°", H.alt)]), function () { var v = fb.get(); if (isTxt) { if (v.tall) delete F.tall; else F.tall = true; } st.blend = v.blend; st.opacity = P.clamp(v.opacity / 100, 0, 1); F.fill = P.clamp(v.fill / 100, 0, 1); lt.angle = v.angle; lt.alt = v.alt; live(); });
 				pane.appendChild(fb.el); pane.appendChild(el("p", "pe-hint2", "Not here yet: channels, Blend If, knockout, Pattern overlay and the Contour / Texture options of Bevel and emboss.")); return;
 			}
 			var e = F[k], params = paramsFor(k, e, lt), f = PE.form(params, function () {

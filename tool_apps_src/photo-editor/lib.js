@@ -624,6 +624,7 @@ var MESPixel = (function () {
 	function fxNorm(fx) {
 		var o = { fill: fx && fx.fill != null ? clamp(+fx.fill, 0, 1) : 1 };
 		FXKEYS.forEach(function (k) { var d = FXDEF[k], s = fx && fx[k]; o[k] = Object.assign({}, d, s || {}); });
+		if (fx && fx.tall) o.tall = true;   // round 12: on a text layer, style the text's own outline / shadow / box too (default: the letters only)
 		var sh = fx && fx.shadow;
 		if (sh && sh.angle == null && (sh.dx != null || sh.dy != null)) { var dx = +sh.dx || 0, dy = +sh.dy || 0; o.shadow.dist = Math.round(Math.hypot(dx, dy) * 10) / 10; o.shadow.angle = o.shadow.dist ? Math.round(Math.atan2(dy, -dx) * 180 / Math.PI) : 120; o.shadow.gl = false; if (!sh.mode) o.shadow.mode = "source-over"; if (sh.knock == null) o.shadow.knock = true; if (sh.spread == null) o.shadow.spread = 0; }
 		if (fx && fx.outline && !fx.outline.mode) o.outline.mode = "source-over";

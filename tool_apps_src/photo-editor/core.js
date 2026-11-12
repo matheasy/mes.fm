@@ -294,8 +294,34 @@
 		L._pad = pad; L._amw = mw;
 		L.cx += m6[0] * dx + m6[2] * dy; L.cy += m6[1] * dx + m6[3] * dy; L.canvas = c; L.rev++;
 		L._drawnFont = PE.fontAvailable(t.font) ? t.font : "";   // round 11: what the pixels were drawn in ("" = a fallback: drawing it again later is no loss)
+		L._glyph = { c: c, g: textDecor(t) ? textGlyphs(L, lay) : null };
 		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
+
+	/* round 12: a layer style on a text layer follows the LETTERS, not the text's own Outline / Shadow / background box (a subscriber: "the layer style on
+	 * the text is working on the outline, not just the text itself"). textGlyphs = the letters (and underlines) alone, in the same place on a canvas the size
+	 * of the layer's; kept with the canvas it belongs to, made again after undo / reopening when the layout still matches the pixels. */
+	function textDecor(t) { return !!(t && ((t.strokeOn && t.strokeW > 0) || t.bgOn || t.shadowOn)); }
+	function textGlyphs(L, lay) {
+		var t = L.text, c = mk(lay.W, lay.H), x = c.getContext("2d"), rich = lay.rich, base = PE.textMask(t), sz = t.size, uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), ls = t.ls || 0;
+		if ("letterSpacing" in x) x.letterSpacing = ls + "px"; x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = "#000";
+		lay.lines.forEach(function (ln, i) {
+			var py = lay.base[i], x0 = lay.lx[i];
+			P.textSegs(rich, lay.rsz, ln.start, ln.end, base).forEach(function (g) {
+				var gx = x0 + lay.measure(ln.text.slice(0, g.s - ln.start), ln.start); setFont(x, fontFor(t, g.m, sz * g.k)); x.fillText(ln.text.slice(g.s - ln.start, g.e - ln.start), gx, py);
+				if (g.m & 4) { var xe = x0 + lay.measure(ln.text.slice(0, g.e - ln.start), ln.start) - (ls > 0 ? ls : 0); if (xe > gx) x.fillRect(gx, py + uOff * g.k, xe - gx, uTh * g.k); }
+			});
+		});
+		return c;
+	}
+	function glyphFor(L) {
+		if (L.type !== "text" || !L.text || !textDecor(L.text) || (L.fx && L.fx.tall)) return null;
+		var gl = L._glyph; if (gl && gl.c === L.canvas) return gl.g;
+		var g = null;
+		try { if (!PE.textFontHold(L)) { var lay = PE.textLayout(L); if (lay && lay.W === L.canvas.width && lay.H === L.canvas.height) g = textGlyphs(L, lay); } } catch (e) { g = null; }
+		L._glyph = { c: L.canvas, g: g }; return g;
+	}
+	PE.textGlyphCanvas = glyphFor;
 
 	/* ---------- layer styles (L.fx): Photoshop-style effects (bevel and emboss, stroke, inner / drop shadow, inner / outer glow, satin, colour and
 	   gradient overlay, fill opacity) worked out from the layer's visible pixels (mask and crop included), never baked into the layer: change or remove
@@ -314,9 +340,9 @@
 		var reach = P.fxReach(f, lt) / sc, mg = Math.ceil((reach + 2) / 16) * 16, W = cw + mg * 2, H = ch + mg * 2, r = { mg: mg, under: [], over: [], fill: P.fxNorm(f).fill };
 		if (W * H > 24e6) { L._fxc = { key: key, c: L.canvas, r: r }; return r; }   // too big to work out in a browser: drawn without the style
 		// the shape (alpha) and its distance field only change when the pixels do: cached apart from the effect settings so dragging a slider is quick
-		var bkey = [L.rev, cw, ch, mg, JSON.stringify(L.crop), !!L.mask, !!L.maskOff].join("|"), b = L._fxb;
+		var glyph = glyphFor(L), bkey = [L.rev, cw, ch, mg, JSON.stringify(L.crop), !!L.mask, !!L.maskOff, glyph ? 1 : 0].join("|"), b = L._fxb;
 		if (!b || b.key !== bkey || b.c !== L.canvas) {
-			var src = mk(W, H), sx = src.getContext("2d"); sx.drawImage(L.canvas, mg, mg);
+			var src = mk(W, H), sx = src.getContext("2d"); sx.drawImage(glyph || L.canvas, mg, mg);
 			if (L.mask && !L.maskOff) { sx.globalCompositeOperation = "destination-in"; sx.drawImage(L.mask, mg, mg); }
 			if (L.crop) { sx.globalCompositeOperation = "destination-in"; sx.fillStyle = "#000"; sx.fillRect(mg + L.crop.x, mg + L.crop.y, L.crop.w, L.crop.h); }
 			var id = sx.getImageData(0, 0, W, H), al = new Uint8Array(W * H); for (var i = 0; i < al.length; i++) al[i] = id.data[i * 4 + 3];

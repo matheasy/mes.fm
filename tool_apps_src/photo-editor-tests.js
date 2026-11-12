@@ -456,6 +456,7 @@ t("round 11: textHold keeps a text drawn in a font this browser cannot draw", ()
 	assert.strictEqual(P.textHold(Object.assign({}, base, { drawn: "" })), false, "already a fallback: redraw is no loss");
 	assert.strictEqual(P.textHold(Object.assign({}, base, { available: true })), false); assert.strictEqual(P.textHold(Object.assign({}, base, { web: false })), false, "installed fonts are never held");
 	assert.strictEqual(P.textHold(Object.assign({}, base, { real: false })), false, "a new text (4x4 canvas) is drawn"); assert.strictEqual(P.textHold(null), false); });
+t("round 12: fxNorm keeps the text letters-only switch", () => { assert.strictEqual(P.fxNorm({ tall: true, color: { on: true } }).tall, true); assert.strictEqual(P.fxNorm({ color: { on: true } }).tall, undefined); });
 t("round 11: fontFileMatch finds texts that used a font file", () => {
 	assert(P.fontFileMatch(["8bit Font", "sans-serif"], "8bit Font", "MESfilebitFontxa"), "pre-round-10 projects stored the file name");
 	assert(P.fontFileMatch(["MESfilebitFontxa", "8bit Font", "sans-serif"], "8bit font", "MESfilebitFontxa"), "round 10 alias");
