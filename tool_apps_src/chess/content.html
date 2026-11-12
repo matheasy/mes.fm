@@ -1,0 +1,167 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script src="/main_js/panel-view.js" defer></script>
+	<div class="tu ch" id="ch">
+		<div class="ch-tabs" id="ch-tabs" role="tablist" aria-label="Chess sections">
+			<button type="button" class="ch-tab" role="tab" data-t="play" aria-selected="true" aria-controls="ch-p-play">Play</button><button type="button" class="ch-tab" role="tab" data-t="online" aria-selected="false" aria-controls="ch-p-online" tabindex="-1">Play online</button><button type="button" class="ch-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="ch-p-stats" tabindex="-1">Statistics</button><button type="button" class="ch-tab" role="tab" data-t="rules" aria-selected="false" aria-controls="ch-p-rules" tabindex="-1">Rules</button>
+		</div>
+
+		<section id="ch-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card ch-setup" id="ch-setup">
+				<div class="tu-row">
+					<div class="tu-field ch-f-game"><label for="ch-game">Game</label>
+						<select id="ch-game" class="tu-select"></select></div>
+					<div class="tu-field ch-f-seg"><span class="tu-label" id="ch-opp-l">Play against</span>
+						<div class="tu-seg" id="ch-opp" role="group" aria-labelledby="ch-opp-l"><button type="button" data-v="cpu" aria-pressed="true">Computer</button><button type="button" data-v="local" aria-pressed="false">A friend here</button></div></div>
+					<div class="tu-field ch-f-seg ch-cpuonly"><span class="tu-label" id="ch-lv-l">Level</span>
+						<div class="tu-seg" id="ch-lv" role="group" aria-labelledby="ch-lv-l"><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button><button type="button" data-v="expert" aria-pressed="false">Expert</button></div></div>
+					<div class="tu-field ch-f-seg ch-cpuonly"><span class="tu-label" id="ch-me-l">You play</span>
+						<div class="tu-seg" id="ch-me" role="group" aria-labelledby="ch-me-l"><button type="button" data-v="white" aria-pressed="true">White</button><button type="button" data-v="black" aria-pressed="false">Black</button><button type="button" data-v="alt" aria-pressed="false">Take turns</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+					<div class="tu-field ch-f-clock"><label for="ch-clock">Clock</label>
+						<select id="ch-clock" class="tu-select"><option value="">No clock</option><option value="1+0">1 min (bullet)</option><option value="3+2">3 + 2 (blitz)</option><option value="5+0">5 min (blitz)</option><option value="10+0">10 min (rapid)</option><option value="15+10">15 + 10 (rapid)</option><option value="30+0">30 min (classical)</option></select></div>
+				</div>
+				<p class="ch-desc" id="ch-desc"></p>
+				<div class="ch-opts">
+					<label><input type="checkbox" id="ch-dots" checked> Show where a piece can go</label>
+					<label><input type="checkbox" id="ch-anal"> Show the computer's opinion (bar + best move)</label>
+					<label class="ch-localonly"><input type="checkbox" id="ch-autoflip"> Turn the board for each player (pass and play)</label>
+					<label><input type="checkbox" id="ch-sound" checked> Sounds</label>
+				</div>
+			</div>
+
+			<div class="ch-view" id="ch-view">
+				<div class="ch-vbar">
+					<p class="ch-status" id="ch-status" role="status" aria-live="polite"></p>
+					<span class="ch-vbtns" id="ch-pbar" role="group" aria-label="Game"><button type="button" class="ch-vb ch-vb--main" id="ch-new" title="Start a new game (N)">↺ New game</button><button type="button" class="ch-vb" id="ch-undo" title="Take back your last move (U)">↶ Undo</button><button type="button" class="ch-vb" id="ch-hint" title="Show the computer's best move (H)">💡 Hint</button><button type="button" class="ch-vb" id="ch-resign" title="Give up this game">⚑ Resign</button><button type="button" class="ch-vb" id="ch-hsave" hidden title="Write this game's moves and result to your Hive account (self-reported)">⬢ Save result to Hive</button><button type="button" class="ch-vb" id="ch-hpost" hidden title="Write a Hive post about this game (for example for the Chess Brothers curation)">✍ Post this game on Hive</button></span>
+				</div>
+				<div class="ch-dbar" role="group" aria-label="View">
+					<span class="tu-seg ch-seg" id="ch-dim" role="group" aria-label="2D or 3D"><button type="button" data-v="2d" aria-pressed="true">2D</button><button type="button" data-v="3d" aria-pressed="false">3D</button></span>
+					<label class="ch-3donly">Room <select id="ch-room" class="tu-select ch-sel"></select></label>
+					<label class="ch-3donly">Pieces <select id="ch-set" class="tu-select ch-sel"></select></label>
+					<label class="ch-3donly">Camera <select id="ch-cam" class="tu-select ch-sel"><option value="auto">My side</option><option value="top">From above</option><option value="side">From the side</option><option value="white">White's side</option><option value="black">Black's side</option><option value="orbit">Free (drag)</option></select></label>
+					<label class="ch-2donly">Board <select id="ch-theme" class="tu-select ch-sel"><option value="green">Green</option><option value="wood">Wood</option><option value="blue">Blue</option><option value="grey">Grey</option><option value="purple">Purple</option></select></label>
+					<label>Colours <select id="ch-pcol" class="tu-select ch-sel" title="Piece colours: pick a pair that is easy for you to see"><option value="auto">White and black</option><option value="cream">Cream and brown</option><option value="red">White and red</option><option value="green">White and green</option><option value="blueorange">Orange and blue (colour-blind friendly)</option><option value="yellowpurple">Yellow and purple</option><option value="goldsilver">Gold and silver</option></select></label>
+					<button type="button" class="ch-vb ch-3donly" id="ch-view3" title="Back to the normal camera (or double-click the board)">⟲ Reset view</button>
+					<button type="button" class="ch-vb" id="ch-flip" title="Turn the board round (R)">⇅ Turn board</button>
+				</div>
+				<p class="ch-hsaved" id="ch-hsaved"></p>
+				<div class="ch-online-bar" id="ch-obar" hidden></div>
+				<div class="ch-stage" id="ch-stage">
+					<div class="ch-play">
+						<div class="ch-player" id="ch-ptop"></div>
+						<div class="ch-boardwrap">
+							<div class="ch-evbar" id="ch-evbar" hidden aria-hidden="true"><i id="ch-evfill"></i><span id="ch-evtxt"></span></div>
+							<div class="ch-board" id="ch-board" tabindex="0" aria-label="Chess board: arrow keys move the square cursor, Enter picks a piece and then its square. You can also type a move like e4 or Nf3."></div>
+							<div class="ch-3d" id="ch-3d" hidden><p class="ch-3dmsg" id="ch-3dmsg">Loading 3D…</p></div>
+							<div class="ch-promo" id="ch-promo" hidden role="dialog" aria-label="Promote the pawn to"></div>
+						</div>
+						<div class="ch-player" id="ch-pbot"></div>
+					</div>
+				</div>
+				<p class="ch-anote" id="ch-anote" aria-live="polite"></p>
+				<div class="ch-typebox"><label for="ch-type">Type a move</label><input id="ch-type" class="tu-input" autocomplete="off" spellcheck="false" placeholder="e4, Nf3, O-O, e7e8q…" maxlength="10"></div>
+				<div class="ch-replay" id="ch-replay">
+					<span class="ch-rbtns" role="group" aria-label="Look back through the moves"><button type="button" class="ch-vb" data-r="first" title="Start of the game">⏮</button><button type="button" class="ch-vb" data-r="prev" title="One move back (←)">◀</button><button type="button" class="ch-vb" data-r="next" title="One move forward (→)">▶</button><button type="button" class="ch-vb" data-r="last" title="Back to now">⏭</button></span>
+					<span class="ch-rpos" id="ch-rpos"></span>
+					<span class="ch-vbtns"><button type="button" class="ch-vb" id="ch-link" title="Copy a link that opens this position">🔗 Link</button><button type="button" class="ch-vb" id="ch-pgn" title="Copy the game as PGN">📋 PGN</button><button type="button" class="ch-vb" id="ch-dl" title="Download the game as a .pgn file">⬇ .pgn</button><button type="button" class="ch-vb" id="ch-load" title="Load a game from PGN or a position from FEN">📂 Load PGN / FEN</button></span>
+				</div>
+				<ol class="ch-moves" id="ch-moves" aria-label="Moves"></ol>
+				<div class="ch-loadbox" id="ch-loadbox" hidden>
+					<label for="ch-loadtxt">Paste a PGN game or a FEN position</label>
+					<textarea id="ch-loadtxt" class="tu-input" rows="5" spellcheck="false" placeholder='[Event "..."] 1. e4 e5 2. Nf3 ...   or   rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2'></textarea>
+					<p class="ch-loadbtns"><button type="button" class="tu-btn tu-btn--primary" id="ch-loadgo">Load</button><label class="tu-btn">Open a .pgn file<input type="file" id="ch-loadfile" accept=".pgn,.txt,text/plain" hidden></label><button type="button" class="tu-btn" id="ch-loadx">Close</button></p>
+					<p class="tu-note" id="ch-loadnote">The loaded game opens at its last move; play on against the computer or a friend from there, or step back through it.</p>
+				</div>
+			</div>
+			<div class="ch-postbox tu-card" id="ch-postbox" hidden>
+				<h2 class="ch-h">Post this game on Hive</h2>
+				<p class="ch-sub">Edit the post, then publish it from your Hive account. It is tagged <b>#chessbrothers</b> and <b>#chess</b> so the Chess Brothers curators and other chess players on Hive see it. The PGN and a link that replays the game here are included.</p>
+				<div class="tu-field"><label for="ch-ptitle">Title</label><input id="ch-ptitle" class="tu-input" maxlength="250"></div>
+				<div class="tu-field"><label for="ch-pbody">Post (Markdown)</label><textarea id="ch-pbody" class="tu-input" rows="12" spellcheck="true"></textarea></div>
+				<div class="tu-field"><label for="ch-ptags">Tags (space between them, first one = where it is posted)</label><input id="ch-ptags" class="tu-input" spellcheck="false"></div>
+				<p class="ch-loadbtns"><button type="button" class="tu-btn tu-btn--primary" id="ch-pgo">Publish on Hive</button><button type="button" class="tu-btn" id="ch-pcopy">Copy the text</button><button type="button" class="tu-btn" id="ch-px">Close</button></p>
+				<p class="tu-note" id="ch-pnote">Hive posts are public and permanent. You need to be logged in with Hive (Play online tab).</p>
+			</div>
+			<p class="tu-note">Keys: <kbd>←</kbd> <kbd>→</kbd> step through the moves, <kbd>N</kbd> new game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>R</kbd> turn the board, <kbd>D</kbd> 2D / 3D, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. In 3D, drag the board (or use two fingers) to look around it, Ctrl + scroll or pinch to zoom, double-click to reset the view; pick the camera "Free" to fly all the way round. Your games and settings stay in this browser.</p>
+		</section>
+
+		<section id="ch-p-online" role="tabpanel" aria-label="Play online" hidden>
+			<div class="tu-card">
+				<h2 class="ch-h">Play someone online as a guest</h2>
+				<p class="ch-sub">No account needed. Make a game and send the link to a friend, or pick an open game from the list below. The game is the one chosen on the Play tab (Chess960 picks a new start position).</p>
+				<div class="tu-row">
+					<div class="tu-field ch-f-name"><label for="ch-name">Your name</label><input id="ch-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<div class="tu-field ch-f-seg"><span class="tu-label" id="ch-ofirst-l">I play</span>
+						<div class="tu-seg" id="ch-ofirst" role="group" aria-labelledby="ch-ofirst-l"><button type="button" data-v="host" aria-pressed="true">White</button><button type="button" data-v="guest" aria-pressed="false">Black</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+				</div>
+				<label class="ch-chk"><input type="checkbox" id="ch-opub" checked> List my game under "Open games" so anyone can join</label>
+				<p class="ch-ogame">Game: <b id="ch-ovar"></b> <button type="button" class="ch-linkbtn" id="ch-ochange">change</button></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="ch-ocreate">Make a guest game</button></p>
+			</div>
+			<div class="tu-card">
+				<div class="ch-lobhead"><h2 class="ch-h">Open games</h2><button type="button" class="tu-btn" id="ch-orefresh">↻ Refresh</button></div>
+				<div id="ch-lobby"><p class="ch-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card ch-hive" id="ch-hive">
+				<h2 class="ch-h"><span class="ch-hivelogo" aria-hidden="true">⬢</span> Play on Hive</h2>
+				<p class="ch-sub">Every move is signed with your Hive account (the Hive Keychain extension or the Keychain phone app) and kept on the Hive blockchain for good. No mes.fm server decides anything: both browsers read the moves from the chain and check them with the same rules, so the whole game and its result are public and can't be changed by anyone. A move takes about 3 to 6 seconds to reach the other player and costs no HIVE (only a little of your account's free Resource Credits). Choose a slow pace and it becomes correspondence chess: a move a day.</p>
+				<div id="ch-hlogin"></div>
+				<div id="ch-hmake" hidden>
+					<div class="tu-row">
+						<div class="tu-field ch-f-name"><label for="ch-hto">Challenge an account (optional)</label><input id="ch-hto" class="tu-input" maxlength="17" autocomplete="off" spellcheck="false" placeholder="@username, or leave empty"></div>
+						<div class="tu-field ch-f-clock"><label for="ch-ht">Time per move</label>
+							<select id="ch-ht" class="tu-select"><option value="5">5 minutes (live game)</option><option value="15">15 minutes</option><option value="60">1 hour</option><option value="1440">1 day (correspondence)</option><option value="4320">3 days (correspondence)</option></select></div>
+					</div>
+					<p class="ch-ogame">Game: <b id="ch-hvar"></b> · your colour: the setting above.</p>
+					<p><button type="button" class="tu-btn tu-btn--primary" id="ch-hcreate">Make a Hive game</button></p>
+					<p class="tu-note">Empty = an open game anyone on Hive can join from the list below (it stays open for an hour). With a name, only that account can join: send them the link. A player who takes longer than the time per move can lose by a claim.</p>
+				</div>
+				<div class="ch-lobhead"><h3 class="ch-h3">Open Hive games</h3><button type="button" class="tu-btn" id="ch-hrefresh">↻ Refresh</button></div>
+				<div id="ch-hlobby"><p class="ch-sub">Loading…</p></div>
+				<div id="ch-hminebox" hidden><h3 class="ch-h3">My Hive games</h3><div id="ch-hmine"></div></div>
+				<h3 class="ch-h3">Recently on Hive</h3>
+				<div id="ch-hrecent"><p class="ch-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card ch-cbro">
+				<h2 class="ch-h">Chess on Hive</h2>
+				<p class="ch-sub">Hive has an active chess crowd. <a href="https://peakd.com/@chessbrotherspro" target="_blank" rel="noopener">Chess Brothers</a> (<a href="https://peakd.com/created/chessbrothers" target="_blank" rel="noopener">#chessbrothers</a>) curates chess posts every day, in English and Spanish, and there is <a href="https://peakd.com/c/hive-157286" target="_blank" rel="noopener">The Chess Community</a>. Finished a good game here? Press <b>✍ Post this game on Hive</b> under the board: it writes a post with your moves, the PGN and a replay link, tagged #chessbrothers.</p>
+			</div>
+			<p class="tu-note">Guest online games are kept on mes.fm's server for a few hours, then deleted. Only the game itself and the names you type are stored. Hive games and saved results are public and permanent, like everything on Hive; mes.fm only keeps a short list of open and recent Hive games so players can find each other.</p>
+		</section>
+
+		<section id="ch-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded), per game and level. Games left unfinished are not counted.</p>
+			<div id="ch-stats"></div>
+		</section>
+
+		<section id="ch-p-rules" role="tabpanel" aria-label="Rules" hidden>
+			<div id="ch-rules"></div>
+		</section>
+
+		<div class="tu-toast" id="ch-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Play chess free: against the computer, a friend, online or on Hive</h2>
+			<p>A complete chess board in your browser with nothing to install and no account. Play the computer at four levels, a friend on the same phone or computer, or someone online: as a guest with a link, or on the Hive blockchain where every move is signed and kept for good (a live game or slow correspondence chess). Switch between a clean 2D board and a 3D board in a chess club, a tournament hall, a park, a living room or space, with wood, marble, glass or tournament pieces. Variants: Chess960 (Fischer Random), King of the Hill and Three-check.</p>
+			<h3>How strong is the computer?</h3>
+			<dl>
+				<dt>Easy</dt><dd>Looks one move ahead and adds a lot of chance, so it leaves pieces hanging and misses tactics. Good for learning the moves.</dd>
+				<dt>Medium</dt><dd>Looks three moves ahead with some chance mixed in: it punishes plain blunders but plays loose positional chess, roughly like a casual club player.</dd>
+				<dt>Hard</dt><dd>An alpha-beta search with a transposition table, null-move pruning and a quiescence search for about a second (often 8 to 10 half-moves deep), judging positions by material, piece placement, the bishop pair and pawn structure. A real challenge for most club players.</dd>
+				<dt>Expert</dt><dd>The same engine with three times the thinking time.</dd>
+			</dl>
+			<p>Tick <b>Show the computer's opinion</b> to see an evaluation bar and the best move as an arrow, or press <b>Hint</b> for a single suggestion. The computer plays every variant too.</p>
+			<h3>How Hive games work</h3>
+			<p>A Hive game is a series of small signed messages from your Hive account (custom_json operations with the id <code>mes_chess</code>, signed with your posting key, never your active or owner key). The host opens a game with a time per move, the other player joins, and each move is one operation with its move number. Both browsers read both accounts' histories from a Hive node and replay the moves with the same rules, so they always agree and nobody, not even mes.fm, can change a move or the result. Draw offers, resignations and win claims (when the other player runs out of their time per move, judged by block times) are operations too. You can also save the result of a game against the computer or a friend to your account; that is marked as self-reported, because the moves were not signed one by one as they happened.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How do I move?</dt><dd>Click or tap a piece, then the square it should go to (the dots show where it can go), or drag it there. You can also type moves such as e4, Nf3, exd5, O-O or e8=Q in the box under the board.</dd>
+				<dt>How do I castle?</dt><dd>Move your king two squares towards the rook (or click the rook after picking the king); the rook jumps over. In Chess960 click the king, then your rook.</dd>
+				<dt>What happens to a pawn on the last rank?</dt><dd>It is promoted: a small window asks for a queen, rook, bishop or knight.</dd>
+				<dt>When is a game a draw?</dt><dd>Stalemate (no legal move and not in check), the same position three times, 50 moves by each side without a pawn move or a capture, too little material to mate (such as king and bishop against king), or an agreed draw online.</dd>
+				<dt>What is Chess960?</dt><dd>Bobby Fischer's variant: the back-rank pieces start in one of 960 shuffled orders (bishops on opposite colours, king between the rooks) and both sides mirror each other. Castling still ends with the king on g1 or c1 and the rook beside it.</dd>
+				<dt>Can I save or share a game?</dt><dd>Copy a link that opens the game at any move, copy or download it as PGN (the standard format every chess program reads), load a PGN or FEN, save the result to Hive, or write a Hive post about it.</dd>
+				<dt>Can I play on a phone?</dt><dd>Yes. Fill window and Full screen make the board as big as your screen; held sideways, the board takes the whole height and the moves sit beside it.</dd>
+			</dl>
+			<p>Related: <a href="/connect-four">Connect Four</a> &middot; <a href="/backgammon">Backgammon</a> &middot; <a href="/billiards">Billiards</a> &middot; <a href="/tic-tac-toe">Tic-Tac-Toe</a> &middot; <a href="/minesweeper">Minesweeper</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>
