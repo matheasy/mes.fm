@@ -113,9 +113,17 @@
 		["tooth", "Tooth", "🦷"], ["arm", "Arm", "💪"], ["leg", "Leg", "🦵"]
 	]);
 
-	// Real photos (AI-made in Grok / ChatGPT / Gemini, 2026-11-11) for every animal: mes.fm/kids/img/animals/<key>.jpg, shown when S.pics = "photo"
-	var PHOTOS = "dog cat cow pig sheep goat horse chicken rooster duck goose turkey owl crow dove bird peacock eagle frog bee cricket elephant lion tiger bear wolf monkey whale bison deer snake crocodile mouse rabbit fish turtle giraffe zebra penguin butterfly octopus fox".split(" ");
-	ITEMS.forEach(function (it) { if (it.cat === "animals" && PHOTOS.indexOf(it.key) >= 0) it.ph = "/kids/img/animals/" + it.key + ".jpg?v=1"; });
+	// Real photos (AI-made in Grok / ChatGPT / Gemini, 2026-11-11): mes.fm/kids/img/<cat>/<key>.jpg, shown when S.pics = "photo".
+	// Animals, food, things and vehicles all have one; ABC cards reuse a photo whose word matches (apple, ball, cat ...).
+	var PHOTOS = {
+		animals: "dog cat cow pig sheep goat horse chicken rooster duck goose turkey owl crow dove bird peacock eagle frog bee cricket elephant lion tiger bear wolf monkey whale bison deer snake crocodile mouse rabbit fish turtle giraffe zebra penguin butterfly octopus fox",
+		food: "apple banana strawberry grapes orange watermelon carrot corn broccoli bread cheese egg milk cookie cake pizza pear cherries",
+		things: "ball teddy book cup shoe hat sock spoon bed chair key clock balloon present umbrella house tree flower sun moon rainbow star",
+		vehicles: "car bus truck firetruck police ambulance train plane boat bike tractor helicopter rocket motorbike"
+	};
+	var PH = {}; Object.keys(PHOTOS).forEach(function (c) { PHOTOS[c].split(" ").forEach(function (k) { PH[c + ":" + k] = "/kids/img/" + c + "/" + k + ".jpg?v=1"; }); });
+	var ABC_PH = { apple: "food:apple", ball: "things:ball", cat: "animals:cat", dog: "animals:dog", egg: "food:egg", fish: "animals:fish", grapes: "food:grapes", lion: "animals:lion", moon: "things:moon", orange: "food:orange", pig: "animals:pig", rainbow: "things:rainbow", sun: "things:sun", tree: "things:tree", umbrella: "things:umbrella", zebra: "animals:zebra" };
+	ITEMS.forEach(function (it) { var p = PH[it.id] || (it.cat === "letters" && PH[ABC_PH[it.ex]]); if (p) it.ph = p; });
 	var BY_ID = {}; ITEMS.forEach(function (it) { BY_ID[it.id] = it; });
 
 	// Each page = a mode: which categories it can show (and which are on by default).
