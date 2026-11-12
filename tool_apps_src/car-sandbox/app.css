@@ -110,3 +110,9 @@
 	.cs-replaying .cs-touch, .cs-replaying .cs-speedo, .cs-replaying .cs-help, .cs-replaying .cs-hud {display:none !important;}
 	html body.dark-mode #cs .cs-replay {background:rgba(12,16,24,0.82);color:#f2f5fa;}
 	html body.dark-mode #cs .cs-replay button, html body.dark-mode #cs .cs-replay select, html body.dark-mode #cs .cs-rptime {color:#f2f5fa;background:rgba(255,255,255,0.1);}
+	.cs-todr {width:100%;}
+	.cs-todticks {display:flex;justify-content:space-between;font-size:0.72em;opacity:0.7;margin-top:-0.1em;}
+	.cs-pop select {font:inherit;font-size:0.95em;background:rgba(255,255,255,0.1);color:var(--cs-ink);border:1px solid var(--cs-line);border-radius:0.4em;}
+	.cs-pop select option {color:#111;}
+	.cs-pop input[data-tod] {width:100%;}
+	.cs-pop b span {font-weight:500;opacity:0.8;}

@@ -417,6 +417,12 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-replaying .cs-touch, .cs-replaying .cs-speedo, .cs-replaying .cs-help, .cs-replaying .cs-hud {display:none !important;}
 	html body.dark-mode #cs .cs-replay {background:rgba(12,16,24,0.82);color:#f2f5fa;}
 	html body.dark-mode #cs .cs-replay button, html body.dark-mode #cs .cs-replay select, html body.dark-mode #cs .cs-rptime {color:#f2f5fa;background:rgba(255,255,255,0.1);}
+	.cs-todr {width:100%;}
+	.cs-todticks {display:flex;justify-content:space-between;font-size:0.72em;opacity:0.7;margin-top:-0.1em;}
+	.cs-pop select {font:inherit;font-size:0.95em;background:rgba(255,255,255,0.1);color:var(--cs-ink);border:1px solid var(--cs-line);border-radius:0.4em;}
+	.cs-pop select option {color:#111;}
+	.cs-pop input[data-tod] {width:100%;}
+	.cs-pop b span {font-weight:500;opacity:0.8;}
 
 
 	@media print {
@@ -554,6 +560,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-paint button{border:2px solid rgba(76,76,76,0.20)}
 	body.dark-mode .cs-replay button,body.dark-mode .cs-replay select{background:rgba(26,26,26,0.10)}
 	body.dark-mode .cs-replay select option{color:#eeeeee}
+	body.dark-mode .cs-pop select{background:rgba(26,26,26,0.10)}
+	body.dark-mode .cs-pop select option{color:#eeeeee}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -810,6 +818,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<b>Sound</b>
 					<label class="cs-prow"><input type="checkbox" data-snd> Sound on</label>
 					<label class="cs-prow">Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"><span data-volnum></span></label>
+					<b>Time of day <span data-todlab></span></b>
+					<input type="range" data-tod min="0" max="24" step="0.05" aria-label="Time of day (hours)">
+					<div class="cs-prow"><button type="button" class="cs-mini" data-cycle>▶ Run the day</button><select data-cyspd aria-label="Length of a day"></select></div>
 					<b>Show on screen</b>
 					<label class="cs-prow"><input type="checkbox" data-show="info"> Car, gravity, g-force, damage</label>
 					<label class="cs-prow"><input type="checkbox" data-show="lap"> Lap timer</label>
@@ -827,7 +838,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
 						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
-						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night driving · <kbd>K</kbd> weather</li>
+						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
 						<li>In the air, the pedals tip the nose and steering rolls the car</li>
 						<li>Drag the picture to look around · a game controller works too</li>
@@ -845,6 +856,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-grow"><input type="range" id="cs-g" min="0" max="30" step="0.01" aria-label="Gravity in metres per second squared"><input type="number" id="cs-gnum" class="tu-input" min="0" max="300" step="0.01" aria-label="Gravity (m/s²)"><span>m/s²</span></div>
 					<div class="cs-row"><button type="button" class="tu-btn tu-btn--ghost" id="cs-flip">↕ Flip gravity for 2.5 s (G)</button></div>
 					<p class="tu-note" id="cs-gfacts"></p>
+				</div>
+				<div class="cs-card">
+					<div class="cs-ch">Time of day <span class="cs-gname" data-todlab></span></div>
+					<input type="range" class="cs-todr" data-tod min="0" max="24" step="0.05" aria-label="Time of day (hours)">
+					<div class="cs-todticks" aria-hidden="true"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn tu-btn--ghost" data-cycle>▶ Run the day</button><select class="tu-select" data-cyspd aria-label="Length of a day"></select></div>
+					<p class="tu-note">Drag through sunrise and sunset to see the sun move, the sky change colour and the shadows grow. At dusk the lamp posts and headlights switch on.</p>
 				</div>
 				<div class="cs-card">
 					<div class="cs-ch">Other cars</div>
@@ -872,7 +890,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="cs-checks">
 						<label><input type="checkbox" id="cs-slow"> Slow motion</label>
-						<label><input type="checkbox" data-night> Night driving</label>
 						<label><input type="checkbox" id="cs-snd" data-snd> Sound</label>
 						<label>Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"> <span data-volnum></span></label>
 						<label><input type="checkbox" id="cs-dmgon"> Dents &amp; damage</label>
@@ -924,6 +941,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>Yes. A wet road gives the tyres about 70% of their dry grip, a thunderstorm about 60% and packed snow only about a third, so you need much more room to stop and must take bends slower. The stopping distance shown under the gravity controls includes it. The Moon and Ceres have no air, so they have no weather at all.</dd>
 				<dt>Can I watch a crash again?</dt>
 				<dd>Yes: the last 12 seconds of every car and object are always kept. Press Y (or the 🎬 button) for an instant replay with TV cameras, a chase camera or an orbit you can drag, in slow motion if you like, and drag the bar to any moment.</dd>
+				<dt>How does the time of day work?</dt>
+				<dd>Pick any hour with the slider, or press "Run the day" and choose how long a whole day takes (from 2 minutes to real time). The sun rises at 6:00, is highest at noon and sets at 18:00; low sun gives long shadows and an orange sky, and on Mars the sunset glows blue, as photographed by NASA’s rovers. On the real Moon a day lasts about 29.5 Earth days.</dd>
 				<dt>What does night driving change?</dt>
 				<dd>The sun goes down, stars come out, the lamp posts along the track glow and your car’s headlights light the road. On the Moon the only light left is earthshine (sunlight reflected off the Earth), so the headlights matter a lot.</dd>
 				<dt>Is anything saved or uploaded?</dt>

@@ -93,4 +93,16 @@ Object.keys(C.WEATHER).forEach(function (k) { var x = C.WEATHER[k]; ok(x.grip > 
 near(C.stopDist(27.78, C.WEATHER.snow.grip, 9.81) / C.stopDist(27.78, 1, 9.81), 1 / 0.32, 1e-9, "snow stops 3x longer");
 ok(C.parseQuery("w=earth&wx=snow").weather === "snow" && C.parseQuery("wx=nope").weather === undefined, "wx query");
 ok(C.query({ world: "earth", weather: "rain" }).indexOf("wx=rain") >= 0 && C.query({ world: "moon", weather: "rain" }).indexOf("wx") < 0, "wx in links only where possible");
+// time of day
+var base = C.WORLDS.earth.sun;
+ok(C.sunAt(12, base).elev > 0.85 && C.sunAt(12, base).day === 1 && C.sunAt(12, base).sunK === 1, "noon is full day");
+ok(C.sunAt(0, base).elev < -0.85 && C.sunAt(0, base).day === 0 && C.sunAt(0, base).moonK === 1, "midnight is night");
+near(C.sunAt(6, base).elev, 0, 1e-9, "sunrise at 6"); near(C.sunAt(18, base).elev, 0, 1e-9, "sunset at 18");
+ok(C.sunAt(18.05, base).dusk > 0.8 && C.sunAt(12, base).dusk === 0 && C.sunAt(2, base).dusk === 0, "dusk colours only near sunset");
+var d1 = C.sunAt(9, base).dir, d2 = C.sunAt(15, base).dir; ok(Math.abs(d1[0] - d2[0]) + Math.abs(d1[2] - d2[2]) > 0.5, "sun moves across the sky");
+for (var hh = 0; hh < 24; hh += 0.37) { var sa = C.sunAt(hh, base); near(Math.hypot(sa.dir[0], sa.dir[1], sa.dir[2]), 1, 1e-9, "sun dir unit"); ok(sa.day >= 0 && sa.day <= 1 && !(sa.sunK > 0 && sa.moonK > 0), "sun / moon light never both at " + hh); }
+ok(C.fmtTime(13.5) === "13:30" && C.fmtTime(24.25) === "00:15" && C.fmtTime(-1) === "23:00", "time format");
+ok(C.timeName(12) === "Midday" && C.timeName(18) === "Sunset" && C.timeName(23) === "Night", "time names");
+ok(C.parseQuery("t=19.5").tod === 19.5 && C.parseQuery("t=30").tod === undefined, "t query");
+ok(C.query({ world: "earth", tod: 19.5 }).indexOf("t=19.5") >= 0 && C.query({ world: "earth", tod: 13 }).indexOf("t=") < 0, "t in links");
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

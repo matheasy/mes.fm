@@ -75,6 +75,21 @@
 	/* which weather each world can have (no air = no weather) */
 	C.weatherFor = function (wid) { var W = C.WORLDS[wid]; if (!W || !W.rho) return ["clear"]; if (wid === "mars") return ["clear", "dust", "co2snow"]; return ["clear", "rain", "storm", "snow", "fog"]; };
 
+	/* ---------- time of day ----------
+	   sun direction at hour h (0-24) for a world whose midday-ish sun points along base (its W.sun): rises at 6, highest at 12 (about 67°),
+	   sets at 18, swinging across the sky. day = how much daylight (0 night .. 1 full day), dusk = how strong sunrise / sunset colours are,
+	   sunK / moonK = strength of direct sun light / moon light (0..1). */
+	function sstep(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+	C.sunAt = function (h, base) {
+		var a = ((h - 6) / 24) * 2 * Math.PI, elev = Math.sin(a) * 0.92, ce = Math.sqrt(1 - elev * elev);
+		var az0 = Math.atan2(base[0], base[2]), az = az0 + (a - Math.PI / 2) * 0.9;
+		return { dir: [Math.sin(az) * ce, elev, Math.cos(az) * ce], elev: elev, day: sstep(-0.17, 0.09, elev), dusk: elev > -0.14 ? Math.max(0, 1 - Math.abs(elev - 0.02) / 0.17) : 0, sunK: sstep(0, 0.16, elev), moonK: sstep(0.02, -0.12, elev) };
+	};
+	C.fmtTime = function (h) { h = ((h % 24) + 24) % 24; var hh = Math.floor(h), mm = Math.floor((h - hh) * 60); return (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm; };
+	C.timeName = function (h) { h = ((h % 24) + 24) % 24; return h < 4.5 ? "Night" : h < 5.6 ? "Before dawn" : h < 7.2 ? "Sunrise" : h < 11 ? "Morning" : h < 13.5 ? "Midday" : h < 16.8 ? "Afternoon" : h < 18.6 ? "Sunset" : h < 19.6 ? "Dusk" : "Night"; };
+	/* how long a whole game day takes when the clock runs (minutes) */
+	C.CYCLES = [[2, "2 minutes"], [6, "6 minutes"], [15, "15 minutes"], [60, "1 hour"], [1440, "24 hours (real time)"]];
+
 	/* ---------- seeded randomness + noise ---------- */
 	C.rng = function (seed) { var s = (seed >>> 0) || 1; return function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 	function hash2(ix, iz, seed) { var h = Math.imul(ix, 374761393) + Math.imul(iz, 668265263) + Math.imul(seed, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
@@ -351,9 +366,10 @@
 		var t = parseInt(p.get("cars"), 10); if (t >= 0 && t <= 12) o.traffic = t;
 		if (["cruise", "chase", "park"].indexOf(p.get("ai")) >= 0) o.ai = p.get("ai");
 		if (C.WEATHER[p.get("wx")]) o.weather = p.get("wx");
+		var tt = parseFloat(p.get("t")); if (isFinite(tt) && tt >= 0 && tt < 24) o.tod = tt;
 		return o;
 	};
-	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); return p.toString(); };
+	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); if (s.tod != null && Math.abs(s.tod - 13) > 0.01) p.set("t", String(+(+s.tod).toFixed(2))); return p.toString(); };
 
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCar = C;
 })(typeof window !== "undefined" ? window : this);

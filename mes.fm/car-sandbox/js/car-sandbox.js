@@ -75,6 +75,21 @@
 	/* which weather each world can have (no air = no weather) */
 	C.weatherFor = function (wid) { var W = C.WORLDS[wid]; if (!W || !W.rho) return ["clear"]; if (wid === "mars") return ["clear", "dust", "co2snow"]; return ["clear", "rain", "storm", "snow", "fog"]; };
 
+	/* ---------- time of day ----------
+	   sun direction at hour h (0-24) for a world whose midday-ish sun points along base (its W.sun): rises at 6, highest at 12 (about 67°),
+	   sets at 18, swinging across the sky. day = how much daylight (0 night .. 1 full day), dusk = how strong sunrise / sunset colours are,
+	   sunK / moonK = strength of direct sun light / moon light (0..1). */
+	function sstep(a, b, x) { var t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
+	C.sunAt = function (h, base) {
+		var a = ((h - 6) / 24) * 2 * Math.PI, elev = Math.sin(a) * 0.92, ce = Math.sqrt(1 - elev * elev);
+		var az0 = Math.atan2(base[0], base[2]), az = az0 + (a - Math.PI / 2) * 0.9;
+		return { dir: [Math.sin(az) * ce, elev, Math.cos(az) * ce], elev: elev, day: sstep(-0.17, 0.09, elev), dusk: elev > -0.14 ? Math.max(0, 1 - Math.abs(elev - 0.02) / 0.17) : 0, sunK: sstep(0, 0.16, elev), moonK: sstep(0.02, -0.12, elev) };
+	};
+	C.fmtTime = function (h) { h = ((h % 24) + 24) % 24; var hh = Math.floor(h), mm = Math.floor((h - hh) * 60); return (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm; };
+	C.timeName = function (h) { h = ((h % 24) + 24) % 24; return h < 4.5 ? "Night" : h < 5.6 ? "Before dawn" : h < 7.2 ? "Sunrise" : h < 11 ? "Morning" : h < 13.5 ? "Midday" : h < 16.8 ? "Afternoon" : h < 18.6 ? "Sunset" : h < 19.6 ? "Dusk" : "Night"; };
+	/* how long a whole game day takes when the clock runs (minutes) */
+	C.CYCLES = [[2, "2 minutes"], [6, "6 minutes"], [15, "15 minutes"], [60, "1 hour"], [1440, "24 hours (real time)"]];
+
 	/* ---------- seeded randomness + noise ---------- */
 	C.rng = function (seed) { var s = (seed >>> 0) || 1; return function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
 	function hash2(ix, iz, seed) { var h = Math.imul(ix, 374761393) + Math.imul(iz, 668265263) + Math.imul(seed, 2147483647); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
@@ -351,9 +366,10 @@
 		var t = parseInt(p.get("cars"), 10); if (t >= 0 && t <= 12) o.traffic = t;
 		if (["cruise", "chase", "park"].indexOf(p.get("ai")) >= 0) o.ai = p.get("ai");
 		if (C.WEATHER[p.get("wx")]) o.weather = p.get("wx");
+		var tt = parseFloat(p.get("t")); if (isFinite(tt) && tt >= 0 && tt < 24) o.tod = tt;
 		return o;
 	};
-	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); return p.toString(); };
+	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); if (s.tod != null && Math.abs(s.tod - 13) > 0.01) p.set("t", String(+(+s.tod).toFixed(2))); return p.toString(); };
 
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCar = C;
 })(typeof window !== "undefined" ? window : this);
@@ -373,14 +389,15 @@
 	function load(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v && typeof v === "object" ? Object.assign(d, v) : d; } catch (e) { return d; } }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var usLocale = /^en-(US|LR|MM)/.test(navigator.language || "");
-	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, night: false, weather: "clear", vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true } });
+	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, tod: 13, cycle: false, cycleMin: 6, weather: "clear", vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true } });
 	if (!S.show || typeof S.show !== "object") S.show = { info: true, lap: true, speed: true, msg: true, ghost: true };
 	if (S.ghost === false) { S.show.ghost = false; delete S.ghost; }
 	if (typeof S.vol !== "number") S.vol = 0.7;
+	if (typeof S.tod !== "number") S.tod = S.night ? 22 : 13; delete S.night;
 	var REC = load(RKEY, { top: 0, jump: 0, air: 0, crash: 0, laps: {} }); if (!REC.laps) REC.laps = {};
 	var Q = C.parseQuery(location.search);
 	if (Q.world) { S.world = Q.world; S.g = null; S.car = null; }
-	if (Q.car) S.car = Q.car; if (Q.g != null) S.g = Q.g; if (Q.traffic != null) S.traffic = Q.traffic; if (Q.ai) S.ai = Q.ai; if (Q.weather) S.weather = Q.weather;
+	if (Q.car) S.car = Q.car; if (Q.g != null) S.g = Q.g; if (Q.traffic != null) S.traffic = Q.traffic; if (Q.ai) S.ai = Q.ai; if (Q.weather) S.weather = Q.weather; if (Q.tod != null) S.tod = Q.tod;
 	if (!C.WORLDS[S.world]) S.world = "earth";
 
 	var THREE = null, RAPIER = null;
@@ -446,7 +463,7 @@
 	/* ===================== the world ===================== */
 	function clearWorld() {
 		if (worldGroup) { scene.remove(worldGroup); worldGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (m) { if (m.map) m.map.dispose(); m.dispose(); }); } }); }
-		if (skyGroup) scene.remove(skyGroup);
+		if (skyGroup) scene.remove(skyGroup); skyGroup = null; skyRef = null;
 		cars.forEach(function (c) { scene.remove(c.group); }); objs.forEach(function (o) { scene.remove(o.mesh); });
 		cars = []; objs = []; statics = []; parts.clear(); lampMat = null; groundMat = trackMat = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
 		if (phys) { phys.free(); phys = null; }
@@ -477,27 +494,54 @@
 	function hAt(x, z) { return C.gridHeight(ter, groundH, x, z); }
 	/* ---------- day and night ---------- */
 	var NIGHT_SKY = { earth: ["#01030a", "#0c1730"], jupiter: ["#030208", "#1a1420"], mars: ["#04030a", "#1e1418"], moon: ["#000000", "#020308"], ceres: ["#000000", "#020205"] };
-	function applyLighting() {
-		var n = !!S.night, sd = new THREE.Vector3(W.sun[0], W.sun[1], W.sun[2]).normalize();
-		if (n) sd.set(-sd.x, Math.max(0.35, sd.y), -sd.z).normalize(); /* moonlight / earthshine from the other side */
-		sunLight.userData.dir = sd;
-		sunLight.color.set(n ? (W.planet === "earth" ? "#9fc0ff" : "#a9bdf5") : W.sunCol);
-		var X = wx(), ov = X.over;
-		sunLight.intensity = (n ? (W.planet === "earth" ? 0.55 : 0.4) : (W.amb < 0.3 ? 3.2 : 2.4)) * (1 - ov * 0.65);
-		hemi.color.set(n ? 0x1d2a48 : (W.amb < 0.3 ? 0x8899aa : W.sky[1])); hemi.groundColor.set(n ? 0x050608 : W.ground[0]); hemi.intensity = n ? 0.12 : W.amb;
-		renderer.toneMappingExposure = n ? 1.25 : (W.amb < 0.3 ? 0.95 : 1.0);
-		var fc = n ? "#05070d" : (X.fogCol || (W.fog && W.fog[0]) || "#000"), f1 = W.fog ? W.fog[1] : 300, f2 = W.fog ? W.fog[2] : 900;
-		scene.fog = W.fog || X.fogCol ? new THREE.Fog(fc, f1 * (n ? 0.6 : 1) * Math.max(0.05, X.fog), f2 * (n ? 0.7 : 1) * X.fog) : null;
-		if (!n && ov) hemi.intensity = W.amb * (1 + ov * 0.4); /* flat grey light under clouds */
+	var dayK = 1, skyRef = null;
+	function applyLighting() { applyGround(); buildWeather(); sunLight.castShadow = !!S.shadows; if (!skyGroup) buildSky(); applyTime(); }
+	/* everything that depends on the hour: sun / moon light, sky colours, stars, fog, lamps. Cheap, so it runs every frame while the day cycles. */
+	var tmpC1, tmpC2, tmpC3;
+	function applyTime() {
+		if (!W || !skyRef) return;
+		tmpC1 = tmpC1 || new THREE.Color(); tmpC2 = tmpC2 || new THREE.Color(); tmpC3 = tmpC3 || new THREE.Color();
+		var st = C.sunAt(S.tod, W.sun), d = st.day, X = wx(), ov = X.over, dusk = st.dusk * (1 - ov * 0.8);
+		dayK = d;
+		var sunDir = new THREE.Vector3(st.dir[0], st.dir[1], st.dir[2]), moonDir = new THREE.Vector3(-st.dir[0], Math.max(0.35, Math.abs(st.dir[1]) * 0.6 + 0.3), -st.dir[2]).normalize();
+		var dayI = (W.amb < 0.3 ? 3.2 : 2.4) * (1 - ov * 0.65), nightI = W.planet === "earth" ? 0.55 : 0.4;
+		if (st.sunK >= st.moonK) { sunLight.userData.dir = sunDir; sunLight.intensity = dayI * st.sunK; sunLight.color.set(W.sunCol).lerp(tmpC1.set("#ff9b5c"), Math.min(1, dusk * 1.1)); }
+		else { sunLight.userData.dir = moonDir; sunLight.intensity = nightI * st.moonK * (1 - ov * 0.6); sunLight.color.set(W.planet === "earth" ? "#9fc0ff" : "#a9bdf5"); }
+		var dayHemi = ov ? W.amb * (1 + ov * 0.4) : W.amb;
+		hemi.intensity = 0.12 + (dayHemi - 0.12) * d;
+		hemi.color.set(0x1d2a48).lerp(tmpC1.set(W.amb < 0.3 ? 0x8899aa : W.sky[1]), d); hemi.groundColor.set(0x050608).lerp(tmpC1.set(W.ground[0]), d);
 		hemiBase = hemi.intensity;
-		applyGround(); buildWeather();
-		sunLight.castShadow = !!S.shadows;
-		if (lampMat) lampMat.emissiveIntensity = n ? 3 : 0;
-		if (skyGroup) { scene.remove(skyGroup); skyGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); }
-		buildSky();
-		var b = $("cs-night"); if (b) { b.setAttribute("aria-pressed", String(n)); b.textContent = n ? "☀️" : "🌙"; }
-		root.querySelectorAll("[data-night]").forEach(function (x) { x.checked = n; });
+		renderer.toneMappingExposure = 1.25 + ((W.amb < 0.3 ? 0.95 : 1.0) - 1.25) * d;
+		/* sky: night colours -> day colours (greyer under cloud), with an orange horizon at sunrise / sunset */
+		var dsky = W.sky, nsky = NIGHT_SKY[S.world] || ["#000", "#050810"];
+		var top = tmpC1.set(dsky[0]), hor = tmpC2.set(dsky[1]);
+		if (ov) { var grey = S.world === "mars" ? ["#8f6a4c", "#c79a72"] : X.snowy ? ["#9aa4b0", "#d5dbe2"] : ["#4f5863", "#8b949e"]; top.lerp(tmpC3.set(grey[0]), ov); hor.lerp(tmpC3.set(grey[1]), ov); }
+		top.lerp(tmpC3.set(ov ? "#0a0c10" : nsky[0]), 1 - d); hor.lerp(tmpC3.set(ov ? "#111419" : nsky[1]), 1 - d);
+		if (W.rho) hor.lerp(tmpC3.set(S.world === "mars" ? "#7fa6c9" /* Mars sunsets are blue */ : "#ff8a45"), dusk * 0.85);
+		var col = skyRef.geo.attributes.color, ys = skyRef.ys, c = tmpC3;
+		for (var i = 0; i < ys.length; i++) { c.copy(hor).lerp(top, Math.pow(ys[i], 0.55)); col.setXYZ(i, c.r, c.g, c.b); }
+		col.needsUpdate = true;
+		skyRef.sun.position.copy(sunDir).multiplyScalar(1500); skyRef.sun.visible = st.elev > -0.06 && ov < 0.55; skyRef.sun.material.color.set("#ffffff").lerp(tmpC3.set("#ffb070"), dusk);
+		if (skyRef.moon) { skyRef.moon.position.copy(moonDir).multiplyScalar(1500); skyRef.moon.material.opacity = Math.max(0, 1 - d * 1.4); skyRef.moon.visible = skyRef.moon.material.opacity > 0.02 && ov < 0.55; }
+		var so = W.stars ? 1 : Math.pow(1 - d, 2) * (ov < 0.55 ? 1 : 0); skyRef.stars.material.opacity = so; skyRef.stars.visible = so > 0.02;
+		/* fog follows the sky */
+		var fogDay = X.fogCol || (W.fog && W.fog[0]);
+		if (fogDay) {
+			var fcol = tmpC3.set(fogDay); if (W.rho) fcol.lerp(tmpC2.set("#e79a6a"), dusk * 0.35); fcol.lerp(tmpC1.set("#05070d"), 1 - d);
+			var f1 = (W.fog ? W.fog[1] : 300) * Math.max(0.05, X.fog) * (0.6 + 0.4 * d), f2 = (W.fog ? W.fog[2] : 900) * X.fog * (0.7 + 0.3 * d);
+			if (!scene.fog) scene.fog = new THREE.Fog(fcol, f1, f2); else { scene.fog.color.copy(fcol); scene.fog.near = f1; scene.fog.far = f2; }
+		} else scene.fog = null;
+		if (lampMat) lampMat.emissiveIntensity = 3 * Math.max(0, Math.min(1, (0.55 - d) / 0.35));
+		var dark = d < 0.45, b = $("cs-night"); if (b) { b.setAttribute("aria-pressed", String(dark)); b.textContent = dark ? "☀️" : "🌙"; }
+		todUI();
 	}
+	function todUI() {
+		root.querySelectorAll("[data-tod]").forEach(function (x) { if (document.activeElement !== x) x.value = String(S.tod); });
+		root.querySelectorAll("[data-todlab]").forEach(function (x) { x.textContent = C.fmtTime(S.tod) + " · " + C.timeName(S.tod); });
+		root.querySelectorAll("[data-cycle]").forEach(function (x) { x.textContent = S.cycle ? "❚❚ Stop the clock" : "▶ Run the day"; x.setAttribute("aria-pressed", String(!!S.cycle)); });
+		root.querySelectorAll("[data-cyspd]").forEach(function (x) { x.value = String(S.cycleMin); });
+	}
+	function setTod(h, quiet) { S.tod = ((h % 24) + 24) % 24; if (!quiet) save(); applyTime(); }
 	/* ---------- weather ---------- */
 	function wx() { return C.WEATHER[C.weatherFor(S.world).indexOf(S.weather) >= 0 ? S.weather : "clear"]; }
 	var hemiBase = 0.5, groundMat = null, trackMat = null, groundMap = null, snowMap = null, wxObj = null, rainSnd = null, nextBolt = 0, flash = 0;
@@ -555,7 +599,7 @@
 		var X = wx(); $("cs-wx").value = k;
 		toast(X.name + (X.grip < 1 ? ": tyre grip " + Math.round(X.grip * 100) + "% of dry, so brake earlier" : ""));
 	}
-	function setNight(on) { S.night = !!on; save(); applyLighting(); toast(S.night ? (W.stars ? "Night: only the light of the " + (W.planet === "earth" ? "Earth" : "stars") + " and your headlights" : "Night driving: headlights on") : "Daytime"); }
+	function setNight(on) { setTod(on ? 22 : 12.5); syncUrl(); toast(on ? (W.stars ? "Night: only the light of the " + (W.planet === "earth" ? "Earth" : "stars") + " and your headlights" : "Night: headlights on") : "Daytime"); }
 	/* headlights: two real spot lights on the player's car (only at night) + faint beams */
 	var heads = null;
 	function headlights() {
@@ -569,31 +613,29 @@
 			beam.rotation.x = -Math.PI / 2; beam.position.set(0, -0.5, 10); heads.group.add(beam);
 		}
 		var c = cars[player]; if (!c) return;
-		heads.group.visible = !!S.night;
+		heads.group.visible = dayK < 0.45;
 		if (heads.group.parent !== c.group) { c.group.add(heads.group); heads.group.position.set(0, c.d.windows ? -c.d.h * 0.3 : c.d.h * 0.15, c.d.l / 2 + 0.05); }
 	}
 
 	function buildSky() {
 		skyGroup = new THREE.Group(); scene.add(skyGroup);
-		var skyC = S.night ? NIGHT_SKY[S.world] || ["#000", "#050810"] : W.sky, X0 = wx();
-		if (X0.over) { var grey = S.world === "mars" ? ["#8f6a4c", "#c79a72"] : X0.snowy ? ["#9aa4b0", "#d5dbe2"] : ["#4f5863", "#8b949e"]; skyC = [new THREE.Color(skyC[0]).lerp(new THREE.Color(S.night ? "#0a0c10" : grey[0]), X0.over).getStyle(), new THREE.Color(skyC[1]).lerp(new THREE.Color(S.night ? "#111419" : grey[1]), X0.over).getStyle()]; }
-		var geo = new THREE.SphereGeometry(1800, 32, 16), col = [], top = new THREE.Color(skyC[0]), hor = new THREE.Color(skyC[1]), p = geo.attributes.position;
-		for (var i = 0; i < p.count; i++) { var t = Math.max(0, p.getY(i) / 1800); var c = hor.clone().lerp(top, Math.pow(t, 0.55)); col.push(c.r, c.g, c.b); }
-		geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+		var geo = new THREE.SphereGeometry(1800, 32, 16), p = geo.attributes.position, ys = new Float32Array(p.count);
+		for (var i = 0; i < p.count; i++) ys[i] = Math.max(0, p.getY(i) / 1800);
+		geo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(p.count * 3), 3));
 		skyGroup.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false })));
-		var sd = new THREE.Vector3(W.sun[0], W.sun[1], W.sun[2]).normalize();
 		var sunTex = canvasTex(128, 128, function (g) { var gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, "rgba(255,255,250,1)"); gr.addColorStop(0.18, "rgba(255,250,230,0.95)"); gr.addColorStop(0.4, "rgba(255,230,180,0.25)"); gr.addColorStop(1, "rgba(255,220,160,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
-		var sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, fog: false, depthWrite: false, transparent: true })); sun.position.copy(sd).multiplyScalar(1500); sun.scale.setScalar(W.amb < 0.3 ? 120 : 260); sun.visible = !S.night && X0.over < 0.55; skyGroup.add(sun);
-		if (S.night && !W.stars) { /* a moon in the sky */
+		var sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: sunTex, fog: false, depthWrite: false, transparent: true })); sun.scale.setScalar(W.amb < 0.3 ? 120 : 260); skyGroup.add(sun);
+		var moonS = null;
+		if (!W.stars) { /* a moon for the night sky */
 			var mt = canvasTex(128, 128, function (g) { var gr = g.createRadialGradient(64, 64, 20, 64, 64, 64); gr.addColorStop(0, "rgba(235,240,255,1)"); gr.addColorStop(0.42, "rgba(220,228,250,1)"); gr.addColorStop(0.5, "rgba(180,200,255,0.25)"); gr.addColorStop(1, "rgba(150,180,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); g.fillStyle = "rgba(160,170,190,.5)"; [[52, 50, 9], [74, 70, 7], [60, 78, 5]].forEach(function (c) { g.beginPath(); g.arc(c[0], c[1], c[2], 0, 7); g.fill(); }); });
-			var moonS = new THREE.Sprite(new THREE.SpriteMaterial({ map: mt, fog: false, depthWrite: false, transparent: true })); moonS.position.copy(sunLight.userData.dir || new THREE.Vector3(0, 1, 0)).multiplyScalar(1500); moonS.scale.setScalar(150); skyGroup.add(moonS);
+			moonS = new THREE.Sprite(new THREE.SpriteMaterial({ map: mt, fog: false, depthWrite: false, transparent: true })); moonS.scale.setScalar(150); skyGroup.add(moonS);
 		}
-		if ((W.stars || S.night) && X0.over < 0.55) {
-			var r = C.rng(99), pts = [];
-			for (var k = 0; k < 2500; k++) { var u = r() * 2 - 1, a = r() * Math.PI * 2, s = Math.sqrt(1 - u * u); if (u < -0.05) continue; pts.push(Math.cos(a) * s * 1700, u * 1700, Math.sin(a) * s * 1700); }
-			var sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
-			skyGroup.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 2.2, sizeAttenuation: false, fog: false, depthWrite: false })));
-		}
+		var r = C.rng(99), pts = [];
+		for (var k = 0; k < 2500; k++) { var u = r() * 2 - 1, a = r() * Math.PI * 2, s2 = Math.sqrt(1 - u * u); if (u < -0.05) continue; pts.push(Math.cos(a) * s2 * 1700, u * 1700, Math.sin(a) * s2 * 1700); }
+		var sg = new THREE.BufferGeometry(); sg.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+		var stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 2.2, sizeAttenuation: false, fog: false, depthWrite: false, transparent: true }));
+		skyGroup.add(stars);
+		skyRef = { geo: geo, ys: ys, sun: sun, moon: moonS, stars: stars };
 		if (W.planet === "earth") {
 			var et = canvasTex(512, 256, function (g, w, h) { g.fillStyle = "#1d4f91"; g.fillRect(0, 0, w, h); var r2 = C.rng(5); g.fillStyle = "#3f7d3a"; for (var i = 0; i < 26; i++) { g.beginPath(); g.ellipse(r2() * w, h * (0.2 + r2() * 0.6), 20 + r2() * 60, 12 + r2() * 30, r2() * 3, 0, 7); g.fill(); } g.fillStyle = "rgba(255,255,255,.75)"; for (i = 0; i < 60; i++) { g.beginPath(); g.ellipse(r2() * w, r2() * h, 10 + r2() * 40, 3 + r2() * 8, r2() * 0.5, 0, 7); g.fill(); } g.fillStyle = "#f4f7fb"; g.fillRect(0, 0, w, 14); g.fillRect(0, h - 14, w, 14); });
 			var earth = new THREE.Mesh(new THREE.SphereGeometry(70, 48, 24), new THREE.MeshStandardMaterial({ map: et, roughness: 0.8, fog: false }));
@@ -734,7 +776,7 @@
 			}
 			trunk.count = crown.count = n; trunk.castShadow = crown.castShadow = true; worldGroup.add(trunk, crown);
 			/* lamp posts along the track: their heads glow at night */
-			lampMat = new THREE.MeshStandardMaterial({ color: 0xfff6d8, emissive: 0xffe2a0, emissiveIntensity: S.night ? 3 : 0 });
+			lampMat = new THREE.MeshStandardMaterial({ color: 0xfff6d8, emissive: 0xffe2a0, emissiveIntensity: 0 });
 			var LN = Math.floor(C.trackLength() / 40), poles = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.12, 7, 6), mat("#8a9099", { metalness: 0.6 }), LN), lamps = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.18, 0.4), lampMat, LN);
 			for (var li = 0; li < LN; li++) { var lp = C.trackPoint(li * 40 + 10), ox = Math.cos(lp.dir), oz = -Math.sin(lp.dir), side = C.TRACK.width / 2 + 1.5, px = lp.x + ox * side, pz = lp.z + oz * side;
 				tmpM.compose(new THREE.Vector3(px, 3.5, pz), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)); poles.setMatrixAt(li, tmpM);
@@ -1040,7 +1082,7 @@
 		}
 		keys[k] = true;
 		if (k === "y") { replayStart(); return; }
-		if (k === "n") { setNight(!S.night); return; }
+		if (k === "n") { setNight(dayK >= 0.45); return; }
 		if (k === "k") { var wl = C.weatherFor(S.world); if (wl.length < 2) { setWeather("rain"); return; } setWeather(wl[(wl.indexOf(S.weather) + 1) % wl.length]); return; }
 		if (k === "r") { resetCar(cars[player], true); toast("Back on its wheels"); }
 		else if (k === "c") cycleCam(1);
@@ -1151,7 +1193,7 @@
 		}
 		c.flame.visible = !!inp.boost && inp.th > 0;
 		var brk = (inp.br > 0 && v > 0.5) || (inp.th > 0 && v < -0.5) || inp.hb;
-		c.lightR.emissiveIntensity = brk ? 3.2 : (S.night ? 1.1 : 0.5); c.lightF.emissiveIntensity = S.night ? 5 : 1.2;
+		c.lightR.emissiveIntensity = brk ? 3.2 : (dayK < 0.45 ? 1.1 : 0.5); c.lightF.emissiveIntensity = dayK < 0.45 ? 5 : 1.2;
 		c.in = inp; c.anyContact = anyContact;
 	}
 
@@ -1509,7 +1551,7 @@
 	}
 
 	/* ===================== main loop ===================== */
-	var acc = 0, lastFrame = 0, frames = 0;
+	var todSave = 3, acc = 0, lastFrame = 0, frames = 0;
 	function frame(now) {
 		requestAnimationFrame(frame);
 		if (!phys) return;
@@ -1520,6 +1562,7 @@
 		render();
 	}
 	function advance(dt) {
+		if (S.cycle && !paused && !replay) { S.tod = (S.tod + dt * (S.slow ? 0.25 : 1) * 24 / (S.cycleMin * 60)) % 24; applyTime(); todSave -= dt; if (todSave < 0) { todSave = 3; save(); } }
 		stepWeather(paused && !replay ? 0 : dt * (S.slow ? 0.25 : 1) * (replay ? replay.speed * (replay.playing ? 1 : 0) : 1)); rainSound();
 		if (replay) { replayAdvance(dt); if (skyGroup) skyGroup.position.copy(camera.position); headlights(); return; }
 		if (!paused) {
@@ -1630,8 +1673,11 @@
 		$("cs-popx").addEventListener("click", function () { $("cs-pop").hidden = true; $("cs-optbtn").setAttribute("aria-expanded", "false"); });
 		applyShow(); syncSoundUI();
 		$("cs-rpbtn").addEventListener("click", replayStart);
-		$("cs-night").addEventListener("click", function () { setNight(!S.night); });
-		root.addEventListener("change", function (e) { if (e.target.matches("[data-night]")) setNight(e.target.checked); });
+		$("cs-night").addEventListener("click", function () { setNight(dayK >= 0.45); });
+		root.addEventListener("input", function (e) { if (e.target.matches("[data-tod]")) setTod(+e.target.value, true); });
+		root.addEventListener("change", function (e) { if (e.target.matches("[data-tod]")) { save(); syncUrl(); } else if (e.target.matches("[data-cyspd]")) { S.cycleMin = +e.target.value; save(); todUI(); } });
+		root.addEventListener("click", function (e) { var b = e.target.closest("[data-cycle]"); if (b) { S.cycle = !S.cycle; save(); todUI(); toast(S.cycle ? "The day is running: one day = " + C.CYCLES.find(function (x) { return x[0] === S.cycleMin; })[1] : "Clock stopped at " + C.fmtTime(S.tod)); } });
+		root.querySelectorAll("[data-cyspd]").forEach(function (sel) { sel.innerHTML = C.CYCLES.map(function (x) { return '<option value="' + x[0] + '">1 day = ' + x[1] + "</option>"; }).join(""); });
 		$("cs-rpplay").addEventListener("click", rpToggle);
 		$("cs-rpx").addEventListener("click", function () { replayStop(); });
 		$("cs-rpbar").addEventListener("input", function () { if (!replay) return; replay.t = +this.value / 1000 * replay.len; replay.playing = false; $("cs-rpplay").textContent = "▶"; });
@@ -1678,7 +1724,7 @@
 		run: function (sec, inp) { var saved = touch; touch = Object.assign({ th: 0, br: 0, l: 0, r: 0, hb: 0, boost: 0 }, inp || {}); for (var i = 0; i < sec * 60; i++) advance(1 / 60); touch = saved; render(); return this.state(); },
 		/* let the computer drive the player's car (testing the lap timer): MESCarSandbox.auto(seconds) */
 		auto: function (sec) { var a = S.ai; S.ai = "cruise"; autoPilot = true; for (var i = 0; i < sec * 60; i++) advance(1 / 60); autoPilot = false; S.ai = a; render(); return { laps: lap.laps, last: lap.last, best: REC.laps[lapKey()], hud: $("cs-lapnow").textContent + " | " + $("cs-lapbest").textContent, toast: $("cs-toast").textContent }; },
-		car: function () { return cars[player]; }, replay: function () { replayStart(); return replay ? { len: replay.len, frames: replay.frames.length } : null; }, replayStep: function (sec) { for (var i = 0; i < sec * 60; i++) advance(1 / 60); render(); return replay ? replay.t : null; }, night: setNight, weather: setWeather, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
+		car: function () { return cars[player]; }, replay: function () { replayStart(); return replay ? { len: replay.len, frames: replay.frames.length } : null; }, replayStep: function (sec) { for (var i = 0; i < sec * 60; i++) advance(1 / 60); render(); return replay ? replay.t : null; }, night: setNight, weather: setWeather, tod: function (h) { setTod(h); return { day: dayK, sun: sunLight.intensity, hemi: hemi.intensity }; }, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
 		render: function () { render(); }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();
