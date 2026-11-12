@@ -82,6 +82,20 @@
       }
     ]
   },
+  "https://mes.fm/ashton-forbes-rolling-stone": {
+    "image": "https://mes.fm/ashton-forbes-rolling-stone/img/rolling-stone-headline.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-vz3iyklt"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35705"
+      }
+    ]
+  },
   "https://mes.fm/bill-gates-ai-warning": {
     "image": "https://img.leopedia.io/DQmX5VtKL31AyGjFaYJsrGM7DexFTarHYZYgeyx5uqsDF1W/telegram-cloud-photo-size-1-4934004137423211687-y.jpg",
     "watchLinks": [],
@@ -434,14 +448,6 @@
       {
         "label": "Hive",
         "href": "https://inleo.io/@mestruth/spooky-news-checkup-ashton-forbes-911-revisionist-offguardian-wildin-h2i"
-      },
-      {
-        "label": "Telegram",
-        "href": "https://t.me/meslinks/35689"
-      },
-      {
-        "label": "Telegram 2",
-        "href": "https://t.me/meslinks/35698"
       }
     ]
   },
@@ -526,7 +532,7 @@
     "watchLinks": [],
     "namedLinks": [
       {
-        "label": "MES.fm",
+        "label": "Open the archive",
         "href": "https://mes.fm/telegram"
       },
       {
@@ -536,6 +542,14 @@
       {
         "label": "Telegram",
         "href": "https://t.me/meslinks/35685"
+      },
+      {
+        "label": "More conspiracy links",
+        "href": "https://mes.fm/conspiracy"
+      },
+      {
+        "label": "More science posts",
+        "href": "https://mes.fm/science-posts"
       }
     ]
   },

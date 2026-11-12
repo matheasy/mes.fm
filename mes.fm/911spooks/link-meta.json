@@ -124,6 +124,20 @@
       }
     ]
   },
+  "https://mes.fm/ashton-forbes-rolling-stone": {
+    "image": "https://mes.fm/ashton-forbes-rolling-stone/img/rolling-stone-headline.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-vz3iyklt"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35705"
+      }
+    ]
+  },
   "https://mes.fm/bg-notes": {
     "image": "https://mes.fm/img/bg-logo-big.jpg",
     "watchLinks": [],
@@ -291,7 +305,12 @@
         "href": "https://t.me/meslinks/35673"
       }
     ],
-    "namedLinks": []
+    "namedLinks": [
+      {
+        "label": "Also",
+        "href": "https://mes.fm/richard-gage-flat-earth"
+      }
+    ]
   },
   "https://mes.fm/spooks-news-nov-2026": {
     "image": "https://mes.fm/spooks-news-nov-2026/img/spooks-news-og.jpg",
@@ -300,14 +319,6 @@
       {
         "label": "Hive",
         "href": "https://inleo.io/@mestruth/spooky-news-checkup-ashton-forbes-911-revisionist-offguardian-wildin-h2i"
-      },
-      {
-        "label": "Telegram",
-        "href": "https://t.me/meslinks/35689"
-      },
-      {
-        "label": "Telegram 2",
-        "href": "https://t.me/meslinks/35698"
       }
     ]
   }

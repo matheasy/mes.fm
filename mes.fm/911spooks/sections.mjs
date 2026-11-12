@@ -9,6 +9,7 @@ export const SECTIONS = [
     id: "911spooks-posts",
     title: "Posts",
     items: [
+      { href: "https://mes.fm/ashton-forbes-rolling-stone", title: "Rolling Stone Wrote an Article on Ashton Forbes 😅", who: "ashton" },
       { href: "https://mes.fm/spooks-news-nov-2026", title: "Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin'", who: "ashton revisionist offguardian hughes" },
       { href: "https://mes.fm/david-hughes-fetzer-2.0", title: "Dear Dr. David A. Fetzer...", who: "hughes fetzer" },
       { href: "https://mes.fm/mh370-litmus-spooks", title: "MH370 Teleportation Cartoons are a Litmus Test for Spooks", who: "bob revisionist" },
