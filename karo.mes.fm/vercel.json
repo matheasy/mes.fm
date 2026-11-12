@@ -3,6 +3,17 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "karo.mes.fm"
+        }
+      ],
+      "destination": "https://www.alpinewestcreative.com/:path*",
+      "permanent": true
+    },
+    {
       "source": "/",
       "has": [
         {
