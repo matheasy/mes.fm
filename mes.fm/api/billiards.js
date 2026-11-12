@@ -96,7 +96,7 @@ async function hiveRec(res, b, now, ip) {
   if (!rec) return send(res, 404, { error: 'That operation is not on the chain yet (or its shots do not replay to that result): wait a few seconds.' });
   const g0 = T.game(rec.v);
   const sc = g0 && g0.type === 'S' ? ' ' + rec.score[0] + '-' + rec.score[1] : '';
-  const item = { acct: rec.acct, g: rec.g, v: rec.v, res: (g0.np === 1 ? 'cleared in ' + rec.shots.length + ' shots' : rec.o === 'local' ? 'player ' + (rec.w + 1) + ' won' : (rec.result === 'w' ? 'won' : 'lost') + ' vs ' + rec.o + ' computer') + sc, trx: rec.trx, ts: rec.ts };
+  const item = { acct: rec.acct, g: rec.g, v: rec.v, res: (g0.np === 1 ? 'cleared in ' + rec.shots.length + ' shots' : rec.o === 'local' ? 'player ' + (rec.w + 1) + ' won' : (rec.result === 'w' ? 'won' : 'lost') + ' vs ' + rec.o + ' computer') + sc + (rec.ng ? ' · no guide' : ''), trx: rec.trx, ts: rec.ts };
   await redis([['ZADD', 'blh:recs', rec.ts || now, JSON.stringify(item)], ['ZREMRANGEBYRANK', 'blh:recs', 0, -41]]);
   return send(res, 200, { ok: true });
 }

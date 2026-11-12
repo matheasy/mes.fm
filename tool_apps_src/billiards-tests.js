@@ -200,6 +200,7 @@ eq(B.pointsLeft(B.create("S6", "q")), 75, "75 with six reds");
 	const rec = { a: "rec", g: "recrecre", v: "C1", sd: "s1", m: solo.hist.join("."), o: "local", s: -1, w: 0 };
 	const recOps = [{ ...H.clean(rec), acct: "alice", trx: "r1", block: 1, i: 1, ts: 1 }];
 	eq(H.records(recOps).length, 1, "hive: a challenge clear replays and counts");
+	eq(H.records([{ ...H.clean(Object.assign({}, rec, { ng: 1 })), acct: "alice", trx: "r2", block: 2, i: 2, ts: 2 }])[0].ng, 1, "hive: a result saved without the guide says so");
 	const fake = [{ ...H.clean({ ...rec, m: "0~64~0~0" }), acct: "alice", trx: "r2", block: 2, i: 2, ts: 2 }];
 	eq(H.records(fake).length, 0, "hive: a result that does not replay is dropped");
 })();

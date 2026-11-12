@@ -81,7 +81,7 @@
 		render(); relayout();
 		maybeCpu();
 	}
-	function storeCur() { S.cur = { v: st.v, seed: st.seed, hist: st.hist.slice(), mode: mode, human: human, done: !!st.win }; save(); }
+	function storeCur() { S.cur = { v: st.v, seed: st.seed, hist: st.hist.slice(), mode: mode, human: human, done: !!st.win, guided: !!st._guided }; save(); }
 	function isHumanTurn() {
 		if (!st || st.win) return false;
 		if (mode === "cpu") return st.turn === human;
@@ -134,6 +134,7 @@
 			if (st.bih) return toast("The cue ball can't go there: place it " + B.zoneName(st.zone) + ", not touching another ball.");
 			return toast("That shot isn't allowed.");
 		}
+		if (effGuide() !== "off") st._guided = true;
 		if (mode === "online") return onlineShot(shot);
 		if (mode === "hive") return hiveShot(shot);
 		take(shot);
@@ -1278,7 +1279,7 @@
 		need();
 	}
 	function finish() {
-		var w = st.win.p, key = st.v + "|" + (mode === "cpu" ? S.lv : mode);
+		var w = st.win.p, key = st.v + "|" + (mode === "cpu" ? S.lv : mode) + (st._guided ? "" : "|ng");
 		var r = S.stats[key] || { w: 0, l: 0, g: 0, shots: 0, pots: 0, best: 0, fewest: 0 };
 		r.g++;
 		var me = mode === "cpu" ? human : 0;
@@ -1293,7 +1294,7 @@
 		save();
 		render();
 		if (st.np === 1) toast(st.msg);
-		else toast(youAre(w) && mode !== "local" ? "You win! 🎱" : nameOf(w) + " wins.");
+		else toast((youAre(w) && mode !== "local" ? "You win! 🎱" : nameOf(w) + " wins.") + ((mode === "cpu" || mode === "local") && st.win.why !== "resign" ? " Save it to your Hive account with ⬢ Save result to Hive above the table." : ""));
 	}
 
 	/* ===================================================================== setup ===================================================================== */
@@ -1329,12 +1330,15 @@
 		var ng = noGuide(), b = $("bl-gbtn"), eg = effGuide();
 		b.textContent = ng ? "Guide: off (this game)" : GLAB[S.guide] || GLAB.full; b.classList.toggle("is-off", eg === "off"); b.disabled = ng;
 		b.setAttribute("aria-label", ng ? "No aiming guide in this game: both players play without it" : b.textContent + " (press to change)");
+		var pg = $("bl-pguide");
+		if (pg) { pg.textContent = ng ? "Guide: off (this game)" : GLAB[S.guide] || GLAB.full; pg.disabled = ng; pg.classList.toggle("is-off", eg === "off"); pg.title = ng ? "This game is played without the aiming guide, for both players (set by the player who made it)" : "Aiming guide: full, short or off (G)"; }
 		var o = ov && ov.querySelector('[data-ov="guide"]');
 		if (o) { o.textContent = ng ? "No guide" : eg === "short" ? "Guide: short" : eg === "off" ? "Guide: off" : "Guide"; o.classList.toggle("is-off", eg === "off"); o.disabled = ng; o.title = ng ? "No aiming guide in this game (set by the player who made it)" : "Aiming guide: full, short or off (G)"; }
 		var segB = $("bl-guide").querySelectorAll("button"); for (var i = 0; i < segB.length; i++) segB[i].disabled = ng;
 	}
 	function cycleGuide() { if (noGuide()) return toast("This game is played without the aiming guide, for both players."); var o = ["full", "short", "off"]; S.guide = o[(o.indexOf(S.guide) + 1) % 3]; save(); segSet("bl-guide", S.guide); guideBtn(); need(); toast(S.guide === "off" ? "Guide off: aim by eye." : S.guide === "short" ? "Short guide: only the first part of the line." : "Full guide."); }
 	$("bl-gbtn").addEventListener("click", cycleGuide);
+	$("bl-pguide").addEventListener("click", cycleGuide);
 	guideBtn();
 	segWire("bl-orient", function (v) { S.orient = v; save(); relayout(); });
 	segWire("bl-speed", function (v) { S.speed = v; save(); });
@@ -1397,7 +1401,7 @@
 		var OPP = { easy: "vs Easy computer", medium: "vs Medium computer", hard: "vs Hard computer", pro: "vs Pro computer", local: "two players here", solo: "on your own", online: "online (guest)", hive: "on Hive" };
 		var rows = keys.sort().map(function (k) {
 			var r = S.stats[k], p = k.split("|"), pot = r.shots ? Math.round(r.pots * 100 / r.shots) + "%" : "–";
-			return "<tr><td>" + esc(B.describe(p[0])) + ' <span class="bl-lobv">' + esc(OPP[p[1]] || p[1]) + "</span></td><td>" + r.g + '</td><td class="w">' + r.w + '</td><td class="l">' + (p[1] === "local" ? "–" : r.l) + "</td><td>" + pot + "</td><td>" + (r.best ? r.best : r.fewest ? r.fewest + " shots" : "–") + "</td></tr>";
+			return "<tr><td>" + esc(B.describe(p[0])) + ' <span class="bl-lobv">' + esc(OPP[p[1]] || p[1]) + (p[2] === "ng" ? " · no guide" : "") + "</span></td><td>" + r.g + '</td><td class="w">' + r.w + '</td><td class="l">' + (p[1] === "local" ? "–" : r.l) + "</td><td>" + pot + "</td><td>" + (r.best ? r.best : r.fewest ? r.fewest + " shots" : "–") + "</td></tr>";
 		}).join("");
 		box.innerHTML = '<table class="bl-stbl"><thead><tr><th>Game</th><th>Played</th><th>Won</th><th>Lost</th><th title="Balls potted per shot (yours)">Pots / shot</th><th title="Snooker: highest break. Practice: fewest shots to clear">Best</th></tr></thead><tbody>' + rows + "</tbody></table>" +
 			'<p class="bl-sub" style="margin-top:0.8em">Challenges done: <b>' + chDone + " of " + B.CHALLENGES.length + '</b></p><p><button type="button" class="tu-btn" id="bl-sreset">Delete my statistics</button></p>';
@@ -1882,6 +1886,7 @@
 		var me = hMe();
 		if (!me) { showTab("online"); toast("Log in with Hive (Play online tab) and press Save again on the Play tab."); return; }
 		var obj = { a: "rec", g: H.newGid(), v: st.v, sd: st.seed, m: st.hist.join("."), o: mode === "cpu" ? S.lv : "local", s: mode === "cpu" ? human : -1, w: st.win.p };
+		if (!st._guided) obj.ng = 1;
 		if (!H.clean(obj)) return toast("This game is too long to save on Hive.");
 		var key = st.v + ":" + st.seed + ":" + st.hist.length, b = this;
 		b.disabled = true;
@@ -1918,7 +1923,7 @@
 			(recs.length ? '<h4 class="bl-h4">Saved results (self-reported, checked by replaying the shots)</h4><ul class="bl-lob">' + recs.map(function (o) {
 				var res = o.result === "w" ? "Won" : o.result === "l" ? "Lost" : (B.game(o.v).np === 1 ? "Cleared" : "Player " + (o.w + 1) + " won");
 				var lk = location.pathname + "?v=" + encodeURIComponent(o.v) + "&sd=" + o.sd + "&m=" + o.shots.join(".");
-				return '<li><span class="bl-lobn">' + esc(res) + ' <span class="bl-lobv">· ' + esc(B.describe(o.v)) + " · vs " + esc(OPP[o.o] || o.o) + " · " + o.shots.length + " shots" + (B.game(o.v).type === "S" ? " · " + o.score[0] + "–" + o.score[1] : "") + " · " + new Date(o.ts).toLocaleString() + " · " + txLinks(o.trx) + '</span></span><a class="tu-btn" href="' + esc(lk) + '">Replay</a></li>';
+				return '<li><span class="bl-lobn">' + esc(res) + ' <span class="bl-lobv">· ' + esc(B.describe(o.v)) + " · vs " + esc(OPP[o.o] || o.o) + (o.ng ? " · no guide" : "") + " · " + o.shots.length + " shots" + (B.game(o.v).type === "S" ? " · " + o.score[0] + "–" + o.score[1] : "") + " · " + new Date(o.ts).toLocaleString() + " · " + txLinks(o.trx) + '</span></span><a class="tu-btn" href="' + esc(lk) + '">Replay</a></li>';
 			}).join("") + "</ul>" : "");
 		}, function () {});
 	}
@@ -2067,7 +2072,7 @@
 		if (c && !c.done && c.v === S.game && c.hist && c.hist.length && B.game(c.v)) {
 			var s1 = B.replay(c.v, c.seed, c.hist);
 			if (s1) {
-				st = s1; seed = c.seed; mode = c.mode === "local" || c.mode === "solo" || c.mode === "cpu" ? c.mode : effOpp(); human = c.human || 0;
+				st = s1; st._guided = !!c.guided; seed = c.seed; mode = c.mode === "local" || c.mode === "solo" || c.mode === "cpu" ? c.mode : effOpp(); human = c.human || 0;
 				place = st.bih ? defaultPlace() : null; autoAimNext();
 				relayout(); render(); maybeCpu();
 				return;

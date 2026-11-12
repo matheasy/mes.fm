@@ -996,13 +996,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="tu-seg" id="bl-lv" role="group" aria-labelledby="bl-lv-l"><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button><button type="button" data-v="pro" aria-pressed="false">Pro</button></div></div>
 					<div class="tu-field bl-f-seg bl-cpuonly"><span class="tu-label" id="bl-me-l">Who breaks</span>
 						<div class="tu-seg" id="bl-me" role="group" aria-labelledby="bl-me-l"><button type="button" data-v="first" aria-pressed="true">Me</button><button type="button" data-v="second" aria-pressed="false">Computer</button><button type="button" data-v="alt" aria-pressed="false">Take turns</button></div></div>
+					<div class="tu-field bl-f-seg" title="Off is the real test: the computer never sees a guide either. Games won without it are counted on their own in Statistics."><span class="tu-label" id="bl-guide-l">Aiming guide</span>
+							<div class="tu-seg" id="bl-guide" role="group" aria-labelledby="bl-guide-l"><button type="button" data-v="full" aria-pressed="true">Full</button><button type="button" data-v="short" aria-pressed="false">Short</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
 				</div>
 				<p class="bl-desc" id="bl-desc"></p>
 				<details class="bl-more" id="bl-more">
 					<summary>Options</summary>
 					<div class="bl-opts">
-						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-guide-l">Aiming guide</span>
-							<div class="tu-seg" id="bl-guide" role="group" aria-labelledby="bl-guide-l"><button type="button" data-v="full" aria-pressed="true">Full</button><button type="button" data-v="short" aria-pressed="false">Short</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
 						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-orient-l">Table</span>
 							<div class="tu-seg" id="bl-orient" role="group" aria-labelledby="bl-orient-l"><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="across" aria-pressed="false">Across</button><button type="button" data-v="upright" aria-pressed="false">Upright</button></div></div>
 						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-speed-l">Shot speed</span>
@@ -1027,7 +1027,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="bl-view" id="bl-view">
 				<div class="bl-vbar">
 					<div class="bl-players" id="bl-players" aria-live="polite"></div>
-					<span class="bl-vbtns" id="bl-pbar" role="group" aria-label="Game"><button type="button" class="bl-vb bl-vb--main" id="bl-new" title="Start a new game (N)">↺ New game</button><button type="button" class="bl-vb" id="bl-undo" title="Take back your last shot (U)">↶ Undo</button><button type="button" class="bl-vb" id="bl-replay" title="Watch the last shot again (R)">▶ Replay shot</button><button type="button" class="bl-vb" id="bl-hsave" hidden title="Write this game's shots and result to your Hive account (self-reported)">⬢ Save result to Hive</button><button type="button" class="bl-vb" id="bl-mus" title="Play music or a video while you play (M)" aria-expanded="false" aria-controls="bl-muspanel">🎵 Music</button><span class="tu-seg bl-dim" id="bl-dim" role="group" aria-label="View"><button type="button" data-v="2d" aria-pressed="true" title="Flat view from above (V switches)">2D</button><button type="button" data-v="3d" aria-pressed="false" title="3D view with cameras (V switches)">3D</button></span><select id="bl-cam" class="tu-select bl-cam" aria-label="3D camera" title="3D camera (K changes it)" hidden><option value="auto">Camera: auto</option><option value="behind">Behind the cue</option><option value="overhead">From above</option><option value="side">From the side</option><option value="orbit">Free (drag to turn)</option></select><select id="bl-room" class="tu-select bl-cam" aria-label="3D room" title="Where the table stands (3D)" hidden><option value="dark">Room: dark</option><option value="bar">Bar</option><option value="tournament">Tournament</option><option value="stadium">Stadium</option><option value="home">Home</option><option value="party">Party club</option><option value="screens">Video call fans</option></select></span>
+					<span class="bl-vbtns" id="bl-pbar" role="group" aria-label="Game"><button type="button" class="bl-vb bl-vb--main" id="bl-new" title="Start a new game (N)">↺ New game</button><button type="button" class="bl-vb" id="bl-undo" title="Take back your last shot (U)">↶ Undo</button><button type="button" class="bl-vb" id="bl-replay" title="Watch the last shot again (R)">▶ Replay shot</button><button type="button" class="bl-vb" id="bl-hsave" hidden title="Write this game's shots and result to your Hive account (self-reported)">⬢ Save result to Hive</button><button type="button" class="bl-vb bl-pguide" id="bl-pguide" title="Aiming guide: full, short or off (G)">Guide: Full</button><button type="button" class="bl-vb" id="bl-mus" title="Play music or a video while you play (M)" aria-expanded="false" aria-controls="bl-muspanel">🎵 Music</button><span class="tu-seg bl-dim" id="bl-dim" role="group" aria-label="View"><button type="button" data-v="2d" aria-pressed="true" title="Flat view from above (V switches)">2D</button><button type="button" data-v="3d" aria-pressed="false" title="3D view with cameras (V switches)">3D</button></span><select id="bl-cam" class="tu-select bl-cam" aria-label="3D camera" title="3D camera (K changes it)" hidden><option value="auto">Camera: auto</option><option value="behind">Behind the cue</option><option value="overhead">From above</option><option value="side">From the side</option><option value="orbit">Free (drag to turn)</option></select><select id="bl-room" class="tu-select bl-cam" aria-label="3D room" title="Where the table stands (3D)" hidden><option value="dark">Room: dark</option><option value="bar">Bar</option><option value="tournament">Tournament</option><option value="stadium">Stadium</option><option value="home">Home</option><option value="party">Party club</option><option value="screens">Video call fans</option></select></span>
 				</div>
 				<p class="bl-msg" id="bl-msg" role="status" aria-live="polite"></p>
 				<p class="bl-hsaved" id="bl-hsaved"></p>
@@ -1119,7 +1119,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 
 		<section id="bl-p-stats" role="tabpanel" aria-label="Statistics" hidden>
-			<p class="tu-note">Kept in this browser only (nothing is uploaded), per game and level. Games left unfinished are not counted.</p>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded), per game and level. Games played with the aiming guide off the whole time are counted on their own ("no guide"). Games left unfinished are not counted.</p>
 			<div id="bl-stats"></div>
 		</section>
 
@@ -1211,7 +1211,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=12" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

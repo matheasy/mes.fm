@@ -931,6 +931,7 @@
 			if (typeof j.sd !== "string" || !/^[a-z0-9]{1,16}$/.test(j.sd)) return null;
 			if (H.OPP.indexOf(j.o) < 0 || [-1, 0, 1].indexOf(j.s) < 0 || [-1, 0, 1].indexOf(j.w) < 0) return null;
 			o.v = j.v; o.sd = j.sd; o.m = j.m; o.o = j.o; o.s = j.s; o.w = j.w;
+			if (j.ng === 1) o.ng = 1;   // played without the aiming guide (self-reported)
 			return o;
 		}
 		if (!H.ACCT_RE.test(String(j.h))) return null;
@@ -1031,7 +1032,7 @@
 			o._st = st;
 			return true;
 		}).map(function (o) {
-			return { acct: o.acct, g: o.g, v: o.v, sd: o.sd, shots: o.m.split("."), o: o.o, s: o.s, w: o.w, score: o._st.score, result: o.s < 0 ? "" : o.w === o.s ? "w" : "l", ts: o.ts, trx: o.trx };
+			return { acct: o.acct, g: o.g, v: o.v, sd: o.sd, shots: o.m.split("."), o: o.o, s: o.s, w: o.w, score: o._st.score, result: o.s < 0 ? "" : o.w === o.s ? "w" : "l", ng: o.ng ? 1 : 0, ts: o.ts, trx: o.trx };
 		});
 	};
 
