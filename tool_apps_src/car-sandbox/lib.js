@@ -92,6 +92,37 @@
 		var cx = x > h ? h : -h; return Math.abs(Math.hypot(x - cx, dz) - T.r);
 	};
 
+	/* nearest point on the track centre line: {s (distance along it, 0 = start line), d (distance from it)}. Exact for the stadium shape. */
+	C.trackNearest = function (x, z) {
+		var T = C.TRACK, h = T.half, r = T.r, arc = Math.PI * r, dz = z - T.cz, s;
+		if (x >= -h && x <= h) s = dz >= 0 ? (x >= 0 ? x : 4 * h + 2 * arc + x) : h + arc + (h - x);
+		else if (x > h) { var a = Math.atan2(x - h, dz); if (a < 0) a += 2 * Math.PI; s = h + Math.min(a, Math.PI) * r; }
+		else { var b = Math.atan2(-h - x, -dz); if (b < 0) b += 2 * Math.PI; s = 3 * h + arc + Math.min(b, Math.PI) * r; }
+		var L = C.trackLength(); s = ((s % L) + L) % L;
+		return { s: s, d: C.trackDist(x, z) };
+	};
+	/* lap timing: a lap counts only when the four quarters of the track are entered in order and the car crosses the start line going forward.
+	   lap = state object (start with C.lapNew()); feed it the car's track position each step: returns events [{t: "start"|"sector"|"lap"|"wrong", ...}]. */
+	C.SECTORS = 4;
+	C.lapNew = function () { return { sec: -1, t0: null, splits: [], next: 0, laps: 0, last: null, valid: false }; };
+	C.lapStep = function (st, s, d, now) {
+		var L = C.trackLength(), n = C.SECTORS, sec = Math.min(n - 1, Math.floor(s / (L / n))), ev = [];
+		if (d > C.TRACK.width * 1.5) return ev; /* off the track: positions there don't count */
+		if (st.sec === -1) { st.sec = sec; return ev; }
+		if (sec === st.sec) return ev;
+		if (sec === (st.sec + 1) % n) {
+			if (sec === 0) { /* crossed the start line forward */
+				if (st.valid && st.next === 0 && st.t0 != null) { var lt = now - st.t0; st.splits.push(lt); st.laps++; st.last = { time: lt, splits: st.splits.slice() }; ev.push({ t: "lap", time: lt, splits: st.splits.slice() }); }
+				else ev.push({ t: "start" });
+				st.t0 = now; st.splits = []; st.next = 1; st.valid = true;
+			} else if (st.valid && sec === st.next) { st.splits.push(now - st.t0); st.next = (sec + 1) % n; ev.push({ t: "sector", n: sec, time: now - st.t0 }); }
+			else st.valid = false;
+		} else { st.valid = false; if (sec === (st.sec + n - 1) % n) ev.push({ t: "wrong" }); }
+		st.sec = sec; return ev;
+	};
+	C.fmtLap = function (t) { if (t == null || !isFinite(t)) return "–"; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(2); };
+	C.lapKey = function (world, car, g) { return world + "|" + car + "|" + (+g).toFixed(2); };
+
 	/* ---------- craters (seeded list) ---------- */
 	C.craters = function (wid) {
 		var W = C.WORLDS[wid], out = []; if (!W.craters) return out;

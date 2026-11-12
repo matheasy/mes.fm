@@ -92,6 +92,37 @@
 		var cx = x > h ? h : -h; return Math.abs(Math.hypot(x - cx, dz) - T.r);
 	};
 
+	/* nearest point on the track centre line: {s (distance along it, 0 = start line), d (distance from it)}. Exact for the stadium shape. */
+	C.trackNearest = function (x, z) {
+		var T = C.TRACK, h = T.half, r = T.r, arc = Math.PI * r, dz = z - T.cz, s;
+		if (x >= -h && x <= h) s = dz >= 0 ? (x >= 0 ? x : 4 * h + 2 * arc + x) : h + arc + (h - x);
+		else if (x > h) { var a = Math.atan2(x - h, dz); if (a < 0) a += 2 * Math.PI; s = h + Math.min(a, Math.PI) * r; }
+		else { var b = Math.atan2(-h - x, -dz); if (b < 0) b += 2 * Math.PI; s = 3 * h + arc + Math.min(b, Math.PI) * r; }
+		var L = C.trackLength(); s = ((s % L) + L) % L;
+		return { s: s, d: C.trackDist(x, z) };
+	};
+	/* lap timing: a lap counts only when the four quarters of the track are entered in order and the car crosses the start line going forward.
+	   lap = state object (start with C.lapNew()); feed it the car's track position each step: returns events [{t: "start"|"sector"|"lap"|"wrong", ...}]. */
+	C.SECTORS = 4;
+	C.lapNew = function () { return { sec: -1, t0: null, splits: [], next: 0, laps: 0, last: null, valid: false }; };
+	C.lapStep = function (st, s, d, now) {
+		var L = C.trackLength(), n = C.SECTORS, sec = Math.min(n - 1, Math.floor(s / (L / n))), ev = [];
+		if (d > C.TRACK.width * 1.5) return ev; /* off the track: positions there don't count */
+		if (st.sec === -1) { st.sec = sec; return ev; }
+		if (sec === st.sec) return ev;
+		if (sec === (st.sec + 1) % n) {
+			if (sec === 0) { /* crossed the start line forward */
+				if (st.valid && st.next === 0 && st.t0 != null) { var lt = now - st.t0; st.splits.push(lt); st.laps++; st.last = { time: lt, splits: st.splits.slice() }; ev.push({ t: "lap", time: lt, splits: st.splits.slice() }); }
+				else ev.push({ t: "start" });
+				st.t0 = now; st.splits = []; st.next = 1; st.valid = true;
+			} else if (st.valid && sec === st.next) { st.splits.push(now - st.t0); st.next = (sec + 1) % n; ev.push({ t: "sector", n: sec, time: now - st.t0 }); }
+			else st.valid = false;
+		} else { st.valid = false; if (sec === (st.sec + n - 1) % n) ev.push({ t: "wrong" }); }
+		st.sec = sec; return ev;
+	};
+	C.fmtLap = function (t) { if (t == null || !isFinite(t)) return "–"; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(2); };
+	C.lapKey = function (world, car, g) { return world + "|" + car + "|" + (+g).toFixed(2); };
+
 	/* ---------- craters (seeded list) ---------- */
 	C.craters = function (wid) {
 		var W = C.WORLDS[wid], out = []; if (!W.craters) return out;
@@ -307,7 +338,7 @@
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var usLocale = /^en-(US|LR|MM)/.test(navigator.language || "");
 	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true });
-	var REC = load(RKEY, { top: 0, jump: 0, air: 0, crash: 0 });
+	var REC = load(RKEY, { top: 0, jump: 0, air: 0, crash: 0, laps: {} }); if (!REC.laps) REC.laps = {};
 	var Q = C.parseQuery(location.search);
 	if (Q.world) { S.world = Q.world; S.g = null; S.car = null; }
 	if (Q.car) S.car = Q.car; if (Q.g != null) S.g = Q.g; if (Q.traffic != null) S.traffic = Q.traffic; if (Q.ai) S.ai = Q.ai;
@@ -399,7 +430,7 @@
 		/* the player's car at the start, then the computer cars */
 		var start = startPose(0);
 		cars.push(makeCar(S.car && C.CARS[S.car] ? S.car : W.car, S.color || null, start, true));
-		player = 0;
+		player = 0; lapReset();
 		setTraffic(S.traffic);
 		camSnap = true;
 		updateGravityUI(); updateHud(true);
@@ -708,6 +739,7 @@
 		c.body.setTranslation({ x: p.x, y: Math.max(hAt(p.x, p.z), here ? t.y - 1 : -1e9) + c.d.wr + c.d.rest + 1.2, z: p.z }, true);
 		c.body.setRotation(qYaw(p.yaw), true); c.body.setLinvel({ x: 0, y: 0, z: 0 }, true); c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
 		c.lastV = null; c.upsideT = 0; c.air = null; c.born = simT;
+		if (c === cars[player]) lapReset();
 	}
 	function repair(c) {
 		c.damage = 0;
@@ -957,10 +989,28 @@
 	}
 
 	/* ===================== simulation step ===================== */
-	var simT = 0;
+	var simT = 0, lap = C.lapNew(), wrongT = 0, autoPilot = false;
+	function lapReset() { lap = C.lapNew(); }
+	function lapKey() { var c = cars[player]; return c ? C.lapKey(S.world, c.type, gravity) : ""; }
+	function lapTick(c, t) {
+		if (!W.track) return;
+		var n = C.trackNearest(t.x, t.z);
+		C.lapStep(lap, n.s, n.d, simT).forEach(function (e) {
+			var best = REC.laps[lapKey()];
+			if (e.t === "start") toast("Lap timer started: go!");
+			else if (e.t === "sector") { var b = best && best.splits[e.n - 1], dd = b != null ? e.time - b : null; toast("Sector " + e.n + ": " + C.fmtLap(e.time) + (dd != null ? "  (" + (dd <= 0 ? "−" : "+") + Math.abs(dd).toFixed(2) + ")" : "")); }
+			else if (e.t === "lap") {
+				var isBest = !best || e.time < best.time;
+				if (isBest) { REC.laps[lapKey()] = { time: e.time, splits: e.splits }; saveRec(); }
+				toast("Lap " + lap.laps + ": " + C.fmtLap(e.time) + (isBest ? (best ? "  · new best by " + (best.time - e.time).toFixed(2) + " s!" : "  · first lap set!") : "  (+" + (e.time - best.time).toFixed(2) + ")"));
+				sfx("pop", 1);
+			}
+			else if (e.t === "wrong" && simT - wrongT > 4) { wrongT = simT; toast("Wrong way! Laps run the other way round"); }
+		});
+	}
 	function step(dt) {
 		var pin = readInput();
-		cars.forEach(function (c, i) { driveCar(c, i === player ? pin : aiInput(c, dt), dt); c.veh.updateVehicle(dt); });
+		cars.forEach(function (c, i) { driveCar(c, i === player && !autoPilot ? pin : aiInput(c, dt), dt); c.veh.updateVehicle(dt); });
 		phys.step(eventQ);
 		/* impacts: a velocity change much bigger than gravity + springs can give in one step = a crash */
 		var gy = phys.gravity.y;
@@ -982,7 +1032,7 @@
 			if (up.y < 0.25 && Math.hypot(lv.x, lv.z) < 2) c.upsideT += dt; else c.upsideT = 0;
 			if (c.ai && c.upsideT > 3) resetCar(c, true);
 			if (t.y < -60 || t.y > 4000 && gravity > 0.5) resetCar(c, false);
-			if (ci === player) trackAir(c, t, lv);
+			if (ci === player) { trackAir(c, t, lv); lapTick(c, t); }
 			/* dust behind wheels on dusty worlds, smoke from wrecks */
 			if (!W.track && c.anyContact && Math.hypot(lv.x, lv.z) > 4 && Math.random() < 0.5) {
 				var wi = 2 + ((Math.random() * 2) | 0), cp = c.veh.wheelContactPoint(wi);
@@ -1137,6 +1187,7 @@
 
 	/* ===================== gravity ===================== */
 	function setGravity(g) {
+		if (Math.abs(g - gravity) > 1e-6) lap.valid = false; /* a new gravity starts a new set of best laps */
 		gravity = g; S.g = Math.abs(g - W.g) < 1e-6 ? null : g; save();
 		phys.gravity = { x: 0, y: gFlip > 0 ? Math.abs(g) * 0.6 : -g, z: 0 };
 		cars.forEach(function (c) { c.body.wakeUp(); setSuspForce(c); }); objs.forEach(function (o) { o.body.wakeUp(); });
@@ -1144,7 +1195,7 @@
 	}
 	function flipGravity() {
 		if (gFlip > 0) { gFlip = 0; setGravity(gravity); return; }
-		gFlip = 2.5; phys.gravity = { x: 0, y: Math.max(1.5, gravity) * 0.6, z: 0 };
+		gFlip = 2.5; lap.valid = false; phys.gravity = { x: 0, y: Math.max(1.5, gravity) * 0.6, z: 0 };
 		cars.forEach(function (c) { c.body.wakeUp(); }); objs.forEach(function (o) { o.body.wakeUp(); });
 		toast("Gravity points UP for 2.5 seconds!"); updateGravityUI();
 	}
@@ -1173,8 +1224,15 @@
 		$("cs-dmg").style.width = c.damage + "%"; $("cs-dmg").style.background = c.damage > 75 ? "#e03131" : c.damage > 40 ? "#f08c00" : "#37b24d";
 		$("cs-hdmg").textContent = Math.round(c.damage) + "%";
 		$("cs-hcar").textContent = C.CARS[c.type].name + (cars.length > 1 ? " (" + (player + 1) + "/" + cars.length + ")" : "");
+		var lb = $("cs-lap"); lb.hidden = !W.track;
+		if (W.track) {
+			var best = REC.laps[lapKey()];
+			$("cs-lapnow").textContent = lap.t0 != null && lap.valid ? "Lap " + (lap.laps + 1) + " · " + C.fmtLap(simT - lap.t0) : (lap.t0 != null ? "Lap not counted · cross the line again" : "Cross the start line to start the timer");
+			$("cs-lapbest").textContent = "Last " + C.fmtLap(lap.last && lap.last.time) + " · Best " + C.fmtLap(best && best.time);
+		}
 		$("cs-air").textContent = c.air ? "In the air " + (simT - c.air.t0).toFixed(1) + " s" : "";
-		$("cs-rec").textContent = "Top " + C.fmtSpeed(REC.top, S.units) + " · longest jump " + C.fmtDist(REC.jump, S.units) + " · most air " + REC.air.toFixed(1) + " s · biggest crash " + REC.crash.toFixed(0) + " g";
+		var bl = REC.laps[lapKey()];
+		$("cs-rec").textContent = (W.track ? "Best lap here (" + C.CARS[c.type].name + ", " + gravity.toFixed(2) + " m/s²): " + C.fmtLap(bl && bl.time) + " · " : "") + "Top " + C.fmtSpeed(REC.top, S.units) + " · longest jump " + C.fmtDist(REC.jump, S.units) + " · most air " + REC.air.toFixed(1) + " s · biggest crash " + REC.crash.toFixed(0) + " g";
 	}
 
 	/* ===================== main loop ===================== */
@@ -1220,7 +1278,7 @@
 	function togglePause() { paused = !paused; $("cs-pause").textContent = paused ? "▶ Play" : "❚❚ Pause"; toast(paused ? "Paused" : "Playing"); }
 	function switchCar(dir) {
 		if (cars.length < 2) { toast("Add computer cars to switch between them"); return; }
-		cars[player].ai = true; player = (player + dir + cars.length) % cars.length; cars[player].ai = false; camSnap = true;
+		cars[player].ai = true; player = (player + dir + cars.length) % cars.length; cars[player].ai = false; camSnap = true; lapReset();
 		toast("Now driving: " + C.CARS[cars[player].type].name);
 	}
 
@@ -1270,7 +1328,7 @@
 		$("cs-touchsel").value = S.touch; $("cs-touchsel").addEventListener("change", function () { S.touch = this.value; save(); showTouch(); });
 		$("cs-png").addEventListener("click", function () { render(); var a = document.createElement("a"); a.download = "mes-car-sandbox.png"; a.href = renderer.domElement.toDataURL("image/png"); a.click(); });
 		$("cs-link").addEventListener("click", function () { var u = location.origin + location.pathname + "?" + C.query(S); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { toast("Link copied"); }, function () { prompt("Copy this link", u); }); });
-		$("cs-recclear").addEventListener("click", function () { REC = { top: 0, jump: 0, air: 0, crash: 0 }; saveRec(); updateHud(true); });
+		$("cs-recclear").addEventListener("click", function () { REC = { top: 0, jump: 0, air: 0, crash: 0, laps: {} }; saveRec(); updateHud(true); });
 		$("cs-helpbtn").addEventListener("click", function () { var h = $("cs-help"); h.hidden = !h.hidden; S.help = !h.hidden; save(); });
 		$("cs-helpx").addEventListener("click", function () { $("cs-help").hidden = true; S.help = false; save(); });
 		$("cs-help").hidden = !S.help;
@@ -1282,7 +1340,7 @@
 	function swapPlayerCar() {
 		var old = cars[player], t = old.body.translation(), f = fwdOf(old);
 		var c = makeCar(S.car && C.CARS[S.car] ? S.car : W.car, S.color, { x: t.x, z: t.z, yaw: Math.atan2(f.x, f.z) }, true);
-		removeCar(old); cars[player] = c; c.id = player; camSnap = true; updateHud(true);
+		removeCar(old); cars[player] = c; c.id = player; camSnap = true; lapReset(); updateHud(true);
 	}
 	function syncUrl() { try { history.replaceState(null, "", location.pathname + "?" + C.query(S)); } catch (e) { /* ignore */ } }
 
@@ -1303,6 +1361,8 @@
 		state: function () { var c = cars[player]; return c ? { cam: camera.position.toArray().map(Math.round), pos: c.body.translation(), v: c.veh.currentVehicleSpeed(), damage: c.damage, cars: cars.length, objs: objs.length, g: phys.gravity.y, contact: c.anyContact } : null; },
 		/* run the simulation forward without animation frames (a hidden tab has none): MESCarSandbox.run(seconds, {th, st, br, boost}) */
 		run: function (sec, inp) { var saved = touch; touch = Object.assign({ th: 0, br: 0, l: 0, r: 0, hb: 0, boost: 0 }, inp || {}); for (var i = 0; i < sec * 60; i++) advance(1 / 60); touch = saved; render(); return this.state(); },
+		/* let the computer drive the player's car (testing the lap timer): MESCarSandbox.auto(seconds) */
+		auto: function (sec) { var a = S.ai; S.ai = "cruise"; autoPilot = true; for (var i = 0; i < sec * 60; i++) advance(1 / 60); autoPilot = false; S.ai = a; render(); return { laps: lap.laps, last: lap.last, best: REC.laps[lapKey()], hud: $("cs-lapnow").textContent + " | " + $("cs-lapbest").textContent, toast: $("cs-toast").textContent }; },
 		render: function () { render(); }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();

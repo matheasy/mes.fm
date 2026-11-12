@@ -58,4 +58,20 @@ ok(back.world === "moon" && back.car === "rover" && back.g === 3.71 && back.traf
 ok(!C.parseQuery("w=nope&car=x&g=-1&cars=99").world && C.parseQuery("w=nope&g=-1&cars=99").g === undefined, "bad query ignored");
 ok(C.query({ world: "earth", car: "sports", g: 9.81 }).indexOf("g=") < 0, "default g left out");
 ok(C.query({ world: "earth", car: null, g: null }) === "w=earth", "no car = left out");
+// track nearest point: inverse of trackPoint, also a little off the line
+for (s = 0; s < L; s += 7.3) { var tp = C.trackPoint(s), nr = C.trackNearest(tp.x, tp.z); near(Math.min(Math.abs(nr.s - s), L - Math.abs(nr.s - s)), 0, 1e-6, "nearest s at " + s); near(nr.d, 0, 1e-6, "nearest d"); var off = C.trackNearest(tp.x + Math.cos(tp.dir) * 4, tp.z - Math.sin(tp.dir) * 4); near(Math.min(Math.abs(off.s - s), L - Math.abs(off.s - s)), 0, 0.2, "offset s at " + s); near(off.d, 4, 1e-6, "offset d"); }
+// laps: drive two laps along the line
+var st = C.lapNew(), evs = [], tt = 0;
+for (s = -20; s < 2 * L + 10; s += 2) { tt += 0.1; var q2 = C.trackPoint(s), nn = C.trackNearest(q2.x, q2.z); C.lapStep(st, nn.s, nn.d, tt).forEach(function (e) { evs.push(e); }); }
+var kinds = evs.map(function (e) { return e.t; }).join(",");
+ok(kinds === "start,sector,sector,sector,lap,sector,sector,sector,lap", "lap events " + kinds);
+var lap1 = evs.filter(function (e) { return e.t === "lap"; })[0]; near(lap1.time, L / 2 * 0.1, 0.11, "lap time"); ok(lap1.splits.length === 4 && lap1.splits[3] === lap1.time, "splits");
+// shortcut across the infield (skip a quarter) does not count
+var st2 = C.lapNew(), ev2 = [], t2 = 0;
+[ -5, 2, 40, 500, 700, 760, L - 3, 3 ].forEach(function (sv) { t2 += 5; var p3 = C.trackPoint(sv), n3 = C.trackNearest(p3.x, p3.z); C.lapStep(st2, n3.s, n3.d, t2).forEach(function (e) { ev2.push(e.t); }); });
+ok(ev2.indexOf("lap") < 0, "shortcut lap rejected " + ev2.join(","));
+// driving the wrong way says so
+var st3 = C.lapNew(), ev3 = []; [10, 5, L - 5, L - 10].forEach(function (sv, i) { var p4 = C.trackPoint(sv), n4 = C.trackNearest(p4.x, p4.z); C.lapStep(st3, n4.s, n4.d, i).forEach(function (e) { ev3.push(e.t); }); });
+ok(ev3.indexOf("wrong") >= 0, "wrong way");
+ok(C.fmtLap(61.234) === "1:01.23" && C.fmtLap(9.5) === "0:09.50", "lap format");
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

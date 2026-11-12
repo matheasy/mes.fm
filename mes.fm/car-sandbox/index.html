@@ -329,6 +329,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-dbar i {display:block;height:100%;width:0;background:#37b24d;transition:width .2s;}
 	.cs-air {font-weight:700;color:#ffd43b;min-height:0;}
 	.cs-air:empty {display:none;}
+	.cs-lap {margin-top:0.3em;padding-top:0.3em;border-top:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;}
+	.cs-lap b {font-size:1.15em;font-variant-numeric:tabular-nums;color:#ffd43b;}
+	.cs-lap span {color:var(--cs-dim);font-variant-numeric:tabular-nums;}
 	.cs-speedo {position:absolute;right:0.8em;bottom:0.7em;color:var(--cs-ink);text-align:right;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.6);line-height:1;}
 	.cs-speedo b {font-size:2.6em;font-weight:800;font-variant-numeric:tabular-nums;color:var(--cs-ink);}
 	.cs-speedo span {display:block;font-size:0.85em;color:var(--cs-dim);font-weight:600;}
@@ -354,7 +357,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-has-touch .cs-speedo b {font-size:1.8em;}
 	@media (max-width:640px) {
 		.cs-hud {font-size:0.68em;min-width:0;}
-		.cs-hrow:nth-child(4), .cs-hcar {display:none;}
+		.cs-hrow:nth-child(4), .cs-hcar, #cs-lapbest {display:none;}
 		.cs-touch button {width:3.3em;height:3.3em;font-size:1em;}
 		#cs-t-gas {height:4.4em;}
 		.cs-touch .cs-t-sm {width:2.6em;height:2.6em;}
@@ -520,6 +523,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-load{background:radial-gradient(circle at 50% 40%, #233046, #3a4a69)}
 	body.dark-mode .cs-dbar{background:rgba(26,26,26,0.15)}
 	body.dark-mode .cs-air{color:#ffdb5c}
+	body.dark-mode .cs-lap{border-top:1px solid rgba(51,51,51,0.15)}
+	body.dark-mode .cs-lap b{color:#ffdb5c}
 	body.dark-mode .cs-sbtns button:hover{border-color:#333333}
 	body.dark-mode .cs-help kbd{background:rgba(26,26,26,0.16);border:1px solid rgba(51,51,51,0.25)}
 	body.dark-mode .cs-touch button{border:2px solid rgba(51,51,51,0.35)}
@@ -755,6 +760,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-hrow"><span>Felt</span><b id="cs-hg">1.0 g</b><span>peak</span><b id="cs-hpeak">0 g</b></div>
 					<div class="cs-hrow"><span>Damage</span><i class="cs-dbar"><i id="cs-dmg"></i></i><b id="cs-hdmg">0%</b></div>
 					<div class="cs-air" id="cs-air"></div>
+					<div class="cs-lap" id="cs-lap" hidden><b id="cs-lapnow"></b><span id="cs-lapbest"></span></div>
 				</div>
 				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
 				<div class="cs-sbtns">
@@ -770,6 +776,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or the arrow keys · <kbd>S</kbd> at a stop = reverse</li>
 						<li><kbd>Space</kbd> handbrake (drift) · <kbd>Shift</kbd> boost</li>
 						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
+						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>P</kbd> pause</li>
 						<li>In the air, the pedals tip the nose and steering rolls the car</li>
 						<li>Drag the picture to look around · a game controller works too</li>

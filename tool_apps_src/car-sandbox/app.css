@@ -22,6 +22,9 @@
 	.cs-dbar i {display:block;height:100%;width:0;background:#37b24d;transition:width .2s;}
 	.cs-air {font-weight:700;color:#ffd43b;min-height:0;}
 	.cs-air:empty {display:none;}
+	.cs-lap {margin-top:0.3em;padding-top:0.3em;border-top:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;}
+	.cs-lap b {font-size:1.15em;font-variant-numeric:tabular-nums;color:#ffd43b;}
+	.cs-lap span {color:var(--cs-dim);font-variant-numeric:tabular-nums;}
 	.cs-speedo {position:absolute;right:0.8em;bottom:0.7em;color:var(--cs-ink);text-align:right;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.6);line-height:1;}
 	.cs-speedo b {font-size:2.6em;font-weight:800;font-variant-numeric:tabular-nums;color:var(--cs-ink);}
 	.cs-speedo span {display:block;font-size:0.85em;color:var(--cs-dim);font-weight:600;}
@@ -47,7 +50,7 @@
 	.cs-has-touch .cs-speedo b {font-size:1.8em;}
 	@media (max-width:640px) {
 		.cs-hud {font-size:0.68em;min-width:0;}
-		.cs-hrow:nth-child(4), .cs-hcar {display:none;}
+		.cs-hrow:nth-child(4), .cs-hcar, #cs-lapbest {display:none;}
 		.cs-touch button {width:3.3em;height:3.3em;font-size:1em;}
 		#cs-t-gas {height:4.4em;}
 		.cs-touch .cs-t-sm {width:2.6em;height:2.6em;}
