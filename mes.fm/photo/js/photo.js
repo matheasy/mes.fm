@@ -3048,8 +3048,13 @@ var MESPixel = (function () {
 		base.getContext("2d").drawImage(L.canvas, 0, 0, pw, ph); var baseData = base.getContext("2d").getImageData(0, 0, pw, ph), mask = maskProxy(L, pw, ph), out = mk(pw, ph), timer = 0;
 		function render() { timer = 0; var id = new ImageData(new Uint8ClampedArray(baseData.data), pw, ph); run(id.data, pw, ph, sc); if (mask) P.blendByMask(baseData.data, id.data, mask); out.getContext("2d").putImageData(id, 0, 0); L.preview = out; PE.invalidate(); }
 		render();
-		return { update: function () { if (!timer) timer = setTimeout(render, 25); }, apply: function (label) { clearTimeout(timer); L.preview = null; PE.applyPixels(L, function (d, W, H) { run(d, W, H, 1); }, label); }, cancel: function () { clearTimeout(timer); L.preview = null; PE.invalidate(); }, L: L };
+		var touched = false;
+		return { touched: function () { return touched; }, update: function () { touched = true; if (!timer) timer = setTimeout(render, 25); }, apply: function (label) { clearTimeout(timer); L.preview = null; PE.applyPixels(L, function (d, W, H) { run(d, W, H, 1); }, label); }, cancel: function () { clearTimeout(timer); L.preview = null; PE.invalidate(); }, L: L };
 	}
+	/* round 12: a preview window closed any other way than its Cancel button (the ✕, Esc, a click beside it, another window opening) keeps what it shows,
+	 * as one undo step, once something in it was changed; untouched it just closes. Cancel puts the picture back. (Same as the Layer style window.) */
+	function keepOnClose(pv, st, apply) { return function () { if (st.done) return; st.done = true; if (!st.cancel && pv.touched()) apply(); else pv.cancel(); }; }
+	function cancelBtn(st) { return { label: "Cancel", title: "Close without changing the picture", act: function (m) { st.cancel = true; m.close(); } }; }
 	function adjustDialog(def) {
 		if (!PE.doc || !PE.active()) { PE.toast("Open an image first"); return; }
 		if (!def.params || !def.params.length) { PE.applyPixels(PE.active(), function (d, w, h) { def.fn(d, w, h, {}, 1); }, def.title); return; }
@@ -3058,10 +3063,10 @@ var MESPixel = (function () {
 		var scaleKeys = def.scaleKeys || [];
 		pv = previewer(function (d, w, h, sc) { var p = f.get(); scaleKeys.forEach(function (k) { p[k] *= sc; }); def.fn(d, w, h, p, sc); });
 		if (!pv) return;
-		var done = false;
-		PE.modal({ title: def.title, body: wrap, noFocus: true, clear: true, onClose: function () { if (!done) pv.cancel(); }, buttons: [
-			{ label: "Reset", act: function () { def.params.forEach(function (p) { f.set(p.k, p.def != null ? p.def : p.val); }); pv.update(); } }, { label: "Cancel", act: function (m) { m.close(); } },
-			{ label: "Apply", primary: true, act: function (m) { done = true; PE.savedParams[def.id] = f.get(); pv.apply(def.title); m.close(); } }] });
+		var st = {}, go = function () { PE.savedParams[def.id] = f.get(); pv.apply(def.title); };
+		PE.modal({ title: def.title, body: wrap, noFocus: true, clear: true, onClose: keepOnClose(pv, st, go), buttons: [
+			{ label: "Reset", act: function () { def.params.forEach(function (p) { f.set(p.k, p.def != null ? p.def : p.val); }); pv.update(); } }, cancelBtn(st),
+			{ label: "Apply", primary: true, act: function (m) { st.done = true; go(); m.close(); } }] });
 	}
 	PE.savedParams = {};
 	/* Camtasia-style "Remove a colour": the colour comes from the last magic-wand click when there is one */
@@ -3107,7 +3112,7 @@ var MESPixel = (function () {
 		function drawH() { var ch = f.get().ch; hc.getContext("2d").drawImage(histCanvas(hist[ch], 256, 90, ch), 0, 0); }
 		auto.addEventListener("click", function () { var r = P.autoLevels(hist[f.get().ch], 0.005); f.set("ib", r.black); f.set("iw", r.white); pv.update(); });
 		var pv = previewer(function (d) { var p = f.get(), lut = P.levelsLUT(Math.min(p.ib, p.iw - 1), p.iw, p.g, p.ob, p.ow), id = P.identityLUT(); if (p.ch === "l") P.applyLUT(d, lut); else P.applyLUT(d, p.ch === "r" ? lut : id, p.ch === "g" ? lut : id, p.ch === "b" ? lut : id); }); if (!pv) return; drawH();
-		var done = false; PE.modal({ title: "Levels", body: wrap, noFocus: true, onClose: function () { if (!done) pv.cancel(); }, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "Apply", primary: true, act: function (m) { done = true; pv.apply("Levels"); m.close(); } }] });
+		var st = {}; PE.modal({ title: "Levels", body: wrap, noFocus: true, onClose: keepOnClose(pv, st, function () { pv.apply("Levels"); }), buttons: [cancelBtn(st), { label: "Apply", primary: true, act: function (m) { st.done = true; pv.apply("Levels"); m.close(); } }] });
 	}
 	/* ---------- Curves ---------- */
 	function curvesDialog() {
@@ -3128,7 +3133,7 @@ var MESPixel = (function () {
 		cv.addEventListener("pointerup", function () { drag = -1; });
 		cv.addEventListener("dblclick", function (e) { var p = pos(e), a = pts[chan]; for (var i = 1; i < a.length - 1; i++) if (Math.hypot(a[i][0] - p[0], a[i][1] - p[1]) < 12) { a.splice(i, 1); draw(); pv.update(); return; } });
 		var pv = previewer(function (d) { var l = P.curveLUT(pts.l), r = P.curveLUT(pts.r), g = P.curveLUT(pts.g), b = P.curveLUT(pts.b); var R = new Uint8Array(256), G = new Uint8Array(256), B = new Uint8Array(256); for (var i = 0; i < 256; i++) { R[i] = l[r[i]]; G[i] = l[g[i]]; B[i] = l[b[i]]; } P.applyLUT(d, R, G, B); }); if (!pv) return; draw();
-		var done = false; PE.modal({ title: "Curves", body: wrap, noFocus: true, onClose: function () { if (!done) pv.cancel(); }, buttons: [{ label: "Reset", act: function () { pts = { l: [[0, 0], [255, 255]], r: [[0, 0], [255, 255]], g: [[0, 0], [255, 255]], b: [[0, 0], [255, 255]] }; draw(); pv.update(); } }, { label: "Cancel", act: function (m) { m.close(); } }, { label: "Apply", primary: true, act: function (m) { done = true; pv.apply("Curves"); m.close(); } }] });
+		var st = {}; PE.modal({ title: "Curves", body: wrap, noFocus: true, onClose: keepOnClose(pv, st, function () { pv.apply("Curves"); }), buttons: [{ label: "Reset", act: function () { pts = { l: [[0, 0], [255, 255]], r: [[0, 0], [255, 255]], g: [[0, 0], [255, 255]], b: [[0, 0], [255, 255]] }; draw(); pv.update(); } }, cancelBtn(st), { label: "Apply", primary: true, act: function (m) { st.done = true; pv.apply("Curves"); m.close(); } }] });
 	}
 	PE.runAdjust = function (id) {
 		var a = PE.ADJUST.concat(PE.FILTERS).filter(function (x) { return x.id === id; })[0]; if (!a) return;
@@ -3307,8 +3312,8 @@ var MESPixel = (function () {
 		var L = PE.active(); if (!PE.doc || !L) { PE.toast("Open an image first"); return; } if (!PE.prepare(L, false, true)) return;
 		var w = L.canvas.width, h = L.canvas.height, mx = Math.floor(Math.min(w, h) / 2), wrap = el("div"), f = PE.form([P2("r", "Radius", 0, mx, Math.min(24, mx), 1, "px")], function () { pv.update(); }); wrap.appendChild(f.el);
 		function round(d, W, Hh, sc) { var r = f.get().r * sc, c = mk(W, Hh), x = c.getContext("2d"); x.putImageData(new ImageData(d, W, Hh), 0, 0); x.globalCompositeOperation = "destination-in"; x.beginPath(); x.moveTo(r, 0); x.arcTo(W, 0, W, Hh, r); x.arcTo(W, Hh, 0, Hh, r); x.arcTo(0, Hh, 0, 0, r); x.arcTo(0, 0, W, 0, r); x.closePath(); x.fill(); d.set(x.getImageData(0, 0, W, Hh).data); }
-		var pv = previewer(round); if (!pv) return; var done = false;
-		PE.modal({ title: "Round corners", body: wrap, noFocus: true, onClose: function () { if (!done) pv.cancel(); }, buttons: [{ label: "Cancel", act: function (m) { m.close(); } }, { label: "Apply", primary: true, act: function (m) { done = true; pv.apply("Round corners"); m.close(); } }] });
+		var pv = previewer(round); if (!pv) return; var st = {};
+		PE.modal({ title: "Round corners", body: wrap, noFocus: true, onClose: keepOnClose(pv, st, function () { pv.apply("Round corners"); }), buttons: [cancelBtn(st), { label: "Apply", primary: true, act: function (m) { st.done = true; pv.apply("Round corners"); m.close(); } }] });
 	};
 	PE.dlgStraighten = function () {
 		var d = PE.doc; if (!d) return; var wrap = el("div"), f = PE.form([P2("a", "Angle", -45, 45, 0, 0.1, "°"), { k: "ex", label: "Grow canvas to fit", type: "check", val: false }], null); wrap.appendChild(f.el); wrap.appendChild(el("p", "pe-hint2", "Rotates every layer about the centre of the image. Use it to level a tilted horizon. Without “Grow canvas”, the corners are cropped."));

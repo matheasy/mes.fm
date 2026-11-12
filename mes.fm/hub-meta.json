@@ -146,6 +146,11 @@
 "updated":"2026-11-04",
 "type":"Calculator"
 },
+"/car-sandbox":{
+"added":"2026-11-12",
+"updated":"2026-11-12",
+"type":"Simulation"
+},
 "/cas-calculator":{
 "added":"2026-10-02",
 "updated":"2026-11-11",

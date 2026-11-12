@@ -671,6 +671,13 @@ APPS = {
                             desc="Free bridge simulator and truss calculator: draw a bridge from steel, timber, cables and concrete or start from Warren, Pratt, Howe, K, arch, cable-stayed and suspension designs, see every member's force and buckling check, auto-size it to the cheapest safe design, then drive cars, buses and trucks over it, blow wind across it and shake it with an earthquake.",
                             meta_desc="Free bridge simulator: build truss, arch and cable bridges, check every member, auto-size for the lowest cost, then test with traffic, wind and earthquakes.",
                             js_v="1", vars={"SEO": "@seo.html"}),
+    # MES Car Sandbox (2026-11-12): free-roam 3D driving with Rapier rigid-body physics (raycast-vehicle cars, grip limited by wheel load, heightfield terrain, ramps, loop,
+    # half pipe, loose objects, computer cars, dents) on Earth / Moon / Mars / Ceres / Jupiter-g worlds with a gravity slider. lib.js = MESCar (tests tool_apps_src/car-sandbox-tests.js).
+    "car-sandbox": dict(title="MES Car Sandbox", page_title="3D Car Sandbox: Drive on the Moon, Mars and a Test Track with Real Physics",
+                            tag="Drive anywhere. Crash anything. Change gravity.", accent="#d9480f", dark="#a63a0b", tint="#ffe8d9",
+                            desc="A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.",
+                            meta_desc="Free 3D car sandbox with real physics: drive on a test track, the Moon, Mars or Ceres, crash into cars and objects, jump ramps and change gravity.",
+                            js_v="1"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
@@ -1488,6 +1495,13 @@ APPS = {
                 tag="Classic Minesweeper, a daily board and best times.", accent="#475569", dark="#334155", tint="#e7ebf0",
                 desc="Play Minesweeper free in your browser: Beginner, Intermediate, Expert and custom boards, a daily board that is the same for everyone, no-guess boards, chording, flags, touch controls and your best times, with the option to save results to the Hive blockchain for a verified leaderboard.",
                 js_v="2", pre_js=["/main_js/hive.js?v=2"]),
+    # MES Chess (2026-11-12): tool_apps_src/chess (lib.js = MESChess rules + engine + PGN + Hive protocol, also mes.fm/api/_chess-lib.js for api/chess.js:
+    # cp after editing; view3d.js = the 3D board and venues (three.js on demand); app.js = the page + the computer's Web Worker). Tests: chess-tests.js, chess-api-tests.js.
+    "chess": dict(title="MES Chess", page_title="Chess: Play Free Against the Computer, a Friend, Online or on Hive",
+                tag="Play chess in 2D or 3D, against anyone.", accent="#7a4a1e", dark="#5a3514", tint="#f5ead9",
+                desc="Play chess free against the computer at four levels, a friend on the same device, or someone online as a guest or on the Hive blockchain (live or correspondence), on a 2D board or a 3D board in a chess club, tournament hall, park or space. Chess960, King of the Hill and Three-check, clocks, hints, analysis, PGN and FEN.",
+                meta_desc="Free chess: play the computer at four levels, a friend, or online as a guest or on Hive. 2D or 3D boards, Chess960, clocks, hints, PGN and FEN.",
+                js_v="1", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "connect-four": dict(title="MES Connect Four", page_title="Connect Four: Play Free Against the Computer, a Friend or Online",
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",
