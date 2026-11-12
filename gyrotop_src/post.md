@@ -18,9 +18,9 @@ https://youtu.be/rVX4pVWbI84
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23xAXuQ8NmnbKhCktPoe7QzfE8bRMoE1zs48QrzRu6R9Zr6iDMcuX5dCRU2fJK35cEEBK.png)
 
-In the GyroTop, the tip is very sharp and the top has very little room to move, slide, or roll. Rather moving the top around causes it to automatically re-align against both gravity and magnetic attraction.
+In the GyroTop, the tip is very sharp and the top has very little room to move, slide, or roll. Rather, moving the top around causes it to automatically re-align against both gravity and magnetic attraction.
 
-I take this further by showing that a gyroscope placed as a spinning top can rise on it's own too, thus completely refuting the rolling vs sliding friction theory. See my following videos:
+I take this further by showing that a gyroscope placed as a spinning top can rise on its own too, thus completely refuting the rolling vs sliding friction theory. See my following videos:
 
 >See full experiments list here: [https://mes.fm/experiments-series](https://mes.fm/experiments-series)
 
@@ -32,7 +32,7 @@ https://youtu.be/3euEKr0SXQM
 
 https://youtu.be/nqeQuAwVIqo
 
-The Experiment 1 video above shows that minimizing precessional friction is the key to causing gyroscopes (and hence spinning tops to rise).
+The Experiment 1 video above shows that minimizing precessional friction is the key to causing gyroscopes (and hence spinning tops) to rise.
 
 Furthermore, adding tape to increase spin friction can greatly increase the rate of rising.
 
@@ -42,7 +42,7 @@ Thus, in my opinion, the mainstream explanation of how spinning tops rise is alm
 
 Furthermore, the very concept of angular momentum is put into question.
 
-The mainstream explanation of angular momentum is that it is rotational analog of linear momentum. Basically spinning objects have an inertia that hinders any torques trying to change it's spin axis. See the image below of a gyroscope balancing vertically: https://en.wikipedia.org/wiki/Angular_momentum
+The mainstream explanation of angular momentum is that it is the rotational analog of linear momentum. Basically spinning objects have an inertia that hinders any torques trying to change its spin axis. See the image below of a gyroscope balancing vertically: https://en.wikipedia.org/wiki/Angular_momentum
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23ywuQqhAZgJELaVeyYLPZArCyVeW4fEWpgEfFaPtkGfnZH9TjfLM4tC2RV2g216dHtWP.png)
 
@@ -51,7 +51,7 @@ Owen Liang's GyroTop strongly suggests that spinning tops behave as if they don'
 https://youtu.be/0zGCXrUFiSM
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23xAcSbqcNTAKagnYuCPHpR8QUWeMVrSLwR5NPtARL7cXkRSGEaAmdjcsSJsRncjJX4tg.png)
 
-The first person that I am aware of that understood that Gyroscopes seemingly behave without angular momentum is Professor of Heavy Electrical Engineering Eric Laithwaite, whom was also a pioneer in magnetic levitating trains: https://en.wikipedia.org/wiki/Eric_Laithwaite
+The first person that I am aware of that understood that gyroscopes seemingly behave without angular momentum is Professor of Heavy Electrical Engineering Eric Laithwaite, who was also a pioneer in magnetic levitating trains: https://en.wikipedia.org/wiki/Eric_Laithwaite
 
 See this demonstration by Eric Laithwaite showing that a precessing gyroscope behaves inertialess in precession:
 
@@ -67,7 +67,7 @@ https://youtu.be/ddGRWfvYwZU
 
 In my opinion, these ice block experiments are irrefutable proof that precession lowers the angular momentum / inertia of spinning objects.
 
-To illustrate what this means, if you had a car-sized gyroscope spinning rapidly, it will precess over a tiny ladder without knocking it over. And if you stood in-front of it, you can knock over the car easily (instead of getting run over). https://mes.fm/antigravity-6-rotation-defy-physics
+To illustrate what this means, if you had a car-sized gyroscope spinning rapidly, it will precess over a tiny ladder without knocking it over. And if you stood in front of it, you can knock over the car easily (instead of getting run over). https://mes.fm/antigravity-6-rotation-defy-physics
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23zSQTDTAac5kNBpqGcHK18Y8WYrFDGLjZoi85dWYmrHLKv24ZbcFDAUpHqBtNR2F6iDY.png)
 
@@ -85,6 +85,6 @@ https://www.youtube.com/watch?v=rJ7ag17LxA8
 
 https://youtu.be/1Grv5B7AqkE
 
-The above are examples of the truly limitless applications of a true understand of the GyroTop, and objects in rotation in general. 
+The above are examples of the truly limitless applications of a true understanding of the GyroTop, and objects in rotation in general. 
 
-I believe the GyroTop should be made available in every physics call around the world!
+I believe the GyroTop should be made available in every physics class around the world!
