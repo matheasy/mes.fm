@@ -103,7 +103,7 @@ BL_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__t
 BL_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm) for sl, nm in BL_PAGES[1:])
 def _bl(slug, start, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", nm) for sl, nm in BL_PAGES)
-    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="13",
+    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="14",
              src="billiards", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"], nav_extra=BL_NAV_INFO, menu_extra=BL_NAV_MENU,
              vars={"START": start, "FAM": fam, "SEO": "@seo/%s.html" % slug})
     if slug != "billiards":
@@ -1294,14 +1294,14 @@ APPS = {
                   5, "#c2410c", "#9a3412", "#fff0e0"),
     # MES GTA 6 Hub (see GTA_BRAND above)
     "billiards": _bl("billiards", "", "MES Billiards", "Billiards: Play 8-Ball, 9-Ball and Snooker Free Online",
-                "Free billiards with real physics: 8-ball, 9-ball, 10-ball and snooker against the computer at four levels, a friend on the same device, or online as a guest or on the Hive blockchain, plus practice racks and trick-shot challenges.", 0,
-                "Play 8-ball, 9-ball, 10-ball and snooker free: real ball physics with spin, a computer at four levels, a friend, or online and on Hive. No download."),
+                "Free billiards with real physics: 8-ball, 9-ball, 10-ball and snooker against the computer at five levels, a friend on the same device, or online as a guest or on the Hive blockchain, plus practice racks and trick-shot challenges.", 0,
+                "Play 8-ball, 9-ball, 10-ball and snooker free: real ball physics with spin, a computer at five levels, a friend, or online and on Hive. No download."),
     "8-ball": _bl("8-ball", "8", "MES 8-Ball Pool", "8-Ball Pool: Play Free Against the Computer or a Friend",
-                "Play 8-ball pool free in your browser: break, take solids or stripes and pot the 8, with real spin and cushion physics, a computer opponent at four levels, two players on one device, or online and on Hive.", 1,
-                "Play 8-ball pool free: solids or stripes, then the 8. Real spin and cushion physics, a computer at four levels, a friend, or online. No download."),
+                "Play 8-ball pool free in your browser: break, take solids or stripes and pot the 8, with real spin and cushion physics, a computer opponent at five levels, two players on one device, or online and on Hive.", 1,
+                "Play 8-ball pool free: solids or stripes, then the 8. Real spin and cushion physics, a computer at five levels, a friend, or online. No download."),
     "9-ball": _bl("9-ball", "9", "MES 9-Ball Pool", "9-Ball Pool: Play Free Online With Real Physics",
                 "Play 9-ball pool free: hit the lowest ball first and pot the 9 to win, with real spin, combinations and cushion physics, against the computer, a friend or online. 10-ball is included too.", 2,
-                "Play 9-ball (and 10-ball) free: hit the lowest ball first, pot the 9 to win. Real spin and physics, a computer at four levels, a friend or online."),
+                "Play 9-ball (and 10-ball) free: hit the lowest ball first, pot the 9 to win. Real spin and physics, a computer at five levels, a friend or online."),
     "snooker": _bl("snooker", "S15", "MES Snooker", "Snooker: Play Free on a Full-Size 12-Foot Table",
                 "Play snooker free on a full-size 12-foot table: reds and colours, breaks, fouls and the black ball finish, with real spin and cushion physics, against the computer, a friend or online. Six-red snooker included.", 3,
                 "Play snooker free on a full-size table: reds, colours, breaks and fouls with real spin physics, against the computer, a friend or online. Six-red too."),

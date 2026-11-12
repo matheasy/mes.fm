@@ -150,7 +150,7 @@ eq(B.pointsLeft(B.create("S6", "q")), 75, "75 with six reds");
 
 // 6. determinism + the computer finishes games
 (function () {
-	for (const [v, lv] of [["8", "hard"], ["9", "medium"], ["S6", "pro"], ["P8", "pro"]]) {
+	for (const [v, lv] of [["8", "hard"], ["9", "medium"], ["S6", "pro"], ["P8", "pro"], ["9", "expert"], ["10", "expert"]]) {
 		const s = B.create(v, "z" + v); let k = 0;
 		while (!s.win && k < 220) { const shot = B.ai(s, lv); if (!B.apply(s, shot)) { ok(false, v + ": computer made an illegal shot"); break; } k++; }
 		ok(!!s.win || v === "P8", v + " " + lv + ": the game ends (" + k + " shots)");

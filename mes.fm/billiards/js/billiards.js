@@ -688,7 +688,10 @@
 		easy: { k: 3, aim: 1.7, pow: 0.16, spin: false, safe: 6 },
 		medium: { k: 6, aim: 0.65, pow: 0.08, spin: true, safe: 10 },
 		hard: { k: 10, aim: 0.22, pow: 0.04, spin: true, safe: 16 },
-		pro: { k: 14, aim: 0.07, pow: 0.02, spin: true, safe: 22 }
+		pro: { k: 14, aim: 0.07, pow: 0.02, spin: true, safe: 22 },
+		// expert: almost no aim error, and it plays for position: more speeds and spins per pot, the next shot weighted more,
+		// and a wider search for safeties (it leaves the other player as little as it can)
+		expert: { k: 16, deep: 5, bih: 8, aim: 0.02, pow: 0.008, spin: true, safe: 44, speeds: [0.92, 1.15, 1.45, 1.85], spins: [[0, 0], [0, 45], [0, -45], [0, 80], [0, -70], [40, 20], [-40, 20]], pw: 70 }
 	};
 	function aimPoints(s) {    // where to send an object ball for each pocket (a little inside the mouth)
 		var G = geometry(s.T), R = s.T.R;
@@ -750,24 +753,25 @@
 		return v;
 	}
 	B.posValue = posValue;
-	function evalAfter(s0, shot, me) {
+	function evalAfter(s0, shot, me, pw) {
+		pw = pw || 40;
 		var s = B.clone(s0), r = B.apply(s, shot);
 		if (!r) return { v: -1e9 };
 		var v;
 		if (s.win) v = s.win.p === me ? 1000 : -1000;
-		else if (s.turn === me) v = 100 + posValue(s) * 40 + (s.g.type === "S" ? r.pots.reduce(function (a, id) { return a + s.k[id]; }, 0) * 3 : r.pots.length * 2);
-		else v = (r.foul ? -60 : 0) - posValue(s) * 40 + (s.g.type === "S" ? (s.score[me] - s0.score[me]) - (s.score[1 - me] - s0.score[1 - me]) : 0);
+		else if (s.turn === me) v = 100 + posValue(s) * pw + (s.g.type === "S" ? r.pots.reduce(function (a, id) { return a + s.k[id]; }, 0) * 3 : r.pots.length * 2);
+		else v = (r.foul ? -60 : 0) - posValue(s) * pw + (s.g.type === "S" ? (s.score[me] - s0.score[me]) - (s.score[1 - me] - s0.score[1 - me]) : 0);
 		return { v: v, r: r, s: s };
 	}
 	/**
-	 * The computer's shot. level: easy | medium | hard | pro; rand: a random function (Math.random). -> shot object
+	 * The computer's shot. level: easy | medium | hard | pro | expert; rand: a random function (Math.random). -> shot object
 	 */
 	B.ai = function (s, level, rand) {
 		rand = rand || Math.random;
 		var Lv = B.LEVELS[level] || B.LEVELS.medium, me = s.turn, T = s.T, R = T.R, best = null, tries = [], i;
 		var tg = B.targets(s);
 		function consider(shot) {
-			var e = evalAfter(s, shot, me);
+			var e = evalAfter(s, shot, me, Lv.pw);
 			tries.push(1);
 			if (!best || e.v > best.v) best = { v: e.v, shot: shot };
 		}
@@ -817,11 +821,26 @@
 			}
 		} else starts.push([s.x[0], s.y[0]]);
 		var place = s.bih;
-		starts.forEach(function (st) {
+		if (Lv.deep) {
+			// expert: a quick plain try of every pot first, then the most promising few with every speed and spin (position play)
+			var rough = [];
+			starts.slice(0, Lv.bih || 6).forEach(function (st) {
+				B.candidates(s, st[0], st[1], tg).slice(0, Lv.k).forEach(function (cd) {
+					var sh0 = mk(st[0], st[1], cd.gx, cd.gy, Math.min(B.VMAX * 0.95, speedFor(cd)), 0, 0, place), e0 = evalAfter(s, sh0, me, Lv.pw);
+					if (!best || e0.v > best.v) best = { v: e0.v, shot: sh0 };
+					rough.push({ st: st, cd: cd, v: e0.v + cd.score * 30 });
+				});
+			});
+			rough.sort(function (a, b) { return b.v - a.v; });
+			rough.slice(0, Lv.deep).forEach(function (o) {
+				var v = speedFor(o.cd);
+				Lv.speeds.forEach(function (f) { Lv.spins.forEach(function (sp) { consider(mk(o.st[0], o.st[1], o.cd.gx, o.cd.gy, Math.min(B.VMAX * 0.95, v * f), sp[0], sp[1], place)); }); });
+			});
+		} else starts.forEach(function (st) {
 			var c = B.candidates(s, st[0], st[1], tg).slice(0, Lv.k);
 			c.forEach(function (cd) {
 				var v = speedFor(cd);
-				var vs = [v, v * 1.45], spins = Lv.spin ? [[0, 0], [0, 45], [0, -45]] : [[0, 0]];
+				var vs = Lv.speeds ? Lv.speeds.map(function (f) { return v * f; }) : [v, v * 1.45], spins = Lv.spins || (Lv.spin ? [[0, 0], [0, 45], [0, -45]] : [[0, 0]]);
 				vs.forEach(function (vv) { spins.forEach(function (sp) { consider(mk(st[0], st[1], cd.gx, cd.gy, Math.min(B.VMAX * 0.95, vv), sp[0], sp[1], place)); }); });
 			});
 		});
@@ -896,7 +915,7 @@
 	/* ======================================================= Hive protocol ======================================================= */
 	// custom_json id mes_pool. Ops: open {g, v, f, to?, re?} · join {h, g} · sh {h, g, n, m, c} · res / claim / cancel {h, g} ·
 	// rec {g, v, sd (seed), m (shots joined by "."), o (computer level | local), s (your seat | -1), w (winner | -1)}
-	var H = B.hive = { ID: "mes_pool", CLAIM_S: 300, OPEN_S: 3600, GID_RE: /^[a-z0-9]{8}$/, ACCT_RE: /^[a-z][a-z0-9.-]{2,15}$/, OPP: ["easy", "medium", "hard", "pro", "local"] };
+	var H = B.hive = { ID: "mes_pool", CLAIM_S: 300, OPEN_S: 3600, GID_RE: /^[a-z0-9]{8}$/, ACCT_RE: /^[a-z][a-z0-9.-]{2,15}$/, OPP: ["easy", "medium", "hard", "pro", "expert", "local"] };
 	B.onlineGame = function (v) { var g = B.game(v); return !!(g && g.online); };
 	H.parse = function (entries, acct) {
 		var out = [];
@@ -1835,7 +1854,7 @@
 	var aim = 0, power = S.power || 350, spin = { x: 0, y: 0 }, place = null, elev = 0;   // elev = cue elevation in degrees (jump shots)   // place = cue ball spot while in hand (table metres)
 	var anim = null, queue = [], lastShow = null, cpuAim = null;
 	var score = { p: [0, 0] };
-	var LEVEL_NAMES = { easy: "Easy", medium: "Medium", hard: "Hard", pro: "Pro" };
+	var LEVEL_NAMES = { easy: "Easy", medium: "Medium", hard: "Hard", pro: "Pro", expert: "Expert" };
 
 	function newSeed() { var A = "abcdefghijkmnpqrstuvwxyz23456789", s = ""; for (var i = 0; i < 6; i++) s += A[(Math.random() * A.length) | 0]; return s; }
 	function game() { return st.g; }
@@ -3174,7 +3193,7 @@
 		var box = $("bl-stats"), keys = Object.keys(S.stats);
 		var chDone = B.CHALLENGES.filter(function (c) { return S.chal[c.id]; }).length;
 		if (!keys.length && !chDone) { box.innerHTML = '<p class="bl-sub">No finished games yet.</p>'; return; }
-		var OPP = { easy: "vs Easy computer", medium: "vs Medium computer", hard: "vs Hard computer", pro: "vs Pro computer", local: "two players here", solo: "on your own", online: "online (guest)", hive: "on Hive" };
+		var OPP = { easy: "vs Easy computer", medium: "vs Medium computer", hard: "vs Hard computer", pro: "vs Pro computer", expert: "vs Expert computer", local: "two players here", solo: "on your own", online: "online (guest)", hive: "on Hive" };
 		var rows = keys.sort().map(function (k) {
 			var r = S.stats[k], p = k.split("|"), pot = r.shots ? Math.round(r.pots * 100 / r.shots) + "%" : "–";
 			return "<tr><td>" + esc(B.describe(p[0])) + ' <span class="bl-lobv">' + esc(OPP[p[1]] || p[1]) + (p[2] === "ng" ? " · no guide" : "") + "</span></td><td>" + r.g + '</td><td class="w">' + r.w + '</td><td class="l">' + (p[1] === "local" ? "–" : r.l) + "</td><td>" + pot + "</td><td>" + (r.best ? r.best : r.fewest ? r.fewest + " shots" : "–") + "</td></tr>";
@@ -3692,7 +3711,7 @@
 		HA.ops(me, Date.now() - 30 * 86400000).then(function (ops) {
 			var games = H.myGames(me, ops).slice(0, 12), recs = H.records(ops, 12), box = $("bl-hmine");
 			$("bl-hminebox").hidden = !games.length && !recs.length;
-			var OPP = { easy: "Easy computer", medium: "Medium computer", hard: "Hard computer", pro: "Pro computer", local: "pass and play / practice" };
+			var OPP = { easy: "Easy computer", medium: "Medium computer", hard: "Hard computer", pro: "Pro computer", expert: "Expert computer", local: "pass and play / practice" };
 			box.innerHTML = (games.length ? '<ul class="bl-lob">' + games.map(function (g) {
 				return '<li><span class="bl-lobn">' + (g.role === "host" ? "You opened" + (g.to ? " (challenge to @" + esc(g.to) + ")" : "") : "You joined @" + esc(g.host)) + ' <span class="bl-lobv">· ' + (g.v ? esc(B.describe(g.v)) + " · " : "") + new Date(g.ts).toLocaleString() + " · " + txLinks(g.trx) + '</span></span><button type="button" class="tu-btn" data-hjoin="' + esc(g.host + "/" + g.gid) + '">Open</button></li>';
 			}).join("") + "</ul>" : "") +

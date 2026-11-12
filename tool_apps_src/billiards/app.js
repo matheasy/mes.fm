@@ -59,7 +59,7 @@
 	var aim = 0, power = S.power || 350, spin = { x: 0, y: 0 }, place = null, elev = 0;   // elev = cue elevation in degrees (jump shots)   // place = cue ball spot while in hand (table metres)
 	var anim = null, queue = [], lastShow = null, cpuAim = null;
 	var score = { p: [0, 0] };
-	var LEVEL_NAMES = { easy: "Easy", medium: "Medium", hard: "Hard", pro: "Pro" };
+	var LEVEL_NAMES = { easy: "Easy", medium: "Medium", hard: "Hard", pro: "Pro", expert: "Expert" };
 
 	function newSeed() { var A = "abcdefghijkmnpqrstuvwxyz23456789", s = ""; for (var i = 0; i < 6; i++) s += A[(Math.random() * A.length) | 0]; return s; }
 	function game() { return st.g; }
@@ -1398,7 +1398,7 @@
 		var box = $("bl-stats"), keys = Object.keys(S.stats);
 		var chDone = B.CHALLENGES.filter(function (c) { return S.chal[c.id]; }).length;
 		if (!keys.length && !chDone) { box.innerHTML = '<p class="bl-sub">No finished games yet.</p>'; return; }
-		var OPP = { easy: "vs Easy computer", medium: "vs Medium computer", hard: "vs Hard computer", pro: "vs Pro computer", local: "two players here", solo: "on your own", online: "online (guest)", hive: "on Hive" };
+		var OPP = { easy: "vs Easy computer", medium: "vs Medium computer", hard: "vs Hard computer", pro: "vs Pro computer", expert: "vs Expert computer", local: "two players here", solo: "on your own", online: "online (guest)", hive: "on Hive" };
 		var rows = keys.sort().map(function (k) {
 			var r = S.stats[k], p = k.split("|"), pot = r.shots ? Math.round(r.pots * 100 / r.shots) + "%" : "–";
 			return "<tr><td>" + esc(B.describe(p[0])) + ' <span class="bl-lobv">' + esc(OPP[p[1]] || p[1]) + (p[2] === "ng" ? " · no guide" : "") + "</span></td><td>" + r.g + '</td><td class="w">' + r.w + '</td><td class="l">' + (p[1] === "local" ? "–" : r.l) + "</td><td>" + pot + "</td><td>" + (r.best ? r.best : r.fewest ? r.fewest + " shots" : "–") + "</td></tr>";
@@ -1916,7 +1916,7 @@
 		HA.ops(me, Date.now() - 30 * 86400000).then(function (ops) {
 			var games = H.myGames(me, ops).slice(0, 12), recs = H.records(ops, 12), box = $("bl-hmine");
 			$("bl-hminebox").hidden = !games.length && !recs.length;
-			var OPP = { easy: "Easy computer", medium: "Medium computer", hard: "Hard computer", pro: "Pro computer", local: "pass and play / practice" };
+			var OPP = { easy: "Easy computer", medium: "Medium computer", hard: "Hard computer", pro: "Pro computer", expert: "Expert computer", local: "pass and play / practice" };
 			box.innerHTML = (games.length ? '<ul class="bl-lob">' + games.map(function (g) {
 				return '<li><span class="bl-lobn">' + (g.role === "host" ? "You opened" + (g.to ? " (challenge to @" + esc(g.to) + ")" : "") : "You joined @" + esc(g.host)) + ' <span class="bl-lobv">· ' + (g.v ? esc(B.describe(g.v)) + " · " : "") + new Date(g.ts).toLocaleString() + " · " + txLinks(g.trx) + '</span></span><button type="button" class="tu-btn" data-hjoin="' + esc(g.host + "/" + g.gid) + '">Open</button></li>';
 			}).join("") + "</ul>" : "") +
