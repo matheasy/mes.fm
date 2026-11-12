@@ -392,6 +392,27 @@
 		var m = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshBasicMaterial({ map: n.t, transparent: true, depthWrite: false }));
 		m.position.set(x, y, z); m.rotation.y = ry || 0; g.add(m); return m;
 	}
+	/* pictures made for the rooms (Gemini, 2026-11-12) in /billiards/img/room/: loaded when a room is built; until then the
+	   code-drawn stand-in shows (brick) or the picture is simply not there yet (posters, jukebox) */
+	var ROOM_IMG = "/billiards/img/room/";
+	function imgTex(view, file, onload) {
+		var t = new THREE.TextureLoader().load(ROOM_IMG + file, function (tx) { if (onload) onload(tx); view.render(); }, undefined, function () {});
+		t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+		return t;
+	}
+	function picture(view, g, file, w, h, x, y, z, ry, opts) {   // a flat picture on a wall (posters get a thin dark frame)
+		opts = opts || {};
+		var t = imgTex(view, file, function () { m.visible = true; if (fr) fr.visible = true; });
+		var mat = opts.glow ? new THREE.MeshBasicMaterial({ map: t, transparent: true, alphaTest: 0.4 }) : std("#ffffff", 0.75, { map: t });
+		var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+		m.position.set(x, y, z); m.rotation.y = ry || 0; m.visible = false; g.add(m);
+		var fr = null;
+		if (opts.frame) {
+			fr = new THREE.Mesh(new THREE.PlaneGeometry(w + 0.07, h + 0.07), std("#1a120c", 0.5));
+			fr.position.set(x - Math.sin(ry || 0) * 0.004, y, z - Math.cos(ry || 0) * 0.004); fr.rotation.y = ry || 0; fr.visible = false; g.add(fr);
+		}
+		return m;
+	}
 	function walls(g, X, Z, H, mat, floorMat) {
 		var fl = new THREE.Mesh(new THREE.PlaneGeometry(2 * X + 2, 2 * Z + 2), floorMat); fl.rotation.x = -Math.PI / 2; fl.position.y = -0.89; fl.receiveShadow = true; g.add(fl);
 		var y = -0.89 + H / 2;
@@ -419,7 +440,15 @@
 			brick.wrapS = brick.wrapT = THREE.RepeatWrapping; brick.repeat.set(6, 3);
 			var plank = tex(256, 256, function (c, w, h) { for (var y = 0; y < h; y += 32) { var v = 80 + Math.random() * 30; c.fillStyle = "rgb(" + v + "," + (v * 0.6) + "," + (v * 0.35) + ")"; c.fillRect(0, y, w, 31); c.fillStyle = "rgba(0,0,0,0.4)"; c.fillRect(0, y + 31, w, 1); } });
 			plank.wrapS = plank.wrapT = THREE.RepeatWrapping; plank.repeat.set(8, 8);
-			walls(g, X, Z, H, std("#ffffff", 0.95, { map: brick }), std("#ffffff", 0.7, { map: plank }));
+			var wallMat = std("#ffffff", 0.95, { map: brick }), self3 = this;
+			walls(g, X, Z, H, wallMat, std("#ffffff", 0.7, { map: plank }));
+			imgTex(this, "brick.jpg", function (tx) { tx.wrapS = tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(Math.round(2 * X / 1.6), 2); wallMat.map = tx; wallMat.needsUpdate = true; brick.dispose(); });
+			// posters on the walls (original vintage-style art, made for this page)
+			picture(this, g, "poster-billiards.jpg", 0.62, 0.69, -0.5, F + 1.75, Z - 0.02, Math.PI, { frame: true });
+			picture(this, g, "poster-8ball.jpg", 0.6, 0.69, 0.35, F + 1.75, Z - 0.02, Math.PI, { frame: true });
+			picture(this, g, "poster-8ball.jpg", 0.6, 0.69, -X + 0.02, F + 1.8, 1.55, Math.PI / 2, { frame: true });
+			picture(this, g, "poster-billiards.jpg", 0.62, 0.69, X - 0.02, F + 1.8, -1.55, -Math.PI / 2, { frame: true });
+			void self3;
 			// the bar counter with bottles and stools
 			var wood = std("#5a2e17", 0.45), top = std("#2a1508", 0.3);
 			box(g, 4.2, 1.05, 0.6, wood, 0, F + 0.525, -Z + 0.9, true); box(g, 4.4, 0.06, 0.75, top, 0, F + 1.08, -Z + 0.85, true);
@@ -445,8 +474,9 @@
 				c.fillStyle = "#c62828"; c.beginPath(); c.arc(128, 128, 8, 0, 7); c.fill();
 			}) }));
 			db.rotation.x = Math.PI / 2; db.position.set(-1.8, F + 1.75, Z - 0.03); db.rotation.z = Math.PI; g.add(db);
-			var jb = box(g, 0.7, 1.4, 0.45, std("#4a148c", 0.4, { emissive: "#7b1fa2", emissiveIntensity: 0.35 }), 1.9, F + 0.7, Z - 0.4, true);
-			jb.rotation.y = Math.PI;
+			// the jukebox: a lit picture standing in front of the wall, with its own warm glow
+			picture(this, g, "jukebox.webp", 0.96, 1.44, 1.95, F + 0.72, Z - 0.3, Math.PI, { glow: true });
+			var jl = new THREE.PointLight("#ff9a3c", 1.1, 2.6, 1.6); jl.position.set(1.95, F + 1.0, Z - 0.75); g.add(jl);
 			var warm = new THREE.PointLight("#ffb36b", 2.2, 9, 1.2); warm.position.set(0, F + 2.6, -Z + 1.2); g.add(warm);
 			var pink = new THREE.PointLight("#ff3d8b", 1.2, 5, 1.5); pink.position.set(-X + 0.5, F + 2.2, 0); g.add(pink);
 		} else if (name === "tournament") {
