@@ -356,6 +356,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-pic:active {transform:scale(.94);}
 	#kd .kd-pic.kd-wig {animation:kd-wig .5s;}
 	@keyframes kd-wig {0%,100% {transform:rotate(0);} 25% {transform:rotate(-8deg) scale(1.06);} 75% {transform:rotate(8deg) scale(1.06);}}
+	#kd .kd-photo {display:block;width:1.15em;height:1.15em;max-width:78vw;max-height:52vh;object-fit:cover;border-radius:.12em;box-shadow:0 .03em .12em rgba(0,0,0,.35);background:#fbf3e4;-webkit-user-drag:none;user-select:none;}
+	#kd .kd-choice .kd-photo {width:100%;height:100%;max-width:none;max-height:none;border-radius:inherit;box-shadow:none;}
+	#kd .kd-wrap.kd-on #kd-pics {display:none;}
 	#kd .kd-pic svg {width:1em;height:1em;display:block;overflow:visible;}
 	#kd .kd-pic .kd-count {display:grid;grid-template-columns:repeat(5, 1fr);gap:.06em;font-size:.3em;line-height:1;}
 	#kd .kd-pic .kd-count--big {font-size:.42em;}
@@ -527,6 +530,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-t6 {background:var(--kd-c6);}
 
 	#kd #kd-mute[aria-pressed="true"] {border-color:var(--kd-no);}
+	#kd .kd-tbtn[hidden] {display:none;}
 
 
 	@media print {
@@ -650,6 +654,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #kd{--kd-go:#f15718;--kd-say:#267ae3;--kd-snd:#25e4b4;--kd-ok:#1feab6;--kd-ring:#ff7f0a;--kd-overlay:rgba(98,80,185,0.55);--kd-link:#2d7ddc;--kd-abc:#722fda;--kd-shadow:0 .4em 1.2em rgba(255,173,10,0.14)}
+	body.dark-mode #kd .kd-photo{background:#292215}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -724,6 +729,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<span class="kd-score" id="kd-score" aria-label="Stars collected" hidden>⭐ <b id="kd-stars">0</b></span>
 				<div class="kd-grown">
 					<button type="button" class="kd-hold" id="kd-gear" title="Grown-ups: hold for 2 seconds to open the settings" aria-label="Settings for grown-ups: hold for 2 seconds"><span class="kd-ring" aria-hidden="true"></span><span aria-hidden="true">⚙️</span><span class="kd-tl">Grown-ups</span></button>
+					<button type="button" class="kd-tbtn" id="kd-pics" aria-pressed="true" title="Real photos or cartoon pictures"><span aria-hidden="true">📷</span><span class="kd-tl">Real photos</span></button>
 					<button type="button" class="kd-tbtn" id="kd-mute" aria-pressed="false" title="Sound on or off"><span aria-hidden="true">🔊</span><span class="kd-tl">Sound on</span></button>
 					<button type="button" class="kd-tbtn" id="kd-fill" title="Fill the browser window (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⤢</span><span class="kd-tl">Fill window</span></button>
 					<button type="button" class="kd-tbtn" id="kd-fs" title="Full screen (kid-proof: hold ✕ for 2 seconds to leave)"><span aria-hidden="true">⛶</span><span class="kd-tl">Full screen</span></button>
@@ -783,6 +789,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						</div>
 						<div class="kd-row"><span>"What's this?" / math answers</span>
 							<div class="kd-seg" id="kd-o-qn" role="radiogroup" aria-label="Pictures to choose from"><button type="button" data-v="2" role="radio">2</button><button type="button" data-v="3" role="radio">3</button><button type="button" data-v="4" role="radio">4</button></div>
+						</div>
+						<div class="kd-row"><span>Animal pictures</span>
+							<div class="kd-seg" id="kd-o-pics" role="radiogroup" aria-label="Animal pictures"><button type="button" data-v="photo" role="radio">📷 Real photos</button><button type="button" data-v="cartoon" role="radio">🐶 Cartoon</button></div>
 						</div>
 						<div class="kd-row"><span>Colours</span>
 							<div class="kd-seg" id="kd-o-theme" role="radiogroup" aria-label="Colours"><button type="button" data-v="bright" role="radio">🌈 Bright</button><button type="button" data-v="calm" role="radio">🌙 Calm</button></div>
@@ -889,7 +898,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=4" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -49,6 +49,9 @@
 	#kd .kd-pic:active {transform:scale(.94);}
 	#kd .kd-pic.kd-wig {animation:kd-wig .5s;}
 	@keyframes kd-wig {0%,100% {transform:rotate(0);} 25% {transform:rotate(-8deg) scale(1.06);} 75% {transform:rotate(8deg) scale(1.06);}}
+	#kd .kd-photo {display:block;width:1.15em;height:1.15em;max-width:78vw;max-height:52vh;object-fit:cover;border-radius:.12em;box-shadow:0 .03em .12em rgba(0,0,0,.35);background:#fbf3e4;-webkit-user-drag:none;user-select:none;}
+	#kd .kd-choice .kd-photo {width:100%;height:100%;max-width:none;max-height:none;border-radius:inherit;box-shadow:none;}
+	#kd .kd-wrap.kd-on #kd-pics {display:none;}
 	#kd .kd-pic svg {width:1em;height:1em;display:block;overflow:visible;}
 	#kd .kd-pic .kd-count {display:grid;grid-template-columns:repeat(5, 1fr);gap:.06em;font-size:.3em;line-height:1;}
 	#kd .kd-pic .kd-count--big {font-size:.42em;}
@@ -220,3 +223,4 @@
 	#kd .kd-t6 {background:var(--kd-c6);}
 
 	#kd #kd-mute[aria-pressed="true"] {border-color:var(--kd-no);}
+	#kd .kd-tbtn[hidden] {display:none;}

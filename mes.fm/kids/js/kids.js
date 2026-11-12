@@ -113,6 +113,9 @@
 		["tooth", "Tooth", "🦷"], ["arm", "Arm", "💪"], ["leg", "Leg", "🦵"]
 	]);
 
+	// Real photos (AI-made in Grok / ChatGPT / Gemini, 2026-11-11) for every animal: mes.fm/kids/img/animals/<key>.jpg, shown when S.pics = "photo"
+	var PHOTOS = "dog cat cow pig sheep goat horse chicken rooster duck goose turkey owl crow dove bird peacock eagle frog bee cricket elephant lion tiger bear wolf monkey whale bison deer snake crocodile mouse rabbit fish turtle giraffe zebra penguin butterfly octopus fox".split(" ");
+	ITEMS.forEach(function (it) { if (it.cat === "animals" && PHOTOS.indexOf(it.key) >= 0) it.ph = "/kids/img/animals/" + it.key + ".jpg?v=1"; });
 	var BY_ID = {}; ITEMS.forEach(function (it) { BY_ID[it.id] = it; });
 
 	// Each page = a mode: which categories it can show (and which are on by default).
@@ -427,7 +430,7 @@
 	}
 
 	// ---------- Settings ----------
-	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false };
+	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false, pics: "photo" };
 	function clean(s) {
 		s = s && typeof s === "object" ? s : {};
 		var o = {};
@@ -438,6 +441,7 @@
 		if (STYLES[s.style]) o.style = s.style;
 		["auto", "sw", "snd", "showWord", "count", "mute"].forEach(function (k) { if (typeof s[k] === "boolean") o[k] = s[k]; });
 		if (["upper", "lower", "title", "both"].indexOf(s.lcase) >= 0) o.lcase = s.lcase;
+		if (s.pics === "photo" || s.pics === "cartoon") o.pics = s.pics;
 		o.ord = {};
 		if (s.ord && typeof s.ord === "object") for (var md in MODES) if (s.ord[md] === "order" || s.ord[md] === "shuffle") o.ord[md] = s.ord[md];
 		o.maxNum = [5, 10, 20].indexOf(Number(s.maxNum)) >= 0 ? Number(s.maxNum) : 10;
@@ -525,6 +529,7 @@
 	}
 	function picHtml(it) {
 		var p = it.pic;
+		if (it.ph && S.pics === "photo") return '<img class="kd-photo" src="' + esc(it.ph) + '" alt="" decoding="async" draggable="false">';
 		if (p.indexOf("svg:") === 0) return shapeSvg(p.slice(4));
 		if (p.indexOf("col:") === 0) return blobSvg(p.slice(4));
 		if (p.indexOf("num:") === 0) return countHtml(it);
@@ -794,6 +799,9 @@
 	$("kd-back").addEventListener("click", function () { unlock(); go(-1); });
 	$("kd-fwd").addEventListener("click", function () { unlock(); go(1); });
 	$("kd-shuf").addEventListener("click", function () { unlock(); shuffleNow(); });
+	// Real photos or cartoon (emoji) pictures for the animals: toolbar button + Grown-ups setting
+	function picsUi() { var b = $("kd-pics"); if (!b) return; var ph = S.pics === "photo"; b.setAttribute("aria-pressed", ph ? "true" : "false"); b.querySelector(".kd-tl").textContent = ph ? "Real photos" : "Cartoon"; b.firstElementChild.textContent = ph ? "📷" : "🐶"; b.hidden = !K.ITEMS.some(function (it) { return it.ph && MODE.cats.indexOf(it.cat) >= 0; }); }
+	if ($("kd-pics")) $("kd-pics").addEventListener("click", function () { S.pics = S.pics === "photo" ? "cartoon" : "photo"; save(); picsUi(); render(false); var o = $("kd-o-pics"); if (o) [].forEach.call(o.children, function (c) { c.setAttribute("aria-checked", c.getAttribute("data-v") === S.pics ? "true" : "false"); }); toast(S.pics === "photo" ? "Real photos" : "Cartoon pictures"); });
 	$("kd-mute").addEventListener("click", function () { S.mute = !S.mute; save(); var c = $("kd-o-mute"); if (c) c.checked = S.mute; muteUi(); toast(S.mute ? "Sound off" : "Sound on"); });
 	$("kd-say").addEventListener("click", function () { unlock(); if (play_ === "quiz" || play_ === "math") askAgain(); else sayCard(cur()); armAdv(); });
 	$("kd-qq").addEventListener("click", function () { unlock(); askAgain(); });
@@ -923,6 +931,7 @@
 		seg("kd-o-num", S.maxNum, function (v) { S.maxNum = +v; save(); rebuild(order[idx]); render(false); });
 		seg("kd-o-adv", S.adv, function (v) { S.adv = +v; save(); });
 		seg("kd-o-qn", S.quizN, function (v) { S.quizN = +v; save(); if (play_ === "quiz") render(false); });
+		seg("kd-o-pics", S.pics, function (v) { S.pics = v; save(); picsUi(); render(false); });
 		seg("kd-o-theme", S.theme, function (v) { S.theme = v; save(); root.setAttribute("data-theme", v); });
 		seg("kd-o-style", S.style, function (v) { var st = K.STYLES[v]; if (!st) return; S.style = v; S.rate = st.rate; S.pitch = st.pitch; save(); stopAll(); unlock(); say("Hello! Look, a cow. Moo!", token); });
 		$("kd-rate").value = S.rate; $("kd-rate-v").textContent = S.rate.toFixed(2) + "×";
@@ -999,7 +1008,7 @@
 	caseLabels();
 	rebuild();
 	render(false);
-	muteUi();
+	muteUi(); picsUi();
 	var q = /[?&]play=quiz\b/.test(location.search);
 	if (MODE.math) {
 		play_ = "math";

@@ -113,6 +113,9 @@
 		["tooth", "Tooth", "🦷"], ["arm", "Arm", "💪"], ["leg", "Leg", "🦵"]
 	]);
 
+	// Real photos (AI-made in Grok / ChatGPT / Gemini, 2026-11-11) for every animal: mes.fm/kids/img/animals/<key>.jpg, shown when S.pics = "photo"
+	var PHOTOS = "dog cat cow pig sheep goat horse chicken rooster duck goose turkey owl crow dove bird peacock eagle frog bee cricket elephant lion tiger bear wolf monkey whale bison deer snake crocodile mouse rabbit fish turtle giraffe zebra penguin butterfly octopus fox".split(" ");
+	ITEMS.forEach(function (it) { if (it.cat === "animals" && PHOTOS.indexOf(it.key) >= 0) it.ph = "/kids/img/animals/" + it.key + ".jpg?v=1"; });
 	var BY_ID = {}; ITEMS.forEach(function (it) { BY_ID[it.id] = it; });
 
 	// Each page = a mode: which categories it can show (and which are on by default).
@@ -427,7 +430,7 @@
 	}
 
 	// ---------- Settings ----------
-	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false };
+	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false, pics: "photo" };
 	function clean(s) {
 		s = s && typeof s === "object" ? s : {};
 		var o = {};
@@ -438,6 +441,7 @@
 		if (STYLES[s.style]) o.style = s.style;
 		["auto", "sw", "snd", "showWord", "count", "mute"].forEach(function (k) { if (typeof s[k] === "boolean") o[k] = s[k]; });
 		if (["upper", "lower", "title", "both"].indexOf(s.lcase) >= 0) o.lcase = s.lcase;
+		if (s.pics === "photo" || s.pics === "cartoon") o.pics = s.pics;
 		o.ord = {};
 		if (s.ord && typeof s.ord === "object") for (var md in MODES) if (s.ord[md] === "order" || s.ord[md] === "shuffle") o.ord[md] = s.ord[md];
 		o.maxNum = [5, 10, 20].indexOf(Number(s.maxNum)) >= 0 ? Number(s.maxNum) : 10;
