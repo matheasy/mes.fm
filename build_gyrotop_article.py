@@ -10,8 +10,8 @@ line become lazy embeds, as Hive shows them. Thumbnail (og:image + top of the ar
     python3 build_gyrotop_article.py              # dry run
     python3 build_gyrotop_article.py --apply      # write
 
-Never hand-edit the output. After a run: add_sidebar_math.py --only=gyrotop-angular-momentum --apply,
-add_bottom_ad.py --only=gyrotop-angular-momentum --apply, build_sitemap.py, build_search_index.py."""
+Never hand-edit the output. --apply also re-runs add_sidebar_math.py and add_bottom_ad.py for this page. After a title or
+description change also run build_sitemap.py and build_search_index.py."""
 import html, json, os, re, subprocess, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -90,11 +90,17 @@ def build():
     return t
 
 
+CLS = 'class="gt-yt"'
+
 if __name__ == "__main__":
     out = build()
     apply = "--apply" in sys.argv
-    print(f"{len(out)} bytes, {out.count('gt-yt')//1} video embeds -> {os.path.relpath(OUT, ROOT)}"
+    print(f"{len(out)} bytes, {out.count(CLS)} video embeds -> {os.path.relpath(OUT, ROOT)}"
           + ("" if apply else "   (dry run; pass --apply to write)"))
     if apply:
         os.makedirs(os.path.dirname(OUT), exist_ok=True)
         open(OUT, "w", encoding="utf-8").write(out)
+        # the build writes the bare shell: put the "More like this" sidebar and the bottom ad back on
+        for script in ("add_sidebar_math.py", "add_bottom_ad.py"):
+            subprocess.run([sys.executable, os.path.join(ROOT, script), "--only=" + SLUG, "--apply"], check=True, stdout=subprocess.DEVNULL)
+        print("sidebar + bottom ad re-applied")
