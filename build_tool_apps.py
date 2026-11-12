@@ -73,7 +73,7 @@ KIDS_PAGES = [("kids-flashcards", "Flashcards"), ("kids-animal-sounds", "Animal 
 KIDS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in KIDS_PAGES)
 KIDS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm if nm != "Shapes" else "Shapes &amp; Colours") for sl, nm in KIDS_PAGES)
 def _kids(slug, mode, seo, title, page_title, desc, tab, accent, dark, tint):
-    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="6", no_ads=True,
+    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="7", no_ads=True,
              src="kids", vars={"MODE": mode, "BODY": "@hub.html" if mode == "hub" else "@player.html", "SEO": "@seo/%s.html" % seo},
              pre_js=[] if mode == "hub" else ["/main_js/voice-picker.js?v=1"], nav_extra=KIDS_NAV_INFO, menu_extra=KIDS_NAV_MENU,
              head_extra=PAGE3_HEAD)
