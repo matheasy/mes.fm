@@ -300,3 +300,5 @@
 	#bl .bl-view.mes-pside .bl-online-bar {flex-direction:column;align-items:stretch;}
 	#bl .bl-view.mes-pside .bl-online-bar .bl-vbtns {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));}
 	#bl .bl-view.mes-pside .bl-msg {font-size:0.88em;}
+	/* 2D <-> 3D cross-fade: the incoming view lies over the outgoing one, centred on it */
+	#bl .bl-stage > .is-over {position:absolute;z-index:2;transform:translate(-50%, -50%);margin:0 !important;}

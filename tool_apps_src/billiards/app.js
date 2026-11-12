@@ -239,7 +239,7 @@
 		return w < 620 && window.innerHeight > window.innerWidth * 1.15;
 	}
 	function relayout() {
-		if (!st) return;
+		if (!st || xfBusy) return;
 		var T = st.T, cush = 0.045, wood = T.id === "pool" ? 0.11 : 0.13, edge = cush + wood;
 		var Lo = T.L + 2 * edge, Wo = T.W + 2 * edge, up = upright();
 		var dimX = up ? Wo : Lo, dimY = up ? Lo : Wo;
@@ -578,49 +578,107 @@
 
 	/* ===================================================================== 3D view ===================================================================== */
 	var v3 = null, v3busy = false, box3 = $("bl-3d");
+	/* 2D <-> 3D: the incoming view is laid over the outgoing one and they cross-fade, so the screen is never empty.
+	   2D -> 3D: the 3D camera starts straight above, sized like the flat table, fades in over it, then swoops down behind the cue.
+	   3D -> 2D: the camera rises to straight above, then the flat table fades in over it. */
+	var xf = 0, xfBusy = false;
+	var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 	function setDim(d, quiet) {
 		if (d === "3d" && !window.BL3D) d = "2d";
+		if (xfBusy) { segSet("bl-dim", S.dim); return; }   // let the running cross-fade finish first
 		S.dim = d; save(); segSet("bl-dim", d);
 		$("bl-cam").hidden = $("bl-room").hidden = d !== "3d";
 		ovDim();
+		var my = ++xf;
 		if (d === "2d") {
-			if (v3 && !box3.hidden) {   // ease the 3D camera up to straight above, then fade over to the flat table
+			loadPill(false);
+			if (v3 && !box3.hidden) {   // ease the 3D camera up to straight above, then cross-fade to the flat table
 				v3.forceTop = true; draw();
-				setTimeout(function () { fadeSwap(cv, box3, function () { v3.forceTop = false; relayout(); }); }, 420);
+				setTimeout(function () { if (my === xf) crossTo(cv, box3, function () { v3.forceTop = false; }); }, REDUCED ? 0 : 450);
 			} else { box3.hidden = true; cv.hidden = false; relayout(); }
 			return;
 		}
-		if (v3) { fadeSwap(box3, cv, function () { relayout(); v3.flyFromTop(); draw(); }); return; }
+		if (v3) { in3(my); return; }
 		if (v3busy) return;
 		v3busy = true;
-		box3.hidden = false; cv.hidden = true;
-		box3.style.width = (LY ? LY.w : 600) + "px"; box3.style.height = (LY ? LY.h : 330) + "px";
-		box3.innerHTML = '<div class="bl-3dmsg">Loading the 3D view…</div>';
+		var pillT = setTimeout(function () { if (my === xf) loadPill(true); }, 250);   // the 2D table stays on screen while 3D loads
 		window.BL3D.create(box3).then(function (v) {
-			v3busy = false; v3 = v;
-			var msg = box3.querySelector(".bl-3dmsg"); if (msg) msg.remove();
-			box3.style.width = box3.style.height = "";
+			v3busy = false; v3 = v; clearTimeout(pillT); loadPill(false);
 			v3.setCam(S.cam);
 			v3.roomName = S.room;
+			if (my !== xf || S.dim !== "3d") return;
+			in3(my);
 			addHint();
-			relayout();
-			v3.flyFromTop(); draw();
 		}, function (e) {
-			v3busy = false; box3.innerHTML = ""; box3.hidden = true; cv.hidden = false;
-			S.dim = "2d"; save(); segSet("bl-dim", "2d"); $("bl-cam").hidden = $("bl-room").hidden = true;
+			v3busy = false; clearTimeout(pillT); loadPill(false); box3.innerHTML = ""; box3.hidden = true; cv.hidden = false;
+			S.dim = "2d"; save(); segSet("bl-dim", "2d"); $("bl-cam").hidden = $("bl-room").hidden = true; ovDim();
 			if (!quiet) toast("The 3D view could not start (" + ((e && e.message) || "no WebGL") + "). Showing 2D.");
 			relayout();
 		});
 	}
-	function fadeSwap(showEl, hideEl, after) {
-		hideEl.classList.add("is-fade");
-		setTimeout(function () {
-			hideEl.hidden = true; hideEl.classList.remove("is-fade");
-			showEl.classList.add("is-fade"); showEl.hidden = false;
-			if (after) after();
-			requestAnimationFrame(function () { requestAnimationFrame(function () { showEl.classList.remove("is-fade"); }); });
-		}, 200);
+	function loadPill(on) {
+		var el = $("bl-opill"); if (!el) return;
+		if (on) { el.textContent = "Loading the 3D view…"; el.hidden = false; el.dataset.load = "1"; }
+		else if (el.dataset.load) { el.hidden = true; el.textContent = ""; delete el.dataset.load; }
 	}
+	function in3(my) {
+		if (cv.hidden) { box3.hidden = false; v3.setTable(st, S.cloth, S.nums); relayout(); v3.flyFromTop(); draw(); return; }
+		v3.forceTop = true;
+		crossTo(box3, cv, function () {
+			if (my !== xf) return;
+			v3.flyFromTop(); draw();                                  // straight above at the 3D view's own size...
+			setTimeout(function () { if (my !== xf) return; v3.forceTop = false; draw(); }, 60);   // ...then swoop down behind the cue
+		});
+	}
+	function crossTo(showEl, hideEl, done) {
+		var fill = view.classList.contains("mes-pfill"), sr = stage.getBoundingClientRect(), cs = getComputedStyle(stage);
+		var padT = parseFloat(cs.paddingTop) || 0, h0 = stage.offsetHeight, cx, cy;
+		var finish = function () {
+			hideEl.hidden = true; hideEl.style.opacity = ""; hideEl.style.transition = "";
+			showEl.classList.remove("is-over"); showEl.style.left = showEl.style.top = showEl.style.opacity = showEl.style.transition = "";
+			xfBusy = false;
+			if (fill || REDUCED) { relayout(); if (done) done(); return; }
+			// the stage grows or shrinks smoothly to the new view's height
+			stage.style.height = h0 + "px"; stage.style.overflow = "hidden";
+			relayout();
+			if (done) done();
+			stage.style.height = ""; var h1 = stage.offsetHeight; stage.style.height = h0 + "px";
+			void stage.offsetHeight;
+			stage.style.transition = "height 0.3s ease"; stage.style.height = h1 + "px";
+			setTimeout(function () { stage.style.transition = stage.style.height = stage.style.overflow = ""; }, 330);
+		};
+		if (showEl === box3) {
+			var hr = hideEl.getBoundingClientRect();
+			cx = hr.left - sr.left + hr.width / 2; cy = hr.top - sr.top + hr.height / 2;
+			box3.hidden = false;
+			v3.setTable(st, S.cloth, S.nums);
+			v3.size(Math.max(200, Math.round(hr.width)), Math.max(150, Math.round(hr.height)));   // the top view framed like the flat table
+			v3.flyFromTop(); draw();
+		} else {
+			cv.hidden = false;
+			relayout();                                                // sizes the flat table (S.dim is already "2d")
+			var mr = parseFloat(cv.style.marginRight) || 0, mb = parseFloat(cv.style.marginBottom) || 0;
+			cx = sr.width / 2 - mr / 2;
+			cy = fill ? sr.height / 2 - mb / 2 : padT + LY.h / 2;
+		}
+		if (REDUCED) { finish(); return; }
+		xfBusy = true;
+		showEl.classList.add("is-over");
+		showEl.style.left = cx + "px"; showEl.style.top = cy + "px";
+		showEl.style.transition = "none"; showEl.style.opacity = "0";
+		void showEl.offsetWidth;
+		showEl.style.transition = "opacity 0.34s ease";
+		hideEl.style.transition = "opacity 0.2s ease 0.16s";   // the old view stays solid until the new one is mostly in
+		showEl.style.opacity = "1"; hideEl.style.opacity = "0";
+		setTimeout(finish, 360);
+	}
+	// load the 3D library quietly once the page has settled, so the first switch to 3D is quick
+	(function () {
+		var c = navigator.connection;
+		if (!window.BL3D || !window.BL3D.load || (c && (c.saveData || /2g/.test(c.effectiveType || "")))) return;
+		var go = function () { (window.requestIdleCallback || function (f) { setTimeout(f, 1); })(function () { window.BL3D.load().catch(function () {}); }, { timeout: 5000 }); };
+		if (document.readyState === "complete") setTimeout(go, 2500); else window.addEventListener("load", function () { setTimeout(go, 2500); });
+	})();
 	function addHint() {
 		var h = document.createElement("div"); h.className = "bl-3dhint";
 		h.textContent = "Behind the cue: drag sideways to aim, up / down to tilt the view (Page Up / Down) · other cameras: press where to aim · right-drag or two fingers: turn the camera · Ctrl + wheel / pinch: zoom";
