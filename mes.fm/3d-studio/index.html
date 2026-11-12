@@ -509,6 +509,26 @@ body.dark-mode #td .tu-seo h2, body.dark-mode #td .tu-seo h3, body.dark-mode #td
 #td.td-short.td-noctl .td-bar, #td.td-short.td-noctl .td-left, #td.td-short.td-noctl .td-right, #td.td-short.td-noctl .td-vtools, #td.td-short.td-noctl .td-status {display:none;}
 #td.td-short.td-noctl .td-ctlbtn {right:6px;bottom:auto;top:6px;width:40px;height:40px;min-height:0;padding:0;justify-content:center;font-size:1.05em;opacity:0.85;}
 #td.td-short.td-noctl .td-ctlbtn span {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+/* Photo to 3D dialog (photo3d.js) */
+#td .td-dlg--p3 {width:min(1040px, 100%);}
+#td .td-p3 {display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr);gap:16px;margin-top:10px;}
+#td .td-p3-l, #td .td-p3-r {min-width:0;display:flex;flex-direction:column;gap:8px;}
+#td .td-p3-drop {border:2px dashed var(--td-line);border-radius:10px;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:8px;color:var(--td-text);background:var(--td-input);}
+#td .td-p3-drop:hover, #td .td-p3-drop.on, #td .td-p3-drop:focus-visible {border-color:var(--td-acc);outline:none;}
+#td .td-p3-drop small {color:var(--td-dim);}
+#td .td-p3-drop canvas {max-width:100%;max-height:220px;border-radius:6px;}
+#td .td-p3-prevw {position:relative;min-height:150px;border-radius:10px;background:repeating-conic-gradient(rgba(127,127,127,0.18) 0 25%, transparent 0 50%) 0 0 / 16px 16px;display:flex;align-items:center;justify-content:center;padding:8px;}
+#td .td-p3-prevw canvas {max-width:100%;max-height:300px;image-rendering:auto;}
+#td .td-p3-ph {position:absolute;color:var(--td-dim);font-size:0.85em;}
+#td .td-p3-bar {height:6px;border-radius:3px;background:var(--td-line);overflow:hidden;}
+#td .td-p3-bar i {display:block;height:100%;width:0;background:var(--td-acc);transition:width 0.2s;}
+#td .td-p3-pres {display:flex;flex-wrap:wrap;gap:5px;}
+#td .td-p3-pres .td-b {font-size:0.82em;}
+#td .td-p3-pres .td-b[aria-pressed="true"] {background:var(--td-acc);border-color:var(--td-acc);color:#fff;}
+#td .td-p3-grid {display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;}
+#td .td-p3-grid input[type=range] {width:100%;accent-color:var(--td-acc);}
+#td .td-p3-ai {font-size:0.76em;}
+@media (max-width: 700px) {#td .td-p3 {grid-template-columns:minmax(0, 1fr);} #td .td-p3-grid {grid-template-columns:1fr;}}
 
 
 	@media print {
@@ -633,6 +653,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #td.td{--td-gbg:#2ddc6e;--td-gbd:#2edb6e;--td-rbd:#d13838;--td-ay:#2edb6e;--td-wbg:#d89f31;--td-wbd:#f59914}
 	body.dark-mode #td .tu-seo{background:#1a1a1a;color:#d1d6dc}
+	body.dark-mode #td .td-p3-prevw{background:repeating-conic-gradient(rgba(82,82,82,0.18) 0 25%, transparent 0 50%) 0 0 / 16px 16px}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -851,6 +872,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="td-bar" id="td-bar" role="toolbar" aria-label="3D Studio tools">
 			<div class="td-grp">
 				<button type="button" class="td-b td-b--pri" data-act="templates" title="Ready-made models to start from">📚 Templates</button>
+				<button type="button" class="td-b" data-act="photo3d" title="Turn a photo or drawing into a printable relief, coin, lithophane or figure (AI depth, runs in your browser)">📷 Photo to 3D</button>
 				<button type="button" class="td-b" data-act="open" title="Open a .mes3d project, or import STL, OBJ, GLB, 3MF or SVG (Ctrl+O)">📂 Open / Import</button>
 				<button type="button" class="td-b" data-act="save" title="Save the project as a .mes3d file (Ctrl+S)">💾 Save</button>
 				<button type="button" class="td-b td-b--exp" data-act="export" title="Export for your slicer: STL, 3MF, OBJ or GLB (Ctrl+E)">⬇ Export STL / 3MF</button>
@@ -915,8 +937,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="td-empty" id="td-empty">
 						<div class="td-empty-in">
 							<b>Start your 3D model</b>
-							<span>Click a shape on the left to add it, or start from a ready-made model.</span>
-							<div><button type="button" class="td-b td-b--pri" data-act="templates">📚 Pick a template</button> <button type="button" class="td-b" data-act="open">📂 Open a file</button></div>
+							<span>Click a shape on the left to add it, start from a ready-made model, or turn a photo into 3D.</span>
+							<div><button type="button" class="td-b td-b--pri" data-act="templates">📚 Pick a template</button> <button type="button" class="td-b" data-act="photo3d">📷 Photo to 3D</button> <button type="button" class="td-b" data-act="open">📂 Open a file</button></div>
 							<small>Drag to turn the view · right-drag to pan · scroll to zoom</small>
 						</div>
 					</div>
@@ -977,7 +999,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/audio"><img class="mes-aside__img mes-aside__img--logo" src="/audio/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Free Online Audio Editor with AI Noise Removal</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/one-rep-max-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/one-rep-max-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">One-Rep Max (1RM) Calculator: 7 Formulas, Rep Chart, Plates and Strength Level</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/brick-builder"><img class="mes-aside__img mes-aside__img--logo" src="/brick-builder/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Brick Builder: Free 3D Building Brick Simulator with Bridges and Strength Test</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/one-rep-max-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/one-rep-max-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">One-Rep Max (1RM) Calculator: 7 Formulas, Rep Chart, Plates and Strength Level</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1027,7 +1049,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/3d-studio/js/3d-studio.js?v=2" defer></script>
+	<script src="/3d-studio/js/3d-studio.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

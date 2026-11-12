@@ -173,5 +173,36 @@ ok(!M.validProject({ app: 'mes-3d-studio', objs: [{ type: 'evil', pos: [0, 0, 0]
 ok(!M.validProject({ app: 'mes-3d-studio', objs: [{ type: 'box', pos: [0, 0, 'x'], rot: [0, 0, 0], scl: [1, 1, 1] }] }), 'bad number');
 ok(M.safeName('a/b:c?') === 'a b c', 'safe name');
 
+// ---------- picture -> relief ----------
+(function () {
+	var w = 10, h = 6, H = new Float32Array(w * h), m = M.shapeMask('rect', w, h);
+	var flat = M.reliefMesh(H, m, w, h, { cell: 2, base: 3, height: 5 });
+	near(M.volumeArea(flat).volume, 20 * 12 * 3, 1e-3, 'flat relief = a 20 x 12 x 3 box');
+	var mc = M.manifoldCheck(flat); ok(mc.closed && mc.boundary === 0 && mc.shells === 1, 'flat relief is watertight ' + JSON.stringify(mc).slice(0, 120));
+	var bb = M.bboxOf(flat); near(bb.min[2], 0, 1e-6, 'sits on the plate'); near(bb.max[2], 3, 1e-6, 'base height');
+	for (var i = 0; i < H.length; i++) H[i] = 1;
+	near(M.volumeArea(M.reliefMesh(H, m, w, h, { cell: 2, base: 3, height: 5 })).volume, 20 * 12 * 8, 1e-3, 'full height = base + relief');
+	near(M.volumeArea(M.reliefMesh(H, m, w, h, { cell: 2, base: 2, height: 5, twoSided: true })).volume, 20 * 12 * 12, 1e-3, 'two-sided = mirrored');
+	// a bumpy circle with a hole and a corner-only contact still closes
+	var W = 40, Hh = 30, rnd = 1, hm = new Float32Array(W * Hh); for (i = 0; i < hm.length; i++) { rnd = (rnd * 16807) % 2147483647; hm[i] = rnd / 2147483647; }
+	var cm = M.shapeMask('circle', W, Hh); cm[15 * W + 20] = 0; cm[0] = 1; cm[W + 1] = 1;
+	var clean = M.cleanMask(cm, W, Hh, { largest: false, holes: 0 });
+	var soup = M.reliefMesh(M.normHeights(hm, clean, W, Hh, { blur: 1 }), clean, W, Hh, { cell: 1, base: 1, height: 4, border: 2 });
+	var c2 = M.manifoldCheck(soup); ok(c2.closed && c2.boundary === 0 && c2.flipped === 0, 'bumpy circle with a hole is watertight ' + JSON.stringify(c2).slice(0, 160));
+	ok(M.volumeArea(soup).volume > 0, 'outward facing');
+	var two = M.reliefMesh(hm, clean, W, Hh, { cell: 1, base: 1, height: 4, twoSided: true }), c3 = M.manifoldCheck(two); ok(c3.closed && c3.boundary === 0, 'two-sided bumpy is watertight');
+	// cleanMask: largest piece + small holes
+	var a = new Uint8Array(100); for (i = 0; i < 100; i++) { var x = i % 10, y = (i / 10) | 0; a[i] = (x >= 1 && x <= 6 && y >= 1 && y <= 6 && !(x === 3 && y === 3)) || (x === 9 && y === 9) ? 1 : 0; }
+	var cl = M.cleanMask(a, 10, 10, { largest: true, holes: 4 }); ok(cl[99] === 0, 'stray piece dropped'); ok(cl[33] === 1, 'small hole filled');
+	var dg = M.cleanMask(new Uint8Array([1, 0, 0, 1]), 2, 2, { largest: false }); ok(dg[1] + dg[2] === 1, 'corner contact joined');
+	// normHeights
+	var nh = M.normHeights(new Float32Array([0, 5, 10]), null, 3, 1, { lo: 0, hi: 1 }); near(nh[0], 0, 1e-6, 'norm low'); near(nh[1], 0.5, 1e-6, 'norm mid'); near(nh[2], 1, 1e-6, 'norm high');
+	near(M.normHeights(new Float32Array([0, 5, 10]), null, 3, 1, { lo: 0, hi: 1, invert: true })[0], 1, 1e-6, 'invert');
+	var rs = M.resampleGrid(new Float32Array([0, 1, 2, 3]), 4, 1, 2, 1); near(rs[0], 0.5, 1e-6, 'shrink averages'); near(rs[1], 2.5, 1e-6, 'shrink averages 2');
+	var g = M.reliefGrid(4000, 3000, 60000); ok(g.w * g.h <= 60500 && Math.abs(g.w / g.h - 4 / 3) < 0.02, 'grid keeps aspect');
+	var dist = M.edgeDistance(M.shapeMask('rect', 9, 9), 9, 9); near(dist[4 * 9 + 4], 5, 1e-6, 'edge distance at the centre');
+	ok(Object.keys(M.RELIEF_PRESETS).length >= 5, 'presets');
+})();
+
 console.log(fails ? fails + ' of ' + n + ' checks FAILED' : 'all ' + n + ' checks passed');
 process.exit(fails ? 1 : 0);

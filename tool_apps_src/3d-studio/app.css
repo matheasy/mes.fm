@@ -202,3 +202,23 @@ body.dark-mode #td .tu-seo h2, body.dark-mode #td .tu-seo h3, body.dark-mode #td
 #td.td-short.td-noctl .td-bar, #td.td-short.td-noctl .td-left, #td.td-short.td-noctl .td-right, #td.td-short.td-noctl .td-vtools, #td.td-short.td-noctl .td-status {display:none;}
 #td.td-short.td-noctl .td-ctlbtn {right:6px;bottom:auto;top:6px;width:40px;height:40px;min-height:0;padding:0;justify-content:center;font-size:1.05em;opacity:0.85;}
 #td.td-short.td-noctl .td-ctlbtn span {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+/* Photo to 3D dialog (photo3d.js) */
+#td .td-dlg--p3 {width:min(1040px, 100%);}
+#td .td-p3 {display:grid;grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr);gap:16px;margin-top:10px;}
+#td .td-p3-l, #td .td-p3-r {min-width:0;display:flex;flex-direction:column;gap:8px;}
+#td .td-p3-drop {border:2px dashed var(--td-line);border-radius:10px;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:8px;color:var(--td-text);background:var(--td-input);}
+#td .td-p3-drop:hover, #td .td-p3-drop.on, #td .td-p3-drop:focus-visible {border-color:var(--td-acc);outline:none;}
+#td .td-p3-drop small {color:var(--td-dim);}
+#td .td-p3-drop canvas {max-width:100%;max-height:220px;border-radius:6px;}
+#td .td-p3-prevw {position:relative;min-height:150px;border-radius:10px;background:repeating-conic-gradient(rgba(127,127,127,0.18) 0 25%, transparent 0 50%) 0 0 / 16px 16px;display:flex;align-items:center;justify-content:center;padding:8px;}
+#td .td-p3-prevw canvas {max-width:100%;max-height:300px;image-rendering:auto;}
+#td .td-p3-ph {position:absolute;color:var(--td-dim);font-size:0.85em;}
+#td .td-p3-bar {height:6px;border-radius:3px;background:var(--td-line);overflow:hidden;}
+#td .td-p3-bar i {display:block;height:100%;width:0;background:var(--td-acc);transition:width 0.2s;}
+#td .td-p3-pres {display:flex;flex-wrap:wrap;gap:5px;}
+#td .td-p3-pres .td-b {font-size:0.82em;}
+#td .td-p3-pres .td-b[aria-pressed="true"] {background:var(--td-acc);border-color:var(--td-acc);color:#fff;}
+#td .td-p3-grid {display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;}
+#td .td-p3-grid input[type=range] {width:100%;accent-color:var(--td-acc);}
+#td .td-p3-ai {font-size:0.76em;}
+@media (max-width: 700px) {#td .td-p3 {grid-template-columns:minmax(0, 1fr);} #td .td-p3-grid {grid-template-columns:1fr;}}

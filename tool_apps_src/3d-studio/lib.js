@@ -405,12 +405,161 @@
 	function validProject(p) { return !!(p && p.app === 'mes-3d-studio' && Array.isArray(p.objs) && p.objs.every(function (o) { return validObj(o, 0); })); }
 	function safeName(s, fallback) { var n = String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80); return n || fallback || 'model'; }
 
+
+	// ---------- picture -> 3D relief (heights on a grid of cells, used by "Photo to 3D") ----------
+	// Box-filter / bilinear resample of a w x h float grid to nw x nh.
+	function resampleGrid(a, w, h, nw, nh) {
+		var o = new Float32Array(nw * nh), sx = w / nw, sy = h / nh;
+		for (var j = 0; j < nh; j++) for (var i = 0; i < nw; i++) {
+			if (sx > 1 || sy > 1) { // shrink: average the source pixels under the cell
+				var x0 = Math.floor(i * sx), x1 = Math.max(x0 + 1, Math.floor((i + 1) * sx)), y0 = Math.floor(j * sy), y1 = Math.max(y0 + 1, Math.floor((j + 1) * sy)), t = 0, c = 0;
+				for (var y = y0; y < y1 && y < h; y++) for (var x = x0; x < x1 && x < w; x++) { t += a[y * w + x]; c++; }
+				o[j * nw + i] = c ? t / c : 0;
+			} else { // grow: bilinear
+				var fx = Math.min(w - 1, Math.max(0, (i + 0.5) * sx - 0.5)), fy = Math.min(h - 1, Math.max(0, (j + 0.5) * sy - 0.5)), ix = Math.floor(fx), iy = Math.floor(fy), ax = fx - ix, ay = fy - iy, ix2 = Math.min(w - 1, ix + 1), iy2 = Math.min(h - 1, iy + 1);
+				o[j * nw + i] = (a[iy * w + ix] * (1 - ax) + a[iy * w + ix2] * ax) * (1 - ay) + (a[iy2 * w + ix] * (1 - ax) + a[iy2 * w + ix2] * ax) * ay;
+			}
+		}
+		return o;
+	}
+	// Outline of the model: 'rect', 'circle' (largest circle in the middle), 'oval' (fills the picture) or 'subject' (alpha >= 0.5).
+	function shapeMask(kind, w, h, alpha) {
+		var m = new Uint8Array(w * h), cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2;
+		for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) {
+			var k = j * w + i, dx = i + 0.5 - cx, dy = j + 0.5 - cy;
+			m[k] = kind === 'circle' ? (dx * dx + dy * dy <= r * r ? 1 : 0) : kind === 'oval' ? ((dx * dx) / (cx * cx) + (dy * dy) / (cy * cy) <= 1 ? 1 : 0) : kind === 'subject' ? (alpha && alpha[k] >= 0.5 ? 1 : 0) : 1;
+		}
+		return m;
+	}
+	function components(m, w, h, val) { // 4-connected pieces of cells equal to val -> {lab Int32Array, sizes[], touches[] (touches the grid edge)}
+		var lab = new Int32Array(w * h).fill(-1), sizes = [], touches = [], st = new Int32Array(w * h);
+		for (var s0 = 0; s0 < w * h; s0++) {
+			if (m[s0] !== val || lab[s0] >= 0) continue;
+			var id = sizes.length, n = 0, top = 0, edge = false; st[top++] = s0; lab[s0] = id;
+			while (top) {
+				var k = st[--top], x = k % w, y = (k - x) / w; n++;
+				if (x === 0 || y === 0 || x === w - 1 || y === h - 1) edge = true;
+				if (x > 0 && m[k - 1] === val && lab[k - 1] < 0) { lab[k - 1] = id; st[top++] = k - 1; }
+				if (x < w - 1 && m[k + 1] === val && lab[k + 1] < 0) { lab[k + 1] = id; st[top++] = k + 1; }
+				if (y > 0 && m[k - w] === val && lab[k - w] < 0) { lab[k - w] = id; st[top++] = k - w; }
+				if (y < h - 1 && m[k + w] === val && lab[k + w] < 0) { lab[k + w] = id; st[top++] = k + w; }
+			}
+			sizes.push(n); touches.push(edge);
+		}
+		return { lab: lab, sizes: sizes, touches: touches };
+	}
+	// Makes a mask printable as one watertight solid: cells that only touch at a corner get joined (else edges would be shared by 4 faces),
+	// optionally only the biggest piece is kept and holes smaller than opt.holes cells are filled. Returns a new Uint8Array.
+	function cleanMask(mask, w, h, opt) {
+		opt = opt || {}; var m = new Uint8Array(mask), i, k;
+		if (opt.largest !== false) {
+			var c = components(m, w, h, 1), best = -1, bn = 0;
+			for (i = 0; i < c.sizes.length; i++) if (c.sizes[i] > bn) { bn = c.sizes[i]; best = i; }
+			for (k = 0; k < m.length; k++) if (m[k] && c.lab[k] !== best) m[k] = 0;
+		}
+		if (opt.holes > 0) {
+			var e = components(m, w, h, 0);
+			for (k = 0; k < m.length; k++) if (!m[k] && !e.touches[e.lab[k]] && e.sizes[e.lab[k]] <= opt.holes) m[k] = 1;
+		}
+		for (var pass = 0; pass < 8; pass++) { // join corner-only contacts
+			var changed = false;
+			for (var y = 0; y < h - 1; y++) for (var x = 0; x < w - 1; x++) {
+				var a = m[y * w + x], b = m[y * w + x + 1], cc = m[(y + 1) * w + x], d = m[(y + 1) * w + x + 1];
+				if (a && d && !b && !cc) { m[y * w + x + 1] = 1; changed = true; }
+				else if (b && cc && !a && !d) { m[y * w + x] = 1; changed = true; }
+			}
+			if (!changed) break;
+		}
+		return m;
+	}
+	function boxBlur(v, mask, w, h, passes) { // blur that only mixes cells inside the mask
+		var a = new Float32Array(v), b = new Float32Array(v.length);
+		for (var p = 0; p < passes; p++) {
+			for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+				var k = y * w + x; if (mask && !mask[k]) { b[k] = a[k]; continue; }
+				var t = 0, c = 0;
+				for (var dy = -1; dy <= 1; dy++) { var yy = y + dy; if (yy < 0 || yy >= h) continue; for (var dx = -1; dx <= 1; dx++) { var xx = x + dx; if (xx < 0 || xx >= w) continue; var q = yy * w + xx; if (mask && !mask[q]) continue; t += a[q]; c++; } }
+				b[k] = t / c;
+			}
+			var tmp = a; a = b; b = tmp;
+		}
+		return a;
+	}
+	// Raw values (depth or brightness) -> heights 0..1 inside the mask: percentile stretch (lo..hi %), smoothing, gamma, invert.
+	function normHeights(v, mask, w, h, opt) {
+		opt = opt || {}; var vals = [], k, n = w * h;
+		var s = opt.blur > 0 ? boxBlur(v, mask, w, h, opt.blur | 0) : v;
+		for (k = 0; k < n; k++) if (!mask || mask[k]) vals.push(s[k]);
+		if (!vals.length) return new Float32Array(n);
+		vals.sort(function (a, b) { return a - b; });
+		var lo = vals[Math.floor((vals.length - 1) * (opt.lo == null ? 0.02 : opt.lo))], hi = vals[Math.floor((vals.length - 1) * (opt.hi == null ? 0.98 : opt.hi))], rg = hi - lo || 1, g = opt.gamma > 0 ? opt.gamma : 1, o = new Float32Array(n);
+		for (k = 0; k < n; k++) { var t = Math.min(1, Math.max(0, (s[k] - lo) / rg)); if (opt.invert) t = 1 - t; o[k] = g === 1 ? t : Math.pow(t, g); }
+		return o;
+	}
+	// Distance (in cells, 8-neighbour chamfer) from each inside cell to the nearest outside cell or the grid edge.
+	function edgeDistance(mask, w, h) {
+		var d = new Float32Array(w * h), INF = 1e9, x, y, k, D = Math.SQRT2;
+		for (k = 0; k < d.length; k++) d[k] = mask[k] ? INF : 0;
+		function g(xx, yy) { return xx < 0 || yy < 0 || xx >= w || yy >= h ? 0 : d[yy * w + xx]; }
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) { k = y * w + x; if (!d[k]) continue; d[k] = Math.min(d[k], g(x - 1, y) + 1, g(x, y - 1) + 1, g(x - 1, y - 1) + D, g(x + 1, y - 1) + D); }
+		for (y = h - 1; y >= 0; y--) for (x = w - 1; x >= 0; x--) { k = y * w + x; if (!d[k]) continue; d[k] = Math.min(d[k], g(x + 1, y) + 1, g(x, y + 1) + 1, g(x + 1, y + 1) + D, g(x - 1, y + 1) + D); }
+		return d;
+	}
+	// Heights (0..1, row 0 = top of the picture) + mask -> closed, outward-facing triangle soup in mm, Z up, the picture lying on the plate.
+	// opt: cell (mm per cell), base (mm under the lowest point), height (mm of relief), twoSided (mirror the relief under the model, flat-back otherwise),
+	// border (mm of frame at full height round the edge), smoothEdge (taper the relief to 0 over this many mm near the outline).
+	function reliefMesh(H, mask, w, h, opt) {
+		opt = opt || {}; var cell = opt.cell || 0.5, base = opt.base == null ? 1 : opt.base, hh = opt.height == null ? 3 : opt.height, two = !!opt.twoSided, x, y, k;
+		var bc = (opt.border || 0) / cell, tc = (opt.smoothEdge || 0) / cell, dist = bc > 0 || tc > 0 ? edgeDistance(mask, w, h) : null;
+		var val = new Float32Array(w * h);
+		for (k = 0; k < w * h; k++) { if (!mask[k]) continue; var t = H[k]; if (dist) { if (dist[k] <= bc) t = 1; else if (tc > 0 && dist[k] - bc < tc) t *= (dist[k] - bc) / tc; } val[k] = t; }
+		// corner heights = average of the inside cells around the corner (corners on a (w+1) x (h+1) grid)
+		var W1 = w + 1, ct = new Float32Array(W1 * (h + 1)), cn = new Uint8Array(W1 * (h + 1));
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) { k = y * w + x; if (!mask[k]) continue; var v = val[k]; [y * W1 + x, y * W1 + x + 1, (y + 1) * W1 + x, (y + 1) * W1 + x + 1].forEach(function (c) { ct[c] += v; cn[c]++; }); }
+		for (k = 0; k < ct.length; k++) if (cn[k]) ct[k] /= cn[k];
+		var cells = 0, walls = 0;
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) { k = y * w + x; if (!mask[k]) continue; cells++; if (x === 0 || !mask[k - 1]) walls++; if (x === w - 1 || !mask[k + 1]) walls++; if (y === 0 || !mask[k - w]) walls++; if (y === h - 1 || !mask[k + w]) walls++; }
+		var out = new Float32Array((cells * 4 + walls * 2) * 9), p = 0;
+		function zt(c) { return two ? base / 2 + ct[c] * hh : base + ct[c] * hh; }
+		function zb(c) { return two ? -(base / 2 + ct[c] * hh) : 0; }
+		function px(cx) { return cx * cell; }
+		function py(cy) { return (h - cy) * cell; } // picture row -> y up
+		function tri(a, b, c) { out[p++] = a[0]; out[p++] = a[1]; out[p++] = a[2]; out[p++] = b[0]; out[p++] = b[1]; out[p++] = b[2]; out[p++] = c[0]; out[p++] = c[1]; out[p++] = c[2]; }
+		function quad(a, b, c, d) { tri(a, b, c); tri(a, c, d); }
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+			k = y * w + x; if (!mask[k]) continue;
+			// corners in picture coords: TL (x,y) TR (x+1,y) BL (x,y+1) BR (x+1,y+1); in the mesh y grows upward, so BL is "south-west"
+			var cTL = y * W1 + x, cTR = cTL + 1, cBL = cTL + W1, cBR = cBL + 1;
+			var T = function (c, cx, cy) { return [px(cx), py(cy), zt(c)]; }, B = function (c, cx, cy) { return [px(cx), py(cy), zb(c)]; };
+			var tBL = T(cBL, x, y + 1), tBR = T(cBR, x + 1, y + 1), tTR = T(cTR, x + 1, y), tTL = T(cTL, x, y);
+			var bBL = B(cBL, x, y + 1), bBR = B(cBR, x + 1, y + 1), bTR = B(cTR, x + 1, y), bTL = B(cTL, x, y);
+			quad(tBL, tBR, tTR, tTL); // top, counter-clockwise from above
+			quad(bBL, bTL, bTR, bBR); // bottom, facing down
+			if (y === h - 1 || !mask[k + w]) quad(bBL, bBR, tBR, tBL); // south wall (-y)
+			if (y === 0 || !mask[k - w]) quad(bTR, bTL, tTL, tTR); // north wall (+y)
+			if (x === w - 1 || !mask[k + 1]) quad(bBR, bTR, tTR, tBR); // east wall (+x)
+			if (x === 0 || !mask[k - 1]) quad(bTL, bBL, tBL, tTL); // west wall (-x)
+		}
+		return out;
+	}
+	// Grid size for a picture: at most maxCells cells, keeping the aspect ratio.
+	function reliefGrid(w, h, maxCells) { var s = Math.min(1, Math.sqrt((maxCells || 60000) / (w * h))); return { w: Math.max(2, Math.round(w * s)), h: Math.max(2, Math.round(h * s)) }; }
+	function luminance(rgba, n) { var o = new Float32Array(n); for (var i = 0; i < n; i++) o[i] = (0.2126 * rgba[i * 4] + 0.7152 * rgba[i * 4 + 1] + 0.0722 * rgba[i * 4 + 2]) / 255; return o; }
+	var RELIEF_PRESETS = {
+		relief: { name: 'Raised picture (relief)', source: 'depth', shape: 'rect', width: 100, base: 2, height: 6, border: 0, two: false, blur: 2, gamma: 1, invert: false },
+		medal: { name: 'Coin / medallion', source: 'depth', shape: 'circle', width: 60, base: 2, height: 3, border: 2.5, two: false, blur: 2, gamma: 1, invert: false },
+		figure: { name: 'Cut-out figure (flat back)', source: 'depth', shape: 'subject', width: 80, base: 2, height: 10, border: 0, two: false, blur: 3, gamma: 1, invert: false },
+		puffy: { name: 'Cut-out figure (both sides)', source: 'depth', shape: 'subject', width: 80, base: 3, height: 7, border: 0, two: true, blur: 3, gamma: 1, invert: false },
+		litho: { name: 'Lithophane (light shines through)', source: 'dark', shape: 'rect', width: 100, base: 0.8, height: 2.2, border: 3, two: false, blur: 0, gamma: 1, invert: false },
+		logo: { name: 'Logo or drawing (brightness)', source: 'dark', shape: 'rect', width: 80, base: 2, height: 2, border: 0, two: false, blur: 0, gamma: 1, invert: false }
+	};
+
 	var api = { PLATES: PLATES, plateById: plateById, MATERIALS: MATERIALS, materialById: materialById, UNITS: UNITS, parseLength: parseLength, fmtLength: fmtLength, fmtNum: fmtNum, snap: snap,
 		bboxOf: bboxOf, volumeArea: volumeArea, flipWinding: flipWinding, weld: weld, manifoldCheck: manifoldCheck, overhang: overhang, plateFit: plateFit, filament: filament,
 		polyArea: polyArea, ccw: ccw, circlePts: circlePts, roundedRect: roundedRect, starPts: starPts, heartPts: heartPts, polygonPts: polygonPts, gearPts: gearPts, bounds2: bounds2, offsetPolygon: offsetPolygon, cleanProfile: cleanProfile,
 		threeMFModel: threeMFModel, THREEMF_TYPES: THREEMF_TYPES, THREEMF_RELS: THREEMF_RELS, hex6: hex6,
 		bytesToB64: bytesToB64, b64ToBytes: b64ToBytes, f32ToB64: f32ToB64, b64ToF32: b64ToF32,
-		alignShifts: alignShifts, distributeShifts: distributeShifts, TYPES: TYPES, validObj: validObj, validProject: validProject, safeName: safeName };
+		alignShifts: alignShifts, resampleGrid: resampleGrid, shapeMask: shapeMask, cleanMask: cleanMask, normHeights: normHeights, edgeDistance: edgeDistance, reliefMesh: reliefMesh, reliefGrid: reliefGrid, luminance: luminance, RELIEF_PRESETS: RELIEF_PRESETS, distributeShifts: distributeShifts, TYPES: TYPES, validObj: validObj, validProject: validProject, safeName: safeName };
 	if (typeof module !== 'undefined' && module.exports) module.exports = api;
 	root.MES3D = api;
 })(typeof window !== 'undefined' ? window : this);

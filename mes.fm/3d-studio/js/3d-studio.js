@@ -84,7 +84,34 @@ var MESImg = (function () {
 		}
 		return out;
 	}
-	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead };
+	/* ---------- hand pictures from one MES tool to another in the same browser (round 10: Photo Editor <-> Compressor <-> Image Converter) ----------
+	 * The pictures go through IndexedDB "mes-handoff" (same site, never uploaded) under a random id; the other page is opened with ?handoff=<id> and
+	 * takes them (they are deleted when taken, and anything older than an hour is cleared). send() opens the new tab inside the click so pop-up
+	 * blockers allow it, then points it at the page once the pictures are stored. */
+	var HDB = "mes-handoff";
+	function hdb() { return new Promise(function (res, rej) { if (typeof indexedDB === "undefined") { rej(new Error("no IndexedDB")); return; } var r = indexedDB.open(HDB, 1); r.onupgradeneeded = function () { r.result.createObjectStore("h"); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	function htx(mode, fn) { return hdb().then(function (db) { return new Promise(function (res, rej) { var t = db.transaction("h", mode), st = t.objectStore("h"), out = fn(st); t.oncomplete = function () { db.close(); res(out && out.result !== undefined ? out.result : out); }; t.onerror = function () { db.close(); rej(t.error); }; }); }); }
+	function handoffPut(files) {
+		var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10), list = (files || []).map(function (f) { return { name: f.name || "picture.png", type: f.type || (f.blob && f.blob.type) || "image/png", blob: f.blob || f }; });
+		return htx("readwrite", function (st) { var c = st.openCursor(); c.onsuccess = function () { var cur = c.result; if (!cur) return; if (!cur.value || Date.now() - cur.value.t > 3600e3) cur.delete(); cur.continue(); }; st.put({ t: Date.now(), files: list }, id); }).then(function () { return id; });
+	}
+	function handoffTake(id) {
+		var got = null; return htx("readwrite", function (st) { var g = st.get(String(id)); g.onsuccess = function () { got = g.result || null; if (got) st.delete(String(id)); }; }).then(function () {
+			if (!got) return []; return got.files.map(function (f) { try { return new File([f.blob], f.name, { type: f.type }); } catch (e) { var b = f.blob; b.name = f.name; return b; } });
+		});
+	}
+	/* to = "/photo" | "/compress" | "/image-converter"; files = [File or {blob, name}]. Returns a promise; onBlocked(url) is called when no tab could open. */
+	function handoffSend(to, files, onBlocked) {
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) {}
+		return handoffPut(files).then(function (id) { var url = to + (to.indexOf("?") < 0 ? "?" : "&") + "handoff=" + encodeURIComponent(id); if (w && !w.closed) { try { w.opener = null; } catch (e) {} w.location.href = url; } else if (onBlocked) onBlocked(url); else location.href = url; return id; }, function (e) { if (w) w.close(); throw e; });
+	}
+	/* the pictures handed to this page (?handoff=<id>), and the address cleaned so a reload doesn't ask again */
+	function handoffReceive() {
+		if (typeof location === "undefined") return Promise.resolve([]); var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m) return Promise.resolve([]);
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) {}
+		return handoffTake(m[1]).catch(function () { return []; });
+	}
+	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead, handoffPut: handoffPut, handoffTake: handoffTake, handoffSend: handoffSend, handoffReceive: handoffReceive };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	return api;
 })();
@@ -496,12 +523,161 @@ var MESImg = (function () {
 	function validProject(p) { return !!(p && p.app === 'mes-3d-studio' && Array.isArray(p.objs) && p.objs.every(function (o) { return validObj(o, 0); })); }
 	function safeName(s, fallback) { var n = String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80); return n || fallback || 'model'; }
 
+
+	// ---------- picture -> 3D relief (heights on a grid of cells, used by "Photo to 3D") ----------
+	// Box-filter / bilinear resample of a w x h float grid to nw x nh.
+	function resampleGrid(a, w, h, nw, nh) {
+		var o = new Float32Array(nw * nh), sx = w / nw, sy = h / nh;
+		for (var j = 0; j < nh; j++) for (var i = 0; i < nw; i++) {
+			if (sx > 1 || sy > 1) { // shrink: average the source pixels under the cell
+				var x0 = Math.floor(i * sx), x1 = Math.max(x0 + 1, Math.floor((i + 1) * sx)), y0 = Math.floor(j * sy), y1 = Math.max(y0 + 1, Math.floor((j + 1) * sy)), t = 0, c = 0;
+				for (var y = y0; y < y1 && y < h; y++) for (var x = x0; x < x1 && x < w; x++) { t += a[y * w + x]; c++; }
+				o[j * nw + i] = c ? t / c : 0;
+			} else { // grow: bilinear
+				var fx = Math.min(w - 1, Math.max(0, (i + 0.5) * sx - 0.5)), fy = Math.min(h - 1, Math.max(0, (j + 0.5) * sy - 0.5)), ix = Math.floor(fx), iy = Math.floor(fy), ax = fx - ix, ay = fy - iy, ix2 = Math.min(w - 1, ix + 1), iy2 = Math.min(h - 1, iy + 1);
+				o[j * nw + i] = (a[iy * w + ix] * (1 - ax) + a[iy * w + ix2] * ax) * (1 - ay) + (a[iy2 * w + ix] * (1 - ax) + a[iy2 * w + ix2] * ax) * ay;
+			}
+		}
+		return o;
+	}
+	// Outline of the model: 'rect', 'circle' (largest circle in the middle), 'oval' (fills the picture) or 'subject' (alpha >= 0.5).
+	function shapeMask(kind, w, h, alpha) {
+		var m = new Uint8Array(w * h), cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2;
+		for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) {
+			var k = j * w + i, dx = i + 0.5 - cx, dy = j + 0.5 - cy;
+			m[k] = kind === 'circle' ? (dx * dx + dy * dy <= r * r ? 1 : 0) : kind === 'oval' ? ((dx * dx) / (cx * cx) + (dy * dy) / (cy * cy) <= 1 ? 1 : 0) : kind === 'subject' ? (alpha && alpha[k] >= 0.5 ? 1 : 0) : 1;
+		}
+		return m;
+	}
+	function components(m, w, h, val) { // 4-connected pieces of cells equal to val -> {lab Int32Array, sizes[], touches[] (touches the grid edge)}
+		var lab = new Int32Array(w * h).fill(-1), sizes = [], touches = [], st = new Int32Array(w * h);
+		for (var s0 = 0; s0 < w * h; s0++) {
+			if (m[s0] !== val || lab[s0] >= 0) continue;
+			var id = sizes.length, n = 0, top = 0, edge = false; st[top++] = s0; lab[s0] = id;
+			while (top) {
+				var k = st[--top], x = k % w, y = (k - x) / w; n++;
+				if (x === 0 || y === 0 || x === w - 1 || y === h - 1) edge = true;
+				if (x > 0 && m[k - 1] === val && lab[k - 1] < 0) { lab[k - 1] = id; st[top++] = k - 1; }
+				if (x < w - 1 && m[k + 1] === val && lab[k + 1] < 0) { lab[k + 1] = id; st[top++] = k + 1; }
+				if (y > 0 && m[k - w] === val && lab[k - w] < 0) { lab[k - w] = id; st[top++] = k - w; }
+				if (y < h - 1 && m[k + w] === val && lab[k + w] < 0) { lab[k + w] = id; st[top++] = k + w; }
+			}
+			sizes.push(n); touches.push(edge);
+		}
+		return { lab: lab, sizes: sizes, touches: touches };
+	}
+	// Makes a mask printable as one watertight solid: cells that only touch at a corner get joined (else edges would be shared by 4 faces),
+	// optionally only the biggest piece is kept and holes smaller than opt.holes cells are filled. Returns a new Uint8Array.
+	function cleanMask(mask, w, h, opt) {
+		opt = opt || {}; var m = new Uint8Array(mask), i, k;
+		if (opt.largest !== false) {
+			var c = components(m, w, h, 1), best = -1, bn = 0;
+			for (i = 0; i < c.sizes.length; i++) if (c.sizes[i] > bn) { bn = c.sizes[i]; best = i; }
+			for (k = 0; k < m.length; k++) if (m[k] && c.lab[k] !== best) m[k] = 0;
+		}
+		if (opt.holes > 0) {
+			var e = components(m, w, h, 0);
+			for (k = 0; k < m.length; k++) if (!m[k] && !e.touches[e.lab[k]] && e.sizes[e.lab[k]] <= opt.holes) m[k] = 1;
+		}
+		for (var pass = 0; pass < 8; pass++) { // join corner-only contacts
+			var changed = false;
+			for (var y = 0; y < h - 1; y++) for (var x = 0; x < w - 1; x++) {
+				var a = m[y * w + x], b = m[y * w + x + 1], cc = m[(y + 1) * w + x], d = m[(y + 1) * w + x + 1];
+				if (a && d && !b && !cc) { m[y * w + x + 1] = 1; changed = true; }
+				else if (b && cc && !a && !d) { m[y * w + x] = 1; changed = true; }
+			}
+			if (!changed) break;
+		}
+		return m;
+	}
+	function boxBlur(v, mask, w, h, passes) { // blur that only mixes cells inside the mask
+		var a = new Float32Array(v), b = new Float32Array(v.length);
+		for (var p = 0; p < passes; p++) {
+			for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+				var k = y * w + x; if (mask && !mask[k]) { b[k] = a[k]; continue; }
+				var t = 0, c = 0;
+				for (var dy = -1; dy <= 1; dy++) { var yy = y + dy; if (yy < 0 || yy >= h) continue; for (var dx = -1; dx <= 1; dx++) { var xx = x + dx; if (xx < 0 || xx >= w) continue; var q = yy * w + xx; if (mask && !mask[q]) continue; t += a[q]; c++; } }
+				b[k] = t / c;
+			}
+			var tmp = a; a = b; b = tmp;
+		}
+		return a;
+	}
+	// Raw values (depth or brightness) -> heights 0..1 inside the mask: percentile stretch (lo..hi %), smoothing, gamma, invert.
+	function normHeights(v, mask, w, h, opt) {
+		opt = opt || {}; var vals = [], k, n = w * h;
+		var s = opt.blur > 0 ? boxBlur(v, mask, w, h, opt.blur | 0) : v;
+		for (k = 0; k < n; k++) if (!mask || mask[k]) vals.push(s[k]);
+		if (!vals.length) return new Float32Array(n);
+		vals.sort(function (a, b) { return a - b; });
+		var lo = vals[Math.floor((vals.length - 1) * (opt.lo == null ? 0.02 : opt.lo))], hi = vals[Math.floor((vals.length - 1) * (opt.hi == null ? 0.98 : opt.hi))], rg = hi - lo || 1, g = opt.gamma > 0 ? opt.gamma : 1, o = new Float32Array(n);
+		for (k = 0; k < n; k++) { var t = Math.min(1, Math.max(0, (s[k] - lo) / rg)); if (opt.invert) t = 1 - t; o[k] = g === 1 ? t : Math.pow(t, g); }
+		return o;
+	}
+	// Distance (in cells, 8-neighbour chamfer) from each inside cell to the nearest outside cell or the grid edge.
+	function edgeDistance(mask, w, h) {
+		var d = new Float32Array(w * h), INF = 1e9, x, y, k, D = Math.SQRT2;
+		for (k = 0; k < d.length; k++) d[k] = mask[k] ? INF : 0;
+		function g(xx, yy) { return xx < 0 || yy < 0 || xx >= w || yy >= h ? 0 : d[yy * w + xx]; }
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) { k = y * w + x; if (!d[k]) continue; d[k] = Math.min(d[k], g(x - 1, y) + 1, g(x, y - 1) + 1, g(x - 1, y - 1) + D, g(x + 1, y - 1) + D); }
+		for (y = h - 1; y >= 0; y--) for (x = w - 1; x >= 0; x--) { k = y * w + x; if (!d[k]) continue; d[k] = Math.min(d[k], g(x + 1, y) + 1, g(x, y + 1) + 1, g(x + 1, y + 1) + D, g(x - 1, y + 1) + D); }
+		return d;
+	}
+	// Heights (0..1, row 0 = top of the picture) + mask -> closed, outward-facing triangle soup in mm, Z up, the picture lying on the plate.
+	// opt: cell (mm per cell), base (mm under the lowest point), height (mm of relief), twoSided (mirror the relief under the model, flat-back otherwise),
+	// border (mm of frame at full height round the edge), smoothEdge (taper the relief to 0 over this many mm near the outline).
+	function reliefMesh(H, mask, w, h, opt) {
+		opt = opt || {}; var cell = opt.cell || 0.5, base = opt.base == null ? 1 : opt.base, hh = opt.height == null ? 3 : opt.height, two = !!opt.twoSided, x, y, k;
+		var bc = (opt.border || 0) / cell, tc = (opt.smoothEdge || 0) / cell, dist = bc > 0 || tc > 0 ? edgeDistance(mask, w, h) : null;
+		var val = new Float32Array(w * h);
+		for (k = 0; k < w * h; k++) { if (!mask[k]) continue; var t = H[k]; if (dist) { if (dist[k] <= bc) t = 1; else if (tc > 0 && dist[k] - bc < tc) t *= (dist[k] - bc) / tc; } val[k] = t; }
+		// corner heights = average of the inside cells around the corner (corners on a (w+1) x (h+1) grid)
+		var W1 = w + 1, ct = new Float32Array(W1 * (h + 1)), cn = new Uint8Array(W1 * (h + 1));
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) { k = y * w + x; if (!mask[k]) continue; var v = val[k]; [y * W1 + x, y * W1 + x + 1, (y + 1) * W1 + x, (y + 1) * W1 + x + 1].forEach(function (c) { ct[c] += v; cn[c]++; }); }
+		for (k = 0; k < ct.length; k++) if (cn[k]) ct[k] /= cn[k];
+		var cells = 0, walls = 0;
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) { k = y * w + x; if (!mask[k]) continue; cells++; if (x === 0 || !mask[k - 1]) walls++; if (x === w - 1 || !mask[k + 1]) walls++; if (y === 0 || !mask[k - w]) walls++; if (y === h - 1 || !mask[k + w]) walls++; }
+		var out = new Float32Array((cells * 4 + walls * 2) * 9), p = 0;
+		function zt(c) { return two ? base / 2 + ct[c] * hh : base + ct[c] * hh; }
+		function zb(c) { return two ? -(base / 2 + ct[c] * hh) : 0; }
+		function px(cx) { return cx * cell; }
+		function py(cy) { return (h - cy) * cell; } // picture row -> y up
+		function tri(a, b, c) { out[p++] = a[0]; out[p++] = a[1]; out[p++] = a[2]; out[p++] = b[0]; out[p++] = b[1]; out[p++] = b[2]; out[p++] = c[0]; out[p++] = c[1]; out[p++] = c[2]; }
+		function quad(a, b, c, d) { tri(a, b, c); tri(a, c, d); }
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+			k = y * w + x; if (!mask[k]) continue;
+			// corners in picture coords: TL (x,y) TR (x+1,y) BL (x,y+1) BR (x+1,y+1); in the mesh y grows upward, so BL is "south-west"
+			var cTL = y * W1 + x, cTR = cTL + 1, cBL = cTL + W1, cBR = cBL + 1;
+			var T = function (c, cx, cy) { return [px(cx), py(cy), zt(c)]; }, B = function (c, cx, cy) { return [px(cx), py(cy), zb(c)]; };
+			var tBL = T(cBL, x, y + 1), tBR = T(cBR, x + 1, y + 1), tTR = T(cTR, x + 1, y), tTL = T(cTL, x, y);
+			var bBL = B(cBL, x, y + 1), bBR = B(cBR, x + 1, y + 1), bTR = B(cTR, x + 1, y), bTL = B(cTL, x, y);
+			quad(tBL, tBR, tTR, tTL); // top, counter-clockwise from above
+			quad(bBL, bTL, bTR, bBR); // bottom, facing down
+			if (y === h - 1 || !mask[k + w]) quad(bBL, bBR, tBR, tBL); // south wall (-y)
+			if (y === 0 || !mask[k - w]) quad(bTR, bTL, tTL, tTR); // north wall (+y)
+			if (x === w - 1 || !mask[k + 1]) quad(bBR, bTR, tTR, tBR); // east wall (+x)
+			if (x === 0 || !mask[k - 1]) quad(bTL, bBL, tBL, tTL); // west wall (-x)
+		}
+		return out;
+	}
+	// Grid size for a picture: at most maxCells cells, keeping the aspect ratio.
+	function reliefGrid(w, h, maxCells) { var s = Math.min(1, Math.sqrt((maxCells || 60000) / (w * h))); return { w: Math.max(2, Math.round(w * s)), h: Math.max(2, Math.round(h * s)) }; }
+	function luminance(rgba, n) { var o = new Float32Array(n); for (var i = 0; i < n; i++) o[i] = (0.2126 * rgba[i * 4] + 0.7152 * rgba[i * 4 + 1] + 0.0722 * rgba[i * 4 + 2]) / 255; return o; }
+	var RELIEF_PRESETS = {
+		relief: { name: 'Raised picture (relief)', source: 'depth', shape: 'rect', width: 100, base: 2, height: 6, border: 0, two: false, blur: 2, gamma: 1, invert: false },
+		medal: { name: 'Coin / medallion', source: 'depth', shape: 'circle', width: 60, base: 2, height: 3, border: 2.5, two: false, blur: 2, gamma: 1, invert: false },
+		figure: { name: 'Cut-out figure (flat back)', source: 'depth', shape: 'subject', width: 80, base: 2, height: 10, border: 0, two: false, blur: 3, gamma: 1, invert: false },
+		puffy: { name: 'Cut-out figure (both sides)', source: 'depth', shape: 'subject', width: 80, base: 3, height: 7, border: 0, two: true, blur: 3, gamma: 1, invert: false },
+		litho: { name: 'Lithophane (light shines through)', source: 'dark', shape: 'rect', width: 100, base: 0.8, height: 2.2, border: 3, two: false, blur: 0, gamma: 1, invert: false },
+		logo: { name: 'Logo or drawing (brightness)', source: 'dark', shape: 'rect', width: 80, base: 2, height: 2, border: 0, two: false, blur: 0, gamma: 1, invert: false }
+	};
+
 	var api = { PLATES: PLATES, plateById: plateById, MATERIALS: MATERIALS, materialById: materialById, UNITS: UNITS, parseLength: parseLength, fmtLength: fmtLength, fmtNum: fmtNum, snap: snap,
 		bboxOf: bboxOf, volumeArea: volumeArea, flipWinding: flipWinding, weld: weld, manifoldCheck: manifoldCheck, overhang: overhang, plateFit: plateFit, filament: filament,
 		polyArea: polyArea, ccw: ccw, circlePts: circlePts, roundedRect: roundedRect, starPts: starPts, heartPts: heartPts, polygonPts: polygonPts, gearPts: gearPts, bounds2: bounds2, offsetPolygon: offsetPolygon, cleanProfile: cleanProfile,
 		threeMFModel: threeMFModel, THREEMF_TYPES: THREEMF_TYPES, THREEMF_RELS: THREEMF_RELS, hex6: hex6,
 		bytesToB64: bytesToB64, b64ToBytes: b64ToBytes, f32ToB64: f32ToB64, b64ToF32: b64ToF32,
-		alignShifts: alignShifts, distributeShifts: distributeShifts, TYPES: TYPES, validObj: validObj, validProject: validProject, safeName: safeName };
+		alignShifts: alignShifts, resampleGrid: resampleGrid, shapeMask: shapeMask, cleanMask: cleanMask, normHeights: normHeights, edgeDistance: edgeDistance, reliefMesh: reliefMesh, reliefGrid: reliefGrid, luminance: luminance, RELIEF_PRESETS: RELIEF_PRESETS, distributeShifts: distributeShifts, TYPES: TYPES, validObj: validObj, validProject: validProject, safeName: safeName };
 	if (typeof module !== 'undefined' && module.exports) module.exports = api;
 	root.MES3D = api;
 })(typeof window !== 'undefined' ? window : this);
@@ -584,6 +760,211 @@ var MESImg = (function () {
 			make: function () { return [g([o('plate', { w: 60, d: 22, h: 2, r: 4 }, [0, 30, 1]), o('extrude', { depth: 2, shapes: [{ o: [[-4, 0], [4, 0], [4, 60], [0, 70], [-4, 60]] }] }, [0, -14, 1], { rot: [0, 0, 180] }), o('text', { text: 'Basil', size: 10, depth: 1.2, font: 'helvetiker_bold' }, [0, 30, 2.6])], { color: '#65a30d', name: 'Plant label' })]; } }
 	];
 	window.TD_TEMPLATES = T;
+})();
+
+/* MES 3D Studio: "Photo to 3D". Turns a picture into a printable relief, coin, lithophane or cut-out figure, all in the browser.
+ * Heights come from an AI depth model (Depth Anything V2 Small, Apache-2.0, onnx-community/depth-anything-v2-small) or from the picture's brightness;
+ * "Subject only" uses the picture's own transparency, else IS-Net (Apache-2.0, Ko033/isnet-general-use-onnx, the Photo Editor's background remover).
+ * transformers.js 3.7.6 from jsDelivr loads on first use; the models come from huggingface.co once and stay in the browser's cache. Nothing is uploaded.
+ * The mesh maths (resample, mask clean-up, heights, watertight mesh) is MES3D in lib.js. Started by app.js: window.TDPhoto3D(api). */
+(function () {
+	'use strict';
+	var LIB = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js', TF = null, models = {};
+	var DEPTH = { id: 'onnx-community/depth-anything-v2-small', mb: function (g) { return g ? 50 : 27; } };
+	var SEG = { id: 'Ko033/isnet-general-use-onnx', mb: function (g) { return g ? 88 : 46; } };
+	var KEY = 'mes-3d-studio:photo3d';
+	function loadLib() { return TF ? Promise.resolve(TF) : new Function('u', 'return import(u)')(LIB).then(function (m) { TF = m; return m; }); }
+	var f16 = null;
+	function gpuF16() { if (f16) return f16; f16 = navigator.gpu ? navigator.gpu.requestAdapter().then(function (a) { return !!(a && a.features.has('shader-f16')); }).catch(function () { return false; }) : Promise.resolve(false); return f16; }
+
+	window.TDPhoto3D = function (api) {
+		var L = api.L, esc = api.esc;
+		var st = (function () { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } })();
+		var P = Object.assign({ preset: 'relief', detail: 60000 }, L.RELIEF_PRESETS.relief, st);
+		function save() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) { } }
+		var pic = null; // {name, canvas (<= 1024 px), w, h, rgba, alpha (Float32 or null), depth: {d,w,h} | null, seg: {d,w,h} | null}
+
+		function getModel(which, prog) {
+			return Promise.all([loadLib(), gpuF16()]).then(function (r) {
+				var gpu = r[1], key = which + (gpu ? ':gpu' : ':cpu'); if (models[key]) return models[key];
+				var M = which === 'depth' ? DEPTH : SEG, opt = { progress_callback: prog, dtype: gpu ? 'fp16' : 'q8', device: gpu ? 'webgpu' : 'wasm' };
+				function load(o) {
+					if (which === 'depth') return TF.pipeline('depth-estimation', M.id, o).then(function (p) { return { run: p, gpu: o.device === 'webgpu' }; });
+					return Promise.all([TF.AutoModel.from_pretrained(M.id, o), TF.AutoProcessor.from_pretrained(M.id)]).then(function (a) { return { model: a[0], proc: a[1], gpu: o.device === 'webgpu' }; });
+				}
+				return (models[key] = load(opt).catch(function (e) { if (!gpu) throw e; return load({ progress_callback: prog, dtype: 'q8', device: 'wasm' }); }));
+			});
+		}
+		function tensorGrid(t) { var dims = t.dims, h = dims[dims.length - 2], w = dims[dims.length - 1]; return Promise.resolve(t.data).then(function (d) { return { d: Float32Array.from(d), w: w, h: h }; }); }
+		function runDepth(prog) {
+			return getModel('depth', prog).then(function (m) { return TF.RawImage.fromCanvas(pic.canvas); }).then(function (img) {
+				return getModel('depth', prog).then(function (m) { return m.run(img); });
+			}).then(function (out) { return tensorGrid(out.predicted_depth); });
+		}
+		function runSeg(prog) {
+			return getModel('seg', prog).then(function (m) {
+				return Promise.resolve(TF.RawImage.fromCanvas(pic.canvas)).then(function (img) { return m.proc(img); }).then(function (inp) {
+					var s = m.model.sessions.model, feed = {}; feed[s.inputNames[0]] = inp.pixel_values;
+					return m.model(feed).then(function (res) { return tensorGrid(res[s.outputNames[0]]); });
+				});
+			}).then(function (g) { // min-max normalise to 0..1
+				var mn = Infinity, mx = -Infinity, i; for (i = 0; i < g.d.length; i++) { if (g.d[i] < mn) mn = g.d[i]; if (g.d[i] > mx) mx = g.d[i]; }
+				var r = mx - mn || 1; for (i = 0; i < g.d.length; i++) g.d[i] = (g.d[i] - mn) / r; return g;
+			});
+		}
+
+		// ---------- reading a picture ----------
+		function loadPicture(file) {
+			return createImageBitmap(file, { imageOrientation: 'from-image' }).catch(function () { return createImageBitmap(file); }).then(function (bmp) {
+				var s = Math.min(1, 1024 / Math.max(bmp.width, bmp.height)), w = Math.max(2, Math.round(bmp.width * s)), h = Math.max(2, Math.round(bmp.height * s));
+				var c = document.createElement('canvas'); c.width = w; c.height = h; var x = c.getContext('2d', { willReadFrequently: true });
+				x.imageSmoothingQuality = 'high'; x.drawImage(bmp, 0, 0, w, h);
+				var rgba = x.getImageData(0, 0, w, h).data, alpha = null, see = 0;
+				for (var i = 0; i < w * h; i++) if (rgba[i * 4 + 3] < 250) see++;
+				if (see > w * h * 0.02) { alpha = new Float32Array(w * h); for (i = 0; i < w * h; i++) alpha[i] = rgba[i * 4 + 3] / 255; }
+				// the AI models want a solid picture: paint transparent parts white
+				if (alpha) { var c2 = document.createElement('canvas'); c2.width = w; c2.height = h; var x2 = c2.getContext('2d'); x2.fillStyle = '#fff'; x2.fillRect(0, 0, w, h); x2.drawImage(c, 0, 0); c = c2; rgba = x2.getImageData(0, 0, w, h).data; }
+				pic = { name: api.baseName(file.name || 'picture'), canvas: c, w: w, h: h, rgba: rgba, alpha: alpha, depth: null, seg: null };
+				return pic;
+			});
+		}
+
+		// ---------- the dialog ----------
+		var d = null, busy = false, token = 0;
+		function presetChips() { return Object.keys(L.RELIEF_PRESETS).map(function (k) { return '<button type="button" class="td-b td-p3-pre" data-pre="' + k + '" aria-pressed="' + (P.preset === k) + '">' + esc(L.RELIEF_PRESETS[k].name) + '</button>'; }).join(''); }
+		function num(id, label, v, step, hint) { return '<label class="td-f" title="' + esc(hint || '') + '">' + label + '<input class="td-in" type="number" inputmode="decimal" step="' + step + '" min="0" id="td-p3-' + id + '" value="' + v + '"></label>'; }
+		function open(file) {
+			d = api.dialog('<h3>Photo to 3D</h3>'
+				+ '<p class="td-hint">Turn a photo or drawing into a model you can print: a raised picture, a coin, a lithophane or a cut-out figure. Everything happens in your browser: the picture is never uploaded.</p>'
+				+ '<div class="td-p3">'
+				+ '<div class="td-p3-l">'
+				+ '<div class="td-p3-drop" id="td-p3-drop" tabindex="0" role="button" aria-label="Choose a picture"><canvas id="td-p3-pic" hidden></canvas><span id="td-p3-dt">📷 <b>Choose a picture</b><br><small>or drop it here, or paste it (Ctrl+V)</small></span></div>'
+				+ '<input type="file" id="td-p3-file" accept="image/*" hidden>'
+				+ '<div class="td-p3-prevw"><canvas id="td-p3-prev" aria-label="Preview of the 3D shape (lit from the top left)"></canvas><div class="td-p3-ph" id="td-p3-ph">The 3D preview appears here</div></div>'
+				+ '<div class="td-p3-bar" id="td-p3-bar" hidden><i></i></div><p class="td-hint" id="td-p3-st" aria-live="polite"></p>'
+				+ '</div>'
+				+ '<div class="td-p3-r">'
+				+ '<div class="td-p3-pres">' + presetChips() + '</div>'
+				+ '<div class="td-p3-grid">'
+				+ '<label class="td-f td-f--w">Height comes from<select id="td-p3-source"><option value="depth">AI depth: near things stick out (3D from a photo)</option><option value="dark">Brightness: darker = higher</option><option value="light">Brightness: lighter = higher</option></select></label>'
+				+ '<label class="td-f td-f--w">Shape<select id="td-p3-shape"><option value="rect">Rectangle (whole picture)</option><option value="circle">Circle (coin)</option><option value="oval">Oval</option><option value="subject">Subject only (background removed)</option></select></label>'
+				+ num('width', 'Width (mm)', P.width, 1, 'Width of the model; the depth follows the picture') + num('height', 'Relief height (mm)', P.height, 0.1, 'How far the highest point rises above the base')
+				+ num('base', 'Base (mm)', P.base, 0.1, 'Solid thickness under the relief (lithophane: the thinnest part)') + num('border', 'Frame (mm)', P.border, 0.5, 'A raised rim round the edge; 0 = none')
+				+ num('round', 'Round the edges (mm)', P.round || 0, 0.5, 'Lowers the relief near the outline so cut-outs get soft edges')
+				+ '<label class="td-f">Smoothness<input type="range" min="0" max="8" step="1" id="td-p3-blur" value="' + P.blur + '"></label>'
+				+ '<label class="td-f">Contrast<input type="range" min="0.4" max="2.5" step="0.05" id="td-p3-gamma" value="' + P.gamma + '" title="Left = more of the relief rises; right = only the highest parts stand out"></label>'
+				+ '<label class="td-f">Detail<select id="td-p3-detail"><option value="20000">Low (fast)</option><option value="60000">Normal</option><option value="120000">High</option><option value="200000">Very high (big file)</option></select></label>'
+				+ '<label class="td-chk td-f--w"><input type="checkbox" id="td-p3-two"> Both sides (puffy: the relief is mirrored underneath)</label>'
+				+ '<label class="td-chk td-f--w"><input type="checkbox" id="td-p3-inv"> Flip the heights (high becomes low)</label>'
+				+ '</div>'
+				+ '<p class="td-hint" id="td-p3-info"></p>'
+				+ '<p class="td-hint td-p3-ai">AI depth guesses shape from one photo: it is a relief (like a carving), not a full model you can walk round. First use downloads a small AI model (about ' + DEPTH.mb(!!navigator.gpu) + ' MB, + ' + SEG.mb(!!navigator.gpu) + ' MB for "Subject only") from huggingface.co and keeps it in this browser.</p>'
+				+ '<div class="td-btns"><button type="button" class="td-b td-b--pri" id="td-p3-add" disabled>➕ Add to my model</button><button type="button" class="td-b" data-close>Cancel</button></div>'
+				+ '</div></div>', 'td-dlg--wide td-dlg--p3', function () { token++; d = null; document.removeEventListener('paste', onPaste); });
+			setForm(); bind(); document.addEventListener('paste', onPaste);
+			if (file) choose(file); else if (pic) { showPic(); update(); }
+		}
+		function $(id) { return d && d.querySelector('#td-p3-' + id); }
+		function setForm() {
+			$('source').value = P.source; $('shape').value = P.shape; $('detail').value = String(P.detail);
+			['width', 'height', 'base', 'border'].forEach(function (k) { $(k).value = P[k]; }); $('round').value = P.round || 0; $('blur').value = P.blur; $('gamma').value = P.gamma;
+			$('two').checked = !!P.two; $('inv').checked = !!P.invert;
+			d.querySelectorAll('.td-p3-pre').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.pre === P.preset)); });
+		}
+		function readForm() {
+			function n(id, dflt, lo, hi) { var v = parseFloat(String($(id).value).replace(',', '.')); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : dflt; }
+			P.source = $('source').value; P.shape = $('shape').value; P.detail = +$('detail').value;
+			P.width = n('width', 100, 5, 1000); P.height = n('height', 4, 0, 200); P.base = n('base', 1, 0, 100); P.border = n('border', 0, 0, 100); P.round = n('round', 0, 0, 100);
+			P.blur = +$('blur').value; P.gamma = +$('gamma').value; P.two = $('two').checked; P.invert = $('inv').checked;
+		}
+		var timer = 0;
+		function bind() {
+			var drop = $('drop'), fi = $('file');
+			drop.addEventListener('click', function () { fi.click(); });
+			drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fi.click(); } });
+			fi.addEventListener('change', function () { if (fi.files[0]) choose(fi.files[0]); fi.value = ''; });
+			drop.addEventListener('dragover', function (e) { e.preventDefault(); e.stopPropagation(); drop.classList.add('on'); });
+			drop.addEventListener('dragleave', function () { drop.classList.remove('on'); });
+			drop.addEventListener('drop', function (e) { e.preventDefault(); e.stopPropagation(); drop.classList.remove('on'); var f = e.dataTransfer.files[0]; if (f) choose(f); });
+			d.addEventListener('click', function (e) {
+				var b = e.target.closest('[data-pre]'); if (!b) return;
+				P.preset = b.dataset.pre; Object.assign(P, L.RELIEF_PRESETS[P.preset]); P.round = P.shape === 'subject' && !P.two ? 2 : P.two ? 3 : 0; setForm(); save(); update();
+			});
+			d.addEventListener('input', function (e) { if (!e.target.id || e.target.id.indexOf('td-p3-') !== 0 || e.target.id === 'td-p3-file') return; readForm(); save(); clearTimeout(timer); timer = setTimeout(update, e.target.type === 'range' ? 60 : 250); });
+			d.addEventListener('change', function (e) { if (e.target.tagName === 'SELECT' || e.target.type === 'checkbox') { readForm(); save(); update(); } });
+			$('add').addEventListener('click', add);
+		}
+		function onPaste(e) {
+			var it = Array.prototype.find.call((e.clipboardData && e.clipboardData.items) || [], function (i) { return i.type.indexOf('image/') === 0; });
+			if (it) { e.preventDefault(); choose(it.getAsFile()); }
+		}
+		function status(t, frac) {
+			if (!d) return; $('st').textContent = t || '';
+			var bar = $('bar'); bar.hidden = frac == null; if (frac != null) bar.firstChild.style.width = Math.round(frac * 100) + '%';
+		}
+		function choose(file) {
+			if (!file || !/^image\//.test(file.type || 'image/')) return status('That is not a picture. Use a JPG, PNG or WebP.');
+			status('Reading the picture…');
+			token++; loadPicture(file).then(function () { showPic(); update(); }).catch(function (e) { status('Could not read that picture (' + (e && e.message || e) + '). Try a JPG, PNG or WebP.'); });
+		}
+		function showPic() {
+			var c = $('pic'), dt = $('dt'); c.hidden = false; dt.hidden = true; c.width = pic.w; c.height = pic.h; c.getContext('2d').drawImage(pic.canvas, 0, 0);
+		}
+		function progress(label) {
+			var files = {};
+			return function (p) {
+				if (!p || p.status !== 'progress' || !(p.total > 1e6)) return; files[p.file] = p; var l = 0, t = 0;
+				for (var k in files) { l += files[k].loaded; t += files[k].total; }
+				status('Downloading the ' + label + ' model… ' + Math.round(l / 1e6) + ' of ' + Math.round(t / 1e6) + ' MB (only the first time)', t ? l / t : 0);
+			};
+		}
+		// make sure the AI results this setting needs exist, then build
+		var built = null;
+		function update() {
+			if (!d || !pic) return; readForm();
+			var my = ++token, needDepth = P.source === 'depth' && !pic.depth, needSeg = P.shape === 'subject' && !pic.alpha && !pic.seg;
+			var steps = Promise.resolve();
+			if (needDepth) steps = steps.then(function () { status('Loading the AI depth model…', 0); return runDepth(progress('depth')).then(function (g) { pic.depth = g; }); });
+			if (needSeg) steps = steps.then(function () { status('Loading the AI background remover…', 0); return runSeg(progress('background')).then(function (g) { pic.seg = g; }); });
+			if (needDepth || needSeg) { busy = true; $('add').disabled = true; }
+			steps.then(function () { if (my !== token || !d) return; busy = false; status(needDepth || needSeg ? 'Done. Change any setting: the preview follows at once.' : ''); build(); })
+				.catch(function (e) { if (my !== token || !d) return; busy = false; console.warn(e); status('The AI model could not run: ' + (e && e.message || e) + (/fetch|network|load|Failed/i.test(String(e && e.message)) ? ' (check your connection)' : '') + '. Brightness still works without it.'); });
+		}
+		function build() {
+			var g = L.reliefGrid(pic.w, pic.h, P.detail), gw = g.w, gh = g.h, src;
+			if (P.source === 'depth') src = L.resampleGrid(pic.depth.d, pic.depth.w, pic.depth.h, gw, gh);
+			else { var lum = L.luminance(pic.rgba, pic.w * pic.h); if (P.source === 'dark') for (var i = 0; i < lum.length; i++) lum[i] = 1 - lum[i]; src = L.resampleGrid(lum, pic.w, pic.h, gw, gh); }
+			var alpha = P.shape === 'subject' ? (pic.alpha ? L.resampleGrid(pic.alpha, pic.w, pic.h, gw, gh) : L.resampleGrid(pic.seg.d, pic.seg.w, pic.seg.h, gw, gh)) : null;
+			var mask = L.cleanMask(L.shapeMask(P.shape, gw, gh, alpha), gw, gh, { largest: P.shape === 'subject', holes: P.shape === 'subject' ? Math.round(gw * gh / 400) : 0 });
+			var cells = 0; for (var k = 0; k < mask.length; k++) cells += mask[k];
+			if (cells < 4) { built = null; $('add').disabled = true; $('info').textContent = 'Nothing is left to print: the subject was not found. Try another shape.'; return; }
+			var H = L.normHeights(src, mask, gw, gh, { blur: P.blur, gamma: P.gamma, invert: P.invert });
+			var x0 = gw, x1 = -1; for (var yy = 0; yy < gh; yy++) for (var xx = 0; xx < gw; xx++) if (mask[yy * gw + xx]) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; }
+			var cell = P.width / (x1 - x0 + 1), soup = L.reliefMesh(H, mask, gw, gh, { cell: cell, base: P.base, height: P.height, twoSided: P.two, border: P.border, smoothEdge: P.round });
+			built = { soup: soup, H: H, mask: mask, gw: gw, gh: gh, cell: cell };
+			drawPreview(); var bb = L.bboxOf(soup), sz = bb.size;
+			$('info').textContent = 'Size ' + L.fmtNum(sz[0], 1) + ' × ' + L.fmtNum(sz[1], 1) + ' × ' + L.fmtNum(sz[2], 1) + ' mm · ' + (soup.length / 9).toLocaleString() + ' triangles · watertight, ready to print';
+			$('add').disabled = busy;
+		}
+		function drawPreview() { // hill-shaded picture of the heights, lit from the top left
+			var b = built, c = $('prev'), gw = b.gw, gh = b.gh; c.width = gw; c.height = gh; $('ph').hidden = true;
+			var x = c.getContext('2d'), id = x.createImageData(gw, gh), a = id.data, zs = Math.max(b.gw, b.gh) * 0.35 * Math.min(1.5, Math.max(0.3, (P.height + 0.01) / P.width * 10)), lx = -0.55, ly = -0.55, lz = 0.63;
+			function hv(i, j) { i = Math.max(0, Math.min(gw - 1, i)); j = Math.max(0, Math.min(gh - 1, j)); var k = j * gw + i; return b.mask[k] ? b.H[k] : 0; }
+			for (var j = 0; j < gh; j++) for (var i = 0; i < gw; i++) {
+				var k = j * gw + i, o = k * 4; if (!b.mask[k]) { a[o + 3] = 0; continue; }
+				var nx = (hv(i - 1, j) - hv(i + 1, j)) * zs / 2, ny = (hv(i, j - 1) - hv(i, j + 1)) * zs / 2, nl = Math.hypot(nx, ny, 1), s = Math.max(0, (nx * lx + ny * ly + lz) / nl);
+				var v = 40 + 200 * s; a[o] = v * 0.86; a[o + 1] = v * 0.92; a[o + 2] = v; a[o + 3] = 255;
+			}
+			x.putImageData(id, 0, 0);
+		}
+		function add() {
+			if (!built || busy) return;
+			var name = pic.name + ' (' + L.RELIEF_PRESETS[P.preset].name.replace(/ \(.*/, '').toLowerCase() + ')';
+			api.addMesh(built.soup, name, P.preset === 'litho' ? '#F5F5F0' : null);
+			api.closeDlg(); api.toast('Added ' + name + '. Check it in the Print tab, then export STL or 3MF.' + (P.preset === 'litho' ? ' Print lithophanes standing up, in white, at 100% infill.' : ''));
+		}
+		return { open: open, isImage: function (f) { return /^image\/(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.type) || /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name); } };
+	};
 })();
 
 /* MES 3D Studio (mes.fm/3d-studio): a beginner-friendly 3D modeler for 3D printing.
@@ -1208,7 +1589,8 @@ var MESImg = (function () {
 	// ---------- left panel ----------
 	function shapesPanel() {
 		$('#td-shapes').innerHTML = Object.keys(PRIMS).map(function (k) { return '<button type="button" class="td-shape" data-add="' + k + '" title="Add a ' + esc(PRIMS[k].name.toLowerCase()) + '"><span class="td-si">' + PRIMS[k].icon + '</span><span>' + esc(PRIMS[k].name.replace(/ \(.*/, '')) + '</span></button>'; }).join('')
-			+ '<button type="button" class="td-shape" data-act="svg" title="Raise an SVG drawing into 3D"><span class="td-si">✎</span><span>SVG file</span></button>';
+			+ '<button type="button" class="td-shape" data-act="svg" title="Raise an SVG drawing into 3D"><span class="td-si">✎</span><span>SVG file</span></button>'
+			+ '<button type="button" class="td-shape" data-act="photo3d" title="Turn a photo into a relief, coin, lithophane or figure"><span class="td-si">📷</span><span>Photo to 3D</span></button>';
 	}
 	var openGroups = {};
 	function outliner() {
@@ -1667,6 +2049,14 @@ var MESImg = (function () {
 
 	// ---------- files: import / open / save / export ----------
 	function download(blob, name) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+	// a ready triangle soup (mm, Z up) -> a new mesh part, centred, on the plate
+	function addMesh(soup, name, color) {
+		var pos = new Float32Array(soup), bb = L.bboxOf(pos), c = [(bb.min[0] + bb.max[0]) / 2, (bb.min[1] + bb.max[1]) / 2, (bb.min[2] + bb.max[2]) / 2];
+		for (var j = 0; j < pos.length; j += 3) { pos[j] -= c[0]; pos[j + 1] -= c[1]; pos[j + 2] -= c[2]; }
+		var ref = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); MESH[ref] = pos;
+		var ext = { name: name, hole: false }; if (color) ext.color = color;
+		var o = newObj('mesh', { ref: ref, tris: pos.length / 9 }, ext); placeNew([o]); frame([o]); return o;
+	}
 	function baseName(n) { return L.safeName(String(n || '').replace(/\.[^.]+$/, ''), 'model'); }
 	function saveProject() {
 		var meshesB64 = {}, refs = usedRefs(); for (var r in refs) if (refs[r]) meshesB64[r] = L.f32ToB64(refs[r]);
@@ -1680,7 +2070,8 @@ var MESImg = (function () {
 			if (ext === 'mes3d' || ext === 'json') return f.text().then(function (t) { openProject(t, f.name); });
 			if (ext === 'svg') return f.text().then(function (t) { importSvg(t, f.name); });
 			if (['stl', 'obj', 'glb', 'gltf', '3mf'].indexOf(ext) >= 0) return importModel(f, ext);
-			toast('Cannot open ' + f.name + '. Use .mes3d, STL, OBJ, GLB, 3MF or SVG.');
+			if (photo3d.isImage(f)) return photo3d.open(f);
+			toast('Cannot open ' + f.name + '. Use .mes3d, STL, OBJ, GLB, 3MF, SVG, or a picture for Photo to 3D.');
 		});
 	}
 	function openProject(text, fname) {
@@ -1846,7 +2237,7 @@ var MESImg = (function () {
 
 	// ---------- actions + keys ----------
 	var ACTS = {
-		templates: templatesDlg, open: function () { $('#td-file').click(); }, save: saveProject, export: exportDlg, 'new': newProject, undo: undo, redo: redo,
+		photo3d: function () { photo3d.open(); }, templates: templatesDlg, open: function () { $('#td-file').click(); }, save: saveProject, export: exportDlg, 'new': newProject, undo: undo, redo: redo,
 		hole: toggleHole, group: function () { group('union'); }, subtract: function () { group('union', true); }, intersect: function () { group('intersect'); }, ungroup: ungroup,
 		dup: dup, mirror: mirrorDlg, align: alignDlg, drop: function () { drop(); }, 'delete': del, center: centerOnPlate, shot: screenshot,
 		fill: function () { setFill(!root.classList.contains('td-fill')); }, full: fullScreen, help: helpDlg, svg: function () { $('#td-file').accept = '.svg'; $('#td-file').click(); },
@@ -1939,7 +2330,7 @@ var MESImg = (function () {
 	$('#td-insp').innerHTML = '<p class="td-hint">Loading…</p>';
 	var start = function () {
 		loadEngine().then(function () {
-			initScene(); ready = true;
+			initScene(); ready = true; if (/[?&]photo=1/.test(location.search)) setTimeout(function () { photo3d.open(); }, 50);
 			$('#td-loading').hidden = true;
 			return loadAuto();
 		}).then(function (a) {
@@ -1954,6 +2345,8 @@ var MESImg = (function () {
 	};
 	if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 1500 }); else setTimeout(start, 200);
 
+	var photo3d = window.TDPhoto3D({ L: L, esc: esc, dialog: dialog, closeDlg: closeDlg, toast: toast, addMesh: addMesh, baseName: baseName });
+
 	// for testing in a hidden tab (no animation frames there)
-	window.MES3DStudio = { render: function () { if (ready) { sync(); render(); } }, S: S, ST: ST, add: addPrim, template: function (id) { var t = window.TD_TEMPLATES.find(function (x) { return x.id === id; }); if (t) fromTemplate(t); }, check: function () { check(true); return lastCheck; }, exportParts: exportParts, doExport: doExport, select: select, group: group, setView: setView, ready: function () { return ready; } };
+	window.MES3DStudio = { render: function () { if (ready) { sync(); render(); } }, S: S, ST: ST, add: addPrim, template: function (id) { var t = window.TD_TEMPLATES.find(function (x) { return x.id === id; }); if (t) fromTemplate(t); }, check: function () { check(true); return lastCheck; }, exportParts: exportParts, doExport: doExport, select: select, group: group, setView: setView, ready: function () { return ready; }, photo3d: photo3d, addMesh: addMesh };
 })();

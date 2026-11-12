@@ -620,7 +620,8 @@
 	// ---------- left panel ----------
 	function shapesPanel() {
 		$('#td-shapes').innerHTML = Object.keys(PRIMS).map(function (k) { return '<button type="button" class="td-shape" data-add="' + k + '" title="Add a ' + esc(PRIMS[k].name.toLowerCase()) + '"><span class="td-si">' + PRIMS[k].icon + '</span><span>' + esc(PRIMS[k].name.replace(/ \(.*/, '')) + '</span></button>'; }).join('')
-			+ '<button type="button" class="td-shape" data-act="svg" title="Raise an SVG drawing into 3D"><span class="td-si">✎</span><span>SVG file</span></button>';
+			+ '<button type="button" class="td-shape" data-act="svg" title="Raise an SVG drawing into 3D"><span class="td-si">✎</span><span>SVG file</span></button>'
+			+ '<button type="button" class="td-shape" data-act="photo3d" title="Turn a photo into a relief, coin, lithophane or figure"><span class="td-si">📷</span><span>Photo to 3D</span></button>';
 	}
 	var openGroups = {};
 	function outliner() {
@@ -1079,6 +1080,14 @@
 
 	// ---------- files: import / open / save / export ----------
 	function download(blob, name) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+	// a ready triangle soup (mm, Z up) -> a new mesh part, centred, on the plate
+	function addMesh(soup, name, color) {
+		var pos = new Float32Array(soup), bb = L.bboxOf(pos), c = [(bb.min[0] + bb.max[0]) / 2, (bb.min[1] + bb.max[1]) / 2, (bb.min[2] + bb.max[2]) / 2];
+		for (var j = 0; j < pos.length; j += 3) { pos[j] -= c[0]; pos[j + 1] -= c[1]; pos[j + 2] -= c[2]; }
+		var ref = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); MESH[ref] = pos;
+		var ext = { name: name, hole: false }; if (color) ext.color = color;
+		var o = newObj('mesh', { ref: ref, tris: pos.length / 9 }, ext); placeNew([o]); frame([o]); return o;
+	}
 	function baseName(n) { return L.safeName(String(n || '').replace(/\.[^.]+$/, ''), 'model'); }
 	function saveProject() {
 		var meshesB64 = {}, refs = usedRefs(); for (var r in refs) if (refs[r]) meshesB64[r] = L.f32ToB64(refs[r]);
@@ -1092,7 +1101,8 @@
 			if (ext === 'mes3d' || ext === 'json') return f.text().then(function (t) { openProject(t, f.name); });
 			if (ext === 'svg') return f.text().then(function (t) { importSvg(t, f.name); });
 			if (['stl', 'obj', 'glb', 'gltf', '3mf'].indexOf(ext) >= 0) return importModel(f, ext);
-			toast('Cannot open ' + f.name + '. Use .mes3d, STL, OBJ, GLB, 3MF or SVG.');
+			if (photo3d.isImage(f)) return photo3d.open(f);
+			toast('Cannot open ' + f.name + '. Use .mes3d, STL, OBJ, GLB, 3MF, SVG, or a picture for Photo to 3D.');
 		});
 	}
 	function openProject(text, fname) {
@@ -1258,7 +1268,7 @@
 
 	// ---------- actions + keys ----------
 	var ACTS = {
-		templates: templatesDlg, open: function () { $('#td-file').click(); }, save: saveProject, export: exportDlg, 'new': newProject, undo: undo, redo: redo,
+		photo3d: function () { photo3d.open(); }, templates: templatesDlg, open: function () { $('#td-file').click(); }, save: saveProject, export: exportDlg, 'new': newProject, undo: undo, redo: redo,
 		hole: toggleHole, group: function () { group('union'); }, subtract: function () { group('union', true); }, intersect: function () { group('intersect'); }, ungroup: ungroup,
 		dup: dup, mirror: mirrorDlg, align: alignDlg, drop: function () { drop(); }, 'delete': del, center: centerOnPlate, shot: screenshot,
 		fill: function () { setFill(!root.classList.contains('td-fill')); }, full: fullScreen, help: helpDlg, svg: function () { $('#td-file').accept = '.svg'; $('#td-file').click(); },
@@ -1351,7 +1361,7 @@
 	$('#td-insp').innerHTML = '<p class="td-hint">Loading…</p>';
 	var start = function () {
 		loadEngine().then(function () {
-			initScene(); ready = true;
+			initScene(); ready = true; if (/[?&]photo=1/.test(location.search)) setTimeout(function () { photo3d.open(); }, 50);
 			$('#td-loading').hidden = true;
 			return loadAuto();
 		}).then(function (a) {
@@ -1366,6 +1376,8 @@
 	};
 	if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 1500 }); else setTimeout(start, 200);
 
+	var photo3d = window.TDPhoto3D({ L: L, esc: esc, dialog: dialog, closeDlg: closeDlg, toast: toast, addMesh: addMesh, baseName: baseName });
+
 	// for testing in a hidden tab (no animation frames there)
-	window.MES3DStudio = { render: function () { if (ready) { sync(); render(); } }, S: S, ST: ST, add: addPrim, template: function (id) { var t = window.TD_TEMPLATES.find(function (x) { return x.id === id; }); if (t) fromTemplate(t); }, check: function () { check(true); return lastCheck; }, exportParts: exportParts, doExport: doExport, select: select, group: group, setView: setView, ready: function () { return ready; } };
+	window.MES3DStudio = { render: function () { if (ready) { sync(); render(); } }, S: S, ST: ST, add: addPrim, template: function (id) { var t = window.TD_TEMPLATES.find(function (x) { return x.id === id; }); if (t) fromTemplate(t); }, check: function () { check(true); return lastCheck; }, exportParts: exportParts, doExport: doExport, select: select, group: group, setView: setView, ready: function () { return ready; }, photo3d: photo3d, addMesh: addMesh };
 })();

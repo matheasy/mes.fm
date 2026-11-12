@@ -18,7 +18,7 @@
 },
 "/3d-studio":{
 "added":"2026-10-31",
-"updated":"2026-11-01",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/age-calculator":{
@@ -368,7 +368,7 @@
 },
 "/go":{
 "added":"2026-10-06",
-"updated":"2026-11-10",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/gpacalculator":{
