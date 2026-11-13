@@ -356,6 +356,13 @@ body.dark-mode #nr.nr .nr-read {background:#2a1f45;border-color:#a78bfa;color:#e
 body.dark-mode #nr.nr .nr-bar {background:#2a1f45;}
 body.dark-mode #nr.nr .nr-pieces, body.dark-mode #nr.nr .nr-pieces li, body.dark-mode #nr.nr .nr-dl {border-color:#3a4150;}
 body.dark-mode #nr.nr .nr-ptext {color:#e5e7eb;}
+#nr .nr-made {margin:-0.2em 0 0.7em;color:#4b5563;font-size:0.95em;}
+#nr .nr-made b {color:#4c1d95;}
+#nr .nr-made.is-other {background:#fef3c7;border:1px solid #f59e0b;color:#78350f;border-radius:8px;padding:0.45em 0.7em;}
+body.dark-mode #nr.nr .nr-made {color:#c4cbd6;}
+body.dark-mode #nr.nr .nr-made b {color:#c4b5fd;}
+body.dark-mode #nr.nr .nr-made.is-other {background:#3a2a06;border-color:#b7791f;color:#fde68a;}
+body.dark-mode #nr.nr .nr-made.is-other b {color:#fde68a;}
 
 
 	@media print {
@@ -498,6 +505,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #nr .nr-pieces{border:1px solid #29313d}
 	body.dark-mode #nr .nr-pieces li{border-bottom:1px solid #2a313c}
 	body.dark-mode #nr .nr-dl{border-top:1px solid #2a313c}
+	body.dark-mode #nr .nr-made{color:#a2a7ae}
+	body.dark-mode #nr .nr-made b{color:#a176e4}
+	body.dark-mode #nr .nr-made.is-other{background:#3f3719;border:1px solid #c47e08;color:#ed9c6e}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -772,6 +782,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div class="tu-card" id="nr-out" hidden>
 			<h2 class="nr-h">Your narration <span class="nr-dur" id="nr-dur"></span></h2>
+			<p class="nr-made" id="nr-made"></p>
 			<audio id="nr-play" controls class="nr-audio"></audio>
 			<ol class="nr-pieces" id="nr-pieces"></ol>
 			<div class="nr-row nr-dl">
@@ -859,7 +870,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/narrate.js?v=1" defer></script><script src="/narration/js/narration.js?v=1" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/narrate.js?v=1" defer></script><script src="/narration/js/narration.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

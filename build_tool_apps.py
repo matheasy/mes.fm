@@ -251,7 +251,7 @@ APPS = {
     "narration": dict(title="MES Narration", page_title="Text to Speech in Your Own Voice: Free Narration Tool (MP3, M4A, WAV)",
                  tag="Type it. Hear it. In your own voice.", accent="#6d28d9", dark="#4c1d95", tint="#ede9fe",
                  desc="Free text to speech narration tool: type a script and get a voice-over in 28 natural English voices or in your own voice from a 15-second sample. Runs in your browser, nothing uploaded. Download MP3, M4A or WAV, or add it to the MES Video Editor.",
-                 js_v="1", pre_js=["/main_js/voice-picker.js?v=1", "/main_js/tab-progress.js?v=1", "/main_js/narrate.js?v=1"]),
+                 js_v="2", pre_js=["/main_js/voice-picker.js?v=1", "/main_js/tab-progress.js?v=1", "/main_js/narrate.js?v=1"]),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",

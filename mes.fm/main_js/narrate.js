@@ -34,7 +34,8 @@
 		return parts;
 	}
 	// script -> [{text} | {pause: seconds}]; paragraphs (blank lines) become {para: true} after their last piece
-	function split(script, max) {
+	// one: each sentence is its own piece (used for the voice copy, which can lose its way on two sentences at once)
+	function split(script, max, one) {
 		max = max || 220; var items = [];
 		String(script || "").replace(/\r/g, "").split(/\n\s*\n/).forEach(function (para, pi, all) {
 			var bits = para.split(PAUSE), i;   // split with a capture group: text, seconds, text, ...
@@ -44,7 +45,7 @@
 				var buf = "";
 				sentences(txt).forEach(function (s) {
 					cutLong(s, max).forEach(function (p) {
-						if (buf && (buf + " " + p).length > max) { items.push({ text: buf }); buf = p; } else buf = buf ? buf + " " + p : p;
+						if (buf && (one || (buf + " " + p).length > max)) { items.push({ text: buf }); buf = p; } else buf = buf ? buf + " " + p : p;
 					});
 				});
 				if (buf) items.push({ text: buf });
@@ -81,8 +82,17 @@
 		for (var i = 0; i < n; i++) { var x = Math.max(-1, Math.min(1, a[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true); }
 		return buf;
 	}
+	// a take shorter than ~25 ms per letter is broken (speech runs at ~65-80 ms per letter)
+	function tooShort(sec, text) { var n = String(text || "").replace(/[^A-Za-z0-9]/g, "").length; return n >= 12 && sec < n * 0.025; }
+	function halves(t) {
+		t = String(t || "").trim(); var w = t.split(/\s+/); if (w.length < 4) return null;
+		var mid = t.length / 2, best = -1, re = /[,;:—–]\s+/g, m;
+		while ((m = re.exec(t))) { var at = m.index + 1; if (at > t.length * 0.25 && at < t.length * 0.75 && (best < 0 || Math.abs(at - mid) < Math.abs(best - mid))) best = at; }
+		if (best > 0) return [t.slice(0, best).trim(), t.slice(best).trim()];
+		var k = Math.ceil(w.length / 2); return [w.slice(0, k).join(" "), w.slice(k).join(" ")];
+	}
 	function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
-	var pure = { SR: SR, VOICES: VOICES, split: split, sentences: sentences, cutLong: cutLong, trim: trim, join: join, peakNormalize: peakNormalize, resample: resample, wav: wav, hash: hash };
+	var pure = { tooShort: tooShort, halves: halves, SR: SR, VOICES: VOICES, split: split, sentences: sentences, cutLong: cutLong, trim: trim, join: join, peakNormalize: peakNormalize, resample: resample, wav: wav, hash: hash };
 	if (typeof module === "object" && module.exports) { module.exports = pure; return; }
 
 	/* ---------- browser: workers ---------- */
@@ -124,11 +134,24 @@
 				return getVoice(o.voice).then(function (v) { if (!v) throw new Error("That voice is not saved in this browser any more."); return call("clone", "clone", { text: text, voiceId: o.voice, samples: v.samples, exaggeration: o.exaggeration }); });
 			});
 		} else p = call("kokoro", "kokoro", { text: text, voice: o.voice, speed: o.speed || 1 });
-		return p.then(function (r) { var a = trim(r.sr === SR ? r.audio : resample(r.audio, r.sr, SR), SR); if (cache.size > 400) cache.delete(cache.keys().next().value); cache.set(key, a); return a; });
+		return p.then(function (r) {
+			var a = trim(r.sr === SR ? r.audio : resample(r.audio, r.sr, SR), SR);
+			// the voice copy (Chatterbox) sometimes "speaks" a line as near-silence and returns a fraction of a second; such a take is never
+			// kept: the line is said again in two halves (at a comma if there is one, else at the middle word)
+			if (o.engine === "clone" && tooShort(a.length / SR, text)) {
+				var h = halves(text), depth = o._depth || 0;
+				if (h && depth < 2) {
+					var o2 = Object.assign({}, o, { _depth: depth + 1 });
+					return speakOne(h[0], o2).then(function (a1) { return speakOne(h[1], o2).then(function (a2) { return join([{ audio: a1, gap: 0.12 }, { audio: a2 }], SR); }); });
+				}
+				return a;   // still short: give it back, but don't cache it, so "Again" makes a new take
+			}
+			if (cache.size > 400) cache.delete(cache.keys().next().value); cache.set(key, a); return a;
+		});
 	}
 	// the whole script -> {audio (24 kHz mono), pieces: [{text, start, end}]}; o: engine, voice, speed, exaggeration, gap, paraGap, onPiece(i, n, item), signal
 	function speak(script, o) {
-		o = o || {}; var items = split(script, o.engine === "clone" ? 150 : 260), n = items.filter(function (x) { return x.text; }).length, done = 0, out = [];
+		o = o || {}; var items = split(script, o.engine === "clone" ? 150 : 260, o.engine === "clone"), n = items.filter(function (x) { return x.text; }).length, done = 0, out = [];
 		var chain = load(o.engine, o);
 		items.forEach(function (it) {
 			chain = chain.then(function () {

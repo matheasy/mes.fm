@@ -49,3 +49,10 @@ body.dark-mode #nr.nr .nr-read {background:#2a1f45;border-color:#a78bfa;color:#e
 body.dark-mode #nr.nr .nr-bar {background:#2a1f45;}
 body.dark-mode #nr.nr .nr-pieces, body.dark-mode #nr.nr .nr-pieces li, body.dark-mode #nr.nr .nr-dl {border-color:#3a4150;}
 body.dark-mode #nr.nr .nr-ptext {color:#e5e7eb;}
+#nr .nr-made {margin:-0.2em 0 0.7em;color:#4b5563;font-size:0.95em;}
+#nr .nr-made b {color:#4c1d95;}
+#nr .nr-made.is-other {background:#fef3c7;border:1px solid #f59e0b;color:#78350f;border-radius:8px;padding:0.45em 0.7em;}
+body.dark-mode #nr.nr .nr-made {color:#c4cbd6;}
+body.dark-mode #nr.nr .nr-made b {color:#c4b5fd;}
+body.dark-mode #nr.nr .nr-made.is-other {background:#3a2a06;border-color:#b7791f;color:#fde68a;}
+body.dark-mode #nr.nr .nr-made.is-other b {color:#fde68a;}

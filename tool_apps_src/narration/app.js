@@ -17,7 +17,7 @@
 		return '<optgroup label="' + g[1] + '">' + N.VOICES.filter(function (v) { return v[2].indexOf(g[0]) === 0; }).map(function (v) { return '<option value="' + v[0] + '">' + v[1] + " (" + v[2].split("· ")[1] + ")</option>"; }).join("") + "</optgroup>";
 	}).join("");
 	vs.value = S.voice; if (!vs.value) vs.value = "af_heart";
-	vs.onchange = function () { S.voice = vs.value; save(); };
+	vs.onchange = function () { S.voice = vs.value; save(); madeLabel(); };
 	if (window.MESVoicePicker) try { window.MESVoicePicker.enhance(vs); } catch (e) { /* plain select */ }
 	function slider(id, key, fmt) { var el = $(id), out = $(id + "v"); el.value = S[key]; function show() { out.textContent = fmt(+el.value); } show(); el.oninput = function () { S[key] = +el.value; show(); save(); }; }
 	slider("nr-speed", "speed", function (v) { return v.toFixed(2) + "×"; });
@@ -30,6 +30,7 @@
 		S.eng = e; save();
 		["stock", "clone"].forEach(function (k) { var on = (k === "clone") === (e === "clone"); $("nr-tab-" + k).setAttribute("aria-selected", on); $("nr-pane-" + k).hidden = !on; });
 		if (e === "clone") { checkGpu(); renderVoices(); }
+		madeLabel();
 	}
 	$("nr-tab-stock").onclick = function () { setEng("kokoro"); }; $("nr-tab-clone").onclick = function () { setEng("clone"); };
 
@@ -58,6 +59,7 @@
 				return '<div class="nr-vrow' + (v.id === S.cvoice ? " is-on" : "") + '"><label><input type="radio" name="nr-cv" value="' + v.id + '"' + (v.id === S.cvoice ? " checked" : "") + "> <b>" + esc(v.name) + "</b> <small>" + (v.samples.length / N.SR).toFixed(1) + " s</small></label>" +
 					'<button type="button" class="tu-btn tu-btn--ghost nr-sm" data-play="' + v.id + '" title="Play the sample">▶</button><button type="button" class="tu-btn tu-btn--ghost nr-sm" data-del="' + v.id + '" title="Delete this voice" aria-label="Delete ' + esc(v.name) + '">×</button></div>';
 			}).join("");
+			madeLabel();
 		});
 	}
 	$("nr-voices").addEventListener("change", function (e) { if (e.target.name === "nr-cv") { S.cvoice = e.target.value; save(); renderVoices(); } });
@@ -138,8 +140,19 @@
 
 	/* ---------- result ---------- */
 	var outUrl = null;
+	// which voice the result was made with, and a warning when the picked voice / tab is now a different one
+	function voiceName(o) {
+		if (o.engine === "clone") { var v = voices.filter(function (x) { return x.id === o.voice; })[0]; return (v ? v.name : "your voice") + " (my own voice)"; }
+		var k = N.VOICES.filter(function (x) { return x[0] === o.voice; })[0]; return (k ? k[1] : o.voice) + " (ready-made voice)";
+	}
+	function madeLabel() {
+		var el = $("nr-made"); if (!el || !last) return;
+		var now = opts(), same = now.engine === last.o.engine && now.voice === last.o.voice;
+		el.className = "nr-made" + (same ? "" : " is-other");
+		el.innerHTML = "Made with <b>" + esc(voiceName(last.o)) + "</b>." + (same ? "" : " You have picked <b>" + esc(now.voice ? voiceName(now) : "My own voice") + "</b> now: press Make the narration to hear the script in that voice.");
+	}
 	function showResult() {
-		var r = last.r; $("nr-out").hidden = false; $("nr-dur").textContent = fmtT(r.audio.length / r.sr);
+		var r = last.r; $("nr-out").hidden = false; $("nr-dur").textContent = fmtT(r.audio.length / r.sr); madeLabel();
 		if (outUrl) URL.revokeObjectURL(outUrl); outUrl = URL.createObjectURL(new Blob([N.wav(r.audio, r.sr)], { type: "audio/wav" })); $("nr-play").src = outUrl;
 		$("nr-pieces").innerHTML = r.pieces.map(function (p, i) {
 			return '<li><button type="button" class="tu-btn tu-btn--ghost nr-sm" data-at="' + i + '" title="Play from here">▶ ' + fmtT(p.start) + '</button><span class="nr-ptext">' + esc(p.text) + '</span>' + (last.o.engine === "clone" ? '<button type="button" class="tu-btn tu-btn--ghost nr-sm" data-redo="' + i + '" title="Say this line again (a new take)">↻ Again</button>' : "") + "</li>";
