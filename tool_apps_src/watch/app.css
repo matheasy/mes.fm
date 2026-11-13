@@ -269,7 +269,15 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 /* the normal page's box is short (a phone held upright: ~210 px), so the tab is smaller there */
 #wt .wt-player:not(.mes-pfill) .wt-spd {gap:2px;}
 #wt .wt-player:not(.mes-pfill) .wt-spd button {width:34px;min-height:26px;font-size:14px;}
-#wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdv {display:none;}   /* the speed is shown in the bar under the box */
+#wt .wt-player:not(.mes-pfill) .wt-spd {gap:1px;}
+#wt .wt-player:not(.mes-pfill) .wt-spd button {min-height:22px;}
+#wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdv {width:34px;min-height:16px;font-size:10px;}
 #wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdx, #wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdf {min-height:22px;font-size:12px;}
 @media (max-height:420px) {#wt .wt-player.mes-pfill .wt-spd button {min-height:30px;} #wt .wt-player.mes-pfill .wt-spd .wt-spdx, #wt .wt-player.mes-pfill .wt-spd .wt-spdf {min-height:24px;}}
-@media (hover: hover) and (pointer: fine) {.wt-stage:has(.wt-spd:not([hidden]):not(.wt-spdL)) .wt-zmini {right:50px;}}
+@media (hover: hover) and (pointer: fine) {
+	#wt .wt-zmini[hidden] {display:none;}
+	.wt-zmini.wt-zmL {right:auto;left:8px;}
+	#wt .wt-zmini .wt-zmf {height:24px;font-size:12px;}
+	.wt-stage:has(.wt-spd:not([hidden]):not(.wt-spdL)) .wt-zmini:not(.wt-zmL) {right:50px;}
+	.wt-stage:has(.wt-spd.wt-spdL:not([hidden])) .wt-zmini.wt-zmL {left:50px;}
+}

@@ -5,7 +5,7 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, cc: false, keepTrack: false, bk: {}, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 }, spdL: false };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, cc: false, keepTrack: false, bk: {}, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 }, spdL: false, zmL: false };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	if (!S.bk || typeof S.bk !== 'object') S.bk = {};
@@ -578,11 +578,17 @@
 		// mouse computers: no layer over the player at 100% (so YouTube's own clicks, double-click full screen and caption dragging
 		// work as on youtube.com); a small zoom strip shows on the right while the pointer is over the video instead
 		var mini = document.createElement('div'); mini.className = 'wt-zmini'; mini.setAttribute('role', 'toolbar'); mini.setAttribute('aria-label', 'Zoom');
-		mini.innerHTML = '<button type="button" data-z="in" title="Zoom in (+)" aria-label="Zoom in">+</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100% (0)">100%</button><button type="button" data-z="out" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button>';
-		mini.addEventListener('click', function (e) { var b = e.target.closest('[data-z]'); if (!b) return; var z = b.dataset.z, k = (S.zoom || {}).k || 1; if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else zoomTo(fillK()); });
+		mini.innerHTML = '<button type="button" data-z="in" title="Zoom in (+)" aria-label="Zoom in">+</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100% (0)">100%</button><button type="button" data-z="out" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button>' +
+			'<button type="button" data-z="flip" class="wt-zmf" title="Switch sides" aria-label="Move the zoom buttons to the other side">⇄</button>' +
+			'<button type="button" data-z="x" class="wt-zmf" title="Hide these buttons (click near this edge of the video to bring them back)" aria-label="Hide the zoom buttons">✕</button>';
+		mini.addEventListener('click', function (e) { var b = e.target.closest('[data-z]'); if (!b) return; var z = b.dataset.z;
+			if (z === 'flip') { S.zmL = !S.zmL; save(); paintZm(); return; } if (z === 'x') { zmGone = true; paintZm(); return; }
+			var k = (S.zoom || {}).k || 1; if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else zoomTo(fillK()); });
 		mini.addEventListener('wheel', function (e) { e.preventDefault(); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY)); }, { passive: false });
-		st.appendChild(mini); ctlBar(st); spdTab(st); applyZoom();
+		st.appendChild(mini); ctlBar(st); spdTab(st); paintZm(); applyZoom();
 	}
+	var zmGone = false;
+	function paintZm() { var m = document.querySelector('#wt-stage .wt-zmini'); if (m) { m.hidden = zmGone; m.classList.toggle('wt-zmL', !!S.zmL); } }
 	/* speed tab on the picture's edge (opposite the panel's › tab) in Fill window / full screen: +, −, 2×, 1×, ✕ hides it */
 	var spdGone = false;
 	// with the side panel (Fill window) the tab sits opposite the panel; on the normal page it is S.spdL's side
@@ -837,9 +843,11 @@
 		// phones with a camera notch: without viewport-fit=cover the full-screen picture is pushed off centre by the notch's width
 		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
 		$('wt-player').addEventListener('pointerdown', function (e) {
-			var pl = $('wt-player'); if (!spdGone) return;
-			var r = $('wt-stage').getBoundingClientRect(), d = spdLeft() ? e.clientX - r.left : r.right - e.clientX;
-			if (d >= 0 && d < 36 && e.clientY >= r.top && e.clientY <= r.bottom) { spdGone = false; syncSpeed(); }
+			if (!spdGone && !zmGone) return;
+			var r = $('wt-stage').getBoundingClientRect(); if (e.clientY < r.top || e.clientY > r.bottom) return;
+			function near(left) { var d = left ? e.clientX - r.left : r.right - e.clientX; return d >= 0 && d < 36; }
+			if (spdGone && near(spdLeft())) { spdGone = false; syncSpeed(); }
+			if (zmGone && near(!!S.zmL)) { zmGone = false; paintZm(); }
 		}, true);
 		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { var pl = $('wt-player'); if (!pl.classList.contains('mes-pfill') && spdGone) spdGone = false; syncSpeed(); if (pl.classList.contains('wt-zprev') && (!pl.classList.contains('mes-pside') || pl.classList.contains('mes-pmini'))) pl.classList.remove('wt-zprev'); else if (zMode && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini')) pl.classList.add('wt-zprev'); zprevH(); setTimeout(applyZoom, 60); } });
 		zoomLayer();
