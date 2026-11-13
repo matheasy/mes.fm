@@ -272,7 +272,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="25", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=2"]),
+                  js_v="25", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=3"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -741,11 +741,11 @@ APPS = {
                  tag="Sketch, doodle, diagram and colour in, right in your browser.", accent="#7048e8", dark="#5235b8", tint="#ede8fd",
                  desc="Free online drawing pad: sketch with a pen, marker, pencil, highlighter, calligraphy, neon or spray brush, add 30 shapes, arrows, text, emoji and symbols, start from templates (grid and lined paper, comic strips, mind maps, flowcharts, thumbnails, icons) or colouring pages, then download a PNG, JPEG or SVG. No sign-up; drawings stay in your browser.",
                  meta_desc="Free drawing pad: brushes, shapes, text, emoji, templates and colouring pages. Export PNG, JPEG or SVG. No sign-up, saved in your browser.",
-                 js_v="1", lib_from=["image-converter"]),
+                 js_v="2", lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="57", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js"], lib_from=["image-converter"]),
+                         js_v="58", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js", "cloud.js"], lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
@@ -1017,7 +1017,7 @@ APPS = {
     "pdf": dict(title="MES PDF Editor", page_title="Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online",
                 tag="Sign, fill in, annotate and redact PDFs in your browser.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                 desc="Free online PDF editor and signer: add a typed, drawn or uploaded signature, fill in forms, draw and highlight, add comments, edit text, black out private details, and rotate, delete or reorder pages. Private: your PDF never leaves your browser.",
-                js_v="11", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"], pre_js=["/main_js/cloud-files.js?v=2", "/main_js/link-open.js?v=2"]),
+                js_v="12", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "export.js"], pre_js=["/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
     # PDF Tools family (2026-10-15): one script (tool_apps_src/pdf-tools/app.js, helpers lib.js = PT, tests tool_apps_src/pdf-tools-tests.js) and one content template; data-mode on #pt picks merge / split / organize / images / toimg / compress, vars.SEO = seo/<mode>.html. Same brand as the PDF editor (slug pdf). pdf.js + pdf-lib from cdnjs on first use; ZIPs use MESImg (lib_from image-converter).
     "merge-pdf": dict(title="Merge PDF", page_title="Merge PDF: Combine PDF Files Online for Free", tag="Combine PDFs into one file.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                     desc="Free online PDF merger: combine two or more PDF files into a single document, put them in any order, and pick which pages to use from each. Private: your files never leave your browser. No sign-up, no watermark.",
@@ -1373,12 +1373,12 @@ APPS = {
                  tag="Open text, RTF, Markdown and code files in your browser.", accent="#0f766e", dark="#0b5a54", tint="#dff3f0",
                  desc="Free online text file viewer: open .txt, .md, .rtf, .csv, .json, .html, .log and code files in your browser. Read them laid out nicely (Markdown and RTF formatted, CSV as a table) or as code with line numbers and colours, read them aloud, change the font and size, edit and download. Private: nothing is uploaded.",
                  meta_desc="Free text file viewer: open TXT, RTF, Markdown, CSV, JSON and code files in a formatted reading view or a code view with line numbers. Read aloud, edit. No upload.",
-                 js_v="1", pre_js=["/main_js/link-open.js?v=2"]),
+                 js_v="2", pre_js=["/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
     "docx": dict(title="MES Word Viewer", page_title="DOCX Viewer and Editor: Open Word Documents Online, No Upload",
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
                  meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
-                 js_v="6", pre_js=["/main_js/cloud-files.js?v=2", "/main_js/link-open.js?v=2"]),
+                 js_v="7", pre_js=["/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
     # MES Spreadsheet Viewer & Editor (2026-10-30, mes.fm/excel): .xlsx / .xlsm / .xls / .ods / .csv / .tsv read and written by SheetJS CE 0.20.3 (Apache-2.0,
     # self-hosted in /main_js/sheetjs/0.20.3/, loaded on first open), virtualised grid, own formula engine + dependency recalc in lib.js (MESXL, node tests
     # tool_apps_src/excel-tests.js), sort / filter view, rows / columns / sheets, undo, print, recent files + autosave in IndexedDB "mes-excel". Nothing is uploaded.
@@ -1387,7 +1387,7 @@ APPS = {
                   tag="Open, view and edit spreadsheets in your browser.", accent="#1e7145", dark="#155a36", tint="#e1f1e7",
                   desc="Free online spreadsheet viewer and editor: open Excel files (.xlsx, .xlsm, .xls), LibreOffice .ods and CSV in your browser, with every sheet, number formats and formulas. Edit cells and simple formulas, find, sort and filter, add rows and columns, then save as .xlsx, .ods or CSV, or print to PDF. Fast with big files. Private: nothing is uploaded.",
                   meta_desc="Free spreadsheet viewer and editor: open Excel .xlsx / .xls, .ods and CSV files, edit cells and formulas, sort, filter, save as .xlsx or CSV. No upload.",
-                  js_v="7", js_parts=["formulas.js", "edit.js", "ooxml.js", "parts.js"], pre_js=["/main_js/cloud-files.js?v=2"]),
+                  js_v="8", js_parts=["formulas.js", "edit.js", "ooxml.js", "parts.js"], pre_js=["/main_js/cloud-files.js?v=3"]),
     "compress": dict(title="MES Compressor", page_title="Compressor: Compress Images, PDFs and Audio Online",
                        tag="Make pictures, PDFs and audio smaller.", accent="#4338ca", dark="#3730a3", tint="#e8e9fb",
                        desc="Free online compressor for pictures, PDFs and audio: shrink JPG, PNG and WebP to a quality or file size you choose, make PDFs smaller while keeping text selectable, and save audio as smaller MP3s. Before and after preview, ZIP download. Private: nothing is uploaded.",
@@ -1416,7 +1416,7 @@ APPS = {
                       tag="Build 3D models from shapes and print them. No sign-up.", accent="#2563eb", dark="#1d4ed8", tint="#e0ecff",
                       desc="Free online 3D modeling app for beginners and 3D printing: add boxes, cylinders, spheres, 3D text and more, cut holes, group shapes, revolve and extrude your own drawings, start from templates like a name keychain, phone stand or gear, check that it fits your printer and is watertight, estimate filament and cost, and export STL, 3MF, OBJ or GLB. Runs in your browser: nothing is uploaded.",
                       meta_desc="Free online 3D modeler for beginners: build models from shapes, holes and 3D text, check them for 3D printing and export STL or 3MF. Runs in your browser, nothing uploaded.",
-                      js_v="3", js_parts=["templates.js", "photo3d.js"], lib_from=["image-converter"]),
+                      js_v="4", js_parts=["templates.js", "photo3d.js"], lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
     # MES Brick Builder (2026-11-10): 3D building-brick simulator with example builds, bridges and a simple strength test. lib = MESBrick (tests: node tool_apps_src/brick-builder-tests.js), examples in templates.js
     "brick-builder": dict(title="MES Brick Builder", page_title="Brick Builder: Free 3D Building Brick Simulator with Bridges and Strength Test",
                       tag="Build with virtual bricks in 3D. Test how strong your bridge is.", accent="#c2410c", dark="#9a3412", tint="#ffedd5",
@@ -1432,7 +1432,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="33", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="33", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

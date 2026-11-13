@@ -4715,7 +4715,7 @@
 		n.title = file.name + (file.size ? " (" + X.fmtBytes(file.size) + ")" : "");
 		document.title = (file.dirty ? "• " : "") + file.name + " - MES Spreadsheet Viewer";
 	}
-	window.addEventListener("beforeunload", function (e) { if (file && file.dirty && !file.autosaved && !file.saved) { e.preventDefault(); e.returnValue = ""; } });
+	window.addEventListener("beforeunload", function (e) { if (!window.__mesCloudLeaving && file && file.dirty && !file.autosaved && !file.saved) { e.preventDefault(); e.returnValue = ""; } });
 
 	/* ---------- recent files + autosave (IndexedDB, this device only) ---------- */
 	var idb = null;

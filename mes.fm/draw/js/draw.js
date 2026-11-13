@@ -626,9 +626,9 @@ var MESImg = (function () {
 	function snap() { return { objs: doc.objs.slice(), bg: { c: doc.bg.c, p: doc.bg.p }, w: doc.w, h: doc.h }; }
 	function commit() {
 		hist = hist.slice(0, hpos + 1); hist.push(snap()); if (hist.length > 200) hist.shift(); hpos = hist.length - 1;
-		sel = sel.filter(byId); uiHist(); scheduleSave(); dirty(); uiSel();
+		sel = sel.filter(byId); uiHist(); scheduleSave(); dirty(); uiSel(); cloudTick();
 	}
-	function restore(h) { doc.objs = h.objs.slice(); doc.bg = { c: h.bg.c, p: h.bg.p }; var sz = doc.w !== h.w || doc.h !== h.h; doc.w = h.w; doc.h = h.h; sel = sel.filter(byId); if (sz) fit(); uiPage(); uiHist(); uiSel(); scheduleSave(); dirty(); }
+	function restore(h) { doc.objs = h.objs.slice(); doc.bg = { c: h.bg.c, p: h.bg.p }; var sz = doc.w !== h.w || doc.h !== h.h; doc.w = h.w; doc.h = h.h; sel = sel.filter(byId); if (sz) fit(); uiPage(); uiHist(); uiSel(); scheduleSave(); dirty(); cloudTick(); }
 	function undo() { if (op) return; finishText(); if (hpos > 0) { hpos--; restore(hist[hpos]); tip("Undone"); } }
 	function redo() { if (op) return; if (hpos < hist.length - 1) { hpos++; restore(hist[hpos]); tip("Redone"); } }
 	function uiHist() { $("dr-undo").disabled = hpos <= 0; $("dr-redo").disabled = hpos >= hist.length - 1; }
@@ -1147,7 +1147,7 @@ var MESImg = (function () {
 		var m = D.SIZES.filter(function (s) { return s[2] === doc.w && s[3] === doc.h; })[0]; $("dr-size").value = m ? m[0] : "custom";
 	}
 	function wireBar() {
-		$("dr-name").addEventListener("input", function () { doc.name = this.value.trim() || "Untitled drawing"; scheduleSave(); });
+		$("dr-name").addEventListener("input", function () { doc.name = this.value.trim() || "Untitled drawing"; scheduleSave(); cloudTick(); });
 		$("dr-new").addEventListener("click", function () { newDoc("blank"); toast("New drawing. Your last one is in My drawings."); });
 		$("dr-undo").addEventListener("click", undo); $("dr-redo").addEventListener("click", redo);
 		$("dr-zin").addEventListener("click", function () { zoomAt(1.25, W / 2, H / 2); }); $("dr-zout").addEventListener("click", function () { zoomAt(0.8, W / 2, H / 2); }); $("dr-zfit").addEventListener("click", fit);
@@ -1320,7 +1320,7 @@ var MESImg = (function () {
 		else if (mod && (k === "d" || k === "D")) duplicate();
 		else if (mod && (k === "g" || k === "G")) group(e.shiftKey);
 		else if (mod && (k === "e" || k === "E")) pop("dr-exppop", "dr-expbtn", true);
-		else if (mod && (k === "s" || k === "S")) { saveNow(); toast("Saved in this browser. For a file, use Export → Save as .mesdraw file."); }
+		else if (mod && (k === "s" || k === "S")) { saveNow(); if (!(cloud && cloud.save(doc))) toast("Saved in this browser. To keep it in OneDrive, Dropbox, Google Drive or a folder, press ☁ Cloud."); }
 		else if (mod && k === "]") order(true); else if (mod && k === "[") order(false);
 		else if (mod) done = false;
 		else if (k === "Delete" || k === "Backspace") delSel();
@@ -1359,6 +1359,32 @@ var MESImg = (function () {
 		else if (e.shiftKey) { view.ox -= e.deltaY; view.fit = false; dirty(false); } else { view.ox -= e.deltaX; view.oy -= e.deltaY; view.fit = false; dirty(false); }
 	}, { passive: false });
 
+	/* ---------- ☁ Cloud: keep a drawing (.mesdraw) saved to a synced folder, Dropbox, OneDrive or Google Drive (main_js/cloud-files.js).
+	   Attached once the first drawing is on the page, so a return from signing in opens its kept drawing over it. ---------- */
+	var cloud = null;
+	function cloudTick() { if (!doc) return; doc.__cRev = (doc.__cRev || 0) + 1; if (cloud && cloud.linked(doc)) cloud.changed(doc); }
+	function cloudInit() {
+		if (cloud || !window.MESCloud) return;
+		cloud = window.MESCloud.attach({
+			app: "draw", folder: "MES Apps/Draw", what: "drawing", title: "Draw", defExt: "mesdraw", btnClass: "dr-b", before: $("dr-pagebtn"), toast: function (m) { toast(m); },
+			exts: [".mesdraw"],
+			accept: [{ description: "MES Draw drawing", accept: { "application/json": [".mesdraw"] } }],
+			doc: function () { return doc; },
+			name: function (d) { return fileBase() + ".mesdraw"; },
+			writeName: function (n) { return /\.mesdraw$/i.test(n || "") ? n : String(n || "drawing").replace(/\.[A-Za-z0-9]{1,8}$/, "") + ".mesdraw"; },
+			bytes: function (d) { if (d !== doc) return Promise.reject(new Error("That drawing was closed.")); finishText(); d.__cTry = d.__cRev || 0; return Promise.resolve(new TextEncoder().encode(D.serialize(d))); },
+			open: function (u8, name) {
+				var d = D.parse(new TextDecoder().decode(u8)); if (!d) throw new Error("That is not a MES Draw file");
+				if (!d.name || d.name === "Drawing") d.name = String(name || "Drawing").replace(/\.mesdraw$/i, "");
+				saveNow(); d.id = uid(); setDoc(d, true); doc.__cRev = doc.__cSaved = 0; return doc;
+			},
+			dirty: function (d) { return (d.__cRev || 0) !== (d.__cSaved || 0); },
+			markDirty: function (d) { d.__cRev = (d.__cRev || 0) + 1; },
+			saved: function (d) { d.__cSaved = d.__cTry != null ? d.__cTry : d.__cRev || 0; },
+			replaces: false
+		});
+	}
+
 	/* ---------- start ---------- */
 	buildTools(); wireOpts(); wireBar(); buildPal();
 	$("dr-tabs").addEventListener("click", function (e) { var b = e.target.closest("[data-t]"); if (b) setTab(b.getAttribute("data-t")); });
@@ -1367,7 +1393,7 @@ var MESImg = (function () {
 	readDesk(); new MutationObserver(function () { readDesk(); dirty(false); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
 	if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); window.addEventListener("resize", resize);
 	uiSide(); resize();
-	function startDoc(d) { if (d) setDoc(d, false); else newDoc("blank"); setTool(S.tool || "brush"); setTab(S.tab || "shapes"); handoff(); }
+	function startDoc(d) { if (d) setDoc(d, false); else newDoc("blank"); setTool(S.tool || "brush"); setTab(S.tab || "shapes"); handoff(); cloudInit(); }
 	(S.last ? getDoc(S.last) : Promise.resolve(null)).then(startDoc, function () { startDoc(null); });
 	function handoff() { var I = window.MESImg; if (I && I.handoffReceive && /[?&]handoff=/.test(location.search)) I.handoffReceive().then(function (files) { files.forEach(function (f) { addImageFile(f); }); }); }
 	window.addEventListener("pagehide", function () { if (saveTimer) saveNow(); });

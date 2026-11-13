@@ -8,9 +8,11 @@
  *             OneDrive = Files.ReadWrite (whole drive, so the folder is a normal one; token "mes-cloud:tok:onedrive"),
  *             Google = drive.file (only files this app made, shown in My Drive; token "mes-cloud:tok:gdrive"),
  *             Dropbox = its app folder Apps/MES Copy Text (the app's type can't change), folder inside it; token shared with Copy Text.
- *             Those apps only allow https://mes.fm/copy-text as the sign-in return address, so Dropbox / Microsoft sign-in
- *             runs in a pop-up that lands on /copy-text, which hands the code back (localStorage "mes-cloud:code:<state>",
- *             the relay at the top of copy-text/sync.js) and closes. Google's token pop-up needs no relay.
+ *             Dropbox / Microsoft sign-in happens on the page itself, like Copy Text: the page goes to Dropbox / Microsoft and
+ *             comes back to its own address (registered with them: HERE below). Before it leaves, the open document is kept in
+ *             IndexedDB ("stash:<app>", as the bytes the page saves) and opened again on return, then the Cloud window opens on
+ *             that service. A page whose address is not registered yet (HERE_READY false) falls back to the old pop-up that lands
+ *             on /copy-text (the relay at the top of copy-text/sync.js). Google's sign-in is always Google's own small window.
  * Each linked document remembers {p, ref, name, ver}; a save sends the version it last saw, so a file changed on another
  * device is never overwritten without asking (Keep mine / Open theirs / Save mine as a copy). Auto-save after changes,
  * a check for changes elsewhere when the tab gets focus. Pure helpers are exported for node tests.
@@ -43,6 +45,11 @@
 
 	var CLOUD = Object.assign({ dropbox: "iii9nua0gtgi3t6", onedrive: "294df2de-6d61-4c56-a0c1-c79cd09a2e8e", gdrive: "604980806442-dlqf3ur1qohoe67sc5i70qu4is9sfva9.apps.googleusercontent.com" }, window.MES_CT_CLOUD || {});
 	var RELAY = "https://mes.fm/copy-text", DIR = "MES Apps";
+	/* Pages that sign in on themselves: each address must be in the Dropbox app's Redirect URIs and the Entra app's SPA redirect URIs.
+	   Flip HERE_READY to true for a service once all of them are registered there. */
+	var HERE = ["/pdf", "/excel", "/docx", "/text", "/photo", "/draw", "/3d-studio", "/video", "/watch"];
+	var HERE_READY = Object.assign({ dropbox: false, onedrive: false }, window.MES_CLOUD_HERE || {});
+	function hereUri() { var pth = location.pathname.replace(/\/(index\.html)?$/, "") || "/"; return HERE.indexOf(pth) >= 0 && /^https:\/\/mes\.fm$/.test(location.origin) ? location.origin + pth : ""; }
 	function tokKey(p) { return p === "dropbox" ? "mes-copytext:v1:tok:dropbox" : "mes-cloud:tok:" + p; }
 	function segs(f) { return String(f == null ? DIR : f).split("/").map(function (x) { return x.trim(); }).filter(Boolean); }
 	function encPath(f) { return segs(f).map(encodeURIComponent).join("/"); }
@@ -131,6 +138,37 @@
 			.then(function (j) { saveTok(p, j); }, function (e) { pending = null; throw e; });
 	}
 	var pending = null;
+	// Dropbox / Microsoft on the page itself: keep the document, go there, come back here (see the header)
+	function hereSignIn(p, app, stash) {
+		var ru = hereUri(), verifier = rnd(48), state = rnd(16);
+		return Promise.resolve().then(function () { return stash ? stash() : null; }).catch(function () { return null; }).then(function (doc) {
+			window.__mesCloudLeaving = doc !== false;              // kept: pages skip their "leave this page?" question
+			return (doc ? hkv("put", "stash:" + app, doc).catch(function () { }) : hkv("del", "stash:" + app).catch(function () { })).then(function () {
+				return crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+			});
+		}).then(function (h) {
+			ls("mes-cloud:here:" + state, { p: p, app: app, v: verifier, ru: ru, t: Date.now() });
+			location.assign(P[p].authUrl(b64url(h), state, ru));
+			return new Promise(function () { });          // the page is going away
+		});
+	}
+	// back from Dropbox / Microsoft: take ?code=&state= out of the address bar at once, then trade the code for a token
+	var RETURN = null;
+	function takeReturn() {
+		try {
+			var q = new URLSearchParams(location.search), st = q.get("state"); if (!st) return null;
+			var info = ls("mes-cloud:here:" + st); if (!info) return null;
+			ls("mes-cloud:here:" + st, null);
+			var got = { info: info, code: q.get("code"), error: q.get("error"), desc: q.get("error_description") };
+			["code", "state", "error", "error_description", "error_uri", "session_state", "client_info"].forEach(function (k) { q.delete(k); });
+			var rest = q.toString(); history.replaceState(null, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
+			if (Date.now() - (info.t || 0) > 900000) return null;      // older than 15 minutes: ignore
+			if (MOCK && got.code) { got.token = Promise.resolve(ls("mes-cloud:mock:on:" + info.p, true)); return got; }   // ?cloudmock=1: a pretend return
+			got.token = got.code ? P[info.p].exchange(got.code, info.v, info.ru).then(function (j) { saveTok(info.p, j); }) : Promise.reject(err("auth", (got.desc || got.error || "The sign-in was cancelled.")));
+			got.token.catch(function () { });
+			return got;
+		} catch (e) { return null; }
+	}
 
 	/* ---------- providers: list() / head(ref) -> ver / read(ref) -> {bytes, ver, name} / write(ref|null, name, bytes, ver) -> {ref, ver, name} ---------- */
 	var P = {
@@ -163,8 +201,8 @@
 		dropbox: {
 			name: "Dropbox", root: ["Apps", "MES Copy Text"], where: function (l) { return "Dropbox › Apps › MES Copy Text › " + segs(l && l.dir).join(" › ") + " › " + (l ? l.name : ""); },
 			ok: function () { return !!CLOUD.dropbox; },
-			authUrl: function (ch, st) { return "https://www.dropbox.com/oauth2/authorize?" + form({ client_id: CLOUD.dropbox, response_type: "code", code_challenge: ch, code_challenge_method: "S256", redirect_uri: RELAY, token_access_type: "offline", state: st }); },
-			exchange: function (code, v) { return tokenCall("https://api.dropboxapi.com/oauth2/token", { grant_type: "authorization_code", code: code, client_id: CLOUD.dropbox, code_verifier: v, redirect_uri: RELAY }); },
+			authUrl: function (ch, st, ru) { return "https://www.dropbox.com/oauth2/authorize?" + form({ client_id: CLOUD.dropbox, response_type: "code", code_challenge: ch, code_challenge_method: "S256", redirect_uri: ru || RELAY, token_access_type: "offline", state: st }); },
+			exchange: function (code, v, ru) { return tokenCall("https://api.dropboxapi.com/oauth2/token", { grant_type: "authorization_code", code: code, client_id: CLOUD.dropbox, code_verifier: v, redirect_uri: ru || RELAY }); },
 			refresh: function (r) { return tokenCall("https://api.dropboxapi.com/oauth2/token", { grant_type: "refresh_token", refresh_token: r, client_id: CLOUD.dropbox }); },
 			api: function (path, body) { return authed("dropbox", "https://api.dropboxapi.com/2/" + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); },
 			kids: function (folder) {
@@ -209,8 +247,8 @@
 			ok: function () { return !!CLOUD.onedrive; },
 			ms: "https://login.microsoftonline.com/common/oauth2/v2.0/", scope: "Files.ReadWrite offline_access",
 			g: "https://graph.microsoft.com/v1.0/me/drive/",
-			authUrl: function (ch, st) { return this.ms + "authorize?" + form({ client_id: CLOUD.onedrive, response_type: "code", redirect_uri: RELAY, response_mode: "query", scope: this.scope, code_challenge: ch, code_challenge_method: "S256", state: st }); },
-			exchange: function (code, v) { return tokenCall(P.onedrive.ms + "token", { client_id: CLOUD.onedrive, grant_type: "authorization_code", code: code, redirect_uri: RELAY, code_verifier: v, scope: P.onedrive.scope }); },
+			authUrl: function (ch, st, ru) { return this.ms + "authorize?" + form({ client_id: CLOUD.onedrive, response_type: "code", redirect_uri: ru || RELAY, response_mode: "query", scope: this.scope, code_challenge: ch, code_challenge_method: "S256", state: st }); },
+			exchange: function (code, v, ru) { return tokenCall(P.onedrive.ms + "token", { client_id: CLOUD.onedrive, grant_type: "authorization_code", code: code, redirect_uri: ru || RELAY, code_verifier: v, scope: P.onedrive.scope }); },
 			refresh: function (r) { return tokenCall(P.onedrive.ms + "token", { client_id: CLOUD.onedrive, grant_type: "refresh_token", refresh_token: r, scope: P.onedrive.scope }); },
 			at: function (folder) { var f = encPath(folder); return P.onedrive.g + (f ? "root:/" + f + ":" : "root"); },
 			path: function (name, folder) { return P.onedrive.g + "root:/" + segs(folder).concat([name]).map(encodeURIComponent).join("/") + ":"; },
@@ -396,6 +434,7 @@
 			tok(p, null);
 		};
 	});
+	RETURN = takeReturn();
 	/* ?cloudmock=1: stand-in accounts kept in localStorage (for testing the page without real sign-ins) */
 	if (MOCK) ["dropbox", "onedrive", "gdrive"].forEach(function (p) {
 		var K = "mes-cloud:mock:" + p;
@@ -747,7 +786,7 @@
 			else if (a === "tab") { prefs.tab = p; savePrefs(); paintDlg(); }
 			else if (a === "connect") {
 				busy = "Signing in to " + provName(p) + "…"; paintDlg();
-				P[p].connect().then(function () { busy = ""; listCache[p] = null; listErr[p] = null; d = cfg.doc(); if (L(d) && L(d).p === p && L(d).code === "auth") { L(d).code = null; L(d).err = null; } paintDlg(); paint(); },
+				connectFrom(p).then(function () { busy = ""; listCache[p] = null; listErr[p] = null; d = cfg.doc(); if (L(d) && L(d).p === p && L(d).code === "auth") { L(d).code = null; L(d).err = null; } paintDlg(); paint(); },
 					function (x) { busy = ""; if (x.code !== "abort") lastErr = x.message; paintDlg(); });
 			}
 			else if (a === "cancel") { if (pending) pending.cancel(); }
@@ -773,6 +812,38 @@
 			if (e.key === "Escape") { e.stopPropagation(); close(); }
 			if (e.key === "Enter" && e.target.id === "mcl-name") { var b = dlg.querySelector('[data-a="savehere"]'); if (b) b.click(); }
 		});
+		// sign in: on this page when its address is registered with the service, else the pop-up / Google's window
+		function connectFrom(p) {
+			if (p !== "gdrive" && !MOCK && HERE_READY[p] && hereUri()) return hereSignIn(p, cfg.app, function () {
+				var d = cfg.doc(); if (!d) return null;
+				var l = L(d), name = H.safeName(cfg.writeName ? cfg.writeName(cfg.name(d)) : cfg.name(d), cfg.defExt);
+				return Promise.resolve(cfg.bytes(d, name)).then(function (bytes) {
+					var u = u8of(bytes); if (u.length > 200 * 1048576) return false;     // too big to keep: the page asks before leaving as usual
+					return { bytes: u, name: name, dirty: !!cfg.dirty(d), link: l && l.p !== "file" ? { p: l.p, ref: l.ref, name: l.name, ver: l.ver, dir: l.dir } : null, t: Date.now() };
+				});
+			});
+			return P[p].connect();
+		}
+		// back from signing in on this page: open the kept document again, then the Cloud window on that service
+		if (RETURN && RETURN.info.app === cfg.app) {
+			var back = RETURN; RETURN = null;
+			back.token.then(function () {
+				return hkv("get", "stash:" + cfg.app).catch(function () { return null; }).then(function (st) {
+					hkv("del", "stash:" + cfg.app).catch(function () { });
+					if (!st || !st.bytes || Date.now() - st.t > 900000) return;
+					return Promise.resolve(cfg.open(st.bytes, st.name, null)).then(function (d) {
+						if (!d) return;
+						if (st.link) setL(d, Object.assign({}, st.link, { code: null, err: null }));
+						if (st.dirty && cfg.markDirty) cfg.markDirty(d);
+					});
+				});
+			}).then(function () {
+				prefs.tab = back.info.p; savePrefs(); listCache[back.info.p] = null; toast("Connected to " + provName(back.info.p)); paint(); open();
+			}, function (e) {
+				lastErr = e && e.message || String(e); prefs.tab = back.info.p; savePrefs();
+				hkv("get", "stash:" + cfg.app).then(function (st) { hkv("del", "stash:" + cfg.app).catch(function () { }); if (st && st.bytes) return cfg.open(st.bytes, st.name, null); }).catch(function () { }).then(function () { paint(); open(); });
+			});
+		}
 		function confirmLeave(d) { return !(cfg.replaces && d && cfg.dirty(d) && !L(d) && !confirm("You have changes here that are not saved. Open another file anyway?")); }
 		btn.onclick = function () { if (dlg.hidden) open(); else close(); };
 		chip.onclick = open;

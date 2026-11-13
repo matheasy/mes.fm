@@ -681,7 +681,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	PE.saveState = saveState; PE.on("history", saveState); PE.on("docsize", saveState);
 
 	/* ---------- autosave (IndexedDB, per project, with Recent projects): projects.js ---------- */
-	window.addEventListener("beforeunload", function (e) { if (PE.doc && PE.dirty && PE.hist.stack.length > 1) { e.preventDefault(); e.returnValue = ""; } });
+	window.addEventListener("beforeunload", function (e) { if (!window.__mesCloudLeaving && PE.doc && PE.dirty && PE.hist.stack.length > 1) { e.preventDefault(); e.returnValue = ""; } });
 
 	/* ---------- menus ---------- */
 	var isMac = /Mac|iPhone|iPad/.test(navigator.platform), MOD = isMac ? "⌘" : "Ctrl+";

@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-12",
+"generated":"2026-11-13",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -18,7 +18,7 @@
 },
 "/3d-studio":{
 "added":"2026-10-31",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/age-calculator":{
@@ -258,7 +258,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -273,7 +273,7 @@
 },
 "/draw":{
 "added":"2026-11-10",
-"updated":"2026-11-10",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/due-date-calculator":{
@@ -308,7 +308,7 @@
 },
 "/excel":{
 "added":"2026-10-30",
-"updated":"2026-11-10",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/exif-viewer":{
@@ -648,7 +648,7 @@
 },
 "/pdf":{
 "added":"2026-10-15",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/pdf-tools":{
@@ -668,7 +668,7 @@
 },
 "/photo":{
 "added":"2026-10-16",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/photoelectric-effect-simulator":{
@@ -913,7 +913,7 @@
 },
 "/text":{
 "added":"2026-11-12",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/text-size":{
@@ -988,7 +988,7 @@
 },
 "/video":{
 "added":"2026-10-28",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/videospeed":{
@@ -1008,7 +1008,7 @@
 },
 "/watch":{
 "added":"2026-11-07",
-"updated":"2026-11-12",
+"updated":"2026-11-13",
 "type":"Tool"
 },
 "/water-intake-calculator":{

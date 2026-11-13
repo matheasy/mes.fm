@@ -1351,9 +1351,9 @@ var MESImg = (function () {
 	function snapshot() { return JSON.stringify({ objs: S.objs, name: S.name }); }
 	function commit(label) {
 		hist = hist.slice(0, hpos + 1); hist.push(snapshot()); if (hist.length > 120) hist.shift(); hpos = hist.length - 1;
-		sync(); undoBtns(); autosave();
+		sync(); undoBtns(); autosave(); cloudTick();
 	}
-	function restore(json) { var d = JSON.parse(json); S.objs = d.objs; S.name = d.name || S.name; sync(); undoBtns(); autosave(); }
+	function restore(json) { var d = JSON.parse(json); S.objs = d.objs; S.name = d.name || S.name; sync(); undoBtns(); autosave(); cloudTick(); }
 	function undo() { if (hpos > 0) { hpos--; restore(hist[hpos]); } }
 	function redo() { if (hpos < hist.length - 1) { hpos++; restore(hist[hpos]); } }
 	function undoBtns() { $('[data-act=undo]').disabled = hpos <= 0; $('[data-act=redo]').disabled = hpos >= hist.length - 1; }
@@ -2058,11 +2058,43 @@ var MESImg = (function () {
 		var o = newObj('mesh', { ref: ref, tris: pos.length / 9 }, ext); placeNew([o]); frame([o]); return o;
 	}
 	function baseName(n) { return L.safeName(String(n || '').replace(/\.[^.]+$/, ''), 'model'); }
-	function saveProject() {
+	function projectJSON() {
 		var meshesB64 = {}, refs = usedRefs(); for (var r in refs) if (refs[r]) meshesB64[r] = L.f32ToB64(refs[r]);
-		var data = { app: 'mes-3d-studio', v: 1, name: S.name, saved: new Date().toISOString(), plate: ST.plate, objs: S.objs, meshes: meshesB64 };
-		download(new Blob([JSON.stringify(data)], { type: 'application/json' }), L.safeName(S.name, 'model') + '.mes3d');
+		return JSON.stringify({ app: 'mes-3d-studio', v: 1, name: S.name, saved: new Date().toISOString(), plate: ST.plate, objs: S.objs, meshes: meshesB64 });
+	}
+	function saveProject() {
+		if (cloud && cloud.save(proj)) return;
+		download(new Blob([projectJSON()], { type: 'application/json' }), L.safeName(S.name, 'model') + '.mes3d');
 		toast('Saved ' + L.safeName(S.name, 'model') + '.mes3d to your downloads.');
+	}
+	// ---------- ☁ Cloud: keep the project (.mes3d) saved to a synced folder, Dropbox, OneDrive or Google Drive (main_js/cloud-files.js).
+	// proj = the cloud's handle for "the project that is open": a new object whenever a project is opened or started, so a link never
+	// follows into another project. Attached once the last session is restored, so a return from signing in opens its kept project over it.
+	var proj = {}, cloud = null;
+	function cloudTick() { proj.rev = (proj.rev || 0) + 1; if (cloud && cloud.linked(proj)) cloud.changed(proj); }
+	function cloudInit() {
+		if (cloud || !window.MESCloud) return;
+		cloud = window.MESCloud.attach({
+			app: '3d-studio', folder: 'MES Apps/3D Studio', what: 'project', title: '3D Studio', defExt: 'mes3d', btnClass: 'td-b', before: $('[data-act=export]'), toast: function (m) { toast(m); },
+			exts: ['.mes3d'],
+			accept: [{ description: '3D Studio project', accept: { 'application/json': ['.mes3d'] } }],
+			doc: function () { return proj; },
+			name: function () { return L.safeName(S.name, 'model') + '.mes3d'; },
+			writeName: function (n) { return /\.mes3d$/i.test(n || '') ? n : String(n || 'model').replace(/\.[A-Za-z0-9]{1,8}$/, '') + '.mes3d'; },
+			bytes: function (d) { if (d !== proj) return Promise.reject(new Error('That project was closed.')); d.tried = d.rev || 0; return Promise.resolve(new TextEncoder().encode(projectJSON())); },
+			open: function (u8, fname) {
+				var d = JSON.parse(new TextDecoder().decode(u8));
+				if (!L.validProject(d)) throw new Error('That file is not a 3D Studio project (or it is damaged).');
+				MESH = {}; for (var r in d.meshes || {}) MESH[r] = L.b64ToF32(d.meshes[r]);
+				S.objs = d.objs; S.name = d.name || baseName(fname); S.sel = []; geoCache.clear();
+				walk(S.objs, function (o) { o.id = o.id || uid(); o.p = o.p || {}; if (o.type === 'text') needFont(o.p.font || 'helvetiker_bold'); });
+				commit('Open'); frame(); proj = { rev: 0, saved: 0 }; return proj;
+			},
+			dirty: function (d) { return (d.rev || 0) !== (d.saved || 0); },
+			markDirty: function (d) { d.rev = (d.rev || 0) + 1; },
+			saved: function (d) { d.saved = d.tried != null ? d.tried : d.rev || 0; },
+			replaces: true
+		});
 	}
 	function openFiles(files) {
 		Array.prototype.slice.call(files || []).forEach(function (f) {
@@ -2079,9 +2111,9 @@ var MESImg = (function () {
 		if (!L.validProject(d)) return toast('That file is not a 3D Studio project (or it is damaged).');
 		var go = function () {
 			MESH = {}; for (var r in d.meshes || {}) MESH[r] = L.b64ToF32(d.meshes[r]);
-			S.objs = d.objs; S.name = d.name || baseName(fname); S.sel = []; geoCache.clear();
+			S.objs = d.objs; S.name = d.name || baseName(fname); S.sel = []; geoCache.clear(); proj = {};
 			walk(S.objs, function (o) { o.id = o.id || uid(); o.p = o.p || {}; });
-			commit('Open'); frame();
+			commit('Open'); frame(); if (cloud) cloud.refresh();
 			toast('Opened ' + fname + '.');
 		};
 		if (S.objs.length) { var dd = dialog('<h3>Open ' + esc(fname) + '</h3><p>Replace what you have now, or add the project\'s parts to it?</p><div class="td-btns td-btns--end"><button type="button" class="td-b" data-o="add">Add to this model</button><button type="button" class="td-b td-b--pri" data-o="rep">Replace</button></div>');
@@ -2192,7 +2224,7 @@ var MESImg = (function () {
 		hide.forEach(function (h, i) { h.visible = vis[i]; }); dirty = true;
 	}
 	function newProject() {
-		var go = function () { S.objs = []; S.sel = []; S.name = 'My model'; MESH = {}; geoCache.clear(); commit('New'); setView('iso'); };
+		var go = function () { S.objs = []; S.sel = []; S.name = 'My model'; MESH = {}; geoCache.clear(); proj = {}; commit('New'); setView('iso'); if (cloud) cloud.refresh(); };
 		if (!S.objs.length) return go();
 		var d = dialog('<h3>Start a new project?</h3><p>The current model will be cleared (you can still press Undo).</p><div class="td-btns td-btns--end"><button type="button" class="td-b" data-close>Cancel</button><button type="button" class="td-b td-b--pri" id="td-newok">Start new</button></div>');
 		$('#td-newok').onclick = function () { closeDlg(); go(); };
@@ -2335,7 +2367,7 @@ var MESImg = (function () {
 			return loadAuto();
 		}).then(function (a) {
 			if (a && a.objs) { try { var objs = JSON.parse(a.objs); if (objs.length) { MESH = a.meshes || {}; S.objs = objs; S.name = a.name || S.name; toast('Welcome back: your last project is restored.', ['Start new', function () { S.objs = []; S.sel = []; S.name = 'My model'; commit('New'); }]); } } catch (e) {} }
-			hist = [snapshot()]; hpos = 0; sync(); undoBtns(); frame();
+			hist = [snapshot()]; hpos = 0; sync(); undoBtns(); frame(); cloudInit();
 			walk(S.objs, function (o) { if (o.type === 'text') needFont(o.p.font || 'helvetiker_bold'); });
 			needFont('helvetiker_bold');
 		}).catch(function (e) {

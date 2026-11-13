@@ -447,7 +447,27 @@
 	$("tx-share").onclick = function () { if (!D || !D.src) return; var u = location.origin + "/text?url=" + encodeURIComponent(D.src); navigator.clipboard.writeText(u).then(function () { toast("Link copied: it opens this file here"); }, function () { prompt("Copy this link:", u); }); };
 	$("tx-print").onclick = function () { if (D && D.editing) finishEdit(); window.print(); };
 	$("tx-close").onclick = function () { if (!confirmDrop()) return; D = null; document.title = "MES Text Viewer"; render(); };
-	window.addEventListener("beforeunload", function (e) { if (D && (D.dirty || (D.editing && editor.value !== D.text))) { e.preventDefault(); e.returnValue = ""; } });
+	window.addEventListener("beforeunload", function (e) { if (!window.__mesCloudLeaving && D && (D.dirty || (D.editing && editor.value !== D.text))) { e.preventDefault(); e.returnValue = ""; } });
+
+	// ---------- ☁ Cloud: keep the file saved to a synced folder, Dropbox, OneDrive or Google Drive (main_js/cloud-files.js) ----------
+	function syncEdit() {   // typed text counts at once (not only when "Done editing" is pressed), so auto-save sees it
+		if (!D || !D.editing || editor.value === D.text) return;
+		D.text = editor.value; D.dirty = true; D.bytes = null; D.size = new Blob([D.text]).size; D.enc = "utf-8"; $("tx-name").textContent = D.name + " •";
+	}
+	var cloud = window.MESCloud ? window.MESCloud.attach({
+		app: "text", folder: "MES Apps/Text", what: "text file", title: "Text", defExt: "txt", btnClass: "tx-btn", before: $("tx-read"), toast: toast,
+		exts: [".txt", ".md", ".markdown", ".rtf", ".csv", ".tsv", ".json", ".html", ".htm", ".xml", ".log", ".srt", ".vtt", ".ini", ".cfg", ".conf", ".yaml", ".yml", ".toml", ".js", ".mjs", ".ts", ".css", ".py", ".sh", ".bat", ".ps1", ".c", ".h", ".cpp", ".java", ".cs", ".go", ".rs", ".php", ".rb", ".sql", ".tex"],
+		accept: [{ description: "Text file", accept: { "text/plain": [".txt", ".md", ".rtf", ".csv", ".tsv", ".json", ".html", ".log", ".xml", ".srt"] } }],
+		doc: function () { return D; },
+		name: function (d) { return d.name; },
+		bytes: function (d) { if (d !== D) return Promise.reject(new Error("That file was closed.")); syncEdit(); return Promise.resolve(!d.dirty && d.bytes ? d.bytes : new TextEncoder().encode(d.text)); },
+		open: function (u8, name) { openBytes(u8, name); return D; },
+		dirty: function (d) { if (d === D) syncEdit(); return !!d.dirty; },
+		markDirty: function (d) { d.dirty = true; render(); },
+		saved: function (d, name) { if (name && name !== d.name) { d.name = name; document.title = d.name + " · MES Text Viewer"; } d.dirty = false; if (d === D) $("tx-name").textContent = d.name; },
+		replaces: true
+	}) : null;
+	editor.addEventListener("input", function () { if (!D || !cloud || !cloud.linked(D)) return; syncEdit(); cloud.changed(D); });
 
 	// ---------- read aloud: the MES Read Aloud engine (main_js/site-read-aloud.js) reads the reading or code view ----------
 	function activeRoot() { return !D ? null : D.view === "code" ? codeV : readV; }
@@ -480,7 +500,7 @@
 	document.addEventListener("keydown", function (e) {
 		var t = e.target, typing = t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable), mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
 		if (mod && k === "o") { e.preventDefault(); $("tx-file").click(); return; }
-		if (mod && k === "s" && D) { e.preventDefault(); download(false); return; }
+		if (mod && k === "s" && D) { e.preventDefault(); if (!(cloud && cloud.save(D))) download(false); return; }
 		if (e.altKey && e.shiftKey && e.code === "KeyR" && D) { e.preventDefault(); readAloud(); return; }
 		if (typing || mod || e.altKey) return;
 		if (e.key === "Escape" && root.classList.contains("tx-fill")) { setFill(false); return; }

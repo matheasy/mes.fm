@@ -337,7 +337,7 @@
 	PD.dialog = function (html, onClose) { var m = $("pd-modal"), d = $("pd-dlg"); d.innerHTML = html; m.hidden = false; PD._onClose = onClose || null; };
 	PD.closeDialog = function () { var m = $("pd-modal"); m.hidden = true; $("pd-dlg").innerHTML = ""; if (PD._onClose) { var f = PD._onClose; PD._onClose = null; f(); } };
 	$("pd-modal").addEventListener("mousedown", function (e) { if (e.target === this && !PD.noBackdropClose) PD.closeDialog(); });
-	window.addEventListener("beforeunload", function (e) { if (PD.dirty) { e.preventDefault(); e.returnValue = ""; } });
+	window.addEventListener("beforeunload", function (e) { if (!window.__mesCloudLeaving && PD.dirty) { e.preventDefault(); e.returnValue = ""; } });
 })();
 
 /* MES PDF Editor: tools, option bar, pointer handling, text editing, page list. Uses PD (core.js). */

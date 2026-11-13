@@ -782,7 +782,7 @@
 		if (!on) $("dx-zoom").textContent = "100%";
 		fillPane(); status();
 	}
-	window.addEventListener("beforeunload", function (e) { if (docs.some(function (d) { return d.dirty; })) { e.preventDefault(); e.returnValue = ""; } });
+	window.addEventListener("beforeunload", function (e) { if (!window.__mesCloudLeaving && docs.some(function (d) { return d.dirty; })) { e.preventDefault(); e.returnValue = ""; } });
 
 	setSide(S.side); setTab(S.tab); refreshUi(); showRecent();
 	window.MESDocxApp = { docs: docs, open: openBytes, build: buildEdited, current: function () { return cur; }, setMode: setMode };     // for testing in the console
