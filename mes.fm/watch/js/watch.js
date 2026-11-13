@@ -1196,7 +1196,7 @@
 	'use strict';
 	var W = window.MESWatch, $ = function (id) { return document.getElementById(id); };
 	var KEY = 'mes-watch:v1', HLS_URL = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js';
-	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, cc: false, keepTrack: false, bk: {}, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 } };
+	var S = { q: [], i: -1, saved: [], hist: [], lists: [], chans: [], shorts: false, rate: 1, tab: 'q', auto: true, priv: true, cc: false, keepTrack: false, bk: {}, histOn: true, cm: false, pz: true, zctl: true, pzHint: 0, zoom: { k: 1, x: 0, y: 0 }, spdL: false };
 	var openList = null;
 	try { var raw = JSON.parse(localStorage.getItem(KEY) || 'null'); if (raw) for (var k in S) if (raw[k] != null) S[k] = raw[k]; } catch (e) {}
 	if (!S.bk || typeof S.bk !== 'object') S.bk = {};
@@ -1415,7 +1415,7 @@
 		['wt-slower', 'wt-faster', 'wt-sv'].forEach(function (id) { $(id).disabled = !ok; });
 		$('wt-speed').title = ok ? 'Speed: S slower, D faster, R normal' : 'This site\'s own player has its own speed setting';
 		var sp = document.querySelector('#wt-stage .wt-spd');
-		if (sp) { sp.hidden = !ok || spdGone; sp.querySelector('.wt-spdv').textContent = (+shown.toFixed(2)) + '×'; }
+		if (sp) { sp.hidden = !ok || spdGone; sp.classList.toggle('wt-spdL', spdLeft()); sp.querySelector('.wt-spdv').textContent = (+shown.toFixed(2)) + '×'; }
 		paintCC();
 	}
 
@@ -1776,6 +1776,8 @@
 	}
 	/* speed tab on the picture's edge (opposite the panel's › tab) in Fill window / full screen: +, −, 2×, 1×, ✕ hides it */
 	var spdGone = false;
+	// with the side panel (Fill window) the tab sits opposite the panel; on the normal page it is S.spdL's side
+	function spdLeft() { var pl = $('wt-player'); return pl && pl.classList.contains('mes-pside') ? pl.classList.contains('mes-pright') : !!S.spdL; }
 	function spdTab(st) {
 		var t = document.createElement('div'); t.className = 'wt-spd'; t.setAttribute('role', 'toolbar'); t.setAttribute('aria-label', 'Speed');
 		t.innerHTML = '<button type="button" data-sp="up" title="Faster (D)" aria-label="Faster">+</button>' +
@@ -1783,11 +1785,17 @@
 			'<button type="button" data-sp="down" title="Slower (S)" aria-label="Slower">−</button>' +
 			'<button type="button" data-sp="2" title="Speed 2×">2×</button>' +
 			'<button type="button" data-sp="1" title="Normal speed (R)">1×</button>' +
+			'<button type="button" data-sp="flip" class="wt-spdf" title="Switch sides (in Fill window the panel moves to the other side too)" aria-label="Switch sides">⇄</button>' +
 			'<button type="button" data-sp="x" class="wt-spdx" title="Hide these buttons (tap the edge to bring them back)" aria-label="Hide the speed buttons">✕</button>';
 		['pointerdown', 'dblclick', 'wheel', 'touchstart'].forEach(function (ev) { t.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
 		t.addEventListener('click', function (e) {
 			var b = e.target.closest('[data-sp]'); if (!b) return; var k = b.dataset.sp;
 			if (k === 'x') { spdGone = true; syncSpeed(); return; }
+			if (k === 'flip') {
+				var pl = $('wt-player'), q = pl.__mesSide;
+				if (pl.classList.contains('mes-pside') && q && q.flip) q.flip.click(); else { S.spdL = !S.spdL; save(); }
+				syncSpeed(); return;
+			}
 			if (!cur || !W.canSpeed(cur)) return;
 			if (k === 'up') step(1); else if (k === 'down') step(-1); else setRate(+k);
 		});
@@ -2020,11 +2028,11 @@
 		// phones with a camera notch: without viewport-fit=cover the full-screen picture is pushed off centre by the notch's width
 		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
 		$('wt-player').addEventListener('pointerdown', function (e) {
-			var pl = $('wt-player'); if (!spdGone || !pl.classList.contains('mes-pfill')) return;
-			var r = $('wt-stage').getBoundingClientRect(), d = pl.classList.contains('mes-pright') ? e.clientX - r.left : r.right - e.clientX;
+			var pl = $('wt-player'); if (!spdGone) return;
+			var r = $('wt-stage').getBoundingClientRect(), d = spdLeft() ? e.clientX - r.left : r.right - e.clientX;
 			if (d >= 0 && d < 36 && e.clientY >= r.top && e.clientY <= r.bottom) { spdGone = false; syncSpeed(); }
 		}, true);
-		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { var pl = $('wt-player'); if (!pl.classList.contains('mes-pfill') && spdGone) { spdGone = false; syncSpeed(); } if (pl.classList.contains('wt-zprev') && (!pl.classList.contains('mes-pside') || pl.classList.contains('mes-pmini'))) pl.classList.remove('wt-zprev'); else if (zMode && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini')) pl.classList.add('wt-zprev'); zprevH(); setTimeout(applyZoom, 60); } });
+		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { var pl = $('wt-player'); if (!pl.classList.contains('mes-pfill') && spdGone) spdGone = false; syncSpeed(); if (pl.classList.contains('wt-zprev') && (!pl.classList.contains('mes-pside') || pl.classList.contains('mes-pmini'))) pl.classList.remove('wt-zprev'); else if (zMode && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini')) pl.classList.add('wt-zprev'); zprevH(); setTimeout(applyZoom, 60); } });
 		zoomLayer();
 		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q'); paintCmBtn();
 		if (/[?&]debug=1/.test(location.search)) window.MESWatchDebug = { S: S, play: play, go: go, position: position, cur: function () { return cur; } };

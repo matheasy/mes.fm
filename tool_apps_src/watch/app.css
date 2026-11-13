@@ -255,17 +255,21 @@ html body.dark-mode #wt .wt-hwarn.is-open {color:#fdba74;}
 .wt-cmr .wt-cml {gap:0.6em;}
 .wt-cmr .wt-cmrb {margin-top:0.4em;}
 
-/* speed tab on the picture's edge in Fill window / full screen (looks like the panel's › tab, on the other side) */
+/* speed tab on the picture's edge (opposite the panel's › tab in Fill window / full screen; ⇄ switches sides) */
 .wt-spd {display:none;}
-.wt-player.mes-pfill .wt-spd:not([hidden]) {display:flex;flex-direction:column;align-items:stretch;gap:4px;position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:6;opacity:.55;transition:opacity .2s;}
-.wt-player.mes-pfill.mes-pright .wt-spd {right:auto;left:0;}
-.wt-player.mes-pfill .wt-spd:hover, .wt-player.mes-pfill .wt-spd:focus-within {opacity:1;}
+.wt-spd:not([hidden]) {display:flex;flex-direction:column;align-items:stretch;gap:4px;position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:6;opacity:.55;transition:opacity .2s;}
+.wt-spd.wt-spdL {right:auto;left:0;}
+.wt-spd:hover, .wt-spd:focus-within {opacity:1;}
 #wt .wt-spd button, #wt .wt-spd .wt-spdv {font:inherit;font-size:15px;line-height:1;width:40px;min-height:34px;padding:0;box-sizing:border-box;border:1px solid #b9c2cc;border-right:0;border-radius:9px 0 0 9px;background:rgba(255,255,255,.92);color:#1f2430;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-#wt .wt-spd .wt-spdv {font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;cursor:default;min-height:24px;}
-#wt .wt-spd .wt-spdx {font-size:13px;min-height:26px;}
-#wt .wt-player .wt-spd .wt-spdv, html body.dark-mode #wt .wt-player .wt-spd .wt-spdv {background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:6px 0 0 6px;}
-#wt .wt-player.mes-pright .wt-spd .wt-spdv {border-radius:0 6px 6px 0;border:0;}
-#wt .wt-player.mes-pright .wt-spd button, #wt .wt-player.mes-pright .wt-spd .wt-spdv {border-radius:0 9px 9px 0;border-right:1px solid #b9c2cc;border-left:0;}
-html body.dark-mode #wt .wt-spd button, html body.dark-mode #wt .wt-spd .wt-spdv {background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555;}
-@media (max-height:420px) {#wt .wt-spd button {min-height:30px;} #wt .wt-spd .wt-spdx {min-height:24px;}}
-@media (hover: hover) and (pointer: fine) {.wt-player.mes-pfill:not(.mes-pright) .wt-stage:has(.wt-spd:not([hidden])) .wt-zmini {right:50px;}}
+#wt .wt-spd.wt-spdL button {border-radius:0 9px 9px 0;border-right:1px solid #b9c2cc;border-left:0;}
+html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555;}
+#wt .wt-spd .wt-spdv, html body.dark-mode #wt .wt-spd .wt-spdv {font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;cursor:default;min-height:24px;background:rgba(0,0,0,.55);color:#fff;border:0;border-radius:6px 0 0 6px;}
+#wt .wt-spd.wt-spdL .wt-spdv {border-radius:0 6px 6px 0;}
+#wt .wt-spd .wt-spdx, #wt .wt-spd .wt-spdf {font-size:13px;min-height:26px;}
+/* the normal page's box is short (a phone held upright: ~210 px), so the tab is smaller there */
+#wt .wt-player:not(.mes-pfill) .wt-spd {gap:2px;}
+#wt .wt-player:not(.mes-pfill) .wt-spd button {width:34px;min-height:26px;font-size:14px;}
+#wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdv {display:none;}   /* the speed is shown in the bar under the box */
+#wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdx, #wt .wt-player:not(.mes-pfill) .wt-spd .wt-spdf {min-height:22px;font-size:12px;}
+@media (max-height:420px) {#wt .wt-player.mes-pfill .wt-spd button {min-height:30px;} #wt .wt-player.mes-pfill .wt-spd .wt-spdx, #wt .wt-player.mes-pfill .wt-spd .wt-spdf {min-height:24px;}}
+@media (hover: hover) and (pointer: fine) {.wt-stage:has(.wt-spd:not([hidden]):not(.wt-spdL)) .wt-zmini {right:50px;}}
