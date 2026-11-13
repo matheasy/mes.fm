@@ -320,3 +320,9 @@
 	#bl .bl-ov.is-hide .bl-opow, #bl .bl-ov.is-hide .bl-ohit, #bl .bl-ov.is-hide .bl-ospin, #bl .bl-ov.is-hide .bl-ojog, #bl .bl-ov.is-hide .bl-ospinpop {display:none !important;}
 	#bl .bl-otop .bl-ovis.is-on {border-color:#ffd54f;color:#ffd54f;}
 	#bl .bl-otop .bl-ozoom {font-size:0.85em;padding:0 0.5em;border-color:#74c0fc;color:#d0ebff;}
+	/* left-handed layout (⇄ button, L): HIT + power bar on the left (clear of the side-panel tab), spin ball on the right */
+	#bl .bl-ov.is-left .bl-opow {right:auto;left:46px;}
+	#bl .bl-ov.is-left .bl-ohit {right:auto;left:10px;}
+	#bl .bl-ov.is-left .bl-ospin {left:auto;right:10px;}
+	#bl .bl-ov.is-left .bl-ojog {left:100px;right:76px;}
+	#bl .bl-otop .bl-oside {font-size:1.05em;}

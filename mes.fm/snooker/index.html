@@ -627,6 +627,12 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#bl .bl-ov.is-hide .bl-opow, #bl .bl-ov.is-hide .bl-ohit, #bl .bl-ov.is-hide .bl-ospin, #bl .bl-ov.is-hide .bl-ojog, #bl .bl-ov.is-hide .bl-ospinpop {display:none !important;}
 	#bl .bl-otop .bl-ovis.is-on {border-color:#ffd54f;color:#ffd54f;}
 	#bl .bl-otop .bl-ozoom {font-size:0.85em;padding:0 0.5em;border-color:#74c0fc;color:#d0ebff;}
+	/* left-handed layout (⇄ button, L): HIT + power bar on the left (clear of the side-panel tab), spin ball on the right */
+	#bl .bl-ov.is-left .bl-opow {right:auto;left:46px;}
+	#bl .bl-ov.is-left .bl-ohit {right:auto;left:10px;}
+	#bl .bl-ov.is-left .bl-ospin {left:auto;right:10px;}
+	#bl .bl-ov.is-left .bl-ojog {left:100px;right:76px;}
+	#bl .bl-otop .bl-oside {font-size:1.05em;}
 
 
 	@media print {
@@ -1028,6 +1034,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<div class="tu-seg" id="bl-speed" role="group" aria-labelledby="bl-speed-l"><button type="button" data-v="0.5" aria-pressed="false">Slow</button><button type="button" data-v="1" aria-pressed="true">Normal</button><button type="button" data-v="2" aria-pressed="false">Fast</button></div></div>
 						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-ovm-l">Buttons on the table</span>
 							<div class="tu-seg" id="bl-ovm" role="group" aria-labelledby="bl-ovm-l" title="Power bar, HIT and spin on the table itself. Auto = on phones and tablets, and in Fill window / full screen."><button type="button" data-v="auto" aria-pressed="true">Auto</button><button type="button" data-v="always" aria-pressed="false">Always</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
+						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-ovl-l">HIT and power bar</span>
+							<div class="tu-seg" id="bl-ovl" role="group" aria-labelledby="bl-ovl-l" title="Which side of the table the HIT button and power bar sit on (the spin ball goes to the other side). Also the ⇄ button on the table."><button type="button" data-v="r" aria-pressed="true">Right</button><button type="button" data-v="l" aria-pressed="false">Left</button></div></div>
 						<div class="tu-field bl-f-seg"><span class="tu-label" id="bl-cloth-l">Cloth</span>
 							<div class="tu-seg" id="bl-cloth" role="group" aria-labelledby="bl-cloth-l"><button type="button" data-v="green" aria-pressed="true">Green</button><button type="button" data-v="blue" aria-pressed="false">Blue</button><button type="button" data-v="red" aria-pressed="false">Red</button><button type="button" data-v="grey" aria-pressed="false">Grey</button></div></div>
 						<div class="bl-checks">
@@ -1230,7 +1238,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:3
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=27" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=28" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
