@@ -905,7 +905,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section class="cg-pane" data-pane="shor" hidden>
 			<div class="tu-card">
 				<h2 class="cg-h">How a quantum computer factors a number</h2>
-				<p class="cg-note">To factor N, pick a number a and find the <b>period</b> r of aˣ mod N (how often it repeats). The quantum computer finds r by putting every x in superposition at once and using the quantum Fourier transform; then plain maths turns r into the factors. This is simulated exactly here for N up to 255.</p>
+				<p class="cg-note">To factor N, pick a number a and find the <b>period</b> r of aˣ mod N (how often it repeats). The quantum computer finds r by putting every x in superposition at once and using the quantum Fourier transform; then plain maths turns r into the factors. This is simulated exactly here for N up to 255. To see the actual gates, open the <a href="/quantum-computing?ex=shor">Shor circuit in the Quantum Computer Simulator</a>.</p>
 				<div class="cg-ctl">
 					<label class="cg-inl">N <input id="qc-N" class="tu-input cg-small" type="text" inputmode="numeric" value="15"></label>
 					<label class="cg-inl">a <input id="qc-a" class="tu-input cg-small" type="text" inputmode="numeric" value="7"></label>
@@ -936,7 +936,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section class="cg-pane" data-pane="grover" hidden>
 			<div class="tu-card">
 				<h2 class="cg-h">Find one item in an unsorted list, √N times faster</h2>
-				<p class="cg-note">All items start equally likely. Each Grover step flips the sign of the answer (the oracle), then reflects every amplitude about the average. The answer grows, the rest shrink. Stop at the right moment and measuring gives the answer almost surely; go too far and it shrinks again.</p>
+				<p class="cg-note">All items start equally likely. Each Grover step flips the sign of the answer (the oracle), then reflects every amplitude about the average. The answer grows, the rest shrink. Stop at the right moment and measuring gives the answer almost surely; go too far and it shrinks again. The same algorithm as a real gate circuit: <a href="/quantum-computing?ex=grover3">Grover search on 3 qubits</a>.</p>
 				<div class="cg-ctl">
 					<label class="cg-inl">Qubits <input type="range" id="qc-gq" min="2" max="8" value="5"> <b id="qc-gqv">5</b></label>
 					<label class="cg-inl">The answer is item <input id="qc-gm" class="tu-input cg-small" type="text" inputmode="numeric" value="19"></label>
@@ -1033,7 +1033,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dt>How do I know if a website is quantum-safe?</dt><dd>Use the <a href="/quantum-safe-check">Quantum-Safe Website Checker</a>: it tests whether the site's HTTPS accepts the post-quantum key exchange X25519MLKEM768.</dd>
 				<dt>Does quantum key distribution make encryption unbreakable?</dt><dd>In theory the key exchange is protected by physics, but real systems have been attacked through imperfect hardware, need a trusted link to authenticate who you are talking to, and cover limited distances. Security agencies such as the NSA and the UK NCSC recommend post-quantum cryptography instead for most uses.</dd>
 			</dl>
-			<p>Related: <a href="/cryptography">Cryptography Lab</a> · <a href="/quantum-safe-check">Quantum-Safe Website Checker</a> · <a href="/quantum">MES Quantum Lab</a> · <a href="/quantum-entanglement">Quantum Entanglement</a> · <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a></p>
+			<p>Related: <a href="/quantum-computing">Quantum Computer Simulator</a> (build circuits, Grover, Shor) · <a href="/cryptography">Cryptography Lab</a> · <a href="/quantum-safe-check">Quantum-Safe Website Checker</a> · <a href="/quantum">MES Quantum Lab</a> · <a href="/quantum-entanglement">Quantum Entanglement</a> · <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a></p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -1095,7 +1095,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/cryptography/js/cryptography.js?v=2" defer></script>
+	<script src="/cryptography/js/cryptography.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

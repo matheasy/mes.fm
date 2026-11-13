@@ -270,6 +270,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("gnm", "German New Medicine"),
     ("negative-index", "Light & Metamaterials Lab"),
     ("hologram", "Hologram Simulator"),
+    ("quantum-computing", "Quantum Computer Simulator"),   # also built by build_tool_apps.py
     ("maps", "Maps"),
     ("heart-simulator", "Heart Simulator"),
     ("quantum", "Quantum Lab"),   # MES Quantum Lab (one source, six pages; build_tool_apps.py _qm)

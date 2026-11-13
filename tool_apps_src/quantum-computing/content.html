@@ -1,0 +1,131 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu qx" id="qx">
+		<section class="qx-view" id="qx-view" aria-label="Quantum circuit simulator">
+			<div class="qx-bar" id="qx-bar">
+				<div class="qx-qn" role="group" aria-label="Number of qubits">
+					<button type="button" id="qx-qminus" aria-label="One qubit fewer">−</button>
+					<span id="qx-qnv">2 qubits</span>
+					<button type="button" id="qx-qplus" aria-label="One qubit more">+</button>
+				</div>
+				<button type="button" class="qx-b" id="qx-undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+				<button type="button" class="qx-b" id="qx-redo" title="Redo (Ctrl+Y)">↷ Redo</button>
+				<button type="button" class="qx-b" id="qx-clear">Clear</button>
+				<button type="button" class="qx-b qx-b--pri" id="qx-share">🔗 Share link</button>
+				<span class="qx-vbtns" id="qx-vbtns"></span>
+			</div>
+			<div class="qx-pal" id="qx-pal" role="toolbar" aria-label="Gates: drag one onto the circuit, or click it and then click a spot on a wire"></div>
+			<p class="qx-tip" id="qx-tip">Drag a gate onto a wire, or click a gate and then click a spot. Click a gate in the circuit to change or delete it; drag it off the circuit to remove it.</p>
+			<div class="qx-circ" id="qx-circ"><div class="qx-grid" id="qx-grid"></div></div>
+			<div class="qx-play" role="group" aria-label="Step through the circuit">
+				<button type="button" id="qx-first" title="Back to the start (Home)" aria-label="Back to the start">⏮</button>
+				<button type="button" id="qx-prev" title="One step back (←)" aria-label="One step back">◀</button>
+				<button type="button" id="qx-playb" class="qx-playb" title="Play the circuit step by step" aria-label="Play">▶ Play</button>
+				<button type="button" id="qx-next" title="One step forward (→)" aria-label="One step forward">▶</button>
+				<button type="button" id="qx-last" title="Whole circuit (End)" aria-label="Whole circuit">⏭</button>
+				<input type="range" id="qx-step" min="0" max="0" value="0" aria-label="Step">
+				<span class="qx-stepv" id="qx-stepv"></span>
+			</div>
+			<div class="qx-edit" id="qx-edit" hidden></div>
+			<p class="qx-mid" id="qx-mid" hidden></p>
+			<div class="qx-out">
+				<div class="qx-card qx-card--state">
+					<div class="qx-ch">
+						<h3>State vector</h3>
+						<div class="qx-seg" id="qx-mode" role="group" aria-label="Show">
+							<button type="button" data-m="amp" aria-pressed="true">Amplitudes</button>
+							<button type="button" data-m="prob" aria-pressed="false">Probabilities</button>
+						</div>
+						<label class="qx-ck"><input type="checkbox" id="qx-hz"> Hide zeros</label>
+					</div>
+					<div class="qx-cvw"><canvas id="qx-sv" role="img" aria-label="Bar chart of the amplitudes of every basis state"></canvas><div class="qx-tt" id="qx-tt" hidden></div></div>
+					<div class="qx-leg" id="qx-leg"></div>
+					<details class="qx-tbl"><summary>Show as a table</summary><div id="qx-tbl"></div></details>
+				</div>
+				<div class="qx-card qx-card--bloch">
+					<div class="qx-ch"><h3>Bloch sphere</h3><div class="qx-seg qx-seg--q" id="qx-bq" role="group" aria-label="Qubit"></div></div>
+					<div class="qx-cvw"><canvas id="qx-bl" tabindex="0" role="img" aria-label="Bloch sphere of the selected qubit. Drag to turn it."></canvas></div>
+					<div class="qx-bv" id="qx-bv"></div>
+				</div>
+				<div class="qx-card qx-card--shots">
+					<div class="qx-ch"><h3>Measurement shots</h3>
+						<label class="qx-ck">Shots <select id="qx-sn"><option>1</option><option>10</option><option>100</option><option selected>1024</option><option>8192</option></select></label>
+						<button type="button" class="qx-b qx-b--pri" id="qx-run">Run shots</button>
+					</div>
+					<div class="qx-cvw"><canvas id="qx-hist" role="img" aria-label="Histogram of measurement results"></canvas></div>
+					<p class="qx-sinfo" id="qx-sinfo"></p>
+				</div>
+			</div>
+		</section>
+
+		<div class="tu-card qx-ex">
+			<h3>Example circuits</h3>
+			<div class="qx-chips" id="qx-pre" role="group" aria-label="Example circuits"></div>
+			<p class="qx-note" id="qx-note"></p>
+		</div>
+
+		<div class="tu-card qx-qasm">
+			<h3>OpenQASM 2.0</h3>
+			<p class="tu-note">Export the circuit to run it in Qiskit, Cirq or on IBM Quantum, or paste OpenQASM 2 code to load it here (qelib1 gates: h, x, y, z, s, sdg, t, tdg, sx, rx, ry, rz, u1/p, u2, u3, cx, cy, cz, ch, crx, cry, crz, cu1, ccx, swap, cswap, measure).</p>
+			<textarea id="qx-qtxt" spellcheck="false" rows="9" aria-label="OpenQASM code"></textarea>
+			<div class="qx-qbtns">
+				<button type="button" class="qx-b" id="qx-qexp">Export from circuit</button>
+				<button type="button" class="qx-b qx-b--pri" id="qx-qimp">Load into circuit</button>
+				<button type="button" class="qx-b" id="qx-qcopy">Copy</button>
+				<button type="button" class="qx-b" id="qx-qdl">Download .qasm</button>
+				<label class="qx-b qx-file">Open .qasm file<input type="file" id="qx-qfile" accept=".qasm,.txt,text/plain"></label>
+			</div>
+			<p class="qx-qerr" id="qx-qerr" role="alert"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>What is a quantum computer?</h2>
+			<p>An ordinary computer stores information in bits that are either 0 or 1. A <b>quantum computer</b> uses <b>qubits</b>. A qubit can be 0, 1, or a <b>superposition</b> of both: a pair of complex numbers, the amplitudes α and β, with <span class="mes-tex">\(|\alpha|^2 + |\beta|^2 = 1\)</span>. When you measure it you get 0 with probability <span class="mes-tex">\(|\alpha|^2\)</span> and 1 with probability <span class="mes-tex">\(|\beta|^2\)</span>, and the superposition is gone. Two qubits need four amplitudes, three need eight: <b>n qubits are described by 2ⁿ complex numbers</b>. That exponential growth is where the power of a quantum computer comes from, and it is also why this simulator stops at 10 qubits (1,024 amplitudes) and why simulating 50 or more qubits overwhelms the biggest supercomputers.</p>
+			<div class="qx-eq" role="math" aria-label="Key equations">
+				<div><span class="qx-eq__n">one qubit</span> <span class="qx-eq__f mes-tex">\(\displaystyle |\psi\rangle = \alpha|0\rangle + \beta|1\rangle = \cos\tfrac{\theta}{2}|0\rangle + e^{i\varphi}\sin\tfrac{\theta}{2}|1\rangle\)</span></div>
+				<div><span class="qx-eq__n">Hadamard</span> <span class="qx-eq__f mes-tex">\(\displaystyle H = \frac{1}{\sqrt2}\begin{pmatrix}1&amp;1\\1&amp;-1\end{pmatrix},\quad H|0\rangle = \frac{|0\rangle+|1\rangle}{\sqrt2}\)</span></div>
+				<div><span class="qx-eq__n">Bell state</span> <span class="qx-eq__f mes-tex">\(\displaystyle \mathrm{CNOT}\,(H\otimes I)\,|00\rangle = \frac{|00\rangle + |11\rangle}{\sqrt2}\)</span></div>
+				<div><span class="qx-eq__n">QFT</span> <span class="qx-eq__f mes-tex">\(\displaystyle |x\rangle \mapsto \frac{1}{\sqrt N}\sum_{y=0}^{N-1} e^{2\pi i\,xy/N}\,|y\rangle\)</span></div>
+				<div><span class="qx-eq__n">Grover rounds</span> <span class="qx-eq__f mes-tex">\(\displaystyle k \approx \frac{\pi}{4}\sqrt{N}\)</span></div>
+			</div>
+			<h3>How to use this quantum circuit simulator</h3>
+			<ul>
+				<li><b>Build a circuit:</b> drag gates from the palette onto the wires. Each wire is one qubit and starts in |0⟩; time runs from left to right. Two-qubit gates (CNOT, CZ, swap) land on the wire you drop them on and the one below; click the gate to move its control or target to any other wire.</li>
+				<li><b>Add a control:</b> drop the <b>●</b> on another wire in the same column as a gate to make it controlled: a controlled Rz, a controlled swap (Fredkin), a doubly controlled Z...</li>
+				<li><b>Read the state:</b> every basis state has a bar. Its height is the size of the amplitude, its colour the phase (red = 0°, yellow-green = 90°, cyan = 180°, purple = 270°). The numbers at the end of each wire give the chance that the qubit reads 1.</li>
+				<li><b>Step through:</b> use ◀ ▶ or the slider to see the state after each column, or press Play. The dashed line in the circuit shows where you are.</li>
+				<li><b>Bloch sphere:</b> pick a qubit to see its state as an arrow on the sphere: up = |0⟩, down = |1⟩, the equator = equal superpositions with different phases. Drag the sphere to turn it. A qubit that is entangled with others has no pure state of its own, so its arrow gets shorter; for a Bell pair it shrinks to the centre.</li>
+				<li><b>Measure:</b> the M gate marks qubits to read out. "Run shots" repeats the circuit many times and counts the answers, as a real quantum computer would: the bars approach the probabilities but never match them exactly. A measurement in the middle of a circuit collapses the state, so the shots are then simulated one by one.</li>
+				<li><b>Share and export:</b> "Share link" copies a link that holds the whole circuit. The OpenQASM box exports code for Qiskit, Cirq or IBM Quantum and loads code from them.</li>
+			</ul>
+			<h3>The example circuits</h3>
+			<ul>
+				<li><b>Bell state and GHZ:</b> entanglement. The qubits are random one by one but always agree with each other.</li>
+				<li><b>Teleportation:</b> moves the state of one qubit onto another using a shared Bell pair, without sending the qubit itself. The classical corrections are replaced by controlled gates (deferred measurement).</li>
+				<li><b>Superdense coding:</b> the reverse trick: two classical bits in one transmitted qubit.</li>
+				<li><b>Deutsch–Jozsa and Bernstein–Vazirani:</b> the first algorithms with a proven quantum advantage: one query to an oracle answers what a classical computer needs many queries for.</li>
+				<li><b>Grover search:</b> finds a marked item among N in about √N steps instead of N/2. That square-root speed-up is why 128-bit keys are considered weak against quantum computers while 256-bit keys are fine.</li>
+				<li><b>Quantum Fourier transform:</b> the building block of phase estimation and Shor's algorithm. The simulator's tests check it against the discrete Fourier transform for up to 5 qubits.</li>
+				<li><b>Shor's algorithm:</b> factors a number by finding the period of aˣ mod N. The demo finds the period 4 of 7ˣ mod 15 with 7 qubits; from it, gcd(7² − 1, 15) = 3 and gcd(7² + 1, 15) = 5. Breaking RSA-2048 this way would need thousands of error-corrected logical qubits, far beyond today's machines: see <a href="/quantum-cryptography?tab=shor">Quantum Cryptography</a>.</li>
+			</ul>
+			<h3>Questions people ask</h3>
+			<dl>
+				<dt>Is this a real quantum computer?</dt>
+				<dd>No. It is a <b>state-vector simulator</b>: your browser stores all 2ⁿ amplitudes and multiplies them by each gate's matrix, exactly and without noise. That is how quantum programs are tested before they run on real hardware. Real machines add noise, limited connections between qubits and errors that grow with circuit depth.</dd>
+				<dt>Why only 10 qubits?</dt>
+				<dd>Each extra qubit doubles the memory and the work. 10 qubits = 1,024 amplitudes, instant in a browser and still readable as bars. 30 qubits would need about 16 GB, 50 qubits about 16 petabytes.</dd>
+				<dt>Which qubit is which in |q₂q₁q₀⟩?</dt>
+				<dd>Qubit 0 is the rightmost (lowest) bit, the convention of Qiskit and IBM Quantum. So with three qubits, |100⟩ means q2 = 1 and the others 0, and it is basis state number 4.</dd>
+				<dt>What is the difference between amplitude and probability?</dt>
+				<dd>The amplitude is a complex number with a size and a phase; the probability is its size squared. Phases do not change the probabilities directly, but they decide how amplitudes add up or cancel when later gates mix them: that interference is what quantum algorithms use.</dd>
+				<dt>What does entangled mean on the Bloch sphere?</dt>
+				<dd>The Bloch sphere shows one qubit. If the qubits are entangled, no single-qubit state describes it, so the simulator shows its <i>reduced density matrix</i>: the arrow has length r &lt; 1 and the state is mixed. Length 0 means fully entangled: alone, it is a perfect coin.</dd>
+				<dt>What are S, T and the rotation gates?</dt>
+				<dd>S and T add a phase of 90° and 45° to |1⟩ (turns about the z axis). Rx, Ry and Rz turn the Bloch arrow by any angle about an axis; type the angle as pi/4, 3π/8 or 0.5 (radians). P(φ) adds the phase φ to |1⟩; controlled P is used in the QFT.</dd>
+				<dt>Does it work offline and is anything uploaded?</dt>
+				<dd>Everything runs on your device. The circuit is kept in your browser so it is still there next time; nothing is sent anywhere unless you share the link yourself.</dd>
+			</dl>
+			<p>More from MES: <a href="/quantum">MES Quantum Lab</a> (tunnelling, double slit, entanglement, the hydrogen atom) · <a href="/quantum-cryptography">Quantum Cryptography</a> (BB84, Shor, Grover, post-quantum keys) · <a href="/quantum-safe-check">Is a website quantum-safe?</a> · <a href="/cryptography">Cryptography Lab</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/primes">Prime Numbers</a> · <a href="/tools">All MES tools</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+		<script src="/main_js/panel-view.js?v=1" defer></script>
+	</div>

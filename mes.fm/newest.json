@@ -100,10 +100,10 @@
  ],
  "tools": [
   {
-   "href": "/quantum-cryptography",
-   "title": "Quantum Cryptography",
-   "icon": "/img/quantum-cryptography-logo.png",
-   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
+   "href": "/quantum-computing",
+   "title": "Quantum Computer Simulator",
+   "icon": "/img/quantum-computing-logo.png",
+   "desc": "Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.",
    "added": "2026-11-13",
    "kind": "tool"
   },
@@ -112,6 +112,14 @@
    "title": "Quantum-Safe Website Checker",
    "icon": "/img/quantum-safe-check-logo.png",
    "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
+  {
+   "href": "/quantum-cryptography",
+   "title": "Quantum Cryptography",
+   "icon": "/img/quantum-cryptography-logo.png",
+   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
    "added": "2026-11-13",
    "kind": "tool"
   },
@@ -186,22 +194,14 @@
    "desc": "Watch a wave packet tunnel through a barrier, build double-slit stripes one particle at a time, run a Bell test on entangled pairs, send atoms through Stern-Gerlach magnets and explore hydrogen orbitals.",
    "added": "2026-11-10",
    "kind": "tool"
-  },
-  {
-   "href": "/billiards",
-   "title": "Billiards: 8-Ball, 9-Ball & Snooker",
-   "icon": "/img/billiards-logo.png",
-   "desc": "Pool and snooker with real spin physics, against the computer, a friend or a Hive player, plus trick-shot challenges.",
-   "added": "2026-11-09",
-   "kind": "tool"
   }
  ],
  "latest": [
   {
-   "href": "/quantum-cryptography",
-   "title": "Quantum Cryptography",
-   "icon": "/img/quantum-cryptography-logo.png",
-   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
+   "href": "/quantum-computing",
+   "title": "Quantum Computer Simulator",
+   "icon": "/img/quantum-computing-logo.png",
+   "desc": "Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.",
    "added": "2026-11-13",
    "kind": "tool"
   },
@@ -210,6 +210,14 @@
    "title": "Quantum-Safe Website Checker",
    "icon": "/img/quantum-safe-check-logo.png",
    "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
+  {
+   "href": "/quantum-cryptography",
+   "title": "Quantum Cryptography",
+   "icon": "/img/quantum-cryptography-logo.png",
+   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
    "added": "2026-11-13",
    "kind": "tool"
   },
@@ -251,14 +259,6 @@
    "icon": "/img/chess-logo.png",
    "desc": "Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.",
    "added": "2026-11-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/bridge-builder",
-   "title": "Bridge Builder",
-   "icon": "/img/bridge-builder-logo.png",
-   "desc": "Design a truss, arch or cable bridge, check every member, auto-size it for the lowest cost, then drive trucks over it, blow wind and shake it with an earthquake.",
-   "added": "2026-11-11",
    "kind": "tool"
   }
  ]
