@@ -108,6 +108,24 @@
       }
     ]
   },
+  "https://mes.fm/hutchison-health-press-release-2026": {
+    "image": "https://mes.fm/hutchison-health-press-release-2026-pdf/preview.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "PDF",
+        "href": "https://mes.fm/hutchison-health-press-release-2026-pdf"
+      },
+      {
+        "label": "Google Drive",
+        "href": "https://drive.google.com/file/d/1wvzEOKPfKytPZ5fSbetNXaSnS-MIYYmu/"
+      },
+      {
+        "label": "Hutchison Effect",
+        "href": "https://mes.fm/hutchison"
+      }
+    ]
+  },
   "https://mes.fm/hutchison-health-sept5-2026": {
     "image": "https://mes.fm/hutchison-health-sept5-2026/img/hutchison-health-sept5-2026.jpg",
     "watchLinks": [],

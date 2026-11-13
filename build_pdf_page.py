@@ -6,7 +6,7 @@ Copies the PDF from ~/Downloads (or the page's own `src`, or --pdf) into mes.fm/
 Per-page options: `noindex`, `private` (also no ads / comments / rating row), `brand="911"` (a key of convert_mirror_pages.BRANDS without the slash: that hub's logo / title / tab instead of
 MES.fm), `src` (where the PDF comes from), `meta` (Title / Author / Subject / Keywords written into the copied PDF, with
 DisplayDocTitle, so a browser's PDF viewer shows a real title: needs pymupdf (`pip install pymupdf`) when the PDF is copied in;
-CHECK every hosted PDF's metadata before publishing), `og_abs` (absolute og:image URL), `sidebar=False`.
+CHECK every hosted PDF's metadata before publishing), `viewer=False` + `content` (an article page: the PDF's text from a source HTML file, no viewer; e.g. mes.fm/hutchison-health-press-release-2026 from hutchison_press_release_src/content.html), `og_abs` (absolute og:image URL), `sidebar=False`.
 Dry-runs by default."""
 import argparse, html, os, shutil, sys
 from pathlib import Path
@@ -86,6 +86,35 @@ PAGES.update({
         outro=AJ_CREDIT + """
 <p>More formats (Kindle, EPUB, audio book, paperback) are listed on <a href="/911-holding-truth#get-the-book">the online edition's Get the book box</a> and on the author's <a href="https://www.checktheevidence.com/wordpress/2017/11/20/9-11-holding-the-truth/" target="_blank" rel="noopener">book page</a>. The first book is <a href="/911-finding-truth-pdf">9/11 Finding the Truth (PDF)</a>.</p>"""),
 })
+HUTCH_PR = "John Hutchison Health Update and Press Release"
+HUTCH_PR_DRIVE = "https://drive.google.com/file/d/1wvzEOKPfKytPZ5fSbetNXaSnS-MIYYmu/"
+HUTCH_PR_PARTOF = 'Part of <a href="https://mes.fm/hutchison">MES Hutchison Effect</a> &middot; <a href="https://mes.fm/hutchison-posts">Posts and Updates</a>'
+PAGES.update({
+    "hutchison-health-press-release-2026-pdf": dict(
+        title=HUTCH_PR + " (PDF)",
+        subtitle="Press release by the Hutchison family &middot; November 12, 2026 &middot; 6 pages &middot; PDF",
+        desc="Read or download the November 12, 2026 press release on John Hutchison's health: advanced bladder cancer, acute kidney decline and the formal complaints filed against four Northern California healthcare networks.",
+        pdf="john-hutchison-press-release-2026-11-12.pdf", pdf_label=HUTCH_PR + " (PDF)",
+        src=Path.home() / "Library/CloudStorage/OneDrive-Personal/MathEasySolutions/YouTube/Video Files/MES 911Truth/Other Uploads/Hutchison Effect/Nancy/John Hutchison Health/press release v2.pdf",
+        meta=dict(title="Internationally Known Inventor John Hutchison Fights for His Life (press release, November 12, 2026)", author="Nancy Hutchison",
+                  subject="Press release: John Hutchison's health, and the formal complaints filed with the California Department of Public Health and the Medical Board of California",
+                  keywords="John Hutchison, Nancy Hutchison, Hutchison Effect, press release, health update, medical negligence", creator="LibreOffice Writer"),
+        alt_url=HUTCH_PR_DRIVE, alt_label="Alternative download (Google Drive)",
+        brand="hutchison", partof=HUTCH_PR_PARTOF + ' &middot; <a href="/hutchison-health-press-release-2026">Read it as a web page</a>', og="preview.jpg",
+        intro="""<p>The press release issued by the Hutchison family on <b>November 12, 2026</b> about <b>John Hutchison's health</b>: advanced bladder cancer, acute kidney decline, and the formal complaints filed with the California Department of Public Health and the Medical Board of California.</p>
+<p><b>Prefer a web page?</b> The whole press release is also on mes.fm as an article: <a href="/hutchison-health-press-release-2026"><b>read it online</b></a>. The PDF (6 pages) is shown below; it is also on <a href="%s" target="_blank" rel="noopener">Google Drive</a>.</p>""" % HUTCH_PR_DRIVE,
+        outro="""<p>More health updates and posts about John Hutchison are in <a href="/hutchison-posts">Hutchison Effect: Posts and Updates</a>.</p>"""),
+    "hutchison-health-press-release-2026": dict(
+        viewer=False, content="hutchison_press_release_src/content.html",
+        title=HUTCH_PR,
+        subtitle="Press release by the Hutchison family &middot; November 12, 2026 &middot; <a href=\"/hutchison-health-press-release-2026-pdf\">PDF</a> &middot; <a href=\"%s\" target=\"_blank\" rel=\"noopener\">Google Drive</a>" % HUTCH_PR_DRIVE,
+        desc="November 12, 2026 press release: inventor John Hutchison is fighting advanced bladder cancer and acute kidney decline, and complaints have been filed against four Northern California healthcare networks.",
+        brand="hutchison", partof=HUTCH_PR_PARTOF, og_abs="https://mes.fm/hutchison-health-press-release-2026-pdf/preview.jpg",
+        intro="""<div class="pdf-actions"><a class="pdf-btn" href="/hutchison-health-press-release-2026-pdf">Read the PDF</a><a class="pdf-btn alt" href="/hutchison-health-press-release-2026-pdf/john-hutchison-press-release-2026-11-12.pdf" download>Download the PDF</a><a class="pdf-btn alt" href="%s" target="_blank" rel="noopener">Google Drive</a></div>
+<p><i>The press release below is reproduced in full, as issued by the Hutchison family.</i></p>
+""" % HUTCH_PR_DRIVE,
+        outro="""<p>More health updates and posts about John Hutchison are in <a href="/hutchison-posts">Hutchison Effect: Posts and Updates</a>.</p>"""),
+})
 CSS = """    .pdf-actions { display: flex; flex-wrap: wrap; gap: 0.6em; margin: 1em 0; }
     .pdf-btn { display: inline-block; padding: 0.7em 1.2em; border-radius: 8px; font-weight: 700; text-decoration: none; border: 2px solid #1a73e8; background: #1a73e8; color: #fff !important; }
     .pdf-btn.alt { background: transparent; color: #1a73e8 !important; }
@@ -93,17 +122,25 @@ CSS = """    .pdf-actions { display: flex; flex-wrap: wrap; gap: 0.6em; margin: 
     .pdf-wrap { margin: 1em 0 1.4em; border: 1px solid rgba(128,128,128,0.4); border-radius: 8px; overflow: hidden; background: #fff; }
     .pdf-frame { display: block; width: 100%; height: 85vh; min-height: 480px; border: 0; }
     .pdf-fallback { padding: 2em 1em; text-align: center; color: #333; }
+    .pr-release { margin: 0.4em 0 1em; }
+    .pr-headline { font-weight: 800; font-size: 1.15em; line-height: 1.35; margin: 0.6em 0 1em; }
+    .pr-contact { padding: 0.7em 1em; border-left: 4px solid #1a73e8; background: rgba(26,115,232,0.07); border-radius: 0 6px 6px 0; }
     @media (max-width: 700px) { .pdf-frame { height: 70vh; } }
 """
 def build(slug, cfg):
     t = (R / "hive_mirror_template.html").read_text(encoding="utf-8")
     t = t.replace("@@VIDEO_SCRIPTS@@", "")
     t = t.replace("</style>", CSS + "</style>", 1)
+    if cfg.get("viewer") is False:   # an article page (the PDF's text as a web page), no PDF viewer
+        art = cfg["intro"] + (R / cfg["content"]).read_text(encoding="utf-8") + cfg["outro"]
+        return fill(slug, cfg, t, art)
     pdf = "/%s/%s" % (slug, cfg["pdf"])
     art = cfg["intro"] + '\n<div class="pdf-actions"><a class="pdf-btn" href="%s" download>Download the PDF</a>%s<a class="pdf-btn alt" href="%s" target="_blank" rel="noopener">Open it full screen</a></div>\n' % (
         pdf, ('<a class="pdf-btn alt" href="%s" target="_blank" rel="noopener">%s</a>' % (cfg["alt_url"], html.escape(cfg["alt_label"]))) if cfg.get("alt_url") else "", pdf)
     art += '<div class="pdf-wrap"><object class="pdf-frame" data="%s#view=FitH" type="application/pdf" aria-label="%s"><div class="pdf-fallback"><p>Your browser cannot show a PDF inside the page.</p><p><a class="pdf-btn" href="%s">Open the PDF</a></p></div></object></div>\n' % (pdf, html.escape(cfg["pdf_label"]), pdf)
     art += cfg["outro"]
+    return fill(slug, cfg, t, art)
+def fill(slug, cfg, t, art):
     if cfg.get("noindex"): t = t.replace('<link rel="canonical"', '<meta name="robots" content="noindex%s">\n  <link rel="canonical"' % (", nofollow" if cfg.get("private") else ""), 1)
     if cfg.get("private"):   # private page: no ads, no comments, no rating row
         import re
@@ -152,6 +189,12 @@ ap = argparse.ArgumentParser(); ap.add_argument("--apply", action="store_true");
 a = ap.parse_args()
 for slug, cfg in PAGES.items():
     if a.only and a.only != slug: continue
+    if cfg.get("viewer") is False:
+        print(slug, "-> article page")
+        if a.apply:
+            (SITE / slug).mkdir(exist_ok=True); (SITE / slug / "index.html").write_text(build(slug, cfg), encoding="utf-8"); print("  wrote", SITE / slug / "index.html")
+            if cfg.get("sidebar", True): sidebar(slug)
+        continue
     d = SITE / slug; src = Path(a.pdf) if a.pdf else Path(cfg["src"]) if cfg.get("src") else Path.home() / "Downloads" / cfg["pdf"]; dst = d / cfg["pdf"]
     print(slug, "-> pdf", "present" if dst.exists() else ("will copy from %s" % src if src.exists() else "MISSING (put it at %s)" % src))
     if a.apply:
