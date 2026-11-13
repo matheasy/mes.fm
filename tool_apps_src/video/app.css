@@ -262,6 +262,7 @@
 	#vd .vd.vd-bar1 .vd-time {font-size:0.82em;} #vd .vd.vd-bar1 #vd-tin {padding:0.05em 0.25em;min-height:0;}
 	#vd .vd.vd-bar1 .vd-tools .vd-xt {display:none;} #vd .vd.vd-bar1 .vd-div {height:16px;} #vd .vd.vd-bar1 .vd-chk {font-size:0.82em;}
 	#vd .vd.vd-bar1 #vd-zoom {width:6em;}
+	#vd #vd-split2 {display:none;} #vd .vd.vd-bar2 #vd-split2 {display:inline-flex;} /* Minimal hides the tools row: keep Split one click away */
 	#vd .vd.vd-bar2 .vd-tools {height:0;min-height:0;padding:0;border:0;overflow:hidden;visibility:hidden;} /* kept in the grid so the rows below don't shift */
 	#vd .vd.vd-pvfill .vd-seek {order:-1;flex:1 0 100%;} #vd .vd.vd-pvfill .vd-transport {flex-wrap:wrap;}
 	/* Compact with room to spare: words back, still one row (fitBars in app.js decides) */
