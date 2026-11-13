@@ -363,6 +363,27 @@ body.dark-mode #nr.nr .nr-made {color:#c4cbd6;}
 body.dark-mode #nr.nr .nr-made b {color:#c4b5fd;}
 body.dark-mode #nr.nr .nr-made.is-other {background:#3a2a06;border-color:#b7791f;color:#fde68a;}
 body.dark-mode #nr.nr .nr-made.is-other b {color:#fde68a;}
+#nr .nr-prog.is-busy .nr-bar i {width:35%;animation:nrBusy 1.4s ease-in-out infinite;transition:none;}
+@keyframes nrBusy {0% {transform:translateX(-100%);} 100% {transform:translateX(290%);}}
+@media (prefers-reduced-motion: reduce) {#nr .nr-prog.is-busy .nr-bar i {animation-duration:4s;}}
+#nr .nr-pl {display:flex;flex-wrap:wrap;align-items:center;gap:0.45em 0.7em;margin:0.5em 0;padding:0.45em 0.6em;border:1px solid #e1e5eb;border-radius:0.6em;background:#faf9ff;}
+#nr .nr-pl-lab {flex-basis:100%;font-weight:600;color:#4c1d95;font-size:0.92em;}
+#nr .nr-pl-pp {min-width:44px;min-height:40px;padding:0 0.6em;font-size:1.05em;}
+#nr .nr-pl.is-on .nr-pl-pp {background:#6d28d9;border-color:#6d28d9;color:#fff;}
+#nr .nr-pl-t {font-variant-numeric:tabular-nums;color:#4b5563;font-size:0.9em;min-width:6.5em;}
+#nr .nr-pl-seek {flex:1 1 10em;min-width:8em;accent-color:#6d28d9;}
+#nr .nr-pl-sp {display:inline-flex;border:1px solid #d5d9e0;border-radius:0.5em;overflow:hidden;}
+#nr .nr-pl-r {font:inherit;font-size:0.85em;padding:0.35em 0.55em;min-height:34px;border:0;border-left:1px solid #d5d9e0;background:transparent;color:#374151;cursor:pointer;}
+#nr .nr-pl-r:first-child {border-left:0;}
+#nr .nr-pl-r[aria-pressed="true"] {background:#6d28d9;color:#fff;font-weight:600;}
+#nr .nr-pl--big .nr-pl-pp {min-width:52px;min-height:46px;font-size:1.2em;}
+body.dark-mode #nr.nr .nr-pl {background:#1f2430;border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-pl-lab {color:#c4b5fd;}
+body.dark-mode #nr.nr .nr-pl-t {color:#c4cbd6;}
+body.dark-mode #nr.nr .nr-pl-sp, body.dark-mode #nr.nr .nr-pl-r {border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-pl-r {color:#e5e7eb;}
+body.dark-mode #nr.nr .nr-pl-r[aria-pressed="true"], body.dark-mode #nr.nr .nr-pl.is-on .nr-pl-pp {background:#7c3aed;border-color:#7c3aed;color:#fff;}
+body.dark-mode #nr.nr .nr-pl-seek {accent-color:#a78bfa;}
 
 
 	@media print {
@@ -508,6 +529,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #nr .nr-made{color:#a2a7ae}
 	body.dark-mode #nr .nr-made b{color:#a176e4}
 	body.dark-mode #nr .nr-made.is-other{background:#3f3719;border:1px solid #c47e08;color:#ed9c6e}
+	body.dark-mode #nr .nr-pl{border:1px solid #29313d;background:#120e25}
+	body.dark-mode #nr .nr-pl-lab{color:#a176e4}
+	body.dark-mode #nr .nr-pl.is-on .nr-pl-pp{border-color:#561fad}
+	body.dark-mode #nr .nr-pl-t{color:#a2a7ae}
+	body.dark-mode #nr .nr-pl-sp{border:1px solid #2c323c}
+	body.dark-mode #nr .nr-pl-r{border-left:1px solid #2c323c;color:#b4bac2}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -870,7 +897,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/narrate.js?v=1" defer></script><script src="/narration/js/narration.js?v=2" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/narrate.js?v=1" defer></script><script src="/narration/js/narration.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

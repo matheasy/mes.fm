@@ -59,17 +59,67 @@
 				return '<div class="nr-vrow' + (v.id === S.cvoice ? " is-on" : "") + '"><label><input type="radio" name="nr-cv" value="' + v.id + '"' + (v.id === S.cvoice ? " checked" : "") + "> <b>" + esc(v.name) + "</b> <small>" + (v.samples.length / N.SR).toFixed(1) + " s</small></label>" +
 					'<button type="button" class="tu-btn tu-btn--ghost nr-sm" data-play="' + v.id + '" title="Play the sample">▶</button><button type="button" class="tu-btn tu-btn--ghost nr-sm" data-del="' + v.id + '" title="Delete this voice" aria-label="Delete ' + esc(v.name) + '">×</button></div>';
 			}).join("");
-			madeLabel();
+			rowIcons(); madeLabel();
 		});
 	}
 	$("nr-voices").addEventListener("change", function (e) { if (e.target.name === "nr-cv") { S.cvoice = e.target.value; save(); renderVoices(); } });
 	$("nr-voices").addEventListener("click", function (e) {
 		var p = e.target.closest("[data-play]"), d = e.target.closest("[data-del]");
-		if (p) { var v = voices.filter(function (x) { return x.id === p.getAttribute("data-play"); })[0]; if (v) playBlob(new Blob([N.wav(v.samples, N.SR)], { type: "audio/wav" })); }
+		if (p) {
+			var id = p.getAttribute("data-play");
+			if (tmpAudio.dataset.vid === id && tmpAudio.src) { if (tmpAudio.paused || tmpAudio.ended) { if (tmpAudio.ended) tmpAudio.currentTime = 0; tmpAudio.play().catch(function () {}); pv.el.hidden = false; } else tmpAudio.pause(); }
+			else { var v = voices.filter(function (x) { return x.id === id; })[0]; if (v) playBlob(new Blob([N.wav(v.samples, N.SR)], { type: "audio/wav" }), "Sample: " + v.name, $("nr-voices"), id); }
+		}
 		if (d) { var dv = voices.filter(function (x) { return x.id === d.getAttribute("data-del"); })[0]; if (dv && confirm("Delete the voice “" + dv.name + "” from this browser?")) N.deleteVoice(dv.id).then(renderVoices); }
 	});
-	var tmpAudio = new Audio();
-	function playBlob(b) { try { URL.revokeObjectURL(tmpAudio.src); } catch (e) {} tmpAudio.src = URL.createObjectURL(b); tmpAudio.play().catch(function () {}); }
+	/* ---------- players: play / pause, seek, speed (one speed for all of them, S.rate) ---------- */
+	var RATES = [0.75, 1, 1.25, 1.5, 2], players = [];
+	if (RATES.indexOf(S.rate) < 0) S.rate = 1;
+	function player(au, host, extra) {
+		au.controls = false; au.preload = "metadata"; au.playbackRate = S.rate;
+		var el = document.createElement("div"); el.className = "nr-pl";
+		el.innerHTML = (extra && extra.label ? '<span class="nr-pl-lab"></span>' : "") +
+			'<button type="button" class="tu-btn tu-btn--ghost nr-pl-pp" aria-label="Play">▶\uFE0E</button>' +
+			'<span class="nr-pl-t">0:00 / 0:00</span>' +
+			'<input type="range" class="nr-pl-seek" min="0" max="1000" step="1" value="0" aria-label="Position">' +
+			'<span class="nr-pl-sp" role="group" aria-label="Playback speed">' + RATES.map(function (r) { return '<button type="button" class="nr-pl-r" data-r="' + r + '" aria-pressed="false">' + (r === 1 ? "1×" : r + "×") + "</button>"; }).join("") + "</span>" +
+			(extra && extra.close ? '<button type="button" class="tu-btn tu-btn--ghost nr-sm nr-pl-x" aria-label="Close">×</button>' : "");
+		host.appendChild(el);
+		var pp = el.querySelector(".nr-pl-pp"), tt = el.querySelector(".nr-pl-t"), sk = el.querySelector(".nr-pl-seek"), drag = false, raf = 0;
+		function dur() { return isFinite(au.duration) ? au.duration : 0; }
+		function paint() {
+			var d = dur(), c = au.currentTime || 0; tt.textContent = fmtT(c) + " / " + fmtT(d);
+			if (!drag) sk.value = d ? Math.round(c / d * 1000) : 0;
+			var on = !au.paused && !au.ended; pp.textContent = on ? "❚❚" : "▶\uFE0E"; pp.setAttribute("aria-label", on ? "Pause" : "Play"); el.classList.toggle("is-on", on);
+		}
+		function loop() { paint(); if (!au.paused) raf = requestAnimationFrame(loop); }
+		function rates() { el.querySelectorAll(".nr-pl-r").forEach(function (b) { b.setAttribute("aria-pressed", +b.getAttribute("data-r") === S.rate ? "true" : "false"); }); }
+		pp.onclick = function () { if (au.paused || au.ended) { if (au.ended) au.currentTime = 0; au.play().catch(function () {}); } else au.pause(); };
+		sk.oninput = function () { drag = true; var d = dur(); if (d) { au.currentTime = sk.value / 1000 * d; tt.textContent = fmtT(au.currentTime) + " / " + fmtT(d); } };
+		sk.onchange = function () { drag = false; paint(); };
+		el.querySelector(".nr-pl-sp").onclick = function (e) { var b = e.target.closest("[data-r]"); if (!b) return; S.rate = +b.getAttribute("data-r"); save(); players.forEach(function (q) { q.au.playbackRate = S.rate; q.rates(); }); };
+		["play", "pause", "ended", "loadedmetadata", "durationchange", "seeked", "emptied"].forEach(function (ev) { au.addEventListener(ev, function () { au.playbackRate = S.rate; cancelAnimationFrame(raf); if (!au.paused) loop(); else paint(); }); });
+		var x = el.querySelector(".nr-pl-x"); if (x) x.onclick = function () { au.pause(); el.hidden = true; };
+		rates(); paint();
+		var api = { el: el, au: au, rates: rates, paint: paint, label: function (t) { var l = el.querySelector(".nr-pl-lab"); if (l) l.textContent = t; } };
+		players.push(api); return api;
+	}
+	// one preview player for voice samples and "Hear this voice"; it moves next to whatever started it
+	var tmpAudio = new Audio(), pv = player(tmpAudio, document.createElement("div"), { label: true, close: true }); pv.el.classList.add("nr-pl--pv"); pv.el.hidden = true;
+	function playBlob(b, label, after, vid) {
+		try { URL.revokeObjectURL(tmpAudio.src); } catch (e) {}
+		tmpAudio.src = URL.createObjectURL(b); tmpAudio.dataset.vid = vid || "";
+		pv.label(label || "Preview"); if (after) after.insertAdjacentElement("afterend", pv.el); pv.el.hidden = false;
+		tmpAudio.play().catch(function () {});
+	}
+	// the ▶ on a saved voice's row shows ❚❚ while its sample plays, and pauses / resumes it
+	function rowIcons() {
+		var on = !tmpAudio.paused && !tmpAudio.ended ? tmpAudio.dataset.vid : "";
+		document.querySelectorAll("#nr-voices [data-play]").forEach(function (b) { var me = b.getAttribute("data-play") === on; b.textContent = me ? "❚❚" : "▶\uFE0E"; b.title = me ? "Pause the sample" : "Play the sample"; });
+	}
+	["play", "pause", "ended", "emptied"].forEach(function (ev) { tmpAudio.addEventListener(ev, rowIcons); });
+	player($("nr-sampleplay"), $("nr-sampleplay").parentNode).el.classList.add("nr-pl--sample");
+	$("nr-sampleplay").insertAdjacentElement("afterend", players[players.length - 1].el);
 
 	var sample = null, rec = null;
 	function gotSample(blob) {
@@ -108,7 +158,18 @@
 	ta.oninput = function () { S.text = ta.value; save(); count(); }; count();
 
 	function opts() { return { engine: S.eng, voice: S.eng === "clone" ? S.cvoice : S.voice, speed: S.speed, exaggeration: S.exag, gap: S.gap, paraGap: S.pgap, gpu: S.gpu }; }
-	function progress(on, frac, txt) { $("nr-prog").hidden = !on; $("nr-barfill").style.width = Math.round((frac || 0) * 100) + "%"; $("nr-progt").textContent = txt || ""; }
+	function progress(on, frac, txt, busyBar) {
+		$("nr-prog").hidden = !on; $("nr-prog").classList.toggle("is-busy", !!busyBar);
+		$("nr-barfill").style.width = busyBar ? "" : Math.round(Math.max(0, Math.min(1, frac || 0)) * 100) + "%"; $("nr-progt").textContent = txt || "";
+	}
+	/* Time estimates, learned on this computer (localStorage): how long getting the model ready takes after the download, and how long a line
+	   takes = a + b x letters, scaled by k (the ratio of real to estimated time, averaged over the last lines). */
+	var EKEY = KEY + ":eta", E = { prep: { clone: 25, kokoro: 4 }, k: { clone: 1, kokoro: 1 } };
+	try { var e0 = JSON.parse(localStorage.getItem(EKEY)); if (e0 && e0.prep && e0.k) E = e0; } catch (e) { /* ignore */ }
+	function saveE() { try { localStorage.setItem(EKEY, JSON.stringify(E)); } catch (e) { /* ignore */ } }
+	var LINE = { clone: [1.4, 0.065], kokoro: [0.15, 0.012] };
+	function lineEst(eng, text, gpu) { var c = LINE[eng] || LINE.kokoro, f = eng === "kokoro" && !gpu ? 2.5 : 1; return (c[0] + c[1] * String(text).length) * f * (E.k[eng] || 1); }
+	function left(sec) { sec = Math.max(1, Math.round(sec)); return sec < 60 ? "about " + sec + " s left" : "about " + fmtT(sec) + " left"; }
 	function loadMsg(f, L, T) { return "Downloading the voice model, one time only: " + (T ? Math.round(L / 1048576) + " of " + Math.round(T / 1048576) + " MB" : Math.round(f * 100) + "%"); }
 
 	var busy = false, ctrl = null, last = null;
@@ -116,10 +177,48 @@
 		if (busy) return; var text = ta.value.trim(); if (!text) { toast("Type a script first."); ta.focus(); return; }
 		var o = opts(); if (S.eng === "clone" && !o.voice) { toast("Add and save your voice first (My own voice → Add a voice)."); setEng("clone"); return; }
 		busy = true; ctrl = new AbortController(); o.signal = ctrl.signal; $("nr-go").disabled = true; $("nr-stop").hidden = false;
-		var t0 = performance.now(), tp = window.MESTabProgress ? window.MESTabProgress.task("Narration") : null;
-		o.onProgress = function (f, L, T) { progress(true, f, loadMsg(f, L, T)); };
-		o.onPiece = function (i, n, it) { var f = n ? i / n : 0; progress(true, f, i < n ? "Speaking line " + (i + 1) + " of " + n + ": “" + it.text.slice(0, 60) + (it.text.length > 60 ? "…" : "") + "”" : "Joining the lines…"); if (tp) tp.set(f); };
-		progress(true, 0, N.isLoaded(o.engine) ? "Starting…" : "Loading the voice model…");
+		var t0 = performance.now(), tp = window.MESTabProgress ? window.MESTabProgress.task("Narration") : null, eng = o.engine;
+		// what is happening now: "dl" downloading, "prep" model being set up on the graphics chip (no progress events), "speak" making lines
+		var P = { ph: N.isLoaded(eng) ? "speak" : "dl", f: 0, L: 0, T: 0, lastEv: performance.now(), dlT0: performance.now(), dlL0: 0, prepT0: 0,
+			lines: N.split(text, eng === "clone" ? 150 : 260, eng === "clone").filter(function (x) { return x.text; }), i: 0, lineT0: 0, inLine: false };
+		P.est = P.lines.map(function (x) { return lineEst(eng, x.text, o.gpu); });
+		function sum(a, b) { return a + b; }
+		function tick() {
+			var now = performance.now(), sec = (now - t0) / 1000, tag = " · " + fmtT(sec) + " so far";
+			if (P.ph === "dl") {
+				if (P.T && P.f >= 0.995 || P.L && now - P.lastEv > 4000) { P.ph = "prep"; P.prepT0 = now; }
+				else {
+					var spd = (P.L - P.dlL0) / Math.max(0.5, (now - P.dlT0) / 1000), rest = P.T && spd > 0 ? (P.T - P.L) / spd : 0;
+					progress(true, P.f, (P.L ? loadMsg(P.f, P.L, P.T) + (rest > 2 ? " · " + left(rest + E.prep[eng]) : "") : "Opening the voice model…") + tag);
+					if (tp) tp.set(P.f * 0.6); return;
+				}
+			}
+			if (P.ph === "prep") {
+				var w = (now - P.prepT0) / 1000, ex = E.prep[eng] || 20;
+				progress(true, 0, "Getting the voice model ready on your " + (eng === "clone" || o.gpu ? "graphics chip" : "processor") + " (this can take " + (ex < 60 ? Math.round(ex) + " s" : fmtT(ex)) + ", the page is not stuck): " +
+					(w < ex ? left(ex - w) : "almost there…") + tag, true);
+				return;
+			}
+			// speaking: finished lines + the share of the current line that has probably been done
+			var tot = P.est.reduce(sum, 0), done = P.est.slice(0, P.i).reduce(sum, 0), cur = P.est[P.i] || 0, inl = P.inLine ? Math.min(cur * 0.95, (now - P.lineT0) / 1000) : 0;
+			var frac = tot ? (done + inl) / tot : 1, it = P.lines[P.i];
+			progress(true, frac, (it ? "Speaking line " + (P.i + 1) + " of " + P.lines.length + ": “" + it.text.slice(0, 50) + (it.text.length > 50 ? "…" : "") + "” · " + left(tot - done - inl) : "Joining the lines…") + tag);
+			if (tp) tp.set(frac);
+		}
+		var timer = setInterval(tick, 250);
+		o.onProgress = function (f, L, T) { if (P.ph === "prep" && f < 0.99 && L > P.L) P.ph = "dl"; P.f = f; P.L = L; P.T = T; P.lastEv = performance.now(); if (!P.dlL0 && L) { P.dlL0 = L; P.dlT0 = performance.now(); } tick(); };
+		o.onPiece = function (i, n, it) {
+			var now = performance.now();
+			if (P.ph !== "speak") { if (P.ph === "prep") { E.prep[eng] = Math.round((E.prep[eng] * 0.4 + (now - P.prepT0) / 1000 * 0.6) * 10) / 10; saveE(); } P.ph = "speak"; }
+			if (!P.inLine) { P.i = i; P.inLine = true; P.lineT0 = now; }
+			else {   // a line finished: learn from it (cached lines come back at once and teach nothing)
+				var took = (now - P.lineT0) / 1000, est = P.est[P.i] || 0;
+				if (took > 0.3 && est) { E.k[eng] = Math.max(0.2, Math.min(6, (E.k[eng] || 1) * 0.6 + (E.k[eng] || 1) * (took / est) * 0.4)); saveE(); for (var j = P.i + 1; j < P.est.length; j++) P.est[j] = lineEst(eng, P.lines[j].text, o.gpu); }
+				P.est[P.i] = took; P.inLine = false; P.i = i;
+			}
+			tick();
+		};
+		tick();
 		N.speak(text, o).then(function (r) {
 			last = { r: r, o: o, text: text }; showResult(); progress(false);
 			if (tp) tp.done("Narration ready");
@@ -127,19 +226,19 @@
 		}, function (e) {
 			progress(false); if (tp) tp.fail(e.message);
 			if (!/Stopped/.test(e.message)) toast("Could not make the narration: " + e.message + (o.engine === "clone" ? " (try a shorter script, or the ready-made voices)" : ""));
-		}).then(function () { busy = false; $("nr-go").disabled = false; $("nr-stop").hidden = true; });
+		}).then(function () { clearInterval(timer); busy = false; $("nr-go").disabled = false; $("nr-stop").hidden = true; });
 	}
 	$("nr-go").onclick = run;
 	$("nr-stop").onclick = function () { if (ctrl) ctrl.abort(); progress(true, 0, "Stopping after this line…"); };
 	$("nr-hear").onclick = function () {
 		var b = this; b.disabled = true; var v = N.VOICES.filter(function (x) { return x[0] === vs.value; })[0];
 		N.load("kokoro", { gpu: S.gpu, onProgress: function (f, L, T) { progress(true, f, loadMsg(f, L, T)); } }).then(function () {
-			progress(true, 1, "Speaking…"); return N.speakOne("Hi, I'm " + (v ? v[1] : "this voice") + ". This is how I sound reading your script.", { engine: "kokoro", voice: vs.value, speed: S.speed });
-		}).then(function (a) { progress(false); playBlob(new Blob([N.wav(a, N.SR)], { type: "audio/wav" })); }, function (e) { progress(false); toast("Could not load the voice: " + e.message); }).then(function () { b.disabled = false; });
+			progress(true, 0, "Making the sample…", true); return N.speakOne("Hi, I'm " + (v ? v[1] : "this voice") + ". This is how I sound reading your script.", { engine: "kokoro", voice: vs.value, speed: S.speed });
+		}).then(function (a) { progress(false); playBlob(new Blob([N.wav(a, N.SR)], { type: "audio/wav" }), "Voice: " + (v ? v[1] : vs.value), b.closest(".nr-row") || b, ""); }, function (e) { progress(false); toast("Could not load the voice: " + e.message); }).then(function () { b.disabled = false; });
 	};
 
 	/* ---------- result ---------- */
-	var outUrl = null;
+	var outUrl = null, resP = player($("nr-play"), $("nr-out")); resP.el.classList.add("nr-pl--big"); $("nr-play").insertAdjacentElement("afterend", resP.el);
 	// which voice the result was made with, and a warning when the picked voice / tab is now a different one
 	function voiceName(o) {
 		if (o.engine === "clone") { var v = voices.filter(function (x) { return x.id === o.voice; })[0]; return (v ? v.name : "your voice") + " (my own voice)"; }
