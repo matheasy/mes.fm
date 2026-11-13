@@ -326,3 +326,6 @@
 	#bl .bl-ov.is-left .bl-ospin {left:auto;right:10px;}
 	#bl .bl-ov.is-left .bl-ojog {left:100px;right:76px;}
 	#bl .bl-otop .bl-oside {font-size:1.05em;}
+	/* power bar: a short bar just above HIT, not the full height of the table (was top 64px .. bottom 96px) */
+	#bl .bl-opow {top:auto;bottom:98px;height:clamp(120px, 38%, 230px);width:40px;}
+	@media (max-height:420px) {#bl .bl-opow {bottom:82px;height:clamp(100px, 42%, 200px);width:36px;}}

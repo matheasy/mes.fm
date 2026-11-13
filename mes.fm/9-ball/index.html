@@ -633,6 +633,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#bl .bl-ov.is-left .bl-ospin {left:auto;right:10px;}
 	#bl .bl-ov.is-left .bl-ojog {left:100px;right:76px;}
 	#bl .bl-otop .bl-oside {font-size:1.05em;}
+	/* power bar: a short bar just above HIT, not the full height of the table (was top 64px .. bottom 96px) */
+	#bl .bl-opow {top:auto;bottom:98px;height:clamp(120px, 38%, 230px);width:40px;}
+	@media (max-height:420px) {#bl .bl-opow {bottom:82px;height:clamp(100px, 42%, 200px);width:36px;}}
 
 
 	@media print {
@@ -1234,7 +1237,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:2
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=28" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=29" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
