@@ -53,7 +53,7 @@
 		.cs-hrow:nth-child(4), .cs-hcar, #cs-lapbest {display:none;}
 		.cs-touch button {width:3.3em;height:3.3em;font-size:1em;}
 		#cs-t-gas {height:4.4em;}
-		.cs-touch .cs-t-sm {width:2.6em;height:2.6em;}
+		.cs-touch .cs-t-sm {width:2.9em;height:2.9em;}
 		.cs-touch {padding:0.4em;}
 		.cs-sel select {min-width:8em;}
 	}
@@ -116,3 +116,24 @@
 	.cs-pop select option {color:#111;}
 	.cs-pop input[data-tod] {width:100%;}
 	.cs-pop b span {font-weight:500;opacity:0.8;}
+	/* pedals and reset (2026-11-12): labelled, coloured, so it is obvious which is gas */
+	.cs-touch .cs-pedal {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.1em;line-height:1.05;font-family:inherit;}
+	.cs-touch .cs-pedal b {font-size:0.82em;letter-spacing:0.04em;color:#fff;}
+	.cs-touch .cs-pedal small, .cs-touch .cs-t-sm small {font-size:0.5em;opacity:0.85;color:#fff;display:block;line-height:1;}
+	.cs-touch .cs-parr {font-size:1.05em;line-height:1;color:#fff;}
+	.cs-touch #cs-t-gas {background:rgba(47,158,68,0.55);border-color:rgba(140,233,154,0.85);}
+	.cs-touch #cs-t-brake {background:rgba(201,42,42,0.5);border-color:rgba(255,168,168,0.85);}
+	.cs-touch #cs-t-gas.on {background:rgba(64,192,87,0.9);border-color:#fff;}
+	.cs-touch #cs-t-brake.on {background:rgba(240,62,62,0.9);border-color:#fff;}
+	.cs-touch #cs-t-gas.cs-hint {animation:cs-pulse 1.2s ease-in-out infinite;}
+	@keyframes cs-pulse {50% {box-shadow:0 0 0 0.45em rgba(140,233,154,0.45);}}
+	.cs-touch .cs-t-sm {display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;font-family:inherit;}
+	.cs-touch .cs-t-reset {background:rgba(250,176,5,0.5);border-color:rgba(255,224,130,0.85);}
+	.cs-has-touch #cs-sreset {display:none;}
+	.cs-unflip {position:absolute;left:50%;top:38%;transform:translateX(-50%);z-index:3;cursor:pointer;font:inherit;font-weight:800;font-size:1.15em;padding:0.65em 1.3em;border-radius:2em;border:2px solid #fff;background:rgba(250,176,5,0.92);color:#1a1a1a;box-shadow:0 4px 18px rgba(0,0,0,0.35);}
+	.cs-unflip small {font-weight:600;font-size:0.75em;color:#1a1a1a;}
+	.cs-unflip[hidden] {display:none;}
+	/* narrow picture (side panel open, phone): speed moves under the buttons so it never covers the lap box or the buttons */
+	.cs-narrow .cs-sbtns {flex-wrap:wrap;justify-content:flex-end;max-width:58%;}
+	.cs-narrow.cs-has-touch .cs-speedo, .cs-narrow .cs-speedo {top:var(--cs-spt, 3.4em);bottom:auto;right:0.7em;left:auto;transform:none;margin-top:0;}
+	.cs-narrow .cs-hud {max-width:40%;}

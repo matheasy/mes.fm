@@ -26,9 +26,11 @@
 					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
 					<button type="button" id="cs-camreset" title="Back to the normal camera angle (double-click the picture)" hidden>↺ View</button>
+					<button type="button" id="cs-sreset" title="Put the car back on its wheels (R)">↺ Reset</button>
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
 				</div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
+				<button type="button" class="cs-unflip" id="cs-unflip" hidden>↺ Flip back over <small id="cs-unflipn"></small></button>
 				<div class="cs-replay" id="cs-replay" hidden>
 					<span class="cs-rplabel">● REPLAY</span>
 					<button type="button" id="cs-rpplay" aria-label="Play or pause the replay">❚❚</button>
@@ -64,13 +66,13 @@
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
 						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
-						<li>In the air, the pedals tip the nose and steering rolls the car</li>
+						<li>Stuck or upside down? Press <kbd>R</kbd> or ↺ Reset (it also flips back by itself after a few seconds)</li>
 						<li>Drag the picture to look around · a game controller works too</li>
 					</ul>
 				</div>
 				<div class="cs-touch" id="cs-touch" hidden>
 					<div class="cs-tl"><button type="button" id="cs-t-left" aria-label="Steer left">◀</button><button type="button" id="cs-t-right" aria-label="Steer right">▶</button></div>
-					<div class="cs-tr"><div class="cs-tcol"><button type="button" id="cs-t-boost" class="cs-t-sm" aria-label="Boost">⚡</button><button type="button" id="cs-t-hb" class="cs-t-sm" aria-label="Handbrake">HB</button></div><button type="button" id="cs-t-brake" aria-label="Brake or reverse">⏷</button><button type="button" id="cs-t-gas" aria-label="Accelerate">⏶</button></div>
+					<div class="cs-tr"><div class="cs-tcol"><button type="button" id="cs-t-reset" class="cs-t-sm cs-t-reset" aria-label="Reset: put the car back on its wheels">↺<small>Reset</small></button><button type="button" id="cs-t-boost" class="cs-t-sm" aria-label="Boost">⚡<small>Boost</small></button><button type="button" id="cs-t-hb" class="cs-t-sm" aria-label="Handbrake">HB<small>Drift</small></button></div><button type="button" id="cs-t-brake" class="cs-pedal" aria-label="Brake or reverse"><span class="cs-parr">▼</span><b>BRAKE</b><small>hold = reverse</small></button><button type="button" id="cs-t-gas" class="cs-pedal" aria-label="Gas: accelerate"><span class="cs-parr">▲</span><b>GAS</b></button></div>
 				</div>
 			</div>
 			<div class="cs-panel">

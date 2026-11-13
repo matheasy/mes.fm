@@ -417,7 +417,7 @@
 	var renderer, scene, camera, sunLight, hemi, worldGroup, skyGroup, clockLast = 0;
 	var phys = null, eventQ = null, groundH = null, ter = null, W = null;
 	var cars = [], objs = [], player = 0, statics = [];
-	var gravity = 9.81, gFlip = 0, paused = false;
+	var gravity = 9.81, gFlip = 0, paused = false, subLast = true;
 	var tmpV, tmpQ, tmpM;
 
 	function initRenderer() {
@@ -441,6 +441,8 @@
 	function resize() {
 		if (!renderer) return;
 		var w = stage.clientWidth || 640, h = stage.clientHeight || 360;
+		root.classList.toggle("cs-narrow", w < 900);
+		var sb = stage.querySelector(".cs-sbtns"); if (sb) stage.style.setProperty("--cs-spt", (sb.offsetTop + sb.offsetHeight + 8) + "px");
 		renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
 	}
 
@@ -907,7 +909,15 @@
 		return car;
 	}
 	function gripOf(d) { return d.grip > 1.6 ? d.grip / 2.3 : d.grip; } /* the table holds old-style numbers for some cars; real tyres are mu ~ 1 */
-	function setSuspForce(car) { for (var i = 0; i < 4; i++) car.veh.setWheelMaxSuspensionForce(i, car.d.mass * Math.max(9.81, Math.abs(gravity)) * 2.5 + 10); }
+	/* springs follow gravity: above Earth's g they stiffen in proportion (same ride height and damping ratio), so a car on the Sun
+	   (28 g) does not sit on its belly with the springs crushed */
+	function setSuspForce(car) {
+		var gk = Math.max(1, Math.abs(gravity) / 9.81), k = car.d.k * gk;
+		for (var i = 0; i < 4; i++) {
+			car.veh.setWheelMaxSuspensionForce(i, car.d.mass * Math.max(9.81, Math.abs(gravity)) * 2.5 + 10);
+			car.veh.setWheelSuspensionStiffness(i, k); car.veh.setWheelSuspensionCompression(i, 0.69 * Math.sqrt(k)); car.veh.setWheelSuspensionRelaxation(i, 1.0 * Math.sqrt(k));
+		}
+	}
 	function removeCar(c) { phys.removeVehicleController(c.veh); phys.removeRigidBody(c.body); scene.remove(c.group); c.group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); }
 
 	function setTraffic(n) {
@@ -1084,7 +1094,7 @@
 		if (k === "y") { replayStart(); return; }
 		if (k === "n") { setNight(dayK >= 0.45); return; }
 		if (k === "k") { var wl = C.weatherFor(S.world); if (wl.length < 2) { setWeather("rain"); return; } setWeather(wl[(wl.indexOf(S.weather) + 1) % wl.length]); return; }
-		if (k === "r") { resetCar(cars[player], true); toast("Back on its wheels"); }
+		if (k === "r") playerReset();
 		else if (k === "c") cycleCam(1);
 		else if (k === "tab") { e.preventDefault(); switchCar(e.shiftKey ? -1 : 1); }
 		else if (k === "g") flipGravity();
@@ -1097,6 +1107,15 @@
 	});
 	document.addEventListener("keyup", function (e) { keys[e.key.toLowerCase()] = false; });
 	window.addEventListener("blur", function () { keys = {}; });
+	/* the player's car on its roof or side: a big "Flip back over" button after 1.2 s, and it flips back by itself after 6 s */
+	function playerReset() { if (replay) replayStop(true); resetCar(cars[player], true); toast("Back on its wheels"); $("cs-unflip").hidden = true; }
+	var unflipShown = -1;
+	function unflipTick(c) {
+		var el = $("cs-unflip"), t = c.upsideT, show = t > 1.2 && !autoPilot;
+		if (show && t > 6) { playerReset(); return; }
+		var n = show ? Math.ceil(6 - t) : -1;
+		if (n !== unflipShown) { unflipShown = n; el.hidden = !show; if (show) $("cs-unflipn").textContent = "(by itself in " + n + " s)"; }
+	}
 	function stageVisible() { var r = stage.getBoundingClientRect(); return r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5; }
 
 	function setupTouch() {
@@ -1108,6 +1127,9 @@
 			el.addEventListener("pointerdown", on); el.addEventListener("pointerup", off); el.addEventListener("pointercancel", off); el.addEventListener("lostpointercapture", off);
 			el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 		});
+		/* the gas pedal pulses until it is first pressed, so a newcomer sees which one makes the car go */
+		var gasEl = $("cs-t-gas"); if (gasEl) { gasEl.classList.add("cs-hint"); gasEl.addEventListener("pointerdown", function () { gasEl.classList.remove("cs-hint"); }, { once: true }); }
+		var rs = $("cs-t-reset"); if (rs) { rs.addEventListener("click", playerReset); rs.addEventListener("contextmenu", function (e) { e.preventDefault(); }); }
 		showTouch();
 	}
 	function showTouch() { var on = S.touch === "on" || (S.touch === "auto" && matchMedia("(pointer:coarse)").matches); $("cs-touch").hidden = !on; root.classList.toggle("cs-has-touch", on); }
@@ -1158,9 +1180,10 @@
 		var grip = gripOf(d) * wx().grip, drive = d.drive === "awd" ? [0, 1, 2, 3] : d.drive === "fwd" ? [0, 1] : [2, 3], i;
 		var eng = [0, 0, 0, 0];
 		var wantRev = inp.br > 0 && v < 0.6 && !inp.th, braking = inp.br > 0 && v >= 0.6, braking2 = inp.th > 0 && v < -0.6;
-		var power = C.engineForce(d.F, v, d.vmax, inp.boost) * (1 - dmg * 0.6) * (d.drive === "awd" ? 0.5 : 1);
+		/* heavy-gravity worlds: the engine grows with g (a sandbox car on the Sun would otherwise never beat its own rolling resistance) */
+		var power = C.engineForce(d.F, v, d.vmax, inp.boost) * (1 - dmg * 0.6) * (d.drive === "awd" ? 0.5 : 1) * Math.sqrt(Math.max(1, Math.abs(gravity) / 9.81));
 		if (inp.th > 0 && !braking2) drive.forEach(function (k) { eng[k] = power * inp.th; });
-		if (wantRev) drive.forEach(function (k) { eng[k] = -C.engineForce(d.F, -v, d.vmax * 0.3, false) * 0.6 * inp.br * (d.drive === "awd" ? 0.5 : 1); });
+		if (wantRev) drive.forEach(function (k) { eng[k] = -C.engineForce(d.F, -v, d.vmax * 0.3, false) * 0.6 * inp.br * (d.drive === "awd" ? 0.5 : 1) * Math.sqrt(Math.max(1, Math.abs(gravity) / 9.81)); });
 		if (braking || braking2) for (i = 0; i < 4; i++) eng[i] = -Math.sign(v) * d.mass * 9.81 * 0.3 * Math.max(inp.br, inp.th);
 		var anyContact = false;
 		for (i = 0; i < 4; i++) {
@@ -1175,22 +1198,8 @@
 		var lv = c.body.linvel(), sp = Math.hypot(lv.x, lv.y, lv.z), rho = S.world === "earth" || S.world === "jupiter" ? W.rho : W.rho;
 		c.body.resetForces(true);
 		if (sp > 0.5) { var fd = C.dragForce(rho, d.cdA * (1 + dmg * 0.4), sp) + (anyContact ? d.mass * Math.abs(gravity) * 0.012 : 0), k2 = -fd / sp; c.body.addForce({ x: lv.x * k2, y: lv.y * k2, z: lv.z * k2 }, true); }
-		/* air control: pitch with the pedals, roll with the steering while flying. Keys already held when the car left the ground are
-		   ignored until released and pressed again (holding the gas off a ramp must not flip the car), and the control aims at a modest
-		   turning rate (it pushes only towards that rate), so it can never spin the car up without limit. With no keys: pure physics. */
-		if (!anyContact) c.airT = (c.airT || 0) + dt; else { c.airT = 0; c.airHeld = null; }
-		if (!anyContact && !c.airHeld) c.airHeld = { th: !!inp.th, br: !!inp.br, st: !!inp.st };
-		if (c.airHeld) { if (!inp.th) c.airHeld.th = false; if (!inp.br) c.airHeld.br = false; if (!inp.st) c.airHeld.st = false; }
-		if (!anyContact && c === cars[player] && c.airT > 0.15 && simT - c.born > 1.5) {
-			var pth = c.airHeld.th ? 0 : inp.th, pbr = c.airHeld.br ? 0 : inp.br, pst = c.airHeld.st ? 0 : inp.st;
-			if (pth || pbr || pst) {
-				var r = c.body.rotation(); tmpQ.set(r.x, r.y, r.z, r.w); var av = c.body.angvel(), qi = tmpQ.clone().invert(), w = new THREE.Vector3(av.x, av.y, av.z).applyQuaternion(qi);
-				var Ix = d.mass * (d.h * d.h + d.l * d.l) / 12 * 1.4, Iz = d.mass * (d.w * d.w + d.h * d.h) / 12 * 1.4, RATE = 1.8, K = 3;
-				var tx = (pth || pbr) ? Ix * K * ((pth - pbr) * RATE - w.x) : 0, tz = pst ? Iz * K * (-pst * RATE - w.z) : 0;
-				var tq = new THREE.Vector3(tx, 0, tz).applyQuaternion(tmpQ);
-				c.body.addTorque({ x: tq.x, y: tq.y, z: tq.z }, true);
-			}
-		}
+		/* no air control: in the air the pedals and steering do nothing to the car's rotation (pure physics; it used to tip the car) */
+		if (!anyContact) c.airT = (c.airT || 0) + dt; else c.airT = 0;
 		c.flame.visible = !!inp.boost && inp.th > 0;
 		var brk = (inp.br > 0 && v > 0.5) || (inp.th > 0 && v < -0.5) || inp.hb;
 		c.lightR.emissiveIntensity = brk ? 3.2 : (dayK < 0.45 ? 1.1 : 0.5); c.lightF.emissiveIntensity = dayK < 0.45 ? 5 : 1.2;
@@ -1305,12 +1314,34 @@
 			else if (e.t === "wrong" && simT - wrongT > 4) { wrongT = simT; toast("Wrong way! Laps run the other way round"); }
 		});
 		/* record this lap at 20 samples a second for a possible new ghost */
-		if (lap.t0 != null && lap.valid && ghostRec.length < 6000 && (Math.round(simT * 60) % 3 === 0)) ghostRec.push(C.ghostSample(simT - lap.t0, t, c.body.rotation()));
+		if (lap.t0 != null && lap.valid && ghostRec.length < 6000 && (Math.round(simT * 60) % 3 === 0) && subLast) ghostRec.push(C.ghostSample(simT - lap.t0, t, c.body.rotation()));
+	}
+	/* Energy guard. Rapier sometimes pushes a fast-landing chassis out of the ground (heightfield) with a huge impulse: the car shot
+	   off at 3x its landing speed and tumbled. Per kg: kinetic (moving + turning) + potential energy may grow in one step only by what
+	   the springs (4 x max suspension force) and the engine can add; anything more is a solver glitch and is taken back out by scaling
+	   both velocities down. Normal driving, jumps and crashes (which lose energy) never come near the limit. */
+	function carEnergy(c) {
+		var d = c.d, lv = c.body.linvel(), av = c.body.angvel(), t = c.body.translation(), ir = (d.w * d.w + d.h * d.h + d.l * d.l) / 18 * 1.4;
+		var kl = 0.5 * (lv.x * lv.x + lv.y * lv.y + lv.z * lv.z), ka = 0.5 * ir * (av.x * av.x + av.y * av.y + av.z * av.z);
+		return { k: kl + ka, p: -phys.gravity.y * t.y, v: Math.sqrt(2 * kl) };
+	}
+	function energyGuard(c) {
+		var a = c.preE; if (!a) return;
+		var b = carEnergy(c), dt = phys.timestep, d = c.d;
+		var acc = 4 * (d.mass * Math.max(9.81, Math.abs(gravity)) * 2.5 + 10) / d.mass + C.engineForce(d.F, 0, d.vmax, true) * Math.sqrt(Math.max(1, Math.abs(gravity) / 9.81)) / d.mass;
+		var dv = acc * dt * 1.5, allow = dv * (a.v + dv) + 0.5;
+		var target = a.k + a.p + allow - b.p;
+		if (b.k <= target) return;
+		var s = target > 0 ? Math.sqrt(target / b.k) : 0, lv = c.body.linvel(), av = c.body.angvel();
+		c.body.setLinvel({ x: lv.x * s, y: lv.y * s, z: lv.z * s }, true);
+		c.body.setAngvel({ x: av.x * s, y: av.y * s, z: av.z * s }, true);
+		c.glitches = (c.glitches || 0) + 1;
 	}
 	function step(dt) {
 		var pin = readInput();
-		cars.forEach(function (c, i) { driveCar(c, i === player && !autoPilot ? pin : aiInput(c, dt), dt); c.veh.updateVehicle(dt); });
+		cars.forEach(function (c, i) { driveCar(c, i === player && !autoPilot ? pin : aiInput(c, dt), dt); c.veh.updateVehicle(dt); c.preE = carEnergy(c); });
 		phys.step(eventQ);
+		cars.forEach(energyGuard);
 		/* impacts: a velocity change much bigger than gravity + springs can give in one step = a crash */
 		var gy = phys.gravity.y;
 		cars.forEach(function (c, ci) {
@@ -1323,13 +1354,16 @@
 				var sx = 0, sy = 0, sz = 0; rb.forEach(function (q) { sx += q[0]; sy += q[1]; sz += q[2]; });
 				var felt = Math.hypot(sx, sy, sz) / (rb.length * dt) / C.G0;
 				c.gS += (felt - c.gS) * Math.min(1, dt * 6); if (felt > c.gPeak && simT - (c.born || 0) > 1.5) c.gPeak = felt;
-				if (dv > 2.2 && simT - (c.born || 0) > 1) impact(c, ci, nx * dt, ny * dt, nz * dt, dv, t, felt);
+				/* the crash threshold grows with gravity: on the Sun (28 g) just resting on the springs is a 4.6 m/s push every step */
+				var gThr = Math.abs(gravity) * dt * 4;
+				if (dv > 2.2 + gThr && simT - (c.born || 0) > 1) impact(c, ci, nx * dt, ny * dt, nz * dt, dv - gThr, t, felt);
 			}
 			c.lastV = { x: lv.x, y: lv.y, z: lv.z };
 			/* flipped / lost: computer cars put themselves back */
 			var up = upOf(c);
 			if (up.y < 0.25 && Math.hypot(lv.x, lv.z) < 2) c.upsideT += dt; else c.upsideT = 0;
 			if (c.ai && c.upsideT > 3) resetCar(c, true);
+			if (ci === player) unflipTick(c);
 			if (t.y < -60 || t.y > 4000 && gravity > 0.5) resetCar(c, false);
 			if (ci === player) { trackAir(c, t, lv); lapTick(c, t); }
 			/* dust behind wheels on dusty worlds, smoke from wrecks */
@@ -1350,7 +1384,7 @@
 			o.lastV = { x: lv.x, y: lv.y, z: lv.z };
 		});
 		for (var i = objs.length - 1; i >= 0; i--) if (objs[i].broken) breakObj(objs[i], i);
-		if (Math.round(simT * 60) % 2 === 0) recordFrame();
+		if (subLast && Math.round(simT * 60) % 2 === 0) recordFrame();
 	}
 	function impact(c, ci, ix, iy, iz, dv, t, felt) {
 		/* where: the side of the car facing the hit (opposite the push), in car coordinates */
@@ -1567,7 +1601,10 @@
 		if (replay) { replayAdvance(dt); if (skyGroup) skyGroup.position.copy(camera.position); headlights(); return; }
 		if (!paused) {
 			acc += dt * (S.slow ? 0.25 : 1);
-			var n = 0; while (acc >= 1 / 60 && n < 4) { step(1 / 60); simT += 1 / 60; acc -= 1 / 60; n++; }
+			/* heavy gravity makes the (gravity-scaled) springs stiff: take smaller physics steps so they stay stable (Sun: 6 a tick) */
+			var sub = Math.max(1, Math.min(8, Math.ceil(Math.sqrt(Math.abs(gravity) / 9.81)))), sdt = 1 / 60 / sub;
+			phys.timestep = sdt;
+			var n = 0; while (acc >= 1 / 60 && n < 4) { for (var si = 0; si < sub; si++) { subLast = si === sub - 1; step(sdt); simT += sdt; } acc -= 1 / 60; n++; }
 			if (n >= 4) acc = 0;
 			if (gFlip > 0) { gFlip -= dt; if (gFlip <= 0) { gFlip = 0; setGravity(gravity); toast("Gravity is back"); } }
 		}
@@ -1656,7 +1693,7 @@
 		$("cs-lays").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) spawnLayout(b.dataset.k); });
 		$("cs-clear").addEventListener("click", function () { clearObjs(); toast("Objects cleared"); });
 		/* car actions */
-		$("cs-reset").addEventListener("click", function () { resetCar(cars[player], true); });
+		$("cs-reset").addEventListener("click", playerReset); $("cs-sreset").addEventListener("click", playerReset); $("cs-unflip").addEventListener("click", playerReset);
 		$("cs-start").addEventListener("click", function () { resetCar(cars[player], false); repair(cars[player]); });
 		$("cs-repair").addEventListener("click", function () { cars.forEach(repair); toast("All cars repaired"); });
 		$("cs-pause").addEventListener("click", togglePause);
