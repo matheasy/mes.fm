@@ -3352,25 +3352,33 @@
 	});
 	document.addEventListener("paste", function (e) {
 		if (/input|textarea|select/i.test((document.activeElement || {}).tagName || "")) return;
-		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); importFiles(fs); return; }
 		var ae = document.activeElement; if (ae && ae !== document.body && !app.contains(ae)) return;
+		clearTimeout(pasteT); pasteT = 0;
+		var txt = ""; try { txt = (e.clipboardData && e.clipboardData.getData("text/plain")) || ""; } catch (x) { /* ignore */ }
+		// our own Ctrl+C put a marker on the system clipboard: paste the clips, not whatever picture / file was copied before
+		if (txt.indexOf(CLIPMARK) === 0 && readClip()) { e.preventDefault(); VE.paste(); return; }
+		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); importFiles(fs); return; }
 		if (readClip()) { e.preventDefault(); VE.paste(); }   // Ctrl+V with copied clips
 	});
 
 	/* ---------- clip clipboard: cut / copy / paste (kept in this browser, so it also works between tabs and projects that share the media) ---------- */
-	var CLIPKEY = "mes-video-editor:clipboard", clipMem = null;
+	var CLIPKEY = "mes-video-editor:clipboard", CLIPMARK = "MES Video Editor clips ", clipMem = null, pasteT = 0;
+	// Ctrl+V with nothing editable focused: some browsers (Safari) send no paste event then, so paste the copied clips ourselves if none arrives
+	VE.pasteKey = function () { clearTimeout(pasteT); pasteT = setTimeout(function () { pasteT = 0; if (readClip()) VE.paste(); }, 120); };
 	function readClipAny() { return readClip(); }
 	function readClip() { if (clipMem) return clipMem; try { var c = JSON.parse(localStorage.getItem(CLIPKEY)); if (c && c.clips && c.clips.length) return (clipMem = c); } catch (e) { /* ignore */ } return null; }
 	window.addEventListener("storage", function (e) { if (e.key === CLIPKEY) clipMem = null; });
 	VE.copy = function (quiet) {
 		var list = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).map(function (id) { return V.clip(VE.P, id); }).filter(Boolean);
-		if (!list.length) { toast("Select a clip first (click it; Shift-click adds more)."); return false; }
+		if (!list.length) { toast("Select a clip first (click it; Shift- or Ctrl/Cmd-click adds more)."); return false; }
 		var t0 = Math.min.apply(null, list.map(function (c) { return c.start; }));
 		clipMem = { t0: t0, at: Date.now(), clips: list.map(function (c) {
 			var tr = V.track(VE.P, c.track), kind = V.kindFor(c.type), same = VE.P.tracks.filter(function (t) { return t.kind === kind; });
 			return { c: JSON.parse(JSON.stringify(c)), row: same.indexOf(tr) };
 		}) };
 		try { localStorage.setItem(CLIPKEY, JSON.stringify(clipMem)); } catch (e) { /* too big: kept in this tab only */ }
+		// replace the system clipboard too, so Ctrl+V pastes these clips instead of an older screenshot / file
+		try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(CLIPMARK + clipMem.at).catch(function () { /* ignore */ }); } catch (e) { /* ignore */ }
 		if (!quiet) toast("Copied " + list.length + " clip" + (list.length === 1 ? "" : "s") + ". Ctrl+V pastes at the playhead (right-click a track: Paste here).");
 		return true;
 	};
@@ -4631,6 +4639,7 @@
 		if (mod && (k === "i" || k === "I")) { e.preventDefault(); $("vd-file").click(); return; }
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }
 		if (mod && !e.shiftKey && !e.altKey && /^[cx]$/i.test(k) && !String(window.getSelection && window.getSelection() || "")) { if (VE.selected().length) { e.preventDefault(); if (/x/i.test(k)) VE.cut(); else VE.copy(); } return; }
+		if (mod && !e.shiftKey && !e.altKey && (k === "v" || k === "V")) { VE.pasteKey(); return; }   // the paste event (if the browser sends one) cancels this and decides
 		if (e.altKey && !mod && (k === "ArrowUp" || k === "ArrowDown")) { e.preventDefault(); VE.moveRow(k === "ArrowUp" ? -1 : 1); return; }
 		if (mod && e.shiftKey && (k === "a" || k === "A")) { e.preventDefault(); VE.separate(VE.selected()); return; }
 		if (mod && (k === "a" || k === "A")) { e.preventDefault(); VE.sel = VE.P.clips.map(function (c) { return c.id; }); VE.emit("select"); return; }

@@ -751,6 +751,11 @@
 "updated":"2026-11-10",
 "type":"Calculator"
 },
+"/quantum-computing":{
+"added":"2026-11-13",
+"updated":"2026-11-13",
+"type":"Simulation"
+},
 "/quantum-cryptography":{
 "added":"2026-11-13",
 "updated":"2026-11-13",
