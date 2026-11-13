@@ -154,6 +154,34 @@ function Locked(name) { return { kind: 'directory', name: name, values: function
 	t0 = Date.now(); S.largestFiles(mb, 50); S.byType(mb, 0); S.sameSizeGroups(mb, 1);
 	ok(Date.now() - t0 < 3000, 'lists on 120k files in ' + (Date.now() - t0) + ' ms');
 
+	/* cloud or on this computer */
+	(function () {
+		var raw = S.fromPaths([
+			{ path: 'OneDrive-Personal/a.jpg', size: 100, mtime: 1 },
+			{ path: 'OneDrive-Personal/Vid/b.mp4', size: 1000, mtime: 1 },
+			{ path: 'OneDrive-Personal/Vid/Café.mov', size: 50, mtime: 1 },
+			{ path: 'OneDrive-Personal/Icon\r', size: 0, mtime: 1 },
+			{ path: 'OneDrive-Personal/x.txt', size: 7, mtime: 1 }
+		], 'OneDrive-Personal');
+		var m = S.build(raw);
+		var mac = '#mes-storage mac\n0\t40000060\t./a.jpg\n2000\t20\t./Vid/b.mp4\n0\t40000060\t./Vid/Café.mov\n2536\t8040\t./Icon\r\nnot a line\n';
+		var p = S.parseLocation(mac);
+		eq(p.kind, 'mac', 'mac header'); eq(p.count, 4, 'mac rows'); eq(p.bad, 1, 'bad line counted');
+		ok(p.map.get('Icon\r') === 1, 'a name ending in \\r is kept on a Mac');
+		var loc = S.applyLocation(m, p);
+		eq(loc.matched, 4, 'matched (NFD name matches NFC)');
+		eq(loc.cloudB[0], 150, 'cloud bytes'); eq(loc.localB[0], 1000, 'local bytes'); eq(loc.cloudN[0], 2, 'cloud files');
+		eq(m.total[0] - loc.localB[0] - loc.cloudB[0], 7, 'unknown = not in the list');
+		eq(S.largestLocal(m, 5, 0).length, 2, 'largest on-computer files');
+		var w = S.parseLocation('﻿#mes-storage win\r\n5242912\ta.jpg\r\n32\tVid\\b.mp4\r\n524320\tx.txt\r\n');
+		eq(w.kind, 'win', 'win header'); eq(w.map.get('a.jpg'), 2, 'recall = cloud'); eq(w.map.get('Vid/b.mp4'), 1, 'plain = local'); eq(w.map.get('x.txt'), 3, 'pinned');
+		ok(S.parseLocation('hello').error, 'wrong file refused');
+		ok(S.looksCloud('OneDrive-Personal') && S.looksCloud('iCloud Drive') && !S.looksCloud('Documents'), 'cloud folder names');
+		ok(/CloudStorage\/'OneDrive-Personal'/.test(S.locationCommand('mac', 'OneDrive-Personal').cmd), 'mac cd guess');
+		ok(!S.locationCommand('mac', 'Docs').guessed, 'no guess for other folders');
+		ok(/\$env:OneDrive/.test(S.locationCommand('win', 'OneDrive').cmd), 'win cd guess');
+	})();
+
 	console.log(pass + ' passed, ' + fail + ' failed');
 	process.exit(fail ? 1 : 0);
 })();

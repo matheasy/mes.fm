@@ -473,6 +473,33 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #st .tu-btn--primary {background:#34d399;border-color:#34d399;color:#0b1410;}
 	body.dark-mode #st .tu-btn--ghost {color:#cfd6de;border-color:#4a525d;background:transparent;}
 	body.dark-mode #st .tu-btn--ghost:hover {background:#2a313a;}
+	/* cloud or on this computer */
+	.st {--st-here:#15803d;--st-cloud:#0369a1;--st-cloudbg:#eef7fd;--st-cloudb:#b9dcf2;}
+	#st .st-locv {color:var(--st-here);}
+	#st .st-cldv {color:var(--st-cloud);}
+	#st .st-muted {color:var(--st-muted);}
+	.st-cloudtag {font-size:0.88em;color:var(--st-muted);}
+	.st-cloudwarn {background:var(--st-cloudbg);border:1px solid var(--st-cloudb);border-radius:0.55em;padding:0.65em 0.9em;margin:0.7em 0 0;line-height:1.5;}
+	.st-cloudhow {margin-top:0.7em;}
+	.st-cloudhow > summary {cursor:pointer;font-weight:600;padding:0.35em 0;}
+	.st-cloudhow > p {line-height:1.55;}
+	.st-steps {line-height:1.6;padding-left:1.4em;margin:0.7em 0;}
+	.st-cmdbox {display:flex;gap:0.6em;align-items:flex-start;flex-wrap:wrap;background:var(--st-soft);border:1px solid var(--st-line);border-radius:0.55em;padding:0.6em;}
+	#st .st-cmd {flex:1 1 20em;min-width:0;background:none;padding:0;font-size:0.86em;line-height:1.5;word-break:break-all;white-space:pre-wrap;user-select:all;}
+	.st-cdrop {border:2px dashed var(--st-cloudb);border-radius:0.6em;padding:1em;text-align:center;margin-top:0.8em;background:var(--st-cloudbg);display:flex;gap:0.6em;align-items:center;justify-content:center;flex-wrap:wrap;}
+	.st-cdrop.st-over {border-color:var(--st-cloud);}
+	.st-locbar {display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--st-bartrack);margin:0.8em 0 0.5em;}
+	.st-locbar span {display:block;height:100%;}
+	.st-lbh {background:var(--st-here);}
+	.st-lbc {background:var(--st-cloud);}
+	.st-locnums {display:flex;flex-wrap:wrap;gap:0.3em 1.4em;margin-bottom:0.6em;}
+	.st-locnums b {font-size:1.15em;}
+	.st-iloc {margin-top:0.25em;}
+	.st-cbadge {font-size:0.85em;margin-left:0.2em;}
+	.st-locc .st-pathsm {display:block;}
+	.st-lg {display:inline-flex;align-items:center;gap:0.35em;padding:0.25em 0.6em;}
+	.st-lgnote {color:var(--st-muted);font-size:0.9em;}
+	body.dark-mode #st.st {--st-here:#4ade80;--st-cloud:#7dd3fc;--st-cloudbg:#10283a;--st-cloudb:#24506e;}
 
 
 	@media print {
@@ -597,21 +624,22 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode .st{--st-bar:#22e7b6;--st-tipbg:rgba(85,115,181,0.94);--st-sel:#f5a214;--st-err:#df2a2a}
 	body.dark-mode #st code{background:rgba(82,82,82,0.15)}
+	body.dark-mode .st{--st-here:#2ddc6e;--st-cloud:#0fa7fb}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/storage" />            <meta property="og:title" content="MES Storage Analyzer | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/storage/img/logo-big.png" />
-        <meta property="og:description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded." />
+        <meta property="og:description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded." />
 
-        <meta name="description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES Storage Analyzer">
-        <meta name="twitter:description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.">
+        <meta name="twitter:description" content="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded.">
         <meta name="twitter:image" content="https://mes.fm/storage/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Storage Analyzer">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Storage Analyzer", "url": "https://mes.fm/storage", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Storage Analyzer", "url": "https://mes.fm/storage", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -808,7 +836,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Storage Analyzer: See What Is Taking Up Space in a Folder</h1>                                        <p class="page-description">Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Storage Analyzer: See What Is Taking Up Space in a Folder</h1>                                        <p class="page-description">Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu st" id="st">
 		<p class="st-honest"><b>Private:</b> this page looks at a folder on your computer and adds up the file sizes. It never opens or reads your files (unless you ask it to check for exact duplicates), and nothing is uploaded: everything happens in this browser tab.</p>
@@ -851,13 +879,27 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<p class="st-warnline" id="st-warn" hidden></p>
 			</section>
 
+			<section class="tu-card st-cloud" id="st-cloudsec">
+				<div class="st-chead"><h2 class="st-h">☁️ In the cloud or on this computer?</h2><span class="st-cloudtag" id="st-cloudtag"></span></div>
+				<div id="st-cloudres"></div>
+				<details class="st-cloudhow" id="st-cloudhow">
+					<summary id="st-cloudsum">Find out which files are downloaded and which are only in the cloud</summary>
+					<p id="st-cloudwhy">OneDrive, iCloud Drive, Dropbox and Google Drive keep many files <b>only in the cloud</b> and download them when you open them. A browser can't see the difference: it reports every file's full size, downloaded or not, so the totals above are what the folder holds in the cloud, not what it takes on your disk. Your computer does know, and one read-only command can tell this page.</p>
+					<div class="tu-seg st-seg" role="group" aria-label="Your computer"><button type="button" data-os="mac" aria-pressed="true">Mac</button><button type="button" data-os="win" aria-pressed="false">Windows</button></div>
+					<ol class="st-steps" id="st-steps"></ol>
+					<div class="st-cmdbox"><code class="st-cmd" id="st-cmd"></code><button type="button" class="tu-btn tu-btn--primary st-small" id="st-cmdcopy">Copy command</button></div>
+					<p class="tu-note">The command only reads each file's flags from the file list. It doesn't open, download, change or upload anything, and the list it saves stays on your computer until you drop it here (it is read in this tab, not sent anywhere).</p>
+					<div class="st-cdrop" id="st-cdrop"><b>Drop mes-storage-cloud.txt here</b> or <button type="button" class="tu-btn tu-btn--ghost st-small" id="st-cfile">Choose the file</button><input type="file" id="st-cinput" accept=".txt,text/plain" hidden></div>
+					<p class="tu-note" id="st-cdemo" hidden><button type="button" class="tu-btn tu-btn--ghost st-small" id="st-cdemobtn">Try it on the made-up folder</button></p>
+				</details>
+			</section>
 			<section class="tu-card st-chartcard" id="st-chartsec">
 				<div class="st-chead">
 					<div class="tu-seg st-seg" role="group" aria-label="Chart">
 						<button type="button" data-view="sun" aria-pressed="true">◔ Sunburst</button><button type="button" data-view="tree" aria-pressed="false">▦ Treemap</button>
 					</div>
 					<div class="tu-seg st-seg" role="group" aria-label="Colours">
-						<button type="button" data-col="folder" aria-pressed="true">By folder</button><button type="button" data-col="type" aria-pressed="false">By file type</button>
+						<button type="button" data-col="folder" aria-pressed="true">By folder</button><button type="button" data-col="type" aria-pressed="false">By file type</button><button type="button" data-col="where" aria-pressed="false" title="Downloaded or only in the cloud">☁️ Cloud or here</button>
 					</div>
 					<label class="st-rings" id="st-ringslab">Rings <input type="range" id="st-rings" min="2" max="10" step="1" value="6"> <b id="st-ringsv">6</b></label>
 					<span class="st-cbtns" id="st-cbtns"></span>
@@ -893,6 +935,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<th class="st-thbar"><button type="button" data-sort="size">% of folder</button></th>
 							<th class="st-num"><button type="button" data-sort="files">Files</button></th>
 							<th class="st-num st-hidesm"><button type="button" data-sort="date">Last changed</button></th>
+							<th class="st-num st-thloc" hidden><button type="button" data-sort="local" title="How much of it is downloaded to this computer">On this computer</button></th>
 						</tr></thead>
 						<tbody id="st-tbody"></tbody>
 					</table>
@@ -903,6 +946,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="st-chead">
 					<div class="tu-chips st-tabs" id="st-tabs" role="tablist" aria-label="Lists">
 						<button type="button" class="tu-chip" role="tab" data-tab="big">Largest files</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="local" hidden>💻 On this computer</button>
 						<button type="button" class="tu-chip" role="tab" data-tab="types">File types</button>
 						<button type="button" class="tu-chip" role="tab" data-tab="old">Old &amp; large</button>
 						<button type="button" class="tu-chip" role="tab" data-tab="dup">Duplicates</button>
@@ -957,6 +1001,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>"Last changed" is the date the file was last modified. Web pages can't see when a file was last opened, so an old date means "not changed", not necessarily "not used".</p>
 			<h4>How are duplicates found?</h4>
 			<p>First by size: files with exactly the same number of bytes are possible duplicates, which costs nothing. If you press "Check contents", the page reads those files and compares their SHA-256 fingerprints; files with the same fingerprint have the same contents. Very large files (over 2 GB) are compared by their first and last 8 MB and are marked as "probably the same".</p>
+			<h4>Does it know which OneDrive / iCloud files are only in the cloud?</h4>
+			<p>Yes, with one extra step. Browsers report the full size of a cloud-only file (a "placeholder"), so on its own the page counts everything. Copy the command from the "In the cloud or on this computer?" box into Terminal (Mac) or PowerShell (Windows): it reads each file's cloud flag (macOS marks cloud-only files "dataless"; Windows uses the "recall on data access" attribute) without downloading anything, and saves a list you drop onto the page. The charts can then be coloured by where each file is, and a list shows the biggest files that really take space on your disk.</p>
 			<h4>What about shortcuts and links?</h4>
 			<p>Browsers decide how links (symlinks, shortcuts, aliases) appear; some are skipped and a shortcut file counts as a small file. A link loop can't run forever: the scan stops 64 folder levels down and lists anything it skipped under "Couldn't read".</p>
 			<h4>How many files can it handle?</h4>
@@ -1023,7 +1069,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/storage/js/storage.js?v=1" defer></script>
+	<script src="/storage/js/storage.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

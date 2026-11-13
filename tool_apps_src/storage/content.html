@@ -40,13 +40,27 @@
 				<p class="st-warnline" id="st-warn" hidden></p>
 			</section>
 
+			<section class="tu-card st-cloud" id="st-cloudsec">
+				<div class="st-chead"><h2 class="st-h">☁️ In the cloud or on this computer?</h2><span class="st-cloudtag" id="st-cloudtag"></span></div>
+				<div id="st-cloudres"></div>
+				<details class="st-cloudhow" id="st-cloudhow">
+					<summary id="st-cloudsum">Find out which files are downloaded and which are only in the cloud</summary>
+					<p id="st-cloudwhy">OneDrive, iCloud Drive, Dropbox and Google Drive keep many files <b>only in the cloud</b> and download them when you open them. A browser can't see the difference: it reports every file's full size, downloaded or not, so the totals above are what the folder holds in the cloud, not what it takes on your disk. Your computer does know, and one read-only command can tell this page.</p>
+					<div class="tu-seg st-seg" role="group" aria-label="Your computer"><button type="button" data-os="mac" aria-pressed="true">Mac</button><button type="button" data-os="win" aria-pressed="false">Windows</button></div>
+					<ol class="st-steps" id="st-steps"></ol>
+					<div class="st-cmdbox"><code class="st-cmd" id="st-cmd"></code><button type="button" class="tu-btn tu-btn--primary st-small" id="st-cmdcopy">Copy command</button></div>
+					<p class="tu-note">The command only reads each file's flags from the file list. It doesn't open, download, change or upload anything, and the list it saves stays on your computer until you drop it here (it is read in this tab, not sent anywhere).</p>
+					<div class="st-cdrop" id="st-cdrop"><b>Drop mes-storage-cloud.txt here</b> or <button type="button" class="tu-btn tu-btn--ghost st-small" id="st-cfile">Choose the file</button><input type="file" id="st-cinput" accept=".txt,text/plain" hidden></div>
+					<p class="tu-note" id="st-cdemo" hidden><button type="button" class="tu-btn tu-btn--ghost st-small" id="st-cdemobtn">Try it on the made-up folder</button></p>
+				</details>
+			</section>
 			<section class="tu-card st-chartcard" id="st-chartsec">
 				<div class="st-chead">
 					<div class="tu-seg st-seg" role="group" aria-label="Chart">
 						<button type="button" data-view="sun" aria-pressed="true">◔ Sunburst</button><button type="button" data-view="tree" aria-pressed="false">▦ Treemap</button>
 					</div>
 					<div class="tu-seg st-seg" role="group" aria-label="Colours">
-						<button type="button" data-col="folder" aria-pressed="true">By folder</button><button type="button" data-col="type" aria-pressed="false">By file type</button>
+						<button type="button" data-col="folder" aria-pressed="true">By folder</button><button type="button" data-col="type" aria-pressed="false">By file type</button><button type="button" data-col="where" aria-pressed="false" title="Downloaded or only in the cloud">☁️ Cloud or here</button>
 					</div>
 					<label class="st-rings" id="st-ringslab">Rings <input type="range" id="st-rings" min="2" max="10" step="1" value="6"> <b id="st-ringsv">6</b></label>
 					<span class="st-cbtns" id="st-cbtns"></span>
@@ -82,6 +96,7 @@
 							<th class="st-thbar"><button type="button" data-sort="size">% of folder</button></th>
 							<th class="st-num"><button type="button" data-sort="files">Files</button></th>
 							<th class="st-num st-hidesm"><button type="button" data-sort="date">Last changed</button></th>
+							<th class="st-num st-thloc" hidden><button type="button" data-sort="local" title="How much of it is downloaded to this computer">On this computer</button></th>
 						</tr></thead>
 						<tbody id="st-tbody"></tbody>
 					</table>
@@ -92,6 +107,7 @@
 				<div class="st-chead">
 					<div class="tu-chips st-tabs" id="st-tabs" role="tablist" aria-label="Lists">
 						<button type="button" class="tu-chip" role="tab" data-tab="big">Largest files</button>
+						<button type="button" class="tu-chip" role="tab" data-tab="local" hidden>💻 On this computer</button>
 						<button type="button" class="tu-chip" role="tab" data-tab="types">File types</button>
 						<button type="button" class="tu-chip" role="tab" data-tab="old">Old &amp; large</button>
 						<button type="button" class="tu-chip" role="tab" data-tab="dup">Duplicates</button>
@@ -146,6 +162,8 @@
 			<p>"Last changed" is the date the file was last modified. Web pages can't see when a file was last opened, so an old date means "not changed", not necessarily "not used".</p>
 			<h4>How are duplicates found?</h4>
 			<p>First by size: files with exactly the same number of bytes are possible duplicates, which costs nothing. If you press "Check contents", the page reads those files and compares their SHA-256 fingerprints; files with the same fingerprint have the same contents. Very large files (over 2 GB) are compared by their first and last 8 MB and are marked as "probably the same".</p>
+			<h4>Does it know which OneDrive / iCloud files are only in the cloud?</h4>
+			<p>Yes, with one extra step. Browsers report the full size of a cloud-only file (a "placeholder"), so on its own the page counts everything. Copy the command from the "In the cloud or on this computer?" box into Terminal (Mac) or PowerShell (Windows): it reads each file's cloud flag (macOS marks cloud-only files "dataless"; Windows uses the "recall on data access" attribute) without downloading anything, and saves a list you drop onto the page. The charts can then be coloured by where each file is, and a list shows the biggest files that really take space on your disk.</p>
 			<h4>What about shortcuts and links?</h4>
 			<p>Browsers decide how links (symlinks, shortcuts, aliases) appear; some are skipped and a shortcut file counts as a small file. A link loop can't run forever: the scan stops 64 folder levels down and lists anything it skipped under "Couldn't read".</p>
 			<h4>How many files can it handle?</h4>

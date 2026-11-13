@@ -166,3 +166,30 @@
 	body.dark-mode #st .tu-btn--primary {background:#34d399;border-color:#34d399;color:#0b1410;}
 	body.dark-mode #st .tu-btn--ghost {color:#cfd6de;border-color:#4a525d;background:transparent;}
 	body.dark-mode #st .tu-btn--ghost:hover {background:#2a313a;}
+	/* cloud or on this computer */
+	.st {--st-here:#15803d;--st-cloud:#0369a1;--st-cloudbg:#eef7fd;--st-cloudb:#b9dcf2;}
+	#st .st-locv {color:var(--st-here);}
+	#st .st-cldv {color:var(--st-cloud);}
+	#st .st-muted {color:var(--st-muted);}
+	.st-cloudtag {font-size:0.88em;color:var(--st-muted);}
+	.st-cloudwarn {background:var(--st-cloudbg);border:1px solid var(--st-cloudb);border-radius:0.55em;padding:0.65em 0.9em;margin:0.7em 0 0;line-height:1.5;}
+	.st-cloudhow {margin-top:0.7em;}
+	.st-cloudhow > summary {cursor:pointer;font-weight:600;padding:0.35em 0;}
+	.st-cloudhow > p {line-height:1.55;}
+	.st-steps {line-height:1.6;padding-left:1.4em;margin:0.7em 0;}
+	.st-cmdbox {display:flex;gap:0.6em;align-items:flex-start;flex-wrap:wrap;background:var(--st-soft);border:1px solid var(--st-line);border-radius:0.55em;padding:0.6em;}
+	#st .st-cmd {flex:1 1 20em;min-width:0;background:none;padding:0;font-size:0.86em;line-height:1.5;word-break:break-all;white-space:pre-wrap;user-select:all;}
+	.st-cdrop {border:2px dashed var(--st-cloudb);border-radius:0.6em;padding:1em;text-align:center;margin-top:0.8em;background:var(--st-cloudbg);display:flex;gap:0.6em;align-items:center;justify-content:center;flex-wrap:wrap;}
+	.st-cdrop.st-over {border-color:var(--st-cloud);}
+	.st-locbar {display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--st-bartrack);margin:0.8em 0 0.5em;}
+	.st-locbar span {display:block;height:100%;}
+	.st-lbh {background:var(--st-here);}
+	.st-lbc {background:var(--st-cloud);}
+	.st-locnums {display:flex;flex-wrap:wrap;gap:0.3em 1.4em;margin-bottom:0.6em;}
+	.st-locnums b {font-size:1.15em;}
+	.st-iloc {margin-top:0.25em;}
+	.st-cbadge {font-size:0.85em;margin-left:0.2em;}
+	.st-locc .st-pathsm {display:block;}
+	.st-lg {display:inline-flex;align-items:center;gap:0.35em;padding:0.25em 0.6em;}
+	.st-lgnote {color:var(--st-muted);font-size:0.9em;}
+	body.dark-mode #st.st {--st-here:#4ade80;--st-cloud:#7dd3fc;--st-cloudbg:#10283a;--st-cloudb:#24506e;}

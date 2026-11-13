@@ -401,11 +401,83 @@ var MESStorage = (function () {
 		return { tool: 'MES Storage Analyzer', made: new Date(nowMs || Date.now()).toISOString(), root: pathOf(m, root), tree: node(root, 0) };
 	}
 
+	/* ---------- cloud or on this computer? ----------
+	   A web page can't see whether a file in a OneDrive / iCloud / Dropbox / Google Drive folder is downloaded:
+	   the browser reports the full size either way. The person runs one read-only command (it only reads file
+	   flags, so nothing is downloaded) and drops its output here. Formats (first line is the header):
+	     #mes-storage mac   then  <512-byte blocks>\t<st_flags hex>\t./relative/path      (stat -f '%b%t%Xf%t%N')
+	     #mes-storage win   then  <attributes decimal>\t<relative\path>                   (PowerShell)
+	   mac: SF_DATALESS (0x40000000) = only in the cloud. win: RECALL_ON_DATA_ACCESS (0x400000), RECALL_ON_OPEN
+	   (0x40000) or OFFLINE (0x1000) = only in the cloud; PINNED (0x80000) = "Always keep on this device". */
+	var CLOUD_DIRS = /^(onedrive|dropbox|google ?drive|googledrive|icloud|icloud drive|mobile documents|box|cloudstorage|pcloud|mega|nextcloud|sync)\b/i;
+	function looksCloud(name) { return CLOUD_DIRS.test(String(name || '').trim()); }
+	function parseLocation(text) {
+		text = String(text || '').replace(/^﻿/, '');
+		var nl = text.indexOf('\n'), head = (nl < 0 ? text : text.slice(0, nl)).replace(/\r$/, '').trim().toLowerCase();
+		var kind = head === '#mes-storage mac' ? 'mac' : head === '#mes-storage win' ? 'win' : '';
+		if (!kind) return { error: 'This isn\'t the list the command makes (its first line should be "#mes-storage mac" or "#mes-storage win").' };
+		var lines = text.slice(nl + 1).split('\n'), map = new Map(), bad = 0;
+		for (var k = 0; k < lines.length; k++) {
+			var ln = lines[k];
+			if (kind === 'win') ln = ln.replace(/\r$/, '');   /* Windows writes CRLF; on a Mac a file name may really end in \r ("Icon\r") */
+			if (!ln) continue;
+			var a = ln.indexOf('\t'); if (a < 0) { bad++; continue; }
+			var st, path;
+			if (kind === 'mac') {
+				var b = ln.indexOf('\t', a + 1); if (b < 0) { bad++; continue; }
+				var blocks = +ln.slice(0, a), flags = parseInt(ln.slice(a + 1, b), 16);
+				if (!(flags >= 0) || !(blocks >= 0)) { bad++; continue; }
+				path = ln.slice(b + 1).replace(/^\.\//, '');
+				st = (flags & 0x40000000) ? 2 : 1;
+			} else {
+				var at = +ln.slice(0, a); if (!(at >= 0)) { bad++; continue; }
+				path = ln.slice(a + 1).replace(/\\/g, '/').replace(/^\.\//, '');
+				st = (at & (0x400000 | 0x40000 | 0x1000)) ? 2 : (at & 0x80000) ? 3 : 1;
+			}
+			map.set(path.normalize('NFC'), st);
+		}
+		return { kind: kind, map: map, count: map.size, bad: bad };
+	}
+	/* where[i] for files: 0 unknown, 1 on this computer, 2 only in the cloud, 3 kept on this device (pinned).
+	   Per node: localB / cloudB / cloudN totals (unknown = total - local - cloud). */
+	function applyLocation(m, parsed) {
+		var n = m.n, where = new Uint8Array(n), localB = new Float64Array(n), cloudB = new Float64Array(n), cloudN = new Uint32Array(n), localN = new Uint32Array(n), matched = 0;
+		var rel = new Array(n); rel[0] = '';
+		for (var i = 1; i < n; i++) {
+			var pp = rel[m.parent[i]];
+			rel[i] = (pp ? pp + '/' : '') + String(m.names[i]).normalize('NFC');
+			if (m.isDir[i]) continue;
+			var st = parsed.map.get(rel[i]);
+			if (!st) continue;
+			where[i] = st; matched++;
+			if (st === 2) { cloudB[i] = m.size[i]; cloudN[i] = 1; } else { localB[i] = m.size[i]; localN[i] = 1; }
+		}
+		for (i = n - 1; i > 0; i--) { var p = m.parent[i]; localB[p] += localB[i]; cloudB[p] += cloudB[i]; cloudN[p] += cloudN[i]; localN[p] += localN[i]; }
+		m.loc = { kind: parsed.kind, where: where, localB: localB, cloudB: cloudB, cloudN: cloudN, localN: localN, matched: matched, listed: parsed.count };
+		return m.loc;
+	}
+	function largestLocal(m, n, root) { var w = m.loc && m.loc.where; return topN(fileIds(m, root).filter(function (i) { return w && w[i] && w[i] !== 2; }), function (i) { return m.size[i]; }, n || 50); }
+	function shq(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
+	function psq(s) { return "'" + String(s).replace(/'/g, "''") + "'"; }
+	/* the command for each system. dir = a folder to cd into when we can guess it (cloud folders have known places) */
+	function locationCommand(os, rootName) {
+		var r = String(rootName || ''), out;
+		if (os === 'mac') {
+			var cd = /^(onedrive|dropbox|googledrive|google drive|box)/i.test(r) ? 'cd ~/Library/CloudStorage/' + shq(r) + ' && ' : /^icloud/i.test(r) ? 'cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs && ' : '';
+			out = cd + '{ echo "#mes-storage mac"; find . -type f -exec stat -f \'%b%t%Xf%t%N\' {} + 2>/dev/null; } > ~/Downloads/mes-storage-cloud.txt && open -R ~/Downloads/mes-storage-cloud.txt';
+			return { cmd: out, guessed: !!cd };
+		}
+		var cdw = /^onedrive/i.test(r) ? (r.toLowerCase() === 'onedrive' ? 'cd $env:OneDrive; ' : 'cd (Join-Path $env:USERPROFILE ' + psq(r) + '); ') : '';
+		out = cdw + '$b=(Get-Location).Path; & { "#mes-storage win"; Get-ChildItem -LiteralPath $b -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { "{0}`t{1}" -f [int]$_.Attributes, $_.FullName.Substring($b.Length).TrimStart(\'\\\') } } | Set-Content -Encoding UTF8 "$env:USERPROFILE\\Downloads\\mes-storage-cloud.txt"; explorer.exe /select,"$env:USERPROFILE\\Downloads\\mes-storage-cloud.txt"';
+		return { cmd: out, guessed: !!cdw };
+	}
+
 	return { scanHandle: scanHandle, WORKER_SRC: WORKER_SRC, fromPaths: fromPaths, build: build, children: children, pathOf: pathOf,
 		ancestors: ancestors, isInside: isInside, topN: topN, largestFiles: largestFiles, byType: byType, oldLarge: oldLarge,
 		emptyFolders: emptyFolders, sameSizeGroups: sameSizeGroups, splitByHash: splitByHash, matcher: matcher, search: search,
 		squarify: squarify, sunburst: sunburst, ext: ext, catOf: catOf, CATS: CATS, fmtBytes: fmtBytes, fmtInt: fmtInt, pct: pct,
-		fmtPct: fmtPct, fmtDate: fmtDate, ageText: ageText, parseSize: parseSize, csvCell: csvCell, toCSV: toCSV, toJSON: toJSON };
+		fmtPct: fmtPct, fmtDate: fmtDate, ageText: ageText, parseSize: parseSize, csvCell: csvCell, toCSV: toCSV, toJSON: toJSON,
+		looksCloud: looksCloud, parseLocation: parseLocation, applyLocation: applyLocation, largestLocal: largestLocal, locationCommand: locationCommand };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage;
 
@@ -428,6 +500,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	var mode = 'none';         // 'handle' (File System Access), 'paths' (folder upload picker / dropped entries), 'demo'
 	var busy = null;           // the running scan: {cancel()}
 	var hashes = {}, hashRun = null;
+	var locParsed = null;      // the dropped cloud-status list, kept for "Scan again" (in memory only)
 	var hasPicker = typeof window.showDirectoryPicker === 'function';
 	var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -572,6 +645,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		for (var i = 0; i < e.dataTransfer.items.length; i++) if (e.dataTransfer.items[i].kind === 'file') { it = e.dataTransfer.items[i]; break; }
 		if (!it) return;
 		var entry = it.webkitGetAsEntry ? it.webkitGetAsEntry() : null;
+		var asFile = it.getAsFile ? it.getAsFile() : null;
+		if (M && asFile && /\.txt$/i.test(asFile.name) && !(entry && entry.isDirectory)) { readLocFile(asFile); return; }
 		if (it.getAsFileSystemHandle) {
 			it.getAsFileSystemHandle().then(function (h) {
 				if (h && h.kind === 'directory') scanFromHandle(h);
@@ -623,6 +698,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	function finish(raw, how) {
 		showProg(false);
 		mode = how; M = L.build(raw); zoom = 0; sel = -1; hover = -1; expanded = new Set(); moreN = new Map(); focusCat = -1; hashes = {}; hashRun = null;
+		if (locParsed && locParsed.root === M.names[0]) L.applyLocation(M, locParsed); else locParsed = null;
+		if (!M.loc && P.col === 'where') P.col = 'folder';
+		if (!M.loc && P.tab === 'local') P.tab = 'big';
 		$('st-pick').hidden = true; $('st-res').hidden = false;
 		if (M.n < 2) toast('The folder is empty, or the browser showed none of its files.');
 		renderAll();
@@ -636,7 +714,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		else { toast('The browser needs you to pick the folder again.'); $('st-choose').click(); }
 	};
 
-	function renderAll() { renderSummary(); renderZoom(); }
+	function renderAll() { renderSummary(); renderCloud(); paintSeg(); renderZoom(); }
 	function renderZoom() { renderCrumbs(); drawChart(); renderInfo(); renderLegend(); renderTable(); renderList(); }
 
 	function renderSummary() {
@@ -648,7 +726,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 			['<b>' + N(M.dirs[0]) + '</b><span>folders</span>'],
 			[cat ? '<b>' + esc(cat.name) + '</b><span>biggest type: ' + B(cat.bytes) + ' (' + L.fmtPct(L.pct(cat.bytes, M.total[0])) + ')</span>' : ''],
 			[big != null ? '<b>' + B(M.size[big]) + '</b><span>largest file: ' + esc(M.names[big]) + '</span>' : '']
-		].filter(function (x) { return x[0]; }).map(function (x) { return '<div class="st-stat">' + x[0] + '</div>'; }).join('');
+		].concat(M.loc ? [['<b class="st-locv">' + B(M.loc.localB[0]) + '</b><span>💻 on this computer (' + N(M.loc.localN[0]) + ' files)</span>'], ['<b class="st-cldv">' + B(M.loc.cloudB[0]) + '</b><span>☁️ only in the cloud (' + N(M.loc.cloudN[0]) + ' files)</span>']] : [])
+		.filter(function (x) { return x[0]; }).map(function (x) { return '<div class="st-stat">' + x[0] + '</div>'; }).join('');
 		var w = $('st-warn');
 		if (M.errors.length) { w.hidden = false; w.innerHTML = N(M.errors.length) + ' item' + (M.errors.length > 1 ? 's' : '') + ' could not be read and ' + (M.errors.length > 1 ? 'are' : 'is') + ' not counted. <button type="button" id="st-goerr">See which</button>'; $('st-goerr').onclick = function () { setTab('err'); $('st-listsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }; }
 		else w.hidden = true;
@@ -693,6 +772,23 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		var dk = dark();
 		return 'hsl(215,' + (dk ? 10 : 12) + '%,' + (dk ? 30 + ring * 4 : 70 + Math.min(ring, 5) * 3) + '%)';
 	}
+	/* ☁️ Cloud or here: files by where they are, folders blended by how much of them is downloaded */
+	var LOC_COL = { here: [22, 163, 74], cloud: [56, 189, 248], none: [148, 163, 184] };
+	function mixRGB(a, b, t) { return [0, 1, 2].map(function (k) { return Math.round(a[k] + (b[k] - a[k]) * t); }); }
+	function whereCol(i, ring) {
+		var lo = M.loc, dk = dark(), c;
+		if (!lo) c = LOC_COL.none;
+		else if (!M.isDir[i]) c = lo.where[i] === 2 ? LOC_COL.cloud : lo.where[i] ? (lo.where[i] === 3 ? [21, 128, 61] : LOC_COL.here) : LOC_COL.none;
+		else { var a = lo.localB[i], b = lo.cloudB[i]; c = a + b > 0 ? mixRGB(LOC_COL.cloud, LOC_COL.here, a / (a + b)) : LOC_COL.none; }
+		var f = M.isDir[i] ? (dk ? -0.12 + Math.min(ring, 6) * 0.04 : -0.08 + Math.min(ring, 6) * 0.05) : (dk ? 0.05 : 0.18);
+		return 'rgb(' + c.map(function (v) { return Math.round(f > 0 ? v + (255 - v) * f : v * (1 + f)); }).join(',') + ')';
+	}
+	function locLine(i) {
+		var lo = M.loc; if (!lo) return '';
+		if (!M.isDir[i]) return ['Not in the cloud list', '💻 On this computer', '☁️ Only in the cloud (not downloaded)', '📌 Always kept on this device'][lo.where[i]];
+		return '💻 ' + B(lo.localB[i]) + ' on this computer · ☁️ ' + B(lo.cloudB[i]) + ' only in the cloud' + (lo.cloudN[i] ? ' (' + N(lo.cloudN[i]) + ' files)' : '');
+	}
+	function cloudBadge(i) { return M.loc && !M.isDir[i] && M.loc.where[i] === 2 ? ' <span class="st-cbadge" title="Only in the cloud">☁️</span>' : ''; }
 	function faded(i) { return focusCat >= 0 && (M.isDir[i] || M.cat[i] !== focusCat); }
 
 	/* ---------- chart ---------- */
@@ -736,6 +832,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 			var ri = r0 + (a.ring - 1) * dr, ro = ri + dr - 0.5, s = a.a0 - Math.PI / 2, e = a.a1 - Math.PI / 2, col;
 			if (a.i < 0) col = dark() ? '#4b5563' : '#cbd5e1';
 			else if (P.col === 'type') col = typeCol(a.i, a.ring);
+			else if (P.col === 'where') col = whereCol(a.i, a.ring);
 			else col = folderCol(hueOfTop(topIx.get(topOf(a.i)) || 0), a.ring, !M.isDir[a.i]);
 			ctx.globalAlpha = a.i >= 0 && faded(a.i) ? 0.18 : 1;
 			ctx.beginPath(); ctx.arc(cx, cy, ro, s, e); ctx.arc(cx, cy, ri, e, s, true); ctx.closePath();
@@ -772,7 +869,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		var rects = [], ids = [], depthOf = [], budget = 60000, bg = cssVar('--st-chartbg'), dk = dark();
 		var topIx = new Map(); L.children(M, zoom).forEach(function (c, k) { topIx.set(c, k); });
 		ctx.font = '600 11px system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-		function colOf(i, d, h) { return P.col === 'type' ? typeCol(i, d) : folderCol(h, d, !M.isDir[i]); }
+		function colOf(i, d, h) { return P.col === 'type' ? typeCol(i, d) : P.col === 'where' ? whereCol(i, d) : folderCol(h, d, !M.isDir[i]); }
 		function rec(i, x, y, w, h, d, hue) {
 			var ks = L.children(M, i), vals = new Array(ks.length);
 			for (var k = 0; k < ks.length; k++) vals[k] = M.total[ks[k]];
@@ -877,6 +974,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 			html = '<b>' + (M.isDir[i] ? '📁 ' : '') + esc(M.names[i]) + '</b><br>' + B(M.total[i]) + ' · ' + L.fmtPct(L.pct(M.total[i], M.total[zoom])) + ' of ' + esc(M.names[zoom]) +
 				(M.isDir[i] ? '<br>' + N(M.files[i]) + ' files' : '<br>' + esc(L.CATS[M.cat[i]].name) + (M.exts[M.extId[i]] ? ' (.' + esc(M.exts[M.extId[i]]) + ')' : '')) +
 				(M.newest[i] > 0 ? '<br>Last changed ' + L.fmtDate(M.newest[i]) : '') +
+				(M.loc ? '<br>' + locLine(i) : '') +
 				(p >= 0 && p !== zoom ? '<div class="st-tippath">in ' + esc(L.pathOf(M, p)) + '</div>' : '');
 		}
 		tip.innerHTML = html; tip.hidden = false;
@@ -918,6 +1016,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 			'<div>' + share + '</div>' +
 			(d ? '<div>' + N(M.files[i]) + ' files · ' + N(M.dirs[i]) + ' folders</div>' : '<div>' + esc(L.CATS[M.cat[i]].name) + (M.exts[M.extId[i]] ? ' · .' + esc(M.exts[M.extId[i]]) : '') + ' · ' + N(M.size[i]) + ' bytes</div>') +
 			(M.newest[i] > 0 ? '<div>' + (d ? 'Newest change ' : 'Last changed ') + L.fmtDate(M.newest[i]) + ' (' + L.ageText(M.newest[i], Date.now()) + ')</div>' : '') +
+			(M.loc ? '<div class="st-iloc">' + locLine(i) + '</div>' : '') +
 			'<div class="st-ipath">' + esc(L.pathOf(M, i)) + '</div>' +
 			'<div class="tu-row">' +
 			(d && i !== zoom ? '<button type="button" class="tu-btn st-small" data-act="zoom">Zoom in</button>' : '') +
@@ -942,7 +1041,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	/* legend */
 	function renderLegend() {
 		var el = $('st-legend');
-		if (P.col === 'type') {
+		if (P.col === 'where') {
+			var lo = M.loc, z = zoom, un = M.total[z] - lo.localB[z] - lo.cloudB[z];
+			el.innerHTML = [['here', '💻 On this computer', lo.localB[z]], ['cloud', '☁️ Only in the cloud', lo.cloudB[z]], ['none', 'Not in the list', un]].filter(function (x) { return x[2] > 0 || x[0] !== 'none'; })
+				.map(function (x) { return '<span class="st-lg"><span class="st-sw" style="background:rgb(' + LOC_COL[x[0]].join(',') + ')"></span>' + x[1] + ' · ' + B(x[2]) + ' (' + L.fmtPct(L.pct(x[2], M.total[z])) + ')</span>'; }).join('') +
+				'<span class="st-lg st-lgnote">Folders are coloured from blue (all cloud) to green (all downloaded).</span>';
+		} else if (P.col === 'type') {
 			var bt = L.byType(M, zoom);
 			el.innerHTML = bt.cats.map(function (c) {
 				return '<button type="button" data-cat="' + c.i + '" aria-pressed="' + (focusCat === c.i) + '"' + (focusCat >= 0 && focusCat !== c.i ? ' class="st-dim"' : '') + ' title="Show only ' + esc(c.name) + ' (click again for all)"><span class="st-sw" style="background:' + c.color + '"></span>' + esc(c.name) + ' · ' + B(c.bytes) + '</button>';
@@ -967,6 +1071,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	document.querySelector('#st-chartsec').addEventListener('click', function (e) {
 		var v = e.target.closest('[data-view]'), c = e.target.closest('[data-col]');
 		if (v) { P.view = v.getAttribute('data-view'); save(); paintSeg(); drawChart(); }
+		if (c && c.getAttribute('data-col') === 'where' && !M.loc) { toast('First load the cloud list: see the box "In the cloud or on this computer?" above.'); var hw = $('st-cloudhow'); hw.open = true; $('st-cloudsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
 		if (c) { P.col = c.getAttribute('data-col'); if (P.col !== 'type') focusCat = -1; save(); paintSeg(); drawChart(); renderLegend(); }
 	});
 	$('st-rings').oninput = function () { P.rings = +this.value; $('st-ringsv').textContent = P.rings; save(); drawChart(); };
@@ -977,7 +1082,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		size: function (a, b) { return M.total[b] - M.total[a]; },
 		name: function (a, b) { return M.names[a].localeCompare(M.names[b], undefined, { numeric: true, sensitivity: 'base' }); },
 		files: function (a, b) { return M.files[b] - M.files[a] || M.total[b] - M.total[a]; },
-		date: function (a, b) { return M.newest[b] - M.newest[a]; }
+		date: function (a, b) { return M.newest[b] - M.newest[a]; },
+		local: function (a, b) { return M.loc ? M.loc.localB[b] - M.loc.localB[a] : 0; }
 	};
 	function sortedKids(i) {
 		var ks = L.children(M, i);
@@ -990,11 +1096,19 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		var dirI = M.isDir[i], p = M.parent[i], pc = L.pct(M.total[i], M.total[p] || 1), open = expanded.has(i), kids = dirI ? M.start[i + 1] - M.start[i] : 0;
 		return '<tr class="st-row' + (i === sel ? ' st-on' : '') + '" data-i="' + i + '"><td class="st-name"><div class="st-nm" style="padding-left:' + (d * 1.15).toFixed(2) + 'em">' +
 			'<button type="button" class="st-tog" data-t="' + i + '"' + (kids ? ' aria-expanded="' + open + '" aria-label="' + (open ? 'Collapse ' : 'Expand ') + esc(M.names[i]) + '"' : ' disabled aria-hidden="true" tabindex="-1"') + '>' + (kids ? (open ? '▾' : '▸') : '') + '</button>' +
-			'<span class="st-ico" aria-hidden="true">' + (dirI ? '📁' : fileIcon(i)) + '</span><button type="button" class="st-nlink" data-n="' + i + '">' + esc(M.names[i]) + '</button></div></td>' +
+			'<span class="st-ico" aria-hidden="true">' + (dirI ? '📁' : fileIcon(i)) + '</span><button type="button" class="st-nlink" data-n="' + i + '">' + esc(M.names[i]) + '</button>' + cloudBadge(i) + '</div></td>' +
 			'<td class="st-num">' + B(M.total[i]) + '</td>' +
 			'<td class="st-pbarcell"><div class="st-bar"><i><b style="width:' + Math.min(100, pc).toFixed(2) + '%"></b></i><span>' + L.fmtPct(pc) + '</span></div></td>' +
 			'<td class="st-num">' + (dirI ? N(M.files[i]) : '') + '</td>' +
-			'<td class="st-num st-hidesm">' + L.fmtDate(M.newest[i]) + '</td></tr>';
+			'<td class="st-num st-hidesm">' + L.fmtDate(M.newest[i]) + '</td>' + locCell(i) + '</tr>';
+	}
+	function NC() { return M && M.loc ? 6 : 5; }
+	function locCell(i) {
+		if (!M.loc) return '';
+		var lo = M.loc;
+		if (!M.isDir[i]) return '<td class="st-num st-locc">' + (lo.where[i] === 2 ? '<span class="st-cldv">☁️ cloud</span>' : lo.where[i] ? '<span class="st-locv">' + B(M.size[i]) + '</span>' : '<span class="st-muted">?</span>') + '</td>';
+		var t = M.total[i] || 1;
+		return '<td class="st-num st-locc" title="' + esc(locLine(i)) + '"><span class="st-locv">' + B(lo.localB[i]) + '</span><span class="st-pathsm">' + L.fmtPct(L.pct(lo.localB[i], t)) + ' downloaded</span></td>';
 	}
 	function renderTable() {
 		if ($('st-q').value.trim()) return renderSearch();
@@ -1006,11 +1120,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 				out.push(row(ks[k], d));
 				if (expanded.has(ks[k])) rec(ks[k], d + 1);
 			}
-			if (ks.length > lim) out.push('<tr class="st-more"><td colspan="5"><button type="button" data-more="' + i + '">Show ' + Math.min(200, ks.length - lim) + ' more of ' + N(ks.length - lim) + ' (in ' + esc(M.names[i]) + ')</button></td></tr>');
+			if (ks.length > lim) out.push('<tr class="st-more"><td colspan="' + NC() + '"><button type="button" data-more="' + i + '">Show ' + Math.min(200, ks.length - lim) + ' more of ' + N(ks.length - lim) + ' (in ' + esc(M.names[i]) + ')</button></td></tr>');
 		}
 		rec(zoom, 0);
-		if (rows > LIMIT) out.push('<tr class="st-more"><td colspan="5">Many rows open. Collapse some folders, or zoom into a folder, to see the rest.</td></tr>');
-		$('st-tbody').innerHTML = out.join('') || '<tr><td colspan="5" class="st-empty">This folder is empty.</td></tr>';
+		if (rows > LIMIT) out.push('<tr class="st-more"><td colspan="' + NC() + '">Many rows open. Collapse some folders, or zoom into a folder, to see the rest.</td></tr>');
+		document.querySelector('#st-tree .st-thloc').hidden = !M.loc;
+		$('st-tbody').innerHTML = out.join('') || '<tr><td colspan="' + NC() + '" class="st-empty">This folder is empty.</td></tr>';
 		$('st-qinfo').textContent = zoom ? 'Inside ' + M.names[zoom] : '';
 		[].forEach.call(document.querySelectorAll('#st-tree th'), function (th) {
 			var b = th.querySelector('[data-sort]'); if (!b) return;
@@ -1049,8 +1164,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 			var p = M.parent[i];
 			return '<tr class="st-row" data-i="' + i + '"><td class="st-name"><div class="st-nm"><span class="st-ico" aria-hidden="true">' + (M.isDir[i] ? '📁' : fileIcon(i)) + '</span><span><button type="button" class="st-nlink" data-reveal="' + i + '">' + esc(M.names[i]) + '</button><span class="st-pathsm">' + esc(p >= 0 ? L.pathOf(M, p) : '') + '</span></span></div></td>' +
 				'<td class="st-num">' + B(M.total[i]) + '</td><td class="st-pbarcell"><div class="st-bar"><i><b style="width:' + Math.min(100, L.pct(M.total[i], M.total[0])).toFixed(2) + '%"></b></i><span>' + L.fmtPct(L.pct(M.total[i], M.total[0])) + '</span></div></td>' +
-				'<td class="st-num">' + (M.isDir[i] ? N(M.files[i]) : '') + '</td><td class="st-num st-hidesm">' + L.fmtDate(M.newest[i]) + '</td></tr>';
-		}).join('') || '<tr><td colspan="5" class="st-empty">Nothing matches. Try part of a name, or *.mp4 for a type.</td></tr>';
+				'<td class="st-num">' + (M.isDir[i] ? N(M.files[i]) : '') + '</td><td class="st-num st-hidesm">' + L.fmtDate(M.newest[i]) + '</td>' + locCell(i) + '</tr>';
+		}).join('') || '<tr><td colspan="' + NC() + '" class="st-empty">Nothing matches. Try part of a name, or *.mp4 for a type.</td></tr>';
 	}
 
 	/* ---------- lists ---------- */
@@ -1058,7 +1173,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	$('st-tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) setTab(b.getAttribute('data-tab')); };
 	function itemCell(i, base) {
 		var p = M.parent[i];
-		return '<button type="button" class="st-linkbtn" data-reveal="' + i + '">' + (M.isDir[i] ? '📁 ' : fileIcon(i) + ' ') + esc(M.names[i]) + '</button><button type="button" class="st-copy" data-copy="' + i + '" title="Copy the path">Copy path</button>' +
+		return '<button type="button" class="st-linkbtn" data-reveal="' + i + '">' + (M.isDir[i] ? '📁 ' : fileIcon(i) + ' ') + esc(M.names[i]) + '</button>' + cloudBadge(i) + '<button type="button" class="st-copy" data-copy="' + i + '" title="Copy the path">Copy path</button>' +
 			'<span class="st-pathsm">' + esc(p >= 0 ? L.pathOf(M, p) : '') + '</span>';
 	}
 	function sel_(id, opts, v) { return '<select class="tu-select" id="' + id + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (String(o[0]) === String(v) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>'; }
@@ -1068,7 +1183,15 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		var er = document.querySelector('#st-tabs [data-tab="err"]'); er.textContent = 'Couldn\'t read' + (M.errors.length ? ' (' + N(M.errors.length) + ')' : '');
 		$('st-scope').innerHTML = P.tab === 'err' ? 'Whole scan.' : 'Inside <b>' + esc(L.pathOf(M, zoom)) + '</b> (' + B(M.total[zoom]) + '). Zoom the chart into a folder to narrow these lists.';
 		var el = $('st-panel'), now = Date.now(), tot = M.total[zoom] || 1, h = '';
-		if (P.tab === 'big') {
+		var lt = document.querySelector('#st-tabs [data-tab="local"]'); lt.hidden = !M.loc;
+		if (P.tab === 'local' && M.loc) {
+			var lo = M.loc, loc = L.largestLocal(M, 100, zoom), win = lo.kind === 'win';
+			h = '<p><b>' + B(lo.localB[zoom]) + '</b> of this folder is downloaded to this computer (' + N(lo.localN[zoom]) + ' files); <b>' + B(lo.cloudB[zoom]) + '</b> is only in the cloud. These are the biggest downloaded files: the ones that really use your disk.</p>' +
+				'<p class="tu-note">To keep a file in the cloud only and get the space back: ' + (win ? 'in File Explorer right-click it (or a folder) and choose <b>Free up space</b>.' : 'in Finder right-click it (or a folder) and choose <b>Remove Download</b>.') + ' "Always keep on this device" files (📌) stay downloaded until you change that. Then load a fresh list to see the change.</p>' +
+				(loc.length ? '<div class="tu-table-wrap"><table class="tu-table st-ltbl"><thead><tr><th>#</th><th>File</th><th class="st-num">Size</th><th class="st-num">Last changed</th></tr></thead><tbody>' +
+					loc.map(function (i, k) { return '<tr><td>' + (k + 1) + '</td><td>' + (lo.where[i] === 3 ? '📌 ' : '') + itemCell(i) + '</td><td class="st-num">' + B(M.size[i]) + '</td><td class="st-num">' + L.fmtDate(M.mtime[i]) + '</td></tr>'; }).join('') +
+					'</tbody></table></div>' : '<p class="st-empty">Nothing here is downloaded: it is all in the cloud.</p>');
+		} else if (P.tab === 'big') {
 			var big = L.largestFiles(M, 50, zoom);
 			h = big.length ? '<div class="tu-table-wrap"><table class="tu-table st-ltbl"><thead><tr><th>#</th><th>File</th><th class="st-num">Size</th><th class="st-num">Share</th><th class="st-num">Last changed</th></tr></thead><tbody>' +
 				big.map(function (i, k) { return '<tr><td>' + (k + 1) + '</td><td>' + itemCell(i) + '</td><td class="st-num">' + B(M.size[i]) + '</td><td class="st-num">' + L.fmtPct(L.pct(M.size[i], tot)) + '</td><td class="st-num">' + L.fmtDate(M.mtime[i]) + '</td></tr>'; }).join('') +
@@ -1177,6 +1300,84 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		else run.done = true;
 		if (P.tab === 'dup') renderList();
 	}
+
+	/* ---------- cloud or on this computer? ---------- */
+	var OS = /Win/i.test(navigator.platform || navigator.userAgent) ? 'win' : 'mac';
+	function renderCloud() {
+		var looks = L.looksCloud(M.names[0]), how = $('st-cloudhow'), res = $('st-cloudres'), lo = M.loc;
+		$('st-cloudtag').textContent = lo ? 'from your ' + (lo.kind === 'win' ? 'Windows' : 'Mac') + ' list' : looks ? 'This looks like a cloud folder' : '';
+		$('st-cdemo').hidden = mode !== 'demo';
+		if (lo) {
+			var t = M.total[0] || 1, un = Math.max(0, t - lo.localB[0] - lo.cloudB[0]);
+			res.innerHTML = '<div class="st-locbar" role="img" aria-label="' + esc(L.fmtPct(L.pct(lo.localB[0], t)) + ' on this computer, ' + L.fmtPct(L.pct(lo.cloudB[0], t)) + ' only in the cloud') + '">' +
+				'<span class="st-lbh" style="width:' + L.pct(lo.localB[0], t).toFixed(3) + '%"></span><span class="st-lbc" style="width:' + L.pct(lo.cloudB[0], t).toFixed(3) + '%"></span></div>' +
+				'<div class="st-locnums"><span><b class="st-locv">💻 ' + B(lo.localB[0]) + '</b> on this computer · ' + N(lo.localN[0]) + ' files</span><span><b class="st-cldv">☁️ ' + B(lo.cloudB[0]) + '</b> only in the cloud · ' + N(lo.cloudN[0]) + ' files</span>' +
+				(un > 0 ? '<span class="st-muted">' + B(un) + ' not in the list (' + N(M.files[0] - lo.matched) + ' files: new since the list was made, or the list was made for another folder)</span>' : '') + '</div>' +
+				'<div class="tu-row"><button type="button" class="tu-btn st-small" id="st-locchart">☁️ Colour the chart by it</button><button type="button" class="tu-btn tu-btn--ghost st-small" id="st-loclist">💻 Biggest downloaded files</button><button type="button" class="tu-btn tu-btn--ghost st-small" id="st-locclear">Forget the list</button></div>';
+			$('st-cloudsum').textContent = 'Load a new list (after downloading or freeing up files)';
+			how.open = false;
+		} else {
+			res.innerHTML = looks ? '<p class="st-cloudwarn"><b>' + esc(M.names[0]) + '</b> looks like a cloud folder, so the ' + B(M.total[0]) + ' above counts files that are only in the cloud too. Run the command below to see how much is really on this computer.</p>' : '';
+			$('st-cloudsum').textContent = 'Find out which files are downloaded and which are only in the cloud';
+			how.open = looks;
+		}
+		paintOS();
+	}
+	function paintOS() {
+		[].forEach.call(document.querySelectorAll('#st [data-os]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-os') === OS); });
+		var c = L.locationCommand(OS, M ? M.names[0] : ''), root = esc(M ? M.names[0] : 'your folder'), steps;
+		if (OS === 'mac') steps = ['Open <b>Terminal</b> (press Cmd+Space, type Terminal, press Return).',
+			c.guessed ? 'Copy the command below, paste it into Terminal and press Return. It goes into <b>' + root + '</b> by itself.' : 'Type <code>cd</code> and a space, drag the <b>' + root + '</b> folder from Finder onto the Terminal window, and press Return. Then copy the command below, paste it and press Return.',
+			'After a few seconds Finder shows <b>mes-storage-cloud.txt</b> in Downloads. Drag it onto the box below.'];
+		else steps = ['Open <b>PowerShell</b> (press the Windows key, type PowerShell, press Enter).',
+			c.guessed ? 'Copy the command below, paste it into PowerShell (right-click pastes) and press Enter. It goes into <b>' + root + '</b> by itself.' : 'Type <code>cd </code> and a space, drag the <b>' + root + '</b> folder from File Explorer onto the window, and press Enter. Then copy the command below, paste it and press Enter.',
+			'File Explorer opens Downloads with <b>mes-storage-cloud.txt</b> selected. Drag it onto the box below.'];
+		$('st-steps').innerHTML = steps.map(function (x) { return '<li>' + x + '</li>'; }).join('');
+		$('st-cmd').textContent = c.cmd;
+	}
+	$('st-cloudsec').addEventListener('click', function (e) {
+		var o = e.target.closest('[data-os]');
+		if (o) { OS = o.getAttribute('data-os'); paintOS(); return; }
+		var id = e.target.closest('button') && e.target.closest('button').id;
+		if (id === 'st-cmdcopy') {
+			var t = $('st-cmd').textContent;
+			if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { toast('Command copied. Paste it into ' + (OS === 'mac' ? 'Terminal' : 'PowerShell') + '.'); }, function () { prompt('Copy this command:', t); });
+			else prompt('Copy this command:', t);
+		} else if (id === 'st-cfile') $('st-cinput').click();
+		else if (id === 'st-locchart') { P.col = 'where'; save(); paintSeg(); drawChart(); renderLegend(); $('st-chartsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+		else if (id === 'st-loclist') { setTab('local'); $('st-listsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+		else if (id === 'st-locclear') { locParsed = null; M.loc = null; if (P.col === 'where') P.col = 'folder'; if (P.tab === 'local') P.tab = 'big'; renderAll(); }
+		else if (id === 'st-cdemobtn') {
+			/* made-up: big media mostly in the cloud, recent and small files downloaded */
+			var map = new Map(), s = 7;
+			function rnd() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+			for (var i = 1; i < M.n; i++) if (!M.isDir[i]) { var age = (Date.now() - M.mtime[i]) / 864e5; map.set(L.pathOf(M, i).split('/').slice(1).join('/'), (M.size[i] > 5e7 && rnd() < 0.85) || (age > 900 && rnd() < 0.7) ? 2 : rnd() < 0.05 ? 3 : 1); }
+			useLocation({ kind: 'mac', map: map, count: map.size, bad: 0 });
+		}
+	});
+	function useLocation(parsed) {
+		parsed.root = M.names[0]; locParsed = parsed;
+		var lo = L.applyLocation(M, parsed);
+		if (!lo.matched) { M.loc = null; locParsed = null; toast('None of the ' + N(parsed.count) + ' files in that list are in this folder. Was the command run inside ' + M.names[0] + '?'); return; }
+		P.col = 'where'; save(); renderAll();
+		toast('Loaded: ' + N(lo.matched) + ' files matched. ' + B(lo.localB[0]) + ' is on this computer, ' + B(lo.cloudB[0]) + ' only in the cloud.');
+		$('st-cloudsec').scrollIntoView({ block: 'start', behavior: 'smooth' });
+	}
+	function readLocFile(f) {
+		if (!f || !M) return;
+		f.text().then(function (txt) {
+			var p = L.parseLocation(txt);
+			if (p.error) { toast(p.error); return; }
+			useLocation(p);
+		}, function () { toast('Could not read that file.'); });
+	}
+	$('st-cinput').onchange = function () { readLocFile(this.files && this.files[0]); this.value = ''; };
+	(function () {
+		var dz = $('st-cdrop');
+		['dragenter', 'dragover'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('st-over'); }); });
+		['dragleave', 'drop'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.stopPropagation(); if (ev === 'dragleave' && dz.contains(e.relatedTarget)) return; dz.classList.remove('st-over'); }); });
+		dz.addEventListener('drop', function (e) { e.preventDefault(); readLocFile(e.dataTransfer.files && e.dataTransfer.files[0]); });
+	})();
 
 	/* ---------- reports ---------- */
 	function download(name, text, type) {

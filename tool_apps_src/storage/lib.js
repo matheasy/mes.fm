@@ -401,10 +401,82 @@ var MESStorage = (function () {
 		return { tool: 'MES Storage Analyzer', made: new Date(nowMs || Date.now()).toISOString(), root: pathOf(m, root), tree: node(root, 0) };
 	}
 
+	/* ---------- cloud or on this computer? ----------
+	   A web page can't see whether a file in a OneDrive / iCloud / Dropbox / Google Drive folder is downloaded:
+	   the browser reports the full size either way. The person runs one read-only command (it only reads file
+	   flags, so nothing is downloaded) and drops its output here. Formats (first line is the header):
+	     #mes-storage mac   then  <512-byte blocks>\t<st_flags hex>\t./relative/path      (stat -f '%b%t%Xf%t%N')
+	     #mes-storage win   then  <attributes decimal>\t<relative\path>                   (PowerShell)
+	   mac: SF_DATALESS (0x40000000) = only in the cloud. win: RECALL_ON_DATA_ACCESS (0x400000), RECALL_ON_OPEN
+	   (0x40000) or OFFLINE (0x1000) = only in the cloud; PINNED (0x80000) = "Always keep on this device". */
+	var CLOUD_DIRS = /^(onedrive|dropbox|google ?drive|googledrive|icloud|icloud drive|mobile documents|box|cloudstorage|pcloud|mega|nextcloud|sync)\b/i;
+	function looksCloud(name) { return CLOUD_DIRS.test(String(name || '').trim()); }
+	function parseLocation(text) {
+		text = String(text || '').replace(/^﻿/, '');
+		var nl = text.indexOf('\n'), head = (nl < 0 ? text : text.slice(0, nl)).replace(/\r$/, '').trim().toLowerCase();
+		var kind = head === '#mes-storage mac' ? 'mac' : head === '#mes-storage win' ? 'win' : '';
+		if (!kind) return { error: 'This isn\'t the list the command makes (its first line should be "#mes-storage mac" or "#mes-storage win").' };
+		var lines = text.slice(nl + 1).split('\n'), map = new Map(), bad = 0;
+		for (var k = 0; k < lines.length; k++) {
+			var ln = lines[k];
+			if (kind === 'win') ln = ln.replace(/\r$/, '');   /* Windows writes CRLF; on a Mac a file name may really end in \r ("Icon\r") */
+			if (!ln) continue;
+			var a = ln.indexOf('\t'); if (a < 0) { bad++; continue; }
+			var st, path;
+			if (kind === 'mac') {
+				var b = ln.indexOf('\t', a + 1); if (b < 0) { bad++; continue; }
+				var blocks = +ln.slice(0, a), flags = parseInt(ln.slice(a + 1, b), 16);
+				if (!(flags >= 0) || !(blocks >= 0)) { bad++; continue; }
+				path = ln.slice(b + 1).replace(/^\.\//, '');
+				st = (flags & 0x40000000) ? 2 : 1;
+			} else {
+				var at = +ln.slice(0, a); if (!(at >= 0)) { bad++; continue; }
+				path = ln.slice(a + 1).replace(/\\/g, '/').replace(/^\.\//, '');
+				st = (at & (0x400000 | 0x40000 | 0x1000)) ? 2 : (at & 0x80000) ? 3 : 1;
+			}
+			map.set(path.normalize('NFC'), st);
+		}
+		return { kind: kind, map: map, count: map.size, bad: bad };
+	}
+	/* where[i] for files: 0 unknown, 1 on this computer, 2 only in the cloud, 3 kept on this device (pinned).
+	   Per node: localB / cloudB / cloudN totals (unknown = total - local - cloud). */
+	function applyLocation(m, parsed) {
+		var n = m.n, where = new Uint8Array(n), localB = new Float64Array(n), cloudB = new Float64Array(n), cloudN = new Uint32Array(n), localN = new Uint32Array(n), matched = 0;
+		var rel = new Array(n); rel[0] = '';
+		for (var i = 1; i < n; i++) {
+			var pp = rel[m.parent[i]];
+			rel[i] = (pp ? pp + '/' : '') + String(m.names[i]).normalize('NFC');
+			if (m.isDir[i]) continue;
+			var st = parsed.map.get(rel[i]);
+			if (!st) continue;
+			where[i] = st; matched++;
+			if (st === 2) { cloudB[i] = m.size[i]; cloudN[i] = 1; } else { localB[i] = m.size[i]; localN[i] = 1; }
+		}
+		for (i = n - 1; i > 0; i--) { var p = m.parent[i]; localB[p] += localB[i]; cloudB[p] += cloudB[i]; cloudN[p] += cloudN[i]; localN[p] += localN[i]; }
+		m.loc = { kind: parsed.kind, where: where, localB: localB, cloudB: cloudB, cloudN: cloudN, localN: localN, matched: matched, listed: parsed.count };
+		return m.loc;
+	}
+	function largestLocal(m, n, root) { var w = m.loc && m.loc.where; return topN(fileIds(m, root).filter(function (i) { return w && w[i] && w[i] !== 2; }), function (i) { return m.size[i]; }, n || 50); }
+	function shq(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
+	function psq(s) { return "'" + String(s).replace(/'/g, "''") + "'"; }
+	/* the command for each system. dir = a folder to cd into when we can guess it (cloud folders have known places) */
+	function locationCommand(os, rootName) {
+		var r = String(rootName || ''), out;
+		if (os === 'mac') {
+			var cd = /^(onedrive|dropbox|googledrive|google drive|box)/i.test(r) ? 'cd ~/Library/CloudStorage/' + shq(r) + ' && ' : /^icloud/i.test(r) ? 'cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs && ' : '';
+			out = cd + '{ echo "#mes-storage mac"; find . -type f -exec stat -f \'%b%t%Xf%t%N\' {} + 2>/dev/null; } > ~/Downloads/mes-storage-cloud.txt && open -R ~/Downloads/mes-storage-cloud.txt';
+			return { cmd: out, guessed: !!cd };
+		}
+		var cdw = /^onedrive/i.test(r) ? (r.toLowerCase() === 'onedrive' ? 'cd $env:OneDrive; ' : 'cd (Join-Path $env:USERPROFILE ' + psq(r) + '); ') : '';
+		out = cdw + '$b=(Get-Location).Path; & { "#mes-storage win"; Get-ChildItem -LiteralPath $b -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { "{0}`t{1}" -f [int]$_.Attributes, $_.FullName.Substring($b.Length).TrimStart(\'\\\') } } | Set-Content -Encoding UTF8 "$env:USERPROFILE\\Downloads\\mes-storage-cloud.txt"; explorer.exe /select,"$env:USERPROFILE\\Downloads\\mes-storage-cloud.txt"';
+		return { cmd: out, guessed: !!cdw };
+	}
+
 	return { scanHandle: scanHandle, WORKER_SRC: WORKER_SRC, fromPaths: fromPaths, build: build, children: children, pathOf: pathOf,
 		ancestors: ancestors, isInside: isInside, topN: topN, largestFiles: largestFiles, byType: byType, oldLarge: oldLarge,
 		emptyFolders: emptyFolders, sameSizeGroups: sameSizeGroups, splitByHash: splitByHash, matcher: matcher, search: search,
 		squarify: squarify, sunburst: sunburst, ext: ext, catOf: catOf, CATS: CATS, fmtBytes: fmtBytes, fmtInt: fmtInt, pct: pct,
-		fmtPct: fmtPct, fmtDate: fmtDate, ageText: ageText, parseSize: parseSize, csvCell: csvCell, toCSV: toCSV, toJSON: toJSON };
+		fmtPct: fmtPct, fmtDate: fmtDate, ageText: ageText, parseSize: parseSize, csvCell: csvCell, toCSV: toCSV, toJSON: toJSON,
+		looksCloud: looksCloud, parseLocation: parseLocation, applyLocation: applyLocation, largestLocal: largestLocal, locationCommand: locationCommand };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage;
