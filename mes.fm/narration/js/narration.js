@@ -73,8 +73,10 @@
 		if (d) { var dv = voices.filter(function (x) { return x.id === d.getAttribute("data-del"); })[0]; if (dv && confirm("Delete the voice “" + dv.name + "” from this browser?")) N.deleteVoice(dv.id).then(renderVoices); }
 	});
 	/* ---------- players: play / pause, seek, speed (one speed for all of them, S.rate) ---------- */
-	var RATES = [0.75, 1, 1.25, 1.5, 2], players = [];
-	if (RATES.indexOf(S.rate) < 0) S.rate = 1;
+	var RATES = [0.75, 1, 1.25, 1.5, 2], players = [], RMIN = 0.5, RMAX = 3;
+	function rnd(r) { return Math.max(RMIN, Math.min(RMAX, Math.round(r * 20) / 20)); }
+	S.rate = rnd(+S.rate || 1);
+	function setRate(r) { S.rate = rnd(r); save(); players.forEach(function (q) { q.au.playbackRate = S.rate; q.rates(); }); }
 	function player(au, host, extra) {
 		au.controls = false; au.preload = "metadata"; au.playbackRate = S.rate;
 		var el = document.createElement("div"); el.className = "nr-pl";
@@ -82,7 +84,8 @@
 			'<button type="button" class="tu-btn tu-btn--ghost nr-pl-pp" aria-label="Play">▶\uFE0E</button>' +
 			'<span class="nr-pl-t">0:00 / 0:00</span>' +
 			'<input type="range" class="nr-pl-seek" min="0" max="1000" step="1" value="0" aria-label="Position">' +
-			'<span class="nr-pl-sp" role="group" aria-label="Playback speed">' + RATES.map(function (r) { return '<button type="button" class="nr-pl-r" data-r="' + r + '" aria-pressed="false">' + (r === 1 ? "1×" : r + "×") + "</button>"; }).join("") + "</span>" +
+			'<span class="nr-pl-fine" role="group" aria-label="Playback speed"><button type="button" class="nr-pl-step" data-d="-1" aria-label="Slower (0.05×)">−</button><output class="nr-pl-rv" aria-live="polite">1.00×</output><button type="button" class="nr-pl-step" data-d="1" aria-label="Faster (0.05×)">+</button></span>' +
+			'<span class="nr-pl-sp" role="group" aria-label="Speed presets">' + RATES.map(function (r) { return '<button type="button" class="nr-pl-r" data-r="' + r + '" aria-pressed="false">' + (r === 1 ? "1×" : r + "×") + "</button>"; }).join("") + "</span>" +
 			(extra && extra.close ? '<button type="button" class="tu-btn tu-btn--ghost nr-sm nr-pl-x" aria-label="Close">×</button>' : "");
 		host.appendChild(el);
 		var pp = el.querySelector(".nr-pl-pp"), tt = el.querySelector(".nr-pl-t"), sk = el.querySelector(".nr-pl-seek"), drag = false, raf = 0;
@@ -93,11 +96,23 @@
 			var on = !au.paused && !au.ended; pp.textContent = on ? "❚❚" : "▶\uFE0E"; pp.setAttribute("aria-label", on ? "Pause" : "Play"); el.classList.toggle("is-on", on);
 		}
 		function loop() { paint(); if (!au.paused) raf = requestAnimationFrame(loop); }
-		function rates() { el.querySelectorAll(".nr-pl-r").forEach(function (b) { b.setAttribute("aria-pressed", +b.getAttribute("data-r") === S.rate ? "true" : "false"); }); }
+		function rates() {
+			el.querySelectorAll(".nr-pl-r").forEach(function (b) { b.setAttribute("aria-pressed", Math.abs(+b.getAttribute("data-r") - S.rate) < 0.001 ? "true" : "false"); });
+			el.querySelector(".nr-pl-rv").textContent = S.rate.toFixed(2) + "×";
+			el.querySelector('[data-d="-1"]').disabled = S.rate <= RMIN + 0.001; el.querySelector('[data-d="1"]').disabled = S.rate >= RMAX - 0.001;
+		}
 		pp.onclick = function () { if (au.paused || au.ended) { if (au.ended) au.currentTime = 0; au.play().catch(function () {}); } else au.pause(); };
 		sk.oninput = function () { drag = true; var d = dur(); if (d) { au.currentTime = sk.value / 1000 * d; tt.textContent = fmtT(au.currentTime) + " / " + fmtT(d); } };
 		sk.onchange = function () { drag = false; paint(); };
-		el.querySelector(".nr-pl-sp").onclick = function (e) { var b = e.target.closest("[data-r]"); if (!b) return; S.rate = +b.getAttribute("data-r"); save(); players.forEach(function (q) { q.au.playbackRate = S.rate; q.rates(); }); };
+		el.querySelector(".nr-pl-sp").onclick = function (e) { var b = e.target.closest("[data-r]"); if (b) setRate(+b.getAttribute("data-r")); };
+		// − / + change the speed by 0.05×; holding the button keeps stepping
+		el.querySelectorAll(".nr-pl-step").forEach(function (b) {
+			var hold = 0, rep = 0, d = +b.getAttribute("data-d");
+			function stop() { clearTimeout(hold); clearInterval(rep); }
+			b.addEventListener("pointerdown", function (e) { if (e.button) return; setRate(S.rate + d * 0.05); stop(); hold = setTimeout(function () { rep = setInterval(function () { setRate(S.rate + d * 0.05); }, 120); }, 450); });
+			["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { b.addEventListener(ev, stop); });
+			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setRate(S.rate + d * 0.05); } });
+		});
 		["play", "pause", "ended", "loadedmetadata", "durationchange", "seeked", "emptied"].forEach(function (ev) { au.addEventListener(ev, function () { au.playbackRate = S.rate; cancelAnimationFrame(raf); if (!au.paused) loop(); else paint(); }); });
 		var x = el.querySelector(".nr-pl-x"); if (x) x.onclick = function () { au.pause(); el.hidden = true; };
 		rates(); paint();
@@ -220,7 +235,7 @@
 		};
 		tick();
 		N.speak(text, o).then(function (r) {
-			last = { r: r, o: o, text: text }; showResult(); progress(false);
+			addTake(r, o, text); progress(false);
 			if (tp) tp.done("Narration ready");
 			toast("Done in " + ((performance.now() - t0) / 1000).toFixed(1) + " s: " + fmtT(r.audio.length / r.sr) + " of speech.");
 		}, function (e) {
@@ -248,15 +263,63 @@
 		var el = $("nr-made"); if (!el || !last) return;
 		var now = opts(), same = now.engine === last.o.engine && now.voice === last.o.voice;
 		el.className = "nr-made" + (same ? "" : " is-other");
-		el.innerHTML = "Made with <b>" + esc(voiceName(last.o)) + "</b>." + (same ? "" : " You have picked <b>" + esc(now.voice ? voiceName(now) : "My own voice") + "</b> now: press Make the narration to hear the script in that voice.");
+		el.innerHTML = "Made with <b>" + esc(last.name || voiceName(last.o)) + "</b>." + (same ? "" : " You have picked <b>" + esc(now.voice ? voiceName(now) : "My own voice") + "</b> now: press Make the narration to hear the script in that voice.");
 	}
-	function showResult() {
+	/* Every narration is kept as its own take (newest first), also after a reload: IndexedDB "mes-narration" / "takes", sound stored as 16-bit,
+	   at most MAXT takes. Download, Video Editor, the line list and "Again" work on the open one ("last"). */
+	var takes = [], MAXT = 20, tdb = null;
+	function db() {
+		if (tdb) return tdb;
+		return (tdb = new Promise(function (res, rej) { var q = indexedDB.open("mes-narration", 1); q.onupgradeneeded = function () { q.result.createObjectStore("takes", { keyPath: "id" }); }; q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; }));
+	}
+	function tx(mode, fn) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("takes", mode), r = fn(t.objectStore("takes")); t.oncomplete = function () { res(r && r.result); }; t.onerror = function () { rej(t.error); }; }); }); }
+	function toI16(a) { var o = new Int16Array(a.length); for (var i = 0; i < a.length; i++) { var x = Math.max(-1, Math.min(1, a[i])); o[i] = x < 0 ? x * 32768 : x * 32767; } return o; }
+	function toF32(a) { var o = new Float32Array(a.length); for (var i = 0; i < a.length; i++) o[i] = a[i] / 32768; return o; }
+	function cleanO(o) { return { engine: o.engine, voice: o.voice, speed: o.speed, exaggeration: o.exaggeration, gap: o.gap, paraGap: o.paraGap }; }
+	function addTake(r, o, text) {
+		var k = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t: Date.now(), text: text, o: cleanO(o), name: voiceName(o), r: r };
+		takes.unshift(k); var gone = takes.splice(MAXT);
+		last = k; showResult();
+		tx("readwrite", function (st) { st.put({ id: k.id, t: k.t, text: k.text, o: k.o, name: k.name, sr: r.sr, pieces: r.pieces, a: toI16(r.audio) }); gone.forEach(function (g) { st.delete(g.id); }); })
+			.catch(function () { toast("This narration could not be kept in the browser (storage full?): download it to keep it."); });
+	}
+	function openTake(id) { var k = takes.filter(function (x) { return x.id === id; })[0]; if (!k) return; $("nr-play").pause(); last = k; showResult(); }
+	function delTake(id) {
+		var i = takes.findIndex(function (x) { return x.id === id; }); if (i < 0) return; var k = takes[i];
+		if (!confirm("Delete this narration (" + k.name + ", " + fmtT(k.r.audio.length / k.r.sr) + ")?")) return;
+		takes.splice(i, 1); tx("readwrite", function (st) { st.delete(id); }).catch(function () {});
+		if (last === k) { $("nr-play").pause(); last = takes[0] || null; }
+		if (last) showResult(); else { $("nr-out").hidden = true; }
+	}
+	function ago(t) { var m = Math.round((Date.now() - t) / 60000); if (m < 1) return "just now"; if (m < 60) return m + " min ago"; var h = Math.round(m / 60); if (h < 24) return h + " h ago"; return new Date(t).toLocaleDateString(); }
+	function renderTakes() {
+		var box = $("nr-takes"); if (!box) return;
+		if (takes.length < 2) { box.hidden = true; box.innerHTML = ""; return; }
+		box.hidden = false;
+		box.innerHTML = '<div class="nr-takes-h">All your narrations (' + takes.length + ')</div>' + takes.map(function (k) {
+			var on = k === last;
+			return '<div class="nr-take' + (on ? " is-on" : "") + '"><button type="button" class="nr-take-open" data-open="' + k.id + '"' + (on ? ' aria-current="true"' : "") + '>' +
+				'<b>' + esc(k.name) + '</b> <span class="nr-take-m">' + fmtT(k.r.audio.length / k.r.sr) + " · " + ago(k.t) + '</span><span class="nr-take-x">' + esc(k.text.replace(/\s+/g, " ").slice(0, 70)) + (k.text.length > 70 ? "…" : "") + "</span></button>" +
+				'<button type="button" class="tu-btn tu-btn--ghost nr-sm" data-tdel="' + k.id + '" title="Delete this narration" aria-label="Delete this narration">×</button></div>';
+		}).join("");
+	}
+	$("nr-takes").addEventListener("click", function (e) { var o = e.target.closest("[data-open]"), d = e.target.closest("[data-tdel]"); if (o) openTake(o.getAttribute("data-open")); if (d) delTake(d.getAttribute("data-tdel")); });
+	tx("readonly", function (st) { return st.getAll(); }).then(function (rows) {
+		rows = (rows || []).sort(function (a, b) { return b.t - a.t; });
+		var known = {}; takes.forEach(function (k) { known[k.id] = 1; });
+		rows.forEach(function (x) { if (!known[x.id]) takes.push({ id: x.id, t: x.t, text: x.text, o: x.o, name: x.name, r: { audio: toF32(x.a), sr: x.sr, pieces: x.pieces } }); });
+		takes.sort(function (a, b) { return b.t - a.t; });
+		if (!last && takes.length) { last = takes[0]; showResult(true); } else renderTakes();
+	}).catch(function () { /* no storage: takes live in this page only */ });
+
+	function showResult(quiet) {
 		var r = last.r; $("nr-out").hidden = false; $("nr-dur").textContent = fmtT(r.audio.length / r.sr); madeLabel();
 		if (outUrl) URL.revokeObjectURL(outUrl); outUrl = URL.createObjectURL(new Blob([N.wav(r.audio, r.sr)], { type: "audio/wav" })); $("nr-play").src = outUrl;
 		$("nr-pieces").innerHTML = r.pieces.map(function (p, i) {
 			return '<li><button type="button" class="tu-btn tu-btn--ghost nr-sm" data-at="' + i + '" title="Play from here">▶ ' + fmtT(p.start) + '</button><span class="nr-ptext">' + esc(p.text) + '</span>' + (last.o.engine === "clone" ? '<button type="button" class="tu-btn tu-btn--ghost nr-sm" data-redo="' + i + '" title="Say this line again (a new take)">↻ Again</button>' : "") + "</li>";
 		}).join("");
-		$("nr-out").scrollIntoView({ behavior: "smooth", block: "nearest" });
+		renderTakes();
+		if (!quiet) $("nr-out").scrollIntoView({ behavior: "smooth", block: "nearest" });
 	}
 	$("nr-pieces").addEventListener("click", function (e) {
 		var a = e.target.closest("[data-at]"), rd = e.target.closest("[data-redo]");

@@ -77,3 +77,23 @@ body.dark-mode #nr.nr .nr-pl-sp, body.dark-mode #nr.nr .nr-pl-r {border-color:#3
 body.dark-mode #nr.nr .nr-pl-r {color:#e5e7eb;}
 body.dark-mode #nr.nr .nr-pl-r[aria-pressed="true"], body.dark-mode #nr.nr .nr-pl.is-on .nr-pl-pp {background:#7c3aed;border-color:#7c3aed;color:#fff;}
 body.dark-mode #nr.nr .nr-pl-seek {accent-color:#a78bfa;}
+#nr .nr-pl-fine {display:inline-flex;align-items:center;border:1px solid #d5d9e0;border-radius:0.5em;overflow:hidden;}
+#nr .nr-pl-step {font:inherit;font-size:1.1em;font-weight:700;width:36px;min-height:34px;border:0;background:transparent;color:#374151;cursor:pointer;touch-action:manipulation;user-select:none;}
+#nr .nr-pl-step:disabled {opacity:0.35;cursor:default;}
+#nr .nr-pl-rv {min-width:3.6em;text-align:center;font-variant-numeric:tabular-nums;font-weight:600;font-size:0.9em;color:#4c1d95;border-left:1px solid #d5d9e0;border-right:1px solid #d5d9e0;padding:0.35em 0.2em;}
+#nr .nr-takes {margin:0 0 0.8em;border:1px solid #e1e5eb;border-radius:0.6em;max-height:16em;overflow:auto;}
+#nr .nr-takes-h {position:sticky;top:0;background:#f8f7fc;padding:0.35em 0.6em;font-weight:600;font-size:0.88em;color:#4b5563;border-bottom:1px solid #e1e5eb;}
+#nr .nr-take {display:flex;align-items:center;gap:0.4em;padding:0.2em 0.4em;border-bottom:1px solid #eef0f3;}
+#nr .nr-take:last-child {border-bottom:0;}
+#nr .nr-take.is-on {background:#f3efff;box-shadow:inset 3px 0 0 #6d28d9;}
+#nr .nr-take-open {flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:0.1em 0.5em;text-align:left;font:inherit;background:transparent;border:0;padding:0.35em 0.3em;cursor:pointer;color:inherit;}
+#nr .nr-take-m {color:#6b7280;font-size:0.85em;}
+#nr .nr-take-x {flex-basis:100%;color:#4b5563;font-size:0.88em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.dark-mode #nr.nr .nr-pl-fine, body.dark-mode #nr.nr .nr-pl-rv {border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-pl-step {color:#e5e7eb;}
+body.dark-mode #nr.nr .nr-pl-rv {color:#c4b5fd;}
+body.dark-mode #nr.nr .nr-takes, body.dark-mode #nr.nr .nr-takes-h, body.dark-mode #nr.nr .nr-take {border-color:#3a4150;}
+body.dark-mode #nr.nr .nr-takes-h {background:#1b1f29;color:#c4cbd6;}
+body.dark-mode #nr.nr .nr-take.is-on {background:#2a1f45;box-shadow:inset 3px 0 0 #a78bfa;}
+body.dark-mode #nr.nr .nr-take-open, body.dark-mode #nr.nr .nr-take-open b {color:#e5e7eb;}
+body.dark-mode #nr.nr .nr-take-m, body.dark-mode #nr.nr .nr-take-x {color:#aab3c2;}
