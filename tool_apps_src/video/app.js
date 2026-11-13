@@ -411,7 +411,7 @@
 			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); VE.stepFrame(dir, sec || e.shiftKey); } });
 			return;
 		}
-		b.onclick = function () { if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
+		b.onclick = function () { if (a === "start") { P.seek(0); VE.tl.reveal(0); } else if (a === "end") { P.seek(V.duration(VE.P)); VE.tl.reveal(VE.t); } else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
 	});
 	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
 	var tin = $("vd-tin");

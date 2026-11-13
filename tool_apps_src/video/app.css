@@ -92,6 +92,7 @@
 	#vd .vd-tl {position:relative;min-height:0;background:#0b0e13;}
 	#vd .vd-tlscroll {position:absolute;inset:0;overflow:auto;}
 	#vd .vd-tlinner {position:relative;min-height:100%;}
+	#vd .vd-marquee {position:absolute;z-index:30;pointer-events:none;border:1px solid #38bdf8;background:rgba(56,189,248,0.16);border-radius:2px;}
 	#vd .vd-tlinner.is-drop {background:rgba(56,189,248,0.06);}
 	#vd .vd-rulerwrap {position:sticky;top:0;height:26px;z-index:7;background:var(--vd-panel);border-bottom:1px solid var(--vd-line);cursor:pointer;color:var(--vd-dim);}
 	#vd #vd-ruler {position:absolute;top:0;left:0;display:block;color:var(--vd-dim);}

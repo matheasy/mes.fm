@@ -2795,9 +2795,11 @@
 			}
 		}
 		var clipEl = e.target.closest(".vd-clip"), t = x2t(e.clientX);
-		if (e.target.closest("#vd-rulerwrap") || !clipEl) {
-			if (!e.target.closest("#vd-rulerwrap") && !e.shiftKey) { VE.sel = []; VE.emit("select"); }
-			drag = { mode: "scrub" }; VE.preview.seek(t); inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
+		if (e.target.closest("#vd-rulerwrap")) { drag = { mode: "scrub" }; VE.preview.seek(t); inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
+		if (!clipEl) {   // empty space: a click moves the playhead there, a drag draws a box that selects every clip it touches (Camtasia); Shift / Ctrl adds to the selection
+			var ir0 = inner.getBoundingClientRect(), add = e.shiftKey || e.ctrlKey || e.metaKey;
+			drag = { mode: "pick", x0: e.clientX - ir0.left, y0: e.clientY - ir0.top, lx: e.clientX, ly: e.clientY, t: t, add: add, base: add ? VE.sel.slice() : [], moved: false };
+			inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
 		}
 		var c = V.clip(VE.P, clipEl.getAttribute("data-id")); if (!c) return;
 		var tr = V.track(VE.P, c.track);
@@ -2812,10 +2814,39 @@
 		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track, anims: x.anims ? JSON.stringify(x.anims) : null }; }), moved: false, el: clipEl };
 		inner.setPointerCapture(e.pointerId); e.preventDefault();
 	});
+	// selection box: drawn in the timeline's own coordinates (it scrolls with it); near an edge the timeline scrolls on by itself
+	function pickUpdate() {
+		var d = drag; if (!d || d.mode !== "pick" || !d.box) return;
+		var ir = inner.getBoundingClientRect(), x1 = d.lx - ir.left, y1 = d.ly - ir.top;
+		var l = Math.max(HEAD, Math.min(d.x0, x1)), r = Math.max(HEAD, Math.max(d.x0, x1)), tp = Math.max(0, Math.min(d.y0, y1)), bt = Math.max(d.y0, y1);
+		Object.assign(d.box.style, { left: l + "px", top: tp + "px", width: Math.max(0, r - l) + "px", height: (bt - tp) + "px" });
+		var L = ir.left + l, R = ir.left + r, Tp = ir.top + tp, B = ir.top + bt, seen = {}, sel = d.base.slice();
+		sel.forEach(function (id) { seen[id] = 1; });
+		rows.querySelectorAll(".vd-clip").forEach(function (el) {
+			var b = el.getBoundingClientRect(), id = el.getAttribute("data-id");
+			if (b.right > L && b.left < R && b.bottom > Tp && b.top < B && !seen[id]) { seen[id] = 1; sel.push(id); }
+		});
+		if (sel.join() !== VE.sel.join()) { VE.sel = sel; VE.emit("select"); markSel(); }
+	}
+	function pickScroll() {
+		var d = drag; if (!d || d.mode !== "pick") return;
+		var b = sc.getBoundingClientRect(), E = 40, dx = 0, dy = 0;
+		if (d.lx > b.right - E) dx = Math.ceil((d.lx - (b.right - E)) / 2); else if (d.lx < b.left + HEAD + E) dx = -Math.ceil((b.left + HEAD + E - d.lx) / 2);
+		if (d.ly > b.bottom - E) dy = Math.ceil((d.ly - (b.bottom - E)) / 2); else if (d.ly < b.top + RULER + E) dy = -Math.ceil((b.top + RULER + E - d.ly) / 2);
+		if (!dx && !dy) return;
+		var x0 = sc.scrollLeft, y0 = sc.scrollTop; sc.scrollLeft += V.clamp(dx, -40, 40); sc.scrollTop += V.clamp(dy, -40, 40);
+		if (sc.scrollLeft !== x0 || sc.scrollTop !== y0) pickUpdate();
+	}
 	function mag(id) { var q = V.track(VE.P, id); return !!(q && q.mag); }
 	inner.addEventListener("pointermove", function (e) {
 		if (!drag) { var ce = e.target.closest && e.target.closest(".vd-clip"); if (ce) { var r = ce.getBoundingClientRect(); ce.style.cursor = (r.width >= 22 && (e.clientX - r.left < 7 || r.right - e.clientX < 7)) ? "ew-resize" : "grab"; } return; }
 		if (drag.mode === "scrub") { VE.preview.seek(x2t(e.clientX)); return; }
+		if (drag.mode === "pick") {
+			drag.lx = e.clientX; drag.ly = e.clientY;
+			if (!drag.moved && Math.abs(e.clientX - drag.x0 - inner.getBoundingClientRect().left) < 4 && Math.abs(e.clientY - drag.y0 - inner.getBoundingClientRect().top) < 4) return;
+			if (!drag.moved) { drag.moved = true; drag.box = document.createElement("div"); drag.box.className = "vd-marquee"; inner.appendChild(drag.box); drag.timer = setInterval(pickScroll, 16); }
+			pickUpdate(); return;
+		}
 		if (drag.mode === "anim") {
 			var ddx = e.clientX - drag.x0; if (drag.locked || (!drag.moved && Math.abs(ddx) < 3)) return; drag.moved = true;
 			var ac = drag.c, aa = drag.a, len = V.dur(ac), dta = ddx / VE.pps, lo = Math.min(0, drag.t0), sn = T.snap && !e.altKey ? 8 / VE.pps : 0;
@@ -2907,6 +2938,11 @@
 	function finish() {
 		if (!drag) return;
 		var d = drag; drag = null;
+		if (d.mode === "pick") {
+			clearInterval(d.timer); if (d.box) d.box.remove();
+			if (!d.moved) { if (!d.add && VE.sel.length) { VE.sel = []; VE.emit("select"); markSel(); } VE.preview.seek(d.t); }
+			return;
+		}
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Layer height"); return; }
 		if (d.mode === "track") {
 			rows.classList.remove("is-tdragging"); d.all.forEach(function (r) { r.style.transform = ""; });
@@ -3573,7 +3609,7 @@
 			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); VE.stepFrame(dir, sec || e.shiftKey); } });
 			return;
 		}
-		b.onclick = function () { if (a === "start") P.seek(0); else if (a === "end") P.seek(V.duration(VE.P)); else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
+		b.onclick = function () { if (a === "start") { P.seek(0); VE.tl.reveal(0); } else if (a === "end") { P.seek(V.duration(VE.P)); VE.tl.reveal(VE.t); } else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
 	});
 	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
 	var tin = $("vd-tin");
