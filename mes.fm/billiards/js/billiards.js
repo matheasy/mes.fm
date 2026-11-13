@@ -2726,7 +2726,7 @@
 	var ov = document.createElement("div");
 	ov.className = "bl-ov"; ov.id = "bl-ov";
 	ov.innerHTML = '<div class="bl-ochip" id="bl-ochip" aria-live="polite"></div>' +
-		'<div class="bl-otop"><button type="button" data-ov="zoom" class="bl-ozoom" hidden title="Zoomed or moved: tap to put the whole table back in the middle (0)">1×</button><button type="button" data-ov="side" class="bl-oside" title="Move HIT and the power bar to the other side (L)">⇄</button><button type="button" data-ov="vis" class="bl-ovis" title="Buttons on the table: shown, see-through or hidden (H)">👁</button><button type="button" data-ov="guide" class="bl-oguide" title="Aiming guide: full, short or off (G)">Guide</button><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
+		'<div class="bl-otop"><button type="button" data-ov="zoom" class="bl-ozoom" hidden title="Zoomed or moved: tap to put the whole table back in the middle (0)">1×</button><button type="button" data-ov="rot" class="bl-orot" title="Turn the table: upright / across (O)">⟳</button><button type="button" data-ov="side" class="bl-oside" title="Move HIT and the power bar to the other side (L)">⇄</button><button type="button" data-ov="vis" class="bl-ovis" title="Buttons on the table: shown, see-through or hidden (H)">👁</button><button type="button" data-ov="guide" class="bl-oguide" title="Aiming guide: full, short or off (G)">Guide</button><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
 		'<div class="bl-opow" id="bl-opow" role="slider" aria-label="Power: drag down to pull the cue back, let go to shoot" aria-valuemin="1" aria-valuemax="100"><div class="bl-opowfill" id="bl-opowfill"></div><span class="bl-opowt">PULL<br>↓</span><span class="bl-opowv" id="bl-opowv"></span></div>' +
 		'<div class="bl-opill" id="bl-opill" hidden></div>' +
 		'<button type="button" class="bl-ospin" id="bl-ospin" title="Spin: drag the red dot, or tap for the big picker and jump shots"><canvas class="bl-spincv" width="96" height="96"></canvas></button>' +
@@ -2740,10 +2740,10 @@
 		'<div class="bl-ohelp" id="bl-ohelp" hidden><b>How to shoot</b><ol><li><b>Aim:</b> drag the <b>aim strip</b> at the bottom left or right (slowly = a hair at a time), or press on the table and drag. The dotted line shows where the white ball goes.' + '<span class="bl-o3d"> In 3D behind the cue, dragging on the table sideways also aims, up / down looks higher or lower.</span></li>' +
 		'<li><b>Shoot (easiest):</b> press on the <b>cue stick</b> (or the white ball) and <b>pull back</b>. The further you pull, the harder the shot. <b>Let go to shoot</b>, or slide back to where you started to cancel.</li><li><b>Or:</b> pull the bar on the right <b>down</b> (like pulling the cue back) and <b>let go to shoot</b>. Or <b>hold HIT</b>: the power goes up and down, let go when it is right. A quick tap on HIT shoots at the power already set.</li>' +
 		'<li><b>Spin:</b> drag the red dot on the little white ball (bottom left), or tap it for the big picker. Top = the white ball keeps rolling after the hit, bottom = it comes back, sides = side spin off the cushions.</li>' +
-		'<li><b>Jump shot:</b> in the big spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Guide:</b> the Guide button top right switches the aiming line full / short / off.</li><li><b>Zoom (2D):</b> pinch with two fingers (or Ctrl + mouse wheel; the plain wheel in Fill window), drag with two fingers or the right mouse button to move the table around (also without zooming, e.g. to lift it clear of the buttons). Tap the <b>1×</b> / <b>2.0×</b> button to put it back. <b>👁</b> makes the buttons see-through, then hides them (pull the cue to shoot).</li><li><b>Left-handed?</b> The <b>⇄</b> button (or the L key) moves HIT and the power bar to the left side.</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
+		'<li><b>Jump shot:</b> in the big spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Guide:</b> the Guide button top right switches the aiming line full / short / off.</li><li><b>Zoom (2D):</b> pinch with two fingers (or Ctrl + mouse wheel; the plain wheel in Fill window), drag with two fingers or the right mouse button to move the table around (also without zooming, e.g. to lift it clear of the buttons). Tap the <b>1×</b> / <b>2.0×</b> button to put it back. <b>👁</b> makes the buttons see-through, then hides them (pull the cue to shoot).</li><li><b>Turn the table:</b> the <b>⟳</b> button (or the O key) stands the 2D table upright or lays it across.</li><li><b>Left-handed?</b> The <b>⇄</b> button (or the L key) moves HIT and the power bar to the left side.</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
 	stage.appendChild(ov);
 	drawSpin();
-	function ovDim() { if (!ov) return; var b = ov.querySelector('[data-ov="dim"]'); if (b) b.textContent = S.dim === "3d" ? "2D" : "3D"; ov.querySelector('[data-ov="cam"]').hidden = S.dim !== "3d"; }
+	function ovDim() { if (!ov) return; var b = ov.querySelector('[data-ov="dim"]'); if (b) b.textContent = S.dim === "3d" ? "2D" : "3D"; ov.querySelector('[data-ov="cam"]').hidden = S.dim !== "3d"; ov.querySelector('[data-ov="rot"]').hidden = S.dim === "3d"; }
 	ovDim();
 	function showHelp(on) { $("bl-ohelp").hidden = !on; if (!on) { S.helpSeen = 1; save(); } }
 	ov.addEventListener("click", function (e) {
@@ -2758,7 +2758,15 @@
 		else if (a === "zoom") zoomReset();
 		else if (a === "vis") cycleVis();
 		else if (a === "side") setSide(S.ovL ? "r" : "l", true);
+		else if (a === "rot") turnTable();
 	});
+	// turn the 2D table between upright and across (the Options "Table" setting keeps Auto as a choice)
+	function turnTable() {
+		if (S.dim === "3d") return;
+		S.orient = upright() ? "across" : "upright"; save(); segSet("bl-orient", S.orient);
+		zv = { z: 1, x: 0, y: 0 }; relayout();
+		toast(S.orient === "upright" ? "Table upright. Options → Table → Auto turns it by itself again." : "Table across. Options → Table → Auto turns it by itself again.");
+	}
 	// left-handed layout: HIT + power bar on the left, spin ball on the right
 	function setSide(v, tell) {
 		S.ovL = v === "l" ? 1 : 0; save();
@@ -3097,6 +3105,7 @@
 		else if (k === "g") cycleGuide();
 		else if (k === "h") cycleVis();
 		else if (k === "l") setSide(S.ovL ? "r" : "l", true);
+		else if (k === "o") turnTable();
 		else if (e.key === "+" || e.key === "=") { if (LY) zoomAt(1.25, LY.w / 2, LY.h / 2); }
 		else if (e.key === "-" || e.key === "_") { if (LY) zoomAt(0.8, LY.w / 2, LY.h / 2); }
 		else if (e.key === "0") zoomReset();
