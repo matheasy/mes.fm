@@ -118,7 +118,7 @@ GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="19",
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="20",
              src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js", "map.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
@@ -272,7 +272,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="21", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=2"]),
+                  js_v="22", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=2"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",

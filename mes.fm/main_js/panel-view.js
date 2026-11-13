@@ -120,6 +120,9 @@
       if (d) { e.preventDefault(); setW(cur + d, true); }
     });
     q.grip = grip;
+    // the panel scrolls inside the card: keep the grip covering the visible height, not just the top screenful
+    function gripY() { grip.style.top = sec.scrollTop + 'px'; grip.style.bottom = 'auto'; grip.style.height = sec.clientHeight + 'px'; }
+    sec.addEventListener('scroll', function () { if (q.on) gripY(); }, { passive: true });
     function save() { try { localStorage.setItem(SKEY, JSON.stringify(SP)); } catch (e) {} }
     q.apply = function () {
       var open = !!(o.open && o.open()), w = sec.clientWidth, h = sec.clientHeight;
@@ -140,6 +143,7 @@
         if (getComputedStyle(sec).position === 'static') { sec.style.position = 'relative'; q.pos = true; }
         var gg = geo(), gx = (SP.r ? gg.r.width - gg.pr - pw - gg.gap / 2 : gg.pl + pw + gg.gap / 2) - 7;
         grip.style.left = Math.round(gx) + 'px';
+        gripY();
         grip.setAttribute('aria-valuenow', pw); grip.setAttribute('aria-valuemin', 160); grip.setAttribute('aria-valuemax', Math.round(maxW(w)));
         stage.style.height = Math.max(120, h - padV) + 'px';
         sec.style.setProperty('--mes-sh', Math.max(120, h - padV) + 'px');
