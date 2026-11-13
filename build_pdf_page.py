@@ -100,7 +100,7 @@ PAGES.update({
                   subject="Press release: John Hutchison's health, and the formal complaints filed with the California Department of Public Health and the Medical Board of California",
                   keywords="John Hutchison, Nancy Hutchison, Hutchison Effect, press release, health update, medical negligence", creator="LibreOffice Writer"),
         alt_url=HUTCH_PR_DRIVE, alt_label="Alternative download (Google Drive)",
-        brand="hutchison", partof=HUTCH_PR_PARTOF + ' &middot; <a href="/hutchison-health-press-release-2026">Read it as a web page</a>', og="preview.jpg",
+        brand="hutchison", partof=HUTCH_PR_PARTOF + ' &middot; <a href="/hutchison-health-press-release-2026">Read it as a web page</a>', og_abs="https://mes.fm/hutchison-health-press-release-2026/img/share.jpg",
         intro="""<p>The press release issued by the Hutchison family on <b>November 12, 2026</b> about <b>John Hutchison's health</b>: advanced bladder cancer, acute kidney decline, and the formal complaints filed with the California Department of Public Health and the Medical Board of California.</p>
 <p><b>Prefer a web page?</b> The whole press release is also on mes.fm as an article: <a href="/hutchison-health-press-release-2026"><b>read it online</b></a>. The PDF (6 pages) is shown below; it is also on <a href="%s" target="_blank" rel="noopener">Google Drive</a>.</p>""" % HUTCH_PR_DRIVE,
         outro="""<p>More health updates and posts about John Hutchison are in <a href="/hutchison-posts">Hutchison Effect: Posts and Updates</a>.</p>"""),
@@ -109,7 +109,7 @@ PAGES.update({
         title=HUTCH_PR,
         subtitle="Press release by the Hutchison family &middot; November 12, 2026 &middot; <a href=\"/hutchison-health-press-release-2026-pdf\">PDF</a> &middot; <a href=\"%s\" target=\"_blank\" rel=\"noopener\">Google Drive</a>" % HUTCH_PR_DRIVE,
         desc="November 12, 2026 press release: inventor John Hutchison is fighting advanced bladder cancer and acute kidney decline, and complaints have been filed against four Northern California healthcare networks.",
-        brand="hutchison", partof=HUTCH_PR_PARTOF, og_abs="https://mes.fm/hutchison-health-press-release-2026-pdf/preview.jpg",
+        brand="hutchison", partof=HUTCH_PR_PARTOF, og_abs="https://mes.fm/hutchison-health-press-release-2026/img/share.jpg",
         intro="""<div class="pdf-actions"><a class="pdf-btn" href="/hutchison-health-press-release-2026-pdf">Read the PDF</a><a class="pdf-btn alt" href="/hutchison-health-press-release-2026-pdf/john-hutchison-press-release-2026-11-12.pdf" download>Download the PDF</a><a class="pdf-btn alt" href="%s" target="_blank" rel="noopener">Google Drive</a></div>
 <p><i>The press release below is reproduced in full, as issued by the Hutchison family.</i></p>
 """ % HUTCH_PR_DRIVE,
