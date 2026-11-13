@@ -23,7 +23,7 @@ export const SECTIONS = [
     title: "Posts and Updates",
     items: [
       { href: "https://mes.fm/hutchison-health-press-release-2026", title: "John Hutchison Health Update and Press Release" },
-      { href: "https://mes.fm/hutchison-birthday-2026", title: "Happy 80th Birthday, Captain John Hutchison!" },
+      { href: "https://mes.fm/hutchison-birthday-2026", title: "Happy 81st Birthday, Captain John Hutchison!" },
       { href: "https://mes.fm/hutchison-cancer-treatment", title: "John Hutchison starts (mainstream) cancer treatment in a couple of weeks — health update" },
       { href: "https://mes.fm/hutchison-article-balloons", title: "John Hutchison's First Newspaper Appearance: Balloons Over Grouse Mountain" },
       { href: "https://mes.fm/hutchison-health-sept6-2026", title: "John Hutchison is coming home — health update" },
