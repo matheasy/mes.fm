@@ -40,6 +40,7 @@
 					<label class="ch-3donly">Camera <select id="ch-cam" class="tu-select ch-sel"><option value="auto">My side</option><option value="eye">Player's eye (see the room)</option><option value="top">From above</option><option value="side">From the side</option><option value="white">White's side</option><option value="black">Black's side</option><option value="orbit">Free (drag)</option></select></label>
 					<label class="ch-2donly">Board <select id="ch-theme" class="tu-select ch-sel"><option value="green">Green</option><option value="wood">Wood</option><option value="blue">Blue</option><option value="grey">Grey</option><option value="purple">Purple</option></select></label>
 					<label>Colours <select id="ch-pcol" class="tu-select ch-sel" title="Piece colours: pick a pair that is easy for you to see"><option value="auto">White and black</option><option value="cream">Cream and brown</option><option value="red">White and red</option><option value="green">White and green</option><option value="blueorange">Orange and blue (colour-blind friendly)</option><option value="yellowpurple">Yellow and purple</option><option value="goldsilver">Gold and silver</option></select></label>
+					<span class="ch-shows" role="group" aria-label="Show on the board">Show <label><input type="checkbox" data-sh="names"> Names</label><label><input type="checkbox" data-sh="btns"> Board buttons</label><label><input type="checkbox" data-sh="moves"> Moves</label><label><input type="checkbox" data-sh="type"> Type box</label></span>
 					<button type="button" class="ch-vb ch-3donly" id="ch-view3" title="Back to the normal camera (or double-click the board)">⟲ Reset view</button>
 					<button type="button" class="ch-vb" id="ch-flip" title="Turn the board round (R)">⇅ Turn board</button>
 				</div>
@@ -55,10 +56,11 @@
 							<div class="ch-promo" id="ch-promo" hidden role="dialog" aria-label="Promote the pawn to"></div>
 						</div>
 						<div class="ch-player" id="ch-pbot"></div>
+						<div class="ch-otb" id="ch-otb" role="group" aria-label="Game buttons on the board"><button type="button" class="ch-ob" data-o="undo" title="Take back your last move (U)">↶ <span>Undo</span></button><button type="button" class="ch-ob" data-o="hint" title="Show the computer's best move (H)">💡 <span>Hint</span></button><button type="button" class="ch-ob ch-3donly" data-o="view" title="Camera back to its normal view (or double-click the board)">⟲ <span>Reset view</span></button><button type="button" class="ch-ob" data-o="flip" title="Turn the board round (R)">⇅ <span>Turn</span></button><input id="ch-otype" class="ch-otype" autocomplete="off" spellcheck="false" placeholder="Type a move: e4, Nf3…" maxlength="10" aria-label="Type a move"></div>
 					</div>
 				</div>
 				<p class="ch-anote" id="ch-anote" aria-live="polite"></p>
-				<div class="ch-typebox"><label for="ch-type">Type a move</label><input id="ch-type" class="tu-input" autocomplete="off" spellcheck="false" placeholder="e4, Nf3, O-O, e7e8q…" maxlength="10"></div>
+				<div class="ch-typebox" id="ch-typebox"><label for="ch-type">Type a move</label><input id="ch-type" class="tu-input" autocomplete="off" spellcheck="false" placeholder="e4, Nf3, O-O, e7e8q…" maxlength="10"></div>
 				<div class="ch-replay" id="ch-replay">
 					<span class="ch-rbtns" role="group" aria-label="Look back through the moves"><button type="button" class="ch-vb" data-r="first" title="Start of the game">⏮</button><button type="button" class="ch-vb" data-r="prev" title="One move back (←)">◀</button><button type="button" class="ch-vb" data-r="next" title="One move forward (→)">▶</button><button type="button" class="ch-vb" data-r="last" title="Back to now">⏭</button></span>
 					<span class="ch-rpos" id="ch-rpos"></span>
@@ -81,7 +83,7 @@
 				<p class="ch-loadbtns"><button type="button" class="tu-btn tu-btn--primary" id="ch-pgo">Publish on Hive</button><button type="button" class="tu-btn" id="ch-pcopy">Copy the text</button><button type="button" class="tu-btn" id="ch-px">Close</button></p>
 				<p class="tu-note" id="ch-pnote">Hive posts are public and permanent. You need to be logged in with Hive (Play online tab).</p>
 			</div>
-			<p class="tu-note">Keys: <kbd>←</kbd> <kbd>→</kbd> step through the moves, <kbd>N</kbd> new game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>R</kbd> turn the board, <kbd>D</kbd> 2D / 3D, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. In 3D, drag the board (or use two fingers) to look around it, Ctrl + scroll or pinch to zoom, double-click to reset the view; pick the camera "Free" to fly all the way round. Your games and settings stay in this browser.</p>
+			<p class="tu-note">Keys: <kbd>←</kbd> <kbd>→</kbd> step through the moves, <kbd>N</kbd> new game, <kbd>U</kbd> undo, <kbd>H</kbd> hint, <kbd>R</kbd> turn the board, <kbd>D</kbd> 2D / 3D, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. In 3D, drag the board (or use two fingers) to look around it, Ctrl, Shift or Cmd + scroll (plain scroll in fill window) or pinch to zoom, double-click or ⟲ Reset view to go back to the normal camera; pick the camera "Free" to fly all the way round. Your games and settings stay in this browser.</p>
 		</section>
 
 		<section id="ch-p-online" role="tabpanel" aria-label="Play online" hidden>

@@ -32,9 +32,10 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "standard", opp: "cpu", lv: "medium", me: "white", alt: 0, clock: "", dots: true, anal: false, autoflip: false, sound: true,
-		dim: "2d", room: "club", set: "wood", cam: "auto", theme: "green", pcol: "auto", flipX: false,
+		dim: "2d", room: "club", set: "wood", cam: "auto", theme: "green", pcol: "auto", flipX: false, show: null,
 		name: "", ofirst: "host", opub: true, ht: 5, cur: null, stats: {}, online: null, orec: {}, hive: null, saved: {} };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k in saved) S[k] = saved[k]; } catch (e) {}
+	S.show = Object.assign({ names: true, btns: true, moves: true, type: true }, S.show || {});
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 	/* ---------- worker ---------- */
@@ -498,7 +499,7 @@
 		} else if (e.key === "Escape" && sel >= 0) { sel = -1; render(true); }
 	});
 	board.addEventListener("blur", function () { if (kbd) { kbd = false; render(true); } });
-	$("ch-type").addEventListener("keydown", function (e) {
+	function typeKey(e) {
 		if (e.key !== "Enter") return;
 		var txt = this.value.trim(); if (!txt) return;
 		if (!canInput()) { toast(vi !== null ? "Return to the current move first (⏭)." : "It's not your turn."); return; }
@@ -506,7 +507,9 @@
 		if (!o) { toast("\"" + txt + "\" isn't a legal move here (examples: e4, Nf3, exd5, O-O, e8=Q)."); return; }
 		this.value = "";
 		humanMove(o);
-	});
+	}
+	$("ch-type").addEventListener("keydown", typeKey);
+	$("ch-otype").addEventListener("keydown", typeKey);
 
 	/* ---------- piece colours (2D and 3D) ---------- */
 	var PCOL = { auto: null, cream: ["#f3e2bf", "#5b3a20"], red: ["#f5f5f5", "#b3261e"], blueorange: ["#ffae42", "#1f5fbf"], yellowpurple: ["#ffd84d", "#6a3fb5"], goldsilver: ["#e3b84a", "#9aa6b2"], green: ["#f5f5f5", "#1f7a3a"] };
@@ -582,8 +585,12 @@
 	box3.addEventListener("wheel", function (e) {
 		if (!v3) return;
 		var full = view.classList.contains("mes-pfill") || document.fullscreenElement;
-		if (!e.ctrlKey && !full) return;
-		e.preventDefault(); v3.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08);
+		if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !full) return;
+		// Shift + wheel arrives as a sideways scroll on Macs (deltaX), so use whichever axis moved
+		var d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+		if (e.deltaMode === 1) d *= 16; else if (e.deltaMode === 2) d *= 400;
+		e.preventDefault(); if (!d) return;
+		v3.zoom(Math.exp(Math.max(-0.3, Math.min(0.3, d * 0.0015))));
 	}, { passive: false });
 	box3.addEventListener("dblclick", function () { if (v3) v3.resetView(); });
 
@@ -695,6 +702,10 @@
 		$("ch-hint").hidden = on1 || !!st.win;
 		$("ch-hint").disabled = !canInput();
 		$("ch-resign").hidden = on1 || !!st.win || !st.hist.length;
+		var ob = function (k) { return root.querySelector('.ch-ob[data-o="' + k + '"]'); };
+		ob("undo").hidden = on1; ob("undo").disabled = on1 || !st.hist.length;
+		ob("hint").hidden = on1 || !!st.win; ob("hint").disabled = !canInput();
+		applyShow();
 		var canSave = st.win && (mode === "cpu" || mode === "local") && vi === null && ["mate", "stalemate", "fifty", "repeat", "material", "hill", "checks"].indexOf(st.win.why) >= 0;
 		$("ch-hsave").hidden = !canSave;
 		var savedKey = code + ":" + st.hist.join(".");
@@ -752,6 +763,26 @@
 	$("ch-cam").addEventListener("change", function () { S.cam = this.value; save(); if (v3) v3.setCam(S.cam); });
 	$("ch-pcol").addEventListener("change", function () { S.pcol = this.value; save(); applyPcol(); render(true); });
 	$("ch-view3").addEventListener("click", function () { if (v3) v3.resetView(); });
+	/* buttons on the board + what to show (the "Show" ticks sit in the view bar, so they are in the side panel too) */
+	$("ch-otb").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
+		var o = b.getAttribute("data-o");
+		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click();
+	});
+	function inFill() { return $("ch-view").classList.contains("mes-pfill") || !!document.fullscreenElement; }
+	function applyShow() {
+		var sh = S.show;
+		root.classList.toggle("ch-nonames", !sh.names);
+		$("ch-otb").hidden = !sh.btns || !(use3d() || inFill());
+		$("ch-moves").hidden = !sh.moves;
+		$("ch-typebox").hidden = !sh.type;
+		$("ch-otype").hidden = !sh.type;
+		root.querySelectorAll("[data-sh]").forEach(function (c) { c.checked = !!sh[c.getAttribute("data-sh")]; });
+	}
+	root.querySelector(".ch-shows").addEventListener("change", function (e) {
+		var c = e.target.closest("[data-sh]"); if (!c) return;
+		S.show[c.getAttribute("data-sh")] = c.checked; save(); applyShow(); setTimeout(size3d, 30);
+	});
 	$("ch-theme").addEventListener("change", function () { S.theme = this.value; save(); root.setAttribute("data-theme", S.theme); });
 	$("ch-flip").addEventListener("click", function () { S.flipX = !S.flipX; save(); render(true); });
 	$("ch-new").addEventListener("click", newGame);

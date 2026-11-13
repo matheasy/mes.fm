@@ -268,8 +268,9 @@
 	View.prototype.setCam = function (m) { this.camMode = m; this.free = { yaw: 0, pitch: 0 }; this.render(); };
 	View.prototype.zoom = function (f) { this.zoomF = Math.max(0.45, Math.min(2.6, this.zoomF * f)); if (this.camMode === "orbit") this.orb.d = Math.max(5, Math.min(40, this.orb.d * f)); this.render(); };
 	View.prototype.orbit = function (dx, dy) {
-		if (this.camMode === "orbit") { this.orb.th -= dx * 0.008; this.orb.ph = Math.max(0.05, Math.min(1.45, this.orb.ph - dy * 0.006)); }
-		else { this.free.yaw -= dx * 0.008; this.free.pitch = Math.max(-0.9, Math.min(0.9, this.free.pitch + dy * 0.006)); }
+		// "grab the board": the board turns the way the pointer moves; dragging down tips the far side towards you (camera rises)
+		if (this.camMode === "orbit") { this.orb.th += dx * 0.008; this.orb.ph = Math.max(0.05, Math.min(1.45, this.orb.ph - dy * 0.006)); }
+		else { this.free.yaw += dx * 0.008; this.free.pitch = Math.max(-0.9, Math.min(0.9, this.free.pitch - dy * 0.006)); }
 		this.render();
 	};
 	View.prototype.resetView = function () { this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1; this.orb = { th: this.flip ? -Math.PI / 2 : Math.PI / 2, ph: 0.75, d: 13 }; this.render(); };
