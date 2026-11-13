@@ -258,7 +258,35 @@
             });
         });
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", favMenu); else favMenu();
+    /* "Mobile Apps" (/mobile-apps, phone icon) in every burger / side menu, right after Tools (and after a page's own
+       "iPhone App" item, if it has one), so app links rank above Browser Extensions. Pages whose menu already links
+       /mobile-apps are left alone. The item carries data-mapps, which main.js skips when it counts the active tab. */
+    MENU_ICON.apps = '<svg viewBox="0 0 24 24" width="1.05em" height="1.05em" aria-hidden="true" focusable="false" style="vertical-align:-.15em"><rect x="6" y="2" width="12" height="20" rx="2.6" fill="#4dabf7"/><rect x="8" y="4.6" width="8" height="12.8" rx=".8" fill="#fff"/><circle cx="12" cy="19.6" r="1" fill="#fff"/></svg>';
+    function appsMenu() {
+        var seen = [];
+        Array.prototype.forEach.call(document.querySelectorAll("li.navbar__item > a.navbar__link"), function (a) {
+            var ul = a.closest("ul"); if (!ul || seen.indexOf(ul) >= 0) return; seen.push(ul);
+            var links = ul.querySelectorAll("a.navbar__link"), tools = null, i;
+            for (i = 0; i < links.length; i++) {
+                var h = links[i].getAttribute("href") || "";
+                if (/(^|mes\.fm)\/mobile-apps(\.html)?\/?$/.test(h)) return;
+                if (!tools && /(^|mes\.fm)\/tools(\.html)?\/?$/.test(h)) tools = links[i].closest("li");
+            }
+            var ref = tools || ul.querySelector("li[data-fav]") || (ul.querySelector('a.navbar__link[href$="/browser"]') || {}).parentNode;
+            if (!ref || ref.parentNode !== ul) return;
+            var after = !!tools;
+            while (after && ref.nextElementSibling && ref.nextElementSibling.matches(".mes-applink, .pc-applink")) ref = ref.nextElementSibling;
+            var n = ref.cloneNode(true); n.className = "navbar__item"; n.setAttribute("data-mapps", "1");
+            ["data-fav", "data-top", "data-prem"].forEach(function (k) { n.removeAttribute(k); });
+            var l = n.querySelector("a.navbar__link"); if (!l) return;
+            l.className = "navbar__link"; l.setAttribute("href", "/mobile-apps"); l.removeAttribute("target"); l.removeAttribute("rel"); l.removeAttribute("id"); l.removeAttribute("title");
+            l.innerHTML = MENU_ICON.apps + " "; l.appendChild(document.createTextNode("Mobile Apps"));
+            if (/^\/mobile-apps(\.html)?\/?$/.test(location.pathname)) { l.setAttribute("aria-current", "page"); l.classList.add("active-tab"); }
+            ul.insertBefore(n, after ? ref.nextSibling : ref);
+        });
+    }
+    function menuExtras() { favMenu(); appsMenu(); }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", menuExtras); else menuExtras();
 
     /* Page text size marker for the MES Text Size browser extension: on a page that has its own header A- / A+ (ids textSizeDown / textSizeUp,
        textSizeDownBtn / textSizeUpBtn), <html data-mes-text-scale="125"> is set while the page's own size ("articleFontScale") is not 100, and a
