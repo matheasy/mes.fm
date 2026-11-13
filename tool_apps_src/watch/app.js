@@ -223,6 +223,8 @@
 		$('wt-sv').textContent = (+shown.toFixed(2)) + '×'; $('wt-speed').classList.toggle('wt-off', !ok);
 		['wt-slower', 'wt-faster', 'wt-sv'].forEach(function (id) { $(id).disabled = !ok; });
 		$('wt-speed').title = ok ? 'Speed: S slower, D faster, R normal' : 'This site\'s own player has its own speed setting';
+		var sp = document.querySelector('#wt-stage .wt-spd');
+		if (sp) { sp.hidden = !ok || spdGone; sp.querySelector('.wt-spdv').textContent = (+shown.toFixed(2)) + '×'; }
 		paintCC();
 	}
 
@@ -579,7 +581,26 @@
 		mini.innerHTML = '<button type="button" data-z="in" title="Zoom in (+)" aria-label="Zoom in">+</button><button type="button" data-z="reset" class="wt-zv" title="Back to 100% (0)">100%</button><button type="button" data-z="out" title="Zoom out (−)" aria-label="Zoom out">−</button><button type="button" data-z="fill" title="Fill the box (crops the black bars)">Fill</button>';
 		mini.addEventListener('click', function (e) { var b = e.target.closest('[data-z]'); if (!b) return; var z = b.dataset.z, k = (S.zoom || {}).k || 1; if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else zoomTo(fillK()); });
 		mini.addEventListener('wheel', function (e) { e.preventDefault(); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY)); }, { passive: false });
-		st.appendChild(mini); ctlBar(st); applyZoom();
+		st.appendChild(mini); ctlBar(st); spdTab(st); applyZoom();
+	}
+	/* speed tab on the picture's edge (opposite the panel's › tab) in Fill window / full screen: +, −, 2×, 1×, ✕ hides it */
+	var spdGone = false;
+	function spdTab(st) {
+		var t = document.createElement('div'); t.className = 'wt-spd'; t.setAttribute('role', 'toolbar'); t.setAttribute('aria-label', 'Speed');
+		t.innerHTML = '<button type="button" data-sp="up" title="Faster (D)" aria-label="Faster">+</button>' +
+			'<span class="wt-spdv" aria-live="polite">1×</span>' +
+			'<button type="button" data-sp="down" title="Slower (S)" aria-label="Slower">−</button>' +
+			'<button type="button" data-sp="2" title="Speed 2×">2×</button>' +
+			'<button type="button" data-sp="1" title="Normal speed (R)">1×</button>' +
+			'<button type="button" data-sp="x" class="wt-spdx" title="Hide these buttons (tap the edge to bring them back)" aria-label="Hide the speed buttons">✕</button>';
+		['pointerdown', 'dblclick', 'wheel', 'touchstart'].forEach(function (ev) { t.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
+		t.addEventListener('click', function (e) {
+			var b = e.target.closest('[data-sp]'); if (!b) return; var k = b.dataset.sp;
+			if (k === 'x') { spdGone = true; syncSpeed(); return; }
+			if (!cur || !W.canSpeed(cur)) return;
+			if (k === 'up') step(1); else if (k === 'down') step(-1); else setRate(+k);
+		});
+		st.appendChild(t); syncSpeed();
 	}
 	/* our own control bar while zoomed in: the zoom scales the player's own controls with the picture (YouTube's bar moves off
 	   the screen), and a page can't separate them, so this one sits at the bottom of the box, unscaled */
@@ -807,7 +828,12 @@
 	function boot() {
 		// phones with a camera notch: without viewport-fit=cover the full-screen picture is pushed off centre by the notch's width
 		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
-		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { var pl = $('wt-player'); if (pl.classList.contains('wt-zprev') && (!pl.classList.contains('mes-pside') || pl.classList.contains('mes-pmini'))) pl.classList.remove('wt-zprev'); else if (zMode && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini')) pl.classList.add('wt-zprev'); zprevH(); setTimeout(applyZoom, 60); } });
+		$('wt-player').addEventListener('pointerdown', function (e) {
+			var pl = $('wt-player'); if (!spdGone || !pl.classList.contains('mes-pfill')) return;
+			var r = $('wt-stage').getBoundingClientRect(), d = pl.classList.contains('mes-pright') ? e.clientX - r.left : r.right - e.clientX;
+			if (d >= 0 && d < 36 && e.clientY >= r.top && e.clientY <= r.bottom) { spdGone = false; syncSpeed(); }
+		}, true);
+		if (window.MESPanel) window.MESPanel.add($('wt-player'), { bar: $('wt-pbtns'), stage: $('wt-stage'), onChange: function () { var pl = $('wt-player'); if (!pl.classList.contains('mes-pfill') && spdGone) { spdGone = false; syncSpeed(); } if (pl.classList.contains('wt-zprev') && (!pl.classList.contains('mes-pside') || pl.classList.contains('mes-pmini'))) pl.classList.remove('wt-zprev'); else if (zMode && pl.classList.contains('mes-pside') && !pl.classList.contains('mes-pmini')) pl.classList.add('wt-zprev'); zprevH(); setTimeout(applyZoom, 60); } });
 		zoomLayer();
 		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q'); paintCmBtn();
 		if (/[?&]debug=1/.test(location.search)) window.MESWatchDebug = { S: S, play: play, go: go, position: position, cur: function () { return cur; } };
