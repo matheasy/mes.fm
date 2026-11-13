@@ -30,9 +30,9 @@
     openlimits: { name: "MES Open Limits", pkg: "fm.mes.openlimits", key: "openlimitsAppBannerHidden",
       ios: "", extra: " (limit how many times a day you open your apps)" },
     polls: { name: "MES Polls", pkg: "fm.mes.polls", key: "pollsAppBannerHidden",
-      ios: "", extra: " (make a quick poll and share the link)" },
+      ios: "https://apps.apple.com/us/app/id6833587418", extra: " (make a quick poll and share the link)" },
     timer: { name: "MES Timer", pkg: "fm.mes.timer", key: "timerAppBannerHidden",
-      ios: "", extra: " (alarms, countdowns, stopwatch, Pomodoro and interval timer)" }
+      ios: "https://apps.apple.com/us/app/id6833587925", extra: " (alarms, countdowns, stopwatch, Pomodoro and interval timer)" }
   };
   function joinUrl(a) { return "https://play.google.com/apps/testing/" + a.pkg; }
   function ext(href, text) { return '<a href="' + href + '" target="_blank" rel="noopener">' + text + "</a>"; }

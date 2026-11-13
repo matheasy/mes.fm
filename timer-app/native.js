@@ -145,7 +145,10 @@
 		if (!TS) return;
 		var items = O.live ? runningItems() : [];
 		if (android) {
-			if (!bg || !items.length) { if (liveSig !== "") { liveSig = ""; TS.clearRunning().catch(function () {}); } return; }
+			// Posted while the app is open too (like the phone's own Clock app): the system hides the chip of the app on screen, and
+			// some phones (Samsung) freeze the page as soon as it leaves the screen, so a notification first posted on "pause"
+			// sometimes never arrived.
+			if (!items.length) { if (liveSig !== "") { liveSig = ""; TS.clearRunning().catch(function () {}); } return; }
 			var sigA = JSON.stringify(items);
 			if (sigA !== liveSig || force) { liveSig = sigA; TS.showRunning({ items: items.slice().reverse() }).catch(function () {}); }   // last posted owns the status-bar chip: the soonest countdown
 			return;
@@ -171,7 +174,7 @@
 	document.addEventListener("click", function (e) {
 		var b = e.target.closest && e.target.closest("button");
 		if (!b || !b.closest("#tm")) return;
-		setTimeout(function () { liveUpdate(); if (!asked && upcoming().length) askOnce(); }, 400);
+		setTimeout(function () { liveUpdate(); if (!asked && (upcoming().length || (O.live && runningItems().length))) askOnce(); }, 400);
 	}, true);
 
 	/* ---------- background / foreground ---------- */
@@ -216,12 +219,14 @@
 			if (android && s) {
 				if (!s.notifications) { probs.push("notifications are turned off for MES Timer"); fixes.push(["Turn on notifications", function () { askOnce(); TS.openSettings({ what: "app" }); }]); }
 				if (O.alerts && !s.exact) { probs.push("“Alarms & reminders” is not allowed, so alerts may be late"); fixes.push(["Allow alarms", function () { TS.openSettings({ what: "exact" }); }]); }
+				if (O.live && s.sdk >= 36 && s.notifications && !s.liveUpdates) { probs.push("the countdown chip in the status bar is turned off for MES Timer (it still shows in the notification shade)"); fixes.push(["Show it in the status bar", function () { TS.openSettings({ what: "promoted" }); }]); }
 				if (O.ring && !s.fullScreen) { probs.push("full-screen alarms are not allowed, so alarms show as a notification"); fixes.push(["Allow full screen", function () { TS.openSettings({ what: "fullScreen" }); }]); }
 			} else if (ln.display && ln.display !== "granted" && (O.alerts || O.live)) {
 				probs.push("notifications are not allowed for MES Timer");
 				fixes.push([ln.display === "denied" ? "Open Settings" : "Allow notifications", function () { if (ln.display === "denied" && TS && TS.openSettings) TS.openSettings({ what: "app" }); else { asked = false; askOnce(); } }]);
 			}
-			st.textContent = probs.length ? "Heads-up: " + probs.join("; ") + "." : ((O.alerts || O.live) ? "All set." : "Alerts and live status are off: timers only ring while the app is open.");
+			var chipNote = android && s && O.live && s.sdk < 36 ? " The countdown shows in the notification shade; the chip in the status bar needs Android 16 or later." : "";
+			st.textContent = probs.length ? "Heads-up: " + probs.join("; ") + "." + chipNote : ((O.alerts || O.live) ? "All set." + chipNote : "Alerts and live status are off: timers only ring while the app is open.");
 			fixes.forEach(function (f) { st.appendChild(document.createElement("br")); st.appendChild(btn(f[0], f[1])); });
 		});
 	}

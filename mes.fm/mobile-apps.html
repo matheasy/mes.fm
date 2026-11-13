@@ -516,7 +516,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                         </div>
                         <a class="info-bar__logo-container" href="/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src=https://mes.fm/main_img/mes-logo-small.png"></a>                                <!-- (Responsive) Horizontal -->                        <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Mobile Apps</h1>                                        <p class="page-description">Mobile apps built by Math Easy Solutions. Percentage, BMI, Grade, GPA and Fitness calculators are on the App Store. <a href="/installs">See how many people install them</a>.</p>	<div id="main-content">
+                                    <h1 class="page-title">Mobile Apps</h1>                                        <p class="page-description">Mobile apps built by Math Easy Solutions. Percentage, BMI, Grade, GPA, Fitness, Polls and Timer are on the App Store. <a href="/installs">See how many people install them</a>.</p>	<div id="main-content">
+		<div id="ma-apps" data-card-views="mobile-apps" data-cv-item=".app-card" data-cv-title="h2" data-cv-desc="p">
 		<div class="app-card" style="display:flex;flex-wrap:wrap;align-items:center;gap:1em 1.2em;border:0.125em solid #1479c7;border-radius:0.5em;padding:1em;margin:0 0 1.2em;">
 			<img src="/img/percentagecalculator-app-icon.png" alt="MES Percentage Calculator app icon" width="96" height="96" style="width:6em;height:6em;border-radius:22%;flex:0 0 auto;">
 			<div style="flex:1 1 16em;min-width:0;line-height:1.4;">
@@ -588,7 +589,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div style="flex:1 1 16em;min-width:0;line-height:1.4;">
 				<h2 style="margin:0 0 0.2em;font-size:1.3em;">MES Polls <span style="font-size:0.6em;font-weight:700;vertical-align:middle;padding:0.15em 0.5em;border-radius:999px;background:#1f9d55;color:#fff;">New</span></h2>
 				<p style="margin:0 0 0.7em;">Make a poll in seconds, share the link, and watch the votes come in live: one or several picks, a closing time, results hidden until people vote, a QR code to show on screen. The free <a href="/polls">mes.fm/polls</a> as an app. No ads, no account.</p>
-				<p style="margin:0;font-size:0.95em;">The iPhone version is in Apple's review now; the Android version is open for testers (below).</p>
+				<a class="app-store-link" href="https://apps.apple.com/us/app/id6833587418" target="_blank" rel="noopener">Download on the App Store<span style="font-weight:400;"> (iPhone &amp; iPad)</span></a>
 				<details class="android-testers" data-mes-tester="polls">
 					<summary>Android: beta testing &mdash; become a tester</summary>
 				</details>
@@ -599,12 +600,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div style="flex:1 1 16em;min-width:0;line-height:1.4;">
 				<h2 style="margin:0 0 0.2em;font-size:1.3em;">MES Timer <span style="font-size:0.6em;font-weight:700;vertical-align:middle;padding:0.15em 0.5em;border-radius:999px;background:#1f9d55;color:#fff;">New</span></h2>
 				<p style="margin:0 0 0.7em;">Countdowns, stopwatch, alarms, Pomodoro and interval timers in one app, many at once. The time shows in your phone's top bar while a timer runs, and alarms ring with a full-screen alert even when the app is closed (notifications can be turned off). The free <a href="/timer">mes.fm/timer</a> as an app. No ads, no account.</p>
-				<p style="margin:0;font-size:0.95em;">The iPhone version is in Apple's review now; the Android version is open for testers (below).</p>
+				<a class="app-store-link" href="https://apps.apple.com/us/app/id6833587925" target="_blank" rel="noopener">Download on the App Store<span style="font-weight:400;"> (iPhone &amp; iPad)</span></a>
 				<details class="android-testers" data-mes-tester="timer">
 					<summary>Android: beta testing &mdash; become a tester</summary>
 				</details>
 			</div>
 		</div>
+		</div><script src="/main_js/card-views.js" defer></script>
 		<style>
 			#app-store-link, #main-content .app-store-link { display:inline-block; text-decoration:none; padding:0.75em 1.4em; font-size:1.05em; font-weight:700; color:#fff; background-color:#1479c7; border:0.125em solid #1479c7; border-radius:0.3em; }
 			#app-store-link span, #main-content .app-store-link span { color: inherit; }

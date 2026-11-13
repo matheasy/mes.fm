@@ -103,7 +103,7 @@ BL_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__t
 BL_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm) for sl, nm in BL_PAGES[1:])
 def _bl(slug, start, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", nm) for sl, nm in BL_PAGES)
-    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="28",
+    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="29",
              src="billiards", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"], nav_extra=BL_NAV_INFO, menu_extra=BL_NAV_MENU,
              vars={"START": start, "FAM": fam, "SEO": "@seo/%s.html" % slug})
     if slug != "billiards":
@@ -272,7 +272,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="23", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=2"]),
+                  js_v="24", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=2"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",

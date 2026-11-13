@@ -13,7 +13,9 @@
     { k: 'bmi', name: 'BMI Calculator', bundle: 'fm.mes.bmicalculator', ios: '6824009307', android: 'fm.mes.bmicalculator', title: /\bbmi\b/i, web: '/bmicalculator' },
     { k: 'grade', name: 'Grade Calculator', bundle: 'fm.mes.gradecalculator', ios: '6824035179', android: 'fm.mes.gradecalculator', title: /grade/i, web: '/gradecalculator' },
     { k: 'gpa', name: 'GPA Calculator', bundle: 'fm.mes.gpacalculator', ios: '6824052607', android: 'fm.mes.gpacalculator', title: /\bgpa\b/i, web: '/gpacalculator' },
-    { k: 'fit', name: 'Fitness Calculators', bundle: 'fm.mes.fitnesscalculators', ios: '6824113713', android: 'fm.mes.fitnesscalculators', title: /fitness/i, web: '/bmr-calculator' }
+    { k: 'fit', name: 'Fitness Calculators', bundle: 'fm.mes.fitnesscalculators', ios: '6824113713', android: 'fm.mes.fitnesscalculators', title: /fitness/i, web: '/bmr-calculator' },
+    { k: 'polls', name: 'Polls', bundle: 'fm.mes.polls', ios: '6833587418', android: 'fm.mes.polls', title: /poll/i, web: '/polls' },
+    { k: 'timer', name: 'Timer', bundle: 'fm.mes.timer', ios: '6833587925', android: 'fm.mes.timer', title: /timer/i, web: '/timer' }
   ];
   I.appByKey = function (k) { for (var i = 0; i < I.APPS.length; i++) if (I.APPS[i].k === k) return I.APPS[i]; return null; };
 
