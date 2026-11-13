@@ -466,13 +466,13 @@ APPS = {
                                 tag="Antiderivatives and definite integrals with steps.", accent="#b45309", dark="#7c3a06", tint="#fdf0d9",
                                 desc="Free integral calculator with steps: indefinite and definite integrals by substitution, integration by parts, partial fractions and trig rules, improper integrals with infinite bounds, numeric values when there is no closed form, and a plot of the area.",
                                 js_v="1", pre_js=CAS_JS, css_extra=["_cas.css"]),
-    # YouTube Money Calculator (rewritten 2026-10-02 from the 2016 jQuery page; youtubemoney must NEVER carry ads, so no_ads strips the
-    # AdSense loader + Auto-ads guard from the shell and tags the sidebar no-ads; the old meme gallery lives on at /youtubemoney/youtubers).
+    # YouTube Money Calculator (rewritten 2026-10-02 from the 2016 jQuery page). Ads ON since 2026-11-13 (the calculator is original maths +
+    # text; owner's decision). The 2016 meme archive at /youtubemoney/youtubers and the /how-much-do-youtubers-make page stay ad-free.
     "youtubemoney": dict(meta_desc="Free YouTube money calculator: estimate what a video or channel earns from views by topic, Shorts or long-form and viewer location.", share_img="youtubemoney/img/logo-big.png",
                   title="YouTube Money Calculator", page_title="YouTube Money Calculator",
                          tag="How much do YouTubers make?", accent="#cc1f1f", dark="#9a1515", tint="#fbe9e9",
                          desc="Free YouTube money calculator: estimate how much a video or channel earns from views, by topic, Shorts or long-form and viewer location, or work out how many views you need to hit an income goal. Uses your own RPM if you know it.",
-                         js_v="2", no_ads=True,
+                         js_v="2",
                          nav_extra="<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/how-much-do-youtubers-make'>Channels</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/youtubemoney/youtubers'>YouTubers</a></li>",
                          menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/how-much-do-youtubers-make\">How much do YouTubers make? (channels)</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/youtubemoney/youtubers\">YouTuber earnings archive</a></li>"),
     "calendar": dict(title="MES Calendar", page_title="Calendar",

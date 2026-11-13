@@ -316,7 +316,8 @@ def card_html(c):
              lg=" mes-aside__img--logo" if c.get("logo") else "", t=c["title"], k=c["kind"])
 
 
-NO_AD_DIRS = ("youtubemoney",)   # these pages must never carry ads: empty slot (no top ad) + data-no-ads (aside.js skips the 300x600 unit)
+AD_OK_PAGES = ("youtubemoney/index.html",)   # the YouTube Money calculator itself carries ads since 2026-11-13; its 2016 meme archive does not
+NO_AD_DIRS = ("youtubemoney",)   # these pages must never carry ads (except AD_OK_PAGES): empty slot (no top ad) + data-no-ads (aside.js skips the 300x600 unit)
 
 
 def aside_html(family, cfg, cards, slot, no_ads=False):
@@ -408,7 +409,8 @@ def main():
             else:
                 m = SLOT_RE.search(old)
                 slot = m.group(1) if m else DEFAULT_SLOT
-            no_ads = os.path.relpath(page["path"], SITE).split(os.sep)[0] in NO_AD_DIRS
+            rel = os.path.relpath(page["path"], SITE)
+            no_ads = rel.split(os.sep)[0] in NO_AD_DIRS and rel not in AD_OK_PAGES
             if no_ads:
                 slot = ""
             block = "" if args.remove else aside_html(family, cfg, recs_for(family, page, cat, cfg), slot, no_ads)
