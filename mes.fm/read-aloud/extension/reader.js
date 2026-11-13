@@ -658,7 +658,9 @@
     '.rap{max-width:200px;min-width:120px}.p.min .rap{display:none}' + (window.MESRAPick ? MESRAPick.css : '') +
     '.p.min{width:auto;padding:6px 8px}.p.min .bar,.p.min .row>*:not(.grip):not(.pl):not(.mini):not(.x){display:none}.p.min .row{flex-wrap:nowrap}' +
     // vertical player: the controls in a column at the side of the page, the text box beside them (left of the controls when docked right)
-    '.ori.on{background:#1a4d6b}.p.pip .ori{display:none}' +
+    '.ori.on{background:#1a4d6b}' +
+    // vertical inside the pop-out window: a column of controls filling the (tall, narrow) window, as many buttons a row as fit
+    '.p.pip.vert.vert{position:static;transform:none;width:100%;height:100vh;max-height:none;box-sizing:border-box;padding:8px}.p.pip.vert .row{grid-template-columns:repeat(auto-fill,minmax(34px,1fr))}.p.pip.vert .row>button{width:100%}' +
     '.p.vert{display:grid;grid-template-columns:auto;grid-template-rows:auto minmax(0,1fr);column-gap:8px;width:auto;max-height:calc((100vh - 24px) / var(--z,1));padding:8px}' +
     '.p.vert:not(.moved){left:auto;right:12px;top:50%;bottom:auto;transform:translateY(-50%)}.p.vert.dl:not(.moved){right:auto;left:12px}' +
     '.p.vert .bar,.p.vert .row{grid-column:1}.p.vert .bar{grid-row:1;margin:0 0 4px}' +
@@ -941,7 +943,7 @@
     var api = window.documentPictureInPicture;
     if (!api || !ui) return;
     var w;
-    try { w = await api.requestWindow({ width: 660, height: 150 }); } catch (e) { setStatus('The browser did not open the floating window.', true); return; }
+    try { w = await api.requestWindow(uiVert ? { width: 170, height: 560 } : { width: 660, height: 150 }); } catch (e) { setStatus('The browser did not open the floating window.', true); return; }
     pipWin = w;
     var d = w.document;
     d.title = 'MES Read Aloud';
@@ -950,7 +952,16 @@
     mountPip();
     w.addEventListener('keydown', onKey, true);
     w.addEventListener('pagehide', onPipHide);
-    try { var chromeH = w.outerHeight - w.innerHeight; w.resizeTo(w.outerWidth, Math.max(110, ui.p.offsetHeight + chromeH + 2)); } catch (e) { /* the window may not be resizable */ }
+    if (!uiVert) pipFit();
+  }
+  // size the floating window to the player: a bar across (horizontal) or a tall, narrow column (vertical)
+  function pipFit() {
+    var w = pipWin; if (!w || !ui) return;
+    try {
+      var chromeH = w.outerHeight - w.innerHeight, chromeW = w.outerWidth - w.innerWidth;
+      if (uiVert) w.resizeTo(170 + chromeW, Math.min(Math.max(420, (screen.availHeight || 800) - 120), 640) + chromeH);
+      else { w.resizeTo(660 + chromeW, w.outerHeight); w.resizeTo(w.outerWidth, Math.max(110, ui.p.offsetHeight + chromeH + 2)); }
+    } catch (e) { /* the window may not be resizable */ }
   }
   function mountPip() {
     if (!ui || !pipWin) return;
@@ -1006,7 +1017,7 @@
   // vertical / horizontal player. Vertical = the controls in a column docked at the side of the page (the side the player was nearer to),
   // the text box beside them at full height, its width set by the grip on its outer edge. Kept with the position in mesraUi.
   var TBW_MIN = 200, TBW_DEF = 380;
-  function vertOn() { return !!ui && uiVert && !pipWin; }
+  function vertOn() { return !!ui && uiVert; }
   function tbwMax() { return Math.max(TBW_DEF, Math.round(window.innerWidth * 0.8 / uiZoom) - 150); }
   function tbwClamp(w) { return Math.round(Math.max(TBW_MIN, Math.min(tbwMax(), w))); }
   function tbwDrag(t, d) {
@@ -1023,7 +1034,7 @@
     p.classList.toggle('vert', v);
     p.classList.toggle('vt', v && !uiMin && ui.tp.classList.contains('on'));
     p.classList.toggle('dl', v && uiSide === 'l');
-    if (!v) p.classList.remove('vl');
+    if (!v || pipWin) { p.classList.remove('vl'); if (pipWin) { p.classList.remove('vt'); p.classList.remove('dl'); } }
     else if (!uiPos) p.classList.toggle('vl', uiSide === 'l');
     else { var r = p.getBoundingClientRect(); p.classList.toggle('vl', r.left + r.width / 2 < window.innerWidth / 2); }
     p.style.setProperty('--tbw', tbwClamp(uiTbW || TBW_DEF) + 'px');
@@ -1039,7 +1050,8 @@
     }
   }
   function toggleVert() {
-    if (!ui || pipWin) return;
+    if (!ui) return;
+    if (pipWin) { uiVert = !uiVert; vertApply(); saveUi(); pipFit(); setStatus(uiVert ? 'Vertical player (V switches back)' : 'Horizontal player'); return; }
     if (!uiVert) { var r = ui.p.getBoundingClientRect(); uiSide = r.left + r.width / 2 < window.innerWidth / 2 - 4 ? 'l' : 'r'; }
     uiVert = !uiVert;
     place(null, true); tbApply(); saveUi();
