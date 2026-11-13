@@ -1204,6 +1204,11 @@
 		return s.toFixed(2) + "×";   // always 2 decimals so the box doesn't jump: 11.30×
 	};
 	V.SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 12, 16, 24, 32, 45];
+	// real time left to watch from t to the end at a preview speed -> "24:15" or "1:02:03" (whole seconds, rounded up)
+	V.watchLeft = function (t, dur, speed) {
+		var r = Math.max(0, (dur || 0) - (t || 0)) / (speed > 0 ? speed : 1), n = Math.ceil(r - 1e-6), h = Math.floor(n / 3600), m = Math.floor(n / 60) % 60, sec = n % 60;
+		return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (sec < 10 ? "0" : "") + sec;
+	};
 	V.short = function (t) { if (!(t >= 0)) t = 0; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1); };
 	V.parseTime = function (s, fps) {
 		s = String(s || "").trim(); if (!s) return null;
@@ -3543,6 +3548,7 @@
 	var spToastT = 0;
 	VE.on("speed", function (s) {
 		UI.speed = s; saveUI(); fillSpeed();
+		leftText();
 		clearTimeout(spToastT);
 		spToastT = setTimeout(function () { if (Math.abs(s - 1) > 1e-9) toast("Preview speed " + V.speedLabel(s, VE.P.fps) + (s > 16 + 1e-9 || s < 0.0625 - 1e-9 ? ": the browser can't play this fast or slow, so frames are skipped and there is no sound" : "") + " (the exported video is not changed)", 3500); }, 250);
 	});
@@ -3571,7 +3577,8 @@
 	});
 	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
 	var tin = $("vd-tin");
-	function timeText() { if (document.activeElement !== tin) tin.value = V.tc(VE.t, VE.P.fps); tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; $("vd-tdur").textContent = V.tc(V.duration(VE.P), VE.P.fps); }
+	function timeText() { if (document.activeElement !== tin) tin.value = V.tc(VE.t, VE.P.fps); tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; $("vd-tdur").textContent = V.tc(V.duration(VE.P), VE.P.fps); leftText(); }
+	function leftText() { var d = V.duration(VE.P), sp = P.speed || 1, el = $("vd-tleft"); if (!(d > 0) || VE.t >= d - 1e-6) { el.textContent = ""; return; } el.textContent = V.watchLeft(VE.t, d, sp) + " left" + (Math.abs(sp - 1) > 1e-9 ? " at " + V.speedLabel(sp, VE.P.fps) : ""); }
 	tin.addEventListener("focus", function () { if (P.playing) P.pause(); tin.value = V.tc(VE.t, VE.P.fps); tin.select(); });
 	// the first click selects the whole time (so typing replaces it); a click while it has focus places the caret as usual
 	tin.addEventListener("mousedown", function (e) { if (document.activeElement !== tin) { e.preventDefault(); tin.focus(); } });

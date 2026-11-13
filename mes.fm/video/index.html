@@ -373,6 +373,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-stagewrap:fullscreen {background:#000;} #vd #vd-canvas {display:block;background:#000;touch-action:none;}
 	#vd .vd-transport {background:var(--vd-panel);border-top:1px solid var(--vd-line);justify-content:flex-start;}
 	#vd .vd-play {background:var(--vd-acc);border-color:var(--vd-acc);color:#fff;min-width:44px;}
+	#vd #vd-tleft {margin-left:0.8em;color:var(--vd-dim);font-size:0.92em;}
+	#vd #vd-tleft:empty {display:none;}
 	#vd .vd-time {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.9em;padding:0 0.4em;color:var(--vd-fg);white-space:nowrap;flex-shrink:0;}
 	#vd #vd-tin {box-sizing:content-box;flex-shrink:0;font:inherit;color:inherit;background:transparent;border:1px solid transparent;border-radius:4px;padding:0.15em 0.3em;width:8ch;min-width:7ch;cursor:text;text-align:right;}
 	#vd #vd-tin:hover {border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05);}
@@ -1086,7 +1088,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" class="vd-btn vd-ico" data-tp="nextclip" title="Next clip edge (Down arrow, or Ctrl+Alt+Right as in Camtasia)" aria-label="Next clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3v10l6-5z"/><rect x="10.7" y="3" width="1.8" height="10"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="end" title="To the end (End)" aria-label="To the end"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3v10l4.5-5zM7 3v10l4.5-5z"/><rect x="12" y="3" width="2" height="10"/></svg></button>
 						<span class="vd-speed" role="group" aria-label="Preview playback speed (does not change the video)" title="Playback speed of the preview only. The exported video keeps its normal speed. - / + = 0.05 steps (hold to go faster), Shift+&lt; / Shift+&gt; = the next preset. From 1 frame per second to 45&times;; above 16&times; or below 1/16&times; frames are skipped and there is no sound."><span>Speed</span><button type="button" class="vd-btn vd-ico vd-spb" id="vd-spdn" aria-label="Slower by 0.05">&minus;</button><select id="vd-speed" aria-label="Preview playback speed"></select><input type="text" id="vd-spin" class="vd-spin" hidden spellcheck="false" autocomplete="off" aria-label="Type a speed: 2.35, 300%, 1/2 or 5 fps"><button type="button" class="vd-btn vd-ico vd-spb" id="vd-spup" aria-label="Faster by 0.05">+</button></span>
-						<span class="vd-time" id="vd-time"><input type="text" id="vd-tin" value="0:00;00" spellcheck="false" autocomplete="off" inputmode="text" aria-label="Playhead time: type a time and press Enter to go there" title="Type a time and press Enter to go there: 4:23;13, 1:02:03, 263, 2m30s, +10 or -5 (from here). Ctrl+G jumps here."> / <span id="vd-tdur">0:00;00</span></span>
+						<span class="vd-time" id="vd-time"><input type="text" id="vd-tin" value="0:00;00" spellcheck="false" autocomplete="off" inputmode="text" aria-label="Playhead time: type a time and press Enter to go there" title="Type a time and press Enter to go there: 4:23;13, 1:02:03, 263, 2m30s, +10 or -5 (from here). Ctrl+G jumps here."> / <span id="vd-tdur">0:00;00</span><span id="vd-tleft" title="How long it takes to watch the rest, from the playhead to the end, at this preview speed"></span></span>
 						<span class="vd-sp"></span>
 						<button type="button" class="vd-btn vd-sm vd-ico" id="vd-undo2" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button><button type="button" class="vd-btn vd-sm vd-ico" id="vd-redo2" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
 						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl">PNG</span></button>
@@ -1227,7 +1229,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=32" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=2" defer></script><script src="/video/js/video.js?v=33" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

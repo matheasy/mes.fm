@@ -815,6 +815,11 @@
 		return s.toFixed(2) + "×";   // always 2 decimals so the box doesn't jump: 11.30×
 	};
 	V.SPEED_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 6, 8, 12, 16, 24, 32, 45];
+	// real time left to watch from t to the end at a preview speed -> "24:15" or "1:02:03" (whole seconds, rounded up)
+	V.watchLeft = function (t, dur, speed) {
+		var r = Math.max(0, (dur || 0) - (t || 0)) / (speed > 0 ? speed : 1), n = Math.ceil(r - 1e-6), h = Math.floor(n / 3600), m = Math.floor(n / 60) % 60, sec = n % 60;
+		return (h ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (sec < 10 ? "0" : "") + sec;
+	};
 	V.short = function (t) { if (!(t >= 0)) t = 0; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1); };
 	V.parseTime = function (s, fps) {
 		s = String(s || "").trim(); if (!s) return null;

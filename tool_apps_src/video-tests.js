@@ -373,5 +373,8 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	const o = V.clipDefaults({ id: "o", type: "audio", media: "other", track: "t2", start: 40, in: 0, out: 5 }); p.clips.push(o);
 	ok(!V.linkCandidate(p, [o]), "different file: no link");
 }
+ok(V.watchLeft(17*60+16.8, 3600+17*60+52.9, 2.5) === "24:15", "17:16 to 1:17:52 at 2.5x = 24:15");
+ok(V.watchLeft(0, 3725, 1) === "1:02:05", "hours shown");
+ok(V.watchLeft(50, 40, 2) === "0:00", "past the end");
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

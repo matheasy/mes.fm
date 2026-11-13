@@ -386,6 +386,7 @@
 	var spToastT = 0;
 	VE.on("speed", function (s) {
 		UI.speed = s; saveUI(); fillSpeed();
+		leftText();
 		clearTimeout(spToastT);
 		spToastT = setTimeout(function () { if (Math.abs(s - 1) > 1e-9) toast("Preview speed " + V.speedLabel(s, VE.P.fps) + (s > 16 + 1e-9 || s < 0.0625 - 1e-9 ? ": the browser can't play this fast or slow, so frames are skipped and there is no sound" : "") + " (the exported video is not changed)", 3500); }, 250);
 	});
@@ -414,7 +415,8 @@
 	});
 	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
 	var tin = $("vd-tin");
-	function timeText() { if (document.activeElement !== tin) tin.value = V.tc(VE.t, VE.P.fps); tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; $("vd-tdur").textContent = V.tc(V.duration(VE.P), VE.P.fps); }
+	function timeText() { if (document.activeElement !== tin) tin.value = V.tc(VE.t, VE.P.fps); tin.style.width = Math.max(7, tin.value.length + 1) + "ch"; $("vd-tdur").textContent = V.tc(V.duration(VE.P), VE.P.fps); leftText(); }
+	function leftText() { var d = V.duration(VE.P), sp = P.speed || 1, el = $("vd-tleft"); if (!(d > 0) || VE.t >= d - 1e-6) { el.textContent = ""; return; } el.textContent = V.watchLeft(VE.t, d, sp) + " left" + (Math.abs(sp - 1) > 1e-9 ? " at " + V.speedLabel(sp, VE.P.fps) : ""); }
 	tin.addEventListener("focus", function () { if (P.playing) P.pause(); tin.value = V.tc(VE.t, VE.P.fps); tin.select(); });
 	// the first click selects the whole time (so typing replaces it); a click while it has focus places the caret as usual
 	tin.addEventListener("mousedown", function (e) { if (document.activeElement !== tin) { e.preventDefault(); tin.focus(); } });
