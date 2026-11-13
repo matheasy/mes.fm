@@ -705,8 +705,8 @@
 		function encOn() { return $("wp-hive-encrypt").checked; }
 		function paintWarn() {
 			var w = $("wp-hive-warn");
-			if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "wp-hive-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a backup made here is <b>not encrypted</b>: your plan and history will be public on the Hive blockchain, forever. For encrypted backups use a computer with the Keychain extension, or open mes.fm in the Keychain app's own browser."; return; }
-			if (encOn()) { w.className = "wp-hive-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
+			if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "wp-hive-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key (pick <b>🛡 Passphrase</b> under the Encrypt tick to encrypt anyway), so a backup made here is <b>not encrypted</b>: your plan and history will be public on the Hive blockchain, forever. For encrypted backups use a computer with the Keychain extension, or open mes.fm in the Keychain app's own browser."; return; }
+			if (encOn()) { w.className = "wp-hive-warn"; w.innerHTML = (HS().lockMode && HS().lockMode() === "pass" ? "🛡 Locked with your passphrase (quantum-safe): only the passphrase opens it." : "🔒 Encrypted: only your memo key can open it.") + " Others can still see that a backup exists, when, and its size. Saved permanently."; }
 			else { w.className = "wp-hive-warn is-open"; w.innerHTML = "⚠ <b>Not encrypted:</b> your whole plan and history will be <b>public on the Hive blockchain, readable by anyone, forever</b>."; }
 		}
 		function paintUser() {
@@ -736,10 +736,11 @@
 		$("wp-hivebtn").onclick = function () { if ($("wp-hive").hidden) open(true); else close(); };
 		$("wp-hive-close").onclick = close;
 		$("wp-hive-encrypt").onchange = function () { try { localStorage.setItem(ENC_KEY, this.checked ? "1" : "0"); } catch (e) {} paintWarn(); };
+		if (HS() && HS().encModeUI) HS().encModeUI($("wp-hive-encrypt"), function () { paintUser(); });
 		if (window.MESHive) MESHive.onChange(function () { if (!$("wp-hive").hidden) { list = null; $("wp-hive-list").innerHTML = ""; paintUser(); } });
 		function kb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(n < 10240 ? 1 : 0) + " KB"; }
 		function when(iso) { var d = new Date(/Z$/.test(iso) ? iso : iso + "Z"); return isNaN(d) ? "" : d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
-		function errText(e) { return e && e.code === "cancel" ? "Cancelled in Keychain." : (e && e.message) || "Something went wrong."; }
+		function errText(e) { return e && e.code === "cancel" ? "Cancelled." : (e && e.message) || "Something went wrong."; }
 		function busy(on) { busyOn = on; ["wp-hive-save", "wp-hive-load"].forEach(function (id) { $(id).disabled = on; }); }
 		function count(plan) { var n = 0; (plan.days || []).forEach(function (d) { n += (d.items || []).length; }); (plan.lists || []).forEach(function (l) { (l.groups || []).forEach(function (g) { n += (g.items || []).length; }); }); return n; }
 		function hsave() {
@@ -751,7 +752,7 @@
 			HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
 				if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
 				return HS().save(HAPP, HNAME, data, { encrypt: enc, onProgress: function (m) { msg(m); } }).then(function (r) {
-					msg("Saved \"" + P.title + "\" (" + n + " activities, " + P.log.length + " history entries) to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? ", encrypted" : ", NOT encrypted") + "). It shows up in the list within a few seconds.", "ok");
+					msg("Saved \"" + P.title + "\" (" + n + " activities, " + P.log.length + " history entries) to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? (r.header && r.header.e === 2 ? ", locked with your passphrase (quantum-safe)" : ", encrypted") : ", NOT encrypted") + "). It shows up in the list within a few seconds.", "ok");
 					toast("Saved to Hive");
 					list = null; setTimeout(function () { load(true); }, 4000);
 				});
@@ -770,7 +771,7 @@
 			var box = $("wp-hive-list");
 			if (!list || !list.length) { box.innerHTML = ""; return; }
 			box.innerHTML = '<ul class="wp-hb">' + list.map(function (e, i) {
-				var meta = (e.encrypted ? "🔒 encrypted" : "👁 public") + " · " + esc(kb(e.bytes)) + (e.complete ? "" : " · incomplete");
+				var meta = HS().lockLabel(e) + " · " + esc(kb(e.bytes)) + (e.complete ? "" : " · incomplete");
 				return '<li class="wp-hb-row"><span class="wp-hb-when"><b>' + esc(when(e.time)) + (i === 0 ? ' <span class="wp-hive-new">newest</span>' : "") + "</b>" +
 					"<small>" + meta + (e.trx ? ' · <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener" title="See this backup on the blockchain">chain ↗</a>' : "") + "</small></span>" +
 					'<span class="wp-hb-acts">' + (e.complete ? '<button type="button" class="tu-btn tu-btn--primary" data-h="restore" data-i="' + i + '">Load</button>' : "") +
@@ -779,7 +780,7 @@
 		}
 		function restore(i) {
 			var e = list && list[i]; if (!e || busyOn) return;
-			busy(true); msg(e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
+			busy(true); msg(e.lock === "pass" ? "Unlocking with your passphrase…" : e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
 			HS().load(e).then(function (data) {
 				var plan = data && data.plan ? data.plan : data;
 				if (!plan || !Array.isArray(plan.days)) throw new Error("That backup is not a Workout Planner plan.");

@@ -276,7 +276,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="25", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=3", "/main_js/cloud-files.js?v=3"]),
+                  js_v="26", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -502,7 +502,7 @@ APPS = {
                       tag="Save text once, copy it anytime, synced to your own cloud.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
                       desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
                       meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
-                      js_v="13", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=4"]),
+                      js_v="14", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
@@ -1186,7 +1186,7 @@ APPS = {
                             tag="Plan your week, rotate your workouts, track your streak.", accent="#1d7a46", dark="#155c34", tint="#e2f3e8",
                             desc="Free workout routine planner: plan each day of your week with times and activities in your own categories, keep a Currently-at marker that moves to the next workout when you finish one, run training lists and rotations, drag and drop everything, log workouts and see your streak and calendar. Import from Excel, print, share as a link. No sign-up.",
                             meta_desc="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel.",
-                            js_v="2", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=4"]),
+                            js_v="3", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"]),
     # Famous Birthdays (new 2026-10-21, mes.fm/birthday; aliases /birthdays /celebrity-birthdays /famous-birthdays /born-today ...): who shares your birthday, born today,
     # name search, filters (field / country / era / living), same date + same year + nearest. Data = mes.fm/birthday/data/MM.json + index.json from Wikidata (CC0),
     # written by build_birthdays.py (+ birthday_extras.json). lib.js = BD (helpers + loader; tests tool_apps_src/birthday-tests.js); Sun sign / Chinese animal from the
@@ -1379,7 +1379,7 @@ APPS = {
     "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser.",
-                js_v="5", pre_js=["/main_js/site-search.js?v=1", "/main_js/hive.js?v=2", "/main_js/hive-store.js?v=4"], no_ads=True),
+                js_v="6", pre_js=["/main_js/site-search.js?v=1", "/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"], no_ads=True),
     # MES Ratings (mes.fm/ratings): results of the "Rate this page" stars every public page carries (main_js/rating.js, loaded lazily by
     # site-search.js; votes = /api/rating, Upstash): Top rated (Bayesian average), Most rated, Recently rated, section chips, and a feedback box
     # that only sends by email / the contact form. Local preview falls back to ratings/data/sample.json. Wide, ad-free, no sidebar.

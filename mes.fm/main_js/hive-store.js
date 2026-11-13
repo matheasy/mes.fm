@@ -26,6 +26,20 @@
    - Even encrypted, a save is PUBLIC and PERMANENT: anyone can see that the account saved N bytes for "copy-text" at that
      time. Unencrypted saves are readable by anyone, forever.
 
+   Quantum-safe passphrase lock (2026-11-13, header e: 2)
+   - The memo-key wrap above is elliptic-curve (secp256k1 ECDH), which a big enough quantum computer could break with Shor's
+     algorithm. Hive data is permanent, so a save made today could be read one day ("harvest now, decrypt later").
+   - e: 2 instead derives the AES-256-GCM key from a passphrase: PBKDF2-SHA256 (Web Crypto), `i` rounds (PASS_ROUNDS) with a fresh
+     16-byte salt per save; header {e:2, kd:"pbkdf2-sha256", i, sa: salt, iv}. Nothing elliptic-curve is involved, so only the
+     passphrase guards it. AES-256 stays strong against quantum computers (Grover only halves the bits); the passphrase must be
+     strong too (generatePass() = 120 random bits). There is deliberately NO memo-key copy of the key next to it: that copy
+     would be the weak spot.
+   - Works with the Keychain phone app (HiveAuth) too, since no memo key is needed. Forgotten passphrase = save lost for good.
+   - The chosen lock is one setting for every MES page: localStorage "mes-hive-store:lock" = "memo" | "pass". The passphrase is
+     kept in memory for the page; "Remember on this device" stores it in localStorage "mes-hive-store:pass:<account>".
+   - Every save keeps the lock it was made with forever (the chain can't be edited); re-saving with the passphrase only protects
+     the new save. Pages call encModeUI(checkbox, onChange) to show the choice; save({encrypt:true}) uses it; load() asks.
+
    Pure helpers (b64, chunking, op building, assembling saves from history) are exported for node tests:
    node tool_apps_src/hive-store-tests.js */
 (function (root) {
@@ -39,6 +53,10 @@
     var TX_GAP_MS = 3500;
     var FILTER_CUSTOM_JSON = 262144;   /* 1 << 18: custom_json in the account_history operation filter */
     var NAME_RE = /^[a-z0-9][a-z0-9._-]{0,39}$/;
+    var PASS_ROUNDS = 600000;     /* PBKDF2-SHA256 rounds for e:2 (OWASP 2023); stored per save, so it can grow later */
+    var PASS_MIN = 12;
+    var LOCK_KEY = "mes-hive-store:lock", PASS_KEY = "mes-hive-store:pass:";
+    var QPAGE = "/quantum-cryptography?tab=safe";
 
     /* ---------- bytes <-> text ---------- */
     function utf8(s) { return new TextEncoder().encode(s); }
@@ -129,7 +147,8 @@
             var e = by[k]; if (dead[k] || !e.header) return;
             var have = Object.keys(e.parts).length;
             e.complete = have === e.count;
-            e.encrypted = e.header.e === 1;
+            e.encrypted = e.header.e === 1 || e.header.e === 2;
+            e.lock = e.header.e === 2 ? "pass" : e.header.e === 1 ? "memo" : "";
             e.bytes = +e.header.b || 0;
             e.payload = e.complete ? Array.apply(null, { length: e.count }).map(function (x, i) { return e.parts[i]; }).join("") : "";
             delete e.parts;
@@ -152,6 +171,36 @@
         if (typeof DecompressionStream === "undefined") return Promise.reject(new Error("This browser can't unpack compressed data."));
         return streamBytes(bytes, new DecompressionStream("deflate-raw"));
     }
+    /* passphrase -> AES-256-GCM key (PBKDF2-SHA256). NFC so the same passphrase typed on another device gives the same key. */
+    function passKey(pass, salt, rounds, use) {
+        return crypto.subtle.importKey("raw", utf8(String(pass).normalize("NFC")), "PBKDF2", false, ["deriveKey"]).then(function (base) {
+            return crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: salt, iterations: rounds }, base, { name: "AES-GCM", length: 256 }, false, use);
+        });
+    }
+    /* rough strength in bits: random-looking text = length x log2(character pool), minus repeats; 4+ words = ~11 bits a word */
+    function passBits(p) {
+        p = String(p || "");
+        if (!p) return 0;
+        var words = p.trim().split(/[\s\-_.,]+/).filter(Boolean);
+        var pool = (/[a-z]/.test(p) ? 26 : 0) + (/[A-Z]/.test(p) ? 26 : 0) + (/[0-9]/.test(p) ? 10 : 0) + (/[^a-zA-Z0-9]/.test(p) ? 33 : 0);
+        var uniq = {}; p.split("").forEach(function (c) { uniq[c] = 1; });
+        var len = Math.min(p.length, Object.keys(uniq).length * 3);
+        var bits = Math.round(len * Math.log2(Math.max(pool, 2)));
+        if (/^(.)\1+$/.test(p) || /^(?:0?1?2?3?4?5?6?7?8?9?|abcdefgh?i?j?k?)$/i.test(p) || /password|qwerty|letmein|123456/i.test(p)) bits = Math.min(bits, 20);
+        if (words.length >= 4 && words.every(function (w) { return /^[a-z]+$/i.test(w); })) bits = Math.min(bits, words.length * 11);
+        return bits;
+    }
+    var GEN = "abcdefghjkmnpqrstuvwxyz23456789";   /* 31 letters / digits, no look-alikes (i l o 0 1) */
+    function generatePass(groups) {
+        groups = groups || 6;
+        var out = [], b = randomBytes(groups * 4 * 2), j = 0;
+        for (var g = 0; g < groups; g++) {
+            var w = "";
+            while (w.length < 5) { var x = b[j++ % b.length]; if (j >= b.length) { b = randomBytes(b.length); j = 0; } if (x < 248) w += GEN[x % 31]; }
+            out.push(w);
+        }
+        return out.join("-");   /* 6 x 5 x log2(31) = ~149 bits */
+    }
     function aad(app, name, saveId) { return utf8(ID + "/" + V + "/" + app + "/" + name + "/" + saveId); }
     function sha16(bytes) { return crypto.subtle.digest("SHA-256", bytes).then(function (d) { return hex(new Uint8Array(d)).slice(0, 16); }); }
 
@@ -159,12 +208,20 @@
     function pack(data, o) {
         var raw = utf8(JSON.stringify(data));
         var saveId = o.saveId || newSaveId();
-        var header = { e: o.encrypt ? 1 : 0, z: "", b: raw.length, t: new Date(o.now || Date.now()).toISOString() };
+        var usePass = o.encrypt && typeof o.pass === "string";
+        var header = { e: usePass ? 2 : o.encrypt ? 1 : 0, z: "", b: raw.length, t: new Date(o.now || Date.now()).toISOString() };
         return deflate(raw).then(function (z) {
             var body = raw;
             if (z && z.length < raw.length) { body = z; header.z = "d"; }
             if (!o.encrypt) return sha16(raw).then(function (h) { header.sha = h; return { saveId: saveId, header: header, payload: b64(body) }; });
             var key = randomBytes(32), iv = randomBytes(12);
+            if (usePass) {
+                var salt = randomBytes(16), rounds = o.rounds || PASS_ROUNDS;
+                header.kd = "pbkdf2-sha256"; header.i = rounds; header.sa = b64(salt); header.iv = b64(iv);
+                return passKey(o.pass, salt, rounds, ["encrypt"])
+                    .then(function (ck) { return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv, additionalData: aad(o.app, o.name, saveId) }, ck, body); })
+                    .then(function (ct) { return { saveId: saveId, header: header, payload: b64(new Uint8Array(ct)) }; });
+            }
             return o.wrapKey(hex(key)).then(function (wrapped) {
                 if (typeof wrapped !== "string" || !wrapped) throw new Error("Keychain did not return the encrypted key.");
                 header.k = wrapped; header.iv = b64(iv);
@@ -181,7 +238,24 @@
         var h = e.header, body;
         try { body = unb64(e.payload); } catch (x) { return Promise.reject(new Error("This save is damaged.")); }
         var p = Promise.resolve(body);
-        if (h.e === 1) {
+        if (h.e === 2) {
+            if (h.kd !== "pbkdf2-sha256" || !(h.i >= 1000 && h.i <= 50000000)) return Promise.reject(new Error("This save uses a lock this page doesn't know."));
+            if (!o.getPass) return Promise.reject(new Error("This save is locked with a passphrase."));
+            var tries = 0;
+            var attempt = function (wrong) {
+                return Promise.resolve(o.getPass({ wrong: wrong, tries: tries++ })).then(function (pw) {
+                    if (typeof pw !== "string") { var c = new Error("Cancelled."); c.code = "cancel"; throw c; }
+                    return passKey(pw, unb64(h.sa), h.i, ["decrypt"]).then(function (ck) {
+                        return crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(h.iv), additionalData: aad(e.app, e.name, e.s) }, ck, body)
+                            .then(function (ab) { if (o.onPassOk) o.onPassOk(pw); return new Uint8Array(ab); }, function () {
+                                if (tries >= 5 || o.noRetry) { var w = new Error("Wrong passphrase (or the save is damaged)."); w.code = "badpass"; throw w; }
+                                return attempt(true);
+                            });
+                    });
+                });
+            };
+            p = attempt(false);
+        } else if (h.e === 1) {
             if (!o.unwrapKey) return Promise.reject(new Error("This save is encrypted."));
             p = o.unwrapKey(h.k).then(function (hk) {
                 var key = unhex(String(hk).replace(/^#/, "").trim());
@@ -193,7 +267,7 @@
             }).then(function (ab) { return new Uint8Array(ab); });
         }
         return p.then(function (b) { return h.z === "d" ? inflate(b) : b; }).then(function (raw) {
-            if (h.e !== 1 && h.sha) return sha16(raw).then(function (s) { if (s !== h.sha) throw new Error("This save is damaged (checksum)."); return raw; });
+            if (!h.e && h.sha) return sha16(raw).then(function (s) { if (s !== h.sha) throw new Error("This save is damaged (checksum)."); return raw; });
             return raw;
         }).then(function (raw) { return JSON.parse(unutf8(raw)); });
     }
@@ -231,7 +305,17 @@
         };
     }
     /* false while logged in with the Keychain phone app (HiveAuth): it can't use the memo key, so saves can't be encrypted */
-    function canEncrypt() { var h = root.MESHive; return !(h && h.memoOk && !h.memoOk()); }
+    function memoOk() { var h = root.MESHive; return !(h && h.memoOk && !h.memoOk()); }
+    function canEncrypt() { return lockMode() === "pass" || memoOk(); }
+    function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; }
+    function lockMode() { return ls(LOCK_KEY) === "pass" ? "pass" : "memo"; }
+    function setLock(m) { ls(LOCK_KEY, m === "pass" ? "pass" : "memo"); fire(); }
+    var memPass = {}, subs = [];
+    function fire() { subs.slice().forEach(function (f) { try { f(lockMode()); } catch (e) {} }); }
+    function knownPass(acct) { return memPass[acct] || ls(PASS_KEY + acct) || ""; }
+    function rememberPass(acct, pw, keep) { memPass[acct] = pw; if (keep) ls(PASS_KEY + acct, pw); }
+    function forgetPass(acct) { delete memPass[acct]; ls(PASS_KEY + acct, null); fire(); }
+    function isRemembered(acct) { return !!ls(PASS_KEY + acct); }
     function memoHint(m) {
         return (m || "Keychain could not use your memo key") +
             ". Encrypted Hive saves need your MEMO key in Keychain (Keychain > your account > Manage keys > add the memo key).";
@@ -254,9 +338,14 @@
         var say = opt.onProgress || function () {};
         return Promise.resolve().then(function () {
             var account = need();
-            if (opt.encrypt && !canEncrypt()) { var ne = new Error(H().NO_MEMO || "Encryption is not available with this login."); ne.code = "nomemo-has"; throw ne; }
-            if (opt.encrypt) say("Confirm in Keychain: encrypt the backup key to your own memo key…");
-            return pack(data, { encrypt: !!opt.encrypt, app: app, name: name, wrapKey: wrapKeyFor(account) }).then(function (pk) {
+            if (opt.encrypt && (opt.lock || lockMode()) === "memo" && !memoOk()) { var ne = new Error(H().NO_MEMO || "Encryption is not available with this login."); ne.code = "nomemo-has"; throw ne; }
+            var mode = opt.lock || lockMode();
+            var getPw = (opt.encrypt && mode === "pass") ? (opt.pass || knownPass(account) ? Promise.resolve(opt.pass || knownPass(account)) : askPass({ mode: "save", account: account })) : Promise.resolve(null);
+            return getPw.then(function (pw) {
+            if (opt.encrypt && mode === "pass") { if (typeof pw !== "string") { var c = new Error("Cancelled."); c.code = "cancel"; throw c; } say("Locking the data with your passphrase (quantum-safe)…"); }
+            else if (opt.encrypt) say("Confirm in Keychain: encrypt the backup key to your own memo key…");
+            return pack(data, { encrypt: !!opt.encrypt, pass: pw == null ? undefined : pw, app: app, name: name, wrapKey: wrapKeyFor(account) });
+            }).then(function (pk) {
                 var jsons = chunkJsons(app, name, pk.saveId, pk.header, pk.payload);
                 var txs = buildTxs(account, jsons), i = 0;
                 function next() {
@@ -327,7 +416,17 @@
     }
     function load(entry) {
         var account = need();
-        return unpack(entry, { unwrapKey: unwrapKeyFor(account) });
+        var first = true;
+        return unpack(entry, {
+            unwrapKey: unwrapKeyFor(account),
+            getPass: function (st) {
+                var k = knownPass(account);
+                if (first && k && !st.wrong) { first = false; return k; }
+                first = false;
+                return askPass({ mode: "open", account: account, wrong: st.wrong && st.tries > 0 });
+            },
+            onPassOk: function (pw) { if (!memPass[account]) memPass[account] = pw; }
+        });
     }
     function forget(app, name, saveId) {
         return Promise.resolve().then(function () {
@@ -351,11 +450,116 @@
     }
     function explorer(trx) { return "https://hivehub.dev/tx/" + encodeURIComponent(trx); }
 
+    /* ---------- lock choice + passphrase dialog (browser only; self-contained CSS, light + dark) ---------- */
+    function lockLabel(e) { return !e || !e.encrypted ? "👁 public" : e.lock === "pass" ? "🛡 passphrase (quantum-safe)" : "🔒 memo key"; }
+    var CSS = ".mhs-ov{position:fixed;inset:0;z-index:2147483646;background:rgba(10,14,24,.55);display:flex;align-items:center;justify-content:center;padding:16px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}" +
+        ".mhs-card{background:#fff;color:#1d2330;border-radius:12px;max-width:470px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px;box-shadow:0 18px 60px rgba(0,0,0,.35)}" +
+        ".mhs-card *{color:inherit;box-sizing:border-box}.mhs-card h3{margin:0 0 6px;font-size:1.15em;line-height:1.3}.mhs-card p{margin:6px 0;font-size:.93em}" +
+        ".mhs-card a{color:#1d5fd0}.mhs-in{width:100%;font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;padding:9px 10px;border:1px solid #b8c0cc;border-radius:8px;background:#fff;color:#1d2330;margin:4px 0}" +
+        ".mhs-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}.mhs-b{font:inherit;font-size:.92em;padding:7px 12px;border-radius:8px;border:1px solid #b8c0cc;background:#f3f5f8;cursor:pointer}" +
+        ".mhs-b--p{background:#15803d;border-color:#15803d;color:#fff!important}.mhs-b:disabled{opacity:.5;cursor:default}.mhs-ck{display:flex;gap:7px;align-items:flex-start;font-size:.9em;margin:5px 0}.mhs-ck input{margin-top:3px}" +
+        ".mhs-meter{height:6px;border-radius:3px;background:#e3e7ed;overflow:hidden;margin-top:4px}.mhs-meter i{display:block;height:100%;width:0;background:#c0392b;transition:width .2s}" +
+        ".mhs-st{font-size:.85em;margin-top:3px}.mhs-err{color:#b42318!important;font-weight:600;font-size:.9em}.mhs-note{font-size:.84em;opacity:.85}" +
+        ".mhs-dark .mhs-card{background:#1f242d;color:#e6e9ef}.mhs-dark .mhs-in{background:#141820;color:#e6e9ef;border-color:#4a5363}.mhs-dark .mhs-b{background:#2b313c;border-color:#4a5363}" +
+        ".mhs-dark .mhs-b--p{background:#16a34a;border-color:#16a34a}.mhs-dark .mhs-card a{color:#7fb0ff}.mhs-dark .mhs-meter{background:#353c48}.mhs-dark .mhs-err{color:#ff8a80!important}" +
+        ".mhs-lock{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px;font-size:.9em}.mhs-lock button{font:inherit;font-size:.95em;padding:4px 10px;border-radius:999px;border:1px solid #9aa4b2;background:transparent;cursor:pointer;color:inherit}" +
+        ".mhs-lock button[aria-pressed=true]{background:#15803d;border-color:#15803d;color:#fff}.mhs-lock .mhs-lk-m[aria-pressed=true]{background:#475569;border-color:#475569}.mhs-lock a{font-size:.92em}.mhs-lock.is-off{opacity:.55}" +
+        ".mhs-lock [hidden],.mhs-card [hidden]{display:none!important}.mhs-lockn{font-size:.82em;opacity:.85;margin:0 0 4px;flex-basis:100%}";
+    function css() { if (document.getElementById("mhs-css")) return; var st = document.createElement("style"); st.id = "mhs-css"; st.textContent = CSS; document.head.appendChild(st); }
+    function el(tag, attrs, html) { var e = document.createElement(tag); for (var k in attrs || {}) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; }
+    function strength(bits) {
+        if (bits >= 100) return [100, "#15803d", "Very strong: safe for the long run, quantum computers included."];
+        if (bits >= 80) return [80, "#2f9e44", "Strong."];
+        if (bits >= 60) return [55, "#d97706", "Okay, but longer is better for something kept forever."];
+        return [Math.max(8, bits * 0.8), "#c0392b", "Too weak: easy to guess. Use Make one for me, or 5+ random words."];
+    }
+    /* askPass({mode: "save"|"open", account, wrong}) -> Promise of the passphrase, or null when cancelled */
+    function askPass(o) {
+        o = o || {};
+        return new Promise(function (resolve) {
+            css();
+            var save = o.mode === "save";
+            var ov = el("div", { "class": "mhs-ov" + (document.body.classList.contains("dark-mode") || document.body.classList.contains("dark") ? " mhs-dark" : ""), role: "dialog", "aria-modal": "true" });
+            var why = '<a href="' + QPAGE + '" target="_blank" rel="noopener">How this stays safe from quantum computers</a>';
+            ov.innerHTML = '<div class="mhs-card">' + (save
+                ? '<h3>🛡 Lock with a passphrase (quantum-safe)</h3><p>Your data is locked in this browser with AES-256, using a key made from this passphrase. No memo key or elliptic-curve maths is involved, so a future quantum computer can\'t unlock it: only the passphrase can. ' + why + '.</p>' +
+                  '<p><b>Keep it safe:</b> if you lose the passphrase, saves locked with it can never be opened, by you or anyone. Use the same one on every MES page and device.</p>'
+                : '<h3>🛡 Passphrase needed</h3><p>This Hive save was locked with a passphrase. Type it to open it.</p>') +
+                (o.wrong ? '<p class="mhs-err">That passphrase didn\'t open it. Try again.</p>' : '') +
+                '<input class="mhs-in" id="mhs-p1" type="password" autocomplete="' + (save ? "new-password" : "current-password") + '" placeholder="Passphrase" spellcheck="false" autocapitalize="off">' +
+                (save ? '<input class="mhs-in" id="mhs-p2" type="password" autocomplete="new-password" placeholder="Type it again" spellcheck="false" autocapitalize="off">' +
+                  '<div class="mhs-meter"><i id="mhs-bar"></i></div><div class="mhs-st" id="mhs-st">At least ' + PASS_MIN + ' characters.</div>' : '') +
+                '<div class="mhs-row"><button type="button" class="mhs-b" id="mhs-show">Show</button>' + (save ? '<button type="button" class="mhs-b" id="mhs-gen">🎲 Make one for me</button><button type="button" class="mhs-b" id="mhs-copy" hidden>Copy</button>' : '') + '</div>' +
+                (save ? '<label class="mhs-ck"><input type="checkbox" id="mhs-ok"> <span>I have written it down or saved it in my password manager.</span></label>' : '') +
+                '<label class="mhs-ck"><input type="checkbox" id="mhs-keep"> <span>Remember it on this device (anyone using this browser could open your saves)</span></label>' +
+                '<div class="mhs-row" style="justify-content:flex-end;margin-top:10px"><button type="button" class="mhs-b" id="mhs-no">Cancel</button><button type="button" class="mhs-b mhs-b--p" id="mhs-yes">' + (save ? "Lock and save" : "Open") + '</button></div></div>';
+            document.body.appendChild(ov);
+            function $(id) { return ov.querySelector("#" + id); }
+            var p1 = $("mhs-p1"), p2 = $("mhs-p2"), yes = $("mhs-yes");
+            $("mhs-keep").checked = !!(o.account && isRemembered(o.account));
+            function check() {
+                if (!save) { yes.disabled = !p1.value; return; }
+                var bits = passBits(p1.value), sv = strength(bits), bar = $("mhs-bar");
+                bar.style.width = sv[0] + "%"; bar.style.background = sv[1];
+                var msg = p1.value.length < PASS_MIN ? "At least " + PASS_MIN + " characters." : sv[2];
+                if (p2.value && p2.value !== p1.value) msg = "The two don't match yet.";
+                $("mhs-st").textContent = msg;
+                yes.disabled = !(p1.value.length >= PASS_MIN && bits >= 50 && p1.value === p2.value && $("mhs-ok").checked);
+            }
+            function done(v) { document.removeEventListener("keydown", key, true); ov.remove(); resolve(v); }
+            function key(ev) { if (ev.key === "Escape") { ev.stopPropagation(); done(null); } else if (ev.key === "Enter" && !yes.disabled && ov.contains(ev.target)) { ev.preventDefault(); yes.click(); } }
+            document.addEventListener("keydown", key, true);
+            ov.addEventListener("input", check); ov.addEventListener("change", check);
+            $("mhs-show").onclick = function () { var t = p1.type === "password" ? "text" : "password"; p1.type = t; if (p2) p2.type = t; this.textContent = t === "text" ? "Hide" : "Show"; };
+            if (save) {
+                $("mhs-gen").onclick = function () { var g = generatePass(); p1.value = p2.value = g; p1.type = p2.type = "text"; $("mhs-show").textContent = "Hide"; $("mhs-copy").hidden = false; check(); };
+                $("mhs-copy").onclick = function () { var b = this; try { navigator.clipboard.writeText(p1.value).then(function () { b.textContent = "Copied ✓"; }); } catch (e) {} };
+            }
+            $("mhs-no").onclick = function () { done(null); };
+            ov.addEventListener("mousedown", function (ev) { if (ev.target === ov) done(null); });
+            yes.onclick = function () { if (yes.disabled) return; var v = p1.value; if (o.account) rememberPass(o.account, v, $("mhs-keep").checked); if (o.account && !$("mhs-keep").checked) ls(PASS_KEY + o.account, null); done(v); };
+            check(); setTimeout(function () { p1.focus(); }, 30);
+        });
+    }
+    /* encModeUI(encryptCheckbox, onChange) puts "Lock with: Memo key | Passphrase (quantum-safe)" under the page's Encrypt tick.
+       One choice for every MES page. onChange(mode) lets the page repaint its notes / enable the tick (canEncrypt() changes). */
+    function encModeUI(cb, onChange) {
+        if (!cb || typeof document === "undefined") return null;
+        css();
+        var box = el("div", { "class": "mhs-lock" });
+        box.innerHTML = '<span>Lock with:</span><button type="button" class="mhs-lk-m">🔑 Memo key</button><button type="button" class="mhs-lk-p">🛡 Passphrase (quantum-safe)</button>' +
+            '<a href="' + QPAGE + '" target="_blank" rel="noopener" title="Why the memo key is not quantum-safe">Why?</a> <a href="#" class="mhs-lk-f" hidden>Forget the remembered passphrase</a><div class="mhs-lockn"></div>';
+        var anchor = cb.closest("label") || cb;
+        anchor.parentNode.insertBefore(box, anchor.nextSibling);
+        function paint() {
+            var m = lockMode(), u = root.MESHive && root.MESHive.user && root.MESHive.user();
+            box.querySelector(".mhs-lk-m").setAttribute("aria-pressed", m === "memo");
+            box.querySelector(".mhs-lk-p").setAttribute("aria-pressed", m === "pass");
+            box.classList.toggle("is-off", !cb.checked && !cb.disabled);
+            var f = box.querySelector(".mhs-lk-f"); f.hidden = !(m === "pass" && u && (isRemembered(u.name) || memPass[u.name]));
+            box.querySelector(".mhs-lockn").textContent = m === "pass"
+                ? "AES-256 with a key from your passphrase: safe from quantum computers as long as the passphrase is strong. Lose it and the save is gone for good."
+                : "Easy (Keychain does it), but the memo key is elliptic-curve: a big future quantum computer could unlock these saves, and Hive keeps them forever.";
+        }
+        box.addEventListener("click", function (ev) {
+            var b = ev.target.closest("button,a.mhs-lk-f"); if (!b) return;
+            if (b.classList.contains("mhs-lk-f")) { ev.preventDefault(); var u = root.MESHive && root.MESHive.user && root.MESHive.user(); if (u) forgetPass(u.name); paint(); return; }
+            setLock(b.classList.contains("mhs-lk-p") ? "pass" : "memo");
+        });
+        cb.addEventListener("change", paint);
+        subs.push(function (m) { paint(); if (onChange) onChange(m); });
+        try { window.addEventListener("storage", function (ev) { if (ev.key === LOCK_KEY) fire(); }); } catch (e) {}
+        paint();
+        return { refresh: paint };
+    }
+
     var api = {
         ID: ID, V: V, JSON_MAX: JSON_MAX, OPS_PER_TX: OPS_PER_TX, MAX_CHUNKS: MAX_CHUNKS,
         b64: b64, unb64: unb64, hex: hex, unhex: unhex, okName: okName, newSaveId: newSaveId,
         chunkJsons: chunkJsons, buildTxs: buildTxs, customJson: customJson, tombstone: tombstone, assemble: assemble,
         pack: pack, unpack: unpack,
+        passKey: passKey, passBits: passBits, generatePass: generatePass, PASS_ROUNDS: PASS_ROUNDS, QPAGE: QPAGE,
+        lockMode: lockMode, setLock: setLock, forgetPass: forgetPass, isRemembered: isRemembered, askPass: askPass, encModeUI: encModeUI, lockLabel: lockLabel,
         SINCE: SINCE, save: save, list: list, load: load, forget: forget, forgetMany: forgetMany, canEncrypt: canEncrypt, rcPercent: rcPercent, explorer: explorer
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;

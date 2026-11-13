@@ -1391,8 +1391,8 @@
 	function encOn() { return $("cp-hive-encrypt").checked; }
 	function paintWarn() {
 		var w = $("cp-hive-warn");
-		if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "cp-hive-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a backup made here is <b>not encrypted</b>: every text will be public on the Hive blockchain, readable by anyone, forever. For encrypted backups (and to open them) use a computer with the Keychain extension, or open mes.fm in the Keychain app's own browser."; return; }
-		if (encOn()) { w.className = "cp-hive-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
+		if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "cp-hive-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key (pick <b>🛡 Passphrase</b> under the Encrypt tick to encrypt anyway), so a backup made here is <b>not encrypted</b>: every text will be public on the Hive blockchain, readable by anyone, forever. For encrypted backups (and to open them) use a computer with the Keychain extension, or open mes.fm in the Keychain app's own browser."; return; }
+		if (encOn()) { w.className = "cp-hive-warn"; w.innerHTML = (HS().lockMode && HS().lockMode() === "pass" ? "🛡 Locked with your passphrase (quantum-safe): only the passphrase opens it." : "🔒 Encrypted: only your memo key can open it.") + " Others can still see that a backup exists, when, and its size. Saved permanently."; }
 		else { w.className = "cp-hive-warn is-open"; w.innerHTML = "⚠ <b>Not encrypted:</b> every text and title will be <b>public on the Hive blockchain, readable by anyone, forever</b>. It can't be deleted later."; }
 	}
 	function paintUser() {
@@ -1421,10 +1421,11 @@
 	$("cp-hivebtn").onclick = function () { if ($("cp-hive").hidden) openHive(true); else closeHive(); };
 	$("cp-hive-close").onclick = closeHive;
 	$("cp-hive-encrypt").onchange = function () { try { localStorage.setItem(ENC_KEY, this.checked ? "1" : "0"); } catch (e) {} paintWarn(); };
+	if (HS() && HS().encModeUI) HS().encModeUI($("cp-hive-encrypt"), function () { paintUser(); });
 	if (window.MESHive) MESHive.onChange(function () { if (!$("cp-hive").hidden) { hiveList = null; $("cp-hive-list").innerHTML = ""; paintUser(); } });
 	function kb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(n < 10240 ? 1 : 0) + " KB"; }
 	function when(iso) { var d = new Date(/Z$/.test(iso) ? iso : iso + "Z"); return isNaN(d) ? "" : d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
-	function errText(e) { return e && e.code === "cancel" ? "Cancelled in Keychain." : (e && e.message) || "Something went wrong."; }
+	function errText(e) { return e && e.code === "cancel" ? "Cancelled." : (e && e.message) || "Something went wrong."; }
 	function busy(on) { hiveBusy = on; ["cp-hive-save", "cp-hive-load"].forEach(function (id) { $(id).disabled = on; }); }
 	function hiveSave() {
 		if (hiveBusy) return;
@@ -1438,7 +1439,7 @@
 			if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
 			return HS().save(HAPP, HNAME, snapData, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
 				setRec(CTLib.record(snapData, Date.now(), u.name)); render.noFocus = true; render(); render.noFocus = false;
-				hmsg("Saved " + n + (n === 1 ? " text" : " texts") + " to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? ", encrypted" : ", NOT encrypted") + ")." +
+				hmsg("Saved " + n + (n === 1 ? " text" : " texts") + " to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? (r.header && r.header.e === 2 ? ", locked with your passphrase (quantum-safe)" : ", encrypted") : ", NOT encrypted") + ")." +
 					(rc != null ? " Resource Credits before: " + rc.toFixed(0) + "%." : "") + " It shows up in the list within a few seconds.", "ok");
 				toast("Saved to Hive");
 				hiveList = null; setTimeout(function () { hiveLoad(true); }, 4000);
@@ -1474,7 +1475,7 @@
 		box.innerHTML = '<div class="cp-hb-bar"><label class="cp-hb-all"><input type="checkbox" data-hp="all"' + (all ? " checked" : "") + '> Select all</label>' +
 			'<button type="button" class="tu-btn tu-btn--ghost cp-hb-hide" data-h="forgetsel"' + (n ? "" : " disabled") + ' title="Hide the ticked backups from this list (the data stays on the blockchain)">Hide selected' + (n ? " (" + n + ")" : "") + '</button></div>' +
 			'<ul class="cp-hb">' + hiveList.map(function (e, i) {
-				var meta = (e.encrypted ? "🔒 encrypted" : "👁 public") + " · " + esc(kb(e.bytes)) + (e.complete ? "" : " · incomplete");
+				var meta = HS().lockLabel(e) + " · " + esc(kb(e.bytes)) + (e.complete ? "" : " · incomplete");
 				return '<li class="cp-hb-row' + (hivePick[e.s] ? " is-on" : "") + '"><input type="checkbox" class="cp-hb-ck" data-hp="' + i + '"' + (hivePick[e.s] ? " checked" : "") + ' aria-label="Select the backup of ' + esc(when(e.time)) + '">' +
 					'<span class="cp-hb-when" title="' + esc(when(e.time)) + (e.encrypted ? " · encrypted" : " · not encrypted: public") + '"><b>' + esc(shortWhen(e.time)) + (i === 0 ? ' <span class="cp-hive-new">newest</span>' : "") + "</b>" +
 					'<small>' + meta + (e.trx ? ' · <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener" class="cp-hive-tx" title="See this backup on the blockchain">chain ↗</a>' : "") + "</small></span>" +
@@ -1490,7 +1491,7 @@
 	});
 	function restoreFrom(i, mode) {
 		var e = hiveList && hiveList[i]; if (!e || hiveBusy) return;
-		busy(true); hmsg(e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
+		busy(true); hmsg(e.lock === "pass" ? "Unlocking with your passphrase…" : e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
 		HS().load(e).then(function (data) {
 			var snap = JSON.stringify(state), n = CTLib.count(data), et = Date.parse(/Z$/.test(e.time) ? e.time : e.time + "Z");
 			if (i === 0 && (!hrec || !(et < hrec.t - 120000))) setRec(CTLib.record(data, et || Date.now(), HV().user() ? HV().user().name : ""));

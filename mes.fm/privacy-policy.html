@@ -606,6 +606,12 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	from the list). If you turn "Encrypt" off, anyone can read the texts in that backup, forever. Loading a backup reads your account's
 	public history from Hive servers (api.hive.blog and similar).
 	</p>
+	<p>
+	Instead of the memo key you can choose "Passphrase (quantum-safe)" (Copy Text, MES Watch, Favourites, Workout Planner): the key is then made
+	from a passphrase you choose, in your browser, and no memo-key copy is stored, so a future quantum computer can't open it
+	(<a href="https://mes.fm/quantum-cryptography?tab=safe">why</a>). The passphrase is never sent anywhere; if you tick "Remember it on this device" it is kept
+	in this browser's local storage ("mes-hive-store:pass:&lt;account&gt;"). If you lose it, saves locked with it can't be opened by anyone.
+	</p>
 
 	<h2 class="mini-title" id="open-limits">Open Limits app (Android and iPhone)</h2>
 

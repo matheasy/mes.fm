@@ -948,8 +948,8 @@
 		}
 		function paintWarn() {
 			var w = $("wt-hive-warn");
-			if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a backup made here is <b>public</b> on the Hive blockchain, readable by anyone, forever."; w.className = "wt-hwarn is-open"; return; }
-			if (encOn()) { w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; w.className = "wt-hwarn"; }
+			if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key (pick <b>🛡 Passphrase</b> under the Encrypt tick to encrypt anyway), so a backup made here is <b>public</b> on the Hive blockchain, readable by anyone, forever."; w.className = "wt-hwarn is-open"; return; }
+			if (encOn()) { w.innerHTML = (HS().lockMode && HS().lockMode() === "pass" ? "🛡 Locked with your passphrase (quantum-safe): only the passphrase opens it." : "🔒 Encrypted: only your memo key can open it.") + " Others can still see that a backup exists, when, and its size. Saved permanently."; w.className = "wt-hwarn"; }
 			else { w.innerHTML = "⚠ <b>Not encrypted:</b> every video link, playlist name and channel will be <b>public on the Hive blockchain, readable by anyone, forever</b>."; w.className = "wt-hwarn is-open"; }
 		}
 		function hbusyOn(on) { hbusy = on; ["wt-hive-save", "wt-hive-load"].forEach(function (id) { $(id).disabled = on; }); }
@@ -965,7 +965,7 @@
 			HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
 				if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
 				return HS().save(HAPP, HNAME, data, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
-					hmsg("Backed up " + n + " items to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? ", encrypted" : ", NOT encrypted") + "). It shows up in the list within a few seconds.", "ok");
+					hmsg("Backed up " + n + " items to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? (r.header && r.header.e === 2 ? ", locked with your passphrase (quantum-safe)" : ", encrypted") : ", NOT encrypted") + "). It shows up in the list within a few seconds.", "ok");
 					toast("Backed up to Hive"); hiveList = null; setTimeout(function () { hiveLoad(true); }, 4000);
 				});
 			}).catch(function (e) { hmsg(errText(e), "err"); }).then(function () { hbusyOn(false); });
@@ -984,7 +984,7 @@
 			if (!hiveList || !hiveList.length) { box.innerHTML = ""; return; }
 			box.innerHTML = '<table class="tu-table wt-htbl"><thead><tr><th scope="col">Saved</th><th scope="col">Type</th><th scope="col">Size</th><th scope="col"><span class="wt-sr">Actions</span></th></tr></thead><tbody>' +
 				hiveList.map(function (e, i) {
-					return "<tr><td>" + esc(when(e.time)) + "</td><td>" + (e.encrypted ? "🔒 Encrypted" : "👁 Public") + "</td><td>" + esc(kb(e.bytes)) + (e.complete ? "" : " (incomplete)") + "</td><td class=\"wt-hacts\">" +
+					return "<tr><td>" + esc(when(e.time)) + "</td><td>" + HS().lockLabel(e) + "</td><td>" + esc(kb(e.bytes)) + (e.complete ? "" : " (incomplete)") + "</td><td class=\"wt-hacts\">" +
 						(e.complete ? '<button type="button" class="tu-btn tu-btn--primary" data-h="merge" data-i="' + i + '" title="Add what you don\'t have yet; keeps yours">Add to mine</button> <button type="button" class="tu-btn" data-h="replace" data-i="' + i + '" title="Replace your lists here with this backup">Replace</button> ' : "") +
 						'<button type="button" class="tu-btn tu-btn--ghost" data-h="forget" data-i="' + i + '" title="Hide this backup from the list (it stays on the blockchain)">Hide</button>' +
 						(e.trx ? ' <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener">on chain</a>' : "") + "</td></tr>";
@@ -992,7 +992,7 @@
 		}
 		function restore(i, mode) {
 			var e = hiveList && hiveList[i]; if (!e || hbusy) return;
-			hbusyOn(true); hmsg(e.encrypted ? "Confirm in Keychain: open the backup with your memo key…" : "Opening the backup…");
+			hbusyOn(true); hmsg(e.lock === "pass" ? "Unlocking with your passphrase…" : e.encrypted ? "Confirm in Keychain: open the backup with your memo key…" : "Opening the backup…");
 			HS().load(e).then(function (data) {
 				var mine = W.snap(api.S, true), undo = JSON.stringify(mine);
 				if (mode === "replace") {
@@ -1020,6 +1020,7 @@
 		});
 		$("wt-hive").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "wt-hive-name") { e.preventDefault(); $("wt-hive").querySelector('[data-h="login"]').click(); } });
 		$("wt-hive-enc").onchange = function () { try { localStorage.setItem(ENC, this.checked ? "1" : "0"); } catch (x) {} paintWarn(); };
+		if (HS() && HS().encModeUI) HS().encModeUI($("wt-hive-enc"), function () { paintHive(); });
 		$("wt-hive-save").onclick = hiveSave;
 		$("wt-hive-load").onclick = function () { hiveLoad(false); };
 		if (window.MESHive && MESHive.onChange) MESHive.onChange(function () { if (!$("wt-sync").hidden) { hiveList = null; paintList(); paintHive(); } });

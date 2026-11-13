@@ -548,7 +548,7 @@
     function HV() { return window.MESHive; }
     function HS() { return window.MESHiveStore; }
     function hmsg(t, cls) { var m = $("fv-hv-msg"); m.textContent = t || ""; m.className = "fv-linknote fv-hv-msg" + (cls ? " is-" + cls : ""); }
-    function hvErr(e) { return e && e.code === "cancel" ? "Cancelled in Keychain." : (e && e.message) || "Something went wrong."; }
+    function hvErr(e) { return e && e.code === "cancel" ? "Cancelled." : (e && e.message) || "Something went wrong."; }
     function hvWhen(t) { var d = new Date(/Z$/.test(t) ? t : t + "Z"); if (isNaN(d)) return t; var o = { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }; if (d.getFullYear() !== new Date().getFullYear()) o.year = "numeric"; return d.toLocaleString(undefined, o); }
     function hvKb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(1) + " KB"; }
     function paintWhat() {
@@ -558,8 +558,8 @@
     }
     function paintWarn() {
         var w = $("fv-hv-warn"), enc = $("fv-hv-enc").checked;
-        if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "fv-hv-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a save made here is <b>public</b>: your group names and pages can be read by anyone on the Hive blockchain, forever. For encrypted saves use a computer with the Keychain extension."; return; }
-        if (enc) { w.className = "fv-hv-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
+        if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "fv-hv-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key (pick <b>🛡 Passphrase</b> under the Encrypt tick to encrypt anyway), so a save made here is <b>public</b>: your group names and pages can be read by anyone on the Hive blockchain, forever. For encrypted saves use a computer with the Keychain extension."; return; }
+        if (enc) { w.className = "fv-hv-warn"; w.innerHTML = (HS().lockMode && HS().lockMode() === "pass" ? "🛡 Locked with your passphrase (quantum-safe): only the passphrase opens it." : "🔒 Encrypted: only your memo key can open it.") + " Others can still see that a backup exists, when, and its size. Saved permanently."; }
         else { w.className = "fv-hv-warn is-open"; w.innerHTML = "⚠ <b>Public:</b> the group names and pages will be <b>readable by anyone on the Hive blockchain, forever</b>. Good for a list you want to share; it can't be deleted later."; }
     }
     function paintUser() {
@@ -590,7 +590,7 @@
         HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
             if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
             return HS().save(HAPP, gid ? "group" : "all", data, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
-                hmsg("Saved " + what + " (" + n + " pages) to @" + u.name + " on Hive (" + hvKb(r.bytes) + (enc ? ", encrypted" : ", public") + "). It shows up in the list within a few seconds.", "ok");
+                hmsg("Saved " + what + " (" + n + " pages) to @" + u.name + " on Hive (" + hvKb(r.bytes) + (enc ? (r.header && r.header.e === 2 ? ", locked with your passphrase (quantum-safe)" : ", encrypted") : ", public") + "). It shows up in the list within a few seconds.", "ok");
                 toast("Saved to Hive"); hvList = null; setTimeout(function () { hvLoad(true); }, 4000);
             });
         }).catch(function (e) { hmsg(hvErr(e), "err"); }).then(function () { hvBusySet(false); });
@@ -608,7 +608,7 @@
         var box = $("fv-hv-list");
         if (!hvList || !hvList.length) { box.innerHTML = ""; return; }
         box.innerHTML = '<ul class="fv-hb">' + hvList.map(function (e, i) {
-            var meta = (e.name === "group" ? "One group" : "All groups") + " · " + (e.encrypted ? "🔒 encrypted" : "👁 public") + " · " + esc(hvKb(e.bytes)) + (e.complete ? "" : " · incomplete");
+            var meta = (e.name === "group" ? "One group" : "All groups") + " · " + HS().lockLabel(e) + " · " + esc(hvKb(e.bytes)) + (e.complete ? "" : " · incomplete");
             return "<li><span class='fv-hb-when'><b>" + esc(hvWhen(e.time)) + (i === 0 ? ' <span class="fv-hb-new">newest</span>' : "") + "</b><small>" + meta +
                 (e.trx ? ' · <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener">chain ↗</a>' : "") + "</small></span>" +
                 (e.complete ? '<button type="button" class="tu-btn tu-btn--primary" data-h="merge" data-i="' + i + '" title="Add the pages you don\'t have yet; keeps yours">Add to mine</button><button type="button" class="tu-btn tu-btn--ghost" data-h="replace" data-i="' + i + '" title="' + (e.name === "group" ? "Replace your group of the same name with this one" : "Replace all your favourites with this save") + '">Replace</button>' : "") +
@@ -617,7 +617,7 @@
     }
     function hvRestore(i, mode) {
         var e = hvList && hvList[i]; if (!e || hvBusy) return;
-        hvBusySet(true); hmsg(e.encrypted ? "Confirm in Keychain: decrypt with your memo key…" : "Opening the save…");
+        hvBusySet(true); hmsg(e.lock === "pass" ? "Unlocking with your passphrase…" : e.encrypted ? "Confirm in Keychain: decrypt with your memo key…" : "Opening the save…");
         HS().load(e).then(function (d) {
             if (!d || !Array.isArray(d.g)) throw new Error("That save could not be read.");
             var c = clean({ groups: d.g.map(function (r) { return { name: r[0], items: r[1], open: true }; }) }), n = c.groups.reduce(function (t, g) { return t + g.items.length; }, 0);
@@ -636,6 +636,7 @@
     }
     if ($("fv-hive")) {
         $("fv-hv-enc").onchange = function () { lsSet(ENC_KEY, this.checked ? "1" : "0"); paintWarn(); };
+        if (HS() && HS().encModeUI) HS().encModeUI($("fv-hv-enc"), function () { paintUser(); });
         $("fv-hv-save").onclick = hvSave;
         $("fv-hv-load").onclick = function () { hvLoad(false); };
         $("fv-hv-what").addEventListener("focus", paintWhat);

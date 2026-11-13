@@ -64,7 +64,7 @@
 	BS.SHARED = {
 		'denoise-models': ['Noise removal model (Audio & Video editors)', '/audio'],
 		'handoff': ['Pictures passed between tools', '/photo'],
-		'hive-user': ['Hive login', ''], 'hive-has': ['Hive login (phone app)', ''], 'hive-store': ['Hive backups (list cache)', '/copy-text'],
+		'hive-user': ['Hive login', ''], 'hive-has': ['Hive login (phone app)', ''], 'hive-store': ['Hive backups (list cache, lock choice, remembered passphrase)', '/copy-text'],
 		'hive-sort': ['Hive comments', ''], 'hive-tabs': ['Hive comments', ''], 'hive-vw': ['Hive comments', ''], 'hive-comments': ['Hive comments', ''],
 		'linkpref': ['Site settings', ''], 'when': ['Site settings', ''], 'time24': ['Site settings', ''], 'owner': ['Site settings', ''],
 		'stage': ['Simulator box sizes', ''], 'inlhide': ['Simulator box sizes', ''], 'fillpanel': ['Simulator box sizes', ''],

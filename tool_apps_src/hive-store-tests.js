@@ -162,5 +162,35 @@ function rnd(len) { let s = ""; while (s.length < len) s += Math.random().toStri
         delete globalThis.MESHive; delete globalThis.localStorage;
     });
 
+    await t("passphrase lock (e:2): round trip, wrong passphrase, no memo key involved", async () => {
+        const data = { notes: ["quantum", "safe ✓"], n: 42 };
+        const pk = await S.pack(data, { encrypt: true, pass: "correct horse battery staple x9", rounds: 2000, app: "copy-text", name: "boards", wrapKey: () => { throw new Error("memo wrap must not be used"); } });
+        assert.strictEqual(pk.header.e, 2); assert.strictEqual(pk.header.kd, "pbkdf2-sha256"); assert.strictEqual(pk.header.i, 2000);
+        assert(!pk.header.k, "no wrapped memo key next to it"); assert(pk.header.sa && pk.header.iv);
+        const e = S.assemble(history([S.buildTxs("alice", S.chunkJsons("copy-text", "boards", pk.saveId, pk.header, pk.payload))], "alice"), "alice")[0];
+        assert.strictEqual(e.encrypted, true); assert.strictEqual(e.lock, "pass");
+        await assert.rejects(S.unpack(e), /passphrase/);
+        let asked = 0;
+        assert.deepStrictEqual(await S.unpack(e, { getPass: (st) => { asked++; return st.tries === 0 ? "wrong one" : "correct horse battery staple x9"; } }), data);
+        assert.strictEqual(asked, 2);
+        await assert.rejects(S.unpack(e, { getPass: () => "nope", noRetry: true }), (x) => x.code === "badpass");
+        await assert.rejects(S.unpack(e, { getPass: () => null }), (x) => x.code === "cancel");
+        /* NFC: the same passphrase typed with a combining accent opens it too */
+        const pk2 = await S.pack({ a: 1 }, { encrypt: true, pass: "caf\u00e9-caf\u00e9-caf\u00e9", rounds: 1000, app: "x", name: "y" });
+        const e2 = S.assemble(history([S.buildTxs("bob", S.chunkJsons("x", "y", pk2.saveId, pk2.header, pk2.payload))], "bob"), "bob")[0];
+        assert.deepStrictEqual(await S.unpack(e2, { getPass: () => "cafe\u0301-cafe\u0301-cafe\u0301" }), { a: 1 });
+    });
+
+    await t("passphrase strength + generator", () => {
+        const g = S.generatePass();
+        assert(/^[a-z2-9]{5}(-[a-z2-9]{5}){5}$/.test(g), g); assert(!/[ilo01]/.test(g));
+        assert(S.passBits(g) >= 100, "generated: " + S.passBits(g));
+        assert(S.passBits("password1234") <= 20); assert(S.passBits("aaaaaaaaaaaaaa") <= 20);
+        assert(S.passBits("123456789012") <= 20);
+        assert(S.passBits("Tr0ub4dor&3xQz!") >= 80);
+        assert(S.passBits("apple river stone cloud") <= 44);
+        assert.strictEqual(S.passBits(""), 0);
+    });
+
     console.log("\n" + n + " tests passed");
 })().catch((e) => { console.error(e); process.exit(1); });
