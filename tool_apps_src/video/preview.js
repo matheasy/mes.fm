@@ -279,17 +279,19 @@
 		cv.style.width = bw + "px"; cv.style.height = bh + "px";
 		if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
 		if (isFit || !ow) {
-			var m = Math.round(14 * d), top = fitClear ? clearTop() * d : 0;
-			if (top > m) { view = V.viewFit(pw, ph - top + m, VE.P.w, VE.P.h, m); view.oy += top - m; }   // "Fit clear": the frame starts below the zoom bar
-			else view = V.viewFit(pw, ph, VE.P.w, VE.P.h, m);
+			// "Fit clear" keeps the frame below the zoom bar; both fits keep it above a transport bar that floats over the stage (Fill window)
+			var m = Math.round(14 * d), top = Math.max(m, fitClear ? clearTop() * d : 0), bot = Math.max(m, clearBottom() * d);
+			view = V.viewFit(pw, Math.max(2 * m + 2, ph - top - bot + 2 * m), VE.P.w, VE.P.h, m); view.oy += top - m;
 		}
 		else { view.k = view.k / dpr * d; view.ox = pw / 2 - cxF * view.k; view.oy = ph / 2 - cyF * view.k; }
 		dpr = d; draw();
 	}
 	P.fit = fit;
-	if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap); else window.addEventListener("resize", fit);
+	if (window.ResizeObserver) { var ro = new ResizeObserver(function () { fit(); }); ro.observe(wrap); var tb = wrap.parentNode && wrap.parentNode.querySelector(".vd-transport"); if (tb) ro.observe(tb); } else window.addEventListener("resize", fit);
 	// how far down the zoom bar reaches inside the stage (CSS px)
 	function clearTop() { var bar = document.getElementById("vd-vz"); if (!bar || bar.offsetParent === null) return 0; var a = bar.getBoundingClientRect(), b = wrap.getBoundingClientRect(); return Math.max(0, a.bottom - b.top + 6); }
+	// how far a bar floating over the bottom of the stage (the Fill window transport) reaches up into it (CSS px)
+	function clearBottom() { var bar = wrap.parentNode && wrap.parentNode.querySelector(".vd-transport"); if (!bar || bar.offsetParent === null || getComputedStyle(bar).position !== "absolute") return 0; var a = bar.getBoundingClientRect(), b = wrap.getBoundingClientRect(); return Math.max(0, b.bottom - a.top + 6); }
 	P.zoomFit = function (clear) { isFit = true; fitClear = !!clear; fit(); };
 	P.barShown = function (on) { if (on != null) { VS.bar = !!on; saveVS(); if (isFit && fitClear) requestAnimationFrame(fit); } return VS.bar !== false; };
 	// zoom to pct (100 = one frame pixel per screen pixel) around a stage point (canvas px; default the middle)
