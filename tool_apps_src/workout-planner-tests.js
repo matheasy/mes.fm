@@ -126,5 +126,13 @@ eq(junk.log.length, 1, "bad log rows dropped");
 const dup = W.normalize({ days: [{ id: "a", dow: 0, items: [{ id: "z", name: "1" }, { id: "z", name: "2" }] }] });
 ok(dup.days[0].items[0].id !== dup.days[0].items[1].id, "duplicate ids made unique");
 
+// checklist Here marker
+const cg = { mode: "all", here: "", items: [{ id: "a", done: "2026-11-01" }, { id: "b", done: "" }, { id: "c", done: "" }] };
+eq(W.groupCur(cg), "b", "checklist Here = first not done");
+cg.here = "c"; eq(W.groupCur(cg), "c", "checklist Here = the one set");
+cg.items[2].done = "2026-11-02"; eq(W.groupCur(cg), "b", "Here moves on (wrapping) when its item is ticked");
+cg.items[1].done = "2026-11-02"; eq(W.groupCur(cg), "", "all done = no Here");
+eq(W.groupCur({ mode: "one", here: "x", items: [{ id: "x" }] }), "x", "rotation Here unchanged");
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "All " + n + " checks passed");
 process.exit(bad ? 1 : 0);

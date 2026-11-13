@@ -262,3 +262,42 @@
 	body.dark-mode #wp.wp .wp-today {color:#0b1b33;}
 	body.dark-mode .wp-ghost {background:#2a2f36;color:#e8ebef;}
 	body.dark-mode #wp.wp .wp-here.is-on, body.dark-mode #wp.wp .wp-herepill {color:#1b1b1b;}
+
+	/* ☁ Hive backup panel */
+	#wp .wp-hive {border-left:5px solid var(--accent);}
+	#wp .wp-hive[hidden], #wp .wp-hive [hidden] {display:none !important;}
+	#wp .wp-hive-head {display:flex;align-items:center;gap:0.5em;}
+	#wp .wp-hive-title {font-size:1.2em;margin:0;flex:1;}
+	#wp .wp-hive-intro {margin:0.5em 0 0.7em;line-height:1.5;}
+	#wp .wp-hive-user {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-bottom:0.7em;}
+	#wp .wp-hive-who {display:inline-flex;align-items:center;gap:0.45em;}
+	#wp .wp-hive-who img {border-radius:50%;}
+	#wp .wp-hive-login {display:flex;flex-wrap:wrap;gap:0.5em;width:100%;}
+	#wp .wp-hive-login .tu-input {flex:1 1 12em;min-width:0;}
+	#wp .wp-hive-enc {display:flex;gap:0.5em;align-items:flex-start;cursor:pointer;line-height:1.4;}
+	#wp .wp-hive-enc input {width:1.2em;height:1.2em;margin-top:0.1em;flex:0 0 auto;cursor:pointer;}
+	#wp .wp-hive-warn {margin:0.6em 0;padding:0.55em 0.8em;border-radius:0 0.4em 0.4em 0;border-left:4px solid #2f8a4f;background:#eaf6ee;color:#1d4a2c;font-size:0.93em;line-height:1.45;}
+	#wp .wp-hive-warn.is-open {border-left-color:#c0392b;background:#fdecea;color:#7a1c13;}
+	#wp .wp-hive-acts {display:flex;flex-wrap:wrap;gap:0.5em;}
+	#wp .wp-hive-msg {min-height:1.2em;margin:0.6em 0 0.3em;}
+	#wp .wp-hive-msg.is-ok {color:#1d6b36;}
+	#wp .wp-hive-msg.is-err {color:#a3261b;}
+	#wp .wp-hb {list-style:none;margin:0;padding:0;}
+	#wp .wp-hb-row {display:flex;align-items:center;gap:0.6em;padding:0.4em 0.2em;border-bottom:1px solid #e3e7ec;}
+	#wp .wp-hb-when {flex:1 1 auto;min-width:0;display:flex;flex-direction:column;line-height:1.3;}
+	#wp .wp-hb-when b {font-weight:600;font-size:0.95em;}
+	#wp .wp-hb-when small {font-size:0.78em;color:#6b7480;}
+	#wp .wp-hb-acts {display:flex;gap:0.3em;flex:0 0 auto;}
+	#wp .wp-hb-acts .tu-btn {padding:0.3em 0.6em;font-size:0.85em;}
+	#wp .wp-hive-new {font-size:0.8em;background:var(--tint);color:#14532d;border-radius:1em;padding:0.05em 0.5em;}
+	#wp .wp-hive-more {margin-top:0.6em;}
+	#wp .wp-hive-more summary {cursor:pointer;font-weight:600;}
+	#wp .wp-hive-more li {margin:0.35em 0;line-height:1.45;}
+	body.dark-mode #wp.wp .wp-hive-warn {background:#16301f;color:#bfe8cc;border-left-color:#4caf6e;}
+	body.dark-mode #wp.wp .wp-hive-warn.is-open {background:#3a1714;color:#ffc9c2;border-left-color:#ff6b5c;}
+	body.dark-mode #wp.wp .wp-hive-msg.is-ok {color:#6ee7a0;}
+	body.dark-mode #wp.wp .wp-hive-msg.is-err {color:#ff9b8f;}
+	body.dark-mode #wp.wp .wp-hb-row {border-color:#3a3a3a;}
+	body.dark-mode #wp.wp .wp-hb-when small {color:#a0a8b3;}
+	body.dark-mode #wp.wp .wp-hb-when b {color:#e4e4e4;}
+	body.dark-mode #wp.wp .wp-hive-new {background:#1d4a2c;color:#d6f5e0;}

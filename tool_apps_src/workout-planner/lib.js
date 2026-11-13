@@ -217,6 +217,14 @@
 		return p.days[(i + 1) % p.days.length];
 	}
 	function advance(p, skipEmpty) { p.here = nextDay(p, skipEmpty).id; return p.here; }
+	function groupCur(g) {   // the item marked Here: a rotation's own pointer; in a checklist the Here item while not done, else the next not-done one after it
+		if (!g || !g.items.length) return "";
+		if (g.mode === "one") return g.here || g.items[0].id;
+		var n = g.items.length, i = g.items.findIndex(function (x) { return x.id === g.here; });
+		if (i >= 0 && !g.items[i].done) return g.here;
+		for (var k = 1; k <= n; k++) { var x = g.items[((i < 0 ? -1 : i) + k + n) % n]; if (!x.done) return x.id; }
+		return "";
+	}
 	function groupNext(g) { if (!g.items.length) return ""; var i = g.items.findIndex(function (x) { return x.id === g.here; }); return g.items[(i + 1) % g.items.length].id; }
 	function todayRow(p, today) { var w = dowOf(today); return p.days.find(function (d) { return d.dow === w; }) || null; }
 
@@ -277,7 +285,7 @@
 			out.push([l.name]);
 			l.groups.forEach(function (g) {
 				out.push([(g.title || (g.mode === "one" ? "Do one" : "Do all")) + (g.mode === "one" ? " (do one, in turn)" : "")]);
-				g.items.forEach(function (x) { out.push(["", itemText(x), x.done ? "Done " + shortDate(x.done, today) : "", g.mode === "one" && g.here === x.id ? "Here" : ""]); });
+				g.items.forEach(function (x) { out.push(["", itemText(x), x.done ? "Done " + shortDate(x.done, today) : "", groupCur(g) === x.id ? "Here" : ""]); });
 			});
 			if (l.note) out.push([l.note]);
 			out.push([]);
@@ -406,7 +414,7 @@
 		uid: uid, str: str, okColor: okColor, okDate: okDate, okTime: okTime, dateKey: dateKey, parseKey: parseKey, addDays: addDays, dowOf: dowOf, shortDate: shortDate, weekStart: weekStart,
 		fmtTime: fmtTime, parseTime: parseTime, item: item, cleanItem: cleanItem, meta: meta, normalize: normalize, template: template, defaultCats: defaultCats,
 		findItem: findItem, dayById: dayById, grpById: grpById, listById: listById, catById: catById, cellItems: cellItems, moveItem: moveItem, removeItem: removeItem, moveInArray: moveInArray, moveRow: moveRow,
-		nextDay: nextDay, advance: advance, groupNext: groupNext, todayRow: todayRow, logItems: logItems, byDate: byDate, streaks: streaks, weekStreak: weekStreak, heat: heat, weekSummary: weekSummary,
+		nextDay: nextDay, advance: advance, groupNext: groupNext, groupCur: groupCur, todayRow: todayRow, logItems: logItems, byDate: byDate, streaks: streaks, weekStreak: weekStreak, heat: heat, weekSummary: weekSummary,
 		itemText: itemText, grid: grid, listGrid: listGrid, toCSV: toCSV, toTSV: toTSV, planCSV: planCSV, parseDelimited: parseDelimited, dowFromText: dowFromText, parseItemText: parseItemText, parseTable: parseTable,
 		encodeShare: encodeShare, decodeShare: decodeShare, sameDays: sameDays, b64e: b64e, b64d: b64d };
 	if (typeof module !== "undefined" && module.exports) module.exports = API;

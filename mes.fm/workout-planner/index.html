@@ -570,6 +570,45 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode .wp-ghost {background:#2a2f36;color:#e8ebef;}
 	body.dark-mode #wp.wp .wp-here.is-on, body.dark-mode #wp.wp .wp-herepill {color:#1b1b1b;}
 
+	/* ☁ Hive backup panel */
+	#wp .wp-hive {border-left:5px solid var(--accent);}
+	#wp .wp-hive[hidden], #wp .wp-hive [hidden] {display:none !important;}
+	#wp .wp-hive-head {display:flex;align-items:center;gap:0.5em;}
+	#wp .wp-hive-title {font-size:1.2em;margin:0;flex:1;}
+	#wp .wp-hive-intro {margin:0.5em 0 0.7em;line-height:1.5;}
+	#wp .wp-hive-user {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-bottom:0.7em;}
+	#wp .wp-hive-who {display:inline-flex;align-items:center;gap:0.45em;}
+	#wp .wp-hive-who img {border-radius:50%;}
+	#wp .wp-hive-login {display:flex;flex-wrap:wrap;gap:0.5em;width:100%;}
+	#wp .wp-hive-login .tu-input {flex:1 1 12em;min-width:0;}
+	#wp .wp-hive-enc {display:flex;gap:0.5em;align-items:flex-start;cursor:pointer;line-height:1.4;}
+	#wp .wp-hive-enc input {width:1.2em;height:1.2em;margin-top:0.1em;flex:0 0 auto;cursor:pointer;}
+	#wp .wp-hive-warn {margin:0.6em 0;padding:0.55em 0.8em;border-radius:0 0.4em 0.4em 0;border-left:4px solid #2f8a4f;background:#eaf6ee;color:#1d4a2c;font-size:0.93em;line-height:1.45;}
+	#wp .wp-hive-warn.is-open {border-left-color:#c0392b;background:#fdecea;color:#7a1c13;}
+	#wp .wp-hive-acts {display:flex;flex-wrap:wrap;gap:0.5em;}
+	#wp .wp-hive-msg {min-height:1.2em;margin:0.6em 0 0.3em;}
+	#wp .wp-hive-msg.is-ok {color:#1d6b36;}
+	#wp .wp-hive-msg.is-err {color:#a3261b;}
+	#wp .wp-hb {list-style:none;margin:0;padding:0;}
+	#wp .wp-hb-row {display:flex;align-items:center;gap:0.6em;padding:0.4em 0.2em;border-bottom:1px solid #e3e7ec;}
+	#wp .wp-hb-when {flex:1 1 auto;min-width:0;display:flex;flex-direction:column;line-height:1.3;}
+	#wp .wp-hb-when b {font-weight:600;font-size:0.95em;}
+	#wp .wp-hb-when small {font-size:0.78em;color:#6b7480;}
+	#wp .wp-hb-acts {display:flex;gap:0.3em;flex:0 0 auto;}
+	#wp .wp-hb-acts .tu-btn {padding:0.3em 0.6em;font-size:0.85em;}
+	#wp .wp-hive-new {font-size:0.8em;background:#e2f3e8;color:#14532d;border-radius:1em;padding:0.05em 0.5em;}
+	#wp .wp-hive-more {margin-top:0.6em;}
+	#wp .wp-hive-more summary {cursor:pointer;font-weight:600;}
+	#wp .wp-hive-more li {margin:0.35em 0;line-height:1.45;}
+	body.dark-mode #wp.wp .wp-hive-warn {background:#16301f;color:#bfe8cc;border-left-color:#4caf6e;}
+	body.dark-mode #wp.wp .wp-hive-warn.is-open {background:#3a1714;color:#ffc9c2;border-left-color:#ff6b5c;}
+	body.dark-mode #wp.wp .wp-hive-msg.is-ok {color:#6ee7a0;}
+	body.dark-mode #wp.wp .wp-hive-msg.is-err {color:#ff9b8f;}
+	body.dark-mode #wp.wp .wp-hb-row {border-color:#3a3a3a;}
+	body.dark-mode #wp.wp .wp-hb-when small {color:#a0a8b3;}
+	body.dark-mode #wp.wp .wp-hb-when b {color:#e4e4e4;}
+	body.dark-mode #wp.wp .wp-hive-new {background:#1d4a2c;color:#d6f5e0;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -703,6 +742,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #wp .wp-stamp{color:#73e89f}
 	body.dark-mode #wp .wp-herepill{color:#e4e4e4}
 	body.dark-mode #wp .tu-stat--hero{background:#1d2a22;border-color:#1b4128}
+	body.dark-mode #wp .wp-hive-warn{border-left:4px solid #41be6d;background:#19241c;color:#8ad1a2}
+	body.dark-mode #wp .wp-hive-warn.is-open{border-left-color:#d03e2f;background:#251311;color:#e97c72}
+	body.dark-mode #wp .wp-hive-msg.is-ok{color:#7fdc9d}
+	body.dark-mode #wp .wp-hive-msg.is-err{color:#e87c73}
+	body.dark-mode #wp .wp-hb-row{border-bottom:1px solid #29323d}
+	body.dark-mode #wp .wp-hb-when small{color:#9a9da2}
+	body.dark-mode #wp .wp-hive-new{background:#1d2a22;color:#7bdfa3}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -931,6 +977,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn tu-btn--ghost" id="wp-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
 				<span class="wp-tpl"><label for="wp-tplsel">Template</label> <select id="wp-tplsel" class="tu-select"></select> <button type="button" class="tu-btn" id="wp-tplgo">Load</button></span>
 				<button type="button" class="tu-btn" id="wp-share">🔗 Copy share link</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wp-hivebtn" aria-expanded="false" aria-controls="wp-hive" title="Back up your plan and history to your Hive account (encrypted) and get it back on any device">☁ Hive backup</button>
 				<details class="wp-menu" id="wp-exp"><summary class="tu-btn">⬇ Export</summary>
 					<div class="wp-menupop">
 						<button type="button" data-exp="excel">📋 Copy as a table (paste into Excel / Sheets)</button>
@@ -953,6 +1000,37 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</div>
 
+
+		<div class="tu-card wp-hive" id="wp-hive" hidden>
+			<div class="wp-hive-head">
+				<h2 class="wp-hive-title">☁ Back up to Hive</h2>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wp-hive-close" aria-label="Close the Hive backup panel">✕</button>
+			</div>
+			<p class="wp-hive-intro">Save your whole plan (week, training lists, 📍 markers and history) to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load it on any computer or phone with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a>: the browser extension, or the Keychain phone app. No mes.fm account and no server: the backup is written to the Hive blockchain from your browser, signed in Keychain. Your keys never leave Keychain.</p>
+			<div class="wp-hive-user" id="wp-hive-user"></div>
+			<div id="wp-hive-main" hidden>
+				<label class="wp-hive-enc"><input type="checkbox" id="wp-hive-encrypt" checked> <span><b>Encrypt</b> (recommended): only you can read it, with your Hive memo key</span></label>
+				<p class="wp-hive-warn" id="wp-hive-warn" role="note"></p>
+				<div class="wp-hive-acts">
+					<button type="button" class="tu-btn tu-btn--primary" id="wp-hive-save">Save to Hive</button>
+					<button type="button" class="tu-btn" id="wp-hive-load">Load from Hive</button>
+				</div>
+				<p class="tu-note wp-hive-msg" id="wp-hive-msg" aria-live="polite"></p>
+				<div id="wp-hive-list" class="wp-hive-list"></div>
+				<details class="wp-hive-more">
+					<summary>What to know before you use it</summary>
+					<ul>
+						<li><strong>It is permanent.</strong> Anything written to Hive stays in the blockchain's history forever. "Hide" removes a backup from this list, but the data itself can never be deleted.</li>
+						<li><strong>It is public.</strong> Anyone can see that your account saved a Workout Planner backup, when, and how big it is. With <em>Encrypt</em> on they can't read it: a fresh random key encrypts it in your browser and only that key is locked to your own memo key. With <em>Encrypt</em> off, <strong>anyone can read your plan and history, forever</strong>.</li>
+						<li><strong>It needs your memo key</strong> in Keychain to encrypt and to open an encrypted backup. If you ever change your memo key, older encrypted backups can no longer be opened, so save a new one.</li>
+						<li><strong>It uses Resource Credits</strong>, not money: Hive's free allowance, which refills over about five days. Saving uses your <em>posting</em> key; it can't move any funds.</li>
+						<li><strong>Loading replaces</strong> the plan in this browser with the backup (you can undo right after).</li>
+					</ul>
+				</details>
+			</div>
+			<div id="wp-hive-help"></div>
+		</div>
+
 		<div class="tu-card wp-next" id="wp-next" aria-live="polite"></div>
 
 		<section class="tu-card wp-sec" id="wp-weekcard" tabindex="-1" aria-labelledby="wp-weekh">
@@ -972,7 +1050,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card wp-sec" id="wp-listcard" tabindex="-1" aria-labelledby="wp-listh">
 			<div class="wp-head" id="wp-listbar"><h2 id="wp-listh">Training lists</h2><button type="button" class="tu-btn" id="wp-addlist">+ New list</button></div>
-			<p class="tu-note">A list has groups: <b>Do all</b> (a checklist: each one gets a done date) or <b>Do one, in turn</b> (a rotation: do the one marked 📍, then it moves on). Drag activities between lists and the week.</p>
+			<p class="tu-note">A list has groups: <b>Do all</b> (a checklist: each one gets a done date) or <b>Do one, in turn</b> (a rotation: do the one marked 📍, then it moves on). In a checklist 📍 marks the next one to do; "Set here" moves it. Drag activities between lists and the week.</p>
 			<div id="wp-lists" class="wp-lists"></div>
 		</section>
 
@@ -1018,7 +1096,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li>Drag activities between days, categories and lists, and drag days to change their order. Everything also works from the keyboard.</li>
 				<li>Log what you did, then see your streak, a calendar of active days and a weekly summary of planned versus done.</li>
 				<li>Print the plan, copy it into Excel or Google Sheets, download a CSV, or paste a table from your spreadsheet to import it.</li>
-				<li>Share your plan as a link, or keep a backup file. Everything is saved in your browser; nothing is uploaded.</li>
+				<li>Share your plan as a link, or keep a backup file. Everything is saved in your browser; nothing is uploaded unless you choose <b>☁ Hive backup</b>, which saves it (encrypted) to your own Hive account so you can load it on another device.</li>
 			</ul>
 			<h3>The templates</h3>
 			<p><b>Beginner full body</b> trains every major muscle group three times a week with a walk in between. <b>Push / Pull / Legs</b> splits the body over six days. <b>5×5 strength</b> alternates two barbell workouts, A (squat, bench press, row) and B (squat, overhead press, deadlift). <b>Start running</b> uses run/walk intervals in the style of the NHS Couch to 5K plan (its first week alternates 60 seconds of running with 90 seconds of walking). Change anything to fit you.</p>
@@ -1094,7 +1172,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/workout-planner/js/workout-planner.js?v=1" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=4" defer></script><script src="/workout-planner/js/workout-planner.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

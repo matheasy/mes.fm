@@ -217,6 +217,14 @@
 		return p.days[(i + 1) % p.days.length];
 	}
 	function advance(p, skipEmpty) { p.here = nextDay(p, skipEmpty).id; return p.here; }
+	function groupCur(g) {   // the item marked Here: a rotation's own pointer; in a checklist the Here item while not done, else the next not-done one after it
+		if (!g || !g.items.length) return "";
+		if (g.mode === "one") return g.here || g.items[0].id;
+		var n = g.items.length, i = g.items.findIndex(function (x) { return x.id === g.here; });
+		if (i >= 0 && !g.items[i].done) return g.here;
+		for (var k = 1; k <= n; k++) { var x = g.items[((i < 0 ? -1 : i) + k + n) % n]; if (!x.done) return x.id; }
+		return "";
+	}
 	function groupNext(g) { if (!g.items.length) return ""; var i = g.items.findIndex(function (x) { return x.id === g.here; }); return g.items[(i + 1) % g.items.length].id; }
 	function todayRow(p, today) { var w = dowOf(today); return p.days.find(function (d) { return d.dow === w; }) || null; }
 
@@ -277,7 +285,7 @@
 			out.push([l.name]);
 			l.groups.forEach(function (g) {
 				out.push([(g.title || (g.mode === "one" ? "Do one" : "Do all")) + (g.mode === "one" ? " (do one, in turn)" : "")]);
-				g.items.forEach(function (x) { out.push(["", itemText(x), x.done ? "Done " + shortDate(x.done, today) : "", g.mode === "one" && g.here === x.id ? "Here" : ""]); });
+				g.items.forEach(function (x) { out.push(["", itemText(x), x.done ? "Done " + shortDate(x.done, today) : "", groupCur(g) === x.id ? "Here" : ""]); });
 			});
 			if (l.note) out.push([l.note]);
 			out.push([]);
@@ -406,7 +414,7 @@
 		uid: uid, str: str, okColor: okColor, okDate: okDate, okTime: okTime, dateKey: dateKey, parseKey: parseKey, addDays: addDays, dowOf: dowOf, shortDate: shortDate, weekStart: weekStart,
 		fmtTime: fmtTime, parseTime: parseTime, item: item, cleanItem: cleanItem, meta: meta, normalize: normalize, template: template, defaultCats: defaultCats,
 		findItem: findItem, dayById: dayById, grpById: grpById, listById: listById, catById: catById, cellItems: cellItems, moveItem: moveItem, removeItem: removeItem, moveInArray: moveInArray, moveRow: moveRow,
-		nextDay: nextDay, advance: advance, groupNext: groupNext, todayRow: todayRow, logItems: logItems, byDate: byDate, streaks: streaks, weekStreak: weekStreak, heat: heat, weekSummary: weekSummary,
+		nextDay: nextDay, advance: advance, groupNext: groupNext, groupCur: groupCur, todayRow: todayRow, logItems: logItems, byDate: byDate, streaks: streaks, weekStreak: weekStreak, heat: heat, weekSummary: weekSummary,
 		itemText: itemText, grid: grid, listGrid: listGrid, toCSV: toCSV, toTSV: toTSV, planCSV: planCSV, parseDelimited: parseDelimited, dowFromText: dowFromText, parseItemText: parseItemText, parseTable: parseTable,
 		encodeShare: encodeShare, decodeShare: decodeShare, sameDays: sameDays, b64e: b64e, b64d: b64d };
 	if (typeof module !== "undefined" && module.exports) module.exports = API;
@@ -470,7 +478,7 @@
 		if (m) h += '<span class="wp-cm">' + esc(m) + '</span>';
 		if (it.note) h += '<span class="wp-cnote" title="' + esc(it.note) + '">✎</span>';
 		if (opt.row && it.done) h += '<span class="wp-stamp">Done ' + esc(W.shortDate(it.done, today())) + '</span>';
-		if (opt.rot) h += opt.here ? '<span class="wp-herepill">📍 Here</span>' : '<button type="button" class="wp-sethere" data-gh="' + it.id + '" aria-label="Mark ' + esc(it.name) + ' as Here">Set here</button>';
+		if (opt.rot && !(it.done && !opt.here && opt.check)) h += opt.here ? '<span class="wp-herepill">📍 Here</span>' : '<button type="button" class="wp-sethere" data-gh="' + it.id + '" aria-label="Mark ' + esc(it.name) + ' as Here">Set here</button>';
 		return h + "</div>";
 	}
 	function cell(d, c) {
@@ -540,7 +548,7 @@
 		var rot = [];
 		P.lists.forEach(function (l) { l.groups.forEach(function (g) {
 			if (g.mode === "one" && g.here) { var f = W.findItem(P, g.here); if (f) rot.push('<li><span class="wp-lname2">' + esc(l.name) + (g.title ? " › " + esc(g.title) : "") + ':</span> <b>' + esc(f.item.name) + '</b> <button type="button" class="tu-btn wp-sm" data-gdone="' + l.id + "|" + g.id + '">✓ Done, next</button></li>'); }
-			else if (g.mode === "all") { var left = g.items.filter(function (x) { return !x.done; }); if (left.length) rot.push('<li><span class="wp-lname2">' + esc(l.name) + (g.title ? " › " + esc(g.title) : "") + ':</span> ' + left.length + " left (next: <b>" + esc(left[0].name) + "</b>)</li>"); }
+			else if (g.mode === "all") { var left = g.items.filter(function (x) { return !x.done; }); if (left.length) { var cf = W.findItem(P, W.groupCur(g)); rot.push('<li><span class="wp-lname2">' + esc(l.name) + (g.title ? " › " + esc(g.title) : "") + ':</span> ' + left.length + ' left, 📍 <b>' + esc(cf ? cf.item.name : left[0].name) + '</b></li>'); } }
 		}); });
 		if (rot.length) h += '<div class="wp-nrot"><b>From your lists</b><ul>' + rot.join("") + "</ul></div>";
 		$("wp-next").innerHTML = h;
@@ -553,13 +561,13 @@
 			return '<div class="wp-list" data-list="' + l.id + '"><div class="wp-lhead"><input type="text" class="wp-lname" data-lname="' + l.id + '" value="' + esc(l.name) + '" maxlength="80" aria-label="List name">' +
 				'<span class="wp-lbtns"><button type="button" class="wp-ib" data-lmove="' + l.id + '|-1"' + (li ? "" : " disabled") + ' aria-label="Move list up">↑</button><button type="button" class="wp-ib" data-lmove="' + l.id + '|1"' + (li < P.lists.length - 1 ? "" : " disabled") + ' aria-label="Move list down">↓</button><button type="button" class="wp-ib wp-danger" data-ldel="' + l.id + '" aria-label="Delete list">🗑</button></span></div>' +
 				l.groups.map(function (g, gi) {
-					var one = g.mode === "one";
+					var one = g.mode === "one", cur = W.groupCur(g);
 					return '<div class="wp-grp' + (one ? " wp-grp--one" : "") + '"><div class="wp-ghead"><input type="text" class="wp-gtitle" data-gtitle="' + l.id + "|" + g.id + '" value="' + esc(g.title) + '" maxlength="80" placeholder="' + (one ? "Do one after finishing above" : "Group name, e.g. Monday Workouts") + '" aria-label="Group name">' +
 						'<select class="wp-gmode" data-gmode="' + l.id + "|" + g.id + '" aria-label="How this group works"><option value="all"' + (one ? "" : " selected") + '>Do all (checklist)</option><option value="one"' + (one ? " selected" : "") + '>Do one, in turn</option></select>' +
 						'<span class="wp-lbtns"><button type="button" class="wp-ib" data-gmove="' + l.id + "|" + g.id + '|-1"' + (gi ? "" : " disabled") + ' aria-label="Move group up">↑</button><button type="button" class="wp-ib" data-gmove="' + l.id + "|" + g.id + '|1"' + (gi < l.groups.length - 1 ? "" : " disabled") + ' aria-label="Move group down">↓</button>' +
 						(one ? "" : '<button type="button" class="wp-ib" data-greset="' + l.id + "|" + g.id + '" title="Clear every done date" aria-label="Start this checklist again">↺</button>') +
 						(l.groups.length > 1 ? '<button type="button" class="wp-ib wp-danger" data-gdel="' + l.id + "|" + g.id + '" aria-label="Delete group">🗑</button>' : "") + "</span></div>" +
-						'<div class="wp-gitems" data-drop="g|' + l.id + "|" + g.id + '" data-axis="y">' + g.items.map(function (x) { return chip(x, { row: true, check: !one, rot: one, here: one && g.here === x.id }); }).join("") +
+						'<div class="wp-gitems" data-drop="g|' + l.id + "|" + g.id + '" data-axis="y">' + g.items.map(function (x) { return chip(x, { row: true, check: !one, rot: true, here: cur === x.id }); }).join("") +
 						'<button type="button" class="wp-add wp-add--row" data-add="g|' + l.id + "|" + g.id + '">+ Add</button></div>' +
 						(one && g.here ? '<div class="wp-gfoot"><button type="button" class="tu-btn tu-btn--primary wp-sm" data-gdone="' + l.id + "|" + g.id + '">✓ Done, next one</button></div>' : "") + "</div>";
 				}).join("") +
@@ -1065,7 +1073,7 @@
 			h += '<div class="wp-plist"><h2>' + esc(l.name) + "</h2>";
 			l.groups.forEach(function (gr) {
 				h += "<h3>" + esc(gr.title || (gr.mode === "one" ? "Do one, in turn" : "Do all")) + (gr.mode === "one" ? " (do one, in turn)" : "") + "</h3><ul>" +
-					gr.items.map(function (x) { return "<li>" + (gr.mode === "all" ? (x.done ? "☑ " : "☐ ") : "") + esc(W.itemText(x)) + (x.done ? " <b>Done " + esc(W.shortDate(x.done, td)) + "</b>" : "") + (gr.mode === "one" && gr.here === x.id ? " <b>📍 Here</b>" : "") + "</li>"; }).join("") + "</ul>";
+					gr.items.map(function (x) { return "<li>" + (gr.mode === "all" ? (x.done ? "☑ " : "☐ ") : "") + esc(W.itemText(x)) + (x.done ? " <b>Done " + esc(W.shortDate(x.done, td)) + "</b>" : "") + (W.groupCur(gr) === x.id ? " <b>📍 Here</b>" : "") + "</li>"; }).join("") + "</ul>";
 			});
 			if (l.note) h += "<p><i>" + esc(l.note) + "</i></p>";
 			h += "</div>";
@@ -1108,6 +1116,128 @@
 		$("wp-sharebar").hidden = false;
 		$("wp-shareuse").onclick = function () { change(function () { var log = P.log; P = plan; P.log = log; }); $("wp-sharebar").hidden = true; toast("Now using the shared plan", true); };
 		$("wp-sharekeep").onclick = function () { $("wp-sharebar").hidden = true; };
+	})();
+
+
+	/* ---------- ☁ Hive backup (MESHive + MESHiveStore, like Copy Text; app "workout-planner", name "plan") ---------- */
+	(function () {
+		var HAPP = "workout-planner", HNAME = "plan", ENC_KEY = KEY + ":hiveenc", list = null, busyOn = false;
+		function HV() { return window.MESHive; }
+		function HS() { return window.MESHiveStore; }
+		function msg(t, cls) { var m = $("wp-hive-msg"); m.textContent = t || ""; m.className = "tu-note wp-hive-msg" + (cls ? " is-" + cls : ""); }
+		function encOn() { return $("wp-hive-encrypt").checked; }
+		function paintWarn() {
+			var w = $("wp-hive-warn");
+			if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "wp-hive-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a backup made here is <b>not encrypted</b>: your plan and history will be public on the Hive blockchain, forever. For encrypted backups use a computer with the Keychain extension, or open mes.fm in the Keychain app's own browser."; return; }
+			if (encOn()) { w.className = "wp-hive-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
+			else { w.className = "wp-hive-warn is-open"; w.innerHTML = "⚠ <b>Not encrypted:</b> your whole plan and history will be <b>public on the Hive blockchain, readable by anyone, forever</b>."; }
+		}
+		function paintUser() {
+			var box = $("wp-hive-user"), u = HV() && HV().user();
+			if (!HV() || !HS()) { box.innerHTML = '<p class="wp-hive-warn is-open">The Hive scripts did not load (blocked or offline). Reload the page to try again.</p>'; $("wp-hive-main").hidden = true; return; }
+			if (u) {
+				box.innerHTML = '<span class="wp-hive-who"><img src="' + HV().avatar(u.name) + '" alt="" width="24" height="24" loading="lazy"> Logged in as <b>@' + esc(u.name) + '</b></span> <button type="button" class="tu-btn tu-btn--ghost" data-h="logout">Log out</button>';
+				$("wp-hive-main").hidden = false; $("wp-hive-help").innerHTML = "";
+				var ce = $("wp-hive-encrypt"), can = !HS().canEncrypt || HS().canEncrypt();
+				if (!can) ce.checked = false; else if (ce.disabled) { try { ce.checked = localStorage.getItem(ENC_KEY) !== "0"; } catch (e) { ce.checked = true; } }
+				ce.disabled = !can; paintWarn();
+			} else {
+				box.innerHTML = '<div class="wp-hive-login"><input class="tu-input" id="wp-hive-name" type="text" placeholder="Your Hive username" aria-label="Your Hive username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="17">' +
+					' <button type="button" class="tu-btn tu-btn--primary" data-h="login">Log in with Keychain</button></div>';
+				$("wp-hive-main").hidden = true;
+				HV().keychain(1500).then(function (k) { if (!k && !HV().user()) $("wp-hive-help").innerHTML = HV().helpHtml(); });
+			}
+		}
+		function open(focus) {
+			var p = $("wp-hive"); p.hidden = false; $("wp-hivebtn").setAttribute("aria-expanded", "true");
+			try { $("wp-hive-encrypt").checked = localStorage.getItem(ENC_KEY) !== "0"; } catch (e) {}
+			paintWarn(); paintUser();
+			if (HV() && HV().user() && !list) load(true);
+			if (focus) { p.scrollIntoView({ block: "nearest", behavior: "smooth" }); var n = $("wp-hive-name"); (n || $("wp-hive-save")).focus(); }
+		}
+		function close() { $("wp-hive").hidden = true; $("wp-hivebtn").setAttribute("aria-expanded", "false"); $("wp-hivebtn").focus(); }
+		$("wp-hivebtn").onclick = function () { if ($("wp-hive").hidden) open(true); else close(); };
+		$("wp-hive-close").onclick = close;
+		$("wp-hive-encrypt").onchange = function () { try { localStorage.setItem(ENC_KEY, this.checked ? "1" : "0"); } catch (e) {} paintWarn(); };
+		if (window.MESHive) MESHive.onChange(function () { if (!$("wp-hive").hidden) { list = null; $("wp-hive-list").innerHTML = ""; paintUser(); } });
+		function kb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(n < 10240 ? 1 : 0) + " KB"; }
+		function when(iso) { var d = new Date(/Z$/.test(iso) ? iso : iso + "Z"); return isNaN(d) ? "" : d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+		function errText(e) { return e && e.code === "cancel" ? "Cancelled in Keychain." : (e && e.message) || "Something went wrong."; }
+		function busy(on) { busyOn = on; ["wp-hive-save", "wp-hive-load"].forEach(function (id) { $(id).disabled = on; }); }
+		function count(plan) { var n = 0; (plan.days || []).forEach(function (d) { n += (d.items || []).length; }); (plan.lists || []).forEach(function (l) { (l.groups || []).forEach(function (g) { n += (g.items || []).length; }); }); return n; }
+		function hsave() {
+			if (busyOn) return;
+			var enc = encOn(), data = { app: "mes-workout-planner", saved: new Date().toISOString(), plan: P }, n = count(P);
+			if (!enc && !confirm("Save WITHOUT encryption?\n\nYour whole plan and history will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
+			busy(true);
+			var u = HV().user();
+			HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
+				if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
+				return HS().save(HAPP, HNAME, data, { encrypt: enc, onProgress: function (m) { msg(m); } }).then(function (r) {
+					msg("Saved \"" + P.title + "\" (" + n + " activities, " + P.log.length + " history entries) to @" + u.name + " on Hive (" + kb(r.bytes) + (enc ? ", encrypted" : ", NOT encrypted") + "). It shows up in the list within a few seconds.", "ok");
+					toast("Saved to Hive");
+					list = null; setTimeout(function () { load(true); }, 4000);
+				});
+			}).catch(function (e) { msg(errText(e), "err"); }).then(function () { busy(false); });
+		}
+		function load(quiet) {
+			if (busyOn && !quiet) return;
+			var u = HV() && HV().user(); if (!u) return;
+			busy(true); if (!quiet) msg("Looking for your backups on Hive…");
+			HS().list(u.name, { app: HAPP, name: HNAME, pages: 30, onProgress: function (i) { if (!quiet && i > 1) msg("Looking for your backups on Hive… (" + i + " pages of account history read)"); } }).then(function (saves) {
+				list = saves.slice(0, 12); paint();
+				if (!quiet) msg(saves.length ? "Found " + saves.length + (saves.length === 1 ? " backup" : " backups") + ". Pick one to load." : "No Workout Planner backups found on @" + u.name + " yet.", saves.length ? "" : "err");
+			}).catch(function (e) { if (!quiet) msg("Could not read from Hive: " + errText(e), "err"); }).then(function () { busy(false); });
+		}
+		function paint() {
+			var box = $("wp-hive-list");
+			if (!list || !list.length) { box.innerHTML = ""; return; }
+			box.innerHTML = '<ul class="wp-hb">' + list.map(function (e, i) {
+				var meta = (e.encrypted ? "🔒 encrypted" : "👁 public") + " · " + esc(kb(e.bytes)) + (e.complete ? "" : " · incomplete");
+				return '<li class="wp-hb-row"><span class="wp-hb-when"><b>' + esc(when(e.time)) + (i === 0 ? ' <span class="wp-hive-new">newest</span>' : "") + "</b>" +
+					"<small>" + meta + (e.trx ? ' · <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener" title="See this backup on the blockchain">chain ↗</a>' : "") + "</small></span>" +
+					'<span class="wp-hb-acts">' + (e.complete ? '<button type="button" class="tu-btn tu-btn--primary" data-h="restore" data-i="' + i + '">Load</button>' : "") +
+					'<button type="button" class="tu-btn tu-btn--ghost" data-h="forget" data-i="' + i + '" title="Hide it from this list (the data stays on the blockchain)">Hide</button></span></li>';
+			}).join("") + "</ul>";
+		}
+		function restore(i) {
+			var e = list && list[i]; if (!e || busyOn) return;
+			busy(true); msg(e.encrypted ? "Confirm in Keychain: decrypt the backup key with your memo key…" : "Opening the backup…");
+			HS().load(e).then(function (data) {
+				var plan = data && data.plan ? data.plan : data;
+				if (!plan || !Array.isArray(plan.days)) throw new Error("That backup is not a Workout Planner plan.");
+				var np = W.normalize(plan);
+				if (!confirm("Replace the plan in this browser with the backup \"" + np.title + "\" from " + when(e.time) + "?\n(" + count(np) + " activities, " + np.log.length + " history entries. You can undo right after.)")) { msg(""); return; }
+				change(function () { P = np; });
+				toast("Loaded the Hive backup", true);
+				msg("Loaded \"" + np.title + "\" from Hive.", "ok");
+			}).catch(function (x) { msg(errText(x), "err"); }).then(function () { busy(false); });
+		}
+		$("wp-hive").addEventListener("click", function (e) {
+			var b = e.target.closest("[data-h]"); if (!b) return;
+			var a = b.dataset.h;
+			if (a === "login") {
+				var name = ($("wp-hive-name").value || "").trim();
+				if (!name) { $("wp-hive-name").focus(); msg("Type your Hive username first.", "err"); return; }
+				msg("Confirm the login in Hive Keychain (the browser extension, or the phone app if this browser has no extension)…");
+				HV().login(name).then(function () { msg(""); paintUser(); load(true); }).catch(function (x) {
+					msg(x.code === "nokeychain" ? "Hive Keychain is not installed in this browser (see below)." : errText(x), "err");
+					if (x.code === "nokeychain") $("wp-hive-help").innerHTML = HV().helpHtml();
+				});
+			} else if (a === "logout") { HV().logout(); list = null; $("wp-hive-list").innerHTML = ""; msg(""); paintUser(); }
+			else if (a === "restore") restore(+b.dataset.i);
+			else if (a === "forget") {
+				var it = list[+b.dataset.i]; if (!it || busyOn) return;
+				if (!confirm("Hide this backup from the list?\n\nThis only adds a 'hidden' note on Hive: the backup itself stays in the blockchain's history forever" + (it.encrypted ? " (still encrypted)." : ", readable by anyone."))) return;
+				busy(true); msg("Confirm in Keychain…");
+				HS().forget(HAPP, HNAME, it.s).then(function () { list.splice(+b.dataset.i, 1); paint(); msg("Hidden from the list.", "ok"); })
+					.catch(function (x) { msg(errText(x), "err"); }).then(function () { busy(false); });
+			}
+		});
+		$("wp-hive").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "wp-hive-name") { e.preventDefault(); $("wp-hive").querySelector('[data-h="login"]').click(); } else if (e.key === "Escape") close(); });
+		$("wp-hive-save").onclick = hsave;
+		$("wp-hive-load").onclick = function () { load(false); };
+		if (/[?&]hive=1\b/.test(location.search) || location.hash === "#hive") open(false);
 	})();
 
 	/* ---------- Fill window / Full screen ---------- */

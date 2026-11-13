@@ -14,6 +14,7 @@
 				<button type="button" class="tu-btn tu-btn--ghost" id="wp-undo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
 				<span class="wp-tpl"><label for="wp-tplsel">Template</label> <select id="wp-tplsel" class="tu-select"></select> <button type="button" class="tu-btn" id="wp-tplgo">Load</button></span>
 				<button type="button" class="tu-btn" id="wp-share">🔗 Copy share link</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wp-hivebtn" aria-expanded="false" aria-controls="wp-hive" title="Back up your plan and history to your Hive account (encrypted) and get it back on any device">☁ Hive backup</button>
 				<details class="wp-menu" id="wp-exp"><summary class="tu-btn">⬇ Export</summary>
 					<div class="wp-menupop">
 						<button type="button" data-exp="excel">📋 Copy as a table (paste into Excel / Sheets)</button>
@@ -36,6 +37,37 @@
 			</div>
 		</div>
 
+
+		<div class="tu-card wp-hive" id="wp-hive" hidden>
+			<div class="wp-hive-head">
+				<h2 class="wp-hive-title">☁ Back up to Hive</h2>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wp-hive-close" aria-label="Close the Hive backup panel">✕</button>
+			</div>
+			<p class="wp-hive-intro">Save your whole plan (week, training lists, 📍 markers and history) to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load it on any computer or phone with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a>: the browser extension, or the Keychain phone app. No mes.fm account and no server: the backup is written to the Hive blockchain from your browser, signed in Keychain. Your keys never leave Keychain.</p>
+			<div class="wp-hive-user" id="wp-hive-user"></div>
+			<div id="wp-hive-main" hidden>
+				<label class="wp-hive-enc"><input type="checkbox" id="wp-hive-encrypt" checked> <span><b>Encrypt</b> (recommended): only you can read it, with your Hive memo key</span></label>
+				<p class="wp-hive-warn" id="wp-hive-warn" role="note"></p>
+				<div class="wp-hive-acts">
+					<button type="button" class="tu-btn tu-btn--primary" id="wp-hive-save">Save to Hive</button>
+					<button type="button" class="tu-btn" id="wp-hive-load">Load from Hive</button>
+				</div>
+				<p class="tu-note wp-hive-msg" id="wp-hive-msg" aria-live="polite"></p>
+				<div id="wp-hive-list" class="wp-hive-list"></div>
+				<details class="wp-hive-more">
+					<summary>What to know before you use it</summary>
+					<ul>
+						<li><strong>It is permanent.</strong> Anything written to Hive stays in the blockchain's history forever. "Hide" removes a backup from this list, but the data itself can never be deleted.</li>
+						<li><strong>It is public.</strong> Anyone can see that your account saved a Workout Planner backup, when, and how big it is. With <em>Encrypt</em> on they can't read it: a fresh random key encrypts it in your browser and only that key is locked to your own memo key. With <em>Encrypt</em> off, <strong>anyone can read your plan and history, forever</strong>.</li>
+						<li><strong>It needs your memo key</strong> in Keychain to encrypt and to open an encrypted backup. If you ever change your memo key, older encrypted backups can no longer be opened, so save a new one.</li>
+						<li><strong>It uses Resource Credits</strong>, not money: Hive's free allowance, which refills over about five days. Saving uses your <em>posting</em> key; it can't move any funds.</li>
+						<li><strong>Loading replaces</strong> the plan in this browser with the backup (you can undo right after).</li>
+					</ul>
+				</details>
+			</div>
+			<div id="wp-hive-help"></div>
+		</div>
+
 		<div class="tu-card wp-next" id="wp-next" aria-live="polite"></div>
 
 		<section class="tu-card wp-sec" id="wp-weekcard" tabindex="-1" aria-labelledby="wp-weekh">
@@ -55,7 +87,7 @@
 
 		<section class="tu-card wp-sec" id="wp-listcard" tabindex="-1" aria-labelledby="wp-listh">
 			<div class="wp-head" id="wp-listbar"><h2 id="wp-listh">Training lists</h2><button type="button" class="tu-btn" id="wp-addlist">+ New list</button></div>
-			<p class="tu-note">A list has groups: <b>Do all</b> (a checklist: each one gets a done date) or <b>Do one, in turn</b> (a rotation: do the one marked 📍, then it moves on). Drag activities between lists and the week.</p>
+			<p class="tu-note">A list has groups: <b>Do all</b> (a checklist: each one gets a done date) or <b>Do one, in turn</b> (a rotation: do the one marked 📍, then it moves on). In a checklist 📍 marks the next one to do; "Set here" moves it. Drag activities between lists and the week.</p>
 			<div id="wp-lists" class="wp-lists"></div>
 		</section>
 
@@ -101,7 +133,7 @@
 				<li>Drag activities between days, categories and lists, and drag days to change their order. Everything also works from the keyboard.</li>
 				<li>Log what you did, then see your streak, a calendar of active days and a weekly summary of planned versus done.</li>
 				<li>Print the plan, copy it into Excel or Google Sheets, download a CSV, or paste a table from your spreadsheet to import it.</li>
-				<li>Share your plan as a link, or keep a backup file. Everything is saved in your browser; nothing is uploaded.</li>
+				<li>Share your plan as a link, or keep a backup file. Everything is saved in your browser; nothing is uploaded unless you choose <b>☁ Hive backup</b>, which saves it (encrypted) to your own Hive account so you can load it on another device.</li>
 			</ul>
 			<h3>The templates</h3>
 			<p><b>Beginner full body</b> trains every major muscle group three times a week with a walk in between. <b>Push / Pull / Legs</b> splits the body over six days. <b>5×5 strength</b> alternates two barbell workouts, A (squat, bench press, row) and B (squat, overhead press, deadlift). <b>Start running</b> uses run/walk intervals in the style of the NHS Couch to 5K plan (its first week alternates 60 seconds of running with 90 seconds of walking). Change anything to fit you.</p>
