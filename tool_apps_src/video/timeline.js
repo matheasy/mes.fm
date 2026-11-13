@@ -159,6 +159,8 @@
 	function snapPts(ignore) { return V.snapPoints(VE.P, ignore, [VE.t]); }
 	function unlocked(c) { var q = V.track(VE.P, c.track); return !(q && q.lock); }
 	inner.addEventListener("pointerdown", function (e) {
+		// preventDefault below keeps focus where it was (e.g. the speed box), which would swallow Delete / S / arrows: let go of it
+		var ae = document.activeElement; if (ae && ae !== document.body && !inner.contains(ae) && ae.blur) ae.blur();
 		if (e.button > 0) return;
 		var tb = e.target.closest("[data-tact]"); if (tb) return trackAction(tb);
 		var rg = e.target.closest("[data-rgrip]");
