@@ -46,9 +46,9 @@
 	var CLOUD = Object.assign({ dropbox: "iii9nua0gtgi3t6", onedrive: "294df2de-6d61-4c56-a0c1-c79cd09a2e8e", gdrive: "604980806442-dlqf3ur1qohoe67sc5i70qu4is9sfva9.apps.googleusercontent.com" }, window.MES_CT_CLOUD || {});
 	var RELAY = "https://mes.fm/copy-text", DIR = "MES Apps";
 	/* Pages that sign in on themselves: each address must be in the Dropbox app's Redirect URIs and the Entra app's SPA redirect URIs.
-	   Flip HERE_READY to true for a service once all of them are registered there. */
+	   Registered with both on 2026-11-13; a new page needs adding there first (else keep it out of HERE). */
 	var HERE = ["/pdf", "/excel", "/docx", "/text", "/photo", "/draw", "/3d-studio", "/video", "/watch"];
-	var HERE_READY = Object.assign({ dropbox: false, onedrive: false }, window.MES_CLOUD_HERE || {});
+	var HERE_READY = Object.assign({ dropbox: true, onedrive: true }, window.MES_CLOUD_HERE || {});
 	function hereUri() { var pth = location.pathname.replace(/\/(index\.html)?$/, "") || "/"; return HERE.indexOf(pth) >= 0 && /^https:\/\/mes\.fm$/.test(location.origin) ? location.origin + pth : ""; }
 	function tokKey(p) { return p === "dropbox" ? "mes-copytext:v1:tok:dropbox" : "mes-cloud:tok:" + p; }
 	function segs(f) { return String(f == null ? DIR : f).split("/").map(function (x) { return x.trim(); }).filter(Boolean); }
