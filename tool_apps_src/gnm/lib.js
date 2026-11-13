@@ -432,28 +432,92 @@
 		[/ (blood(?! pressure| sugar| test)|bleed|bleeding|bloody) /, "blood",
 			"In GNM, bright red blood from the lower bowel usually points to the rectum (ectoderm, identity conflict), and blood mixed with mucus higher up to the intestine (endoderm, morsel conflict); in both, Hamer placed the bleeding in the healing phase. Both are listed below as organ candidates."]
 	];
-	function match(text) {
-		var txt = normText(text), sc = { norm: 0, dhs: 0, ca: 0, cl: 0, pcla: 0, ec: 0, pclb: 0, rec: 0 }, why = [], used = [];
+	/* ---------------- report mode: words doctors write in reports, letters and articles ---------------- */
+	/* [phrase, phase, weight, why]: phase-level signs that do not depend on the tissue */
+	var CLIN = [
+		["edema", "pcla", 3, "edema (swelling) is typical of PCL-A"], ["oedema", "pcla", 3, "edema (swelling) is typical of PCL-A"], ["effusion", "pcla", 3, "in GNM, fluid collecting (an effusion) belongs to the healing phase"],
+		["inflammation", "pcla", 3, "in GNM, inflammation is the repair of the healing phase"], ["inflammatory", "pcla", 2, "in GNM, inflammation is the repair of the healing phase"], ["inflamed", "pcla", 2, "in GNM, inflammation is the repair of the healing phase"],
+		["infiltrate", "pcla", 2, "an infiltrate (inflamed, swollen tissue) fits PCL-A"], ["hyperemia", "pcla", 2, "more blood flow to the tissue fits the healing phase"], ["hyperaemia", "pcla", 2, "more blood flow to the tissue fits the healing phase"],
+		["abscess", "pcla", 2, "in GNM, pus and an abscess come from microbes breaking tissue down in the healing phase"], ["pus", "pcla", 2, "in GNM, pus comes from microbes working in the healing phase"], ["purulent", "pcla", 2, "in GNM, pus comes from microbes working in the healing phase"],
+		["elevated crp", "pcla", 2, "a raised CRP (inflammation marker) fits the healing phase"], ["raised crp", "pcla", 2, "a raised CRP (inflammation marker) fits the healing phase"], ["high crp", "pcla", 2, "a raised CRP (inflammation marker) fits the healing phase"],
+		["elevated esr", "pcla", 2, "a raised ESR (inflammation marker) fits the healing phase"], ["leukocytosis", "pcla", 2, "a high white-cell count goes with inflammation, the healing phase in GNM"], ["leucocytosis", "pcla", 2, "a high white-cell count goes with inflammation, the healing phase in GNM"],
+		["febrile", "pcla", 3, "fever belongs to the healing phase in GNM"], ["pyrexia", "pcla", 3, "fever belongs to the healing phase in GNM"], ["lethargy", "pcla", 2, "fatigue fits vagotonia"], ["lethargic", "pcla", 2, "fatigue fits vagotonia"], ["fatigue", "pcla", 2, "fatigue fits vagotonia"], ["malaise", "pcla", 1, "feeling unwell and tired fits vagotonia"],
+		["night sweats", "pcla", 3, "night sweats go with the healing phase (tuberculous breakdown)"], ["caseating", "pcla", 3, "caseation is tuberculous breakdown, the healing phase in GNM"], ["caseation", "pcla", 3, "caseation is tuberculous breakdown, the healing phase in GNM"],
+		["granuloma", "pcla", 2, "in GNM, granulomas are read as tuberculous healing"], ["granulomatous", "pcla", 2, "in GNM, granulomas are read as tuberculous healing"], ["tuberculosis", "pcla", 3, "in GNM, mycobacteria (TB) break down tumours in the healing phase"],
+		["cavitation", "pcla", 2, "a cavity left after tuberculous breakdown is a healing-phase finding in GNM"], ["cavity", "pcla", 1, "a cavity left after breakdown fits the healing phase"],
+		["fibrosis", "pclb", 2, "fibrosis (scar tissue) belongs to PCL-B"], ["fibrotic", "pclb", 2, "fibrosis (scar tissue) belongs to PCL-B"], ["scarring", "pclb", 2, "scarring belongs to PCL-B"], ["scar tissue", "pclb", 3, "scarring belongs to PCL-B"],
+		["calcified", "pclb", 2, "calcification marks the end of healing (PCL-B) in GNM"], ["calcification", "pclb", 2, "calcification marks the end of healing (PCL-B) in GNM"], ["calcifications", "pclb", 2, "calcification marks the end of healing (PCL-B) in GNM"],
+		["sclerotic", "pclb", 2, "sclerosis (hardening, recalcified bone) belongs to PCL-B"], ["recalcification", "pclb", 3, "recalcification of bone is PCL-B"], ["osteoblastic", "pclb", 2, "new bone being laid down is PCL-B"], ["callus", "pclb", 2, "callus (new bone) is PCL-B"], ["encapsulated", "pclb", 2, "an encapsulated growth is, in GNM, one that healing has closed off"],
+		["tachycardia", "ca", 2, "a fast heartbeat fits sympathicotonia"], ["hypertension", "ca", 2, "high blood pressure fits sympathicotonia"], ["cachexia", "ca", 3, "wasting fits long sympathicotonia"], ["cachectic", "ca", 3, "wasting fits long sympathicotonia"],
+		["anorexia", "ca", 2, "loss of appetite fits sympathicotonia"], ["poor appetite", "ca", 2, "loss of appetite fits sympathicotonia"], ["reduced appetite", "ca", 2, "loss of appetite fits sympathicotonia"], ["decreased appetite", "ca", 2, "loss of appetite fits sympathicotonia"],
+		["unintentional weight loss", "ca", 3, "weight loss goes with sympathicotonia"], ["stress", "ca", 1, "stress fits sympathicotonia"], ["anxiety", "ca", 1, "constant worry fits sympathicotonia"], ["hypercalcemia", "ca", 2, "calcium released from dissolving bone fits the active phase of a bone program"], ["hypercalcaemia", "ca", 2, "calcium released from dissolving bone fits the active phase of a bone program"],
+		["syncope", "ec", 2, "a short faint fits the epileptoid crisis"], ["fainted", "ec", 2, "a short faint fits the epileptoid crisis"], ["epileptic", "ec", 2, "seizures are a crisis sign"], ["arrhythmia", "ec", 1, "rhythm disturbances can be the crisis of a heart program"], ["pulmonary embolism", "ec", 2, "in GNM, a pulmonary embolism is read as an epileptoid crisis"],
+		["stable disease", "norm", 1, "a growth that does not change fits normotonia or an encapsulated, finished program"], ["unchanged", "norm", 1, "no change since the last scan"], ["no change", "norm", 1, "no change since the last scan"],
+		["regression", "pcla", 1, "a growth getting smaller fits breakdown in the healing phase"], ["decreased in size", "pcla", 1, "a growth getting smaller fits breakdown in the healing phase"], ["reduced in size", "pcla", 1, "a growth getting smaller fits breakdown in the healing phase"], ["resolving", "pclb", 1, "a finding going away fits the end of healing"], ["resolved", "pclb", 1, "a finding gone away fits the end of healing"]
+	];
+	/* [phrase, {layer: phase}, weight, what it is, layer hint when no organ word is found] -- GNM reads these by the tissue (third law) */
+	var LAYERED = [
+		["adenocarcinoma", { endo: "ca", oldm: "ca" }, 3, "an adenocarcinoma (compact glandular growth)", "endo"],
+		["adenoma", { endo: "ca", oldm: "ca" }, 2, "an adenoma (glandular growth)", "endo"],
+		["polyp", { endo: "ca" }, 2, "a polyp (growth of the gut lining)", "endo"], ["polyps", { endo: "ca" }, 2, "polyps (growth of the gut lining)", "endo"],
+		["mesothelioma", { oldm: "ca" }, 3, "a mesothelioma (growth of the pleura or peritoneum)", "oldm"],
+		["melanoma", { oldm: "ca" }, 3, "a melanoma (growth of the dermis)", "oldm"],
+		["squamous cell carcinoma", { ecto: "pcla" }, 3, "a squamous cell carcinoma (squamous lining refilling and swelling)", "ecto"],
+		["squamous", { ecto: "pcla" }, 1, "squamous lining refilling", "ecto"],
+		["intraductal", { ecto: "pcla" }, 2, "an intraductal finding (lining of the milk ducts refilling)", "ecto"],
+		["ductal carcinoma", { ecto: "pcla" }, 3, "a ductal carcinoma (lining of the milk ducts refilling)", "ecto"],
+		["sarcoma", { newm: "pcla" }, 3, "a sarcoma (connective tissue or bone rebuilding)", "newm"], ["osteosarcoma", { newm: "pcla" }, 3, "an osteosarcoma (bone rebuilding with swelling)", "newm"],
+		["lymphoma", { newm: "pcla" }, 3, "a lymphoma (lymph nodes swelling while they rebuild)", "newm"],
+		["lymphadenopathy", { newm: "pcla" }, 3, "swollen lymph nodes", "newm"], ["enlarged lymph nodes", { newm: "pcla" }, 3, "swollen lymph nodes", "newm"],
+		["osteolysis", { newm: "ca" }, 3, "osteolysis (bone dissolving)", "newm"], ["osteolytic", { newm: "ca" }, 3, "osteolysis (bone dissolving)", "newm"], ["lytic lesion", { newm: "ca" }, 3, "a lytic lesion (bone dissolving)", "newm"], ["lytic lesions", { newm: "ca" }, 3, "lytic lesions (bone dissolving)", "newm"],
+		["osteoporosis", { newm: "ca" }, 2, "osteoporosis (bone thinning)", "newm"], ["osteopenia", { newm: "ca" }, 2, "osteopenia (bone thinning)", "newm"], ["atrophy", { newm: "ca", ecto: "ca" }, 2, "atrophy (tissue shrinking)", null],
+		["necrosis", { newm: "ca", endo: "pcla", oldm: "pcla" }, 2, "necrosis (dead tissue)", null], ["necrotic", { newm: "ca", endo: "pcla", oldm: "pcla" }, 2, "necrotic (dead) tissue", null],
+		["ulcer", { ecto: "ca" }, 2, "an ulcer (lining lost)", "ecto"], ["ulceration", { ecto: "ca" }, 2, "ulceration (lining lost)", "ecto"], ["ulcerated", { ecto: "ca" }, 2, "an ulcer (lining lost)", "ecto"], ["erosion", { ecto: "ca" }, 1, "an erosion (lining lost)", "ecto"],
+		["tumor", { endo: "ca", oldm: "ca", newm: "pcla", ecto: "pcla" }, 1, "a tumour", null], ["tumour", { endo: "ca", oldm: "ca", newm: "pcla", ecto: "pcla" }, 1, "a tumour", null],
+		["mass", { endo: "ca", oldm: "ca", newm: "pcla", ecto: "pcla" }, 1, "a mass", null], ["nodule", { endo: "ca", oldm: "ca" }, 1, "a nodule (compact growth)", null], ["nodules", { endo: "ca", oldm: "ca" }, 1, "nodules (compact growths)", null],
+		["osteolytic lesion", { newm: "ca" }, 3, "an osteolytic lesion (bone dissolving)", "newm"], ["osteolytic lesions", { newm: "ca" }, 3, "osteolytic lesions (bone dissolving)", "newm"], ["sclerotic lesion", { newm: "pclb" }, 3, "a sclerotic lesion (bone recalcified)", "newm"], ["sclerotic lesions", { newm: "pclb" }, 3, "sclerotic lesions (bone recalcified)", "newm"],
+		["progression", { endo: "ca", oldm: "ca", newm: "pcla", ecto: "pcla" }, 1, "growth since the last check (progression)", null], ["increased in size", { endo: "ca", oldm: "ca", newm: "pcla", ecto: "pcla" }, 1, "growth since the last check", null], ["enlarging", { endo: "ca", oldm: "ca", newm: "pcla", ecto: "pcla" }, 1, "growth since the last check", null]
+	];
+	/* extra organ words that turn up in reports */
+	var CLIN_ORG = {
+		alveoli: ["upper lobe", "lower lobe", "middle lobe", "right lung", "left lung", "pulmonary nodule", "pulmonary nodules", "lung nodule", "lung nodules", "nodules in the lung", "nodules in the lungs", "pulmonary", "lung cancer", "alveolar"],
+		bronchi: ["bronchial", "bronchial carcinoma", "bronchiectasis", "copd"], stomach: ["gastric", "gastritis", "esophageal", "oesophageal"],
+		intestine: ["colorectal", "colonic", "sigmoid", "cecum", "caecum", "ileum", "jejunum", "duodenum", "duodenal", "crohn's", "crohns", "colitis", "diverticulitis"],
+		rectum: ["rectal", "anal", "hemorrhoids", "haemorrhoids"], liver: ["hepatic", "hepatocellular", "hepatitis", "cirrhosis"],
+		breast: ["mammary gland", "lobular carcinoma", "breast cancer", "breast tumour", "breast tumor", "mammogram", "mammography"], milkducts: ["ductal", "intraductal", "ductal carcinoma"],
+		bone: ["osseous", "vertebra", "vertebrae", "vertebral", "lumbar", "thoracic spine", "cervical spine", "femur", "femoral", "pelvis", "pelvic bone", "rib", "ribs", "skeletal", "osteolysis", "osteolytic", "lytic lesion", "lytic lesions", "osteosarcoma", "osteopenia", "bone marrow", "leukemia", "leukaemia", "myeloma"],
+		lymph: ["lymphadenopathy", "nodal", "lymphoma", "axillary nodes", "cervical nodes", "enlarged lymph nodes"], larynx: ["laryngeal", "vocal cord", "vocal cords"], thyroid: ["thyroid nodule", "hypothyroid", "hashimoto", "hashimoto's"],
+		pleura: ["pleural", "mesothelioma"], peritoneum: ["peritoneal", "peritonitis"], prostate: ["prostatic", "psa"], ovary: ["ovarian", "testicular"], kidneyp: ["renal cyst", "renal parenchyma", "wilms"], collecting: ["renal failure", "kidney failure", "oliguria"],
+		skin: ["cutaneous", "dermatitis", "skin lesion", "basal cell"], dermis: ["melanoma"], bladder: ["urothelial", "bladder cancer"], coronary: ["myocardial infarction", "coronary artery disease", "stent"], motor: ["multiple sclerosis", "paresis", "hemiparesis"], islets: ["type 1 diabetes", "type 2 diabetes", "hba1c"]
+	};
+	var NEG_REP = /\b(no|not|without|never|nor|none|denies|denied|negative for|free of|absence of|absent|no evidence of|no sign of|no signs of|ruled out|excluded)\s+(\w+\s+){0,3}$/;
+	var NEG_AFTER = /^ ?(\w+ ){0,3}(was |were |is |are |has been |have been )?(ruled out|excluded|not seen|not identified|not detected|not present|absent|negative)\b/;
+	function negatedRep(txt, i, len) { return NEG_REP.test(txt.slice(Math.max(0, i - 44), i + 1)) || NEG_AFTER.test(txt.slice(i + len + 1, i + len + 50)); }
+
+	function match(text, opts) {
+		opts = opts || {};
+		var rep = !!opts.report, txt = normText(text), sc = { norm: 0, dhs: 0, ca: 0, cl: 0, pcla: 0, ec: 0, pclb: 0, rec: 0 }, why = [], used = [];
 		if (txt.trim().length < 2) return { empty: true, phase: null, scores: sc, organs: [], why: [], notes: [] };
+		function neg(i, len) { return rep ? negatedRep(txt, i, len) : negated(txt, i); }
 		function overlaps(i, len) { for (var u = 0; u < used.length; u++) if (i < used[u][1] && i + len > used[u][0]) return true; return false; }
-		var cues = CUES.slice().sort(function (a, b) { return b[0].length - a[0].length; });   /* longer phrases first */
+		var cues = (rep ? CUES.concat(CLIN) : CUES).slice().sort(function (a, b) { return b[0].length - a[0].length; });   /* longer phrases first */
 		cues.forEach(function (c) {
 			findAll(txt, c[0]).forEach(function (i) {
 				if (overlaps(i, c[0].length + 1)) return;
 				used.push([i, i + c[0].length + 1]);
-				if (negated(txt, i)) { why.push({ w: c[0], neg: true, p: c[1], s: "'" + c[0] + "' is negated, so it is left out" }); return; }
+				if (neg(i, c[0].length)) { why.push({ w: c[0], neg: true, p: c[1], s: "'" + c[0] + "' is negated, so it is left out" }); return; }
 				sc[c[1]] += c[2]; why.push({ w: c[0], p: c[1], s: c[3] });
 			});
 		});
 		/* organ candidates: keyword hits; organ cues also vote for a phase */
-		var org = [];
+		var org = [], orgPos = [];
 		ORGANS.forEach(function (o) {
-			var hits = [], score = 0, mine = [];
-			o.kw.slice().sort(function (a, b) { return b.length - a.length; }).forEach(function (k) {
+			var hits = [], score = 0, mine = [], kws = rep && CLIN_ORG[o.id] ? o.kw.concat(CLIN_ORG[o.id]) : o.kw;
+			kws.slice().sort(function (a, b) { return b.length - a.length; }).forEach(function (k) {
 				findAll(txt, k).forEach(function (i) {
-					if (negated(txt, i)) return;
+					if (neg(i, k.length)) return;
 					for (var v = 0; v < mine.length; v++) if (i < mine[v][1] && i + k.length + 1 > mine[v][0]) return;   /* "poop" inside "pooping blood" */
-					mine.push([i, i + k.length + 1]);
+					mine.push([i, i + k.length + 1]); orgPos.push({ i: i, id: o.id });
 					for (var u = 0; u < used.length; u++) if (i < used[u][1] && i + k.length + 1 > used[u][0] && used[u][1] - used[u][0] > k.length + 1) return;   /* "cold" inside "cold hands" */
 					if (hits.indexOf(k) < 0) { hits.push(k); score += k.indexOf(" ") > 0 ? 3 : 2; }
 					var cp = o.cue[k]; if (cp) { sc[cp] += 2; if (!why.some(function (w) { return w.w === k && w.p === cp; })) why.push({ w: k, p: cp, o: o.id, s: "in GNM, '" + k + "' on the " + o.name.toLowerCase() + " belongs to " + PHASES[cp].short }); }
@@ -462,16 +526,137 @@
 			if (score) org.push({ id: o.id, score: score, hits: hits });
 		});
 		org.sort(function (a, b) { return b.score - a.score || a.id.localeCompare(b.id); });
+		/* report mode: tissue words, read by the germ layer of the organ found here (else the document's, else the word's own) */
+		if (rep) {
+			var docLay = LAYERS[opts.layer] ? opts.layer : "", lay = org.length ? ORGAN_BY[org[0].id].layer : docLay;
+			var hitsL = [];
+			LAYERED.slice().sort(function (a, b) { return b[0].length - a[0].length; }).forEach(function (c) {
+				findAll(txt, c[0]).forEach(function (i) {
+					if (overlaps(i, c[0].length + 1)) return;
+					used.push([i, i + c[0].length + 1]);
+					hitsL.push({ c: c, i: i });
+				});
+			});
+			/* in reading order, so "the nodule ... with necrosis" reads the necrosis in the nodule's tissue */
+			hitsL.sort(function (a, b) { return a.i - b.i; });
+			var sticky = "", ctx = opts.ctx || [];
+			hitsL.forEach(function (h) {
+				var c = h.c, i = h.i, k;
+				if (neg(i, c[0].length)) { why.push({ w: c[0], neg: true, p: "info", s: "'" + c[0] + "' is negated, so it is left out" }); return; }
+				/* an organ found here whose tissue this word can be in; else the tissue just used; else recent sections / the document; else the word's own tissue */
+				var L = "", guess = false;
+				/* nearest organ word (within ~80 characters) whose tissue fits, then the tissue just used, then any organ named here */
+				var near = null, nd = 1e9;
+				orgPos.forEach(function (op) { var d = Math.abs(op.i - i), ly = ORGAN_BY[op.id].layer; if (c[1][ly] && d < nd) { nd = d; near = ly; } });
+				if (near && nd <= 80) L = near;
+				if (!L && sticky && c[1][sticky]) L = sticky;
+				if (!L && near) L = near;
+				for (k = 0; k < ctx.length && !L; k++) { var cl = ORGAN_BY[ctx[k]] && ORGAN_BY[ctx[k]].layer; if (cl && c[1][cl]) L = cl; }
+				if (!L && docLay && c[1][docLay]) L = docLay;
+				if (!L && c[4]) { L = c[4]; guess = true; }
+				if (!L) L = lay;
+				var p = L ? c[1][L] : null;
+				if (p) { sticky = L; sc[p] += c[2]; why.push({ w: c[0], p: p, s: "in GNM, " + c[3] + " in " + LAYERS[L].name.toLowerCase() + " tissue belongs to " + PHASES[p].short + (guess ? " (tissue taken from the word itself)" : "") }); }
+				else why.push({ w: c[0], p: "info", s: "GNM reads " + c[3] + " by the tissue it is in" + (L ? "; for " + LAYERS[L].name.toLowerCase() + " tissue there is no fixed phase" : ", and no organ was named here to decide") });
+			});
+		}
 		var best = null, bestS = 0;
 		ORDER.forEach(function (p) { if (sc[p] > bestS) { best = p; bestS = sc[p]; } });
 		var total = 0; ORDER.forEach(function (p) { total += sc[p]; });
 		var scenario = sc.rec >= 2 ? "hanging" : null;
 		if (!best && sc.rec) best = "pcla";
 		var notes = []; NOTES.forEach(function (n) { if (n[0].test(txt)) notes.push({ id: n[1], s: n[2] }); });
+		if (rep) REP_NOTES.forEach(function (n) { if (n[0].test(txt) && !notes.some(function (x) { return x.id === n[1]; })) notes.push({ id: n[1], s: n[2] }); });
 		return { empty: false, phase: best, conf: total ? bestS / total : 0, scores: sc, organs: org.slice(0, 5), why: why, scenario: scenario, notes: notes };
+	}
+	var REP_NOTES = [
+		[/ (metastasis|metastases|metastatic|mets) /, "mets", "Hamer did not accept that cancer cells travel through the blood to start new tumours. In GNM, a new tumour found later is read as a new program with its own conflict, often set off by the shock of the first diagnosis or of a frightening prognosis (for example a death-fright conflict for lung nodules, an attack conflict for the pleura or peritoneum, a self-devaluation conflict for bone)."],
+		[/ (diagnosis|diagnosed|prognosis|biopsy|scan showed|ct scan|mri|pet scan|pet ct) /, "dx", "GNM pays close attention to the moment a diagnosis or prognosis is given: Hamer described it as a common DHS in itself, so the date of each scan or biopsy is worth noting on a timeline."],
+		[/ (chemotherapy|chemo|radiotherapy|radiation therapy|surgery|resection|resected|operation) /, "rx", "The report mentions treatment. GNM describes the course of the programs themselves; a resection, for example, removes the tissue a program was running in, so later reports are read for new programs rather than the old one."]
+	];
+
+	/* ---------------- whole reports: split into sections, read each, find dates ---------------- */
+	var MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+	function pad2(n) { return (n < 10 ? "0" : "") + n; }
+	function findDates(s) {
+		var out = [], m, re, str = String(s || "");
+		function add(y, mo, d, raw, ambig) {
+			y = +y; if (y < 100) y += y < 50 ? 2000 : 1900;
+			if (y < 1900 || y > 2100 || mo < 1 || mo > 12 || (d && (d < 1 || d > 31))) return;
+			out.push({ raw: raw, key: y + "-" + pad2(mo) + (d ? "-" + pad2(d) : ""), ambig: !!ambig, at: m.index });
+		}
+		re = /\b(\d{4})-(\d{1,2})-(\d{1,2})\b/g; while ((m = re.exec(str))) add(m[1], +m[2], +m[3], m[0]);
+		re = /\b(\d{1,2})[\/.](\d{1,2})[\/.](\d{4}|\d{2})\b/g; while ((m = re.exec(str))) { var a = +m[1], b = +m[2]; if (a > 12) add(m[3], b, a, m[0]); else add(m[3], a, b, m[0], b <= 12 && a !== b); }
+		var MN = "(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\\.?";
+		re = new RegExp("\\b" + MN + " (\\d{1,2})(?:st|nd|rd|th)?,? (\\d{4})\\b", "gi"); while ((m = re.exec(str))) add(m[3], MONTHS.indexOf(m[1].slice(0, 3).toLowerCase()) + 1, +m[2], m[0]);
+		re = new RegExp("\\b(\\d{1,2})(?:st|nd|rd|th)? " + MN + ",? (\\d{4})\\b", "gi"); while ((m = re.exec(str))) add(m[3], MONTHS.indexOf(m[2].slice(0, 3).toLowerCase()) + 1, +m[1], m[0]);
+		re = new RegExp("\\b" + MN + ",? (\\d{4})\\b", "gi"); while ((m = re.exec(str))) { var mi = m.index, raw = m[0]; if (!out.some(function (o) { return mi >= o.at && mi < o.at + o.raw.length + 6; })) add(m[2], MONTHS.indexOf(m[1].slice(0, 3).toLowerCase()) + 1, 0, raw); }
+		out.sort(function (x, y) { return x.at - y.at; });
+		return out;
+	}
+	function isHeading(line) {
+		var l = line.trim();
+		if (!l || l.length > 70) return false;
+		if (/:$/.test(l) && l.split(" ").length <= 8) return true;
+		var letters = l.replace(/[^A-Za-z]/g, "");
+		return letters.length >= 4 && letters === letters.toUpperCase() && !/[.!?]$/.test(l);
+	}
+	function splitLong(t, max) {
+		if (t.length <= max) return [t];
+		var parts = [], cur = "";
+		t.split(/(?<=[.!?])\s+/).forEach(function (s) { if (cur && (cur + " " + s).length > max) { parts.push(cur); cur = s; } else cur = cur ? cur + " " + s : s; });
+		if (cur) parts.push(cur);
+		var out = []; parts.forEach(function (p) { while (p.length > max * 1.5) { out.push(p.slice(0, max)); p = p.slice(max); } out.push(p); });
+		return out;
+	}
+	function sections(text) {
+		var t = String(text || "").replace(/\r\n?/g, "\n").replace(/[ \t ]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+		if (!t) return [];
+		var out = [], head = "", lastBody = false;
+		t.split(/\n\s*\n/).forEach(function (block) {
+			var lines = block.split("\n"), body = [];
+			lines.forEach(function (ln) {
+				if (isHeading(ln)) {
+					var hd = ln.trim().replace(/:$/, "");
+					if (body.length) { out.push({ h: head, t: body.join(" ").trim() }); body = []; head = hd; lastBody = false; }
+					else { head = head && !lastBody ? head + " · " + hd : hd; lastBody = false; }
+				}
+				else { body.push(ln.trim()); lastBody = true; }
+			});
+			if (body.length) { out.push({ h: head, t: body.join(" ").trim() }); }
+		});
+		/* merge very short bits into the next section with the same heading */
+		var merged = [];
+		out.forEach(function (s) {
+			var last = merged[merged.length - 1];
+			if (last && last.h === s.h && last.t.length < 40) last.t = last.t + " " + s.t; else merged.push({ h: s.h, t: s.t });
+		});
+		var fin = [];
+		merged.forEach(function (s) { splitLong(s.t, 1600).forEach(function (p) { if (p.trim()) fin.push({ h: s.h, t: p.trim() }); }); });
+		return fin.slice(0, 400);
+	}
+	var REPORT_MAX = 400000;
+	function reviewReport(text) {
+		var t = String(text || ""), tooLong = t.length > REPORT_MAX;
+		if (tooLong) t = t.slice(0, REPORT_MAX);
+		var secs = sections(t);
+		if (!secs.length || t.replace(/\s/g, "").length < 3) return { empty: true, sections: [], timeline: [] };
+		var overall = match(t, { report: true }), lay = overall.organs.length ? ORGAN_BY[overall.organs[0].id].layer : "";
+		var docOrg = overall.organs.map(function (o) { return o.id; }), recent = [];
+		var res = secs.map(function (s, i) {
+			var r = match(s.h + " | " + s.t, { report: true, layer: lay, ctx: recent.concat(docOrg) });
+			r.organs.slice().reverse().forEach(function (o) { var j = recent.indexOf(o.id); if (j >= 0) recent.splice(j, 1); recent.unshift(o.id); });
+			return { i: i, h: s.h, t: s.t, r: r, dates: findDates(s.h + " | " + s.t), hits: r.why.filter(function (w) { return !w.neg; }).length + r.organs.length };
+		});
+		var tl = [], seen = {};
+		res.forEach(function (s) { if (!s.r.phase || !s.dates.length) return; var d = s.dates[0], k = d.key + "|" + s.r.phase; if (seen[k]) return; seen[k] = 1; tl.push({ key: d.key, raw: d.raw, ambig: d.ambig, phase: s.r.phase, i: s.i, organ: s.r.organs.length ? s.r.organs[0].id : null }); });
+		tl.sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : a.i - b.i; });
+		var words = (t.match(/\S+/g) || []).length;
+		return { empty: false, tooLong: tooLong, chars: t.length, words: words, overall: overall, layer: lay, sections: res, found: res.filter(function (s) { return s.hits; }).length, timeline: tl };
 	}
 
 	var api = { PHASES: PHASES, ORDER: ORDER, LAYERS: LAYERS, LAYER_ORDER: LAYER_ORDER, ORGANS: ORGANS, ORGAN_BY: ORGAN_BY, LAWS: LAWS, GLOSSARY: GLOSSARY, SCEN: SCEN, CUES: CUES, NOTES: NOTES,
-		build: build, levelAt: levelAt, phaseAt: phaseAt, sample: sample, placeFor: placeFor, cellSign: cellSign, organText: organText, focusLook: focusLook, match: match, normText: normText };
+		build: build, levelAt: levelAt, phaseAt: phaseAt, sample: sample, placeFor: placeFor, cellSign: cellSign, organText: organText, focusLook: focusLook, match: match, normText: normText,
+		CLIN: CLIN, LAYERED: LAYERED, CLIN_ORG: CLIN_ORG, REP_NOTES: REP_NOTES, findDates: findDates, sections: sections, reviewReport: reviewReport };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESGNM = api;
 })(this);

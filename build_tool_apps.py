@@ -654,10 +654,11 @@ APPS = {
     # Normal-width page in the tools sidebar collection, Wide by default; boxes .nr-wrap get the stage-ctl View bar.
     # German New Medicine explorer (2026-11-01): Hamer's two-phase chart with a draggable marker (classic / hanging healing / recurrence / unresolved), "describe your symptoms"
     # keyword matcher (no AI), organs by germ layer with body + brain-relay diagrams, the Five Biological Laws with diagrams, glossary popovers (lib.js = MESGNM, node-tested: tool_apps_src/gnm-tests.js).
+    # 2026-11-13: "Read a report or article": PDF / .docx / text / photo / link -> G.reviewReport (report words, tissue-aware, dates -> timeline); article links via api/page-text.js.
     "gnm": dict(title="MES German New Medicine Explorer", page_title="German New Medicine (GNM): Interactive Chart of the 5 Biological Laws",
                 tag="Two phases. Three levels. Five laws.", accent="#4d7c0f", dark="#3f6212", tint="#ecfccb",
-                desc="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.",
-                js_v="9"),
+                desc="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, read a medical report or article (PDF, Word, link) the GNM way, and explore the Five Biological Laws and a glossary.",
+                js_v="10", pre_js=["/main_js/link-open.js?v=1"]),
     "neuron-simulator": dict(title="MES Neuron Simulator", page_title="Neuron Simulator: Action Potential, Nerve Conduction and Synapses",
                              tag="Spike, conduct, connect.", accent="#0e7490", dark="#155e75", tint="#cffafe",
                              desc="A free neuron simulator: the Hodgkin-Huxley action potential with sodium and potassium gates, threshold and refractory periods, TTX, TEA, lidocaine, hyperkalaemia and temperature; saltatory conduction along myelinated and unmyelinated axons with multiple sclerosis demyelination and block; EPSP and IPSP summation; the neuromuscular junction with myasthenia gravis and train-of-four; and a Nernst and Goldman equation calculator.",

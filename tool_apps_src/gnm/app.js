@@ -1,6 +1,6 @@
 /* German New Medicine explorer UI: two-phase chart with a draggable marker, "describe your symptoms" matcher, organ / brain-relay picker,
    the Five Biological Laws with diagrams, glossary popovers. Data + maths: MESGNM (lib.js, node-tested: tool_apps_src/gnm-tests.js).
-   Settings: localStorage mes-gnm:v1 = {sc, A, D, t, organ, layer, law} (the symptom text is never saved). */
+   Settings: localStorage mes-gnm:v1 = {sc, A, D, t, organ, layer, law, rpOnly, rpWhy} (the symptom / report text is never saved). */
 (function () {
 	"use strict";
 	var $ = function (id) { return document.getElementById(id); };
@@ -20,7 +20,8 @@
 		t: num(saved.t, 0, 1, 0.3),            /* marker as a fraction of the time axis */
 		organ: G.ORGAN_BY[saved.organ] ? saved.organ : "bronchi",
 		layer: G.LAYERS[saved.layer] ? saved.layer : "",
-		law: num(saved.law, 0, 4, 0)
+		law: num(saved.law, 0, 4, 0),
+		rpOnly: saved.rpOnly !== false, rpWhy: saved.rpWhy !== false
 	};
 	var qs = new URLSearchParams(location.search);
 	if (G.ORGAN_BY[qs.get("organ")]) S.organ = qs.get("organ");
@@ -301,6 +302,231 @@
 		if (ev.target.closest("[data-go=chart]")) $("gn-chartcard").scrollIntoView({ behavior: "smooth", block: "start" });
 	});
 
+	/* ---------------------------------------------------------------- read a report or article */
+	/* Text comes from a file (pdf.js / mammoth / Tesseract, loaded on first use), a link (main_js/link-open.js for PDF / Word, /api/page-text for
+	   web pages) or the text box; G.reviewReport reads it section by section. Nothing is uploaded or saved except the two filter ticks. */
+	var RP = { src: "", rep: null, pdf: null };
+	var RP_EX = "PATIENT: J. Example (made-up report)\n\nCT CHEST WITH CONTRAST 14/02/2024\n\nCLINICAL HISTORY:\nPersistent cough for 6 weeks, poor appetite and unintentional weight loss. Trouble sleeping since a job loss in December.\n\nFINDINGS:\nA 2.1 cm spiculated nodule in the right upper lobe, biopsy: adenocarcinoma. No pleural effusion. Small mediastinal lymph nodes. No osteolytic lesions.\n\nIMPRESSION:\nRight upper lobe adenocarcinoma. No evidence of metastatic disease.\n\nFOLLOW-UP CT 3 September 2024:\nThe nodule has decreased in size with central necrosis and a small cavity. Patient reports night sweats, fatigue and a low-grade fever for three weeks. Enlarged lymph nodes in the right hilum. Elevated CRP.\n\nFOLLOW-UP CT March 12, 2025:\nResidual scar tissue with calcification at the site of the former nodule. No new nodules. Patient feels well, energy coming back.";
+	function rpStatus(msg, prog) {
+		var st = $("gn-rp-st"); st.hidden = !msg && prog == null; $("gn-rp-stt").textContent = msg || "";
+		var p = $("gn-rp-prog"); p.hidden = prog == null; if (prog != null) { if (prog < 0) p.removeAttribute("value"); else p.value = prog; }
+	}
+	var scripts = {};
+	function loadScript(src) {
+		if (!scripts[src]) scripts[src] = new Promise(function (ok, no) { var s = document.createElement("script"); s.src = src; s.async = true; s.onload = ok; s.onerror = function () { delete scripts[src]; no(new Error("Could not load a reader (" + src.split("/").pop() + "). Check your connection.")); }; document.head.appendChild(s); });
+		return scripts[src];
+	}
+	var PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+	function pdfLib() { return loadScript(PDFJS + "pdf.min.js").then(function () { var L = window.pdfjsLib; L.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js"; return L; }); }
+	function pdfText(buf) {
+		return pdfLib().then(function (L) { return L.getDocument({ data: new Uint8Array(buf) }).promise; }).then(function (doc) {
+			RP.pdf = doc; var n = doc.numPages, out = [], i = 0;
+			function page() {
+				if (++i > n) return out.join("\n\n");
+				rpStatus("Reading page " + i + " of " + n + "…", (i - 1) / n);
+				return doc.getPage(i).then(function (pg) { return pg.getTextContent(); }).then(function (tc) {
+					var s = "", lastY = null, lastH = 10;
+					tc.items.forEach(function (it) {
+						if (!("str" in it)) return;
+						var y = it.transform[5], h = Math.abs(it.transform[3]) || lastH;
+						if (lastY !== null && Math.abs(y - lastY) > 1) s += Math.abs(y - lastY) > h * 1.6 ? "\n\n" : "\n";
+						else if (s && !/\s$/.test(s) && it.str && !/^\s/.test(it.str)) s += " ";
+						s += it.str; if (it.hasEOL) { s += "\n"; lastY = null; } else lastY = y; lastH = h;
+					});
+					out.push(s.replace(/[ \t]+\n/g, "\n")); return page();
+				});
+			}
+			return page();
+		});
+	}
+	var TESS = "https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js";
+	function ocrImages(sources, label) {
+		return loadScript(TESS).then(function () {
+			var cur = 0, total = sources.length;
+			return window.Tesseract.createWorker("eng", 1, { logger: function (m) { if (m && m.status === "recognizing text") rpStatus("Reading the text from " + label + (total > 1 ? " " + (cur + 1) + " of " + total : "") + "…", (cur + (m.progress || 0)) / total); }, errorHandler: function () {} });
+		}).then(function (w) {
+			var out = [], k = 0;
+			function next() {
+				if (k >= sources.length) return w.terminate().then(function () { return out.join("\n\n"); });
+				var cur = k; return Promise.resolve(typeof sources[k] === "function" ? sources[k]() : sources[k]).then(function (img) { return w.recognize(img); }).then(function (r) { out.push(r.data.text || ""); k = cur + 1; return next(); });
+			}
+			return next();
+		});
+	}
+	function pdfOcr() {
+		var doc = RP.pdf; if (!doc) return;
+		var n = Math.min(doc.numPages, 30), pages = [];
+		for (var i = 1; i <= n; i++) (function (i) { pages.push(function () { return doc.getPage(i).then(function (pg) { var vp = pg.getViewport({ scale: 2 }), c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height; return pg.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise.then(function () { return c; }); }); }); })(i);
+		$("gn-rp-ocr").hidden = true;
+		ocrImages(pages, "page").then(function (t) { gotText(t, RP.src + (doc.numPages > n ? " (first " + n + " pages, read from the pictures)" : " (read from the pictures)")); })
+			.catch(function (e) { rpStatus(e.message || "Could not read the pictures."); });
+	}
+	function htmlText(html) {
+		var d = new DOMParser().parseFromString(html, "text/html");
+		[].forEach.call(d.querySelectorAll("script,style,noscript,nav,header,footer,aside,form,svg,iframe,template"), function (e) { e.remove(); });
+		[].forEach.call(d.querySelectorAll("p,div,li,tr,br,section,article,h1,h2,h3,h4,h5,h6,blockquote,pre,table"), function (e) {
+			if (/^H\d$/.test(e.tagName) && e.textContent.trim() && !/[:.?!]\s*$/.test(e.textContent)) e.appendChild(d.createTextNode(":"));
+			e.appendChild(d.createTextNode("\n\n"));
+		});
+		return (d.body ? d.body.textContent : "").replace(/[ \t\u00a0]+/g, " ").replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+	}
+	function readFile(f) {
+		var name = f.name || "file", lo = name.toLowerCase(), type = (f.type || "").toLowerCase();
+		RP.pdf = null; $("gn-rp-ocr").hidden = true; $("gn-rp-out").innerHTML = "";
+		rpStatus("Opening " + name + "…", -1);
+		var p;
+		if (/\.pdf$/.test(lo) || type === "application/pdf") p = f.arrayBuffer().then(pdfText).then(function (t) {
+			if (t.replace(/\s/g, "").length < 40 * (RP.pdf ? RP.pdf.numPages : 1)) { rpStatus("This PDF has little or no text in it: it looks like scanned pictures of pages.", null); $("gn-rp-ocr").hidden = false; RP.src = name; if (!t.trim()) return null; }
+			return t;
+		});
+		else if (/\.docx$/.test(lo) || type.indexOf("wordprocessingml") >= 0) p = loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.13.0/mammoth.browser.min.js").then(function () { return f.arrayBuffer(); }).then(function (b) { return window.mammoth.extractRawText({ arrayBuffer: b }); }).then(function (r) { return r.value; });
+		else if (/\.doc$/.test(lo) || type === "application/msword") p = Promise.reject(new Error("That is an old Word .doc file, which a browser cannot read. Open it in Word and save it as .docx or PDF, or copy the text and paste it."));
+		else if (/^image\//.test(type) || /\.(jpe?g|png|webp|gif|bmp)$/.test(lo)) p = ocrImages([f], "the picture");
+		else if (/\.html?$/.test(lo) || type === "text/html") p = f.text().then(htmlText);
+		else p = f.text();
+		p.then(function (t) { if (t != null) gotText(t, name); })
+			.catch(function (e) { rpStatus(e && e.message ? e.message : "Could not read that file."); });
+	}
+	function openLink(raw) {
+		var L = window.MESLinkOpen; raw = String(raw || "").trim();
+		if (!raw) { rpStatus("Paste a link first."); return; }
+		if (!L) { rpStatus("The link reader has not loaded yet. Try again in a moment."); return; }
+		var url = L.fix(raw, "docx"); if (!url) { rpStatus("That is not a web link (it should start with https://)."); return; }
+		var path = ""; try { path = new URL(url).pathname.toLowerCase(); } catch (e) {}
+		var kind = /docs\.google\.com\/document/.test(url) || /\.docx$/.test(path) ? "docx" : /\.pdf$/.test(path) || /drive\.google\.com|dropbox\.com/.test(url) ? "pdf" : "";
+		$("gn-rp-out").innerHTML = "";
+		function viaFile(k) { return L.get(raw, { kind: k, onStatus: function (m) { rpStatus(m, -1); } }).then(function (f) { readFile(f); }); }
+		var p;
+		if (kind) p = viaFile(kind);
+		else {
+			var host = ""; try { host = new URL(url).hostname; } catch (e) {}
+			rpStatus("Reading the page at " + host + "…", -1);
+			p = fetch("/api/page-text?url=" + encodeURIComponent(url), { credentials: "omit" }).then(function (r) {
+				return r.json().catch(function () { throw new Error(r.status === 404 ? "The page reader only runs on mes.fm itself." : "mes.fm answered " + r.status + "."); }).then(function (j) {
+					if (j.redo) return viaFile(j.redo);
+					if (!r.ok || j.error) throw new Error(j.error || "Could not read that page.");
+					gotText((j.title ? j.title + "\n\n" : "") + j.text, j.title ? j.title + " (" + host + ")" : host);
+					if (j.cut) rpStatus("The page was very long, so only its first part was read.");
+				});
+			});
+		}
+		p.catch(function (e) { rpStatus(e && e.message ? e.message : "Could not open that link."); });
+	}
+	function gotText(t, src) {
+		RP.src = src || ""; $("gn-rp-txt").value = String(t || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(); $("gn-rp-src").textContent = src ? "(from " + src + ", you can edit it)" : "";
+		review();
+	}
+	function rpHighlight(text, why) {
+		var words = {}, list = [];
+		why.forEach(function (w) { if (!w.w || w.w.length < 2) return; var k = w.w; if (!words[k] || w.neg) words[k] = w; });
+		Object.keys(words).sort(function (a, b) { return b.length - a.length; }).forEach(function (k) { list.push(k); });
+		var h = esc(text);
+		if (!list.length) return h;
+		var re = new RegExp("(^|[^\\w&#])(" + list.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/'/g, "['’]").replace(/ /g, "[\\s\\-]+"); }).join("|") + ")(s|es|ing)?(?=$|[^\\w])", "gi");
+		return h.replace(re, function (m, pre, word, tail) {
+			var key = word.toLowerCase().replace(/[’]/g, "'").replace(/[\s\-]+/g, " "), w = words[key];
+			if (!w) return m;
+			var col = w.neg ? "" : (G.PHASES[w.p] ? G.PHASES[w.p].color : "#64748b");
+			return pre + '<mark class="gn-hl' + (w.neg ? " is-neg" : "") + '"' + (col ? ' style="--hc:' + col + '"' : "") + ' title="' + esc(w.s) + '">' + word + (tail || "") + "</mark>";
+		});
+	}
+	function tagFor(p) { return G.PHASES[p] ? '<span class="gn-tag" style="background:' + G.PHASES[p].color + '">' + esc(G.PHASES[p].short) + "</span>" : p === "info" ? '<span class="gn-tag gn-tag--info">by tissue</span>' : '<span class="gn-tag" style="background:#64748b">recurrence</span>'; }
+	function whyList(why) { return '<ul class="gn-why">' + why.map(function (w) { return "<li" + (w.neg ? ' class="is-neg"' : "") + "><b>" + esc(w.w) + "</b>: " + esc(w.s) + (w.neg ? "" : " " + tagFor(w.p)) + "</li>"; }).join("") + "</ul>"; }
+	function organWords(r) { var out = []; r.organs.forEach(function (o) { o.hits.forEach(function (h) { out.push({ w: h, p: "organ", s: "organ word: " + G.ORGAN_BY[o.id].name }); }); }); return out; }
+	function review() {
+		var txt = $("gn-rp-txt").value, out = $("gn-rp-out");
+		if (window.MESLinkOpen && window.MESLinkOpen.looksLikeLink(txt)) { $("gn-rp-url").value = txt.trim(); $("gn-rp-txt").value = ""; openLink(txt); return; }
+		var R = G.reviewReport(txt); RP.rep = R;
+		if (R.empty) { rpStatus(""); out.innerHTML = '<p class="tu-note">Open a file, a link, or paste some text first.</p>'; return; }
+		rpStatus(R.tooLong ? "This text is very long, so only its first 400,000 characters were read." : "");
+		var O = R.overall, h = '<div class="gn-askres gn-rp-sum">';
+		h += '<p class="gn-rp-meta">' + (RP.src ? "<b>" + esc(RP.src) + "</b> · " : "") + R.words.toLocaleString() + " words · " + R.sections.length + " section" + (R.sections.length === 1 ? "" : "s") + ", " + R.found + " with GNM signs</p>";
+		if (O.phase) { var P = G.PHASES[O.phase]; h += '<p class="gn-askhead"><span class="gn-badge" style="background:' + P.color + '">' + esc(P.short) + "</span> Taken as a whole, the signs in this text lean most towards <b>" + esc(P.name) + "</b> " + q(P.g) + (O.conf < 0.6 ? " (mixed signs: a report often covers several programs or several dates, so look at the sections and the timeline)" : "") + ".</p>"; }
+		else h += '<p class="gn-askhead">No clear phase signs were found in the whole text.</p>';
+		var max = 0; G.ORDER.forEach(function (p) { max = Math.max(max, O.scores[p]); });
+		if (max) { h += '<div class="gn-bars">'; G.ORDER.forEach(function (p) { var v = O.scores[p]; if (!v) return; h += '<div class="gn-bar"><span>' + esc(G.PHASES[p].short) + '</span><i><b style="width:' + (100 * v / max).toFixed(0) + "%;background:" + G.PHASES[p].color + '"></b></i><em>' + v + "</em></div>"; }); h += "</div>"; }
+		if (O.organs.length) h += '<h4>Organs named</h4><div class="gn-cands">' + O.organs.map(function (c) { var o = G.ORGAN_BY[c.id], Ly = G.LAYERS[o.layer]; return '<button type="button" class="gn-cand" data-org="' + c.id + '"><i style="background:' + Ly.color + '"></i><span><b>' + esc(o.name) + "</b><small>" + esc(Ly.name) + " · " + esc(Ly.brain) + " · " + esc(c.hits.slice(0, 4).join(", ")) + "</small></span></button>"; }).join("") + "</div>";
+		(O.notes || []).forEach(function (n) { h += '<p class="gn-inote">' + esc(n.s) + "</p>"; });
+		h += '<div class="gn-askrow"><button type="button" class="tu-btn tu-btn--ghost" data-rp="chart">Show the overall reading on the chart</button><button type="button" class="tu-btn tu-btn--ghost" data-rp="copy">Copy a summary</button></div></div>';
+		if (R.timeline.length) {
+			h += '<h3 class="gn-rp-h3">Timeline from the dates in the text</h3><ol class="gn-rp-tl">';
+			R.timeline.forEach(function (e) { var P = G.PHASES[e.phase], o = e.organ ? G.ORGAN_BY[e.organ] : null; h += '<li><span class="gn-rp-date">' + esc(e.key) + (e.ambig ? ' <small title="Written as ' + esc(e.raw) + ': day and month could be either way round">?</small>' : "") + '</span><span class="gn-badge" style="background:' + P.color + '">' + esc(P.short) + "</span><span>" + esc(P.name) + (o ? " · " + esc(o.name) : "") + '</span><button type="button" class="gn-link" data-rpsec="' + e.i + '">Go to the section</button></li>'; });
+			h += "</ol>";
+			if (R.timeline.some(function (e) { return e.ambig; })) h += '<p class="tu-note">Dates marked ? are written like 03/04/2024, where the day and month could be either way round; they are read month first unless the first number is over 12.</p>';
+		}
+		h += '<div class="gn-rp-filters"><h3 class="gn-rp-h3">Section by section</h3><label><input type="checkbox" id="gn-rp-only"' + (S.rpOnly !== false ? " checked" : "") + '> Only sections with GNM signs</label><label><input type="checkbox" id="gn-rp-why"' + (S.rpWhy !== false ? " checked" : "") + "> Show the reasons</label></div>";
+		h += '<div class="gn-rp-secs" id="gn-rp-secs">' + rpSections(R) + "</div>";
+		out.innerHTML = h;
+	}
+	function rpSections(R) {
+		var only = S.rpOnly !== false, showWhy = S.rpWhy !== false, h = "";
+		R.sections.forEach(function (s) {
+			if (only && !s.hits) return;
+			var r = s.r, P = r.phase ? G.PHASES[r.phase] : null;
+			h += '<article class="gn-rsec" id="gn-rsec-' + s.i + '"><div class="gn-rsec-h">' + (P ? '<span class="gn-badge" style="background:' + P.color + '">' + esc(P.short) + "</span>" : '<span class="gn-badge gn-badge--none">no phase</span>') + "<b>" + esc(s.h || "Section " + (s.i + 1)) + "</b>" + (s.dates.length ? '<small class="gn-rp-date">' + esc(s.dates[0].key) + "</small>" : "") + r.organs.slice(0, 3).map(function (c) { var o = G.ORGAN_BY[c.id]; return '<button type="button" class="gn-ochip" data-org="' + c.id + '" style="--oc:' + G.LAYERS[o.layer].color + '">' + esc(o.name) + "</button>"; }).join("") + "</div>";
+			h += '<p class="gn-rsec-t">' + rpHighlight(s.t, r.why.concat(organWords(r))) + "</p>";
+			if (showWhy && r.why.length) h += whyList(r.why);
+			if (r.phase) h += '<button type="button" class="gn-link" data-rpput="' + s.i + '">Show this section on the chart ↑</button>';
+			h += "</article>";
+		});
+		return h || '<p class="tu-note">No section has signs from the GNM list. Untick "Only sections with GNM signs" to see the whole text.</p>';
+	}
+	function rpPut(r) {
+		if (r.scenario === "hanging" && S.sc !== "hanging") { S.sc = "hanging"; rebuild(); }
+		if (r.organs.length) { S.organ = r.organs[0].id; renderOrgans(); }
+		if (r.phase) { var t = G.placeFor(M, r.phase, r.phase === "ca" ? 0.6 : 0.5); if (t != null) setT(t / M.T); else placeMarker(); } else placeMarker();
+		$("gn-chartcard").scrollIntoView({ behavior: "smooth", block: "start" });
+	}
+	function rpSummary(R) {
+		var O = R.overall, L = ["GNM reading of " + (RP.src || "a pasted text") + " (mes.fm/gnm, keyword matcher, no AI)", ""];
+		if (O.phase) L.push("Overall: leans towards " + G.PHASES[O.phase].name + " (" + G.PHASES[O.phase].short + ")");
+		if (O.organs.length) L.push("Organs named: " + O.organs.map(function (c) { return G.ORGAN_BY[c.id].name; }).join(", "));
+		if (R.timeline.length) { L.push("", "Timeline:"); R.timeline.forEach(function (e) { L.push("  " + e.key + "  " + G.PHASES[e.phase].short + (e.organ ? "  " + G.ORGAN_BY[e.organ].name : "")); }); }
+		L.push("", "Sections:");
+		R.sections.forEach(function (s) { if (!s.hits) return; L.push("- " + (s.h || "Section " + (s.i + 1)) + ": " + (s.r.phase ? G.PHASES[s.r.phase].short : "no phase") + " (" + s.r.why.filter(function (w) { return !w.neg; }).map(function (w) { return w.w; }).join(", ") + ")"); });
+		return L.join("\n");
+	}
+	var drop = $("gn-rp-drop"), fileIn = $("gn-rp-file");
+	drop.addEventListener("click", function () { fileIn.click(); });
+	drop.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); fileIn.click(); } });
+	fileIn.addEventListener("change", function () { if (fileIn.files[0]) readFile(fileIn.files[0]); fileIn.value = ""; });
+	["dragenter", "dragover"].forEach(function (t) { drop.addEventListener(t, function (ev) { ev.preventDefault(); drop.classList.add("is-over"); }); });
+	["dragleave", "drop"].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.remove("is-over"); }); });
+	drop.addEventListener("drop", function (ev) {
+		ev.preventDefault(); var dt = ev.dataTransfer;
+		if (dt.files && dt.files[0]) { readFile(dt.files[0]); return; }
+		var u = dt.getData("text/uri-list") || dt.getData("text/plain"); if (u) { $("gn-rp-url").value = u.split("\n")[0].trim(); openLink(u.split("\n")[0]); }
+	});
+	$("gn-rp-open").addEventListener("click", function () { openLink($("gn-rp-url").value); });
+	$("gn-rp-url").addEventListener("keydown", function (ev) { if (ev.key === "Enter") { ev.preventDefault(); openLink($("gn-rp-url").value); } });
+	$("gn-rp-go").addEventListener("click", function () { if (!$("gn-rp-txt").value.trim() && $("gn-rp-url").value.trim()) openLink($("gn-rp-url").value); else review(); });
+	$("gn-rp-ex").addEventListener("click", function () { gotText(RP_EX, "an example report (made up)"); });
+	$("gn-rp-clr").addEventListener("click", function () { $("gn-rp-txt").value = ""; $("gn-rp-url").value = ""; $("gn-rp-src").textContent = ""; $("gn-rp-out").innerHTML = ""; RP.src = ""; RP.rep = null; RP.pdf = null; $("gn-rp-ocr").hidden = true; rpStatus(""); });
+	$("gn-rp-ocr").addEventListener("click", pdfOcr);
+	$("gn-rp-out").addEventListener("change", function (ev) {
+		if (ev.target.id === "gn-rp-only") S.rpOnly = ev.target.checked; else if (ev.target.id === "gn-rp-why") S.rpWhy = ev.target.checked; else return;
+		save(); if (RP.rep) $("gn-rp-secs").innerHTML = rpSections(RP.rep);
+	});
+	$("gn-rp-out").addEventListener("click", function (ev) {
+		var b = ev.target.closest("[data-org]");
+		if (b) { S.organ = b.getAttribute("data-org"); renderOrgans(); placeMarker(); $("gn-orgcard").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+		b = ev.target.closest("[data-rpsec]");
+		if (b) { { var el2 = $("gn-rsec-" + b.getAttribute("data-rpsec")); if (el2) { el2.scrollIntoView({ behavior: "smooth", block: "center" }); el2.classList.add("is-flash"); setTimeout(function () { el2.classList.remove("is-flash"); }, 1600); } } return; }
+		b = ev.target.closest("[data-rpput]");
+		if (b && RP.rep) { rpPut(RP.rep.sections[+b.getAttribute("data-rpput")].r); return; }
+		b = ev.target.closest("[data-rp]");
+		if (!b || !RP.rep) return;
+		if (b.getAttribute("data-rp") === "chart") rpPut(RP.rep.overall);
+		else { var t = rpSummary(RP.rep); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = "Copy a summary"; }, 1500); }, function () { window.prompt("Copy the summary:", t); }); }
+	});
+	document.addEventListener("paste", function (ev) {
+		if (!root.contains(document.activeElement) && document.activeElement !== document.body) return;
+		var a = document.activeElement; if (a && a !== document.body && a !== drop) return;
+		var f = ev.clipboardData && ev.clipboardData.files && ev.clipboardData.files[0];
+		if (f) { ev.preventDefault(); readFile(f); }
+	});
+	(function () { var u = window.MESLinkOpen ? window.MESLinkOpen.fromQuery() : new URLSearchParams(location.search).get("url"); if (u) { $("gn-rp-url").value = u; setTimeout(function () { openLink(u); $("gn-repcard").scrollIntoView({ block: "start" }); }, 300); } })();
+
 	/* ---------------------------------------------------------------- organs, body and brain */
 	function drawBody() {
 		var B = $("gn-body"); B.innerHTML = "";
@@ -494,10 +720,11 @@
 		if (!window.MESPanel) return false;
 		window.MESPanel.add($("gn-chartcard"), { bar: $("gn-ch-pv"), onChange: closePop });
 		window.MESPanel.add($("gn-orgcard"), { bar: $("gn-org-pv"), onChange: closePop });
+		window.MESPanel.add($("gn-repcard"), { bar: $("gn-rp-pv"), onChange: closePop });
 		return true;
 	}
 	if (!panels()) { var tries = 0, iv = setInterval(function () { if (panels() || ++tries > 40) clearInterval(iv); }, 150); }
 
 	paintScen(); paintSliders(); drawChart(); renderOrgans(); renderLaws(); renderGloss();
-	window.MESGNMDebug = { S: S, model: function () { return M; }, setT: setT, ask: ask };
+	window.MESGNMDebug = { S: S, model: function () { return M; }, setT: setT, ask: ask, review: review, gotText: gotText, RP: RP };
 })();

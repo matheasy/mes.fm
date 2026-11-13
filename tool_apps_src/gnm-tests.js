@@ -87,6 +87,38 @@ ok(m("").empty && m("   ").empty, "empty input");
 ok(m("asdf qwerty").phase === null && m("asdf qwerty").organs.length === 0, "nothing matched");
 ok(G.match("Swellings and FEVER!!").phase === "pcla", "case, punctuation and plurals");
 
+/* report mode */
+{
+	const rr = (t) => G.match(t, { report: true });
+	ok(rr("no evidence of metastatic disease").why.every(w => w.neg || w.p === "info"), "report negation: no evidence of");
+	ok(rr("pleural effusion was ruled out").organs.length === 0, "negation after: ruled out");
+	ok(rr("negative for malignancy and inflammation").scores.pcla === 0, "negative for ... and ...");
+	ok(rr("adenocarcinoma of the colon").phase === "ca", "adenocarcinoma in endoderm = active");
+	ok(rr("squamous cell carcinoma of the bronchial mucosa").phase === "pcla", "squamous cell carcinoma in ectoderm = healing");
+	ok(rr("osteolytic lesions in the lumbar spine").phase === "ca" && rr("sclerotic lesions in the lumbar spine").phase === "pclb", "bone: lysis active, sclerosis PCL-B");
+	ok(rr("enlarged lymph nodes").phase === "pcla" && rr("enlarged lymph nodes").organs[0].id === "lymph", "lymph swelling = healing");
+	ok(rr("necrosis").why.some(w => w.p === "info"), "necrosis without a tissue gives no phase");
+	ok(rr("tumour in the liver with necrosis").why.some(w => w.w === "necrosis" && w.p === "pcla"), "necrosis in endoderm = healing breakdown");
+	ok(rr("the patient had chemotherapy and surgery").notes.some(n => n.id === "rx"), "treatment note");
+	ok(!G.match("adenocarcinoma").why.length, "report words only in report mode");
+	const d = G.findDates("Seen 2024-03-15, then 03/04/2024, 25/12/2023, March 2, 2025, 7 Jan 2026 and in Feb 2022.");
+	ok(d.map(x => x.key).join() === "2024-03-15,2024-03-04,2023-12-25,2025-03-02,2026-01-07,2022-02", "dates found: " + d.map(x => x.key).join());
+	ok(d[1].ambig && !d[2].ambig, "dd/mm vs mm/dd flagged");
+	const secs = G.sections("CT CHEST 2024-01-02\n\nFINDINGS:\nA nodule.\nMore text here about it.\n\nIMPRESSION:\nStable.");
+	ok(secs.length === 2 && /CT CHEST/.test(secs[0].h) && /FINDINGS/.test(secs[0].h) && secs[1].h === "IMPRESSION", "sections and stacked headings");
+	const s2 = G.sections("PATIENT: A. Person\n\nCT CHEST 2024-02-14\n\nHISTORY:\nCough.");
+	ok(s2.length === 2 && /CT CHEST 2024-02-14 · HISTORY/.test(s2[1].h), "heading after body text stacks with the next heading: " + JSON.stringify(s2));
+	const rep = G.reviewReport("CT CHEST 15/03/2024\n\nFINDINGS:\nSpiculated nodule in the right upper lobe, adenocarcinoma.\n\nFOLLOW-UP:\nMarch 2, 2025: the nodule has decreased in size with central necrosis and caseating granuloma. Febrile with night sweats.");
+	ok(rep.timeline.length === 2 && rep.timeline[0].phase === "ca" && rep.timeline[1].phase === "pcla", "timeline: active then healing");
+	ok(rep.sections[1].r.why.some(w => w.w === "necrosis" && w.p === "pcla"), "necrosis read in the nodule's tissue (reading order)");
+	ok(G.reviewReport("   ").empty && G.reviewReport("x".repeat(500000)).tooLong, "empty / too long");
+	const rall = JSON.stringify([G.CLIN, G.LAYERED, G.REP_NOTES]).toLowerCase();
+	["skip treatment", "stop treatment", "stop chemo", "you have cancer"].forEach(w => ok(rall.indexOf(w) < 0, "report tables: no instruction wording " + w));
+	Object.keys(G.CLIN_ORG).forEach(k => ok(!!G.ORGAN_BY[k], "CLIN_ORG organ exists: " + k));
+	G.CLIN.forEach(c => ok(!!G.PHASES[c[1]], "CLIN phase valid: " + c[0]));
+	G.LAYERED.forEach(c => Object.keys(c[1]).forEach(l => ok(!!G.LAYERS[l] && !!G.PHASES[c[1][l]], "LAYERED valid: " + c[0])));
+}
+
 /* wording: describes GNM, never instructs */
 const all = JSON.stringify([G.PHASES, G.LAYERS, G.ORGANS, G.LAWS, G.GLOSSARY, G.CUES]) + content;
 ["skip treatment", "stop treatment", "stop chemo", "don't see a doctor", "do not see a doctor", "you have cancer", "diagnosis:"].forEach(w => ok(all.toLowerCase().indexOf(w) < 0, "no instruction / diagnosis wording: " + w));

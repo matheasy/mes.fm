@@ -1,7 +1,7 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gn" id="gn">
 		<p class="gn-lead">An interactive guide to <b>German New Medicine</b> <button type="button" class="gn-q" data-g="gnm" aria-label="What is German New Medicine?">?</button> (GNM), the model of health and disease that <b>Dr. Ryke Geerd Hamer</b> <button type="button" class="gn-q" data-g="hamer" aria-label="Who was Ryke Geerd Hamer?">?</button> set out in his Five Biological Laws. Everything here explains what GNM teaches, in its own terms: drag the marker along the two-phase curve, pick an organ, describe what you notice, and see how GNM reads it on the levels of psyche, brain and organ.</p>
-		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a><a href="#gn-refs">Learn more</a></nav>
+		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-repcard">Read a report or article</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a><a href="#gn-refs">Learn more</a></nav>
 
 		<!-- ============================== 1. THE TWO-PHASE CHART ============================== -->
 		<section class="tu-card gn-card" id="gn-chartcard" aria-labelledby="gn-ch-h">
@@ -35,6 +35,28 @@
 			<div class="gn-askrow"><button type="button" class="tu-btn tu-btn--primary" id="gn-ask-go">Read it the GNM way</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-ask-clr">Clear</button></div>
 			<div class="tu-chips gn-ex" id="gn-ask-ex" role="group" aria-label="Examples"></div>
 			<div id="gn-ask-out" class="gn-ask-out" aria-live="polite"></div>
+		</section>
+
+		<!-- ============================== 2b. READ A REPORT OR ARTICLE ============================== -->
+		<section class="tu-card gn-card" id="gn-repcard" aria-labelledby="gn-rp-h">
+			<div class="gn-chead"><h2 id="gn-rp-h">Read a report or article</h2><span class="gn-pv" id="gn-rp-pv"></span></div>
+			<p class="tu-note gn-sub">Open a medical report, a doctor's letter, a lab or scan result, or an article (a PDF, a Word .docx file, a text file, a photo of a page, or a link), or paste its text. The same word-and-phrase matcher, with the words doctors use in reports added, reads it section by section the GNM way: which phase each finding points to, which organs and germ layers are named, and the dates it can place on a timeline. Words such as "no evidence of", "negative for" or "ruled out" are left out. No AI, and the file is read only in your browser: nothing is uploaded or saved (a link to a web page is fetched for you by mes.fm, which keeps no copy).</p>
+			<div class="gn-rp-in">
+				<div class="gn-rp-drop" id="gn-rp-drop" tabindex="0" role="button" aria-label="Choose a file, or drop one here">
+					<b>Drop a file here</b> or <span class="gn-link-like">choose one</span>
+					<small>PDF, Word .docx, .txt, .html, or a photo / scan of a page (JPG, PNG)</small>
+					<input type="file" id="gn-rp-file" accept=".pdf,.docx,.txt,.md,.html,.htm,.jpg,.jpeg,.png,.webp,.doc,application/pdf,text/plain,text/html,image/*,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+				</div>
+				<div class="gn-rp-link">
+					<label class="tu-label" for="gn-rp-url">Or a link to a PDF, Word file, Google Doc or article</label>
+					<div class="gn-rp-urlrow"><input type="url" id="gn-rp-url" class="tu-input" placeholder="https://…" autocomplete="off" inputmode="url"><button type="button" class="tu-btn" id="gn-rp-open">Open link</button></div>
+				</div>
+			</div>
+			<label class="tu-label" for="gn-rp-txt">Or paste the text <span class="tu-note" id="gn-rp-src"></span></label>
+			<textarea id="gn-rp-txt" class="tu-input gn-ask-in gn-rp-txt" rows="6" placeholder="Paste a report, a letter or an article here…"></textarea>
+			<div class="gn-askrow"><button type="button" class="tu-btn tu-btn--primary" id="gn-rp-go">Read it the GNM way</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-rp-ex">Try an example report</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-rp-clr">Clear</button></div>
+			<div class="gn-rp-st" id="gn-rp-st" aria-live="polite" hidden><span id="gn-rp-stt"></span><progress id="gn-rp-prog" max="1" hidden></progress><button type="button" class="tu-btn tu-btn--ghost" id="gn-rp-ocr" hidden>Read the text from the page pictures (OCR)</button></div>
+			<div id="gn-rp-out" class="gn-rp-out"></div>
 		</section>
 
 		<!-- ============================== 3. ORGANS AND BRAIN RELAYS ============================== -->
@@ -92,6 +114,7 @@
 			<h3>Questions</h3>
 			<dl>
 				<dt>How does the "Describe your symptoms" box work?</dt><dd>It looks for words and phrases from a fixed list (for example "cold hands", "fever", "cough", "chills", "peeing a lot") and adds up which GNM phase each one belongs to, and which organ words appear. It is a keyword matcher, not artificial intelligence, and nothing you type is sent anywhere or saved.</dd>
+				<dt>How does "Read a report or article" work?</dt><dd>The text of the file or page is taken out in your browser (pdf.js for PDFs, mammoth for Word files, Tesseract for photos and scans) and split into its sections. Each section goes through the same matcher as the symptom box, plus a list of report words: inflammation, edema and effusion read as healing, fibrosis and calcification as late healing, and words such as adenocarcinoma, necrosis, lymphoma or osteolysis are read by the tissue they are in, as GNM's third law does. Dates in the text become a timeline. Every match shows its reason, so you can judge it yourself.</dd>
 				<dt>What decides the side of the body?</dt><dd>In GNM, a person's handedness decides on which side of the cerebellum and cortex a conflict lands. Hamer used the clapping test: the hand on top is the leading hand.</dd>
 				<dt>Why do microbes appear only in the healing phase?</dt><dd>Hamer's fourth law says the brain switches on the microbes of each germ layer after conflictolysis to break down or rebuild tissue, so in GNM they are helpers of the healing phase.</dd>
 				<dt>Where does the information come from?</dt><dd>From Hamer's own descriptions of the Five Biological Laws and the GNM teaching material based on them (for example the scientific chart of GNM and learninggnm.com). The organ list here is a short selection.</dd>

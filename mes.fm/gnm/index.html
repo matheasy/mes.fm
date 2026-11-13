@@ -310,7 +310,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu [hidden] {display:none !important;}
 	.gn {position:relative;--gn-ink:#1f2937;--gn-dim:#5b6472;--gn-line:#d6dbe3;--gn-card:#ffffff;--gn-soft:#f5f6f9;--gn-up:#fdecec;--gn-dn:#eaf0fd;--gn-sil:#e7e2dc;--gn-silb:#c9c0b6;--gn-curve:#111827;--gn-hhb:#e9e6f0;--gn-edema:#93c5fd;--gn-glia:#ffffff;--gn-glia2:#94a3b8;}
 	body.dark-mode #gn.gn {--gn-ink:#e7ebf2;--gn-dim:#a3adbd;--gn-line:#3a414c;--gn-card:#1f2329;--gn-soft:#262b33;--gn-up:#3a1f22;--gn-dn:#1c2638;--gn-sil:#3a3633;--gn-silb:#5a534c;--gn-curve:#f3f4f6;--gn-hhb:#2c2a36;--gn-edema:#1e4e8c;--gn-glia:#f8fafc;--gn-glia2:#64748b;}
-	#gn :where(section, nav, div, span, p, ul, ol, li, dl, dt, dd, h2, h3, h4, small, em, b, i, strong, label, figure, figcaption) {color:inherit;}
+	#gn :where(section, article, nav, div, span, p, mark, progress, ul, ol, li, dl, dt, dd, h2, h3, h4, small, em, b, i, strong, label, figure, figcaption) {color:inherit;}
 	#gn .tu-note {color:var(--gn-dim);}
 	#gn {color:var(--gn-ink);}
 	#gn .tu-label {text-transform:none;letter-spacing:0;}
@@ -509,6 +509,42 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:520px){ .gn-figs {grid-template-columns:minmax(0,0.8fr) minmax(0,1fr);} .gn-oh {display:none;} #gn .gn-orow {grid-template-columns:minmax(0,1fr) minmax(0,1fr);} .gn-mrow {grid-template-columns:minmax(0,1fr);} }
 	body.dark-mode #gn .gn-oi.is-on, body.dark-mode #gn .gn-lawtabs button[aria-selected="true"] b, body.dark-mode #gn .gn-q:hover, body.dark-mode #gn .gn-q[aria-expanded="true"] {color:#111827;}
 	.gn-chart--n .gn-st {font-size:22px;} .gn-chart--n .gn-tri-t, .gn-chart--n .gn-ph {font-size:19px;} .gn-chart--n .gn-in {font-size:14.5px;} .gn-chart--n .gn-cap {font-size:17px;} .gn-chart--n .gn-ecbox-t {font-size:20px;} .gn-chart--n .gn-bar-t {font-size:21px;} .gn-chart--n .gn-bar-t--s {font-size:18px;} .gn-chart--n .gn-small {font-size:17px;} .gn-chart--n .gn-ax {font-size:22px;} .gn-chart--n .gn-ev {font-size:19px;} .gn-chart--n .gn-mlab {font-size:22px;}
+	/* read a report or article */
+	.gn-rp-in {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:0.8em 1.2em;align-items:stretch;margin-bottom:0.8em;}
+	@media (max-width:700px){ .gn-rp-in {grid-template-columns:minmax(0,1fr);} }
+	.gn-rp-drop {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.2em;text-align:center;border:2px dashed var(--gn-line);border-radius:0.7em;padding:0.9em;cursor:pointer;background:var(--gn-soft);min-height:5.5em;}
+	.gn-rp-drop:hover, .gn-rp-drop:focus-visible, .gn-rp-drop.is-over {border-color:var(--accent);outline:none;}
+	.gn-rp-drop small {color:var(--gn-dim);font-size:0.85em;}
+	#gn .gn-link-like {color:var(--accent);text-decoration:underline;}
+	.gn-rp-link {display:flex;flex-direction:column;justify-content:center;}
+	.gn-rp-urlrow {display:flex;gap:0.5em;margin-top:0.3em;}
+	.gn-rp-urlrow input {flex:1 1 auto;min-width:0;}
+	.gn-rp-txt {min-height:7em;}
+	.gn-rp-st {display:flex;flex-wrap:wrap;align-items:center;gap:0.6em;margin:0.2em 0 0.7em;font-size:0.93em;color:var(--gn-dim);}
+	.gn-rp-st progress {flex:0 0 12em;accent-color:var(--accent);}
+	.gn-rp-meta {margin:0 0 0.4em;font-size:0.9em;color:var(--gn-dim);}
+	.gn-rp-meta b {color:var(--gn-ink);}
+	.gn-rp-h3 {font-size:1.08em;margin:1em 0 0.4em;}
+	.gn-rp-tl {list-style:none;margin:0;padding:0;display:grid;gap:0.3em;}
+	.gn-rp-tl li {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;padding:0.35em 0.6em;border:1px solid var(--gn-line);border-radius:0.5em;background:var(--gn-card);}
+	#gn .gn-rp-tl .gn-link {padding:0;margin-left:auto;}
+	.gn-rp-date {font-variant-numeric:tabular-nums;font-weight:700;min-width:6.5em;}
+	small.gn-rp-date {font-weight:600;color:var(--gn-dim);min-width:0;}
+	.gn-rp-filters {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 1.2em;}
+	.gn-rp-filters h3 {margin-right:auto;}
+	.gn-rp-filters label {font-size:0.92em;display:inline-flex;align-items:center;gap:0.35em;cursor:pointer;}
+	.gn-rp-filters input {accent-color:var(--accent);}
+	.gn-rp-secs {display:grid;gap:0.6em;}
+	.gn-rsec {border:1px solid var(--gn-line);border-radius:0.6em;padding:0.6em 0.8em;background:var(--gn-card);transition:box-shadow 0.3s;}
+	.gn-rsec.is-flash {box-shadow:0 0 0 3px var(--accent);}
+	.gn-rsec-h {display:flex;flex-wrap:wrap;align-items:center;gap:0.45em;margin-bottom:0.35em;}
+	#gn .gn-badge--none {background:#64748b;}
+	#gn .gn-ochip {border:1px solid var(--oc);border-left-width:5px;background:var(--gn-soft);color:var(--gn-ink);border-radius:999px;font:inherit;font-size:0.78em;padding:0.1em 0.6em;cursor:pointer;}
+	.gn-rsec-t {margin:0 0 0.4em;font-size:0.95em;line-height:1.6;overflow-wrap:anywhere;}
+	#gn mark.gn-hl {background:color-mix(in srgb, var(--hc, #64748b) 22%, transparent);color:inherit;border-bottom:2px solid var(--hc, #64748b);border-radius:0.2em;padding:0 0.1em;cursor:help;}
+	#gn mark.gn-hl.is-neg {background:transparent;border-bottom:1px dashed var(--gn-dim);color:var(--gn-dim);text-decoration:line-through;text-decoration-thickness:1px;}
+	#gn .gn-tag--info {background:#64748b;}
+	body.dark-mode #gn mark.gn-hl {background:color-mix(in srgb, var(--hc, #94a3b8) 35%, transparent);}
 
 
 	@media print {
@@ -640,21 +676,24 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .gn-odot{stroke:#333333}
 	body.dark-mode .gn-bfocus{stroke:#333333}
 	body.dark-mode #gn .gn-star{color:#fbb360}
+	body.dark-mode #gn .gn-badge--none{background:#444f5f}
+	body.dark-mode #gn mark.gn-hl{background:color-mix(in srgb, var(--hc, #444f5f) 22%, transparent)}
+	body.dark-mode #gn .gn-tag--info{background:#444f5f}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/gnm" />            <meta property="og:title" content="MES German New Medicine Explorer | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/gnm/img/logo-big.png" />
-        <meta property="og:description" content="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary." />
+        <meta property="og:description" content="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, read a medical report or article (PDF, Word, link) the GNM way, and explore the Five Biological Laws and a glossary." />
 
-        <meta name="description" content="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, read a medical report or article (PDF, Word, link) the GNM way, and explore the Five Biological Laws and a glossary.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES German New Medicine Explorer">
-        <meta name="twitter:description" content="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.">
+        <meta name="twitter:description" content="An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, read a medical report or article (PDF, Word, link) the GNM way, and explore the Five Biological Laws and a glossary.">
         <meta name="twitter:image" content="https://mes.fm/gnm/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES German New Medicine Explorer">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES German New Medicine Explorer", "url": "https://mes.fm/gnm", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES German New Medicine Explorer", "url": "https://mes.fm/gnm", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, read a medical report or article (PDF, Word, link) the GNM way, and explore the Five Biological Laws and a glossary."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -851,11 +890,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">German New Medicine (GNM): Interactive Chart of the 5 Biological Laws</h1>                                        <p class="page-description">An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, and explore the Five Biological Laws and a glossary.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">German New Medicine (GNM): Interactive Chart of the 5 Biological Laws</h1>                                        <p class="page-description">An interactive, visual guide to German New Medicine (GNM) by Dr. Ryke Geerd Hamer: drag a marker along the two-phase chart (DHS, conflict-active phase, conflictolysis, PCL-A, epileptoid crisis, PCL-B), see what GNM expects for psyche, brain relay and organ by germ layer, describe your symptoms in plain words, read a medical report or article (PDF, Word, link) the GNM way, and explore the Five Biological Laws and a glossary.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gn" id="gn">
 		<p class="gn-lead">An interactive guide to <b>German New Medicine</b> <button type="button" class="gn-q" data-g="gnm" aria-label="What is German New Medicine?">?</button> (GNM), the model of health and disease that <b>Dr. Ryke Geerd Hamer</b> <button type="button" class="gn-q" data-g="hamer" aria-label="Who was Ryke Geerd Hamer?">?</button> set out in his Five Biological Laws. Everything here explains what GNM teaches, in its own terms: drag the marker along the two-phase curve, pick an organ, describe what you notice, and see how GNM reads it on the levels of psyche, brain and organ.</p>
-		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a><a href="#gn-refs">Learn more</a></nav>
+		<nav class="gn-jump" aria-label="On this page"><a href="#gn-chartcard">Two-phase chart</a><a href="#gn-askcard">Describe your symptoms</a><a href="#gn-repcard">Read a report or article</a><a href="#gn-orgcard">Organs &amp; brain relays</a><a href="#gn-laws">The 5 Biological Laws</a><a href="#gn-gloss">Glossary</a><a href="#gn-refs">Learn more</a></nav>
 
 		<!-- ============================== 1. THE TWO-PHASE CHART ============================== -->
 		<section class="tu-card gn-card" id="gn-chartcard" aria-labelledby="gn-ch-h">
@@ -889,6 +928,28 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="gn-askrow"><button type="button" class="tu-btn tu-btn--primary" id="gn-ask-go">Read it the GNM way</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-ask-clr">Clear</button></div>
 			<div class="tu-chips gn-ex" id="gn-ask-ex" role="group" aria-label="Examples"></div>
 			<div id="gn-ask-out" class="gn-ask-out" aria-live="polite"></div>
+		</section>
+
+		<!-- ============================== 2b. READ A REPORT OR ARTICLE ============================== -->
+		<section class="tu-card gn-card" id="gn-repcard" aria-labelledby="gn-rp-h">
+			<div class="gn-chead"><h2 id="gn-rp-h">Read a report or article</h2><span class="gn-pv" id="gn-rp-pv"></span></div>
+			<p class="tu-note gn-sub">Open a medical report, a doctor's letter, a lab or scan result, or an article (a PDF, a Word .docx file, a text file, a photo of a page, or a link), or paste its text. The same word-and-phrase matcher, with the words doctors use in reports added, reads it section by section the GNM way: which phase each finding points to, which organs and germ layers are named, and the dates it can place on a timeline. Words such as "no evidence of", "negative for" or "ruled out" are left out. No AI, and the file is read only in your browser: nothing is uploaded or saved (a link to a web page is fetched for you by mes.fm, which keeps no copy).</p>
+			<div class="gn-rp-in">
+				<div class="gn-rp-drop" id="gn-rp-drop" tabindex="0" role="button" aria-label="Choose a file, or drop one here">
+					<b>Drop a file here</b> or <span class="gn-link-like">choose one</span>
+					<small>PDF, Word .docx, .txt, .html, or a photo / scan of a page (JPG, PNG)</small>
+					<input type="file" id="gn-rp-file" accept=".pdf,.docx,.txt,.md,.html,.htm,.jpg,.jpeg,.png,.webp,.doc,application/pdf,text/plain,text/html,image/*,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+				</div>
+				<div class="gn-rp-link">
+					<label class="tu-label" for="gn-rp-url">Or a link to a PDF, Word file, Google Doc or article</label>
+					<div class="gn-rp-urlrow"><input type="url" id="gn-rp-url" class="tu-input" placeholder="https://…" autocomplete="off" inputmode="url"><button type="button" class="tu-btn" id="gn-rp-open">Open link</button></div>
+				</div>
+			</div>
+			<label class="tu-label" for="gn-rp-txt">Or paste the text <span class="tu-note" id="gn-rp-src"></span></label>
+			<textarea id="gn-rp-txt" class="tu-input gn-ask-in gn-rp-txt" rows="6" placeholder="Paste a report, a letter or an article here…"></textarea>
+			<div class="gn-askrow"><button type="button" class="tu-btn tu-btn--primary" id="gn-rp-go">Read it the GNM way</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-rp-ex">Try an example report</button><button type="button" class="tu-btn tu-btn--ghost" id="gn-rp-clr">Clear</button></div>
+			<div class="gn-rp-st" id="gn-rp-st" aria-live="polite" hidden><span id="gn-rp-stt"></span><progress id="gn-rp-prog" max="1" hidden></progress><button type="button" class="tu-btn tu-btn--ghost" id="gn-rp-ocr" hidden>Read the text from the page pictures (OCR)</button></div>
+			<div id="gn-rp-out" class="gn-rp-out"></div>
 		</section>
 
 		<!-- ============================== 3. ORGANS AND BRAIN RELAYS ============================== -->
@@ -946,6 +1007,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h3>Questions</h3>
 			<dl>
 				<dt>How does the "Describe your symptoms" box work?</dt><dd>It looks for words and phrases from a fixed list (for example "cold hands", "fever", "cough", "chills", "peeing a lot") and adds up which GNM phase each one belongs to, and which organ words appear. It is a keyword matcher, not artificial intelligence, and nothing you type is sent anywhere or saved.</dd>
+				<dt>How does "Read a report or article" work?</dt><dd>The text of the file or page is taken out in your browser (pdf.js for PDFs, mammoth for Word files, Tesseract for photos and scans) and split into its sections. Each section goes through the same matcher as the symptom box, plus a list of report words: inflammation, edema and effusion read as healing, fibrosis and calcification as late healing, and words such as adenocarcinoma, necrosis, lymphoma or osteolysis are read by the tissue they are in, as GNM's third law does. Dates in the text become a timeline. Every match shows its reason, so you can judge it yourself.</dd>
 				<dt>What decides the side of the body?</dt><dd>In GNM, a person's handedness decides on which side of the cerebellum and cortex a conflict lands. Hamer used the clapping test: the hand on top is the leading hand.</dd>
 				<dt>Why do microbes appear only in the healing phase?</dt><dd>Hamer's fourth law says the brain switches on the microbes of each germ layer after conflictolysis to break down or rebuild tissue, so in GNM they are helpers of the healing phase.</dd>
 				<dt>Where does the information come from?</dt><dd>From Hamer's own descriptions of the Five Biological Laws and the GNM teaching material based on them (for example the scientific chart of GNM and learninggnm.com). The organ list here is a short selection.</dd>
@@ -1013,7 +1075,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gnm/js/gnm.js?v=9" defer></script>
+	<script src="/main_js/link-open.js?v=1" defer></script><script src="/gnm/js/gnm.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
