@@ -751,6 +751,16 @@
 "updated":"2026-11-10",
 "type":"Calculator"
 },
+"/quantum-cryptography":{
+"added":"2026-11-13",
+"updated":"2026-11-13",
+"type":"Tool"
+},
+"/quantum-safe-check":{
+"added":"2026-11-13",
+"updated":"2026-11-13",
+"type":"Tool"
+},
 "/quaternions":{
 "added":"2026-11-03",
 "updated":"2026-11-12",
