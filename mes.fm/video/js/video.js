@@ -1018,6 +1018,22 @@
 		v.noAudio = false; if (!V.partners(p, v).length) v.link = null;
 		return v;
 	};
+	// "Link video and sound" again after an unlink: the video and the sound clip of the same media. clips = the selected clips; with only one
+	// selected, its counterpart is the unlinked clip of the other kind from the same file whose source lines up best. -> {v, a} or null
+	V.linkCandidate = function (p, clips) {
+		clips = (clips || []).filter(Boolean); if (!clips.length || clips.length > 2 || clips.some(function (c) { return c.link; })) return null;
+		var v = clips.filter(function (c) { return c.type === "video"; })[0], a = clips.filter(function (c) { return c.type === "audio"; })[0];
+		if (clips.length === 2) return v && a && v.media === a.media ? { v: v, a: a } : null;
+		var c = clips[0]; if (c.type !== "video" && c.type !== "audio") return null;
+		var zero = function (x) { return x.start - x.in / (x.speed || 1); }, want = c.type === "video" ? "audio" : "video", best = null, bd = Infinity;
+		p.clips.forEach(function (x) { if (x === c || x.link || x.type !== want || x.media !== c.media) return; var d = Math.abs(zero(x) - zero(c)) + Math.abs(x.start - c.start) * 0.01; if (d < bd) { bd = d; best = x; } });
+		if (!best) return null;
+		return c.type === "video" ? { v: c, a: best } : { v: best, a: c };
+	};
+	// link them: the sound takes the video's timing (start, trim, speed) and the video stays silent so the sound is not heard twice
+	V.linkPair = function (p, pair, linkId) {
+		if (!pair) return null; pair.v.link = pair.a.link = linkId; pair.v.noAudio = true; V.syncLinks(p); return pair;
+	};
 	V.unlink = function (p, id) { var c = V.clip(p, id); if (!c || !c.link) return p; var k = c.link; p.clips.forEach(function (x) { if (x.link === k) x.link = null; }); return p; };
 	// split clips ids (and their partners) at t; a split pair gets a new link for its right halves. -> ids of the right halves
 	V.splitAt = function (p, ids, t, newId, minDur) {
@@ -3387,7 +3403,8 @@
 			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });
 			sep();
 			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
-			else if (c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
+			else { var lp = V.linkCandidate(VE.P, sel.length > 1 ? sel : [c]); if (lp) it("Link video and sound", "", function () { VE.linkBack(lp); }); }
+			if (!c.link && c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
 			it("Select everything on " + tname, "", function () { VE.sel = V.onTrack(VE.P, tr.id).map(function (q) { return q.id; }); VE.emit("select"); });
 		} else if (tr) {
 			it("Paste here (" + V.short(info.t) + ", " + tname + ")", "", function () { VE.paste(info.t, tr); }, !cb || tr.lock);
@@ -3641,7 +3658,7 @@
 			["cut", "Cut", MK + "X", !has], ["copy", "Copy", MK + "C", !has], ["paste", "Paste at the playhead", MK + "V", !cb], ["dup", "Duplicate", MK + "D", !has], "-",
 			["del", "Delete", "Del", !has], ["ripple", "Ripple delete (close the gap)", "Shift+Del", !has], ["split", "Split at the playhead", "S", !inClip], ["cutrange", "Cut out the marked part (I to O)", "", !marksOk()], "-",
 			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this layer"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
-			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], "-",
+			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], ["link", "Link video and sound", "", !V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])], "-",
 			["narrate", "Add narration from text…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
 		];
 	}
@@ -3662,6 +3679,7 @@
 			after: function () { VE.sel = VE.P.clips.filter(function (c) { return V.end(c) > VE.t + 1e-6; }).map(function (c) { return c.id; }); VE.emit("select"); },
 			none: function () { VE.sel = []; VE.emit("select"); },
 			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); }, addlayer: function () { VE.addTrack("v", c0 ? V.track(VE.P, c0.track) : null, "above"); VE.commit("Add layer"); },
+			link: function () { VE.linkBack(V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])); },
 			sep: function () { if (c0.link) { V.unlink(VE.P, c0.id); VE.commit("Unlink"); } else VE.separate(sel); },
 			narrate: openNarrate, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },
 		})[a]();
@@ -4619,6 +4637,11 @@
 		toast("The sound is now its own clip on the layer below, linked to the video: moving, trimming, splitting or deleting one does the other too (Alt + drag moves just one). Drag the bottom edge of the track to make the waveform taller.", 9000);
 	};
 	$("vd-sep").onclick = function () { VE.separate(VE.selected()); };
+	VE.linkBack = function (pair) {
+		if (!V.linkPair(VE.P, pair, V.uid("L"))) return;
+		VE.sel = [pair.v.id, pair.a.id]; VE.commit("Link video and sound");
+		toast("Linked again: the sound follows the video (same start and trim), and moving, trimming, splitting or deleting one does the other too.", 7000);
+	};
 	function linkSection(c) {
 		var h = "", parts = V.partners(VE.P, c);
 		if (c.link && parts.length) {
@@ -4626,9 +4649,11 @@
 			h += '<div class="vd-linkrow">&#128279; Linked to its ' + (o.type === "audio" ? "sound" : "video") + " on " + esc(ot ? ot.name : "another track") + '. Moving, trimming, splitting and deleting one does the other too (Alt + drag moves just this one).<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="unlink">Unlink</button>' +
 				(c.type === "video" || o.type === "video" ? '<button type="button" class="vd-btn vd-sm" data-lk="join">Put the sound back into the video</button>' : "") + "</div></div>";
 		} else if (c.type === "video" && c.noAudio) {
-			h += '<div class="vd-linkrow">This clip plays no sound (it was separated).<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="sndon">Play its own sound again</button></div></div>';
+			h += '<div class="vd-linkrow">This clip plays no sound (it was separated).<div class="vd-row">' + (V.linkCandidate(VE.P, [c]) ? '<button type="button" class="vd-btn vd-sm" data-lk="relink">&#128279; Link to its sound again</button>' : "") + '<button type="button" class="vd-btn vd-sm" data-lk="sndon">Play its own sound again</button></div></div>';
 		} else if (c.type === "video" && VE.hasSound(c)) {
 			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="sep" title="Ctrl+Shift+A">Separate video and audio</button></div>';
+		} else if (c.type === "audio" && !c.link && V.linkCandidate(VE.P, [c])) {
+			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="relink">&#128279; Link to its video again</button></div>';
 		}
 		return h;
 	}
@@ -4639,6 +4664,7 @@
 				if (a === "sep") VE.separate([c]);
 				else if (a === "unlink") { V.unlink(VE.P, c.id); VE.commit("Unlink"); }
 				else if (a === "join") { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }
+				else if (a === "relink") VE.linkBack(V.linkCandidate(VE.P, [c]));
 				else if (a === "sndon") { c.noAudio = false; VE.commit("Sound on"); }
 			};
 		});

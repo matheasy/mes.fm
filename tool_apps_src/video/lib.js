@@ -629,6 +629,22 @@
 		v.noAudio = false; if (!V.partners(p, v).length) v.link = null;
 		return v;
 	};
+	// "Link video and sound" again after an unlink: the video and the sound clip of the same media. clips = the selected clips; with only one
+	// selected, its counterpart is the unlinked clip of the other kind from the same file whose source lines up best. -> {v, a} or null
+	V.linkCandidate = function (p, clips) {
+		clips = (clips || []).filter(Boolean); if (!clips.length || clips.length > 2 || clips.some(function (c) { return c.link; })) return null;
+		var v = clips.filter(function (c) { return c.type === "video"; })[0], a = clips.filter(function (c) { return c.type === "audio"; })[0];
+		if (clips.length === 2) return v && a && v.media === a.media ? { v: v, a: a } : null;
+		var c = clips[0]; if (c.type !== "video" && c.type !== "audio") return null;
+		var zero = function (x) { return x.start - x.in / (x.speed || 1); }, want = c.type === "video" ? "audio" : "video", best = null, bd = Infinity;
+		p.clips.forEach(function (x) { if (x === c || x.link || x.type !== want || x.media !== c.media) return; var d = Math.abs(zero(x) - zero(c)) + Math.abs(x.start - c.start) * 0.01; if (d < bd) { bd = d; best = x; } });
+		if (!best) return null;
+		return c.type === "video" ? { v: c, a: best } : { v: best, a: c };
+	};
+	// link them: the sound takes the video's timing (start, trim, speed) and the video stays silent so the sound is not heard twice
+	V.linkPair = function (p, pair, linkId) {
+		if (!pair) return null; pair.v.link = pair.a.link = linkId; pair.v.noAudio = true; V.syncLinks(p); return pair;
+	};
 	V.unlink = function (p, id) { var c = V.clip(p, id); if (!c || !c.link) return p; var k = c.link; p.clips.forEach(function (x) { if (x.link === k) x.link = null; }); return p; };
 	// split clips ids (and their partners) at t; a split pair gets a new link for its right halves. -> ids of the right halves
 	V.splitAt = function (p, ids, t, newId, minDur) {

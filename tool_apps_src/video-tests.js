@@ -355,5 +355,23 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	near(V.dnBlend(wet, dry, 0.5)[0], 0.1, 1e-6, "50% keeps -20 dB of the noise");
 	ok(V.TEXT_DEFAULT.wrap > 0 && V.TEXT_DEFAULT.lh > 1, "titles wrap by default");
 }
+{
+	const p = { tracks: [{ id: "t1", kind: "v" }, { id: "t2", kind: "a" }], clips: [] };
+	const v = V.clipDefaults({ id: "v1", type: "video", media: "m1", track: "t1", start: 10, in: 5, out: 30 });
+	p.clips.push(v);
+	const a2 = V.separateAudio(p, "v1", "a1", "L1", null);
+	ok(a2 && v.link === "L1", "separated");
+	V.unlink(p, "v1"); ok(!v.link && !a2.link, "unlinked");
+	a2.start = 14;   // moved apart after unlinking
+	const pair = V.linkCandidate(p, [v]);
+	ok(pair && pair.a === a2, "finds its sound from the video alone");
+	ok(V.linkCandidate(p, [a2]).v === v, "finds its video from the sound alone");
+	ok(V.linkCandidate(p, [v, a2]).a === a2, "both selected");
+	V.linkPair(p, pair, "L2");
+	ok(v.link === "L2" && a2.link === "L2" && v.noAudio && a2.start === 10 && a2.in === 5, "linked again, sound back in sync");
+	ok(!V.linkCandidate(p, [v]), "already linked: nothing to offer");
+	const o = V.clipDefaults({ id: "o", type: "audio", media: "other", track: "t2", start: 40, in: 0, out: 5 }); p.clips.push(o);
+	ok(!V.linkCandidate(p, [o]), "different file: no link");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
