@@ -156,3 +156,4 @@ body.dx-filled { overflow: hidden; }
 	#dx .dx-drop-t { font-size: 18px; }
 }
 @media print { body.dx-printing #dx { display: none; } }
+	#dx .dx-linkform {display:flex;gap:0.5em;max-width:34em;margin:1em auto 0;} #dx .dx-link {flex:1;min-width:0;padding:0.5em 0.7em;border:1px solid var(--dx-line);border-radius:6px;background:var(--dx-panel);color:var(--dx-ink);font:inherit;} #dx .dx-linknote {text-align:center;color:var(--dx-mute);font-size:0.9em;margin:0.4em auto 0;max-width:36em;} #dx .dx-linknote.is-warn {color:var(--dx-err);}

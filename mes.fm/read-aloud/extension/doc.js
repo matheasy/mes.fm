@@ -116,12 +116,23 @@
     doc.lang = '';
     say(name + (out.info ? ' · ' + out.info : '') + '. Press “Read aloud” (or Alt+Shift+R). Click a paragraph first to start there; double-click a word while it reads to jump to it.');
     $('play').disabled = false; $('play').focus();
+    mesLink(kind);
     window.scrollTo(0, 0);
+  }
+  // "Open in MES PDF Editor / Word Viewer": the page layout plus editing, with Read aloud too; a web address is handed over (?url=), a file from this computer has to be opened there again
+  function mesLink(kind) {
+    var a = $('onmes'); if (kind !== 'pdf' && kind !== 'docx') { a.hidden = true; return; }
+    var page = kind === 'pdf' ? 'pdf' : 'docx', web = /^https?:/i.test(srcUrl);
+    a.href = 'https://mes.fm/' + page + (web ? '?url=' + encodeURIComponent(srcUrl) : '');
+    a.textContent = kind === 'pdf' ? 'Open in MES PDF Editor' : 'Open in MES Word Viewer';
+    a.title = (kind === 'pdf' ? 'See the real pages, edit, sign or fill in this PDF on mes.fm' : 'See the real page layout or edit this document on mes.fm') + ' (it has Read aloud too)' + (web ? '' : '. A file from this computer has to be opened there again.');
+    a.hidden = false;
   }
 
   // ---- getting the file ----
   function readFile(f) {
     if (!f) return;
+    srcUrl = '';
     var rd = new FileReader();
     rd.onload = function () { openBytes(rd.result, f.name, f.type); };
     rd.onerror = function () { say('The file could not be read.', true); };

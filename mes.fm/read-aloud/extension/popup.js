@@ -70,6 +70,8 @@
       }
       if (isDoc) {
         $('page').textContent = R.isDocxUrl(tab.url) ? 'Read this Word file' : 'Read this PDF';
+        // a PDF / Word file on the web: the mes.fm links open this very file (?url=)
+        if (/^https?:/.test(tab.url)) { var mk = R.isDocxUrl(tab.url) ? 'mesdocx' : 'mespdf'; $(mk).href = 'https://mes.fm/' + (mk === 'mesdocx' ? 'docx' : 'pdf') + '?url=' + encodeURIComponent(tab.url); $(mk).textContent = mk === 'mesdocx' ? 'Open this in MES Word Viewer' : 'Open this in MES PDF Editor'; }
         if (/^file:/.test(tab.url)) chrome.extension.isAllowedFileSchemeAccess(function (ok) { $('fileoff').hidden = !!ok; });
       }
       if (R.docsId(tab.url)) chrome.permissions.contains({ origins: DOCS }, function (has) { $('docs').hidden = !!has; });

@@ -39,6 +39,7 @@ const PDF = Buffer.from("%PDF-1.7\n%....\n1 0 obj");
 const HTML = Buffer.from("<!doctype html><html><script>alert(1)</script>");
 ok(G.sniff(PNG) === "image/png" && G.sniff(JPG) === "image/jpeg" && G.sniff(PDF) === "application/pdf" && G.sniff(HTML) === null, "sniff");
 ok(G.sniff(Buffer.from("RIFF\0\0\0\0WEBPVP8 ")) === "image/webp" && G.sniff(Buffer.from("\0\0\0\x1cftypavif\0\0")) === "image/avif" && G.sniff(Buffer.from("GIF89a......")) === "image/gif", "sniff webp/avif/gif");
+ok(G.sniffDocx(Buffer.concat([Buffer.from("PK\x03\x04"), Buffer.alloc(40), Buffer.from("word/document.xml")])) === G.DOCX && G.sniffDocx(Buffer.concat([Buffer.from("PK\x03\x04"), Buffer.alloc(40), Buffer.from("xl/workbook.xml")])) === null && !G.typeAllowed("application/zip") && G.typeAllowed("application/zip", "docx"), "docx sniff / kind");
 ok(!G.typeAllowed("image/svg+xml") && !G.typeAllowed("text/html") && G.typeAllowed("image/png; charset=x") && G.typeAllowed("application/pdf") && G.typeAllowed(""), "typeAllowed");
 
 // routes for the fake fetch: url -> response

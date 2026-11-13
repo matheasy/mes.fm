@@ -96,12 +96,20 @@ function sniff(b) {
   return null;
 }
 
+// A .docx is a ZIP whose central directory names word/document.xml (file names are stored as plain text, so a byte search finds it).
+const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+function sniffDocx(b) {
+  if (!b || b.length < 30 || b[0] !== 0x50 || b[1] !== 0x4b || b[2] !== 3 || b[3] !== 4) return null;
+  return b.indexOf('word/document.xml') >= 0 ? DOCX : null;
+}
+
 // Header Content-Type we are willing to read at all (the bytes decide the real type). SVG is refused: it is a document that can run script.
-function typeAllowed(ct) {
+function typeAllowed(ct, kind) {
   const t = String(ct || '').toLowerCase().split(';')[0].trim();
   if (!t) return true;                                                            // some servers send none; sniff() decides
   if (t === 'image/svg+xml') return false;
+  if (kind === 'docx' && (t === DOCX || t === 'application/zip' || t === 'application/x-zip-compressed' || t === 'application/msword')) return true;
   return /^image\//.test(t) || t === 'application/pdf' || t === 'application/octet-stream' || t === 'binary/octet-stream';
 }
 
-module.exports = { ipv4Public, ipv6Public, v6groups, checkUrl, pickPublicIp, sniff, typeAllowed };
+module.exports = { ipv4Public, ipv6Public, v6groups, checkUrl, pickPublicIp, sniff, sniffDocx, typeAllowed, DOCX };

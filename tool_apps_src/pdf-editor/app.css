@@ -54,3 +54,4 @@
 
 html body.dark-mode #pd.pd {--pd-on:#d9363e;}
 html body.dark-mode #pd .pd-btn--primary, html body.dark-mode #pd .pd-seg button[aria-pressed="true"] {color:#fff;}
+	.pd-linkform {display:flex;gap:0.5em;width:100%;max-width:30em;} .pd .pd-link {flex:1;min-width:0;padding:0.55em 0.75em;border-radius:7px;border:1px solid var(--pd-line);background:var(--pd-panel);color:var(--pd-fg);font:inherit;} .pd .pd-link:focus {outline:2px solid var(--pd-on);outline-offset:1px;} .pd-linknote.is-warn {color:#ffb4a8;}

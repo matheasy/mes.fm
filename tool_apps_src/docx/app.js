@@ -103,6 +103,24 @@
 		var fs = []; [].forEach.call((e.clipboardData && e.clipboardData.items) || [], function (it) { if (it.kind === "file") { var f = it.getAsFile(); if (f && /\.(docx|docm|dotx|dotm|doc)$/i.test(f.name || "") || (f && f.type === DOCX_MIME)) fs.push(f); } });
 		if (fs.length) { e.preventDefault(); addFiles(fs); }
 	});
+	/* a .docx from a link: the box under the drop zone, the Link button, a link pasted anywhere, or ?url= (/main_js/link-open.js) */
+	var LO = window.MESLinkOpen, linkTip = $("dx-linknote").textContent;
+	function linkNote(m, warn) { var n = $("dx-linknote"); n.textContent = m || linkTip; n.classList.toggle("is-warn", !!warn); }
+	function openLink(raw) {
+		if (!LO) return toast("Could not load the link opener");
+		$("dx-linkgo").disabled = true;
+		return LO.get(raw, { kind: "docx", onStatus: function (m) { linkNote(m); } }).then(function (f) { linkNote(""); $("dx-link").value = ""; return addFiles([f]); })
+			.catch(function (e) { var m = (e && e.message || String(e)) + " You can also download the file and drop it here."; linkNote(m, true); toast(m); })
+			.then(function () { $("dx-linkgo").disabled = false; });
+	}
+	$("dx-linkform").addEventListener("submit", function (e) { e.preventDefault(); openLink($("dx-link").value); });
+	$("dx-openlink").onclick = function () { var v = window.prompt("Link to a Word .docx file (https://...)\nGoogle Docs, Drive and Dropbox links work when shared publicly.", ""); if (v) openLink(v); };
+	document.addEventListener("paste", function (e) {
+		var t = e.target; if (t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable)) return;
+		var cd = e.clipboardData, x = cd && cd.getData("text/plain"); if (cd && cd.files && cd.files.length) return;
+		if (LO && LO.looksLikeLink(x) && (!cur || /\.docx(\?|#|$)/i.test(x) || /docs\.google\.com|drive\.google\.com|dropbox\.com/i.test(x))) { e.preventDefault(); e.stopImmediatePropagation(); openLink(x.trim()); }
+	}, true);
+	if (LO && LO.fromQuery()) openLink(LO.fromQuery());
 	function addFiles(list) {
 		var chain = Promise.resolve();
 		list.forEach(function (f) { chain = chain.then(function () { return f.arrayBuffer().then(function (b) { return openBytes(new Uint8Array(b), f.name, { size: f.size, lastModified: f.lastModified }); }); }); });

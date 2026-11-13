@@ -324,6 +324,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.dark-mode #pt .pt-drop {background:rgba(255,255,255,0.05);} body.dark-mode #pt .pt-drop.is-over {background:rgba(255,255,255,0.12);} body.dark-mode #pt .pt-drop-t {color:#f0f0f0;} body.dark-mode #pt .pt-drop-s, body.dark-mode #pt .pt-priv, body.dark-mode #pt .pt-note, body.dark-mode #pt .pt-more, body.dark-mode #pt .pt-prog, body.dark-mode #pt .pt-fm, body.dark-mode #pt .pt-res-m {color:#a8b0bb;}
 	body.dark-mode #pt .pt-file, body.dark-mode #pt .pt-pg {background:#262a2e;border-color:#3a3f45;} body.dark-mode #pt .pt-pg.is-sel {background:rgba(255,255,255,0.1);border-color:var(--accent);} body.dark-mode #pt .pt-mv button, body.dark-mode #pt .pt-pa button, body.dark-mode #pt .pt-tabs button, body.dark-mode #pt .pt-file input[type=text], body.dark-mode #pt .pt-ctl input, body.dark-mode #pt .pt-ctl select {background:#262a2e;border-color:#4a5058;color:#e8e8e8;} body.dark-mode #pt .pt-tabs button[aria-pressed="true"] {background:var(--accent);color:#fff;} body.dark-mode #pt .pt-res {border-bottom-color:#33383e;}
 	@media (max-width:560px) {#pt .pt-files {grid-template-columns:repeat(auto-fill,minmax(10em,1fr));} #pt .pt-go {width:100%;}}
+	#pt .pt-linkform {display:flex;gap:0.5em;max-width:36em;margin:0.8em auto 0;} #pt .pt-link {flex:1;min-width:0;}
 
 
 	@media print {
@@ -691,6 +692,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<input type="file" id="pt-input" hidden>
 			<p class="pt-priv">Private: your files are processed in this browser and never uploaded.</p>
 		</div>
+		<form class="pt-linkform" id="pt-linkform" autocomplete="off"><input type="url" id="pt-link" class="tu-input pt-link" placeholder="&hellip;or paste a link to a PDF (https://&hellip;)" aria-label="Link to a PDF" spellcheck="false"><button type="submit" class="tu-btn" id="pt-linkgo">Open link</button></form>
 		<div id="pt-notice" class="tu-card tu-card--tint pt-notice" role="status" hidden></div>
 		<div id="pt-work" hidden>
 			<div class="pt-files" id="pt-files"></div>
@@ -774,7 +776,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:4
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/merge-pdf/js/merge-pdf.js?v=1" defer></script>
+	<script src="/main_js/link-open.js?v=1" defer></script><script src="/merge-pdf/js/merge-pdf.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

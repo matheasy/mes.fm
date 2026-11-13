@@ -463,6 +463,7 @@ body.dx-filled { overflow: hidden; }
 	#dx .dx-drop-t { font-size: 18px; }
 }
 @media print { body.dx-printing #dx { display: none; } }
+	#dx .dx-linkform {display:flex;gap:0.5em;max-width:34em;margin:1em auto 0;} #dx .dx-link {flex:1;min-width:0;padding:0.5em 0.7em;border:1px solid var(--dx-line);border-radius:6px;background:var(--dx-panel);color:var(--dx-ink);font:inherit;} #dx .dx-linknote {text-align:center;color:var(--dx-mute);font-size:0.9em;margin:0.4em auto 0;max-width:36em;} #dx .dx-linknote.is-warn {color:var(--dx-err);}
 
 
 	@media print {
@@ -807,6 +808,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="dx-top">
 				<button type="button" class="dx-btn dx-btn--primary" id="dx-open" title="Open .docx files (Ctrl+O)">Open</button>
 				<button type="button" class="dx-btn" id="dx-new" title="Start a new blank document">New</button>
+				<button type="button" class="dx-btn" id="dx-openlink" title="Open a .docx from a web link (or paste a link anywhere on the page)">&#128279; Link</button>
 				<input type="file" id="dx-input" accept=".docx,.docm,.dotx,.dotm,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden>
 				<div class="dx-tabs" id="dx-tabs" role="tablist" aria-label="Open documents"></div>
 			</div>
@@ -914,6 +916,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<div class="dx-drop-b"><button type="button" class="dx-btn dx-btn--primary dx-big" id="dx-e-open">Open a .docx</button> <button type="button" class="dx-btn dx-big" id="dx-e-new">New blank document</button></div>
 							<p class="dx-priv">Private: the document is read and shown by your own browser. Nothing is uploaded.</p>
 						</div>
+						<form class="dx-linkform" id="dx-linkform" autocomplete="off"><input type="url" id="dx-link" class="dx-link" placeholder="&hellip;or paste a link to a Word document (https://&hellip;)" aria-label="Link to a Word document" spellcheck="false"><button type="submit" class="dx-btn" id="dx-linkgo">Open link</button></form>
+						<p class="dx-linknote" id="dx-linknote">Google Docs, Google Drive and Dropbox links work when the file is shared publicly.</p>
 						<div class="dx-recent" id="dx-recent" hidden>
 							<div class="dx-recent-h"><b>Recent files</b> <span class="dx-recent-s">kept on this device only</span> <button type="button" class="dx-link" id="dx-rclear">Forget all</button></div>
 							<div id="dx-rlist"></div>
@@ -1015,7 +1019,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=2" defer></script><script src="/docx/js/docx.js?v=4" defer></script>
+	<script src="/main_js/cloud-files.js?v=2" defer></script><script src="/main_js/link-open.js?v=1" defer></script><script src="/docx/js/docx.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

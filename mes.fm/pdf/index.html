@@ -361,6 +361,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 
 html body.dark-mode #pd.pd {--pd-on:#d9363e;}
 html body.dark-mode #pd .pd-btn--primary, html body.dark-mode #pd .pd-seg button[aria-pressed="true"] {color:#fff;}
+	.pd-linkform {display:flex;gap:0.5em;width:100%;max-width:30em;} .pd .pd-link {flex:1;min-width:0;padding:0.55em 0.75em;border-radius:7px;border:1px solid var(--pd-line);background:var(--pd-panel);color:var(--pd-fg);font:inherit;} .pd .pd-link:focus {outline:2px solid var(--pd-on);outline-offset:1px;} .pd-linknote.is-warn {color:#ffb4a8;}
 
 
 	@media print {
@@ -707,6 +708,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="pd-top">
 			<div class="pd-top-l">
 				<button type="button" class="pd-btn" id="pd-open">Open PDF</button>
+				<button type="button" class="pd-btn" id="pd-openlink" title="Open a PDF from a web link (or just paste a link anywhere on the page)">&#128279; From link</button>
 				<span class="pd-fname" id="pd-name">No file open</span>
 			</div>
 			<div class="pd-top-r">
@@ -736,7 +738,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="pd-empty-t">Free PDF editor and signer</div>
 						<div class="pd-empty-s">Sign, fill in, annotate, highlight, redact and edit text. Everything happens in your browser: your PDF is never uploaded.</div>
 						<div class="pd-empty-b"><button type="button" class="pd-btn pd-btn--primary pd-big" id="pd-e-open">Open a PDF</button> <button type="button" class="pd-btn pd-big" id="pd-e-blank">Start a blank page</button></div>
-						<div class="pd-empty-s">&hellip;or drop a PDF anywhere here. Password-protected files work too.</div>
+						<form class="pd-linkform" id="pd-linkform" autocomplete="off"><input type="url" id="pd-link" class="pd-link" placeholder="&hellip;or paste a link to a PDF (https://&hellip;)" aria-label="Link to a PDF" spellcheck="false"><button type="submit" class="pd-btn" id="pd-linkgo">Open link</button></form>
+						<div class="pd-empty-s pd-linknote" id="pd-linknote" hidden></div>
+						<div class="pd-empty-s">&hellip;or drop a PDF anywhere here. Password-protected files work too. Google Docs, Google Drive and Dropbox links work if the file is shared publicly.</div>
 						<div class="pd-empty-s">More PDF tools: <a href="/merge-pdf">Merge</a> &middot; <a href="/split-pdf">Split</a> &middot; <a href="/organize-pdf">Organize pages</a> &middot; <a href="/jpg-to-pdf">Images to PDF</a> &middot; <a href="/pdf-to-jpg">PDF to images</a> &middot; <a href="/compress-pdf">Compress</a></div>
 						<div class="pd-empty-s">Have a Word document? Open it in the <a href="/docx">Word Viewer</a> and save it as a PDF first.</div>
 					</div>
@@ -839,7 +843,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=2" defer></script><script src="/pdf/js/pdf.js?v=9" defer></script>
+	<script src="/main_js/cloud-files.js?v=2" defer></script><script src="/main_js/link-open.js?v=1" defer></script><script src="/pdf/js/pdf.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

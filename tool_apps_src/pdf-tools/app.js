@@ -24,6 +24,19 @@
 	var tick = function () { return new Promise(function (r) { setTimeout(r, 0); }); };
 	$("pt-drop-t").textContent = CFG.t; $("pt-drop-s").textContent = CFG.s; $("pt-pick").textContent = CFG.multi ? "Choose files" : "Choose a file"; $("pt-go").textContent = CFG.go; $("pt-input").accept = CFG.kind === "pdf" ? "application/pdf,.pdf" : "image/*"; $("pt-input").multiple = CFG.multi;
 	var drop = $("pt-drop"); $("pt-pick").addEventListener("click", function (e) { e.stopPropagation(); $("pt-input").click(); }); drop.addEventListener("click", function () { $("pt-input").click(); }); drop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("pt-input").click(); } });
+	/* a PDF from a link (box under the drop zone, a link pasted anywhere, or ?url=), via /main_js/link-open.js */
+	var LO = window.MESLinkOpen, lf = $("pt-linkform"), escT = function (x) { return String(x).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+	if (CFG.kind !== "pdf" || !LO) lf.hidden = true; else {
+		var openLink = async function (raw) {
+			if (busy) return; $("pt-linkgo").disabled = true;
+			try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { notice(escT(m)); } }); notice(""); await addFiles([f]); $("pt-link").value = ""; }
+			catch (e) { notice(escT((e && e.message || String(e)) + " You can also download the PDF and drop it here."), true); }
+			finally { $("pt-linkgo").disabled = false; }
+		};
+		lf.addEventListener("submit", function (e) { e.preventDefault(); openLink($("pt-link").value); });
+		document.addEventListener("paste", function (e) { var t = e.target; if (t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable)) return; var x = e.clipboardData && e.clipboardData.getData("text/plain"); if (LO.looksLikeLink(x)) { e.preventDefault(); openLink(x.trim()); } });
+		if (LO.fromQuery()) openLink(LO.fromQuery());
+	}
 	$("pt-input").addEventListener("change", function () { addFiles(this.files); this.value = ""; });
 	["dragenter", "dragover"].forEach(function (n) { document.addEventListener(n, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); drop.classList.add("is-over"); } }); });
 	["dragleave", "drop"].forEach(function (n) { document.addEventListener(n, function (e) { if (n === "dragleave" && e.relatedTarget) return; drop.classList.remove("is-over"); }); });

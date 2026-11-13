@@ -3,6 +3,7 @@
 		<div class="pd-top">
 			<div class="pd-top-l">
 				<button type="button" class="pd-btn" id="pd-open">Open PDF</button>
+				<button type="button" class="pd-btn" id="pd-openlink" title="Open a PDF from a web link (or just paste a link anywhere on the page)">&#128279; From link</button>
 				<span class="pd-fname" id="pd-name">No file open</span>
 			</div>
 			<div class="pd-top-r">
@@ -32,7 +33,9 @@
 						<div class="pd-empty-t">Free PDF editor and signer</div>
 						<div class="pd-empty-s">Sign, fill in, annotate, highlight, redact and edit text. Everything happens in your browser: your PDF is never uploaded.</div>
 						<div class="pd-empty-b"><button type="button" class="pd-btn pd-btn--primary pd-big" id="pd-e-open">Open a PDF</button> <button type="button" class="pd-btn pd-big" id="pd-e-blank">Start a blank page</button></div>
-						<div class="pd-empty-s">&hellip;or drop a PDF anywhere here. Password-protected files work too.</div>
+						<form class="pd-linkform" id="pd-linkform" autocomplete="off"><input type="url" id="pd-link" class="pd-link" placeholder="&hellip;or paste a link to a PDF (https://&hellip;)" aria-label="Link to a PDF" spellcheck="false"><button type="submit" class="pd-btn" id="pd-linkgo">Open link</button></form>
+						<div class="pd-empty-s pd-linknote" id="pd-linknote" hidden></div>
+						<div class="pd-empty-s">&hellip;or drop a PDF anywhere here. Password-protected files work too. Google Docs, Google Drive and Dropbox links work if the file is shared publicly.</div>
 						<div class="pd-empty-s">More PDF tools: <a href="/merge-pdf">Merge</a> &middot; <a href="/split-pdf">Split</a> &middot; <a href="/organize-pdf">Organize pages</a> &middot; <a href="/jpg-to-pdf">Images to PDF</a> &middot; <a href="/pdf-to-jpg">PDF to images</a> &middot; <a href="/compress-pdf">Compress</a></div>
 						<div class="pd-empty-s">Have a Word document? Open it in the <a href="/docx">Word Viewer</a> and save it as a PDF first.</div>
 					</div>

@@ -258,7 +258,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-11-10",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -648,7 +648,7 @@
 },
 "/pdf":{
 "added":"2026-10-15",
-"updated":"2026-11-10",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/pdf-tools":{

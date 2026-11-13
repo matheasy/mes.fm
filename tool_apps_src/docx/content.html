@@ -4,6 +4,7 @@
 			<div class="dx-top">
 				<button type="button" class="dx-btn dx-btn--primary" id="dx-open" title="Open .docx files (Ctrl+O)">Open</button>
 				<button type="button" class="dx-btn" id="dx-new" title="Start a new blank document">New</button>
+				<button type="button" class="dx-btn" id="dx-openlink" title="Open a .docx from a web link (or paste a link anywhere on the page)">&#128279; Link</button>
 				<input type="file" id="dx-input" accept=".docx,.docm,.dotx,.dotm,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden>
 				<div class="dx-tabs" id="dx-tabs" role="tablist" aria-label="Open documents"></div>
 			</div>
@@ -111,6 +112,8 @@
 							<div class="dx-drop-b"><button type="button" class="dx-btn dx-btn--primary dx-big" id="dx-e-open">Open a .docx</button> <button type="button" class="dx-btn dx-big" id="dx-e-new">New blank document</button></div>
 							<p class="dx-priv">Private: the document is read and shown by your own browser. Nothing is uploaded.</p>
 						</div>
+						<form class="dx-linkform" id="dx-linkform" autocomplete="off"><input type="url" id="dx-link" class="dx-link" placeholder="&hellip;or paste a link to a Word document (https://&hellip;)" aria-label="Link to a Word document" spellcheck="false"><button type="submit" class="dx-btn" id="dx-linkgo">Open link</button></form>
+						<p class="dx-linknote" id="dx-linknote">Google Docs, Google Drive and Dropbox links work when the file is shared publicly.</p>
 						<div class="dx-recent" id="dx-recent" hidden>
 							<div class="dx-recent-h"><b>Recent files</b> <span class="dx-recent-s">kept on this device only</span> <button type="button" class="dx-link" id="dx-rclear">Forget all</button></div>
 							<div id="dx-rlist"></div>

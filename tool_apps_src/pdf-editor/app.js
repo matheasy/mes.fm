@@ -11,6 +11,30 @@
 	$("pd-addfile").addEventListener("change", function () { if (this.files[0]) PD.addPdf(this.files[0]); this.value = ""; });
 	$("pd-e-blank").addEventListener("click", function () { PD.newBlank(); });
 	$("pd-imgfile").addEventListener("change", async function () { var f = this.files[0]; this.value = ""; if (!f || !PD.doc) return; var r = await PD.loadImageFile(f); if (r) { PD.setTool("image"); PD.armed = { kind: "img", id: r.id, w: r.w, h: r.h }; PD.buildOpts(); PD.toast("Click where the picture should go", 3000); } });
+	/* open from a link: the empty-page box, the "From link" button, a link pasted anywhere, or ?url= (MESLinkOpen in /main_js/link-open.js) */
+	var LO = window.MESLinkOpen;
+	function linkNote(msg, warn) { var n = $("pd-linknote"); if (!n) return; n.hidden = !msg; n.textContent = msg || ""; n.classList.toggle("is-warn", !!warn); }
+	async function openLink(raw) {
+		if (!LO) return PD.toast("Could not load the link opener");
+		if (!confirmDiscard()) return;
+		PD.busy(true, "Fetching the PDF..."); $("pd-linkgo").disabled = true;
+		try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { linkNote(m); $("pd-st-doc").textContent = m; } }); PD.busy(false); linkNote(""); await PD.open(f); PD.toast(f.mesVia === "mes" ? "Opened (fetched through mes.fm, no copy kept)" : "Opened from " + f.mesHost, 3500); }
+		catch (e) { PD.busy(false); var m = (e && e.message || String(e)) + " You can also download the PDF and drop it here."; linkNote(m, true); PD.toast(m, 7000); }
+		finally { $("pd-linkgo").disabled = false; }
+	}
+	$("pd-linkform").addEventListener("submit", function (e) { e.preventDefault(); openLink($("pd-link").value); });
+	$("pd-openlink").addEventListener("click", function () {
+		PD.dialog('<h3 style="margin:0 0 .6em">Open a PDF from a link</h3><form id="pd-dlink" autocomplete="off" style="display:flex;gap:.5em;flex-wrap:wrap"><input type="url" id="pd-dlinkin" class="pd-link" placeholder="https://..." aria-label="Link to a PDF" style="flex:1;min-width:14em" spellcheck="false"><button type="submit" class="pd-btn pd-btn--primary">Open</button><button type="button" class="pd-btn" id="pd-dlinkx">Cancel</button></form><p style="margin:.7em 0 0;opacity:.8;font-size:.92em">Tip: you can also just paste a link anywhere on this page. Google Docs, Drive and Dropbox links work when shared publicly. Files over 4.4 MB from sites that block other sites have to be downloaded first.</p>');
+		var i = $("pd-dlinkin"); setTimeout(function () { i.focus(); }, 30);
+		$("pd-dlinkx").onclick = function () { PD.closeDialog(); };
+		$("pd-dlink").onsubmit = function (e) { e.preventDefault(); var v = i.value; PD.closeDialog(); openLink(v); };
+	});
+	document.addEventListener("paste", function (e) {
+		var t = e.target; if (t && /INPUT|TEXTAREA|SELECT/.test(t.tagName) || (t && t.isContentEditable) || (PD.isEditing && PD.isEditing())) return;
+		var cd = e.clipboardData, txt = cd && cd.getData("text/plain"); if (cd && cd.files && cd.files.length) return;
+		if (LO && LO.looksLikeLink(txt) && (!PD.doc || /\.pdf(\?|#|$)/i.test(txt) || /docs\.google\.com|drive\.google\.com|dropbox\.com/i.test(txt))) { e.preventDefault(); e.stopImmediatePropagation(); openLink(txt.trim()); }
+	}, true);
+	if (LO && LO.fromQuery()) { var q0 = LO.fromQuery(); $("pd-link").value = q0; openLink(q0); }
 	/* drag and drop: a PDF opens, a picture is placed on the page under the pointer */
 	var view = $("pd-view"), depth = 0;
 	function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0; }

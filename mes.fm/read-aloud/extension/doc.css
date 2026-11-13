@@ -7,6 +7,8 @@ body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system
 .tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 button { font: inherit; background: var(--chip); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; min-height: 36px; }
 button:hover, button:focus-visible { border-color: var(--acc); outline: none; }
+a.btn { display: inline-flex; align-items: center; font-size: 14px; color: var(--fg); background: var(--chip); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; min-height: 36px; box-sizing: border-box; text-decoration: none; } a.btn:hover { border-color: var(--acc); } a.btn[hidden] { display: none; }
+.drop a { color: var(--acc); }
 button.pri { background: var(--acc); border-color: var(--acc); color: var(--accfg); font-weight: 600; }
 button:disabled { opacity: .45; cursor: default; }
 main { max-width: 820px; margin: 0 auto; padding: 18px 16px 220px; }

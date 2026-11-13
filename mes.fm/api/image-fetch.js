@@ -1,4 +1,4 @@
-// Fetch a picture (or PDF) from a link for mes.fm/translate and mes.fm/image-to-text, when the browser cannot load it itself
+// Fetch a picture (or PDF) from a link for mes.fm/translate, mes.fm/image-to-text, mes.fm/pdf and the PDF tools, when the browser cannot load it itself
 // (the other site sends no CORS headers). GET /api/image-fetch?url=<http(s) link>  ->  the bytes, with their real type.
 //
 // The link is typed by a visitor, so this is careful not to become a way into private networks or an open proxy:
@@ -10,6 +10,7 @@
 //   - only image/* (not SVG) or PDF, and the first bytes must really be one (sniff); the reply carries the sniffed type,
 //     `nosniff`, a sandbox CSP and no-store, so opening the URL directly can never run anything on mes.fm
 //   - 60 fetches per visitor IP per hour when Upstash Redis is set up (same UPSTASH_REDIS_REST_URL / _TOKEN as api/fav.js); without it, no limit
+// &kind=docx (mes.fm/docx) also accepts a Word .docx (a ZIP that names word/document.xml), served as an attachment.
 // MAX_BYTES is 4.4 MB because a Vercel Function's response body is capped at 4.5 MB: bigger files must be downloaded and dropped on the page.
 'use strict';
 const http = require('http');
@@ -41,7 +42,7 @@ async function doh(host, type) {
 }
 
 // One request to `url`, connected to the already-checked address `ip`. Resolves { status, headers, body: Buffer | null }.
-function getPinned(url, ip, deadline) {
+function getPinned(url, ip, deadline, kind) {
   return new Promise((resolve, reject) => {
     const u = new URL(url), mod = u.protocol === 'https:' ? https : http;
     const left = deadline - Date.now();
@@ -55,7 +56,7 @@ function getPinned(url, ip, deadline) {
       const status = r.statusCode, headers = r.headers;
       if (status >= 300 && status < 400) { r.resume(); return resolve({ status, headers, body: null }); }
       if (status !== 200) { r.resume(); return resolve({ status, headers, body: null }); }
-      if (!G.typeAllowed(headers['content-type'])) { r.destroy(); return resolve({ status, headers, body: null, badType: true }); }
+      if (!G.typeAllowed(headers['content-type'], kind)) { r.destroy(); return resolve({ status, headers, body: null, badType: true }); }
       const len = +headers['content-length'];
       if (len > MAX_BYTES) { r.destroy(); return resolve({ status, headers, body: null, tooBig: true }); }
       const parts = []; let n = 0;
@@ -84,6 +85,7 @@ async function rateOk(req) {
 async function handler(req, res, deps) {
   const resolve = (deps && deps.resolve) || doh, get = (deps && deps.get) || getPinned, limit = (deps && deps.rateOk) || rateOk;
   if (req.method !== 'GET') return fail(res, 405, 'GET only');
+  const kind = req.query && req.query.kind === 'docx' ? 'docx' : '';
   const first = G.checkUrl(req.query && req.query.url);
   if (!first.ok) return fail(res, 400, first.reason);
   if (!(await limit(req))) return fail(res, 429, 'Too many pictures fetched from your connection this hour. Download the picture and drop the file instead.');
@@ -95,7 +97,7 @@ async function handler(req, res, deps) {
       if (!c.ok) return fail(res, 400, 'The link redirects somewhere this tool will not go: ' + c.reason);
       const ip = await G.pickPublicIp(c.host, resolve);
       if (!ip) return fail(res, 400, 'That address does not point to a public web server.');
-      const r = await get(c.url, ip, deadline);
+      const r = await get(c.url, ip, deadline, kind);
       if (r.status >= 300 && r.status < 400) {
         const loc = r.headers && r.headers.location;
         if (!loc || ++hops > MAX_HOPS) return fail(res, 502, 'Too many redirects.');
@@ -103,16 +105,16 @@ async function handler(req, res, deps) {
         continue;
       }
       if (r.tooBig) return fail(res, 413, 'That file is bigger than ' + (MAX_BYTES / 1e6).toFixed(1) + ' MB. Download it and drop the file on the page instead.');
-      if (r.badType) return fail(res, 415, 'That link is not a picture or PDF (it is ' + String(r.headers['content-type'] || 'unknown').split(';')[0] + ').');
+      if (r.badType) return fail(res, 415, 'That link is not a ' + (kind === 'docx' ? 'Word file' : 'picture or PDF') + ' (it is ' + String(r.headers['content-type'] || 'unknown').split(';')[0] + ').');
       if (r.status !== 200 || !r.body) return fail(res, 502, 'The other site answered ' + r.status + '.');
-      const type = G.sniff(r.body);
-      if (!type) return fail(res, 415, 'That link is not a picture or PDF this page can read.');
+      const type = kind === 'docx' ? G.sniffDocx(r.body) : G.sniff(r.body);
+      if (!type) return fail(res, 415, kind === 'docx' ? 'That link is not a Word .docx file.' : 'That link is not a picture or PDF this page can read.');
       res.setHeader('Content-Type', type);
       res.setHeader('Content-Length', String(r.body.length));
       res.setHeader('Cache-Control', 'no-store');
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Content-Disposition', kind === 'docx' ? 'attachment' : 'inline');
       res.setHeader('X-Robots-Tag', 'noindex');
       return res.status(200).send(r.body);
     }

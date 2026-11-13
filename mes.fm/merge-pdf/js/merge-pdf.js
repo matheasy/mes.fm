@@ -84,7 +84,34 @@ var MESImg = (function () {
 		}
 		return out;
 	}
-	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead };
+	/* ---------- hand pictures from one MES tool to another in the same browser (round 10: Photo Editor <-> Compressor <-> Image Converter) ----------
+	 * The pictures go through IndexedDB "mes-handoff" (same site, never uploaded) under a random id; the other page is opened with ?handoff=<id> and
+	 * takes them (they are deleted when taken, and anything older than an hour is cleared). send() opens the new tab inside the click so pop-up
+	 * blockers allow it, then points it at the page once the pictures are stored. */
+	var HDB = "mes-handoff";
+	function hdb() { return new Promise(function (res, rej) { if (typeof indexedDB === "undefined") { rej(new Error("no IndexedDB")); return; } var r = indexedDB.open(HDB, 1); r.onupgradeneeded = function () { r.result.createObjectStore("h"); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	function htx(mode, fn) { return hdb().then(function (db) { return new Promise(function (res, rej) { var t = db.transaction("h", mode), st = t.objectStore("h"), out = fn(st); t.oncomplete = function () { db.close(); res(out && out.result !== undefined ? out.result : out); }; t.onerror = function () { db.close(); rej(t.error); }; }); }); }
+	function handoffPut(files) {
+		var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10), list = (files || []).map(function (f) { return { name: f.name || "picture.png", type: f.type || (f.blob && f.blob.type) || "image/png", blob: f.blob || f }; });
+		return htx("readwrite", function (st) { var c = st.openCursor(); c.onsuccess = function () { var cur = c.result; if (!cur) return; if (!cur.value || Date.now() - cur.value.t > 3600e3) cur.delete(); cur.continue(); }; st.put({ t: Date.now(), files: list }, id); }).then(function () { return id; });
+	}
+	function handoffTake(id) {
+		var got = null; return htx("readwrite", function (st) { var g = st.get(String(id)); g.onsuccess = function () { got = g.result || null; if (got) st.delete(String(id)); }; }).then(function () {
+			if (!got) return []; return got.files.map(function (f) { try { return new File([f.blob], f.name, { type: f.type }); } catch (e) { var b = f.blob; b.name = f.name; return b; } });
+		});
+	}
+	/* to = "/photo" | "/compress" | "/image-converter"; files = [File or {blob, name}]. Returns a promise; onBlocked(url) is called when no tab could open. */
+	function handoffSend(to, files, onBlocked) {
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) {}
+		return handoffPut(files).then(function (id) { var url = to + (to.indexOf("?") < 0 ? "?" : "&") + "handoff=" + encodeURIComponent(id); if (w && !w.closed) { try { w.opener = null; } catch (e) {} w.location.href = url; } else if (onBlocked) onBlocked(url); else location.href = url; return id; }, function (e) { if (w) w.close(); throw e; });
+	}
+	/* the pictures handed to this page (?handoff=<id>), and the address cleaned so a reload doesn't ask again */
+	function handoffReceive() {
+		if (typeof location === "undefined") return Promise.resolve([]); var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m) return Promise.resolve([]);
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) {}
+		return handoffTake(m[1]).catch(function () { return []; });
+	}
+	var api = { FORMATS: FORMATS, extOf: extOf, baseName: baseName, cleanFileName: cleanFileName, fitSize: fitSize, uniqueName: uniqueName, outName: outName, formatBytes: formatBytes, crc32: crc32, zipStore: zipStore, zipRead: zipRead, handoffPut: handoffPut, handoffTake: handoffTake, handoffSend: handoffSend, handoffReceive: handoffReceive };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	return api;
 })();
@@ -182,6 +209,19 @@ var MESImg = (function () {
 	var tick = function () { return new Promise(function (r) { setTimeout(r, 0); }); };
 	$("pt-drop-t").textContent = CFG.t; $("pt-drop-s").textContent = CFG.s; $("pt-pick").textContent = CFG.multi ? "Choose files" : "Choose a file"; $("pt-go").textContent = CFG.go; $("pt-input").accept = CFG.kind === "pdf" ? "application/pdf,.pdf" : "image/*"; $("pt-input").multiple = CFG.multi;
 	var drop = $("pt-drop"); $("pt-pick").addEventListener("click", function (e) { e.stopPropagation(); $("pt-input").click(); }); drop.addEventListener("click", function () { $("pt-input").click(); }); drop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("pt-input").click(); } });
+	/* a PDF from a link (box under the drop zone, a link pasted anywhere, or ?url=), via /main_js/link-open.js */
+	var LO = window.MESLinkOpen, lf = $("pt-linkform"), escT = function (x) { return String(x).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+	if (CFG.kind !== "pdf" || !LO) lf.hidden = true; else {
+		var openLink = async function (raw) {
+			if (busy) return; $("pt-linkgo").disabled = true;
+			try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { notice(escT(m)); } }); notice(""); await addFiles([f]); $("pt-link").value = ""; }
+			catch (e) { notice(escT((e && e.message || String(e)) + " You can also download the PDF and drop it here."), true); }
+			finally { $("pt-linkgo").disabled = false; }
+		};
+		lf.addEventListener("submit", function (e) { e.preventDefault(); openLink($("pt-link").value); });
+		document.addEventListener("paste", function (e) { var t = e.target; if (t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable)) return; var x = e.clipboardData && e.clipboardData.getData("text/plain"); if (LO.looksLikeLink(x)) { e.preventDefault(); openLink(x.trim()); } });
+		if (LO.fromQuery()) openLink(LO.fromQuery());
+	}
 	$("pt-input").addEventListener("change", function () { addFiles(this.files); this.value = ""; });
 	["dragenter", "dragover"].forEach(function (n) { document.addEventListener(n, function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); drop.classList.add("is-over"); } }); });
 	["dragleave", "drop"].forEach(function (n) { document.addEventListener(n, function (e) { if (n === "dragleave" && e.relatedTarget) return; drop.classList.remove("is-over"); }); });
