@@ -103,7 +103,7 @@ BL_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__t
 BL_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm) for sl, nm in BL_PAGES[1:])
 def _bl(slug, start, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", nm) for sl, nm in BL_PAGES)
-    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="26",
+    d = dict(title=title, page_title=page_title, tag=BL_BRAND["tag"], accent="#0f7a4a", dark="#0b5a36", tint="#dff3e8", desc=desc, meta_desc=meta_desc, js_v="27",
              src="billiards", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"], nav_extra=BL_NAV_INFO, menu_extra=BL_NAV_MENU,
              vars={"START": start, "FAM": fam, "SEO": "@seo/%s.html" % slug})
     if slug != "billiards":
@@ -118,7 +118,7 @@ GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="20",
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="21",
              src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js", "map.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
@@ -684,7 +684,7 @@ APPS = {
                             tag="Drive anywhere. Crash anything. Change gravity.", accent="#d9480f", dark="#a63a0b", tint="#ffe8d9",
                             desc="A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.",
                             meta_desc="Free 3D car sandbox with real physics: drive on a test track, the Moon, Mars or Ceres, crash into cars and objects, jump ramps and change gravity.",
-                            js_v="1"),
+                            js_v="2"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
@@ -1153,7 +1153,7 @@ APPS = {
                             tag="Plan your week, rotate your workouts, track your streak.", accent="#1d7a46", dark="#155c34", tint="#e2f3e8",
                             desc="Free workout routine planner: plan each day of your week with times and activities in your own categories, keep a Currently-at marker that moves to the next workout when you finish one, run training lists and rotations, drag and drop everything, log workouts and see your streak and calendar. Import from Excel, print, share as a link. No sign-up.",
                             meta_desc="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel.",
-                            js_v="1"),
+                            js_v="2", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=4"]),
     # Famous Birthdays (new 2026-10-21, mes.fm/birthday; aliases /birthdays /celebrity-birthdays /famous-birthdays /born-today ...): who shares your birthday, born today,
     # name search, filters (field / country / era / living), same date + same year + nearest. Data = mes.fm/birthday/data/MM.json + index.json from Wikidata (CC0),
     # written by build_birthdays.py (+ birthday_extras.json). lib.js = BD (helpers + loader; tests tool_apps_src/birthday-tests.js); Sun sign / Chinese animal from the
@@ -1508,7 +1508,7 @@ APPS = {
                 tag="Play chess in 2D or 3D, against anyone.", accent="#7a4a1e", dark="#5a3514", tint="#f5ead9",
                 desc="Play chess free against the computer at four levels, a friend on the same device, or someone online as a guest or on the Hive blockchain (live or correspondence), on a 2D board or a 3D board in a chess club, tournament hall, park or space. Chess960, King of the Hill and Three-check, clocks, hints, analysis, PGN and FEN.",
                 meta_desc="Free chess: play the computer at four levels, a friend, or online as a guest or on Hive. 2D or 3D boards, Chess960, clocks, hints, PGN and FEN.",
-                js_v="2", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
+                js_v="3", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "connect-four": dict(title="MES Connect Four", page_title="Connect Four: Play Free Against the Computer, a Friend or Online",
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",
@@ -1708,6 +1708,9 @@ APP_STORE = {
     "gradecalculator": ("MES Grade Calculator", "https://apps.apple.com/us/app/id6824035179"),
     "weighted-average-calculator": ("MES Grade Calculator", "https://apps.apple.com/us/app/id6824035179"),
     "gpacalculator": ("MES GPA Calculator", "https://apps.apple.com/us/app/id6824052607"),
+    "polls": ("MES Polls", "https://apps.apple.com/us/app/id6833587418"),
+    **{s: ("MES Timer", "https://apps.apple.com/us/app/id6833587925") for s in ("timer", "countdown-timer", "stopwatch", "alarm-clock",
+                                                                            "pomodoro-timer", "interval-timer", "countdown-to-date")},
     **{s: _APP_FIT for s in ("bmr-calculator", "tdee-calculator", "body-fat-calculator", "ideal-weight-calculator", "waist-to-hip-ratio-calculator",
                              "macro-calculator", "protein-intake-calculator", "water-intake-calculator", "heart-rate-zone-calculator",
                              "calories-burned-calculator", "pace-calculator", "one-rep-max-calculator", "sleep-calculator")},

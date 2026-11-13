@@ -132,7 +132,6 @@
 		var SRC = {"3s": "3Speak", yt: "YouTube", sp: "Spotify"}, cur = null, src = null, mkey = "mes-gta:music";
 		function pick(b) { var o = {}; try { o = JSON.parse(localStorage.getItem(mkey) || "{}"); } catch (e) {} return b.getAttribute("data-" + o.src) ? o.src : (b.dataset["3s"] ? "3s" : "yt"); }
 		function url(k, v) {
-		if (k === "3s") return "https://play.3speak.tv/embed?v=" + encodeURIComponent(v).replace("%2F", "/") + "&autoplay=true";
 		if (k === "yt") return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(v) + "?autoplay=1&rel=0";
 		return "https://open.spotify.com/embed/album/" + encodeURIComponent(v) + "?utm_source=generator&theme=0";
 		}
@@ -148,18 +147,47 @@
 		$("gm-links").innerHTML = [d.q && link("More versions on YouTube", "https://www.youtube.com/results?search_query=" + d.q), link("Hive post", d.hive), d["3s"] && link("3Speak", "https://3speak.tv/watch?v=" + d["3s"]), d.yt && link("YouTube", "https://www.youtube.com/watch?v=" + d.yt), d.sp && link("Spotify", "https://open.spotify.com/album/" + d.sp), link("Apple Music", d.apple), link("Amazon Music", d.amazon), link("Deezer", d.deezer)].filter(Boolean).join(" · ");
 		if (play) load(); else poster();
 		}
+		function posterOf(b) { return b.dataset.st ? "https://i.ytimg.com/vi/" + b.dataset.yt + "/hqdefault.jpg" : b.querySelector("img").getAttribute("src").replace("/320x0/", "/640x0/").replace("/mqdefault.", "/hqdefault."); }
 		function poster() {
-		var img = cur.dataset.st ? "https://i.ytimg.com/vi/" + cur.dataset.yt + "/hqdefault.jpg" : cur.querySelector("img").getAttribute("src").replace("/320x0/", "/640x0/").replace("/mqdefault.", "/hqdefault.");
+		stopHls(); var img = posterOf(cur);
 		$("gm-screen").className = "gm-screen";
 		$("gm-screen").innerHTML = '<button type="button" class="gm-poster" id="gm-poster"><img src="' + esc(img) + '" alt=""><span class="gm-play" aria-hidden="true">▶</span><span class="gm-ptxt">Play on ' + SRC[src] + "</span></button>";
 		$("gm-poster").addEventListener("click", load);
 		}
-		function load() {
-		var v = cur.dataset[src], sp = src === "sp";
-		$("gm-screen").className = "gm-screen" + (sp ? " is-sp" : "");
-		$("gm-screen").innerHTML = '<iframe src="' + esc(url(src, v)) + '" title="' + esc(name(cur)) + '" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+		/* 3Speak: never iframe play.3speak.tv/embed (it is a whole 3Speak page now, shown squashed with white bars).
+		    Like every other MES page: ask play.3speak.tv/api/embed for the current HLS manifest and play it in our own
+		    <video> (native HLS on Safari / iOS, else hls.js); if that fails, fall back to the YouTube upload. */
+		var hlsP = null, hlsObj = null;
+		function hlsLib() { return hlsP || (hlsP = new Promise(function (ok, no) { if (window.Hls) return ok(window.Hls); var s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js"; s.onload = function () { ok(window.Hls); }; s.onerror = function () { hlsP = null; no(); }; document.head.appendChild(s); })); }
+		function stopHls() { if (hlsObj) { try { hlsObj.destroy(); } catch (e) {} hlsObj = null; } }
+		function load3s(b) {
+		var scr = $("gm-screen"), poster = posterOf(b);
+		scr.className = "gm-screen";
+		scr.innerHTML = '<video controls playsinline preload="auto" poster="' + esc(poster) + '"></video>';
+		var vid = scr.querySelector("video"), dead = false;
+		function fail() { if (dead || cur !== b) return; dead = true; stopHls(); if (b.dataset.yt) { src = "yt"; loadFrame(b); } else scr.innerHTML = '<p class="gm-err">This video could not be played here. <a href="https://3speak.tv/watch?v=' + esc(b.dataset["3s"]) + '" target="_blank" rel="noopener">Watch it on 3Speak</a>.</p>'; }
+		function start(u) {
+			if (cur !== b) return;
+			function native() { if (!vid.canPlayType("application/vnd.apple.mpegurl")) return fail(); vid.src = u; vid.addEventListener("error", fail); vid.play().catch(function () {}); }
+			/* hls.js first wherever Media Source works (some desktop Chromes now answer "maybe" for HLS and then fail); native HLS for iPhone Safari */
+			if (!window.MediaSource && !window.ManagedMediaSource) return native();
+			hlsLib().then(function (H) {
+			if (cur !== b) return; if (!H || !H.isSupported()) return native();
+			hlsObj = new H(); hlsObj.loadSource(u); hlsObj.attachMedia(vid);
+			hlsObj.on(H.Events.MANIFEST_PARSED, function () { vid.play().catch(function () {}); });
+			hlsObj.on(H.Events.ERROR, function (e, d) { if (d && d.fatal) fail(); });
+			}, native);
 		}
-		list.addEventListener("click", function (e) { var b = e.target.closest(".gm-item"); if (b) show(b, cur !== b || !$("gm-screen").querySelector("iframe")); });
+		fetch("https://play.3speak.tv/api/embed?v=" + encodeURIComponent(b.dataset["3s"]).replace("%2F", "/")).then(function (r) { return r.json(); })
+			.then(function (d) { if (d && d.videoUrl) start(d.videoUrl); else fail(); }, fail);
+		}
+		function load() { stopHls(); if (src === "3s") load3s(cur); else loadFrame(cur); }
+		function loadFrame(b) {
+		var v = b.dataset[src], sp = src === "sp";
+		$("gm-screen").className = "gm-screen" + (sp ? " is-sp" : "");
+		$("gm-screen").innerHTML = '<iframe src="' + esc(url(src, v)) + '" title="' + esc(name(b)) + '" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+		}
+		list.addEventListener("click", function (e) { var b = e.target.closest(".gm-item"); if (b) show(b, cur !== b || !$("gm-screen").querySelector("iframe, video")); });
 		root.querySelector(".gm-games").addEventListener("click", function (e) {
 			var b = e.target.closest(".gm-chip[data-yt]"); if (!b) return;
 			show(b, true);
@@ -168,7 +196,7 @@
 		$("gm-src").addEventListener("click", function (e) {
 		var b = e.target.closest("button[data-k]"); if (!b) return;
 		try { localStorage.setItem(mkey, JSON.stringify({src: b.getAttribute("data-k")})); } catch (er) {}
-		var playing = !!$("gm-screen").querySelector("iframe"); show(cur, playing);
+		var playing = !!$("gm-screen").querySelector("iframe, video"); show(cur, playing);
 		});
 		show(list.querySelector(".gm-item"), false);
 		})();
