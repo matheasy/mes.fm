@@ -42,6 +42,28 @@
 			<p class="fv-linknote">The same list inside the address itself, for when you prefer to keep everything in your own bookmarks. Nothing is stored anywhere.</p>
 			<div class="fv-linkrow"><input id="fv-link" class="tu-input" type="text" readonly aria-label="Long link to my favourites"><button type="button" class="tu-btn tu-btn--ghost" id="fv-copy2">Copy long link</button></div>
 			<p class="fv-linknote" id="fv-linknote"></p></details>
+			<div class="fv-hive" id="fv-hive">
+				<h3>&#9729; Save to Hive</h3>
+				<p class="fv-linknote">Save your whole list, or one group, to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load it on any computer or phone with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a> (the browser extension or the phone app). No mes.fm server: your browser writes it to the blockchain, signed in Keychain.</p>
+				<div class="fv-hv-user" id="fv-hv-user"></div>
+				<div id="fv-hv-main" hidden>
+					<div class="fv-hv-row">
+						<label class="fv-to">Save <select id="fv-hv-what" class="tu-select" aria-label="What to save to Hive"></select></label>
+						<label class="fv-hv-enc"><input type="checkbox" id="fv-hv-enc" checked> <span><b>Encrypt</b> (only you can read it, with your memo key)</span></label>
+					</div>
+					<p class="fv-hv-warn" id="fv-hv-warn" role="note"></p>
+					<div class="fv-hv-acts"><button type="button" class="tu-btn tu-btn--primary" id="fv-hv-save">Save to Hive</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-hv-load">Load from Hive</button></div>
+					<p class="fv-linknote fv-hv-msg" id="fv-hv-msg" aria-live="polite"></p>
+					<div class="fv-hv-list" id="fv-hv-list"></div>
+					<details class="fv-hv-more"><summary>What to know before you use it</summary><ul>
+						<li><b>It is permanent.</b> Anything written to Hive stays in the blockchain's history forever. "Hide" only removes a backup from this list.</li>
+						<li><b>It is public.</b> Anyone can see that your account saved an MES Favourites backup, when, and its size. With <em>Encrypt</em> on they can't read it. With it off, <b>your group names and pages are readable by anyone, forever</b> (fine for a list you want to share).</li>
+						<li><b>Encryption needs your memo key</b> in Keychain (to save and to open). The Keychain phone app can't use the memo key, so there only public saves are possible.</li>
+						<li>It uses free Resource Credits and your <em>posting</em> key; it can't move any funds.</li>
+					</ul></details>
+				</div>
+				<div id="fv-hv-help"></div>
+			</div>
 			<div class="fv-files"><button type="button" class="tu-btn tu-btn--ghost" id="fv-export">Download backup file</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-import">Restore from a backup file</button> <input type="file" id="fv-file" accept=".json,application/json" hidden></div>
 		</div>
 
@@ -51,9 +73,9 @@
 				<li><b>Add:</b> search for any calculator, tool, tutorial or other mes.fm page and press Add. Choose the group first with &ldquo;Add to&rdquo;.</li>
 				<li><b>Arrange:</b> drag a tile by the dots (or anywhere on it with a mouse) to reorder it or move it to another group. Hold <kbd>Alt</kbd> while dropping to copy it instead. With the keyboard, focus the dots and press the arrow keys.</li>
 				<li><b>Groups:</b> create as many as you like, rename them, drag them by their dots, and fold them with the arrow. A page can sit in several groups: use the copy button on its tile.</li>
-				<li><b>Sync:</b> make your short link (mes.fm/f/&hellip;) and open it on another device to get the same favourites.</li>
+				<li><b>Sync:</b> make your short link (mes.fm/f/&hellip;) and open it on another device to get the same favourites, or save the list (or one group) to your Hive account, encrypted or public, and load it anywhere with Hive Keychain.</li>
 			</ul>
 			<h2>Is my list private?</h2>
-			<p>Yes. It stays in your browser unless you share your link yourself. A short link stores your group names and page addresses on our server (nothing else, no account); you can delete it any time. Without a short link nothing leaves your browser.</p>
+			<p>Yes. It stays in your browser unless you share your link yourself. A short link stores your group names and page addresses on our server (nothing else, no account); you can delete it any time. Without a short link nothing leaves your browser. A Hive backup goes straight from your browser to your own Hive account; encrypted, only your memo key can open it.</p>
 		</div>
 	</div>

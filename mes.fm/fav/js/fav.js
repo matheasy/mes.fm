@@ -321,6 +321,17 @@
     };
 
     /* ---------- importing (link or file) ---------- */
+    function doReplace(c) { var old = state; state = c; save(); render(); toast("Replaced your favourites", function () { state = old; save(); render(); }); }
+    function doMerge(c) {
+        var old2 = JSON.parse(JSON.stringify(state)), added = 0;
+        c.groups.forEach(function (cg) {
+            var g = state.groups.filter(function (x) { return x.name.toLowerCase() === cg.name.toLowerCase(); })[0];
+            if (!g) { g = { id: uid(), name: cg.name, open: true, items: [] }; state.groups.push(g); }
+            cg.items.forEach(function (p) { if (g.items.indexOf(p) === -1) { g.items.push(p); added++; } });
+        });
+        save(); render(); toast(added ? "Merged: " + added + " new page" + (added === 1 ? "" : "s") : "Nothing new to add", function () { state = clean(old2); save(); render(); });
+        return added;
+    }
     function offerImport(c, from) {
         var n = c.groups.reduce(function (s, g) { return s + g.items.length; }, 0);
         if (!total() && state.groups.length === 1 && !state.groups[0].items.length) { state = c; save(); render(); toast("Loaded " + n + " pages from " + from); return; }
@@ -329,16 +340,8 @@
             '<button type="button" class="tu-btn tu-btn--primary" data-a="replace">Replace mine</button><button type="button" class="tu-btn tu-btn--ghost" data-a="merge">Merge with mine</button><button type="button" class="tu-btn tu-btn--ghost" data-a="cancel">Cancel</button>';
         noticeEl.onclick = function (e) {
             var b = e.target.closest("button[data-a]"); if (!b) return; var a = b.getAttribute("data-a");
-            if (a === "replace") { var old = state; state = c; save(); render(); toast("Replaced your favourites", function () { state = old; save(); render(); }); }
-            else if (a === "merge") {
-                var old2 = JSON.parse(JSON.stringify(state));
-                c.groups.forEach(function (cg) {
-                    var g = state.groups.filter(function (x) { return x.name.toLowerCase() === cg.name.toLowerCase(); })[0];
-                    if (!g) { g = { id: uid(), name: cg.name, open: true, items: [] }; state.groups.push(g); }
-                    cg.items.forEach(function (p) { if (g.items.indexOf(p) === -1) g.items.push(p); });
-                });
-                save(); render(); toast("Merged", function () { state = clean(old2); save(); render(); });
-            }
+            if (a === "replace") doReplace(c);
+            else if (a === "merge") doMerge(c);
             noticeEl.hidden = true; noticeEl.innerHTML = "";
             if (location.search) history.replaceState(null, "", location.pathname);
         };
@@ -536,6 +539,132 @@
     });
 
     window.addEventListener("storage", function (e) { if (e.key === KEY && !drag && !tdrag) { state = load(); render(); updateLink(); } });
+
+
+    /* ---------- ☁ Save to Hive (MESHive + MESHiveStore, like Copy Text). custom_json "mes_store", app "fav", name "all" (every group) or
+       "group" (one group: the group's own name is only inside the data, so an encrypted save doesn't show it). Data = {v:1, g:[[name,[paths]]...]}.
+       Encrypt choice: localStorage "mes-fav:hiveenc" ("0" = off). ---------- */
+    var HAPP = "fav", ENC_KEY = "mes-fav:hiveenc", hvList = null, hvBusy = false;
+    function HV() { return window.MESHive; }
+    function HS() { return window.MESHiveStore; }
+    function hmsg(t, cls) { var m = $("fv-hv-msg"); m.textContent = t || ""; m.className = "fv-linknote fv-hv-msg" + (cls ? " is-" + cls : ""); }
+    function hvErr(e) { return e && e.code === "cancel" ? "Cancelled in Keychain." : (e && e.message) || "Something went wrong."; }
+    function hvWhen(t) { var d = new Date(/Z$/.test(t) ? t : t + "Z"); if (isNaN(d)) return t; var o = { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }; if (d.getFullYear() !== new Date().getFullYear()) o.year = "numeric"; return d.toLocaleString(undefined, o); }
+    function hvKb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(1) + " KB"; }
+    function paintWhat() {
+        var sel = $("fv-hv-what"), cur = sel.value;
+        sel.innerHTML = '<option value="">All groups (' + total() + " pages)</option>" + state.groups.map(function (g) { return '<option value="' + esc(g.id) + '">Group: ' + esc(g.name) + " (" + g.items.length + ")</option>"; }).join("");
+        if (cur && groupBy(cur)) sel.value = cur;
+    }
+    function paintWarn() {
+        var w = $("fv-hv-warn"), enc = $("fv-hv-enc").checked;
+        if (HS() && HS().canEncrypt && !HS().canEncrypt()) { w.className = "fv-hv-warn is-open"; w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so a save made here is <b>public</b>: your group names and pages can be read by anyone on the Hive blockchain, forever. For encrypted saves use a computer with the Keychain extension."; return; }
+        if (enc) { w.className = "fv-hv-warn"; w.innerHTML = "🔒 Encrypted: only your memo key can open it. Others can still see that a backup exists, when, and its size. Saved permanently."; }
+        else { w.className = "fv-hv-warn is-open"; w.innerHTML = "⚠ <b>Public:</b> the group names and pages will be <b>readable by anyone on the Hive blockchain, forever</b>. Good for a list you want to share; it can't be deleted later."; }
+    }
+    function paintUser() {
+        var box = $("fv-hv-user"), u = HV() && HV().user();
+        if (!HV() || !HS()) { box.innerHTML = '<p class="fv-hv-warn is-open">The Hive scripts did not load (blocked or offline). Reload the page to try again.</p>'; $("fv-hv-main").hidden = true; return; }
+        if (u) {
+            box.innerHTML = '<span class="fv-hv-who"><img src="' + HV().avatar(u.name) + '" alt="" width="24" height="24" loading="lazy"> Logged in as <b>@' + esc(u.name) + '</b></span> <button type="button" class="tu-btn tu-btn--ghost" data-h="logout">Log out</button>';
+            $("fv-hv-main").hidden = false; $("fv-hv-help").innerHTML = "";
+            var ce = $("fv-hv-enc"), can = !HS().canEncrypt || HS().canEncrypt();
+            if (!can) ce.checked = false; else ce.checked = lsGet(ENC_KEY, "1") !== "0";
+            ce.disabled = !can; paintWhat(); paintWarn();
+        } else {
+            box.innerHTML = '<div class="fv-hv-login"><input class="tu-input" id="fv-hv-name" type="text" placeholder="Your Hive username" aria-label="Your Hive username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="17"> <button type="button" class="tu-btn tu-btn--primary" data-h="login">Log in with Keychain</button></div>';
+            $("fv-hv-main").hidden = true;
+            HV().keychain(1500).then(function (k) { if (!k && !HV().user()) $("fv-hv-help").innerHTML = HV().helpHtml(); });
+        }
+    }
+    function hvBusySet(on) { hvBusy = on; $("fv-hv-save").disabled = on; $("fv-hv-load").disabled = on; }
+    function hvSave() {
+        if (hvBusy) return;
+        var gid = $("fv-hv-what").value, gs = gid ? [groupBy(gid)].filter(Boolean) : state.groups;
+        var n = gs.reduce(function (t, g) { return t + g.items.length; }, 0);
+        if (!n) { hmsg(gid ? "That group is empty." : "Add a few pages first.", "err"); return; }
+        var enc = $("fv-hv-enc").checked, what = gid ? "the group “" + gs[0].name + "”" : "all " + gs.length + " group" + (gs.length === 1 ? "" : "s");
+        if (!enc && !confirm("Save WITHOUT encryption?\n\n" + what + " (" + n + " pages) will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
+        var data = { v: 1, g: gs.map(function (g) { return [g.name, g.items.slice()]; }) }, u = HV().user();
+        hvBusySet(true);
+        HS().rcPercent(u.name).catch(function () { return null; }).then(function (rc) {
+            if (rc != null && rc < 3) throw new Error("Your account's Resource Credits are at " + rc.toFixed(0) + "%. They refill over about five days; try again later.");
+            return HS().save(HAPP, gid ? "group" : "all", data, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
+                hmsg("Saved " + what + " (" + n + " pages) to @" + u.name + " on Hive (" + hvKb(r.bytes) + (enc ? ", encrypted" : ", public") + "). It shows up in the list within a few seconds.", "ok");
+                toast("Saved to Hive"); hvList = null; setTimeout(function () { hvLoad(true); }, 4000);
+            });
+        }).catch(function (e) { hmsg(hvErr(e), "err"); }).then(function () { hvBusySet(false); });
+    }
+    function hvLoad(quiet) {
+        if (hvBusy && !quiet) return;
+        var u = HV().user(); if (!u) return;
+        hvBusySet(true); if (!quiet) hmsg("Looking for your saves on Hive…");
+        HS().list(u.name, { app: HAPP, pages: 30, onProgress: function (i) { if (!quiet && i > 1) hmsg("Looking for your saves on Hive… (" + i + " pages of account history read)"); } }).then(function (saves) {
+            hvList = saves.filter(function (e) { return e.name === "all" || e.name === "group"; }).slice(0, 15); paintHvList();
+            if (!quiet) hmsg(hvList.length ? "Found " + hvList.length + " save" + (hvList.length === 1 ? "" : "s") + ". Pick one to load." : "No MES Favourites saves found on @" + u.name + " yet.", hvList.length ? "" : "err");
+        }).catch(function (e) { hmsg("Could not read from Hive: " + hvErr(e), "err"); }).then(function () { hvBusySet(false); });
+    }
+    function paintHvList() {
+        var box = $("fv-hv-list");
+        if (!hvList || !hvList.length) { box.innerHTML = ""; return; }
+        box.innerHTML = '<ul class="fv-hb">' + hvList.map(function (e, i) {
+            var meta = (e.name === "group" ? "One group" : "All groups") + " · " + (e.encrypted ? "🔒 encrypted" : "👁 public") + " · " + esc(hvKb(e.bytes)) + (e.complete ? "" : " · incomplete");
+            return "<li><span class='fv-hb-when'><b>" + esc(hvWhen(e.time)) + (i === 0 ? ' <span class="fv-hb-new">newest</span>' : "") + "</b><small>" + meta +
+                (e.trx ? ' · <a href="' + HS().explorer(e.trx) + '" target="_blank" rel="noopener">chain ↗</a>' : "") + "</small></span>" +
+                (e.complete ? '<button type="button" class="tu-btn tu-btn--primary" data-h="merge" data-i="' + i + '" title="Add the pages you don\'t have yet; keeps yours">Add to mine</button><button type="button" class="tu-btn tu-btn--ghost" data-h="replace" data-i="' + i + '" title="' + (e.name === "group" ? "Replace your group of the same name with this one" : "Replace all your favourites with this save") + '">Replace</button>' : "") +
+                '<button type="button" class="tu-btn tu-btn--ghost" data-h="forget" data-i="' + i + '" title="Hide this save from the list (the data stays on the blockchain)">Hide</button></li>';
+        }).join("") + "</ul>";
+    }
+    function hvRestore(i, mode) {
+        var e = hvList && hvList[i]; if (!e || hvBusy) return;
+        hvBusySet(true); hmsg(e.encrypted ? "Confirm in Keychain: decrypt with your memo key…" : "Opening the save…");
+        HS().load(e).then(function (d) {
+            if (!d || !Array.isArray(d.g)) throw new Error("That save could not be read.");
+            var c = clean({ groups: d.g.map(function (r) { return { name: r[0], items: r[1], open: true }; }) }), n = c.groups.reduce(function (t, g) { return t + g.items.length; }, 0);
+            if (mode === "merge") { var a = doMerge(c); hmsg(a ? "Added " + a + " page" + (a === 1 ? "" : "s") + " you didn't have. Your own were kept." : "You already have every page in that save.", "ok"); }
+            else if (e.name === "group") {
+                var cg = c.groups[0], g = state.groups.filter(function (x) { return x.name.toLowerCase() === cg.name.toLowerCase(); })[0], old = JSON.parse(JSON.stringify(state));
+                if (g) g.items = cg.items.slice(); else state.groups.push({ id: uid(), name: cg.name, open: true, items: cg.items.slice() });
+                save(); render(); toast("Replaced the group " + cg.name, function () { state = clean(old); save(); render(); });
+                hmsg("Loaded the group “" + cg.name + "” (" + n + " pages).", "ok");
+            } else {
+                if (!confirm("Replace all your favourites with this save (" + n + " pages in " + c.groups.length + " groups)?\nYou can undo right after.")) { hmsg(""); return; }
+                doReplace(c); hmsg("Loaded " + n + " pages from the save.", "ok");
+            }
+            paintWhat();
+        }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
+    }
+    if ($("fv-hive")) {
+        $("fv-hv-enc").onchange = function () { lsSet(ENC_KEY, this.checked ? "1" : "0"); paintWarn(); };
+        $("fv-hv-save").onclick = hvSave;
+        $("fv-hv-load").onclick = function () { hvLoad(false); };
+        $("fv-hv-what").addEventListener("focus", paintWhat);
+        $("fv-hive").addEventListener("click", function (e) {
+            var b = e.target.closest("[data-h]"); if (!b) return;
+            var a = b.dataset.h;
+            if (a === "login") {
+                var name = ($("fv-hv-name").value || "").trim();
+                if (!name) { $("fv-hv-name").focus(); hmsg("Type your Hive username first.", "err"); return; }
+                hmsg("Confirm the login in Hive Keychain (the browser extension, or the phone app if this browser has no extension)…");
+                HV().login(name).then(function () { hmsg(""); paintUser(); hvLoad(true); }).catch(function (x) {
+                    hmsg(x.code === "nokeychain" ? "Hive Keychain is not installed in this browser (see below)." : hvErr(x), "err");
+                    if (x.code === "nokeychain") $("fv-hv-help").innerHTML = HV().helpHtml();
+                });
+            } else if (a === "logout") { HV().logout(); hvList = null; paintHvList(); hmsg(""); paintUser(); }
+            else if (a === "merge" || a === "replace") hvRestore(+b.dataset.i, a);
+            else if (a === "forget") {
+                var it = hvList[+b.dataset.i]; if (!it || hvBusy) return;
+                if (!confirm("Hide this save from the list?\n\nThis only adds a 'hidden' note on Hive: the save itself stays in the blockchain's history forever" + (it.encrypted ? " (still encrypted)." : ", readable by anyone."))) return;
+                hvBusySet(true); hmsg("Confirm in Keychain…");
+                HS().forget(HAPP, it.name, it.s).then(function () { hvList.splice(+b.dataset.i, 1); paintHvList(); hmsg("Hidden from the list.", "ok"); })
+                    .catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
+            }
+        });
+        $("fv-hive").addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.id === "fv-hv-name") { e.preventDefault(); $("fv-hive").querySelector('[data-h="login"]').click(); } });
+        if (window.MESHive) MESHive.onChange(function () { hvList = null; paintHvList(); paintUser(); });
+        paintUser();
+        if (HV() && HV().user()) hvLoad(true);
+    }
 
     /* ---------- start ---------- */
     render(); updateLink(); paintShort();

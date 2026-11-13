@@ -445,6 +445,32 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#fv .fv-v-compact .fv-tt {white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;word-break:break-word;}
 	@media (max-width:560px) {#fv .fv-v-compact .fv-tile .fv-grip {width:1em;} #fv .fv-v-compact .fv-tile a {font-size:0.8em;gap:0.3em;}}
 
+	#fv .fv-hive {margin:1em 0 1.1em;padding:0.8em 1em;border-left:5px solid var(--fv-acc,#a15c07);background:var(--fv-surf2,#faf7f1);border-radius:0 0.6em 0.6em 0;}
+	#fv .fv-hive h3 {margin:0 0 0.3em;font-size:1.1em;}
+	#fv .fv-hive [hidden] {display:none !important;}
+	#fv .fv-hv-user, #fv .fv-hv-row, #fv .fv-hv-acts, #fv .fv-hv-login {display:flex;flex-wrap:wrap;gap:0.6em;align-items:center;margin:0.4em 0;}
+	#fv .fv-hv-login .tu-input {flex:1 1 12em;min-width:0;}
+	#fv .fv-hv-who {display:inline-flex;align-items:center;gap:0.45em;} #fv .fv-hv-who img {border-radius:50%;}
+	#fv .fv-hv-enc {display:inline-flex;gap:0.45em;align-items:center;cursor:pointer;} #fv .fv-hv-enc input {width:1.15em;height:1.15em;margin:0;}
+	#fv .fv-hv-warn {margin:0.5em 0;padding:0.5em 0.8em;border-radius:0 0.4em 0.4em 0;border-left:4px solid #2f8a4f;background:#eaf6ee;color:#1d4a2c;font-size:0.92em;line-height:1.45;}
+	#fv .fv-hv-warn.is-open {border-left-color:#c0392b;background:#fdecea;color:#7a1c13;}
+	#fv .fv-hv-msg.is-ok {color:#1d6b36;} #fv .fv-hv-msg.is-err {color:#a3261b;}
+	#fv .fv-hb {list-style:none;margin:0;padding:0;}
+	#fv .fv-hb li {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;padding:0.45em 0.2em;border-bottom:1px solid var(--fv-line,#e3e7ec);}
+	#fv .fv-hb-when {flex:1 1 12em;min-width:0;display:flex;flex-direction:column;line-height:1.3;}
+	#fv .fv-hb-when small {font-size:0.8em;color:var(--fv-mut,#6b7480);}
+	#fv .fv-hb-new {font-size:0.78em;background:#fdf0d8;color:#5c3a04;border-radius:1em;padding:0.05em 0.5em;font-weight:600;}
+	#fv .fv-hb .tu-btn {padding:0.3em 0.65em;font-size:0.86em;}
+	#fv .fv-hv-more {margin-top:0.6em;} #fv .fv-hv-more summary {cursor:pointer;font-weight:600;} #fv .fv-hv-more li {margin:0.3em 0;line-height:1.45;}
+	#fv .fv-hive .mh-help {font-size:0.92em;margin:0.7em 0 0;padding:0.7em 0.9em;border-left:3px solid #e0a100;background:#fff8e6;border-radius:0 6px 6px 0;line-height:1.5;}
+	body.dark-mode #fv .fv-hive {background:#262421;}
+	body.dark-mode #fv .fv-hive h3, body.dark-mode #fv .fv-hv-enc, body.dark-mode #fv .fv-hv-more li, body.dark-mode #fv .fv-hb-when b, body.dark-mode #fv .fv-hive .mh-help {color:#e4e4e4;}
+	body.dark-mode #fv .fv-hv-warn {background:#16301f;color:#bfe8cc;border-left-color:#4caf6e;}
+	body.dark-mode #fv .fv-hv-warn.is-open {background:#3a1714;color:#ffc9c2;border-left-color:#ff6b5c;}
+	body.dark-mode #fv .fv-hv-msg.is-ok {color:#8fe0a8;} body.dark-mode #fv .fv-hv-msg.is-err {color:#ff9a8f;}
+	body.dark-mode #fv .fv-hb-new {background:#3d2e10;color:#f5d58a;}
+	body.dark-mode #fv .fv-hive .mh-help {background:#2b2412;border-color:#c99100;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -570,21 +596,30 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #fv .fv-r mark{background:#594a22;color:#d1d6dc}
 	body.dark-mode .fv-menu{background:#1a1a1a;color:#d1d6dc;border:1px solid #343d48}
 	body.dark-mode .fv-toast{background:#525252}
+	body.dark-mode #fv .fv-hive{border-left:5px solid var(--fv-acc,#f48c0b);background:var(--fv-surf2,#1f1b14)}
+	body.dark-mode #fv .fv-hv-warn{border-left:4px solid #41be6d;background:#19241c;color:#8ad1a2}
+	body.dark-mode #fv .fv-hv-warn.is-open{border-left-color:#d03e2f;background:#251311;color:#e97c72}
+	body.dark-mode #fv .fv-hv-msg.is-ok{color:#7fdc9d}
+	body.dark-mode #fv .fv-hv-msg.is-err{color:#e87c73}
+	body.dark-mode #fv .fv-hb li{border-bottom:1px solid var(--fv-line,#29323d)}
+	body.dark-mode #fv .fv-hb-when small{color:var(--fv-mut,#9a9da2)}
+	body.dark-mode #fv .fv-hb-new{background:#322815;color:#f8be63}
+	body.dark-mode #fv .fv-hive .mh-help{border-left:3px solid #ffb700;background:#28210f}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/fav" />            <meta property="og:title" content="MES Favourites | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/fav/img/logo-big.png" />
-        <meta property="og:description" content="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser." />
+        <meta property="og:description" content="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser." />
 
-        <meta name="description" content="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES Favourites">
-        <meta name="twitter:description" content="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.">
+        <meta name="twitter:description" content="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser.">
         <meta name="twitter:image" content="https://mes.fm/fav/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Favourites">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Favourites", "url": "https://mes.fm/fav", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Favourites", "url": "https://mes.fm/fav", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -628,7 +663,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">MES Favourites: Your Own Calculators and Tools Page</h1>                                        <p class="page-description">Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link. Private: it stays in your browser.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">MES Favourites: Your Own Calculators and Tools Page</h1>                                        <p class="page-description">Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu fv" id="fv">
 		<div class="tu-card fv-find">
 			<label class="tu-label" for="fv-q">Search mes.fm to add pages, or to filter the favourites below</label>
@@ -673,6 +708,28 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p class="fv-linknote">The same list inside the address itself, for when you prefer to keep everything in your own bookmarks. Nothing is stored anywhere.</p>
 			<div class="fv-linkrow"><input id="fv-link" class="tu-input" type="text" readonly aria-label="Long link to my favourites"><button type="button" class="tu-btn tu-btn--ghost" id="fv-copy2">Copy long link</button></div>
 			<p class="fv-linknote" id="fv-linknote"></p></details>
+			<div class="fv-hive" id="fv-hive">
+				<h3>&#9729; Save to Hive</h3>
+				<p class="fv-linknote">Save your whole list, or one group, to your own <a href="https://hive.io" target="_blank" rel="noopener">Hive</a> account and load it on any computer or phone with <a href="https://hive-keychain.com/" target="_blank" rel="noopener">Hive Keychain</a> (the browser extension or the phone app). No mes.fm server: your browser writes it to the blockchain, signed in Keychain.</p>
+				<div class="fv-hv-user" id="fv-hv-user"></div>
+				<div id="fv-hv-main" hidden>
+					<div class="fv-hv-row">
+						<label class="fv-to">Save <select id="fv-hv-what" class="tu-select" aria-label="What to save to Hive"></select></label>
+						<label class="fv-hv-enc"><input type="checkbox" id="fv-hv-enc" checked> <span><b>Encrypt</b> (only you can read it, with your memo key)</span></label>
+					</div>
+					<p class="fv-hv-warn" id="fv-hv-warn" role="note"></p>
+					<div class="fv-hv-acts"><button type="button" class="tu-btn tu-btn--primary" id="fv-hv-save">Save to Hive</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-hv-load">Load from Hive</button></div>
+					<p class="fv-linknote fv-hv-msg" id="fv-hv-msg" aria-live="polite"></p>
+					<div class="fv-hv-list" id="fv-hv-list"></div>
+					<details class="fv-hv-more"><summary>What to know before you use it</summary><ul>
+						<li><b>It is permanent.</b> Anything written to Hive stays in the blockchain's history forever. "Hide" only removes a backup from this list.</li>
+						<li><b>It is public.</b> Anyone can see that your account saved an MES Favourites backup, when, and its size. With <em>Encrypt</em> on they can't read it. With it off, <b>your group names and pages are readable by anyone, forever</b> (fine for a list you want to share).</li>
+						<li><b>Encryption needs your memo key</b> in Keychain (to save and to open). The Keychain phone app can't use the memo key, so there only public saves are possible.</li>
+						<li>It uses free Resource Credits and your <em>posting</em> key; it can't move any funds.</li>
+					</ul></details>
+				</div>
+				<div id="fv-hv-help"></div>
+			</div>
 			<div class="fv-files"><button type="button" class="tu-btn tu-btn--ghost" id="fv-export">Download backup file</button> <button type="button" class="tu-btn tu-btn--ghost" id="fv-import">Restore from a backup file</button> <input type="file" id="fv-file" accept=".json,application/json" hidden></div>
 		</div>
 
@@ -682,10 +739,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><b>Add:</b> search for any calculator, tool, tutorial or other mes.fm page and press Add. Choose the group first with &ldquo;Add to&rdquo;.</li>
 				<li><b>Arrange:</b> drag a tile by the dots (or anywhere on it with a mouse) to reorder it or move it to another group. Hold <kbd>Alt</kbd> while dropping to copy it instead. With the keyboard, focus the dots and press the arrow keys.</li>
 				<li><b>Groups:</b> create as many as you like, rename them, drag them by their dots, and fold them with the arrow. A page can sit in several groups: use the copy button on its tile.</li>
-				<li><b>Sync:</b> make your short link (mes.fm/f/&hellip;) and open it on another device to get the same favourites.</li>
+				<li><b>Sync:</b> make your short link (mes.fm/f/&hellip;) and open it on another device to get the same favourites, or save the list (or one group) to your Hive account, encrypted or public, and load it anywhere with Hive Keychain.</li>
 			</ul>
 			<h2>Is my list private?</h2>
-			<p>Yes. It stays in your browser unless you share your link yourself. A short link stores your group names and page addresses on our server (nothing else, no account); you can delete it any time. Without a short link nothing leaves your browser.</p>
+			<p>Yes. It stays in your browser unless you share your link yourself. A short link stores your group names and page addresses on our server (nothing else, no account); you can delete it any time. Without a short link nothing leaves your browser. A Hive backup goes straight from your browser to your own Hive account; encrypted, only your memo key can open it.</p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -740,7 +797,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/site-search.js?v=1" defer></script><script src="/fav/js/fav.js?v=4" defer></script>
+	<script src="/main_js/site-search.js?v=1" defer></script><script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=4" defer></script><script src="/fav/js/fav.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

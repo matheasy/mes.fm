@@ -143,7 +143,7 @@
 },
 "/calories-burned-calculator":{
 "added":"2026-10-14",
-"updated":"2026-11-04",
+"updated":"2026-11-12",
 "type":"Calculator"
 },
 "/car-sandbox":{
@@ -218,7 +218,7 @@
 },
 "/crash-physics":{
 "added":"2026-11-05",
-"updated":"2026-11-05",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/dark-mode":{
@@ -323,7 +323,7 @@
 },
 "/fav":{
 "added":"2026-10-15",
-"updated":"2026-10-31",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/file-check":{
@@ -368,7 +368,7 @@
 },
 "/geometry":{
 "added":"2026-10-18",
-"updated":"2026-10-18",
+"updated":"2026-11-12",
 "type":"Calculator"
 },
 "/gnm":{
@@ -423,12 +423,12 @@
 },
 "/hologram":{
 "added":"2026-11-02",
-"updated":"2026-11-03",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/hutchison-effect-simulator":{
 "added":"2026-10-26",
-"updated":"2026-11-07",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/ideal-weight-calculator":{
@@ -488,7 +488,7 @@
 },
 "/letter-recognition":{
 "added":"2026-10-19",
-"updated":"2026-11-01",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/light-in-a-medium":{
@@ -548,7 +548,7 @@
 },
 "/maxwell-vortices":{
 "added":"2026-11-03",
-"updated":"2026-11-03",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/metric-tensor":{
@@ -583,7 +583,7 @@
 },
 "/mortgagecalculator":{
 "added":"2026-09-01",
-"updated":"2026-10-14",
+"updated":"2026-11-12",
 "type":"Calculator"
 },
 "/narration":{
@@ -598,7 +598,7 @@
 },
 "/negative-index":{
 "added":"2026-11-01",
-"updated":"2026-11-01",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/neural-network-playground":{
@@ -723,7 +723,7 @@
 },
 "/primes":{
 "added":"2026-11-10",
-"updated":"2026-11-10",
+"updated":"2026-11-12",
 "type":"Calculator"
 },
 "/pronounce":{
@@ -738,7 +738,7 @@
 },
 "/quantum":{
 "added":"2026-11-10",
-"updated":"2026-11-10",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/quantum-calculator":{
@@ -748,7 +748,7 @@
 },
 "/quaternions":{
 "added":"2026-11-03",
-"updated":"2026-11-03",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/random-number-generator":{
@@ -798,7 +798,7 @@
 },
 "/search-engines":{
 "added":"2026-10-03",
-"updated":"2026-10-24",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/seo":{
@@ -808,7 +808,7 @@
 },
 "/shapes-calculator":{
 "added":"2026-10-18",
-"updated":"2026-10-18",
+"updated":"2026-11-12",
 "type":"Calculator"
 },
 "/share":{
@@ -853,12 +853,12 @@
 },
 "/spin-half":{
 "added":"2026-11-03",
-"updated":"2026-11-03",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/spin-simulator":{
 "added":"2026-11-01",
-"updated":"2026-11-01",
+"updated":"2026-11-12",
 "type":"Simulation"
 },
 "/spin-wave-field":{
@@ -973,7 +973,7 @@
 },
 "/unit-conversion":{
 "added":"2026-07-13",
-"updated":"2026-11-07",
+"updated":"2026-11-12",
 "type":"Calculator"
 },
 "/vatcalculator":{
@@ -993,7 +993,7 @@
 },
 "/volume-booster":{
 "added":"2026-10-11",
-"updated":"2026-11-08",
+"updated":"2026-11-12",
 "type":"Browser extension"
 },
 "/waist-to-hip-ratio-calculator":{
