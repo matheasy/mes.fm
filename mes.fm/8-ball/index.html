@@ -618,6 +618,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#bl .bl-cic {display:inline-flex;align-items:center;gap:3px;}
 	#bl .bl-cic i {font-style:normal;font-size:0.82em;opacity:0.85;margin:0 2px;}
 	#bl .bl-cic:empty {display:none;}
+	/* on-table buttons see-through / hidden (👁 button, H), zoom indicator */
+	#bl .bl-ov.is-faint .bl-opow, #bl .bl-ov.is-faint .bl-ohit, #bl .bl-ov.is-faint .bl-ospin, #bl .bl-ov.is-faint .bl-ojog {opacity:0.32;}
+	#bl .bl-ov.is-faint .bl-ochip, #bl .bl-ov.is-hide .bl-ochip {opacity:0.6;}
+	#bl .bl-ov.is-faint .bl-otop button:not(.bl-ovis) {opacity:0.55;}
+	#bl .bl-ov.is-faint .bl-opow:hover, #bl .bl-ov.is-faint .bl-opow.is-drag, #bl .bl-ov.is-faint .bl-ohit:hover, #bl .bl-ov.is-faint .bl-ohit:active, #bl .bl-ov.is-faint .bl-ohit.is-charge, #bl .bl-ov.is-faint .bl-ospin:hover, #bl .bl-ov.is-faint .bl-ospin:active, #bl .bl-ov.is-faint .bl-ojog:hover, #bl .bl-ov.is-faint .bl-ojog.is-drag, #bl .bl-ov.is-faint .bl-otop button:hover {opacity:1;}
+	#bl .bl-ov.is-faint .bl-ohit {background:rgba(15,122,74,0.6);}
+	#bl .bl-ov.is-hide .bl-opow, #bl .bl-ov.is-hide .bl-ohit, #bl .bl-ov.is-hide .bl-ospin, #bl .bl-ov.is-hide .bl-ojog, #bl .bl-ov.is-hide .bl-ospinpop {display:none !important;}
+	#bl .bl-otop .bl-ovis.is-on {border-color:#ffd54f;color:#ffd54f;}
+	#bl .bl-otop .bl-ozoom {font-size:0.85em;padding:0 0.5em;border-color:#74c0fc;color:#d0ebff;}
 
 
 	@media print {
@@ -773,6 +782,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #bl .bl-ujog .bl-jogt{background-image:linear-gradient(90deg, rgba(73,80,90,0.65) 2px, transparent 2px)}
 	body.dark-mode #bl .bl-ospinpop{background:rgba(68,82,95,0.90)}
 	body.dark-mode #bl .bl-sphead button{border:1px solid rgba(51,51,51,0.30);background:#48515b}
+	body.dark-mode #bl .bl-otop .bl-ovis.is-on{border-color:#cc9b00;color:#ffd85c}
+	body.dark-mode #bl .bl-otop .bl-ozoom{border-color:#046bbd}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1217,7 +1228,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=26" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/billiards/js/billiards.js?v=27" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

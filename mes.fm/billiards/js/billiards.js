@@ -1920,7 +1920,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "8", opp: "cpu", lv: "medium", me: "first", alt: 0, guide: "full", orient: "auto", speed: "1", cloth: "green", snd: true, rel: true, nums: false,
-		names: ["", ""], ovm: "auto", mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", ong: 0, opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
+		names: ["", ""], ovm: "auto", ovv: 0, mus: [], mpBig: false, dim: "2d", cam: "auto", room: "bar", name: "", ofirst: "host", ong: 0, opub: true, cur: null, stats: {}, online: null, hive: null, saved: {}, chal: {}, power: 350 };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k0 in saved) S[k0] = saved[k0]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -2139,14 +2139,17 @@
 		var ah;
 		if (fill) ah = Math.max(160, stage.clientHeight - 12);
 		else ah = Math.max(220, window.innerHeight - (up ? 250 : 200));
-		// in 2D, keep the table clear of the on-table buttons (power bar on the right, HIT / aim strip below, the top row)
-		var ovOn = ov && S.dim !== "3d" && getComputedStyle($("bl-opow")).display !== "none";
+		// Fill window / full screen: the canvas is the whole stage and the table fills it (the on-table buttons float over it,
+		// see-through / hideable). On the normal page with "Buttons on the table: Always", keep the table clear of them.
+		var big = fill && S.dim !== "3d";
+		var ovOn = !big && ov && S.dim !== "3d" && getComputedStyle($("bl-opow")).display !== "none";
 		var kk = ovOn ? Math.min((aw - 62) / dimX, (ah - 58) / dimY) : Math.min(aw / dimX, ah / dimY);
 		cv.style.margin = ovOn ? "0 62px 58px 0" : "";
-		var w = Math.floor(dimX * kk), h = Math.floor(dimY * kk), dpr = Math.min(2.5, window.devicePixelRatio || 1);
+		var w = big ? Math.floor(aw) : Math.floor(dimX * kk), h = big ? Math.floor(ah) : Math.floor(dimY * kk), dpr = Math.min(2.5, window.devicePixelRatio || 1);
 		cv.style.width = w + "px"; cv.style.height = h + "px";
 		cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-		LY = { k: kk, w: w, h: h, dpr: dpr, up: up, cx: w / 2, cy: h / 2, cush: cush, wood: wood, T: T, Lo: Lo, Wo: Wo };
+		LY = { k0: kk, k: kk, w: w, h: h, dpr: dpr, up: up, cx: w / 2, cy: h / 2, cush: cush, wood: wood, T: T, Lo: Lo, Wo: Wo, dimX: dimX, dimY: dimY };
+		zoomApply(true);
 		staticCv = null; sprites = {};
 		if (S.dim === "3d" && v3) {
 			var portrait = aw < 620 && window.innerHeight > window.innerWidth * 1.15;
@@ -2160,6 +2163,28 @@
 		ov.classList.toggle("is-narrow", sr.width < 520);
 		ov.classList.toggle("is-short", sr.height < 520);
 	}
+	/* ---------- 2D zoom and pan (pinch / two fingers, Ctrl + wheel or the wheel in Fill window, right- or middle-drag pans) ---------- */
+	var zv = { z: 1, x: 0, y: 0 };
+	function zoomApply(quiet) {
+		if (!LY) return;
+		zv.z = Math.max(1, Math.min(5, zv.z));
+		if (zv.z < 1.001) { zv.z = 1; zv.x = 0; zv.y = 0; }
+		var tw = LY.dimX * LY.k0 * zv.z, th = LY.dimY * LY.k0 * zv.z;
+		var mx = zv.z > 1 ? Math.max(0, (tw - LY.w) / 2) + LY.w * 0.12 : 0, my = zv.z > 1 ? Math.max(0, (th - LY.h) / 2) + LY.h * 0.12 : 0;
+		zv.x = Math.max(-mx, Math.min(mx, zv.x)); zv.y = Math.max(-my, Math.min(my, zv.y));
+		LY.k = LY.k0 * zv.z; LY.cx = LY.w / 2 + zv.x; LY.cy = LY.h / 2 + zv.y;
+		var zb = ov && ov.querySelector('[data-ov="zoom"]');
+		if (zb) { zb.hidden = zv.z === 1 || S.dim === "3d"; zb.textContent = (Math.round(zv.z * 10) / 10) + "×"; }
+		if (!quiet) { staticCv = null; sprites = {}; need(); }
+	}
+	// zoom by factor f keeping the canvas point (px, py) still
+	function zoomAt(f, px, py) {
+		if (!LY || S.dim === "3d") return;
+		var z0 = zv.z, z1 = Math.max(1, Math.min(5, z0 * f)), ox = px - (LY.w / 2 + zv.x), oy = py - (LY.h / 2 + zv.y);
+		zv.x = px - LY.w / 2 - ox * z1 / z0; zv.y = py - LY.h / 2 - oy * z1 / z0; zv.z = z1;
+		zoomApply();
+	}
+	function zoomReset() { zv = { z: 1, x: 0, y: 0 }; zoomApply(); }
 	function w2s(x, y) { return LY.up ? [LY.cx + y * LY.k, LY.cy - x * LY.k] : [LY.cx + x * LY.k, LY.cy + y * LY.k]; }
 	function s2w(px, py) { return LY.up ? [(LY.cy - py) / LY.k, (px - LY.cx) / LY.k] : [(px - LY.cx) / LY.k, (py - LY.cy) / LY.k]; }
 	function buildStatic() {
@@ -2700,7 +2725,7 @@
 	var ov = document.createElement("div");
 	ov.className = "bl-ov"; ov.id = "bl-ov";
 	ov.innerHTML = '<div class="bl-ochip" id="bl-ochip" aria-live="polite"></div>' +
-		'<div class="bl-otop"><button type="button" data-ov="guide" class="bl-oguide" title="Aiming guide: full, short or off (G)">Guide</button><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
+		'<div class="bl-otop"><button type="button" data-ov="zoom" class="bl-ozoom" hidden title="Zoomed in: tap to see the whole table (0)">1×</button><button type="button" data-ov="vis" class="bl-ovis" title="Buttons on the table: shown, see-through or hidden (H)">👁</button><button type="button" data-ov="guide" class="bl-oguide" title="Aiming guide: full, short or off (G)">Guide</button><button type="button" data-ov="dim" title="Switch 2D / 3D (V)">3D</button><button type="button" data-ov="cam" title="Next camera (K)">🎥</button><button type="button" data-ov="help" title="How to shoot">?</button><button type="button" data-ov="fill" title="Fill the window">⤢</button></div>' +
 		'<div class="bl-opow" id="bl-opow" role="slider" aria-label="Power: drag down to pull the cue back, let go to shoot" aria-valuemin="1" aria-valuemax="100"><div class="bl-opowfill" id="bl-opowfill"></div><span class="bl-opowt">PULL<br>↓</span><span class="bl-opowv" id="bl-opowv"></span></div>' +
 		'<div class="bl-opill" id="bl-opill" hidden></div>' +
 		'<button type="button" class="bl-ospin" id="bl-ospin" title="Spin: drag the red dot, or tap for the big picker and jump shots"><canvas class="bl-spincv" width="96" height="96"></canvas></button>' +
@@ -2714,7 +2739,7 @@
 		'<div class="bl-ohelp" id="bl-ohelp" hidden><b>How to shoot</b><ol><li><b>Aim:</b> drag the <b>aim strip</b> at the bottom left or right (slowly = a hair at a time), or press on the table and drag. The dotted line shows where the white ball goes.' + '<span class="bl-o3d"> In 3D behind the cue, dragging on the table sideways also aims, up / down looks higher or lower.</span></li>' +
 		'<li><b>Shoot (easiest):</b> press on the <b>cue stick</b> (or the white ball) and <b>pull back</b>. The further you pull, the harder the shot. <b>Let go to shoot</b>, or slide back to where you started to cancel.</li><li><b>Or:</b> pull the bar on the right <b>down</b> (like pulling the cue back) and <b>let go to shoot</b>. Or <b>hold HIT</b>: the power goes up and down, let go when it is right. A quick tap on HIT shoots at the power already set.</li>' +
 		'<li><b>Spin:</b> drag the red dot on the little white ball (bottom left), or tap it for the big picker. Top = the white ball keeps rolling after the hit, bottom = it comes back, sides = side spin off the cushions.</li>' +
-		'<li><b>Jump shot:</b> in the big spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Guide:</b> the Guide button top right switches the aiming line full / short / off.</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
+		'<li><b>Jump shot:</b> in the big spin picker raise the cue (30 to 50° jumps a ball in the way; hit firmly). Too hard and steep and the white ball can fly off the table, which is a foul.</li><li><b>Guide:</b> the Guide button top right switches the aiming line full / short / off.</li><li><b>Zoom (2D):</b> pinch with two fingers (or Ctrl + mouse wheel; the plain wheel in Fill window), drag with two fingers or the right mouse button to move around. Tap the <b>2.0×</b> button to see the whole table again. <b>👁</b> makes the buttons see-through, then hides them (pull the cue to shoot).</li><li><b>Ball in hand:</b> after a foul, drag the white ball to where you want it first.</li></ol><button type="button" class="bl-vb bl-vb--main" data-ov="helpok">Got it</button></div>';
 	stage.appendChild(ov);
 	drawSpin();
 	function ovDim() { if (!ov) return; var b = ov.querySelector('[data-ov="dim"]'); if (b) b.textContent = S.dim === "3d" ? "2D" : "3D"; ov.querySelector('[data-ov="cam"]').hidden = S.dim !== "3d"; }
@@ -2729,7 +2754,23 @@
 		else if (a === "help") showHelp($("bl-ohelp").hidden);
 		else if (a === "helpok") showHelp(false);
 		else if (a === "fill") panelBtn(0);
+		else if (a === "zoom") zoomReset();
+		else if (a === "vis") cycleVis();
 	});
+	// the on-table buttons: 0 = shown, 1 = see-through (solid again while pressed), 2 = hidden (pull the cue to shoot)
+	function ovVis() {
+		var v = S.ovv || 0;
+		ov.classList.toggle("is-faint", v === 1); ov.classList.toggle("is-hide", v === 2);
+		var b = ov.querySelector('[data-ov="vis"]');
+		b.classList.toggle("is-on", v > 0);
+		b.title = ["Buttons on the table are shown: tap to make them see-through (H)", "Buttons are see-through: tap to hide them (H)", "Buttons are hidden: tap to show them (H)"][v];
+		b.setAttribute("aria-label", b.title);
+	}
+	function cycleVis() {
+		S.ovv = ((S.ovv || 0) + 1) % 3; save(); ovVis();
+		toast(["Buttons on the table shown.", "Buttons see-through: they turn solid while you press them.", "Buttons hidden: press on the cue and pull back to shoot. Tap 👁 to bring them back."][S.ovv]);
+	}
+	ovVis();
 	// no text selection / "Copy, Select all" menu when a button is held down (HIT charges by holding)
 	ov.addEventListener("contextmenu", function (e) { if (!e.target.closest("input")) e.preventDefault(); });
 	ov.addEventListener("selectstart", function (e) { if (!e.target.closest("input")) e.preventDefault(); });
@@ -2843,7 +2884,38 @@
 	/* ===================================================================== input ===================================================================== */
 	var drag = null;
 	function evXY(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+	var ptrs = {}, pinch = null;
+	function ptrList() { return Object.keys(ptrs).map(function (k) { return ptrs[k]; }); }
+	function cancelDrag() {
+		if (!drag) return;
+		if (drag.kind === "pull") { power = drag.p0; renderPower(); pullTip(""); }
+		if (drag.kind === "aim" && drag.a0 != null) aim = drag.a0;
+		drag = null; cv.classList.remove("is-dragball"); viewDrag(false); need();
+	}
+	function pinchStart() {
+		var a = ptrList(); if (a.length < 2) return;
+		var p = a[0], q = a[1];
+		pinch = { d0: Math.max(20, Math.hypot(p[0] - q[0], p[1] - q[1])), z0: zv.z, x0: zv.x, y0: zv.y, cx: (p[0] + q[0]) / 2, cy: (p[1] + q[1]) / 2 };
+	}
+	cv.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+	cv.addEventListener("wheel", function (e) {
+		if (S.dim === "3d") return;
+		if (!e.ctrlKey && !view.classList.contains("mes-pfill")) return;   // on the normal page the wheel scrolls the page
+		e.preventDefault();
+		var p = evXY(e); zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), p[0], p[1]);
+	}, { passive: false });
 	cv.addEventListener("pointerdown", function (e) {
+		var p0 = evXY(e);
+		if (e.isPrimary || e.pointerType !== "touch") { ptrs = {}; pinch = null; }   // forget pointers whose "up" got lost
+		ptrs[e.pointerId] = p0;
+		if (e.pointerType === "touch" && ptrList().length >= 2) {   // a second finger: pinch / pan the table, never a shot
+			cancelDrag(); pinchStart(); cv.setPointerCapture(e.pointerId); e.preventDefault(); return;
+		}
+		// right / middle mouse button, or one finger while it is not your shot and the table is zoomed in: pan
+		if (e.button === 1 || e.button === 2 || (!canShoot() && !anim && zv.z > 1)) {
+			drag = { kind: "pan", sx: e.clientX, sy: e.clientY, x0: zv.x, y0: zv.y };
+			cv.setPointerCapture(e.pointerId); e.preventDefault(); return;
+		}
 		if (e.button > 0) return;
 		ensureAudio();
 		if (anim) { skipAnim(); return; }
@@ -2856,13 +2928,22 @@
 		} else if (onCue(w)) {
 			drag = pullStart(e.clientX, e.clientY);
 		} else {
-			drag = { kind: "aim" };
+			drag = { kind: "aim", a0: aim };
 			setAimTo(w);
 		}
 		e.preventDefault();
 	});
 	cv.addEventListener("pointermove", function (e) {
 		var p = evXY(e), w = s2w(p[0], p[1]);
+		if (ptrs[e.pointerId]) ptrs[e.pointerId] = p;
+		if (pinch) {
+			var a = ptrList(); if (a.length < 2) return;
+			var m = [(a[0][0] + a[1][0]) / 2, (a[0][1] + a[1][1]) / 2], d = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]);
+			var z1 = Math.max(1, Math.min(5, pinch.z0 * d / pinch.d0)), ox = pinch.cx - (LY.w / 2 + pinch.x0), oy = pinch.cy - (LY.h / 2 + pinch.y0);
+			zv.z = z1; zv.x = m[0] - LY.w / 2 - ox * z1 / pinch.z0; zv.y = m[1] - LY.h / 2 - oy * z1 / pinch.z0;
+			zoomApply(); return;
+		}
+		if (drag && drag.kind === "pan") { zv.x = drag.x0 + e.clientX - drag.sx; zv.y = drag.y0 + e.clientY - drag.sy; zoomApply(); return; }
 		if (drag && !drag.faded) { drag.faded = true; viewDrag(true); }
 		if (!drag) {
 			if (canShoot() && st.bih && LY) { var c = cueXY(); cv.classList.toggle("is-place", Math.hypot(w[0] - c[0], w[1] - c[1]) < st.T.R * 2.4); }
@@ -2874,7 +2955,11 @@
 		} else if (drag.kind === "pull") pullMove(drag, e.clientX, e.clientY);
 		else setAimTo(w);
 	});
-	function endDrag() { viewDrag(false); if (drag) { var d0 = drag; drag = null; cv.classList.remove("is-dragball"); if (d0.kind === "pull") pullEnd(d0); render(); } }
+	function endDrag(e) {
+		if (e && e.pointerId != null) delete ptrs[e.pointerId];
+		if (pinch) { if (ptrList().length < 2) pinch = null; return; }   // lifting one finger of a pinch never aims or shoots
+		if (drag && drag.kind === "pan") { drag = null; return; }
+		viewDrag(false); if (drag) { var d0 = drag; drag = null; cv.classList.remove("is-dragball"); if (d0.kind === "pull") pullEnd(d0); render(); } }
 	cv.addEventListener("pointerup", endDrag);
 	cv.addEventListener("pointercancel", endDrag);
 	function clampPlace(x, y) {
@@ -3002,6 +3087,10 @@
 		else if (k === "v") setDim(S.dim === "3d" ? "2d" : "3d");
 		else if (k === "m") musToggle();
 		else if (k === "g") cycleGuide();
+		else if (k === "h") cycleVis();
+		else if (e.key === "+" || e.key === "=") { if (LY) zoomAt(1.25, LY.w / 2, LY.h / 2); }
+		else if (e.key === "-" || e.key === "_") { if (LY) zoomAt(0.8, LY.w / 2, LY.h / 2); }
+		else if (e.key === "0") zoomReset();
 		else if (k === "k") { if (S.dim === "3d") cycleCam(); }
 		else if ((e.key === "PageUp" || e.key === "PageDown") && S.dim === "3d" && v3) { e.preventDefault(); v3.tiltBy(e.key === "PageUp" ? 0.08 : -0.08); draw(); }
 	});

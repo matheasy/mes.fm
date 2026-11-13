@@ -300,8 +300,8 @@ APPS = {
     # also run as a Blob Web Worker from its own source; model in typed arrays, squarify, sunburst, lists, CSV/JSON), tests tool_apps_src/storage-tests.js.
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
                     tag="Find what fills your disk.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
-                    desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates and empty folders. Nothing is uploaded.",
-                    js_v="1", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
+                    desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded.",
+                    js_v="2", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
     # Browser Storage & Memory (2026-11-07, mes.fm/browser-storage): a sub-page of the Storage Analyzer brand. Measures what mes.fm keeps in this browser
     # (localStorage, sessionStorage, IndexedDB, Cache storage, OPFS, cookies, service workers), names the tool each piece belongs to, deletes per item / tool,
     # asks for persistent storage, backs up / restores saved settings; this tab's JS memory (performance.memory) with a live chart; a per-browser guide
@@ -684,7 +684,7 @@ APPS = {
                             tag="Drive anywhere. Crash anything. Change gravity.", accent="#d9480f", dark="#a63a0b", tint="#ffe8d9",
                             desc="A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.",
                             meta_desc="Free 3D car sandbox with real physics: drive on a test track, the Moon, Mars or Ceres, crash into cars and objects, jump ramps and change gravity.",
-                            js_v="2"),
+                            js_v="3"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",

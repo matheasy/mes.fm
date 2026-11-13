@@ -311,3 +311,12 @@
 	#bl .bl-cic {display:inline-flex;align-items:center;gap:3px;}
 	#bl .bl-cic i {font-style:normal;font-size:0.82em;opacity:0.85;margin:0 2px;}
 	#bl .bl-cic:empty {display:none;}
+	/* on-table buttons see-through / hidden (👁 button, H), zoom indicator */
+	#bl .bl-ov.is-faint .bl-opow, #bl .bl-ov.is-faint .bl-ohit, #bl .bl-ov.is-faint .bl-ospin, #bl .bl-ov.is-faint .bl-ojog {opacity:0.32;}
+	#bl .bl-ov.is-faint .bl-ochip, #bl .bl-ov.is-hide .bl-ochip {opacity:0.6;}
+	#bl .bl-ov.is-faint .bl-otop button:not(.bl-ovis) {opacity:0.55;}
+	#bl .bl-ov.is-faint .bl-opow:hover, #bl .bl-ov.is-faint .bl-opow.is-drag, #bl .bl-ov.is-faint .bl-ohit:hover, #bl .bl-ov.is-faint .bl-ohit:active, #bl .bl-ov.is-faint .bl-ohit.is-charge, #bl .bl-ov.is-faint .bl-ospin:hover, #bl .bl-ov.is-faint .bl-ospin:active, #bl .bl-ov.is-faint .bl-ojog:hover, #bl .bl-ov.is-faint .bl-ojog.is-drag, #bl .bl-ov.is-faint .bl-otop button:hover {opacity:1;}
+	#bl .bl-ov.is-faint .bl-ohit {background:rgba(15,122,74,0.6);}
+	#bl .bl-ov.is-hide .bl-opow, #bl .bl-ov.is-hide .bl-ohit, #bl .bl-ov.is-hide .bl-ospin, #bl .bl-ov.is-hide .bl-ojog, #bl .bl-ov.is-hide .bl-ospinpop {display:none !important;}
+	#bl .bl-otop .bl-ovis.is-on {border-color:#ffd54f;color:#ffd54f;}
+	#bl .bl-otop .bl-ozoom {font-size:0.85em;padding:0 0.5em;border-color:#74c0fc;color:#d0ebff;}
