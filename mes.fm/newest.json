@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-12",
+ "generated": "2026-11-13",
  "calculators": [
   {
    "href": "/luders-bands",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/cryptography",
+   "title": "Cryptography Lab",
+   "icon": "/img/cryptography-logo.png",
+   "desc": "Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
+  {
    "href": "/text",
    "title": "Text Viewer (TXT, RTF, Code)",
    "icon": "/img/text-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
    "added": "2026-11-07",
    "kind": "tool"
-  },
-  {
-   "href": "/gta-stunt-jump-simulator",
-   "title": "Stunt Jump Simulator",
-   "icon": "/img/gta-stunt-jump-simulator-logo.png",
-   "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
-   "added": "2026-11-07",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/cryptography",
+   "title": "Cryptography Lab",
+   "icon": "/img/cryptography-logo.png",
+   "desc": "Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
   {
    "href": "/text",
    "title": "Text Viewer (TXT, RTF, Code)",
@@ -252,14 +260,6 @@
    "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
    "added": "2026-11-10",
    "kind": "tool"
-  },
-  {
-   "href": "/luders-bands",
-   "title": "Lüders Band Simulator",
-   "icon": "/img/luders-bands-logo.png",
-   "desc": "Pull a mild steel bar and watch the yield band run along it at 55° while the force stays flat. Notches, machine stiffness, strain ageing.",
-   "added": "2026-11-10",
-   "kind": "calculator"
   }
  ]
 }

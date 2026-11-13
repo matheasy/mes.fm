@@ -1,0 +1,237 @@
+	<div class="tu" id="cg">
+		<div class="cg-tabs" id="cg-tabs" role="tablist" aria-label="Cryptography tools">
+			<button type="button" role="tab" data-t="cipher">Ciphers</button>
+			<button type="button" role="tab" data-t="crack">Crack a cipher</button>
+			<button type="button" role="tab" data-t="rsa">RSA</button>
+			<button type="button" role="tab" data-t="dh">Key exchange</button>
+			<button type="button" role="tab" data-t="hash">Hashes</button>
+			<button type="button" role="tab" data-t="aes">Encrypt with a password</button>
+			<button type="button" role="tab" data-t="enc">Base64, hex, Morse…</button>
+			<button type="button" role="tab" data-t="mod">Modular maths</button>
+		</div>
+
+		<!-- ============ Ciphers ============ -->
+		<section class="cg-pane" data-pane="cipher">
+			<div class="tu-card">
+				<div class="cg-ctl">
+					<label class="cg-inl">Cipher <select id="cg-c" class="tu-select">
+						<option value="caesar">Caesar shift</option><option value="rot13">ROT13</option><option value="atbash">Atbash</option><option value="affine">Affine</option>
+						<option value="vigenere">Vigenère</option><option value="beaufort">Beaufort</option><option value="keyword">Keyword substitution</option><option value="rail">Rail fence</option></select></label>
+					<div class="tu-seg" id="cg-dir" role="group" aria-label="Direction"><button type="button" data-v="enc">Encrypt</button><button type="button" data-v="dec">Decrypt</button></div>
+				</div>
+				<div class="cg-ctl" id="cg-keys">
+					<label class="cg-inl" data-for="caesar">Shift <input type="range" id="cg-shift" min="0" max="25" value="3"> <b id="cg-shiftv">3</b></label>
+					<label class="cg-inl" data-for="affine">a <select id="cg-aa" class="tu-select"></select></label>
+					<label class="cg-inl" data-for="affine">b <input type="range" id="cg-ab" min="0" max="25" value="8"> <b id="cg-abv">8</b></label>
+					<label class="cg-inl" data-for="vigenere beaufort">Key word <input id="cg-key" class="tu-input cg-mid" type="text" value="LEMON" spellcheck="false" autocomplete="off"></label>
+					<label class="cg-inl" data-for="keyword">Keyword <input id="cg-kw" class="tu-input cg-mid" type="text" value="ZEBRAS" spellcheck="false" autocomplete="off"></label>
+					<label class="cg-inl" data-for="rail">Rails <input type="range" id="cg-rails" min="2" max="10" value="3"> <b id="cg-railsv">3</b></label>
+				</div>
+				<div class="cg-io">
+					<div class="cg-iobox"><label for="cg-in" class="cg-lab" id="cg-inlab">Your message</label>
+						<textarea id="cg-in" class="tu-input cg-ta" rows="5" spellcheck="false">Attack at dawn. Meet me by the old bridge.</textarea></div>
+					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--ghost" id="cg-swap" title="Put the result in the box and flip Encrypt / Decrypt">⇅ Swap</button></div>
+					<div class="cg-iobox"><label for="cg-out" class="cg-lab" id="cg-outlab">Encrypted</label>
+						<textarea id="cg-out" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
+				</div>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="cg-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cg-tocrack">Try to crack the result ›</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cg-link">Copy link</button></div>
+			</div>
+			<div class="tu-card" id="cg-viz-card">
+				<h2 class="cg-h" id="cg-vizh">How it works</h2>
+				<div id="cg-viz"></div>
+				<p class="cg-note" id="cg-vizn"></p>
+			</div>
+		</section>
+
+		<!-- ============ Crack ============ -->
+		<section class="cg-pane" data-pane="crack" hidden>
+			<div class="tu-card">
+				<label for="cg-ct" class="cg-lab">Paste a secret message made with a classical cipher (Caesar, Atbash, affine or Vigenère)</label>
+				<textarea id="cg-ct" class="tu-input cg-ta" rows="5" spellcheck="false"></textarea>
+				<div class="cg-ex" id="cg-ctex"><span>Try:</span></div>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="cg-crack">Crack it</button></div>
+			</div>
+			<div id="cg-crout"></div>
+			<div class="tu-card">
+				<h2 class="cg-h">Letter frequencies</h2>
+				<p class="cg-note">Bars = how often each letter appears in your text; the grey line = normal English. A Caesar shift slides the whole pattern sideways, which is why the peaks give it away.</p>
+				<div class="cg-chart" id="cg-freq"></div>
+				<div class="tu-stats cg-mini" id="cg-fstats"></div>
+			</div>
+		</section>
+
+		<!-- ============ RSA ============ -->
+		<section class="cg-pane" data-pane="rsa" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">1. Make a key pair</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">p <input id="cg-p" class="tu-input cg-num" type="text" inputmode="numeric" value="61"></label>
+					<label class="cg-inl">q <input id="cg-q" class="tu-input cg-num" type="text" inputmode="numeric" value="53"></label>
+					<label class="cg-inl">e <input id="cg-e" class="tu-input cg-small" type="text" inputmode="numeric" value="17" placeholder="auto"></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="cg-rsago">Make keys</button>
+				</div>
+				<div class="cg-ctl"><span class="cg-muted">Or pick two random primes of</span>
+					<div class="tu-seg" id="cg-bits" role="group" aria-label="Prime size"><button type="button" data-b="8">8 bits</button><button type="button" data-b="16">16</button><button type="button" data-b="32">32</button><button type="button" data-b="64">64</button><button type="button" data-b="128">128</button><button type="button" data-b="512">512</button><button type="button" data-b="1024">1024</button></div></div>
+				<p class="cg-err" id="cg-rsaerr" hidden></p>
+				<div id="cg-rsakey"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">2. Send a message</h2>
+				<div class="cg-ctl"><div class="tu-seg" id="cg-rmode" role="group" aria-label="Message type"><button type="button" data-v="text">Text</button><button type="button" data-v="num">A number</button></div></div>
+				<label class="cg-lab" for="cg-rmsg" id="cg-rmsglab">Message (encrypted with the public key e, n)</label>
+				<input id="cg-rmsg" class="tu-input tu-input--big" type="text" value="Hi MES!" spellcheck="false" autocomplete="off">
+				<div id="cg-rsamsg"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">3. Be the attacker: break the key</h2>
+				<p class="cg-note">Anyone can see n and e. If they can split n back into p × q, they can work out d. Try it with the key above: small keys fall in a blink, real ones (2048 bits) would take longer than the age of the universe.</p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--ghost" id="cg-rsacrack">Try to factor n</button></div>
+				<div id="cg-rsacrout"></div>
+			</div>
+		</section>
+
+		<!-- ============ Diffie-Hellman ============ -->
+		<section class="cg-pane" data-pane="dh" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Agree on a secret over an open line</h2>
+				<p class="cg-note">Alice and Bob each keep a private number and only ever send mixed results. Eve hears everything sent but still can't get the shared secret, the same way you can't un-mix paint.</p>
+				<div class="cg-paint" id="cg-paint"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">With real numbers</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">Public prime p <input id="cg-dp" class="tu-input cg-num" type="text" inputmode="numeric" value="23"></label>
+					<label class="cg-inl">Base g <input id="cg-dg" class="tu-input cg-small" type="text" inputmode="numeric" value="5"></label>
+					<label class="cg-inl">Alice's secret a <input id="cg-da" class="tu-input cg-small" type="text" inputmode="numeric" value="6"></label>
+					<label class="cg-inl">Bob's secret b <input id="cg-db" class="tu-input cg-small" type="text" inputmode="numeric" value="15"></label>
+				</div>
+				<div class="cg-ctl"><span class="cg-muted">Random:</span>
+					<div class="tu-seg" id="cg-dbits" role="group" aria-label="Prime size"><button type="button" data-b="8">small</button><button type="button" data-b="32">32 bits</button><button type="button" data-b="64">64 bits</button><button type="button" data-b="256">256 bits</button></div></div>
+				<p class="cg-err" id="cg-dherr" hidden></p>
+				<div id="cg-dhout"></div>
+			</div>
+		</section>
+
+		<!-- ============ Hashes ============ -->
+		<section class="cg-pane" data-pane="hash" hidden>
+			<div class="tu-card">
+				<label for="cg-hin" class="cg-lab">Text to hash</label>
+				<textarea id="cg-hin" class="tu-input cg-ta" rows="3" spellcheck="false">hello</textarea>
+				<div class="cg-hashes" id="cg-hout"></div>
+				<div class="cg-drop" id="cg-hdrop" tabindex="0" role="button">Or drop a file here (or click) to get its fingerprints. The file never leaves your computer.<input type="file" id="cg-hfile" hidden></div>
+				<div id="cg-hfout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">The avalanche effect</h2>
+				<p class="cg-note">Change one letter and about half of SHA-256's 256 bits flip. That is why a hash can prove a file was not changed, and why you can't work backwards from a hash.</p>
+				<div class="cg-two">
+					<label class="cg-inl cg-grow">A <input id="cg-av1" class="tu-input" type="text" value="hello" spellcheck="false"></label>
+					<label class="cg-inl cg-grow">B <input id="cg-av2" class="tu-input" type="text" value="hellp" spellcheck="false"></label>
+				</div>
+				<div class="cg-bits" id="cg-avbits" aria-label="SHA-256 bits, changed bits highlighted"></div>
+				<p class="cg-status" id="cg-avstat"></p>
+			</div>
+		</section>
+
+		<!-- ============ AES ============ -->
+		<section class="cg-pane" data-pane="aes" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Real encryption (AES-256-GCM)</h2>
+				<p class="cg-note">This is the same strong encryption banks and messaging apps use, done by your browser's built-in Web Crypto. The password becomes a key with PBKDF2 (250,000 rounds). Nothing is sent anywhere: copy the result and send it any way you like.</p>
+				<label for="cg-pw" class="cg-lab">Password</label>
+				<div class="cg-row"><input id="cg-pw" class="tu-input tu-input--big" type="password" autocomplete="new-password" spellcheck="false"><button type="button" class="tu-btn tu-btn--ghost" id="cg-pwshow">Show</button></div>
+				<p class="cg-status" id="cg-pwst"></p>
+				<div class="cg-io">
+					<div class="cg-iobox"><label for="cg-ain" class="cg-lab">Message, or an MES1… text to decrypt</label><textarea id="cg-ain" class="tu-input cg-ta" rows="5" spellcheck="false"></textarea></div>
+					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--primary" id="cg-aenc">Encrypt ›</button><button type="button" class="tu-btn tu-btn--ghost" id="cg-adec">‹ Decrypt</button></div>
+					<div class="cg-iobox"><label for="cg-aout" class="cg-lab">Result</label><textarea id="cg-aout" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
+				</div>
+				<p class="cg-err" id="cg-aerr" hidden></p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--ghost" id="cg-acopy">Copy result</button></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Encrypt or decrypt a file</h2>
+				<div class="cg-drop" id="cg-afdrop" tabindex="0" role="button">Drop a file here (or click). A normal file is encrypted to <code>name.mesenc</code>; a <code>.mesenc</code> file is decrypted back. Uses the password above.<input type="file" id="cg-afile" hidden></div>
+				<p class="cg-status" id="cg-afst"></p>
+			</div>
+		</section>
+
+		<!-- ============ Encoders ============ -->
+		<section class="cg-pane" data-pane="enc" hidden>
+			<div class="tu-card">
+				<div class="cg-ctl">
+					<label class="cg-inl">Format <select id="cg-ef" class="tu-select">
+						<option value="b64">Base64</option><option value="b64u">Base64 (URL-safe)</option><option value="hex">Hexadecimal</option><option value="bin">Binary</option>
+						<option value="morse">Morse code</option><option value="url">URL encoding</option><option value="rot47">ROT47</option><option value="xor">XOR with a key (hex out)</option></select></label>
+					<div class="tu-seg" id="cg-edir" role="group" aria-label="Direction"><button type="button" data-v="enc">Encode</button><button type="button" data-v="dec">Decode</button></div>
+					<label class="cg-inl" id="cg-exkw">Key <input id="cg-exk" class="tu-input cg-mid" type="text" value="mes" spellcheck="false"></label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cg-eplay">▶ Play Morse</button>
+				</div>
+				<div class="cg-io">
+					<div class="cg-iobox"><label for="cg-ein" class="cg-lab">Input</label><textarea id="cg-ein" class="tu-input cg-ta" rows="5" spellcheck="false">Hello, MES! ✓</textarea></div>
+					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--ghost" id="cg-eswap">⇅ Swap</button></div>
+					<div class="cg-iobox"><label for="cg-eout" class="cg-lab">Output</label><textarea id="cg-eout" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
+				</div>
+				<p class="cg-err" id="cg-eerr" hidden></p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--ghost" id="cg-ecopy">Copy output</button></div>
+				<p class="cg-note">Encoding is not encryption: anyone can decode Base64, hex or Morse without a key. It just turns data into text that travels safely.</p>
+			</div>
+		</section>
+
+		<!-- ============ Modular maths ============ -->
+		<section class="cg-pane" data-pane="mod" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Modular power a<sup>e</sup> mod m (square and multiply)</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">a <input id="cg-ma" class="tu-input cg-num" type="text" inputmode="numeric" value="65"></label>
+					<label class="cg-inl">e <input id="cg-me" class="tu-input cg-num" type="text" inputmode="numeric" value="17"></label>
+					<label class="cg-inl">m <input id="cg-mm" class="tu-input cg-num" type="text" inputmode="numeric" value="3233"></label>
+				</div>
+				<p class="cg-err" id="cg-merr" hidden></p>
+				<div id="cg-mout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Modular inverse (extended Euclid)</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">The inverse of <input id="cg-ia" class="tu-input cg-num" type="text" inputmode="numeric" value="17"></label>
+					<label class="cg-inl">mod <input id="cg-im" class="tu-input cg-num" type="text" inputmode="numeric" value="3120"></label>
+				</div>
+				<div id="cg-iout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Clock arithmetic</h2>
+				<p class="cg-note">“mod 12” is a clock: after 12 you start again at 0. Drag the slider to add hours.</p>
+				<div class="cg-ctl"><label class="cg-inl">Modulus <input type="range" id="cg-clm" min="2" max="26" value="12"> <b id="cg-clmv">12</b></label>
+					<label class="cg-inl">Start <input type="range" id="cg-cls" min="0" max="25" value="9"> <b id="cg-clsv">9</b></label>
+					<label class="cg-inl">Add <input type="range" id="cg-cla" min="0" max="60" value="5"> <b id="cg-clav">5</b></label></div>
+				<div id="cg-clock"></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Cryptography, explained</h2>
+			<p><strong>Cryptography</strong> is the maths of keeping messages secret and proving they were not changed. This page lets you try every big idea in it, from the Caesar shift Julius Caesar used to the RSA and AES encryption that protects the web today. Everything runs in your browser: nothing you type is uploaded.</p>
+			<h3>What each tab does</h3>
+			<ul>
+				<li><strong>Ciphers</strong>: encrypt and decrypt with the Caesar shift, ROT13, Atbash, affine, Vigenère, Beaufort, keyword substitution and rail fence ciphers, with a picture of how each one moves the letters.</li>
+				<li><strong>Crack a cipher</strong>: break a secret message without the key using letter frequencies, the index of coincidence and the Kasiski test, the way codebreakers did for centuries.</li>
+				<li><strong>RSA</strong>: build a public and private key from two primes step by step (n = p × q, φ(n), e and d with the extended Euclidean algorithm), send a message, then try to break the key by factoring n.</li>
+				<li><strong>Key exchange</strong>: Diffie–Hellman, shown with mixing paint and with real numbers, and why the eavesdropper can't solve the discrete logarithm.</li>
+				<li><strong>Hashes</strong>: MD5, SHA-1, SHA-256, SHA-384, SHA-512 and CRC32 of text or a file, plus the avalanche effect bit by bit.</li>
+				<li><strong>Encrypt with a password</strong>: real AES-256-GCM encryption of text or files with your browser's Web Crypto.</li>
+				<li><strong>Base64, hex, Morse…</strong> and <strong>Modular maths</strong>: the encodings and number tricks cryptography is built on.</li>
+			</ul>
+			<h3>Questions people ask</h3>
+			<dl>
+				<dt>What is the difference between a code, a cipher and encoding?</dt><dd>A cipher changes letters or bits with a rule and a key (Caesar, AES). A code swaps whole words for code words from a book. Encoding (Base64, Morse) has no key at all: anyone can reverse it.</dd>
+				<dt>Why is the Caesar cipher so easy to break?</dt><dd>There are only 25 possible shifts, so a computer tries them all at once, and letter frequencies point to the right one: E, T and A stay the most common letters, just moved.</dd>
+				<dt>Why does RSA use prime numbers?</dt><dd>Multiplying two big primes is quick, but splitting the product back into them is extremely slow. Your public key holds the product n; only you know the two primes, and you need them to work out the private key d. See the <a href="/primes">prime number checker</a> to factor numbers yourself.</dd>
+				<dt>Is the RSA tab safe for real secrets?</dt><dd>No. It is “textbook RSA” for learning: no padding, and keys you can see. For real secrets use the password tab (AES-256-GCM) or a proper app.</dd>
+				<dt>Can a hash be reversed?</dt><dd>No. A hash throws information away, so many inputs share each output; the only way back is guessing inputs. That is why short or common passwords get cracked: attackers hash billions of guesses.</dd>
+				<dt>How strong is the password encryption?</dt><dd>AES-256 itself has never been broken. The weak point is the password: the page estimates how long a guessing attack would take, so use a long passphrase.</dd>
+			</dl>
+			<p>Related: <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/file-check">File Safety Check</a> · <a href="/tools">More tools</a></p>
+		</div>
+	</div>

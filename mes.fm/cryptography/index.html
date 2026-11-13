@@ -1,0 +1,1157 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Cryptography Lab -- mes.fm/cryptography -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/cryptography/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/cryptography" />                    <title>MES Cryptography Lab | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#166534;color:white;}
+        .button {color:#166534;border:0.125em solid#166534;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#166534; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#166534; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#166534;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#166534;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#166534;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#14532d;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#166534;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#166534;border:0.125em solid#166534;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#14532d;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#166534;}
+        .dropdown-symbol--dark {color:#166534;}
+        .button--active {background-color:#166534;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#166534;--accent-dark:#14532d;--tint:#e7f5ec;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e7f5ec;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e7f5ec;border-color:#e7f5ec;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e7f5ec;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e7f5ec;border-color:#e7f5ec;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e7f5ec;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e7f5ec;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#26b05b !important;--accent-dark:#26b05b !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	#cg {color:#1f2937;--cg-a:#166534;--cg-a2:#15803d;--cg-soft:#e7f5ec;--cg-line:#d1d5db;--cg-muted:#4b5563;--cg-bar:#16a34a;--cg-en:#6b7280;--cg-k:#b45309;--cg-c:#1d4ed8;--cg-on:#fef3c7;}
+	:where(#cg) :is(div, span, p, label, figcaption, summary, section, details, form, dt, dd, li, b, small, h2, h3, td, th, code) {color:inherit;}
+	.cg-tabs {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 1em;}
+	.cg-tabs button {cursor:pointer;font:inherit;font-size:0.95em;padding:0.5em 1em;border-radius:1.4em;border:1px solid #c3c9d2;background:#fff;color:#374151;}
+	.cg-tabs button:hover {border-color:var(--cg-a);color:var(--cg-a);}
+	.cg-tabs button[aria-selected="true"] {background:var(--cg-a);border-color:var(--cg-a);color:#fff;}
+	#cg .cg-h {font-weight:700;font-size:1.12em;margin:0 0 0.6em;border:0;padding:0;}
+	.cg-lab {display:block;font-size:0.95em;margin:0.2em 0 0.35em;color:var(--cg-muted);}
+	.cg-ctl {display:flex;flex-wrap:wrap;gap:0.6em 1.1em;align-items:center;margin-bottom:0.8em;}
+	.cg-ctl[hidden], #cg [hidden] {display:none !important;}
+	.cg-inl {display:inline-flex;align-items:center;gap:0.45em;font-size:0.95em;}
+	.cg-inl b {min-width:1.4em;font-variant-numeric:tabular-nums;}
+	.cg-grow {flex:1 1 14em;} .cg-grow .tu-input {flex:1;min-width:0;}
+	.cg-mid {width:9em;} .cg-num {width:13em;max-width:60vw;font-variant-numeric:tabular-nums;} .cg-small {width:7em;}
+	.cg-row {display:flex;gap:0.5em;align-items:center;} .cg-row .tu-input {flex:1;min-width:0;}
+	.cg-two {display:flex;flex-wrap:wrap;gap:0.6em 1em;margin-bottom:0.8em;}
+	.cg-io {display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0.7em;align-items:center;}
+	.cg-iobox {min-width:0;}
+	.cg-ta {width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.98em;line-height:1.5;resize:vertical;min-height:7em;}
+	.cg-ta--out {background:var(--cg-soft);}
+	.cg-mid-btns {display:flex;flex-direction:column;gap:0.5em;}
+	@media (max-width:760px) { .cg-io {grid-template-columns:minmax(0,1fr);} .cg-mid-btns {flex-direction:row;justify-content:center;} }
+	.cg-acts {display:flex;gap:0.5em;flex-wrap:wrap;margin-top:0.8em;}
+	.cg-note {color:var(--cg-muted);font-size:0.93em;line-height:1.55;margin:0.6em 0;}
+	.cg-muted {color:var(--cg-muted);font-size:0.93em;}
+	.cg-status {margin:0.6em 0;line-height:1.55;}
+	.cg-err {color:#b91c1c;font-weight:600;margin:0.6em 0 0;}
+	.cg-wait {color:var(--cg-muted);font-style:italic;}
+	.cg-ex {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.7em;font-size:0.92em;}
+	.cg-ex > span {color:var(--cg-muted);}
+	.cg-formula {font-family:ui-monospace,Menlo,Consolas,monospace;margin:0.6em 0 0;}
+	.cg-weak {color:#b91c1c;} .cg-strong {color:#15803d;}
+	.cg-status.cg-medium {color:#a16207;}
+	/* letter mapping */
+	.cg-map {overflow-x:auto;padding:0.2em 0 0.5em;}
+	.cg-maprow {display:flex;gap:2px;align-items:center;margin-bottom:2px;}
+	.cg-maph {flex:0 0 4.2em;font-size:0.8em;color:var(--cg-muted);}
+	.cg-l {flex:0 0 1.75em;height:1.75em;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--cg-line);border-radius:0.3em;font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600;font-size:0.9em;background:#fff;}
+	.cg-l--c {color:var(--cg-c);} .cg-l--k {color:var(--cg-k);}
+	.cg-l.is-used {background:var(--cg-on);border-color:#f59e0b;}
+	/* wheel */
+	.cg-wheel {display:block;width:min(320px,100%);margin:0 auto 0.6em;touch-action:none;cursor:grab;user-select:none;}
+	.cg-w1 {fill:#f8fafc;stroke:var(--cg-line);stroke-width:2;} .cg-w2 {fill:var(--cg-soft);stroke:var(--cg-a2);stroke-width:2;} .cg-w3 {fill:#fff;stroke:var(--cg-line);}
+	.cg-wt {font:600 15px ui-monospace,Menlo,Consolas,monospace;text-anchor:middle;fill:#1f2937;}
+	.cg-wt--in {fill:var(--cg-c);}
+	.cg-wk {font:700 32px system-ui,sans-serif;text-anchor:middle;fill:var(--cg-a);} .cg-wks {font:13px system-ui,sans-serif;text-anchor:middle;fill:var(--cg-muted);}
+	.cg-wp {fill:#f59e0b;}
+	/* rail fence */
+	.cg-rail {display:grid;grid-template-columns:repeat(var(--cols),1.5em);gap:2px;overflow-x:auto;padding-bottom:0.4em;}
+	.cg-rail span {height:1.5em;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.85em;border-radius:0.25em;}
+	.cg-rail span.is-on {background:var(--cg-on);border:1px solid #f59e0b;font-weight:700;}
+	/* charts */
+	.cg-svg {display:block;width:100%;height:auto;}
+	.cg-grid {stroke:#e5e7eb;stroke-width:1;} .cg-axis {font:11px system-ui,sans-serif;fill:var(--cg-muted);}
+	.cg-bar {fill:var(--cg-bar);} .cg-bar.is-pick {fill:#f59e0b;} .cg-enline {fill:none;stroke:var(--cg-en);stroke-width:2;stroke-dasharray:5 3;}
+	.cg-mini {margin-top:0.6em;}
+	#cg .tu-stat__label {text-transform:none;letter-spacing:0;}
+	#cg .tu-stat {display:flex;flex-direction:column;gap:0.15em;min-width:0;}
+	#cg .tu-seg {flex-wrap:wrap;max-width:100%;}
+	/* crack results */
+	.cg-hero {border-left:6px solid var(--cg-a2);}
+	.cg-hero.cg-bad {border-left-color:#b91c1c;background:#fdf3f3;padding:0.7em 1em;border-radius:0.5em;margin-top:0.6em;}
+	.cg-hero.cg-good {border-left-color:#15803d;background:#f0faf4;padding:0.7em 1em;border-radius:0.5em;margin-top:0.6em;}
+	.cg-hero p {margin:0.35em 0;line-height:1.5;}
+	.cg-badge {display:inline-block;font-size:0.78em;font-weight:700;letter-spacing:0.05em;padding:0.2em 0.65em;border-radius:1em;background:var(--cg-a);color:#fff;}
+	.cg-bad .cg-badge {background:#b91c1c;} .cg-good .cg-badge {background:#15803d;}
+	#cg .cg-verdict {font-weight:700;font-size:1.35em;margin:0.35em 0 0.3em;border:0;padding:0;}
+	.cg-plain {font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--cg-soft);padding:0.6em 0.8em;border-radius:0.4em;line-height:1.55;overflow-wrap:anywhere;}
+	.cg-shifts {columns:2 22em;column-gap:2em;margin:0;padding-left:0;list-style:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.86em;}
+	.cg-shifts li {padding:0.2em 0.3em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;break-inside:avoid;border-radius:0.3em;}
+	.cg-shifts li.is-best {background:var(--cg-on);font-weight:700;}
+	.cg-sk {display:inline-block;min-width:1.8em;color:var(--cg-muted);}
+	.cg-cands li {margin:0.3em 0;overflow-wrap:anywhere;}
+	.cg-more summary {cursor:pointer;color:var(--cg-a);font-weight:600;margin-top:0.6em;}
+	.cg-tab td, .cg-tab th {font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+	/* RSA */
+	#cg .cg-keys {grid-template-columns:repeat(auto-fit,minmax(13em,1fr));}
+	.cg-num-v {word-break:break-all;font-variant-numeric:tabular-nums;font-size:1.25em !important;}
+	.cg-keypair {display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:0.6em;margin-top:0.8em;}
+	.cg-kp {padding:0.6em 0.8em;border-radius:0.5em;overflow-wrap:anywhere;font-size:0.95em;}
+	.cg-kp--pub {background:#eff6ff;border:1px solid #bfdbfe;} .cg-kp--priv {background:#fef2f2;border:1px solid #fecaca;}
+	.cg-flow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.9em;margin:0.8em 0;}
+	.cg-flow > div:not(.cg-arr) {background:var(--cg-soft);border-radius:0.5em;padding:0.4em 0.8em;min-width:0;overflow-wrap:anywhere;}
+	.cg-fl {display:block;font-size:0.78em;color:var(--cg-muted);}
+	.cg-arr {color:var(--cg-muted);font-size:0.9em;}
+	/* DH */
+	.cg-paintsvg {max-width:640px;margin:0 auto;}
+	.cg-pot {stroke:rgba(0,0,0,0.35);stroke-width:1.5;} .cg-pl {font:600 13px system-ui,sans-serif;text-anchor:middle;fill:#1f2937;} .cg-ps {font:12px system-ui,sans-serif;text-anchor:middle;fill:var(--cg-muted);}
+	.cg-ph {font:700 16px system-ui,sans-serif;text-anchor:middle;fill:var(--cg-a);} .cg-dash {stroke:var(--cg-line);stroke-dasharray:4 4;}
+	.cg-arrowp {fill:none;stroke:var(--cg-en);stroke-width:1.5;stroke-dasharray:3 3;}
+	.cg-dh {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.7em;}
+	@media (max-width:640px) { .cg-dh {grid-template-columns:minmax(0,1fr);} }
+	.cg-dhcol {border:1px solid var(--cg-line);border-radius:0.6em;padding:0.6em 0.8em;min-width:0;}
+	.cg-dhcol h3 {margin:0 0 0.3em;font-size:1em;}
+	.cg-dhcol p {margin:0.25em 0;overflow-wrap:anywhere;font-size:0.93em;}
+	.cg-dhcol--eve {background:#fff7ed;border-color:#fed7aa;}
+	.cg-big {font-weight:700;font-size:1.15em;font-variant-numeric:tabular-nums;} .cg-sec {color:var(--cg-a);}
+	/* hashes */
+	.cg-hashes {margin-top:0.8em;}
+	.cg-hrow {display:grid;grid-template-columns:8.5em minmax(0,1fr) auto;gap:0.6em;align-items:center;padding:0.35em 0;border-bottom:1px solid #eef0f2;}
+	.cg-hn {font-weight:700;font-size:0.92em;} .cg-hn small {display:block;font-weight:400;color:var(--cg-muted);font-size:0.82em;}
+	.cg-hv {font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.85em;overflow-wrap:anywhere;word-break:break-all;}
+	.cg-hv--sm {font-size:0.78em;}
+	.cg-hc {padding:0.25em 0.7em;font-size:0.85em;}
+	@media (max-width:560px) { .cg-hrow {grid-template-columns:minmax(0,1fr) auto;} .cg-hv {grid-column:1 / -1;grid-row:2;} }
+	.cg-drop {margin-top:0.9em;border:2px dashed var(--cg-line);border-radius:0.7em;padding:1em;text-align:center;color:var(--cg-muted);cursor:pointer;font-size:0.93em;}
+	.cg-drop:hover, .cg-drop.is-over, .cg-drop:focus-visible {border-color:var(--cg-a);color:var(--cg-a);}
+	.cg-bits {display:grid;grid-template-columns:repeat(32,1fr);gap:2px;max-width:640px;}
+	.cg-bits span {aspect-ratio:1;border-radius:2px;background:#e5e7eb;}
+	.cg-bits span.b1 {background:#9ca3af;}
+	.cg-bits span.is-diff {background:#f59e0b;} .cg-bits span.is-diff.b1 {background:#dc2626;}
+	/* mod */
+	.cg-big-ans {font-size:1.25em;overflow-wrap:anywhere;margin:0.4em 0;}
+	.cg-clocksvg {max-width:300px;margin:0 auto;}
+	.cg-cdot {fill:#9ca3af;} .cg-cstart {fill:#2563eb;} .cg-cend {fill:#f59e0b;} .cg-carc {fill:none;stroke:var(--cg-a2);stroke-width:3;}
+
+	/* dark */
+	html body.dark-mode #cg.tu {color:#e5e7eb;--cg-a:#4ade80;--cg-a2:#22c55e;--cg-soft:#1d2a22;--cg-line:#4a4a4a;--cg-muted:#b8c0cc;--cg-bar:#22c55e;--cg-en:#cbd5e1;--cg-k:#fbbf24;--cg-c:#93c5fd;--cg-on:#4a3a10;}
+	html body.dark-mode #cg.tu .cg-tabs button {background:#262626;border-color:#4a4a4a;color:#ddd;}
+	html body.dark-mode #cg.tu .cg-tabs button[aria-selected="true"] {background:#22c55e;border-color:#22c55e;color:#06110a;}
+	html body.dark-mode #cg.tu .cg-l {background:#262626;color:#e5e7eb;}
+	html body.dark-mode #cg.tu .cg-l--c {color:#93c5fd;} html body.dark-mode #cg.tu .cg-l--k {color:#fbbf24;}
+	html body.dark-mode #cg.tu .cg-l.is-used {background:#4a3a10;border-color:#d97706;}
+	html body.dark-mode #cg.tu .cg-w1 {fill:#1f1f1f;} html body.dark-mode #cg.tu .cg-w3 {fill:#262626;}
+	html body.dark-mode #cg.tu .cg-wt, html body.dark-mode #cg.tu .cg-pl {fill:#e5e7eb;} html body.dark-mode #cg.tu .cg-wt--in {fill:#93c5fd;}
+	html body.dark-mode #cg.tu .cg-grid {stroke:#3a3a3a;}
+	html body.dark-mode #cg.tu .cg-hero.cg-bad {background:#3a1d1d;} html body.dark-mode #cg.tu .cg-hero.cg-good {background:#16291d;}
+	html body.dark-mode #cg.tu .cg-badge {background:#15803d;color:#fff;} html body.dark-mode #cg.tu .cg-bad .cg-badge {background:#b91c1c;}
+	html body.dark-mode #cg.tu .cg-kp--pub {background:#172338;border-color:#2c4a7a;} html body.dark-mode #cg.tu .cg-kp--priv {background:#341b1b;border-color:#6b2b2b;}
+	html body.dark-mode #cg.tu .cg-dhcol--eve {background:#33240f;border-color:#6b4a1c;}
+	html body.dark-mode #cg.tu .cg-hrow {border-bottom-color:#333;}
+	html body.dark-mode #cg.tu .cg-bits span {background:#333;} html body.dark-mode #cg.tu .cg-bits span.b1 {background:#6b7280;}
+	html body.dark-mode #cg.tu .cg-bits span.is-diff {background:#f59e0b;} html body.dark-mode #cg.tu .cg-bits span.is-diff.b1 {background:#ef4444;}
+	html body.dark-mode #cg.tu .cg-err {color:#fca5a5;} html body.dark-mode #cg.tu .cg-weak {color:#fca5a5;} html body.dark-mode #cg.tu .cg-strong {color:#86efac;} html body.dark-mode #cg.tu .cg-status.cg-medium {color:#fcd34d;}
+	html body.dark-mode #cg.tu .cg-shifts li.is-best {background:#4a3a10;}
+	html body.dark-mode #cg.tu .cg-more summary {color:#4ade80;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #166534;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #166534; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(22,101,52,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content :where(sub,sup){color:inherit}
+	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#36d372;--accent-dark:#3acf75}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #193c26}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#1a261f;border-color:#193c26}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#1a261f;border-color:#193c26}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#1a261f}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #cg{color:#ced3da;--cg-a:#36d372;--cg-a2:#2ddc6e;--cg-bar:#27e26c;--cg-k:#f37616;--cg-c:#2758e2}
+	body.dark-mode .cg-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#b4bac2}
+	body.dark-mode .cg-err{color:#ea7171}
+	body.dark-mode .cg-weak{color:#ea7171}
+	body.dark-mode .cg-strong{color:#73e89f}
+	body.dark-mode .cg-status.cg-medium{color:#f8bb63}
+	body.dark-mode .cg-l{background:#1a1a1a}
+	body.dark-mode .cg-l.is-used{border-color:#c47e08}
+	body.dark-mode .cg-wt{fill:#ced3da}
+	body.dark-mode .cg-wp{fill:#f9c162}
+	body.dark-mode .cg-rail span.is-on{border:1px solid #c47e08}
+	body.dark-mode .cg-grid{stroke:#2c313a}
+	body.dark-mode .cg-bar.is-pick{fill:#f9c162}
+	body.dark-mode .cg-hero.cg-bad{border-left-color:#dd2222;background:#221111}
+	body.dark-mode .cg-hero.cg-good{border-left-color:#24db68;background:#141f18}
+	body.dark-mode .cg-kp--pub{background:#0e1825;border:1px solid #023472}
+	body.dark-mode .cg-kp--priv{background:#231010;border:1px solid #670202}
+	body.dark-mode .cg-pot{stroke:rgba(76,76,76,0.35)}
+	body.dark-mode .cg-pl{fill:#ced3da}
+	body.dark-mode .cg-dhcol--eve{background:#251b0e;border-color:#874902}
+	body.dark-mode .cg-hrow{border-bottom:1px solid #2c333a}
+	body.dark-mode .cg-bits span{background:#242629}
+	body.dark-mode .cg-bits span.b1{background:#24282d}
+	body.dark-mode .cg-cdot{fill:#999da3}
+	body.dark-mode .cg-cstart{fill:#6a94f1}
+	body.dark-mode .cg-cend{fill:#f9c162}
+	/* TOOL-DARK:END */
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/cryptography" />            <meta property="og:title" content="MES Cryptography Lab | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/cryptography/img/logo-big.png" />
+        <meta property="og:description" content="Encrypt, decrypt and crack Caesar, Vigenère and other ciphers, build RSA keys from primes step by step, try Diffie-Hellman, hashes and real AES password encryption." />
+
+        <meta name="description" content="Encrypt, decrypt and crack Caesar, Vigenère and other ciphers, build RSA keys from primes step by step, try Diffie-Hellman, hashes and real AES password encryption.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Cryptography Lab">
+        <meta name="twitter:description" content="Encrypt, decrypt and crack Caesar, Vigenère and other ciphers, build RSA keys from primes step by step, try Diffie-Hellman, hashes and real AES password encryption.">
+        <meta name="twitter:image" content="https://mes.fm/cryptography/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Cryptography Lab">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Cryptography Lab", "url": "https://mes.fm/cryptography", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free cryptography tools in your browser: Caesar, Vigenère, affine, Atbash and rail fence ciphers, crack secret messages with letter frequencies, build an RSA key from two primes step by step, Diffie-Hellman key exchange, MD5 and SHA-256 hashes, and real AES encryption with a password."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/cryptography" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/cryptography/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/cryptography" tabindex="-1">Cryptography Lab</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/cryptography'><img height="88" width="88" id="logo" class="logo" alt="MES Cryptography Lab logo" src="/cryptography/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/cryptography'>
+                                    <p class="calculator-title">MES Cryptography Lab</p>
+                                </a>
+                                <p class="tag-line">Encrypt, decrypt and crack. See how it works.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/cryptography'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Cryptography Lab: Ciphers, RSA, Hashes & AES</h1>                                        <p class="page-description">Free cryptography tools in your browser: Caesar, Vigenère, affine, Atbash and rail fence ciphers, crack secret messages with letter frequencies, build an RSA key from two primes step by step, Diffie-Hellman key exchange, MD5 and SHA-256 hashes, and real AES encryption with a password.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<div class="tu" id="cg">
+		<div class="cg-tabs" id="cg-tabs" role="tablist" aria-label="Cryptography tools">
+			<button type="button" role="tab" data-t="cipher">Ciphers</button>
+			<button type="button" role="tab" data-t="crack">Crack a cipher</button>
+			<button type="button" role="tab" data-t="rsa">RSA</button>
+			<button type="button" role="tab" data-t="dh">Key exchange</button>
+			<button type="button" role="tab" data-t="hash">Hashes</button>
+			<button type="button" role="tab" data-t="aes">Encrypt with a password</button>
+			<button type="button" role="tab" data-t="enc">Base64, hex, Morse…</button>
+			<button type="button" role="tab" data-t="mod">Modular maths</button>
+		</div>
+
+		<!-- ============ Ciphers ============ -->
+		<section class="cg-pane" data-pane="cipher">
+			<div class="tu-card">
+				<div class="cg-ctl">
+					<label class="cg-inl">Cipher <select id="cg-c" class="tu-select">
+						<option value="caesar">Caesar shift</option><option value="rot13">ROT13</option><option value="atbash">Atbash</option><option value="affine">Affine</option>
+						<option value="vigenere">Vigenère</option><option value="beaufort">Beaufort</option><option value="keyword">Keyword substitution</option><option value="rail">Rail fence</option></select></label>
+					<div class="tu-seg" id="cg-dir" role="group" aria-label="Direction"><button type="button" data-v="enc">Encrypt</button><button type="button" data-v="dec">Decrypt</button></div>
+				</div>
+				<div class="cg-ctl" id="cg-keys">
+					<label class="cg-inl" data-for="caesar">Shift <input type="range" id="cg-shift" min="0" max="25" value="3"> <b id="cg-shiftv">3</b></label>
+					<label class="cg-inl" data-for="affine">a <select id="cg-aa" class="tu-select"></select></label>
+					<label class="cg-inl" data-for="affine">b <input type="range" id="cg-ab" min="0" max="25" value="8"> <b id="cg-abv">8</b></label>
+					<label class="cg-inl" data-for="vigenere beaufort">Key word <input id="cg-key" class="tu-input cg-mid" type="text" value="LEMON" spellcheck="false" autocomplete="off"></label>
+					<label class="cg-inl" data-for="keyword">Keyword <input id="cg-kw" class="tu-input cg-mid" type="text" value="ZEBRAS" spellcheck="false" autocomplete="off"></label>
+					<label class="cg-inl" data-for="rail">Rails <input type="range" id="cg-rails" min="2" max="10" value="3"> <b id="cg-railsv">3</b></label>
+				</div>
+				<div class="cg-io">
+					<div class="cg-iobox"><label for="cg-in" class="cg-lab" id="cg-inlab">Your message</label>
+						<textarea id="cg-in" class="tu-input cg-ta" rows="5" spellcheck="false">Attack at dawn. Meet me by the old bridge.</textarea></div>
+					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--ghost" id="cg-swap" title="Put the result in the box and flip Encrypt / Decrypt">⇅ Swap</button></div>
+					<div class="cg-iobox"><label for="cg-out" class="cg-lab" id="cg-outlab">Encrypted</label>
+						<textarea id="cg-out" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
+				</div>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="cg-copy">Copy result</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cg-tocrack">Try to crack the result ›</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cg-link">Copy link</button></div>
+			</div>
+			<div class="tu-card" id="cg-viz-card">
+				<h2 class="cg-h" id="cg-vizh">How it works</h2>
+				<div id="cg-viz"></div>
+				<p class="cg-note" id="cg-vizn"></p>
+			</div>
+		</section>
+
+		<!-- ============ Crack ============ -->
+		<section class="cg-pane" data-pane="crack" hidden>
+			<div class="tu-card">
+				<label for="cg-ct" class="cg-lab">Paste a secret message made with a classical cipher (Caesar, Atbash, affine or Vigenère)</label>
+				<textarea id="cg-ct" class="tu-input cg-ta" rows="5" spellcheck="false"></textarea>
+				<div class="cg-ex" id="cg-ctex"><span>Try:</span></div>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="cg-crack">Crack it</button></div>
+			</div>
+			<div id="cg-crout"></div>
+			<div class="tu-card">
+				<h2 class="cg-h">Letter frequencies</h2>
+				<p class="cg-note">Bars = how often each letter appears in your text; the grey line = normal English. A Caesar shift slides the whole pattern sideways, which is why the peaks give it away.</p>
+				<div class="cg-chart" id="cg-freq"></div>
+				<div class="tu-stats cg-mini" id="cg-fstats"></div>
+			</div>
+		</section>
+
+		<!-- ============ RSA ============ -->
+		<section class="cg-pane" data-pane="rsa" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">1. Make a key pair</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">p <input id="cg-p" class="tu-input cg-num" type="text" inputmode="numeric" value="61"></label>
+					<label class="cg-inl">q <input id="cg-q" class="tu-input cg-num" type="text" inputmode="numeric" value="53"></label>
+					<label class="cg-inl">e <input id="cg-e" class="tu-input cg-small" type="text" inputmode="numeric" value="17" placeholder="auto"></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="cg-rsago">Make keys</button>
+				</div>
+				<div class="cg-ctl"><span class="cg-muted">Or pick two random primes of</span>
+					<div class="tu-seg" id="cg-bits" role="group" aria-label="Prime size"><button type="button" data-b="8">8 bits</button><button type="button" data-b="16">16</button><button type="button" data-b="32">32</button><button type="button" data-b="64">64</button><button type="button" data-b="128">128</button><button type="button" data-b="512">512</button><button type="button" data-b="1024">1024</button></div></div>
+				<p class="cg-err" id="cg-rsaerr" hidden></p>
+				<div id="cg-rsakey"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">2. Send a message</h2>
+				<div class="cg-ctl"><div class="tu-seg" id="cg-rmode" role="group" aria-label="Message type"><button type="button" data-v="text">Text</button><button type="button" data-v="num">A number</button></div></div>
+				<label class="cg-lab" for="cg-rmsg" id="cg-rmsglab">Message (encrypted with the public key e, n)</label>
+				<input id="cg-rmsg" class="tu-input tu-input--big" type="text" value="Hi MES!" spellcheck="false" autocomplete="off">
+				<div id="cg-rsamsg"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">3. Be the attacker: break the key</h2>
+				<p class="cg-note">Anyone can see n and e. If they can split n back into p × q, they can work out d. Try it with the key above: small keys fall in a blink, real ones (2048 bits) would take longer than the age of the universe.</p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--ghost" id="cg-rsacrack">Try to factor n</button></div>
+				<div id="cg-rsacrout"></div>
+			</div>
+		</section>
+
+		<!-- ============ Diffie-Hellman ============ -->
+		<section class="cg-pane" data-pane="dh" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Agree on a secret over an open line</h2>
+				<p class="cg-note">Alice and Bob each keep a private number and only ever send mixed results. Eve hears everything sent but still can't get the shared secret, the same way you can't un-mix paint.</p>
+				<div class="cg-paint" id="cg-paint"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">With real numbers</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">Public prime p <input id="cg-dp" class="tu-input cg-num" type="text" inputmode="numeric" value="23"></label>
+					<label class="cg-inl">Base g <input id="cg-dg" class="tu-input cg-small" type="text" inputmode="numeric" value="5"></label>
+					<label class="cg-inl">Alice's secret a <input id="cg-da" class="tu-input cg-small" type="text" inputmode="numeric" value="6"></label>
+					<label class="cg-inl">Bob's secret b <input id="cg-db" class="tu-input cg-small" type="text" inputmode="numeric" value="15"></label>
+				</div>
+				<div class="cg-ctl"><span class="cg-muted">Random:</span>
+					<div class="tu-seg" id="cg-dbits" role="group" aria-label="Prime size"><button type="button" data-b="8">small</button><button type="button" data-b="32">32 bits</button><button type="button" data-b="64">64 bits</button><button type="button" data-b="256">256 bits</button></div></div>
+				<p class="cg-err" id="cg-dherr" hidden></p>
+				<div id="cg-dhout"></div>
+			</div>
+		</section>
+
+		<!-- ============ Hashes ============ -->
+		<section class="cg-pane" data-pane="hash" hidden>
+			<div class="tu-card">
+				<label for="cg-hin" class="cg-lab">Text to hash</label>
+				<textarea id="cg-hin" class="tu-input cg-ta" rows="3" spellcheck="false">hello</textarea>
+				<div class="cg-hashes" id="cg-hout"></div>
+				<div class="cg-drop" id="cg-hdrop" tabindex="0" role="button">Or drop a file here (or click) to get its fingerprints. The file never leaves your computer.<input type="file" id="cg-hfile" hidden></div>
+				<div id="cg-hfout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">The avalanche effect</h2>
+				<p class="cg-note">Change one letter and about half of SHA-256's 256 bits flip. That is why a hash can prove a file was not changed, and why you can't work backwards from a hash.</p>
+				<div class="cg-two">
+					<label class="cg-inl cg-grow">A <input id="cg-av1" class="tu-input" type="text" value="hello" spellcheck="false"></label>
+					<label class="cg-inl cg-grow">B <input id="cg-av2" class="tu-input" type="text" value="hellp" spellcheck="false"></label>
+				</div>
+				<div class="cg-bits" id="cg-avbits" aria-label="SHA-256 bits, changed bits highlighted"></div>
+				<p class="cg-status" id="cg-avstat"></p>
+			</div>
+		</section>
+
+		<!-- ============ AES ============ -->
+		<section class="cg-pane" data-pane="aes" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Real encryption (AES-256-GCM)</h2>
+				<p class="cg-note">This is the same strong encryption banks and messaging apps use, done by your browser's built-in Web Crypto. The password becomes a key with PBKDF2 (250,000 rounds). Nothing is sent anywhere: copy the result and send it any way you like.</p>
+				<label for="cg-pw" class="cg-lab">Password</label>
+				<div class="cg-row"><input id="cg-pw" class="tu-input tu-input--big" type="password" autocomplete="new-password" spellcheck="false"><button type="button" class="tu-btn tu-btn--ghost" id="cg-pwshow">Show</button></div>
+				<p class="cg-status" id="cg-pwst"></p>
+				<div class="cg-io">
+					<div class="cg-iobox"><label for="cg-ain" class="cg-lab">Message, or an MES1… text to decrypt</label><textarea id="cg-ain" class="tu-input cg-ta" rows="5" spellcheck="false"></textarea></div>
+					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--primary" id="cg-aenc">Encrypt ›</button><button type="button" class="tu-btn tu-btn--ghost" id="cg-adec">‹ Decrypt</button></div>
+					<div class="cg-iobox"><label for="cg-aout" class="cg-lab">Result</label><textarea id="cg-aout" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
+				</div>
+				<p class="cg-err" id="cg-aerr" hidden></p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--ghost" id="cg-acopy">Copy result</button></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Encrypt or decrypt a file</h2>
+				<div class="cg-drop" id="cg-afdrop" tabindex="0" role="button">Drop a file here (or click). A normal file is encrypted to <code>name.mesenc</code>; a <code>.mesenc</code> file is decrypted back. Uses the password above.<input type="file" id="cg-afile" hidden></div>
+				<p class="cg-status" id="cg-afst"></p>
+			</div>
+		</section>
+
+		<!-- ============ Encoders ============ -->
+		<section class="cg-pane" data-pane="enc" hidden>
+			<div class="tu-card">
+				<div class="cg-ctl">
+					<label class="cg-inl">Format <select id="cg-ef" class="tu-select">
+						<option value="b64">Base64</option><option value="b64u">Base64 (URL-safe)</option><option value="hex">Hexadecimal</option><option value="bin">Binary</option>
+						<option value="morse">Morse code</option><option value="url">URL encoding</option><option value="rot47">ROT47</option><option value="xor">XOR with a key (hex out)</option></select></label>
+					<div class="tu-seg" id="cg-edir" role="group" aria-label="Direction"><button type="button" data-v="enc">Encode</button><button type="button" data-v="dec">Decode</button></div>
+					<label class="cg-inl" id="cg-exkw">Key <input id="cg-exk" class="tu-input cg-mid" type="text" value="mes" spellcheck="false"></label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="cg-eplay">▶ Play Morse</button>
+				</div>
+				<div class="cg-io">
+					<div class="cg-iobox"><label for="cg-ein" class="cg-lab">Input</label><textarea id="cg-ein" class="tu-input cg-ta" rows="5" spellcheck="false">Hello, MES! ✓</textarea></div>
+					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--ghost" id="cg-eswap">⇅ Swap</button></div>
+					<div class="cg-iobox"><label for="cg-eout" class="cg-lab">Output</label><textarea id="cg-eout" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
+				</div>
+				<p class="cg-err" id="cg-eerr" hidden></p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--ghost" id="cg-ecopy">Copy output</button></div>
+				<p class="cg-note">Encoding is not encryption: anyone can decode Base64, hex or Morse without a key. It just turns data into text that travels safely.</p>
+			</div>
+		</section>
+
+		<!-- ============ Modular maths ============ -->
+		<section class="cg-pane" data-pane="mod" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Modular power a<sup>e</sup> mod m (square and multiply)</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">a <input id="cg-ma" class="tu-input cg-num" type="text" inputmode="numeric" value="65"></label>
+					<label class="cg-inl">e <input id="cg-me" class="tu-input cg-num" type="text" inputmode="numeric" value="17"></label>
+					<label class="cg-inl">m <input id="cg-mm" class="tu-input cg-num" type="text" inputmode="numeric" value="3233"></label>
+				</div>
+				<p class="cg-err" id="cg-merr" hidden></p>
+				<div id="cg-mout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Modular inverse (extended Euclid)</h2>
+				<div class="cg-ctl">
+					<label class="cg-inl">The inverse of <input id="cg-ia" class="tu-input cg-num" type="text" inputmode="numeric" value="17"></label>
+					<label class="cg-inl">mod <input id="cg-im" class="tu-input cg-num" type="text" inputmode="numeric" value="3120"></label>
+				</div>
+				<div id="cg-iout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Clock arithmetic</h2>
+				<p class="cg-note">“mod 12” is a clock: after 12 you start again at 0. Drag the slider to add hours.</p>
+				<div class="cg-ctl"><label class="cg-inl">Modulus <input type="range" id="cg-clm" min="2" max="26" value="12"> <b id="cg-clmv">12</b></label>
+					<label class="cg-inl">Start <input type="range" id="cg-cls" min="0" max="25" value="9"> <b id="cg-clsv">9</b></label>
+					<label class="cg-inl">Add <input type="range" id="cg-cla" min="0" max="60" value="5"> <b id="cg-clav">5</b></label></div>
+				<div id="cg-clock"></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Cryptography, explained</h2>
+			<p><strong>Cryptography</strong> is the maths of keeping messages secret and proving they were not changed. This page lets you try every big idea in it, from the Caesar shift Julius Caesar used to the RSA and AES encryption that protects the web today. Everything runs in your browser: nothing you type is uploaded.</p>
+			<h3>What each tab does</h3>
+			<ul>
+				<li><strong>Ciphers</strong>: encrypt and decrypt with the Caesar shift, ROT13, Atbash, affine, Vigenère, Beaufort, keyword substitution and rail fence ciphers, with a picture of how each one moves the letters.</li>
+				<li><strong>Crack a cipher</strong>: break a secret message without the key using letter frequencies, the index of coincidence and the Kasiski test, the way codebreakers did for centuries.</li>
+				<li><strong>RSA</strong>: build a public and private key from two primes step by step (n = p × q, φ(n), e and d with the extended Euclidean algorithm), send a message, then try to break the key by factoring n.</li>
+				<li><strong>Key exchange</strong>: Diffie–Hellman, shown with mixing paint and with real numbers, and why the eavesdropper can't solve the discrete logarithm.</li>
+				<li><strong>Hashes</strong>: MD5, SHA-1, SHA-256, SHA-384, SHA-512 and CRC32 of text or a file, plus the avalanche effect bit by bit.</li>
+				<li><strong>Encrypt with a password</strong>: real AES-256-GCM encryption of text or files with your browser's Web Crypto.</li>
+				<li><strong>Base64, hex, Morse…</strong> and <strong>Modular maths</strong>: the encodings and number tricks cryptography is built on.</li>
+			</ul>
+			<h3>Questions people ask</h3>
+			<dl>
+				<dt>What is the difference between a code, a cipher and encoding?</dt><dd>A cipher changes letters or bits with a rule and a key (Caesar, AES). A code swaps whole words for code words from a book. Encoding (Base64, Morse) has no key at all: anyone can reverse it.</dd>
+				<dt>Why is the Caesar cipher so easy to break?</dt><dd>There are only 25 possible shifts, so a computer tries them all at once, and letter frequencies point to the right one: E, T and A stay the most common letters, just moved.</dd>
+				<dt>Why does RSA use prime numbers?</dt><dd>Multiplying two big primes is quick, but splitting the product back into them is extremely slow. Your public key holds the product n; only you know the two primes, and you need them to work out the private key d. See the <a href="/primes">prime number checker</a> to factor numbers yourself.</dd>
+				<dt>Is the RSA tab safe for real secrets?</dt><dd>No. It is “textbook RSA” for learning: no padding, and keys you can see. For real secrets use the password tab (AES-256-GCM) or a proper app.</dd>
+				<dt>Can a hash be reversed?</dt><dd>No. A hash throws information away, so many inputs share each output; the only way back is guessing inputs. That is why short or common passwords get cracked: attackers hash billions of guesses.</dd>
+				<dt>How strong is the password encryption?</dt><dd>AES-256 itself has never been broken. The weak point is the password: the page estimates how long a guessing attack would take, so use a long passphrase.</dd>
+			</dl>
+			<p>Related: <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/file-check">File Safety Check</a> · <a href="/tools">More tools</a></p>
+		</div>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/relative-speed-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/relative-speed-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Relative Speed and Strength Calculator: Animals Scaled to Human Size (Running, Flying, Jumps, Falls)</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/ideal-weight-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ideal-weight-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/cryptography">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/cryptography/js/cryptography.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

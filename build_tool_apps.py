@@ -834,6 +834,14 @@ APPS = {
                             js_v="2"),
     # Prime Numbers (2026-11-10): checker + factorization (BigInt Miller-Rabin + Pollard rho), coprime / GCD / LCM with Venn + Euclid, animated sieve, Ulam / Sacks spiral,
     # primes in a range, nth prime, pi(x) chart. lib.js = MESPrime (node tests: tool_apps_src/primes-tests.js), app.js = UI.
+    # Cryptography Lab (2026-11-13, mes.fm/cryptography; NOT /crypto = the Bitcoin/Hive hub): classical ciphers + cracking (frequency, IoC, Kasiski), textbook RSA step by step,
+    # Diffie-Hellman (paint + numbers, baby-step giant-step), hashes (pure MD5 / SHA-256 + Web Crypto) with the avalanche picture, AES-256-GCM text / file encryption,
+    # encoders and modular maths. lib.js = MESCrypto on top of MESPrime (lib_from primes); node tests: tool_apps_src/cryptography-tests.js.
+    "cryptography": dict(title="MES Cryptography Lab", page_title="Cryptography Lab: Ciphers, RSA, Hashes & AES",
+                   tag="Encrypt, decrypt and crack. See how it works.", accent="#166534", dark="#14532d", tint="#e7f5ec",
+                   desc="Free cryptography tools in your browser: Caesar, Vigen\u00e8re, affine, Atbash and rail fence ciphers, crack secret messages with letter frequencies, build an RSA key from two primes step by step, Diffie-Hellman key exchange, MD5 and SHA-256 hashes, and real AES encryption with a password.",
+                   meta_desc="Encrypt, decrypt and crack Caesar, Vigen\u00e8re and other ciphers, build RSA keys from primes step by step, try Diffie-Hellman, hashes and real AES password encryption.",
+                   lib_from=["primes"], js_v="1"),
     "primes": dict(title="MES Prime Numbers", page_title="Prime Number Checker, Factors, GCD & Sieve",
                    tag="Is it prime? Factors, divisors, coprime, sieve.", accent="#0e7c66", dark="#0b5e4e", tint="#e3f4ef",
                    desc="Free prime number checker: is it prime, its prime factorization with a factor tree, every divisor, coprime check with GCD and LCM, an animated Sieve of Eratosthenes, the Ulam prime spiral, primes in a range, the nth prime and the prime counting function. Works for huge numbers.",
