@@ -10,6 +10,7 @@
 //   - only image/* (not SVG) or PDF, and the first bytes must really be one (sniff); the reply carries the sniffed type,
 //     `nosniff`, a sandbox CSP and no-store, so opening the URL directly can never run anything on mes.fm
 //   - 60 fetches per visitor IP per hour when Upstash Redis is set up (same UPSTASH_REDIS_REST_URL / _TOKEN as api/fav.js); without it, no limit
+// &kind=text (mes.fm/text) accepts any text file (no NUL bytes in the first 4 KB), served as octet-stream attachment.
 // &kind=docx (mes.fm/docx) also accepts a Word .docx (a ZIP that names word/document.xml), served as an attachment.
 // MAX_BYTES is 4.4 MB because a Vercel Function's response body is capped at 4.5 MB: bigger files must be downloaded and dropped on the page.
 'use strict';
@@ -85,7 +86,7 @@ async function rateOk(req) {
 async function handler(req, res, deps) {
   const resolve = (deps && deps.resolve) || doh, get = (deps && deps.get) || getPinned, limit = (deps && deps.rateOk) || rateOk;
   if (req.method !== 'GET') return fail(res, 405, 'GET only');
-  const kind = req.query && req.query.kind === 'docx' ? 'docx' : '';
+  const kind = req.query && (req.query.kind === 'docx' || req.query.kind === 'text') ? req.query.kind : '';
   const first = G.checkUrl(req.query && req.query.url);
   if (!first.ok) return fail(res, 400, first.reason);
   if (!(await limit(req))) return fail(res, 429, 'Too many pictures fetched from your connection this hour. Download the picture and drop the file instead.');
@@ -105,16 +106,16 @@ async function handler(req, res, deps) {
         continue;
       }
       if (r.tooBig) return fail(res, 413, 'That file is bigger than ' + (MAX_BYTES / 1e6).toFixed(1) + ' MB. Download it and drop the file on the page instead.');
-      if (r.badType) return fail(res, 415, 'That link is not a ' + (kind === 'docx' ? 'Word file' : 'picture or PDF') + ' (it is ' + String(r.headers['content-type'] || 'unknown').split(';')[0] + ').');
+      if (r.badType) return fail(res, 415, 'That link is not a ' + (kind === 'docx' ? 'Word file' : kind === 'text' ? 'text file' : 'picture or PDF') + ' (it is ' + String(r.headers['content-type'] || 'unknown').split(';')[0] + ').');
       if (r.status !== 200 || !r.body) return fail(res, 502, 'The other site answered ' + r.status + '.');
-      const type = kind === 'docx' ? G.sniffDocx(r.body) : G.sniff(r.body);
-      if (!type) return fail(res, 415, kind === 'docx' ? 'That link is not a Word .docx file.' : 'That link is not a picture or PDF this page can read.');
+      const type = kind === 'docx' ? G.sniffDocx(r.body) : kind === 'text' ? G.sniffText(r.body) : G.sniff(r.body);
+      if (!type) return fail(res, 415, kind === 'docx' ? 'That link is not a Word .docx file.' : kind === 'text' ? 'That link is not a text file.' : 'That link is not a picture or PDF this page can read.');
       res.setHeader('Content-Type', type);
       res.setHeader('Content-Length', String(r.body.length));
       res.setHeader('Cache-Control', 'no-store');
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-      res.setHeader('Content-Disposition', kind === 'docx' ? 'attachment' : 'inline');
+      res.setHeader('Content-Disposition', kind ? 'attachment' : 'inline');
       res.setHeader('X-Robots-Tag', 'noindex');
       return res.status(200).send(r.body);
     }

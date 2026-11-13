@@ -1,4 +1,4 @@
-# MES Read Aloud 1.11.0
+# MES Read Aloud 1.12.0
 
 Upload `store.zip`; images: `icon-128.png` (store icon), `screenshot-*.png`, `promo-440x280.png`.
 
@@ -15,7 +15,8 @@ Reads web pages, Google Docs, PDFs and Word files aloud, highlighting each word 
 Listen to any web page instead of reading it. MES Read Aloud finds the article text (or reads what you select) and speaks it with the voices of your browser and computer, highlighting the word and sentence as it goes.
 
 What it does
-• Reads web pages, a selection, Google Docs, PDF files and Word (.docx) files.
+• Reads web pages, a selection and Google Docs.
+• PDF, Word (.docx) and text files (.txt, .md, .rtf, .csv, code) open in the free MES PDF Editor, Word Viewer or Text Viewer on mes.fm, where they look like the real document and Read aloud highlights each word on the page. The file is passed straight from the extension to that page in your browser; it is not uploaded.
 • Highlights the current word and sentence, and scrolls with the reading.
 • Floating player you can drag or shrink: play / pause, previous / next sentence, speed, voice, double-click any word to jump there.
 • Searchable voice list grouped by language; voices that fail to speak are skipped automatically.
@@ -58,6 +59,10 @@ Saves the chosen voice, speed and setups.
 ## Permission justification: contextMenus
 
 Adds 'Read this aloud' and 'Read this PDF / Word file aloud' to the right-click menu.
+
+## Permission justification: externally_connectable (https://mes.fm/*)
+
+Lets the mes.fm PDF Editor, Word Viewer or Text Viewer tab that the extension opens ask it for the file the person chose, so the file is shown there without being uploaded anywhere. Only mes.fm pages can ask, only with the one-time code the extension put in that tab's address.
 
 ## Permission justification: Host permission file:///*
 

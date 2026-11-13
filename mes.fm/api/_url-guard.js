@@ -103,13 +103,22 @@ function sniffDocx(b) {
   return b.indexOf('word/document.xml') >= 0 ? DOCX : null;
 }
 
+// Text for mes.fm/text: any file whose first 4 KB has no NUL byte (or starts with a UTF-16 byte-order mark). Served as octet-stream, never rendered.
+function sniffText(b) {
+  if (!b || !b.length) return null;
+  if ((b[0] === 0xff && b[1] === 0xfe) || (b[0] === 0xfe && b[1] === 0xff)) return 'application/octet-stream';
+  for (let i = 0, n = Math.min(b.length, 4096); i < n; i++) if (b[i] === 0) return null;
+  return 'application/octet-stream';
+}
+
 // Header Content-Type we are willing to read at all (the bytes decide the real type). SVG is refused: it is a document that can run script.
 function typeAllowed(ct, kind) {
   const t = String(ct || '').toLowerCase().split(';')[0].trim();
   if (!t) return true;                                                            // some servers send none; sniff() decides
   if (t === 'image/svg+xml') return false;
+  if (kind === 'text' && (/^text\//.test(t) || /json|xml|rtf|javascript|ecmascript|yaml|toml|csv|x-sh|x-python|x-subrip|x-tex|markdown/.test(t))) return true;
   if (kind === 'docx' && (t === DOCX || t === 'application/zip' || t === 'application/x-zip-compressed' || t === 'application/msword')) return true;
   return /^image\//.test(t) || t === 'application/pdf' || t === 'application/octet-stream' || t === 'binary/octet-stream';
 }
 
-module.exports = { ipv4Public, ipv6Public, v6groups, checkUrl, pickPublicIp, sniff, sniffDocx, typeAllowed, DOCX };
+module.exports = { ipv4Public, ipv6Public, v6groups, checkUrl, pickPublicIp, sniff, sniffDocx, sniffText, typeAllowed, DOCX };

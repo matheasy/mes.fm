@@ -29,7 +29,7 @@
 	if (CFG.kind !== "pdf" || !LO) lf.hidden = true; else {
 		var openLink = async function (raw) {
 			if (busy) return; $("pt-linkgo").disabled = true;
-			try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { notice(escT(m)); } }); notice(""); await addFiles([f]); $("pt-link").value = ""; }
+			try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { notice(escT(m)); } }); notice(""); if (f.mesKind && f.mesKind !== "pdf") { await LO.sendTo(f.mesKind, f, { busy: !!items.length }); return; } await addFiles([f]); $("pt-link").value = ""; }
 			catch (e) { notice(escT((e && e.message || String(e)) + " You can also download the PDF and drop it here."), true); }
 			finally { $("pt-linkgo").disabled = false; }
 		};

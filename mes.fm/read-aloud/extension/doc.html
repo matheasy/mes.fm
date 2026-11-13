@@ -9,22 +9,25 @@
 </head>
 <body>
 <header class="top">
-  <div class="brand">MES Read Aloud <span>&middot; read a PDF or Word file</span></div>
+  <div class="brand">MES Read Aloud <span>&middot; open a PDF, Word or text file</span></div>
   <div class="tools">
     <button id="play" class="pri" disabled>&#9654; Read aloud</button>
     <button id="pick">Open a file&hellip;</button>
     <a id="onmes" class="btn" href="https://mes.fm/pdf" target="_blank" rel="noopener" hidden title="See the real pages, edit, sign or fill in forms on mes.fm (it has Read aloud too)">Open in MES PDF Editor</a>
     <button id="smaller" title="Smaller text" aria-label="Smaller text">A&minus;</button><button id="bigger" title="Larger text" aria-label="Larger text">A+</button>
-    <input type="file" id="file" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" hidden>
+    <input type="file" id="file" accept=".pdf,.docx,.txt,.md,.rtf,.csv,.json,.html,.htm,.xml,.log,.srt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/*" hidden>
   </div>
 </header>
 <main>
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
+  <div id="herebox" class="card" hidden>
+    <p>The file opens in a new tab on <b>mes.fm</b>: PDFs in the PDF Editor, Word files in the Word Viewer, text files in the Text Viewer. There it looks like the real document, and <b>Read aloud</b> highlights each word on the page. The file is passed straight from this extension to that page; nothing is uploaded.</p>
+    <p><button id="readhere">Read it here as plain text instead</button></p>
+  </div>
   <div id="drop" class="drop">
-    <p class="big">Drop a PDF or Word (.docx) file here</p>
+    <p class="big">Drop a PDF, Word (.docx) or text file here</p>
     <p>or <button id="pick2" class="pri">choose a file</button></p>
-    <p class="hint">The file is read on this computer. Nothing is uploaded. Plain text (.txt) works too. Old Word files (.doc) do not: save them as .docx first.</p>
-    <p class="hint">Want the real page layout, or to edit, sign or fill in the file too? Open it in the free <a href="https://mes.fm/pdf" target="_blank" rel="noopener">MES PDF Editor</a> or <a href="https://mes.fm/docx" target="_blank" rel="noopener">MES Word Viewer</a>: both have Read aloud built in, with each word highlighted on the page, and open files from a link.</p>
+    <p class="hint">It opens on mes.fm (PDF Editor, Word Viewer or Text Viewer), straight from this extension: nothing is uploaded. Old Word files (.doc) do not work: save them as .docx first.</p>
   </div>
   <div id="fileaccess" class="card" hidden>
     <h2>Let the extension open files on your computer</h2>

@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/text",
+   "title": "Text Viewer (TXT, RTF, Code)",
+   "icon": "/img/text-logo.png",
+   "desc": "Open .txt, .md, .rtf, .csv, .json, .html and code files: a formatted reading view or a code view with line numbers, read aloud, edit and save. Nothing is uploaded.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
+  {
    "href": "/narration",
    "title": "Narration",
    "icon": "/img/narration-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.",
    "added": "2026-11-07",
    "kind": "tool"
-  },
-  {
-   "href": "/party",
-   "title": "Party Invitations & RSVP",
-   "icon": "/img/party-logo.png",
-   "desc": "Make a themed invitation, send one link and see who's coming: Going / Maybe / Can't go, plus-ones, waitlist, what to bring. No sign-up for anyone.",
-   "added": "2026-11-07",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/text",
+   "title": "Text Viewer (TXT, RTF, Code)",
+   "icon": "/img/text-logo.png",
+   "desc": "Open .txt, .md, .rtf, .csv, .json, .html and code files: a formatted reading view or a code view with line numbers, read aloud, edit and save. Nothing is uploaded.",
+   "added": "2026-11-12",
+   "kind": "tool"
+  },
   {
    "href": "/narration",
    "title": "Narration",
@@ -250,14 +258,6 @@
    "title": "Lüders Band Simulator",
    "icon": "/img/luders-bands-logo.png",
    "desc": "Pull a mild steel bar and watch the yield band run along it at 55° while the force stays flat. Notches, machine stiffness, strain ageing.",
-   "added": "2026-11-10",
-   "kind": "calculator"
-  },
-  {
-   "href": "/primes",
-   "title": "Prime Numbers",
-   "icon": "/img/primes-logo.png",
-   "desc": "Is it prime? Prime factors, divisors, coprime, GCD and LCM, the sieve and the prime spiral.",
    "added": "2026-11-10",
    "kind": "calculator"
   }

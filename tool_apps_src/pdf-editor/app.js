@@ -5,7 +5,16 @@
 	if (!root) return;
 	PD.init.buildTools(); PD.init.bindPointer(); PD.init.bindThumbs(); PD.setTool("select");
 	function confirmDiscard() { return !PD.dirty || window.confirm("You have unsaved edits. Open another PDF and discard them?"); }
-	function openFile(f) { if (!f) return; if (!/pdf/i.test(f.type) && !/\.pdf$/i.test(f.name)) return PD.toast("Please choose a PDF file"); if (!confirmDiscard()) return; PD.open(f); }
+	// a Word or text file goes to the Word Viewer / Text Viewer (window.MESLinkOpen, /main_js/link-open.js)
+	function openFile(f) {
+		if (!f) return; var LK = window.MESLinkOpen;
+		if (!/pdf/i.test(f.type) && !/\.pdf$/i.test(f.name)) {
+			var k = LK ? LK.kindOf(f.name, f.type) : "other";
+			if (k === "docx" || k === "text") return LK.sendTo(k, f, { busy: !!PD.doc });
+			return PD.toast("Please choose a PDF file", 3000);
+		}
+		if (!confirmDiscard()) return; PD.open(f);
+	}
 	["pd-open", "pd-e-open"].forEach(function (id) { $(id).addEventListener("click", function () { $("pd-file").click(); }); });
 	$("pd-file").addEventListener("change", function () { openFile(this.files[0]); this.value = ""; });
 	$("pd-addfile").addEventListener("change", function () { if (this.files[0]) PD.addPdf(this.files[0]); this.value = ""; });
@@ -18,7 +27,7 @@
 		if (!LO) return PD.toast("Could not load the link opener");
 		if (!confirmDiscard()) return;
 		PD.busy(true, "Fetching the PDF..."); $("pd-linkgo").disabled = true;
-		try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { linkNote(m); $("pd-st-doc").textContent = m; } }); PD.busy(false); linkNote(""); await PD.open(f); PD.toast(f.mesVia === "mes" ? "Opened (fetched through mes.fm, no copy kept)" : "Opened from " + f.mesHost, 3500); }
+		try { var f = await LO.get(raw, { kind: "pdf", onStatus: function (m) { linkNote(m); $("pd-st-doc").textContent = m; } }); PD.busy(false); linkNote(""); if (f.mesKind && f.mesKind !== "pdf") { await LO.sendTo(f.mesKind, f, { busy: false }); return; } await PD.open(f); PD.toast(f.mesVia === "mes" ? "Opened (fetched through mes.fm, no copy kept)" : "Opened from " + f.mesHost, 3500); }
 		catch (e) { PD.busy(false); var m = (e && e.message || String(e)) + " You can also download the PDF and drop it here."; linkNote(m, true); PD.toast(m, 7000); }
 		finally { $("pd-linkgo").disabled = false; }
 	}
@@ -34,7 +43,11 @@
 		var cd = e.clipboardData, txt = cd && cd.getData("text/plain"); if (cd && cd.files && cd.files.length) return;
 		if (LO && LO.looksLikeLink(txt) && (!PD.doc || /\.pdf(\?|#|$)/i.test(txt) || /docs\.google\.com|drive\.google\.com|dropbox\.com/i.test(txt))) { e.preventDefault(); e.stopImmediatePropagation(); openLink(txt.trim()); }
 	}, true);
-	if (LO && LO.fromQuery()) { var q0 = LO.fromQuery(); $("pd-link").value = q0; openLink(q0); }
+	// a file handed over by another MES page (?handoff=) or the MES Read Aloud extension (?ext=&k=), else ?url=
+	if (LO) LO.receive().then(function (f) {
+		if (f) { PD.open(f).then(function () { if (f.mesFromExt) PD.toast("Opened from MES Read Aloud. Press Read aloud to listen.", 5000); }); return; }
+		if (LO.fromQuery()) { var q0 = LO.fromQuery(); $("pd-link").value = q0; openLink(q0); }
+	}, function (e) { linkNote(e.message, true); PD.toast(e.message, 7000); });
 	/* drag and drop: a PDF opens, a picture is placed on the page under the pointer */
 	var view = $("pd-view"), depth = 0;
 	function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0; }

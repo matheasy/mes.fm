@@ -828,7 +828,7 @@
 },
 "/site-index":{
 "added":"2026-10-03",
-"updated":"2026-11-10",
+"updated":"2026-11-12",
 "type":"Tool"
 },
 "/site-traffic":{
@@ -910,6 +910,11 @@
 "added":"2026-10-20",
 "updated":"2026-11-11",
 "type":"Simulation"
+},
+"/text":{
+"added":"2026-11-12",
+"updated":"2026-11-12",
+"type":"Tool"
 },
 "/text-size":{
 "added":"2026-10-11",

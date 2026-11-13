@@ -1576,7 +1576,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   // ---- the player -----------------------------------------------------------------------------------------------------
-  var CSS_UI = '*{box-sizing:border-box}:host{all:initial}.p{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;width:min(640px,calc(100vw - 20px));background:#1f2023;color:#f2f2f2;border:1px solid #3a3c41;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.45);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:8px 10px 10px;zoom:var(--z,1)}' +
+  var CSS_UI = '*{box-sizing:border-box}:host{all:initial}.p{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;width:var(--pw,min(640px,calc(100vw - 20px)));max-width:calc(100vw / var(--z,1) - 10px);background:#1f2023;color:#f2f2f2;border:1px solid #3a3c41;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.45);font:13px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:8px 10px 10px;zoom:var(--z,1)}' +
     '.p.bottom{bottom:12px}.p.top{top:12px}.bar{height:18px;cursor:pointer;margin:-2px 0 4px;position:relative;touch-action:none;outline:none}.bar::before{content:"";position:absolute;left:0;right:0;top:6px;height:6px;border-radius:3px;background:#3a3c41;transition:top .1s,height .1s}.bar:hover::before,.bar.drag::before,.bar:focus-visible::before{top:5px;height:8px}.fill{position:absolute;left:0;top:6px;height:6px;border-radius:3px;background:#4cc38a;width:0;pointer-events:none;transition:top .1s,height .1s}.bar:hover .fill,.bar.drag .fill,.bar:focus-visible .fill{top:5px;height:8px}.thumb{position:absolute;top:2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#f2f2f2;box-shadow:0 1px 4px rgba(0,0,0,.5);left:0;opacity:0;pointer-events:none;transition:opacity .1s}.bar:hover .thumb,.bar.drag .thumb,.bar:focus-visible .thumb{opacity:1}.bar:focus-visible::before{box-shadow:0 0 0 2px #4cc38a}.btip{position:absolute;bottom:20px;transform:translateX(-50%);max-width:320px;width:max-content;background:#0f1012;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;padding:5px 8px;font-size:12px;line-height:1.35;pointer-events:none;white-space:normal;display:none;z-index:3}.btip b{color:#4cc38a;font-weight:600;display:block}.bar:hover .btip,.bar.drag .btip{display:block}.p.pip .btip{bottom:auto;top:20px}.lay{font-size:12px;padding:0 10px;background:#2b3a67;height:28px}.lay[hidden]{display:none}' +
     '.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}button{all:unset;cursor:pointer;min-width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 16px/1 system-ui,sans-serif;color:#f2f2f2;background:#2c2e33;padding:0 8px;text-align:center}' +
     'button:hover,button:focus-visible{background:#3d4047;outline:none}button.pl{background:#15803d;min-width:44px}button.pl:hover{background:#1a9a49}select{font:inherit;background:#2c2e33;color:#f2f2f2;border:1px solid #3a3c41;border-radius:8px;height:34px;padding:0 6px;max-width:170px}' +
@@ -1586,8 +1586,9 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.rs{background:#1f6f43;font-size:13px;padding:0 12px}.rs[hidden]{display:none}.dk.on{background:#2b3a67}.dml{margin-left:auto;display:flex;align-items:center;gap:4px;height:26px;padding:0 8px;border-radius:7px;color:#aab0b8;font:500 12px/1 system-ui,sans-serif;text-decoration:none;background:transparent;border:1px solid #3a3c41}.dml:hover,.dml:focus-visible{color:#f2f2f2;background:#2b3a67;border-color:#2b3a67;outline:none}.p.flip:not(.pip){filter:invert(1) hue-rotate(180deg)}.hl.on{background:#4a4220}.hl i{font-style:normal;padding:0 4px;border-radius:3px;font-size:13px}.hl.on i{background:#ffd54a;color:#000}.hl:not(.on) i{text-decoration:line-through;color:#9aa0a8}' +
     '.p.moved{left:var(--x);top:var(--y);bottom:auto;transform:none}' +
     '.rz{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;touch-action:none;border-radius:0 0 13px 0;color:#8a919a;background:linear-gradient(135deg,transparent 50%,currentColor 50%,currentColor 58%,transparent 58%,transparent 70%,currentColor 70%,currentColor 78%,transparent 78%);opacity:.7}.rz:hover{opacity:1}.p.pip .rz,.p.min .rz{display:none}' +
-    '.p.pip,.p.pip.moved{zoom:1;position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
-    '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.pip .tp,.p.min .tp{display:none}' +
+    '.p.pip,.p.pip.moved{zoom:1;position:static;left:auto;top:auto;bottom:auto;transform:none;width:100%;max-width:none;border:0;border-radius:0;box-shadow:none}.p.pip .grip,.p.pip .mini{display:none}.pip-b.on{background:#1a4d6b}' +
+    '.tp{display:none;margin:0 0 8px;border:1px solid #3a3c41;border-radius:10px;background:#17181a;overflow:hidden}.tp.on{display:block}.p.min .tp,.p.pip.vert .tp{display:none}' +
+    '.p.pip:not(.vert){display:flex;flex-direction:column;height:100vh;box-sizing:border-box}.p.pip:not(.vert)>*{flex:none}.p.pip:not(.vert) .tp.on{display:flex;flex-direction:column;flex:1 1 auto;min-height:60px}.p.pip:not(.vert) .tp.on .tb{flex:1;height:auto}.p.pip .tgr,.p.pip .tpe{display:none}' +
     '.th{display:flex;align-items:center;gap:4px;padding:3px 6px;background:#25272b;color:#aab0b8;font-size:12px}.th b{flex:1;font-weight:600}.th button{min-width:28px;height:24px;font-size:13px;border-radius:6px;padding:0 6px}.tpb.on{background:#1a4d6b}' +
     '.tb{position:relative;height:var(--tbh,150px);min-height:56px;overflow:auto;padding:8px 12px;font-size:calc(16px * var(--tf,1));line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e6e6;user-select:text}.tb .w{cursor:pointer;border-radius:3px}.tb .w:hover{text-decoration:underline}.tb .s.cur{background:var(--sc);color:var(--sct);border-radius:3px}.tb .w.cur{background:var(--wc);color:var(--wct)}' +
     '.tgr{height:14px;cursor:ns-resize;touch-action:none;display:flex;align-items:center;justify-content:center;background:#25272b;border-top:1px solid #3a3c41}.tgr::before{content:"";width:44px;height:4px;border-radius:2px;background:#6a7078}.tgr:hover::before,.tgr:focus-visible::before,.tgr.on::before{background:#cfd3d8}.tgr:focus-visible{outline:none;background:#2f3237}.tpe.on{background:#1a4d6b}.tp.on{display:flex;flex-direction:column}.p.tgu .tgr{order:-1;border-top:0;border-bottom:1px solid #3a3c41}' +
@@ -1597,7 +1598,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     '.ori.on{background:#1a4d6b}' +
     // vertical inside the pop-out window: a column of controls filling the (tall, narrow) window, as many buttons a row as fit
     '.p.pip.vert.vert{position:static;transform:none;width:100%;height:100vh;max-height:none;box-sizing:border-box;padding:8px}.p.pip.vert .row{grid-template-columns:repeat(auto-fill,minmax(34px,1fr))}.p.pip.vert .row>button{width:100%}' +
-    '.p.vert{display:grid;grid-template-columns:auto;grid-template-rows:auto minmax(0,1fr);column-gap:8px;width:auto;max-height:calc((100vh - 24px) / var(--z,1));padding:8px}' +
+    '.p.vert{max-width:none;display:grid;grid-template-columns:auto;grid-template-rows:auto minmax(0,1fr);column-gap:8px;width:auto;max-height:calc((100vh - 24px) / var(--z,1));padding:8px}' +
     '.p.vert:not(.moved){left:auto;right:12px;top:50%;bottom:auto;transform:translateY(-50%)}.p.vert.dl:not(.moved){right:auto;left:12px}' +
     '.p.vert .bar,.p.vert .row{grid-column:1}.p.vert .bar{grid-row:1;margin:0 0 4px}' +
     '.p.vert .row{grid-row:2;display:grid;grid-template-columns:repeat(3,34px);grid-auto-flow:row dense;gap:4px;align-content:start;overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin}' +
@@ -1779,23 +1780,31 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
       if (e.button > 0) return;
       var r = ui.p.getBoundingClientRect();
       place({ x: r.left, y: r.top }, true);   // anchor the top-left corner so it grows toward the bottom-right
-      rs0 = { x: e.clientX, w: r.width, z: uiZoom };
+      rs0 = { x: e.clientX, y: e.clientY, w: r.width, z: uiZoom, text: rzTextMode(), h: tbHeight() };
       try { rz.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
       e.preventDefault();
     });
     rz.addEventListener('pointermove', function (e) {
       if (!rs0) return;
       if (!(e.buttons & 1)) { endRz(); return; }   // the button was let go somewhere we did not hear about: stop following the pointer
+      if (rs0.text) {   // text box shown: the player gets wider and the box taller, the buttons keep their size
+        uiW = Math.round(Math.max(360, Math.min((window.innerWidth - 10) / uiZoom, (rs0.w + e.clientX - rs0.x) / uiZoom)));
+        ui.p.style.setProperty('--pw', uiW + 'px');
+        uiTbBig = false; uiTbH = tbClamp(rs0.h + (e.clientY - rs0.y) / uiZoom); tbApply();
+        return;
+      }
       setZoom(rs0.z * (rs0.w + e.clientX - rs0.x) / rs0.w);
     });
     function endRz() { if (rs0) { rs0 = null; saveUi(); } }
+    function rzTextMode() { return !!ui && ui.tp.classList.contains('on') && !vertOn() && !uiMin && !pipWin; }
+    rz.addEventListener('pointerenter', function () { rz.title = rzTextMode() ? 'Drag to make the player wider and the text box taller (the buttons keep their size). Double-click: normal size' : 'Drag to make the whole player bigger or smaller (double-click for normal size)'; });
     rz.addEventListener('pointerup', endRz);
     rz.addEventListener('pointercancel', endRz);
     rz.addEventListener('lostpointercapture', endRz);
-    rz.ondblclick = function () { setZoom(1); saveUi(); };
+    rz.ondblclick = function () { uiW = null; ui.p.style.removeProperty('--pw'); setZoom(1); saveUi(); };
     ['click', 'mousedown', 'mouseup', 'pointerdown', 'dblclick', 'keydown', 'keyup'].forEach(function (t) { h.addEventListener(t, function (e) { e.stopPropagation(); }); });
     (document.body || document.documentElement).appendChild(h);
-    applyZoom(); ui.p.classList.toggle('min', uiMin); tbApply(); place(uiPos, true); fillMini();
+    applyZoom(); if (uiW) ui.p.style.setProperty('--pw', uiW + 'px'); ui.p.classList.toggle('min', uiMin); tbApply(); place(uiPos, true); fillMini();
     if (pipWin) mountPip();
   }
 
@@ -1843,6 +1852,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     ui.tp.classList.toggle('on', on); ui.tpb.classList.toggle('on', on);
     ui.tpb.title = on ? 'Hide the text box' : 'Show the text being read in a box ' + (vertOn() ? 'beside' : 'above') + ' the player';
     vertApply(); if (uiPos) place(uiPos, true);
+    if (pipWin && !uiVert) setTimeout(pipFit, 0);
     if (!on) return;
     ui.tl.textContent = hasDomText() ? 'Text being read' : st.docs ? 'Text of this Google Doc (Google Docs draws its pages itself, so the words are followed here)' : 'Text being read (the page cannot highlight text inside a text box, so it is shown here)';
     var ps = ui.p.style;
@@ -1896,7 +1906,14 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
     try {
       var chromeH = w.outerHeight - w.innerHeight, chromeW = w.outerWidth - w.innerWidth;
       if (uiVert) w.resizeTo(170 + chromeW, Math.min(Math.max(420, (screen.availHeight || 800) - 120), 640) + chromeH);
-      else { w.resizeTo(660 + chromeW, w.outerHeight); w.resizeTo(w.outerWidth, Math.max(110, ui.p.offsetHeight + chromeH + 2)); }
+      else {
+        // the controls' own height (the text box, when shown, gets at least 260 px more; a taller window the person made is kept)
+        var ctl = 0, cs = getComputedStyle(ui.p); Array.prototype.forEach.call(ui.p.children, function (c) { if (c !== ui.tp && c.offsetParent !== null) { var m = getComputedStyle(c); if (m.position === 'absolute') return; ctl += c.offsetHeight + (parseFloat(m.marginTop) || 0) + (parseFloat(m.marginBottom) || 0); } });
+        ctl += (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+        var tpOn = ui.tp.classList.contains('on'), want = Math.max(110, ctl + chromeH + 2) + (tpOn ? 260 : 0);
+        if (w.outerWidth < 420) w.resizeTo(660 + chromeW, w.outerHeight);
+        if (!tpOn || w.outerHeight < want) w.resizeTo(w.outerWidth, want);
+      }
     } catch (e) { /* the window may not be resizable */ }
   }
   function mountPip() {
@@ -1926,12 +1943,12 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
   }
 
   // player position + minimised state, remembered per browser (not per site)
-  var uiPos = null, uiZoom = 1, uiMin = false, hlPrev = null, uiDark = {}, uiTbH = null, uiTbBig = false, uiVert = false, uiSide = 'r', uiTbW = null;
+  var uiPos = null, uiZoom = 1, uiW = null, uiMin = false, hlPrev = null, uiDark = {}, uiTbH = null, uiTbBig = false, uiVert = false, uiSide = 'r', uiTbW = null;
   function loadUi(cb) {
-    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiDark = u.dark || {}; uiTbH = Number(u.tbh) > 0 ? Number(u.tbh) : null; uiTbBig = !!u.tbBig; uiVert = !!u.vert; uiSide = u.side === 'l' ? 'l' : 'r'; uiTbW = Number(u.tbw) > 0 ? Number(u.tbw) : null; } tbApply(); setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
+    try { chrome.storage.local.get('mesraUi', function (a) { var u = a && a.mesraUi; if (u) { uiPos = u.pos || null; uiMin = !!u.min; uiZoom = Math.max(0.5, Math.min(2, Number(u.zoom) || 1)); uiW = Number(u.w) >= 360 ? Number(u.w) : null; uiDark = u.dark || {}; uiTbH = Number(u.tbh) > 0 ? Number(u.tbh) : null; uiTbBig = !!u.tbBig; uiVert = !!u.vert; uiSide = u.side === 'l' ? 'l' : 'r'; uiTbW = Number(u.tbw) > 0 ? Number(u.tbw) : null; } tbApply(); setDark(!!uiDark[location.hostname], false); if (cb) cb(); }); } catch (e) { if (cb) cb(); }
   }
   loadUi();
-  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, min: uiMin, dark: uiDark, tbh: uiTbH, tbBig: uiTbBig, vert: uiVert, side: uiSide, tbw: uiTbW } }); } catch (e) { /* ignore */ } }
+  function saveUi() { try { chrome.storage.local.set({ mesraUi: { pos: uiPos, zoom: uiZoom, w: uiW, min: uiMin, dark: uiDark, tbh: uiTbH, tbBig: uiTbBig, vert: uiVert, side: uiSide, tbw: uiTbW } }); } catch (e) { /* ignore */ } }
   function place(pt, keep) {
     if (!ui || pipWin) return;
     if (!pt) { uiPos = null; ui.p.classList.remove('moved'); ui.p.classList.toggle('tgu', tbUp()); vertApply(); if (!keep) saveUi(); return; }

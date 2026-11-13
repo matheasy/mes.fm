@@ -97,11 +97,42 @@
     if (b[0] === 0x50 && b[1] === 0x4b) return /\.docx$/i.test(name) || /wordprocessingml/.test(type) || !/\.(xlsx|pptx|zip|odt)$/i.test(name) ? 'docx' : 'other';   // PK (zip)
     if (b[0] === 0xd0 && b[1] === 0xcf) return 'doc';                                                       // old binary Word / Office
     if (/\.(txt|md|text)$/i.test(name) || /^text\//.test(type)) return 'txt';
+    var head = new Uint8Array(bytes.slice(0, 4096)), utf16 = (head[0] === 0xff && head[1] === 0xfe) || (head[0] === 0xfe && head[1] === 0xff);
+    if (head.length && (utf16 || head.indexOf(0) < 0)) return 'txt';   // no NUL bytes: a text file (rtf, csv, code ...)
     return 'other';
   }
-  async function openBytes(data, name, type) {
+  // ---- the file is shown on mes.fm: /pdf, /docx or /text show the real pages (or formatted text) and read them aloud with the same
+  // highlighting. The page is opened with ?ext=<this extension's id>&k=<token> and asks for the file with chrome.runtime.sendMessage
+  // (manifest: externally_connectable for mes.fm); it gets the bytes in base64 pieces. Only that one tab, only once. ----
+  var MES = 'https://mes.fm', PART = 3 * 1024 * 1024, handing = null;
+  var PAGE = { pdf: 'pdf', docx: 'docx', txt: 'text' }, PAGENAME = { pdf: 'MES PDF Editor', docx: 'MES Word Viewer', txt: 'MES Text Viewer' };
+  function b64(u8) { var s = ''; for (var i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768)); return btoa(s); }
+  chrome.runtime.onMessageExternal.addListener(function (m, sender, reply) {
+    if (!handing || !m || m.mesra !== 'file' || m.k !== handing.k) return;
+    if (!sender.url || sender.url.indexOf(MES + '/') !== 0) return;
+    var u8 = new Uint8Array(handing.data), parts = Math.max(1, Math.ceil(u8.length / PART)), i = Math.max(0, m.part | 0);
+    if (i >= parts) { reply({ error: 'no such part' }); return; }
+    reply({ name: handing.name, type: handing.type, src: /^https?:/i.test(handing.src) ? handing.src : '', parts: parts, data: b64(u8.subarray(i * PART, (i + 1) * PART)) });
+    if (i === parts - 1) { var h = handing; handing = null; clearTimeout(h.timer); say('Opened in ' + h.pageName + '. This tab can be closed.'); setTimeout(function () { try { chrome.tabs.getCurrent(function (t) { if (t) chrome.tabs.remove(t.id); }); } catch (e) { window.close(); } }, 400); }
+  });
+  function handOff(data, name, type, kind) {
+    var k = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(12)), function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+    handing = { k: k, data: data, name: name, type: type, src: srcUrl, pageName: PAGENAME[kind] };
+    var url = MES + '/' + PAGE[kind] + '?ext=' + chrome.runtime.id + '&k=' + k;
+    show(null); doc.hidden = true; $('play').disabled = true;
+    say('Opening ' + name + ' in ' + PAGENAME[kind] + ' on mes.fm, where it is shown as it looks and read aloud with each word highlighted…');
+    $('herebox').hidden = false;
+    chrome.tabs.getCurrent(function (t) { chrome.tabs.create({ url: url, index: t ? t.index + 1 : undefined, openerTabId: t ? t.id : undefined }); });
+    handing.timer = setTimeout(function () { if (handing && handing.k === k) say('mes.fm did not ask for the file (no connection, or the page was closed). You can read it here as plain text instead.', true); }, 25000);
+  }
+  var lastFile = null;
+  $('readhere').onclick = function () { if (!lastFile) return; handing = null; $('herebox').hidden = true; openBytes(lastFile.data, lastFile.name, lastFile.type, true); };
+
+  async function openBytes(data, name, type, here) {
     try { if (window.__mesraStop) window.__mesraStop(); } catch (e) { /* ignore */ }
     var kind = kindOf(String(name || ''), type || '', data), out;
+    if (!here && PAGE[kind]) { lastFile = { data: data, name: name, type: type }; handOff(data, String(name || 'Document'), type || '', kind); return; }
+    $('herebox').hidden = true;
     name = String(name || 'Document').replace(/\.(pdf|docx|txt|md)$/i, '') || 'Document';
     document.title = name + ' · MES Read Aloud';
     say('Opening ' + name + '…');

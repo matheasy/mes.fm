@@ -1,0 +1,69 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu tx" id="tx">
+		<div class="tx-top">
+			<button type="button" class="tx-btn tx-btn--pri" id="tx-open" title="Open a text file (Ctrl+O)">Open</button>
+			<button type="button" class="tx-btn" id="tx-openlink" title="Open a file from a web link (or paste a link anywhere on the page)">&#128279; Link</button>
+			<span class="tx-name" id="tx-name">No file open</span>
+			<span class="tx-sp"></span>
+			<div class="tx-seg" role="group" aria-label="View">
+				<button type="button" id="tx-vread" aria-pressed="true" title="Reading view: the text laid out for reading (Markdown, RTF and web pages formatted)">Reading</button>
+				<button type="button" id="tx-vcode" aria-pressed="false" title="Code view: the raw text with line numbers and colours">Code</button>
+			</div>
+			<button type="button" class="tx-ib" id="tx-smaller" title="Smaller text (-)" aria-label="Smaller text">A&minus;</button><button type="button" class="tx-ib" id="tx-bigger" title="Larger text (+)" aria-label="Larger text">A+</button>
+			<button type="button" class="tx-btn" id="tx-read" title="Read the text aloud, each word highlighted (Alt+Shift+R)" disabled><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
+			<button type="button" class="tx-btn" id="tx-edit" title="Edit the text (E)" disabled>Edit</button>
+			<button type="button" class="tx-btn" id="tx-more" aria-haspopup="true" aria-expanded="false" title="Copy, download, settings">&#8943; More</button>
+			<button type="button" class="tx-ib" id="tx-fill" title="Fill the browser window (W)" aria-label="Fill window">&#10530;</button><button type="button" class="tx-ib" id="tx-fs" title="Full screen (F)" aria-label="Full screen">&#9974;</button>
+		</div>
+		<div class="tx-menu" id="tx-menu" hidden>
+			<div class="tx-mrow"><button type="button" id="tx-copy" disabled>Copy all text</button><button type="button" id="tx-dl" disabled>Download</button><button type="button" id="tx-dltxt" disabled>Download as .txt</button><button type="button" id="tx-share" hidden>Copy link to this file</button><button type="button" id="tx-print" disabled>Print</button><button type="button" id="tx-close" disabled>Close file</button></div>
+			<label>Look <select id="tx-theme"><option value="auto">Follow the site</option><option value="paper">Paper</option><option value="sepia">Sepia</option><option value="dark">Dark</option></select></label>
+			<label>Width <select id="tx-width"><option value="narrow">Narrow (easy reading)</option><option value="normal">Normal</option><option value="full">Full width</option></select></label>
+			<label>Font <select id="tx-font"><option value="sans">Sans-serif</option><option value="serif">Serif</option><option value="mono">Fixed width</option></select></label>
+			<label>Line breaks <select id="tx-unwrap" title="Old e-texts and emails are often cut into short lines: Join puts the lines of a paragraph back together"><option value="auto">Automatic</option><option value="keep">Keep as in the file</option><option value="join">Join lines into paragraphs</option></select></label>
+			<label class="tx-chk"><input type="checkbox" id="tx-wrap"> Wrap long lines (code view)</label>
+			<label class="tx-chk"><input type="checkbox" id="tx-nums"> Line numbers (code view)</label>
+			<label class="tx-chk"><input type="checkbox" id="tx-colors"> Colours from the file (RTF)</label>
+			<label>Characters <select id="tx-enc" title="How the bytes of the file are turned into letters. Change it if you see odd characters"><option value="auto">Automatic</option><option value="utf-8">UTF-8</option><option value="windows-1252">Western (Windows-1252)</option><option value="iso-8859-1">Western (ISO-8859-1)</option><option value="utf-16le">UTF-16 LE</option><option value="utf-16be">UTF-16 BE</option><option value="windows-1251">Cyrillic (Windows-1251)</option><option value="iso-8859-2">Central European (ISO-8859-2)</option><option value="shift_jis">Japanese (Shift_JIS)</option><option value="gbk">Chinese simplified (GBK)</option><option value="big5">Chinese traditional (Big5)</option><option value="euc-kr">Korean (EUC-KR)</option></select></label>
+		</div>
+		<div class="tx-info" id="tx-info" aria-live="polite"></div>
+		<div class="tx-stage" id="tx-stage">
+			<div class="tx-empty" id="tx-empty">
+				<div class="tx-drop" id="tx-drop" tabindex="0" role="button" aria-label="Open a text file">
+					<div class="tx-drop-ic" aria-hidden="true">TXT</div>
+					<div class="tx-drop-t">Drop a text file here</div>
+					<div class="tx-drop-s">.txt, .md, .rtf, .csv, .json, .html, .log, code (.js, .py, .css &hellip;) and more. Read it laid out nicely, or as code with line numbers.</div>
+					<button type="button" class="tx-btn tx-btn--pri tx-big" id="tx-e-open">Choose a file</button>
+				</div>
+				<form class="tx-linkform" id="tx-linkform" autocomplete="off"><input type="url" id="tx-link" class="tx-input" placeholder="&hellip;or paste a link to a text file (https://&hellip;)" aria-label="Link to a text file" spellcheck="false"><button type="submit" class="tx-btn" id="tx-linkgo">Open link</button></form>
+				<p class="tx-note" id="tx-linknote">GitHub, Google Docs, Google Drive and Dropbox links work when the file is public.</p>
+				<details class="tx-pastebox"><summary>&hellip;or paste or type some text</summary><textarea id="tx-pastein" class="tx-input" rows="6" placeholder="Paste text here" spellcheck="false"></textarea><button type="button" class="tx-btn" id="tx-pastego">Show it</button></details>
+				<p class="tx-note">Private: the file is read and shown by your own browser. Nothing is uploaded. PDFs open in the <a href="/pdf">PDF Editor</a>, Word files in the <a href="/docx">Word Viewer</a>.</p>
+			</div>
+			<article class="tx-read" id="tx-readv" hidden></article>
+			<div class="tx-code" id="tx-codev" hidden></div>
+			<textarea class="tx-editor" id="tx-editor" spellcheck="false" aria-label="Edit the text" hidden></textarea>
+			<div class="tx-over" id="tx-over">Drop the file to open it</div>
+		</div>
+		<input type="file" id="tx-file" hidden>
+	</div>
+
+	<div class="tu-seo">
+		<h2>Open text files, RTF and code in your browser</h2>
+		<p>The <b>MES Text Viewer</b> opens any text-based file and shows it two ways. <b>Reading view</b> lays the text out like a page in a book: Markdown is formatted with headings and lists, RTF (rich text from WordPad and TextEdit) keeps its bold, italic, sizes, colours and tables, web pages are shown without their scripts, CSV spreadsheets become tables, and plain text gets comfortable line lengths with clickable links. <b>Code view</b> shows the exact text with line numbers and colours for more than 30 programming languages.</p>
+		<h2>What you can do</h2>
+		<ul>
+			<li><b>Open</b> a file, drop it on the page, paste it, or paste a <b>link</b> to one (GitHub, Google Docs, Google Drive and Dropbox links are turned into the file itself).</li>
+			<li><b>Read it aloud</b> with every word highlighted, using the voices on your device.</li>
+			<li>Change the <b>text size</b>, <b>font</b>, <b>width</b> and <b>look</b> (paper, sepia, dark), or fill the whole window for reading.</li>
+			<li><b>Edit</b> the text and download it again, or download it as plain .txt.</li>
+			<li>Fix odd characters by choosing another <b>character encoding</b> (old Windows files, Cyrillic, Japanese, Chinese, Korean).</li>
+			<li>Old e-texts and emails cut into short lines can be <b>joined back into paragraphs</b>.</li>
+		</ul>
+		<h2>Questions</h2>
+		<dl>
+			<dt>Is my file uploaded?</dt><dd>No. It is read and shown by your browser. A file opened from a link is fetched by your browser too; only when the other website blocks that does mes.fm fetch it for you, without keeping a copy.</dd>
+			<dt>Which files work?</dt><dd>Anything that is text inside: .txt, .md, .rtf, .csv, .tsv, .json, .xml, .html, .log, .srt, .yaml, .ini and source code. Word files (.docx) open in the <a href="/docx">Word Viewer</a> and PDFs in the <a href="/pdf">PDF Editor</a>; if you drop one here you are taken there.</dd>
+			<dt>Why do some letters look wrong?</dt><dd>The file was saved in an older character encoding. Open <i>More</i> and pick another one under <i>Characters</i>.</dd>
+		</dl>
+	</div>

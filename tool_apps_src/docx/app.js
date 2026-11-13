@@ -109,7 +109,7 @@
 	function openLink(raw) {
 		if (!LO) return toast("Could not load the link opener");
 		$("dx-linkgo").disabled = true;
-		return LO.get(raw, { kind: "docx", onStatus: function (m) { linkNote(m); } }).then(function (f) { linkNote(""); $("dx-link").value = ""; return addFiles([f]); })
+		return LO.get(raw, { kind: "docx", onStatus: function (m) { linkNote(m); } }).then(function (f) { linkNote(""); $("dx-link").value = ""; if (f.mesKind && f.mesKind !== "docx") return LO.sendTo(f.mesKind, f, { busy: false }); return addFiles([f]); })
 			.catch(function (e) { var m = (e && e.message || String(e)) + " You can also download the file and drop it here."; linkNote(m, true); toast(m); })
 			.then(function () { $("dx-linkgo").disabled = false; });
 	}
@@ -120,9 +120,11 @@
 		var cd = e.clipboardData, x = cd && cd.getData("text/plain"); if (cd && cd.files && cd.files.length) return;
 		if (LO && LO.looksLikeLink(x) && (!cur || /\.docx(\?|#|$)/i.test(x) || /docs\.google\.com|drive\.google\.com|dropbox\.com/i.test(x))) { e.preventDefault(); e.stopImmediatePropagation(); openLink(x.trim()); }
 	}, true);
-	if (LO && LO.fromQuery()) openLink(LO.fromQuery());
+	if (LO) LO.receive().then(function (f) { if (f) { addFiles([f]).then(function () { if (f.mesFromExt) toast("Opened from MES Read Aloud. Press Read aloud to listen."); }); } else if (LO.fromQuery()) openLink(LO.fromQuery()); }, function (e) { linkNote(e.message, true); });
 	function addFiles(list) {
-		var chain = Promise.resolve();
+		var chain = Promise.resolve(), LK = window.MESLinkOpen;
+		// PDFs and text files go to the PDF Editor / Text Viewer
+		if (LK) list = list.filter(function (f) { var k = LK.kindOf(f.name, f.type); if (k === "pdf" || (k === "text" && !/\.docx?$/i.test(f.name))) { LK.sendTo(k, f, { busy: !!cur }); return false; } return true; });
 		list.forEach(function (f) { chain = chain.then(function () { return f.arrayBuffer().then(function (b) { return openBytes(new Uint8Array(b), f.name, { size: f.size, lastModified: f.lastModified }); }); }); });
 		return chain;
 	}

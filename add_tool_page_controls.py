@@ -199,6 +199,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("video", "MES Video Editor"),
     ("convert-video", "MES Video Converter"),
     ("docx", "MES Word Viewer"),
+    ("text", "MES Text Viewer"),
     ("excel", "MES Spreadsheet Viewer"),
     ("fonts", "MES Font Preview and Finder"),
     ("font-finder", "MES Font Finder"),
