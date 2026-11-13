@@ -305,16 +305,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu [class$="-eq"] > div {margin:0.25em 0;}
 .tu [class$="-eq__n"] {vertical-align:middle;}
 
-	#cg {color:#1f2937;--cg-a:#166534;--cg-a2:#15803d;--cg-soft:#e7f5ec;--cg-line:#d1d5db;--cg-muted:#4b5563;--cg-bar:#16a34a;--cg-en:#6b7280;--cg-k:#b45309;--cg-c:#1d4ed8;--cg-on:#fef3c7;}
-	:where(#cg) :is(div, span, p, label, figcaption, summary, section, details, form, dt, dd, li, b, small, h2, h3, td, th, code) {color:inherit;}
+	:is(#cg,#qc,#qs) {color:#1f2937;--cg-a:#166534;--cg-a2:#15803d;--cg-soft:#e7f5ec;--cg-line:#d1d5db;--cg-muted:#4b5563;--cg-bar:#16a34a;--cg-en:#6b7280;--cg-k:#b45309;--cg-c:#1d4ed8;--cg-on:#fef3c7;}
+	:where(#cg,#qc,#qs) :is(div, span, p, label, figcaption, summary, section, details, form, dt, dd, li, b, small, h2, h3, td, th, code) {color:inherit;}
 	.cg-tabs {display:flex;flex-wrap:wrap;gap:0.4em;margin:0 0 1em;}
 	.cg-tabs button {cursor:pointer;font:inherit;font-size:0.95em;padding:0.5em 1em;border-radius:1.4em;border:1px solid #c3c9d2;background:#fff;color:#374151;}
 	.cg-tabs button:hover {border-color:var(--cg-a);color:var(--cg-a);}
 	.cg-tabs button[aria-selected="true"] {background:var(--cg-a);border-color:var(--cg-a);color:#fff;}
-	#cg .cg-h {font-weight:700;font-size:1.12em;margin:0 0 0.6em;border:0;padding:0;}
+	:is(#cg,#qc,#qs) .cg-h {font-weight:700;font-size:1.12em;margin:0 0 0.6em;border:0;padding:0;}
 	.cg-lab {display:block;font-size:0.95em;margin:0.2em 0 0.35em;color:var(--cg-muted);}
 	.cg-ctl {display:flex;flex-wrap:wrap;gap:0.6em 1.1em;align-items:center;margin-bottom:0.8em;}
-	.cg-ctl[hidden], #cg [hidden] {display:none !important;}
+	.cg-ctl[hidden], :is(#cg,#qc,#qs) [hidden] {display:none !important;}
 	.cg-inl {display:inline-flex;align-items:center;gap:0.45em;font-size:0.95em;}
 	.cg-inl b {min-width:1.4em;font-variant-numeric:tabular-nums;}
 	.cg-grow {flex:1 1 14em;} .cg-grow .tu-input {flex:1;min-width:0;}
@@ -361,9 +361,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cg-grid {stroke:#e5e7eb;stroke-width:1;} .cg-axis {font:11px system-ui,sans-serif;fill:var(--cg-muted);}
 	.cg-bar {fill:var(--cg-bar);} .cg-bar.is-pick {fill:#f59e0b;} .cg-enline {fill:none;stroke:var(--cg-en);stroke-width:2;stroke-dasharray:5 3;}
 	.cg-mini {margin-top:0.6em;}
-	#cg .tu-stat__label {text-transform:none;letter-spacing:0;}
-	#cg .tu-stat {display:flex;flex-direction:column;gap:0.15em;min-width:0;}
-	#cg .tu-seg {flex-wrap:wrap;max-width:100%;}
+	:is(#cg,#qc,#qs) .tu-stat__label {text-transform:none;letter-spacing:0;}
+	:is(#cg,#qc,#qs) .tu-stat {display:flex;flex-direction:column;gap:0.15em;min-width:0;}
+	:is(#cg,#qc,#qs) .tu-seg {flex-wrap:wrap;max-width:100%;}
 	/* crack results */
 	.cg-hero {border-left:6px solid var(--cg-a2);}
 	.cg-hero.cg-bad {border-left-color:#b91c1c;background:#fdf3f3;padding:0.7em 1em;border-radius:0.5em;margin-top:0.6em;}
@@ -371,7 +371,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cg-hero p {margin:0.35em 0;line-height:1.5;}
 	.cg-badge {display:inline-block;font-size:0.78em;font-weight:700;letter-spacing:0.05em;padding:0.2em 0.65em;border-radius:1em;background:var(--cg-a);color:#fff;}
 	.cg-bad .cg-badge {background:#b91c1c;} .cg-good .cg-badge {background:#15803d;}
-	#cg .cg-verdict {font-weight:700;font-size:1.35em;margin:0.35em 0 0.3em;border:0;padding:0;}
+	:is(#cg,#qc,#qs) .cg-verdict {font-weight:700;font-size:1.35em;margin:0.35em 0 0.3em;border:0;padding:0;}
 	.cg-plain {font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--cg-soft);padding:0.6em 0.8em;border-radius:0.4em;line-height:1.55;overflow-wrap:anywhere;}
 	.cg-shifts {columns:2 22em;column-gap:2em;margin:0;padding-left:0;list-style:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.86em;}
 	.cg-shifts li {padding:0.2em 0.3em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;break-inside:avoid;border-radius:0.3em;}
@@ -381,7 +381,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cg-more summary {cursor:pointer;color:var(--cg-a);font-weight:600;margin-top:0.6em;}
 	.cg-tab td, .cg-tab th {font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
 	/* RSA */
-	#cg .cg-keys {grid-template-columns:repeat(auto-fit,minmax(13em,1fr));}
+	:is(#cg,#qc,#qs) .cg-keys {grid-template-columns:repeat(auto-fit,minmax(13em,1fr));}
 	.cg-num-v {word-break:break-all;font-variant-numeric:tabular-nums;font-size:1.25em !important;}
 	.cg-keypair {display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:0.6em;margin-top:0.8em;}
 	.cg-kp {padding:0.6em 0.8em;border-radius:0.5em;overflow-wrap:anywhere;font-size:0.95em;}
@@ -422,25 +422,71 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cg-cdot {fill:#9ca3af;} .cg-cstart {fill:#2563eb;} .cg-cend {fill:#f59e0b;} .cg-carc {fill:none;stroke:var(--cg-a2);stroke-width:3;}
 
 	/* dark */
-	html body.dark-mode #cg.tu {color:#e5e7eb;--cg-a:#4ade80;--cg-a2:#22c55e;--cg-soft:#1d2a22;--cg-line:#4a4a4a;--cg-muted:#b8c0cc;--cg-bar:#22c55e;--cg-en:#cbd5e1;--cg-k:#fbbf24;--cg-c:#93c5fd;--cg-on:#4a3a10;}
-	html body.dark-mode #cg.tu .cg-tabs button {background:#262626;border-color:#4a4a4a;color:#ddd;}
-	html body.dark-mode #cg.tu .cg-tabs button[aria-selected="true"] {background:#22c55e;border-color:#22c55e;color:#06110a;}
-	html body.dark-mode #cg.tu .cg-l {background:#262626;color:#e5e7eb;}
-	html body.dark-mode #cg.tu .cg-l--c {color:#93c5fd;} html body.dark-mode #cg.tu .cg-l--k {color:#fbbf24;}
-	html body.dark-mode #cg.tu .cg-l.is-used {background:#4a3a10;border-color:#d97706;}
-	html body.dark-mode #cg.tu .cg-w1 {fill:#1f1f1f;} html body.dark-mode #cg.tu .cg-w3 {fill:#262626;}
-	html body.dark-mode #cg.tu .cg-wt, html body.dark-mode #cg.tu .cg-pl {fill:#e5e7eb;} html body.dark-mode #cg.tu .cg-wt--in {fill:#93c5fd;}
-	html body.dark-mode #cg.tu .cg-grid {stroke:#3a3a3a;}
-	html body.dark-mode #cg.tu .cg-hero.cg-bad {background:#3a1d1d;} html body.dark-mode #cg.tu .cg-hero.cg-good {background:#16291d;}
-	html body.dark-mode #cg.tu .cg-badge {background:#15803d;color:#fff;} html body.dark-mode #cg.tu .cg-bad .cg-badge {background:#b91c1c;}
-	html body.dark-mode #cg.tu .cg-kp--pub {background:#172338;border-color:#2c4a7a;} html body.dark-mode #cg.tu .cg-kp--priv {background:#341b1b;border-color:#6b2b2b;}
-	html body.dark-mode #cg.tu .cg-dhcol--eve {background:#33240f;border-color:#6b4a1c;}
-	html body.dark-mode #cg.tu .cg-hrow {border-bottom-color:#333;}
-	html body.dark-mode #cg.tu .cg-bits span {background:#333;} html body.dark-mode #cg.tu .cg-bits span.b1 {background:#6b7280;}
-	html body.dark-mode #cg.tu .cg-bits span.is-diff {background:#f59e0b;} html body.dark-mode #cg.tu .cg-bits span.is-diff.b1 {background:#ef4444;}
-	html body.dark-mode #cg.tu .cg-err {color:#fca5a5;} html body.dark-mode #cg.tu .cg-weak {color:#fca5a5;} html body.dark-mode #cg.tu .cg-strong {color:#86efac;} html body.dark-mode #cg.tu .cg-status.cg-medium {color:#fcd34d;}
-	html body.dark-mode #cg.tu .cg-shifts li.is-best {background:#4a3a10;}
-	html body.dark-mode #cg.tu .cg-more summary {color:#4ade80;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu {color:#e5e7eb;--cg-a:#4ade80;--cg-a2:#22c55e;--cg-soft:#1d2a22;--cg-line:#4a4a4a;--cg-muted:#b8c0cc;--cg-bar:#22c55e;--cg-en:#cbd5e1;--cg-k:#fbbf24;--cg-c:#93c5fd;--cg-on:#4a3a10;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-tabs button {background:#262626;border-color:#4a4a4a;color:#ddd;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-tabs button[aria-selected="true"] {background:#22c55e;border-color:#22c55e;color:#06110a;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-l {background:#262626;color:#e5e7eb;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-l--c {color:#93c5fd;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-l--k {color:#fbbf24;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-l.is-used {background:#4a3a10;border-color:#d97706;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-w1 {fill:#1f1f1f;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-w3 {fill:#262626;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-wt, html body.dark-mode :is(#cg,#qc,#qs).tu .cg-pl {fill:#e5e7eb;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-wt--in {fill:#93c5fd;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-grid {stroke:#3a3a3a;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-hero.cg-bad {background:#3a1d1d;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-hero.cg-good {background:#16291d;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-badge {background:#15803d;color:#fff;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-bad .cg-badge {background:#b91c1c;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-kp--pub {background:#172338;border-color:#2c4a7a;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-kp--priv {background:#341b1b;border-color:#6b2b2b;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-dhcol--eve {background:#33240f;border-color:#6b4a1c;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-hrow {border-bottom-color:#333;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-bits span {background:#333;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-bits span.b1 {background:#6b7280;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-bits span.is-diff {background:#f59e0b;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-bits span.is-diff.b1 {background:#ef4444;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-err {color:#fca5a5;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-weak {color:#fca5a5;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-strong {color:#86efac;} html body.dark-mode :is(#cg,#qc,#qs).tu .cg-status.cg-medium {color:#fcd34d;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-shifts li.is-best {background:#4a3a10;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-more summary {color:#4ade80;}
+	/* ===== quantum pages (#qc quantum cryptography, #qs website checker) ===== */
+	.cg-tablink {display:inline-flex;align-items:center;font-size:0.95em;padding:0.5em 1em;border-radius:1.4em;border:1px dashed var(--cg-a);color:var(--cg-a) !important;text-decoration:none;font-weight:600;}
+	.cg-tablink:hover {background:var(--cg-soft);}
+	.qc-ph th {text-align:left;white-space:nowrap;font-size:0.85em;}
+	.qc-ph td {text-align:center;min-width:1.9em;padding:0.25em 0.2em;font-family:ui-monospace,Menlo,Consolas,monospace;}
+	.qc-ph td.is-keep {background:#e7f5ec;} .qc-ph td.is-err {background:#fde7c7;}
+	.qc-gl {font-size:1.25em;}
+	.qc-keys {font-size:0.85em;line-height:1.7;overflow-wrap:anywhere;margin-top:0.6em;}
+	.qc-keys span {display:inline-block;width:3.2em;color:var(--cg-muted);}
+	.qc-keys code {font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:0.05em;}
+	mark.qc-x {background:#f59e0b;color:#111;}
+	.qc-limit {stroke:#dc2626;stroke-width:1.5;stroke-dasharray:6 4;}
+	.qc-line {fill:none;stroke:var(--cg-a2);stroke-width:2.5;} .qc-dot {fill:#f59e0b;stroke:#fff;stroke-width:2;}
+	.qc-cap {margin-top:0.3em;font-size:0.86em;}
+	.qc-spike {fill:#7c3aed;} .qc-meas {stroke:#f59e0b;stroke-width:1.5;stroke-dasharray:3 2;}
+	.qc-steps {line-height:1.7;margin:0;padding-left:1.4em;} .qc-steps .qc-ok {color:#15803d;font-size:1.15em;}
+	.qc-ans {fill:#dc2626;}
+	.qc-st {display:inline-block;font-size:0.8em;font-weight:700;padding:0.15em 0.6em;border-radius:1em;white-space:nowrap;}
+	.qc-st-broken {background:#fde2e2;color:#991b1b;} .qc-st-weak {background:#fef3c7;color:#92400e;} .qc-st-safe {background:#dcfce7;color:#166534;} .qc-st-pq {background:#dbeafe;color:#1e40af;}
+	.qc-safe td {vertical-align:top;font-size:0.92em;} .qc-safe small {color:var(--cg-muted);}
+	.qc-my {fill:#f59e0b;background:#f59e0b;} .qc-mx2 {fill:#2563eb;background:#2563eb;} .qc-mz {fill:#7c3aed;background:#7c3aed;}
+	.qc-sw {display:inline-block;width:0.9em;height:0.9em;border-radius:0.2em;vertical-align:-0.1em;}
+	.qc-flow {display:flex;flex-wrap:wrap;align-items:center;gap:0.5em 0.8em;margin:0.6em 0 0.8em;}
+	.qc-flow > div:not(.cg-arr) {background:var(--cg-soft);border-radius:0.5em;padding:0.45em 0.8em;font-size:0.92em;}
+	.qs-ta {min-height:4.5em;}
+	.qs-res {margin-top:0.8em;}
+	.qs-top {display:flex;gap:0.9em;align-items:center;}
+	.qs-g {flex:0 0 auto;width:2.4em;height:2.4em;border-radius:0.5em;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:1.4em;color:#fff;background:#6b7280;}
+	.qs-gA {background:#15803d;} .qs-gB {background:#65a30d;} .qs-gC {background:#d97706;} .qs-gD {background:#c2410c;} .qs-gF {background:#b91c1c;} .qs-gX {background:#6b7280;}
+	.qs-spin {animation:qsp 1s ease-in-out infinite alternate;} @keyframes qsp {to {opacity:0.4;}}
+	:is(#cg,#qc,#qs) .qs-host {margin:0;font-size:1.15em;font-weight:700;border:0;padding:0;overflow-wrap:anywhere;}
+	.qs-label {margin:0.1em 0 0;font-weight:600;color:var(--cg-muted);}
+	.qs-sum {line-height:1.55;margin:0.7em 0;}
+	.qs-dl {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.4em 1em;margin:0;}
+	.qs-dl dt {font-size:0.8em;color:var(--cg-muted);} .qs-dl dd {margin:0;overflow-wrap:anywhere;font-size:0.95em;} .qs-dl small {color:var(--cg-muted);}
+	.qs-legend {display:grid;gap:0.5em;} .qs-legend > div {display:flex;gap:0.6em;align-items:baseline;line-height:1.45;} .qs-legend .qs-g {width:1.7em;height:1.7em;font-size:1em;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-tablink {color:#4ade80 !important;border-color:#4ade80;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-ph td.is-keep {background:#16291d;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-ph td.is-err {background:#4a3210;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-st-broken {background:#4c1d1d;color:#fecaca;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-st-weak {background:#4a3510;color:#fde68a;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-st-safe {background:#14351f;color:#bbf7d0;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-st-pq {background:#172a4d;color:#bfdbfe;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-spike {fill:#a78bfa;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-ans {fill:#f87171;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-steps .qc-ok {color:#86efac;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qs-g {color:#fff;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu mark.qc-x {background:#f59e0b;color:#111;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qs-gA {background:#15803d;} html body.dark-mode :is(#cg,#qc,#qs).tu .qs-gB {background:#65a30d;} html body.dark-mode :is(#cg,#qc,#qs).tu .qs-gC {background:#d97706;}
+	html body.dark-mode :is(#cg,#qc,#qs).tu .qs-gD {background:#c2410c;} html body.dark-mode :is(#cg,#qc,#qs).tu .qs-gF {background:#b91c1c;} html body.dark-mode :is(#cg,#qc,#qs).tu .qs-gX {background:#6b7280;}
 
 
 	@media print {
@@ -563,7 +609,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
-	body.dark-mode #cg{color:#ced3da;--cg-a:#36d372;--cg-a2:#2ddc6e;--cg-bar:#27e26c;--cg-k:#f37616;--cg-c:#2758e2}
+	body.dark-mode :is(#cg,#qc,#qs){color:#ced3da;--cg-a:#36d372;--cg-a2:#2ddc6e;--cg-bar:#27e26c;--cg-k:#f37616;--cg-c:#2758e2}
 	body.dark-mode .cg-tabs button{border:1px solid #3a424d;background:#1a1a1a;color:#b4bac2}
 	body.dark-mode .cg-err{color:#ea7171}
 	body.dark-mode .cg-weak{color:#ea7171}
@@ -589,6 +635,24 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cg-cdot{fill:#999da3}
 	body.dark-mode .cg-cstart{fill:#6a94f1}
 	body.dark-mode .cg-cend{fill:#f9c162}
+	body.dark-mode .qc-ph td.is-keep{background:#1a261f}
+	body.dark-mode .qc-ph td.is-err{background:#3f301a}
+	body.dark-mode mark.qc-x{color:#eeeeee}
+	body.dark-mode .qc-limit{stroke:#b01c1c}
+	body.dark-mode .qc-dot{fill:#f9c162;stroke:#333333}
+	body.dark-mode .qc-spike{fill:#9c69f1}
+	body.dark-mode .qc-meas{stroke:#c47e08}
+	body.dark-mode .qc-steps .qc-ok{color:#73e89f}
+	body.dark-mode .qc-ans{fill:#e87272}
+	body.dark-mode .qc-st-broken{background:#2b1313;color:#e77474}
+	body.dark-mode .qc-st-weak{background:#3f3719;color:#f19d6a}
+	body.dark-mode .qc-st-safe{background:#152f1e;color:#79e2a1}
+	body.dark-mode .qc-st-pq{background:#132030;color:#748fe7}
+	body.dark-mode .qc-my{fill:#f9c162}
+	body.dark-mode .qc-mx2{fill:#6a94f1}
+	body.dark-mode .qc-mz{fill:#9c69f1}
+	body.dark-mode .qs-g{background:#4a4f59}
+	body.dark-mode .qs-gX{background:#4a4f59}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -793,7 +857,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
                         <div class="info-bar-container" role="navigation" aria-label="Primary">
                             <ul id="info-bar" class="info-bar shadow">
-                                <li class="info-bar__item"><a class="info-bar__item__text" href='/cryptography'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/cryptography'>Home</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-cryptography'>Quantum</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='/quantum-safe-check'>Quantum-Safe Check</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
                                     <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
                                     <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
                         </div>
@@ -811,6 +875,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" data-t="aes">Encrypt with a password</button>
 			<button type="button" role="tab" data-t="enc">Base64, hex, Morse…</button>
 			<button type="button" role="tab" data-t="mod">Modular maths</button>
+			<a class="cg-tablink" href="/quantum-cryptography">Quantum ›</a>
 		</div>
 
 		<!-- ============ Ciphers ============ -->
@@ -1035,7 +1100,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dt>Can a hash be reversed?</dt><dd>No. A hash throws information away, so many inputs share each output; the only way back is guessing inputs. That is why short or common passwords get cracked: attackers hash billions of guesses.</dd>
 				<dt>How strong is the password encryption?</dt><dd>AES-256 itself has never been broken. The weak point is the password: the page estimates how long a guessing attack would take, so use a long passphrase.</dd>
 			</dl>
-			<p>Related: <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/file-check">File Safety Check</a> · <a href="/tools">More tools</a></p>
+			<h3>What about quantum computers?</h3>
+			<p>A big enough quantum computer would break RSA, Diffie–Hellman and elliptic curves with Shor's algorithm, and halve the strength of AES with Grover's. Try both, plus quantum key distribution and the new post-quantum standards, in <a href="/quantum-cryptography">Quantum Cryptography</a>, and test any site with the <a href="/quantum-safe-check">Quantum-Safe Website Checker</a>.</p>
+			<p>Related: <a href="/quantum-cryptography">Quantum Cryptography</a> · <a href="/quantum-safe-check">Quantum-Safe Checker</a> · <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/file-check">File Safety Check</a> · <a href="/tools">More tools</a></p>
 		</div>
 	</div>
 	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
@@ -1047,7 +1114,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/relative-speed-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/relative-speed-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Relative Speed and Strength Calculator: Animals Scaled to Human Size (Running, Flying, Jumps, Falls)</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/ideal-weight-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ideal-weight-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/quantum-cryptography"><img class="mes-aside__img mes-aside__img--logo" src="/quantum-cryptography/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Quantum Cryptography & Post-Quantum Encryption</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/ideal-weight-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/ideal-weight-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Ideal Weight Calculator: Devine, Robinson, Miller and Hamwi Formulas</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1055,7 +1122,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
     <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
-        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/cryptography">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/cryptography">Home</a></li><li class="navbar__item"><a class="navbar__link" href="/quantum-cryptography">Quantum Cryptography</a></li><li class="navbar__item"><a class="navbar__link" href="/quantum-safe-check">Quantum-Safe Website Checker</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
     <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
     <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
@@ -1097,7 +1164,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/cryptography/js/cryptography.js?v=1" defer></script>
+	<script src="/cryptography/js/cryptography.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

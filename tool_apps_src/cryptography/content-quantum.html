@@ -1,0 +1,171 @@
+	<div class="tu" id="qc">
+		<div class="cg-tabs" id="qc-tabs" role="tablist" aria-label="Quantum cryptography tools">
+			<button type="button" role="tab" data-t="bb84">Quantum key distribution (BB84)</button>
+			<button type="button" role="tab" data-t="shor">Shor's algorithm</button>
+			<button type="button" role="tab" data-t="grover">Grover's search</button>
+			<button type="button" role="tab" data-t="safe">Is it quantum-safe?</button>
+			<button type="button" role="tab" data-t="pqc">Try post-quantum crypto</button>
+			<a class="cg-tablink" href="/quantum-safe-check">Check a website ›</a>
+		</div>
+
+		<!-- ============ BB84 ============ -->
+		<section class="cg-pane" data-pane="bb84">
+			<div class="tu-card">
+				<h2 class="cg-h">Send a secret key with single photons</h2>
+				<p class="cg-note">Alice sends photons polarised in a random direction: <b>+</b> basis (↔ = 0, ↕ = 1) or <b>×</b> basis (⤢ = 0, ⤡ = 1). Bob measures each one in a random basis. Afterwards they compare bases (not bits) in public and keep only the photons where they matched. If Eve measures photons on the way, she disturbs about a quarter of the kept ones, and Alice and Bob see the errors.</p>
+				<div class="cg-ctl">
+					<label class="cg-inl">Photons <select id="qc-n" class="tu-select"><option>24</option><option>100</option><option selected>1000</option><option>10000</option><option>100000</option></select></label>
+					<label class="cg-inl">Eve listens to <input type="range" id="qc-eve" min="0" max="100" value="0"> <b id="qc-evev">0%</b></label>
+					<label class="cg-inl">Noisy fibre <input type="range" id="qc-noise" min="0" max="15" value="1"> <b id="qc-noisev">1%</b></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="qc-send">Send again</button>
+				</div>
+				<div class="tu-stats cg-mini" id="qc-bstats"></div>
+				<div id="qc-bverdict"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">The first photons, one by one</h2>
+				<div class="tu-table-wrap"><table class="tu-table cg-tab qc-ph" id="qc-ptab"></table></div>
+				<p class="cg-note">Green rows are kept (same basis). Orange = an error Alice and Bob will find when they compare a sample. A grey eye = Eve measured that photon.</p>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Error rate vs how much Eve listens</h2>
+				<div class="cg-chart" id="qc-bchart"></div>
+				<p class="cg-note">Above about 11% errors no secret key can be distilled, so Alice and Bob throw the key away and try again. Below it, “privacy amplification” shrinks the key so Eve knows nothing about what is left (key rate 1 − 2·h(error)).</p>
+			</div>
+		</section>
+
+		<!-- ============ Shor ============ -->
+		<section class="cg-pane" data-pane="shor" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">How a quantum computer factors a number</h2>
+				<p class="cg-note">To factor N, pick a number a and find the <b>period</b> r of aˣ mod N (how often it repeats). The quantum computer finds r by putting every x in superposition at once and using the quantum Fourier transform; then plain maths turns r into the factors. This is simulated exactly here for N up to 255.</p>
+				<div class="cg-ctl">
+					<label class="cg-inl">N <input id="qc-N" class="tu-input cg-small" type="text" inputmode="numeric" value="15"></label>
+					<label class="cg-inl">a <input id="qc-a" class="tu-input cg-small" type="text" inputmode="numeric" value="7"></label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="qc-arand">Random a</button>
+					<div class="cg-ex" id="qc-shex"><span>Try:</span></div>
+				</div>
+				<p class="cg-err" id="qc-sherr" hidden></p>
+				<div id="qc-shout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">1. The repeating pattern aˣ mod N</h2>
+				<div class="cg-chart" id="qc-shseq"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">2. What the quantum computer measures</h2>
+				<p class="cg-note" id="qc-shqnote"></p>
+				<div class="cg-chart" id="qc-shdist"></div>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="qc-measure">Run the quantum computer once</button><button type="button" class="tu-btn tu-btn--ghost" id="qc-measure10">Run it 10 times</button></div>
+				<div id="qc-meas"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">3. From the period to the factors</h2>
+				<ol class="qc-steps" id="qc-shsteps"></ol>
+			</div>
+		</section>
+
+		<!-- ============ Grover ============ -->
+		<section class="cg-pane" data-pane="grover" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Find one item in an unsorted list, √N times faster</h2>
+				<p class="cg-note">All items start equally likely. Each Grover step flips the sign of the answer (the oracle), then reflects every amplitude about the average. The answer grows, the rest shrink. Stop at the right moment and measuring gives the answer almost surely; go too far and it shrinks again.</p>
+				<div class="cg-ctl">
+					<label class="cg-inl">Qubits <input type="range" id="qc-gq" min="2" max="8" value="5"> <b id="qc-gqv">5</b></label>
+					<label class="cg-inl">The answer is item <input id="qc-gm" class="tu-input cg-small" type="text" inputmode="numeric" value="19"></label>
+					<button type="button" class="tu-btn tu-btn--ghost" id="qc-gback">‹ Step back</button>
+					<button type="button" class="tu-btn tu-btn--primary" id="qc-gstep">Grover step ›</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="qc-gbest">Jump to the best</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="qc-greset">Reset</button>
+				</div>
+				<p class="cg-status" id="qc-gstat"></p>
+				<div class="cg-chart" id="qc-gbars"></div>
+				<div class="cg-chart" id="qc-gcurve"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">What Grover means for passwords and keys</h2>
+				<div class="cg-ctl"><label class="cg-inl">Key length <input type="range" id="qc-gk" min="40" max="256" step="8" value="128"> <b id="qc-gkv">128</b> bits</label></div>
+				<div id="qc-gkout"></div>
+			</div>
+		</section>
+
+		<!-- ============ Safe? ============ -->
+		<section class="cg-pane" data-pane="safe" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Which encryption survives a quantum computer?</h2>
+				<div class="cg-ctl"><div class="tu-seg" id="qc-sf" role="group" aria-label="Show"><button type="button" data-v="all">All</button><button type="button" data-v="broken">Broken by Shor</button><button type="button" data-v="weakened">Weakened by Grover</button><button type="button" data-v="safe">Quantum-safe</button></div></div>
+				<div class="tu-table-wrap"><table class="tu-table cg-tab qc-safe" id="qc-stab"></table></div>
+				<p class="cg-note">Security in bits = about how many 2ⁿ steps the best known attack needs. Sizes are the public key and the ciphertext or signature, in bytes. Post-quantum keys are bigger: that is the main cost of switching.</p>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Harvest now, decrypt later: is your data at risk? (Mosca's rule)</h2>
+				<p class="cg-note">Attackers can record encrypted traffic today and decrypt it once a big enough quantum computer exists (“Q-Day”). If the years your data must stay secret plus the years it takes to switch to post-quantum encryption is more than the years until Q-Day, you are already late.</p>
+				<div class="cg-ctl">
+					<label class="cg-inl">Must stay secret for <input type="range" id="qc-mx" min="0" max="50" value="10"> <b id="qc-mxv">10</b> years</label>
+					<label class="cg-inl">Switching takes <input type="range" id="qc-my" min="0" max="20" value="5"> <b id="qc-myv">5</b> years</label>
+					<label class="cg-inl">Q-Day in <input type="range" id="qc-mz" min="1" max="40" value="12"> <b id="qc-mzv">12</b> years</label>
+				</div>
+				<div class="cg-chart" id="qc-mchart"></div>
+				<div id="qc-mout"></div>
+				<div class="cg-ex" id="qc-mex"><span>Examples:</span></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">How big a quantum computer breaks RSA?</h2>
+				<div class="tu-table-wrap"><table class="tu-table cg-tab" id="qc-cost"></table></div>
+				<p class="cg-note">These are published estimates; they keep dropping as the algorithms improve. Today's largest machines have about a thousand noisy physical qubits, and nobody has factored anything bigger than tiny numbers with Shor's algorithm.</p>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Check a website</h2>
+				<form class="cg-row" id="qc-chk" autocomplete="off"><input id="qc-chku" class="tu-input tu-input--big" type="text" placeholder="example.com" spellcheck="false"><button type="submit" class="tu-btn tu-btn--primary">Check ›</button></form>
+				<p class="cg-note">Opens the <a href="/quantum-safe-check">Quantum-Safe Website Checker</a>: does the site use post-quantum encryption today?</p>
+			</div>
+		</section>
+
+		<!-- ============ PQC live ============ -->
+		<section class="cg-pane" data-pane="pqc" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">Real post-quantum key exchange: ML-KEM (Kyber)</h2>
+				<p class="cg-note">The new NIST standard FIPS 203, running in your browser (the open-source <a href="https://github.com/paulmillr/noble-post-quantum" rel="noopener">noble-post-quantum</a> library, loaded only when you press a button). Bob publishes a public key; Alice “encapsulates” a random secret to it; only Bob can “decapsulate” it. The same thing Chrome and Firefox do on every HTTPS visit to sites that support it.</p>
+				<div class="cg-ctl"><label class="cg-inl">Strength <select id="qc-kem" class="tu-select"><option value="512">ML-KEM-512 (≈ AES-128)</option><option value="768" selected>ML-KEM-768 (≈ AES-192)</option><option value="1024">ML-KEM-1024 (≈ AES-256)</option></select></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="qc-kemgo">Run a key exchange</button></div>
+				<div id="qc-kemout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Post-quantum signatures: ML-DSA (Dilithium) and SLH-DSA (SPHINCS+)</h2>
+				<div class="cg-ctl"><label class="cg-inl">Algorithm <select id="qc-dsa" class="tu-select"><option value="ml44">ML-DSA-44</option><option value="ml65" selected>ML-DSA-65</option><option value="ml87">ML-DSA-87</option><option value="slh">SLH-DSA-SHA2-128f (hash-based)</option></select></label></div>
+				<label class="cg-lab" for="qc-dmsg">Message to sign</label>
+				<input id="qc-dmsg" class="tu-input tu-input--big" type="text" value="I wrote this, and nobody changed it." spellcheck="false">
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="qc-dsago">Make keys and sign</button><button type="button" class="tu-btn tu-btn--ghost" id="qc-dsatamper">Change one letter and verify again</button></div>
+				<div id="qc-dsaout"></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="cg-h">Is your own browser quantum-safe?</h2>
+				<p class="cg-note">Asks Cloudflare which key exchange your browser just used to reach it (one small request to cloudflare.com).</p>
+				<div class="cg-acts"><button type="button" class="tu-btn tu-btn--primary" id="qc-mybr">Check my browser</button></div>
+				<div id="qc-mybrout"></div>
+			</div>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Quantum computing and cryptography, explained</h2>
+			<p>A <strong>quantum computer</strong> uses qubits, which can be in a mix (superposition) of 0 and 1 and can be entangled with each other. For most jobs that is no faster than a normal computer, but for a few problems it is enormously faster, and two of those problems hold up most of today's internet security. This page lets you try the ideas yourself: quantum key distribution, Shor's and Grover's algorithms, and the new <strong>post-quantum cryptography</strong> (also called quantum-safe, quantum-proof or quantum-resistant encryption) that replaces what quantum computers will break.</p>
+			<h3>What a quantum computer breaks, and what it doesn't</h3>
+			<ul>
+				<li><strong>Shor's algorithm</strong> (1994) factors big numbers and solves discrete logarithms quickly. That breaks <strong>RSA</strong>, <strong>Diffie–Hellman</strong> and <strong>elliptic-curve cryptography</strong> (ECDSA, X25519, and the secp256k1 keys of Bitcoin and Hive): almost all public-key encryption and digital signatures in use today.</li>
+				<li><strong>Grover's algorithm</strong> (1996) searches √N times faster. It halves the strength of symmetric keys and hashes, so <strong>AES-256</strong> stays safe (128 bits left) and AES-128 drops to a still-hard 64-bit level.</li>
+			</ul>
+			<h3>Quantum cryptography vs post-quantum cryptography</h3>
+			<p><strong>Quantum cryptography</strong> (quantum key distribution, QKD, like BB84) uses physics: single photons over a fibre or to a satellite, where any eavesdropper leaves errors. It needs special hardware and a direct link. <strong>Post-quantum cryptography</strong> is normal software built on maths problems that quantum computers are not known to solve, mostly <em>lattices</em>. It runs on any phone or server, which is why the internet is moving to it.</p>
+			<h3>The new standards</h3>
+			<p>In August 2024 NIST published the first post-quantum standards: <strong>FIPS 203 ML-KEM</strong> (from CRYSTALS-Kyber) for key exchange, <strong>FIPS 204 ML-DSA</strong> (from CRYSTALS-Dilithium) and <strong>FIPS 205 SLH-DSA</strong> (from SPHINCS+) for signatures. FN-DSA (Falcon) and the code-based HQC (chosen in March 2025 as a backup) follow. Browsers already combine ML-KEM-768 with X25519 (“X25519MLKEM768”) so a connection stays safe even if one of the two is ever broken. NIST plans to deprecate RSA and elliptic curves around 2030 and disallow them by 2035.</p>
+			<h3>Questions people ask</h3>
+			<dl>
+				<dt>When will quantum computers break encryption (Q-Day)?</dt><dd>Nobody knows. Estimates range from about 2030 to the 2040s. Published estimates for breaking RSA-2048 dropped from about 20 million noisy qubits (2019) to under one million (2025); today's machines have about a thousand. Data recorded now can be decrypted later, which is why the switch is happening already.</dd>
+				<dt>Is Bitcoin quantum-safe?</dt><dd>Not yet. Its signatures use elliptic curves (secp256k1), which Shor's algorithm breaks. Coins whose public key is visible on the blockchain (reused or old addresses) would be at risk first. Hive keys use the same curve. Mining (SHA-256) is only slightly affected by Grover.</dd>
+				<dt>Is AES quantum-proof?</dt><dd>AES-256 is considered safe: Grover's search would still need about 2¹²⁸ steps. That is why the password tab of the <a href="/cryptography">Cryptography Lab</a> uses AES-256.</dd>
+				<dt>How do I know if a website is quantum-safe?</dt><dd>Use the <a href="/quantum-safe-check">Quantum-Safe Website Checker</a>: it tests whether the site's HTTPS accepts the post-quantum key exchange X25519MLKEM768.</dd>
+				<dt>Does quantum key distribution make encryption unbreakable?</dt><dd>In theory the key exchange is protected by physics, but real systems have been attacked through imperfect hardware, need a trusted link to authenticate who you are talking to, and cover limited distances. Security agencies such as the NSA and the UK NCSC recommend post-quantum cryptography instead for most uses.</dd>
+			</dl>
+			<p>Related: <a href="/cryptography">Cryptography Lab</a> · <a href="/quantum-safe-check">Quantum-Safe Website Checker</a> · <a href="/quantum">MES Quantum Lab</a> · <a href="/quantum-entanglement">Quantum Entanglement</a> · <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a></p>
+		</div>
+	</div>

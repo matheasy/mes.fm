@@ -8,6 +8,7 @@
 			<button type="button" role="tab" data-t="aes">Encrypt with a password</button>
 			<button type="button" role="tab" data-t="enc">Base64, hex, Morse…</button>
 			<button type="button" role="tab" data-t="mod">Modular maths</button>
+			<a class="cg-tablink" href="/quantum-cryptography">Quantum ›</a>
 		</div>
 
 		<!-- ============ Ciphers ============ -->
@@ -232,6 +233,8 @@
 				<dt>Can a hash be reversed?</dt><dd>No. A hash throws information away, so many inputs share each output; the only way back is guessing inputs. That is why short or common passwords get cracked: attackers hash billions of guesses.</dd>
 				<dt>How strong is the password encryption?</dt><dd>AES-256 itself has never been broken. The weak point is the password: the page estimates how long a guessing attack would take, so use a long passphrase.</dd>
 			</dl>
-			<p>Related: <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/file-check">File Safety Check</a> · <a href="/tools">More tools</a></p>
+			<h3>What about quantum computers?</h3>
+			<p>A big enough quantum computer would break RSA, Diffie–Hellman and elliptic curves with Shor's algorithm, and halve the strength of AES with Grover's. Try both, plus quantum key distribution and the new post-quantum standards, in <a href="/quantum-cryptography">Quantum Cryptography</a>, and test any site with the <a href="/quantum-safe-check">Quantum-Safe Website Checker</a>.</p>
+			<p>Related: <a href="/quantum-cryptography">Quantum Cryptography</a> · <a href="/quantum-safe-check">Quantum-Safe Checker</a> · <a href="/primes">Prime Numbers</a> · <a href="/enigma">Enigma Machine</a> · <a href="/matrix-calculator">Matrix Calculator</a> · <a href="/file-check">File Safety Check</a> · <a href="/tools">More tools</a></p>
 		</div>
 	</div>

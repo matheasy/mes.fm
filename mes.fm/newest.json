@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/quantum-cryptography",
+   "title": "Quantum Cryptography",
+   "icon": "/img/quantum-cryptography-logo.png",
+   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
+  {
+   "href": "/quantum-safe-check",
+   "title": "Quantum-Safe Website Checker",
+   "icon": "/img/quantum-safe-check-logo.png",
+   "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
+  {
    "href": "/cryptography",
    "title": "Cryptography Lab",
    "icon": "/img/cryptography-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Pool and snooker with real spin physics, against the computer, a friend or a Hive player, plus trick-shot challenges.",
    "added": "2026-11-09",
    "kind": "tool"
-  },
-  {
-   "href": "/watch",
-   "title": "Watch",
-   "icon": "/img/watch-logo.png",
-   "desc": "Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations or comments. Up next list, save for later, resume, speed.",
-   "added": "2026-11-07",
-   "kind": "tool"
-  },
-  {
-   "href": "/gta",
-   "title": "GTA 6 Hub",
-   "icon": "/img/gta-logo.png",
-   "desc": "Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.",
-   "added": "2026-11-07",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/quantum-cryptography",
+   "title": "Quantum Cryptography",
+   "icon": "/img/quantum-cryptography-logo.png",
+   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
+  {
+   "href": "/quantum-safe-check",
+   "title": "Quantum-Safe Website Checker",
+   "icon": "/img/quantum-safe-check-logo.png",
+   "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
+   "added": "2026-11-13",
+   "kind": "tool"
+  },
   {
    "href": "/cryptography",
    "title": "Cryptography Lab",
@@ -243,22 +259,6 @@
    "icon": "/img/bridge-builder-logo.png",
    "desc": "Design a truss, arch or cable bridge, check every member, auto-size it for the lowest cost, then drive trucks over it, blow wind and shake it with an earthquake.",
    "added": "2026-11-11",
-   "kind": "tool"
-  },
-  {
-   "href": "/draw",
-   "title": "Draw (Drawing Pad)",
-   "icon": "/img/draw-logo.png",
-   "desc": "Sketch with pens, markers and spray, add shapes, arrows, text, emoji and symbols, start from templates or colouring pages, then download PNG or SVG.",
-   "added": "2026-11-10",
-   "kind": "tool"
-  },
-  {
-   "href": "/brick-builder",
-   "title": "Brick Builder (3D building bricks)",
-   "icon": "/img/brick-builder-logo.png",
-   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
-   "added": "2026-11-10",
    "kind": "tool"
   }
  ]

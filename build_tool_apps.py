@@ -46,6 +46,10 @@ PDF_NAV_MENU = '<li class="navbar__item"><a class="navbar__link" href="/pdf">Edi
 # Storage family nav (2026-11-07): the Storage Analyzer (disk folders) and Browser Storage & Memory (what mes.fm keeps in this browser) link each other
 ST_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/browser-storage'>Browser Storage</a></li>"
 ST_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/browser-storage\">Browser Storage &amp; Memory</a></li>"
+CG_BRAND = dict(slug="cryptography", title="MES Cryptography Lab", tag="Encrypt, decrypt and crack. See how it works.")
+CG_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/quantum-cryptography'>Quantum</a></li><li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/quantum-safe-check'>Quantum-Safe Check</a></li>"
+CG_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/quantum-cryptography\">Quantum Cryptography</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/quantum-safe-check\">Quantum-Safe Website Checker</a></li>"
+CG_PARTS = ["qlib.js", "quantum.js"]
 TR_BRAND = dict(slug="translate", title="MES Translate", tag="Translate text, photos and PDFs, on your device when it can.")
 TR_NAV_INFO = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/image-to-text'>Image to Text</a></li>"
 TR_NAV_MENU = "<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/image-to-text\">Image to Text (OCR)</a></li>"
@@ -841,7 +845,22 @@ APPS = {
                    tag="Encrypt, decrypt and crack. See how it works.", accent="#166534", dark="#14532d", tint="#e7f5ec",
                    desc="Free cryptography tools in your browser: Caesar, Vigen\u00e8re, affine, Atbash and rail fence ciphers, crack secret messages with letter frequencies, build an RSA key from two primes step by step, Diffie-Hellman key exchange, MD5 and SHA-256 hashes, and real AES encryption with a password.",
                    meta_desc="Encrypt, decrypt and crack Caesar, Vigen\u00e8re and other ciphers, build RSA keys from primes step by step, try Diffie-Hellman, hashes and real AES password encryption.",
-                   lib_from=["primes"], js_v="1"),
+                   lib_from=["primes"], js_parts=CG_PARTS, nav_extra=CG_NAV_INFO, menu_extra=CG_NAV_MENU, js_v="2"),
+    # Quantum Cryptography + Quantum-Safe Website Checker (2026-11-13): sub-pages of the Cryptography Lab, same source folder and ONE served script
+    # (cryptography/js/cryptography.js = MESPrime + MESCrypto + qlib.js (MESQC) + quantum.js + app.js); bump js_v on all three together.
+    # qlib tests: tool_apps_src/quantum-cryptography-tests.js; the checker's server side is api/pq-check.js + api/_pq-tls.js (tests: tool_apps_src/quantum-safe-check-tests.js).
+    "quantum-cryptography": dict(title="Quantum Cryptography", page_title="Quantum Cryptography & Post-Quantum Encryption",
+                   tag="BB84, Shor, Grover and quantum-safe encryption.", accent="#166534", dark="#14532d", tint="#e7f5ec",
+                   desc="Quantum cryptography and quantum computing, hands-on: send a key with photons (BB84) and catch an eavesdropper, watch Shor's algorithm factor a number and Grover's search find an answer, see which encryption is quantum-safe, and run real post-quantum ML-KEM (Kyber) and ML-DSA in your browser.",
+                   meta_desc="Try quantum key distribution (BB84), Shor's and Grover's algorithms, check which encryption is quantum-safe, and run real post-quantum ML-KEM (Kyber) and ML-DSA in your browser.",
+                   src="cryptography", content="content-quantum.html", js_path="cryptography/js/cryptography.js", lib_from=["primes"], js_parts=CG_PARTS,
+                   brand=CG_BRAND, tab=1, nav_extra=CG_NAV_INFO, menu_extra=CG_NAV_MENU, share_img="quantum-cryptography/img/share.jpg", js_v="2"),
+    "quantum-safe-check": dict(title="Quantum-Safe Website Checker", page_title="Is This Website Quantum-Safe? Post-Quantum TLS Checker",
+                   tag="Does a site use post-quantum encryption?", accent="#166534", dark="#14532d", tint="#e7f5ec",
+                   desc="Free quantum-safe website checker: paste one or more links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768 with ML-KEM / Kyber), plus its TLS version, cipher and certificate, graded A to F, with how to switch your own server on.",
+                   meta_desc="Is this website quantum-safe? Paste links to check if a site uses post-quantum TLS (X25519MLKEM768 / ML-KEM), plus TLS version, cipher and certificate. Free, A to F.",
+                   src="cryptography", content="content-check.html", js_path="cryptography/js/cryptography.js", lib_from=["primes"], js_parts=CG_PARTS,
+                   brand=CG_BRAND, tab=2, nav_extra=CG_NAV_INFO, menu_extra=CG_NAV_MENU, share_img="quantum-safe-check/img/share.jpg", js_v="2"),
     "primes": dict(title="MES Prime Numbers", page_title="Prime Number Checker, Factors, GCD & Sieve",
                    tag="Is it prime? Factors, divisors, coprime, sieve.", accent="#0e7c66", dark="#0b5e4e", tint="#e3f4ef",
                    desc="Free prime number checker: is it prime, its prime factorization with a factor tree, every divisor, coprime check with GCD and LCM, an animated Sieve of Eratosthenes, the Ulam prime spiral, primes in a range, the nth prime and the prime counting function. Works for huge numbers.",

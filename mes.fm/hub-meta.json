@@ -754,7 +754,7 @@
 "/quantum-cryptography":{
 "added":"2026-11-13",
 "updated":"2026-11-13",
-"type":"Tool"
+"type":"Simulation"
 },
 "/quantum-safe-check":{
 "added":"2026-11-13",
