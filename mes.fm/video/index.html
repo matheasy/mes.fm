@@ -352,6 +352,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-hgrip {cursor:row-resize;background:var(--vd-panel);border-top:1px solid var(--vd-line);position:relative;touch-action:none;display:flex;align-items:center;justify-content:center;}
 	#vd .vd-hgrip i {display:block;width:46px;height:3px;border-radius:2px;background:#4b5563;} #vd .vd-hgrip:hover i, #vd .vd-hgrip.is-on i, #vd .vd-hgrip:focus-visible i {background:var(--vd-sel);} #vd .vd-hgrip:focus-visible {outline:0;}
 	#vd .vd-cvs {display:inline-flex;align-items:center;gap:0.35em;font-size:0.82em;color:var(--vd-dim);} #vd .vd-cvs select {max-width:15em;min-height:32px;}
+	#vd .vd-bgc {position:relative;} #vd .vd-bgbtn {display:inline-flex;align-items:center;gap:0.4em;min-height:32px;}
+	#vd .vd-sw {display:inline-block;width:1.15em;height:1.15em;border-radius:3px;border:1px solid var(--vd-dim);box-shadow:inset 0 0 0 1px rgba(0,0,0,0.35);}
+	#vd .vd-bgpop {position:absolute;top:calc(100% + 6px);left:0;z-index:60;width:15.5em;padding:0.7em;border-radius:8px;background:var(--vd-panel, #1d2228);border:1px solid var(--vd-line, #3a424c);box-shadow:0 8px 24px rgba(0,0,0,0.45);color:var(--vd-fg, #e8ecf0);font-size:1.05em;}
+	#vd .vd-bgpop b {display:block;margin-bottom:0.5em;font-size:0.95em;}
+	#vd .vd-bgsws {display:grid;grid-template-columns:repeat(6,1fr);gap:0.4em;}
+	#vd .vd-bgs {aspect-ratio:1;min-height:30px;border-radius:5px;border:1px solid rgba(128,128,128,0.6);cursor:pointer;padding:0;}
+	#vd .vd-bgs.is-on {outline:2px solid #4dabf7;outline-offset:2px;}
+	#vd .vd-bgcus {display:flex;align-items:center;justify-content:space-between;gap:0.5em;margin:0.6em 0 0.4em;font-size:0.9em;} #vd .vd-bgcus input {width:3em;height:30px;padding:0;border:0;background:none;cursor:pointer;}
+	#vd .vd-bgpop small {display:block;color:var(--vd-dim);font-size:0.8em;line-height:1.35;}
 	#vd .vd.vd-pvfill .vd-center {position:fixed;inset:0;z-index:100003;background:#000;}
 	#vd .vd.vd-pvfill .vd-transport {position:absolute;left:0;right:0;bottom:0;background:rgba(17,21,28,0.88);border-top:1px solid var(--vd-line);opacity:0.25;transition:opacity .2s;}
 	#vd .vd.vd-pvfill .vd-transport:hover, #vd .vd.vd-pvfill .vd-transport:focus-within, #vd .vd.vd-pvfill.vd-pvshow .vd-transport {opacity:1;}
@@ -733,6 +742,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-card:hover{background:#3e4d66}
 	body.dark-mode #vd .vd-card .vd-cv{background:#3c4c67}
 	body.dark-mode #vd .vd-hgrip i{background:#46505d}
+	body.dark-mode #vd .vd-bgpop{background:var(--vd-panel, #45505f);border:1px solid var(--vd-line, #424b57)}
+	body.dark-mode #vd .vd-bgs{border:1px solid rgba(107,107,107,0.60)}
+	body.dark-mode #vd .vd-bgs.is-on{outline:2px solid #0970c3}
 	body.dark-mode #vd .vd.vd-pvfill .vd-center{background:#525252}
 	body.dark-mode #vd .vd.vd-pvfill .vd-transport{background:rgba(62,76,102,0.88)}
 	body.dark-mode #vd .vd-missg{border:1px solid #f3700c}
@@ -1027,6 +1039,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<input type="text" class="vd-name" id="vd-name" aria-label="Project name" maxlength="120">
 				<span class="vd-saved" id="vd-saved" aria-live="polite"></span>
 				<label class="vd-cvs" title="Canvas size: the picture size of the video you make"><span>Canvas</span><select id="vd-cvsize" aria-label="Canvas size"></select></label>
+				<span class="vd-cvs vd-bgc"><button type="button" class="vd-btn vd-bgbtn" id="vd-bgbtn" aria-haspopup="true" aria-expanded="false" title="Canvas colour: what shows behind your clips where nothing covers the canvas"><i class="vd-sw" id="vd-bgsw"></i><span class="vd-lbl">Colour</span></button>
+				<div class="vd-bgpop" id="vd-bgpop" role="dialog" aria-label="Canvas colour" hidden><b>Canvas colour</b><div class="vd-bgsws" id="vd-bgsws"></div><label class="vd-bgcus"><span>Any colour</span><input type="color" id="vd-bgcol"></label><small>Shows wherever no clip covers the canvas (also in the exported video).</small></div></span>
 				<span class="vd-sp"></span>
 				<button type="button" class="vd-btn vd-ico" id="vd-tgl-left" aria-pressed="true" title="Show or hide the library on the left (media, titles, effects)" aria-label="Library panel"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor"/><rect x="2" y="3" width="4" height="10" fill="currentColor"/></svg></button>
 				<button type="button" class="vd-btn vd-ico" id="vd-tgl-right" aria-pressed="true" title="Show or hide the properties on the right" aria-label="Properties panel"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="none" stroke="currentColor"/><rect x="10" y="3" width="4" height="10" fill="currentColor"/></svg></button>
@@ -1233,7 +1247,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=38" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=39" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

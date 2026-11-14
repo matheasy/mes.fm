@@ -938,7 +938,7 @@
 		h += '<div class="vd-sec"><b>Picture size</b><div class="vd-grid">' + num("vd-p-w", "Width", p.w, 2, 16, 7680, "px") + num("vd-p-h", "Height", p.h, 2, 16, 4320, "px") + "</div>";
 		var bin0 = VE.bin.filter(function (m) { return m.kind === "video" && m.w; })[0];
 		h += '<div class="vd-row vd-wrap">' + V.CANVAS_PRESETS.map(function (s) { return '<button type="button" class="vd-btn vd-sm" data-size="' + s[0] + '"' + (p.w + "x" + p.h === s[0] ? ' aria-pressed="true"' : "") + ">" + s[1] + "</button>"; }).join("") + (bin0 ? '<button type="button" class="vd-btn vd-sm" data-size="' + (Math.round(bin0.w / 2) * 2) + "x" + (Math.round(bin0.h / 2) * 2) + '">Like ' + esc(bin0.name.slice(0, 18)) + " (" + bin0.w + "×" + bin0.h + ")</button>" : "") + "</div>";
-		h += '<div class="vd-grid"><label class="vd-f"><span>Frame rate</span><select id="vd-p-fps">' + [24, 25, 29.97, 30, 50, 60].map(function (f) { return '<option value="' + f + '"' + (Math.abs(p.fps - f) < 0.01 ? " selected" : "") + ">" + f + " fps</option>"; }).join("") + (([24, 25, 29.97, 30, 50, 60].some(function (f) { return Math.abs(p.fps - f) < 0.01; })) ? "" : '<option selected value="' + p.fps + '">' + p.fps + " fps</option>") + '</select></label><label class="vd-f"><span>Background</span><input type="color" id="vd-p-bg" value="' + esc(p.bg) + '"></label></div></div>';
+		h += '<div class="vd-grid"><label class="vd-f"><span>Frame rate</span><select id="vd-p-fps">' + [24, 25, 29.97, 30, 50, 60].map(function (f) { return '<option value="' + f + '"' + (Math.abs(p.fps - f) < 0.01 ? " selected" : "") + ">" + f + " fps</option>"; }).join("") + (([24, 25, 29.97, 30, 50, 60].some(function (f) { return Math.abs(p.fps - f) < 0.01; })) ? "" : '<option selected value="' + p.fps + '">' + p.fps + " fps</option>") + '</select></label><label class="vd-f"><span>Canvas colour</span><input type="color" id="vd-p-bg" value="' + esc(p.bg) + '"></label></div></div>';
 		var nsrc = p.clips.filter(V.hasSource).length;
 		if (nsrc) h += '<div class="vd-sec"><b>Source times</b><p class="vd-sub">Where each video and sound clip begins and ends in its file (handy after splitting a long recording into parts).</p><ol class="vd-srclist">' + V.sourceList(p, clipName).slice(0, 40).map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ol>" + (nsrc > 40 ? '<p class="vd-sub">… and ' + (nsrc - 40) + " more (all of them are copied).</p>" : "") + '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-p-scopy">Copy the list</button></div></div>';
 		h += '<div class="vd-sec"><b>Start here</b><ol class="vd-steps"><li>Import videos, sound and pictures (or drop them in).</li><li>Drag them onto the timeline, or select several and press <i>Add selected in order</i> to join them.</li><li>Click a clip to trim, split (S), fade, move or clean up its sound here.</li><li>Press <i>Export MP4</i>.</li></ol><p class="vd-sub">Your work is saved in this browser as you go.</p></div>';
@@ -947,7 +947,7 @@
 		$("vd-p-w").onchange = function () { setSize(+this.value || p.w, p.h); }; $("vd-p-h").onchange = function () { setSize(p.w, +this.value || p.h); };
 		insp.querySelectorAll("[data-size]").forEach(function (b) { b.onclick = function () { var s = b.getAttribute("data-size").split("x"); setSize(+s[0], +s[1]); }; });
 		$("vd-p-fps").onchange = function () { p.fps = +this.value; VE.commit("Frame rate"); };
-		$("vd-p-bg").onchange = function () { p.bg = this.value; VE.commit("Background"); };
+		$("vd-p-bg").onchange = function () { p.bg = this.value; VE.commit("Canvas colour"); };
 		if ($("vd-p-scopy")) $("vd-p-scopy").onclick = copyAllSources;
 	}
 	function bindInsp(c) {
@@ -1620,6 +1620,22 @@
 		var q = V.parseSize(v); if (q) VE.setCanvas(q.w, q.h);
 	};
 	VE.on("change", renderCvs);
+	/* ---------- canvas colour (VE.P.bg): drawn by VE.draw under every clip, so preview and export match ---------- */
+	var BG_SW = [["#000000", "Black"], ["#ffffff", "White"], ["#808080", "Grey"], ["#1e1e1e", "Dark grey"], ["#f2f2f2", "Light grey"], ["#0b1f3a", "Navy"], ["#1a5fb4", "Blue"], ["#00b140", "Green screen"], ["#0047bb", "Blue screen"], ["#7a1f1f", "Dark red"], ["#f5e6c8", "Cream"], ["#3b2a1a", "Brown"]];
+	function renderBg() {
+		var bg = (VE.P.bg || "#000000").toLowerCase();
+		$("vd-bgsw").style.background = bg; $("vd-bgcol").value = bg;
+		$("vd-bgsws").innerHTML = BG_SW.map(function (s) { return '<button type="button" class="vd-bgs' + (s[0] === bg ? " is-on" : "") + '" data-bg="' + s[0] + '" title="' + s[1] + '" aria-label="' + s[1] + '" aria-pressed="' + (s[0] === bg) + '" style="background:' + s[0] + '"></button>'; }).join("");
+		var pb = document.getElementById("vd-p-bg"); if (pb) pb.value = bg;
+	}
+	function setBg(v, commit) { VE.P.bg = v; renderBg(); VE.preview.draw(); if (commit) VE.commit("Canvas colour"); }
+	$("vd-bgbtn").onclick = function (e) { e.stopPropagation(); var pop = $("vd-bgpop"); pop.hidden = !pop.hidden; this.setAttribute("aria-expanded", !pop.hidden); if (!pop.hidden) { renderBg(); var on = pop.querySelector(".is-on") || pop.querySelector("button"); if (on) on.focus({ preventScroll: true }); } };
+	$("vd-bgsws").onclick = function (e) { var b = e.target.closest("[data-bg]"); if (b) setBg(b.getAttribute("data-bg"), true); };
+	$("vd-bgcol").oninput = function () { setBg(this.value, false); };
+	$("vd-bgcol").onchange = function () { setBg(this.value, true); };
+	document.addEventListener("click", function (e) { var pop = $("vd-bgpop"); if (!pop.hidden && e.target.isConnected && !e.target.closest(".vd-bgc")) { pop.hidden = true; $("vd-bgbtn").setAttribute("aria-expanded", "false"); } });
+	$("vd-bgpop").addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); this.hidden = true; $("vd-bgbtn").setAttribute("aria-expanded", "false"); $("vd-bgbtn").focus(); } });
+	VE.on("change", renderBg); renderBg();
 
 	/* ---------- preview filling the window ---------- */
 	var pvT = 0;
