@@ -51,6 +51,7 @@
 		if (it.k === 'youtube') return fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + it.id), { credentials: 'omit' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return j && { key: it.key, t: j.title, th: it.th }; });
 		if (it.k === '3speak') return speakInfo(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		if (it.k === 'odysee') return odyseeGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
+		if (it.k === 'bitchute' && it.id) return bitchuteGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		return Promise.resolve(null);
 	}
 	function speakInfo(it) {
@@ -77,6 +78,22 @@
 			});
 		odyCache[it.key] = p; p.catch(function () { delete odyCache[it.key]; });
 		return p;
+	}
+
+	/* BitChute: its API (no CORS for other sites) gives the plain mp4, which plays in our own <video> with speed control;
+	   mes.fm/api/bitchute-media looks it up. Anything wrong -> BitChute's own embed player, as before. */
+	var bcCache = {};
+	function bitchuteGet(it) {
+		if (bcCache[it.key]) return bcCache[it.key];
+		var p = fetch('/api/bitchute-media?id=' + encodeURIComponent(it.id), { credentials: 'omit' })
+			.then(function (r) { if (!r.ok) throw new Error('no file'); return r.json(); })
+			.then(function (j) { if (!j || !j.url) throw new Error('no file'); return { url: j.url, title: j.title || '', thumb: j.thumb || '' }; });
+		bcCache[it.key] = p; p.catch(function () { delete bcCache[it.key]; });
+		return p;
+	}
+	function bcFallback(g) {
+		if (g !== gen || !cur) return;
+		W.noBC[cur.key] = 1; var p = position(); play(cur, p && p.pos > 1 ? { t: Math.floor(p.pos) } : {});
 	}
 
 	/* ---------- the player ---------- */
@@ -135,9 +152,9 @@
 					} });
 				saveT = setInterval(remember, 5000);
 			}, function (e) { if (g === gen) failed(e.message); });
-		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file') {
+		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file' || mode === 'bitchute') {
 			setStage('<p class="wt-loading">Loading the video…</p>');
-			var src = mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : Promise.resolve({ url: cur.u, title: cur.t });
+			var src = mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : mode === 'bitchute' ? bitchuteGet(cur) : Promise.resolve({ url: cur.u, title: cur.t });
 			src.then(function (info) {
 				if (g !== gen) return;
 				if (info.title || info.thumb) setMeta(cur.key, info.title, info.thumb);
@@ -148,7 +165,7 @@
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
 				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); } });
 				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
-				v.addEventListener('error', function () { if (g === gen) failed('This browser could not play the video file.'); });
+				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else failed('This browser could not play the video file.'); });
 				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
 						if (g !== gen) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.');
@@ -158,7 +175,7 @@
 				}
 				v.src = info.url;
 				var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
-			}).catch(function (e) { if (g === gen) failed(e.message); });
+			}).catch(function (e) { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else failed(e.message); });
 			saveT = setInterval(remember, 5000);
 		} else if (mode === 'embed') {
 			var f = document.createElement('iframe'); if (S.priv) { f.setAttribute('credentialless', ''); try { f.credentialless = true; } catch (e) {} } f.src = cur.e; f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.title = W.label(cur);
@@ -169,7 +186,7 @@
 		}
 		syncSpeed();
 		if (S.cm) loadComments();
-		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
+		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file|bitchute)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
 	function failed(text) {
 		var stage = $('wt-stage');
@@ -244,7 +261,7 @@
 	}
 
 	/* ---------- captions: our own CC button (YouTube's is out of reach while the picture is zoomed, or under the touch layer) ---------- */
-	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file') && !!(vid && vid.textTracks && vid.textTracks.length)); }
+	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file' || m === 'bitchute') && !!(vid && vid.textTracks && vid.textTracks.length)); }
 	function paintCC() {
 		var on = !!S.cc, ok = ccAble();
 		[$('wt-cc')].concat([].slice.call(document.querySelectorAll('#wt-stage [data-c="cc"]'))).forEach(function (b) {
@@ -537,7 +554,7 @@
 	$('wt-track').checked = !!S.keepTrack;
 	$('wt-track').onchange = function () { S.keepTrack = this.checked; W.keepTrack = S.keepTrack; if (!S.keepTrack) cleanAll(); save(); renderList(); showMeta(); toast(S.keepTrack ? 'New links keep their tracking codes' : 'Tracking codes are removed from links'); };
 	$('wt-priv').checked = S.priv !== false;
-	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && W.mode(cur) !== 'hls' && W.mode(cur) !== 'odysee' && W.mode(cur) !== 'file') { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
+	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && !/^(hls|odysee|file|bitchute)$/.test(W.mode(cur))) { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
 	function strip(it) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; return c; }
 
 	/* "+ List": add the playing video to one of my playlists */
@@ -601,9 +618,33 @@
 			if (z === 'flip') { S.zmL = !S.zmL; save(); paintZm(); return; } if (z === 'x') { zmGone = true; paintZm(); return; }
 			var k = (S.zoom || {}).k || 1; if (z === 'in') zoomTo(k * 1.25); else if (z === 'out') zoomTo(k / 1.25); else if (z === 'reset') zoomTo(1); else zoomTo(fillK()); });
 		mini.addEventListener('wheel', function (e) { e.preventDefault(); zoomTo(((S.zoom || {}).k || 1) * Math.pow(1.0015, -e.deltaY)); }, { passive: false });
-		st.appendChild(mini); ctlBar(st); spdTab(st); paintZm(); applyZoom();
+		st.appendChild(mini); ctlBar(st); spdTab(st); leftPill(st); paintZm(); applyZoom();
 	}
 	var zmGone = false;
+	/* time left at the current speed, top right of the picture (click: time left <-> clock time it ends) */
+	var leftT = 0;
+	function curRate() {
+		try { if (yt && yt.getPlaybackRate) return yt.getPlaybackRate() || 1; } catch (e) {}
+		return vid && vid.playbackRate ? vid.playbackRate : 1;
+	}
+	function leftTick() {
+		var el = document.querySelector('#wt-stage .wt-left'); if (!el) { clearInterval(leftT); leftT = 0; return; }
+		var p = position(), r = curRate();
+		if (!p || !p.dur || p.dur - p.pos < 0.5) { el.hidden = true; return; }
+		var sec = (p.dur - p.pos) / r, txt;
+		if (S.leftClock) {
+			txt = 'Ends ' + new Date(Date.now() + sec * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+		} else txt = W.fmt(Math.ceil(sec)) + ' left';
+		if (Math.abs(r - 1) > 0.001) txt += ' at ' + r.toFixed(2) + '×';
+		el.textContent = txt; el.hidden = false;
+	}
+	function leftPill(st) {
+		var el = document.createElement('button'); el.type = 'button'; el.className = 'wt-left'; el.hidden = true;
+		el.title = 'Time left at the current speed (click: show the time it ends instead)';
+		['pointerdown', 'dblclick', 'touchstart'].forEach(function (ev) { el.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
+		el.addEventListener('click', function (e) { e.stopPropagation(); S.leftClock = !S.leftClock; save(); leftTick(); });
+		st.appendChild(el); clearInterval(leftT); leftT = setInterval(leftTick, 500); leftTick();
+	}
 	function paintZm() { var m = document.querySelector('#wt-stage .wt-zmini'); if (m) { m.hidden = zmGone; m.classList.toggle('wt-zmL', !!S.zmL); } }
 	/* speed tab on the picture's edge (opposite the panel's › tab) in Fill window / full screen: +, −, 2×, 1×, ✕ hides it */
 	var spdGone = false;
@@ -692,7 +733,7 @@
 	}
 	function ctlSync(st, z) {
 		var c = st.querySelector('.wt-zbar'); if (!c) return;
-		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
+		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file|bitchute)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
 		if (c.hidden === !want) { if (want) ctlTick(); return; }
 		c.hidden = !want; st.classList.toggle('wt-hasctl', want); clearInterval(ctlT);
 		if (vid) vid.controls = !want;   // the video's own bar would show, scaled and moved, under ours
@@ -720,7 +761,7 @@
 	}
 	function touchOn() {
 		if (S.pz === false || !cur) return false;
-		var m = W.mode(cur); if (!/^(yt|hls|odysee|file)$/.test(m)) return false;
+		var m = W.mode(cur); if (!/^(yt|hls|odysee|file|bitchute)$/.test(m)) return false;
 		if (finePtr && finePtr.matches && ((S.zoom || {}).k || 1) <= 1.001) return false;   // mouse at 100%: leave the player alone
 		return !!$('wt-stage').querySelector('iframe#wt-yt, video');
 	}

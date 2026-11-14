@@ -13,7 +13,8 @@ it = W.item('https://odysee.com/@mestruth:9/my-video:3'); eq([W.mode(it), it.id]
 it = W.item('https://odysee.com/@mestruth:9'); eq(W.mode(it), 'open', 'odysee channel = open');
 it = W.item('https://rumble.com/embed/v4abc12/'); eq(W.mode(it), 'embed', 'rumble embed');
 it = W.item('https://rumble.com/v4xyz-some-title.html'); eq(W.mode(it), 'open', 'rumble page');
-it = W.item('https://www.bitchute.com/video/AbCdEf123456/'); eq(W.mode(it), 'embed', 'bitchute');
+it = W.item('https://www.bitchute.com/video/AbCdEf123456/'); eq(W.mode(it), 'bitchute', 'bitchute own player'); eq(W.canSpeed(it), true, 'bitchute speed'); W.noBC[it.key] = 1; eq(W.mode(it), 'embed', 'bitchute fallback'); delete W.noBC[it.key];
+{ const bm = require('../mes.fm/api/bitchute-media.js'); eq([bm.okMedia('https://seed1.bitchute.com/a/b.mp4'), bm.okMedia('https://evil.com/b.mp4'), bm.okMedia('http://seed1.bitchute.com/b.mp4'), bm.okMedia('https://bitchute.com.evil.io/b.mp4')], [true, false, false, false], 'bitchute media url check'); }
 it = W.item('https://x.com/mes/status/1234567890123'); eq(W.mode(it), 'embed', 'x');
 it = W.item('https://example.com/clip.mp4'); eq([W.mode(it), it.t], ['file', 'clip.mp4'], 'direct');
 ok(W.item('notalink').err, 'bad link');

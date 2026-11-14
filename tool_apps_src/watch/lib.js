@@ -6,17 +6,19 @@
 	W.MAX_HIST = 300; W.MAX_LIST = 500;
 
 	/* how a link plays: yt = YouTube IFrame API, hls = 3Speak stream in our own <video>, odysee = Odysee file in our own <video>,
-	   file = a direct media file, embed = the site's own player (no speed / resume), open = can only be opened on the site */
+	   file = a direct media file, bitchute = BitChute's mp4 in our own <video>, embed = the site's own player (no speed / resume), open = can only be opened on the site */
 	W.mode = function (it) {
 		if (!it) return "open";
 		if (it.k === "youtube") return "yt";
 		if (it.k === "3speak") return "hls";
 		if (it.k === "odysee") return it.id ? "odysee" : "open";
 		if (it.k === "direct") return "file";
+		if (it.k === "bitchute" && it.id && !W.noBC[it.key]) return "bitchute";   // own <video> from BitChute's file (falls back to its embed)
 		if (it.e) return "embed";
 		return "open";
 	};
-	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file"; };
+	W.noBC = {};   // BitChute videos whose file could not be found / played this session: use BitChute's own player
+	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "bitchute"; };
 	W.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 	W.ytSpeed = function (r) { return Math.max(0.25, Math.min(2, r)); };   // YouTube's player stops at 2x
 
