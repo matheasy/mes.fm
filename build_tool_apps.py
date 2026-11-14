@@ -694,7 +694,11 @@ APPS = {
                             tag="Drive anywhere. Crash anything. Change gravity.", accent="#d9480f", dark="#a63a0b", tint="#ffe8d9",
                             desc="A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.",
                             meta_desc="Free 3D car sandbox with real physics: drive on a test track, the Moon, Mars or Ceres, crash into cars and objects, jump ramps and change gravity.",
-                            js_v="7"),
+                            # manifest + apple-mobile-web-app-capable: on iPhone (no Fullscreen API) Add to Home Screen opens it with no Safari bars.
+                            head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
+                                       '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
+                                       '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
+                            js_v="8"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
