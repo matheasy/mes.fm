@@ -415,11 +415,23 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #bb .bb-toast.on {opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* fill window / full screen */
-#bb.bb-fill {position:fixed;inset:0;z-index:2147483000;border-radius:0;display:flex;flex-direction:column;padding:6px 8px;}
+#bb.bb-fill {position:fixed;inset:0;margin:0;max-width:none;z-index:2147483000;border-radius:0;display:flex;flex-direction:column;padding:6px 8px;}
 html.bb-fill-on, html.bb-fill-on body {overflow:hidden;}
 #bb.bb-fill .tu-seo {display:none;}
 #bb.bb-fill .bb-main {flex:1;height:auto;min-height:0;}
 #bb:fullscreen {padding:6px 8px;}
+/* hide menus (only while filling the window / full screen) */
+#bb .bb-fonly, #bb .bb-ftools {display:none;}
+#bb.bb-fill .bb-fonly {display:inline-flex;}
+#bb.bb-fill.bb-nobar .bb-bar {display:none;}
+#bb.bb-fill.bb-nobar .bb-status {display:none;}
+#bb.bb-fill.bb-nobar, #bb.bb-fill.bb-nobar:fullscreen {padding:0;}
+#bb.bb-fill.bb-nopan .bb-left, #bb.bb-fill.bb-nopan .bb-right {display:none !important;}
+#bb.bb-fill.bb-nopan .bb-main {display:flex !important;flex-direction:column;overflow:hidden !important;}
+#bb.bb-fill.bb-nopan .bb-stage {flex:1;height:auto !important;min-height:0 !important;}
+#bb.bb-fill.bb-nobar .bb-ftools, #bb.bb-fill.bb-nopan .bb-ftools {display:flex;position:absolute;top:8px;left:8px;gap:4px;z-index:3;}
+#bb.bb-fill.bb-nobar .bb-ftools .bb-vb[aria-pressed="false"] {opacity:0.85;}
+#bb.bb-fill:not(.bb-nobar) .bb-ftools [data-fm="close"] {display:none;}
 
 @media (max-width:1100px) {
 	#bb .bb-main {grid-template-columns:minmax(11em, 13em) minmax(0, 1fr);grid-template-rows:minmax(0, 1fr) auto;height:auto;}
@@ -860,6 +872,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="bb-b" data-act="shot" title="Save a picture of the view">📷 PNG</button>
 				<button type="button" class="bb-b bb-bonly" data-act="stl" title="Download an STL file for a 3D printer">⬇ STL</button>
 				<button type="button" class="bb-b" data-act="fill" id="bb-fillbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ Fill window</button>
+				<button type="button" class="bb-b bb-fonly" data-act="menus" title="Hide the menus so the building area gets the whole screen (H)">▴ Hide menus</button>
 				<button type="button" class="bb-b" data-act="full" id="bb-fsbtn" title="Full screen (Shift+F)">⛶ Full screen</button>
 				<button type="button" class="bb-b" data-act="help" title="How it works and keyboard shortcuts (?)">? Help</button>
 			</div>
@@ -882,6 +895,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="bb-stage" id="bb-stage">
 				<div class="bb-view" id="bb-view" tabindex="0" aria-label="3D building area: click to add a brick, drag to turn the view, right-drag or two fingers to move it, wheel or pinch to zoom">
 					<div class="bb-labels" id="bb-labels" aria-hidden="true"></div>
+					<div class="bb-ftools" role="group" aria-label="Menus">
+						<button type="button" class="bb-vb" data-fm="menus" title="Show the menus again (H)">☰ Menus</button>
+						<button type="button" class="bb-vb" data-fm="panel" id="bb-fpanel" title="Show or hide the side panel (parts, colours, smash settings)">◧ Panel</button>
+						<button type="button" class="bb-vb" data-fm="close" title="Leave full screen (Esc)">✕</button>
+					</div>
 					<div class="bb-vtools" role="group" aria-label="Views">
 						<button type="button" class="bb-vb" data-view="iso" title="3D view (0)">3D</button>
 						<button type="button" class="bb-vb" data-view="top" title="From the top (7)">Top</button>
@@ -1089,7 +1107,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/brick-builder/js/brick-builder.js?v=3" defer></script>
+	<script src="/brick-builder/js/brick-builder.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

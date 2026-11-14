@@ -8,7 +8,7 @@
 	var imp; try { imp = new Function('u', 'return import(u)'); } catch (e) { imp = null; }
 	var T, OrbitControls, BGU;
 	var KEY = 'mes-brick-builder:v1', BKEY = 'mes-brick-builder:build';
-	var S = { part: 'b2x4', color: 0, rot: 0, tool: 'build', cat: 'brick', size: 32, bcol: 3, shadow: true, ghost: true, studs: true, stress: false, anchored: true, grip: 'normal', lw: 200, tab: 'test' };
+	var S = { part: 'b2x4', color: 0, rot: 0, tool: 'build', cat: 'brick', size: 32, bcol: 3, shadow: true, ghost: true, studs: true, stress: false, anchored: true, grip: 'normal', lw: 200, tab: 'test', hbar: false, hpan: false };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); for (var k in sv) if (k in S || /^c[a-z]+$/.test(k) || k === 'btab') S[k] = sv[k]; } catch (e) {}
 	if (!M.BY[S.part]) S.part = 'b2x4';
 	function saveS() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -577,6 +577,12 @@
 		$('bb-fillbtn').setAttribute('aria-pressed', on ? 'true' : 'false'); $('bb-fillbtn').textContent = on ? '✕ Close' : '⤢ Fill window';
 		setTimeout(resize, 30);
 	}
+	function menus(bar, pan) {
+		S.hbar = !!bar; S.hpan = !!pan; saveS();
+		root.classList.toggle('bb-nobar', S.hbar); root.classList.toggle('bb-nopan', S.hpan);
+		$('bb-fpanel').setAttribute('aria-pressed', S.hpan ? 'false' : 'true');
+		setTimeout(resize, 30);
+	}
 	function full() {
 		var fe = document.fullscreenElement || document.webkitFullscreenElement;
 		if (fe) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
@@ -627,6 +633,11 @@
 		});
 		$('bb-sback').addEventListener('click', function () { mode('build'); });
 		$('bb-empty').addEventListener('click', function (e) { if (e.target.closest('[data-act=examples]')) examplesDlg(); });
+		root.querySelector('.bb-ftools').addEventListener('click', function (e) {
+			var b = e.target.closest('[data-fm]'); if (!b) return; var f = b.dataset.fm;
+			if (f === 'menus') menus(false, false); else if (f === 'panel') menus(S.hbar, !S.hpan);
+			else { if (document.fullscreenElement || document.webkitFullscreenElement) full(); else fill(false); }
+		});
 		root.querySelector('.bb-vtools').addEventListener('click', function (e) { var b = e.target.closest('[data-view]'); if (b && T) setView(b.dataset.view); });
 		root.querySelector('.bb-tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) tab(b.dataset.tab); });
 		$('bb-stress').onchange = function () { S.stress = this.checked; saveS(); sync(); };
@@ -665,6 +676,7 @@
 			if (ctrl && (k === 's' || k === 'S')) { e.preventDefault(); act('save'); return; }
 			if (ctrl || e.altKey) return;
 			if (k === 'Escape' && root.classList.contains('bb-fill') && !document.fullscreenElement) { fill(false); return; }
+			if ((k === 'h' || k === 'H') && root.classList.contains('bb-fill')) { e.preventDefault(); if (S.hbar || S.hpan) menus(false, false); else menus(true, true); return; }
 			if (crash && crash.active() && (k === ' ' || k === 'g')) { e.preventDefault(); crash.go(); return; }
 			if (root.classList.contains('bb-smash')) { if (k === 'b' || k === 'Escape' && !root.classList.contains('bb-fill')) { e.preventDefault(); mode('build'); } else if (k === 'f') fill(); else if (k === 'F') full(); return; }
 			if (S.tab === 'steps' && stepN != null && (k === 'ArrowRight' || k === 'ArrowLeft')) { e.preventDefault(); setStep(stepN + (k === 'ArrowRight' ? 1 : -1)); return; }
@@ -684,12 +696,12 @@
 		else if (a === 'rotate') { S.rot = (S.rot + 1) & 3; saveS(); if (ghost && ghost.visible && hover) { var h = hover; placeMesh(ghost, { t: S.part, x: h.x, y: h.y, z: h.z, r: S.rot }); dirty = true; } toast('Turned: ' + ['0°', '90°', '180°', '270°'][S.rot], 900); }
 		else if (a === 'shot') shot(); else if (a === 'stl') stl();
 		else if (a === 'crash') mode('smash');
-		else if (a === 'fill') fill(); else if (a === 'full') full(); else if (a === 'help') help();
+		else if (a === 'fill') fill(); else if (a === 'full') full(); else if (a === 'menus') menus(true, true); else if (a === 'help') help();
 	}
 
 	// ---------- start ----------
 	function start() {
-		buildPalette(); wire(); syncControls(); setTool(S.tool); mode(root.dataset.start === 'crash' ? 'smash' : 'build');
+		buildPalette(); wire(); syncControls(); menus(S.hbar, S.hpan); setTool(S.tool); mode(root.dataset.start === 'crash' ? 'smash' : 'build');
 		if (!(root.requestFullscreen || root.webkitRequestFullscreen)) $('bb-fsbtn').hidden = true;
 		var h = /#b=([A-Za-z0-9_-]+)/.exec(location.hash), saved = null;
 		try { saved = JSON.parse(localStorage.getItem(BKEY) || 'null'); } catch (e) {}
