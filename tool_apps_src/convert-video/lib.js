@@ -7,7 +7,11 @@
 	var C = {};
 
 	/* ---------- names, sizes, formats ---------- */
-	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif"];
+	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif", "trec"];
+	// Camtasia 2019+ recordings (.trec) are QuickTime files with TechSmith TSCC2 video + AAC; ffmpeg reads them.
+	// The mouse cursor is kept apart in TechSmith's own TSCM data, so the converted picture has no cursor.
+	C.isTrec = function (name) { return C.extOf(name) === "trec"; };
+	C.TREC_NOTE = "Camtasia recording: the mouse cursor is not in the picture (Camtasia keeps it apart and draws it when you edit). Export an MP4 from Camtasia if you need the cursor.";
 	C.AUDIO_EXT = ["mp3", "wav", "m4a", "aac", "ogg", "oga", "opus", "flac", "wma", "aif", "aiff", "amr", "weba"];
 	C.extOf = function (name) { var m = /\.([a-z0-9]+)$/i.exec(String(name || "")); return m ? m[1].toLowerCase() : ""; };
 	C.isVideo = function (name, type) { return /^video\//.test(type || "") || C.VIDEO_EXT.indexOf(C.extOf(name)) >= 0; };

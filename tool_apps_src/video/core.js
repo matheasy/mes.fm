@@ -85,9 +85,12 @@
 				var info = /\.(mp4|m4v|mov|3gp)$/i.test(m.file.name) || /mp4|quicktime/.test(m.file.type) || m.converted ? await VE.analyzeMp4(m.file).catch(function () { return null; }) : null;
 				if (!info || !info.ok) {
 					var why = info && info.why ? info.why : "";
+					var trec = C.isTrec(m.file.name);
+					if (trec) why = "Camtasia recording, this can take a few minutes";
 					status(m, "Converting to MP4" + (why ? " (" + why + ")" : "") + "...", 0);
 					var res = await E.convert(m.file, { onProgress: function (x) { status(m, "Converting to MP4... " + Math.round(x * 100) + "%", x); }, onStatus: function (s, x) { status(m, s, x); } });
 					m.origName = m.file.name; m.file = new File([res.blob], C.outName(m.file.name), { type: "video/mp4" }); m.converted = true; m.note = res.note || "";
+					if (trec) VE.emit("notice", m.origName + ": " + C.TREC_NOTE);
 					info = await VE.analyzeMp4(m.file);
 					if (!info.ok) throw new Error(info.why || "The converted file could not be read.");
 				}

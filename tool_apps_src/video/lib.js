@@ -57,7 +57,7 @@
 	V.hasSource = function (c) { return !!c && (c.type === "video" || c.type === "audio"); };
 	V.srcText = function (c, fps) { return V.tc(c.in, fps) + " \u2013 " + V.tc(c.out, fps); };
 	// media folder (a folder inside OneDrive / Dropbox / Google Drive / iCloud that its desktop app syncs): which media files are in it
-	V.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|avi|wmv|flv|mpg|mpeg|ts|mts|m2ts|3gp|ogv|mp3|wav|m4a|aac|ogg|oga|opus|flac|wma|aif|aiff|png|jpe?g|gif|webp|bmp|avif|heic)$/i;
+	V.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|avi|wmv|flv|mpg|mpeg|ts|mts|m2ts|3gp|ogv|trec|mp3|wav|m4a|aac|ogg|oga|opus|flac|wma|aif|aiff|png|jpe?g|gif|webp|bmp|avif|heic)$/i;
 	V.folderIndex = function (files) {   // [{name, size, path}] -> {n: count, by: {lower-case name: [entries]}}
 		var by = {}; (files || []).forEach(function (f) { var k = String(f.name || "").toLowerCase(); (by[k] = by[k] || []).push(f); });
 		return { n: (files || []).length, by: by };
@@ -82,6 +82,22 @@
 		return p.clips.filter(V.hasSource).slice().sort(function (a, b) { return a.start - b.start || String(a.track).localeCompare(String(b.track)); }).map(function (c) {
 			return (nameOf ? nameOf(c) + ": " : "") + V.srcText(c, p.fps) + " (at " + V.tc(c.start, p.fps) + " on the timeline, length " + V.tc(c.out - c.in, p.fps) + ")";
 		});
+	};
+	// layers with no clips on them; at least one layer of each kind (picture "v" / sound "a") is always kept
+	V.emptyTracks = function (p) {
+		var used = {}; p.clips.forEach(function (c) { used[c.track] = 1; });
+		var out = [];
+		["v", "a"].forEach(function (k) {
+			var all = p.tracks.filter(function (t) { return t.kind === k; }), empty = all.filter(function (t) { return !used[t.id]; });
+			if (empty.length && empty.length === all.length) empty = empty.slice(1);
+			out = out.concat(empty);
+		});
+		return out;
+	};
+	V.removeEmptyTracks = function (p) {
+		var gone = V.emptyTracks(p), ids = {}; gone.forEach(function (t) { ids[t.id] = 1; });
+		if (gone.length) p.tracks = p.tracks.filter(function (t) { return !ids[t.id]; });
+		return gone.length;
 	};
 	V.onTrack = function (p, trackId, ignore) {
 		return p.clips.filter(function (c) { return c.track === trackId && !(ignore && ignore[c.id]); }).sort(function (a, b) { return a.start - b.start; });

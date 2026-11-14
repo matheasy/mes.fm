@@ -22,6 +22,7 @@ function chunks(b) {
 // names
 eq(C.outName("My clip.avi"), "My clip.mp4", "outName");
 const used = {}; C.outName("a.avi", used); eq(C.outName("a.mkv", used), "a (2).mp4", "outName clash");
+ok(C.isVideo("Rec 11-13-2026 4.trec") && C.isTrec("a.TREC") && !C.isTrec("a.mp4"), "Camtasia .trec");
 ok(C.isVideo("x.WMV") && C.isVideo("x.flv") && !C.isVideo("x.txt"), "isVideo");
 eq(C.formatBytes(1536), "1.50 KB", "formatBytes"); eq(C.formatTime(3725), "1:02:05", "formatTime");
 eq(C.streamOf("00dc"), 0, "streamOf video"); eq(C.streamOf("01wb"), 1, "streamOf audio"); eq(C.streamOf("ix00"), -1, "streamOf index");

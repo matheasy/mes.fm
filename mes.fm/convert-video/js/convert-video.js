@@ -125,7 +125,11 @@ var MESImg = (function () {
 	var C = {};
 
 	/* ---------- names, sizes, formats ---------- */
-	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif"];
+	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif", "trec"];
+	// Camtasia 2019+ recordings (.trec) are QuickTime files with TechSmith TSCC2 video + AAC; ffmpeg reads them.
+	// The mouse cursor is kept apart in TechSmith's own TSCM data, so the converted picture has no cursor.
+	C.isTrec = function (name) { return C.extOf(name) === "trec"; };
+	C.TREC_NOTE = "Camtasia recording: the mouse cursor is not in the picture (Camtasia keeps it apart and draws it when you edit). Export an MP4 from Camtasia if you need the cursor.";
 	C.AUDIO_EXT = ["mp3", "wav", "m4a", "aac", "ogg", "oga", "opus", "flac", "wma", "aif", "aiff", "amr", "weba"];
 	C.extOf = function (name) { var m = /\.([a-z0-9]+)$/i.exec(String(name || "")); return m ? m[1].toLowerCase() : ""; };
 	C.isVideo = function (name, type) { return /^video\//.test(type || "") || C.VIDEO_EXT.indexOf(C.extOf(name)) >= 0; };
@@ -762,6 +766,7 @@ var MESImg = (function () {
 			if (code !== 0) { var errLine = ffLog.filter(function (l) { return /error|invalid|not supported|could not/i.test(l); }).slice(-2).join(" "); throw new Error("ffmpeg could not convert this file" + (errLine ? ": " + errLine : ".")); }
 			var data = await inst.readFile(out); try { await inst.deleteFile(out); } catch (e) { /* ignore */ }
 			var note = plan.copyVideo ? "(picture copied as it is" + (plan.hasAudio ? plan.copyAudio ? ", sound copied)" : ", sound made AAC)" : ")") : "(picture re-encoded with x264" + (plan.video ? " from " + plan.video.codec : "") + ")";
+			if (C.isTrec(file.name)) note += " " + C.TREC_NOTE;
 			var res = { size: data.length, note: note, engine: "ffmpeg", plan: plan };
 			if (opts.handle) { var wr = await opts.handle.createWritable(); await wr.write(data); await wr.close(); res.handle = opts.handle; }
 			else res.blob = new Blob([data], { type: "video/mp4" });
@@ -894,6 +899,7 @@ var MESImg = (function () {
 		if (!f.p) return "";
 		var r = f.p.route;
 		if (r.engine === "native" && !S.reenc) return '<span class="vc-eng is-fast">Fast copy</span> ' + esc(r.why);
+		if (C.isTrec(f.file && f.file.name)) return '<span class="vc-eng">ffmpeg</span> ' + esc("Camtasia recording (TechSmith screen video): the picture will be re-encoded with x264. The mouse cursor is not included.");
 		return '<span class="vc-eng">ffmpeg</span> ' + esc(S.reenc ? "the picture will be re-encoded with x264" : r.why === "read with ffmpeg" ? "read with ffmpeg; H.264 is copied, other pictures are re-encoded" : "read with ffmpeg: " + r.why);
 	}
 

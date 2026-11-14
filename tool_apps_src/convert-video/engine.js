@@ -255,6 +255,7 @@
 			if (code !== 0) { var errLine = ffLog.filter(function (l) { return /error|invalid|not supported|could not/i.test(l); }).slice(-2).join(" "); throw new Error("ffmpeg could not convert this file" + (errLine ? ": " + errLine : ".")); }
 			var data = await inst.readFile(out); try { await inst.deleteFile(out); } catch (e) { /* ignore */ }
 			var note = plan.copyVideo ? "(picture copied as it is" + (plan.hasAudio ? plan.copyAudio ? ", sound copied)" : ", sound made AAC)" : ")") : "(picture re-encoded with x264" + (plan.video ? " from " + plan.video.codec : "") + ")";
+			if (C.isTrec(file.name)) note += " " + C.TREC_NOTE;
 			var res = { size: data.length, note: note, engine: "ffmpeg", plan: plan };
 			if (opts.handle) { var wr = await opts.handle.createWritable(); await wr.write(data); await wr.close(); res.handle = opts.handle; }
 			else res.blob = new Blob([data], { type: "video/mp4" });

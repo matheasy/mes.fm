@@ -7,7 +7,11 @@
 	var C = {};
 
 	/* ---------- names, sizes, formats ---------- */
-	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif"];
+	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif", "trec"];
+	// Camtasia 2019+ recordings (.trec) are QuickTime files with TechSmith TSCC2 video + AAC; ffmpeg reads them.
+	// The mouse cursor is kept apart in TechSmith's own TSCM data, so the converted picture has no cursor.
+	C.isTrec = function (name) { return C.extOf(name) === "trec"; };
+	C.TREC_NOTE = "Camtasia recording: the mouse cursor is not in the picture (Camtasia keeps it apart and draws it when you edit). Export an MP4 from Camtasia if you need the cursor.";
 	C.AUDIO_EXT = ["mp3", "wav", "m4a", "aac", "ogg", "oga", "opus", "flac", "wma", "aif", "aiff", "amr", "weba"];
 	C.extOf = function (name) { var m = /\.([a-z0-9]+)$/i.exec(String(name || "")); return m ? m[1].toLowerCase() : ""; };
 	C.isVideo = function (name, type) { return /^video\//.test(type || "") || C.VIDEO_EXT.indexOf(C.extOf(name)) >= 0; };
@@ -446,7 +450,7 @@
 	V.hasSource = function (c) { return !!c && (c.type === "video" || c.type === "audio"); };
 	V.srcText = function (c, fps) { return V.tc(c.in, fps) + " \u2013 " + V.tc(c.out, fps); };
 	// media folder (a folder inside OneDrive / Dropbox / Google Drive / iCloud that its desktop app syncs): which media files are in it
-	V.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|avi|wmv|flv|mpg|mpeg|ts|mts|m2ts|3gp|ogv|mp3|wav|m4a|aac|ogg|oga|opus|flac|wma|aif|aiff|png|jpe?g|gif|webp|bmp|avif|heic)$/i;
+	V.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|avi|wmv|flv|mpg|mpeg|ts|mts|m2ts|3gp|ogv|trec|mp3|wav|m4a|aac|ogg|oga|opus|flac|wma|aif|aiff|png|jpe?g|gif|webp|bmp|avif|heic)$/i;
 	V.folderIndex = function (files) {   // [{name, size, path}] -> {n: count, by: {lower-case name: [entries]}}
 		var by = {}; (files || []).forEach(function (f) { var k = String(f.name || "").toLowerCase(); (by[k] = by[k] || []).push(f); });
 		return { n: (files || []).length, by: by };
@@ -471,6 +475,22 @@
 		return p.clips.filter(V.hasSource).slice().sort(function (a, b) { return a.start - b.start || String(a.track).localeCompare(String(b.track)); }).map(function (c) {
 			return (nameOf ? nameOf(c) + ": " : "") + V.srcText(c, p.fps) + " (at " + V.tc(c.start, p.fps) + " on the timeline, length " + V.tc(c.out - c.in, p.fps) + ")";
 		});
+	};
+	// layers with no clips on them; at least one layer of each kind (picture "v" / sound "a") is always kept
+	V.emptyTracks = function (p) {
+		var used = {}; p.clips.forEach(function (c) { used[c.track] = 1; });
+		var out = [];
+		["v", "a"].forEach(function (k) {
+			var all = p.tracks.filter(function (t) { return t.kind === k; }), empty = all.filter(function (t) { return !used[t.id]; });
+			if (empty.length && empty.length === all.length) empty = empty.slice(1);
+			out = out.concat(empty);
+		});
+		return out;
+	};
+	V.removeEmptyTracks = function (p) {
+		var gone = V.emptyTracks(p), ids = {}; gone.forEach(function (t) { ids[t.id] = 1; });
+		if (gone.length) p.tracks = p.tracks.filter(function (t) { return !ids[t.id]; });
+		return gone.length;
 	};
 	V.onTrack = function (p, trackId, ignore) {
 		return p.clips.filter(function (c) { return c.track === trackId && !(ignore && ignore[c.id]); }).sort(function (a, b) { return a.start - b.start; });
@@ -1549,6 +1569,7 @@
 			if (code !== 0) { var errLine = ffLog.filter(function (l) { return /error|invalid|not supported|could not/i.test(l); }).slice(-2).join(" "); throw new Error("ffmpeg could not convert this file" + (errLine ? ": " + errLine : ".")); }
 			var data = await inst.readFile(out); try { await inst.deleteFile(out); } catch (e) { /* ignore */ }
 			var note = plan.copyVideo ? "(picture copied as it is" + (plan.hasAudio ? plan.copyAudio ? ", sound copied)" : ", sound made AAC)" : ")") : "(picture re-encoded with x264" + (plan.video ? " from " + plan.video.codec : "") + ")";
+			if (C.isTrec(file.name)) note += " " + C.TREC_NOTE;
 			var res = { size: data.length, note: note, engine: "ffmpeg", plan: plan };
 			if (opts.handle) { var wr = await opts.handle.createWritable(); await wr.write(data); await wr.close(); res.handle = opts.handle; }
 			else res.blob = new Blob([data], { type: "video/mp4" });
@@ -1717,9 +1738,12 @@
 				var info = /\.(mp4|m4v|mov|3gp)$/i.test(m.file.name) || /mp4|quicktime/.test(m.file.type) || m.converted ? await VE.analyzeMp4(m.file).catch(function () { return null; }) : null;
 				if (!info || !info.ok) {
 					var why = info && info.why ? info.why : "";
+					var trec = C.isTrec(m.file.name);
+					if (trec) why = "Camtasia recording, this can take a few minutes";
 					status(m, "Converting to MP4" + (why ? " (" + why + ")" : "") + "...", 0);
 					var res = await E.convert(m.file, { onProgress: function (x) { status(m, "Converting to MP4... " + Math.round(x * 100) + "%", x); }, onStatus: function (s, x) { status(m, s, x); } });
 					m.origName = m.file.name; m.file = new File([res.blob], C.outName(m.file.name), { type: "video/mp4" }); m.converted = true; m.note = res.note || "";
+					if (trec) VE.emit("notice", m.origName + ": " + C.TREC_NOTE);
 					info = await VE.analyzeMp4(m.file);
 					if (!info.ok) throw new Error(info.why || "The converted file could not be read.");
 				}
@@ -3257,7 +3281,7 @@
 		return best;
 	}
 	var missEl = document.createElement("div"); missEl.id = "vd-miss"; missEl.className = "vd-miss"; var bh = app.querySelector(".vd-binhead"); bh.parentNode.insertBefore(missEl, bh.nextSibling);   // first, so it is seen even in a short panel
-	var missFile = document.createElement("input"); missFile.type = "file"; missFile.hidden = true; missFile.accept = "video/*,audio/*,image/*,.avi,.mkv,.wmv,.flv,.mts,.m2ts"; document.body.appendChild(missFile);
+	var missFile = document.createElement("input"); missFile.type = "file"; missFile.hidden = true; missFile.accept = "video/*,audio/*,image/*,.avi,.mkv,.wmv,.flv,.mts,.m2ts,.trec"; document.body.appendChild(missFile);
 	function renderMiss() {
 		var gs = missGroups();
 		missEl.hidden = !gs.length; if (!gs.length) { missEl.innerHTML = ""; return; }
@@ -3429,6 +3453,12 @@
 		plan.forEach(function (q) { if (q[1].mag) V.magnetInsert(VE.P, q[1].id, q[0].id, q[0].start); });
 		VE.commit(dir < 0 ? "Move up a layer" : "Move down a layer");
 	};
+	VE.deleteEmptyTracks = function () {
+		var n = V.removeEmptyTracks(VE.P);
+		if (!n) { VE.emit("notice", "There are no empty layers to delete."); return; }
+		VE.commit(n === 1 ? "Delete empty layer" : "Delete " + n + " empty layers");
+		VE.emit("notice", n === 1 ? "Deleted 1 empty layer." : "Deleted " + n + " empty layers.");
+	};
 	VE.moveTrack = function (tr, dir) {
 		var list = VE.P.tracks, i = list.indexOf(tr), j = i + dir; if (i < 0 || j < 0 || j >= list.length || list[j].kind !== tr.kind) return;
 		list.splice(i, 1); list.splice(j, 0, tr); VE.commit("Move layer");
@@ -3471,8 +3501,12 @@
 			it("Move this layer down", "", function () { VE.moveTrack(tr, 1); }, !dn);
 			var same = VE.P.tracks.filter(function (q) { return q.kind === tr.kind; }).length;
 			it("Delete this layer", "", function () { VE.P.tracks = VE.P.tracks.filter(function (q) { return q !== tr; }); VE.commit("Delete layer"); }, same < 2 || V.onTrack(VE.P, tr.id).length > 0);
+			var ne = V.emptyTracks(VE.P).length;
+			it("Delete empty layers" + (ne ? " (" + ne + ")" : ""), "", VE.deleteEmptyTracks, !ne);
 		} else {
 			it("Paste at the playhead", K + "V", function () { VE.paste(); }, !cb);
+			var ne2 = V.emptyTracks(VE.P).length;
+			if (ne2) { sep(); it("Delete empty layers (" + ne2 + ")", "", VE.deleteEmptyTracks); }
 		}
 		if (items[items.length - 1] === "-") items.pop();
 		var el = document.createElement("div"); el.className = "vd-ctx"; el.setAttribute("role", "menu");
@@ -3711,7 +3745,7 @@
 			["cut", "Cut", MK + "X", !has], ["copy", "Copy", MK + "C", !has], ["paste", "Paste at the playhead", MK + "V", !cb], ["dup", "Duplicate", MK + "D", !has], "-",
 			["del", "Delete", "Del", !has], ["ripple", "Ripple delete (close the gap)", "Shift+Del", !has], ["split", "Split at the playhead", "S", !inClip], ["cutrange", "Cut out the marked part (I to O)", "", !marksOk()], "-",
 			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this layer"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
-			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], ["link", "Link video and sound", "", !V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])], "-",
+			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["noempty", "Delete empty layers", "", !V.emptyTracks(VE.P).length], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], ["link", "Link video and sound", "", !V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])], "-",
 			["narrate", "Add narration from text…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
 		];
 	}
@@ -3731,7 +3765,7 @@
 			track: function () { VE.sel = V.onTrack(VE.P, c0.track).map(function (c) { return c.id; }); VE.emit("select"); },
 			after: function () { VE.sel = VE.P.clips.filter(function (c) { return V.end(c) > VE.t + 1e-6; }).map(function (c) { return c.id; }); VE.emit("select"); },
 			none: function () { VE.sel = []; VE.emit("select"); },
-			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); }, addlayer: function () { VE.addTrack("v", c0 ? V.track(VE.P, c0.track) : null, "above"); VE.commit("Add layer"); },
+			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); }, addlayer: function () { VE.addTrack("v", c0 ? V.track(VE.P, c0.track) : null, "above"); VE.commit("Add layer"); }, noempty: VE.deleteEmptyTracks,
 			link: function () { VE.linkBack(V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])); },
 			sep: function () { if (c0.link) { V.unlink(VE.P, c0.id); VE.commit("Unlink"); } else VE.separate(sel); },
 			narrate: openNarrate, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },

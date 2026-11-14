@@ -49,6 +49,7 @@
 		if (!f.p) return "";
 		var r = f.p.route;
 		if (r.engine === "native" && !S.reenc) return '<span class="vc-eng is-fast">Fast copy</span> ' + esc(r.why);
+		if (C.isTrec(f.file && f.file.name)) return '<span class="vc-eng">ffmpeg</span> ' + esc("Camtasia recording (TechSmith screen video): the picture will be re-encoded with x264. The mouse cursor is not included.");
 		return '<span class="vc-eng">ffmpeg</span> ' + esc(S.reenc ? "the picture will be re-encoded with x264" : r.why === "read with ffmpeg" ? "read with ffmpeg; H.264 is copied, other pictures are re-encoded" : "read with ffmpeg: " + r.why);
 	}
 
