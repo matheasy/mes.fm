@@ -39,4 +39,10 @@ ok(Q.groverIters(1 << 20, 1) === 804, "grover 2^20 -> 804"); var over = Q.grover
 ok(Q.ALGOS.filter(function (a) { return a.st === "pq"; }).length >= 4, "pq algorithms"); ok(Q.ALGOS.every(function (a) { return a.name && a.st && a.why; }), "table complete");
 ok(Q.mosca(10, 5, 12).risk && !Q.mosca(2, 3, 15).risk, "mosca"); ok(Q.bytesLabel(1184) === "1.2 KB", "bytes label");
 
+// backup tab: passphrase guessing cost (the numbers quoted on the page: 50 bits = ~$5 million, ~1,200 years on one GPU)
+var c50 = Q.crack(50); ok(c50.usd > 4e6 && c50.usd < 7e6, "50-bit cost ~$5M"); ok(c50.secs1 / Q.YEAR_S > 1000 && c50.secs1 / Q.YEAR_S < 1500, "50-bit ~1,200 GPU-years");
+ok(Math.abs(c50.usdIn(2.5) - c50.usd / 2) < 1, "halves every 2.5 years"); ok(Q.crack(51).usd / c50.usd === 2, "each bit doubles");
+ok(Q.durText(30) === "30 seconds" && /age of the universe/.test(Q.durText(Q.crack(100).secs1)), "durations"); ok(Q.passBits("password123") <= 20 && Q.passBits("") === 0, "weak passphrases");
+var hs = require("../mes.fm/main_js/hive-store.js"); ["correct horse battery staple", "Tr0ub4dor&3", "x7-kq2m"].forEach(function (p) { ok(Q.passBits(p) === hs.passBits(p), "passBits in step with hive-store: " + p); });
+
 console.log(n + " checks, " + fails + " failed"); process.exit(fails ? 1 : 0);

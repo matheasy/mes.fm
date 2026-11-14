@@ -56,7 +56,7 @@
     var PASS_ROUNDS = 600000;     /* PBKDF2-SHA256 rounds for e:2 (OWASP 2023); stored per save, so it can grow later */
     var PASS_MIN = 12;
     var LOCK_KEY = "mes-hive-store:lock", PASS_KEY = "mes-hive-store:pass:";
-    var QPAGE = "/quantum-cryptography?tab=safe";
+    var QPAGE = "/quantum-cryptography?tab=backup";
 
     /* ---------- bytes <-> text ---------- */
     function utf8(s) { return new TextEncoder().encode(s); }
@@ -467,6 +467,13 @@
         ".mhs-lock [hidden],.mhs-card [hidden]{display:none!important}.mhs-lockn{font-size:.82em;opacity:.85;margin:0 0 4px;flex-basis:100%}";
     function css() { if (document.getElementById("mhs-css")) return; var st = document.createElement("style"); st.id = "mhs-css"; st.textContent = CSS; document.head.appendChild(st); }
     function el(tag, attrs, html) { var e = document.createElement(tag); for (var k in attrs || {}) e.setAttribute(k, attrs[k]); if (html != null) e.innerHTML = html; return e; }
+    /* guessing cost, same model as MESQC.crack (quantum-cryptography qlib.js): 15,000 guesses a second per rented GPU at $0.50 an hour */
+    function crackText(bits) {
+        var secs = Math.pow(2, Math.max(0, bits - 1)) / 15000, usd = secs / 3600 * 0.5, yrs = secs / 31557600;
+        function big(x) { return x >= 1e15 ? "more than anyone has" : x >= 1e12 ? "$" + Math.round(x / 1e12) + " trillion" : x >= 1e9 ? "$" + Math.round(x / 1e9) + " billion" : x >= 1e6 ? "$" + Math.round(x / 1e6) + " million" : x >= 1e3 ? "$" + Math.round(x / 1e3) + ",000" : "$" + Math.max(1, Math.round(x)); }
+        var t = yrs >= 1e9 ? "billions of years" : yrs >= 1e6 ? Math.round(yrs / 1e6) + " million years" : yrs >= 2 ? Math.round(yrs).toLocaleString("en") + " years" : secs >= 172800 ? Math.round(secs / 86400) + " days" : secs >= 7200 ? Math.round(secs / 3600) + " hours" : "minutes";
+        return "Guessing it: about " + t + " on one gaming PC, or " + big(usd) + " of rented graphics cards today.";
+    }
     function strength(bits) {
         if (bits >= 100) return [100, "#15803d", "Very strong: safe for the long run, quantum computers included."];
         if (bits >= 80) return [80, "#2f9e44", "Strong."];
@@ -501,7 +508,7 @@
                 if (!save) { yes.disabled = !p1.value; return; }
                 var bits = passBits(p1.value), sv = strength(bits), bar = $("mhs-bar");
                 bar.style.width = sv[0] + "%"; bar.style.background = sv[1];
-                var msg = p1.value.length < PASS_MIN ? "At least " + PASS_MIN + " characters." : sv[2];
+                var msg = p1.value.length < PASS_MIN ? "At least " + PASS_MIN + " characters." : sv[2] + " " + crackText(bits);
                 if (p2.value && p2.value !== p1.value) msg = "The two don't match yet.";
                 $("mhs-st").textContent = msg;
                 yes.disabled = !(p1.value.length >= PASS_MIN && bits >= 50 && p1.value === p2.value && $("mhs-ok").checked);
@@ -528,7 +535,7 @@
         css();
         var box = el("div", { "class": "mhs-lock" });
         box.innerHTML = '<span>Lock with:</span><button type="button" class="mhs-lk-m">🔑 Memo key</button><button type="button" class="mhs-lk-p">🛡 Passphrase (quantum-safe)</button>' +
-            '<a href="' + QPAGE + '" target="_blank" rel="noopener" title="Why the memo key is not quantum-safe">Why?</a> <a href="#" class="mhs-lk-f" hidden>Forget the remembered passphrase</a><div class="mhs-lockn"></div>';
+            '<a href="' + QPAGE + '" target="_blank" rel="noopener" title="How long each lock keeps your text safe, and what cracking it would cost">Why? How long is it safe?</a> <a href="#" class="mhs-lk-f" hidden>Forget the remembered passphrase</a><div class="mhs-lockn"></div>';
         var anchor = cb.closest("label") || cb;
         anchor.parentNode.insertBefore(box, anchor.nextSibling);
         function paint() {
@@ -538,8 +545,8 @@
             box.classList.toggle("is-off", !cb.checked && !cb.disabled);
             var f = box.querySelector(".mhs-lk-f"); f.hidden = !(m === "pass" && u && (isRemembered(u.name) || memPass[u.name]));
             box.querySelector(".mhs-lockn").textContent = m === "pass"
-                ? "AES-256 with a key from your passphrase: safe from quantum computers as long as the passphrase is strong. Lose it and the save is gone for good."
-                : "Easy (Keychain does it), but the memo key is elliptic-curve: a big future quantum computer could unlock these saves, and Hive keeps them forever.";
+                ? "AES-256 with a key from your passphrase: safe from quantum computers as long as the passphrase is strong (Make one for me = safe for good). Lose it and the save is gone for good."
+                : "Easy (Keychain does it), and nobody can open it today. But the memo key is elliptic-curve: a big quantum computer, likely some time in the 2030s, could open every memo-key save, and Hive keeps them forever. Fine for things that won't matter by then.";
         }
         box.addEventListener("click", function (ev) {
             var b = ev.target.closest("button,a.mhs-lk-f"); if (!b) return;

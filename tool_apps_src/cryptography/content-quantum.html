@@ -4,6 +4,7 @@
 			<button type="button" role="tab" data-t="shor">Shor's algorithm</button>
 			<button type="button" role="tab" data-t="grover">Grover's search</button>
 			<button type="button" role="tab" data-t="safe">Is it quantum-safe?</button>
+			<button type="button" role="tab" data-t="backup">Your MES backups</button>
 			<button type="button" role="tab" data-t="pqc">Try post-quantum crypto</button>
 			<a class="cg-tablink" href="/quantum-safe-check">Check a website ›</a>
 		</div>
@@ -121,6 +122,64 @@
 			</div>
 		</section>
 
+		<!-- ============ Your MES backups (the "Why?" link of the Hive-backup lock choice points here) ============ -->
+		<section class="cg-pane" data-pane="backup" hidden>
+			<div class="tu-card">
+				<h2 class="cg-h">What happens to private text you save in Copy Text (and Watch, Favourites, the Workout Planner)</h2>
+				<p class="cg-note">Short answer: <b>the 🛡 Passphrase lock with “Make one for me” is safe for as long as anyone can foresee, quantum computers included.</b> The 🔑 Memo-key lock is safe from everyone today, but a big quantum computer could open it later, and our best guess is that this becomes possible some time in the 2030s. A Hive backup can never be deleted, so pick the lock for how long the text must stay secret, not for today.</p>
+				<div class="tu-table-wrap"><table class="tu-table cg-tab qc-bk">
+					<thead><tr><th>Where your text is</th><th>Who can read it today</th><th>Once big quantum computers exist</th><th>Safe for about</th></tr></thead>
+					<tbody>
+						<tr><td><b>Only in this browser</b><br><small>the default: nothing is uploaded</small></td><td>Anyone who can use this device and browser profile</td><td>Makes no difference: it never travelled anywhere</td><td class="qc-ok">As long as your device is safe</td></tr>
+						<tr><td><b>☁ Sync</b> to your Dropbox, OneDrive, Google Drive or a synced folder</td><td>You, the cloud company, and anyone who gets into that account (the file is not encrypted by MES)</td><td>Someone who recorded the upload could read it later if the connection did not use post-quantum encryption (see the checks below)</td><td class="qc-mid">As long as your cloud account is safe</td></tr>
+						<tr><td><b>Hive backup, Encrypt off</b></td><td class="qc-bad">Everyone, now and forever</td><td>Already public</td><td class="qc-bad">Never: don't put anything private here</td></tr>
+						<tr><td><b>Hive backup, 🔑 Memo key</b></td><td>Only you (Hive Keychain unlocks it)</td><td class="qc-bad">Your public memo key is printed on your Hive account. A big enough quantum computer can work the private memo key out from it (Shor's algorithm) and open <b>every</b> memo-key save you ever made, on every MES page, plus your encrypted transfer memos.</td><td class="qc-mid">Our guess: until the 2030s. Could be sooner, could be 20+ years.</td></tr>
+						<tr><td><b>Hive backup, 🛡 Passphrase</b></td><td>Only someone who has the passphrase</td><td class="qc-ok">No real help to an attacker: AES-256 keeps about 128 bits of strength even against Grover's search, and guessing the passphrase is still guessing</td><td class="qc-ok">“Make one for me”: for good. Your own passphrase: see the calculator below.</td></tr>
+					</tbody>
+				</table></div>
+				<p class="cg-note">On Hive, everyone can still see <b>that</b> you saved something: when, from which MES page, and roughly how big. Only the contents are hidden.</p>
+			</div>
+
+			<div class="tu-card">
+				<h2 class="cg-h">How long would my passphrase hold?</h2>
+				<p class="cg-note">Type a passphrase to test it. It stays on this page: it is not saved and not sent anywhere. This is the only thing standing between an attacker who downloads your passphrase-locked save and your text.</p>
+				<div class="cg-row"><input id="qc-bkp" class="tu-input tu-input--big" type="password" placeholder="Try a passphrase" spellcheck="false" autocomplete="off" autocapitalize="off"><button type="button" class="tu-btn tu-btn--ghost" id="qc-bkshow">Show</button></div>
+				<div class="cg-ctl"><label class="cg-inl">or pick a strength <input type="range" id="qc-bkb" min="20" max="150" value="50"> <b id="qc-bkbv">50 bits</b></label></div>
+				<div class="cg-ex" id="qc-bkex"><span>Examples:</span></div>
+				<div id="qc-bkout"></div>
+				<p class="cg-note">How these numbers are made: every guess has to run PBKDF2-SHA256 600,000 times (that is what the page does when you lock a save). A top gaming graphics card manages about 15,000 guesses a second at that, and renting one costs about $0.50 an hour. On average an attacker finds the passphrase after trying half of all possibilities. Hardware gets about twice as cheap every 2.5 years, which is where the future prices come from; special chips built for the job could be roughly 10× cheaper again. A quantum computer doesn't change this much: Grover's search would have to run all 600,000 rounds inside the quantum machine for every step, which is far slower than graphics cards. The strength in bits is a rough estimate from the length and the kinds of characters; a phrase from a song or a book is much weaker than it looks.</p>
+			</div>
+
+			<div class="tu-card">
+				<h2 class="cg-h">When could a quantum computer open a memo-key save, and what would it cost?</h2>
+				<ul class="qc-bkl">
+					<li><b>Today:</b> nobody can. Breaking a Hive memo key (256-bit elliptic curve) with normal computers takes about 2¹²⁸ steps: more than every computer on Earth could do before the Sun burns out.</li>
+					<li><b>What it takes:</b> about 2,330 error-free (“logical”) qubits for a 256-bit curve (Roetteler et al. 2017), which means roughly a million good physical qubits. The biggest machines today have about a thousand noisy ones, and the estimates keep dropping (RSA-2048 went from 20 million physical qubits in 2019 to under a million in 2025).</li>
+					<li><b>When:</b> nobody knows. Experts asked each year by the Global Risk Institute see a real chance within 10 years and think it more likely than not within about 15 to 20. NIST tells everyone to stop relying on elliptic curves by 2030 and to stop using them by 2035. Our planning guess: <b>treat memo-key saves as readable by the mid-2030s</b>.</li>
+					<li><b>Cost:</b> the first machines will cost billions, be few, and need hours to a day per key, so they will go after big targets first (exposed Bitcoin keys, government secrets). Within some years after that, opening one key should get cheap. Old saves don't expire: a save made today can be opened whenever that day comes.</li>
+					<li><b>Hive itself</b> uses the same curve for all account keys, so Hive will have to move to new keys before then. That protects your account and funds, but not saves already written to the chain: changing your memo key later does not re-lock old saves. To protect one, load it and save it again with the passphrase lock (the old copy stays on the chain, but it is still only memo-key locked, so for something very sensitive assume the old copy will be read one day).</li>
+				</ul>
+			</div>
+
+			<div class="tu-card">
+				<h2 class="cg-h">What about the connection to mes.fm?</h2>
+				<p class="cg-note">mes.fm itself already uses post-quantum encryption for its connections: <a href="/quantum-safe-check?u=mes.fm">check mes.fm</a> (grade A, X25519MLKEM768). That protects the page while it loads. It is not what protects a Hive backup: the backup is locked in your browser <b>before</b> it goes anywhere, then written to the public Hive blockchain, where anyone can download it. Only the lock you picked keeps it private. For ☁ Sync the connection to your cloud does matter, so check it: <a href="/quantum-safe-check?u=dropbox.com">Dropbox</a> · <a href="/quantum-safe-check?u=onedrive.live.com">OneDrive</a> · <a href="/quantum-safe-check?u=drive.google.com">Google Drive</a> · <a href="/quantum-safe-check?u=api.hive.blog">a Hive API node</a>.</p>
+			</div>
+
+			<div class="tu-card">
+				<h2 class="cg-h">Which lock for what</h2>
+				<div class="tu-table-wrap"><table class="tu-table cg-tab qc-bk">
+					<thead><tr><th>What you save</th><th>Use</th></tr></thead>
+					<tbody>
+						<tr><td>Things that don't matter in a few years: links, drafts, reminders, shopping lists</td><td>🔑 Memo key is fine (easiest: nothing to remember)</td></tr>
+						<tr><td>Personal notes, addresses, phone numbers, anything you would not want public in 10 to 20 years</td><td>🛡 Passphrase, with “Make one for me” or 6+ random words</td></tr>
+						<tr><td>Passwords, recovery codes, private keys, seed phrases</td><td>Best kept out of any online backup. If you must: 🛡 Passphrase with “Make one for me”, kept in a password manager, and don't tick “Remember it on this device”</td></tr>
+					</tbody>
+				</table></div>
+				<p class="cg-note">The passphrase is only as safe as where you keep it: if you tick “Remember it on this device”, anyone who can use that browser can open your saves. Lose the passphrase and nobody, not even MES, can open those saves again. Try it on <a href="/copy-text#hive">Copy Text</a>.</p>
+			</div>
+		</section>
+
 		<!-- ============ PQC live ============ -->
 		<section class="cg-pane" data-pane="pqc" hidden>
 			<div class="tu-card">
@@ -161,7 +220,7 @@
 			<h3>Questions people ask</h3>
 			<dl>
 				<dt>When will quantum computers break encryption (Q-Day)?</dt><dd>Nobody knows. Estimates range from about 2030 to the 2040s. Published estimates for breaking RSA-2048 dropped from about 20 million noisy qubits (2019) to under one million (2025); today's machines have about a thousand. Data recorded now can be decrypted later, which is why the switch is happening already.</dd>
-				<dt>Are MES "Save to Hive" backups quantum-safe?</dt><dd>They can be. Copy Text, MES Watch, Favourites and the Workout Planner can encrypt a Hive backup two ways. <strong>Memo key</strong> wraps the AES key to your Hive memo key, which uses the same elliptic curve Shor's algorithm breaks, so a future quantum computer could open those saves (and Hive keeps them forever). <strong>Passphrase (quantum-safe)</strong> makes the AES-256 key from a passphrase with PBKDF2 (600,000 rounds) and stores no memo-key copy, so only the passphrase can open it. Every save keeps the lock it was made with: an old memo-key save stays a memo-key save, so re-save anything private with the passphrase lock. Try it on <a href="/copy-text#hive">Copy Text</a>.</dd><dt>Is Bitcoin quantum-safe?</dt><dd>Not yet. Its signatures use elliptic curves (secp256k1), which Shor's algorithm breaks. Coins whose public key is visible on the blockchain (reused or old addresses) would be at risk first. Hive keys use the same curve. Mining (SHA-256) is only slightly affected by Grover.</dd>
+				<dt>Are MES "Save to Hive" backups quantum-safe?</dt><dd>They can be. Copy Text, MES Watch, Favourites and the Workout Planner can encrypt a Hive backup two ways. <strong>Memo key</strong> wraps the AES key to your Hive memo key, which uses the same elliptic curve Shor's algorithm breaks, so a future quantum computer could open those saves (and Hive keeps them forever). <strong>Passphrase (quantum-safe)</strong> makes the AES-256 key from a passphrase with PBKDF2 (600,000 rounds) and stores no memo-key copy, so only the passphrase can open it. Every save keeps the lock it was made with: an old memo-key save stays a memo-key save, so re-save anything private with the passphrase lock. Try it on <a href="/copy-text#hive">Copy Text</a>, and see <a href="/quantum-cryptography?tab=backup">how long each lock is safe for</a>.</dd><dt>Is Bitcoin quantum-safe?</dt><dd>Not yet. Its signatures use elliptic curves (secp256k1), which Shor's algorithm breaks. Coins whose public key is visible on the blockchain (reused or old addresses) would be at risk first. Hive keys use the same curve. Mining (SHA-256) is only slightly affected by Grover.</dd>
 				<dt>Is AES quantum-proof?</dt><dd>AES-256 is considered safe: Grover's search would still need about 2¹²⁸ steps. That is why the password tab of the <a href="/cryptography">Cryptography Lab</a> uses AES-256.</dd>
 				<dt>How do I know if a website is quantum-safe?</dt><dd>Use the <a href="/quantum-safe-check">Quantum-Safe Website Checker</a>: it tests whether the site's HTTPS accepts the post-quantum key exchange X25519MLKEM768.</dd>
 				<dt>Does quantum key distribution make encryption unbreakable?</dt><dd>In theory the key exchange is protected by physics, but real systems have been attacked through imperfect hardware, need a trusted link to authenticate who you are talking to, and cover limited distances. Security agencies such as the NSA and the UK NCSC recommend post-quantum cryptography instead for most uses.</dd>

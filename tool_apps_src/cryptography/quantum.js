@@ -81,7 +81,7 @@
 
 	/* =================== Quantum cryptography page =================== */
 	if (!$("qc")) return;
-	var TABS = ["bb84", "shor", "grover", "safe", "pqc"], inited = {}, INIT = { bb84: initBB, shor: initShor, grover: initGrover, safe: initSafe, pqc: initPqc };
+	var TABS = ["bb84", "shor", "grover", "safe", "backup", "pqc"], inited = {}, INIT = { bb84: initBB, shor: initShor, grover: initGrover, safe: initSafe, backup: initBackup, pqc: initPqc };
 	var qp = new URLSearchParams(location.search); if (qp.get("tab")) S.tab = qp.get("tab");
 	function showTab(t, push) {
 		if (TABS.indexOf(t) < 0) t = "bb84"; S.tab = t; save();
@@ -92,6 +92,35 @@
 	}
 	$("qc-tabs").addEventListener("click", function (e) { var b = e.target.closest("button[data-t]"); if (b) showTab(b.dataset.t, true); });
 	$("qc-tabs").addEventListener("keydown", function (e) { var i = TABS.indexOf(S.tab), j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : -9; if (j === -9) return; e.preventDefault(); j = (j + TABS.length) % TABS.length; showTab(TABS[j], true); document.querySelector('#qc-tabs [data-t="' + TABS[j] + '"]').focus(); });
+
+	/* ---------- Your MES backups: passphrase guessing cost ---------- */
+	function initBackup() {
+		var inp = $("qc-bkp"), rng = $("qc-bkb");
+		var EX = [["8 random letters", 38], ["Tr0ub4dor&3 style", 52], ["4 random words", 44], ["6 random words", 66], ["Make one for me", 149]];
+		$("qc-bkex").insertAdjacentHTML("beforeend", EX.map(function (e, i) { return '<button type="button" class="tu-chip" data-i="' + i + '">' + esc(e[0]) + "</button>"; }).join(""));
+		$("qc-bkex").addEventListener("click", function (e) { var b = e.target.closest("button[data-i]"); if (!b) return; inp.value = ""; rng.value = Math.min(150, EX[b.dataset.i][1]); run(EX[b.dataset.i][1]); });
+		$("qc-bkshow").onclick = function () { inp.type = inp.type === "password" ? "text" : "password"; this.textContent = inp.type === "text" ? "Hide" : "Show"; };
+		inp.addEventListener("input", function () { if (inp.value) { var b = Q.passBits(inp.value); rng.value = Math.max(20, Math.min(150, b)); run(b); } else run(+rng.value); });
+		rng.addEventListener("input", function () { inp.value = ""; run(+rng.value); });
+		function run(bits) {
+			bits = Math.min(bits, 160);
+			$("qc-bkbv").textContent = bits + " bits";
+			var c = Q.crack(bits), y = Q.YEAR_S;
+			var v = c.secsN(1e6) / y >= 1000 && c.usdIn(30) > 1e12 ? ["cg-good", "Safe for good: no foreseeable computer, normal or quantum, can guess it."]
+				: c.usdIn(20) > 1e9 ? ["cg-good", "Safe for decades, even against a government."]
+				: c.usd > 1e6 ? ["cg-warn", "Safe from ordinary people for years, but a rich attacker could afford it, and it gets cheaper every year. Fine for things that matter for a few years; use a longer one for anything that must stay secret for decades."]
+				: ["cg-bad", "Too weak: a single attacker who wants your saves could guess it. The lock asks for at least 50 bits; use “Make one for me” or 6+ random words."];
+			$("qc-bkout").innerHTML = '<div class="tu-stats cg-mini">' +
+				stat("Strength", bits + " bits", sci(c.guesses) + " guesses on average") +
+				stat("One gaming PC", Q.durText(c.secs1), "1 graphics card") +
+				stat("A criminal group", Q.durText(c.secsN(1000)), "1,000 graphics cards") +
+				stat("A government", Q.durText(c.secsN(1e6)), "1 million graphics cards") +
+				stat("Cost today", Q.usdText(c.usd), "rented graphics cards") +
+				stat("Cost in 10 / 20 / 30 years", Q.usdText(c.usdIn(10)) + " / " + Q.usdText(c.usdIn(20)) + " / " + Q.usdText(c.usdIn(30)), "hardware twice as cheap every 2.5 years") +
+				'</div><div class="tu-card cg-hero ' + v[0] + '"><p class="qc-bkv">' + esc(v[1]) + "</p></div>";
+		}
+		run(+rng.value);
+	}
 
 	/* ---------- BB84 ---------- */
 	var GLY = [["↔", "↕"], ["⤢", "⤡"]], BAS = ["+", "×"];
