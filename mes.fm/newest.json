@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/darkroom",
+   "title": "Darkroom: Photo Library & RAW Editor",
+   "icon": "/img/darkroom-logo.png",
+   "desc": "A free Lightroom alternative: rate and keyword your photos, develop RAW files with curves, colour grading, masks and healing, then batch export. Nothing is uploaded.",
+   "added": "2026-11-14",
+   "kind": "tool"
+  },
+  {
    "href": "/transcript",
    "title": "Transcript & Timestamps",
    "icon": "/img/transcript-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Sketch with pens, markers and spray, add shapes, arrows, text, emoji and symbols, start from templates or colouring pages, then download PNG or SVG.",
    "added": "2026-11-10",
    "kind": "tool"
-  },
-  {
-   "href": "/brick-builder",
-   "title": "Brick Builder (3D building bricks)",
-   "icon": "/img/brick-builder-logo.png",
-   "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
-   "added": "2026-11-10",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/darkroom",
+   "title": "Darkroom: Photo Library & RAW Editor",
+   "icon": "/img/darkroom-logo.png",
+   "desc": "A free Lightroom alternative: rate and keyword your photos, develop RAW files with curves, colour grading, masks and healing, then batch export. Nothing is uploaded.",
+   "added": "2026-11-14",
+   "kind": "tool"
+  },
   {
    "href": "/transcript",
    "title": "Transcript & Timestamps",
@@ -250,14 +258,6 @@
    "title": "Narration",
    "icon": "/img/narration-logo.png",
    "desc": "Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.",
-   "added": "2026-11-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/car-sandbox",
-   "title": "Car Sandbox",
-   "icon": "/img/car-sandbox-logo.png",
-   "desc": "Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.",
    "added": "2026-11-12",
    "kind": "tool"
   }

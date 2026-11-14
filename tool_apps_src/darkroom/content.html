@@ -1,0 +1,113 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu dr" id="dr">
+		<div class="dr-top">
+			<div class="dr-mods" role="tablist" aria-label="Module">
+				<button type="button" role="tab" data-mod="library" aria-selected="true" title="Library (G)">Library</button><button type="button" role="tab" data-mod="develop" aria-selected="false" title="Develop (D)">Develop</button>
+			</div>
+			<div class="dr-crumb" id="dr-crumb"></div>
+			<div class="dr-topr">
+				<div class="dr-seg" role="group" aria-label="Controls" id="dr-level"><button type="button" data-lv="simple" aria-pressed="false" title="Fewer sliders, big Looks">Simple</button><button type="button" data-lv="pro" aria-pressed="true" title="Every panel">Pro</button></div>
+				<div class="dr-mw"><button type="button" class="dr-b" id="dr-openbtn" aria-haspopup="true" aria-expanded="false">📁 Open ▾</button>
+					<div class="dr-pop" id="dr-openmenu" hidden role="menu">
+						<button type="button" class="dr-item" data-act="folder" role="menuitem">📁 Open a folder…</button>
+						<button type="button" class="dr-item" data-act="files" role="menuitem">🖼️ Open photos…</button>
+						<button type="button" class="dr-item" data-act="add" role="menuitem">➕ Add photos to this catalogue…</button>
+						<button type="button" class="dr-item" data-act="rescan" role="menuitem">🔄 Look for new photos in the folder</button>
+						<button type="button" class="dr-item" data-act="sample" role="menuitem">✨ Load sample photos</button>
+						<div class="dr-sep"></div>
+						<button type="button" class="dr-item" data-act="backup" role="menuitem">💾 Back up my edits (file)…</button>
+						<button type="button" class="dr-item" data-act="restore" role="menuitem">📥 Restore edits from a backup…</button>
+						<button type="button" class="dr-item" data-act="settings" role="menuitem">⚙ Settings…</button>
+						<button type="button" class="dr-item" data-act="close" role="menuitem">✕ Close this folder</button>
+					</div>
+				</div>
+				<button type="button" class="dr-b dr-b--pri" id="dr-export" title="Export the selected photos (Ctrl+Shift+E)">⬆ Export</button>
+				<button type="button" class="dr-ib" id="dr-fill" title="Fill the browser window (F)">⤢</button>
+				<button type="button" class="dr-ib" id="dr-fs" title="Full screen (Shift+F)">⛶</button>
+				<button type="button" class="dr-ib" id="dr-help" title="Keyboard shortcuts (?)">?</button>
+			</div>
+		</div>
+		<div class="dr-main">
+			<aside class="dr-left" id="dr-left" aria-label="Left panel"></aside>
+			<div class="dr-lgrip" id="dr-lgrip" title="Drag to resize, double-click to hide"></div>
+			<div class="dr-center" id="dr-center">
+				<div class="dr-fbar" id="dr-fbar">
+					<input type="search" class="dr-in dr-q" id="dr-q" placeholder="Search names, folders, keywords…" aria-label="Search">
+					<label class="dr-fl">Stars <select class="dr-in" id="dr-frating"><option value="0">Any</option><option value="1">★ or more</option><option value="2">★★ or more</option><option value="3">★★★ or more</option><option value="4">★★★★ or more</option><option value="5">★★★★★</option></select></label>
+					<label class="dr-fl">Flag <select class="dr-in" id="dr-fflag"><option value="any">Any</option><option value="picked">Picked</option><option value="notrej">Not rejected</option><option value="unflagged">Unflagged</option><option value="rejected">Rejected</option></select></label>
+					<label class="dr-fl">Label <select class="dr-in" id="dr-flabel"><option value="0">Any</option><option value="1">Red</option><option value="2">Yellow</option><option value="3">Green</option><option value="4">Blue</option><option value="5">Purple</option><option value="-1">No label</option></select></label>
+					<label class="dr-fl">Show <select class="dr-in" id="dr-fedit"><option value="any">All</option><option value="yes">Edited</option><option value="no">Not edited</option><option value="raw">RAW only</option><option value="jpeg">JPEG / other</option></select></label>
+					<label class="dr-fl">Sort <select class="dr-in" id="dr-sort"><option value="date">Capture time</option><option value="name">File name</option><option value="rating">Rating</option><option value="edited">Last edited</option><option value="size">File size</option><option value="kind">RAW first</option></select></label>
+					<button type="button" class="dr-ib" id="dr-sortdir" title="Reverse the order">↑</button>
+					<label class="dr-fl dr-tsz" title="Thumbnail size">▫<input type="range" id="dr-tsize" min="90" max="320" step="10" value="170">▣</label>
+				</div>
+				<div class="dr-start" id="dr-start">
+					<div class="dr-drop" id="dr-drop">
+						<div class="dr-dropart" aria-hidden="true"></div>
+						<h2>Drop a folder of photos here</h2>
+						<p>RAW (Canon, Nikon, Sony, Fujifilm, Olympus, Panasonic, Pentax, DNG…), JPEG, PNG, WebP, TIFF and HEIC. Your photos stay on this computer.</p>
+						<div class="dr-startbtns">
+							<button type="button" class="dr-b dr-b--pri dr-big" data-act="folder">📁 Open a folder</button>
+							<button type="button" class="dr-b dr-big" data-act="files">🖼️ Open photos</button>
+						</div>
+						<div class="dr-startbtns">
+							<button type="button" class="dr-b dr-b--ghost" id="dr-reopen" data-act="reopen" hidden></button>
+							<button type="button" class="dr-b dr-b--ghost" data-act="sample">✨ Try it with sample photos</button>
+						</div>
+						<label class="dr-chk"><input type="checkbox" id="dr-sub" checked> Include subfolders</label>
+						<p class="dr-how" id="dr-how"></p>
+					</div>
+				</div>
+				<div class="dr-grid" id="dr-grid" tabindex="0" aria-label="Photos" hidden></div>
+				<div class="dr-stage" id="dr-stage" hidden>
+					<canvas id="dr-cv"></canvas><canvas id="dr-ov"></canvas>
+					<div class="dr-badge" id="dr-badge" hidden></div>
+					<div class="dr-busy" id="dr-busy" hidden><span class="dr-spin"></span><span id="dr-busyt">Loading…</span></div>
+					<div class="dr-tooltip" id="dr-tip" hidden></div>
+				</div>
+				<div class="dr-tbar" id="dr-tbar"></div>
+			</div>
+			<div class="dr-rgrip" id="dr-rgrip" title="Drag to resize, double-click to hide"></div>
+			<aside class="dr-right" id="dr-right" aria-label="Right panel"></aside>
+		</div>
+		<div class="dr-film" id="dr-film" aria-label="Filmstrip"></div>
+		<div class="dr-modal" id="dr-modal" hidden><div class="dr-dlg" id="dr-dlg" role="dialog" aria-modal="true"></div></div>
+		<div class="dr-toast" id="dr-toast" role="status" aria-live="polite"></div>
+		<input type="file" id="dr-pickfiles" multiple accept="image/*,.cr2,.cr3,.crw,.nef,.nrw,.arw,.srf,.sr2,.dng,.raf,.orf,.rw2,.rwl,.pef,.srw,.3fr,.iiq,.erf,.kdc,.dcr,.mos,.mrw,.x3f,.xmp,.mesdr" hidden>
+		<input type="file" id="dr-pickdir" webkitdirectory multiple hidden>
+		<input type="file" id="dr-pickbackup" accept=".json,application/json" hidden>
+	</div>
+
+	<div class="tu-seo">
+		<h2>A free photo library and RAW developer in your browser</h2>
+		<p>MES Darkroom is a free alternative to paid photo-library apps such as Adobe Lightroom Classic. Open a folder of photos (with its subfolders), rate and flag the keepers, add colour labels and keywords, then develop them: white balance, exposure, highlights and shadows, whites and blacks, texture, clarity, dehaze, tone curves, a colour mixer, colour grading, sharpening and noise reduction, lens corrections, perspective, crop and straighten, vignettes, grain, healing spots and masks. Every edit is non-destructive: your original files are never changed, and you can step back through the history or compare before and after at any time.</p>
+		<p>Edits are kept in this browser, and can also be saved as small <code>.mesdr</code> files next to your photos, so they follow the folder to another computer (OneDrive, Dropbox, iCloud or a USB drive). Export finished photos as JPEG, PNG or WebP at any size, one by one, as a ZIP, or straight into a folder.</p>
+		<h3>RAW files</h3>
+		<p>Camera RAW files are decoded in the browser with LibRaw, the open-source library used by many photo apps, into 16-bit linear colour, so highlights and shadows can be pulled back much further than in a JPEG. While the RAW decodes (a few seconds), the camera's own preview is shown. Sony, Canon, Nikon, Fujifilm, Olympus / OM System, Panasonic, Pentax, Leica, Hasselblad and DNG files all work.</p>
+		<h3>Coming from Lightroom?</h3>
+		<p>In Lightroom Classic, select all your photos and choose <b>Metadata › Save Metadata to Files</b> (Ctrl+S / Cmd+S). That writes an <code>.xmp</code> file next to each RAW. When you open the folder here, ratings, colour labels, keywords and most Develop settings (exposure, tone, presence, white balance, tone curves, HSL, colour grading, sharpening, noise reduction, vignette, grain and crop) are read from those files. Lightroom profiles and masks can't be copied over; the photo may look slightly different. MES Darkroom is not made by, or connected with, Adobe; Lightroom is Adobe's trademark.</p>
+		<h3>Simple and Pro</h3>
+		<p><b>Simple</b> shows big one-click Looks drawn from your own photo and a handful of sliders: light, colour, detail and effects. <b>Pro</b> shows every panel. Switch any time; nothing is lost.</p>
+		<h3>Keyboard shortcuts</h3>
+		<dl>
+			<dt>G / D</dt><dd>Library grid / Develop</dd>
+			<dt>← →</dt><dd>Previous / next photo</dd>
+			<dt>0 – 5</dt><dd>Star rating</dd>
+			<dt>P / X / U</dt><dd>Pick / reject / unflag</dd>
+			<dt>6 – 9</dt><dd>Red, yellow, green, blue label</dd>
+			<dt>\ and Y</dt><dd>Before / after, side-by-side split</dd>
+			<dt>R, Q, M, W</dt><dd>Crop, healing, masks, white-balance picker</dd>
+			<dt>J</dt><dd>Show clipped highlights (red) and shadows (blue)</dd>
+			<dt>Z or Space</dt><dd>Zoom 100% / fit</dd>
+			<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd>
+			<dt>Ctrl+Shift+C / Ctrl+Shift+V</dt><dd>Copy / paste develop settings (to every selected photo)</dd>
+			<dt>F</dt><dd>Fill the browser window</dd>
+		</dl>
+		<h3>Questions</h3>
+		<dl>
+			<dt>Are my photos uploaded?</dt><dd>No. Everything happens in this browser tab: your photos are read from the folder you open, processed on your graphics card (WebGL), and exported back to your computer.</dd>
+			<dt>Where are my edits saved?</dt><dd>In this browser's storage, keyed by file name and size. Turn on "Save edits next to the photos" in Settings to also write a small .mesdr file beside each edited photo, and use "Back up my edits" to keep a copy of everything.</dd>
+			<dt>Which browser works best?</dt><dd>Chrome, Edge, Brave or Opera on a computer can open a folder and save next to the photos. In Brave, turn on brave://flags/#file-system-access-api for that. Safari and Firefox can open a folder and edit, but save exports as downloads.</dd>
+			<dt>Can I retouch, add text or combine pictures?</dt><dd>Use "Edit in Photo Editor" (in Develop) to send the developed photo to the <a href="/photo">MES Photo Editor</a>, which has layers, selections, a clone stamp, text and AI background removal.</dd>
+		</dl>
+	</div>

@@ -763,10 +763,19 @@ APPS = {
                  desc="Free online drawing pad: sketch with a pen, marker, pencil, highlighter, calligraphy, neon or spray brush, add 30 shapes, arrows, text, emoji and symbols, start from templates (grid and lined paper, comic strips, mind maps, flowcharts, thumbnails, icons) or colouring pages, then download a PNG, JPEG or SVG. No sign-up; drawings stay in your browser.",
                  meta_desc="Free drawing pad: brushes, shapes, text, emoji, templates and colouring pages. Export PNG, JPEG or SVG. No sign-up, saved in your browser.",
                  js_v="2", lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
+    # MES Darkroom (2026-11-14, mes.fm/darkroom; /lightroom etc. 308 here): a free Lightroom-Classic-style photo library + RAW developer. lib.js = MESDR (settings, curves,
+    # white balance, auto tone, presets, copy groups, export names, RAW embedded-preview finder, Lightroom XMP import, catalogue filter / sort; node tests
+    # tool_apps_src/darkroom-tests.js), engine.js = DREngine (WebGL2: the whole develop pipeline in one fragment shader, same code for preview and export),
+    # app.js = UI. RAW decoding = libraw-wasm 1.6.0 self-hosted in mes.fm/main_js/libraw/1.6.0/ (LibRaw, LGPL / CDDL). Never call the page "Lightroom" (Adobe's trademark).
+    "darkroom": dict(title="MES Darkroom", page_title="Free Photo Library and RAW Editor, a Lightroom Alternative",
+                     tag="Organise, develop and export your photos. No upload. No subscription.", accent="#c2690f", dark="#8a4708", tint="#fbefe1",
+                     desc="Free photo library and RAW editor in your browser, an alternative to Adobe Lightroom Classic: open a folder, rate, flag, label and keyword your photos, then develop them with white balance, exposure, highlights, shadows, tone curves, colour mixer, colour grading, sharpening, noise reduction, crop, healing and masks. Batch export to JPEG, PNG or WebP. Your photos never leave your computer.",
+                     meta_desc="Free Lightroom alternative in your browser: photo library, RAW developer, tone curves, HSL, colour grading, masks, healing and batch export. Nothing is uploaded.",
+                     js_v="1", js_parts=["engine.js"], lib_from=["image-converter", "exif-viewer"]),
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="58", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js", "cloud.js"], lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
+                         js_v="59", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js", "cloud.js"], lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
