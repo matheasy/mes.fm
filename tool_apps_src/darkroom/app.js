@@ -6,6 +6,7 @@
 	function $(id) { return document.getElementById(id); }
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 	function h(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+	function scrollIn(box, el, mode) { if (!box || !el || !box.clientWidth) return; var b = box.getBoundingClientRect(), r = el.getBoundingClientRect(); function axis(lo, hi, blo, bhi, size) { if (mode === "center") return (lo + hi) / 2 - (blo + bhi) / 2; if (lo < blo) return lo - blo; if (hi > bhi) return Math.min(hi - bhi, lo - blo); return 0; } var dy = axis(r.top, r.bottom, b.top, b.bottom), dx = axis(r.left, r.right, b.left, b.right); if (dy) box.scrollTop += dy; if (dx) box.scrollLeft += dx; }
 	function cap(el, e) { try { el.setPointerCapture(e.pointerId); } catch (x) {} }
 	function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 	function debounce(fn, ms) { var t; return function () { var a = arguments, me = this; clearTimeout(t); t = setTimeout(function () { fn.apply(me, a); }, ms); }; }
@@ -362,8 +363,8 @@
 		var old = curPhoto(); cur = clamp(i, 0, view.length - 1); var p = curPhoto(); if (!p) return;
 		if (!keepSel) { sel.clear(); sel.add(p.key); anchor = cur; }
 		view.forEach(function (q) { var c = gridCells[q.key]; if (c) { c.classList.toggle("dr-sel", sel.has(q.key)); c.classList.toggle("dr-cur", q === p); } var f = filmCells[q.key]; if (f) { f.classList.toggle("dr-sel", sel.has(q.key)); f.classList.toggle("dr-cur", q === p); } });
-		var c = gridCells[p.key]; if (c && mod === "library") c.scrollIntoView({ block: "nearest" });
-		var fc = filmCells[p.key]; if (fc) fc.scrollIntoView({ block: "nearest", inline: "nearest" });
+		var c = gridCells[p.key]; if (c && mod === "library") scrollIn($("dr-grid"), c);
+		var fc = filmCells[p.key]; if (fc) scrollIn($("dr-film"), fc);
 		crumb();
 		if (mod === "library") { renderRightLibrary(); renderTbarLibrary(); }
 		else if (!old || old.key !== p.key) openDevelop(p);
@@ -372,8 +373,13 @@
 	$("dr-grid").addEventListener("click", function (e) {
 		var qc = e.target.closest(".dr-qc"), c = e.target.closest(".dr-cell"); if (!c) return; var i = +c.getAttribute("data-i");
 		if (qc) { toggleQuick([view[i]]); return; }
+		/* touch: a tap on the photo that is already picked opens it in Develop (double-tap is hard on phones) */
+		if (gridTouch && i === cur && sel.size === 1 && !e.shiftKey && !e.ctrlKey && !e.metaKey) { setMod("develop"); return; }
 		clickSelect(i, e);
+		if (gridTouch && !(S_tipTap++)) toast("Tap it again to develop it.", 1800);
 	});
+	var gridTouch = false, S_tipTap = 0;
+	$("dr-grid").addEventListener("pointerdown", function (e) { gridTouch = e.pointerType === "touch"; });
 	$("dr-grid").addEventListener("dblclick", function (e) { var c = e.target.closest(".dr-cell"); if (!c) return; setCur(+c.getAttribute("data-i")); setMod("develop"); });
 	function toggleQuick(list) { var q = colls.find(function (c) { return c.id === "qc"; }); if (!q) { q = { id: "qc", name: "Quick collection", keys: [] }; colls.push(q); } var allIn = list.every(function (p) { return q.keys.indexOf(p.key) >= 0; }); list.forEach(function (p) { var i = q.keys.indexOf(p.key); if (allIn && i >= 0) q.keys.splice(i, 1); else if (!allIn && i < 0) q.keys.push(p.key); updateCell(p); }); saveColls(); toast(allIn ? "Removed from the Quick collection" : "Added to the Quick collection", 1500); if (mod === "library") renderLeftLibrary(); }
 
@@ -454,7 +460,7 @@
 	function renderFilm() {
 		var f = $("dr-film"); f.innerHTML = ""; filmCells = {}; var frag = document.createDocumentFragment();
 		view.forEach(function (p, i) { var c = h("div", "dr-fcell" + (sel.has(p.key) ? " dr-sel" : "") + (i === cur ? " dr-cur" : ""), filmHtml(p)); c.setAttribute("data-i", i); c.title = p.name; filmCells[p.key] = c; frag.appendChild(c); });
-		f.appendChild(frag); var c0 = filmCells[(curPhoto() || {}).key]; if (c0) c0.scrollIntoView({ block: "nearest", inline: "center" });
+		f.appendChild(frag); var c0 = filmCells[(curPhoto() || {}).key]; if (c0) scrollIn(f, c0, "center");
 		setTimeout(loadFilmVisible, 0);
 	}
 	function loadFilmVisible() { var f = $("dr-film"), l = f.scrollLeft - 300, r = f.scrollLeft + f.clientWidth + 600; view.forEach(function (p) { var c = filmCells[p.key]; if (c && c.offsetLeft > l && c.offsetLeft < r) wantThumb(p, mod === "develop"); }); }
@@ -473,7 +479,7 @@
 		if (mod === "develop" && m !== "develop") leaveDevelop();
 		mod = m; refreshAll();
 		if (m === "develop") { var p = curPhoto(); if (p) openDevelop(p); }
-		else { requestAnimationFrame(loadVisible); var c = gridCells[(curPhoto() || {}).key]; if (c) c.scrollIntoView({ block: "center" }); }
+		else { requestAnimationFrame(loadVisible); var c = gridCells[(curPhoto() || {}).key]; if (c) scrollIn($("dr-grid"), c, "center"); }
 	}
 	function ensureEngine() {
 		if (eng) return eng;
@@ -557,7 +563,7 @@
 		var gl = eng.gl, bg = [0.043, 0.043, 0.047, 1];
 		eng.draw(s, { outW: W, outH: H, map: map }, { before: dev.before, clip: dev.clipShow, showMask: dev.showMask && dev.selMask ? maskIndex(dev.selMask) : 0, bg: bg });
 		if (dev.split && !dev.before) { gl.enable(gl.SCISSOR_TEST); gl.scissor(0, 0, Math.round(W / 2), H); eng.draw(s, { outW: W, outH: H, map: map }, { before: true, bg: bg }); gl.disable(gl.SCISSOR_TEST); }
-		drawOverlay(v, dpr);
+		drawOverlay(v, dpr); stageLock();
 		var zl = root.querySelector(".dr-zoomv"); if (zl) zl.textContent = Math.round(v.z * dpr * 100) + "%";
 	}
 	function maskIndex(id) { var on = dev.s.locals.filter(function (l) { return l.on; }); var i = on.findIndex(function (l) { return l.id === id; }); return i + 1; }
@@ -582,14 +588,23 @@
 	function scheduleLooks() { clearTimeout(looksT); looksT = setTimeout(drawLooks, 350); }
 	function drawLooks() {
 		if (!dev || !dev.ready) return; var boxes = root.querySelectorAll("canvas[data-look]"); if (!boxes.length) return;
-		var base = dev.s; boxes.forEach(function (c) {
-			var id = c.getAttribute("data-look"), ps = presetById(id), s = id === "none" ? D.defaults() : id === "auto" ? autoSettings(base) : ps ? D.applyPreset(base, ps.s, 100) : base;
-			s = D.clone(s); s.crop = base.crop; s.angle = base.angle; s.rot90 = base.rot90; s.flipH = base.flipH; s.flipV = base.flipV;
-			var px = eng.pixels(s, 140); c.width = px.w; c.height = px.h; var x = c.getContext("2d"), id2 = x.createImageData(px.w, px.h);
-			for (var y = 0; y < px.h; y++) id2.data.set(px.data.subarray((px.h - 1 - y) * px.w * 4, (px.h - y) * px.w * 4), y * px.w * 4);
-			x.putImageData(id2, 0, 0);
-		});
-		requestRender();
+		/* a few previews per frame (each one waits for the graphics card), on-screen ones first, so a phone never locks up */
+		var base = dev.s, gen = ++looksGen, list = Array.prototype.slice.call(boxes), vh = window.innerHeight;
+		function onScreen(c) { var r = c.getBoundingClientRect(); return r.bottom > -50 && r.top < vh + 50 && r.width > 0; }
+		list.sort(function (a, b) { return (onScreen(b) ? 1 : 0) - (onScreen(a) ? 1 : 0); });
+		(function next() {
+			if (gen !== looksGen || !dev || !dev.ready) return; var t0 = performance.now();
+			while (list.length && performance.now() - t0 < 12) { var c = list.shift(); if (c.isConnected) oneLook(c, base); }
+			if (list.length) setTimeout(next, 16); else requestRender();
+		})();
+	}
+	var looksGen = 0;
+	function oneLook(c, base) {
+		var id = c.getAttribute("data-look"), ps = presetById(id), s = id === "none" ? D.defaults() : id === "auto" ? autoSettings(base) : ps ? D.applyPreset(base, ps.s, 100) : base;
+		s = D.clone(s); s.crop = base.crop; s.angle = base.angle; s.rot90 = base.rot90; s.flipH = base.flipH; s.flipV = base.flipV;
+		var px = eng.pixels(s, 140); c.width = px.w; c.height = px.h; var x = c.getContext("2d"), id2 = x.createImageData(px.w, px.h);
+		for (var y = 0; y < px.h; y++) id2.data.set(px.data.subarray((px.h - 1 - y) * px.w * 4, (px.h - y) * px.w * 4), y * px.w * 4);
+		x.putImageData(id2, 0, 0);
 	}
 	function autoSettings(s) { var n = autoNeutral(s), px = eng.pixels(n, 256), out = D.clone(s); Object.assign(out, D.autoTone(D.histogram(px.data))); return out; }
 
@@ -980,8 +995,30 @@
 	var drag = null, spaceDown = false;
 	var ovEl = $("dr-ov");
 	function local(e) { var r = ovEl.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+	/* touch: on a phone the page must still scroll over the picture. One finger = scroll the page (or move the picture
+	   when zoomed in / a tool is on), swipe sideways = next / previous photo, double-tap = zoom, two fingers = pinch. */
+	var touches = {}, pinch = null, lastTap = null;
+	function winMode() { return root.classList.contains("dr-win") || document.fullscreenElement === root; }
+	function isZoomed() { return !!(dev && VI && dev.view.z && dev.view.z > VI.fit * 1.01); }
+	function stageLock() { var st = $("dr-stage"); if (st) st.classList.toggle("dr-lock", !!(dev && (dev.tool || isZoomed() || winMode()))); }
+	ovEl.addEventListener("touchstart", function (e) { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+	function startPinch() { var ids = Object.keys(touches), a = touches[ids[0]], b = touches[ids[1]], v = VI, m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; pinch = { d0: Math.max(10, Math.hypot(a[0] - b[0], a[1] - b[1])), z0: v.z, o: screenToOut(v, m[0], m[1]) }; drag = null; }
+	function touchEnd(e) {
+		if (!touches[e.pointerId]) return false; delete touches[e.pointerId];
+		if (pinch) { if (Object.keys(touches).length < 2) { pinch = null; if (VI && dev.view.z && dev.view.z <= VI.fit * 1.01) dev.view.z = 0; drag = null; lastTap = null; requestRender(); } return true; }
+		return false;
+	}
+	function doubleTap(p) { var now = Date.now(), t = lastTap; if (t && now - t.t < 340 && Math.hypot(p[0] - t.p[0], p[1] - t.p[1]) < 40) { lastTap = null; if (!isZoomed()) zoomTo(Math.max(VI.fit * 2.5, 1 / dprv()), p[0], p[1]); else { dev.view.z = 0; requestRender(); } return true; } lastTap = { t: now, p: p }; return false; }
 	ovEl.addEventListener("pointerdown", function (e) {
-		if (!dev || !dev.ready || !VI) return; var p = local(e), v = VI; cap(ovEl, e);
+		if (!dev || !dev.ready || !VI) return; var p = local(e), v = VI;
+		if (e.pointerType === "touch") {
+			touches[e.pointerId] = p; var n = Object.keys(touches).length;
+			if (n === 2 && !(drag && drag.k === "paint")) { cap(ovEl, e); startPinch(); requestRender(); return; }
+			if (n > 1) return;
+			if (!dev.tool && !isZoomed()) { drag = { k: "tap", p: p }; return; }
+			if (!dev.tool) { cap(ovEl, e); drag = { k: "pan", p: p, cx: v.cx, cy: v.cy, moved: false, touch: true }; return; }
+		}
+		cap(ovEl, e);
 		if (e.button === 1 || e.button === 2 || spaceDown || (!dev.tool && (dev.view.z && dev.view.z > v.fit * 1.01))) { drag = { k: "pan", p: p, cx: v.cx, cy: v.cy, moved: false }; return; }
 		if (!dev.tool) { drag = { k: "click", p: p }; return; }
 		if (dev.tool === "wb") { var uv = screenToSrc(v, p[0], p[1]); if (uv[0] < 0 || uv[1] < 0 || uv[0] > 1 || uv[1] > 1) return; var rgb = eng.sampleSource(uv[0], uv[1]); var w = D.wbFromPick(rgb); dev.s.temp = w.temp; dev.s.tint = w.tint; afterSettings(true); commit("White balance (picked)"); setTool(null); return; }
@@ -1005,7 +1042,9 @@
 		if (!dev || !VI) return; var p = local(e), v = VI;
 		if (dev.tool === "mask") { var L0 = curMask(); dev.brushAt = L0 && L0.type === "brush" && !newMask ? p : null; if (dev.brushAt && !drag) requestRender(); }
 		ovEl.style.cursor = !dev.tool ? (dev.view.z > v.fit * 1.01 ? "grab" : "zoom-in") : dev.tool === "wb" || dev.tool === "heal" ? "crosshair" : dev.tool === "mask" ? (dev.brushAt ? "none" : "crosshair") : dev.tool === "crop" ? cropCursor(v, p) : "default";
+		if (e.pointerType === "touch" && touches[e.pointerId]) { touches[e.pointerId] = p; if (pinch) { var ids = Object.keys(touches); if (ids.length < 2) return; var a = touches[ids[0]], b = touches[ids[1]], m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], z = clamp(pinch.z0 * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d0, v.fit * 0.6, 16); dev.view = { z: z, cx: pinch.o[0] - (m[0] - v.W / 2) / z, cy: pinch.o[1] - (m[1] - v.H / 2) / z }; requestRender(); return; } }
 		if (!drag) return;
+		if (drag.k === "tap") { var tdx = p[0] - drag.p[0], tdy = p[1] - drag.p[1]; if (Math.abs(tdx) > 14 && Math.abs(tdx) > Math.abs(tdy) * 1.4) drag.swipe = true; drag.last = p; return; }
 		if (drag.k === "pan") { drag.moved = true; dev.view = { z: v.z, cx: drag.cx - (p[0] - drag.p[0]) / v.z, cy: drag.cy - (p[1] - drag.p[1]) / v.z }; requestRender(); return; }
 		if (drag.k === "click") { if (Math.hypot(p[0] - drag.p[0], p[1] - drag.p[1]) > 4) { drag = { k: "pan", p: p, cx: v.cx, cy: v.cy, moved: true }; if (!dev.view.z) dev.view = { z: v.z, cx: v.cx, cy: v.cy }; } return; }
 		if (drag.k.indexOf("crop-") === 0) { cropDrag(v, p); requestRender(); return; }
@@ -1021,7 +1060,11 @@
 		live();
 	});
 	function endDrag(e) {
+		if (e && e.pointerType === "touch" && touchEnd(e)) return;
 		if (!drag || !dev) { drag = null; return; } var k = drag.k, v = VI, p = e ? local(e) : null;
+		if (k === "tap") { var d0 = drag; drag = null; if (!p) return; var sdx = p[0] - d0.p[0]; if (d0.swipe && Math.abs(sdx) > 50) { lastTap = null; step(sdx < 0 ? 1 : -1); } else if (Math.hypot(sdx, p[1] - d0.p[1]) < 12) doubleTap(p); return; }
+		if (k === "pan" && !drag.touch && !drag.moved && p && e.button === 0 && !spaceDown && !dev.tool) { drag = null; dev.view.z = 0; requestRender(); return; }
+		if (k === "pan" && drag.touch) { var mv = drag.moved; drag = null; if (!mv && p) doubleTap(p); requestRender(); return; }
 		if (k === "click" && p) { /* click: toggle fit / 100% at that point */ if (!dev.view.z || dev.view.z <= v.fit * 1.01) zoomTo(1 / dprv(), p[0], p[1]); else { dev.view.z = 0; requestRender(); } }
 		else if (k.indexOf("crop-") === 0) { constrainCrop(); syncControls(); commit(k === "crop-rot" ? "Straighten " + dev.s.angle.toFixed(1) + "°" : "Crop"); requestRender(); }
 		else if (k === "spot" || k === "spot-src") commit(k === "spot" ? "Move spot" : "Spot source");
@@ -1033,7 +1076,7 @@
 		else if (k.indexOf("lin-") === 0 || k.indexOf("rad-") === 0) commit("Move mask");
 		drag = null; requestRender();
 	}
-	ovEl.addEventListener("pointerup", endDrag); ovEl.addEventListener("pointercancel", function () { drag = null; dev && (dev.drawNew = null); requestRender(); });
+	ovEl.addEventListener("pointerup", endDrag); ovEl.addEventListener("pointercancel", function (e) { if (e.pointerType === "touch") { delete touches[e.pointerId]; if (Object.keys(touches).length < 2) pinch = null; } drag = null; dev && (dev.drawNew = null); requestRender(); });
 	ovEl.addEventListener("pointerleave", function () { if (dev && dev.brushAt) { dev.brushAt = null; requestRender(); } });
 	ovEl.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	ovEl.addEventListener("wheel", function (e) {

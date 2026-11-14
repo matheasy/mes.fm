@@ -381,7 +381,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.dr-cell:hover .dr-qc, .dr-qc.dr-on {opacity:1;} .dr-qc.dr-on {background:var(--dr-acc);border-color:var(--dr-acc);color:var(--dr-accfg);}
 	.dr-gempty {grid-column:1/-1;color:var(--dr-dim);text-align:center;padding:3em 1em;}
 	/* stage */
-	.dr-stage {flex:1;position:relative;min-height:0;overflow:hidden;touch-action:none;}
+	.dr-stage {flex:1;position:relative;min-height:0;overflow:hidden;touch-action:pan-y;}
+	.dr-stage.dr-lock {touch-action:none;}
 	.dr-stage canvas {position:absolute;inset:0;width:100%;height:100%;display:block;}
 	.dr-badge {position:absolute;left:0.6em;top:0.6em;background:var(--dr-scrim);color:var(--dr-hi);padding:0.25em 0.6em;border-radius:0.35em;font-size:0.85em;pointer-events:none;}
 	.dr-busy {position:absolute;right:0.6em;top:0.6em;background:var(--dr-scrim);color:var(--dr-hi);padding:0.35em 0.7em;border-radius:0.4em;display:flex;gap:0.5em;align-items:center;font-size:0.9em;}
@@ -482,6 +483,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		.dr-crumb {display:none;}
 		.dr-top {gap:0.35em;}
 		.dr-grid {--dr-ts:120px;}
+		.dr-grid, .dr-film, .dr-left, .dr-right {overscroll-behavior:auto;}
 	}
 	/* dark page: restate (the derived dark block rewrites custom properties) */
 	html body.dark-mode #dr.dr {--dr-bg:#121214;--dr-p1:#1c1c20;--dr-p2:#24242a;--dr-p3:#2c2c33;--dr-line:#36363e;--dr-text:#e6e6ea;--dr-dim:#9a9aa6;--dr-faint:#6c6c78;--dr-acc:#e8922a;--dr-acc2:#f5b35b;--dr-accfg:#1a1206;--dr-field:#0e0e10;--dr-stage:#0b0b0c;--dr-sel:rgba(232,146,42,0.22);--dr-selline:#e8922a;--dr-shadow:rgba(0,0,0,0.55);--dr-scrim:rgba(0,0,0,0.6);--dr-star:#f5c518;--dr-pick:#f2f2f2;--dr-rej:#ff6b6b;--dr-ok:#57c785;--dr-hi:#ffffff;--dr-lo:#000000;--dr-thumb:#1a1a1e;background:var(--dr-bg);color:var(--dr-text);border-color:var(--dr-line);}
@@ -992,7 +994,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/darkroom/js/darkroom.js?v=2" defer></script>
+	<script src="/darkroom/js/darkroom.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
