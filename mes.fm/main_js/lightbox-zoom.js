@@ -141,9 +141,38 @@
     }, true);
 
     /* A click that ends a drag must not close the viewer or change picture. */
+    /* The <img> box is bigger than the picture (object-fit: contain), so a
+       click on the empty bars beside it counts as "outside" and closes. */
+    function picRect() {
+      var r = img.getBoundingClientRect();
+      var nw = img.naturalWidth, nh = img.naturalHeight;
+      if (!nw || !nh || !r.width || !r.height) return r;
+      var k = Math.min(r.width / nw, r.height / nh);
+      var w = nw * k, h = nh * k;
+      return { left: r.left + (r.width - w) / 2, top: r.top + (r.height - h) / 2, right: r.left + (r.width + w) / 2, bottom: r.top + (r.height + h) / 2 };
+    }
+    function closeViewer() {
+      var b = document.getElementById('lightboxClose');
+      if (b) b.click();
+      else { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+    }
     overlay.addEventListener('click', function (e) {
-      if (moved) { moved = false; e.stopImmediatePropagation(); e.preventDefault(); }
+      if (moved) { moved = false; e.stopImmediatePropagation(); e.preventDefault(); return; }
+      if (e.target === img) {
+        var p = picRect();
+        if (e.clientX < p.left || e.clientX > p.right || e.clientY < p.top || e.clientY > p.bottom) {
+          e.stopImmediatePropagation(); e.preventDefault();
+          closeViewer();
+        }
+      }
     }, true);
+    /* Arrow cursor over the empty bars, so it is clear a click there closes. */
+    img.addEventListener('mousemove', function (e) {
+      if (drag) return;
+      var p = picRect();
+      var out = e.clientX < p.left || e.clientX > p.right || e.clientY < p.top || e.clientY > p.bottom;
+      img.style.cursor = out ? 'default' : '';
+    });
 
     function dist(t) { var a = t[0], b = t[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
     function mid(t) { return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 }; }
