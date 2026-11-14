@@ -8,7 +8,7 @@
   <link rel="canonical" href="https://mes.fm/gyrotop-angular-momentum" />
   <!-- OG-TAGS:START -->
   <meta property="og:type" content="article">
-  <meta property="og:site_name" content="MES Truth">
+  <meta property="og:site_name" content="MES Anti-Gravity">
   <meta property="og:url" content="https://mes.fm/gyrotop-angular-momentum">
   <meta property="og:title" content="GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics">
   <meta property="og:description" content="Owen Liang&#x27;s GyroTop magnetic spinning top and MES gyroscope experiments question the friction explanation of rising tops and the mainstream idea of angular momentum.">
@@ -19,8 +19,8 @@
   <meta name="twitter:description" content="Owen Liang&#x27;s GyroTop magnetic spinning top and MES gyroscope experiments question the friction explanation of rising tops and the mainstream idea of angular momentum.">
   <meta name="twitter:image" content="https://mes.fm/gyrotop-angular-momentum/img/thumbnail.jpg">
   <!-- OG-TAGS:END -->
-  <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
-  <title>GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics | Math Easy Solutions</title>
+  <link rel="icon" href="https://mes.fm/img/antigravity-logo.jpg?v=1" type="image/jpeg" />
+  <title>GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics | MES Anti-Gravity</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -38,11 +38,6 @@
     body.dark a { color: #6cb6f5; }
 
     .container {
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .ad-slot {
       max-width: 760px;
       margin: 0 auto;
     }
@@ -137,52 +132,129 @@
       #info-bar .info-bar__item__text { min-height: 44px; display: flex; align-items: center; }
     }
 
+    .theme-toggle-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    body.light .theme-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .theme-toggle-btn { background-color: #444444; color: #ffffff; }
+
     .site-link {
       font-size: 0.9em;
     }
 
     h1 {
-      font-size: 1.8em;
-      margin: 0.4em 0 0.1em;
+      font-size: 2em;
+      margin: 0.4em 0 0.2em;
     }
 
-    .page-subtitle {
-      font-size: 0.85em;
-      opacity: 0.75;
-      margin-bottom: 1.4em;
+    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
+       the byline and the Jump To navigation scale. Uses rem so nested
+       lists/quotes don't compound. Playlist cards/rows are excluded. */
+    .post-body :is(p, li, blockquote, td, th):not(#playlist *) { font-size: calc(1rem * var(--ts, 1)); }
+
+    .post-meta {
+      font-size: calc(0.9rem * var(--ts, 1));
+      opacity: 0.85;
+      margin-bottom: 0.6em;
     }
 
-    article p {
+    .post-meta span:not(:last-child)::after {
+      content: " \00b7 ";
+    }
+
+    .peakd-link {
+      display: inline-block;
+      margin: 0.6em 0 1.4em;
+      font-size: calc(0.9rem * var(--ts, 1));
+      font-style: italic;
+    }
+
+    .post-body {
+      word-wrap: break-word;
+    }
+
+    .post-body h1 {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2.chapter-top {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 1.8em 0 0.8em;
+    }
+
+    .post-body h2 {
+      font-size: 1.3em;
+      margin: 1.9em 0 0.4em;
+    }
+
+    .post-body h3 {
+      font-size: 1.1em;
+      margin: 1.6em 0 0.4em;
+    }
+
+    .post-body p {
       margin: 0 0 1em;
     }
 
-    .source-list {
-      margin: 0 0 1.2em;
+    .post-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.6em 0;
+      cursor: zoom-in;
+    }
+
+    .post-body ul {
       padding-left: 1.3em;
     }
 
-    .source-list li {
+    .post-body li {
       margin: 0 0 0.5em;
     }
 
-    .source-list li ul {
-      margin: 0.4em 0 0;
-      padding-left: 1.3em;
+    .post-body blockquote {
+      border-left: 3px solid #277bb6;
+      margin: 1em 0;
+      padding: 0.2em 1em;
+      opacity: 0.9;
+    }
+
+    .post-body table {
+      border-collapse: collapse;
+      max-width: 100%;
+      margin: 1.5em 0;
+    }
+
+    .post-body td,
+    .post-body th {
+      border: 1px solid;
+      border-color: inherit;
+      padding: 6px 10px;
     }
 
     .video-embed {
       position: relative;
       width: 100%;
-      padding-top: 56.25%;
+      padding-bottom: 56.25%;
       border-radius: 4px;
       overflow: hidden;
       margin: 0.6em 0 1.2em;
       transition: width 0.25s ease, max-width 0.25s ease, margin 0.25s ease,
-        height 0.25s ease, padding-top 0.25s ease, border-radius 0.25s ease;
+        height 0.25s ease, padding-bottom 0.25s ease, border-radius 0.25s ease;
     }
 
-    .video-embed video,
-    .video-embed iframe {
+    .video-embed iframe,
+    .video-embed video {
       position: absolute;
       top: 0;
       left: 0;
@@ -198,12 +270,13 @@
       left: 50%;
       margin-left: -50vw;
       margin-right: -50vw;
-      padding-top: 0;
+      padding-bottom: 0;
       height: min(85vh, 56.25vw);
       border-radius: 0;
       background: #000;
     }
 
+    .video-embed.theater-mode iframe,
     .video-embed.theater-mode video {
       object-fit: contain;
     }
@@ -262,65 +335,6 @@
       pointer-events: none;
     }
 
-    .source-link {
-      display: inline-block;
-      font-size: 0.9em;
-      font-style: italic;
-    }
-
-    .timestamps {
-      margin: 0 0 1.4em;
-      font-size: 0.92em;
-    }
-
-    .timestamps summary {
-      cursor: pointer;
-      font-weight: bold;
-      margin-bottom: 0.6em;
-    }
-
-    .timestamps ul {
-      margin: 0.3em 0;
-      padding-left: 1.3em;
-    }
-
-    .timestamps li {
-      margin: 0 0 0.35em;
-    }
-
-    .written-solution {
-      margin: 0 0 1.6em;
-    }
-
-    .written-solution > summary {
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1.15em;
-      margin-bottom: 0.4em;
-    }
-
-    .written-solution .ws-note {
-      font-size: 0.85em;
-      opacity: 0.75;
-      margin: 0.4em 0 1.2em;
-    }
-
-    .written-solution h3 {
-      font-size: 1.05em;
-      margin: 1.4em 0 0.4em;
-    }
-
-    .written-solution p { margin: 0 0 1em; }
-
-    .sol-image {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      display: block;
-      margin: 0.6em 0 1.2em;
-      cursor: zoom-in;
-    }
-
     .lightbox-overlay {
       display: none;
       position: fixed;
@@ -363,6 +377,7 @@
     .lightbox-close,
     .lightbox-prev,
     .lightbox-next {
+      position: fixed;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -377,7 +392,6 @@
     .lightbox-next:hover { background: rgba(0, 0, 0, 0.85); }
 
     .lightbox-close {
-      position: fixed;
       top: 16px;
       right: 16px;
       width: 40px;
@@ -389,6 +403,7 @@
 
     .lightbox-prev,
     .lightbox-next {
+      position: static;
       width: 44px;
       height: 44px;
       border-radius: 50%;
@@ -403,15 +418,21 @@
       .lightbox-close { width: 36px; height: 36px; }
     }
 
-    .retrieved-note {
-      font-size: 0.85em;
-      opacity: 0.7;
-      margin-top: 0.4em;
-    }
-
     hr {
       margin: 2em 0;
       opacity: 0.3;
+    }
+
+    .source-link {
+      display: inline-block;
+      font-size: 0.9em;
+      font-style: italic;
+    }
+
+    .retrieved-note {
+      font-size: calc(0.85rem * var(--ts, 1));
+      opacity: 0.7;
+      margin-top: 0.4em;
     }
 
     .site-footer-note {
@@ -420,85 +441,297 @@
       text-align: center;
     }
 
+    /* Every chapter (the leading "Full Video" one plus every Hive-sourced "# "
+       section) is a collapsible dropdown -- see wrapChaptersInToggles() in
+       build.mjs and toggleChapter() below. */
+    .chapter-toggle-header {
+      cursor: pointer;
+    }
+
+    .chapter-toggle-header .arrow-icon {
+      font-size: 0.6em;
+      display: inline-block;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+
+    .chapter-toggle-list.hidden {
+      display: none;
+    }
+
+    /* Pinned to the top of the post body, just under the <hr> that follows the
+       article meta -- a collapse/expand-all control anchored to the right edge,
+       above the first ("Full Video") chapter. */
+    .chapters-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin: -0.8em 0 0.4em;
+    }
+
+    /* Playlist chapter — Grid View (card-grid, default) / List View toggle for
+       the sibling Problems Plus video pages. See buildPlaylistSection() in
+       build.mjs. Card-grid styling kept in sync with the identical block in
+       mes.fm/911/build.mjs, mes.fm/hutchison/build.mjs, and
+       mes.fm/conspiracy/build.mjs. */
+    .view-toggle {
+      display: flex;
+      gap: 0.5em;
+      margin: 0 0 1em;
+    }
+
+    .view-toggle-btn {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    body.light .view-toggle-btn { background-color: #dddddd; color: #000000; }
+    body.dark .view-toggle-btn { background-color: #444444; color: #ffffff; }
+    body.light .view-toggle-btn.active { background-color: #1a6fb0; color: #ffffff; }
+    body.dark .view-toggle-btn.active { background-color: #6cb6f5; color: #1a1a1a; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 0 0 0.4em;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(128, 128, 128, 0.35);
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    body.light .link-card { background-color: #fafafa; color: #000000; }
+    body.dark .link-card { background-color: #232323; color: #ffffff; }
+
+    .link-card-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #333333;
+      background-image: linear-gradient(135deg, #2a2a2a, #4a4a4a);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .link-card-body {
+      padding: 0.6rem 0.8rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .link-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: inherit;
+    }
+
+    .link-card-readmore {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    body.light .link-card-readmore { color: #1a6fb0; }
+    body.dark .link-card-readmore { color: #6cb6f5; }
+
+    @media (max-width: 560px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    /* List View -- plain title / links-row / full-thumbnail markup, matching
+       how a Hive-sourced "Thumbnail View" chapter (e.g. mes.fm/hutchison's
+       Cold Fusion section) already renders each entry: <h2> title, a <p> link
+       row, then the full (uncropped) image. */
+    .playlist-list-view {
+      margin: 0 0 0.4em;
+    }
+
+    .playlist-list-view h2 {
+      font-size: 1.15em;
+      margin: 1.4em 0 0.3em;
+    }
+
+    .playlist-list-view h2:first-child {
+      margin-top: 0;
+    }
+
+    .playlist-list-view p {
+      margin: 0 0 0.6em;
+    }
+
+    .playlist-row-thumb {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0 0 1.2em;
+    }
+
+    /* Must come after .card-grid/.playlist-list-view above: same specificity
+       (single class), so source order decides the tie -- this needs to win. */
+    .view-hidden {
+      display: none;
+    }
+
+    /* Table of contents: a fixed side column on wide viewports, collapsing to a
+       <details> dropdown above the article on anything narrower. */
+    .toc-sidebar {
+      display: none;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-sidebar {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: calc(50% + 410px);
+        width: 210px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        font-size: calc(0.85rem * var(--ts, 1));
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+      }
+
+      /* toc-sidebar-scrollbar */
+      .toc-sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .toc-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(128, 128, 128, 0.4);
+        border-radius: 3px;
+      }
+
+      .toc-sidebar-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.6em;
+        margin: 0 0 0.7em;
+      }
+
+      .toc-sidebar .toc-title {
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+        margin: 0;
+      }
+
+      .toc-collapse-all-btn {
+        font-size: 0.8em;
+        opacity: 0.65;
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        text-decoration: underline;
+        color: inherit;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .toc-collapse-all-btn:hover {
+        opacity: 1;
+      }
+
+      .toc-sidebar a {
+        display: block;
+        padding: 0.3em 0;
+        opacity: 0.85;
+        text-decoration: none;
+      }
+
+      .toc-sidebar a:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+
+      /* "## " sub-chapters (e.g. each Problem) nested under their chapter */
+      .toc-sidebar a.toc-sub {
+        padding-left: 1em;
+        font-size: 0.92em;
+      }
+    }
+
+    .toc-mobile {
+      margin: 1.2em 0;
+    }
+
+    @media (min-width: 1300px) {
+      .toc-mobile {
+        display: none;
+      }
+    }
+
+    .toc-mobile { font-size: calc(1rem * var(--ts, 1)); }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.6em 0.9em;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      border-radius: 6px;
+    }
+
+    .toc-mobile .toc-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4em;
+      padding: 0.8em 0.9em 0.2em;
+    }
+
+    .toc-mobile a {
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .toc-mobile a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-mobile a.toc-sub {
+      padding-left: 1em;
+      font-size: 0.92em;
+    }
+
     @media (max-width: 600px) {
-      h1 { font-size: 1.4em; }
+      h1 { font-size: 1.5em; }
       body { padding: 0 12px 40px; }
     }
-
-    .lightbox-zoom-controls {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      z-index: 2147483647;
-    }
-
-    .lightbox-zoom-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      border: 0;
-      cursor: pointer;
-      font-size: 1.2em;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .lightbox-zoom-btn:hover {
-      background: rgba(0, 0, 0, 0.85);
-    }
-
-    .lightbox-zoom-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-
-    .lightbox-zoom-level {
-      min-width: 3.4em;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.7);
-      color: #ffffff;
-      font-size: 0.8em;
-      padding: 5px 8px;
-      border-radius: 999px;
-    }
-
-    #lightboxImage {
-      transition: transform 0.15s ease;
-    }
-
-    #lightboxImage.zoomed {
-      cursor: grab;
-    }
-
-    #lightboxImage.dragging {
-      cursor: grabbing;
-      transition: none;
-    }
-
-    @media (max-width: 600px) {
-      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
-    }
-
-    /* "Part of" strip under the nav bar: links back to the full main article
-       page (playlist + written notes) at this problem's section. */
-    .part-of { margin: 14px 0 0; padding: 0.55em 0.9em; border-radius: 6px; font-size: 0.9em; border: 1px solid rgba(128, 128, 128, 0.4); }
-    .part-of a { font-weight: bold; }
-
-    /* Text-size control (--ts, set by the header A-/A+ buttons): only prose,
-       the byline and the video timestamps scale -- headings, buttons and the
-       video stay fixed. rem so nested lists don't compound. */
-    .container article :is(p, li, blockquote):not(.video-embed *) { font-size: calc(1rem * var(--ts, 1)); }
-    .container article .timestamps li { font-size: calc(0.92rem * var(--ts, 1)); }
-    .container article .written-solution .ws-note { font-size: calc(0.85rem * var(--ts, 1)); }
-    .page-subtitle { font-size: calc(0.85rem * var(--ts, 1)); }
-  /* Site footer -- same links/markup as mes.fm/math and mes.fm/911, in
+  /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+}
+/* Site footer -- same links/markup as mes.fm/math and mes.fm/911, in
        this page family's own blue accent (#277bb6, matching .hamburger-btn/
        .info-bar above) and sized to this family's 760px .container (911
        uses 1180px for its own wider card-grid page). */
@@ -580,12 +813,137 @@
       .header-controls { position: absolute; right: 8px; bottom: 0; margin-left: 0; }
       body.is-stuck .header-controls { bottom: auto; }
     }
+    /* LIGHTBOX-ZOOM-INSERTED */
+    .lightbox-zoom-controls {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 2147483647;
+    }
+
+    .lightbox-zoom-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: 0;
+      cursor: pointer;
+      font-size: 1.2em;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-zoom-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+    }
+
+    .lightbox-zoom-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .lightbox-zoom-level {
+      min-width: 3.4em;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 0.8em;
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    #lightboxImage {
+      transition: transform 0.15s ease;
+    }
+
+    #lightboxImage.zoomed {
+      cursor: grab;
+    }
+
+    #lightboxImage.dragging {
+      cursor: grabbing;
+      transition: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-zoom-btn { width: 36px; height: 36px; font-size: 1.05em; }
+    }
+/* "Open in:" preferred-site switch + per-card site icon (shared/link-pref.mjs, main_js/link-pref.js). */
+.lp-row { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 1em; }
+.lp-row > .ls-chips { flex: 1 1 22em; }
+.lp-row--solo { margin: 0 0 0.6em; }
+.lp { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3em; margin: 0.7em 0 0 auto; font-size: 0.85em; }
+.lp-lbl { color: #555; margin-right: 0.15em; }
+.lp button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3em; min-height: 2.2em;
+  padding: 0.3em 0.65em; border-radius: 1.2em; border: 1px solid #c3c9d2; background: #fff; color: #333;
+}
+.lp button:hover { border-color: #277bb6; color: #1a6fb0; }
+.lp button:focus-visible { outline: 2px solid #277bb6; outline-offset: 2px; }
+.lp button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+.lp button.lp-few:not([aria-pressed="true"]) { color: #6a7280; border-style: dashed; }
+.lp-n { font-size: 0.85em; font-variant-numeric: tabular-nums; }
+.lp-ic {
+  display: inline-block; flex: none; width: 1.15em; height: 1.15em; vertical-align: -0.2em; background: currentColor;
+  -webkit-mask: var(--lp-i) center / contain no-repeat; mask: var(--lp-i) center / contain no-repeat;
+}
+/* the pages' CSS reset paints every span / a #333: take the button's / caption's colour instead */
+.lp button span, .lp-a .lp-ic, .lp-a .lp-name { color: inherit; }
+.link-card-readmore .lp-ic { margin-right: 0.3em; }
+.list-row h3 .lp-a { color: inherit; text-decoration: none; }
+.list-row h3 .lp-a:hover { text-decoration: underline; }
+.list-row h3 .lp-ic { width: 0.85em; height: 0.85em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.75; }
+.lp-ic[data-s="mes"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1%2012.6%204.6%2010.6%208.6%2017.4%2014.6%201.8H23.2V4.8H16.6L10%2022.4H7.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="youtube"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M23%207.2a3%203%200%200%200-2.1-2.1C19%204.6%2012%204.6%2012%204.6s-7%200-8.9.5A3%203%200%200%200%201%207.2C.5%209.1.5%2012%20.5%2012s0%202.9.5%204.8a3%203%200%200%200%202.1%202.1c1.9.5%208.9.5%208.9.5s7%200%208.9-.5a3%203%200%200%200%202.1-2.1c.5-1.9.5-4.8.5-4.8s0-2.9-.5-4.8zM9.7%2015.4V8.6l5.9%203.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="hive"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M6.8%202.5h10.4L22.5%2012l-5.3%209.5H6.8L1.5%2012zM9%206.5%206.3%2012%209%2017.5h6l2.7-5.5L15%206.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="3speak"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM9.5%207.5v9l7-4.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="rumble"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M5%203.8c0-1.6%201.7-2.5%203-1.6l12.4%208.2c1.2.8%201.2%202.4%200%203.2L8%2021.8c-1.3.9-3-.1-3-1.6zM8.6%208.5v7l5.4-3.5z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="odysee"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M12%201.5a10.5%2010.5%200%201%201%200%2021%2010.5%2010.5%200%200%201%200-21zM12%206a6%206%200%201%200%200%2012%206%206%200%200%200%200-12z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="x"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h5.4l4.2%205.9L17.7%203h3l-6.7%207.7L21.5%2021h-5.4l-4.6-6.4L5.9%2021H3l7.2-8.3z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="bitchute"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M3%203h18v18H3zM8%206.5v11h5.3c2.2%200%203.7-1.2%203.7-3.1%200-1.4-.8-2.4-2.1-2.7%201-.4%201.6-1.3%201.6-2.4%200-1.8-1.4-2.8-3.5-2.8zM10.6%208.6h2.1c.9%200%201.4.4%201.4%201.1s-.5%201.2-1.4%201.2h-2.1zm0%204.2h2.4c1%200%201.5.5%201.5%201.2%200%20.8-.6%201.3-1.5%201.3h-2.4z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="telegram"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M1.5%2011.2%2021.6%203.3c.9-.3%201.7.3%201.4%201.7l-3.4%2016c-.2%201.1-.9%201.4-1.8.9l-5-3.7-2.4%202.3c-.3.3-.5.5-1%20.5l.4-5.1%209.3-8.4c.4-.4-.1-.6-.6-.2L6.9%2014.6%202%2013.1c-1.1-.3-1.1-1.1.5-1.9z'%2F%3E%3C%2Fsvg%3E"); }
+.lp-ic[data-s="twitch"] { --lp-i: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill-rule%3D'evenodd'%20d%3D'M4%202%202.5%206v14h5v2.5h2.8L13%2020h4l5-5V2zm16%2012-3%203h-4.5L10%2019.5V17H6V4h14zM15%207h2v5h-2zm-5%200h2v5h-2z'%2F%3E%3C%2Fsvg%3E"); }
+body.dark-mode .lp-lbl, body.dark .lp-lbl { color: #bbb; }
+body.dark-mode .list-row h3 .lp-a, body.dark .list-row h3 .lp-a { color: inherit; }
+body.dark-mode .lp button, body.dark .lp button { background: #2a2a2a; color: #ddd; border-color: #555; }
+body.dark-mode .lp button:hover, body.dark .lp button:hover { border-color: #6cb6f5; color: #6cb6f5; }
+body.dark-mode .lp button[aria-pressed="true"], body.dark .lp button[aria-pressed="true"] { background: #6cb6f5; border-color: #6cb6f5; color: #111; }
+body.dark-mode .lp button.lp-few:not([aria-pressed="true"]), body.dark .lp button.lp-few:not([aria-pressed="true"]) { color: #a3abb8; }
+body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { outline-color: #6cb6f5; }
+.playlist-list-view h2 .lp-a { color: inherit; text-decoration: none; }
+.playlist-list-view h2 .lp-a:hover { text-decoration: underline; }
+.playlist-list-view h2 .lp-ic { width: 0.7em; height: 0.7em; margin-left: 0.35em; vertical-align: 0; opacity: 0.75; }
 
     /* ---- GyroTop article (build_gyrotop_article.py) ---- */
-    article { overflow-wrap: anywhere; }
-    article img { max-width: 100%; height: auto; display: block; margin: 1em auto; border-radius: 6px; }
+    .post-body { overflow-wrap: anywhere; }
+    .post-body img { max-width: 100%; height: auto; display: block; margin: 1em auto; border-radius: 6px; }
+    .post-body blockquote { margin: -0.4em auto 1.2em; text-align: center; font-style: italic; opacity: 0.85; border: 0; padding: 0; }
     .gt-yt { position: relative; width: 100%; aspect-ratio: 16 / 9; margin: 1em 0; }
     .gt-yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 6px; }
+    .gt-partof { margin: 0.4em 0 1em; padding: 0.55em 0.9em; border-left: 4px solid #277bb6; background: rgba(39,123,182,0.08); border-radius: 0 6px 6px 0; }
+    body.dark .gt-partof { border-left-color: #6cb6f5; background: rgba(108,182,245,0.08); }
+    .gt-qs { list-style: none; padding: 0; margin: 0.6em 0 1.2em; counter-reset: q; }
+    .gt-qs li { counter-increment: q; margin: 0 0 0.6em; }
+    .gt-qs a { display: flex; gap: 0.7em; align-items: flex-start; padding: 0.7em 0.9em; border: 1px solid rgba(39,123,182,0.35);
+      border-radius: 8px; text-decoration: none; color: inherit; background: rgba(39,123,182,0.05); line-height: 1.45; }
+    .gt-qs a:hover, .gt-qs a:focus-visible { border-color: #277bb6; background: rgba(39,123,182,0.12); }
+    .gt-qs a::before { content: counter(q); flex: none; width: 1.8em; height: 1.8em; border-radius: 50%; background: #277bb6; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9em; }
+    .gt-qs .gt-go { margin-left: auto; flex: none; color: #1f6aa0; font-weight: 600; white-space: nowrap; }
+    body.dark .gt-qs a { border-color: rgba(108,182,245,0.35); background: rgba(108,182,245,0.06); }
+    body.dark .gt-qs a:hover { border-color: #6cb6f5; background: rgba(108,182,245,0.14); }
+    body.dark .gt-qs a::before { background: #3f8fd0; }
+    body.dark .gt-qs .gt-go { color: #8cc8f7; }
+    .gt-ask { margin: 0.2em 0 1em; padding: 0.6em 0.9em; border-radius: 6px; background: rgba(39,123,182,0.08); font-weight: 600; }
+    body.dark .gt-ask { background: rgba(108,182,245,0.1); }
+    .gt-back { margin: 1.2em 0 0.4em; font-size: 0.95em; }
+    @media (max-width: 520px) { .gt-qs .gt-go { display: none; } }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -611,14 +969,14 @@
       setTimeout(go, 15000);
     })();
     </script>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+<!-- JUMP-ASIDE --><link rel="stylesheet" href="/main_js/jump-aside.css?v=1"><!-- /JUMP-ASIDE --><!-- TOC-FLIP-HEAD --><link rel="stylesheet" href="/main_js/toc-flip.css?v=7"><script>try{var L=localStorage,H=document.documentElement.classList;if(L.getItem('asideSide')==='left')H.add('aside-left');if(L.getItem('pageWide')==='1')H.add('page-wide');if(L.getItem('pageMode')==='theatre')H.add('page-theatre');if(L.getItem('tocHidden')==='1')H.add('toc-hidden');var w=+L.getItem('tocWidth');if(w>=120&&w<=900)document.documentElement.style.setProperty('--toc-swp',w+'px')}catch(e){}</script><!-- /TOC-FLIP-HEAD -->
+</head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/antigravity" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/antigravity-logo.jpg"></a>
   <a class="compact-nav-title" href="/antigravity" tabindex="-1">MES Anti-Gravity</a>
   <ul class="compact-nav-links">
-    <li><a href="/antigravity" tabindex="-1">Anti-Gravity</a></li>
     <li><a href="/calculators" tabindex="-1">Calculators</a></li>
     <li><a href="/tools" tabindex="-1">Tools</a></li>
     <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
@@ -629,11 +987,21 @@
 </div>
 
 
-
-  <div class="container has-aside">
+  <nav class="toc-sidebar" aria-label="Table of contents">
+    <div class="toc-sidebar-header">
+      <div class="toc-title">Jump to</div>
+      <button type="button" class="toc-collapse-all-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+    </div>
+      <a href="#article">The Article</a>
+      <a href="#questions">Follow-up Questions</a>
+      <a class="toc-sub" href="#q1">1. Experimental observations and measurements</a>
+      <a class="toc-sub" href="#q2">2. Additional GyroTop Testing</a>
+      <a class="toc-sub" href="#q3">3. GyroTop Potential</a>
+  </nav>
+  <div class="container">
     <div class="top-bar">
       <div class="site-brand">
-        <a class="site-brand-logo-link" href="/antigravity"><img class="site-brand-logo" src="/img/antigravity-logo.jpg" width="88" height="88" alt="MES Anti-Gravity logo"></a>
+        <a class="site-brand-logo-link" href="/antigravity"><img class="site-brand-logo" src="https://mes.fm/img/antigravity-logo.jpg" width="88" height="88" alt="MES Anti-Gravity logo"></a>
         <div class="site-brand-text"><a class="site-brand-title" href="/antigravity">MES Anti-Gravity</a><p class="site-brand-tag">MES Anti-Gravity research: gyroscopes, spinning wheels and hidden science.</p></div>
       </div>
       <div class="header-controls">
@@ -687,13 +1055,34 @@
         <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li>
       </ul>
     </div>
-    <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="/antigravity">MES Anti-Gravity</a> &middot; <a href="/experiments">MES Experiments</a> &middot; <a href="/science">MES Science</a></div>
 
     <h1>GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics</h1>
-    <div class="page-subtitle">Owen Liang's magnetic spinning top, rising gyroscopes and ice-block experiments &middot; November 11, 2026</div>
+    <div class="post-meta">
+      <span>By MES</span>
+      <span>November 11, 2026</span>
+    </div>
+    <p class="gt-partof">Part of <a href="/antigravity">MES Anti-Gravity</a> &middot; <a href="/experiments">MES Experiments</a> &middot; <a href="/science">MES Science</a></p>
 
-    <article>
-<p><img src="/gyrotop-angular-momentum/img/thumbnail.jpg" width="640" height="360" alt="GyroTop magnetic spinning top rising against a magnet"></p>
+    <details class="toc-mobile">
+      <summary>Jump to section</summary>
+      <nav class="toc-links" aria-label="Table of contents">
+      <a href="#article">The Article</a>
+      <a href="#questions">Follow-up Questions</a>
+      <a class="toc-sub" href="#q1">1. Experimental observations and measurements</a>
+      <a class="toc-sub" href="#q2">2. Additional GyroTop Testing</a>
+      <a class="toc-sub" href="#q3">3. GyroTop Potential</a>
+      </nav>
+    </details>
+
+    <hr>
+
+    <div class="post-body">
+<div class="chapters-toolbar">
+<button id="toggleAllChaptersBtn" class="theme-toggle-btn toggle-all-chapters-btn" onclick="toggleAllChapters()">Collapse All</button>
+</div>
+<div class="chapter-toggle" id="article">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('article-list')"><center>The Article <span id="arrowIcon-article-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="article-list" class="chapter-toggle-list"><p><img src="/gyrotop-angular-momentum/img/thumbnail.jpg" width="640" height="360" alt="GyroTop magnetic spinning top rising against a magnet"></p>
 <p>First of all, in mainstream literature, there is debate as to how ordinary spinning tops rise, with almost all of the focus towards sliding and/or rolling friction from the contact on the ground. See my Grok AI discussion with all links to related papers: <a target="_blank" rel="noopener" href="https://grok.com/share/c2hhcmQtMg_e2aa9cd5-580c-4692-8978-c25c1886e6db">https://grok.com/share/c2hhcmQtMg_e2aa9cd5-580c-4692-8978-c25c1886e6db</a></p>
 <p>This image illustrates the difference between sliding and rolling friction. <a target="_blank" rel="noopener" href="https://www.britannica.com/science/rolling-friction">https://www.britannica.com/science/rolling-friction</a></p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/242NyrESpxgBYXyF4ndGXKhn8k7r7xJNTMntRXGZ9BwRgUUdT9pgugYPSeg24jkZkW1FN.png" alt=""></p>
@@ -732,7 +1121,7 @@
 <div class="gt-yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/ddGRWfvYwZU" title="YouTube video" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 <p>In my opinion, these ice block experiments are irrefutable proof that precession lowers the angular momentum / inertia of spinning objects.</p>
 <p>To illustrate what this means, if you had a car-sized gyroscope spinning rapidly, it will precess over a tiny ladder without knocking it over. And if you stood in front of it, you can knock over the car easily (instead of getting run over). <a href="https://mes.fm/antigravity-6-rotation-defy-physics">https://mes.fm/antigravity-6-rotation-defy-physics</a></p>
-<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zSQTDTAac5kNBpqGcHK18Y8WYrFDGLjZoi85dWYmrHLKv24ZbcFDAUpHqBtNR2F6iDY.png" alt=""></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23zbo2iBMo1LuQVWsEbEaEoubWGweGWZKPhM11Yn2tqdXJ4oguD7KDJfffE9h1NG2PnNk.png" alt=""></p>
 <p>Regarding practical applications, the first thing that comes to mind is torque over-unity, inertial propulsion (useful in space), free energy generator, and much more. See videos below.</p>
 <div class="gt-yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/VUh6QXe4mMY" title="YouTube video" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 <div class="gt-yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/6q0qXRetpB4" title="YouTube video" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
@@ -742,21 +1131,69 @@
 <div class="gt-yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/1Grv5B7AqkE" title="YouTube video" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 <p>The above are examples of the truly limitless applications of a true understanding of the GyroTop, and objects in rotation in general. </p>
 <p>I believe the GyroTop should be made available in every physics class around the world!</p>
+</div>
+</div>
+<hr>
+<div class="chapter-toggle" id="questions">
+<h2 class="chapter-toggle-header chapter-top" onclick="toggleChapter('questions-list')"><center>Follow-up Questions <span id="arrowIcon-questions-list" class="arrow-icon">&#9660;</span></center></h2>
+<div id="questions-list" class="chapter-toggle-list"><p>Questions I was asked about the GyroTop. Click one to jump to my answer.</p>
+<ol class="gt-qs">
+<li><a class="gt-qlink" href="#q1"><span>What experimental observations or measurements would help establish the physical principles discussed in your article?</span><span class="gt-go">Answer &darr;</span></a></li>
+<li><a class="gt-qlink" href="#q2"><span>What additional testing would you recommend to better understand the GYROTOP&#x27;s capabilities?</span><span class="gt-go">Answer &darr;</span></a></li>
+<li><a class="gt-qlink" href="#q3"><span>Based on your experience, what potential applications do you see for GYROTOP in science education, toys, or other markets?</span><span class="gt-go">Answer &darr;</span></a></li>
+</ol>
+<div class="chapter-toggle chapter-sub" id="q1">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('q1-list')">1. Experimental observations and measurements <span id="arrowIcon-q1-list" class="arrow-icon">&#9660;</span></h2>
+<div id="q1-list" class="chapter-toggle-list"><p class="gt-ask">Question: What experimental observations or measurements would help establish the physical principles discussed in your article?</p>
+<p>My above article presents qualitative observations that mainstream theory does not know are possible and some run contrary to established theory. The most obvious is the lack of sufficient inertia / angular momentum in precession to even nudge an ice block. In my opinion, this &quot;lack of or variable inertia&quot; is the fundamental reason for all of the anomalous effects observed in Owen Liang&#39;s and my experiments. </p>
+<p>From my <a href="https://mes.fm/antigravity-6-rotation-defy-physics">Anti-Gravity Part 6 video</a>, I went over Cambridge University&#39;s (bogus) attempts to &quot;debunk&quot; Eric Laithwaite&#39;s observation of this lack of inertia. <a target="_blank" rel="noopener" href="https://www3.eng.cam.ac.uk/~hemh1/gyroscopes/icegyro.html">https://www3.eng.cam.ac.uk/~hemh1/gyroscopes/icegyro.html</a></p>
+<p>To illustrate what I mean, according to Cambridge University (and all mainstream established theory), since a precessing gyroscope has no lateral forces, then the center of mass should stay fixed horizontally when placed on a low friction surface.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wgoRzPHp6SRhX7xtA2wAf1WjJN9sRS7LsB8PYCSu5Yk9THUTFE6a94PNeuvud2yWzb7.png" alt=""></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tw9tswvboz6cYDv84BW1aZsTvgLsSP1FR2Ud1zrHDRvoBoqm7hm3jP3JzzartNsQH5d.png" alt=""></p>
+<p>Cambridge even includes an animation illustrating this (cartoon) physics.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EnmBj5bmZBqq9Zbkwnh5VmvR7w9CGB1StSHGD9hC1FV7hRPtsKh43tGgKu8zHUGe6CS.png" alt=""></p>
+<p>But my ice experiments already show that on a low friction surface, such as an ice block, the gyroscope in precession does not even nudge it horizontally, except at slow spin speeds. In other words, my experiments are irrefutable proof that precessional angular momentum / inertia is variable. <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=j82Z1KgfRtI">https://www.youtube.com/watch?v=j82Z1KgfRtI</a></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tve5mZUtZZoL6Ltr6vL3PKdtsT9mMkjewbHDTQ16VGiWXu8gqfydT5DHeewaW49UzNS.png" alt=""></p>
+<blockquote>
+<p>At high spin speeds the gyro precesses without expected angular momentum.</p>
+</blockquote>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23wgDKHJv8vbGds61tbAYP5BXt1KSetQWL92RCNCaEU6Z2eXxtg3wNpN7Wmg6QbzrkWyx.png" alt=""></p>
+<blockquote>
+<p>At slow spin speeds the gyro behaves as described by Cambridge. </p>
+</blockquote>
+<p>Some experimental measurements to perform to understand and establish working principles would include measuring the spin rate, the mass, angular momentum, precessional rate, and resulting horizontal inertia. Much of this should be required work for every university in the world!</p>
+<p class="gt-back"><a class="gt-qlink" href="#questions">&uarr; Back to the questions</a></p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="q2">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('q2-list')">2. Additional GyroTop Testing <span id="arrowIcon-q2-list" class="arrow-icon">&#9660;</span></h2>
+<div id="q2-list" class="chapter-toggle-list"><p class="gt-ask">Question: What additional testing would you recommend to better understand the GYROTOP&#x27;s capabilities?</p>
+<p>In my opinion, it would be great if the GyroTop can be made simpler and easier to setup. Right now it takes a lot of effort in getting it placed just right and then breathing hard into it to get it up to speed. An automated way to spin it up, either via battery and/or magnetic spinning would be great.</p>
+<p>Regarding additional testing, I think building a much thicker and heavier GyroTop would better demonstrate its ability to change its orientation even though its calculated angular momentum vector would be high. An automated and measured orientation rotation setup would also be great.</p>
+<p>Another experiment is to somehow motorize the rotor during operation, to see if it behaves the same. Here is an experiment of a motorized gyroscope in precession:</p>
+<div class="gt-yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/Pbb_RnxeYys" title="YouTube video" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<p class="gt-back"><a class="gt-qlink" href="#questions">&uarr; Back to the questions</a></p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="q3">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('q3-list')">3. GyroTop Potential <span id="arrowIcon-q3-list" class="arrow-icon">&#9660;</span></h2>
+<div id="q3-list" class="chapter-toggle-list"><p class="gt-ask">Question: Based on your experience, what potential applications do you see for GYROTOP in science education, toys, or other markets?</p>
+<p>In my opinion, the GyroTop can be a great science educational toy, but this would depend on the ease of use, particularly to students. Including an apparatus to keep it held up while manually blowing into it and then being able to get the gyro completely upside down without having to manually hold it upside down would be great. Something like a mechanical crank to turn the apparatus upside down. </p>
+<p>I can do my part in testing and promoting any GyroTop variations!</p>
+<p class="gt-back"><a class="gt-qlink" href="#questions">&uarr; Back to the questions</a></p>
+</div>
+</div>
+</div>
+</div>
 
-    </article>
+    </div>
     <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
     <div id="comments-button" class="mes-comments-toggle">Comments</div>
     <div id="comments-box" class="hide"><div id="fastcomments-widget"></div></div>
-<!-- MES-BOTTOM-AD -->
-<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
-<!-- /MES-BOTTOM-AD -->
-<!-- MES-COLS-END --></div><aside id="mes-aside" class="mes-aside" data-aside-family="antigravity" aria-label="More like this"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/antigravity"><span class="mes-aside__text"><span class="mes-aside__name">MES Anti-Gravity</span><span class="mes-aside__tag">Collection</span></span></a></li><li><a class="mes-aside__card" href="/math"><span class="mes-aside__text"><span class="mes-aside__name">MES Math Tutorials</span><span class="mes-aside__tag">Explore</span></span></a></li><li><a class="mes-aside__card" href="/calculators"><span class="mes-aside__text"><span class="mes-aside__name">Free Online Calculators</span><span class="mes-aside__tag">Explore</span></span></a></li><li><a class="mes-aside__card" href="/tools"><span class="mes-aside__text"><span class="mes-aside__name">Free Online Tools</span><span class="mes-aside__tag">Explore</span></span></a></li></ul></div></aside></div><!-- /MES-COLS-END -->
-
     <script src="/main_js/comments.js?v=1.0.1" defer></script>
 
 
     <hr>
-
     <div id="footer" class="footer" role="contentinfo">
       <div class="footer__item-container">
         <div class="footer__item">
@@ -796,6 +1233,60 @@
   </div>
 
   <script>
+    function toggleChapter(listId) {
+      const list = document.getElementById(listId);
+      const arrowIcon = document.getElementById('arrowIcon-' + listId);
+      list.classList.toggle('hidden');
+      arrowIcon.textContent = list.classList.contains('hidden') ? '▼' : '▲';
+    }
+
+    // A Jump-to link (or a deep link such as #problem-3-...) can target a
+    // heading inside a collapsed chapter or sub-chapter, which is display:none
+    // and so can't be scrolled to -- expand every collapsed ancestor first.
+    // Runs in the click handler, before the browser performs the anchor jump,
+    // and on hashchange / page load.
+    function revealChapterFor(hash) {
+      if (!hash || hash.length < 2) return;
+      let target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      let list;
+      const own = target && target.classList.contains('chapter-toggle') && document.getElementById(target.id + '-list');
+      if (own && own.classList.contains('hidden')) {
+        own.classList.remove('hidden');
+        const ownArrow = document.getElementById('arrowIcon-' + own.id);
+        if (ownArrow) ownArrow.textContent = '▲';
+      }
+      while (target && (list = target.closest('.chapter-toggle-list'))) {
+        if (list.classList.contains('hidden')) {
+          list.classList.remove('hidden');
+          const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+          if (arrowIcon) arrowIcon.textContent = '▲';
+        }
+        target = list.parentElement;
+      }
+    }
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest && e.target.closest('.toc-sidebar a, .toc-mobile a, a.gt-qlink');
+      if (link) revealChapterFor(link.hash);
+    });
+    window.addEventListener('hashchange', function () {
+      revealChapterFor(location.hash);
+      const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (target) target.scrollIntoView();
+    });
+    revealChapterFor(location.hash);
+
+    function toggleAllChapters() {
+      const lists = document.querySelectorAll('.chapter-toggle-list');
+      const buttons = document.querySelectorAll('.toggle-all-chapters-btn');
+      const collapse = lists.length === 0 || !lists[0].classList.contains('hidden');
+      lists.forEach((list) => {
+        list.classList.toggle('hidden', collapse);
+        const arrowIcon = document.getElementById('arrowIcon-' + list.id);
+        if (arrowIcon) arrowIcon.textContent = collapse ? '▼' : '▲';
+      });
+      buttons.forEach((btn) => { btn.textContent = collapse ? 'Expand All' : 'Collapse All'; });
+    }
+
     const body = document.body;
     const themeToggle = document.getElementById('themeToggle');
 
@@ -823,106 +1314,32 @@
   </script>
 
   <script>
-    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below,
-    // see main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also
-    // moves the sidebar below). Height is capped at min(85vh, 56.25vw) in theater mode so ultra-wide
-    // viewports don't get a comically tall player. Only one mode is active at a time.
+    // playlist-view-toggle: switches the Playlist chapter between Grid View
+    // (thumbnail cards, default) and List View (title + full thumbnail + every
+    // platform link) -- both are pre-rendered at build time in
+    // buildPlaylistSection(), so this just toggles which one is visible.
     (function () {
-      var embed = document.getElementById('videoEmbed');
-      var wideBtn = document.getElementById('wideToggle');
-      var theaterBtn = document.getElementById('theaterToggle');
-      if (!embed || !wideBtn || !theaterBtn) return;
-      var mode = 'default';
+      var gridBtn = document.getElementById('playlistGridBtn');
+      var listBtn = document.getElementById('playlistListBtn');
+      var grid = document.getElementById('playlistGrid');
+      var list = document.getElementById('playlistList');
+      if (!gridBtn || !listBtn || !grid || !list) return;
 
-      function apply() {
-        embed.classList.toggle('theater-mode', mode === 'theater');
-        document.body.classList.toggle('video-wide', mode === 'wide');
-        document.body.classList.toggle('video-theater', mode === 'theater');
-        wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
-        wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
-        theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
-        theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
-        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion
-        // zones on scroll/resize, not on a plain class-driven layout change, so nudge
-        // it to recompute once the width/height transition above has settled.
-        setTimeout(function () {
-          window.dispatchEvent(new Event('resize'));
-        }, 300);
-      }
-
-      function setMode(next) {
-        mode = mode === next ? 'default' : next;
-        apply();
-      }
-
-      wideBtn.addEventListener('click', function () { setMode('wide'); });
-      theaterBtn.addEventListener('click', function () { setMode('theater'); });
-
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && mode !== 'default') setMode(mode);
+      gridBtn.addEventListener('click', function () {
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+        grid.classList.remove('view-hidden');
+        list.classList.add('view-hidden');
+      });
+      listBtn.addEventListener('click', function () {
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+        list.classList.remove('view-hidden');
+        grid.classList.add('view-hidden');
       });
     })();
   </script>
 
-
-
-  <script>
-    // image-lightbox: click any figure in the written solution (or the thumbnail)
-    // to pop it out full-viewport, with prev/next via on-screen arrows and keys.
-    (function () {
-      var images = Array.prototype.slice.call(document.querySelectorAll('article img'));
-      if (!images.length) return;
-
-      var overlay = document.getElementById('lightboxOverlay');
-      var imageEl = document.getElementById('lightboxImage');
-      var controlsEl = document.getElementById('lightboxControls');
-      var counterEl = document.getElementById('lightboxCounter');
-      var closeBtn = document.getElementById('lightboxClose');
-      var prevBtn = document.getElementById('lightboxPrev');
-      var nextBtn = document.getElementById('lightboxNext');
-      var currentIndex = 0;
-
-      if (images.length < 2) { controlsEl.style.display = 'none'; }
-
-      function show(index) {
-        currentIndex = (index + images.length) % images.length;
-        var img = images[currentIndex];
-        imageEl.src = img.currentSrc || img.src;
-        imageEl.alt = img.alt || '';
-        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
-      }
-      function open(index) {
-        show(index);
-        overlay.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-      function close() {
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-      }
-
-      images.forEach(function (img, index) {
-        img.style.cursor = 'zoom-in';
-        img.addEventListener('click', function () { open(index); });
-      });
-      closeBtn.addEventListener('click', close);
-      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
-      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-      document.addEventListener('keydown', function (e) {
-        if (!overlay.classList.contains('open')) return;
-        if (e.key === 'Escape') close();
-        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
-        else if (e.key === 'ArrowRight') show(currentIndex + 1);
-      });
-    })();
-  </script>
-
-  <script>
-    // lightbox-zoom: zoom 10%-800%, mouse wheel / pinch / drag. The code is
-    // shared by every page with an image lightbox: /main_js/lightbox-zoom.js
-    (function () { var s = document.createElement('script'); s.src = '/main_js/lightbox-zoom.js'; document.head.appendChild(s); })();
-  </script>
   <script>
     // text-size control: same STEPS / 'articleFontScale' key as
     // add_text_size_control.py and mes.fm/math. Drives the --ts CSS variable,
@@ -949,10 +1366,172 @@
       apply();
     })();
   </script>
+
+  <script>
+    // view-mode: Default / Wide (fills the page width -- the "More like this" sidebar moves below, see
+    // main_js/aside.css) / Theater (fills the browser width, like YouTube's theater mode; also moves the
+    // sidebar below). Delegated + per-embed since a page may hold several videos; only one mode per embed.
+    (function () {
+      function refreshBody() {
+        document.body.classList.toggle('video-wide', !!document.querySelector('.video-embed.wide-mode'));
+        document.body.classList.toggle('video-theater', !!document.querySelector('.video-embed.theater-mode'));
+      }
+
+      function modeOf(embed) {
+        if (embed.classList.contains('theater-mode')) return 'theater';
+        if (embed.classList.contains('wide-mode')) return 'wide';
+        return 'default';
+      }
+
+      function setEmbedMode(embed, wideBtn, theaterBtn, mode) {
+        embed.classList.toggle('wide-mode', mode === 'wide');
+        embed.classList.toggle('theater-mode', mode === 'theater');
+        if (wideBtn) {
+          wideBtn.textContent = mode === 'wide' ? 'Default View' : 'Wide View';
+          wideBtn.setAttribute('aria-pressed', mode === 'wide' ? 'true' : 'false');
+        }
+        if (theaterBtn) {
+          theaterBtn.textContent = mode === 'theater' ? 'Default View' : 'Theater Mode';
+          theaterBtn.setAttribute('aria-pressed', mode === 'theater' ? 'true' : 'false');
+        }
+        refreshBody();
+        // AdSense's side rail ads only re-check google-side-rail-overlap exclusion zones on
+        // scroll/resize, not on a plain class-driven layout change, so nudge it to recompute
+        // once the width/height transition above has settled.
+        setTimeout(function () {
+          window.dispatchEvent(new Event('resize'));
+        }, 300);
+      }
+
+      document.addEventListener('click', function (e) {
+        var wideBtn = e.target.closest('.wide-toggle-btn');
+        var theaterBtn = !wideBtn && e.target.closest('.theater-toggle-btn');
+        var toggle = wideBtn || theaterBtn;
+        if (!toggle) return;
+        var embed = toggle.closest('.video-embed');
+        if (!embed) return;
+        var wanted = wideBtn ? 'wide' : 'theater';
+        var embedWideBtn = embed.querySelector('.wide-toggle-btn');
+        var embedTheaterBtn = embed.querySelector('.theater-toggle-btn:not(.wide-toggle-btn)');
+        setEmbedMode(embed, embedWideBtn, embedTheaterBtn, modeOf(embed) === wanted ? 'default' : wanted);
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('.video-embed.wide-mode, .video-embed.theater-mode').forEach(function (embed) {
+          setEmbedMode(embed, embed.querySelector('.wide-toggle-btn'), embed.querySelector('.theater-toggle-btn:not(.wide-toggle-btn)'), 'default');
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    // auto-hide-controls: fades the theater-mode toggle and 3Speak badge out while
+    // a native <video> is playing and the pointer is idle, like YouTube's own
+    // control bar. Only applies to embeds that hold a real <video> (the 3Speak
+    // HLS player) -- YouTube iframes keep their badge.
+    (function () {
+      document.querySelectorAll('.video-embed').forEach(function (embed) {
+        var video = embed.querySelector('video');
+        var toggle = embed.querySelector('.theater-toggle-btn');
+        if (!video || !toggle) return;
+        var hideTimer = null;
+
+        function showControls() {
+          embed.classList.remove('controls-hidden');
+        }
+
+        function scheduleHide() {
+          clearTimeout(hideTimer);
+          if (video.paused || video.ended) return;
+          hideTimer = setTimeout(function () {
+            embed.classList.add('controls-hidden');
+          }, 2000);
+        }
+
+        video.addEventListener('play', scheduleHide);
+        video.addEventListener('pause', showControls);
+        video.addEventListener('ended', showControls);
+        embed.addEventListener('mousemove', function () {
+          showControls();
+          scheduleHide();
+        });
+        embed.addEventListener('mouseleave', scheduleHide);
+      });
+    })();
+  </script>
+  <script src="/main_js/video-speed-hold.js?v=1" defer></script>
+  <script src="/main_js/video-chapters.js?v=1" defer></script>
+  
+
+  <script>
+    // image-lightbox: click any post-body image to pop it out full-viewport, with
+    // prev/next via on-screen arrows and keyboard arrows.
+    (function () {
+      var images = Array.prototype.slice.call(document.querySelectorAll('.post-body img'));
+      if (!images.length) return;
+
+      var overlay = document.getElementById('lightboxOverlay');
+      var imageEl = document.getElementById('lightboxImage');
+      var controlsEl = document.getElementById('lightboxControls');
+      var counterEl = document.getElementById('lightboxCounter');
+      var closeBtn = document.getElementById('lightboxClose');
+      var prevBtn = document.getElementById('lightboxPrev');
+      var nextBtn = document.getElementById('lightboxNext');
+      var currentIndex = 0;
+
+      if (images.length < 2) {
+        controlsEl.style.display = 'none';
+      }
+
+      function show(index) {
+        currentIndex = (index + images.length) % images.length;
+        var img = images[currentIndex];
+        imageEl.src = img.currentSrc || img.src;
+        imageEl.alt = img.alt || '';
+        counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      }
+
+      function open(index) {
+        show(index);
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      images.forEach(function (img, index) {
+        img.addEventListener('click', function () { open(index); });
+      });
+
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+      nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) close();
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') close();
+        else if (e.key === 'ArrowLeft') show(currentIndex - 1);
+        else if (e.key === 'ArrowRight') show(currentIndex + 1);
+      });
+    })();
+  </script>
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 99, info_bar_tab: 0 };</script>
-  <script src="/main_js/main.js?v=1.0.5"></script>
-  <!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
+  <script src="/main_js/main.js?v=1.0.3"></script>
+  <script>
+    // lightbox-zoom: zoom 10%-800%, mouse wheel / pinch / drag. The code is
+    // shared by every page with an image lightbox: /main_js/lightbox-zoom.js
+    (function () { var s = document.createElement('script'); s.src = '/main_js/lightbox-zoom.js'; document.head.appendChild(s); })();
+  </script><!-- PAGEVIEW-TRACKING-INSERTED --><script src="/main_js/track.js" defer></script><script src="/main_js/info-bar-fit.js" defer></script><script src="/main_js/jump-to.js?v=3" data-always defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
   // are dropped from the right, least important first, rather than
@@ -1007,5 +1586,5 @@
     update();
   })();
 </script>
-<script src="/main_js/site-search.js?v=1" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- JUMP-ASIDE-JS --><script src="/main_js/jump-aside.js?v=1" defer></script><!-- /JUMP-ASIDE-JS --><script src="/main_js/link-pref.js?v=1" defer></script><script src="/main_js/toc-flip.js?v=6" defer></script></body>
 </html>
