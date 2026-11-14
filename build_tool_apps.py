@@ -74,6 +74,12 @@ PAGE3_HEAD = ('<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hu
 # Ad-free (no_ads) on purpose: children's pages. Animal recordings = public-domain / CC0 Wikimedia Commons files in mes.fm/kids/sounds (credits in lib.js SOUNDS).
 KIDS_BRAND = dict(slug="kids", title="MES Kids", tag="Talking flashcards, animal sounds, ABC, counting and math.")
 KIDS_PAGES = [("kids-flashcards", "Flashcards"), ("kids-animal-sounds", "Animal Sounds"), ("kids-abc", "ABC"), ("kids-shapes", "Shapes"), ("kids-numbers", "Numbers"), ("kids-math", "Math")]
+# Photo tools family (2026-11-14): Photo Editor, Darkroom, Draw, Gallery and Image Converter link each other in the info bar + burger menu.
+PHOTO_FAM = [("photo", "Photo Editor"), ("darkroom", "Darkroom"), ("draw", "Draw"), ("gallery", "Gallery"), ("image-converter", "Image Converter")]
+def _photo_nav(me):
+    o = [(sl, nm) for sl, nm in PHOTO_FAM if sl != me]
+    return dict(nav_extra="".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % x for x in o),
+                menu_extra="".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % x for x in o))
 KIDS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in KIDS_PAGES)
 KIDS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm if nm != "Shapes" else "Shapes &amp; Colours") for sl, nm in KIDS_PAGES)
 def _kids(slug, mode, seo, title, page_title, desc, tab, accent, dark, tint):
@@ -341,7 +347,7 @@ APPS = {
                     desc="Free photo and video viewer in your browser: open a folder (with subfolders) and see thousands of pictures and videos in rows, squares, masonry or a list, grouped by day, month, folder or type. Big viewer with zoom, slideshow, rotation, favourites and star ratings, and video speed controls from 0.25x to 4x with frame steps and A-B loops. Nothing is uploaded.",
                     meta_desc="Free photo and video viewer for your own folders: fast thumbnails, rows / masonry / list, slideshow, zoom, video speed 0.25x-4x and A-B loops. Nothing is uploaded.",
                     js_v="3", lib_from=["exif-viewer"],
-                    head_extra='<link rel="manifest" href="/gallery/manifest.webmanifest"><meta name="theme-color" content="#5b21b6">'),
+                    head_extra='<link rel="manifest" href="/gallery/manifest.webmanifest"><meta name="theme-color" content="#5b21b6">', **_photo_nav("gallery")),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",
@@ -762,7 +768,7 @@ APPS = {
                  tag="Sketch, doodle, diagram and colour in, right in your browser.", accent="#7048e8", dark="#5235b8", tint="#ede8fd",
                  desc="Free online drawing pad: sketch with a pen, marker, pencil, highlighter, calligraphy, neon or spray brush, add 30 shapes, arrows, text, emoji and symbols, start from templates (grid and lined paper, comic strips, mind maps, flowcharts, thumbnails, icons) or colouring pages, then download a PNG, JPEG or SVG. No sign-up; drawings stay in your browser.",
                  meta_desc="Free drawing pad: brushes, shapes, text, emoji, templates and colouring pages. Export PNG, JPEG or SVG. No sign-up, saved in your browser.",
-                 js_v="2", lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
+                 js_v="2", lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"], **_photo_nav("draw")),
     # MES Darkroom (2026-11-14, mes.fm/darkroom; /lightroom etc. 308 here): a free Lightroom-Classic-style photo library + RAW developer. lib.js = MESDR (settings, curves,
     # white balance, auto tone, presets, copy groups, export names, RAW embedded-preview finder, Lightroom XMP import, catalogue filter / sort; node tests
     # tool_apps_src/darkroom-tests.js), engine.js = DREngine (WebGL2: the whole develop pipeline in one fragment shader, same code for preview and export),
@@ -771,11 +777,11 @@ APPS = {
                      tag="Organise, develop and export your photos. No upload. No subscription.", accent="#c2690f", dark="#8a4708", tint="#fbefe1",
                      desc="Free photo library and RAW editor in your browser, an alternative to Adobe Lightroom Classic: open a folder, rate, flag, label and keyword your photos, then develop them with white balance, exposure, highlights, shadows, tone curves, colour mixer, colour grading, sharpening, noise reduction, crop, healing and masks. Batch export to JPEG, PNG or WebP. Your photos never leave your computer.",
                      meta_desc="Free Lightroom alternative in your browser: photo library, RAW developer, tone curves, HSL, colour grading, masks, healing and batch export. Nothing is uploaded.",
-                     js_v="2", js_parts=["engine.js", "ai.js"], lib_from=["image-converter", "exif-viewer"]),
+                     js_v="2", js_parts=["engine.js", "ai.js"], lib_from=["image-converter", "exif-viewer"], **_photo_nav("darkroom")),
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
-                         js_v="59", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js", "cloud.js"], lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"]),
+                         js_v="59", js_parts=["core.js", "tools.js", "tools2.js", "dialogs.js", "ai.js", "aiort.js", "erase.js", "upscale.js", "equation.js", "xcf.js", "files.js", "projects.js", "psd.js", "round7.js", "layerstyle.js", "fontcat.js", "fontpick.js", "icons.js", "adjust.js", "cloud.js"], lib_from=["image-converter"], pre_js=["/main_js/cloud-files.js?v=3"], **_photo_nav("photo")),
     # MES Audio Editor (mes.fm/audio): Audacity-style multi-track editor with AI noise removal. lib.js = MESAudio (clip model, edits, mixdown, peaks, fades, EQ,
     # BS.1770 loudness / true peak, limiter, compressor, de-click, WAV; node-tested with the shared denoiser: tool_apps_src/audio-tests.js), app.js = UI.
     # The noise removal is the shared /main_js/denoise.js (MESDenoise: DeepFilterNet3 ONNX + RNNoise wasm + spectral gate), also used by the video editor.
@@ -788,7 +794,7 @@ APPS = {
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
                          desc="Free bulk image converter: convert PNG to JPG, JPG to PNG or WebP in one go. Drop a whole folder, set the quality and size, and download everything as a ZIP. Runs in your browser, nothing is uploaded and there is no limit on files.",
-                         js_v="2"),
+                         js_v="2", **_photo_nav("image-converter")),
     # Atomic Clock Simulator: caesium clock loop (quartz locked to atoms), Ramsey fringes / fountain, clock race, Allan-deviation chart, drift calculator.
     # lib.js = physics + drift maths (node-tested: tool_apps_src/atomic-clock-simulator-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
     "atomic-clock-simulator": dict(title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
@@ -1927,6 +1933,30 @@ def build_from_source(slug, cfg, tpl):
     return page, js, SITE / jsrel
 
 
+def run_followups(slugs):
+    """A rebuild writes the bare template page, which has NO floating bar / A- A+ moon / dark theme, no "More like this" sidebar and no
+    bottom ad: add_tool_page_controls / add_sidebar / add_bottom_ad / add_cross_links add those afterwards. Forgetting them shipped
+    mes.fm/darkroom without any of it (2026-11-14), so they now run here, limited (--only) to the pages just rebuilt. Each script only
+    touches pages registered in its own lists, so ad-free / sidebar-less pages stay as they are. --no-followups skips this."""
+    import subprocess
+    pages = []
+    for k in slugs:
+        out = APPS[k].get("out", k + "/index.html")
+        pages.append(out[:-len("/index.html")] if out.endswith("/index.html") else out[:-len(".html")])
+    if not pages:
+        return
+    only = "--only=" + ",".join(pages)
+    for script in ("add_tool_page_controls.py", "add_sidebar.py", "add_bottom_ad.py"):
+        print("== follow-up: %s %s" % (script, only if len(pages) <= 8 else "--only=(%d pages)" % len(pages)))
+        r = subprocess.run([sys.executable, str(ROOT / script), only, "--apply"], cwd=ROOT, capture_output=True, text=True)
+        if r.returncode:
+            print(r.stdout[-1500:] + r.stderr[-1500:])
+            print("!! %s failed: run it by hand" % script)
+    r = subprocess.run([sys.executable, str(ROOT / "add_cross_links.py"), "--apply"], cwd=ROOT, capture_output=True, text=True)
+    if r.returncode:
+        print("!! add_cross_links.py failed: run it by hand\n" + r.stderr[-1500:])
+
+
 def main():
     tpl = TEMPLATE.read_text(encoding="utf-8")
     only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)   # --only=slug,slug rebuilds just those apps
@@ -1951,6 +1981,8 @@ def main():
         if APPLY:
             p.write_text(new, encoding="utf-8")
     print("" if APPLY else "(dry run -- pass --apply)")
+    if APPLY and "--no-followups" not in sys.argv:
+        run_followups([k for k in APPS if not only or k in only])
     if APPLY:       # keep the "Newest calculators / tools" strip (mes.fm/newest.json) current whenever a tool page is (re)built
         import subprocess
         subprocess.run([sys.executable, str(ROOT / "build_newest.py"), "--apply"], check=False)

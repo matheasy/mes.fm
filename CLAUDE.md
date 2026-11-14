@@ -769,6 +769,15 @@ Note that other agent sessions sometimes have a repo-wide pass of their own sitt
 tree. Before committing one of these, compare `git status --porcelain | wc -l` against the file count your script
 reported; if there is a large gap, stage only your own paths rather than `git add -A`.
 
+**`build_tool_apps.py --apply` now runs the follow-ups itself (2026-11-14).** A rebuild writes the bare template page (no floating bar,
+no A- / A+ / moon, no dark theme, no "More like this" sidebar, no bottom ad); mes.fm/darkroom went live like that after a second
+`--only=darkroom` rebuild whose follow-ups were never re-run. `run_followups()` at the end of `main()` now runs `add_tool_page_controls.py`,
+`add_sidebar.py`, `add_bottom_ad.py` with `--only=<the rebuilt pages>` plus `add_cross_links.py`; each only touches pages in its own lists, so
+ad-free / sidebar-less pages are unaffected. `--no-followups` skips it. Still register a NEW tool in those scripts' lists first, and check the
+built page has `compact-nav`, `TOOL-DARK` and (if it should) `MES-ASIDE` / `MES-BOTTOM-AD`. **Photo tools family:** `PHOTO_FAM` / `_photo_nav()`
+in build_tool_apps.py gives photo, darkroom, draw, gallery and image-converter info-bar + burger links to each other; a new photo tool goes in
+`PHOTO_FAM` and gets `**_photo_nav("<slug>")` in its APPS entry.
+
 **Rebuild follow-ups are now stable (2026-11-05).** `add_tool_page_controls.py`, `add_sidebar.py` and `add_bottom_ad.py` take
 `--only=<slug>[,<slug>...]` (a folder slug = its `index.html`, or a page file such as `weighted-average-calculator`), so after
 `build_tool_apps.py --only=X --apply` run them with `--only=X` and nothing else is touched. Even a full run no longer churns:
