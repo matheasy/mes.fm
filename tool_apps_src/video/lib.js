@@ -499,6 +499,7 @@
 	// a rectangle of the frame's shape centred at (cx, cy), w wide, kept inside the frame where it fits
 	V.frameRect = function (cx, cy, w, W, H) { w = V.clamp(w, 8, W); var h = w * H / W, x = V.clamp(cx - w / 2, 0, W - w), y = V.clamp(cy - h / 2, 0, H - h); return { x: x, y: y, w: w, h: h }; };
 	V.ANIM_PRESETS = [
+		{ id: "custom", name: "Custom", desc: "Then move it in the preview", at: "here" },
 		{ id: "zoomin", name: "Zoom in", desc: "1.5× bigger", at: "here" }, { id: "zoomout", name: "Zoom out", desc: "Back to the full frame", at: "here" },
 		{ id: "zoompan", name: "Zoom-n-pan", desc: "Draw a box on the preview", at: "here", rect: true },
 		{ id: "slidein-l", name: "Slide in", desc: "From the left", at: "start" }, { id: "slidein-r", name: "Slide in", desc: "From the right", at: "start" },
@@ -506,8 +507,7 @@
 		{ id: "slideout-r", name: "Slide out", desc: "To the right", at: "end" }, { id: "fadein", name: "Fade in", desc: "From see-through", at: "start" },
 		{ id: "fadeout", name: "Fade out", desc: "To see-through", at: "end" }, { id: "scaleup", name: "Scale up", desc: "1.25× bigger", at: "here" },
 		{ id: "scaledown", name: "Scale down", desc: "0.8× smaller", at: "here" }, { id: "popin", name: "Pop in", desc: "Grows from nothing", at: "start" },
-		{ id: "spin", name: "Spin", desc: "One full turn", at: "here" }, { id: "tilt", name: "Tilt", desc: "Turn 10°", at: "here" },
-		{ id: "custom", name: "Custom", desc: "Then move it in the preview", at: "here" }
+		{ id: "spin", name: "Spin", desc: "One full turn", at: "here" }, { id: "tilt", name: "Tilt", desc: "Turn 10°", at: "here" }
 	];
 	V.animPreset = function (id) { for (var j = 0; j < V.ANIM_PRESETS.length; j++) if (V.ANIM_PRESETS[j].id === id) return V.ANIM_PRESETS[j]; return null; };
 	// make the animation for a preset: s = the clip's state where it starts, box = { w, h } of the clip on the frame (frame pixels), W x H frame,

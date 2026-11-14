@@ -47,7 +47,7 @@
 		if (!c.anims || c.type === "audio") return "";
 		return c.anims.map(function (a, i) {
 			var x = a.t * VE.pps, aw = Math.max(10, a.d * VE.pps); if (x + aw < 0 || x > w) return "";
-			return '<i class="vd-an-mk' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + VE.esc(a.id) + '" style="left:' + x + "px;width:" + aw + "px;top:" + (2 + (i % 2) * 13) + 'px" title="' + VE.esc(V.animName(a)) + " · " + (Math.round(a.d * 100) / 100) + ' s. Drag to move, drag an end to change its length, click to jump to its end."><u></u><s></s><b></b></i>';
+			return '<i class="vd-an-mk' + (VE.animSel === a.id ? " is-sel" : "") + '" data-aid="' + VE.esc(a.id) + '" style="left:' + x + "px;width:" + aw + "px;top:" + (2 + (i % 2) * 13) + 'px" title="' + VE.esc(V.animName(a)) + " · " + (Math.round(a.d * 100) / 100) + ' s. Drag to move, drag an end to change its length, click to jump to its end (and select it: Delete removes just this animation)."><u></u><s></s><b></b></i>';
 		}).join("");
 	}
 	// the canvas only covers the part of the clip that is on screen (plus a screen on each side), drawn at real size: a long clip zoomed
@@ -194,7 +194,7 @@
 		var tr = V.track(VE.P, c.track);
 		if (e.shiftKey || e.ctrlKey || e.metaKey) { var i = VE.sel.indexOf(c.id); if (i >= 0) VE.sel.splice(i, 1); else VE.sel.push(c.id); }
 		else if (VE.sel.indexOf(c.id) < 0) VE.sel = [c.id];
-		VE.emit("select"); markSel();
+		VE.animSel = null; VE.emit("select"); markSel();
 		if (tr && tr.lock) return;
 		var r = clipEl.getBoundingClientRect(), edge = e.clientX - r.left < 7 ? "l" : r.right - e.clientX < 7 ? "r" : null;
 		if (r.width < 22) edge = null;
@@ -329,7 +329,7 @@
 		var d = drag; drag = null;
 		if (d.mode === "pick") {
 			clearInterval(d.timer); if (d.box) d.box.remove();
-			if (!d.moved) { if (!d.add && VE.sel.length) { VE.sel = []; VE.emit("select"); markSel(); } VE.preview.seek(d.t); }
+			if (!d.moved) { if (!d.add && (VE.sel.length || VE.animSel)) { VE.sel = []; VE.animSel = null; VE.emit("select"); markSel(); } VE.preview.seek(d.t); }
 			return;
 		}
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Layer height"); return; }

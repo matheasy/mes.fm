@@ -336,7 +336,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-main > .vd-rail {grid-column:1;} #vd .vd-main > .vd-left {grid-column:2;} #vd #vd-lgrip {grid-column:3;} #vd .vd-main > .vd-center {grid-column:4;} #vd #vd-rgrip {grid-column:5;} #vd .vd-main > .vd-insp {grid-column:6;}
 	#vd .vd-rail {background:#0d1118;border-right:1px solid var(--vd-line);display:flex;flex-direction:column;gap:2px;padding:0.3em 0.2em;overflow:auto;min-height:0;}
 	#vd .vd-rail button {background:transparent;border:0;border-radius:0.4em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0.15em;padding:0.45em 0.1em;font:inherit;font-size:0.68em;line-height:1.15;color:var(--vd-dim);text-align:center;min-height:52px;}
-	#vd .vd-rail button i {font-style:normal;font-size:1.65em;line-height:1;filter:grayscale(0.35);} #vd .vd-rail .vd-ri-t {font-family:Georgia,serif;font-weight:700;}
+	#vd .vd-rail button i {font-style:normal;font-size:1.65em;line-height:1;filter:grayscale(0.35);} #vd .vd-rail .vd-ri-t {font-family:Georgia,serif;font-weight:700;} #vd .vd-rail .vd-ri-s {font-size:1.3em;color:#e11d48;filter:none;}
 	#vd .vd-rail button:hover {background:var(--vd-btnh);color:var(--vd-fg);} #vd .vd-rail button[aria-selected="true"] {background:#2a1520;color:#fff;box-shadow:inset 3px 0 0 var(--vd-acc);} #vd .vd-rail button[aria-selected="true"] i {filter:none;}
 	#vd .vd-left {background:var(--vd-panel);min-height:0;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
 	#vd .vd-pane {display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow:auto;padding:0.5em;}
@@ -739,6 +739,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #vd .vd{--vd-acc:#e32650;--vd-video:#2758e2;--vd-audio:#12f7b6;--vd-text:#f37616}
 	body.dark-mode #vd .vd-rail{background:#394b6a}
+	body.dark-mode #vd .vd-rail .vd-ri-s{color:#ec6e8a}
 	body.dark-mode #vd .vd-card:hover{background:#3e4d66}
 	body.dark-mode #vd .vd-card .vd-cv{background:#3c4c67}
 	body.dark-mode #vd .vd-hgrip i{background:#46505d}
@@ -1052,6 +1053,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<nav class="vd-rail" id="vd-rail" role="tablist" aria-label="Library" aria-orientation="vertical">
 					<button type="button" role="tab" data-cat="media" aria-selected="true"><i aria-hidden="true">&#127902;</i><span>Media</span></button>
 					<button type="button" role="tab" data-cat="titles" aria-selected="false"><i aria-hidden="true" class="vd-ri-t">T</i><span>Titles</span></button>
+					<button type="button" role="tab" data-cat="shapes" aria-selected="false"><i aria-hidden="true" class="vd-ri-s">&#9650;</i><span>Shapes</span></button>
 					<button type="button" role="tab" data-cat="trans" aria-selected="false"><i aria-hidden="true">&#10697;</i><span>Transitions</span></button>
 					<button type="button" role="tab" data-cat="afx" aria-selected="false"><i aria-hidden="true">&#128266;</i><span>Audio effects</span></button>
 					<button type="button" role="tab" data-cat="vfx" aria-selected="false"><i aria-hidden="true">&#10024;</i><span>Visual effects</span></button>
@@ -1069,7 +1071,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						</div>
 						<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first. Drop a .mesvideo project file to open it.</p>
 					</section>
-					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles &amp; annotations</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div><div class="vd-panehead vd-panehead2"><b>Arrows &amp; shapes</b></div><div class="vd-cards" data-cards="shapes"></div></section>
+					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
+					<section class="vd-pane" data-pane="shapes" role="tabpanel" aria-label="Shapes" hidden><div class="vd-panehead"><b>Shapes &amp; annotations</b></div><p class="vd-hint">Arrows, boxes, bars, highlights and more. Click to put one at the playhead, or drag it onto the timeline; then drag its handles in the preview to size it.</p><div class="vd-cards" data-cards="shapes"></div></section>
 					<section class="vd-pane" data-pane="trans" role="tabpanel" aria-label="Transitions" hidden><div class="vd-panehead"><b>Transitions</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-trdur" aria-label="Transition length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="trans"></div></section>
 					<section class="vd-pane" data-pane="afx" role="tabpanel" aria-label="Audio effects" hidden><div class="vd-panehead"><b>Audio effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip. Nothing is changed in your files: the effects are worked out as you play and export, and you can change or remove them in the properties.</p><div class="vd-cards" data-cards="afx"></div></section>
 					<section class="vd-pane" data-pane="vfx" role="tabpanel" aria-label="Visual effects" hidden><div class="vd-panehead"><b>Visual effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="vfx"></div></section>
@@ -1247,7 +1250,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=40" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=41" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

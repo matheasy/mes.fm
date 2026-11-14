@@ -29,7 +29,7 @@
 	#vd .vd-main > .vd-rail {grid-column:1;} #vd .vd-main > .vd-left {grid-column:2;} #vd #vd-lgrip {grid-column:3;} #vd .vd-main > .vd-center {grid-column:4;} #vd #vd-rgrip {grid-column:5;} #vd .vd-main > .vd-insp {grid-column:6;}
 	#vd .vd-rail {background:#0d1118;border-right:1px solid var(--vd-line);display:flex;flex-direction:column;gap:2px;padding:0.3em 0.2em;overflow:auto;min-height:0;}
 	#vd .vd-rail button {background:transparent;border:0;border-radius:0.4em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0.15em;padding:0.45em 0.1em;font:inherit;font-size:0.68em;line-height:1.15;color:var(--vd-dim);text-align:center;min-height:52px;}
-	#vd .vd-rail button i {font-style:normal;font-size:1.65em;line-height:1;filter:grayscale(0.35);} #vd .vd-rail .vd-ri-t {font-family:Georgia,serif;font-weight:700;}
+	#vd .vd-rail button i {font-style:normal;font-size:1.65em;line-height:1;filter:grayscale(0.35);} #vd .vd-rail .vd-ri-t {font-family:Georgia,serif;font-weight:700;} #vd .vd-rail .vd-ri-s {font-size:1.3em;color:#e11d48;filter:none;}
 	#vd .vd-rail button:hover {background:var(--vd-btnh);color:var(--vd-fg);} #vd .vd-rail button[aria-selected="true"] {background:#2a1520;color:#fff;box-shadow:inset 3px 0 0 var(--vd-acc);} #vd .vd-rail button[aria-selected="true"] i {filter:none;}
 	#vd .vd-left {background:var(--vd-panel);min-height:0;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
 	#vd .vd-pane {display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow:auto;padding:0.5em;}

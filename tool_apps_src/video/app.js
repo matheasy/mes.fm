@@ -315,6 +315,15 @@
 		VE.commit("Split");
 	};
 	VE.del = function (ripple) {
+		if (VE.animSel) {   // an animation arrow is selected: Delete removes just that animation, not the clip
+			var ac = VE.selected().filter(function (c) { return (c.anims || []).some(function (a) { return a.id === VE.animSel; }); })[0];
+			if (ac) {
+				var atr = V.track(VE.P, ac.track); if (atr && atr.lock) { toast("That track is locked."); return; }
+				ac.anims = V.cleanAnims(ac.anims.filter(function (a) { return a.id !== VE.animSel; })); if (ac.anims && !ac.anims.length) ac.anims = null;
+				VE.animSel = null; VE.commit("Delete animation"); return;
+			}
+			VE.animSel = null;
+		}
 		var ids = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).filter(function (id) { var c = V.clip(VE.P, id), tr = c && V.track(VE.P, c.track); return c && !(tr && tr.lock); });
 		if (!ids.length) { toast("Select a clip first."); return; }
 		V.removeClips(VE.P, ids, ripple); VE.sel = []; VE.commit(ripple ? "Ripple delete" : "Delete");
@@ -1799,6 +1808,7 @@
 		{ id: "arrow2", name: "Double arrow", desc: "Both ends", shape: { k: "arrow", heads: "both", color: "#f59e0b" }, svg: '<path d="M9 20 H35" stroke="#f59e0b" stroke-width="4"/><path d="M41 20 L31 14 V26 Z M3 20 L13 14 V26 Z" fill="#f59e0b"/>' },
 		{ id: "line", name: "Line", desc: "Underline or connect", y: 0.6, shape: { k: "line", color: "#facc15" }, svg: '<path d="M5 28 H39" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>' },
 		{ id: "rect", name: "Box", desc: "Outline round something", shape: { k: "rect", w: 0.3, h: 0.25, round: 0.08 }, svg: '<rect x="6" y="9" width="32" height="22" rx="3" fill="none" stroke="#e11d48" stroke-width="3.5"/>' },
+		{ id: "bar", name: "Bar", desc: "Solid rectangle, any size", y: 0.8, shape: { k: "rect", w: 0.5, h: 0.07, round: 0.15, fillOn: true, fill: "#e11d48", fillOp: 1, lw: 0, shadow: false }, svg: '<rect x="3" y="15" width="38" height="10" rx="2" fill="#e11d48"/>' },
 		{ id: "ellipse", name: "Circle", desc: "Ring round something", shape: { k: "ellipse", w: 0.18, h: 0.28 }, svg: '<ellipse cx="22" cy="20" rx="15" ry="12" fill="none" stroke="#e11d48" stroke-width="3.5"/>' },
 		{ id: "highlight", name: "Highlight", desc: "See-through marker", shape: { k: "highlight", w: 0.35, h: 0.08, fill: "#fde047", fillOp: 0.38, round: 0.2 }, svg: '<rect x="4" y="14" width="36" height="12" rx="3" fill="#fde047" opacity="0.6"/><path d="M8 20 H36" stroke="#e5e7eb" stroke-width="2"/>' },
 		{ id: "spotlight", name: "Spotlight", desc: "Darken the rest", dur: 3, shape: { k: "spotlight", w: 0.32, h: 0.3, oval: true, lw: 0, dark: 0.62 }, svg: '<rect x="2" y="4" width="40" height="32" rx="3" fill="#000" opacity="0.7"/><ellipse cx="22" cy="20" rx="11" ry="9" fill="#e5e7eb"/>' },
