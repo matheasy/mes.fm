@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-13",
+ "generated": "2026-11-14",
  "calculators": [
   {
    "href": "/luders-bands",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/transcript",
+   "title": "Transcript & Timestamps",
+   "icon": "/img/transcript-logo.png",
+   "desc": "Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.",
+   "added": "2026-11-14",
+   "kind": "tool"
+  },
+  {
    "href": "/quantum-computing",
    "title": "Quantum Computer Simulator",
    "icon": "/img/quantum-computing-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.",
    "added": "2026-11-10",
    "kind": "tool"
-  },
-  {
-   "href": "/quantum",
-   "title": "Quantum Lab",
-   "icon": "/img/quantum-logo.png",
-   "desc": "Watch a wave packet tunnel through a barrier, build double-slit stripes one particle at a time, run a Bell test on entangled pairs, send atoms through Stern-Gerlach magnets and explore hydrogen orbitals.",
-   "added": "2026-11-10",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/transcript",
+   "title": "Transcript & Timestamps",
+   "icon": "/img/transcript-logo.png",
+   "desc": "Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.",
+   "added": "2026-11-14",
+   "kind": "tool"
+  },
   {
    "href": "/quantum-computing",
    "title": "Quantum Computer Simulator",
@@ -250,14 +258,6 @@
    "title": "Car Sandbox",
    "icon": "/img/car-sandbox-logo.png",
    "desc": "Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.",
-   "added": "2026-11-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/chess",
-   "title": "Chess",
-   "icon": "/img/chess-logo.png",
-   "desc": "Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.",
    "added": "2026-11-12",
    "kind": "tool"
   }

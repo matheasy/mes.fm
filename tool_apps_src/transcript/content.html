@@ -1,0 +1,145 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu tx" id="tx">
+		<div class="tu-card tx-src">
+			<div class="tx-tabs" role="tablist" aria-label="Where the words come from">
+				<button type="button" role="tab" id="tx-t-link" aria-selected="true" aria-controls="tx-p-link" data-tab="link">🔗 Video link</button>
+				<button type="button" role="tab" id="tx-t-file" aria-selected="false" aria-controls="tx-p-file" data-tab="file" tabindex="-1">📁 File</button>
+				<button type="button" role="tab" id="tx-t-paste" aria-selected="false" aria-controls="tx-p-paste" data-tab="paste" tabindex="-1">📋 Paste captions</button>
+			</div>
+			<div class="tx-pane" role="tabpanel" id="tx-p-link" aria-labelledby="tx-t-link">
+				<form class="tx-linkrow" id="tx-form">
+					<label class="tx-sr" for="tx-url">Video link</label>
+					<input class="tu-input tu-input--big" id="tx-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://www.youtube.com/watch?v=…  (also 3Speak, Odysee, a .mp3 / .mp4 link)">
+					<button type="submit" class="tu-btn tu-btn--primary">Get transcript</button>
+				</form>
+				<p class="tx-sites">YouTube: its own captions, in seconds. 3Speak, Odysee and .mp3 / .mp4 links: speech recognition right here in your browser.</p>
+				<p class="tx-msg" id="tx-linkmsg" role="status" aria-live="polite"></p>
+			</div>
+			<div class="tx-pane" role="tabpanel" id="tx-p-file" aria-labelledby="tx-t-file" hidden>
+				<label class="tx-drop" id="tx-drop" for="tx-file">
+					<span class="tx-dropbig">Drop a video, audio or caption file</span>
+					<span class="tx-dropsub">MP4, MOV, MKV, MP3, WAV, M4A … are turned into text in this browser. SRT, VTT, TXT and JSON captions open as they are. Nothing is uploaded.</span>
+					<input type="file" id="tx-file" accept="audio/*,video/*,.mkv,.avi,.wmv,.flv,.srt,.vtt,.sbv,.txt,.json">
+				</label>
+			</div>
+			<div class="tx-pane" role="tabpanel" id="tx-p-paste" aria-labelledby="tx-t-paste" hidden>
+				<label class="tu-label" for="tx-paste">Paste SRT, VTT, or YouTube's "Show transcript" panel</label>
+				<textarea class="tu-input tx-paste" id="tx-paste" rows="7" spellcheck="false" placeholder="0:01&#10;All right, it's time for another math easy solution.&#10;0:04&#10;Today I'm going to…"></textarea>
+				<div class="tu-row"><button type="button" class="tu-btn tu-btn--primary" id="tx-pastego">Open these captions</button>
+					<details class="tx-how"><summary>How do I copy YouTube's transcript?</summary><p>On the video's YouTube page press <b>…more</b> under the title, then <b>Show transcript</b>. Click in the transcript panel, select it all (drag from the first line to the last) and copy. Paste it here: the times come along.</p></details></div>
+			</div>
+
+			<div class="tx-asr" id="tx-asr" hidden>
+				<h2 class="tx-h">Make the transcript with speech recognition</h2>
+				<p class="tx-asrwhy" id="tx-asrwhy"></p>
+				<div class="tx-asrrow">
+					<label class="tu-field tu-field--sm"><span class="tu-label">Quality</span><select class="tu-select" id="tx-model"></select></label>
+					<label class="tu-field tu-field--sm"><span class="tu-label">Language spoken</span><select class="tu-select" id="tx-lang"></select></label>
+					<button type="button" class="tu-btn tu-btn--primary" id="tx-asrgo">🎙 Start</button>
+				</div>
+				<p class="tu-note">Uses OpenAI's Whisper model (MIT licence), downloaded once and run on your own computer: the sound never leaves it. A fast graphics card (WebGPU in Chrome, Edge, Brave) makes it many times quicker.</p>
+			</div>
+			<div class="tx-prog" id="tx-prog" hidden>
+				<div class="tx-progtext" id="tx-progtext" role="status" aria-live="polite"></div>
+				<div class="tx-bar"><i id="tx-bar"></i></div>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tx-cancel">Cancel</button>
+			</div>
+		</div>
+
+		<section class="tu-card tx-res" id="tx-res" hidden>
+			<div class="tx-head" id="tx-head">
+				<div class="tx-meta"><h2 class="tx-title" id="tx-title"></h2><div class="tx-sub" id="tx-sub"></div></div>
+			</div>
+			<div class="tx-body">
+				<div class="tx-left">
+					<div class="tx-player" id="tx-player"></div>
+					<div class="tx-trackrow" id="tx-trackrow" hidden><label class="tu-label" for="tx-track">Captions</label><select class="tu-select" id="tx-track"></select><span class="tx-dim" id="tx-autonote"></span></div>
+					<div class="tx-related" id="tx-related"></div>
+				</div>
+				<div class="tx-right">
+					<div class="tx-vtabs" role="tablist" aria-label="Results">
+						<button type="button" role="tab" aria-selected="true" data-v="tr" id="tx-vt-tr">Transcript</button>
+						<button type="button" role="tab" aria-selected="false" data-v="ch" id="tx-vt-ch" tabindex="-1">⏱ Chapter timestamps</button>
+						<button type="button" role="tab" aria-selected="false" data-v="ex" id="tx-vt-ex" tabindex="-1">⬇ Copy &amp; download</button>
+					</div>
+
+					<div class="tx-view" id="tx-v-tr" role="tabpanel" aria-labelledby="tx-vt-tr">
+						<div class="tx-tools">
+							<div class="tu-seg" id="tx-mode"><button type="button" data-m="lines">Lines</button><button type="button" data-m="paras">Paragraphs</button></div>
+							<label class="tx-chk"><input type="checkbox" id="tx-showt"> Times</label>
+							<label class="tx-chk" id="tx-followl"><input type="checkbox" id="tx-follow"> Follow the video</label>
+							<div class="tx-find"><input class="tu-input" id="tx-q" type="search" placeholder="Search the words…" aria-label="Search the transcript"><span class="tx-qn" id="tx-qn"></span><button type="button" class="tx-ib" id="tx-qp" title="Previous match" aria-label="Previous match">↑</button><button type="button" class="tx-ib" id="tx-qx" title="Next match" aria-label="Next match">↓</button></div>
+						</div>
+						<div class="tx-list" id="tx-list" tabindex="0" aria-label="Transcript"></div>
+						<div class="tx-actions"><button type="button" class="tu-btn" id="tx-copyall">Copy the text</button><button type="button" class="tu-btn tu-btn--ghost" id="tx-copyt">Copy with times</button><a class="tu-btn tu-btn--ghost" id="tx-tolate" href="/translate" target="_blank" rel="noopener">Translate ↗</a></div>
+					</div>
+
+					<div class="tx-view" id="tx-v-ch" role="tabpanel" aria-labelledby="tx-vt-ch" hidden>
+						<div class="tx-desc" id="tx-descch" hidden></div>
+						<div class="tx-chopts">
+							<label class="tu-field tu-field--sm"><span class="tu-label">How many</span><select class="tu-select" id="tx-chn"><option value="0">Automatic</option></select></label>
+							<button type="button" class="tu-btn" id="tx-chmake">↻ Make chapters again</button>
+							<button type="button" class="tu-btn tu-btn--ghost" id="tx-chadd">＋ Add one at the video's time</button>
+						</div>
+						<p class="tu-note">Breaks come from where the words change topic and titles from the words used most there: a draft. Click a time to jump there, edit any title, or ask an AI below for better titles.</p>
+						<ol class="tx-chlist" id="tx-chlist"></ol>
+						<div class="tx-chcheck" id="tx-chcheck" role="status"></div>
+						<label class="tu-label" for="tx-chout">For your video description</label>
+						<textarea class="tu-input tx-chout" id="tx-chout" rows="6" spellcheck="false"></textarea>
+						<div class="tx-actions"><button type="button" class="tu-btn tu-btn--primary" id="tx-chcopy">Copy chapters</button>
+							<label class="tx-chk"><input type="checkbox" id="tx-chhead"> Add a "Timestamps:" heading</label>
+							<label class="tx-chk"><input type="checkbox" id="tx-chdash"> Dash after the time</label></div>
+						<details class="tx-ai" id="tx-ai">
+							<summary>✨ Better titles from an AI (ChatGPT, Claude, Gemini, Grok)</summary>
+							<ol class="tx-aisteps">
+								<li><button type="button" class="tu-btn" id="tx-aicopy">Copy the request</button> (the transcript squeezed to one line every 20 seconds, with the rules for YouTube chapters)</li>
+								<li>Paste it into <a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://claude.ai/new" target="_blank" rel="noopener">Claude</a>, <a href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini</a> or <a href="https://grok.com/" target="_blank" rel="noopener">Grok</a>.</li>
+								<li>Paste its answer here: <textarea class="tu-input" id="tx-aians" rows="4" spellcheck="false" placeholder="0:00 Intro&#10;3:53 Footage of the disaster…"></textarea> <button type="button" class="tu-btn tu-btn--primary" id="tx-aiuse">Use these chapters</button></li>
+							</ol>
+							<p class="tx-dim" id="tx-ailen"></p>
+							<div class="tx-nano" id="tx-nano" hidden><button type="button" class="tu-btn" id="tx-nanogo">🧠 Write titles with the AI built into this browser</button> <span class="tx-dim">Chrome's on-device model: nothing is sent anywhere.</span></div>
+						</details>
+					</div>
+
+					<div class="tx-view" id="tx-v-ex" role="tabpanel" aria-labelledby="tx-vt-ex" hidden>
+						<div class="tx-chopts">
+							<label class="tu-field tu-field--sm"><span class="tu-label">Format</span><select class="tu-select" id="tx-fmt">
+								<option value="txt">Plain text</option><option value="paras">Paragraphs</option><option value="parast">Paragraphs with times</option><option value="lines">Lines with times</option>
+								<option value="md">Markdown (chapters + paragraphs)</option><option value="srt">SRT subtitles</option><option value="vtt">WebVTT subtitles</option><option value="json">JSON</option></select></label>
+						</div>
+						<textarea class="tu-input tx-exout" id="tx-exout" rows="14" spellcheck="false" readonly></textarea>
+						<div class="tx-actions"><button type="button" class="tu-btn tu-btn--primary" id="tx-excopy">Copy</button><button type="button" class="tu-btn" id="tx-exdl">Download</button><span class="tx-dim" id="tx-exinfo"></span></div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<div class="tu-card tx-cross">
+			<h2 class="tx-h">More for your videos</h2>
+			<div class="tx-crossgrid">
+				<a href="/youtube-thumbnail" id="tx-x-thumb"><b>🖼 Thumbnail Grabber</b><span>Save a video's thumbnail in every size.</span></a>
+				<a href="/youtube-audio" id="tx-x-audio"><b>🔊 Audio Analyzer</b><span>How loud is it? LUFS, waveform, silences.</span></a>
+				<a href="/watch" id="tx-x-watch"><b>▶ MES Watch</b><span>Just the video: no feed, no comments.</span></a>
+				<a href="/translate"><b>🌐 Translate</b><span>Turn the transcript into another language.</span></a>
+				<a href="/speedreader"><b>📖 Speed Reader</b><span>Read the transcript fast, or have it read aloud.</span></a>
+				<a href="/copy-text"><b>📋 Copy Text</b><span>Keep your description snippets one click away.</span></a>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Get the transcript of a YouTube video</h2>
+			<p>Paste a YouTube link and press <b>Get transcript</b>. The page reads the video's own captions (the ones you see with the CC button: written by the creator, or YouTube's automatic ones) and shows every line with its time. Click a line and the video jumps there. Search for a word, switch between lines and paragraphs, and copy or download the text as plain text, paragraphs, SRT or WebVTT subtitles, Markdown or JSON.</p>
+			<h3>Chapter timestamps for your description</h3>
+			<p>The <b>Chapter timestamps</b> tab finds where the talk changes topic and writes a first draft like <code>0:00 Intro</code>, <code>3:53 Live footage</code>. Edit the titles, add or delete chapters, and copy the list into your video description. The page checks YouTube's rules: the first chapter at 0:00, at least three chapters, each at least 10 seconds long.</p>
+			<p>For polished titles, <b>Copy the request</b> gives an AI chatbot the transcript in a compact form with YouTube's rules; paste its answer back and the chapters are checked and ready.</p>
+			<h3>3Speak, Odysee and your own files</h3>
+			<p>Sites that have no captions get a transcript from speech recognition: OpenAI's Whisper model runs inside your browser, so the sound is never uploaded. 3Speak and Odysee links work straight away; for Rumble, BitChute or X, download the video and drop the file here. The first run downloads the model (about 40 to 250 MB depending on the quality you pick); after that it starts in seconds.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why does a YouTube video say "no captions"?</dt><dd>Some videos have captions turned off, are too new for YouTube's automatic captions, or are music without speech. If you own the video, download it in YouTube Studio and drop the file here to make a transcript with speech recognition.</dd>
+				<dt>Are automatic captions accurate?</dt><dd>Mostly, but names and technical words are often wrong, and older automatic captions have no punctuation. The paragraph view puts in breaks at pauses to make them easier to read.</dd>
+				<dt>Is anything stored?</dt><dd>No account and nothing kept on a server. For YouTube links mes.fm asks YouTube for the caption file on your behalf (a browser page can't), and passes it straight back to you.</dd>
+			</dl>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js" defer></script>

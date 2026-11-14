@@ -971,6 +971,11 @@
 "updated":"2026-10-23",
 "type":"Calculator"
 },
+"/transcript":{
+"added":"2026-11-14",
+"updated":"2026-11-14",
+"type":"Tool"
+},
 "/translate":{
 "added":"2026-10-24",
 "updated":"2026-11-07",
@@ -1063,7 +1068,7 @@
 },
 "/youtube-thumbnail":{
 "added":"2026-09-17",
-"updated":"2026-10-11",
+"updated":"2026-11-14",
 "type":"Tool"
 },
 "/youtubemoney":{

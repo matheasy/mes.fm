@@ -82,6 +82,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("telegram", "Telegram Archive"),
     ("mic-test", "Mic Test"),
     ("youtube-audio", "YouTube Audio Analyzer"),
+    ("transcript", "Transcript & Timestamps"),
     ("file-check", "File Safety Check"),
     ("storage", "Storage Analyzer"),
     ("browser-storage", "Storage Analyzer", "/storage"),   # 2026-11-07 sub-page (brand option)

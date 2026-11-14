@@ -269,6 +269,14 @@ APPS = {
                      desc="Free YouTube audio analyzer: measure any video's loudness in LUFS, true peak and loudness range, and see its waveform, spectrogram, silences and clipping. Works with YouTube, 3Speak, Rumble, Odysee, BitChute, X and your own audio or video files. Nothing is uploaded.",
                      meta_desc="Measure a YouTube video's loudness (LUFS, true peak, LRA) and see its waveform, spectrogram, silences and clipping. Also 3Speak, Rumble, Odysee and your own files.",
                      js_v="4", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+    # MES Transcript & Timestamps (2026-11-14, mes.fm/transcript): YouTube captions via api/yt-transcript.js (YouTube's player API as its Android app,
+    # no key), Whisper (transformers.js 3.7.6) in the browser for 3Speak / Odysee / files, chapter-timestamp drafts (TextTiling) + AI request, exports.
+    # lib.js = MESTx, tests tool_apps_src/transcript-tests.js. MESYA (youtube-audio lib) parses links / reads 3Speak; convert-video engine for odd files.
+    "transcript": dict(title="MES Transcript & Timestamps", page_title="YouTube Transcript and Chapter Timestamps Generator",
+                       tag="Every word, every timestamp.", accent="#b91c1c", dark="#991b1b", tint="#fde8e8",
+                       desc="Free YouTube transcript generator: paste a link to get the video's captions with clickable times, search them, and copy or download them as text, paragraphs, SRT or VTT. Make chapter timestamps for your description. 3Speak, Odysee and your own files get a transcript from speech recognition in your browser.",
+                       meta_desc="Get any YouTube video's transcript with clickable times, make chapter timestamps for your description, and download TXT, SRT or VTT. Also 3Speak, Odysee and your own files.",
+                       js_v="1", lib_from=["youtube-audio", "convert-video"], js_parts=["../convert-video/engine.js"]),
     # MES Watch (2026-11-07, mes.fm/watch): a plain player for YouTube (IFrame API, nocookie), 3Speak (HLS) and Odysee (file) in our own <video>,
     # Rumble / BitChute / X embeds; Up next / Saved / History with resume, in localStorage mes-watch:v1. lib.js = MESWatch on top of
     # youtube-audio's MESYA.parseLink (lib_from). Tests: node tool_apps_src/watch-tests.js.

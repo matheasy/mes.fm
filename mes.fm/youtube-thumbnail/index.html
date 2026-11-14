@@ -234,6 +234,7 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.ytt__form input {font:inherit;font-size:1em;flex:1 1 20em;min-width:0;padding:0.65em 0.8em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
 	.ytt__form input:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(224,32,32,0.18);}
 	.ytt__hint {font-size:0.82em;color:#8a93a0;margin:0 0 1.2em;}
+	.ytt__more {margin:1em 0 0;font-size:.95em;line-height:1.6}
 	.ytt__error {color:#a81717;background:#fdeaea;border:1px solid #f3c6c6;border-radius:0.4em;padding:0.7em 0.9em;margin:0 0 1.2em;font-size:0.92em;}
 
 	.ytt__result {display:flex;flex-wrap:wrap;gap:1.2em;background:#fafafa;border:1px solid #e3e3e3;border-radius:0.5em;padding:1em;}
@@ -601,7 +602,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<input type="url" id="ytt-url" placeholder="Paste a video link&hellip; e.g. https://youtube.com/watch?v=&hellip;" autocomplete="off" aria-label="Video URL">
 			<button type="button" class="ytt__btn" id="ytt-fetch">Get Thumbnail</button>
 		</div>
-		<p class="ytt__hint">Works with YouTube, 3Speak, Odysee, and Rumble video links.</p>
+		<p class="ytt__hint">Works with YouTube, 3Speak, Odysee, and Rumble video links. Need the words too? <a href="/transcript">Get the transcript and chapter timestamps</a>.</p>
 		<p class="ytt__error hide" id="ytt-error"></p>
 
 		<div class="ytt__result hide" id="ytt-result">
@@ -695,7 +696,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/youtube-thumbnail/js/thumbnail.js" defer></script>
+	<script src="/youtube-thumbnail/js/thumbnail.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

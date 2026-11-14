@@ -111,6 +111,14 @@
 
 		errorEl.classList.add("hide");
 		resultEl.classList.remove("hide");
+		moreLinks();
+	}
+	// Same link, other MES tools (transcript + chapters, loudness, plain player)
+	function moreLinks() {
+		var box = $("ytt-more"), u = urlInput.value.trim();
+		if (!box) { box = document.createElement("p"); box.id = "ytt-more"; box.className = "ytt__more"; resultEl.parentNode.insertBefore(box, resultEl.nextSibling); }
+		var q = encodeURIComponent(u);
+		box.innerHTML = 'Same video: <a href="/transcript?v=' + q + '">Transcript &amp; chapter timestamps</a> &middot; <a href="/youtube-audio?u=' + q + '">How loud is it?</a> &middot; <a href="/watch?v=' + q + '">Watch without distractions</a>';
 	}
 
 	// YouTube serves a small grey placeholder image (120x90) for a size that
@@ -206,4 +214,9 @@
 	urlInput.addEventListener("keydown", function (e) {
 		if (e.key === "Enter") handleFetch();
 	});
+	// ?url=<link> (or ?v=, ?u=) opens a link straight away, e.g. from mes.fm/transcript
+	try {
+		var sp = new URLSearchParams(location.search), pre = sp.get("url") || sp.get("u") || sp.get("v");
+		if (pre) { urlInput.value = pre; handleFetch(); }
+	} catch (e) {}
 })();
