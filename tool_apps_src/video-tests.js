@@ -393,5 +393,10 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 ok(V.watchLeft(17*60+16.8, 3600+17*60+52.9, 2.5) === "24:15", "17:16 to 1:17:52 at 2.5x = 24:15");
 ok(V.watchLeft(0, 3725, 1) === "1:02:05", "hours shown");
 ok(V.watchLeft(50, 40, 2) === "0:00", "past the end");
+eq(V.customSlot(3, 5, 1, 10), { t: 3, d: 2 }, "dropped before the playhead: runs from the drop point to the playhead");
+eq(V.customSlot(4.99, 5, 1, 10), { t: 4.96, d: 0.04 }, "dropped just before the playhead: tiny but still ends there");
+eq(V.customSlot(7, 5, 1, 10), { t: 4, d: 1 }, "dropped after the playhead: its normal length, ending at the playhead");
+eq(V.customSlot(null, 0.5, 1, 10), { t: 0, d: 0.5 }, "click near the clip start: cut short at the start");
+ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "playhead outside the clip: none");
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

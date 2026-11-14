@@ -1932,6 +1932,7 @@
 	VE.addAnim = function (id, c, at) {
 		var pre = V.animPreset(id); if (!pre || !c) return;
 		var len = V.dur(c), d = UI.anDur || 1, here = (at != null ? at : VE.t) - c.start, slot = V.animSlot(pre.at, here, d, len);
+		if (id === "custom") { var cs = V.customSlot(at != null ? at - c.start : null, VE.t - c.start, d, len); if (cs) slot = cs; }   // ends at the playhead
 		VE.sel = [c.id]; VE.emit("select");
 		function make(rect) {
 			var s = V.stateAt(c, slot.t), r = VE.rectOf(measure, c, VE.P.w, VE.P.h, posOf(s)), vals = V.animValues(id, s, r ? { w: r.dw, h: r.dh } : null, VE.P.w, VE.P.h, { rect: rect });

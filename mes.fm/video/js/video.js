@@ -928,6 +928,15 @@
 	};
 	// where a new animation of length d goes inside a clip of length len: "start", "end", or at rel ("here"), kept inside the clip
 	V.animSlot = function (at, rel, d, len) { d = Math.min(d, Math.max(0.05, len)); var t = at === "start" ? 0 : at === "end" ? len - d : V.clamp(rel, 0, Math.max(0, len - d)); return { t: Math.round(t * 1e6) / 1e6, d: d }; };
+	// Custom animation: it ends at the playhead (play = seconds into the clip) when the playhead is inside the clip. Dropped on the clip
+	// (drop = seconds into the clip) before the playhead it runs from the drop point to the playhead, however short that makes it;
+	// otherwise it takes its normal length d up to the playhead (cut short at the clip's start). null = playhead not in the clip.
+	V.customSlot = function (drop, play, d, len) {
+		var MIN = 0.04; if (play == null || play < MIN || play > len + 1e-6) return null;
+		var end = Math.min(play, len), t = drop != null && drop < end - 1e-6 ? Math.max(0, drop) : Math.max(0, end - d);
+		if (end - t < MIN) t = Math.max(0, end - MIN);
+		return { t: Math.round(t * 1e6) / 1e6, d: Math.round((end - t) * 1e6) / 1e6 };
+	};
 	V.animName = function (a) { var p = V.animPreset(a.kind); return p ? p.name + (/^slide/.test(p.id) ? " " + p.desc.toLowerCase() : "") : "Animation"; };
 
 	/* ---------- preview view: zoom and pan of the canvas inside the stage ---------- */
@@ -5242,6 +5251,7 @@
 	VE.addAnim = function (id, c, at) {
 		var pre = V.animPreset(id); if (!pre || !c) return;
 		var len = V.dur(c), d = UI.anDur || 1, here = (at != null ? at : VE.t) - c.start, slot = V.animSlot(pre.at, here, d, len);
+		if (id === "custom") { var cs = V.customSlot(at != null ? at - c.start : null, VE.t - c.start, d, len); if (cs) slot = cs; }   // ends at the playhead
 		VE.sel = [c.id]; VE.emit("select");
 		function make(rect) {
 			var s = V.stateAt(c, slot.t), r = VE.rectOf(measure, c, VE.P.w, VE.P.h, posOf(s)), vals = V.animValues(id, s, r ? { w: r.dw, h: r.dh } : null, VE.P.w, VE.P.h, { rect: rect });
