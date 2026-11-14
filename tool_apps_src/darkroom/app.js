@@ -646,6 +646,7 @@
 		var box = h("div"); box.appendChild(lk); box.appendChild(amt);
 		R.appendChild(sec("looks", "Looks", box));
 		var b2 = h("div"), bw = h("div", "dr-row"); bw.innerHTML = '<button type="button" class="dr-b dr-b--sm" id="dr-bwtog" aria-pressed="' + dev.s.bw + '">◑ Black &amp; white</button><button type="button" class="dr-b dr-b--sm" id="dr-awb">⌖ Auto white balance</button>';
+		var sm = h("div", "dr-row"); sm.innerHTML = '<button type="button" class="dr-b dr-b--sm" data-ai="subject">👤 Brighten subject</button><button type="button" class="dr-b dr-b--sm" data-ai="sky">☁ Deeper sky</button><button type="button" class="dr-b dr-b--sm" data-ai="background">▦ Darken background</button>'; b2.appendChild(sm); sm.querySelectorAll("[data-ai]").forEach(function (x) { x.onclick = function () { smartMask(x.getAttribute("data-ai")); }; });
 		b2.appendChild(bw); sliders(SIMPLE, b2); R.appendChild(sec("simple", "Adjust", b2));
 		bw.querySelector("#dr-bwtog").onclick = function () { dev.s.bw = !dev.s.bw; afterSettings(true); commit(dev.s.bw ? "Black & white" : "Colour"); };
 		bw.querySelector("#dr-awb").onclick = autoWB;
@@ -862,10 +863,11 @@
 	var newMask = null; /* "linear" | "radial" | "brush": waiting for the first drag */
 	function maskPanel(box) {
 		var on = dev.s.locals;
-		box.innerHTML = '<div class="dr-subh">Masks</div><div class="dr-row"><button type="button" class="dr-b dr-b--sm" data-nm="linear" aria-pressed="' + (newMask === "linear") + '">▤ Linear</button><button type="button" class="dr-b dr-b--sm" data-nm="radial">◯ Radial</button><button type="button" class="dr-b dr-b--sm" data-nm="brush">🖌 Brush</button></div>';
+		box.innerHTML = '<div class="dr-subh">Masks</div><div class="dr-row"><button type="button" class="dr-b dr-b--sm" data-nm="linear" aria-pressed="' + (newMask === "linear") + '">▤ Linear</button><button type="button" class="dr-b dr-b--sm" data-nm="radial">◯ Radial</button><button type="button" class="dr-b dr-b--sm" data-nm="brush">🖌 Brush</button></div><div class="dr-row"><button type="button" class="dr-b dr-b--sm" data-ai="subject" title="Finds the main subject with an AI model that runs on this computer">👤 Subject</button><button type="button" class="dr-b dr-b--sm" data-ai="sky" title="Finds the sky (no download)">☁ Sky</button><button type="button" class="dr-b dr-b--sm" data-ai="background" title="Everything except the subject">▦ Background</button></div>';
 		var lst = h("div", "dr-list dr-masks");
 		on.forEach(function (l, i) { var b = li('<input type="checkbox" ' + (l.on ? "checked" : "") + ' title="On / off" data-mon> ' + esc(l.name || ({ linear: "Linear", radial: "Radial", brush: "Brush" }[l.type] + " " + (i + 1))), null, dev.selMask === l.id, function (e) { if (e.target.matches("[data-mon]")) { l.on = e.target.checked; live(); commit("Mask on / off"); return; } if (e.target.closest(".dr-x")) return; dev.selMask = l.id; renderDevelopPanels(); requestRender(); }, '<button type="button" class="dr-x" title="Delete mask">✕</button>'); b.querySelector(".dr-x").onclick = function (e) { e.stopPropagation(); dev.s.locals.splice(i, 1); delete dev.maskCv[l.id]; if (dev.selMask === l.id) dev.selMask = dev.s.locals[0] ? dev.s.locals[0].id : null; setMasksFor(eng, dev.s, dev.maskCv); live(); commit("Delete mask"); renderDevelopPanels(); }; lst.appendChild(b); });
 		box.appendChild(lst);
+		box.querySelectorAll("[data-ai]").forEach(function (b) { b.onclick = function () { smartMask(b.getAttribute("data-ai")); }; });
 		box.querySelectorAll("[data-nm]").forEach(function (b) { b.onclick = function () { var t = b.getAttribute("data-nm"); if (dev.s.locals.length >= 8) { toast("Up to 8 masks per photo.", 2500); return; } if (t === "brush" && dev.s.locals.filter(function (x) { return x.type === "brush"; }).length >= 8) return; if (t === "brush") { var l = D.cleanLocal({ type: "brush" }); l.adj.exp = 0.5; dev.s.locals.push(l); dev.selMask = l.id; newMask = null; makeMaskCanvas(l); setMasksFor(eng, dev.s, dev.maskCv); commit("New brush mask"); tip("Paint where the change should go. Alt (Option) + drag erases."); } else { newMask = t; tip(t === "linear" ? "Drag from where the change is full to where it fades out." : "Drag from the centre outwards."); } renderDevelopPanels(); }; });
 		var L = on.find(function (x) { return x.id === dev.selMask; });
 		if (L) {
@@ -879,6 +881,31 @@
 			ad.querySelector("#dr-mshow").onchange = function () { dev.showMask = this.checked; requestRender(); };
 		} else if (!on.length) box.appendChild(h("p", "dr-note", "Masks change only part of the photo: a linear gradient for skies, a radial one to light a face, or a brush for anything else."));
 		var dn = h("button", "dr-b dr-b--pri dr-b--sm", "Done"); dn.type = "button"; dn.style.marginTop = "0.5em"; dn.onclick = function () { setTool(null); }; box.appendChild(dn);
+	}
+	/* ---- smart masks: subject (AI), background, sky ---- */
+	function sourcePixels(maxSide) { var px = eng.pixels(D.defaults(), maxSide, { before: true }), w = px.w, hh = px.h, out = new Uint8ClampedArray(w * hh * 4); for (var y = 0; y < hh; y++) out.set(px.data.subarray((hh - 1 - y) * w * 4, (hh - y) * w * 4), y * w * 4); requestRender(); return { w: w, h: hh, data: out }; }
+	function alphaCanvas(a, w, hh, inv) { var c = document.createElement("canvas"); c.width = w; c.height = hh; var x = c.getContext("2d"), id = x.createImageData(w, hh), d = id.data; for (var i = 0; i < a.length; i++) { d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 255; d[i * 4 + 3] = Math.round(255 * (inv ? 1 - a[i] : a[i])); } x.putImageData(id, 0, 0); return c; }
+	var SMART = { subject: { name: "Subject", adj: { exp: 0.35, cla: 8, sat: 6 } }, background: { name: "Background", adj: { exp: -0.45, sat: -10 } }, sky: { name: "Sky", adj: { exp: -0.5, dh: 15, sat: 10, hi: -20 } } };
+	var smartBusy = false;
+	async function smartMask(kind) {
+		if (!dev || !dev.ready || smartBusy) return; if (dev.s.locals.length >= 8) { toast("Up to 8 masks per photo: delete one first.", 3000); return; }
+		var d0 = dev, info = SMART[kind], a, w, hh; smartBusy = true;
+		try {
+			if (kind === "sky") { busy("Finding the sky…"); await new Promise(function (r) { setTimeout(r, 30); }); var sp = sourcePixels(480), r = D.skyMask(sp.data, sp.w, sp.h); if (r.cover < 0.02) { toast("No sky found in this photo. Paint one with the Brush, or try a Linear mask.", 4500); return; } a = r.a; w = sp.w; hh = sp.h; }
+			else {
+				if (!window.DRAI) throw new Error("the AI part did not load");
+				if (!d0.subj) { busy("Getting ready…"); var src = sourcePixels(1024), c = document.createElement("canvas"); c.width = src.w; c.height = src.h; c.getContext("2d").putImageData(new ImageData(src.data, src.w, src.h), 0, 0); var res = await window.DRAI.subject(c, function (t) { if (dev === d0) busy(t); }); d0.subj = { a: D.normMask(res.d), w: res.w, h: res.h }; }
+				a = d0.subj.a; w = d0.subj.w; hh = d0.subj.h;
+			}
+			if (dev !== d0) return;
+			var l = D.cleanLocal({ type: "brush", name: info.name }); Object.assign(l.adj, info.adj);
+			var cv = makeMaskCanvas(l), x = cv.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(alphaCanvas(a, w, hh, kind === "background"), 0, 0, cv.width, cv.height);
+			var wu = cv.toDataURL("image/webp", 0.9); l.mask = /^data:image\/webp/.test(wu) ? wu : cv.toDataURL("image/png");
+			dev.s.locals.push(l); dev.selMask = l.id; newMask = null; await setMasksFor(eng, dev.s, dev.maskCv); live(); commit(info.name + " mask");
+			if (dev.tool !== "mask") setTool("mask"); else renderDevelopPanels();
+			toast(info.name + " mask added: move its sliders, or touch it up with the brush (Alt erases).", 3500);
+		} catch (e) { toast("Could not make the " + info.name.toLowerCase() + " mask: " + (e && e.message || e), 5000); }
+		finally { smartBusy = false; busy(null); }
 	}
 	function makeMaskCanvas(l) { var k = 1024 / Math.max(eng.W, eng.H), c = document.createElement("canvas"); c.width = Math.max(8, Math.round(eng.W * k)); c.height = Math.max(8, Math.round(eng.H * k)); dev.maskCv[l.id] = c; return c; }
 	async function restoreMaskCanvases() { for (var i = 0; i < dev.s.locals.length; i++) { var l = dev.s.locals[i]; if (l.type !== "brush" || dev.maskCv[l.id]) continue; var c = makeMaskCanvas(l); if (l.mask) { var im = await loadImg(l.mask); if (im) c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); } } }

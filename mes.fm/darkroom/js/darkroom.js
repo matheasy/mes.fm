@@ -628,6 +628,65 @@ var MESDR = (function () {
 		return t;
 	}
 
+	/* ---------- smart masks ---------- */
+	/* box mean of a float plane (radius r) via a summed-area table */
+	function boxMean(src, w, h, r) {
+		var I = new Float64Array((w + 1) * (h + 1)), out = new Float32Array(w * h), x, y;
+		for (y = 0; y < h; y++) { var row = 0; for (x = 0; x < w; x++) { row += src[y * w + x]; I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + row; } }
+		for (y = 0; y < h; y++) { var y0 = Math.max(0, y - r), y1 = Math.min(h, y + r + 1); for (x = 0; x < w; x++) { var x0 = Math.max(0, x - r), x1 = Math.min(w, x + r + 1); out[y * w + x] = (I[y1 * (w + 1) + x1] - I[y0 * (w + 1) + x1] - I[y1 * (w + 1) + x0] + I[y0 * (w + 1) + x0]) / ((x1 - x0) * (y1 - y0)); } }
+		return out;
+	}
+	/* edge-aware smoothing of a mask p, guided by the luminance g (He et al. guided filter) */
+	function guidedFilter(g, p, w, h, r, eps) {
+		var n = w * h, gp = new Float32Array(n), gg = new Float32Array(n), i;
+		for (i = 0; i < n; i++) { gp[i] = g[i] * p[i]; gg[i] = g[i] * g[i]; }
+		var mg = boxMean(g, w, h, r), mp = boxMean(p, w, h, r), mgp = boxMean(gp, w, h, r), mgg = boxMean(gg, w, h, r), a = new Float32Array(n), b = new Float32Array(n);
+		for (i = 0; i < n; i++) { var cov = mgp[i] - mg[i] * mp[i], vr = mgg[i] - mg[i] * mg[i]; a[i] = cov / (vr + eps); b[i] = mp[i] - a[i] * mg[i]; }
+		var ma = boxMean(a, w, h, r), mb = boxMean(b, w, h, r), out = new Float32Array(n);
+		for (i = 0; i < n; i++) out[i] = clamp(ma[i] * g[i] + mb[i], 0, 1);
+		return out;
+	}
+	/* sky from the picture alone (sRGB RGBA, about 300-500 px): bright, smooth, blue / white / sunset pixels connected to the top edge.
+	   Returns {a: Float32Array 0..1, cover: share of the picture} */
+	function skyMask(px, w, h) {
+		var n = w * h, L = new Float32Array(n), sc = new Float32Array(n), i, x, y;
+		for (i = 0; i < n; i++) { var r = px[i * 4] / 255, g = px[i * 4 + 1] / 255, b = px[i * 4 + 2] / 255; L[i] = 0.2126 * r + 0.7152 * g + 0.0722 * b; }
+		/* texture = local gradient, averaged */
+		var grad = new Float32Array(n);
+		for (y = 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) { i = y * w + x; grad[i] = Math.abs(L[i + 1] - L[i - 1]) + Math.abs(L[i + w] - L[i - w]); }
+		var V = new Float32Array(n); for (i = 0; i < n; i++) V[i] = Math.max(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]) / 255;
+		var tex = boxMean(grad, w, h, 2), sorted = Array.prototype.slice.call(V).sort(function (a2, b2) { return a2 - b2; }), med = sorted[Math.floor(n * 0.5)], hiL = sorted[Math.floor(n * 0.9)];
+		for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+			i = y * w + x; var R = px[i * 4] / 255, G = px[i * 4 + 1] / 255, B = px[i * 4 + 2] / 255, mx = Math.max(R, G, B), mn = Math.min(R, G, B), sat = mx > 0 ? (mx - mn) / mx : 0;
+			var blue = B > R && B >= G * 0.9 ? 1 : 0, neutral = sat < 0.18 ? 1 : 0, warm = R > B && sat < 0.75 && y < h * 0.6 ? 0.7 : 0;
+			var col = Math.max(blue, neutral * 0.85, warm), bright = smooth01((V[i] - Math.min(med, 0.45) * 0.8) / Math.max(0.12, hiL - med * 0.8));
+			var smoothT = 1 - smooth01((tex[i] - 0.03) / 0.09), pos = 1 - 0.55 * (y / h);
+			sc[i] = col * (0.35 + 0.65 * bright) * (0.25 + 0.75 * smoothT) * pos * (0.25 + 0.75 * smooth01((V[i] - 0.3) / 0.3));
+		}
+		/* grow from the top rows over likely sky without crossing strong edges */
+		var m = new Uint8Array(n), q = new Int32Array(n), qh = 0, qt = 0;
+		for (x = 0; x < w; x++) for (y = 0; y < Math.max(2, Math.round(h * 0.04)); y++) { i = y * w + x; if (sc[i] > 0.42 && !m[i]) { m[i] = 1; q[qt++] = i; } }
+		while (qh < qt) {
+			i = q[qh++]; x = i % w; y = (i - x) / w;
+			for (var k = 0; k < 4; k++) { var nx = x + (k === 0 ? 1 : k === 1 ? -1 : 0), ny = y + (k === 2 ? 1 : k === 3 ? -1 : 0); if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue; var j = ny * w + nx; if (m[j]) continue;
+				if (sc[j] > 0.3 && Math.abs(L[j] - L[i]) < 0.06 && grad[j] < 0.16) { m[j] = 1; q[qt++] = j; } }
+		}
+		/* fill small holes (clouds, birds) that do not touch the sides or the bottom */
+		var lab = new Int32Array(n).fill(-1), comp = 0;
+		for (var s0 = 0; s0 < n; s0++) {
+			if (m[s0] || lab[s0] >= 0) continue; var cnt = 0, edge = false; qh = qt = 0; q[qt++] = s0; lab[s0] = comp;
+			while (qh < qt) { i = q[qh++]; cnt++; x = i % w; y = (i - x) / w; if (x === 0 || x === w - 1 || y === h - 1) edge = true; for (var k2 = 0; k2 < 4; k2++) { var nx2 = x + (k2 === 0 ? 1 : k2 === 1 ? -1 : 0), ny2 = y + (k2 === 2 ? 1 : k2 === 3 ? -1 : 0); if (nx2 < 0 || ny2 < 0 || nx2 >= w || ny2 >= h) continue; var j2 = ny2 * w + nx2; if (!m[j2] && lab[j2] < 0) { lab[j2] = comp; q[qt++] = j2; } } }
+			if (!edge && cnt < n * 0.04) for (var t = 0; t < qt; t++) m[q[t]] = 1;
+			comp++;
+		}
+		var p = new Float32Array(n), cover = 0; for (i = 0; i < n; i++) { p[i] = m[i]; cover += m[i]; }
+		var a = guidedFilter(L, p, w, h, Math.max(2, Math.round(Math.max(w, h) / 120)), 1e-3);
+		return { a: a, cover: cover / n };
+	}
+	function smooth01(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+	/* model output (any range) -> 0..1 with a soft edge */
+	function normMask(d) { var mn = 1e9, mx = -1e9, i; for (i = 0; i < d.length; i++) { if (d[i] < mn) mn = d[i]; if (d[i] > mx) mx = d[i]; } var rg = Math.max(1e-6, mx - mn), out = new Float32Array(d.length); for (i = 0; i < d.length; i++) out[i] = smooth01(((d[i] - mn) / rg - 0.1) / 0.8); return out; }
+
 	return {
 		RAW_EXT: RAW_EXT, IMG_EXT: IMG_EXT, ext: ext, isRaw: isRaw, isPhoto: isPhoto, clamp: clamp,
 		BANDS: BANDS, BAND_LABEL: BAND_LABEL, LOCAL_ADJ: LOCAL_ADJ, defaults: defaults, normalize: normalize, clone: clone, NUM_RANGES: NUM_RANGES, cleanLocal: cleanLocal,
@@ -638,6 +697,7 @@ var MESDR = (function () {
 		PRESETS: PRESETS, applyPreset: applyPreset, makePreset: makePreset, LABELS: LABELS, fmtVal: fmtVal,
 		exportName: exportName, exportSize: exportSize,
 		findJpegs: findJpegs, jpegSize: jpegSize, bestPreview: bestPreview, tiffOrientation: tiffOrientation,
+		boxMean: boxMean, guidedFilter: guidedFilter, skyMask: skyMask, normMask: normMask,
 		parseXmp: parseXmp, LABELS_C: LABELS_C, filterPhotos: filterPhotos, sortPhotos: sortPhotos, natCmp: natCmp, halfTable: halfTable
 	};
 })();
@@ -934,6 +994,34 @@ if (typeof module !== "undefined" && module.exports) module.exports = MESDR;
 	function defaults0() { return MESDR.defaults(); }
 	Engine.prototype.destroy = function () { this.drop(); var ext = this.gl.getExtension("WEBGL_lose_context"); if (ext) ext.loseContext(); };
 	window.DREngine = Engine; window.DRGeo = { geometry: geometry, mul: mul, T: T, Sc: Sc, R: R, inv: mat3Inv, apply: apply };
+})();
+
+/* MES Darkroom: smart masks. Subject = IS-Net "general use" (Apache-2.0) run by transformers.js 3.7.6 in the browser (the same model and
+   cache as the Photo Editor's background removal); Sky = MESDR.skyMask (no download). window.DRAI.subject(canvas, onStatus) -> Promise<{d: Float32Array, w, h}>. */
+(function () {
+	"use strict";
+	if (typeof window === "undefined") return;
+	var LIB = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js", ID = "Ko033/isnet-general-use-onnx", T = null, cache = {};
+	function loadLib() { return T ? Promise.resolve(T) : new Function("u", "return import(u)")(LIB).then(function (m) { T = m; return m; }); }
+	function gpuF16() { return navigator.gpu ? navigator.gpu.requestAdapter().then(function (a) { return !!(a && a.features.has("shader-f16")); }).catch(function () { return false; }) : Promise.resolve(false); }
+	function model(onProgress) {
+		return Promise.all([loadLib(), gpuF16()]).then(function (r) {
+			var gpu = r[1], key = gpu ? "gpu" : "cpu"; if (cache[key]) return cache[key];
+			function load(o) { return Promise.all([T.AutoModel.from_pretrained(ID, o), T.AutoProcessor.from_pretrained(ID)]).then(function (a) { return { model: a[0], proc: a[1] }; }); }
+			return load({ progress_callback: onProgress, dtype: gpu ? "fp16" : "q8", device: gpu ? "webgpu" : "wasm" }).catch(function (e) { if (!gpu) throw e; return load({ progress_callback: onProgress, dtype: "q8", device: "wasm" }); }).then(function (m) { return (cache[key] = m); });
+		});
+	}
+	function subject(canvas, onStatus) {
+		var seen = {};
+		return model(function (p) { if (p && p.status === "progress" && p.total > 2e6) { seen[p.file] = [p.loaded, p.total]; var a = 0, b = 0; Object.keys(seen).forEach(function (k) { a += seen[k][0]; b += seen[k][1]; }); onStatus("Downloading the AI model (once): " + Math.round(a / 1e6) + " of " + Math.round(b / 1e6) + " MB…"); } }).then(function (m) {
+			onStatus("Finding the subject…");
+			return Promise.resolve(T.RawImage.fromCanvas(canvas)).then(function (img) { return m.proc(img); }).then(function (inp) {
+				var s = m.model.sessions.model, feed = {}; feed[s.inputNames[0]] = inp.pixel_values;
+				return m.model(feed).then(function (res) { var o = res[s.outputNames[0]], dims = o.dims; return Promise.resolve(o.data).then(function (d) { return { d: d, w: dims[dims.length - 1], h: dims[dims.length - 2] }; }); });
+			});
+		});
+	}
+	window.DRAI = { subject: subject, modelMB: function () { return navigator.gpu ? 88 : 46; } };
 })();
 
 /* MES Darkroom: library + develop UI. Uses MESDR (lib.js), DREngine / DRGeo (engine.js), MESImg (image-converter: ZIP + hand-off), MESExif (exif-viewer). */
@@ -1584,6 +1672,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = MESDR;
 		var box = h("div"); box.appendChild(lk); box.appendChild(amt);
 		R.appendChild(sec("looks", "Looks", box));
 		var b2 = h("div"), bw = h("div", "dr-row"); bw.innerHTML = '<button type="button" class="dr-b dr-b--sm" id="dr-bwtog" aria-pressed="' + dev.s.bw + '">◑ Black &amp; white</button><button type="button" class="dr-b dr-b--sm" id="dr-awb">⌖ Auto white balance</button>';
+		var sm = h("div", "dr-row"); sm.innerHTML = '<button type="button" class="dr-b dr-b--sm" data-ai="subject">👤 Brighten subject</button><button type="button" class="dr-b dr-b--sm" data-ai="sky">☁ Deeper sky</button><button type="button" class="dr-b dr-b--sm" data-ai="background">▦ Darken background</button>'; b2.appendChild(sm); sm.querySelectorAll("[data-ai]").forEach(function (x) { x.onclick = function () { smartMask(x.getAttribute("data-ai")); }; });
 		b2.appendChild(bw); sliders(SIMPLE, b2); R.appendChild(sec("simple", "Adjust", b2));
 		bw.querySelector("#dr-bwtog").onclick = function () { dev.s.bw = !dev.s.bw; afterSettings(true); commit(dev.s.bw ? "Black & white" : "Colour"); };
 		bw.querySelector("#dr-awb").onclick = autoWB;
@@ -1800,10 +1889,11 @@ if (typeof module !== "undefined" && module.exports) module.exports = MESDR;
 	var newMask = null; /* "linear" | "radial" | "brush": waiting for the first drag */
 	function maskPanel(box) {
 		var on = dev.s.locals;
-		box.innerHTML = '<div class="dr-subh">Masks</div><div class="dr-row"><button type="button" class="dr-b dr-b--sm" data-nm="linear" aria-pressed="' + (newMask === "linear") + '">▤ Linear</button><button type="button" class="dr-b dr-b--sm" data-nm="radial">◯ Radial</button><button type="button" class="dr-b dr-b--sm" data-nm="brush">🖌 Brush</button></div>';
+		box.innerHTML = '<div class="dr-subh">Masks</div><div class="dr-row"><button type="button" class="dr-b dr-b--sm" data-nm="linear" aria-pressed="' + (newMask === "linear") + '">▤ Linear</button><button type="button" class="dr-b dr-b--sm" data-nm="radial">◯ Radial</button><button type="button" class="dr-b dr-b--sm" data-nm="brush">🖌 Brush</button></div><div class="dr-row"><button type="button" class="dr-b dr-b--sm" data-ai="subject" title="Finds the main subject with an AI model that runs on this computer">👤 Subject</button><button type="button" class="dr-b dr-b--sm" data-ai="sky" title="Finds the sky (no download)">☁ Sky</button><button type="button" class="dr-b dr-b--sm" data-ai="background" title="Everything except the subject">▦ Background</button></div>';
 		var lst = h("div", "dr-list dr-masks");
 		on.forEach(function (l, i) { var b = li('<input type="checkbox" ' + (l.on ? "checked" : "") + ' title="On / off" data-mon> ' + esc(l.name || ({ linear: "Linear", radial: "Radial", brush: "Brush" }[l.type] + " " + (i + 1))), null, dev.selMask === l.id, function (e) { if (e.target.matches("[data-mon]")) { l.on = e.target.checked; live(); commit("Mask on / off"); return; } if (e.target.closest(".dr-x")) return; dev.selMask = l.id; renderDevelopPanels(); requestRender(); }, '<button type="button" class="dr-x" title="Delete mask">✕</button>'); b.querySelector(".dr-x").onclick = function (e) { e.stopPropagation(); dev.s.locals.splice(i, 1); delete dev.maskCv[l.id]; if (dev.selMask === l.id) dev.selMask = dev.s.locals[0] ? dev.s.locals[0].id : null; setMasksFor(eng, dev.s, dev.maskCv); live(); commit("Delete mask"); renderDevelopPanels(); }; lst.appendChild(b); });
 		box.appendChild(lst);
+		box.querySelectorAll("[data-ai]").forEach(function (b) { b.onclick = function () { smartMask(b.getAttribute("data-ai")); }; });
 		box.querySelectorAll("[data-nm]").forEach(function (b) { b.onclick = function () { var t = b.getAttribute("data-nm"); if (dev.s.locals.length >= 8) { toast("Up to 8 masks per photo.", 2500); return; } if (t === "brush" && dev.s.locals.filter(function (x) { return x.type === "brush"; }).length >= 8) return; if (t === "brush") { var l = D.cleanLocal({ type: "brush" }); l.adj.exp = 0.5; dev.s.locals.push(l); dev.selMask = l.id; newMask = null; makeMaskCanvas(l); setMasksFor(eng, dev.s, dev.maskCv); commit("New brush mask"); tip("Paint where the change should go. Alt (Option) + drag erases."); } else { newMask = t; tip(t === "linear" ? "Drag from where the change is full to where it fades out." : "Drag from the centre outwards."); } renderDevelopPanels(); }; });
 		var L = on.find(function (x) { return x.id === dev.selMask; });
 		if (L) {
@@ -1817,6 +1907,31 @@ if (typeof module !== "undefined" && module.exports) module.exports = MESDR;
 			ad.querySelector("#dr-mshow").onchange = function () { dev.showMask = this.checked; requestRender(); };
 		} else if (!on.length) box.appendChild(h("p", "dr-note", "Masks change only part of the photo: a linear gradient for skies, a radial one to light a face, or a brush for anything else."));
 		var dn = h("button", "dr-b dr-b--pri dr-b--sm", "Done"); dn.type = "button"; dn.style.marginTop = "0.5em"; dn.onclick = function () { setTool(null); }; box.appendChild(dn);
+	}
+	/* ---- smart masks: subject (AI), background, sky ---- */
+	function sourcePixels(maxSide) { var px = eng.pixels(D.defaults(), maxSide, { before: true }), w = px.w, hh = px.h, out = new Uint8ClampedArray(w * hh * 4); for (var y = 0; y < hh; y++) out.set(px.data.subarray((hh - 1 - y) * w * 4, (hh - y) * w * 4), y * w * 4); requestRender(); return { w: w, h: hh, data: out }; }
+	function alphaCanvas(a, w, hh, inv) { var c = document.createElement("canvas"); c.width = w; c.height = hh; var x = c.getContext("2d"), id = x.createImageData(w, hh), d = id.data; for (var i = 0; i < a.length; i++) { d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 255; d[i * 4 + 3] = Math.round(255 * (inv ? 1 - a[i] : a[i])); } x.putImageData(id, 0, 0); return c; }
+	var SMART = { subject: { name: "Subject", adj: { exp: 0.35, cla: 8, sat: 6 } }, background: { name: "Background", adj: { exp: -0.45, sat: -10 } }, sky: { name: "Sky", adj: { exp: -0.5, dh: 15, sat: 10, hi: -20 } } };
+	var smartBusy = false;
+	async function smartMask(kind) {
+		if (!dev || !dev.ready || smartBusy) return; if (dev.s.locals.length >= 8) { toast("Up to 8 masks per photo: delete one first.", 3000); return; }
+		var d0 = dev, info = SMART[kind], a, w, hh; smartBusy = true;
+		try {
+			if (kind === "sky") { busy("Finding the sky…"); await new Promise(function (r) { setTimeout(r, 30); }); var sp = sourcePixels(480), r = D.skyMask(sp.data, sp.w, sp.h); if (r.cover < 0.02) { toast("No sky found in this photo. Paint one with the Brush, or try a Linear mask.", 4500); return; } a = r.a; w = sp.w; hh = sp.h; }
+			else {
+				if (!window.DRAI) throw new Error("the AI part did not load");
+				if (!d0.subj) { busy("Getting ready…"); var src = sourcePixels(1024), c = document.createElement("canvas"); c.width = src.w; c.height = src.h; c.getContext("2d").putImageData(new ImageData(src.data, src.w, src.h), 0, 0); var res = await window.DRAI.subject(c, function (t) { if (dev === d0) busy(t); }); d0.subj = { a: D.normMask(res.d), w: res.w, h: res.h }; }
+				a = d0.subj.a; w = d0.subj.w; hh = d0.subj.h;
+			}
+			if (dev !== d0) return;
+			var l = D.cleanLocal({ type: "brush", name: info.name }); Object.assign(l.adj, info.adj);
+			var cv = makeMaskCanvas(l), x = cv.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(alphaCanvas(a, w, hh, kind === "background"), 0, 0, cv.width, cv.height);
+			var wu = cv.toDataURL("image/webp", 0.9); l.mask = /^data:image\/webp/.test(wu) ? wu : cv.toDataURL("image/png");
+			dev.s.locals.push(l); dev.selMask = l.id; newMask = null; await setMasksFor(eng, dev.s, dev.maskCv); live(); commit(info.name + " mask");
+			if (dev.tool !== "mask") setTool("mask"); else renderDevelopPanels();
+			toast(info.name + " mask added: move its sliders, or touch it up with the brush (Alt erases).", 3500);
+		} catch (e) { toast("Could not make the " + info.name.toLowerCase() + " mask: " + (e && e.message || e), 5000); }
+		finally { smartBusy = false; busy(null); }
 	}
 	function makeMaskCanvas(l) { var k = 1024 / Math.max(eng.W, eng.H), c = document.createElement("canvas"); c.width = Math.max(8, Math.round(eng.W * k)); c.height = Math.max(8, Math.round(eng.H * k)); dev.maskCv[l.id] = c; return c; }
 	async function restoreMaskCanvases() { for (var i = 0; i < dev.s.locals.length; i++) { var l = dev.s.locals[i]; if (l.type !== "brush" || dev.maskCv[l.id]) continue; var c = makeMaskCanvas(l); if (l.mask) { var im = await loadImg(l.mask); if (im) c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); } } }

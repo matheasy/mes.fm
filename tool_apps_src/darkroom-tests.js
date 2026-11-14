@@ -51,4 +51,9 @@ ok(D.filterPhotos(L, { minRating: 3 }, ro).length === 2, "rating filter"); ok(D.
 ok(D.filterPhotos(L, { folder: "x" }, ro).length === 2, "folder includes subfolders"); ok(D.filterPhotos(L, { q: "sea" }, ro)[0].key === "b", "keyword search"); ok(D.filterPhotos(L, { kind: "raw" }, ro).length === 1, "raw filter");
 ok(D.sortPhotos(L, "date", "asc", ro).map(function (q) { return q.key; }).join("") === "bac", "sort by date"); ok(D.sortPhotos(L, "rating", "desc", ro)[0].key === "b", "sort by rating");
 var ht = D.halfTable(); ok(ht[0] === 0 && ht[65535] === 0x3c00, "half table ends");
+/* sky: blue top half, brown bottom half with a textured horizon */
+var W = 120, H = 80, im = new Uint8Array(W * H * 4); for (var yy = 0; yy < H; yy++) for (var xx = 0; xx < W; xx++) { var o = (yy * W + xx) * 4, sky = yy < 36 + Math.round(3 * Math.sin(xx / 7)); if (sky) { im[o] = 110; im[o + 1] = 160; im[o + 2] = 230; } else { var nz = (xx * 7 + yy * 13) % 9 * 6; im[o] = 90 + nz; im[o + 1] = 70 + nz; im[o + 2] = 40; } im[o + 3] = 255; }
+var SK = D.skyMask(im, W, H); ok(SK.cover > 0.38 && SK.cover < 0.5, "sky cover " + SK.cover.toFixed(2)); ok(SK.a[5 * W + 60] > 0.9 && SK.a[70 * W + 60] < 0.1, "sky top in, ground out");
+var gray = new Uint8Array(W * H * 4).fill(60); for (i = 3; i < gray.length; i += 4) gray[i] = 255; ok(D.skyMask(gray, W, H).cover < 0.05, "dark flat picture has no sky");
+var nm = D.normMask(new Float32Array([2, 4, 6])); ok(nm[0] === 0 && nm[2] === 1, "normMask");
 console.log(bad ? bad + " of " + n + " FAILED" : "all " + n + " passed"); process.exit(bad ? 1 : 0);
