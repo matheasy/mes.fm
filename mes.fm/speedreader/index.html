@@ -434,6 +434,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tvbody {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane {flex:1 1 auto;height:auto;max-height:none;min-height:0;}
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tv {min-height:10em;overflow:hidden;}
+	/* after a grip drag the text box keeps the dragged height; the reader scrolls instead of squeezing / clipping it (phone full screen) */
+	.tu .sr-reader.is-focus.tv-sized[data-mode="aloud"] .sr-tv, .tu .sr-reader.is-focus.tv-sized[data-mode="aloud"] .sr-tvbody {flex:0 0 auto;overflow:visible;}
 	.tu .sr-reader.is-focus .sr-settings, .tu .sr-reader.is-focus .sr-tv, .tu .sr-reader.is-focus .sr-note {max-width:60em;width:100%;margin-left:auto;margin-right:auto;}
 	.tu .sr-reader.is-focus .sr-progress, .tu .sr-reader.is-focus .sr-transport, .tu .sr-reader.is-focus .sr-speedrow, .tu .sr-reader.is-focus .sr-voicerow {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
 	.tu .sr-reader.is-focus .sr-top {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
@@ -1177,7 +1179,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/speedreader/js/speedreader.js?v=4" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/speedreader/js/speedreader.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

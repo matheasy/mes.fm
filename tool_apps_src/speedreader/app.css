@@ -127,6 +127,8 @@
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tvbody {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;}
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-pane {flex:1 1 auto;height:auto;max-height:none;min-height:0;}
 	.tu .sr-reader.is-focus[data-mode="aloud"] .sr-tv {min-height:10em;overflow:hidden;}
+	/* after a grip drag the text box keeps the dragged height; the reader scrolls instead of squeezing / clipping it (phone full screen) */
+	.tu .sr-reader.is-focus.tv-sized[data-mode="aloud"] .sr-tv, .tu .sr-reader.is-focus.tv-sized[data-mode="aloud"] .sr-tvbody {flex:0 0 auto;overflow:visible;}
 	.tu .sr-reader.is-focus .sr-settings, .tu .sr-reader.is-focus .sr-tv, .tu .sr-reader.is-focus .sr-note {max-width:60em;width:100%;margin-left:auto;margin-right:auto;}
 	.tu .sr-reader.is-focus .sr-progress, .tu .sr-reader.is-focus .sr-transport, .tu .sr-reader.is-focus .sr-speedrow, .tu .sr-reader.is-focus .sr-voicerow {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}
 	.tu .sr-reader.is-focus .sr-top {max-width:48em;width:100%;margin-left:auto;margin-right:auto;}

@@ -333,7 +333,8 @@ var SRLib = (function () {
 		if (/natural|neural|premium|enhanced|online/i.test(v.name)) s += 12;
 		if (v["default"]) s += 3;
 		if (v.localService) s += 4;      // local voices report word boundaries; many online ones do not
-		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar/i.test(v.name)) s -= 40;
+		if (/novelty|whisper|bubbles|bells|boing|cellos|jester|organ|trinoids|zarvox|bad news|good news|albert|fred|junior|ralph|superstar|bahh|wobble/i.test(v.name)) s -= 40;
+		else if (/^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i.test(v.name)) s -= 15;   // macOS Eloquence voices: robotic, keep them off the automatic choice
 		return s;
 	}
 	// the key a voice is remembered by (same as the speed reader's <option> values)
@@ -1118,7 +1119,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 		if (on === P.focus) return;
 		P.focus = on;
 		el.reader.classList.toggle("is-focus", on);
-		el.pane.classList.remove("is-sized");
+		el.pane.classList.remove("is-sized"); el.reader.classList.remove("tv-sized");
 		el.focus.setAttribute("aria-pressed", on ? "true" : "false");
 		el.focus.setAttribute("aria-label", on ? "Exit focus mode" : "Focus mode (full screen)");
 		document.documentElement.classList.toggle("sr-lock", on);
@@ -1357,7 +1358,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = SRLib;
 				if (!drag) return;
 				var h = Math.max(96, Math.min(window.innerHeight * 0.9, h0 + e.clientY - y0));
 				el.pane.style.setProperty("--sr-ph", Math.round(h) + "px");
-				if (P.focus) el.pane.classList.add("is-sized");
+				if (P.focus) { el.pane.classList.add("is-sized"); el.reader.classList.add("tv-sized"); }
 			});
 			function end() { drag = false; }
 			g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);

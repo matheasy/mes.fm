@@ -703,7 +703,7 @@
 		if (on === P.focus) return;
 		P.focus = on;
 		el.reader.classList.toggle("is-focus", on);
-		el.pane.classList.remove("is-sized");
+		el.pane.classList.remove("is-sized"); el.reader.classList.remove("tv-sized");
 		el.focus.setAttribute("aria-pressed", on ? "true" : "false");
 		el.focus.setAttribute("aria-label", on ? "Exit focus mode" : "Focus mode (full screen)");
 		document.documentElement.classList.toggle("sr-lock", on);
@@ -942,7 +942,7 @@
 				if (!drag) return;
 				var h = Math.max(96, Math.min(window.innerHeight * 0.9, h0 + e.clientY - y0));
 				el.pane.style.setProperty("--sr-ph", Math.round(h) + "px");
-				if (P.focus) el.pane.classList.add("is-sized");
+				if (P.focus) { el.pane.classList.add("is-sized"); el.reader.classList.add("tv-sized"); }
 			});
 			function end() { drag = false; }
 			g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
