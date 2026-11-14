@@ -611,8 +611,8 @@
 	function spdLeft() { var pl = $('wt-player'); return pl && pl.classList.contains('mes-pside') ? pl.classList.contains('mes-pright') : !!S.spdL; }
 	function spdTab(st) {
 		var t = document.createElement('div'); t.className = 'wt-spd'; t.setAttribute('role', 'toolbar'); t.setAttribute('aria-label', 'Speed');
-		t.innerHTML = '<button type="button" data-sp="up" title="Faster (D)" aria-label="Faster">+</button>' +
-			'<span class="wt-spdv" aria-live="polite">1.00×</span>' +
+		t.innerHTML = '<span class="wt-spdv" aria-live="polite">1.00×</span>' +
+			'<button type="button" data-sp="up" title="Faster (D)" aria-label="Faster">+</button>' +
 			'<button type="button" data-sp="down" title="Slower (S)" aria-label="Slower">−</button>' +
 			'<button type="button" data-sp="2" title="Speed 2×">2×</button>' +
 			'<button type="button" data-sp="1" title="Normal speed (R)">1×</button>' +
