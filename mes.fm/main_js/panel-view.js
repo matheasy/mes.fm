@@ -39,11 +39,11 @@
     '.mes-pside.mes-pmini>.mes-ptools{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:30;flex-direction:column;flex-wrap:nowrap;gap:4px;margin:0!important;opacity:.55;transition:opacity .2s}' +
     '.mes-pside.mes-pmini.mes-pright>.mes-ptools{left:auto;right:0;align-items:flex-end}' +
     '.mes-pside.mes-pmini>.mes-ptools:hover,.mes-pside.mes-pmini>.mes-ptools:focus-within{opacity:1}' +
-    '.mes-pmini>.mes-ptools>.mes-pflip,.mes-pmini>.mes-ptools>.mes-pclose{display:none}' +
+    '.mes-pmini>.mes-ptools>.mes-pflip,.mes-pmini>.mes-ptools>.mes-pgo{display:none!important}' +
     '.mes-pmini>.mes-ptools .mes-ptb{min-height:0;padding:0;width:26px;font-size:15px;line-height:1;border-radius:0 9px 9px 0;border-left:0}' +
-    '.mes-pmini>.mes-ptools .mes-phide{height:46px}.mes-pmini>.mes-ptools .mes-pgo{height:26px;font-size:13px}' +
+    '.mes-pmini>.mes-ptools .mes-phide{height:46px}.mes-pmini>.mes-ptools .mes-pclose{height:34px;font-size:15px}' +
     '.mes-pmini.mes-pright>.mes-ptools .mes-ptb{border-radius:9px 0 0 9px;border-left:1px solid #b9c2cc;border-right:0}' +
-    '.mes-ptools>.mes-pgo{display:none}.mes-pmini>.mes-ptools>.mes-pgo{display:block}' +
+    '.mes-ptools>.mes-pgo{display:none}' +
     '.mes-pgone>.mes-ptools{display:none!important}' +
     '.mes-ptools .mes-ptb{background:rgba(255,255,255,.92);min-height:34px}' +
     'body.dark-mode .mes-ptools .mes-ptb{background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555}' +
@@ -96,7 +96,7 @@
     q.hide.classList.add('mes-phide');
     q.flip = mk('⇄', 'Put the panel on the other side', function () { SP.r = !SP.r; save(); sides.forEach(apply); });
     q.flip.classList.add('mes-pflip');
-    if (o.close) { q.close = mk('✕', 'Close (Esc)', function () { o.close(); }); q.close.classList.add('mes-pclose'); }
+    if (o.close) { q.close = mk('✕', 'Close: back to the page (Esc)', function () { o.close(); }); q.close.classList.add('mes-pclose'); }
     // the X on the small tab hides even the tab, until this full screen / Fill window is closed and opened again
     // (or the very edge of the picture is tapped, so a phone without Esc can always get back)
     q.go = mk('×', 'Hide this tab too (comes back next time, or tap the very edge)', function () { q.gone = true; q.apply(); });
