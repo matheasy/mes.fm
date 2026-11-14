@@ -137,3 +137,63 @@
 	.cs-narrow .cs-sbtns {flex-wrap:wrap;justify-content:flex-end;max-width:58%;}
 	.cs-narrow.cs-has-touch .cs-speedo, .cs-narrow .cs-speedo {top:var(--cs-spt, 3.4em);bottom:auto;right:0.7em;left:auto;transform:none;margin-top:0;}
 	.cs-narrow .cs-hud {max-width:40%;}
+
+	/* mini-map */
+	.cs-mm {position:absolute;left:0.6em;bottom:0.7em;width:150px;height:150px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.55);box-shadow:0 2px 10px rgba(0,0,0,.45);background:#222;z-index:2;}
+	.cs-mm.big {width:230px;height:230px;}
+	.cs-mm canvas {width:100%;height:100%;display:block;cursor:pointer;}
+	.cs-mmscale {position:absolute;left:50%;bottom:6%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;}
+	.cs-mmb {position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:2px;padding-top:12%;opacity:0;transition:opacity .2s;pointer-events:none;}
+	.cs-mm:hover .cs-mmb, .cs-mm:focus-within .cs-mmb {opacity:1;pointer-events:auto;}
+	.cs-mmb button {width:24px;height:24px;padding:0;border-radius:6px;border:1px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.75);color:#fff;font-size:12px;line-height:1;cursor:pointer;}
+	@media (hover:none) { .cs-mmb {opacity:1;pointer-events:auto;padding-top:0;align-content:flex-end;padding-bottom:16%;} .cs-mmb button {width:22px;height:22px;} }
+	.cs-has-touch .cs-mm {left:auto;right:0.6em;bottom:auto;top:3.4em;width:118px;height:118px;}
+	.cs-has-touch .cs-mm.big {width:170px;height:170px;}
+	.cs-replaying .cs-mm, .cs-hide-map .cs-mm {display:none !important;}
+	.cs-sbtns button[aria-pressed=false]#cs-mapbtn {opacity:0.55;}
+	@media (max-width:640px) { .cs-mm {width:110px;height:110px;} .cs-mm.big {width:160px;height:160px;} }
+	.cs-help {z-index:1;}
+	/* map editor */
+	.cs-ed {position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;background:#11151c;color:var(--cs-ink);font-size:0.86em;}
+	.cs-ed button, .cs-ed select {font:inherit;font-size:0.95em;cursor:pointer;border-radius:0.45em;border:1px solid var(--cs-line);background:rgba(255,255,255,0.08);color:var(--cs-ink);padding:0.3em 0.6em;min-height:2.1em;}
+	.cs-ed select option {color:#111;background:#fff;}
+	.cs-ed button:hover {border-color:#fff;}
+	.cs-ed button[aria-pressed=true] {background:#1c7ed6;border-color:#74c0fc;color:#fff;}
+	.cs-edtop {display:flex;flex-wrap:wrap;align-items:center;gap:0.35em;padding:0.45em 0.5em 0.3em;}
+	.cs-edtools {display:flex;gap:0.25em;}
+	.cs-edsp {flex:1 1 0;}
+	.cs-ed .cs-eddone {background:#2f9e44;border-color:#69db7c;color:#fff;font-weight:700;}
+	.cs-edpal {display:flex;gap:0.3em;overflow-x:auto;padding:0 0.5em 0.4em;scrollbar-width:thin;}
+	.cs-edpal button {white-space:nowrap;flex:0 0 auto;}
+	.cs-edmain {flex:1 1 auto;position:relative;min-height:0;display:flex;}
+	.cs-edmain canvas {flex:1 1 auto;min-width:0;width:100%;height:100%;display:block;touch-action:none;}
+	.cs-edside {width:15em;flex:0 0 auto;overflow-y:auto;padding:0.6em;background:rgba(255,255,255,0.04);border-left:1px solid var(--cs-line);display:flex;flex-direction:column;gap:0.45em;}
+	.cs-edside p {margin:0;color:var(--cs-dim);font-size:0.95em;line-height:1.4;}
+	.cs-edside b {font-size:1.05em;color:var(--cs-ink);}
+	.cs-edprm {display:grid;grid-template-columns:4.6em 1fr 3.6em;align-items:center;gap:0.35em;font-size:0.92em;}
+	.cs-edprm input[type=range] {width:100%;min-width:0;}
+	.cs-edprm output {text-align:right;font-variant-numeric:tabular-nums;color:var(--cs-ink);}
+	.cs-edprm select {grid-column:2 / 4;}
+	.cs-edchk {display:flex;gap:0.4em;align-items:flex-start;font-size:0.95em;}
+	.cs-edbtns {display:flex;flex-wrap:wrap;gap:0.3em;}
+	.cs-ed .cs-eddel {border-color:rgba(255,120,120,0.5);}
+	.cs-edhint {padding:0.35em 0.6em 0.45em;color:var(--cs-dim);font-size:0.88em;border-top:1px solid var(--cs-line);}
+	.cs-editing .cs-hud, .cs-editing .cs-speedo, .cs-editing .cs-sbtns, .cs-editing .cs-touch, .cs-editing .cs-help, .cs-editing .cs-mm, .cs-editing .cs-unflip {display:none !important;}
+	.cs-editing .cs-toast {z-index:9;top:auto;bottom:3em;}
+	@media (max-width:700px) {
+		.cs-edmain {flex-direction:column;}
+		.cs-edside {width:auto;max-height:38%;border-left:0;border-top:1px solid var(--cs-line);}
+		.cs-edhint {display:none;}
+	}
+	html body.dark-mode #cs .cs-ed {background:#11151c;color:#f2f5fa;}
+	html body.dark-mode #cs .cs-ed button, html body.dark-mode #cs .cs-ed select {background:rgba(255,255,255,0.08);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-ed button[aria-pressed=true] {background:#1c7ed6;color:#fff;}
+	html body.dark-mode #cs .cs-ed .cs-eddone {background:#2f9e44;color:#fff;}
+	html body.dark-mode #cs .cs-edside b, html body.dark-mode #cs .cs-edprm output {color:#f2f5fa;}
+	html body.dark-mode #cs .cs-edside p, html body.dark-mode #cs .cs-edhint {color:#b7c0cf;}
+	html body.dark-mode #cs .cs-mmb button {background:rgba(12,16,24,0.75);color:#fff;}
+	@media (max-width:700px) { .cs-editing .cs-stage {aspect-ratio:auto;height:86vh;max-height:none;} }
+	.cs-editing .mes-pfill .cs-stage {height:auto;}
+	.cs-touch .cs-t-launch {width:4.2em;height:4.2em;background:rgba(155,93,229,0.75);border-color:#fff;font-size:1.1em;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cs-pulse 1s infinite alternate;}
+	.cs-t-launch small {font-size:0.55em;}
+	@keyframes cs-pulse {from {transform:scale(1);} to {transform:scale(1.08);}}

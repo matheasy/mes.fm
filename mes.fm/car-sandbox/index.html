@@ -445,6 +445,66 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-narrow.cs-has-touch .cs-speedo, .cs-narrow .cs-speedo {top:var(--cs-spt, 3.4em);bottom:auto;right:0.7em;left:auto;transform:none;margin-top:0;}
 	.cs-narrow .cs-hud {max-width:40%;}
 
+	/* mini-map */
+	.cs-mm {position:absolute;left:0.6em;bottom:0.7em;width:150px;height:150px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.55);box-shadow:0 2px 10px rgba(0,0,0,.45);background:#222;z-index:2;}
+	.cs-mm.big {width:230px;height:230px;}
+	.cs-mm canvas {width:100%;height:100%;display:block;cursor:pointer;}
+	.cs-mmscale {position:absolute;left:50%;bottom:6%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;}
+	.cs-mmb {position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:2px;padding-top:12%;opacity:0;transition:opacity .2s;pointer-events:none;}
+	.cs-mm:hover .cs-mmb, .cs-mm:focus-within .cs-mmb {opacity:1;pointer-events:auto;}
+	.cs-mmb button {width:24px;height:24px;padding:0;border-radius:6px;border:1px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.75);color:#fff;font-size:12px;line-height:1;cursor:pointer;}
+	@media (hover:none) { .cs-mmb {opacity:1;pointer-events:auto;padding-top:0;align-content:flex-end;padding-bottom:16%;} .cs-mmb button {width:22px;height:22px;} }
+	.cs-has-touch .cs-mm {left:auto;right:0.6em;bottom:auto;top:3.4em;width:118px;height:118px;}
+	.cs-has-touch .cs-mm.big {width:170px;height:170px;}
+	.cs-replaying .cs-mm, .cs-hide-map .cs-mm {display:none !important;}
+	.cs-sbtns button[aria-pressed=false]#cs-mapbtn {opacity:0.55;}
+	@media (max-width:640px) { .cs-mm {width:110px;height:110px;} .cs-mm.big {width:160px;height:160px;} }
+	.cs-help {z-index:1;}
+	/* map editor */
+	.cs-ed {position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;background:#11151c;color:var(--cs-ink);font-size:0.86em;}
+	.cs-ed button, .cs-ed select {font:inherit;font-size:0.95em;cursor:pointer;border-radius:0.45em;border:1px solid var(--cs-line);background:rgba(255,255,255,0.08);color:var(--cs-ink);padding:0.3em 0.6em;min-height:2.1em;}
+	.cs-ed select option {color:#111;background:#fff;}
+	.cs-ed button:hover {border-color:#fff;}
+	.cs-ed button[aria-pressed=true] {background:#1c7ed6;border-color:#74c0fc;color:#fff;}
+	.cs-edtop {display:flex;flex-wrap:wrap;align-items:center;gap:0.35em;padding:0.45em 0.5em 0.3em;}
+	.cs-edtools {display:flex;gap:0.25em;}
+	.cs-edsp {flex:1 1 0;}
+	.cs-ed .cs-eddone {background:#2f9e44;border-color:#69db7c;color:#fff;font-weight:700;}
+	.cs-edpal {display:flex;gap:0.3em;overflow-x:auto;padding:0 0.5em 0.4em;scrollbar-width:thin;}
+	.cs-edpal button {white-space:nowrap;flex:0 0 auto;}
+	.cs-edmain {flex:1 1 auto;position:relative;min-height:0;display:flex;}
+	.cs-edmain canvas {flex:1 1 auto;min-width:0;width:100%;height:100%;display:block;touch-action:none;}
+	.cs-edside {width:15em;flex:0 0 auto;overflow-y:auto;padding:0.6em;background:rgba(255,255,255,0.04);border-left:1px solid var(--cs-line);display:flex;flex-direction:column;gap:0.45em;}
+	.cs-edside p {margin:0;color:var(--cs-dim);font-size:0.95em;line-height:1.4;}
+	.cs-edside b {font-size:1.05em;color:var(--cs-ink);}
+	.cs-edprm {display:grid;grid-template-columns:4.6em 1fr 3.6em;align-items:center;gap:0.35em;font-size:0.92em;}
+	.cs-edprm input[type=range] {width:100%;min-width:0;}
+	.cs-edprm output {text-align:right;font-variant-numeric:tabular-nums;color:var(--cs-ink);}
+	.cs-edprm select {grid-column:2 / 4;}
+	.cs-edchk {display:flex;gap:0.4em;align-items:flex-start;font-size:0.95em;}
+	.cs-edbtns {display:flex;flex-wrap:wrap;gap:0.3em;}
+	.cs-ed .cs-eddel {border-color:rgba(255,120,120,0.5);}
+	.cs-edhint {padding:0.35em 0.6em 0.45em;color:var(--cs-dim);font-size:0.88em;border-top:1px solid var(--cs-line);}
+	.cs-editing .cs-hud, .cs-editing .cs-speedo, .cs-editing .cs-sbtns, .cs-editing .cs-touch, .cs-editing .cs-help, .cs-editing .cs-mm, .cs-editing .cs-unflip {display:none !important;}
+	.cs-editing .cs-toast {z-index:9;top:auto;bottom:3em;}
+	@media (max-width:700px) {
+		.cs-edmain {flex-direction:column;}
+		.cs-edside {width:auto;max-height:38%;border-left:0;border-top:1px solid var(--cs-line);}
+		.cs-edhint {display:none;}
+	}
+	html body.dark-mode #cs .cs-ed {background:#11151c;color:#f2f5fa;}
+	html body.dark-mode #cs .cs-ed button, html body.dark-mode #cs .cs-ed select {background:rgba(255,255,255,0.08);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-ed button[aria-pressed=true] {background:#1c7ed6;color:#fff;}
+	html body.dark-mode #cs .cs-ed .cs-eddone {background:#2f9e44;color:#fff;}
+	html body.dark-mode #cs .cs-edside b, html body.dark-mode #cs .cs-edprm output {color:#f2f5fa;}
+	html body.dark-mode #cs .cs-edside p, html body.dark-mode #cs .cs-edhint {color:#b7c0cf;}
+	html body.dark-mode #cs .cs-mmb button {background:rgba(12,16,24,0.75);color:#fff;}
+	@media (max-width:700px) { .cs-editing .cs-stage {aspect-ratio:auto;height:86vh;max-height:none;} }
+	.cs-editing .mes-pfill .cs-stage {height:auto;}
+	.cs-touch .cs-t-launch {width:4.2em;height:4.2em;background:rgba(155,93,229,0.75);border-color:#fff;font-size:1.1em;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cs-pulse 1s infinite alternate;}
+	.cs-t-launch small {font-size:0.55em;}
+	@keyframes cs-pulse {from {transform:scale(1);} to {transform:scale(1.08);}}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -590,6 +650,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-touch .cs-t-reset{border-color:rgba(176,132,0,0.85)}
 	body.dark-mode .cs-unflip{border:2px solid #333333;color:#e5e5e5}
 	body.dark-mode .cs-unflip small{color:#e5e5e5}
+	body.dark-mode .cs-mm{border:2px solid rgba(51,51,51,0.55);background:#525252}
+	body.dark-mode .cs-mmb button{border:1px solid rgba(51,51,51,0.40)}
+	body.dark-mode .cs-ed{background:#3e4c66}
+	body.dark-mode .cs-ed button,body.dark-mode .cs-ed select{background:rgba(26,26,26,0.08)}
+	body.dark-mode .cs-ed select option{color:#eeeeee;background:#1a1a1a}
+	body.dark-mode .cs-ed button:hover{border-color:#333333}
+	body.dark-mode .cs-ed button[aria-pressed=true]{border-color:#046bbd}
+	body.dark-mode .cs-ed .cs-eddone{border-color:#27a53c}
+	body.dark-mode .cs-edside{background:rgba(26,26,26,0.04)}
+	body.dark-mode .cs-ed .cs-eddel{border-color:rgba(186,0,0,0.50)}
+	body.dark-mode .cs-touch .cs-t-launch{border-color:#333333}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -824,6 +895,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
 				<div class="cs-sbtns">
+					<button type="button" id="cs-mapbtn" title="Show or hide the map" aria-label="Map" aria-pressed="true">🗺</button>
 					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
 					<button type="button" id="cs-night" title="Night driving (N)" aria-label="Night driving" aria-pressed="false">🌙</button>
 					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
@@ -832,6 +904,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" id="cs-camreset" title="Back to the normal camera angle (double-click the picture)" hidden>↺ View</button>
 					<button type="button" id="cs-sreset" title="Put the car back on its wheels (R)">↺ Reset</button>
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
+				</div>
+				<div class="cs-mm" id="cs-mm">
+					<canvas id="cs-mmc" title="Open the map editor (B)"></canvas>
+					<span class="cs-mmscale" id="cs-mmscale"></span>
+					<div class="cs-mmb" id="cs-mmb">
+						<button type="button" data-mm="in" title="Zoom in" aria-label="Zoom the map in">＋</button>
+						<button type="button" data-mm="out" title="Zoom out" aria-label="Zoom the map out">−</button>
+						<button type="button" data-mm="rot" id="cs-mmrot" aria-label="Map direction">⬆</button>
+						<button type="button" data-mm="big" title="Bigger / smaller map" aria-label="Bigger or smaller map">⤢</button>
+						<button type="button" data-mm="edit" title="Edit the map: ramps, loops, roads (B)" aria-label="Edit the map">✎</button>
+						<button type="button" data-mm="hide" title="Hide the map" aria-label="Hide the map">✕</button>
+					</div>
 				</div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
 				<button type="button" class="cs-unflip" id="cs-unflip" hidden>↺ Flip back over <small id="cs-unflipn"></small></button>
@@ -851,7 +935,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<b>Time of day <span data-todlab></span></b>
 					<input type="range" data-tod min="0" max="24" step="0.05" aria-label="Time of day (hours)">
 					<div class="cs-prow"><button type="button" class="cs-mini" data-cycle>▶ Run the day</button><select data-cyspd aria-label="Length of a day"></select></div>
+					<b>Game</b>
+					<label class="cs-prow">Speed <select data-speed aria-label="Game speed"></select></label>
+					<label class="cs-prow">Cars <select data-drive aria-label="How lively the cars are"></select></label>
 					<b>Show on screen</b>
+					<label class="cs-prow"><input type="checkbox" data-show="map"> Map</label>
 					<label class="cs-prow"><input type="checkbox" data-show="info"> Car, gravity, g-force, damage</label>
 					<label class="cs-prow"><input type="checkbox" data-show="lap"> Lap timer</label>
 					<label class="cs-prow"><input type="checkbox" data-show="speed"> Speedometer</label>
@@ -868,15 +956,33 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
 						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
+						<li><kbd>B</kbd> map editor: place ramps, loops, springs, launch pads, boost strips and draw your own roads · <kbd>L</kbd> fire a launch pad · <kbd>[</kbd> <kbd>]</kbd> slower / faster game</li>
 						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
 						<li>Stuck or upside down? Press <kbd>R</kbd> or ↺ Reset (it also flips back by itself after a few seconds)</li>
 						<li>Drag the picture to look around · a game controller works too</li>
 					</ul>
 				</div>
+				<div class="cs-ed" id="cs-ed" hidden>
+					<div class="cs-edtop">
+						<div class="cs-edtools" role="group" aria-label="Tools">
+							<button type="button" data-tool="select" title="Select and move (Esc)">✋ Move</button>
+							<button type="button" data-tool="road" title="Draw a road">🛣 Road</button>
+							<button type="button" data-tool="car" title="Choose where your car starts">🚗 Car here</button>
+						</div>
+						<select id="cs-edlay" aria-label="Load a layout"></select>
+						<span class="cs-edsp"></span>
+						<button type="button" data-ed="undo" title="Undo (Ctrl+Z)">↶ Undo</button>
+						<button type="button" data-ed="zout" aria-label="Zoom out">−</button><button type="button" data-ed="zin" aria-label="Zoom in">＋</button><button type="button" data-ed="fit" title="Show the whole world">⤢ All</button>
+						<button type="button" data-ed="done" class="cs-eddone" title="Back to driving (Esc / B)">✓ Done</button>
+					</div>
+					<div class="cs-edpal" id="cs-edpal" role="group" aria-label="Pieces to add"></div>
+					<div class="cs-edmain"><canvas id="cs-edc" aria-label="Map of the world, top view"></canvas><div class="cs-edside" id="cs-edside"></div></div>
+					<div class="cs-edhint" id="cs-edhint"></div>
+				</div>
 				<div class="cs-touch" id="cs-touch" hidden>
 					<div class="cs-tl"><button type="button" id="cs-t-left" aria-label="Steer left">◀</button><button type="button" id="cs-t-right" aria-label="Steer right">▶</button></div>
-					<div class="cs-tr"><div class="cs-tcol"><button type="button" id="cs-t-reset" class="cs-t-sm cs-t-reset" aria-label="Reset: put the car back on its wheels">↺<small>Reset</small></button><button type="button" id="cs-t-boost" class="cs-t-sm" aria-label="Boost">⚡<small>Boost</small></button><button type="button" id="cs-t-hb" class="cs-t-sm" aria-label="Handbrake">HB<small>Drift</small></button></div><button type="button" id="cs-t-brake" class="cs-pedal" aria-label="Brake or reverse"><span class="cs-parr">▼</span><b>BRAKE</b><small>hold = reverse</small></button><button type="button" id="cs-t-gas" class="cs-pedal" aria-label="Gas: accelerate"><span class="cs-parr">▲</span><b>GAS</b></button></div>
+					<div class="cs-tr"><button type="button" id="cs-t-launch" class="cs-t-launch" aria-label="Launch" hidden>🚀<small>Launch</small></button><div class="cs-tcol"><button type="button" id="cs-t-reset" class="cs-t-sm cs-t-reset" aria-label="Reset: put the car back on its wheels">↺<small>Reset</small></button><button type="button" id="cs-t-boost" class="cs-t-sm" aria-label="Boost">⚡<small>Boost</small></button><button type="button" id="cs-t-hb" class="cs-t-sm" aria-label="Handbrake">HB<small>Drift</small></button></div><button type="button" id="cs-t-brake" class="cs-pedal" aria-label="Brake or reverse"><span class="cs-parr">▼</span><b>BRAKE</b><small>hold = reverse</small></button><button type="button" id="cs-t-gas" class="cs-pedal" aria-label="Gas: accelerate"><span class="cs-parr">▲</span><b>GAS</b></button></div>
 				</div>
 			</div>
 			<div class="cs-panel">
@@ -903,6 +1009,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-paint" id="cs-paint"></div>
 				</div>
 				<div class="cs-card cs-card--wide">
+					<div class="cs-ch">Map &amp; track builder</div>
+					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn" id="cs-edit">✎ Open the map editor (B)</button><select class="tu-select" id="cs-layout" aria-label="Load a layout"></select><button type="button" class="tu-btn tu-btn--ghost" id="cs-mapreset">⟲ Original map</button></div>
+					<div class="cs-ch cs-ch2">Place in front of the car</div>
+					<div class="cs-objs" id="cs-quick"></div>
+					<p class="tu-note">In the editor: drag pieces, turn them, change their size, draw roads and closed circuits (laps are timed on a circuit when the test-track oval is switched off), and copy a link to share your map. Each world keeps its own map in this browser.</p>
+				</div>
+				<div class="cs-card cs-card--wide">
 					<div class="cs-ch">Drop things in front of the car</div>
 					<div class="cs-objs" id="cs-objs"></div>
 					<div class="cs-ch cs-ch2">Set-ups</div>
@@ -919,7 +1032,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" class="tu-btn tu-btn--ghost" id="cs-pause">❚❚ Pause</button>
 					</div>
 					<div class="cs-checks">
-						<label><input type="checkbox" id="cs-slow"> Slow motion</label>
+						<label>Game speed <select class="tu-select" data-speed aria-label="Game speed"></select></label>
+						<label>Cars <select class="tu-select" data-drive aria-label="How lively the cars are"></select></label>
 						<label><input type="checkbox" id="cs-snd" data-snd> Sound</label>
 						<label>Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"> <span data-volnum></span></label>
 						<label><input type="checkbox" id="cs-dmgon"> Dents &amp; damage</label>
@@ -930,6 +1044,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="cs-ch cs-ch2">Show on screen</div>
 					<div class="cs-checks">
+						<label><input type="checkbox" data-show="map"> Map</label>
 						<label><input type="checkbox" data-show="info"> Car &amp; g-force box</label>
 						<label><input type="checkbox" data-show="lap"> Lap timer</label>
 						<label><input type="checkbox" data-show="speed"> Speedometer</label>
@@ -975,6 +1090,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>Pick any hour with the slider, or press "Run the day" and choose how long a whole day takes (from 2 minutes to real time). The sun rises at 6:00, is highest at noon and sets at 18:00; low sun gives long shadows and an orange sky, and on Mars the sunset glows blue, as photographed by NASA’s rovers. On the real Moon a day lasts about 29.5 Earth days.</dd>
 				<dt>What does night driving change?</dt>
 				<dd>The sun goes down, stars come out, the lamp posts along the track glow and your car’s headlights light the road. On the Moon the only light left is earthshine (sunlight reflected off the Earth), so the headlights matter a lot.</dd>
+				<dt>Can I build my own track?</dt>
+				<dd>Yes. Press B (or ✎ on the map) to open the map editor: add springs that throw the car straight up, launch pads that fire when you press L, boost strips, kickers, ramps up to a 30 m mega ramp, gap jumps, table tops, bumps, loops, half pipes, banked walls, blocks and platforms, drag and turn them, change their size, and draw roads. Close a road into a circuit and switch the oval off, and your laps on it are timed, with a ghost of your best lap. "Copy a link to this map" shares the whole layout.</dd>
+				<dt>The game feels slow. Can I speed it up?</dt>
+				<dd>Two settings: Game speed runs time faster or slower (from ¼× slow motion to 3×), and Cars picks Realistic (the real engine and tyre numbers), Lively (more power and grip, the default) or Arcade. Press [ and ] while driving to change the game speed.</dd>
 				<dt>Is anything saved or uploaded?</dt>
 				<dd>Only your settings, records and best-lap ghosts, in your own browser. Nothing is uploaded.</dd>
 			</dl>
@@ -1039,7 +1158,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/car-sandbox/js/car-sandbox.js?v=9" defer></script>
+	<script src="/car-sandbox/js/car-sandbox.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

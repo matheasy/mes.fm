@@ -135,9 +135,9 @@
 	   lap = state object (start with C.lapNew()); feed it the car's track position each step: returns events [{t: "start"|"sector"|"lap"|"wrong", ...}]. */
 	C.SECTORS = 4;
 	C.lapNew = function () { return { sec: -1, t0: null, splits: [], next: 0, laps: 0, last: null, valid: false }; };
-	C.lapStep = function (st, s, d, now) {
-		var L = C.trackLength(), n = C.SECTORS, sec = Math.min(n - 1, Math.floor(s / (L / n))), ev = [];
-		if (d > C.TRACK.width * 1.5) return ev; /* off the track: positions there don't count */
+	C.lapStep = function (st, s, d, now, Lc, wc) {
+		var L = Lc || C.trackLength(), n = C.SECTORS, sec = Math.min(n - 1, Math.floor(s / (L / n))), ev = [];
+		if (d > (wc || C.TRACK.width) * 1.5) return ev; /* off the track: positions there don't count */
 		if (st.sec === -1) { st.sec = sec; return ev; }
 		if (sec === st.sec) return ev;
 		if (sec === (st.sec + 1) % n) {
@@ -171,7 +171,7 @@
 		return { name: parts.join(" + "), turns: fp + fr + Math.floor(fy / 2) };
 	};
 	C.fmtLap = function (t) { if (t == null || !isFinite(t)) return "–"; var m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (s < 10 ? "0" : "") + s.toFixed(2); };
-	C.lapKey = function (world, car, g) { return world + "|" + car + "|" + (+g).toFixed(2); };
+	C.lapKey = function (world, car, g, extra) { return world + "|" + car + "|" + (+g).toFixed(2) + (extra ? "|" + extra : ""); };
 
 	/* ---------- craters (seeded list) ---------- */
 	C.craters = function (wid) {
@@ -357,6 +357,190 @@
 	C.fmtDist = function (m, unit) { if (!isFinite(m)) return "∞"; return unit === "mph" ? (m * 3.28084 >= 1000 ? (m / 1609.344).toFixed(2) + " mi" : Math.round(m * 3.28084) + " ft") : (m >= 1000 ? (m / 1000).toFixed(2) + " km" : (m < 10 ? m.toFixed(1) : Math.round(m)) + " m"); };
 	C.gName = function (g) { var best = null; C.GRAVITY.forEach(function (p) { if (Math.abs(p[1] - g) < 0.02) best = p[0]; }); return best; };
 
+	/* ---------- game speed + how lively the cars are ----------
+	   SPEEDS = how fast time runs (1 = real time). DRIVE = engine force / top speed / tyre grip multipliers: "real" is the car table as it is,
+	   "fast" and "arcade" are livelier (more power, more grip) for play; lap records are kept apart per setting. */
+	C.SPEEDS = [[0.25, "¼× slow motion"], [0.5, "½×"], [0.75, "¾×"], [1, "1× real time"], [1.25, "1¼×"], [1.5, "1½×"], [2, "2× fast"], [3, "3× very fast"]];
+	C.DRIVE = {
+		real: { name: "Realistic", F: 1, v: 1, grip: 1 },
+		fast: { name: "Lively", F: 1.7, v: 1.15, grip: 1.12 },
+		arcade: { name: "Arcade", F: 2.6, v: 1.35, grip: 1.3 }
+	};
+	C.DRIVE_ORDER = ["real", "fast", "arcade"];
+
+	/* ---------- map editor: pieces you can place ----------
+	   Every piece is a plain object {t (shape), k (catalogue key), x, z, yaw, ...size}; the built-in stunt pieces use the same shapes. */
+	C.PIECES = {
+		kicker: { name: "Kicker", icon: "◢", t: "ramp", w: 7, l: 8, h: 1.6 },
+		ramp: { name: "Ramp", icon: "📐", t: "ramp", w: 8, l: 14, h: 3.5 },
+		bigramp: { name: "Big ramp", icon: "⛰️", t: "ramp", w: 10, l: 20, h: 6 },
+		mega: { name: "Mega ramp", icon: "🗻", t: "ramp", w: 14, l: 30, h: 8 },
+		gap: { name: "Gap jump", icon: "↗↘", t: "gap", w: 8, l: 12, h: 3, gap: 20 },
+		table: { name: "Table top", icon: "⏢", t: "table", w: 9, l: 30, h: 3 },
+		whoops: { name: "Bumps", icon: "〰️", t: "whoops", w: 8, l: 30, h: 0.7, n: 6 },
+		loop: { name: "Loop", icon: "➰", t: "loop", r: 9, w: 7 },
+		pipe: { name: "Half pipe", icon: "◡", t: "pipe", r: 10, l: 40 },
+		bank: { name: "Banked wall", icon: "◣", t: "bank", w: 6, l: 30, h: 4 },
+		block: { name: "Low block", icon: "▬", t: "block", w: 12, l: 4, h: 1.2 },
+		wall: { name: "Wall", icon: "🧱", t: "block", w: 16, l: 1, h: 3 },
+		platform: { name: "Platform", icon: "⬛", t: "block", w: 14, l: 14, h: 2.5 },
+		spring: { name: "Spring (auto)", icon: "🌀", t: "pad", pad: "spring", w: 6, l: 6, v: 22 },
+		launchpad: { name: "Launch pad (press L)", icon: "🚀", t: "pad", pad: "press", w: 6, l: 6, v: 30 },
+		boost: { name: "Boost strip", icon: "⏩", t: "pad", pad: "boost", w: 6, l: 10, v: 45 }
+	};
+	C.PIECE_ORDER = ["spring", "launchpad", "boost", "kicker", "ramp", "bigramp", "mega", "gap", "table", "whoops", "loop", "pipe", "bank", "block", "wall", "platform"];
+	/* editable sizes: [label, min, max, step] */
+	C.PARAMS = { w: ["Width", 1, 40, 0.5], l: ["Length", 1, 80, 0.5], h: ["Height", 0.2, 20, 0.1], r: ["Radius", 4, 20, 0.5], gap: ["Gap", 2, 80, 1], n: ["Bumps", 2, 20, 1], v: ["Launch", 4, 70, 1] };
+	C.SHAPE_PARAMS = { ramp: ["h", "l", "w"], gap: ["gap", "h", "l", "w"], table: ["h", "l", "w"], whoops: ["n", "h", "l", "w"], loop: ["r", "w"], pipe: ["r", "l"], bank: ["h", "l", "w"], block: ["h", "l", "w"], pad: ["v", "l", "w"] };
+	C.newPiece = function (k, x, z, yaw) { var P = C.PIECES[k], o = { k: k, x: x, z: z, yaw: yaw || 0 }; Object.keys(P).forEach(function (q) { if (q !== "name" && q !== "icon") o[q] = P[q]; }); return o; };
+	C.pieceName = function (p) { if (p.k && C.PIECES[p.k]) return C.PIECES[p.k].name; var n = { ramp: "Ramp", gap: "Gap jump", table: "Table top", whoops: "Bumps", loop: "Loop", pipe: "Half pipe", bank: "Banked wall", block: "Block", pad: "Pad" }; return n[p.t] || p.t; };
+	C.clampPiece = function (p) { (C.SHAPE_PARAMS[p.t] || []).forEach(function (q) { var D = C.PARAMS[q]; var v = +p[q]; if (!isFinite(v)) v = D[1]; p[q] = Math.max(D[1], Math.min(D[2], q === "n" ? Math.round(v) : v)); }); return p; };
+	/* the piece's footprint as a rectangle in its own frame (x across, z along its facing direction): {cx, cz, hx, hz} */
+	C.pieceRect = function (p) {
+		if (p.t === "gap") return { cx: 0, cz: 0, hx: p.w / 2, hz: p.l + p.gap / 2 };
+		if (p.t === "loop") return { cx: (p.w + 1.5) / 2, cz: 0, hx: p.w + 0.75, hz: p.r };
+		if (p.t === "pipe") return { cx: 0, cz: 0, hx: p.r, hz: p.l / 2 };
+		return { cx: 0, cz: 0, hx: p.w / 2, hz: p.l / 2 };
+	};
+	/* local (piece frame) to world: yaw 0 faces +z */
+	C.toWorld = function (p, lx, lz) { var c = Math.cos(p.yaw), s = Math.sin(p.yaw); return [p.x + lx * c + lz * s, p.z - lx * s + lz * c]; };
+	C.toLocal = function (p, x, z) { var c = Math.cos(p.yaw), s = Math.sin(p.yaw), dx = x - p.x, dz = z - p.z; return [dx * c - dz * s, dx * s + dz * c]; };
+	C.pieceCorners = function (p) { var R = C.pieceRect(p); return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(function (k) { return C.toWorld(p, R.cx + k[0] * R.hx, R.cz + k[1] * R.hz); }); };
+	C.pieceHit = function (p, x, z, pad) { var R = C.pieceRect(p), q = C.toLocal(p, x, z); pad = pad || 0; return Math.abs(q[0] - R.cx) <= R.hx + pad && Math.abs(q[1] - R.cz) <= R.hz + pad; };
+	/* pads: what a car standing on one gets. spring = straight up at v (m/s) every time it lands on it; press = the same when the driver presses
+	   launch; boost = pushed along the pad's direction up to v. Returns the new velocity {x, y, z} or null. lv = car velocity, up = gravity sign (1 or -1). */
+	C.PAD_COOLDOWN = 1.0;
+	C.padLaunch = function (p, lv, pressed, gsign) {
+		var up = gsign < 0 ? -1 : 1;
+		if (p.pad === "spring" || (p.pad === "press" && pressed)) return { x: lv.x * 0.9, y: up * p.v, z: lv.z * 0.9 };
+		if (p.pad === "boost") {
+			var fx = Math.sin(p.yaw), fz = Math.cos(p.yaw), along = lv.x * fx + lv.z * fz; if (along >= p.v) return null;
+			var add = Math.max(0, p.v - Math.max(0, along)); return { x: lv.x + fx * add, y: lv.y, z: lv.z + fz * add };
+		}
+		return null;
+	};
+	/* how high / how long a spring throws the car straight up in gravity g */
+	C.springHeight = function (v, g) { return g > 0 ? v * v / (2 * g) : Infinity; };
+
+	/* the side profile [[z, y], ...] (convex, anticlockwise) of the prism shapes, extruded across their width */
+	C.prismParts = function (p) {
+		var b, out = [];
+		if (p.t === "ramp") out.push({ dz: 0, flip: false, prof: [[-p.l / 2, 0], [p.l / 2, 0], [p.l / 2, p.h]] });
+		else if (p.t === "gap") { b = p.gap / 2 + p.l / 2; out.push({ dz: -b, flip: false, prof: [[-p.l / 2, 0], [p.l / 2, 0], [p.l / 2, p.h]] }); out.push({ dz: b, flip: true, prof: [[-p.l / 2, 0], [p.l / 2, 0], [p.l / 2, p.h * 0.9]] }); }
+		else if (p.t === "table") { var r = Math.min(p.l / 3, p.h * 3.2); out.push({ dz: 0, flip: false, prof: [[-p.l / 2, 0], [p.l / 2, 0], [p.l / 2 - r, p.h], [-p.l / 2 + r, p.h]] }); }
+		else if (p.t === "whoops") {
+			var n = Math.max(2, Math.round(p.n)), a = p.l / n / 2;
+			for (var i = 0; i < n; i++) { var c = -p.l / 2 + a * (2 * i + 1), pr = []; for (var j = 0; j <= 8; j++) { var t = Math.PI * j / 8; pr.push([-Math.cos(t) * a, Math.sin(t) * p.h]); } out.push({ dz: c, flip: false, prof: pr }); }
+		}
+		else if (p.t === "bank") { /* a slope that rises across its width: drive along it, leaning in */ out.push({ dz: 0, flip: false, across: true, prof: [[-p.w / 2, 0], [p.w / 2, 0], [p.w / 2, p.h]] }); }
+		return out;
+	};
+
+	/* ---------- roads you draw ----------
+	   a road = {w (width m), closed, pts [[x, z], ...]} drawn as a smooth Catmull-Rom curve through the points. */
+	C.ROAD_WIDTHS = [[6, "Narrow (6 m)"], [10, "Normal (10 m)"], [16, "Wide (16 m)"], [24, "Very wide (24 m)"]];
+	C.roadPath = function (pts, closed, step) {
+		step = step || 2;
+		var n = pts.length, out = [], s = 0; if (n < 2) return { pts: [], L: 0, closed: !!closed };
+		function P(i) { if (closed) return pts[((i % n) + n) % n]; return pts[Math.max(0, Math.min(n - 1, i))]; }
+		var segs = closed ? n : n - 1;
+		for (var i = 0; i < segs; i++) {
+			var p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2), len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]), m = Math.max(1, Math.ceil(len / step));
+			for (var j = 0; j < m; j++) {
+				var t = j / m, t2 = t * t, t3 = t2 * t;
+				var x = 0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3);
+				var z = 0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3);
+				out.push({ x: x, z: z });
+			}
+		}
+		if (!closed) out.push({ x: pts[n - 1][0], z: pts[n - 1][1] });
+		for (i = 0; i < out.length; i++) {
+			var a = out[i], nb = out[i + 1] || (closed ? out[0] : null), pv = out[i - 1] || (closed ? out[out.length - 1] : null);
+			var dx = (nb ? nb.x : a.x) - (pv ? pv.x : a.x), dz = (nb ? nb.z : a.z) - (pv ? pv.z : a.z);
+			a.dir = Math.atan2(dx, dz); if (i) s += Math.hypot(a.x - out[i - 1].x, a.z - out[i - 1].z); a.s = s;
+		}
+		var L = s + (closed && out.length ? Math.hypot(out[0].x - out[out.length - 1].x, out[0].z - out[out.length - 1].z) : 0);
+		return { pts: out, L: L, closed: !!closed };
+	};
+	/* nearest point of a road path: {s, d, i} */
+	C.pathNearest = function (path, x, z) {
+		var P = path.pts, best = 0, bd = 1e18;
+		for (var i = 0; i < P.length; i++) { var dx = P[i].x - x, dz = P[i].z - z, d = dx * dx + dz * dz; if (d < bd) { bd = d; best = i; } }
+		if (!P.length) return { s: 0, d: Infinity, i: 0 };
+		/* refine on the two segments next to the nearest sample */
+		var res = { s: P[best].s, d: Math.sqrt(bd), i: best };
+		[best - 1, best].forEach(function (k) {
+			var a = P[k], b = P[k + 1] || (path.closed ? P[0] : null); if (!a || !b) return;
+			var ex = b.x - a.x, ez = b.z - a.z, l2 = ex * ex + ez * ez; if (!l2) return;
+			var t = Math.max(0, Math.min(1, ((x - a.x) * ex + (z - a.z) * ez) / l2)), px = a.x + ex * t, pz = a.z + ez * t, d = Math.hypot(x - px, z - pz);
+			if (d < res.d) res = { s: a.s + Math.sqrt(l2) * t, d: d, i: k };
+		});
+		return res;
+	};
+	C.pathPoint = function (path, s) {
+		var P = path.pts, L = path.L; if (!P.length) return { x: 0, z: 0, dir: 0 };
+		if (path.closed) s = ((s % L) + L) % L; else s = Math.max(0, Math.min(P[P.length - 1].s, s));
+		var lo = 0, hi = P.length - 1; if (s >= P[hi].s) { var a0 = P[hi], b0 = path.closed ? P[0] : P[hi], seg = L - a0.s; var f0 = seg > 0 ? (s - a0.s) / seg : 0; return { x: a0.x + (b0.x - a0.x) * f0, z: a0.z + (b0.z - a0.z) * f0, dir: a0.dir }; }
+		while (hi - lo > 1) { var m = (lo + hi) >> 1; if (P[m].s <= s) lo = m; else hi = m; }
+		var a = P[lo], b = P[hi], f = (s - a.s) / ((b.s - a.s) || 1);
+		return { x: a.x + (b.x - a.x) * f, z: a.z + (b.z - a.z) * f, dir: a.dir };
+	};
+
+	/* ---------- layouts (map presets) ---------- */
+	C.MAP_PRESETS = [["original", "Original layout"], ["empty", "Empty (no pieces)"], ["jumps", "Jump lines"], ["arena", "Stunt arena"], ["race", "Race circuit (road)"]];
+	C.mapPreset = function (kind, wid) {
+		var W = C.WORLDS[wid], m = { p: [], r: [], oval: true };
+		if (kind === "original") { m.p = C.statics(wid).map(function (s) { return Object.assign({}, s); }); return m; }
+		if (kind === "empty") return m;
+		var ox = 0, oz = W.track ? C.TRACK.cz : 40, P = function (k, x, z, yaw, o) { var p = C.newPiece(k, ox + x, oz + z, yaw); if (o) Object.assign(p, o); m.p.push(p); };
+		if (kind === "jumps") {
+			var e = Math.PI / 2, wv = -Math.PI / 2;
+			P("kicker", -95, 25, e); P("gap", -55, 25, e); P("table", 0, 25, e); P("whoops", 45, 25, e); P("bigramp", 85, 25, e);
+			P("ramp", 90, -25, wv); P("gap", 45, -25, wv, { gap: 28, h: 4 }); P("loop", -5, -25, wv); P("kicker", -50, -25, wv); P("mega", -85, -25, wv, { l: 26, h: 7 });
+			P("boost", -112, 25, e); P("spring", 110, 0, 0); P("launchpad", -110, -25, wv);
+			if (!W.track) m.p.forEach(function (p) { var t = p.x; p.x = p.z - oz; p.z = oz + t * 0.6 + 40; p.yaw = p.yaw > 0 ? 0 : Math.PI; p.x *= 1.4; });
+		} else if (kind === "arena") {
+			for (var i = 0; i < 8; i++) { var a = i / 8 * 2 * Math.PI; P(i % 2 ? "ramp" : "bigramp", Math.sin(a) * 55, Math.cos(a) * 55, a + Math.PI); }
+			P("loop", -12, 0, 0); P("pipe", 22, 0, 0, { l: 30 }); P("platform", 0, 30, 0, { w: 10, l: 10, h: 2 }); P("kicker", 0, 18, Math.PI);
+			P("spring", -30, -30, 0); P("spring", 30, -30, 0, { v: 32 }); P("launchpad", 0, -38, 0); P("boost", -40, 20, Math.PI / 2);
+		} else if (kind === "race") {
+			m.oval = false; m.p = [];
+			var pts = [[-150, 20], [-60, 40], [30, 10], [110, 40], [160, -20], [120, -100], [40, -80], [-20, -130], [-110, -120], [-170, -60]];
+			if (!W.track) pts = pts.map(function (q) { return [q[0] * 0.9, q[1] * 0.9 + 60]; });
+			m.r.push({ w: 12, closed: true, pts: pts });
+			var path = C.roadPath(pts, true, 2), j1 = C.pathPoint(path, path.L * 0.32), j2 = C.pathPoint(path, path.L * 0.7);
+			m.p.push(C.newPiece("kicker", j1.x, j1.z, j1.dir)); m.p.push(C.newPiece("whoops", j2.x, j2.z, j2.dir));
+			m.p[0].w = 10; m.p[1].w = 11;
+		}
+		return m;
+	};
+
+	/* ---------- a map in a link: compact JSON in base64url ---------- */
+	function r1(v) { return Math.round(v * 10) / 10; }
+	C.mapEncode = function (m) {
+		var o = { v: 1, p: (m.p || []).map(function (p) { var a = [p.k || p.t, r1(p.x), r1(p.z), Math.round(p.yaw * 180 / Math.PI)]; (C.SHAPE_PARAMS[p.t] || []).forEach(function (q) { a.push(r1(p[q])); }); return a; }), r: (m.r || []).map(function (r) { var a = [r.w, r.closed ? 1 : 0]; r.pts.forEach(function (q) { a.push(Math.round(q[0]), Math.round(q[1])); }); return a; }) };
+		if (m.oval === false) o.o = 0;
+		var js = JSON.stringify(o), b = typeof btoa === "function" ? btoa(unescape(encodeURIComponent(js))) : Buffer.from(js, "utf8").toString("base64");
+		return b.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+	};
+	C.mapDecode = function (str) {
+		try {
+			var b = String(str).replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "=";
+			var js = typeof atob === "function" ? decodeURIComponent(escape(atob(b))) : Buffer.from(b, "base64").toString("utf8"), o = JSON.parse(js);
+			if (!o || o.v !== 1) return null;
+			var m = { p: [], r: [], oval: o.o !== 0 };
+			(o.p || []).slice(0, 200).forEach(function (a) {
+				var k = a[0], t; if (C.PIECES[k]) t = C.PIECES[k].t; else if (C.SHAPE_PARAMS[k]) { t = k; k = null; } else return;
+				var p = k ? C.newPiece(k, +a[1], +a[2], (+a[3] || 0) * Math.PI / 180) : { t: t, x: +a[1], z: +a[2], yaw: (+a[3] || 0) * Math.PI / 180 };
+				if (!isFinite(p.x) || !isFinite(p.z)) return;
+				(C.SHAPE_PARAMS[t] || []).forEach(function (q, i) { if (a[4 + i] != null) p[q] = +a[4 + i]; });
+				m.p.push(C.clampPiece(p));
+			});
+			(o.r || []).slice(0, 20).forEach(function (a) { var r = { w: Math.max(3, Math.min(40, +a[0] || 10)), closed: !!a[1], pts: [] }; for (var i = 2; i + 1 < a.length && r.pts.length < 200; i += 2) if (isFinite(+a[i]) && isFinite(+a[i + 1])) r.pts.push([+a[i], +a[i + 1]]); if (r.pts.length >= 2) m.r.push(r); });
+			return m;
+		} catch (e) { return null; }
+	};
+
 	/* ---------- settings in a link ---------- */
 	C.parseQuery = function (q) {
 		var o = {}, p = new URLSearchParams(q || "");
@@ -367,9 +551,11 @@
 		if (["cruise", "chase", "park"].indexOf(p.get("ai")) >= 0) o.ai = p.get("ai");
 		if (C.WEATHER[p.get("wx")]) o.weather = p.get("wx");
 		var tt = parseFloat(p.get("t")); if (isFinite(tt) && tt >= 0 && tt < 24) o.tod = tt;
+		var sp = parseFloat(p.get("spd")); if (C.SPEEDS.some(function (x) { return x[0] === sp; })) o.speed = sp;
+		if (C.DRIVE[p.get("dr")]) o.drive = p.get("dr");
 		return o;
 	};
-	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); if (s.tod != null && Math.abs(s.tod - 13) > 0.01) p.set("t", String(+(+s.tod).toFixed(2))); return p.toString(); };
+	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); if (s.tod != null && Math.abs(s.tod - 13) > 0.01) p.set("t", String(+(+s.tod).toFixed(2))); if (s.speed && s.speed !== 1) p.set("spd", String(s.speed)); if (s.drive && s.drive !== "fast") p.set("dr", s.drive); return p.toString(); };
 
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCar = C;
 })(typeof window !== "undefined" ? window : this);

@@ -105,4 +105,48 @@ ok(C.fmtTime(13.5) === "13:30" && C.fmtTime(24.25) === "00:15" && C.fmtTime(-1) 
 ok(C.timeName(12) === "Midday" && C.timeName(18) === "Sunset" && C.timeName(23) === "Night", "time names");
 ok(C.parseQuery("t=19.5").tod === 19.5 && C.parseQuery("t=30").tod === undefined, "t query");
 ok(C.query({ world: "earth", tod: 19.5 }).indexOf("t=19.5") >= 0 && C.query({ world: "earth", tod: 13 }).indexOf("t=") < 0, "t in links");
+// game speed + driving feel in links
+ok(C.parseQuery("spd=2").speed === 2 && C.parseQuery("spd=7").speed === undefined && C.parseQuery("dr=arcade").drive === "arcade" && C.parseQuery("dr=x").drive === undefined, "speed / drive query");
+ok(C.query({ world: "earth", speed: 1.5, drive: "real" }).indexOf("spd=1.5") >= 0 && C.query({ world: "earth", speed: 1, drive: "fast" }).indexOf("spd") < 0 && C.query({ world: "earth", drive: "real" }).indexOf("dr=real") >= 0, "speed / drive in links");
+ok(C.DRIVE_ORDER.every(function (k) { var D = C.DRIVE[k]; return D.F >= 1 && D.v >= 1 && D.grip >= 1; }), "driving feels never weaker than real");
+// map pieces
+C.PIECE_ORDER.forEach(function (k) {
+	var p = C.newPiece(k, 12, -7, 0.7), R = C.pieceRect(p), cs = C.pieceCorners(p);
+	ok(p.t && C.SHAPE_PARAMS[p.t], "piece shape " + k);
+	ok(C.pieceHit(p, (cs[0][0] + cs[2][0]) / 2, (cs[0][1] + cs[2][1]) / 2) && !C.pieceHit(p, 12 + 500, -7), "piece hit " + k);
+	var w = C.toWorld(p, 3, -2), l = C.toLocal(p, w[0], w[1]); near(l[0], 3, 1e-9, "local x " + k); near(l[1], -2, 1e-9, "local z " + k);
+	near(Math.hypot(cs[0][0] - cs[1][0], cs[0][1] - cs[1][1]), 2 * R.hx, 1e-9, "rect width " + k);
+	C.prismParts(p).forEach(function (pt) { ok(pt.prof.length >= 3 && pt.prof.every(function (q) { return q[1] >= 0 && isFinite(q[0]); }), "prism profile " + k); });
+	var bad2 = Object.assign({}, p); (C.SHAPE_PARAMS[p.t] || []).forEach(function (q) { bad2[q] = 1e9; }); C.clampPiece(bad2); ok((C.SHAPE_PARAMS[p.t] || []).every(function (q) { return bad2[q] <= C.PARAMS[q][2]; }), "clamp " + k);
+});
+near(C.toWorld({ x: 0, z: 0, yaw: Math.PI / 2 }, 0, 10)[0], 10, 1e-9, "yaw 90° faces +x");
+ok(C.prismParts(C.newPiece("whoops", 0, 0, 0)).length === 6 && C.prismParts(C.newPiece("gap", 0, 0, 0))[1].flip === true, "whoops count / gap landing");
+// roads
+var sq = C.roadPath([[0, 0], [100, 0], [100, 100], [0, 100]], true, 2);
+ok(sq.L > 380 && sq.L < 460 && sq.closed, "closed road length " + sq.L);
+var pp = C.pathPoint(sq, 50), nn = C.pathNearest(sq, pp.x, pp.z); near(nn.s, 50, 1.5, "nearest = point"); ok(nn.d < 0.5, "on the road");
+near(C.pathPoint(sq, sq.L + 10).x, C.pathPoint(sq, 10).x, 1e-6, "closed road wraps");
+var op = C.roadPath([[0, 0], [50, 0]], false, 2); near(op.L, 50, 0.01, "straight open road"); near(C.pathPoint(op, 25).x, 25, 0.01, "midpoint");
+var lp = C.lapNew(), evs = [], tt = 0; for (var round = 0; round < 3.3; round += 0.01) { var ss = (round * sq.L) % sq.L; C.lapStep(lp, ss, 0, tt += 0.1, sq.L, 10).forEach(function (e) { evs.push(e.t); }); }
+ok(lp.laps === 2 && evs.indexOf("lap") >= 0, "laps on a drawn circuit: " + lp.laps);
+// layouts + map links
+["earth", "moon", "mars"].forEach(function (w) {
+	C.MAP_PRESETS.forEach(function (pr) {
+		var m = C.mapPreset(pr[0], w), d = C.mapDecode(C.mapEncode(m));
+		ok(d && d.p.length === m.p.length && d.r.length === m.r.length && d.oval === (m.oval !== false), "map link round trip " + w + " " + pr[0]);
+		d.p.forEach(function (p, i) { near(p.x, m.p[i].x, 0.06, "piece x"); near(p.yaw, m.p[i].yaw, 0.01, "piece yaw"); ok(p.t === m.p[i].t, "piece shape kept"); });
+		var half = C.WORLDS[w].size / 2 - 30; ok(m.p.every(function (p) { return Math.abs(p.x) < half && Math.abs(p.z) < half; }), "layout inside the world " + w + " " + pr[0]);
+	});
+});
+ok(C.mapPreset("race", "earth").oval === false && C.mapPreset("race", "earth").r[0].closed, "race layout = closed road, oval off");
+ok(C.mapDecode("!!!") === null && C.mapDecode("e30") === null, "bad map links ignored");
+ok(C.lapKey("earth", "sports", 9.81, "dr:fast") === "earth|sports|9.81|dr:fast" && C.lapKey("earth", "sports", 9.81) === "earth|sports|9.81", "lap keys");
+// pads
+var spr = C.newPiece("spring", 0, 0, 0), lpd = C.newPiece("launchpad", 0, 0, 0), bst = C.newPiece("boost", 0, 0, Math.PI / 2);
+ok(C.padLaunch(spr, { x: 3, y: -1, z: 0 }, false, 1).y === spr.v, "spring throws up by itself");
+ok(C.padLaunch(spr, { x: 0, y: 0, z: 0 }, false, -1).y === -spr.v, "spring follows flipped gravity");
+ok(C.padLaunch(lpd, { x: 0, y: 0, z: 0 }, false, 1) === null && C.padLaunch(lpd, { x: 0, y: 0, z: 0 }, true, 1).y === lpd.v, "launch pad waits for the button");
+var bv = C.padLaunch(bst, { x: 5, y: 0, z: 0 }, false, 1); near(bv.x, bst.v, 1e-9, "boost along its direction"); ok(C.padLaunch(bst, { x: 60, y: 0, z: 0 }, false, 1) === null, "boost never slows");
+near(C.springHeight(20, 9.81), 400 / 19.62, 1e-9, "spring height");
+ok(C.mapDecode(C.mapEncode({ p: [spr, lpd, bst], r: [] })).p.map(function (p) { return p.pad; }).join() === "spring,press,boost", "pads survive a map link");
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);
