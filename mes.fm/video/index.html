@@ -342,7 +342,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-pane {display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow:auto;padding:0.5em;}
 	#vd .vd-bin, #vd .vd-insp {background:var(--vd-panel);display:flex;flex-direction:column;min-height:0;overflow:auto;padding:0.5em;}
 	#vd .vd-bin {overflow:hidden;}
-	#vd .vd-panehead {display:flex;align-items:center;gap:0.4em;margin-bottom:0.3em;min-height:32px;} #vd .vd-panehead select {min-height:28px;padding:0.1em 0.3em;}
+	#vd .vd-panehead {display:flex;align-items:center;gap:0.4em;margin-bottom:0.3em;min-height:32px;} #vd .vd-panehead select {min-height:28px;padding:0.1em 0.3em;} #vd .vd-panehead2 {margin-top:1em;}
 	#vd .vd-cards {display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:0.45em;margin-top:0.4em;}
 	#vd .vd-card {background:var(--vd-panel2);border:1px solid var(--vd-line);border-radius:0.5em;padding:0.35em;cursor:grab;display:flex;flex-direction:column;gap:0.25em;text-align:left;font:inherit;touch-action:none;min-height:96px;}
 	#vd .vd-card:hover {border-color:#4b5a73;background:#252e3d;} #vd .vd-card:focus-visible {outline:2px solid var(--vd-sel);}
@@ -420,7 +420,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-tbtns button {background:transparent;border:0;cursor:pointer;font-size:0.85em;min-width:25px;min-height:24px;border-radius:0.3em;padding:0;color:var(--vd-dim);} #vd .vd-tbtns button:hover {background:var(--vd-btnh);} #vd .vd-tbtns button[aria-pressed="true"] {color:var(--vd-acc2);}
 	#vd .vd-lane {position:relative;flex:1;}
 	#vd .vd-clip {position:absolute;top:2px;bottom:2px;border-radius:5px;overflow:hidden;background:var(--vd-video);border:1px solid rgba(255,255,255,0.25);cursor:grab;touch-action:none;}
-	#vd .vd-clip--audio {background:var(--vd-audio);} #vd .vd-clip--image {background:var(--vd-image);} #vd .vd-clip--text {background:var(--vd-text);}
+	#vd .vd-clip--audio {background:var(--vd-audio);} #vd .vd-clip--image {background:var(--vd-image);} #vd .vd-clip--text {background:var(--vd-text);} #vd .vd-clip--shape {background:#be123c;}
 	#vd .vd-clip.is-sel {box-shadow:0 0 0 2px var(--vd-sel), inset 0 0 0 1px var(--vd-sel);z-index:2;} #vd .vd-clip.is-bad {box-shadow:0 0 0 2px #ef4444;opacity:0.7;} #vd .vd-clip.is-missing {background:#3f1d1d;}
 	#vd .vd-cc {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 	#vd .vd-cl {position:absolute;left:4px;top:1px;right:4px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000,0 0 3px #000;pointer-events:none;color:#fff;}
@@ -1069,7 +1069,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						</div>
 						<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first. Drop a .mesvideo project file to open it.</p>
 					</section>
-					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles &amp; annotations</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
+					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles &amp; annotations</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div><div class="vd-panehead vd-panehead2"><b>Arrows &amp; shapes</b></div><div class="vd-cards" data-cards="shapes"></div></section>
 					<section class="vd-pane" data-pane="trans" role="tabpanel" aria-label="Transitions" hidden><div class="vd-panehead"><b>Transitions</b><span class="vd-sp"></span><label class="vd-chk">Length <select id="vd-trdur" aria-label="Transition length"><option value="0.5">0.5 s</option><option value="1" selected>1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></label></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="trans"></div></section>
 					<section class="vd-pane" data-pane="afx" role="tabpanel" aria-label="Audio effects" hidden><div class="vd-panehead"><b>Audio effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip. Nothing is changed in your files: the effects are worked out as you play and export, and you can change or remove them in the properties.</p><div class="vd-cards" data-cards="afx"></div></section>
 					<section class="vd-pane" data-pane="vfx" role="tabpanel" aria-label="Visual effects" hidden><div class="vd-panehead"><b>Visual effects</b></div><p class="vd-hint">Click to use it on the selected clips, or drag it onto a clip.</p><div class="vd-cards" data-cards="vfx"></div></section>
@@ -1247,7 +1247,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=39" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=40" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

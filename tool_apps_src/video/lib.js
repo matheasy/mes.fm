@@ -9,6 +9,13 @@
 	V.clamp = function (x, a, b) { return x < a ? a : x > b ? b : x; };
 
 	/* ---------- project ---------- */
+	// shapes / annotations (clip type "shape"): a box centred at (x, y), w x h as fractions of the frame width / height (times scale).
+	// k: arrow (tail at the box's left middle, head at the right; turn it with the turn handle), line, rect, ellipse, highlight
+	// (see-through fill), spotlight (darkens everything outside the shape), pixelate (hides what is under it), badge (numbered circle).
+	// lw = line width and px = pixel size, both fractions of the frame height
+	V.SHAPE_DEFAULT = { k: "arrow", w: 0.25, h: 0.12, color: "#e11d48", lw: 0.008, fillOn: false, fill: "#e11d48", fillOp: 0.3, heads: "end", head: 1, dash: false, shadow: true, round: 0.12, oval: false, dark: 0.6, px: 0.025, n: 1, ncolor: "#ffffff" };
+	V.SHAPE_KINDS = [["arrow", "Arrow"], ["line", "Line"], ["rect", "Box"], ["ellipse", "Circle / oval"], ["highlight", "Highlight"], ["spotlight", "Spotlight"], ["pixelate", "Hide (pixelate)"], ["badge", "Number badge"]];
+	V.isGfx = function (c) { return !!c && (c.type === "text" || c.type === "shape"); };   // made in the editor: no media file
 	V.TEXT_DEFAULT = { s: "Your title", font: "Arial, Helvetica, sans-serif", size: 0.09, color: "#ffffff", bgOn: true, bg: "#000000", bgOp: 0.55, bold: true, italic: false, align: "center", shadow: true, outline: 0, ocolor: "#000000", wrap: 0.8, ls: 0, lh: 1.22 };
 	// wrap: box width for automatic line breaks as a share of the frame width at scale 1 (0 = only your own line breaks); ls = letter spacing in em; lh = line height (x the text size)
 	V.newProject = function (o) {
@@ -20,6 +27,7 @@
 		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
 		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); }
+		if (c.type === "shape") { c.shape = Object.assign({}, V.SHAPE_DEFAULT, c.shape || {}); }
 		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
 	};
@@ -140,7 +148,7 @@
 		if (t <= c.start + minDur || t >= V.end(c) - minDur) return null;
 		var s = V.srcAt(c, t), L = JSON.parse(JSON.stringify(c)), R = JSON.parse(JSON.stringify(c));
 		L.out = s; R.id = newId; R.in = s; R.start = t;
-		if (c.type === "text" || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
+		if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
 		L.fout = 0; L.fin = Math.min(c.fin || 0, V.dur(L)); R.fin = 0; R.xin = 0; R.fout = Math.min(c.fout || 0, V.dur(R));
 		if (c.anims && c.anims.length) { var sa = V.splitAnims(c, t - c.start); L.anims = sa.left; V.setBase(R, sa.base); R.anims = sa.right; }
 		return [L, R];
@@ -193,8 +201,8 @@
 			var s = c.start, e = V.end(c);
 			if (e <= a + 1e-6) { out.push(c); return; }
 			if (s >= b - 1e-6) { c.start = s - (b - a); out.push(c); return; }
-			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (c.type === "text" || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; out.push(L); }
-			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (c.type === "text" || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } out.push(R); }
+			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; out.push(L); }
+			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } out.push(R); }
 		});
 		p.clips = out;
 		return p;

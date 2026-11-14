@@ -44,7 +44,7 @@
 	function missGroups() {
 		var g = {}, out = [];
 		VE.P.clips.forEach(function (c) {
-			if (c.type === "text" || !c.media) return; var m = VE.media(c.media); if (m && m.state !== "missing") return;
+			if (V.isGfx(c) || !c.media) return; var m = VE.media(c.media); if (m && m.state !== "missing") return;
 			var x = g[c.media]; if (!x) { x = g[c.media] = { id: c.media, m: m, n: 0, end: 0, img: c.type === "image" }; out.push(x); }
 			x.n++; x.end = Math.max(x.end, c.out || 0);
 		});
@@ -186,7 +186,7 @@
 	// paste at time at (default the playhead); onTrack = the track that was right-clicked (the copied clips move there, keeping their rows relative to each other)
 	VE.paste = function (at, onTrack) {
 		var cb = readClip(); if (!cb) { toast("Nothing copied yet: select clips and press Ctrl+C (or right-click → Copy)."); return; }
-		var items = cb.clips.filter(function (q) { return q.c.type === "text" || VE.media(q.c.media); });
+		var items = cb.clips.filter(function (q) { return V.isGfx(q.c) || VE.media(q.c.media); });
 		if (!items.length) { toast("The copied clips use media that is not in this project's Media bin. Import the same files first."); return; }
 		var t = at != null ? at : VE.t, links = {}, made = [], added = 0, kinds = { v: VE.P.tracks.filter(function (x) { return x.kind === "v"; }), a: VE.P.tracks.filter(function (x) { return x.kind === "a"; }) };
 		// row offset per kind: the right-clicked track takes the top copied row of its kind
@@ -334,6 +334,19 @@
 		if (tr.mag) { VE.P.clips.push(c); V.magnetInsert(VE.P, tr.id, c.id, t0); VE.sel = [c.id]; VE.commit("Add title"); return; }
 		VE.P.clips.push(c); VE.sel = [c.id]; VE.commit("Add title");
 		setTimeout(function () { if (V.active(c, VE.t)) VE.preview.editText(c); else { var ta = $("vd-ttext"); if (ta) { ta.focus(); ta.select(); } } }, 60);
+	};
+	// a shape / annotation clip at the playhead (or where it was dropped), on the first unlocked layer with room; a number badge
+	// counts up from the last badge in the project
+	VE.addShape = function (preset, at, trackId) {
+		var pr = preset || {}, t0 = at != null ? at : VE.t, dur = pr.dur || 4, vt = VE.P.tracks.filter(function (t) { return t.kind === "v" && !t.lock && !t.mag; }), tr = trackId ? V.track(VE.P, trackId) : null;
+		if (tr && (tr.lock || tr.kind !== "v" || (!tr.mag && !V.canPlace(VE.P, tr.id, t0, dur)))) tr = null;
+		for (var j = 0; !tr && j < vt.length; j++) if (V.canPlace(VE.P, vt[j].id, t0, dur)) tr = vt[j];
+		if (!tr) tr = VE.addTrack("v");
+		var S = JSON.parse(JSON.stringify(pr.shape || {}));
+		if (S.k === "badge") { var ns = VE.P.clips.filter(function (q) { return q.type === "shape" && q.shape && q.shape.k === "badge"; }).map(function (q) { return parseInt(q.shape.n, 10) || 0; }); S.n = ns.length ? Math.max.apply(null, ns) + 1 : 1; }
+		var c = V.clipDefaults({ id: V.uid("c"), type: "shape", track: tr.id, start: t0, in: 0, out: dur, fin: 0.2, fout: 0.2, x: pr.x != null ? pr.x : 0.5, y: pr.y != null ? pr.y : 0.5, rot: pr.rot || 0, shape: S });
+		VE.P.clips.push(c); if (tr.mag) V.magnetInsert(VE.P, tr.id, c.id, t0);
+		VE.sel = [c.id]; VE.commit("Add " + (pr.name || "shape").toLowerCase());
 	};
 	function mark(which) {
 		VE.P.marks = VE.P.marks || {}; VE.P.marks[which] = VE.t;
@@ -877,7 +890,7 @@
 		var sel = VE.selected();
 		if (!sel.length) return renderProject();
 		if (sel.length > 1) return renderMulti(sel);
-		var c = sel[0], m = VE.media(c.media), h = '<h3>' + esc(c.type === "text" ? "Title" : m ? m.name : "Clip") + '</h3><p class="vd-sub">' + ({ video: "Video clip", audio: "Sound clip", image: "Picture", text: "Title" })[c.type] + " · " + V.short(V.dur(c)) + "</p>";
+		var c = sel[0], m = VE.media(c.media), skind = c.type === "shape" ? (V.SHAPE_KINDS.filter(function (q) { return q[0] === c.shape.k; })[0] || [0, "Shape"])[1] : "", h = '<h3>' + esc(c.type === "text" ? "Title" : c.type === "shape" ? skind : m ? m.name : "Clip") + '</h3><p class="vd-sub">' + ({ video: "Video clip", audio: "Sound clip", image: "Picture", text: "Title", shape: "Shape / annotation" })[c.type] + " · " + V.short(V.dur(c)) + "</p>";
 		h += '<div class="vd-sec"><b>Time</b><div class="vd-grid">' + num("vd-i-start", "Starts at", r1(c.start), 0.01, 0, null, "s") + num("vd-i-dur", "Length", r1(V.dur(c)), 0.01, 0.05, null, "s") + "</div>";
 		if (V.hasSource(c)) h += '<div class="vd-src"><b class="vd-srch">Source times <small>(where this clip is in its file)</small></b><div class="vd-grid">' + tcBox("vd-i-sin", "Begins at", c.in, "Where the clip begins in " + (m ? m.name : "its file") + ". Type a time (1:02:03;15, 263, 4m23s) and press Enter to trim the start.") + tcBox("vd-i-sout", "Ends at", c.out, "Where the clip ends in its file. Type a time and press Enter to trim the end.") + '</div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-i-scopy" title="Copy the begin and end times in the file">Copy source times</button>' + (VE.P.clips.filter(V.hasSource).length > 1 ? '<button type="button" class="vd-btn vd-sm" id="vd-i-scopyall" title="Copy the source times of every video and sound clip, in timeline order">Copy for all clips</button>' : "") + "</div></div>";
 		h += '<div class="vd-grid">' + num("vd-i-fin", "Fade in", r1(c.fin || 0), 0.1, 0, 30, "s") + num("vd-i-fout", "Fade out", r1(c.fout || 0), 0.1, 0, 30, "s") + "</div>";
@@ -900,13 +913,33 @@
 			h += '<div class="vd-checks"><label><input type="checkbox" id="vd-t-bold"' + (T.bold ? " checked" : "") + "> Bold</label><label><input type=\"checkbox\" id=\"vd-t-italic\"" + (T.italic ? " checked" : "") + "> Italic</label><label><input type=\"checkbox\" id=\"vd-t-shadow\"" + (T.shadow ? " checked" : "") + "> Shadow</label><label><input type=\"checkbox\" id=\"vd-t-bgon\"" + (T.bgOn ? " checked" : "") + "> Box behind</label></div>";
 			h += '<div class="vd-grid"><label class="vd-f"><span>Box colour</span><input type="color" id="vd-t-bg" value="' + esc(T.bg) + '"></label>' + num("vd-t-bgop", "Box opacity", Math.round((T.bgOp == null ? 0.55 : T.bgOp) * 100), 5, 0, 100, "%") + num("vd-t-outline", "Outline", T.outline || 0, 0.5, 0, 10) + '<label class="vd-f"><span>Outline colour</span><input type="color" id="vd-t-ocolor" value="' + esc(T.ocolor || "#000000") + '"></label></div></div>';
 		}
+		if (c.type === "shape") {
+			var S = c.shape, k = S.k, isLine = k === "arrow" || k === "line", col = function (id, label, v) { return '<label class="vd-f"><span>' + label + '</span><input type="color" id="' + id + '" value="' + esc(v) + '"></label>'; };
+			h += '<div class="vd-sec"><b>Shape</b><p class="vd-sub">Drag it in the preview: the white side handles change ' + (isLine ? "its length" : "its width and height") + ', a corner makes it bigger, the round handle turns it' + (isLine ? " (to point the arrow)" : "") + '.</p><div class="vd-grid"><label class="vd-f"><span>Kind</span><select id="vd-s-k">' + V.SHAPE_KINDS.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === k ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select></label>";
+			if (k === "badge") h += '<label class="vd-f"><span>Number or text</span><input type="text" id="vd-s-n" maxlength="4" value="' + esc(String(S.n)) + '"></label>' + num("vd-s-h", "Size", Math.round(S.h * 1000) / 10, 0.5, 2, 80, "%", "Diameter as a share of the picture height") + col("vd-s-fill", "Circle colour", S.fill || S.color) + col("vd-s-ncolor", "Number colour", S.ncolor || "#ffffff");
+			else {
+				h += num("vd-s-w", isLine ? "Length" : "Width", Math.round(S.w * 1000) / 10, 0.5, 1, 400, "%", "A share of the picture width") + (isLine ? "" : num("vd-s-h", "Height", Math.round(S.h * 1000) / 10, 0.5, 1, 400, "%", "A share of the picture height"));
+				if (k !== "highlight" && k !== "pixelate") h += col("vd-s-color", k === "spotlight" ? "Edge colour" : "Colour", S.color) + num("vd-s-lw", k === "spotlight" ? "Edge width" : "Line width", Math.round(S.lw * 10000) / 100, 0.05, 0, 10, "%", "A share of the picture height" + (k === "spotlight" ? " (0 = no edge)" : ""));
+				if (k === "arrow") h += num("vd-s-head", "Arrow head", Math.round((S.head || 1) * 100), 10, 30, 400, "%") + '<label class="vd-f"><span>Heads</span><select id="vd-s-heads"><option value="end"' + (S.heads !== "both" ? " selected" : "") + ">One end</option><option value=\"both\"" + (S.heads === "both" ? " selected" : "") + ">Both ends</option></select></label>";
+				if (k === "rect" || k === "ellipse" || k === "highlight") h += col("vd-s-fill", k === "highlight" ? "Highlight colour" : "Fill colour", S.fill || S.color) + num("vd-s-fillop", k === "highlight" ? "See-through" : "Fill opacity", Math.round(S.fillOp * 100), 5, 0, 100, "%");
+				if (k === "spotlight") h += num("vd-s-dark", "Darken the rest", Math.round(S.dark * 100), 5, 0, 100, "%");
+				if (k === "pixelate") h += num("vd-s-px", "Block size", Math.round(S.px * 1000) / 10, 0.1, 0.3, 20, "%", "Size of the blocks as a share of the picture height: bigger hides more");
+				if (k === "rect" || k === "highlight" || ((k === "spotlight" || k === "pixelate") && !S.oval)) h += num("vd-s-round", "Rounded corners", Math.round((S.round || 0) * 100), 5, 0, 100, "%");
+			}
+			h += "</div><div class=\"vd-checks\">";
+			if (k === "spotlight" || k === "pixelate" || k === "highlight") h += '<label><input type="checkbox" id="vd-s-oval"' + (S.oval ? " checked" : "") + "> Oval</label>";
+			if (k === "rect" || k === "ellipse") h += '<label><input type="checkbox" id="vd-s-fillon"' + (S.fillOn ? " checked" : "") + "> Fill inside</label>";
+			if (k !== "highlight" && k !== "pixelate" && k !== "badge") h += '<label><input type="checkbox" id="vd-s-dash"' + (S.dash ? " checked" : "") + "> Dashed</label>";
+			if (k !== "highlight" && k !== "pixelate" && k !== "spotlight") h += '<label><input type="checkbox" id="vd-s-shadow"' + (S.shadow ? " checked" : "") + "> Shadow</label>";
+			h += "</div></div>";
+		}
 		if (c.type !== "audio") {
 			var rel = VE.t - c.start, ptol = 0.5 / VE.P.fps, run = c.anims && V.active(c, VE.t) ? V.animRunning(c, rel, ptol) : null, st = V.active(c, VE.t) ? V.stateAt(c, rel) : V.baseState(c);
 			var ownA = !run && c.anims && V.active(c, VE.t) ? V.animEndingAt(c, rel, ptol) || ["x", "y", "scale", "rot", "op"].map(function (k) { return V.propOwner(c, rel, k, ptol); }).filter(Boolean)[0] : null;
 			h += '<div class="vd-sec"><b>Position</b><p class="vd-sub">' + (run ? "The playhead is inside the animation &ldquo;" + esc(V.animName(run)) + "&rdquo;: move it to the animation's start or end to change these." : ownA ? "At the playhead: the end of &ldquo;" + esc(V.animName(ownA)) + "&rdquo;. Changes here (or dragging in the preview) move where that animation ends." : "Or drag it in the preview: a corner resizes, the round handle turns it.") + '</p><fieldset class="vd-fs"' + (run ? " disabled" : "") + '><div class="vd-grid">' + num("vd-i-x", "Left / right", Math.round(st.x * 1000) / 10, 0.5, -500, 500, "%") + num("vd-i-y", "Up / down", Math.round(st.y * 1000) / 10, 0.5, -500, 500, "%") + num("vd-i-scale", "Size", Math.round(st.scale * 1000) / 10, 1, 1, 4000, "%") + num("vd-i-rot", "Turn", Math.round(st.rot * 10) / 10, 1, -3600, 3600, "°") + num("vd-i-op", "Opacity", Math.round(st.op * 100), 5, 0, 100, "%") + "</div>";
-			if (c.type !== "text") h += '<div class="vd-grid">' + num("vd-i-cl", "Crop left", Math.round(st.cl * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cr", "Crop right", Math.round(st.cr * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-ct", "Crop top", Math.round(st.ct * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cb", "Crop bottom", Math.round(st.cb * 1000) / 10, 0.5, 0, 95, "%") + "</div>";
+			if (!V.isGfx(c)) h += '<div class="vd-grid">' + num("vd-i-cl", "Crop left", Math.round(st.cl * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cr", "Crop right", Math.round(st.cr * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-ct", "Crop top", Math.round(st.ct * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cb", "Crop bottom", Math.round(st.cb * 1000) / 10, 0.5, 0, 95, "%") + "</div>";
 			h += "</fieldset>";
-			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-pos="center">Centre</button><button type="button" class="vd-btn vd-sm" data-pos="fit">Fit the frame</button>' + (c.type !== "text" ? '<button type="button" class="vd-btn vd-sm" data-pos="fill">Fill the frame</button><button type="button" class="vd-btn vd-sm" data-pos="pip">Corner (picture in picture)</button>' : "") + "</div></div>";
+			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-pos="center">Centre</button><button type="button" class="vd-btn vd-sm" data-pos="fit">Fit the frame</button>' + (!V.isGfx(c) ? '<button type="button" class="vd-btn vd-sm" data-pos="fill">Fill the frame</button><button type="button" class="vd-btn vd-sm" data-pos="pip">Corner (picture in picture)</button>' : "") + "</div></div>";
 		}
 		if (c.type !== "audio") h += animSection(c);
 		h += linkSection(c);
@@ -985,6 +1018,18 @@
 		setNum("vd-i-rot", function (v) { setP("rot", V.clamp(v, -3600, 3600)); }, "Turn");
 		["l", "r", "t", "b"].forEach(function (k) { setNum("vd-i-c" + k, function (v) { setP("c" + k, V.clamp(v / 100, 0, 0.95)); }, "Crop"); });
 		insp.querySelectorAll("[data-pos]").forEach(function (b) { b.onclick = function () { var a = b.getAttribute("data-pos"), m = VE.media(c.media); c.x = 0.5; c.y = 0.5; if (a === "fit") c.scale = 1; if (a === "fill" && m && m.w) c.scale = Math.max(VE.P.w / m.w, VE.P.h / m.h) / Math.min(VE.P.w / m.w, VE.P.h / m.h); if (a === "pip") { c.scale = 0.3; c.x = 0.82; c.y = 0.8; } if (a === "center" && c.type === "text") c.y = 0.5; VE.commit("Position"); }; });
+		if (c.type === "shape") {
+			var S = c.shape, sl = function () { VE.preview.draw(); };
+			on("vd-s-k", "change", function () { S.k = this.value; if (S.k === "badge" && !S.fill) S.fill = S.color; VE.commit("Shape kind"); });
+			setNum("vd-s-w", function (v) { S.w = V.clamp(v / 100, 0.005, 4); }, "Shape size"); setNum("vd-s-h", function (v) { S.h = V.clamp(v / 100, 0.005, 4); }, "Shape size");
+			setNum("vd-s-lw", function (v) { S.lw = V.clamp(v / 100, 0, 0.1); }, "Line width"); setNum("vd-s-head", function (v) { S.head = V.clamp(v / 100, 0.3, 4); }, "Arrow head");
+			setNum("vd-s-fillop", function (v) { S.fillOp = V.clamp(v / 100, 0, 1); }, "Fill opacity"); setNum("vd-s-dark", function (v) { S.dark = V.clamp(v / 100, 0, 1); }, "Spotlight");
+			setNum("vd-s-px", function (v) { S.px = V.clamp(v / 100, 0.003, 0.2); }, "Block size"); setNum("vd-s-round", function (v) { S.round = V.clamp(v / 100, 0, 1); }, "Rounded corners");
+			on("vd-s-heads", "change", function () { S.heads = this.value; VE.commit("Arrow heads"); });
+			on("vd-s-n", "input", function () { S.n = this.value; sl(); }); on("vd-s-n", "change", function () { VE.commit("Badge number"); });
+			["color", "fill", "ncolor"].forEach(function (kk) { on("vd-s-" + kk, "input", function () { S[kk] = this.value; sl(); }); on("vd-s-" + kk, "change", function () { VE.commit("Shape colour"); }); });
+			["oval", "fillon", "dash", "shadow"].forEach(function (kk) { on("vd-s-" + kk, "change", function () { S[kk === "fillon" ? "fillOn" : kk] = this.checked; VE.commit("Shape style"); }); });
+		}
 		if (c.type === "text") {
 			var T = c.text, live = function () { VE.preview.draw(); };
 			on("vd-ttext", "input", function () { T.s = this.value; live(); }); on("vd-ttext", "change", function () { VE.commit("Title text"); });
@@ -1749,9 +1794,21 @@
 		{ id: "step", name: "Step label", desc: "Top left corner", x: 0.14, y: 0.1, text: { s: "Step 1", size: 0.055, bg: "#1d4ed8", bgOp: 0.95 } },
 		{ id: "end", name: "End card", desc: "Centred, 5 s", y: 0.5, dur: 5, text: { s: "Thanks for watching!\nmes.fm", size: 0.08, bgOp: 0.7 } }
 	];
+	var SHAPES = [
+		{ id: "arrow", name: "Arrow", desc: "Point at something", x: 0.42, y: 0.42, rot: 30, shape: { k: "arrow" }, svg: '<path d="M6 30 L34 10" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/><path d="M38 7 L26 9 L33 17 Z" fill="#e11d48"/>' },
+		{ id: "arrow2", name: "Double arrow", desc: "Both ends", shape: { k: "arrow", heads: "both", color: "#f59e0b" }, svg: '<path d="M9 20 H35" stroke="#f59e0b" stroke-width="4"/><path d="M41 20 L31 14 V26 Z M3 20 L13 14 V26 Z" fill="#f59e0b"/>' },
+		{ id: "line", name: "Line", desc: "Underline or connect", y: 0.6, shape: { k: "line", color: "#facc15" }, svg: '<path d="M5 28 H39" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>' },
+		{ id: "rect", name: "Box", desc: "Outline round something", shape: { k: "rect", w: 0.3, h: 0.25, round: 0.08 }, svg: '<rect x="6" y="9" width="32" height="22" rx="3" fill="none" stroke="#e11d48" stroke-width="3.5"/>' },
+		{ id: "ellipse", name: "Circle", desc: "Ring round something", shape: { k: "ellipse", w: 0.18, h: 0.28 }, svg: '<ellipse cx="22" cy="20" rx="15" ry="12" fill="none" stroke="#e11d48" stroke-width="3.5"/>' },
+		{ id: "highlight", name: "Highlight", desc: "See-through marker", shape: { k: "highlight", w: 0.35, h: 0.08, fill: "#fde047", fillOp: 0.38, round: 0.2 }, svg: '<rect x="4" y="14" width="36" height="12" rx="3" fill="#fde047" opacity="0.6"/><path d="M8 20 H36" stroke="#e5e7eb" stroke-width="2"/>' },
+		{ id: "spotlight", name: "Spotlight", desc: "Darken the rest", dur: 3, shape: { k: "spotlight", w: 0.32, h: 0.3, oval: true, lw: 0, dark: 0.62 }, svg: '<rect x="2" y="4" width="40" height="32" rx="3" fill="#000" opacity="0.7"/><ellipse cx="22" cy="20" rx="11" ry="9" fill="#e5e7eb"/>' },
+		{ id: "pixelate", name: "Hide (pixelate)", desc: "Blur out a name or face", shape: { k: "pixelate", w: 0.2, h: 0.12, round: 0, px: 0.025 }, svg: '<g fill="#94a3b8"><rect x="8" y="10" width="7" height="7"/><rect x="22" y="10" width="7" height="7" fill="#64748b"/><rect x="15" y="17" width="7" height="7" fill="#cbd5e1"/><rect x="29" y="17" width="7" height="7"/><rect x="8" y="24" width="7" height="7" fill="#64748b"/><rect x="22" y="24" width="7" height="7" fill="#cbd5e1"/><rect x="15" y="10" width="7" height="7" fill="#475569"/><rect x="29" y="10" width="7" height="7" fill="#cbd5e1"/><rect x="15" y="24" width="7" height="7" fill="#94a3b8"/><rect x="29" y="24" width="7" height="7" fill="#475569"/><rect x="8" y="17" width="7" height="7" fill="#475569"/><rect x="22" y="17" width="7" height="7" fill="#94a3b8"/></g>' },
+		{ id: "badge", name: "Number badge", desc: "Step 1, 2, 3 ...", x: 0.2, y: 0.25, shape: { k: "badge", h: 0.1, fill: "#1d4ed8", color: "#1d4ed8", n: 1 }, svg: '<circle cx="22" cy="20" r="14" fill="#1d4ed8" stroke="#fff" stroke-width="2"/><text x="22" y="26" text-anchor="middle" font-family="Arial" font-weight="700" font-size="17" fill="#fff">1</text>' }
+	];
 	var ANIM_ICO = { zoomin: "&#8853;", zoomout: "&#8854;", zoompan: "&#11034;", "slidein-l": "&#8680;", "slidein-r": "&#8678;", "slidein-b": "&#8679;", "slideout-l": "&#8678;", "slideout-r": "&#8680;", fadein: "&#9680;", fadeout: "&#9681;", scaleup: "&#10530;", scaledown: "&#10529;", popin: "&#10040;", spin: "&#10227;", tilt: "&#8635;", custom: "&#10148;" };
 	var CARDS = {
 		titles: TITLES.map(function (t) { return { id: t.id, name: t.name, desc: t.desc, title: t }; }),
+		shapes: SHAPES.map(function (s) { return { id: s.id, name: s.name, desc: s.desc, preset: s, svg: s.svg }; }),
 		trans: [
 			{ id: "fin", ico: "&#9698;", name: "Fade in", desc: "From black / silence" }, { id: "fout", ico: "&#9699;", name: "Fade out", desc: "To black / silence" },
 			{ id: "fboth", ico: "&#9670;", name: "Fade in and out", desc: "Both ends" }, { id: "xfade", ico: "&#10697;", name: "Cross-fade", desc: "From the clip right before" },
@@ -1773,7 +1830,7 @@
 		anim: V.ANIM_PRESETS.map(function (q) { return { id: q.id, name: q.name, desc: q.desc, ico: ANIM_ICO[q.id] || "&#10148;" }; })
 	};
 	function cardHtml(cat, c) {
-		var vis = cat === "titles" ? '<span style="font:' + (c.title.text.bold === false ? "400" : "700") + " " + Math.round(10 + (c.title.text.size || 0.09) * 70) + "px Arial,sans-serif;color:#fff;padding:0 0.3em;border-radius:3px;" + (c.title.text.bgOn === false ? "text-shadow:0 0 3px #000,0 0 1px #000;" : "background:" + (c.title.text.bg || "#000") + ";") + '">' + esc(c.name.split(" ")[0]) + "</span>" : c.ico;
+		var vis = cat === "shapes" ? '<svg viewBox="0 0 44 40" width="44" height="40">' + c.svg + "</svg>" : cat === "titles" ? '<span style="font:' + (c.title.text.bold === false ? "400" : "700") + " " + Math.round(10 + (c.title.text.size || 0.09) * 70) + "px Arial,sans-serif;color:#fff;padding:0 0.3em;border-radius:3px;" + (c.title.text.bgOn === false ? "text-shadow:0 0 3px #000,0 0 1px #000;" : "background:" + (c.title.text.bg || "#000") + ";") + '">' + esc(c.name.split(" ")[0]) + "</span>" : c.ico;
 		return '<button type="button" class="vd-card" data-card="' + cat + ":" + c.id + '" title="' + esc(c.desc) + '"><span class="vd-cv" aria-hidden="true">' + vis + "</span><b>" + esc(c.name) + "</b><small>" + esc(c.desc) + "</small></button>";
 	}
 	app.querySelectorAll("[data-cards]").forEach(function (box) { var cat = box.getAttribute("data-cards"); box.innerHTML = CARDS[cat].map(function (c) { return cardHtml(cat, c); }).join(""); });
@@ -1783,6 +1840,7 @@
 	function applyCard(key, clips, drop) {
 		var q = cardOf(key), cat = q.cat, cd = q.c; if (!cd) return;
 		if (cat === "titles") { VE.addTitle(cd.title, drop ? drop.t : null, drop ? drop.track : null); return; }
+		if (cat === "shapes") { VE.addShape(cd.preset, drop ? drop.t : null, drop ? drop.track : null); return; }
 		if (cat === "anim") {
 			var tgt = (clips || VE.selected()).filter(function (c) { var tr = V.track(VE.P, c.track); return c.type !== "audio" && !(tr && tr.lock); })[0];
 			if (!tgt) { toast("Select a video, picture or title first (or drag the animation onto one)."); return; }
@@ -1836,7 +1894,7 @@
 		cdrag.ghost.style.left = e.clientX + 12 + "px"; cdrag.ghost.style.top = e.clientY + 8 + "px";
 		var el = document.elementFromPoint(e.clientX, e.clientY), ce = el && el.closest && el.closest(".vd-clip");
 		app.querySelectorAll(".vd-clip.is-target").forEach(function (x) { if (x !== ce) x.classList.remove("is-target"); }); if (ce) ce.classList.add("is-target");
-		VE.tl.dragHint(e.clientX, e.clientY, cdrag.key.indexOf("titles:") === 0 && VE.tl.inside(e.clientX, e.clientY));
+		VE.tl.dragHint(e.clientX, e.clientY, /^(titles|shapes):/.test(cdrag.key) && VE.tl.inside(e.clientX, e.clientY));
 	});
 	document.addEventListener("pointerup", function (e) {
 		if (!cdrag || e.pointerId !== cdrag.id) return;
@@ -1844,7 +1902,7 @@
 		app.querySelectorAll(".vd-clip.is-target").forEach(function (x) { x.classList.remove("is-target"); });
 		if (!d.on) { applyCard(d.key); return; }
 		var el = document.elementFromPoint(e.clientX, e.clientY), ce = el && el.closest && el.closest(".vd-clip");
-		if (d.key.indexOf("titles:") === 0) { if (VE.tl.inside(e.clientX, e.clientY)) { var row = el && el.closest && el.closest(".vd-trow"); applyCard(d.key, null, { t: VE.tl.x2t(e.clientX), track: row ? row.getAttribute("data-track") : null }); } return; }
+		if (/^(titles|shapes):/.test(d.key)) { if (VE.tl.inside(e.clientX, e.clientY)) { var row = el && el.closest && el.closest(".vd-trow"); applyCard(d.key, null, { t: VE.tl.x2t(e.clientX), track: row ? row.getAttribute("data-track") : null }); } return; }
 		if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c) applyCard(d.key, [c], d.key.indexOf("anim:") === 0 ? { t: VE.tl.x2t(e.clientX) } : null); }
 	});
 	app.addEventListener("keydown", function (e) { var cb = e.target.closest && e.target.closest(".vd-card"); if (cb && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); applyCard(cb.getAttribute("data-card")); } }, true);

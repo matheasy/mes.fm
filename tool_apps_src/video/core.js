@@ -368,6 +368,7 @@
 		for (var j = 0; j < L.length; j++) {
 			var c = L[j].clip, pos = L[j].pos || V.posAt(c, t); ctx.globalAlpha = L[j].alpha;
 			if (c.type === "text") { if (VE.editingTextId !== c.id || opt.export) drawText(ctx, c, W, H, pos); continue; }
+			if (c.type === "shape") { drawShape(ctx, c, W, H, pos); continue; }
 			var s = src(c, L[j].src); if (!s || !s.img) continue;
 			var r = V.place(s.w, s.h, pos, W, H), turned = !!pos.rot;
 			if (turned) { ctx.save(); ctx.translate(r.dx + r.dw / 2, r.dy + r.dh / 2); ctx.rotate(pos.rot * Math.PI / 180); ctx.translate(-(r.dx + r.dw / 2), -(r.dy + r.dh / 2)); }
@@ -423,6 +424,69 @@
 		return b;
 	}
 	VE.editingTextId = null;
+	/* ---------- shapes / annotations ---------- */
+	VE.shapeBox = function (c, W, H, pos) {
+		pos = pos || c;
+		var S = c.shape || V.SHAPE_DEFAULT, sc = pos.scale || 1, lw = Math.max(1, S.lw * H * sc), bw, bh;
+		if (S.k === "arrow" || S.k === "line") { bw = Math.max(8, S.w * W * sc); bh = Math.max(lw * (S.k === "arrow" ? 4.2 * (S.head || 1) : 1) + lw, 14); }
+		else if (S.k === "badge") { bw = bh = Math.max(12, S.h * H * sc); }
+		else { bw = Math.max(4, S.w * W * sc); bh = Math.max(4, S.h * H * sc); }
+		return { dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, lw: lw, S: S, px: lw };
+	};
+	function shapePath(ctx, S, b) {
+		ctx.beginPath();
+		if (S.k === "ellipse" || S.k === "badge" || ((S.k === "spotlight" || S.k === "pixelate" || S.k === "highlight") && S.oval)) ctx.ellipse(b.dx + b.dw / 2, b.dy + b.dh / 2, b.dw / 2, b.dh / 2, 0, 0, Math.PI * 2);
+		else { var r = Math.min(b.dw, b.dh) / 2 * Math.max(0, Math.min(1, S.round || 0)); if (r > 0.5) roundRect(ctx, b.dx, b.dy, b.dw, b.dh, r); else ctx.rect(b.dx, b.dy, b.dw, b.dh); }
+	}
+	function arrowHead(ctx, x, y, dir, len, wid) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - dir * len, y - wid / 2); ctx.lineTo(x - dir * len * 0.82, y); ctx.lineTo(x - dir * len, y + wid / 2); ctx.closePath(); ctx.fill(); }
+	function drawShape(ctx, c, W, H, pos) {
+		var b = VE.shapeBox(c, W, H, pos), S = b.S, rot = pos && pos.rot, cx = b.dx + b.dw / 2, cy = b.dy + b.dh / 2;
+		ctx.save();
+		function turn() { if (rot) { ctx.translate(cx, cy); ctx.rotate(rot * Math.PI / 180); ctx.translate(-cx, -cy); } }
+		if (S.k === "spotlight") {   // darken the whole frame except the shape
+			ctx.beginPath(); ctx.rect(-W, -H, W * 3, H * 3); turn(); shapePath2();
+			ctx.fillStyle = "rgba(0,0,0," + Math.max(0, Math.min(1, S.dark)) + ")"; ctx.fill("evenodd");
+			if (S.lw > 0 && S.color) { ctx.beginPath(); shapePath2(); ctx.lineWidth = b.lw; ctx.strokeStyle = S.color; if (S.dash) ctx.setLineDash([b.lw * 3, b.lw * 2]); ctx.stroke(); }
+			ctx.restore(); return b;
+		}
+		function shapePath2() { if (S.oval) ctx.ellipse(cx, cy, b.dw / 2, b.dh / 2, 0, 0, Math.PI * 2); else { var r = Math.min(b.dw, b.dh) / 2 * Math.max(0, Math.min(1, S.round || 0)); if (r > 0.5) { ctx.moveTo(b.dx + r, b.dy); ctx.arcTo(b.dx + b.dw, b.dy, b.dx + b.dw, b.dy + b.dh, r); ctx.arcTo(b.dx + b.dw, b.dy + b.dh, b.dx, b.dy + b.dh, r); ctx.arcTo(b.dx, b.dy + b.dh, b.dx, b.dy, r); ctx.arcTo(b.dx, b.dy, b.dx + b.dw, b.dy, r); ctx.closePath(); } else ctx.rect(b.dx, b.dy, b.dw, b.dh); } }
+		if (S.k === "pixelate") {   // read back what is already drawn under the box (device pixels), shrink it, draw it back blocky
+			try {
+				var m = ctx.getTransform(), pts = [[b.dx, b.dy], [b.dx + b.dw, b.dy], [b.dx, b.dy + b.dh], [b.dx + b.dw, b.dy + b.dh]].map(function (q) { var p = rot ? V.rotPt(q[0], q[1], cx, cy, rot) : { x: q[0], y: q[1] }; return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f }; });
+				var cw = ctx.canvas.width, chh = ctx.canvas.height, x0 = Math.max(0, Math.floor(Math.min.apply(null, pts.map(function (p) { return p.x; })))), y0 = Math.max(0, Math.floor(Math.min.apply(null, pts.map(function (p) { return p.y; }))));
+				var x1 = Math.min(cw, Math.ceil(Math.max.apply(null, pts.map(function (p) { return p.x; })))), y1 = Math.min(chh, Math.ceil(Math.max.apply(null, pts.map(function (p) { return p.y; }))));
+				var block = Math.max(2, S.px * H * Math.hypot(m.a, m.b)), ww = x1 - x0, hh = y1 - y0;
+				if (ww > 1 && hh > 1) {
+					var sw = Math.max(1, Math.round(ww / block)), sh = Math.max(1, Math.round(hh / block)), t = VE.tmpCanvas("pix", sw, sh);
+					t.ctx.setTransform(1, 0, 0, 1, 0, 0); t.ctx.imageSmoothingEnabled = true; t.ctx.clearRect(0, 0, sw, sh); t.ctx.drawImage(ctx.canvas, x0, y0, ww, hh, 0, 0, sw, sh);
+					turn(); ctx.beginPath(); shapePath2(); ctx.clip();
+					ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingEnabled = false; ctx.drawImage(t.canvas, 0, 0, sw, sh, x0, y0, ww, hh);
+				}
+			} catch (e) { /* the canvas could not be read */ }
+			ctx.restore(); return b;
+		}
+		turn();
+		if (S.shadow && S.k !== "highlight") { ctx.shadowColor = "rgba(0,0,0,0.45)"; ctx.shadowBlur = b.lw * 1.6; ctx.shadowOffsetY = b.lw * 0.5; }
+		ctx.strokeStyle = S.color || "#e11d48"; ctx.fillStyle = S.color || "#e11d48"; ctx.lineWidth = b.lw; ctx.lineCap = "round"; ctx.lineJoin = "round";
+		if (S.dash) ctx.setLineDash([b.lw * 3, b.lw * 2]);
+		if (S.k === "arrow" || S.k === "line") {
+			var hl = S.k === "arrow" ? b.lw * 4.2 * (S.head || 1) : 0, hw = hl * 0.95, xa = b.dx, xb = b.dx + b.dw, two = S.heads === "both";
+			ctx.beginPath(); ctx.moveTo(xa + (two ? hl * 0.7 : 0), cy); ctx.lineTo(xb - hl * 0.7, cy); ctx.stroke(); ctx.setLineDash([]);
+			if (hl) { arrowHead(ctx, xb, cy, 1, hl, hw); if (two) arrowHead(ctx, xa, cy, -1, hl, hw); }
+		} else if (S.k === "highlight") {
+			ctx.globalAlpha *= Math.max(0, Math.min(1, S.fillOp)); ctx.fillStyle = S.fill || "#fde047"; shapePath(ctx, S, b); ctx.fill();
+		} else if (S.k === "badge") {
+			ctx.fillStyle = S.fill || S.color; shapePath(ctx, S, b); ctx.fill(); ctx.shadowColor = "transparent";
+			if (S.lw > 0) { ctx.lineWidth = Math.max(1, b.lw * 0.6); ctx.strokeStyle = S.ncolor || "#fff"; ctx.stroke(); }
+			var txt = String(S.n == null ? "1" : S.n).slice(0, 4), fpx = b.dh * (txt.length > 2 ? 0.42 : txt.length > 1 ? 0.52 : 0.62);
+			ctx.fillStyle = S.ncolor || "#fff"; ctx.font = "700 " + fpx + "px Arial, Helvetica, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(txt, cx, cy + fpx * 0.04);
+		} else {
+			if (S.fillOn) { ctx.save(); ctx.globalAlpha *= Math.max(0, Math.min(1, S.fillOp)); ctx.fillStyle = S.fill || S.color; shapePath(ctx, S, b); ctx.fill(); ctx.restore(); }
+			if (S.lw > 0) { shapePath(ctx, S, b); ctx.stroke(); }
+		}
+		ctx.restore();
+		return b;
+	}
 	/* ---------- fonts for titles: ones every computer has, plus Google Fonts (loaded when picked; the export waits for them) ---------- */
 	VE.FONTS = [
 		["Arial", "Arial, Helvetica, sans-serif", null, "Sans-serif"], ["Helvetica", "Helvetica, Arial, sans-serif", null, "Sans-serif"], ["Verdana", "Verdana, sans-serif", null, "Sans-serif"],
@@ -464,11 +528,12 @@
 		pos = pos || V.posAt(c, VE.t);
 		var r;
 		if (c.type === "text") r = textBox(ctx, c, W, H, pos);
+		else if (c.type === "shape") r = VE.shapeBox(c, W, H, pos);
 		else { var m = VE.media(c.media); if (!m || !m.w) return null; r = V.place(m.w, m.h, pos, W, H); }
 		r.rot = pos.rot || 0; r.pos = pos;
 		return r;
 	};
-	VE.mediaDur = function (c) { if (c.type === "text") return Infinity; var m = VE.media(c.media); return !m ? Infinity : m.kind === "image" ? Infinity : m.dur; };
+	VE.mediaDur = function (c) { if (V.isGfx(c)) return Infinity; var m = VE.media(c.media); return !m ? Infinity : m.kind === "image" ? Infinity : m.dur; };
 	VE.hasSound = function (c) { if ((c.type !== "video" && c.type !== "audio") || c.noAudio) return false; var m = VE.media(c.media); return !!(m && m.hasAudio); };
 
 	/* ---------- restore the last session ---------- */

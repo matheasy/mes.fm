@@ -62,7 +62,7 @@
 		var p = VE.P, W = o.w, H = o.h, fps = o.fps, a = o.a || 0, b = o.b || V.duration(p), N = Math.max(1, Math.round((b - a) * fps)), failed = null, t00 = performance.now();
 		if (!(b > a)) throw new Error("There is nothing to export: the timeline is empty.");
 		if (o.onProgress) o.onProgress(0, "Loading fonts and analysing the sound for the audio effects..."); await VE.ensureFonts(); await VE.ensureAllFx();
-		var missing = p.clips.filter(function (c) { if (c.type === "text") return false; var m = VE.media(c.media); return !m || m.state !== "ready"; });
+		var missing = p.clips.filter(function (c) { if (V.isGfx(c)) return false; var m = VE.media(c.media); return !m || m.state !== "ready"; });
 		if (missing.length) throw new Error("Some clips' media is missing or still being prepared (" + missing.map(function (c) { var m = VE.media(c.media); return m ? m.name : "?"; }).filter(function (x, i, s) { return s.indexOf(x) === i; }).slice(0, 3).join(", ") + "). Wait for it, or add the file again.");
 		var cfg = { codec: V.avcCodec(W, H, fps), width: W, height: H, bitrate: V.bitrate(W, H, fps, o.quality), bitrateMode: "variable", framerate: fps, latencyMode: "quality", avc: { format: "avc" } }, sup = null;
 		var hws = ["prefer-hardware", "no-preference", "prefer-software"];

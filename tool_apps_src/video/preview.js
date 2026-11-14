@@ -209,7 +209,14 @@
 		return [[r.dx, r.dy], [r.dx + r.dw, r.dy], [r.dx + r.dw, r.dy + r.dh], [r.dx, r.dy + r.dh]].map(function (q) { var p = V.rotPt(q[0], q[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; });
 	}
 	// middle of the left and right edges of a title: drag to set the width where its lines wrap
-	function sideHandles(r) { var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2; return [[r.dx, cy], [r.dx + r.dw, cy]].map(function (q) { var p = V.rotPt(q[0], q[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; }); }
+	// white pill handles: titles = left / right (where lines wrap); shapes = left / right (width or length) and top / bottom (height)
+	function sideHandles(r, c) {
+		var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2, k = c && c.type === "shape" ? c.shape.k : null, q = [];
+		if (k !== "badge") q.push([r.dx, cy, "w"], [r.dx + r.dw, cy, "w"]);
+		if (k && k !== "arrow" && k !== "line" && k !== "badge") q.push([cx, r.dy, "h"], [cx, r.dy + r.dh, "h"]);
+		return q.map(function (s) { var p = V.rotPt(s[0], s[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k, ax: s[2] }; });
+	}
+	function hasSides(c) { return c && (c.type === "text" || c.type === "shape"); }
 	function rotHandle(r) { var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2, p = V.rotPt(cx, r.dy - 28 * dpr / view.k, cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k }; }
 	function paint() {
 		if (!needDraw) return; needDraw = false;
@@ -252,8 +259,8 @@
 				ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(rh.x, rh.y); ctx.stroke();
 				ctx.fillStyle = "#38bdf8"; cs.forEach(function (q) { ctx.fillRect(q.x - hs, q.y - hs, hs * 2, hs * 2); });
 				ctx.beginPath(); ctx.arc(rh.x, rh.y, hs, 0, Math.PI * 2); ctx.fillStyle = "#0c4a6e"; ctx.fill(); ctx.stroke();
-				if (c.type === "text") sideHandles(r).forEach(function (q) { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate((r.rot || 0) * Math.PI / 180); ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 1.5 * dpr; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr, 3.5 * dpr); else ctx.rect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr); ctx.fill(); ctx.stroke(); ctx.restore(); });
-				if (drag && drag.mode === "wrap" && drag.c === c) { var T0 = c.text, lab = T0.wrap > 0 ? "Box width " + Math.round(T0.wrap * 100) + "% · lines wrap" : "No wrapping"; ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var lw2 = ctx.measureText(lab).width, lx = (cs[0].x + cs[1].x) / 2 - lw2 / 2, ly = Math.min(cs[0].y, cs[1].y) - 34 * dpr; ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(lx - 5 * dpr, ly - 15 * dpr, lw2 + 10 * dpr, 18 * dpr); ctx.fillStyle = "#e0f2fe"; ctx.fillText(lab, lx, ly); }
+				if (hasSides(c)) sideHandles(r, c).forEach(function (q) { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(((r.rot || 0) + (q.ax === "h" ? 90 : 0)) * Math.PI / 180); ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 1.5 * dpr; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr, 3.5 * dpr); else ctx.rect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr); ctx.fill(); ctx.stroke(); ctx.restore(); });
+				if (drag && drag.mode === "wrap" && drag.c === c && c.type === "text") { var T0 = c.text, lab = T0.wrap > 0 ? "Box width " + Math.round(T0.wrap * 100) + "% · lines wrap" : "No wrapping"; ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var lw2 = ctx.measureText(lab).width, lx = (cs[0].x + cs[1].x) / 2 - lw2 / 2, ly = Math.min(cs[0].y, cs[1].y) - 34 * dpr; ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(lx - 5 * dpr, ly - 15 * dpr, lw2 + 10 * dpr, 18 * dpr); ctx.fillStyle = "#e0f2fe"; ctx.fillText(lab, lx, ly); }
 				var rel = VE.t - c.start, run = c.anims && V.animRunning(c, rel, 0.5 / VE.P.fps), own = c.anims && !run && V.animEndingAt(c, rel, 0.5 / VE.P.fps);
 				if (run || own) { ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var tx = run ? "Inside an animation: move the playhead to its start or end to change it" : "At the end of \u201c" + V.animName(own) + "\u201d: moving it sets where the animation ends"; var tw = ctx.measureText(tx).width; var bx = 10 * dpr, by = CH - 8 * dpr; /* bottom left of the stage, clear of the zoom bar */ ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(bx - 4 * dpr, by - 15 * dpr, tw + 8 * dpr, 17 * dpr); ctx.fillStyle = run ? "#fca5a5" : "#fde68a"; ctx.fillText(tx, bx, by); }
 				ctx.restore();
@@ -344,7 +351,7 @@
 			if (r0) {
 				var rh = rotHandle(r0); if (Math.hypot(pt.cx - rh.x, pt.cy - rh.y) < tol * 1.4) { hitC = sel; mode = "turn"; }
 				if (!hitC) corners(r0).forEach(function (q) { if (Math.abs(pt.cx - q.x) < tol && Math.abs(pt.cy - q.y) < tol) { hitC = sel; mode = "corner"; } });
-				if (!hitC && sel.type === "text") sideHandles(r0).forEach(function (q) { if (Math.abs(pt.cx - q.x) < tol * 1.2 && Math.abs(pt.cy - q.y) < tol * 1.8) { hitC = sel; mode = "wrap"; } });
+				var sideAx = null; if (!hitC && hasSides(sel)) sideHandles(r0, sel).forEach(function (q) { if (!hitC && Math.abs(pt.cx - q.x) < tol * 1.8 && Math.abs(pt.cy - q.y) < tol * 1.8) { hitC = sel; mode = "wrap"; sideAx = q.ax; } });
 			}
 		}
 		if (!hitC) for (var j = L.length - 1; j >= 0; j--) { var c = L[j].clip, tr = V.track(VE.P, c.track); if (tr && tr.lock) continue; var r = VE.rectOf(ctx, c, PW, PH, L[j].pos); if (r && inside(r, pt)) { hitC = c; break; } }
@@ -357,7 +364,7 @@
 		var rel = VE.t - hitC.start, fpsTol = 0.5 / VE.P.fps;
 		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
 		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
-		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false };
+		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false, ax: typeof sideAx === "undefined" ? null : sideAx };
 		if (mode === "move") {   // snap targets: the frame's edges and middle, and the edges / middles of the other pictures showing now
 			var rb = VE.rectOf(ctx, hitC, PW, PH, pos);
 			if (rb) { drag.bw = rb.dw; drag.bh = rb.dh; drag.bx = rb.dx + rb.dw / 2 - cxp; drag.by = rb.dy + rb.dh / 2 - cyp; }
@@ -379,6 +386,12 @@
 		if (!drag) { if (!pick) cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
 		if (drag.pan) { var b2 = cv.getBoundingClientRect(), sx = cv.width / Math.max(1, b2.width); view.ox = drag.ox + (e.clientX - drag.x) * sx; view.oy = drag.oy + (e.clientY - drag.y) * sx; draw(); return; }
 		var pt = toFrame(e), c = drag.c, rel = drag.rel, tol = drag.tol; drag.moved = true;
+		if (drag.mode === "wrap" && c.type === "shape") {
+			var S = c.shape, pq = V.rotPt(pt.x, pt.y, drag.cx, drag.cy, -(drag.r0 || 0)), scs = Math.max(0.01, drag.s0 || 1);
+			if (drag.ax === "h") S.h = V.clamp(Math.round(2 * Math.abs(pq.y - drag.cy) / (VE.P.h * scs) * 1000) / 1000, 0.005, 4);
+			else S.w = V.clamp(Math.round(2 * Math.abs(pq.x - drag.cx) / (VE.P.w * scs) * 1000) / 1000, 0.005, 4);
+			VE.emit("live"); draw(); return;
+		}
 		if (drag.mode === "wrap") {
 			var T = c.text, pp = V.rotPt(pt.x, pt.y, drag.cx, drag.cy, -(drag.r0 || 0)), half = Math.abs(pp.x - drag.cx), sc = Math.max(0.01, drag.s0 || 1);
 			T.wrap = V.clamp(Math.round(2 * half / (VE.P.w * sc) * 1000) / 1000, 0.05, 4); VE.emit("live"); draw(); return;
@@ -405,7 +418,7 @@
 		if (e && e.pointerType === "touch") { delete touches[e.pointerId]; if (pinch && Object.keys(touches).length < 2) pinch = null; }
 		if (pick && pick.p0) { var r = pick.r, cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(r && r.w > 8 ? r : null); return; }
 		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
-		guides = null; if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit("Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
+		guides = null; if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit(drag.c.type === "shape" ? "Shape size" : "Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
 		drag = null;
 	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);

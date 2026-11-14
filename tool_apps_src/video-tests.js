@@ -381,6 +381,15 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	ok(V.removeEmptyTracks(p) === 0, "nothing more to remove");
 	ok(V.MEDIA_EXT.test("Rec 1.trec"), "folder scan finds .trec");
 }
+{
+	const c = V.clipDefaults({ id: "s", type: "shape", track: "t1", start: 2, in: 0, out: 4, shape: { k: "badge", n: 3 } });
+	ok(c.shape.k === "badge" && c.shape.n === 3 && c.shape.color === V.SHAPE_DEFAULT.color, "shape gets its defaults");
+	ok(V.isGfx(c) && !V.isGfx({ type: "video" }), "shapes need no media file");
+	const p = V.normalize({ tracks: [{ id: "t1", kind: "v" }], clips: [c] });
+	ok(p.clips.length === 1 && p.clips[0].shape.n === 3, "shape survives a save / load");
+	const parts = V.split(p.clips[0], 3, "s2");
+	ok(parts && [].concat(parts.L || parts[0], parts.R || parts[1]).every(function (q) { return q && q.in === 0 && q.type === "shape"; }), "split shape: both halves start at 0");
+}
 ok(V.watchLeft(17*60+16.8, 3600+17*60+52.9, 2.5) === "24:15", "17:16 to 1:17:52 at 2.5x = 24:15");
 ok(V.watchLeft(0, 3725, 1) === "1:02:05", "hours shown");
 ok(V.watchLeft(50, 40, 2) === "0:00", "past the end");

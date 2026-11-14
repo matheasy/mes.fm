@@ -35,7 +35,7 @@
 	#vd .vd-pane {display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow:auto;padding:0.5em;}
 	#vd .vd-bin, #vd .vd-insp {background:var(--vd-panel);display:flex;flex-direction:column;min-height:0;overflow:auto;padding:0.5em;}
 	#vd .vd-bin {overflow:hidden;}
-	#vd .vd-panehead {display:flex;align-items:center;gap:0.4em;margin-bottom:0.3em;min-height:32px;} #vd .vd-panehead select {min-height:28px;padding:0.1em 0.3em;}
+	#vd .vd-panehead {display:flex;align-items:center;gap:0.4em;margin-bottom:0.3em;min-height:32px;} #vd .vd-panehead select {min-height:28px;padding:0.1em 0.3em;} #vd .vd-panehead2 {margin-top:1em;}
 	#vd .vd-cards {display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:0.45em;margin-top:0.4em;}
 	#vd .vd-card {background:var(--vd-panel2);border:1px solid var(--vd-line);border-radius:0.5em;padding:0.35em;cursor:grab;display:flex;flex-direction:column;gap:0.25em;text-align:left;font:inherit;touch-action:none;min-height:96px;}
 	#vd .vd-card:hover {border-color:#4b5a73;background:#252e3d;} #vd .vd-card:focus-visible {outline:2px solid var(--vd-sel);}
@@ -113,7 +113,7 @@
 	#vd .vd-tbtns button {background:transparent;border:0;cursor:pointer;font-size:0.85em;min-width:25px;min-height:24px;border-radius:0.3em;padding:0;color:var(--vd-dim);} #vd .vd-tbtns button:hover {background:var(--vd-btnh);} #vd .vd-tbtns button[aria-pressed="true"] {color:var(--vd-acc2);}
 	#vd .vd-lane {position:relative;flex:1;}
 	#vd .vd-clip {position:absolute;top:2px;bottom:2px;border-radius:5px;overflow:hidden;background:var(--vd-video);border:1px solid rgba(255,255,255,0.25);cursor:grab;touch-action:none;}
-	#vd .vd-clip--audio {background:var(--vd-audio);} #vd .vd-clip--image {background:var(--vd-image);} #vd .vd-clip--text {background:var(--vd-text);}
+	#vd .vd-clip--audio {background:var(--vd-audio);} #vd .vd-clip--image {background:var(--vd-image);} #vd .vd-clip--text {background:var(--vd-text);} #vd .vd-clip--shape {background:#be123c;}
 	#vd .vd-clip.is-sel {box-shadow:0 0 0 2px var(--vd-sel), inset 0 0 0 1px var(--vd-sel);z-index:2;} #vd .vd-clip.is-bad {box-shadow:0 0 0 2px #ef4444;opacity:0.7;} #vd .vd-clip.is-missing {background:#3f1d1d;}
 	#vd .vd-cc {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 	#vd .vd-cl {position:absolute;left:4px;top:1px;right:4px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000,0 0 3px #000;pointer-events:none;color:#fff;}
