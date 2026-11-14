@@ -163,7 +163,7 @@
 
 	function Engine(canvas, opts) {
 		opts = opts || {};
-		var gl = canvas.getContext("webgl2", { premultipliedAlpha: false, preserveDrawingBuffer: !!opts.preserve, antialias: false, alpha: false });
+		var gl = canvas.getContext("webgl2", { preserveDrawingBuffer: !!opts.preserve, antialias: false }); /* default alpha: some Android GPUs show an alpha:false canvas as black (the drawn pixels read back with alpha 0); every pixel we draw is opaque anyway */
 		if (!gl) throw new Error("WebGL2 is not available in this browser.");
 		this.gl = gl; this.canvas = canvas; this.floatOK = !!gl.getExtension("EXT_color_buffer_float"); gl.getExtension("OES_texture_float_linear");
 		this.maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
