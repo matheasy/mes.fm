@@ -698,7 +698,7 @@ APPS = {
                             head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
                                        '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
                                        '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
-                            js_v="8"),
+                            js_v="9"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",

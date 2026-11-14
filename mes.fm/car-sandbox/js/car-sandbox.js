@@ -1448,7 +1448,7 @@
 	function cycleCam(dir) { var i = CAMS.findIndex(function (c) { return c[0] === S.cam; }); S.cam = CAMS[(i + dir + CAMS.length) % CAMS.length][0]; $("cs-cam").value = S.cam; camSnap = true; free.yaw = free.pitch = 0; save(); toast("Camera: " + CAMS.find(function (c) { return c[0] === S.cam; })[1]); }
 	function updateCamera(dt) {
 		var c = cars[player]; if (!c) return;
-		var t = c.body.translation(), lv = c.body.linvel(), r = c.body.rotation(), cq = new THREE.Quaternion(r.x, r.y, r.z, r.w), pos = new THREE.Vector3(t.x, t.y, t.z);
+		var ip = ipose(c), t = ip.t.clone(), lv = c.body.linvel(), cq = ip.q.clone(), pos = t.clone();
 		var fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(cq), sp = Math.hypot(lv.x, lv.z);
 		var head = sp > 3 && c.veh.currentVehicleSpeed() > 0 ? Math.atan2(lv.x, lv.z) : Math.atan2(fwd.x, fwd.z);
 		if (c.veh.currentVehicleSpeed() < -1) head = Math.atan2(fwd.x, fwd.z);
@@ -1604,7 +1604,7 @@
 			/* heavy gravity makes the (gravity-scaled) springs stiff: take smaller physics steps so they stay stable (Sun: 6 a tick) */
 			var sub = Math.max(1, Math.min(8, Math.ceil(Math.sqrt(Math.abs(gravity) / 9.81)))), sdt = 1 / 60 / sub;
 			phys.timestep = sdt;
-			var n = 0; while (acc >= 1 / 60 && n < 4) { for (var si = 0; si < sub; si++) { subLast = si === sub - 1; step(sdt); simT += sdt; } acc -= 1 / 60; n++; }
+			var n = 0; while (acc >= 1 / 60 && n < 4) { keepPrev(); for (var si = 0; si < sub; si++) { subLast = si === sub - 1; step(sdt); simT += sdt; } acc -= 1 / 60; n++; }
 			if (n >= 4) acc = 0;
 			if (gFlip > 0) { gFlip -= dt; if (gFlip <= 0) { gFlip = 0; setGravity(gravity); toast("Gravity is back"); } }
 		}
@@ -1613,18 +1613,32 @@
 		hudT -= dt; if (hudT < 0) { hudT = 0.1; updateHud(); }
 		if (cars[player]) engineSound(cars[player]);
 	}
+	/* Physics runs in fixed 1/60 s ticks but frames come at the screen's rate (120 Hz on ProMotion screens, and rAF timing wobbles),
+	   so a frame gets 0, 1 or 2 ticks: at speed the car jumped unevenly while the camera followed smoothly = the picture shook.
+	   Each frame now draws every body part of the way from its pose before the last tick to its pose after it (alpha = acc * 60). */
+	function keepPrev() {
+		function k(o) { var t = o.body.translation(), r = o.body.rotation(); if (!o.pv) o.pv = { t: new THREE.Vector3(), q: new THREE.Quaternion() }; o.pv.t.set(t.x, t.y, t.z); o.pv.q.set(r.x, r.y, r.z, r.w); o.pv.ok = true; }
+		cars.forEach(k); objs.forEach(k);
+	}
+	var ipT = null, ipQ = null;
+	function ipose(o) {
+		if (!ipT) { ipT = new THREE.Vector3(); ipQ = new THREE.Quaternion(); }
+		var t = o.body.translation(), r = o.body.rotation(); ipT.set(t.x, t.y, t.z); ipQ.set(r.x, r.y, r.z, r.w);
+		var a = paused ? 1 : Math.max(0, Math.min(1, acc * 60));
+		if (o.pv && o.pv.ok && a < 1 && o.pv.t.distanceToSquared(ipT) < 100) { ipT.lerpVectors(o.pv.t, ipT, a); ipQ.slerpQuaternions(o.pv.q, ipQ, a); }
+		return { t: ipT, q: ipQ };
+	}
 	function stageOnScreen() { var r = stage.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }
 	function syncMeshes() {
 		cars.forEach(function (c) {
-			var t = c.body.translation(), r = c.body.rotation();
-			c.group.position.set(t.x, t.y, t.z); c.group.quaternion.set(r.x, r.y, r.z, r.w);
+			var ip = ipose(c); c.group.position.copy(ip.t); c.group.quaternion.copy(ip.q);
 			for (var i = 0; i < 4; i++) {
 				var w = c.wheels[i], sl = c.veh.wheelSuspensionLength(i), cp = c.veh.wheelChassisConnectionPointCs(i);
 				if (sl == null || !cp) continue;
 				w.piv.position.set(cp.x, cp.y - sl, cp.z); w.piv.rotation.y = c.veh.wheelSteering(i) || 0; w.spin.rotation.x = c.veh.wheelRotation(i) || 0;
 			}
 		});
-		objs.forEach(function (o) { var t = o.body.translation(), r = o.body.rotation(); o.mesh.position.set(t.x, t.y, t.z); o.mesh.quaternion.set(r.x, r.y, r.z, r.w); });
+		objs.forEach(function (o) { var ip = ipose(o); o.mesh.position.copy(ip.t); o.mesh.quaternion.copy(ip.q); });
 		if (ghostMesh) {
 			var gp = S.show.ghost !== false && lap.t0 != null && lap.valid ? C.ghostPose(ghost, simT - lap.t0) : null;
 			ghostMesh.visible = !!gp; if (gp) { ghostMesh.position.set(gp.x, gp.y, gp.z); ghostMesh.quaternion.set(gp.q[0], gp.q[1], gp.q[2], gp.q[3]); }
@@ -1762,6 +1776,6 @@
 		/* let the computer drive the player's car (testing the lap timer): MESCarSandbox.auto(seconds) */
 		auto: function (sec) { var a = S.ai; S.ai = "cruise"; autoPilot = true; for (var i = 0; i < sec * 60; i++) advance(1 / 60); autoPilot = false; S.ai = a; render(); return { laps: lap.laps, last: lap.last, best: REC.laps[lapKey()], hud: $("cs-lapnow").textContent + " | " + $("cs-lapbest").textContent, toast: $("cs-toast").textContent }; },
 		car: function () { return cars[player]; }, replay: function () { replayStart(); return replay ? { len: replay.len, frames: replay.frames.length } : null; }, replayStep: function (sec) { for (var i = 0; i < sec * 60; i++) advance(1 / 60); render(); return replay ? replay.t : null; }, night: setNight, weather: setWeather, tod: function (h) { setTod(h); return { day: dayK, sun: sunLight.intensity, hemi: hemi.intensity }; }, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
-		render: function () { render(); }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
+		render: function () { render(); }, advance: function (dt) { advance(dt); }, camera: function () { return camera; }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();
