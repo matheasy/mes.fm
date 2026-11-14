@@ -213,18 +213,33 @@
 		if (yt && yt.setPlaybackRate) { try { yt.setPlaybackRate(W.ytSpeed(r)); } catch (e) {} if (r > 2 && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('YouTube\'s player goes up to 2×'); } }
 		syncSpeed();
 	}
+	// 0.05 steps (snapped to the 0.05 grid so 1.07 goes to 1.10 / 1.05)
 	function step(dir) {
-		var L = W.SPEEDS, r = S.rate, i;
-		if (dir > 0) { for (i = 0; i < L.length && L[i] <= r + 0.001; i++); setRate(L[Math.min(i, L.length - 1)]); }
-		else { for (i = L.length - 1; i >= 0 && L[i] >= r - 0.001; i--); setRate(L[Math.max(i, 0)]); }
+		var q = S.rate / 0.05, n = dir > 0 ? Math.floor(q + 1e-6) + 1 : Math.ceil(q - 1e-6) - 1;
+		setRate(n * 0.05);
+	}
+	// press and hold = repeat (after 380 ms, then every 90 ms, faster after 1.5 s); the click that follows a press is swallowed,
+	// so a keyboard Enter / Space (click with detail 0) still steps once
+	function holdRepeat(el, test, fn) {
+		var tmr = 0, t0 = 0, eat = false;
+		function stop() { clearTimeout(tmr); tmr = 0; }
+		function tick() { fn(test.btn); tmr = setTimeout(tick, Date.now() - t0 > 1500 ? 45 : 90); }
+		el.addEventListener('pointerdown', function (e) {
+			var b = test(e); if (!b || b.disabled || (e.button && e.button !== 0)) return;
+			test.btn = b; stop(); eat = true; t0 = Date.now(); fn(b); tmr = setTimeout(tick, 380);
+			try { b.setPointerCapture(e.pointerId); } catch (x) {}
+		});
+		['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (ev) { el.addEventListener(ev, stop); });
+		el.addEventListener('click', function (e) { if (eat && e.detail !== 0 && test(e)) { eat = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+		el.addEventListener('contextmenu', function (e) { if (test(e)) e.preventDefault(); });
 	}
 	function syncSpeed() {
 		var ok = cur && W.canSpeed(cur), shown = cur && W.mode(cur) === 'yt' ? W.ytSpeed(S.rate) : S.rate;
-		$('wt-sv').textContent = (+shown.toFixed(2)) + '×'; $('wt-speed').classList.toggle('wt-off', !ok);
+		$('wt-sv').textContent = shown.toFixed(2) + '×'; $('wt-speed').classList.toggle('wt-off', !ok);
 		['wt-slower', 'wt-faster', 'wt-sv'].forEach(function (id) { $(id).disabled = !ok; });
 		$('wt-speed').title = ok ? 'Speed: S slower, D faster, R normal' : 'This site\'s own player has its own speed setting';
 		var sp = document.querySelector('#wt-stage .wt-spd');
-		if (sp) { sp.hidden = !ok || spdGone; sp.classList.toggle('wt-spdL', spdLeft()); sp.querySelector('.wt-spdv').textContent = (+shown.toFixed(2)) + '×'; }
+		if (sp) { sp.hidden = !ok || spdGone; sp.classList.toggle('wt-spdL', spdLeft()); sp.querySelector('.wt-spdv').textContent = shown.toFixed(2) + '×'; }
 		paintCC();
 	}
 
@@ -266,6 +281,7 @@
 	$('wt-cc').onclick = toggleCC;
 	$('wt-slower').onclick = function () { step(-1); };
 	$('wt-faster').onclick = function () { step(1); };
+	holdRepeat($('wt-speed'), function (e) { return e.target.closest && e.target.closest('#wt-slower, #wt-faster'); }, function (b) { step(b.id === 'wt-faster' ? 1 : -1); });
 	$('wt-sv').onclick = function () { setRate(1); };
 
 	/* ---------- adding links ---------- */
@@ -596,7 +612,7 @@
 	function spdTab(st) {
 		var t = document.createElement('div'); t.className = 'wt-spd'; t.setAttribute('role', 'toolbar'); t.setAttribute('aria-label', 'Speed');
 		t.innerHTML = '<button type="button" data-sp="up" title="Faster (D)" aria-label="Faster">+</button>' +
-			'<span class="wt-spdv" aria-live="polite">1×</span>' +
+			'<span class="wt-spdv" aria-live="polite">1.00×</span>' +
 			'<button type="button" data-sp="down" title="Slower (S)" aria-label="Slower">−</button>' +
 			'<button type="button" data-sp="2" title="Speed 2×">2×</button>' +
 			'<button type="button" data-sp="1" title="Normal speed (R)">1×</button>' +
@@ -614,6 +630,7 @@
 			if (!cur || !W.canSpeed(cur)) return;
 			if (k === 'up') step(1); else if (k === 'down') step(-1); else setRate(+k);
 		});
+		holdRepeat(t, function (e) { var b = e.target.closest && e.target.closest('[data-sp="up"], [data-sp="down"]'); return b && cur && W.canSpeed(cur) ? b : null; }, function (b) { step(b.dataset.sp === 'up' ? 1 : -1); });
 		st.appendChild(t); syncSpeed();
 	}
 	/* our own control bar while zoomed in: the zoom scales the player's own controls with the picture (YouTube's bar moves off

@@ -281,3 +281,7 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 	.wt-stage:has(.wt-spd:not([hidden]):not(.wt-spdL)) .wt-zmini:not(.wt-zmL) {right:50px;}
 	.wt-stage:has(.wt-spd.wt-spdL:not([hidden])) .wt-zmini.wt-zmL {left:50px;}
 }
+
+/* hold-to-repeat speed buttons: no text selection / long-press menu on phones */
+#wt .wt-spd, #wt .wt-speed {-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+#wt .wt-spd button, #wt .wt-speed button {touch-action:manipulation;}

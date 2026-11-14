@@ -589,6 +589,10 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 	.wt-stage:has(.wt-spd.wt-spdL:not([hidden])) .wt-zmini.wt-zmL {left:50px;}
 }
 
+/* hold-to-repeat speed buttons: no text selection / long-press menu on phones */
+#wt .wt-spd, #wt .wt-speed {-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+#wt .wt-spd button, #wt .wt-speed button {touch-action:manipulation;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -988,7 +992,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="wt-b" id="wt-prev" title="Previous (Shift+N)" aria-label="Previous">⏮&#xFE0E;</button>
 					<button type="button" class="wt-b" id="wt-next" title="Next (N)" aria-label="Next">⏭&#xFE0E;</button>
 					<span class="wt-speed" id="wt-speed" title="Speed: S slower, D faster, R normal">
-						<button type="button" class="wt-b" id="wt-slower" aria-label="Slower">−</button><button type="button" class="wt-b wt-sv" id="wt-sv" aria-label="Normal speed">1×</button><button type="button" class="wt-b" id="wt-faster" aria-label="Faster">+</button>
+						<button type="button" class="wt-b" id="wt-slower" aria-label="Slower">−</button><button type="button" class="wt-b wt-sv" id="wt-sv" aria-label="Normal speed">1.00×</button><button type="button" class="wt-b" id="wt-faster" aria-label="Faster">+</button>
 					</span>
 					<button type="button" class="wt-b" id="wt-star" title="Save for later" aria-pressed="false">☆</button>
 					<button type="button" class="wt-b" id="wt-addl" title="Add to one of my playlists" aria-haspopup="true">+ List</button>
@@ -1182,7 +1186,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=26" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=27" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
