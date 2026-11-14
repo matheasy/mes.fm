@@ -15,6 +15,9 @@ it = W.item('https://rumble.com/embed/v4abc12/'); eq(W.mode(it), 'embed', 'rumbl
 it = W.item('https://rumble.com/v4xyz-some-title.html'); eq(W.mode(it), 'open', 'rumble page');
 it = W.item('https://www.bitchute.com/video/AbCdEf123456/'); eq(W.mode(it), 'bitchute', 'bitchute own player'); eq(W.canSpeed(it), true, 'bitchute speed'); W.noBC[it.key] = 1; eq(W.mode(it), 'embed', 'bitchute fallback'); delete W.noBC[it.key];
 { const bm = require('../mes.fm/api/bitchute-media.js'); eq([bm.okMedia('https://seed1.bitchute.com/a/b.mp4'), bm.okMedia('https://evil.com/b.mp4'), bm.okMedia('http://seed1.bitchute.com/b.mp4'), bm.okMedia('https://bitchute.com.evil.io/b.mp4')], [true, false, false, false], 'bitchute media url check'); }
+it = W.item('https://vimeo.com/1246902394/1608648b3d'); eq([W.mode(it), it.id, it.e, W.canSpeed(it), W.siteName(it)], ['vimeo', '1246902394', 'https://player.vimeo.com/video/1246902394?h=1608648b3d&dnt=1&playsinline=1', true, 'Vimeo'], 'vimeo unlisted');
+it = W.item('https://vimeo.com/user187376030'); eq(W.mode(it), 'open', 'vimeo profile');
+eq([W.vmSpeed(3.05), W.vmSpeed(0.25)], [2, 0.5], 'vimeo speed range');
 it = W.item('https://x.com/mes/status/1234567890123'); eq(W.mode(it), 'embed', 'x');
 it = W.item('https://example.com/clip.mp4'); eq([W.mode(it), it.t], ['file', 'clip.mp4'], 'direct');
 ok(W.item('notalink').err, 'bad link');

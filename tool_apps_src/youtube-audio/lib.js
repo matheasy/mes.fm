@@ -28,7 +28,7 @@
 	}
 	Y.tParam = tParam;
 	Y.SITES = {
-		youtube: "YouTube", "3speak": "3Speak", rumble: "Rumble", odysee: "Odysee", bitchute: "BitChute", x: "X", substack: "Substack",
+		youtube: "YouTube", "3speak": "3Speak", rumble: "Rumble", odysee: "Odysee", bitchute: "BitChute", vimeo: "Vimeo", x: "X", substack: "Substack",
 		direct: "Media file", other: "Web page"
 	};
 	/* -> {ok, kind, name, id, embed (iframe URL or null), watch (link to open), start (s), reason} */
@@ -76,6 +76,18 @@
 		if (h === "bitchute.com" || h === "old.bitchute.com") {
 			if ((m = p.match(/^\/(?:video|embed)\/([A-Za-z0-9_-]{6,32})\/?/))) return out("bitchute", m[1], "https://www.bitchute.com/embed/" + m[1] + "/", { watch: "https://www.bitchute.com/video/" + m[1] + "/" });
 			return out("bitchute", null, null);
+		}
+		/* Vimeo: vimeo.com/<id>[/<hash>], vimeo.com/channels|groups|showcase/.../<id>, player.vimeo.com/video/<id>?h=<hash>
+		   (the hash is what lets an unlisted video play; kept in the embed link) */
+		if (h === "vimeo.com" || h === "player.vimeo.com") {
+			var vm = null, vh = q.get("h") || "";
+			if ((m = p.match(/^\/(?:video\/)?(\d{5,12})(?:\/([0-9a-f]{6,20}))?\/?$/i))) { vm = m[1]; if (m[2]) vh = m[2]; }
+			else if ((m = p.match(/^\/(?:channels\/[^/]+|groups\/[^/]+\/videos|showcase\/\d+\/video|album\/\d+\/video)\/(\d{5,12})\/?$/i))) vm = m[1];
+			if (!vm) return out("vimeo", null, null);
+			if (!/^[0-9a-f]{0,20}$/i.test(vh)) vh = "";
+			var vst = tParam((u.hash.match(/t=([0-9hms.]+)/) || [])[1] || q.get("t"));
+			return out("vimeo", vm, "https://player.vimeo.com/video/" + vm + "?" + (vh ? "h=" + vh + "&" : "") + "dnt=1&playsinline=1" + (vst ? "#t=" + vst + "s" : ""),
+				{ watch: "https://vimeo.com/" + vm + (vh ? "/" + vh : "") + (vst ? "#t=" + vst + "s" : ""), start: vst, hash: vh || "" });
 		}
 		/* X / Twitter: the tweet's own embed page plays its video */
 		if (h === "x.com" || h === "twitter.com" || h === "mobile.twitter.com" || h === "fxtwitter.com" || h === "vxtwitter.com") {

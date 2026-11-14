@@ -13,12 +13,14 @@
 		if (it.k === "3speak") return "hls";
 		if (it.k === "odysee") return it.id ? "odysee" : "open";
 		if (it.k === "direct") return "file";
+		if (it.k === "vimeo" && it.id && it.e) return "vimeo";   // Vimeo's player + its player.js API (speed, time)
 		if (it.k === "bitchute" && it.id && !W.noBC[it.key]) return "bitchute";   // own <video> from BitChute's file (falls back to its embed)
 		if (it.e) return "embed";
 		return "open";
 	};
 	W.noBC = {};   // BitChute videos whose file could not be found / played this session: use BitChute's own player
-	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "bitchute"; };
+	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "bitchute" || m === "vimeo"; };
+	W.vmSpeed = function (r) { return Math.max(0.5, Math.min(2, r)); };   // Vimeo's player: 0.5x to 2x
 	W.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 	W.ytSpeed = function (r) { return Math.max(0.25, Math.min(2, r)); };   // YouTube's player stops at 2x
 

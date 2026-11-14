@@ -7,7 +7,11 @@
 	var C = {};
 
 	/* ---------- names, sizes, formats ---------- */
-	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif"];
+	C.VIDEO_EXT = ["avi", "mkv", "wmv", "asf", "flv", "f4v", "mov", "qt", "mp4", "m4v", "webm", "mpg", "mpeg", "mpe", "m2v", "vob", "ts", "mts", "m2ts", "3gp", "3g2", "ogv", "divx", "xvid", "rm", "rmvb", "dv", "mxf", "y4m", "gif", "trec"];
+	// Camtasia 2019+ recordings (.trec) are QuickTime files with TechSmith TSCC2 video + AAC; ffmpeg reads them.
+	// The mouse cursor is kept apart in TechSmith's own TSCM data, so the converted picture has no cursor.
+	C.isTrec = function (name) { return C.extOf(name) === "trec"; };
+	C.TREC_NOTE = "Camtasia recording: the mouse cursor is not in the picture (Camtasia keeps it apart and draws it when you edit). Export an MP4 from Camtasia if you need the cursor.";
 	C.AUDIO_EXT = ["mp3", "wav", "m4a", "aac", "ogg", "oga", "opus", "flac", "wma", "aif", "aiff", "amr", "weba"];
 	C.extOf = function (name) { var m = /\.([a-z0-9]+)$/i.exec(String(name || "")); return m ? m[1].toLowerCase() : ""; };
 	C.isVideo = function (name, type) { return /^video\//.test(type || "") || C.VIDEO_EXT.indexOf(C.extOf(name)) >= 0; };
@@ -417,7 +421,7 @@
 	}
 	Y.tParam = tParam;
 	Y.SITES = {
-		youtube: "YouTube", "3speak": "3Speak", rumble: "Rumble", odysee: "Odysee", bitchute: "BitChute", x: "X", substack: "Substack",
+		youtube: "YouTube", "3speak": "3Speak", rumble: "Rumble", odysee: "Odysee", bitchute: "BitChute", vimeo: "Vimeo", x: "X", substack: "Substack",
 		direct: "Media file", other: "Web page"
 	};
 	/* -> {ok, kind, name, id, embed (iframe URL or null), watch (link to open), start (s), reason} */
@@ -465,6 +469,18 @@
 		if (h === "bitchute.com" || h === "old.bitchute.com") {
 			if ((m = p.match(/^\/(?:video|embed)\/([A-Za-z0-9_-]{6,32})\/?/))) return out("bitchute", m[1], "https://www.bitchute.com/embed/" + m[1] + "/", { watch: "https://www.bitchute.com/video/" + m[1] + "/" });
 			return out("bitchute", null, null);
+		}
+		/* Vimeo: vimeo.com/<id>[/<hash>], vimeo.com/channels|groups|showcase/.../<id>, player.vimeo.com/video/<id>?h=<hash>
+		   (the hash is what lets an unlisted video play; kept in the embed link) */
+		if (h === "vimeo.com" || h === "player.vimeo.com") {
+			var vm = null, vh = q.get("h") || "";
+			if ((m = p.match(/^\/(?:video\/)?(\d{5,12})(?:\/([0-9a-f]{6,20}))?\/?$/i))) { vm = m[1]; if (m[2]) vh = m[2]; }
+			else if ((m = p.match(/^\/(?:channels\/[^/]+|groups\/[^/]+\/videos|showcase\/\d+\/video|album\/\d+\/video)\/(\d{5,12})\/?$/i))) vm = m[1];
+			if (!vm) return out("vimeo", null, null);
+			if (!/^[0-9a-f]{0,20}$/i.test(vh)) vh = "";
+			var vst = tParam((u.hash.match(/t=([0-9hms.]+)/) || [])[1] || q.get("t"));
+			return out("vimeo", vm, "https://player.vimeo.com/video/" + vm + "?" + (vh ? "h=" + vh + "&" : "") + "dnt=1&playsinline=1" + (vst ? "#t=" + vst + "s" : ""),
+				{ watch: "https://vimeo.com/" + vm + (vh ? "/" + vh : "") + (vst ? "#t=" + vst + "s" : ""), start: vst, hash: vh || "" });
 		}
 		/* X / Twitter: the tweet's own embed page plays its video */
 		if (h === "x.com" || h === "twitter.com" || h === "mobile.twitter.com" || h === "fxtwitter.com" || h === "vxtwitter.com") {
@@ -1114,6 +1130,7 @@
 			if (code !== 0) { var errLine = ffLog.filter(function (l) { return /error|invalid|not supported|could not/i.test(l); }).slice(-2).join(" "); throw new Error("ffmpeg could not convert this file" + (errLine ? ": " + errLine : ".")); }
 			var data = await inst.readFile(out); try { await inst.deleteFile(out); } catch (e) { /* ignore */ }
 			var note = plan.copyVideo ? "(picture copied as it is" + (plan.hasAudio ? plan.copyAudio ? ", sound copied)" : ", sound made AAC)" : ")") : "(picture re-encoded with x264" + (plan.video ? " from " + plan.video.codec : "") + ")";
+			if (C.isTrec(file.name)) note += " " + C.TREC_NOTE;
 			var res = { size: data.length, note: note, engine: "ffmpeg", plan: plan };
 			if (opts.handle) { var wr = await opts.handle.createWritable(); await wr.write(data); await wr.close(); res.handle = opts.handle; }
 			else res.blob = new Blob([data], { type: "video/mp4" });

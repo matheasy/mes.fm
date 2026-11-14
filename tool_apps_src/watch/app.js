@@ -51,6 +51,7 @@
 		if (it.k === 'youtube') return fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + it.id), { credentials: 'omit' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { return j && { key: it.key, t: j.title, th: it.th }; });
 		if (it.k === '3speak') return speakInfo(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		if (it.k === 'odysee') return odyseeGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
+		if (it.k === 'vimeo' && it.id) return vimeoMeta(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		if (it.k === 'bitchute' && it.id) return bitchuteGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		return Promise.resolve(null);
 	}
@@ -96,12 +97,28 @@
 		W.noBC[cur.key] = 1; var p = position(); play(cur, p && p.pos > 1 ? { t: Math.floor(p.pos) } : {});
 	}
 
+	/* Vimeo: title / thumbnail from its oEmbed (CORS-open); the player is Vimeo's iframe driven by its player.js API */
+	var VIMEO_JS = 'https://cdn.jsdelivr.net/npm/@vimeo/player@2.25.1/dist/player.min.js', vmLoading = null, vmMetaC = {};
+	function vimeoMeta(it) {
+		if (vmMetaC[it.key]) return vmMetaC[it.key];
+		var p = fetch('https://vimeo.com/api/oembed.json?url=' + encodeURIComponent(it.u.split('#')[0]), { credentials: 'omit' })
+			.then(function (r) { if (!r.ok) throw new Error('no info'); return r.json(); })
+			.then(function (j) { return { title: j.title || '', thumb: String(j.thumbnail_url || '').replace(/_\d+x\d+(?=\?|$)/, '_640x360').replace(/-d_\d+x\d+/, '-d_640x360') }; });
+		vmMetaC[it.key] = p; p.catch(function () { delete vmMetaC[it.key]; });
+		return p;
+	}
+	function vimeoApi() {
+		if (window.Vimeo && Vimeo.Player) return Promise.resolve();
+		return vmLoading || (vmLoading = loadScript(VIMEO_JS).catch(function (e) { vmLoading = null; throw new Error('Vimeo\'s player could not be loaded (a blocker may be stopping it).'); }));
+	}
+
 	/* ---------- the player ---------- */
-	var cur = null, gen = 0, yt = null, vid = null, hls = null, saveT = 0, rateNote = 0;
+	var cur = null, gen = 0, yt = null, vm = null, vid = null, hls = null, saveT = 0, rateNote = 0;
 	function histRec(it) { var i = W.indexOf(S.hist, it.key); return i < 0 ? null : S.hist[i]; }
 	function teardown() {
 		clearInterval(saveT); saveT = 0;
 		if (yt) { try { yt.destroy(); } catch (e) {} yt = null; }
+		if (vm) { try { vm.p.destroy(); } catch (e) {} vm = null; }
 		if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
 		if (vid) { try { vid.pause(); vid.removeAttribute('src'); vid.load(); } catch (e) {} vid = null; }
 		setStage('');
@@ -109,6 +126,7 @@
 	function setStage(h) { $('wt-stage').innerHTML = h; zoomLayer(); }
 	function position() {
 		try { if (yt && yt.getCurrentTime) return { pos: yt.getCurrentTime() || 0, dur: yt.getDuration() || 0 }; } catch (e) {}
+		if (vm) return { pos: vm.pos, dur: vm.dur };
 		if (vid) return { pos: vid.currentTime || 0, dur: isFinite(vid.duration) ? vid.duration : 0 };
 		return null;
 	}
@@ -177,6 +195,26 @@
 				var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
 			}).catch(function (e) { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else failed(e.message); });
 			saveT = setInterval(remember, 5000);
+		} else if (mode === 'vimeo') {
+			var vf = document.createElement('iframe'); vf.src = cur.e.replace('#', (cur.e.indexOf('?') < 0 ? '?' : '&') + 'autoplay=1#');
+			vf.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; vf.allowFullscreen = true; vf.referrerPolicy = 'strict-origin-when-cross-origin'; vf.title = W.label(cur);
+			if (vf.src.indexOf('autoplay=1') < 0) vf.src += '&autoplay=1';
+			stage.appendChild(vf);
+			vimeoMeta(cur).then(function (i) { if (g === gen) setMeta(cur.key, i.title, i.thumb); }, function () {});
+			vimeoApi().then(function () {
+				if (g !== gen) return;
+				var P = new Vimeo.Player(vf), me = vm = { p: P, pos: 0, dur: 0, rate: 1, paused: true };
+				P.on('timeupdate', function (d) { me.pos = d.seconds || 0; if (d.duration) me.dur = d.duration; });
+				P.on('play', function () { me.paused = false; }); P.on('pause', function () { me.paused = true; });
+				P.on('ended', function () { me.paused = true; if (g === gen) ended(); });
+				P.on('playbackratechange', function (d) { me.rate = d.playbackRate || 1; if (g === gen && !holdOn && Math.abs(me.rate - W.vmSpeed(S.rate)) > 0.001) { S.rate = me.rate; save(); } syncSpeed(); });
+				P.ready().then(function () {
+					if (g !== gen) return;
+					P.getDuration().then(function (d) { me.dur = d || 0; if (start && start < me.dur - 5) P.setCurrentTime(start).catch(function () {}); }).catch(function () {});
+					if (Math.abs(S.rate - 1) > 0.001) setRate(S.rate);
+				}).catch(function () {});
+			}).catch(function (e) { if (g === gen) toast(e.message); });
+			saveT = setInterval(remember, 5000);
 		} else if (mode === 'embed') {
 			var f = document.createElement('iframe'); if (S.priv) { f.setAttribute('credentialless', ''); try { f.credentialless = true; } catch (e) {} } f.src = cur.e; f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.title = W.label(cur);
 			stage.appendChild(f);
@@ -227,12 +265,15 @@
 	function setRate(r) {
 		r = Math.round(Math.max(0.25, Math.min(4, r)) * 100) / 100; S.rate = r; save();
 		if (vid) vid.playbackRate = r;
+		if (vm) { vm.p.setPlaybackRate(W.vmSpeed(r)).catch(function () { if (Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('The owner of this Vimeo video has turned off speed control'); } }); if ((r < 0.5 || r > 2) && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('Vimeo\'s player goes from 0.5× to 2×'); } }
 		if (yt && yt.setPlaybackRate) { try { yt.setPlaybackRate(W.ytSpeed(r)); } catch (e) {} if (r > 2 && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('YouTube\'s player goes up to 2×'); } }
 		syncSpeed();
 	}
 	// 0.05 steps (snapped to the 0.05 grid so 1.07 goes to 1.10 / 1.05)
 	function step(dir) {
-		var q = S.rate / 0.05, n = dir > 0 ? Math.floor(q + 1e-6) + 1 : Math.ceil(q - 1e-6) - 1;
+		// start from the speed the player really uses (YouTube stops at 2x, Vimeo at 0.5x-2x), not a higher saved one
+		var m = cur && W.mode(cur), base = m === 'yt' ? W.ytSpeed(S.rate) : m === 'vimeo' ? W.vmSpeed(S.rate) : S.rate;
+		var q = base / 0.05, n = dir > 0 ? Math.floor(q + 1e-6) + 1 : Math.ceil(q - 1e-6) - 1;
 		setRate(n * 0.05);
 	}
 	// press and hold = repeat (after 380 ms, then every 90 ms, faster after 1.5 s); the click that follows a press is swallowed,
@@ -251,7 +292,7 @@
 		el.addEventListener('contextmenu', function (e) { if (test(e)) e.preventDefault(); });
 	}
 	function syncSpeed() {
-		var ok = cur && W.canSpeed(cur), shown = cur && W.mode(cur) === 'yt' ? W.ytSpeed(S.rate) : S.rate;
+		var ok = cur && W.canSpeed(cur), shown = cur && W.mode(cur) === 'yt' ? W.ytSpeed(S.rate) : cur && W.mode(cur) === 'vimeo' ? W.vmSpeed(S.rate) : S.rate;
 		$('wt-sv').textContent = shown.toFixed(2) + '×'; $('wt-speed').classList.toggle('wt-off', !ok);
 		['wt-slower', 'wt-faster', 'wt-sv'].forEach(function (id) { $(id).disabled = !ok; });
 		$('wt-speed').title = ok ? 'Speed: S slower, D faster, R normal' : 'This site\'s own player has its own speed setting';
@@ -625,6 +666,7 @@
 	var leftT = 0;
 	function curRate() {
 		try { if (yt && yt.getPlaybackRate) return yt.getPlaybackRate() || 1; } catch (e) {}
+		if (vm) return vm.rate || 1;
 		return vid && vid.playbackRate ? vid.playbackRate : 1;
 	}
 	function leftTick() {
@@ -702,7 +744,7 @@
 		});
 		sk.addEventListener('change', function () {
 			dragging = false; var p = position(); if (!p || !p.dur) return; var t = p.dur * sk.value / 1000;
-			try { if (yt && yt.seekTo) yt.seekTo(t, true); else if (vid) vid.currentTime = t; } catch (x) {}
+			try { if (yt && yt.seekTo) yt.seekTo(t, true); else if (vm) vm.p.setCurrentTime(t).catch(function () {}); else if (vid) vid.currentTime = t; } catch (x) {}
 			setTimeout(ctlTick, 120);
 		});
 		c.__drag = function () { return dragging; };
@@ -711,6 +753,7 @@
 	}
 	function playing() {
 		try { if (yt && yt.getPlayerState) return yt.getPlayerState() === 1; } catch (e) {}
+		if (vm) return !vm.paused;
 		return !!(vid && !vid.paused && !vid.ended);
 	}
 	function ctlWake() {
@@ -865,13 +908,14 @@
 	/* ---------- keys ---------- */
 	function togglePlay() {
 		if (yt && yt.getPlayerState) { try { if (yt.getPlayerState() === 1) yt.pauseVideo(); else yt.playVideo(); } catch (e) {} return true; }
+		if (vm) { if (vm.paused) vm.p.play().catch(function () {}); else vm.p.pause().catch(function () {}); return true; }
 		if (vid) { if (vid.paused) vid.play().catch(function () {}); else vid.pause(); return true; }
 		return false;
 	}
 	function seekBy(d) {
 		var p = position(); if (!p) return;
 		var t = Math.max(0, Math.min((p.dur || 1e9) - 0.5, p.pos + d));
-		if (yt && yt.seekTo) yt.seekTo(t, true); else if (vid) vid.currentTime = t;
+		if (yt && yt.seekTo) yt.seekTo(t, true); else if (vm) vm.p.setCurrentTime(t).catch(function () {}); else if (vid) vid.currentTime = t;
 		toast((d > 0 ? '+' : '−') + Math.abs(d) + ' s · ' + W.fmt(t));
 	}
 	document.addEventListener('keydown', function (e) {

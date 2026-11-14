@@ -274,7 +274,7 @@ APPS = {
                      tag="How loud is that video, really?", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
                      desc="Free YouTube audio analyzer: measure any video's loudness in LUFS, true peak and loudness range, and see its waveform, spectrogram, silences and clipping. Works with YouTube, 3Speak, Rumble, Odysee, BitChute, X and your own audio or video files. Nothing is uploaded.",
                      meta_desc="Measure a YouTube video's loudness (LUFS, true peak, LRA) and see its waveform, spectrogram, silences and clipping. Also 3Speak, Rumble, Odysee and your own files.",
-                     js_v="4", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+                     js_v="5", lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # MES Transcript & Timestamps (2026-11-14, mes.fm/transcript): YouTube captions via api/yt-transcript.js (YouTube's player API as its Android app,
     # no key), Whisper (transformers.js 3.7.6) in the browser for 3Speak / Odysee / files, chapter-timestamp drafts (TextTiling) + AI request, exports.
     # lib.js = MESTx, tests tool_apps_src/transcript-tests.js. MESYA (youtube-audio lib) parses links / reads 3Speak; convert-video engine for odd files.
@@ -290,7 +290,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="30", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
+                  js_v="32", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
