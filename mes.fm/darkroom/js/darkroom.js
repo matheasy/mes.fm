@@ -1400,7 +1400,7 @@ if (typeof module !== "undefined" && module.exports) module.exports = MESDR;
 		var qc = e.target.closest(".dr-qc"), c = e.target.closest(".dr-cell"); if (!c) return; var i = +c.getAttribute("data-i");
 		if (qc) { toggleQuick([view[i]]); return; }
 		/* touch: a tap on the photo that is already picked opens it in Develop (double-tap is hard on phones) */
-		if (gridTouch && i === cur && sel.size === 1 && !e.shiftKey && !e.ctrlKey && !e.metaKey) { setMod("develop"); return; }
+		if (gridTouch && i === cur && (sel.size === 0 || (sel.size === 1 && sel.has(view[i].key))) && !e.shiftKey && !e.ctrlKey && !e.metaKey) { setMod("develop"); return; }
 		clickSelect(i, e);
 		if (gridTouch && !(S_tipTap++)) toast("Tap it again to develop it.", 1800);
 	});

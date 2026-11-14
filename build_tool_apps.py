@@ -777,7 +777,7 @@ APPS = {
                      tag="Organise, develop and export your photos. No upload. No subscription.", accent="#c2690f", dark="#8a4708", tint="#fbefe1",
                      desc="Free photo library and RAW editor in your browser, an alternative to Adobe Lightroom Classic: open a folder, rate, flag, label and keyword your photos, then develop them with white balance, exposure, highlights, shadows, tone curves, colour mixer, colour grading, sharpening, noise reduction, crop, healing and masks. Batch export to JPEG, PNG or WebP. Your photos never leave your computer.",
                      meta_desc="Free Lightroom alternative in your browser: photo library, RAW developer, tone curves, HSL, colour grading, masks, healing and batch export. Nothing is uploaded.",
-                     js_v="7", js_parts=["engine.js", "ai.js"], lib_from=["image-converter", "exif-viewer"], **_photo_nav("darkroom")),
+                     js_v="8", js_parts=["engine.js", "ai.js"], lib_from=["image-converter", "exif-viewer"], **_photo_nav("darkroom")),
     "photo": dict(title="MES Photo Editor", src="photo-editor", page_title="Free Online Photo Editor with Layers",
                          tag="Pro tools. No upload. No sign-up.", accent="#7c3aed", dark="#5b21b6", tint="#f1eafe",
                          desc="Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.",
