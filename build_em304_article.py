@@ -91,6 +91,18 @@ CHILDREN = [
                 ("Odysee", "https://odysee.com/@mes:8/em-304-failure-temperature-columbia:c"),
                 ("BitChute", "https://www.bitchute.com/video/398VBStUrIHX/"),
                 ("Telegram", "https://t.me/meslinks/35702")]),
+    dict(slug="judy-wood-columbia-disaster", permlink="dr-judy-wood-solved-the-spa-342", youtube="R-_hxF-LV7M",
+         title="Dr. Judy Wood solved the Space Shuttle Columbia disaster 5 months before NASA did!",
+         notes=["Dr. Judy Wood solved the Space Shuttle Columbia Disaster right away!",
+                "CAIB Investigator Scott Hubbard April 15, 2003 presentation confirmed Dr. Judy Wood's analysis"],
+         fix={"NASA focused on the left wing 2 months later, but it wasn't until 5 months later that they obtained\n": "NASA focused on the left wing 2 months later, but it wasn't until 5 months later that they obtained experimental confirmation that the foam strike would cause extensive damage to the wing\n",
+              "Thermocouple data showing a temperature spike in the left wing at around 205 °F, just as Dr. Judy Wo\n": "Thermocouple data showing a temperature spike in the left wing at around 205 °F, just as Dr. Judy Wood had already calculated!\n",
+              "The spike in temperature means the superheated plasma had entered the wing, but the Space Shuttle ke\n": "The spike in temperature means the superheated plasma had entered the wing, but the Space Shuttle kept flying for another 400+ seconds\n",
+              "DJW's 205 °F annotation is a direct visual link between the real flight data and her idealized tube\n": "DJW's 205 °F annotation is a direct visual link between the real flight data and her idealized tube problem calculation\n"},
+         links=[("Rumble", "https://rumble.com/v7idb9e-dr.-judy-wood-solved-the-space-shuttle-columbia-disaster-5-months-before-na.html"),
+                ("Odysee", "https://odysee.com/@mes:8/judy-wood-columbia-disaster:c"),
+                ("BitChute", "https://www.bitchute.com/video/jaW1WAPf0tJX/"),
+                ("Telegram", "https://t.me/meslinks/35712")]),
 ]
 CHILD_SRC = os.path.join(SRC, "children")
 

@@ -42,7 +42,7 @@ Later in this video, I cover the Space Shuttle Columbia disaster and some of the
 - [2:19:47](https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=8387) Grok AI List of Controversies Surrounding the Disaster
 - [2:28:26](https://3speak.tv/watch?v=mes/exam-problem-by-dr-judy-woo-59&t=8906) Outro
 
-![Space Shuttle Columbia.jpeg](https://images.3speak.tv/images/1793338697652-09f1672ac6a230fc.webp)
+![Space Shuttle Columbia.jpeg](https://files.peakd.com/file/peakd-hive/mes/23yJTMbM7K7cff13rPe2SyPp3Fd1479doYpXz3kcLhK2NyD3dA3eNYYTc3wV6KwVjz2st.jpeg)
 
 #math #science #nasa #space #engineering 
 
@@ -115,6 +115,8 @@ Footage from February 1, 2003 of the disaster can be seen at the 1:48 timestamp,
 >Here is footage of the thermal tile damage during the launch on January 16, 2003, in which a piece of foam from the rocket booster breaks off and strikes the left wing: [https://youtu.be/IgQ3ekcvyRA](https://youtu.be/IgQ3ekcvyRA)
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23ynKzci2WjGwNf1XSFinVNDLNmGJv5s8VcgXn8ECAfDmPBTajWeyTZqxZvmHc82KYKEM.png)
+
+![image.png](https://files.peakd.com/file/peakd-hive/mes/23wqbcWDY56pF4cNvadd3x1iidQTJ8Lp6bpzEpxq1acSqDuZGjoyRunpy4azAernv9stp.png)
 
 # Problem 1 of EM 304 – Test #1 – February 6, 2003
 
@@ -485,7 +487,7 @@ Here is a **Gemini AI** summary of emails that Dr. Judy Wood sent me regarding h
     - To help students grasp concepts like shear stress versus normal stress, she famously used visual aids in her classes, including Roadrunner cartoons ([such as the Coyote cutting a circular disk out of a bridge](https://youtu.be/OmVCF0nmslU?t=144)) to teach them how to identify the **correct surface area**.
     - Around half of her students solved it completely, though many initially doubted their calculations because the resulting failure temperature (~205°F) seemed surprisingly low.
 - **NASA's Timeline to the Same Conclusion:**
-    - It took NASA **two months** following the disaster (upon analyzing flight-data-recorder equivalent thermocouple data) to officially update and confirm the exact failure location on the wing—matching the conclusion Dr. Wood had already mapped out for her students' exam.
+    - It took NASA **two months** following the disaster (upon analyzing flight-data-recorder equivalent thermocouple data) to ~~officially update and confirm the exact failure location on the wing~~ focus their investigation on the left wing, and five months until they got experimental confirmation of the extensive damage caused by a foam strike—matching the conclusion Dr. Wood had already mapped out for her students' exam.
 - **Other Notable Details:**
     - **"The Disaster Queen":** Dr. Wood was known by this nickname for her ability to analyze structural failures and apply them to coursework.
     - **NASA's Internal Awareness & Cover-Up:** She noted that NASA management was aware of the foam strike early on and even discussed launching a "care package" of supplies to the space station that could have been redirected to the shuttle, but chose not to inform the crew of the serious danger. Furthermore, multiple requests by outside groups for spy-satellite imaging of the wing were cancelled by higher-ups.
@@ -505,7 +507,9 @@ Note the landing gear door, showing the damage shown is to the left wing, exactl
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/EoCpNqtJud3tzUTFamVrXVugcNxNAxfSsjEcnYuYLMkVEweDHgFNRv2g2ZrHCMe9sCH.png)
 
-Note that the above image is [erroneously showing the right wing](https://gemini.google.com/share/d/17N_c4Rnm9fAxj0X-iToN91XBvVFSwVJN).
+Note that the image above is indeed of the left wing, [as illustrated below](https://www.youtube.com/watch?v=oNmR2YZO2gw&t=743s).
+
+![image.png](https://files.peakd.com/file/peakd-hive/mes/23y8sogpMP8RpToYweGkJLSYAVmEDuS6zmwdTKBzbYRdS684MFdzwvmrBJhMnk71TBtXH.png)
 
 Here is a [Grok AI explanation](https://grok.com/share/c2hhcmQtMg_fc040234-028b-42e7-8409-c6119ec15c3a) for the above chart, since it doesn't come with any text.
 

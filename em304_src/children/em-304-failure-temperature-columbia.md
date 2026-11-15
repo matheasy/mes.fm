@@ -6,38 +6,36 @@ Watch on: [Notes](https://mes.fm/em-304-failure-temperature-columbia) · [YouTub
 
 Timestamps:
 
-#### Video Chapters
-
 - [0:00](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698) Problem 1 of EM 304 on February 6, 2003: Possible cause of failure is the loss of a thermal tile
 - [1:01](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=61) Problem assumptions: Aluminum tube is heated uniformly while the remaining structure is at 0° F
 - [3:26](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=206) Given three volume elements to examine the corresponding stresses and temperatures at failure
 - [6:20](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=380) Material properties for the support plates and aluminum tube
-- [9:33](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=573) Three questions: Determine maximum temperature of the aluminum tube before failure, first failure lo
-- [11:17](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=677) Location descriptions: Point A is inside the top plate, B is the surface between the plate and tube,
+- [9:33](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=573) Three questions: Determine maximum temperature of the aluminum tube before failure, first failure location, stress states at the three volume elements, and draw these stress state diagrams.
+- [11:17](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=677) Location descriptions: Point A is inside the top plate, B is the surface between the plate and tube, Point C is the outer surface of the aluminum tube.
 - [12:02](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=722) Solution: I used Dr. Judy Wood's solution key and Grok AI's assistance in this solution
-- [12:20](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=740) Thermal expansion properties: Support plates are idealized as perfectly rigid and non-expanding, whi
+- [12:20](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=740) Thermal expansion properties: Support plates are idealized as perfectly rigid and non-expanding, while the aluminum tube uses the 2014-T6 aluminum alloy properties.
 - [12:38](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=758) Strength limits of the plates and tube. Note that ksi = kips per square inch = 1000 psi
 - [14:52](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=892) Solution to (a): Maximum temperature without failure
-- [17:33](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1053) The aluminum tube is assumed to be of constant length, which means the thermal expansion displacemen
+- [17:33](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1053) The aluminum tube is assumed to be of constant length, which means the thermal expansion displacement is equal to the resulting compressive displacement.
 - [20:17](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1217) Equation for thermal displacement involving the coefficient of linear thermal expansion
 - [22:21](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1341) Equation for Young's Modulus and compressive stress
 - [24:30](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1470) Rearrange to obtain our temperature increase formula (and force that develops in the tube)
 - [27:16](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1636) Candidate 1: Aluminum tube in compression (point C)
 - [29:07](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1747) Maximum temperature at failure at point C is 442.2 °F
 - [32:04](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=1924) Candidate 2: Plate bearing at the tube end (point B)
-- [34:40](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2080) Plates are idealized as rigid and non-expanding, so we have to scale up the temperature of the alumi
+- [34:40](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2080) Plates are idealized as rigid and non-expanding, so we have to scale up the temperature of the aluminum tube by the ratio of the plate to tube compressive strength limits and obtain failure temperature of 515.9 °F at point B.
 - [35:47](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2147) Candidate 3: Shear at the plate connection (point A)
 - [37:19](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2239) Free body diagram of the shear stress in the plate due to the compressive stress in the tube
 - [42:27](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2547) "Unrolling" the circular shear stress to obtain a rectangle corresponding to the shear area
-- [45:40](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2740) By equilibrium, we obtain a formula for the compressive stress in the tube as a function of the shea
+- [45:40](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2740) By equilibrium, we obtain a formula for the compressive stress in the tube as a function of the shear stress in the plate and the ratio of the shear area to compressive area
 - [49:00](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=2940) Temperature at failure at point A is 205.03 °F
-- [53:30](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3210) Solution to (b): It fails at point A first, shear in the plate, because its failure temperature is t
+- [53:30](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3210) Solution to (b): It fails at point A first, shear in the plate, because its failure temperature is the lowest
 - [54:33](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3273) Solution to part (c): Stress state at the failure temperature
-- [55:46](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3346) Obtain compressive stress in the aluminum from the shear stress in the plate using our earlier deriv
+- [55:46](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3346) Obtain compressive stress in the aluminum from the shear stress in the plate using our earlier derived formula, and get 27.8 ksi, which is also the uniaxial compressive stress at point C and bearing stress at point B. This stress is well below the plate and tube allowable compressive stresses
 - [59:02](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3542) Solution to (d): Volume-element sketches
 - [59:38](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3578) Note: The "1 + 2" are actually points Dr. Judy Wood gives when grading tests
 - [1:03:30](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3810) Shear stress diagram needs to have arrows be in equilibrium aka not rotating
-- [1:06:02](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3962) Summary of the Engineering Logic: Compressive stress in the tube causes failure in shear at the plat
+- [1:06:02](https://3speak.tv/watch?v=mes/em-304-exam-problem-failure-698&t=3962) Summary of the Engineering Logic: Compressive stress in the tube causes failure in shear at the plate, even though the compressive stress is far below its strength limit
 
 ![EM 304 Exam Problem: Failure Temperature of the Space Shuttle Columbia](https://images.3speak.tv/images/1794372636679-d2d7e42831803816.webp)
 
