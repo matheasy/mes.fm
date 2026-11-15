@@ -27,6 +27,15 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
                 primaryButtonLabel: .init(text: "OK", color: bg), primaryButtonBackgroundColor: accent)
         }
         let after = left - 1
+        let pause = Shared.prefs.pause
+        let start = Shared.waits[l.id.uuidString]
+        let now = Date().timeIntervalSince1970
+        let started = start != nil && now - (start ?? 0) < 600
+        let wait = Logic.waitLeft(start: start, pause: pause, now: now)
+        let openText: String
+        if pause == 0 || (started && wait == 0) { openText = "Open (\(left) left)" }
+        else if !started { openText = "Breathe: wait \(pause < 60 ? "\(pause) s" : "\(pause / 60) min") to open" }
+        else { openText = "Wait \(wait) s more, then tap again" }
         return ShieldConfiguration(
             backgroundBlurStyle: .systemUltraThinMaterialDark, backgroundColor: bg,
             icon: UIImage(systemName: "hand.raised.fill")?.withTintColor(accent, renderingMode: .alwaysOriginal),
@@ -34,7 +43,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             subtitle: .init(text: "This would be open \(used + 1) of \(l.limit) today, for \(l.session) minutes. "
                             + (after == 0 ? "It's your last one." : "\(after) left after this one."), color: UIColor(white: 0.8, alpha: 1)),
             primaryButtonLabel: .init(text: "Not now", color: bg), primaryButtonBackgroundColor: accent,
-            secondaryButtonLabel: .init(text: "Open (\(left) left)", color: accent))
+            secondaryButtonLabel: .init(text: openText, color: accent))
     }
 
     override func configuration(shielding application: Application) -> ShieldConfiguration {

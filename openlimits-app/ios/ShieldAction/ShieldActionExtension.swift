@@ -1,3 +1,4 @@
+import Foundation
 import ManagedSettings
 
 /// The shield's buttons. "Not now" (the big one) closes the app; "Open" uses one of today's opens.
@@ -5,6 +6,20 @@ class ShieldActionExtension: ShieldActionDelegate {
     private func act(_ action: ShieldAction, _ l: LimitItem?, _ done: @escaping (ShieldActionResponse) -> Void) {
         guard action == .secondaryButtonPressed, let l, Logic.left(Shared.days, Logic.dayKey(), l) > 0 else {
             done(.close); return
+        }
+        // A wait before opening: the first tap starts it, the shield then shows how long is left; a tap after it opens.
+        let pause = Shared.prefs.pause
+        let now = Date().timeIntervalSince1970
+        let key = l.id.uuidString
+        if pause > 0 {
+            var w = Shared.waits
+            let left = Logic.waitLeft(start: w[key], pause: pause, now: now)
+            if w[key] == nil || now - (w[key] ?? 0) >= 600 {
+                w[key] = now; Shared.waits = w
+                Notes.waitDone(l, after: pause)
+                done(.defer); return   // .defer re-draws the shield with the time left
+            }
+            if left > 0 { done(.defer); return }
         }
         // Takes the shield down; .defer makes the system look again and show the app.
         done(Shields.open(l, extra: false) ? .defer : .close)

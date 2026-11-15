@@ -28,6 +28,21 @@ struct DayCount: Codable, Equatable {
 
 struct Prefs: Codable, Equatable {
     var strict = false
+    /// Seconds to wait on the lock screen before "Open" works (0 = no wait).
+    var pause = 0
+    /// A notification after each open: "Instagram: 3/8 opens used".
+    var notify = true
+    /// Warn when this many opens or fewer are left (0 = never).
+    var warnAt = 3
+
+    init() {}
+    init(from d: Decoder) throws {
+        let c = try d.container(keyedBy: CodingKeys.self)
+        strict = (try? c.decode(Bool.self, forKey: .strict)) ?? false
+        pause = (try? c.decode(Int.self, forKey: .pause)) ?? 0
+        notify = (try? c.decode(Bool.self, forKey: .notify)) ?? true
+        warnAt = (try? c.decode(Int.self, forKey: .warnAt)) ?? 3
+    }
 }
 
 enum Logic {
@@ -77,6 +92,22 @@ enum Logic {
         return old.on && (!new.on || new.limit > old.limit || new.session > old.session)
     }
 
+    /// Text of the notification after an open: (title, body).
+    static func openMessage(_ name: String, used: Int, limit: Int, extra: Bool, warnAt: Int) -> (String, String) {
+        let left = max(0, limit - used)
+        if extra { return ("\(name): extra open", "Over today's limit. It locks again when the open's time is up.") }
+        if left == 0 { return ("\(name): last open used", "\(used)/\(limit) opens used. It locks until midnight.") }
+        if warnAt > 0 && left <= warnAt { return ("WARNING: \(left) \(left == 1 ? "open" : "opens") left of \(name)", "\(used)/\(limit) opens used today.") }
+        return ("\(name): \(used)/\(limit) opens used", "\(left) left today.")
+    }
+
+    /// Seconds still to wait before "Open" works (0 = ready). The wait starts at the first tap on Open.
+    static func waitLeft(start: Double?, pause: Int, now: Double) -> Int {
+        guard pause > 0 else { return 0 }
+        guard let start, now - start < 600 else { return pause }   // no wait started (or an old one): the full wait
+        return max(0, Int((Double(pause) - (now - start)).rounded(.up)))
+    }
+
     /// Keep 120 days.
     static func prune(_ days: [String: [String: DayCount]], today: Date = Date()) -> [String: [String: DayCount]] {
         let cut = dayKey(Calendar.current.date(byAdding: .day, value: -120, to: today)!)
@@ -104,6 +135,8 @@ enum Shared {
     static var since: String {
         get { if let s = d.string(forKey: "since") { return s }; let s = Logic.dayKey(); d.set(s, forKey: "since"); return s }
     }
+    /// limit id -> when the wait on the lock screen started (seconds since 1970).
+    static var waits: [String: Double] { get { get("waits", [:]) } set { put("waits", newValue) } }
     static var best: Int { get { d.integer(forKey: "best") } set { d.set(newValue, forKey: "best") } }
 
     static func limit(containing app: ApplicationToken?, category: ActivityCategoryToken? = nil, web: WebDomainToken? = nil) -> LimitItem? {
@@ -159,6 +192,8 @@ enum Shields {
         center.stopMonitoring([name])
         do { try center.startMonitoring(name, during: sched) } catch { return false }
         Shared.addOpen(l.id, extra: extra)
+        var w = Shared.waits; w[l.id.uuidString] = nil; Shared.waits = w
+        Notes.afterOpen(l, extra: extra)
         var s = Shared.sessions; s[l.id.uuidString] = end.timeIntervalSince1970; Shared.sessions = s
         unlock(l.id)
         return true
@@ -198,4 +233,38 @@ enum Shields {
         unlock(l.id)
         DeviceActivityCenter().stopMonitoring([DeviceActivityName("s-" + l.id.uuidString)])
     }
+}
+
+import UserNotifications
+
+/// Local notifications (the app asks for permission; the shield extensions post them).
+enum Notes {
+    static func name(_ l: LimitItem) -> String { l.name.isEmpty ? (l.appCount == 1 ? "This app" : "These apps") : l.name }
+
+    static func afterOpen(_ l: LimitItem, extra: Bool) {
+        let p = Shared.prefs
+        guard p.notify || extra || p.warnAt > 0 else { return }
+        let used = Logic.used(Shared.days, Logic.dayKey(), l.id).o
+        let left = max(0, l.limit - used)
+        let warn = extra || left == 0 || (p.warnAt > 0 && left <= p.warnAt)
+        if !p.notify && !warn { return }
+        let (t, b) = Logic.openMessage(name(l), used: used, limit: l.limit, extra: extra, warnAt: p.warnAt)
+        post(id: "open-" + l.id.uuidString, title: t, body: b, sound: warn, at: nil)
+    }
+
+    /// "You can open it now" when a lock-screen wait is over.
+    static func waitDone(_ l: LimitItem, after seconds: Int) {
+        post(id: "wait-" + l.id.uuidString, title: "\(name(l)): the wait is over", body: "Go back and tap Open to use one of today's opens.", sound: true, at: seconds)
+    }
+
+    static func post(id: String, title: String, body: String, sound: Bool, at: Int?) {
+        let c = UNMutableNotificationContent()
+        c.title = title; c.body = body
+        if sound { c.sound = .default }
+        if #available(iOS 15.0, *) { c.interruptionLevel = sound ? .timeSensitive : .passive }
+        let trig = at.map { UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(max(1, $0)), repeats: false) }
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: c, trigger: trig))
+    }
+
+    static func ask() { UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in } }
 }

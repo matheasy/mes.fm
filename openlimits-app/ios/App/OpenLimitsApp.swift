@@ -54,6 +54,7 @@ final class Model: ObservableObject {
     }
 
     func setStrict(_ v: Bool) { var p = Shared.prefs; p.strict = v; Shared.prefs = p; refresh() }
+    func setPrefs(_ f: (inout Prefs) -> Void) { var p = Shared.prefs; f(&p); Shared.prefs = p; refresh(); if p.notify || p.warnAt > 0 { Notes.ask() } }
 
     func openAnyway(_ l: LimitItem) {
         if !Shields.open(l, extra: true) { error = "Couldn't start the extra open. Try again." }
@@ -126,6 +127,23 @@ struct ContentView: View {
                             Text("No \"open anyway\" when locked, and loosening a limit makes you wait 30 seconds.").font(.caption).foregroundStyle(.secondary)
                         }
                     }
+                }
+
+                Section {
+                    Picker("Wait before opening", selection: Binding(get: { m.prefs.pause }, set: { v in m.setPrefs { $0.pause = v } })) {
+                        ForEach([0, 5, 10, 15, 30, 60, 120], id: \.self) { v in Text(v == 0 ? "None" : v < 60 ? "\(v) s" : "\(v / 60) min").tag(v) }
+                    }
+                    Toggle(isOn: Binding(get: { m.prefs.notify }, set: { v in m.setPrefs { $0.notify = v } })) {
+                        VStack(alignment: .leading) {
+                            Text("Tell me each time I open one")
+                            Text("A quiet note like \"Instagram: 3/8 opens used\".").font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    Picker("Warn me when opens left are", selection: Binding(get: { m.prefs.warnAt }, set: { v in m.setPrefs { $0.warnAt = v } })) {
+                        ForEach([0, 1, 2, 3, 5], id: \.self) { v in Text(v == 0 ? "Never" : "\(v)").tag(v) }
+                    }
+                } header: { Text("Wait and notifications") } footer: {
+                    Text("With a wait, the first tap on Open starts it and a notification tells you when it's over. Notifications show on the lock screen; iPhone has no status-bar counter like Android.")
                 }
 
                 Section("How it works") {
