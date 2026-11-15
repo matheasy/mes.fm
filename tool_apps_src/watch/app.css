@@ -288,5 +288,15 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 /* time left at the current speed */
 #wt .wt-left[hidden] {display:none;}
 #wt .wt-left {position:absolute;top:8px;right:8px;z-index:6;font:inherit;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;padding:6px 9px;border:0;border-radius:8px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;opacity:.75;transition:opacity .2s;-webkit-user-select:none;user-select:none;}
+#wt .wt-left {display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:5px 8px;}
+#wt .wt-left .wt-leftr {font-size:.82em;font-weight:500;opacity:.85;}
+#wt .wt-player:not(.mes-pfill) .wt-left {padding:3px 6px;}
+.wt-ytcover[hidden], .wt-ytnb[hidden] {display:none !important;}
+.wt-ytcover {position:absolute;left:0;top:44px;width:min(480px,62%);height:118px;z-index:5;background:rgba(10,10,12,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:0 12px 12px 0;pointer-events:none;}
+#wt .wt-ytcover .wt-ytcx {pointer-events:auto;position:absolute;top:4px;right:4px;width:26px;height:26px;padding:0;border:0;border-radius:50%;font:inherit;font-size:13px;line-height:1;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;opacity:.7;}
+#wt .wt-ytcover .wt-ytcx:hover {opacity:1;}
+#wt .wt-ytnb {position:absolute;left:8px;bottom:58px;z-index:6;font:inherit;font-size:12px;font-weight:600;padding:5px 9px;border:0;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;}
 #wt .wt-left:hover, #wt .wt-left:focus-visible {opacity:1;}
 #wt .wt-player:not(.mes-pfill) .wt-left {font-size:11px;padding:4px 7px;top:6px;right:6px;}
+html body.dark-mode #wt .wt-ytcover {background:rgba(10,10,12,.55);}
+html body.dark-mode #wt .wt-ytcover .wt-ytcx, html body.dark-mode #wt .wt-ytnb {background:rgba(0,0,0,.6);color:#fff;}

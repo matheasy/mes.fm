@@ -163,7 +163,7 @@
 				yt = new YT.Player('wt-yt', { host: S.priv ? 'https://www.youtube-nocookie.com' : 'https://www.youtube.com', videoId: cur.id, width: '100%', height: '100%',
 					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3, cc_load_policy: S.cc ? 1 : 0 },
 					events: {
-						onReady: function (e) { if (g !== gen) return; try { e.target.setPlaybackRate(W.ytSpeed(S.rate)); e.target.playVideo(); var d = e.target.getVideoData(); if (d && d.title) setMeta(cur.key, d.title, cur.th); } catch (x) {} syncSpeed(); },
+						onReady: function (e) { if (g !== gen) return; try { var ar = e.target.getAvailablePlaybackRates && e.target.getAvailablePlaybackRates(); if (ar && ar.length) W.ytMax = Math.max(2, Math.max.apply(null, ar)); } catch (x) {} ytNote(); try { e.target.setPlaybackRate(W.ytSpeed(S.rate)); e.target.playVideo(); var d = e.target.getVideoData(); if (d && d.title) setMeta(cur.key, d.title, cur.th); } catch (x) {} syncSpeed(); },
 						onStateChange: function (e) { if (g === gen && e.data === 0) ended(); },
 						onApiChange: function () { if (g === gen && S.cc) ccPick(false); },
 						onError: function (e) { if (g === gen) failed(e && (e.data === 100 || e.data === 5) ? 'YouTube says this video is unavailable (removed or private).' : 'YouTube would not play this video here (the owner may have turned off playing on other sites).'); }
@@ -263,10 +263,10 @@
 
 	/* ---------- speed ---------- */
 	function setRate(r) {
-		r = Math.round(Math.max(0.25, Math.min(4, r)) * 100) / 100; S.rate = r; save();
-		if (vid) vid.playbackRate = r;
+		r = Math.round(Math.max(0.25, Math.min(W.SPEED_MAX, r)) * 100) / 100; S.rate = r; save();
+		if (vid) { try { vid.playbackRate = r; } catch (e) {} if (r > 4 && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('Above 4× most browsers turn the sound off'); } }
 		if (vm) { vm.p.setPlaybackRate(W.vmSpeed(r)).catch(function () { if (Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('The owner of this Vimeo video has turned off speed control'); } }); if ((r < 0.5 || r > 2) && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('Vimeo\'s player goes from 0.5× to 2×'); } }
-		if (yt && yt.setPlaybackRate) { try { yt.setPlaybackRate(W.ytSpeed(r)); } catch (e) {} if (r > 2 && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('YouTube\'s player goes up to 2×'); } }
+		if (yt && yt.setPlaybackRate) { try { yt.setPlaybackRate(W.ytSpeed(r)); } catch (e) {} if (r > W.ytMax && Date.now() - rateNote > 4000) { rateNote = Date.now(); toast('YouTube\'s player goes up to ' + W.ytMax + '× (BitChute, 3Speak, Odysee and files go up to 16×)'); } }
 		syncSpeed();
 	}
 	// 0.05 steps (snapped to the 0.05 grid so 1.07 goes to 1.10 / 1.05)
@@ -662,6 +662,23 @@
 		st.appendChild(mini); ctlBar(st); spdTab(st); leftPill(st); paintZm(); applyZoom();
 	}
 	var zmGone = false;
+	/* YouTube's own notice panels (e.g. "Federal Emergency Management Agency · ...") sit inside YouTube's frame, where a page
+	   cannot reach; a dark blurred patch over that corner hides it. Offered for a few seconds when a YouTube video starts;
+	   S.ytCover = keep the patch on for every YouTube video. */
+	var ytNoteT = 0;
+	function ytNote() {
+		var st = $('wt-stage'); if (!st || !yt) return;
+		var old = st.querySelector('.wt-ytcover'); if (old) old.remove();
+		var c = document.createElement('div'); c.className = 'wt-ytcover'; c.hidden = !S.ytCover;
+		c.innerHTML = '<button type="button" class="wt-ytcx" title="Show YouTube\'s notice again" aria-label="Remove the cover">✕</button>';
+		var b = document.createElement('button'); b.type = 'button'; b.className = 'wt-ytnb'; b.hidden = !!S.ytCover;
+		b.textContent = '✕ Hide YouTube notice'; b.title = 'Cover YouTube\'s information panel (top left) for every YouTube video';
+		[c, b].forEach(function (el) { ['pointerdown', 'dblclick', 'touchstart'].forEach(function (ev) { el.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); }); });
+		c.querySelector('button').addEventListener('click', function (e) { e.stopPropagation(); S.ytCover = false; save(); c.hidden = true; b.hidden = false; clearTimeout(ytNoteT); ytNoteT = setTimeout(function () { b.hidden = true; }, 8000); });
+		b.addEventListener('click', function (e) { e.stopPropagation(); S.ytCover = true; save(); c.hidden = false; b.hidden = true; });
+		st.appendChild(c); st.appendChild(b);
+		clearTimeout(ytNoteT); if (!S.ytCover) ytNoteT = setTimeout(function () { b.hidden = true; }, 15000);
+	}
 	/* time left at the current speed, top right of the picture (click: time left <-> clock time it ends) */
 	var leftT = 0;
 	function curRate() {
@@ -677,8 +694,11 @@
 		if (S.leftClock) {
 			txt = 'Ends ' + new Date(Date.now() + sec * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 		} else txt = W.fmt(Math.ceil(sec)) + ' left';
-		if (Math.abs(r - 1) > 0.001) txt += ' at ' + r.toFixed(2) + '×';
-		el.textContent = txt; el.hidden = false;
+		var sp = Math.abs(r - 1) > 0.001 ? '(' + r.toFixed(2) + '×)' : '';
+		var key = txt + '|' + sp;
+		if (el._k !== key) { el._k = key; el.innerHTML = ''; var a = document.createElement('span'); a.textContent = txt; el.appendChild(a);
+			if (sp) { var b = document.createElement('span'); b.className = 'wt-leftr'; b.textContent = sp; el.appendChild(b); } }
+		el.hidden = false;
 	}
 	function leftPill(st) {
 		var el = document.createElement('button'); el.type = 'button'; el.className = 'wt-left'; el.hidden = true;

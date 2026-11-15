@@ -22,7 +22,7 @@ it = W.item('https://x.com/mes/status/1234567890123'); eq(W.mode(it), 'embed', '
 it = W.item('https://example.com/clip.mp4'); eq([W.mode(it), it.t], ['file', 'clip.mp4'], 'direct');
 ok(W.item('notalink').err, 'bad link');
 ok(W.canSpeed(W.item('https://youtu.be/dQw4w9WgXcQ')) && !W.canSpeed(W.item('https://rumble.com/embed/v4abc12/')), 'canSpeed');
-eq(W.ytSpeed(3), 2, 'yt speed cap');
+eq(W.ytSpeed(3), 2, 'yt speed cap'); eq(W.SPEED_MAX, 16, 'own player max');
 
 const m = W.parseMany('https://youtu.be/dQw4w9WgXcQ\nhttps://www.youtube.com/watch?v=dQw4w9WgXcQ, https://3speak.tv/watch?v=mes/x1 hello ftp://x.y/z');
 eq(m.items.length, 2, 'dedupe + parse many'); eq(m.errors.length, 1, 'ftp error');

@@ -595,8 +595,18 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 /* time left at the current speed */
 #wt .wt-left[hidden] {display:none;}
 #wt .wt-left {position:absolute;top:8px;right:8px;z-index:6;font:inherit;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;padding:6px 9px;border:0;border-radius:8px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;opacity:.75;transition:opacity .2s;-webkit-user-select:none;user-select:none;}
+#wt .wt-left {display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:5px 8px;}
+#wt .wt-left .wt-leftr {font-size:.82em;font-weight:500;opacity:.85;}
+#wt .wt-player:not(.mes-pfill) .wt-left {padding:3px 6px;}
+.wt-ytcover[hidden], .wt-ytnb[hidden] {display:none !important;}
+.wt-ytcover {position:absolute;left:0;top:44px;width:min(480px,62%);height:118px;z-index:5;background:rgba(10,10,12,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:0 12px 12px 0;pointer-events:none;}
+#wt .wt-ytcover .wt-ytcx {pointer-events:auto;position:absolute;top:4px;right:4px;width:26px;height:26px;padding:0;border:0;border-radius:50%;font:inherit;font-size:13px;line-height:1;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;opacity:.7;}
+#wt .wt-ytcover .wt-ytcx:hover {opacity:1;}
+#wt .wt-ytnb {position:absolute;left:8px;bottom:58px;z-index:6;font:inherit;font-size:12px;font-weight:600;padding:5px 9px;border:0;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;}
 #wt .wt-left:hover, #wt .wt-left:focus-visible {opacity:1;}
 #wt .wt-player:not(.mes-pfill) .wt-left {font-size:11px;padding:4px 7px;top:6px;right:6px;}
+html body.dark-mode #wt .wt-ytcover {background:rgba(10,10,12,.55);}
+html body.dark-mode #wt .wt-ytcover .wt-ytcx, html body.dark-mode #wt .wt-ytnb {background:rgba(0,0,0,.6);color:#fff;}
 
 
 	@media print {
@@ -760,6 +770,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #wt .wt-spd.wt-spdL button{border-right:1px solid #404b58}
 	body.dark-mode #wt .wt-spd .wt-spdv{background:rgba(82,82,82,0.55)}
 	body.dark-mode #wt .wt-left{background:rgba(82,82,82,0.60)}
+	body.dark-mode .wt-ytcover{background:rgba(74,74,89,0.55)}
+	body.dark-mode #wt .wt-ytcover .wt-ytcx{background:rgba(82,82,82,0.55)}
+	body.dark-mode #wt .wt-ytnb{background:rgba(82,82,82,0.65)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -774,7 +787,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta name="twitter:image" content="https://mes.fm/watch/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Watch">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Watch", "url": "https://mes.fm/watch", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Watch", "url": "https://mes.fm/watch", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 16x. Nothing is uploaded."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -971,7 +984,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Watch YouTube, 3Speak, Rumble and Odysee Videos Without Distractions</h1>                                        <p class="page-description">Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 4x. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Watch YouTube, 3Speak, Rumble and Odysee Videos Without Distractions</h1>                                        <p class="page-description">Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 16x. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu wt" id="wt">
 		<form class="tu-card wt-add" id="wt-form" autocomplete="off">
@@ -1086,7 +1099,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h3>What works with each site</h3>
 			<dl>
 				<dt>YouTube</dt><dd>Played with YouTube's own player in privacy-enhanced mode (youtube-nocookie.com). Speed from 0.25× to 2×, resume, and the next video starts by itself when one ends. Shorts and live links work too.</dd>
-				<dt>3Speak and Odysee</dt><dd>The page plays the video file straight from the site in a normal player, so any speed from 0.25× to 4×, resume and auto-next all work.</dd>
+				<dt>3Speak and Odysee</dt><dd>The page plays the video file straight from the site in a normal player, so any speed from 0.25× to 16× (most browsers turn the sound off above 4×), resume and auto-next all work.</dd>
 				<dt>Rumble, BitChute and X</dt><dd>These play in the site's own small player, so the speed buttons and resume don't reach inside them. For Rumble use the <em>Embed</em> link (Share, then Embed): a normal rumble.com page link can't be played on another site, so the page offers to open it on Rumble instead.</dd>
 				<dt>Video files</dt><dd>A link straight to an .mp4, .webm or .mp3 file plays in the normal player, if the site that has the file allows it.</dd>
 			</dl>
@@ -1192,7 +1205,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=32" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=33" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

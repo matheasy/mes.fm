@@ -22,7 +22,9 @@
 	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "bitchute" || m === "vimeo"; };
 	W.vmSpeed = function (r) { return Math.max(0.5, Math.min(2, r)); };   // Vimeo's player: 0.5x to 2x
 	W.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
-	W.ytSpeed = function (r) { return Math.max(0.25, Math.min(2, r)); };   // YouTube's player stops at 2x
+	W.ytMax = 2;   // YouTube's embed offers up to 2x; raised on ready if getAvailablePlaybackRates() offers more
+	W.ytSpeed = function (r) { return Math.max(0.25, Math.min(W.ytMax, r)); };
+	W.SPEED_MAX = 16;   // our own <video> (browsers allow up to 16x; Chrome mutes the sound above 4x)
 
 	/* one link -> item {k, id, u (link to open), e (embed url), s (start s), key, t (title), th (thumbnail)} or {err} */
 	W.item = function (text) {
