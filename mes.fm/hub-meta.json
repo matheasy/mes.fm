@@ -1023,7 +1023,7 @@
 },
 "/videospeed":{
 "added":"2026-10-11",
-"updated":"2026-11-08",
+"updated":"2026-11-15",
 "type":"Browser extension"
 },
 "/volume-booster":{
@@ -1038,7 +1038,7 @@
 },
 "/watch":{
 "added":"2026-11-07",
-"updated":"2026-11-14",
+"updated":"2026-11-15",
 "type":"Tool"
 },
 "/water-intake-calculator":{

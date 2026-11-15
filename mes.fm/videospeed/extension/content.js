@@ -349,5 +349,38 @@
     if (ui) { ui.host.remove(); ui = null; }
   }
 
+  // ---- MES Watch bridge -------------------------------------------------------------------------------------------------
+  // YouTube's embedded player stops at 2x. mes.fm/watch asks this frame (the YouTube iframe, where it cannot reach) to set
+  // the <video>'s own speed: {mesvs: 'ping'} -> {mesvs: 'ack'}, {mesvs: 'rate', r} sets it (above 2x it is held there, since
+  // YouTube's player puts its own speed back on seeks / quality changes). Only messages from the parent page on mes.fm.
+  var bridgeWant = 0;
+  function bridgeVideo() {
+    var el = null;
+    if (media.size) el = pickActive();
+    if (!el) el = document.querySelector('video');
+    if (el && !el.__mesBridged) {
+      el.__mesBridged = true;
+      el.addEventListener('ratechange', function (e) {
+        if (bridgeWant > 2 && Math.abs(el.playbackRate - bridgeWant) > 0.001) { e.stopImmediatePropagation(); try { el.playbackRate = bridgeWant; } catch (x) { /* ignore */ } }
+      }, true);
+    }
+    return el;
+  }
+  function bridgeOk(o) { return o === 'https://mes.fm' || /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(o); }
+  if (window.parent !== window) {
+    window.addEventListener('message', function (e) {
+      var d = e.data;
+      if (!d || typeof d !== 'object' || typeof d.mesvs !== 'string' || e.source !== window.parent || !bridgeOk(e.origin)) return;
+      var el = bridgeVideo(), r = 0;
+      if (d.mesvs === 'rate' && el) {
+        r = V.clamp(d.r);
+        bridgeWant = r;
+        el.__mesWant = r;
+        try { el.playbackRate = r; } catch (x) { /* ignore */ }
+      }
+      try { window.parent.postMessage({ mesvs: 'ack', video: !!el, r: el ? el.playbackRate : 0, v: chrome.runtime.getManifest().version }, e.origin); } catch (x) { /* ignore */ }
+    });
+  }
+
   load();
 })();
