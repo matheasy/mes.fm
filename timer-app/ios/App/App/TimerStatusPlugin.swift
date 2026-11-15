@@ -37,7 +37,8 @@ public class TimerStatusPlugin: CAPPlugin, CAPBridgedPlugin {
                     title: (o["title"] as? String) ?? "Timer",
                     text: (o["text"] as? String) ?? "",
                     end: (o["end"] as? NSNumber).map { $0.doubleValue / 1000 },
-                    start: (o["start"] as? NSNumber).map { $0.doubleValue / 1000 })
+                    start: (o["start"] as? NSNumber).map { $0.doubleValue / 1000 },
+                    frozen: o["frozen"] as? String)
             }
             NSLog("MESTIMER liveActivity items=%d enabled=%d", items.count, ActivityAuthorizationInfo().areActivitiesEnabled ? 1 : 0)
             Task {

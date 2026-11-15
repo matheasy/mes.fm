@@ -19,76 +19,57 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Method;
 
 /**
  * MES Timer native helper.
- *  showRunning({items:[{key, title, end?, start?, text?}]}): one ongoing notification per running countdown (end = epoch ms,
- *    counts down) or stopwatch (start = epoch ms, counts up); paused items pass a fixed text. On Android 16 they are requested as
- *    promoted "Live Updates", so the countdown also shows as a chip in the status bar.
- *  clearRunning(), schedule({items:[{at,title,body,ring}], ringStyle}), cancel(), status(), openSettings({what}).
+ *  showRunning({items, style}) / clearRunning() / takeChanges(): live notifications of running and paused timers (TimerLive,
+ *    ticked by TimerService), with Pause / Resume, Cancel and Sound buttons; the "liveChanged" event fires when one is pressed.
+ * schedule({items:[{at,title,body,ring}], ringStyle}), cancel(), status(), openSettings({what}).
  */
 @CapacitorPlugin(name = "TimerStatus")
 public class TimerStatusPlugin extends Plugin {
-    private static final int RUN_BASE = 7000;
-    private int shown = 0;
 
     @Override
-    public void load() { TimerAlarms.channels(getContext()); }
+    public void load() { inst = this; TimerAlarms.channels(getContext()); }
 
-    @PluginMethod
-    public void showRunning(PluginCall call) {
-        Context c = getContext();
-        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-        JSArray items = call.getArray("items", new JSArray());
-        int n = 0;
-        try {
-            for (int k = 0; k < items.length() && n < 8; k++) {
-                JSONObject it = items.getJSONObject(k);
-                Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, TimerAlarms.CH_RUN) : new Notification.Builder(c);
-                b.setSmallIcon(R.drawable.ic_stat_timer).setContentTitle(it.optString("title", "Timer")).setOngoing(true).setOnlyAlertOnce(true)
-                    .setContentIntent(TimerAlarms.openAppPi(c)).setColor(0xFFA86706).setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setCategory(it.has("start") ? Notification.CATEGORY_STOPWATCH : Notification.CATEGORY_PROGRESS);
-                if (Build.VERSION.SDK_INT < 26) b.setPriority(Notification.PRIORITY_LOW);
-                if (it.has("end")) {
-                    b.setWhen(it.getLong("end")).setShowWhen(true).setUsesChronometer(true);
-                    if (Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
-                    b.setContentText(it.optString("text", "Counting down"));
-                } else if (it.has("start")) {
-                    b.setWhen(it.getLong("start")).setShowWhen(true).setUsesChronometer(true);
-                    b.setContentText(it.optString("text", "Stopwatch running"));
-                } else {
-                    b.setShowWhen(false).setContentText(it.optString("text", "Paused"));
-                }
-                promote(b, it.optString("chip", ""));
-                nm.notify(RUN_BASE + n, b.build());
-                n++;
-            }
-        } catch (Exception e) { call.reject(e.getMessage()); return; }
-        for (int k = n; k < Math.max(shown, 8); k++) nm.cancel(RUN_BASE + k);
-        shown = n;
-        call.resolve();
+    private static TimerStatusPlugin inst;
+    /** Is the app on screen (then the page rings by itself and no phone alarms are wanted). */
+    static volatile boolean visible = true;
+
+    @Override protected void handleOnResume() { visible = true; super.handleOnResume(); }
+    @Override protected void handleOnPause() { visible = false; super.handleOnPause(); }
+
+    /** A notification button changed a timer: tell the page if it is listening (it also asks with takeChanges on resume). */
+    static void changed() {
+        TimerStatusPlugin p = inst;
+        if (p != null) { try { p.notifyListeners("liveChanged", new JSObject()); } catch (Exception ignored) {} }
     }
 
-    /** Android 16 Live Updates: ask for the notification to be promoted (status-bar chip). Reflection keeps older SDKs happy. */
-    private static void promote(Notification.Builder b, String chip) {
-        if (Build.VERSION.SDK_INT < 36) return;
+    /** items: see TimerLive. style: auto | big | chip. */
+    @PluginMethod
+    public void showRunning(PluginCall call) {
+        inst = this;
         try {
-            Method m = Notification.Builder.class.getMethod("setRequestPromotedOngoing", boolean.class);
-            m.invoke(b, true);
-            if (chip != null && !chip.isEmpty()) {
-                Method t = Notification.Builder.class.getMethod("setShortCriticalText", String.class);
-                t.invoke(b, chip);
-            }
-        } catch (Exception ignored) {}
+            TimerLive.setItems(getContext(), new JSONArray(call.getArray("items", new JSArray()).toString()), call.getString("style", "auto"));
+            TimerLive.refresh(getContext());
+        } catch (Exception e) { call.reject(e.getMessage()); return; }
+        call.resolve();
     }
 
     @PluginMethod
     public void clearRunning(PluginCall call) {
-        NotificationManager nm = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        for (int k = 0; k < 8; k++) nm.cancel(RUN_BASE + k);
-        shown = 0;
+        TimerService.stopIfRunning(getContext());
+        TimerLive.clearAll(getContext());
         call.resolve();
+    }
+
+    /** Button changes the page has not taken yet: {changes: {key: item}}. */
+    @PluginMethod
+    public void takeChanges(PluginCall call) {
+        inst = this;
+        JSObject r = new JSObject();
+        try { r.put("changes", new JSObject(TimerLive.takeChanges(getContext()).toString())); } catch (Exception e) { r.put("changes", new JSObject()); }
+        call.resolve(r);
     }
 
     @PluginMethod
@@ -120,6 +101,8 @@ public class TimerStatusPlugin extends Plugin {
         if (Build.VERSION.SDK_INT >= 36) { try { promo = (Boolean) NotificationManager.class.getMethod("canPostPromotedNotifications").invoke(nm); } catch (Exception ignored) {} }
         r.put("liveUpdates", promo);
         r.put("sdk", Build.VERSION.SDK_INT);
+        r.put("big", TimerLive.bigStyle(c));
+        r.put("samsung", "samsung".equalsIgnoreCase(Build.MANUFACTURER));
         call.resolve(r);
     }
 

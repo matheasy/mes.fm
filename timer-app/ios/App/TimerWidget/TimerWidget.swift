@@ -9,7 +9,9 @@ private struct TimeText: View {
     let item: TimerActivityAttributes.Item
     var stale: Bool = false
     var body: some View {
-        if let e = item.end, stale || e <= Date().timeIntervalSince1970 {
+        if let f = item.frozen {
+            Text(f).monospacedDigit()
+        } else if let e = item.end, stale || e <= Date().timeIntervalSince1970 {
             Text("Done").fontWeight(.bold)
         } else if let e = item.end {
             let end = Date(timeIntervalSince1970: e)
@@ -28,14 +30,14 @@ struct TimerLiveActivity: Widget {
         ActivityConfiguration(for: TimerActivityAttributes.self) { ctx in
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(Array(ctx.state.items.enumerated()), id: \.offset) { _, it in
-                    HStack {
-                        Image(systemName: it.start != nil ? "stopwatch" : "timer").foregroundColor(accent)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(it.title).font(.headline).lineLimit(1)
-                            if !it.text.isEmpty { Text(it.text).font(.caption).foregroundColor(.secondary).lineLimit(1) }
+                    // the time is the main, big line (like the phone's own Clock app); the name under it
+                    HStack(alignment: .center, spacing: 12) {
+                        Image(systemName: it.frozen != nil ? "pause.circle.fill" : it.start != nil ? "stopwatch" : "timer").font(.title2).foregroundColor(accent)
+                        VStack(alignment: .leading, spacing: 0) {
+                            TimeText(item: it, stale: ctx.isStale).font(.system(size: ctx.state.items.count > 1 ? 30 : 40, weight: .regular)).foregroundColor(it.frozen != nil ? .secondary : .white).lineLimit(1).minimumScaleFactor(0.6)
+                            Text(it.text.isEmpty ? it.title : it.title + " · " + it.text).font(.subheadline).foregroundColor(.secondary).lineLimit(1)
                         }
-                        Spacer()
-                        TimeText(item: it, stale: ctx.isStale).font(.system(size: 30, weight: .semibold)).foregroundColor(accent).multilineTextAlignment(.trailing).frame(maxWidth: 140, alignment: .trailing)
+                        Spacer(minLength: 0)
                     }
                 }
             }

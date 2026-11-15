@@ -31,6 +31,17 @@
             android:taskAffinity="fm.mes.timer.alarm"
             android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
 
+        <!-- Ticks the running timers' notifications (the big time, the time in the status-bar icon) once a second while the app is
+             in the background. Special use: a running timer / stopwatch shown live in the notification and status bar. -->
+        <service
+            android:name=".TimerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Shows the user's running countdown timer or stopwatch with the live time in the notification and status bar, with Pause / Resume / Cancel buttons, while the user has a timer running." />
+        </service>
+
         <receiver android:name=".TimerReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -58,4 +69,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 </manifest>

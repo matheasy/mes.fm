@@ -1085,6 +1085,9 @@
 		else if (e.key === "f" || e.key === "F") { var first = document.querySelector(SOLO ? ".tm-timer, .tm-sec__b" : ".tm-timer"); if (first) toggleFull(first); }
 	});
 
+	/* the phone app (timer-app/native.js) applies changes made with its notification buttons (Pause, Cancel, Sound...) */
+	window.MESTimerHook = { apply: function (fn) { fn(S); renderAll(); updateAwake(); updateTitle(); save(); if (dpOpen) renderDisplay(); } };
+
 	/* ---------- init ---------- */
 	load(); applyCompact(); try { S.titleSrc = (sessionStorage.getItem(KEY + ":tab") || "auto").slice(0, 40); } catch (e) {} fillSettings();
 	var q = new URLSearchParams(location.search);

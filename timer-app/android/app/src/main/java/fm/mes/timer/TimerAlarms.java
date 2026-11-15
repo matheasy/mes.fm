@@ -20,6 +20,7 @@ public final class TimerAlarms {
     public static final String CH_RUN = "mes-timer-running";
     public static final String CH_RING = "mes-timer-ring";
     public static final String CH_PLAIN = "mes-timer-plain";
+    public static final String CH_QUIET = "mes-timer-quiet";
     static final String PREFS = "mes-timer-alarms";
     static final String ACTION_FIRE = "fm.mes.timer.FIRE";
     static final String ACTION_STOP = "fm.mes.timer.STOP";
@@ -49,6 +50,12 @@ public final class TimerAlarms {
         plain.enableVibration(true);
         plain.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         nm.createNotificationChannel(plain);
+        NotificationChannel quiet = new NotificationChannel(CH_QUIET, "Timers with sound off", NotificationManager.IMPORTANCE_HIGH);
+        quiet.setDescription("A timer you turned the sound off for (Sound off button): it shows, but makes no sound");
+        quiet.setSound(null, null);
+        quiet.enableVibration(false);
+        quiet.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        nm.createNotificationChannel(quiet);
     }
 
     static Uri soundUri(Context c) { return Uri.parse("android.resource://" + c.getPackageName() + "/" + R.raw.mes_alarm); }
@@ -93,6 +100,62 @@ public final class TimerAlarms {
         prefs(c).edit().putString("items", kept.toString()).putBoolean("ringStyle", ringStyle).putInt("n", n).apply();
     }
 
+    /* ---------- the notification buttons of a running timer (TimerLive): change only that timer's alarms ---------- */
+    static JSONArray stored(Context c) { try { return new JSONArray(prefs(c).getString("items", "[]")); } catch (Exception e) { return new JSONArray(); } }
+    static JSONObject held(Context c) { try { return new JSONObject(prefs(c).getString("held", "{}")); } catch (Exception e) { return new JSONObject(); } }
+    private static void reschedule(Context c, JSONArray list, JSONObject held) {
+        boolean rs = prefs(c).getBoolean("ringStyle", true);
+        String h = held.toString();
+        if (list.length() > 0 || prefs(c).getInt("n", 0) > 0) schedule(c, list, rs);
+        prefs(c).edit().putString("held", h).apply();
+    }
+    /** Paused: take the timer's alarms off (kept, to put back on Resume). */
+    static void holdKey(Context c, String key, long now) {
+        JSONArray all = stored(c), rest = new JSONArray(), mine = new JSONArray();
+        for (int i = 0; i < all.length(); i++) { JSONObject o = all.optJSONObject(i); if (o == null) continue; (key.equals(o.optString("key")) ? mine : rest).put(o); }
+        JSONObject h = held(c);
+        try { if (mine.length() > 0) h.put(key, new JSONObject().put("at", now).put("items", mine)); } catch (Exception ignored) {}
+        reschedule(c, rest, h);
+    }
+    /** Resumed: put them back, later by the time it was paused. */
+    static boolean releaseKey(Context c, String key, long now) {
+        JSONObject h = held(c), mine = h.optJSONObject(key);
+        if (mine == null) return false;
+        h.remove(key);
+        JSONArray all = stored(c), its = mine.optJSONArray("items");
+        long shift = now - mine.optLong("at", now);
+        for (int i = 0; its != null && i < its.length(); i++) {
+            JSONObject o = its.optJSONObject(i);
+            try { o.put("at", o.optLong("at") + shift); all.put(o); } catch (Exception ignored) {}
+        }
+        reschedule(c, all, h);
+        return true;
+    }
+    /** Resumed from the notification while the app is closed and it had no alarm (it was paused when the app was left): add the finish alarm. */
+    static void addOne(Context c, JSONObject item) {
+        if (item == null || item.optLong("at") <= System.currentTimeMillis()) return;
+        JSONArray all = stored(c);
+        all.put(item);
+        boolean rs = prefs(c).getBoolean("ringStyle", true);
+        String h = held(c).toString();
+        schedule(c, all, rs);
+        prefs(c).edit().putString("held", h).apply();
+    }
+    static void dropKey(Context c, String key) {
+        JSONArray all = stored(c), rest = new JSONArray();
+        for (int i = 0; i < all.length(); i++) { JSONObject o = all.optJSONObject(i); if (o != null && !key.equals(o.optString("key"))) rest.put(o); }
+        JSONObject h = held(c); h.remove(key);
+        reschedule(c, rest, h);
+    }
+    static void muteKey(Context c, String key, boolean mute) {
+        JSONArray all = stored(c);
+        for (int i = 0; i < all.length(); i++) { JSONObject o = all.optJSONObject(i); if (o != null && key.equals(o.optString("key"))) try { o.put("mute", mute); } catch (Exception ignored) {} }
+        JSONObject h = held(c), mine = h.optJSONObject(key);
+        JSONArray its = mine == null ? null : mine.optJSONArray("items");
+        for (int i = 0; its != null && i < its.length(); i++) try { its.optJSONObject(i).put("mute", mute); } catch (Exception ignored) {}
+        reschedule(c, all, h);
+    }
+
     public static void cancelAll(Context c) {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         int n = Math.max(prefs(c).getInt("n", 0), 60);
@@ -101,7 +164,7 @@ public final class TimerAlarms {
             PendingIntent pi = PendingIntent.getBroadcast(c, 9000 + k, i, PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
             if (pi != null) { am.cancel(pi); pi.cancel(); }
         }
-        prefs(c).edit().remove("items").putInt("n", 0).apply();
+        prefs(c).edit().remove("items").remove("held").putInt("n", 0).apply();
     }
 
     /** After a reboot: put back what is still in the future. */
@@ -118,8 +181,9 @@ public final class TimerAlarms {
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         String title = it.optString("title", "Time is up");
         String body = it.optString("body", "");
-        boolean ring = it.optBoolean("ring") && it.optBoolean("ringStyle", true);
-        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, ring ? CH_RING : CH_PLAIN) : new Notification.Builder(c);
+        boolean mute = it.optBoolean("mute");
+        boolean ring = it.optBoolean("ring") && it.optBoolean("ringStyle", true) && !mute;
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(c, ring ? CH_RING : mute ? CH_QUIET : CH_PLAIN) : new Notification.Builder(c);
         b.setSmallIcon(R.drawable.ic_stat_timer).setContentTitle(title).setContentText(body).setAutoCancel(true)
             .setContentIntent(openAppPi(c)).setColor(0xFFA86706).setShowWhen(true).setWhen(System.currentTimeMillis())
             .setVisibility(Notification.VISIBILITY_PUBLIC);

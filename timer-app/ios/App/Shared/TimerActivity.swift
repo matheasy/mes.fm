@@ -9,6 +9,7 @@ public struct TimerActivityAttributes: ActivityAttributes {
         public var text: String
         public var end: Double?     // epoch seconds: counts down
         public var start: Double?   // epoch seconds: counts up (stopwatch)
+        public var frozen: String?  // a paused timer: the time it stopped at
     }
     public struct ContentState: Codable, Hashable {
         public var items: [Item]
