@@ -292,6 +292,7 @@ sub {vertical-align:sub;}
 }
 
 .link-card-thumb {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   background-color: #333333;
@@ -299,6 +300,21 @@ sub {vertical-align:sub;}
   background-size: cover;
   background-position: center;
 }
+
+/* Unlisted on YouTube: badge on the thumbnail (Grid / Trailers / All) and after the title (List). */
+.link-card-unlisted, .list-unlisted {
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #ffffff;
+  background-color: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.link-card-unlisted { position: absolute; top: 6px; left: 6px; }
+.list-unlisted { vertical-align: middle; font-size: 0.6em; background-color: #555555; border-color: #555555; }
 
 .link-card-body {
   padding: 0.6rem 0.8rem 0.8rem;
@@ -1832,7 +1848,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="911 spooks" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=D3a1z6_SScE" data-l-hive="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" href="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
@@ -1923,7 +1939,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="hutchison spooks" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=xLe2uhz4ANs" href="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect</span>
         <span class="link-card-note">(Update: Unlisted as Bob is a spook mes.fm/bg)</span>
@@ -2670,7 +2686,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/JSoCmEEObnU/maxresdefault.jpg" alt="55: 9/11 Planes Research Discusses the Passengers on Flights 11, 175, 77, and 93">
     </div>
     <div class="list-row" data-cats="911 spooks">
-      <h3><a class="lp-a" href="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=D3a1z6_SScE" data-l-hive="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" target="_blank" rel="noopener">54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a></h3>
+      <h3><a class="lp-a" href="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=D3a1z6_SScE" data-l-hive="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" target="_blank" rel="noopener">54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)<span class="lp-ic" data-s="hive" aria-hidden="true"></span></a> <span class="list-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></h3>
       <p><a href="https://www.youtube.com/watch?v=D3a1z6_SScE" target="_blank" rel="noopener">YouTube</a> - <a href="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" target="_blank" rel="noopener">Hive</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg" alt="54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)">
     </div>
@@ -2735,7 +2751,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/YtMNbVhRkV0/maxresdefault.jpg" alt="43: Investigating MH370x Origins">
     </div>
     <div class="list-row" data-cats="hutchison spooks">
-      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=xLe2uhz4ANs" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a></h3>
+      <h3><a class="lp-a" href="https://www.youtube.com/watch?v=xLe2uhz4ANs" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect<span class="lp-ic" data-s="youtube" aria-hidden="true"></span></a> <span class="list-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></h3>
       <p class="list-note">(Update: Unlisted as Bob is a spook <a href="https://mes.fm/bg">mes.fm/bg</a>)</p>
       <p><a href="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">YouTube</a></p>
       <img loading="lazy" class="list-thumb" src="https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg" alt="42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect">
@@ -3082,7 +3098,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="hutchison" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=fCUk_LElaMs" href="https://www.youtube.com/watch?v=fCUk_LElaMs" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fCUk_LElaMs/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fCUk_LElaMs/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">118: Visual of Hutchison Effect on the Hydrogen Line</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3103,7 +3119,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=LrNCIOOT8Do" href="https://www.youtube.com/watch?v=LrNCIOOT8Do" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LrNCIOOT8Do/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LrNCIOOT8Do/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">111: AI Joe Rogan and AI Elon Musk discussing Ben Factor</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3117,7 +3133,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="911" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=LAJ2vzyZjnM" href="https://www.youtube.com/watch?v=LAJ2vzyZjnM" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LAJ2vzyZjnM/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LAJ2vzyZjnM/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">108: 9/11 Avengers Reveal the True Story of 9/11</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3159,14 +3175,14 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=j3ci2ALYCNU" href="https://www.youtube.com/watch?v=j3ci2ALYCNU" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/j3ci2ALYCNU/mqdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/j3ci2ALYCNU/mqdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">99: Dr. Charles Hoffe and Dr. Stephen Malthouse at the BC Strong Rally</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=OiUX2_ivhp4" href="https://www.youtube.com/watch?v=OiUX2_ivhp4" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OiUX2_ivhp4/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OiUX2_ivhp4/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">98: Buga Sphere and Steven Greer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3201,21 +3217,21 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=w_d8vtxvTQM" href="https://www.youtube.com/watch?v=w_d8vtxvTQM" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/w_d8vtxvTQM/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/w_d8vtxvTQM/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">Jeanne Traduction Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=nqd-gAPBtMw" href="https://www.youtube.com/watch?v=nqd-gAPBtMw" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/nqd-gAPBtMw/mqdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/nqd-gAPBtMw/mqdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">Biodigital Convergence Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=dId0ynOEHOo" href="https://www.youtube.com/watch?v=dId0ynOEHOo" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/dId0ynOEHOo/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/dId0ynOEHOo/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">MCFD Protest Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3229,35 +3245,35 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=mFR2qwtaEOE" href="https://www.youtube.com/watch?v=mFR2qwtaEOE" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mFR2qwtaEOE/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mFR2qwtaEOE/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">Moon Landing Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="hutchison" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=0xyH_TMubqI" href="https://www.youtube.com/watch?v=0xyH_TMubqI" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0xyH_TMubqI/mqdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0xyH_TMubqI/mqdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">Hutchison Inventor3 Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=RUTjaDEWE2I" href="https://www.youtube.com/watch?v=RUTjaDEWE2I" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RUTjaDEWE2I/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RUTjaDEWE2I/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer Dr. Daniel Nagase Theo Lim Amber Alert</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="mh370" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=44AX8WdyyCI" href="https://www.youtube.com/watch?v=44AX8WdyyCI" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/44AX8WdyyCI/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/44AX8WdyyCI/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">BLANK: MH370 Teleportation Video Fakery</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=g8XbA5Yp-Vc" href="https://www.youtube.com/watch?v=g8XbA5Yp-Vc" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g8XbA5Yp-Vc/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g8XbA5Yp-Vc/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-title">Trailer They Live 2025</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3623,7 +3639,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="hutchison" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=fCUk_LElaMs" href="https://www.youtube.com/watch?v=fCUk_LElaMs" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fCUk_LElaMs/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/fCUk_LElaMs/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">118: Visual of Hutchison Effect on the Hydrogen Line</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3693,7 +3709,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=LrNCIOOT8Do" href="https://www.youtube.com/watch?v=LrNCIOOT8Do" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LrNCIOOT8Do/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LrNCIOOT8Do/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">111: AI Joe Rogan and AI Elon Musk discussing Ben Factor</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3728,7 +3744,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="911" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=LAJ2vzyZjnM" href="https://www.youtube.com/watch?v=LAJ2vzyZjnM" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LAJ2vzyZjnM/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/LAJ2vzyZjnM/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">108: 9/11 Avengers Reveal the True Story of 9/11</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3833,7 +3849,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=j3ci2ALYCNU" href="https://www.youtube.com/watch?v=j3ci2ALYCNU" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/j3ci2ALYCNU/mqdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/j3ci2ALYCNU/mqdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">99: Dr. Charles Hoffe and Dr. Stephen Malthouse at the BC Strong Rally</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3847,7 +3863,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=OiUX2_ivhp4" href="https://www.youtube.com/watch?v=OiUX2_ivhp4" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OiUX2_ivhp4/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/OiUX2_ivhp4/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">98: Buga Sphere and Steven Greer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3924,21 +3940,21 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=w_d8vtxvTQM" href="https://www.youtube.com/watch?v=w_d8vtxvTQM" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/w_d8vtxvTQM/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/w_d8vtxvTQM/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">Jeanne Traduction Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=nqd-gAPBtMw" href="https://www.youtube.com/watch?v=nqd-gAPBtMw" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/nqd-gAPBtMw/mqdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/nqd-gAPBtMw/mqdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">Biodigital Convergence Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=dId0ynOEHOo" href="https://www.youtube.com/watch?v=dId0ynOEHOo" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/dId0ynOEHOo/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/dId0ynOEHOo/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">MCFD Protest Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -3994,35 +4010,35 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=mFR2qwtaEOE" href="https://www.youtube.com/watch?v=mFR2qwtaEOE" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mFR2qwtaEOE/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/mFR2qwtaEOE/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">Moon Landing Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="hutchison" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=0xyH_TMubqI" href="https://www.youtube.com/watch?v=0xyH_TMubqI" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0xyH_TMubqI/mqdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/0xyH_TMubqI/mqdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">Hutchison Inventor3 Trailer</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=RUTjaDEWE2I" href="https://www.youtube.com/watch?v=RUTjaDEWE2I" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RUTjaDEWE2I/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/RUTjaDEWE2I/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">Trailer Dr. Daniel Nagase Theo Lim Amber Alert</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="mh370" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=44AX8WdyyCI" href="https://www.youtube.com/watch?v=44AX8WdyyCI" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/44AX8WdyyCI/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/44AX8WdyyCI/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">BLANK: MH370 Teleportation Video Fakery</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
       </span>
     </a>
     <a class="link-card lp-a" data-cats="" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=g8XbA5Yp-Vc" href="https://www.youtube.com/watch?v=g8XbA5Yp-Vc" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g8XbA5Yp-Vc/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/g8XbA5Yp-Vc/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--trailer">Trailer</span><span class="link-card-title">Trailer They Live 2025</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="youtube" aria-hidden="true"></span><span class="lp-name">View on YouTube</span> &rarr;</span>
@@ -4288,7 +4304,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="911 spooks" data-lp-def="hive" data-l-youtube="https://www.youtube.com/watch?v=D3a1z6_SScE" data-l-hive="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" href="https://peakd.com/hive-113182/@mes/livestream-54-pentagon-911" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/D3a1z6_SScE/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--livestream">Livestream</span><span class="link-card-title">54: UPDATE – Adam Eisenberg and Norman are 9/11 disinfo clowns (See Livestream 137)</span>
         <span class="link-card-readmore"><span class="lp-ic" data-s="hive" aria-hidden="true"></span><span class="lp-name">View on Hive</span> &rarr;</span>
@@ -4379,7 +4395,7 @@ body.is-stuck #header-controls { transform: none; bottom: auto; }
       </span>
     </a>
     <a class="link-card lp-a" data-cats="hutchison spooks" data-lp-def="youtube" data-l-youtube="https://www.youtube.com/watch?v=xLe2uhz4ANs" href="https://www.youtube.com/watch?v=xLe2uhz4ANs" target="_blank" rel="noopener">
-      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg')"></span>
+      <span class="link-card-thumb" style="background-image:url('https://i.ytimg.com/vi/xLe2uhz4ANs/maxresdefault.jpg')"><span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span></span>
       <span class="link-card-body">
         <span class="link-card-tag link-card-tag--livestream">Livestream</span><span class="link-card-title">42: Bob Greenyer Discusses EVOs, LENR, and the Hutchison Effect</span>
         <span class="link-card-note">(Update: Unlisted as Bob is a spook mes.fm/bg)</span>

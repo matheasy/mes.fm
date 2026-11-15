@@ -157,14 +157,16 @@ function toItem(v) {
   const title = shortTitle(v);
   const mirror = MIRRORS[v.id];
   const cats = catsOf(v);
-  if (mirror && mirror.scrape) return { href: mirror.href, title, cats };
+  // Unlisted on YouTube (update_livestreams_playlist.py records it): an "Unlisted" badge on the card / row.
+  const un = v.unlisted ? { unlisted: true } : {};
+  if (mirror && mirror.scrape) return { href: mirror.href, title, cats, ...un };
   const number = (v.title.match(/^MES Livestream (\d+)/) || [])[1];
   const links = [
     ...(mirror ? [["Notes", mirror.href], ...(mirror.extra || [])] : []),
     ["YouTube", YT(v.id)],
     ...(EXTRA_LINKS[number] || []),
   ];
-  return { title, image: v.thumb, links, cats, ...(NOTES[number] ? { note: NOTES[number] } : {}) };
+  return { title, image: v.thumb, links, cats, ...un, ...(NOTES[number] ? { note: NOTES[number] } : {}) };
 }
 
 // Newest first by stream number. YouTube appends new playlist videos at the END, so playlist order
@@ -495,7 +497,7 @@ function buildCard(item, meta) {
   // "Open in:" switch (shared/link-pref.mjs): every site this item has a link on, so main_js/link-pref.js can retarget the card.
   const lp = lpAttrs(lpMap(buildLinksForItem(item, meta)), href);
   return `<a class="link-card${lp ? " lp-a" : ""}"${catsAttr}${lp} href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>
-      <span class="link-card-thumb"${thumbStyle}></span>
+      <span class="link-card-thumb"${thumbStyle}>${item.unlisted ? '<span class="link-card-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span>' : ""}</span>
       <span class="link-card-body">
         ${item.tag ? `<span class="link-card-tag link-card-tag--${escapeHtml(item.tag.toLowerCase())}">${escapeHtml(item.tag)}</span>` : ""}<span class="link-card-title">${escapeHtml(item.title)}</span>${item.note ? `
         <span class="link-card-note">${escapeHtml(noteText(item.note))}</span>` : ""}
@@ -519,7 +521,7 @@ function buildRow(item, meta, linksBuilder) {
     ? `<a class="lp-a" href="${escapeHtml(href)}"${lp}${/^https?:\/\/(?:www\.)?mes\.fm\//.test(href) ? "" : ' target="_blank" rel="noopener"'}>${escapeHtml(item.title)}${lpIcon(lpSite(href))}</a>`
     : escapeHtml(item.title);
   return `<div class="list-row"${catsAttr}>
-      <h3>${titleHtml}</h3>${item.note ? `
+      <h3>${titleHtml}${item.unlisted ? ' <span class="list-unlisted" title="Unlisted on YouTube: only people with the link can find it there">Unlisted</span>' : ""}</h3>${item.note ? `
       <p class="list-note">${noteHtml(item.note)}</p>` : ""}
       <p>${linksHtml}</p>
       ${imgHtml}
@@ -961,6 +963,7 @@ sub {vertical-align:sub;}
 }
 
 .link-card-thumb {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   background-color: #333333;
@@ -968,6 +971,21 @@ sub {vertical-align:sub;}
   background-size: cover;
   background-position: center;
 }
+
+/* Unlisted on YouTube: badge on the thumbnail (Grid / Trailers / All) and after the title (List). */
+.link-card-unlisted, .list-unlisted {
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: #ffffff;
+  background-color: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.link-card-unlisted { position: absolute; top: 6px; left: 6px; }
+.list-unlisted { vertical-align: middle; font-size: 0.6em; background-color: #555555; border-color: #555555; }
 
 .link-card-body {
   padding: 0.6rem 0.8rem 0.8rem;

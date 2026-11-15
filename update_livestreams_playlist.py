@@ -51,6 +51,19 @@ def best_thumb(video_id):
     return maxres if thumb_exists(maxres) else f"https://i.ytimg.com/vi/{video_id}/mqdefault.jpg"
 
 
+def availability(video_id):
+    """'public' / 'unlisted' / ... for one video, or None when the lookup fails. The flat playlist
+    listing has no visibility, so each video is asked for on its own (build.mjs shows an Unlisted badge)."""
+    try:
+        out = subprocess.run(
+            ["yt-dlp", "--skip-download", "--print", "%(availability)s", f"https://youtu.be/{video_id}"],
+            capture_output=True, text=True, timeout=90,
+        ).stdout.strip().splitlines()
+        return out[-1] if out and out[-1] not in ("NA", "") else None
+    except Exception:
+        return None
+
+
 def main():
     apply = "--apply" in sys.argv
     old = {}
@@ -79,6 +92,15 @@ def main():
     for e in entries:
         if "thumb" not in e:
             e["thumb"] = old[e["id"]]["thumb"]
+
+    # Visibility can change, so every video is checked each run; a failed lookup keeps the old value.
+    with ThreadPoolExecutor(8) as pool:
+        for e, av in zip(entries, pool.map(lambda e: availability(e["id"]), entries)):
+            was = old.get(e["id"], {}).get("unlisted")
+            unlisted = (av == "unlisted") if av else was
+            if unlisted:
+                e["unlisted"] = True
+    print(f"{sum(1 for e in entries if e.get('unlisted'))} unlisted")
 
     new_ids = [e["id"] for e in todo]
     print(f"{len(entries)} videos in the playlist ({len(new_ids)} new since the last snapshot)")
