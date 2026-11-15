@@ -2308,8 +2308,17 @@
 	// preview playback speed (1 frame / s up to 45x): the edit and the export are not changed; video / audio elements keep their pitch at this
 	// speed. Browsers only play media at 1/16x-16x, so outside that the clips are shown by seeking frame after frame, without sound ("jump" mode).
 	P.setSpeed = function (s) {
-		s = V.clampSpeed(s, VE.P.fps); P.speed = s;
-		if (P.playing && !P.rev) { P.pause(); P.play(s); }
+		s = V.clampSpeed(s, VE.P.fps); var was = P.speed; P.speed = s;
+		if (P.playing && !P.rev) {
+			var old = P.rate;
+			if (!jumpRate(old) && !jumpRate(s)) {   // no pause: carry on from the same spot at the new rate, the elements just change their playbackRate
+				P.t0 = P.time(); P.p0 = performance.now(); P.rate = s;
+				var oldEl = Math.abs(old - 1) > 1e-3 && Math.abs(old - was) < 1e-3, newEl = Math.abs(s - 1) > 1e-3;
+				if (cleanNodes.length && oldEl && newEl) cleanNodes.forEach(function (n) { if (n.el) n.el.playbackRate = Math.max(0.0625, Math.min(16, (n.cs || 1) * s)); });
+				else if (cleanNodes.length || VE.P.clips.some(function (c) { return c.clean && c.clean.key; })) scheduleClean();
+				sync();
+			} else { P.pause(); P.play(s); }
+		}
 		VE.emit("speed", s);
 	};
 	P.stepSpeed = function (dir) { var L = V.SPEED_PRESETS, i = 0; while (i < L.length - 1 && L[i] < P.speed - 1e-9) i++; var n = dir > 0 ? (L[i] > P.speed + 1e-9 ? L[i] : L[Math.min(L.length - 1, i + 1)]) : (i > 0 ? L[i - 1] : V.speedMin(VE.P.fps)); P.setSpeed(n); };
@@ -2356,11 +2365,20 @@
 				if (!e.el.seeking && Math.abs(e.el.currentTime - src) > 0.5 / jf) setTime(e, src);
 			} else if (playing && active) {
 				var pr = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
-				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
-				var keep = Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3;   // the speed menu: keep the voice's pitch (J / L shuttle and clip speed do not)
+				// the speed menu keeps the voice's pitch (J / L shuttle and clip speed do not); 1x counts too, so crossing 1x never flips it mid-play
+				var keep = Math.abs(P.rate - P.speed) < 1e-3;
 				if (e.el.preservesPitch !== keep) e.el.preservesPitch = keep;
-				if (e.el.paused) { if (Math.abs(e.el.currentTime - src) > 0.02) setTime(e, src); var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
-				else if (Math.abs(e.el.currentTime - src) > 0.3 * Math.max(1, P.rate)) setTime(e, src);
+				if (e.el.paused) { e.corr = 0; if (Math.abs(e.el.currentTime - src) > 0.02) setTime(e, src); var pp = e.el.play(); if (pp && pp.catch) pp.catch(function () { }); }
+				else {
+					// small drift between the element and the timeline clock is evened out by playing 2.5% faster / slower for a moment;
+					// only a big gap is fixed with a seek (a seek mid-play gives a visible jump and a gap in the sound)
+					var diff = e.el.currentTime - src, ad = Math.abs(diff);
+					if (ad > Math.max(1, 0.6 * pr)) { e.corr = 0; setTime(e, src); }
+					else if (e.corr ? ad < 0.015 : ad < 0.06) e.corr = 0;
+					else e.corr = diff > 0 ? -1 : 1;
+					pr = Math.max(0.0625, Math.min(16, pr * (1 + 0.025 * (e.corr || 0))));
+				}
+				if (Math.abs(e.el.playbackRate - pr) > 1e-3) e.el.playbackRate = pr;
 			} else {
 				if (!e.el.paused) e.el.pause();
 				var fps = (m && m.fps) || 30;
@@ -2410,7 +2428,7 @@
 		var el = new Audio(); el.preload = "auto"; el.src = url; el.preservesPitch = true; el.playbackRate = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
 		var sn = a.createMediaElementSource(el), gain = a.createGain(); gain.gain.value = 0; sn.connect(gain).connect(a.destination);
 		var timer = setTimeout(function () { el.currentTime = off; var pp = el.play(); if (pp && pp.catch) pp.catch(function () { }); }, Math.max(0, (from - now) / P.rate * 1000));
-		cleanNodes.push({ id: c.id, gain: gain, node: { stop: function () { clearTimeout(timer); el.pause(); el.removeAttribute("src"); }, disconnect: function () { sn.disconnect(); } } });
+		cleanNodes.push({ id: c.id, gain: gain, el: el, cs: c.speed || 1, node: { stop: function () { clearTimeout(timer); el.pause(); el.removeAttribute("src"); }, disconnect: function () { sn.disconnect(); } } });
 		void len;
 	}
 	function stopClean() { cleanGen++; cleanNodes.forEach(function (n) { try { n.node.stop(); n.node.disconnect(); n.gain.disconnect(); } catch (e) { /* ignore */ } }); cleanNodes = []; }
