@@ -27,10 +27,49 @@ async function get<T>(path: string, params: Record<string, string>): Promise<T> 
   const url = new URL(`${API_BASE}${path}`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-  const res = await fetch(url.toString(), { headers: headers(), next: { revalidate: 0 }, signal: AbortSignal.timeout(30_000) });
-  if (res.status === 429) throw new RateLimitError('CoinGecko rate limit reached');
-  if (!res.ok) throw new Error(`CoinGecko request failed: ${res.status}`);
-  return res.json() as Promise<T>;
+  // The free plan answers 429 after a short burst (a sync prices many coins at once). Wait
+  // (Retry-After, else 2 s, 4 s, 8 s) and try again before giving up as a RateLimitError.
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url.toString(), { headers: headers(), next: { revalidate: 0 }, signal: AbortSignal.timeout(30_000) });
+    if (res.status === 429) {
+      if (attempt >= 3) throw new RateLimitError('CoinGecko rate limit reached');
+      const retryAfter = Number(res.headers.get('retry-after'));
+      const wait = Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter, 15) * 1000 : 2000 * 2 ** attempt;
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+    if (!res.ok) throw new Error(`CoinGecko request failed: ${res.status}`);
+    return res.json() as Promise<T>;
+  }
+}
+
+/** Keyless DefiLlama current price for a CoinGecko coin id: the fallback when CoinGecko refuses (no 24h change there) */
+async function llamaCurrentPrice(coinId: string): Promise<number | null> {
+  const key = `coingecko:${coinId}`;
+  const res = await fetch(`https://coins.llama.fi/prices/current/${key}`, { next: { revalidate: 0 }, signal: AbortSignal.timeout(15_000) });
+  if (!res.ok) return null;
+  const json = (await res.json()) as { coins?: Record<string, { price?: number }> };
+  const price = json.coins?.[key]?.price;
+  return typeof price === 'number' && Number.isFinite(price) && price > 0 ? price : null;
+}
+
+/** CoinGecko /simple/price, falling back to DefiLlama when CoinGecko is rate limited or down */
+async function currentPriceWithFallback(coinId: string): Promise<PricePoint> {
+  try {
+    const result = await get<Record<string, { usd: number; usd_24h_change?: number }>>('/simple/price', {
+      ids: coinId,
+      vs_currencies: 'usd',
+      include_24hr_change: 'true',
+    });
+    const entry = result[coinId];
+    if (entry?.usd) return { usd: entry.usd, usd24hChange: entry.usd_24h_change ?? null };
+  } catch (err) {
+    const usd = await llamaCurrentPrice(coinId).catch(() => null);
+    if (usd !== null) return { usd, usd24hChange: null };
+    throw err;
+  }
+  const usd = await llamaCurrentPrice(coinId).catch(() => null);
+  return { usd: usd ?? 0, usd24hChange: null };
 }
 
 export interface PricePoint {
@@ -40,13 +79,7 @@ export interface PricePoint {
 
 /** Current USD price + 24h change for any CoinGecko coin id (native coins: binancecoin/ethereum/hyperliquid) */
 export async function getCurrentPrice(coinId: string): Promise<PricePoint> {
-  const result = await get<Record<string, { usd: number; usd_24h_change?: number }>>('/simple/price', {
-    ids: coinId,
-    vs_currencies: 'usd',
-    include_24hr_change: 'true',
-  });
-  const entry = result[coinId];
-  return { usd: entry?.usd ?? 0, usd24hChange: entry?.usd_24h_change ?? null };
+  return currentPriceWithFallback(coinId);
 }
 
 /** Resolves an EVM contract address to its CoinGecko coin id on the given platform, or null if unlisted */
@@ -54,7 +87,9 @@ export async function resolveCoinIdByContract(contractAddress: string, platform:
   try {
     const result = await get<{ id: string }>(`/coins/${platform}/contract/${contractAddress.toLowerCase()}`, {});
     return result.id ?? null;
-  } catch {
+  } catch (err) {
+    // a rate limit is not "unlisted": rethrow so the caller doesn't cache null and call a real token spam
+    if (err instanceof RateLimitError) throw err;
     return null;
   }
 }

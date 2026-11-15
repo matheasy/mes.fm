@@ -171,9 +171,10 @@ export function createEtherscanNetwork(network: EtherscanNetworkId) {
     for (const { token, balance } of balances.values()) {
       if (balance <= 1e-12) continue; // filters out both zero and floating-point dust from summation
 
-      const coinId = await resolveCoinId(token);
+      // one token's price failing (rate limit) shows that holding unpriced instead of failing the whole network
+      const coinId = await resolveCoinId(token).catch(() => null);
       const price = coinId
-        ? await cached(cacheKey('price', coinId, network), CACHE_TTL_SECONDS.currentPrice, () => coingecko.getCurrentPrice(coinId))
+        ? await cached(cacheKey('price', coinId, network), CACHE_TTL_SECONDS.currentPrice, () => coingecko.getCurrentPrice(coinId)).catch(() => null)
         : null;
 
       holdings.push({
