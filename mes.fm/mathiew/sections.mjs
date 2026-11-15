@@ -15,6 +15,7 @@ export const SECTIONS = [
     id: "mathiew-posts",
     title: "Posts",
     items: [
+      { href: "https://mes.fm/graduated-clown-college", title: "Graduated from Clown College! 🙌🧑‍🎓🎪" },
       { href: "https://mes.fm/richmond-elections-sticker-2026", title: "Local Elections Requiring a Mandatory Mark of the BC, Canada Voting Sticker" },
       { href: "https://mes.fm/mathiew-not-robber", title: "MES Is NOT Robbin' a Bank #notarobber 🥷🌚" },
       { href: "https://mes.fm/haircut-neice", title: "Neice Gave Me a Haircut" },
