@@ -149,7 +149,18 @@
 
 	/* ---------- the text box on the canvas: drag its edges to set the wrap width; with Auto-fit text also its height (the font size follows) ----------
 	 * Handles sit on the text frame (not on the layer's padding). hx / hy = 0, 0.5 or 1 across / down the frame; the opposite side stays where it is. */
-	var bw = null, tmv = null;   // a text-box drag / a text move in the Text tool
+	var bw = null, tmv = null, bsc = null;   // a text-box drag / a text move / a corner drag (text size) in the Text tool
+	/* the four corners of the box in the Text tool: drag = bigger / smaller text (same as the Move tool's corners), so you don't have to switch tools.
+	 * With Auto-fit text the corners already belong to the box (boxHandles), so none here. */
+	var CORN = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+	function cornerHit(L, e) {
+		if (!L || L.type !== "text" || !L.text || L.text.fit || L.locked || !PE.effVisible(L)) return null; var sp = scrOf(e), best = null, bd = 11;
+		CORN.forEach(function (q) { var d = PE.textFramePt(L, q[0], q[1]), sc = PE.toScreen(d.x, d.y), dd = Math.hypot(sc.x - sp.x, sc.y - sp.y); if (dd < bd) { bd = dd; best = q; } }); return best;
+	}
+	function drawCorners(x, L) {
+		if (!L || L.type !== "text" || !L.text || L.text.fit || L.locked || !PE.effVisible(L)) return;
+		CORN.forEach(function (q) { var d = PE.textFramePt(L, q[0], q[1]), sc = PE.toScreen(d.x, d.y); x.save(); x.translate(sc.x, sc.y); x.rotate(L.rot); x.fillStyle = "#fff"; x.strokeStyle = "#1a73e8"; x.lineWidth = 1.75; x.fillRect(-5, -5, 10, 10); x.strokeRect(-5, -5, 10, 10); x.restore(); });
+	}
 	var SIDES = [[0, 0.5], [1, 0.5]], ALL8 = [[0, 0], [0.5, 0], [1, 0], [1, 0.5], [1, 1], [0.5, 1], [0, 1], [0, 0.5]];
 	function boxHandles(L) {
 		if (!L || L.type !== "text" || !L.text || L.locked || !PE.effVisible(L)) return []; var lay = PE.textLayout(L), p = lay.pad;
@@ -259,7 +270,7 @@
 		}
 		x.restore();
 	}
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters; highlight words and move Size to change only their size. Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text: the corners too, and the size follows). To move the text, drag its box outline or the ✥ grip under it, or hold Ctrl/Cmd and drag the text (Shift = straight line). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters; highlight words and move Size to change only their size. Drag a corner of the box to make the text bigger or smaller (Alt = from the centre). Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text the corners change the box and the size follows). To move the text, drag its box outline or the ✥ grip under it, or hold Ctrl/Cmd and drag the text (Shift = straight line). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
 		ui: [{ type: "button", label: "✓ Done", cls: "pe-btn--primary", title: "Finish this text (Ctrl+Enter or Esc)", when: function () { return !!te; }, act: function () { PE.endTextEdit(false); PE.emit("opts", "text"); } },
 			{ type: "button", label: "✕ Cancel", title: "Throw away the changes made since the last step of this text", when: function () { return !!te; }, act: function () { if (!te) return; var L = te.L, o = te.orig, isNew = te.isNew; L.text = JSON.parse(o); PE.renderText(L); PE.touch(L); PE.endTextEdit(isNew); PE.emit("opts", "text"); } },
 			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px", help: "How big the letters are. The box next to the number picks the unit: pt = points like in Word or Google Docs (12 pt = 16 px, 72 pt = 96 px); px = pixels of the image; pt (72/in) = points the way Photoshop, Photopea and GIMP count them for screen images (1 pt = 1 px). Only the number shown changes: the text looks the same." }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
@@ -288,19 +299,21 @@
 			var A = PE.active();
 			if (hoverT && hoverT !== A && PE.doc.layers.indexOf(hoverT) >= 0 && !te) drawFrame(x, hoverT, false);
 			if (A && A.type === "text" && A.text) { drawFrame(x, A, !!te); if (te && te.L === A) drawCaret(x, v); }
-			if (A && A.type === "text" && A.text) PE.drawTextBoxHandles(x, A);
+			if (A && A.type === "text" && A.text) { PE.drawTextBoxHandles(x, A); drawCorners(x, A); }
 			if (A && A.type === "text" && A.text) PE.drawTextMoveGrip(x, A);
 		},
-		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } var A = PE.active(), hh = A && A.type === "text" ? PE.textBoxHit(A, e) : null; PE.els.over.style.cursor = hh ? PE.textBoxCursor(hh, A) : (A && PE.textMoveHit(A, e)) ? "move" : "text"; },
+		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } var A = PE.active(), ch = cornerHit(A, e), hh = ch ? { hx: (ch[0] + 1) / 2, hy: (ch[1] + 1) / 2 } : A && A.type === "text" ? PE.textBoxHit(A, e) : null; PE.els.over.style.cursor = hh ? PE.textBoxCursor(hh, A) : (A && PE.textMoveHit(A, e)) ? "move" : "text"; },
 		move: function (e) {
+			if (bsc) { PE.textScaleMove(bsc, e); return; }
 			if (bw) { PE.textBoxMove(bw, e); return; }
 			if (tmv) { var dx = e.x - tmv.x0, dy = e.y - tmv.y0; if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; } if (!tmv.moved && Math.hypot(e.sx - tmv.sx, e.sy - tmv.sy) < 2) return; tmv.L.cx = tmv.cx + dx; tmv.L.cy = tmv.cy + dy; tmv.moved = true; PE.invalidate(); if (te && te.L === tmv.L) placeEditor(); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } else if (m0.how !== "grip") { m0.ev._noMove = true; PE.tools.text.down(m0.ev); tdrag = null; } if (te) PE.focusText(); return; }   /* round 12: a click on the outline that did not move still edits the text */ if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
+		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } else if (m0.how !== "grip") { m0.ev._noMove = true; PE.tools.text.down(m0.ev); tdrag = null; } if (te) PE.focusText(); return; }   /* round 12: a click on the outline that did not move still edits the text */ if (bsc) { var s0 = bsc; bsc = null; if (s0.moved) { if (te) PE.textCheckpoint("Text size"); else PE.commit("Text size"); } if (te) PE.focusText(); tdrag = null; return; } if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
-			var A0 = te ? te.L : PE.active(), hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
+			var A0 = te ? te.L : PE.active(), cq = cornerHit(A0, e); if (cq) { bsc = PE.textScaleStart(A0, cq[0], cq[1], e, e.alt); tdrag = null; return; }   // corner = text size, right here in the Text tool (Alt: about the centre)
+			var hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
 			var mh = !e._noMove && A0 && PE.textMoveHit(A0, e); if (mh) { tmv = { L: A0, how: mh, ev: e, x0: e.x, y0: e.y, sx: e.sx, sy: e.sy, cx: A0.cx, cy: A0.cy, moved: false }; tdrag = null; return; }
 			var hit = hitText(e, te ? te.L : PE.active());
 			if (te && hit === te.L) {
@@ -314,7 +327,7 @@
 			if (hit) { PE.setActive(hit.id); var i2 = indexAt(hit, e.x, e.y); openEdit(hit, false, i2); tdrag = { a: i2 }; return; }
 			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad; L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2;
 			PE.addLayer(L); openEdit(L, true, 0);
-		}, cancel: function () { if (tmv) { tmv.L.cx = tmv.cx; tmv.L.cy = tmv.cy; PE.invalidate(); tmv = null; } if (bw) { PE.textBoxAbort(bw); bw = null; } PE.endTextEdit(false); hoverT = null; } });
+		}, cancel: function () { if (tmv) { tmv.L.cx = tmv.cx; tmv.L.cy = tmv.cy; PE.invalidate(); tmv = null; } if (bw) { PE.textBoxAbort(bw); bw = null; } if (bsc) { PE.textBoxAbort(bsc); bsc = null; } PE.endTextEdit(false); hoverT = null; } });
 	function preset(o) { for (var k in o) PE.optSet("text", k, o[k]); PE.emit("opts", "text"); }
 	/* open the active text layer for editing: at = a point on the canvas (caret there, from a double-click with the Move tool), else everything selected */
 	PE.editActiveText = function (at) { var L = PE.active(); if (L && L.type === "text") { PE.setTool("text"); openEdit(L, false, at ? indexAt(L, at.x, at.y) : "all"); } };
