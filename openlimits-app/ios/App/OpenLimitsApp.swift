@@ -27,7 +27,29 @@ final class Model: ObservableObject {
         prefs = Shared.prefs
         authorized = AuthorizationCenter.shared.authorizationStatus == .approved
         if authorized { Shields.reconcile() }
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-demo") { demo() }
+        #endif
     }
+
+    #if DEBUG
+    /// Sample limits for store screenshots in the simulator (Screen Time doesn't work there). Never saved.
+    private func demo() {
+        let a = LimitItem(name: "Instagram", limit: 8), b = LimitItem(name: "TikTok", limit: 5), c = LimitItem(name: "YouTube", limit: 4)
+        limits = [a, b, c]
+        var d: [String: [String: DayCount]] = [:]
+        let cal = Calendar.current
+        let past = [[5, 3, 2], [7, 4, 3], [4, 2, 4], [6, 5, 1], [3, 3, 2], [6, 4, 3]]
+        for (i, v) in past.enumerated() {
+            let day = Logic.dayKey(cal.date(byAdding: .day, value: -(i + 1), to: Date())!)
+            d[day] = [a.id.uuidString: DayCount(o: v[0]), b.id.uuidString: DayCount(o: v[1]), c.id.uuidString: DayCount(o: v[2])]
+        }
+        d[Logic.dayKey()] = [a.id.uuidString: DayCount(o: 3), b.id.uuidString: DayCount(o: 2), c.id.uuidString: DayCount(o: 4)]
+        days = d
+        authorized = true
+        prefs.pause = 30; prefs.warnAt = 3
+    }
+    #endif
 
     func authorize() async {
         do {
