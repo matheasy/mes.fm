@@ -322,6 +322,11 @@ html body.dark-mode #tx.tu { --tx-acc:#f87171; --tx-line:#3a3f46; --tx-soft:#232
 #tx .tx-msg:empty { display:none; }
 #tx .tx-msg.tx-err { color:#b42318; }
 html body.dark-mode #tx .tx-msg.tx-err { color:#ff8a80; }
+#tx .tx-msg .tx-steps { margin:.5em 0 .7em 1.4em; padding:0; color:inherit; list-style:decimal outside; }
+#tx .tx-msg .tx-steps li { margin:.2em 0; color:inherit; display:list-item; list-style:decimal outside; }
+#tx .tx-msg .tx-acts { display:flex; flex-wrap:wrap; gap:.5em; }
+#tx .tx-msg .tx-acts .tu-btn { text-decoration:none !important; }
+#tx .tx-msg .tx-acts a.tu-btn--primary, html body.dark-mode #tx .tx-msg .tx-acts a.tu-btn--primary { color:#fff !important; }
 #tx .tx-drop { display:block; border:2px dashed var(--tx-line); border-radius:12px; padding:1.6em 1em; text-align:center; cursor:pointer; background:var(--tx-soft); }
 #tx .tx-drop.tx-over { border-color:var(--tx-acc); }
 #tx .tx-drop input { display:none; }
@@ -937,7 +942,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/transcript/js/transcript.js?v=1" defer></script>
+	<script src="/transcript/js/transcript.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

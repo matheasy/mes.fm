@@ -282,7 +282,7 @@ APPS = {
                        tag="Every word, every timestamp.", accent="#b91c1c", dark="#991b1b", tint="#fde8e8",
                        desc="Free YouTube transcript generator: paste a link to get the video's captions with clickable times, search them, and copy or download them as text, paragraphs, SRT or VTT. Make chapter timestamps for your description. 3Speak, Odysee and your own files get a transcript from speech recognition in your browser.",
                        meta_desc="Get any YouTube video's transcript with clickable times, make chapter timestamps for your description, and download TXT, SRT or VTT. Also 3Speak, Odysee and your own files.",
-                       js_v="1", lib_from=["youtube-audio", "convert-video"], js_parts=["../convert-video/engine.js"]),
+                       js_v="2", lib_from=["youtube-audio", "convert-video"], js_parts=["../convert-video/engine.js"]),
     # MES Watch (2026-11-07, mes.fm/watch): a plain player for YouTube (IFrame API, nocookie), 3Speak (HLS) and Odysee (file) in our own <video>,
     # Rumble / BitChute / X embeds; Up next / Saved / History with resume, in localStorage mes-watch:v1. lib.js = MESWatch on top of
     # youtube-audio's MESYA.parseLink (lib_from). Tests: node tool_apps_src/watch-tests.js.

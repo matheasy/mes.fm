@@ -15,6 +15,11 @@ html body.dark-mode #tx.tu { --tx-acc:#f87171; --tx-line:#3a3f46; --tx-soft:#232
 #tx .tx-msg:empty { display:none; }
 #tx .tx-msg.tx-err { color:#b42318; }
 html body.dark-mode #tx .tx-msg.tx-err { color:#ff8a80; }
+#tx .tx-msg .tx-steps { margin:.5em 0 .7em 1.4em; padding:0; color:inherit; list-style:decimal outside; }
+#tx .tx-msg .tx-steps li { margin:.2em 0; color:inherit; display:list-item; list-style:decimal outside; }
+#tx .tx-msg .tx-acts { display:flex; flex-wrap:wrap; gap:.5em; }
+#tx .tx-msg .tx-acts .tu-btn { text-decoration:none !important; }
+#tx .tx-msg .tx-acts a.tu-btn--primary, html body.dark-mode #tx .tx-msg .tx-acts a.tu-btn--primary { color:#fff !important; }
 #tx .tx-drop { display:block; border:2px dashed var(--tx-line); border-radius:12px; padding:1.6em 1em; text-align:center; cursor:pointer; background:var(--tx-soft); }
 #tx .tx-drop.tx-over { border-color:var(--tx-acc); }
 #tx .tx-drop input { display:none; }

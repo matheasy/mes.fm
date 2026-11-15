@@ -28,7 +28,7 @@
 	}
 	Y.tParam = tParam;
 	Y.SITES = {
-		youtube: "YouTube", "3speak": "3Speak", rumble: "Rumble", odysee: "Odysee", bitchute: "BitChute", x: "X", substack: "Substack",
+		youtube: "YouTube", "3speak": "3Speak", rumble: "Rumble", odysee: "Odysee", bitchute: "BitChute", vimeo: "Vimeo", x: "X", substack: "Substack",
 		direct: "Media file", other: "Web page"
 	};
 	/* -> {ok, kind, name, id, embed (iframe URL or null), watch (link to open), start (s), reason} */
@@ -76,6 +76,18 @@
 		if (h === "bitchute.com" || h === "old.bitchute.com") {
 			if ((m = p.match(/^\/(?:video|embed)\/([A-Za-z0-9_-]{6,32})\/?/))) return out("bitchute", m[1], "https://www.bitchute.com/embed/" + m[1] + "/", { watch: "https://www.bitchute.com/video/" + m[1] + "/" });
 			return out("bitchute", null, null);
+		}
+		/* Vimeo: vimeo.com/<id>[/<hash>], vimeo.com/channels|groups|showcase/.../<id>, player.vimeo.com/video/<id>?h=<hash>
+		   (the hash is what lets an unlisted video play; kept in the embed link) */
+		if (h === "vimeo.com" || h === "player.vimeo.com") {
+			var vm = null, vh = q.get("h") || "";
+			if ((m = p.match(/^\/(?:video\/)?(\d{5,12})(?:\/([0-9a-f]{6,20}))?\/?$/i))) { vm = m[1]; if (m[2]) vh = m[2]; }
+			else if ((m = p.match(/^\/(?:channels\/[^/]+|groups\/[^/]+\/videos|showcase\/\d+\/video|album\/\d+\/video)\/(\d{5,12})\/?$/i))) vm = m[1];
+			if (!vm) return out("vimeo", null, null);
+			if (!/^[0-9a-f]{0,20}$/i.test(vh)) vh = "";
+			var vst = tParam((u.hash.match(/t=([0-9hms.]+)/) || [])[1] || q.get("t"));
+			return out("vimeo", vm, "https://player.vimeo.com/video/" + vm + "?" + (vh ? "h=" + vh + "&" : "") + "dnt=1&playsinline=1" + (vst ? "#t=" + vst + "s" : ""),
+				{ watch: "https://vimeo.com/" + vm + (vh ? "/" + vh : "") + (vst ? "#t=" + vst + "s" : ""), start: vst, hash: vh || "" });
 		}
 		/* X / Twitter: the tweet's own embed page plays its video */
 		if (h === "x.com" || h === "twitter.com" || h === "mobile.twitter.com" || h === "fxtwitter.com" || h === "vxtwitter.com") {
@@ -1544,8 +1556,21 @@
 			show({ cues: X.norm(j.cues), title: j.title, sub: [j.author, X.fmt(j.len, j.len >= 3600), (j.auto ? "YouTube's automatic captions" : "Captions") + " (" + j.lang + ")"], src: { kind: "youtube", id: L.id, watch: L.watch, start: L.start }, tracks: j.tracks, lang: j.lang, auto: j.auto, desc: j.desc, len: j.len });
 		} catch (e) {
 			var local = /^(localhost|127\.)/.test(location.hostname);
+			if (!local && /sign in|not a bot|confirm you/i.test(e.message || "")) return botMsg(L);
 			msg(esc(local ? "The caption reader only runs on mes.fm itself (this is a local copy)." : (e.message || String(e))) + " You can still copy YouTube's own transcript (under the video: …more → Show transcript) and paste it in the <b>Paste captions</b> tab.", true);
 		}
+	}
+
+	/* YouTube sometimes answers our server (a data-centre address) with "Sign in to confirm you're not a bot". That is about the server,
+	   not the visitor, and signing in to anything here would not help, so say so and offer the two ways that do work. */
+	function botMsg(L) {
+		var w = L.watch || ("https://www.youtube.com/watch?v=" + L.id);
+		msg("<b>YouTube is blocking our caption reader right now.</b> It asked mes.fm's server to prove it isn't a robot. This is not about you: you don't need an account or to sign in anywhere. Get the transcript from YouTube yourself in 3 steps:" +
+			'<ol class="tx-steps"><li>Open the video on YouTube (button below).</li><li>Under the video tap <b>…more</b>, scroll down and tap <b>Show transcript</b>. Select all of it and copy.</li><li>Come back and paste it in the <b>Paste captions</b> tab.</li></ol>' +
+			'<span class="tx-acts"><a class="tu-btn tu-btn--primary" href="' + esc(w) + '" target="_blank" rel="noopener">▶ Open the video on YouTube</a> ' +
+			'<button type="button" class="tu-btn" id="tx-gopaste">📋 Go to Paste captions</button> <button type="button" class="tu-btn" id="tx-retry">↻ Try again</button></span>', true);
+		$("tx-gopaste").addEventListener("click", function () { setTab("paste"); $("tx-paste").focus(); });
+		$("tx-retry").addEventListener("click", function () { openLink($("tx-url").value); });
 	}
 
 	/* ---------- getting 16 kHz mono sound ---------- */

@@ -76,8 +76,21 @@
 			show({ cues: X.norm(j.cues), title: j.title, sub: [j.author, X.fmt(j.len, j.len >= 3600), (j.auto ? "YouTube's automatic captions" : "Captions") + " (" + j.lang + ")"], src: { kind: "youtube", id: L.id, watch: L.watch, start: L.start }, tracks: j.tracks, lang: j.lang, auto: j.auto, desc: j.desc, len: j.len });
 		} catch (e) {
 			var local = /^(localhost|127\.)/.test(location.hostname);
+			if (!local && /sign in|not a bot|confirm you/i.test(e.message || "")) return botMsg(L);
 			msg(esc(local ? "The caption reader only runs on mes.fm itself (this is a local copy)." : (e.message || String(e))) + " You can still copy YouTube's own transcript (under the video: …more → Show transcript) and paste it in the <b>Paste captions</b> tab.", true);
 		}
+	}
+
+	/* YouTube sometimes answers our server (a data-centre address) with "Sign in to confirm you're not a bot". That is about the server,
+	   not the visitor, and signing in to anything here would not help, so say so and offer the two ways that do work. */
+	function botMsg(L) {
+		var w = L.watch || ("https://www.youtube.com/watch?v=" + L.id);
+		msg("<b>YouTube is blocking our caption reader right now.</b> It asked mes.fm's server to prove it isn't a robot. This is not about you: you don't need an account or to sign in anywhere. Get the transcript from YouTube yourself in 3 steps:" +
+			'<ol class="tx-steps"><li>Open the video on YouTube (button below).</li><li>Under the video tap <b>…more</b>, scroll down and tap <b>Show transcript</b>. Select all of it and copy.</li><li>Come back and paste it in the <b>Paste captions</b> tab.</li></ol>' +
+			'<span class="tx-acts"><a class="tu-btn tu-btn--primary" href="' + esc(w) + '" target="_blank" rel="noopener">▶ Open the video on YouTube</a> ' +
+			'<button type="button" class="tu-btn" id="tx-gopaste">📋 Go to Paste captions</button> <button type="button" class="tu-btn" id="tx-retry">↻ Try again</button></span>', true);
+		$("tx-gopaste").addEventListener("click", function () { setTab("paste"); $("tx-paste").focus(); });
+		$("tx-retry").addEventListener("click", function () { openLink($("tx-url").value); });
 	}
 
 	/* ---------- getting 16 kHz mono sound ---------- */
