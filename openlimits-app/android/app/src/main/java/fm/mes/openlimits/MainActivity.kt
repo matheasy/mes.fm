@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.provider.Settings as AndroidSettings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -266,8 +268,8 @@ private fun SettingsCard(s: State) {
             Text("Settings", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(10.dp))
             Text("Pause before opening", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-            Text("Wait a few seconds (breathe) before the Open button works.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Choices(listOf(0, 3, 5, 10, 15), s.settings.pause, { if (it == 0) "None" else "${it}s" }) { v -> Store.update(ctx) { it.copy(settings = it.settings.copy(pause = v)) } }
+            Text("Wait (breathe) before the Open button works. A longer wait makes opening on autopilot harder.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Choices(listOf(0, 3, 5, 10, 15, 30, 60, 120), s.settings.pause, { when { it == 0 -> "None"; it >= 60 -> "${it / 60} min"; else -> "${it}s" } }) { v -> Store.update(ctx) { it.copy(settings = it.settings.copy(pause = v)) } }
             Spacer(Modifier.height(12.dp))
             Text("Same open if you come back within", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             Text("Switching to another app and back quickly doesn't use another open.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -278,11 +280,55 @@ private fun SettingsCard(s: State) {
                 if (!v && s.settings.strict) strictWait = true
                 else Store.update(ctx) { it.copy(settings = it.settings.copy(strict = v)) }
             }
+            Spacer(Modifier.height(10.dp))
+            NotifySettings(s)
             if (s.settings.pause == 0 && !s.settings.ask) Text("With no pause and no question, opens are counted quietly and you only see a screen when an app is almost used up or locked.",
                 fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
         }
     }
     if (strictWait) WaitDialog("Turn off strict mode?", onDone = { strictWait = false; Store.update(ctx) { it.copy(settings = it.settings.copy(strict = false)) } }, onCancel = { strictWait = false })
+}
+
+/** Notifications: one after each open, a warning when few are left, and the status-bar counter. */
+@Composable
+private fun NotifySettings(s: State) {
+    val ctx = LocalContext.current
+    var allowed by remember { mutableStateOf(Notify.allowed(ctx)) }
+    val owner = LocalLifecycleOwner.current
+    DisposableEffect(owner) {
+        val obs = LifecycleEventObserver { _, e -> if (e == Lifecycle.Event.ON_RESUME) { allowed = Notify.allowed(ctx); Notify.updateBar(ctx) } }
+        owner.lifecycle.addObserver(obs)
+        onDispose { owner.lifecycle.removeObserver(obs) }
+    }
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        allowed = Notify.allowed(ctx)
+        if (!ok && !allowed) Notify.openSettings(ctx)
+        Notify.updateBar(ctx)
+    }
+    fun allow() { if (Notify.needsPermission) ask.launch(android.Manifest.permission.POST_NOTIFICATIONS) else Notify.openSettings(ctx) }
+    // Ask once, the first time the screen shows with a notification setting on.
+    LaunchedEffect(Unit) { if (!allowed && (s.settings.notify || s.settings.bar || s.settings.warnAt > 0) && Notify.needsPermission) allow() }
+
+    Text("Notifications", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 4.dp))
+    if (!allowed) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(10.dp)).background(Color(0x33F59E0B)).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text("Notifications are off for Open Limits, so these can't show.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            TextButton(onClick = ::allow) { Text("Turn on") }
+        }
+    }
+    SwitchRow("Tell me each time I open one", "A quiet note like \"Instagram: 3/8 opens used\". It goes away by itself.", s.settings.notify) { v ->
+        Store.update(ctx) { it.copy(settings = it.settings.copy(notify = v)) }; if (v && !allowed) allow()
+    }
+    Text("Warn me when this many opens are left", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 6.dp))
+    Text("Pops up \"WARNING: 3 opens left of Instagram\".", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Choices(listOf(0, 1, 2, 3, 5), s.settings.warnAt, { if (it == 0) "Never" else "$it" }) { v ->
+        Store.update(ctx) { it.copy(settings = it.settings.copy(warnAt = v)) }; if (v > 0 && !allowed) allow()
+    }
+    Spacer(Modifier.height(4.dp))
+    SwitchRow("Opens-left counter in the status bar", "The number of opens left (the app with the fewest) sits in the status bar; pull down to see every app's 3/8.", s.settings.bar) { v ->
+        Store.update(ctx) { it.copy(settings = it.settings.copy(bar = v)) }; if (v && !allowed) allow()
+    }
+    TextButton(onClick = { Notify.openSettings(ctx) }, contentPadding = PaddingValues(0.dp)) { Text("Sound, pop-up and lock-screen choices…") }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -296,7 +342,7 @@ private fun Choices(values: List<Int>, cur: Int, label: (Int) -> String, onPick:
 @Composable
 private fun SwitchRow(title: String, sub: String, value: Boolean, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().clickable { onChange(!value) }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f).padding(end = 12.dp)) {
             Text(title, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             Text(sub, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

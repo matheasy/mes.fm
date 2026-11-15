@@ -22,9 +22,20 @@ class LimitService : AccessibilityService() {
         super.onServiceConnected()
         instance = this
         refreshLists()
+        Notify.updateBar(this)
+        scheduleMidnight()
+    }
+
+    /** At midnight every app gets its opens back: refresh the status-bar counter then. */
+    private val midnight = Runnable { Notify.updateBar(this); scheduleMidnight() }
+    private fun scheduleMidnight() {
+        main.removeCallbacks(midnight)
+        val next = java.time.LocalDate.now().plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        main.postDelayed(midnight, (next - System.currentTimeMillis()).coerceAtLeast(1000L) + 2000L)
     }
 
     override fun onDestroy() {
+        main.removeCallbacks(midnight)
         if (instance === this) instance = null
         super.onDestroy()
     }
@@ -64,7 +75,8 @@ class LimitService : AccessibilityService() {
             Gate.PAUSE -> if (Logic.silent(s, day, rule)) {
                 countOpen(pkg, null, false)
                 val left = Logic.left(Store.get(this), day, rule)
-                if (left <= 1) main.post { Toast.makeText(this, if (left == 1) "1 open of ${rule.label} left today" else "That was your last open of ${rule.label} today", Toast.LENGTH_LONG).show() }
+                val s2 = Store.get(this)
+                if (left <= 1 && (!s2.settings.notify || !Notify.allowed(this))) main.post { Toast.makeText(this, if (left == 1) "1 open of ${rule.label} left today" else "That was your last open of ${rule.label} today", Toast.LENGTH_LONG).show() }
             } else showGate(pkg)
             Gate.LOCKED -> showGate(pkg)
         }
@@ -93,6 +105,7 @@ class LimitService : AccessibilityService() {
             Store.update(ctx) { Logic.addOpen(it, Store.today(), pkg, reason, extra) }
             openedAt[pkg] = now
             leftAt.remove(pkg)
+            Notify.afterOpen(ctx, pkg, extra)
         }
 
         /** The gate opened the app: don't gate it again while it comes to the front. */

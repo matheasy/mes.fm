@@ -78,4 +78,26 @@ class LogicTest {
         val h = Logic.history(s, LocalDate.parse(day), 7)
         assertEquals(7, h.size); assertEquals(1, h.last().second); assertEquals(0, h.first().second)
     }
+
+    @Test fun openMessages() {
+        val r = AppRule("x", "Instagram", 8)
+        var s = State(apps = listOf(r), since = "2026-11-01")
+        repeat(3) { s = Logic.addOpen(s, day, "x", null, false) }
+        assertEquals("Instagram: 3/8 opens used", Logic.openMessage(s, day, r, false).first)
+        assertFalse(Logic.openMessage(s, day, r, false).third)
+        repeat(2) { s = Logic.addOpen(s, day, "x", null, false) }
+        val w = Logic.openMessage(s, day, r, false)
+        assertEquals("WARNING: 3 opens left of Instagram", w.first); assertTrue(w.third)
+        repeat(3) { s = Logic.addOpen(s, day, "x", null, false) }
+        assertEquals("Instagram: last open used", Logic.openMessage(s, day, r, false).first)
+        val off = s.copy(settings = s.settings.copy(warnAt = 0))
+        assertEquals("Instagram: 5/8 opens used", Logic.openMessage(Logic.fromJson(Logic.toJson(off)).copy(days = mapOf(day to mapOf("x" to DayApp(5)))), day, r, false).first)
+        assertEquals(0, Logic.fewestLeft(s, day))
+        assertEquals("Instagram 8/8", Logic.barSummary(s, day)!!.second)
+    }
+
+    @Test fun settingsRoundTrip() {
+        val s = State(settings = Settings(pause = 60, notify = false, warnAt = 5, bar = false))
+        assertEquals(s.settings, Logic.fromJson(Logic.toJson(s)).settings)
+    }
 }

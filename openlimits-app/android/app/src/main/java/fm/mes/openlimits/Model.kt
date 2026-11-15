@@ -29,6 +29,12 @@ data class Settings(
     val ask: Boolean = true,
     /** Strict mode: no emergency opens, loosening a limit needs a wait. */
     val strict: Boolean = false,
+    /** Notification each time a limited app is opened ("3 of 8 opens used"). */
+    val notify: Boolean = true,
+    /** Warn (pop-up notification) when this many opens or fewer are left (0 = never). */
+    val warnAt: Int = 3,
+    /** Keep an "opens left today" counter in the status bar. */
+    val bar: Boolean = true,
 )
 
 data class State(
@@ -130,6 +136,33 @@ object Logic {
         else -> old.on && (!new.on || new.limit > old.limit)
     }
 
+    /** Text for the notification after an open: (title, body, isWarning). */
+    fun openMessage(s: State, day: String, rule: AppRule, extra: Boolean): Triple<String, String, Boolean> {
+        val o = opens(s, day, rule.pkg)
+        val left = left(s, day, rule)
+        val warn = s.settings.warnAt
+        return when {
+            extra -> Triple("${rule.label}: extra open", "Over today's limit (${o.extra} extra). It locks again when you leave.", true)
+            left == 0 -> Triple("${rule.label}: last open used", "${o.opens}/${rule.limit} opens used. It locks until midnight.", true)
+            warn > 0 && left <= warn -> Triple("WARNING: $left ${if (left == 1) "open" else "opens"} left of ${rule.label}", "${o.opens}/${rule.limit} opens used today.", true)
+            else -> Triple("${rule.label}: ${o.opens}/${rule.limit} opens used", "$left left today.", false)
+        }
+    }
+
+    /** One line per limited app for the status-bar counter, fewest left first. Null when there is nothing to show. */
+    fun barSummary(s: State, day: String): Pair<String, String>? {
+        val on = s.apps.filter { it.on }
+        if (on.isEmpty()) return null
+        val sorted = on.sortedBy { left(s, day, it) }
+        val first = sorted.first()
+        val title = "${left(s, day, first)} ${if (left(s, day, first) == 1) "open" else "opens"} left of ${first.label}"
+        val body = sorted.joinToString(" · ") { "${it.label} ${opens(s, day, it.pkg).opens}/${it.limit}" }
+        return title to body
+    }
+
+    /** Fewest opens left over the apps with a limit (the number drawn in the status-bar icon). */
+    fun fewestLeft(s: State, day: String): Int? = s.apps.filter { it.on }.minOfOrNull { left(s, day, it) }
+
     // ---- JSON ----
     fun toJson(s: State): String {
         val o = JSONObject()
@@ -138,7 +171,8 @@ object Logic {
             s.apps.forEach { put(JSONObject().put("p", it.pkg).put("l", it.label).put("n", it.limit).put("on", it.on)) }
         })
         o.put("set", JSONObject().put("pause", s.settings.pause).put("grace", s.settings.grace)
-            .put("ask", s.settings.ask).put("strict", s.settings.strict))
+            .put("ask", s.settings.ask).put("strict", s.settings.strict)
+            .put("notify", s.settings.notify).put("warn", s.settings.warnAt).put("bar", s.settings.bar))
         val days = JSONObject()
         s.days.forEach { (day, m) ->
             val dj = JSONObject()
@@ -168,10 +202,13 @@ object Logic {
             }
             val sj = o.optJSONObject("set") ?: JSONObject()
             val settings = Settings(
-                pause = sj.optInt("pause", 5).coerceIn(0, 60),
+                pause = sj.optInt("pause", 5).coerceIn(0, 120),
                 grace = sj.optInt("grace", 3).coerceIn(0, 30),
                 ask = sj.optBoolean("ask", true),
                 strict = sj.optBoolean("strict", false),
+                notify = sj.optBoolean("notify", true),
+                warnAt = sj.optInt("warn", 3).coerceIn(0, 10),
+                bar = sj.optBoolean("bar", true),
             )
             val days = mutableMapOf<String, Map<String, DayApp>>()
             o.optJSONObject("days")?.let { dj ->

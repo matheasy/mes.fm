@@ -36,6 +36,7 @@ object Store {
         if (st > next.bestStreak) next = next.copy(bestStreak = st)
         flow.value = next
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, Logic.toJson(next)).apply()
+        Notify.updateBar(ctx)
     }
 
     /** Called by the service when another process (none today) might have written: re-read from disk. */
