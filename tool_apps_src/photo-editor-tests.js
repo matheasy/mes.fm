@@ -471,4 +471,9 @@ t("per-letter text size", function () {
 	var segs = P.textSegs("0011", [1, 2, 2, 2], 0, 4, 0); assert.deepStrictEqual(segs.map(function (g) { return [g.s, g.e, g.m, g.k]; }), [[0, 1, 0, 1], [1, 2, 0, 2], [2, 4, 1, 2]]);
 	assert.deepStrictEqual(P.lineScales([{ start: 0, end: 2 }, { start: 3, end: 3 }, { start: 3, end: 4 }], [1, 2, 1, 1]), [2, 1, 1]);
 	assert.deepStrictEqual(P.lineScales([{ start: 0, end: 2 }], null), [1]); });
+t("despill: green / blue / red screens only, inside the region", function () {
+	assert.strictEqual(P.spillChannel([0, 255, 0]), 1); assert.strictEqual(P.spillChannel([30, 60, 220]), 2); assert.strictEqual(P.spillChannel([255, 255, 255]), -1); assert.strictEqual(P.spillChannel([255, 255, 0]), -1); assert.strictEqual(P.spillChannel([0, 0, 0]), -1);
+	var d = new Uint8ClampedArray([20, 90, 30, 255, 200, 200, 200, 255, 10, 120, 10, 255, 0, 255, 0, 0]);
+	assert.strictEqual(P.despill(d, 4, 1, [0, 255, 0], [1, 1, 0, 1]), 1); assert.deepStrictEqual(Array.from(d.slice(0, 12)), [20, 30, 30, 255, 200, 200, 200, 255, 10, 120, 10, 255]);
+	assert.strictEqual(P.despill(d, 4, 1, [255, 255, 255], null), 0); });
 console.log(n + " checks ok");

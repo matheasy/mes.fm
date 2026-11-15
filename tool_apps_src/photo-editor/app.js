@@ -509,7 +509,12 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	}
 	function copyMerged() { if (!PE.doc) return; var c = PE.flatten(), b = PE.sel && PE.selBounds(), xf = { cx: PE.doc.w / 2, cy: PE.doc.h / 2, sx: 1, sy: 1, rot: 0 }; if (b) { var n = PE.mk(b.w, b.h), x = n.getContext("2d"); x.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); x.globalCompositeOperation = "destination-in"; x.drawImage(PE.sel.c, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h); c = n; xf = { cx: b.x + b.w / 2, cy: b.y + b.h / 2, sx: 1, sy: 1, rot: 0 }; } remember(c, xf); c.toBlob(function (bl) { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]).then(function () { PE.toast("Copied merged image"); }); } catch (e) { PE.toast("Copied"); } }); }
 	PE.clearSelection = function () { clearSel(); };
-	function clearSel() { var L = PE.active(); if (!L) return; if (!PE.sel) { PE.toast("Make a selection first (or delete the layer)"); return; } if (!PE.prepare(L, false, true)) return; var t = L.editMask && L.mask ? L.mask : L.canvas, o = PE.origin(L), x = t.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-out"; x.drawImage(PE.sel.c, -o.x, -o.y); x.restore(); L.rev++; PE.commit("Clear selection"); }
+	function clearSel() { var L = PE.active(); if (!L) return; if (!PE.sel) { PE.toast("Make a selection first (or delete the layer)"); return; } if (!PE.prepare(L, false, true)) return; var t = L.editMask && L.mask ? L.mask : L.canvas, o = PE.origin(L), x = t.getContext("2d"); x.save(); x.globalCompositeOperation = "destination-out"; x.drawImage(PE.sel.c, -o.x, -o.y); x.restore(); var cleaned = t === L.canvas ? cleanSpill(L, o) : 0; L.rev++; PE.commit(cleaned ? "Delete + clean edges" : "Clear selection"); }
+	/* after deleting a wand-selected green / blue / red screen: take its tint out of the pixels within 3 px of the cut (on the layer the wand picked) */
+	function cleanSpill(L, o) { var wl = PE.wandLast; if (!wl || !wl.rgb || wl.sel !== PE.sel || wl.layer !== L.id || P.spillChannel(wl.rgb) < 0) return 0;
+		var dd = PE.doc, m = P.growShrinkMask(PE.selMask(), dd.w, dd.h, 3, true), c = L.canvas, cw = c.width, ch = c.height, reg = new Uint8Array(cw * ch);
+		for (var y = 0; y < ch; y++) { var dy = y + o.y; if (dy < 0 || dy >= dd.h) continue; for (var xx = 0; xx < cw; xx++) { var dx = xx + o.x; if (dx >= 0 && dx < dd.w && m[dy * dd.w + dx]) reg[y * cw + xx] = 1; } }
+		var cx = c.getContext("2d"), im = cx.getImageData(0, 0, cw, ch), n = P.despill(im.data, cw, ch, wl.rgb, reg); if (n) cx.putImageData(im, 0, 0); return n; }
 	function fillSel(color) {
 		var L = PE.active(); if (!PE.doc || !PE.prepare(L)) return; var o = PE.origin(L), c = PE.mk(L.canvas.width, L.canvas.height), x = c.getContext("2d"); x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
 		PE.paintInto(L, c, o.x, o.y, { target: L.editMask && L.mask ? "mask" : "pixel" }); PE.commit("Fill");
@@ -819,6 +824,8 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	if (S.opt) for (var k in S.opt) if (PE.opt[k]) for (var kk in S.opt[k]) if (kk in PE.opt[k]) PE.opt[k][kk] = S.opt[k][kk];
 	if (PE.opt.text && /^\s*['"]?MESfile/.test(String(PE.opt.text.font || ""))) PE.opt.text.font = PE.TEXTDEF.font;   // round 10: a font file loaded in an earlier visit is gone after a reload: new texts use the standard font instead of an invisible fallback
 	if (!S.wand2) { PE.opt.wand.merged = true; PE.opt.wand.what = "color"; sset({ wand2: 1 }); }   // 2026-11-11: the wand reads what you see by default (it used to read only the selected layer, which looked like it selected the wrong part)
+	PE.opt.wand.what = "color"; PE.opt.wand.mode = "new";   // 2026-11-14: never carry "Everything else" / "Add" over to a new visit (a remembered "Everything else + Add" made the wand look broken)
+	if (!S.wand3) { PE.opt.wand.pro = false; PE.opt.wand.merged = false; PE.opt.wand.pick = true; PE.opt.wand.contiguous = true; sset({ wand3: 1 }); }   // simple wand for everyone once
 	PE.opt.shape.next = 1; PE.opt.text.str = "Text";
 	showTab(S.tab === "comps" ? "comps" : "hist"); buildMenus(); buildTools(); PE.initPointer(); PE.initTextEditor(); buildColor(); resize(); PE.setTool("move"); status(); if (PE.recentReady) PE.recentReady(); saveState();
 	if (S.win) { autoWin = true; toggleWin(true); }

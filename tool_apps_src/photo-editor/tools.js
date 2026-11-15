@@ -450,31 +450,54 @@
 		dbl: function () { if (lasso && lasso.poly) { lasso.pts.pop(); lassoDone(lasso.mode); } },
 		enter: function () { if (lasso && lasso.poly) lassoDone(lasso.mode); }, cancel: function () { lasso = null; },
 		overlay: function (x) { if (!lasso) return; x.lineWidth = 1; [["#000", 0], ["#fff", 5]].forEach(function (p) { x.strokeStyle = p[0]; x.setLineDash([5, 5]); x.lineDashOffset = p[1]; x.beginPath(); lasso.pts.forEach(function (q, i) { var s = PE.toScreen(q.x, q.y); i ? x.lineTo(s.x, s.y) : x.moveTo(s.x, s.y); }); if (lasso.poly && lasso.cur) { var c = PE.toScreen(lasso.cur.x, lasso.cur.y); x.lineTo(c.x, c.y); } x.stroke(); }); x.setLineDash([]); x.lineDashOffset = 0; } });
-	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: true, mode: "new", smooth: true, pick: false, what: "color" },
-		ui: [{ k: "what", label: "Select", type: "seg", options: [["color", "The colour I click"], ["rest", "Everything else"]], help: "The colour I click (like GIMP and Photoshop): clicking the white background selects the white, and Delete removes it. Everything else: clicking the white selects everything that is NOT white (the drawing), ready to copy (Ctrl+C) and paste as a new layer. The selected part gets a blue wash and moving dashes round its edge." }, { k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1 }, { k: "contiguous", label: "Contiguous", type: "check" }, { k: "merged", label: "Use what I see (all layers)", type: "check", help: "On (the default): the wand looks at the picture as you see it, all layers together. Off: it looks only at the layer selected in the Layers panel, so clicking a see-through part of that layer selects all of its empty space." }, { k: "smooth", label: "Smooth edges", type: "check" }, { k: "pick", label: "Pick the layer under the click", type: "check", help: "Off (the default, like Photoshop and Photopea): the wand always works on the layer selected in the Layers panel. On: if a letter, shape or picture on a layer above the selected one covers the spot you click, the wand switches to that layer first." }, { k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]] },
-			{ type: "button", label: "⌫ Delete selected", when: function () { return !!PE.sel; }, title: "Remove the selected pixels from the active layer (Delete key)", act: function () { PE.clearSelection(); } },
+	/* 2026-11-14: simple by default. Without "More options" the wand always does the plain thing: select the colour you click, joined to
+	   the spot, on the layer you see there (so Delete hits that layer), new selection each click (Shift adds, Alt subtracts), and Delete also
+	   cleans a green / blue / red screen's tint off the edges. The pro settings only apply while "More options" is on. */
+	function wandEff() { var o = PE.opt.wand; return o.pro ? o : { tol: o.tol, contiguous: true, merged: false, mode: "new", smooth: true, pick: "top", what: "color", clean: true }; }
+	PE.wandEff = wandEff;
+	function wandPro(u) { u.show = "pro"; return u; }
+	PE.defTool({ id: "wand", name: "Magic Wand (select by colour)", key: "w", icon: "✨", opts: { tol: 32, contiguous: true, merged: false, mode: "new", smooth: true, pick: true, what: "color", clean: true, pro: false },
+		ui: [{ k: "tol", label: "Tolerance", type: "range", min: 0, max: 255, step: 1, help: "How close a colour has to be to the one you click to be selected too. Low: only that exact colour. Higher: shades of it as well (a green screen with uneven light needs about 40-80). If the selection leaks into your picture, lower it." },
+			{ type: "button", label: "⌫ Delete selected", when: function () { return !!PE.sel; }, title: "Remove the selected pixels from the layer (Delete key)", act: function () { PE.clearSelection(); } },
 			{ type: "button", label: "⇄ Invert", when: function () { return !!PE.sel; }, title: "Select the opposite part (Ctrl+Shift+I)", act: function () { PE.selInvert(); PE.commit("Invert selection"); PE.emit("opts", "wand"); } },
-			{ type: "button", label: "🎨 Remove a colour…", title: "Like Camtasia's Remove a Color: make one colour see-through everywhere on the layer, with a soft edge, and see it live", act: function () { PE.removeColorDialog(PE.wandColor); } }],
-		hint: "Click a colour to select it (the selected part gets a blue wash). Raise Tolerance to include similar colours. To make a plain background see-through: click it, then Delete selected, or use Remove a colour.",
+			{ type: "button", label: "🎨 Remove a colour…", title: "Like Camtasia's Remove a Color: make one colour see-through everywhere on the layer (inside shapes too), with a soft edge, and see it live", act: function () { PE.removeColorDialog(PE.wandColor); } },
+			{ k: "pro", label: "More options", type: "check", help: "Off (simple): click a colour and it is selected, only the part joined to where you clicked, on the layer you see there. Delete removes it and cleans a green-screen tint off the edges. Shift-click adds more, Alt-click takes some away. On: every setting (select everything else, all layers, add / subtract mode ...) for experts." },
+			wandPro({ k: "what", label: "Select", type: "seg", options: [["color", "The colour I click"], ["rest", "Everything else"]], help: "The colour I click (like GIMP and Photoshop): clicking the white background selects the white, and Delete removes it. Everything else: clicking the white selects everything that is NOT white (the drawing), ready to copy (Ctrl+C) and paste as a new layer." }),
+			wandPro({ k: "contiguous", label: "Contiguous", type: "check", help: "On: only the area joined to where you click (the background outside a logo, not the same colour inside its letters). Off: that colour everywhere on the layer." }),
+			wandPro({ k: "merged", label: "Use what I see (all layers)", type: "check", help: "On: the wand looks at the picture as you see it, all layers together, but Delete still removes from the layer selected in the Layers panel. Off: it looks at one layer only." }),
+			wandPro({ k: "pick", label: "Pick the layer under the click", type: "check", help: "On: the wand works on the layer you see where you click (it becomes the selected layer). Off: always the layer selected in the Layers panel." }),
+			wandPro({ k: "smooth", label: "Smooth edges", type: "check" }),
+			wandPro({ k: "clean", label: "Clean coloured edges on Delete", type: "check", help: "After Delete, takes the tint of a green, blue or red background out of the pixels along the cut, so no coloured rim is left round the outline. White, black and mixed colours are left alone." }),
+			wandPro({ k: "mode", label: "Mode", type: "seg", options: [["new", "New"], ["add", "Add"], ["sub", "Subtract"], ["int", "Intersect"]], help: "What a click does with the selection you already have. Shift-click always adds, Alt-click always subtracts." })],
+		hint: "Click the background (or any colour) to select it, then press Delete. Only the part joined to your click is selected, so the same colour inside your picture stays. Shift-click adds more, Alt-click takes some away.",
 		down: function (e) {
-			var o = PE.opt.wand, d = PE.doc, L = PE.active(), mask, w, h;
-			if (o.pick && !o.merged && L) {   // the layer that is really visible under the click (a letter on its own layer, a pasted picture ...)
+			var o = wandEff(), d = PE.doc, L = PE.active(), mask, w, h, rgb = null;
+			if (o.pick === "top") {   // simple: the topmost visible layer that really has a pixel under the click
+				for (var ti = d.layers.length - 1; ti >= 0; ti--) {
+					var T = d.layers[ti]; if (PE.isGroup(T) || !PE.effVisible(T) || T.locked) continue; var tq = PE.toLayerPt(T, e.x, e.y);
+					if (tq.x < 0 || tq.y < 0 || tq.x >= T.canvas.width || tq.y >= T.canvas.height) continue; if (T.canvas.getContext("2d").getImageData(Math.floor(tq.x), Math.floor(tq.y), 1, 1).data[3] < 24) continue;
+					if (T !== L) { PE.setActive(T.id); L = T; } break;
+				}
+			} else if (o.pick && !o.merged && L) {   // the layer that is really visible under the click (a letter on its own layer, a pasted picture ...)
 				for (var li = d.layers.length - 1; li >= 0; li--) {
 					var C = d.layers[li]; if (C === L) break; if (PE.isGroup(C) || !PE.effVisible(C)) continue; var q = PE.toLayerPt(C, e.x, e.y), cw = C.canvas.width, ch = C.canvas.height;
 					if (q.x < 0 || q.y < 0 || q.x >= cw || q.y >= ch) continue; if (C.canvas.getContext("2d").getImageData(Math.floor(q.x), Math.floor(q.y), 1, 1).data[3] < 24) continue;
-					if (C !== L && !C.locked) { PE.setActive(C.id); L = C; PE.toast("Picked layer \u201c" + C.name + "\u201d"); } break;
+					if (C !== L && !C.locked) { PE.setActive(C.id); L = C; PE.toast("Picked layer “" + C.name + "”"); } break;
 				}
 			}
-			if (o.merged || !L) { var c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height); mask = P.floodMask(id.data, c.width, c.height, e.x, e.y, o.tol, o.contiguous); w = c.width; h = c.height; }
+			var px = Math.max(0, Math.min(d.w - 1, Math.floor(e.x))), py = Math.max(0, Math.min(d.h - 1, Math.floor(e.y)));
+			if (o.merged || !L) { var c = PE.flatten(), id = c.getContext("2d").getImageData(0, 0, c.width, c.height); mask = P.floodMask(id.data, c.width, c.height, e.x, e.y, o.tol, o.contiguous); w = c.width; h = c.height; var mi0 = (py * w + px) * 4; rgb = [id.data[mi0], id.data[mi0 + 1], id.data[mi0 + 2]]; }
 			else { var og = PE.origin(L), lp = PE.toLayerPt(L, e.x, e.y); if (!PE.isIdentity(L)) { PE.bake(L); og = PE.origin(L); lp = { x: e.x - og.x, y: e.y - og.y }; } var data = PE.layerData(L), buf = new Uint8ClampedArray(d.w * d.h * 4);   // the layer on a canvas-size sheet: everything outside the layer is transparent, so clicking empty space selects ALL of it (like Photoshop), not just the layer's own box
 				var x0 = Math.max(0, og.x), x1 = Math.min(d.w, og.x + data.width); if (x1 > x0) for (var y = 0; y < data.height; y++) { var dy = y + og.y; if (dy < 0 || dy >= d.h) continue; buf.set(data.data.subarray(((y * data.width) + x0 - og.x) * 4, ((y * data.width) + x1 - og.x) * 4), (dy * d.w + x0) * 4); }
-				mask = P.floodMask(buf, d.w, d.h, e.x, e.y, o.tol, o.contiguous); w = d.w; h = d.h; }
-			try { var fc = PE.flatten().getContext("2d").getImageData(Math.max(0, Math.min(d.w - 1, Math.floor(e.x))), Math.max(0, Math.min(d.h - 1, Math.floor(e.y))), 1, 1).data; PE.wandColor = "#" + [fc[0], fc[1], fc[2]].map(function (v) { return (v < 16 ? "0" : "") + v.toString(16); }).join(""); } catch (x) {}
+				mask = P.floodMask(buf, d.w, d.h, e.x, e.y, o.tol, o.contiguous); w = d.w; h = d.h; var bi = (py * w + px) * 4; if (buf[bi + 3]) rgb = [buf[bi], buf[bi + 1], buf[bi + 2]]; }
+			if (rgb) PE.wandColor = P.rgbToHex ? P.rgbToHex(rgb[0], rgb[1], rgb[2]) : "#" + rgb.map(function (v) { return (v < 16 ? "0" : "") + v.toString(16); }).join("");
 			if (o.what === "rest") mask = P.invertMask(mask);
 			if (o.smooth) mask = P.featherMask(P.growShrinkMask(mask, w, h, 0, true), w, h, 1.5);
 			var n = 0; for (var mi = 0; mi < mask.length; mi++) if (mask[mi] > 127) n++; var pc = n * 100 / mask.length;
-			PE.selFromMask(mask, selMode(e)); PE.commit("Magic wand"); PE.emit("opts", "wand");
-			PE.toast((o.what === "rest" ? "Selected everything except that colour" : "Selected that colour") + " (" + (n && pc < 1 ? "under 1" : Math.round(pc)) + "% of the picture, shown in blue). " + (o.what === "rest" ? "Ctrl+C copies it." : "Delete removes it from \u201c" + (L ? L.name : "the layer") + "\u201d."));
+			var mode = e.shift && e.alt ? "int" : e.shift ? "add" : e.alt ? "sub" : o.mode;
+			PE.selFromMask(mask, mode); PE.wandLast = { sel: PE.sel, layer: L ? L.id : 0, rgb: o.what === "color" && o.clean ? rgb : null };
+			PE.commit("Magic wand"); PE.emit("opts", "wand");
+			PE.toast((o.what === "rest" ? "Selected everything except that colour" : "Selected that colour") + " (" + (n && pc < 1 ? "under 1" : Math.round(pc)) + "% of the picture, shown in blue). " + (o.what === "rest" ? "Ctrl+C copies it." : "Press Delete to remove it from “" + (L ? L.name : "the layer") + "”."));
 		} });
 
 	/* ---------- crop ---------- */
