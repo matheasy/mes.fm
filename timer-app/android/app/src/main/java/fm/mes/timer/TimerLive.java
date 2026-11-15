@@ -237,6 +237,17 @@ final class TimerLive {
         }
         java.util.Iterator<String> ks = posted.keys();
         while (ks.hasNext()) { String k = ks.next(); if (!nowPosted.has(k)) nm.cancel(idFor(k)); }
+        // anything else of ours on screen that is no longer a shown timer (e.g. left behind when the ticking service moved to
+        // another timer's notification) goes too
+        java.util.HashSet<Integer> want = new java.util.HashSet<>();
+        java.util.Iterator<String> wk = nowPosted.keys();
+        while (wk.hasNext()) want.add(idFor(wk.next()));
+        try {
+            for (android.service.notification.StatusBarNotification sb : nm.getActiveNotifications()) {
+                int id = sb.getId();
+                if (id > BASE && id <= BASE + 901 && !want.contains(id)) nm.cancel(id);
+            }
+        } catch (Exception ignored) {}
         prefs(c).edit().putString("posted", nowPosted.toString()).apply();
     }
 
