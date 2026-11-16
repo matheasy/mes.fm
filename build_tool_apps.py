@@ -459,7 +459,7 @@ APPS = {
                      tag="Paste any tracking number. We find the carrier.", accent="#b45309", dark="#92400e", tint="#fdf0e1",
                      desc="Free universal package tracker: paste a tracking number, a shipping email or a link, or scan the label, and get the right tracking page for Royal Mail, USPS, UPS, FedEx, DHL, Canada Post, Amazon, Australia Post, China Post and 50 more carriers, with typo checks and a saved list of your parcels.",
                      meta_desc="Universal package tracker: paste or scan any tracking number and open the right carrier's tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
-                     js_v="1", head_extra='<link rel="search" type="application/opensearchdescription+xml" title="MES Package Tracker" href="https://mes.fm/tracking/opensearch.xml" />'),
+                     js_v="2", pre_js=["/main_js/select-search.js?v=1"], head_extra='<link rel="search" type="application/opensearchdescription+xml" title="MES Package Tracker" href="https://mes.fm/tracking/opensearch.xml" />'),
     # Archive (2026-10-14): one address -> Wayback Machine, archive.today, Ghostarchive, Megalodon, Arquivo.pt, RemovePaywall, ArcHive (Hive blockchain) + the user's own sites. lib.js = engine table (shared with the
     # MES Archive extension in mes.fm/archive/extension via build_archive_extension.py), tests: node tool_apps_src/archive-tests.js.
     "archive": dict(tools_extra=EXT_TAB, title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",

@@ -323,10 +323,12 @@
 
   // ---- your country
   (function () {
+    var ALIAS = {US: "usa america united states", GB: "uk britain england scotland wales great britain", AE: "uae emirates dubai", KR: "korea", NL: "holland", CZ: "czechia", TR: "turkey", CH: "swiss", DE: "deutschland", ES: "espana", HK: "hongkong", TW: "taiwan", RU: "russia", VN: "viet nam"};
     var sel = $("tk-home"), homes = T.HOMES.slice().sort(function (a, b) { return country(a).localeCompare(country(b)); });
-    sel.innerHTML = '<option value="">Not set</option>' + homes.map(function (cc) { return '<option value="' + cc + '">' + flag(cc) + " " + esc(country(cc)) + "</option>"; }).join("");
+    sel.innerHTML = '<option value="">Not set</option>' + homes.map(function (cc) { return '<option value="' + cc + '" data-search="' + esc(ALIAS[cc] || "") + '">' + flag(cc) + " " + esc(country(cc)) + "</option>"; }).join("");
     sel.value = S.home || "";
     sel.addEventListener("change", function () { S.home = sel.value; save(); show(current); renderSaved(); });
+    if (window.MESSelect) MESSelect.enhance(sel, {placeholder: "Search countries…", noun: "countries"});
   })();
 
   // ---- results
