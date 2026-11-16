@@ -258,8 +258,8 @@
 		if (android) {
 			var sl = document.createElement("label"); sl.className = "tm-check"; sl.style.display = "block"; sl.style.margin = ".3em 0";
 			sl.appendChild(document.createTextNode("Running timer notification: "));
-			var sel = document.createElement("select"); sel.id = "tm-app-style";
-			[["auto", "Automatic"], ["big", "Big time + time in the status-bar icon (Samsung style)"], ["chip", "Android Live Update (time chip in the status bar, Android 16+)"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
+			var sel = document.createElement("select"); sel.id = "tm-app-style"; sel.style.maxWidth = "100%";
+			[["auto", "Automatic"], ["chip", "Live Update chip (icon + time)"], ["big", "Time inside the status-bar icon"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); });
 			sel.value = O.style;
 			sel.addEventListener("change", function () { O.style = sel.value; saveO(); liveSig = ""; liveUpdate(true); paintStatus(); });
 			sl.appendChild(sel); box.appendChild(sl);
@@ -288,7 +288,7 @@
 				probs.push("notifications are not allowed for MES Timer");
 				fixes.push([ln.display === "denied" ? "Open Settings" : "Allow notifications", function () { if (ln.display === "denied" && TS && TS.openSettings) TS.openSettings({ what: "app" }); else { asked = false; askOnce(); } }]);
 			}
-			var chipNote = android && s && O.live ? (s.big ? " Running timers show the time big in the notification, and in the status-bar icon." : " Running timers show as an Android Live Update: the time is a chip in the status bar.") : "";
+			var chipNote = android && s && O.live ? (s.big ? " Running timers show the time big in the notification, and in the status-bar icon." : " Running timers show as a Live Update: the timer icon and the time in a chip in the status bar, like the Clock app. If your phone shows no chip, pick \u201cTime inside the status-bar icon\u201d above.") : "";
 			st.textContent = probs.length ? "Heads-up: " + probs.join("; ") + "." + chipNote : ((O.alerts || O.live) ? "All set." + chipNote : "Alerts and live status are off: timers only ring while the app is open.");
 			fixes.forEach(function (f) { st.appendChild(document.createElement("br")); st.appendChild(btn(f[0], f[1])); });
 		});

@@ -273,5 +273,14 @@ def main() -> None:
     print("done -> %s" % WWW)
 
 
+def add_update_note() -> None:
+    """'Update available' note + burger-menu item (shared ../app_update.py, ../mes.fm/main_js/app-update.js)."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    import app_update
+    app_update.inject(Path(__file__).resolve().parent, 'polls', '6833587418', 'fm.mes.polls', 'index.html')
+
+
 if __name__ == "__main__":
     main()
+    add_update_note()

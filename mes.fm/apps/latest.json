@@ -1,0 +1,10 @@
+{
+  "_about": "Newest versionCode released on Google Play per MES app (closed testing counts). Read by main_js/app-update.js inside the apps to show 'Update available'. Raise a number only once that build is live on Play.",
+  "pct":     { "android": 11, "name": "1.3" },
+  "bmi":     { "android": 6,  "name": "1.1" },
+  "grade":   { "android": 4,  "name": "1.1" },
+  "gpa":     { "android": 2,  "name": "1.0.1" },
+  "fit":     { "android": 2,  "name": "1.1" },
+  "polls":   { "android": 1,  "name": "1.0" },
+  "timer":   { "android": 2,  "name": "1.0.1" }
+}

@@ -583,6 +583,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 body.dark-mode #tm .tm-say {background:#2a241a;color:#f3e6cc;border-color:#6b5a3a;}
 body.dark-mode #tm .tm-arm {background:#3a3015;color:#f5dc9a;border-color:#7a6326;}
 body.dark-mode #tm .tm-saybtn.is-set {background:#4a3612;border-color:#d79a3e;box-shadow:inset 0 0 0 1px #d79a3e;}
+/* Display mode: scroll when the window is too short (mouse wheel / trackpad / touch). The bar stays on top; pop-ups stay put. */
+.tm-dp {overflow-y:auto;overscroll-behavior:contain;} .tm-dp__bar {position:sticky;top:0;z-index:6;background:var(--dp12);} .tm-dp__grid {flex:1 0 auto;}
+.tm-dp__pick, .tm-dp__ed, .tm-dp__ring {position:fixed;}
 
 
 	@media print {
@@ -980,5 +983,6 @@ body.dark-mode #app-foot a{color:#f0c27a;}
 })();
 </script>
 <script src="js/native.js"></script>
+<script src="js/app-update.js" data-app="timer" data-ios="6833587925" data-android="fm.mes.timer" data-v-ios="1.0" data-v-android="1.0.3" data-code-android="5"></script>
 </body>
 </html>

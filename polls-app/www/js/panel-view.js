@@ -39,11 +39,11 @@
     '.mes-pside.mes-pmini>.mes-ptools{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:30;flex-direction:column;flex-wrap:nowrap;gap:4px;margin:0!important;opacity:.55;transition:opacity .2s}' +
     '.mes-pside.mes-pmini.mes-pright>.mes-ptools{left:auto;right:0;align-items:flex-end}' +
     '.mes-pside.mes-pmini>.mes-ptools:hover,.mes-pside.mes-pmini>.mes-ptools:focus-within{opacity:1}' +
-    '.mes-pmini>.mes-ptools>.mes-pflip,.mes-pmini>.mes-ptools>.mes-pclose{display:none}' +
+    '.mes-pmini>.mes-ptools>.mes-pflip,.mes-pmini>.mes-ptools>.mes-pgo{display:none!important}' +
     '.mes-pmini>.mes-ptools .mes-ptb{min-height:0;padding:0;width:26px;font-size:15px;line-height:1;border-radius:0 9px 9px 0;border-left:0}' +
-    '.mes-pmini>.mes-ptools .mes-phide{height:46px}.mes-pmini>.mes-ptools .mes-pgo{height:26px;font-size:13px}' +
+    '.mes-pmini>.mes-ptools .mes-phide{height:46px}.mes-pmini>.mes-ptools .mes-pclose{height:34px;font-size:15px}' +
     '.mes-pmini.mes-pright>.mes-ptools .mes-ptb{border-radius:9px 0 0 9px;border-left:1px solid #b9c2cc;border-right:0}' +
-    '.mes-ptools>.mes-pgo{display:none}.mes-pmini>.mes-ptools>.mes-pgo{display:block}' +
+    '.mes-ptools>.mes-pgo{display:none}' +
     '.mes-pgone>.mes-ptools{display:none!important}' +
     '.mes-ptools .mes-ptb{background:rgba(255,255,255,.92);min-height:34px}' +
     'body.dark-mode .mes-ptools .mes-ptb{background:rgba(30,32,36,.92);color:#e3e7ec;border-color:#555}' +
@@ -57,6 +57,31 @@
   var open = null; // the card in Fill window / full screen
   var fsEl = function () { return document.fullscreenElement || document.webkitFullscreenElement || null; };
   var canFs = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+  /* iPhone Safari (checked on iOS 26.5) has no Fullscreen API for pages at all, only for <video>. So there the Full screen button
+     opens Fill window and says once how to get the real thing: turn sideways (Safari hides its bars), or Add to Home Screen and open
+     the page from its icon (no Safari bars at all; navigator.standalone is then true and no tip is shown). */
+  var iosPhone = !canFs && /iPhone|iPod/.test(navigator.userAgent || '');
+  var standalone = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches));
+  var TIPKEY = 'mes-panel:iostip';
+  st.textContent += '.mes-ptip{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:60;width:min(92%,26em);box-sizing:border-box;padding:.75em .9em;border-radius:12px;' +
+    'background:rgba(20,24,30,.94);color:#f1f3f5;font-size:15px;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.35)}' +
+    '.mes-ptip b{color:#fff}.mes-ptip p{margin:0 0 .5em;color:inherit}.mes-ptip .mes-ptipb{display:flex;gap:.5em;justify-content:flex-end;flex-wrap:wrap}' +
+    '.mes-ptip button{font:inherit;font-size:14px;padding:.35em .8em;border-radius:999px;border:1px solid #6b7480;background:transparent;color:#f1f3f5;cursor:pointer}' +
+    '.mes-ptip button.mes-ptipok{background:#1d6fd1;border-color:#1d6fd1;color:#fff}';
+  function iosTip(p) {
+    if (standalone) return;
+    try { if (localStorage.getItem(TIPKEY) === '1') return; } catch (e) {}
+    if (p.tip) p.tip.remove();
+    var t = document.createElement('div'); t.className = 'mes-ptip'; t.setAttribute('role', 'note');
+    t.innerHTML = '<p><b>Full screen on iPhone:</b> Safari can\'t hide its own bars for a web page, so this fills the window instead.</p>' +
+      '<p>Turn the phone <b>sideways</b> for the biggest picture. For real full screen, tap <b>Share</b> \u2192 <b>Add to Home Screen</b> and open it from the new icon.</p>' +
+      '<div class="mes-ptipb"><button type="button" class="mes-ptipno">Don\'t show again</button><button type="button" class="mes-ptipok">OK</button></div>';
+    function gone() { if (t.parentNode) t.remove(); if (p.tip === t) p.tip = null; clearTimeout(t.__to); }
+    t.querySelector('.mes-ptipok').addEventListener('click', gone);
+    t.querySelector('.mes-ptipno').addEventListener('click', function () { try { localStorage.setItem(TIPKEY, '1'); } catch (e) {} gone(); });
+    t.__to = setTimeout(gone, 15000);
+    p.tip = t; p.sec.appendChild(t);
+  }
   /* ---- side panel layout ---- */
   var SKEY = 'mes-panel:side', SP = { r: false, m: false, w: 0 };
   try { var sp0 = JSON.parse(localStorage.getItem(SKEY) || 'null'); if (sp0) { SP.r = !!sp0.r; SP.m = !!sp0.m; SP.w = +sp0.w > 0 ? Math.round(+sp0.w) : 0; } } catch (e) {}
@@ -71,7 +96,7 @@
     q.hide.classList.add('mes-phide');
     q.flip = mk('⇄', 'Put the panel on the other side', function () { SP.r = !SP.r; save(); sides.forEach(apply); });
     q.flip.classList.add('mes-pflip');
-    if (o.close) { q.close = mk('✕', 'Close (Esc)', function () { o.close(); }); q.close.classList.add('mes-pclose'); }
+    if (o.close) { q.close = mk('✕', 'Close: back to the page (Esc)', function () { o.close(); }); q.close.classList.add('mes-pclose'); }
     // the X on the small tab hides even the tab, until this full screen / Fill window is closed and opened again
     // (or the very edge of the picture is tapped, so a phone without Esc can always get back)
     q.go = mk('×', 'Hide this tab too (comes back next time, or tap the very edge)', function () { q.gone = true; q.apply(); });
@@ -120,6 +145,9 @@
       if (d) { e.preventDefault(); setW(cur + d, true); }
     });
     q.grip = grip;
+    // the panel scrolls inside the card: keep the grip covering the visible height, not just the top screenful
+    function gripY() { grip.style.top = sec.scrollTop + 'px'; grip.style.bottom = 'auto'; grip.style.height = sec.clientHeight + 'px'; }
+    sec.addEventListener('scroll', function () { if (q.on) gripY(); }, { passive: true });
     function save() { try { localStorage.setItem(SKEY, JSON.stringify(SP)); } catch (e) {} }
     q.apply = function () {
       var open = !!(o.open && o.open()), w = sec.clientWidth, h = sec.clientHeight;
@@ -140,6 +168,7 @@
         if (getComputedStyle(sec).position === 'static') { sec.style.position = 'relative'; q.pos = true; }
         var gg = geo(), gx = (SP.r ? gg.r.width - gg.pr - pw - gg.gap / 2 : gg.pl + pw + gg.gap / 2) - 7;
         grip.style.left = Math.round(gx) + 'px';
+        gripY();
         grip.setAttribute('aria-valuenow', pw); grip.setAttribute('aria-valuemin', 160); grip.setAttribute('aria-valuemax', Math.round(maxW(w)));
         stage.style.height = Math.max(120, h - padV) + 'px';
         sec.style.setProperty('--mes-sh', Math.max(120, h - padV) + 'px');
@@ -166,10 +195,12 @@
     p.fill.setAttribute('aria-pressed', on && !fs ? 'true' : 'false');
     p.fill.textContent = on && !fs ? '✕ Close' : '⤢ Fill window';
     p.fill.title = on && !fs ? 'Back to the page (Esc)' : 'Cover the browser window with this card (Esc closes)';
+    if (p.fs && p.ios) { p.fs.hidden = on; return; }
     if (p.fs) { p.fs.setAttribute('aria-pressed', fs ? 'true' : 'false'); p.fs.textContent = fs ? '✕ Exit full screen' : resumeP === p ? '⛶ Back to full screen' : '⛶ Full screen'; p.fs.classList.toggle('mes-presume', resumeP === p && !fs); }
   }
   function setFill(p, on) {
     if (!on && resumeP === p) { resumeP = null; fsP = null; }
+    if (!on && p.tip) { p.tip.remove(); p.tip = null; }
     if (on && open && open !== p) setFill(open, false);
     p.sec.classList.toggle('mes-pfill', on);
     document.documentElement.classList.toggle('mes-pfill-on', on);
@@ -226,6 +257,12 @@
         var r = (sec.requestFullscreen || sec.webkitRequestFullscreen).call(sec);
         if (r && r.catch) r.catch(function () { setFill(p, true); });
       });
+      g.appendChild(p.fs);
+    } else if (iosPhone) {
+      p.ios = true;
+      p.fs = document.createElement('button'); p.fs.type = 'button'; p.fs.className = 'mes-pbtn'; p.fs.textContent = '⛶ Full screen';
+      p.fs.title = 'Fill the screen (iPhone: for real full screen, Add to Home Screen)';
+      p.fs.addEventListener('click', function () { setFill(p, true); iosTip(p); });
       g.appendChild(p.fs);
     }
     if (!sec.hasAttribute('tabindex')) sec.setAttribute('tabindex', '-1');

@@ -69,6 +69,7 @@ final class TimerLive {
         java.util.Iterator<String> ks = ch.keys();
         while (ks.hasNext()) { String k = ks.next(); if (find(out, k) == null) { JSONObject o = find(old, k); if (o != null && !"gone".equals(o.optString("st"))) out.put(o); } }
         prefs(c).edit().putString("items", out.toString()).putString("style", style == null ? "auto" : style).apply();
+        if (style != null && !style.equals(prefs(c).getString("lastStyle", ""))) prefs(c).edit().putString("lastStyle", style).putLong("chipFail", 0).apply();
     }
 
     static JSONObject find(JSONArray a, String key) {
@@ -141,7 +142,22 @@ final class TimerLive {
         String st = prefs(c).getString("style", "auto");
         if ("big".equals(st)) return true;
         if ("chip".equals(st)) return false;
-        return !promotable(c) || "samsung".equalsIgnoreCase(Build.MANUFACTURER);
+        // Automatic: an Android 16 Live Update (a chip with the timer icon and the time, like the phone's own Clock app) wherever
+        // the system lets this app post one. Samsung's One UI 8+ shows Live Updates in its status bar and Now Bar too. If the
+        // system turns the request down (the FLAG_PROMOTED_ONGOING check in postAll), fall back to the big style for a day.
+        if (!promotable(c)) return true;
+        return System.currentTimeMillis() - prefs(c).getLong("chipFail", 0) < 24L * 3600 * 1000;
+    }
+
+    static final int FLAG_PROMOTED_ONGOING = 0x00040000;
+
+    /** After posting in chip style: did the system really promote it? Returns false when it was turned down. */
+    static boolean chipGranted(NotificationManager nm, int id) {
+        try {
+            for (android.service.notification.StatusBarNotification sb : nm.getActiveNotifications())
+                if (sb.getId() == id) return (sb.getNotification().flags & FLAG_PROMOTED_ONGOING) != 0;
+        } catch (Exception ignored) {}
+        return true;
     }
 
     static boolean promotable(Context c) {
@@ -180,7 +196,13 @@ final class TimerLive {
             }
         } else {
             b.setSmallIcon(R.drawable.ic_stat_timer);
-            if (run) promote(b, time);
+            if (run) {
+                // the chip shows the timer icon + a chronometer the system itself ticks (smooth, never a second late)
+                long when = up ? now - ms : now + ms;
+                b.setShowWhen(true).setWhen(when).setUsesChronometer(true);
+                if (!up && Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
+                promote(b);
+            }
         }
         // buttons, like the phone's own Clock app: Pause / Resume, Cancel, Sound on / off
         b.addAction(new Notification.Action.Builder(null, run ? "Pause" : "Resume", actPi(c, key, run ? "pause" : "resume")).build());
@@ -189,17 +211,19 @@ final class TimerLive {
         return b.build();
     }
 
-    static void promote(Notification.Builder b, String chip) {
+    static void promote(Notification.Builder b) {
         if (Build.VERSION.SDK_INT < 36) return;
         try {
             Method m = Notification.Builder.class.getMethod("setRequestPromotedOngoing", boolean.class);
             m.invoke(b, true);
-            Method t = Notification.Builder.class.getMethod("setShortCriticalText", String.class);
-            t.invoke(b, chip);
         } catch (Exception ignored) {}
     }
 
-    /** The time drawn as the status-bar icon (white on transparent: the status bar tints it). */
+    /**
+     * The time drawn as the status-bar icon (white on transparent: the status bar tints it). The status bar fits every icon in
+     * a small square, so the digits are drawn as tall as the square allows and squeezed sideways to fit (a condensed font,
+     * then a narrower text scale): about twice the height of plain text that fits the width.
+     */
     static Icon textIcon(Context c, String text) {
         int px = Math.max(48, Math.round(24 * c.getResources().getDisplayMetrics().density));
         Bitmap bm = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
@@ -208,12 +232,20 @@ final class TimerLive {
         p.setColor(0xFFFFFFFF);
         p.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
         p.setTextAlign(Paint.Align.CENTER);
-        float size = px * 0.62f;
+        android.graphics.Rect r = new android.graphics.Rect();
+        p.setTextSize(100f);
+        p.getTextBounds("0", 0, 1, r);
+        float digitH = r.height() / 100f;                 // digit height per unit of text size
+        float size = px * 0.98f / digitH;                 // digits as tall as the icon
         p.setTextSize(size);
-        float w = p.measureText(text);
-        if (w > px * 0.98f) { size *= px * 0.98f / w; p.setTextSize(size); }
-        Paint.FontMetrics fm = p.getFontMetrics();
-        cv.drawText(text, px / 2f, px / 2f - (fm.ascent + fm.descent) / 2f, p);
+        float w = p.measureText(text), maxW = px * 1.0f;
+        if (w > maxW) {
+            float sx = maxW / w;
+            if (sx < 0.6f) { size *= sx / 0.6f; p.setTextSize(size); sx = Math.min(1f, maxW / p.measureText(text)); }
+            p.setTextScaleX(sx);
+        }
+        p.getTextBounds("0", 0, 1, r);
+        cv.drawText(text, px / 2f, px / 2f + r.height() / 2f, p);
         return Icon.createWithBitmap(bm);
     }
 
@@ -233,6 +265,11 @@ final class TimerLive {
             try {
                 nm.notify(idFor(key), build(c, it, now, big));
                 nowPosted.put(key, 1);
+                if (!big && "run".equals(it.optString("st")) && !chipGranted(nm, idFor(key))) {
+                    prefs(c).edit().putLong("chipFail", now).apply();
+                    big = true;
+                    nm.notify(idFor(key), build(c, it, now, true));
+                }
             } catch (Exception ignored) {}
         }
         java.util.Iterator<String> ks = posted.keys();

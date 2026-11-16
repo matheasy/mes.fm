@@ -1985,6 +1985,7 @@
     { "source": "/assets/:path*", "destination": "https://mes-fm-crypto.vercel.app/finance/assets/:path*" }
   ],
   "headers": [
+    { "source": "/apps/latest.json", "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }, { "key": "Cache-Control", "value": "public, max-age=300" }] },
     { "source": "/v/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
     { "source": "/p/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
     { "source": "/hp/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
