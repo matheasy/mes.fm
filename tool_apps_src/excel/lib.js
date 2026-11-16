@@ -968,7 +968,7 @@
 		num: num, txt: txt, bool: bool, numbersOf: numbersOf, binScalar: binScalar, Env: Env, E: E, dateText: dateText, timeText: timeText, ymdSerial: ymdSerial, normFn: normFn, walk: walk,
 		fmtGeneral: fmtGeneral, roundHalfAway: roundHalfAway, compare: compare,
 		adjust: adjust, renameSheetRefs: renameSheetRefs, shiftIdx: shiftIdx,
-		cellValue: cellValue, resultCell: resultCell, Calc: Calc,
+		cellValue: cellValue, resultCell: resultCell, Calc: Calc, srefRange: srefRange,
 		cmpValues: cmpValues, matchFilter: matchFilter, viewRows: viewRows, FILTER_OPS: FILTER_OPS,
 		fmtBytes: fmtBytes, kindOf: kindOf, baseName: baseName, safeSheetName: safeSheetName
 	};

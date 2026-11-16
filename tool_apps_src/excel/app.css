@@ -176,3 +176,21 @@ html body.dark-mode #xl .xl-edhl span { filter: brightness(1.45); }
 #xl .xl-mcx { position: absolute; right: 3px; top: 3px; width: 22px; height: 22px; border: 0; border-radius: 11px; background: rgba(0,0,0,.55); color: #fff; font-size: 15px; line-height: 20px; padding: 0; cursor: pointer; display: none; }
 #xl .xl-mychart:hover .xl-mcx, #xl .xl-mychart:focus .xl-mcx, #xl .xl-mychart.is-sel .xl-mcx { display: block; }
 #xl .xl-fxin.is-ghost { color: var(--xl-mute); }
+/* wrapped / tall cell text is a span: it must take the cell's own colour (the site's dark theme paints spans light grey) */
+#xl .xl-c > .xl-ct, html body.dark-mode #xl .xl-c > .xl-ct { color: inherit; }
+/* light / dark switch in the top bar (also reachable in Fill window and full screen) */
+#xl .xl-theme { font-size: 15px; line-height: 1; min-width: 34px; }
+/* right-click menu */
+#xl .xl-cmenu { position: fixed; left: 0; top: 0; z-index: 2147483000; width: 250px; max-height: calc(100vh - 16px); overflow-y: auto; padding: 4px; }
+#xl .xl-cmenu button { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 13.5px; }
+#xl .xl-cmenu button > span:first-child { flex: 1; }
+#xl .xl-cmenu button kbd { font: inherit; font-size: 12px; color: var(--xl-mute); background: none; border: 0; padding: 0; }
+#xl .xl-cmenu button:disabled { opacity: .45; cursor: default; background: none; }
+#xl .xl-cmenu hr { border: 0; border-top: 1px solid var(--xl-line); margin: 4px 6px; }
+#xl .xl-cmenu .xl-cmh { font-size: 11.5px; font-weight: 700; color: var(--xl-mute); padding: 6px 10px 2px; }
+#xl .xl-cmenu .xl-sub { position: relative; }
+/* AutoComplete list under the cell being typed */
+#xl .xl-ac { position: absolute; z-index: 30; background: var(--xl-panel); border: 1px solid var(--xl-line); border-radius: 7px; box-shadow: 0 6px 20px rgba(0,0,0,.22); padding: 3px; min-width: 140px; max-width: 360px; }
+#xl .xl-ac button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; font: inherit; font-size: 13px; color: var(--xl-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#xl .xl-ac button.is-on, #xl .xl-ac button:hover { background: var(--xl-hov); }
+#xl .xl-ac small { display: block; padding: 2px 8px 3px; font-size: 11.5px; color: var(--xl-mute); }

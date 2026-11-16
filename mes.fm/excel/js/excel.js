@@ -968,7 +968,7 @@
 		num: num, txt: txt, bool: bool, numbersOf: numbersOf, binScalar: binScalar, Env: Env, E: E, dateText: dateText, timeText: timeText, ymdSerial: ymdSerial, normFn: normFn, walk: walk,
 		fmtGeneral: fmtGeneral, roundHalfAway: roundHalfAway, compare: compare,
 		adjust: adjust, renameSheetRefs: renameSheetRefs, shiftIdx: shiftIdx,
-		cellValue: cellValue, resultCell: resultCell, Calc: Calc,
+		cellValue: cellValue, resultCell: resultCell, Calc: Calc, srefRange: srefRange,
 		cmpValues: cmpValues, matchFilter: matchFilter, viewRows: viewRows, FILTER_OPS: FILTER_OPS,
 		fmtBytes: fmtBytes, kindOf: kindOf, baseName: baseName, safeSheetName: safeSheetName
 	};
@@ -2543,8 +2543,11 @@
 		var tx = xml("<worksheet>" + tail.replace(/<\/worksheet>\s*$/, "") + "</worksheet>");
 		kids(kid(tx, "mergeCells"), "mergeCell").forEach(function (mc) { var g = parseRange(mc.a.ref); if (g) out.merges.push(g); });
 		var cfRe = /<(?:\w+:)?conditionalFormatting\b[\s\S]*?<\/(?:\w+:)?conditionalFormatting>/g, cm;
-		var tailNoExt = tail.replace(/<extLst>[\s\S]*<\/extLst>/, "");
-		while ((cm = cfRe.exec(tailNoExt))) out.cfRaw.push(cm[0]);
+		// the sheet's own extLst (newer data bars, icon sets...) comes after the last conditionalFormatting block; a cfRule can hold an
+		// extLst of its own (the link to that newer data bar), so cut at the first extLst after the last block, not at the first one
+		var lastCf = tail.lastIndexOf("</conditionalFormatting>"), extAt = tail.indexOf("<extLst>", lastCf < 0 ? 0 : lastCf);
+		var tailNoExt = extAt >= 0 ? tail.slice(0, extAt) : tail;
+		while ((cm = cfRe.exec(tailNoExt))) out.cfRaw.push(cm[0].replace(/<(?:\w+:)?extLst>[\s\S]*?<\/(?:\w+:)?extLst>/g, ""));
 		kids(tx, "conditionalFormatting").forEach(function (cf) {
 			var ranges = sqref(cf.a.sqref);
 			kids(cf, "cfRule").forEach(function (rule) { var p = parseRule(rule, styles); if (p) { p.ranges = ranges; out.cf.push(p); } });
@@ -3207,10 +3210,10 @@
 					if (/<sheetViews>[\s\S]*?<\/sheetViews>|<sheetViews\/>/.test(s)) s = s.replace(/<sheetViews>[\s\S]*?<\/sheetViews>|<sheetViews\/>/, sv);
 					else s = s.replace(/(<sheetFormatPr|<cols|<sheetData)/, sv + "$1");
 					var sm = si.model;
-					if (sm && model && info.structOk) {
+					if (sm && model && (info.structOk || info.rowsOk)) {
 						if (sm.cfRaw && sm.cfRaw.length) { s = insertBefore(s, AFTER_CF, sm.cfRaw.join("")); report.cf += sm.cfRaw.length; }
 						var relN = 0, rid = function () { var id; do { id = "rIdMes" + (++relN); } while (relsRaw && relsRaw.indexOf('Id="' + id + '"') >= 0); return id; };
-						if (sm.drawingPart) {
+						if (sm.drawingPart && info.structOk) {
 							var id = rid(); newRels.push('<Relationship Id="' + id + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="' + relRel(part, sm.drawingPart) + '"/>');
 							s = insertBefore(s, AFTER_DRAWING, '<drawing r:id="' + id + '"/>');
 							copyTree(sm.drawingPart);
@@ -3222,6 +3225,11 @@
 								var names = info.tableHeaders && info.tableHeaders[t.part];
 								jobs.push(O(t.part).then(function (b) {
 									var tx = utf8(b), k2 = 0;
+									var tr = info.tableRefs && info.tableRefs[t.part];
+									if (tr && tx.indexOf('ref="' + tr.ref + '"') < 0) {   // rows went in / out of the table: its range, and the filter range, follow
+										tx = tx.replace(/(<(?:\w+:)?table\b[^>]*?\sref=")[^"]*(")/, "$1" + tr.ref + "$2").replace(/(<(?:\w+:)?autoFilter\b[^>]*?\sref=")[^"]*(")/, "$1" + tr.af + "$2");
+										tx = tx.replace(/<(?:\w+:)?sortState\b[\s\S]*?<\/(?:\w+:)?sortState>|<(?:\w+:)?sortState\b[^>]*\/>/g, "");
+									}
 									if (names) tx = tx.replace(/(<(?:\w+:)?tableColumn\b[^>]*?\bname=")([^"]*)(")/g, function (m, a, nm, c) { var n = names[k2++]; return a + (n != null && n !== "" ? escX(n) : nm) + c; });
 									write[t.part] = enc(tx); ct = ctAdd(ct, t.part, "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml");
 								}));
@@ -3908,6 +3916,7 @@
 		sel.ac = Math.max(0, Math.min(NC - 1, sel.ac)); sel.fc = Math.max(0, Math.min(NC - 1, sel.fc));
 	}
 	function select(dr, c, extend, keepMode) {
+		if (!tabKeep) tabAnchor = null;
 		if (extend) { sel.fr = dr; sel.fc = c; }
 		else { sel.ar = sel.fr = dr; sel.ac = sel.fc = c; }
 		if (!keepMode) sel.mode = "";
@@ -3988,15 +3997,18 @@
 		if (editing.where === "cell") {
 			ed.hidden = false; ed.value = text != null ? text : (cell && cell.sp ? "" : editing.orig);
 			placeEditor(); ed.focus(); var n = ed.value.length; ed.setSelectionRange(n, n);
+			if (text != null) acInput({ inputType: "insertText" });
 			fxin.value = ed.value;
 		}
 		refHL(); status();
 	}
-	function cancelEdit() { if (!editing) return; backToEditSheet(); var w = editing.where; editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); fxin.value = editText(getCell(actualRow(sel.ar), sel.ac)); if (w === "cell") scroll.focus({ preventScroll: true }); note(""); render(); status(); }
+	function cancelEdit() { acHide(); if (!editing) return; backToEditSheet(); var w = editing.where; editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); fxin.value = editText(getCell(actualRow(sel.ar), sel.ac)); if (w === "cell") scroll.focus({ preventScroll: true }); note(""); render(); status(); }
 	function commitEdit() {
+		acHide();
 		if (!editing) return true;
 		var e = editing, val = e.where === "cell" ? ed.value : fxin.value;
 		if (isFormulaText(val)) val = autoClose(val);
+		else if (e.where === "cell" && val && e.mode === "enter") { var ex = acExact(val); if (ex && ex !== val) val = ex; }
 		backToEditSheet();
 		if (val === e.orig) { editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); render(); return true; }
 		try { setCells([{ r: e.ar, c: e.c, text: val }], "Edit " + X.a1(e.ar, e.c)); }
@@ -4088,6 +4100,7 @@
 			var w = wb.Sheets[n];
 			snap.sheets[n] = { ws: w, data: (w["!data"] || []).map(function (r) { return r && r.slice(); }), cols: w["!cols"] ? w["!cols"].map(function (o) { return o && Object.assign({}, o); }) : null, ref: w["!ref"],
 				rows: w["!rows"] ? w["!rows"].slice() : null, merges: w["!merges"] ? w["!merges"].map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }) : null,
+				x: modelSnap(w),
 				mine: JSON.stringify({ t: (w["!mestables"] || []).map(function (t) { var o = Object.assign({}, t); delete o.els; return o; }), c: (w["!mescharts"] || []).map(function (c) { return { id: c.id, m: c.m, range: c.range, byRow: c.byRow, at: c.at, name: c.name }; }), f: w["!mescf"] || [] }) };
 		});
 		return snap;
@@ -4102,16 +4115,21 @@
 			if (s.rows) w["!rows"] = s.rows.slice(); else delete w["!rows"];
 			if (s.merges) w["!merges"] = s.merges.map(function (g) { return { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; }); else delete w["!merges"];
 			w["!ref"] = s.ref; wb.Sheets[n] = w;
+			modelRestore(w, s.x);
 			var mine = JSON.parse(s.mine || "{}"); w["!mestables"] = mine.t || []; w["!mescharts"] = (mine.c || []).map(function (c) { chartBuild(c); return c; }); w["!mescf"] = mine.f || [];
 		});
 		stale = {}; cssCache = {}; cfc = null;
 	}
+	// what ooxml.js read for a sheet and that moves with inserted / deleted rows: tables, conditional formatting, row styles
+	function modelSnap(w) { var x = sx(w); if (!x) return null; return { tables: x.tables.map(function (t) { return [t, t.g, t.ref]; }), cf: x.cf.map(function (r) { return [r, r.ranges, r.formulas]; }), cfRaw: x.cfRaw.slice(), rowXf: x.rowXf }; }
+	function modelRestore(w, m) { var x = sx(w); if (!x || !m) return; x.tables = m.tables.map(function (a) { a[0].g = a[1]; a[0].ref = a[2]; return a[0]; }); x.cf = m.cf.map(function (a) { a[0].ranges = a[1]; a[0].formulas = a[2]; a[0].__v = -1; return a[0]; }); x.cfRaw = m.cfRaw.slice(); x.rowXf = m.rowXf; }
 	function afterStruct() { resetCalc(); views = {}; si = Math.min(si, wb.SheetNames.length - 1); dims(); layout(); ensureView(); renderSheets(); clampSel(); }
 	function struct(label, fn, soft) {
 		if (editing) commitEdit();
 		var hadView = isSF();
 		if (view()) { views[wb.SheetNames[si]] = null; layout(); }
-		if (file && !soft) file.structN = (file.structN || 0) + 1;
+		if (file && soft === "rows") file.rowStructN = (file.rowStructN || 0) + 1;
+		else if (file && !soft) file.structN = (file.structN || 0) + 1;
 		var before = snapshot(), s0 = si;
 		var changedF = fn(); stale = {};
 		var after = snapshot();
@@ -4138,16 +4156,54 @@
 		return changed;
 	}
 	function finalPositions(changed) { return changed.map(function (p) { return { si: p.s, r: p.r, c: p.c }; }); }
-	function insertRows(at, n) {
+	// grow: a table that should take in the new rows even though they go just below its last row (Tab in its last cell)
+	function insertRows(at, n, grow) {
 		struct((n > 0 ? "Insert " : "Delete ") + Math.abs(n) + " row" + (Math.abs(n) > 1 ? "s" : ""), function () {
 			var d = data(), name = wb.SheetNames[si];
 			if (n > 0) { while (d.length < at) d.push(undefined); var add = []; for (var i = 0; i < n; i++) add.push(undefined); Array.prototype.splice.apply(d, [at, 0].concat(add)); }
 			else d.splice(at, -n);
 			var rm = ws()["!rows"]; if (rm && rm.length > at) { if (n > 0) Array.prototype.splice.apply(rm, [at, 0].concat(new Array(n))); else rm.splice(at, -n); }
-			shiftMerges("r", at, n); shiftObjects("r", at, n, name);
-			return finalPositions(adjustAll({ axis: "r", at: at, n: n, sheet: name }));
-		});
+			// a row added at the end of a table: formatting rules that stop at its last data row take in the new rows too (as in Excel)
+			rowGrow = n > 0 ? tablesHere().filter(function (T) { return (T.totals && T.g.e.r === at) || (grow && T.t === grow); }).map(function (T) { return { c1: T.g.s.c, c2: T.g.e.c, r0: T.g.s.r }; }) : null;
+			try { shiftMerges("r", at, n); shiftObjects("r", at, n, name); } finally { rowGrow = null; }
+			if (grow && n > 0 && grow.g.e.r === at - 1) { grow.g = { s: Object.assign({}, grow.g.s), e: { r: at + n - 1, c: grow.g.e.c } }; grow.ref = X.rangeA1(grow.g); delete grow.__cols; }
+			var changed = finalPositions(adjustAll({ axis: "r", at: at, n: n, sheet: name }));
+			if (n > 0) changed = changed.concat(formatNewRows(at, n));
+			// formulas that use table names (Table1[Goals], [@Date]...) now cover a different range: work them out again
+			wb.SheetNames.forEach(function (nm, s2) { (wb.Sheets[nm]["!data"] || []).forEach(function (row, r) { if (row) row.forEach(function (cell, c) { if (cell && cell.f && cell.f.indexOf("[") >= 0) changed.push({ si: s2, r: r, c: c }); }); }); });
+			return changed;
+		}, "rows");
 	}
+	// new rows look like the row above them (Excel's "format same as above"); in a table they also get its calculated-column formulas.
+	// The row above is skipped when it is a table's header or total row (then the row below is used).
+	function formatNewRows(at, n) {
+		var d = data(), out = [], tabs = tablesHere();
+		var specialRow = function (r, c) { for (var i = 0; i < tabs.length; i++) { var t = tabs[i]; if (c >= t.g.s.c && c <= t.g.e.c && ((t.header && r === t.g.s.r) || (t.totals && r === t.g.e.r))) return true; } return false; };
+		var inTable = function (r, c) { for (var i = 0; i < tabs.length; i++) { var t = tabs[i]; if (r >= t.g.s.r && r <= t.g.e.r && c >= t.g.s.c && c <= t.g.e.c) return t; } return null; };
+		var above = d[at - 1] || [], below = d[at + n] || [], w = Math.max(above.length, below.length);
+		for (var c = 0; c < w; c++) {
+			var src = at - 1, cell = above[c];
+			if (at === 0 || specialRow(at - 1, c)) { src = at + n; cell = below[c]; if (specialRow(src, c)) continue; }
+			if (!cell) continue;
+			var t = inTable(at, c);
+			for (var i = 0; i < n; i++) {
+				var r = at + i, nc;
+				if (t && cell.f && !cell.sp) { nc = cloneFor(cell, r - src, 0); delete nc.v; nc.t = "n"; nc.v = 0; out.push({ si: si, r: r, c: c }); }
+				else { if (cell.xs == null && !cell.s && !cell.ml && !cell.z) continue; nc = { t: "z" }; if (cell.xs != null) { nc.xs = cell.xs; if (cell.xz) nc.xz = cell.xz; } if (cell.s) nc.s = cell.s; if (cell.ml) nc.ml = cell.ml; if (cell.z) nc.z = cell.z; }
+				if (!d[r]) d[r] = [];
+				d[r][c] = nc;
+			}
+		}
+		return out;
+	}
+	// tables of this sheet (from the file and made here): {g, header, totals, name, mine, t}
+	function tablesHere() {
+		var out = [], x = sx();
+		(x && x.tables || []).forEach(function (t) { out.push({ g: t.g, header: t.header, totals: t.totals, name: t.name, t: t }); });
+		(ws()["!mestables"] || []).forEach(function (t) { out.push({ g: t.g, header: t.header, totals: t.totals, name: t.name, mine: true, t: t }); });
+		return out;
+	}
+	function anyTableAt(ar, c) { var l = tablesHere(); for (var i = 0; i < l.length; i++) { var g = l[i].g; if (ar >= g.s.r && ar <= g.e.r && c >= g.s.c && c <= g.e.c) return l[i]; } return null; }
 	function insertCols(at, n) {
 		struct((n > 0 ? "Insert " : "Delete ") + Math.abs(n) + " column" + (Math.abs(n) > 1 ? "s" : ""), function () {
 			var d = data(), name = wb.SheetNames[si], w = ws();
@@ -4461,8 +4517,8 @@
 		if (k === "PageUp") return mv((e.shiftKey ? dr : sel.ar) - page, e.shiftKey ? c : sel.ac, e.shiftKey);
 		if (k === "Home") return mv(mod ? minRow() : sel.ar, 0, e.shiftKey);
 		if (k === "End" && mod) return mv(lastDataDr(), Math.max(0, nCols - 1), e.shiftKey);
-		if (k === "Tab") return mv(sel.ar, sel.ac + (e.shiftKey ? -1 : 1));
-		if (k === "Enter") return mv(sel.ar + (e.shiftKey ? -1 : 1), sel.ac);
+		if (k === "Tab") { e.preventDefault(); tabMove(e.shiftKey); return; }
+		if (k === "Enter") { e.preventDefault(); enterMove(e.shiftKey); return; }
 		if (k === "F2") { e.preventDefault(); startEdit(); return; }
 		if (k === "Escape" && clip) { clip = null; render(); return; }
 		if (mod && k.toLowerCase() === "d") { e.preventDefault(); fillDown(); return; }
@@ -4485,24 +4541,25 @@
 	ed.addEventListener("keydown", function (e) {
 		var k = e.key;
 		if (f4Key(e)) return;
+		if (acKey(e)) return;
 		if (editing && editing.mode === "enter" && /^Arrow(Up|Down|Left|Right)$/.test(k) && !e.ctrlKey && !e.metaKey && !e.altKey && pointable()) { e.preventDefault(); e.stopPropagation(); arrowPoint(k, e.shiftKey); return; }
 		if (/^(Arrow|Home|End)/.test(k) && editing) editing.pick = null;
-		if (k === "Enter" && !e.altKey) { e.preventDefault(); e.stopPropagation(); var d = e.shiftKey ? -1 : 1; if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar + d, sel.ac); } return; }
+		if (k === "Enter" && !e.altKey) { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); enterMove(e.shiftKey); } return; }
 		if (k === "Enter" && e.altKey) { e.preventDefault(); var s = ed.selectionStart; ed.value = ed.value.slice(0, s) + "\n" + ed.value.slice(ed.selectionEnd); ed.setSelectionRange(s + 1, s + 1); placeEditor(); return; }
-		if (k === "Tab") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar, sel.ac + (e.shiftKey ? -1 : 1)); } return; }
+		if (k === "Tab") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); tabMove(e.shiftKey); } return; }
 		if (k === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); return; }
 		e.stopPropagation();
 	});
-	ed.addEventListener("input", function () { fxin.value = ed.value; placeEditor(); if (editing) { editing.pick = null; refHL(); } });
+	ed.addEventListener("input", function (ev) { if (editing) acInput(ev); fxin.value = ed.value; placeEditor(); if (editing) { editing.pick = null; refHL(); } });
 	ed.addEventListener("blur", function () { setTimeout(function () { if (editing && editing.where === "cell" && document.activeElement !== ed && document.activeElement !== fxin) commitEdit(); render(); }, 0); });
 	fxin.addEventListener("focus", function () { if (!wb) return; if (editing && editing.where === "cell") { var v = ed.value; editing.where = "bar"; ed.hidden = true; fxin.value = v; return; } editing = { dr: sel.ar, c: sel.ac, ar: actualRow(sel.ar), si: si, where: "bar", mode: "edit", pick: null, orig: editText(getCell(actualRow(sel.ar), sel.ac)) }; refHL(); });
 	fxin.addEventListener("input", function () { if (!editing) return; editing.pick = null; refHL(); });
 	fxin.addEventListener("keydown", function (e) {
 		if (!editing) return;
 		if (f4Key(e)) return;
-		if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar + (e.shiftKey ? -1 : 1), sel.ac); } }
+		if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (commitEdit()) { scroll.focus({ preventScroll: true }); enterMove(e.shiftKey); } }
 		else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cancelEdit(); scroll.focus({ preventScroll: true }); }
-		else if (e.key === "Tab") { e.preventDefault(); if (commitEdit()) { scroll.focus({ preventScroll: true }); select(sel.ar, sel.ac + (e.shiftKey ? -1 : 1)); } }
+		else if (e.key === "Tab") { e.preventDefault(); if (commitEdit()) { scroll.focus({ preventScroll: true }); tabMove(e.shiftKey); } }
 	});
 	fxin.addEventListener("blur", function () { if (editing && editing.where === "bar") { if (!commitEdit()) { cancelEdit(); } } });
 	$("xl-editbtn").onclick = function () { if (!wb) return; scroll.focus({ preventScroll: true }); startEdit(); };
@@ -4794,8 +4851,9 @@
 		btn.addEventListener("click", function (e) { e.stopPropagation(); var open = m.hidden; closeMenus(); if (open && wb) { m.hidden = false; btn.setAttribute("aria-expanded", "true"); var f = m.querySelector("button:not([hidden])"); if (f) f.focus(); } });
 		m.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); closeMenus(); btn.focus(); } });
 	}
-	function closeMenus() { [["xl-rcbtn", "xl-rcmenu"], ["xl-insbtn", "xl-insmenu"], ["xl-save", "xl-savemenu"], ["xl-hdr", "xl-frzmenu"]].forEach(function (p) { $(p[1]).hidden = true; $(p[0]).setAttribute("aria-expanded", "false"); }); }
+	function closeMenus() { [["xl-editm", "xl-editmenu"], ["xl-rcbtn", "xl-rcmenu"], ["xl-insbtn", "xl-insmenu"], ["xl-save", "xl-savemenu"], ["xl-hdr", "xl-frzmenu"]].forEach(function (p) { $(p[1]).hidden = true; $(p[0]).setAttribute("aria-expanded", "false"); }); }
 	document.addEventListener("click", function (e) { if (!e.target.closest(".xl-dd")) closeMenus(); });
+	menu($("xl-editm"), $("xl-editmenu")); $("xl-editmenu").addEventListener("click", function (e) { var b = e.target.closest("[data-ca]"); if (!b) return; closeMenus(); cellAct(b.getAttribute("data-ca")); });
 	menu($("xl-rcbtn"), $("xl-rcmenu")); menu($("xl-insbtn"), $("xl-insmenu")); menu($("xl-save"), $("xl-savemenu")); menu($("xl-hdr"), $("xl-frzmenu"));
 	$("xl-rcmenu").addEventListener("click", function (e) { var b = e.target.closest("[data-rc]"); if (!b) return; closeMenus(); rowsCols(b.getAttribute("data-rc")); });
 	$("xl-savemenu").addEventListener("click", function (e) { var b = e.target.closest("[data-save]"); if (!b) return; closeMenus(); saveAs(b.getAttribute("data-save")); });
@@ -4854,7 +4912,7 @@
 	// .xlsx bytes: SheetJS writes the cells, then ooxml.js grafts back the original styles, theme, freeze panes, tables, charts,
 	// pictures and conditional formatting (only the last four need the rows / columns / sheets to be unchanged since opening)
 	function graftInfo() {
-		var pkg = pkgOf(), info = { sheets: [], extraXfs: [], structOk: !!pkg && !(file && file.structN > 0), tableHeaders: {}, active: si }, lost = {};
+		var pkg = pkgOf(), info = { sheets: [], extraXfs: [], structOk: !!pkg && !(file && (file.structN > 0 || file.rowStructN > 0)), rowsOk: !!pkg && !(file && file.structN > 0), tableHeaders: {}, tableRefs: {}, active: si }, lost = {};
 		var raws = pkg ? O.rawXfs(pkg.styles.raw) : [], next = raws.length, nextFmt = pkg ? O.maxFmtId(pkg.styles.raw) + 1 : 164, made = {}, fmtIds = {};
 		if (pkg) { for (var id in pkg.styles.fmts) fmtIds[pkg.styles.fmts[id]] = +id; for (var bi in O.BUILTIN_FMT) if (!(O.BUILTIN_FMT[bi] in fmtIds)) fmtIds[O.BUILTIN_FMT[bi]] = +bi; }
 		var xfFor = function (xs, z) {
@@ -4880,7 +4938,9 @@
 					}
 				}
 				if (sm && sm.tables) sm.tables.forEach(function (t) { if (!t.header) return; var row0 = d[t.g.s.r] || [], names = []; for (var c2 = t.g.s.c; c2 <= t.g.e.c; c2++) names.push(row0[c2] ? disp(row0[c2]) : null); info.tableHeaders[t.part] = names; });
-				if (sm && !info.structOk) { if (sm.objects && sm.objects.some(function (o) { return o.type === "chart"; })) lost.charts = 1; if (sm.objects && sm.objects.some(function (o) { return o.type === "pic"; })) lost.pictures = 1; if (sm.tables && sm.tables.length) lost["table formats"] = 1; if (sm.cfRaw && sm.cfRaw.length) lost["conditional formatting"] = 1; }
+				if (sm && sm.tables) sm.tables.forEach(function (t) { var af = { s: t.g.s, e: { r: t.g.e.r - (t.totals ? 1 : 0), c: t.g.e.c } }; info.tableRefs[t.part] = { ref: X.rangeA1(t.g), af: X.rangeA1(af) }; });
+				if (sm && !info.structOk) { if (sm.objects && sm.objects.some(function (o) { return o.type === "chart"; })) lost.charts = 1; if (sm.objects && sm.objects.some(function (o) { return o.type === "pic"; })) lost.pictures = 1; }
+				if (sm && !info.rowsOk) { if (sm.tables && sm.tables.length) lost["table formats"] = 1; if (sm.cfRaw && sm.cfRaw.length) lost["conditional formatting"] = 1; }
 			}
 			var rm = w["!rows"]; if (rm) for (var hr = 0; hr < rm.length; hr++) if (rm[hr] && rm[hr].hidden) (rowAttrs || (rowAttrs = {}))[hr] = ' hidden="1"';
 			var add = mineParts(w, info.sheets.length);
@@ -4891,7 +4951,9 @@
 		return info;
 	}
 	// SheetJS's writer fails on a missing row inside the data (left by inserting rows): fill the holes first
-	function prepWrite() { wb.SheetNames.forEach(function (n) { var d = wb.Sheets[n]["!data"]; if (d && !d.length) d.push([]); if (d) for (var r = 0; r < d.length; r++) if (!d[r]) d[r] = []; }); }
+	// SheetJS's writer reads every row inside the sheet's range: a row with no entry (a range larger than the cells, e.g. a sheet
+	// that only holds a chart or a pivot table) made it crash, so every row up to the end of the range gets an (empty) entry
+	function prepWrite() { wb.SheetNames.forEach(function (n) { var w = wb.Sheets[n], d = w["!data"]; if (!d) return; if (!d.length) d.push([]); var g = w["!ref"] ? X.parseRange(String(w["!ref"]).replace(/\$/g, "")) : null, end = Math.max(d.length, g ? Math.min(g.e.r + 1, 1048576) : 0); if (end - d.length > 2e5) end = d.length; for (var r = 0; r < end; r++) if (!d[r]) d[r] = []; }); }
 	function xlsxBytes(bt) {
 		var vba = bt === "xlsm";
 		prepWrite();
@@ -4947,9 +5009,25 @@
 	}
 	function refHL() {
 		var t = edText(), was = hlRefs.length;
-		hlRefs = editing && isFormulaText(t) ? X.refSpans(t) : [];
+		hlRefs = editing && isFormulaText(t) ? X.refSpans(t).concat(srefSpans(t)).sort(function (a, b) { return a.start - b.start; }) : [];
 		paintEdHL();
 		if (was || hlRefs.length) render();
+	}
+	// table references (Table1[League], [@Goals], Table1[[#Totals],[Date]]) get a colour and an outline too
+	var SREF_COL = ["#0a8fa0", "#c4570f", "#b0186d", "#1a7f37", "#7b3fe4", "#d1242f"];
+	function srefSpans(t) {
+		if (t.indexOf("[") < 0 || !X.srefRange) return [];
+		var toks; try { toks = X.tokenize(t.slice(1)); } catch (e) { return []; }
+		var out = [], C = ensureCalc(), colors = {}, n = 0;
+		toks.forEach(function (k) {
+			if (k.type !== "sref") return;
+			var res = null; try { res = X.srefRange(C, k.v.table, k.v.spec, { si: editing.si, cur: { r: editing.ar, c: editing.c } }); } catch (e) { res = null; }
+			if (!res) return;
+			var key = (k.v.table || "") + "|" + X.rangeA1(res.g);
+			if (!(key in colors)) colors[key] = SREF_COL[n++ % SREF_COL.length];
+			out.push({ start: k.pos + 1, end: k.pos + 1 + k.raw.length, text: k.raw, sheet: res.sheet, g: res.g, color: colors[key] });
+		});
+		return out;
 	}
 	// the cell editor is a textarea, which cannot colour parts of its text: a copy of the text sits behind it with the references coloured
 	function paintEdHL() {
@@ -5346,9 +5424,49 @@
 		if (n > 0) return i >= at ? i + n : i;
 		var m = -n; if (i >= at + m) return i + n; if (i >= at) return isEnd ? at - 1 : at; return i;
 	}
+	// a range after rows / columns go in or out (null: deleted with them)
+	var rowGrow = null;
+	function shiftG(g, k, at, n) {
+		var s0 = g.s[k], e0 = g.e[k], lim = (k === "r" ? X.MAXR : X.MAXC) - 1;
+		if (n < 0 && s0 >= at && e0 < at - n) return null;
+		var s1 = shiftIdx(s0, at, n, false), e1 = e0 >= lim ? e0 : Math.min(lim, shiftIdx(e0, at, n, true));
+		if (e1 < s1) return null;
+		var o = { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; o.s[k] = s1; o.e[k] = e1; return o;
+	}
+	function unX(t) { return String(t).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&"); }
+	function enX(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+	function shiftModel(w, k, at, n, name) {
+		var x = sx(w); if (!x) return;
+		var op = { axis: k, at: at, n: n, sheet: name, here: name }, adj = function (f) { try { return X.adjust(f, op); } catch (e) { return f; } };
+		x.tables = x.tables.filter(function (t) { var g = shiftG(t.g, k, at, n); if (!g) return false; t.g = g; t.ref = X.rangeA1(g); return true; });
+		var growG = function (g) {
+			if (k === "r" && rowGrow && g.e.r === at - 1 && rowGrow.some(function (z) { return g.s.c >= z.c1 && g.e.c <= z.c2 && g.s.r >= z.r0; })) { var o = { s: Object.assign({}, g.s), e: Object.assign({}, g.e) }; o.e.r = at - 1 + n; return o; }
+			return shiftG(g, k, at, n);
+		};
+		var done = new Map();
+		x.cf = x.cf.filter(function (rule) {
+			var nr = done.get(rule.ranges);
+			if (!nr) { nr = rule.ranges.map(growG).filter(Boolean); done.set(rule.ranges, nr); }
+			if (!nr.length) return false;
+			rule.ranges = nr; rule.__v = -1;
+			if (rule.formulas) rule.formulas = rule.formulas.map(function (f) { return typeof f === "string" ? adj(f) : f; });
+			return true;
+		});
+		x.cfRaw = x.cfRaw.map(function (raw) {
+			var gone = false;
+			raw = raw.replace(/(<(?:\w+:)?conditionalFormatting\b[^>]*?\bsqref=")([^"]*)(")/, function (m, a, v, b) {
+				var list = v.trim().split(/\s+/).map(function (one) { var g = X.parseRange(one); if (!g) return one; var g2 = growG(g); return g2 ? X.rangeA1(g2) : null; }).filter(Boolean);
+				if (!list.length) gone = true; return a + list.join(" ") + b;
+			});
+			if (gone) return null;
+			return raw.replace(/(<(?:\w+:)?formula>)([\s\S]*?)(<\/(?:\w+:)?formula>)/g, function (m, a, f, b) { return a + enX(adj(unX(f))) + b; });
+		}).filter(Boolean);
+		if (k === "r") { var nx = {}; Object.keys(x.rowXf).forEach(function (r0) { var r = +r0, g = shiftG({ s: { r: r, c: 0 }, e: { r: r, c: 0 } }, "r", at, n); if (g) nx[g.s.r] = x.rowXf[r0]; }); x.rowXf = nx; }
+		cssCache = {};
+	}
 	function shiftObjects(axis, at, n, name) {
-		void name;
 		var w = ws(), k = axis, tl = w["!mestables"], cl = w["!mescharts"];
+		shiftModel(w, k, at, n, name);
 		if (tl) w["!mestables"] = tl.filter(function (t) {
 			var s0 = t.g.s[k], e0 = t.g.e[k], s1 = shiftIdx(s0, at, n, false), e1 = shiftIdx(e0, at, n, true);
 			if (n < 0 && s0 >= at && e0 < at - n) return false;
@@ -5479,6 +5597,190 @@
 		else if (w === "fill-down") fillDown(); else if (w === "fill-right") fillRight();
 	});
 
+	/* ---------- Tab / Enter like Excel: Tab at a table's last column goes to the start of the next row (a new row from its last
+	   cell); Enter after a run of Tabs goes back to the column the run started in ---------- */
+	var tabAnchor = null, tabKeep = false;
+	function sel2(dr, c) { tabKeep = true; try { select(dr, c); } finally { tabKeep = false; } }
+	function tabMove(back) {
+		if (!wb) return;
+		var ar = actualRow(sel.ar);
+		if (!tabAnchor || tabAnchor.dr !== sel.ar) tabAnchor = { dr: sel.ar, c: sel.ac };
+		var T = ar != null && !isSF() ? anyTableAt(ar, sel.ac) : null;
+		if (T) {
+			var g = T.g, first = g.s.r + (T.header ? 1 : 0), last = g.e.r - (T.totals ? 1 : 0);
+			if (ar >= first && ar <= last) {
+				if (!back && sel.ac >= g.e.c) {
+					if (ar === last) { insertRows(last + 1, 1, T.totals ? null : T.t); toast("Added a row to " + T.name); }
+					var nd = displayRow(ar + 1); if (nd == null) nd = sel.ar + 1;
+					sel2(nd, g.s.c); tabAnchor = { dr: nd, c: g.s.c }; return;
+				}
+				if (back && sel.ac <= g.s.c && ar > first) { var pd = displayRow(ar - 1); if (pd != null) { sel2(pd, g.e.c); tabAnchor = null; return; } }
+			}
+		}
+		sel2(sel.ar, Math.max(0, sel.ac + (back ? -1 : 1)));
+	}
+	function enterMove(back) {
+		var a = tabAnchor; tabAnchor = null;
+		if (!back && a && a.dr === sel.ar) { select(sel.ar + 1, a.c); return; }
+		select(sel.ar + (back ? -1 : 1), sel.ac);
+	}
+
+	/* ---------- AutoComplete: typing text in a column offers the entries already in it (the table's column, or the rows near) ---------- */
+	var acEl = null, acList = [], acIx = -1;
+	function acHide() { if (acEl) acEl.hidden = true; acList = []; acIx = -1; }
+	// the entry already in the column that the typed text equals apart from capitals (Excel keeps that entry's capitals)
+	function acExact(typed) {
+		if (!editing || editing.where !== "cell" || !typed || isFormulaText(typed)) return null;
+		var ar = editing.ar, c = editing.c, d = data(), T = anyTableAt(ar, c), lo = T ? T.g.s.r + (T.header ? 1 : 0) : Math.max(base, ar - 2000), hi = T ? T.g.e.r - (T.totals ? 1 : 0) : Math.min(nRows - 1, ar + 2000), low = typed.toLowerCase();
+		for (var k = 1; k <= Math.max(ar - lo, hi - ar); k++) for (var sgn = -1; sgn <= 1; sgn += 2) { var r = ar + sgn * k; if (r < lo || r > hi) continue; var cl = d[r] && d[r][c]; if (cl && !cl.f && (cl.t === "s" || cl.t === "str") && String(cl.v).toLowerCase() === low) return String(cl.v); }
+		return null;
+	}
+	function acCandidates(typed) {
+		if (!editing || editing.si !== si || !typed || isFormulaText(typed) || /^['\-+$(]?\d/.test(typed) || typed.length > 200) return [];
+		var ar = editing.ar, c = editing.c, d = data(), T = anyTableAt(ar, c), lo, hi;
+		if (T) { lo = T.g.s.r + (T.header ? 1 : 0); hi = T.g.e.r - (T.totals ? 1 : 0); } else { lo = Math.max(base, ar - 2000); hi = Math.min(nRows - 1, ar + 2000); }
+		var low = typed.toLowerCase(), seen = {}, out = [];
+		var look = function (r) {
+			if (r === ar) return;
+			var cl = d[r] && d[r][c]; if (!cl || cl.f || !(cl.t === "s" || cl.t === "str")) return;
+			var v = String(cl.v == null ? "" : cl.v); if (v.length <= typed.length || v.toLowerCase().indexOf(low) !== 0) return;
+			var key = v.toLowerCase(); if (seen[key]) { seen[key].n++; return; }
+			seen[key] = { v: v, n: 1, d: Math.abs(r - ar) }; out.push(seen[key]);
+		};
+		for (var r = ar - 1; r >= lo; r--) look(r);
+		for (var r2 = ar + 1; r2 <= hi; r2++) look(r2);
+		out.sort(function (a, b) { return a.d - b.d; });
+		return out.slice(0, 8).map(function (o) { return o.v; });
+	}
+	function acInput(ev) {
+		if (editing.where !== "cell") { acHide(); return; }
+		var v = ed.value, it = ev && ev.inputType || "";
+		if (/^delete/.test(it) || ed.selectionStart !== v.length) { acHide(); return; }
+		var list = acCandidates(v);
+		if (!list.length) { acHide(); return; }
+		// one match: fill in the rest, selected, so Enter / Tab keeps it and typing replaces it (Excel AutoComplete)
+		if (list.length === 1 && /^insert/.test(it)) { var n = v.length; ed.value = v + list[0].slice(n); ed.setSelectionRange(n, ed.value.length); }
+		acShow(v, list);
+	}
+	function acShow(typed, list) {
+		if (!acEl) {
+			acEl = document.createElement("div"); acEl.className = "xl-ac"; acEl.setAttribute("role", "listbox"); grid.appendChild(acEl);
+			acEl.addEventListener("pointerdown", function (e) { e.preventDefault(); var b = e.target.closest("[data-ai]"); if (!b) return; acPick(+b.getAttribute("data-ai")); });
+		}
+		acList = list; acIx = -1;
+		acEl.innerHTML = list.map(function (v, i) { return '<button type="button" role="option" tabindex="-1" data-ai="' + i + '"><b>' + esc(v.slice(0, typed.length)) + "</b>" + esc(v.slice(typed.length)) + "</button>"; }).join("") + "<small>" + (list.length > 1 ? "&darr; to choose, Enter to use" : "Enter keeps it, keep typing to change it") + "</small>";
+		acEl.hidden = false;
+		acEl.style.left = ed.style.left; acEl.style.top = (parseFloat(ed.style.top) + ed.offsetHeight + 2) + "px";
+	}
+	function acMark() { [].forEach.call(acEl.querySelectorAll("[data-ai]"), function (b, i) { b.classList.toggle("is-on", i === acIx); }); if (acIx >= 0) { ed.value = acList[acIx]; ed.setSelectionRange(ed.value.length, ed.value.length); fxin.value = ed.value; placeEditor(); } }
+	function acPick(i) { if (!editing || !acList[i]) return; ed.value = acList[i]; fxin.value = ed.value; acHide(); ed.focus(); ed.setSelectionRange(ed.value.length, ed.value.length); placeEditor(); }
+	function acKey(e) {
+		if (!acEl || acEl.hidden || !acList.length) return false;
+		if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); e.stopPropagation(); acIx = e.key === "ArrowDown" ? Math.min(acList.length - 1, acIx + 1) : Math.max(-1, acIx - 1); acMark(); return true; }
+		if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); acHide(); return true; }
+		return false;
+	}
+
+	/* ---------- Edit actions (Edit menu, right-click menu) ---------- */
+	function cellAct(a) {
+		if (!wb) return;
+		if (editing && a !== "edit" && !commitEdit()) return;
+		var R = selRect();
+		switch (a) {
+			case "cut": case "copy": {
+				var o = doCopy(a === "cut"); if (!o) return;
+				var done = function () { toast((a === "cut" ? "Cut" : "Copied") + (a === "cut" ? ": select where it goes and paste" : "")); };
+				try { if (navigator.clipboard && window.ClipboardItem) navigator.clipboard.write([new ClipboardItem({ "text/plain": new Blob([o.text], { type: "text/plain" }), "text/html": new Blob([o.html], { type: "text/html" }) })]).then(done, function () { navigator.clipboard.writeText(o.text).then(done, done); }); else if (navigator.clipboard) navigator.clipboard.writeText(o.text).then(done, done); else done(); } catch (err) { done(); }
+				break;
+			}
+			case "paste": case "pastev": {
+				var useText = function (t) { if (a === "paste" && clip && (t == null || clipSame(t))) pasteInternal(); else if (t != null) pasteText(t); else if (clip) { if (a === "paste") pasteInternal(); else pasteText(clip.text); } else toast("Nothing to paste. Copy something first, or press Ctrl+V."); };
+				if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(useText, function () { useText(null); }); else useText(null);
+				break;
+			}
+			case "clear": clearSel(); break;
+			case "filld": fillDown(); break;
+			case "fillr": fillRight(); break;
+			case "edit": scroll.focus({ preventScroll: true }); startEdit(); break;
+			case "all": $("xl-corner").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })); break;
+			case "find": $("xl-q").focus(); $("xl-q").select(); break;
+			case "sasc": sortBy(1); break;
+			case "sdesc": sortBy(-1); break;
+			case "fval": { var cl = getCell(actualRow(sel.ar), sel.ac), vs = vstate(); vs.filters.push({ c: sel.ac, op: "eq", v: disp(cl) }); computeView(); toast("Showing only the rows where column " + X.colName(sel.ac) + " is “" + disp(cl) + "”. The file itself is not changed."); break; }
+			case "table": insertTable(); break;
+			case "frz": setFreeze("sel"); break;
+			case "trow": { var ar = actualRow(R.r2), T = anyTableAt(ar, sel.ac); if (T) { insertRows(ar + 1, 1, ar === T.g.e.r ? T.t : null); select(displayRow(ar + 1), sel.ac); } break; }
+			case "tsasc": case "tsdesc": { var T2 = anyTableAt(actualRow(sel.ar), sel.ac); if (T2) sortTable(T2.t, sel.ac, a === "tsasc" ? 1 : -1); break; }
+			default: rowsCols(a);
+		}
+	}
+	/* ---------- right-click menu (instead of the browser's) ---------- */
+	var cmEl = null;
+	function closeCm() { if (cmEl) { cmEl.remove(); cmEl = null; } }
+	function cmOpen(x, y, where) {
+		closeCm();
+		var R = selRect(), nr = R.r2 - R.r1 + 1, ncl = R.c2 - R.c1 + 1, ar = actualRow(sel.ar), T = ar != null ? anyTableAt(ar, sel.ac) : null, sf = isSF();
+		var rows = nr > 1 ? nr + " rows" : "row", cols = ncl > 1 ? ncl + " columns" : "column";
+		var it = [];
+		var add = function (label, act, key, off) { it.push('<button type="button" role="menuitem" data-ca="' + act + '"' + (off ? " disabled" : "") + "><span>" + label + "</span>" + (key ? "<kbd>" + key + "</kbd>" : "") + "</button>"); };
+		var hr = function () { it.push("<hr>"); }, head = function (t) { it.push('<div class="xl-cmh">' + t + "</div>"); };
+		add("Cut", "cut", "Ctrl+X"); add("Copy", "copy", "Ctrl+C"); add("Paste", "paste", "Ctrl+V"); add("Paste values only", "pastev");
+		hr();
+		if (where !== "col") { add("Insert " + (nr > 1 && where === "row" ? nr + " rows" : "row") + " above", "row-above", "Ctrl+Shift+="); add("Insert " + (nr > 1 && where === "row" ? nr + " rows" : "row") + " below", "row-below"); }
+		if (where !== "row") { add("Insert column left", "col-left"); add("Insert column right", "col-right"); }
+		if (where !== "col") add("Delete " + rows, "row-del", "Ctrl+-");
+		if (where !== "row") add("Delete " + cols, "col-del");
+		add("Clear contents", "clear", "Delete");
+		if (where === "cell") {
+			hr(); add("Fill down", "filld", "Ctrl+D"); add("Fill right", "fillr", "Ctrl+R");
+			if (T) { hr(); head("Table " + esc(T.name)); add("Add a table row below", "trow"); add("Sort table A to Z", "tsasc", null, sf); add("Sort table Z to A", "tsdesc", null, sf); }
+			hr(); head("View (the file is not changed)"); add("Sort sheet A to Z by this column", "sasc"); add("Sort sheet Z to A", "sdesc"); add("Show only rows with this value", "fval");
+			hr(); if (!T) add("Make a table from these cells", "table"); add("Freeze panes here", "frz"); add("Edit the cell", "edit", "F2");
+		}
+		var m = document.createElement("div"); m.className = "xl-menu xl-cmenu"; m.setAttribute("role", "menu"); m.innerHTML = it.join("");
+		root.appendChild(m); cmEl = m;
+		var w = m.offsetWidth, h = m.offsetHeight;
+		m.style.left = Math.max(4, Math.min(x, window.innerWidth - w - 6)) + "px"; m.style.top = Math.max(4, Math.min(y, window.innerHeight - h - 6)) + "px";
+		m.addEventListener("click", function (e) { var b = e.target.closest("[data-ca]"); if (!b || b.disabled) return; closeCm(); scroll.focus({ preventScroll: true }); cellAct(b.getAttribute("data-ca")); });
+		m.addEventListener("keydown", function (e) {
+			var bs = [].slice.call(m.querySelectorAll("button:not([disabled])")), i = bs.indexOf(document.activeElement);
+			if (e.key === "Escape") { e.preventDefault(); closeCm(); scroll.focus({ preventScroll: true }); }
+			else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); bs[(i + (e.key === "ArrowDown" ? 1 : bs.length - 1)) % bs.length].focus(); }
+		});
+		var f = m.querySelector("button:not([disabled])"); if (f) f.focus({ preventScroll: true });
+	}
+	function onCtx(e) {
+		if (!wb) return;
+		e.preventDefault();
+		if (editing && !commitEdit()) return;
+		var where = "cell", R = selRect(), p = null;
+		var rh = e.target.closest && e.target.closest("[data-dr]"), ch = e.target.closest && e.target.closest("#xl-colh [data-c]");
+		if (rh && (e.currentTarget.id === "xl-rowh" || e.currentTarget.id === "xl-frzh")) { where = "row"; var dr = +rh.getAttribute("data-dr"); if (!(sel.mode === "row" && dr >= R.r1 && dr <= R.r2)) rowHeadDown.call(e.currentTarget, { target: rh, shiftKey: false, preventDefault: function () {} }); }
+		else if (ch) { where = "col"; var c = +ch.getAttribute("data-c"); if (!(sel.mode === "col" && c >= R.c1 && c <= R.c2)) { sel.ac = sel.fc = c; sel.ar = minRow(); sel.fr = Math.max(minRow(), dataN() - 1); sel.mode = "col"; clampSel(); showActive(); render(); } }
+		else if (e.currentTarget === scroll) { p = hitCell(e, scroll); if (!(p.dr >= R.r1 && p.dr <= R.r2 && p.c >= R.c1 && p.c <= R.c2)) select(p.dr, p.c); }
+		scroll.focus({ preventScroll: true });
+		cmOpen(e.clientX, e.clientY, where);
+	}
+	[scroll, $("xl-rowh"), $("xl-frzh"), $("xl-colh"), $("xl-frz"), $("xl-frzc"), $("xl-fcols")].forEach(function (el) { el.addEventListener("contextmenu", onCtx); });
+	document.addEventListener("pointerdown", function (e) { if (cmEl && !e.target.closest(".xl-cmenu")) closeCm(); }, true);
+	scroll.addEventListener("scroll", closeCm, { passive: true });
+	// Shift+F10 / the menu key open it at the selected cell
+	scroll.addEventListener("keydown", function (e) {
+		if (!wb || editing || !(e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey))) return;
+		e.preventDefault(); var g = grid.getBoundingClientRect(), I = scrollInfo();
+		cmOpen(g.left + HW + colX[sel.ac + 1] - (sel.ac < FC ? 0 : I.sl), g.top + CHH + FR + (sel.ar + 1) * RH - I.P, "cell");
+	});
+
+	/* ---------- light / dark switch in the top bar (Fill window and full screen hide the page's own one) ---------- */
+	function themeIcon() { var b = $("xl-theme"); if (b) { b.innerHTML = isDark() ? "&#9728;&#65038;" : "&#9790;"; b.title = isDark() ? "Switch to light" : "Switch to dark"; } }
+	$("xl-theme").onclick = function () {
+		var site = document.getElementById("themeToggleBtn");
+		if (site) site.click();
+		else { var d = !isDark(); document.body.classList.toggle("dark-mode", d); try { localStorage.setItem("theme", d ? "dark" : "light"); } catch (e) { /* ignore */ } }
+		themeIcon();
+	};
+	themeIcon();
+
 	/* ---------- fill window / full screen ---------- */
 	function addPanel() { if (window.MESPanel) window.MESPanel.add(app, { bar: $("xl-pv"), onChange: function () { layout(); render(); } }); }
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
@@ -5489,7 +5791,7 @@
 	var q = /[?&]new=1/.test(location.search);
 	if (q) newBook();
 	// dark mode switched: cell colours (dark text without a fill is lightened) and charts follow
-	if (window.MutationObserver) { var wasDark = isDark(); new MutationObserver(function () { var d = isDark(); if (d !== wasDark) { wasDark = d; cssCache = {}; if (wb) { render(); drawObjects(true); } } }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
+	if (window.MutationObserver) { var wasDark = isDark(); new MutationObserver(function () { var d = isDark(); if (d !== wasDark) { wasDark = d; cssCache = {}; themeIcon(); if (wb) { render(); drawObjects(true); } } }).observe(document.body, { attributes: true, attributeFilter: ["class"] }); }
 	window.MESExcelDebug = { get wb() { return wb; }, get sel() { return sel; }, openBytes: openBytes, setCells: setCells, pasteText: pasteText, get stale() { return stale; }, select: select, actualRow: actualRow,
 		xlsxBytes: xlsxBytes, setFreeze: setFreeze, showSheet: showSheet, drawObjects: drawObjects, draw: draw };
 })();

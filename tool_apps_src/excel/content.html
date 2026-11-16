@@ -8,11 +8,27 @@
 				<span class="xl-fname" id="xl-fname" title="">No file open</span>
 				<span class="xl-grow"></span>
 				<span class="xl-pv" id="xl-pv"></span>
+				<button type="button" class="xl-btn xl-theme" id="xl-theme" title="Switch between light and dark" aria-label="Switch between light and dark">&#9790;</button>
 			</div>
 			<div class="xl-bar" id="xl-bar" role="toolbar" aria-label="Spreadsheet tools">
 				<button type="button" class="xl-ib" id="xl-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
 				<button type="button" class="xl-ib" id="xl-redo" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>&#8631;</button>
 				<span class="xl-sep"></span>
+				<div class="xl-dd">
+					<button type="button" class="xl-btn" id="xl-editm" aria-haspopup="true" aria-expanded="false" title="Cut, copy, paste, clear and fill (or right-click a cell)">Edit &#9662;</button>
+					<div class="xl-menu" id="xl-editmenu" hidden role="menu">
+						<button type="button" role="menuitem" data-ca="cut"><b>Cut</b><small>Ctrl+X</small></button>
+						<button type="button" role="menuitem" data-ca="copy"><b>Copy</b><small>Ctrl+C</small></button>
+						<button type="button" role="menuitem" data-ca="paste"><b>Paste</b><small>Ctrl+V</small></button>
+						<button type="button" role="menuitem" data-ca="pastev"><b>Paste values only</b><small>no formulas or formats</small></button>
+						<button type="button" role="menuitem" data-ca="clear"><b>Clear contents</b><small>Delete</small></button>
+						<button type="button" role="menuitem" data-ca="filld"><b>Fill down</b><small>Ctrl+D</small></button>
+						<button type="button" role="menuitem" data-ca="fillr"><b>Fill right</b><small>Ctrl+R</small></button>
+						<button type="button" role="menuitem" data-ca="edit"><b>Edit the cell</b><small>F2 or double-click</small></button>
+						<button type="button" role="menuitem" data-ca="all"><b>Select all</b><small>Ctrl+A</small></button>
+						<button type="button" role="menuitem" data-ca="find"><b>Find</b><small>Ctrl+F</small></button>
+					</div>
+				</div>
 				<div class="xl-dd">
 					<button type="button" class="xl-btn" id="xl-rcbtn" aria-haspopup="true" aria-expanded="false" title="Add or delete rows and columns">Rows &amp; columns &#9662;</button>
 					<div class="xl-menu" id="xl-rcmenu" hidden role="menu">

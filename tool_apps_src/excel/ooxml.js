@@ -489,8 +489,11 @@
 		var tx = xml("<worksheet>" + tail.replace(/<\/worksheet>\s*$/, "") + "</worksheet>");
 		kids(kid(tx, "mergeCells"), "mergeCell").forEach(function (mc) { var g = parseRange(mc.a.ref); if (g) out.merges.push(g); });
 		var cfRe = /<(?:\w+:)?conditionalFormatting\b[\s\S]*?<\/(?:\w+:)?conditionalFormatting>/g, cm;
-		var tailNoExt = tail.replace(/<extLst>[\s\S]*<\/extLst>/, "");
-		while ((cm = cfRe.exec(tailNoExt))) out.cfRaw.push(cm[0]);
+		// the sheet's own extLst (newer data bars, icon sets...) comes after the last conditionalFormatting block; a cfRule can hold an
+		// extLst of its own (the link to that newer data bar), so cut at the first extLst after the last block, not at the first one
+		var lastCf = tail.lastIndexOf("</conditionalFormatting>"), extAt = tail.indexOf("<extLst>", lastCf < 0 ? 0 : lastCf);
+		var tailNoExt = extAt >= 0 ? tail.slice(0, extAt) : tail;
+		while ((cm = cfRe.exec(tailNoExt))) out.cfRaw.push(cm[0].replace(/<(?:\w+:)?extLst>[\s\S]*?<\/(?:\w+:)?extLst>/g, ""));
 		kids(tx, "conditionalFormatting").forEach(function (cf) {
 			var ranges = sqref(cf.a.sqref);
 			kids(cf, "cfRule").forEach(function (rule) { var p = parseRule(rule, styles); if (p) { p.ranges = ranges; out.cf.push(p); } });
@@ -1153,10 +1156,10 @@
 					if (/<sheetViews>[\s\S]*?<\/sheetViews>|<sheetViews\/>/.test(s)) s = s.replace(/<sheetViews>[\s\S]*?<\/sheetViews>|<sheetViews\/>/, sv);
 					else s = s.replace(/(<sheetFormatPr|<cols|<sheetData)/, sv + "$1");
 					var sm = si.model;
-					if (sm && model && info.structOk) {
+					if (sm && model && (info.structOk || info.rowsOk)) {
 						if (sm.cfRaw && sm.cfRaw.length) { s = insertBefore(s, AFTER_CF, sm.cfRaw.join("")); report.cf += sm.cfRaw.length; }
 						var relN = 0, rid = function () { var id; do { id = "rIdMes" + (++relN); } while (relsRaw && relsRaw.indexOf('Id="' + id + '"') >= 0); return id; };
-						if (sm.drawingPart) {
+						if (sm.drawingPart && info.structOk) {
 							var id = rid(); newRels.push('<Relationship Id="' + id + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="' + relRel(part, sm.drawingPart) + '"/>');
 							s = insertBefore(s, AFTER_DRAWING, '<drawing r:id="' + id + '"/>');
 							copyTree(sm.drawingPart);
@@ -1168,6 +1171,11 @@
 								var names = info.tableHeaders && info.tableHeaders[t.part];
 								jobs.push(O(t.part).then(function (b) {
 									var tx = utf8(b), k2 = 0;
+									var tr = info.tableRefs && info.tableRefs[t.part];
+									if (tr && tx.indexOf('ref="' + tr.ref + '"') < 0) {   // rows went in / out of the table: its range, and the filter range, follow
+										tx = tx.replace(/(<(?:\w+:)?table\b[^>]*?\sref=")[^"]*(")/, "$1" + tr.ref + "$2").replace(/(<(?:\w+:)?autoFilter\b[^>]*?\sref=")[^"]*(")/, "$1" + tr.af + "$2");
+										tx = tx.replace(/<(?:\w+:)?sortState\b[\s\S]*?<\/(?:\w+:)?sortState>|<(?:\w+:)?sortState\b[^>]*\/>/g, "");
+									}
 									if (names) tx = tx.replace(/(<(?:\w+:)?tableColumn\b[^>]*?\bname=")([^"]*)(")/g, function (m, a, nm, c) { var n = names[k2++]; return a + (n != null && n !== "" ? escX(n) : nm) + c; });
 									write[t.part] = enc(tx); ct = ctAdd(ct, t.part, "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml");
 								}));
