@@ -47,8 +47,8 @@ export interface Settings {
   minHoldingUsd: number;
   /** a move smaller than this is skipped (fees eat it) */
   minTradeUsd: number;
-  /** what went into the Liquidity position, in CAD (moves into Liquidity logged here are added on top) */
-  lpBasisCad: number;
+  /** what went into the Liquidity position, in USD (moves into Liquidity logged here are added on top) */
+  lpBasisUsd: number;
   /** Store of Value: buy the smallest coin / sell the biggest, so they level out over time */
   sovLevel: boolean;
   /** Store of Value sales: spread over every coin worth minHoldingUsd+ (default), or the biggest first */
@@ -90,7 +90,7 @@ export const DEFAULT_SETTINGS: Settings = {
   moves: DEFAULT_MOVES,
   minHoldingUsd: 500,
   minTradeUsd: 20,
-  lpBasisCad: 4777.13,
+  lpBasisUsd: 4777.13,
   sovLevel: true,
   sovSell: 'spread',
   sovNext: 'Gold (PAXG), Monero (XMR)',
@@ -155,7 +155,7 @@ export function normalize(raw: unknown): Settings {
     moves,
     minHoldingUsd: num(r.minHoldingUsd, d.minHoldingUsd, 0, 1e7),
     minTradeUsd: num(r.minTradeUsd, d.minTradeUsd, 0, 1e6),
-    lpBasisCad: num(r.lpBasisCad, d.lpBasisCad, 0, 1e9),
+    lpBasisUsd: num(r.lpBasisUsd, d.lpBasisUsd, 0, 1e9),
     sovLevel: r.sovLevel ?? d.sovLevel,
     sovSell: r.sovSell === 'biggest' ? 'biggest' : 'spread',
     sovNext: typeof r.sovNext === 'string' ? r.sovNext.slice(0, 120) : d.sovNext,
@@ -369,30 +369,30 @@ export interface LpInfo {
 }
 
 export interface LpStatus {
-  basisCad: number;
-  valueCad: number | null;
-  profitCad: number | null;
+  /** what went in, USD */
+  basisUsd: number;
+  valueUsd: number | null;
   profitUsd: number | null;
   profitPct: number | null;
+  /** the same in CAD at today's rate, for reference */
+  profitCad: number | null;
 }
 
 const DAY = 86_400_000;
 export const isoDay = (t: number | Date) => new Date(t).toISOString().slice(0, 10);
 
-/** What went into Liquidity (CAD): the starting amount + every logged move into it, at that day's rate */
+/** What went into Liquidity (USD): the starting amount + every logged move into it */
 export function lpStatus(s: Settings, log: LogEntry[], lp: LpInfo | null): LpStatus {
-  let basis = s.lpBasisCad;
+  let basis = s.lpBasisUsd;
   for (const e of log) {
     if (e.skipped) continue;
     const toLp = e.to === 'lp' ? e.usd : (e.lpUsd ?? 0);
-    const rate = e.cad ?? lp?.cadRate ?? 1.4;
-    if (toLp > 0) basis += toLp * rate;
-    if (e.from === 'lp' && e.moveId !== 'lp2s') basis -= e.usd * rate; // a % taken out of the position
+    if (toLp > 0) basis += toLp;
+    if (e.from === 'lp' && e.moveId !== 'lp2s') basis -= e.usd; // a % taken out of the position
   }
-  if (!lp || !lp.cadRate) return { basisCad: basis, valueCad: null, profitCad: null, profitUsd: null, profitPct: null };
-  const valueCad = lp.valueUsd * lp.cadRate;
-  const profitCad = valueCad - basis;
-  return { basisCad: basis, valueCad, profitCad, profitUsd: profitCad / lp.cadRate, profitPct: basis > 0 ? profitCad / basis : null };
+  if (!lp) return { basisUsd: basis, valueUsd: null, profitUsd: null, profitPct: null, profitCad: null };
+  const profitUsd = lp.valueUsd - basis;
+  return { basisUsd: basis, valueUsd: lp.valueUsd, profitUsd, profitPct: basis > 0 ? profitUsd / basis : null, profitCad: lp.cadRate ? profitUsd * lp.cadRate : null };
 }
 
 /** Signal for a move: buying a riskier section follows the risk score, selling one follows it backwards;
@@ -571,7 +571,7 @@ export function plan(h: Holdings, s: Settings, inds: Indicator[], log: LogEntry[
       let skipped: string | null = null;
       if (m.kind === 'profit') {
         if (m.from === 'lp' && lps.profitUsd == null) skipped = 'The Liquidity value has not loaded';
-        else if (baseUsd <= 0) skipped = `No profit to move: the position is ${lps.profitCad != null ? `${fmtCad(-lps.profitCad)} below` : 'below'} what you put in`;
+        else if (baseUsd <= 0) skipped = `No profit to move: the position is ${lps.profitUsd != null ? `${fmtUsd(-lps.profitUsd)} below` : 'below'} what you put in`;
         else if (usd < s.minTradeUsd) skipped = `The profit (${fmtUsd(usd)}) is under the $${s.minTradeUsd} minimum, let it grow`;
       } else if (!src.length) skipped = `Nothing in ${BUCKET_LABEL[m.from]} is worth $${s.minHoldingUsd.toLocaleString()} or more`;
       else if (mult === 0) skipped = 'Market mood and targets both say wait this time';
@@ -652,11 +652,11 @@ export function advise(p: PlannedMove, c: { h: Holdings; s: Settings; risk: Risk
   if (m.from === 'sov' && s.sovSell === 'biggest' && p.sells.length) n.push({ tone: 'info', text: `Sells from the biggest Store of Value coin first (${p.sells.map((x) => x.key).join(', ')}), which also helps level them.` });
   if (m.from === 'tokens' && c.alt != null && c.alt < -0.2) n.push({ tone: 'info', text: 'HIVE is weak against Bitcoin right now. If HIVE is below what you paid, this sale also books a loss for taxes (fine, but don\'t buy it back within 30 days).' });
   if ((m.from === 'cash') && h.total.cash - p.usd < h.all * 0.05) n.push({ tone: 'warn', text: 'After this, Cash LP would be under 5% of everything: little left to buy the next dip with.' });
-  if (m.kind === 'profit' && m.from === 'lp' && c.lps.profitCad != null) {
+  if (m.kind === 'profit' && m.from === 'lp' && c.lps.profitUsd != null) {
     n.push(
-      c.lps.profitCad > 0
-        ? { tone: 'tip', text: `Liquidity is ${fmtCad(c.lps.profitCad)} up on ${fmtCad(c.lps.basisCad)} put in. Taking this profit out leaves the original amount working. Harvest the CAKE rewards too (they count as income for taxes).` }
-        : { tone: 'info', text: `Liquidity is ${fmtCad(-c.lps.profitCad)} below the ${fmtCad(c.lps.basisCad)} you put in: leave it, nothing to take out this month.` },
+      c.lps.profitUsd > 0
+        ? { tone: 'tip', text: `Liquidity is ${fmtUsd(c.lps.profitUsd)} up on ${fmtUsd(c.lps.basisUsd)} put in. Taking this profit out leaves the original amount working. Harvest the CAKE rewards too (they count as income for taxes).` }
+        : { tone: 'info', text: `Liquidity is ${fmtUsd(-c.lps.profitUsd)} below the ${fmtUsd(c.lps.basisUsd)} you put in: leave it, nothing to take out this month. No profit sweep until it is back above that.` },
     );
   }
   if (p.usd > 0 && p.usd < 50) n.push({ tone: 'info', text: 'A small amount: fees can eat a noticeable part. Doing it every second month would be fine.' });
@@ -895,7 +895,7 @@ export function topIssues(h: Holdings, s: Settings, planned: PlannedMove[], risk
   if (buyFear && risk.score >= 0.6)
     out.push({ rank: 60, tone: 'tip', title: 'Fear is high: a good month for the Cash LP buy', text: `Do the ${fmtUsd(buyFear.usd)} Cash LP move now; fearful markets have usually been better times to buy than greedy ones.` });
   if (lps.profitUsd != null && lps.profitUsd >= s.minTradeUsd)
-    out.push({ rank: 70, tone: 'tip', title: `Take ${fmtUsd(lps.profitUsd)} of Liquidity profit`, text: `The LP is worth ${lps.valueCad != null ? fmtCad(lps.valueCad) : '?'} vs ${fmtCad(lps.basisCad)} put in. Move the profit to Store of Value (the smallest coin) and harvest the CAKE.` });
+    out.push({ rank: 70, tone: 'tip', title: `Take ${fmtUsd(lps.profitUsd)} of Liquidity profit`, text: `The LP is worth ${lps.valueUsd != null ? fmtUsd(lps.valueUsd) : '?'} vs ${fmtUsd(lps.basisUsd)} put in. Move the profit to Store of Value (the smallest coin) and harvest the CAKE.` });
   const big = [...h.items].filter((x) => !keep.has(x.key.toUpperCase())).sort((a, b) => b.valueUsd - a.valueUsd)[0];
   if (big && h.all > 0 && big.valueUsd / h.all > 0.35)
     out.push({ rank: 65 + Math.round((big.valueUsd / h.all - 0.35) * 100), tone: 'warn', title: `${big.key} is ${Math.round((big.valueUsd / h.all) * 100)}% of everything`, text: `One coin decides most of your result. Levelling Store of Value (Tokens → Store of Value buys go to the smallest coin) slowly fixes this; you could also speed it up once by moving some ${big.key} into ${big.bucket === 'sov' ? 'the smaller Store of Value coins' : 'Store of Value'}.` });

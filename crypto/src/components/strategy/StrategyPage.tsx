@@ -597,16 +597,17 @@ export default function StrategyPage() {
             </span>
           </div>
           <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-            <p className={`text-3xl font-semibold tabular-nums ${lps.profitCad == null ? 'text-gray-100' : lps.profitCad >= 0 ? 'text-gain' : 'text-loss'}`}>
-              {lps.profitCad == null ? '—' : `${lps.profitCad >= 0 ? '+' : '−'}${cad0(Math.abs(lps.profitCad))}`}
+            <p className={`text-3xl font-semibold tabular-nums ${lps.profitUsd == null ? 'text-gray-100' : lps.profitUsd >= 0 ? 'text-gain' : 'text-loss'}`}>
+              {lps.profitUsd == null ? '—' : `${lps.profitUsd >= 0 ? '+' : '−'}${usd0(Math.abs(lps.profitUsd))}`}
               {lps.profitPct != null && <span className="ml-2 text-lg">({lps.profitPct >= 0 ? '+' : ''}{(lps.profitPct * 100).toFixed(1)}%)</span>}
             </p>
             <p className="text-sm text-gray-400">
-              worth {lps.valueCad != null ? cad0(lps.valueCad) : '—'} ({usd0(lpInfo.valueUsd)}) · put in {cad0(lps.basisCad)}
-              {Math.abs(lps.basisCad - settings.lpBasisCad) > 0.5 && <> ({cad0(settings.lpBasisCad)} at the start + moves you logged)</>}
+              worth {usd0(lpInfo.valueUsd)} · put in {usd0(lps.basisUsd)}
+              {Math.abs(lps.basisUsd - settings.lpBasisUsd) > 0.5 && <> ({usd0(settings.lpBasisUsd)} at the start + moves you logged)</>}
+              {lps.profitCad != null && <> · {lps.profitCad >= 0 ? '+' : '−'}{cad0(Math.abs(lps.profitCad))}</>}
             </p>
           </div>
-          <p className="text-xs text-gray-500">Value includes unharvested CAKE. The cost is in CAD; change the starting amount under Settings.</p>
+          <p className="text-xs text-gray-500">Value includes unharvested CAKE. Amounts in USD (CAD at today's rate); change the starting amount under Settings.</p>
         </a>
       )}
 
@@ -836,8 +837,8 @@ export default function StrategyPage() {
                   <input type="number" className={inputCls} min={0} max={50} step={0.5} value={settings.cashAprPct} onChange={(e) => update((s) => ({ ...s, cashAprPct: Number(e.target.value) }))} />
                 </label>
                 <label className="flex flex-col gap-1 text-xs text-gray-400">
-                  Put into Liquidity at the start (CAD)
-                  <input type="number" className={inputCls} min={0} step={0.01} value={settings.lpBasisCad} onChange={(e) => update((s) => ({ ...s, lpBasisCad: Number(e.target.value) }))} />
+                  Put into Liquidity at the start (USD)
+                  <input type="number" className={inputCls} min={0} step={0.01} value={settings.lpBasisUsd} onChange={(e) => update((s) => ({ ...s, lpBasisUsd: Number(e.target.value) }))} />
                 </label>
                 <label className="flex flex-col gap-1 text-xs text-gray-400">
                   Store of Value sales come from
