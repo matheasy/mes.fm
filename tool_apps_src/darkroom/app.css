@@ -1,7 +1,7 @@
 	/* MES Darkroom: an always-dark workspace. Every colour is a custom property, restated at the end for body.dark-mode (the derived dark theme rewrites them otherwise). */
 	.tu [hidden] {display:none !important;}
 	.dr {--dr-bg:#121214;--dr-p1:#1c1c20;--dr-p2:#24242a;--dr-p3:#2c2c33;--dr-line:#36363e;--dr-text:#e6e6ea;--dr-dim:#9a9aa6;--dr-faint:#6c6c78;--dr-acc:#e8922a;--dr-acc2:#f5b35b;--dr-accfg:#1a1206;--dr-field:#0e0e10;--dr-stage:#0b0b0c;--dr-sel:rgba(232,146,42,0.22);--dr-selline:#e8922a;--dr-shadow:rgba(0,0,0,0.55);--dr-scrim:rgba(0,0,0,0.6);--dr-star:#f5c518;--dr-pick:#f2f2f2;--dr-rej:#ff6b6b;--dr-ok:#57c785;--dr-hi:#ffffff;--dr-lo:#000000;--dr-thumb:#1a1a1e;
-		display:flex;flex-direction:column;height:clamp(560px,calc(100vh - 120px),1500px);background:var(--dr-bg);color:var(--dr-text);border:1px solid var(--dr-line);border-radius:0.5em;overflow:hidden;position:relative;font-size:13px;line-height:1.3;color-scheme:dark;user-select:none;-webkit-user-select:none;}
+		display:flex;flex-direction:column;height:var(--mes-gh, clamp(560px,calc(100vh - 120px),1500px));background:var(--dr-bg);color:var(--dr-text);border:1px solid var(--dr-line);border-radius:0.5em;overflow:hidden;position:relative;font-size:13px;line-height:1.3;color-scheme:dark;user-select:none;-webkit-user-select:none;}
 	.dr *, .dr *::before, .dr *::after {box-sizing:border-box;color:inherit;}
 	.dr button, .dr input, .dr select, .dr textarea {font:inherit;margin:0;}
 	.dr button {cursor:pointer;}

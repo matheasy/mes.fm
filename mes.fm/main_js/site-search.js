@@ -708,6 +708,13 @@
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", extStoreLoader); else extStoreLoader();
 
+    // height grip under viewer boxes: any element with data-mes-grip gets the drag bar (main_js/height-grip.js)
+    function gripLoader() {
+        if (window.MESGrip || !document.querySelector("[data-mes-grip]") || document.getElementById("mes-hgrip-js")) return;
+        var s = document.createElement("script"); s.id = "mes-hgrip-js"; s.src = "/main_js/height-grip.js?v=2"; s.async = true; document.head.appendChild(s);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", gripLoader); else gripLoader();
+
     /* Standard | Wide | Theatre (| Show sidebar) in the floating compact bar (2026-11-02). On big screens (>= 1400px), while #compact-nav is
        showing, a small copy of the page's own width switch (aside.js .mes-mode, toc-flip.js .toc-mode, hub-theatre.js .hub-mode) sits in the
        bar. Each copy button just clicks the matching button of the page's switch, so all the logic (pageMode / pageWide / asideForce ...) stays

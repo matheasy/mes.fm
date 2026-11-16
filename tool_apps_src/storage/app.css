@@ -51,7 +51,7 @@
 	.st-crumbs button[aria-current] {color:var(--st-fg);font-weight:700;cursor:default;}
 	.st-crumbs .st-sep {color:var(--st-muted);}
 	.st-chartwrap {display:grid;grid-template-columns:minmax(0, 1fr) 17em;gap:1em;align-items:start;}
-	.st-chart {position:relative;height:min(72vh, 40em);min-height:18em;background:var(--st-chartbg);border-radius:0.5em;touch-action:manipulation;}
+	.st-chart {position:relative;height:var(--mes-gh, min(72vh, 40em));min-height:18em;background:var(--st-chartbg);border-radius:0.5em;touch-action:manipulation;}
 	.st-chart canvas {display:block;cursor:pointer;}
 	.st-tip {position:absolute;background:var(--st-tipbg);color:var(--st-tipfg);padding:0.45em 0.65em;border-radius:0.45em;font-size:0.86em;line-height:1.45;pointer-events:none;z-index:3;max-width:22em;}
 	.st-tip[hidden] {display:none;}
@@ -144,7 +144,7 @@
 	}
 	@media (max-width:600px) {
 		.st-pstats {grid-template-columns:repeat(2, minmax(0, 1fr));}
-		.st-chart {height:min(62vh, 26em);}
+		.st-chart {height:var(--mes-gh, min(62vh, 26em));}
 		.st-hidesm {display:none;}
 		.st-tree td.st-name {min-width:9em;}
 		.st-pbarcell {min-width:5.5em;}

@@ -309,7 +309,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* width comes from the page's Standard | Wide | Theatre switch (Wide by default via the inline snippet in content.html) */
 	.tu [hidden] {display:none !important;}
 	.pe {--pe-adjT1:#3b82f6;--pe-adjT2:#f59e0b;--pe-adjN:#9ca3af;--pe-adjG:#22c55e;--pe-adjM:#d946ef;--pe-adjS0:#8a8a8a;--pe-adjS1:#ef4444;--pe-adjS2:#f43f5e;--pe-adjK:#4c1d95;--pe-bg:#141418;--pe-panel:#1d1d23;--pe-panel2:#26262e;--pe-line:#34343f;--pe-text:#ececf1;--pe-dim:#9b9bab;--pe-hover:#2f2f3a;--pe-on:var(--accent);--pe-onfg:#fff;--pe-field:#101014;--pe-stage:#1b1b1f;--pe-hi:#ffffff;--pe-lo:#000000;--pe-ring:#c4b5fd;--pe-acc2:#c4b5fd;--pe-hibg:rgba(124,58,237,0.20);--pe-selbg:rgba(139,92,246,0.60);--pe-selfg:#ffffff;--pe-notebg:#231f33;--pe-dropbg:rgba(124,58,237,0.12);--pe-scrim:rgba(0,0,0,0.55);--pe-shadow:rgba(0,0,0,0.5);--pe-shadow2:rgba(0,0,0,0.6);--pe-gray:#888888;--pe-err:#ff8a80;
-		display:flex;flex-direction:column;height:clamp(540px,calc(100vh - 140px),1200px);background:var(--pe-bg);border:1px solid var(--pe-line);border-radius:0.5em;overflow:hidden;color:var(--pe-text);font-size:13px;line-height:1.3;position:relative;color-scheme:dark;}
+		display:flex;flex-direction:column;height:var(--mes-gh, clamp(540px,calc(100vh - 140px),1200px));background:var(--pe-bg);border:1px solid var(--pe-line);border-radius:0.5em;overflow:hidden;color:var(--pe-text);font-size:13px;line-height:1.3;position:relative;color-scheme:dark;}
 	.pe *, .pe *::before, .pe *::after {box-sizing:border-box;color:inherit;}
 	.pe button, .pe input, .pe select, .pe textarea {font:inherit;margin:0;}
 	.pe button {cursor:pointer;}
@@ -1013,7 +1013,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Free Online Photo Editor with Layers</h1>                                        <p class="page-description">Free online photo editor with layers, selections, magic wand, clone stamp, levels and curves. Add text labels, arrows, callouts and blur boxes to screenshots, combine images, keep transparency, open PSD and GIMP (.xcf) files and export PNG, JPEG or WebP. Private: nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
-	<div class="tu pe" id="pe">
+	<div class="tu pe" id="pe" data-mes-grip="mes-photo:h" data-mes-grip-min="400">
 		<div class="pe-top">
 			<div class="pe-menubar" id="pe-menubar" role="menubar"></div>
 			<div class="pe-search" id="pe-searchw"><input type="search" id="pe-search" placeholder="🔍 Search tools, menus, layers…  (Ctrl+K)" aria-label="Search tools, menu commands and layers" autocomplete="off"><div class="pe-sres" id="pe-sres" hidden></div></div>

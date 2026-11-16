@@ -14,7 +14,7 @@
 	#mp .mp-lead {margin:0.9em 0;}
 	/* stage */
 	#mp .mp-stagewrap {position:relative;}
-	#mp .mp-stage {position:relative;width:100%;height:480px;border-radius:12px;overflow:hidden;background:var(--mp-stage);box-shadow:0 6px 24px rgba(10,30,60,.18);touch-action:none;user-select:none;-webkit-user-select:none;}
+	#mp .mp-stage {position:relative;width:100%;height:var(--mes-gh, 480px);border-radius:12px;overflow:hidden;background:var(--mp-stage);box-shadow:0 6px 24px rgba(10,30,60,.18);touch-action:none;user-select:none;-webkit-user-select:none;}
 	#mp .mp-stage canvas {display:block;cursor:grab;outline:none;}
 	#mp .mp-stage canvas:focus-visible {box-shadow:inset 0 0 0 3px #5eb8ff;}
 	#mp .mp-badge {position:absolute;left:10px;top:10px;background:rgba(10,20,35,.72);color:#fff;font-weight:700;font-size:0.88em;padding:0.3em 0.75em;border-radius:2em;pointer-events:none;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

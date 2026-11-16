@@ -428,7 +428,10 @@
       var narrow = W < 560, globe = S.tab === "globe" || curId === "ortho" || (S.tab === "quiz" && S.qp === "ortho");
       var ideal = globe ? W * (narrow ? 0.95 : 0.72) : W * (narrow ? 0.62 : 0.56);
       H = Math.round(Math.max(narrow ? 220 : 300, Math.min(ideal, window.innerHeight * 0.78)));
-      wrap.style.height = H + "px";
+      /* a height dragged with the grip under the map (main_js/height-grip.js) wins */
+      var gh = parseFloat(wrap.style.getPropertyValue("--mes-gh"));
+      if (gh > 0) H = Math.round(gh);
+      wrap.style.height = "var(--mes-gh, " + H + "px)";
     }
     DPR = Math.min(2.5, window.devicePixelRatio || 1);
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);

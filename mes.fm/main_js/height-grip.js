@@ -5,6 +5,7 @@
  *          page's own Fill window / full screen rules still win)
  *   key  = localStorage name for the chosen height (per page / box)
  *   min  = smallest height in px (default 200)
+ * or just put data-mes-grip="<key>" (+ data-mes-grip-min) on the box.
  * Drag (mouse, touch, pen), arrow keys when focused (Shift = bigger steps),
  * double-click or Enter = back to the page's default height.
  * The grip hides itself while the box is stretched by a fill / full screen
@@ -47,11 +48,17 @@
 			g.setAttribute("aria-valuenow", String(Math.round(el.getBoundingClientRect().height)));
 			if (opt.onChange) opt.onChange(h);
 		}
+		/* hidden when the box can't change height right now: Fill window / full screen
+		   (height auto, flex or 100%), phone layouts with height:auto, or display:none */
 		function stretched() {
-			var cs = getComputedStyle(el);
-			if (parseFloat(cs.flexGrow) > 0) return true;
 			for (var n = el; n; n = n.parentElement) if (n === document.fullscreenElement || n === document.webkitFullscreenElement) return true;
-			return false;
+			for (var m = el, i = 0; m && i < 6; m = m.parentElement, i++) if (getComputedStyle(m).position === "fixed") return true;
+			var old = el.style.getPropertyValue("--mes-gh"), h1 = el.offsetHeight;
+			if (!h1) return true;
+			el.style.setProperty("--mes-gh", (h1 + 37) + "px");
+			var h2 = el.offsetHeight;
+			if (old) el.style.setProperty("--mes-gh", old); else el.style.removeProperty("--mes-gh");
+			return h2 === h1;
 		}
 		function vis() { g.hidden = stretched(); }
 
@@ -96,4 +103,10 @@
 		return api;
 	}
 	window.MESGrip = {add: add};
+	/* automatic: <div data-mes-grip="localStorage key" data-mes-grip-min="300"> */
+	function auto() {
+		var els = document.querySelectorAll("[data-mes-grip]");
+		for (var i = 0; i < els.length; i++) add(els[i], {key: els[i].getAttribute("data-mes-grip"), min: +els[i].getAttribute("data-mes-grip-min") || 0});
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", auto); else auto();
 })();

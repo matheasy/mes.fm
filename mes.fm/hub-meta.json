@@ -18,7 +18,7 @@
 },
 "/3d-studio":{
 "added":"2026-10-31",
-"updated":"2026-11-13",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/age-calculator":{
@@ -113,7 +113,7 @@
 },
 "/brick-builder":{
 "added":"2026-11-10",
-"updated":"2026-11-13",
+"updated":"2026-11-16",
 "type":"Simulation"
 },
 "/bridge-builder":{
@@ -233,7 +233,7 @@
 },
 "/darkroom":{
 "added":"2026-11-14",
-"updated":"2026-11-15",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/database":{
@@ -283,7 +283,7 @@
 },
 "/draw":{
 "added":"2026-11-10",
-"updated":"2026-11-14",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/due-date-calculator":{
@@ -413,12 +413,12 @@
 },
 "/gta":{
 "added":"2026-11-07",
-"updated":"2026-11-12",
+"updated":"2026-11-16",
 "type":"Game"
 },
 "/gta-stunt-jump-simulator":{
 "added":"2026-11-07",
-"updated":"2026-11-12",
+"updated":"2026-11-16",
 "type":"Simulation"
 },
 "/heart-rate-zone-calculator":{
@@ -538,7 +538,7 @@
 },
 "/maps":{
 "added":"2026-11-07",
-"updated":"2026-11-07",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/march-madness":{
@@ -678,7 +678,7 @@
 },
 "/photo":{
 "added":"2026-10-16",
-"updated":"2026-11-15",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/photoelectric-effect-simulator":{
@@ -908,7 +908,7 @@
 },
 "/storage":{
 "added":"2026-10-29",
-"updated":"2026-11-12",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/stream-chat":{

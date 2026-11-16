@@ -57,7 +57,7 @@
 	#dr .dr-num {font:inherit;font-size:0.9em;width:4.6em;padding:0.35em 0.4em;border-radius:7px;}
 	#dr .dr-selacts {padding-left:0.6em;border-left:2px solid var(--dr-line);}
 	/* main: tools | stage | side */
-	#dr .dr-main {display:grid;grid-template-columns:52px minmax(0,1fr) clamp(16.5em, 26%, 20em);gap:0.5em;height:clamp(420px, 74vh, 980px);min-height:0;}
+	#dr .dr-main {display:grid;grid-template-columns:52px minmax(0,1fr) clamp(16.5em, 26%, 20em);gap:0.5em;height:var(--mes-gh, clamp(420px, 74vh, 980px));min-height:0;}
 	#dr.dr-noside .dr-main {grid-template-columns:52px minmax(0,1fr);}
 	#dr.dr-noside .dr-side {display:none;}
 	#dr .dr-tools {display:flex;flex-direction:column;gap:3px;overflow:auto;padding:2px;}

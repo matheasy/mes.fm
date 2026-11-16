@@ -2419,6 +2419,7 @@
 	}
 	drawBase(); fit(); setMode("explore"); renderList(); renderHive(); boot();
 	window.addEventListener("resize", function () { applyView(); });
+	if (window.ResizeObserver) new ResizeObserver(function () { applyView(); }).observe(stage);
 	var want = new URLSearchParams(location.search).get("pin");
 	refresh().then(function () { if (want && byId[want]) { centreOn(byId[want].x, byId[want].y, 3); openPin(want, true); } });
 	setInterval(function () { if (!document.hidden && mode === "explore" && !drag) refresh(true); }, 60000);

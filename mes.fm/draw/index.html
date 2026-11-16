@@ -364,7 +364,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#dr .dr-num {font:inherit;font-size:0.9em;width:4.6em;padding:0.35em 0.4em;border-radius:7px;}
 	#dr .dr-selacts {padding-left:0.6em;border-left:2px solid var(--dr-line);}
 	/* main: tools | stage | side */
-	#dr .dr-main {display:grid;grid-template-columns:52px minmax(0,1fr) clamp(16.5em, 26%, 20em);gap:0.5em;height:clamp(420px, 74vh, 980px);min-height:0;}
+	#dr .dr-main {display:grid;grid-template-columns:52px minmax(0,1fr) clamp(16.5em, 26%, 20em);gap:0.5em;height:var(--mes-gh, clamp(420px, 74vh, 980px));min-height:0;}
 	#dr.dr-noside .dr-main {grid-template-columns:52px minmax(0,1fr);}
 	#dr.dr-noside .dr-side {display:none;}
 	#dr .dr-tools {display:flex;flex-direction:column;gap:3px;overflow:auto;padding:2px;}
@@ -893,7 +893,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 			</div>
 
-			<div class="dr-main" id="dr-main">
+			<div class="dr-main" id="dr-main" data-mes-grip="mes-draw:h" data-mes-grip-min="320">
 				<div class="dr-tools" id="dr-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
 				<div class="dr-stage" id="dr-stage">
 					<canvas id="dr-cv" tabindex="0" aria-label="Drawing area"></canvas>

@@ -18,7 +18,7 @@
 #bb input[type=checkbox] {accent-color:var(--bb-accd);width:1.1em;height:1.1em;}
 #bb input[type=range] {accent-color:var(--bb-accd);width:100%;}
 
-#bb .bb-main {display:grid;grid-template-columns:minmax(12em, 15em) minmax(0, 1fr) minmax(15em, 19em);gap:8px;height:min(80vh, 900px);min-height:540px;}
+#bb .bb-main {display:grid;grid-template-columns:minmax(12em, 15em) minmax(0, 1fr) minmax(15em, 19em);gap:8px;height:var(--mes-gh, min(80vh, 900px));min-height:540px;}
 #bb .bb-left, #bb .bb-right {display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0;}
 #bb .bb-panel {background:var(--bb-panel);border:1px solid var(--bb-line);border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:0;}
 #bb .bb-panel--grow {flex:1;}

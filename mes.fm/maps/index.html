@@ -321,7 +321,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#mp .mp-lead {margin:0.9em 0;}
 	/* stage */
 	#mp .mp-stagewrap {position:relative;}
-	#mp .mp-stage {position:relative;width:100%;height:480px;border-radius:12px;overflow:hidden;background:var(--mp-stage);box-shadow:0 6px 24px rgba(10,30,60,.18);touch-action:none;user-select:none;-webkit-user-select:none;}
+	#mp .mp-stage {position:relative;width:100%;height:var(--mes-gh, 480px);border-radius:12px;overflow:hidden;background:var(--mp-stage);box-shadow:0 6px 24px rgba(10,30,60,.18);touch-action:none;user-select:none;-webkit-user-select:none;}
 	#mp .mp-stage canvas {display:block;cursor:grab;outline:none;}
 	#mp .mp-stage canvas:focus-visible {box-shadow:inset 0 0 0 3px #5eb8ff;}
 	#mp .mp-badge {position:absolute;left:10px;top:10px;background:rgba(10,20,35,.72);color:#fff;font-weight:700;font-size:0.88em;padding:0.3em 0.75em;border-radius:2em;pointer-events:none;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -813,7 +813,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div class="mp-stagewrap" id="mp-stagewrap">
-			<div class="mp-stage" id="mp-stage">
+			<div class="mp-stage" id="mp-stage" data-mes-grip="mes-maps:h" data-mes-grip-min="260">
 				<canvas id="mp-cv" tabindex="0" role="img" aria-label="Interactive world map. Drag to turn it, Ctrl and scroll or use the + and − buttons to zoom, click a country for its facts. Arrow keys turn the map."></canvas>
 				<div class="mp-badge" id="mp-badge" aria-live="polite"></div>
 				<div class="mp-tb" role="toolbar" aria-label="Map view">
@@ -1046,7 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/maps/js/maps.js?v=1" defer></script>
+	<script src="/maps/js/maps.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

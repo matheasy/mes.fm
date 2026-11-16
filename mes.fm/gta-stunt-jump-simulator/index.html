@@ -683,7 +683,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.gm-tb, #gt .gm-tools .mes-pbtn {cursor:pointer;font:inherit;font-size:0.86em;font-weight:700;min-width:2.2em;height:2.1em;padding:0 0.6em;border-radius:0.5em;border:1px solid var(--gm-line);background:var(--gm-card2);color:var(--gm-ink);}
 	.gm-tb:hover {border-color:var(--gt-pink);}
 	.gm-tbl {font-size:0.82em;display:inline-flex;align-items:center;gap:0.25em;margin-left:0.3em;color:var(--gm-dim);}
-	.gm-stage {position:relative;min-height:28em;height:min(78vh, 46em);background:var(--gm-sea);overflow:hidden;touch-action:none;outline:none;cursor:grab;}
+	.gm-stage {position:relative;min-height:28em;height:var(--mes-gh, min(78vh, 46em));background:var(--gm-sea);overflow:hidden;touch-action:none;outline:none;cursor:grab;}
 	.gm-stage:focus-visible {box-shadow:inset 0 0 0 3px var(--gt-pink);}
 	.gm-stage.is-drag {cursor:grabbing;}
 	.gt.gm-adding .gm-stage {cursor:crosshair;}
@@ -778,7 +778,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:899px) {
 		.gm-wrap {grid-template-columns:minmax(0,1fr);}
 		.gm-side {border-left:0;border-top:1px solid var(--gm-line);max-height:none;}
-		.gm-stage {height:min(70vh, 34em);min-height:20em;}
+		.gm-stage {height:var(--mes-gh, min(70vh, 34em));min-height:20em;}
 		.gm-modebtn small {display:none;}
 	}
 	html body.dark-mode #gt .gm-st--v, html body.dark-mode #gt .gm-vb--up.is-on {background:#3ecf7a;color:#0b2414;}
@@ -1515,7 +1515,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gta/js/gta.js?v=21" defer></script>
+	<script src="/gta/js/gta.js?v=22" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

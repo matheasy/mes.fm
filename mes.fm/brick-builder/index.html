@@ -325,7 +325,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #bb input[type=checkbox] {accent-color:var(--bb-accd);width:1.1em;height:1.1em;}
 #bb input[type=range] {accent-color:var(--bb-accd);width:100%;}
 
-#bb .bb-main {display:grid;grid-template-columns:minmax(12em, 15em) minmax(0, 1fr) minmax(15em, 19em);gap:8px;height:min(80vh, 900px);min-height:540px;}
+#bb .bb-main {display:grid;grid-template-columns:minmax(12em, 15em) minmax(0, 1fr) minmax(15em, 19em);gap:8px;height:var(--mes-gh, min(80vh, 900px));min-height:540px;}
 #bb .bb-left, #bb .bb-right {display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0;}
 #bb .bb-panel {background:var(--bb-panel);border:1px solid var(--bb-line);border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:0;}
 #bb .bb-panel--grow {flex:1;}
@@ -878,7 +878,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</div>
 
-		<div class="bb-main">
+		<div class="bb-main" data-mes-grip="mes-brick-builder:h" data-mes-grip-min="400">
 			<aside class="bb-left" aria-label="Parts and colours">
 				<div class="bb-panel">
 					<div class="bb-ph">Colour <span class="bb-cname" id="bb-cname"></span></div>
