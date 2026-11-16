@@ -49,7 +49,7 @@
 	.mg-prog[hidden] {display:none;}
 	.mg-progbar {flex:0 0 8em;height:5px;border-radius:3px;background:var(--mg-tile);overflow:hidden;}
 	.mg-progbar span {display:block;height:100%;width:0;background:var(--mg-prog);transition:width 0.25s;}
-	.mg-scroll {position:relative;height:auto;max-height:calc(100vh - 150px);min-height:180px;overflow-y:auto;overflow-x:hidden;padding:6px;outline:none;overscroll-behavior:contain;}
+	.mg-scroll {position:relative;height:auto;max-height:var(--mes-gh, calc(100vh - 150px));min-height:180px;overflow-y:auto;overflow-x:hidden;padding:6px;outline:none;overscroll-behavior:contain;}
 	.mg-canvas {position:relative;width:100%;}
 	.mg-empty {position:absolute;inset:3em 1em auto;text-align:center;color:var(--mg-muted);font-size:1.05em;}
 	.mg-empty[hidden] {display:none;}
@@ -123,7 +123,7 @@
 	@media (max-width:600px) {
 		.mg-acts .mg-ico span {display:none;}
 		.mg-bar {padding:0.5em;}
-		.mg-scroll {max-height:calc(100vh - 210px);min-height:160px;padding:3px;}
+		.mg-scroll {max-height:var(--mes-gh, calc(100vh - 210px));min-height:160px;padding:3px;}
 		.mg-sel {font-size:0.86em;}
 		.mg-seg button {padding:0.35em 0.55em;}
 	}

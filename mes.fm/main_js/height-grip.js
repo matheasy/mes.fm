@@ -6,6 +6,9 @@
  *   key  = localStorage name for the chosen height (per page / box)
  *   min  = smallest height in px (default 200)
  * or just put data-mes-grip="<key>" (+ data-mes-grip-min) on the box.
+ * mode "max" (data-mes-grip-mode="max"): for a box that grows with its content
+ *   (photo grid, page list): CSS uses max-height: var(--mes-gh, <default or none>)
+ *   with overflow:auto, and the grip shows once the content is taller than min.
  * Drag (mouse, touch, pen), arrow keys when focused (Shift = bigger steps),
  * double-click or Enter = back to the page's default height.
  * The grip hides itself while the box is stretched by a fill / full screen
@@ -32,7 +35,7 @@
 	function add(el, opt) {
 		if (!el || el.__mesGrip) return el && el.__mesGrip;
 		opt = opt || {}; css();
-		var key = opt.key || ("mes-hgrip:" + location.pathname), min = opt.min || 200;
+		var key = opt.key || ("mes-hgrip:" + location.pathname), min = opt.min || 200, maxMode = opt.mode === "max";
 		var g = document.createElement("div");
 		g.className = "mes-hgrip"; g.tabIndex = 0;
 		g.setAttribute("role", "separator"); g.setAttribute("aria-orientation", "horizontal");
@@ -56,8 +59,9 @@
 			var old = el.style.getPropertyValue("--mes-gh"), h1 = el.offsetHeight;
 			if (!h1) return true;
 			el.style.setProperty("--mes-gh", (h1 + 37) + "px");
-			var h2 = el.offsetHeight;
+			var h2 = el.offsetHeight, mh = getComputedStyle(el).maxHeight;
 			if (old) el.style.setProperty("--mes-gh", old); else el.style.removeProperty("--mes-gh");
+			if (maxMode) return mh !== (h1 + 37) + "px" || (!old && el.scrollHeight <= min + 50);
 			return h2 === h1;
 		}
 		function vis() { g.hidden = stretched(); }
@@ -106,7 +110,7 @@
 	/* automatic: <div data-mes-grip="localStorage key" data-mes-grip-min="300"> */
 	function auto() {
 		var els = document.querySelectorAll("[data-mes-grip]");
-		for (var i = 0; i < els.length; i++) add(els[i], {key: els[i].getAttribute("data-mes-grip"), min: +els[i].getAttribute("data-mes-grip-min") || 0});
+		for (var i = 0; i < els.length; i++) add(els[i], {key: els[i].getAttribute("data-mes-grip"), min: +els[i].getAttribute("data-mes-grip-min") || 0, mode: els[i].getAttribute("data-mes-grip-mode") || ""});
 	}
 	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", auto); else auto();
 })();
