@@ -1,0 +1,79 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu up" id="up">
+		<div class="tu-card up-drop" id="up-drop" tabindex="0" role="button" aria-label="Add pictures: click, drop files here or paste">
+			<div class="up-drop-ico" aria-hidden="true">🔍</div>
+			<div class="up-drop-t"><b>Drop pictures here</b> or click to choose</div>
+			<div class="up-drop-s">JPG, PNG, WebP, GIF, BMP, AVIF · one or many · you can also paste (Ctrl+V)</div>
+			<div class="up-drop-b"><button type="button" class="tu-btn tu-btn--primary" id="up-pick">Choose pictures</button> <button type="button" class="tu-btn tu-btn--ghost" id="up-sample">Try a sample</button></div>
+			<input type="file" id="up-file" accept="image/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif" multiple hidden>
+		</div>
+
+		<div class="tu-card up-opts">
+			<div class="up-grid">
+				<div class="tu-field up-wide"><span class="tu-label" id="up-mode-l">What is in the picture?</span>
+					<div class="tu-seg up-seg" id="up-mode" role="group" aria-labelledby="up-mode-l">
+						<button type="button" data-v="photo" aria-pressed="true">📷 Photo &amp; everyday</button><button type="button" data-v="art" aria-pressed="false">🎨 Drawing, anime &amp; cartoon</button><button type="button" data-v="pixel" aria-pressed="false">👾 Pixel art</button><button type="button" data-v="smooth" aria-pressed="false">No AI</button>
+					</div>
+					<span class="tu-note" id="up-mode-n"></span></div>
+				<div class="tu-field"><span class="tu-label" id="up-by-l">Make it</span>
+					<div class="tu-seg up-seg" id="up-scale" role="group" aria-labelledby="up-by-l">
+						<button type="button" data-v="2" aria-pressed="true">2×</button><button type="button" data-v="3" aria-pressed="false">3×</button><button type="button" data-v="4" aria-pressed="false">4×</button><button type="button" data-v="8" aria-pressed="false">8×</button><button type="button" data-v="w" aria-pressed="false">Width…</button>
+					</div>
+					<span class="up-w" id="up-w-box" hidden><input type="number" class="tu-input" id="up-w" min="16" max="16384" step="1" value="3840" aria-label="Width in pixels"> px wide
+						<span class="up-chips"><button type="button" data-w="1920">1080p</button><button type="button" data-w="2560">1440p</button><button type="button" data-w="3840">4K</button><button type="button" data-w="7680">8K</button></span></span></div>
+				<div class="tu-field" id="up-det-f"><span class="tu-label" id="up-det-l">AI detail: <b id="up-det-v">100</b>%</span>
+					<input type="range" id="up-det" min="0" max="100" step="5" value="100" aria-labelledby="up-det-l">
+					<span class="tu-note">Lower it if the result looks too smooth or painted: it mixes in a plain resize.</span></div>
+				<div class="tu-field"><span class="tu-label" id="up-fmt-l">Save as</span>
+					<div class="tu-seg up-seg" id="up-fmt" role="group" aria-labelledby="up-fmt-l">
+						<button type="button" data-v="png" aria-pressed="true">PNG</button><button type="button" data-v="jpg" aria-pressed="false">JPEG</button><button type="button" data-v="webp" aria-pressed="false">WebP</button>
+					</div>
+					<span class="up-q" id="up-q-box" hidden><label for="up-q">Quality <b id="up-q-v">92</b>%</label> <input type="range" id="up-q" min="50" max="100" value="92"></span>
+					<span class="tu-note">PNG keeps every detail and transparency. JPEG / WebP make much smaller files.</span></div>
+			</div>
+			<div class="up-eng" id="up-eng">Runs on your device. The first AI upscale downloads a small model (5 MB or less) and keeps it in your browser.</div>
+		</div>
+
+		<div class="up-bar" id="up-bar" hidden>
+			<div class="up-sum" id="up-sum" aria-live="polite"></div>
+			<div class="up-act"><button type="button" class="tu-btn tu-btn--primary" id="up-go">✨ Upscale all</button> <button type="button" class="tu-btn tu-btn--ghost" id="up-stop" hidden>Stop</button> <button type="button" class="tu-btn tu-btn--ghost" id="up-zip" disabled>⬇ Download all (ZIP)</button> <button type="button" class="tu-btn tu-btn--ghost" id="up-clear">Clear all</button></div>
+		</div>
+		<div class="up-prog" id="up-prog" hidden><i id="up-prog-i"></i></div>
+		<div class="up-st" id="up-st" aria-live="polite"></div>
+		<ul class="up-list" id="up-list"></ul>
+
+		<div class="tu-card tu-card--tint up-priv"><b>Private by design.</b> Your pictures are upscaled inside your browser with an AI model that runs on your own computer or phone (on the graphics chip when the browser allows it). Nothing is uploaded. Want to touch it up afterwards? Every result has an <b>Edit</b> button that opens it in the <a href="/photo">MES Photo Editor</a>.</div>
+
+		<div class="tu-seo">
+			<h2>Upscale pictures with AI, free and private</h2>
+			<p>Make a small or blurry picture 2, 3, 4 or 8 times bigger, or exactly 1080p, 4K or 8K wide. A plain resize just stretches the pixels, so edges get soft and blocky. An AI upscaler has learned what real edges, textures and lines look like, so it fills in the new pixels with believable detail: text and outlines stay sharp, JPEG blocks and noise are cleaned up.</p>
+			<h3>Which picture type should I choose?</h3>
+			<dl>
+				<dt>Photo &amp; everyday</dt><dd>Photos, screenshots, scans, logos and thumbnails. Uses Real-ESRGAN “general x4v3”, which also removes JPEG blocks and mild noise.</dd>
+				<dt>Drawing, anime &amp; cartoon</dt><dd>Clean lines and flat colours: anime, cartoons, comics, line art, illustrations and game art. Uses Real-ESRGAN “anime video v3”, which keeps lines crisp without adding photo-like texture.</dd>
+				<dt>Pixel art</dt><dd>Every pixel becomes a sharp square (nearest neighbour). Use this for retro game sprites and tiny icons, where any smoothing would ruin the look.</dd>
+				<dt>No AI</dt><dd>A normal high-quality resize, so you can compare and see what the AI adds.</dd>
+			</dl>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is it really free with no limits?</dt><dd>Yes. There is no account, watermark or daily limit, because the work is done by your own device, not a server.</dd>
+				<dt>How long does it take?</dt><dd>On a computer whose browser can use the graphics chip (WebGPU: Chrome, Edge, Brave and recent Safari), a 1000 × 700 photo takes a few seconds. Without it the AI runs on the processor and the same picture takes a minute or two. The page shows an estimate before you start.</dd>
+				<dt>How big can the result be?</dt><dd>Up to 16,384 pixels on a side and 80 megapixels, which is a browser limit. For bigger prints upscale in parts in the Photo Editor.</dd>
+				<dt>Can AI recover details that were never in the picture?</dt><dd>No. It makes believable detail, not the true detail: a face too small to recognise will not become that person, and tiny text may become other letters. For evidence or documents keep the original.</dd>
+				<dt>How does 8× work?</dt><dd>The models make a picture 4× bigger. For 8× the page upscales 4×, shrinks the result to a quarter of the final size, and upscales 4× again, so the second pass works on the cleaned picture.</dd>
+				<dt>Does it keep transparency?</dt><dd>Yes, when you save as PNG or WebP. The see-through parts are resized smoothly and the AI works on the colours.</dd>
+				<dt>Which AI models are used?</dt><dd>Real-ESRGAN by Xintao Wang and others (BSD 3-Clause licence), run by ONNX Runtime Web. The model files are served from mes.fm and kept in your browser after the first use.</dd>
+			</dl>
+		</div>
+	</div>
+	<div class="up-cmp" id="up-cmp" hidden role="dialog" aria-label="Compare before and after">
+		<div class="up-cmp-bar">
+			<b class="up-cmp-t" id="up-cmp-t"></b>
+			<span class="up-cmp-z"><button type="button" data-z="fit">Fit</button><button type="button" data-z="1">100%</button><button type="button" data-z="2">200%</button><span id="up-cmp-zv"></span></span>
+			<span class="up-cmp-m"><button type="button" data-m="split" aria-pressed="true">Slider</button><button type="button" data-m="side" aria-pressed="false">Side by side</button></span>
+			<button type="button" class="up-cmp-dl" id="up-cmp-dl">⬇ Download</button>
+			<button type="button" class="up-cmp-x" id="up-cmp-x" aria-label="Close">✕</button>
+		</div>
+		<div class="up-cmp-stage" id="up-cmp-stage"><canvas id="up-cmp-cv"></canvas><span class="up-cmp-l">Before (plain resize)</span><span class="up-cmp-r">After</span></div>
+		<div class="up-cmp-tip">Drag the line to compare · wheel or pinch to zoom · drag to move · Esc closes</div>
+	</div>

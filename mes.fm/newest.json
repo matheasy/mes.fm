@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-14",
+ "generated": "2026-11-16",
  "calculators": [
   {
    "href": "/luders-bands",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/upscale",
+   "title": "AI Image Upscaler",
+   "icon": "/img/upscale-logo.png",
+   "desc": "Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.",
+   "added": "2026-11-16",
+   "kind": "tool"
+  },
+  {
    "href": "/darkroom",
    "title": "Darkroom: Photo Library & RAW Editor",
    "icon": "/img/darkroom-logo.png",
@@ -178,25 +186,17 @@
    "desc": "Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.",
    "added": "2026-11-12",
    "kind": "tool"
-  },
-  {
-   "href": "/bridge-builder",
-   "title": "Bridge Builder",
-   "icon": "/img/bridge-builder-logo.png",
-   "desc": "Design a truss, arch or cable bridge, check every member, auto-size it for the lowest cost, then drive trucks over it, blow wind and shake it with an earthquake.",
-   "added": "2026-11-11",
-   "kind": "tool"
-  },
-  {
-   "href": "/draw",
-   "title": "Draw (Drawing Pad)",
-   "icon": "/img/draw-logo.png",
-   "desc": "Sketch with pens, markers and spray, add shapes, arrows, text, emoji and symbols, start from templates or colouring pages, then download PNG or SVG.",
-   "added": "2026-11-10",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/upscale",
+   "title": "AI Image Upscaler",
+   "icon": "/img/upscale-logo.png",
+   "desc": "Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.",
+   "added": "2026-11-16",
+   "kind": "tool"
+  },
   {
    "href": "/darkroom",
    "title": "Darkroom: Photo Library & RAW Editor",
@@ -243,22 +243,6 @@
    "icon": "/img/cryptography-logo.png",
    "desc": "Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.",
    "added": "2026-11-13",
-   "kind": "tool"
-  },
-  {
-   "href": "/text",
-   "title": "Text Viewer (TXT, RTF, Code)",
-   "icon": "/img/text-logo.png",
-   "desc": "Open .txt, .md, .rtf, .csv, .json, .html and code files: a formatted reading view or a code view with line numbers, read aloud, edit and save. Nothing is uploaded.",
-   "added": "2026-11-12",
-   "kind": "tool"
-  },
-  {
-   "href": "/narration",
-   "title": "Narration",
-   "icon": "/img/narration-logo.png",
-   "desc": "Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.",
-   "added": "2026-11-12",
    "kind": "tool"
   }
  ]

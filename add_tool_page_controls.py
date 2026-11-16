@@ -68,6 +68,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("julia-set-explorer", "Julia Set Explorer"),
     ("time-dilation-explained", "Time Dilation Simulator", "/time-dilation"),   # tutorial: a sub-page of the Time Dilation brand (brand option in build_tool_apps.py)
     ("archive", "Archive"),
+    ("tracking", "Tracking"),
     ("baby-growth-percentile-calculator", "Baby Growth Percentile Calculator"),
     ("baby-feeding-log", "Baby Feeding Log"),
     ("domain-lookup", "Domain Lookup"),
@@ -246,6 +247,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("audio", "Audio Editor"),   # also built by build_tool_apps.py (always-dark editor workspace, MESDenoise)
     ("darkroom", "Darkroom"),
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
+    ("upscale", "Upscale"),   # also built by build_tool_apps.py
     ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
     ("buddhabrot", "Buddhabrot Explorer"),
     ("time-dilation", "Time Dilation Simulator"),
