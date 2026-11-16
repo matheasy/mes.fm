@@ -62,6 +62,13 @@ export default function OverviewPage() {
         <LpCard />
         <BucketCard path="/api/cash" href="https://mes.fm/cash" label="Cash LP · stablecoins, BTC/HBD pool, ACE, SURGE" />
         <BucketCard path="/api/tokens" href="https://mes.fm/tokens" label="Tokens · every other token worth $10+" />
+        <a href="https://mes.fm/strategy" className="panel block transition hover:border-accent">
+          <div className="flex items-center justify-between">
+            <p className="stat-label">Strategy · Cash LP → Tokens → Store of Value</p>
+            <span className="text-xs text-accent">Open &rarr;</span>
+          </div>
+          <p className="mt-2 text-sm text-gray-400">This month&apos;s moves, sized from these balances, with market signals, targets and a backtest.</p>
+        </a>
         <RandomWalletsCard />
       </div>
       <SectionsCheck portfolio={portfolio} />
