@@ -976,6 +976,11 @@
 "updated":"2026-10-23",
 "type":"Calculator"
 },
+"/tracking":{
+"added":"2026-11-16",
+"updated":"2026-11-16",
+"type":"Tool"
+},
 "/transcript":{
 "added":"2026-11-14",
 "updated":"2026-11-14",

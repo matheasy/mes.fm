@@ -6,5 +6,5 @@
   "gpa":     { "android": 2,  "name": "1.0.1" },
   "fit":     { "android": 2,  "name": "1.1" },
   "polls":   { "android": 1,  "name": "1.0" },
-  "timer":   { "android": 2,  "name": "1.0.1" }
+  "timer":   { "android": 4,  "name": "1.0.2" }
 }
