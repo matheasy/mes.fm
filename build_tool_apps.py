@@ -803,6 +803,16 @@ APPS = {
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
                          desc="Free bulk image converter: convert PNG to JPG, JPG to PNG or WebP in one go. Drop a whole folder, set the quality and size, and download everything as a ZIP. Runs in your browser, nothing is uploaded and there is no limit on files.",
                          js_v="2", **_photo_nav("image-converter")),
+    # MES Upscale (2026-11-16): AI picture upscaler in the browser. Real-ESRGAN x4 models (BSD-3, self-hosted in mes.fm/upscale/models/: general x4v3 for photos,
+    # anime video v3 (fixed 256x256 input) for drawings) via onnxruntime-web, WebGPU first; pixel-art / plain-resize modes; 8x = two passes. lib.js = MESUp
+    # (sizes, pass plan, tile plans, tensor packing; node: tool_apps_src/upscale-tests.js). Nothing is uploaded.
+    "upscale": dict(title="MES Upscale", page_title="AI Image Upscaler: Make Pictures Bigger and Sharper",
+                    tag="Make small pictures 2, 4 or 8 times bigger with AI. Free, private, in your browser.", accent="#6d28d9", dark="#5b21b6", tint="#efe9fb",
+                    desc="Free AI image upscaler: make photos, screenshots, logos, anime and drawings 2x, 3x, 4x or 8x bigger, or exactly 1080p, 4K or 8K wide, with sharp edges and real-looking detail. Real-ESRGAN runs in your browser on your own device: nothing is uploaded, no account, no watermark.",
+                    meta_desc="Free AI image upscaler: make photos, anime and drawings 2x, 4x or 8x bigger or 4K wide with sharp detail. Runs in your browser, nothing uploaded, no watermark.",
+                    js_v="1", lib_from=["image-converter"], pre_js=["/main_js/tab-progress.js?v=1"], share_img="upscale/img/share.jpg",
+                    nav_extra="".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % x for x in [("photo", "Photo Editor"), ("compress", "Compressor"), ("image-converter", "Image Converter")]),
+                    menu_extra="".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % x for x in [("photo", "Photo Editor"), ("compress", "Compressor"), ("image-converter", "Image Converter")])),
     # Atomic Clock Simulator: caesium clock loop (quartz locked to atoms), Ramsey fringes / fountain, clock race, Allan-deviation chart, drift calculator.
     # lib.js = physics + drift maths (node-tested: tool_apps_src/atomic-clock-simulator-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
     "atomic-clock-simulator": dict(title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
