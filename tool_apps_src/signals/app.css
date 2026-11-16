@@ -254,3 +254,21 @@ body.dark-mode #sg.sg .sg-cx {background:rgba(0,0,0,0.7);}
 	#sg .sg-ago.is-old {color:#b45309;} body.dark-mode #sg.sg .sg-ago.is-old {color:#fbbf24;}
 	#sg .sg-rbtn {padding:0.3em 0.8em;min-height:2.2em;}
 	#sg .sg-rbtn.is-busy, #sg #sg-refresh.is-busy {opacity:0.65;cursor:progress;}
+/* ETF flows + smart / dumb money (2026-11-16) */
+#sg .sg-fill.s3 {fill:var(--sg-s3);}
+#sg .sg-vbar {stroke:none;} #sg .sg-vbar.p {fill:var(--sg-up);} #sg .sg-vbar.n {fill:var(--sg-dn);}
+#sg .sg-sw--in {background:var(--sg-up);} #sg .sg-sw--out {background:var(--sg-dn);}
+#sg .sg-etf, #sg .sg-sd {margin-top:1em;}
+#sg .sg-etfstats {margin:0.6em 0;}
+#sg .sg-etfstats .tu-stat__value.up {color:var(--sg-up);} #sg .sg-etfstats .tu-stat__value.dn {color:var(--sg-dn);}
+#sg .sg-etfrun {margin:0.2em 0 0.5em;font-weight:700;} #sg .sg-etfrun.up {color:var(--sg-up);} #sg .sg-etfrun.dn {color:var(--sg-dn);}
+#sg .sg-chead--sub {margin-top:0.8em;}
+#sg .sg-sdtop {display:grid;grid-template-columns:repeat(auto-fit, minmax(14em, 1fr));gap:0.7em;margin:0.6em 0;}
+#sg .sg-sdv {display:grid;grid-template-columns:1fr auto;gap:0.15em 0.6em;align-items:center;padding:0.7em 0.85em;border:1px solid var(--sg-line);border-radius:0.6em;background:var(--sg-soft);}
+#sg .sg-sdv b {font-size:2em;line-height:1;grid-row:span 2;}
+#sg .sg-sdv__l {font-weight:700;} #sg .sg-sdv__w {color:var(--sg-mut);font-size:0.9em;}
+#sg .sg-sdv .sg-bar {grid-column:1 / -1;}
+#sg .sg-sdv .sg-bar i.s1b {background:var(--sg-s1);} #sg .sg-sdv .sg-bar i.s2b {background:var(--sg-s2);}
+#sg .sg-sdread {margin:0.3em 0 0.6em;}
+#sg .sg-sdt td, #sg .sg-sdt th {white-space:nowrap;}
+

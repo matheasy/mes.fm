@@ -8,6 +8,31 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 
 (async () => {
 	await t('api copy of the lib is byte-identical', () => assert.strictEqual(fs.readFileSync(path.join(__dirname, '..', 'mes.fm', 'api', '_signals-lib.js'), 'utf8'), fs.readFileSync(path.join(__dirname, 'signals', 'lib.js'), 'utf8'), 'run: cp tool_apps_src/signals/lib.js mes.fm/api/_signals-lib.js'));
+	await t('bitcoin ETF flows', () => {
+		const e = S.parseEtfFlows(fj('bgeo_etf_flow_btc.json'), S.yahooCloses(fj('yahoo_btcusd_5y.json')));
+		assert.strictEqual(e.first, '2024-01-11');
+		assert(Math.abs(e.days[0][1] - 14128.67) < 0.01, 'day one in BTC');
+		assert(e.days[0][2] > 6e8 && e.days[0][2] < 7.2e8, 'day one about $655M');
+		assert(e.days.every((d, i) => !i || d[0] > e.days[i - 1][0]), 'oldest first');
+		const tot = e.days.reduce((a, d) => a + d[1], 0); assert(Math.abs(tot - e.held) <= 1, 'held = running total'); assert.strictEqual(S.etfHeld(e.days).pop()[1], e.held);
+		assert(e.held > 400000 && e.held < 1500000);
+		assert.strictEqual(Math.sign(e.streak), Math.sign(e.last[1]));
+		const noPx = S.parseEtfFlows([{ d: '2024-01-12', etfFlow: '5' }, { d: '2024-01-11', etfFlow: '-2.5' }], null);
+		assert.deepStrictEqual(noPx.days, [['2024-01-11', -2.5, null], ['2024-01-12', 5, null]]); assert.strictEqual(noPx.held, 3); assert.strictEqual(noPx.usd, false); assert.strictEqual(noPx.sum7.usd, null);
+		assert.throws(() => S.parseEtfFlows([]));
+	});
+	await t('smart money / dumb money (COT)', () => {
+		const c = S.smartDumb(fj('cftc_cot_legacy.json'), 156, 260);
+		assert(c.hist.length > 100 && c.hist.length <= 260);
+		assert(c.hist.every((p) => p[1] >= 0 && p[1] <= 100 && p[2] >= 0 && p[2] <= 100));
+		assert.strictEqual(c.parts.length, 4); assert.strictEqual(c.smartLabel, S.sdLabel(c.smart));
+		assert.strictEqual(c.date, c.hist[c.hist.length - 1][0]);
+		assert(S.GLOSSARY.smartdumb[1].indexOf('156 weeks') > 0);
+		// a made-up market: commercials steadily more bullish -> smart money 100 on the last week, small traders steadily less -> dumb money 0
+		const rows = []; for (let i = 0; i < 80; i++) rows.push({ cftc_contract_market_code: '13874A', report_date_as_yyyy_mm_dd: S.addDays('2024-01-02', i * 7) + 'T00:00:00.000', open_interest_all: '1000', comm_positions_long_all: String(500 + i), comm_positions_short_all: '500', nonrept_positions_long_all: '100', nonrept_positions_short_all: String(100 + i) });
+		const m = S.smartDumb(rows); assert(m.smart >= 99 && m.dumb <= 1, m.smart + ' ' + m.dumb); assert(/Smart money much more/.test(m.reading));
+		assert.throws(() => S.smartDumb([]));
+	});
 	await t('FRED csv', () => {
 		const a = S.parseFredCsv(fx('fred_VIXCLS.csv'));
 		assert(a.length > 400); assert(/^\d{4}-\d\d-\d\d$/.test(a[0][0])); assert(a.some((p) => p[1] === null) || true);
@@ -233,7 +258,7 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 	// ---- the aggregator with a mocked fetch ----
 	const ROUTES = [
 		[/alternative\.me\/fng/, 'fng.json'], [/coins\/markets\?.*category=stablecoins/, 'coingecko_stables.json'], [/coins\/markets/, 'coingecko_markets.json'], [/api\/v3\/global/, 'coingecko_global.json'],
-		[/api\.hyperliquid\.xyz\/info/, 'hl_meta.json'], [/blocks\/tip\/height/, 'mempool_height.txt'], [/difficulty-adjustment/, 'mempool_difficulty.json'], [/finance\.yahoo\.com/, 'yahoo_gspc.json'],
+		[/api\.hyperliquid\.xyz\/info/, 'hl_meta.json'], [/blocks\/tip\/height/, 'mempool_height.txt'], [/difficulty-adjustment/, 'mempool_difficulty.json'], [/BTC-USD/, 'yahoo_btcusd_5y.json'], [/finance\.yahoo\.com/, 'yahoo_gspc.json'], [/bitcoin-data\.com\/v1\/etf-flow-btc/, 'bgeo_etf_flow_btc.json'], [/publicreporting\.cftc\.gov/, 'cftc_cot_legacy.json'],
 		[/id=T10Y2Y/, 'fred_T10Y2Y_monthly.csv'], [/id=USREC/, 'fred_USREC.csv'], [/id=CPIAUCSL/, 'fred_CPIAUCSL.csv'], [/id=VIXCLS/, 'fred_VIXCLS.csv'], [/id=BAMLH0A0HYM2/, 'fred_BAMLH0A0HYM2.csv'],
 		[/fredgraph\.csv/, 'fred_SP500.csv'], [/bankofcanada/, 'boc_valet.json'], [/data-api\.ecb/, 'ecb_dfr.csv'], [/bankofengland/, 'boe_bankrate.csv'], [/federalreserve\.gov\/feeds/, 'fed_press_monetary.xml'],
 		[/tag_slug=geopolitics/, 'polymarket_geo_geopolitics.json'], [/tag_slug=middle-east/, 'polymarket_geo_middle-east.json'], [/tag_slug=ukraine/, 'polymarket_geo_ukraine.json'], [/tag_slug=china/, 'polymarket_geo_china.json'],
@@ -256,7 +281,8 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert.strictEqual(res.code, 200); assert(/s-maxage=300, stale-while-revalidate=3600/.test(res.h['Cache-Control']));
 		const s = res.body.sources, bad = Object.keys(s).filter((k) => !s[k].ok);
 		assert.deepStrictEqual(bad, [], 'failed: ' + bad.map((k) => k + ' ' + s[k].error).join('; '));
-		assert.strictEqual(Object.keys(s).length, 22);
+		assert.strictEqual(Object.keys(s).length, 24);
+		assert(s.etf.data.days.length > 600 && s.etf.data.usd); assert(s.cot.data.parts.length === 4);
 		['news', 'mnews', 'wnews'].forEach((k) => { assert(s[k].data.items.length >= 10, k); assert(!s[k].data.missing, k + ' missing ' + s[k].data.missing); s[k].data.items.forEach((i) => { assert(i.src && /^https?:\/\//.test(i.link)); if (i.img) assert(/^https:\/\//.test(i.img)); }); });
 		assert(s.mnews.data.items.some((i) => i.src === 'CNBC') && s.mnews.data.items.some((i) => i.img), 'markets section has CNBC and pictures');
 		assert(new Set(s.wnews.data.items.map((i) => i.src)).size === 5, 'all five world feeds');
@@ -266,7 +292,7 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert(calls.every((c) => /^https:\/\//.test(c.url)), 'https only'); assert(!calls.some((c) => /ignored|x=1/.test(c.url)), 'client input never reaches a fetch');
 		assert(s.markets.data.spx.price > 0 && s.markets.data.gold.price > 0); assert(s.rates.data.latest.spread); assert.strictEqual(s.rates.data.target.rate, 4);
 		const snap = S.snapshot(s); ['cfg', 'sfg', 'btc', 'spx', 't10', 'spread', 'dff'].forEach((k) => assert(snap[k] != null, 'snapshot ' + k));
-		assert(JSON.stringify(res.body).length < 200000, 'response stays small');
+		assert(JSON.stringify(res.body).length < 240000, 'response stays small');
 	});
 	await t('aggregator: one broken source does not break the rest; Yahoo falls back to FRED', async () => {
 		breakers = [/finance\.yahoo\.com/, /coingecko\.com\/api\/v3\/global/]; const res = fakeRes(); await api({}, res); breakers = [];
@@ -275,7 +301,10 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert(s.markets.ok); assert.strictEqual(s.markets.data.spx.src, 'FRED'); assert(!s.markets.data.gold, 'gold has no FRED fallback'); assert(s.markets.data._missing.some((m) => /gold/.test(m)));
 	});
 	await t('aggregator: everything down -> 502 no-store', async () => {
-		breakers = [/./]; const res = fakeRes(); await api({}, res); breakers = [];
+		const t0 = Date.now; Date.now = () => t0() + 7 * 3600e3; breakers = [/./];
+		const r1 = fakeRes(); await api({}, r1);
+		assert.strictEqual(r1.code, 200, 'warm cache still answers'); assert(r1.body.sources.etf.ok && r1.body.sources.etf.data.stale, 'old ETF copy marked stale'); assert(r1.body.sources.cot.data.stale);
+		api.clearCache(); const res = fakeRes(); await api({}, res); breakers = []; Date.now = t0;
 		assert.strictEqual(res.code, 502); assert.strictEqual(res.h['Cache-Control'], 'no-store');
 	});
 	await t('sample data for ?mock=1 exists and parses', () => {

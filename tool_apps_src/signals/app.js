@@ -4,8 +4,8 @@
 	'use strict';
 	var S = window.MESSig, $ = function (id) { return document.getElementById(id); }, root = $('sg');
 	if (!S || !root) return;
-	var KEY = 'mes-signals:v1', st = { tab: 'over', cxd: 30, fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1 }, data = null, snaps = null, loading = false;
-	var SKEYS = ['tab', 'cxd', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf'];
+	var KEY = 'mes-signals:v1', st = { tab: 'over', cxd: 30, fg: 90, rates: 1100, curve: 9999, qk: 'spx', pcat: 'All', nview: 'cards', ncols: 'auto', nshow: 10, nclosed: {}, nsrc: {}, gconf: 1, etf: 90, sd: 156 }, data = null, snaps = null, loading = false;
+	var SKEYS = ['tab', 'cxd', 'fg', 'rates', 'curve', 'qk', 'pcat', 'nview', 'ncols', 'nshow', 'nclosed', 'nsrc', 'gconf', 'etf', 'sd'];
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || '{}'); SKEYS.forEach(function (k) { if (sv[k] != null) st[k] = sv[k]; }); } catch (e) {}
 	var qs = new URLSearchParams(location.search), MOCK = qs.get('mock') === '1' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
 	if (qs.get('tab')) st.tab = qs.get('tab');
@@ -75,6 +75,7 @@
 			if (!s.p.length) return;
 			var d = s.p.map(function (p, k) { return (k ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1); }).join('');
 			if (s.negFill) { var zy = Y(Math.max(y0, Math.min(y1, 0))).toFixed(1); out.push('<clipPath id="' + box.id + '-neg"><rect x="0" y="' + zy + '" width="' + W + '" height="' + H + '"></rect></clipPath><path class="sg-negfill" clip-path="url(#' + box.id + '-neg)" d="' + d + 'L' + X(s.p[s.p.length - 1][0]).toFixed(1) + ' ' + zy + 'L' + X(s.p[0][0]).toFixed(1) + ' ' + zy + 'Z"></path>'); }
+			if (s.bars) { var bw = Math.max(1, Math.min(14, (W - pl - pr) / Math.max(1, s.p.length) * 0.78)), zy0 = Y(Math.max(y0, Math.min(y1, 0))); s.p.forEach(function (p) { var yy = Y(p[1]); out.push('<rect class="sg-vbar ' + (p[1] < 0 ? 'n' : 'p') + '" x="' + (X(p[0]) - bw / 2).toFixed(1) + '" y="' + Math.min(yy, zy0).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0.6, Math.abs(zy0 - yy)).toFixed(1) + '"></rect>'); }); return; }
 			if (s.fill) out.push('<path class="sg-fill ' + s.cls + '" d="' + d + 'L' + X(s.p[s.p.length - 1][0]).toFixed(1) + ' ' + (H - pb) + 'L' + X(s.p[0][0]).toFixed(1) + ' ' + (H - pb) + 'Z"></path>');
 			out.push('<path class="sg-line ' + s.cls + '"' + (s.step ? ' stroke-linejoin="miter"' : '') + ' d="' + d + '"></path>');
 		});
@@ -89,7 +90,7 @@
 				s.p.forEach(function (q2) { var dd = Math.abs(q2[0] - tt); if (dd < bd) { bd = dd; p = q2; } });
 				if (!p || bd > span / 20 + 40 * 864e5) { dot.setAttribute('cx', -9); return; }
 				dot.setAttribute('cx', X(p[0])); dot.setAttribute('cy', Y(p[1])); if (!best) best = p;
-				lines.push((o.series.length > 1 ? s.name + ': ' : '') + (o.fv || o.fy || String)(p[1]));
+				lines.push((o.series.length > 1 ? s.name + ': ' : '') + (o.fv || o.fy || String)(p[1], p[2]));
 			});
 			if (!best) return hide();
 			cross.setAttribute('x1', X(best[0])); cross.setAttribute('x2', X(best[0]));
@@ -182,6 +183,50 @@
 		$('sg-fg-legend').innerHTML = ser.map(function (x) { return '<span><i class="sg-sw ' + x.cls + '"></i>' + x.name + '</span>'; }).join('') + '<span><i class="sg-sw sg-sw--xf"></i>Extreme fear</span><span><i class="sg-sw sg-sw--xg"></i>Extreme greed</span>';
 		if (ser.length) chart($('sg-fg-chart'), { series: ser, yMin: 0, yMax: 100, yTicks: [0, 25, 50, 75, 100], bands: [[0, 25, 'sg-band-xf'], [75, 100, 'sg-band-xg']], label: 'Fear and Greed history', fv: function (v) { return v + ' (' + S.fgLabel(v) + ')'; } });
 		else $('sg-fg-chart').innerHTML = '';
+		drawSmartDumb();
+	}
+	// signed amounts for flows: +$655M / −$467M, +1,234 BTC
+	function sMoney(v) { return v == null ? '—' : !v ? '$0' : (v > 0 ? '+' : v < 0 ? '−' : '') + S.money(Math.abs(v), 'big'); }
+	function sBtc(v) { return v == null ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + S.fmt(Math.abs(v), 0) + ' BTC'; }
+	function drawEtf() {
+		var e = src('etf'), box = $('sg-etf');
+		if (!e) { box.innerHTML = '<b>Bitcoin ETF flows</b>' + err('etf'); return; }
+		var u = e.usd, L = e.last, flow = function (b, d) { return u && d != null ? sMoney(d) : sBtc(b); }, sub = function (b, d) { return u && d != null ? esc(sBtc(b)) : ''; }, cl = function (v) { return v > 0 ? 'up' : v < 0 ? 'dn' : ''; };
+		var st2 = e.streak ? Math.abs(e.streak) + ' trading day' + (Math.abs(e.streak) === 1 ? '' : 's') + ' of ' + (e.streak > 0 ? 'inflows' : 'outflows') + ' in a row' : '';
+		box.innerHTML = '<div class="sg-chead"><b>US spot Bitcoin ETF flows ' + q('etf') + '</b><div class="tu-seg sg-range" data-chart="etf"><button type="button" data-r="30">30 days</button><button type="button" data-r="90">90 days</button><button type="button" data-r="365">1 year</button><button type="button" data-r="9999">All</button></div></div>' +
+			'<div class="tu-stats sg-etfstats">' +
+			'<div class="tu-stat"><div class="tu-stat__label">Last day (' + esc(dshort(L[0])) + ')</div><div class="tu-stat__value sg-ch ' + cl(L[1]) + '">' + esc(flow(L[1], L[2])) + '</div><div class="tu-stat__sub">' + sub(L[1], L[2]) + '</div></div>' +
+			'<div class="tu-stat"><div class="tu-stat__label">Last 7 trading days</div><div class="tu-stat__value sg-ch ' + cl(e.sum7.btc) + '">' + esc(flow(e.sum7.btc, e.sum7.usd)) + '</div><div class="tu-stat__sub">' + sub(e.sum7.btc, e.sum7.usd) + '</div></div>' +
+			'<div class="tu-stat"><div class="tu-stat__label">Last 30 trading days</div><div class="tu-stat__value sg-ch ' + cl(e.sum30.btc) + '">' + esc(flow(e.sum30.btc, e.sum30.usd)) + '</div><div class="tu-stat__sub">' + sub(e.sum30.btc, e.sum30.usd) + '</div></div>' +
+			'<div class="tu-stat"><div class="tu-stat__label">Held by the funds ' + q('etfheld') + '</div><div class="tu-stat__value">' + esc(S.fmt(e.held, 0)) + ' BTC</div><div class="tu-stat__sub">' + (e.heldUsd ? 'about ' + esc(S.money(e.heldUsd, 'big')) + ' at today&rsquo;s price' : '') + '</div></div></div>' +
+			(st2 ? '<p class="sg-etfrun ' + cl(e.streak) + '">' + esc(st2) + '</p>' : '') +
+			'<div class="sg-legend"><span><i class="sg-sw sg-sw--in"></i>Inflow (funds bought)</span><span><i class="sg-sw sg-sw--out"></i>Outflow (funds sold)</span></div>' +
+			'<div class="sg-chart" id="sg-etf-chart"></div><div class="sg-chead sg-chead--sub"><b>Bitcoin held by US spot ETFs</b></div><div class="sg-chart" id="sg-etf-held"></div>' +
+			'<p class="tu-note">Net flow of all US spot Bitcoin funds together, per trading day, in bitcoin by <a href="https://charts.bgeometrics.com/etf_dark.html" target="_blank" rel="noopener">BGeometrics</a>' + (u ? '; dollars = bitcoin &times; that day&rsquo;s closing price (Yahoo Finance), an estimate' : '') + '. Updated once a day after the US close. ' +
+			(e.note ? esc(e.note) + '. ' : '') + (e.stale ? 'Showing the copy from ' + esc(ago(e.stale)) + ' (the source did not answer). ' : '') + 'Per-fund numbers: <a href="https://farside.co.uk/btc/" target="_blank" rel="noopener nofollow">Farside Investors</a>. Ether ETF flows have no free data feed we can use yet.</p>';
+		var since = st.etf > 5000 ? '0000' : S.ymd(Date.now() - st.etf * 864e5), btcBy = {};
+		e.days.forEach(function (d) { btcBy[d[0]] = d[1]; });
+		var pts = e.days.filter(function (d) { return d[0] >= since; }).map(function (d) { return [d[0], u && d[2] != null ? d[2] : d[1]]; });
+		chart($('sg-etf-chart'), { series: [{ name: 'Net flow', cls: 's1', pts: pts, bars: true }], zero: true, label: 'Daily net flow of US spot Bitcoin ETFs',
+			fy: function (v) { return u ? sMoney(v).replace('+', '') : (v / 1000).toFixed(0) + 'k'; }, fv: function (v, d) { return (u ? sMoney(v) + ' (' + sBtc(btcBy[d]) + ')' : sBtc(v)) + (v >= 0 ? ' in' : ' out'); } });
+		chart($('sg-etf-held'), { series: [{ name: 'Held', cls: 's3', pts: S.etfHeld(e.days).filter(function (d) { return d[0] >= since; }), fill: true }], h: 150, label: 'Bitcoin held by US spot ETFs',
+			fy: function (v) { return Math.round(v / 1000) + 'k'; }, fv: function (v) { return S.fmt(v, 0) + ' BTC'; } });
+	}
+	function drawSmartDumb() {
+		var c = src('cot'), box = $('sg-sd');
+		if (!c) { box.innerHTML = '<b>MES Smart Money / Dumb Money</b>' + err('cot'); return; }
+		var cell = function (lab, v, word, cls) { return '<div class="sg-sdv"><span class="sg-sdv__l"><i class="sg-sw ' + cls + '"></i>' + lab + '</span><b>' + v + '</b><span class="sg-sdv__w">' + esc(word) + '</span><span class="sg-bar"><i class="' + cls + 'b" style="width:' + Math.max(2, v) + '%"></i></span></div>'; };
+		box.innerHTML = '<div class="sg-chead"><b>MES Smart Money / Dumb Money ' + q('smartdumb') + '</b><div class="tu-seg sg-range" data-chart="sd"><button type="button" data-r="52">1 year</button><button type="button" data-r="156">3 years</button><button type="button" data-r="260">5 years</button></div></div>' +
+			'<div class="sg-sdtop">' + cell('Smart money', c.smart, c.smartLabel, 's1') + cell('Dumb money', c.dumb, c.dumbLabel, 's2') + '</div>' +
+			'<p class="sg-sdread"><b>' + esc(c.reading) + '</b> <span class="tu-note">(positions as of ' + esc(dshort(c.date)) + ' ' + q('cot') + ')</span></p>' +
+			'<div class="sg-legend"><span><i class="sg-sw s1"></i>Smart money (commercial hedgers)</span><span><i class="sg-sw s2"></i>Dumb money (small traders)</span><span><i class="sg-sw sg-sw--xg"></i>Very bullish</span><span><i class="sg-sw sg-sw--xf"></i>Very bearish</span></div>' +
+			'<div class="sg-chart" id="sg-sd-chart"></div>' +
+			'<details class="sg-method"><summary>By market and how this is worked out</summary><div class="sg-tw"><table class="tu-table sg-sdt"><thead><tr><th>Futures market</th><th class="r">Smart money</th><th class="r">Dumb money</th><th class="r">Hedgers&rsquo; net</th><th class="r">Small traders&rsquo; net</th></tr></thead><tbody>' +
+			c.parts.map(function (p) { return '<tr><td>' + esc(p.name) + '</td><td class="r">' + p.smart + '</td><td class="r">' + p.dumb + '</td><td class="r">' + esc((p.smartNet > 0 ? '+' : '') + S.fmt(p.smartNet, 1)) + '%</td><td class="r">' + esc((p.dumbNet > 0 ? '+' : '') + S.fmt(p.dumbNet, 1)) + '%</td></tr>'; }).join('') +
+			'</tbody></table></div><p class="tu-note">Net = long minus short contracts as a share of open interest.</p><p>' + esc(S.SMART_DUMB_METHOD) + '</p><p>Data: <a href="https://publicreporting.cftc.gov" target="_blank" rel="noopener">CFTC Public Reporting</a>. ' + (c.stale ? 'Showing the copy from ' + esc(ago(c.stale)) + '. ' : '') + 'It describes positioning, not a forecast.</p></details>';
+		var since = S.ymd(Date.now() - st.sd * 7 * 864e5), h = c.hist.filter(function (p) { return p[0] >= since; });
+		chart($('sg-sd-chart'), { series: [{ name: 'Smart money', cls: 's1', pts: h.map(function (p) { return [p[0], p[1]]; }) }, { name: 'Dumb money', cls: 's2', pts: h.map(function (p) { return [p[0], p[2]]; }) }],
+			yMin: 0, yMax: 100, yTicks: [0, 20, 50, 80, 100], bands: [[0, 20, 'sg-band-xf'], [80, 100, 'sg-band-xg']], label: 'Smart money and dumb money confidence', fv: function (v) { return v + ' (' + S.sdLabel(v) + ')'; } });
 	}
 	function drawCrypto() {
 		var c = src('coins'), g = src('global'), sb = src('stables'), hv = src('halving');
@@ -194,6 +239,7 @@
 		else o += stat('Total crypto market cap', '—', 'not available right now');
 		if (sb) o += stat('Stablecoin supply ' + q('stablecoin'), S.money(sb.total, 'big'), sb.top.slice(0, 3).map(function (t) { return esc(t[0]) + ' ' + esc(S.money(t[1], 'big')); }).join(' · '));
 		$('sg-cstats').innerHTML = o;
+		drawEtf();
 		var pp = src('perps');
 		if (pp) {
 			var fMax = Math.max(S.PERP_BASE * 4, Math.max.apply(null, pp.map(function (x) { return Math.abs(x.funding || 0); }))), oMax = Math.max.apply(null, pp.map(function (x) { return x.oi || 0; })), vMax = Math.max.apply(null, pp.map(function (x) { return x.vol || 0; }));
@@ -478,7 +524,7 @@
 	function drawTab(t) { ({ over: drawOver, sent: drawSent, crypto: drawCrypto, mkts: drawMkts, rates: drawRates, pred: drawPred, geo: drawGeo, news: drawNews })[t](); rangeBtns(); }
 
 	// ---------- footer + loading ----------
-	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', perps: 'Perps funding and open interest (Hyperliquid)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)' };
+	var NAMES = { fng: 'Crypto Fear & Greed (alternative.me)', coins: 'Crypto prices (CoinGecko)', global: 'Crypto market (CoinGecko)', stables: 'Stablecoins (CoinGecko)', halving: 'Bitcoin blocks (mempool.space)', perps: 'Perps funding and open interest (Hyperliquid)', markets: 'Stocks, gold, oil, dollar (Yahoo Finance, FRED backup)', stockfg: 'Stock Fear & Greed inputs (FRED)', rates: 'US rates (FRED)', curve: 'Yield curve + recessions (FRED)', cpi: 'CPI (FRED)', boc: 'Bank of Canada (Valet)', ecb: 'ECB', boe: 'Bank of England', fed: 'Fed press releases (RSS)', poly: 'Polymarket', kalshi: 'Kalshi', news: 'Crypto news: CoinDesk, Cointelegraph (RSS)', mnews: 'Markets news: CNBC, MarketWatch, BBC Business (RSS)', wnews: 'World news: BBC, Al Jazeera, NPR, The Guardian, DW (RSS)', geo: 'Conflict markets (Polymarket)', geok: 'Conflict markets (Kalshi)', etf: 'Bitcoin ETF flows (BGeometrics)', cot: 'Smart / Dumb Money (CFTC Commitments of Traders)' };
 	function foot() {
 		$('sg-updated').innerHTML = (MOCK ? '<b>Sample data</b> saved ' : 'Updated ') + esc(ago(data.generated)) + ' · refreshes every 5 minutes';
 		$('sg-srcs').innerHTML = Object.keys(NAMES).map(function (k) { var s = data.sources[k]; return '<li class="' + (s && s.ok ? 'ok' : 'bad') + '">' + (s && s.ok ? '&#10003; ' : '&#10007; ') + esc(NAMES[k]) + (s && !s.ok ? ' <span class="tu-note">' + esc(s.error) + '</span>' : '') + '</li>'; }).join('');

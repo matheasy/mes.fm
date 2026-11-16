@@ -436,6 +436,80 @@
 		return { height: height, target: target, left: left, avgSec: Math.round(avg / 1000), eta: (now == null ? Date.now() : now) + left * avg, reward: 50 / Math.pow(2, epoch - 1), next: 50 / Math.pow(2, epoch), epochPct: round((1 - left / 210000) * 100, 1) };
 	};
 
+	// ---------- Bitcoin ETF flows (BGeometrics bitcoin-data.com, keyless, 15 requests a day per address: the API caches it in Upstash) ----------
+	// daily closes from a Yahoo v8 chart -> [[ymd, close]]
+	S.yahooCloses = function (j) {
+		var r = j && j.chart && j.chart.result && j.chart.result[0]; if (!r) throw new Error('no chart');
+		var ts = r.timestamp || [], cl = (r.indicators && r.indicators.quote && r.indicators.quote[0] && r.indicators.quote[0].close) || [], out = [], i;
+		for (i = 0; i < ts.length; i++) if (cl[i] != null) out.push([S.ymd(ts[i] * 1000), round(cl[i], 2)]);
+		return out;
+	};
+	// rows [{d, etfFlow (BTC)}] + optional BTC closes -> {days: [[ymd, btc, usd|null]], held (BTC, running total), last, sum7, sum30, ...}
+	// US dollars = each day's BTC flow x that day's Bitcoin close (an estimate: issuers report at their own net asset value)
+	S.parseEtfFlows = function (rows, closes) {
+		if (!Array.isArray(rows) || !rows.length) throw new Error('no ETF flow data');
+		var px = {}, pd = [], days = [], held = 0;
+		(closes || []).forEach(function (p) { px[p[0]] = p[1]; pd.push(p[0]); });
+		pd.sort();
+		var priceOn = function (d) { if (px[d] != null) return px[d]; var lo = 0, hi = pd.length - 1, best = null; while (lo <= hi) { var m = (lo + hi) >> 1; if (pd[m] <= d) { best = pd[m]; lo = m + 1; } else hi = m - 1; } return best && S.addDays(best, 5) >= d ? px[best] : null; };
+		rows.map(function (r) { return [String(r.d || '').slice(0, 10), num(r.etfFlow)]; }).filter(function (r) { return /^\d{4}-\d\d-\d\d$/.test(r[0]) && r[1] !== null; })
+			.sort(function (a, b) { return a[0] < b[0] ? -1 : 1; })
+			.forEach(function (r) { var p = priceOn(r[0]); held += r[1]; days.push([r[0], round(r[1], 2), p ? Math.round(r[1] * p) : null]); });
+		if (!days.length) throw new Error('no ETF flow rows');
+		var sum = function (n, k) { var a = days.slice(-n), t = 0, ok = 0; a.forEach(function (d) { if (d[k] !== null) { t += d[k]; ok++; } }); return ok ? round(t, k === 1 ? 1 : 0) : null; };
+		var streak = 0, sign = Math.sign(days[days.length - 1][1]), i;
+		for (i = days.length - 1; i >= 0 && Math.sign(days[i][1]) === sign && sign !== 0; i--) streak++;
+		var lp = closes && closes.length ? closes[closes.length - 1][1] : null;
+		return { days: days, held: Math.round(held), heldUsd: lp ? Math.round(held * lp) : null, last: days[days.length - 1], streak: streak * (sign || 0),
+			sum7: { btc: sum(7, 1), usd: sum(7, 2) }, sum30: { btc: sum(30, 1), usd: sum(30, 2) }, first: days[0][0], usd: !!lp };
+	};
+
+	// ---------- MES Smart Money / Dumb Money (CFTC Commitments of Traders, our own composite) ----------
+	S.COT_MARKETS = { '13874A': 'E-mini S&P 500', '209742': 'E-mini Nasdaq-100', '124603': 'E-mini Dow ($5)', '239742': 'E-mini Russell 2000' };
+	S.SMART_DUMB_METHOD = 'Made from the CFTC’s weekly Commitments of Traders report (legacy, futures only) for four US stock-index futures: E-mini S&P 500, Nasdaq-100, Dow and Russell 2000. ' +
+		'Smart money = commercial traders (banks, dealers and big institutions that use futures to hedge). Dumb money = non-reportable positions (traders too small to have to report, mostly individuals). ' +
+		'For each market we take each group’s net position (long minus short) as a share of open interest and rank it against the last 156 weeks (3 years): 0 = the most bearish that group has been in 3 years, 100 = the most bullish. ' +
+		'The four markets are averaged. Positions are as of Tuesday and published the following Friday, so it is always a few days old. Our own composite, not SentimenTrader’s (theirs is proprietary and uses other inputs).';
+	// running total of the daily flows = bitcoin held by the funds -> [[ymd, BTC]]
+	S.etfHeld = function (days) { var h = 0; return (days || []).map(function (d) { h += d[1]; return [d[0], Math.round(h)]; }); };
+	S.sdLabel = function (v) { return v < 20 ? 'Very bearish' : v < 40 ? 'Bearish' : v <= 60 ? 'Neutral' : v <= 80 ? 'Bullish' : 'Very bullish'; };
+	// Socrata rows -> {date, smart, dumb, label, parts, hist: [[ymd, smart, dumb]]}
+	S.smartDumb = function (rows, win, keep) {
+		win = win || 156;
+		var by = {};
+		(rows || []).forEach(function (r) {
+			var c = String(r.cftc_contract_market_code || '').trim(), d = String(r.report_date_as_yyyy_mm_dd || '').slice(0, 10), oi = num(r.open_interest_all);
+			if (!S.COT_MARKETS[c] || !/^\d{4}-\d\d-\d\d$/.test(d) || !oi) return;
+			var cn = num(r.comm_positions_long_all) - num(r.comm_positions_short_all), nn = num(r.nonrept_positions_long_all) - num(r.nonrept_positions_short_all);
+			if (!isFinite(cn) || !isFinite(nn)) return;
+			(by[c] = by[c] || {})[d] = [cn / oi * 100, nn / oi * 100];
+		});
+		var codes = Object.keys(by); if (!codes.length) throw new Error('no COT rows');
+		var scored = {}, dates = {};
+		codes.forEach(function (c) {
+			var ds = Object.keys(by[c]).sort(), sm = ds.map(function (d) { return by[c][d][0]; }), dm = ds.map(function (d) { return by[c][d][1]; });
+			scored[c] = {};
+			for (var i = 51; i < ds.length; i++) {
+				var lo = Math.max(0, i - win + 1);
+				scored[c][ds[i]] = [S.pctRank(sm.slice(lo, i + 1), sm[i]), S.pctRank(dm.slice(lo, i + 1), dm[i]), sm[i], dm[i]];
+				dates[ds[i]] = 1;
+			}
+		});
+		var hist = [];
+		Object.keys(dates).sort().forEach(function (d) {
+			var a = codes.map(function (c) { return scored[c][d]; }).filter(Boolean);
+			if (a.length < Math.min(3, codes.length)) return;
+			var s = 0, m = 0; a.forEach(function (x) { s += x[0]; m += x[1]; });
+			hist.push([d, Math.round(s / a.length), Math.round(m / a.length)]);
+		});
+		if (!hist.length) throw new Error('not enough COT history');
+		var lastD = hist[hist.length - 1][0];
+		var parts = codes.filter(function (c) { return scored[c][lastD]; }).map(function (c) { var x = scored[c][lastD]; return { code: c, name: S.COT_MARKETS[c], smart: Math.round(x[0]), dumb: Math.round(x[1]), smartNet: round(x[2], 1), dumbNet: round(x[3], 1) }; });
+		var n = hist[hist.length - 1], gap = n[1] - n[2];
+		return { date: n[0], smart: n[1], dumb: n[2], gap: gap, smartLabel: S.sdLabel(n[1]), dumbLabel: S.sdLabel(n[2]), parts: parts, hist: keep ? hist.slice(-keep) : hist,
+			reading: gap >= 40 ? 'Smart money much more bullish than the crowd' : gap >= 15 ? 'Smart money more bullish than the crowd' : gap <= -40 ? 'The crowd much more bullish than smart money' : gap <= -15 ? 'The crowd more bullish than smart money' : 'Both groups about as bullish' };
+	};
+
 	// ---------- scoring ----------
 	S.fgLabel = function (v) { return v < 25 ? 'Extreme fear' : v < 45 ? 'Fear' : v <= 55 ? 'Neutral' : v <= 75 ? 'Greed' : 'Extreme greed'; };
 	S.fgClass = function (v) { return v < 25 ? 'xf' : v < 45 ? 'f' : v <= 55 ? 'n' : v <= 75 ? 'g' : 'xg'; };
@@ -624,9 +698,14 @@
 		dated: ['“By ...?” and “through ...?” markets', 'Some questions are split into dates: “Ceasefire continues through October 31 / November 30 / December 31”. Each date is its own yes/no market, shown here earliest first. For “continues through” the chance usually falls the further out you go; for “happens by” it usually rises.'],
 		contracts: ['Kalshi volume (contracts)', 'Kalshi reports how many contracts were traded, not dollars. Each contract pays $1 if the answer is Yes, so the dollars that changed hands are less than the contract count.'],
 		warcost: ['War-cost estimates', 'Official figures come from the Pentagon (testimony or briefings to Congress) and are cumulative totals on the day they were given; what they include changes (some leave out the build-up, base repairs, veterans’ care or interest on borrowing). Think-tank estimates such as CSIS work from Congressional Budget Office unit costs. Long-run studies (for example Brown University’s Costs of War project) count far more, so different numbers can all be honest. We list each with its date and source instead of running a live counter.'],
+		etf: ['Spot Bitcoin ETF flows', 'US exchange-traded funds that hold real bitcoin (BlackRock IBIT, Fidelity FBTC, Grayscale GBTC and others, trading since January 11, 2024). An inflow means investors bought new fund shares, so the funds bought bitcoin; an outflow means shares were cashed in and bitcoin was sold. Totals for all US spot funds, counted in bitcoin by BGeometrics; the dollar figure is that day\u2019s bitcoin amount times the Bitcoin closing price, so it can differ a little from the funds\u2019 own reports. Big flows show what large investors are doing; they follow the price as often as they lead it.'],
+		etfheld: ['Bitcoin held by US spot ETFs', 'The running total of every day\u2019s net flow since the funds opened: about how many bitcoins all US spot ETFs hold together. It starts at zero on January 11, 2024, so the bitcoin Grayscale already held in its trust before it became an ETF is not counted.'],
+		smartdumb: ['MES Smart Money / Dumb Money', 'Two 0 to 100 scores for how bullish two groups of stock-futures traders are compared with the last three years. The idea, made popular by SentimenTrader, is that hedgers (\u201csmart money\u201d) tend to buy when prices have fallen and sell into rallies, while small traders (\u201cdumb money\u201d) tend to chase the trend, so the two often point opposite ways at turning points. It describes positioning, not what happens next; there are long stretches where it says little. How it is worked out: '],
+		cot: ['Commitments of Traders (COT)', 'A weekly report by the US Commodity Futures Trading Commission listing how many futures contracts each type of trader holds long and short, as of Tuesday, published Friday afternoon. \u201cCommercials\u201d use futures to hedge their business; \u201cnon-reportable\u201d positions belong to traders below the reporting size, mostly individuals.'],
 		feargauges: ['Markets’ fear gauges', 'Prices that often jump when people get scared: oil (supply worries, especially around the Strait of Hormuz, where about a fifth of the world’s oil passes), gold (a traditional safe haven), the VIX (expected stock-market swings) and the US dollar. They react to many things besides conflict, so a move is a hint, not proof.']
 	};
 	S.GLOSSARY.sfg[1] += S.STOCK_FG_METHOD;
+	S.GLOSSARY.smartdumb[1] += S.SMART_DUMB_METHOD;
 
 	if (typeof module !== 'undefined' && module.exports) module.exports = S;
 	else root.MESSig = S;

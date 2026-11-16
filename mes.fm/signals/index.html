@@ -561,6 +561,24 @@ body.dark-mode #sg.sg .sg-cx {background:rgba(0,0,0,0.7);}
 	#sg .sg-ago.is-old {color:#b45309;} body.dark-mode #sg.sg .sg-ago.is-old {color:#fbbf24;}
 	#sg .sg-rbtn {padding:0.3em 0.8em;min-height:2.2em;}
 	#sg .sg-rbtn.is-busy, #sg #sg-refresh.is-busy {opacity:0.65;cursor:progress;}
+/* ETF flows + smart / dumb money (2026-11-16) */
+#sg .sg-fill.s3 {fill:var(--sg-s3);}
+#sg .sg-vbar {stroke:none;} #sg .sg-vbar.p {fill:var(--sg-up);} #sg .sg-vbar.n {fill:var(--sg-dn);}
+#sg .sg-sw--in {background:var(--sg-up);} #sg .sg-sw--out {background:var(--sg-dn);}
+#sg .sg-etf, #sg .sg-sd {margin-top:1em;}
+#sg .sg-etfstats {margin:0.6em 0;}
+#sg .sg-etfstats .tu-stat__value.up {color:var(--sg-up);} #sg .sg-etfstats .tu-stat__value.dn {color:var(--sg-dn);}
+#sg .sg-etfrun {margin:0.2em 0 0.5em;font-weight:700;} #sg .sg-etfrun.up {color:var(--sg-up);} #sg .sg-etfrun.dn {color:var(--sg-dn);}
+#sg .sg-chead--sub {margin-top:0.8em;}
+#sg .sg-sdtop {display:grid;grid-template-columns:repeat(auto-fit, minmax(14em, 1fr));gap:0.7em;margin:0.6em 0;}
+#sg .sg-sdv {display:grid;grid-template-columns:1fr auto;gap:0.15em 0.6em;align-items:center;padding:0.7em 0.85em;border:1px solid var(--sg-line);border-radius:0.6em;background:var(--sg-soft);}
+#sg .sg-sdv b {font-size:2em;line-height:1;grid-row:span 2;}
+#sg .sg-sdv__l {font-weight:700;} #sg .sg-sdv__w {color:var(--sg-mut);font-size:0.9em;}
+#sg .sg-sdv .sg-bar {grid-column:1 / -1;}
+#sg .sg-sdv .sg-bar i.s1b {background:var(--sg-s1);} #sg .sg-sdv .sg-bar i.s2b {background:var(--sg-s2);}
+#sg .sg-sdread {margin:0.3em 0 0.6em;}
+#sg .sg-sdt td, #sg .sg-sdt th {white-space:nowrap;}
+
 
 
 	@media print {
@@ -947,6 +965,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="sg-legend" id="sg-fg-legend"></div>
 				<div class="sg-chart" id="sg-fg-chart"></div>
 			</div>
+			<div class="tu-card sg-sd" id="sg-sd"></div>
 		</section>
 
 		<div class="sg-cx" id="sg-cx" role="dialog" aria-modal="true" aria-labelledby="sg-cx-t" hidden>
@@ -971,6 +990,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section class="sg-panel" id="sg-p-crypto" role="tabpanel" hidden>
 			<div class="sg-coins" id="sg-coins"></div>
 			<div class="tu-stats" id="sg-cstats"></div>
+			<div class="tu-card sg-etf" id="sg-etf"></div>
 			<div class="tu-card sg-perps" id="sg-perps"></div>
 			<div class="tu-card sg-halving" id="sg-halving"></div>
 		</section>
@@ -1056,7 +1076,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>Free market signals dashboard: fear &amp; greed, rates, the Fed and the odds</h2>
 			<p>MES Market Signals puts the numbers people check every morning on one free page with no sign-up: the <strong>Crypto Fear &amp; Greed Index</strong>, a <strong>stock-market fear &amp; greed</strong> reading you can verify, Bitcoin, Ether, XRP, Solana and HIVE prices, Bitcoin dominance and the halving countdown, the S&amp;P 500, Nasdaq, Dow, gold, oil and the dollar, the <strong>fed funds rate</strong>, Treasury yields and the yield curve, inflation, the <strong>next FOMC meeting</strong>, and what <strong>prediction markets</strong> say about the Fed, inflation and recession. Every technical word has a &ldquo;?&rdquo; button with a plain-English explanation.</p>
 			<h3>Where the numbers come from</h3>
-			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the RSS feeds of the Federal Reserve, CoinDesk, Cointelegraph, CNBC, MarketWatch, BBC, Al Jazeera, NPR, The Guardian and DW (headline, the publisher&rsquo;s one-line summary and picture, linked to the article). Doomsday Clock: the Bulletin of the Atomic Scientists. The page refreshes about every five minutes; markets that are closed show their last price.</p>
+			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Spot Bitcoin ETF flows: BGeometrics (in bitcoin; dollars use that day&rsquo;s Bitcoin price). MES Smart Money / Dumb Money: our own score from the CFTC&rsquo;s weekly Commitments of Traders report for four US stock-index futures. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the RSS feeds of the Federal Reserve, CoinDesk, Cointelegraph, CNBC, MarketWatch, BBC, Al Jazeera, NPR, The Guardian and DW (headline, the publisher&rsquo;s one-line summary and picture, linked to the article). Doomsday Clock: the Bulletin of the Atomic Scientists. The page refreshes about every five minutes; markets that are closed show their last price.</p>
 			<h3>How is the stock fear &amp; greed number made?</h3>
 			<p>It is MES&rsquo;s own composite, not CNN&rsquo;s index (that one uses data we cannot get for free). It averages three readings, each ranked against its own last year so they share a 0-100 scale: how far the S&amp;P 500 is above or below its 125-day average, the VIX (flipped, since a high VIX means fear) and the extra interest junk-rated companies pay over the US government (flipped too). The method is written out next to the gauge so anyone can check it.</p>
 			<h3>Questions</h3>
@@ -1135,7 +1155,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/signals/js/signals.js?v=6" defer></script>
+	<script src="/signals/js/signals.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

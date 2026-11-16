@@ -30,6 +30,7 @@
 				<div class="sg-legend" id="sg-fg-legend"></div>
 				<div class="sg-chart" id="sg-fg-chart"></div>
 			</div>
+			<div class="tu-card sg-sd" id="sg-sd"></div>
 		</section>
 
 		<div class="sg-cx" id="sg-cx" role="dialog" aria-modal="true" aria-labelledby="sg-cx-t" hidden>
@@ -54,6 +55,7 @@
 		<section class="sg-panel" id="sg-p-crypto" role="tabpanel" hidden>
 			<div class="sg-coins" id="sg-coins"></div>
 			<div class="tu-stats" id="sg-cstats"></div>
+			<div class="tu-card sg-etf" id="sg-etf"></div>
 			<div class="tu-card sg-perps" id="sg-perps"></div>
 			<div class="tu-card sg-halving" id="sg-halving"></div>
 		</section>
@@ -139,7 +141,7 @@
 			<h2>Free market signals dashboard: fear &amp; greed, rates, the Fed and the odds</h2>
 			<p>MES Market Signals puts the numbers people check every morning on one free page with no sign-up: the <strong>Crypto Fear &amp; Greed Index</strong>, a <strong>stock-market fear &amp; greed</strong> reading you can verify, Bitcoin, Ether, XRP, Solana and HIVE prices, Bitcoin dominance and the halving countdown, the S&amp;P 500, Nasdaq, Dow, gold, oil and the dollar, the <strong>fed funds rate</strong>, Treasury yields and the yield curve, inflation, the <strong>next FOMC meeting</strong>, and what <strong>prediction markets</strong> say about the Fed, inflation and recession. Every technical word has a &ldquo;?&rdquo; button with a plain-English explanation.</p>
 			<h3>Where the numbers come from</h3>
-			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the RSS feeds of the Federal Reserve, CoinDesk, Cointelegraph, CNBC, MarketWatch, BBC, Al Jazeera, NPR, The Guardian and DW (headline, the publisher&rsquo;s one-line summary and picture, linked to the article). Doomsday Clock: the Bulletin of the Atomic Scientists. The page refreshes about every five minutes; markets that are closed show their last price.</p>
+			<p>Crypto Fear &amp; Greed: alternative.me. Crypto prices, market cap and stablecoins: CoinGecko. Bitcoin block height: mempool.space. Spot Bitcoin ETF flows: BGeometrics (in bitcoin; dollars use that day&rsquo;s Bitcoin price). MES Smart Money / Dumb Money: our own score from the CFTC&rsquo;s weekly Commitments of Traders report for four US stock-index futures. Stock indexes, gold, oil and the dollar: Yahoo Finance (with FRED closing prices as a backup). Interest rates, VIX, junk-bond spreads, inflation and recession dates: FRED, the database of the Federal Reserve Bank of St. Louis. Bank of Canada: its Valet API. ECB and Bank of England: their own statistics sites. Prediction markets: Polymarket and Kalshi public data. Headlines: the RSS feeds of the Federal Reserve, CoinDesk, Cointelegraph, CNBC, MarketWatch, BBC, Al Jazeera, NPR, The Guardian and DW (headline, the publisher&rsquo;s one-line summary and picture, linked to the article). Doomsday Clock: the Bulletin of the Atomic Scientists. The page refreshes about every five minutes; markets that are closed show their last price.</p>
 			<h3>How is the stock fear &amp; greed number made?</h3>
 			<p>It is MES&rsquo;s own composite, not CNN&rsquo;s index (that one uses data we cannot get for free). It averages three readings, each ranked against its own last year so they share a 0-100 scale: how far the S&amp;P 500 is above or below its 125-day average, the VIX (flipped, since a high VIX means fear) and the extra interest junk-rated companies pay over the US government (flipped too). The method is written out next to the gauge so anyone can check it.</p>
 			<h3>Questions</h3>

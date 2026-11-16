@@ -26,6 +26,9 @@
 //   geo      gamma-api.polymarket.com /events (geopolitics, middle-east, ukraine, china tags), conflict questions only
 //   geok     Kalshi KXHORMUZNORM (Strait of Hormuz)
 //   perps    api.hyperliquid.xyz/info metaAndAssetCtxs (POST, keyless): funding, open interest, volume of a few perps
+//   etf      bitcoin-data.com/v1/etf-flow-btc (BGeometrics, keyless, daily US spot Bitcoin ETF net flows in BTC; 15 requests a day per
+//            address, so the answer is kept in Upstash for 4 h) x Yahoo BTC-USD daily closes for the dollar amount  (verified 2026-11-16)
+//   cot      publicreporting.cftc.gov 6dca-aqww (CFTC legacy Commitments of Traders, Socrata, keyless): MES Smart / Dumb Money, cached 6 h
 const L = require('./_signals-lib.js');
 
 const UA = 'mes.fm-signals/1.0 (+https://mes.fm/signals)';
@@ -93,11 +96,51 @@ async function quote(k) {
   catch (e) { if (!y[2]) throw e; const q = L.quoteFromFred(await fred(y[2], daysAgo(120))); q.name = y[1]; q.note = 'Yahoo did not answer; FRED closing price (about a day behind)'; return q; }
 }
 
+// Upstash cache for sources that are rate-limited or change slowly (same env vars as api/fav.js). Without Upstash it just fetches.
+// Keeps the last good answer 14 days; when the source fails the old answer is returned with stale: <ISO time>.
+const memo = {};
+async function kv(cmds) {
+  const r = await fetch(process.env.UPSTASH_REDIS_REST_URL + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.UPSTASH_REDIS_REST_TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) });
+  if (!r.ok) throw new Error('kv ' + r.status);
+  return r.json();
+}
+async function cached(key, maxMs, fn) {
+  const up = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+  let hit = memo[key] || null;
+  if (!hit && up) { try { const r = await kv([['GET', key]]); if (r[0] && r[0].result) hit = JSON.parse(r[0].result); } catch (e) { hit = null; } }
+  if (hit && Date.now() - hit.t < maxMs) { memo[key] = hit; return hit.d; }
+  try {
+    const d = await fn(), rec = { t: Date.now(), d };
+    memo[key] = rec;
+    if (up) await kv([['SET', key, JSON.stringify(rec), 'EX', 14 * 86400]]).catch(() => {});
+    return d;
+  } catch (e) {
+    if (hit) return Object.assign({}, hit.d, { stale: new Date(hit.t).toISOString() });
+    throw e;
+  }
+}
+async function btcCloses() {
+  try { return L.yahooCloses(await json('https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=5y&interval=1d', 8000, { 'user-agent': 'Mozilla/5.0 (compatible; mes.fm-signals/1.0)' })); }
+  catch (e) { return null; }
+}
+
 const JOBS = {
   fng: async () => L.parseFng(await json('https://api.alternative.me/fng/?limit=400&format=json')),
   coins: async () => L.parseCoins(await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,hive,ripple,solana&sparkline=true&price_change_percentage=24h,7d')),
   global: async () => L.parseGlobal(await json('https://api.coingecko.com/api/v3/global')),
   stables: async () => L.parseStables(await json('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=stablecoins&order=market_cap_desc&per_page=20')),
+  etf: () => cached('signals:etf', 4 * 3600e3, async () => {
+    const [rows, px] = await Promise.all([json('https://bitcoin-data.com/v1/etf-flow-btc', 9000), btcCloses()]);
+    const e = L.parseEtfFlows(rows, px);
+    if (!px) e.note = 'Bitcoin prices did not load, so flows are shown in bitcoin only';
+    return e;
+  }),
+  cot: () => cached('signals:cot', 6 * 3600e3, async () => {
+    const since = daysAgo(6 * 366), codes = Object.keys(L.COT_MARKETS).map((c) => "'" + c + "'").join(',');
+    const url = 'https://publicreporting.cftc.gov/resource/6dca-aqww.json?$select=report_date_as_yyyy_mm_dd,cftc_contract_market_code,open_interest_all,comm_positions_long_all,comm_positions_short_all,nonrept_positions_long_all,nonrept_positions_short_all' +
+      '&$where=' + encodeURIComponent('cftc_contract_market_code in(' + codes + ") AND report_date_as_yyyy_mm_dd>'" + since + "'") + '&$order=report_date_as_yyyy_mm_dd&$limit=5000';
+    return L.smartDumb(await json(url, 10000), 156, 260);
+  }),
   perps: async () => L.parseHlPerps(await json('https://api.hyperliquid.xyz/info', 8000, { 'content-type': 'application/json' }, '{"type":"metaAndAssetCtxs"}')),
   halving: async () => {
     const [h, d] = await Promise.all([text('https://mempool.space/api/blocks/tip/height'), json('https://mempool.space/api/v1/difficulty-adjustment').catch(() => null)]);
@@ -192,6 +235,7 @@ module.exports = async (req, res) => {
 };
 module.exports.collect = collect;
 module.exports.JOBS = JOBS;
+module.exports.clearCache = () => { for (const k in memo) delete memo[k]; };
 
 // node mes.fm/api/signals.js --write  -> refreshes the page's sample data (mes.fm/signals/data/sample.json, used by ?mock=1 and local previews)
 if (require.main === module && process.argv.includes('--write')) {
