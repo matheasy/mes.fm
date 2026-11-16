@@ -15,13 +15,15 @@ interface Props {
   planned: PlannedMove[];
   onChange: (d: Settings['diagram']) => void;
   onPickMove: (id: string) => void;
+  /** shown under the picture (the % sliders) */
+  footer?: React.ReactNode;
 }
 
 type Drag = { kind: 'node'; b: Bucket } | { kind: 'label'; id: string; sx: number; sy: number; dx: number; dy: number };
 
 /** The cycle as a picture: drag a circle or a label to move it (saved); click a label to edit that move;
  * double-click the background to put everything back. */
-export default function CycleDiagram({ settings, totals, all, planned, onChange, onPickMove }: Props) {
+export default function CycleDiagram({ settings, totals, all, planned, onChange, onPickMove, footer }: Props) {
   const svg = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [moved, setMoved] = useState(false);
@@ -163,6 +165,7 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
           );
         })}
       </svg>
+      {footer}
     </div>
   );
 }

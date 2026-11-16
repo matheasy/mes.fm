@@ -159,7 +159,7 @@ export function normalize(raw: unknown): Settings {
     sovLevel: r.sovLevel ?? d.sovLevel,
     sovSell: r.sovSell === 'biggest' ? 'biggest' : 'spread',
     sovNext: typeof r.sovNext === 'string' ? r.sovNext.slice(0, 120) : d.sovNext,
-    targets: Object.fromEntries(BUCKETS.map((b) => [b, num(t[b], d.targets[b], 0, 100)])) as Record<Bucket, number>,
+    targets: Object.fromEntries(BUCKETS.map((b) => [b, old ? d.targets[b] : num(t[b], d.targets[b], 0, 100)])) as Record<Bucket, number>,
     useTargets: r.useTargets ?? d.useTargets,
     driftWeight: num(r.driftWeight, d.driftWeight, 0, 1),
     tiltStrength: num(r.tiltStrength, d.tiltStrength, 0, 1),
@@ -910,4 +910,145 @@ export function topIssues(h: Holdings, s: Settings, planned: PlannedMove[], risk
   if (lps.profitPct != null && lps.profitPct < -0.15)
     out.push({ rank: 45, tone: 'warn', title: `Liquidity is ${Math.round(-lps.profitPct * 100)}% below cost`, text: 'Check the position is still the right one (range, pair) before adding more to it.' });
   return out.sort((a, b) => b.rank - a.rank).slice(0, max);
+}
+
+/* ------------------------------------------------------------------ recommended % per move */
+
+export interface Rec {
+  pct: number;
+  why: string;
+}
+
+const q25 = (v: number) => Math.round(v * 4) / 4;
+
+/**
+ * A suggested % for each move (key = move id) and for each split (key = `${id}:split`), worked out
+ * from your target mix (Settings -> Targets, used here even when "nudge toward targets" is off):
+ * with flat prices, a section stays at its target when what flows in equals what flows out, so
+ *   Store of Value -> Cash  = Cash->(Tokens/LP) rate x Cash target / SOV target
+ *   Tokens -> SOV           = Cash->(Tokens/LP) rate x share to Tokens x Cash target / Tokens target
+ * The Cash LP rate itself follows how full Cash LP is versus its target. Market mood is NOT in these
+ * (it already changes each month's amount on top), so they are steady settings, not timing calls.
+ */
+export function recommendRates(s: Settings, h: Holdings | null, lp: LpInfo | null): Record<string, Rec> {
+  const out: Record<string, Rec> = {};
+  const t = normTargets(s.targets);
+  const w = h ? weightsOf(h) : null;
+  const cashOut = s.moves.find((m) => m.on && m.kind === 'pct' && m.from === 'cash');
+  const anchor = cashOut?.ratePct ?? 4;
+  const share = (m: Move | undefined, b: Bucket) => (!m ? 0 : m.to === b ? 1 - (m.split ? m.split.pct / 100 : 0) : m.split?.to === b ? m.split.pct / 100 : 0);
+  const pctT = (b: Bucket) => `${Math.round(t[b] * 100)}%`;
+  for (const m of s.moves) {
+    if (m.kind !== 'pct') continue;
+    if (m.from === 'cash') {
+      if (w && t.cash > 0) {
+        const ratio = w.cash / t.cash;
+        const pct = clamp(q25(4 * Math.sqrt(ratio)), 1, 8);
+        out[m.id] = {
+          pct,
+          why:
+            ratio < 0.8
+              ? `Cash LP is ${Math.round(w.cash * 100)}% vs its ${pctT('cash')} target: spend it a bit slower so it can refill (market mood still makes this month's amount bigger in a dip).`
+              : ratio > 1.25
+                ? `Cash LP is ${Math.round(w.cash * 100)}% vs its ${pctT('cash')} target: plenty of dry powder, you can put it to work a bit faster.`
+                : `Cash LP is close to its ${pctT('cash')} target: your 4% pace fits.`,
+        };
+      } else out[m.id] = { pct: 4, why: 'Your usual pace.' };
+      if (m.split) {
+        const pct = lp?.inRange === false ? 0 : clamp(Math.round(((t[m.split.to] / ((t[m.to] + t[m.split.to]) || 1)) * 100) / 5) * 5, 0, 100);
+        out[`${m.id}:split`] = {
+          pct,
+          why: lp?.inRange === false && m.split.to === 'lp' ? 'The Liquidity position is out of range (earning no fees): send it all to Tokens until it is re-ranged.' : `Splits in line with your targets: ${BUCKET_LABEL[m.to]} ${pctT(m.to)}, ${BUCKET_LABEL[m.split.to]} ${pctT(m.split.to)}.`,
+        };
+      }
+    } else if (m.from === 'sov' && m.to === 'cash') {
+      const pct = t.sov > 0 ? clamp(q25((anchor * t.cash) / t.sov), 0.25, 10) : m.ratePct;
+      out[m.id] = { pct, why: `Keeps Store of Value near its ${pctT('sov')} target: it only has to refill what Cash LP spends (${anchor}% of a section ${Math.round((t.cash / (t.sov || 1)) * 100)}% its size). A higher rate slowly shrinks Store of Value.` };
+    } else if (m.from === 'tokens' && m.to === 'sov') {
+      const inTok = share(cashOut, 'tokens');
+      const pct = t.tokens > 0 ? clamp(q25((anchor * inTok * t.cash) / t.tokens), 0.25, 10) : m.ratePct;
+      out[m.id] = { pct, why: `Tokens get ${anchor}% × ${Math.round(inTok * 100)}% of Cash LP each month; sending about the same back out keeps Tokens near its ${pctT('tokens')} target. Higher = Tokens shrink, lower = they grow.` };
+    } else {
+      out[m.id] = { pct: m.ratePct, why: 'No suggestion for this kind of move.' };
+    }
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ Canadian tax check (gains, superficial losses) */
+
+/** Average cost per coin from the Taxes page's ACB pools (all wallets pooled, as the CRA requires) */
+export type AcbMap = Record<string, { qty: number; acbUsd: number; acbCad: number | null }>;
+
+const TAX_ALIAS: Record<string, string> = { WBNB: 'BNB', WETH: 'ETH', 'SWAP.HIVE': 'HIVE', BTCB: 'BTC', WBTC: 'BTC' };
+const taxKey = (k: string) => TAX_ALIAS[k.toUpperCase()] ?? k.toUpperCase();
+
+export interface TaxLeg {
+  key: string;
+  amount: number;
+  /** gain (+) or loss (-) in CAD at today's price vs your average cost */
+  gainCad: number;
+  /** part of a loss that would be "superficial" (not deductible now) because the plan buys the same coin within 30 days */
+  deniedCad: number;
+  boughtAmount: number;
+  costPer: number;
+  pricePer: number;
+}
+
+/** For each move's sells: the gain or loss, and how much of a loss the plan's own buys would make superficial */
+export function taxCheck(planned: PlannedMove[], acb: AcbMap | null, cadRate: number | null): Record<string, TaxLeg[]> {
+  const out: Record<string, TaxLeg[]> = {};
+  if (!acb || !cadRate) return out;
+  for (const p of planned) {
+    if (p.skipped || !p.sells.length) continue;
+    const legs: TaxLeg[] = [];
+    for (const s of p.sells) {
+      const k = taxKey(s.key);
+      const pool = acb[k];
+      if (!pool || !(pool.qty > 0) || s.amount == null || !(s.amount > 0)) continue;
+      const pricePer = s.usd / s.amount;
+      const costPerUsd = pool.acbUsd / pool.qty;
+      const costPerCad = pool.acbCad != null ? pool.acbCad / pool.qty : costPerUsd * cadRate;
+      const gainCad = s.amount * (pricePer * cadRate - costPerCad);
+      // the same coin bought by any move due within 30 days of this one (the 61-day window around the sale)
+      let bought = 0;
+      for (const q of planned) {
+        if (q.skipped || Math.abs(q.dueInDays - p.dueInDays) > 30) continue;
+        for (const b of q.buys) if (taxKey(b.key) === k && b.amount != null) bought += b.amount;
+      }
+      const denied = gainCad < 0 ? -gainCad * Math.min(1, bought / s.amount) : 0;
+      legs.push({ key: k, amount: s.amount, gainCad, deniedCad: denied, boughtAmount: bought, costPer: costPerUsd, pricePer });
+    }
+    if (legs.length) out[p.move.id] = legs;
+  }
+  return out;
+}
+
+/** Plain notes for one move from its tax check */
+export function taxNotes(legs: TaxLeg[] | undefined): Note[] {
+  if (!legs || !legs.length) return [];
+  const n: Note[] = [];
+  const cad = (v: number) => fmtCad(Math.abs(v));
+  const price = (v: number) => (v >= 1000 ? fmtUsd(v) : '$' + v.toPrecision(3));
+  for (const l of legs) {
+    if (l.deniedCad >= 5) {
+      const all = l.deniedCad >= -l.gainCad - 0.5;
+      const fix =
+        l.key === 'BTC'
+          ? ' (selling and buying BTC in the same month also just pays fees twice: set "Store of Value sales come from" to "the biggest coin first" so only XRP is sold)'
+          : ' (point that buy at another coin for a month)';
+      n.push({
+        tone: 'warn',
+        text:
+          'Tax: selling ' + l.key + ' books a ' + cad(l.gainCad) + ' loss (your average cost ' + price(l.costPer) + ' vs ' + price(l.pricePer) + ' now), but this month\'s plan also BUYS ' + l.key +
+          ', so ' + (all ? 'all' : 'about ' + cad(l.deniedCad)) + ' of that loss is "superficial": you can\'t claim it this year. It isn\'t lost: it is added to the cost of the ' + l.key +
+          ' you keep and counts when you sell those later. To claim the loss now, don\'t buy ' + l.key + ' within 30 days before or after this sale' + fix + '.',
+      });
+    } else if (l.gainCad <= -5) {
+      n.push({ tone: 'info', text: 'Tax: selling ' + l.key + ' books about a ' + cad(l.gainCad) + ' capital loss (average cost ' + price(l.costPer) + ' vs ' + price(l.pricePer) + ' now). It can offset gains. Don\'t buy ' + l.key + ' back within 30 days or it is denied.' });
+    } else if (l.gainCad >= 50) {
+      n.push({ tone: 'info', text: 'Tax: selling ' + l.key + ' books about a ' + cad(l.gainCad) + ' capital gain; half of it is taxable income.' });
+    }
+  }
+  return n;
 }

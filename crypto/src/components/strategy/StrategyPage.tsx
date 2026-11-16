@@ -11,6 +11,7 @@ import type { BucketSnapshot, LpSnapshot, SovSnapshot } from '@/lib/types';
 import type { StrategyMarket } from '@/app/api/strategy/market/route';
 import type { StrategyStore } from '@/app/api/strategy/route';
 import CycleDiagram from './CycleDiagram';
+import MoveSliders from './MoveSliders';
 import {
   BUCKET_LABEL,
   BUCKET_LINK,
@@ -29,6 +30,9 @@ import {
   normTargets,
   normalize,
   plan,
+  recommendRates,
+  taxCheck,
+  taxNotes,
   project,
   riskScore,
   stanceOf,
@@ -39,7 +43,10 @@ import {
   type Leg,
   type LpInfo,
   type Note,
+  type AcbMap,
+  type Rec,
   type Risk,
+  type TaxLeg,
   type LogEntry,
   type Move,
   type PlannedMove,
@@ -47,6 +54,7 @@ import {
   type Strategy,
 } from '@/lib/strategy/model';
 
+type TaxHolding = { asset: string; quantity: number; acbUsd: number; acbCad: number | null };
 const LS_SETTINGS = 'mes-strategy:v1';
 const LS_LOG = 'mes-strategy:v1:log';
 const usd0 = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -159,7 +167,7 @@ function Notes({ notes }: { notes: Note[] }) {
   );
 }
 
-function MoveCard({ p, risk, onDone, onSkip }: { p: PlannedMove; risk: Risk; onDone: (usd: number, note: string) => void; onSkip: () => void }) {
+function MoveCard({ p, risk, recs, taxLegs, onMove, onDone, onSkip }: { p: PlannedMove; risk: Risk; recs: Record<string, Rec>; taxLegs?: TaxLeg[]; onMove: (patch: Partial<Move>) => void; onDone: (usd: number, note: string) => void; onSkip: () => void }) {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [open, setOpen] = useState(false);
@@ -189,6 +197,8 @@ function MoveCard({ p, risk, onDone, onSkip }: { p: PlannedMove; risk: Risk; onD
           {due ? (p.dueInDays < 0 ? `Due ${-p.dueInDays} days ago` : 'Due now') : `Next on ${p.dueOn} (${p.dueInDays} d)`}
         </span>
       </div>
+
+      <MoveSliders move={m} recs={recs} onChange={onMove} />
 
       {p.skipped ? (
         <p className="text-sm text-gray-400">Skip this time: {p.skipped}.</p>
@@ -255,7 +265,7 @@ function MoveCard({ p, risk, onDone, onSkip }: { p: PlannedMove; risk: Risk; onD
         </div>
       )}
 
-      <Notes notes={p.notes} />
+      <Notes notes={[...p.notes, ...taxNotes(taxLegs)]} />
 
       <div className="flex flex-wrap items-center gap-2">
         {!p.skipped && (
@@ -288,6 +298,11 @@ export default function StrategyPage() {
   const sov = useStoredThenLive<SovSnapshot>('/api/sov');
   const lpq = useStoredThenLive<LpSnapshot>('/api/lp');
   const market = useSWR(`${BASE_PATH}/api/strategy/market`, (u: string) => fetchApiResult<StrategyMarket>(u), { revalidateOnFocus: false });
+  // average cost per coin (the Taxes page's saved ACB pools) - only read, never recalculated here
+  const taxes = useSWR(`${BASE_PATH}/api/taxes?stored=1`, (u: string) => fetchApiResult<{ holdings?: TaxHolding[]; data?: { holdings?: TaxHolding[] } } | null>(u), {
+    revalidateOnFocus: false,
+    shouldRetryOnError: false,
+  });
   const store = useSWR(`${BASE_PATH}/api/strategy`, (u: string) => fetchApiResult<StrategyStore | null>(u), { revalidateOnFocus: false });
 
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -370,7 +385,22 @@ export default function StrategyPage() {
   const stance = stanceOf(risk.score);
   const planned = useMemo(() => (holdings ? plan(holdings, settings, inds, log, { lp: lpInfo }) : []), [holdings, settings, inds, log, lpInfo]);
   const lps = useMemo(() => lpStatus(settings, log, lpInfo), [settings, log, lpInfo]);
-  const issues = holdings ? topIssues(holdings, settings, planned, risk, lpInfo, lps) : [];
+  const recs = useMemo(() => recommendRates(settings, holdings, lpInfo), [settings, holdings, lpInfo]);
+  const acb = useMemo<AcbMap | null>(() => {
+    // the stored answer is the Taxes data itself (older copies were wrapped in { savedAt, data })
+    const hs = taxes.data?.holdings ?? taxes.data?.data?.holdings;
+    if (!hs) return null;
+    return Object.fromEntries(hs.map((x) => [x.asset.toUpperCase(), { qty: x.quantity, acbUsd: x.acbUsd, acbCad: x.acbCad }]));
+  }, [taxes.data]);
+  const tax = useMemo(() => taxCheck(planned, acb, lpInfo?.cadRate ?? cash.data?.cadRate ?? null), [planned, acb, lpInfo, cash.data]);
+  const taxTotals = Object.values(tax).flat().reduce((t, l) => ({ denied: t.denied + l.deniedCad, loss: t.loss + Math.min(0, l.gainCad), gain: t.gain + Math.max(0, l.gainCad) }), { denied: 0, loss: 0, gain: 0 });
+  const issues = holdings ? topIssues(holdings, settings, planned, risk, lpInfo, lps, 4) : [];
+  if (taxTotals.denied >= 20 && holdings) {
+    const coins = [...new Set(Object.values(tax).flat().filter((l) => l.deniedCad >= 5).map((l) => l.key))].join(' and ');
+    issues.push({ rank: 75, tone: 'warn', title: `About ${cad0(taxTotals.denied)} of this month's losses wouldn't count for taxes`, text: `The plan sells ${coins} below your average cost and also buys ${coins} within 30 days, so the CRA's superficial-loss rule denies that part of the loss for now (it is added to the cost of what you keep instead). The moves below say how to avoid it.` });
+    issues.sort((a, b) => b.rank - a.rank);
+  }
+  issues.splice(3);
   const sorted = [...planned].sort((a, b) => a.dueInDays - b.dueInDays);
   const w = holdings ? weightsOf(holdings) : null;
   // Liquidity only gives back its profit, so with flat prices it would soak everything up: leave it out
@@ -595,6 +625,9 @@ export default function StrategyPage() {
               key={p.move.id}
               p={p}
               risk={risk}
+              recs={recs}
+              taxLegs={tax[p.move.id]}
+              onMove={(patch) => setMove(p.move.id, patch)}
               onDone={(usd, note) => addLog(doneEntry(p, usd, note))}
               onSkip={() => addLog({ id: newId(), moveId: p.move.id, date: isoDay(Date.now()), usd: 0, from: p.move.from, to: p.move.to, skipped: true })}
             />
@@ -602,7 +635,44 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {holdings && <CycleDiagram settings={settings} totals={holdings.total} all={holdings.all} planned={planned} onChange={(d) => update((s) => ({ ...s, diagram: d }))} onPickMove={pickMove} />}
+      {holdings && <CycleDiagram settings={settings} totals={holdings.total} all={holdings.all} planned={planned} onChange={(d) => update((s) => ({ ...s, diagram: d }))} onPickMove={pickMove}
+          footer={
+            <div className="mt-3 grid gap-4 border-t border-bg-border/60 pt-3 md:grid-cols-2">
+              {settings.moves.filter((m) => m.on).map((m) => (
+                <div key={m.id} className="flex flex-col gap-1">
+                  <p className="text-sm font-semibold text-gray-200">
+                    {BUCKET_LABEL[m.from]} → {BUCKET_LABEL[m.to]}
+                    {m.split ? ` + ${BUCKET_LABEL[m.split.to]}` : ''}
+                    {(() => {
+                      const pm = planned.find((x) => x.move.id === m.id);
+                      return pm ? <span className="ml-2 font-normal text-gray-400">{pm.skipped ? 'skip this time' : `${usd0(pm.usd)} now`}</span> : null;
+                    })()}
+                  </p>
+                  <MoveSliders move={m} recs={recs} onChange={(patch) => setMove(m.id, patch)} compact />
+                </div>
+              ))}
+              <div className="flex items-start md:col-span-2">
+                <button
+                  type="button"
+                  className={btnCls}
+                  onClick={() =>
+                    update((s) => ({
+                      ...s,
+                      moves: s.moves.map((m) => {
+                        const r = recs[m.id];
+                        const rs = recs[`${m.id}:split`];
+                        return { ...m, ratePct: m.kind === 'pct' && r ? r.pct : m.ratePct, split: m.split && rs ? { ...m.split, pct: rs.pct } : m.split };
+                      }),
+                    }))
+                  }
+                >
+                  Use all recommended %
+                </button>
+              </div>
+            </div>
+          }
+        />
+      }
 
       {/* ---------------------------------------------------- signals */}
       <section className="panel flex flex-col gap-3">
@@ -851,8 +921,18 @@ export default function StrategyPage() {
               more than the timing. Treat them as a tie-breaker (skip selling Store of Value in a panic, buy a little extra), not a crystal ball.
             </li>
             <li>
-              Taxes (Canada): every crypto-to-crypto swap is a disposal, so each move is a taxable event at your ACB, and a loss is denied if you buy the same coin back within 30 days before or after (superficial
-              loss). Your <a href="https://mes.fm/taxes" className="text-accent hover:underline">Taxes page</a> picks the trades up automatically.
+              <b className="text-gray-100">Taxes (Canada).</b> Every crypto-to-crypto swap counts as selling: the difference between the price and your average cost (ACB, from your{' '}
+              <a href="https://mes.fm/taxes" className="text-accent hover:underline">Taxes page</a>) is a capital gain or loss, and half of a net gain is taxable.{' '}
+              <b className="text-gray-100">Superficial loss rule:</b> if you sell a coin at a loss and buy the same coin within 30 days before or after (and still hold some 30 days later), that loss
+              can&apos;t be claimed now. It isn&apos;t gone: it is added to the cost of the coins you kept, so it lowers the tax when you sell those later. Your cycle buys and sells HIVE every month,
+              and levelling buys BTC while Store of Value → Cash sells some, so this can happen every month while those coins are below what you paid.
+              {acb && (
+                <>
+                  {' '}This month&apos;s sells: about {cad0(-taxTotals.loss)} of losses{taxTotals.gain > 0 ? ` and ${cad0(taxTotals.gain)} of gains` : ''}
+                  {taxTotals.denied >= 1 ? <>, of which about <b className="text-gray-100">{cad0(taxTotals.denied)}</b> of the losses would be superficial</> : null}. Rough: based on today&apos;s prices and
+                  the plan&apos;s own buys only (your other trades count too).
+                </>
+              )}
             </li>
           </ul>
         </section>
