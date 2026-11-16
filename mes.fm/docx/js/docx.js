@@ -1495,5 +1495,6 @@ var MESDocx = (function () {
 	window.addEventListener("beforeunload", function (e) { if (!window.__mesCloudLeaving && docs.some(function (d) { return d.dirty; })) { e.preventDefault(); e.returnValue = ""; } });
 
 	setSide(S.side); setTab(S.tab); refreshUi(); showRecent();
+	if (window.MESGrip) MESGrip.add(document.getElementById("dx-main"), { key: "mes-docx:h", min: 260 });
 	window.MESDocxApp = { docs: docs, open: openBytes, build: buildEdited, current: function () { return cur; }, setMode: setMode };     // for testing in the console
 })();

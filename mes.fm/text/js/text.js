@@ -513,5 +513,6 @@
 	render();
 	// a file handed over by another MES page or the Read Aloud extension, else ?url=
 	if (LO) LO.receive().then(function (f) { if (f) openFile(f); else if (LO.fromQuery()) { $("tx-link").value = LO.fromQuery(); openLink(LO.fromQuery()); } }, function (e) { info(e.message, true); });
+	if (window.MESGrip) MESGrip.add($("tx-stage"), { key: "mes-text:h", min: 200 });
 	window.MESTextDebug = { open: openBytes, openText: openText, get doc() { return D; }, render: render, setView: setView };
 })();

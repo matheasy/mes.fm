@@ -366,7 +366,7 @@ html body.dark-mode #xl .xl-btn--primary:hover { background: #24834f; }
 #xl .xl-note a, #xl .xl-note .xl-link { color: inherit; font-weight: 600; }
 
 /* grid */
-#xl .xl-grid { position: relative; height: clamp(420px, 70vh, 1400px); background: var(--xl-cell); overflow: hidden; font-size: 13.5px; font-family: Calibri, Carlito, "Segoe UI", system-ui, -apple-system, sans-serif; user-select: none; -webkit-user-select: none; }
+#xl .xl-grid { position: relative; height: var(--mes-gh, clamp(420px, 70vh, 1400px)); background: var(--xl-cell); overflow: hidden; font-size: 13.5px; font-family: Calibri, Carlito, "Segoe UI", system-ui, -apple-system, sans-serif; user-select: none; -webkit-user-select: none; }
 #xl .xl-app.mes-pfill { padding: 0 !important; border: 0; }
 #xl .xl-app.mes-pfill .xl-grid { height: auto; flex: 1; min-height: 0; }
 #xl .xl-corner, #xl .xl-colh, #xl .xl-rowh, #xl .xl-frzh, #xl .xl-frz, #xl .xl-frzc, #xl .xl-fcols { position: absolute; overflow: hidden; background: var(--xl-head); z-index: 3; }
@@ -453,7 +453,7 @@ html body.dark-mode #xl .xl-c.f-fill { color: #111; }   /* fills come from the f
 	#xl .xl-lbl { display: none; }
 	#xl .xl-find .xl-in { width: 120px; }
 	#xl .xl-fname { max-width: 100%; order: 5; flex-basis: 100%; font-size: 14px; }
-	#xl .xl-grid { height: clamp(380px, 64vh, 900px); }
+	#xl .xl-grid { height: var(--mes-gh, clamp(380px, 64vh, 900px)); }
 	#xl .xl-btn, #xl .xl-ib { min-height: 38px; }
 	#xl .xl-menu { width: min(270px, 80vw); }
 	#xl #xl-fval { width: 110px; }
@@ -1077,7 +1077,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/excel/js/excel.js?v=9" defer></script>
+	<script src="/main_js/height-grip.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/excel/js/excel.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -53,7 +53,7 @@ body.dark-mode #dx .dx-btn--primary:hover { background: #3767b0; }
 #dx .dx-note { padding: 8px 12px; background: var(--dx-note); color: var(--dx-noteink); border-bottom: 1px solid var(--dx-line); font-size: 14px; }
 #dx .dx-note a, #dx .dx-note button.dx-link { color: inherit; font-weight: 600; }
 #dx .dx-note.is-err { color: var(--dx-err); }
-#dx .dx-main { display: flex; min-height: 0; height: clamp(440px, 76vh, 1500px); }
+#dx .dx-main { display: flex; min-height: 0; height: var(--mes-gh, clamp(440px, 76vh, 1500px)); }
 #dx .dx-sidep { width: 270px; flex: none; background: var(--dx-panel); border-right: 1px solid var(--dx-line); display: flex; flex-direction: column; min-height: 0; }
 #dx .dx-app.no-side .dx-sidep { display: none; }
 #dx .dx-stabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 6px 0; border-bottom: 1px solid var(--dx-line); }
@@ -147,7 +147,7 @@ body.dark-mode #dx .dx-btn--primary:hover { background: #3767b0; }
 #dx .dx-app:fullscreen .dx-main { height: auto; flex: 1; }
 body.dx-filled { overflow: hidden; }
 @media (max-width: 760px) {
-	#dx .dx-main { height: clamp(420px, 78vh, 1200px); position: relative; }
+	#dx .dx-main { height: var(--mes-gh, clamp(420px, 78vh, 1200px)); position: relative; }
 	#dx .dx-sidep { position: absolute; left: 0; top: 0; bottom: 0; width: min(86%, 300px); z-index: 20; box-shadow: 4px 0 18px rgba(0,0,0,.25); }
 	#dx .dx-ib--txt .dx-lbl, #dx .dx-sep { display: none; }
 	#dx .dx-btn, #dx .dx-ib, #dx .dx-zoom, #dx .dx-segb, #dx .dx-eb, #dx .dx-esel { min-height: 40px; }
