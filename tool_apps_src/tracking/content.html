@@ -1,0 +1,75 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu tk" id="tk">
+		<div class="tu-card tk-in" id="tk-drop">
+			<label class="tu-label" for="tk-text">Tracking number, a few numbers, a shipping email or a tracking link</label>
+			<textarea id="tk-text" class="tu-input tk-text" rows="2" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="LA717056590GB"></textarea>
+			<div class="tk-act">
+				<button type="button" class="tu-btn tu-btn--primary tk-go" id="tk-go">Find tracking pages</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tk-paste">Paste</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tk-scan">&#128247; Scan a label</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tk-pic">&#128444; Photo or screenshot</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="tk-clear">Clear</button>
+				<input type="file" id="tk-file" accept="image/*" hidden>
+			</div>
+			<div class="tk-opt">
+				<label for="tk-home">Your country</label>
+				<select id="tk-home" class="tu-select"></select>
+				<span class="tu-note">Its postal service is added for parcels coming from abroad.</span>
+			</div>
+			<div class="tk-status" id="tk-status" aria-live="polite" hidden></div>
+			<p class="tu-note tk-hint">You can also drop a picture of a label or a screenshot of the shipping email here. Nothing is uploaded: the number is read in your browser and only the carrier you click sees it.</p>
+		</div>
+
+		<div id="tk-results" aria-live="polite"></div>
+
+		<section class="tk-saved" id="tk-savedwrap" hidden>
+			<div class="tk-shead">
+				<h2>My parcels <span class="tk-count" id="tk-scount"></span></h2>
+				<div class="tk-sbtns">
+					<button type="button" class="tu-btn tu-btn--ghost" id="tk-showdone"></button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="tk-copyall">Copy list</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="tk-sharelist">Copy share link</button>
+				</div>
+			</div>
+			<div id="tk-saved"></div>
+			<p class="tu-note">Saved in this browser only. Tick a parcel when it arrives.</p>
+		</section>
+
+		<details class="tu-card tk-dir" id="tk-dir">
+			<summary>Every carrier we know (<span id="tk-dircount"></span>) and their tracking pages</summary>
+			<input type="search" id="tk-dirq" class="tu-input" placeholder="Search carriers or countries" autocomplete="off">
+			<div class="tk-dirlist" id="tk-dirlist"></div>
+		</details>
+
+		<div class="tk-cam" id="tk-cam" hidden role="dialog" aria-label="Scan a shipping label">
+			<div class="tk-camin">
+				<video id="tk-video" playsinline muted></video>
+				<div class="tk-camframe"></div>
+				<div class="tk-cambar"><span id="tk-camtext">Point the camera at the barcode or the tracking number</span><button type="button" class="tu-btn tu-btn--ghost" id="tk-camread">Read the text</button><button type="button" class="tu-btn tu-btn--primary" id="tk-camclose">Close</button></div>
+			</div>
+		</div>
+		<div class="tu-toast" id="tk-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Track any package from one number</h2>
+			<p>Paste a tracking number and this page works out which company it belongs to (Royal Mail, USPS, UPS, FedEx, DHL, Canada Post, Purolator, Amazon, Australia Post, China Post, Cainiao and about 50 more) and gives you a button that opens <strong>that company's own tracking page</strong> with the number already filled in. Several numbers, a whole shipping email or a tracking link work too, and you can scan the barcode on a label or read the number from a photo or screenshot.</p>
+			<h3>How it knows the carrier</h3>
+			<ul>
+				<li><b>International post</b> (like <code>LA717056590GB</code>): 2 letters, 8 digits, a check digit and the 2-letter country it was posted in. The check digit is tested, so a typo is caught before you search.</li>
+				<li><b>UPS</b> numbers start with <code>1Z</code> and also carry a check digit.</li>
+				<li><b>USPS</b> numbers are usually 22 digits starting with 92 to 95 (the barcode adds 420 and the ZIP code in front, which is removed for you).</li>
+				<li><b>Amazon</b> starts with TBA (TBC in Canada), <b>DHL eCommerce</b> with GM, <b>Cainiao / AliExpress</b> with LP, <b>Yodel</b> with JD.</li>
+				<li>Plain numbers of 10 to 16 digits fit several companies (FedEx, DHL, DPD, GLS, Canada Post, Purolator), so they are shown in order of how likely each one is, together with universal trackers.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Why doesn't the page show where my parcel is?</h4>
+			<p>Carriers only share live tracking with businesses that sign up for their systems, and copying it from their pages breaks their rules. So we send you to the official page instead, which is always the most up to date. The universal trackers (17TRACK, Parcels, Ship24) show many carriers in one place if you prefer that.</p>
+			<h4>Is my tracking number sent anywhere?</h4>
+			<p>No. Recognising the number, reading barcodes and reading text from a picture all happen in your browser. The number goes only to the tracking site you choose to open. Saved parcels stay in this browser.</p>
+			<h4>Which tracking page should I use for a parcel from abroad?</h4>
+			<p>For an international postal item, the sending country's post shows the first part of the journey and your own post office shows the rest once it arrives. Set <em>Your country</em> above and both are offered.</p>
+			<h4>The number starts with U and nothing shows up.</h4>
+			<p>Numbers starting with U (for example UA123456789CN) are untracked small packets: they usually only get a scan when posted and sometimes when delivered.</p>
+			<p class="tu-note">Related: <a href="/search-engines">Search Engines</a>, <a href="/archive">Archive</a>, <a href="/reminder">Reminder</a>, <a href="/copy-text">Copy Text</a>.</p>
+		</div>
+	</div>

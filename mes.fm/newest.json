@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/tracking",
+   "title": "Package Tracker",
+   "icon": "/img/tracking-logo.png",
+   "desc": "Paste, scan or photograph any tracking number and open the right carrier’s tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
+   "added": "2026-11-16",
+   "kind": "tool"
+  },
+  {
    "href": "/upscale",
    "title": "AI Image Upscaler",
    "icon": "/img/upscale-logo.png",
@@ -189,6 +197,14 @@
   }
  ],
  "latest": [
+  {
+   "href": "/tracking",
+   "title": "Package Tracker",
+   "icon": "/img/tracking-logo.png",
+   "desc": "Paste, scan or photograph any tracking number and open the right carrier’s tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
+   "added": "2026-11-16",
+   "kind": "tool"
+  },
   {
    "href": "/upscale",
    "title": "AI Image Upscaler",

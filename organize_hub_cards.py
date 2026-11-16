@@ -37,7 +37,7 @@ PAGES = {
         ("time", "Time &amp; Focus", ["birthday-personality", "speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar", "reminder", "party", "workout-planner", "birthday"]),
         ("media", "Media &amp; Web", ["seo", "quantum-safe-check", "youtube-thumbnail", "transcript", "stats", "fav", "share", "search", "search-engines", "reverse-image-search", "domain-lookup", "site-traffic", "database", "ping", "polls", "stream-chat", "mic-test", "youtube-audio", "watch", "file-check", "storage", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
         ("money", "Money &amp; Markets", ["signals", "debt-clock", "elections"]),
-        ("home", "Home &amp; Car", ["jump-start"]),
+        ("home", "Home &amp; Car", ["tracking", "jump-start"]),
         ("kids", "Kids &amp; Toddlers", ["kids"]),
         ("games", "Games &amp; Chance", ["chess", "poker", "backgammon", "tic-tac-toe", "minesweeper", "connect-four", "billiards", "nba-picks", "nfl-picks", "mlb-picks", "nhl-picks", "la-liga-picks", "premier-league-picks", "march-madness", "random-number-generator", "dice-roller", "gta"]),
         ("photos", "Photos &amp; Images", ["photo", "darkroom", "draw", "gallery", "3d-studio", "audio", "narration", "compress", "compress-video", "convert-video", "video", "pdf", "pdf-tools", "docx", "text", "excel", "merge-pdf", "image-converter", "upscale", "exif-viewer"]),

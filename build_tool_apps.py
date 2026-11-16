@@ -452,6 +452,14 @@ APPS = {
                           tag="One-tap feeds, bottles and diapers.", accent="#d97706", dark="#a85b04", tint="#fdebd0",
                           desc="Free baby feeding log and breastfeeding timer: tap left or right to time each feed, get a reminder of which side is next, log bottles, pumping and wet or dirty diapers, and see today's totals and the gap between feeds. Private, saved on your phone, no sign-up.",
                           js_v="3"),
+    # MES Package Tracker (2026-11-16, mes.fm/tracking): paste / scan / photograph a tracking number -> the carrier's own tracking page (Royal Mail, USPS, UPS, FedEx, DHL,
+    # Canada Post ... ~55 carriers + universal trackers). lib.js = MESTrack (patterns, UPU S10 / UPS / USPS / FedEx check digits, extract from emails and tracking links;
+    # node: tool_apps_src/tracking-tests.js). No server: live status is not shown on purpose (carriers' APIs need business accounts). Saved parcels in localStorage.
+    "tracking": dict(title="MES Package Tracker", page_title="Package Tracker: Find the Tracking Page for Any Tracking Number",
+                     tag="Paste any tracking number. We find the carrier.", accent="#b45309", dark="#92400e", tint="#fdf0e1",
+                     desc="Free universal package tracker: paste a tracking number, a shipping email or a link, or scan the label, and get the right tracking page for Royal Mail, USPS, UPS, FedEx, DHL, Canada Post, Amazon, Australia Post, China Post and 50 more carriers, with typo checks and a saved list of your parcels.",
+                     meta_desc="Universal package tracker: paste or scan any tracking number and open the right carrier's tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
+                     js_v="1", head_extra='<link rel="search" type="application/opensearchdescription+xml" title="MES Package Tracker" href="https://mes.fm/tracking/opensearch.xml" />'),
     # Archive (2026-10-14): one address -> Wayback Machine, archive.today, Ghostarchive, Megalodon, Arquivo.pt, RemovePaywall, ArcHive (Hive blockchain) + the user's own sites. lib.js = engine table (shared with the
     # MES Archive extension in mes.fm/archive/extension via build_archive_extension.py), tests: node tool_apps_src/archive-tests.js.
     "archive": dict(tools_extra=EXT_TAB, title="MES Archive", page_title="Archive Any Web Page: Wayback Machine, archive.today and More",
