@@ -1,12 +1,12 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { BUCKET_LABEL, BUCKETS, type Bucket, type PlannedMove, type Settings } from '@/lib/strategy/model';
+import { BUCKET_LABEL, BUCKETS, DEFAULT_NODES, type Bucket, type PlannedMove, type Settings } from '@/lib/strategy/model';
 
 const usd0 = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-const COLOR: Record<Bucket, string> = { cash: '#22c55e', tokens: '#a855f7', sov: '#f0b90b' };
+const COLOR: Record<Bucket, string> = { cash: '#22c55e', lp: '#3b82f6', tokens: '#a855f7', sov: '#f0b90b' };
 const W = 600;
-const H = 340;
+const H = 400;
 
 interface Props {
   settings: Settings;
@@ -32,7 +32,7 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
     return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H };
   };
   const pos = (b: Bucket) => ({ x: (d.nodes[b].x / 100) * W, y: (d.nodes[b].y / 100) * H });
-  const radius = (b: Bucket) => 30 + 34 * Math.sqrt(all > 0 ? totals[b] / all : 1 / 3);
+  const radius = (b: Bucket) => 28 + 32 * Math.sqrt(all > 0 ? totals[b] / all : 1 / 4);
 
   const onMove = (e: React.PointerEvent) => {
     if (!drag) return;
@@ -65,10 +65,10 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
         onPointerUp={end}
         onPointerLeave={end}
         onDoubleClick={(e) => {
-          if (e.target === svg.current) onChange({ nodes: { cash: { x: 20, y: 72 }, tokens: { x: 50, y: 18 }, sov: { x: 80, y: 72 } }, labels: {} });
+          if (e.target === svg.current) onChange({ nodes: { ...DEFAULT_NODES }, labels: {} });
         }}
         role="img"
-        aria-label="Cycle of moves between Cash LP, Tokens and Store of Value"
+        aria-label="Cycle of moves between Cash LP, Liquidity, Tokens and Store of Value"
       >
         <defs>
           {BUCKETS.map((b) => (
@@ -77,11 +77,14 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
             </marker>
           ))}
         </defs>
-        {moves.map((p) => {
+        {moves.flatMap((p) => [
+          { p, to: p.move.to, main: true, share: 1 - (p.move.split ? p.move.split.pct / 100 : 0) },
+          ...(p.move.split && p.move.split.pct > 0 ? [{ p, to: p.move.split.to, main: false, share: p.move.split.pct / 100 }] : []),
+        ]).map(({ p, to, main, share }) => {
           const m = p.move;
           const a = pos(m.from);
-          const b = pos(m.to);
-          const key = [m.from, m.to].sort().join('-');
+          const b = pos(to);
+          const key = [m.from, to].sort().join('-');
           const k = pairCount.get(key) ?? 0;
           pairCount.set(key, k + 1);
           const dx = b.x - a.x;
@@ -90,7 +93,7 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
           const ux = dx / len;
           const uy = dy / len;
           const ra = radius(m.from) + 4;
-          const rb = radius(m.to) + 8;
+          const rb = radius(to) + 8;
           const sx = a.x + ux * ra;
           const sy = a.y + uy * ra;
           const ex = b.x - ux * rb;
@@ -98,14 +101,16 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
           const bend = 34 + k * 30;
           const cx = (sx + ex) / 2 - uy * bend;
           const cy = (sy + ey) / 2 + ux * bend;
-          const off = d.labels[m.id] ?? { dx: 0, dy: 0 };
+          const lid = main ? m.id : `${m.id}:${to}`;
+          const off = d.labels[lid] ?? { dx: 0, dy: 0 };
           const lx = (sx + 2 * cx + ex) / 4 + off.dx;
           const ly = (sy + 2 * cy + ey) / 4 + off.dy;
           const changed = Math.abs(p.mult - 1) > 0.02;
-          const line2 = p.skipped ? 'skip this time' : `${usd0(p.usd)} now${changed ? ` (×${p.mult.toFixed(2)})` : ''}`;
+          const line1 = m.kind === 'profit' ? `profit every ${m.everyDays}d` : `${m.ratePct}% every ${m.everyDays}d${share < 1 ? ` · ${Math.round(share * 100)}%` : ''}`;
+          const line2 = p.skipped ? 'skip this time' : `${usd0(p.usd * share)} now${changed ? ` (×${p.mult.toFixed(2)})` : ''}`;
           return (
-            <g key={m.id}>
-              <path d={`M${sx},${sy} Q${cx},${cy} ${ex},${ey}`} fill="none" stroke={COLOR[m.to]} strokeWidth={2 + Math.min(4, p.mult * 1.5)} strokeOpacity={p.skipped ? 0.35 : 0.9} strokeDasharray={p.skipped ? '6 6' : undefined} markerEnd={`url(#arr-${m.to})`} />
+            <g key={lid}>
+              <path d={`M${sx},${sy} Q${cx},${cy} ${ex},${ey}`} fill="none" stroke={COLOR[to]} strokeWidth={2 + Math.min(4, p.mult * 1.5)} strokeOpacity={p.skipped ? 0.35 : 0.9} strokeDasharray={p.skipped ? '6 6' : undefined} markerEnd={`url(#arr-${to})`} />
               <g
                 transform={`translate(${lx},${ly})`}
                 className="cursor-grab"
@@ -113,15 +118,15 @@ export default function CycleDiagram({ settings, totals, all, planned, onChange,
                   (e.target as Element).setPointerCapture?.(e.pointerId);
                   const q = pt(e);
                   setMoved(false);
-                  setDrag({ kind: 'label', id: m.id, sx: q.x, sy: q.y, dx: off.dx, dy: off.dy });
+                  setDrag({ kind: 'label', id: lid, sx: q.x, sy: q.y, dx: off.dx, dy: off.dy });
                 }}
                 onClick={() => {
                   if (!moved) onPickMove(m.id);
                 }}
               >
-                <rect x={-68} y={-21} width={136} height={42} rx={8} fill="rgb(var(--c-panel))" stroke={COLOR[m.to]} strokeOpacity={0.7} />
+                <rect x={-74} y={-21} width={148} height={42} rx={8} fill="rgb(var(--c-panel))" stroke={COLOR[to]} strokeOpacity={0.7} />
                 <text textAnchor="middle" y={-4} fontSize={13} fontWeight={600} fill="rgb(var(--g-100))">
-                  {m.ratePct}% every {m.everyDays}d
+                  {line1}
                 </text>
                 <text textAnchor="middle" y={13} fontSize={12} fill={p.skipped ? 'rgb(var(--g-500))' : 'rgb(var(--g-300))'}>
                   {line2}

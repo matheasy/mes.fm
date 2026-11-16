@@ -7,7 +7,7 @@ import FreshNote from '@/components/FreshNote';
 import { useStoredThenLive } from '@/hooks/useStoredThenLive';
 import { fetchApiResult } from '@/lib/apiFetcher';
 import { BASE_PATH } from '@/lib/basePath';
-import type { BucketSnapshot, SovSnapshot } from '@/lib/types';
+import type { BucketSnapshot, LpSnapshot, SovSnapshot } from '@/lib/types';
 import type { StrategyMarket } from '@/app/api/strategy/market/route';
 import type { StrategyStore } from '@/app/api/strategy/route';
 import CycleDiagram from './CycleDiagram';
@@ -15,6 +15,7 @@ import {
   BUCKET_LABEL,
   BUCKET_LINK,
   BUCKETS,
+  DEFAULT_MOVES,
   DEFAULT_SETTINGS,
   STRATEGY_LABEL,
   backtest,
@@ -23,6 +24,8 @@ import {
   holdingsFrom,
   indicators,
   isoDay,
+  lpStatus,
+  topIssues,
   normTargets,
   normalize,
   plan,
@@ -33,6 +36,10 @@ import {
   weightsOf,
   type Bucket,
   type IndicatorKey,
+  type Leg,
+  type LpInfo,
+  type Note,
+  type Risk,
   type LogEntry,
   type Move,
   type PlannedMove,
@@ -43,11 +50,12 @@ import {
 const LS_SETTINGS = 'mes-strategy:v1';
 const LS_LOG = 'mes-strategy:v1:log';
 const usd0 = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+const cad0 = (v: number) => `${v.toLocaleString('en-CA', { style: 'currency', currency: 'CAD', currencyDisplay: 'narrowSymbol', maximumFractionDigits: 0 })} CAD`;
 const usd2 = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: v < 100 ? 2 : 0 });
 const pct = (v: number, d = 1) => `${(v * 100).toFixed(d)}%`;
 const qty = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: n >= 100 ? 2 : n >= 1 ? 4 : 6 });
-const COLOR: Record<Bucket, string> = { cash: '#22c55e', tokens: '#a855f7', sov: '#f0b90b' };
-const SCOLOR: Record<Strategy, string> = { hold: '#8a94a6', cycle: '#3b82f6', signals: '#f0b90b', rebalance: '#ef4444' };
+const COLOR: Record<Bucket, string> = { cash: '#22c55e', lp: '#3b82f6', tokens: '#a855f7', sov: '#f0b90b' };
+const SCOLOR: Record<Strategy, string> = { hold: '#8a94a6', cycle: '#06b6d4', signals: '#f0b90b', rebalance: '#ef4444' };
 const tipStyle = {
   contentStyle: { background: 'rgb(var(--c-panel))', border: '1px solid rgb(var(--c-border))', borderRadius: 8, color: 'rgb(var(--g-100))' },
   itemStyle: { color: 'rgb(var(--g-100))' },
@@ -131,14 +139,34 @@ function AllocationBar({ w, label }: { w: Record<Bucket, number>; label: string 
 
 /* ------------------------------------------------------------------ one move card */
 
-function MoveCard({ p, onDone, onSkip }: { p: PlannedMove; onDone: (usd: number, note: string) => void; onSkip: () => void }) {
+const NOTE_STYLE: Record<Note['tone'], { cls: string; icon: string }> = {
+  warn: { cls: 'border-loss/40 bg-loss/10 text-gray-100', icon: '⚠' },
+  tip: { cls: 'border-gain/40 bg-gain/10 text-gray-100', icon: '✓' },
+  info: { cls: 'border-bg-border bg-bg/40 text-gray-300', icon: 'i' },
+};
+
+function Notes({ notes }: { notes: Note[] }) {
+  if (!notes.length) return null;
+  return (
+    <ul className="flex flex-col gap-1.5">
+      {notes.map((n, i) => (
+        <li key={i} className={`flex gap-2 rounded-md border px-2.5 py-1.5 text-xs leading-relaxed ${NOTE_STYLE[n.tone].cls}`}>
+          <span className="font-bold" aria-hidden="true">{NOTE_STYLE[n.tone].icon}</span>
+          <span>{n.text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function MoveCard({ p, risk, onDone, onSkip }: { p: PlannedMove; risk: Risk; onDone: (usd: number, note: string) => void; onSkip: () => void }) {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [open, setOpen] = useState(false);
   const m = p.move;
   const due = p.dueInDays <= 0;
-  const dir = p.signal > 0.05 ? 'bigger' : p.signal < -0.05 ? 'smaller' : 'normal';
-  const strength = Math.abs(p.signal) >= 0.6 ? 'Strong' : Math.abs(p.signal) >= 0.25 ? 'Moderate' : 'Weak';
+  const groups = new Map<Bucket, Leg[]>();
+  for (const l of p.buys) groups.set(l.bucket ?? m.to, [...(groups.get(l.bucket ?? m.to) ?? []), l]);
   return (
     <div className={`panel flex flex-col gap-3 ${due && !p.skipped ? 'border-accent/70' : ''}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -146,9 +174,15 @@ function MoveCard({ p, onDone, onSkip }: { p: PlannedMove; onDone: (usd: number,
           <p className="text-base font-semibold text-gray-100">
             <a href={BUCKET_LINK[m.from]} className="hover:text-accent">{BUCKET_LABEL[m.from]}</a> &rarr;{' '}
             <a href={BUCKET_LINK[m.to]} className="hover:text-accent">{BUCKET_LABEL[m.to]}</a>
+            {m.split && m.split.pct > 0 && (
+              <>
+                {' '}+ <a href={BUCKET_LINK[m.split.to]} className="hover:text-accent">{BUCKET_LABEL[m.split.to]}</a>
+              </>
+            )}
           </p>
           <p className="text-xs text-gray-400">
-            {m.ratePct}% of {usd0(p.eligibleUsd)} every {m.everyDays} days · {p.lastDone ? `last done ${p.lastDone}` : 'not done yet'}
+            {m.kind === 'profit' ? `the profit of ${BUCKET_LABEL[m.from]}` : `${m.ratePct}% of ${usd0(p.eligibleUsd)}`}
+            {m.split && m.split.pct > 0 ? ` (${100 - m.split.pct}% / ${m.split.pct}%)` : ''} every {m.everyDays} days · {p.lastDone ? `last done ${p.lastDone}` : 'not done yet'}
           </p>
         </div>
         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${due ? 'bg-accent/20 text-accent' : 'bg-bg-border/60 text-gray-300'}`}>
@@ -162,10 +196,12 @@ function MoveCard({ p, onDone, onSkip }: { p: PlannedMove; onDone: (usd: number,
         <>
           <div className="flex flex-wrap items-baseline gap-x-3">
             <p className="text-3xl font-semibold tabular-nums text-gray-100">{usd0(p.usd)}</p>
-            <p className="text-sm text-gray-400">
-              plan&apos;s normal size {usd0(p.baseUsd)}
-              {Math.abs(p.mult - 1) > 0.01 && <> · ×{p.mult.toFixed(2)}</>}
-            </p>
+            {m.kind === 'pct' && (
+              <p className="text-sm text-gray-400">
+                normal size {usd0(p.baseUsd)}
+                {Math.abs(p.mult - 1) > 0.01 && <> · ×{p.mult.toFixed(2)}</>}
+              </p>
+            )}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -181,37 +217,45 @@ function MoveCard({ p, onDone, onSkip }: { p: PlannedMove; onDone: (usd: number,
             </div>
             <div>
               <p className="stat-label mb-1">Buy (after ~fees)</p>
-              <ul className="flex flex-col gap-1 text-sm">
-                {p.buys.length ? (
-                  p.buys.map((l) => (
-                    <li key={l.key} className="flex justify-between gap-2 border-b border-bg-border/60 py-0.5">
-                      <span className="text-gray-200">{l.amount != null ? `${qty(l.amount)} ${l.key}` : l.key}</span>
-                      <span className="tabular-nums text-gray-300">{usd2(l.usd)}</span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-gray-400">Pick where it goes under Settings &rarr; Where bought value goes</li>
-                )}
-              </ul>
+              {p.buys.length ? (
+                [...groups.entries()].map(([b, legs]) => (
+                  <div key={b} className="mb-1">
+                    {groups.size > 1 && <p className="text-xs text-gray-500">{BUCKET_LABEL[b]}</p>}
+                    <ul className="flex flex-col gap-1 text-sm">
+                      {legs.map((l) => (
+                        <li key={`${b}-${l.key}`} className="flex justify-between gap-2 border-b border-bg-border/60 py-0.5">
+                          <span className="text-gray-200">{l.amount != null ? `${qty(l.amount)} ${l.key}` : l.key}</span>
+                          <span className="tabular-nums text-gray-300">{usd2(l.usd)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-400">Pick where it goes under Settings &rarr; Where bought value goes</p>
+              )}
             </div>
           </div>
         </>
       )}
 
-      {p.reasons.length > 0 && (
-        <div className="flex flex-wrap gap-2 text-xs">
+      {p.reasons.length > 0 && !p.skipped && (
+        <div className="flex flex-col gap-1 text-xs">
           {p.reasons.map((r) => (
-            <span key={r.label} className={`rounded-full border px-2 py-0.5 ${r.mult > 1.01 ? 'border-gain/50 text-gain' : r.mult < 0.99 ? 'border-loss/50 text-loss' : 'border-bg-border text-gray-400'}`}>
-              {r.label} ×{r.mult.toFixed(2)}
-            </span>
+            <p key={r.label} className="text-gray-300">
+              <span className={`mr-1 rounded-full border px-2 py-0.5 font-semibold ${r.mult > 1.01 ? 'border-gain/50 text-gain' : r.mult < 0.99 ? 'border-loss/50 text-loss' : 'border-bg-border text-gray-400'}`}>
+                {r.label}: {r.mult > 1.01 ? `+${Math.round((r.mult - 1) * 100)}%` : r.mult < 0.99 ? `−${Math.round((1 - r.mult) * 100)}%` : 'no change'}
+              </span>
+              {r.why}
+              {r.label === 'Market mood' && risk.used > 0 && (
+                <span className="text-gray-500"> ({risk.agreeCount} of {risk.used} signals agree)</span>
+              )}
+            </p>
           ))}
-          {m.tilt && (
-            <span className="rounded-full border border-bg-border px-2 py-0.5 text-gray-300" title="How many of the market signals point the same way. It is NOT a chance of profit.">
-              Signals: {strength} {dir === 'normal' ? '(no change)' : `→ ${dir}`} · {Math.round(p.agreement * 100)}% agree
-            </span>
-          )}
         </div>
       )}
+
+      <Notes notes={p.notes} />
 
       <div className="flex flex-wrap items-center gap-2">
         {!p.skipped && (
@@ -242,6 +286,7 @@ export default function StrategyPage() {
   const cash = useStoredThenLive<BucketSnapshot>('/api/cash');
   const tokens = useStoredThenLive<BucketSnapshot>('/api/tokens');
   const sov = useStoredThenLive<SovSnapshot>('/api/sov');
+  const lpq = useStoredThenLive<LpSnapshot>('/api/lp');
   const market = useSWR(`${BASE_PATH}/api/strategy/market`, (u: string) => fetchApiResult<StrategyMarket>(u), { revalidateOnFocus: false });
   const store = useSWR(`${BASE_PATH}/api/strategy`, (u: string) => fetchApiResult<StrategyStore | null>(u), { revalidateOnFocus: false });
 
@@ -295,28 +340,55 @@ export default function StrategyPage() {
 
   const holdings = useMemo(() => {
     if (!cash.data || !tokens.data || !sov.data) return null;
-    return holdingsFrom(
-      cash.data.items.map((i) => ({ key: i.key, name: i.name, valueUsd: i.valueUsd, amount: i.amount })),
-      tokens.data.items.map((i) => ({ key: i.key, name: i.name, valueUsd: i.valueUsd, amount: i.amount })),
-      sov.data.assets.map((a) => ({ key: a.asset, name: a.asset, valueUsd: a.valueUsd, amount: a.amount })),
-    );
-  }, [cash.data, tokens.data, sov.data]);
+    return holdingsFrom({
+      cash: cash.data.items.map((i) => ({ key: i.key, name: i.name, valueUsd: i.valueUsd, amount: i.amount })),
+      lp: lpq.data ? [{ key: 'ETH/BNB LP', name: lpq.data.positions[0]?.label ?? 'Liquidity position', valueUsd: lpq.data.totalUsd, amount: null }] : [],
+      tokens: tokens.data.items.map((i) => ({ key: i.key, name: i.name, valueUsd: i.valueUsd, amount: i.amount })),
+      sov: sov.data.assets.map((a) => ({ key: a.asset, name: a.asset, valueUsd: a.valueUsd, amount: a.amount })),
+    });
+  }, [cash.data, tokens.data, sov.data, lpq.data]);
+
+  const lpInfo = useMemo<LpInfo | null>(() => {
+    const d = lpq.data;
+    if (!d) return null;
+    const legs = new Map<string, { symbol: string; valueUsd: number; amount: number }>();
+    for (const pos of d.positions)
+      for (const l of pos.legs) {
+        const sym = l.symbol === 'WBNB' ? 'BNB' : l.symbol === 'WETH' ? 'ETH' : l.symbol;
+        const x = legs.get(sym) ?? { symbol: sym, valueUsd: 0, amount: 0 };
+        x.valueUsd += l.valueUsd ?? 0;
+        x.amount += l.amount;
+        legs.set(sym, x);
+      }
+    const details = d.positions.map((x) => (x.detail ?? '').toLowerCase());
+    const inRange = details.some((t) => t.includes('out of range')) ? false : details.some((t) => t.includes('in range')) ? true : null;
+    return { valueUsd: d.totalUsd, cadRate: d.cadRate ?? cash.data?.cadRate ?? null, inRange, legs: [...legs.values()] };
+  }, [lpq.data, cash.data]);
 
   const inds = useMemo(() => (market.data ? indicators(market.data.inputs) : []), [market.data]);
   const risk = useMemo(() => riskScore(inds, settings.weights), [inds, settings.weights]);
   const stance = stanceOf(risk.score);
-  const planned = useMemo(() => (holdings ? plan(holdings, settings, inds, log) : []), [holdings, settings, inds, log]);
+  const planned = useMemo(() => (holdings ? plan(holdings, settings, inds, log, { lp: lpInfo }) : []), [holdings, settings, inds, log, lpInfo]);
+  const lps = useMemo(() => lpStatus(settings, log, lpInfo), [settings, log, lpInfo]);
+  const issues = holdings ? topIssues(holdings, settings, planned, risk, lpInfo, lps) : [];
   const sorted = [...planned].sort((a, b) => a.dueInDays - b.dueInDays);
   const w = holdings ? weightsOf(holdings) : null;
-  const ss = steadyState(settings.moves);
-  const half = halfLifeMonths(settings.moves);
+  // Liquidity only gives back its profit, so with flat prices it would soak everything up: leave it out
+  const loopMoves = settings.moves.filter((m) => m.from !== 'lp' && m.to !== 'lp').map((m) => (m.split?.to === 'lp' ? { ...m, split: null } : m));
+  const ss = (() => {
+    const r = steadyState(loopMoves);
+    if (!r) return null;
+    const t = r.cash + r.tokens + r.sov || 1;
+    return { cash: r.cash / t, lp: 0, tokens: r.tokens / t, sov: r.sov / t };
+  })();
+  const half = halfLifeMonths(loopMoves);
   const targets = normTargets(settings.targets);
 
   const proj = useMemo(() => {
     if (!holdings) return [];
     return project(holdings.total, settings.moves, 36).map((r) => {
-      const t = r.cash + r.tokens + r.sov || 1;
-      return { m: r.m, cash: (r.cash / t) * 100, tokens: (r.tokens / t) * 100, sov: (r.sov / t) * 100 };
+      const t = r.cash + r.lp + r.tokens + r.sov || 1;
+      return { m: r.m, cash: (r.cash / t) * 100, lp: (r.lp / t) * 100, tokens: (r.tokens / t) * 100, sov: (r.sov / t) * 100 };
     });
   }, [holdings, settings.moves]);
 
@@ -342,19 +414,22 @@ export default function StrategyPage() {
     const tokMix = mixOf('tokens');
     const sovLine = basket(days, series, Object.keys(sovMix).length ? sovMix : { BTC: 1 });
     const tokLine = basket(days, series, Object.keys(tokMix).length ? tokMix : { HIVE: 1 });
+    const lpMix: Record<string, number> = {};
+    for (const l of lpInfo?.legs ?? []) if (series[l.symbol]) lpMix[l.symbol] = l.valueUsd;
+    const lpLine = basket(days, series, Object.keys(lpMix).length ? lpMix : { ETH: 1, BNB: 1 });
     const btc = basket(days, series, { BTC: 1 });
-    if (!sovLine || !tokLine || !btc) return null;
+    if (!sovLine || !tokLine || !btc || !lpLine) return null;
     const hiveBtc = days.map((d) => { const hv = series.HIVE?.[d]; const bv = series.BTC?.[d]; return hv && bv ? hv / bv : NaN; });
     for (let i = 0; i < hiveBtc.length; i++) if (!Number.isFinite(hiveBtc[i])) hiveBtc[i] = i ? hiveBtc[i - 1]! : 1;
-    const inp = { days, sov: sovLine, tokens: tokLine, btc, hiveBtc, fng: md.fng.slice(start) };
+    const inp = { days, sov: sovLine, tokens: tokLine, lp: lpLine, btc, hiveBtc, fng: md.fng.slice(start) };
     const strategies: Strategy[] = ['hold', 'cycle', 'signals', 'rebalance'];
     const results = strategies.map((s) => backtest(inp, w, settings, s));
     const step = Math.max(1, Math.floor(days.length / 260));
     const chart = days
       .map((d, i) => ({ d, ...Object.fromEntries(results.map((r) => [r.strategy, Math.round(r.values[i] ?? 0)])) }))
       .filter((_, i) => i % step === 0 || i === days.length - 1);
-    return { results, chart, from: days[0], mixes: { sov: Object.keys(sovMix), tokens: Object.keys(tokMix) } };
-  }, [market.data, holdings, w, settings, btYears]);
+    return { results, chart, from: days[0], mixes: { sov: Object.keys(sovMix), tokens: Object.keys(tokMix), lp: Object.keys(lpMix) } };
+  }, [market.data, holdings, w, settings, btYears, lpInfo]);
 
   // review numbers
   const biggest = holdings ? [...holdings.items].sort((a, b) => b.valueUsd - a.valueUsd)[0] : null;
@@ -365,12 +440,15 @@ export default function StrategyPage() {
   };
   const monthlyFlows = planned.reduce<Record<Bucket, number>>(
     (acc, p) => {
+      if (p.move.kind === 'profit') return acc;
       const f = 30 / p.move.everyDays;
+      const s2 = p.move.split ? p.move.split.pct / 100 : 0;
       acc[p.move.from] -= p.baseUsd * f;
-      acc[p.move.to] += p.baseUsd * f;
+      acc[p.move.to] += p.baseUsd * f * (1 - s2);
+      if (p.move.split) acc[p.move.split.to] += p.baseUsd * f * s2;
       return acc;
     },
-    { cash: 0, tokens: 0, sov: 0 },
+    { cash: 0, lp: 0, tokens: 0, sov: 0 },
   );
 
   const pickMove = (id: string) => {
@@ -384,13 +462,20 @@ export default function StrategyPage() {
 
   const setMove = (id: string, patch: Partial<Move>) => update((s) => ({ ...s, moves: s.moves.map((m) => (m.id === id ? { ...m, ...patch } : m)) }));
   const loadingData = cash.isLoading || tokens.isLoading || sov.isLoading;
+  const newId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  const doneEntry = (p: PlannedMove, usd: number, note: string): LogEntry => {
+    const m = p.move;
+    const toLp = m.to === 'lp' ? usd : m.split?.to === 'lp' ? (usd * m.split.pct) / 100 : 0;
+    return { id: newId(), moveId: m.id, date: isoDay(Date.now()), usd, from: m.from, to: m.to, cad: lpInfo?.cadRate ?? cash.data?.cadRate ?? undefined, lpUsd: toLp || undefined, note: note || undefined };
+  };
   const dataErr = (!cash.data && cash.error) || (!tokens.data && tokens.error) || (!sov.data && sov.error);
 
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-gray-400">
-        Your rotation <b className="text-gray-200">Cash LP → Tokens → Store of Value → Cash LP</b> as a dated to-do list, sized from today&apos;s balances on{' '}
+        Your rotation <b className="text-gray-200">Cash LP → Tokens / Liquidity → Store of Value → Cash LP</b> as a dated to-do list, sized from today&apos;s balances on{' '}
         <a href="https://mes.fm/cash" className="text-accent hover:underline">Cash LP</a>,{' '}
+        <a href="https://mes.fm/lp" className="text-accent hover:underline">Liquidity</a>,{' '}
         <a href="https://mes.fm/tokens" className="text-accent hover:underline">Tokens</a> and{' '}
         <a href="https://mes.fm/sov" className="text-accent hover:underline">Store of Value</a>, with optional nudges from market signals (also on{' '}
         <a href="https://mes.fm/signals" className="text-accent hover:underline">mes.fm/signals</a>) and your target mix. It is a rules calculator, not a prediction, and not financial advice: you
@@ -402,7 +487,7 @@ export default function StrategyPage() {
         <div className="panel flex flex-col gap-3 lg:col-span-2">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="stat-label">Followed sections</p>
-            <FreshNote savedAt={cash.savedAt ?? tokens.savedAt ?? sov.savedAt} updating={cash.updating || tokens.updating || sov.updating} error={null} />
+            <FreshNote savedAt={cash.savedAt ?? tokens.savedAt ?? sov.savedAt ?? lpq.savedAt} updating={cash.updating || tokens.updating || sov.updating || lpq.updating} error={null} />
           </div>
           {loadingData && !holdings && <p className="text-sm text-gray-400">Loading your balances…</p>}
           {dataErr && !holdings && <p className="text-sm text-loss">{dataErr}</p>}
@@ -411,7 +496,7 @@ export default function StrategyPage() {
               <p className="text-3xl font-semibold tabular-nums text-gray-100">{usd0(holdings.all)}</p>
               <AllocationBar w={w} label="Now" />
               {settings.useTargets && <AllocationBar w={targets} label="Your targets" />}
-              {ss && <AllocationBar w={ss} label="Where your % rates settle on their own (prices flat)" />}
+              {ss && <AllocationBar w={ss} label="Where your % rates settle on their own (prices flat, Liquidity left out)" />}
               <div className="flex flex-wrap gap-4 text-xs text-gray-400">
                 {BUCKETS.map((b) => (
                   <span key={b} className="flex items-center gap-1">
@@ -431,11 +516,23 @@ export default function StrategyPage() {
             <>
               <p className={`text-lg font-semibold ${stance.tone === 'buy' ? 'text-gain' : stance.tone === 'sell' ? 'text-loss' : 'text-gray-100'}`}>{stance.label}</p>
               <Bar value={risk.score} />
+              <p className="text-sm text-gray-300">{stance.plain}</p>
               <p className="text-xs text-gray-400">
-                Score {risk.score >= 0 ? '+' : ''}
-                {risk.score.toFixed(2)} (−1 greed … +1 fear) · {Math.round(risk.agreement * 100)}% of the {risk.used} signals agree. Agreement is how much the signals point the same way, not a
-                chance of profit.
+                {risk.agreeCount} of {risk.used} signals agree.
               </p>
+              <details className="text-xs text-gray-400">
+                <summary className="cursor-pointer text-gray-300 hover:text-accent">What does "market mood" mean?</summary>
+                <div className="mt-1 flex flex-col gap-1.5">
+                  <p>
+                    A few public numbers (fear &amp; greed, Bitcoin vs its average price, how far it is below its record ...) are combined into one reading from greedy (left) to fearful (right).
+                  </p>
+                  <p>
+                    The old rule of thumb: buy when others are scared, take profits when they are greedy. So in a fearful market the plan makes <b>buys</b> a bit bigger and <b>sales</b> a bit
+                    smaller, and the other way round when people are greedy. At most ±{Math.round(settings.tiltStrength * 100)}% (change it under the signals list).
+                  </p>
+                  <p>&quot;3 of 5 agree&quot; only says how many readings point the same way. It is not a chance of making money: markets can stay scared, or greedy, for months.</p>
+                </div>
+              </details>
               <a href="https://mes.fm/signals" className="text-xs text-accent hover:underline">
                 All market signals →
               </a>
@@ -443,6 +540,45 @@ export default function StrategyPage() {
           )}
         </div>
       </div>
+
+      {/* ---------------------------------------------------- do these first */}
+      {issues.length > 0 && (
+        <section className="panel flex flex-col gap-2 border-accent/60">
+          <p className="stat-label">Do these first</p>
+          <ol className="flex flex-col gap-2">
+            {issues.map((it, i) => (
+              <li key={it.title} className={`flex gap-3 rounded-lg border px-3 py-2 ${it.tone === 'warn' ? 'border-loss/40 bg-loss/10' : 'border-gain/40 bg-gain/10'}`}>
+                <span className={`mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full text-xs font-bold ${it.tone === 'warn' ? 'bg-loss text-white' : 'bg-gain text-white'}`}>{i + 1}</span>
+                <span className="text-sm">
+                  <b className="text-gray-100">{it.title}.</b> <span className="text-gray-300">{it.text}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {lpInfo && (
+        <a href="https://mes.fm/lp" className="panel flex flex-col gap-2 transition hover:border-accent">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="stat-label">Liquidity profit · ETH/BNB on PancakeSwap</p>
+            <span className={`text-xs font-semibold ${lpInfo.inRange === false ? 'text-loss' : 'text-gray-400'}`}>
+              {lpInfo.inRange === false ? 'OUT OF RANGE · earning no fees' : lpInfo.inRange ? 'In range · earning fees' : ''}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+            <p className={`text-3xl font-semibold tabular-nums ${lps.profitCad == null ? 'text-gray-100' : lps.profitCad >= 0 ? 'text-gain' : 'text-loss'}`}>
+              {lps.profitCad == null ? '—' : `${lps.profitCad >= 0 ? '+' : '−'}${cad0(Math.abs(lps.profitCad))}`}
+              {lps.profitPct != null && <span className="ml-2 text-lg">({lps.profitPct >= 0 ? '+' : ''}{(lps.profitPct * 100).toFixed(1)}%)</span>}
+            </p>
+            <p className="text-sm text-gray-400">
+              worth {lps.valueCad != null ? cad0(lps.valueCad) : '—'} ({usd0(lpInfo.valueUsd)}) · put in {cad0(lps.basisCad)}
+              {Math.abs(lps.basisCad - settings.lpBasisCad) > 0.5 && <> ({cad0(settings.lpBasisCad)} at the start + moves you logged)</>}
+            </p>
+          </div>
+          <p className="text-xs text-gray-500">Value includes unharvested CAKE. The cost is in CAD; change the starting amount under Settings.</p>
+        </a>
+      )}
 
       {/* ---------------------------------------------------- moves */}
       <section className="flex flex-col gap-3">
@@ -453,13 +589,14 @@ export default function StrategyPage() {
           </p>
         </div>
         {!holdings && <p className="text-sm text-gray-400">The moves appear once your balances have loaded.</p>}
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           {sorted.map((p) => (
             <MoveCard
               key={p.move.id}
               p={p}
-              onDone={(usd, note) => addLog({ id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, moveId: p.move.id, date: isoDay(Date.now()), usd, from: p.move.from, to: p.move.to, note: note || undefined })}
-              onSkip={() => addLog({ id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, moveId: p.move.id, date: isoDay(Date.now()), usd: 0, from: p.move.from, to: p.move.to, skipped: true })}
+              risk={risk}
+              onDone={(usd, note) => addLog(doneEntry(p, usd, note))}
+              onSkip={() => addLog({ id: newId(), moveId: p.move.id, date: isoDay(Date.now()), usd: 0, from: p.move.from, to: p.move.to, skipped: true })}
             />
           ))}
         </div>
@@ -481,7 +618,8 @@ export default function StrategyPage() {
                 <span className="tabular-nums text-gray-100">{i.value}</span>
               </div>
               <Bar value={i.score} />
-              <p className="text-xs text-gray-400">{i.note}</p>
+              <p className="text-sm text-gray-300">{i.plain}</p>
+              <p className="text-xs text-gray-500">{i.note}</p>
               <Slider label="Weight" value={settings.weights[i.key]} min={0} max={3} step={0.25} onChange={(v) => update((s) => ({ ...s, weights: { ...s.weights, [i.key as IndicatorKey]: v } }))} fmt={(v) => (v === 0 ? 'off' : `${v}×`)} />
             </div>
           ))}
@@ -508,15 +646,16 @@ export default function StrategyPage() {
             <div>
               <p className="mb-2 text-sm font-semibold text-gray-200">Moves</p>
               <div className="overflow-x-auto">
-                <table className="data-table min-w-[620px]">
+                <table className="data-table min-w-[820px]">
                   <thead>
                     <tr>
                       <th>On</th>
                       <th>From</th>
                       <th>To</th>
-                      <th>% each time</th>
+                      <th>Also to (share)</th>
+                      <th>How much</th>
                       <th>Every (days)</th>
-                      <th>Signals</th>
+                      <th>Market mood</th>
                       <th />
                     </tr>
                   </thead>
@@ -541,13 +680,33 @@ export default function StrategyPage() {
                           </select>
                         </td>
                         <td>
-                          <input type="number" className={`${inputCls} w-20`} min={0} max={50} step={0.25} value={m.ratePct} onChange={(e) => setMove(m.id, { ratePct: Number(e.target.value) })} />
+                          <div className="flex items-center gap-1">
+                            <select className={inputCls} value={m.split?.to ?? ''} onChange={(e) => setMove(m.id, { split: e.target.value ? { to: e.target.value as Bucket, pct: m.split?.pct ?? 50 } : null })} aria-label="Second destination">
+                              <option value="">—</option>
+                              {BUCKETS.filter((b) => b !== m.from && b !== m.to).map((b) => (
+                                <option key={b} value={b}>{BUCKET_LABEL[b]}</option>
+                              ))}
+                            </select>
+                            {m.split && (
+                              <input type="number" className={`${inputCls} w-16`} min={0} max={100} step={5} value={m.split.pct} onChange={(e) => setMove(m.id, { split: { to: m.split!.to, pct: Number(e.target.value) } })} aria-label="Share to the second destination, %" />
+                            )}
+                            {m.split && <span className="text-xs text-gray-500">%</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-1">
+                            <select className={inputCls} value={m.kind} onChange={(e) => setMove(m.id, { kind: e.target.value as Move['kind'], tilt: e.target.value === 'profit' ? false : m.tilt })} aria-label="Kind of move">
+                              <option value="pct">% of it</option>
+                              <option value="profit">its profit</option>
+                            </select>
+                            {m.kind === 'pct' && <input type="number" className={`${inputCls} w-20`} min={0} max={50} step={0.25} value={m.ratePct} onChange={(e) => setMove(m.id, { ratePct: Number(e.target.value) })} aria-label="Percent each time" />}
+                          </div>
                         </td>
                         <td>
                           <input type="number" className={`${inputCls} w-20`} min={1} max={365} value={m.everyDays} onChange={(e) => setMove(m.id, { everyDays: Number(e.target.value) })} />
                         </td>
                         <td>
-                          <input type="checkbox" checked={m.tilt} onChange={(e) => setMove(m.id, { tilt: e.target.checked })} aria-label="Let signals change this move" />
+                          <input type="checkbox" checked={m.tilt} disabled={m.kind === 'profit'} onChange={(e) => setMove(m.id, { tilt: e.target.checked })} aria-label="Let market mood change this move" />
                         </td>
                         <td>
                           <button type="button" className="text-xs text-gray-400 hover:text-loss" onClick={() => update((s) => ({ ...s, moves: s.moves.filter((x) => x.id !== m.id) }))}>
@@ -560,11 +719,11 @@ export default function StrategyPage() {
                 </table>
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
-                <button type="button" className={btnCls} onClick={() => update((s) => ({ ...s, moves: [...s.moves, { id: `m${Date.now().toString(36)}`, from: 'cash', to: 'sov', ratePct: 2, everyDays: 30, tilt: true, on: true }] }))}>
+                <button type="button" className={btnCls} onClick={() => update((s) => ({ ...s, moves: [...s.moves, { id: `m${Date.now().toString(36)}`, kind: 'pct', from: 'cash', to: 'sov', split: null, ratePct: 2, everyDays: 30, tilt: true, on: true }] }))}>
                   + Add a move
                 </button>
-                <button type="button" className={btnCls} onClick={() => update((s) => ({ ...s, moves: DEFAULT_SETTINGS.moves.map((m) => ({ ...m })) }))}>
-                  Back to 4% / 3% / 2%
+                <button type="button" className={btnCls} onClick={() => update((s) => ({ ...s, moves: DEFAULT_MOVES.map((m) => ({ ...m, split: m.split ? { ...m.split } : null })) }))}>
+                  Back to the starting moves
                 </button>
               </div>
             </div>
@@ -575,7 +734,7 @@ export default function StrategyPage() {
                 <label className="flex items-center gap-2 text-sm text-gray-300">
                   <input type="checkbox" checked={settings.useTargets} onChange={(e) => update((s) => ({ ...s, useTargets: e.target.checked }))} /> Nudge moves toward a target mix
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {BUCKETS.map((b) => (
                     <label key={b} className="flex flex-col gap-1 text-xs text-gray-400">
                       {BUCKET_LABEL[b]} %
@@ -584,7 +743,7 @@ export default function StrategyPage() {
                   ))}
                 </div>
                 {ss && (
-                  <button type="button" className={`${btnCls} self-start`} onClick={() => update((s) => ({ ...s, targets: { cash: Math.round(ss.cash * 100), tokens: Math.round(ss.tokens * 100), sov: Math.round(ss.sov * 100) } }))}>
+                  <button type="button" className={`${btnCls} self-start`} onClick={() => update((s) => ({ ...s, targets: { cash: Math.round(ss.cash * 100), lp: s.targets.lp, tokens: Math.round(ss.tokens * 100), sov: Math.round(ss.sov * 100) } }))}>
                     Use the mix my rates settle at
                   </button>
                 )}
@@ -606,6 +765,24 @@ export default function StrategyPage() {
                   Cash interest a year (HBD savings %, backtest)
                   <input type="number" className={inputCls} min={0} max={50} step={0.5} value={settings.cashAprPct} onChange={(e) => update((s) => ({ ...s, cashAprPct: Number(e.target.value) }))} />
                 </label>
+                <label className="flex flex-col gap-1 text-xs text-gray-400">
+                  Put into Liquidity at the start (CAD)
+                  <input type="number" className={inputCls} min={0} step={0.01} value={settings.lpBasisCad} onChange={(e) => update((s) => ({ ...s, lpBasisCad: Number(e.target.value) }))} />
+                </label>
+                <label className="flex flex-col gap-1 text-xs text-gray-400">
+                  Store of Value sales come from
+                  <select className={inputCls} value={settings.sovSell} onChange={(e) => update((s) => ({ ...s, sovSell: e.target.value as Settings['sovSell'] }))}>
+                    <option value="spread">every coin, by size</option>
+                    <option value="biggest">the biggest coin first</option>
+                  </select>
+                </label>
+                <label className="col-span-2 flex items-center gap-2 text-sm text-gray-300">
+                  <input type="checkbox" checked={settings.sovLevel} onChange={(e) => update((s) => ({ ...s, sovLevel: e.target.checked }))} /> Level Store of Value: buys go to its smallest coin first
+                </label>
+                <label className="col-span-2 flex flex-col gap-1 text-xs text-gray-400">
+                  Next Store of Value coins, once level (reminder)
+                  <input className={inputCls} defaultValue={settings.sovNext} onBlur={(e) => update((s) => ({ ...s, sovNext: e.target.value }))} />
+                </label>
                 <label className="col-span-2 flex flex-col gap-1 text-xs text-gray-400">
                   Never sell (comma separated)
                   <input className={inputCls} defaultValue={settings.keep.join(', ')} onBlur={(e) => update((s) => ({ ...s, keep: e.target.value.split(',').map((x) => x.trim()).filter(Boolean) }))} />
@@ -615,9 +792,9 @@ export default function StrategyPage() {
 
             <div>
               <p className="mb-1 text-sm font-semibold text-gray-200">Where bought value goes</p>
-              <p className="mb-2 text-xs text-gray-400">Shares per section, e.g. Tokens: HIVE 70, ETH 30. Leave a section empty to spread buys over what you already hold there (worth ${settings.minHoldingUsd}+).</p>
+              <p className="mb-2 text-xs text-gray-400">Shares per section, e.g. Tokens: HIVE 70, ETH 30. Leave a section empty to spread buys over what you already hold there (worth ${settings.minHoldingUsd}+). Liquidity always buys its own two coins; with levelling on, Store of Value buys go to the smallest coin listed (add XMR or PAXG here when it is time: it gets the buys until it catches up).</p>
               <div className="grid gap-3 md:grid-cols-3">
-                {BUCKETS.map((b) => (
+                {BUCKETS.filter((b) => b !== 'lp').map((b) => (
                   <DestEditor key={b} bucket={b} value={settings.dest[b]} suggestions={holdings?.items.filter((h) => h.bucket === b).map((h) => h.key) ?? []} onChange={(v) => update((s) => ({ ...s, dest: { ...s.dest, [b]: v } }))} />
                 ))}
               </div>
@@ -642,10 +819,10 @@ export default function StrategyPage() {
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm text-gray-300">
             {ss && (
               <li>
-                Left alone with flat prices, your rates settle at <b className="text-gray-100">{pct(ss.cash, 0)} Cash LP / {pct(ss.tokens, 0)} Tokens / {pct(ss.sov, 0)} Store of Value</b>
+                Left alone with flat prices, the Cash LP → Tokens → Store of Value → Cash LP loop settles at <b className="text-gray-100">{pct(ss.cash, 0)} Cash LP / {pct(ss.tokens, 0)} Tokens / {pct(ss.sov, 0)} Store of Value</b>
                 {half ? <>, closing half of any gap in about {half} months</> : null}. A fixed-% cycle always has such a resting mix: each section ends up in proportion to 1 ÷ the rate leaving it. Right
-                now you are at {pct(w.cash, 0)} / {pct(w.tokens, 0)} / {pct(w.sov, 0)}, so per month the plan moves about{' '}
-                {BUCKETS.map((b) => `${monthlyFlows[b] >= 0 ? '+' : '−'}${usd0(Math.abs(monthlyFlows[b]))} ${BUCKET_LABEL[b]}`).join(', ')}.
+                now you are at {pct(w.cash, 0)} / {pct(w.tokens, 0)} / {pct(w.sov, 0)} (+ {pct(w.lp, 0)} Liquidity), so per month the plan moves about{' '}
+                {BUCKETS.map((b) => `${monthlyFlows[b] >= 0 ? '+' : '−'}${usd0(Math.abs(monthlyFlows[b]))} ${BUCKET_LABEL[b]}`).join(', ')} (not counting the Liquidity profit sweep).
                 {ss.sov < w.sov - 0.05 && (
                   <> That means it is slowly <b className="text-gray-100">shrinking Store of Value</b> toward {pct(ss.sov, 0)}. If you want Store of Value to stay the biggest part, lower the Store of Value → Cash rate or set targets.</>
                 )}
@@ -670,7 +847,7 @@ export default function StrategyPage() {
               HBD in savings earns interest while it waits, so a bigger cash share costs less than it seems, and it is what lets you buy more when the signals say fear.
             </li>
             <li>
-              Signals change a move by at most ±{Math.round(settings.tiltStrength * 100)}% here. In the backtest below they barely change the result either way: at a few % a month, <i>what</i> you hold matters far
+              Market mood changes a move by at most ±{Math.round(settings.tiltStrength * 100)}% here. In the backtest below they barely change the result either way: at a few % a month, <i>what</i> you hold matters far
               more than the timing. Treat them as a tie-breaker (skip selling Store of Value in a panic, buy a little extra), not a crystal ball.
             </li>
             <li>
@@ -759,7 +936,7 @@ export default function StrategyPage() {
               </table>
             </div>
             <p className="text-xs text-gray-500">
-              From {bt.from}. Store of Value priced as today&apos;s mix of {bt.mixes.sov.join(' + ') || 'BTC'}, Tokens as {bt.mixes.tokens.join(' + ') || 'HIVE'} (coins without free price history are left out),
+              From {bt.from}. Store of Value priced as today&apos;s mix of {bt.mixes.sov.join(' + ') || 'BTC'}, Tokens as {bt.mixes.tokens.join(' + ') || 'HIVE'}, Liquidity as {bt.mixes.lp.join(' + ') || 'ETH + BNB'} held as-is (no fees earned, no impermanent loss: rough) (coins without free price history are left out),
               Cash LP at {settings.cashAprPct}% a year. Past signals used: fear &amp; greed, Bitcoin vs its 200-day average, distance from the high, HIVE vs BTC (perp funding and stock fear &amp; greed have no long
               free history). One price path is not proof: treat differences of a few % as noise.
             </p>
