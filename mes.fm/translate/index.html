@@ -399,8 +399,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* text size buttons: always in a filled box, in the tool rows only with Full width */
 	#tr .tr-fz {font-weight:800;font-size:0.95em;min-width:36px;}
 	#tr .tr-fz:disabled {opacity:0.4;cursor:default;}
-	#tr .tr-fzw {display:none;}
-	@media (min-width: 1200px) { body.tr-wide #tr .tr-fzw {display:inline-flex;} }
+	/* A- / A+ show in every box's tool row (2026-11-16: hard to read otherwise); inside Fill window the fill bar has its own pair */
+	#tr .tr-fill .tr-fzw {display:none;}
 	#tr .tr-act--out .tu-btn {min-height:40px;}
 	#tr .tr-live {display:inline-flex;align-items:center;gap:0.45em;font-size:0.92em;cursor:pointer;min-height:36px;min-width:0;}
 	#tr .tr-live input {width:1.15em;height:1.15em;flex:0 0 auto;margin:0;}
@@ -530,7 +530,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#tr .tr-fs-on [data-fb="fs"] {background:var(--tr-tint);border-color:var(--tr-acc);}
 	#tr .tu-toast {z-index:2100;}
 
-	@media (max-width: 440px) { #tr .tr-ib {min-width:38px;padding:0;} #tr .tr-tools {gap:0.05em;} #tr .tr-count {margin:0 0.2em;} #tr .tu-card {padding:0.85em 0.75em;} }
+	@media (max-width: 440px) { #tr .tr-ib {min-width:38px;padding:0;} #tr .tr-tools .tr-ib {min-width:32px;} #tr .tr-tools {gap:0;} #tr .tr-count {margin:0 0.2em;font-size:0.85em;white-space:nowrap;} #tr .tu-card {padding:0.85em 0.75em;} }
 
 	/* dark mode */
 	body.dark-mode #tr.tr {--tr-ink:#e8ecf1;--tr-mut:#aab3bf;--tr-line:#4a4f57;--tr-card:#1f1f1f;--tr-soft:#2a2c30;--tr-out:#24282c;--tr-acc:#38bdd2;--tr-accd:#7dd3e3;--tr-tint:#123a42;--tr-onacc:#062a30;
@@ -1114,7 +1114,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/image-to-text"><img class="mes-aside__img mes-aside__img--logo" src="/image-to-text/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Image to Text: Free OCR in Your Browser</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/pdf-tools"><img class="mes-aside__img mes-aside__img--logo" src="/pdf-tools/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Free PDF Tools: Edit, Merge, Split, Compress and Convert</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/image-to-text"><img class="mes-aside__img mes-aside__img--logo" src="/image-to-text/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Image to Text: Free OCR in Your Browser</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/primes"><img class="mes-aside__img mes-aside__img--logo" src="/primes/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Prime Number Checker, Factors, GCD & Sieve</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1164,7 +1164,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/translate/js/translate.js?v=6" defer></script>
+	<script src="/translate/js/translate.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -92,8 +92,8 @@
 	/* text size buttons: always in a filled box, in the tool rows only with Full width */
 	#tr .tr-fz {font-weight:800;font-size:0.95em;min-width:36px;}
 	#tr .tr-fz:disabled {opacity:0.4;cursor:default;}
-	#tr .tr-fzw {display:none;}
-	@media (min-width: 1200px) { body.tr-wide #tr .tr-fzw {display:inline-flex;} }
+	/* A- / A+ show in every box's tool row (2026-11-16: hard to read otherwise); inside Fill window the fill bar has its own pair */
+	#tr .tr-fill .tr-fzw {display:none;}
 	#tr .tr-act--out .tu-btn {min-height:40px;}
 	#tr .tr-live {display:inline-flex;align-items:center;gap:0.45em;font-size:0.92em;cursor:pointer;min-height:36px;min-width:0;}
 	#tr .tr-live input {width:1.15em;height:1.15em;flex:0 0 auto;margin:0;}
@@ -223,7 +223,7 @@
 	#tr .tr-fs-on [data-fb="fs"] {background:var(--tr-tint);border-color:var(--tr-acc);}
 	#tr .tu-toast {z-index:2100;}
 
-	@media (max-width: 440px) { #tr .tr-ib {min-width:38px;padding:0;} #tr .tr-tools {gap:0.05em;} #tr .tr-count {margin:0 0.2em;} #tr .tu-card {padding:0.85em 0.75em;} }
+	@media (max-width: 440px) { #tr .tr-ib {min-width:38px;padding:0;} #tr .tr-tools .tr-ib {min-width:32px;} #tr .tr-tools {gap:0;} #tr .tr-count {margin:0 0.2em;font-size:0.85em;white-space:nowrap;} #tr .tu-card {padding:0.85em 0.75em;} }
 
 	/* dark mode */
 	body.dark-mode #tr.tr {--tr-ink:#e8ecf1;--tr-mut:#aab3bf;--tr-line:#4a4f57;--tr-card:#1f1f1f;--tr-soft:#2a2c30;--tr-out:#24282c;--tr-acc:#38bdd2;--tr-accd:#7dd3e3;--tr-tint:#123a42;--tr-onacc:#062a30;

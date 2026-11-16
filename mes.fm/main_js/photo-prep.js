@@ -482,6 +482,13 @@
       return fc;
     }
     function sched() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; render(); }); }
+    // the stage changes size (options row grows / shrinks, keyboard, rotation): resize the canvas bitmap too, or the picture is
+    // stretched by CSS and the crop handles no longer sit where they are drawn
+    function fitSize() {
+      var r = stage.getBoundingClientRect(), d = Math.min(3, window.devicePixelRatio || 1);
+      if (Math.abs(r.width - sw) < 0.5 && Math.abs(r.height - sh) < 0.5 && d === dpr) return false;
+      resize(); return true;
+    }
     function resize() {
       var r = stage.getBoundingClientRect(); dpr = Math.min(3, window.devicePixelRatio || 1);
       sw = Math.max(1, r.width); sh = Math.max(1, r.height);
@@ -493,6 +500,7 @@
     function stageColor() { return getComputedStyle(stage).backgroundColor || "#ddd"; }
     function render() {
       if (!st) return;
+      if (fitSize()) return;   // resize() renders
       var g = cv.getContext("2d"), t = xf(), fc = frameCanvas(), g0 = geo(), c = st.crop;
       g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, sw, sh);
       var full = tool === "crop" || tool === "rotate";

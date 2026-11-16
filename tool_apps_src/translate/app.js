@@ -729,7 +729,7 @@
   var prepP = null;
   function photoPrep() {
     if (window.MESPhotoPrep) return Promise.resolve(window.MESPhotoPrep);
-    if (!prepP) prepP = loadScript("/main_js/photo-prep.js?v=1").then(function () { return window.MESPhotoPrep; }, function (e) { prepP = null; throw e; });
+    if (!prepP) prepP = loadScript("/main_js/photo-prep.js?v=2").then(function () { return window.MESPhotoPrep; }, function (e) { prepP = null; throw e; });
     return prepP;
   }
   function editCanvas(c, name) {
