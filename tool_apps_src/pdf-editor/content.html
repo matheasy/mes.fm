@@ -2,8 +2,8 @@
 	<div class="tu pd" id="pd">
 		<div class="pd-top">
 			<div class="pd-top-l">
-				<button type="button" class="pd-btn" id="pd-open">Open PDF</button>
-				<button type="button" class="pd-btn" id="pd-openlink" title="Open a PDF from a web link (or just paste a link anywhere on the page)">&#128279; From link</button>
+				<button type="button" class="pd-btn" id="pd-open" title="Open a PDF (Ctrl+O)"><span class="pd-ico" aria-hidden="true">&#128194;</span><span class="pd-lbl"> Open PDF</span></button>
+				<button type="button" class="pd-btn pd-x" id="pd-openlink" title="Open a PDF from a web link (or just paste a link anywhere on the page)">&#128279; From link</button>
 				<span class="pd-fname" id="pd-name">No file open</span>
 			</div>
 			<div class="pd-top-r">
@@ -14,18 +14,22 @@
 				<button type="button" class="pd-zoom" id="pd-zoom" title="Click to fit the page width">100%</button>
 				<button type="button" class="pd-ib" id="pd-zin" title="Zoom in" aria-label="Zoom in">+</button>
 				<span class="pd-vsep"></span>
-				<button type="button" class="pd-ib pd-ib--txt" id="pd-thumbbtn" aria-pressed="true" title="Show or hide the page list">Pages</button>
-				<button type="button" class="pd-ib pd-ib--txt" id="pd-darkbtn" aria-pressed="false" title="Dark pages: show the PDF pages light-on-dark, easier on the eyes at night. Your downloads and prints are not changed (D)">&#9680; Dark pages</button>
+				<button type="button" class="pd-ib pd-ib--txt pd-x" id="pd-thumbbtn" aria-pressed="true" title="Show or hide the page list">Pages</button>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-bmbtn" aria-pressed="false" title="Bookmarks: jump to a chapter, read the PDF's own bookmarks or make them automatically (B)"><span aria-hidden="true">&#128278;</span><span class="pd-lbl"> Bookmarks</span></button>
+				<button type="button" class="pd-ib pd-ib--txt pd-x" id="pd-darkbtn" aria-pressed="false" title="Dark pages: show the PDF pages light-on-dark, easier on the eyes at night. Your downloads and prints are not changed (D)">&#9680; Dark pages</button>
 				<button type="button" class="pd-ib pd-ib--txt" id="pd-winbtn" aria-pressed="false" title="Fill the browser window (F)">&#10530; Full window</button>
-				<button type="button" class="pd-btn" id="pd-read" title="Read the PDF aloud, with each word highlighted on the page. Starts at the page you are on (Alt+Shift+R)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
-				<button type="button" class="pd-btn" id="pd-print" title="Print the edited PDF">Print</button>
-				<button type="button" class="pd-btn pd-btn--primary" id="pd-export">Download PDF</button>
+				<button type="button" class="pd-btn pd-x" id="pd-read" title="Read the PDF aloud, with each word highlighted on the page. Starts at the page you are on (Alt+Shift+R)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
+				<button type="button" class="pd-btn pd-x" id="pd-print" title="Print the edited PDF">Print</button>
+				<button type="button" class="pd-ib pd-more" id="pd-more" aria-expanded="false" aria-controls="pd-morebar" title="More: open from a link, cloud, page list, dark pages, read aloud, print">&#8943;</button>
+				<button type="button" class="pd-btn pd-btn--primary" id="pd-export" title="Download the edited PDF"><span class="pd-ico" aria-hidden="true">&#11015;</span><span class="pd-lbl"> Download PDF</span></button>
 			</div>
 		</div>
+		<div class="pd-morebar" id="pd-morebar" hidden></div>
 		<div class="pd-opts" id="pd-opts" aria-label="Tool options"></div>
 		<div class="pd-main">
 			<div class="pd-tools" id="pd-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
 			<div class="pd-thumbs" id="pd-thumbs" aria-label="Pages"></div>
+			<div class="pd-bm" id="pd-bm" aria-label="Bookmarks" hidden></div>
 			<div class="pd-view" id="pd-view">
 				<div class="pd-pages" id="pd-pages"></div>
 				<div class="pd-empty" id="pd-empty">
@@ -44,6 +48,7 @@
 			</div>
 		</div>
 		<div class="pd-status"><span id="pd-st-doc">No file</span><span id="pd-st-sel"></span><span class="pd-hint" id="pd-hint"></span></div>
+		<div class="pd-grip" id="pd-grip" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to make the editor taller or shorter (double-click: back to normal)"></div>
 		<input type="file" id="pd-file" accept="application/pdf,.pdf" hidden>
 		<input type="file" id="pd-addfile" accept="application/pdf,.pdf" hidden>
 		<input type="file" id="pd-imgfile" accept="image/*" hidden>
@@ -73,7 +78,8 @@
 			<dt>Is my signature legally valid?</dt><dd>An image of your signature placed on a PDF is accepted for many everyday documents, but it is not a certified digital signature. For contracts that require one, check what the other party asks for.</dd>
 			<dt>Can I fill in the form fields of a PDF form?</dt><dd>Yes. If the PDF has fillable fields, the editor tells you; choose the <b>Fill form</b> tool and type into the highlighted text boxes, tick the check boxes and radio buttons, and pick from the drop-downs. For a form with no fields (a scan, for instance), use the Text tool and check-mark stamps to fill it in by hand.</dd>
 			<dt>Does it work with a password-protected PDF?</dt><dd>Yes: you are asked for the password. The edited copy is saved as flattened pages when the file cannot be re-written directly.</dd>
-			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support; the page list and tools adapt to small screens. A larger screen is more comfortable for detailed work.</dd>
+			<dt>Can it make bookmarks (a table of contents) for a PDF?</dt><dd>Yes. Tap <b>&#128278; Bookmarks</b>: the PDF's own bookmarks show up, and <b>Make bookmarks</b> builds them from the book's table of contents (matching the printed page numbers to the real pages) or, if it has none, from its headings. Scanned books are read with OCR first. Rename, indent, reorder or delete them, and they are saved into the PDF when you download it, so other PDF readers show them too. It all runs in your browser.</dd>
+			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support. On a phone the buttons fit in one short row (the rest are behind &#8943;), the page list is off until you want it, and you can drag the bar under the editor to make it taller, or use Full window. A larger screen is more comfortable for detailed work.</dd>
 			<dt>What happens to my work if I close the tab?</dt><dd>It is not saved on any server. The page warns you before you leave with unsaved edits, so download the PDF when you are done.</dd>
 		</dl>
 		<p><b>Other document tools:</b> <a href="/docx">Word Viewer</a> (open, edit and save .docx files) &middot; <a href="/excel">Spreadsheet Viewer</a> (open, edit and save Excel and CSV files) &middot; <a href="/pdf-tools">PDF Tools</a> (merge, split, compress, convert).</p>

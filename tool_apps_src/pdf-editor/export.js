@@ -19,6 +19,7 @@
 			for (var ai = 0; ai < p.annots.length; ai++) await draw(L, out, page, p.annots[ai], font, image, pngImage);
 			if (pi % 8 === 7) await new Promise(function (r) { setTimeout(r, 0); });
 		}
+		if (PD.writeOutline) try { PD.writeOutline(L, out, function (pi, y) { var p = PD.doc.pages[pi]; return y == null ? p.y0 + p.H : y; }); } catch (e) { console.error("bookmarks", e); }
 		out.setProducer("MES PDF Editor (mes.fm/pdf)"); out.setModificationDate(new Date());
 		return out.save();
 	}
@@ -59,6 +60,7 @@
 			var blob = await new Promise(function (r) { cv.toBlob(r, "image/jpeg", q); }), bytes = new Uint8Array(await blob.arrayBuffer()), img = await out.embedJpg(bytes), page = out.addPage([vp.width / scale, vp.height / scale]); page.drawImage(img, { x: 0, y: 0, width: vp.width / scale, height: vp.height / scale }); cv.width = cv.height = 1;
 			if (onProgress) onProgress(i + 1, PD.doc.pages.length); await new Promise(function (r) { setTimeout(r, 0); });
 		}
+		if (PD.writeOutline) try { PD.writeOutline(L, out, function (pi, y) { var p = PD.doc.pages[pi], v = PD.vp(p, 1); return y == null ? v.height : v.height - v.toView(p.x0, y)[1]; }); } catch (e) { console.error("bookmarks", e); }
 		out.setProducer("MES PDF Editor (mes.fm/pdf)"); return out.save();
 	}
 	PD.exportBytes = async function (opts, onProgress) {

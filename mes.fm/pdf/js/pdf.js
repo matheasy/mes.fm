@@ -126,7 +126,105 @@
 	History.prototype.undo = function () { return this.canUndo() ? this.stack[--this.i] : null; }; History.prototype.redo = function () { return this.canRedo() ? this.stack[++this.i] : null; };
 	// default stamps / sizes
 	var SIZES = { sigW: 150, stampW: 28, noteW: 18 };
-	var PDM = { newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
+
+	/* ---------- bookmarks: find a table of contents or headings in the text of the pages (also used on OCR'd lines) ----------
+	   a page = { lines: gap-aware lines [{text, x, y, size}], rows: y-grouped rows (a wide gap becomes a tab), H }; y grows upwards like PDF space */
+	function rowsOf(items) {
+		var it = items.filter(function (i) { return i && typeof i.str === "string" && i.str.trim() !== "" && i.transform; }).map(function (i) { return { s: i.str, x: i.transform[4], y: i.transform[5], w: i.width || 0, size: Math.hypot(i.transform[2], i.transform[3]) || i.height || 10 }; });
+		it.sort(function (a, b) { return Math.abs(b.y - a.y) > 0.45 * Math.min(a.size, b.size) ? b.y - a.y : a.x - b.x; });
+		var rows = [], cur = null;
+		it.forEach(function (i) {
+			if (cur && Math.abs(cur.y - i.y) < 0.45 * Math.min(cur.size, i.size)) { var gap = i.x - (cur.x + cur.w); cur.text += gap > 2 * cur.size ? "\t" : gap > 0.15 * cur.size && !/\s$/.test(cur.text) ? " " : ""; cur.text += i.s; cur.w = Math.max(cur.w, i.x + i.w - cur.x); cur.size = Math.max(cur.size, i.size); }
+			else { cur = { text: i.s, x: i.x, y: i.y, w: i.w, size: i.size }; rows.push(cur); }
+		});
+		return rows;
+	}
+	function bmNorm(s) { return String(s || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+	function bodySize(pages) { var w = {}; pages.forEach(function (p) { (p.lines || []).forEach(function (l) { var k = Math.round(l.size * 2) / 2; w[k] = (w[k] || 0) + String(l.text).length; }); }); var best = 0, bk = 10; Object.keys(w).forEach(function (k) { if (w[k] > best) { best = w[k]; bk = +k; } }); return bk; }
+	function isScanned(pages) { if (!pages.length) return false; var t = 0; pages.forEach(function (p) { var c = 0; (p.lines || []).forEach(function (l) { c += String(l.text).replace(/\s/g, "").length; }); if (c >= 40) t++; }); return t / pages.length < 0.3; }
+	var TOC_RE = /^(.*?[A-Za-zÀ-ɏ].*?)\s*(?:[.·•…_ ]{3,}|\t|\s[.·•…_]{2,}\s?)\s*(\d{1,4})$/;
+	function findToc(pages) {
+		var n = pages.length, lim = Math.min(n, 30), entries = [], tocPages = [], last = -9;
+		for (var pi = 0; pi < lim; pi++) {
+			var got = [];
+			var prev = null;   // an entry that runs over two lines: its first line has no page number
+			(pages[pi].rows || pages[pi].lines || []).forEach(function (r) {
+				var t = String(r.text).replace(/\s+$/, ""), m = t.match(TOC_RE);
+				if (!m) { prev = /[A-Za-zÀ-ɏ]/.test(t) && t.length <= 120 && !/\t/.test(t) ? r : null; return; }
+				var title = m[1].replace(/[\s.·•…_\t]+$/, "").replace(/\t/g, " ").replace(/\s{2,}/g, " ").trim(), x = r.x;
+				if (prev && prev.y - r.y > 0 && prev.y - r.y <= 1.9 * Math.max(prev.size, r.size) && prev.x <= r.x + 2) { title = String(prev.text).replace(/\s+/g, " ").trim() + " " + title; x = prev.x; }
+				prev = null; if (title.length < 2 || title.length > 200) return; got.push({ t: title, num: +m[2], x: x, tp: pi });
+			});
+			if (got.length >= 4 && (pi - last <= 2 || !tocPages.length)) { tocPages.push(pi); last = pi; entries = entries.concat(got); }
+			else if (tocPages.length && pi - last > 2) break;
+		}
+		if (entries.length < 4) return { items: [], tocPages: [] };
+		var inc = 0; for (var i = 1; i < entries.length; i++) if (entries[i].num >= entries[i - 1].num) inc++;
+		if (inc / (entries.length - 1) < 0.7) return { items: [], tocPages: [] };
+		// levels: indentation first, else the depth of a "1.2.3" number
+		var xs = []; entries.forEach(function (e) { var k = Math.round(e.x / 6); if (xs.indexOf(k) < 0) xs.push(k); }); xs.sort(function (a, b) { return a - b; });
+		entries.forEach(function (e) { var lv = xs.length > 1 ? xs.indexOf(Math.round(e.x / 6)) : 0, m = e.t.match(/^(\d+(?:\.\d+)+)\s/); if (xs.length <= 1 && m) lv = m[1].split(".").length - 1; e.lv = Math.min(2, Math.max(0, lv)); });
+		// printed page number -> PDF page: vote on where the titles really appear
+		var body = bodySize(pages), start = tocPages[tocPages.length - 1] + 1, votes = {}, found = [];
+		entries.forEach(function (e, ei) {
+			var tn = bmNorm(e.t).slice(0, 50); if (tn.length < 4) return;
+			for (var pi = start; pi < n; pi++) { var hit = null; (pages[pi].lines || []).some(function (l) { var ln = bmNorm(l.text); if (ln.length >= 4 && l.size >= body * 0.9 && (ln.indexOf(tn) === 0 || (ln.length >= 8 && tn.indexOf(ln) === 0))) { hit = l; return true; } return false; }); if (hit) { var off = pi - (e.num - 1); votes[off] = (votes[off] || 0) + 1; found.push({ ei: ei, pi: pi, y: hit.y + hit.size }); } }
+		});
+		var off = 0, bestV = 0; Object.keys(votes).forEach(function (k) { if (votes[k] > bestV || (votes[k] === bestV && Math.abs(+k) < Math.abs(off))) { bestV = votes[k]; off = +k; } });
+		var sure = bestV >= Math.max(2, Math.ceil(entries.length * 0.3));
+		var items = entries.map(function (e, ei) {
+			var pi = Math.max(0, Math.min(n - 1, e.num - 1 + off)), y = null;
+			found.forEach(function (f) { if (f.ei === ei && Math.abs(f.pi - pi) <= 2 && y == null) { pi = f.pi; y = f.y; } });
+			return { t: e.t, pi: pi, y: y, lv: e.lv };
+		});
+		return { items: items, tocPages: tocPages, sure: sure, offset: off };
+	}
+	var KW_RE = /^(chapter|part|book|section|lesson|unit|appendix|preface|foreword|introduction|prologue|epilogue|contents|table of contents|index|conclusion|afterword|acknowledg\w*|bibliography|references|glossary|notes|summary)\b/i;
+	function findHeadings(pages, skip) {
+		var n = pages.length, body = bodySize(pages), seen = {}, cands = [];
+		// running headers / footers: the same text on many pages (with a page number, only near the top or bottom edge: "Chapter 3" lines must stay)
+		var seenD = {}; pages.forEach(function (p, pi) { var keys = {}; (p.lines || []).forEach(function (l) { var k = bmNorm(l.text), kd = "#" + k.replace(/\d+/g, "#"); [k, kd].forEach(function (x) { if (x && x !== "#" && !keys[x]) { keys[x] = 1; seen[x] = (seen[x] || 0) + 1; } }); }); });
+		function running(l, p) { var k = bmNorm(l.text); if (seen[k] >= rep) return true; var edge = p.H && (l.y > p.H * 0.9 || l.y < p.H * 0.1); return !!edge && seen["#" + k.replace(/\d+/g, "#")] >= rep; }
+		var rep = Math.max(3, Math.ceil(n * 0.25));
+		// a size that is mostly used for long lines is paragraph text (a bigger font for some passages), not headings
+		var tot = {}, longs = {}; pages.forEach(function (p) { (p.lines || []).forEach(function (l) { var k = Math.round(l.size); tot[k] = (tot[k] || 0) + 1; if (String(l.text).length > 55) longs[k] = (longs[k] || 0) + 1; }); });
+		function paraSize(sz) { var k = Math.round(sz); return tot[k] >= 6 && (longs[k] || 0) / tot[k] > 0.3; }
+		pages.forEach(function (p, pi) {
+			if (skip && skip.indexOf(pi) >= 0) return;
+			(p.lines || []).forEach(function (l) {
+				var t = String(l.text).replace(/\s+/g, " ").trim(), letters = (t.match(/[A-Za-zÀ-ɏ]/g) || []).length;
+				if (letters < 2 || t.length > 110 || /^(page\s*)?\d+$/i.test(t) || running(l, p)) return;
+				var up = (t.match(/[A-ZÀ-Þ]/g) || []).length, big = l.size >= body * 1.18, kw = KW_RE.test(t) && t.length <= 80 && l.size >= body * 0.95,
+					caps = t.length <= 70 && letters >= 4 && up / letters >= 0.8 && l.size >= body * 1.08 && !/[.,;:]$/.test(t);
+				if (big && !kw && !caps && paraSize(l.size)) return; if (!(big || kw || caps)) return; if (!kw && (t.length > 80 || (t.length > 50 && /[.?!]$/.test(t)) || /[:;,]$/.test(t) || /^[a-z\u00e0-\u00ff(\[]/.test(t) || /[\u2190-\u21ff\u2200-\u22ff=<>\u0391-\u03c9]/.test(t))) return;
+				cands.push({ t: t, pi: pi, y: l.y + l.size, size: l.size, key: Math.round(l.size), kw: kw, ch: /^(chapter|part|book)\b/i.test(t) });
+			});
+		});
+		// a title that runs over two lines becomes one bookmark
+		var merged = [];
+		cands.forEach(function (c) { var prev = merged[merged.length - 1]; if (prev && prev.pi === c.pi && prev.key === c.key && prev.lastY - c.y >= 0 && prev.lastY - (c.y - c.size) <= 2.4 * c.size && (prev.t + " " + c.t).length <= 130) { prev.t += " " + c.t; prev.lastY = c.y - c.size; } else { c.lastY = c.y - c.size; merged.push(c); } });
+		// levels by size: the biggest headings are level 1
+		var counts = {}; merged.forEach(function (c) { counts[c.key] = (counts[c.key] || 0) + 1; });
+		var keys = Object.keys(counts).map(Number).sort(function (a, b) { return b - a; }).filter(function (k) { return counts[k] <= Math.max(6, n * 3); });
+		var items = merged.filter(function (c) { return keys.indexOf(c.key) >= 0 || c.kw; }).map(function (c) { var r = keys.indexOf(c.key); return { t: c.t, pi: c.pi, y: c.y, lv: c.ch ? 0 : Math.min(2, Math.max(0, r)) }; });
+		var out = []; items.forEach(function (b) { var p = out[out.length - 1]; if (p && Math.abs(p.pi - b.pi) <= 1 && bmNorm(p.t) === bmNorm(b.t)) return; out.push(b); });
+		var cap = Math.max(80, n * 2); for (var lv = 2; out.length > cap && lv > 0; lv--) out = out.filter(function (b) { return b.lv < lv; });
+		return out;
+	}
+	function makeBookmarks(pages) {
+		if (isScanned(pages)) return { items: [], how: "scanned" };
+		var toc = findToc(pages);
+		if (toc.items.length >= 4) { var items = toc.items.slice(); if (!items.some(function (b) { return b.pi === toc.tocPages[0]; })) items.unshift({ t: "Contents", pi: toc.tocPages[0], y: null, lv: 0 }); return { items: items, how: "toc", sure: toc.sure }; }
+		var h = findHeadings(pages, toc.tocPages);
+		return { items: h, how: h.length ? "headings" : "none" };
+	}
+	// flat list with levels -> tree (a level can only go one deeper than the item before it)
+	function bmTree(flat) {
+		var root = { kids: [] }, stack = [root];
+		flat.forEach(function (b) { var lv = Math.max(0, Math.min(b.lv | 0, stack.length - 1)); stack.length = lv + 1; var node = { b: b, kids: [] }; stack[lv].kids.push(node); stack.push(node); });
+		return root.kids;
+	}
+	var PDM = { rowsOf: rowsOf, bmNorm: bmNorm, bodySize: bodySize, isScanned: isScanned, findToc: findToc, findHeadings: findHeadings, makeBookmarks: makeBookmarks, bmTree: bmTree, newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
 	if (typeof module !== "undefined" && module.exports) module.exports = PDM; else root.PDM = PDM;
 })(typeof window !== "undefined" ? window : this);
 
@@ -136,9 +234,10 @@
 	var M = window.PDM, PD = window.PD = { M: M, doc: null, zoom: 1, tool: "select", sel: null, cur: 0, dirty: false, images: {}, S: { thumbs: true, win: null }, hooks: {}, clip: null };
 	var $ = PD.$ = function (id) { return document.getElementById(id); };
 	var KEY = "mes-pdf-editor:v1";
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; if (sv.dark) PD.S.dark = true; } } catch (e) {}
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; if (sv.dark) PD.S.dark = true; if (sv.thumbsM) PD.S.thumbsM = true; if (sv.h) PD.S.h = sv.h; if (sv.hM) PD.S.hM = sv.hM; if (sv.bm) PD.S.bm = true; if (sv.bmM) PD.S.bmM = true; } } catch (e) {}
 	PD.S.prefs = PD.S.prefs || {};
-	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, dark: !!PD.S.dark, prefs: PD.S.prefs })); } catch (e) {} };
+	PD.thumbsOn = function () { var r = document.getElementById("pd"); return r && r.classList.contains("pd-compact") ? !!PD.S.thumbsM : PD.S.thumbs !== false; };
+	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, dark: !!PD.S.dark, prefs: PD.S.prefs, thumbsM: !!PD.S.thumbsM, h: PD.S.h || 0, hM: PD.S.hM || 0, bm: !!PD.S.bm, bmM: !!PD.S.bmM })); } catch (e) {} };
 	PD.on = function (n, f) { (PD.hooks[n] = PD.hooks[n] || []).push(f); }; PD.emit = function (n, a) { (PD.hooks[n] || []).forEach(function (f) { try { f(a); } catch (e) { console.error(e); } }); };
 	PD.toast = function (msg, ms) { var t = $("pd-toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(PD.toast._t); PD.toast._t = setTimeout(function () { t.classList.remove("show"); }, ms || 2200); };
 	PD.hint = function (s) { $("pd-hint").textContent = s || ""; };
@@ -179,11 +278,11 @@
 			PD.busy(true, "Opening " + file.name + "...");
 			var bytes = new Uint8Array(await file.arrayBuffer()); if (String.fromCharCode.apply(null, bytes.slice(0, 5)) !== "%PDF-") { var head = String.fromCharCode.apply(null, bytes.slice(0, 1024)); if (head.indexOf("%PDF-") < 0) throw new Error("That does not look like a PDF file."); }
 			var s = await PD.loadSource(bytes, file.name);
-			PD.doc = { name: file.name, srcs: [s], pages: s.proxies.map(function (p, i) { return pageEntry(0, i, p); }) };
+			PD.doc = { name: file.name, srcs: [s], pages: s.proxies.map(function (p, i) { return pageEntry(0, i, p); }), bms: [] };
 			PD.images = {}; PD.sel = null; PD.cur = 0; PD.dirty = false; PD.hist.reset(PD.snapshot()); PD.layout(true); PD.emit("open");
 		} catch (e) { console.error(e); PD.toast((e && e.message) || "Could not open that PDF", 4500); } finally { PD.busy(false); }
 	};
-	PD.newBlank = async function () { await PD.ensureLibs(); PD.doc = { name: "Untitled.pdf", srcs: [], pages: [blankEntry(612, 792)] }; PD.images = {}; PD.sel = null; PD.cur = 0; PD.dirty = false; PD.hist.reset(PD.snapshot()); PD.layout(true); PD.emit("open"); };
+	PD.newBlank = async function () { await PD.ensureLibs(); PD.doc = { name: "Untitled.pdf", srcs: [], pages: [blankEntry(612, 792)], bms: [] }; PD.images = {}; PD.sel = null; PD.cur = 0; PD.dirty = false; PD.hist.reset(PD.snapshot()); PD.layout(true); PD.emit("open"); };
 	PD.addPdf = async function (file) {
 		if (!PD.doc) return PD.open(file);
 		try { PD.busy(true, "Adding pages..."); var bytes = new Uint8Array(await file.arrayBuffer()), s = await PD.loadSource(bytes, file.name), si = PD.doc.srcs.push(s) - 1; s.proxies.forEach(function (p, i) { PD.doc.pages.push(pageEntry(si, i, p)); }); PD.commit(); PD.layout(); PD.toast("Added " + s.proxies.length + (s.proxies.length === 1 ? " page" : " pages")); }
@@ -196,13 +295,13 @@
 
 	/* ---------- history: JSON snapshots of the page list and every annotation ---------- */
 	PD.hist = new M.History(80);
-	PD.snapshot = function () { return JSON.stringify({ pages: PD.doc ? PD.doc.pages.map(function (p) { return { id: p.id, src: p.src, index: p.index, blank: !!p.blank, W: p.W, H: p.H, x0: p.x0, y0: p.y0, rot0: p.rot0, rot: p.rot, annots: p.annots }; }) : [] }); };
+	PD.snapshot = function () { return JSON.stringify({ pages: PD.doc ? PD.doc.pages.map(function (p) { return { id: p.id, src: p.src, index: p.index, blank: !!p.blank, W: p.W, H: p.H, x0: p.x0, y0: p.y0, rot0: p.rot0, rot: p.rot, annots: p.annots }; }) : [], bms: PD.doc && PD.doc.bms || [] }); };
 	PD.commit = function () { if (!PD.doc) return; PD.dirty = true; if (PD.hist.push(PD.snapshot())) PD.emit("history"); PD.status(); };
 	function restore(snap) {
 		if (!snap || !PD.doc) return; var d = JSON.parse(snap), selId = PD.sel && PD.sel.id;
 		PD.doc.pages = d.pages.map(function (q) { var p = Object.assign({}, q); p.proxy = q.blank ? null : PD.doc.srcs[q.src].proxies[q.index]; return p; });
 		PD.sel = null; if (selId) PD.doc.pages.forEach(function (p) { p.annots.forEach(function (a) { if (a.id === selId) PD.sel = { page: p.id, id: a.id }; }); });
-		PD.cur = Math.min(PD.cur, PD.doc.pages.length - 1); PD.dirty = true; PD.layout(); PD.emit("history"); PD.status();
+		PD.doc.bms = d.bms || []; PD.cur = Math.min(PD.cur, PD.doc.pages.length - 1); PD.dirty = true; PD.layout(); PD.emit("history"); PD.status();
 	}
 	PD.undo = function () { var s = PD.hist.undo(); if (s) restore(s); }; PD.redo = function () { var s = PD.hist.redo(); if (s) restore(s); };
 
@@ -570,7 +669,7 @@
 		}).catch(function () {});
 	}
 	function buildThumbs() {
-		var box = $("pd-thumbs"); box.classList.toggle("is-off", !PD.S.thumbs || !PD.doc); if (!PD.doc) { box.innerHTML = ""; return; } if (!PD.S.thumbs) return;
+		var box = $("pd-thumbs"); box.classList.toggle("is-off", !PD.thumbsOn() || !PD.doc); if (!PD.doc) { box.innerHTML = ""; return; } if (!PD.thumbsOn()) return;
 		box.innerHTML = PD.doc.pages.map(function (p, i) { return '<div class="pd-th' + (i === PD.cur ? " is-cur" : "") + '" draggable="true" data-i="' + i + '"><canvas></canvas><div class="pd-th-n">' + (i + 1) + '</div><div class="pd-th-act"><button type="button" data-a="rl" title="Rotate left" aria-label="Rotate page ' + (i + 1) + ' left">↶</button><button type="button" data-a="rr" title="Rotate right" aria-label="Rotate page ' + (i + 1) + ' right">↷</button><button type="button" data-a="dup" title="Duplicate page" aria-label="Duplicate page ' + (i + 1) + '">⧉</button><button type="button" data-a="blank" title="Add a blank page after this one" aria-label="Add a blank page after page ' + (i + 1) + '">+</button><button type="button" data-a="del" title="Delete page" aria-label="Delete page ' + (i + 1) + '">✕</button></div></div>'; }).join("") + '<div class="pd-thumbs-add"><button type="button" data-a="addblank">+ Blank page</button><button type="button" data-a="addpdf">+ Pages from a PDF</button></div>';
 		[].forEach.call(box.querySelectorAll(".pd-th"), function (th, i) { thumbRender(PD.doc.pages[i], th.querySelector("canvas")); });
 	}
@@ -590,9 +689,9 @@
 		box.addEventListener("drop", function (e) { if (from == null) return; e.preventDefault(); var th = e.target.closest(".pd-th"); if (th) { var to = +th.dataset.i; if (to !== from) { var pg = PD.doc.pages.splice(from, 1)[0]; PD.doc.pages.splice(to, 0, pg); PD.cur = to; PD.commit(); PD.layout(); } } from = null; });
 		box.addEventListener("dragend", function () { from = null; [].forEach.call(box.querySelectorAll(".is-over"), function (x) { x.classList.remove("is-over"); }); });
 	}
-	var thumbT; PD.on("layout", function () { clearTimeout(thumbT); thumbT = setTimeout(buildThumbs, 120); }); PD.on("cur", function () { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (x, i) { x.classList.toggle("is-cur", i === PD.cur); }); var cur = $("pd-thumbs").querySelector(".is-cur"); if (cur && PD.S.thumbs) { var box = $("pd-thumbs"); if (cur.offsetTop < box.scrollTop || cur.offsetTop + cur.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = cur.offsetTop - 20; } });
+	var thumbT; PD.on("layout", function () { clearTimeout(thumbT); thumbT = setTimeout(buildThumbs, 120); }); PD.on("cur", function () { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (x, i) { x.classList.toggle("is-cur", i === PD.cur); }); var cur = $("pd-thumbs").querySelector(".is-cur"); if (cur && PD.thumbsOn()) { var box = $("pd-thumbs"); if (cur.offsetTop < box.scrollTop || cur.offsetTop + cur.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = cur.offsetTop - 20; } });
 	PD.refreshThumb = function (p) { var i = PD.doc.pages.indexOf(p), th = $("pd-thumbs").querySelectorAll(".pd-th")[i]; if (th) thumbRender(p, th.querySelector("canvas")); };
-	var tt; PD.on("history", function () { clearTimeout(tt); tt = setTimeout(function () { if (PD.doc && PD.S.thumbs) { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (th, i) { if (PD.doc.pages[i]) thumbRender(PD.doc.pages[i], th.querySelector("canvas")); }); } }, 600); });
+	var tt; PD.on("history", function () { clearTimeout(tt); tt = setTimeout(function () { if (PD.doc && PD.thumbsOn()) { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (th, i) { if (PD.doc.pages[i]) thumbRender(PD.doc.pages[i], th.querySelector("canvas")); }); } }, 600); });
 	PD.init = { buildTools: buildTools, bindPointer: bindPointer, bindThumbs: bindThumbs };
 })();
 
@@ -718,6 +817,178 @@
 	};
 })();
 
+/* MES PDF Editor: 🔖 Bookmarks. Reads the PDF's own outline when it opens, makes bookmarks from a table of contents or the headings
+   (PDM.makeBookmarks; scanned books are read with Tesseract.js first), lets you rename / move / indent / delete them, and writes them
+   into the downloaded PDF as a real outline (PD.writeOutline, called by export.js). A bookmark = { id, t, pg (page id), y (PDF y or null), lv }. */
+(function () {
+	"use strict";
+	var PD = window.PD, M = PD.M, $ = PD.$, root = $("pd"), panel = $("pd-bm"), btn = $("pd-bmbtn"), selId = null, busy = null, made = null;
+	function esc(s) { return M.esc(String(s == null ? "" : s)); }
+	function compact() { return root.classList.contains("pd-compact"); }
+	PD.bmOn = function () { return compact() ? !!PD.S.bmM : !!PD.S.bm; };
+	function bms() { return PD.doc ? (PD.doc.bms = PD.doc.bms || []) : []; }
+	function pageIndex(id) { if (!PD.doc) return -1; for (var i = 0; i < PD.doc.pages.length; i++) if (PD.doc.pages[i].id === id) return i; return -1; }
+	function changed(note) { if (note != null) made = note; PD.commit(); render(); }
+
+	/* ---------- the PDF's own outline ---------- */
+	async function readOutline(doc) {
+		var s = doc.srcs[0]; if (!s || !s.pdf) return;
+		var ol; try { ol = await s.pdf.getOutline(); } catch (e) { return; } if (!ol || !ol.length || PD.doc !== doc) return;
+		var out = [];
+		async function walk(list, lv) {
+			for (var i = 0; i < list.length && out.length < 3000; i++) {
+				var it = list[i], dest = it.dest, pi = -1, y = null;
+				try {
+					if (typeof dest === "string") dest = await s.pdf.getDestination(dest);
+					if (Array.isArray(dest) && dest.length) { var ref = dest[0]; pi = typeof ref === "number" ? ref : await s.pdf.getPageIndex(ref); var kind = dest[1] && dest[1].name; if (kind === "XYZ" && typeof dest[3] === "number") y = dest[3]; else if ((kind === "FitH" || kind === "FitBH") && typeof dest[2] === "number") y = dest[2]; }
+				} catch (e) { pi = -1; }
+				var page = pi >= 0 ? doc.pages.filter(function (p) { return p.src === 0 && p.index === pi; })[0] : null;
+				out.push({ id: M.newId("b"), t: String(it.title || "Untitled").replace(/\s+/g, " ").trim() || "Untitled", pg: page ? page.id : null, y: y, lv: Math.min(lv, 5) });
+				if (it.items && it.items.length) await walk(it.items, lv + 1);
+			}
+		}
+		await walk(ol, 0);
+		if (PD.doc !== doc || !out.length) return;
+		doc.bms = out; doc.bmFrom = "pdf"; made = "These are the bookmarks saved in the PDF.";
+		PD.hist.reset(PD.snapshot()); render();
+		if (!PD.S.bmAsked && !PD.bmOn() && out.length >= 3) PD.toast("This PDF has " + out.length + " bookmarks: tap 🔖 to see them", 3500);
+	}
+	PD.on("open", function () { selId = null; made = null; if (busy) busy.stop = true; render(); var d = PD.doc; readOutline(d).then(function () { if (PD.doc === d && !bms().length && d.pages.length >= 12) made = "This PDF has no bookmarks. Make them from its table of contents or headings:"; render(); }); });
+	PD.on("history", render); PD.on("layout", function () { if (PD.bmOn()) markCur(); }); PD.on("cur", markCur);
+
+	/* ---------- making them ---------- */
+	async function textPages(stopper, prog) {
+		var pages = [], n = PD.doc.pages.length;
+		for (var i = 0; i < n; i++) {
+			if (stopper.stop) return null; var p = PD.doc.pages[i];
+			if (p.blank || !p.proxy) { pages.push({ lines: [], rows: [], H: p.H }); continue; }
+			try { var tc = await p.proxy.getTextContent(); pages.push({ lines: M.groupText(tc.items, tc.styles), rows: M.rowsOf(tc.items), H: p.H }); } catch (e) { pages.push({ lines: [], rows: [], H: p.H }); }
+			if (i % 10 === 9) { prog((i + 1) / n, "Reading page " + (i + 1) + " of " + n + "..."); await new Promise(function (r) { setTimeout(r, 0); }); }
+		}
+		return pages;
+	}
+	var tess = null;
+	function loadTess() { if (window.Tesseract) return Promise.resolve(); if (tess) return tess; tess = new Promise(function (res, rej) { var sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js"; sc.onload = res; sc.onerror = function () { tess = null; rej(new Error("Could not load the text reader. Check your connection.")); }; document.head.appendChild(sc); }); return tess; }
+	async function ocrPages(stopper, prog) {
+		await loadTess(); prog(0.01, "Getting the text reader ready (about 5 MB, once)...");
+		var worker = await window.Tesseract.createWorker("eng"), n = PD.doc.pages.length, pages = [];
+		try {
+			for (var i = 0; i < n; i++) {
+				if (stopper.stop) break; var p = PD.doc.pages[i]; prog(i / n, "Reading the pictures of the pages: " + (i + 1) + " of " + n + "... (Stop keeps what is read so far)");
+				if (p.blank || !p.proxy) { pages.push({ lines: [], rows: [], H: p.H }); continue; }
+				var vp0 = p.proxy.getViewport({ scale: 1, rotation: (p.rot0 + p.rot) % 360 }), sc = Math.min(2.2, 1500 / vp0.width), vp = p.proxy.getViewport({ scale: sc, rotation: (p.rot0 + p.rot) % 360 }), cv = document.createElement("canvas");
+				cv.width = Math.round(vp.width); cv.height = Math.round(vp.height); var ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+				await p.proxy.render({ canvasContext: ctx, viewport: vp }).promise;
+				var r = await worker.recognize(cv, {}, { blocks: true, text: false }), lines = [], H = cv.height / sc;
+				((r.data && r.data.blocks) || []).forEach(function (b) { (b.paragraphs || []).forEach(function (pa) { (pa.lines || []).forEach(function (l) { var t = String(l.text || "").replace(/\s+/g, " ").trim(), bb = l.bbox; if (!t || !bb || (l.confidence != null && l.confidence < 45)) return; var h = (bb.y1 - bb.y0) / sc; lines.push({ text: t, x: bb.x0 / sc, y: H - bb.y1 / sc, size: Math.max(4, h * 0.82) }); }); }); });
+				pages.push({ lines: lines, rows: lines, H: H }); cv.width = cv.height = 1;
+			}
+		} finally { try { await worker.terminate(); } catch (e) {} }
+		while (pages.length < n) pages.push({ lines: [], rows: [], H: 0 });
+		return pages;
+	}
+	function adopt(res, how) {
+		var list = res.items.map(function (b) { var p = PD.doc.pages[b.pi]; return { id: M.newId("b"), t: b.t, pg: p ? p.id : null, y: b.y, lv: b.lv | 0 }; });
+		PD.doc.bms = list; PD.doc.bmFrom = how;
+		var note = res.how === "toc" ? "Made from the table of contents" + (res.sure ? "." : ". The page numbers are a best guess: check a few and fix them with ⇅ or Set page.") : "Made from the headings. Check them: rename, indent or delete with the buttons under a bookmark.";
+		changed(note + (how === "ocr" ? " (read from the pictures of the pages)" : "") + " They are saved into the PDF when you download it.");
+		PD.toast(list.length + " bookmarks made", 2500);
+	}
+	async function make(useOcr) {
+		if (!PD.doc) return PD.toast("Open a PDF first"); if (busy) return;
+		if (bms().length && !window.confirm("Replace the " + bms().length + " bookmarks you have with new ones?")) return;
+		var stopper = busy = { stop: false }, doc = PD.doc; render();
+		var prog = function (f, msg) { if (busy !== stopper) return; var bar = panel.querySelector(".pd-bm-prog i"), nt = panel.querySelector(".pd-bm-note"); if (bar) bar.style.width = Math.round(Math.max(0, Math.min(1, f)) * 100) + "%"; if (nt) nt.textContent = msg; };
+		try {
+			var pages = useOcr ? await ocrPages(stopper, prog) : await textPages(stopper, prog);
+			if (PD.doc !== doc) return; if (!pages) { made = "Stopped."; return; }
+			var res = M.makeBookmarks(pages);
+			if (res.how === "scanned" && !useOcr) { made = "This PDF is scanned (its pages are pictures), so there is no text to find headings in. Read the pictures first (OCR). It takes a few seconds a page."; busy = null; render(true); return; }
+			if (!res.items.length) { made = "No table of contents or headings were found. Add bookmarks yourself with + Add."; return; }
+			adopt(res, useOcr ? "ocr" : "text");
+		} catch (e) { console.error(e); made = "Something went wrong: " + ((e && e.message) || e); }
+		finally { if (busy === stopper) busy = null; render(); }
+	}
+
+	/* ---------- the panel ---------- */
+	function show(on) { if (compact()) PD.S.bmM = on; else PD.S.bm = on; PD.S.bmAsked = true; PD.saveS(); render(); if (PD.doc) setTimeout(function () { PD.emit("room"); }, 30); }
+	PD.toggleBookmarks = function () { show(!PD.bmOn()); };
+	btn.onclick = PD.toggleBookmarks;
+	function curPageId() { var p = PD.doc && PD.doc.pages[PD.cur]; return p && p.id; }
+	function markCur() {
+		if (!PD.bmOn() || !PD.doc) return; var list = bms(), cur = PD.cur, best = null;
+		list.forEach(function (b) { var i = pageIndex(b.pg); if (i >= 0 && i <= cur && (!best || i >= pageIndex(best.pg))) best = b; });
+		[].forEach.call(panel.querySelectorAll(".pd-bmr"), function (r) { r.classList.toggle("is-cur", !!best && r.dataset.id === best.id); });
+	}
+	function render(scanned) {
+		var on = PD.bmOn() && !!PD.doc; panel.hidden = !on; btn.setAttribute("aria-pressed", String(on)); if (!on) return;
+		var list = bms(), html = '<div class="pd-bm-h"><b>Bookmarks</b><span class="pd-note">' + (list.length || "") + '</span><button type="button" class="pd-ib pd-bm-x" data-a="close" aria-label="Close bookmarks">&#10005;</button></div>';
+		html += '<div class="pd-bm-act">' + (busy ? '<button type="button" class="pd-btn" data-a="stop">Stop</button>' : '<button type="button" class="pd-btn pd-btn--primary" data-a="make" title="Find the table of contents or the headings and make bookmarks">&#10024; Make bookmarks</button><button type="button" class="pd-btn" data-a="add" title="Add a bookmark for the page you are on">+ Add</button>' + (list.length ? '<button type="button" class="pd-btn" data-a="clear" title="Delete all bookmarks">Clear</button>' : "")) + '</div>';
+		if (scanned === true && !busy) html += '<div class="pd-bm-act"><button type="button" class="pd-btn pd-btn--primary" data-a="ocr">Read the pages (OCR)</button></div>';
+		html += busy ? '<div class="pd-bm-prog"><i></i></div><div class="pd-bm-note">Working...</div>' : '<div class="pd-bm-note">' + esc(made || "") + '</div>';
+		html += '<div class="pd-bm-list" role="tree">';
+		if (!list.length) html += '<div class="pd-bm-empty">No bookmarks yet. <b>&#10024; Make bookmarks</b> finds the table of contents or the headings; <b>+ Add</b> marks the page you are on.</div>';
+		list.forEach(function (b, i) {
+			var pi = pageIndex(b.pg), sel = b.id === selId;
+			html += '<div class="pd-bmr' + (sel ? " is-sel" : "") + (pi < 0 ? " is-gone" : "") + '" data-id="' + b.id + '" data-lv="' + b.lv + '" role="treeitem" aria-level="' + (b.lv + 1) + '"><button type="button" class="pd-bmr-t" data-a="go" style="padding-left:' + (0.55 + b.lv * 1.1) + 'em" title="' + (pi < 0 ? "Its page was deleted" : "Go to page " + (pi + 1)) + '"><span class="pd-bmr-n">' + esc(b.t) + '</span><span class="pd-bmr-p">' + (pi < 0 ? "&ndash;" : pi + 1) + "</span></button>";
+			if (sel) html += '<div class="pd-bmr-tools" style="padding-left:' + (0.55 + b.lv * 1.1) + 'em"><button type="button" data-a="ren" title="Rename" aria-label="Rename">&#9998;</button><button type="button" data-a="out" title="Move left (one level up)" aria-label="Move left" ' + (b.lv ? "" : "disabled") + '>&#8676;</button><button type="button" data-a="in" title="Move right (under the one above)" aria-label="Move right" ' + (i && b.lv <= list[i - 1].lv ? "" : "disabled") + '>&#8677;</button><button type="button" data-a="up" title="Move up" aria-label="Move up" ' + (i ? "" : "disabled") + '>&#8593;</button><button type="button" data-a="down" title="Move down" aria-label="Move down" ' + (i < list.length - 1 ? "" : "disabled") + '>&#8595;</button><button type="button" data-a="here" title="Point it at the page you are on now">Set page</button><button type="button" data-a="del" title="Delete" aria-label="Delete">&#10005;</button></div>';
+			html += "</div>";
+		});
+		panel.innerHTML = html + "</div>"; markCur();
+		var s = panel.querySelector(".pd-bmr.is-sel"); if (s && s.scrollIntoViewIfNeeded) s.scrollIntoViewIfNeeded(false);
+	}
+	function goTo(b) {
+		var pi = pageIndex(b.pg); if (pi < 0) return PD.toast("The page of this bookmark was deleted");
+		var p = PD.doc.pages[pi], el = PD.pageEl(p), v = $("pd-view"); if (!el) return PD.goPage(pi);
+		var dy = 0; if (b.y != null) { var pt = PD.vp(p).toView(p.x0, b.y); dy = Math.max(0, pt[1] - 12); }
+		v.scrollTo({ top: el.offsetTop + dy - 8, behavior: "smooth" }); PD.cur = pi; PD.emit("cur");
+		if (compact()) show(false);
+	}
+	function rename(b) {
+		var row = panel.querySelector('.pd-bmr[data-id="' + b.id + '"] .pd-bmr-t'); if (!row) return;
+		row.outerHTML = '<input type="text" class="pd-bm-ed" value="' + esc(b.t) + '" aria-label="Bookmark name">';
+		var inp = panel.querySelector(".pd-bm-ed"); inp.focus(); inp.select(); var done = false;
+		function fin(ok) { if (done) return; done = true; var v = inp.value.replace(/\s+/g, " ").trim(); if (ok && v && v !== b.t) { b.t = v; changed(); } else render(); }
+		inp.addEventListener("keydown", function (e) { e.stopPropagation(); if (e.key === "Enter") fin(true); else if (e.key === "Escape") fin(false); }); inp.addEventListener("blur", function () { fin(true); });
+	}
+	panel.addEventListener("click", function (e) {
+		var b0 = e.target.closest("button"); if (!b0) return; var a = b0.dataset.a, row = b0.closest(".pd-bmr"), list = bms(), i = row ? list.findIndex(function (x) { return x.id === row.dataset.id; }) : -1, b = list[i];
+		if (a === "close") return show(false); if (a === "make") return make(false); if (a === "ocr") return make(true); if (a === "stop") { if (busy) busy.stop = true; return; }
+		if (a === "clear") { if (window.confirm("Delete all " + list.length + " bookmarks?")) { PD.doc.bms = []; selId = null; changed(""); } return; }
+		if (a === "add") { var p = PD.doc.pages[PD.cur], nb = { id: M.newId("b"), t: "Page " + (PD.cur + 1), pg: p.id, y: null, lv: 0 }, at = list.length; for (var k = 0; k < list.length; k++) if (pageIndex(list[k].pg) > PD.cur) { at = k; break; } if (at > 0) nb.lv = Math.min(list[at - 1].lv, 5); list.splice(at, 0, nb); selId = nb.id; changed(); rename(nb); return; }
+		if (!b) return;
+		if (a === "go") { selId = b.id; render(); goTo(b); return; }
+		if (a === "ren") return rename(b);
+		if (a === "del") { list.splice(i, 1); selId = null; return changed(); }
+		if (a === "out") { b.lv = Math.max(0, b.lv - 1); return changed(); } if (a === "in") { if (i) b.lv = Math.min(list[i - 1].lv + 1, b.lv + 1, 5); return changed(); }
+		if (a === "up" && i > 0) { list.splice(i - 1, 0, list.splice(i, 1)[0]); return changed(); } if (a === "down" && i < list.length - 1) { list.splice(i + 1, 0, list.splice(i, 1)[0]); return changed(); }
+		if (a === "here") { b.pg = curPageId(); b.y = null; PD.toast("Now goes to page " + (PD.cur + 1)); return changed(); }
+	});
+	panel.addEventListener("keydown", function (e) { e.stopPropagation(); });
+	document.addEventListener("keydown", function (e) { var t = e.target; if (e.ctrlKey || e.metaKey || e.altKey || !PD.doc || (t && /INPUT|TEXTAREA|SELECT/.test(t.tagName)) || PD.isEditing()) return; if (e.key === "b" || e.key === "B") PD.toggleBookmarks(); });
+	PD.renderBookmarks = render;
+
+	/* ---------- writing them into the downloaded PDF (pdf-lib low level: /Outlines with /First /Last /Next /Prev /Parent /Count, /Dest [page /XYZ null top null]) ---------- */
+	PD.writeOutline = function (L, out, destOf) {
+		var list = bms().filter(function (b) { return pageIndex(b.pg) >= 0; }); if (!list.length) return;
+		var ctx = out.context, tree = M.bmTree(list), rootRef = ctx.nextRef(), pages = out.getPages();
+		function build(nodes, parentRef) {
+			var refs = nodes.map(function () { return ctx.nextRef(); }), total = 0;
+			nodes.forEach(function (nd, k) {
+				var b = nd.b, pi = pageIndex(b.pg), d = destOf(pi, b.y), dict = { Title: L.PDFHexString.fromText(b.t), Parent: parentRef, Dest: [pages[pi].ref, L.PDFName.of("XYZ"), null, d == null ? null : L.PDFNumber.of(Math.round(d * 100) / 100), null] };
+				if (k > 0) dict.Prev = refs[k - 1]; if (k < nodes.length - 1) dict.Next = refs[k + 1];
+				if (nd.kids.length) { var sub = build(nd.kids, refs[k]); dict.First = sub.first; dict.Last = sub.last; dict.Count = L.PDFNumber.of(-nd.kids.length); }
+				ctx.assign(refs[k], ctx.obj(dict)); total++;
+			});
+			return { first: refs[0], last: refs[refs.length - 1], count: total };
+		}
+		var top = build(tree, rootRef);
+		ctx.assign(rootRef, ctx.obj({ Type: "Outlines", First: top.first, Last: top.last, Count: L.PDFNumber.of(top.count) }));
+		out.catalog.set(L.PDFName.of("Outlines"), rootRef);
+	};
+	render();
+})();
+
 /* MES PDF Editor: export with pdf-lib (text and shapes stay vector), flatten mode (pages become pictures), print. Uses PD. */
 (function () {
 	"use strict";
@@ -739,6 +1010,7 @@
 			for (var ai = 0; ai < p.annots.length; ai++) await draw(L, out, page, p.annots[ai], font, image, pngImage);
 			if (pi % 8 === 7) await new Promise(function (r) { setTimeout(r, 0); });
 		}
+		if (PD.writeOutline) try { PD.writeOutline(L, out, function (pi, y) { var p = PD.doc.pages[pi]; return y == null ? p.y0 + p.H : y; }); } catch (e) { console.error("bookmarks", e); }
 		out.setProducer("MES PDF Editor (mes.fm/pdf)"); out.setModificationDate(new Date());
 		return out.save();
 	}
@@ -779,6 +1051,7 @@
 			var blob = await new Promise(function (r) { cv.toBlob(r, "image/jpeg", q); }), bytes = new Uint8Array(await blob.arrayBuffer()), img = await out.embedJpg(bytes), page = out.addPage([vp.width / scale, vp.height / scale]); page.drawImage(img, { x: 0, y: 0, width: vp.width / scale, height: vp.height / scale }); cv.width = cv.height = 1;
 			if (onProgress) onProgress(i + 1, PD.doc.pages.length); await new Promise(function (r) { setTimeout(r, 0); });
 		}
+		if (PD.writeOutline) try { PD.writeOutline(L, out, function (pi, y) { var p = PD.doc.pages[pi], v = PD.vp(p, 1); return y == null ? v.height : v.height - v.toView(p.x0, y)[1]; }); } catch (e) { console.error("bookmarks", e); }
 		out.setProducer("MES PDF Editor (mes.fm/pdf)"); return out.save();
 	}
 	PD.exportBytes = async function (opts, onProgress) {
@@ -879,11 +1152,12 @@
 	var scrollT; view.addEventListener("scroll", function () { clearTimeout(scrollT); scrollT = setTimeout(PD.trackCurrent, 80); });
 	var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(refit, 200); });
 	/* page list and window mode */
-	function showThumbs() { $("pd-thumbbtn").setAttribute("aria-pressed", String(PD.S.thumbs)); $("pd-thumbs").classList.toggle("is-off", !PD.S.thumbs || !PD.doc); }
-	$("pd-thumbbtn").onclick = function () { PD.S.thumbs = !PD.S.thumbs; PD.saveS(); showThumbs(); if (PD.S.thumbs) PD.layout(); }; showThumbs(); PD.on("open", showThumbs);
-	function winLabel(on) { var b = $("pd-winbtn"); b.innerHTML = on ? "&#10005; Exit full window" : "&#10530; Full window"; b.title = on ? "Back to the normal page (F or Esc)" : "Fill the browser window (F)"; }
+	function showThumbs() { var on = PD.thumbsOn(); $("pd-thumbbtn").setAttribute("aria-pressed", String(on)); $("pd-thumbs").classList.toggle("is-off", !on || !PD.doc); }
+	// the page list has its own on/off choice on a phone (off by default there, on by default on a computer)
+	$("pd-thumbbtn").onclick = function () { var on = !PD.thumbsOn(); if (root.classList.contains("pd-compact")) PD.S.thumbsM = on; else PD.S.thumbs = on; PD.saveS(); showThumbs(); if (on) PD.layout(); }; showThumbs(); PD.on("open", showThumbs);
+	function winLabel(on) { var b = $("pd-winbtn"); b.innerHTML = on ? '<span aria-hidden="true">&#10005;</span><span class="pd-lbl"> Exit full window</span>' : '<span aria-hidden="true">&#10530;</span><span class="pd-lbl"> Full window</span>'; b.title = on ? "Back to the normal page (F or Esc)" : "Fill the browser window (F)"; }
 	function toggleWin(auto) { var on = !root.classList.contains("pd-win"); root.classList.toggle("pd-win", on); document.documentElement.classList.toggle("pd-win-on", on); $("pd-winbtn").setAttribute("aria-pressed", String(on)); winLabel(on); if (!auto) { PD.S.win = on; PD.saveS(); } if (PD.doc) setTimeout(refit, 80); }
-	$("pd-winbtn").onclick = function () { toggleWin(); };
+	$("pd-winbtn").onclick = function () { toggleWin(); }; winLabel(false);
 	/* Dark pages (saved with the other settings) */
 	function darkPages(on, save) { root.classList.toggle("pd-darkpg", on); var b = $("pd-darkbtn"); b.setAttribute("aria-pressed", String(on)); b.innerHTML = on ? "&#9680; Light pages" : "&#9680; Dark pages"; if (save) { PD.S.dark = on; PD.saveS(); } }
 	$("pd-darkbtn").onclick = function () { darkPages(!root.classList.contains("pd-darkpg"), true); }; darkPages(!!PD.S.dark);
@@ -980,5 +1254,41 @@
 		saved: function (d, name) { if (name && name !== d.name) d.name = name; if (d === PD.doc) PD.dirty = false; PD.status(); }
 	}) : null;
 	if (cloud) PD.on("history", function () { if (PD.dirty) cloud.changed(PD.doc); });
+	PD.on("room", refit);
+
+	/* ---------- phone / small window layout ----------
+	   pd-compact (editor under 700px wide, or a window under 560px tall): one short top row, the rarely used buttons move into a bar behind "⋯",
+	   small tools, no empty options row, page list off by default; pd-narrow (portrait phone) also puts the tools in a row above the pages.
+	   Decided from the editor's own width, so Standard / Wide / Theatre and the sidebar count too. */
+	var moreBar = $("pd-morebar"), moreBtn = $("pd-more"), xs = null, compact = null;
+	function moveX(on) {
+		if (!xs) { xs = [].slice.call(root.querySelectorAll(".pd-top .pd-x")); var cb = document.getElementById("mcl-btn-pdf"); if (cb) xs.splice(1, 0, cb); xs.forEach(function (el) { var m = document.createComment(""); el.parentNode.insertBefore(m, el); el._home = m; }); }
+		xs.forEach(function (el) { if (on) moreBar.appendChild(el); else el._home.parentNode.insertBefore(el, el._home.nextSibling); });
+	}
+	function setMore(open) { moreBar.hidden = !open; moreBtn.setAttribute("aria-expanded", String(open)); }
+	moreBtn.onclick = function () { setMore(moreBar.hidden); };
+	moreBar.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b && b.id !== "pd-darkbtn" && b.id !== "pd-thumbbtn") setMore(false); });
+	function applyH() { var h = root.classList.contains("pd-compact") ? PD.S.hM : PD.S.h; root.style.height = h && !root.classList.contains("pd-win") ? h + "px" : ""; }
+	function measure() {
+		var w = root.clientWidth || window.innerWidth, wh = window.innerHeight, c = w < 700 || wh < 560, n = c && w < 620 && wh > w * 0.9;
+		root.classList.toggle("pd-narrow", n);
+		if (c === compact) return; compact = c; root.classList.toggle("pd-compact", c); moveX(c); if (!c) setMore(false);
+		showThumbs(); applyH(); if (PD.renderBookmarks) PD.renderBookmarks(); if (PD.doc) { PD.layout(); setTimeout(refit, 60); }
+	}
+	// on a phone, bring the whole editor into view right under the site's floating bar when a PDF opens
+	PD.on("open", function () { if (!root.classList.contains("pd-compact") || root.classList.contains("pd-win")) return; var nav = document.getElementById("compact-nav"), off = nav ? Math.max(nav.offsetHeight, 52) : 0; window.scrollTo({ top: Math.max(0, root.getBoundingClientRect().top + window.scrollY - off - 4), behavior: "smooth" }); });
+	measure(); window.addEventListener("resize", measure); window.addEventListener("orientationchange", function () { setTimeout(measure, 250); });
+	if (window.ResizeObserver) new ResizeObserver(function () { measure(); }).observe(root);
+	var otw = toggleWin; toggleWin = function (auto) { otw(auto); applyH(); setTimeout(measure, 30); };
+	/* the grip under the editor: drag to make it taller or shorter (saved; phone and computer separately), double-click goes back to normal */
+	var grip = $("pd-grip");
+	grip.addEventListener("pointerdown", function (e) {
+		e.preventDefault(); grip.setPointerCapture(e.pointerId); var y0 = e.clientY, h0 = root.offsetHeight, key = root.classList.contains("pd-compact") ? "hM" : "h";
+		function mv(ev) { var h = Math.round(Math.max(320, Math.min(3000, h0 + ev.clientY - y0))); root.style.height = h + "px"; PD.S[key] = h; }
+		function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); PD.saveS(); refit(); }
+		grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+	});
+	grip.addEventListener("dblclick", function () { PD.S[root.classList.contains("pd-compact") ? "hM" : "h"] = 0; PD.saveS(); applyH(); refit(); });
+	grip.addEventListener("keydown", function (e) { var d = e.key === "ArrowDown" ? 40 : e.key === "ArrowUp" ? -40 : 0; if (!d) return; e.preventDefault(); e.stopPropagation(); var key = root.classList.contains("pd-compact") ? "hM" : "h", h = Math.max(320, root.offsetHeight + d); PD.S[key] = h; PD.saveS(); applyH(); });
 	PD.status();
 })();

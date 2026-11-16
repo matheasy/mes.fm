@@ -4,9 +4,10 @@
 	var M = window.PDM, PD = window.PD = { M: M, doc: null, zoom: 1, tool: "select", sel: null, cur: 0, dirty: false, images: {}, S: { thumbs: true, win: null }, hooks: {}, clip: null };
 	var $ = PD.$ = function (id) { return document.getElementById(id); };
 	var KEY = "mes-pdf-editor:v1";
-	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; if (sv.dark) PD.S.dark = true; } } catch (e) {}
+	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) { if (sv.thumbs === false) PD.S.thumbs = false; if (sv.win === false) PD.S.win = false; PD.S.prefs = sv.prefs || {}; if (sv.dark) PD.S.dark = true; if (sv.thumbsM) PD.S.thumbsM = true; if (sv.h) PD.S.h = sv.h; if (sv.hM) PD.S.hM = sv.hM; if (sv.bm) PD.S.bm = true; if (sv.bmM) PD.S.bmM = true; } } catch (e) {}
 	PD.S.prefs = PD.S.prefs || {};
-	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, dark: !!PD.S.dark, prefs: PD.S.prefs })); } catch (e) {} };
+	PD.thumbsOn = function () { var r = document.getElementById("pd"); return r && r.classList.contains("pd-compact") ? !!PD.S.thumbsM : PD.S.thumbs !== false; };
+	PD.saveS = function () { try { localStorage.setItem(KEY, JSON.stringify({ thumbs: PD.S.thumbs, win: PD.S.win, dark: !!PD.S.dark, prefs: PD.S.prefs, thumbsM: !!PD.S.thumbsM, h: PD.S.h || 0, hM: PD.S.hM || 0, bm: !!PD.S.bm, bmM: !!PD.S.bmM })); } catch (e) {} };
 	PD.on = function (n, f) { (PD.hooks[n] = PD.hooks[n] || []).push(f); }; PD.emit = function (n, a) { (PD.hooks[n] || []).forEach(function (f) { try { f(a); } catch (e) { console.error(e); } }); };
 	PD.toast = function (msg, ms) { var t = $("pd-toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(PD.toast._t); PD.toast._t = setTimeout(function () { t.classList.remove("show"); }, ms || 2200); };
 	PD.hint = function (s) { $("pd-hint").textContent = s || ""; };
@@ -47,11 +48,11 @@
 			PD.busy(true, "Opening " + file.name + "...");
 			var bytes = new Uint8Array(await file.arrayBuffer()); if (String.fromCharCode.apply(null, bytes.slice(0, 5)) !== "%PDF-") { var head = String.fromCharCode.apply(null, bytes.slice(0, 1024)); if (head.indexOf("%PDF-") < 0) throw new Error("That does not look like a PDF file."); }
 			var s = await PD.loadSource(bytes, file.name);
-			PD.doc = { name: file.name, srcs: [s], pages: s.proxies.map(function (p, i) { return pageEntry(0, i, p); }) };
+			PD.doc = { name: file.name, srcs: [s], pages: s.proxies.map(function (p, i) { return pageEntry(0, i, p); }), bms: [] };
 			PD.images = {}; PD.sel = null; PD.cur = 0; PD.dirty = false; PD.hist.reset(PD.snapshot()); PD.layout(true); PD.emit("open");
 		} catch (e) { console.error(e); PD.toast((e && e.message) || "Could not open that PDF", 4500); } finally { PD.busy(false); }
 	};
-	PD.newBlank = async function () { await PD.ensureLibs(); PD.doc = { name: "Untitled.pdf", srcs: [], pages: [blankEntry(612, 792)] }; PD.images = {}; PD.sel = null; PD.cur = 0; PD.dirty = false; PD.hist.reset(PD.snapshot()); PD.layout(true); PD.emit("open"); };
+	PD.newBlank = async function () { await PD.ensureLibs(); PD.doc = { name: "Untitled.pdf", srcs: [], pages: [blankEntry(612, 792)], bms: [] }; PD.images = {}; PD.sel = null; PD.cur = 0; PD.dirty = false; PD.hist.reset(PD.snapshot()); PD.layout(true); PD.emit("open"); };
 	PD.addPdf = async function (file) {
 		if (!PD.doc) return PD.open(file);
 		try { PD.busy(true, "Adding pages..."); var bytes = new Uint8Array(await file.arrayBuffer()), s = await PD.loadSource(bytes, file.name), si = PD.doc.srcs.push(s) - 1; s.proxies.forEach(function (p, i) { PD.doc.pages.push(pageEntry(si, i, p)); }); PD.commit(); PD.layout(); PD.toast("Added " + s.proxies.length + (s.proxies.length === 1 ? " page" : " pages")); }
@@ -64,13 +65,13 @@
 
 	/* ---------- history: JSON snapshots of the page list and every annotation ---------- */
 	PD.hist = new M.History(80);
-	PD.snapshot = function () { return JSON.stringify({ pages: PD.doc ? PD.doc.pages.map(function (p) { return { id: p.id, src: p.src, index: p.index, blank: !!p.blank, W: p.W, H: p.H, x0: p.x0, y0: p.y0, rot0: p.rot0, rot: p.rot, annots: p.annots }; }) : [] }); };
+	PD.snapshot = function () { return JSON.stringify({ pages: PD.doc ? PD.doc.pages.map(function (p) { return { id: p.id, src: p.src, index: p.index, blank: !!p.blank, W: p.W, H: p.H, x0: p.x0, y0: p.y0, rot0: p.rot0, rot: p.rot, annots: p.annots }; }) : [], bms: PD.doc && PD.doc.bms || [] }); };
 	PD.commit = function () { if (!PD.doc) return; PD.dirty = true; if (PD.hist.push(PD.snapshot())) PD.emit("history"); PD.status(); };
 	function restore(snap) {
 		if (!snap || !PD.doc) return; var d = JSON.parse(snap), selId = PD.sel && PD.sel.id;
 		PD.doc.pages = d.pages.map(function (q) { var p = Object.assign({}, q); p.proxy = q.blank ? null : PD.doc.srcs[q.src].proxies[q.index]; return p; });
 		PD.sel = null; if (selId) PD.doc.pages.forEach(function (p) { p.annots.forEach(function (a) { if (a.id === selId) PD.sel = { page: p.id, id: a.id }; }); });
-		PD.cur = Math.min(PD.cur, PD.doc.pages.length - 1); PD.dirty = true; PD.layout(); PD.emit("history"); PD.status();
+		PD.doc.bms = d.bms || []; PD.cur = Math.min(PD.cur, PD.doc.pages.length - 1); PD.dirty = true; PD.layout(); PD.emit("history"); PD.status();
 	}
 	PD.undo = function () { var s = PD.hist.undo(); if (s) restore(s); }; PD.redo = function () { var s = PD.hist.redo(); if (s) restore(s); };
 

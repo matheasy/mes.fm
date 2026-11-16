@@ -363,6 +363,60 @@ html body.dark-mode #pd.pd {--pd-on:#d9363e;}
 html body.dark-mode #pd .pd-btn--primary, html body.dark-mode #pd .pd-seg button[aria-pressed="true"] {color:#fff;}
 	.pd-linkform {display:flex;gap:0.5em;width:100%;max-width:30em;} .pd .pd-link {flex:1;min-width:0;padding:0.55em 0.75em;border-radius:7px;border:1px solid var(--pd-line);background:var(--pd-panel);color:var(--pd-fg);font:inherit;} .pd .pd-link:focus {outline:2px solid var(--pd-on);outline-offset:1px;} .pd-linknote.is-warn {color:#ffb4a8;}
 
+/* ---------- phone / small-window layout (class pd-compact, set by app.js from the editor's own size: under 700px wide or a window under 560px tall) ----------
+   one short top row, the rarely used buttons behind "⋯", no empty options row, small tools, page list off by default, the editor as tall as the screen */
+.pd-more {display:none;} .pd-morebar {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;background:var(--pd-panel2);border-bottom:1px solid var(--pd-line);padding:0.35em 0.5em;flex:none;}
+.pd-grip {flex:none;height:12px;cursor:ns-resize;background:var(--pd-panel);border-top:1px solid var(--pd-line);touch-action:none;position:relative;} .pd-grip::after {content:"";position:absolute;left:50%;top:4px;width:42px;height:4px;margin-left:-21px;border-radius:2px;background:var(--pd-dim);opacity:0.55;} .pd-grip:hover::after, .pd-grip:focus-visible::after {opacity:1;background:var(--pd-on);}
+.pd.pd-win .pd-grip {display:none;}
+html.pd-win-on #hdrBarTab, html.pd-win-on #compact-nav, html.pd-win-on .mes-bottom-anchor {display:none !important;}
+.pd-ico {display:none;}
+.pd.pd-compact {font-size:13px;height:max(420px, calc(100dvh - 68px));scroll-margin-top:64px;}
+.pd.pd-compact.pd-win {height:auto;}
+.pd-compact .pd-ico {display:inline;} .pd-compact .pd-lbl {display:none;}
+.pd-compact .pd-more {display:inline-block;font-size:1.35em;line-height:1;}
+.pd-compact .pd-more[aria-expanded="true"] {background:var(--pd-hover);border-color:var(--pd-line);}
+.pd-compact .pd-top {flex-wrap:nowrap;gap:0.25em;padding:0.25em 0.35em;}
+.pd-compact .pd-top-l {flex:1 1 auto;min-width:0;flex-wrap:nowrap;gap:0.25em;} .pd-compact .pd-top-r {flex:none;flex-wrap:nowrap;gap:0.1em;}
+.pd-compact .pd-fname {max-width:none;min-width:0;flex:1 1 auto;font-size:0.92em;}
+.pd-compact .pd-btn {padding:0.4em 0.6em;} .pd-compact .pd-top .pd-btn--primary {padding:0.4em 0.75em;}
+.pd-compact .pd-ib {min-width:2.3em;height:2.3em;padding:0 0.25em;} .pd-compact .pd-zoom {min-width:3.3em;height:2.3em;font-size:0.92em;} .pd-compact .pd-vsep {display:none;}
+.pd-compact .pd-opts {flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;min-height:0;padding:0.25em 0.45em;gap:0.6em;white-space:nowrap;scrollbar-width:thin;}
+.pd-compact .pd-opts > * {flex:none;}
+.pd-compact .pd-opts:has(> .pd-note:only-child), .pd-compact .pd-opts:empty {display:none;}
+.pd-compact .pd-tool {font-size:0.72em;padding:0.25em 0.15em;gap:0;} .pd-compact .pd-tool .pd-ti {font-size:1.45em;}
+.pd-compact .pd-status {padding:0.15em 0.6em;font-size:0.85em;gap:0.8em;} .pd-compact .pd-hint {display:none;}
+.pd-compact .pd-empty-in {gap:0.7em;} .pd-compact .pd-empty-t {font-size:1.35em;}
+/* narrow (portrait phone): tools in one scrolling row above the pages, a slim page strip */
+.pd-narrow .pd-main {flex-direction:column;}
+.pd-narrow .pd-tools {flex-direction:row;width:100%;border-right:0;border-bottom:1px solid var(--pd-line);overflow-x:auto;overflow-y:hidden;padding:0.2em;scrollbar-width:thin;}
+.pd-narrow .pd-tool {min-width:3.6em;flex:none;}
+.pd-narrow .pd-thumbs {width:100%;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--pd-line);max-height:none;padding:0.3em;gap:0.4em;}
+.pd-narrow .pd-th {width:4.6em;flex:none;padding:0.15em;} .pd-narrow .pd-th-act {display:none;} .pd-narrow .pd-th.is-cur .pd-th-act {display:flex;position:absolute;left:100%;top:0;z-index:2;flex-direction:column;background:var(--pd-panel);border:1px solid var(--pd-line);border-radius:0.35em;padding:0.15em;margin:0 0 0 0.2em;}
+.pd-narrow .pd-thumbs-add {flex-direction:row;margin:0;} .pd-narrow .pd-thumbs-add button {white-space:nowrap;font-size:0.85em;padding:0.3em 0.5em;}
+.pd-narrow .pd-pages {gap:10px;padding:8px;}
+/* short + wide (phone held sideways): keep the side columns, but slimmer */
+.pd-compact:not(.pd-narrow) .pd-tools {width:4.4em;padding:0.2em;} .pd-compact:not(.pd-narrow) .pd-thumbs {width:7.5em;padding:0.3em;}
+@media (max-width:760px) {.pd:not(.pd-compact) .pd-th-act {display:flex;}}
+
+/* ---------- 🔖 Bookmarks panel ---------- */
+.pd-bm {flex:none;width:16em;display:flex;flex-direction:column;background:var(--pd-panel);border-right:1px solid var(--pd-line);min-height:0;}
+.pd-bm-h {display:flex;align-items:center;gap:0.4em;padding:0.45em 0.55em;border-bottom:1px solid var(--pd-line);} .pd-bm-h b {flex:1;} .pd-bm-x {display:none;}
+.pd-bm-act {display:flex;flex-wrap:wrap;gap:0.3em;padding:0.45em 0.55em;border-bottom:1px solid var(--pd-line);} .pd-bm-act .pd-btn {padding:0.35em 0.6em;font-size:0.92em;}
+.pd-bm-note {padding:0.4em 0.6em;color:var(--pd-dim);font-size:0.85em;border-bottom:1px solid var(--pd-line);} .pd-bm-note:empty {display:none;}
+.pd-bm-prog {height:4px;background:var(--pd-field);} .pd-bm-prog i {display:block;height:100%;width:0;background:var(--pd-on);transition:width .2s;}
+.pd-bm-list {flex:1 1 auto;overflow-y:auto;padding:0.3em 0;}
+.pd-bmr {position:relative;}
+.pd-bmr-t {display:flex;gap:0.4em;align-items:baseline;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;padding:0.4em 0.55em 0.4em 0;color:var(--pd-text);line-height:1.3;}
+.pd-bmr-t:hover {background:var(--pd-hover);} .pd-bmr.is-cur > .pd-bmr-t {border-left-color:var(--pd-on);background:var(--pd-panel2);} .pd-bmr.is-sel > .pd-bmr-t {background:var(--pd-hover);}
+.pd-bmr-n {flex:1;min-width:0;overflow-wrap:anywhere;} .pd-bmr[data-lv="0"] .pd-bmr-n {font-weight:700;} .pd-bmr-p {color:var(--pd-dim);font-size:0.85em;flex:none;}
+.pd-bmr-tools {display:none;gap:0.2em;flex-wrap:wrap;padding:0.15em 0.5em 0.45em;} .pd-bmr.is-sel .pd-bmr-tools {display:flex;}
+.pd-bmr-tools button {background:var(--pd-field);border:1px solid var(--pd-line);border-radius:0.3em;min-width:2.1em;height:2.1em;padding:0 0.35em;font-size:0.9em;} .pd-bmr-tools button:hover {background:var(--pd-hover);}
+.pd-bmr.is-gone .pd-bmr-n {text-decoration:line-through;opacity:0.6;}
+.pd-bm-empty {padding:0.9em 0.7em;color:var(--pd-dim);font-size:0.92em;}
+.pd-bm-ed {width:100%;background:var(--pd-field);border:1px solid var(--pd-on);border-radius:0.3em;padding:0.35em 0.45em;color:var(--pd-text);}
+.pd-compact .pd-bm {position:absolute;z-index:40;left:0;top:0;bottom:0;width:min(22em,88%);box-shadow:6px 0 24px rgba(0,0,0,0.55);} .pd-compact .pd-bm-x {display:inline-block;}
+.pd-main {position:relative;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -707,8 +761,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<div class="tu pd" id="pd">
 		<div class="pd-top">
 			<div class="pd-top-l">
-				<button type="button" class="pd-btn" id="pd-open">Open PDF</button>
-				<button type="button" class="pd-btn" id="pd-openlink" title="Open a PDF from a web link (or just paste a link anywhere on the page)">&#128279; From link</button>
+				<button type="button" class="pd-btn" id="pd-open" title="Open a PDF (Ctrl+O)"><span class="pd-ico" aria-hidden="true">&#128194;</span><span class="pd-lbl"> Open PDF</span></button>
+				<button type="button" class="pd-btn pd-x" id="pd-openlink" title="Open a PDF from a web link (or just paste a link anywhere on the page)">&#128279; From link</button>
 				<span class="pd-fname" id="pd-name">No file open</span>
 			</div>
 			<div class="pd-top-r">
@@ -719,18 +773,22 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="pd-zoom" id="pd-zoom" title="Click to fit the page width">100%</button>
 				<button type="button" class="pd-ib" id="pd-zin" title="Zoom in" aria-label="Zoom in">+</button>
 				<span class="pd-vsep"></span>
-				<button type="button" class="pd-ib pd-ib--txt" id="pd-thumbbtn" aria-pressed="true" title="Show or hide the page list">Pages</button>
-				<button type="button" class="pd-ib pd-ib--txt" id="pd-darkbtn" aria-pressed="false" title="Dark pages: show the PDF pages light-on-dark, easier on the eyes at night. Your downloads and prints are not changed (D)">&#9680; Dark pages</button>
+				<button type="button" class="pd-ib pd-ib--txt pd-x" id="pd-thumbbtn" aria-pressed="true" title="Show or hide the page list">Pages</button>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-bmbtn" aria-pressed="false" title="Bookmarks: jump to a chapter, read the PDF's own bookmarks or make them automatically (B)"><span aria-hidden="true">&#128278;</span><span class="pd-lbl"> Bookmarks</span></button>
+				<button type="button" class="pd-ib pd-ib--txt pd-x" id="pd-darkbtn" aria-pressed="false" title="Dark pages: show the PDF pages light-on-dark, easier on the eyes at night. Your downloads and prints are not changed (D)">&#9680; Dark pages</button>
 				<button type="button" class="pd-ib pd-ib--txt" id="pd-winbtn" aria-pressed="false" title="Fill the browser window (F)">&#10530; Full window</button>
-				<button type="button" class="pd-btn" id="pd-read" title="Read the PDF aloud, with each word highlighted on the page. Starts at the page you are on (Alt+Shift+R)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
-				<button type="button" class="pd-btn" id="pd-print" title="Print the edited PDF">Print</button>
-				<button type="button" class="pd-btn pd-btn--primary" id="pd-export">Download PDF</button>
+				<button type="button" class="pd-btn pd-x" id="pd-read" title="Read the PDF aloud, with each word highlighted on the page. Starts at the page you are on (Alt+Shift+R)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
+				<button type="button" class="pd-btn pd-x" id="pd-print" title="Print the edited PDF">Print</button>
+				<button type="button" class="pd-ib pd-more" id="pd-more" aria-expanded="false" aria-controls="pd-morebar" title="More: open from a link, cloud, page list, dark pages, read aloud, print">&#8943;</button>
+				<button type="button" class="pd-btn pd-btn--primary" id="pd-export" title="Download the edited PDF"><span class="pd-ico" aria-hidden="true">&#11015;</span><span class="pd-lbl"> Download PDF</span></button>
 			</div>
 		</div>
+		<div class="pd-morebar" id="pd-morebar" hidden></div>
 		<div class="pd-opts" id="pd-opts" aria-label="Tool options"></div>
 		<div class="pd-main">
 			<div class="pd-tools" id="pd-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
 			<div class="pd-thumbs" id="pd-thumbs" aria-label="Pages"></div>
+			<div class="pd-bm" id="pd-bm" aria-label="Bookmarks" hidden></div>
 			<div class="pd-view" id="pd-view">
 				<div class="pd-pages" id="pd-pages"></div>
 				<div class="pd-empty" id="pd-empty">
@@ -749,6 +807,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</div>
 		<div class="pd-status"><span id="pd-st-doc">No file</span><span id="pd-st-sel"></span><span class="pd-hint" id="pd-hint"></span></div>
+		<div class="pd-grip" id="pd-grip" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to make the editor taller or shorter (double-click: back to normal)"></div>
 		<input type="file" id="pd-file" accept="application/pdf,.pdf" hidden>
 		<input type="file" id="pd-addfile" accept="application/pdf,.pdf" hidden>
 		<input type="file" id="pd-imgfile" accept="image/*" hidden>
@@ -778,7 +837,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<dt>Is my signature legally valid?</dt><dd>An image of your signature placed on a PDF is accepted for many everyday documents, but it is not a certified digital signature. For contracts that require one, check what the other party asks for.</dd>
 			<dt>Can I fill in the form fields of a PDF form?</dt><dd>Yes. If the PDF has fillable fields, the editor tells you; choose the <b>Fill form</b> tool and type into the highlighted text boxes, tick the check boxes and radio buttons, and pick from the drop-downs. For a form with no fields (a scan, for instance), use the Text tool and check-mark stamps to fill it in by hand.</dd>
 			<dt>Does it work with a password-protected PDF?</dt><dd>Yes: you are asked for the password. The edited copy is saved as flattened pages when the file cannot be re-written directly.</dd>
-			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support; the page list and tools adapt to small screens. A larger screen is more comfortable for detailed work.</dd>
+			<dt>Can it make bookmarks (a table of contents) for a PDF?</dt><dd>Yes. Tap <b>&#128278; Bookmarks</b>: the PDF's own bookmarks show up, and <b>Make bookmarks</b> builds them from the book's table of contents (matching the printed page numbers to the real pages) or, if it has none, from its headings. Scanned books are read with OCR first. Rename, indent, reorder or delete them, and they are saved into the PDF when you download it, so other PDF readers show them too. It all runs in your browser.</dd>
+			<dt>Does it work on a phone or tablet?</dt><dd>Yes, with touch and pen support. On a phone the buttons fit in one short row (the rest are behind &#8943;), the page list is off until you want it, and you can drag the bar under the editor to make it taller, or use Full window. A larger screen is more comfortable for detailed work.</dd>
 			<dt>What happens to my work if I close the tab?</dt><dd>It is not saved on any server. The page warns you before you leave with unsaved edits, so download the PDF when you are done.</dd>
 		</dl>
 		<p><b>Other document tools:</b> <a href="/docx">Word Viewer</a> (open, edit and save .docx files) &middot; <a href="/excel">Spreadsheet Viewer</a> (open, edit and save Excel and CSV files) &middot; <a href="/pdf-tools">PDF Tools</a> (merge, split, compress, convert).</p>
@@ -843,7 +903,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/pdf/js/pdf.js?v=12" defer></script>
+	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/pdf/js/pdf.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

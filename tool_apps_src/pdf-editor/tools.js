@@ -228,7 +228,7 @@
 		}).catch(function () {});
 	}
 	function buildThumbs() {
-		var box = $("pd-thumbs"); box.classList.toggle("is-off", !PD.S.thumbs || !PD.doc); if (!PD.doc) { box.innerHTML = ""; return; } if (!PD.S.thumbs) return;
+		var box = $("pd-thumbs"); box.classList.toggle("is-off", !PD.thumbsOn() || !PD.doc); if (!PD.doc) { box.innerHTML = ""; return; } if (!PD.thumbsOn()) return;
 		box.innerHTML = PD.doc.pages.map(function (p, i) { return '<div class="pd-th' + (i === PD.cur ? " is-cur" : "") + '" draggable="true" data-i="' + i + '"><canvas></canvas><div class="pd-th-n">' + (i + 1) + '</div><div class="pd-th-act"><button type="button" data-a="rl" title="Rotate left" aria-label="Rotate page ' + (i + 1) + ' left">↶</button><button type="button" data-a="rr" title="Rotate right" aria-label="Rotate page ' + (i + 1) + ' right">↷</button><button type="button" data-a="dup" title="Duplicate page" aria-label="Duplicate page ' + (i + 1) + '">⧉</button><button type="button" data-a="blank" title="Add a blank page after this one" aria-label="Add a blank page after page ' + (i + 1) + '">+</button><button type="button" data-a="del" title="Delete page" aria-label="Delete page ' + (i + 1) + '">✕</button></div></div>'; }).join("") + '<div class="pd-thumbs-add"><button type="button" data-a="addblank">+ Blank page</button><button type="button" data-a="addpdf">+ Pages from a PDF</button></div>';
 		[].forEach.call(box.querySelectorAll(".pd-th"), function (th, i) { thumbRender(PD.doc.pages[i], th.querySelector("canvas")); });
 	}
@@ -248,8 +248,8 @@
 		box.addEventListener("drop", function (e) { if (from == null) return; e.preventDefault(); var th = e.target.closest(".pd-th"); if (th) { var to = +th.dataset.i; if (to !== from) { var pg = PD.doc.pages.splice(from, 1)[0]; PD.doc.pages.splice(to, 0, pg); PD.cur = to; PD.commit(); PD.layout(); } } from = null; });
 		box.addEventListener("dragend", function () { from = null; [].forEach.call(box.querySelectorAll(".is-over"), function (x) { x.classList.remove("is-over"); }); });
 	}
-	var thumbT; PD.on("layout", function () { clearTimeout(thumbT); thumbT = setTimeout(buildThumbs, 120); }); PD.on("cur", function () { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (x, i) { x.classList.toggle("is-cur", i === PD.cur); }); var cur = $("pd-thumbs").querySelector(".is-cur"); if (cur && PD.S.thumbs) { var box = $("pd-thumbs"); if (cur.offsetTop < box.scrollTop || cur.offsetTop + cur.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = cur.offsetTop - 20; } });
+	var thumbT; PD.on("layout", function () { clearTimeout(thumbT); thumbT = setTimeout(buildThumbs, 120); }); PD.on("cur", function () { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (x, i) { x.classList.toggle("is-cur", i === PD.cur); }); var cur = $("pd-thumbs").querySelector(".is-cur"); if (cur && PD.thumbsOn()) { var box = $("pd-thumbs"); if (cur.offsetTop < box.scrollTop || cur.offsetTop + cur.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = cur.offsetTop - 20; } });
 	PD.refreshThumb = function (p) { var i = PD.doc.pages.indexOf(p), th = $("pd-thumbs").querySelectorAll(".pd-th")[i]; if (th) thumbRender(p, th.querySelector("canvas")); };
-	var tt; PD.on("history", function () { clearTimeout(tt); tt = setTimeout(function () { if (PD.doc && PD.S.thumbs) { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (th, i) { if (PD.doc.pages[i]) thumbRender(PD.doc.pages[i], th.querySelector("canvas")); }); } }, 600); });
+	var tt; PD.on("history", function () { clearTimeout(tt); tt = setTimeout(function () { if (PD.doc && PD.thumbsOn()) { [].forEach.call($("pd-thumbs").querySelectorAll(".pd-th"), function (th, i) { if (PD.doc.pages[i]) thumbRender(PD.doc.pages[i], th.querySelector("canvas")); }); } }, 600); });
 	PD.init = { buildTools: buildTools, bindPointer: bindPointer, bindThumbs: bindThumbs };
 })();

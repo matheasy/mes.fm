@@ -38,4 +38,20 @@ eq(P.hexToRgb("#ff0000"), [1, 0, 0], "red"); eq(P.hexToRgb("#0f0")[1], 1, "short
 eq(P.editedName("My Form.pdf"), "My Form-edited.pdf", "edited name"); eq(P.editedName("a-edited.pdf"), "a-edited.pdf", "not doubled"); eq(P.editedName("a/b:c.pdf"), "a-b-c-edited.pdf", "unsafe characters"); eq(P.editedName(""), "document-edited.pdf", "empty"); eq(P.formatBytes(1536), "2 KB", "KB"); eq(P.formatBytes(5 * 1048576), "5.0 MB", "MB");
 // history
 const h = new P.History(3); h.reset("a"); eq(h.canUndo(), false, "nothing to undo"); h.push("b"); h.push("c"); eq(h.undo(), "b", "undo"); eq(h.canRedo(), true, "can redo"); eq(h.redo(), "c", "redo"); h.push("d"); h.push("e"); eq(h.stack.length, 3, "limited to 3"); eq(h.undo(), "d", "undo again"); h.push("x"); eq(h.canRedo(), false, "a new edit drops the redo branch"); eq(h.push("x"), false, "same snapshot is not pushed twice"); eq(P.newId("n") !== P.newId("n"), true, "ids are unique");
+// bookmarks: table of contents, headings, scanned, tree
+{
+	const L = (text, y, size, x) => ({ text, y, size: size || 10, x: x || 72 });
+	const toc = { lines: [L("Contents", 700, 18)], rows: [L("Contents", 700, 18), L("1. Getting started . . . . . . 1", 660), L("2. The long chapter title that", 640), L("runs over two lines .......... 5", 628), L("2.1 A part of it\t7", 610, 10, 90), L("3. The end ........ 9", 590)] };
+	const pages = [{ lines: [L("A Book", 600, 30)], rows: [] }, toc];
+	for (let i = 0; i < 10; i++) pages.push({ lines: [L("Body text that goes on and on and on for a whole line of words here.", 500)], rows: [] });
+	pages[2].lines.push(L("1. Getting started", 720, 16)); pages[6].lines.push(L("2. The long chapter title that runs over two lines", 720, 16)); pages[10].lines.push(L("3. The end", 720, 16));
+	const r = P.makeBookmarks(pages);
+	eq(r.how, "toc", "table of contents found"); eq(r.items.length, 5, "contents + 4 entries"); eq(r.items[2].t, "2. The long chapter title that runs over two lines", "two-line entry joined"); eq(r.items[1].pi, 2, "printed page 1 -> PDF page 3"); eq(r.items[3].lv, 1, "indented entry is a level down"); eq(r.sure, true, "offset confirmed by the headings");
+	const hp = [0, 1, 2, 3].map(i => ({ lines: [L("Chapter " + (i + 1) + ": Beginnings", 720, 18), L("Running header", 780, 9), L("Section " + i + " notes", 650, 13), L("Plain text body line that is long enough to be a paragraph, really.", 600), L("Plain text body line that is long enough to be a paragraph, again.", 588)], rows: [] }));
+	const h2 = P.makeBookmarks(hp);
+	eq(h2.how, "headings", "headings used without a table of contents"); eq(h2.items.filter(b => /^Chapter/.test(b.t)).length, 4, "every chapter found"); eq(h2.items.some(b => /Running/.test(b.t)), false, "running header left out"); eq(h2.items.find(b => /^Section/.test(b.t)).lv, 1, "smaller heading is level 2");
+	eq(P.makeBookmarks([{ lines: [] }, { lines: [] }, { lines: [L("x", 1)] }]).how, "scanned", "pages without text = scanned");
+	const tr = P.bmTree([{ t: "a", lv: 0 }, { t: "b", lv: 2 }, { t: "c", lv: 1 }, { t: "d", lv: 0 }]);
+	eq(tr.length, 2, "two top items"); eq(tr[0].kids.length, 2, "a level can only go one deeper"); eq(tr[0].kids[0].b.t, "b", "child order kept");
+}
 console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);

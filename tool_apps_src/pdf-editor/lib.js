@@ -126,6 +126,104 @@
 	History.prototype.undo = function () { return this.canUndo() ? this.stack[--this.i] : null; }; History.prototype.redo = function () { return this.canRedo() ? this.stack[++this.i] : null; };
 	// default stamps / sizes
 	var SIZES = { sigW: 150, stampW: 28, noteW: 18 };
-	var PDM = { newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
+
+	/* ---------- bookmarks: find a table of contents or headings in the text of the pages (also used on OCR'd lines) ----------
+	   a page = { lines: gap-aware lines [{text, x, y, size}], rows: y-grouped rows (a wide gap becomes a tab), H }; y grows upwards like PDF space */
+	function rowsOf(items) {
+		var it = items.filter(function (i) { return i && typeof i.str === "string" && i.str.trim() !== "" && i.transform; }).map(function (i) { return { s: i.str, x: i.transform[4], y: i.transform[5], w: i.width || 0, size: Math.hypot(i.transform[2], i.transform[3]) || i.height || 10 }; });
+		it.sort(function (a, b) { return Math.abs(b.y - a.y) > 0.45 * Math.min(a.size, b.size) ? b.y - a.y : a.x - b.x; });
+		var rows = [], cur = null;
+		it.forEach(function (i) {
+			if (cur && Math.abs(cur.y - i.y) < 0.45 * Math.min(cur.size, i.size)) { var gap = i.x - (cur.x + cur.w); cur.text += gap > 2 * cur.size ? "\t" : gap > 0.15 * cur.size && !/\s$/.test(cur.text) ? " " : ""; cur.text += i.s; cur.w = Math.max(cur.w, i.x + i.w - cur.x); cur.size = Math.max(cur.size, i.size); }
+			else { cur = { text: i.s, x: i.x, y: i.y, w: i.w, size: i.size }; rows.push(cur); }
+		});
+		return rows;
+	}
+	function bmNorm(s) { return String(s || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+	function bodySize(pages) { var w = {}; pages.forEach(function (p) { (p.lines || []).forEach(function (l) { var k = Math.round(l.size * 2) / 2; w[k] = (w[k] || 0) + String(l.text).length; }); }); var best = 0, bk = 10; Object.keys(w).forEach(function (k) { if (w[k] > best) { best = w[k]; bk = +k; } }); return bk; }
+	function isScanned(pages) { if (!pages.length) return false; var t = 0; pages.forEach(function (p) { var c = 0; (p.lines || []).forEach(function (l) { c += String(l.text).replace(/\s/g, "").length; }); if (c >= 40) t++; }); return t / pages.length < 0.3; }
+	var TOC_RE = /^(.*?[A-Za-zÀ-ɏ].*?)\s*(?:[.·•…_ ]{3,}|\t|\s[.·•…_]{2,}\s?)\s*(\d{1,4})$/;
+	function findToc(pages) {
+		var n = pages.length, lim = Math.min(n, 30), entries = [], tocPages = [], last = -9;
+		for (var pi = 0; pi < lim; pi++) {
+			var got = [];
+			var prev = null;   // an entry that runs over two lines: its first line has no page number
+			(pages[pi].rows || pages[pi].lines || []).forEach(function (r) {
+				var t = String(r.text).replace(/\s+$/, ""), m = t.match(TOC_RE);
+				if (!m) { prev = /[A-Za-zÀ-ɏ]/.test(t) && t.length <= 120 && !/\t/.test(t) ? r : null; return; }
+				var title = m[1].replace(/[\s.·•…_\t]+$/, "").replace(/\t/g, " ").replace(/\s{2,}/g, " ").trim(), x = r.x;
+				if (prev && prev.y - r.y > 0 && prev.y - r.y <= 1.9 * Math.max(prev.size, r.size) && prev.x <= r.x + 2) { title = String(prev.text).replace(/\s+/g, " ").trim() + " " + title; x = prev.x; }
+				prev = null; if (title.length < 2 || title.length > 200) return; got.push({ t: title, num: +m[2], x: x, tp: pi });
+			});
+			if (got.length >= 4 && (pi - last <= 2 || !tocPages.length)) { tocPages.push(pi); last = pi; entries = entries.concat(got); }
+			else if (tocPages.length && pi - last > 2) break;
+		}
+		if (entries.length < 4) return { items: [], tocPages: [] };
+		var inc = 0; for (var i = 1; i < entries.length; i++) if (entries[i].num >= entries[i - 1].num) inc++;
+		if (inc / (entries.length - 1) < 0.7) return { items: [], tocPages: [] };
+		// levels: indentation first, else the depth of a "1.2.3" number
+		var xs = []; entries.forEach(function (e) { var k = Math.round(e.x / 6); if (xs.indexOf(k) < 0) xs.push(k); }); xs.sort(function (a, b) { return a - b; });
+		entries.forEach(function (e) { var lv = xs.length > 1 ? xs.indexOf(Math.round(e.x / 6)) : 0, m = e.t.match(/^(\d+(?:\.\d+)+)\s/); if (xs.length <= 1 && m) lv = m[1].split(".").length - 1; e.lv = Math.min(2, Math.max(0, lv)); });
+		// printed page number -> PDF page: vote on where the titles really appear
+		var body = bodySize(pages), start = tocPages[tocPages.length - 1] + 1, votes = {}, found = [];
+		entries.forEach(function (e, ei) {
+			var tn = bmNorm(e.t).slice(0, 50); if (tn.length < 4) return;
+			for (var pi = start; pi < n; pi++) { var hit = null; (pages[pi].lines || []).some(function (l) { var ln = bmNorm(l.text); if (ln.length >= 4 && l.size >= body * 0.9 && (ln.indexOf(tn) === 0 || (ln.length >= 8 && tn.indexOf(ln) === 0))) { hit = l; return true; } return false; }); if (hit) { var off = pi - (e.num - 1); votes[off] = (votes[off] || 0) + 1; found.push({ ei: ei, pi: pi, y: hit.y + hit.size }); } }
+		});
+		var off = 0, bestV = 0; Object.keys(votes).forEach(function (k) { if (votes[k] > bestV || (votes[k] === bestV && Math.abs(+k) < Math.abs(off))) { bestV = votes[k]; off = +k; } });
+		var sure = bestV >= Math.max(2, Math.ceil(entries.length * 0.3));
+		var items = entries.map(function (e, ei) {
+			var pi = Math.max(0, Math.min(n - 1, e.num - 1 + off)), y = null;
+			found.forEach(function (f) { if (f.ei === ei && Math.abs(f.pi - pi) <= 2 && y == null) { pi = f.pi; y = f.y; } });
+			return { t: e.t, pi: pi, y: y, lv: e.lv };
+		});
+		return { items: items, tocPages: tocPages, sure: sure, offset: off };
+	}
+	var KW_RE = /^(chapter|part|book|section|lesson|unit|appendix|preface|foreword|introduction|prologue|epilogue|contents|table of contents|index|conclusion|afterword|acknowledg\w*|bibliography|references|glossary|notes|summary)\b/i;
+	function findHeadings(pages, skip) {
+		var n = pages.length, body = bodySize(pages), seen = {}, cands = [];
+		// running headers / footers: the same text on many pages (with a page number, only near the top or bottom edge: "Chapter 3" lines must stay)
+		var seenD = {}; pages.forEach(function (p, pi) { var keys = {}; (p.lines || []).forEach(function (l) { var k = bmNorm(l.text), kd = "#" + k.replace(/\d+/g, "#"); [k, kd].forEach(function (x) { if (x && x !== "#" && !keys[x]) { keys[x] = 1; seen[x] = (seen[x] || 0) + 1; } }); }); });
+		function running(l, p) { var k = bmNorm(l.text); if (seen[k] >= rep) return true; var edge = p.H && (l.y > p.H * 0.9 || l.y < p.H * 0.1); return !!edge && seen["#" + k.replace(/\d+/g, "#")] >= rep; }
+		var rep = Math.max(3, Math.ceil(n * 0.25));
+		// a size that is mostly used for long lines is paragraph text (a bigger font for some passages), not headings
+		var tot = {}, longs = {}; pages.forEach(function (p) { (p.lines || []).forEach(function (l) { var k = Math.round(l.size); tot[k] = (tot[k] || 0) + 1; if (String(l.text).length > 55) longs[k] = (longs[k] || 0) + 1; }); });
+		function paraSize(sz) { var k = Math.round(sz); return tot[k] >= 6 && (longs[k] || 0) / tot[k] > 0.3; }
+		pages.forEach(function (p, pi) {
+			if (skip && skip.indexOf(pi) >= 0) return;
+			(p.lines || []).forEach(function (l) {
+				var t = String(l.text).replace(/\s+/g, " ").trim(), letters = (t.match(/[A-Za-zÀ-ɏ]/g) || []).length;
+				if (letters < 2 || t.length > 110 || /^(page\s*)?\d+$/i.test(t) || running(l, p)) return;
+				var up = (t.match(/[A-ZÀ-Þ]/g) || []).length, big = l.size >= body * 1.18, kw = KW_RE.test(t) && t.length <= 80 && l.size >= body * 0.95,
+					caps = t.length <= 70 && letters >= 4 && up / letters >= 0.8 && l.size >= body * 1.08 && !/[.,;:]$/.test(t);
+				if (big && !kw && !caps && paraSize(l.size)) return; if (!(big || kw || caps)) return; if (!kw && (t.length > 80 || (t.length > 50 && /[.?!]$/.test(t)) || /[:;,]$/.test(t) || /^[a-z\u00e0-\u00ff(\[]/.test(t) || /[\u2190-\u21ff\u2200-\u22ff=<>\u0391-\u03c9]/.test(t))) return;
+				cands.push({ t: t, pi: pi, y: l.y + l.size, size: l.size, key: Math.round(l.size), kw: kw, ch: /^(chapter|part|book)\b/i.test(t) });
+			});
+		});
+		// a title that runs over two lines becomes one bookmark
+		var merged = [];
+		cands.forEach(function (c) { var prev = merged[merged.length - 1]; if (prev && prev.pi === c.pi && prev.key === c.key && prev.lastY - c.y >= 0 && prev.lastY - (c.y - c.size) <= 2.4 * c.size && (prev.t + " " + c.t).length <= 130) { prev.t += " " + c.t; prev.lastY = c.y - c.size; } else { c.lastY = c.y - c.size; merged.push(c); } });
+		// levels by size: the biggest headings are level 1
+		var counts = {}; merged.forEach(function (c) { counts[c.key] = (counts[c.key] || 0) + 1; });
+		var keys = Object.keys(counts).map(Number).sort(function (a, b) { return b - a; }).filter(function (k) { return counts[k] <= Math.max(6, n * 3); });
+		var items = merged.filter(function (c) { return keys.indexOf(c.key) >= 0 || c.kw; }).map(function (c) { var r = keys.indexOf(c.key); return { t: c.t, pi: c.pi, y: c.y, lv: c.ch ? 0 : Math.min(2, Math.max(0, r)) }; });
+		var out = []; items.forEach(function (b) { var p = out[out.length - 1]; if (p && Math.abs(p.pi - b.pi) <= 1 && bmNorm(p.t) === bmNorm(b.t)) return; out.push(b); });
+		var cap = Math.max(80, n * 2); for (var lv = 2; out.length > cap && lv > 0; lv--) out = out.filter(function (b) { return b.lv < lv; });
+		return out;
+	}
+	function makeBookmarks(pages) {
+		if (isScanned(pages)) return { items: [], how: "scanned" };
+		var toc = findToc(pages);
+		if (toc.items.length >= 4) { var items = toc.items.slice(); if (!items.some(function (b) { return b.pi === toc.tocPages[0]; })) items.unshift({ t: "Contents", pi: toc.tocPages[0], y: null, lv: 0 }); return { items: items, how: "toc", sure: toc.sure }; }
+		var h = findHeadings(pages, toc.tocPages);
+		return { items: h, how: h.length ? "headings" : "none" };
+	}
+	// flat list with levels -> tree (a level can only go one deeper than the item before it)
+	function bmTree(flat) {
+		var root = { kids: [] }, stack = [root];
+		flat.forEach(function (b) { var lv = Math.max(0, Math.min(b.lv | 0, stack.length - 1)); stack.length = lv + 1; var node = { b: b, kids: [] }; stack[lv].kids.push(node); stack.push(node); });
+		return root.kids;
+	}
+	var PDM = { rowsOf: rowsOf, bmNorm: bmNorm, bodySize: bodySize, isScanned: isScanned, findToc: findToc, findHeadings: findHeadings, makeBookmarks: makeBookmarks, bmTree: bmTree, newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
 	if (typeof module !== "undefined" && module.exports) module.exports = PDM; else root.PDM = PDM;
 })(typeof window !== "undefined" ? window : this);

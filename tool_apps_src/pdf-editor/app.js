@@ -73,11 +73,12 @@
 	var scrollT; view.addEventListener("scroll", function () { clearTimeout(scrollT); scrollT = setTimeout(PD.trackCurrent, 80); });
 	var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(refit, 200); });
 	/* page list and window mode */
-	function showThumbs() { $("pd-thumbbtn").setAttribute("aria-pressed", String(PD.S.thumbs)); $("pd-thumbs").classList.toggle("is-off", !PD.S.thumbs || !PD.doc); }
-	$("pd-thumbbtn").onclick = function () { PD.S.thumbs = !PD.S.thumbs; PD.saveS(); showThumbs(); if (PD.S.thumbs) PD.layout(); }; showThumbs(); PD.on("open", showThumbs);
-	function winLabel(on) { var b = $("pd-winbtn"); b.innerHTML = on ? "&#10005; Exit full window" : "&#10530; Full window"; b.title = on ? "Back to the normal page (F or Esc)" : "Fill the browser window (F)"; }
+	function showThumbs() { var on = PD.thumbsOn(); $("pd-thumbbtn").setAttribute("aria-pressed", String(on)); $("pd-thumbs").classList.toggle("is-off", !on || !PD.doc); }
+	// the page list has its own on/off choice on a phone (off by default there, on by default on a computer)
+	$("pd-thumbbtn").onclick = function () { var on = !PD.thumbsOn(); if (root.classList.contains("pd-compact")) PD.S.thumbsM = on; else PD.S.thumbs = on; PD.saveS(); showThumbs(); if (on) PD.layout(); }; showThumbs(); PD.on("open", showThumbs);
+	function winLabel(on) { var b = $("pd-winbtn"); b.innerHTML = on ? '<span aria-hidden="true">&#10005;</span><span class="pd-lbl"> Exit full window</span>' : '<span aria-hidden="true">&#10530;</span><span class="pd-lbl"> Full window</span>'; b.title = on ? "Back to the normal page (F or Esc)" : "Fill the browser window (F)"; }
 	function toggleWin(auto) { var on = !root.classList.contains("pd-win"); root.classList.toggle("pd-win", on); document.documentElement.classList.toggle("pd-win-on", on); $("pd-winbtn").setAttribute("aria-pressed", String(on)); winLabel(on); if (!auto) { PD.S.win = on; PD.saveS(); } if (PD.doc) setTimeout(refit, 80); }
-	$("pd-winbtn").onclick = function () { toggleWin(); };
+	$("pd-winbtn").onclick = function () { toggleWin(); }; winLabel(false);
 	/* Dark pages (saved with the other settings) */
 	function darkPages(on, save) { root.classList.toggle("pd-darkpg", on); var b = $("pd-darkbtn"); b.setAttribute("aria-pressed", String(on)); b.innerHTML = on ? "&#9680; Light pages" : "&#9680; Dark pages"; if (save) { PD.S.dark = on; PD.saveS(); } }
 	$("pd-darkbtn").onclick = function () { darkPages(!root.classList.contains("pd-darkpg"), true); }; darkPages(!!PD.S.dark);
@@ -174,5 +175,41 @@
 		saved: function (d, name) { if (name && name !== d.name) d.name = name; if (d === PD.doc) PD.dirty = false; PD.status(); }
 	}) : null;
 	if (cloud) PD.on("history", function () { if (PD.dirty) cloud.changed(PD.doc); });
+	PD.on("room", refit);
+
+	/* ---------- phone / small window layout ----------
+	   pd-compact (editor under 700px wide, or a window under 560px tall): one short top row, the rarely used buttons move into a bar behind "⋯",
+	   small tools, no empty options row, page list off by default; pd-narrow (portrait phone) also puts the tools in a row above the pages.
+	   Decided from the editor's own width, so Standard / Wide / Theatre and the sidebar count too. */
+	var moreBar = $("pd-morebar"), moreBtn = $("pd-more"), xs = null, compact = null;
+	function moveX(on) {
+		if (!xs) { xs = [].slice.call(root.querySelectorAll(".pd-top .pd-x")); var cb = document.getElementById("mcl-btn-pdf"); if (cb) xs.splice(1, 0, cb); xs.forEach(function (el) { var m = document.createComment(""); el.parentNode.insertBefore(m, el); el._home = m; }); }
+		xs.forEach(function (el) { if (on) moreBar.appendChild(el); else el._home.parentNode.insertBefore(el, el._home.nextSibling); });
+	}
+	function setMore(open) { moreBar.hidden = !open; moreBtn.setAttribute("aria-expanded", String(open)); }
+	moreBtn.onclick = function () { setMore(moreBar.hidden); };
+	moreBar.addEventListener("click", function (e) { var b = e.target.closest("button"); if (b && b.id !== "pd-darkbtn" && b.id !== "pd-thumbbtn") setMore(false); });
+	function applyH() { var h = root.classList.contains("pd-compact") ? PD.S.hM : PD.S.h; root.style.height = h && !root.classList.contains("pd-win") ? h + "px" : ""; }
+	function measure() {
+		var w = root.clientWidth || window.innerWidth, wh = window.innerHeight, c = w < 700 || wh < 560, n = c && w < 620 && wh > w * 0.9;
+		root.classList.toggle("pd-narrow", n);
+		if (c === compact) return; compact = c; root.classList.toggle("pd-compact", c); moveX(c); if (!c) setMore(false);
+		showThumbs(); applyH(); if (PD.renderBookmarks) PD.renderBookmarks(); if (PD.doc) { PD.layout(); setTimeout(refit, 60); }
+	}
+	// on a phone, bring the whole editor into view right under the site's floating bar when a PDF opens
+	PD.on("open", function () { if (!root.classList.contains("pd-compact") || root.classList.contains("pd-win")) return; var nav = document.getElementById("compact-nav"), off = nav ? Math.max(nav.offsetHeight, 52) : 0; window.scrollTo({ top: Math.max(0, root.getBoundingClientRect().top + window.scrollY - off - 4), behavior: "smooth" }); });
+	measure(); window.addEventListener("resize", measure); window.addEventListener("orientationchange", function () { setTimeout(measure, 250); });
+	if (window.ResizeObserver) new ResizeObserver(function () { measure(); }).observe(root);
+	var otw = toggleWin; toggleWin = function (auto) { otw(auto); applyH(); setTimeout(measure, 30); };
+	/* the grip under the editor: drag to make it taller or shorter (saved; phone and computer separately), double-click goes back to normal */
+	var grip = $("pd-grip");
+	grip.addEventListener("pointerdown", function (e) {
+		e.preventDefault(); grip.setPointerCapture(e.pointerId); var y0 = e.clientY, h0 = root.offsetHeight, key = root.classList.contains("pd-compact") ? "hM" : "h";
+		function mv(ev) { var h = Math.round(Math.max(320, Math.min(3000, h0 + ev.clientY - y0))); root.style.height = h + "px"; PD.S[key] = h; }
+		function up() { grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); PD.saveS(); refit(); }
+		grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+	});
+	grip.addEventListener("dblclick", function () { PD.S[root.classList.contains("pd-compact") ? "hM" : "h"] = 0; PD.saveS(); applyH(); refit(); });
+	grip.addEventListener("keydown", function (e) { var d = e.key === "ArrowDown" ? 40 : e.key === "ArrowUp" ? -40 : 0; if (!d) return; e.preventDefault(); e.stopPropagation(); var key = root.classList.contains("pd-compact") ? "hM" : "h", h = Math.max(320, root.offsetHeight + d); PD.S[key] = h; PD.saveS(); applyH(); });
 	PD.status();
 })();
