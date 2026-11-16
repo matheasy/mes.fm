@@ -146,7 +146,20 @@ final class TimerLive {
         // the system lets this app post one. Samsung's One UI 8+ shows Live Updates in its status bar and Now Bar too. If the
         // system turns the request down (the FLAG_PROMOTED_ONGOING check in postAll), fall back to the big style for a day.
         if (!promotable(c)) return true;
+        // Samsung: One UI 8.0 grants the request (the flag is set) but shows no chip for other apps' Live Updates; that
+        // came with One UI 8.5. So on older One UI, use the time-in-the-icon style, which always shows in the status bar.
+        if (samsungNoChip()) return true;
         return System.currentTimeMillis() - prefs(c).getLong("chipFail", 0) < 24L * 3600 * 1000;
+    }
+
+    static boolean samsungNoChip() {
+        if (!"samsung".equalsIgnoreCase(Build.MANUFACTURER)) return false;
+        int v = 0;
+        try {
+            Object o = Class.forName("android.os.SystemProperties").getMethod("get", String.class).invoke(null, "ro.build.version.oneui");
+            v = Integer.parseInt(String.valueOf(o).trim());
+        } catch (Exception ignored) {}
+        return v < 80500;   // 80000 = One UI 8.0; unknown counts as old
     }
 
     static final int FLAG_PROMOTED_ONGOING = 0x00040000;
@@ -199,6 +212,8 @@ final class TimerLive {
             if (run) {
                 // the chip shows the timer icon + a chronometer the system itself ticks (smooth, never a second late)
                 long when = up ? now - ms : now + ms;
+                // the chronometer IS the time here, so the title is the name (otherwise the time shows twice)
+                b.setContentTitle(name).setContentText(null);
                 b.setShowWhen(true).setWhen(when).setUsesChronometer(true);
                 if (!up && Build.VERSION.SDK_INT >= 24) b.setChronometerCountDown(true);
                 promote(b);
