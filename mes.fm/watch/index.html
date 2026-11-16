@@ -462,7 +462,7 @@ html body.dark-mode #wt .wt-lcount {color:#fff;}
 .wt-cmmsg {color:var(--wt-muted);margin:0.4em 0;}
 .wt-cmmore {margin-top:0.7em;}
 .wt-player.mes-pfill .wt-cm {flex:0 0 auto;max-height:38vh;overflow:auto;}
-.wt-player.mes-pside .wt-cm {max-height:none;}
+.wt-player.mes-pside .wt-cm {max-height:60vh;}
 html body.dark-mode #wt .wt-cmc {color:#14101a;}
 /* sync & backup */
 .wt-sync {display:flex;flex-direction:column;gap:0.8em;}
@@ -1033,16 +1033,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<label class="wt-check"><input type="checkbox" id="wt-pz" checked> Touch screens: tap the video to play / pause, pinch or double-tap to zoom</label>
 						<label class="wt-check"><input type="checkbox" id="wt-zctl" checked> When zoomed in, show a play / seek bar under the picture (the player's own bar moves with the zoom)</label>
 						<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
+						<label class="wt-check"><input type="checkbox" id="wt-leftck" checked> Show the time left on the picture (−1:12, at the current speed; click it to show when it ends)</label>
 						<label class="wt-check"><input type="checkbox" id="wt-ytcov"> YouTube: cover the information panel YouTube puts over some videos (top left)</label>
 						<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 					</div>
 				</details>
 			</div>
+			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
 			<div class="wt-pq" id="wt-pq">
 				<div class="wt-pqh"><b>Up next <small id="wt-pqn">0</small></b><span><button type="button" class="wt-b" id="wt-pqup" aria-label="Scroll the list up" title="Scroll up">▲&#xFE0E;</button><button type="button" class="wt-b" id="wt-pqdn" aria-label="Scroll the list down" title="Scroll down">▼&#xFE0E;</button></span></div>
 				<div class="wt-pql" id="wt-pql"></div>
 			</div>
-			<div class="wt-cm" id="wt-cm" hidden aria-live="polite"></div>
 		</section>
 
 		<section class="tu-card wt-lists" id="wt-lists">
@@ -1204,7 +1205,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=34" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=35" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

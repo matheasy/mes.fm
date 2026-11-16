@@ -155,7 +155,7 @@ html body.dark-mode #wt .wt-lcount {color:#fff;}
 .wt-cmmsg {color:var(--wt-muted);margin:0.4em 0;}
 .wt-cmmore {margin-top:0.7em;}
 .wt-player.mes-pfill .wt-cm {flex:0 0 auto;max-height:38vh;overflow:auto;}
-.wt-player.mes-pside .wt-cm {max-height:none;}
+.wt-player.mes-pside .wt-cm {max-height:60vh;}
 html body.dark-mode #wt .wt-cmc {color:#14101a;}
 /* sync & backup */
 .wt-sync {display:flex;flex-direction:column;gap:0.8em;}

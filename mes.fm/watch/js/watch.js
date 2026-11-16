@@ -1818,6 +1818,8 @@
 	$('wt-histon').onchange = function () { S.histOn = this.checked; save(); toast(this.checked ? 'History is on' : 'History is off: nothing new is kept'); };
 	$('wt-track').checked = !!S.keepTrack;
 	$('wt-track').onchange = function () { S.keepTrack = this.checked; W.keepTrack = S.keepTrack; if (!S.keepTrack) cleanAll(); save(); renderList(); showMeta(); toast(S.keepTrack ? 'New links keep their tracking codes' : 'Tracking codes are removed from links'); };
+	$('wt-leftck').checked = !S.leftOff;
+	$('wt-leftck').onchange = function () { S.leftOff = !this.checked; save(); leftTick(); };
 	$('wt-ytcov').checked = !!S.ytCov;
 	$('wt-ytcov').onchange = function () { S.ytCov = this.checked; delete S.ytCover; save(); ytNote(); };
 	$('wt-priv').checked = S.priv !== false;
@@ -1912,11 +1914,11 @@
 	function leftTick() {
 		var el = document.querySelector('#wt-stage .wt-left'); if (!el) { clearInterval(leftT); leftT = 0; return; }
 		var p = position(), r = curRate();
-		if (!p || !p.dur || p.dur - p.pos < 0.5) { el.hidden = true; return; }
+		if (S.leftOff || !p || !p.dur || p.dur - p.pos < 0.5) { el.hidden = true; return; }
 		var sec = (p.dur - p.pos) / r, txt;
 		if (S.leftClock) {
 			txt = 'Ends ' + new Date(Date.now() + sec * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-		} else txt = W.fmt(Math.ceil(sec)) + ' left';
+		} else txt = '\u2212' + W.fmt(Math.ceil(sec));
 		var sp = Math.abs(r - 1) > 0.001 ? '(' + r.toFixed(2) + '×)' : '';
 		var key = txt + '|' + sp;
 		if (el._k !== key) { el._k = key; el.innerHTML = ''; var a = document.createElement('span'); a.textContent = txt; el.appendChild(a);
@@ -1925,7 +1927,7 @@
 	}
 	function leftPill(st) {
 		var el = document.createElement('button'); el.type = 'button'; el.className = 'wt-left'; el.hidden = true;
-		el.title = 'Time left at the current speed (click: show the time it ends instead)';
+		el.title = 'Time left at the current speed (click: show the time it ends instead; hide it in Options)';
 		['pointerdown', 'dblclick', 'touchstart'].forEach(function (ev) { el.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
 		el.addEventListener('click', function (e) { e.stopPropagation(); S.leftClock = !S.leftClock; save(); leftTick(); });
 		st.appendChild(el); clearInterval(leftT); leftT = setInterval(leftTick, 500); leftTick();
