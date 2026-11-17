@@ -4220,6 +4220,15 @@
 	}
 	function num(id, label, val, step, min, max, unit, title) { return '<label class="vd-f" title="' + esc(title || "") + '"><span>' + label + '</span><input type="number" id="' + id + '" value="' + val + '" step="' + step + '"' + (min != null ? ' min="' + min + '"' : "") + (max != null ? ' max="' + max + '"' : "") + ">" + (unit ? "<em>" + unit + "</em>" : "") + "</label>"; }
 	function r1(x) { return Math.round(x * 100) / 100; }
+	// slider + number box together: drag for a quick change, type for an exact one (the number box keeps the id, so setNum() works the same)
+	function sld(id, label, val, step, min, max, unit, title, rmin, rmax) {
+		rmin = rmin == null ? min : rmin; rmax = rmax == null ? max : rmax; var v = val === "" ? rmin : Math.min(rmax, Math.max(rmin, +val || 0));
+		return '<div class="vd-f vd-sl" title="' + esc(title || "") + '"><span>' + label + '</span><div class="vd-slrow"><input type="range" class="vd-rng" data-for="' + id + '" aria-label="' + esc(label) + '" min="' + rmin + '" max="' + rmax + '" step="' + step + '" value="' + v + '"><span class="vd-slnum"><input type="number" id="' + id + '" value="' + val + '" step="' + step + '"' + (min != null ? ' min="' + min + '"' : "") + (max != null ? ' max="' + max + '"' : "") + ' aria-label="' + esc(label) + '">' + (unit ? "<em>" + unit + "</em>" : "") + "</span></div></div>";
+	}
+	function seg(id, items, cur, label) { return '<div class="vd-seg" role="group" aria-label="' + esc(label) + '" id="' + id + '">' + items.map(function (q) { return '<button type="button" data-v="' + q[0] + '" aria-pressed="' + (q[0] === cur) + '" title="' + esc(q[2] || q[1]) + '">' + q[1] + "</button>"; }).join("") + "</div>"; }
+	function tog(id, html, on, title) { return '<button type="button" class="vd-tog" id="' + id + '" aria-pressed="' + !!on + '" title="' + esc(title || "") + '">' + html + "</button>"; }
+	var SWATCH = ["#ffffff", "#000000", "#facc15", "#ef4444", "#22c55e", "#3b82f6", "#a855f7", "#f97316"];
+	function swatches(id, cur, label) { cur = String(cur || "").toLowerCase(); return '<div class="vd-swr" role="group" aria-label="' + esc(label) + '" data-sw="' + id + '">' + SWATCH.map(function (c) { return '<button type="button" data-c="' + c + '" style="background:' + c + '" aria-label="' + c + '" aria-pressed="' + (cur === c) + '"></button>'; }).join("") + '<label class="vd-swc" title="Any colour"><input type="color" id="' + id + '" value="' + esc(cur || "#ffffff") + '" aria-label="' + esc(label) + ': any colour"></label></div>'; }
 	function tcBox(id, label, t, title) { return '<label class="vd-f" title="' + esc(title || "") + '"><span>' + label + '</span><input type="text" class="vd-tcin" id="' + id + '" value="' + esc(V.tc(t, VE.P.fps)) + '" spellcheck="false" autocomplete="off"></label>'; }
 	function copyText(txt, msg) {
 		var done = function () { toast(msg); };
@@ -4239,38 +4248,43 @@
 		var c = sel[0], m = VE.media(c.media), skind = c.type === "shape" ? (V.SHAPE_KINDS.filter(function (q) { return q[0] === c.shape.k; })[0] || [0, "Shape"])[1] : "", h = '<h3>' + esc(c.type === "text" ? "Title" : c.type === "shape" ? skind : m ? m.name : "Clip") + '</h3><p class="vd-sub">' + ({ video: "Video clip", audio: "Sound clip", image: "Picture", text: "Title", shape: "Shape / annotation" })[c.type] + " · " + V.short(V.dur(c)) + "</p>";
 		h += '<div class="vd-sec"><b>Time</b><div class="vd-grid">' + num("vd-i-start", "Starts at", r1(c.start), 0.01, 0, null, "s") + num("vd-i-dur", "Length", r1(V.dur(c)), 0.01, 0.05, null, "s") + "</div>";
 		if (V.hasSource(c)) h += '<div class="vd-src"><b class="vd-srch">Source times <small>(where this clip is in its file)</small></b><div class="vd-grid">' + tcBox("vd-i-sin", "Begins at", c.in, "Where the clip begins in " + (m ? m.name : "its file") + ". Type a time (1:02:03;15, 263, 4m23s) and press Enter to trim the start.") + tcBox("vd-i-sout", "Ends at", c.out, "Where the clip ends in its file. Type a time and press Enter to trim the end.") + '</div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-i-scopy" title="Copy the begin and end times in the file">Copy source times</button>' + (VE.P.clips.filter(V.hasSource).length > 1 ? '<button type="button" class="vd-btn vd-sm" id="vd-i-scopyall" title="Copy the source times of every video and sound clip, in timeline order">Copy for all clips</button>' : "") + "</div></div>";
-		h += '<div class="vd-grid">' + num("vd-i-fin", "Fade in", r1(c.fin || 0), 0.1, 0, 30, "s") + num("vd-i-fout", "Fade out", r1(c.fout || 0), 0.1, 0, 30, "s") + "</div>";
+		var fmax = Math.max(0.5, Math.min(5, Math.floor(V.dur(c) / 2 * 10) / 10));
+		h += sld("vd-i-fin", "Fade in", r1(c.fin || 0), 0.1, 0, 30, "s", "Fades in from black / silence over this many seconds", 0, fmax) + sld("vd-i-fout", "Fade out", r1(c.fout || 0), 0.1, 0, 30, "s", "Fades out to black / silence over this many seconds", 0, fmax);
 		var prev = V.prevTouching(VE.P, c);
-		h += num("vd-i-xin", "Cross-fade from the clip before", r1(c.xin || 0), 0.1, 0, 10, "s", prev ? "The clip starts showing this long before its start, fading in over the clip before it" : "Put this clip right after another one on the same track to cross-fade");
+		h += sld("vd-i-xin", "Cross-fade from the clip before", r1(c.xin || 0), 0.1, 0, 10, "s", prev ? "The clip starts showing this long before its start, fading in over the clip before it" : "Put this clip right after another one on the same track to cross-fade", 0, prev ? Math.max(0.5, Math.min(3, Math.floor(Math.min(V.dur(prev), V.dur(c)) * 10) / 10)) : 3);
 		if (!prev) h += '<p class="vd-sub">Cross-fades work when this clip starts exactly where another clip on its track ends.</p>';
 		if (c.type === "video" || c.type === "audio") h += '<label class="vd-f"><span>Speed</span><select id="vd-i-speed">' + [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4].map(function (s) { return '<option value="' + s + '"' + (Math.abs((c.speed || 1) - s) < 1e-6 ? " selected" : "") + ">" + s + "×</option>"; }).join("") + "</select></label>";
 		h += "</div>";
 		if (c.type === "text") {
 			var T = c.text;
-			h += '<div class="vd-sec"><b>Text</b><p class="vd-sub">Or double-click the title in the preview and type there. Drag the white side handles to change where lines wrap.</p><textarea id="vd-ttext" rows="3" aria-label="Title text">' + esc(T.s) + "</textarea>";
+			h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there.</p>';
 			var fInfo = VE.fontInfo(T.font);
-			h += '<div class="vd-grid"><div class="vd-f vd-fontpick"><span>Font</span><button type="button" class="vd-btn vd-fontbtn" id="vd-t-fontbtn" aria-haspopup="listbox" aria-expanded="false" style="font-family:' + esc(T.font) + '"><span>' + esc(fInfo[0]) + '</span><span aria-hidden="true">&#9662;</span></button></div>' +
-				num("vd-t-size", "Size", Math.round(T.size * 1000) / 10, 0.5, 1, 60, "%", "Height of the letters as a share of the picture height") + '<label class="vd-f"><span>Colour</span><input type="color" id="vd-t-color" value="' + esc(T.color) + '"></label>' +
-				'<label class="vd-f"><span>Align</span><select id="vd-t-align">' + ["left", "center", "right"].map(function (a) { return '<option' + (T.align === a ? " selected" : "") + ">" + a + "</option>"; }).join("") + "</select></label>" +
-				num("vd-t-ls", "Letter spacing", Math.round((T.ls || 0) * 1000) / 10, 1, -20, 100, "%", "Space between letters, as a share of the text size (0 = the font's own)") +
-				num("vd-t-lh", "Line spacing", Math.round((T.lh || 1.22) * 100), 5, 60, 400, "%", "Distance from one line to the next, as a share of the text size (122% is normal)") +
-				num("vd-t-wrap", "Box width", T.wrap > 0 ? Math.round(T.wrap * 1000) / 10 : "", 1, 5, 400, "%", "Lines wrap at this width (a share of the picture width). Empty = only your own line breaks.") +
-				'<label class="vd-f vd-fck"><span>Wrap lines</span><input type="checkbox" id="vd-t-wrapon"' + (T.wrap > 0 ? " checked" : "") + '></label></div>';
-			h += '<div class="vd-checks"><label><input type="checkbox" id="vd-t-bold"' + (T.bold ? " checked" : "") + "> Bold</label><label><input type=\"checkbox\" id=\"vd-t-italic\"" + (T.italic ? " checked" : "") + "> Italic</label><label><input type=\"checkbox\" id=\"vd-t-shadow\"" + (T.shadow ? " checked" : "") + "> Shadow</label><label><input type=\"checkbox\" id=\"vd-t-bgon\"" + (T.bgOn ? " checked" : "") + "> Box behind</label></div>";
-			h += '<div class="vd-grid"><label class="vd-f"><span>Box colour</span><input type="color" id="vd-t-bg" value="' + esc(T.bg) + '"></label>' + num("vd-t-bgop", "Box opacity", Math.round((T.bgOp == null ? 0.55 : T.bgOp) * 100), 5, 0, 100, "%") + num("vd-t-outline", "Outline", T.outline || 0, 0.5, 0, 10) + '<label class="vd-f"><span>Outline colour</span><input type="color" id="vd-t-ocolor" value="' + esc(T.ocolor || "#000000") + '"></label></div></div>';
+			h += '<div class="vd-f vd-fontpick"><span>Font</span><button type="button" class="vd-btn vd-fontbtn" id="vd-t-fontbtn" aria-haspopup="listbox" aria-expanded="false" style="font-family:' + esc(T.font) + '"><span>' + esc(fInfo[0]) + '</span><span aria-hidden="true">&#9662;</span></button></div>';
+			h += sld("vd-t-size", "Size", Math.round(T.size * 1000) / 10, 0.5, 1, 60, "%", "Height of the letters as a share of the picture height", 2, 30);
+			h += '<div class="vd-tbar">' + tog("vd-t-bold", "<b>B</b>", T.bold, "Bold") + tog("vd-t-italic", "<i>I</i>", T.italic, "Italic") + '<span class="vd-tsep"></span>' +
+				seg("vd-t-align", [["left", '<svg viewBox="0 0 16 16" class="vd-ti" aria-hidden="true"><path d="M2 3h12v1.6H2zM2 6.4h8v1.6H2zM2 9.8h12v1.6H2zM2 13.2h8v1.6H2z"/></svg>', "Align left"], ["center", '<svg viewBox="0 0 16 16" class="vd-ti" aria-hidden="true"><path d="M2 3h12v1.6H2zM4 6.4h8v1.6H4zM2 9.8h12v1.6H2zM4 13.2h8v1.6H4z"/></svg>', "Centre"], ["right", '<svg viewBox="0 0 16 16" class="vd-ti" aria-hidden="true"><path d="M2 3h12v1.6H2zM6 6.4h8v1.6H6zM2 9.8h12v1.6H2zM6 13.2h8v1.6H6z"/></svg>', "Align right"]], T.align || "center", "Alignment") +
+				'<span class="vd-tsep"></span>' + tog("vd-t-shadow", "Shadow", T.shadow, "Soft shadow behind the letters") + tog("vd-t-bgon", "Box", T.bgOn, "A box behind the text") + "</div>";
+			h += '<div class="vd-f"><span>Text colour</span>' + swatches("vd-t-color", T.color, "Text colour") + "</div>";
+			if (T.bgOn) h += '<div class="vd-subsec"><div class="vd-f"><span>Box colour</span>' + swatches("vd-t-bg", T.bg, "Box colour") + "</div>" + sld("vd-t-bgop", "Box opacity", Math.round((T.bgOp == null ? 0.55 : T.bgOp) * 100), 5, 0, 100, "%") + "</div>";
+			h += '<div class="vd-subsec">' + sld("vd-t-outline", "Outline", T.outline || 0, 0.5, 0, 10, "", "Outline around the letters (0 = none)") + ((T.outline || 0) > 0 ? '<div class="vd-f"><span>Outline colour</span>' + swatches("vd-t-ocolor", T.ocolor || "#000000", "Outline colour") + "</div>" : "") + "</div>";
+			h += '<details class="vd-more"' + (UI.txtMore ? " open" : "") + ' id="vd-t-more"><summary>Spacing and line wrap</summary>' +
+				sld("vd-t-ls", "Letter spacing", Math.round((T.ls || 0) * 1000) / 10, 1, -20, 100, "%", "Space between letters, as a share of the text size (0 = the font's own)", -10, 50) +
+				sld("vd-t-lh", "Line spacing", Math.round((T.lh || 1.22) * 100), 5, 60, 400, "%", "Distance from one line to the next, as a share of the text size (122% is normal)", 80, 250) +
+				'<label class="vd-chk"><input type="checkbox" id="vd-t-wrapon"' + (T.wrap > 0 ? " checked" : "") + '> Wrap long lines</label>' +
+				(T.wrap > 0 ? sld("vd-t-wrap", "Box width", Math.round(T.wrap * 1000) / 10, 1, 5, 400, "%", "Lines wrap at this width (a share of the picture width). You can also drag the white side handles in the preview.", 10, 100) : "") + "</details></div>";
 		}
 		if (c.type === "shape") {
 			var S = c.shape, k = S.k, isLine = k === "arrow" || k === "line", col = function (id, label, v) { return '<label class="vd-f"><span>' + label + '</span><input type="color" id="' + id + '" value="' + esc(v) + '"></label>'; };
 			h += '<div class="vd-sec"><b>Shape</b><p class="vd-sub">Drag it in the preview: the white side handles change ' + (isLine ? "its length" : "its width and height") + ', a corner makes it bigger, the round handle turns it' + (isLine ? " (to point the arrow)" : "") + '.</p><div class="vd-grid"><label class="vd-f"><span>Kind</span><select id="vd-s-k">' + V.SHAPE_KINDS.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === k ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + "</select></label>";
-			if (k === "badge") h += '<label class="vd-f"><span>Number or text</span><input type="text" id="vd-s-n" maxlength="4" value="' + esc(String(S.n)) + '"></label>' + num("vd-s-h", "Size", Math.round(S.h * 1000) / 10, 0.5, 2, 80, "%", "Diameter as a share of the picture height") + col("vd-s-fill", "Circle colour", S.fill || S.color) + col("vd-s-ncolor", "Number colour", S.ncolor || "#ffffff");
+			if (k === "badge") h += '<label class="vd-f"><span>Number or text</span><input type="text" id="vd-s-n" maxlength="4" value="' + esc(String(S.n)) + '"></label>' + sld("vd-s-h", "Size", Math.round(S.h * 1000) / 10, 0.5, 2, 80, "%", "Diameter as a share of the picture height", 2, 150) + col("vd-s-fill", "Circle colour", S.fill || S.color) + col("vd-s-ncolor", "Number colour", S.ncolor || "#ffffff");
 			else {
-				h += num("vd-s-w", isLine ? "Length" : "Width", Math.round(S.w * 1000) / 10, 0.5, 1, 400, "%", "A share of the picture width") + (isLine ? "" : num("vd-s-h", "Height", Math.round(S.h * 1000) / 10, 0.5, 1, 400, "%", "A share of the picture height"));
-				if (k !== "highlight" && k !== "pixelate") h += col("vd-s-color", k === "spotlight" ? "Edge colour" : "Colour", S.color) + num("vd-s-lw", k === "spotlight" ? "Edge width" : "Line width", Math.round(S.lw * 10000) / 100, 0.05, 0, 10, "%", "A share of the picture height" + (k === "spotlight" ? " (0 = no edge)" : ""));
-				if (k === "arrow") h += num("vd-s-head", "Arrow head", Math.round((S.head || 1) * 100), 10, 30, 400, "%") + '<label class="vd-f"><span>Heads</span><select id="vd-s-heads"><option value="end"' + (S.heads !== "both" ? " selected" : "") + ">One end</option><option value=\"both\"" + (S.heads === "both" ? " selected" : "") + ">Both ends</option></select></label>";
-				if (k === "rect" || k === "ellipse" || k === "highlight") h += col("vd-s-fill", k === "highlight" ? "Highlight colour" : "Fill colour", S.fill || S.color) + num("vd-s-fillop", k === "highlight" ? "See-through" : "Fill opacity", Math.round(S.fillOp * 100), 5, 0, 100, "%");
-				if (k === "spotlight") h += num("vd-s-dark", "Darken the rest", Math.round(S.dark * 100), 5, 0, 100, "%");
-				if (k === "pixelate") h += num("vd-s-px", "Block size", Math.round(S.px * 1000) / 10, 0.1, 0.3, 20, "%", "Size of the blocks as a share of the picture height: bigger hides more");
-				if (k === "rect" || k === "highlight" || ((k === "spotlight" || k === "pixelate") && !S.oval)) h += num("vd-s-round", "Rounded corners", Math.round((S.round || 0) * 100), 5, 0, 100, "%");
+				h += sld("vd-s-w", isLine ? "Length" : "Width", Math.round(S.w * 1000) / 10, 0.5, 1, 400, "%", "A share of the picture width", 2, 150) + (isLine ? "" : sld("vd-s-h", "Height", Math.round(S.h * 1000) / 10, 0.5, 1, 400, "%", "A share of the picture height", 2, 150));
+				if (k !== "highlight" && k !== "pixelate") h += col("vd-s-color", k === "spotlight" ? "Edge colour" : "Colour", S.color) + sld("vd-s-lw", k === "spotlight" ? "Edge width" : "Line width", Math.round(S.lw * 10000) / 100, 0.05, 0, 10, "%", "A share of the picture height" + (k === "spotlight" ? " (0 = no edge)" : ""), 0, 3);
+				if (k === "arrow") h += sld("vd-s-head", "Arrow head", Math.round((S.head || 1) * 100), 10, 30, 400, "%", "", 30, 300) + '<label class="vd-f"><span>Heads</span><select id="vd-s-heads"><option value="end"' + (S.heads !== "both" ? " selected" : "") + ">One end</option><option value=\"both\"" + (S.heads === "both" ? " selected" : "") + ">Both ends</option></select></label>";
+				if (k === "rect" || k === "ellipse" || k === "highlight") h += col("vd-s-fill", k === "highlight" ? "Highlight colour" : "Fill colour", S.fill || S.color) + sld("vd-s-fillop", k === "highlight" ? "See-through" : "Fill opacity", Math.round(S.fillOp * 100), 5, 0, 100, "%");
+				if (k === "spotlight") h += sld("vd-s-dark", "Darken the rest", Math.round(S.dark * 100), 5, 0, 100, "%");
+				if (k === "pixelate") h += sld("vd-s-px", "Block size", Math.round(S.px * 1000) / 10, 0.1, 0.3, 20, "%", "Size of the blocks as a share of the picture height: bigger hides more", 0.3, 8);
+				if (k === "rect" || k === "highlight" || ((k === "spotlight" || k === "pixelate") && !S.oval)) h += sld("vd-s-round", "Rounded corners", Math.round((S.round || 0) * 100), 5, 0, 100, "%");
 			}
 			h += "</div><div class=\"vd-checks\">";
 			if (k === "spotlight" || k === "pixelate" || k === "highlight") h += '<label><input type="checkbox" id="vd-s-oval"' + (S.oval ? " checked" : "") + "> Oval</label>";
@@ -4282,7 +4296,7 @@
 		if (c.type !== "audio") {
 			var rel = VE.t - c.start, ptol = 0.5 / VE.P.fps, run = c.anims && V.active(c, VE.t) ? V.animRunning(c, rel, ptol) : null, st = V.active(c, VE.t) ? V.stateAt(c, rel) : V.baseState(c);
 			var ownA = !run && c.anims && V.active(c, VE.t) ? V.animEndingAt(c, rel, ptol) || ["x", "y", "scale", "rot", "op"].map(function (k) { return V.propOwner(c, rel, k, ptol); }).filter(Boolean)[0] : null;
-			h += '<div class="vd-sec"><b>Position</b><p class="vd-sub">' + (run ? "The playhead is inside the animation &ldquo;" + esc(V.animName(run)) + "&rdquo;: move it to the animation's start or end to change these." : ownA ? "At the playhead: the end of &ldquo;" + esc(V.animName(ownA)) + "&rdquo;. Changes here (or dragging in the preview) move where that animation ends." : "Or drag it in the preview: a corner resizes, the round handle turns it.") + '</p><fieldset class="vd-fs"' + (run ? " disabled" : "") + '><div class="vd-grid">' + num("vd-i-x", "Left / right", Math.round(st.x * 1000) / 10, 0.5, -500, 500, "%") + num("vd-i-y", "Up / down", Math.round(st.y * 1000) / 10, 0.5, -500, 500, "%") + num("vd-i-scale", "Size", Math.round(st.scale * 1000) / 10, 1, 1, 4000, "%") + num("vd-i-rot", "Turn", Math.round(st.rot * 10) / 10, 1, -3600, 3600, "°") + num("vd-i-op", "Opacity", Math.round(st.op * 100), 5, 0, 100, "%") + "</div>";
+			h += '<div class="vd-sec"><b>Position</b><p class="vd-sub">' + (run ? "The playhead is inside the animation &ldquo;" + esc(V.animName(run)) + "&rdquo;: move it to the animation's start or end to change these." : ownA ? "At the playhead: the end of &ldquo;" + esc(V.animName(ownA)) + "&rdquo;. Changes here (or dragging in the preview) move where that animation ends." : "Or drag it in the preview: a corner resizes, the round handle turns it.") + '</p><fieldset class="vd-fs"' + (run ? " disabled" : "") + '>' + sld("vd-i-x", "Left / right", Math.round(st.x * 1000) / 10, 0.5, -500, 500, "%", "", -50, 150) + sld("vd-i-y", "Up / down", Math.round(st.y * 1000) / 10, 0.5, -500, 500, "%", "", -50, 150) + sld("vd-i-scale", "Size", Math.round(st.scale * 1000) / 10, 1, 1, 4000, "%", "", 5, 300) + sld("vd-i-rot", "Turn", Math.round(st.rot * 10) / 10, 1, -3600, 3600, "°", "", -180, 180) + sld("vd-i-op", "Opacity", Math.round(st.op * 100), 5, 0, 100, "%");
 			if (!V.isGfx(c)) h += '<div class="vd-grid">' + num("vd-i-cl", "Crop left", Math.round(st.cl * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cr", "Crop right", Math.round(st.cr * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-ct", "Crop top", Math.round(st.ct * 1000) / 10, 0.5, 0, 95, "%") + num("vd-i-cb", "Crop bottom", Math.round(st.cb * 1000) / 10, 0.5, 0, 95, "%") + "</div>";
 			h += "</fieldset>";
 			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-pos="center">Centre</button><button type="button" class="vd-btn vd-sm" data-pos="fit">Fit the frame</button>' + (!V.isGfx(c) ? '<button type="button" class="vd-btn vd-sm" data-pos="fill">Fill the frame</button><button type="button" class="vd-btn vd-sm" data-pos="pip">Corner (picture in picture)</button>' : "") + "</div></div>";
@@ -4291,7 +4305,7 @@
 		h += linkSection(c);
 		if (VE.hasSound(c)) h += soundSection([c]);
 		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; bindInsp(c); bindLink(c); bindAnims(c);
+		insp.innerHTML = h; INSP_LIVE = {}; bindInsp(c); bindLink(c); bindAnims(c); wireRanges();
 	}
 	function soundSection(list) {
 		var c = list[0], db = Math.round(V.db(c.vol == null ? 1 : c.vol) * 10) / 10;
@@ -4299,7 +4313,7 @@
 		if (list.length === 1) h += '<label class="vd-f vd-wide"><span>Volume <output id="vd-volout">' + (isFinite(db) ? (db > 0 ? "+" : "") + db + " dB" : "off") + '</output></span><input type="range" id="vd-i-vol" min="-40" max="20" step="0.5" value="' + (isFinite(db) ? db : -40) + '"></label><div class="vd-checks"><label><input type="checkbox" id="vd-i-mute"' + (c.mute ? " checked" : "") + "> Mute this clip</label></div>";
 		h += "</div>" + fxSection(list) + '<div class="vd-sec"><b>Clean up</b>';
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
-		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + num("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "</div>" +
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + "</div>" + sld("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "<div>" + "</div>" +
 			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-dn-go">Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other (C)">&#8645; Compare before / after</button></div>' : "") + "</div>";
 		return h;
@@ -4309,7 +4323,7 @@
 		var h = "<h3>" + sel.length + ' clips selected</h3><p class="vd-sub">Shift- or Ctrl-click clips to add or remove them.</p>';
 		if (snd.length) h += soundSection(snd);
 		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; bindSound(snd); bindActs();
+		insp.innerHTML = h; INSP_LIVE = {}; bindSound(snd); bindActs(); wireRanges();
 	}
 	function renderProject() {
 		var p = VE.P, d = V.duration(p);
@@ -4328,6 +4342,19 @@
 		$("vd-p-fps").onchange = function () { p.fps = +this.value; VE.commit("Frame rate"); };
 		$("vd-p-bg").onchange = function () { p.bg = this.value; VE.commit("Canvas colour"); };
 		if ($("vd-p-scopy")) $("vd-p-scopy").onclick = copyAllSources;
+	}
+	var INSP_LIVE = {};
+	// every slider drives its number box: live while dragging (preview redrawn, no undo step), one undo step on release
+	function wireRanges() {
+		insp.querySelectorAll(".vd-rng[data-for]").forEach(function (r) {
+			var id = r.getAttribute("data-for"), n = $(id); if (!n) return;
+			n.addEventListener("input", function () { var v = parseFloat(n.value); if (isFinite(v)) r.value = v; });
+			r.addEventListener("input", function () {
+				n.value = r.value; var f = INSP_LIVE[id];
+				if (f) { f[0](parseFloat(r.value)); VE.preview.draw(); }
+			});
+			r.addEventListener("change", function () { var f = INSP_LIVE[id]; if (f) VE.commit(f[1]); else n.dispatchEvent(new Event("change", { bubbles: true })); });
+		});
 	}
 	function bindInsp(c) {
 		function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
@@ -4352,7 +4379,8 @@
 		setSrc("vd-i-sin", "in"); setSrc("vd-i-sout", "out");
 		on("vd-i-scopy", "click", function () { copyText(clipName(c) + ": " + V.srcText(c, VE.P.fps), "Copied: " + V.srcText(c, VE.P.fps)); });
 		on("vd-i-scopyall", "click", copyAllSources);
-		function setNum(id, fn, label) { on(id, "change", function () { var v = parseFloat(this.value); if (!isFinite(v)) return renderInsp(); fn(v); VE.commit(label); }); }
+		var liveFn = INSP_LIVE = {};
+		function setNum(id, fn, label) { liveFn[id] = [fn, label]; on(id, "change", function () { var v = parseFloat(this.value); if (!isFinite(v)) return renderInsp(); fn(v); VE.commit(label); }); }
 		setNum("vd-i-start", function (v) { var s = Math.max(0, v); if (V.canPlace(VE.P, c.track, s, V.dur(c), (function () { var o = {}; o[c.id] = 1; return o; })())) c.start = s; else toast("There is no room there on this layer."); }, "Move");
 		setNum("vd-i-dur", function (v) { var r = V.trim(c, "r", c.start + Math.max(0.05, v), { mediaDur: VE.mediaDur(c), hi: nextStart(c), minDur: 1 / VE.P.fps }); Object.assign(c, r); }, "Length");
 		setNum("vd-i-fin", function (v) { c.fin = V.clamp(v, 0, V.dur(c)); }, "Fade in"); setNum("vd-i-fout", function (v) { c.fout = V.clamp(v, 0, V.dur(c)); }, "Fade out");
@@ -4383,14 +4411,13 @@
 			on("vd-t-fontbtn", "click", function () { fontPicker(this, T.font, function (stack) { T.font = stack; VE.ensureFont(T).then(function () { VE.preview.draw(); }); VE.commit("Font"); }); });
 			setNum("vd-t-ls", function (v) { T.ls = V.clamp(v / 100, -0.2, 1); }, "Letter spacing"); setNum("vd-t-lh", function (v) { T.lh = V.clamp(v / 100, 0.6, 4); }, "Line spacing");
 			on("vd-t-wrap", "change", function () { var v = parseFloat(this.value); T.wrap = isFinite(v) && v > 0 ? V.clamp(v / 100, 0.05, 4) : 0; VE.commit("Title box width"); });
-			on("vd-t-wrapon", "change", function () { if (this.checked) T.wrap = T.lastWrap || 0.8; else { T.lastWrap = T.wrap; T.wrap = 0; } VE.commit(this.checked ? "Wrap lines" : "No line wrap"); });
-			on("vd-t-color", "input", function () { T.color = this.value; live(); }); on("vd-t-color", "change", function () { VE.commit("Text colour"); });
-			on("vd-t-align", "change", function () { T.align = this.value; VE.commit("Align"); });
-			["bold", "italic", "shadow"].forEach(function (k) { on("vd-t-" + k, "change", function () { T[k] = this.checked; VE.commit("Text style"); }); });
-			on("vd-t-bgon", "change", function () { T.bgOn = this.checked; VE.commit("Text box"); });
-			on("vd-t-bg", "input", function () { T.bg = this.value; live(); }); on("vd-t-bg", "change", function () { VE.commit("Box colour"); });
-			setNum("vd-t-bgop", function (v) { T.bgOp = V.clamp(v / 100, 0, 1); }, "Box opacity"); setNum("vd-t-outline", function (v) { T.outline = V.clamp(v, 0, 10); }, "Outline");
-			on("vd-t-ocolor", "change", function () { T.ocolor = this.value; VE.commit("Outline colour"); });
+			on("vd-t-wrapon", "change", function () { if (this.checked) T.wrap = T.lastWrap || 0.8; else { T.lastWrap = T.wrap; T.wrap = 0; } VE.commit(this.checked ? "Wrap lines" : "No line wrap"); renderInsp(); });
+			function colour(id, key, label) { on(id, "input", function () { T[key] = this.value; live(); }); on(id, "change", function () { T[key] = this.value; VE.commit(label); renderInsp(); }); insp.querySelectorAll('[data-sw="' + id + '"] [data-c]').forEach(function (b) { b.onclick = function () { T[key] = b.getAttribute("data-c"); VE.commit(label); renderInsp(); }; }); }
+			colour("vd-t-color", "color", "Text colour"); colour("vd-t-bg", "bg", "Box colour"); colour("vd-t-ocolor", "ocolor", "Outline colour");
+			insp.querySelectorAll("#vd-t-align [data-v]").forEach(function (b) { b.onclick = function () { T.align = b.getAttribute("data-v"); VE.commit("Align"); renderInsp(); }; });
+			[["bold", "bold", "Bold"], ["italic", "italic", "Italic"], ["shadow", "shadow", "Shadow"], ["bgon", "bgOn", "Text box"]].forEach(function (q) { on("vd-t-" + q[0], "click", function () { T[q[1]] = !T[q[1]]; VE.commit(q[2]); renderInsp(); }); });
+			on("vd-t-more", "toggle", function () { UI.txtMore = this.open; saveUI(); });
+			setNum("vd-t-bgop", function (v) { T.bgOp = V.clamp(v / 100, 0, 1); }, "Box opacity"); setNum("vd-t-outline", function (v) { var had = (T.outline || 0) > 0; T.outline = V.clamp(v, 0, 10); if (had !== T.outline > 0) setTimeout(renderInsp, 0); }, "Outline");
 		}
 		if (VE.hasSound(c)) {
 			on("vd-i-vol", "input", function () { var d = +this.value; c.vol = d <= -40 ? 0 : V.fromDb(d); c.lufs = null; $("vd-volout").textContent = d <= -40 ? "off" : (d > 0 ? "+" : "") + d + " dB"; VE.preview.sync(); });

@@ -650,6 +650,35 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #vd .vd-recbig {background:#dc2626;color:#fff;} html body.dark-mode #vd .vd-recbig.is-on {background:#991b1b;}
 	html body.dark-mode #vd .vd-trrec .vd-ti {fill:#ef4444;} html body.dark-mode #vd .vd-trrec.is-on {background:#b91c1c;} html body.dark-mode #vd .vd-trrec.is-on .vd-ti {fill:#fff;}
 
+	/* properties panel: sliders with number boxes, style buttons, swatches */
+	#vd .vd-grid > .vd-sl {grid-column:1 / -1;}
+	#vd .vd-sl {margin:0.15em 0 0.25em;}
+	#vd .vd-slrow {display:flex;align-items:center;gap:0.55em;}
+	#vd .vd-rng {flex:1 1 auto;min-width:0;accent-color:var(--vd-sel);height:22px;margin:0;}
+	#vd .vd-slnum {position:relative;flex:0 0 5.6em;}
+	#vd .vd-slnum input {width:100%;box-sizing:border-box;}
+	#vd .vd-slnum em {position:absolute;right:0.5em;top:50%;transform:translateY(-50%);font-style:normal;font-size:0.9em;pointer-events:none;color:var(--vd-dim);}
+	#vd .vd-sl > span {color:var(--vd-fg);}
+	#vd .vd-txt textarea {min-height:5.5em;}
+	#vd .vd-fontbtn {width:100%;justify-content:space-between;}
+	#vd .vd-tbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em;margin:0.45em 0;}
+	#vd .vd-tsep {width:1px;height:22px;background:var(--vd-line);margin:0 0.15em;}
+	#vd .vd-tog, #vd .vd-seg button {min-width:34px;min-height:32px;padding:0.2em 0.55em;background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.4em;cursor:pointer;font:inherit;font-size:0.88em;display:inline-flex;align-items:center;justify-content:center;}
+	#vd .vd-tog b, #vd .vd-tog i {font-size:1.1em;}
+	#vd .vd-tog[aria-pressed=true], #vd .vd-seg button[aria-pressed=true] {background:var(--vd-sel);border-color:var(--vd-sel);color:#fff;}
+	#vd .vd-seg {display:inline-flex;} #vd .vd-seg button {border-radius:0;margin-left:-1px;} #vd .vd-seg button:first-child {border-radius:0.4em 0 0 0.4em;margin-left:0;} #vd .vd-seg button:last-child {border-radius:0 0.4em 0.4em 0;}
+	#vd .vd-seg .vd-ti {width:16px;height:16px;fill:currentColor;}
+	#vd .vd-swr {display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;margin-top:0.15em;}
+	#vd .vd-swr button {width:24px;height:24px;border-radius:50%;border:2px solid #4b5563;cursor:pointer;padding:0;}
+	#vd .vd-swr button[aria-pressed=true] {outline:2px solid var(--vd-sel);outline-offset:2px;}
+	#vd .vd-swc {position:relative;width:24px;height:24px;border-radius:50%;overflow:hidden;border:2px solid #4b5563;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);cursor:pointer;}
+	#vd .vd-swc input {position:absolute;inset:-6px;width:40px;height:40px;opacity:0;cursor:pointer;}
+	#vd .vd-subsec {margin-top:0.4em;padding:0.4em 0.5em;border-left:2px solid var(--vd-line);}
+	#vd .vd-more {margin-top:0.5em;} #vd .vd-more summary {cursor:pointer;font-size:0.85em;color:var(--vd-dim);min-height:28px;display:flex;align-items:center;}
+	#vd .vd-more[open] summary {color:var(--vd-fg);}
+	html body.dark-mode #vd .vd-tog[aria-pressed=true], html body.dark-mode #vd .vd-seg button[aria-pressed=true] {color:#fff;}
+	html body.dark-mode #vd .vd-swr button, html body.dark-mode #vd .vd-swc {border-color:#4b5563;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1326,7 +1355,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=46" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=47" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
