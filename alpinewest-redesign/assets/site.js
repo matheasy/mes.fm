@@ -25,7 +25,7 @@
   var phone = window.matchMedia("(max-width: 860px)");
   function onScroll() {
     var y = window.scrollY;
-    var heroH = document.querySelector(".hero") ? window.innerHeight * 0.75 : 10;
+    var heroH = document.querySelector(".hero, .phero, .nf") ? window.innerHeight * 0.75 : 10;
     hdr.classList.toggle("is-solid", y > heroH - 70);
     var down = y > lastY + 4, up = y < lastY - 4;
     if (phone.matches && !document.body.classList.contains("menu-open")) {

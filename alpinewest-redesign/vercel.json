@@ -1,0 +1,30 @@
+{
+  "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "karo.mes.fm" }], "destination": "https://www.alpinewestcreative.com/$1", "permanent": true },
+    { "source": "/hotels-airbnbs", "destination": "/work", "permanent": true },
+    { "source": "/food-beverage", "destination": "/work", "permanent": true },
+    { "source": "/video", "destination": "/work", "permanent": true },
+    { "source": "/product-branding", "destination": "/work", "permanent": true },
+    { "source": "/investment", "destination": "/services", "permanent": true },
+    { "source": "/contact-8", "destination": "/inquire", "permanent": true },
+    { "source": "/contact", "destination": "/inquire", "permanent": true },
+    { "source": "/portfolio", "destination": "/work", "permanent": true },
+    { "source": "/m", "destination": "/", "permanent": true },
+    { "source": "/m/hotels-airbnbs", "destination": "/work", "permanent": true },
+    { "source": "/m/food-beverage", "destination": "/work", "permanent": true },
+    { "source": "/m/video", "destination": "/work", "permanent": true },
+    { "source": "/m/product-branding", "destination": "/work", "permanent": true },
+    { "source": "/m/investment", "destination": "/services", "permanent": true },
+    { "source": "/m/contact-8", "destination": "/inquire", "permanent": true },
+    { "source": "/m/:path*", "destination": "/", "permanent": true }
+  ],
+  "headers": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "karo.mes.fm" }], "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] },
+    { "source": "/(img|video)/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }] },
+    { "source": "/_(src|tools)/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
+  ]
+}

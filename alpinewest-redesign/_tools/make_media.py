@@ -61,6 +61,11 @@ PHOTOS = {
     "calgary-grain-sour":        "446ba23f",
     "calgary-winter-dining":     "e9a00d92",
     "calgary-loft-lounge":       "f9d07321",
+    # One18 Empire (restaurant & bar, labelled on the old Food & Beverage page)
+    "one18-torch":               "84948f2e",
+    "one18-pour":                "9a34f829",
+    "one18-scallops":            "d228f8f4",
+    "one18-brunch":              "0fef6911",
     # Karolina
     "karolina-portrait":         "746ae3b8",
 }
