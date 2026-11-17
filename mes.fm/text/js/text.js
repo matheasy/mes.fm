@@ -265,6 +265,7 @@
 		readV.classList.toggle("tx-nocolor", !S.colors);
 		$("tx-theme").value = S.look; $("tx-width").value = S.width; $("tx-font").value = S.font; $("tx-unwrap").value = S.unwrap;
 		$("tx-wrap").checked = !!S.wrap; $("tx-nums").checked = !!S.nums; $("tx-colors").checked = !!S.colors;
+		if (typeof tsz !== "undefined" && tsz) tsz.refresh();
 	}
 	applyLook();
 	[["tx-theme", "look"], ["tx-width", "width"], ["tx-font", "font"]].forEach(function (p) { $(p[0]).onchange = function () { S[p[1]] = this.value; save(); applyLook(); }; });
@@ -274,7 +275,10 @@
 	$("tx-colors").onchange = function () { S.colors = this.checked; save(); applyLook(); };
 	$("tx-enc").onchange = function () { if (!D || !D.bytes) return; if (D.dirty && !confirm("Re-reading the file with other characters drops your edits. Go on?")) { this.value = D.encPick || "auto"; return; } D.encPick = this.value; var r = T.decode(D.bytes, this.value); D.text = r.text; D.enc = r.enc; D.dirty = false; D.info = T.info(D.name, D.text); render(); };
 	function setFs(v) { S.fs = Math.round(Math.max(0.6, Math.min(2.6, v)) * 100) / 100; save(); applyLook(); }
-	$("tx-smaller").onclick = function () { setFs(S.fs - 0.1); }; $("tx-bigger").onclick = function () { setFs(S.fs + 0.1); };
+	// A- / 100% / A+ pill (main_js/text-size.js); keys + - 0 still step by 10%
+	var tsz = window.MESTextSize ? MESTextSize.add({ into: $("tx-tsz"), label: "Text size",
+		steps: [60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200, 230, 260],
+		get: function () { return Math.round(S.fs * 100); }, set: function (p) { setFs(p / 100); } }) : null;
 	$("tx-more").onclick = function () { var m = $("tx-menu"); m.hidden = !m.hidden; this.setAttribute("aria-expanded", String(!m.hidden)); };
 
 	// ---------- opening ----------

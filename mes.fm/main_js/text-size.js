@@ -32,27 +32,36 @@
     function read(key) { try { var v = parseFloat(localStorage.getItem(key)); if (STEPS.indexOf(v) >= 0) return v; } catch (e) {} return 100; }
     function write(key, v) { try { if (v === 100) localStorage.removeItem(key); else localStorage.setItem(key, String(v)); } catch (e) {} }
 
+    /* o.steps (percent list), o.get() / o.set(pct): use the page's own saved size instead of o.key (then o.apply is optional);
+       the returned pill has .refresh() to repaint it after the page changed the size some other way (keys, other buttons). */
     function add(o) {
         css();
-        var pct = read(o.key), what = o.label || "Text size";
+        var ST = o.steps || STEPS, ext = typeof o.get === "function";
+        var pct = ext ? o.get() : read(o.key), what = o.label || "Text size";
         var box = document.createElement("span");
         box.className = "mes-ts"; box.setAttribute("role", "group"); box.setAttribute("aria-label", what);
         box.innerHTML = '<button type="button" data-d="-1" title="Smaller text" aria-label="Smaller text">A−</button>' +
             '<button type="button" class="mes-ts-v" data-d="0" title="Back to normal size" aria-label="Reset text size">100%</button>' +
             '<button type="button" class="mes-ts-up" data-d="1" title="Bigger text" aria-label="Bigger text">A+</button>';
         var bv = box.children[1], bdn = box.children[0], bup = box.children[2];
-        function show() {
+        function paint() {
             bv.textContent = Math.round(pct) + "%";
-            bdn.disabled = pct <= STEPS[0]; bup.disabled = pct >= STEPS[STEPS.length - 1];
-            o.apply(pct / 100);
+            bdn.disabled = pct <= ST[0] + 0.01; bup.disabled = pct >= ST[ST.length - 1] - 0.01;
+        }
+        function show() { paint(); if (o.apply) o.apply(pct / 100); }
+        function step(d) {      // next listed step above / below the current size (the page may hold an unlisted value)
+            if (d === 0) return 100;
+            if (d > 0) { for (var i = 0; i < ST.length; i++) if (ST[i] > pct + 0.01) return ST[i]; return ST[ST.length - 1]; }
+            for (var j = ST.length - 1; j >= 0; j--) if (ST[j] < pct - 0.01) return ST[j]; return ST[0];
         }
         box.addEventListener("click", function (e) {
             var b = e.target.closest("button[data-d]"); if (!b) return;
             e.preventDefault();
-            var d = +b.getAttribute("data-d"), i = STEPS.indexOf(pct);
-            pct = d === 0 ? 100 : STEPS[Math.max(0, Math.min(STEPS.length - 1, i + d))];
-            write(o.key, pct); show();
+            pct = step(+b.getAttribute("data-d"));
+            if (ext) o.set(pct); else write(o.key, pct);
+            show();
         });
+        box.refresh = function () { if (ext) pct = o.get(); paint(); };
         if (o.into) o.into.appendChild(box);
         show();
         return box;

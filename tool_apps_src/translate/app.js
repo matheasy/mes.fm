@@ -1159,7 +1159,15 @@
     if (FZ.indexOf(S.fz) < 0) S.fz = 1;
     root.style.setProperty("--tr-fz", String(S.fz));
     Array.prototype.forEach.call(root.querySelectorAll("[data-fz]"), function (b) { var d = +b.getAttribute("data-fz"); b.disabled = d < 0 ? S.fz === FZ[0] : S.fz === FZ[FZ.length - 1]; });
+    (tsz || []).forEach(function (p) { p.refresh(); });
   }
+  // A- / 100% / A+ pills in the boxes' tool rows (main_js/text-size.js), same saved size as the fill-bar buttons
+  var tsz = [];
+  if (window.MESTextSize) Array.prototype.forEach.call(root.querySelectorAll(".tr-tsz"), function (el) {
+    tsz.push(MESTextSize.add({ into: el, label: "Text size of the boxes", steps: FZ.map(function (v) { return Math.round(v * 1000) / 10; }),
+      get: function () { return Math.round((S.fz || 1) * 1000) / 10; },
+      set: function (p) { S.fz = FZ.reduce(function (a, v) { return Math.abs(v * 100 - p) < Math.abs(a * 100 - p) ? v : a; }, 1); save(); applyFz(); } }));
+  });
   root.addEventListener("click", function (e) {
     var b = e.target.closest("[data-fz]"); if (!b) return;
     var i = FZ.indexOf(S.fz) + (+b.getAttribute("data-fz")); S.fz = FZ[Math.max(0, Math.min(FZ.length - 1, i))]; save(); applyFz();

@@ -130,3 +130,10 @@ body.tx-filling #compact-nav, body.tx-filling ins.adsbygoogle, body.tx-filling i
 	#tx .tx-read { position: absolute; left: 0; top: 0; box-shadow: none; margin: 0; max-width: none; }
 }
 #tx input[type="file"][hidden] { display: none !important; }
+
+/* A- / 100% / A+ pill (main_js/text-size.js) in the viewer's own colours */
+#tx .tx-tsz { display: inline-flex; }
+#tx .tx-tsz .mes-ts { border-color: var(--tx-line); border-radius: 7px; }
+#tx .tx-tsz .mes-ts button { background: var(--tx-panel); color: var(--tx-ink); min-height: 34px; }
+#tx .tx-tsz .mes-ts .mes-ts-v { border-color: var(--tx-line); }
+#tx .tx-tsz .mes-ts button:hover:not(:disabled) { background: var(--tx-hov); color: var(--tx-ink); }

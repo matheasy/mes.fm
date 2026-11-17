@@ -93,7 +93,8 @@
 	#tr .tr-fz {font-weight:800;font-size:0.95em;min-width:36px;}
 	#tr .tr-fz:disabled {opacity:0.4;cursor:default;}
 	/* A- / A+ show in every box's tool row (2026-11-16: hard to read otherwise); inside Fill window the fill bar has its own pair */
-	#tr .tr-fill .tr-fzw {display:none;}
+	#tr .tr-fill .tr-fzw, #tr .tr-fill .tr-tsz {display:none;}
+	#tr .tr-tsz {display:inline-flex;align-items:center;}
 	#tr .tr-act--out .tu-btn {min-height:40px;}
 	#tr .tr-live {display:inline-flex;align-items:center;gap:0.45em;font-size:0.92em;cursor:pointer;min-height:36px;min-width:0;}
 	#tr .tr-live input {width:1.15em;height:1.15em;flex:0 0 auto;margin:0;}

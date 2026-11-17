@@ -524,7 +524,7 @@ APPS = {
                       tag="Save text once, copy it anytime, synced to your own cloud.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
                       desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
                       meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
-                      js_v="16", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/text-size.js?v=1"]),
+                      js_v="16", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/text-size.js?v=2"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
@@ -1194,13 +1194,13 @@ APPS = {
                       tag="Translate text, photos and PDFs, on your device when it can.", accent="#0b7285", dark="#085563", tint="#e0f3f6",
                       desc="Free translator for text, photos, screenshots and PDFs in about 85 languages. Chrome and Edge translate on your own device, so nothing is sent anywhere; other browsers use a free online service. Reads the text in pictures right in your browser.",
                       meta_desc="Free translator for text, photos and PDFs in 85 languages. Chrome and Edge translate on your device; pictures are read in your browser, never uploaded.",
-                      js_v="7", vars={"MODE": "translate", "SEO": "@seo/translate.html"},
+                      js_v="8", pre_js=["/main_js/text-size.js?v=2"], vars={"MODE": "translate", "SEO": "@seo/translate.html"},
                       nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
     "image-to-text": dict(title="Image to Text (OCR)", page_title="Image to Text: Free OCR in Your Browser",
                           tag="Copy the text out of photos, screenshots and PDFs.", accent="#0b7285", dark="#085563", tint="#e0f3f6", src="translate", js_path="translate/js/translate.js",
                           desc="Free image to text converter (OCR): drop a photo, screenshot, scan or PDF and copy its text, in about 80 languages. The picture is read right in your browser and never uploaded. Fix the text, save it as .txt or translate it.",
                           meta_desc="Free image to text (OCR): copy the text from photos, screenshots and scanned PDFs in 80 languages. Runs in your browser, nothing is uploaded.",
-                          js_v="7", vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1, share_img="image-to-text/img/logo-big.png",
+                          js_v="8", pre_js=["/main_js/text-size.js?v=2"], vars={"MODE": "ocr", "SEO": "@seo/image-to-text.html"}, brand=TR_BRAND, tab=1, share_img="image-to-text/img/logo-big.png",
                           nav_extra=TR_NAV_INFO, menu_extra=TR_NAV_MENU),
     # MES Pronounce (new 2026-10-26, mes.fm/pronounce; aliases /pronunciation /how-to-pronounce /syllables /ipa ...): hear words and sentences in the device's accents,
     # syllables + stress + IPA + respelling from the CMU Pronouncing Dictionary (shards in mes.fm/pronounce/data/, build_pronounce_data.py), UK forms by hand,
@@ -1450,7 +1450,7 @@ APPS = {
                  tag="Open text, RTF, Markdown and code files in your browser.", accent="#0f766e", dark="#0b5a54", tint="#dff3f0",
                  desc="Free online text file viewer: open .txt, .md, .rtf, .csv, .json, .html, .log and code files in your browser. Read them laid out nicely (Markdown and RTF formatted, CSV as a table) or as code with line numbers and colours, read them aloud, change the font and size, edit and download. Private: nothing is uploaded.",
                  meta_desc="Free text file viewer: open TXT, RTF, Markdown, CSV, JSON and code files in a formatted reading view or a code view with line numbers. Read aloud, edit. No upload.",
-                 js_v="3", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
+                 js_v="4", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2"]),
     "docx": dict(title="MES Word Viewer", page_title="DOCX Viewer and Editor: Open Word Documents Online, No Upload",
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
@@ -1687,6 +1687,50 @@ def _bmi_pages():
 
 
 _bmi_pages()
+
+
+# ---------- MES Market Signals in other languages (2026-11-17) ----------
+# One page script (signals/js/signals.js) for every language. All UI text goes through MESSig.T(english) in app.js / lib.js; each language's
+# translations are tool_apps_src/signals/i18n/<code>.json ({meta, s: {English: translation}, g: glossary}, list of keys = i18n/en.json from
+# `node tool_apps_src/signals/i18n/extract.js`, checked by `... --check`). The build writes mes.fm/signals/js/i18n-<code>.js
+# (window.SG_I18N, loaded before the page script) and fills {{tr:...}} in content.html; the explanation / FAQ is seo/<code>.html.
+# A language file that is missing (not translated yet) is simply not built.
+SIG_LANG_SLUGS = {"fa": "signals-fa", "ar": "signals-ar", "es": "signals-es", "pt-BR": "signals-pt", "tr": "signals-tr", "ru": "signals-ru",
+                  "zh-CN": "signals-zh", "hi": "signals-hi", "id": "signals-id", "vi": "signals-vi", "de": "signals-de", "fr": "signals-fr"}
+
+
+def _signals_pages():
+    import hashlib
+    d = SRC / "signals" / "i18n"
+    packs = {c: json.loads((d / (c + ".json")).read_text(encoding="utf-8")) for c in SIG_LANG_SLUGS if (d / (c + ".json")).exists()}
+    codes = ["en"] + [c for c in SIG_LANG_SLUGS if c in packs]
+    path = lambda c: "/signals" if c == "en" else "/" + SIG_LANG_SLUGS[c]
+    name = lambda c: "English" if c == "en" else packs[c]["meta"]["name"]
+    hreflang = "".join('<link rel="alternate" hreflang="%s" href="https://mes.fm%s" />' % (c, path(c)) for c in codes) + '<link rel="alternate" hreflang="x-default" href="https://mes.fm/signals" />'
+
+    def switcher(code):
+        label = "Language" if code == "en" else packs[code]["meta"]["lang_label"]
+        items = "".join('<li><a href="%s" hreflang="%s" lang="%s"%s>%s</a></li>' % (path(c), c, c, ' aria-current="page"' if c == code else "", name(c)) for c in codes)
+        return '\t\t<nav class="sg-lang" aria-label="%s"><details><summary>&#127760; %s</summary><ul>%s</ul></details></nav>' % (label, name(code), items)
+    base = APPS["signals"]
+    base.update(head_extra=hreflang, vars={"SEO": "@seo/en.html", "LANGSW": switcher("en"), "SGATTR": ""})
+    out = SITE / "signals" / "js"
+    for code, P in packs.items():
+        m = P["meta"]
+        js = "window.SG_I18N = " + json.dumps({"code": code, "name": m["name"], "locale": m["locale"], "dir": m["dir"], "s": P["s"], "g": P.get("g", {})}, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        v = hashlib.md5(js.encode("utf-8")).hexdigest()[:8]
+        if "--apply" in sys.argv:
+            out.mkdir(parents=True, exist_ok=True)
+            f = out / ("i18n-%s.js" % code)
+            if not f.exists() or f.read_text(encoding="utf-8") != js:
+                f.write_text(js, encoding="utf-8")
+        APPS[SIG_LANG_SLUGS[code]] = dict(base, title=m["title"], page_title=m["page_title"], tag=m["tag"], desc=m["desc"], src="signals", js_path="signals/js/signals.js",
+                                          logo_from="signals", lang=code, og_locale=m["og_locale"], doc_title=m["doc_title"], tr=P["s"],
+                                          pre_js=base.get("pre_js", []) + ["/signals/js/i18n-%s.js?v=%s" % (code, v)], head_extra=hreflang,
+                                          vars={"SEO": "@seo/%s.html" % code, "LANGSW": switcher(code), "SGATTR": ' lang="%s"%s' % (code, ' dir="rtl"' if m["dir"] == "rtl" else "")})
+
+
+_signals_pages()
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
 
@@ -1850,6 +1894,8 @@ def build_from_source(slug, cfg, tpl):
     content = (d / cfg.get("content", "content.html")).read_text(encoding="utf-8")
     for k, v in cfg.get("vars", {}).items():       # {{KEY}} placeholders in a shared content template; a value starting with "@" is a file in the source folder
         content = content.replace("{{%s}}" % k, (d / v[1:]).read_text(encoding="utf-8").strip("\n") if v.startswith("@") else v)
+    # {{tr:English text}} = that text in the page's language (Market Signals: cfg['tr'] = {English: translation}; English pages just drop the marker)
+    content = re.sub(r"\{\{tr:([\s\S]*?)\}\}", lambda m: (cfg.get("tr") or {}).get(m.group(1)) or m.group(1), content)
     if cfg.get("i18n") is not None:   # {{t:key}} = a UI string of the page's language (the BMI pages: tool_apps_src/bmicalculator/i18n.js)
         content = re.sub(r"\{\{t:(\w+)\}\}", lambda m: cfg["i18n"][m.group(1)], content)
         assert "{{" not in content, re.findall(r"\{\{[^}]*\}\}", content)[:3]

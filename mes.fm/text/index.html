@@ -438,6 +438,13 @@ body.tx-filling #compact-nav, body.tx-filling ins.adsbygoogle, body.tx-filling i
 }
 #tx input[type="file"][hidden] { display: none !important; }
 
+/* A- / 100% / A+ pill (main_js/text-size.js) in the viewer's own colours */
+#tx .tx-tsz { display: inline-flex; }
+#tx .tx-tsz .mes-ts { border-color: var(--tx-line); border-radius: 7px; }
+#tx .tx-tsz .mes-ts button { background: var(--tx-panel); color: var(--tx-ink); min-height: 34px; }
+#tx .tx-tsz .mes-ts .mes-ts-v { border-color: var(--tx-line); }
+#tx .tx-tsz .mes-ts button:hover:not(:disabled) { background: var(--tx-hov); color: var(--tx-ink); }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -786,7 +793,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" id="tx-vread" aria-pressed="true" title="Reading view: the text laid out for reading (Markdown, RTF and web pages formatted)">Reading</button>
 				<button type="button" id="tx-vcode" aria-pressed="false" title="Code view: the raw text with line numbers and colours">Code</button>
 			</div>
-			<button type="button" class="tx-ib" id="tx-smaller" title="Smaller text (-)" aria-label="Smaller text">A&minus;</button><button type="button" class="tx-ib" id="tx-bigger" title="Larger text (+)" aria-label="Larger text">A+</button>
+			<span id="tx-tsz" class="tx-tsz"></span>
 			<button type="button" class="tx-btn" id="tx-read" title="Read the text aloud, each word highlighted (Alt+Shift+R)" disabled><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px"><path d="M3 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Read aloud</button>
 			<button type="button" class="tx-btn" id="tx-edit" title="Edit the text (E)" disabled>Edit</button>
 			<button type="button" class="tx-btn" id="tx-more" aria-haspopup="true" aria-expanded="false" title="Copy, download, settings">&#8943; More</button>
@@ -903,7 +910,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/text/js/text.js?v=3" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/text/js/text.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
