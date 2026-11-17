@@ -1,0 +1,388 @@
+{
+ "photos": {
+  "villamil-cabana-reading": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-balcony-sea": {
+   "w": 3832,
+   "h": 5740,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-cabana-wine": {
+   "w": 3121,
+   "h": 3901,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-terrace-palm": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-evening-stairs": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-cocktails-marble": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-indoor-pool": {
+   "w": 3938,
+   "h": 4922,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-caprese": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-terrace-view": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-sunlit-cocktail": {
+   "w": 3540,
+   "h": 4425,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-bar-pour": {
+   "w": 3688,
+   "h": 5525,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-garden-stairs": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-pool-swimmer": {
+   "w": 4003,
+   "h": 5996,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-pool-glass": {
+   "w": 4000,
+   "h": 6000,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-lunch-table": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-poolside-dessert": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-golden-cocktail": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-rose-pillow": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "villamil-suite-lamp": {
+   "w": 3795,
+   "h": 5685,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-cabana-cocktail": {
+   "w": 3963,
+   "h": 5936,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-coconut-pool": {
+   "w": 3862,
+   "h": 5793,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-lantern-walk": {
+   "w": 3639,
+   "h": 5459,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-sunset-cabanas": {
+   "w": 3699,
+   "h": 5549,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-yoga-terrace": {
+   "w": 3766,
+   "h": 5642,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-fitness-ocean": {
+   "w": 3807,
+   "h": 5710,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-folk-dancers": {
+   "w": 3879,
+   "h": 5819,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-fire-mask": {
+   "w": 2481,
+   "h": 3716,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "ziva-fire-performer": {
+   "w": 3132,
+   "h": 4692,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-grain-cocktails": {
+   "w": 3786,
+   "h": 5408,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-grain-toast": {
+   "w": 3967,
+   "h": 5885,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-grain-cocoa": {
+   "w": 3771,
+   "h": 5649,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-grain-guest": {
+   "w": 3659,
+   "h": 4574,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-grain-cheers": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-grain-sour": {
+   "w": 4016,
+   "h": 6016,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-winter-dining": {
+   "w": 3730,
+   "h": 4662,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "calgary-loft-lounge": {
+   "w": 4005,
+   "h": 5006,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2400
+   ]
+  },
+  "karolina-portrait": {
+   "w": 2003,
+   "h": 3000,
+   "widths": [
+    640,
+    1080,
+    1600,
+    2003
+   ]
+  }
+ },
+ "films": {
+  "villamil-film": {
+   "src": "/video/villamil-film.mp4",
+   "poster": "/img/villamil-film-poster.webp"
+  },
+  "villamil-reel": {
+   "src": "/video/villamil-reel.mp4",
+   "poster": "/img/villamil-reel-poster.webp"
+  },
+  "spa-reel": {
+   "src": "/video/spa-reel.mp4",
+   "poster": "/img/spa-reel-poster.webp"
+  }
+ }
+}
