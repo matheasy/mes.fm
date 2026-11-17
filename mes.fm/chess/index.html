@@ -540,6 +540,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ch .ch-ob[disabled] {opacity:0.45;cursor:default;}
 	#ch.ch-3don .ch-ob {background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25);color:#fff;}
 	#ch.ch-3don .ch-ob:hover {background:rgba(255,255,255,0.24);}
+	#ch .ch-otb.is-min > :not(.ch-ob--min) {display:none !important;}
+	#ch .ch-otb.is-min {padding:0.15em;}
+	#ch .ch-ob--min {padding:0.2em 0.55em;}
 	#ch .ch-ob--big {font-weight:700;border-color:#a2652f;}
 	#ch.ch-3don .ch-ob--big {background:rgba(162,101,47,0.85);border-color:#d79a5c;}
 	#ch.ch-3don .ch-ob--big:hover {background:rgba(190,120,56,0.95);}
@@ -960,7 +963,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<div class="ch-promo" id="ch-promo" hidden role="dialog" aria-label="Promote the pawn to"></div>
 						</div>
 						<div class="ch-player" id="ch-pbot"></div>
-						<div class="ch-otb" id="ch-otb" role="group" aria-label="Game buttons on the board"><button type="button" class="ch-ob" data-o="undo" title="Take back your last move (U)">↶ <span>Undo</span></button><button type="button" class="ch-ob" data-o="hint" title="Show the computer's best move (H)">💡 <span>Hint</span></button><button type="button" class="ch-ob ch-3donly" data-o="view" title="Camera back to its normal view (or double-click the board)">⟲ <span>Reset view</span></button><button type="button" class="ch-ob" data-o="flip" title="Turn the board round (R)">⇅ <span>Turn</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fill" title="Make the board cover the browser window (W)">⤢ <span>Fill window</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fs" title="Show the board on the whole screen (F)">⛶ <span>Full screen</span></button><input id="ch-otype" class="ch-otype" autocomplete="off" spellcheck="false" placeholder="Type a move: e4, Nf3…" maxlength="10" aria-label="Type a move"></div>
+						<div class="ch-otb" id="ch-otb" role="group" aria-label="Game buttons on the board"><button type="button" class="ch-ob ch-ob--min" data-o="min" aria-expanded="true" title="Hide the buttons on the board">▾</button><button type="button" class="ch-ob" data-o="undo" title="Take back your last move (U)">↶ <span>Undo</span></button><button type="button" class="ch-ob" data-o="hint" title="Show the computer's best move (H)">💡 <span>Hint</span></button><button type="button" class="ch-ob ch-3donly" data-o="view" title="Camera back to its normal view (or double-click the board)">⟲ <span>Reset view</span></button><button type="button" class="ch-ob" data-o="flip" title="Turn the board round (R)">⇅ <span>Turn</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fill" title="Make the board cover the browser window (W)">⤢ <span>Fill window</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fs" title="Show the board on the whole screen (F)">⛶ <span>Full screen</span></button><input id="ch-otype" class="ch-otype" autocomplete="off" spellcheck="false" placeholder="Type a move: e4, Nf3…" maxlength="10" aria-label="Type a move"></div>
 					</div>
 				</div>
 				<p class="ch-anote" id="ch-anote" aria-live="polite"></p>
@@ -1130,7 +1133,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=4" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

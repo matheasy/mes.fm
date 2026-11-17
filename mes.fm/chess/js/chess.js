@@ -2503,7 +2503,7 @@
 	$("ch-otb").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
 		var o = b.getAttribute("data-o");
-		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click(); else if (o === "fill") panelBtn(0); else if (o === "fs") panelBtn(1);
+		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click(); else if (o === "min") { S.otbMin = !S.otbMin; save(); applyShow(); } else if (o === "fill") panelBtn(0); else if (o === "fs") panelBtn(1);
 	});
 	/** the Fill window / Full screen buttons on the board mirror panel-view.js's own buttons (labels follow the state) */
 	function paintOtbPanel() {
@@ -2521,6 +2521,9 @@
 		var sh = S.show;
 		root.classList.toggle("ch-nonames", !sh.names);
 		$("ch-otb").hidden = !sh.btns;
+		$("ch-otb").classList.toggle("is-min", !!S.otbMin);
+		var mb = root.querySelector('.ch-ob[data-o="min"]');
+		if (mb) { mb.textContent = S.otbMin ? "▴ Buttons" : "▾"; mb.title = S.otbMin ? "Show the buttons on the board" : "Hide the buttons on the board"; mb.setAttribute("aria-expanded", S.otbMin ? "false" : "true"); }
 		paintOtbPanel();
 		$("ch-moves").hidden = !sh.moves;
 		$("ch-typebox").hidden = !sh.type;

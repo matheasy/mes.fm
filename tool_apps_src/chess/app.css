@@ -233,6 +233,9 @@
 	#ch .ch-ob[disabled] {opacity:0.45;cursor:default;}
 	#ch.ch-3don .ch-ob {background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25);color:#fff;}
 	#ch.ch-3don .ch-ob:hover {background:rgba(255,255,255,0.24);}
+	#ch .ch-otb.is-min > :not(.ch-ob--min) {display:none !important;}
+	#ch .ch-otb.is-min {padding:0.15em;}
+	#ch .ch-ob--min {padding:0.2em 0.55em;}
 	#ch .ch-ob--big {font-weight:700;border-color:#a2652f;}
 	#ch.ch-3don .ch-ob--big {background:rgba(162,101,47,0.85);border-color:#d79a5c;}
 	#ch.ch-3don .ch-ob--big:hover {background:rgba(190,120,56,0.95);}
