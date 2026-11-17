@@ -314,7 +314,7 @@
      Without a key, or if the service can't be reached, the form falls back to
      opening the visitor's email app with the message filled in (mailto:). */
   var TO = 'info@alpinewestcreative.com';
-  var WEB3FORMS_KEY = '';
+  var WEB3FORMS_KEY = 'b8c3f583-d4c5-45c9-bdc1-8d867cbbf63f';
   function formNote(f, text, ok) {
     var n = f.querySelector('.aw-form-note');
     if (!n) {
