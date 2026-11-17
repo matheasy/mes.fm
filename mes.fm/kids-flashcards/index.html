@@ -536,6 +536,26 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-cimg {width:1em;height:1em;display:block;object-fit:contain;-webkit-user-drag:none;user-select:none;}
 	#kd .kd-gone i .kd-cimg {display:inline-block;vertical-align:top;}
 
+	/* "All cards" list */
+	#kd .kd-lst-in {max-width:60em;}
+	#kd .kd-lst-bar {display:flex;align-items:center;gap:.7em;margin:.7em 0 .4em;position:sticky;top:-1em;background:var(--kd-card);padding:.4em 0;z-index:1;}
+	#kd .kd-lst-bar input {flex:1;min-width:0;font:inherit;font-size:1.15em;padding:.5em .8em;border:2px solid var(--kd-btn-line);border-radius:.9em;background:var(--kd-btn);color:var(--kd-ink);}
+	#kd .kd-lst-bar input:focus {outline:3px solid var(--kd-sel);outline-offset:1px;}
+	#kd .kd-lst-h {margin:.8em 0 .4em;font-size:1.1em;}
+	#kd .kd-lst-row {display:grid;grid-template-columns:repeat(auto-fill,minmax(7.2em,1fr));gap:.55em;}
+	#kd .kd-lst-it {display:flex;flex-direction:column;align-items:center;gap:.25em;padding:.45em .3em .5em;border:2px solid var(--kd-btn-line);border-radius:1em;background:var(--kd-btn);color:var(--kd-btn-ink);cursor:pointer;font-family:var(--kd-font);}
+	#kd .kd-lst-it:hover {border-color:var(--kd-sel);}
+	#kd .kd-lst-it.is-cur {border-color:var(--kd-go);box-shadow:0 0 0 2px var(--kd-go);}
+	#kd .kd-lst-it:active {transform:scale(.96);}
+	#kd .kd-lst-pic {width:5.2em;height:5.2em;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:.6em;}
+	#kd .kd-lst-e {font-size:3.4em;line-height:1;}
+	#kd .kd-lst-pic img {width:100% !important;height:100% !important;max-width:none !important;object-fit:cover;border-radius:.6em;}
+	#kd .kd-lst-pic svg {width:90%;height:90%;}
+	#kd .kd-lst-e .kd-cimg {width:1em !important;height:1em !important;object-fit:contain;}
+	#kd .kd-lst-w {font-weight:800;font-size:1.05em;line-height:1.15;text-align:center;word-break:break-word;}
+	#kd .kd-lst-s {font-size:.8em;color:var(--kd-mut);text-align:center;}
+	@media (max-width:480px) { #kd .kd-lst-row {grid-template-columns:repeat(auto-fill,minmax(6em,1fr));} #kd .kd-lst-pic {width:4.4em;height:4.4em;} }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -761,9 +781,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="kd-big kd-big--say" id="kd-say"><span aria-hidden="true">🔊</span> Say it again</button>
 				<button type="button" class="kd-big kd-big--snd" id="kd-snd" hidden><span aria-hidden="true">🐾</span> Animal sound</button>
 				<button type="button" class="kd-big" id="kd-shuf"><span aria-hidden="true">🔀</span> Shuffle</button>
+				<button type="button" class="kd-big" id="kd-list"><span aria-hidden="true">📋</span> All cards</button>
 				<button type="button" class="kd-big kd-big--go" id="kd-fwd">Next <span aria-hidden="true">▶</span></button>
 			</div>
 			<p class="kd-hint" id="kd-hint" role="status"></p>
+
+			<div class="kd-set kd-lst" id="kd-lst" role="dialog" aria-modal="true" aria-labelledby="kd-lst-h" hidden>
+				<div class="kd-set-in kd-lst-in">
+					<div class="kd-set-head"><h2 id="kd-lst-h">All cards</h2><button type="button" class="kd-x" id="kd-lst-x" aria-label="Close the list">✕</button></div>
+					<div class="kd-lst-bar"><input type="search" id="kd-lst-q" placeholder="Search, e.g. bear" autocomplete="off" aria-label="Search the cards"><span class="kd-small" id="kd-lst-n"></span></div>
+					<div class="kd-lst-grid" id="kd-lst-grid"></div>
+				</div>
+			</div>
 
 			<div class="kd-set" id="kd-set" role="dialog" aria-modal="true" aria-labelledby="kd-set-h" hidden>
 				<div class="kd-set-in">
@@ -908,7 +937,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=10" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

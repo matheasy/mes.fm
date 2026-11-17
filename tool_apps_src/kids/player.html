@@ -40,9 +40,18 @@
 				<button type="button" class="kd-big kd-big--say" id="kd-say"><span aria-hidden="true">🔊</span> Say it again</button>
 				<button type="button" class="kd-big kd-big--snd" id="kd-snd" hidden><span aria-hidden="true">🐾</span> Animal sound</button>
 				<button type="button" class="kd-big" id="kd-shuf"><span aria-hidden="true">🔀</span> Shuffle</button>
+				<button type="button" class="kd-big" id="kd-list"><span aria-hidden="true">📋</span> All cards</button>
 				<button type="button" class="kd-big kd-big--go" id="kd-fwd">Next <span aria-hidden="true">▶</span></button>
 			</div>
 			<p class="kd-hint" id="kd-hint" role="status"></p>
+
+			<div class="kd-set kd-lst" id="kd-lst" role="dialog" aria-modal="true" aria-labelledby="kd-lst-h" hidden>
+				<div class="kd-set-in kd-lst-in">
+					<div class="kd-set-head"><h2 id="kd-lst-h">All cards</h2><button type="button" class="kd-x" id="kd-lst-x" aria-label="Close the list">✕</button></div>
+					<div class="kd-lst-bar"><input type="search" id="kd-lst-q" placeholder="Search, e.g. bear" autocomplete="off" aria-label="Search the cards"><span class="kd-small" id="kd-lst-n"></span></div>
+					<div class="kd-lst-grid" id="kd-lst-grid"></div>
+				</div>
+			</div>
 
 			<div class="kd-set" id="kd-set" role="dialog" aria-modal="true" aria-labelledby="kd-set-h" hidden>
 				<div class="kd-set-in">

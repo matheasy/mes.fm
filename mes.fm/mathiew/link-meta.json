@@ -1,4 +1,18 @@
 {
+  "https://mes.fm/ar-glasses-reflection": {
+    "image": "https://mes.fm/ar-glasses-reflection/img/ar-glasses-reflection.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mathiew/re-leothreads-nuskuiow"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35715"
+      }
+    ]
+  },
   "https://mes.fm/full-moon-hat": {
     "image": "https://mes.fm/full-moon-hat/img/full-moon-hat-1.jpg",
     "watchLinks": [],
@@ -18,12 +32,12 @@
     "watchLinks": [],
     "namedLinks": [
       {
-        "label": "Hive",
-        "href": "https://inleo.io/threads/view/mathiew/re-leothreads-2hkkrfkwt"
-      },
-      {
         "label": "Telegram",
         "href": "https://t.me/meslinks/35711"
+      },
+      {
+        "label": "More personal posts",
+        "href": "https://mes.fm/mathiew"
       }
     ]
   },

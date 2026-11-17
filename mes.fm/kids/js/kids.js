@@ -833,8 +833,61 @@
 	stage.addEventListener("pointercancel", function () { sid = null; });
 	stage.addEventListener("contextmenu", function (e) { if (kiosk) e.preventDefault(); });
 
+
+	// ---------- "All cards": a searchable picture list of the deck; tap one to jump to it ----------
+	var lstEl = $("kd-lst"), lstQ = $("kd-lst-q"), lstGrid = $("kd-lst-grid"), lstFocus = null;
+	function catName(c) { for (var i = 0; i < K.CATS.length; i++) if (K.CATS[i].id === c) return K.CATS[i].icon + " " + K.CATS[i].name; return c; }
+	function fold(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+	function lstText(it) { return fold([it.word, it.letter, it.ex, it.nw, it.n, it.sw, catName(it.cat)].join(" ")); }
+	function lstItems() {
+		var ids = pool.slice(), byCat = {};
+		ids.forEach(function (id) { var it = K.BY_ID[id]; (byCat[it.cat] = byCat[it.cat] || []).push(it); });
+		return Object.keys(byCat).map(function (c) {
+			var a = byCat[c]; if (c !== "letters" && c !== "numbers") a.sort(function (x, y) { return x.word.localeCompare(y.word); });
+			return { cat: c, items: a };
+		});
+	}
+	function lstPic(it) { if (it.cat === "numbers") return '<span class="kd-lst-e">' + cpic(it.cp) + "</span>"; var h = picHtml(it); return h.charAt(0) === "<" ? h.replace('decoding="async"', 'decoding="async" loading="lazy"') : '<span class="kd-lst-e">' + h + "</span>"; }
+	function renderList() {
+		var q = fold(lstQ.value).trim().split(/\s+/).filter(Boolean), groups = lstItems(), html = "", n = 0, tot = 0, curId = order[idx];
+		groups.forEach(function (g) {
+			var hits = g.items.filter(function (it) { tot++; var t = lstText(it); return q.every(function (w) { return t.indexOf(w) >= 0; }); });
+			if (!hits.length) return;
+			if (groups.length > 1) html += '<h3 class="kd-lst-h">' + esc(catName(g.cat)) + "</h3>";
+			html += '<div class="kd-lst-row">';
+			hits.forEach(function (it) {
+				n++;
+				var sub = K.subLabel(it);
+				html += '<button type="button" class="kd-lst-it' + (it.id === curId ? " is-cur" : "") + '" data-id="' + esc(it.id) + '"><span class="kd-lst-pic">' + lstPic(it) + '</span><span class="kd-lst-w">' + esc(K.label(it, S.lcase)) + "</span>" + (sub ? '<span class="kd-lst-s">' + esc(sub) + "</span>" : "") + "</button>";
+			});
+			html += "</div>";
+		});
+		lstGrid.innerHTML = html || '<p class="kd-small">No card matches "' + esc(lstQ.value) + '".</p>';
+		$("kd-lst-n").textContent = q.length ? n + " of " + tot : tot + " cards";
+	}
+	function openList() {
+		clearTimeout(advT); stopAll(); lstFocus = document.activeElement;
+		lstQ.value = ""; renderList(); lstEl.hidden = false;
+		var c = lstGrid.querySelector(".is-cur"); if (c) c.scrollIntoView({ block: "center" });
+		if (!matchMedia("(pointer: coarse)").matches) lstQ.focus({ preventScroll: true });
+	}
+	function closeList(back) { if (lstEl.hidden) return; lstEl.hidden = true; if (back && lstFocus && lstFocus.focus) lstFocus.focus({ preventScroll: true }); armAdv(); }
+	$("kd-list").addEventListener("click", function () { unlock(); openList(); });
+	$("kd-lst-x").addEventListener("click", function () { closeList(true); });
+	lstEl.addEventListener("click", function (e) { if (e.target === lstEl) closeList(true); });
+	lstQ.addEventListener("input", renderList);
+	lstQ.addEventListener("keydown", function (e) { if (e.key === "Enter") { var b = lstGrid.querySelector(".kd-lst-it"); if (b) { e.preventDefault(); b.click(); } } });
+	lstGrid.addEventListener("click", function (e) {
+		var b = e.target.closest(".kd-lst-it"); if (!b) return;
+		var id = b.getAttribute("data-id"), i = order.indexOf(id); if (i < 0) return;
+		closeList(false);
+		if (play_ === "quiz") setPlay("learn");
+		idx = i; lastDir = 0; render(true); stage.focus({ preventScroll: true });
+	});
+
 	document.addEventListener("keydown", function (e) {
 		if (!$("kd-set").hidden) { if (e.key === "Escape") { e.preventDefault(); closeSet(); } return; }
+		if (!lstEl.hidden) { if (e.key === "Escape") { e.preventDefault(); closeList(true); } return; }
 		var t = e.target, tag = t && t.tagName;
 		if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || (t && t.isContentEditable)) return;
 		var inStage = kiosk || $("kd-wrap").contains(t);
@@ -1031,7 +1084,7 @@
 		$("kd-ages").hidden = false; $("kd-modes").hidden = true;
 		$("kd-score").hidden = false; $("kd-stars").textContent = stars;
 		$("kd-say").innerHTML = '<span aria-hidden="true">🔊</span> Ask again';
-		$("kd-shuf").hidden = true; $("kd-back").hidden = true; $("kd-prev").hidden = true;
+		$("kd-shuf").hidden = true; $("kd-back").hidden = true; $("kd-prev").hidden = true; $("kd-list").hidden = true;
 		$("kd-fwd").innerHTML = 'New one <span aria-hidden="true">▶</span>';
 		Array.prototype.forEach.call($("kd-ages").children, function (b) { b.addEventListener("click", function () { setAge(+b.getAttribute("data-age"), true); }); });
 		setAge(S.age, false);
