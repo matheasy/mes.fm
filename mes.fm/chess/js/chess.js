@@ -2381,6 +2381,35 @@
 		var who = mode === "local" ? C.playerName(cfg, s.turn) : (youAre(s.turn) ? "Your move" : nameOf(s.turn) + " to move");
 		return chip(s.turn) + (mode === "local" ? who + " to move" : who) + (C.inCheck(s) ? ": <b>check!</b>" : ".");
 	}
+	/* a big message on the board itself for check, checkmate and every other game end (the status line sits far above the 3D board) */
+	var bn = { key: "", shut: "", t: 0 };
+	function banner(s) {
+		var el = $("ch-banner"); if (!el) return;
+		if (vi !== null || (mode === "online" && on.g && on.g.status === "wait")) { el.hidden = true; return; }
+		var key = code + ":" + st.hist.join(".");
+		if (s.win) {
+			if (bn.shut === key) { el.hidden = true; return; }
+			var p = s.win.p, msg = statusText(s).replace(/<span class="ch-chip[^>]*><\/span>/g, "");
+			el.className = "ch-banner " + (p < 0 ? "is-draw" : youAre(p) ? "is-win" : "is-lose");
+			$("ch-bmsg").innerHTML = (p >= 0 && s.win.why === "mate" ? '<span class="ch-btop">Checkmate!</span>' : "") + msg;
+			$("ch-bact").innerHTML = (mode === "cpu" || mode === "local" ? '<button type="button" class="ch-ob ch-ob--big" data-b="new">↺ New game</button>' : "") + '<button type="button" class="ch-ob" data-b="moves">Look at the board</button>';
+			el.hidden = false; clearTimeout(bn.t); bn.key = key;
+			return;
+		}
+		if (C.inCheck(s) && key !== bn.key) {
+			bn.key = key;
+			el.className = "ch-banner is-check";
+			$("ch-bmsg").innerHTML = '<span class="ch-btop">Check!</span>' + (youAre(s.turn) ? "Your king is attacked: get it out of check." : nameOf(s.turn) + "'s king is attacked.");
+			$("ch-bact").innerHTML = "";
+			el.hidden = false; clearTimeout(bn.t);
+			bn.t = setTimeout(function () { el.hidden = true; }, 2600);
+		} else if (!C.inCheck(s) && key !== bn.key) { bn.key = key; clearTimeout(bn.t); el.hidden = true; }
+	}
+	$("ch-banner").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-b]");
+		if (b && b.getAttribute("data-b") === "new") { $("ch-new").click(); return; }
+		bn.shut = code + ":" + st.hist.join("."); $("ch-banner").hidden = true;   // a click anywhere else on it hides it
+	});
 	function renderMoves() {
 		var ol = $("ch-moves"), h = st.hist, at = vi === null ? h.length : vi, startBlack = /\sb\s/.test(st.fen0), full = parseInt(st.fen0.split(" ")[5], 10) || 1;
 		var items = [];
@@ -2424,6 +2453,7 @@
 		root.classList.toggle("ch-inlocal", mode === "local");
 		root.classList.toggle("ch-3don", use3d());
 		$("ch-status").innerHTML = statusText(s);
+		banner(s);
 		if (!keepAnal) runAnalysis();
 		board.hidden = use3d();
 		box3.hidden = !use3d();

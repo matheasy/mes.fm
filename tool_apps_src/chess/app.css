@@ -236,6 +236,19 @@
 	#ch .ch-otb.is-min > :not(.ch-ob--min) {display:none !important;}
 	#ch .ch-otb.is-min {padding:0.15em;}
 	#ch .ch-ob--min {padding:0.2em 0.55em;}
+	#ch .ch-banner {position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:6;max-width:min(92%,30em);padding:0.8em 1.3em 0.9em;border-radius:14px;text-align:center;color:#fff;font-size:1.1em;line-height:1.35;box-shadow:0 10px 34px rgba(0,0,0,0.45);cursor:pointer;animation:chBan 0.28s ease-out;}
+	#ch .ch-banner[hidden] {display:none !important;}
+	#ch .ch-banner b {color:inherit;}
+	#ch .ch-banner.is-check {background:rgba(185,28,28,0.93);border:2px solid #fca5a5;pointer-events:none;}
+	#ch .ch-banner.is-win {background:rgba(21,128,61,0.94);border:2px solid #86efac;}
+	#ch .ch-banner.is-lose {background:rgba(127,29,29,0.94);border:2px solid #fca5a5;}
+	#ch .ch-banner.is-draw {background:rgba(51,65,85,0.95);border:2px solid #cbd5e1;}
+	#ch .ch-btop {display:block;font-size:1.9em;font-weight:800;letter-spacing:0.02em;line-height:1.15;margin-bottom:0.15em;text-shadow:0 2px 8px rgba(0,0,0,0.35);}
+	#ch .ch-bact {display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-top:0.6em;}
+	#ch .ch-bact:empty {display:none;}
+	#ch .ch-banner .ch-ob {background:rgba(255,255,255,0.16);border-color:rgba(255,255,255,0.45);color:#fff;font-size:0.85em;}
+	@keyframes chBan {from {opacity:0;transform:translate(-50%,-10px) scale(0.96);} to {opacity:1;transform:translate(-50%,0) scale(1);}}
+	@media (prefers-reduced-motion:reduce) {#ch .ch-banner {animation:none;}}
 	#ch .ch-ob--big {font-weight:700;border-color:#a2652f;}
 	#ch.ch-3don .ch-ob--big {background:rgba(162,101,47,0.85);border-color:#d79a5c;}
 	#ch.ch-3don .ch-ob--big:hover {background:rgba(190,120,56,0.95);}
