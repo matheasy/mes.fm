@@ -5381,7 +5381,7 @@
 	function openNarrate(mode) {
 		UI.cat = "narr"; UI.noLeft = false; relayout();
 		if (mode === "type" || mode === "rec") setNMode(mode);
-		setTimeout(function () { var f = mode === "type" ? $("vd-nt") : $("vd-nrec"); if (f) f.focus(); }, 60);
+		setTimeout(function () { var f = mode === "rec" ? $("vd-nrec") : $("vd-nt"); if (f) f.focus(); }, 60);
 	}
 	$("vd-narr") && ($("vd-narr").onclick = function () { openNarrate(); });
 	// both ways are always shown now (record first, it is the main one); mode only says which field gets the focus
@@ -5468,7 +5468,7 @@
 		fillVoices().then(function (N) { return nSpeak(N, text).then(function (r) {
 			nHearEl = new Audio(URL.createObjectURL(new Blob([N.wav(r.audio, r.sr)], { type: "audio/wav" })));
 			nHearEl.onended = function () { nHearEl = null; b.textContent = "▶ Listen first"; };
-			b.textContent = "■ Stop listening"; nprog(1, "Playing it (" + (r.audio.length / r.sr).toFixed(1) + " s). Make it and add it uses the same take."); return nHearEl.play();
+			b.textContent = "■ Stop listening"; nprog(1, "Playing it (" + (r.audio.length / r.sr).toFixed(1) + " s). Add with this voice uses the same take."); return nHearEl.play();
 		}); }).catch(function (e) { nprog(0, "Could not make it: " + e.message); }).then(function () { nBusy = false; b.disabled = false; });
 	};
 	$("vd-ngo").onclick = function () {
@@ -5530,7 +5530,7 @@
 			var go = function () {
 				REC.counting = 0;
 				var types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"], type = ""; for (var i = 0; i < types.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) { type = types[i]; break; }
-				var mr; try { mr = new MediaRecorder(REC.stream, type ? { mimeType: type, audioBitsPerSecond: 192000 } : undefined); } catch (e) { $("vd-nmicst").textContent = "This browser can't record here: " + e.message; b.textContent = "● Record"; return; }
+				var mr; try { mr = new MediaRecorder(REC.stream, type ? { mimeType: type, audioBitsPerSecond: 192000 } : undefined); } catch (e) { $("vd-nmicst").textContent = "This browser can't record here: " + e.message; b.textContent = "● Record my voice"; return; }
 				REC.mr = mr; REC.chunks = [];
 				mr.ondataavailable = function (e) { if (e.data && e.data.size) REC.chunks.push(e.data); };
 				mr.onstart = function () {
@@ -5539,7 +5539,7 @@
 					REC.timer = setInterval(recTime, 250); recTime();
 				};
 				mr.onstop = function () { recDone(); };
-				mr.start(1000); b.textContent = "■ Stop recording"; b.classList.add("is-on"); $("vd-trrec").classList.add("is-on"); $("vd-trrec").setAttribute("aria-label", "Stop recording"); document.addEventListener("keydown", recKey, true);
+				mr.start(1000); b.textContent = "■ Stop"; b.classList.add("is-on"); $("vd-trrec").classList.add("is-on"); $("vd-trrec").setAttribute("aria-label", "Stop recording"); document.addEventListener("keydown", recKey, true);
 			};
 			if (NS.count) {
 				var n = 3; REC.counting = 1; b.textContent = "■ Cancel"; $("vd-nrt").textContent = "Starting in 3…";
@@ -5548,13 +5548,13 @@
 		}).catch(function (e) { $("vd-nmicst").textContent = e.message; toast(e.message, 7000); });
 	}
 	function stopRec() {
-		if (REC.counting) { REC.counting = 0; clearInterval(REC.cd); $("vd-nrt").textContent = ""; $("vd-nrec").textContent = "● Record"; return; }
+		if (REC.counting) { REC.counting = 0; clearInterval(REC.cd); $("vd-nrt").textContent = ""; $("vd-nrec").textContent = "● Record my voice"; return; }
 		if (REC.mr && REC.mr.state !== "inactive") REC.mr.stop();
 	}
 	function recDone() {
 		var mr = REC.mr, at = REC.at, dur = (performance.now() - REC.t0) / 1000; REC.mr = null; clearInterval(REC.timer); document.removeEventListener("keydown", recKey, true);
 		if (P.playing) P.pause(); P.muted = false; P.sync && P.sync();
-		var b = $("vd-nrec"); b.textContent = "● Record"; b.classList.remove("is-on"); $("vd-trrec").classList.remove("is-on"); $("vd-trrec").setAttribute("aria-label", "Record narration"); b.disabled = true; $("vd-nrt").textContent = "Saving " + dur.toFixed(1) + " s…";
+		var b = $("vd-nrec"); b.textContent = "● Record my voice"; b.classList.remove("is-on"); $("vd-trrec").classList.remove("is-on"); $("vd-trrec").setAttribute("aria-label", "Record narration"); b.disabled = true; $("vd-nrt").textContent = "Saving " + dur.toFixed(1) + " s…";
 		var blob = new Blob(REC.chunks, { type: (mr && mr.mimeType) || "audio/webm" }); REC.chunks = [];
 		Promise.all([loadNarrate(), blob.arrayBuffer()]).then(function (x) {
 			var N = x[0], AC = window.AudioContext || window.webkitAudioContext, ac = new AC();

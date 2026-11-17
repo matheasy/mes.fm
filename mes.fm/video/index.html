@@ -639,15 +639,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #vd .vd-link, html body.dark-mode #vd .vd-narr a {color:#93c5fd;} html body.dark-mode #vd .vd-nrt {color:#fca5a5;}
 	html body.dark-mode #vd .vd-rec {color:#fecaca;border-color:#b91c1c;} html body.dark-mode #vd .vd-rec.is-on {background:#b91c1c;color:#fff;}
 	#vd .vd-nhead {display:block;font-size:0.95em;margin-top:0.2em;}
-	#vd .vd-nrecbox {background:#2a1215;border:1px solid #7f1d1d;border-radius:0.6em;padding:0.6em;}
-	#vd .vd-ntypebox {margin-top:0.9em;padding-top:0.7em;border-top:1px solid var(--vd-line);}
+	#vd .vd-nrecrow {align-items:center;flex-wrap:wrap;gap:0.4em;}
+	#vd .vd-nai {display:flex;flex-direction:column;gap:0.45em;margin-top:0.3em;padding-top:0.6em;border-top:1px solid var(--vd-line);}
 	#vd .vd-recbig {width:100%;min-height:52px;font-size:1.15em;font-weight:700;background:#dc2626;color:#fff;border:0;border-radius:0.6em;cursor:pointer;}
 	#vd .vd-recbig:hover {background:#ef4444;} #vd .vd-recbig.is-on {background:#991b1b;}
 	#vd .vd-nopts summary {cursor:pointer;font-size:0.85em;color:var(--vd-dim);min-height:28px;display:flex;align-items:center;}
 	#vd .vd-nopts[open] {display:flex;flex-direction:column;gap:0.4em;}
 	#vd .vd-trrec .vd-ti {fill:#ef4444;} #vd .vd-trrec.is-on {background:#b91c1c;} #vd .vd-trrec.is-on .vd-ti {fill:#fff;animation:vd-recb 1s steps(2) infinite;}
 	@keyframes vd-recb {50% {opacity:0.25;}}
-	html body.dark-mode #vd .vd-nrecbox {background:#2a1215;border-color:#7f1d1d;} html body.dark-mode #vd .vd-recbig {background:#dc2626;color:#fff;} html body.dark-mode #vd .vd-recbig.is-on {background:#991b1b;}
+	html body.dark-mode #vd .vd-recbig {background:#dc2626;color:#fff;} html body.dark-mode #vd .vd-recbig.is-on {background:#991b1b;}
 	html body.dark-mode #vd .vd-trrec .vd-ti {fill:#ef4444;} html body.dark-mode #vd .vd-trrec.is-on {background:#b91c1c;} html body.dark-mode #vd .vd-trrec.is-on .vd-ti {fill:#fff;}
 
 
@@ -835,7 +835,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-nmeter{background:#3b4e68}
 	body.dark-mode #vd .vd-rec{border-color:#dd2222}
 	body.dark-mode #vd .vd-nsave code,body.dark-mode #vd .vd-narr code{background:#3b4e68}
-	body.dark-mode #vd .vd-nrecbox{border:1px solid #d02f2f}
 	body.dark-mode #vd .vd-trrec .vd-ti{fill:#f26969}
 	/* TOOL-DARK:END */
 </style>
@@ -1113,14 +1112,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</section>
 					<section class="vd-pane vd-narr" data-pane="narr" role="tabpanel" aria-label="Narration" hidden>
 						<div class="vd-panehead"><b>Narration</b></div>
-						<div class="vd-nbox vd-nrecbox" id="vd-nr-rec">
-							<b class="vd-nhead">&#127897; Record my voice</b>
-							<button type="button" class="vd-btn vd-rec vd-recbig" id="vd-nrec">&#9679; Record</button>
-							<span class="vd-nrt" id="vd-nrt" aria-live="polite">Starts at the playhead. The timeline plays while you talk; stop with the button, Space or Esc.</span>
+						<div class="vd-nbox" id="vd-nr-type">
+							<p class="vd-hint">Type what you'll say, then record yourself reading it, or let a computer voice say it. Both land at the playhead as a sound clip.</p>
+							<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true" placeholder="Type or paste your script&hellip;" aria-label="Narration script"></textarea>
+							<div class="vd-row vd-nrecrow" id="vd-nr-rec"><button type="button" class="vd-btn vd-rec" id="vd-nrec" title="Record your voice from the playhead (R; Space or Esc stops)">&#9679; Record my voice</button><span class="vd-nrt" id="vd-nrt" aria-live="polite"></span></div>
 							<div class="vd-nmeter" aria-hidden="true"><i id="vd-nmf"></i></div>
-							<p class="vd-hint" id="vd-nmicst">Press Test my mic to see the level (it stays in this browser).</p>
 							<details class="vd-nopts"><summary>Microphone and recording options</summary>
 								<label class="vd-nlab">Microphone<select id="vd-nmic" aria-label="Microphone"><option value="">Default microphone</option></select></label>
+								<p class="vd-hint" id="vd-nmicst">Press Test my mic to see the level (it stays in this browser).</p>
 								<div class="vd-checks vd-ncol">
 									<label><input type="checkbox" id="vd-nplay"> Play the timeline while I record</label>
 									<label><input type="checkbox" id="vd-nmute"> Mute the timeline sound while I record (use this without headphones)</label>
@@ -1128,18 +1127,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 									<label><input type="checkbox" id="vd-nclean"> Let the browser clean up the sound (noise / echo / auto level)</label>
 								</div>
 								<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ntest">Test my mic</button></div>
-								<p class="vd-hint">Tip: headphones keep the video's sound out of the recording.</p>
+								<p class="vd-hint">Tip: headphones keep the video's sound out of the recording. The red &#9679; next to Play records too.</p>
 							</details>
-						</div>
-						<div class="vd-nbox vd-ntypebox" id="vd-nr-type">
-							<b class="vd-nhead">&#9000; Or type it: computer voice</b>
-							<p class="vd-hint">Type the script: it is spoken in this browser and added as a sound clip at the playhead. A blank line = a longer pause, <code>[pause 2]</code> = 2 seconds.</p>
-							<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true" placeholder="Type or paste what the voice should say&hellip;" aria-label="Narration script"></textarea>
-							<label class="vd-nlab">Voice<select id="vd-nv" aria-label="Voice"></select></label>
-							<label class="vd-nlab" id="vd-nspw">Speed <output id="vd-nspv">1.00&times;</output><input type="range" id="vd-nsp" min="0.6" max="1.6" step="0.05" aria-label="Speed"></label>
-							<p class="vd-hint" id="vd-nown">Want it in <b>your own voice</b>? <a href="/narration#own" target="_blank" rel="noopener">Set up my voice on MES Narration</a> (record 15 seconds once), then <button type="button" class="vd-link" id="vd-nrefresh">refresh the voice list</button>.</p>
-							<div class="vd-row"><button type="button" class="vd-btn" id="vd-nhear">&#9654; Listen first</button><button type="button" class="vd-btn vd-primary" id="vd-ngo">&#128483; Make it and add it</button></div>
-							<div class="vd-nprog" id="vd-nprog" hidden><div class="vd-nbar"><i id="vd-nbf"></i></div><span id="vd-npt"></span></div>
+							<div class="vd-nai">
+								<label class="vd-nlab">Computer voice<select id="vd-nv" aria-label="Computer voice"></select></label>
+								<label class="vd-nlab" id="vd-nspw">Speed <output id="vd-nspv">1.00&times;</output><input type="range" id="vd-nsp" min="0.6" max="1.6" step="0.05" aria-label="Speed"></label>
+								<div class="vd-row"><button type="button" class="vd-btn" id="vd-nhear">&#9654; Listen first</button><button type="button" class="vd-btn" id="vd-ngo">&#128483; Add with this voice</button></div>
+								<p class="vd-hint" id="vd-nown">Want it in <b>your own voice</b>? <a href="/narration#own" target="_blank" rel="noopener">Set up my voice on MES Narration</a> (record 15 seconds once), then <button type="button" class="vd-link" id="vd-nrefresh">refresh the voice list</button>.</p>
+								<p class="vd-hint">A blank line = a longer pause, <code>[pause 2]</code> = 2 seconds.</p>
+								<div class="vd-nprog" id="vd-nprog" hidden><div class="vd-nbar"><i id="vd-nbf"></i></div><span id="vd-npt"></span></div>
+							</div>
 						</div>
 						<div class="vd-sec vd-nsave">
 							<b>Where narrations are saved</b>
@@ -1329,7 +1326,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=45" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=46" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
