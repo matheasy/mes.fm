@@ -158,6 +158,9 @@
 		// our own Ctrl+C put a marker on the system clipboard: paste the clips, not whatever picture / file was copied before
 		if (txt.indexOf(CLIPMARK) === 0 && readClip()) { e.preventDefault(); VE.paste(); return; }
 		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); pasteFiles(fs); return; }
+		// copied text (not our own clips marker): a title at the playhead with that text
+		var tt = txt.replace(/\r\n?/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+		if (tt) { e.preventDefault(); pasteTitle(tt); return; }
 		if (readClip()) { e.preventDefault(); VE.paste(); }   // Ctrl+V with copied clips
 	});
 
@@ -419,6 +422,14 @@
 		list.forEach(function (c) { var d = JSON.parse(JSON.stringify(c)); d.id = V.uid("c"); if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L")); if (d.grp) d.grp = links["g" + d.grp] || (links["g" + d.grp] = V.uid("G")); var st = V.canPlace(VE.P, c.track, c.start + shift, V.dur(c)) ? c.start + shift : V.fitOnTrack(VE.P, c.track, V.end(c), V.dur(c)); d.start = st == null ? V.end(c) : st; VE.P.clips.push(d); ns.push(d.id); });
 		VE.sel = ns; VE.commit("Duplicate");
 	};
+	// pasted text becomes a title: long text gets smaller letters and more time on screen (about 3 words a second, 4-15 s)
+	function pasteTitle(s) {
+		if (s.length > 1000) { s = s.slice(0, 1000).replace(/\s+\S*$/, "") + "…"; toast("That was long: the title keeps the first 1,000 characters."); }
+		var words = s.split(/\s+/).length, lines = s.split("\n").length, n = s.length;
+		var size = n > 300 || lines > 8 ? 0.04 : n > 120 || lines > 4 ? 0.05 : n > 50 || lines > 2 ? 0.065 : 0.09;
+		var big = size < 0.065;
+		VE.addTitle({ y: big ? 0.5 : 0.82, dur: Math.round(Math.min(15, Math.max(4, words / 3))), text: { s: s, size: size, align: lines > 1 && big ? "left" : "center", wrap: big ? 0.86 : 0.8 } });
+	}
 	VE.addTitle = function (preset, at, trackId) {
 		var pr = preset || {}, t0 = at != null ? at : VE.t, vt = VE.P.tracks.filter(function (t) { return t.kind === "v" && !t.lock && !t.mag; }), tr = trackId ? V.track(VE.P, trackId) : null, dur = pr.dur || 4;
 		if (tr && (tr.lock || tr.kind !== "v" || (!tr.mag && !V.canPlace(VE.P, tr.id, t0, dur)))) tr = null;
