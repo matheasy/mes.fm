@@ -35,3 +35,9 @@ Tracking: clicks on every "Inquire about a shoot" button (`inquire_click`, with 
 2. `vercel.json` here already redirects every old URL (`/hotels-airbnbs`, `/food-beverage`, `/video`,
    `/product-branding`, `/investment`, `/contact-8`, the `/m/...` phone pages) to its new page.
 3. Submit the new `sitemap.xml` in Google Search Console.
+
+## Karo's private dashboard
+`/stats`, `/search-console` and `/seo` (login karo / rome) are proxied to mes.fm by the `rewrites` in `vercel.json`;
+the pages and data live in mes.fm (`build_awc_dashboard.py`, see the repo's CLAUDE.md). Every page loads
+`/assets/track.js` (the anonymous view counter) and carries the Google / Bing verification tags, both from
+`_src/_partials/shell.html`. `/privacy` explains the counter.

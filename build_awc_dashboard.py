@@ -11,7 +11,7 @@ put in a small Alpine West Creative shell and pointed at her data:
 /api/awc/<x> (mes.fm/api/awc/*.js) runs the normal mes.fm handler for site 'awc' (api/_site.js: keys awc:*, her Bing
 site). middleware.js puts /awc/* and /api/awc/* behind the login karo / rome. www.alpinewestcreative.com proxies
 /stats, /search-console, /seo, /awc/* and /api/awc/* to mes.fm (karo.mes.fm/vercel.json), so she uses them on her own
-domain. Page views are counted by karo.mes.fm/assets/track.js -> mes.fm/api/track (site www.alpinewestcreative.com).
+domain. Page views are counted by alpinewest-redesign/assets/track.js -> mes.fm/api/track (site www.alpinewestcreative.com).
 
 Re-run after the mes.fm tools change (it copies whatever is built there now). Never hand-edit the output.
 Dry run by default; --apply writes.
@@ -25,7 +25,7 @@ import datetime
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MES = os.path.join(ROOT, 'mes.fm')
-KARO = os.path.join(ROOT, 'karo.mes.fm')
+KARO = os.path.join(ROOT, 'alpinewest-redesign')   # the folder her Vercel project deploys (the redesign; karo.mes.fm = old Wix mirror)
 OUT = os.path.join(MES, 'awc')
 HOST = 'www.alpinewestcreative.com'
 NAME = 'Alpine West Creative'
@@ -216,11 +216,18 @@ def meta(s, name, attr='name'):
 
 def seo_report():
     rows = []
-    for fn in sorted(os.listdir(KARO)):
-        if not fn.endswith('.html') or fn.startswith('google'):
+    files = []
+    for dp, dirs, fns in os.walk(KARO):
+        dirs[:] = sorted(d for d in dirs if not d.startswith(('_', '.')) and d not in ('img', 'video', 'assets'))
+        files += [os.path.relpath(os.path.join(dp, f), KARO) for f in fns if f.endswith('.html')]
+    for fn in sorted(files):
+        if fn.startswith('google') or fn == '404.html':
             continue
         s = read(os.path.join(KARO, fn))
-        url = '/' if fn == 'index.html' else '/' + fn[:-5]
+        url = '/' + fn[:-5]
+        url = re.sub(r'(^|/)index$', '', url) or '/'
+        if url != '/':
+            url = url.rstrip('/')
         t = re.search(r'<title>(.*?)</title>', s, re.S | re.I)
         title = html.unescape(t.group(1).strip()) if t else ''
         desc = meta(s, 'description')
