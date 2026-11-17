@@ -1915,11 +1915,15 @@
 		var el = document.querySelector('#wt-stage .wt-left'); if (!el) { clearInterval(leftT); leftT = 0; return; }
 		var p = position(), r = curRate();
 		if (S.leftOff || !p || !p.dur || p.dur - p.pos < 0.5) { el.hidden = true; return; }
-		var sec = (p.dur - p.pos) / r, txt;
+		var sec = (p.dur - p.pos) / r, txt, sp = Math.abs(r - 1) > 0.001 ? '(' + r.toFixed(2) + '×)' : '';
+		// S.leftClock: 0 = time left, 1 (or true) = end time 12-hour, 2 = end time 24-hour
 		if (S.leftClock) {
-			txt = 'Ends ' + new Date(Date.now() + sec * 1000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+			var end = new Date(Date.now() + sec * 1000);
+			txt = '@ ' + (S.leftClock === 2
+				? end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })
+				: end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
+			if (sp) { txt += ' (' + (+r.toFixed(2)) + '×)'; sp = ''; }
 		} else txt = '\u2212' + W.fmt(Math.ceil(sec));
-		var sp = Math.abs(r - 1) > 0.001 ? '(' + r.toFixed(2) + '×)' : '';
 		var key = txt + '|' + sp;
 		if (el._k !== key) { el._k = key; el.innerHTML = ''; var a = document.createElement('span'); a.textContent = txt; el.appendChild(a);
 			if (sp) { var b = document.createElement('span'); b.className = 'wt-leftr'; b.textContent = sp; el.appendChild(b); } }
@@ -1927,9 +1931,9 @@
 	}
 	function leftPill(st) {
 		var el = document.createElement('button'); el.type = 'button'; el.className = 'wt-left'; el.hidden = true;
-		el.title = 'Time left at the current speed (click: show the time it ends instead; hide it in Options)';
+		el.title = 'Time left at the current speed. Click: the time it ends (12-hour), click again: 24-hour, again: time left. Hide it in Options.';
 		['pointerdown', 'dblclick', 'touchstart'].forEach(function (ev) { el.addEventListener(ev, function (e) { e.stopPropagation(); }, { passive: true }); });
-		el.addEventListener('click', function (e) { e.stopPropagation(); S.leftClock = !S.leftClock; save(); leftTick(); });
+		el.addEventListener('click', function (e) { e.stopPropagation(); S.leftClock = !S.leftClock ? 1 : (S.leftClock === 2 ? 0 : 2); save(); leftTick(); });
 		st.appendChild(el); clearInterval(leftT); leftT = setInterval(leftTick, 500); leftTick();
 	}
 	function paintZm() { var m = document.querySelector('#wt-stage .wt-zmini'); if (m) { m.hidden = zmGone; m.classList.toggle('wt-zmL', !!S.zmL); } }
