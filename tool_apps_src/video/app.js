@@ -920,7 +920,7 @@
 		h += "</div>";
 		if (c.type === "text") {
 			var T = c.text;
-			h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there.</p>';
+			h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there. The white handles on its sides set the box width (where lines wrap), the top / bottom ones its height.</p>';
 			var fInfo = VE.fontInfo(T.font);
 			h += '<div class="vd-f vd-fontpick"><span>Font</span><button type="button" class="vd-btn vd-fontbtn" id="vd-t-fontbtn" aria-haspopup="listbox" aria-expanded="false" style="font-family:' + esc(T.font) + '"><span>' + esc(fInfo[0]) + '</span><span aria-hidden="true">&#9662;</span></button></div>';
 			h += sld("vd-t-size", "Size", Math.round(T.size * 1000) / 10, 0.5, 1, 60, "%", "Height of the letters as a share of the picture height", 2, 30);
@@ -930,9 +930,11 @@
 			h += '<div class="vd-f"><span>Text colour</span>' + swatches("vd-t-color", T.color, "Text colour") + "</div>";
 			if (T.bgOn) h += '<div class="vd-subsec"><div class="vd-f"><span>Box colour</span>' + swatches("vd-t-bg", T.bg, "Box colour") + "</div>" + sld("vd-t-bgop", "Box opacity", Math.round((T.bgOp == null ? 0.55 : T.bgOp) * 100), 5, 0, 100, "%") + "</div>";
 			h += '<div class="vd-subsec">' + sld("vd-t-outline", "Outline", T.outline || 0, 0.5, 0, 10, "", "Outline around the letters (0 = none)") + ((T.outline || 0) > 0 ? '<div class="vd-f"><span>Outline colour</span>' + swatches("vd-t-ocolor", T.ocolor || "#000000", "Outline colour") + "</div>" : "") + "</div>";
-			h += '<details class="vd-more"' + (UI.txtMore ? " open" : "") + ' id="vd-t-more"><summary>Spacing and line wrap</summary>' +
+			h += '<details class="vd-more"' + (UI.txtMore ? " open" : "") + ' id="vd-t-more"><summary>Spacing, box size and line wrap</summary>' +
 				sld("vd-t-ls", "Letter spacing", Math.round((T.ls || 0) * 1000) / 10, 1, -20, 100, "%", "Space between letters, as a share of the text size (0 = the font's own)", -10, 50) +
 				sld("vd-t-lh", "Line spacing", Math.round((T.lh || 1.22) * 100), 5, 60, 400, "%", "Distance from one line to the next, as a share of the text size (122% is normal)", 80, 250) +
+				sld("vd-t-boxh", "Box height", T.boxH > 0 ? Math.round(T.boxH * 1000) / 10 : 0, 1, 0, 400, "%", "How tall the box is, as a share of the picture height (0 = fits the text). You can also drag the white top / bottom handles in the preview.", 0, 100) +
+				'<div class="vd-f"><span>Text in the box</span>' + seg("vd-t-valign", [["top", "Top"], ["middle", "Middle"], ["bottom", "Bottom"]], T.valign || "middle", "Where the lines sit in a taller box") + "</div>" +
 				'<label class="vd-chk"><input type="checkbox" id="vd-t-wrapon"' + (T.wrap > 0 ? " checked" : "") + '> Wrap long lines</label>' +
 				(T.wrap > 0 ? sld("vd-t-wrap", "Box width", Math.round(T.wrap * 1000) / 10, 1, 5, 400, "%", "Lines wrap at this width (a share of the picture width). You can also drag the white side handles in the preview.", 10, 100) : "") + "</details></div>";
 		}
@@ -1079,6 +1081,8 @@
 			colour("vd-t-color", "color", "Text colour"); colour("vd-t-bg", "bg", "Box colour"); colour("vd-t-ocolor", "ocolor", "Outline colour");
 			insp.querySelectorAll("#vd-t-align [data-v]").forEach(function (b) { b.onclick = function () { T.align = b.getAttribute("data-v"); VE.commit("Align"); renderInsp(); }; });
 			[["bold", "bold", "Bold"], ["italic", "italic", "Italic"], ["shadow", "shadow", "Shadow"], ["bgon", "bgOn", "Text box"]].forEach(function (q) { on("vd-t-" + q[0], "click", function () { T[q[1]] = !T[q[1]]; VE.commit(q[2]); renderInsp(); }); });
+			setNum("vd-t-boxh", function (v) { T.boxH = v > 0 ? V.clamp(v / 100, 0.02, 4) : 0; }, "Title box height");
+			insp.querySelectorAll("#vd-t-valign [data-v]").forEach(function (b) { b.onclick = function () { T.valign = b.getAttribute("data-v"); VE.commit("Text placement"); renderInsp(); }; });
 			on("vd-t-more", "toggle", function () { UI.txtMore = this.open; saveUI(); });
 			setNum("vd-t-bgop", function (v) { T.bgOp = V.clamp(v / 100, 0, 1); }, "Box opacity"); setNum("vd-t-outline", function (v) { var had = (T.outline || 0) > 0; T.outline = V.clamp(v, 0, 10); if (had !== T.outline > 0) setTimeout(renderInsp, 0); }, "Outline");
 		}

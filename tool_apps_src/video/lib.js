@@ -16,7 +16,7 @@
 	V.SHAPE_DEFAULT = { k: "arrow", w: 0.25, h: 0.12, color: "#e11d48", lw: 0.008, fillOn: false, fill: "#e11d48", fillOp: 0.3, heads: "end", head: 1, dash: false, shadow: true, round: 0.12, oval: false, dark: 0.6, px: 0.025, n: 1, ncolor: "#ffffff" };
 	V.SHAPE_KINDS = [["arrow", "Arrow"], ["line", "Line"], ["rect", "Box"], ["ellipse", "Circle / oval"], ["highlight", "Highlight"], ["spotlight", "Spotlight"], ["pixelate", "Hide (pixelate)"], ["badge", "Number badge"]];
 	V.isGfx = function (c) { return !!c && (c.type === "text" || c.type === "shape"); };   // made in the editor: no media file
-	V.TEXT_DEFAULT = { s: "Your title", font: "Arial, Helvetica, sans-serif", size: 0.09, color: "#ffffff", bgOn: true, bg: "#000000", bgOp: 0.55, bold: true, italic: false, align: "center", shadow: true, outline: 0, ocolor: "#000000", wrap: 0.8, ls: 0, lh: 1.22 };
+	V.TEXT_DEFAULT = { s: "Your title", font: "Arial, Helvetica, sans-serif", size: 0.09, color: "#ffffff", bgOn: true, bg: "#000000", bgOp: 0.55, bold: true, italic: false, align: "center", shadow: true, outline: 0, ocolor: "#000000", wrap: 0.8, ls: 0, lh: 1.22, boxH: 0, valign: "middle" };
 	// wrap: box width for automatic line breaks as a share of the frame width at scale 1 (0 = only your own line breaks); ls = letter spacing in em; lh = line height (x the text size)
 	V.newProject = function (o) {
 		o = o || {};

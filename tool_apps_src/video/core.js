@@ -402,8 +402,10 @@
 		var meas = function (l) { return ctx.measureText(l).width; }, lines = V.wrapText(meas, T.s, inner);
 		var wmax = 0; lines.forEach(function (l) { wmax = Math.max(wmax, meas(l)); });
 		unsetFont(ctx);
-		var lh = px * (T.lh > 0 ? T.lh : 1.22), bw = Math.max(wmax, px * 0.6) + pad * 2, bh = lines.length * lh + pad * 1.2;
-		return { px: px, lines: lines, lh: lh, pad: pad, wrapW: wrapW, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, T: T };
+		// T.boxH (a share of the frame height, 0 = fit the text) makes the box taller than the text; T.valign places the lines in it
+		var lh = px * (T.lh > 0 ? T.lh : 1.22), bw = Math.max(wmax, px * 0.6) + pad * 2, th = lines.length * lh + pad * 1.2, bh = Math.max(th, T.boxH > 0 ? T.boxH * H * sc : 0);
+		var ty = T.valign === "top" ? 0 : T.valign === "bottom" ? bh - th : (bh - th) / 2;
+		return { px: px, lines: lines, lh: lh, pad: pad, wrapW: wrapW, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, th: th, ty: ty, T: T };
 	}
 	function drawText(ctx, c, W, H, pos) {
 		var b = textBox(ctx, c, W, H, pos), T = b.T, rot = pos && pos.rot;
@@ -414,7 +416,7 @@
 		var lsx = "letterSpacing" in ctx ? (T.ls || 0) * b.px : 0;
 		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad + lsx : b.dx + b.dw / 2 + lsx / 2;
 		b.lines.forEach(function (l, k) {
-			var y = b.dy + b.pad * 0.6 + b.lh * (k + 0.5);
+			var y = b.dy + (b.ty || 0) + b.pad * 0.6 + b.lh * (k + 0.5);
 			if (T.shadow) { ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = b.px * 0.12; ctx.shadowOffsetY = b.px * 0.05; ctx.fillStyle = T.color; ctx.fillText(l, x, y); ctx.restore(); }
 			if (T.outline > 0) { ctx.lineWidth = T.outline * b.px * 0.08; ctx.strokeStyle = T.ocolor || "#000"; ctx.lineJoin = "round"; ctx.strokeText(l, x, y); }
 			ctx.fillStyle = T.color || "#fff"; ctx.fillText(l, x, y);

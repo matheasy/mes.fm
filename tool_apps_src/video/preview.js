@@ -231,6 +231,7 @@
 	function sideHandles(r, c) {
 		var cx = r.dx + r.dw / 2, cy = r.dy + r.dh / 2, k = c && c.type === "shape" ? c.shape.k : null, q = [];
 		if (k !== "badge") q.push([r.dx, cy, "w"], [r.dx + r.dw, cy, "w"]);
+		if (c && c.type === "text") q.push([cx, r.dy, "h"], [cx, r.dy + r.dh, "h"]);   // titles: top / bottom = box height
 		if (k && k !== "arrow" && k !== "line" && k !== "badge") q.push([cx, r.dy, "h"], [cx, r.dy + r.dh, "h"]);
 		return q.map(function (s) { var p = V.rotPt(s[0], s[1], cx, cy, r.rot || 0); return { x: view.ox + p.x * view.k, y: view.oy + p.y * view.k, ax: s[2] }; });
 	}
@@ -278,7 +279,7 @@
 				ctx.fillStyle = "#38bdf8"; cs.forEach(function (q) { ctx.fillRect(q.x - hs, q.y - hs, hs * 2, hs * 2); });
 				ctx.beginPath(); ctx.arc(rh.x, rh.y, hs, 0, Math.PI * 2); ctx.fillStyle = "#0c4a6e"; ctx.fill(); ctx.stroke();
 				if (hasSides(c)) sideHandles(r, c).forEach(function (q) { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(((r.rot || 0) + (q.ax === "h" ? 90 : 0)) * Math.PI / 180); ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 1.5 * dpr; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr, 3.5 * dpr); else ctx.rect(-3.5 * dpr, -11 * dpr, 7 * dpr, 22 * dpr); ctx.fill(); ctx.stroke(); ctx.restore(); });
-				if (drag && drag.mode === "wrap" && drag.c === c && c.type === "text") { var T0 = c.text, lab = T0.wrap > 0 ? "Box width " + Math.round(T0.wrap * 100) + "% · lines wrap" : "No wrapping"; ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var lw2 = ctx.measureText(lab).width, lx = (cs[0].x + cs[1].x) / 2 - lw2 / 2, ly = Math.min(cs[0].y, cs[1].y) - 34 * dpr; ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(lx - 5 * dpr, ly - 15 * dpr, lw2 + 10 * dpr, 18 * dpr); ctx.fillStyle = "#e0f2fe"; ctx.fillText(lab, lx, ly); }
+				if (drag && drag.mode === "wrap" && drag.c === c && c.type === "text") { var T0 = c.text, lab = drag.ax === "h" ? (T0.boxH > 0 ? "Box height " + Math.round(T0.boxH * 100) + "%" : "Box fits the text") : T0.wrap > 0 ? "Box width " + Math.round(T0.wrap * 100) + "% · lines wrap" : "No wrapping"; ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var lw2 = ctx.measureText(lab).width, lx = (cs[0].x + cs[1].x) / 2 - lw2 / 2, ly = Math.min(cs[0].y, cs[1].y) - 34 * dpr; ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(lx - 5 * dpr, ly - 15 * dpr, lw2 + 10 * dpr, 18 * dpr); ctx.fillStyle = "#e0f2fe"; ctx.fillText(lab, lx, ly); }
 				var rel = VE.t - c.start, run = c.anims && V.animRunning(c, rel, 0.5 / VE.P.fps), own = c.anims && !run && V.animEndingAt(c, rel, 0.5 / VE.P.fps);
 				if (run || own) { ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "bottom"; var tx = run ? "Inside an animation: move the playhead to its start or end to change it" : "At the end of \u201c" + V.animName(own) + "\u201d: moving it sets where the animation ends"; var tw = ctx.measureText(tx).width; var bx = 10 * dpr, by = CH - 8 * dpr; /* bottom left of the stage, clear of the zoom bar */ ctx.fillStyle = "rgba(2,6,23,0.85)"; ctx.fillRect(bx - 4 * dpr, by - 15 * dpr, tw + 8 * dpr, 17 * dpr); ctx.fillStyle = run ? "#fca5a5" : "#fde68a"; ctx.fillText(tx, bx, by); }
 				ctx.restore();
@@ -382,7 +383,7 @@
 		var rel = VE.t - hitC.start, fpsTol = 0.5 / VE.P.fps;
 		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
 		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
-		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false, ax: typeof sideAx === "undefined" ? null : sideAx };
+		drag = { c: hitC, mode: mode, rel: rel, tol: fpsTol, x0: pos.x, y0: pos.y, s0: pos.scale, r0: pos.rot, p0: pt, d0: Math.max(4, Math.hypot(pt.x - cxp, pt.y - cyp)), a0: Math.atan2(pt.y - cyp, pt.x - cxp), cx: cxp, cy: cyp, moved: false, ax: typeof sideAx === "undefined" ? null : sideAx, th0: r0 && r0.th, dh0: r0 && r0.dh, p0l: r0 ? V.rotPt(pt.x, pt.y, cxp, cyp, -(pos.rot || 0)).y : 0 };
 		if (mode === "move") {   // snap targets: the frame's edges and middle, and the edges / middles of the other pictures showing now
 			var rb = VE.rectOf(ctx, hitC, PW, PH, pos);
 			if (rb) { drag.bw = rb.dw; drag.bh = rb.dh; drag.bx = rb.dx + rb.dw / 2 - cxp; drag.by = rb.dy + rb.dh / 2 - cyp; }
@@ -412,6 +413,16 @@
 		}
 		if (drag.mode === "wrap") {
 			var T = c.text, pp = V.rotPt(pt.x, pt.y, drag.cx, drag.cy, -(drag.r0 || 0)), half = Math.abs(pp.x - drag.cx), sc = Math.max(0.01, drag.s0 || 1);
+			if (drag.ax === "h") {
+				// box height: dragging back inside the text makes it fit the text again (boxH 0)
+				// the opposite edge stays where it is (the box's centre moves by half the change)
+				var top = drag.p0l < drag.cy, opp = drag.cy + (top ? 1 : -1) * drag.dh0 / 2, edge = top ? Math.min(pp.y, opp - 4) : Math.max(pp.y, opp + 4);
+				var hh = Math.abs(edge - opp) / (VE.P.h * sc), need = (drag.th0 || 0) / (VE.P.h * sc);
+				T.boxH = hh <= need + 0.01 ? 0 : V.clamp(Math.round(hh * 1000) / 1000, 0.02, 4);
+				var realH = Math.max(drag.th0 || 0, T.boxH * VE.P.h * sc), mid = opp + (top ? -1 : 1) * realH / 2, d = mid - drag.cy, rr = (drag.r0 || 0) * Math.PI / 180;
+				V.setPropAt(c, rel, "x", Math.round((drag.x0 - d * Math.sin(rr) / VE.P.w) * 10000) / 10000, tol); V.setPropAt(c, rel, "y", Math.round((drag.y0 + d * Math.cos(rr) / VE.P.h) * 10000) / 10000, tol);
+				VE.emit("live"); draw(); return;
+			}
 			T.wrap = V.clamp(Math.round(2 * half / (VE.P.w * sc) * 1000) / 1000, 0.05, 4); VE.emit("live"); draw(); return;
 		}
 		else if (drag.mode === "corner") V.setPropAt(c, rel, "scale", V.clamp(Math.round(drag.s0 * Math.hypot(pt.x - drag.cx, pt.y - drag.cy) / drag.d0 * 1000) / 1000, 0.02, 20), tol);
@@ -436,7 +447,7 @@
 		if (e && e.pointerType === "touch") { delete touches[e.pointerId]; if (pinch && Object.keys(touches).length < 2) pinch = null; }
 		if (pick && pick.p0) { var r = pick.r, cb = pick.cb; pick = null; cv.style.cursor = ""; draw(); cb(r && r.w > 8 ? r : null); return; }
 		if (drag && drag.pan) { drag = null; cv.style.cursor = P.space || spaceHeld || P.hand ? "grab" : ""; return; }
-		guides = null; if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit(drag.c.type === "shape" ? "Shape size" : "Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
+		guides = null; if (drag && drag.moved) { var a = V.animEndingAt(drag.c, drag.rel, drag.tol) || V.propOwner(drag.c, drag.rel, drag.mode === "corner" ? "scale" : drag.mode === "turn" ? "rot" : "x", drag.tol); if (drag.mode === "wrap") VE.commit(drag.c.type === "shape" ? "Shape size" : drag.ax === "h" ? "Title box height" : "Title box width"); else VE.commit((drag.mode === "corner" ? "Resize" : drag.mode === "turn" ? "Turn" : "Move") + (a ? " (animation end)" : "")); }
 		drag = null;
 	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
@@ -479,7 +490,7 @@
 		st.width = bw + "px"; st.minHeight = bh + "px"; st.height = bh + "px";
 		st.left = (cx - bw / 2) + "px"; st.top = (cy - bh / 2) + "px";
 		st.font = VE.textFont(T, r.px * k); st.lineHeight = (r.lh * k) + "px"; st.letterSpacing = ((T.ls || 0) * r.px * k) + "px";
-		st.padding = (r.pad * 0.6 * k) + "px " + (r.pad * k) + "px"; st.textAlign = T.align || "center"; st.color = T.color || "#fff"; st.caretColor = T.color || "#fff";
+		st.padding = ((r.pad * 0.6 + (r.ty || 0)) * k) + "px " + (r.pad * k) + "px " + (r.pad * 0.6 * k) + "px"; st.boxSizing = "border-box"; st.textAlign = T.align || "center"; st.color = T.color || "#fff"; st.caretColor = T.color || "#fff";
 		st.whiteSpace = r.wrapW > 0 ? "pre-wrap" : "pre"; st.background = "rgba(" + rgb.join(",") + "," + bgA + ")"; st.borderRadius = (r.px * 0.25 * k) + "px";
 		st.textShadow = T.outline > 0 ? "0 0 " + Math.max(1, T.outline * r.px * k * 0.05) + "px " + (T.ocolor || "#000") : T.shadow ? "0 " + (r.px * k * 0.05) + "px " + (r.px * k * 0.12) + "px rgba(0,0,0,0.6)" : "none";
 		st.transform = r.rot ? "rotate(" + r.rot + "deg)" : "";
