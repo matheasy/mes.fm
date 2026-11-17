@@ -444,7 +444,7 @@
 	}
 
 	// ---------- Settings ----------
-	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false, pics: "photo" };
+	var DEFAULTS = { rate: 0.82, pitch: 1.18, style: "teacher", voice: "", auto: true, sw: true, snd: true, showWord: true, lcase: "title", maxNum: 10, count: true, adv: 0, quizN: 3, theme: "bright", age: 2, mute: false, pics: "photo", ai: "af_heart", ailive: false };
 	function clean(s) {
 		s = s && typeof s === "object" ? s : {};
 		var o = {};
@@ -456,6 +456,8 @@
 		["auto", "sw", "snd", "showWord", "count", "mute"].forEach(function (k) { if (typeof s[k] === "boolean") o[k] = s[k]; });
 		if (["upper", "lower", "title", "both"].indexOf(s.lcase) >= 0) o.lcase = s.lcase;
 		if (s.pics === "photo" || s.pics === "cartoon") o.pics = s.pics;
+		if (s.ai === "" || AI_VOICES.some(function (v) { return v[0] === s.ai; })) o.ai = s.ai;
+		if (typeof s.ailive === "boolean") o.ailive = s.ailive;
 		o.ord = {};
 		if (s.ord && typeof s.ord === "object") for (var md in MODES) if (s.ord[md] === "order" || s.ord[md] === "shuffle") o.ord[md] = s.ord[md];
 		o.maxNum = [5, 10, 20].indexOf(Number(s.maxNum)) >= 0 ? Number(s.maxNum) : 10;
@@ -468,6 +470,32 @@
 		return o;
 	}
 
+
+	// ---------- Natural AI voices (2026-11-17) ----------
+	// Every fixed line the cards say is pre-made as a short MP3 per voice with Kokoro-82M (Apache-2.0; the engine of mes.fm/narration) by
+	// tool_apps_src/kids/make-voices.mjs: mes.fm/kids/voice/<voice>/<vkey(sentence)>.mp3 + index.json. The page splits a line into sentences and
+	// plays the clips one after another; a line with any sentence missing (math questions) is said live by Kokoro (opt-in) or the device voice.
+	var AI_VOICES = [["af_heart", "Heart", "US · warm"], ["af_bella", "Bella", "US · bright"], ["bf_emma", "Emma", "UK"], ["am_michael", "Michael", "US · man"], ["am_santa", "Santa", "US · jolly"]];
+	var AI_SPEED = 0.9;
+	function vkey(sentence) { var t = String(sentence).trim(), h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36); }
+	function vSentences(text) { var out = [], re = /[^.!?]*[.!?]+["'”’)]*\s*|[^.!?]+$/g, m; text = String(text || ""); while ((m = re.exec(text)) && m[0]) { var x = m[0].trim(); if (x) out.push(x); } return out; }
+	// what the AI voice is given for a sentence (Kokoro reads single capital letters as letter names by itself: checked with Whisper; "Ay" came out as "I")
+	function ttsText(sentence) { return sentence; }
+	// every sentence the cards can say with fixed words: [[sentence, isLetterLine], ...] (unique)
+	function voiceLines() {
+		var seen = {}, out = [];
+		function add(text, letter) { vSentences(text).forEach(function (x) { if (!seen[x]) { seen[x] = 1; out.push([x, !!letter && /(^|[^A-Za-z'])[A-Z](?![A-Za-z'])/.test(x)]); } }); }
+		ITEMS.forEach(function (it) {
+			var L = it.cat === "letters";
+			add(speakText(it, { count: true }), L); add(speakText(it, { count: false }), L); add(speakText(it, { soundWord: true }), L);
+			add(findPrompt(it), L); add(gentle(it), L); add(praise(it, function () { return 0; }), L);
+			if (it.sw) { add(it.sw + "!"); add("The " + it.word.toLowerCase() + " says " + it.sw.toLowerCase() + "!"); }
+		});
+		PRAISE.forEach(function (p) { add(p); });
+		["Hello! Look, a cow. Moo!", "Hello! Let's play.", "Try again!"].forEach(function (t) { add(t); });
+		return out;
+	}
+
 	// Cards in order (ABC, numbers) or shuffled (the rest), unless the grown-up chose
 	function orderFor(s, mode) { return (s.ord && s.ord[mode]) || ((MODES[mode] || {}).order ? "order" : "shuffle"); }
 
@@ -476,6 +504,7 @@
 		caseWord: caseWord, label: label, subLabel: subLabel, speakText: speakText, findPrompt: findPrompt, praise: praise, cheer: cheer, gentle: gentle,
 		soundFor: soundFor, keyToId: keyToId, filterVoices: filterVoices, pickVoice: pickVoice, voiceScore: voiceScore, vKey: vKey, STYLES: STYLES, styleText: styleText,
 		speechFailure: speechFailure, pruneBadVoices: pruneBadVoices, clean: clean,
+		AI_VOICES: AI_VOICES, AI_SPEED: AI_SPEED, vkey: vkey, vSentences: vSentences, ttsText: ttsText, voiceLines: voiceLines,
 		MATH_AGES: MATH_AGES, MATH_KINDS: MATH_KINDS, mathQ: mathQ, makeQ: makeQ };
 	if (typeof module !== "undefined" && module.exports) module.exports = api;
 	else root.MESKids = api;

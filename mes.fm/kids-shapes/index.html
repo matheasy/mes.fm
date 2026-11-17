@@ -555,6 +555,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#kd .kd-lst-w {font-weight:800;font-size:1.05em;line-height:1.15;text-align:center;word-break:break-word;}
 	#kd .kd-lst-s {font-size:.8em;color:var(--kd-mut);text-align:center;}
 	@media (max-width:480px) { #kd .kd-lst-row {grid-template-columns:repeat(auto-fill,minmax(6em,1fr));} #kd .kd-lst-pic {width:4.4em;height:4.4em;} }
+	#kd .kd-seg--ai button small {opacity:.75;font-size:.8em;}
 
 
 	@media print {
@@ -842,12 +843,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="kd-sec">
 						<h3>Voice</h3>
 						<label class="kd-chk kd-nomath"><input type="checkbox" id="kd-o-auto"> Say the word when a card appears</label>
-						<div class="kd-field"><label for="kd-voice">Voice</label><select id="kd-voice"></select></div>
-						<div class="kd-row kd-row--style"><span>Voice style</span>
+						<div class="kd-row kd-row--ai"><span>Voice</span>
+							<div class="kd-seg kd-seg--ai" id="kd-o-ai" role="radiogroup" aria-label="Voice"></div>
+						</div>
+						<label class="kd-chk" id="kd-row-ailive"><input type="checkbox" id="kd-o-ailive"> Use the AI voice for math questions and other new sentences too (downloads a 92 MB voice engine once; a slow phone may pause a moment before speaking)</label>
+						<div class="kd-field kd-devonly"><label for="kd-voice">Device voice</label><select id="kd-voice"></select></div>
+						<div class="kd-row kd-row--style kd-devonly"><span>Voice style</span>
 							<div class="kd-seg" id="kd-o-style" role="radiogroup" aria-label="Voice style"></div>
 						</div>
 						<div class="kd-field kd-field--r"><label for="kd-rate">Speed <output id="kd-rate-v"></output></label><input type="range" id="kd-rate" min="0.4" max="1.5" step="0.05"></div>
-						<div class="kd-field kd-field--r"><label for="kd-pitch">Pitch <output id="kd-pitch-v"></output></label><input type="range" id="kd-pitch" min="0.5" max="2" step="0.05"></div>
+						<div class="kd-field kd-field--r kd-devonly"><label for="kd-pitch">Pitch <output id="kd-pitch-v"></output></label><input type="range" id="kd-pitch" min="0.5" max="2" step="0.05"></div>
 						<div class="kd-row"><button type="button" class="kd-sbtn" id="kd-test">🔊 Test the voice</button><button type="button" class="kd-sbtn" id="kd-vreset">Reset speed and pitch</button></div>
 						<p class="kd-small" id="kd-vnote"></p>
 					</div>
@@ -926,7 +931,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:4
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=11" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/kids/js/kids.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

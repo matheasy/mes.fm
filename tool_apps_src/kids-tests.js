@@ -147,5 +147,21 @@ const nums = cres.match(/-?\d+(\.\d+)?/g).map(Number); // M x y A r r 0 1 0 x y 
 const [mx, my, r1, , , , , x2, y2, r2] = nums, chord = Math.hypot(x2 - mx, y2 - my);
 ok(2 * r1 >= chord && 2 * r2 >= chord && Math.abs(r1 - r2) > 2, "crescent arcs fit their chord and differ in size (" + cres + ")");
 
+// natural AI voices: every fixed line the cards can say is covered by pre-made clips (MESKids.voiceLines), keys don't collide, letter names
+{
+	const L = K.voiceLines(), have = new Set(L.map((x) => x[0])), keys = new Set(L.map((x) => K.vkey(x[0])));
+	ok(keys.size === L.length, "voice clip keys are unique (" + L.length + ")");
+	let miss = [];
+	const need = (t) => K.vSentences(t).forEach((x) => { if (!have.has(x)) miss.push(x); });
+	K.ITEMS.forEach((it) => { need(K.speakText(it, { count: true })); need(K.speakText(it, { count: false })); need(K.findPrompt(it)); need(K.gentle(it)); for (let i = 0; i < 8; i++) need(K.praise(it, () => i / 8)); });
+	for (let i = 0; i < 8; i++) need(K.cheer(() => i / 8));
+	ok(!miss.length, "every card line has clips: " + miss.slice(0, 5).join(" | "));
+	ok(JSON.stringify(K.vSentences("Who says moo? Find the cow!")) === '["Who says moo?","Find the cow!"]' && K.vSentences("One, two, three!").length === 1, "sentence split");
+	ok(K.clean({ ai: "nope" }).ai === "af_heart" && K.clean({ ai: "" }).ai === "" && K.clean({ ai: "bf_emma" }).ai === "bf_emma", "ai voice setting is checked");
+	// clips that were made: index.json lists exactly the lines
+	const vdir = path.join(__dirname, "../mes.fm/kids/voice");
+	for (const [vid] of K.AI_VOICES) { const f = path.join(vdir, vid, "index.json"); if (!fs.existsSync(f)) continue; const j = JSON.parse(fs.readFileSync(f, "utf8")); ok(j.keys.length === keys.size && j.keys.every((k) => keys.has(k) && fs.existsSync(path.join(vdir, vid, k + ".mp3"))), vid + " clips match the lines"); }
+}
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);

@@ -118,8 +118,49 @@
 	}
 	function style() { return K.STYLES[S.style] || K.STYLES.teacher; }
 	function stopAll() { token++; try { if (synth) synth.cancel(); } catch (e) {} if (audio) { try { audio.pause(); } catch (e) {} audio = null; } }
+	// ---------- natural AI voices (Kokoro clips made by make-voices.mjs; see MESKids.voiceLines) ----------
+	// A line whose sentences all have a clip plays the clips; anything else (math questions) is said live by Kokoro in this browser when the
+	// grown-up allowed the 92 MB download (S.ailive, via /main_js/narrate.js, the mes.fm/narration engine), else by the device voice.
+	var aiIdx = {}, aiIdxP = {}, live = null, liveP = null, liveNoted = false;
+	function aiIndex(v) {
+		if (aiIdx[v]) return Promise.resolve(aiIdx[v]);
+		if (!aiIdxP[v]) aiIdxP[v] = fetch("/kids/voice/" + v + "/index.json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) { var set = {}; ((j && j.keys) || []).forEach(function (k) { set[k] = 1; }); return (aiIdx[v] = set); });
+		return aiIdxP[v];
+	}
+	function aiRate() { return Math.max(0.5, Math.min(2, S.rate / K.DEFAULTS.rate)); }
+	function liveLoad() {
+		if (liveP) return liveP;
+		liveP = new Promise(function (res, rej) { if (window.MESNarrate) return res(); var sc = document.createElement("script"); sc.src = "/main_js/narrate.js?v=1"; sc.onload = res; sc.onerror = function () { rej(new Error("load")); }; document.head.appendChild(sc); })
+			.then(function () { return window.MESNarrate.load("kokoro", { onProgress: function (f) { var n = $("kd-vnote"); if (n && !setEl.hidden) n.textContent = "Downloading the AI voice engine: " + Math.round(f * 100) + "%"; } }); })
+			.then(function () { live = window.MESNarrate; if (!setEl.hidden) aiNote(); });
+		liveP.catch(function () { liveP = null; });
+		return liveP;
+	}
+	function sayLive(text, tk) {
+		if (!live) { liveLoad(); if (!liveNoted) { liveNoted = true; hint("Getting the AI voice ready for new sentences (one-time download). The device voice speaks until then."); } return sayDevice(text, tk); }
+		return live.speak(text, { engine: "kokoro", voice: S.ai, speed: K.AI_SPEED }).then(function (r) {
+			if (tk !== token) return;
+			var url = URL.createObjectURL(new Blob([live.wav(r.audio, r.sr)], { type: "audio/wav" }));
+			return play(url, aiRate(), 30000).then(function () { URL.revokeObjectURL(url); });
+		}, function () { return sayDevice(text, tk); });
+	}
+	function say(text, tk) {
+		if (!text || S.mute) return Promise.resolve();
+		if (!S.ai) return sayDevice(text, tk);
+		return aiIndex(S.ai).then(function (idx) {
+			if (tk !== token) return;
+			var ks = K.vSentences(text).map(K.vkey);
+			if (ks.length && ks.every(function (k) { return idx[k]; })) {
+				var chain = Promise.resolve();
+				ks.forEach(function (k, i) { chain = chain.then(function () { if (tk !== token) return; return (i ? new Promise(function (r) { setTimeout(r, 90); }) : Promise.resolve()).then(function () { if (tk === token) return play("/kids/voice/" + S.ai + "/" + k + ".mp3", aiRate(), 20000); }); }); });
+				return chain;
+			}
+			return S.ailive ? sayLive(text, tk) : sayDevice(text, tk);
+		});
+	}
+	if (S.ai) aiIndex(S.ai);
 	// say(text) -> promise that resolves when speech ends (or right away without speech). A voice that doesn't speak is marked bad and the text is said again with the next one.
-	function say(text, tk, retry) {
+	function sayDevice(text, tk, retry) {
 		return new Promise(function (res) {
 			if (!synth || !text || S.mute) return res();
 			var spoken = K.styleText(text, S.style), st = style();
@@ -135,7 +176,7 @@
 				var k = v ? vKey(v) : "";
 				if (why && why !== "error") { if (!anySpoke) why = ""; else { strikes[k] = (strikes[k] || 0) + 1; if (strikes[k] < 2) why = ""; } }
 				if (!why && started) strikes[k] = 0;
-				if (why && v && !retry) { markBad(v, why); if (voice() && voice() !== v) return say(text, tk, true).then(res); }
+				if (why && v && !retry) { markBad(v, why); if (voice() && voice() !== v) return sayDevice(text, tk, true).then(res); }
 				res();
 			}
 			u.onstart = function () { started = true; anySpoke = true; t0 = Date.now(); };
@@ -146,14 +187,15 @@
 			try { synth.speak(u); } catch (e) { fin(); }
 		});
 	}
-	function play(src) {
+	function play(src, rate, maxMs) {
 		return new Promise(function (res) {
 			if (!src || S.mute) return res();
 			var a = new Audio(src); audio = a;
+			if (rate && rate !== 1) { a.playbackRate = rate; a.preservesPitch = true; }
 			var done = false; function fin() { if (done) return; done = true; res(); }
 			a.onended = fin; a.onerror = fin;
 			var p = a.play(); if (p && p.catch) p.catch(fin);
-			setTimeout(fin, 8000);
+			setTimeout(fin, maxMs || 8000);
 		});
 	}
 	// The full "say this card" sequence; a newer call cancels an older one
@@ -519,7 +561,8 @@
 		seg("kd-o-pics", S.pics, function (v) { S.pics = v; save(); picsUi(); render(false); });
 		seg("kd-o-theme", S.theme, function (v) { S.theme = v; save(); root.setAttribute("data-theme", v); });
 		seg("kd-o-style", S.style, function (v) { var st = K.STYLES[v]; if (!st) return; S.style = v; S.rate = st.rate; S.pitch = st.pitch; save(); stopAll(); unlock(); say("Hello! Look, a cow. Moo!", token); });
-		$("kd-rate").value = S.rate; $("kd-rate-v").textContent = S.rate.toFixed(2) + "×";
+		aiUi();
+		$("kd-rate").value = S.rate; rateOut();
 		$("kd-pitch").value = S.pitch; $("kd-pitch-v").textContent = S.pitch.toFixed(2);
 		fillVoices();
 	}
@@ -537,12 +580,33 @@
 	$("kd-set-x").addEventListener("click", function () { closeSet(); });
 	$("kd-set-done").addEventListener("click", function () { closeSet(); });
 	setEl.addEventListener("click", function (e) { if (e.target === setEl) closeSet(); });
-	$("kd-rate").addEventListener("input", function () { S.rate = +this.value; $("kd-rate-v").textContent = S.rate.toFixed(2) + "×"; save(); });
+	function rateOut() { $("kd-rate-v").textContent = (S.ai ? aiRate() : S.rate).toFixed(2) + "×"; }
+	$("kd-rate").addEventListener("input", function () { S.rate = +this.value; rateOut(); save(); });
+	// Voice: one of the natural AI voices or the device's own voices
+	function aiNote() {
+		var n = $("kd-vnote"); if (!n || !S.ai) return;
+		n.textContent = "Natural AI voices (Kokoro, the voice engine of MES Narration): every card, question and cheer is a ready-made recording, so it plays at once and works on any phone. " +
+			(S.ailive ? (live ? "The AI voice engine is ready in this browser for math questions and other new sentences." : "Math questions and other new sentences use the AI voice once its engine has downloaded (92 MB, once).") : "Math questions and other new sentences use this device's voice.");
+	}
+	function aiUi() {
+		var box = $("kd-o-ai"); if (!box) return;
+		if (!box.children.length) {
+			K.AI_VOICES.concat([["", "This device", "its own voices"]]).forEach(function (v) {
+				var b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "radio"); b.setAttribute("data-v", v[0]);
+				b.innerHTML = '<span aria-hidden="true">' + (v[0] ? "🌟" : "📱") + "</span> " + esc(v[1]) + " <small>" + esc(v[2]) + "</small>"; box.appendChild(b);
+			});
+		}
+		seg("kd-o-ai", S.ai, function (v) { S.ai = v; save(); stopAll(); unlock(); aiUi(); rateOut(); var tk = token; (v ? aiIndex(v) : Promise.resolve()).then(function () { if (tk === token) say("Hello! Look, a cow. Moo!", tk); }); });
+		chk("kd-o-ailive", "ailive", function () { if (S.ailive) liveLoad(); aiNote(); });
+		[].forEach.call(root.querySelectorAll(".kd-devonly"), function (el) { el.hidden = !!S.ai; });
+		$("kd-row-ailive").hidden = !S.ai;
+		if (S.ai) aiNote(); else { vsig = ""; fillVoices(); }
+	}
 	$("kd-pitch").addEventListener("input", function () { S.pitch = +this.value; $("kd-pitch-v").textContent = S.pitch.toFixed(2); save(); });
 	$("kd-rate").addEventListener("change", function () { stopAll(); say("Hello! Let's play.", token); });
 	$("kd-pitch").addEventListener("change", function () { stopAll(); say("Hello! Let's play.", token); });
 	$("kd-test").addEventListener("click", function () { unlock(); sayCard(cur()); });
-	$("kd-vreset").addEventListener("click", function () { var st = style(); S.rate = st.rate; S.pitch = st.pitch; save(); syncSet(); });
+	$("kd-vreset").addEventListener("click", function () { var st = style(); S.rate = S.ai ? K.DEFAULTS.rate : st.rate; S.pitch = st.pitch; save(); syncSet(); });
 	// voice style buttons, from K.STYLES
 	(function () { var box = $("kd-o-style"); if (!box) return; Object.keys(K.STYLES).forEach(function (k) { var st = K.STYLES[k], b = document.createElement("button"); b.type = "button"; b.setAttribute("data-v", k); b.setAttribute("role", "radio"); b.innerHTML = '<span aria-hidden="true">' + st.icon + "</span> " + esc(st.name); box.appendChild(b); }); })();
 	$("kd-s-fill").addEventListener("click", function () { enterKiosk(false); });
@@ -571,7 +635,7 @@
 			vsel.appendChild(og);
 		});
 		vsel.value = S.voice; if (vsel.value !== S.voice) vsel.value = "";
-		$("kd-vnote").textContent = voices.length ? voices.length + " voices on this device. Automatic picks the most natural one it finds (voices named Natural, Premium, Enhanced or Google sound best; on an iPhone, iPad or Mac you can download more under Settings > Accessibility > Spoken Content > Voices). The voice is your device's own: nothing is sent anywhere." : "Loading voices…";
+		if (!S.ai) $("kd-vnote").textContent = voices.length ? voices.length + " voices on this device. Automatic picks the most natural one it finds (voices named Natural, Premium, Enhanced or Google sound best; on an iPhone, iPad or Mac you can download more under Settings > Accessibility > Spoken Content > Voices). The voice is your device's own: nothing is sent anywhere." : "Loading voices…";
 	}
 	if (vsel) vsel.addEventListener("change", function () { S.voice = vsel.value; if (bad[S.voice]) { delete bad[S.voice]; saveBad(); } save(); vsig = ""; stopAll(); unlock(); say("Hello! This is " + (cur() ? cur().word.toLowerCase() : "a cat") + ".", token); });
 	if (window.MESVoicePicker && vsel) window.MESVoicePicker.enhance(vsel, { sample: "Hello! Look, a cow. Moo!" });

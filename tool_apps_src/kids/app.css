@@ -248,3 +248,4 @@
 	#kd .kd-lst-w {font-weight:800;font-size:1.05em;line-height:1.15;text-align:center;word-break:break-word;}
 	#kd .kd-lst-s {font-size:.8em;color:var(--kd-mut);text-align:center;}
 	@media (max-width:480px) { #kd .kd-lst-row {grid-template-columns:repeat(auto-fill,minmax(6em,1fr));} #kd .kd-lst-pic {width:4.4em;height:4.4em;} }
+	#kd .kd-seg--ai button small {opacity:.75;font-size:.8em;}
