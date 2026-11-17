@@ -8,7 +8,8 @@ OUT = ROOT + '/links/index.html'
 esc = lambda s: html.escape(s, quote=True)
 
 vercel = json.load(open(ROOT + '/vercel.json'))
-REDIR = {r['source']: r['destination'] for r in vercel.get('redirects', [])}
+from compact_redirects import expand   # merged short-link rules (/:k(a|b|c)) -> one entry each
+REDIR = {r['source']: r['destination'] for r in expand(vercel.get('redirects', []))}
 
 # ---------------------------------------------------------------- icons
 GLYPH = {  # key: (label, css class)

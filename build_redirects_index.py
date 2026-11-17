@@ -56,7 +56,8 @@ def base_path(p):
 
 def main():
     cfg = json.loads((SITE / "vercel.json").read_text(encoding="utf-8"))
-    reds = cfg.get("redirects", [])
+    from compact_redirects import expand   # merged short-link rules (/:k(a|b|c)) -> one entry each
+    reds = expand(cfg.get("redirects", []))
     notes = {}
     nf = SITE / "go" / "notes.json"
     if nf.exists():
