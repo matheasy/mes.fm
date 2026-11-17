@@ -11,13 +11,14 @@
 #em .em-av { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex: none; background: var(--em-soft); }
 #em .em-status { min-height: 1.3em; margin: 0 0 .6em; color: var(--em-mute); font-size: .93em; }
 #em .em-status.is-bad { color: var(--em-bad); }
-#em .em-gate { max-width: 44em; }
+#em .em-gate { max-width: none; }
+#em .em-gate > p, #em .em-gate .em-steps { max-width: 62em; }
 #em .em-gate h2 { margin-top: 0; }
 #em .em-row { display: flex; gap: .5em; flex-wrap: wrap; align-items: center; margin: .3em 0 .6em; }
 #em .em-row .tu-input { flex: 1 1 14em; min-width: 0; }
 #em .em-pass { font-family: ui-monospace, Menlo, Consolas, monospace; }
-#em .em-steps { padding-left: 1.3em; }
-#em .em-steps li { margin: .3em 0; }
+#em .em-steps { padding-left: 1.6em; list-style: decimal; }
+#em .em-steps li { margin: .3em 0; list-style: decimal; }
 #em .em-check { display: flex; gap: .5em; align-items: flex-start; margin: .5em 0; cursor: pointer; }
 #em .em-check input { margin-top: .25em; }
 #em .em-meter { height: 6px; border-radius: 3px; background: var(--em-soft); overflow: hidden; margin: .2em 0; }
