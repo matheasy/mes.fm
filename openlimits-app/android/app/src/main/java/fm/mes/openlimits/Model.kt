@@ -9,6 +9,10 @@ data class AppRule(
     val label: String,
     val limit: Int,
     val on: Boolean = true,
+    /** Own nudge message for this app ("" = use the default message). */
+    val msg: String = "",
+    /** Sound for this app: -1 = same as the default, else Sound.OFF / SPEAK / REC. */
+    val sound: Int = -1,
 )
 
 /** Opens of one app on one day. */
@@ -35,6 +39,37 @@ data class Settings(
     val warnAt: Int = 3,
     /** Keep an "opens left today" counter in the status bar. */
     val bar: Boolean = true,
+    /** Nudge messages on: show the message on the pause / locked screen and in the open notification. */
+    val nudge: Boolean = true,
+    /** The default nudge message ("" = none). {app} and {left} are filled in. */
+    val msg: String = "",
+    /** Default nudge sound: Sound.OFF / SPEAK / REC. */
+    val sound: Int = Sound.OFF,
+    /** Nudge sound volume, 0-100 (of the media volume). */
+    val vol: Int = 80,
+    /** Play the nudge sound only when the app is locked (else on every pause screen too). */
+    val soundLockedOnly: Boolean = false,
+)
+
+/** How a nudge message sounds. */
+object Sound {
+    const val OFF = 0
+    /** The phone's text-to-speech voice reads the message. */
+    const val SPEAK = 1
+    /** A recording the person made in the app. */
+    const val REC = 2
+}
+
+/** Ready-made nudge messages to pick from (the person can edit them). */
+val NUDGE_EXAMPLES = listOf(
+    "Stop opening up {app}. Touch grass instead.",
+    "Checking your portfolio won't make it go up.",
+    "Is this really why you picked up your phone?",
+    "Put the phone down and go for a walk.",
+    "Nothing new happened since last time.",
+    "Future you will thank you for closing {app}.",
+    "Drink some water and stretch first.",
+    "Only {left} opens left today. Spend them well.",
 )
 
 data class State(
@@ -59,6 +94,9 @@ val REASONS = listOf(
 /** What the service should do when a limited app comes to the front. */
 enum class Gate { ALLOW, PAUSE, LOCKED }
 
+/** Longest nudge message. */
+const val MSG_MAX = 160
+
 object Logic {
     fun dayKey(d: LocalDate): String = d.toString()
 
@@ -79,7 +117,27 @@ object Logic {
 
     /** Can the pause screen be skipped (no wait, no question, and not the last open)? Then the open is counted silently. */
     fun silent(s: State, day: String, rule: AppRule): Boolean =
-        s.settings.pause == 0 && !s.settings.ask && left(s, day, rule) > 1
+        s.settings.pause == 0 && !s.settings.ask && left(s, day, rule) > 1 &&
+            nudgeText(s, day, rule) == null && nudgeSound(s, rule, locked = false) == Sound.OFF
+
+    /** Fill in {app} and {left} in a nudge message. */
+    fun fill(text: String, app: String, left: Int): String =
+        text.replace("{app}", app, ignoreCase = true).replace("{left}", left.toString(), ignoreCase = true).trim()
+
+    /** The nudge message to show for [rule] (its own, else the default), or null when there is none / nudges are off. */
+    fun nudgeText(s: State, day: String, rule: AppRule): String? {
+        if (!s.settings.nudge) return null
+        val t = rule.msg.ifBlank { s.settings.msg }
+        if (t.isBlank()) return null
+        return fill(t, rule.label, left(s, day, rule))
+    }
+
+    /** Which sound to play when the gate shows ([locked] = the app is locked for today). */
+    fun nudgeSound(s: State, rule: AppRule, locked: Boolean): Int {
+        if (!s.settings.nudge) return Sound.OFF
+        if (s.settings.soundLockedOnly && !locked) return Sound.OFF
+        return if (rule.sound in Sound.OFF..Sound.REC) rule.sound else s.settings.sound.coerceIn(Sound.OFF, Sound.REC)
+    }
 
     fun addOpen(s: State, day: String, pkg: String, reason: String?, extra: Boolean): State {
         val today = s.days[day].orEmpty()
@@ -141,6 +199,12 @@ object Logic {
         val o = opens(s, day, rule.pkg)
         val left = left(s, day, rule)
         val warn = s.settings.warnAt
+        val n = nudgeText(s, day, rule)
+        val m = openBase(rule, o, left, warn, extra)
+        return if (n == null) m else Triple(m.first, m.second + "\n" + n, m.third)
+    }
+
+    private fun openBase(rule: AppRule, o: DayApp, left: Int, warn: Int, extra: Boolean): Triple<String, String, Boolean> {
         return when {
             extra -> Triple("${rule.label}: extra open", "Over today's limit (${o.extra} extra). It locks again when you leave.", true)
             left == 0 -> Triple("${rule.label}: last open used", "${o.opens}/${rule.limit} opens used. It locks until midnight.", true)
@@ -168,11 +232,16 @@ object Logic {
         val o = JSONObject()
         o.put("v", 1)
         o.put("apps", org.json.JSONArray().apply {
-            s.apps.forEach { put(JSONObject().put("p", it.pkg).put("l", it.label).put("n", it.limit).put("on", it.on)) }
+            s.apps.forEach { put(JSONObject().put("p", it.pkg).put("l", it.label).put("n", it.limit).put("on", it.on).apply {
+                if (it.msg.isNotEmpty()) put("m", it.msg)
+                if (it.sound >= 0) put("s", it.sound)
+            }) }
         })
         o.put("set", JSONObject().put("pause", s.settings.pause).put("grace", s.settings.grace)
             .put("ask", s.settings.ask).put("strict", s.settings.strict)
-            .put("notify", s.settings.notify).put("warn", s.settings.warnAt).put("bar", s.settings.bar))
+            .put("notify", s.settings.notify).put("warn", s.settings.warnAt).put("bar", s.settings.bar)
+            .put("nudge", s.settings.nudge).put("msg", s.settings.msg).put("snd", s.settings.sound)
+            .put("vol", s.settings.vol).put("sndLock", s.settings.soundLockedOnly))
         val days = JSONObject()
         s.days.forEach { (day, m) ->
             val dj = JSONObject()
@@ -197,7 +266,8 @@ object Logic {
             o.optJSONArray("apps")?.let { a ->
                 for (i in 0 until a.length()) {
                     val j = a.getJSONObject(i)
-                    apps += AppRule(j.getString("p"), j.optString("l", j.getString("p")), j.optInt("n", 5).coerceIn(1, 99), j.optBoolean("on", true))
+                    apps += AppRule(j.getString("p"), j.optString("l", j.getString("p")), j.optInt("n", 5).coerceIn(1, 99), j.optBoolean("on", true),
+                        j.optString("m", "").take(MSG_MAX), j.optInt("s", -1).coerceIn(-1, Sound.REC))
                 }
             }
             val sj = o.optJSONObject("set") ?: JSONObject()
@@ -209,6 +279,11 @@ object Logic {
                 notify = sj.optBoolean("notify", true),
                 warnAt = sj.optInt("warn", 3).coerceIn(0, 10),
                 bar = sj.optBoolean("bar", true),
+                nudge = sj.optBoolean("nudge", true),
+                msg = sj.optString("msg", "").take(MSG_MAX),
+                sound = sj.optInt("snd", Sound.OFF).coerceIn(Sound.OFF, Sound.REC),
+                vol = sj.optInt("vol", 80).coerceIn(0, 100),
+                soundLockedOnly = sj.optBoolean("sndLock", false),
             )
             val days = mutableMapOf<String, Map<String, DayApp>>()
             o.optJSONObject("days")?.let { dj ->

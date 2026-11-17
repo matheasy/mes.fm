@@ -42,11 +42,12 @@ class GateActivity : ComponentActivity() {
             override fun handleOnBackPressed() = notNow()
         })
         setContent { OLTheme { GateScreen(pkg, ::open, ::notNow) } }
+        if (savedInstanceState == null) Nudger.forGate(this, pkg)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent.getStringExtra(EXTRA_PKG)?.let { pkg = it }
+        intent.getStringExtra(EXTRA_PKG)?.let { pkg = it; Nudger.forGate(this, it) }
     }
 
     private fun open(reason: String?, extra: Boolean) {
@@ -103,6 +104,11 @@ fun GateScreen(pkg: String, onOpen: (String?, Boolean) -> Unit, onNotNow: () -> 
             Text("This would be open ${used.opens + 1} of $limit today", color = GateText, fontSize = 18.sp, textAlign = TextAlign.Center)
             Spacer(Modifier.height(6.dp))
             Text(if (left == 1) "It's your last one." else "${left - 1} left after this one.", color = GateDim, fontSize = 15.sp)
+        }
+        rule?.let { Logic.nudgeText(s, day, it) }?.let { msg ->
+            Spacer(Modifier.height(22.dp))
+            Text("\u201C$msg\u201D", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, lineHeight = 29.sp,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0x334F46E5)).padding(horizontal = 18.dp, vertical = 16.dp))
         }
         Spacer(Modifier.height(18.dp))
         Dots(limit, used.opens)

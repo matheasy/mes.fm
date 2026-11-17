@@ -100,4 +100,42 @@ class LogicTest {
         val s = State(settings = Settings(pause = 60, notify = false, warnAt = 5, bar = false))
         assertEquals(s.settings, Logic.fromJson(Logic.toJson(s)).settings)
     }
+
+    @Test fun nudgeTextDefaultAndPerApp() {
+        val s = base.copy(settings = Settings(msg = "Stop opening {app}. {left} left."))
+        assertEquals("Stop opening Instagram. 3 left.", Logic.nudgeText(s, day, ig))
+        val own = ig.copy(msg = "Touch grass instead")
+        assertEquals("Touch grass instead", Logic.nudgeText(s.copy(apps = listOf(own)), day, own))
+        assertNull(Logic.nudgeText(s.copy(settings = s.settings.copy(nudge = false)), day, ig))
+        assertNull(Logic.nudgeText(base, day, ig))
+    }
+
+    @Test fun nudgeSoundRules() {
+        val s = base.copy(settings = Settings(sound = Sound.SPEAK))
+        assertEquals(Sound.SPEAK, Logic.nudgeSound(s, ig, locked = false))
+        assertEquals(Sound.REC, Logic.nudgeSound(s, ig.copy(sound = Sound.REC), locked = false))
+        assertEquals(Sound.OFF, Logic.nudgeSound(s, ig.copy(sound = Sound.OFF), locked = true))
+        val lockedOnly = s.copy(settings = s.settings.copy(soundLockedOnly = true))
+        assertEquals(Sound.OFF, Logic.nudgeSound(lockedOnly, ig, locked = false))
+        assertEquals(Sound.SPEAK, Logic.nudgeSound(lockedOnly, ig, locked = true))
+    }
+
+    @Test fun nudgeStopsSilentOpens() {
+        val s = base.copy(settings = Settings(pause = 0, ask = false, msg = "Hey"))
+        assertFalse(Logic.silent(s, day, ig))
+        assertTrue(Logic.silent(s.copy(settings = s.settings.copy(msg = "")), day, ig))
+    }
+
+    @Test fun nudgeInNotificationAndJsonRoundTrip() {
+        val s = base.copy(apps = listOf(ig.copy(msg = "Checking won't help", sound = Sound.REC)),
+            settings = Settings(msg = "def", sound = Sound.SPEAK, vol = 40, soundLockedOnly = true))
+        val r = s.apps[0]
+        assertTrue(Logic.openMessage(Logic.addOpen(s, day, r.pkg, null, false), day, r, false).second.endsWith("\nChecking won't help"))
+        val back = Logic.fromJson(Logic.toJson(s))
+        assertEquals(s.apps, back.apps)
+        assertEquals(s.settings, back.settings)
+        // Old saves (no nudge fields) load with nudges on and no message.
+        val old = Logic.fromJson("""{"v":1,"apps":[{"p":"a","l":"A","n":2,"on":true}],"set":{"pause":5}}""")
+        assertEquals(-1, old.apps[0].sound); assertEquals("", old.settings.msg); assertTrue(old.settings.nudge)
+    }
 }

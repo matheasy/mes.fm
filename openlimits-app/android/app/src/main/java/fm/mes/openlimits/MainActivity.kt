@@ -281,6 +281,8 @@ private fun SettingsCard(s: State) {
                 else Store.update(ctx) { it.copy(settings = it.settings.copy(strict = v)) }
             }
             Spacer(Modifier.height(10.dp))
+            NudgeSettings(s)
+            Spacer(Modifier.height(10.dp))
             NotifySettings(s)
             if (s.settings.pause == 0 && !s.settings.ask) Text("With no pause and no question, opens are counted quietly and you only see a screen when an app is almost used up or locked.",
                 fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
@@ -369,6 +371,8 @@ private fun EditDialog(s: State, r: AppRule, onClose: () -> Unit) {
     val ctx = LocalContext.current
     var limit by remember { mutableIntStateOf(r.limit) }
     var on by remember { mutableStateOf(r.on) }
+    var msg by remember { mutableStateOf(r.msg) }
+    var sound by remember { mutableIntStateOf(r.sound) }
     var pending by remember { mutableStateOf<(() -> Unit)?>(null) }
     fun apply(next: AppRule?) {
         val save = {
@@ -378,11 +382,11 @@ private fun EditDialog(s: State, r: AppRule, onClose: () -> Unit) {
         if (s.settings.strict && Logic.loosens(r, next)) pending = save else save()
     }
     AlertDialog(
-        onDismissRequest = onClose,
+        onDismissRequest = { Nudger.stop(); Nudger.stopRec(); onClose() },
         icon = { AppIcon(r.pkg, r.label, 48.dp) },
         title = { Text(r.label) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text("Opens per day", fontWeight = FontWeight.SemiBold)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedButton(onClick = { if (limit > 1) limit-- }) { Text("−", fontSize = 20.sp) }
@@ -391,10 +395,15 @@ private fun EditDialog(s: State, r: AppRule, onClose: () -> Unit) {
                 }
                 Spacer(Modifier.height(8.dp))
                 SwitchRow("Limit is on", "Turn off to pause this limit without losing it.", on) { on = it }
+                if (s.settings.nudge) {
+                    Text("Nudge message for ${r.label}", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 6.dp))
+                    NudgeEditor(msg, { msg = it }, sound, { sound = it }, r.pkg, r.label, s.settings.vol,
+                        placeholder = s.settings.msg.ifBlank { "Leave empty to use your default message" })
+                } else Text("Nudge messages are off (Settings).", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 TextButton(onClick = { apply(null) }, colors = ButtonDefaults.textButtonColors(contentColor = Bad)) { Text("Remove this app") }
             }
         },
-        confirmButton = { Button(onClick = { apply(r.copy(limit = limit, on = on)) }) { Text("Save") } },
+        confirmButton = { Button(onClick = { Nudger.stop(); Nudger.stopRec(); apply(r.copy(limit = limit, on = on, msg = msg.trim(), sound = sound)) }) { Text("Save") } },
         dismissButton = { TextButton(onClick = onClose) { Text("Cancel") } },
     )
     pending?.let { go -> WaitDialog("Loosen this limit?", onDone = { pending = null; go() }, onCancel = { pending = null }) }
@@ -466,4 +475,104 @@ private fun PickRow(a: Launchable, onClick: () -> Unit) {
         Spacer(Modifier.width(14.dp))
         Text(a.label, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
     }
+}
+
+/** Nudge messages: the default text, its sound, recording, volume. */
+@Composable
+private fun NudgeSettings(s: State) {
+    val ctx = LocalContext.current
+    fun set(f: (Settings) -> Settings) = Store.update(ctx) { it.copy(settings = f(it.settings)) }
+    Text("Nudge message", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 4.dp))
+    SwitchRow("Show my nudge message", "Your own words on the pause and locked screens (and in the open notification). Each app can have its own: tap the app above.", s.settings.nudge) { v -> set { it.copy(nudge = v) } }
+    if (!s.settings.nudge) return
+    var text by remember { mutableStateOf(s.settings.msg) }
+    LaunchedEffect(text) { delay(400); if (text.trim() != s.settings.msg) set { it.copy(msg = text.trim()) } }
+    NudgeEditor(text, { text = it }, s.settings.sound, { v -> set { it.copy(sound = v) } }, null, "Instagram", s.settings.vol,
+        placeholder = "e.g. Stop opening up {app}. Touch grass instead.")
+    if (s.settings.sound != Sound.OFF || s.apps.any { it.sound > Sound.OFF }) {
+        Text("Sound volume: ${s.settings.vol}%", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 8.dp))
+        Text("A share of your media volume.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        var vol by remember(s.settings.vol) { mutableFloatStateOf(s.settings.vol.toFloat()) }
+        Slider(value = vol, onValueChange = { vol = it }, valueRange = 0f..100f, steps = 9,
+            onValueChangeFinished = { val v = vol.toInt(); set { it.copy(vol = v) } })
+        SwitchRow("Play the sound only when it's locked", "Off: it also plays on every pause screen.", s.settings.soundLockedOnly) { v -> set { it.copy(soundLockedOnly = v) } }
+    }
+}
+
+/**
+ * Edit one nudge message and its sound. [pkg] = the app (per-app message) or null (the default).
+ * Per-app sound has an extra "Same as default" choice (-1).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NudgeEditor(text: String, onText: (String) -> Unit, sound: Int, onSound: (Int) -> Unit, pkg: String?, appName: String, vol: Int, placeholder: String) {
+    val ctx = LocalContext.current
+    var examples by remember { mutableStateOf(false) }
+    OutlinedTextField(
+        value = text, onValueChange = { onText(it.take(MSG_MAX)) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+        placeholder = { Text(placeholder, fontSize = 14.sp) }, minLines = 2, maxLines = 4,
+        supportingText = { Text("{app} = the app's name, {left} = opens left. ${text.length}/$MSG_MAX") },
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        TextButton(onClick = { examples = !examples }, contentPadding = PaddingValues(0.dp)) { Text(if (examples) "Hide examples" else "Pick an example…") }
+        if (text.isNotEmpty()) TextButton(onClick = { onText("") }) { Text("Clear") }
+    }
+    if (examples) FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        NUDGE_EXAMPLES.forEach { e -> SuggestionChip(onClick = { onText(e); examples = false }, label = { Text(e, fontSize = 13.sp) }) }
+    }
+    Text("Sound", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 6.dp))
+    val opts = buildList {
+        if (pkg != null) add(-1 to "Same as default")
+        add(Sound.OFF to "Off"); add(Sound.SPEAK to "Read it out"); add(Sound.REC to "My recording")
+    }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        opts.forEach { (v, l) -> FilterChip(selected = sound == v, onClick = { onSound(v) }, label = { Text(l) }) }
+    }
+    val shown = Logic.fill(text.ifBlank { if (pkg == null) "" else Store.get(ctx).settings.msg }, appName, 3)
+    if (sound == Sound.SPEAK) {
+        TextButton(onClick = { if (shown.isNotBlank()) Nudger.speak(ctx, shown, vol / 100f) }, enabled = shown.isNotBlank(), contentPadding = PaddingValues(0.dp)) {
+            Text(if (shown.isBlank()) "Type a message to hear it" else "▶ Hear it")
+        }
+    }
+    if (sound == Sound.REC) Recorder(pkg, vol)
+}
+
+/** Record / play / delete a nudge voice note (15 seconds at most). */
+@Composable
+private fun Recorder(pkg: String?, vol: Int) {
+    val ctx = LocalContext.current
+    var rec by remember { mutableStateOf(false) }
+    var has by remember(pkg) { mutableStateOf(Nudger.hasRec(ctx, pkg)) }
+    var secs by remember { mutableIntStateOf(0) }
+    var denied by remember { mutableStateOf(false) }
+    fun start() {
+        rec = Nudger.startRec(ctx, Nudger.recFile(ctx, pkg)) { rec = false; has = Nudger.hasRec(ctx, pkg) }
+        secs = 0
+    }
+    val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> if (ok) start() else denied = true }
+    LaunchedEffect(rec) { while (rec) { delay(1000); secs++ } }
+    DisposableEffect(Unit) { onDispose { if (Nudger.recording) Nudger.stopRec() } }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+        if (rec) {
+            Button(onClick = { Nudger.stopRec(); rec = false; has = Nudger.hasRec(ctx, pkg) }, colors = ButtonDefaults.buttonColors(containerColor = Bad)) { Text("■ Stop  0:${"%02d".format(secs)}") }
+        } else {
+            Button(onClick = {
+                val granted = androidx.core.content.ContextCompat.checkSelfPermission(ctx, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                if (granted) start() else ask.launch(android.Manifest.permission.RECORD_AUDIO)
+            }) { Text(if (has) "● Record again" else "● Record") }
+            if (has) {
+                OutlinedButton(onClick = { Nudger.playFile(ctx, Nudger.recFile(ctx, pkg), vol / 100f) }) { Text("▶ Play") }
+                TextButton(onClick = { Nudger.stop(); Nudger.recFile(ctx, pkg).delete(); has = false }) { Text("Delete") }
+            }
+        }
+    }
+    Text(
+        when {
+            denied -> "Open Limits needs the microphone to record. You can allow it in the phone's settings for this app."
+            rec -> "Recording… say your message (up to 15 seconds)."
+            has -> "Your recording plays when ${if (pkg == null) "a limited app" else "this app"} opens."
+            pkg != null -> "No recording for this app yet: your default recording plays (or the message is read out)."
+            else -> "No recording yet: the message is read out instead."
+        }, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }

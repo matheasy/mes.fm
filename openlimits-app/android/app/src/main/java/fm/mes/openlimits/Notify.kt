@@ -63,6 +63,7 @@ object Notify {
                 val b = Notification.Builder(ctx, if (warn) CH_WARN else CH_OPEN)
                     .setSmallIcon(numberIcon(Logic.left(s, day, rule)))
                     .setContentTitle(title).setContentText(body)
+                    .setStyle(Notification.BigTextStyle().bigText(body))
                     .setContentIntent(openAppPi(ctx)).setAutoCancel(true)
                     .setColor(0xFF4338CA.toInt()).setCategory(Notification.CATEGORY_STATUS)
                     .setTimeoutAfter(if (warn) 30_000L else 8_000L)

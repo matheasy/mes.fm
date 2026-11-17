@@ -4,6 +4,9 @@
     <!-- "3/8 opens used" notifications and the status-bar counter (Android 13+ asks first). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Only to record your own nudge message (a voice note played when a limited app opens). Stays on the phone. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- To list the apps you can put a limit on (launcher apps only, not every package). -->
     <queries>
         <intent>
@@ -13,6 +16,10 @@
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.HOME" />
+        </intent>
+        <!-- The phone's text-to-speech voice reads nudge messages. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
 
