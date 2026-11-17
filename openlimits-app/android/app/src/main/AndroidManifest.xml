@@ -6,6 +6,8 @@
 
     <!-- Only to record your own nudge message (a voice note played when a limited app opens). Stays on the phone. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- ...but a microphone is optional: phones, tablets and TVs without one can still install the app. -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <!-- To list the apps you can put a limit on (launcher apps only, not every package). -->
     <queries>
