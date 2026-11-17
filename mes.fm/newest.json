@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-16",
+ "generated": "2026-11-17",
  "calculators": [
   {
    "href": "/luders-bands",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/email",
+   "title": "MES Mail",
+   "icon": "/img/email-logo.png",
+   "desc": "Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.",
+   "added": "2026-11-17",
+   "kind": "tool"
+  },
+  {
    "href": "/tracking",
    "title": "Package Tracker",
    "icon": "/img/tracking-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.",
    "added": "2026-11-12",
    "kind": "tool"
-  },
-  {
-   "href": "/chess",
-   "title": "Chess",
-   "icon": "/img/chess-logo.png",
-   "desc": "Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.",
-   "added": "2026-11-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/email",
+   "title": "MES Mail",
+   "icon": "/img/email-logo.png",
+   "desc": "Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.",
+   "added": "2026-11-17",
+   "kind": "tool"
+  },
   {
    "href": "/tracking",
    "title": "Package Tracker",
@@ -250,14 +258,6 @@
    "title": "Quantum Cryptography",
    "icon": "/img/quantum-cryptography-logo.png",
    "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
-   "added": "2026-11-13",
-   "kind": "tool"
-  },
-  {
-   "href": "/cryptography",
-   "title": "Cryptography Lab",
-   "icon": "/img/cryptography-logo.png",
-   "desc": "Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.",
    "added": "2026-11-13",
    "kind": "tool"
   }

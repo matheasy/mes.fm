@@ -1,0 +1,71 @@
+	<div class="tu ed" id="ed">
+		<div class="ed-tabs" role="tablist" aria-label="Which list">
+			<button type="button" role="tab" class="ed-tab" data-k="fix" aria-selected="true">&#128295; Fixes <span class="ed-n" data-n="fix"></span></button>
+			<button type="button" role="tab" class="ed-tab" data-k="app" aria-selected="false">&#128161; New apps <span class="ed-n" data-n="app"></span></button>
+			<button type="button" role="tab" class="ed-tab" data-k="all" aria-selected="false">All <span class="ed-n" data-n="all"></span></button>
+			<span class="ed-sync" id="ed-sync" aria-live="polite"></span>
+		</div>
+
+		<div class="tu-card ed-add">
+			<label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label>
+			<textarea id="ed-t" class="tu-input ed-ta" rows="2" placeholder="What should change? Paste page links (mes.fm/photo) and snipboard.io screenshot links in the text." spellcheck="true"></textarea>
+			<div class="ed-addrow">
+				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option></select></label>
+				<label class="ed-chk"><input type="checkbox" id="ed-star"> &#9733; Important</label>
+				<span class="ed-sp"></span>
+				<span class="ed-hint">Ctrl+Enter adds</span>
+				<button type="button" class="tu-btn tu-btn--primary" id="ed-addbtn">Add</button>
+			</div>
+		</div>
+
+		<div class="ed-bar">
+			<input id="ed-q" type="search" class="tu-input" placeholder="Search the list" aria-label="Search the list" autocomplete="off">
+			<div class="ed-chips" role="group" aria-label="Status">
+				<button type="button" class="ed-chip" data-st="open">Open</button>
+				<button type="button" class="ed-chip" data-st="doing">Doing</button>
+				<button type="button" class="ed-chip" data-st="done">Done</button>
+				<button type="button" class="ed-chip" data-st="wont">Won't do</button>
+				<button type="button" class="ed-chip" data-st="all">Everything</button>
+			</div>
+			<label class="ed-chk"><input type="checkbox" id="ed-fstar"> &#9733; only</label>
+			<select id="ed-tool" class="tu-select" aria-label="Page"><option value="">Every page</option></select>
+			<select id="ed-sort" class="tu-select" aria-label="Sort">
+				<option value="new">Newest first</option>
+				<option value="old">Oldest first</option>
+				<option value="star">Important first</option>
+				<option value="upd">Recently changed</option>
+			</select>
+		</div>
+		<p class="ed-count" id="ed-count" aria-live="polite"></p>
+		<ol class="ed-list" id="ed-list"></ol>
+		<p class="ed-empty" id="ed-empty" hidden></p>
+
+		<details class="tu-card ed-more" id="ed-backup">
+			<summary>&#128190; Backups, moving devices and Telegram import</summary>
+			<p class="ed-p">The list lives on mes.fm (behind the same password as /ads), so every phone and computer that knows the password sees the same list. This browser also keeps the last copy it loaded, so you can still read it offline. Extra copies, in case something goes wrong on the server:</p>
+
+			<h3 class="ed-h">1. A file</h3>
+			<p class="ed-p"><button type="button" class="tu-btn tu-btn--primary" id="ed-dl">&#11015; Download as a JSON file</button> <button type="button" class="tu-btn tu-btn--ghost" id="ed-up">Restore from a file&hellip;</button> <input type="file" id="ed-upfile" accept=".json,application/json" hidden></p>
+			<p class="ed-note">Restoring adds back what is missing and keeps what you have (an item changed later wins). Nothing is deleted.</p>
+
+			<h3 class="ed-h">2. Hive, encrypted</h3>
+			<div class="ed-hive" id="ed-hive">
+				<div id="ed-hv-user"></div>
+				<div id="ed-hv-main" hidden>
+					<label class="ed-chk"><input type="checkbox" id="ed-hv-enc" checked> <b>Encrypt</b></label>
+					<p class="ed-hvwarn" id="ed-hv-warn"></p>
+					<p><button type="button" class="tu-btn tu-btn--primary" id="ed-hv-save">Save to Hive</button> <button type="button" class="tu-btn tu-btn--ghost" id="ed-hv-load">Find my saves</button></p>
+					<p class="ed-note" id="ed-hv-msg" aria-live="polite"></p>
+					<div id="ed-hv-list"></div>
+				</div>
+				<div id="ed-hv-help"></div>
+				<p class="ed-note">Saved as one <code>custom_json</code> on your own account. With the &#128737; passphrase lock it is AES-256-GCM with a key made from your passphrase (PBKDF2, 600,000 rounds), which quantum computers can't break; no memo key is involved. Anyone can see that a save exists, when, and its size, but not the text. Lose the passphrase and nobody can open it, so write it down. Very long lists (more than about 150 KB packed) are too big for one save.</p>
+			</div>
+
+			<h3 class="ed-h">3. Bring the Telegram groups over</h3>
+			<p class="ed-p">In Telegram Desktop open the group, &#8942; &rarr; <b>Export chat history</b>, untick photos / videos / files, Format <b>Machine-readable JSON</b>, Export. Then pick the <code>result.json</code> file (do it once for each group):</p>
+			<p class="ed-p"><button type="button" class="tu-btn tu-btn--primary" id="ed-tg">Pick result.json&hellip;</button> <input type="file" id="ed-tgfile" accept=".json,application/json" hidden></p>
+			<div id="ed-tgprev"></div>
+		</details>
+	</div>
+	<div class="tu-toast" id="ed-toast" role="status" aria-live="polite"></div>

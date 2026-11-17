@@ -1328,6 +1328,16 @@ APPS = {
     # @mestruth on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive, read by api/dashboard.js (one adapter per platform; optional env
     # YOUTUBE_API_KEY / ODYSEE_AUTH_TOKEN; daily history in Upstash). lib.js = MESDash, byte-identical copy at api/_dash-lib.js. Wide, ad-free,
     # no sidebar, noindex. Tests: tool_apps_src/dashboard-tests.js.
+    # MES Edits (private, mes.fm/edits, behind the middleware.js password like /ads): the list of fixes and new-app ideas that used to live in
+    # two Telegram groups. Data = api/edits.js (Upstash hash edits:items); rules in lib.js (MESEdits), byte-identical copy at api/_edits-lib.js.
+    # JSON download / restore, encrypted Hive backup (MESHiveStore app "edits"), Telegram Desktop export import. Ad-free, no comments, noindex.
+    # Tests: node tool_apps_src/edits-tests.js.
+    "edits": dict(title="MES Edits", page_title="MES Edits: Fixes and New App Ideas",
+                tag="Fixes and new app ideas, in one list.", accent="#b4234f", dark="#8a1a3c", tint="#fdeaf0",
+                desc="Private list of fixes and new app ideas for mes.fm.",
+                js_v="1", no_ads=True, no_comments=True,
+                pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/select-search.js"],
+                head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     "dashboard": dict(title="MES Dashboard", page_title="MES Dashboard: Channels, Comments and Notifications",
                 tag="Every MES channel in one place.", accent="#4f46e5", dark="#3730a3", tint="#eef2ff",
                 desc="Private dashboard: followers, views, uploads, comments and notifications of the MES channels on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive.",

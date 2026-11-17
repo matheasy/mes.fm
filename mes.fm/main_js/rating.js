@@ -6,7 +6,7 @@
 (function () {
     "use strict";
     if (window.__mesRating) return; window.__mesRating = 1;
-    var EXCLUDE = /^\/(ads|search-console|earnings|contact|privacy-policy|donate|ratings|feedback|portfolio|taxes|sov|lp|assets|random-wallets|finance|ai|mfa|404|f|r|ri)(\/|$)|_https?_|\/1$/;
+    var EXCLUDE = /^\/(ads|search-console|earnings|edits|dashboard|contact|privacy-policy|donate|ratings|feedback|portfolio|taxes|sov|lp|assets|random-wallets|finance|ai|mfa|404|f|r|ri)(\/|$)|_https?_|\/1$/;
     var KEY = "mes-rating:v1", MIN_MS = 4000, EMAIL = "contact@mes.fm";
     var API = "/api/rating";
     function pagePath() {

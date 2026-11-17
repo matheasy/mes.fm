@@ -47,6 +47,10 @@ export const config = {
     '/dashboard',
     '/dashboard/:path*',
     '/api/dashboard',
+    // the private list of fixes and new-app ideas (replaces two Telegram groups) and its data
+    '/edits',
+    '/edits/:path*',
+    '/api/edits',
   ],
 };
 
