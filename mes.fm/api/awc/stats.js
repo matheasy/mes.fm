@@ -1,0 +1,4 @@
+// alpinewestcreative.com dashboard: the normal /api/stats handler, run for site 'awc' (own key prefix, own Bing site; see api/_site.js)
+const handler = require('../stats.js');
+const SITE = require('../_site.js');
+module.exports = (req, res) => SITE.runAs('awc', () => handler(req, res));

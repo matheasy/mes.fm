@@ -1,3 +1,4 @@
+const SITE = require('./_site.js');
 const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 
 const TOP_N = 50;
@@ -35,7 +36,7 @@ async function runPipeline(commands) {
       Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(commands),
+    body: JSON.stringify(SITE.prefixCommands(commands)),
   });
   return upstashRes.json();
 }

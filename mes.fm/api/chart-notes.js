@@ -1,3 +1,4 @@
+const SITE = require('./_site.js');
 // Chart notes for the private dashboards (mes.fm/search-console and mes.fm/ads), like Search Console's own annotations:
 // a short note on a day ("Started the Argentina campaigns", "Site moved to mes.fm/<slug>"), drawn as a marker on the
 // x axis of the day-by-day charts. Shared by both pages; behind the middleware.js password like them.
@@ -20,7 +21,7 @@ async function redis(commands) {
   const r = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(commands),
+    body: JSON.stringify(SITE.prefixCommands(commands)),
   });
   if (!r.ok) throw new Error('redis ' + r.status);
   return r.json();
@@ -64,7 +65,7 @@ async function respond(req, deps) {
   const read = async () => { try { const v = await deps.get(); const l = v ? JSON.parse(v) : []; return Array.isArray(l) ? l : []; } catch (e) { return []; } };
   if (req.method === 'GET') return { status: 200, body: { notes: await read() } };
   if (req.method !== 'POST') return { status: 405, body: { error: 'GET or POST' } };
-  if (!req.local && !ORIGINS.includes(String(req.origin || ''))) return { status: 403, body: { error: 'wrong origin' } };
+  if (!req.local && !SITE.site().origins.includes(String(req.origin || ''))) return { status: 403, body: { error: 'wrong origin' } };
   if (!/^application\/json/i.test(String(req.contentType || ''))) return { status: 415, body: { error: 'JSON only' } };
   let body = req.body;
   if (typeof body === 'string') { if (body.length > 4000) return { status: 413, body: { error: 'too large' } }; try { body = JSON.parse(body); } catch (e) { return { status: 400, body: { error: 'bad json' } }; } }

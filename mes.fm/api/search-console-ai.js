@@ -1,3 +1,4 @@
+const SITE = require('./_site.js');
 // AI search numbers for the private mes.fm/search-console page (behind the middleware.js password: /api/search-console-ai
 // is in its matcher). Neither Google's "Generative AI performance" report nor Bing's "AI Performance" report has an API
 // (checked 2026-10-26: searchanalytics.query has no AI search type / appearance, the Bing Webmaster API has no AI method),
@@ -28,7 +29,7 @@ async function redis(commands) {
   const r = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(commands),
+    body: JSON.stringify(SITE.prefixCommands(commands)),
   });
   if (!r.ok) throw new Error('redis ' + r.status);
   return r.json();
@@ -102,7 +103,7 @@ async function respond(req, deps) {
     return { status: 200, body: { google: pj(g), bing: pj(b) } };
   }
   if (method !== 'POST' && method !== 'DELETE') return { status: 405, body: { error: 'GET, POST or DELETE' } };
-  if (!req.local && !ORIGINS.includes(String(req.origin || ''))) return { status: 403, body: { error: 'wrong origin' } };
+  if (!req.local && !SITE.site().origins.includes(String(req.origin || ''))) return { status: 403, body: { error: 'wrong origin' } };
   if (method === 'DELETE') {
     const src = String((req.query || {}).src || '');
     if (!SHAPES[src]) return { status: 400, body: { error: 'src must be google or bing' } };

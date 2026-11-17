@@ -1,3 +1,4 @@
+const SITE = require('./_site.js');
 const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 
 // Same range set and hourly/daily split as api/stats.js's RANGES, so the
@@ -64,7 +65,7 @@ module.exports = async (req, res) => {
           Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(keys.map((k) => ['ZMSCORE', `${lbPrefix}${k}`, ...pages])),
+        body: JSON.stringify(SITE.prefixCommands(keys.map((k) => ['ZMSCORE', `${lbPrefix}${k}`, ...pages]))),
       });
       pageResults = await upstashRes.json();
     } catch {
@@ -100,7 +101,7 @@ module.exports = async (req, res) => {
         Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(commands),
+      body: JSON.stringify(SITE.prefixCommands(commands)),
     });
     results = await upstashRes.json();
   } catch {

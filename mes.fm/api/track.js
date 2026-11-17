@@ -1,4 +1,7 @@
 const { dayKey, hourKey } = require('./_bucket-keys');
+const SITE = require('./_site.js');
+// Other sites MES keeps stats for (api/_site.js): same counters under their own key prefix.
+const OTHER_SITES = { 'www.alpinewestcreative.com': 'awc', 'alpinewestcreative.com': 'awc' };
 
 const MAX_LEN = 200;
 // Only accept mes.fm itself and its subdomains -- rejects Vercel preview/
@@ -54,7 +57,7 @@ function detectSource(referrerRaw, site, ad) {
     return 'direct';
   }
   if (!host) return 'direct';
-  if (host === site.toLowerCase() || /(^|\.)mes\.fm$/i.test(host)) return 'internal';
+  if (host.replace(/^www\./, '') === site.toLowerCase().replace(/^www\./, '') || /(^|\.)mes\.fm$/i.test(host)) return 'internal';
   if (/(^|\.)google\.[a-z.]+$/.test(host)) return 'google';
   if (/(^|\.)(bing|yahoo|duckduckgo|baidu|yandex|ecosia|ask)\./.test(host)) return 'search';
   if (/(^|\.)(facebook|fb|instagram|reddit|tiktok|linkedin|pinterest|threads|youtube|youtu)\.[a-z.]+$/.test(host) || host === 't.co' || host === 'x.com') return 'social';
@@ -76,10 +79,11 @@ module.exports = async (req, res) => {
   }
 
   const body = req.body || {};
-  const site = String(body.site || '').trim();
+  let site = String(body.site || '').trim();
   const path = String(body.path || '/').trim().slice(0, MAX_LEN);
 
-  if (!SITE_RE.test(site) || !path.startsWith('/')) {
+  const other = OTHER_SITES[site.toLowerCase()];
+  if ((!SITE_RE.test(site) && !other) || !path.startsWith('/')) {
     res.status(400).json({ error: 'invalid site or path' });
     return;
   }
@@ -92,6 +96,8 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // one name per other site (apex and www count as the same pages)
+  if (other) site = SITE.SITES[other].host;
   const member = `${site}|${path}`;
   const source = detectSource(body.referrer, site, body.ad);
   // Composite members so a single sorted set can hold a per-page breakdown --
@@ -179,7 +185,7 @@ module.exports = async (req, res) => {
         Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(commands),
+      body: JSON.stringify(SITE.prefixWith(other ? SITE.SITES[other].prefix : '', commands)),
     });
   } catch {
     // best-effort tracking, never block the page for it

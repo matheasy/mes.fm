@@ -1,3 +1,4 @@
+const SITE = require('./_site.js');
 // Receives Google Search Console numbers for the private mes.fm/search-console page.
 //
 // google-ads/search-console-gsc-script.js (Google Apps Script, runs in the owner's Google account, calls the Search
@@ -175,7 +176,7 @@ async function pipeline(commands) {
   const r = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(commands),
+    body: JSON.stringify(SITE.prefixCommands(commands)),
   });
   if (!r.ok) throw new Error('redis ' + r.status);
   return r.json();

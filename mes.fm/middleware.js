@@ -51,6 +51,11 @@ export const config = {
     '/edits',
     '/edits/:path*',
     '/api/edits',
+    // Karo's dashboard for alpinewestcreative.com (stats, Search Console, SEO): pages at /awc/..., data at /api/awc/...
+    // (her domain proxies /stats, /search-console, /seo there). Own login: karo / rome (mes / 911 works too).
+    '/awc',
+    '/awc/:path*',
+    '/api/awc/:path*',
   ],
 };
 
@@ -67,8 +72,17 @@ const USERNAME = 'mes';
 const PASSWORD = '911';
 const REALM = 'mes.fm';
 
+// Karo's own login for the alpinewestcreative.com dashboard (api/_site.js); her Search Console numbers arrive from
+// an Apps Script with its own key, so that one URL is not behind the login.
+const AWC = /^\/(awc|api\/awc)(\/|$)/;
+const AWC_OPEN = /^\/api\/awc\/search-console-ingest\/?$/;
+const AWC_USERS = [['karo', 'rome'], [USERNAME, PASSWORD]];
+
 export default function middleware(request) {
-  if (isPublic(new URL(request.url))) return;
+  const url = new URL(request.url);
+  if (isPublic(url)) return;
+  const awc = AWC.test(url.pathname);
+  if (awc && AWC_OPEN.test(url.pathname)) return;
 
   const header = request.headers.get('authorization') || '';
 
@@ -78,7 +92,7 @@ export default function middleware(request) {
       const sep = decoded.indexOf(':');
       const username = decoded.slice(0, sep);
       const password = decoded.slice(sep + 1);
-      if (username === USERNAME && password === PASSWORD) {
+      if (awc ? AWC_USERS.some(([u, p]) => u === username && p === password) : (username === USERNAME && password === PASSWORD)) {
         return; // authorized — continue to the rewrite
       }
     } catch {
@@ -89,7 +103,7 @@ export default function middleware(request) {
   return new Response('Authentication required.', {
     status: 401,
     headers: {
-      'WWW-Authenticate': `Basic realm="${REALM}", charset="UTF-8"`,
+      'WWW-Authenticate': `Basic realm="${awc ? 'Alpine West Creative' : REALM}", charset="UTF-8"`,
     },
   });
 }

@@ -22,6 +22,7 @@
 //   breakdowns, so they cover at most 90 days (+ 90 before for the comparison): a 365-day request with filters is answered
 //   for 90 days (google.clamped, rangeUsed: "90").
 // ?page=<full page URL>&src=google|bing -> the queries of that page (cur + prev), kept for older page versions.
+const SITE = (function () { try { return require('./_site.js'); } catch (e) { return {}; } })();
 const RANGES = ['today', 'yesterday', '7', '28', '90', '365'];
 const SUM_RANGES = ['7', '28', '90', '365'];
 const FDIMS = ['query', 'page', 'country', 'device'];
@@ -33,11 +34,12 @@ const BING_BASE = 'https://ssl.bing.com/webmaster/api.svc/json/';
 const BING_TTL = 6 * 3600;
 const MEM = new Map(); // method+arg -> { at, data }
 
+const pfx = (c) => (SITE.prefixCommands ? SITE.prefixCommands(c) : c);
 async function redis(commands) {
   const r = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/pipeline`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(commands),
+    body: JSON.stringify(pfx(commands)),
   });
   if (!r.ok) throw new Error('redis ' + r.status);
   return r.json();
@@ -58,7 +60,8 @@ function normPage(url) {
   let path = slash === -1 ? '/' : s.slice(slash);
   path = path.replace(/\/index\.html$/i, '/').replace(/\.html$/i, '');
   if (path.length > 1) path = path.replace(/\/+$/, '');
-  return host === 'mes.fm' || host === '' ? path || '/' : host + path;
+  const own = SITE.site && SITE.site().host ? SITE.site().host.replace(/^www\./, '') : 'mes.fm';
+  return host === own || host === '' ? path || '/' : host + path;
 }
 
 // Sum clicks / impressions and an impressions-weighted position.
@@ -330,7 +333,7 @@ function scrub(s, key) {
 }
 
 async function bingCall(method, extra, key, siteUrl) {
-  const memKey = method + '|' + (extra || '');
+  const memKey = siteUrl + '|' + method + '|' + (extra || '');
   const mem = MEM.get(memKey);
   if (mem && Date.now() - mem.at < BING_TTL * 1000) return mem.data;
   const rkey = 'gscdash:bing:' + method + (extra ? ':' + Buffer.from(extra).toString('base64url').slice(0, 200) : '');
@@ -549,7 +552,7 @@ async function handler(req, res) {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   const q = req.query || {};
   const key = process.env.BING_WEBMASTER_KEY || '';
-  const siteUrl = process.env.BING_SITE_URL || 'https://mes.fm/';
+  const siteUrl = (SITE.site && SITE.site().id !== 'mes') ? SITE.site().bing : (process.env.BING_SITE_URL || 'https://mes.fm/');
 
   // drill-down: the queries of one page (older page versions)
   if (q.page) {
