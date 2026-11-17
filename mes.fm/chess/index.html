@@ -543,7 +543,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ch .ch-otb.is-min > :not(.ch-ob--min) {display:none !important;}
 	#ch .ch-otb.is-min {padding:0.15em;}
 	#ch .ch-ob--min {padding:0.2em 0.55em;}
-	#ch .ch-banner {position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:6;max-width:min(92%,30em);padding:0.8em 1.3em 0.9em;border-radius:14px;text-align:center;color:#fff;font-size:1.1em;line-height:1.35;box-shadow:0 10px 34px rgba(0,0,0,0.45);cursor:pointer;animation:chBan 0.28s ease-out;}
+	#ch .ch-banner {position:absolute;left:50%;top:14%;transform:translateX(-50%);z-index:6;max-width:min(92%,30em);padding:0.8em 2.2em 0.9em;border-radius:14px;text-align:center;color:#fff;font-size:1.1em;line-height:1.35;box-shadow:0 10px 34px rgba(0,0,0,0.45);cursor:pointer;animation:chBan 0.28s ease-out;}
 	#ch .ch-banner[hidden] {display:none !important;}
 	#ch .ch-banner b {color:inherit;}
 	#ch .ch-banner.is-check {background:rgba(185,28,28,0.93);border:2px solid #fca5a5;pointer-events:none;}
@@ -551,6 +551,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ch .ch-banner.is-lose {background:rgba(127,29,29,0.94);border:2px solid #fca5a5;}
 	#ch .ch-banner.is-draw {background:rgba(51,65,85,0.95);border:2px solid #cbd5e1;}
 	#ch .ch-btop {display:block;font-size:1.9em;font-weight:800;letter-spacing:0.02em;line-height:1.15;margin-bottom:0.15em;text-shadow:0 2px 8px rgba(0,0,0,0.35);}
+	#ch .ch-bx {position:absolute;top:0.3em;right:0.35em;width:1.9em;height:1.9em;border-radius:50%;border:1px solid rgba(255,255,255,0.5);background:rgba(0,0,0,0.25);color:#fff;font:inherit;font-size:0.85em;line-height:1;cursor:pointer;padding:0;}
+	#ch .ch-bx:hover {background:rgba(0,0,0,0.45);}
+	#ch .ch-banner.is-check .ch-bx {display:none;}
 	#ch .ch-bact {display:flex;gap:0.5em;justify-content:center;flex-wrap:wrap;margin-top:0.6em;}
 	#ch .ch-bact:empty {display:none;}
 	#ch .ch-banner .ch-ob {background:rgba(255,255,255,0.16);border-color:rgba(255,255,255,0.45);color:#fff;font-size:0.85em;}
@@ -707,6 +710,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ch .ch-banner.is-win{border:2px solid #16a64a}
 	body.dark-mode #ch .ch-banner.is-lose{border:2px solid #8b0505}
 	body.dark-mode #ch .ch-banner.is-draw{background:rgba(61,78,102,0.95);border:2px solid #293747}
+	body.dark-mode #ch .ch-bx{border:1px solid rgba(51,51,51,0.50);background:rgba(82,82,82,0.25)}
+	body.dark-mode #ch .ch-bx:hover{background:rgba(82,82,82,0.45)}
 	body.dark-mode #ch .ch-banner .ch-ob{background:rgba(26,26,26,0.16);border-color:rgba(51,51,51,0.45)}
 	body.dark-mode #ch .ch-ob--big{border-color:#c67b39}
 	body.dark-mode #ch.ch-3don .ch-ob--big{border-color:#a46728}
@@ -978,7 +983,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<div class="ch-evbar" id="ch-evbar" hidden aria-hidden="true"><i id="ch-evfill"></i><span id="ch-evtxt"></span></div>
 							<div class="ch-board" id="ch-board" tabindex="0" aria-label="Chess board: arrow keys move the square cursor, Enter picks a piece and then its square. You can also type a move like e4 or Nf3."></div>
 							<div class="ch-3d" id="ch-3d" hidden><p class="ch-3dmsg" id="ch-3dmsg">Loading 3D…</p></div>
-							<div class="ch-banner" id="ch-banner" hidden role="status" aria-live="assertive"><div class="ch-bmsg" id="ch-bmsg"></div><div class="ch-bact" id="ch-bact"></div></div>
+							<div class="ch-banner" id="ch-banner" hidden role="status" aria-live="assertive"><button type="button" class="ch-bx" data-b="x" title="Close (look around the board, take a screenshot)" aria-label="Close">✕</button><div class="ch-bmsg" id="ch-bmsg"></div><div class="ch-bact" id="ch-bact"></div></div>
 							<div class="ch-promo" id="ch-promo" hidden role="dialog" aria-label="Promote the pawn to"></div>
 						</div>
 						<div class="ch-player" id="ch-pbot"></div>
@@ -1152,7 +1157,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=6" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

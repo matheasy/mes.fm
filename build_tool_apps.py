@@ -1509,7 +1509,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="46", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="47", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
@@ -1593,7 +1593,7 @@ APPS = {
                 tag="Play chess in 2D or 3D, against anyone.", accent="#7a4a1e", dark="#5a3514", tint="#f5ead9",
                 desc="Play chess free against the computer at four levels, a friend on the same device, or someone online as a guest or on the Hive blockchain (live or correspondence), on a 2D board or a 3D board in a chess club, tournament hall, park or space. Chess960, King of the Hill and Three-check, clocks, hints, analysis, PGN and FEN.",
                 meta_desc="Free chess: play the computer at four levels, a friend, or online as a guest or on Hive. 2D or 3D boards, Chess960, clocks, hints, PGN and FEN.",
-                js_v="6", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
+                js_v="7", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "connect-four": dict(title="MES Connect Four", page_title="Connect Four: Play Free Against the Computer, a Friend or Online",
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",
