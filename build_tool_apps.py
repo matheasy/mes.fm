@@ -242,6 +242,14 @@ APPS = {
                  js_v="2"),
     # MES Polls (2026-10-31, mes.fm/polls; a poll = mes.fm/v/<id>, vercel.json rewrite to /polls?p=<id>): make a poll and share it. Storage = mes.fm/api/poll.js (Upstash),
     # lib.js = MESPoll (page helpers); tests: node tool_apps_src/polls-tests.js (fake Redis). On localhost the page uses an in-browser stand-in (no /api).
+    # MES Mail (2026-11-17, mes.fm/email): quantum-safe encrypted mail between Hive accounts. lib.js = MESMail (X-Wing = ML-KEM-768 + X25519
+    # key wrap from @noble/post-quantum 0.7.1 hybrid.js loaded at runtime, AES-256-GCM body, custom_json id "mes_mail" + 0.001 HBD notice transfer);
+    # tests tool_apps_src/email-tests.js (NOBLE=<node_modules> for the real KEM). On localhost / ?mock=1 it runs on a pretend chain in localStorage.
+    "email": dict(title="MES Mail", page_title="MES Mail: Quantum-Safe Encrypted Email for Hive",
+                  tag="Private, end-to-end encrypted mail between Hive accounts.", accent="#3b4cca", dark="#2c3a9e", tint="#e6e9fb",
+                  desc="Free encrypted email for Hive: send end-to-end encrypted messages to any Hive account, stored on the blockchain and readable only by the people you write to. Quantum-safe (ML-KEM-768 + X25519 and AES-256), threads and replies, Sent folder, classic memo reader. No server, no sign-up.",
+                  meta_desc="Free quantum-safe encrypted email for Hive accounts: end-to-end encrypted messages on the blockchain, threads, replies and a classic memo reader.",
+                  js_v="1", pre_js=["/main_js/hive.js?v=2"], head_extra=PAGE3_HEAD),
     "polls": dict(title="MES Polls", page_title="Make a Poll: Free Online Poll Maker, No Sign-Up",
                   tag="Ask a question, share one link, watch the votes come in.", accent="#3b5bdb", dark="#2c47b0", tint="#e7ecfb",
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",

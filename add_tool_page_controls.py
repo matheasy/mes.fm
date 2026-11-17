@@ -77,6 +77,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("narration", "Narration"),
     ("watch", "Watch"),
     ("polls", "Polls"),
+    ("email", "Mail"),
     ("party", "Party"),
     ("stream-chat", "Stream Chat"),
     ("database", "Video Database"),

@@ -1,0 +1,138 @@
+	<div class="tu em" id="em">
+		<p class="em-mock" id="em-mock" hidden><b>Test mode:</b> a pretend Hive chain kept in this browser (nothing is signed or sent). Open a second tab to log in as someone else and write back.</p>
+
+		<div class="em-top">
+			<div class="em-who" id="em-who"></div>
+			<div class="em-topbtns">
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-refresh" hidden>↻ Check for mail</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-lock" hidden>🔒 Lock</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-logout" hidden>Log out</button>
+			</div>
+		</div>
+		<p class="em-status" id="em-status" role="status"></p>
+
+		<section class="tu-card em-gate" id="em-login" hidden>
+			<h2>Log in with your Hive account</h2>
+			<p>MES Mail sends end-to-end encrypted messages between Hive accounts, stored on the Hive blockchain. Only you and the people you write to can read them, and the encryption is quantum-safe.</p>
+			<form class="em-row" id="em-loginf">
+				<input class="tu-input" id="em-user" placeholder="Hive username" autocomplete="username" autocapitalize="none" spellcheck="false">
+				<button type="submit" class="tu-btn tu-btn--primary">Log in</button>
+			</form>
+			<div id="em-kchelp"></div>
+		</section>
+
+		<section class="tu-card em-gate" id="em-setup" hidden>
+			<h2>Set up MES Mail</h2>
+			<p>Make a <b>mail passphrase</b>. Your quantum-safe keys are made from it, so the same passphrase opens your mail on any device. It never leaves this browser.</p>
+			<ol class="em-steps">
+				<li>Make a passphrase and <b>write it down</b>. If you lose it, no one can recover your mail, not even us.</li>
+				<li>Press <b>Publish my mail key</b>. One Keychain approval (Posting key) adds your public key to your Hive profile so people can write to you.</li>
+			</ol>
+			<label class="tu-label" for="em-p1">Mail passphrase</label>
+			<div class="em-row">
+				<input class="tu-input em-pass" id="em-p1" type="password" autocomplete="new-password" spellcheck="false">
+				<button type="button" class="tu-btn" id="em-gen">Make one for me</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-show">Show</button>
+			</div>
+			<div class="em-meter"><span id="em-bar"></span></div>
+			<p class="tu-note" id="em-bits"></p>
+			<label class="tu-label" for="em-p2">Type it again</label>
+			<input class="tu-input em-pass" id="em-p2" type="password" autocomplete="new-password" spellcheck="false">
+			<label class="em-check"><input type="checkbox" id="em-wrote"> I wrote my passphrase down somewhere safe</label>
+			<label class="em-check"><input type="checkbox" id="em-rem1"> Remember it on this device (don't tick on a shared computer)</label>
+			<div class="em-row"><button type="button" class="tu-btn tu-btn--primary" id="em-publish" disabled>Publish my mail key</button></div>
+			<p class="tu-note" id="em-setupnote"></p>
+		</section>
+
+		<section class="tu-card em-gate" id="em-unlock" hidden>
+			<h2>Unlock your mail</h2>
+			<p>Type your mail passphrase. Your messages are decrypted here in the browser.</p>
+			<form id="em-unlockf">
+				<div class="em-row">
+					<input class="tu-input em-pass" id="em-up" type="password" autocomplete="current-password" spellcheck="false" aria-label="Mail passphrase">
+					<button type="submit" class="tu-btn tu-btn--primary">Unlock</button>
+				</div>
+				<label class="em-check"><input type="checkbox" id="em-rem2"> Remember it on this device</label>
+			</form>
+			<p class="tu-note" id="em-unlocknote"></p>
+			<details class="em-forgot"><summary>Forgot your passphrase?</summary>
+				<p>It can't be recovered. You can make a new passphrase and publish a new key: new mail will work, but messages sent to your old key can never be opened again.</p>
+				<button type="button" class="tu-btn" id="em-rekey">Make a new key</button>
+			</details>
+		</section>
+
+		<div class="em-app" id="em-app" hidden>
+			<nav class="em-nav" aria-label="Mail folders">
+				<button type="button" class="tu-btn tu-btn--primary em-compose" id="em-new">✏️ New message</button>
+				<button type="button" class="em-fold" data-f="inbox">📥 Inbox <span class="em-n" id="em-ninbox"></span></button>
+				<button type="button" class="em-fold" data-f="sent">📤 Sent <span class="em-n" id="em-nsent"></span></button>
+				<button type="button" class="em-fold" data-f="all">🗂 All conversations</button>
+				<button type="button" class="em-fold" data-f="classic">🔑 Classic memos <span class="em-n" id="em-nclassic"></span></button>
+				<div class="em-keybox" id="em-keybox"></div>
+			</nav>
+			<section class="em-list" id="em-listpane" aria-label="Conversations">
+				<input class="tu-input em-search" id="em-q" type="search" placeholder="Search your mail" aria-label="Search your mail">
+				<div id="em-list"></div>
+			</section>
+			<section class="em-read" id="em-read" aria-live="polite">
+				<div class="em-empty" id="em-empty">
+					<p class="em-big">📧</p>
+					<p>Pick a conversation, or write a new message.</p>
+				</div>
+				<div id="em-thread" hidden></div>
+
+				<form class="em-compose-f" id="em-cf" hidden>
+					<div class="em-cfhead"><button type="button" class="tu-btn tu-btn--ghost em-back" data-back>‹ Back</button><h2 id="em-cft">New message</h2></div>
+					<label class="tu-label" for="em-to">To <span class="em-hint">Hive usernames, separated by commas (up to 10)</span></label>
+					<input class="tu-input" id="em-to" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="@username">
+					<div class="em-chips" id="em-tochips"></div>
+					<label class="tu-label" for="em-subj">Subject</label>
+					<input class="tu-input" id="em-subj" maxlength="200">
+					<label class="tu-label" for="em-body">Message</label>
+					<textarea class="tu-input em-body" id="em-body" rows="12"></textarea>
+					<p class="tu-note em-est" id="em-est"></p>
+					<div class="em-row em-sendrow">
+						<button type="submit" class="tu-btn tu-btn--primary" id="em-send">🔒 Send encrypted</button>
+						<label class="em-cur">Notice paid in <select class="tu-select" id="em-curr"><option value="HBD">HBD</option><option value="HIVE">HIVE</option></select></label>
+						<button type="button" class="tu-btn tu-btn--ghost" id="em-classic" hidden>Send as a classic memo</button>
+					</div>
+					<p class="tu-note" id="em-sendnote"></p>
+				</form>
+
+				<div class="em-classicv" id="em-classicv" hidden></div>
+			</section>
+		</div>
+
+		<section class="tu-card em-howto">
+			<h2>How MES Mail works</h2>
+			<div class="em-how">
+				<div><b>1. Your key</b><p>Your passphrase makes an X-Wing key pair: ML-KEM-768, the NIST post-quantum standard, combined with X25519. The public half goes on your Hive profile.</p></div>
+				<div><b>2. Sealing</b><p>Each message is encrypted with a fresh AES-256-GCM key. That key is locked separately for every recipient and for you, so it shows in your Sent folder.</p></div>
+				<div><b>3. On Hive</b><p>The sealed message is saved as custom_json signed with your posting key, and each recipient gets a 0.001 HBD transfer as the delivery notice. They keep it.</p></div>
+				<div><b>4. Reading</b><p>Your inbox finds the notices in your history, fetches the messages from the senders' histories and opens them here. Nothing passes through mes.fm.</p></div>
+			</div>
+			<p class="tu-note"><b>Public on Hive, forever:</b> who wrote to whom, when, and how big the message is. <b>Private:</b> the subject and the text. Messages can't be deleted from the blockchain. <a href="/quantum-cryptography?tab=safe">Why quantum-safe matters</a></p>
+		</section>
+
+		<div class="tu-seo">
+			<h2>Quantum-safe encrypted email for Hive</h2>
+			<p>MES Mail is a free, private inbox for anyone with a Hive account. Messages are end-to-end encrypted in your browser, stored on the Hive blockchain and opened only by the people they were sent to. There is no mail server, no account to make and no company holding your messages.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why "quantum-safe"?</dt>
+				<dd>Classic Hive memos are locked with elliptic-curve keys, and a large quantum computer running Shor's algorithm could break those. Blockchain data is permanent, so someone could store memos today and read them later. MES Mail locks every message key with ML-KEM-768 (FIPS 203) together with X25519, and the message itself with AES-256, which quantum computers don't break.</dd>
+				<dt>What does it cost?</dt>
+				<dd>Saving the message uses resource credits, which are free. The delivery notice is a 0.001 HBD transfer (a tenth of a cent) to each recipient, and they keep it.</dd>
+				<dt>Which keys does Keychain ask for?</dt>
+				<dd>Posting to save the message and to publish your mail key, Active for the 0.001 HBD notice. Your keys never leave Keychain. The Keychain phone app (HiveAuth) works too.</dd>
+				<dt>Can I read my mail on another device?</dt>
+				<dd>Yes. Log in with the same Hive account and type the same mail passphrase. Everything comes back from the blockchain.</dd>
+				<dt>What if I forget my passphrase?</dt>
+				<dd>It can't be recovered. You can make a new key, but messages sent to the old key stay locked forever. Write it down.</dd>
+				<dt>What are classic memos?</dt>
+				<dd>Encrypted memos sent with ordinary Hive transfers (memos that start with #). MES Mail lists them and opens them through Keychain with your memo key, and can send one to people who haven't set up MES Mail yet. They aren't quantum-safe, and Keychain on a phone (HiveAuth) can't open them.</dd>
+				<dt>Is anything sent to mes.fm?</dt>
+				<dd>No. The page talks to public Hive API nodes directly. Your passphrase, keys and messages stay in your browser.</dd>
+			</dl>
+		</div>
+	</div>
