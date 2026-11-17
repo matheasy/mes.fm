@@ -89,6 +89,18 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("browser-storage", "Storage Analyzer", "/storage"),   # 2026-11-07 sub-page (brand option)
     ("gallery", "Gallery"),
     ("signals", "Market Signals"),
+    ("signals-fa", "سیگنال‌های بازار"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-ar", "إشارات السوق"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-es", "Señales del mercado"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-pt", "Sinais do mercado"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-tr", "Piyasa Sinyalleri"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-ru", "Рыночные сигналы"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-zh", "市场信号"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-hi", "मार्केट सिग्नल्स"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-id", "Sinyal Pasar"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-vi", "Tín hiệu Thị trường"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-de", "Marktsignale"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
+    ("signals-fr", "Signaux de marché"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
     ("elections", "Elections"),
     ("debt-clock", "Debt Clock"),
     ("compound-interest-calculator", "Compound Interest Calculator"),   # 2026-10-23

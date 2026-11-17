@@ -1725,7 +1725,7 @@ def _signals_pages():
             if not f.exists() or f.read_text(encoding="utf-8") != js:
                 f.write_text(js, encoding="utf-8")
         APPS[SIG_LANG_SLUGS[code]] = dict(base, title=m["title"], page_title=m["page_title"], tag=m["tag"], desc=m["desc"], src="signals", js_path="signals/js/signals.js",
-                                          logo_from="signals", lang=code, og_locale=m["og_locale"], doc_title=m["doc_title"], tr=P["s"],
+                                          logo_from="signals", lang=code, og_locale=m["og_locale"], doc_title=m["doc_title"], tr=P["s"], rtl=m["dir"] == "rtl",
                                           pre_js=base.get("pre_js", []) + ["/signals/js/i18n-%s.js?v=%s" % (code, v)], head_extra=hreflang,
                                           vars={"SEO": "@seo/%s.html" % code, "LANGSW": switcher(code), "SGATTR": ' lang="%s"%s' % (code, ' dir="rtl"' if m["dir"] == "rtl" else "")})
 
@@ -1922,6 +1922,9 @@ def build_from_source(slug, cfg, tpl):
                  "@@TAGLINE@@": cfg["tag"], "@@PAGE_TITLE@@": cfg["page_title"], "@@PAGE_DESC@@": desc,
                  "@@ACCENT@@": cfg["accent"], "@@ACCENT_DARK@@": cfg["dark"]}.items():
         page = page.replace(k, v)
+    if cfg.get("rtl"):                # a right-to-left language (Persian, Arabic): the page's own title, tagline and description run right to left; the shared site shell stays LTR
+        for a in ('<h1 class="page-title"', '<p class="page-description"', '<p class="tag-line"'):
+            page = page.replace(a, a.replace(' class=', ' dir="rtl" class='), 1)
     if cfg.get("lang"):               # a page in another language: <html lang>, og:locale
         page = page.replace('<html lang="en">', '<html lang="%s">' % cfg["lang"], 1)
         page = page.replace('<meta property="og:description"', '<meta property="og:locale" content="%s" />        <meta property="og:description"' % cfg.get("og_locale", cfg["lang"]), 1)
