@@ -944,4 +944,26 @@
 
 	try { var d = JSON.parse(localStorage.getItem(KEY + ":draft") || "null"); if (d) { $("cp-new-text").value = d.t || ""; $("cp-new-title").value = d.h || ""; } } catch (e) {}
 	render.noFocus = true; render(); render.noFocus = false;
+
+	// A- / 100% / A+ for the "Add text to keep" box (size saved in this browser)
+	(function () {
+		var ta = $("cp-new-text"), box = document.querySelector("#cp .cp-fz"), FK = KEY + ":infz";
+		var STEPS = [75, 87.5, 100, 112.5, 125, 150, 175, 200, 250, 300], pct = 100;
+		if (!ta || !box) return;
+		try { var v = parseFloat(localStorage.getItem(FK)); if (STEPS.indexOf(v) >= 0) pct = v; } catch (e) {}
+		function show() {
+			ta.style.fontSize = pct === 100 ? "" : (1.05 * pct / 100) + "em";
+			box.querySelector(".cp-fzv").textContent = Math.round(pct) + "%";
+			box.querySelector('[data-fz="-1"]').disabled = pct <= STEPS[0];
+			box.querySelector('[data-fz="1"]').disabled = pct >= STEPS[STEPS.length - 1];
+		}
+		box.addEventListener("click", function (e) {
+			var b = e.target.closest("button[data-fz]"); if (!b) return;
+			var d = +b.getAttribute("data-fz"), i = STEPS.indexOf(pct);
+			pct = d === 0 ? 100 : STEPS[Math.max(0, Math.min(STEPS.length - 1, i + d))];
+			try { if (pct === 100) localStorage.removeItem(FK); else localStorage.setItem(FK, String(pct)); } catch (e2) {}
+			show();
+		});
+		show();
+	})();
 })();

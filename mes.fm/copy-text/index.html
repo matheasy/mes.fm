@@ -308,6 +308,18 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* copy text -- sticky-note palette: the accent is a note yellow-brown; note colours are literals so the dark theme can map them */
 	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
 	.tu .cp-new-text {min-height:6.5em;line-height:1.45;resize:vertical;}
+	.tu .cp-lblrow {display:flex;align-items:center;justify-content:space-between;gap:0.6em;margin-bottom:0.25em;}
+	.tu .cp-lblrow > label {margin:0;}
+	.tu .cp-fz {display:inline-flex;border:1px solid #c3c9d2;border-radius:999px;overflow:hidden;flex:none;}
+	.tu .cp-fz button {border:0;background:#fff;color:#444;font:inherit;font-size:0.85em;font-weight:700;padding:0.3em 0.75em;cursor:pointer;min-height:2em;}
+	.tu .cp-fz .cp-fzb--up {font-size:1em;}
+	.tu .cp-fz .cp-fzv {font-weight:400;font-size:0.78em;min-width:3.6em;border-left:1px solid #c3c9d2;border-right:1px solid #c3c9d2;}
+	.tu .cp-fz button:hover:not(:disabled) {color:var(--accent);background:#fbf1d9;}
+	.tu .cp-fz button:disabled {opacity:0.4;cursor:default;}
+	body.dark-mode #cp .cp-fz {border-color:#555;}
+	body.dark-mode #cp .cp-fz button {background:#262626;color:#e3e6ea;}
+	body.dark-mode #cp .cp-fz .cp-fzv {border-color:#555;}
+	body.dark-mode #cp .cp-fz button:hover:not(:disabled) {background:#333;color:var(--accent);}
 	.tu .cp-add-btns {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;}
 	.tu .cp-boards {display:flex;flex-wrap:wrap;gap:0.4em;margin:1.2em 0 0.8em;padding-bottom:0.2em;border-bottom:2px solid #fbf1d9;}
 	.tu .cp-tab {cursor:pointer;border:1px solid #c3c9d2;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:#fff;color:#444;padding:0.5em 0.9em;font-size:0.92em;margin-bottom:-2px;}
@@ -680,6 +692,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode .tu kbd{border:1px solid #3a424d;background:#16191d;color:#cccccc}
+	body.dark-mode .tu .cp-fz{border:1px solid #3a424d}
+	body.dark-mode .tu .cp-fz button{background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode .tu .cp-fz .cp-fzv{border-left:1px solid #3a424d;border-right:1px solid #3a424d}
+	body.dark-mode .tu .cp-fz button:hover:not(:disabled){background:#322a17}
 	body.dark-mode .tu .cp-boards{border-bottom:2px solid #543e09}
 	body.dark-mode .tu .cp-tab{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
 	body.dark-mode .tu .cp-n{background:rgba(82,82,82,0.08)}
@@ -952,7 +968,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	<div class="tu" id="cp">
 		<div class="tu-card cp-add">
 			<div class="tu-field">
-				<label for="cp-new-text">Add text to keep</label>
+				<div class="cp-lblrow">
+					<label for="cp-new-text">Add text to keep</label>
+					<div class="cp-fz" role="group" aria-label="Text size in the box">
+						<button type="button" class="cp-fzb" data-fz="-1" title="Smaller text" aria-label="Smaller text">A−</button>
+						<button type="button" class="cp-fzv" data-fz="0" title="Back to normal size" aria-label="Reset text size">100%</button>
+						<button type="button" class="cp-fzb cp-fzb--up" data-fz="1" title="Bigger text" aria-label="Bigger text">A+</button>
+					</div>
+				</div>
 				<textarea id="cp-new-text" class="tu-input cp-new-text" rows="4" spellcheck="true" placeholder="Paste or type anything you want to copy again later: an email reply, an address, a link, a code snippet, a signature…"></textarea>
 			</div>
 			<div class="tu-row" style="margin-top:0.7em;align-items:center;">
@@ -1123,7 +1146,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/copy-text/js/copy-text.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/copy-text/js/copy-text.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

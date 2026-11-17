@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-16",
+"generated":"2026-11-17",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -43,7 +43,7 @@
 },
 "/audio":{
 "added":"2026-10-28",
-"updated":"2026-11-07",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/baby-feeding-log":{
@@ -203,7 +203,7 @@
 },
 "/copy-text":{
 "added":"2026-10-03",
-"updated":"2026-11-13",
+"updated":"2026-11-17",
 "type":"Tool"
 },
 "/countdown-timer":{
@@ -483,7 +483,7 @@
 },
 "/kids":{
 "added":"2026-10-29",
-"updated":"2026-11-11",
+"updated":"2026-11-17",
 "type":"Collection"
 },
 "/la-liga-picks":{
@@ -598,7 +598,7 @@
 },
 "/narration":{
 "added":"2026-11-12",
-"updated":"2026-11-12",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/nba-picks":{
@@ -818,7 +818,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-16",
+"updated":"2026-11-17",
 "type":"Tool"
 },
 "/search-engines":{
@@ -1028,7 +1028,7 @@
 },
 "/video":{
 "added":"2026-10-28",
-"updated":"2026-11-15",
+"updated":"2026-11-17",
 "type":"Tool"
 },
 "/videospeed":{
