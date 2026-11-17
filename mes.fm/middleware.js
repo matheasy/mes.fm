@@ -75,7 +75,7 @@ const REALM = 'mes.fm';
 // Karo's own login for the alpinewestcreative.com dashboard (api/_site.js); her Search Console numbers arrive from
 // an Apps Script with its own key, so that one URL is not behind the login.
 const AWC = /^\/(awc|api\/awc)(\/|$)/;
-const AWC_OPEN = /^\/api\/awc\/search-console-ingest\/?$/;
+const AWC_OPEN = /^\/api\/awc\/(search-console-ingest|p)\/?$/;  // the Apps Script ingest (has its key) and her page-view beacon
 const AWC_USERS = [['karo', 'rome'], [USERNAME, PASSWORD]];
 
 export default function middleware(request) {
