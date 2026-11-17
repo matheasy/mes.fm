@@ -5,6 +5,8 @@ import ManagedSettings
 class ShieldActionExtension: ShieldActionDelegate {
     private func act(_ action: ShieldAction, _ l: LimitItem?, _ done: @escaping (ShieldActionResponse) -> Void) {
         guard action == .secondaryButtonPressed, let l, Logic.left(Shared.days, Logic.dayKey(), l) > 0 else {
+            // "Not now" / "OK": the nudge sound (and message) as the app closes.
+            if let l { Notes.nudge(l, locked: Logic.left(Shared.days, Logic.dayKey(), l) == 0) }
             done(.close); return
         }
         // A wait before opening: the first tap starts it, the shield then shows how long is left; a tap after it opens.
@@ -16,6 +18,7 @@ class ShieldActionExtension: ShieldActionDelegate {
             let left = Logic.waitLeft(start: w[key], pause: pause, now: now)
             if w[key] == nil || now - (w[key] ?? 0) >= 600 {
                 w[key] = now; Shared.waits = w
+                Notes.nudge(l, locked: false)
                 Notes.waitDone(l, after: pause)
                 done(.defer); return   // .defer re-draws the shield with the time left
             }

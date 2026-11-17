@@ -67,10 +67,29 @@ final class Model: ObservableObject {
         Shared.limits = all
         if !l.on { Shields.unlock(l.id) }
         refresh()
+        rebuildSounds(delay: 0)
+    }
+
+    private var rebuildTask: Task<Void, Never>?
+    /// Remake the nudge sound files (after a message, sound, volume or recording changed).
+    func rebuildSounds(delay: Double = 0.8) {
+        rebuildTask?.cancel()
+        rebuildTask = Task {
+            if delay > 0 { try? await Task.sleep(nanoseconds: UInt64(delay * 1e9)) }
+            guard !Task.isCancelled else { return }
+            await NudgeAudio.shared.rebuildAll()
+        }
+    }
+
+    func setNudge(_ f: (inout Prefs) -> Void) {
+        var p = Shared.prefs; f(&p); Shared.prefs = p; prefs = p
+        rebuildSounds()
+        if p.nudge && p.sound != NudgeSound.off { Notes.ask() }
     }
 
     func remove(_ l: LimitItem) {
         Shields.remove(l)
+        for u in [NudgeFiles.recording(l.id), NudgeFiles.play(l.id)].compactMap({ $0 }) { try? FileManager.default.removeItem(at: u) }
         Shared.limits = Shared.limits.filter { $0.id != l.id }
         refresh()
     }
@@ -167,6 +186,8 @@ struct ContentView: View {
                 } header: { Text("Wait and notifications") } footer: {
                     Text("With a wait, the first tap on Open starts it and a notification tells you when it's over. Notifications show on the lock screen; iPhone has no status-bar counter like Android.")
                 }
+
+                NudgeSection(m: m)
 
                 Section("How it works") {
                     Text("When you open a limited app, a lock screen asks if you really want to. Tap Open to use one of today's opens: the app stays open for the minutes you chose, then locks again. When the opens are used up, it stays locked until midnight.")
@@ -331,6 +352,16 @@ struct EditView: View {
                 } footer: {
                     Text("After \(item.limit) opens it locks until midnight. Apple doesn't allow an open shorter than 15 minutes.")
                 }
+                if model.prefs.nudge {
+                    Section {
+                        NudgeEditor(text: $item.msg, sound: $item.sound, recKey: item.id.uuidString, recURL: NudgeFiles.recording(item.id),
+                                    perLimit: true, vol: model.prefs.vol, appName: item.name.isEmpty ? "this app" : item.name,
+                                    placeholder: model.prefs.msg.isEmpty ? "Empty = your default message" : model.prefs.msg,
+                                    defaultText: model.prefs.msg)
+                    } header: { Text("Nudge message for this limit") } footer: {
+                        Text("Leave it empty to use your default message from Settings.")
+                    }
+                }
                 if !isNew {
                     Section {
                         Toggle("Limit is on", isOn: $item.on)
@@ -355,5 +386,97 @@ struct EditView: View {
         if !isNew, model.prefs.strict, let old = model.limits.first(where: { $0.id == item.id }), Logic.loosens(old, next) {
             wait = go; waiting = true
         } else { go() }
+    }
+}
+
+/// Settings: the default nudge message, its sound and volume.
+struct NudgeSection: View {
+    @ObservedObject var m: Model
+    @State private var text = Shared.prefs.msg
+    var body: some View {
+        Section {
+            Toggle(isOn: Binding(get: { m.prefs.nudge }, set: { v in m.setNudge { $0.nudge = v } })) {
+                VStack(alignment: .leading) {
+                    Text("Show my nudge message")
+                    Text("Your own words on the lock screen over a limited app, and in the open notification. Each limit can have its own.").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            if m.prefs.nudge {
+                NudgeEditor(text: $text, sound: Binding(get: { m.prefs.sound }, set: { v in m.setNudge { $0.sound = v } }),
+                            recKey: "default", recURL: NudgeFiles.recording(nil), perLimit: false, vol: m.prefs.vol, appName: "Instagram",
+                            placeholder: "e.g. Stop opening up {app}. Touch grass instead.", defaultText: "",
+                            onRecorded: { m.rebuildSounds(delay: 0) })
+                    .onChange(of: text) { v in m.setNudge { $0.msg = String(v.prefix(nudgeMax)).trimmingCharacters(in: .whitespacesAndNewlines) } }
+                if m.prefs.sound != NudgeSound.off || m.limits.contains(where: { $0.sound > NudgeSound.off }) {
+                    VStack(alignment: .leading) {
+                        Text("Sound volume: \(m.prefs.vol)%")
+                        Slider(value: Binding(get: { Double(m.prefs.vol) }, set: { v in m.prefs.vol = Int(v) }), in: 0...100, step: 10) { editing in
+                            if !editing { let v = m.prefs.vol; m.setNudge { $0.vol = v } }
+                        }
+                    }
+                    Toggle("Play the sound only when it's locked", isOn: Binding(get: { m.prefs.soundLockedOnly }, set: { v in m.setNudge { $0.soundLockedOnly = v } }))
+                }
+            }
+        } header: { Text("Nudge message") } footer: {
+            if m.prefs.nudge {
+                Text("{app} = the app's name, {left} = opens left. On iPhone the sound plays as a notification when you tap Not now or start the wait (Apple doesn't let the lock screen play sound). It follows your ringer volume, and the silent switch mutes it.")
+            }
+        }
+    }
+}
+
+/// One nudge message: text, examples, sound choice, recording.
+struct NudgeEditor: View {
+    @Binding var text: String
+    @Binding var sound: Int
+    let recKey: String
+    let recURL: URL?
+    let perLimit: Bool
+    let vol: Int
+    let appName: String
+    let placeholder: String
+    let defaultText: String
+    var onRecorded: () -> Void = {}
+    @ObservedObject private var audio = NudgeAudio.shared
+    @State private var hasRec = false
+
+    var body: some View {
+        TextField(placeholder, text: $text, axis: .vertical)
+            .lineLimit(2...4)
+            .onChange(of: text) { v in if v.count > nudgeMax { text = String(v.prefix(nudgeMax)) } }
+            .onAppear { hasRec = NudgeFiles.exists(recURL) }
+        Menu {
+            ForEach(nudgeExamples, id: \.self) { e in Button(e) { text = e } }
+            if !text.isEmpty { Divider(); Button("Clear", role: .destructive) { text = "" } }
+        } label: { Label("Pick an example", systemImage: "text.quote") }
+        Picker("Sound", selection: $sound) {
+            if perLimit { Text("Same as default").tag(-1) }
+            Text("Off").tag(NudgeSound.off)
+            Text("Read it out").tag(NudgeSound.speak)
+            Text("My recording").tag(NudgeSound.rec)
+        }
+        let spoken = Nudge.fill(text.isEmpty ? defaultText : text, app: appName, left: 3)
+        if sound == NudgeSound.speak {
+            Button { audio.hear(spoken, vol: vol) } label: { Label(spoken.isEmpty ? "Type a message to hear it" : "Hear it", systemImage: "play.circle") }
+                .disabled(spoken.isEmpty)
+        }
+        if sound == NudgeSound.rec {
+            if audio.recordingFor == recKey {
+                Button(role: .destructive) { audio.stopRecording() } label: { Label("Stop  0:\(String(format: "%02d", audio.recSecs))", systemImage: "stop.circle.fill") }
+                Text("Recording… say your message (up to 15 seconds).").font(.caption).foregroundStyle(.secondary)
+            } else {
+                Button {
+                    if let u = recURL { audio.record(recKey, to: u) { hasRec = NudgeFiles.exists(recURL); onRecorded() } }
+                } label: { Label(hasRec ? "Record again" : "Record", systemImage: "record.circle") }
+                if hasRec, let u = recURL {
+                    Button { audio.play(u, vol: vol) } label: { Label("Play", systemImage: "play.circle") }
+                    Button("Delete recording", role: .destructive) { try? FileManager.default.removeItem(at: u); hasRec = false; onRecorded() }
+                }
+                Text(audio.denied ? "Open Limits needs the microphone to record: allow it in Settings > Open Limits."
+                     : hasRec ? "Your recording plays when you're nudged."
+                     : perLimit ? "No recording for this limit yet: your default recording plays (or the message is read out)."
+                     : "No recording yet: the message is read out instead.").font(.caption).foregroundStyle(.secondary)
+            }
+        }
     }
 }

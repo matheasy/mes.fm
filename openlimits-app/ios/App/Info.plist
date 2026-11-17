@@ -13,6 +13,7 @@
 	<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key><false/>
 	<key>LSRequiresIPhoneOS</key><true/>
+	<key>NSMicrophoneUsageDescription</key><string>Only to record your own nudge message, a short voice note that plays when you open a limited app. It stays on your iPhone.</string>
 	<key>UILaunchScreen</key><dict><key>UIColorName</key><string>LaunchBg</string></dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array><string>UIInterfaceOrientationPortrait</string></array>

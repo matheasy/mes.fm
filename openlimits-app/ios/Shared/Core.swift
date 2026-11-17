@@ -17,6 +17,24 @@ struct LimitItem: Codable, Identifiable, Equatable {
     /// Minutes one open lasts (Apple's schedules can't be shorter than 15).
     var session: Int = 15
     var on: Bool = true
+    /// Own nudge message ("" = use the default one).
+    var msg: String = ""
+    /// Sound: -1 = same as the default, else NudgeSound.off / speak / rec.
+    var sound: Int = -1
+
+    init() {}
+    init(name: String, limit: Int) { self.name = name; self.limit = limit }
+    init(from d: Decoder) throws {
+        let c = try d.container(keyedBy: CodingKeys.self)
+        id = (try? c.decode(UUID.self, forKey: .id)) ?? UUID()
+        name = (try? c.decode(String.self, forKey: .name)) ?? ""
+        selection = (try? c.decode(FamilyActivitySelection.self, forKey: .selection)) ?? FamilyActivitySelection()
+        limit = (try? c.decode(Int.self, forKey: .limit)) ?? 5
+        session = (try? c.decode(Int.self, forKey: .session)) ?? 15
+        on = (try? c.decode(Bool.self, forKey: .on)) ?? true
+        msg = (try? c.decode(String.self, forKey: .msg)) ?? ""
+        sound = (try? c.decode(Int.self, forKey: .sound)) ?? -1
+    }
 
     var appCount: Int { selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count }
 }
@@ -34,6 +52,16 @@ struct Prefs: Codable, Equatable {
     var notify = true
     /// Warn when this many opens or fewer are left (0 = never).
     var warnAt = 3
+    /// Nudge messages: shown on the lock screen and in notifications.
+    var nudge = true
+    /// The default nudge message ("" = none). {app} and {left} are filled in.
+    var msg = ""
+    /// Default nudge sound (NudgeSound).
+    var sound = NudgeSound.off
+    /// Nudge sound volume 0-100 (of the ringer volume).
+    var vol = 80
+    /// Play the sound only when the app is locked for today.
+    var soundLockedOnly = false
 
     init() {}
     init(from d: Decoder) throws {
@@ -42,7 +70,69 @@ struct Prefs: Codable, Equatable {
         pause = (try? c.decode(Int.self, forKey: .pause)) ?? 0
         notify = (try? c.decode(Bool.self, forKey: .notify)) ?? true
         warnAt = (try? c.decode(Int.self, forKey: .warnAt)) ?? 3
+        nudge = (try? c.decode(Bool.self, forKey: .nudge)) ?? true
+        msg = (try? c.decode(String.self, forKey: .msg)) ?? ""
+        sound = (try? c.decode(Int.self, forKey: .sound)) ?? NudgeSound.off
+        vol = (try? c.decode(Int.self, forKey: .vol)) ?? 80
+        soundLockedOnly = (try? c.decode(Bool.self, forKey: .soundLockedOnly)) ?? false
     }
+}
+
+enum NudgeSound {
+    static let off = 0
+    /// The iPhone's voice reads the message (made into a sound file by the app).
+    static let speak = 1
+    /// A voice note recorded in the app.
+    static let rec = 2
+}
+
+/// Ready-made nudge messages to pick from.
+let nudgeExamples = [
+    "Stop opening up {app}. Touch grass instead.",
+    "Checking your portfolio won't make it go up.",
+    "Is this really why you picked up your phone?",
+    "Put the phone down and go for a walk.",
+    "Nothing new happened since last time.",
+    "Future you will thank you for closing {app}.",
+    "Drink some water and stretch first.",
+    "Only {left} opens left today. Spend them well.",
+]
+let nudgeMax = 160
+
+enum Nudge {
+    /// Fill in {app} and {left} ({left} = nil: "a few", for the spoken file made ahead of time).
+    static func fill(_ t: String, app: String, left: Int?) -> String {
+        var s = t.replacingOccurrences(of: "{app}", with: app, options: .caseInsensitive)
+        s = s.replacingOccurrences(of: "{left}", with: left.map(String.init) ?? "a few", options: .caseInsensitive)
+        return s.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    static func raw(_ p: Prefs, _ l: LimitItem) -> String? {
+        guard p.nudge else { return nil }
+        let t = l.msg.trimmingCharacters(in: .whitespaces).isEmpty ? p.msg : l.msg
+        return t.trimmingCharacters(in: .whitespaces).isEmpty ? nil : t
+    }
+    static func text(_ p: Prefs, _ l: LimitItem, app: String, left: Int?) -> String? {
+        raw(p, l).map { fill($0, app: app, left: left) }
+    }
+    static func sound(_ p: Prefs, _ l: LimitItem, locked: Bool) -> Int {
+        guard p.nudge, p.vol > 0, !(p.soundLockedOnly && !locked) else { return NudgeSound.off }
+        return (NudgeSound.off...NudgeSound.rec).contains(l.sound) ? l.sound : p.sound
+    }
+}
+
+/// Nudge sound files live in the App Group's Library/Sounds, where notifications can play them.
+enum NudgeFiles {
+    static var dir: URL? {
+        guard let base = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return nil }
+        let d = base.appendingPathComponent("Library/Sounds", isDirectory: true)
+        try? FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
+        return d
+    }
+    /// The person's own recording: nil = the default one, else one limit's.
+    static func recording(_ id: UUID?) -> URL? { dir?.appendingPathComponent("rec-\(id?.uuidString ?? "default").caf") }
+    /// The ready-to-play sound for one limit (spoken message or recording, volume applied). Made by the app.
+    static func play(_ id: UUID) -> URL? { dir?.appendingPathComponent("nudge-\(id.uuidString).caf") }
+    static func exists(_ u: URL?) -> Bool { u.map { FileManager.default.fileExists(atPath: $0.path) } ?? false }
 }
 
 enum Logic {
@@ -240,6 +330,8 @@ import UserNotifications
 /// Local notifications (the app asks for permission; the shield extensions post them).
 enum Notes {
     static func name(_ l: LimitItem) -> String { l.name.isEmpty ? (l.appCount == 1 ? "This app" : "These apps") : l.name }
+    /// The name inside a sentence ("Stop opening up this app").
+    static func inline(_ l: LimitItem) -> String { l.name.isEmpty ? (l.appCount == 1 ? "this app" : "these apps") : l.name }
 
     static func afterOpen(_ l: LimitItem, extra: Bool) {
         let p = Shared.prefs
@@ -248,8 +340,22 @@ enum Notes {
         let left = max(0, l.limit - used)
         let warn = extra || left == 0 || (p.warnAt > 0 && left <= p.warnAt)
         if !p.notify && !warn { return }
-        let (t, b) = Logic.openMessage(name(l), used: used, limit: l.limit, extra: extra, warnAt: p.warnAt)
+        var (t, b) = Logic.openMessage(name(l), used: used, limit: l.limit, extra: extra, warnAt: p.warnAt)
+        if let n = Nudge.text(p, l, app: inline(l), left: left) { b += "\n" + n }
         post(id: "open-" + l.id.uuidString, title: t, body: b, sound: warn, at: nil)
+    }
+
+    /// The nudge sound (and message) when the lock screen is dismissed or an open starts.
+    static func nudge(_ l: LimitItem, locked: Bool) {
+        let p = Shared.prefs
+        guard Nudge.sound(p, l, locked: locked) != NudgeSound.off, let f = NudgeFiles.play(l.id), NudgeFiles.exists(f) else { return }
+        let left = Logic.left(Shared.days, Logic.dayKey(), l)
+        let c = UNMutableNotificationContent()
+        c.title = name(l)
+        c.body = Nudge.text(p, l, app: inline(l), left: left) ?? (locked ? "Locked for today." : "Do you really need it right now?")
+        c.sound = UNNotificationSound(named: UNNotificationSoundName(f.lastPathComponent))
+        if #available(iOS 15.0, *) { c.interruptionLevel = .timeSensitive }
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "nudge-" + l.id.uuidString, content: c, trigger: nil))
     }
 
     /// "You can open it now" when a lock-screen wait is over.

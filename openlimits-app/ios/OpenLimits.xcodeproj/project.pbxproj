@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		105FD2893AD4E29EB944C86E /* NudgeAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8276D19EBD7E975A2EB9E794 /* NudgeAudio.swift */; };
 		16EC16548A65504397F9E128 /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62EA5963FDF31774840C5445 /* Core.swift */; };
 		1CD62CAEBCB4BDAD4CED5A1B /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62EA5963FDF31774840C5445 /* Core.swift */; };
 		1CE3B49D4C15FA35F4FA23F3 /* ShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 567E6B38680EBBC24DF77A91 /* ShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -71,6 +72,7 @@
 		63D2CC6525AE73BC41A6B731 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		74FDAA7DB1778B120C46FB17 /* ShieldAction.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ShieldAction.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		79C49E991C1A8279E52112B5 /* ShieldConfigurationExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldConfigurationExtension.swift; sourceTree = "<group>"; };
+		8276D19EBD7E975A2EB9E794 /* NudgeAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeAudio.swift; sourceTree = "<group>"; };
 		8A81E5E1BC30F30DB06919CC /* ShieldActionExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldActionExtension.swift; sourceTree = "<group>"; };
 		9509E6C5790A005AFD2F9E15 /* Monitor.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = Monitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B90D91A8434DECBD5F290089 /* OpenLimits.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = OpenLimits.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -123,6 +125,7 @@
 			children = (
 				63D2CC6525AE73BC41A6B731 /* Assets.xcassets */,
 				081153F96D8CA4BD94055E20 /* Info.plist */,
+				8276D19EBD7E975A2EB9E794 /* NudgeAudio.swift */,
 				15EF7E77B537B89511C207AA /* OpenLimits.entitlements */,
 				FFF4CA3E7A83EA4148BDDE6E /* OpenLimitsApp.swift */,
 			);
@@ -318,6 +321,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1CD62CAEBCB4BDAD4CED5A1B /* Core.swift in Sources */,
+				105FD2893AD4E29EB944C86E /* NudgeAudio.swift in Sources */,
 				8AF7E5E0BC973F7ED455FAD3 /* OpenLimitsApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -378,7 +382,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = BS5YQPDA5X;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -544,7 +548,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = BS5YQPDA5X;
 				ENABLE_NS_ASSERTIONS = NO;
