@@ -4871,6 +4871,7 @@
 			case "i": case "I": mark("in"); break; case "o": case "O": mark("out"); break;
 			case "t": case "T": VE.addTitle(); break;
 			case "n": case "N": openNarrate(); break;
+			case "r": case "R": if (!e.ctrlKey && !e.metaKey && !e.altKey) VE.recToggle(); break;
 			case "b": case "B": VE.cycleBar(); break;
 			case "f": case "F": if (e.shiftKey) $("vd-fs").click(); else setPv(!app.classList.contains("vd-pvfill")); break;
 			case "+": case "=": VE.tl.zoom(VE.pps * 1.5); break; case "-": case "_": VE.tl.zoom(VE.pps / 1.5); break;
@@ -5380,16 +5381,12 @@
 	function openNarrate(mode) {
 		UI.cat = "narr"; UI.noLeft = false; relayout();
 		if (mode === "type" || mode === "rec") setNMode(mode);
-		setTimeout(function () { var f = NS.mode === "rec" ? $("vd-nrec") : $("vd-nt"); if (f) f.focus(); }, 60);
+		setTimeout(function () { var f = mode === "type" ? $("vd-nt") : $("vd-nrec"); if (f) f.focus(); }, 60);
 	}
 	$("vd-narr") && ($("vd-narr").onclick = function () { openNarrate(); });
-	function setNMode(m) {
-		NS.mode = m === "rec" ? "rec" : "type"; nkeep();
-		app.querySelectorAll("[data-nmode]").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-nmode") === NS.mode); });
-		$("vd-nr-type").hidden = NS.mode !== "type"; $("vd-nr-rec").hidden = NS.mode !== "rec";
-		if (NS.mode === "rec") listMics(false);
-	}
-	app.querySelectorAll("[data-nmode]").forEach(function (b) { b.onclick = function () { setNMode(b.getAttribute("data-nmode")); }; });
+	// both ways are always shown now (record first, it is the main one); mode only says which field gets the focus
+	function setNMode(m) { NS.mode = m === "type" ? "type" : "rec"; nkeep(); }
+	$("vd-nr-rec").closest("details") || listMics(false);
 	// keys typed in the pane are for the pane, not the editor's shortcuts
 	$("vd-nt").addEventListener("keydown", function (e) { e.stopPropagation(); if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); $("vd-ngo").click(); } });
 
@@ -5525,7 +5522,7 @@
 	}
 	$("vd-ntest").onclick = function () { if (REC.mr || REC.counting) return; if (REC.stream) { closeMic(); $("vd-nmicst").textContent = "Mic test stopped."; return; } openMic().catch(function (e) { $("vd-nmicst").textContent = e.message; }); };
 	function recTime() { if (!REC.mr) return; var s = (performance.now() - REC.t0) / 1000; $("vd-nrt").textContent = "● " + Math.floor(s / 60) + ":" + ("0" + Math.floor(s % 60)).slice(-2) + " recording"; }
-	function recKey(e) { if (e.key === "Escape" || e.key === " ") { e.preventDefault(); e.stopPropagation(); stopRec(); } }
+	function recKey(e) { if (e.key === "Escape" || e.key === " " || ((e.key === "r" || e.key === "R") && !e.ctrlKey && !e.metaKey && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || ""))) { e.preventDefault(); e.stopPropagation(); stopRec(); } }
 	function startRec() {
 		var canW = ndirReady(), b = $("vd-nrec");
 		Promise.all([REC.stream ? Promise.resolve(REC.stream) : openMic(), canW]).then(function (x) {
@@ -5542,7 +5539,7 @@
 					REC.timer = setInterval(recTime, 250); recTime();
 				};
 				mr.onstop = function () { recDone(); };
-				mr.start(1000); b.textContent = "■ Stop"; b.classList.add("is-on"); document.addEventListener("keydown", recKey, true);
+				mr.start(1000); b.textContent = "■ Stop recording"; b.classList.add("is-on"); $("vd-trrec").classList.add("is-on"); $("vd-trrec").setAttribute("aria-label", "Stop recording"); document.addEventListener("keydown", recKey, true);
 			};
 			if (NS.count) {
 				var n = 3; REC.counting = 1; b.textContent = "■ Cancel"; $("vd-nrt").textContent = "Starting in 3…";
@@ -5557,7 +5554,7 @@
 	function recDone() {
 		var mr = REC.mr, at = REC.at, dur = (performance.now() - REC.t0) / 1000; REC.mr = null; clearInterval(REC.timer); document.removeEventListener("keydown", recKey, true);
 		if (P.playing) P.pause(); P.muted = false; P.sync && P.sync();
-		var b = $("vd-nrec"); b.textContent = "● Record"; b.classList.remove("is-on"); b.disabled = true; $("vd-nrt").textContent = "Saving " + dur.toFixed(1) + " s…";
+		var b = $("vd-nrec"); b.textContent = "● Record"; b.classList.remove("is-on"); $("vd-trrec").classList.remove("is-on"); $("vd-trrec").setAttribute("aria-label", "Record narration"); b.disabled = true; $("vd-nrt").textContent = "Saving " + dur.toFixed(1) + " s…";
 		var blob = new Blob(REC.chunks, { type: (mr && mr.mimeType) || "audio/webm" }); REC.chunks = [];
 		Promise.all([loadNarrate(), blob.arrayBuffer()]).then(function (x) {
 			var N = x[0], AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
@@ -5569,7 +5566,11 @@
 		}).then(function () { $("vd-nrt").textContent = "Added (" + dur.toFixed(1) + " s). Record again to add another take."; }, function (e) { $("vd-nrt").textContent = "Could not add it: " + e.message; })
 			.then(function () { b.disabled = false; });
 	}
-	$("vd-nrec").onclick = function () { if (REC.mr || REC.counting) stopRec(); else startRec(); };
+	function recToggle() { if (REC.mr || REC.counting) stopRec(); else startRec(); }
+	$("vd-nrec").onclick = recToggle;
+	// the red ● next to Play: opens the Narration panel (meter + status) and starts recording right away (it is the click the browser needs)
+	$("vd-trrec").onclick = function () { if (!(REC.mr || REC.counting) && (UI.cat !== "narr" || UI.noLeft)) { UI.cat = "narr"; UI.noLeft = false; relayout(); } recToggle(); };
+	VE.recToggle = function () { $("vd-trrec").click(); };
 	setNMode(NS.mode);
 	setTimeout(function () { if (!$("vd-nr-type").closest("[data-pane]").hidden && !nVoicesDone) fillVoices().catch(function () { }); }, 300);
 
