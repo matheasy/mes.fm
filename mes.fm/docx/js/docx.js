@@ -1496,5 +1496,8 @@ var MESDocx = (function () {
 
 	setSide(S.side); setTab(S.tab); refreshUi(); showRecent();
 	if (window.MESGrip) MESGrip.add(document.getElementById("dx-main"), { key: "mes-docx:h", min: 260 });
+	// text size while editing (A- / 100% / A+ in the formatting bar; the top-bar zoom still enlarges the whole page)
+	if (window.MESTextSize) MESTextSize.add({ key: "mes-docx:edfz", into: document.getElementById("dx-tsz"), label: "Text size while editing",
+		apply: function (sc) { document.getElementById("dx").style.setProperty("--dx-tfz", sc); } });
 	window.MESDocxApp = { docs: docs, open: openBytes, build: buildEdited, current: function () { return cur; }, setMode: setMode };     // for testing in the console
 })();

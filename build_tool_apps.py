@@ -1473,7 +1473,7 @@ APPS = {
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
                  meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
-                 js_v="8", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
+                 js_v="9", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2"]),
     # MES Spreadsheet Viewer & Editor (2026-10-30, mes.fm/excel): .xlsx / .xlsm / .xls / .ods / .csv / .tsv read and written by SheetJS CE 0.20.3 (Apache-2.0,
     # self-hosted in /main_js/sheetjs/0.20.3/, loaded on first open), virtualised grid, own formula engine + dependency recalc in lib.js (MESXL, node tests
     # tool_apps_src/excel-tests.js), sort / filter view, rows / columns / sheets, undo, print, recent files + autosave in IndexedDB "mes-excel". Nothing is uploaded.

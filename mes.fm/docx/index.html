@@ -394,13 +394,13 @@ body.dark-mode #dx .dx-btn--primary:hover { background: #3767b0; }
 #dx .dx-view { flex: 1; min-width: 0; overflow: auto; background: var(--dx-desk); position: relative; outline: none; }
 #dx .dx-host { display: block; min-height: 100%; }
 #dx .dx-edwrap { padding: 16px; min-height: 100%; box-sizing: border-box; }
-#dx .dx-ed { background: var(--dx-pbg); color: var(--dx-pink); margin: 0 auto 16px; box-shadow: 0 1px 4px rgba(0,0,0,.35); box-sizing: border-box; outline: none; font: 11pt/1.45 Calibri, Carlito, "Segoe UI", Arial, sans-serif; word-wrap: break-word; }
+#dx .dx-ed { background: var(--dx-pbg); color: var(--dx-pink); margin: 0 auto 16px; box-shadow: 0 1px 4px rgba(0,0,0,.35); box-sizing: border-box; outline: none; font: 11pt/1.45 Calibri, Carlito, "Segoe UI", Arial, sans-serif; font-size: calc(11pt * var(--dx-tfz, 1)); word-wrap: break-word; }
 #dx .dx-ed :where(p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, pre, span, b, strong, i, em, u, s, sup, sub, code, div, ul, ol, a, mark) { color: var(--dx-pink); }
 #dx .dx-ed p { margin: 0 0 8pt; }
 #dx .dx-ed h1, #dx .dx-ed h2, #dx .dx-ed h3, #dx .dx-ed h4, #dx .dx-ed h5, #dx .dx-ed h6 { color: var(--dx-phead); font-family: "Calibri Light", Calibri, Carlito, Arial, sans-serif; font-weight: 400; margin: 14pt 0 4pt; line-height: 1.2; }
-#dx .dx-ed h1 { font-size: 20pt; } #dx .dx-ed h2 { font-size: 16pt; } #dx .dx-ed h3 { font-size: 14pt; font-weight: 700; } #dx .dx-ed h4 { font-size: 12pt; font-weight: 700; }
-#dx .dx-ed h5, #dx .dx-ed h6 { font-size: 11pt; font-weight: 700; font-style: italic; }
-#dx .dx-ed h1.dx-title { font-size: 28pt; color: var(--dx-pink); margin-top: 0; }
+#dx .dx-ed h1 { font-size: calc(20pt * var(--dx-tfz, 1)); } #dx .dx-ed h2 { font-size: calc(16pt * var(--dx-tfz, 1)); } #dx .dx-ed h3 { font-size: calc(14pt * var(--dx-tfz, 1)); font-weight: 700; } #dx .dx-ed h4 { font-size: calc(12pt * var(--dx-tfz, 1)); font-weight: 700; }
+#dx .dx-ed h5, #dx .dx-ed h6 { font-size: calc(11pt * var(--dx-tfz, 1)); font-weight: 700; font-style: italic; }
+#dx .dx-ed h1.dx-title { font-size: calc(28pt * var(--dx-tfz, 1)); color: var(--dx-pink); margin-top: 0; }
 #dx .dx-ed ul, #dx .dx-ed ol { margin: 0 0 8pt; padding-left: 2.2em; list-style-position: outside; }
 #dx .dx-ed ul { list-style-type: disc; } #dx .dx-ed ul ul { list-style-type: circle; } #dx .dx-ed ul ul ul { list-style-type: square; }
 #dx .dx-ed ol { list-style-type: decimal; } #dx .dx-ed ol ol { list-style-type: lower-alpha; } #dx .dx-ed ol ol ol { list-style-type: lower-roman; }
@@ -464,6 +464,13 @@ body.dx-filled { overflow: hidden; }
 }
 @media print { body.dx-printing #dx { display: none; } }
 	#dx .dx-linkform {display:flex;gap:0.5em;max-width:34em;margin:1em auto 0;} #dx .dx-link {flex:1;min-width:0;padding:0.5em 0.7em;border:1px solid var(--dx-line);border-radius:6px;background:var(--dx-panel);color:var(--dx-ink);font:inherit;} #dx .dx-linknote {text-align:center;color:var(--dx-mute);font-size:0.9em;margin:0.4em auto 0;max-width:36em;} #dx .dx-linknote.is-warn {color:var(--dx-err);}
+
+/* text size while editing (main_js/text-size.js pill in the formatting bar, --dx-tfz on #dx) */
+#dx .dx-tsz { display: inline-flex; }
+#dx .dx-tsz .mes-ts { border-color: var(--dx-line); border-radius: 7px; }
+#dx .dx-tsz .mes-ts button { background: var(--dx-panel); color: var(--dx-ink); min-height: 34px; }
+#dx .dx-tsz .mes-ts .mes-ts-v { border-color: var(--dx-line); }
+#dx .dx-tsz .mes-ts button:hover:not(:disabled) { background: var(--dx-hov); color: var(--dx-ink); }
 
 
 	@media print {
@@ -874,6 +881,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="dx-eb" data-cmd="table" title="Insert a table" aria-label="Insert a table">&#9638;</button>
 				<button type="button" class="dx-eb" data-cmd="insertHorizontalRule" title="Horizontal line" aria-label="Horizontal line">&#8213;</button>
 				<button type="button" class="dx-eb" data-cmd="removeFormat" title="Clear formatting" aria-label="Clear formatting">T&#824;</button>
+				<span class="dx-sep"></span>
+				<span class="dx-tsz" id="dx-tsz" title="Text size while editing (the words still wrap inside the page; zoom in the top bar enlarges the whole page)"></span>
 				<input type="file" id="dx-imgin" accept="image/*" hidden>
 			</div>
 			<div class="dx-note" id="dx-note" hidden role="status"></div>
@@ -1019,7 +1028,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/docx/js/docx.js?v=8" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/docx/js/docx.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
