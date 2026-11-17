@@ -27,8 +27,8 @@
 				(canDel ? '<button type="button" data-tact="del" title="Delete this empty layer">&times;</button>' : "") + "</span>" + (h >= 70 && hasSnd ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
 				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? "T  " + (c.text && c.text.s || "").split("\n")[0] : c.type === "shape" ? "\u25B2  " + ((V.SHAPE_KINDS.filter(function (q) { return q[0] === (c.shape && c.shape.k); })[0] || [0, "Shape"])[1]) + (c.shape && c.shape.k === "badge" ? " " + c.shape.n : "") : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
-				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
-				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
+				var badges = (c.link ? "🔗 " : "") + (c.grp ? "📎 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
+				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + (c.grp ? " is-grp" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
 					'<canvas class="vd-cc" data-h="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" + (V.hasSource(c) && w >= 150 && h >= 40 ? '<span class="vd-cst">' + VE.esc(V.srcText(c, p.fps)) + "</span>" : "") +
 					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
@@ -193,7 +193,7 @@
 		var c = V.clip(VE.P, clipEl.getAttribute("data-id")); if (!c) return;
 		var tr = V.track(VE.P, c.track);
 		if (e.shiftKey || e.ctrlKey || e.metaKey) { var i = VE.sel.indexOf(c.id); if (i >= 0) VE.sel.splice(i, 1); else VE.sel.push(c.id); }
-		else if (VE.sel.indexOf(c.id) < 0) VE.sel = [c.id];
+		else if (VE.sel.indexOf(c.id) < 0) VE.sel = e.altKey ? [c.id] : V.withGroup(VE.P, [c.id]);   // a click selects the whole group (Alt: just this clip)
 		VE.animSel = null; VE.emit("select"); markSel();
 		if (tr && tr.lock) return;
 		var r = clipEl.getBoundingClientRect(), edge = e.clientX - r.left < 7 ? "l" : r.right - e.clientX < 7 ? "r" : null;

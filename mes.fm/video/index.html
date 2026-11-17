@@ -678,6 +678,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-more[open] summary {color:var(--vd-fg);}
 	html body.dark-mode #vd .vd-tog[aria-pressed=true], html body.dark-mode #vd .vd-seg button[aria-pressed=true] {color:#fff;}
 	html body.dark-mode #vd .vd-swr button, html body.dark-mode #vd .vd-swc {border-color:#4b5563;}
+	#vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
+	html body.dark-mode #vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
 
 
 	@media print {
@@ -1267,7 +1269,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+X / C / V</dt><dd>Cut / copy / paste clips (paste goes to the playhead; right-click a track for &ldquo;Paste here&rdquo;)</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>Arrows after clicking the preview</dt><dd>Move the selected picture or title 1 pixel (Shift: 10); click the timeline to get the frame-stepping arrows back</dd><dt>Alt+&uarr; / &darr;</dt><dd>Move the selected clips up / down a track (or drag them; several clips move together)</dd><dt>Right-click</dt><dd>Menu for a clip, an empty spot or a track</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
-					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>H or &#9995;</dt><dd>Hand: drag moves the preview view (also Space + drag, even over a clip)</dd><dt>N</dt><dd>Narration: type a script or record your voice</dd><dt>R</dt><dd>Record narration from the playhead (R / Space / Esc stops)</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>H or &#9995;</dt><dd>Hand: drag moves the preview view (also Space + drag, even over a clip)</dd><dt>N</dt><dd>Narration: type a script or record your voice</dd><dt>R</dt><dd>Record narration from the playhead (R / Space / Esc stops)</dd><dt>Ctrl+G / Ctrl+Shift+G</dt><dd>Group the selected clips / ungroup (a click then selects the whole group; Alt + click picks one)</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
 			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>
@@ -1355,7 +1357,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=48" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=49" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -197,6 +197,7 @@
 			var d = JSON.parse(JSON.stringify(q.c)), kind = V.kindFor(d.type), list = kinds[kind];
 			d.id = V.uid("c"); d.start = Math.max(0, t + (q.c.start - cb.t0));
 			if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L"));
+			if (d.grp) d.grp = links["g" + d.grp] || (links["g" + d.grp] = V.uid("G"));
 			var want = list[V.clamp((q.row < 0 ? 0 : q.row) + off[kind], 0, list.length - 1)], dur = V.dur(d), tr = null;
 			function free(x) { return x && !x.lock && (x.mag || (V.canPlace(VE.P, x.id, d.start, dur) && !placed.some(function (o) { return o.track === x.id && o.start < d.start + dur - 1e-6 && d.start < o.start + V.dur(o) - 1e-6; }))); }
 			if (free(want)) tr = want; else for (var j = 0; j < list.length && !tr; j++) if (free(list[j])) tr = list[j];
@@ -259,6 +260,9 @@
 			sep();
 			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });
 			sep();
+			var gsel = V.withGroup(VE.P, sel.map(function (q) { return q.id; })), oneGrp = c.grp && gsel.every(function (id) { return (V.clip(VE.P, id) || {}).grp === c.grp; });
+			if (sel.length > 1 && !oneGrp) it("Group these " + sel.length + " clips", K + "G", function () { VE.groupSel(); });
+			if (c.grp) it("Ungroup", K + "Shift+G", function () { VE.ungroupSel(); });
 			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
 			else { var lp = V.linkCandidate(VE.P, sel.length > 1 ? sel : [c]); if (lp) it("Link video and sound", "", function () { VE.linkBack(lp); }); }
 			if (!c.link && c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
@@ -328,10 +332,16 @@
 		if (!ids.length) { toast("Select a clip first."); return; }
 		V.removeClips(VE.P, ids, ripple); VE.sel = []; VE.commit(ripple ? "Ripple delete" : "Delete");
 	};
+	VE.groupSel = function () {
+		var ids = V.withGroup(VE.P, targets().map(function (c) { return c.id; }));
+		if (ids.length < 2) { toast("Select two or more clips first (Shift- or Ctrl-click them, or drag a box round them), then group them."); return; }
+		V.group(VE.P, ids, V.uid("G")); VE.sel = ids; VE.commit("Group"); toast("Grouped " + ids.length + " clips: clicking one selects them all, and they move and delete together. Alt + click picks just one.", 6000);
+	};
+	VE.ungroupSel = function () { var ids = targets().map(function (c) { return c.id; }); if (!ids.some(function (id) { return (V.clip(VE.P, id) || {}).grp; })) { toast("Nothing grouped is selected."); return; } V.ungroup(VE.P, ids); VE.commit("Ungroup"); toast("Ungrouped."); };
 	VE.duplicate = function () {
 		var list = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).map(function (id) { return V.clip(VE.P, id); }).filter(Boolean); if (!list.length) return; var ns = [], links = {};
 		var a0 = Math.min.apply(null, list.map(function (c) { return c.start; })), shift = Math.max.apply(null, list.map(V.end)) - a0;
-		list.forEach(function (c) { var d = JSON.parse(JSON.stringify(c)); d.id = V.uid("c"); if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L")); var st = V.canPlace(VE.P, c.track, c.start + shift, V.dur(c)) ? c.start + shift : V.fitOnTrack(VE.P, c.track, V.end(c), V.dur(c)); d.start = st == null ? V.end(c) : st; VE.P.clips.push(d); ns.push(d.id); });
+		list.forEach(function (c) { var d = JSON.parse(JSON.stringify(c)); d.id = V.uid("c"); if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L")); if (d.grp) d.grp = links["g" + d.grp] || (links["g" + d.grp] = V.uid("G")); var st = V.canPlace(VE.P, c.track, c.start + shift, V.dur(c)) ? c.start + shift : V.fitOnTrack(VE.P, c.track, V.end(c), V.dur(c)); d.start = st == null ? V.end(c) : st; VE.P.clips.push(d); ns.push(d.id); });
 		VE.sel = ns; VE.commit("Duplicate");
 	};
 	VE.addTitle = function (preset, at, trackId) {
@@ -987,8 +997,8 @@
 		var snd = sel.filter(VE.hasSound);
 		var h = "<h3>" + sel.length + ' clips selected</h3><p class="vd-sub">Shift- or Ctrl-click clips to add or remove them.</p>';
 		if (snd.length) h += soundSection(snd);
-		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; INSP_LIVE = {}; bindSound(snd); bindActs(); wireRanges();
+		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-grpbtn">&#128206; Group them</button><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
+		insp.innerHTML = h; INSP_LIVE = {}; var gb = $("vd-grpbtn"); if (gb) { var gs = sel.filter(function (q) { return q.grp; }); if (gs.length === sel.length && gs.every(function (q) { return q.grp === gs[0].grp; })) { gb.innerHTML = "Ungroup"; gb.classList.remove("vd-primary"); gb.onclick = function () { VE.ungroupSel(); }; } else gb.onclick = function () { VE.groupSel(); }; } bindSound(snd); bindActs(); wireRanges();
 	}
 	function renderProject() {
 		var p = VE.P, d = V.duration(p);
@@ -1533,6 +1543,7 @@
 		if (mod && (k === "e" || k === "E")) { e.preventDefault(); openExport(); return; }
 		if (mod && (k === "i" || k === "I")) { e.preventDefault(); $("vd-file").click(); return; }
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }
+		if (mod && (k === "g" || k === "G")) { e.preventDefault(); if (e.shiftKey) VE.ungroupSel(); else VE.groupSel(); return; }
 		if (mod && !e.shiftKey && !e.altKey && /^[cx]$/i.test(k) && !String(window.getSelection && window.getSelection() || "")) { if (VE.selected().length) { e.preventDefault(); if (/x/i.test(k)) VE.cut(); else VE.copy(); } return; }
 		if (mod && !e.shiftKey && !e.altKey && (k === "v" || k === "V")) { VE.pasteKey(); return; }   // the paste event (if the browser sends one) cancels this and decides
 		if (e.altKey && !mod && (k === "ArrowUp" || k === "ArrowDown")) { e.preventDefault(); VE.moveRow(k === "ArrowUp" ? -1 : 1); return; }
@@ -1549,7 +1560,7 @@
 		var h = true;
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
-			case "g": case "G": $("vd-vzguide").click(); break;
+			case "g": case "G": if (mod) { if (e.shiftKey) VE.ungroupSel(); else VE.groupSel(); } else $("vd-vzguide").click(); break;
 			case "h": case "H": P.setHand(!P.hand); break;
 			case "k": case "K": P.pause(); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
@@ -1593,7 +1604,8 @@
 		toast("Linked again: the sound follows the video (same start and trim), and moving, trimming, splitting or deleting one does the other too.", 7000);
 	};
 	function linkSection(c) {
-		var h = "", parts = V.partners(VE.P, c);
+		var h = "", parts = V.partners(VE.P, c), gm = V.groupOf(VE.P, c);
+		if (gm.length > 1) h += '<div class="vd-linkrow">&#128206; In a group of ' + gm.length + ' clips: clicking one selects them all, and they move and delete together (Alt + click picks just this one).<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ungrp">Ungroup</button></div></div>';
 		if (c.link && parts.length) {
 			var o = parts[0], ot = V.track(VE.P, o.track);
 			h += '<div class="vd-linkrow">&#128279; Linked to its ' + (o.type === "audio" ? "sound" : "video") + " on " + esc(ot ? ot.name : "another track") + '. Moving, trimming, splitting and deleting one does the other too (Alt + drag moves just this one).<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="unlink">Unlink</button>' +
@@ -1608,6 +1620,7 @@
 		return h;
 	}
 	function bindLink(c) {
+		var ug = $("vd-ungrp"); if (ug) ug.onclick = function () { V.ungroup(VE.P, [c.id]); VE.commit("Ungroup"); };
 		insp.querySelectorAll("[data-lk]").forEach(function (b) {
 			b.onclick = function () {
 				var a = b.getAttribute("data-lk");

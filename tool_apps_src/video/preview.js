@@ -379,7 +379,7 @@
 			if (pt.x < 0 || pt.y < 0 || pt.x > PW || pt.y > PH || !isFit) startPan(e);   // drag the empty pasteboard (or a zoomed view) to move it
 			return;
 		}
-		if (VE.sel.indexOf(hitC.id) < 0) { VE.sel = [hitC.id]; VE.emit("select"); }
+		if (VE.sel.indexOf(hitC.id) < 0) { VE.sel = e.altKey ? [hitC.id] : V.withGroup(VE.P, [hitC.id]); VE.emit("select"); }
 		var rel = VE.t - hitC.start, fpsTol = 0.5 / VE.P.fps;
 		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
 		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
@@ -388,7 +388,9 @@
 			var rb = VE.rectOf(ctx, hitC, PW, PH, pos);
 			if (rb) { drag.bw = rb.dw; drag.bh = rb.dh; drag.bx = rb.dx + rb.dw / 2 - cxp; drag.by = rb.dy + rb.dh / 2 - cyp; }
 			drag.tx = [0, PW / 2, PW]; drag.ty = [0, PH / 2, PH];
-			L.forEach(function (l) { if (l.clip === hitC) return; var ro = VE.rectOf(ctx, l.clip, PW, PH, l.pos); if (!ro || ro.rot) return; drag.tx.push(ro.dx, ro.dx + ro.dw / 2, ro.dx + ro.dw); drag.ty.push(ro.dy, ro.dy + ro.dh / 2, ro.dy + ro.dh); });
+			// the rest of its group showing now moves by the same amount (Alt: just this clip)
+			drag.mates = e.altKey ? [] : V.groupOf(VE.P, hitC).filter(function (m) { var tr = V.track(VE.P, m.track); return m !== hitC && V.active(m, VE.t) && !(tr && tr.lock) && !(m.anims && V.animRunning(m, VE.t - m.start, fpsTol)); }).map(function (m) { var pm = V.posAt(m, VE.t); return { c: m, x0: pm.x, y0: pm.y, rel: VE.t - m.start }; });
+			L.forEach(function (l) { if (l.clip === hitC || drag.mates.some(function (q) { return q.c === l.clip; })) return; var ro = VE.rectOf(ctx, l.clip, PW, PH, l.pos); if (!ro || ro.rot) return; drag.tx.push(ro.dx, ro.dx + ro.dw / 2, ro.dx + ro.dw); drag.ty.push(ro.dy, ro.dy + ro.dh / 2, ro.dy + ro.dh); });
 		}
 		cv.setPointerCapture(e.pointerId); e.preventDefault(); draw();
 	});
@@ -440,6 +442,7 @@
 				if (gx != null || gy != null) guides = { x: gx, y: gy };
 			}
 			V.setPropAt(c, rel, "x", Math.round(nx * 10000) / 10000, tol); V.setPropAt(c, rel, "y", Math.round(ny * 10000) / 10000, tol);
+			(drag.mates || []).forEach(function (q) { V.setPropAt(q.c, q.rel, "x", Math.round((q.x0 + nx - drag.x0) * 10000) / 10000, tol); V.setPropAt(q.c, q.rel, "y", Math.round((q.y0 + ny - drag.y0) * 10000) / 10000, tol); });
 		}
 		VE.emit("live"); draw();
 	});

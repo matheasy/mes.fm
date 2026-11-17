@@ -614,9 +614,21 @@
 	// pack every magnetic track, then let linked partners follow (called on every edit)
 	V.applyMagnets = function (p) {
 		p.tracks.forEach(function (tr) { if (tr.mag) V.pack(p, tr.id); });
-		V.syncLinks(p);
+		V.syncLinks(p); V.cleanGroups(p);
 		return p;
 	};
+
+	/* ---------- groups: any clips that select, move and delete together (c.grp); unlike links they keep their own timing ---------- */
+	V.withGroup = function (p, ids) {
+		var set = {}, g = {}; ids.forEach(function (i) { set[i] = 1; var c = V.clip(p, i); if (c && c.grp) g[c.grp] = 1; });
+		p.clips.forEach(function (c) { if (c.grp && g[c.grp]) set[c.id] = 1; });
+		return p.clips.filter(function (c) { return set[c.id]; }).map(function (c) { return c.id; });
+	};
+	V.groupOf = function (p, c) { return c && c.grp ? p.clips.filter(function (x) { return x.grp === c.grp; }) : []; };
+	V.group = function (p, ids, gid) { var cs = ids.map(function (i) { return V.clip(p, i); }).filter(Boolean); if (cs.length < 2) return null; cs.forEach(function (c) { c.grp = gid; }); V.cleanGroups(p); return gid; };
+	V.ungroup = function (p, ids) { var g = {}; ids.forEach(function (i) { var c = V.clip(p, i); if (c && c.grp) g[c.grp] = 1; }); p.clips.forEach(function (c) { if (c.grp && g[c.grp]) c.grp = null; }); return p; };
+	// a group left with one clip (the others deleted) is no group
+	V.cleanGroups = function (p) { var n = {}; p.clips.forEach(function (c) { if (c.grp) n[c.grp] = (n[c.grp] || 0) + 1; }); p.clips.forEach(function (c) { if (c.grp && n[c.grp] < 2) c.grp = null; }); return p; };
 
 	/* ---------- linked clips (a video and its separated sound) ---------- */
 	V.partners = function (p, c) { return c && c.link ? p.clips.filter(function (x) { return x !== c && x.link === c.link; }) : []; };

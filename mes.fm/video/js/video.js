@@ -1007,9 +1007,21 @@
 	// pack every magnetic track, then let linked partners follow (called on every edit)
 	V.applyMagnets = function (p) {
 		p.tracks.forEach(function (tr) { if (tr.mag) V.pack(p, tr.id); });
-		V.syncLinks(p);
+		V.syncLinks(p); V.cleanGroups(p);
 		return p;
 	};
+
+	/* ---------- groups: any clips that select, move and delete together (c.grp); unlike links they keep their own timing ---------- */
+	V.withGroup = function (p, ids) {
+		var set = {}, g = {}; ids.forEach(function (i) { set[i] = 1; var c = V.clip(p, i); if (c && c.grp) g[c.grp] = 1; });
+		p.clips.forEach(function (c) { if (c.grp && g[c.grp]) set[c.id] = 1; });
+		return p.clips.filter(function (c) { return set[c.id]; }).map(function (c) { return c.id; });
+	};
+	V.groupOf = function (p, c) { return c && c.grp ? p.clips.filter(function (x) { return x.grp === c.grp; }) : []; };
+	V.group = function (p, ids, gid) { var cs = ids.map(function (i) { return V.clip(p, i); }).filter(Boolean); if (cs.length < 2) return null; cs.forEach(function (c) { c.grp = gid; }); V.cleanGroups(p); return gid; };
+	V.ungroup = function (p, ids) { var g = {}; ids.forEach(function (i) { var c = V.clip(p, i); if (c && c.grp) g[c.grp] = 1; }); p.clips.forEach(function (c) { if (c.grp && g[c.grp]) c.grp = null; }); return p; };
+	// a group left with one clip (the others deleted) is no group
+	V.cleanGroups = function (p) { var n = {}; p.clips.forEach(function (c) { if (c.grp) n[c.grp] = (n[c.grp] || 0) + 1; }); p.clips.forEach(function (c) { if (c.grp && n[c.grp] < 2) c.grp = null; }); return p; };
 
 	/* ---------- linked clips (a video and its separated sound) ---------- */
 	V.partners = function (p, c) { return c && c.link ? p.clips.filter(function (x) { return x !== c && x.link === c.link; }) : []; };
@@ -2630,7 +2642,7 @@
 			if (pt.x < 0 || pt.y < 0 || pt.x > PW || pt.y > PH || !isFit) startPan(e);   // drag the empty pasteboard (or a zoomed view) to move it
 			return;
 		}
-		if (VE.sel.indexOf(hitC.id) < 0) { VE.sel = [hitC.id]; VE.emit("select"); }
+		if (VE.sel.indexOf(hitC.id) < 0) { VE.sel = e.altKey ? [hitC.id] : V.withGroup(VE.P, [hitC.id]); VE.emit("select"); }
 		var rel = VE.t - hitC.start, fpsTol = 0.5 / VE.P.fps;
 		if (hitC.anims && V.animRunning(hitC, rel, fpsTol)) { VE.emit("notice", "The playhead is inside an animation. Move it to the animation's start or end (double-click its arrow on the timeline) to move the clip there."); draw(); return; }
 		var pos = V.posAt(hitC, VE.t), cxp = pos.x * PW, cyp = pos.y * PH;
@@ -2639,7 +2651,9 @@
 			var rb = VE.rectOf(ctx, hitC, PW, PH, pos);
 			if (rb) { drag.bw = rb.dw; drag.bh = rb.dh; drag.bx = rb.dx + rb.dw / 2 - cxp; drag.by = rb.dy + rb.dh / 2 - cyp; }
 			drag.tx = [0, PW / 2, PW]; drag.ty = [0, PH / 2, PH];
-			L.forEach(function (l) { if (l.clip === hitC) return; var ro = VE.rectOf(ctx, l.clip, PW, PH, l.pos); if (!ro || ro.rot) return; drag.tx.push(ro.dx, ro.dx + ro.dw / 2, ro.dx + ro.dw); drag.ty.push(ro.dy, ro.dy + ro.dh / 2, ro.dy + ro.dh); });
+			// the rest of its group showing now moves by the same amount (Alt: just this clip)
+			drag.mates = e.altKey ? [] : V.groupOf(VE.P, hitC).filter(function (m) { var tr = V.track(VE.P, m.track); return m !== hitC && V.active(m, VE.t) && !(tr && tr.lock) && !(m.anims && V.animRunning(m, VE.t - m.start, fpsTol)); }).map(function (m) { var pm = V.posAt(m, VE.t); return { c: m, x0: pm.x, y0: pm.y, rel: VE.t - m.start }; });
+			L.forEach(function (l) { if (l.clip === hitC || drag.mates.some(function (q) { return q.c === l.clip; })) return; var ro = VE.rectOf(ctx, l.clip, PW, PH, l.pos); if (!ro || ro.rot) return; drag.tx.push(ro.dx, ro.dx + ro.dw / 2, ro.dx + ro.dw); drag.ty.push(ro.dy, ro.dy + ro.dh / 2, ro.dy + ro.dh); });
 		}
 		cv.setPointerCapture(e.pointerId); e.preventDefault(); draw();
 	});
@@ -2691,6 +2705,7 @@
 				if (gx != null || gy != null) guides = { x: gx, y: gy };
 			}
 			V.setPropAt(c, rel, "x", Math.round(nx * 10000) / 10000, tol); V.setPropAt(c, rel, "y", Math.round(ny * 10000) / 10000, tol);
+			(drag.mates || []).forEach(function (q) { V.setPropAt(q.c, q.rel, "x", Math.round((q.x0 + nx - drag.x0) * 10000) / 10000, tol); V.setPropAt(q.c, q.rel, "y", Math.round((q.y0 + ny - drag.y0) * 10000) / 10000, tol); });
 		}
 		VE.emit("live"); draw();
 	});
@@ -2790,8 +2805,8 @@
 				(canDel ? '<button type="button" data-tact="del" title="Delete this empty layer">&times;</button>' : "") + "</span>" + (h >= 70 && hasSnd ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
 				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? "T  " + (c.text && c.text.s || "").split("\n")[0] : c.type === "shape" ? "\u25B2  " + ((V.SHAPE_KINDS.filter(function (q) { return q[0] === (c.shape && c.shape.k); })[0] || [0, "Shape"])[1]) + (c.shape && c.shape.k === "badge" ? " " + c.shape.n : "") : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
-				var badges = (c.link ? "🔗 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
-				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
+				var badges = (c.link ? "🔗 " : "") + (c.grp ? "📎 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
+				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + (c.grp ? " is-grp" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
 					'<canvas class="vd-cc" data-h="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" + (V.hasSource(c) && w >= 150 && h >= 40 ? '<span class="vd-cst">' + VE.esc(V.srcText(c, p.fps)) + "</span>" : "") +
 					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
@@ -2956,7 +2971,7 @@
 		var c = V.clip(VE.P, clipEl.getAttribute("data-id")); if (!c) return;
 		var tr = V.track(VE.P, c.track);
 		if (e.shiftKey || e.ctrlKey || e.metaKey) { var i = VE.sel.indexOf(c.id); if (i >= 0) VE.sel.splice(i, 1); else VE.sel.push(c.id); }
-		else if (VE.sel.indexOf(c.id) < 0) VE.sel = [c.id];
+		else if (VE.sel.indexOf(c.id) < 0) VE.sel = e.altKey ? [c.id] : V.withGroup(VE.P, [c.id]);   // a click selects the whole group (Alt: just this clip)
 		VE.animSel = null; VE.emit("select"); markSel();
 		if (tr && tr.lock) return;
 		var r = clipEl.getBoundingClientRect(), edge = e.clientX - r.left < 7 ? "l" : r.right - e.clientX < 7 ? "r" : null;
@@ -3547,6 +3562,7 @@
 			var d = JSON.parse(JSON.stringify(q.c)), kind = V.kindFor(d.type), list = kinds[kind];
 			d.id = V.uid("c"); d.start = Math.max(0, t + (q.c.start - cb.t0));
 			if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L"));
+			if (d.grp) d.grp = links["g" + d.grp] || (links["g" + d.grp] = V.uid("G"));
 			var want = list[V.clamp((q.row < 0 ? 0 : q.row) + off[kind], 0, list.length - 1)], dur = V.dur(d), tr = null;
 			function free(x) { return x && !x.lock && (x.mag || (V.canPlace(VE.P, x.id, d.start, dur) && !placed.some(function (o) { return o.track === x.id && o.start < d.start + dur - 1e-6 && d.start < o.start + V.dur(o) - 1e-6; }))); }
 			if (free(want)) tr = want; else for (var j = 0; j < list.length && !tr; j++) if (free(list[j])) tr = list[j];
@@ -3609,6 +3625,9 @@
 			sep();
 			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });
 			sep();
+			var gsel = V.withGroup(VE.P, sel.map(function (q) { return q.id; })), oneGrp = c.grp && gsel.every(function (id) { return (V.clip(VE.P, id) || {}).grp === c.grp; });
+			if (sel.length > 1 && !oneGrp) it("Group these " + sel.length + " clips", K + "G", function () { VE.groupSel(); });
+			if (c.grp) it("Ungroup", K + "Shift+G", function () { VE.ungroupSel(); });
 			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
 			else { var lp = V.linkCandidate(VE.P, sel.length > 1 ? sel : [c]); if (lp) it("Link video and sound", "", function () { VE.linkBack(lp); }); }
 			if (!c.link && c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
@@ -3678,10 +3697,16 @@
 		if (!ids.length) { toast("Select a clip first."); return; }
 		V.removeClips(VE.P, ids, ripple); VE.sel = []; VE.commit(ripple ? "Ripple delete" : "Delete");
 	};
+	VE.groupSel = function () {
+		var ids = V.withGroup(VE.P, targets().map(function (c) { return c.id; }));
+		if (ids.length < 2) { toast("Select two or more clips first (Shift- or Ctrl-click them, or drag a box round them), then group them."); return; }
+		V.group(VE.P, ids, V.uid("G")); VE.sel = ids; VE.commit("Group"); toast("Grouped " + ids.length + " clips: clicking one selects them all, and they move and delete together. Alt + click picks just one.", 6000);
+	};
+	VE.ungroupSel = function () { var ids = targets().map(function (c) { return c.id; }); if (!ids.some(function (id) { return (V.clip(VE.P, id) || {}).grp; })) { toast("Nothing grouped is selected."); return; } V.ungroup(VE.P, ids); VE.commit("Ungroup"); toast("Ungrouped."); };
 	VE.duplicate = function () {
 		var list = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).map(function (id) { return V.clip(VE.P, id); }).filter(Boolean); if (!list.length) return; var ns = [], links = {};
 		var a0 = Math.min.apply(null, list.map(function (c) { return c.start; })), shift = Math.max.apply(null, list.map(V.end)) - a0;
-		list.forEach(function (c) { var d = JSON.parse(JSON.stringify(c)); d.id = V.uid("c"); if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L")); var st = V.canPlace(VE.P, c.track, c.start + shift, V.dur(c)) ? c.start + shift : V.fitOnTrack(VE.P, c.track, V.end(c), V.dur(c)); d.start = st == null ? V.end(c) : st; VE.P.clips.push(d); ns.push(d.id); });
+		list.forEach(function (c) { var d = JSON.parse(JSON.stringify(c)); d.id = V.uid("c"); if (d.link) d.link = links[d.link] || (links[d.link] = V.uid("L")); if (d.grp) d.grp = links["g" + d.grp] || (links["g" + d.grp] = V.uid("G")); var st = V.canPlace(VE.P, c.track, c.start + shift, V.dur(c)) ? c.start + shift : V.fitOnTrack(VE.P, c.track, V.end(c), V.dur(c)); d.start = st == null ? V.end(c) : st; VE.P.clips.push(d); ns.push(d.id); });
 		VE.sel = ns; VE.commit("Duplicate");
 	};
 	VE.addTitle = function (preset, at, trackId) {
@@ -4337,8 +4362,8 @@
 		var snd = sel.filter(VE.hasSound);
 		var h = "<h3>" + sel.length + ' clips selected</h3><p class="vd-sub">Shift- or Ctrl-click clips to add or remove them.</p>';
 		if (snd.length) h += soundSection(snd);
-		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; INSP_LIVE = {}; bindSound(snd); bindActs(); wireRanges();
+		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-grpbtn">&#128206; Group them</button><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
+		insp.innerHTML = h; INSP_LIVE = {}; var gb = $("vd-grpbtn"); if (gb) { var gs = sel.filter(function (q) { return q.grp; }); if (gs.length === sel.length && gs.every(function (q) { return q.grp === gs[0].grp; })) { gb.innerHTML = "Ungroup"; gb.classList.remove("vd-primary"); gb.onclick = function () { VE.ungroupSel(); }; } else gb.onclick = function () { VE.groupSel(); }; } bindSound(snd); bindActs(); wireRanges();
 	}
 	function renderProject() {
 		var p = VE.P, d = V.duration(p);
@@ -4883,6 +4908,7 @@
 		if (mod && (k === "e" || k === "E")) { e.preventDefault(); openExport(); return; }
 		if (mod && (k === "i" || k === "I")) { e.preventDefault(); $("vd-file").click(); return; }
 		if (mod && (k === "d" || k === "D")) { e.preventDefault(); VE.duplicate(); return; }
+		if (mod && (k === "g" || k === "G")) { e.preventDefault(); if (e.shiftKey) VE.ungroupSel(); else VE.groupSel(); return; }
 		if (mod && !e.shiftKey && !e.altKey && /^[cx]$/i.test(k) && !String(window.getSelection && window.getSelection() || "")) { if (VE.selected().length) { e.preventDefault(); if (/x/i.test(k)) VE.cut(); else VE.copy(); } return; }
 		if (mod && !e.shiftKey && !e.altKey && (k === "v" || k === "V")) { VE.pasteKey(); return; }   // the paste event (if the browser sends one) cancels this and decides
 		if (e.altKey && !mod && (k === "ArrowUp" || k === "ArrowDown")) { e.preventDefault(); VE.moveRow(k === "ArrowUp" ? -1 : 1); return; }
@@ -4899,7 +4925,7 @@
 		var h = true;
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
-			case "g": case "G": $("vd-vzguide").click(); break;
+			case "g": case "G": if (mod) { if (e.shiftKey) VE.ungroupSel(); else VE.groupSel(); } else $("vd-vzguide").click(); break;
 			case "h": case "H": P.setHand(!P.hand); break;
 			case "k": case "K": P.pause(); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
@@ -4943,7 +4969,8 @@
 		toast("Linked again: the sound follows the video (same start and trim), and moving, trimming, splitting or deleting one does the other too.", 7000);
 	};
 	function linkSection(c) {
-		var h = "", parts = V.partners(VE.P, c);
+		var h = "", parts = V.partners(VE.P, c), gm = V.groupOf(VE.P, c);
+		if (gm.length > 1) h += '<div class="vd-linkrow">&#128206; In a group of ' + gm.length + ' clips: clicking one selects them all, and they move and delete together (Alt + click picks just this one).<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ungrp">Ungroup</button></div></div>';
 		if (c.link && parts.length) {
 			var o = parts[0], ot = V.track(VE.P, o.track);
 			h += '<div class="vd-linkrow">&#128279; Linked to its ' + (o.type === "audio" ? "sound" : "video") + " on " + esc(ot ? ot.name : "another track") + '. Moving, trimming, splitting and deleting one does the other too (Alt + drag moves just this one).<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="unlink">Unlink</button>' +
@@ -4958,6 +4985,7 @@
 		return h;
 	}
 	function bindLink(c) {
+		var ug = $("vd-ungrp"); if (ug) ug.onclick = function () { V.ungroup(VE.P, [c.id]); VE.commit("Ungroup"); };
 		insp.querySelectorAll("[data-lk]").forEach(function (b) {
 			b.onclick = function () {
 				var a = b.getAttribute("data-lk");

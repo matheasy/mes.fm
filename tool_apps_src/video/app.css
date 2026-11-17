@@ -371,3 +371,5 @@
 	#vd .vd-more[open] summary {color:var(--vd-fg);}
 	html body.dark-mode #vd .vd-tog[aria-pressed=true], html body.dark-mode #vd .vd-seg button[aria-pressed=true] {color:#fff;}
 	html body.dark-mode #vd .vd-swr button, html body.dark-mode #vd .vd-swc {border-color:#4b5563;}
+	#vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
+	html body.dark-mode #vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
