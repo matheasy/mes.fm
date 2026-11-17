@@ -218,3 +218,9 @@ body.au-noscroll { overflow: hidden; }
 /* empty state in the page flow (an absolute box overflowed the short track area on phones) */
 .au-tl:has(> .au-empty:not([hidden])) > :is(.au-scroll, .au-agrip, .au-hbar) { display: none; }
 .au-tl > .au-empty:not([hidden]) { position: relative; inset: auto; flex: 1 1 auto; min-height: 220px; }
+.au-ab button + button { border-left: 1px solid var(--au-line); }
+#au .au-ab button#au-pn[aria-pressed=true], #au .au-ab--bar button[data-w=noise][aria-pressed=true] { background: #b91c1c; color: #fff; }
+.au-lg--n::before { background: #f87171; }
+.au-cmp-ck { display: inline-flex; align-items: center; gap: 5px; font-size: 0.88em; white-space: nowrap; cursor: pointer; }
+.au-matchrow { align-items: center; gap: 8px; flex-wrap: wrap; }
+.au-ab button { white-space: nowrap; }

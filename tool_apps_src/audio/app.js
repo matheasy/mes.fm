@@ -27,25 +27,49 @@
 	function fmt(n, d) { return A.fmtTime(n / S.sr, d); }
 
 	/* ---------------- compare after an effect: the track keeps the cleaned audio; playback / drawing can show the original ---------------- */
-	var cmp = null;   // { label, before: tracks before, after: tracks after, ids, a, b, report, show: "after" | "before" }
-	function vt() { return cmp && cmp.show === "before" ? cmp.before : S.tracks; }
+	var cmp = null;   // { label, before: tracks before, after: tracks after, ids, a, b, report, show: "after" | "before" | "noise", noise: tracks (made on first use) }
+	/* "Noise only" (like the Video Editor's "Taken out"): original minus cleaned = what the effect removed. Hiss / hum there is good; words mean it is too strong.
+	   Match levels plays it as loud as the original on average, so even quiet noise is easy to hear. */
+	var cmpMatch = store("cmpMatch") !== false;
+	function setMatch(on) { cmpMatch = !!on; store("cmpMatch", cmpMatch); if (cmp && cmp.show === "noise") { if (playing) playFrom(playPos(), playEnd); draw(); } if (preview && preview.gn) preview.gn.gain.setTargetAtTime(preview.which === "N" ? nGain() : 0, ctx.currentTime, 0.012); document.querySelectorAll("#au [data-act=match], #au-pmatch").forEach(function (b) { b.checked = cmpMatch; }); }
+	function isClean(label) { return /noise|enhance|hum/i.test(label || ""); }
+	function rmsOf(ch) { var e = 0, n = 0; ch.forEach(function (c) { for (var i = 0; i < c.length; i++) e += c[i] * c[i]; n += c.length; }); return n ? Math.sqrt(e / n) : 0; }
+	function diffOf(orig, proc) { return orig.map(function (o, k) { var p = proc[k] || proc[0], d = new Float32Array(o.length); for (var i = 0; i < o.length; i++) d[i] = o[i] - p[i]; return d; }); }
+	function matchDb(ref, x) { var a = rmsOf(ref), b = rmsOf(x); return a > 0 && b > 0 ? Math.max(-6, Math.min(40, A.gainToDb(a / b))) : 0; }
+	function noiseTracks() {
+		if (cmp.noise) return cmp.noise;
+		var out = [];
+		cmp.ids.forEach(function (id) {
+			var bt = versionOf(cmp.before, id), at = versionOf(cmp.after, id); if (!bt || !at) return;
+			var ob = A.renderTrack(bt, cmp.a, cmp.b), d = diffOf(ob, A.renderTrack(at, cmp.a, cmp.b)), t = A.withClips(bt, [A.clip(cmp.a, d)]);
+			t.matchDb = matchDb(ob, d); out.push(t);
+		});
+		return (cmp.noise = out);
+	}
+	function vt() {
+		if (!cmp || cmp.show === "after") return S.tracks; if (cmp.show === "before") return cmp.before;
+		return noiseTracks().map(function (t) { var n = A.withClips(t, t.clips); n.gain = (t.gain || 0) + (cmpMatch ? t.matchDb : 0); n.mute = false; n.solo = false; return n; });
+	}
 	function versionOf(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
 	function startCompare(c) { cmp = c; cmp.show = "after"; renderCmpBar(); draw(); }
-	function endCompare(silent) { if (!cmp) return; var was = cmp.show; cmp = null; $("au-cmpbar").hidden = true; if (was === "before" && playing) playFrom(playPos(), playEnd); if (!silent) toast("Keeping the result"); draw(); }
+	function endCompare(silent) { if (!cmp) return; var was = cmp.show; cmp = null; $("au-cmpbar").hidden = true; if (was !== "after" && playing) playFrom(playPos(), playEnd); if (!silent) toast("Keeping the result"); draw(); }
 	function setCompare(w) {
-		if (!cmp || cmp.show === w) return; var p = playing ? playPos() : null, end = playEnd; cmp.show = w;
+		if (!cmp || cmp.show === w) return; if (w === "noise" && !isClean(cmp.label)) return; var p = playing ? playPos() : null, end = playEnd; cmp.show = w;
 		if (p != null) playFrom(p, end); renderCmpBar(); draw();
 	}
 	function renderCmpBar() {
 		var bar = $("au-cmpbar"); if (!cmp) { bar.hidden = true; return; } bar.hidden = false;
 		var nice = cmp.label.replace(/ \(.*\)$/, "");
-		bar.innerHTML = '<span class="au-cmp-t">Compare <b>' + esc(nice) + '</b>:</span><div class="au-ab au-ab--bar" role="group" aria-label="Hear the track before or after ' + esc(nice) + '"><button type="button" data-w="before" aria-pressed="' + (cmp.show === "before") + '">Original</button><button type="button" data-w="after" aria-pressed="' + (cmp.show === "after") + '">' + (/noise|enhance|hum/i.test(cmp.label) ? "Cleaned" : "After") + '</button></div>' +
-			'<span class="au-cmp-n">' + (cmp.report ? esc(cmp.report.text) : "") + ' Press Space to play, <kbd>B</kbd> to switch.</span><span class="au-cmp-r"><button type="button" class="au-btn au-btn--sm" data-act="undo" title="Undo (' + MOD + 'Z)">↶ Undo</button><button type="button" class="au-btn au-btn--sm" data-act="keep">✓ Keep it</button></span>';
+		bar.innerHTML = '<span class="au-cmp-t">Compare <b>' + esc(nice) + '</b>:</span><div class="au-ab au-ab--bar" role="group" aria-label="Hear the track before or after ' + esc(nice) + '"><button type="button" data-w="before" aria-pressed="' + (cmp.show === "before") + '">Original</button><button type="button" data-w="after" aria-pressed="' + (cmp.show === "after") + '">' + (isClean(cmp.label) ? "Cleaned" : "After") + '</button>' +
+			(isClean(cmp.label) ? '<button type="button" data-w="noise" aria-pressed="' + (cmp.show === "noise") + '" title="Only what was removed (key N)">Noise only</button>' : "") + '</div>' +
+			(isClean(cmp.label) ? '<label class="au-cmp-ck" title="Play Noise only as loud as the original on average, so quiet noise is easy to hear"><input type="checkbox" data-act="match"' + (cmpMatch ? " checked" : "") + '> Match levels</label>' : "") +
+			'<span class="au-cmp-n">' + (cmp.report ? esc(cmp.report.text) : "") + ' Press Space to play, <kbd>B</kbd> to switch' + (isClean(cmp.label) ? ', <kbd>N</kbd> for noise only' : "") + '.</span><span class="au-cmp-r"><button type="button" class="au-btn au-btn--sm" data-act="undo" title="Undo (' + MOD + 'Z)">↶ Undo</button><button type="button" class="au-btn au-btn--sm" data-act="keep">✓ Keep it</button></span>';
 		bar.querySelectorAll("[data-w]").forEach(function (b) { b.onclick = function () { setCompare(b.getAttribute("data-w")); }; });
 		bar.querySelector("[data-act=undo]").onclick = undo; bar.querySelector("[data-act=keep]").onclick = function () { endCompare(); };
+		var mk = bar.querySelector("[data-act=match]"); if (mk) mk.onchange = function () { setMatch(mk.checked); };
 	}
 	/* before (grey, behind) and after (bright, in front) waveforms, min / max per pixel of the mono mix */
-	function drawCompare(c, before, after, num) {
+	function drawCompare(c, before, after, num, noise) {
 		if (!c) return; var wrap = c.parentNode; wrap.hidden = false;
 		var w = Math.max(200, Math.round(c.clientWidth || 300)), h = 150, r = window.devicePixelRatio || 1; c.width = w * r; c.height = h * r;
 		var g = c.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0); g.fillStyle = "#0b0d11"; g.fillRect(0, 0, w, h); g.fillStyle = "rgba(255,255,255,0.08)"; g.fillRect(0, h / 2, w, 1);
@@ -53,7 +77,8 @@
 		/* decibel scale (0 to -54 dB below the loudest peak) so quiet background noise is visible, like the spectral editors do */
 		var pk = Math.max(1e-4, A.peak(before), A.peak(after)), half = h / 2 - 3, RANGE = 54;
 		function yOf(v) { var a = Math.abs(v) / pk; if (a <= 0) return 0; var d = 20 * Math.log10(a); return Math.max(0, (d + RANGE) / RANGE) * half; }
-		[[mono(before), "#6b7280"], [mono(after), "#5eead4"]].forEach(function (L) {
+		var layers = [[mono(before), "#6b7280"]]; if (noise) layers.push([mono(noise), "#f87171"]); layers.push([mono(after), "#5eead4"]);   // noise behind the cleaned wave: it shows in the pauses
+		layers.forEach(function (L) {
 			var d = L[0], n = d.length, step = n / w; g.fillStyle = L[1];
 			for (var x = 0; x < w; x++) { var i0 = Math.floor(x * step), i1 = Math.max(i0 + 1, Math.floor((x + 1) * step)), m = 0; for (var i = i0; i < i1 && i < n; i++) { var v = Math.abs(d[i]); if (v > m) m = v; } var yy = yOf(m); g.fillRect(x, h / 2 - yy, 1, Math.max(1, 2 * yy)); }
 		});
@@ -68,7 +93,7 @@
 			'<div class="au-row"><button type="button" class="au-btn au-btn--sm" data-act="undo">↶ Undo (' + MOD + 'Z)</button><span class="au-note">Use <b>Compare</b> above the tracks to hear Original and Cleaned, then export.</span></div>' +
 			'<div class="au-note">Using it in a video editor (Camtasia, Premiere, CapCut…)? Mute or delete the video\'s own sound there, or you will still hear the noisy original under the cleaned file.</div>';
 		r.querySelector("[data-act=undo]").onclick = undo;
-		if (cmp && $("au-cmpcv")) { var keep = cmp, b0 = keep.before.filter(function (t) { return keep.ids.indexOf(t.id) >= 0; }), a0 = keep.after.filter(function (t) { return keep.ids.indexOf(t.id) >= 0; }); drawCompare($("au-cmpcv"), A.mix(b0, keep.a, keep.b, 1), A.mix(a0, keep.a, keep.b, 1), "Whole applied part"); }
+		if (cmp && $("au-cmpcv")) { var keep = cmp, b0 = keep.before.filter(function (t) { return keep.ids.indexOf(t.id) >= 0; }), a0 = keep.after.filter(function (t) { return keep.ids.indexOf(t.id) >= 0; }); var mb = A.mix(b0, keep.a, keep.b, 1), ma = A.mix(a0, keep.a, keep.b, 1); drawCompare($("au-cmpcv"), mb, ma, "Whole applied part", isClean(keep.label) ? diffOf(mb, ma) : null); }
 	}
 
 	/* ---------------- toast / busy ---------------- */
@@ -169,8 +194,8 @@
 	}
 	function drawLane(g, t0, ti) {
 		/* while comparing: draw the version that plays in colour, the other one in grey behind it */
-		var inCmp = cmp && cmp.ids.indexOf(t0.id) >= 0, t = inCmp ? (versionOf(vt(), t0.id) || t0) : t0, ghost = inCmp ? versionOf(cmp.show === "before" ? cmp.after : cmp.before, t0.id) : null;
-		var y0 = ti * S.laneH, lh = S.laneH, col = trackColor(ti), sel = S.selT.indexOf(t.id) >= 0;
+		var inCmp = cmp && cmp.ids.indexOf(t0.id) >= 0, t = inCmp ? (versionOf(vt(), t0.id) || t0) : t0, ghost = inCmp ? versionOf(cmp.show === "before" ? cmp.after : cmp.show === "noise" ? cmp.after : cmp.before, t0.id) : null;
+		var y0 = ti * S.laneH, lh = S.laneH, col = inCmp && cmp.show === "noise" ? "#f87171" : trackColor(ti), sel = S.selT.indexOf(t.id) >= 0;
 		g.fillStyle = sel ? "#161d24" : "#14161b"; g.fillRect(0, y0, W, lh);
 		g.fillStyle = "#333948"; g.fillRect(0, y0 + lh - 1, W, 1);
 		t.clips.forEach(function (c) {
@@ -188,7 +213,7 @@
 			});
 			for (var k = 0; k < nch; k++) drawWave(g, c, k, cx0, cx1, top + k * chH, chH, t.mute ? "#5b6472" : col);
 		});
-		if (inCmp) { g.font = "bold 11px system-ui,sans-serif"; var lab = cmp.show === "before" ? "ORIGINAL (playing)" : "CLEANED (playing) · grey = original"; var tw = g.measureText(lab).width; g.fillStyle = "rgba(11,13,17,0.75)"; g.fillRect(W - tw - 16, y0 + lh - 20, tw + 12, 16); g.fillStyle = cmp.show === "before" ? "#fbbf24" : "#5eead4"; g.fillText(lab, W - tw - 10, y0 + lh - 8); }
+		if (inCmp) { g.font = "bold 11px system-ui,sans-serif"; var lab = cmp.show === "before" ? "ORIGINAL (playing)" : cmp.show === "noise" ? "NOISE ONLY (playing) · grey = cleaned" + (cmpMatch ? " · levels matched" : "") : (isClean(cmp.label) ? "CLEANED" : "AFTER") + " (playing) · grey = original"; var tw = g.measureText(lab).width; g.fillStyle = "rgba(11,13,17,0.75)"; g.fillRect(W - tw - 16, y0 + lh - 20, tw + 12, 16); g.fillStyle = cmp.show === "before" ? "#fbbf24" : cmp.show === "noise" ? "#f87171" : "#5eead4"; g.fillText(lab, W - tw - 10, y0 + lh - 8); }
 	}
 	function drawWave(g, c, k, cx0, cx1, top, hh, col) {
 		var mid = top + hh / 2, amp = hh / 2 - 1, data = c.ch[k], len = data.length;
@@ -549,10 +574,11 @@
 		if (!fx.noPreview) {
 			box.appendChild(el("div", { class: "au-step" }, '<b>1. Try it first</b> (nothing changes yet)'));
 			box.appendChild(el("div", { class: "au-row" }, '<button type="button" class="au-btn" id="au-pv">▶ Preview</button><span class="au-note" id="au-pvn">Plays up to 30 s of ' + (S.sel ? "the selection" : "your audio") + ' on a loop</span>'));
-			var ab = el("div", { class: "au-listen" }, '<span class="au-listen-l">Listen:</span><div class="au-ab" role="group" aria-label="Listen to the sound before or after the effect"><button type="button" id="au-pa" aria-pressed="false" title="Your original sound (key B switches)">Before</button><button type="button" id="au-pb2" aria-pressed="true" title="With the effect (key B switches)">After</button></div>');
+			var ab = el("div", { class: "au-listen" }, '<span class="au-listen-l">Listen:</span><div class="au-ab" role="group" aria-label="Listen to the sound before or after the effect"><button type="button" id="au-pa" aria-pressed="false" title="Your original sound (key B switches)">Before</button><button type="button" id="au-pb2" aria-pressed="true" title="With the effect (key B switches)">After</button>' + (isClean(fx.id) ? '<button type="button" id="au-pn" aria-pressed="false" title="Only what the effect removes (key N)">Noise only</button>' : "") + '</div>');
 			box.appendChild(ab);
-			box.appendChild(el("div", { class: "au-note" }, "Switch between <b>Before</b> (your original) and <b>After</b> (with " + esc(fx.name.replace(/ \(.*\)$/, "").toLowerCase()) + ") while it plays; key <kbd>B</kbd> does the same. They stay in sync, so you hear exactly what changes."));
-			var cmpWrap = el("div", { class: "au-cmpwrap" }, '<canvas class="au-cmpcv" id="au-cmpcv" width="640" height="150" aria-label="Waveform before (grey, behind) and after (bright, in front)"></canvas><div class="au-cmpleg"><span class="au-lg au-lg--b">Before</span><span class="au-lg au-lg--a">After</span><span id="au-cmpnum"></span></div>');
+			if (isClean(fx.id)) box.appendChild(el("div", { class: "au-row au-matchrow" }, '<label class="au-cmp-ck" for="au-pmatch"><input type="checkbox" id="au-pmatch"' + (cmpMatch ? " checked" : "") + '> Match levels</label><span class="au-note">plays <b>Noise only</b> as loud as your original on average, so quiet noise is easy to hear</span>'));
+			box.appendChild(el("div", { class: "au-note" }, "Switch between <b>Before</b> (your original) and <b>After</b> (with " + esc(fx.name.replace(/ \(.*\)$/, "").toLowerCase()) + ")" + (isClean(fx.id) ? " or <b>Noise only</b> (just what is taken out)" : "") + " while it plays; key <kbd>B</kbd> switches Before / After" + (isClean(fx.id) ? ", <kbd>N</kbd> Noise only" : "") + ". They stay in sync, so you hear exactly what changes." + (isClean(fx.id) ? " In <b>Noise only</b>, hiss, hum and room noise is good; if you hear words, lower the strength until they are gone." : "")));
+			var cmpWrap = el("div", { class: "au-cmpwrap" }, '<canvas class="au-cmpcv" id="au-cmpcv" width="640" height="150" aria-label="Waveform before (grey, behind) and after (bright, in front)"></canvas><div class="au-cmpleg"><span class="au-lg au-lg--b">Before</span><span class="au-lg au-lg--a">After</span>' + (isClean(fx.id) ? '<span class="au-lg au-lg--n">Noise only</span>' : "") + '<span id="au-cmpnum"></span></div>');
 			cmpWrap.hidden = true; box.appendChild(cmpWrap);
 			box.appendChild(el("div", { class: "au-step" }, '<b>2. Apply it</b> to ' + (S.sel ? "the selection" : "the whole " + (targets().length > 1 ? "project" : "track"))));
 		}
@@ -561,7 +587,7 @@
 		openPanel(fx.icon + " " + fx.name, box);
 		$("au-apply").onclick = function () { applyFx(fx, Object.assign({}, vals)); };
 		$("au-cancel").onclick = closePanel;
-		if ($("au-pv")) { $("au-pv").onclick = function () { if (preview && preview.playing) stopPreview(); else startPreview(); }; $("au-pa").onclick = function () { setAB("A"); }; $("au-pb2").onclick = function () { setAB("B"); }; }
+		if ($("au-pv")) { $("au-pv").onclick = function () { if (preview && preview.playing) stopPreview(); else startPreview(); }; $("au-pa").onclick = function () { setAB("A"); }; $("au-pb2").onclick = function () { setAB("B"); }; if ($("au-pn")) $("au-pn").onclick = function () { setAB("N"); }; if ($("au-pmatch")) $("au-pmatch").onchange = function () { setMatch(this.checked); }; }
 		if ($("au-measure")) $("au-measure").onclick = measure;
 		wetCache = null;
 	}
@@ -619,7 +645,7 @@
 	}
 
 	/* A/B preview: mixdown of up to 30 s, original vs processed, both playing in sync */
-	var preview = null;
+	var preview = null, pvWant = null;
 	function previewRange() { var a = S.sel ? S.sel.a : (playing ? Math.round(playPos()) : S.cursor), b = S.sel ? S.sel.b : projEnd(); if (b - a < S.sr * 0.5) { a = 0; b = projEnd(); } return { a: a, b: Math.min(b, a + S.sr * 30) }; }
 	function startPreview() {
 		var fx = curFx; if (!fx) return; var tt = targets(); if (!tt.length) return; stopPlay(); actx();
@@ -628,8 +654,8 @@
 		function next() {
 			if (i >= tt.length) {
 				bz.done(); var orig = A.mix(S.tracks, r.a, r.b, nOut), procTracks = S.tracks.map(function (t) { return proc[t.id] ? proc[t.id] : t; });
-				preview = { a: r.a, b: r.b, ids: ids, raw: proc.__raw, fx: fx, which: (preview && preview.which) || "B" };
-				var procMix = A.mix(procTracks, r.a, r.b, nOut); preview.orig = toAbuf(orig); preview.proc = toAbuf(procMix); playPreview(0); previewCompare(orig, procMix); return;
+				preview = { a: r.a, b: r.b, ids: ids, raw: proc.__raw, fx: fx, which: (preview && preview.which) || pvWant || "B" };
+				var procMix = A.mix(procTracks, r.a, r.b, nOut); setPvBufs(orig, procMix); playPreview(0); previewCompare(orig, procMix); return;
 			}
 			var t = tt[i], buf = A.renderTrack(t, r.a, r.b);
 			return Promise.resolve(fx.run(buf, Object.assign({}, vals), { prog: function (f, m) { bz.set((i + f) / tt.length, m); }, signal: bz.signal, key: "pv" + t.id + r.a + "-" + r.b })).then(function (res) { proc[t.id] = A.writeRange(t, r.a, r.b, res); i++; return tick().then(next); });
@@ -639,8 +665,13 @@
 	}
 	function previewCompare(orig, proc) {
 		var c = $("au-cmpcv"); if (!c) return; var nf = curFx && /noise|enhance|hum/.test(curFx.id) ? A.noiseReport(A.noiseFloor(orig, S.sr), A.noiseFloor(proc, S.sr)).text : "";
-		drawCompare(c, orig, proc, "Preview" + (nf ? ": " + nf : ""));
+		drawCompare(c, orig, proc, "Preview" + (nf ? ": " + nf : ""), nf ? diffOf(orig, proc) : null);
 	}
+	function setPvBufs(orig, proc) {
+		preview.orig = toAbuf(orig); preview.proc = toAbuf(proc);
+		if (isClean(preview.fx && preview.fx.id)) { var d = diffOf(orig, proc); preview.noise = toAbuf(d); preview.nDb = matchDb(orig, d); } else { preview.noise = null; if (preview.which === "N") preview.which = "B"; }
+	}
+	function nGain() { return preview && preview.nDb != null && cmpMatch ? A.dbToGain(preview.nDb) : 1; }
 	function toAbuf(ch) { var b = ctx.createBuffer(ch.length, Math.max(1, ch[0].length), S.sr); ch.forEach(function (d, k) { b.getChannelData(k).set(d); }); return b; }
 	function playPreview(offset) {
 		stopPreviewSources(); var t0 = ctx.currentTime + 0.05;
@@ -648,14 +679,22 @@
 		preview.ga.gain.value = preview.which === "A" ? 1 : 0; preview.gb.gain.value = preview.which === "B" ? 1 : 0;
 		preview.sa = ctx.createBufferSource(); preview.sa.buffer = preview.orig; preview.sa.loop = true; preview.sa.connect(preview.ga);
 		preview.sb = ctx.createBufferSource(); preview.sb.buffer = preview.proc; preview.sb.loop = true; preview.sb.connect(preview.gb);
+		if (preview.noise) { preview.gn = ctx.createGain(); preview.gn.connect(master); preview.gn.gain.value = preview.which === "N" ? nGain() : 0; preview.sn = ctx.createBufferSource(); preview.sn.buffer = preview.noise; preview.sn.loop = true; preview.sn.connect(preview.gn); preview.sn.start(t0, offset || 0); } else preview.gn = preview.sn = null;
 		preview.sa.start(t0, offset || 0); preview.sb.start(t0, offset || 0); preview.t0 = t0 - (offset || 0); preview.playing = true;
 		if ($("au-pv")) $("au-pv").textContent = "⏹ Stop preview"; syncAB(); cancelAnimationFrame(playRaf); playRaf = requestAnimationFrame(pvLoop);
 	}
-	function pvLoop() { if (!preview || !preview.playing) return; var dur = preview.orig.duration, p = preview.a + (((ctx.currentTime - preview.t0) % dur + dur) % dur) * S.sr; var x = xOf(p), g = over.getContext("2d"), h = over.height / dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, h); g.fillStyle = preview.which === "A" ? "#e7e9ee" : "#a78bfa"; g.fillRect(Math.round(x), 0, 2, h); $("au-time").textContent = fmt(p) + " " + preview.which; meter(); playRaf = requestAnimationFrame(pvLoop); }
-	function stopPreviewSources() { if (!preview) return; ["sa", "sb"].forEach(function (k) { if (preview[k]) try { preview[k].stop(); } catch (e) {} }); ["ga", "gb"].forEach(function (k) { if (preview[k]) try { preview[k].disconnect(); } catch (e) {} }); }
+	function pvLoop() { if (!preview || !preview.playing) return; var dur = preview.orig.duration, p = preview.a + (((ctx.currentTime - preview.t0) % dur + dur) % dur) * S.sr; var x = xOf(p), g = over.getContext("2d"), h = over.height / dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, h); g.fillStyle = preview.which === "A" ? "#e7e9ee" : preview.which === "N" ? "#f87171" : "#a78bfa"; g.fillRect(Math.round(x), 0, 2, h); $("au-time").textContent = fmt(p) + " " + (preview.which === "N" ? "noise" : preview.which); meter(); playRaf = requestAnimationFrame(pvLoop); }
+	function stopPreviewSources() { if (!preview) return; ["sa", "sb", "sn"].forEach(function (k) { if (preview[k]) try { preview[k].stop(); } catch (e) {} }); ["ga", "gb", "gn"].forEach(function (k) { if (preview[k]) try { preview[k].disconnect(); } catch (e) {} }); }
 	function stopPreview() { if (!preview) return; stopPreviewSources(); preview.playing = false; cancelAnimationFrame(playRaf); if ($("au-pv")) $("au-pv").textContent = "▶ Preview"; drawOver(); meterClear(); }
-	function setAB(w) { if (!preview) { if ($("au-pa")) { $("au-pa").setAttribute("aria-pressed", w === "A"); $("au-pb2").setAttribute("aria-pressed", w === "B"); } preview = null; return; } preview.which = w; if (preview.playing) { var t = ctx.currentTime; preview.ga.gain.setTargetAtTime(w === "A" ? 1 : 0, t, 0.012); preview.gb.gain.setTargetAtTime(w === "B" ? 1 : 0, t, 0.012); } syncAB(); }
-	function syncAB() { if ($("au-pa") && preview) { $("au-pa").setAttribute("aria-pressed", preview.which === "A"); $("au-pb2").setAttribute("aria-pressed", preview.which === "B"); } }
+	function abPressed(w) { if (!$("au-pa")) return; $("au-pa").setAttribute("aria-pressed", w === "A"); $("au-pb2").setAttribute("aria-pressed", w === "B"); if ($("au-pn")) $("au-pn").setAttribute("aria-pressed", w === "N"); }
+	function setAB(w) {
+		if (w === "N" && !$("au-pn")) return;
+		if (!preview) { pvWant = w; abPressed(w); return; }
+		if (w === "N" && !preview.noise) w = "B"; preview.which = w;
+		if (preview.playing) { var t = ctx.currentTime; preview.ga.gain.setTargetAtTime(w === "A" ? 1 : 0, t, 0.012); preview.gb.gain.setTargetAtTime(w === "B" ? 1 : 0, t, 0.012); if (preview.gn) preview.gn.gain.setTargetAtTime(w === "N" ? nGain() : 0, t, 0.012); }
+		syncAB();
+	}
+	function syncAB() { if (preview) abPressed(preview.which); }
 	var pvT = null;
 	function previewParams(cheap) {
 		if (!preview || !preview.playing) return; clearTimeout(pvT);
@@ -663,7 +702,7 @@
 			var off = ((ctx.currentTime - preview.t0) % preview.orig.duration + preview.orig.duration) % preview.orig.duration, r = { a: preview.a, b: preview.b }, nOut = preview.orig.numberOfChannels, tt = targets(), proc = {}, i = 0;
 			var bz = cheap ? null : busy("Updating the preview");
 			function next() {
-				if (i >= tt.length) { if (bz) bz.done(); var pm = A.mix(S.tracks.map(function (t) { return proc[t.id] || t; }), r.a, r.b, nOut); preview.proc = toAbuf(pm); playPreview(off); previewCompare(A.mix(S.tracks, r.a, r.b, nOut), pm); return; }
+				if (i >= tt.length) { if (bz) bz.done(); var pm = A.mix(S.tracks.map(function (t) { return proc[t.id] || t; }), r.a, r.b, nOut); setPvBufs(A.mix(S.tracks, r.a, r.b, nOut), pm); playPreview(off); previewCompare(A.mix(S.tracks, r.a, r.b, nOut), pm); return; }
 				var t = tt[i], buf = A.renderTrack(t, r.a, r.b);
 				return Promise.resolve(curFx.run(buf, Object.assign({}, vals), { key: "pv" + t.id + r.a + "-" + r.b, prog: function (f, m) { if (bz) bz.set(f, m); }, signal: bz ? bz.signal : null })).then(function (res) { proc[t.id] = A.writeRange(t, r.a, r.b, res); i++; return next(); });
 			}
@@ -919,9 +958,9 @@
 			case "r": case "R": toggleRec(); break;
 			case "l": case "L": loop = !loop; store("loop", loop); syncUi(); toast(loop ? "Loop on" : "Loop off"); break;
 			case "s": case "S": S.spec = !S.spec; store("spec", S.spec); draw(); break;
-			case "n": case "N": openFx("noise"); break;
 			case "e": case "E": openFxList(); break;
-			case "b": case "B": if (preview && preview.playing) setAB(preview.which === "A" ? "B" : "A"); else if (cmp) setCompare(cmp.show === "after" ? "before" : "after"); break;
+			case "b": case "B": if (preview && preview.playing) setAB(preview.which === "B" ? "A" : "B"); else if (cmp) setCompare(cmp.show === "after" ? "before" : "after"); break;
+			case "n": case "N": if (preview && preview.playing && preview.noise) setAB(preview.which === "N" ? "B" : "N"); else if (cmp && isClean(cmp.label)) setCompare(cmp.show === "noise" ? "after" : "noise"); else openFx("noise"); break;
 			case "f": if (!e.shiftKey) toggleWin(); break; case "F": toggleFs(); break;
 			case "?": showHelp(); break;
 			default: return;
