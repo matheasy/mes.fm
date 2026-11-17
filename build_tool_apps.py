@@ -261,7 +261,7 @@ APPS = {
     "narration": dict(title="MES Narration", page_title="Text to Speech in Your Own Voice: Free Narration Tool (MP3, M4A, WAV)",
                  tag="Type it. Hear it. In your own voice.", accent="#6d28d9", dark="#4c1d95", tint="#ede9fe",
                  desc="Free text to speech narration tool: type a script and get a voice-over in 28 natural English voices or in your own voice from a 15-second sample. Runs in your browser, nothing uploaded. Download MP3, M4A or WAV, or add it to the MES Video Editor.",
-                 js_v="4", pre_js=["/main_js/voice-picker.js?v=1", "/main_js/tab-progress.js?v=1", "/main_js/narrate.js?v=1"]),
+                 js_v="5", pre_js=["/main_js/voice-picker.js?v=1", "/main_js/tab-progress.js?v=1", "/main_js/narrate.js?v=1"]),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",
@@ -1509,7 +1509,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="43", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="44", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

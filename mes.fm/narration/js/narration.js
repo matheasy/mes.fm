@@ -33,6 +33,8 @@
 		madeLabel();
 	}
 	$("nr-tab-stock").onclick = function () { setEng("kokoro"); }; $("nr-tab-clone").onclick = function () { setEng("clone"); };
+	// mes.fm/narration#own (the Video Editor's "Set up my voice" link) opens the My own voice tab
+	if (/^#(own|clone|my-?voice)/i.test(location.hash)) setTimeout(function () { setEng("clone"); var t = $("nr-tab-clone"); if (t && t.scrollIntoView) t.scrollIntoView({ block: "center" }); }, 0);
 
 	var gpu = null;
 	function checkGpu() {

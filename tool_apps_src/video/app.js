@@ -544,7 +544,7 @@
 			["del", "Delete", "Del", !has], ["ripple", "Ripple delete (close the gap)", "Shift+Del", !has], ["split", "Split at the playhead", "S", !inClip], ["cutrange", "Cut out the marked part (I to O)", "", !marksOk()], "-",
 			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this layer"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
 			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["noempty", "Delete empty layers", "", !V.emptyTracks(VE.P).length], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], ["link", "Link video and sound", "", !V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])], "-",
-			["narrate", "Add narration from text…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
+			["narrate", "Narration (type or record)…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
 		];
 	}
 	function renderEdit() {
@@ -566,7 +566,7 @@
 			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); }, addlayer: function () { VE.addTrack("v", c0 ? V.track(VE.P, c0.track) : null, "above"); VE.commit("Add layer"); }, noempty: VE.deleteEmptyTracks,
 			link: function () { VE.linkBack(V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])); },
 			sep: function () { if (c0.link) { V.unlink(VE.P, c0.id); VE.commit("Unlink"); } else VE.separate(sel); },
-			narrate: openNarrate, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },
+			narrate: function () { openNarrate(); }, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },
 		})[a]();
 	});
 	/* ---------- project file: like the Photo Editor, a project opened from or saved to a file stays linked to it, so Ctrl+S writes
@@ -2026,9 +2026,13 @@
 	$("vd-vzdim").onclick = function () { P.dimOutside(!P.dimOutside()); vzRender(); };
 	vzRender();
 
-	/* ---------- narration from text (MES Narration engine /main_js/narrate.js, loaded on first use): the speech lands as a sound clip at the playhead ---------- */
-	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "" };
+	/* ---------- Narration pane (left rail): type a script (MES Narration engine /main_js/narrate.js, loaded on first use: Kokoro voices or the
+	   visitor's own voice made on mes.fm/narration) or record a voice-over with the microphone while the timeline plays (like Camtasia).
+	   Every narration becomes a WAV / MP3 / M4A file, is written into the folder the visitor chose (handle in IndexedDB kv "narrdir"),
+	   optionally downloaded too, and added at the playhead as a sound clip. Settings in localStorage mes-video-editor:narrate. ---------- */
+	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "", mode: "type", mic: "", play: true, mute: false, count: true, clean: false, fmt: "wav", dl: false };
 	try { Object.assign(NS, JSON.parse(localStorage.getItem(NKEY)) || {}); } catch (e) { /* ignore */ }
+	function nkeep() { try { localStorage.setItem(NKEY, JSON.stringify(NS)); } catch (e) { /* ignore */ } }
 	function loadNarrate() { if (window.MESNarrate) return Promise.resolve(window.MESNarrate); return new Promise(function (res, rej) { var sc = document.createElement("script"); sc.src = "/main_js/narrate.js?v=1"; sc.onload = function () { res(window.MESNarrate); }; sc.onerror = function () { rej(new Error("Could not load the narration engine.")); }; document.head.appendChild(sc); }); }
 	function addAudioFile(file, at) {
 		return importFiles([file]).then(function (ms) {
@@ -2036,43 +2040,201 @@
 			return new Promise(function (res) { (function wait(n) { if (m.state === "ready" || n > 200) res(m); else setTimeout(function () { wait(n + 1); }, 100); })(0); });
 		}).then(function (m) { if (m.state !== "ready") throw new Error("The sound could not be read."); return VE.tl.placeMedia(m, null, null, at); });
 	}
-	function openNarrate() {
-		loadNarrate().then(function (N) {
-			return N.listVoices().catch(function () { return []; }).then(function (mine) {
-				var vopt = N.VOICES.map(function (v) { return '<option value="k:' + v[0] + '">' + esc(v[1]) + " (" + esc(v[2]) + ")</option>"; }).join("");
-				var mopt = mine.map(function (v) { return '<option value="c:' + v.id + '">' + esc(v.name) + "</option>"; }).join("");
-				var cur = NS.eng === "clone" && NS.cvoice ? "c:" + NS.cvoice : "k:" + NS.voice;
-				dialog('<h3>Add narration from text</h3><p class="vd-sub">Type the script; it is spoken in this browser and added as a sound clip at the playhead (' + esc(V.tc(VE.t, VE.P.fps)) + '). A blank line = a longer pause, <code>[pause 2]</code> = 2 seconds.</p>' +
-					'<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true"></textarea>' +
-					'<div class="vd-grid"><label>Voice<select id="vd-nv"><optgroup label="Ready-made voices">' + vopt + "</optgroup>" + (mopt ? '<optgroup label="My voices (copied from my recordings)">' + mopt + "</optgroup>" : "") + "</select></label>" +
-					'<label>Speed (ready-made voices) <input type="range" id="vd-nsp" min="0.6" max="1.6" step="0.05"></label></div>' +
-					'<p class="vd-sub">' + (mopt ? "My voices use a 1.5 GB model the first time (needs a computer with WebGPU). " : "") + 'To add your own voice, record it once on <a href="/narration" target="_blank" rel="noopener">MES Narration</a> (My own voice → Add a voice): it shows up here after.</p>' +
-					'<div class="vd-nprog" id="vd-nprog" hidden><div class="vd-nbar"><i id="vd-nbf"></i></div><span id="vd-npt"></span></div>' +
-					'<div class="vd-row"><button type="button" class="vd-btn vd-primary" id="vd-ngo">🗣 Make it and add it</button><button type="button" class="vd-btn" id="vd-nclose">Close</button></div>');
-				var ta = $("vd-nt"), sel = $("vd-nv"), sp = $("vd-nsp");
-				ta.value = NS.text || ""; sel.value = cur; if (!sel.value) sel.value = "k:af_heart"; sp.value = NS.speed;
-				function keep() { NS.text = ta.value; var v = sel.value; if (v[0] === "c") { NS.eng = "clone"; NS.cvoice = v.slice(2); } else { NS.eng = "kokoro"; NS.voice = v.slice(2); } NS.speed = +sp.value; try { localStorage.setItem(NKEY, JSON.stringify(NS)); } catch (e) { /* ignore */ } }
-				ta.oninput = sel.onchange = sp.oninput = keep;
-				ta.addEventListener("keydown", function (e) { e.stopPropagation(); });
-				$("vd-nclose").onclick = closeDialog;
-				$("vd-ngo").onclick = function () {
-					keep(); var text = ta.value.trim(); if (!text) { ta.focus(); return; }
-					var b = this, at = VE.t; b.disabled = true; $("vd-nprog").hidden = false;
-					function prog(f, t) { $("vd-nbf").style.width = Math.round(f * 100) + "%"; $("vd-npt").textContent = t; }
-					N.speak(text, { engine: NS.eng, voice: NS.eng === "clone" ? NS.cvoice : NS.voice, speed: NS.speed, exaggeration: NS.exag, gap: NS.gap, paraGap: NS.pgap,
-						onProgress: function (f, L, T) { prog(f, "Downloading the voice model, one time only: " + (T ? Math.round(L / 1048576) + " of " + Math.round(T / 1048576) + " MB" : Math.round(f * 100) + "%")); },
-						onPiece: function (i, n) { prog(n ? i / n : 0, i < n ? "Speaking line " + (i + 1) + " of " + n + "…" : "Adding it to the timeline…"); } })
-					.then(function (r) {
-						var name = "Narration " + text.replace(/\s+/g, " ").slice(0, 32).replace(/[\\/:*?"<>|]+/g, "") + ".wav", f = new File([N.wav(r.audio, r.sr)], name, { type: "audio/wav" });
-						return addAudioFile(f, at);
-					}).then(function (c) { closeDialog(); if (c) { VE.sel = [c.id]; VE.emit("select"); } toast("Narration added at " + V.tc(at, VE.P.fps) + " on " + ((V.track(VE.P, c.track) || {}).name || "a sound track") + ". It is also in Media, so you can drag it again."); },
-						function (e) { b.disabled = false; prog(0, "Could not make it: " + e.message); });
-				};
-				setTimeout(function () { ta.focus(); }, 40);
-			});
-		}, function (e) { toast(e.message); });
+	function openNarrate(mode) {
+		UI.cat = "narr"; UI.noLeft = false; relayout();
+		if (mode === "type" || mode === "rec") setNMode(mode);
+		setTimeout(function () { var f = NS.mode === "rec" ? $("vd-nrec") : $("vd-nt"); if (f) f.focus(); }, 60);
 	}
-	$("vd-narr") && ($("vd-narr").onclick = openNarrate);
+	$("vd-narr") && ($("vd-narr").onclick = function () { openNarrate(); });
+	function setNMode(m) {
+		NS.mode = m === "rec" ? "rec" : "type"; nkeep();
+		app.querySelectorAll("[data-nmode]").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-nmode") === NS.mode); });
+		$("vd-nr-type").hidden = NS.mode !== "type"; $("vd-nr-rec").hidden = NS.mode !== "rec";
+		if (NS.mode === "rec") listMics(false);
+	}
+	app.querySelectorAll("[data-nmode]").forEach(function (b) { b.onclick = function () { setNMode(b.getAttribute("data-nmode")); }; });
+	// keys typed in the pane are for the pane, not the editor's shortcuts
+	$("vd-nt").addEventListener("keydown", function (e) { e.stopPropagation(); if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); $("vd-ngo").click(); } });
+
+	/* where narrations are saved */
+	var ndir = { h: null };
+	function ndirText() {
+		var el = $("vd-ndir"); if (!el) return;
+		if (!FSD) { el.innerHTML = "This browser can't save straight into a folder" + (navigator.brave ? " (Brave can: turn on <code>brave://flags/#file-system-access-api</code>)" : " (Chrome, Edge or Opera on a computer can)") + ". Narrations are kept in this browser with the project; tick <b>Also download each one</b> to get the files in your Downloads folder."; $("vd-ndirpick").hidden = true; $("vd-ndiroff").hidden = true; return; }
+		el.innerHTML = ndir.h ? "Saved into <b>📁 " + esc(ndir.h.name) + "</b> on your computer, and added to the project." : "Not saved to a folder yet: they are kept in this browser with the project. Choose a folder to get each one as a file" + (mdir.h ? " (a folder inside <b>" + esc(mdir.h.name) + "</b>, your media folder, lets the other computer get them too)" : "") + ".";
+		$("vd-ndirpick").textContent = ndir.h ? "Change folder…" : "Choose a folder…"; $("vd-ndiroff").hidden = !ndir.h;
+	}
+	VE.idbGet("kv", "narrdir").then(function (h) { if (h && h.kind === "directory") ndir.h = h; ndirText(); }).catch(function () { ndirText(); });
+	$("vd-ndirpick").onclick = async function () {
+		var o = { id: "mes-video-narr", mode: "readwrite" }; if (ndir.h || mdir.h) o.startIn = ndir.h || mdir.h;
+		var h; try { h = await window.showDirectoryPicker(o); } catch (e) { if (e && e.name !== "AbortError" && o.startIn) { try { delete o.startIn; h = await window.showDirectoryPicker(o); } catch (e2) { return; } } else return; }
+		ndir.h = h; VE.idbPut("kv", "narrdir", h).catch(function () { }); ndirText(); toast("New narrations will be saved in " + h.name + ".");
+	};
+	$("vd-ndiroff").onclick = function () { ndir.h = null; VE.idbDel("kv", "narrdir").catch(function () { }); ndirText(); };
+	// asked inside the click (the browser only shows its permission question after a click)
+	function ndirReady() { return ndir.h ? permOk(ndir.h).then(function (ok) { if (!ok) toast("No permission to save into " + ndir.h.name + ": the narration is kept in this browser only.", 7000); return ok; }) : Promise.resolve(false); }
+	function stamp() { var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate()) + " " + z(d.getHours()) + "-" + z(d.getMinutes()) + "-" + z(d.getSeconds()); }
+	async function uniqueIn(dir, name) {
+		var dot = name.lastIndexOf("."), base = name.slice(0, dot), ext = name.slice(dot);
+		for (var i = 1; i < 200; i++) { var nm = i === 1 ? name : base + " (" + i + ")" + ext; try { await dir.getFileHandle(nm); } catch (e) { return nm; } }
+		return base + " " + Date.now() + ext;
+	}
+	// audio (mono Float32) -> file in the chosen format -> folder / download -> added at `at`
+	function finishNarration(N, audio, sr, base, at, canWrite) {
+		var fmt = NS.fmt, ext = fmt === "mp3" ? ".mp3" : fmt === "m4a" ? ".m4a" : ".wav";
+		return N.encode(audio, sr, fmt, 160).then(async function (blob) {
+			var name = (base + ext).replace(/[\\/:*?"<>|]+/g, ""), where = "";
+			if (canWrite && ndir.h) {
+				try { name = await uniqueIn(ndir.h, name); var fh = await ndir.h.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close(); where = " Saved as " + ndir.h.name + "/" + name + "."; if (mdir.h) rescan(false); }
+				catch (e) { where = " Could not write it into " + ndir.h.name + " (" + (e && e.message || e) + "): it is kept in this browser."; }
+			}
+			if (NS.dl) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000); }
+			var c = await addAudioFile(new File([blob], name, { type: blob.type || "audio/wav" }), at);
+			if (c) { VE.sel = [c.id]; VE.emit("select"); }
+			toast("Narration added at " + V.tc(at, VE.P.fps) + " on " + (c && (V.track(VE.P, c.track) || {}).name || "a sound track") + "." + where, 8000);
+			return c;
+		});
+	}
+	var nfmt = $("vd-nfmt"); nfmt.value = NS.fmt; nfmt.onchange = function () { NS.fmt = nfmt.value; nkeep(); };
+	var ndl = $("vd-ndl"); ndl.checked = !!NS.dl; ndl.onchange = function () { NS.dl = ndl.checked; nkeep(); };
+
+	/* typed script -> speech */
+	var nta = $("vd-nt"), nsel = $("vd-nv"), nsp = $("vd-nsp"), nVoicesDone = false;
+	nta.value = NS.text || ""; nsp.value = NS.speed;
+	function nspText() { $("vd-nspv").textContent = (+nsp.value).toFixed(2) + "×"; $("vd-nspw").hidden = NS.eng === "clone"; }
+	function fillVoices() {
+		return loadNarrate().then(function (N) {
+			return N.listVoices().catch(function () { return []; }).then(function (mine) {
+				var h = '<optgroup label="Ready-made voices">' + N.VOICES.map(function (v) { return '<option value="k:' + v[0] + '" data-search="' + esc(v[2]) + '">' + esc(v[1]) + " (" + esc(v[2]) + ")</option>"; }).join("") + "</optgroup>";
+				if (mine.length) h += '<optgroup label="My voices (copied from my recordings)">' + mine.map(function (v) { return '<option value="c:' + v.id + '">' + esc(v.name) + " (my voice)</option>"; }).join("") + "</optgroup>";
+				nsel.innerHTML = h; nsel.value = NS.eng === "clone" && NS.cvoice ? "c:" + NS.cvoice : "k:" + NS.voice; if (!nsel.value) nsel.value = "k:af_heart";
+				$("vd-nown").innerHTML = (mine.length ? "Your own voices are in the list (the first use downloads a 1.5 GB model and needs a computer with WebGPU). " : "Want it in <b>your own voice</b>? ") + '<a href="/narration#own" target="_blank" rel="noopener">' + (mine.length ? "Add or change my voices" : "Set up my voice on MES Narration") + "</a>" + (mine.length ? "" : " (record 15 seconds once)") + ', then <button type="button" class="vd-link" id="vd-nrefresh">refresh the voice list</button>.';
+				$("vd-nrefresh").onclick = function () { fillVoices().then(function () { toast("Voice list refreshed."); }); };
+				if (!nVoicesDone && window.MESSelect) MESSelect.enhance(nsel, { placeholder: "Search voices…", noun: "voices" });
+				nVoicesDone = true; nkeepVoice(); return N;
+			});
+		});
+	}
+	function nkeepVoice() { var v = nsel.value || "k:af_heart"; if (v[0] === "c") { NS.eng = "clone"; NS.cvoice = v.slice(2); } else { NS.eng = "kokoro"; NS.voice = v.slice(2); } NS.speed = +nsp.value; NS.text = nta.value; nspText(); nkeep(); }
+	nta.oninput = nsel.onchange = nkeepVoice; nsp.oninput = nkeepVoice;
+	// fill the voice list the first time the pane is shown
+	new MutationObserver(function () { if (!$("vd-nr-type").closest("[data-pane]").hidden && !nVoicesDone) fillVoices().catch(function (e) { toast(e.message); }); }).observe($("vd-nr-type").closest("[data-pane]"), { attributes: true, attributeFilter: ["hidden"] });
+	nspText();
+	var nBusy = false, nHearEl = null;
+	function nprog(f, t) { $("vd-nprog").hidden = false; $("vd-nbf").style.width = Math.round(f * 100) + "%"; $("vd-npt").textContent = t; }
+	function nSpeak(N, text) {
+		return N.speak(text, { engine: NS.eng, voice: NS.eng === "clone" ? NS.cvoice : NS.voice, speed: NS.speed, exaggeration: NS.exag, gap: NS.gap, paraGap: NS.pgap,
+			onProgress: function (f, L, T) { nprog(f, "Downloading the voice model, one time only: " + (T ? Math.round(L / 1048576) + " of " + Math.round(T / 1048576) + " MB" : Math.round(f * 100) + "%")); },
+			onPiece: function (i, n) { nprog(n ? i / n : 0, i < n ? "Speaking line " + (i + 1) + " of " + n + "…" : "Done."); } });
+	}
+	$("vd-nhear").onclick = function () {
+		if (nHearEl) { nHearEl.pause(); nHearEl = null; this.textContent = "▶ Listen first"; return; }
+		var text = nta.value.trim(), b = this; if (!text) { nta.focus(); return; } if (nBusy) return;
+		nBusy = true; b.disabled = true;
+		fillVoices().then(function (N) { return nSpeak(N, text).then(function (r) {
+			nHearEl = new Audio(URL.createObjectURL(new Blob([N.wav(r.audio, r.sr)], { type: "audio/wav" })));
+			nHearEl.onended = function () { nHearEl = null; b.textContent = "▶ Listen first"; };
+			b.textContent = "■ Stop listening"; nprog(1, "Playing it (" + (r.audio.length / r.sr).toFixed(1) + " s). Make it and add it uses the same take."); return nHearEl.play();
+		}); }).catch(function (e) { nprog(0, "Could not make it: " + e.message); }).then(function () { nBusy = false; b.disabled = false; });
+	};
+	$("vd-ngo").onclick = function () {
+		var text = nta.value.trim(), b = this; if (!text) { nta.focus(); return; } if (nBusy) return;
+		nkeepVoice(); var at = VE.t; nBusy = true; b.disabled = true;
+		var canW = ndirReady();
+		Promise.all([fillVoices(), canW]).then(function (x) {
+			var N = x[0];
+			return nSpeak(N, text).then(function (r) { nprog(1, "Saving and adding it…"); return finishNarration(N, r.audio, r.sr, "Narration " + stamp() + " - " + text.replace(/\s+/g, " ").slice(0, 32).trim(), at, x[1]); });
+		}).then(function () { nprog(1, "Added. It is also in Media, so you can drag it again."); }, function (e) { nprog(0, "Could not make it: " + e.message); })
+			.then(function () { nBusy = false; b.disabled = false; });
+	};
+
+	/* recording a voice-over with the microphone */
+	var REC = { stream: null, ac: null, an: null, raf: 0, mr: null, chunks: [], at: 0, t0: 0, timer: 0, counting: 0, wasPlay: false };
+	["play", "mute", "count", "clean"].forEach(function (k) { var el = $("vd-n" + k); el.checked = !!NS[k]; el.onchange = function () { NS[k] = el.checked; nkeep(); if (k === "clean" && REC.stream && !REC.mr) openMic(); }; });
+	var nmic = $("vd-nmic");
+	function listMics(ask) {
+		if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+		navigator.mediaDevices.enumerateDevices().then(function (ds) {
+			var mics = ds.filter(function (d) { return d.kind === "audioinput" && d.deviceId !== "default" && d.deviceId !== "communications"; });
+			nmic.innerHTML = '<option value="">Default microphone</option>' + mics.map(function (d, i) { return '<option value="' + esc(d.deviceId) + '">' + esc(d.label || "Microphone " + (i + 1)) + "</option>"; }).join("");
+			nmic.value = NS.mic; if (nmic.value !== NS.mic) nmic.value = "";
+		}).catch(function () { });
+	}
+	nmic.onchange = function () { NS.mic = nmic.value; nkeep(); if (REC.stream && !REC.mr) openMic(); };
+	function closeMic() {
+		cancelAnimationFrame(REC.raf); if (REC.stream) REC.stream.getTracks().forEach(function (t) { t.stop(); }); REC.stream = null;
+		if (REC.ac) REC.ac.close().catch(function () { }); REC.ac = null; REC.an = null; $("vd-nmf").style.width = "0"; $("vd-ntest").textContent = "Test my mic";
+	}
+	function openMic() {
+		if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.reject(new Error("This browser can't record from a microphone here."));
+		closeMic();
+		var c = !!NS.clean, a = { echoCancellation: c, noiseSuppression: c, autoGainControl: c, channelCount: 1 }; if (NS.mic) a.deviceId = { exact: NS.mic };
+		return navigator.mediaDevices.getUserMedia({ audio: a }).then(function (st) {
+			REC.stream = st; listMics(); var AC = window.AudioContext || window.webkitAudioContext; REC.ac = new AC(); REC.an = REC.ac.createAnalyser(); REC.an.fftSize = 1024;
+			REC.ac.createMediaStreamSource(st).connect(REC.an);
+			var buf = new Float32Array(REC.an.fftSize), peak = 0, clipAt = 0;
+			(function meter() {
+				if (!REC.an) return; REC.an.getFloatTimeDomainData(buf); var m = 0; for (var i = 0; i < buf.length; i++) { var v = Math.abs(buf[i]); if (v > m) m = v; }
+				peak = Math.max(m, peak * 0.93); if (m > 0.98) clipAt = performance.now();
+				var db = peak > 0 ? 20 * Math.log10(peak) : -90, w = V.clamp((db + 60) / 60, 0, 1), el = $("vd-nmf");
+				el.style.width = Math.round(w * 100) + "%"; el.style.background = db > -3 ? "#ef4444" : db > -12 ? "#f59e0b" : "#22c55e";
+				if (!REC.mr) $("vd-nmicst").textContent = performance.now() - clipAt < 1500 ? "Too loud: turn the microphone down or move back a little." : db < -45 ? "Very quiet: speak up, or come closer to the microphone." : "Level " + Math.round(db) + " dB: aim for the yellow on your loudest words.";
+				REC.raf = requestAnimationFrame(meter);
+			})();
+			var tr = st.getAudioTracks()[0]; $("vd-ntest").textContent = "Stop the test";
+			if (tr && tr.label && !REC.mr) $("vd-nmicst").textContent = "Listening to " + tr.label + "…";
+			return st;
+		}, function (e) { throw new Error(e && e.name === "NotAllowedError" ? "The browser was not allowed to use the microphone (check the 🔒 / camera icon in the address bar)." : e && e.name === "NotFoundError" ? "No microphone was found." : "The microphone could not be opened: " + (e && e.message || e)); });
+	}
+	$("vd-ntest").onclick = function () { if (REC.mr || REC.counting) return; if (REC.stream) { closeMic(); $("vd-nmicst").textContent = "Mic test stopped."; return; } openMic().catch(function (e) { $("vd-nmicst").textContent = e.message; }); };
+	function recTime() { if (!REC.mr) return; var s = (performance.now() - REC.t0) / 1000; $("vd-nrt").textContent = "● " + Math.floor(s / 60) + ":" + ("0" + Math.floor(s % 60)).slice(-2) + " recording"; }
+	function recKey(e) { if (e.key === "Escape" || e.key === " ") { e.preventDefault(); e.stopPropagation(); stopRec(); } }
+	function startRec() {
+		var canW = ndirReady(), b = $("vd-nrec");
+		Promise.all([REC.stream ? Promise.resolve(REC.stream) : openMic(), canW]).then(function (x) {
+			REC.canWrite = x[1];
+			var go = function () {
+				REC.counting = 0;
+				var types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"], type = ""; for (var i = 0; i < types.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) { type = types[i]; break; }
+				var mr; try { mr = new MediaRecorder(REC.stream, type ? { mimeType: type, audioBitsPerSecond: 192000 } : undefined); } catch (e) { $("vd-nmicst").textContent = "This browser can't record here: " + e.message; b.textContent = "● Record"; return; }
+				REC.mr = mr; REC.chunks = [];
+				mr.ondataavailable = function (e) { if (e.data && e.data.size) REC.chunks.push(e.data); };
+				mr.onstart = function () {
+					REC.t0 = performance.now(); REC.at = VE.t; P.muted = !!NS.mute;
+					if (NS.play && !(P.playing && !P.rev)) { P.play(1); REC.wasPlay = true; } else REC.wasPlay = false;
+					REC.timer = setInterval(recTime, 250); recTime();
+				};
+				mr.onstop = function () { recDone(); };
+				mr.start(1000); b.textContent = "■ Stop"; b.classList.add("is-on"); document.addEventListener("keydown", recKey, true);
+			};
+			if (NS.count) {
+				var n = 3; REC.counting = 1; b.textContent = "■ Cancel"; $("vd-nrt").textContent = "Starting in 3…";
+				REC.cd = setInterval(function () { if (!REC.counting) { clearInterval(REC.cd); return; } n--; if (n > 0) $("vd-nrt").textContent = "Starting in " + n + "…"; else { clearInterval(REC.cd); go(); } }, 1000);
+			} else go();
+		}).catch(function (e) { $("vd-nmicst").textContent = e.message; toast(e.message, 7000); });
+	}
+	function stopRec() {
+		if (REC.counting) { REC.counting = 0; clearInterval(REC.cd); $("vd-nrt").textContent = ""; $("vd-nrec").textContent = "● Record"; return; }
+		if (REC.mr && REC.mr.state !== "inactive") REC.mr.stop();
+	}
+	function recDone() {
+		var mr = REC.mr, at = REC.at, dur = (performance.now() - REC.t0) / 1000; REC.mr = null; clearInterval(REC.timer); document.removeEventListener("keydown", recKey, true);
+		if (P.playing) P.pause(); P.muted = false; P.sync && P.sync();
+		var b = $("vd-nrec"); b.textContent = "● Record"; b.classList.remove("is-on"); b.disabled = true; $("vd-nrt").textContent = "Saving " + dur.toFixed(1) + " s…";
+		var blob = new Blob(REC.chunks, { type: (mr && mr.mimeType) || "audio/webm" }); REC.chunks = [];
+		Promise.all([loadNarrate(), blob.arrayBuffer()]).then(function (x) {
+			var N = x[0], AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
+			return ac.decodeAudioData(x[1]).then(function (ab) {
+				ac.close(); var n = ab.length, m = new Float32Array(n);
+				for (var c = 0; c < ab.numberOfChannels; c++) { var d = ab.getChannelData(c); for (var i = 0; i < n; i++) m[i] += d[i] / ab.numberOfChannels; }
+				return finishNarration(N, m, ab.sampleRate, "Voice recording " + stamp(), at, REC.canWrite);
+			}, function () { ac.close(); throw new Error("The recording could not be read back."); });
+		}).then(function () { $("vd-nrt").textContent = "Added (" + dur.toFixed(1) + " s). Record again to add another take."; }, function (e) { $("vd-nrt").textContent = "Could not add it: " + e.message; })
+			.then(function () { b.disabled = false; });
+	}
+	$("vd-nrec").onclick = function () { if (REC.mr || REC.counting) stopRec(); else startRec(); };
+	setNMode(NS.mode);
+	setTimeout(function () { if (!$("vd-nr-type").closest("[data-pane]").hidden && !nVoicesDone) fillVoices().catch(function () { }); }, 300);
 
 	/* ---------- start ---------- */
 	VE.hist.push(JSON.stringify(VE.P));

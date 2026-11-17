@@ -616,6 +616,29 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-ta {width:100%;box-sizing:border-box;min-height:9em;resize:vertical;background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.45em;padding:0.55em;font:inherit;line-height:1.5;}
 	#vd .vd-nprog {margin:0.6em 0;display:flex;flex-direction:column;gap:0.3em;} #vd .vd-nbar {height:7px;background:#1f2937;border-radius:4px;overflow:hidden;} #vd .vd-nbar i {display:block;height:100%;width:0;background:#a78bfa;transition:width .25s;} #vd #vd-npt {font-size:0.88em;color:#cbd5e1;}
 
+	/* Narration pane */
+	#vd .vd-nseg {display:flex;gap:0;margin:0.2em 0 0.4em;border:1px solid var(--vd-line);border-radius:0.5em;overflow:hidden;}
+	#vd .vd-nseg button {flex:1;min-height:34px;background:transparent;color:var(--vd-fg);border:0;cursor:pointer;font-size:0.86em;padding:0.3em 0.4em;}
+	#vd .vd-nseg button[aria-selected=true] {background:#6d28d9;color:#fff;}
+	#vd .vd-nbox {display:flex;flex-direction:column;gap:0.45em;}
+	#vd .vd-nbox .vd-ta {min-height:8em;}
+	#vd .vd-nlab {display:flex;flex-direction:column;gap:0.25em;font-size:0.85em;color:var(--vd-fg);}
+	#vd .vd-nlab select {min-height:30px;background:var(--vd-in);color:var(--vd-fg);border:1px solid var(--vd-line);border-radius:0.4em;padding:0.2em 0.4em;font:inherit;}
+	#vd .vd-nlab .ss {min-width:0;width:100%;} #vd .vd-nlab .ss-btn {background:var(--vd-in);color:var(--vd-fg);border-color:var(--vd-line);}
+	#vd .vd-nlab output {color:var(--vd-dim);}
+	#vd .vd-link {background:none;border:0;padding:0;color:#93c5fd;text-decoration:underline;cursor:pointer;font:inherit;}
+	#vd .vd-narr a {color:#93c5fd;}
+	#vd .vd-nmeter {height:10px;background:#1f2937;border-radius:5px;overflow:hidden;} #vd .vd-nmeter i {display:block;height:100%;width:0;background:#22c55e;transition:width .06s linear;}
+	#vd .vd-ncol {flex-direction:column;gap:0.1em;} #vd .vd-ncol label {min-height:28px;}
+	#vd .vd-rec {color:#fecaca;border-color:#b91c1c;} #vd .vd-rec.is-on {background:#b91c1c;color:#fff;animation:vd-recp 1.2s ease-in-out infinite;}
+	@keyframes vd-recp {50% {box-shadow:0 0 0 4px rgba(239,68,68,.35);}}
+	#vd .vd-nrt {font-size:0.85em;color:#fca5a5;align-self:center;}
+	#vd .vd-nsave {margin-top:0.8em;display:flex;flex-direction:column;gap:0.35em;}
+	#vd .vd-nsave code, #vd .vd-narr code {background:#1f2937;padding:0 0.25em;border-radius:3px;}
+	html body.dark-mode #vd .vd-nseg button[aria-selected=true] {background:#6d28d9;color:#fff;} html body.dark-mode #vd .vd-nmeter, html body.dark-mode #vd .vd-nsave code, html body.dark-mode #vd .vd-narr code {background:#1f2937;}
+	html body.dark-mode #vd .vd-link, html body.dark-mode #vd .vd-narr a {color:#93c5fd;} html body.dark-mode #vd .vd-nrt {color:#fca5a5;}
+	html body.dark-mode #vd .vd-rec {color:#fecaca;border-color:#b91c1c;} html body.dark-mode #vd .vd-rec.is-on {background:#b91c1c;color:#fff;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -798,6 +821,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-nbar{background:#3b4e68}
 	body.dark-mode #vd .vd-nbar i{background:#312456}
 	body.dark-mode #vd #vd-npt{color:#919dab}
+	body.dark-mode #vd .vd-nmeter{background:#3b4e68}
+	body.dark-mode #vd .vd-rec{border-color:#dd2222}
+	body.dark-mode #vd .vd-nsave code,body.dark-mode #vd .vd-narr code{background:#3b4e68}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1019,7 +1045,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="vd-pop" id="vd-filemenu" hidden role="menu">
 						<button type="button" role="menuitem" data-act="import">Import videos, sound, pictures&hellip; <kbd>Ctrl+I</kbd></button>
 						<button type="button" role="menuitem" data-act="title">Add a title <kbd>T</kbd></button>
-						<button type="button" role="menuitem" data-act="narrate">Add narration from text&hellip; <kbd>N</kbd></button>
+						<button type="button" role="menuitem" data-act="narrate">Narration (type or record)&hellip; <kbd>N</kbd></button>
 						<hr>
 						<button type="button" role="menuitem" data-act="saveproj">Save project file (.mesvideo) <kbd>Ctrl+S</kbd></button>
 						<button type="button" role="menuitem" data-act="saveprojas">Save project as&hellip; <kbd>Ctrl+Shift+S</kbd></button>
@@ -1052,6 +1078,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="vd-main">
 				<nav class="vd-rail" id="vd-rail" role="tablist" aria-label="Library" aria-orientation="vertical">
 					<button type="button" role="tab" data-cat="media" aria-selected="true"><i aria-hidden="true">&#127902;</i><span>Media</span></button>
+					<button type="button" role="tab" data-cat="narr" aria-selected="false"><i aria-hidden="true">&#127897;</i><span>Narration</span></button>
 					<button type="button" role="tab" data-cat="titles" aria-selected="false"><i aria-hidden="true" class="vd-ri-t">T</i><span>Titles</span></button>
 					<button type="button" role="tab" data-cat="shapes" aria-selected="false"><i aria-hidden="true" class="vd-ri-s">&#9650;</i><span>Shapes</span></button>
 					<button type="button" role="tab" data-cat="trans" aria-selected="false"><i aria-hidden="true">&#10697;</i><span>Transitions</span></button>
@@ -1070,6 +1097,40 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<button type="button" class="vd-btn vd-sm" id="vd-addtitle">+ Title</button>
 						</div>
 						<p class="vd-hint" id="vd-binhint">Drop files here or anywhere in the editor. Drag them onto the timeline, or double-click to put one at the playhead. AVI, MKV, WMV and other formats are converted to MP4 first. Drop a .mesvideo project file to open it.</p>
+					</section>
+					<section class="vd-pane vd-narr" data-pane="narr" role="tabpanel" aria-label="Narration" hidden>
+						<div class="vd-panehead"><b>Narration</b></div>
+						<div class="vd-nseg" role="tablist" aria-label="How to make the narration"><button type="button" role="tab" data-nmode="type" aria-selected="true">&#9000; Type it</button><button type="button" role="tab" data-nmode="rec" aria-selected="false">&#127897; Record my voice</button></div>
+						<div class="vd-nbox" id="vd-nr-type">
+							<p class="vd-hint">Type the script: it is spoken in this browser and added as a sound clip at the playhead. A blank line = a longer pause, <code>[pause 2]</code> = 2 seconds.</p>
+							<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true" placeholder="Type or paste what the voice should say&hellip;" aria-label="Narration script"></textarea>
+							<label class="vd-nlab">Voice<select id="vd-nv" aria-label="Voice"></select></label>
+							<label class="vd-nlab" id="vd-nspw">Speed <output id="vd-nspv">1.00&times;</output><input type="range" id="vd-nsp" min="0.6" max="1.6" step="0.05" aria-label="Speed"></label>
+							<p class="vd-hint" id="vd-nown">Want it in <b>your own voice</b>? <a href="/narration#own" target="_blank" rel="noopener">Set up my voice on MES Narration</a> (record 15 seconds once), then <button type="button" class="vd-link" id="vd-nrefresh">refresh the voice list</button>.</p>
+							<div class="vd-row"><button type="button" class="vd-btn" id="vd-nhear">&#9654; Listen first</button><button type="button" class="vd-btn vd-primary" id="vd-ngo">&#128483; Make it and add it</button></div>
+							<div class="vd-nprog" id="vd-nprog" hidden><div class="vd-nbar"><i id="vd-nbf"></i></div><span id="vd-npt"></span></div>
+						</div>
+						<div class="vd-nbox" id="vd-nr-rec" hidden>
+							<p class="vd-hint">Talk over your video like in Camtasia: the timeline plays from the playhead while you speak, and the recording lands there as a sound clip.</p>
+							<label class="vd-nlab">Microphone<select id="vd-nmic" aria-label="Microphone"><option value="">Default microphone</option></select></label>
+							<div class="vd-nmeter" aria-hidden="true"><i id="vd-nmf"></i></div>
+							<p class="vd-hint" id="vd-nmicst">Press Test my mic to see the level (it stays in this browser).</p>
+							<div class="vd-checks vd-ncol">
+								<label><input type="checkbox" id="vd-nplay"> Play the timeline while I record</label>
+								<label><input type="checkbox" id="vd-nmute"> Mute the timeline sound while I record (use this without headphones)</label>
+								<label><input type="checkbox" id="vd-ncount"> Count down 3 seconds first</label>
+								<label><input type="checkbox" id="vd-nclean"> Let the browser clean up the sound (noise / echo / auto level)</label>
+							</div>
+							<div class="vd-row"><button type="button" class="vd-btn" id="vd-ntest">Test my mic</button><button type="button" class="vd-btn vd-rec" id="vd-nrec">&#9679; Record</button><span class="vd-nrt" id="vd-nrt" aria-live="polite"></span></div>
+							<p class="vd-hint">Stop with the button, Space or Esc. Tip: headphones keep the video's sound out of the recording.</p>
+						</div>
+						<div class="vd-sec vd-nsave">
+							<b>Where narrations are saved</b>
+							<label class="vd-nlab">File type<select id="vd-nfmt" aria-label="File type"><option value="wav">WAV (best for editing)</option><option value="mp3">MP3 (small)</option><option value="m4a">M4A (small)</option></select></label>
+							<p class="vd-hint" id="vd-ndir"></p>
+							<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ndirpick">Choose a folder&hellip;</button><button type="button" class="vd-btn vd-sm" id="vd-ndiroff" hidden>Stop saving there</button></div>
+							<label class="vd-chk"><input type="checkbox" id="vd-ndl"> Also download each one</label>
+						</div>
 					</section>
 					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
 					<section class="vd-pane" data-pane="shapes" role="tabpanel" aria-label="Shapes" hidden><div class="vd-panehead"><b>Shapes &amp; annotations</b></div><p class="vd-hint">Arrows, boxes, bars, highlights and more. Click to put one at the playhead, or drag it onto the timeline; then drag its handles in the preview to size it.</p><div class="vd-cards" data-cards="shapes"></div></section>
@@ -1162,7 +1223,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<dt>S</dt><dd>Split at the playhead (the selected clips, or every clip there)</dd><dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					<dt>I / O</dt><dd>Mark in / out; then &ldquo;Cut out marked&rdquo;, or export only that part</dd><dt>T</dt><dd>Add a title</dd>
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+X / C / V</dt><dd>Cut / copy / paste clips (paste goes to the playhead; right-click a track for &ldquo;Paste here&rdquo;)</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>Arrows after clicking the preview</dt><dd>Move the selected picture or title 1 pixel (Shift: 10); click the timeline to get the frame-stepping arrows back</dd><dt>Alt+&uarr; / &darr;</dt><dd>Move the selected clips up / down a track (or drag them; several clips move together)</dd><dt>Right-click</dt><dd>Menu for a clip, an empty spot or a track</dd><dt>+ / &minus;</dt><dd>Zoom the timeline (Ctrl + wheel too)</dd>
-					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>H or &#9995;</dt><dd>Hand: drag moves the preview view (also Space + drag, even over a clip)</dd><dt>N</dt><dd>Add narration from text</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
+					<dt>W</dt><dd>The whole editor fills the browser window (Esc leaves)</dd><dt>F / Shift+F</dt><dd>Preview fills the window / full screen</dd><dt>Ctrl + wheel / pinch</dt><dd>Zoom the preview (drag the grey area around the frame, the middle button, or Space + drag, to move it)</dd><dt>G</dt><dd>Safe-area guides on the preview</dd><dt>H or &#9995;</dt><dd>Hand: drag moves the preview view (also Space + drag, even over a clip)</dd><dt>N</dt><dd>Narration: type a script or record your voice</dd><dt>Ctrl+Shift+A</dt><dd>Separate video and audio</dd><dt>Alt + drag a linked clip</dt><dd>Move it without its partner</dd><dt>Ctrl+S / Ctrl+E</dt><dd>Save project file / export</dd><dt>Alt + drag</dt><dd>Move without snapping</dd>
 				</dl>
 			</div>
 			<div class="vd-modal" id="vd-modal" hidden><div class="vd-dlg" id="vd-dlg" role="dialog" aria-modal="true"></div></div>
@@ -1250,7 +1311,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/video/js/video.js?v=43" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=44" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
