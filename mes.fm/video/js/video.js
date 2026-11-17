@@ -3532,9 +3532,84 @@
 		var txt = ""; try { txt = (e.clipboardData && e.clipboardData.getData("text/plain")) || ""; } catch (x) { /* ignore */ }
 		// our own Ctrl+C put a marker on the system clipboard: paste the clips, not whatever picture / file was copied before
 		if (txt.indexOf(CLIPMARK) === 0 && readClip()) { e.preventDefault(); VE.paste(); return; }
-		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); importFiles(fs); return; }
+		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []); if (fs.length) { e.preventDefault(); pasteFiles(fs); return; }
 		if (readClip()) { e.preventDefault(); VE.paste(); }   // Ctrl+V with copied clips
 	});
+
+	/* ---------- pasted pictures (screenshots, an image copied in a browser / Photo Editor): they arrive with no file on disk and
+	   all called "image.png", so each gets its own dated name, goes on the timeline at the playhead and is saved: into the media folder
+	   (sub-folder "Pasted pictures") when one is linked, else the person is asked once where to keep it. Files copied in Finder /
+	   Explorer already exist on disk, so they are only imported. */
+	var PASTEKEY = "mes-video-editor:pastesave", PASTEDIR = "Pasted pictures";
+	function pastePref() { try { return localStorage.getItem(PASTEKEY) || ""; } catch (e) { return ""; } }
+	function setPastePref(v) { try { if (v) localStorage.setItem(PASTEKEY, v); else localStorage.removeItem(PASTEKEY); } catch (e) { /* ignore */ } }
+	function pastedName(f, i) {
+		var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; };
+		var ext = ((f.type || "").split("/")[1] || "png").replace("jpeg", "jpg").replace(/\+.*$/, "");
+		return "Pasted " + d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + "." + p(d.getMinutes()) + "." + p(d.getSeconds()) + (i ? " (" + (i + 1) + ")" : "") + "." + ext;
+	}
+	function pasteFiles(list) {
+		var fresh = [], n = 0;
+		var files = list.map(function (f) {
+			// a clipboard picture (not a file copied from a folder): generic name, no real modification history
+			if (/^image\//.test(f.type) && (!f.name || /^image\.\w+$/i.test(f.name))) { var nf = new File([f], pastedName(f, n++), { type: f.type, lastModified: Date.now() }); fresh.push(nf); return nf; }
+			return f;
+		});
+		// ask for write access now, while the Ctrl+V still counts as a click (browsers only show the prompt then)
+		var perm = fresh.length && mdir.h && pastePref() !== "browser" ? folderPerm(true, true) : Promise.resolve(false);
+		var at = VE.t;
+		return importFiles(files).then(function (ms) {
+			ms.forEach(function (m) { if (m.state === "ready") { var c = VE.tl.placeMedia(m, null, null, at); at = V.end(c); } });
+			var pm = ms.filter(function (m) { return fresh.indexOf(m.file) >= 0; });
+			if (!pm.length) return;
+			return perm.then(function (ok) {
+				if (mdir.h && pastePref() !== "browser") return ok ? writePasted(pm) : askPasteSave(pm, "The browser did not allow saving into " + mdir.h.name + ".");
+				if (pastePref() === "browser") return toast("Pasted " + (pm.length > 1 ? pm.length + " pictures" : "the picture") + " at the playhead (kept in this browser).");
+				askPasteSave(pm);
+			});
+		});
+	}
+	async function writePasted(pm) {
+		if (!(await folderPerm(true, true))) return askPasteSave(pm, "The browser did not allow saving into " + mdir.h.name + ".");
+		var done = 0, dir;
+		try { dir = await mdir.h.getDirectoryHandle(PASTEDIR, { create: true }); } catch (e) { return toast("Could not make the " + PASTEDIR + " folder: " + (e && e.message || e)); }
+		for (var i = 0; i < pm.length; i++) {
+			var m = pm[i], nm = m.name, k = 1;
+			for (;;) { try { await dir.getFileHandle(nm); nm = m.name.replace(/(\.[^.]+)?$/, " (" + (++k) + ")$1"); } catch (e) { break; } }
+			try { var fh = await dir.getFileHandle(nm, { create: true }), w = await fh.createWritable(); await w.write(m.file); await w.close(); if (nm !== m.name) m.name = nm; done++; }
+			catch (e) { toast("Could not save " + m.name + ": " + (e && e.message || e)); break; }
+		}
+		if (done) { VE.save(); renderBin(); rescan(false); toast("Pasted at the playhead and saved into " + mdir.h.name + "/" + PASTEDIR + (done > 1 ? " (" + done + " pictures)" : "") + ".", 6000); }
+	}
+	function downloadPasted(pm) {
+		pm.forEach(function (m) { var a = document.createElement("a"), u = URL.createObjectURL(m.file); a.href = u; a.download = m.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 30000); });
+	}
+	var pbar = null;
+	function askPasteSave(pm, why) {
+		if (!pbar) { pbar = document.createElement("div"); pbar.className = "vd-pastebar"; pbar.setAttribute("role", "dialog"); pbar.setAttribute("aria-label", "Where to save the pasted picture"); $("vd-toast").parentNode.appendChild(pbar); }
+		var one = pm.length === 1, what = one ? "the picture" : "the " + pm.length + " pictures";
+		pbar.innerHTML = '<div class="vd-pb-t"><b>Pasted ' + what + ' at the playhead.</b> ' + (why ? esc(why) + " " : "") + "Right now " + (one ? "it is" : "they are") + " only kept in this browser. Where should pasted pictures be saved?</div>" +
+			'<div class="vd-pb-b">' + (FSD ? '<button type="button" class="vd-btn vd-sm vd-primary" data-pb="folder">&#128193; ' + (mdir.h ? "Save into " + esc(mdir.h.name) : "Choose a folder…") + "</button>" : "") +
+			'<button type="button" class="vd-btn vd-sm" data-pb="dl">&#11015; Download ' + (one ? "it" : "them") + '</button><button type="button" class="vd-btn vd-sm" data-pb="keep">Keep in this browser</button>' +
+			'<button type="button" class="vd-btn vd-sm vd-ico" data-pb="x" title="Decide later" aria-label="Close">&times;</button></div>' +
+			'<label class="vd-pb-r"><input type="checkbox" data-pb="rem" checked> Remember this choice</label>' +
+			(FSD ? "" : '<div class="vd-pb-n">' + (navigator.brave ? "Brave can save straight into a folder after you turn on brave://flags/#file-system-access-api." : "Saving straight into a folder needs Chrome, Edge or Opera on a computer.") + "</div>");
+		pbar.hidden = false;
+		pbar.onclick = async function (e) {
+			var b = e.target.closest("button[data-pb]"); if (!b) return;
+			var a = b.getAttribute("data-pb"), rem = pbar.querySelector('[data-pb="rem"]').checked; pbar.hidden = true;
+			if (a === "folder") {
+				if (!mdir.h) {
+					var h; try { h = await window.showDirectoryPicker({ id: "mes-video-media", mode: "readwrite" }); } catch (er) { pbar.hidden = false; return; }
+					mdir.h = h; mdir.idx = null; mdir.perm = "granted"; VE.idbPut("kv", "mediadir", h).catch(function () { }); renderSync();
+				}
+				setPastePref(rem ? "folder" : ""); await writePasted(pm);
+				if (!rem) setPastePref("");
+			} else if (a === "dl") { downloadPasted(pm); toast("Downloaded " + what + ". Move " + (one ? "it" : "them") + " next to your videos so the project finds " + (one ? "it" : "them") + " on another computer.", 7000); }
+			else if (a === "keep") { if (rem) setPastePref("browser"); toast("Kept in this browser." + (rem ? " The Media panel's folder button (or Ctrl+V after linking a folder) saves pasted pictures again." : ""), 6000); }
+		};
+		var f = pbar.querySelector("button"); if (f) f.focus();
+	}
 
 	/* ---------- clip clipboard: cut / copy / paste (kept in this browser, so it also works between tabs and projects that share the media) ---------- */
 	var CLIPKEY = "mes-video-editor:clipboard", CLIPMARK = "MES Video Editor clips ", clipMem = null, pasteT = 0;
@@ -4117,7 +4192,7 @@
 	async function linkFolder() {
 		if (!FSD) return toast("This browser can't link a folder" + (navigator.brave ? " (Brave can: turn on brave://flags/#file-system-access-api)" : ": use Chrome, Edge or Opera on a computer") + ". You can still drop the files in to relink them.", 9000);
 		var h; try { h = await window.showDirectoryPicker({ id: "mes-video-media", mode: "read" }); } catch (e) { return; }
-		mdir.h = h; mdir.idx = null; mdir.perm = "granted";
+		mdir.h = h; mdir.idx = null; mdir.perm = "granted"; if (pastePref() === "browser") setPastePref("");
 		VE.idbPut("kv", "mediadir", h).catch(function () { });
 		await rescan(false);
 		var got = await relinkFromFolder(false);

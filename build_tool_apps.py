@@ -83,7 +83,7 @@ def _photo_nav(me):
 KIDS_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in KIDS_PAGES)
 KIDS_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % (sl, nm if nm != "Shapes" else "Shapes &amp; Colours") for sl, nm in KIDS_PAGES)
 def _kids(slug, mode, seo, title, page_title, desc, tab, accent, dark, tint):
-    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="10", no_ads=True,
+    d = dict(title=title, page_title=page_title, tag=KIDS_BRAND["tag"], accent=accent, dark=dark, tint=tint, desc=desc, js_v="11", no_ads=True,
              src="kids", vars={"MODE": mode, "BODY": "@hub.html" if mode == "hub" else "@player.html", "SEO": "@seo/%s.html" % seo},
              pre_js=[] if mode == "hub" else ["/main_js/voice-picker.js?v=1"], nav_extra=KIDS_NAV_INFO, menu_extra=KIDS_NAV_MENU,
              head_extra=PAGE3_HEAD)
@@ -524,7 +524,7 @@ APPS = {
                       tag="Save text once, copy it anytime, synced to your own cloud.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
                       desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
                       meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
-                      js_v="14", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"]),
+                      js_v="15", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
@@ -1509,7 +1509,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="50", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="51", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
