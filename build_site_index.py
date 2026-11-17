@@ -287,6 +287,9 @@ def generator_maps():
     m = re.search(r"^BMI_LANG_SLUGS = \{(.*?)\}", src, re.M | re.S)     # the BMI Calculator's language pages (APPS entries added in a loop)
     if m:
         apps |= set(re.findall(r':\s*"([a-z0-9-]+)"', m.group(1)))
+    m = re.search(r"^SIG_LANG_SLUGS = \{(.*?)\}", src, re.M | re.S)     # Market Signals in other languages (same loop pattern)
+    if m:
+        apps |= set(re.findall(r':\s*"([a-z0-9-]+)"', m.group(1)))
     for a in apps:
         owned.setdefault(a, "build_tool_apps.py")
     # build.mjs: its own directory + every `slug: "x"` it emits (tile hubs list their section pages that way)

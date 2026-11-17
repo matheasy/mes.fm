@@ -10,6 +10,11 @@
 	function num(x) { if (x === null || x === undefined || x === '' || x === '.') return null; var n = +x; return isFinite(n) ? n : null; }
 	function round(x, d) { if (x === null || !isFinite(x)) return null; var k = Math.pow(10, d == null ? 2 : d); return Math.round(x * k) / k; }
 	S.num = num; S.round = round;
+	// ---------- language: the page sets S.L = window.SG_I18N ({s: {English: translation}, g: glossary}) on the translated pages.
+	// S.T(english, {name: value}) = the translation (or the English) with {name} filled in. The API never sets S.L, so it stays English.
+	// S.dfmt(ymd) = how dates inside sentences are written (the page swaps in its own locale-aware one).
+	S.L = null;
+	S.T = function (s, v) { var L = S.L, t = L && L.s && L.s[s]; if (typeof t !== 'string' || !t) t = s; return v ? t.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? v[k] : m; }) : t; };
 	// keep at most n points of a [[date, v], ...] series, evenly spaced, always the last one
 	S.thin = function (a, n) {
 		if (!a || a.length <= n) return a ? a.slice() : [];
@@ -214,6 +219,22 @@
 		{ id: 'npr', name: 'NPR World', sec: 'world', url: 'https://feeds.npr.org/1004/rss.xml', img: ['media.npr.org'], og: ['npr.org'] },
 		{ id: 'guardian', name: 'The Guardian', sec: 'world', url: 'https://www.theguardian.com/world/rss', img: ['guim.co.uk'] },
 		{ id: 'dw', name: 'DW', sec: 'world', url: 'https://rss.dw.com/rdf/rss-en-world', img: ['dw.com'], og: ['dw.com'] }];
+	// News in the translated pages' own languages (job lnews; shown first on the News tab of /signals-<code>). Keyless RSS, checked 2026-11-17.
+	S.LANG_FEEDS = [
+		{ id: 'bbcfa', lang: 'fa', name: 'BBC فارسی', url: 'https://feeds.bbci.co.uk/persian/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'dwfa', lang: 'fa', name: 'DW فارسی', url: 'https://rss.dw.com/xml/rss-per-all', img: ['dw.com'] },
+		{ id: 'bbcar', lang: 'ar', name: 'BBC عربي', url: 'https://feeds.bbci.co.uk/arabic/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'dwar', lang: 'ar', name: 'DW عربية', url: 'https://rss.dw.com/xml/rss-ar-all', img: ['dw.com'] },
+		{ id: 'bbces', lang: 'es', name: 'BBC Mundo', url: 'https://feeds.bbci.co.uk/mundo/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbcpt', lang: 'pt-BR', name: 'BBC News Brasil', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbctr', lang: 'tr', name: 'BBC Türkçe', url: 'https://feeds.bbci.co.uk/turkce/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbcru', lang: 'ru', name: 'BBC Русская служба', url: 'https://feeds.bbci.co.uk/russian/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbczh', lang: 'zh-CN', name: 'BBC 中文', url: 'https://feeds.bbci.co.uk/zhongwen/simp/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbchi', lang: 'hi', name: 'BBC हिंदी', url: 'https://feeds.bbci.co.uk/hindi/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbcid', lang: 'id', name: 'BBC News Indonesia', url: 'https://feeds.bbci.co.uk/indonesia/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'bbcvi', lang: 'vi', name: 'BBC Tiếng Việt', url: 'https://feeds.bbci.co.uk/vietnamese/rss.xml', img: ['bbci.co.uk'] },
+		{ id: 'dwde', lang: 'de', name: 'DW Deutsch', url: 'https://rss.dw.com/xml/rss-de-all', img: ['dw.com'] },
+		{ id: 'f24fr', lang: 'fr', name: 'France 24', url: 'https://www.france24.com/fr/rss', img: ['france24.com'] }];
 	// newest first, at most n per source so one busy feed cannot fill a section
 	S.mergeNews = function (lists, n) {
 		var out = []; lists.forEach(function (l) { out.push.apply(out, (l || []).slice(0, n || 12)); });
@@ -313,62 +334,63 @@
 	function vals(sp) { return (sp || []).map(function (x) { return Array.isArray(x) ? x[1] : x; }).filter(function (v) { return v != null && isFinite(v); }); }
 	var MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	S.humanDate = function (s) { var m = /^(\d{4})-(\d\d)(?:-(\d\d))?/.exec(String(s || '')); return m ? MN[+m[2] - 1] + ' ' + (m[3] ? +m[3] + ', ' : '') + m[1] : String(s || ''); };
+	S.dfmt = function (s) { return S.humanDate(s); };
 	S.sectorMood = function (d, now) {
 		d = d || {}; now = now == null ? Date.now() : now;
 		var rows = [], coins = d.coins || [], by = {}, perps = {}, mk = d.markets || {};
 		coins.forEach(function (c) { by[c.sym] = c; });
 		(d.perps || []).forEach(function (p) { perps[p.sym] = p; });
-		function pf(sym) { var p = perps[sym]; return p && p.lean ? 'funding ' + p.lean : null; }
+		function pf(sym) { var p = perps[sym]; return p && p.lean ? S.T('funding {x}', { x: S.T(p.lean) }) : null; }
 		if (d.fng) {
 			var g = d.global, v = d.fng.now.v, h = d.fng.hist || [], wk = h.length > 7 ? h[h.length - 8][1] : null;
 			rows.push({ key: 'crypto', tab: 'crypto', name: 'Crypto market', mood: S.fgLabel(v), tone: fgTone(v), meter: { v: v, min: 0, max: 100, kind: 'fg' },
-				facts: ['Fear & Greed ' + v + (wk != null ? ' (' + (v - wk >= 0 ? '+' : '−') + Math.abs(v - wk) + ' in a week)' : '')].concat(g ? ['market cap ' + S.money(g.mcap, 'big') + ' (' + S.pct(g.mcapCh24, 1) + ' 24h)', 'BTC dominance ' + S.fmt(g.btcDom, 1) + '%'] : []),
+				facts: [wk != null ? S.T('Fear & Greed {v} ({d} in a week)', { v: v, d: (v - wk >= 0 ? '+' : '−') + Math.abs(v - wk) }) : S.T('Fear & Greed {v}', { v: v })].concat(g ? [S.T('market cap {m} ({p} 24h)', { m: S.money(g.mcap, 'big'), p: S.pct(g.mcapCh24, 1) }), S.T('BTC dominance {p}', { p: S.fmt(g.btcDom, 1) + '%' })] : []),
 				spark: vals(h.slice(-30)) });
 		}
 		[['BTC', 'bitcoin', 'Bitcoin'], ['ETH', 'ethereum', 'Ethereum']].forEach(function (x) {
 			var c = by[x[0]]; if (!c) return; var w = S.trendWord(c.ch7);
 			rows.push({ key: x[1], tab: 'crypto', name: x[2], mood: w, tone: trendTone(w), meter: { v: c.ch7, min: -15, max: 15, kind: 'pct' },
-				facts: [S.money(c.price) + ', ' + S.pct(c.ch7, 1) + ' in 7 days', S.pct(c.athPct, 0) + ' from its high'].concat(pf(x[0]) ? [pf(x[0])] : []), spark: vals(c.spark) });
+				facts: [S.T('{p}, {c} in 7 days', { p: S.money(c.price), c: S.pct(c.ch7, 1) }), S.T('{c} from its high', { c: S.pct(c.athPct, 0) })].concat(pf(x[0]) ? [pf(x[0])] : []), spark: vals(c.spark) });
 		});
 		var alts = ['SOL', 'XRP'].map(function (k) { return by[k]; }).filter(Boolean);
 		if (alts.length) {
 			var avg = alts.reduce(function (a, c) { return a + c.ch7; }, 0) / alts.length, wa = S.trendWord(avg);
 			rows.push({ key: 'alts', tab: 'crypto', name: 'Large altcoins (SOL, XRP)', mood: wa, tone: trendTone(wa), meter: { v: avg, min: -15, max: 15, kind: 'pct' },
-				facts: alts.map(function (c) { return c.sym + ' ' + S.pct(c.ch7, 1) + ' (7d), ' + S.pct(c.athPct, 0) + ' from high'; }).concat(pf('SOL') ? ['SOL ' + pf('SOL')] : []), spark: vals((by.SOL || alts[0]).spark) });
+				facts: alts.map(function (c) { return S.T('{s} {c} (7d), {a} from high', { s: c.sym, c: S.pct(c.ch7, 1), a: S.pct(c.athPct, 0) }); }).concat(pf('SOL') ? ['SOL ' + pf('SOL')] : []), spark: vals((by.SOL || alts[0]).spark) });
 		}
-		if (d.stables) rows.push({ key: 'stables', tab: 'crypto', name: 'Stablecoins', mood: 'Info', tone: 0, facts: ['supply ' + S.money(d.stables.total, 'big'), d.stables.top.slice(0, 2).map(function (t) { return t[0] + ' ' + S.money(t[1], 'big'); }).join(', ')] });
+		if (d.stables) rows.push({ key: 'stables', tab: 'crypto', name: 'Stablecoins', mood: 'Info', tone: 0, facts: [S.T('supply {m}', { m: S.money(d.stables.total, 'big') }), d.stables.top.slice(0, 2).map(function (t) { return t[0] + ' ' + S.money(t[1], 'big'); }).join(', ')] });
 		if (d.stockfg || mk.spx) {
 			var sf = d.stockfg, spx = mk.spx, s3 = spx ? spanPct(spx.spark) : null;
 			rows.push({ key: 'stocks', tab: 'mkts', name: 'US stocks', mood: sf ? S.fgLabel(sf.score) : S.trendWord(s3), tone: sf ? fgTone(sf.score) : trendTone(S.trendWord(s3)), meter: sf ? { v: sf.score, min: 0, max: 100, kind: 'fg' } : null,
-				facts: (sf ? ['MES Stock F&G ' + sf.score] : []).concat(spx ? ['S&P 500 ' + S.fmt(spx.price, 0) + ' (' + S.pct(spx.chPct, 1) + ' day, ' + S.pct(s3, 1) + ' 3 months)'] : []).concat(mk.nasdaq ? ['Nasdaq ' + S.pct(spanPct(mk.nasdaq.spark), 1) + ' 3 months'] : []),
+				facts: (sf ? [S.T('MES Stock F&G {v}', { v: sf.score })] : []).concat(spx ? [S.T('S&P 500 {p} ({d} day, {m} 3 months)', { p: S.fmt(spx.price, 0), d: S.pct(spx.chPct, 1), m: S.pct(s3, 1) })] : []).concat(mk.nasdaq ? [S.T('Nasdaq {m} 3 months', { m: S.pct(spanPct(mk.nasdaq.spark), 1) })] : []),
 				spark: spx ? vals(spx.spark) : [] });
 		}
 		[['gold', 'Gold', 3, ''], ['oil', 'Oil (WTI)', 8, 'surge'], ['dxy', 'US dollar (DXY)', 3, '']].forEach(function (x) {
 			var q = mk[x[0]]; if (!q) return; var c3 = spanPct(q.spark), w = S.trendWord(c3, x[2]);
 			if (x[3] && c3 > 20) w = 'Surging';
 			rows.push({ key: x[0], tab: 'mkts', name: x[1], mood: w, tone: x[0] === 'oil' ? -Math.abs(trendTone(w)) : trendTone(w), meter: { v: c3, min: -30, max: 30, kind: 'pct' },
-				facts: [(x[0] === 'dxy' ? S.fmt(q.price, 2) : S.money(q.price)) + ', ' + S.pct(c3, 1) + ' in 3 months', S.pct(q.chPct, 1) + ' last day'], spark: vals(q.spark) });
+				facts: [S.T('{p}, {c} in 3 months', { p: x[0] === 'dxy' ? S.fmt(q.price, 2) : S.money(q.price), c: S.pct(c3, 1) }), S.T('{c} last day', { c: S.pct(q.chPct, 1) })], spark: vals(q.spark) });
 		});
 		if (d.rates && d.rates.target) {
 			var t = d.rates.target, lo = d.rates.lower, up = t.prev != null && t.rate > t.prev, dn = t.prev != null && t.rate < t.prev, l = d.rates.latest || {};
 			var mf = up ? 'Tightening' : dn ? 'Easing' : 'On hold';
 			var dec = (d.poly || []).filter(function (e) { return /^Fed Decision in/i.test(e.title); })[0];
 			rows.push({ key: 'fed', tab: 'rates', name: 'Fed and US rates', mood: mf, tone: up ? -1 : dn ? 1 : 0,
-				facts: ['target ' + (lo ? S.fmt(lo[1], 2) + '–' : '') + S.fmt(t.rate, 2) + '% (' + (up ? 'raised' : dn ? 'cut' : 'set') + ' ' + S.humanDate(t.since) + ')'].concat(l.dgs10 ? ['10-year ' + S.fmt(l.dgs10[1], 2) + '%' + (d.rates.yearAgo && d.rates.yearAgo.dgs10 ? ' (' + (l.dgs10[1] >= d.rates.yearAgo.dgs10[1] ? '+' : '−') + Math.round(Math.abs(l.dgs10[1] - d.rates.yearAgo.dgs10[1]) * 100) + ' bp in a year)' : '')] : []).concat(dec && dec.outcomes[0] ? [dec.title.replace(/\?$/, '') + ': ' + dec.outcomes[0].label + ' ' + Math.round(dec.outcomes[0].p) + '% (Polymarket)'] : []) });
-			if (l.spread) { var spd = l.spread[1], cw = spd < 0 ? 'Inverted' : spd <= 0.25 ? 'Flat' : 'Normal'; rows.push({ key: 'curve', tab: 'rates', name: 'Yield curve', mood: cw, tone: spd < 0 ? -2 : spd <= 0.25 ? -1 : 0, meter: { v: spd, min: -1.5, max: 1.5, kind: 'pp' }, facts: ['10y − 2y ' + (spd >= 0 ? '+' : '−') + Math.round(Math.abs(spd) * 100) + ' bp'] }); }
+				facts: [S.T(up ? 'target {r} (raised {d})' : dn ? 'target {r} (cut {d})' : 'target {r} (set {d})', { r: (lo ? S.fmt(lo[1], 2) + '–' : '') + S.fmt(t.rate, 2) + '%', d: S.dfmt(t.since) })].concat(l.dgs10 ? [d.rates.yearAgo && d.rates.yearAgo.dgs10 ? S.T('10-year {r} ({b} bp in a year)', { r: S.fmt(l.dgs10[1], 2) + '%', b: (l.dgs10[1] >= d.rates.yearAgo.dgs10[1] ? '+' : '−') + Math.round(Math.abs(l.dgs10[1] - d.rates.yearAgo.dgs10[1]) * 100) }) : S.T('10-year {r}', { r: S.fmt(l.dgs10[1], 2) + '%' })] : []).concat(dec && dec.outcomes[0] ? [dec.title.replace(/\?$/, '') + ': ' + dec.outcomes[0].label + ' ' + Math.round(dec.outcomes[0].p) + '% (Polymarket)'] : []) });
+			if (l.spread) { var spd = l.spread[1], cw = spd < 0 ? 'Inverted' : spd <= 0.25 ? 'Flat' : 'Normal'; rows.push({ key: 'curve', tab: 'rates', name: 'Yield curve', mood: cw, tone: spd < 0 ? -2 : spd <= 0.25 ? -1 : 0, meter: { v: spd, min: -1.5, max: 1.5, kind: 'pp' }, facts: [S.T('10y − 2y {b} bp', { b: (spd >= 0 ? '+' : '−') + Math.round(Math.abs(spd) * 100) })] }); }
 		}
 		if (d.cpi && d.cpi.latest) {
 			var cv = d.cpi.latest[1], y = d.cpi.yoy || [], six = y.length > 6 ? y[y.length - 7][1] : null, iw = cv > 3 ? 'High' : cv >= 2 ? 'Near target' : 'Low';
 			var dir = six == null ? '' : cv > six + 0.2 ? ', rising' : cv < six - 0.2 ? ', falling' : ', steady';
 			rows.push({ key: 'cpi', tab: 'rates', name: 'US inflation', mood: iw + dir, tone: cv > 3 ? -1 - (dir === ', rising' ? 1 : 0) : 0, meter: { v: cv, min: 0, max: 8, kind: 'cpi' },
-				facts: ['CPI ' + S.fmt(cv, 1) + '% a year (' + S.humanDate(d.cpi.latest[0]) + ')'].concat(six != null ? ['6 months earlier ' + S.fmt(six, 1) + '%'] : []), spark: vals(y.slice(-24)) });
+				facts: [S.T('CPI {p} a year ({d})', { p: S.fmt(cv, 1) + '%', d: S.dfmt(d.cpi.latest[0]) })].concat(six != null ? [S.T('6 months earlier {p}', { p: S.fmt(six, 1) + '%' })] : []), spark: vals(y.slice(-24)) });
 		}
 		var rec = (d.kalshi || []).filter(function (e) { return /recession in \d{4}/i.test(e.title); })[0];
 		if (rec && rec.outcomes[0]) { var rp = rec.outcomes[0].p; rows.push({ key: 'rec', tab: 'pred', name: 'US recession odds', mood: rp < 15 ? 'Low' : rp <= 35 ? 'Elevated' : 'High', tone: rp < 15 ? 0 : rp <= 35 ? -1 : -2, meter: { v: rp, min: 0, max: 100, kind: 'odds' }, facts: [rec.title.replace(/\?$/, '') + ': ' + Math.round(rp) + '% (Kalshi)'] }); }
 		if (S.DOOMSDAY_LATEST) {
 			var cs = S.DOOMSDAY_LATEST.seconds, top = S.conflictOdds(S.geoMarkets([d.geo, d.geok]), 1)[0];
 			rows.push({ key: 'geo', tab: 'geo', name: 'Geopolitics', mood: cs < 100 ? 'Very high tension' : cs < 180 ? 'High tension' : 'Tense', tone: cs < 100 ? -2 : -1,
-				facts: ['Doomsday Clock ' + S.clockText(cs) + ' to midnight'].concat(top ? [top.title.replace(/\?$/, '').slice(0, 70) + ': Yes ' + Math.round(top.yes) + '%'] : []).concat(mk.oil ? ['oil ' + S.money(mk.oil.price)] : []) });
+				facts: [S.T('Doomsday Clock {t} to midnight', { t: S.clockText(cs) })].concat(top ? [top.title.replace(/\?$/, '').slice(0, 70) + ': ' + S.T('Yes') + ' ' + Math.round(top.yes) + '%'] : []).concat(mk.oil ? [S.T('oil {p}', { p: S.money(mk.oil.price) })] : []) });
 		}
 		return rows;
 	};
@@ -581,9 +603,9 @@
 		return null;
 	};
 	S.countdown = function (ms) {
-		if (ms <= 0) return 'now';
+		if (ms <= 0) return S.T('now');
 		var d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 3600e3), m = Math.floor(ms % 3600e3 / 60e3);
-		return d > 0 ? d + 'd ' + h + 'h' : h > 0 ? h + 'h ' + m + 'm' : m + 'm';
+		return d > 0 ? S.T('{d}d {h}h', { d: d, h: h }) : h > 0 ? S.T('{h}h {m}m', { h: h, m: m }) : S.T('{m}m', { m: m });
 	};
 
 	// ---------- the Doomsday Clock (hand-entered from the Bulletin of the Atomic Scientists' own timeline, checked 2026-10-25) ----------
@@ -595,7 +617,7 @@
 	S.DOOMSDAY_LATEST = { seconds: 85, announced: '2026-01-27', url: 'https://thebulletin.org/doomsday-clock/' };
 	S.DOOMSDAY_SRC = 'https://thebulletin.org/doomsday-clock/timeline/';
 	S.DOOMSDAY_CHECKED = '2026-10-25';
-	S.clockText = function (sec) { return sec >= 120 ? (sec % 60 ? (sec / 60).toFixed(1) : String(sec / 60)) + ' minutes' : sec + ' seconds'; };
+	S.clockText = function (sec) { return sec >= 120 ? S.T('{n} minutes', { n: sec % 60 ? (sec / 60).toFixed(1) : String(sec / 60) }) : S.T('{n} seconds', { n: sec }); };
 	// step series for the chart: each setting holds until the next one (or `toYmd`), in minutes
 	S.doomsdaySteps = function (toYmd) {
 		var out = [], d = S.DOOMSDAY;
@@ -632,7 +654,7 @@
 	S.fmt = function (v, d) { if (v === null || v === undefined || !isFinite(v)) return '—'; return v.toLocaleString('en-US', { minimumFractionDigits: d == null ? 2 : d, maximumFractionDigits: d == null ? 2 : d }); };
 	S.pct = function (v, d) { if (v === null || v === undefined || !isFinite(v)) return '—'; return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(d == null ? 2 : d) + '%'; };
 	S.bp = function (pts) { return Math.round(pts * 100) + ' bp'; };
-	S.ago = function (ms) { var m = Math.round(ms / 60e3); if (m < 60) return m + ' min'; var h = Math.round(m / 60); if (h < 48) return h + ' h'; return Math.round(h / 24) + ' days'; };
+	S.ago = function (ms) { var m = Math.round(ms / 60e3); if (m < 60) return S.T('{n} min', { n: m }); var h = Math.round(m / 60); if (h < 48) return S.T('{n} h', { n: h }); return S.T('{n} days', { n: Math.round(h / 24) }); };
 
 	// ---------- "what changed since your last visit" ----------
 	// the values the summary strip shows, in comparable units
@@ -652,7 +674,7 @@
 		Object.keys(S.SNAP).forEach(function (k) {
 			if (prev[k] == null || cur[k] == null) return;
 			var s = S.SNAP[k], d = s[1] === 'pct' ? (cur[k] / prev[k] - 1) * 100 : cur[k] - prev[k], big = Math.abs(d) >= s[2];
-			var txt = s[1] === 'pct' ? S.pct(d, 1) : s[1] === 'rate' ? (d >= 0 ? '+' : '−') + Math.round(Math.abs(d) * 100) + ' bp' : (d >= 0 ? '+' : '−') + Math.abs(Math.round(d)) + ' pts';
+			var txt = s[1] === 'pct' ? S.pct(d, 1) : s[1] === 'rate' ? (d >= 0 ? '+' : '−') + Math.round(Math.abs(d) * 100) + ' bp' : S.T('{n} pts', { n: (d >= 0 ? '+' : '−') + Math.abs(Math.round(d)) });
 			out.push({ key: k, name: s[0], delta: round(d, 4), text: txt, big: big, up: d > 0 });
 		});
 		return out;

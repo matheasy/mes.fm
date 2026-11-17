@@ -263,7 +263,7 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		[/fredgraph\.csv/, 'fred_SP500.csv'], [/bankofcanada/, 'boc_valet.json'], [/data-api\.ecb/, 'ecb_dfr.csv'], [/bankofengland/, 'boe_bankrate.csv'], [/federalreserve\.gov\/feeds/, 'fed_press_monetary.xml'],
 		[/tag_slug=geopolitics/, 'polymarket_geo_geopolitics.json'], [/tag_slug=middle-east/, 'polymarket_geo_middle-east.json'], [/tag_slug=ukraine/, 'polymarket_geo_ukraine.json'], [/tag_slug=china/, 'polymarket_geo_china.json'],
 		[/gamma-api\.polymarket/, 'polymarket_fed.json'], [/series_ticker=KXFED/, 'kalshi_kxfed.json'], [/series_ticker=KXHORMUZNORM/, 'kalshi_hormuz.json'], [/kalshi/, 'kalshi_recession.json'], [/coindesk/, 'coindesk.xml'], [/cointelegraph/, 'cointelegraph.xml'],
-		[/cnbc\.com/, 'cnbc_markets.xml'], [/dowjones\.io/, 'marketwatch.xml'], [/bbci\.co\.uk\/news\/business/, 'bbc_business.xml'], [/bbci\.co\.uk\/news\/world/, 'bbc_world.xml'], [/aljazeera/, 'aljazeera.xml'], [/npr\.org/, 'npr_world.xml'], [/theguardian/, 'guardian_world.xml'], [/rss\.dw\.com/, 'dw_world.xml']];
+		[/cnbc\.com/, 'cnbc_markets.xml'], [/dowjones\.io/, 'marketwatch.xml'], [/bbci\.co\.uk\/news\/business/, 'bbc_business.xml'], [/bbci\.co\.uk\/(persian|arabic|mundo|portuguese|turkce|russian|zhongwen|hindi|indonesia|vietnamese)\//, 'bbc_persian.xml'], [/france24\.com/, 'bbc_persian.xml'], [/bbci\.co\.uk\/news\/world/, 'bbc_world.xml'], [/aljazeera/, 'aljazeera.xml'], [/npr\.org/, 'npr_world.xml'], [/theguardian/, 'guardian_world.xml'], [/rss\.dw\.com/, 'dw_world.xml']];
 	let calls = [], breakers = [];
 	global.fetch = async (url, opts) => {
 		calls.push({ url, ua: opts && opts.headers && opts.headers['user-agent'] });
@@ -281,7 +281,8 @@ async function t(name, fn) { try { await fn(); n++; } catch (e) { fail++; consol
 		assert.strictEqual(res.code, 200); assert(/s-maxage=300, stale-while-revalidate=3600/.test(res.h['Cache-Control']));
 		const s = res.body.sources, bad = Object.keys(s).filter((k) => !s[k].ok);
 		assert.deepStrictEqual(bad, [], 'failed: ' + bad.map((k) => k + ' ' + s[k].error).join('; '));
-		assert.strictEqual(Object.keys(s).length, 24);
+		assert.strictEqual(Object.keys(s).length, 25);
+		assert(s.lnews.data.fa.length >= 8 && s.lnews.data.fa.every((i) => i.src && /^https?:\/\//.test(i.link)), 'Persian headlines'); ['ar', 'es', 'zh-CN', 'de', 'fr'].forEach((k) => assert(s.lnews.data[k] && s.lnews.data[k].length, 'lnews ' + k));
 		assert(s.etf.data.days.length > 600 && s.etf.data.usd); assert(s.cot.data.parts.length === 4);
 		['news', 'mnews', 'wnews'].forEach((k) => { assert(s[k].data.items.length >= 10, k); assert(!s[k].data.missing, k + ' missing ' + s[k].data.missing); s[k].data.items.forEach((i) => { assert(i.src && /^https?:\/\//.test(i.link)); if (i.img) assert(/^https:\/\//.test(i.img)); }); });
 		assert(s.mnews.data.items.some((i) => i.src === 'CNBC') && s.mnews.data.items.some((i) => i.img), 'markets section has CNBC and pictures');

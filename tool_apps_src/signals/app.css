@@ -174,9 +174,9 @@
 #sg .sg-ptbl td, #sg .sg-ptbl th { white-space: nowrap; }
 /* ---------- Overview: market mood by sector ---------- */
 #sg .sg-ov {display:flex;flex-direction:column;gap:0.35em;margin:0.4em 0 0.6em;}
-#sg .sg-ov__r {border:1px solid var(--sg-line);border-left:0.35em solid var(--sg-mut);border-radius:0.5em;background:var(--sg-card);}
-#sg .sg-ov__r.t-2 {border-left-color:var(--sg-xf);} #sg .sg-ov__r.t-1 {border-left-color:var(--sg-f);} #sg .sg-ov__r.t0 {border-left-color:var(--sg-line);}
-#sg .sg-ov__r.t1 {border-left-color:var(--sg-g);} #sg .sg-ov__r.t2 {border-left-color:var(--sg-xg);}
+#sg .sg-ov__r {border:1px solid var(--sg-line);border-inline-start:0.35em solid var(--sg-mut);border-radius:0.5em;background:var(--sg-card);}
+#sg .sg-ov__r.t-2 {border-inline-start-color:var(--sg-xf);} #sg .sg-ov__r.t-1 {border-inline-start-color:var(--sg-f);} #sg .sg-ov__r.t0 {border-inline-start-color:var(--sg-line);}
+#sg .sg-ov__r.t1 {border-inline-start-color:var(--sg-g);} #sg .sg-ov__r.t2 {border-inline-start-color:var(--sg-xg);}
 #sg .sg-ov__go {display:grid;grid-template-columns:minmax(9em, 13em) 9.5em 13em minmax(0, 1fr) 1em;align-items:center;gap:0.4em 0.9em;width:100%;padding:0.55em 0.75em;border:0;background:transparent;font:inherit;color:var(--sg-fg);text-align:left;cursor:pointer;border-radius:0.5em;}
 #sg .sg-ov__go:hover {background:var(--sg-soft);} #sg .sg-ov__go:focus-visible {outline:2px solid var(--accent);outline-offset:-2px;}
 #sg .sg-ov__n {font-weight:700;}
@@ -272,3 +272,27 @@ body.dark-mode #sg.sg .sg-cx {background:rgba(0,0,0,0.7);}
 #sg .sg-sdread {margin:0.3em 0 0.6em;}
 #sg .sg-sdt td, #sg .sg-sdt th {white-space:nowrap;}
 
+/* language menu (the page in other languages: /signals-fa, /signals-es ...; build_tool_apps.py SIG_LANG_SLUGS) */
+#sg .sg-lang {display:flex;justify-content:flex-end;margin:0 0 0.5em;}
+#sg .sg-lang details {position:relative;font-size:0.92em;}
+#sg .sg-lang summary {cursor:pointer;list-style:none;padding:0.3em 0.75em;border:1px solid var(--sg-line);border-radius:999px;background:var(--sg-card);color:var(--sg-fg);font-weight:600;user-select:none;}
+#sg .sg-lang summary::-webkit-details-marker {display:none;}
+#sg .sg-lang summary::after {content:" \25BE";}
+#sg .sg-lang ul {position:absolute;right:0;top:calc(100% + 4px);z-index:30;margin:0;padding:0.35em 0;list-style:none;min-width:12em;max-height:70vh;overflow:auto;background:var(--sg-card);border:1px solid var(--sg-line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);}
+#sg .sg-lang li a {display:block;padding:0.42em 1em;color:var(--sg-fg) !important;text-decoration:none !important;}
+#sg .sg-lang li a:hover, #sg .sg-lang li a:focus {background:var(--sg-soft);}
+#sg .sg-lang li a[aria-current] {font-weight:700;color:var(--accent) !important;}
+#sg[dir=rtl] .sg-lang {justify-content:flex-start;}
+#sg[dir=rtl] .sg-lang ul {right:auto;left:0;}
+/* right-to-left pages (Persian, Arabic): text runs right to left, but charts, gauges, clocks and bars keep their left-to-right maths */
+#sg[dir=rtl] .sg-chart, #sg[dir=rtl] .sg-gauge, #sg[dir=rtl] .sg-ck, #sg[dir=rtl] .sg-spark, #sg[dir=rtl] .sg-mt, #sg[dir=rtl] .sg-dbar, #sg[dir=rtl] .sg-hbar, #sg[dir=rtl] .sg-bar, #sg[dir=rtl] .sg-prog, #sg[dir=rtl] .sg-range, #sg[dir=rtl] .sg-cx__rng {direction:ltr;}
+#sg[dir=rtl] .sg-si__v, #sg[dir=rtl] .tu-stat__value, #sg[dir=rtl] .sg-coin__p, #sg[dir=rtl] .sg-hv__big, #sg[dir=rtl] .sg-gv {unicode-bidi:plaintext;}
+#sg[dir=rtl] .sg-ch, #sg[dir=rtl] .sg-cellv, #sg[dir=rtl] .sg-wc__v {direction:ltr;unicode-bidi:isolate;}
+#sg[dir=rtl] .sg-dotc, #sg[dir=rtl] .sg-sw {margin-right:0;margin-left:0.35em;}
+#sg[dir=rtl] .sg-chx {right:auto;left:0.4em;}
+#sg[dir=rtl] .sg-pop__x {right:auto;left:0.3em;}
+#sg[dir=rtl] .sg-mk__f a {margin-left:0;margin-right:auto;}
+#sg[dir=rtl] .sg-nfold {margin-left:0;margin-right:auto;}
+#sg[dir=rtl] .sg-cmore {margin-left:0;margin-right:0.4em;}
+#sg[dir=rtl] .sg-ov__arr {transform:scaleX(-1);}
+#sg[lang=fa], #sg[lang=ar] {line-height:1.7;}

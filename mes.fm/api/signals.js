@@ -155,7 +155,15 @@ const JOBS = {
   },
   stockfg: async () => {
     const since = daysAgo(1000), [sp, vix, hy] = await Promise.all([fred('SP500', since), fred('VIXCLS', since), fred('BAMLH0A0HYM2', since)]);
-    return L.stockFearGreed(sp, vix, hy, 260);
+    // FRED's SP500 series only goes back one year since Nov 2026 (licence), the composite needs ~1.5 years: fill the older days from Yahoo's ^GSPC closes
+    let spx = L.dropNull(sp);
+    if (spx.length < 125 + 252 + 20) {
+      try {
+        const have = new Set(spx.map((p) => p[0])), y = L.yahooCloses(await json('https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=5y&interval=1d', 8000, { 'user-agent': 'Mozilla/5.0 (compatible; mes.fm-signals/1.0)' }));
+        spx = y.filter((p) => !have.has(p[0])).concat(spx).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+      } catch (e) { /* keep FRED only: stockFearGreed then says there is not enough history */ }
+    }
+    return L.stockFearGreed(spx, vix, hy, 260);
   },
   rates: async () => {
     const since = daysAgo(3 * 366), ids = ['DFF', 'DFEDTARU', 'DFEDTARL', 'DGS2', 'DGS10'], got = await Promise.all(ids.map((id) => fred(id, since).then(L.dropNull)));
@@ -193,6 +201,15 @@ const JOBS = {
     return out;
   },
   news: () => feeds('crypto'),
+  // headlines in the languages of the translated pages: { fa: [items], es: [...] }, 10 per language, newest first
+  lnews: async () => {
+    const list = L.LANG_FEEDS, got = await Promise.allSettled(list.map((f) => text(f.url, 7000).then((x) => L.parseRss(x, 10, { sum: true, imgHosts: f.img }).map((i) => Object.assign({ src: f.name, sid: f.id }, i)))));
+    const out = {}, errs = [];
+    got.forEach((g, i) => { const f = list[i]; if (g.status === 'fulfilled') (out[f.lang] = out[f.lang] || []).push(g.value); else errs.push(f.name + ': ' + g.reason.message); });
+    Object.keys(out).forEach((k) => { out[k] = L.mergeNews(out[k], 10).slice(0, 12); });
+    if (!Object.keys(out).length) throw new Error(errs.join('; ') || 'no feed answered');
+    return out;
+  },
   mnews: () => feeds('markets'),
   wnews: () => feeds('world'),
   // Geopolitics: Polymarket conflict markets (war, ceasefire, invasion, blockade ...) from four tags, filtered by L.isConflict, biggest first
