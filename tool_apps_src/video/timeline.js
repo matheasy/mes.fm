@@ -278,6 +278,16 @@
 				var keep0 = JSON.parse(drag.snap), was = {}; keep0.clips.forEach(function (x) { was[x.id] = x; });
 				VE.P.clips.forEach(function (x) { if (!ign[x.id] && was[x.id]) x.start = was[x.id].start; });
 			}
+			// the other selected clips get the same edge moved by the same amount (Camtasia); each stops at its own neighbours / file length
+			var dEdge = drag.edge === "l" ? c.start - o.start : V.end(c) - (o.start + (o.out - o.in) / (c.speed || 1));
+			drag.orig.forEach(function (q) {
+				if (q.c === c || (c.link && q.c.link === c.link) || drag.prim < 2) return;
+				Object.assign(q.c, { start: q.start, in: q.in, out: q.out, anims: q.anims ? JSON.parse(q.anims) : null });
+				var qm = mag(q.c.track), qe = q.start + (q.out - q.in) / (q.c.speed || 1), qlo = 0, qhi = Infinity;
+				if (!qm) V.onTrack(VE.P, q.c.track).forEach(function (x) { if (ign[x.id]) return; if (V.end(x) <= q.start + 1e-4) qlo = Math.max(qlo, V.end(x)); if (x.start >= qe - 1e-4) qhi = Math.min(qhi, x.start); });
+				Object.assign(q.c, V.trim(q.c, drag.edge, (drag.edge === "l" ? q.start : qe) + dEdge, { mediaDur: VE.mediaDur(q.c), lo: qlo, hi: qhi, minDur: 1 / VE.P.fps, mag: qm }));
+				if (qm) V.pack(VE.P, q.c.track);
+			});
 			drag.orig.forEach(function (q) {
 				if (q.c === c || !c.link || q.c.link !== c.link) return;
 				q.c.start = c.start; q.c.in = c.in; q.c.out = c.out;
