@@ -61,6 +61,16 @@ PHOTOS = {
     "calgary-grain-sour":        "446ba23f",
     "calgary-winter-dining":     "e9a00d92",
     "calgary-loft-lounge":       "f9d07321",
+    # Marriott (city hotel stay; Karolina: list it as "Marriott", no location)
+    "marriott-bar-window":       "08d27649",
+    "marriott-napkin-glasses":   "2f7dd3ad",
+    "marriott-bed-view":         "8f589d05",
+    "marriott-window-glasses":   "36c8b8a0",
+    "marriott-bed-lamp":         "28a2fd0f",
+    "marriott-armchair":         "95e0ecb3",
+    "marriott-feet-up":          "9d714f1a",
+    "marriott-champagne-toast":  "5494dd92",
+    "marriott-pour":             "130f6c47",
     # One18 Empire (restaurant & bar, labelled on the old Food & Beverage page)
     "one18-torch":               "84948f2e",
     "one18-pour":                "9a34f829",

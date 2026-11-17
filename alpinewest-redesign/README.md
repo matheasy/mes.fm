@@ -5,7 +5,7 @@ The hospitality-focused redesign of alpinewestcreative.com, built from Karolina'
 
 ## Pages
 `/` · `/work` · `/work/secrets-mallorca-villamil` · `/work/hyatt-ziva-puerto-vallarta` · `/work/hyatt-regency-calgary` ·
-`/services` · `/about` · `/inquire` · `/travel-collaborations` (footer only, noindex) · `404`
+`/work/marriott` · `/services` · `/about` · `/inquire` · `/travel-collaborations` (footer only, noindex) · `404`
 
 ## Editing
 - Pages live in `_src/` (plain HTML). Header, footer and the closing "Your next story starts here" banner are in `_src/_partials/`.
@@ -22,9 +22,9 @@ The hospitality-focused redesign of alpinewestcreative.com, built from Karolina'
 - Originals are cached in `~/.cache/alpinewest-originals` (not in git).
 
 ## Inquiry form
-`_src/inquire.html` has `data-key="WEB3FORMS_KEY"`. Replace it with the real Web3Forms access key (free, made at
-web3forms.com with info@alpinewestcreative.com) and the form sends straight from the page. Until then it opens the
-visitor's email app with the message filled in.
+Sends through Web3Forms with Karolina's access key (`data-key` in `_src/inquire.html`; the key is public by design).
+Messages go to the Gmail address her Web3Forms account was made with; she can change that in the Web3Forms
+dashboard. If the service can't be reached the form shows the email address instead.
 
 Tracking: clicks on every "Inquire about a shoot" button (`inquire_click`, with where it was) and form events
 (`inquiry_start`, `inquiry_submit`) go to Vercel Web Analytics and/or Google Analytics if either is added to the page.
