@@ -714,6 +714,12 @@
         var s = document.createElement("script"); s.id = "mes-hgrip-js"; s.src = "/main_js/height-grip.js?v=2"; s.async = true; document.head.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", gripLoader); else gripLoader();
+    /* A- / 100% / A+ pill for single text boxes: any element with data-mes-tsize="<localStorage key>" (main_js/text-size.js). */
+    function tsizeLoader() {
+        if (window.MESTextSize || !document.querySelector("[data-mes-tsize]") || document.getElementById("mes-tsize-js")) return;
+        var s = document.createElement("script"); s.id = "mes-tsize-js"; s.src = "/main_js/text-size.js?v=1"; s.async = true; document.head.appendChild(s);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tsizeLoader); else tsizeLoader();
 
     /* Standard | Wide | Theatre (| Show sidebar) in the floating compact bar (2026-11-02). On big screens (>= 1400px), while #compact-nav is
        showing, a small copy of the page's own width switch (aside.js .mes-mode, toc-flip.js .toc-mode, hub-theatre.js .hub-mode) sits in the

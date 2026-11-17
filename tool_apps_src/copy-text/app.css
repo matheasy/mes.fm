@@ -1,18 +1,13 @@
 	/* copy text -- sticky-note palette: the accent is a note yellow-brown; note colours are literals so the dark theme can map them */
 	.tu kbd {font:0.85em ui-monospace,Menlo,monospace;padding:0.1em 0.4em;border:1px solid #c3c9d2;border-bottom-width:2px;border-radius:0.3em;background:#f4f6f9;color:#333;}
 	.tu .cp-new-text {min-height:6.5em;line-height:1.45;resize:vertical;}
-	.tu .cp-lblrow {display:flex;align-items:center;justify-content:space-between;gap:0.6em;margin-bottom:0.25em;}
-	.tu .cp-lblrow > label {margin:0;}
-	.tu .cp-fz {display:inline-flex;border:1px solid #c3c9d2;border-radius:999px;overflow:hidden;flex:none;}
-	.tu .cp-fz button {border:0;background:#fff;color:#444;font:inherit;font-size:0.85em;font-weight:700;padding:0.3em 0.75em;cursor:pointer;min-height:2em;}
-	.tu .cp-fz .cp-fzb--up {font-size:1em;}
-	.tu .cp-fz .cp-fzv {font-weight:400;font-size:0.78em;min-width:3.6em;border-left:1px solid #c3c9d2;border-right:1px solid #c3c9d2;}
-	.tu .cp-fz button:hover:not(:disabled) {color:var(--accent);background:#fbf1d9;}
-	.tu .cp-fz button:disabled {opacity:0.4;cursor:default;}
-	body.dark-mode #cp .cp-fz {border-color:#555;}
-	body.dark-mode #cp .cp-fz button {background:#262626;color:#e3e6ea;}
-	body.dark-mode #cp .cp-fz .cp-fzv {border-color:#555;}
-	body.dark-mode #cp .cp-fz button:hover:not(:disabled) {background:#333;color:var(--accent);}
+	/* saved-notes text size (A- / A+ in the search bar, main_js/text-size.js sets --cp-nfz on #cp-out) */
+	.tu #cp-out .cp-body {font-size:calc(1em * var(--cp-nfz, 1));}
+	.tu #cp-out .cp-title {font-size:calc(0.98em * var(--cp-nfz, 1));}
+	.tu #cp-out .cp-e-text {font-size:calc(0.9em * var(--cp-nfz, 1));}
+	.tu #cp-out .cp-e-title {font-size:calc(1.05em * var(--cp-nfz, 1));}
+	.tu .cp-nfzwrap {display:inline-flex;align-items:center;gap:0.35em;font-size:0.85em;color:#667;}
+	body.dark-mode #cp .cp-nfzwrap {color:#a0a8b3;}
 	.tu .cp-add-btns {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;}
 	.tu .cp-boards {display:flex;flex-wrap:wrap;gap:0.4em;margin:1.2em 0 0.8em;padding-bottom:0.2em;border-bottom:2px solid var(--tint);}
 	.tu .cp-tab {cursor:pointer;border:1px solid #c3c9d2;border-bottom:0;border-radius:0.5em 0.5em 0 0;background:#fff;color:#444;padding:0.5em 0.9em;font-size:0.92em;margin-bottom:-2px;}
