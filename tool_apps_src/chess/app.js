@@ -767,13 +767,25 @@
 	$("ch-otb").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
 		var o = b.getAttribute("data-o");
-		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click();
+		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click(); else if (o === "fill") panelBtn(0); else if (o === "fs") panelBtn(1);
 	});
+	/** the Fill window / Full screen buttons on the board mirror panel-view.js's own buttons (labels follow the state) */
+	function paintOtbPanel() {
+		var fb = root.querySelector('.ch-ob[data-o="fill"]'), sb = root.querySelector('.ch-ob[data-o="fs"]'); if (!fb) return;
+		var fillOn = $("ch-view").classList.contains("mes-pfill") && !document.fullscreenElement, fsOn = !!document.fullscreenElement;
+		fb.innerHTML = fillOn ? '✕ <span>Close</span>' : '⤢ <span>Fill window</span>';
+		fb.setAttribute("aria-pressed", fillOn ? "true" : "false");
+		sb.hidden = !(document.fullscreenEnabled || document.webkitFullscreenEnabled) || fillOn;
+		sb.innerHTML = fsOn ? '✕ <span>Exit full screen</span>' : '⛶ <span>Full screen</span>';
+		fb.hidden = fsOn;
+	}
+	document.addEventListener("fullscreenchange", function () { setTimeout(paintOtbPanel, 30); });
 	function inFill() { return $("ch-view").classList.contains("mes-pfill") || !!document.fullscreenElement; }
 	function applyShow() {
 		var sh = S.show;
 		root.classList.toggle("ch-nonames", !sh.names);
-		$("ch-otb").hidden = !sh.btns || !(use3d() || inFill());
+		$("ch-otb").hidden = !sh.btns;
+		paintOtbPanel();
 		$("ch-moves").hidden = !sh.moves;
 		$("ch-typebox").hidden = !sh.type;
 		$("ch-otype").hidden = !sh.type;
@@ -849,7 +861,7 @@
 	/* ---------- fill window / full screen (shared panel-view.js) ---------- */
 	var view = $("ch-view");
 	function addPanel() {
-		if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("ch-pbar"), stage: $("ch-stage"), onChange: function () { render(true); setTimeout(size3d, 60); } });
+		if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("ch-pbar"), stage: $("ch-stage"), onChange: function () { render(true); paintOtbPanel(); setTimeout(size3d, 60); } });
 	}
 	addPanel();
 	if (!view.__mesPanel) document.addEventListener("DOMContentLoaded", addPanel);

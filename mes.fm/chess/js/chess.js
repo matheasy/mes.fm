@@ -1038,7 +1038,8 @@
    Z = rank (rank 1 at Z = +3.5, rank 8 at Z = -3.5), so White sits on the +Z side.
    API: CH3D.create(container) -> Promise<view>; view.setPosition({b, flip, last, check, sel, targets, anim}), view.pick(clientX, clientY) -> square,
    view.setRoom(id), view.setSet(id), view.setCam(mode), view.orbit(dx, dy), view.zoom(f), view.resetView(), view.size(w, h), view.render(),
-   view.png(), view.setCoords(on), view.dispose(). Everything (pieces, rooms, textures) is drawn by code: no image files. */
+   view.png(), view.setCoords(on), view.dispose(). Pieces and rooms are drawn by code, except the AI-painted backdrops (img/bg-*.jpg) and the
+   "Fantasy armies" figures (img/fantasy/*.png). */
 (function () {
 	"use strict";
 	if (typeof document === "undefined" || typeof window === "undefined") return;     // the same file also runs as the computer's Web Worker
@@ -1055,8 +1056,8 @@
 	var M = 18;    // squares per metre (a 5.5 cm square): room furniture is sized in metres * M
 
 	var ROOMS = [{ id: "club", name: "Chess club" }, { id: "tournament", name: "Tournament hall" }, { id: "park", name: "Park table" },
-		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
-	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }];
+		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
+	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
@@ -1084,6 +1085,8 @@
 			w: { color: "#f3efe8", roughness: 0.25, metalness: 0.05 }, b: { color: "#202426", roughness: 0.25, metalness: 0.05 }, accW: "#bdb6aa", accB: "#55606a" };
 		if (id === "glass") return { light: "#c9dcea", dark: "#3e5f7a", lightV: ["#e4eff8"], darkV: ["#2d4a62"], frame: "#20303e", frameV: ["#2f4558"], coord: "#cfe4f5",
 			w: { color: "#eaf6ff", roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62 }, b: { color: "#1e3a5c", roughness: 0.08, metalness: 0.15, transparent: true, opacity: 0.7 }, accW: "#9fd2ff", accB: "#79b8ff" };
+		if (id === "fantasy") return { light: "#a89d89", dark: "#3f434b", lightV: ["#a69b88", "#cfc6b5", "#9b9080"], darkV: ["#3a3d44", "#5c606a", "#2e3036"], frame: "#3a2416", frameV: ["#24150b", "#5a3a22", "#2c1a0e"], coord: "#7fe3ff",
+			w: { color: "#d8c690", roughness: 0.35, metalness: 0.55 }, b: { color: "#5b1e22", roughness: 0.35, metalness: 0.45 }, accW: "#e8d9a8", accB: "#7a2a2e", sprites: true };
 		if (id === "tournament") return { light: "#eeeed2", dark: "#769656", lightV: [], darkV: [], frame: "#f5f3ea", frameV: [], coord: "#4b5d3a",
 			w: { color: "#f5f1e6", roughness: 0.45, metalness: 0 }, b: { color: "#161616", roughness: 0.45, metalness: 0 }, accW: "#d8d2c0", accB: "#3a3a3a" };
 		return { light: "#e6c79a", dark: "#8a5a34", lightV: ["#d4b07c", "#c79f6a"], darkV: ["#6e4424", "#a06a3e"], frame: "#5a3418", frameV: ["#3f230f", "#73441f"], coord: "#f1dcb8",
@@ -1128,7 +1131,32 @@
 		g.Ne = new THREE.SphereGeometry(0.025, 8, 6); g.Ne.userData.keep = true;
 		return g;
 	}
+	/* "Fantasy armies": each piece is an AI-painted figure (mes.fm/chess/img/fantasy/<w|b><K|Q|R|B|N|P>.png, 512 x 640, transparent,
+	   feet at the bottom centre) on a plane that turns to face the camera (and leans back a little when the camera is high), standing on a
+	   small metal base in the side's colour. The textures load once and are shared. */
+	var SPR = {}, SPR_H = { K: 1.32, Q: 1.26, R: 1.12, B: 1.22, N: 1.18, P: 0.92 }, sprGeo = {};
+	function sprMat(key, onload) {
+		if (SPR[key]) return SPR[key];
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy/" + key + ".png?v=1";
+		var t = new THREE.TextureLoader().load(url, function () { onload && onload(); });
+		t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+		var m = new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.35, roughness: 0.9, metalness: 0, side: THREE.DoubleSide, emissive: "#ffffff", emissiveMap: t, emissiveIntensity: 0.42 });
+		m.userData.keep = true;
+		var d = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: t, alphaTest: 0.35 }); d.userData.keep = true;
+		return (SPR[key] = { m: m, d: d });
+	}
+	function makeSprite(type, mats) {
+		var white = type === type.toUpperCase(), t = type.toUpperCase(), g = new THREE.Group(), h = SPR_H[t];
+		var base = new THREE.Mesh(sprGeo.base || (sprGeo.base = (function () { var b = new THREE.CylinderGeometry(0.34, 0.37, 0.07, 32); b.translate(0, 0.035, 0); b.userData.keep = true; return b; })()), white ? mats.w : mats.b);
+		base.castShadow = true; base.receiveShadow = true; g.add(base);
+		var geo = sprGeo[t] || (sprGeo[t] = (function () { var p = new THREE.PlaneGeometry(h * 0.8, h); p.translate(0, h / 2, 0); p.userData.keep = true; return p; })());
+		var s = sprMat((white ? "w" : "b") + t, mats.redraw), pl = new THREE.Mesh(geo, s.m);
+		pl.customDepthMaterial = s.d; pl.castShadow = true; pl.position.y = 0.05; pl.rotation.order = "YXZ"; pl.userData.bb = true;
+		g.add(pl); g.userData.bb = pl; g.userData.type = type;
+		return g;
+	}
 	function makePiece(type, mats) {
+		if (mats.sprites) return makeSprite(type, mats);
 		var white = type === type.toUpperCase(), t = type.toUpperCase(), mat = white ? mats.w : mats.b, acc = white ? mats.accW : mats.accB, g = new THREE.Group(), G = GEO;
 		function add(geo, m, x, y, z) { var o = new THREE.Mesh(geo, m || mat); o.position.set(x || 0, y || 0, z || 0); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; }
 		if (t === "N") {
@@ -1198,6 +1226,7 @@
 		if (this.mats) ["w", "b", "accW", "accB"].forEach(function (k) { this.mats[k].dispose(); }, this);
 		this.look = L;
 		this.mats = { w: keep(new THREE.MeshStandardMaterial(L.w)), b: keep(new THREE.MeshStandardMaterial(L.b)), accW: keep(std(L.accW, 0.4)), accB: keep(std(L.accB, 0.4)) };
+		var self = this; this.mats.sprites = !!L.sprites; this.mats.redraw = function () { self.render(); };
 	};
 	View.prototype.buildBoard = function () {
 		var L = this.look, g = this.boardG, coords = this.coords;
@@ -1367,6 +1396,12 @@
 		var tg = this.camTarget(), cur = this.cur, k = instant || REDUCED ? 1 : 0.16, moving = false;
 		[["eye", tg.eye], ["look", tg.look], ["up", tg.up]].forEach(function (a) { var v = cur[a[0]]; if (v.distanceTo(a[1]) > 0.002) { v.lerp(a[1], k); moving = true; } else v.copy(a[1]); });
 		this.cam.position.copy(cur.eye); this.cam.up.copy(cur.up).normalize(); this.cam.lookAt(cur.look);
+		var ce = cur.eye;
+		this.pieceG.children.forEach(function (g) {   // figures of the Fantasy set turn to face the camera
+			var pl = g.userData.bb; if (!pl) return;
+			var dx = ce.x - g.position.x, dz = ce.z - g.position.z, el = Math.atan2(ce.y - 0.6, Math.hypot(dx, dz));
+			pl.rotation.y = Math.atan2(dx, dz); pl.rotation.x = -Math.max(0, el - 0.35) * 0.55;
+		});
 		if (this.roomAnims.length && !REDUCED) { var tt = now / 1000; this.roomAnims.forEach(function (f) { f(tt); }); busy = true; }
 		this.renderer.render(this.scene, this.cam);
 		if ((moving || busy) && !instant && !document.hidden) this.render();
@@ -1636,6 +1671,45 @@
 			});
 			var pl5 = light(new THREE.PointLight("#c9d8ff", 140, 120, 1.4)); pl5.position.set(0, F + 40, 0);
 			this.key.intensity = 1.4; this.key.color.set("#eef3ff");
+		} else if (name === "runes") {
+			// a candle-lit stone hall of glowing runes (original scene; the far view is the AI-painted bg-runes.jpg)
+			scene.background = new THREE.Color("#0b0e14"); scene.fog = new THREE.Fog("#0b0e14", 70, 210);
+			var stoneT = function (base, seed, rep) { var rr = rng(seed); var t = tex(256, 256, function (c, w, h) { c.fillStyle = base; c.fillRect(0, 0, w, h); for (var y = 0; y < h; y += 64) for (var x = ((y / 64) % 2) * 32; x < w + 64; x += 64) { var v = rr() * 26 - 13; c.fillStyle = "rgba(" + (60 + v) + "," + (62 + v) + "," + (70 + v) + ",0.9)"; c.fillRect(x + 2, y + 2, 60, 60); for (var k = 0; k < 14; k++) { c.fillStyle = "rgba(0,0,0," + rr() * 0.25 + ")"; c.fillRect(x + rr() * 60, y + rr() * 60, 2 + rr() * 6, 2 + rr() * 6); } } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); return t; };
+			var floorR = std("#ffffff", 0.95, { map: stoneT("#22252b", 41, 14) });
+			var wallR = std("#ffffff", 0.95, { map: stoneT("#1c1f25", 43, 6) });
+			F = table(g, std("#ffffff", 0.9, { map: stoneT("#3a3d44", 47, 2) }), std("#2a2c31", 0.9), 18, 18, 13.5);
+			walls(g, 100, 100, 70, F, wallR, floorR);
+			backdrop(this, g, "bg-runes.jpg", { w: 200, h: 112.5, d: 99.4, y: F + 56 });
+			// the glowing rune circle on the floor around the table
+			var runeT = tex(1024, 1024, function (c, w, h) {
+				var rr = rng(91); c.translate(w / 2, h / 2); c.strokeStyle = "#5fe1ff"; c.shadowColor = "#5fe1ff"; c.shadowBlur = 18; c.lineCap = "round";
+				[0.47, 0.41, 0.3].forEach(function (rad, i) { c.lineWidth = i === 1 ? 3 : 6; c.beginPath(); c.arc(0, 0, rad * w, 0, Math.PI * 2); c.stroke(); });
+				c.lineWidth = 5;
+				for (var i = 0; i < 36; i++) {   // made-up rune marks between the two outer rings
+					c.save(); c.rotate(i * Math.PI * 2 / 36); c.translate(0, -0.44 * w);
+					var n = 2 + ((rr() * 3) | 0); c.beginPath(); c.moveTo(0, -14); c.lineTo(0, 14);
+					for (var j = 0; j < n; j++) { var y0 = -14 + rr() * 22, sx = rr() < 0.5 ? -1 : 1; c.moveTo(0, y0); c.lineTo(sx * (6 + rr() * 6), y0 + (rr() - 0.5) * 16); }
+					c.stroke(); c.restore();
+				}
+				for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3, b = a + Math.PI * 2 / 3; c.beginPath(); c.moveTo(Math.cos(a) * 0.3 * w, Math.sin(a) * 0.3 * w); c.lineTo(Math.cos(b) * 0.3 * w, Math.sin(b) * 0.3 * w); c.stroke(); }
+			});
+			var circle = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshBasicMaterial({ map: runeT, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
+			circle.rotation.x = -Math.PI / 2; circle.position.y = F + 0.05; g.add(circle);
+			// candles and pillars
+			var wax = std("#efe4c8", 0.8), flameM = new THREE.MeshBasicMaterial({ color: "#ffcf6b" }), stoneP = std("#2b2e35", 0.9), flames = [];
+			[[-14, -12], [15, -10], [-13, 13], [14, 12]].forEach(function (p, i) {
+				var hh = 1.6 + (i % 2) * 0.8;
+				cyl(g, 0.2, 0.22, hh, wax, p[0] * 0.55, F + 13.5 + hh / 2 - 0.2, p[1] * 0.55, 12);
+				var fl = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), flameM); fl.scale.set(0.7, 1.5, 0.7); fl.position.set(p[0] * 0.55, F + 13.5 + hh + 0.05, p[1] * 0.55); g.add(fl); flames.push(fl);
+			});
+			[[-45, -45], [45, -45], [-45, 45], [45, 45], [-70, 0], [70, 0]].forEach(function (p) {
+				cyl(g, 3.5, 4, 70, stoneP, p[0], F + 35, p[1], 16);
+				var rb = new THREE.Mesh(new THREE.TorusGeometry(4.1, 0.3, 8, 32), new THREE.MeshBasicMaterial({ color: "#3fd0ff" })); rb.rotation.x = Math.PI / 2; rb.position.set(p[0], F + 20, p[1]); g.add(rb);
+			});
+			var cand = light(new THREE.PointLight("#ffb257", 70, 60, 1.6)); cand.position.set(0, 9, 0);
+			var rune = light(new THREE.PointLight("#5fd8ff", 40, 90, 1.4)); rune.position.set(0, 8, -6);
+			anims.push(function (t) { cand.intensity = 65 + 12 * Math.sin(t * 7.3) + 10 * Math.sin(t * 13.1); flames.forEach(function (f, i) { f.scale.y = 1.4 + 0.25 * Math.sin(t * 9 + i * 2); }); circle.material.opacity = 0.7 + 0.18 * Math.sin(t * 1.3); circle.rotation.z = t * 0.03; });
+			this.key.intensity = 0.9; this.key.color.set("#c9d6ff");
 		} else if (name === "space") {
 			scene.background = new THREE.Color("#02030a"); scene.fog = null;
 			var starG = new THREE.BufferGeometry(), pts = [];
@@ -2429,13 +2503,25 @@
 	$("ch-otb").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
 		var o = b.getAttribute("data-o");
-		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click();
+		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click(); else if (o === "fill") panelBtn(0); else if (o === "fs") panelBtn(1);
 	});
+	/** the Fill window / Full screen buttons on the board mirror panel-view.js's own buttons (labels follow the state) */
+	function paintOtbPanel() {
+		var fb = root.querySelector('.ch-ob[data-o="fill"]'), sb = root.querySelector('.ch-ob[data-o="fs"]'); if (!fb) return;
+		var fillOn = $("ch-view").classList.contains("mes-pfill") && !document.fullscreenElement, fsOn = !!document.fullscreenElement;
+		fb.innerHTML = fillOn ? '✕ <span>Close</span>' : '⤢ <span>Fill window</span>';
+		fb.setAttribute("aria-pressed", fillOn ? "true" : "false");
+		sb.hidden = !(document.fullscreenEnabled || document.webkitFullscreenEnabled) || fillOn;
+		sb.innerHTML = fsOn ? '✕ <span>Exit full screen</span>' : '⛶ <span>Full screen</span>';
+		fb.hidden = fsOn;
+	}
+	document.addEventListener("fullscreenchange", function () { setTimeout(paintOtbPanel, 30); });
 	function inFill() { return $("ch-view").classList.contains("mes-pfill") || !!document.fullscreenElement; }
 	function applyShow() {
 		var sh = S.show;
 		root.classList.toggle("ch-nonames", !sh.names);
-		$("ch-otb").hidden = !sh.btns || !(use3d() || inFill());
+		$("ch-otb").hidden = !sh.btns;
+		paintOtbPanel();
 		$("ch-moves").hidden = !sh.moves;
 		$("ch-typebox").hidden = !sh.type;
 		$("ch-otype").hidden = !sh.type;
@@ -2511,7 +2597,7 @@
 	/* ---------- fill window / full screen (shared panel-view.js) ---------- */
 	var view = $("ch-view");
 	function addPanel() {
-		if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("ch-pbar"), stage: $("ch-stage"), onChange: function () { render(true); setTimeout(size3d, 60); } });
+		if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("ch-pbar"), stage: $("ch-stage"), onChange: function () { render(true); paintOtbPanel(); setTimeout(size3d, 60); } });
 	}
 	addPanel();
 	if (!view.__mesPanel) document.addEventListener("DOMContentLoaded", addPanel);
