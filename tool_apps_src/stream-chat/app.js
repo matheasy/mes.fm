@@ -188,7 +188,7 @@
 		var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, t = ctl && setTimeout(function () { ctl.abort(); }, 15000);
 		return fetch(url, Object.assign({ signal: ctl && ctl.signal }, opt || {})).then(function (r) { if (t) clearTimeout(t); return r.json().then(function (j) { if (!r.ok) throw new Error(j && j.error || 'HTTP ' + r.status); return j; }); });
 	}
-	var ytVideos = {};
+	var ytVideos = {}, ytInfo = {};
 	function ytRun(src, label) {
 		var key = 'yt:' + label, g = gen, st = null;
 		function apply(j, first) {
@@ -205,7 +205,7 @@
 					if (src.ch && !j.live && !j.upcoming) { status(key, 'yt', label + ': not live, checking every minute' + (j.why === 'no-channel-id' ? ' (tip: use the channel ID, UC…)' : ''), 'off'); later(poll, 60000); return; }
 					if (j.ended || !j.c) { status(key, 'yt', label + ': no chat on this video', 'off'); later(poll, 60000); return; }
 					if (ytVideos[j.v] && ytVideos[j.v] !== key) { status(key, 'yt', label + ': same stream as ' + ytVideos[j.v].slice(3), 'off'); later(poll, 120000); return; }
-					ytVideos[j.v] = key;
+					ytVideos[j.v] = key; ytInfo[j.v] = { v: j.v, label: label, title: j.title || '' };
 					st = { c: j.c, k: j.k, ver: j.ver, v: j.v };
 					status(key, 'yt', label + (j.upcoming ? ': scheduled stream, chat open' : ': live') + (j.title ? ' · ' + j.title : ''), 'on', 'https://www.youtube.com/live_chat?is_popout=1&v=' + j.v);
 					apply(j, true); later(poll, clampWait(j.wait));
@@ -215,7 +215,7 @@
 			getJSON('/api/yt-chat?c=' + encodeURIComponent(st.c) + '&k=' + encodeURIComponent(st.k) + '&ver=' + encodeURIComponent(st.ver)).then(function (j) {
 				if (g !== gen) return;
 				apply(j, false);
-				if (j.ended || !j.c) { delete ytVideos[st.v]; st = null; status(key, 'yt', label + ': chat ended, checking again', 'off', ''); later(poll, 30000); return; }
+				if (j.ended || !j.c) { delete ytVideos[st.v]; delete ytInfo[st.v]; st = null; status(key, 'yt', label + ': chat ended, checking again', 'off', ''); later(poll, 30000); return; }
 				st.c = j.c; later(poll, clampWait(j.wait));
 			}).catch(function (e) { status(key, 'yt', label + ': ' + e.message + ', retrying', 'err'); later(poll, 8000); });
 		}
@@ -349,7 +349,7 @@
 	/* ---------- start / stop ---------- */
 	function stop() {
 		gen++; timers.forEach(clearTimeout); timers = [];
-		sockets.forEach(function (w) { try { w.onclose = null; w.close(); } catch (e) {} }); sockets = []; ytVideos = {};
+		sockets.forEach(function (w) { try { w.onclose = null; w.close(); } catch (e) {} }); sockets = []; ytVideos = {}; ytInfo = {};
 		lkRooms.forEach(function (r) { try { r.disconnect(); } catch (e) {} }); lkRooms = [];
 		clearStatus();
 	}
@@ -512,6 +512,10 @@
 			if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { prompt('Copy this:', t); }); else prompt('Copy this:', t);
 		});
 	});
-	window.MESStreamChat = { add: add, feature: feature, feed: feed, removeUser: removeUser, hideMsg: hideMsg };
+	/* send box (YouTube for now): send.js */
+	var sendApi = window.SCSend ? window.SCSend({ root: root, el: el, add: add, mode: MODE,
+		mock: Q.mock === '1' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname),
+		live: function () { return Object.keys(ytInfo).map(function (k) { return ytInfo[k]; }); } }) : null;
+	window.MESStreamChat = { add: add, feature: feature, feed: feed, removeUser: removeUser, hideMsg: hideMsg, ytLive: function () { return ytInfo; }, send: sendApi };
 	start();
 })();

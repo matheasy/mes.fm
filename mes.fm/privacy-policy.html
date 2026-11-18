@@ -696,6 +696,13 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	channels (not history) saved to your own Hive account, encrypted with your memo key unless you turn that off, and public and permanent either way.
 	</p>
 
+	<p id="stream-chat-youtube">
+	<b>MES Stream Chat: sending to your YouTube live chat.</b> If you press <b>Sign in with Google</b> in the chat's "Send a message" box, Google gives your browser an access
+	token (scope <code>youtube.force-ssl</code>, the one YouTube requires for posting chat messages) for about an hour. Your browser uses it only to read your channel name,
+	find the live chat of the stream you are already reading, and post the messages you type there, as the channel you picked. The token is kept only in this browser and is
+	never sent to mes.fm; nothing you type is stored by mes.fm. <b>Sign out</b> forgets and revokes it, and you can also remove access at
+	<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.
+	</p>
 	<p id="watch-youtube">
 	<b>MES Watch: your YouTube playlists.</b> If you press <b>Sign in with Google</b> under My playlists, Google gives your browser a read-only access token
 	(scope <code>youtube.readonly</code>) for about an hour. Your browser uses it to ask YouTube's API for your channel name, your playlists (private ones included),

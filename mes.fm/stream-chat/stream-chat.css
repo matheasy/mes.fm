@@ -109,3 +109,19 @@ html.sc-overlay-html, html.sc-overlay-html body { background: transparent !impor
 #sc .sc-blk { margin: .5em 0 .2em; color: #d4d4d8; font-size: .9em; }
 #sc .sc-blklist { display: flex; flex-wrap: wrap; gap: .4em; margin-top: .35em; }
 #sc .sc-blkrow { display: inline-flex; align-items: center; gap: .3em; background: #27272a; border: 1px solid #3f3f46; border-radius: 6px; padding: .15em .2em .15em .45em; }
+
+/* Send a message (YouTube for now), send.js (2026-11-18) */
+#sc .sc-send { border-top: 1px solid var(--sc-line); background: var(--sc-bg2); padding: .45em .6em .35em; font-size: calc(var(--sc-size) * 15px); color: var(--sc-fg); }
+#sc .sc-sendhd { display: flex; align-items: center; gap: .5em; flex-wrap: wrap; }
+#sc .sc-sendtog { font-weight: 600; }
+#sc .sc-sendwho { color: var(--sc-dim); font-size: .88em; display: inline-flex; align-items: center; gap: .3em; flex-wrap: wrap; }
+#sc .sc-link { background: none; border: 0; padding: 0; color: #a78bfa; text-decoration: underline; cursor: pointer; font: inherit; }
+#sc .sc-sendbody { margin-top: .45em; }
+#sc .sc-sendbody[hidden] { display: none; }
+#sc .sc-sendrow { display: flex; gap: .45em; align-items: flex-end; margin-bottom: .35em; }
+#sc .sc-sendto { display: flex; align-items: center; gap: .4em; flex: 1; min-width: 0; }
+#sc .sc-sendto select { flex: 1; min-width: 0; background: var(--sc-bg); color: var(--sc-fg); border: 1px solid var(--sc-line); border-radius: 6px; padding: .3em .4em; font: inherit; font-size: .9em; }
+#sc .sc-sendin { flex: 1; min-width: 0; resize: none; line-height: 1.35; padding: .45em .55em; font: inherit; min-height: 2.3em; max-height: 140px; }
+#sc .sc-sendnote { font-size: .85em; color: var(--sc-dim); min-height: 1.1em; }
+#sc .sc-sendnote--ok { color: #86efac; }
+#sc .sc-sendnote--err { color: #fca5a5; }
