@@ -1,7 +1,7 @@
 # Alpine West Creative: redesign
 
 The hospitality-focused redesign of alpinewestcreative.com, built from Karolina's brief (Nov 2026).
-**Not live (2026-11-18):** www.alpinewestcreative.com went back to the original Wix mirror (`karo.mes.fm/`, Vercel root directory = that folder) while Karolina works through her edits. To relaunch this redesign, follow "Going live" below; `karo.mes.fm/vercel.json` then needs nothing (its temporary 302s for `/work`, `/services`, `/inquire`, `/about` only matter while the mirror is live).
+**Not live (2026-11-18):** www.alpinewestcreative.com went back to the original Wix mirror (`karo.mes.fm/`, Vercel root directory = that folder) while Karolina works through her edits. **Preview:** https://awc.mes.fm (its own Vercel project, root = this folder, noindex): every push updates it. To relaunch this redesign, follow "Going live" below; `karo.mes.fm/vercel.json` then needs nothing (its temporary 302s for `/work`, `/services`, `/inquire`, `/about` only matter while the mirror is live).
 
 ## Pages
 `/` · `/work` · `/work/secrets` · `/work/hyatt-ziva` · `/work/hyatt-regency` ·
