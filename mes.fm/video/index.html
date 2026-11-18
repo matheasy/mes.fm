@@ -687,6 +687,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #vd .vd-swr button, html body.dark-mode #vd .vd-swc {border-color:#4b5563;}
 	#vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
 	html body.dark-mode #vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
+	#vd .vd-chk[hidden] {display:none;}
 
 
 	@media print {
@@ -1180,7 +1181,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<label class="vd-nlab">File type<select id="vd-nfmt" aria-label="File type"><option value="wav">WAV (best for editing)</option><option value="mp3">MP3 (small)</option><option value="m4a">M4A (small)</option></select></label>
 							<p class="vd-hint" id="vd-ndir"></p>
 							<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ndirpick">Choose a folder&hellip;</button><button type="button" class="vd-btn vd-sm" id="vd-ndiroff" hidden>Stop saving there</button></div>
-							<label class="vd-chk"><input type="checkbox" id="vd-ndl"> Also download each one</label>
+							<label class="vd-chk" id="vd-ndlrow"><input type="checkbox" id="vd-ndl"> Download each one as a file (goes to your Downloads folder)</label>
 						</div>
 					</section>
 					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
@@ -1363,7 +1364,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=53" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=54" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

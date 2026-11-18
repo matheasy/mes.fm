@@ -2187,9 +2187,10 @@
 	var ndir = { h: null };
 	function ndirText() {
 		var el = $("vd-ndir"); if (!el) return;
-		if (!FSD) { el.innerHTML = "This browser can't save straight into a folder" + (navigator.brave ? " (Brave can: turn on <code>brave://flags/#file-system-access-api</code>)" : " (Chrome, Edge or Opera on a computer can)") + ". Narrations are kept in this browser with the project; tick <b>Also download each one</b> to get the files in your Downloads folder."; $("vd-ndirpick").hidden = true; $("vd-ndiroff").hidden = true; return; }
+		if (!FSD) { el.innerHTML = "This browser can't save straight into a folder" + (navigator.brave ? " (Brave can: turn on <code>brave://flags/#file-system-access-api</code>)" : " (Chrome, Edge or Opera on a computer can)") + ". Narrations are kept in this browser with the project; tick <b>Download each one as a file</b> to get them in your Downloads folder too."; $("vd-ndirpick").hidden = true; $("vd-ndiroff").hidden = true; return; }
 		el.innerHTML = ndir.h ? "Saved into <b>📁 " + esc(ndir.h.name) + "</b> on your computer, and added to the project." : "Not saved to a folder yet: they are kept in this browser with the project. Choose a folder to get each one as a file" + (mdir.h ? " (a folder inside <b>" + esc(mdir.h.name) + "</b>, your media folder, lets the other computer get them too)" : "") + ".";
 		$("vd-ndirpick").textContent = ndir.h ? "Change folder…" : "Choose a folder…"; $("vd-ndiroff").hidden = !ndir.h;
+		$("vd-ndlrow").hidden = !!ndir.h; // with a folder the file is already on the computer: no second copy
 	}
 	VE.idbGet("kv", "narrdir").then(function (h) { if (h && h.kind === "directory") ndir.h = h; ndirText(); }).catch(function () { ndirText(); });
 	$("vd-ndirpick").onclick = async function () {
@@ -2210,12 +2211,12 @@
 	function finishNarration(N, audio, sr, base, at, canWrite) {
 		var fmt = NS.fmt, ext = fmt === "mp3" ? ".mp3" : fmt === "m4a" ? ".m4a" : ".wav";
 		return N.encode(audio, sr, fmt, 160).then(async function (blob) {
-			var name = (base + ext).replace(/[\\/:*?"<>|]+/g, ""), where = "";
+			var name = (base + ext).replace(/[\\/:*?"<>|]+/g, ""), where = "", wrote = false;
 			if (canWrite && ndir.h) {
-				try { name = await uniqueIn(ndir.h, name); var fh = await ndir.h.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close(); where = " Saved as " + ndir.h.name + "/" + name + "."; if (mdir.h) rescan(false); }
+				try { name = await uniqueIn(ndir.h, name); var fh = await ndir.h.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close(); wrote = true; where = " Saved as " + ndir.h.name + "/" + name + "."; if (mdir.h) rescan(false); }
 				catch (e) { where = " Could not write it into " + ndir.h.name + " (" + (e && e.message || e) + "): it is kept in this browser."; }
 			}
-			if (NS.dl) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000); }
+			if (NS.dl && !wrote) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000); }
 			var c = await addAudioFile(new File([blob], name, { type: blob.type || "audio/wav" }), at);
 			if (c) { VE.sel = [c.id]; VE.emit("select"); }
 			toast("Narration added at " + V.tc(at, VE.P.fps) + " on " + (c && (V.track(VE.P, c.track) || {}).name || "a sound track") + "." + where, 8000);
