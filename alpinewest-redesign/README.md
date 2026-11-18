@@ -43,7 +43,7 @@ the pages and data live in mes.fm (`build_awc_dashboard.py`, see the repo's CLAU
 `_src/_partials/shell.html`. `/privacy` explains the counter.
 
 ## Brand (Nov 2026 update)
-- Logo: `assets/logo.png` / `.webp` = Karolina's own transparent PNG from her Wix uploads (Wix id `eb4a31c6`), only cropped. Never recolour it.
+- Logo: `assets/logo.png` / `.webp` = Karolina's own logo, transparency rebuilt from the JPG she sent (the Wix PNG had hard 1-bit edges that showed white on dark), 2x size, colours unchanged. Never recolour it.
 - Colours: Ivory `#F5F2EB`, Alpine Sage `#78947F`, Deep Forest `#2B4E38`, Midnight Pine `#0F2A1E`, Natural Beige `#D5C29D` (tokens at the top of `site.css` and the "Brand refresh" block at its end).
 - Type: Bodoni Moda (headlines) + Jost (everything else), Google Fonts.
 - Primary button text everywhere: "Request a Custom Proposal" (Deep Forest on light, Natural Beige on dark).
