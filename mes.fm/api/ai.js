@@ -102,20 +102,20 @@ function makeHandler(deps = {}) {
     if (await overLimit('q:' + iph, LIM.quoteIp)) return send(res, 429, { error: 'Too many requests from this network. Try again in an hour.' });
     let q, stored;
     if (b.kind === 'video') {
-      if (!env.XAI_API_KEY) return send(res, 503, { off: true, error: 'Video is not switched on yet.' });
+      if (!env.XAI_API_KEY) return send(res, 503, { off: true, error: 'Videos are coming soon.' });
       const err = A.checkVideo(b.prompt, b.model, b.seconds, b.res);
       if (err) return send(res, 400, { error: err });
       q = A.videoQuote(b.model, b.seconds, b.res);
       stored = { kind: 'video', prompt: b.prompt, model: b.model, seconds: q.seconds, res: b.res, audio: b.audio !== false };
     } else if (b.kind === 'image') {
-      if (!env.OPENAI_API_KEY) return send(res, 503, { off: true, error: 'Pictures are not switched on yet.' });
+      if (!env.OPENAI_API_KEY) return send(res, 503, { off: true, error: 'Pictures are coming soon.' });
       const err = A.checkImage(b.prompt, b.quality, b.size);
       if (err) return send(res, 400, { error: err });
       // prompt tokens estimated on the safe side (2 characters a token); a few cents of a cent at most
       q = A.imageQuote(b.quality, b.size, Math.ceil(b.prompt.length / 2) + 8);
       stored = { kind: 'image', prompt: b.prompt, quality: b.quality, size: b.size };
     } else {
-      if (!env.ANTHROPIC_API_KEY) return send(res, 503, { off: true, error: 'MES AI chat is not switched on yet.' });
+      if (!env.ANTHROPIC_API_KEY) return send(res, 503, { off: true, error: 'MES AI chat is coming soon.' });
       const m = A.MODELS[b.model];
       if (!m) return send(res, 400, { error: 'Pick a model.' });
       if (!m.caps[b.len]) return send(res, 400, { error: 'Pick an answer length.' });

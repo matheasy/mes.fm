@@ -295,6 +295,7 @@
 	var mock = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]mock=1\b/.test(location.search);
 	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
 	var status = { chat: mock, image: mock, video: mock, known: mock };
+	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; }
 	var busy = false;
 
 	/* ---------- saved state ---------- */
@@ -462,6 +463,7 @@
 		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>";
 		$("ai-make").disabled = !(status.image && !busy);
+		$("ai-make").textContent = status.image ? "Pay & create" : "Coming soon";
 		if (typeof paintVprice === "function") paintVprice();
 	}
 	["ai-in", "ai-prompt"].forEach(function (id) { $(id).addEventListener("input", paintPrice); });
@@ -565,7 +567,7 @@
 		var u = who();
 		var text = $("ai-in").value.trim();
 		if (!text) { $("ai-in").focus(); return; }
-		if (!status.chat) { msg("MES AI chat is not switched on yet.", "err"); return; }
+		if (!status.chat) { msg("MES AI chat is coming soon.", "err"); return; }
 		if (!u) { msg("Log in with your Hive account first (above).", "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
 		var msgs = draftMessages();
 		var err = A.checkMessages(msgs);
@@ -669,7 +671,7 @@
 		if (busy) return;
 		var u = who();
 		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value;
-		if (!status.image) { msg("Pictures are not switched on yet.", "err"); return; }
+		if (!status.image) { msg("Pictures are coming soon.", "err"); return; }
 		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
 		var err = isRetry ? null : A.checkImage(prompt, quality, size);
 		if (err) { msg(err, "err"); return; }
@@ -730,6 +732,7 @@
 		var q = vq();
 		$("ai-vprice").innerHTML = "<b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>";
 		$("ai-vmake").disabled = !(status.video && !busy);
+		$("ai-vmake").textContent = status.video ? "Pay & create" : "Coming soon";
 	}
 	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintVprice(); });
 	["ai-vsec", "ai-vres"].forEach(function (id) { $(id).addEventListener("change", paintVprice); });
@@ -826,7 +829,7 @@
 	$("ai-vmake").addEventListener("click", function () {
 		if (busy) return;
 		var u = who(), prompt = $("ai-vprompt").value.trim(), model = $("ai-vmodel").value, sec = +$("ai-vsec").value, res = $("ai-vres").value, audio = $("ai-vaudio").checked;
-		if (!status.video) { msg("Video is not switched on yet.", "err"); return; }
+		if (!status.video) { msg("Videos are coming soon.", "err"); return; }
 		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
 		var err = A.checkVideo(prompt, model, sec, res); if (err) { msg(err, "err"); return; }
 		setBusy(true);
@@ -996,12 +999,18 @@
 	/* ---------- switched on? ---------- */
 	function paintOff() {
 		var o = $("ai-off");
-		var parts = [["Chat", status.chat], ["Pictures", status.image], ["Videos", status.video]];
-		var offs = parts.filter(function (p) { return !p[1]; }).map(function (p) { return p[0]; });
-		o.hidden = !(status.known && offs.length);
-		if (o.hidden) return;
-		o.innerHTML = offs.length === 3 ? '<b>MES AI is not switched on yet.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).'
-			: "<b>Not switched on yet:</b> " + offs.join(", ") + ". The rest works.";
+		// a service whose key is not set yet: "Coming soon" on its tab, a note in its panel, and its button off
+		[["ai-tab-img", "ai-img", status.image, "🖼️ Picture", "Pictures"], ["ai-tab-vid", "ai-vid", status.video, "🎬 Video", "Videos"]].forEach(function (x) {
+			var soon = status.known && !x[2];
+			$(x[0]).innerHTML = x[3] + (soon ? ' <span class="ai-soon-tag">soon</span>' : "");
+			var n = $(x[1]).querySelector(".ai-soon");
+			if (soon && !n) { n = document.createElement("p"); n.className = "ai-soon"; n.innerHTML = "<b>" + x[4] + " are coming soon.</b> The page is ready; this AI service is being connected. Chat works now."; $(x[1]).insertBefore(n, $(x[1]).firstChild); }
+			if (!soon && n) n.remove();
+		});
+		var off = status.known && !status.chat;
+		o.hidden = !off;
+		if (!off) return;
+		o.innerHTML = '<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).';
 	}
 	if (!mock) {
 		fetch("/api/ai?op=status", { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {

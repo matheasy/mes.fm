@@ -453,6 +453,11 @@ html body.dark-mode #ai.ai .ai-savebox code { background: var(--ai-code); color:
 #ai .ai-figimg video { width: 100%; height: auto; display: block; border-radius: .4em; background: #000; }
 html body.dark-mode #ai.ai .ai-vjob { color: var(--ai-ink); }
 
+/* services not switched on yet */
+#ai .ai-soon-tag { font-size: .72em; font-weight: 700; padding: .05em .45em; border-radius: 999px; background: var(--ai-warnbg); color: var(--ai-warn); vertical-align: .15em; }
+#ai.ai .ai-soon { background: var(--ai-warnbg); color: var(--ai-warn); border: 1px solid var(--ai-warn); border-radius: .5em; padding: .6em .8em; margin: 0 0 .8em; }
+html body.dark-mode #ai.ai .ai-soon, html body.dark-mode #ai.ai .ai-soon b, html body.dark-mode #ai.ai .ai-soon-tag { color: var(--ai-warn); background: var(--ai-warnbg); }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -989,7 +994,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=3" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -145,3 +145,8 @@ html body.dark-mode #ai.ai .ai-savebox code { background: var(--ai-code); color:
 #ai .ai-vjob--err { border-style: solid; border-color: var(--ai-err); }
 #ai .ai-figimg video { width: 100%; height: auto; display: block; border-radius: .4em; background: #000; }
 html body.dark-mode #ai.ai .ai-vjob { color: var(--ai-ink); }
+
+/* services not switched on yet */
+#ai .ai-soon-tag { font-size: .72em; font-weight: 700; padding: .05em .45em; border-radius: 999px; background: var(--ai-warnbg); color: var(--ai-warn); vertical-align: .15em; }
+#ai.ai .ai-soon { background: var(--ai-warnbg); color: var(--ai-warn); border: 1px solid var(--ai-warn); border-radius: .5em; padding: .6em .8em; margin: 0 0 .8em; }
+html body.dark-mode #ai.ai .ai-soon, html body.dark-mode #ai.ai .ai-soon b, html body.dark-mode #ai.ai .ai-soon-tag { color: var(--ai-warn); background: var(--ai-warnbg); }
