@@ -63,7 +63,7 @@
 },
 "/bending-stress-calculator":{
 "added":"2026-10-29",
-"updated":"2026-11-11",
+"updated":"2026-11-18",
 "type":"Calculator"
 },
 "/billiards":{
@@ -558,7 +558,7 @@
 },
 "/materials":{
 "added":"2026-10-20",
-"updated":"2026-11-11",
+"updated":"2026-11-18",
 "type":"Collection"
 },
 "/matrix-calculator":{
@@ -853,7 +853,7 @@
 },
 "/shear-stress-calculator":{
 "added":"2026-10-20",
-"updated":"2026-11-11",
+"updated":"2026-11-18",
 "type":"Calculator"
 },
 "/signals":{
@@ -943,7 +943,7 @@
 },
 "/tensile-test-simulator":{
 "added":"2026-10-20",
-"updated":"2026-11-11",
+"updated":"2026-11-18",
 "type":"Simulation"
 },
 "/text":{
@@ -1083,7 +1083,7 @@
 },
 "/youngs-modulus-calculator":{
 "added":"2026-10-20",
-"updated":"2026-11-11",
+"updated":"2026-11-18",
 "type":"Calculator"
 },
 "/youtube-audio":{

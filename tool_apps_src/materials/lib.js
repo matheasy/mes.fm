@@ -486,6 +486,45 @@
 		return r;
 	}
 	function permanentSet(c, e, s) { return c.elastic ? 0 : Math.max(0, e - s / c.E); }
+	/* the test's path with unload / reload cycles. events = [{e: strain where the load came off, q: [turn levels]}]: a level is how far up the elastic line
+	   the bar is (1 = the point on the curve, 0 = no load). q alternates bottoms and tops: [0.3] = down to 30 % of the load, back up to the curve;
+	   [0.3, 0.8, 0] = down to 30 %, up to 80 %, down to zero, then up to the curve. A partial unload therefore goes back up the SAME line from where it
+	   stopped (it never drops to zero first). Points carry k = c (curve) / u (unloading) / r (reloading), ev (event index), seg (segment within the event),
+	   q (level); stops = indices of every bottom (where a play stops so the person can press Load again). Rubber goes down and up its own curve. */
+	function linePt(c, top, set, q) {
+		var e, s;
+		if (c.elastic) { e = top.e * q; s = stressAt(c, e); } else { e = set + (top.e - set) * q; s = top.s * q; }
+		return { e: e, s: s, t: s * (1 + e), et: Math.log(1 + e) };
+	}
+	function curvePt(c, i) { return { e: c.e[i], s: c.s[i], t: c.t[i], et: c.et[i], ph: c.ph[i] }; }
+	function curvePtAt(c, e) { var i = idxAt(c, e), j = Math.min(i + 1, c.e.length - 1), f = j > i && c.e[j] > c.e[i] ? (e - c.e[i]) / (c.e[j] - c.e[i]) : 0; return { e: e, s: lin(c.s[i], c.s[j], f), t: lin(c.t[i], c.t[j], f), et: lin(c.et[i], c.et[j], f), ph: c.ph[j] }; }
+	function loadPath(c, events) {
+		var evs = (events || []).map(function (v, k) { return { e: v.e, q: (v.q && v.q.length ? v.q : [0]).map(function (x) { return Math.max(0, Math.min(1, +x || 0)); }), k: k }; })
+			.filter(function (v) { return v.e > 0; }).sort(function (a, b) { return a.e - b.e; });
+		var P = [], stops = [], ui = 0, i;
+		function push(o, kind, ev, seg, q, top) { P.push({ e: o.e, s: o.s, t: o.t, et: o.et, ph: o.ph || kind, k: kind, ev: ev, seg: seg, q: q, top: top }); }
+		for (i = 0; i < c.e.length; i++) {
+			while (ui < evs.length && evs[ui].e <= c.e[i]) {
+				var v = evs[ui++], top = curvePtAt(c, v.e), set = permanentSet(c, top.e, top.s), lv = 1, qs = v.q.length % 2 ? v.q : v.q.concat([0]), turns = qs.concat([1]);
+				push(top, "c", v.k, -1, 1, top);
+				for (var sg = 0; sg < turns.length; sg++) {
+					var to = sg % 2 === 0 ? Math.min(turns[sg], lv) : Math.max(turns[sg], lv), down = sg % 2 === 0, n = Math.max(2, Math.ceil(36 * Math.abs(to - lv)));
+					for (var j = 1; j <= n; j++) { var qq = lv + (to - lv) * j / n, pt = linePt(c, top, set, qq); push(pt, down ? "u" : "r", v.k, sg, qq, top); }
+					if (down) stops.push(P.length - 1);
+					lv = to;
+				}
+			}
+			push(curvePt(c, i), "c", -1, -1, 1, null);
+		}
+		return { P: P, stops: stops };
+	}
+	/* the turn list after "Load again" (k = u) or "Unload here" (k = r) at level q in segment seg of an event */
+	function loadTurn(qs, seg, kind, q) {
+		var a = (qs || [0]).slice(0, Math.max(0, seg));
+		q = Math.max(0, Math.min(1, q));
+		if (kind === "u") a.push(q); else if (kind === "r") { if (a.length % 2 === 0) a.push(0); a.push(q, 0); }
+		return a;
+	}
 
 	/* ---------- bending of beams (2026-10-29) ----------
 	   Sections for bending about the strong (horizontal) axis; all are symmetric top / bottom, so c = h/2. Q = first moment of the area above the neutral
@@ -617,6 +656,6 @@
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
 		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
 		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin, niceStep: niceStep, snapTo: snapTo, loadLen: loadLen, loadFromDist: loadFromDist, snapLoad: snapLoad, angleDelta: angleDelta,
-		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
+		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, loadPath: loadPath, loadTurn: loadTurn, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);

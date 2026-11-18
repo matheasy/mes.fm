@@ -486,6 +486,45 @@
 		return r;
 	}
 	function permanentSet(c, e, s) { return c.elastic ? 0 : Math.max(0, e - s / c.E); }
+	/* the test's path with unload / reload cycles. events = [{e: strain where the load came off, q: [turn levels]}]: a level is how far up the elastic line
+	   the bar is (1 = the point on the curve, 0 = no load). q alternates bottoms and tops: [0.3] = down to 30 % of the load, back up to the curve;
+	   [0.3, 0.8, 0] = down to 30 %, up to 80 %, down to zero, then up to the curve. A partial unload therefore goes back up the SAME line from where it
+	   stopped (it never drops to zero first). Points carry k = c (curve) / u (unloading) / r (reloading), ev (event index), seg (segment within the event),
+	   q (level); stops = indices of every bottom (where a play stops so the person can press Load again). Rubber goes down and up its own curve. */
+	function linePt(c, top, set, q) {
+		var e, s;
+		if (c.elastic) { e = top.e * q; s = stressAt(c, e); } else { e = set + (top.e - set) * q; s = top.s * q; }
+		return { e: e, s: s, t: s * (1 + e), et: Math.log(1 + e) };
+	}
+	function curvePt(c, i) { return { e: c.e[i], s: c.s[i], t: c.t[i], et: c.et[i], ph: c.ph[i] }; }
+	function curvePtAt(c, e) { var i = idxAt(c, e), j = Math.min(i + 1, c.e.length - 1), f = j > i && c.e[j] > c.e[i] ? (e - c.e[i]) / (c.e[j] - c.e[i]) : 0; return { e: e, s: lin(c.s[i], c.s[j], f), t: lin(c.t[i], c.t[j], f), et: lin(c.et[i], c.et[j], f), ph: c.ph[j] }; }
+	function loadPath(c, events) {
+		var evs = (events || []).map(function (v, k) { return { e: v.e, q: (v.q && v.q.length ? v.q : [0]).map(function (x) { return Math.max(0, Math.min(1, +x || 0)); }), k: k }; })
+			.filter(function (v) { return v.e > 0; }).sort(function (a, b) { return a.e - b.e; });
+		var P = [], stops = [], ui = 0, i;
+		function push(o, kind, ev, seg, q, top) { P.push({ e: o.e, s: o.s, t: o.t, et: o.et, ph: o.ph || kind, k: kind, ev: ev, seg: seg, q: q, top: top }); }
+		for (i = 0; i < c.e.length; i++) {
+			while (ui < evs.length && evs[ui].e <= c.e[i]) {
+				var v = evs[ui++], top = curvePtAt(c, v.e), set = permanentSet(c, top.e, top.s), lv = 1, qs = v.q.length % 2 ? v.q : v.q.concat([0]), turns = qs.concat([1]);
+				push(top, "c", v.k, -1, 1, top);
+				for (var sg = 0; sg < turns.length; sg++) {
+					var to = sg % 2 === 0 ? Math.min(turns[sg], lv) : Math.max(turns[sg], lv), down = sg % 2 === 0, n = Math.max(2, Math.ceil(36 * Math.abs(to - lv)));
+					for (var j = 1; j <= n; j++) { var qq = lv + (to - lv) * j / n, pt = linePt(c, top, set, qq); push(pt, down ? "u" : "r", v.k, sg, qq, top); }
+					if (down) stops.push(P.length - 1);
+					lv = to;
+				}
+			}
+			push(curvePt(c, i), "c", -1, -1, 1, null);
+		}
+		return { P: P, stops: stops };
+	}
+	/* the turn list after "Load again" (k = u) or "Unload here" (k = r) at level q in segment seg of an event */
+	function loadTurn(qs, seg, kind, q) {
+		var a = (qs || [0]).slice(0, Math.max(0, seg));
+		q = Math.max(0, Math.min(1, q));
+		if (kind === "u") a.push(q); else if (kind === "r") { if (a.length % 2 === 0) a.push(0); a.push(q, 0); }
+		return a;
+	}
 
 	/* ---------- bending of beams (2026-10-29) ----------
 	   Sections for bending about the strong (horizontal) axis; all are symmetric top / bottom, so c = h/2. Q = first moment of the area above the neutral
@@ -617,7 +656,7 @@
 		shearPin: shearPin, pinSize: pinSize, gFrom: gFrom, kFrom: kFrom, torsion: torsion, shaftSize: shaftSize, torqueFromPower: torqueFromPower,
 		elastic: elastic, hooke: hooke, hookeInv: hookeInv, poissonBar: poissonBar, thermal: thermal, thermalDT: thermalDT, bucklingStress: bucklingStress, thermalSeries: thermalSeries, thermalState: thermalState, heatRGB: heatRGB, resilience: resilience,
 		BSHAPES: BSHAPES, beamSection: beamSection, BSUP: BSUP, beamSupports: beamSupports, beamSolve: beamSolve, BEAMCASES: BEAMCASES, solveLin: solveLin, niceStep: niceStep, snapTo: snapTo, loadLen: loadLen, loadFromDist: loadFromDist, snapLoad: snapLoad, angleDelta: angleDelta,
-		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, roPoint: roPoint, neckOf: neckOf };
+		FAMS: FAMS, MATS: MATS, mat: mat, curve: curve, serration: serration, saneCurveMat: saneCurveMat, stressAt: stressAt, idxAt: idxAt, measure: measure, permanentSet: permanentSet, loadPath: loadPath, loadTurn: loadTurn, roPoint: roPoint, neckOf: neckOf };
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESMech = api;
 })(this);
 
@@ -1074,31 +1113,19 @@
 	function ptOf(c, i) { return { e: c.e[i], s: c.s[i], t: c.t[i], et: c.et[i], ph: c.ph[i] }; }
 	function ptAt(c, e) { var i = M.idxAt(c, e), j = Math.min(i + 1, c.e.length - 1), f = j > i && c.e[j] > c.e[i] ? (e - c.e[i]) / (c.e[j] - c.e[i]) : 0; function L(a) { return a[i] + (a[j] - a[i]) * f; } return { e: e, s: L(c.s), t: L(c.t), et: L(c.et), ph: c.ph[j] }; }
 	function ttPath() {
-		var c = TT.c, P = [], unl = TT.unl.slice().sort(function (a, b) { return a - b; }), ui = 0, stops = [], i, j;
-		function push(o, kind) { P.push({ e: o.e, s: o.s, t: o.t, et: o.et, ph: o.ph, k: kind }); }
-		for (i = 0; i < c.e.length; i++) {
-			while (ui < unl.length && unl[ui] <= c.e[i]) {
-				var u = unl[ui++], at = ptAt(c, u); push(at, "c");
-				if (c.elastic) { for (j = M.idxAt(c, u); j >= 0; j--) push(ptOf(c, j), "u"); stops.push(P.length - 1); for (j = 1; j <= M.idxAt(c, u); j++) push(ptOf(c, j), "r"); push(at, "r"); }
-				else {
-					var set = M.permanentSet(c, at.e, at.s);
-					for (j = 1; j <= 24; j++) { var f = j / 24, ee = at.e + (set - at.e) * f, ss = at.s * (1 - f); push({ e: ee, s: ss, t: ss * (1 + ee), et: Math.log(1 + ee), ph: "u" }, "u"); }
-					stops.push(P.length - 1);
-					for (j = 1; j <= 24; j++) { var g = j / 24, e2 = set + (at.e - set) * g, s2 = at.s * g; push({ e: e2, s: s2, t: s2 * (1 + e2), et: Math.log(1 + e2), ph: "r" }, "r"); }
-				}
-			}
-			push(ptOf(c, i), "c");
-		}
+		var c = TT.c, r = M.loadPath(c, TT.unl), P = r.P, i;
 		var xm = c.ef || 1, ym = c.smax || 1, cum = [0];
 		for (i = 1; i < P.length; i++) { var dx = 1.6 * (P[i].e - P[i - 1].e) / xm, dy = (P[i].s - P[i - 1].s) / ym; cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy)); }
-		TT.P = P; TT.cum = cum; TT.total = cum[cum.length - 1]; TT.stops = stops.map(function (k) { return cum[k]; });
+		TT.P = P; TT.cum = cum; TT.total = cum[cum.length - 1]; TT.stops = r.stops.map(function (k) { return cum[k]; });
 	}
+	/* path index of the last point of segment seg of event ev (after the path was rebuilt) */
+	function ttSegEnd(ev, seg) { var P = TT.P, k = -1; for (var i = 0; i < P.length; i++) if (P[i].ev === ev && P[i].seg === seg) k = i; return k; }
 	function ttState() {
 		var P = TT.P, cum = TT.cum, p = clamp(TT.p, 0, TT.total), lo = 0, hi = cum.length - 1;
 		while (hi - lo > 1) { var m = (lo + hi) >> 1; if (cum[m] <= p) lo = m; else hi = m; }
 		var a = P[lo], b = P[hi], f = cum[hi] > cum[lo] ? (p - cum[lo]) / (cum[hi] - cum[lo]) : 0;
 		function L(k) { return a[k] + (b[k] - a[k]) * f; }
-		var st = { e: L("e"), s: L("s"), t: L("t"), et: L("et"), k: f > 0 ? b.k : a.k, i: lo, f: f, ph: f > 0 ? b.ph : a.ph };
+		var nb = f > 0 ? b : a, st = { e: L("e"), s: L("s"), t: L("t"), et: L("et"), q: L("q"), k: nb.k, i: lo, f: f, ph: nb.ph, ev: nb.ev, seg: nb.seg, top: nb.top };
 		var em = 0; for (var i = 0; i <= lo; i++) if (P[i].k === "c" && P[i].e > em) em = P[i].e; if (st.k === "c" && st.e > em) em = st.e; st.emax = em;
 		st.broken = p >= TT.total - 1e-9; return st;
 	}
@@ -1177,7 +1204,7 @@
 		ttSpec(st); ttLive(st); ttCtl(st);
 		$("mt-tt-scrub").value = String(Math.round(TT.total > 0 ? TT.p / TT.total * 1000 : 0));
 	}
-	function ttUnloadTop() { var P = TT.P, i = ttState().i; while (i > 0 && P[i].k === "u") i--; return P[i] && P[i].k === "c" ? P[i] : null; }
+	function ttUnloadTop() { return ttState().top || null; }
 	function ttLive(st) {
 		var A0 = PI * spD() * spD() / 4, L0 = spL(), F = st.s * A0, dL = st.e * L0, w = [];
 		w.push("<span><b>Force</b> " + fmt(F, "force") + "</span>", "<span><b>Stretch</b> " + fmt(dL, "small") + "</span>", "<span><b>Stress</b> " + fmt(st.s, "stress") + "</span>", "<span><b>Strain</b> " + strainTxt(st.e) + "</span>");
@@ -1187,26 +1214,27 @@
 	function ttCtl(st) {
 		var pb = $("mt-tt-play"); pb.textContent = TT.play ? "❚❚ Pause" : st.broken ? "↺ Test again" : TT.p > 0 ? "▶ Play" : "▶ Start the test";
 		/* the same button is "Unload here" on the loading curve and "Load again" once the bar is (being) unloaded and the test is paused */
-		var ub = $("mt-tt-unload"), atU = !TT.play && !st.broken && st.k === "u";
+		var ub = $("mt-tt-unload"), atU = !st.broken && st.k === "u";
 		ub.textContent = atU ? "⤒ Load again" : "⤓ Unload here";
 		ub.title = atU ? "Put the load back on: it climbs the same straight line, then carries on along the curve" : "Take the load off from where the test is now";
 		ub.classList.toggle("tu-btn--primary", atU); pb.classList.toggle("tu-btn--primary", !atU);
 		if (atU && !TT.play) pb.textContent = "▶ Load again";
-		ub.disabled = atU ? false : (st.broken || st.k !== "c" || st.e <= 0);
+		ub.disabled = atU ? false : (st.broken || (st.k !== "c" && st.k !== "r") || st.e <= 0 || (st.k === "r" && st.q >= 0.999));
 		ub.dataset.mode = atU ? "load" : "unload";
 		var c = TT.c, msg = "";
 		var stopNow = TT.stops.some(function (s) { return Math.abs(s - TT.p) < 1e-9; });
 		if (st.broken) msg = (c.brittle ? "Broke with almost no warning at " + strainTxt(c.ef) + ": a brittle material does not yield or neck." : c.elastic ? "Snapped at " + strainTxt(c.ef) + ": the pieces spring back almost to their old length." : "Broke at " + strainTxt(c.ef) + " strain. After the break the elastic part (" + strainTxt(c.sf / c.E) + ") springs back, so the pieces fitted together are " + strainTxt(c.ef - c.sf / c.E) + " longer than at the start.");
 		else if (stopNow && st.k === "u") { var top = ttUnloadTop(); if (top) {
 			if (c.elastic) msg = "Rubber gives all of the stretch back: no permanent set. Press Load again to pull it again.";
+			else if (st.q > 0.002) msg = "Partly unloaded: " + fmt(st.s, "stress") + " is still on the bar (" + Math.round(st.q * 100) + "% of the " + fmt(top.s, "stress") + " it had). Load again goes back up the same straight line from here, and only bends onto the curve again at " + strainTxt(top.e) + ".";
 			else if (st.e < 1e-5) msg = "Back to zero: below the yield point everything springs back (elastic). Press Load again to pull it again.";
 			else { msg = "Unloaded from " + strainTxt(top.e) + ": " + strainTxt(top.e - st.e) + " sprang back (slope E) and " + strainTxt(st.e) + " stays (permanent set). Press Load again to put the load back on.";
 				if ((c.yieldKind === "offset" || c.yieldKind === "luders") && top.s > c.sy * 1.01) msg += " It now stays elastic up to " + fmt(top.s, "stress") + ", higher than the first yield (" + fmt(c.sy, "stress") + "): that is strain hardening.";
 				else if (c.brittle) msg += " A brittle material's curve is not quite straight, so even it keeps a small set.";
 				else if (c.type === "polymer") msg += " Plastics also creep back slowly over minutes to hours, which this model leaves out."; }
 		} }
-		else if (st.k === "u") msg = "Taking the load off: the line comes down with the same slope E as the start." + (TT.play ? "" : " Press Load again to put the load back on.");
-		else if (st.k === "r") msg = "Loading again: straight up the same line until it meets the curve, then the test carries on (you can unload again there).";
+		else if (st.k === "u") msg = "Taking the load off: the line comes down with the same slope E as the start." + (TT.play ? " Press Load again to stop part way and load it again from there." : " Press Load again to put the load back on from here.");
+		else if (st.k === "r") msg = "Loading again: straight up the same line until it meets the curve, then the test carries on. Unload here takes the load off again from this point.";
 		else if (st.ph === "neck") msg = "Necking: the bar gets thinner in one place, so the force it takes falls even though the metal there keeps getting stronger (see the true stress).";
 		else if (st.ph === "yp") msg = "The yield point: the line bends over into the upper yield, then the force drops as the first Lüders band forms (the pinned dislocations break free).";
 		else if (st.ph === "lud") msg = "Lüders plateau: bands of yielded steel travel along the bar at an almost constant force; each little wiggle is a band starting or a dislocation front breaking free.";
@@ -1308,13 +1336,19 @@
 	$("mt-tt-play").addEventListener("click", ttPlay);
 	$("mt-tt-reset").addEventListener("click", function () { TT.play = false; TT.unl = []; ttPath(); TT.p = 0; ttRender(); });
 	$("mt-tt-unload").addEventListener("click", function () {
-		if (this.dataset.mode === "load") {   /* Load again: from the bottom of the unloading line, play the reload */
-			var nx = TT.stops.filter(function (x) { return x >= TT.p - 1e-9; })[0]; if (nx != null) TT.p = nx;
+		var st = ttState(), ev, i;
+		if (st.broken) return;
+		if (this.dataset.mode === "load" || st.k === "r") {
+			/* Load again while (part) unloaded, or Unload here while loading again: turn round on the same straight line, from where the bar is now */
+			ev = TT.unl[st.ev]; if (!ev) return;
+			if (st.k === "r" && st.q >= 0.999) return;
+			ev.q = M.loadTurn(ev.q, st.seg, st.k, st.q); ttPath();
+			i = ttSegEnd(st.ev, st.seg); if (i >= 0) TT.p = TT.cum[i];
 			TT.play = true; TT.last = 0; ttRender(); requestAnimationFrame(ttTick); return;
 		}
-		var st = ttState(); if (st.broken || st.k !== "c" || !(st.e > 0)) return;
-		var e = st.e; TT.unl.push(e); ttPath();
-		for (var i = 1; i < TT.P.length; i++) if (TT.P[i].k === "u" && Math.abs(TT.P[i - 1].e - e) < 1e-12) { TT.p = TT.cum[i - 1]; break; }
+		if (st.k !== "c" || !(st.e > 0)) return;
+		var e = st.e; TT.unl.push({ e: e, q: [0] }); ttPath();
+		for (i = 1; i < TT.P.length; i++) if (TT.P[i].k === "u" && TT.P[i].ev === TT.unl.length - 1 && TT.P[i].seg === 0) { TT.p = TT.cum[i - 1]; break; }
 		TT.play = true; TT.last = 0; ttRender(); requestAnimationFrame(ttTick);
 	});
 	$("mt-tt-scrub").addEventListener("input", function () { TT.play = false; TT.p = TT.total * (+this.value) / 1000; ttRender(); });

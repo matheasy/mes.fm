@@ -253,5 +253,38 @@ var odd = M.curve({ id: "r", name: "odd", c: "duct", E: 68.9, sy: 3447, su: 4826
 	near(M.angleDelta(1, 0), -1, 1e-12, "angleDelta 1 -> 0");
 })();
 
+/* unload / reload cycles in the tensile test (queue item: a partial unload then Load again jumped to zero load first) */
+(function () {
+	var c = M.curve(M.mat("al2014"), {}), eu = c.ef * 0.4, top = { e: eu, s: M.stressAt(c, eu) }, set = M.permanentSet(c, top.e, top.s);
+	function seg(path, ev, sg) { return path.P.filter(function (p) { return p.ev === ev && p.seg === sg; }); }
+	/* full unload: down to zero at the permanent set, one stop */
+	var r = M.loadPath(c, [{ e: eu, q: [0] }]), d = seg(r, 0, 0), u = seg(r, 0, 1);
+	ok(r.stops.length === 1 && d.length > 2 && u.length > 2, "full unload: one stop, a down and an up segment");
+	near(d[d.length - 1].e, set, 1e-9, "full unload ends at the permanent set"); ok(Math.abs(d[d.length - 1].s) < 1e-6 * top.s, "full unload ends at zero stress");
+	/* partial unload to 40 %: the lowest stress on the way is 40 % of the top, never zero; the reload starts where the unload stopped */
+	r = M.loadPath(c, [{ e: eu, q: [0.4] }]); d = seg(r, 0, 0); u = seg(r, 0, 1);
+	var minS = Math.min.apply(null, d.concat(u).map(function (p) { return p.s; }));
+	near(minS, 0.4 * top.s, 1e-9, "partial unload never goes below 40 % of the load");
+	ok(u[0].s > d[d.length - 1].s && u[0].s - d[d.length - 1].s < 0.05 * top.s, "reload starts one small step above where the unload stopped (no drop to zero)");
+	near(r.P[r.stops[0]].s, 0.4 * top.s, 1e-9, "the stop is at the partial level");
+	/* every point of the cycle lies on the elastic line through the top, slope E */
+	d.concat(u).forEach(function (p, i) { if (i % 5 === 0) near(top.e - p.e, (top.s - p.s) / c.E, 1e-6, "cycle point on the slope-E line"); });
+	near(u[u.length - 1].e, top.e, 1e-9, "reload meets the curve at the strain where it was unloaded");
+	/* the curve carries on after the cycle: the next curve point is past the turn strain */
+	var after = r.P.filter(function (p, i) { return i > r.P.indexOf(u[u.length - 1]) && p.k === "c"; });
+	ok(after.length > 0 && after[0].e >= top.e, "test carries on along the curve after reloading");
+	/* loadTurn: Load again part way down, then Unload here part way up */
+	var q = M.loadTurn([0], 0, "u", 0.55); ok(q.length === 1 && Math.abs(q[0] - 0.55) < 1e-12, "Load again at 55 % keeps the bottom at 55 %");
+	q = M.loadTurn(q, 1, "r", 0.8); ok(q.length === 3 && q[0] === 0.55 && q[1] === 0.8 && q[2] === 0, "Unload here at 80 % on the way back up adds a top and a new bottom");
+	r = M.loadPath(c, [{ e: eu, q: q }]); ok(r.stops.length === 2, "two bottoms = two stops");
+	var up1 = seg(r, 0, 1); near(up1[up1.length - 1].s, 0.8 * top.s, 1e-9, "second turn at 80 %");
+	q = M.loadTurn(q, 2, "u", 0.3); r = M.loadPath(c, [{ e: eu, q: q }]); near(r.P[r.stops[1]].s, 0.3 * top.s, 1e-9, "Load again part way down the second unload");
+	/* two separate unload events stay in strain order */
+	r = M.loadPath(c, [{ e: eu * 1.5, q: [0] }, { e: eu, q: [0.5] }]); ok(r.stops.length === 2 && r.P[r.stops[0]].ev === 1, "events are taken in strain order");
+	/* rubber goes down and back up its own curve */
+	var rb = M.curve(M.mat(M.MATS.filter(function (m) { return M.curve(m, {}).elastic; })[0].id), {}), er = rb.ef * 0.5;
+	r = M.loadPath(rb, [{ e: er, q: [0.5] }]); near(r.P[r.stops[0]].e, er * 0.5, 1e-9, "rubber: partial unload halfway along its curve");
+})();
+
 console.log(fails ? fails + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(fails ? 1 : 0);
