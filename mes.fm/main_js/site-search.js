@@ -720,6 +720,12 @@
         var s = document.createElement("script"); s.id = "mes-tsize-js"; s.src = "/main_js/text-size.js?v=2"; s.async = true; document.head.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tsizeLoader); else tsizeLoader();
+    /* "− 1.00× +" speed buttons under every .video-embed (3Speak / YouTube players on mirror pages), main_js/video-speed.js. */
+    function vspeedLoader() {
+        if (window.MESVideoSpeed || !document.querySelector(".video-embed") || document.getElementById("mes-vspeed-js")) return;
+        var s = document.createElement("script"); s.id = "mes-vspeed-js"; s.src = "/main_js/video-speed.js?v=1"; s.async = true; document.head.appendChild(s);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", vspeedLoader); else vspeedLoader();
 
     /* Standard | Wide | Theatre (| Show sidebar) in the floating compact bar (2026-11-02). On big screens (>= 1400px), while #compact-nav is
        showing, a small copy of the page's own width switch (aside.js .mes-mode, toc-flip.js .toc-mode, hub-theatre.js .hub-mode) sits in the
