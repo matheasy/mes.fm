@@ -606,6 +606,15 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 #wt .wt-player:not(.mes-pfill) .wt-left {font-size:11px;padding:4px 7px;top:6px;right:6px;}
 html body.dark-mode #wt .wt-ytcover {background:rgba(10,10,12,.55);}
 html body.dark-mode #wt .wt-ytcover .wt-ytcx {background:rgba(0,0,0,.6);color:#fff;}
+	/* files from this computer: the note under the link box and the drop cover */
+	.wt-local {margin:0;font-size:0.88em;color:var(--wt-muted);line-height:1.45;}
+	#wt .wt-local a {color:var(--wt-acc);}
+	#wt .wt-local b {color:var(--wt-fg);}
+	#wt {position:relative;}
+	.wt-drop {display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(15,20,30,0.55);align-items:center;justify-content:center;pointer-events:none;}
+	#wt.wt-dropping .wt-drop {display:flex;}
+	#wt .wt-drop span {background:#fff;color:#1f2430;border:3px dashed #c2255c;border-radius:16px;padding:1.2em 1.8em;font-size:1.25em;font-weight:600;box-shadow:0 10px 40px rgba(0,0,0,0.35);}
+	html body.dark-mode #wt .wt-drop span {background:#232934;color:#e6e9ee;border-color:#f06595;}
 
 
 	@media print {
@@ -771,6 +780,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #wt .wt-left{background:rgba(82,82,82,0.60)}
 	body.dark-mode .wt-ytcover{background:rgba(74,74,89,0.55)}
 	body.dark-mode #wt .wt-ytcover .wt-ytcx{background:rgba(82,82,82,0.55)}
+	body.dark-mode #wt .wt-drop span{background:#1a1a1a;color:#d3d6dc;border:3px dashed #d62966}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -985,6 +995,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Watch YouTube, 3Speak, Rumble and Odysee Videos Without Distractions</h1>                                        <p class="page-description">Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 16x. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu wt" id="wt">
+		<div class="wt-drop" aria-hidden="true"><span>📁&#xFE0E; Drop videos or sound files to play them</span></div>
 		<form class="tu-card wt-add" id="wt-form" autocomplete="off">
 			<label class="wt-sr" for="wt-in">Video links</label>
 			<textarea class="tu-input wt-in" id="wt-in" rows="1" spellcheck="false" inputmode="url" placeholder="Paste video or playlist links"></textarea>
@@ -992,8 +1003,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="submit" class="tu-btn tu-btn--primary" id="wt-play">▶&#xFE0E; Play</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-qadd">+ Up next</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-sadd">☆ Save for later</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-file" title="Play video or sound files from this computer (or drop them anywhere on the page)">📁&#xFE0E; Play a file</button>
 				<span class="wt-msg" id="wt-msg" role="status" aria-live="polite"></span>
 			</div>
+			<p class="wt-local" id="wt-local">Videos on your computer: drop them anywhere here or press <b>Play a file</b>. They play right here; nothing is uploaded. A whole folder of photos and videos? <a href="/gallery">Browse it in MES Gallery</a>.</p>
 			<div class="wt-mes" id="wt-chans"><span>Latest from:</span>
 				<button type="button" class="wt-chip" data-ch="mes">Math Easy Solutions</button>
 				<button type="button" class="wt-chip" data-ch="mestruth">MES Truth</button>
@@ -1022,7 +1035,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<span class="wt-pbtns" id="wt-pbtns"></span>
 			</div>
 			<div class="wt-stage" id="wt-stage">
-				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, or pick something from <em>Latest from</em>.</span></div>
+				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, pick something from <em>Latest from</em>, or drop a video file from your computer here.</span></div>
 			</div>
 			<div class="wt-meta">
 				<div class="wt-title" id="wt-title"></div>
@@ -1205,7 +1218,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=37" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=38" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

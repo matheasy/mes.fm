@@ -298,7 +298,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 16x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="37", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
+                  js_v="38", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -354,7 +354,7 @@ APPS = {
                     tag="Your photos and videos, beautifully, nothing uploaded.", accent="#7c3aed", dark="#5b21b6", tint="#ede7fd",
                     desc="Free photo and video viewer in your browser: open a folder (with subfolders) and see thousands of pictures and videos in rows, squares, masonry or a list, grouped by day, month, folder or type. Big viewer with zoom, slideshow, rotation, favourites and star ratings, and video speed controls from 0.25x to 4x with frame steps and A-B loops. Nothing is uploaded.",
                     meta_desc="Free photo and video viewer for your own folders: fast thumbnails, rows / masonry / list, slideshow, zoom, video speed 0.25x-4x and A-B loops. Nothing is uploaded.",
-                    js_v="3", lib_from=["exif-viewer"],
+                    js_v="4", lib_from=["exif-viewer"],
                     head_extra='<link rel="manifest" href="/gallery/manifest.webmanifest"><meta name="theme-color" content="#5b21b6">', **_photo_nav("gallery")),
     "exif-viewer": dict(title="MES EXIF Viewer", page_title="EXIF Viewer: Photo Metadata, GPS Location and AI Flags",
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",

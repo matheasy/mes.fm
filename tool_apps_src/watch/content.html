@@ -1,5 +1,6 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu wt" id="wt">
+		<div class="wt-drop" aria-hidden="true"><span>📁&#xFE0E; Drop videos or sound files to play them</span></div>
 		<form class="tu-card wt-add" id="wt-form" autocomplete="off">
 			<label class="wt-sr" for="wt-in">Video links</label>
 			<textarea class="tu-input wt-in" id="wt-in" rows="1" spellcheck="false" inputmode="url" placeholder="Paste video or playlist links"></textarea>
@@ -7,8 +8,10 @@
 				<button type="submit" class="tu-btn tu-btn--primary" id="wt-play">▶&#xFE0E; Play</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-qadd">+ Up next</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="wt-sadd">☆ Save for later</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="wt-file" title="Play video or sound files from this computer (or drop them anywhere on the page)">📁&#xFE0E; Play a file</button>
 				<span class="wt-msg" id="wt-msg" role="status" aria-live="polite"></span>
 			</div>
+			<p class="wt-local" id="wt-local">Videos on your computer: drop them anywhere here or press <b>Play a file</b>. They play right here; nothing is uploaded. A whole folder of photos and videos? <a href="/gallery">Browse it in MES Gallery</a>.</p>
 			<div class="wt-mes" id="wt-chans"><span>Latest from:</span>
 				<button type="button" class="wt-chip" data-ch="mes">Math Easy Solutions</button>
 				<button type="button" class="wt-chip" data-ch="mestruth">MES Truth</button>
@@ -37,7 +40,7 @@
 				<span class="wt-pbtns" id="wt-pbtns"></span>
 			</div>
 			<div class="wt-stage" id="wt-stage">
-				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, or pick something from <em>Latest from</em>.</span></div>
+				<div class="wt-empty" id="wt-empty"><b>Nothing playing yet.</b><span>Paste a link above, pick something from <em>Latest from</em>, or drop a video file from your computer here.</span></div>
 			</div>
 			<div class="wt-meta">
 				<div class="wt-title" id="wt-title"></div>

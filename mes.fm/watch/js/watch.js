@@ -495,13 +495,14 @@
 		if (it.k === "3speak") return "hls";
 		if (it.k === "odysee") return it.id ? "odysee" : "open";
 		if (it.k === "direct") return "file";
+		if (it.k === "local") return "local";   // a video / sound file from this computer, in our own <video>
 		if (it.k === "vimeo" && it.id && it.e) return "vimeo";   // Vimeo's player + its player.js API (speed, time)
 		if (it.k === "bitchute" && it.id && !W.noBC[it.key]) return "bitchute";   // own <video> from BitChute's file (falls back to its embed)
 		if (it.e) return "embed";
 		return "open";
 	};
 	W.noBC = {};   // BitChute videos whose file could not be found / played this session: use BitChute's own player
-	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "bitchute" || m === "vimeo"; };
+	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "local" || m === "bitchute" || m === "vimeo"; };
 	W.vmSpeed = function (r) { return Math.max(0.5, Math.min(2, r)); };   // Vimeo's player: 0.5x to 2x
 	W.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 	W.ytMax = 2;   // YouTube's embed offers up to 2x; raised on ready if getAvailablePlaybackRates() offers more
@@ -605,7 +606,17 @@
 	};
 	/* scale that makes a 16:9 picture fill a w x h box (crops the sides or top / bottom) */
 	W.fillZoom = function (w, h, ar) { ar = ar || 16 / 9; if (!w || !h) return 1; var box = w / h; return Math.round(Math.max(box / ar, ar / box) * 100) / 100; };
-	W.siteName = function (it) { return (Y.SITES && Y.SITES[it.k]) || "Video"; };
+	/* ---------- files from this computer ---------- */
+	// a file is known by its name, size and date, so the same file dropped again later finds its resume point
+	W.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|ogv|ogg|mp3|m4a|aac|wav|flac|opus|oga|3gp|avi|wmv|flv|mpg|mpeg|ts|m2ts)$/i;
+	W.isMediaFile = function (name, type) { return /^(video|audio)\//.test(type || "") || W.MEDIA_EXT.test(name || ""); };
+	W.localItem = function (f) {
+		var it = { k: "local", id: String(f.name) + "|" + (f.size || 0) + "|" + (f.lastModified || 0), u: "", e: null, s: 0, t: String(f.name || "Video file"), th: "", sz: f.size || 0 };
+		it.key = W.key(it); return it;
+	};
+	W.isLocal = function (it) { return !!it && it.k === "local"; };
+	W.size = function (b) { b = +b || 0; return b >= 1e9 ? (b / 1e9).toFixed(1) + " GB" : b >= 1e6 ? Math.round(b / 1e6) + " MB" : Math.max(1, Math.round(b / 1e3)) + " KB"; };
+	W.siteName = function (it) { if (it && it.k === "local") return "On this computer"; return (Y.SITES && Y.SITES[it.k]) || "Video"; };
 	W.label = function (it) { if (it.t) return it.t; if (it.k === "youtube") return "YouTube video " + it.id; if (it.id) return W.siteName(it) + ": " + it.id; try { var u = new URL(it.u); return W.siteName(it) + " link: " + u.hostname.replace(/^www\./, "") + (u.pathname.length > 1 ? u.pathname.slice(0, 40) : ""); } catch (e) { return it.u; } };
 
 	/* ---------- lists (plain arrays of items, newest / first wins) ---------- */
@@ -640,7 +651,7 @@
 
 	/* ---------- share links ---------- */
 	W.shareUrl = function (base, items, at, name) {
-		var u = items.map(function (x) { return x.u; });
+		var u = items.filter(function (x) { return x.k !== "local" && x.u; }).map(function (x) { return x.u; });
 		var q = u.length === 1 && !name ? "v=" + encodeURIComponent(u[0]) + (at ? "&t=" + Math.floor(at) : "") : "l=" + u.map(encodeURIComponent).join("|");
 		return base + "?" + q + (name ? "&n=" + encodeURIComponent(String(name).slice(0, 80)) : "");
 	};
@@ -670,11 +681,12 @@
 	// what is shared between devices: the lists, not per-device settings (speed, zoom, ticks) or the playing position in Up next
 	var IT = ["k", "id", "u", "e", "s", "t", "th", "key"];
 	function slim(it, extra) { var o = {}; IT.concat(extra || []).forEach(function (f) { if (it[f] != null && it[f] !== "") o[f] = it[f]; }); return o; }
+	function web(L) { return (L || []).filter(function (x) { return x && x.k !== "local"; }); }
 	W.snap = function (S, withHist) {
-		var o = { v: 1, q: (S.q || []).map(function (x) { return slim(x); }), saved: (S.saved || []).map(function (x) { return slim(x); }),
-			lists: (S.lists || []).map(function (l) { var r = { id: l.id, name: l.name, items: (l.items || []).map(function (x) { return slim(x); }) }; if (l.src) r.src = l.src; return r; }),
+		var o = { v: 1, q: web(S.q).map(function (x) { return slim(x); }), saved: web(S.saved).map(function (x) { return slim(x); }),
+			lists: (S.lists || []).map(function (l) { var r = { id: l.id, name: l.name, items: web(l.items).map(function (x) { return slim(x); }) }; if (l.src) r.src = l.src; return r; }),
 			chans: (S.chans || []).map(function (c) { return { k: c.k, n: c.n || "" }; }) };
-		if (withHist) o.hist = (S.hist || []).map(function (x) { return slim(x, ["pos", "dur", "at"]); });
+		if (withHist) o.hist = web(S.hist).map(function (x) { return slim(x, ["pos", "dur", "at"]); });
 		return o;
 	};
 	W.snapCount = function (d) { d = d || {}; var n = (d.q || []).length + (d.saved || []).length + (d.chans || []).length; (d.lists || []).forEach(function (l) { n += (l.items || []).length; }); return n; };
@@ -1402,9 +1414,9 @@
 					} });
 				saveT = setInterval(remember, 5000);
 			}, function (e) { if (g === gen) failed(e.message); });
-		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file' || mode === 'bitchute') {
-			setStage('<p class="wt-loading">Loading the video…</p>');
-			var src = mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : mode === 'bitchute' ? bitchuteGet(cur) : Promise.resolve({ url: cur.u, title: cur.t });
+		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file' || mode === 'local' || mode === 'bitchute') {
+			setStage('<p class="wt-loading">' + (mode === 'local' ? 'Opening the file…' : 'Loading the video…') + '</p>');
+			var src = mode === 'local' ? localSrc(cur) : mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : mode === 'bitchute' ? bitchuteGet(cur) : Promise.resolve({ url: cur.u, title: cur.t });
 			src.then(function (info) {
 				if (g !== gen) return;
 				if (info.title || info.thumb) setMeta(cur.key, info.title, info.thumb);
@@ -1418,7 +1430,8 @@
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
 				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); } });
 				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
-				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (!hls && info.relay && v.src !== info.relay) { v.src = info.relay; var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function () {}); } else failed('This browser could not play the video file.'); });
+				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (!hls && info.relay && v.src !== info.relay) { v.src = info.relay; var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function () {}); } else failed(mode === 'local' ? 'This browser can\'t play this kind of file (' + (String(cur.t).split('.').pop() || 'file').toUpperCase() + '). MP4, WebM, MP3 and M4A play everywhere.' : 'This browser could not play the video file.'); });
+				if (mode === 'local' && !cur.th) grabThumb(v, g);
 				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
 						if (g !== gen) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.');
@@ -1433,7 +1446,7 @@
 				}
 				v.src = info.url;
 				var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
-			}).catch(function (e) { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else failed(e.message); });
+			}).catch(function (e) { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (e && e.missing) localMissing(g); else failed(e.message); });
 			saveT = setInterval(remember, 5000);
 		} else if (mode === 'vimeo') {
 			var vf = document.createElement('iframe'); vf.src = cur.e.replace('#', (cur.e.indexOf('?') < 0 ? '?' : '&') + 'autoplay=1#');
@@ -1464,11 +1477,11 @@
 		}
 		syncSpeed();
 		if (S.cm) loadComments();
-		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file|bitchute)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
+		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file|local|bitchute)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
 	function failed(text) {
 		var stage = $('wt-stage');
-		setStage('<div class="wt-empty"><b>' + esc(text) + '</b><a class="tu-btn tu-btn--ghost" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a>' +
+		setStage('<div class="wt-empty"><b>' + esc(text) + '</b>' + (W.isLocal(cur) ? '<a class="tu-btn tu-btn--ghost" href="/convert-video" target="_blank" rel="noopener">Convert it to MP4 in the Video Converter ↗&#xFE0E;</a>' : '<a class="tu-btn tu-btn--ghost" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a>') +
 			(S.i < S.q.length - 1 ? '<button type="button" class="tu-btn tu-btn--primary" data-act="next">Play the next one ⏭&#xFE0E;</button>' : '') + '</div>');
 	}
 	function ended() {
@@ -1493,9 +1506,9 @@
 	function showMeta() {
 		var has = !!cur;
 		$('wt-title').textContent = has ? W.label(cur) : '';
-		$('wt-sub').textContent = has ? W.siteName(cur) + (S.q.length > 1 ? ' · ' + (S.i + 1) + ' of ' + S.q.length + ' in Up next' : '') : '';
-		var o = $('wt-open'); o.hidden = !has; if (has) o.href = cur.u;
-		$('wt-copy').hidden = !has; $('wt-star').hidden = !has;
+		$('wt-sub').textContent = has ? W.siteName(cur) + (W.isLocal(cur) && cur.sz ? ' · ' + W.size(cur.sz) : '') + (S.q.length > 1 ? ' · ' + (S.i + 1) + ' of ' + S.q.length + ' in Up next' : '') : '';
+		var lo = has && W.isLocal(cur), o = $('wt-open'); o.hidden = !has || lo; if (has && !lo) o.href = cur.u;
+		$('wt-copy').hidden = !has || lo; $('wt-star').hidden = !has;
 		if (has) { var st = W.indexOf(S.saved, cur.key) >= 0; $('wt-star').textContent = st ? '★' : '☆'; $('wt-star').setAttribute('aria-pressed', String(st)); $('wt-star').title = st ? 'Remove from Saved' : 'Save for later'; }
 		$('wt-prev').disabled = !has || S.i <= 0; $('wt-next').disabled = !has || S.i >= S.q.length - 1;
 		if (has) document.title = W.label(cur) + ' · MES Watch';
@@ -1542,7 +1555,7 @@
 	}
 
 	/* ---------- captions: our own CC button (YouTube's is out of reach while the picture is zoomed, or under the touch layer) ---------- */
-	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file' || m === 'bitchute') && !!(vid && vid.textTracks && vid.textTracks.length)); }
+	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file' || m === 'local' || m === 'bitchute') && !!(vid && vid.textTracks && vid.textTracks.length)); }
 	function paintCC() {
 		var on = !!S.cc, ok = ccAble();
 		[$('wt-cc')].concat([].slice.call(document.querySelectorAll('#wt-stage [data-c="cc"]'))).forEach(function (b) {
@@ -1839,7 +1852,7 @@
 	$('wt-ytcov').checked = !!S.ytCov;
 	$('wt-ytcov').onchange = function () { S.ytCov = this.checked; delete S.ytCover; save(); ytNote(); };
 	$('wt-priv').checked = S.priv !== false;
-	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && !/^(hls|odysee|file|bitchute)$/.test(W.mode(cur))) { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
+	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && !/^(hls|odysee|file|local|bitchute)$/.test(W.mode(cur))) { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
 	function strip(it) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; return c; }
 
 	/* "+ List": add the playing video to one of my playlists */
@@ -2041,7 +2054,7 @@
 	}
 	function ctlSync(st, z) {
 		var c = st.querySelector('.wt-zbar'); if (!c) return;
-		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file|bitchute)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
+		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file|local|bitchute)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
 		if (c.hidden === !want) { if (want) ctlTick(); return; }
 		c.hidden = !want; st.classList.toggle('wt-hasctl', want); clearInterval(ctlT);
 		if (vid) vid.controls = !want;   // the video's own bar would show, scaled and moved, under ours
@@ -2069,7 +2082,7 @@
 	}
 	function touchOn() {
 		if (S.pz === false || !cur) return false;
-		var m = W.mode(cur); if (!/^(yt|hls|odysee|file|bitchute)$/.test(m)) return false;
+		var m = W.mode(cur); if (!/^(yt|hls|odysee|file|local|bitchute)$/.test(m)) return false;
 		if (finePtr && finePtr.matches && ((S.zoom || {}).k || 1) <= 1.001) return false;   // mouse at 100%: leave the player alone
 		return !!$('wt-stage').querySelector('iframe#wt-yt, video');
 	}
@@ -2206,6 +2219,172 @@
 	});
 
 	/* ---------- start ---------- */
+	/* ---------- files from this computer ----------
+	   A file plays from a blob: URL in our own <video>; nothing is uploaded. The File lives in LOCAL for this tab; where the browser
+	   gives a file handle (Chrome / Edge / Opera: picked with the file picker, dropped, or sent from Gallery) it is kept in IndexedDB
+	   "mes-watch", so after a reload one click of "Open it again" brings the same file back. Other browsers: drop it again. */
+	var LOCAL = {}, LURL = null;
+	function fdb() { return new Promise(function (res, rej) { if (typeof indexedDB === 'undefined') return rej(new Error('no IndexedDB')); var r = indexedDB.open('mes-watch', 1); r.onupgradeneeded = function () { r.result.createObjectStore('fh'); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	function fput(key, h) { return fdb().then(function (db) { return new Promise(function (res) { var t = db.transaction('fh', 'readwrite'); t.objectStore('fh').put(h, key); t.oncomplete = res; t.onerror = t.onabort = res; }); }).catch(function () {}); }
+	function fget(key) { return fdb().then(function (db) { return new Promise(function (res) { var r = db.transaction('fh').objectStore('fh').get(key); r.onsuccess = function () { res(r.result || null); }; r.onerror = function () { res(null); }; }); }).catch(function () { return null; }); }
+	// the File for an item: this tab's copy, else the remembered handle (asks permission when `ask` and we are inside a click)
+	function fileOf(it, ask) {
+		if (LOCAL[it.key]) return Promise.resolve(LOCAL[it.key]);
+		return fget(it.key).then(function (h) {
+			if (!h || !h.getFile) return null;
+			var perm = h.queryPermission ? h.queryPermission({ mode: 'read' }) : Promise.resolve('granted');
+			return perm.then(function (p) {
+				if (p === 'granted') return h.getFile();
+				if (!ask || !h.requestPermission) return null;
+				return h.requestPermission({ mode: 'read' }).then(function (p2) { return p2 === 'granted' ? h.getFile() : null; });
+			}).then(function (f) { if (f) LOCAL[it.key] = f; return f || null; }, function () { return null; });
+		});
+	}
+	function localSrc(it) {
+		return fileOf(it, true).then(function (f) {
+			if (!f) { var e = new Error('missing'); e.missing = true; throw e; }
+			if (LURL) { try { URL.revokeObjectURL(LURL); } catch (x) {} }
+			LURL = URL.createObjectURL(f);
+			return { url: LURL };
+		});
+	}
+	function localMissing(g) {
+		fget(cur.key).then(function (h) {
+			if (g !== gen) return;
+			var name = esc(W.label(cur));
+			if (h && h.requestPermission) {
+				setStage('<div class="wt-empty"><b>' + name + '</b><span>This file is on your computer. The browser asks once after the page was closed before MES Watch may open it again.</span><button type="button" class="tu-btn tu-btn--primary" data-lact="again">▶&#xFE0E; Open it again</button><button type="button" class="tu-btn tu-btn--ghost" data-lact="pick">📁&#xFE0E; Pick it myself</button></div>');
+			} else {
+				setStage('<div class="wt-empty"><b>' + name + '</b><span>This file is on your computer and the browser forgot it when the page was closed. Drop it here or pick it again; it carries on where you stopped.' + (window.showOpenFilePicker ? '' : ' (Chrome, Edge and Opera can remember files: then it is one click.)') + '</span><button type="button" class="tu-btn tu-btn--primary" data-lact="pick">📁&#xFE0E; Pick the file</button></div>');
+			}
+		});
+	}
+	$('wt-stage').addEventListener('click', function (e) {
+		var b = e.target.closest('[data-lact]'); if (!b || !cur) return;
+		if (b.dataset.lact === 'again') { fileOf(cur, true).then(function (f) { if (f) play(cur); else toast('The browser did not allow it. Pick the file instead.'); }); }
+		else pickFiles('play');
+	});
+	// a small picture for the lists, taken from the video a few seconds in
+	function grabThumb(v, g) {
+		function grab() {
+			if (g !== gen || cur.th) { v.removeEventListener('timeupdate', grab); return; }
+			if (!v.videoWidth || (v.currentTime < 2 && (v.duration || 0) > 6)) return;
+			v.removeEventListener('timeupdate', grab);
+			try {
+				var w = 192, h = Math.round(w * v.videoHeight / v.videoWidth), c = document.createElement('canvas'); c.width = w; c.height = Math.max(1, Math.min(h, 192));
+				c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+				setMeta(cur.key, '', c.toDataURL('image/jpeg', 0.6));
+			} catch (x) {}
+		}
+		v.addEventListener('timeupdate', grab);
+	}
+	/* entries [{f: File, h: handle|null}] -> items, then play / Up next / Saved like pasted links */
+	function addFiles(entries, how, opts) {
+		var items = [], skipped = 0;
+		entries.forEach(function (e) {
+			if (!e || !e.f) return;
+			if (!W.isMediaFile(e.f.name, e.f.type)) { skipped++; return; }
+			var it = W.localItem(e.f); LOCAL[it.key] = e.f; if (e.h && e.h.kind === 'file') fput(it.key, e.h);
+			if (!items.some(function (x) { return x.key === it.key; })) items.push(it);
+		});
+		if (!items.length) { msg(skipped ? 'Those files are not videos or sound (MES Watch plays video and audio files).' : 'No files came through.'); return; }
+		msg(skipped ? skipped + ' file' + (skipped > 1 ? 's' : '') + ' skipped (not video or sound).' : '');
+		if (how === 'next') { S.q = W.add(S.q, items); save(); setTab('q'); showMeta(); toast(items.length + ' added to Up next'); return; }
+		if (how === 'save') { S.saved = W.add(S.saved, items, true); save(); setTab('saved'); toast(items.length === 1 ? 'Saved for later' : items.length + ' saved for later'); return; }
+		// the same files already in the lists keep their place; the first one plays
+		var at = Math.max(0, S.i + 1), fresh = items.filter(function (x) { return W.indexOf(S.q, x.key) < 0; });
+		S.q = S.q.slice(); Array.prototype.splice.apply(S.q, [at, 0].concat(fresh));
+		play(S.q[W.indexOf(S.q, items[0].key)], opts && opts.t ? { t: opts.t } : {}); setTab('q');
+		if (items.length > 1) toast('Playing ' + W.label(items[0]) + ' · ' + (items.length - 1) + ' more in Up next');
+	}
+	var ACCEPT = 'video/*,audio/*,.mkv,.avi,.mov,.m4v,.flac,.opus';
+	function pickFiles(how) {
+		if (window.showOpenFilePicker) {
+			window.showOpenFilePicker({ multiple: true, id: 'mes-watch', types: [{ description: 'Videos and sound', accept: { 'video/*': ['.mp4', '.m4v', '.mov', '.webm', '.mkv', '.ogv', '.avi'], 'audio/*': ['.mp3', '.m4a', '.aac', '.wav', '.flac', '.ogg', '.opus'] } }], excludeAcceptAllOption: false })
+				.then(function (hs) { return Promise.all(hs.map(function (h) { return h.getFile().then(function (f) { return { f: f, h: h }; }); })); })
+				.then(function (es) { addFiles(es, how); }, function (e) { if (e && e.name !== 'AbortError') pickInput(how); });
+			return;
+		}
+		pickInput(how);
+	}
+	function pickInput(how) {
+		var inp = document.createElement('input'); inp.type = 'file'; inp.multiple = true; inp.accept = ACCEPT;
+		inp.onchange = function () { addFiles(Array.prototype.map.call(inp.files || [], function (f) { return { f: f, h: null }; }), how); };
+		inp.click();
+	}
+	$('wt-file').onclick = function () { pickFiles('play'); };
+	// dropping files (or a folder) anywhere on the page
+	var dragN = 0;
+	function hasFiles(e) { var t = e.dataTransfer && e.dataTransfer.types; return !!t && Array.prototype.indexOf.call(t, 'Files') >= 0; }
+	document.addEventListener('dragenter', function (e) { if (!hasFiles(e)) return; dragN++; $('wt').classList.add('wt-dropping'); });
+	document.addEventListener('dragleave', function () { if (dragN && --dragN === 0) $('wt').classList.remove('wt-dropping'); });
+	document.addEventListener('dragover', function (e) { if (hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+	document.addEventListener('drop', function (e) {
+		if (!hasFiles(e)) return;
+		e.preventDefault(); dragN = 0; $('wt').classList.remove('wt-dropping');
+		var how = e.target.closest && e.target.closest('#wt-tabs, #wt-list') ? 'next' : 'play';
+		// every handle / entry must be asked for during the drop event itself
+		var its = Array.prototype.slice.call(e.dataTransfer.items || []).filter(function (x) { return x.kind === 'file'; });
+		var jobs = its.map(function (x) {
+			var hp = x.getAsFileSystemHandle ? x.getAsFileSystemHandle().catch(function () { return null; }) : Promise.resolve(null);
+			var en = x.webkitGetAsEntry ? x.webkitGetAsEntry() : null, f = x.getAsFile();
+			return hp.then(function (h) {
+				if (h && h.kind === 'directory') return fromDirHandle(h);
+				if (!h && en && en.isDirectory) return fromDirEntry(en);
+				return f ? [{ f: f, h: h }] : [];
+			});
+		});
+		if (!jobs.length) { addFiles(Array.prototype.map.call(e.dataTransfer.files || [], function (f) { return { f: f, h: null }; }), how); return; }
+		Promise.all(jobs).then(function (arr) {
+			var all = [].concat.apply([], arr), folder = arr.some(function (a, i) { return a.length && a._dir; });
+			addFiles(all, how);
+			if (folder) setTimeout(function () { toast('A whole folder? Browse it with thumbnails in MES Gallery (mes.fm/gallery).'); }, 2600);
+		});
+	});
+	function natural(a, b) { return a.f.name.localeCompare(b.f.name, undefined, { numeric: true, sensitivity: 'base' }); }
+	function fromDirHandle(dir) {
+		var out = [];
+		function walk(d, depth) {
+			return (async function () { for await (var ent of d.values()) { if (out.length >= 500) break; if (ent.kind === 'file' && W.isMediaFile(ent.name)) { try { out.push({ f: await ent.getFile(), h: ent }); } catch (x) {} } else if (ent.kind === 'directory' && depth < 3 && ent.name[0] !== '.') await walk(ent, depth + 1); } })();
+		}
+		return walk(dir, 0).then(function () { out.sort(natural); out._dir = 1; return out; }, function () { out._dir = 1; return out; });
+	}
+	function fromDirEntry(dir) {
+		var out = [];
+		function readAll(rd) { return new Promise(function (res) { var all = []; (function more() { rd.readEntries(function (es) { if (!es.length) return res(all); all = all.concat(es); more(); }, function () { res(all); }); })(); }); }
+		function walk(d, depth) {
+			return readAll(d.createReader()).then(function (es) {
+				return es.reduce(function (p, en) { return p.then(function () {
+					if (out.length >= 500) return;
+					if (en.isFile && W.isMediaFile(en.name)) return new Promise(function (res) { en.file(function (f) { out.push({ f: f, h: null }); res(); }, function () { res(); }); });
+					if (en.isDirectory && depth < 3 && en.name[0] !== '.') return walk(en, depth + 1);
+				}); }, Promise.resolve());
+			});
+		}
+		return walk(dir, 0).then(function () { out.sort(natural); out._dir = 1; return out; });
+	}
+	// pasting files (copied in the file manager) into the link box
+	$('wt-in').addEventListener('paste', function (e) {
+		var fs = e.clipboardData && e.clipboardData.files; if (!fs || !fs.length) return;
+		e.preventDefault(); addFiles(Array.prototype.map.call(fs, function (f) { return { f: f, h: null }; }), 'play');
+	});
+	// MES Gallery's "Play in Watch": ?from=gallery&id=… -> ask that tab for the files over a BroadcastChannel (nothing is copied)
+	function fromGallery() {
+		var q = new URLSearchParams(location.search), id = q.get('id');
+		if (q.get('from') !== 'gallery' || !id) return false;
+		try { history.replaceState(null, '', location.pathname); } catch (e) {}
+		if (typeof BroadcastChannel === 'undefined') { msg('This browser can\'t take files from Gallery: drop the video here instead.'); return true; }
+		var ch = new BroadcastChannel('mes-gallery-watch'), got = false, tries = 0;
+		setStage('<p class="wt-loading">Getting the video from Gallery…</p>');
+		ch.onmessage = function (e) {
+			var d = e.data || {}; if (d.id !== id || got) return; got = true; ch.close();
+			if (d.err || !d.list || !d.list.length) { setStage(''); msg('Gallery could not hand the video over. Drop it here instead.'); return; }
+			addFiles(d.list, 'play', { t: d.at || 0 });
+		};
+		(function ask() { if (got) return; ch.postMessage({ want: id }); if (++tries < 12) setTimeout(ask, 400); else { ch.close(); setStage(''); msg('Gallery did not answer (was its tab closed?). Drop the video here instead.'); } })();
+		return true;
+	}
+
 	function boot() {
 		// phones with a camera notch: without viewport-fit=cover the full-screen picture is pushed off centre by the notch's width
 		var vp = document.querySelector('meta[name=viewport]'); if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
@@ -2220,6 +2399,7 @@
 		zoomLayer();
 		renderList(); showMeta(); syncSpeed(); setTab(S.tab || 'q'); paintCmBtn();
 		if (/[?&]debug=1/.test(location.search)) window.MESWatchDebug = { S: S, play: play, go: go, position: position, cur: function () { return cur; } };
+		var fromG = fromGallery();
 		var Q = W.fromQuery(location.search);
 		if (Q.links.length) {
 			var r = W.parseMany(Q.links.join(' '));
@@ -2232,7 +2412,7 @@
 				play(S.q[0], Q.t ? { t: Q.t } : {});
 			}
 			try { history.replaceState(null, '', location.pathname); } catch (e) {}
-		} else if (S.i >= 0 && S.q[S.i]) {
+		} else if (!fromG && S.i >= 0 && S.q[S.i]) {
 			cur = S.q[S.i]; showMeta(); renderList();
 			setStage('<div class="wt-empty"><b>' + esc(W.label(cur)) + '</b><span>' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'You stopped at ' + W.fmt(histRec(cur).pos) + '.' : 'Ready to play.') + '</span><button type="button" class="tu-btn tu-btn--primary" id="wt-resume">▶&#xFE0E; ' + (histRec(cur) && histRec(cur).pos > 20 && !W.done(histRec(cur)) ? 'Continue' : 'Play') + '</button></div>');
 			$('wt-resume').onclick = function () { play(cur); };
@@ -2310,6 +2490,7 @@
 		cmState = { site: site, items: [], count: null, msg: '', more: null, busy: true }; cmPaint();
 		function done() { if (g === cmGen) { cmState.busy = false; cmPaint(); } }
 		function fail(t) { if (g !== cmGen) return; cmState.msg = esc(t); done(); }
+		if (W.isLocal(it)) { cmState.msg = 'This video is a file on your computer, so it has no comments.'; done(); return; }
 		if (it.k === 'youtube') {
 			var ytPage = function (c, ver) {
 				cmState.busy = true; cmPaint();
@@ -2378,7 +2559,10 @@
 	/* ☁ Sync & backup (sync.js): it reads / replaces the shared lists through this */
 	function applySnap(d) {
 		var ck = cur && cur.key;
-		S.q = d.q || []; S.saved = d.saved || []; S.lists = d.lists || []; S.chans = d.chans || []; if (d.hist) S.hist = d.hist;
+		function keepLocal(oldL, newL) { var out = (newL || []).slice(); (oldL || []).forEach(function (x, i) { if (W.isLocal(x) && W.indexOf(out, x.key) < 0) out.splice(Math.min(i, out.length), 0, x); }); return out; }
+		var oldLists = {}; S.lists.forEach(function (l) { oldLists[l.id] = l.items; });
+		S.q = keepLocal(S.q, d.q); S.saved = keepLocal(S.saved, d.saved); S.chans = d.chans || []; if (d.hist) S.hist = keepLocal(S.hist, d.hist);
+		S.lists = (d.lists || []).map(function (l) { if (oldLists[l.id]) l.items = keepLocal(oldLists[l.id], l.items); return l; });
 		S.i = ck ? W.indexOf(S.q, ck) : -1; if (S.i >= 0) cur = S.q[S.i];
 		if (openList && !W.findList(S.lists, openList)) openList = null;
 		save(); renderList(); renderChans(); showMeta();

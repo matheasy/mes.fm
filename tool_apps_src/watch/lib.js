@@ -13,13 +13,14 @@
 		if (it.k === "3speak") return "hls";
 		if (it.k === "odysee") return it.id ? "odysee" : "open";
 		if (it.k === "direct") return "file";
+		if (it.k === "local") return "local";   // a video / sound file from this computer, in our own <video>
 		if (it.k === "vimeo" && it.id && it.e) return "vimeo";   // Vimeo's player + its player.js API (speed, time)
 		if (it.k === "bitchute" && it.id && !W.noBC[it.key]) return "bitchute";   // own <video> from BitChute's file (falls back to its embed)
 		if (it.e) return "embed";
 		return "open";
 	};
 	W.noBC = {};   // BitChute videos whose file could not be found / played this session: use BitChute's own player
-	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "bitchute" || m === "vimeo"; };
+	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "local" || m === "bitchute" || m === "vimeo"; };
 	W.vmSpeed = function (r) { return Math.max(0.5, Math.min(2, r)); };   // Vimeo's player: 0.5x to 2x
 	W.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 	W.ytMax = 2;   // YouTube's embed offers up to 2x; raised on ready if getAvailablePlaybackRates() offers more
@@ -123,7 +124,17 @@
 	};
 	/* scale that makes a 16:9 picture fill a w x h box (crops the sides or top / bottom) */
 	W.fillZoom = function (w, h, ar) { ar = ar || 16 / 9; if (!w || !h) return 1; var box = w / h; return Math.round(Math.max(box / ar, ar / box) * 100) / 100; };
-	W.siteName = function (it) { return (Y.SITES && Y.SITES[it.k]) || "Video"; };
+	/* ---------- files from this computer ---------- */
+	// a file is known by its name, size and date, so the same file dropped again later finds its resume point
+	W.MEDIA_EXT = /\.(mp4|m4v|mov|webm|mkv|ogv|ogg|mp3|m4a|aac|wav|flac|opus|oga|3gp|avi|wmv|flv|mpg|mpeg|ts|m2ts)$/i;
+	W.isMediaFile = function (name, type) { return /^(video|audio)\//.test(type || "") || W.MEDIA_EXT.test(name || ""); };
+	W.localItem = function (f) {
+		var it = { k: "local", id: String(f.name) + "|" + (f.size || 0) + "|" + (f.lastModified || 0), u: "", e: null, s: 0, t: String(f.name || "Video file"), th: "", sz: f.size || 0 };
+		it.key = W.key(it); return it;
+	};
+	W.isLocal = function (it) { return !!it && it.k === "local"; };
+	W.size = function (b) { b = +b || 0; return b >= 1e9 ? (b / 1e9).toFixed(1) + " GB" : b >= 1e6 ? Math.round(b / 1e6) + " MB" : Math.max(1, Math.round(b / 1e3)) + " KB"; };
+	W.siteName = function (it) { if (it && it.k === "local") return "On this computer"; return (Y.SITES && Y.SITES[it.k]) || "Video"; };
 	W.label = function (it) { if (it.t) return it.t; if (it.k === "youtube") return "YouTube video " + it.id; if (it.id) return W.siteName(it) + ": " + it.id; try { var u = new URL(it.u); return W.siteName(it) + " link: " + u.hostname.replace(/^www\./, "") + (u.pathname.length > 1 ? u.pathname.slice(0, 40) : ""); } catch (e) { return it.u; } };
 
 	/* ---------- lists (plain arrays of items, newest / first wins) ---------- */
@@ -158,7 +169,7 @@
 
 	/* ---------- share links ---------- */
 	W.shareUrl = function (base, items, at, name) {
-		var u = items.map(function (x) { return x.u; });
+		var u = items.filter(function (x) { return x.k !== "local" && x.u; }).map(function (x) { return x.u; });
 		var q = u.length === 1 && !name ? "v=" + encodeURIComponent(u[0]) + (at ? "&t=" + Math.floor(at) : "") : "l=" + u.map(encodeURIComponent).join("|");
 		return base + "?" + q + (name ? "&n=" + encodeURIComponent(String(name).slice(0, 80)) : "");
 	};
@@ -188,11 +199,12 @@
 	// what is shared between devices: the lists, not per-device settings (speed, zoom, ticks) or the playing position in Up next
 	var IT = ["k", "id", "u", "e", "s", "t", "th", "key"];
 	function slim(it, extra) { var o = {}; IT.concat(extra || []).forEach(function (f) { if (it[f] != null && it[f] !== "") o[f] = it[f]; }); return o; }
+	function web(L) { return (L || []).filter(function (x) { return x && x.k !== "local"; }); }
 	W.snap = function (S, withHist) {
-		var o = { v: 1, q: (S.q || []).map(function (x) { return slim(x); }), saved: (S.saved || []).map(function (x) { return slim(x); }),
-			lists: (S.lists || []).map(function (l) { var r = { id: l.id, name: l.name, items: (l.items || []).map(function (x) { return slim(x); }) }; if (l.src) r.src = l.src; return r; }),
+		var o = { v: 1, q: web(S.q).map(function (x) { return slim(x); }), saved: web(S.saved).map(function (x) { return slim(x); }),
+			lists: (S.lists || []).map(function (l) { var r = { id: l.id, name: l.name, items: web(l.items).map(function (x) { return slim(x); }) }; if (l.src) r.src = l.src; return r; }),
 			chans: (S.chans || []).map(function (c) { return { k: c.k, n: c.n || "" }; }) };
-		if (withHist) o.hist = (S.hist || []).map(function (x) { return slim(x, ["pos", "dur", "at"]); });
+		if (withHist) o.hist = web(S.hist).map(function (x) { return slim(x, ["pos", "dur", "at"]); });
 		return o;
 	};
 	W.snapCount = function (d) { d = d || {}; var n = (d.q || []).length + (d.saved || []).length + (d.chans || []).length; (d.lists || []).forEach(function (l) { n += (l.items || []).length; }); return n; };

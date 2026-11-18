@@ -131,7 +131,7 @@
 							else if (P.sub && ent.name[0] !== '.' && !/^(node_modules|\$RECYCLE\.BIN|System Volume Information)$/i.test(ent.name)) queue.push({ h: ent, p: q.p + ent.name + '/' });
 						}
 						for (var i = 0; i < files.length; i += 32) {
-							var part = await Promise.all(files.slice(i, i + 32).map(function (fh) { return fh.getFile().then(function (f) { return mkItem(f, q.p + fh.name, false); }, function () { return null; }); }));
+							var part = await Promise.all(files.slice(i, i + 32).map(function (fh) { return fh.getFile().then(function (f) { var it = mkItem(f, q.p + fh.name, false); if (it) it.fh = fh; return it; }, function () { return null; }); }));
 							part.forEach(function (x) { if (x) found.push(x); });
 						}
 					} catch (e) { /* unreadable folder: skip */ }
@@ -732,6 +732,7 @@
 			'<span class="mgv-grow"></span>' +
 			'<button type="button" class="mgv-b" data-a="seta" title="Loop start here (A)">A</button><button type="button" class="mgv-b" data-a="setb" title="Loop end here (B)">B</button><button type="button" class="mgv-b mgv-hidesm" data-a="clearab" title="Clear the A-B loop (C)" id="mgv-clab">✕AB</button>' +
 			'<button type="button" class="mgv-b" data-a="loop" title="Repeat the whole video" aria-pressed="false" id="mgv-loop">🔁︎</button>' +
+			'<button type="button" class="mgv-b" data-a="watch" title="Play it in MES Watch: speed, resume where you stopped, and the videos after it as Up next">▶︎<span class="mgv-hidesm"> Watch</span></button>' +
 			'<span class="mgv-vol"><button type="button" class="mgv-b" data-a="mute" id="mgv-mute" title="Mute (M)">🔊</button><input type="range" id="mgv-vol" min="0" max="1" step="0.02" aria-label="Volume"></span>' +
 			'</div></div>' +
 			'<div class="mgv-pop" id="mgv-speedpop" hidden role="menu" style="top:auto;bottom:calc(var(--mv-stripH,0px) + 110px);right:auto;left:50%;transform:translateX(-50%);min-width:10em"></div>' +
@@ -991,6 +992,7 @@
 		}
 		else if (a === 'help') { vq('mgv-help').hidden = !vq('mgv-help').hidden; }
 		else if (a === 'edit') editInPhoto();
+		else if (a === 'watch') playInWatch();
 		else if (a === 'opentab') { var u = URL.createObjectURL(V.it.file); window.open(u, '_blank', 'noopener'); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); }
 		else if (a === 'copyname') { (navigator.clipboard ? navigator.clipboard.writeText(V.it.path) : Promise.reject()).then(function () { osd('Name copied'); }, function () { osd('Could not copy'); }); }
 		else if (!isV) return;
@@ -1214,7 +1216,7 @@
 		var html = '<h3>' + esc(it.name) + '</h3><div class="mgv-path">' + esc((rootName ? rootName + '/' : '') + it.path) + '</div>' +
 			'<div class="mgv-rate">' + stars + '<button type="button" data-heart="1" class="mgv-heart2' + (r.f ? ' mgv-lit' : '') + '" aria-label="Favourite">♥</button></div>' +
 			'<dl>' + rows.map(function (x) { return '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>'; }).join('') + '</dl>' +
-			'<div class="mgv-acts">' + (it.kind === 'image' ? '<button type="button" class="mgv-b" data-a="edit">✎ Edit in Photo Editor</button>' : '<a class="mgv-b" href="/video" target="_blank" rel="noopener" style="text-decoration:none">✂ Video Editor</a>') +
+			'<div class="mgv-acts">' + (it.kind === 'image' ? '<button type="button" class="mgv-b" data-a="edit">✎ Edit in Photo Editor</button>' : '<button type="button" class="mgv-b" data-a="watch">▶︎ Play in Watch</button><a class="mgv-b" href="/video" target="_blank" rel="noopener" style="text-decoration:none">✂ Video Editor</a>') +
 			'<button type="button" class="mgv-b" data-a="opentab">↗ Open in a new tab</button><button type="button" class="mgv-b" data-a="copyname">Copy name</button></div>' +
 			'<div id="mgv-exif"></div>';
 		vq('mgv-info').innerHTML = html;
@@ -1233,6 +1235,31 @@
 		};
 		if (exifCache.has(it.id)) return done(exifCache.get(it.id));
 		it.file.slice(0, 262144).arrayBuffer().then(function (b) { var ex = null; try { ex = X.parse(b); } catch (e) {} exifCache.set(it.id, ex); done(ex); }, function () { done(null); });
+	}
+	/* Play in Watch: opens mes.fm/watch in a new tab and hands it this video plus the videos after it (in the order shown) through a
+	   BroadcastChannel. Files go over as File objects / file handles, which are not copied, so even huge videos open at once. */
+	var watchCh = null, watchWait = {};
+	function playInWatch() {
+		var it = V.it; if (!it || it.kind !== 'video') return;
+		var start = VIEW.indexOf(it), list = [];
+		for (var j = start < 0 ? 0 : start; j < VIEW.length && list.length < 200; j++) { var x = VIEW[j]; if (x && x.kind === 'video' && x.file) list.push({ f: x.file, h: x.fh || null }); }
+		if (!list.length) list.push({ f: it.file, h: it.fh || null });
+		var m = V.media, at = m && m.tagName === 'VIDEO' ? Math.floor(m.currentTime || 0) : 0;
+		if (m && m.pause) try { m.pause(); } catch (e) {}
+		if (typeof BroadcastChannel === 'undefined') { toast('This browser can\'t hand files to another tab. Open mes.fm/watch and drop the video there.', 6000); return; }
+		var id = Math.random().toString(36).slice(2, 10);
+		watchWait[id] = { list: list, at: at, t: Date.now() };
+		if (!watchCh) {
+			watchCh = new BroadcastChannel('mes-gallery-watch');
+			watchCh.onmessage = function (e) {
+				var d = e.data || {}, w = d.want && watchWait[d.want]; if (!w) return;
+				try { watchCh.postMessage({ id: d.want, list: w.list, at: w.at }); } catch (x) { watchCh.postMessage({ id: d.want, err: 1 }); }
+				delete watchWait[d.want];
+			};
+		}
+		var win = window.open('/watch?from=gallery&id=' + id, '_blank');
+		if (!win) { delete watchWait[id]; toast('The browser blocked the new tab. Allow pop-ups for mes.fm, or open mes.fm/watch and drop the video there.', 6500); return; }
+		toast(list.length > 1 ? 'Opening in Watch, with the next ' + (list.length - 1) + ' video' + (list.length > 2 ? 's' : '') + ' as Up next' : 'Opening in Watch', 3500);
 	}
 	/* Edit in Photo Editor: copy the picture (PNG) to the clipboard inside the click, open the editor; Ctrl+V there pastes it */
 	function editInPhoto() {

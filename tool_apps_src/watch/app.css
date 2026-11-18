@@ -299,3 +299,12 @@ html body.dark-mode #wt .wt-spd button {background:rgba(30,32,36,.92);color:#e3e
 #wt .wt-player:not(.mes-pfill) .wt-left {font-size:11px;padding:4px 7px;top:6px;right:6px;}
 html body.dark-mode #wt .wt-ytcover {background:rgba(10,10,12,.55);}
 html body.dark-mode #wt .wt-ytcover .wt-ytcx {background:rgba(0,0,0,.6);color:#fff;}
+	/* files from this computer: the note under the link box and the drop cover */
+	.wt-local {margin:0;font-size:0.88em;color:var(--wt-muted);line-height:1.45;}
+	#wt .wt-local a {color:var(--wt-acc);}
+	#wt .wt-local b {color:var(--wt-fg);}
+	#wt {position:relative;}
+	.wt-drop {display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(15,20,30,0.55);align-items:center;justify-content:center;pointer-events:none;}
+	#wt.wt-dropping .wt-drop {display:flex;}
+	#wt .wt-drop span {background:#fff;color:#1f2430;border:3px dashed #c2255c;border-radius:16px;padding:1.2em 1.8em;font-size:1.25em;font-weight:600;box-shadow:0 10px 40px rgba(0,0,0,0.35);}
+	html body.dark-mode #wt .wt-drop span {background:#232934;color:#e6e9ee;border-color:#f06595;}

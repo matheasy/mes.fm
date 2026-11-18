@@ -125,4 +125,19 @@ W.keepTrack = true; eq(W.item('https://x.com/mes/status/123?s=20').u, 'https://x
 	ok(!!W.findList(back.lists, 'L3'), 'new playlist from the other device arrives');
 	var rep = W.replaceWith(mine, p); eq(rep.saved, [{ key: 's' }], 'replace with a partial backup keeps what it lacks'); ok(!!W.findList(rep.lists, 'L2'), 'replace keeps unticked playlist');
 })();
+/* files from this computer */
+(function () {
+	var f = { name: 'Holiday 2026.mp4', size: 123456789, lastModified: 1700000000000, type: 'video/mp4' };
+	var it = W.localItem(f), again = W.localItem({ name: f.name, size: f.size, lastModified: f.lastModified });
+	ok(it.k === 'local' && W.mode(it) === 'local' && W.canSpeed(it), 'local file plays in our own player with speed');
+	eq(it.key, again.key, 'the same file dropped again = the same item (keeps its resume point)');
+	ok(it.key !== W.localItem({ name: f.name, size: 5, lastModified: 1 }).key, 'another file with the same name is a different item');
+	ok(W.siteName(it) === 'On this computer' && W.label(it) === 'Holiday 2026.mp4', 'local label');
+	ok(W.isMediaFile('a.MKV', '') && W.isMediaFile('x', 'audio/mpeg') && !W.isMediaFile('pic.jpg', 'image/jpeg'), 'media file test');
+	ok(W.size(123456789) === '123 MB' && W.size(2.5e9) === '2.5 GB', 'file size');
+	var yt = W.item('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+	ok(W.shareUrl('https://mes.fm/watch', [it, yt]).indexOf('local') < 0, 'share links leave local files out');
+	var sn = W.snap({ q: [it, yt], saved: [it], lists: [{ id: 'l', name: 'n', items: [it, yt] }], chans: [], hist: [it] }, true);
+	ok(sn.q.length === 1 && !sn.saved.length && sn.lists[0].items.length === 1 && !sn.hist.length, 'sync / Hive backups leave local files out');
+})();
 console.log('watch tests ok:', n);
