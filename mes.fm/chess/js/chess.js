@@ -1159,7 +1159,7 @@
 	/* "Fantasy armies 3D (in progress)": real 3D figures made with Microsoft TRELLIS (MIT) from the same pictures
 	   (mes.fm/chess/img/fantasy3d/<key>.glb). They are added one or two at a time; a piece with no model yet uses its picture figure.
 	   The files are plain GLBs (one mesh: positions, UVs, indices, one PNG texture), read by the small parser below. */
-	var MODELS3D = ["wN", "wK", "wQ", "wB"], M3 = {};
+	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR"], M3 = {};
 	function parseGlb(buf) {
 		var dv = new DataView(buf), jl = dv.getUint32(12, true), j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jl)));
 		var bin = 20 + jl + 8;
