@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/ai",
+   "title": "MES AI",
+   "icon": "/img/ai-logo.png",
+   "desc": "Chat with top AI models (Claude Sonnet and Opus) for coding, research and writing, and make pictures. See the price first, pay per message in HBD. No plan.",
+   "added": "2026-11-18",
+   "kind": "tool"
+  },
+  {
    "href": "/click-test",
    "title": "Click Speed Test",
    "icon": "/img/click-test-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Open .txt, .md, .rtf, .csv, .json, .html and code files: a formatted reading view or a code view with line numbers, read aloud, edit and save. Nothing is uploaded.",
    "added": "2026-11-12",
    "kind": "tool"
-  },
-  {
-   "href": "/narration",
-   "title": "Narration",
-   "icon": "/img/narration-logo.png",
-   "desc": "Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.",
-   "added": "2026-11-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/ai",
+   "title": "MES AI",
+   "icon": "/img/ai-logo.png",
+   "desc": "Chat with top AI models (Claude Sonnet and Opus) for coding, research and writing, and make pictures. See the price first, pay per message in HBD. No plan.",
+   "added": "2026-11-18",
+   "kind": "tool"
+  },
   {
    "href": "/ductile-fracture-simulator",
    "title": "Voids & Ductile Fracture Simulator",
@@ -251,14 +259,6 @@
    "icon": "/img/transcript-logo.png",
    "desc": "Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.",
    "added": "2026-11-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/quantum-computing",
-   "title": "Quantum Computer Simulator",
-   "icon": "/img/quantum-computing-logo.png",
-   "desc": "Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.",
-   "added": "2026-11-13",
    "kind": "tool"
   }
  ]
