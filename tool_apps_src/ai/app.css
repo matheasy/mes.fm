@@ -139,3 +139,9 @@ html body.dark-mode #ai.ai .ai-hvwarn.is-open { color: var(--ai-warn); }
 html body.dark-mode #ai.ai .ai-hvmsg.is-ok { color: var(--ai-ok); }
 html body.dark-mode #ai.ai .ai-hvmsg.is-err { color: var(--ai-err); }
 html body.dark-mode #ai.ai .ai-savebox code { background: var(--ai-code); color: var(--ai-codeink); }
+
+/* videos */
+#ai .ai-vjob { margin: .5em 0; padding: .5em .7em; border: 1px dashed var(--ai-line); border-radius: .5em; color: var(--ai-ink); }
+#ai .ai-vjob--err { border-style: solid; border-color: var(--ai-err); }
+#ai .ai-figimg video { width: 100%; height: auto; display: block; border-radius: .4em; background: #000; }
+html body.dark-mode #ai.ai .ai-vjob { color: var(--ai-ink); }

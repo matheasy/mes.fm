@@ -14,7 +14,9 @@
 //        id is free. No refunds (said on the page).
 //
 // Calls go straight to the HTTP APIs with fetch (no SDK: the mes.fm Vercel project has no package manager, like every
-// other function here). Keys: Vercel env ANTHROPIC_API_KEY, OPENAI_API_KEY (plain project-level vars), never sent out.
+// other function here). Video (Grok Imagine, xAI): run starts a job (POST /v1/videos/generations), POST {op:"vstatus", id, acct}
+// checks it (GET /v1/videos/<request_id>), GET ?op=vfile&id=&acct= passes the finished file on (xAI's link is temporary).
+// Keys: Vercel env ANTHROPIC_API_KEY, OPENAI_API_KEY, XAI_API_KEY (plain project-level vars), never sent out.
 // Limits per hour: 300 quotes per IP hash, 60 answers per Hive account, 100 per IP hash. Tests: node tool_apps_src/ai-tests.js
 
 const crypto = require('crypto');
@@ -99,7 +101,13 @@ function makeHandler(deps = {}) {
     const iph = sha(ipOf(req) + salt).slice(0, 24);
     if (await overLimit('q:' + iph, LIM.quoteIp)) return send(res, 429, { error: 'Too many requests from this network. Try again in an hour.' });
     let q, stored;
-    if (b.kind === 'image') {
+    if (b.kind === 'video') {
+      if (!env.XAI_API_KEY) return send(res, 503, { off: true, error: 'Video is not switched on yet.' });
+      const err = A.checkVideo(b.prompt, b.model, b.seconds, b.res);
+      if (err) return send(res, 400, { error: err });
+      q = A.videoQuote(b.model, b.seconds, b.res);
+      stored = { kind: 'video', prompt: b.prompt, model: b.model, seconds: q.seconds, res: b.res, audio: b.audio !== false };
+    } else if (b.kind === 'image') {
       if (!env.OPENAI_API_KEY) return send(res, 503, { off: true, error: 'Pictures are not switched on yet.' });
       const err = A.checkImage(b.prompt, b.quality, b.size);
       if (err) return send(res, 400, { error: err });
@@ -164,6 +172,7 @@ function makeHandler(deps = {}) {
     };
     const who = sha('acct:' + rec.acct + salt).slice(0, 32);
     if (rec.kind === 'image') return image(res, rec, who, failed);
+    if (rec.kind === 'video') return videoStart(res, rec, id, isRetry, failed);
     return chat(res, rec, who, failed);
   }
 
@@ -220,6 +229,71 @@ function makeHandler(deps = {}) {
     res.end();
   }
 
+  /* ---------- Grok Imagine video: a job that takes minutes. run starts it; the page then asks "vstatus" every few seconds and
+     fetches the finished file through "vfile" (xAI's link is temporary and may not allow other sites to read it). ---------- */
+  const xaiHeaders = () => ({ Authorization: 'Bearer ' + env.XAI_API_KEY, 'Content-Type': 'application/json' });
+  async function videoStart(res, rec, id, isRetry, failed) {
+    const m = A.VIDEO.models[rec.model];
+    let r, j;
+    try {
+      r = await fetchImpl('https://api.x.ai/v1/videos/generations', {
+        method: 'POST', headers: xaiHeaders(),
+        body: JSON.stringify({ model: m.id, prompt: rec.prompt, duration: rec.seconds, resolution: rec.res, generate_audio: !!rec.audio }),
+      });
+      j = await r.json();
+    } catch (e) { return failed(res, 'Could not reach the video service. Your payment is kept: press Try again.', false); }
+    if (!r.ok || !j || !j.request_id) {
+      return failed(res, 'The video service answered ' + r.status + '.' + (j && j.error ? ' ' + (j.error.message || j.error) : '') + ' Your payment is kept: press Try again.', false);
+    }
+    await redis([['SET', 'ai:vjob:' + id, JSON.stringify({ rid: String(j.request_id), acct: rec.acct, retried: isRetry, at: now() }), 'EX', '86400']]);
+    return send(res, 200, { t: 'video', job: id });
+  }
+  async function vjob(b) {
+    const id = String(b.id || '');
+    if (!A.validId(id)) return { code: 400, err: 'Bad request id.' };
+    const [raw] = await redis([['GET', 'ai:vjob:' + id]]);
+    const job = raw ? JSON.parse(raw) : null;
+    if (!job) return { code: 404, err: 'This video job is no longer known (videos are kept for 24 hours).' };
+    if (String(b.acct || '').toLowerCase() !== job.acct) return { code: 403, err: 'This video belongs to another Hive account.' };
+    return { id, job };
+  }
+  async function vstatus(req, res, b) {
+    const v = await vjob(b);
+    if (v.err) return send(res, v.code, { error: v.err });
+    const { id, job } = v;
+    if (job.url) return send(res, 200, { status: 'done', duration: job.duration || null });
+    let r, j;
+    try { r = await fetchImpl('https://api.x.ai/v1/videos/' + encodeURIComponent(job.rid), { headers: xaiHeaders() }); j = await r.json(); }
+    catch (e) { return send(res, 200, { status: 'pending', note: 'Could not ask the video service; trying again.' }); }
+    const st = j && j.status;
+    if (r.ok && st === 'done' && j.video && A.okVideoUrl(j.video.url)) {
+      job.url = j.video.url; job.duration = j.video.duration || null;
+      await redis([['SET', 'ai:vjob:' + id, JSON.stringify(job), 'EX', '86400']]);
+      return send(res, 200, { status: 'done', duration: job.duration });
+    }
+    if (st === 'failed' || (!r.ok && r.status !== 429 && r.status < 500)) {
+      if (!job.retried) await redis([['SET', 'ai:retry:' + id, '1', 'EX', '86400'], ['DEL', 'ai:vjob:' + id]]);
+      return send(res, 200, { status: 'failed', retry: !job.retried, msg: 'The video service could not make this video' + (j && j.error ? ' (' + (j.error.message || j.error) + ')' : '') + '.' });
+    }
+    return send(res, 200, { status: 'pending' });
+  }
+  async function vfile(req, res, q) {
+    const v = await vjob(q);
+    if (v.err) return send(res, v.code, { error: v.err });
+    if (!v.job.url) return send(res, 409, { error: 'The video is not ready yet.' });
+    let r;
+    try { r = await fetchImpl(v.job.url); } catch (e) { return send(res, 502, { error: 'Could not fetch the video.' }); }
+    if (!r.ok || !r.body) return send(res, 502, { error: 'The video link answered ' + r.status + ' (it may have run out).' });
+    res.statusCode = 200;
+    const ct = (r.headers && r.headers.get && r.headers.get('content-type')) || '';
+    res.setHeader('Content-Type', /^video\//.test(ct) ? ct : 'video/mp4');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('Content-Disposition', 'attachment; filename="mes-ai-' + v.id + '.mp4"');
+    if (r.body.getReader) { const rd = r.body.getReader(); for (;;) { const { done, value } = await rd.read(); if (done) break; res.write(Buffer.from(value)); } }
+    else for await (const c of r.body) res.write(c);
+    res.end();
+  }
+
   async function image(res, rec, who, failed) {
     let r, j;
     try {
@@ -244,10 +318,12 @@ function makeHandler(deps = {}) {
   return async function handler(req, res) {
     try {
       if (req.method === 'GET') {
-        const op = (req.query && req.query.op) || new URL(req.url, 'https://mes.fm').searchParams.get('op');
+        const qs = req.query && Object.keys(req.query).length ? req.query : Object.fromEntries(new URL(req.url, 'https://mes.fm').searchParams);
+        const op = qs.op;
+        if (op === 'vfile') return await vfile(req, res, qs);
         if (op !== 'status') return send(res, 400, { error: 'Unknown op' });
         return send(res, 200, {
-          chat: !!env.ANTHROPIC_API_KEY, image: !!env.OPENAI_API_KEY, margin: A.MARGIN, checked: A.PRICES_CHECKED,
+          chat: !!env.ANTHROPIC_API_KEY, image: !!env.OPENAI_API_KEY, video: !!env.XAI_API_KEY, margin: A.MARGIN, checked: A.PRICES_CHECKED,
           models: Object.keys(A.MODELS).map((k) => ({ key: k, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
           imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
         });
@@ -259,6 +335,7 @@ function makeHandler(deps = {}) {
       try { b = await readBody(req); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
       if (b.op === 'quote') return await quote(req, res, b);
       if (b.op === 'run') return await run(req, res, b);
+      if (b.op === 'vstatus') return await vstatus(req, res, b);
       return send(res, 400, { error: 'Unknown op' });
     } catch (e) {
       if (!res.headersSent) return send(res, 500, { error: 'Something went wrong on our side. Try again.' });

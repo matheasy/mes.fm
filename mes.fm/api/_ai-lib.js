@@ -44,6 +44,19 @@
       high: { "1024x1024": 0.211, "1024x1536": 0.165, "1536x1024": 0.165 }
     } };
 
+  // xAI Grok Imagine video: USD per second of video (docs.x.ai pricing, checked 2026-11-18). xAI says resolution changes the price too
+  // but publishes no rate for it, so RES_X is our own safe guess (x the per-second price): CHECK it against the first real bills and lower it.
+  var VIDEO = { name: "Grok Imagine",
+    models: {
+      lite: { id: "grok-imagine-video-1.5-lite", name: "Lite (cheapest)", usdSec: 0.02, maxRes: "1080p" },
+      std: { id: "grok-imagine-video", name: "Standard", usdSec: 0.05, maxRes: "720p" },
+      best: { id: "grok-imagine-video-1.5", name: "Best (1.5)", usdSec: 0.08, maxRes: "1080p" }
+    },
+    res: ["480p", "720p", "1080p"],
+    RES_X: { "480p": 1, "720p": 1.5, "1080p": 2.25 },
+    durations: [5, 8, 10, 15],
+    maxPromptChars: 4000 };
+
   var LIMITS = { msgChars: 60000, totalChars: 300000, turns: 200, promptChars: 4000, inTokens: 150000 };
 
   var SYSTEM = "You are MES AI, the AI assistant on mes.fm (Math Easy Solutions), running on Anthropic's Claude. " +
@@ -88,6 +101,26 @@
     var hbd = hbdFromUsd(usd);
     return { kind: "image", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
+
+  function videoQuote(model, seconds, res) {
+    var m = VIDEO.models[model];
+    if (!m) throw new Error("Unknown video model");
+    var d = Math.round(Number(seconds));
+    if (VIDEO.durations.indexOf(d) < 0) throw new Error("Unknown video length");
+    var ri = VIDEO.res.indexOf(res);
+    if (ri < 0 || ri > VIDEO.res.indexOf(m.maxRes)) throw new Error("That model can't make " + res + " video");
+    var usd = m.usdSec * d * VIDEO.RES_X[res];
+    var hbd = hbdFromUsd(usd);
+    return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+  }
+  function checkVideo(prompt, model, seconds, res) {
+    if (typeof prompt !== "string" || !prompt.trim()) return "Describe the video first.";
+    if (prompt.length > VIDEO.maxPromptChars) return "The description is too long (" + VIDEO.maxPromptChars + " characters at most).";
+    try { videoQuote(model, seconds, res); } catch (e) { return e.message + "."; }
+    return null;
+  }
+  // the finished video's address from xAI must be a plain https link (it is handed to our server to pass the file on)
+  function okVideoUrl(u) { return typeof u === "string" && /^https:\/\/[a-z0-9.-]+(:443)?\/[^\s]*$/i.test(u) && u.length < 2000; }
 
   /* ---------- request ids and memos ---------- */
   var ID_RE = /^[0-9a-f]{16}$/;
@@ -238,7 +271,7 @@
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
-    chatQuote: chatQuote, imageQuote: imageQuote,
+    chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece

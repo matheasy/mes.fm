@@ -44,6 +44,19 @@
       high: { "1024x1024": 0.211, "1024x1536": 0.165, "1536x1024": 0.165 }
     } };
 
+  // xAI Grok Imagine video: USD per second of video (docs.x.ai pricing, checked 2026-11-18). xAI says resolution changes the price too
+  // but publishes no rate for it, so RES_X is our own safe guess (x the per-second price): CHECK it against the first real bills and lower it.
+  var VIDEO = { name: "Grok Imagine",
+    models: {
+      lite: { id: "grok-imagine-video-1.5-lite", name: "Lite (cheapest)", usdSec: 0.02, maxRes: "1080p" },
+      std: { id: "grok-imagine-video", name: "Standard", usdSec: 0.05, maxRes: "720p" },
+      best: { id: "grok-imagine-video-1.5", name: "Best (1.5)", usdSec: 0.08, maxRes: "1080p" }
+    },
+    res: ["480p", "720p", "1080p"],
+    RES_X: { "480p": 1, "720p": 1.5, "1080p": 2.25 },
+    durations: [5, 8, 10, 15],
+    maxPromptChars: 4000 };
+
   var LIMITS = { msgChars: 60000, totalChars: 300000, turns: 200, promptChars: 4000, inTokens: 150000 };
 
   var SYSTEM = "You are MES AI, the AI assistant on mes.fm (Math Easy Solutions), running on Anthropic's Claude. " +
@@ -88,6 +101,26 @@
     var hbd = hbdFromUsd(usd);
     return { kind: "image", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
+
+  function videoQuote(model, seconds, res) {
+    var m = VIDEO.models[model];
+    if (!m) throw new Error("Unknown video model");
+    var d = Math.round(Number(seconds));
+    if (VIDEO.durations.indexOf(d) < 0) throw new Error("Unknown video length");
+    var ri = VIDEO.res.indexOf(res);
+    if (ri < 0 || ri > VIDEO.res.indexOf(m.maxRes)) throw new Error("That model can't make " + res + " video");
+    var usd = m.usdSec * d * VIDEO.RES_X[res];
+    var hbd = hbdFromUsd(usd);
+    return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+  }
+  function checkVideo(prompt, model, seconds, res) {
+    if (typeof prompt !== "string" || !prompt.trim()) return "Describe the video first.";
+    if (prompt.length > VIDEO.maxPromptChars) return "The description is too long (" + VIDEO.maxPromptChars + " characters at most).";
+    try { videoQuote(model, seconds, res); } catch (e) { return e.message + "."; }
+    return null;
+  }
+  // the finished video's address from xAI must be a plain https link (it is handed to our server to pass the file on)
+  function okVideoUrl(u) { return typeof u === "string" && /^https:\/\/[a-z0-9.-]+(:443)?\/[^\s]*$/i.test(u) && u.length < 2000; }
 
   /* ---------- request ids and memos ---------- */
   var ID_RE = /^[0-9a-f]{16}$/;
@@ -238,7 +271,7 @@
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
-    chatQuote: chatQuote, imageQuote: imageQuote,
+    chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece
@@ -261,7 +294,7 @@
 	var LS = "mes-ai:v1", LS_IMG = "mes-ai:imgs";
 	var mock = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]mock=1\b/.test(location.search);
 	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
-	var status = { chat: mock, image: mock, known: mock };
+	var status = { chat: mock, image: mock, video: mock, known: mock };
 	var busy = false;
 
 	/* ---------- saved state ---------- */
@@ -270,9 +303,9 @@
 	if (!Array.isArray(S.chats)) S.chats = [];
 	if (!A.MODELS[S.model]) S.model = A.DEFAULT_MODEL;
 	if (!A.LENGTHS[S.len]) S.len = "medium";
-	var qTab = /[?&]tab=(img|chat)\b/.exec(location.search);
+	var qTab = /[?&]tab=(img|chat|vid)\b/.exec(location.search);
 	if (qTab) S.tab = qTab[1];
-	if (S.tab !== "img") S.tab = "chat";
+	if (S.tab !== "img" && S.tab !== "vid") S.tab = "chat";
 	function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { msg("This browser's storage is full: old chats could not be saved. Delete some.", "err"); } }
 	function newChat() { var c = { id: A.newId(), title: "New chat", at: Date.now(), msgs: [] }; S.chats.unshift(c); S.cur = c.id; save(); return c; }
 	function cur() { var c = S.chats.filter(function (x) { return x.id === S.cur; })[0]; return c || (S.chats[0] ? (S.cur = S.chats[0].id, S.chats[0]) : newChat()); }
@@ -429,6 +462,7 @@
 		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>";
 		$("ai-make").disabled = !(status.image && !busy);
+		if (typeof paintVprice === "function") paintVprice();
 	}
 	["ai-in", "ai-prompt"].forEach(function (id) { $(id).addEventListener("input", paintPrice); });
 	["ai-q", "ai-size"].forEach(function (id) { $(id).addEventListener("change", paintPrice); });
@@ -446,6 +480,9 @@
 		});
 		rows.push('<tr><td colspan="4" class="ai-sub">A new chat with a short question (about 500 tokens sent). Longer chats cost more.</td></tr>');
 		rows.push("<tr><th>Picture (square)</th><th>Draft</th><th>Good</th><th>Best</th></tr><tr><td>" + esc(A.IMAGE.name) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
+		rows.push("<tr><th>Video (480p)</th><th>5 s</th><th>8 s</th><th>15 s</th></tr>");
+		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(A.VIDEO.models[k].name) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
+		rows.push('<tr><td colspan="4" class="ai-sub">720p costs 1.5 times as much and 1080p 2.25 times.</td></tr>');
 		$("ai-ptable").innerHTML = rows.join("");
 	})();
 
@@ -677,6 +714,140 @@
 		$("ai-msg").appendChild(b);
 	}
 
+	/* ---------- videos (Grok Imagine): pay, start a job, follow it every 5 s, fetch the file into IndexedDB ---------- */
+	var V = A.VIDEO, LS_VJ = "mes-ai:vjobs", LS_VID = "mes-ai:vids";
+	$("ai-vmodel").innerHTML = Object.keys(V.models).map(function (k) { return '<option value="' + k + '">' + esc(V.models[k].name) + "</option>"; }).join("");
+	$("ai-vmodel").value = "lite";
+	$("ai-vsec").innerHTML = V.durations.map(function (d) { return '<option value="' + d + '"' + (d === 5 ? " selected" : "") + ">" + d + " seconds</option>"; }).join("");
+	function paintVres() {
+		var m = V.models[$("ai-vmodel").value], cur = $("ai-vres").value || "480p", max = V.res.indexOf(m.maxRes);
+		$("ai-vres").innerHTML = V.res.filter(function (r, i) { return i <= max; }).map(function (r) { return '<option value="' + r + '">' + r + "</option>"; }).join("");
+		$("ai-vres").value = V.res.indexOf(cur) <= max ? cur : "480p";
+	}
+	paintVres();
+	function vq() { return A.videoQuote($("ai-vmodel").value, +$("ai-vsec").value, $("ai-vres").value); }
+	function paintVprice() {
+		var q = vq();
+		$("ai-vprice").innerHTML = "<b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>";
+		$("ai-vmake").disabled = !(status.video && !busy);
+	}
+	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintVprice(); });
+	["ai-vsec", "ai-vres"].forEach(function (id) { $(id).addEventListener("change", paintVprice); });
+	function vjobs() { try { return JSON.parse(localStorage.getItem(LS_VJ) || "[]"); } catch (e) { return []; } }
+	function vjobsSave(l) { try { localStorage.setItem(LS_VJ, JSON.stringify(l)); } catch (e) {} }
+	function vids() { try { return JSON.parse(localStorage.getItem(LS_VID) || "[]"); } catch (e) { return []; } }
+	function vidsSave(l) { try { localStorage.setItem(LS_VID, JSON.stringify(l)); } catch (e) {} }
+	function paintVjobs() {
+		var l = vjobs();
+		$("ai-vjobs").innerHTML = l.map(function (j) {
+			var mins = Math.max(0, Math.round((Date.now() - j.at) / 60000));
+			return '<div class="ai-vjob' + (j.err ? " ai-vjob--err" : "") + '"><b>' + (j.err ? "⚠ " : "⏳ ") + esc(j.prompt.slice(0, 90)) + '</b><span class="ai-sub"> · ' + esc(j.price) + " HBD · " +
+				(j.err ? esc(j.err) : j.dl ? "downloading…" : "being made (" + mins + " min so far)") + "</span>" +
+				(j.retry ? ' <button type="button" class="tu-btn tu-btn--primary" data-vretry="' + j.id + '">Try again (free)</button>' : "") +
+				(j.err ? ' <button type="button" class="ai-mini" data-vdrop="' + j.id + '">Remove</button>' : "") + "</div>";
+		}).join("");
+	}
+	var vurls = {};
+	function paintVgal() {
+		var l = vids(), g = $("ai-vgal");
+		g.innerHTML = l.map(function (it) {
+			return '<figure class="ai-fig"><div class="ai-figimg"><video controls playsinline preload="metadata" data-k="' + it.id + '"></video></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.seconds + " s · " + it.res + " · " + it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-vdl="' + it.id + '">Download</button><button type="button" class="ai-mini" data-vagain="' + it.id + '">Use this description</button><button type="button" class="ai-mini" data-vrm="' + it.id + '">Delete</button></div></figure>';
+		}).join("");
+		g.querySelectorAll("video[data-k]").forEach(function (v) {
+			var k = v.dataset.k;
+			if (vurls[k]) { v.src = vurls[k]; return; }
+			idbDo("readonly", function (s) { return s.get("v:" + k); }).then(function (blob) { if (blob) { vurls[k] = URL.createObjectURL(blob); v.src = vurls[k]; } });
+		});
+	}
+	function mockVideo(prompt) {
+		var cv = document.createElement("canvas"); cv.width = 320; cv.height = 180;
+		var x = cv.getContext("2d"), st = cv.captureStream ? cv.captureStream(24) : null;
+		if (!st || !window.MediaRecorder) return Promise.resolve(new Blob(["fake"], { type: "video/webm" }));
+		var rec = new MediaRecorder(st, { mimeType: "video/webm" }), parts = [], t0 = performance.now();
+		rec.ondataavailable = function (e) { parts.push(e.data); };
+		return new Promise(function (res) {
+			rec.onstop = function () { res(new Blob(parts, { type: "video/webm" })); };
+			rec.start();
+			(function draw() {
+				var t = (performance.now() - t0) / 1000;
+				x.fillStyle = "#3730a3"; x.fillRect(0, 0, 320, 180); x.fillStyle = "#fbbf24"; x.beginPath(); x.arc(40 + t * 110, 90, 22, 0, 7); x.fill();
+				x.fillStyle = "#fff"; x.font = "bold 14px sans-serif"; x.fillText("Simulated video", 10, 20); x.font = "12px sans-serif"; x.fillText(prompt.slice(0, 40), 10, 168);
+				if (t < 2) requestAnimationFrame(draw); else rec.stop();
+			})();
+		});
+	}
+	var MOCK_V = {};
+	function vstatusReq(j) {
+		if (mock) {
+			var m = MOCK_V[j.id] || (MOCK_V[j.id] = { polls: 0 }); m.polls++;
+			if (/fail/i.test(j.prompt) && !j.retried && m.polls > 1) return Promise.resolve({ status: "failed", retry: true, msg: "Simulated failure." });
+			return Promise.resolve(m.polls > 2 ? { status: "done" } : { status: "pending" });
+		}
+		return post({ op: "vstatus", id: j.id, acct: j.acct }).then(jsonOf);
+	}
+	function vfetch(j) {
+		if (mock) return mockVideo(j.prompt);
+		return fetch("/api/ai?op=vfile&id=" + encodeURIComponent(j.id) + "&acct=" + encodeURIComponent(j.acct), { credentials: "omit" }).then(function (r) {
+			if (!r.ok) return jsonOf(r).then(function (e) { throw new Error(e.error || "Could not download the video."); });
+			return r.blob();
+		});
+	}
+	var vtimer = null;
+	function vpoll() {
+		clearTimeout(vtimer);
+		var l = vjobs().filter(function (j) { return !j.err && !j.dl; });
+		paintVjobs();
+		if (!l.length) return;
+		Promise.all(l.map(function (j) {
+			return vstatusReq(j).then(function (s) {
+				var all = vjobs(), me = all.filter(function (x) { return x.id === j.id; })[0]; if (!me) return;
+				if (s.status === "done") {
+					me.dl = true; vjobsSave(all); paintVjobs();
+					return vfetch(me).then(function (blob) {
+						return idbDo("readwrite", function (st) { return st.put(blob, "v:" + me.id); }).then(function () {
+							var v = vids(); v.unshift({ id: me.id, prompt: me.prompt, seconds: me.seconds, res: me.res, price: me.price, at: Date.now() }); vidsSave(v.slice(0, 100));
+							vjobsSave(vjobs().filter(function (x) { return x.id !== me.id; })); paintVgal(); msg("Your video is ready (kept in this browser).", "ok");
+						});
+					}).catch(function (e) { var a = vjobs(), m2 = a.filter(function (x) { return x.id === me.id; })[0]; if (m2) { m2.dl = false; m2.err = e.message; vjobsSave(a); } });
+				}
+				if (s.status === "failed") { me.err = s.msg || "The video failed."; me.retry = !!s.retry; vjobsSave(all); }
+				if (s.error) { me.err = s.error; vjobsSave(all); }
+			}).catch(function () { /* network blip: next round */ });
+		})).then(function () { paintVjobs(); if (vjobs().some(function (j) { return !j.err && !j.dl; })) vtimer = setTimeout(vpoll, mock ? 1500 : 5000); });
+	}
+	function startVideo(j, isRetry) {
+		var go = mock ? Promise.resolve({ t: "video" }) : runReq(j.id, j.acct, function (n) { msg("Waiting for the blockchain… (" + n * 3 + " s)"); }).then(function (r) { return r.error ? { err: r.error } : jsonOf(r); });
+		return go.then(function (d) {
+			if (d.err || d.t !== "video") { var e = d.err || d; j.err = e.error || e.msg || "The video could not start."; j.retry = !!e.retry; }
+			else { j.err = null; j.retry = false; j.at = Date.now(); if (isRetry) j.retried = true; msg("Paid. Your video is being made: it takes a few minutes.", "ok"); }
+			var l = vjobs().filter(function (x) { return x.id !== j.id; }); l.unshift(j); vjobsSave(l); vpoll();
+		});
+	}
+	$("ai-vmake").addEventListener("click", function () {
+		if (busy) return;
+		var u = who(), prompt = $("ai-vprompt").value.trim(), model = $("ai-vmodel").value, sec = +$("ai-vsec").value, res = $("ai-vres").value, audio = $("ai-vaudio").checked;
+		if (!status.video) { msg("Video is not switched on yet.", "err"); return; }
+		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
+		var err = A.checkVideo(prompt, model, sec, res); if (err) { msg(err, "err"); return; }
+		setBusy(true);
+		var qreq = mock ? Promise.resolve((function () { var q = A.videoQuote(model, sec, res), id = A.newId(); return { status: 200, id: id, memo: A.memoFor(id), price: q.price, usd: q.hbd }; })())
+			: quote({ acct: u.name, kind: "video", prompt: prompt, model: model, seconds: sec, res: res, audio: audio });
+		qreq.then(function (q) {
+			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
+			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
+			return pay(q).then(function () { return startVideo({ id: q.id, acct: u.name, prompt: prompt, seconds: sec, res: res, price: q.price, at: Date.now() }, false); });
+		}).catch(function (e) { var m = e && e.message || String(e); msg(/cancel|declin|denied/i.test(m) ? "Payment cancelled: nothing was sent." : m, "err"); })
+			.then(function () { setBusy(false); });
+	});
+	$("ai-vid").addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return;
+		if (b.dataset.vretry) { var j = vjobs().filter(function (x) { return x.id === b.dataset.vretry; })[0]; if (j) { if (mock) MOCK_V[j.id] = { polls: 0 }; startVideo(j, true); } }
+		if (b.dataset.vdrop) { vjobsSave(vjobs().filter(function (x) { return x.id !== b.dataset.vdrop; })); paintVjobs(); }
+		if (b.dataset.vdl) { var a = document.createElement("a"); a.href = vurls[b.dataset.vdl]; a.download = "mes-ai-" + b.dataset.vdl + (mock ? ".webm" : ".mp4"); a.click(); }
+		if (b.dataset.vagain) { var it = vids().filter(function (x) { return x.id === b.dataset.vagain; })[0]; if (it) { $("ai-vprompt").value = it.prompt; $("ai-vprompt").focus(); } }
+		if (b.dataset.vrm && confirm("Delete this video from this browser?")) { var k = b.dataset.vrm; idbDo("readwrite", function (s) { return s.delete("v:" + k); }); vidsSave(vids().filter(function (x) { return x.id !== k; })); paintVgal(); }
+	});
+
 	/* ---------- 💾 saving: cloud file (MESCloud), Hive backup (MESHiveStore), file backup ---------- */
 	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at; }).join("|"); }
 	function mergeIn(chats, how) {
@@ -813,26 +984,29 @@
 	/* ---------- tabs ---------- */
 	function showTab(t) {
 		S.tab = t; save();
-		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img");
-		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img";
+		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img"); $("ai-tab-vid").setAttribute("aria-selected", t === "vid");
+		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img"; $("ai-vid").hidden = t !== "vid";
 		if (t === "img") paintGal();
+		if (t === "vid") { paintVgal(); paintVjobs(); }
 	}
 	$("ai-tab-chat").addEventListener("click", function () { showTab("chat"); });
 	$("ai-tab-img").addEventListener("click", function () { showTab("img"); });
+	$("ai-tab-vid").addEventListener("click", function () { showTab("vid"); });
 
 	/* ---------- switched on? ---------- */
 	function paintOff() {
 		var o = $("ai-off");
-		var off = status.known && !status.chat && !status.image;
-		o.hidden = !(status.known && (!status.chat || !status.image));
+		var parts = [["Chat", status.chat], ["Pictures", status.image], ["Videos", status.video]];
+		var offs = parts.filter(function (p) { return !p[1]; }).map(function (p) { return p[0]; });
+		o.hidden = !(status.known && offs.length);
 		if (o.hidden) return;
-		o.innerHTML = off ? '<b>MES AI is not switched on yet.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).'
-			: !status.chat ? "<b>Chat is not switched on yet.</b> Pictures work." : "<b>Pictures are not switched on yet.</b> Chat works.";
+		o.innerHTML = offs.length === 3 ? '<b>MES AI is not switched on yet.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).'
+			: "<b>Not switched on yet:</b> " + offs.join(", ") + ". The rest works.";
 	}
 	if (!mock) {
 		fetch("/api/ai?op=status", { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
-			status = { chat: !!j.chat, image: !!j.image, known: true }; paintOff(); paintPrice();
-		}).catch(function () { status = { chat: false, image: false, known: true }; paintOff(); paintPrice(); });
+			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true }; paintOff(); paintPrice();
+		}).catch(function () { status = { chat: false, image: false, video: false, known: true }; paintOff(); paintPrice(); });
 	}
 
 	/* ---------- Fill window for the chat ---------- */
@@ -840,6 +1014,6 @@
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
 
 	if (H && H.onChange) H.onChange(function () { paintAcct(); });
-	paintAcct(); renderLog(); showTab(S.tab); paintOff(); paintPrice();
+	paintAcct(); renderLog(); showTab(S.tab); paintOff(); paintPrice(); vjobsSave(vjobs().map(function (j) { j.dl = false; return j; })); vpoll();
 	window.MESAIDebug = { S: S, status: status, send: send, mock: mock };
 })();

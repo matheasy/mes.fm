@@ -87,6 +87,15 @@ eq(A.streamPiece({ event: "content_block_start", data: { type: "content_block_st
 eq(A.streamPiece({ event: "message_delta", data: { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 9 } } }), { t: "stop", stop: "end_turn", usage: { output_tokens: 9 } }, "stop");
 eq(A.streamPiece({ event: "error", data: { type: "error", error: { message: "Overloaded" } } }), { t: "error", msg: "Overloaded" }, "error event");
 
+/* ---------- video prices ---------- */
+eq(A.videoQuote("best", 10, "720p").price, A.fmtHbd(A.hbdFromUsd(0.08 * 10 * A.VIDEO.RES_X["720p"])), "video: per second x length x resolution guess");
+eq(A.videoQuote("lite", 5, "480p").price, "0.150", "lite 5 s 480p = 0.10 USD -> 0.150 HBD");
+threw = false; try { A.videoQuote("std", 8, "1080p"); } catch (e) { threw = true; } eq(threw, true, "standard stops at 720p");
+threw = false; try { A.videoQuote("best", 7, "480p"); } catch (e) { threw = true; } eq(threw, true, "only the offered lengths");
+ok(A.checkVideo("", "best", 8, "720p"), "video needs a description");
+eq(A.checkVideo("a cat surfing", "best", 8, "1080p"), null, "video ok");
+ok(A.okVideoUrl("https://vidgen.x.ai/abc/video.mp4") && !A.okVideoUrl("http://x/y") && !A.okVideoUrl("file:///etc"), "only https video links are passed on");
+
 /* ---------- saving chats ---------- */
 const c1 = { id: "a", title: "One", at: 10, msgs: [{ role: "user", content: "hi", price: "0.010" }, { role: "assistant", content: "hello" }, { role: "assistant", content: "", pending: true }] };
 const bk = A.backup([c1, { id: "e", title: "empty", at: 1, msgs: [] }], T0);
@@ -109,6 +118,7 @@ function fakeRedis() {
       case "GET": return st.has(k) ? st.get(k) : null;
       case "GETDEL": { const x = st.has(k) ? st.get(k) : null; st.delete(k); return x; }
       case "EXISTS": return st.has(k) ? 1 : 0;
+      case "DEL": return st.delete(k) ? 1 : 0;
       case "INCR": { const x = (Number(st.get(k)) || 0) + 1; st.set(k, String(x)); return x; }
       case "EXPIRE": return 1;
       default: throw new Error("fake redis " + op);
@@ -270,6 +280,54 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   r = mk("POST", { op: "run", id: last.qq.id, acct: "carol" });
   await e.h(r.req, r.res);
   eq(lines(r.res).pop().t, "done", "retry next hour answers");
+
+  // video: quote, pay, start the job, follow it, pass the file on; a failed job gives one free retry
+  {
+    const redis = fakeRedis(), calls = [];
+    let vstate = "pending", chainV = [];
+    const env = { XAI_API_KEY: "xai-test", UPSTASH_REDIS_REST_TOKEN: "x" };
+    const fetchImpl = async (url, init) => {
+      calls.push({ url, body: init && init.body ? JSON.parse(init.body) : null, headers: init && init.headers });
+      if (/videos\/generations$/.test(url)) return { ok: true, status: 200, json: async () => ({ request_id: "req-123" }) };
+      if (/videos\/req-123$/.test(url)) return { ok: true, status: 200, json: async () => vstate === "done" ? { status: "done", video: { url: "https://vidgen.x.ai/out/v.mp4", duration: 8 } } : vstate === "failed" ? { status: "failed" } : { status: "pending" } };
+      if (/vidgen\.x\.ai/.test(url)) return { ok: true, status: 200, headers: { get: () => "video/mp4" }, body: { getReader() { let d = false; return { read: async () => d ? { done: true } : (d = true, { done: false, value: new Uint8Array([1, 2, 3]) }) }; } } };
+      throw new Error("unexpected " + url);
+    };
+    const hv = makeHandler({ env, redis, fetch: fetchImpl, now: () => T0, rpc: async () => chainV });
+    r = mk("POST", { op: "quote", acct: "dan", kind: "chat", model: "sonnet", len: "short", messages: [{ role: "user", content: "hi" }] });
+    await hv(r.req, r.res);
+    eq(r.res.statusCode, 503, "chat off when only the xAI key is set");
+    r = mk("POST", { op: "quote", acct: "dan", kind: "video", prompt: "A fox runs in snow", model: "best", seconds: 8, res: "720p", audio: true });
+    await hv(r.req, r.res);
+    const qv = J(r.res);
+    eq([r.res.statusCode, qv.kind, qv.price], [200, "video", A.videoQuote("best", 8, "720p").price], "video quote");
+    chainV = [tr(1, "dan", "mes", qv.price + " HBD", qv.memo, 5)];
+    r = mk("POST", { op: "run", id: qv.id, acct: "dan" });
+    await hv(r.req, r.res);
+    eq(J(r.res), { t: "video", job: qv.id }, "paid -> video job started");
+    const vc = calls.find((c) => /generations$/.test(c.url));
+    eq([vc.body.model, vc.body.duration, vc.body.resolution, vc.body.generate_audio, vc.headers.Authorization], ["grok-imagine-video-1.5", 8, "720p", true, "Bearer xai-test"], "xAI request");
+    r = mk("POST", { op: "vstatus", id: qv.id, acct: "dan" }); await hv(r.req, r.res);
+    eq(J(r.res).status, "pending", "still making it");
+    r = mk("POST", { op: "vstatus", id: qv.id, acct: "eve" }); await hv(r.req, r.res);
+    eq(r.res.statusCode, 403, "another account can't follow the job");
+    vstate = "done";
+    r = mk("POST", { op: "vstatus", id: qv.id, acct: "dan" }); await hv(r.req, r.res);
+    eq(J(r.res), { status: "done", duration: 8 }, "done");
+    r = mk("GET", null, { op: "vfile", id: qv.id, acct: "dan" }); await hv(r.req, r.res);
+    eq([r.res.headers["Content-Type"], r.res.out.length > 0], ["video/mp4", true], "file passed on");
+    r = mk("POST", { op: "quote", acct: "dan", kind: "video", prompt: "Another", model: "lite", seconds: 5, res: "480p" }); await hv(r.req, r.res);
+    const qf = J(r.res);
+    chainV = [tr(2, "dan", "mes", qf.price + " HBD", qf.memo, 5)];
+    r = mk("POST", { op: "run", id: qf.id, acct: "dan" }); await hv(r.req, r.res);
+    vstate = "failed";
+    r = mk("POST", { op: "vstatus", id: qf.id, acct: "dan" }); await hv(r.req, r.res);
+    eq([J(r.res).status, J(r.res).retry], ["failed", true], "failed job -> free retry");
+    r = mk("POST", { op: "run", id: qf.id, acct: "dan" }); await hv(r.req, r.res);
+    eq(J(r.res).t, "video", "the retry starts a new job");
+    r = mk("POST", { op: "vstatus", id: qf.id, acct: "dan" }); await hv(r.req, r.res);
+    eq(J(r.res).retry, false, "only one retry");
+  }
 
   // origin check in production
   e = setup();
