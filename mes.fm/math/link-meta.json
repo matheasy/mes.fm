@@ -2022,6 +2022,24 @@
       }
     ]
   },
+  "https://mes.fm/math-qa-74-stats": {
+    "image": "https://mes.fm/math-qa-74-stats/img/stats-screen.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-2jaeubdjj"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35717"
+      },
+      {
+        "label": "More math links",
+        "href": "https://mes.fm/math"
+      }
+    ]
+  },
   "https://mes.fm/math-qa-73-stats": {
     "image": "https://mes.fm/math-qa-73-stats/img/stats-screen.jpg",
     "watchLinks": [],
