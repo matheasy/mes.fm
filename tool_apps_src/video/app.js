@@ -1655,6 +1655,118 @@
 		return true;
 	};
 
+	/* ---------- your own keyboard shortcuts (Keys > Change keys); saved in localStorage mes-video-editor:keys ---------- */
+	var KACT = [
+		["play", "Play / pause", "Playback", ["Space"]], ["pause", "Stop", "Playback", ["K"]],
+		["fwd", "Play forward (again: 2×, 4×)", "Playback", ["L"]], ["rev", "Play backwards (again: 2×, 4×)", "Playback", ["J"]],
+		["frameBack", "One frame back", "Playback", [","]], ["frameFwd", "One frame forward", "Playback", ["."]],
+		["slower", "Speed 0.05× slower", "Preview speed", ["["]], ["faster", "Speed 0.05× faster", "Preview speed", ["]"]],
+		["speed1", "Speed 1× (press again: back)", "Preview speed", ["U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", ["P"]],
+		["presetDown", "Previous speed in the list", "Preview speed", ["<"]], ["presetUp", "Next speed in the list", "Preview speed", [">"]],
+		["split", "Split at the playhead", "Editing", ["S"]], ["markIn", "Mark in", "Editing", ["I"]], ["markOut", "Mark out", "Editing", ["O"]],
+		["title", "Add a title", "Editing", ["T"]], ["narrate", "Narration pane", "Editing", ["N"]], ["record", "Record narration (again: stop)", "Editing", ["R"]],
+		["fill", "Preview fills the window", "View", ["F"]], ["fullscreen", "Preview full screen", "View", ["Shift+F"]], ["win", "Whole editor fills the window", "View", ["W"]],
+		["guides", "Safe-area guides", "View", ["G"]], ["hand", "Hand tool (move the preview)", "View", ["H"]], ["bar", "Size of the bars", "View", ["B"]],
+		["zoomIn", "Zoom the timeline in", "View", ["=", "+"]], ["zoomOut", "Zoom the timeline out", "View", ["-", "_"]]
+	];
+	var KRUN = {
+		play: function (e) { if (e.repeat) return; if (e.key === " " && P.hover && !P.playing) P.spaceDown(); else P.toggle(); },
+		pause: function () { P.pause(); },
+		fwd: function () { if (P.playing && !P.rev) P.play(Math.min(8, P.rate * 2)); else P.play(1); },
+		rev: function () { if (P.playing && P.rev) P.reverse(Math.min(8, P.rate * 2)); else P.reverse(1); },
+		frameBack: function () { VE.stepFrame(-1); }, frameFwd: function () { VE.stepFrame(1); },
+		slower: function () { P.nudgeSpeed(-1); }, faster: function () { P.nudgeSpeed(1); },
+		speed1: function () { VE.speedKey(1); }, speed2: function () { VE.speedKey(2); },
+		presetDown: function () { P.stepSpeed(-1); }, presetUp: function () { P.stepSpeed(1); },
+		split: function () { VE.split(); }, markIn: function () { mark("in"); }, markOut: function () { mark("out"); },
+		title: function () { VE.addTitle(); }, narrate: function () { openNarrate(); }, record: function () { VE.recToggle(); },
+		fill: function () { setPv(!app.classList.contains("vd-pvfill")); }, fullscreen: function () { $("vd-fs").click(); }, win: function () { setWin(!UI.win); },
+		guides: function () { $("vd-vzguide").click(); }, hand: function () { P.setHand(!P.hand); }, bar: function () { VE.cycleBar(); },
+		zoomIn: function () { VE.tl.zoom(VE.pps * 1.5); }, zoomOut: function () { VE.tl.zoom(VE.pps / 1.5); }
+	};
+	var KFIXED = /^(Escape|Tab|Enter|Backspace|Delete|Home|End|PageUp|PageDown|ArrowLeft|ArrowRight|ArrowUp|ArrowDown|Shift|Control|Alt|Meta|CapsLock|ContextMenu|Dead|Unidentified|Process)$/;
+	var kCustom = {}; try { kCustom = JSON.parse(localStorage.getItem("mes-video-editor:keys") || "{}") || {}; } catch (x) { kCustom = {}; }
+	function kSave() { try { if (Object.keys(kCustom).length) localStorage.setItem("mes-video-editor:keys", JSON.stringify(kCustom)); else localStorage.removeItem("mes-video-editor:keys"); } catch (x) { /* ignore */ } }
+	function kDef(a) { for (var i = 0; i < KACT.length; i++) if (KACT[i][0] === a) return KACT[i]; return null; }
+	function kKeys(a) { return kCustom[a] ? kCustom[a].slice() : kDef(a)[3].slice(); }
+	function kChanged(a) { return !!kCustom[a] && kCustom[a].join("|") !== kDef(a)[3].join("|"); }
+	function kSet(a, list) { if (list.join("|") === kDef(a)[3].join("|")) delete kCustom[a]; else kCustom[a] = list; }
+	function kMap() { var m = {}; KACT.forEach(function (d) { kKeys(d[0]).forEach(function (k) { m[k] = d[0]; }); }); return m; }
+	var kDefaults = {}; KACT.forEach(function (d) { d[3].forEach(function (k) { kDefaults[k] = 1; }); });
+	// a pressed key as a name: letters upper case with "Shift+" when Shift is held, "Space", other keys as the browser names them
+	function kName(e) { var k = e.key; if (k === " " || k === "Spacebar") return "Space"; if (/^[a-z]$/i.test(k)) return (e.shiftKey ? "Shift+" : "") + k.toUpperCase(); return k; }
+	function kLabel(k) { return k === "Space" ? "Space" : k.replace("Shift+", "Shift + "); }
+	// called by the keyboard handler: true when the key belonged to a shortcut (done, or a default key you moved elsewhere)
+	VE.runShortcut = function (e) {
+		var n = kName(e), m = kMap(), plain = /^Shift\+/.test(n) ? n.slice(6) : null, a = m[n] || (plain && m[plain]);   // Shift + a letter does what the letter does unless it has its own shortcut
+		if (a) { e.preventDefault(); KRUN[a](e); return true; }
+		return !!(kDefaults[n] || (plain && kDefaults[plain]));
+	};
+	function kHelpRows() {
+		var el = $("vd-keysdyn"); if (!el) return;
+		el.innerHTML = KACT.map(function (d) { var ks = kKeys(d[0]); return "<dt>" + (ks.length ? ks.map(function (k) { return esc(kLabel(k)); }).join(" or ") : "<i>none</i>") + "</dt><dd>" + esc(d[1]) + "</dd>"; }).join("");
+	}
+	kHelpRows();
+	function openKeys() {
+		var wait = null, note = "", q = "";
+		function row(d) {
+			var a = d[0], ks = kKeys(a);
+			return '<div class="vd-krow' + (kChanged(a) ? " is-chg" : "") + '" data-a="' + a + '"><span class="vd-kname">' + esc(d[1]) + '</span><span class="vd-kkeys">' +
+				ks.map(function (k, i) { var w = wait && wait.a === a && wait.i === i; return '<span class="vd-kchip' + (w ? " is-wait" : "") + '"><button type="button" class="vd-kset" data-i="' + i + '" title="Click, then press the new key">' + (w ? "Press a key…" : "<kbd>" + esc(kLabel(k)) + "</kbd>") + '</button><button type="button" class="vd-kdel" data-i="' + i + '" title="Remove this key" aria-label="Remove ' + esc(kLabel(k)) + '">&times;</button></span>'; }).join("") +
+				(wait && wait.a === a && wait.i === -1 ? '<span class="vd-kchip is-wait"><button type="button" class="vd-kset">Press a key…</button></span>' : "") +
+				'<button type="button" class="vd-kadd" title="Add another key for this" aria-label="Add a key for ' + esc(d[1]) + '">+ key</button></span>' +
+				'<button type="button" class="vd-krst" title="Back to ' + esc(d[3].map(kLabel).join(" or ")) + '"' + (kChanged(a) ? "" : " hidden") + '>&#8634;</button></div>';
+		}
+		function paint() {
+			var box = $("vd-klist"); if (!box) return; var h = "", grp = "", lq = q.toLowerCase();
+			KACT.forEach(function (d) {
+				if (lq && (d[1] + " " + kKeys(d[0]).join(" ")).toLowerCase().indexOf(lq) < 0) return;
+				if (d[2] !== grp) { grp = d[2]; h += "<h4>" + esc(grp) + "</h4>"; }
+				h += row(d);
+			});
+			box.innerHTML = h || '<p class="vd-sub">Nothing matches.</p>';
+			$("vd-knote").textContent = note; $("vd-knote").hidden = !note;
+			$("vd-kreset").disabled = !Object.keys(kCustom).length;
+		}
+		dialog('<h3>Keyboard shortcuts</h3><p class="vd-dtxt">Click a key, then press the new one. <b>+ key</b> gives an action a second key, &times; removes one. A key can only do one thing, so taking one that is already used moves it here.</p>' +
+			'<input type="search" class="vd-ksearch" id="vd-ksearch" placeholder="Find an action or a key…" aria-label="Find an action or a key">' +
+			'<p class="vd-knote" id="vd-knote" role="status" hidden></p><div class="vd-klist" id="vd-klist"></div>' +
+			'<p class="vd-sub">Always the same: arrows, Home / End, Page Up / Down, Delete, Esc, and the Ctrl / Alt keys (Ctrl+Z, Ctrl+S…).</p>' +
+			'<div class="vd-row"><button type="button" class="vd-btn" id="vd-kreset">Reset all</button><span class="vd-sp"></span><button type="button" class="vd-btn vd-primary" id="vd-kdone">Done</button></div>');
+		$("vd-dlg").classList.add("vd-kdlg");
+		function onKey(e) {
+			if (!wait) return;
+			e.preventDefault(); e.stopImmediatePropagation();
+			if (e.key === "Escape") { wait = null; note = ""; paint(); return; }
+			if (e.ctrlKey || e.metaKey || e.altKey) { note = "Ctrl, Cmd and Alt keys are kept for the built-in shortcuts: press a key on its own (Shift is fine)."; paint(); return; }
+			if (KFIXED.test(e.key)) { if (/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) return; note = kLabel(e.key) + " always does the same thing here, so it can't be changed. Pick another key."; paint(); return; }
+			var n = kName(e), a = wait.a, list = kKeys(a), m = kMap(), other = m[n];
+			note = "";
+			if (other && other !== a) { kSet(other, kKeys(other).filter(function (k) { return k !== n; })); note = kLabel(n) + " was on “" + kDef(other)[1] + "”; that one has " + (kKeys(other).length ? "only " + kKeys(other).map(kLabel).join(" or ") : "no key") + " now."; }
+			list = list.filter(function (k) { return k !== n; });
+			if (wait.i >= 0 && wait.i < kKeys(a).length) { var old = kKeys(a)[wait.i]; var at = list.indexOf(old); if (at >= 0) list[at] = n; else list.push(n); } else list.push(n);
+			kSet(a, list); kSave(); kHelpRows(); wait = null; paint();
+		}
+		window.addEventListener("keydown", onKey, true);
+		var prev = dlgClose; dlgClose = function () { window.removeEventListener("keydown", onKey, true); if (prev) prev(); };
+		$("vd-klist").addEventListener("click", function (e) {
+			var r = e.target.closest(".vd-krow"); if (!r) return; var a = r.getAttribute("data-a"), b = e.target.closest("button"); if (!b) return;
+			if (b.classList.contains("vd-kset")) { var i = b.hasAttribute("data-i") ? +b.getAttribute("data-i") : -1; wait = wait && wait.a === a && wait.i === i ? null : { a: a, i: i }; }
+			else if (b.classList.contains("vd-kadd")) wait = { a: a, i: -1 };
+			else if (b.classList.contains("vd-kdel")) { var l = kKeys(a); l.splice(+b.getAttribute("data-i"), 1); kSet(a, l); kSave(); kHelpRows(); wait = null; note = l.length ? "" : "“" + kDef(a)[1] + "” has no key now (the button still works)."; }
+			else if (b.classList.contains("vd-krst")) { delete kCustom[a]; var m = kMap(); kDef(a)[3].forEach(function (k) { var o = m[k]; if (o && o !== a) kSet(o, kKeys(o).filter(function (x) { return x !== k; })); }); kSave(); kHelpRows(); wait = null; note = ""; }
+			paint();
+			var w = $("vd-klist").querySelector(".is-wait .vd-kset"); if (w) w.focus();
+		});
+		$("vd-ksearch").addEventListener("input", function () { q = this.value.trim(); wait = null; paint(); });
+		$("vd-ksearch").addEventListener("keydown", function (e) { e.stopPropagation(); });
+		$("vd-kreset").onclick = function () { if (!confirm("Put every shortcut back to how it was?")) return; kCustom = {}; kSave(); kHelpRows(); wait = null; note = "Every key is back to normal."; paint(); };
+		$("vd-kdone").onclick = closeDialog;
+		paint();
+	}
+	VE.openKeys = openKeys;
+	$("vd-keyedit").onclick = function () { $("vd-keys").hidden = true; $("vd-help").setAttribute("aria-expanded", "false"); openKeys(); };
+
 	/* ---------- keyboard ---------- */
 	document.addEventListener("keydown", function (e) {
 		var tg = e.target, tn = (tg && tg.tagName) || "";
@@ -1682,6 +1794,7 @@
 			var st = e.shiftKey ? 10 : 1;
 			if (VE.nudge(k === "ArrowLeft" ? -st : k === "ArrowRight" ? st : 0, k === "ArrowUp" ? -st : k === "ArrowDown" ? st : 0)) { e.preventDefault(); return; }
 		}
+		if (VE.runShortcut(e)) return;
 		var h = true;
 		switch (k) {
 			case " ": if (e.repeat) break; if (P.hover && !P.playing) P.spaceDown(); else P.toggle(); break;   // over the preview: hold Space and drag to move the view
