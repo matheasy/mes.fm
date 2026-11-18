@@ -185,12 +185,21 @@
   function bar(v, max, color) { var w = max ? Math.min(100, v / max * 100) : 0; return '<span class="ad-bar"><i style="width:' + w.toFixed(1) + '%;background:' + color + '"></i></span>'; }
 
   // ---- data
-  function setTabs() { document.querySelectorAll('#ad-tabs button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.r === RANGE ? 'true' : 'false'); }); }
-  $('ad-tabs').onclick = function (e) {
-    var b = e.target.closest('button[data-r]'); if (!b || b.dataset.r === RANGE) return;
+  // two range bars (top of the page + above the chart, like /search-console), kept in step
+  function setTabs() {
+    var top = $('ad-tabs');
+    document.querySelectorAll('#ad [data-rangebar]').forEach(function (bar) {
+      if (!bar.firstElementChild) bar.innerHTML = top.innerHTML;
+      bar.querySelectorAll('button[data-r]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.r === RANGE ? 'true' : 'false'); });
+    });
+  }
+  setTabs();
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('#ad [data-rangebar] button[data-r]'); if (!b || b.dataset.r === RANGE) return;
     RANGE = b.dataset.r; try { localStorage.setItem('mes-ads:range', RANGE); } catch (x) {}
+    SEL = -1; VSEL = -1; setTabs();
     load();
-  };
+  });
   function setMode() { document.querySelectorAll('#ad-mode button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.m === MODE ? 'true' : 'false'); }); }
   setMode();
   $('ad-mode').onclick = function (e) {
@@ -405,6 +414,44 @@
     try { localStorage.setItem('mes-ads:seo', SEOL.join(',')); } catch (x) {}
     paintSeoT(); if (DATA) render();
   };
+  // ---- picking a day: dashed crosshair + dots on the chart, numbers in the readout line ABOVE the plot (a finger never hides them)
+  var SEL = -1, VSEL = -1;
+  function chartPick(o) {   // o: box, n, cx(i), y0, y1, dots(i) -> [[y, colour]], read(i) -> html, sel, setSel(i), days(i) -> date
+    var mark = function (i) {
+      o.setSel(i);
+      var g = o.box.querySelector('.ad-mark'), x = o.cx(i).toFixed(1), css = getComputedStyle($('ad'));
+      var out = '<line x1="' + x + '" x2="' + x + '" y1="' + o.y1 + '" y2="' + o.y0 + '" stroke="' + css.getPropertyValue('--ad-muted').trim() + '" stroke-dasharray="3 3"/>';
+      o.dots(i).forEach(function (d) { if (d[0] != null && isFinite(d[0])) out += '<circle cx="' + x + '" cy="' + d[0].toFixed(1) + '" r="4" fill="' + d[1] + '" stroke="' + css.getPropertyValue('--ad-card').trim() + '" stroke-width="2"/>'; });
+      if (g) g.innerHTML = out;
+      var html = o.read(i);
+      if (window.MESNotes) {
+        var day = o.day(i);
+        html += window.MESNotes.list().filter(function (n) { return n.d === day; }).map(function (n) { return '<button type="button" class="gs-nread" data-nid="' + esc(n.id) + '" title="Edit this note">✎ ' + esc(n.t) + '</button>'; }).join('') +
+          '<button type="button" class="gs-nadd" data-nd="' + esc(day) + '" title="Add a note on this day (also: right-click the chart)">+ Note</button>';
+      }
+      o.read$.innerHTML = html;
+    };
+    var start = o.sel >= 0 && o.sel < o.n ? o.sel : o.n - 1;
+    mark(start);
+    var at = function (e) { var r = o.box.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width * o.W; var i = Math.floor((fx - o.padL) / o.bw); return Math.max(0, Math.min(o.n - 1, i)); };
+    var down = false, rest = start;
+    o.box.onpointerdown = function (e) { down = true; mark(rest = at(e)); };
+    o.box.onpointermove = function (e) { if (e.pointerType === 'mouse' || down) { var i = at(e); mark(i); if (down) rest = i; } };
+    o.box.onpointerup = o.box.onpointercancel = function () { down = false; };
+    o.box.onpointerleave = function (e) { down = false; if (e.pointerType === 'mouse') mark(rest); };
+    o.box.onclick = function (e) { if (e.pointerType !== 'touch') rest = at(e); };
+    o.box.oncontextmenu = function (e) { if (!window.MESNotes) return; e.preventDefault(); var i = at(e); mark(rest = i); window.MESNotes.edit(o.day(i)); };
+    o.box.tabIndex = 0;
+    o.box.onkeydown = function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault(); var cur = o.getSel(); mark(rest = Math.max(0, Math.min(o.n - 1, cur + (e.key === 'ArrowLeft' ? -1 : 1))));
+    };
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('#ad .ad-read .gs-nadd'), b = e.target.closest('#ad .ad-read .gs-nread');
+    if (a && window.MESNotes) window.MESNotes.edit(a.dataset.nd);
+    if (b && window.MESNotes) window.MESNotes.edit(null, b.dataset.nid);
+  });
   function drawChart() {
     var days = DATA.daily, svg = $('ad-svg'), box = $('ad-chart');
     var gmap = {};
@@ -456,22 +503,26 @@
     var every = Math.ceil(days.length / Math.max(2, Math.floor(iw / 60)));
     days.forEach(function (x, i) { if (i % every === 0) s += '<text x="' + cx(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + x.d.slice(5) + '</text>'; });
     if (window.MESNotes) s += window.MESNotes.marks({ days: days.map(function (x) { return x.d; }), X: cx, y0: padT + ih, y1: padT, size: 6 });
+    s += '<g class="ad-mark"></g>';
     svg.innerHTML = s;
-    var at = function (pt) { var r = box.getBoundingClientRect(); var i = Math.floor((pt.clientX - r.left - padL) / bw); return i < 0 || i >= days.length ? -1 : i; };
-    box.onmousemove = box.ontouchstart = function (e) {
-      var pt = e.touches ? e.touches[0] : e, r = box.getBoundingClientRect();
-      var i = at(pt); if (i === -1) { $('ad-tip').style.display = 'none'; return; }
-      var x = days[i], tip = $('ad-tip'), gx = gmap[x.d];
-      var notes = window.MESNotes ? window.MESNotes.list().filter(function (n) { return n.d === x.d; }) : [];
-      tip.innerHTML = x.d + '<br>Earned ' + R(money(x.rev)) + (x.prem ? ' + Premium ' + PM(money(x.prem)) : '') + ' · Spent ' + C(money(x.spend)) + '<br>' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks' +
-        (gx && gx.gc != null ? '<br>Google search: ' + int(gx.gc) + ' clicks · ' + int(gx.gi) + ' impr.' + (gx.gf ? ' (fresh)' : '') : '') +
-        (gx && gx.bc != null && SEOL.some(function (k) { return k.charAt(0) === 'b'; }) ? '<br>Bing: ' + int(gx.bc) + ' clicks · ' + int(gx.bi) + ' impr.' : '') +
-        notes.map(function (n) { return '<br>✎ ' + esc(n.t); }).join('');
-      tip.style.display = 'block';
-      tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(0, pt.clientX - r.left + 10)) + 'px'; tip.style.top = '6px';
-    };
-    box.onmouseleave = function () { $('ad-tip').style.display = 'none'; };
-    box.oncontextmenu = function (e) { var i = at(e); if (i === -1 || !window.MESNotes) return; e.preventDefault(); $('ad-tip').style.display = 'none'; window.MESNotes.edit(days[i].d); };
+    var narrow = W < 560;
+    chartPick({ box: box, read$: $('ad-read'), n: days.length, W: W, padL: padL, bw: bw, cx: cx, y0: padT + ih, y1: padT,
+      sel: SEL, setSel: function (i) { SEL = i; }, getSel: function () { return SEL; }, day: function (i) { return days[i].d; },
+      dots: function (i) {
+        var x = days[i], gx = gmap[x.d], d = [[y(x.rev + (x.prem || 0)), cRev], [y(x.spend), cSp]];
+        seo.forEach(function (k) { if (gx && gx[k] != null) d.push([y2(gx[k]), cv('--ad-' + k)]); });
+        return d;
+      },
+      read: function (i) {
+        var x = days[i], gx = gmap[x.d], showB = SEOL.some(function (k) { return k.charAt(0) === 'b'; });
+        var h = '<b>' + esc(x.d) + (x.d === DATA.today ? ' (today, so far)' : '') + '</b>' +
+          '<span class="ad-read__s">Earned <b>' + R(money(x.rev)) + '</b>' + (x.prem ? '+ Premium <b>' + PM(money(x.prem)) + '</b>' : '') + '</span>' +
+          '<span class="ad-read__s">Spent <b>' + C(money(x.spend)) + '</b></span>' +
+          '<span class="ad-read__s ad-read__m">' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks</span>';
+        if (gx && gx.gc != null) h += '<span class="ad-read__s"><span style="color:var(--ad-gc)">Google ' + int(gx.gc) + ' cl</span><span class="ad-read__m">' + (narrow ? shortN(gx.gi) : int(gx.gi)) + ' impr.' + (gx.gf ? ' (fresh)' : '') + '</span></span>';
+        if (gx && gx.bc != null && showB) h += '<span class="ad-read__s"><span style="color:var(--ad-bc)">Bing ' + int(gx.bc) + ' cl</span><span class="ad-read__m">' + (narrow ? shortN(gx.bi) : int(gx.bi)) + ' impr.</span></span>';
+        return h;
+      } });
     if (window.MESNotes) window.MESNotes.attach(box);
   }
   (function notesHook() {
@@ -568,18 +619,16 @@
     var every = Math.ceil(rows.length / Math.max(2, Math.floor(iw / 60)));
     rows.forEach(function (r, i) { if (i % every === 0) s += '<text x="' + cx(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cv('--ad-muted') + '">' + r.d.slice(5) + '</text>'; });
     if (window.MESNotes) s += window.MESNotes.marks({ days: rows.map(function (r) { return r.d; }), X: cx, y0: padT + ih, y1: padT, size: 6 });
+    s += '<g class="ad-mark"></g>';
     svg.innerHTML = s;
-    var at = function (pt) { var rc = box.getBoundingClientRect(); var i = Math.floor((pt.clientX - rc.left - padL) / bw); return i < 0 || i >= rows.length ? -1 : i; };
-    box.onmousemove = box.ontouchstart = function (e) {
-      var pt = e.touches ? e.touches[0] : e, rc = box.getBoundingClientRect(), i = at(pt), tip = $('ad-vstip');
-      if (i === -1) { tip.style.display = 'none'; return; }
-      var r = rows[i];
-      tip.innerHTML = r.d + '<br>Spent ' + C(money(r.spend)) + ' · ' + int(r.adClicks) + ' ad clicks<br>Organic: ' + (r.oc == null ? 'no data yet' : int(r.oc) + ' clicks · ' + int(r.oi) + ' impr.' + (r.of ? ' (fresh)' : ''));
-      tip.style.display = 'block';
-      tip.style.left = Math.min(rc.width - tip.offsetWidth - 4, Math.max(0, pt.clientX - rc.left + 10)) + 'px'; tip.style.top = '6px';
-    };
-    box.onmouseleave = function () { $('ad-vstip').style.display = 'none'; };
-    box.oncontextmenu = function (e) { var i = at(e); if (i === -1 || !window.MESNotes) return; e.preventDefault(); window.MESNotes.edit(rows[i].d); };
+    chartPick({ box: box, read$: $('ad-vsread'), n: rows.length, W: W, padL: padL, bw: bw, cx: cx, y0: padT + ih, y1: padT,
+      sel: VSEL, setSel: function (i) { VSEL = i; }, getSel: function () { return VSEL; }, day: function (i) { return rows[i].d; },
+      dots: function (i) { var r = rows[i]; return [[r.adClicks != null ? yc(r.adClicks) : null, cv('--ad-cost')], [r.oc != null ? yc(r.oc) : null, cv('--ad-gc')], [r.oi != null ? yi(r.oi) : null, cv('--ad-gi')]]; },
+      read: function (i) {
+        var r = rows[i];
+        return '<b>' + esc(r.d) + '</b><span class="ad-read__s">Spent <b>' + C(money(r.spend)) + '</b></span><span class="ad-read__s ad-read__m">' + int(r.adClicks) + ' ad clicks</span>' +
+          '<span class="ad-read__s">Organic: ' + (r.oc == null ? '<span class="ad-read__m">no data yet</span>' : '<span style="color:var(--ad-gc)">' + int(r.oc) + ' clicks</span><span class="ad-read__m">' + int(r.oi) + ' impr.' + (r.of ? ' (fresh)' : '') + '</span>') + '</span>';
+      } });
     if (window.MESNotes) window.MESNotes.attach(box);
   }
   window.addEventListener('resize', function () { if (DATA) drawChart(); if (VS) drawVs(); });

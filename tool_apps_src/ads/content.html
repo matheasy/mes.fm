@@ -1,6 +1,6 @@
 	<div class="tu ad" id="ad" data-page-modes="3">
 		<div class="ad-top">
-			<div class="ad-tabs" id="ad-tabs" role="group" aria-label="Range">
+			<div class="ad-tabs" id="ad-tabs" data-rangebar role="group" aria-label="Range">
 				<button type="button" class="tu-chip" data-r="today" aria-pressed="false">Today</button>
 				<button type="button" class="tu-chip" data-r="yesterday" aria-pressed="false">Yesterday</button>
 				<button type="button" class="tu-chip" data-r="7d" aria-pressed="false">7 days</button>
@@ -28,7 +28,7 @@
 
 		<section class="tu-card ad-sec">
 			<div class="ad-head"><h2>Day by day</h2><span class="ad-hbtns"><button type="button" class="mes-pbtn" id="ad-notes" title="Chart notes: list, add, edit (shared with the Search Console chart)">Notes</button></span></div>
-			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day for its numbers; right-click a day to add a note.</p>
+			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day: its numbers show in the line above the chart. Right-click a day to add a note.</p>
 			<div class="ad-tabs ad-seot" id="ad-seot" role="group" aria-label="Search lines (right axis)">
 				<span class="ad-seol">Search (right axis):</span>
 				<button type="button" class="tu-chip" data-g="gc" aria-pressed="false" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Google clicks</button>
@@ -36,7 +36,9 @@
 				<button type="button" class="tu-chip" data-g="bc" aria-pressed="false" style="--k:var(--ad-bc)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing clicks</button>
 				<button type="button" class="tu-chip" data-g="bi" aria-pressed="false" style="--k:var(--ad-bi)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing impressions</button>
 			</div>
-			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg><div class="ad-tip" id="ad-tip"></div></div>
+			<div class="ad-tabs ad-tabs--sm" data-rangebar role="group" aria-label="Range"></div>
+			<div class="ad-read" id="ad-read" aria-live="polite"></div>
+			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--prem"></i>MES Premium (HBD)</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
 			<p class="tu-note" id="ad-seonote"></p>
 			<p class="tu-note ad-ends" id="ad-ends"></p>
@@ -69,7 +71,8 @@
 				<label>Days <select id="ad-vsdays" class="tu-input"><option>30</option><option>60</option><option selected>90</option><option>180</option></select></label>
 			</form>
 			<div class="tu-stats ad-tiles" id="ad-vstiles"></div>
-			<div class="ad-chart" id="ad-vschart"><svg id="ad-vssvg" preserveAspectRatio="none" role="img" aria-label="Ad spend against organic search per day"></svg><div class="ad-tip" id="ad-vstip"></div></div>
+			<div class="ad-read" id="ad-vsread" aria-live="polite"></div>
+			<div class="ad-chart" id="ad-vschart"><svg id="ad-vssvg" preserveAspectRatio="none" role="img" aria-label="Ad spend against organic search per day"></svg></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--spend"></i>Ad spend</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-cost)"></i>Ad clicks</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-gc)"></i>Organic clicks</span><span><i class="ad-key ad-key--ln ad-key--dash" style="--k:var(--ad-gi)"></i>Organic impressions (own scale)</span></div>
 			<p class="tu-note" id="ad-vsnote"></p>
 		</section>

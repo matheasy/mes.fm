@@ -132,3 +132,19 @@
 	.ad-t td.ad-path .ad-subs {font-size:.82em;margin-top:.2em;white-space:normal;}
 	.ad-t td.ad-path .ad-subs summary {cursor:pointer;color:var(--ad-muted, #6b7280);}
 	.ad-t td.ad-path .ad-subs div {margin:.15em 0 0 .9em;white-space:nowrap;}
+
+	/* readout line above the plot (like /search-console): a finger never covers the numbers */
+	#ad .ad-read {display:flex;flex-wrap:wrap;align-items:baseline;gap:0.15em 0.9em;min-height:2.6em;font-size:0.86em;line-height:1.4;color:var(--ad-ink);padding:0.25em 0 0.35em;border-bottom:1px dashed var(--ad-line);margin-bottom:0.25em;}
+	#ad .ad-read b {font-weight:700;}
+	#ad .ad-read__s {display:inline-flex;flex-wrap:wrap;gap:0.1em 0.5em;}
+	#ad .ad-read__m {color:var(--ad-muted);}
+	#ad .ad-read .gs-nadd, #ad .ad-read .gs-nread {font:inherit;font-size:0.92em;border:1px solid var(--ad-line);background:none;color:var(--ad-muted);border-radius:1em;padding:0 0.6em;cursor:pointer;}
+	#ad .ad-read .gs-nread {color:var(--ad-ink);}
+	.ad-chart {touch-action:pan-y;cursor:crosshair;outline:none;}
+	.ad-chart:focus-visible {box-shadow:0 0 0 2px var(--accent);border-radius:4px;}
+	#ad .ad-tabs--sm {font-size:0.86em;margin:0 0 0.3em;}
+	#ad .ad-sec.mes-pfill .ad-read {flex:0 0 auto;}
+	@media (max-width: 600px) {
+		#ad .ad-tabs--sm {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
+		#ad .ad-tabs--sm .tu-chip {flex:0 0 auto;}
+	}
