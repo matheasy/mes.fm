@@ -19,7 +19,9 @@ t('add / update / reply / delete', () => {
   const it = r.body.item; m[it.id] = it;
   assert.strictEqual(it.t, 'New idea\nsecond line'); assert.strictEqual(it.k, 'app'); assert.strictEqual(it.star, true); assert.strictEqual(it.st, 'todo');
   assert.strictEqual(E.apply(m, { op: 'add', t: '   ' }).status, 400);
-  assert.strictEqual(E.apply(m, { op: 'add', t: 'x', k: 'bogus' }).body.item.k, 'fix');
+  assert.strictEqual(E.apply(m, { op: 'add', t: 'x', k: 'Bad Kind!' }).body.item.k, 'fix');
+  assert.strictEqual(E.apply(m, { op: 'add', t: 'x', k: 'mirror' }).body.item.k, 'mirror');
+  assert.strictEqual(E.apply(m, { op: 'add', t: 'x', k: 'ai-ideas' }).body.item.k, 'ai-ideas');
   r = E.apply(m, { op: 'update', id: it.id, st: 'done', note: 'Shipped in abc123' }, 2000);
   assert.strictEqual(r.body.item.st, 'done'); assert.strictEqual(r.body.item.d, 2000); assert.strictEqual(r.body.item.u, 2000); m[it.id] = r.body.item;
   r = E.apply(m, { op: 'update', id: it.id, st: 'todo' }, 3000); assert.strictEqual(r.body.item.d, 0);
@@ -31,6 +33,21 @@ t('add / update / reply / delete', () => {
   assert.deepStrictEqual(E.apply(m, { op: 'delete', id: it.id }).del, [it.id]);
   assert.strictEqual(E.apply(m, { op: 'what' }).status, 400);
   assert.strictEqual(E.apply(m, { op: 'add', t: 'a'.repeat(9000) }).body.item.t.length, E.MAX_T);
+});
+
+t('lists and my order', () => {
+  assert.strictEqual(E.kindSlug('AI Ideas!'), 'ai-ideas'); assert.strictEqual(E.kindSlug('9 Café ideas'), 'cafe-ideas');
+  assert.strictEqual(E.kindName('ai-ideas'), 'Ai ideas'); assert.strictEqual(E.kindName('mirror'), 'Mirrors'); assert.strictEqual(E.kindOne('app'), 'New app');
+  assert.ok(!E.okKind('a')); assert.ok(!E.okKind('x--y')); assert.ok(E.okKind('other'));
+  const items = [{ id: 'a1aaaa', k: 'fix', t: 'a', st: 'todo', c: 3, u: 3 }, { id: 'b1bbbb', k: 'zz-top', t: 'b', st: 'todo', c: 2, u: 2 }];
+  assert.deepStrictEqual(E.kindsOf(items, ['mine-list']), ['fix', 'app', 'mirror', 'other', 'mine-list', 'zz-top']);
+  assert.strictEqual(E.counts(items)['zz-top'], 1);
+  const m = {}; items.forEach((x) => { m[x.id] = Object.assign({ rs: [], note: '', star: false, d: 0 }, x); });
+  let r = E.apply(m, { op: 'update', id: 'b1bbbb', o: -10 }, 9); assert.strictEqual(r.body.item.o, -10); m.b1bbbb = r.body.item;
+  assert.deepStrictEqual(E.filter(Object.values(m), { k: 'all', sort: 'mine' }).map((x) => x.id), ['b1bbbb', 'a1aaaa']);
+  r = E.apply(m, { op: 'update', id: 'b1bbbb', o: null }, 9); assert.strictEqual(r.body.item.o, undefined);
+  assert.strictEqual(E.apply(m, { op: 'update', id: 'b1bbbb', o: 'x' }).status, 400);
+  assert.strictEqual(E.between(null, 4, true), 2); assert.strictEqual(E.between(2, 4), 3); assert.strictEqual(E.between(5, null), 6);
 });
 
 t('import skips duplicates, newer copy wins', () => {

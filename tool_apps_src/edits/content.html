@@ -1,9 +1,6 @@
 	<div class="tu ed" id="ed">
 		<div class="ed-tabs" role="tablist" aria-label="Which list">
-			<button type="button" role="tab" class="ed-tab" data-k="fix" aria-selected="true">&#128295; Fixes <span class="ed-n" data-n="fix"></span></button>
-			<button type="button" role="tab" class="ed-tab" data-k="app" aria-selected="false">&#128161; New apps <span class="ed-n" data-n="app"></span></button>
-			<button type="button" role="tab" class="ed-tab" data-k="all" aria-selected="false">All <span class="ed-n" data-n="all"></span></button>
-			<button type="button" role="tab" class="ed-tab" data-k="queue" aria-selected="false">&#128203; Queue <span class="ed-n" data-n="queue"></span></button>
+			<span class="ed-tablist" id="ed-tablist"></span>
 			<span class="ed-sync" id="ed-sync" aria-live="polite"></span>
 		</div>
 
@@ -11,10 +8,11 @@
 			<label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label>
 			<textarea id="ed-t" class="tu-input ed-ta" rows="2" placeholder="What should change? Paste page links (mes.fm/photo). Paste a screenshot here or tap 📷 Picture." spellcheck="true"></textarea>
 			<div class="ed-addrow">
-				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option></select></label>
+				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option><option value="mirror">Mirrors</option><option value="other">Other</option></select></label>
 				<label class="ed-chk"><input type="checkbox" id="ed-star"> &#9733; Important</label>
 				<button type="button" class="tu-btn tu-btn--ghost ed-picbtn" id="ed-picbtn" title="Add a screenshot or photo (it is saved with this list and its link goes in the text)">&#128247;&#xFE0E; Picture</button>
 				<input type="file" id="ed-picin" accept="image/*" multiple hidden>
+				<label class="ed-chk ed-small" title="Opens each picture in the editor first: crop, turn, straighten, highlight or white out parts"><input type="checkbox" id="ed-picedit-on" checked> Crop / edit pictures first</label>
 				<span class="ed-sp"></span>
 				<span class="ed-hint">Ctrl+Enter adds</span>
 				<button type="button" class="tu-btn tu-btn--primary" id="ed-addbtn">Add</button>
@@ -37,10 +35,16 @@
 				<option value="old">Oldest first</option>
 				<option value="star">Important first</option>
 				<option value="upd">Recently changed</option>
+				<option value="mine">My order (drag &#10303;)</option>
+			</select>
+			<select id="ed-cols" class="tu-select" aria-label="Columns">
+				<option value="1">1 column</option>
+				<option value="2">2 columns</option>
+				<option value="3">3 columns</option>
 			</select>
 		</div>
 		<p class="ed-count" id="ed-count" aria-live="polite"></p>
-		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; ↑ ↓ / ⤒ First change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
+		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; drag the &#10303; handle (or ↑ ↓ / ⤒ First) to change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
 		<ol class="ed-list" id="ed-list"></ol>
 		<p class="ed-empty" id="ed-empty" hidden></p>
 

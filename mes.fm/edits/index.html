@@ -412,6 +412,32 @@ html body.dark-mode #ed .ed-n {background:rgba(255,255,255,0.12);}
 html body.dark-mode #ed .ed-qn, html body.dark-mode #ed .ed-qon {color:#ff8fb0; border-color:#ff8fb0;}
 html body.dark-mode #ed .ed-qnote {color:#c9cfd6;}
 
+/* Lists, drag to sort, columns, Show more, picture editing (2026-11-18) */
+#ed .ed-tablist {display:contents;}
+#ed .ed-tabnew {border-style:dashed; color:var(--ed-mute);}
+#ed .ed-kind.k-mirror {background:#e6f4f1; color:#11695b;}
+#ed .ed-grip {font:inherit; font-size:1.15em; line-height:1; padding:0.15em 0.3em; border:0; border-radius:0.3em; background:none; color:var(--ed-mute); cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none;}
+#ed .ed-grip:hover, #ed .ed-grip:focus-visible {background:var(--ed-soft); color:var(--ed-fg);}
+#ed .ed-it.is-drag {position:fixed; z-index:2147483000; margin:0; box-shadow:0 12px 32px rgba(0,0,0,0.28); opacity:0.96; pointer-events:none; cursor:grabbing;}
+#ed .ed-ph {border:2px dashed var(--ed-acc); border-radius:0.6em; background:var(--ed-soft); list-style:none;}
+#ed .ed-list.cols-2, #ed .ed-list.cols-3 {display:grid; align-items:start; gap:0.65em;}
+#ed .ed-list.cols-2 {grid-template-columns:repeat(2, minmax(0, 1fr));}
+#ed .ed-list.cols-3 {grid-template-columns:repeat(3, minmax(0, 1fr));}
+@media (max-width:760px) { #ed .ed-list.cols-2, #ed .ed-list.cols-3 {grid-template-columns:minmax(0, 1fr);} #ed #ed-cols {display:none;} }
+#ed .ed-txt {max-height:9.5em; overflow:hidden;}
+#ed .ed-it.is-exp .ed-txt {max-height:none;}
+#ed .ed-more-btn {font:inherit; font-size:0.85em; background:none; border:0; padding:0.2em 0; color:#1d5fa8; cursor:pointer; text-decoration:underline;}
+#ed .ed-mv {font:inherit; font-size:0.85em; padding:0.3em 0.4em; border:1px solid var(--ed-line); border-radius:0.4em; background:var(--ed-bg); color:var(--ed-fg); max-width:11em;}
+#ed .ed-picw {position:relative; display:inline-block;}
+#ed .ed-picw[hidden] {display:none;}
+#ed .ed-picedit {position:absolute; right:0.3em; bottom:0.3em; font:inherit; font-size:0.78em; padding:0.15em 0.55em; border:0; border-radius:1em; background:rgba(20,24,30,0.78); color:#fff; cursor:pointer;}
+#ed .ed-small {font-size:0.85em;}
+html body.dark-mode #ed .ed-kind.k-mirror {background:#173a35; color:#8fe0cf;}
+html body.dark-mode #ed .ed-more-btn {color:#8ab8f0;}
+html body.dark-mode #ed .ed-mv {background:var(--ed-soft); color:var(--ed-fg); border-color:var(--ed-line);}
+html body.dark-mode #ed .ed-grip {color:var(--ed-mute);}
+#ed input[type="file"][hidden] {display:none !important;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -550,6 +576,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu-toast .ed-undo{border:1px solid rgba(51,51,51,0.60)}
 	body.dark-mode #ed .ed-qn{color:#e47698}
 	body.dark-mode #ed .ed-qon{border-color:#d52a5e;color:#e47698}
+	body.dark-mode #ed .ed-kind.k-mirror{background:#1b2725;color:#73e8d6}
+	body.dark-mode #ed .ed-more-btn{color:#74abe7}
+	body.dark-mode #ed .ed-picedit{background:rgba(65,78,98,0.78)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -611,10 +640,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">MES Edits: Fixes and New App Ideas</h1>                                        <p class="page-description">Private list of fixes and new app ideas for mes.fm.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu ed" data-page-modes="3" id="ed">
 		<div class="ed-tabs" role="tablist" aria-label="Which list">
-			<button type="button" role="tab" class="ed-tab" data-k="fix" aria-selected="true">&#128295; Fixes <span class="ed-n" data-n="fix"></span></button>
-			<button type="button" role="tab" class="ed-tab" data-k="app" aria-selected="false">&#128161; New apps <span class="ed-n" data-n="app"></span></button>
-			<button type="button" role="tab" class="ed-tab" data-k="all" aria-selected="false">All <span class="ed-n" data-n="all"></span></button>
-			<button type="button" role="tab" class="ed-tab" data-k="queue" aria-selected="false">&#128203; Queue <span class="ed-n" data-n="queue"></span></button>
+			<span class="ed-tablist" id="ed-tablist"></span>
 			<span class="ed-sync" id="ed-sync" aria-live="polite"></span>
 		</div>
 
@@ -622,10 +648,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label>
 			<textarea id="ed-t" class="tu-input ed-ta" rows="2" placeholder="What should change? Paste page links (mes.fm/photo). Paste a screenshot here or tap 📷 Picture." spellcheck="true"></textarea>
 			<div class="ed-addrow">
-				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option></select></label>
+				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option><option value="mirror">Mirrors</option><option value="other">Other</option></select></label>
 				<label class="ed-chk"><input type="checkbox" id="ed-star"> &#9733; Important</label>
 				<button type="button" class="tu-btn tu-btn--ghost ed-picbtn" id="ed-picbtn" title="Add a screenshot or photo (it is saved with this list and its link goes in the text)">&#128247;&#xFE0E; Picture</button>
 				<input type="file" id="ed-picin" accept="image/*" multiple hidden>
+				<label class="ed-chk ed-small" title="Opens each picture in the editor first: crop, turn, straighten, highlight or white out parts"><input type="checkbox" id="ed-picedit-on" checked> Crop / edit pictures first</label>
 				<span class="ed-sp"></span>
 				<span class="ed-hint">Ctrl+Enter adds</span>
 				<button type="button" class="tu-btn tu-btn--primary" id="ed-addbtn">Add</button>
@@ -648,10 +675,16 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<option value="old">Oldest first</option>
 				<option value="star">Important first</option>
 				<option value="upd">Recently changed</option>
+				<option value="mine">My order (drag &#10303;)</option>
+			</select>
+			<select id="ed-cols" class="tu-select" aria-label="Columns">
+				<option value="1">1 column</option>
+				<option value="2">2 columns</option>
+				<option value="3">3 columns</option>
 			</select>
 		</div>
 		<p class="ed-count" id="ed-count" aria-live="polite"></p>
-		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; ↑ ↓ / ⤒ First change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
+		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; drag the &#10303; handle (or ↑ ↓ / ⤒ First) to change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
 		<ol class="ed-list" id="ed-list"></ol>
 		<p class="ed-empty" id="ed-empty" hidden></p>
 
@@ -735,7 +768,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=2" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

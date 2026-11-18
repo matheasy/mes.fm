@@ -15,7 +15,10 @@
     function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* full or blocked */ } }
     function lsJson(k, d) { try { var v = JSON.parse(lsGet(k, "null")); return v == null ? d : v; } catch (e) { return d; } }
 
-    var pref = Object.assign({ k: "fix", st: "open", sort: "new", star: false, tool: "" }, lsJson(PREF, {}));
+    var pref = Object.assign({ k: "fix", st: "open", sort: "new", star: false, tool: "", cols: 1, picEdit: true }, lsJson(PREF, {}));
+    var KINDS_KEY = "mes-edits:kinds";      /* the user's own lists that have no items yet */
+    function userKinds() { var a = lsJson(KINDS_KEY, []); return Array.isArray(a) ? a.filter(E.okKind) : []; }
+    var exp = {};           /* id -> true while "Show more" is open */
     var cache = lsJson(CACHE, null);
     var items = cache && Array.isArray(cache.items) ? cache.items : [];
     var loadedAt = cache && cache.at || 0, online = null, busy = 0;
@@ -72,7 +75,7 @@
         if (!quiet) paintSync();
         return call("GET").then(function (j) {
             online = true; items = Array.isArray(j.items) ? j.items : []; loadedAt = Date.now(); saveCache();
-            if (Object.keys(open).length) pendingRender = true; else render();
+            if (Object.keys(open).length || drag) pendingRender = true; else render();
             paintSync();
         }).catch(function (e) {
             online = false; paintSync();
@@ -109,20 +112,26 @@
 
     /* ---------- rendering ---------- */
     function fullDate(ms) { return new Date(ms).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
-    function pics(t) {
+    /* editable = pictures in the item's own text get a ✂ Edit button (crop / rotate / mark up, saved as a new picture) */
+    function pics(t, editable) {
         var seen = {};
         return E.links(t).map(E.imageOf).filter(function (u) { if (!u || seen[u]) return false; seen[u] = 1; return true; }).slice(0, 6)
-            .map(function (u) { return '<a class="ed-pic" href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Screenshot" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.hidden=true"></a>'; }).join("");
+            .map(function (u) { return '<span class="ed-picw"><a class="ed-pic" href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Screenshot" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.parentNode.hidden=true"></a>'
+                + (editable ? '<button type="button" class="ed-picedit" data-a="picedit" data-u="' + esc(u) + '" title="Crop, turn or mark up this picture">✂ Edit</button>' : "") + "</span>"; }).join("");
+    }
+    function moveSelect(it) {
+        return '<select class="ed-mv" data-a="mv" aria-label="Move to another list"><option value="">⇄ Move to…</option>' + E.kindsOf(items, userKinds()).filter(function (k) { return k !== it.k; })
+            .map(function (k) { return '<option value="' + esc(k) + '">' + esc(E.kindName(k)) + "</option>"; }).join("") + "</select>";
     }
     function stSelect(it) {
         return '<select class="ed-st" data-a="st" aria-label="Status">' + E.STATES.map(function (s) { return '<option value="' + s + '"' + (s === it.st ? " selected" : "") + ">" + E.STATE_NAME[s] + "</option>"; }).join("") + "</select>";
     }
     function itemHtml(it) {
         var tl = E.itemTools(it), mode = open[it.id];
-        var h = '<li class="ed-it st-' + it.st + (it.star ? " is-star" : "") + '" data-id="' + esc(it.id) + '">';
-        h += '<div class="ed-top"><button type="button" class="ed-star" data-a="star" aria-pressed="' + it.star + '" title="' + (it.star ? "Important (click to unmark)" : "Mark important") + '">' + (it.star ? "★" : "☆") + "</button>" + stSelect(it);
+        var h = '<li class="ed-it st-' + it.st + (it.star ? " is-star" : "") + (exp[it.id] ? " is-exp" : "") + '" data-id="' + esc(it.id) + '">';
+        h += '<div class="ed-top"><button type="button" class="ed-grip" data-a="grip" title="Drag to change the order (or focus and press Alt+↑ / Alt+↓)" aria-label="Drag to change the order">⠿</button><button type="button" class="ed-star" data-a="star" aria-pressed="' + it.star + '" title="' + (it.star ? "Important (click to unmark)" : "Mark important") + '">' + (it.star ? "★" : "☆") + "</button>" + stSelect(it);
         if (pref.k === "queue") h += '<span class="ed-qn" title="Place in the queue">#' + (qPos[it.id] || "?") + "</span>";
-        if (pref.k === "all" || pref.k === "queue") h += '<span class="ed-kind k-' + it.k + '">' + (it.k === "app" ? "New app" : "Fix") + "</span>";
+        if (pref.k === "all" || pref.k === "queue") h += '<span class="ed-kind k-' + esc(it.k) + '">' + esc(E.kindOne(it.k)) + "</span>";
         h += tl.map(function (s) { return '<button type="button" class="ed-tool" data-a="tool" data-v="' + esc(s) + '" title="Show only items about mes.fm/' + esc(s) + '">/' + esc(s) + "</button>"; }).join("");
         h += '<span class="ed-sp"></span><span class="ed-when" title="Added ' + esc(fullDate(it.c)) + (it.d ? " · finished " + esc(fullDate(it.d)) : "") + '">' + esc(E.ago(it.c)) + (it.d ? " · " + (it.st === "done" ? "done " : "closed ") + esc(E.ago(it.d)) : "") + (it.src === "telegram" ? " · from Telegram" : "") + "</span></div>";
         if (mode === "edit") {
@@ -130,8 +139,8 @@
             h += '<label class="ed-sub">Note (what was done, why not, links)</label><textarea class="tu-input ed-ta ed-edn" data-f="note" rows="2" aria-label="Note">' + esc(it.note || "") + "</textarea>";
             h += '<div class="ed-acts"><button type="button" class="tu-btn tu-btn--primary" data-a="save">Save</button><button type="button" class="tu-btn tu-btn--ghost" data-a="cancel">Cancel</button></div>';
         } else {
-            h += '<div class="ed-txt">' + E.linkify(it.t) + "</div>";
-            var p = pics(it.t); if (p) h += '<div class="ed-pics">' + p + "</div>";
+            h += '<div class="ed-txt">' + E.linkify(it.t) + '</div><button type="button" class="ed-more-btn" data-a="more" hidden>' + (exp[it.id] ? "Show less ▴" : "Show more ▾") + "</button>";
+            var p = pics(it.t, true); if (p) h += '<div class="ed-pics">' + p + "</div>";
             if (it.note) h += '<div class="ed-noteb"><b>Note:</b> ' + E.linkify(it.note) + "</div>";
         }
         if (it.rs && it.rs.length) {
@@ -150,13 +159,13 @@
                     + '<button type="button" class="tu-btn tu-btn--ghost ed-qon" data-a="qoff" title="Take it off the queue">✓ Queued' + (qPos[it.id] ? " #" + qPos[it.id] : "") + "</button>"
                     : '<button type="button" class="tu-btn tu-btn--ghost" data-a="qon" title="Add to the end of the queue">＋ Queue</button>')
                 + '<button type="button" class="tu-btn tu-btn--ghost" data-a="reply">💬 Reply</button><button type="button" class="tu-btn tu-btn--ghost" data-a="edit">✎ Edit</button>'
-                + '<button type="button" class="tu-btn tu-btn--ghost" data-a="move">⇄ ' + (it.k === "fix" ? "To New apps" : "To Fixes") + '</button><button type="button" class="tu-btn tu-btn--ghost ed-del" data-a="del" title="Delete">🗑</button></div>';
+                + moveSelect(it) + '<button type="button" class="tu-btn tu-btn--ghost ed-del" data-a="del" title="Delete">🗑</button></div>';
         }
         return h + "</li>";
     }
     function paintTools() {
         var sel = $("ed-tool"), cnt = {};
-        items.forEach(function (it) { if (pref.k !== "all" && it.k !== pref.k) return; E.itemTools(it).forEach(function (s) { cnt[s] = (cnt[s] || 0) + 1; }); });
+        items.forEach(function (it) { if (pref.k !== "all" && pref.k !== "queue" && it.k !== pref.k) return; E.itemTools(it).forEach(function (s) { cnt[s] = (cnt[s] || 0) + 1; }); });
         if (pref.tool && !cnt[pref.tool]) cnt[pref.tool] = 0;
         var keys = Object.keys(cnt).sort();
         var html = '<option value="">Every page</option>' + keys.map(function (s) { return '<option value="' + esc(s) + '">mes.fm/' + esc(s) + " (" + cnt[s] + ")</option>"; }).join("");
@@ -170,21 +179,27 @@
         pendingRender = false;
         qPos = {}; queueList().forEach(function (x, i) { qPos[x.id] = i + 1; });
         $("ed-qnote").hidden = pref.k !== "queue";
-        var c = E.counts(items);
-        root.querySelectorAll("[data-n]").forEach(function (n) { n.textContent = c[n.dataset.n] || ""; });
-        root.querySelectorAll(".ed-tab").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.k === pref.k ? "true" : "false"); });
+        var c = E.counts(items), kinds = E.kindsOf(items, userKinds());
+        if (pref.k !== "all" && pref.k !== "queue" && kinds.indexOf(pref.k) < 0) pref.k = "fix";
+        paintTabs(kinds, c);
+        var ks = $("ed-kind"), kh = kinds.map(function (k) { return '<option value="' + esc(k) + '">' + esc(E.kindName(k)) + "</option>"; }).join("");
+        if (ks.__html !== kh) { var kv = ks.value; ks.innerHTML = kh; ks.__html = kh; if (kv) ks.value = kv; }
         root.querySelectorAll(".ed-chip").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.st === pref.st ? "true" : "false"); });
-        $("ed-addlbl").textContent = pref.k === "app" ? "New app idea" : pref.k === "fix" ? "New fix" : "New item";
-        $("ed-kindwrap").hidden = pref.k !== "all";
-        $("ed-fstar").checked = !!pref.star; $("ed-sort").value = pref.sort;
+        $("ed-addlbl").textContent = pref.k === "app" ? "New app idea" : pref.k === "fix" ? "New fix" : pref.k === "mirror" ? "New mirror to make" : pref.k === "all" || pref.k === "queue" ? "New item" : "New item in " + E.kindName(pref.k);
+        $("ed-kindwrap").hidden = pref.k !== "all" && pref.k !== "queue";
+        $("ed-fstar").checked = !!pref.star; $("ed-sort").value = pref.sort; $("ed-sort").disabled = pref.k === "queue";
+        $("ed-cols").value = String(pref.cols || 1); $("ed-picedit-on").checked = pref.picEdit !== false;
         paintTools();
         var f = { k: pref.k, st: pref.st, sort: pref.sort, star: pref.star, tool: pref.tool, q: $("ed-q").value };
         var list = E.filter(items, f);
-        $("ed-list").innerHTML = list.map(itemHtml).join("");
+        var L = $("ed-list");
+        L.innerHTML = list.map(itemHtml).join("");
+        L.className = "ed-list cols-" + (pref.cols || 1);
+        paintMore();
         var em = $("ed-empty");
         em.hidden = list.length > 0;
         if (!list.length) em.textContent = !items.length ? (online === false ? "Can't reach mes.fm and there's no saved copy in this browser yet." : online ? "Nothing here yet. Add the first one above, or bring the Telegram groups over (bottom of the page)." : "Loading…") : "Nothing matches. Try “Everything” or clear the search.";
-        var where = pref.k === "all" ? "" : (pref.k === "app" ? " new-app ideas" : " fixes");
+        var where = pref.k === "all" ? "" : pref.k === "queue" ? " queued" : pref.k === "app" ? " new-app ideas" : pref.k === "fix" ? " fixes" : " in " + E.kindName(pref.k);
         $("ed-count").textContent = items.length ? list.length + where + " shown" + (pref.st === "open" ? " (open)" : pref.st === "all" ? "" : " (" + E.STATE_NAME[pref.st].toLowerCase() + ")") : "";
         $("ed-count").hidden = !items.length;
     }
@@ -194,8 +209,12 @@
     function add() {
         var ta = $("ed-t"), t = ta.value.trim();
         if (!t) { ta.focus(); return; }
-        var k = pref.k === "all" ? $("ed-kind").value : pref.k;
-        change({ op: "add", k: k, t: t, star: $("ed-star").checked }).then(function (r) { if (r) toast("Added to " + E.KIND_NAME[k]); });
+        var k = pref.k === "all" || pref.k === "queue" ? $("ed-kind").value : pref.k;
+        change({ op: "add", k: k, t: t, star: $("ed-star").checked }).then(function (r) {
+            if (!r) return;
+            if (pref.k === "queue" && r.item) { var ql = queueList().filter(function (x) { return x.id !== r.item.id; }); change({ op: "update", id: r.item.id, qo: (ql.length ? ql[ql.length - 1].qo : 0) + 1 }); }
+            toast("Added to " + E.kindName(k) + (pref.k === "queue" ? " and the queue" : ""));
+        });
         ta.value = ""; $("ed-star").checked = false; lsSet("mes-edits:draft", null); grow(ta);
         if (pref.st !== "open" && pref.st !== "all" && pref.st !== "todo") { pref.st = "open"; savePref(); render(); }
     }
@@ -224,16 +243,60 @@
         var p = a + pre.length + text.length + post.length; try { ta.setSelectionRange(p, p); } catch (e) {}
         ta.dispatchEvent(new Event("input", { bubbles: true }));
     }
+    /* The shared picture editor (crop, turn, straighten, pen, highlighter, white-out), loaded on first use. */
+    var prepP = null;
+    function prep() {
+        if (window.MESPhotoPrep) return Promise.resolve(window.MESPhotoPrep);
+        if (!prepP) prepP = new Promise(function (res, rej) {
+            var sc = document.createElement("script"); sc.src = "/main_js/photo-prep.js?v=2"; sc.async = true;
+            sc.onload = function () { window.MESPhotoPrep ? res(window.MESPhotoPrep) : rej(new Error("editor missing")); };
+            sc.onerror = function () { prepP = null; rej(new Error("Could not load the picture editor.")); };
+            document.head.appendChild(sc);
+        });
+        return prepP;
+    }
+    /* Returns the picture to upload: the edited one, the original (editor turned off or failed), or null (Cancel). */
+    function maybeEdit(file, i, n) {
+        if (pref.picEdit === false) return Promise.resolve(file);
+        return prep().then(function (P) {
+            return P.open(file, { title: n > 1 ? "Picture " + (i + 1) + " of " + n : "Crop or mark up the picture", done: "Add this picture", mime: "image/jpeg", quality: 0.9, maxSide: 2400 })
+                .then(function (r) { return r ? r.blob : null; });
+        }, function () { return file; });
+    }
+    function upload(blob) { return shrink(blob).then(function (d) { return call("POST", { op: "img", data: d }); }); }
     function addPictures(files, ta) {
         files = [].slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); });
         if (!files.length) return false;
-        if (LOCAL) { toast("Pictures are saved on mes.fm itself: try it on the live page"); return true; }
-        var n = files.length; toast(n > 1 ? "Adding " + n + " pictures…" : "Adding the picture…");
-        files.reduce(function (p, f) {
-            return p.then(function () { return shrink(f); }).then(function (d) { return call("POST", { op: "img", data: d }); })
-                .then(function (j) { if (j && j.url) insertAt(ta, j.url); });
-        }, Promise.resolve()).then(function () { toast(n > 1 ? n + " pictures added to the text" : "Picture added to the text"); ta.focus(); }, function (e) { toast("Could not add the picture: " + (e && e.message || e)); });
+        if (LOCAL) { toast("Pictures are saved on mes.fm itself: try it on the live page"); if (pref.picEdit !== false) maybeEdit(files[0], 0, 1); return true; }
+        var n = files.length, added = 0;
+        files.reduce(function (p, f, i) {
+            return p.then(function () { return maybeEdit(f, i, n); }).then(function (b) {
+                if (!b) return;
+                toast("Adding the picture…");
+                return upload(b).then(function (j) { if (j && j.url) { insertAt(ta, j.url); added++; } });
+            });
+        }, Promise.resolve()).then(function () { if (added) toast(added > 1 ? added + " pictures added to the text" : "Picture added to the text"); ta.focus(); }, function (e) { toast("Could not add the picture: " + (e && e.message || e)); });
         return true;
+    }
+    /* ✂ Edit on a picture already in an item: open it in the editor, save the result as a new picture and swap the link in the text. */
+    function editPicture(it, u) {
+        toast("Opening the picture…");
+        var load = fetch(u, { credentials: "same-origin", mode: "cors" }).then(function (r) { if (!r.ok) throw new Error("answered " + r.status); return r.blob(); });
+        Promise.all([prep(), load]).then(function (a) {
+            return a[0].open(a[1], { title: "Edit picture", done: "Save the picture", mime: "image/jpeg", quality: 0.9, maxSide: 2400 });
+        }).then(function (r) {
+            if (!r) return;
+            if (!r.edited) { toast("No changes."); return; }
+            if (LOCAL) { toast("Pictures are saved on mes.fm itself: try it on the live page"); return; }
+            toast("Saving the picture…");
+            return upload(r.blob).then(function (j) {
+                if (!j || !j.url) throw new Error("no link came back");
+                var cur = items[byId(it.id)] || it, old = cur.t, nu = j.url, t = old;
+                E.links(old).forEach(function (l) { if (E.imageOf(l) === u) t = t.split(l).join(nu); });
+                if (t === old) { toast("Saved, but that link wasn't found in the text: " + nu); return; }
+                return change({ op: "update", id: it.id, t: t }).then(function (x) { if (x) toast("Picture saved", function () { change({ op: "update", id: it.id, t: old }); }); });
+            });
+        }).catch(function (e) { toast("Could not open the picture (" + (e && e.message || e) + "). Pictures from other sites may not allow it: download it and add it with 📷 Picture."); });
     }
     $("ed-picbtn").onclick = function () { $("ed-picin").click(); };
     $("ed-picin").onchange = function () { addPictures(this.files, $("ed-t")); this.value = ""; };
@@ -253,7 +316,29 @@
     $("ed-t").value = lsGet("mes-edits:draft", ""); grow($("ed-t"));
 
     /* ---------- filters ---------- */
-    root.querySelector(".ed-tabs").addEventListener("click", function (e) { var b = e.target.closest(".ed-tab"); if (!b) return; pref.k = b.dataset.k; pref.tool = ""; savePref(); render(); });
+    root.querySelector(".ed-tabs").addEventListener("click", function (e) {
+        if (e.target.closest("#ed-newlist")) { newList(); return; }
+        var b = e.target.closest(".ed-tab"); if (!b) return; pref.k = b.dataset.k; pref.tool = ""; savePref(); render();
+    });
+    function paintTabs(kinds, c) {
+        var box = $("ed-tablist");
+        var tab = function (k, label) { return '<button type="button" role="tab" class="ed-tab" data-k="' + esc(k) + '" aria-selected="' + (k === pref.k) + '">' + label + ' <span class="ed-n">' + (c[k] || "") + "</span></button>"; };
+        var ICON = { fix: "🔧 ", app: "💡 ", mirror: "🪞 ", other: "📌 " };
+        var h = kinds.map(function (k) { return tab(k, (ICON[k] || "🗂 ") + esc(E.kindName(k))); }).join("") + tab("all", "All") + tab("queue", "📋 Queue")
+            + '<button type="button" class="ed-tab ed-tabnew" id="ed-newlist" title="Make a list of your own">＋ List</button>';
+        if (box.__html !== h) { box.innerHTML = h; box.__html = h; }
+    }
+    function newList() {
+        var name = prompt("Name of the new list (for example: Hive posts, Ideas for later):", "");
+        if (name == null) return;
+        var k = E.kindSlug(name);
+        if (!E.okKind(k)) { toast("Use at least two letters for the name."); return; }
+        var u = userKinds(); if (u.indexOf(k) < 0 && E.KINDS.indexOf(k) < 0) { u.push(k); lsSet(KINDS_KEY, JSON.stringify(u)); }
+        pref.k = k; pref.tool = ""; savePref(); render(); $("ed-t").focus();
+        toast("New list “" + E.kindName(k) + "”: add its first item above.");
+    }
+    $("ed-cols").onchange = function () { pref.cols = +this.value || 1; savePref(); render(); };
+    $("ed-picedit-on").onchange = function () { pref.picEdit = this.checked; savePref(); };
     root.querySelector(".ed-chips").addEventListener("click", function (e) { var b = e.target.closest(".ed-chip"); if (!b) return; pref.st = b.dataset.st; savePref(); render(); });
     $("ed-fstar").onchange = function () { pref.star = this.checked; savePref(); render(); };
     $("ed-sort").onchange = function () { pref.sort = this.value; savePref(); render(); };
@@ -264,12 +349,19 @@
     /* ---------- item actions ---------- */
     function closeBox(id) { delete open[id]; if (pendingRender) load(true); render(); }
     $("ed-list").addEventListener("change", function (e) {
+        var mv = e.target.closest(".ed-mv");
+        if (mv) {
+            var mid = mv.closest(".ed-it").dataset.id, old = items[byId(mid)], to = mv.value; if (!to || !old) return;
+            var from = old.k;
+            change({ op: "update", id: mid, k: to }).then(function (r) { if (r) toast("Moved to " + E.kindName(to), function () { change({ op: "update", id: mid, k: from }); }); });
+            return;
+        }
         var s = e.target.closest(".ed-st"); if (!s) return;
         var id = s.closest(".ed-it").dataset.id;
         change({ op: "update", id: id, st: s.value });
     });
     $("ed-list").addEventListener("click", function (e) {
-        var b = e.target.closest("[data-a]"); if (!b || b.tagName === "SELECT") return;
+        var b = e.target.closest("[data-a]"); if (!b || b.tagName === "SELECT" || b.dataset.a === "grip") return;
         var li = b.closest(".ed-it"), id = li && li.dataset.id, it = items[byId(id)], a = b.dataset.a;
         if (!it) return;
         if (a === "star") change({ op: "update", id: id, star: !it.star });
@@ -287,7 +379,8 @@
         }
         else if (a === "done" || a === "doing") change({ op: "update", id: id, st: a }).then(function (r) { if (r && a === "done" && pref.st === "open") toast("Marked done", function () { change({ op: "update", id: id, st: it.st }); }); });
         else if (a === "reopen") change({ op: "update", id: id, st: "todo" });
-        else if (a === "move") { var to = it.k === "fix" ? "app" : "fix"; change({ op: "update", id: id, k: to }).then(function (r) { if (r) toast("Moved to " + E.KIND_NAME[to], function () { change({ op: "update", id: id, k: it.k }); }); }); }
+        else if (a === "more") { if (exp[id]) delete exp[id]; else exp[id] = true; li.classList.toggle("is-exp", !!exp[id]); b.textContent = exp[id] ? "Show less ▴" : "Show more ▾"; if (!exp[id]) li.scrollIntoView({ block: "nearest" }); }
+        else if (a === "picedit") editPicture(it, b.dataset.u);
         else if (a === "tool") { pref.tool = b.dataset.v; savePref(); render(); window.scrollTo({ top: root.querySelector(".ed-bar").getBoundingClientRect().top + window.scrollY - 90, behavior: "smooth" }); }
         else if (a === "edit" || a === "reply") {
             open[id] = a; render();
@@ -316,6 +409,89 @@
         var li = e.target.closest(".ed-it");
         if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); var go = li.querySelector('[data-a="send"],[data-a="save"]'); if (go) go.click(); }
         if (e.key === "Escape") { e.preventDefault(); closeBox(li.dataset.id); }
+    });
+
+    /* ---------- long text: Show more / less ---------- */
+    function paintMore() {
+        $("ed-list").querySelectorAll(".ed-it").forEach(function (li) {
+            var tx = li.querySelector(".ed-txt"), b = li.querySelector(".ed-more-btn"); if (!tx || !b) return;
+            if (li.classList.contains("is-exp")) { b.hidden = false; return; }
+            b.hidden = tx.scrollHeight <= tx.clientHeight + 4;
+        });
+    }
+    var moreT = 0; window.addEventListener("resize", function () { clearTimeout(moreT); moreT = setTimeout(paintMore, 150); });
+
+    /* ---------- drag to sort: the Queue sets its order (qo), every other list "My order" (o) ---------- */
+    function shownIds() { return [].map.call($("ed-list").querySelectorAll(".ed-it"), function (li) { return li.dataset.id; }); }
+    /* Save where id now sits among ids (the order on screen). */
+    function placeAt(id, ids) {
+        var i = ids.indexOf(id); if (i < 0) return;
+        var q = pref.k === "queue", key = function (x) { var it = items[byId(x)]; return !it ? null : q ? it.qo : E.orderKey(it); };
+        var prev = i > 0 ? key(ids[i - 1]) : null, next = i < ids.length - 1 ? key(ids[i + 1]) : null;
+        var v = E.between(prev, next, q), it = items[byId(id)];
+        if (!it || (q ? it.qo : E.orderKey(it)) === v) { render(); return; }
+        var body = { op: "update", id: id }; body[q ? "qo" : "o"] = v;
+        var oldV = q ? it.qo : it.o;
+        change(body).then(function (r) { if (r) toast(q ? "Queue order saved (#" + (i + 1) + ")" : "Order saved", function () { var u = { op: "update", id: id }; u[q ? "qo" : "o"] = oldV == null ? null : oldV; change(u); }); });
+    }
+    function toMine() {
+        if (pref.k === "queue" || pref.sort === "mine") return false;
+        pref.sort = "mine"; savePref(); render(); toast("Sorted by “My order” so you can drag (change it in Sort).");
+        return true;
+    }
+    var drag = null;
+    $("ed-list").addEventListener("pointerdown", function (e) {
+        var g = e.target.closest(".ed-grip"); if (!g || e.button > 0) return;
+        e.preventDefault();
+        var id = g.closest(".ed-it").dataset.id;
+        if (toMine()) g = $("ed-list").querySelector('.ed-it[data-id="' + id + '"] .ed-grip');
+        var li = g.closest(".ed-it"), r = li.getBoundingClientRect();
+        var ph = document.createElement("li"); ph.className = "ed-ph"; ph.style.height = r.height + "px";
+        li.parentNode.insertBefore(ph, li);
+        li.classList.add("is-drag"); li.style.width = r.width + "px"; li.style.left = r.left + "px"; li.style.top = r.top + "px";
+        drag = { id: id, li: li, ph: ph, dx: e.clientX - r.left, dy: e.clientY - r.top, pid: e.pointerId, x: e.clientX, y: e.clientY };
+        try { g.setPointerCapture(e.pointerId); } catch (x) {}
+        autoScroll();
+    });
+    function dragTo(x, y) {
+        var d = drag; d.x = x; d.y = y;
+        d.li.style.left = (x - d.dx) + "px"; d.li.style.top = (y - d.dy) + "px";
+        var others = [].filter.call($("ed-list").children, function (c) { return c !== d.li && c !== d.ph; }), before = null;
+        for (var i = 0; i < others.length; i++) {
+            var b = others[i].getBoundingClientRect();
+            if (y < b.top || (y <= b.bottom && x < b.left + b.width / 2 && y < b.top + b.height * 0.75) || (y < b.top + b.height / 2 && x <= b.right)) { before = others[i]; break; }
+        }
+        if (before) { if (d.ph.nextSibling !== before) $("ed-list").insertBefore(d.ph, before); }
+        else if ($("ed-list").lastChild !== d.ph) $("ed-list").appendChild(d.ph);
+    }
+    function autoScroll() {
+        if (!drag) return;
+        var y = drag.y, h = window.innerHeight, v = y < 80 ? -(80 - y) / 4 : y > h - 80 ? (y - h + 80) / 4 : 0;
+        if (v) { window.scrollBy(0, v); dragTo(drag.x, drag.y); }
+        requestAnimationFrame(autoScroll);
+    }
+    document.addEventListener("pointermove", function (e) { if (drag && e.pointerId === drag.pid) { e.preventDefault(); dragTo(e.clientX, e.clientY); } }, { passive: false });
+    function endDrag(e, cancel) {
+        if (!drag || (e && e.pointerId !== drag.pid)) return;
+        var d = drag; drag = null;
+        d.li.classList.remove("is-drag"); d.li.style.width = d.li.style.left = d.li.style.top = "";
+        if (cancel) { d.ph.remove(); render(); return; }
+        d.ph.parentNode.replaceChild(d.li, d.ph);
+        if (pendingRender) { load(true); }
+        placeAt(d.id, shownIds());
+    }
+    document.addEventListener("pointerup", function (e) { endDrag(e); });
+    document.addEventListener("pointercancel", function (e) { endDrag(e, true); });
+    document.addEventListener("keydown", function (e) { if (drag && e.key === "Escape") endDrag({ pointerId: drag.pid }, true); });
+    $("ed-list").addEventListener("keydown", function (e) {
+        var g = e.target.closest && e.target.closest(".ed-grip");
+        if (!g || !e.altKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+        e.preventDefault();
+        var id = g.closest(".ed-it").dataset.id; toMine();
+        var ids = shownIds(), i = ids.indexOf(id), j = e.key === "ArrowUp" ? i - 1 : i + 1;
+        if (i < 0 || j < 0 || j >= ids.length) return;
+        ids.splice(i, 1); ids.splice(j, 0, id); placeAt(id, ids);
+        setTimeout(function () { var ng = $("ed-list").querySelector('.ed-it[data-id="' + id + '"] .ed-grip'); if (ng) ng.focus(); }, 30);
     });
 
     /* ---------- backups: file ---------- */

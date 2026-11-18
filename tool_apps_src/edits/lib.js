@@ -1,7 +1,8 @@
 /* MES Edits: pure logic shared by the page (mes.fm/edits) and the server (mes.fm/api/edits.js requires a byte-identical copy,
    mes.fm/api/_edits-lib.js: cp after editing; the tests check). No DOM, no network.
-   Item = { id, k: "fix"|"app", t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src?, qo? } (c / u / d = ms).
-   qo = place in the Queue (any positive number, smaller = sooner; absent = not queued). Finishing an item (done / won't) takes it off the queue. */
+   Item = { id, k: "fix"|"app"|"mirror"|"other"|<own list slug>, t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src?, qo? } (c / u / d = ms).
+   qo = place in the Queue (any positive number, smaller = sooner; absent = not queued). Finishing an item (done / won't) takes it off the queue.
+   o = place in "My order" (any finite number, smaller = higher; absent = by date, newest first). */
 (function (root, factory) {
     var E = factory();
     if (typeof module === "object" && module.exports) module.exports = E;
@@ -9,8 +10,16 @@
 })(typeof self !== "undefined" ? self : this, function () {
     "use strict";
     var MAX_ITEMS = 5000, MAX_T = 6000, MAX_NOTE = 3000, MAX_R = 3000, MAX_RS = 60, MAX_IMPORT = 2000;
-    var KINDS = ["fix", "app"], STATES = ["todo", "doing", "done", "wont"], BYS = ["me", "claude"];
-    var KIND_NAME = { fix: "Fixes", app: "New apps" };
+    var KINDS = ["fix", "app", "mirror", "other"], STATES = ["todo", "doing", "done", "wont"], BYS = ["me", "claude"];
+    var KIND_NAME = { fix: "Fixes", app: "New apps", mirror: "Mirrors", other: "Other" };
+    var KIND_ONE = { fix: "Fix", app: "New app", mirror: "Mirror", other: "Other" };
+    /* Built-in lists, or one the user made: a short slug ("ai-ideas" = "Ai ideas"). */
+    var KIND_RE = /^[a-z][a-z0-9-]{1,23}$/;
+    function okKind(k) { return KINDS.indexOf(k) >= 0 || (typeof k === "string" && KIND_RE.test(k) && !/--|-$/.test(k)); }
+    function kindSlug(name) { return String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-+$/g, "").replace(/-+/g, "-").slice(0, 24).replace(/-+$/, ""); }
+    function kindName(k) { if (KIND_NAME[k]) return KIND_NAME[k]; var s = String(k).replace(/-/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
+    function kindOne(k) { return KIND_ONE[k] || kindName(k); }
+    function okOrder(v) { return typeof v === "number" ? isFinite(v) && Math.abs(v) < 1e15 : false; }
     var STATE_NAME = { todo: "To do", doing: "Doing", done: "Done", wont: "Won't do" };
 
     function randId() {
@@ -44,13 +53,14 @@
         var c = num(x.c, now);
         var st = STATES.indexOf(x.st) >= 0 ? x.st : "todo";
         var it = {
-            id: okId(x.id) ? x.id : randId(), k: KINDS.indexOf(x.k) >= 0 ? x.k : "fix", t: t, st: st, star: !!x.star,
+            id: okId(x.id) ? x.id : randId(), k: okKind(x.k) ? x.k : "fix", t: t, st: st, star: !!x.star,
             note: cleanText(x.note, MAX_NOTE),
             rs: (Array.isArray(x.rs) ? x.rs : []).map(function (r) { return cleanReply(r, c); }).filter(Boolean).slice(-MAX_RS),
             c: c, u: num(x.u, c), d: st === "done" || st === "wont" ? num(x.d, num(x.u, c)) : 0
         };
         if (typeof x.src === "string" && /^[a-z0-9:_-]{1,40}$/i.test(x.src)) it.src = x.src;
         if (isFinite(+x.qo) && +x.qo > 0 && st !== "done" && st !== "wont") it.qo = +x.qo;
+        if (okOrder(x.o)) it.o = x.o;
         return it;
     }
 
@@ -63,7 +73,7 @@
             var t = cleanText(body.t, MAX_T);
             if (!t) return { status: 400, body: { error: "empty item" } };
             if (count >= MAX_ITEMS) return { status: 400, body: { error: "at most " + MAX_ITEMS + " items" } };
-            it = { id: randId(), k: KINDS.indexOf(body.k) >= 0 ? body.k : "fix", t: t, st: "todo", star: !!body.star, note: "", rs: [], c: now, u: now, d: 0 };
+            it = { id: randId(), k: okKind(body.k) ? body.k : "fix", t: t, st: "todo", star: !!body.star, note: "", rs: [], c: now, u: now, d: 0 };
             return { status: 200, body: { item: it }, put: [it] };
         }
         if (op === "import") {
@@ -94,7 +104,7 @@
                 it.rs = (it.rs || []).concat(r).slice(-MAX_RS);
             } else {
                 if (body.t != null) { it.t = cleanText(body.t, MAX_T); if (!it.t) return { status: 400, body: { error: "empty item" } }; }
-                if (body.k != null) { if (KINDS.indexOf(body.k) < 0) return { status: 400, body: { error: "bad kind" } }; it.k = body.k; }
+                if (body.k != null) { if (!okKind(body.k)) return { status: 400, body: { error: "bad kind" } }; it.k = body.k; }
                 if (body.st != null) {
                     if (STATES.indexOf(body.st) < 0) return { status: 400, body: { error: "bad status" } };
                     if (body.st !== it.st) it.d = body.st === "done" || body.st === "wont" ? now : 0;
@@ -102,6 +112,7 @@
                 }
                 if (body.star != null) it.star = !!body.star;
                 if (body.qo != null) { var q = +body.qo; if (!isFinite(q) || q < 0) return { status: 400, body: { error: "bad queue place" } }; if (q > 0) it.qo = q; else delete it.qo; }
+                if (body.o !== undefined) { if (body.o === null || body.o === "") delete it.o; else if (okOrder(+body.o)) it.o = +body.o; else return { status: 400, body: { error: "bad order" } }; }
                 if (it.st === "done" || it.st === "wont") delete it.qo;
                 if (body.note != null) it.note = cleanText(body.note, MAX_NOTE);
             }
@@ -170,14 +181,31 @@
             if (s === "star" && (a.st === "doing") !== (b.st === "doing")) return a.st === "doing" ? -1 : 1;
             if (s === "old") return a.c - b.c;
             if (s === "upd") return b.u - a.u;
+            if (s === "mine") return orderKey(a) - orderKey(b) || b.c - a.c;
             return b.c - a.c;
         });
         return out;
     }
+    /* "My order": an item's own o, else its date (newest first, as negative numbers, so dragging one item never moves the rest). */
+    function orderKey(it) { return okOrder(it.o) ? it.o : -it.c; }
+    /* The number to give an item dropped between prev and next (either may be missing). */
+    function between(prev, next, positive) {
+        if (prev == null && next == null) return positive ? 1 : 0;
+        if (prev == null) return positive ? next / 2 : next - 1000;
+        if (next == null) return prev + 1;
+        return (prev + next) / 2;
+    }
     function counts(items) {
-        var c = { fix: 0, app: 0, all: 0, queue: 0, todo: 0, doing: 0, done: 0, wont: 0 };
-        items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k]++; c.all++; if (it.qo) c.queue++; } });
+        var c = { fix: 0, app: 0, mirror: 0, other: 0, all: 0, queue: 0, todo: 0, doing: 0, done: 0, wont: 0 };
+        items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k] = (c[it.k] || 0) + 1; c.all++; if (it.qo) c.queue++; } });
         return c;
+    }
+    /* Every list in use: the built-in ones first, then the user's own (A-Z), plus any extra slugs given. */
+    function kindsOf(items, extra) {
+        var own = {};
+        items.forEach(function (it) { if (KINDS.indexOf(it.k) < 0 && okKind(it.k)) own[it.k] = 1; });
+        (extra || []).forEach(function (k) { if (KINDS.indexOf(k) < 0 && okKind(k)) own[k] = 1; });
+        return KINDS.concat(Object.keys(own).sort());
     }
 
     /* ---------- Telegram Desktop export (result.json) ----------
@@ -201,11 +229,11 @@
         if (data.chats && Array.isArray(data.chats.list)) return data.chats.list.filter(function (c) { return c && Array.isArray(c.messages); });
         return [];
     }
-    function guessKind(name) { return /new ?apps?|ideas?/i.test(String(name || "")) ? "app" : "fix"; }
+    function guessKind(name) { return /new ?apps?|ideas?/i.test(String(name || "")) ? "app" : /mirror/i.test(String(name || "")) ? "mirror" : "fix"; }
     function tgTime(m) { var u = +m.date_unixtime; if (u > 0) return u * 1000; var d = Date.parse(m.date || ""); return isNaN(d) ? 0 : d; }
     /* chat -> { name, kind, items: [...] } (items not yet cleaned by cleanItem). */
     function fromTelegramChat(chat, kind) {
-        kind = KINDS.indexOf(kind) >= 0 ? kind : guessKind(chat.name);
+        kind = okKind(kind) ? kind : guessKind(chat.name);
         var cid = Math.abs(+chat.id || 0).toString(36).slice(-6), byId = {}, roots = {}, order = [];
         chat.messages.forEach(function (m) { if (m && m.type === "message") byId[m.id] = m; });
         function textOf(m) {
@@ -254,7 +282,8 @@
     }
 
     return {
-        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
+        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, kindOne: kindOne, kindsOf: kindsOf,
+        orderKey: orderKey, between: between, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
         cleanText: cleanText, cleanItem: cleanItem, textKey: textKey, apply: apply, sortNewest: sortNewest,
         esc: esc, linkify: linkify, links: links, imageOf: imageOf, tools: tools, itemTools: itemTools, filter: filter, counts: counts,
         tgText: tgText, tgChats: tgChats, guessKind: guessKind, fromTelegramChat: fromTelegramChat, fromTelegram: fromTelegram,
