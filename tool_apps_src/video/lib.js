@@ -613,7 +613,19 @@
 	};
 	// pack every magnetic track, then let linked partners follow (called on every edit)
 	V.applyMagnets = function (p) {
+		var was = {}; p.clips.forEach(function (c) { was[c.id] = c.start; });
 		p.tracks.forEach(function (tr) { if (tr.mag) V.pack(p, tr.id); });
+		// a group moves together: when packing shifts a grouped clip, its group members on non-magnetic tracks shift by the same amount
+		// (the leftmost member on a magnetic track sets the amount)
+		var lead = {};
+		p.clips.forEach(function (c) {
+			if (!c.grp || !(V.track(p, c.track) || {}).mag) return;
+			var l = lead[c.grp]; if (!l || was[c.id] < was[l.id]) lead[c.grp] = c;
+		});
+		Object.keys(lead).forEach(function (g) {
+			var l = lead[g], d = l.start - was[l.id]; if (Math.abs(d) < 1e-9) return;
+			p.clips.forEach(function (c) { if (c.grp === g && !(V.track(p, c.track) || {}).mag) c.start = Math.max(0, was[c.id] + d); });
+		});
 		V.syncLinks(p); V.cleanGroups(p);
 		return p;
 	};

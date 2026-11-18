@@ -150,6 +150,8 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	V.magnetInsert(p, "v1", "d", 50); eq([a.start, c.start, d.start], [0, 5, 7], "same place again: stable");
 	const q = proj([clip({ id: "x", start: 4, out: 2 }), clip({ id: "y", start: 9, out: 2, track: "v2" })]); q.tracks[0].mag = true;
 	V.applyMagnets(q); eq([V.clip(q, "x").start, V.clip(q, "y").start], [0, 9], "only magnetic tracks are packed");
+	const gq = proj([clip({ id: "gx", start: 4, out: 2, grp: "G" }), clip({ id: "gy", start: 5, out: 2, track: "v2", grp: "G" }), clip({ id: "gz", start: 20, out: 2, track: "v2" })]); gq.tracks[0].mag = true;
+	V.applyMagnets(gq); eq([V.clip(gq, "gx").start, V.clip(gq, "gy").start, V.clip(gq, "gz").start], [0, 1, 20], "a packed clip's group member on another track moves with it");
 	const n = V.normalize({ tracks: [{ id: "v1", kind: "v", mag: true, h: 9999 }, { id: "a1", kind: "a", h: 120 }], clips: [] });
 	eq([n.tracks[0].mag, n.tracks[0].h, n.tracks[1].mag, n.tracks[1].h], [true, V.ROW_MAX, false, 120], "magnet and track height are kept (height clamped)");
 	eq([V.rowH({ kind: "a" }), V.rowH({ kind: "v", h: 10 })], [V.ROW_DEFAULT.a, V.ROW_MIN], "row heights");
