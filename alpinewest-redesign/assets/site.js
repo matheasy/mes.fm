@@ -13,7 +13,7 @@
   window.AWTrack = track;
   document.addEventListener("click", function (e) {
     var a = e.target.closest("[data-track]");
-    if (a) track("inquire_click", { where: a.getAttribute("data-track") });
+    if (a) track("proposal_click", { where: a.getAttribute("data-track") });
   });
 
   /* Header: solid after the hero, hides while scrolling down on phones, dock button takes over. */
@@ -25,14 +25,14 @@
   var phone = window.matchMedia("(max-width: 860px)");
   function onScroll() {
     var y = window.scrollY;
-    var heroH = document.querySelector(".hero, .phero, .nf") ? window.innerHeight * 0.75 : 10;
+    var heroH = document.querySelector(".hero, .phero, .nf") ? Math.max(window.innerHeight, 480) * 0.75 : 10;
     hdr.classList.toggle("is-solid", y > heroH - 70);
     var down = y > lastY + 4, up = y < lastY - 4;
     if (phone.matches && !document.body.classList.contains("menu-open")) {
       if (down && y > 200) hdr.classList.add("is-hidden");
       else if (up || y < 200) hdr.classList.remove("is-hidden");
     } else hdr.classList.remove("is-hidden");
-    if (dock) dock.classList.toggle("is-on", !onInquire && phone.matches && hdr.classList.contains("is-hidden") && !finalVisible);
+    if (dock) dock.classList.toggle("is-on", !onInquire && phone.matches && y > window.innerHeight * 0.6 && !finalVisible && !document.body.classList.contains("menu-open"));
     lastY = y; ticking = false;
   }
   window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
@@ -110,7 +110,7 @@
       var lines = [];
       [["name", "Name"], ["email", "Email"], ["company", "Hotel / company"], ["location", "Property location"], ["project_type", "Project type"], ["timeline", "Timeline"], ["budget", "Budget"], ["message", "Project"]]
         .forEach(function (f) { var v = (fd.get(f[0]) || "").toString().trim(); if (v) lines.push(f[1] + ": " + v); });
-      var subject = "Shoot inquiry: " + ((fd.get("company") || fd.get("name") || "") + "").trim();
+      var subject = "Proposal request: " + ((fd.get("company") || fd.get("name") || "") + "").trim();
       if (!/^[0-9a-f-]{36}$/i.test(key)) {
         location.href = "mailto:info@alpinewestcreative.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(lines.join("\n"));
         status.textContent = "Your email app should open with the message ready to send. If it doesn't, write to info@alpinewestcreative.com.";

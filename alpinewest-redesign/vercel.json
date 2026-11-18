@@ -15,6 +15,21 @@
       "permanent": true
     },
     {
+      "source": "/work/hyatt-regency-calgary",
+      "destination": "/work/hyatt-regency",
+      "permanent": true
+    },
+    {
+      "source": "/work/hyatt-ziva-puerto-vallarta",
+      "destination": "/work/hyatt-ziva",
+      "permanent": true
+    },
+    {
+      "source": "/work/secrets-mallorca-villamil",
+      "destination": "/work/secrets",
+      "permanent": true
+    },
+    {
       "source": "/hotels-airbnbs",
       "destination": "/work",
       "permanent": true

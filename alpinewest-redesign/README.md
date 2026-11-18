@@ -1,10 +1,10 @@
 # Alpine West Creative: redesign
 
 The hospitality-focused redesign of alpinewestcreative.com, built from Karolina's brief (Nov 2026).
-**Not live.** The live site is still `../karo.mes.fm/` (the Wix mirror), and no Vercel project deploys this folder yet.
+**Live** at www.alpinewestcreative.com (Vercel root directory = this folder): a push deploys it.
 
 ## Pages
-`/` · `/work` · `/work/secrets-mallorca-villamil` · `/work/hyatt-ziva-puerto-vallarta` · `/work/hyatt-regency-calgary` ·
+`/` · `/work` · `/work/secrets` · `/work/hyatt-ziva` · `/work/hyatt-regency` ·
 `/work/marriott` · `/services` · `/about` · `/inquire` · `/travel-collaborations` (footer only, noindex) · `404`
 
 ## Editing
@@ -26,7 +26,7 @@ Sends through Web3Forms with Karolina's access key (`data-key` in `_src/inquire.
 Messages go to the Gmail address her Web3Forms account was made with; she can change that in the Web3Forms
 dashboard. If the service can't be reached the form shows the email address instead.
 
-Tracking: clicks on every "Inquire about a shoot" button (`inquire_click`, with where it was) and form events
+Tracking: clicks on every "Request a Custom Proposal" button (`proposal_click`, with where it was) and form events
 (`inquiry_start`, `inquiry_submit`) go to Vercel Web Analytics and/or Google Analytics if either is added to the page.
 
 ## Going live (only after approval)
@@ -41,3 +41,10 @@ Tracking: clicks on every "Inquire about a shoot" button (`inquire_click`, with 
 the pages and data live in mes.fm (`build_awc_dashboard.py`, see the repo's CLAUDE.md). Every page loads
 `/assets/track.js` (the anonymous view counter) and carries the Google / Bing verification tags, both from
 `_src/_partials/shell.html`. `/privacy` explains the counter.
+
+## Brand (Nov 2026 update)
+- Logo: `assets/logo.png` / `.webp` = Karolina's own transparent PNG from her Wix uploads (Wix id `eb4a31c6`), only cropped. Never recolour it.
+- Colours: Ivory `#F5F2EB`, Alpine Sage `#78947F`, Deep Forest `#2B4E38`, Midnight Pine `#0F2A1E`, Natural Beige `#D5C29D` (tokens at the top of `site.css` and the "Brand refresh" block at its end).
+- Type: Bodoni Moda (headlines) + Jost (everything else), Google Fonts.
+- Primary button text everywhere: "Request a Custom Proposal" (Deep Forest on light, Natural Beige on dark).
+- Visitor-facing hotel names are brand names only (Secrets, Hyatt Ziva, Hyatt Regency, Marriott), no locations. Old project URLs redirect.
