@@ -14,7 +14,9 @@
 	C.PLATFORMS = {
 		yt: { name: 'YouTube', color: '#ff0033' },
 		tw: { name: 'Twitch', color: '#9146ff' },
-		od: { name: 'Odysee', color: '#e50054' }
+		od: { name: 'Odysee', color: '#e50054' },
+		rm: { name: 'Rumble', color: '#85c742' },
+		ts: { name: '3Speak', color: '#e32933' }
 	};
 	C.PAID = { super: 1, sticker: 1, member: 1, gift: 1, bits: 1, sub: 1, tip: 1 };
 	C.isPaid = function (m) { return !!(m && C.PAID[m.kind]); };
@@ -217,6 +219,57 @@
 		return null;
 	};
 
+	/* ---------- Rumble ---------- */
+	/* a chat popup link (rumble.com/chat/popup/450179158), a Studio link with the number, or the number itself */
+	C.rmChat = function (s) {
+		s = String(s || '').trim();
+		var m = s.match(/(?:chat\/popup\/|chat\/api\/chat\/|\/video\/)(\d{5,14})/) || s.match(/^(\d{5,14})$/);
+		return m ? m[1] : '';
+	};
+	/* one Server-Sent Event object from web7.rumble.com/chat/api/chat/<id>/stream -> { msgs, removed } */
+	C.rmEvent = function (ev, users) {
+		var out = { msgs: [], removed: [] }; users = users || {};
+		if (!ev || !ev.data) return out;
+		(ev.data.users || []).forEach(function (u) { if (u && u.id != null) users[u.id] = u; });
+		if (ev.type === 'delete_messages') { (ev.data.message_ids || []).forEach(function (id) { out.removed.push('rm:' + id); }); return out; }
+		if (ev.type !== 'init' && ev.type !== 'messages') return out;
+		(ev.data.messages || []).forEach(function (x) {
+			if (!x || x.id == null) return;
+			var u = users[x.user_id] || {}, rant = x.rant && +x.rant.price_cents > 0 ? x.rant : null;
+			var img = u['image.1'] || '';
+			out.msgs.push({ id: 'rm:' + x.id, p: 'rm', name: u.username || 'Rumble user', avatar: /^https:\/\//.test(img) ? img : '',
+				parts: [{ t: String(x.text || '') }], kind: rant ? 'tip' : 'chat', amount: rant ? '$' + (rant.price_cents / 100).toFixed(2) : '',
+				note: rant ? 'Rant' : '', ts: x.time ? Date.parse(x.time) || Date.now() : Date.now() });
+		});
+		return out;
+	};
+	/* the text of an SSE stream -> its JSON events */
+	C.sseEvents = function (txt) {
+		var out = [];
+		String(txt || '').split(/\r?\n\r?\n/).forEach(function (block) {
+			var data = block.split(/\r?\n/).filter(function (l) { return l.indexOf('data:') === 0; }).map(function (l) { return l.slice(5).replace(/^ /, ''); }).join('\n');
+			if (!/^\s*\{/.test(data)) return;
+			try { out.push(JSON.parse(data)); } catch (e) {}
+		});
+		return out;
+	};
+
+	/* ---------- 3Speak ---------- */
+	/* the OBS chat link 3Speak gives (3speak.tv/obs/chat?key=...) or just the key */
+	C.tsKey = function (s) {
+		s = String(s || '').trim();
+		var m = s.match(/[?&]key=([A-Za-z0-9._~-]{6,120})/) || s.match(/^([A-Za-z0-9._~-]{6,120})$/);
+		return m ? m[1] : '';
+	};
+	/* a LiveKit data packet on the "chat" topic: {type:"chat", identity, name, text, timestamp} */
+	C.tsMsg = function (d) {
+		if (!d || d.type !== 'chat' || !d.text) return null;
+		var who = String(d.identity || '').replace(/~watch$/, ''), name = String(d.name && d.name !== d.identity ? d.name : who).replace(/~watch$/, '');
+		var ok = /^[a-z0-9][a-z0-9.-]{1,15}$/.test(who) && who.indexOf('guest-') !== 0;
+		return { id: 'ts:' + who + '-' + (d.timestamp || Date.now()), p: 'ts', name: name || 'Guest', avatar: ok ? 'https://3speak.tv/img/u/' + who + '/avatar/small' : '',
+			parts: [{ t: String(d.text) }], kind: 'chat', amount: '', note: '', ts: +d.timestamp || Date.now() };
+	};
+
 	/* ---------- feed helpers ---------- */
 	C.plain = function (m) { return (m.parts || []).map(function (p) { return p.t != null ? p.t : (p.alt || ''); }).join(''); };
 	/* keep the newest n, drop duplicate ids */
@@ -257,6 +310,9 @@
      YouTube  via mes.fm/api/yt-chat (the page can't read youtube.com itself)
      Twitch   anonymous IRC WebSocket (wss://irc-ws.chat.twitch.tv)
      Odysee   its own comment WebSocket + comment.List as a backup poll
+     Rumble   via mes.fm/api/rumble-chat (Rumble's event stream refuses other sites; the function reads it every few seconds)
+     3Speak   live.3speak.tv/overlay/<key> says whether the stream is live, /rooms/<room>/listen gives a listener token, then the
+              LiveKit room's "chat" data packets (livekit-client from jsDelivr, loaded only when a 3Speak key is set)
    #sc[data-mode] = page | dock | overlay. Settings in localStorage mes-stream-chat:v1 (per browser: OBS keeps its own copy).
    Clicking a message "features" it: BroadcastChannel mes-stream-chat (+ localStorage mes-stream-chat:feat) tells the overlay, which must
    run in the same browser (the OBS panel and the OBS overlay share OBS's browser). */
@@ -266,15 +322,17 @@
 	if (!root) return;
 	var MODE = root.getAttribute('data-mode') || 'page', KEY = 'mes-stream-chat:v1', FKEY = 'mes-stream-chat:feat';
 	var Q = {}; try { new URLSearchParams(location.search).forEach(function (v, k) { Q[k] = v; }); } catch (e) {}
-	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', on: { yt: true, tw: true, od: true }, show: { yt: true, tw: true, od: true },
+	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', rm: '', ts: '', on: { yt: true, tw: true, od: true, rm: true, ts: true }, show: { yt: true, tw: true, od: true, rm: true, ts: true },
 		paidOnly: false, size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
-	['yt', 'tw', 'od'].forEach(function (p) { if (Q[p] != null) { S[p] = Q[p]; S.on[p] = !!Q[p]; } });
+	var PFS = ['yt', 'tw', 'od', 'rm', 'ts'];
+	PFS.forEach(function (p) { if (S.on[p] == null) S.on[p] = true; if (S.show[p] == null) S.show[p] = true; if (S[p] == null) S[p] = ''; });
+	PFS.forEach(function (p) { if (Q[p] != null) { S[p] = Q[p]; S.on[p] = !!Q[p]; } });
 	if (Q.size) S.size = Math.min(3, Math.max(0.6, +Q.size || 1));
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
 	function $(id) { return document.getElementById(id); }
-	var IMG_OK = /^https:\/\/(yt\d\.ggpht\.com|yt\d\.googleusercontent\.com|lh\d\.googleusercontent\.com|static-cdn\.jtvnw\.net|www\.gstatic\.com|fonts\.gstatic\.com)\//;
+	var IMG_OK = /^https:\/\/(yt\d\.ggpht\.com|yt\d\.googleusercontent\.com|lh\d\.googleusercontent\.com|static-cdn\.jtvnw\.net|www\.gstatic\.com|fonts\.gstatic\.com|hugh\.cdn\.rumble\.cloud|3speak\.tv\/img\/u)\//;
 
 	/* Twitch lets people pick dark name colours: mix those with white until they read on the dark chat (relative luminance >= 0.3) */
 	function readable(hex) {
@@ -301,7 +359,7 @@
 		head.appendChild(badge(m.p));
 		if (S.avatars && m.avatar && IMG_OK.test(m.avatar)) { var av = el('img', 'sc-av'); av.src = m.avatar; av.alt = ''; av.loading = 'lazy'; head.appendChild(av); }
 		var nm = el('span', 'sc-nm', m.name || '?');
-		if (m.color && m.p === 'tw' && !paid) nm.style.color = readable(m.color);
+		if (m.color && (m.p === 'tw' || m.p === 'rm') && !paid) nm.style.color = readable(m.color);
 		if (m.owner) nm.classList.add('sc-nm--owner'); else if (m.mod) nm.classList.add('sc-nm--mod');
 		head.appendChild(nm);
 		if (m.member && !paid) head.appendChild(el('span', 'sc-mb', '★'));
@@ -493,10 +551,64 @@
 		status(key, 'od', chan + ': connecting…'); resolve();
 	}
 
+	/* ---------- Rumble ---------- */
+	function rmRun(id) {
+		var key = 'rm:' + id, g = gen, first = true;
+		function poll() {
+			if (g !== gen) return;
+			getJSON('/api/rumble-chat?id=' + id).then(function (j) {
+				if (g !== gen) return;
+				(j.removed || []).forEach(removeId);
+				(j.msgs || []).forEach(function (m) { add(m, first); });
+				first = false;
+				status(key, 'rm', 'Rumble ' + id + ': chat open', 'on'); later(poll, 4000);
+			}).catch(function (e) { status(key, 'rm', 'Rumble ' + id + ': ' + e.message + ', retrying', 'err'); later(poll, 10000); });
+		}
+		status(key, 'rm', 'Rumble ' + id + ': connecting…'); poll();
+	}
+
+	/* ---------- 3Speak ---------- */
+	var TS_API = 'https://live.3speak.tv', TS_LK = 'wss://live.3speak.tv', lkP = null, lkRooms = [];
+	function lkLib() {
+		return lkP || (lkP = new Function('u', 'return import(u)')('https://cdn.jsdelivr.net/npm/livekit-client@2.9.9/+esm').catch(function (e) { lkP = null; throw e; }));
+	}
+	function tsRun(tk) {
+		var key = 'ts:' + tk.slice(0, 8), g = gen, room = null, lk = null;
+		function check() {
+			if (g !== gen) return;
+			getJSON(TS_API + '/overlay/' + encodeURIComponent(tk), { cache: 'no-store' }).then(function (j) {
+				if (g !== gen) return;
+				if (!j.live || !j.room) {
+					if (lk) { var o = lk; lk = null; try { o.disconnect(); } catch (e) {} }
+					room = null; status(key, 'ts', '3Speak: not live, checking every 15 seconds', 'off'); later(check, 15000); return;
+				}
+				if (j.room !== room) { room = j.room; join(room); }
+				later(check, 15000);
+			}).catch(function (e) { status(key, 'ts', '3Speak: ' + (/404|JSON/.test(e.message) ? 'that chat link was not accepted' : e.message) + ', retrying', 'err'); later(check, 20000); });
+		}
+		function join(r) {
+			status(key, 'ts', '3Speak: joining the stream…');
+			Promise.all([getJSON(TS_API + '/rooms/' + encodeURIComponent(r) + '/listen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"silent":true}' }), lkLib()]).then(function (a) {
+				if (g !== gen || r !== room) return;
+				var L = a[1], rm = new L.Room();
+				rm.on(L.RoomEvent.DataReceived, function (payload, participant, kind, topic) {
+					if (topic && topic !== 'chat') return;
+					try { var m = C.tsMsg(JSON.parse(new TextDecoder().decode(payload))); if (m) add(m); } catch (e) {}
+				});
+				rm.on(L.RoomEvent.Disconnected, function () { if (g !== gen || lk !== rm) return; lk = null; room = null; status(key, 'ts', '3Speak: reconnecting…', 'err'); later(check, 3000); });
+				if (lk) try { lk.disconnect(); } catch (e) {}
+				lk = rm; lkRooms.push(rm);
+				return rm.connect(TS_LK, a[0].token, { autoSubscribe: false }).then(function () { if (g === gen) status(key, 'ts', '3Speak: live, chat open', 'on'); });
+			}).catch(function (e) { if (g !== gen) return; room = null; status(key, 'ts', '3Speak: ' + e.message + ', retrying', 'err'); later(check, 10000); });
+		}
+		status(key, 'ts', '3Speak: connecting…'); check();
+	}
+
 	/* ---------- start / stop ---------- */
 	function stop() {
 		gen++; timers.forEach(clearTimeout); timers = [];
 		sockets.forEach(function (w) { try { w.onclose = null; w.close(); } catch (e) {} }); sockets = []; ytVideos = {};
+		lkRooms.forEach(function (r) { try { r.disconnect(); } catch (e) {} }); lkRooms = [];
 		clearStatus();
 	}
 	function start() {
@@ -506,6 +618,8 @@
 		if (S.on.yt) C.list(S.yt).forEach(function (s) { var src = C.ytSource(s); if (src) { any = true; ytRun(src, ({ 'UCmYl-9bhOOotXaNpS-liNiQ': '@mestruth', 'UCUUBq1GPBvvGNz7dpgO14Ow': '@mes' })[src.ch] || src.ch || src.v); } });
 		if (S.on.tw) C.list(S.tw).forEach(function (s) { var c = C.twChannel(s); if (c) { any = true; twRun(c); } });
 		if (S.on.od) C.list(S.od).forEach(function (s) { var c = C.odChannel(s); if (c) { any = true; odRun(c); } });
+		if (S.on.rm) C.list(S.rm).forEach(function (s) { var id = C.rmChat(s); if (id) { any = true; rmRun(id); } });
+		if (S.on.ts) C.list(S.ts).forEach(function (s) { var k = C.tsKey(s); if (k) { any = true; tsRun(k); } });
 		if (!any) status('x', 'yt', 'Add a channel in Settings to start.', 'off');
 	}
 
@@ -533,7 +647,9 @@
 		' <label class="sc-src"><input type="checkbox" id="sc-on-yt"><span class="sc-pf sc-pf--yt"></span> YouTube <input class="sc-in" id="sc-yt" spellcheck="false" placeholder="@channel, channel ID or video link"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-tw"><span class="sc-pf sc-pf--tw"></span> Twitch <input class="sc-in" id="sc-tw" spellcheck="false" placeholder="channel name"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-od"><span class="sc-pf sc-pf--od"></span> Odysee <input class="sc-in" id="sc-od" spellcheck="false" placeholder="@channel:claim"></label>',
-		' <p class="sc-hint">Several channels? Separate them with commas. YouTube finds the live (or scheduled) stream by itself; a video link reads that video only.</p>',
+		' <label class="sc-src"><input type="checkbox" id="sc-on-rm"><span class="sc-pf sc-pf--rm"></span> Rumble <input class="sc-in" id="sc-rm" spellcheck="false" placeholder="chat popup link, e.g. rumble.com/chat/popup/450179158"></label>',
+		' <label class="sc-src"><input type="checkbox" id="sc-on-ts"><span class="sc-pf sc-pf--ts"></span> 3Speak <input class="sc-in" id="sc-ts" spellcheck="false" placeholder="OBS chat link from 3Speak (Templates page)"></label>',
+		' <p class="sc-hint">Several channels? Separate them with commas. YouTube finds the live (or scheduled) stream by itself; a video link reads that video only. Rumble: paste each stream\'s chat popup link. 3Speak: paste the chat link from its Templates page (one for all your streams).</p>',
 		' <div class="sc-opts"><label><input type="checkbox" id="sc-o-av"> Pictures</label><label><input type="checkbox" id="sc-o-tm"> Times</label><label><input type="checkbox" id="sc-o-dg"> Sound on tips</label>',
 		' <button type="button" class="sc-btn sc-btn--go" id="sc-apply">Save and reconnect</button></div>',
 		'</div>',
@@ -545,8 +661,8 @@
 	list = $('sc-list');
 	function pfChips() {
 		var box = $('sc-pfs'); box.innerHTML = '';
-		['yt', 'tw', 'od'].forEach(function (p) {
-			if (!S.on[p]) return;
+		PFS.forEach(function (p) {
+			if (!S.on[p] || !String(S[p] || '').trim()) return;
 			var b = el('button', 'sc-btn sc-btn--pf'); b.type = 'button'; b.appendChild(badge(p)); b.appendChild(document.createTextNode(C.PLATFORMS[p].name));
 			b.setAttribute('aria-pressed', S.show[p] ? 'true' : 'false'); b.title = 'Show or hide ' + C.PLATFORMS[p].name + ' messages';
 			b.onclick = function () { S.show[p] = !S.show[p]; save(); pfChips(); redraw(); };
@@ -554,13 +670,13 @@
 		});
 	}
 	function fillSetup() {
-		['yt', 'tw', 'od'].forEach(function (p) { $('sc-' + p).value = S[p]; $('sc-on-' + p).checked = !!S.on[p]; });
+		PFS.forEach(function (p) { $('sc-' + p).value = S[p]; $('sc-on-' + p).checked = !!S.on[p]; });
 		$('sc-o-av').checked = S.avatars; $('sc-o-tm').checked = S.times; $('sc-o-dg').checked = S.ding;
 	}
 	function setupOpen(o) { $('sc-setup').hidden = !o; $('sc-gear').setAttribute('aria-expanded', o ? 'true' : 'false'); S.setup = o; save(); }
 	$('sc-gear').onclick = function () { setupOpen($('sc-setup').hidden); };
 	$('sc-apply').onclick = function () {
-		['yt', 'tw', 'od'].forEach(function (p) { S[p] = $('sc-' + p).value.trim(); S.on[p] = $('sc-on-' + p).checked; });
+		PFS.forEach(function (p) { S[p] = $('sc-' + p).value.trim(); S.on[p] = $('sc-on-' + p).checked; });
 		S.avatars = $('sc-o-av').checked; S.times = $('sc-o-tm').checked; S.ding = $('sc-o-dg').checked;
 		save(); pfChips(); redraw(); start();
 	};

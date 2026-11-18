@@ -14,7 +14,9 @@
 	C.PLATFORMS = {
 		yt: { name: 'YouTube', color: '#ff0033' },
 		tw: { name: 'Twitch', color: '#9146ff' },
-		od: { name: 'Odysee', color: '#e50054' }
+		od: { name: 'Odysee', color: '#e50054' },
+		rm: { name: 'Rumble', color: '#85c742' },
+		ts: { name: '3Speak', color: '#e32933' }
 	};
 	C.PAID = { super: 1, sticker: 1, member: 1, gift: 1, bits: 1, sub: 1, tip: 1 };
 	C.isPaid = function (m) { return !!(m && C.PAID[m.kind]); };
@@ -215,6 +217,57 @@
 		if (d.type === 'removed' && d.data && d.data.comment) return { removed: 'od:' + d.data.comment.comment_id };
 		if (d.type === 'viewers' && d.data) return { viewers: d.data.connected };
 		return null;
+	};
+
+	/* ---------- Rumble ---------- */
+	/* a chat popup link (rumble.com/chat/popup/450179158), a Studio link with the number, or the number itself */
+	C.rmChat = function (s) {
+		s = String(s || '').trim();
+		var m = s.match(/(?:chat\/popup\/|chat\/api\/chat\/|\/video\/)(\d{5,14})/) || s.match(/^(\d{5,14})$/);
+		return m ? m[1] : '';
+	};
+	/* one Server-Sent Event object from web7.rumble.com/chat/api/chat/<id>/stream -> { msgs, removed } */
+	C.rmEvent = function (ev, users) {
+		var out = { msgs: [], removed: [] }; users = users || {};
+		if (!ev || !ev.data) return out;
+		(ev.data.users || []).forEach(function (u) { if (u && u.id != null) users[u.id] = u; });
+		if (ev.type === 'delete_messages') { (ev.data.message_ids || []).forEach(function (id) { out.removed.push('rm:' + id); }); return out; }
+		if (ev.type !== 'init' && ev.type !== 'messages') return out;
+		(ev.data.messages || []).forEach(function (x) {
+			if (!x || x.id == null) return;
+			var u = users[x.user_id] || {}, rant = x.rant && +x.rant.price_cents > 0 ? x.rant : null;
+			var img = u['image.1'] || '';
+			out.msgs.push({ id: 'rm:' + x.id, p: 'rm', name: u.username || 'Rumble user', avatar: /^https:\/\//.test(img) ? img : '',
+				parts: [{ t: String(x.text || '') }], kind: rant ? 'tip' : 'chat', amount: rant ? '$' + (rant.price_cents / 100).toFixed(2) : '',
+				note: rant ? 'Rant' : '', ts: x.time ? Date.parse(x.time) || Date.now() : Date.now() });
+		});
+		return out;
+	};
+	/* the text of an SSE stream -> its JSON events */
+	C.sseEvents = function (txt) {
+		var out = [];
+		String(txt || '').split(/\r?\n\r?\n/).forEach(function (block) {
+			var data = block.split(/\r?\n/).filter(function (l) { return l.indexOf('data:') === 0; }).map(function (l) { return l.slice(5).replace(/^ /, ''); }).join('\n');
+			if (!/^\s*\{/.test(data)) return;
+			try { out.push(JSON.parse(data)); } catch (e) {}
+		});
+		return out;
+	};
+
+	/* ---------- 3Speak ---------- */
+	/* the OBS chat link 3Speak gives (3speak.tv/obs/chat?key=...) or just the key */
+	C.tsKey = function (s) {
+		s = String(s || '').trim();
+		var m = s.match(/[?&]key=([A-Za-z0-9._~-]{6,120})/) || s.match(/^([A-Za-z0-9._~-]{6,120})$/);
+		return m ? m[1] : '';
+	};
+	/* a LiveKit data packet on the "chat" topic: {type:"chat", identity, name, text, timestamp} */
+	C.tsMsg = function (d) {
+		if (!d || d.type !== 'chat' || !d.text) return null;
+		var who = String(d.identity || '').replace(/~watch$/, ''), name = String(d.name && d.name !== d.identity ? d.name : who).replace(/~watch$/, '');
+		var ok = /^[a-z0-9][a-z0-9.-]{1,15}$/.test(who) && who.indexOf('guest-') !== 0;
+		return { id: 'ts:' + who + '-' + (d.timestamp || Date.now()), p: 'ts', name: name || 'Guest', avatar: ok ? 'https://3speak.tv/img/u/' + who + '/avatar/small' : '',
+			parts: [{ t: String(d.text) }], kind: 'chat', amount: '', note: '', ts: +d.timestamp || Date.now() };
 	};
 
 	/* ---------- feed helpers ---------- */
