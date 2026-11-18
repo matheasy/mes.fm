@@ -23,7 +23,7 @@
 
 	var ROOMS = [{ id: "club", name: "Chess club" }, { id: "tournament", name: "Tournament hall" }, { id: "park", name: "Park table" },
 		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
-	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }];
+	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "fantasy3d", name: "Fantasy armies 3D (in progress)" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
@@ -51,6 +51,7 @@
 			w: { color: "#f3efe8", roughness: 0.25, metalness: 0.05 }, b: { color: "#202426", roughness: 0.25, metalness: 0.05 }, accW: "#bdb6aa", accB: "#55606a" };
 		if (id === "glass") return { light: "#c9dcea", dark: "#3e5f7a", lightV: ["#e4eff8"], darkV: ["#2d4a62"], frame: "#20303e", frameV: ["#2f4558"], coord: "#cfe4f5",
 			w: { color: "#eaf6ff", roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62 }, b: { color: "#1e3a5c", roughness: 0.08, metalness: 0.15, transparent: true, opacity: 0.7 }, accW: "#9fd2ff", accB: "#79b8ff" };
+		if (id === "fantasy3d") return Object.assign(setLook("fantasy"), { models: true });
 		if (id === "fantasy") return { light: "#a89d89", dark: "#3f434b", lightV: ["#a69b88", "#cfc6b5", "#9b9080"], darkV: ["#3a3d44", "#5c606a", "#2e3036"], frame: "#3a2416", frameV: ["#24150b", "#5a3a22", "#2c1a0e"], coord: "#7fe3ff",
 			w: { color: "#d8c690", roughness: 0.35, metalness: 0.55 }, b: { color: "#5b1e22", roughness: 0.35, metalness: 0.45 }, accW: "#e8d9a8", accB: "#7a2a2e", sprites: true };
 		if (id === "tournament") return { light: "#eeeed2", dark: "#769656", lightV: [], darkV: [], frame: "#f5f3ea", frameV: [], coord: "#4b5d3a",
@@ -121,7 +122,61 @@
 		g.add(pl); g.userData.bb = pl; g.userData.type = type;
 		return g;
 	}
+	/* "Fantasy armies 3D (in progress)": real 3D figures made with Microsoft TRELLIS (MIT) from the same pictures
+	   (mes.fm/chess/img/fantasy3d/<key>.glb). They are added one or two at a time; a piece with no model yet uses its picture figure.
+	   The files are plain GLBs (one mesh: positions, UVs, indices, one PNG texture), read by the small parser below. */
+	var MODELS3D = ["wN", "wK", "wQ"], M3 = {};
+	function parseGlb(buf) {
+		var dv = new DataView(buf), jl = dv.getUint32(12, true), j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jl)));
+		var bin = 20 + jl + 8;
+		function view(i) { var v = j.bufferViews[i]; return { off: bin + (v.byteOffset || 0), len: v.byteLength }; }
+		function acc(i) {
+			var a = j.accessors[i], v = view(a.bufferView), n = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }[a.type] * a.count, o = v.off + (a.byteOffset || 0);
+			var T = { 5126: Float32Array, 5125: Uint32Array, 5123: Uint16Array, 5121: Uint8Array }[a.componentType];
+			return new T(buf.slice(o, o + n * T.BYTES_PER_ELEMENT));
+		}
+		var pr = j.meshes[0].primitives[0], img = null;
+		var mt = j.materials && j.materials[pr.material], tx = mt && mt.pbrMetallicRoughness && mt.pbrMetallicRoughness.baseColorTexture;
+		if (tx) { var im = j.images[j.textures[tx.index].source || 0], iv = view(im.bufferView); img = new Blob([new Uint8Array(buf, iv.off, iv.len)], { type: im.mimeType || "image/png" }); }
+		return { pos: acc(pr.attributes.POSITION), uv: pr.attributes.TEXCOORD_0 !== undefined ? acc(pr.attributes.TEXCOORD_0) : null, idx: acc(pr.indices), img: img };
+	}
+	function model3d(key) {
+		if (M3[key]) return M3[key];
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy3d/" + key + ".glb?v=1";
+		return (M3[key] = fetch(url).then(function (r) { if (!r.ok) throw new Error("model " + r.status); return r.arrayBuffer(); }).then(function (buf) {
+			var d = parseGlb(buf), g = new THREE.BufferGeometry();
+			g.setAttribute("position", new THREE.BufferAttribute(d.pos, 3));
+			if (d.uv) g.setAttribute("uv", new THREE.BufferAttribute(d.uv, 2));
+			g.setIndex(new THREE.BufferAttribute(d.idx, 1));
+			g.computeVertexNormals(); g.computeBoundingBox();
+			var bb = g.boundingBox, s = 1 / (bb.max.y - bb.min.y);       // height 1, feet at y = 0, centred
+			g.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2); g.scale(s, s, s);
+			g.userData.keep = true;
+			var m = new THREE.MeshStandardMaterial({ roughness: 0.75, metalness: 0.05, color: "#ffffff" }); m.userData.keep = true;
+			if (!d.img) return { g: g, m: m };
+			return createImageBitmap(d.img).then(function (bmp) {
+				var t = new THREE.Texture(bmp); t.flipY = false; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.needsUpdate = true;
+				m.map = t; m.emissive = new THREE.Color("#ffffff"); m.emissiveMap = t; m.emissiveIntensity = 0.3; m.needsUpdate = true; return { g: g, m: m };
+			});
+		}).catch(function (e) { delete M3[key]; throw e; }));
+	}
+	function makeModel(type, mats) {
+		var white = type === type.toUpperCase(), t = type.toUpperCase(), key = (white ? "w" : "b") + t, g = new THREE.Group();
+		g.userData.type = type;
+		var stand = makeSprite(type, mats);            // the picture figure stands in until the model has loaded (and if it fails)
+		g.add(stand);
+		model3d(key).then(function (md) {
+			var o = new THREE.Mesh(md.g, md.m), h = SPR_H[t] * 1.02;
+			o.scale.set(h, h, h); o.castShadow = true; o.receiveShadow = true;
+			g.remove(stand); delete g.userData.bb; if (white) o.rotation.y = Math.PI;   // each army faces the other one (the models' front is +Z)
+			g.add(o);
+			mats.redraw && mats.redraw();
+		}, function () { /* keep the picture figure */ });
+		g.userData.bb = stand.userData.bb;
+		return g;
+	}
 	function makePiece(type, mats) {
+		if (mats.models && MODELS3D.indexOf((type === type.toUpperCase() ? "w" : "b") + type.toUpperCase()) >= 0) return makeModel(type, mats);
 		if (mats.sprites) return makeSprite(type, mats);
 		var white = type === type.toUpperCase(), t = type.toUpperCase(), mat = white ? mats.w : mats.b, acc = white ? mats.accW : mats.accB, g = new THREE.Group(), G = GEO;
 		function add(geo, m, x, y, z) { var o = new THREE.Mesh(geo, m || mat); o.position.set(x || 0, y || 0, z || 0); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; }
@@ -192,7 +247,7 @@
 		if (this.mats) ["w", "b", "accW", "accB"].forEach(function (k) { this.mats[k].dispose(); }, this);
 		this.look = L;
 		this.mats = { w: keep(new THREE.MeshStandardMaterial(L.w)), b: keep(new THREE.MeshStandardMaterial(L.b)), accW: keep(std(L.accW, 0.4)), accB: keep(std(L.accB, 0.4)) };
-		var self = this; this.mats.sprites = !!L.sprites; this.mats.redraw = function () { self.render(); };
+		var self = this; this.mats.sprites = !!L.sprites; this.mats.models = !!L.models; this.mats.redraw = function () { self.render(); };
 	};
 	View.prototype.buildBoard = function () {
 		var L = this.look, g = this.boardG, coords = this.coords;

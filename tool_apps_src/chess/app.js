@@ -1692,6 +1692,6 @@
 		} else newGame();
 	}
 	// for testing in a hidden pane: window.MESChessDebug.state()
-	window.MESChessDebug = { state: function () { return { code: code, moves: st.hist.slice(), sans: st.sans.slice(), fen: C.fen(st), win: st.win, mode: mode, turn: st.turn, busy: busy, human: human, dim: S.dim, v3: !!v3, hive: hv.R ? { status: hv.R.status, players: hv.R.players } : null }; },
+	window.MESChessDebug = { view: function () { return v3; }, state: function () { return { code: code, moves: st.hist.slice(), sans: st.sans.slice(), fen: C.fen(st), win: st.win, mode: mode, turn: st.turn, busy: busy, human: human, dim: S.dim, v3: !!v3, hive: hv.R ? { status: hv.R.status, players: hv.R.players } : null }; },
 		move: function (str) { return humanMove(C.mparse(str)); }, click: chooseSquare, v3: function () { return v3; } };
 })();
