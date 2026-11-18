@@ -688,6 +688,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
 	html body.dark-mode #vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
 	#vd .vd-chk[hidden] {display:none;}
+	#vd .vd-nboost {margin-top:0.45em;display:flex;flex-direction:column;gap:0.2em;} #vd .vd-nboost input[type=range] {width:100%;accent-color:#22c55e;} #vd .vd-nboost output {color:var(--vd-dim);margin-left:0.3em;}
 
 
 	@media print {
@@ -1157,6 +1158,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true" placeholder="Type or paste your script&hellip;" aria-label="Narration script"></textarea>
 							<div class="vd-row vd-nrecrow" id="vd-nr-rec"><button type="button" class="vd-btn vd-rec" id="vd-nrec" title="Record your voice from the playhead (R; Space or Esc stops)">&#9679; Record my voice</button><span class="vd-nrt" id="vd-nrt" aria-live="polite"></span></div>
 							<div class="vd-nmeter" aria-hidden="true"><i id="vd-nmf"></i></div>
+							<div class="vd-nboost"><label class="vd-nlab" for="vd-nboost">Mic boost <output id="vd-nboostv">+0 dB</output></label><input type="range" id="vd-nboost" min="0" max="24" step="1" value="0" aria-describedby="vd-nboosth">
+								<label class="vd-chk"><input type="checkbox" id="vd-nauto"> Make each take loud enough by itself (evens it out to normal video loudness)</label>
+								<p class="vd-hint" id="vd-nboosth">Too quiet? Turn the boost up until your loudest words reach the yellow on the meter (red = too loud). Your computer's own input volume (Mac: System Settings &gt; Sound &gt; Input) changes it too.</p></div>
 							<div class="vd-nvid"><span class="vd-nvlab" id="vd-nvlab">While I record, the video:</span><div class="vd-nseg" id="vd-nvid" role="radiogroup" aria-labelledby="vd-nvlab"><button type="button" role="radio" data-v="play" title="The timeline plays with its sound">&#9654; Plays</button><button type="button" role="radio" data-v="mute" title="The timeline plays without sound (no headphones needed)">&#128263; Plays muted</button><button type="button" role="radio" data-v="still" title="The timeline stays still: just record your voice">&#10074;&#10074; Stays still</button></div></div>
 							<details class="vd-nopts"><summary>Microphone and recording options</summary>
 								<label class="vd-nlab">Microphone<select id="vd-nmic" aria-label="Microphone"><option value="">Default microphone</option></select></label>
@@ -1365,7 +1369,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=55" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=56" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

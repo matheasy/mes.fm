@@ -68,6 +68,9 @@
 							<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true" placeholder="Type or paste your script&hellip;" aria-label="Narration script"></textarea>
 							<div class="vd-row vd-nrecrow" id="vd-nr-rec"><button type="button" class="vd-btn vd-rec" id="vd-nrec" title="Record your voice from the playhead (R; Space or Esc stops)">&#9679; Record my voice</button><span class="vd-nrt" id="vd-nrt" aria-live="polite"></span></div>
 							<div class="vd-nmeter" aria-hidden="true"><i id="vd-nmf"></i></div>
+							<div class="vd-nboost"><label class="vd-nlab" for="vd-nboost">Mic boost <output id="vd-nboostv">+0 dB</output></label><input type="range" id="vd-nboost" min="0" max="24" step="1" value="0" aria-describedby="vd-nboosth">
+								<label class="vd-chk"><input type="checkbox" id="vd-nauto"> Make each take loud enough by itself (evens it out to normal video loudness)</label>
+								<p class="vd-hint" id="vd-nboosth">Too quiet? Turn the boost up until your loudest words reach the yellow on the meter (red = too loud). Your computer's own input volume (Mac: System Settings &gt; Sound &gt; Input) changes it too.</p></div>
 							<div class="vd-nvid"><span class="vd-nvlab" id="vd-nvlab">While I record, the video:</span><div class="vd-nseg" id="vd-nvid" role="radiogroup" aria-labelledby="vd-nvlab"><button type="button" role="radio" data-v="play" title="The timeline plays with its sound">&#9654; Plays</button><button type="button" role="radio" data-v="mute" title="The timeline plays without sound (no headphones needed)">&#128263; Plays muted</button><button type="button" role="radio" data-v="still" title="The timeline stays still: just record your voice">&#10074;&#10074; Stays still</button></div></div>
 							<details class="vd-nopts"><summary>Microphone and recording options</summary>
 								<label class="vd-nlab">Microphone<select id="vd-nmic" aria-label="Microphone"><option value="">Default microphone</option></select></label>

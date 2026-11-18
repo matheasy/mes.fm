@@ -5551,7 +5551,7 @@
 	   visitor's own voice made on mes.fm/narration) or record a voice-over with the microphone while the timeline plays (like Camtasia).
 	   Every narration becomes a WAV / MP3 / M4A file, is written into the folder the visitor chose (handle in IndexedDB kv "narrdir"),
 	   optionally downloaded too, and added at the playhead as a sound clip. Settings in localStorage mes-video-editor:narrate. ---------- */
-	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "", mode: "type", mic: "", play: true, mute: false, count: true, clean: false, fmt: "wav", dl: false };
+	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "", mode: "type", mic: "", play: true, mute: false, count: true, clean: false, boost: 0, auto: true, fmt: "wav", dl: false };
 	try { Object.assign(NS, JSON.parse(localStorage.getItem(NKEY)) || {}); } catch (e) { /* ignore */ }
 	function nkeep() { try { localStorage.setItem(NKEY, JSON.stringify(NS)); } catch (e) { /* ignore */ } }
 	function loadNarrate() { if (window.MESNarrate) return Promise.resolve(window.MESNarrate); return new Promise(function (res, rej) { var sc = document.createElement("script"); sc.src = "/main_js/narrate.js?v=1"; sc.onload = function () { res(window.MESNarrate); }; sc.onerror = function () { rej(new Error("Could not load the narration engine.")); }; document.head.appendChild(sc); }); }
@@ -5668,7 +5668,7 @@
 
 	/* recording a voice-over with the microphone */
 	var REC = { stream: null, ac: null, an: null, raf: 0, mr: null, chunks: [], at: 0, t0: 0, timer: 0, counting: 0, wasPlay: false };
-	["count", "clean"].forEach(function (k) { var el = $("vd-n" + k); el.checked = !!NS[k]; el.onchange = function () { NS[k] = el.checked; nkeep(); if (k === "clean" && REC.stream && !REC.mr) openMic(); }; });
+	["count", "clean", "auto"].forEach(function (k) { var el = $("vd-n" + k); el.checked = !!NS[k]; el.onchange = function () { NS[k] = el.checked; nkeep(); if (k === "clean" && REC.stream && !REC.mr) openMic(); }; });
 	// "While I record, the video: Plays | Plays muted | Stays still" (also switches live during a recording)
 	function nvidMode() { return !NS.play ? "still" : NS.mute ? "mute" : "play"; }
 	function paintNvid() { var m = nvidMode(); [].forEach.call($("vd-nvid").children, function (b) { b.setAttribute("aria-checked", b.dataset.v === m ? "true" : "false"); b.setAttribute("aria-selected", b.dataset.v === m ? "true" : "false"); }); }
@@ -5677,6 +5677,11 @@
 		if (REC.mr) { P.muted = !!NS.mute; if (!NS.play) { if (P.playing) P.pause(); } else if (!(P.playing && !P.rev)) P.play(1); P.sync && P.sync(); }
 	}; });
 	paintNvid();
+	var nbo = $("vd-nboost");
+	function boostText() { $("vd-nboostv").textContent = "+" + (+NS.boost || 0) + " dB"; }
+	nbo.value = NS.boost || 0; boostText();
+	nbo.oninput = function () { NS.boost = +nbo.value; boostText(); if (REC.gain) REC.gain.gain.setTargetAtTime(V.fromDb(NS.boost), REC.ac.currentTime, 0.02); };
+	nbo.onchange = function () { nkeep(); };
 	var nmic = $("vd-nmic");
 	function listMics(ask) {
 		if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
@@ -5689,7 +5694,7 @@
 	nmic.onchange = function () { NS.mic = nmic.value; nkeep(); if (REC.stream && !REC.mr) openMic(); };
 	function closeMic() {
 		cancelAnimationFrame(REC.raf); if (REC.stream) REC.stream.getTracks().forEach(function (t) { t.stop(); }); REC.stream = null;
-		if (REC.ac) REC.ac.close().catch(function () { }); REC.ac = null; REC.an = null; $("vd-nmf").style.width = "0"; $("vd-ntest").textContent = "Test my mic";
+		if (REC.ac) REC.ac.close().catch(function () { }); REC.ac = null; REC.an = null; REC.gain = null; REC.dest = null; $("vd-nmf").style.width = "0"; $("vd-ntest").textContent = "Test my mic";
 	}
 	function openMic() {
 		if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.reject(new Error("This browser can't record from a microphone here."));
@@ -5697,7 +5702,10 @@
 		var c = !!NS.clean, a = { echoCancellation: c, noiseSuppression: c, autoGainControl: c, channelCount: 1 }; if (NS.mic) a.deviceId = { exact: NS.mic };
 		return navigator.mediaDevices.getUserMedia({ audio: a }).then(function (st) {
 			REC.stream = st; listMics(); var AC = window.AudioContext || window.webkitAudioContext; REC.ac = new AC(); REC.an = REC.ac.createAnalyser(); REC.an.fftSize = 1024;
-			REC.ac.createMediaStreamSource(st).connect(REC.an);
+			// mic -> boost -> (meter, recorder): the meter shows what is recorded
+			REC.gain = REC.ac.createGain(); REC.gain.gain.value = V.fromDb(+NS.boost || 0);
+			REC.ac.createMediaStreamSource(st).connect(REC.gain); REC.gain.connect(REC.an);
+			REC.dest = REC.ac.createMediaStreamDestination(); REC.gain.connect(REC.dest);
 			var buf = new Float32Array(REC.an.fftSize), peak = 0, clipAt = 0;
 			(function meter() {
 				if (!REC.an) return; REC.an.getFloatTimeDomainData(buf); var m = 0; for (var i = 0; i < buf.length; i++) { var v = Math.abs(buf[i]); if (v > m) m = v; }
@@ -5722,7 +5730,7 @@
 			var go = function () {
 				REC.counting = 0;
 				var types = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"], type = ""; for (var i = 0; i < types.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) { type = types[i]; break; }
-				var mr; try { mr = new MediaRecorder(REC.stream, type ? { mimeType: type, audioBitsPerSecond: 192000 } : undefined); } catch (e) { $("vd-nmicst").textContent = "This browser can't record here: " + e.message; b.textContent = "● Record my voice"; return; }
+				var mr; try { if (REC.ac && REC.ac.state === "suspended") REC.ac.resume(); mr = new MediaRecorder(REC.dest ? REC.dest.stream : REC.stream, type ? { mimeType: type, audioBitsPerSecond: 192000 } : undefined); } catch (e) { $("vd-nmicst").textContent = "This browser can't record here: " + e.message; b.textContent = "● Record my voice"; return; }
 				REC.mr = mr; REC.chunks = [];
 				mr.ondataavailable = function (e) { if (e.data && e.data.size) REC.chunks.push(e.data); };
 				mr.onstart = function () {
@@ -5753,6 +5761,7 @@
 			return ac.decodeAudioData(x[1]).then(function (ab) {
 				ac.close(); var n = ab.length, m = new Float32Array(n);
 				for (var c = 0; c < ab.numberOfChannels; c++) { var d = ab.getChannelData(c); for (var i = 0; i < n; i++) m[i] += d[i] / ab.numberOfChannels; }
+				if (NS.auto) { var L = V.lufs([m], ab.sampleRate), pk = 0; for (var j = 0; j < n; j++) { var a = m[j] < 0 ? -m[j] : m[j]; if (a > pk) pk = a; } var g = V.normalizeGain(L, pk, -16, -1); if (g !== 1) for (var k = 0; k < n; k++) m[k] *= g; }
 				return finishNarration(N, m, ab.sampleRate, "Voice recording " + stamp(), at, REC.canWrite);
 			}, function () { ac.close(); throw new Error("The recording could not be read back."); });
 		}).then(function () { $("vd-nrt").textContent = "Added (" + dur.toFixed(1) + " s). Record again to add another take."; }, function (e) { $("vd-nrt").textContent = "Could not add it: " + e.message; })
