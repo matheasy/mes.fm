@@ -31,7 +31,7 @@
 	var KEY = "mes-timer:v1", OKEY = "mes-timer-app:opts", MAXN = 60, asked = false;
 
 	/* ---------- options ---------- */
-	var O = { live: true, alerts: true, ring: true, style: "auto" };
+	var O = { live: true, alerts: true, ring: true, style: "auto", icon: "big" };
 	try { var so = JSON.parse(localStorage.getItem(OKEY) || "null"); if (so) Object.keys(O).forEach(function (k) { if (typeof so[k] === typeof O[k]) O[k] = so[k]; }); } catch (e) {}
 	function saveO() { try { localStorage.setItem(OKEY, JSON.stringify(O)); } catch (e) {} }
 
@@ -196,7 +196,7 @@
 			// sometimes never arrived.
 			if (!items.length) { if (liveSig !== "") { liveSig = ""; TS.clearRunning().catch(function () {}); } return; }
 			var sigA = JSON.stringify(items);
-			if (sigA !== liveSig || force) { liveSig = sigA; TS.showRunning({ items: items, style: O.style }).catch(function () {}); }
+			if (sigA !== liveSig || force) { liveSig = sigA; TS.showRunning({ items: items, style: O.style, icon: O.icon }).catch(function () {}); }
 			return;
 		}
 		// iPhone: Live Activities can only be started while the app is open, so keep it current from here. Paused timers stay
@@ -263,6 +263,16 @@
 			sel.value = O.style;
 			sel.addEventListener("change", function () { O.style = sel.value; saveO(); liveSig = ""; liveUpdate(true); paintStatus(); });
 			sl.appendChild(sel); box.appendChild(sl);
+			// the status bar fits the icon into a small square: fewer characters = bigger digits
+			var il = document.createElement("label"); il.className = "tm-check"; il.style.display = "block"; il.style.margin = ".3em 0";
+			il.appendChild(document.createTextNode("Time in the status-bar icon: "));
+			var isel = document.createElement("select"); isel.id = "tm-app-icon"; isel.style.maxWidth = "100%";
+			[["big", "Big: seconds, then minutes (45, 5m, 2h)"], ["full", "Full time, smaller (4:59)"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; isel.appendChild(op); });
+			isel.value = O.icon === "full" ? "full" : "big";
+			isel.addEventListener("change", function () { O.icon = isel.value; saveO(); liveSig = ""; liveUpdate(true); });
+			il.appendChild(isel); box.appendChild(il);
+			var showIcon = function () { il.style.display = sel.value === "chip" ? "none" : "block"; };
+			sel.addEventListener("change", showIcon); showIcon();
 		}
 		var st = document.createElement("p"); st.id = "tm-app-status"; st.style.cssText = "font-size:.85em;margin:.3em 0 .6em;opacity:.85;";
 		box.appendChild(st);

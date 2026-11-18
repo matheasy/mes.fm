@@ -51,7 +51,8 @@ final class TimerLive {
     static int idFor(String key) { return BASE + 1 + Math.abs(key.hashCode() % 900); }
 
     /** The page's list. Keys with a button change the page has not taken yet keep the native state. */
-    static void setItems(Context c, JSONArray incoming, String style) {
+    static void setItems(Context c, JSONArray incoming, String style, String icon) {
+        prefs(c).edit().putString("icon", "full".equals(icon) ? "full" : "big").apply();
         JSONObject ch = obj(c, "changes");
         JSONArray old = items(c), out = new JSONArray();
         for (int i = 0; i < incoming.length(); i++) {
@@ -117,13 +118,28 @@ final class TimerLive {
         return h > 0 ? String.format(Locale.US, "%d:%02d:%02d", h, m, r) : String.format(Locale.US, "%02d:%02d", m, r);
     }
 
-    /** Short text for the status-bar icon: 4:59, 59:59, 1h05, 12h. */
-    static String iconText(long ms, boolean up) {
+    /**
+     * What the status-bar icon shows, as parts of [text, size] (size 1 = digits as tall as the icon, smaller = a unit letter
+     * sitting on the baseline). The icon is a small square, so fewer characters = bigger digits.
+     *   "big" (default): seconds alone under a minute (45), then whole minutes (5m, countdowns round up like the Clock app),
+     *                    then hours (2h). The exact time is in the notification.
+     *   "full":          4:59, 59:59, 1h05 (squeezed, so smaller).
+     */
+    static Object[][] iconParts(long ms, boolean up, String fmtMode) {
         long s = up ? ms / 1000 : (ms + 999) / 1000, h = s / 3600, m = s % 3600 / 60, r = s % 60;
-        if (h >= 10) return h + "h";
-        if (h > 0) return h + "h" + String.format(Locale.US, "%02d", m);
-        return m + ":" + String.format(Locale.US, "%02d", r);
+        if ("full".equals(fmtMode)) {
+            if (h >= 10) return new Object[][]{{String.valueOf(h), 1f}, {"h", .55f}};
+            if (h > 0) return new Object[][]{{String.valueOf(h), 1f}, {"h", .55f}, {String.format(Locale.US, "%02d", m), 1f}};
+            return new Object[][]{{String.valueOf(m), 1f}, {":", 1f}, {String.format(Locale.US, "%02d", r), 1f}};
+        }
+        if (s < 60) return new Object[][]{{String.valueOf(s), 1f}};
+        long mins = up ? s / 60 : (s + 59) / 60;
+        if (mins < 100) return new Object[][]{{String.valueOf(mins), 1f}, {"m", .55f}};
+        long hrs = up ? s / 3600 : (s + 3599) / 3600;
+        return new Object[][]{{String.valueOf(hrs), 1f}, {"h", .55f}};
     }
+
+    static String iconFmt(Context c) { return prefs(c).getString("icon", "big"); }
 
     static String title(JSONObject it, long now) {
         String k = it.optString("kind"), label = it.optString("label", "");
@@ -192,7 +208,7 @@ final class TimerLive {
             .setSortKey((run ? (up ? "1" : "0") : "2") + String.format(Locale.US, "%013d", up ? 0 : ms));   // countdowns (soonest first), stopwatches, paused
         if (Build.VERSION.SDK_INT < 26) b.setPriority(Notification.PRIORITY_LOW);
         if (big) {
-            b.setSmallIcon(textIcon(c, iconText(ms, up)));
+            b.setSmallIcon(textIcon(c, iconParts(ms, up, iconFmt(c))));
             if (Build.VERSION.SDK_INT >= 24) {
                 RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.notif_timer);
                 v.setTextViewText(R.id.nt_time, time);
@@ -227,32 +243,42 @@ final class TimerLive {
     }
 
     /**
-     * The time drawn as the status-bar icon (white on transparent: the status bar tints it). The status bar fits every icon in
-     * a small square, so the digits are drawn as tall as the square allows and squeezed sideways to fit (a condensed font,
-     * then a narrower text scale): about twice the height of plain text that fits the width.
+     * The time drawn as the status-bar icon (white on transparent: the status bar tints it). Android fits every notification
+     * icon into a small square and draws nothing wider, so the digits are cropped to their own ink (no font padding), as tall as
+     * the square, in a condensed bold font; the colon is drawn narrow; text still too wide is squeezed sideways.
      */
-    static Icon textIcon(Context c, String text) {
-        int px = Math.max(48, Math.round(24 * c.getResources().getDisplayMetrics().density));
+    static Icon textIcon(Context c, Object[][] parts) {
+        int px = Math.max(64, Math.round(24 * c.getResources().getDisplayMetrics().density));
         Bitmap bm = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(bm);
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setColor(0xFFFFFFFF);
         p.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
-        p.setTextAlign(Paint.Align.CENTER);
         android.graphics.Rect r = new android.graphics.Rect();
         p.setTextSize(100f);
-        p.getTextBounds("0", 0, 1, r);
-        float digitH = r.height() / 100f;                 // digit height per unit of text size
-        float size = px * 0.98f / digitH;                 // digits as tall as the icon
-        p.setTextSize(size);
-        float w = p.measureText(text), maxW = px * 1.0f;
-        if (w > maxW) {
-            float sx = maxW / w;
-            if (sx < 0.6f) { size *= sx / 0.6f; p.setTextSize(size); sx = Math.min(1f, maxW / p.measureText(text)); }
-            p.setTextScaleX(sx);
+        p.getTextBounds("0123456789", 0, 10, r);
+        float size = px * 100f / r.height();             // digits exactly as tall as the icon
+        float gap = size * 0.03f;                        // between parts
+        // widths at scaleX 1 (ink widths, so no side bearings are wasted)
+        int n = parts.length;
+        float[] w = new float[n], left = new float[n];
+        float total = 0;
+        for (int i = 0; i < n; i++) {
+            String t = (String) parts[i][0];
+            p.setTextSize(size * (Float) parts[i][1]);
+            p.getTextBounds(t, 0, t.length(), r);
+            w[i] = r.width(); left[i] = r.left;
+            total += w[i] + (i > 0 ? gap : 0);
         }
-        p.getTextBounds("0", 0, 1, r);
-        cv.drawText(text, px / 2f, px / 2f + r.height() / 2f, p);
+        float sx = total > px ? px / total : 1f;
+        float x = (px - total * sx) / 2f;
+        for (int i = 0; i < n; i++) {
+            String t = (String) parts[i][0];
+            p.setTextSize(size * (Float) parts[i][1]);
+            p.setTextScaleX(sx);
+            cv.drawText(t, x - left[i] * sx, px, p);    // baseline on the bottom edge: digits fill the square top to bottom
+            x += (w[i] + gap) * sx;
+        }
         return Icon.createWithBitmap(bm);
     }
 

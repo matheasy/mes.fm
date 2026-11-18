@@ -50,7 +50,7 @@ public class TimerStatusPlugin extends Plugin {
     public void showRunning(PluginCall call) {
         inst = this;
         try {
-            TimerLive.setItems(getContext(), new JSONArray(call.getArray("items", new JSArray()).toString()), call.getString("style", "auto"));
+            TimerLive.setItems(getContext(), new JSONArray(call.getArray("items", new JSArray()).toString()), call.getString("style", "auto"), call.getString("icon", "big"));
             TimerLive.refresh(getContext());
         } catch (Exception e) { call.reject(e.getMessage()); return; }
         call.resolve();
