@@ -534,30 +534,13 @@
 		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
 		el.addEventListener("click", function (e) { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });   // keyboard Enter / Space
 	});
-	// the same - / + on the Fill window / full screen top bar (speed + time + time left)
-	[["vd-fsdn", -1], ["vd-fsup", 1]].forEach(function (b) {
-		var el = $(b[0]), t0 = 0, tm = 0, held = false;
-		function stop() { clearTimeout(tm); tm = 0; }
-		function rep() { var dt = performance.now() - t0; P.nudgeSpeed(b[1], dt > 2600 ? 1 : dt > 1400 ? 0.25 : 0.05); tm = setTimeout(rep, 90); }
-		el.addEventListener("pointerdown", function (e) { if (e.button !== 0 || el.disabled) return; e.preventDefault(); held = true; t0 = performance.now(); P.nudgeSpeed(b[1]); tm = setTimeout(rep, 420); });
-		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
-		el.addEventListener("click", function () { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });
-	});
-	$("vd-fsnum").onclick = function () { VE.speedKey(1); };
 	// keys like the Video Speed Controller: [ ] = 0.05 slower / faster, U = 1x, P = 2x; pressing U or P again goes back to the speed you had
 	var spBack = 1;
 	VE.speedKey = function (to) {
 		if (Math.abs(P.speed - to) < 1e-9) { if (Math.abs(spBack - to) > 1e-9) P.setSpeed(spBack); return; }
 		spBack = P.speed; P.setSpeed(to);
 	};
-	function fsTop() {
-		var s = P.speed, n = $("vd-fsnum"), fps = VE.P.fps, d = V.duration(VE.P);
-		n.textContent = V.speedLabel(s, fps); n.classList.toggle("is-on", Math.abs(s - 1) > 1e-9);
-		$("vd-fsdn").disabled = s <= V.speedMin(fps) + 1e-9; $("vd-fsup").disabled = s >= V.SPEED_MAX - 1e-9;
-		$("vd-fstime").textContent = V.tc(VE.t, fps) + " / " + V.tc(d, fps);
-		$("vd-fsleft").textContent = d > 0 && VE.t < d - 1e-6 ? V.watchLeft(VE.t, d, s || 1) + " left" : "";
-	}
-	VE.on("speed", fsTop); VE.on("time", fsTop); VE.on("change", fsTop); fsTop();
+
 	var spToastT = 0;
 	VE.on("speed", function (s) {
 		UI.speed = s; saveUI(); fillSpeed();
@@ -1983,10 +1966,49 @@
 	function setPv(on) {
 		app.classList.toggle("vd-pvfill", on); document.documentElement.classList.toggle("vd-noscroll", on || UI.win);
 		$("vd-pvwin").setAttribute("aria-pressed", on); $("vd-pvwin").innerHTML = on ? "&#10006; <span class=\"vd-lbl\">Leave</span>" : "&#10530; <span class=\"vd-lbl\">Fill window</span>";
-		setTimeout(function () { P.fit(); }, 30);
-		if (on) toast("The preview fills the window. Space plays, Esc leaves.", 3000);
+		if (VE.placeBar) VE.placeBar(); setTimeout(function () { P.fit(); if (VE.placeBar) VE.placeBar(); }, 30);
+		if (on) toast("The preview fills the window. Space plays, Esc leaves. Drag the playback bar by its \u283f grip to move it.", 3500);
 	}
 	$("vd-pvwin").onclick = function () { setPv(!app.classList.contains("vd-pvfill")); };
+	// Fill window: drag the playback bar by its grip (or an empty part of it) anywhere on the screen, so the time and speed sit
+	// where you are looking. Saved as fractions of the free space (UI.tpPos = {x, y}), so it stays in place when the window resizes.
+	(function () {
+		var bar = app.querySelector(".vd-transport"), grip = $("vd-tpgrip"), rst = $("vd-tpreset"), box = app.querySelector(".vd-center");
+		function place() {
+			var on = app.classList.contains("vd-pvfill") && UI.tpPos;
+			bar.classList.toggle("is-float", !!on); rst.hidden = !on;
+			if (!on) { bar.style.left = bar.style.top = ""; return; }
+			var W = box.clientWidth, H = box.clientHeight, w = bar.offsetWidth, h = bar.offsetHeight;
+			bar.style.left = Math.round(Math.max(0, W - w) * UI.tpPos.x) + "px"; bar.style.top = Math.round(Math.max(0, H - h) * UI.tpPos.y) + "px";
+		}
+		VE.placeBar = place;
+		function reset() { UI.tpPos = null; saveUI(); place(); }
+		function empty(t) { return t === grip || t === bar || (t.classList && (t.classList.contains("vd-sp") || t.classList.contains("vd-div"))); }
+		bar.addEventListener("pointerdown", function (e) {
+			if (!app.classList.contains("vd-pvfill") || e.button !== 0 || !empty(e.target)) return;
+			e.preventDefault();
+			if (!UI.tpPos) { UI.tpPos = { x: 0.5, y: 1 }; place(); }
+			var r = bar.getBoundingClientRect(), b = box.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, moved = false;
+			bar.classList.add("is-move");
+			function mv(ev) {
+				moved = true; var W = Math.max(1, b.width - r.width), H = Math.max(1, b.height - r.height);
+				UI.tpPos = { x: Math.max(0, Math.min(1, (ev.clientX - b.left - dx) / W)), y: Math.max(0, Math.min(1, (ev.clientY - b.top - dy) / H)) }; place();
+			}
+			function up() { bar.classList.remove("is-move"); window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up); saveUI(); }
+			window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+		});
+		grip.addEventListener("dblclick", reset);
+		grip.addEventListener("keydown", function (e) {   // arrow keys move it too (Shift = bigger steps), Home / End = top / bottom
+			if (!/^(Arrow(Up|Down|Left|Right)|Home|End)$/.test(e.key)) return; e.preventDefault(); e.stopPropagation();
+			var p = UI.tpPos || { x: 0.5, y: 1 }, st = e.shiftKey ? 0.1 : 0.02;
+			if (e.key === "ArrowUp") p.y -= st; if (e.key === "ArrowDown") p.y += st; if (e.key === "ArrowLeft") p.x -= st; if (e.key === "ArrowRight") p.x += st;
+			if (e.key === "Home") p.y = 0; if (e.key === "End") p.y = 1;
+			UI.tpPos = { x: Math.max(0, Math.min(1, p.x)), y: Math.max(0, Math.min(1, p.y)) }; saveUI(); place();
+		});
+		rst.onclick = reset;
+		window.addEventListener("resize", function () { setTimeout(place, 40); });
+		if (window.ResizeObserver) new ResizeObserver(function () { place(); }).observe(bar);
+	})();
 
 	/* ---------- bar size: the playback bar + timeline tools take a lot of height when you only want to watch and cut.
 	   0 Normal, 1 Compact (one thin row each, seek bar beside the time, icons only), 2 Minimal (timeline tools hidden, keys

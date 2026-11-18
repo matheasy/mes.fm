@@ -690,16 +690,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-chk[hidden] {display:none;}
 	#vd .vd-nboost {margin-top:0.45em;display:flex;flex-direction:column;gap:0.2em;} #vd .vd-nboost input[type=range] {width:100%;accent-color:#22c55e;} #vd .vd-nboost output {color:var(--vd-dim);margin-left:0.3em;}
 
-	/* speed + time at the top of the preview in Fill window / full screen */
-	#vd .vd-fstop {display:none;align-items:center;gap:0.5em;padding:0 0.5em 0 0.1em;margin-right:0.2em;border-right:1px solid var(--vd-line);color:#e6e9ef;font-variant-numeric:tabular-nums;flex-wrap:wrap;}
-	#vd .vd.vd-pvfill .vd-vz .vd-fstop, #vd .vd-stagewrap:fullscreen .vd-vz .vd-fstop {display:flex;}
-	#vd .vd.vd-pvfill .vd-vz.is-min > .vd-fstop, #vd .vd-stagewrap:fullscreen .vd-vz.is-min > .vd-fstop {display:flex;border-right:0;}
-		#vd .vd-fsspd {display:inline-flex;align-items:center;gap:0.15em;}
-	#vd .vd-fstop .vd-btn {min-height:28px;padding:0.15em 0.5em;font-size:0.82em;} #vd .vd-fstop .vd-ico {min-width:28px;}
-	#vd .vd-fsnum {min-width:4.6em;font-variant-numeric:tabular-nums;}
-	#vd .vd-fsnum.is-on {color:#fbbf24;border-color:#b45309;}
-	#vd .vd-fstime {font-size:0.85em;white-space:nowrap;} #vd .vd-fsleft {font-size:0.85em;color:#fbbf24;white-space:nowrap;}
-	#vd .vd-fsleft:empty {display:none;}
+	/* Fill window: the playback bar can be dragged anywhere (grip on its left), "Bottom" puts it back */
+	#vd .vd-tpgrip, #vd .vd-tpreset {display:none;}
+	#vd .vd.vd-pvfill .vd-tpgrip {display:inline-flex;cursor:grab;touch-action:none;font-size:1.1em;}
+	#vd .vd.vd-pvfill .vd-tpgrip:active, #vd .vd.vd-pvfill .vd-transport.is-move .vd-tpgrip {cursor:grabbing;}
+	#vd .vd.vd-pvfill .vd-tpreset:not([hidden]) {display:inline-flex;}
+	#vd .vd.vd-pvfill .vd-transport.is-float {right:auto;bottom:auto;width:min(calc(100% - 16px), 1100px);box-sizing:border-box;border:1px solid var(--vd-line);border-radius:0.6em;box-shadow:0 8px 28px rgba(0,0,0,0.55);}
+	#vd .vd.vd-pvfill .vd-transport.is-move {opacity:1;transition:none;user-select:none;}
 
 	/* Keys panel + shortcut editor */
 	#vd .vd-keyshead {display:flex;align-items:center;justify-content:space-between;gap:1em;} #vd .vd-keyssub {display:block;margin-top:0.7em;}
@@ -910,8 +907,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-rec{border-color:#dd2222}
 	body.dark-mode #vd .vd-nsave code,body.dark-mode #vd .vd-narr code{background:#3b4e68}
 	body.dark-mode #vd .vd-trrec .vd-ti{fill:#f26969}
-	body.dark-mode #vd .vd-fsnum.is-on{color:#fcd05f;border-color:#f3700c}
-	body.dark-mode #vd .vd-fsleft{color:#fcd05f}
 	body.dark-mode #vd .vd-krow:hover{background:rgba(26,26,26,0.04)}
 	body.dark-mode #vd .vd-krow.is-chg .vd-kname::after{color:#fcd05f}
 	body.dark-mode #vd .vd-kchip.is-wait{border-color:#e21d48}
@@ -1243,7 +1238,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="vd-stagewrap" id="vd-stagewrap"><canvas id="vd-canvas" width="640" height="360" aria-label="Preview"></canvas>
 						<div class="vd-vz" id="vd-vz" role="toolbar" aria-label="Preview zoom">
 							<button type="button" class="vd-btn vd-sm vd-ico vd-vzhide" id="vd-vzhide" aria-expanded="true" title="Hide these buttons" aria-label="Hide the preview zoom buttons">&#8250;</button>
-							<span class="vd-fstop" id="vd-fstop" role="toolbar" aria-label="Speed and time"><span class="vd-fsspd" title="Preview speed ([ = slower, ] = faster by 0.05, U = 1x, P = 2x). Click the number for 1x."><button type="button" class="vd-btn vd-sm vd-ico" id="vd-fsdn" aria-label="Slower by 0.05">&minus;</button><button type="button" class="vd-btn vd-sm vd-fsnum" id="vd-fsnum" aria-label="Preview speed: click for normal speed">1.00&times;</button><button type="button" class="vd-btn vd-sm vd-ico" id="vd-fsup" aria-label="Faster by 0.05">+</button></span><span class="vd-fstime" id="vd-fstime" aria-live="off"></span><span class="vd-fsleft" id="vd-fsleft" title="Time to watch the rest at this speed"></span></span>
 							<button type="button" class="vd-btn vd-sm" id="vd-vzfit" title="Fit the whole frame in the preview, with a margin around it (these buttons may cover its top corner)">Fit</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-vzfit2" title="Fit the frame below these buttons, so nothing covers it (a little smaller)">Fit clear</button>
 							<button type="button" class="vd-btn vd-sm vd-ico" id="vd-vzout" title="Zoom out 1% (hold to keep going; Ctrl + wheel, pinch)" aria-label="Zoom the preview out 1%">&minus;</button>
@@ -1254,7 +1248,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<button type="button" class="vd-btn vd-sm" id="vd-vzdim" aria-pressed="true" title="Darken what is outside the frame (it is never in the video)">Dim outside</button>
 						</div>
 					</div>
-					<div class="vd-transport" role="toolbar" aria-label="Playback">
+					<div class="vd-transport" role="toolbar" aria-label="Playback"><button type="button" class="vd-btn vd-ico vd-tpgrip" id="vd-tpgrip" title="Drag to move this bar anywhere on the screen (double-click: back to the bottom)" aria-label="Move the playback bar">&#10303;</button><button type="button" class="vd-btn vd-sm vd-tpreset" id="vd-tpreset" hidden title="Put this bar back at the bottom">&#10515; <span class="vd-lbl">Bottom</span></button>
 						<div class="vd-seek" id="vd-seek" role="slider" tabindex="0" aria-label="Position in the video" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00;00" title="Drag to move through the video (arrow keys: a frame, Shift: 1 s, Page Up / Down: 10 s)"><div class="vd-seek-tr"><i class="vd-seek-mk" id="vd-seek-mk"></i><i class="vd-seek-fill" id="vd-seek-fill"></i><span class="vd-seek-ticks" id="vd-seek-ticks"></span></div><b class="vd-seek-th" id="vd-seek-th"></b><span class="vd-seek-tip" id="vd-seek-tip" hidden></span></div>
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="2" height="10"/><path d="M9 3v10L4.5 8zM14 3v10L9.5 8z"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="prevclip" title="Previous clip edge (Up arrow, or Ctrl+Alt+Left as in Camtasia)" aria-label="Previous clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3" width="1.8" height="10"/><path d="M12.5 3v10L6.5 8z"/></svg></button>
@@ -1410,7 +1404,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=59" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=60" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
