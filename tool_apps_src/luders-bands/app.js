@@ -523,12 +523,17 @@
       changed(true); toast(hit >= 0 ? "Notch removed: new bar" : "Notch added: new bar");
       return;
     }
-    selIdx = i; $("lu-follow").checked = false;
+    selIdx = i; $("lu-follow").checked = false; drawAll();
+    var card = document.querySelector("#lu .lu-micro"), xmm = ((i + 0.5) / sim.p.N * sim.p.Lg).toFixed(1);
+    if ($("lu-view").classList.contains("mes-pfill") || document.fullscreenElement) { toast("Slice at " + xmm + " mm picked: close Fill window to see it in Inside the metal"); return; }
+    var r = card.getBoundingClientRect();
+    if (r.top < 60 || r.bottom > window.innerHeight) { var to = window.scrollY + r.top - Math.max(70, (window.innerHeight - r.height) / 2); try { window.scrollTo({ top: to, behavior: "smooth" }); } catch (e) { window.scrollTo(0, to); } setTimeout(function () { var q = card.getBoundingClientRect(); if (q.top > window.innerHeight || q.bottom < 0) window.scrollTo(0, to); }, 900); }
+    card.classList.remove("lu-flash"); void card.offsetWidth; card.classList.add("lu-flash");
   });
   spec.addEventListener("pointermove", function (ev) {
     var i = sliceAt(ev); if (i < 0) { tip.hidden = true; return; }
     var names = ["pinned (not yielded)", "next to the front", "yielding", "yielded"], r = spec.getBoundingClientRect();
-    tip.innerHTML = "<b>" + ((i + 0.5) / sim.p.N * sim.p.Lg).toFixed(1) + " mm</b> · " + names[sim.st[i]] + "<br>plastic strain " + L.pct(sim.ep[i], 2) + ($("lu-notchmode").checked ? "<br><i>click to add / remove a notch</i>" : "<br><i>click to watch it inside</i>");
+    tip.innerHTML = "<b>" + ((i + 0.5) / sim.p.N * sim.p.Lg).toFixed(1) + " mm</b> · " + names[sim.st[i]] + "<br>plastic strain " + L.pct(sim.ep[i], 2) + ($("lu-notchmode").checked ? "<br><i>click to add / remove a notch</i>" : "<br><i>click to watch it inside (panel below)</i>");
     tip.hidden = false; tip.style.left = Math.min(r.width - 170, Math.max(0, ev.clientX - r.left + 12)) + "px"; tip.style.top = Math.max(0, ev.clientY - r.top - 50) + "px";
   });
   spec.addEventListener("pointerleave", function () { tip.hidden = true; });

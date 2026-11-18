@@ -157,3 +157,7 @@
 	#lu .lu-anggrid {margin-top:0.4em;}
 	@media (max-width:700px) { #lu .lu-awide {display:none;} }
 	@media (max-width:520px) { #lu .lu-asl label {display:none;} #lu .lu-angview {padding:0.35em;} }
+
+/* picked slice: flash the Inside-the-metal card */
+#lu .lu-micro.lu-flash { animation: luFlash 1.4s ease-out; }
+@keyframes luFlash { 0%, 30% { box-shadow: 0 0 0 3px #a78bfa; } 100% { box-shadow: 0 0 0 3px transparent; } }
