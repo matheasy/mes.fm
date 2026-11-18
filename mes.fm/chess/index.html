@@ -483,6 +483,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ch .ch-promo svg {width:100%;height:auto;display:block;}
 	#ch .ch-3d {flex:1 1 auto;position:relative;width:100%;height:min(74vh, 62vw);min-height:300px;border-radius:8px;overflow:hidden;background:#111;touch-action:none;}
 	#ch .ch-3d canvas {display:block;width:100%;height:100%;}
+	#ch .ch-lookbar {position:absolute;top:0.6em;left:50%;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:0.2em;padding:0.35em 0.6em;border-radius:12px;background:rgba(20,22,26,0.72);backdrop-filter:blur(4px);color:#fff;max-width:calc(100% - 1.2em);text-align:center;}
+	#ch .ch-lookbar[hidden] {display:none;}
+	#ch .ch-lkrow {display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;justify-content:center;}
+	#ch .ch-lookbar b {color:#fff;font-size:1.05em;}
+	#ch .ch-lkb {cursor:pointer;font:inherit;min-width:36px;min-height:34px;padding:0.1em 0.7em;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.14);color:#fff;font-size:1em;}
+	#ch .ch-lkb:hover {background:rgba(255,255,255,0.26);}
+	#ch .ch-lkhint {font-size:0.8em;color:#d7dbe2;}
 	#ch .ch-3dmsg {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;margin:0;padding:1em;text-align:center;}
 	#ch .ch-typebox {display:flex;gap:0.5em;align-items:center;justify-content:center;margin:0.5em 0 0;font-size:0.9em;}
 	#ch .ch-typebox input {max-width:13em;}
@@ -702,6 +709,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ch .ch-evbar i{background:#1a1a1a}
 	body.dark-mode #ch .ch-evbar span{color:#9e9e9e}
 	body.dark-mode #ch .ch-3d{background:#525252}
+	body.dark-mode #ch .ch-lookbar{background:rgba(71,78,92,0.72)}
+	body.dark-mode #ch .ch-lkb{border:1px solid rgba(51,51,51,0.30);background:rgba(26,26,26,0.14)}
+	body.dark-mode #ch .ch-lkb:hover{background:rgba(26,26,26,0.26)}
+	body.dark-mode #ch .ch-lkhint{color:#969ca6}
 	body.dark-mode #ch .ch-3dmsg{color:#9e9e9e}
 	body.dark-mode #ch.ch-3don .ch-otb{background:rgba(71,78,92,0.62)}
 	body.dark-mode #ch.ch-3don .ch-ob{background:rgba(26,26,26,0.12);border-color:rgba(51,51,51,0.25)}
@@ -982,12 +993,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="ch-boardwrap">
 							<div class="ch-evbar" id="ch-evbar" hidden aria-hidden="true"><i id="ch-evfill"></i><span id="ch-evtxt"></span></div>
 							<div class="ch-board" id="ch-board" tabindex="0" aria-label="Chess board: arrow keys move the square cursor, Enter picks a piece and then its square. You can also type a move like e4 or Nf3."></div>
-							<div class="ch-3d" id="ch-3d" hidden><p class="ch-3dmsg" id="ch-3dmsg">Loading 3D…</p></div>
+							<div class="ch-3d" id="ch-3d" hidden><p class="ch-3dmsg" id="ch-3dmsg">Loading 3D…</p><div class="ch-lookbar" id="ch-lookbar" hidden></div></div>
 							<div class="ch-banner" id="ch-banner" hidden role="status" aria-live="assertive"><button type="button" class="ch-bx" data-b="x" title="Close (look around the board, take a screenshot)" aria-label="Close">✕</button><div class="ch-bmsg" id="ch-bmsg"></div><div class="ch-bact" id="ch-bact"></div></div>
 							<div class="ch-promo" id="ch-promo" hidden role="dialog" aria-label="Promote the pawn to"></div>
 						</div>
 						<div class="ch-player" id="ch-pbot"></div>
-						<div class="ch-otb" id="ch-otb" role="group" aria-label="Game buttons on the board"><button type="button" class="ch-ob ch-ob--min" data-o="min" aria-expanded="true" title="Hide the buttons on the board">▾</button><button type="button" class="ch-ob" data-o="undo" title="Take back your last move (U)">↶ <span>Undo</span></button><button type="button" class="ch-ob" data-o="hint" title="Show the computer's best move (H)">💡 <span>Hint</span></button><button type="button" class="ch-ob ch-3donly" data-o="view" title="Camera back to its normal view (or double-click the board)">⟲ <span>Reset view</span></button><button type="button" class="ch-ob" data-o="flip" title="Turn the board round (R)">⇅ <span>Turn</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fill" title="Make the board cover the browser window (W)">⤢ <span>Fill window</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fs" title="Show the board on the whole screen (F)">⛶ <span>Full screen</span></button><input id="ch-otype" class="ch-otype" autocomplete="off" spellcheck="false" placeholder="Type a move: e4, Nf3…" maxlength="10" aria-label="Type a move"></div>
+						<div class="ch-otb" id="ch-otb" role="group" aria-label="Game buttons on the board"><button type="button" class="ch-ob ch-ob--min" data-o="min" aria-expanded="true" title="Hide the buttons on the board">▾</button><button type="button" class="ch-ob" data-o="undo" title="Take back your last move (U)">↶ <span>Undo</span></button><button type="button" class="ch-ob" data-o="hint" title="Show the computer's best move (H)">💡 <span>Hint</span></button><button type="button" class="ch-ob ch-3donly" data-o="view" title="Camera back to its normal view (or double-click the board)">⟲ <span>Reset view</span></button><button type="button" class="ch-ob ch-3donly" data-o="look" title="Walk the camera up to one piece and look at it close up (L, or double-click a piece)">🔍 <span>Look closer</span></button><button type="button" class="ch-ob" data-o="flip" title="Turn the board round (R)">⇅ <span>Turn</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fill" title="Make the board cover the browser window (W)">⤢ <span>Fill window</span></button><button type="button" class="ch-ob ch-ob--big" data-o="fs" title="Show the board on the whole screen (F)">⛶ <span>Full screen</span></button><input id="ch-otype" class="ch-otype" autocomplete="off" spellcheck="false" placeholder="Type a move: e4, Nf3…" maxlength="10" aria-label="Type a move"></div>
 					</div>
 				</div>
 				<p class="ch-anote" id="ch-anote" aria-live="polite"></p>
@@ -1157,7 +1168,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=9" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

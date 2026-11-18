@@ -549,6 +549,7 @@
 		window.CH3D.create(box3).then(function (v) {
 			v3 = v; v3loading = false;
 			$("ch-3dmsg").hidden = true;
+			v.onLook = showLook;
 			v.setRoom(S.room); v.setSet(S.set); v.setCam(S.cam);
 			if (PCOL[S.pcol] && v.setPieceColors) v.setPieceColors(PCOL[S.pcol]);
 			size3d(); draw3d(true);
@@ -558,6 +559,30 @@
 			setTimeout(function () { S.dim = "2d"; save(); segSet("ch-dim", "2d"); render(true); }, 2500);
 		});
 	}
+	/* Look closer: the camera walks up to one piece (double-click / double-tap it, the 🔍 button, or L); ‹ › go to the next piece of
+	   that army, drag circles round it, pinch / Ctrl+scroll zooms, ✕ / Esc / Reset view = the normal camera. */
+	var lookPick = false, PNAME = { K: "King", Q: "Queen", R: "Rook", B: "Bishop", N: "Knight", P: "Pawn" };
+	function showLook(info) {
+		var bar = $("ch-lookbar"); if (!bar) return;
+		if (info) {
+			lookPick = false;
+			bar.innerHTML = '<span class="ch-lkrow"><button type="button" class="ch-lkb" data-l="prev" title="Previous piece (←)">‹</button><b>' + (info.type === info.type.toUpperCase() ? "White " : "Black ") + PNAME[info.type.toUpperCase()].toLowerCase() +
+				'</b><button type="button" class="ch-lkb" data-l="next" title="Next piece (→)">›</button><button type="button" class="ch-lkb" data-l="end" title="Back to the normal camera (Esc)">✕ Back</button></span><span class="ch-lkhint">Drag to walk round it · pinch or Ctrl + scroll to zoom</span>';
+		} else if (lookPick) bar.innerHTML = '<span class="ch-lkrow"><b>Tap a piece to look at it</b><button type="button" class="ch-lkb" data-l="end">✕</button></span>';
+		bar.hidden = !info && !lookPick;
+	}
+	function startLook() {
+		if (!v3) return;
+		if (v3.look3) { v3.endLook(); return; }
+		if (sel >= 0 && v3.inspect(sel)) return;
+		lookPick = !lookPick; showLook(null);
+	}
+	$("ch-lookbar").addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+	$("ch-lookbar").addEventListener("dblclick", function (e) { e.stopPropagation(); });
+	$("ch-lookbar").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-l]"); if (!b || !v3) return; var l = b.getAttribute("data-l");
+		if (l === "prev") v3.step(-1); else if (l === "next") v3.step(1); else { lookPick = false; v3.endLook(); showLook(null); }
+	});
 	function size3d() { if (!v3) return; var r = box3.getBoundingClientRect(); if (r.width > 10 && r.height > 10) v3.size(Math.round(r.width), Math.round(r.height)); }
 	function draw3d(noAnim) {
 		if (!v3) return;
@@ -590,7 +615,10 @@
 		var d = p3.drag; delete p3.pts[e.pointerId];
 		if (Object.keys(p3.pts).length === 0) p3.drag = null;
 		if (!d || d.look || !v3 || e.type === "pointercancel") return;
-		if (!d.moved) chooseSquare(v3.pick(e.clientX, e.clientY));
+		if (d.moved) return;
+		var sq = v3.pick(e.clientX, e.clientY);
+		if (lookPick) { if (v3.inspect(sq)) return; lookPick = false; showLook(null); }
+		chooseSquare(sq);
 	}
 	box3.addEventListener("pointerup", up3);
 	box3.addEventListener("pointercancel", up3);
@@ -604,7 +632,7 @@
 		e.preventDefault(); if (!d) return;
 		v3.zoom(Math.exp(Math.max(-0.3, Math.min(0.3, d * 0.0015))));
 	}, { passive: false });
-	box3.addEventListener("dblclick", function () { if (v3) v3.resetView(); });
+	box3.addEventListener("dblclick", function (e) { if (!v3) return; var sq = v3.pick(e.clientX, e.clientY); if (sq < 0 || !v3.inspect(sq)) v3.resetView(); });
 
 	/* ---------- render ---------- */
 	function nameOf(p) {
@@ -809,7 +837,7 @@
 	$("ch-otb").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-o]"); if (!b || b.disabled) return;
 		var o = b.getAttribute("data-o");
-		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "flip") $("ch-flip").click(); else if (o === "min") { S.otbMin = !S.otbMin; save(); applyShow(); } else if (o === "fill") panelBtn(0); else if (o === "fs") panelBtn(1);
+		if (o === "undo") undo(); else if (o === "hint") hint(); else if (o === "view") { if (v3) v3.resetView(); } else if (o === "look") startLook(); else if (o === "flip") $("ch-flip").click(); else if (o === "min") { S.otbMin = !S.otbMin; save(); applyShow(); } else if (o === "fill") panelBtn(0); else if (o === "fs") panelBtn(1);
 	});
 	/** the Fill window / Full screen buttons on the board mirror panel-view.js's own buttons (labels follow the state) */
 	function paintOtbPanel() {
@@ -917,6 +945,11 @@
 		if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || e.ctrlKey || e.metaKey || e.altKey) return;
 		if ($("ch-p-play").hidden) return;
 		var k = e.key.toLowerCase();
+		if (v3 && use3d() && (v3.look3 || lookPick)) {
+			if (e.key === "Escape") { lookPick = false; v3.endLook(); showLook(null); return; }
+			if (v3.look3 && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); v3.step(e.key === "ArrowLeft" ? -1 : 1); return; }
+		}
+		if (k === "l" && use3d()) { startLook(); return; }
 		if (k === "n" && mode !== "online" && mode !== "hive") newGame();
 		else if (k === "u") undo();
 		else if (k === "h") hint();

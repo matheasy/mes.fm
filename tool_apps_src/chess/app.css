@@ -176,6 +176,13 @@
 	#ch .ch-promo svg {width:100%;height:auto;display:block;}
 	#ch .ch-3d {flex:1 1 auto;position:relative;width:100%;height:min(74vh, 62vw);min-height:300px;border-radius:8px;overflow:hidden;background:#111;touch-action:none;}
 	#ch .ch-3d canvas {display:block;width:100%;height:100%;}
+	#ch .ch-lookbar {position:absolute;top:0.6em;left:50%;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:0.2em;padding:0.35em 0.6em;border-radius:12px;background:rgba(20,22,26,0.72);backdrop-filter:blur(4px);color:#fff;max-width:calc(100% - 1.2em);text-align:center;}
+	#ch .ch-lookbar[hidden] {display:none;}
+	#ch .ch-lkrow {display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;justify-content:center;}
+	#ch .ch-lookbar b {color:#fff;font-size:1.05em;}
+	#ch .ch-lkb {cursor:pointer;font:inherit;min-width:36px;min-height:34px;padding:0.1em 0.7em;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.14);color:#fff;font-size:1em;}
+	#ch .ch-lkb:hover {background:rgba(255,255,255,0.26);}
+	#ch .ch-lkhint {font-size:0.8em;color:#d7dbe2;}
 	#ch .ch-3dmsg {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;margin:0;padding:1em;text-align:center;}
 	#ch .ch-typebox {display:flex;gap:0.5em;align-items:center;justify-content:center;margin:0.5em 0 0;font-size:0.9em;}
 	#ch .ch-typebox input {max-width:13em;}

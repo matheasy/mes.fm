@@ -125,7 +125,7 @@
 	/* "Fantasy armies 3D (in progress)": real 3D figures made with Microsoft TRELLIS (MIT) from the same pictures
 	   (mes.fm/chess/img/fantasy3d/<key>.glb). They are added one or two at a time; a piece with no model yet uses its picture figure.
 	   The files are plain GLBs (one mesh: positions, UVs, indices, one PNG texture), read by the small parser below. */
-	var MODELS3D = ["wN", "wK", "wQ"], M3 = {};
+	var MODELS3D = ["wN", "wK", "wQ", "wB"], M3 = {};
 	function parseGlb(buf) {
 		var dv = new DataView(buf), jl = dv.getUint32(12, true), j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jl)));
 		var bin = 20 + jl + 8;
@@ -330,6 +330,7 @@
 		}
 		old.forEach(function (m) { if (m && used.indexOf(m) < 0 && next.indexOf(m) < 0) self.pieceG.remove(m); });
 		this.pieces = next; this.pos = p;
+		if (this.look3 && next.indexOf(this.look3.obj) < 0) this.endLook();   // the piece looked at was taken
 		this.markers(p);
 		if (flipChanged && this.camMode !== "orbit") this.free = { yaw: 0, pitch: 0 };
 		this.render();
@@ -349,19 +350,49 @@
 	View.prototype.setCoords = function (on) { this.coords = on !== false; this.buildBoard(); this.render(); };
 
 	/* ---------- camera ---------- */
-	View.prototype.setCam = function (m) { this.camMode = m; this.free = { yaw: 0, pitch: 0 }; this.render(); };
-	View.prototype.zoom = function (f) { this.zoomF = Math.max(0.45, Math.min(2.6, this.zoomF * f)); if (this.camMode === "orbit") this.orb.d = Math.max(5, Math.min(40, this.orb.d * f)); this.render(); };
+	View.prototype.setCam = function (m) { this.endLook(); this.camMode = m; this.free = { yaw: 0, pitch: 0 }; this.render(); };
+	View.prototype.zoom = function (f) {
+		if (this.look3) { this.look3.d = Math.max(0.8, Math.min(12, this.look3.d * f)); this.render(); return; } this.zoomF = Math.max(0.45, Math.min(2.6, this.zoomF * f)); if (this.camMode === "orbit") this.orb.d = Math.max(5, Math.min(40, this.orb.d * f)); this.render(); };
 	View.prototype.orbit = function (dx, dy) {
 		// "grab the board": the board turns the way the pointer moves; dragging down tips the far side towards you (camera rises)
+		if (this.look3) { var L3 = this.look3; L3.th += dx * 0.01; L3.ph = Math.max(0.2, Math.min(1.56, L3.ph - dy * 0.006)); this.render(); return; }
 		if (this.camMode === "orbit") { this.orb.th += dx * 0.008; this.orb.ph = Math.max(0.05, Math.min(1.45, this.orb.ph - dy * 0.006)); }
 		else { this.free.yaw += dx * 0.008; this.free.pitch = Math.max(-0.9, Math.min(0.9, this.free.pitch - dy * 0.006)); }
 		this.render();
 	};
-	View.prototype.resetView = function () { this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1; this.orb = { th: this.flip ? -Math.PI / 2 : Math.PI / 2, ph: 0.75, d: 13 }; this.render(); };
+	/* Look closer: the camera walks up to one piece, starting in front of its face (each army faces the other), and drags /
+	   zoom then circle round it. inspect(square) -> true when there was a piece; step(+1/-1) = the next piece of the same army;
+	   endLook() / resetView() = the normal camera again. onLook(info|null) tells the page what is being looked at. */
+	var LOOK_ORDER = "KQRBNP";
+	View.prototype.inspect = function (s) {
+		var obj = this.pieces[s]; if (!obj) return false;
+		var type = obj.userData.type, white = type === type.toUpperCase(), h = SPR_H[type.toUpperCase()];
+		this.look3 = { obj: obj, s: s, type: type, th: white ? -Math.PI / 2 : Math.PI / 2, ph: 1.15, d: h * 2.1 + 0.7, h: h };
+		if (this.onLook) this.onLook({ s: s, type: type });
+		this.render(); return true;
+	};
+	View.prototype.step = function (dir) {
+		var L3 = this.look3; if (!L3) return;
+		var white = L3.type === L3.type.toUpperCase(), list = [];
+		this.pieces.forEach(function (m, i) { if (m && (m.userData.type === m.userData.type.toUpperCase()) === white) list.push(i); });
+		list.sort(function (a, b) { var ta = LOOK_ORDER.indexOf(this.pieces[a].userData.type.toUpperCase()), tb = LOOK_ORDER.indexOf(this.pieces[b].userData.type.toUpperCase()); return ta - tb || (a % 8) - (b % 8) || a - b; }.bind(this));
+		var k = list.indexOf(this.pieces.indexOf(L3.obj)); if (!list.length) return;
+		var th = L3.th, ph = L3.ph, d = L3.d;
+		this.inspect(list[((k < 0 ? 0 : k + dir) % list.length + list.length) % list.length]);
+		this.look3.th = th; this.look3.ph = ph; this.look3.d = Math.max(this.look3.h * 1.2, d * this.look3.h / (SPR_H[this.look3.type.toUpperCase()] || 1));
+	};
+	View.prototype.endLook = function () { if (!this.look3) return; this.look3 = null; if (this.onLook) this.onLook(null); this.render(); };
+	View.prototype.resetView = function () { this.endLook(); this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1; this.orb = { th: this.flip ? -Math.PI / 2 : Math.PI / 2, ph: 0.75, d: 13 }; this.render(); };
 	View.prototype.camTarget = function () {
 		var mode = this.camMode, z = this.zoomF, out = { eye: new THREE.Vector3(), look: new THREE.Vector3(0, 0, 0), up: new THREE.Vector3(0, 1, 0) };
 		var fov = this.cam.fov * Math.PI / 180, asp = Math.max(0.3, this.w / this.h);
 		var fit = 5.4 / Math.tan(fov / 2) / Math.min(1, asp);        // distance at which the board (with frame) fits the narrow side
+		if (this.look3) {
+			var L3 = this.look3, c = L3.obj.position;
+			out.look.set(c.x, L3.h * 0.55, c.z);
+			out.eye.set(c.x + L3.d * Math.sin(L3.ph) * Math.cos(L3.th), L3.h * 0.55 + L3.d * Math.cos(L3.ph), c.z + L3.d * Math.sin(L3.ph) * Math.sin(L3.th));
+			return out;
+		}
 		if (mode === "orbit") {
 			var o = this.orb;
 			out.eye.set(o.d * Math.sin(o.ph) * Math.cos(o.th), o.d * Math.cos(o.ph), o.d * Math.sin(o.ph) * Math.sin(o.th));
