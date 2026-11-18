@@ -333,10 +333,12 @@
 		' <span class="sc-chips" id="sc-pfs"></span>',
 		' <button type="button" class="sc-btn" id="sc-paid" aria-pressed="false" title="Show only Super Chats, stickers, memberships, bits, subs and tips">$ Tips only</button>',
 		' <span class="sc-sp"></span>',
-		' <button type="button" class="sc-btn" id="sc-sm" title="Smaller text">A-</button><button type="button" class="sc-btn" id="sc-lg" title="Bigger text">A+</button>',
-		' <button type="button" class="sc-btn" id="sc-gear" aria-expanded="false" title="Settings">⚙</button>',
+		' <button type="button" class="sc-btn" id="sc-sm" title="Smaller text" aria-label="Smaller text">A-</button><span class="sc-pct" id="sc-pct" title="Text size (click to reset)" role="button" tabindex="0"></span><button type="button" class="sc-btn" id="sc-lg" title="Bigger text" aria-label="Bigger text">A+</button>',
+		' <button type="button" class="sc-btn" id="sc-gear" aria-expanded="false" aria-controls="sc-setup" title="Show or hide the settings">⚙ <span id="sc-gearlbl">Settings</span></button>',
 		'</div>',
+		'<p class="sc-warn" id="sc-warn" hidden><span>The text size did not change. A browser extension (for example a text size extension) may be setting the size on this page. Turn it off for mes.fm, or use its own buttons instead.</span><button type="button" class="sc-btn" id="sc-warnx">OK</button></p>',
 		'<div class="sc-setup" id="sc-setup" hidden>',
+		' <div class="sc-setup-hd">Settings<span class="sc-sp"></span><button type="button" class="sc-btn" id="sc-hide">Hide settings ▴</button></div>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-yt"><span class="sc-pf sc-pf--yt"></span> YouTube <input class="sc-in" id="sc-yt" spellcheck="false" placeholder="@channel, channel ID or video link"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-tw"><span class="sc-pf sc-pf--tw"></span> Twitch <input class="sc-in" id="sc-tw" spellcheck="false" placeholder="channel name"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-od"><span class="sc-pf sc-pf--od"></span> Odysee <input class="sc-in" id="sc-od" spellcheck="false" placeholder="@channel:claim"></label>',
@@ -366,7 +368,8 @@
 		PFS.forEach(function (p) { $('sc-' + p).value = S[p]; $('sc-on-' + p).checked = !!S.on[p]; });
 		$('sc-o-av').checked = S.avatars; $('sc-o-tm').checked = S.times; $('sc-o-dg').checked = S.ding;
 	}
-	function setupOpen(o) { $('sc-setup').hidden = !o; $('sc-gear').setAttribute('aria-expanded', o ? 'true' : 'false'); S.setup = o; save(); }
+	function setupOpen(o) { $('sc-setup').hidden = !o; $('sc-gear').setAttribute('aria-expanded', o ? 'true' : 'false'); $('sc-gear').setAttribute('aria-pressed', o ? 'true' : 'false'); $('sc-gearlbl').textContent = o ? 'Hide settings' : 'Settings'; S.setup = o; save(); }
+	$('sc-hide').onclick = function () { setupOpen(false); };
 	$('sc-gear').onclick = function () { setupOpen($('sc-setup').hidden); };
 	$('sc-apply').onclick = function () {
 		PFS.forEach(function (p) { S[p] = $('sc-' + p).value.trim(); S.on[p] = $('sc-on-' + p).checked; });
@@ -375,7 +378,20 @@
 	};
 	$('sc-paid').onclick = function () { S.paidOnly = !S.paidOnly; this.setAttribute('aria-pressed', S.paidOnly ? 'true' : 'false'); save(); redraw(); };
 	$('sc-paid').setAttribute('aria-pressed', S.paidOnly ? 'true' : 'false');
-	function size(d) { S.size = Math.round(Math.min(2.2, Math.max(0.7, S.size + d)) * 10) / 10; root.style.setProperty('--sc-size', S.size); save(); if (pinned) toBottom(); }
+	/* A browser extension that sets font sizes on the page (MES Text Size and the like) beats these buttons: when the size we set does
+	   not show up in the computed size of the button bar, say so. */
+	function probe() { var b = $('sc-sm'); return b ? parseFloat(getComputedStyle(b).fontSize) || 0 : 0; }
+	function pct() { $('sc-pct').textContent = Math.round(S.size * 100) + '%'; }
+	function size(d) {
+		var before = probe(), old = S.size;
+		S.size = d === 0 ? 1 : Math.round(Math.min(2.2, Math.max(0.7, S.size + d)) * 10) / 10;
+		root.style.setProperty('--sc-size', S.size); save(); pct(); if (pinned) toBottom();
+		if (S.size !== old) requestAnimationFrame(function () { $('sc-warn').hidden = Math.abs(probe() - before) > 0.2; });
+	}
+	$('sc-pct').onclick = function () { size(0); };
+	$('sc-pct').onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); size(0); } };
+	$('sc-warnx').onclick = function () { $('sc-warn').hidden = true; };
+	pct();
 	$('sc-sm').onclick = function () { size(-0.1); }; $('sc-lg').onclick = function () { size(0.1); };
 	list.addEventListener('scroll', function () { pinned = list.scrollHeight - list.scrollTop - list.clientHeight < 40; if (pinned) { unseen = 0; newPill(); } });
 	$('sc-newpill').onclick = function () { pinned = true; toBottom(); };
