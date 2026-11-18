@@ -164,7 +164,7 @@
         var out = items.filter(function (it) {
             if (f.k === "queue") { if (!it.qo) return false; }
             else if (f.k && f.k !== "all" && it.k !== f.k) return false;
-            var st = f.k === "queue" ? "open" : f.st || "open";
+            var st = f.st || "open";
             if (st === "open" ? !(it.st === "todo" || it.st === "doing") : st !== "all" && it.st !== st) return false;
             if (f.star && !it.star) return false;
             if (f.tool && itemTools(it).indexOf(f.tool) < 0) return false;
