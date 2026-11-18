@@ -515,6 +515,23 @@ html body.dark-mode #lu.lu .lu-g-list .lu-g-on {background:rgba(183,148,246,0.2)
 html body.dark-mode #lu.lu .lu-mk--c {background:#f5a524;} html body.dark-mode #lu.lu .lu-mk--d {background:#7fb2ff;}
 html body.dark-mode #lu.lu .lu-mstages li.is-now {background:#6d28d9;border-color:#6d28d9;}
 
+/* movable / collapsible sections */
+#lu .lu-sec {margin-bottom:0.9em;}
+#lu .lu-sec > .tu-card, #lu .lu-sec > .lu-grid2 {margin-bottom:0;}
+#lu .lu-secbar {display:flex;align-items:center;gap:0.35em;margin:0 0 0.3em;font-size:0.85em;}
+#lu .lu-secbar button {background:none;border:1px solid transparent;border-radius:0.4em;color:var(--lu-mut);cursor:pointer;font:inherit;min-height:32px;padding:0.1em 0.45em;}
+#lu .lu-secbar button:hover, #lu .lu-secbar button:focus-visible {border-color:var(--lu-line);color:var(--lu-ink);}
+#lu .lu-sgrip {cursor:grab !important;touch-action:none;font-size:1.15em;letter-spacing:-0.1em;}
+#lu .lu-stitle {font-weight:700 !important;color:var(--lu-ink) !important;text-align:left;}
+#lu .lu-scar {display:inline-block;width:1em;}
+#lu .lu-smove {margin-left:auto;display:inline-flex;gap:0.15em;}
+#lu .lu-sec.is-col > :not(.lu-secbar) {display:none !important;}
+#lu .lu-sec.is-col > .lu-secbar {padding:0.35em 0.4em;border:1px dashed var(--lu-line);border-radius:0.6em;}
+#lu .lu-sec.is-drag {opacity:0.75;outline:2px dashed var(--lu-sel);outline-offset:4px;border-radius:0.6em;}
+#lu.lu-dragging, #lu .lu-dragging {user-select:none;}
+#lu .lu-dragging .lu-sgrip {cursor:grabbing !important;}
+#lu .lu-secreset {display:block;margin:0 0 1em auto;background:none;border:0;color:var(--lu-mut);text-decoration:underline;cursor:pointer;font-size:0.82em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1208,7 +1225,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:5
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/luders-bands/js/luders-bands.js?v=7" defer></script>
+	<script src="/luders-bands/js/luders-bands.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

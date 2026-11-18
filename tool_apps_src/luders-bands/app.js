@@ -138,7 +138,7 @@
   }
   /* text size: the header A- / A+ sets font-size on #main-content (in em); drawings follow it (capped so the plots keep room) */
   function TXS() { var m = document.getElementById("main-content"), v = m ? parseFloat(m.style.fontSize) : NaN; return v > 0 ? Math.min(1.8, Math.max(0.75, v)) : 1; }
-  function fnt(n, bold) { return (bold ? "bold " : "") + Math.round(n * TXS()) + "px system-ui, sans-serif"; }
+  function fnt(n, bold) { return (bold ? "bold " : "500 ") + Math.round(n * TXS()) + "px system-ui, sans-serif"; }
   function css(name) { return getComputedStyle(root).getPropertyValue(name).trim() || "#888"; }
   function isDark() { return document.body.classList.contains("dark-mode"); }
 
@@ -241,12 +241,19 @@
     c.fillRect(x0, yc + sh / 2 + 4, 1, 8); c.fillRect(x1 - 1, yc + sh / 2 + 4, 1, 8);
     c.textAlign = S.thin && sim.P > 0 ? "left" : "center"; c.fillText("gauge length " + p.Lg + " mm", S.thin && sim.P > 0 ? x0 + 4 : (x0 + x1) / 2, yc + sh / 2 + 14 * TXS());
     /* crosshead arrow */
+    /* labels sit on their own plate above the grey rail (they used to be drawn on it) */
+    var ly = Math.max(Math.round(15 * TXS()), yc - sh / 2 - 32), ax = Math.min(w - 8, x1 + shW + gripW + 4);
+    function plate(txt, x, align, col) {
+      c.font = fnt(12, 1); var tw = c.measureText(txt).width, h2 = Math.round(17 * TXS()), x0 = align === "right" ? x - tw : x;
+      c.fillStyle = css("--lu-bg"); c.strokeStyle = css("--lu-line"); c.lineWidth = 1;
+      c.beginPath(); if (c.roundRect) c.roundRect(x0 - 6, ly - h2 + 4, tw + 12, h2 + 2, 5); else c.rect(x0 - 6, ly - h2 + 4, tw + 12, h2 + 2); c.fill(); c.stroke();
+      c.fillStyle = col; c.textAlign = align; c.fillText(txt, x, ly);
+    }
+    plate(sim.unloadedNow ? "unloaded" : "pulled at " + S.v + " mm/min", ax - 28, "right", css("--lu-arrow"));
     c.strokeStyle = css("--lu-arrow"); c.fillStyle = css("--lu-arrow"); c.lineWidth = 2.5;
-    var ax = Math.min(w - 8, x1 + shW + gripW + 4);
-    c.beginPath(); c.moveTo(ax - 18, yc - sh / 2 - 22); c.lineTo(ax, yc - sh / 2 - 22); c.stroke();
-    c.beginPath(); c.moveTo(ax + 2, yc - sh / 2 - 22); c.lineTo(ax - 6, yc - sh / 2 - 27); c.lineTo(ax - 6, yc - sh / 2 - 17); c.closePath(); c.fill();
-    c.textAlign = "right"; c.fillText((sim.unloadedNow ? "unloaded" : "V = " + S.v + " mm/min"), ax - 22, yc - sh / 2 - 18);
-    c.textAlign = "left"; c.fillStyle = css("--lu-mut"); c.fillText("fixed", pad, yc - sh / 2 - 18);
+    c.beginPath(); c.moveTo(ax - 20, ly - 5); c.lineTo(ax - 2, ly - 5); c.stroke();
+    c.beginPath(); c.moveTo(ax, ly - 5); c.lineTo(ax - 8, ly - 10); c.lineTo(ax - 8, ly); c.closePath(); c.fill();
+    plate("fixed grip", pad + 6, "left", css("--lu-ink"));
     /* front markers */
     var fr = sim.fronts();
     if (sim.phase === "luders" || (fr.length && fr.length < 6)) {
@@ -758,6 +765,62 @@
   /* ---- toast ---- */
   var tt = null;
   function toast(msg) { var el = $("lu-toast"); el.textContent = msg; el.classList.add("tu-toast--show"); clearTimeout(tt); tt = setTimeout(function () { el.classList.remove("tu-toast--show"); }, 2600); }
+
+  /* ---- sections: collapse, and drag (or ▲ ▼) to change their order ---- */
+  (function () {
+    var LKEY = KEY + ":lay", SECS = [["test", "#lu-view", "The test"], ["set", ".lu-grid2", "The bar, the machine and strain ageing"], ["micro", "#lu-micro", "Inside the metal"], ["angle", ".lu-angc", "Why the band leans at about 55°"], ["photos", "#lu-photos", "Real photos"]];
+    var lay = {}; try { lay = JSON.parse(localStorage.getItem(LKEY) || "{}") || {}; } catch (e) {}
+    lay.col = lay.col || {};
+    var wraps = {};
+    SECS.forEach(function (d) {
+      var el = root.querySelector(d[1]); if (!el) return;
+      var w = document.createElement("div"); w.className = "lu-sec"; w.setAttribute("data-sec", d[0]);
+      el.parentNode.insertBefore(w, el);
+      var bar = document.createElement("div"); bar.className = "lu-secbar";
+      bar.innerHTML = '<button type="button" class="lu-sgrip" aria-label="Drag to move this section" title="Drag to move this section">⠿</button><button type="button" class="lu-stitle" aria-expanded="true"><span class="lu-scar" aria-hidden="true">▾</span> ' + d[2] + '</button><span class="lu-smove"><button type="button" data-mv="-1" aria-label="Move up" title="Move up">▲</button><button type="button" data-mv="1" aria-label="Move down" title="Move down">▼</button></span>';
+      w.appendChild(bar); w.appendChild(el); wraps[d[0]] = w;
+    });
+    var host = wraps.test && wraps.test.parentNode;
+    if (!host) return;
+    function list() { return Array.prototype.slice.call(host.querySelectorAll(":scope > .lu-sec")); }
+    function save2() { lay.order = list().map(function (w) { return w.getAttribute("data-sec"); }); try { localStorage.setItem(LKEY, JSON.stringify(lay)); } catch (e) {} }
+    function setCol(w, on) { w.classList.toggle("is-col", on); var t = w.querySelector(".lu-stitle"); t.setAttribute("aria-expanded", on ? "false" : "true"); t.querySelector(".lu-scar").textContent = on ? "▸" : "▾"; }
+    var tail = list()[list().length - 1].nextSibling;
+    if (Array.isArray(lay.order)) { var seen = {}; lay.order.concat(SECS.map(function (d) { return d[0]; })).forEach(function (k) { if (wraps[k] && !seen[k]) { seen[k] = 1; host.insertBefore(wraps[k], tail); } }); }
+    var toast2 = $("lu-toast"); if (toast2) host.appendChild(toast2);
+    Object.keys(wraps).forEach(function (k) { setCol(wraps[k], !!lay.col[k]); });
+    function redraw() { setTimeout(function () { drawAll(); drawAngle(); }, 30); }
+    host.addEventListener("click", function (e) {
+      var w = e.target.closest(".lu-sec"); if (!w || e.target.closest(".lu-sec") !== w) return;
+      if (e.target.closest(".lu-stitle")) { var on = !w.classList.contains("is-col"); setCol(w, on); lay.col[w.getAttribute("data-sec")] = on ? 1 : 0; save2(); if (!on) redraw(); return; }
+      var mv = e.target.closest(".lu-secbar [data-mv]");
+      if (mv) { var L2 = list(), i = L2.indexOf(w), j = i + (+mv.getAttribute("data-mv")); if (j < 0 || j >= L2.length) return; host.insertBefore(w, +mv.getAttribute("data-mv") > 0 ? L2[j].nextSibling : L2[j]); save2(); redraw(); mv.focus(); }
+    });
+    /* drag by the grip: the section follows the pointer between the others */
+    var drag = null;
+    host.addEventListener("pointerdown", function (e) {
+      var g = e.target.closest(".lu-sgrip"); if (!g) return;
+      var w = g.closest(".lu-sec"); e.preventDefault(); g.setPointerCapture(e.pointerId);
+      drag = { w: w, g: g }; w.classList.add("is-drag"); host.classList.add("lu-dragging");
+    });
+    host.addEventListener("pointermove", function (e) {
+      if (!drag) return; var y = e.clientY;
+      var L2 = list().filter(function (x) { return x !== drag.w; }), before = null;
+      for (var i = 0; i < L2.length; i++) { var r = L2[i].getBoundingClientRect(); if (y < r.top + Math.min(r.height / 2, 120)) { before = L2[i]; break; } }
+      var cur = drag.w.nextElementSibling; while (cur && !cur.classList.contains("lu-sec")) cur = cur.nextElementSibling;
+      if (before !== cur) { if (before) host.insertBefore(drag.w, before); else { var last = L2[L2.length - 1]; host.insertBefore(drag.w, last.nextSibling); } }
+      if (y < 60) window.scrollBy(0, -14); else if (y > window.innerHeight - 60) window.scrollBy(0, 14);
+    });
+    function endDrag() { if (!drag) return; drag.w.classList.remove("is-drag"); host.classList.remove("lu-dragging"); drag = null; save2(); redraw(); }
+    host.addEventListener("pointerup", endDrag); host.addEventListener("pointercancel", endDrag);
+    host.addEventListener("keydown", function (e) {
+      var g = e.target.closest(".lu-sgrip"); if (!g || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+      e.preventDefault(); var b = g.closest(".lu-sec").querySelector('[data-mv="' + (e.key === "ArrowUp" ? -1 : 1) + '"]'); b.click(); g.focus();
+    });
+    var rb = document.createElement("button"); rb.type = "button"; rb.className = "lu-secreset"; rb.textContent = "Reset section order";
+    rb.addEventListener("click", function () { SECS.forEach(function (d) { if (wraps[d[0]]) host.insertBefore(wraps[d[0]], toast2 || null); setCol(wraps[d[0]], false); }); lay = { col: {} }; try { localStorage.removeItem(LKEY); } catch (e) {} redraw(); });
+    host.insertBefore(rb, toast2 || null);
+  })();
 
   /* ---- fill window / full screen ---- */
   function addPanel() { if (window.MESPanel && !$("lu-view").__mesPanel) { window.MESPanel.add($("lu-view"), { bar: $("lu-vbar").querySelector(".lu-vbtns"), stage: $("lu-stage"), onChange: function () { setTimeout(drawAll, 40); } }); } }
