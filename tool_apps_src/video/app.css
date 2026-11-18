@@ -382,3 +382,14 @@
 	html body.dark-mode #vd .vd-clip.is-grp {box-shadow:inset 0 -3px 0 #fbbf24;}
 	#vd .vd-chk[hidden] {display:none;}
 	#vd .vd-nboost {margin-top:0.45em;display:flex;flex-direction:column;gap:0.2em;} #vd .vd-nboost input[type=range] {width:100%;accent-color:#22c55e;} #vd .vd-nboost output {color:var(--vd-dim);margin-left:0.3em;}
+
+	/* speed + time at the top of the preview in Fill window / full screen */
+	#vd .vd-fstop {display:none;align-items:center;gap:0.5em;padding:0 0.5em 0 0.1em;margin-right:0.2em;border-right:1px solid var(--vd-line);color:#e6e9ef;font-variant-numeric:tabular-nums;flex-wrap:wrap;}
+	#vd .vd.vd-pvfill .vd-vz .vd-fstop, #vd .vd-stagewrap:fullscreen .vd-vz .vd-fstop {display:flex;}
+	#vd .vd.vd-pvfill .vd-vz.is-min > .vd-fstop, #vd .vd-stagewrap:fullscreen .vd-vz.is-min > .vd-fstop {display:flex;border-right:0;}
+		#vd .vd-fsspd {display:inline-flex;align-items:center;gap:0.15em;}
+	#vd .vd-fstop .vd-btn {min-height:28px;padding:0.15em 0.5em;font-size:0.82em;} #vd .vd-fstop .vd-ico {min-width:28px;}
+	#vd .vd-fsnum {min-width:4.6em;font-variant-numeric:tabular-nums;}
+	#vd .vd-fsnum.is-on {color:#fbbf24;border-color:#b45309;}
+	#vd .vd-fstime {font-size:0.85em;white-space:nowrap;} #vd .vd-fsleft {font-size:0.85em;color:#fbbf24;white-space:nowrap;}
+	#vd .vd-fsleft:empty {display:none;}

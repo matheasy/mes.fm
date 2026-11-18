@@ -534,6 +534,30 @@
 		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
 		el.addEventListener("click", function (e) { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });   // keyboard Enter / Space
 	});
+	// the same - / + on the Fill window / full screen top bar (speed + time + time left)
+	[["vd-fsdn", -1], ["vd-fsup", 1]].forEach(function (b) {
+		var el = $(b[0]), t0 = 0, tm = 0, held = false;
+		function stop() { clearTimeout(tm); tm = 0; }
+		function rep() { var dt = performance.now() - t0; P.nudgeSpeed(b[1], dt > 2600 ? 1 : dt > 1400 ? 0.25 : 0.05); tm = setTimeout(rep, 90); }
+		el.addEventListener("pointerdown", function (e) { if (e.button !== 0 || el.disabled) return; e.preventDefault(); held = true; t0 = performance.now(); P.nudgeSpeed(b[1]); tm = setTimeout(rep, 420); });
+		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
+		el.addEventListener("click", function () { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });
+	});
+	$("vd-fsnum").onclick = function () { VE.speedKey(1); };
+	// keys like the Video Speed Controller: [ ] = 0.05 slower / faster, U = 1x, P = 2x; pressing U or P again goes back to the speed you had
+	var spBack = 1;
+	VE.speedKey = function (to) {
+		if (Math.abs(P.speed - to) < 1e-9) { if (Math.abs(spBack - to) > 1e-9) P.setSpeed(spBack); return; }
+		spBack = P.speed; P.setSpeed(to);
+	};
+	function fsTop() {
+		var s = P.speed, n = $("vd-fsnum"), fps = VE.P.fps, d = V.duration(VE.P);
+		n.textContent = V.speedLabel(s, fps); n.classList.toggle("is-on", Math.abs(s - 1) > 1e-9);
+		$("vd-fsdn").disabled = s <= V.speedMin(fps) + 1e-9; $("vd-fsup").disabled = s >= V.SPEED_MAX - 1e-9;
+		$("vd-fstime").textContent = V.tc(VE.t, fps) + " / " + V.tc(d, fps);
+		$("vd-fsleft").textContent = d > 0 && VE.t < d - 1e-6 ? V.watchLeft(VE.t, d, s || 1) + " left" : "";
+	}
+	VE.on("speed", fsTop); VE.on("time", fsTop); VE.on("change", fsTop); fsTop();
 	var spToastT = 0;
 	VE.on("speed", function (s) {
 		UI.speed = s; saveUI(); fillSpeed();
@@ -1664,6 +1688,10 @@
 			case "g": case "G": if (mod) { if (e.shiftKey) VE.ungroupSel(); else VE.groupSel(); } else $("vd-vzguide").click(); break;
 			case "h": case "H": P.setHand(!P.hand); break;
 			case "k": case "K": P.pause(); break;
+			case "[": P.nudgeSpeed(-1); break;
+			case "]": P.nudgeSpeed(1); break;
+			case "u": case "U": VE.speedKey(1); break;
+			case "p": case "P": VE.speedKey(2); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
 			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else VE.stepFrame(1); break;
 			case "ArrowUp": VE.goEdit(-1); break; case "ArrowDown": VE.goEdit(1); break;
