@@ -79,3 +79,14 @@
 	.rm-banner .rm-again {background:transparent;color:#fff;border:1px solid #8a96a8;}
 	body.dark-mode #rm .rm-item-say {color:#f2a6c4;}
 	body.dark-mode #rm .rm-arm {background:#3a3015;color:#f5dc9a;border-color:#7a6326;}
+
+/* The alert card is always dark navy, in light and dark mode. The shell's reset paints every div / span / p / b #333 and the derived
+   TOOL-DARK block lightens the card and darkens its buttons, which made the text unreadable in dark mode (2026-11-18): restate the
+   colours with enough specificity to win in both themes. */
+html body .rm-banner, html body.dark-mode .rm-banner {background:#1e2733 !important;color:#f3f6fa !important;border:1px solid #3a4a5e;}
+html body .rm-banner :is(div, span, p, b, strong, em, i, small, br), html body.dark-mode .rm-banner :is(div, span, p, b, strong, em, i, small) {color:inherit !important;}
+html body .rm-banner a, html body.dark-mode .rm-banner a {color:#9fd2ff !important;}
+html body .rm-banner .rm-said, html body.dark-mode .rm-banner .rm-said {color:#ffd9e6 !important;}
+html body .rm-banner .rm-note, html body.dark-mode .rm-banner .rm-note {color:#c9d3df !important;}
+html body .rm-banner button, html body.dark-mode .rm-banner button {background:#ffffff !important;color:#1e2733 !important;border:0;}
+html body .rm-banner .rm-again, html body.dark-mode .rm-banner .rm-again {background:transparent !important;color:#ffffff !important;border:1px solid #8a96a8 !important;}

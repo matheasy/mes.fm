@@ -276,3 +276,9 @@ body.dark-mode #tm .tm-saybtn.is-set {background:#4a3612;border-color:#d79a3e;bo
 /* Display mode: scroll when the window is too short (mouse wheel / trackpad / touch). The bar stays on top; pop-ups stay put. */
 .tm-dp {overflow-y:auto;overscroll-behavior:contain;} .tm-dp__bar {position:sticky;top:0;z-index:6;background:var(--dp12);} .tm-dp__grid {flex:1 0 auto;}
 .tm-dp__pick, .tm-dp__ed, .tm-dp__ring {position:fixed;}
+
+/* The ringing banner keeps its red card + white buttons in dark mode too (TOOL-DARK turned the buttons black with pink text, 2026-11-18). */
+html body.dark-mode #tm .tm-ring {background:#c0392f;color:#fff;}
+html body.dark-mode #tm .tm-ring__msg {color:#fff;}
+html body.dark-mode #tm .tm-ring__btns button {background:#fff;color:#a52a22;border-color:#fff;}
+html body.dark-mode #tm .tm-ring__btns button.alt {background:transparent;color:#fff;}

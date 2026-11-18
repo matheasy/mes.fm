@@ -584,6 +584,12 @@ body.dark-mode #tm .tm-saybtn.is-set {background:#4a3612;border-color:#d79a3e;bo
 .tm-dp {overflow-y:auto;overscroll-behavior:contain;} .tm-dp__bar {position:sticky;top:0;z-index:6;background:var(--dp12);} .tm-dp__grid {flex:1 0 auto;}
 .tm-dp__pick, .tm-dp__ed, .tm-dp__ring {position:fixed;}
 
+/* The ringing banner keeps its red card + white buttons in dark mode too (TOOL-DARK turned the buttons black with pink text, 2026-11-18). */
+html body.dark-mode #tm .tm-ring {background:#c0392f;color:#fff;}
+html body.dark-mode #tm .tm-ring__msg {color:#fff;}
+html body.dark-mode #tm .tm-ring__btns button {background:#fff;color:#a52a22;border-color:#fff;}
+html body.dark-mode #tm .tm-ring__btns button.alt {background:transparent;color:#fff;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1087,7 +1093,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:6
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/say-aloud.js?v=1" defer></script><script src="/timer/js/timer.js?v=27" defer></script>
+	<script src="/main_js/voice-picker.js?v=1" defer></script><script src="/main_js/say-aloud.js?v=1" defer></script><script src="/timer/js/timer.js?v=28" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
