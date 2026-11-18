@@ -131,13 +131,25 @@
 
 	/* ---------- the computer ---------- */
 	var LV_MS = { easy: 120, medium: 350, hard: 1200, expert: 3500 };
+	/* Thinking time with a clock (a titled player beat Expert on time in a one-minute game, 2026-11-18): about 1/30 of what is left
+	   plus most of the increment, never more than the level's own time, and much less once the clock runs low, so the computer
+	   plays fast in bullet instead of flagging. Without a clock it is the level's fixed time. */
+	function cpuBudget() {
+		var base = LV_MS[S.lv] || 1200;
+		if (!clk) return base;
+		var left = clockLeft(st.turn), inc = clk.inc || 0, moveNo = st.hist.length >> 1;
+		var share = left / (moveNo < 10 ? 40 : 28) + inc * 0.8;
+		if (left < 10000) share = Math.min(share, left / 45 + inc * 0.5);
+		if (left < 3000) share = Math.min(share, 60);
+		return Math.max(25, Math.min(base, Math.round(share - 40)));
+	}
 	function maybeCpu() {
 		if (mode !== "cpu" || st.win || st.turn === human || busy) return;
 		busy = true;
-		var g = gen, t0 = Date.now();
+		var g = gen, t0 = Date.now(), ms = cpuBudget(), pause = clk ? Math.min(380, ms / 4) : 380;
 		render();
-		ask({ code: code, moves: st.hist.slice(), level: S.lv, ms: LV_MS[S.lv] }).then(function (r) {
-			var wait = Math.max(0, 380 - (Date.now() - t0));
+		ask({ code: code, moves: st.hist.slice(), level: S.lv, ms: ms }).then(function (r) {
+			var wait = Math.max(0, pause - (Date.now() - t0));
 			setTimeout(function () {
 				if (g !== gen) return;
 				busy = false;

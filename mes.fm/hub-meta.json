@@ -158,7 +158,12 @@
 },
 "/chess":{
 "added":"2026-11-12",
-"updated":"2026-11-16",
+"updated":"2026-11-18",
+"type":"Game"
+},
+"/click-test":{
+"added":"2026-11-18",
+"updated":"2026-11-18",
 "type":"Game"
 },
 "/clock":{

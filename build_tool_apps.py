@@ -1601,6 +1601,13 @@ APPS = {
                 desc="Play tic-tac-toe free against the computer at three levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with 15 variants: classic, misère, wild, numerical, 4 × 4, gomoku, drop four, ultimate tic-tac-toe, 3D Qubic, Notakto, Order & Chaos and your own board size.",
                 js_v="3", pre_js=["/main_js/hive.js?v=2"]),
     # 2026-11-07: Minesweeper (results / daily board on Hive, verified leaderboard in api/mines.js) and Connect Four (variants, computer, guests, Hive like tic-tac-toe, api/c4.js).
+    # MES Click Speed Test (2026-11-18, mes.fm/click-test): CPS test for mouse clicks, taps (one finger or every finger) and keyboard presses;
+    # 1-100 s and custom, live CPS, chart, best scores in localStorage, Guinness 760-in-60-s comparison. lib.js = MESClick, tests click-test-tests.js.
+    "click-test": dict(title="MES Click Speed Test", page_title="Click Speed Test (CPS Test): How Many Clicks per Second?",
+                tag="How many clicks can you fit in a second?", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
+                desc="Free click speed test: count your mouse clicks or screen taps in 1, 5, 10, 30, 60 or 100 seconds and see your clicks per second (CPS) live, your fastest second, a speed chart and your best scores. Phone mode counts every finger, and there is a Space-bar mode. Compare with the 760-clicks-in-a-minute world record.",
+                meta_desc="Free CPS test: how many clicks or taps can you do in 1 to 100 seconds? Live clicks per second, speed chart, best scores and the 760-clicks-a-minute record.",
+                js_v="1"),
     "minesweeper": dict(title="MES Minesweeper", page_title="Minesweeper: Play Free Online, Daily Board and Hive Leaderboard",
                 tag="Classic Minesweeper, a daily board and best times.", accent="#475569", dark="#334155", tint="#e7ebf0",
                 desc="Play Minesweeper free in your browser: Beginner, Intermediate, Expert and custom boards, a daily board that is the same for everyone, no-guess boards, chording, flags, touch controls and your best times, with the option to save results to the Hive blockchain for a verified leaderboard.",
@@ -1611,7 +1618,7 @@ APPS = {
                 tag="Play chess in 2D or 3D, against anyone.", accent="#7a4a1e", dark="#5a3514", tint="#f5ead9",
                 desc="Play chess free against the computer at four levels, a friend on the same device, or someone online as a guest or on the Hive blockchain (live or correspondence), on a 2D board or a 3D board in a chess club, tournament hall, park or space. Chess960, King of the Hill and Three-check, clocks, hints, analysis, PGN and FEN.",
                 meta_desc="Free chess: play the computer at four levels, a friend, or online as a guest or on Hive. 2D or 3D boards, Chess960, clocks, hints, PGN and FEN.",
-                js_v="7", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
+                js_v="8", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "connect-four": dict(title="MES Connect Four", page_title="Connect Four: Play Free Against the Computer, a Friend or Online",
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",
