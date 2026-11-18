@@ -418,6 +418,7 @@ body.dark-mode #main-content .sp-table .sp-none { color:#8a8a8a; }
 .sp-credits li { break-inside:avoid; margin:.15em 0; }
 /* collage of the database's pictures (the hub tile) at the bottom of the page */
 .sp-fig { margin:2em auto .5em; max-width:900px; text-align:center; }
+.sp-fig img.list-thumb { max-width:none; margin:0; cursor:zoom-in; }
 .sp-fig img { display:block; width:100%; height:auto; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,.18); border:1px solid #e1e4e8; }
 #main-content .sp-fig figcaption { margin-top:.6em; font-size:.92em; color:#555; font-style:italic; }
 body.dark-mode .sp-fig img { border-color:#3a3a3a; box-shadow:0 6px 24px rgba(0,0,0,.6); }
@@ -608,7 +609,7 @@ def content(recs, today):
 <div class="sp-twrap" id="spTable" hidden></div>
 <p class="sp-meta" style="margin-top:1.2em">Search their names in the <a href="https://t.me/meslinks" target="_blank" rel="noopener">MES Links Telegram</a> for many more posts. Groups and pictures are added on mes.fm; names, notes and links come from the MES spreadsheet.</p>
 <details class="sp-credits"><summary>Picture credits</summary><p>Wikimedia Commons photos are used under their stated licences; the others are the people's own public YouTube channel or Hive profile pictures. People without a picture show their initials.</p><ul>{credits}</ul></details>
-<figure class="sp-fig"><img src="/img/{SLUG}-icon.jpg" width="900" height="600" loading="lazy" decoding="async" alt="A collage of the faces in the 9/11 Spooks Database">
+<figure class="sp-fig"><img class="list-thumb" title="Click to enlarge" src="/img/{SLUG}-icon.jpg" width="900" height="600" loading="lazy" decoding="async" alt="A collage of the faces in the 9/11 Spooks Database">
 <figcaption>The 9/11 Spooks Database: {len(recs)} people and counting.</figcaption></figure>
 </div>"""
 

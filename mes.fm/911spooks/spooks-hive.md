@@ -4,13 +4,13 @@
 
 </center>
 
-The MES list of 9/11 disinfo agents, spooks and controlled opposition: **80+ and counting** (81 as of November 8, 2026), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
+The MES list of 9/11 disinfo agents, spooks and controlled opposition: **80+ and counting** (81 as of November 18, 2026), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
 
 **Searchable version with filters, pictures and the MES posts about each person:** https://mes.fm/911spooks-database
 
 Kept in: [Google Sheet](https://docs.google.com/spreadsheets/d/1-pBVHR4KCT2nVngaWkUhjpHOw0KoJIqehDT3ah5yCSk/edit?gid=686862064) · [Excel (OneDrive)](https://1drv.ms/x/s!As32ynv0LoaIi6UOFw7QTWr1sVrCtA) · [mes.fm](https://mes.fm/911spooks-database) · [Hive](https://peakd.com/hive-113182/@mestruth/911-spooks-database-ayc) · Download: [CSV](https://mes.fm/911spooks-database/spooks.csv) · [JSON](https://mes.fm/911spooks-database/spooks.json)
 
-First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: November 8, 2026.
+First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: November 18, 2026.
 
 
 ## AE911Truth & thermite (14)
@@ -42,7 +42,7 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 | **Christopher Bollyn** |  | [Telegram](https://t.me/meslinks/30626) |
 | **Dan Noel** | French Santa Claus | [Telegram](https://t.me/meslinks/29024) |
 | **Dave von Kleist** |  | [Telegram](https://t.me/meslinks/32464) |
-| **David Hughes** | Jim Fetzer 2.0 | [MES.fm](https://mes.fm/david-hughes-fetzer-2.0) · [Hive](https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c) · [MES posts (2)](https://mes.fm/911spooks-database#david-hughes) |
+| **David Hughes** | Jim Fetzer 2.0 | [MES.fm](https://mes.fm/david-hughes-fetzer-2.0) · [Hive](https://peakd.com/hive-113182/@mes/dear-dr-david-a-fetzer-j1c) · [MES posts (3)](https://mes.fm/911spooks-database#david-hughes) |
 | **David Ray Griffin** |  | [Telegram](https://t.me/meslinks/17185) |
 | **Denis Rancourt** | Not necessarily an agent, but hides from 9/11 DEW. | [Substack](https://911revision.substack.com/p/denis-rancourt-2010-death-blows-to) |
 | **Francis O'Neill** |  | [Telegram](https://t.me/meslinks/32134) |
@@ -55,7 +55,7 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 | **Massimo Mazzucco** | The New Pearl Harbor, American Moon | [Telegram](https://t.me/meslinks/29650) |
 | **Matt Campbell** | Brother of Geophrey that died on 9/11. Krusty the Clown. | [Telegram](https://t.me/meslinks/17479) |
 | **Miles Mathis** |  | [Telegram](https://t.me/meslinks/32026) |
-| **Norman Swaneopoel** | 9/11 Revisionist | [MES.fm](https://mes.fm/norman-patricia-ai-email) · [Hive](https://peakd.com/hive-113182/@mestruth/911-jersey-girl-patricia-casazzas-bizarre-ai-email-ddr) · [MES posts (9)](https://mes.fm/911spooks-database#norman-swaneopoel) |
+| **Norman Swaneopoel** | 9/11 Revisionist | [MES.fm](https://mes.fm/norman-patricia-ai-email) · [Hive](https://peakd.com/hive-113182/@mestruth/911-jersey-girl-patricia-casazzas-bizarre-ai-email-ddr) · [MES posts (10)](https://mes.fm/911spooks-database#norman-swaneopoel) |
 | **Peggy Carter?** | Mark Conlin mentioned this I think? | [Wikipedia](https://en.wikipedia.org/wiki/Peggy_Carter) |
 | **Petra Liverani** | Psyop Detective | [Substack](https://substack.com/@petraliverani/p-150440529) |
 | **Rebekah Roth** | Methodical Deception | [Telegram](https://t.me/meslinks/26647) |
@@ -101,7 +101,7 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 
 | Name | Notes | Links |
 |---|---|---|
-| **Ashton Forbes** | MH370 Grift | [Telegram](https://t.me/meslinks/29685) · [MES posts (3)](https://mes.fm/911spooks-database#ashton-forbes) |
+| **Ashton Forbes** | MH370 Grift | [Telegram](https://t.me/meslinks/29685) · [MES posts (5)](https://mes.fm/911spooks-database#ashton-forbes) |
 | **Bob Greenyer** | "Cold Fusion Engineer" | [MES.fm](https://mes.fm/bg-wildin) · [MES posts (10)](https://mes.fm/911spooks-database#bob-greenyer) |
 | **Chuck Huber** | Agent 17 Voice Actor | [X](https://x.com/MathEasySolns/status/1997454968316661774) |
 | **Fully Charged Zone** | Dallas Gier, pretended to befriend MES and John Hutchison to upload Hutchison Videos, but his plan was to distance the Hutchison Effect from 9/11 dustification. | [MES.fm](https://mes.fm/livestream-143-911-spooks) |
