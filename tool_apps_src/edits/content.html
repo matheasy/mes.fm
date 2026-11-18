@@ -3,6 +3,7 @@
 			<button type="button" role="tab" class="ed-tab" data-k="fix" aria-selected="true">&#128295; Fixes <span class="ed-n" data-n="fix"></span></button>
 			<button type="button" role="tab" class="ed-tab" data-k="app" aria-selected="false">&#128161; New apps <span class="ed-n" data-n="app"></span></button>
 			<button type="button" role="tab" class="ed-tab" data-k="all" aria-selected="false">All <span class="ed-n" data-n="all"></span></button>
+			<button type="button" role="tab" class="ed-tab" data-k="queue" aria-selected="false">&#128203; Queue <span class="ed-n" data-n="queue"></span></button>
 			<span class="ed-sync" id="ed-sync" aria-live="polite"></span>
 		</div>
 
@@ -39,6 +40,7 @@
 			</select>
 		</div>
 		<p class="ed-count" id="ed-count" aria-live="polite"></p>
+		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; ↑ ↓ / ⤒ First change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
 		<ol class="ed-list" id="ed-list"></ol>
 		<p class="ed-empty" id="ed-empty" hidden></p>
 

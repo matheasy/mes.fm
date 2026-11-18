@@ -1,6 +1,7 @@
 /* MES Edits: pure logic shared by the page (mes.fm/edits) and the server (mes.fm/api/edits.js requires a byte-identical copy,
    mes.fm/api/_edits-lib.js: cp after editing; the tests check). No DOM, no network.
-   Item = { id, k: "fix"|"app", t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src? } (c / u / d = ms). */
+   Item = { id, k: "fix"|"app", t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src?, qo? } (c / u / d = ms).
+   qo = place in the Queue (any positive number, smaller = sooner; absent = not queued). Finishing an item (done / won't) takes it off the queue. */
 (function (root, factory) {
     var E = factory();
     if (typeof module === "object" && module.exports) module.exports = E;
@@ -49,6 +50,7 @@
             c: c, u: num(x.u, c), d: st === "done" || st === "wont" ? num(x.d, num(x.u, c)) : 0
         };
         if (typeof x.src === "string" && /^[a-z0-9:_-]{1,40}$/i.test(x.src)) it.src = x.src;
+        if (isFinite(+x.qo) && +x.qo > 0 && st !== "done" && st !== "wont") it.qo = +x.qo;
         return it;
     }
 
@@ -99,6 +101,8 @@
                     it.st = body.st;
                 }
                 if (body.star != null) it.star = !!body.star;
+                if (body.qo != null) { var q = +body.qo; if (!isFinite(q) || q < 0) return { status: 400, body: { error: "bad queue place" } }; if (q > 0) it.qo = q; else delete it.qo; }
+                if (it.st === "done" || it.st === "wont") delete it.qo;
                 if (body.note != null) it.note = cleanText(body.note, MAX_NOTE);
             }
             it.u = now;
@@ -147,8 +151,9 @@
         f = f || {};
         var words = fold(f.q || "").split(/\s+/).filter(Boolean);
         var out = items.filter(function (it) {
-            if (f.k && f.k !== "all" && it.k !== f.k) return false;
-            var st = f.st || "open";
+            if (f.k === "queue") { if (!it.qo) return false; }
+            else if (f.k && f.k !== "all" && it.k !== f.k) return false;
+            var st = f.k === "queue" ? "open" : f.st || "open";
             if (st === "open" ? !(it.st === "todo" || it.st === "doing") : st !== "all" && it.st !== st) return false;
             if (f.star && !it.star) return false;
             if (f.tool && itemTools(it).indexOf(f.tool) < 0) return false;
@@ -158,8 +163,9 @@
             }
             return true;
         });
-        var s = f.sort || "new";
+        var s = f.k === "queue" ? "queue" : f.sort || "new";
         out.sort(function (a, b) {
+            if (s === "queue") return a.qo - b.qo;
             if (s === "star" && a.star !== b.star) return a.star ? -1 : 1;
             if (s === "star" && (a.st === "doing") !== (b.st === "doing")) return a.st === "doing" ? -1 : 1;
             if (s === "old") return a.c - b.c;
@@ -169,8 +175,8 @@
         return out;
     }
     function counts(items) {
-        var c = { fix: 0, app: 0, all: 0, todo: 0, doing: 0, done: 0, wont: 0 };
-        items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k]++; c.all++; } });
+        var c = { fix: 0, app: 0, all: 0, queue: 0, todo: 0, doing: 0, done: 0, wont: 0 };
+        items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k]++; c.all++; if (it.qo) c.queue++; } });
         return c;
     }
 
@@ -379,7 +385,8 @@
         var tl = E.itemTools(it), mode = open[it.id];
         var h = '<li class="ed-it st-' + it.st + (it.star ? " is-star" : "") + '" data-id="' + esc(it.id) + '">';
         h += '<div class="ed-top"><button type="button" class="ed-star" data-a="star" aria-pressed="' + it.star + '" title="' + (it.star ? "Important (click to unmark)" : "Mark important") + '">' + (it.star ? "★" : "☆") + "</button>" + stSelect(it);
-        if (pref.k === "all") h += '<span class="ed-kind k-' + it.k + '">' + (it.k === "app" ? "New app" : "Fix") + "</span>";
+        if (pref.k === "queue") h += '<span class="ed-qn" title="Place in the queue">#' + (qPos[it.id] || "?") + "</span>";
+        if (pref.k === "all" || pref.k === "queue") h += '<span class="ed-kind k-' + it.k + '">' + (it.k === "app" ? "New app" : "Fix") + "</span>";
         h += tl.map(function (s) { return '<button type="button" class="ed-tool" data-a="tool" data-v="' + esc(s) + '" title="Show only items about mes.fm/' + esc(s) + '">/' + esc(s) + "</button>"; }).join("");
         h += '<span class="ed-sp"></span><span class="ed-when" title="Added ' + esc(fullDate(it.c)) + (it.d ? " · finished " + esc(fullDate(it.d)) : "") + '">' + esc(E.ago(it.c)) + (it.d ? " · " + (it.st === "done" ? "done " : "closed ") + esc(E.ago(it.d)) : "") + (it.src === "telegram" ? " · from Telegram" : "") + "</span></div>";
         if (mode === "edit") {
@@ -403,6 +410,9 @@
             var closed = it.st === "done" || it.st === "wont";
             h += '<div class="ed-acts">' + (closed ? '<button type="button" class="tu-btn tu-btn--ghost" data-a="reopen">↺ Reopen</button>'
                 : '<button type="button" class="tu-btn tu-btn--ghost ed-ok" data-a="done">✓ Done</button>' + (it.st === "doing" ? "" : '<button type="button" class="tu-btn tu-btn--ghost" data-a="doing">▶ Doing</button>'))
+                + (it.qo ? (pref.k === "queue" ? '<button type="button" class="tu-btn tu-btn--ghost" data-a="qup" title="Do this sooner">↑</button><button type="button" class="tu-btn tu-btn--ghost" data-a="qdown" title="Do this later">↓</button><button type="button" class="tu-btn tu-btn--ghost" data-a="qtop" title="Do this first">⤒ First</button>' : "")
+                    + '<button type="button" class="tu-btn tu-btn--ghost ed-qon" data-a="qoff" title="Take it off the queue">✓ Queued' + (qPos[it.id] ? " #" + qPos[it.id] : "") + "</button>"
+                    : '<button type="button" class="tu-btn tu-btn--ghost" data-a="qon" title="Add to the end of the queue">＋ Queue</button>')
                 + '<button type="button" class="tu-btn tu-btn--ghost" data-a="reply">💬 Reply</button><button type="button" class="tu-btn tu-btn--ghost" data-a="edit">✎ Edit</button>'
                 + '<button type="button" class="tu-btn tu-btn--ghost" data-a="move">⇄ ' + (it.k === "fix" ? "To New apps" : "To Fixes") + '</button><button type="button" class="tu-btn tu-btn--ghost ed-del" data-a="del" title="Delete">🗑</button></div>';
         }
@@ -418,8 +428,12 @@
         sel.value = pref.tool || "";
         if (keys.length >= 10 && window.MESSelect && !sel.__mesEnh) { sel.__mesEnh = 1; MESSelect.enhance(sel, { placeholder: "Search pages…", noun: "pages" }); }
     }
+    var qPos = {};
+    function queueList() { return items.filter(function (x) { return x.qo && (x.st === "todo" || x.st === "doing"); }).sort(function (a, b) { return a.qo - b.qo; }); }
     function render() {
         pendingRender = false;
+        qPos = {}; queueList().forEach(function (x, i) { qPos[x.id] = i + 1; });
+        $("ed-qnote").hidden = pref.k !== "queue";
         var c = E.counts(items);
         root.querySelectorAll("[data-n]").forEach(function (n) { n.textContent = c[n.dataset.n] || ""; });
         root.querySelectorAll(".ed-tab").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.k === pref.k ? "true" : "false"); });
@@ -523,6 +537,18 @@
         var li = b.closest(".ed-it"), id = li && li.dataset.id, it = items[byId(id)], a = b.dataset.a;
         if (!it) return;
         if (a === "star") change({ op: "update", id: id, star: !it.star });
+        else if (a === "qon") { var ql = queueList(); change({ op: "update", id: id, qo: (ql.length ? ql[ql.length - 1].qo : 0) + 1 }).then(function (r) { if (r) toast("Added to the queue (#" + (ql.length + 1) + ")"); }); }
+        else if (a === "qoff") change({ op: "update", id: id, qo: 0 }).then(function (r) { if (r) toast("Taken off the queue", function () { change({ op: "update", id: id, qo: it.qo }); }); });
+        else if (a === "qup" || a === "qdown" || a === "qtop") {
+            var q = queueList(), i = q.findIndex(function (x) { return x.id === id; });
+            if (a === "qtop") { if (i > 0) change({ op: "update", id: id, qo: q[0].qo / 2 }); }
+            else {
+                var j = a === "qup" ? i - 1 : i + 1;
+                if (i < 0 || j < 0 || j >= q.length) return;
+                var other = q[j], a1 = it.qo, a2 = other.qo;
+                change({ op: "update", id: id, qo: a2 }).then(function (r) { if (r) change({ op: "update", id: other.id, qo: a1 }); });
+            }
+        }
         else if (a === "done" || a === "doing") change({ op: "update", id: id, st: a }).then(function (r) { if (r && a === "done" && pref.st === "open") toast("Marked done", function () { change({ op: "update", id: id, st: it.st }); }); });
         else if (a === "reopen") change({ op: "update", id: id, st: "todo" });
         else if (a === "move") { var to = it.k === "fix" ? "app" : "fix"; change({ op: "update", id: id, k: to }).then(function (r) { if (r) toast("Moved to " + E.KIND_NAME[to], function () { change({ op: "update", id: id, k: it.k }); }); }); }

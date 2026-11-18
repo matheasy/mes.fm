@@ -121,7 +121,8 @@
         var tl = E.itemTools(it), mode = open[it.id];
         var h = '<li class="ed-it st-' + it.st + (it.star ? " is-star" : "") + '" data-id="' + esc(it.id) + '">';
         h += '<div class="ed-top"><button type="button" class="ed-star" data-a="star" aria-pressed="' + it.star + '" title="' + (it.star ? "Important (click to unmark)" : "Mark important") + '">' + (it.star ? "★" : "☆") + "</button>" + stSelect(it);
-        if (pref.k === "all") h += '<span class="ed-kind k-' + it.k + '">' + (it.k === "app" ? "New app" : "Fix") + "</span>";
+        if (pref.k === "queue") h += '<span class="ed-qn" title="Place in the queue">#' + (qPos[it.id] || "?") + "</span>";
+        if (pref.k === "all" || pref.k === "queue") h += '<span class="ed-kind k-' + it.k + '">' + (it.k === "app" ? "New app" : "Fix") + "</span>";
         h += tl.map(function (s) { return '<button type="button" class="ed-tool" data-a="tool" data-v="' + esc(s) + '" title="Show only items about mes.fm/' + esc(s) + '">/' + esc(s) + "</button>"; }).join("");
         h += '<span class="ed-sp"></span><span class="ed-when" title="Added ' + esc(fullDate(it.c)) + (it.d ? " · finished " + esc(fullDate(it.d)) : "") + '">' + esc(E.ago(it.c)) + (it.d ? " · " + (it.st === "done" ? "done " : "closed ") + esc(E.ago(it.d)) : "") + (it.src === "telegram" ? " · from Telegram" : "") + "</span></div>";
         if (mode === "edit") {
@@ -145,6 +146,9 @@
             var closed = it.st === "done" || it.st === "wont";
             h += '<div class="ed-acts">' + (closed ? '<button type="button" class="tu-btn tu-btn--ghost" data-a="reopen">↺ Reopen</button>'
                 : '<button type="button" class="tu-btn tu-btn--ghost ed-ok" data-a="done">✓ Done</button>' + (it.st === "doing" ? "" : '<button type="button" class="tu-btn tu-btn--ghost" data-a="doing">▶ Doing</button>'))
+                + (it.qo ? (pref.k === "queue" ? '<button type="button" class="tu-btn tu-btn--ghost" data-a="qup" title="Do this sooner">↑</button><button type="button" class="tu-btn tu-btn--ghost" data-a="qdown" title="Do this later">↓</button><button type="button" class="tu-btn tu-btn--ghost" data-a="qtop" title="Do this first">⤒ First</button>' : "")
+                    + '<button type="button" class="tu-btn tu-btn--ghost ed-qon" data-a="qoff" title="Take it off the queue">✓ Queued' + (qPos[it.id] ? " #" + qPos[it.id] : "") + "</button>"
+                    : '<button type="button" class="tu-btn tu-btn--ghost" data-a="qon" title="Add to the end of the queue">＋ Queue</button>')
                 + '<button type="button" class="tu-btn tu-btn--ghost" data-a="reply">💬 Reply</button><button type="button" class="tu-btn tu-btn--ghost" data-a="edit">✎ Edit</button>'
                 + '<button type="button" class="tu-btn tu-btn--ghost" data-a="move">⇄ ' + (it.k === "fix" ? "To New apps" : "To Fixes") + '</button><button type="button" class="tu-btn tu-btn--ghost ed-del" data-a="del" title="Delete">🗑</button></div>';
         }
@@ -160,8 +164,12 @@
         sel.value = pref.tool || "";
         if (keys.length >= 10 && window.MESSelect && !sel.__mesEnh) { sel.__mesEnh = 1; MESSelect.enhance(sel, { placeholder: "Search pages…", noun: "pages" }); }
     }
+    var qPos = {};
+    function queueList() { return items.filter(function (x) { return x.qo && (x.st === "todo" || x.st === "doing"); }).sort(function (a, b) { return a.qo - b.qo; }); }
     function render() {
         pendingRender = false;
+        qPos = {}; queueList().forEach(function (x, i) { qPos[x.id] = i + 1; });
+        $("ed-qnote").hidden = pref.k !== "queue";
         var c = E.counts(items);
         root.querySelectorAll("[data-n]").forEach(function (n) { n.textContent = c[n.dataset.n] || ""; });
         root.querySelectorAll(".ed-tab").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.k === pref.k ? "true" : "false"); });
@@ -265,6 +273,18 @@
         var li = b.closest(".ed-it"), id = li && li.dataset.id, it = items[byId(id)], a = b.dataset.a;
         if (!it) return;
         if (a === "star") change({ op: "update", id: id, star: !it.star });
+        else if (a === "qon") { var ql = queueList(); change({ op: "update", id: id, qo: (ql.length ? ql[ql.length - 1].qo : 0) + 1 }).then(function (r) { if (r) toast("Added to the queue (#" + (ql.length + 1) + ")"); }); }
+        else if (a === "qoff") change({ op: "update", id: id, qo: 0 }).then(function (r) { if (r) toast("Taken off the queue", function () { change({ op: "update", id: id, qo: it.qo }); }); });
+        else if (a === "qup" || a === "qdown" || a === "qtop") {
+            var q = queueList(), i = q.findIndex(function (x) { return x.id === id; });
+            if (a === "qtop") { if (i > 0) change({ op: "update", id: id, qo: q[0].qo / 2 }); }
+            else {
+                var j = a === "qup" ? i - 1 : i + 1;
+                if (i < 0 || j < 0 || j >= q.length) return;
+                var other = q[j], a1 = it.qo, a2 = other.qo;
+                change({ op: "update", id: id, qo: a2 }).then(function (r) { if (r) change({ op: "update", id: other.id, qo: a1 }); });
+            }
+        }
         else if (a === "done" || a === "doing") change({ op: "update", id: id, st: a }).then(function (r) { if (r && a === "done" && pref.st === "open") toast("Marked done", function () { change({ op: "update", id: id, st: it.st }); }); });
         else if (a === "reopen") change({ op: "update", id: id, st: "todo" });
         else if (a === "move") { var to = it.k === "fix" ? "app" : "fix"; change({ op: "update", id: id, k: to }).then(function (r) { if (r) toast("Moved to " + E.KIND_NAME[to], function () { change({ op: "update", id: id, k: it.k }); }); }); }

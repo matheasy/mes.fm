@@ -1,6 +1,7 @@
 /* MES Edits: pure logic shared by the page (mes.fm/edits) and the server (mes.fm/api/edits.js requires a byte-identical copy,
    mes.fm/api/_edits-lib.js: cp after editing; the tests check). No DOM, no network.
-   Item = { id, k: "fix"|"app", t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src? } (c / u / d = ms). */
+   Item = { id, k: "fix"|"app", t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src?, qo? } (c / u / d = ms).
+   qo = place in the Queue (any positive number, smaller = sooner; absent = not queued). Finishing an item (done / won't) takes it off the queue. */
 (function (root, factory) {
     var E = factory();
     if (typeof module === "object" && module.exports) module.exports = E;
@@ -49,6 +50,7 @@
             c: c, u: num(x.u, c), d: st === "done" || st === "wont" ? num(x.d, num(x.u, c)) : 0
         };
         if (typeof x.src === "string" && /^[a-z0-9:_-]{1,40}$/i.test(x.src)) it.src = x.src;
+        if (isFinite(+x.qo) && +x.qo > 0 && st !== "done" && st !== "wont") it.qo = +x.qo;
         return it;
     }
 
@@ -99,6 +101,8 @@
                     it.st = body.st;
                 }
                 if (body.star != null) it.star = !!body.star;
+                if (body.qo != null) { var q = +body.qo; if (!isFinite(q) || q < 0) return { status: 400, body: { error: "bad queue place" } }; if (q > 0) it.qo = q; else delete it.qo; }
+                if (it.st === "done" || it.st === "wont") delete it.qo;
                 if (body.note != null) it.note = cleanText(body.note, MAX_NOTE);
             }
             it.u = now;
@@ -147,8 +151,9 @@
         f = f || {};
         var words = fold(f.q || "").split(/\s+/).filter(Boolean);
         var out = items.filter(function (it) {
-            if (f.k && f.k !== "all" && it.k !== f.k) return false;
-            var st = f.st || "open";
+            if (f.k === "queue") { if (!it.qo) return false; }
+            else if (f.k && f.k !== "all" && it.k !== f.k) return false;
+            var st = f.k === "queue" ? "open" : f.st || "open";
             if (st === "open" ? !(it.st === "todo" || it.st === "doing") : st !== "all" && it.st !== st) return false;
             if (f.star && !it.star) return false;
             if (f.tool && itemTools(it).indexOf(f.tool) < 0) return false;
@@ -158,8 +163,9 @@
             }
             return true;
         });
-        var s = f.sort || "new";
+        var s = f.k === "queue" ? "queue" : f.sort || "new";
         out.sort(function (a, b) {
+            if (s === "queue") return a.qo - b.qo;
             if (s === "star" && a.star !== b.star) return a.star ? -1 : 1;
             if (s === "star" && (a.st === "doing") !== (b.st === "doing")) return a.st === "doing" ? -1 : 1;
             if (s === "old") return a.c - b.c;
@@ -169,8 +175,8 @@
         return out;
     }
     function counts(items) {
-        var c = { fix: 0, app: 0, all: 0, todo: 0, doing: 0, done: 0, wont: 0 };
-        items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k]++; c.all++; } });
+        var c = { fix: 0, app: 0, all: 0, queue: 0, todo: 0, doing: 0, done: 0, wont: 0 };
+        items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k]++; c.all++; if (it.qo) c.queue++; } });
         return c;
     }
 

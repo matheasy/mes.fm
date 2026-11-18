@@ -405,6 +405,13 @@ html body.dark-mode #ed .ed-new {background:#14532d; color:#bbf7d0;}
 html body.dark-mode #ed .ed-n {background:rgba(255,255,255,0.12);}
 #ed .ed-bar .tu-select, #ed .ed-kindpick .tu-select, #ed .ed-tgrow .tu-select {width:auto; max-width:100%; flex:0 1 auto;}
 
+/* Queue (2026-11-18) */
+#ed .ed-qnote {margin:0.4em 0 0.8em; padding:0.6em 0.9em; border-radius:0.5em; background:var(--ed-soft); color:var(--ed-mute); font-size:0.92em;}
+#ed .ed-qn {font-weight:700; font-size:0.95em; color:#b4234f; min-width:2em;}
+#ed .ed-qon {border-color:#b4234f; color:#b4234f;}
+html body.dark-mode #ed .ed-qn, html body.dark-mode #ed .ed-qon {color:#ff8fb0; border-color:#ff8fb0;}
+html body.dark-mode #ed .ed-qnote {color:#c9cfd6;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -541,6 +548,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ed .ed-hvwarn.is-bad{color:#ffae5c}
 	body.dark-mode #ed .ed-new{background:#152f1e;color:#79e2a1}
 	body.dark-mode .tu-toast .ed-undo{border:1px solid rgba(51,51,51,0.60)}
+	body.dark-mode #ed .ed-qn{color:#e47698}
+	body.dark-mode #ed .ed-qon{border-color:#d52a5e;color:#e47698}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -605,6 +614,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ed-tab" data-k="fix" aria-selected="true">&#128295; Fixes <span class="ed-n" data-n="fix"></span></button>
 			<button type="button" role="tab" class="ed-tab" data-k="app" aria-selected="false">&#128161; New apps <span class="ed-n" data-n="app"></span></button>
 			<button type="button" role="tab" class="ed-tab" data-k="all" aria-selected="false">All <span class="ed-n" data-n="all"></span></button>
+			<button type="button" role="tab" class="ed-tab" data-k="queue" aria-selected="false">&#128203; Queue <span class="ed-n" data-n="queue"></span></button>
 			<span class="ed-sync" id="ed-sync" aria-live="polite"></span>
 		</div>
 
@@ -641,6 +651,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</select>
 		</div>
 		<p class="ed-count" id="ed-count" aria-live="polite"></p>
+		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; ↑ ↓ / ⤒ First change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
 		<ol class="ed-list" id="ed-list"></ol>
 		<p class="ed-empty" id="ed-empty" hidden></p>
 
@@ -724,7 +735,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=1" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
