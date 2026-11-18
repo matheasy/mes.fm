@@ -133,7 +133,6 @@
 	body.dark-mode #tc .tc-diff .sub b {color:#7ddc9e;}
 	body.dark-mode #tc .tc-diff .del {background:#4a3b0a;color:#ffd866;}
 	body.dark-mode #tc kbd {background:#2a2f36;border-color:#4a515b;color:#e6e9ee;}
-	html body .outer-container {max-width:min(96vw,64em) !important;}
 
 	.tu .tt-lbtable .tt-sub {display:none;}
 	@media (max-width:640px) {
