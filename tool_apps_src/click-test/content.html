@@ -1,0 +1,94 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ct" id="ct">
+		<div class="tu-card ct-ctl">
+			<div class="ct-crow">
+				<span class="ct-lab">Test length</span>
+				<div class="tu-chips" id="ct-modes" role="group" aria-label="Test length"></div>
+				<span class="ct-custom" id="ct-customw" hidden><input class="tu-input" id="ct-custom" type="number" min="1" max="600" step="1" value="15" aria-label="Seconds"> s</span>
+			</div>
+			<div class="ct-crow">
+				<span class="ct-lab">Count</span>
+				<div class="tu-chips" id="ct-inputs" role="group" aria-label="What counts">
+					<button type="button" class="tu-chip" data-i="click">🖱️ Clicks / taps</button>
+					<button type="button" class="tu-chip" data-i="multi">✋ Every finger (phones)</button>
+					<button type="button" class="tu-chip" data-i="key">⌨️ Keyboard</button>
+				</div>
+				<span class="ct-keyw" id="ct-keyw" hidden><label for="ct-key">Key</label>
+					<select class="tu-select" id="ct-key"><option value=" ">Space bar</option><option value="any">Any key</option><option value="z">Z</option><option value="x">X</option><option value="Enter">Enter</option></select></span>
+			</div>
+			<p class="ct-hint" id="ct-hint"></p>
+		</div>
+
+		<section class="tu-card ct-view" id="ct-view">
+			<div class="ct-vhead"><h2 class="ct-h">Click Speed Test</h2><span class="ct-vbtns" id="ct-vbtns"></span></div>
+			<div class="ct-live" id="ct-live">
+				<div class="ct-stat"><span class="ct-sl">Time left</span><b id="ct-left">10.0</b></div>
+				<div class="ct-stat"><span class="ct-sl">Clicks</span><b id="ct-count">0</b></div>
+				<div class="ct-stat"><span class="ct-sl">Per second</span><b id="ct-cps">0.00</b></div>
+				<div class="ct-stat"><span class="ct-sl">Last second</span><b id="ct-now">0</b></div>
+				<div class="ct-stat ct-stat--pace"><span class="ct-sl">vs your best</span><b id="ct-pace">–</b></div>
+			</div>
+			<div class="ct-bar" aria-hidden="true"><i id="ct-prog"></i></div>
+			<div class="ct-pad" id="ct-pad" tabindex="0" role="button" aria-label="Click area: click or tap here as fast as you can">
+				<div class="ct-padmsg" id="ct-padmsg"><b>Click here to start</b><span>The timer starts with your first click.</span></div>
+				<div class="ct-big" id="ct-big" aria-live="off"></div>
+			</div>
+			<div class="ct-chartbox"><canvas id="ct-live-chart" role="img" aria-label="Clicks per second so far"></canvas></div>
+		</section>
+
+		<section class="tu-card ct-res" id="ct-res" hidden>
+			<div class="ct-rtop">
+				<div class="ct-rbig"><b id="ct-rcps">0</b><span>clicks per second</span></div>
+				<div class="ct-rinfo">
+					<div class="ct-rtier" id="ct-rtier"></div>
+					<p id="ct-rtext"></p>
+					<p class="ct-rnew" id="ct-rnew" hidden>🏆 New best for this test!</p>
+				</div>
+			</div>
+			<div class="ct-rgrid" id="ct-rgrid"></div>
+			<div class="tu-row ct-rbtns">
+				<button type="button" class="tu-btn tu-btn--primary" id="ct-again">↻ Try again</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ct-copy">Copy result</button>
+			</div>
+			<h3 class="ct-h3">Clicks per second during the test</h3>
+			<div class="ct-chartbox ct-chartbox--res"><canvas id="ct-res-chart" role="img" aria-label="Clicks per second over time"></canvas><div class="ct-tip" id="ct-tip" hidden></div></div>
+			<p class="tu-note">Line = clicks in the last second at each moment. Bars = clicks in each whole second.</p>
+			<h3 class="ct-h3">How you compare</h3>
+			<div class="ct-cmp" id="ct-cmp"></div>
+			<p class="tu-note">Only the Guinness figure is a verified record. The other speeds are rough, commonly quoted figures.</p>
+		</section>
+
+		<section class="tu-card" id="ct-bestsec">
+			<div class="ct-vhead"><h2 class="ct-h">Your best scores</h2><button type="button" class="tu-btn tu-btn--ghost ct-small" id="ct-clear">Clear</button></div>
+			<div class="tu-table-wrap"><table class="tu-table ct-tbl"><thead><tr><th>Test</th><th>Mouse</th><th>One finger</th><th>Every finger</th><th>Keyboard</th></tr></thead><tbody id="ct-best"></tbody></table></div>
+			<h3 class="ct-h3">Last tries</h3>
+			<ol class="ct-hist" id="ct-hist"></ol>
+			<p class="tu-note">Saved only in this browser.</p>
+		</section>
+
+		<div class="tu-seo">
+			<h2>How fast can you click?</h2>
+			<p>Pick a test length, then click (or tap on a phone) inside the big box as fast as you can. The timer starts with your first click. You get your <strong>clicks per second (CPS)</strong>, your fastest single second, how even your rhythm was and a chart of your speed during the test. Your best score for each test length is kept in this browser.</p>
+			<h3>Ways people click faster</h3>
+			<dl>
+				<dt>Normal clicking</dt><dd>One finger pressing the button the usual way. Most people get roughly 5 to 8 clicks per second.</dd>
+				<dt>Jitter clicking</dt><dd>You tense the muscles of your arm and hand so the finger shakes (jitters) on the button. Often around 10 to 14 CPS, but it is tiring. Don't press hard on the mouse or your wrist, and stop if it hurts.</dd>
+				<dt>Butterfly clicking</dt><dd>Two fingers (usually index and middle) take turns on the same button. Each finger only needs half the speed, so 15 to 20 CPS or more is common. Some mice count two very close clicks as one, which lowers the score.</dd>
+				<dt>Drag clicking</dt><dd>You drag a finger slowly across the button so the friction makes it bounce and register many clicks. It can reach 25 CPS and above, but only on mice whose button surface and switch allow it.</dd>
+				<dt>Several fingers on a phone</dt><dd>With "Every finger" on, each finger that touches the screen counts, so drumming with four or five fingers gives scores no mouse can reach. Compare those scores with each other, not with mouse scores.</dd>
+			</dl>
+			<h3>The world record</h3>
+			<p>The Guinness World Records title for the <strong>most mouse clicks in one minute is 760</strong>, set by Yiğit "Yigox" Arslan with Logitech G in Istanbul, Türkiye, on 10 February 2026. That is about 12.7 clicks per second, kept up for a full minute. Try the 60-second test and the "vs your best" counter to see how close you can get.</p>
+			<h3>Questions</h3>
+			<h4>Is the test fair on every mouse?</h4>
+			<p>The page counts every press the browser reports. Mice and touch screens differ: some ignore presses that come very close together (debounce), and a cheap touch screen may miss fast taps. Compare scores made on the same device.</p>
+			<h4>Why does my phone zoom or select text when I tap fast?</h4>
+			<p>It shouldn't here: the click box turns off double-tap zoom, text selection and the long-press menu. If your browser still zooms, use Fill window so the box covers the whole screen.</p>
+			<h4>Can I use the keyboard?</h4>
+			<p>Yes. Choose Keyboard and press the Space bar (or another key) as fast as you can. Holding the key down doesn't count: only separate presses do.</p>
+			<h4>Is it bad for my hand?</h4>
+			<p>Short tests are fine. Long jitter or butterfly sessions can strain your wrist and fingers. Take breaks and stop if anything hurts.</p>
+		</div>
+		<div class="tu-toast" id="ct-toast" role="status" aria-live="polite"></div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

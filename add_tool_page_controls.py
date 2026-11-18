@@ -115,6 +115,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("backgammon", "Backgammon"),   # 2026-10-23
     ("tic-tac-toe", "Tic-Tac-Toe"),   # 2026-11-06
     ("minesweeper", "Minesweeper"),   # 2026-11-07
+    ("click-test", "Click Speed Test"),   # 2026-11-18
     ("connect-four", "Connect Four"),   # 2026-11-07
     ("chess", "Chess"),   # 2026-11-12
     ("billiards", "Billiards"),   # 2026-11-09

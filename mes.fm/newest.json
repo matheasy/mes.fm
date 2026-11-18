@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-17",
+ "generated": "2026-11-18",
  "calculators": [
   {
    "href": "/luders-bands",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/click-test",
+   "title": "Click Speed Test",
+   "icon": "/img/click-test-logo.png",
+   "desc": "Clicks per second for mouse, taps (every finger counts) or Space bar; 1 to 100 s, chart, best scores, world record.",
+   "added": "2026-11-18",
+   "kind": "tool"
+  },
+  {
    "href": "/email",
    "title": "MES Mail",
    "icon": "/img/email-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.",
    "added": "2026-11-12",
    "kind": "tool"
-  },
-  {
-   "href": "/car-sandbox",
-   "title": "Car Sandbox",
-   "icon": "/img/car-sandbox-logo.png",
-   "desc": "Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.",
-   "added": "2026-11-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/click-test",
+   "title": "Click Speed Test",
+   "icon": "/img/click-test-logo.png",
+   "desc": "Clicks per second for mouse, taps (every finger counts) or Space bar; 1 to 100 s, chart, best scores, world record.",
+   "added": "2026-11-18",
+   "kind": "tool"
+  },
   {
    "href": "/email",
    "title": "MES Mail",
@@ -250,14 +258,6 @@
    "title": "Quantum-Safe Website Checker",
    "icon": "/img/quantum-safe-check-logo.png",
    "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
-   "added": "2026-11-13",
-   "kind": "tool"
-  },
-  {
-   "href": "/quantum-cryptography",
-   "title": "Quantum Cryptography",
-   "icon": "/img/quantum-cryptography-logo.png",
-   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
    "added": "2026-11-13",
    "kind": "tool"
   }
