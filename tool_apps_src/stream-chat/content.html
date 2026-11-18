@@ -9,12 +9,12 @@
 		<h2 class="scp-h">Use it in OBS</h2>
 		<ol class="scp-steps">
 			<li><b>Chat panel:</b> in OBS choose <b>Docks → Custom Browser Docks…</b>, name it <i>All Chats</i>, paste this address and press Apply:
-				<span class="scp-url"><code>https://mes.fm/stream-chat/dock</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-copy="https://mes.fm/stream-chat/dock">Copy</button></span></li>
+				<span class="scp-url"><code data-sc-room="dock?room=">https://mes.fm/stream-chat/dock</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-room="dock?room=" data-sc-copy="https://mes.fm/stream-chat/dock">Copy</button></span></li>
 			<li><b>On screen:</b> in your scene add a <b>Browser</b> source, width 1920, height 1080, with this address:
-				<span class="scp-url"><code>https://mes.fm/stream-chat/overlay</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-copy="https://mes.fm/stream-chat/overlay">Copy</button></span>
+				<span class="scp-url"><code data-sc-room="overlay?room=">https://mes.fm/stream-chat/overlay</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-room="overlay?room=" data-sc-copy="https://mes.fm/stream-chat/overlay">Copy</button></span>
 				It stays empty until you click a message in the OBS chat panel; that message then pops up on stream (click it again, or <i>Take off screen</i>, to remove it). To also show the latest messages on stream, use
-				<span class="scp-url"><code>https://mes.fm/stream-chat/overlay?chat=1</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-copy="https://mes.fm/stream-chat/overlay?chat=1">Copy</button></span></li>
-			<li>The panel and the overlay have to be in OBS together: clicking a message on this page in your normal browser does not reach OBS.</li>
+				<span class="scp-url"><code data-sc-room="overlay?chat=1&amp;room=">https://mes.fm/stream-chat/overlay?chat=1</code> <button type="button" class="tu-btn tu-btn--ghost" data-sc-room="overlay?chat=1&amp;room=" data-sc-copy="https://mes.fm/stream-chat/overlay?chat=1">Copy</button></span></li>
+			<li>These addresses end in your own pairing code, so clicking a message here in your normal browser, or in the OBS panel, pops it up on the OBS overlay. Already set up OBS before? Paste the new overlay address into the Browser source once (and the panel address into the dock, so both share the code).</li>
 		</ol>
 		<p class="tu-note">The panel remembers its own channels (⚙ in the panel). Out of the box it reads YouTube @mestruth and @mes (by their channel IDs, which never change), Twitch matheasysolutions and Odysee @mestruth: change them for your own channels.</p>
 	</div>

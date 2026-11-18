@@ -190,13 +190,13 @@ APPS = {
                        js_v="5", pre_js=["/main_js/mes-ask.js?v=1", "/main_js/unit-price.js?v=1"]),
     # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
     # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
-    "2d-graphing-calculator": dict(title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",
+    "2d-graphing-calculator": dict(no_sidebar=True, title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",
                                    tag="Plot functions, equations and inequalities.", accent="#2160d0", dark="#1646a0", tint="#e3ecfb",
                                    desc="Free online 2D graphing calculator: plot functions, equations, inequalities, parametric and polar curves, use sliders, and find zeros, maximums, minimums and intersections. Zoom, pan, share a link or save a PNG.",
                                    js_v="2", pre_js=["/main_js/mes-ask.js?v=1"]),
     # 3D graphing calculator: lib.js = the 2D page's whitelist compiler extended to x,y,z,u,v,t + meshing (grid surfaces with jump detection,
     # surface nets for implicit F(x,y,z)=G, curve pieces; node-testable), app.js = UI + three.js renderer (core module imported lazily from jsDelivr).
-    "3d-graphing-calculator": dict(title="MES 3D Graphing Calculator", page_title="3D Graphing Calculator",
+    "3d-graphing-calculator": dict(no_sidebar=True, title="MES 3D Graphing Calculator", page_title="3D Graphing Calculator",
                                    tag="Plot surfaces in 3D and rotate them", accent="#6a3fc4", dark="#4c2a94", tint="#ece6fa",
                                    desc="Free online 3D graphing calculator: plot surfaces z = f(x, y), equations in x, y and z like spheres and tori, parametric curves and surfaces, with sliders. Rotate, zoom, colour by height, share a link or save a PNG.",
                                    js_v="2", pre_js=["/main_js/mes-ask.js?v=1"]),
@@ -239,7 +239,7 @@ APPS = {
     "stream-chat": dict(title="MES Stream Chat", page_title="Stream Chat: YouTube, Twitch and Odysee Live Chat in One Window (OBS Dock and Overlay)",
                  tag="All your live chats in one place.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                  desc="Free multistream chat: see your YouTube, Twitch and Odysee live chats in one window with Super Chats, memberships, bits and tips highlighted, then add it to OBS as a chat dock and on-screen overlay. Nothing to install.",
-                 js_v="5"),
+                 js_v="6"),
     # MES Polls (2026-10-31, mes.fm/polls; a poll = mes.fm/v/<id>, vercel.json rewrite to /polls?p=<id>): make a poll and share it. Storage = mes.fm/api/poll.js (Upstash),
     # lib.js = MESPoll (page helpers); tests: node tool_apps_src/polls-tests.js (fake Redis). On localhost the page uses an in-browser stand-in (no /api).
     # MES Mail (2026-11-17, mes.fm/email): quantum-safe encrypted mail between Hive accounts. lib.js = MESMail (X-Wing = ML-KEM-768 + X25519
@@ -562,7 +562,7 @@ APPS = {
                         menu_extra="<li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-transcribe\">Transcription Typing Test</a></li><li class=\"navbar__item\"><a class=\"navbar__link\" href=\"/typing-test-voice\">Voice Typing Test</a></li>"),
     # Solar System Today: where the Sun, planets, Moon and Halley's Comet are on any date. lib.js = Astronomy Engine wrapper (node-testable), view.js = canvas renderer
     # (shared with the mes.fm/moon widget through the extra_js bundle), app.js = UI. Astronomy Engine itself is the copy that /moon already ships (pre_js).
-    "solar-system-today": dict(title="MES Solar System Today", page_title="Solar System Today",
+    "solar-system-today": dict(no_sidebar=True, title="MES Solar System Today", page_title="Solar System Today",
                                tag="Where Earth, the Moon and planets are today.", accent="#3730a3", dark="#292477", tint="#e6e5f8",
                                desc="See where Earth, the Moon, the Sun and the planets are in the solar system today, or on any date: an interactive 3D-style map you can rotate and play forward or backward in time, with distances, light travel times, retrograde planets, eclipses and oppositions.",
                                js_v="4", pre_js=["/moon/js/astronomy.browser.min.js"], js_parts=["view.js"],
@@ -823,13 +823,13 @@ APPS = {
                     menu_extra="".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % x for x in [("photo", "Photo Editor"), ("compress", "Compressor"), ("image-converter", "Image Converter")])),
     # Atomic Clock Simulator: caesium clock loop (quartz locked to atoms), Ramsey fringes / fountain, clock race, Allan-deviation chart, drift calculator.
     # lib.js = physics + drift maths (node-tested: tool_apps_src/atomic-clock-simulator-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
-    "atomic-clock-simulator": dict(title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
+    "atomic-clock-simulator": dict(no_sidebar=True, title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
                             tag="How atoms keep time.", accent="#1e4fb3", dark="#173d8a", tint="#e4ecfa",
                             desc="Free atomic clock simulator: see how a caesium clock locks a quartz oscillator to atoms, tune Ramsey fringes in a fountain clock, race quartz against rubidium, caesium and optical clocks, compare their stability, and work out how far any clock drifts.",
                             js_v="3"),
     # Michelson-Morley Experiment Simulator: interferometer on a rotating table with live fringes, the aether-frame light-path picture, a noisy 16-point turntable run + fit, the historic experiments, and a fringe-shift calculator.
     # lib.js = exact arm-time / fringe maths (node-tested: tool_apps_src/michelson-morley-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
-    "michelson-morley-experiment": dict(title="MES Michelson-Morley Experiment Simulator", page_title="Michelson-Morley Experiment Simulator",
+    "michelson-morley-experiment": dict(no_sidebar=True, title="MES Michelson-Morley Experiment Simulator", page_title="Michelson-Morley Experiment Simulator",
                             tag="Did the Earth move through the aether?", accent="#047857", dark="#065f46", tint="#dcf5ea",
                             desc="Free Michelson-Morley experiment simulator: turn an interferometer through an aether wind and watch the fringes shift, see why the two light paths take different times, run a 16-point turntable measurement with noise, compare the 1881 and 1887 experiments, and calculate the expected fringe shift.",
                             js_v="1"),
@@ -841,7 +841,7 @@ APPS = {
                             js_v="6"),
     # Fountain Clock: the 3D fountain tab of the Atomic Clock Simulator as its own page (own URL, title, share image and text). Shares that app's source folder (src) and its served script
     # (js_path); content-fountain.html carries only the fountain panel + its own text (data-only="fountain" tells app.js to run just that panel).
-    "fountain-clock": dict(title="MES Caesium Fountain Clock", page_title="Caesium Fountain Clock Simulator (3D)",
+    "fountain-clock": dict(no_sidebar=True, title="MES Caesium Fountain Clock", page_title="Caesium Fountain Clock Simulator (3D)",
                             tag="Toss cold atoms up and keep time.", accent="#1e4fb3", dark="#173d8a", tint="#e4ecfa",
                             desc="Watch a caesium fountain atomic clock in 3D: six lasers cool a ball of atoms, it is launched up through the microwave cavity and falls back. Change the flight time and the atom temperature and see why throwing higher stops helping.",
                             src="atomic-clock-simulator", content="content-fountain.html", js_path="atomic-clock-simulator/js/atomic-clock-simulator.js", js_v="3"),
@@ -1299,18 +1299,18 @@ APPS = {
     # widget zbwid-4d9973a2) still delivers the mail; /main_js/contact-prefill.js fills it from ?name=&email=&subject=&message= (used by the
     # rating row, the Android tester banners and the homepage suggestion link: keep that contract) and exposes window.MESContactFill for the
     # topic buttons. Assets live in contact-page/ (js_path, logo_from) so no contact/ folder sits beside contact.html. Ad-free, no sidebar.
-    "contact": dict(title="Contact MES", page_title="Contact Us",
+    "contact": dict(no_sidebar=True, title="Contact MES", page_title="Contact Us",
                     tag="Questions, ideas and corrections: we read everything.", accent="#1a5fb4", dark="#134a8e", tint="#e6effa",
                     desc="Contact Math Easy Solutions (MES.fm) with questions, feedback, corrections or ideas for new math videos, calculators and tools.",
                     meta_desc="Contact Math Easy Solutions (MES.fm) with questions, feedback, corrections or ideas for new math videos, calculators and tools. We read every message.",
                     js_v="1", no_ads=True, url="contact", out="contact.html", js_path="contact-page/js/contact.js", logo_from="contact-page", no_comments=True, home="/", tab=3),
-    "go": dict(title="MES Short Links", page_title="Short Links",
+    "go": dict(no_sidebar=True, title="MES Short Links", page_title="Short Links",
                tag="Every mes.fm short link, searchable.", accent="#0e8a6a", dark="#0a6650", tint="#e0f4ee",
                desc="Every MES short link in one searchable list: mes.fm/pomodoro, mes.fm/physics-playlist and more. Filter by category or topic, copy any short link, and get the line for a new one.",
                js_v="1", no_ads=True),
     # Site Index: a page inventory + template audit of the whole of mes.fm. Data = mes.fm/site-index/pages.json written by build_site_index.py (fetched lazily by app.js);
     # app.js = dashboard, filterable / sortable table, group-by, URL tree, template gallery, CSV / Markdown export; tests: tool_apps_src/site-index-tests.py. Wide page, no sidebar, ad-free (an internal audit page).
-    "site-index": dict(title="MES Site Index", page_title="Site Index",
+    "site-index": dict(no_sidebar=True, title="MES Site Index", page_title="Site Index",
                        tag="Every page on mes.fm, by template.", accent="#1d6fa5", dark="#14507a", tint="#e3f0f8",
                        desc="Complete index of every page on mes.fm, classified by the template, shell and generator it uses, with feature flags and an audit of missing descriptions, share images, canonical tags and broken references. Search, filter, group, browse the URL tree and export to CSV.",
                        js_v="2", no_ads=True),
@@ -1361,7 +1361,7 @@ APPS = {
     # How much do YouTubers make?: leaderboard of big channels with ESTIMATED ad revenue (companion of /youtubemoney, ad-free like it). Data = mes.fm/how-much-do-youtubers-make/data/channels.json
     # (update_youtuber_snapshot.py), live refresh = mes.fm/api/youtuber-stats.js; lib.js = maths + a copy of the calculator's RPM tables (node-testable:
     # tool_apps_src/how-much-do-youtubers-make-tests.js), app.js = UI. Wide page, no sidebar.
-    "how-much-do-youtubers-make": dict(title="How Much Do YouTubers Make?", page_title="How Much Do YouTubers Make?",
+    "how-much-do-youtubers-make": dict(no_sidebar=True, title="How Much Do YouTubers Make?", page_title="How Much Do YouTubers Make?",
                                        tag="Estimated YouTube earnings of the biggest channels.", accent="#cc1f1f", dark="#9a1515", tint="#fbe9e9",
                                        desc="How much do YouTubers make? Estimated YouTube ad earnings per month and per year for 50+ of the biggest channels, from subscribers and recent views, by topic and viewer location. Sortable, searchable and clearly labelled estimates.",
                                        js_v="2", no_ads=True, tab=1,
@@ -1439,7 +1439,7 @@ APPS = {
     "kids-math": _kids("kids-math", "math", "math", "Math for Kids", "Math Games for Kids Ages 2 to 7: Count, Add and Take Away (Free, No Ads)",
                   "Free talking math games for toddlers and young kids: count pictures, which has more, add and take away with pictures, before and after, sums to 20, skip counting and patterns. Pick ages 2-3, 4-5 or 6-7. No ads.",
                   6, "#c2410c", "#9a3412", "#fff0e0"),
-    "fav": dict(title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
+    "fav": dict(no_sidebar=True, title="MES Favourites", page_title="MES Favourites: Your Own Calculators and Tools Page",
                 tag="Your favourite MES pages, your way.", accent="#a15c07", dark="#7a4505", tint="#fdf0d8",
                 desc="Make your own start page of favourite mes.fm calculators, tools and tutorials: search to add, drag tiles into groups you name and fold, and take the whole list to another browser or computer with one link or an encrypted Hive backup. Private: it stays in your browser.",
                 js_v="6", pre_js=["/main_js/site-search.js?v=1", "/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"], no_ads=True),
@@ -1454,7 +1454,7 @@ APPS = {
                 tag="No ads on mes.fm for 1 HBD a month, paid on Hive.", accent="#8a6508", dark="#6b4e06", tint="#fbf3dc",
                 desc="Turn off every ad on mes.fm for 1 HBD a month: log in with Hive Keychain, subscribe with a Hive recurrent transfer or pay once, and the site shows no ads in your browser. No account, no card, checked on the Hive blockchain.",
                 js_v="1", no_ads=True, pre_js=["/main_js/hive.js?v=2"], head_extra=PAGE3_HEAD),
-    "ratings": dict(title="MES Ratings", page_title="MES Ratings: Top Rated Pages and Feedback",
+    "ratings": dict(no_sidebar=True, title="MES Ratings", page_title="MES Ratings: Top Rated Pages and Feedback",
                 tag="Top rated pages, by the people who use them.", accent="#b45309", dark="#8a3f07", tint="#fdf0dd",
                 desc="The top rated, most rated and recently rated mes.fm calculators, tools and tutorials, from the Rate this page stars at the bottom of every page. Fair Bayesian ranking, filter by section, and send us feedback through the contact form.",
                 js_v="1", no_ads=True),
@@ -2046,6 +2046,23 @@ def run_followups(slugs):
     r = subprocess.run([sys.executable, str(ROOT / "add_cross_links.py"), "--apply"], cwd=ROOT, capture_output=True, text=True)
     if r.returncode:
         print("!! add_cross_links.py failed: run it by hand\n" + r.stderr[-1500:])
+    # Guard (2026-11-18, mes.fm/stream-chat shipped for weeks without the sidebar / Standard | Wide | Theatre switch because its slug was
+    # never added to add_sidebar.py's tools collection): every rebuilt page must end up with the floating bar and EITHER the "More like this"
+    # sidebar (which carries the width switch) OR the sidebar-less Standard | Wide | Theatre switch (data-page-modes="3"). A page that is
+    # sidebar-less on purpose (own wide layout) sets no_sidebar=True in its APPS entry to silence this.
+    for k, pg in zip(slugs, pages):
+        cfg = APPS[k]
+        try:
+            html = (SITE / cfg.get("out", k + "/index.html")).read_text(encoding="utf-8")
+        except OSError:
+            continue
+        miss = []
+        if "compact-nav" not in html:
+            miss.append("floating bar (add to add_tool_page_controls.py TOOLS)")
+        if not cfg.get("no_sidebar") and "MES-ASIDE" not in html and 'data-page-modes="3"' not in html:
+            miss.append("sidebar + Standard | Wide | Theatre (add to add_sidebar.py's tools collection, or use PAGE3_HEAD, or set no_sidebar=True)")
+        if miss:
+            print("!!!!! %s is MISSING: %s" % (pg, "; ".join(miss)))
 
 
 def main():

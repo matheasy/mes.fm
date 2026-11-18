@@ -373,10 +373,28 @@
 
 	/* ---------- overlay (on-screen card) ---------- */
 	var chan = null; try { chan = new BroadcastChannel('mes-stream-chat'); } catch (e) {}
+	/* Pairing code: the clicked message also goes through mes.fm/api/stream-chat-feat, so a dock / page in ANY browser reaches an
+	   overlay opened with ?room=<code> (e.g. Brave page -> OBS overlay). ?room= on the page / dock adopts that code. */
+	var RKEY = 'mes-stream-chat:room', ROOM_RE = /^[a-z0-9]{10}$/, ROOM = '';
+	try { ROOM = localStorage.getItem(RKEY) || ''; } catch (e) {}
+	if (Q.room && ROOM_RE.test(Q.room)) { ROOM = Q.room; if (MODE !== 'overlay') try { localStorage.setItem(RKEY, ROOM); } catch (e) {} }
+	if (!ROOM_RE.test(ROOM) && MODE !== 'overlay') {
+		var ab = 'abcdefghijklmnopqrstuvwxyz0123456789', rb = new Uint8Array(10); crypto.getRandomValues(rb);
+		ROOM = ''; for (var ri = 0; ri < 10; ri++) ROOM += ab[rb[ri] % 36];
+		try { localStorage.setItem(RKEY, ROOM); } catch (e) {}
+	}
+	var relayOk = null;
+	function relay(m) {
+		if (!ROOM_RE.test(ROOM) || MODE === 'overlay') return;
+		fetch('/api/stream-chat-feat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room: ROOM, m: m || null }) })
+			.then(function (r) { relayOk = r.ok; tipRelay(); }, function () { relayOk = false; tipRelay(); });
+	}
+	function tipRelay() { var t = document.querySelector('.sc-tip'); if (t && relayOk === false) t.textContent = 'Could not reach the on-screen overlay (only an overlay in this same browser will show it).'; }
 	function feature(m) {
 		var pkt = { type: m ? 'feature' : 'clear', m: m || null, at: Date.now() };
 		try { localStorage.setItem(FKEY, JSON.stringify(pkt)); } catch (e) {}
 		if (chan) chan.postMessage(pkt);
+		relay(m);
 		showFeatured(pkt);
 	}
 	var featId = null;
@@ -636,6 +654,15 @@
 		list = $('sc-list');
 		var f = el('div', 'sc-feat'); f.id = 'sc-feat'; root.appendChild(f);
 		try { var last = JSON.parse(localStorage.getItem(FKEY) || 'null'); if (last && last.m && Date.now() - last.at < 3600000) showFeatured(last); } catch (e) {}
+		if (ROOM_RE.test(ROOM)) {
+			var seenAt = 0;
+			var poll = function () {
+				fetch('/api/stream-chat-feat?room=' + ROOM, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+					if (d && d.at && d.at !== seenAt) { var first = !seenAt; seenAt = d.at; if (!first || (d.m && Date.now() - d.at < 3600000)) showFeatured(d); }
+				}, function () {}).then(function () { setTimeout(poll, document.hidden ? 4000 : 1500); });
+			};
+			poll();
+		}
 		start();
 		return;
 	}
@@ -661,7 +688,7 @@
 		'</div>',
 		'<div class="sc-status" id="sc-status" aria-live="polite"></div>',
 		'<div class="sc-feedwrap"><div class="sc-list" id="sc-list" role="log" aria-label="Chat"></div><button type="button" class="sc-newpill" id="sc-newpill" hidden></button></div>',
-		'<div class="sc-foot"><span id="sc-totals" class="sc-totals"></span><span class="sc-sp"></span><button type="button" class="sc-btn" id="sc-unfeat" hidden>Take off screen</button><span class="sc-tip">Click a message to show it on screen.</span></div>',
+		'<div class="sc-foot"><span id="sc-totals" class="sc-totals"></span><span class="sc-sp"></span><button type="button" class="sc-btn" id="sc-unfeat" hidden>Take off screen</button><span class="sc-tip">Click a message to show it on screen.</span>' + (MODE === 'dock' ? ' <button type="button" class="sc-btn" data-sc-room="overlay?room=" title="Copy the overlay address that goes with this panel">Copy overlay link</button>' : '') + '</div>',
 		MODE === 'page' ? '<div class="sc-featwrap"><div class="sc-flabel">On screen now (overlay preview)</div><div class="sc-feat sc-feat--preview" id="sc-feat"></div></div>' : ''
 	].join('');
 	list = $('sc-list');
@@ -717,6 +744,11 @@
 	fillSetup(); pfChips(); setupOpen(!!S.setup);
 	try { var lf = JSON.parse(localStorage.getItem(FKEY) || 'null'); if (lf && lf.m && Date.now() - lf.at < 3600000) showFeatured(lf); } catch (e) {}
 
+	/* overlay / dock addresses carry this browser's pairing code */
+	[].forEach.call(document.querySelectorAll('[data-sc-room]'), function (n) {
+		var u = 'https://mes.fm/stream-chat/' + n.getAttribute('data-sc-room') + ROOM;
+		if (n.tagName === 'CODE') n.textContent = u; else n.setAttribute('data-sc-copy', u);
+	});
 	/* copy buttons on the page's OBS card */
 	[].forEach.call(document.querySelectorAll('[data-sc-copy]'), function (b) {
 		b.addEventListener('click', function () {
