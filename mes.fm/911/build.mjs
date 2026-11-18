@@ -228,6 +228,13 @@ const PAGES = [
     tileLabel: "MES Truth YouTube",
   },
   {
+    // Tile only: links to the Hutchison Effect hub (mes.fm/hutchison, its own build.mjs). Icon = img/hutchison-icon.jpg (the homepage's Hutchison tile).
+    slug: "hutchison",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Hutchison Effect",
+  },
+  {
     // Tile only: no page is written. Its icon (img/911-livestreams-icon.jpg) is a crop of the newest 9/11
     // livestream's thumbnail on mes.fm/livestreams -- refresh it by hand (and bump iconVersion) when a
     // newer 9/11 stream goes up.
@@ -1833,6 +1840,7 @@ ${hasFilter ? FILTER_CSS : ""}${hasLinkPref ? LP_CSS : ""}</style>
         <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/911spooks'>Spooks</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/hutchison'>Hutchison</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/tools'>Tools</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/mobile-apps'>Mobile Apps</a></li>
@@ -1883,6 +1891,7 @@ ${sectionsHtml}
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/911">9/11 Truth</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/911spooks">9/11 Spooks</a></li>
+          <li class="navbar__item"><a class="navbar__link" href="/hutchison">Hutchison Effect</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
