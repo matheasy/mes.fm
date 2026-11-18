@@ -267,7 +267,7 @@
 			var il = document.createElement("label"); il.className = "tm-check"; il.style.display = "block"; il.style.margin = ".3em 0";
 			il.appendChild(document.createTextNode("Time in the status-bar icon: "));
 			var isel = document.createElement("select"); isel.id = "tm-app-icon"; isel.style.maxWidth = "100%";
-			[["big", "Big: seconds, then minutes (45, 5m, 2h)"], ["full", "Full time, smaller (4:59)"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; isel.appendChild(op); });
+			[["big", "Big: 45s, then 5m, then 2h"], ["full", "Full time, smaller (4:59)"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; isel.appendChild(op); });
 			isel.value = O.icon === "full" ? "full" : "big";
 			isel.addEventListener("change", function () { O.icon = isel.value; saveO(); liveSig = ""; liveUpdate(true); });
 			il.appendChild(isel); box.appendChild(il);

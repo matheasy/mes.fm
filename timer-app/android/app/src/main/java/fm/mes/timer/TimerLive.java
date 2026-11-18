@@ -121,7 +121,7 @@ final class TimerLive {
     /**
      * What the status-bar icon shows, as parts of [text, size] (size 1 = digits as tall as the icon, smaller = a unit letter
      * sitting on the baseline). The icon is a small square, so fewer characters = bigger digits.
-     *   "big" (default): seconds alone under a minute (45), then whole minutes (5m, countdowns round up like the Clock app),
+     *   "big" (default): seconds under a minute (45s), then whole minutes (5m, countdowns round up like the Clock app),
      *                    then hours (2h). The exact time is in the notification.
      *   "full":          4:59, 59:59, 1h05 (squeezed, so smaller).
      */
@@ -132,7 +132,7 @@ final class TimerLive {
             if (h > 0) return new Object[][]{{String.valueOf(h), 1f}, {"h", .55f}, {String.format(Locale.US, "%02d", m), 1f}};
             return new Object[][]{{String.valueOf(m), 1f}, {":", 1f}, {String.format(Locale.US, "%02d", r), 1f}};
         }
-        if (s < 60) return new Object[][]{{String.valueOf(s), 1f}};
+        if (s < 60) return new Object[][]{{String.valueOf(s), 1f}, {"s", .55f}};   // a unit on every value, so it never looks like the clock
         long mins = up ? s / 60 : (s + 59) / 60;
         if (mins < 100) return new Object[][]{{String.valueOf(mins), 1f}, {"m", .55f}};
         long hrs = up ? s / 3600 : (s + 3599) / 3600;
@@ -268,6 +268,7 @@ final class TimerLive {
             p.setTextSize(size * (Float) parts[i][1]);
             p.getTextBounds(t, 0, t.length(), r);
             w[i] = r.width(); left[i] = r.left;
+            if (":".equals(t)) w[i] += gap * 5;           // room round the colon, or 2:54 reads as 254
             total += w[i] + (i > 0 ? gap : 0);
         }
         float sx = total > px ? px / total : 1f;
@@ -276,7 +277,8 @@ final class TimerLive {
             String t = (String) parts[i][0];
             p.setTextSize(size * (Float) parts[i][1]);
             p.setTextScaleX(sx);
-            cv.drawText(t, x - left[i] * sx, px, p);    // baseline on the bottom edge: digits fill the square top to bottom
+            float pad = ":".equals(t) ? gap * 2.5f * sx : 0;
+            cv.drawText(t, x + pad - left[i] * sx, px, p);    // baseline on the bottom edge: digits fill the square top to bottom
             x += (w[i] + gap) * sx;
         }
         return Icon.createWithBitmap(bm);
