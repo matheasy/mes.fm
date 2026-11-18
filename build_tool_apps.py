@@ -1931,6 +1931,12 @@ def build_from_source(slug, cfg, tpl):
     jsrel = cfg.get("js_path", "%s/js/%s.js" % (slug, slug))       # where the page script is served from (js_path: a page that lives inside another site's folder)
     scripts += '<script src="/%s?v=%s" defer></script>' % (jsrel, cfg["js_v"])
     page = tpl
+    if "HUB-THEATRE-HEAD" in (cfg.get("head_extra") or ""):    # PAGE3_HEAD alone is only the restore snippet: the Standard | Wide | Theatre switch also needs
+        if "data-page-modes" not in content:                 # data-page-modes="3" on the tool root + hub-theatre.js (/edits shipped without them, 2026-11-17)
+            content = re.sub(r'(<div class="tu\b[^"]*")', r'\1 data-page-modes="3"', content, count=1)
+        if "hub-theatre.js" not in content:
+            content = content.rstrip("\n") + '\n\t<script src="/main_js/hub-theatre.js?v=2" defer></script>\n'
+        assert "data-page-modes" in content, "%s: PAGE3_HEAD but no <div class=\"tu ...\"> to put data-page-modes on" % slug
     for k, v in (("@@TOOL_CSS@@", css), ("@@CONTENT@@", content.strip("\n")), ("@@LDJSON@@", ld)):
         page = page.replace(k, v)
     if cfg.get("head_extra"):

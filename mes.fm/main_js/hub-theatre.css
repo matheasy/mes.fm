@@ -21,6 +21,9 @@
   :is(body.dark-mode, body.dark) .hub-mode button:hover { background: #3a3a3a; }
   :is(body.dark-mode, body.dark) .hub-mode button[aria-pressed="true"] { background: #6cb6f5; color: #111; }
 
+  /* Wide on data-page-modes="3" tool pages (no sidebar): a real middle size, so a page never needs its own Wide rule (/edits had none, 2026-11-17) */
+  html.page-wide:not(.page-theatre) body:has([data-page-modes='3']) .outer-container { max-width: min(96vw, 80em) !important; }
+
   /* Theatre: the page frame grows to nearly the whole window and the grids add columns */
   html.page-theatre .outer-container { max-width: min(98vw, 2400px) !important; width: auto !important; }
   html.page-theatre .tbl { grid-template-columns: repeat(auto-fill, minmax(19em, 1fr)); }
