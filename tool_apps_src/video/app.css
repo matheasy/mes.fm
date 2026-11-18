@@ -328,6 +328,7 @@
 	#vd .vd-link {background:none;border:0;padding:0;color:#93c5fd;text-decoration:underline;cursor:pointer;font:inherit;}
 	#vd .vd-narr a {color:#93c5fd;}
 	#vd .vd-nmeter {height:10px;background:#1f2937;border-radius:5px;overflow:hidden;} #vd .vd-nmeter i {display:block;height:100%;width:0;background:#22c55e;transition:width .06s linear;}
+	#vd .vd-nvid {margin-top:0.5em;} #vd .vd-nvlab {display:block;font-size:0.85em;color:var(--vd-dim);margin-bottom:0.15em;} #vd .vd-nvid .vd-nseg {margin:0;} #vd .vd-nvid .vd-nseg button {font-size:0.8em;padding:0.3em 0.25em;}
 	#vd .vd-ncol {flex-direction:column;gap:0.1em;} #vd .vd-ncol label {min-height:28px;}
 	#vd .vd-rec {color:#fecaca;border-color:#b91c1c;} #vd .vd-rec.is-on {background:#b91c1c;color:#fff;animation:vd-recp 1.2s ease-in-out infinite;}
 	@keyframes vd-recp {50% {box-shadow:0 0 0 4px rgba(239,68,68,.35);}}

@@ -635,6 +635,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-link {background:none;border:0;padding:0;color:#93c5fd;text-decoration:underline;cursor:pointer;font:inherit;}
 	#vd .vd-narr a {color:#93c5fd;}
 	#vd .vd-nmeter {height:10px;background:#1f2937;border-radius:5px;overflow:hidden;} #vd .vd-nmeter i {display:block;height:100%;width:0;background:#22c55e;transition:width .06s linear;}
+	#vd .vd-nvid {margin-top:0.5em;} #vd .vd-nvlab {display:block;font-size:0.85em;color:var(--vd-dim);margin-bottom:0.15em;} #vd .vd-nvid .vd-nseg {margin:0;} #vd .vd-nvid .vd-nseg button {font-size:0.8em;padding:0.3em 0.25em;}
 	#vd .vd-ncol {flex-direction:column;gap:0.1em;} #vd .vd-ncol label {min-height:28px;}
 	#vd .vd-rec {color:#fecaca;border-color:#b91c1c;} #vd .vd-rec.is-on {background:#b91c1c;color:#fff;animation:vd-recp 1.2s ease-in-out infinite;}
 	@keyframes vd-recp {50% {box-shadow:0 0 0 4px rgba(239,68,68,.35);}}
@@ -1154,12 +1155,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<textarea id="vd-nt" rows="7" class="vd-ta" spellcheck="true" placeholder="Type or paste your script&hellip;" aria-label="Narration script"></textarea>
 							<div class="vd-row vd-nrecrow" id="vd-nr-rec"><button type="button" class="vd-btn vd-rec" id="vd-nrec" title="Record your voice from the playhead (R; Space or Esc stops)">&#9679; Record my voice</button><span class="vd-nrt" id="vd-nrt" aria-live="polite"></span></div>
 							<div class="vd-nmeter" aria-hidden="true"><i id="vd-nmf"></i></div>
+							<div class="vd-nvid"><span class="vd-nvlab" id="vd-nvlab">While I record, the video:</span><div class="vd-nseg" id="vd-nvid" role="radiogroup" aria-labelledby="vd-nvlab"><button type="button" role="radio" data-v="play" title="The timeline plays with its sound">&#9654; Plays</button><button type="button" role="radio" data-v="mute" title="The timeline plays without sound (no headphones needed)">&#128263; Plays muted</button><button type="button" role="radio" data-v="still" title="The timeline stays still: just record your voice">&#10074;&#10074; Stays still</button></div></div>
 							<details class="vd-nopts"><summary>Microphone and recording options</summary>
 								<label class="vd-nlab">Microphone<select id="vd-nmic" aria-label="Microphone"><option value="">Default microphone</option></select></label>
 								<p class="vd-hint" id="vd-nmicst">Press Test my mic to see the level (it stays in this browser).</p>
 								<div class="vd-checks vd-ncol">
-									<label><input type="checkbox" id="vd-nplay"> Play the timeline while I record</label>
-									<label><input type="checkbox" id="vd-nmute"> Mute the timeline sound while I record (use this without headphones)</label>
 									<label><input type="checkbox" id="vd-ncount"> Count down 3 seconds first</label>
 									<label><input type="checkbox" id="vd-nclean"> Let the browser clean up the sound (noise / echo / auto level)</label>
 								</div>
@@ -1363,7 +1363,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=52" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=53" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

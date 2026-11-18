@@ -5652,7 +5652,15 @@
 
 	/* recording a voice-over with the microphone */
 	var REC = { stream: null, ac: null, an: null, raf: 0, mr: null, chunks: [], at: 0, t0: 0, timer: 0, counting: 0, wasPlay: false };
-	["play", "mute", "count", "clean"].forEach(function (k) { var el = $("vd-n" + k); el.checked = !!NS[k]; el.onchange = function () { NS[k] = el.checked; nkeep(); if (k === "clean" && REC.stream && !REC.mr) openMic(); }; });
+	["count", "clean"].forEach(function (k) { var el = $("vd-n" + k); el.checked = !!NS[k]; el.onchange = function () { NS[k] = el.checked; nkeep(); if (k === "clean" && REC.stream && !REC.mr) openMic(); }; });
+	// "While I record, the video: Plays | Plays muted | Stays still" (also switches live during a recording)
+	function nvidMode() { return !NS.play ? "still" : NS.mute ? "mute" : "play"; }
+	function paintNvid() { var m = nvidMode(); [].forEach.call($("vd-nvid").children, function (b) { b.setAttribute("aria-checked", b.dataset.v === m ? "true" : "false"); b.setAttribute("aria-selected", b.dataset.v === m ? "true" : "false"); }); }
+	[].forEach.call($("vd-nvid").children, function (b) { b.onclick = function () {
+		var v = b.dataset.v; NS.play = v !== "still"; NS.mute = v === "mute"; nkeep(); paintNvid();
+		if (REC.mr) { P.muted = !!NS.mute; if (!NS.play) { if (P.playing) P.pause(); } else if (!(P.playing && !P.rev)) P.play(1); P.sync && P.sync(); }
+	}; });
+	paintNvid();
 	var nmic = $("vd-nmic");
 	function listMics(ask) {
 		if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
