@@ -35,7 +35,7 @@
 				<select id="ai-chats" class="tu-input ai-chats" data-native></select>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">＋ New chat</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-del" title="Delete this chat from this browser">Delete chat</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="Download this chat as a Markdown file">Download</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="Save to your cloud, Hive or a file">💾 Save</button>
 			</div>
 			<div class="ai-log" id="ai-log" aria-live="polite" data-mes-tsize="mes-ai:fz" data-mes-tsize-label="Text" data-mes-grip="mes-ai:h" data-mes-grip-mode="max" data-mes-grip-min="220"></div>
 			<div class="ai-compose">
@@ -51,6 +51,36 @@
 				</div>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 			</div>
+			<details class="ai-save" id="ai-save">
+				<summary>💾 Save your chats <span class="ai-sub" id="ai-savestate"></span></summary>
+				<div class="ai-savebox">
+					<h4>☁ Cloud: OneDrive, Dropbox, Google Drive or a synced folder</h4>
+					<p class="tu-note">Keeps one file with all your chats (<code>MES AI chats.json</code>, in <code>MES Apps/AI</code>) saved to your own cloud, written straight from your browser, never through mes.fm. It saves a few seconds after each answer, so your chats follow you to other computers: open the same file there.</p>
+					<div class="ai-saverow" id="ai-cloudrow"></div>
+
+					<h4>🐝 Hive: a backup on the blockchain</h4>
+					<p class="tu-note">Save this chat or all of them to your own Hive account and load them on any device with Hive Keychain. Encrypted by default: only you can read it. Permanent: Hive never forgets.</p>
+					<div id="ai-hv-main">
+						<div class="ai-saverow">
+							<label class="ai-opt"><span>Save</span><select id="ai-hv-what" class="tu-input" data-native><option value="chat">This chat</option><option value="all">All chats</option></select></label>
+							<label class="ai-enc"><input type="checkbox" id="ai-hv-enc" checked> <span><b>Encrypt</b> (only you can read it)</span></label>
+						</div>
+						<p class="ai-hvwarn" id="ai-hv-warn" role="note"></p>
+						<div class="ai-saverow"><button type="button" class="tu-btn tu-btn--primary" id="ai-hv-save">Save to Hive</button> <button type="button" class="tu-btn tu-btn--ghost" id="ai-hv-load">Load from Hive</button></div>
+						<p class="tu-note ai-hvmsg" id="ai-hv-msg" aria-live="polite"></p>
+						<div id="ai-hv-list"></div>
+					</div>
+
+					<h4>📄 A file on this computer</h4>
+					<p class="tu-note">Downloaded chats open in our own <a href="/text" target="_blank" rel="noopener">MES Text Viewer</a> (formatted, with Read aloud and Print to PDF) and backups go back into this page with Restore: no other app needed.</p>
+					<div class="ai-saverow">
+						<button type="button" class="tu-btn tu-btn--ghost" id="ai-open-text" title="Read or print this chat in the MES Text Viewer (formatted Markdown)">📖 Open in Text Viewer</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="ai-dl-md">Download this chat (.md)</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="ai-dl-all">Back up all chats (.json)</button>
+						<label class="tu-btn tu-btn--ghost ai-filebtn">Restore from a backup<input type="file" id="ai-restore" accept=".json,application/json" hidden></label>
+					</div>
+				</div>
+			</details>
 		</section>
 
 		<section class="tu-card ai-img" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>

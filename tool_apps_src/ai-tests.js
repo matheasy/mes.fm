@@ -87,6 +87,18 @@ eq(A.streamPiece({ event: "content_block_start", data: { type: "content_block_st
 eq(A.streamPiece({ event: "message_delta", data: { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 9 } } }), { t: "stop", stop: "end_turn", usage: { output_tokens: 9 } }, "stop");
 eq(A.streamPiece({ event: "error", data: { type: "error", error: { message: "Overloaded" } } }), { t: "error", msg: "Overloaded" }, "error event");
 
+/* ---------- saving chats ---------- */
+const c1 = { id: "a", title: "One", at: 10, msgs: [{ role: "user", content: "hi", price: "0.010" }, { role: "assistant", content: "hello" }, { role: "assistant", content: "", pending: true }] };
+const bk = A.backup([c1, { id: "e", title: "empty", at: 1, msgs: [] }], T0);
+eq([bk.app, bk.v, bk.chats.length, bk.chats[0].msgs.length, bk.chats[0].msgs[0].price], ["mes-ai", 1, 1, 2, "0.010"], "backup drops empty chats and unfinished answers");
+eq(A.readBackup(JSON.stringify(bk))[0].title, "One", "read a backup back");
+threw = false; try { A.readBackup('{"chats":[]}'); } catch (e) { threw = true; } eq(threw, true, "not a MES AI backup");
+let mg = A.mergeChats([A.cleanChat(c1)], [{ id: "a", title: "One", at: 20, msgs: [{ role: "user", content: "hi" }, { role: "assistant", content: "hello" }, { role: "user", content: "more" }, { role: "assistant", content: "sure" }] }, { id: "b", title: "Two", at: 5, msgs: [{ role: "user", content: "x" }] }]);
+eq([mg.chats.length, mg.added, mg.updated, mg.chats[0].id, mg.chats[0].msgs.length], [2, 1, 1, "a", 4], "merge: longer copy wins, new chat added, newest first");
+mg = A.mergeChats(mg.chats, [{ id: "a", title: "One", at: 99, msgs: [{ role: "user", content: "hi" }] }]);
+eq([mg.updated, mg.chats[0].msgs.length], [0, 4], "merge never drops messages");
+ok(A.chatMarkdown(A.cleanChat(c1)).indexOf("## MES AI\n\nhello") > 0, "markdown export");
+
 /* ---------- the server, end to end ---------- */
 function fakeRedis() {
   const st = new Map();

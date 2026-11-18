@@ -199,7 +199,42 @@
     return null;
   }
 
+  /* ---------- saving chats (cloud file, Hive backup, file backup) ---------- */
+  // a chat = {id, title, at, msgs:[{role, content, ...}]}; only finished messages are kept in a backup
+  function cleanChat(c) {
+    if (!c || typeof c.id !== "string" || !Array.isArray(c.msgs)) return null;
+    var msgs = c.msgs.filter(function (m) { return m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && !m.pending; })
+      .map(function (m) { var o = { role: m.role, content: m.content }; ["at", "price", "memo", "model", "len", "stop", "acct"].forEach(function (k) { if (m[k] != null) o[k] = m[k]; }); return o; });
+    return { id: c.id.slice(0, 40), title: String(c.title || "Chat").slice(0, 120), at: Number(c.at) || 0, msgs: msgs };
+  }
+  function backup(chats, now) {
+    return { app: "mes-ai", v: 1, saved: new Date(now || Date.now()).toISOString(), chats: (chats || []).map(cleanChat).filter(function (c) { return c && c.msgs.length; }) };
+  }
+  // accepts a backup object / its JSON text -> chats array, or throws
+  function readBackup(x) {
+    var o = typeof x === "string" ? JSON.parse(x) : x;
+    if (!o || o.app !== "mes-ai" || !Array.isArray(o.chats)) throw new Error("That is not a MES AI backup.");
+    return o.chats.map(cleanChat).filter(Boolean);
+  }
+  // merge theirs into mine: a chat both have keeps the copy with more messages (newer on a tie); nothing is deleted
+  function mergeChats(mine, theirs) {
+    var out = (mine || []).slice(), byId = {}, added = 0, updated = 0;
+    out.forEach(function (c, i) { byId[c.id] = i; });
+    (theirs || []).forEach(function (c) {
+      c = cleanChat(c); if (!c || !c.msgs.length) return;
+      if (!(c.id in byId)) { byId[c.id] = out.length; out.push(c); added++; return; }
+      var i = byId[c.id], m = out[i];
+      if (c.msgs.length > m.msgs.length || (c.msgs.length === m.msgs.length && c.at > m.at)) { out[i] = c; updated++; }
+    });
+    out.sort(function (a, b) { return b.at - a.at; });
+    return { chats: out, added: added, updated: updated };
+  }
+  function chatMarkdown(c) {
+    return "# " + c.title + "\n\n" + c.msgs.map(function (m) { return "## " + (m.role === "user" ? "You" : "MES AI") + "\n\n" + (m.content || ""); }).join("\n\n") + "\n";
+  }
+
   return {
+    cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
@@ -641,6 +676,139 @@
 		b.addEventListener("click", function () { makeImage(true); });
 		$("ai-msg").appendChild(b);
 	}
+
+	/* ---------- 💾 saving: cloud file (MESCloud), Hive backup (MESHiveStore), file backup ---------- */
+	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at; }).join("|"); }
+	function mergeIn(chats, how) {
+		var r = A.mergeChats(S.chats, chats);
+		S.chats = r.chats; if (!S.chats.some(function (c) { return c.id === S.cur; })) S.cur = S.chats[0] ? S.chats[0].id : null;
+		save(); renderLog(); paintPrice();
+		return (how ? how + ": " : "") + (r.added || r.updated ? r.added + " new chat" + (r.added === 1 ? "" : "s") + (r.updated ? ", " + r.updated + " updated" : "") + "." : "you already had all of them.");
+	}
+	$("ai-export").addEventListener("click", function () { var d = $("ai-save"); d.open = true; d.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+	function download(name, text, type) {
+		var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: type })); a.download = name; a.click();
+		setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+	}
+	$("ai-dl-md").addEventListener("click", function () {
+		var c = A.cleanChat(cur()); if (!c || !c.msgs.length) { msg("This chat is empty.", "err"); return; }
+		download((c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") || "chat") + ".md", A.chatMarkdown(c), "text/markdown");
+	});
+	$("ai-open-text").addEventListener("click", function () {
+		var c = A.cleanChat(cur()); if (!c || !c.msgs.length) { msg("This chat is empty.", "err"); return; }
+		var name = (c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") || "chat") + ".md";
+		var f = new File([A.chatMarkdown(c)], name, { type: "text/markdown" });
+		if (!window.MESLinkOpen) { download(name, A.chatMarkdown(c), "text/markdown"); return; }
+		window.MESLinkOpen.sendTo("text", f, { busy: true }).catch(function (e) { msg("Could not open it: " + e.message, "err"); });
+	});
+	$("ai-dl-all").addEventListener("click", function () {
+		var b = A.backup(S.chats); if (!b.chats.length) { msg("No chats to back up yet.", "err"); return; }
+		download("MES AI chats " + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(b, null, 1), "application/json");
+	});
+	$("ai-restore").addEventListener("change", function () {
+		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
+		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), "Restored"), "ok"); }).catch(function (e) { msg(e.message, "err"); });
+	});
+
+	// cloud: one file with every chat; auto-saved a few seconds after each change (MESCloud.changed)
+	var cdoc = { name: "MES AI chats.json" }, cloudSig = null, CKEY = "mes-ai:cloud";
+	function cloudKeep() {
+		var l = cloud && cloud.link(cdoc);
+		try { if (!l) localStorage.removeItem(CKEY); else localStorage.setItem(CKEY, JSON.stringify({ p: l.p, ref: l.p === "file" ? null : l.ref, hid: l.hid || null, name: l.name, ver: l.ver, dir: l.dir })); } catch (e) { /* ignore */ }
+	}
+	var cloud = window.MESCloud ? window.MESCloud.attach({
+		app: "ai", folder: "MES Apps/AI", what: "chats file", title: "MES AI", defExt: "json", btnClass: "tu-btn tu-btn--ghost", mount: $("ai-cloudrow"), replaces: true,
+		toast: function (t) { msg(t, "ok"); },
+		exts: [".json"], accept: [{ description: "MES AI chats", accept: { "application/json": [".json"] } }],
+		doc: function () { return cdoc; },
+		name: function (d) { return d.name || "MES AI chats.json"; },
+		bytes: function () { return Promise.resolve(new TextEncoder().encode(JSON.stringify(A.backup(S.chats)))); },
+		open: function (u8, name) {
+			var chats = A.readBackup(new TextDecoder().decode(u8));
+			var note = mergeIn(chats, "From " + name);
+			cdoc = { name: name }; cloudSig = null;      // our merged copy differs from the file: the next save writes it back
+			setTimeout(function () { cloudKeep(); paintSaveState(); msg(note, "ok"); if (cloud) cloud.changed(cdoc); }, 0);
+			return cdoc;
+		},
+		dirty: function () { return cloudSig !== sig(); },
+		markDirty: function () { cloudSig = null; },
+		saved: function (d, name) { d.name = name; cloudSig = sig(); cloudKeep(); paintSaveState(); }
+	}) : null;
+	(function () { // a cloud link survives a reload
+		var k = null; try { k = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) { /* ignore */ }
+		if (!k || !cloud) return;
+		function put(ref) { cdoc = { name: k.name, __mcl: { p: k.p, ref: ref, name: k.name, ver: k.ver, at: Date.now(), hid: k.hid || undefined, dir: k.dir } }; cloudSig = sig(); cloud.refresh(); paintSaveState(); }
+		if (k.p !== "file") return put(k.ref);
+		if (!k.hid || !window.indexedDB) return;
+		var q = indexedDB.open("mes-cloud", 1);
+		q.onupgradeneeded = function () { q.result.createObjectStore("h"); };
+		q.onsuccess = function () { try { var r = q.result.transaction("h").objectStore("h").get(k.hid); r.onsuccess = function () { if (r.result) { r.result.__mclId = k.hid; put(r.result); } }; } catch (e) { /* ignore */ } };
+	})();
+	if (!cloud) $("ai-cloudrow").innerHTML = '<p class="tu-note">The cloud script did not load. Reload the page to try again.</p>';
+	var saveRaw = save;
+	save = function () { saveRaw(); if (cloud && cloud.linked(cdoc)) { cloud.changed(cdoc); paintSaveState(); } };
+	function paintSaveState() {
+		var l = cloud && cloud.link(cdoc);
+		$("ai-savestate").textContent = l ? "· ☁ " + (cloudSig === sig() ? "saved to " : "saving to ") + (l.p === "file" ? l.name : (cloud.providers[l.p] ? cloud.providers[l.p].name : l.p)) : "";
+	}
+
+	// Hive: custom_json "mes_store", app "mes-ai", name "chat" (one chat) or "all"; encrypted by default ("mes-ai:hiveenc" "0" = off)
+	var HAPP = "mes-ai", ENC = "mes-ai:hiveenc", hvList = null, hvBusy = false;
+	function HS() { return window.MESHiveStore; }
+	function hmsg(t, cls) { var m = $("ai-hv-msg"); m.textContent = t || ""; m.className = "tu-note ai-hvmsg" + (cls ? " is-" + cls : ""); }
+	function hvErr(e) { return e && e.code === "cancel" ? "Cancelled." : e && e.code === "toobig" ? "Too big for one Hive save (about 150 KB packed). Save one chat at a time, or use the cloud." : (e && e.message) || "Something went wrong."; }
+	function hvKb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(1) + " KB"; }
+	function hvWhen(t) { var d = new Date(/Z$/.test(t) ? t : t + "Z"); return isNaN(d) ? t : d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+	function paintHvWarn() {
+		var w = $("ai-hv-warn"), enc = $("ai-hv-enc").checked;
+		if (HS() && HS().canEncrypt && !HS().canEncrypt() && !(HS().lockMode && HS().lockMode() === "pass")) w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so pick <b>🛡 Passphrase</b> under the Encrypt tick, or the save would be public.";
+		else w.innerHTML = enc ? (HS() && HS().lockMode && HS().lockMode() === "pass" ? "🛡 Locked with your passphrase (quantum-safe): only the passphrase opens it." : "🔒 Encrypted with your memo key: only you can open it.") + " Others can see that a backup exists, when, and its size."
+			: "⚠ <b>Public:</b> the chat text will be readable by anyone on the Hive blockchain, forever.";
+		w.className = "ai-hvwarn" + (enc ? "" : " is-open");
+	}
+	function hvReady() {
+		if (mock) { hmsg("Local preview: Hive saving is switched off here (no real Keychain).", "err"); return null; }
+		if (!HS() || !H) { hmsg("The Hive scripts did not load. Reload the page.", "err"); return null; }
+		var u = H.user(); if (!u) { hmsg("Log in with Hive Keychain first (at the top of the page).", "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return null; }
+		return u;
+	}
+	function hvBusySet(b) { hvBusy = b; $("ai-hv-save").disabled = b; $("ai-hv-load").disabled = b; }
+	$("ai-hv-enc").checked = (function () { try { return localStorage.getItem(ENC) !== "0"; } catch (e) { return true; } })();
+	$("ai-hv-enc").addEventListener("change", function () { try { localStorage.setItem(ENC, this.checked ? "1" : "0"); } catch (e) {} paintHvWarn(); });
+	if (HS() && HS().encModeUI) HS().encModeUI($("ai-hv-enc"), paintHvWarn);
+	paintHvWarn();
+	$("ai-hv-save").addEventListener("click", function () {
+		if (hvBusy) return;
+		var u = hvReady(); if (!u) return;
+		var one = $("ai-hv-what").value === "chat", b = A.backup(one ? [cur()] : S.chats);
+		if (!b.chats.length) { hmsg(one ? "This chat is empty." : "No chats to save yet.", "err"); return; }
+		var enc = $("ai-hv-enc").checked;
+		if (!enc && !confirm("Save WITHOUT encryption?\n\nThe chat text will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
+		hvBusySet(true);
+		HS().save(HAPP, one ? "chat" : "all", b, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
+			hmsg("Saved " + (one ? "this chat" : b.chats.length + " chats") + " to @" + u.name + " on Hive (" + hvKb(r.bytes) + (enc ? ", encrypted" : ", public") + ").", "ok");
+			hvList = null; setTimeout(function () { hvLoad(true); }, 4000);
+		}).catch(function (e) { hmsg(hvErr(e), "err"); }).then(function () { hvBusySet(false); });
+	});
+	function hvLoad(quiet) {
+		var u = hvReady(); if (!u || (hvBusy && !quiet)) return;
+		hvBusySet(true); if (!quiet) hmsg("Looking for your saves on Hive…");
+		HS().list(u.name, { app: HAPP, pages: 30 }).then(function (saves) {
+			hvList = saves.filter(function (e) { return e.name === "chat" || e.name === "all"; }).slice(0, 15);
+			$("ai-hv-list").innerHTML = hvList.length ? '<ul class="ai-hvl">' + hvList.map(function (e, i) {
+				return "<li><span><b>" + esc(hvWhen(e.time)) + "</b> <span class=\"ai-sub\">" + (e.name === "chat" ? "One chat" : "All chats") + " · " + esc(HS().lockLabel ? HS().lockLabel(e) : (e.encrypted ? "encrypted" : "public")) + " · " + hvKb(e.bytes) + (e.complete ? "" : " · incomplete") + "</span></span>" +
+					(e.complete ? '<button type="button" class="tu-btn tu-btn--ghost" data-hv="' + i + '">Add to my chats</button>' : "") + "</li>";
+			}).join("") + "</ul>" : "";
+			if (!quiet) hmsg(hvList.length ? "Pick a save to add its chats to yours." : "No MES AI saves found on @" + u.name + " yet.", hvList.length ? "" : "err");
+		}).catch(function (e) { hmsg("Could not read from Hive: " + hvErr(e), "err"); }).then(function () { hvBusySet(false); });
+	}
+	$("ai-hv-load").addEventListener("click", function () { hvLoad(false); });
+	$("ai-hv-list").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-hv]"); if (!b || hvBusy) return;
+		var it = hvList[+b.dataset.hv]; hvBusySet(true);
+		hmsg(it.lock === "pass" ? "Unlocking with your passphrase…" : it.encrypted ? "Confirm in Keychain: decrypt with your memo key…" : "Opening the save…");
+		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), "Loaded from Hive"), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
+	});
 
 	/* ---------- tabs ---------- */
 	function showTab(t) {

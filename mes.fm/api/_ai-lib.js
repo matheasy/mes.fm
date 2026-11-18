@@ -199,7 +199,42 @@
     return null;
   }
 
+  /* ---------- saving chats (cloud file, Hive backup, file backup) ---------- */
+  // a chat = {id, title, at, msgs:[{role, content, ...}]}; only finished messages are kept in a backup
+  function cleanChat(c) {
+    if (!c || typeof c.id !== "string" || !Array.isArray(c.msgs)) return null;
+    var msgs = c.msgs.filter(function (m) { return m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && !m.pending; })
+      .map(function (m) { var o = { role: m.role, content: m.content }; ["at", "price", "memo", "model", "len", "stop", "acct"].forEach(function (k) { if (m[k] != null) o[k] = m[k]; }); return o; });
+    return { id: c.id.slice(0, 40), title: String(c.title || "Chat").slice(0, 120), at: Number(c.at) || 0, msgs: msgs };
+  }
+  function backup(chats, now) {
+    return { app: "mes-ai", v: 1, saved: new Date(now || Date.now()).toISOString(), chats: (chats || []).map(cleanChat).filter(function (c) { return c && c.msgs.length; }) };
+  }
+  // accepts a backup object / its JSON text -> chats array, or throws
+  function readBackup(x) {
+    var o = typeof x === "string" ? JSON.parse(x) : x;
+    if (!o || o.app !== "mes-ai" || !Array.isArray(o.chats)) throw new Error("That is not a MES AI backup.");
+    return o.chats.map(cleanChat).filter(Boolean);
+  }
+  // merge theirs into mine: a chat both have keeps the copy with more messages (newer on a tie); nothing is deleted
+  function mergeChats(mine, theirs) {
+    var out = (mine || []).slice(), byId = {}, added = 0, updated = 0;
+    out.forEach(function (c, i) { byId[c.id] = i; });
+    (theirs || []).forEach(function (c) {
+      c = cleanChat(c); if (!c || !c.msgs.length) return;
+      if (!(c.id in byId)) { byId[c.id] = out.length; out.push(c); added++; return; }
+      var i = byId[c.id], m = out[i];
+      if (c.msgs.length > m.msgs.length || (c.msgs.length === m.msgs.length && c.at > m.at)) { out[i] = c; updated++; }
+    });
+    out.sort(function (a, b) { return b.at - a.at; });
+    return { chats: out, added: added, updated: updated };
+  }
+  function chatMarkdown(c) {
+    return "# " + c.title + "\n\n" + c.msgs.map(function (m) { return "## " + (m.role === "user" ? "You" : "MES AI") + "\n\n" + (m.content || ""); }).join("\n\n") + "\n";
+  }
+
   return {
+    cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
