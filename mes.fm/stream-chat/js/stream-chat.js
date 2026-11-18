@@ -433,12 +433,15 @@
 
 	/* ---------- status ---------- */
 	var ST = {};
-	function status(key, p, txt, state) {
-		ST[key] = { p: p, txt: txt, state: state || 'wait' };
+	/* url = the platform's own chat page, shown as "Open chat" so you can answer people there (kept until the source says otherwise) */
+	function status(key, p, txt, state, url) {
+		ST[key] = { p: p, txt: txt, state: state || 'wait', url: url === undefined ? (ST[key] && ST[key].url) || '' : url };
 		var box = $('sc-status'); if (!box) return;
 		box.innerHTML = '';
 		Object.keys(ST).sort().forEach(function (k) {
-			var s = ST[k], d = el('span', 'sc-st sc-st--' + s.state); d.appendChild(badge(s.p)); d.appendChild(document.createTextNode(s.txt)); box.appendChild(d);
+			var s = ST[k], d = el('span', 'sc-st sc-st--' + s.state); d.appendChild(badge(s.p)); d.appendChild(document.createTextNode(s.txt));
+			if (s.url && /^https:\/\//.test(s.url)) { var a = el('a', 'sc-open', 'Open chat ↗'); a.href = s.url; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Open ' + C.PLATFORMS[s.p].name + ' chat to reply'; d.appendChild(a); }
+			box.appendChild(d);
 		});
 	}
 	function clearStatus() { ST = {}; var b = $('sc-status'); if (b) b.innerHTML = ''; }
@@ -468,7 +471,7 @@
 					if (ytVideos[j.v] && ytVideos[j.v] !== key) { status(key, 'yt', label + ': same stream as ' + ytVideos[j.v].slice(3), 'off'); later(poll, 120000); return; }
 					ytVideos[j.v] = key;
 					st = { c: j.c, k: j.k, ver: j.ver, v: j.v };
-					status(key, 'yt', label + (j.upcoming ? ': scheduled stream, chat open' : ': live') + (j.title ? ' · ' + j.title : ''), 'on');
+					status(key, 'yt', label + (j.upcoming ? ': scheduled stream, chat open' : ': live') + (j.title ? ' · ' + j.title : ''), 'on', 'https://www.youtube.com/live_chat?is_popout=1&v=' + j.v);
 					apply(j, true); later(poll, clampWait(j.wait));
 				}).catch(function (e) { status(key, 'yt', label + ': ' + e.message + ', retrying', 'err'); later(poll, 15000); });
 				return;
@@ -476,7 +479,7 @@
 			getJSON('/api/yt-chat?c=' + encodeURIComponent(st.c) + '&k=' + encodeURIComponent(st.k) + '&ver=' + encodeURIComponent(st.ver)).then(function (j) {
 				if (g !== gen) return;
 				apply(j, false);
-				if (j.ended || !j.c) { delete ytVideos[st.v]; st = null; status(key, 'yt', label + ': chat ended, checking again', 'off'); later(poll, 30000); return; }
+				if (j.ended || !j.c) { delete ytVideos[st.v]; st = null; status(key, 'yt', label + ': chat ended, checking again', 'off', ''); later(poll, 30000); return; }
 				st.c = j.c; later(poll, clampWait(j.wait));
 			}).catch(function (e) { status(key, 'yt', label + ': ' + e.message + ', retrying', 'err'); later(poll, 8000); });
 		}
@@ -494,7 +497,7 @@
 			ws.onopen = function () {
 				ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands'); ws.send('PASS SCHMOOPIIE');
 				ws.send('NICK justinfan' + Math.floor(10000 + Math.random() * 89999)); ws.send('JOIN #' + ch);
-				status(key, 'tw', ch + ': connected', 'on');
+				status(key, 'tw', ch + ': connected', 'on', 'https://www.twitch.tv/popout/' + encodeURIComponent(ch) + '/chat?popout=');
 			};
 			ws.onmessage = function (e) {
 				String(e.data).split('\r\n').forEach(function (line) {
@@ -528,7 +531,8 @@
 				var d = j.data || {}, ac = d.ActiveClaim && d.ActiveClaim.ClaimID;
 				if (!ac) { status(key, 'od', chan + ': no livestream, checking every 2 minutes', 'off'); later(check, 120000); return; }
 				if (ac !== claim) { claim = ac; connect(); backfill(true); }
-				status(key, 'od', chan + (d.Live ? ': live' : ': scheduled stream, chat open'), 'on');
+				var cu = /^lbry:\/\/(.+)$/.exec((d.ActiveClaim && d.ActiveClaim.CanonicalURL) || '');
+				status(key, 'od', chan + (d.Live ? ': live' : ': scheduled stream, chat open'), 'on', cu ? 'https://odysee.com/$/popout/' + cu[1].replace(/#/g, ':') : '');
 				later(check, 180000);
 			}).catch(function (e) { status(key, 'od', chan + ': ' + e.message + ', retrying', 'err'); later(check, 30000); });
 		}
@@ -561,7 +565,7 @@
 				(j.removed || []).forEach(removeId);
 				(j.msgs || []).forEach(function (m) { add(m, first); });
 				first = false;
-				status(key, 'rm', 'Rumble ' + id + ': chat open', 'on'); later(poll, 4000);
+				status(key, 'rm', 'Rumble ' + id + ': chat open', 'on', 'https://rumble.com/chat/popup/' + id); later(poll, 4000);
 			}).catch(function (e) { status(key, 'rm', 'Rumble ' + id + ': ' + e.message + ', retrying', 'err'); later(poll, 10000); });
 		}
 		status(key, 'rm', 'Rumble ' + id + ': connecting…'); poll();
@@ -580,7 +584,7 @@
 				if (g !== gen) return;
 				if (!j.live || !j.room) {
 					if (lk) { var o = lk; lk = null; try { o.disconnect(); } catch (e) {} }
-					room = null; status(key, 'ts', '3Speak: not live, checking every 15 seconds', 'off'); later(check, 15000); return;
+					room = null; status(key, 'ts', '3Speak: not live, checking every 15 seconds', 'off', ''); later(check, 15000); return;
 				}
 				if (j.room !== room) { room = j.room; join(room); }
 				later(check, 15000);
@@ -598,7 +602,7 @@
 				rm.on(L.RoomEvent.Disconnected, function () { if (g !== gen || lk !== rm) return; lk = null; room = null; status(key, 'ts', '3Speak: reconnecting…', 'err'); later(check, 3000); });
 				if (lk) try { lk.disconnect(); } catch (e) {}
 				lk = rm; lkRooms.push(rm);
-				return rm.connect(TS_LK, a[0].token, { autoSubscribe: false }).then(function () { if (g === gen) status(key, 'ts', '3Speak: live, chat open', 'on'); });
+				return rm.connect(TS_LK, a[0].token, { autoSubscribe: false }).then(function () { if (g === gen) status(key, 'ts', '3Speak: live, chat open', 'on', 'https://3speak.tv/l/' + encodeURIComponent(r)); });
 			}).catch(function (e) { if (g !== gen) return; room = null; status(key, 'ts', '3Speak: ' + e.message + ', retrying', 'err'); later(check, 10000); });
 		}
 		status(key, 'ts', '3Speak: connecting…'); check();

@@ -90,3 +90,6 @@ html.sc-overlay-html, html.sc-overlay-html body { background: transparent !impor
 #sc .sc-warn { margin: 0; padding: 6px 10px; background: #422006; color: #fde68a; border-bottom: 1px solid #854d0e; font-size: calc(13px * var(--sc-size)); display: flex; gap: 8px; align-items: flex-start; }
 #sc .sc-warn button { margin-left: auto; }
 #sc .sc-setup-hd { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: calc(13.5px * var(--sc-size)); }
+#sc .sc-st { flex-wrap: wrap; }
+#sc .sc-open { margin-left: 8px; color: #93c5fd; text-decoration: underline; white-space: nowrap; }
+#sc .sc-open:hover { color: #bfdbfe; }
