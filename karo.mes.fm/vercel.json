@@ -15,6 +15,46 @@
       "permanent": true
     },
     {
+      "source": "/work/:path*",
+      "destination": "/hotels-airbnbs",
+      "permanent": false
+    },
+    {
+      "source": "/work",
+      "destination": "/hotels-airbnbs",
+      "permanent": false
+    },
+    {
+      "source": "/services",
+      "destination": "/investment",
+      "permanent": false
+    },
+    {
+      "source": "/inquire",
+      "destination": "/contact-8",
+      "permanent": false
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact-8",
+      "permanent": false
+    },
+    {
+      "source": "/about",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/travel-collaborations",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/hotels-airbnbs",
+      "permanent": false
+    },
+    {
       "source": "/",
       "has": [
         {
