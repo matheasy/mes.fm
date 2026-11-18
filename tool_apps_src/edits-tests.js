@@ -105,7 +105,9 @@ t('backup file', () => {
     all: async () => Object.assign({}, store),
     put: async (items) => { items.forEach((it) => { store[it.id] = JSON.stringify(it); }); },
     del: async (ids) => { ids.forEach((id) => { delete store[id]; }); },
+    getImg: async (id) => imgs[id], putImg: async (id, b) => { imgs[id] = b; },
   };
+  const imgs = {};
   const post = (body, extra) => api.respond(Object.assign({ method: 'POST', body: JSON.stringify(body), origin: 'https://mes.fm', contentType: 'application/json' }, extra), deps);
   await at('api', async () => {
     let r = await post({ op: 'add', t: 'Hello', k: 'fix' });
@@ -125,6 +127,19 @@ t('backup file', () => {
     store.broken = '{not json';
     assert.strictEqual((await api.respond({ method: 'GET' }, deps)).body.items.length, 2);
     assert.deepStrictEqual(api.pairs(['a', '1', 'b', '2']), { a: '1', b: '2' });
+  });
+  await at('pictures', async () => {
+    const jpg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 0xff, 0xd9]).toString('base64');
+    let r = await post({ op: 'img', data: 'data:image/jpeg;base64,' + jpg });
+    assert.strictEqual(r.status, 200); assert.ok(/^https:\/\/mes\.fm\/api\/edits\?img=[a-f0-9]{16}\.jpg$/.test(r.body.url));
+    const g = await api.respond({ method: 'GET', img: r.body.id + '.jpg' }, deps);
+    assert.strictEqual(g.status, 200); assert.strictEqual(g.image.toString('base64'), jpg);
+    assert.strictEqual((await api.respond({ method: 'GET', img: '../x' }, deps)).status, 404);
+    assert.strictEqual((await api.respond({ method: 'GET', img: 'aaaaaaaaaaaaaaaa.jpg' }, deps)).status, 404);
+    assert.strictEqual((await post({ op: 'img', data: Buffer.from('<svg>').toString('base64') })).status, 400);
+    assert.strictEqual((await post({ op: 'img', data: 'A'.repeat(800000) })).status, 400);
+    assert.strictEqual(E.imageOf(r.body.url), '/api/edits?img=' + r.body.id + '.jpg');
+    assert.strictEqual(E.imageOf('https://snipboard.io/9FtYnA.jpg'), 'https://i.snipboard.io/9FtYnA.jpg');
   });
   console.log('edits tests: ' + n + ' groups passed');
 })().catch((e) => { console.error(e); process.exit(1); });

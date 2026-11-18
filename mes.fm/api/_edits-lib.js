@@ -118,6 +118,7 @@
         var h = hrefOf(u), m = h.match(/^https?:\/\/(?:i\.)?snipboard\.io\/([A-Za-z0-9]+)\.(jpg|jpeg|png|gif|webp)\b/i);
         if (m) return "https://i.snipboard.io/" + m[1] + "." + m[2];
         if (/^https:\/\/[^\s?#]+\.(png|jpe?g|gif|webp)(\?[^\s#]*)?$/i.test(h)) return h;
+        if (/^https:\/\/(www\.)?mes\.fm\/api\/edits\?img=[a-f0-9]{16}\.jpg$/i.test(h)) return h.replace(/^https:\/\/(www\.)?mes\.fm/i, "");
         return "";
     }
     function links(t) { var out = []; String(t).replace(URL_RE, function (u) { out.push(trimUrl(u)[0]); return u; }); return out; }

@@ -139,7 +139,7 @@
             }).join("") + "</ul>";
         }
         if (mode === "reply") {
-            h += '<textarea class="tu-input ed-ta ed-rpt" data-f="r" rows="2" placeholder="Add to this item (also takes links and screenshot links)" aria-label="Reply"></textarea>';
+            h += '<textarea class="tu-input ed-ta ed-rpt" data-f="r" rows="2" placeholder="Add to this item (links; paste or drop a screenshot here)" aria-label="Reply"></textarea>';
             h += '<div class="ed-acts"><button type="button" class="tu-btn tu-btn--primary" data-a="send">Add</button><button type="button" class="tu-btn tu-btn--ghost" data-a="cancel">Cancel</button><span class="ed-hint">Ctrl+Enter adds</span></div>';
         } else if (mode !== "edit") {
             var closed = it.st === "done" || it.st === "wont";
@@ -192,6 +192,54 @@
         if (pref.st !== "open" && pref.st !== "all" && pref.st !== "todo") { pref.st = "open"; savePref(); render(); }
     }
     $("ed-addbtn").onclick = add;
+    /* ---------- pictures: pasted or picked (phones: the 📷 button opens the gallery / camera), shrunk to a JPEG, saved by
+       /api/edits (op "img") and put into the text as a link, which shows as a picture like a snipboard link ---------- */
+    function shrink(file) {
+        var bmp = window.createImageBitmap ? createImageBitmap(file, { imageOrientation: "from-image" }).catch(function () { return createImageBitmap(file); }) : Promise.reject(new Error("old browser"));
+        return bmp.then(function (b) {
+            var tries = [[1800, 0.85], [1600, 0.78], [1280, 0.72], [1024, 0.65], [800, 0.6]];
+            function attempt(i) {
+                var t = tries[i], k = Math.min(1, t[0] / Math.max(b.width, b.height)), c = document.createElement("canvas");
+                c.width = Math.max(1, Math.round(b.width * k)); c.height = Math.max(1, Math.round(b.height * k));
+                var x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(b, 0, 0, c.width, c.height);
+                var d = c.toDataURL("image/jpeg", t[1]).split(",")[1];
+                if (d.length <= 640000 || i === tries.length - 1) return d.length <= 690000 ? d : Promise.reject(new Error("That picture is too big."));
+                return attempt(i + 1);
+            }
+            return attempt(0);
+        });
+    }
+    function insertAt(ta, text) {
+        var a = ta.selectionStart != null ? ta.selectionStart : ta.value.length, b = ta.selectionEnd != null ? ta.selectionEnd : a, v = ta.value;
+        var pre = a > 0 && !/\s$/.test(v.slice(0, a)) ? " " : "", post = b < v.length && !/^\s/.test(v.slice(b)) ? " " : "";
+        ta.value = v.slice(0, a) + pre + text + post + v.slice(b);
+        var p = a + pre.length + text.length + post.length; try { ta.setSelectionRange(p, p); } catch (e) {}
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    function addPictures(files, ta) {
+        files = [].slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); });
+        if (!files.length) return false;
+        if (LOCAL) { toast("Pictures are saved on mes.fm itself: try it on the live page"); return true; }
+        var n = files.length; toast(n > 1 ? "Adding " + n + " pictures…" : "Adding the picture…");
+        files.reduce(function (p, f) {
+            return p.then(function () { return shrink(f); }).then(function (d) { return call("POST", { op: "img", data: d }); })
+                .then(function (j) { if (j && j.url) insertAt(ta, j.url); });
+        }, Promise.resolve()).then(function () { toast(n > 1 ? n + " pictures added to the text" : "Picture added to the text"); ta.focus(); }, function (e) { toast("Could not add the picture: " + (e && e.message || e)); });
+        return true;
+    }
+    $("ed-picbtn").onclick = function () { $("ed-picin").click(); };
+    $("ed-picin").onchange = function () { addPictures(this.files, $("ed-t")); this.value = ""; };
+    // paste a screenshot into the new-item box, a reply box or an edit box
+    root.addEventListener("paste", function (e) {
+        var ta = e.target.closest && e.target.closest("textarea"); if (!ta || !e.clipboardData) return;
+        var files = [].slice.call(e.clipboardData.files || []);
+        if (!files.length) [].slice.call(e.clipboardData.items || []).forEach(function (it) { if (it.kind === "file") { var f = it.getAsFile(); if (f) files.push(f); } });
+        if (addPictures(files, ta)) e.preventDefault();
+    });
+    // dropping a picture on any text box works too
+    root.addEventListener("dragover", function (e) { if (e.target.closest && e.target.closest("textarea") && e.dataTransfer && [].indexOf.call(e.dataTransfer.types || [], "Files") >= 0) e.preventDefault(); });
+    root.addEventListener("drop", function (e) { var ta = e.target.closest && e.target.closest("textarea"); if (ta && e.dataTransfer && addPictures(e.dataTransfer.files, ta)) e.preventDefault(); });
+
     $("ed-t").addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); add(); } });
     $("ed-t").addEventListener("input", function () { grow(this); lsSet("mes-edits:draft", this.value || null); });
     $("ed-t").value = lsGet("mes-edits:draft", ""); grow($("ed-t"));

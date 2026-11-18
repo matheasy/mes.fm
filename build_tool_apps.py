@@ -298,7 +298,7 @@ APPS = {
                   tag="Just the video. No feed, no comments.", accent="#be185d", dark="#9d174d", tint="#fce7f1",
                   desc="Free distraction-free video player: paste YouTube, 3Speak, Odysee, Rumble, BitChute or X links and watch them on a plain page with no recommendations or comments. Up next list, save for later, resume where you stopped, speed up to 16x. Nothing is uploaded.",
                   meta_desc="Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations, no comments. Up next list, save for later, resume, speed control.",
-                  js_v="36", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
+                  js_v="37", lib_from=["youtube-audio"], js_parts=["sync.js", "youtube.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
     # MES Mic Test (2026-10-28, mes.fm/mic-test): live dBFS meter (OBS style), verdict, noise floor, 10 s recording, spectrogram, speaker test; OBS / macOS / Yeti help.
     # lib.js = MESMic, tests tool_apps_src/mic-test-tests.js. Audio never leaves the browser.
     "mic-test": dict(title="MES Mic Test", page_title="Mic Test: Check Your Microphone Level in dBFS (OBS, Yeti, Mac)",
@@ -1349,7 +1349,7 @@ APPS = {
     "dashboard": dict(title="MES Dashboard", page_title="MES Dashboard: Channels, Comments and Notifications",
                 tag="Every MES channel in one place.", accent="#4f46e5", dark="#3730a3", tint="#eef2ff",
                 desc="Private dashboard: followers, views, uploads, comments and notifications of the MES channels on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive.",
-                js_v="2", no_ads=True, no_comments=True,
+                js_v="3", no_ads=True, no_comments=True,
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES App Installs (public, mes.fm/installs): installs of the MES mobile apps on iPhone (App Store Connect Sales and Trends) and Android
     # (Google Play installs CSVs in the developer's Cloud Storage bucket), read by api/installs.js (env APPSTORE_* / PLAY_*; lib.js = MESInst,

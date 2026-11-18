@@ -61,7 +61,9 @@
 		}).then(function (j) {
 			var u = j && (j.videoUrl || j.videoUrlFallback1 || j.videoUrlFallback2);
 			if (!u) throw new Error('3Speak has no video for that link.');
-			return { url: (window.MESYA && MESYA.speakUrl) ? MESYA.speakUrl(u) : u, title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
+			var du = (window.MESYA && MESYA.speakUrl) ? MESYA.speakUrl(u) : u;
+			// relay = 3Speak's own play.3speak.tv/hls address: used when the real address inside it fails (a suspended CDN host, Nov 2026)
+			return { url: du, relay: du !== u ? u : '', title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
 		});
 	}
 	function odyseeInfo(uri) {
@@ -116,7 +118,7 @@
 	var cur = null, gen = 0, yt = null, vm = null, vid = null, hls = null, saveT = 0, rateNote = 0;
 	/* YouTube's embed stops at 2x; the MES Video Speed Controller extension (1.3+) runs inside YouTube's frame and sets the
 	   video's own speed when asked (ytBr = its last answer for the current player, null = no answer yet) */
-	var ytBr = null;
+	var ytBr = null, ytSped = false;
 	function ytFrame() { try { var f = yt && yt.getIframe && yt.getIframe(); return f && f.contentWindow; } catch (e) { return null; } }
 	function ytPost(msg) { var w = ytFrame(); if (w) try { w.postMessage(msg, '*'); } catch (e) {} }
 	function ytFast() { return ytBr && ytBr.video; }
@@ -131,7 +133,7 @@
 	function histRec(it) { var i = W.indexOf(S.hist, it.key); return i < 0 ? null : S.hist[i]; }
 	function teardown() {
 		clearInterval(saveT); saveT = 0;
-		if (yt) { try { yt.destroy(); } catch (e) {} yt = null; } ytBr = null;
+		if (yt) { try { yt.destroy(); } catch (e) {} yt = null; } ytBr = null; ytSped = false;
 		if (vm) { try { vm.p.destroy(); } catch (e) {} vm = null; }
 		if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
 		if (vid) { try { vid.pause(); vid.removeAttribute('src'); vid.load(); } catch (e) {} vid = null; }
@@ -178,7 +180,13 @@
 					playerVars: { rel: 0, playsinline: 1, modestbranding: 1, autoplay: 1, start: start || 0, iv_load_policy: 3, cc_load_policy: S.cc ? 1 : 0 },
 					events: {
 						onReady: function (e) { if (g !== gen) return; try { var ar = e.target.getAvailablePlaybackRates && e.target.getAvailablePlaybackRates(); if (ar && ar.length) W.ytMax = Math.max(2, Math.max.apply(null, ar)); } catch (x) {} ytNote(); [0, 700, 2000, 5000].forEach(function (ms) { setTimeout(function () { if (g === gen && !ytBr) ytPost({ mesvs: 'ping' }); }, ms); }); try { e.target.setPlaybackRate(W.ytSpeed(S.rate)); e.target.playVideo(); var d = e.target.getVideoData(); if (d && d.title) setMeta(cur.key, d.title, cur.th); } catch (x) {} syncSpeed(); },
-						onStateChange: function (e) { if (g === gen && e.data === 0) ended(); },
+						onStateChange: function (e) {
+							if (g !== gen) return;
+							if (e.data === 0) ended();
+							// YouTube accepts the speed before playing and reports it, but starts the video at 1x anyway (seen after reopening
+							// the page): once it really plays, nudge it to 1x and back so the speed sticks
+							if (e.data === 1 && !ytSped) { ytSped = true; var r = W.ytSpeed(S.rate), P = e.target; if (Math.abs(r - 1) > 0.001 && !holdOn) { try { P.setPlaybackRate(1); } catch (x) {} setTimeout(function () { if (g === gen && !holdOn) { try { P.setPlaybackRate(W.ytSpeed(S.rate)); } catch (x) {} if (ytFast()) ytPost({ mesvs: 'rate', r: S.rate }); syncSpeed(); } }, 60); } }
+						},
 						onApiChange: function () { if (g === gen && S.cc) ccPick(false); },
 						onError: function (e) { if (g === gen) failed(e && (e.data === 100 || e.data === 5) ? 'YouTube says this video is unavailable (removed or private).' : 'YouTube would not play this video here (the owner may have turned off playing on other sites).'); }
 					} });
@@ -193,16 +201,24 @@
 				var v = document.createElement('video'); v.controls = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.preload = 'auto';
 				if (info.thumb) v.poster = info.thumb;
 				setStage(''); stage.appendChild(v); vid = v;
-				v.addEventListener('loadedmetadata', function () { if (start && start < (v.duration || 1e9) - 5) v.currentTime = start; v.playbackRate = S.rate; }, { once: true });
+				v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate;
+				v.addEventListener('loadedmetadata', function () { if (start && start < (v.duration || 1e9) - 5) v.currentTime = start; v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate; }, { once: true });
+				// a (re)load resets the speed to the default on some browsers / hls.js: set it again once it really plays
+				v.addEventListener('playing', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate; } }, { once: true });
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
 				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); } });
 				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
-				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else failed('This browser could not play the video file.'); });
+				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (!hls && info.relay && v.src !== info.relay) { v.src = info.relay; var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function () {}); } else failed('This browser could not play the video file.'); });
 				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
 						if (g !== gen) return; if (!window.Hls || !Hls.isSupported()) throw new Error('This browser can\'t play 3Speak videos here.');
 						hls = new Hls(); hls.loadSource(info.url); hls.attachMedia(v);
-						hls.on(Hls.Events.ERROR, function (ev, d) { if (d && d.fatal && g === gen) failed('3Speak stopped sending the video.'); });
+						var relayed = false;
+						hls.on(Hls.Events.ERROR, function (ev, d) {
+							if (!d || !d.fatal || g !== gen) return;
+							if (info.relay && !relayed) { relayed = true; var t0 = v.currentTime || 0; hls.loadSource(info.relay); if (t0 > 1) v.addEventListener('loadedmetadata', function () { v.currentTime = t0; }, { once: true }); return; }
+							failed('3Speak stopped sending the video.');
+						});
 					});
 				}
 				v.src = info.url;
