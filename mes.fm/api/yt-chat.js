@@ -50,7 +50,7 @@ async function start(v) {
   const page = C.ytChatPage(await get('https://www.youtube.com/live_chat?is_popout=1&v=' + v));
   if (!page || !page.cont) return { v, ended: true, msgs: [], removed: [] };
   const a = C.ytActions(page.actions);
-  return { v, c: page.cont.c, wait: page.cont.wait, k: page.key, ver: page.ver, msgs: a.msgs, removed: a.removed };
+  return { v, c: page.cont.c, wait: page.cont.wait, k: page.key, ver: page.ver, msgs: a.msgs, removed: a.removed, removedUsers: a.removedUsers || [] };
 }
 
 async function next(c, k, ver) {
@@ -68,7 +68,7 @@ async function next(c, k, ver) {
   const lc = j && j.continuationContents && j.continuationContents.liveChatContinuation;
   if (!lc) return { ended: true, msgs: [], removed: [] };
   const nc = C.ytCont(lc.continuations), a = C.ytActions(lc.actions);
-  return { c: nc ? nc.c : null, wait: nc ? nc.wait : 5000, ended: !nc, msgs: a.msgs, removed: a.removed };
+  return { c: nc ? nc.c : null, wait: nc ? nc.wait : 5000, ended: !nc, msgs: a.msgs, removed: a.removed, removedUsers: a.removedUsers || [] };
 }
 
 module.exports = async function handler(req, res) {

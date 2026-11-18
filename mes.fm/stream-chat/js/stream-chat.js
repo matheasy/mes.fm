@@ -83,6 +83,7 @@
 		var k = Object.keys(item)[0], r = item[k] || {}, m;
 		var base = function (kind) {
 			var o = { id: 'yt:' + (r.id || Math.random()), p: 'yt', name: runsText(r.authorName).trim(), avatar: thumb(r.authorPhoto) || '', parts: runsParts(r.message), kind: kind, amount: '', note: '', ts: r.timestampUsec ? Math.round(+r.timestampUsec / 1000) : Date.now() };
+			if (r.authorExternalChannelId) o.uid = 'yt:' + r.authorExternalChannelId;
 			ytBadges(r, o); return o;
 		};
 		switch (k) {
@@ -106,13 +107,15 @@
 	};
 	/* actions from ytInitialData / get_live_chat -> { msgs, removed: [ids] } */
 	C.ytActions = function (actions) {
-		var msgs = [], removed = [];
+		var msgs = [], removed = [], removedUsers = [];
 		(actions || []).forEach(function (a) {
+			var byA = a.markChatItemsByAuthorAsDeletedAction || a.removeChatItemByAuthorAction;
+			if (byA && byA.externalChannelId) { removedUsers.push('yt:' + byA.externalChannelId); return; }
 			if (a.addChatItemAction) { var m = C.ytItem(a.addChatItemAction.item); if (m && (m.parts.length || m.note || m.amount)) msgs.push(m); }
 			else if (a.removeChatItemAction) removed.push('yt:' + a.removeChatItemAction.targetItemId);
 			else if (a.markChatItemAsDeletedAction) removed.push('yt:' + a.markChatItemAsDeletedAction.targetItemId);
 		});
-		return { msgs: msgs, removed: removed };
+		return { msgs: msgs, removed: removed, removedUsers: removedUsers };
 	};
 	/* the live chat page (HTML) -> {cont, key, ver, title, actions} */
 	C.ytChatPage = function (html) {
@@ -184,6 +187,7 @@
 		var badges = g.badges || '', base = function (kind, text) {
 			var text2 = text || '', act = /^\u0001ACTION (.*)\u0001$/.exec(text2); if (act) text2 = act[1];
 			return { id: 'tw:' + (g.id || Math.random()), p: 'tw', name: name, color: g.color || '', avatar: '', parts: text2 ? C.twParts(text2, g.emotes) : [], kind: kind, amount: '', note: '',
+				uid: g['user-id'] ? 'tw:' + g['user-id'] : 'tw:' + String(name).toLowerCase(),
 				mod: /(^|,)(moderator)\//.test(badges), owner: /(^|,)broadcaster\//.test(badges), member: /(^|,)(subscriber|founder)\//.test(badges), ts: +g['tmi-sent-ts'] || Date.now() };
 		};
 		if (o.cmd === 'PRIVMSG') {
@@ -198,6 +202,8 @@
 		}
 		if (o.cmd === 'CLEARMSG') return { removed: 'tw:' + g['target-msg-id'] };
 		if (o.cmd === 'CLEARCHAT' && o.params.length < 2) return { clear: true };
+		// a ban or timeout: CLEARCHAT #channel :login (tag target-user-id) -> drop everything that person said
+		if (o.cmd === 'CLEARCHAT') return { removedUser: g['target-user-id'] ? 'tw:' + g['target-user-id'] : 'tw:' + String(o.params[1]).toLowerCase() };
 		return null;
 	};
 
@@ -205,7 +211,7 @@
 	C.odComment = function (c) {
 		if (!c || !c.comment_id) return null;
 		var amt = +c.support_amount || 0;
-		return { id: 'od:' + c.comment_id, p: 'od', name: c.channel_name || 'Anonymous', avatar: '', parts: [{ t: String(c.comment || '') }],
+		return { id: 'od:' + c.comment_id, p: 'od', uid: c.channel_id ? 'od:' + c.channel_id : '', name: c.channel_name || 'Anonymous', avatar: '', parts: [{ t: String(c.comment || '') }],
 			kind: amt > 0 ? 'tip' : 'chat', amount: amt > 0 ? (c.is_fiat ? '$' + amt.toFixed(2) : C.lbc(amt)) : '', note: '', ts: c.timestamp ? c.timestamp * 1000 : Date.now() };
 	};
 	C.lbc = function (n) { return (n >= 100 ? Math.round(n) : +n.toFixed(2)) + ' LBC'; };
@@ -237,7 +243,7 @@
 			if (!x || x.id == null) return;
 			var u = users[x.user_id] || {}, rant = x.rant && +x.rant.price_cents > 0 ? x.rant : null;
 			var img = u['image.1'] || '';
-			out.msgs.push({ id: 'rm:' + x.id, p: 'rm', name: u.username || 'Rumble user', avatar: /^https:\/\//.test(img) ? img : '',
+			out.msgs.push({ id: 'rm:' + x.id, p: 'rm', uid: x.user_id != null ? 'rm:' + x.user_id : '', name: u.username || 'Rumble user', avatar: /^https:\/\//.test(img) ? img : '',
 				parts: [{ t: String(x.text || '') }], kind: rant ? 'tip' : 'chat', amount: rant ? '$' + (rant.price_cents / 100).toFixed(2) : '',
 				note: rant ? 'Rant' : '', ts: x.time ? Date.parse(x.time) || Date.now() : Date.now() });
 		});
@@ -266,11 +272,13 @@
 		if (!d || d.type !== 'chat' || !d.text) return null;
 		var who = String(d.identity || '').replace(/~watch$/, ''), name = String(d.name && d.name !== d.identity ? d.name : who).replace(/~watch$/, '');
 		var ok = /^[a-z0-9][a-z0-9.-]{1,15}$/.test(who) && who.indexOf('guest-') !== 0;
-		return { id: 'ts:' + who + '-' + (d.timestamp || Date.now()), p: 'ts', name: name || 'Guest', avatar: ok ? 'https://3speak.tv/img/u/' + who + '/avatar/small' : '',
+		return { id: 'ts:' + who + '-' + (d.timestamp || Date.now()), p: 'ts', uid: who ? 'ts:' + who : '', name: name || 'Guest', avatar: ok ? 'https://3speak.tv/img/u/' + who + '/avatar/small' : '',
 			parts: [{ t: String(d.text) }], kind: 'chat', amount: '', note: '', ts: +d.timestamp || Date.now() };
 	};
 
 	/* ---------- feed helpers ---------- */
+	/* who wrote it: the platform's user id when it gives one, else platform + lower-case name (used for "hide everything from this person") */
+	C.who = function (m) { return m.uid || (m.p + ':' + String(m.name || '').toLowerCase()); };
 	C.plain = function (m) { return (m.parts || []).map(function (p) { return p.t != null ? p.t : (p.alt || ''); }).join(''); };
 	/* keep the newest n, drop duplicate ids */
 	C.Feed = function (max) {
@@ -323,7 +331,7 @@
 	var MODE = root.getAttribute('data-mode') || 'page', KEY = 'mes-stream-chat:v1', FKEY = 'mes-stream-chat:feat';
 	var Q = {}; try { new URLSearchParams(location.search).forEach(function (v, k) { Q[k] = v; }); } catch (e) {}
 	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', rm: '', ts: '', on: { yt: true, tw: true, od: true, rm: true, ts: true }, show: { yt: true, tw: true, od: true, rm: true, ts: true },
-		paidOnly: false, size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
+		paidOnly: false, block: [], words: '', size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	var PFS = ['yt', 'tw', 'od', 'rm', 'ts'];
 	PFS.forEach(function (p) { if (S.on[p] == null) S.on[p] = true; if (S.show[p] == null) S.show[p] = true; if (S[p] == null) S[p] = ''; });
@@ -368,6 +376,7 @@
 		li.appendChild(head);
 		if (m.note) li.appendChild(el('div', 'sc-note', m.note));
 		if (m.parts && m.parts.length) { var tx = el('div', 'sc-tx'); body(m, tx); li.appendChild(tx); }
+		if (!big && MODE !== 'overlay') { var mo = el('button', 'sc-more', '⋯'); mo.type = 'button'; mo.title = 'Hide this message or this person'; mo.setAttribute('aria-label', 'More: hide this message or this person'); li.appendChild(mo); }
 		return li;
 	}
 
@@ -413,7 +422,30 @@
 
 	/* ---------- feed ---------- */
 	var feed = new C.Feed(MODE === 'overlay' ? 60 : 400), list, pinned = true, unseen = 0, booted = {};
-	function visible(m) { return S.show[m.p] && (!S.paidOnly || C.isPaid(m)); }
+	/* Hiding: people you hid (S.block = [{u: who, n: name, p}], saved), banned / timed-out people the platform told us about (this session),
+	   single messages you hid (this session), and "hide messages containing" words (S.words, saved). */
+	var gone = {}, hiddenIds = {};
+	function blocked(m) { var w = C.who(m); return gone[w] || S.block.some(function (b) { return b.u === w; }); }
+	function wordHit(m) {
+		var ws = String(S.words || '').toLowerCase().split(/[,\n]/).map(function (x) { return x.trim(); }).filter(Boolean);
+		if (!ws.length) return false;
+		var t = (C.plain(m) + ' ' + (m.note || '') + ' ' + (m.name || '')).toLowerCase();
+		return ws.some(function (w) { return t.indexOf(w) >= 0; });
+	}
+	function visible(m) { return S.show[m.p] && (!S.paidOnly || C.isPaid(m)) && !hiddenIds[m.id] && !blocked(m) && !wordHit(m); }
+	function dropFeatured(test) { if (featId && MODE !== 'overlay' && feed.items.some(function (x) { return x.id === featId && test(x); })) feature(null); }
+	function removeUser(w) {
+		gone[w] = 1;
+		dropFeatured(function (x) { return C.who(x) === w; });
+		feed.items.filter(function (x) { return C.who(x) === w; }).map(function (x) { return x.id; }).forEach(removeId);
+	}
+	function hideUser(m) {
+		var w = C.who(m);
+		if (!S.block.some(function (b) { return b.u === w; })) S.block.push({ u: w, n: m.name || '?', p: m.p });
+		S.block = S.block.slice(-300); save();
+		dropFeatured(function (x) { return C.who(x) === w; }); redraw(); paintBlock();
+	}
+	function hideMsg(id) { hiddenIds[id] = 1; if (featId === id && MODE !== 'overlay') feature(null); var n = list && list.querySelector('[data-id="' + CSS.escape(id) + '"]'); if (n) n.remove(); }
 	function add(m, quiet) {
 		if (!feed.add(m)) return;
 		if (!list || !visible(m)) return;
@@ -425,7 +457,7 @@
 		if (C.isPaid(m) && !quiet) { ding(); totals(); }
 		if (pinned) toBottom(); else { unseen++; newPill(); }
 	}
-	function removeId(id) { feed.remove(id); var n = list && list.querySelector('[data-id="' + CSS.escape(id) + '"]'); if (n) n.remove(); }
+	function removeId(id) { if (featId === id && MODE !== 'overlay') feature(null); feed.remove(id); var n = list && list.querySelector('[data-id="' + CSS.escape(id) + '"]'); if (n) n.remove(); }
 	function redraw() {
 		if (!list) return;
 		list.innerHTML = '';
@@ -476,6 +508,7 @@
 		var key = 'yt:' + label, g = gen, st = null;
 		function apply(j, first) {
 			(j.removed || []).forEach(removeId);
+			(j.removedUsers || []).forEach(removeUser);
 			(j.msgs || []).forEach(function (m) { add(m, first); });
 		}
 		function poll() {
@@ -523,6 +556,8 @@
 					if (line.indexOf('PING') === 0) { ws.send('PONG :tmi.twitch.tv'); return; }
 					var r = C.twLine(line); if (!r) return;
 					if (r.msg) add(r.msg); else if (r.removed) removeId(r.removed);
+					else if (r.removedUser) removeUser(r.removedUser);
+					else if (r.clear) feed.items.filter(function (x) { return x.p === 'tw'; }).map(function (x) { return x.id; }).forEach(removeId);
 				});
 			};
 			ws.onclose = function () { if (g !== gen) return; status(key, 'tw', ch + ': reconnecting…', 'err'); later(open, 5000); };
@@ -685,6 +720,8 @@
 		' <p class="sc-hint">Several channels? Separate them with commas. YouTube finds the live (or scheduled) stream by itself; a video link reads that video only. Rumble: paste each stream\'s chat popup link. 3Speak: paste the chat link from its Templates page (one for all your streams).</p>',
 		' <div class="sc-opts"><label><input type="checkbox" id="sc-o-av"> Pictures</label><label><input type="checkbox" id="sc-o-tm"> Times</label><label><input type="checkbox" id="sc-o-dg"> Sound on tips</label>',
 		' <button type="button" class="sc-btn sc-btn--go" id="sc-apply">Save and reconnect</button></div>',
+		' <label class="sc-wordlbl">Hide messages containing (commas between words) <input class="sc-in" id="sc-words" spellcheck="false" placeholder="e.g. streamboo, viewers, followers"></label>',
+		' <div class="sc-blk"><b>Hidden people</b> <span class="sc-hint">(hover a message, or right-click it, and press ⋯ → Hide everything from…)</span><div id="sc-blklist" class="sc-blklist"></div></div>',
 		'</div>',
 		'<div class="sc-status" id="sc-status" aria-live="polite"></div>',
 		'<div class="sc-feedwrap"><div class="sc-list" id="sc-list" role="log" aria-label="Chat"></div><button type="button" class="sc-newpill" id="sc-newpill" hidden></button></div>',
@@ -704,14 +741,14 @@
 	}
 	function fillSetup() {
 		PFS.forEach(function (p) { $('sc-' + p).value = S[p]; $('sc-on-' + p).checked = !!S.on[p]; });
-		$('sc-o-av').checked = S.avatars; $('sc-o-tm').checked = S.times; $('sc-o-dg').checked = S.ding;
+		$('sc-o-av').checked = S.avatars; $('sc-o-tm').checked = S.times; $('sc-o-dg').checked = S.ding; $('sc-words').value = S.words || ''; paintBlock();
 	}
 	function setupOpen(o) { $('sc-setup').hidden = !o; $('sc-gear').setAttribute('aria-expanded', o ? 'true' : 'false'); $('sc-gear').setAttribute('aria-pressed', o ? 'true' : 'false'); $('sc-gearlbl').textContent = o ? 'Hide settings' : 'Settings'; S.setup = o; save(); }
 	$('sc-hide').onclick = function () { setupOpen(false); };
 	$('sc-gear').onclick = function () { setupOpen($('sc-setup').hidden); };
 	$('sc-apply').onclick = function () {
 		PFS.forEach(function (p) { S[p] = $('sc-' + p).value.trim(); S.on[p] = $('sc-on-' + p).checked; });
-		S.avatars = $('sc-o-av').checked; S.times = $('sc-o-tm').checked; S.ding = $('sc-o-dg').checked;
+		S.avatars = $('sc-o-av').checked; S.times = $('sc-o-tm').checked; S.ding = $('sc-o-dg').checked; S.words = $('sc-words').value.trim();
 		save(); pfChips(); redraw(); start();
 	};
 	$('sc-paid').onclick = function () { S.paidOnly = !S.paidOnly; this.setAttribute('aria-pressed', S.paidOnly ? 'true' : 'false'); save(); redraw(); };
@@ -733,8 +770,42 @@
 	$('sc-sm').onclick = function () { size(-0.1); }; $('sc-lg').onclick = function () { size(0.1); };
 	list.addEventListener('scroll', function () { pinned = list.scrollHeight - list.scrollTop - list.clientHeight < 40; if (pinned) { unseen = 0; newPill(); } });
 	$('sc-newpill').onclick = function () { pinned = true; toBottom(); };
+	function paintBlock() {
+		var box = $('sc-blklist'); if (!box) return; box.innerHTML = '';
+		if (!S.block.length) { box.appendChild(el('span', 'sc-hint', 'Nobody yet.')); return; }
+		S.block.forEach(function (b, i) {
+			var row = el('span', 'sc-blkrow'); row.appendChild(badge(b.p)); row.appendChild(document.createTextNode(' ' + b.n + ' '));
+			var u = el('button', 'sc-btn', 'Show again'); u.type = 'button'; u.onclick = function () { S.block.splice(i, 1); save(); paintBlock(); redraw(); };
+			row.appendChild(u); box.appendChild(row);
+		});
+	}
+	$('sc-words').addEventListener('change', function () { S.words = this.value.trim(); save(); redraw(); });
+	var menu = null;
+	function closeMenu() { if (menu) { menu.remove(); menu = null; } }
+	function openMenu(n, x, y, alignRight) {
+		closeMenu();
+		var id = n.getAttribute('data-id'), m = feed.items.filter(function (z) { return z.id === id; })[0]; if (!m) return;
+		menu = el('div', 'sc-menu'); menu.setAttribute('role', 'menu');
+		var item = function (txt, fn) { var b = el('button', 'sc-mi', txt); b.type = 'button'; b.setAttribute('role', 'menuitem'); b.onclick = function (e) { e.stopPropagation(); closeMenu(); fn(); }; menu.appendChild(b); return b; };
+		item(featId === id ? 'Take it off screen' : 'Show it on screen', function () { feature(featId === id ? null : m); });
+		item('Hide this message', function () { hideMsg(id); });
+		item('Hide everything from ' + (m.name || 'this person'), function () { hideUser(m); });
+		var note = el('div', 'sc-mnote', 'Hiding is only on this page. To ban or delete it for everyone, use ' + C.PLATFORMS[m.p].name + "'s own chat."); menu.appendChild(note);
+		root.appendChild(menu);
+		var r = root.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight, nr = n.getBoundingClientRect();
+		if (alignRight) x -= mw;
+		if (y + mh > window.innerHeight - 4) y = nr.top - mh - 2;     // no room below the message: open above it
+		menu.style.left = Math.max(4, Math.min(x - r.left, r.width - mw - 4)) + 'px';
+		menu.style.top = Math.max(4, y - r.top) + 'px';
+		menu.querySelector('button').focus();
+	}
+	document.addEventListener('click', function (e) { if (menu && !menu.contains(e.target)) closeMenu(); });
+	document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+	list.addEventListener('scroll', closeMenu);
+	list.addEventListener('contextmenu', function (e) { var n = e.target.closest('.sc-m'); if (!n || e.target.closest('a')) return; e.preventDefault(); openMenu(n, e.clientX, e.clientY); });
 	list.addEventListener('click', function (e) {
 		if (e.target.closest('a')) return;
+		var mb = e.target.closest('.sc-more'); if (mb) { e.stopPropagation(); var row = mb.closest('.sc-m'), rr = row.getBoundingClientRect(); openMenu(row, rr.right, rr.bottom + 2, true); return; }
 		var n = e.target.closest('.sc-m'); if (!n) return;
 		var id = n.getAttribute('data-id'), m = feed.items.filter(function (x) { return x.id === id; })[0];
 		if (!m) return;
@@ -756,6 +827,6 @@
 			if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { prompt('Copy this:', t); }); else prompt('Copy this:', t);
 		});
 	});
-	window.MESStreamChat = { add: add, feature: feature, feed: feed };
+	window.MESStreamChat = { add: add, feature: feature, feed: feed, removeUser: removeUser, hideMsg: hideMsg };
 	start();
 })();

@@ -83,6 +83,7 @@
 		var k = Object.keys(item)[0], r = item[k] || {}, m;
 		var base = function (kind) {
 			var o = { id: 'yt:' + (r.id || Math.random()), p: 'yt', name: runsText(r.authorName).trim(), avatar: thumb(r.authorPhoto) || '', parts: runsParts(r.message), kind: kind, amount: '', note: '', ts: r.timestampUsec ? Math.round(+r.timestampUsec / 1000) : Date.now() };
+			if (r.authorExternalChannelId) o.uid = 'yt:' + r.authorExternalChannelId;
 			ytBadges(r, o); return o;
 		};
 		switch (k) {
@@ -106,13 +107,15 @@
 	};
 	/* actions from ytInitialData / get_live_chat -> { msgs, removed: [ids] } */
 	C.ytActions = function (actions) {
-		var msgs = [], removed = [];
+		var msgs = [], removed = [], removedUsers = [];
 		(actions || []).forEach(function (a) {
+			var byA = a.markChatItemsByAuthorAsDeletedAction || a.removeChatItemByAuthorAction;
+			if (byA && byA.externalChannelId) { removedUsers.push('yt:' + byA.externalChannelId); return; }
 			if (a.addChatItemAction) { var m = C.ytItem(a.addChatItemAction.item); if (m && (m.parts.length || m.note || m.amount)) msgs.push(m); }
 			else if (a.removeChatItemAction) removed.push('yt:' + a.removeChatItemAction.targetItemId);
 			else if (a.markChatItemAsDeletedAction) removed.push('yt:' + a.markChatItemAsDeletedAction.targetItemId);
 		});
-		return { msgs: msgs, removed: removed };
+		return { msgs: msgs, removed: removed, removedUsers: removedUsers };
 	};
 	/* the live chat page (HTML) -> {cont, key, ver, title, actions} */
 	C.ytChatPage = function (html) {
@@ -184,6 +187,7 @@
 		var badges = g.badges || '', base = function (kind, text) {
 			var text2 = text || '', act = /^\u0001ACTION (.*)\u0001$/.exec(text2); if (act) text2 = act[1];
 			return { id: 'tw:' + (g.id || Math.random()), p: 'tw', name: name, color: g.color || '', avatar: '', parts: text2 ? C.twParts(text2, g.emotes) : [], kind: kind, amount: '', note: '',
+				uid: g['user-id'] ? 'tw:' + g['user-id'] : 'tw:' + String(name).toLowerCase(),
 				mod: /(^|,)(moderator)\//.test(badges), owner: /(^|,)broadcaster\//.test(badges), member: /(^|,)(subscriber|founder)\//.test(badges), ts: +g['tmi-sent-ts'] || Date.now() };
 		};
 		if (o.cmd === 'PRIVMSG') {
@@ -198,6 +202,8 @@
 		}
 		if (o.cmd === 'CLEARMSG') return { removed: 'tw:' + g['target-msg-id'] };
 		if (o.cmd === 'CLEARCHAT' && o.params.length < 2) return { clear: true };
+		// a ban or timeout: CLEARCHAT #channel :login (tag target-user-id) -> drop everything that person said
+		if (o.cmd === 'CLEARCHAT') return { removedUser: g['target-user-id'] ? 'tw:' + g['target-user-id'] : 'tw:' + String(o.params[1]).toLowerCase() };
 		return null;
 	};
 
@@ -205,7 +211,7 @@
 	C.odComment = function (c) {
 		if (!c || !c.comment_id) return null;
 		var amt = +c.support_amount || 0;
-		return { id: 'od:' + c.comment_id, p: 'od', name: c.channel_name || 'Anonymous', avatar: '', parts: [{ t: String(c.comment || '') }],
+		return { id: 'od:' + c.comment_id, p: 'od', uid: c.channel_id ? 'od:' + c.channel_id : '', name: c.channel_name || 'Anonymous', avatar: '', parts: [{ t: String(c.comment || '') }],
 			kind: amt > 0 ? 'tip' : 'chat', amount: amt > 0 ? (c.is_fiat ? '$' + amt.toFixed(2) : C.lbc(amt)) : '', note: '', ts: c.timestamp ? c.timestamp * 1000 : Date.now() };
 	};
 	C.lbc = function (n) { return (n >= 100 ? Math.round(n) : +n.toFixed(2)) + ' LBC'; };
@@ -237,7 +243,7 @@
 			if (!x || x.id == null) return;
 			var u = users[x.user_id] || {}, rant = x.rant && +x.rant.price_cents > 0 ? x.rant : null;
 			var img = u['image.1'] || '';
-			out.msgs.push({ id: 'rm:' + x.id, p: 'rm', name: u.username || 'Rumble user', avatar: /^https:\/\//.test(img) ? img : '',
+			out.msgs.push({ id: 'rm:' + x.id, p: 'rm', uid: x.user_id != null ? 'rm:' + x.user_id : '', name: u.username || 'Rumble user', avatar: /^https:\/\//.test(img) ? img : '',
 				parts: [{ t: String(x.text || '') }], kind: rant ? 'tip' : 'chat', amount: rant ? '$' + (rant.price_cents / 100).toFixed(2) : '',
 				note: rant ? 'Rant' : '', ts: x.time ? Date.parse(x.time) || Date.now() : Date.now() });
 		});
@@ -266,11 +272,13 @@
 		if (!d || d.type !== 'chat' || !d.text) return null;
 		var who = String(d.identity || '').replace(/~watch$/, ''), name = String(d.name && d.name !== d.identity ? d.name : who).replace(/~watch$/, '');
 		var ok = /^[a-z0-9][a-z0-9.-]{1,15}$/.test(who) && who.indexOf('guest-') !== 0;
-		return { id: 'ts:' + who + '-' + (d.timestamp || Date.now()), p: 'ts', name: name || 'Guest', avatar: ok ? 'https://3speak.tv/img/u/' + who + '/avatar/small' : '',
+		return { id: 'ts:' + who + '-' + (d.timestamp || Date.now()), p: 'ts', uid: who ? 'ts:' + who : '', name: name || 'Guest', avatar: ok ? 'https://3speak.tv/img/u/' + who + '/avatar/small' : '',
 			parts: [{ t: String(d.text) }], kind: 'chat', amount: '', note: '', ts: +d.timestamp || Date.now() };
 	};
 
 	/* ---------- feed helpers ---------- */
+	/* who wrote it: the platform's user id when it gives one, else platform + lower-case name (used for "hide everything from this person") */
+	C.who = function (m) { return m.uid || (m.p + ':' + String(m.name || '').toLowerCase()); };
 	C.plain = function (m) { return (m.parts || []).map(function (p) { return p.t != null ? p.t : (p.alt || ''); }).join(''); };
 	/* keep the newest n, drop duplicate ids */
 	C.Feed = function (max) {
