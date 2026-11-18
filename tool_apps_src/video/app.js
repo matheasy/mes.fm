@@ -31,7 +31,9 @@
 		list.forEach(paintThumb);
 		$("vd-addsel").disabled = !Object.keys(binSel).some(function (id) { var m = VE.media(id); return m && m.state === "ready"; });
 		$("vd-binhint").hidden = VE.bin.length > 2;
+		var nu = unusedMedia().length, rb = $("vd-rmunused"); rb.hidden = !nu; rb.textContent = "Remove unused (" + nu + ")";
 	}
+	function unusedMedia() { return VE.bin.filter(function (m) { return m.state !== "working" && !VE.P.clips.some(function (c) { return c.media === m.id; }); }); }
 	function paintThumb(m) {
 		var cv = $("vd-binlist").querySelector('canvas[data-th="' + m.id + '"]'); if (!cv) return;
 		var g = cv.getContext("2d"); g.fillStyle = "#1e293b"; g.fillRect(0, 0, 96, 54);
@@ -79,6 +81,9 @@
 	};
 	VE.on("bin", renderMiss); VE.on("change", renderMiss); VE.on("mediaReady", renderMiss);
 	VE.on("bin", renderBin);
+	// keep "on timeline ×N" and the Remove unused count right when clips are added / deleted
+	var useKey = "";
+	VE.on("change", function () { var k = VE.P.clips.map(function (c) { return c.media || ""; }).sort().join(","); if (k !== useKey) { useKey = k; renderBin(); } });
 	VE.on("binItem", function (m) { var el = $("vd-binlist").querySelector('[data-mid="' + m.id + '"]'); if (!el) return renderBin(); var tmp = document.createElement("div"); tmp.innerHTML = binRow(m); el.replaceWith(tmp.firstChild); paintThumb(m); $("vd-addsel").disabled = !Object.keys(binSel).length; });
 	VE.on("thumbs", function (m) { paintThumb(m); });
 	$("vd-binsearch").addEventListener("input", renderBin);
@@ -93,12 +98,22 @@
 	});
 	$("vd-binlist").addEventListener("dblclick", function (e) { var it = e.target.closest(".vd-mi"); if (!it || e.target.closest("button")) return; var m = VE.media(it.getAttribute("data-mid")); if (m && m.state === "ready") VE.tl.placeMedia(m, null, null, VE.t); });
 	$("vd-binlist").addEventListener("keydown", function (e) { var it = e.target.closest(".vd-mi"); if (!it) return; if (e.key === "Enter") { var m = VE.media(it.getAttribute("data-mid")); if (m && m.state === "ready") VE.tl.placeMedia(m, null, null, VE.t); e.preventDefault(); } });
+	$("vd-rmunused").onclick = function () {
+		var list = unusedMedia(); if (!list.length) return;
+		var names = list.slice(0, 12).map(function (m) { return "• " + m.name; }).join("\n") + (list.length > 12 ? "\n… and " + (list.length - 12) + " more" : "");
+		if (!window.confirm("Remove " + list.length + " file" + (list.length > 1 ? "s" : "") + " that no clip on the timeline uses?\n\n" + names + "\n\nThey are taken out of this project only: the files on your computer (and in your media / Narrations folder) stay where they are. This can't be undone.")) return;
+		list.forEach(function (m) { forget(m); });
+		VE.commit("Remove unused media"); renderBin(); toast("Removed " + list.length + " unused file" + (list.length > 1 ? "s" : "") + " from the project.");
+	};
+	function forget(m) {
+		VE.bin = VE.bin.filter(function (x) { return x !== m; }); delete binSel[m.id];
+		VE.idbDel("blobs", "m:" + m.id).catch(function () { }); VE.idbDel("blobs", "t:" + m.id).catch(function () { });
+		if (m.url) try { URL.revokeObjectURL(m.url); } catch (x) { /* ignore */ }
+	}
 	function removeMedia(id) {
 		var m = VE.media(id); if (!m) return; var n = VE.P.clips.filter(function (c) { return c.media === id; }).length;
 		if (n && !window.confirm(m.name + " is used by " + n + " clip" + (n > 1 ? "s" : "") + " on the timeline. Remove it and those clips?")) return;
-		VE.P.clips = VE.P.clips.filter(function (c) { return c.media !== id; }); VE.bin = VE.bin.filter(function (x) { return x !== m; }); delete binSel[id];
-		VE.idbDel("blobs", "m:" + id).catch(function () { }); VE.idbDel("blobs", "t:" + id).catch(function () { });
-		if (m.url) try { URL.revokeObjectURL(m.url); } catch (x) { /* ignore */ }
+		VE.P.clips = VE.P.clips.filter(function (c) { return c.media !== id; }); forget(m);
 		VE.commit("Remove media"); renderBin();
 	}
 	$("vd-addsel").onclick = function () { var list = VE.bin.filter(function (m) { return binSel[m.id] && m.state === "ready"; }); if (list.length) VE.tl.appendAll(list); binSel = {}; renderBin(); };
