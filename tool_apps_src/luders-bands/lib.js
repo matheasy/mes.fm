@@ -24,19 +24,19 @@
      H(ep) = sL + K (ep - eL)^n  (MPa), grain = typical ferrite grain size in µm (steels: sL and eL follow it when the grain slider moves),
      su = typical tensile strength (only used for the text). */
   L.MATS = [
-    { id: "a36", name: "Structural steel (A36 / S275), hot rolled", E: 200, sL: 275, uy: 1.08, eL: 0.018, K: 520, n: 0.42, grain: 25, su: 450, steel: true,
+    { id: "a36", eu: 0.18, A: 0.26, name: "Structural steel (A36 / S275), hot rolled", E: 200, sL: 275, uy: 1.08, eL: 0.018, K: 520, n: 0.42, grain: 25, su: 450, steel: true,
       note: "Plate and beams. The classic Lüders material: a clear upper yield, a flat plateau of 1 to 2.5% and bands you can see in the mill scale." },
-    { id: "s1020", name: "Carbon steel 1020, hot rolled", E: 200, sL: 260, uy: 1.06, eL: 0.02, K: 560, n: 0.45, grain: 22, su: 440, steel: true,
+    { id: "s1020", eu: 0.2, A: 0.3, name: "Carbon steel 1020, hot rolled", E: 200, sL: 260, uy: 1.06, eL: 0.02, K: 560, n: 0.45, grain: 22, su: 440, steel: true,
       note: "A common bar steel. Same story as structural steel." },
-    { id: "dc01", name: "Low-carbon sheet (DC01 / 1008), annealed", E: 205, sL: 200, uy: 1.1, eL: 0.026, K: 430, n: 0.4, grain: 15, su: 320, steel: true,
+    { id: "dc01", eu: 0.24, A: 0.4, name: "Low-carbon sheet (DC01 / 1008), annealed", E: 205, sL: 200, uy: 1.1, eL: 0.026, K: 430, n: 0.4, grain: 15, su: 320, steel: true,
       note: "Freshly annealed sheet, before temper rolling. Pressed like this it shows stretcher strains (worms) on the part." },
-    { id: "fine", name: "Fine-grained steel (normalized, 8 µm)", E: 205, sL: 330, uy: 1.12, eL: 0.034, K: 560, n: 0.38, grain: 8, su: 480, steel: true,
+    { id: "fine", eu: 0.17, A: 0.28, name: "Fine-grained steel (normalized, 8 µm)", E: 205, sL: 330, uy: 1.12, eL: 0.034, K: 560, n: 0.38, grain: 8, su: 480, steel: true,
       note: "Smaller grains: higher yield (Hall-Petch) and a longer Lüders plateau." },
-    { id: "almg", name: "Aluminium-magnesium 5182-O / 5754-O", E: 70, sL: 125, uy: 1.03, eL: 0.012, K: 360, n: 0.38, grain: 20, su: 270, steel: false,
+    { id: "almg", eu: 0.2, A: 0.24, name: "Aluminium-magnesium 5182-O / 5754-O", E: 70, sL: 125, uy: 1.03, eL: 0.012, K: 360, n: 0.38, grain: 20, su: 270, steel: false,
       note: "Car inner panels. Mg atoms pin the dislocations like carbon does in steel: a small yield point and type A stretcher strains (and later the jerky Portevin-Le Chatelier bands, not modelled here)." },
-    { id: "if", name: "Interstitial-free (IF) steel: no yield point", E: 205, sL: 150, uy: 1.0, eL: 0, K: 470, n: 0.24, grain: 20, su: 300, steel: true, noYP: true,
+    { id: "if", eu: 0.26, A: 0.45, name: "Interstitial-free (IF) steel: no yield point", E: 205, sL: 150, uy: 1.0, eL: 0, K: 470, n: 0.24, grain: 20, su: 300, steel: true, noYP: true,
       note: "Titanium / niobium tie up every carbon and nitrogen atom, so nothing pins the dislocations: smooth yielding, no bands. Used for deep-drawn car body parts." },
-    { id: "custom", name: "Your own settings", E: 200, sL: 250, uy: 1.08, eL: 0.02, K: 500, n: 0.42, grain: 20, su: 420, steel: true }
+    { id: "custom", eu: 0.19, A: 0.28, name: "Your own settings", E: 200, sL: 250, uy: 1.08, eL: 0.02, K: 500, n: 0.42, grain: 20, su: 420, steel: true }
   ];
   L.mat = function (id) { for (var i = 0; i < L.MATS.length; i++) if (L.MATS[i].id === id) return L.MATS[i]; return L.MATS[0]; };
 
@@ -70,6 +70,19 @@
   function H(p, ep) { var x = ep - p.eL; return x <= 0 ? p.sL : p.sL + p.K * Math.pow(x, p.n); }
   function Hinv(p, s) { if (s <= p.sL) return p.eL; return p.eL + Math.pow((s - p.sL) / p.K, 1 / p.n); }
   L.H = H; L.Hinv = Hinv;
+  /* H is the true stress of the steel. The machine sees force / starting area: as a slice stretches its cross-section shrinks, so the
+     engineering stress it can carry is G = H ((1 + eL) / (1 + ep))^b (= sL on the plateau; b is set so the peak falls at the material's
+     typical uniform elongation eu, since the plain 1/(1+ep) area loss with these hardening fits would neck far too late). G rises, peaks (Considère: the tensile
+     strength) and would fall: past the peak one place thins faster than the rest and the bar necks there, then breaks. */
+  function G(p, ep) { var b = p.beta || 1; return H(p, ep) * Math.pow((1 + p.eL) / (1 + Math.max(p.eL, ep)), b); }
+  function peakOf(p) { var best = p.eL, bv = G(p, p.eL); for (var e = p.eL; e < 2; e += 0.0005) { var v = G(p, e); if (v > bv) { bv = v; best = e; } else if (v < bv - 1) break; } return { e: best, s: bv }; }
+  function Gtab(p) {                                      /* e at evenly spaced stresses sL..Gmax, so Ginv is a lookup (the solver calls it ~10^4 times a step) */
+    var n = 4096, t = new Float64Array(n + 1), a = p.sL, b = p.Gmax;
+    for (var k = 0; k <= n; k++) { var s = a + (b - a) * k / n, lo = p.eL, hi = p.eNk; for (var i = 0; i < 48; i++) { var m = (lo + hi) / 2; if (G(p, m) < s) lo = m; else hi = m; } t[k] = (lo + hi) / 2; }
+    t[0] = p.eL; t[n] = p.eNk; p.gt = t; p.gn = n;
+  }
+  function Ginv(p, s) { if (s <= p.sL) return p.eL; if (s >= p.Gmax) return p.eNk; var x = (s - p.sL) / (p.Gmax - p.sL) * p.gn, k = Math.floor(x), f = x - k; return p.gt[k] + (p.gt[Math.min(p.gn, k + 1)] - p.gt[k]) * f; }
+  L.G = G; L.peakOf = peakOf;
 
   /* ---------- the simulation ----------
      opts: mat (material object), sL, uy, eL, K, n, E (GPa), Lg (gauge length mm), N (slices), k (machine / specimen stiffness), V (mm/min),
@@ -83,6 +96,10 @@
     };
     if (p.uy < 1) p.uy = 1;
     if (!(p.eL > 0)) { p.eL = 0; p.noYP = true; }
+    var eu = Math.max(p.eL + 0.04, o.eu != null ? o.eu : (m.eu || 0.19)), dh = (H(p, eu + 1e-4) - H(p, eu - 1e-4)) / 2e-4;
+    p.beta = Math.max(0.5, (1 + eu) * dh / H(p, eu));               // area loss exponent chosen so the force peaks at the typical uniform elongation
+    var pk = peakOf(p); p.eNk = pk.e; p.Gmax = pk.s; Gtab(p);                // uniform strain and tensile strength
+    p.A = Math.max(p.eNk + 0.04, o.A != null ? o.A : (m.A || 0.28));  // elongation at break over the gauge
     var N = p.N, dx = p.Lg / N, R = rng(p.seed), sc = p.scatter;
     this.dx = dx;
     this.C = p.Lg / p.E * (1 + 1 / Math.max(0.05, p.k));    // mm of crosshead per MPa
@@ -103,6 +120,7 @@
     this._setNotches();
     this.u = 0; this.t = 0; this.s = 0; this.P = 0; this.bands = 0; this.done = false; this.phase = "elastic"; this.maxS = 0;
     this.upper = null; this.lower = null; this.ludersEnd = null; this.events = []; this.curve = [[0, 0]]; this.unloaded = false; this.agedTimes = 0;
+    this.neck = null; this.broken = false; this.brokenAt = null;
     this._seedStates(true);
   }
   L.Sim = Sim;
@@ -131,11 +149,11 @@
         this.tgt[i] = p.eL;
       } else {
         /* strain ageing: the current flow stress becomes the new lower yield (+ a little), with a new upper yield on top */
-        var base = H(p, this.ep[i]), add = base * 0.06 * ageFrac;
+        var base = G(p, this.ep[i]), add = base * 0.06 * ageFrac;
         this.st[i] = ageFrac > 0.02 ? 0 : 3;
         this.sF[i] = base + add * (1 - 0.15 * sc * this.front[i]);
         this.sU[i] = (base + add) * (1 + (p.uy - 1 + 0.03) * ageFrac) * shoulderMul * this.notchMul[i] * (1 + nz);
-        this.tgt[i] = Hinv(p, this.sF[i] + 0.5);
+        this.tgt[i] = Math.max(this.ep[i], Ginv(p, this.sF[i] + 0.5));
       }
       this.dir[i] = 0; this.band[i] = 0;
     }
@@ -146,29 +164,31 @@
     var p = this.p, N = p.N, dx = this.dx, C = this.C, self = this;
     var Pfix = 0, anyH = false;
     for (var i = 0; i < N; i++) { if (this.st[i] === 3) anyH = true; else Pfix += this.ep[i]; }
-    function Pat(s) { var P = Pfix; for (var i = 0; i < N; i++) if (self.st[i] === 3) { var e = self.ep[i]; if (s > H(p, e)) e = Hinv(p, s); P += e; } return P * dx; }
+    function Pat(s) { var P = Pfix; for (var i = 0; i < N; i++) if (self.st[i] === 3) { var e = self.ep[i]; if (s > G(p, e)) e = Math.max(e, Ginv(p, s)); P += e; } return P * dx; }
     var sEl = (this.u - this.P) / C;
     if (!anyH || sEl <= this._minHard()) return { s: sEl, flow: false };
     var lo = this._minHard(), hi = sEl;
     for (var it = 0; it < 60; it++) { var mid = (lo + hi) / 2; if ((this.u - Pat(mid)) / C > mid) lo = mid; else hi = mid; }
     return { s: lo, flow: true };
   };
-  Sim.prototype._minHard = function () { var p = this.p, m = Infinity; for (var i = 0; i < p.N; i++) if (this.st[i] === 3) { var h = H(p, this.ep[i]); if (h < m) m = h; } return m; };
+  Sim.prototype._minHard = function () { var p = this.p, m = Infinity; for (var i = 0; i < p.N; i++) if (this.st[i] === 3) { var h = G(p, this.ep[i]); if (h < m) m = h; } return m; };
   Sim.prototype._applyHardFlow = function (s) {
     var p = this.p, P = 0;
     for (var i = 0; i < p.N; i++) {
-      if (this.st[i] === 3 && s > H(p, this.ep[i])) { var e = Hinv(p, s), d = e - this.ep[i]; if (d > 0) { this.rate[i] += d; this.ep[i] = e; } }
+      if (this.st[i] === 3 && s > G(p, this.ep[i])) { var e = Math.max(this.ep[i], Ginv(p, s)), d = e - this.ep[i]; if (d > 0) { this.rate[i] += d; this.ep[i] = e; } }
       P += this.ep[i];
     }
     this.P = P * this.dx;
   };
-  Sim.prototype.threshold = function (i) { var st = this.st[i]; return st === 0 ? this.sU[i] : st === 3 ? H(this.p, this.ep[i]) : this.sF[i]; };
+  Sim.prototype.threshold = function (i) { var st = this.st[i]; return st === 0 ? this.sU[i] : st === 3 ? (this.neck ? this.neckS(this.neck.q) : G(this.p, this.ep[i])) : this.sF[i]; };
 
   /* advance the crosshead by du (mm; negative = unload). Returns the events of this step. */
   Sim.prototype.step = function (du, dt) {
     var p = this.p, N = p.N, dx = this.dx, C = this.C, ev = [];
+    if (this.broken) { this.t += dt || 0; for (var b0 = 0; b0 < N; b0++) this.rate[b0] *= 0.9; return ev; }
     this.u += du; this.t += dt || 0;
     for (var i = 0; i < N; i++) this.rate[i] *= 0.9;
+    if (this.neck && du > 0) { this._neckStep(ev); this._record(); return ev; }
     if (du < 0) {                                  // unloading is elastic
       this.s = (this.u - this.P) / C;
       if (this.s <= 0) { this.s = 0; this.u = this.P; }
@@ -211,6 +231,7 @@
     }
     this.s = Math.max(0, (this.u - this.P) / C);
     if (this.s > this.maxS) this.maxS = this.s;
+    if (!this.neck && this.s >= p.Gmax - 1e-6) { var allH = true; for (i = 0; i < N; i++) if (this.st[i] !== 3) { allH = false; break; } if (allH) { this._startNeck(ev); this._neckStep(ev); this._record(); return ev; } }
     var yielding = 0, pinned = 0, hard = 0;
     for (i = 0; i < N; i++) { if (this.st[i] === 3) hard++; else if (this.st[i] === 0) pinned++; else yielding++; }
     var was = this.phase;
@@ -220,6 +241,62 @@
     this._record();
     return ev;
   };
+  /* ---------- necking and fracture ----------
+     Past the tensile strength the weakest place (a notch, else the slice with the least luck in the scatter) takes all further stretching.
+     Neck profile: a Gaussian about 2.5 mm wide (a neck is about as long as the bar is thick). q = extra plastic strain at its centre.
+     The force falls as the neck thins: s = Gmax (1 - 0.22 (q / qf)^1.5); the bar breaks at q = qf, chosen so the total elongation over
+     the gauge equals the material's typical elongation at break A. Illustrative, not a damage model. */
+  Sim.prototype._startNeck = function (ev) {
+    var p = this.p, N = p.N, c = 0, bv = Infinity, i;
+    for (i = 0; i < N; i++) { var x = (i + 0.5) / N, edge = Math.min(x, 1 - x) < 0.08 ? 0.01 : 0; var v = this.notchMul[i] * (1 + 0.004 * this.noise[i] + edge); if (v < bv) { bv = v; c = i; } }
+    var sg = Math.max(2, 2.5 / this.dx), w = new Float64Array(N), W = 0;
+    for (i = 0; i < N; i++) { var d = (i - c) / sg; w[i] = Math.exp(-d * d / 2); if (w[i] < 1e-4) w[i] = 0; W += w[i]; }
+    var e0 = new Float64Array(this.ep), P0 = this.P;
+    var qf = Math.max(0.15, (p.A - (P0 / p.Lg)) * p.Lg / (this.dx * W));
+    this.neck = { c: c, w: w, W: W, e0: e0, P0: P0, q: 0, qf: qf, s0: Math.min(this.s, p.Gmax), strain: this.strain(), t: this.t };
+    this.uts = { s: this.neck.s0, strain: this.strain() };
+    var e = { type: "neck", x: (c + 0.5) / N, t: this.t, s: this.neck.s0, strain: this.strain() }; ev.push(e); this.events.push(e);
+    this.phase = "necking";
+  };
+  Sim.prototype.neckS = function (q) { var n = this.neck; return n.s0 * (1 - 0.22 * Math.pow(Math.min(1, q / n.qf), 1.5)); };
+  Sim.prototype._neckStep = function (ev) {
+    var n = this.neck, p = this.p, C = this.C, dx = this.dx, self = this;
+    function f(q) { return self.u - (n.P0 + dx * n.W * q) - C * self.neckS(q); }
+    if (f(n.q) <= 0) { this.s = Math.max(0, (this.u - this.P) / C); this.phase = "necking"; return; }   // still elastic after an unload
+    if (f(n.qf) > 0) {                                     // the neck has thinned to nothing: it breaks
+      this._setQ(n.qf); this.broken = true; this.s = 0; this.phase = "broken";
+      this.brokenAt = { x: (n.c + 0.5) / p.N, strain: this.strain(), t: this.t, s: this.neckS(n.qf) };
+      var e = { type: "fracture", x: this.brokenAt.x, t: this.t, strain: this.brokenAt.strain }; ev.push(e); this.events.push(e);
+      this.curve.push([this.brokenAt.strain, this.brokenAt.s]); this.curve.push([this.brokenAt.strain + 1e-6, 0]);
+      return;
+    }
+    var lo = n.q, hi = n.qf;
+    for (var it = 0; it < 50; it++) { var m = (lo + hi) / 2; if (f(m) > 0) lo = m; else hi = m; }
+    this._setQ(lo); this.s = this.neckS(lo); this.phase = "necking";
+  };
+  Sim.prototype._setQ = function (q) {
+    var n = this.neck, N = this.p.N, P = 0;
+    for (var i = 0; i < N; i++) { var e = n.e0[i] + n.w[i] * q, d = e - this.ep[i]; if (d > 0) { this.rate[i] += d; this.ep[i] = e; } P += this.ep[i]; }
+    n.q = q; this.P = P * this.dx;
+  };
+  /* snapshots for the rewind slider: everything that changes while the test runs (the curve / events are append-only: their lengths) */
+  var ARR = ["ep", "st", "tgt", "sF", "sU", "dir", "band", "rate", "yt"], SCAL = ["u", "t", "s", "P", "bands", "done", "phase", "maxS", "upper", "lower", "ludersEnd", "unloaded", "agedTimes", "broken", "brokenAt", "uts", "unloadedNow"];
+  Sim.prototype.snapshot = function () {
+    var o = { a: {}, n: this.neck, q: this.neck ? this.neck.q : 0, cl: this.curve.length, el: this.events.length, noYP: this.p.noYP };
+    for (var i = 0; i < ARR.length; i++) o.a[ARR[i]] = this[ARR[i]].slice();
+    for (i = 0; i < SCAL.length; i++) o[SCAL[i]] = this[SCAL[i]];
+    return o;
+  };
+  Sim.prototype.restore = function (o, curve, events) {
+    for (var i = 0; i < ARR.length; i++) this[ARR[i]].set(o.a[ARR[i]]);
+    for (i = 0; i < SCAL.length; i++) this[SCAL[i]] = o[SCAL[i]];
+    this.neck = o.n; if (o.n) o.n.q = o.q;
+    this.p.noYP = o.noYP;
+    this.curve = (curve || this.curve).slice(0, o.cl); this.events = (events || this.events).slice(0, o.el);
+  };
+  /* how far through necking (0..1), for the page */
+  Sim.prototype.neckFrac = function () { return this.neck ? Math.min(1, this.neck.q / this.neck.qf) : 0; };
+
   Sim.prototype._record = function () { var c = this.curve, e = this.strain(); if (!c.length || Math.abs(c[c.length - 1][0] - e) > 2e-6 || Math.abs(c[c.length - 1][1] - this.s) > 0.05) c.push([e, this.s]); };
 
   /* extensometer strain over the whole gauge (elastic + plastic), and plateau stress estimate */
@@ -237,6 +314,7 @@
   /* unload to zero, then age (hours at tempC) or not, ready to reload */
   Sim.prototype.unload = function () { this.u = this.P; this.s = 0; this._record(); this.unloaded = true; };
   Sim.prototype.age = function (hours, tempC) {
+    if (this.neck) return 0;                               // a necked bar can't be aged and tested again here
     var f = L.ageFraction(hours, tempC);
     this.agedTimes++;
     this.upper = null; this.lower = null; this.ludersEnd = null;

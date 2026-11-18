@@ -18,26 +18,68 @@
 					<button type="button" data-v="strain" aria-pressed="false" title="A strain map, like digital image correlation (DIC)">Strain map</button>
 					<button type="button" data-v="rate" aria-pressed="false" title="Where the steel is stretching right now">Flowing now</button>
 				</div>
+				<button type="button" class="tu-btn tu-btn--ghost lu-gbtn" id="lu-gbtn" aria-expanded="false" aria-controls="lu-gloss" title="What do these words mean?">? Words explained</button>
 				<span class="lu-vbtns"></span>
+			</div>
+			<p class="lu-lookkey" id="lu-lookkey" aria-live="polite"></p>
+			<div class="lu-gloss" id="lu-gloss" hidden role="region" aria-label="Words explained">
+				<div class="lu-g-top"><b>Words explained</b><button type="button" class="tu-btn tu-btn--ghost lu-gclose" id="lu-gclose" aria-label="Close">✕</button></div>
+				<dl class="lu-g-list">
+					<dt data-term="band">Lüders band</dt><dd>A stripe of steel that has yielded (stretched for good) while the steel next to it has not stretched at all. It starts at one end and grows along the bar.</dd>
+					<dt data-term="front">Band front</dt><dd>The edge of the band: the thin seam between stretched and unstretched steel. It is the only place the metal is moving during the plateau. It runs along the bar at a slant (about 55°).</dd>
+					<dt data-term="stress">Stress</dt><dd>How hard the bar is being pulled, per square millimetre of its cross-section: force ÷ area, in MPa (newtons per mm²). A bigger bar needs more force for the same stress.</dd>
+					<dt data-term="strain">Strain</dt><dd>How much longer the bar has got, as a fraction of its starting length. 1% strain on a 50 mm bar = 0.5 mm longer.</dd>
+					<dt data-term="elastic">Elastic</dt><dd>Springy stretching. Let go and the bar goes back to its old length.</dd>
+					<dt data-term="plastic">Plastic strain / yielded</dt><dd>Stretching that stays after you let go. A slice that has "yielded" has started stretching for good.</dd>
+					<dt data-term="upper">Upper yield point</dt><dd>The peak of force just before the first band forms. The steel holds out a little longer than it should, because carbon atoms pin its dislocations (see Inside the metal).</dd>
+					<dt data-term="lower">Lower yield / plateau</dt><dd>The flat part of the force curve while the band crosses the bar. The force hardly changes because all the machine's pulling goes into moving the front.</dd>
+					<dt data-term="eL">Lüders strain (εL)</dt><dd>How much a slice stretches the moment the front passes it, usually 1-3% for mild steel. Every slice jumps by about this much.</dd>
+					<dt data-term="time">Time</dt><dd>Seconds of the test (real time, not the playback speed you chose).</dd>
+					<dt data-term="yielded">Yielded (%)</dt><dd>How much of the gauge length the band has already covered.</dd>
+					<dt data-term="fronts">Band fronts</dt><dd>How many fronts are moving right now. A band that starts in the middle (a notch) has two fronts, one going each way.</dd>
+					<dt data-term="vfront">Front speed</dt><dd>How fast a front moves along the bar. Formula: V ÷ (fronts × εL), with V the machine's pulling speed. Two fronts each move half as fast.</dd>
+					<dt data-term="hard">Work hardening</dt><dd>After the band has crossed the whole bar, the steel gets stronger as it stretches more, so the force rises again.</dd>
+					<dt data-term="disl">Dislocation</dt><dd>A line-shaped flaw in the rows of atoms. Metals stretch by these lines sliding through the crystal, a row at a time.</dd>
+					<dt data-term="age">Strain ageing</dt><dd>Leave stretched steel for weeks (or bake it) and the carbon atoms move back onto the dislocations, so the yield point and the bands come back.</dd>
+					<dt data-term="gauge">Gauge length</dt><dd>The thin, measured middle part of the test bar (here 50 mm). The thick ends are held in the grips.</dd>
+					<dt data-term="machine">Soft / stiff machine</dt><dd>How much the testing machine itself stretches. A soft machine stores spring energy, so the force drop at the upper yield point looks smaller.</dd>
+				</dl>
 			</div>
 			<div class="lu-stage" id="lu-stage">
 				<div class="lu-specw">
 					<canvas id="lu-spec" class="lu-cv" aria-label="The test bar in the grips of the testing machine"></canvas>
 					<div class="lu-tip" id="lu-tip" hidden></div>
 				</div>
+				<div class="lu-scrubw" id="lu-scrubw">
+					<button type="button" class="tu-btn tu-btn--ghost lu-sb" data-sc="start" title="Back to the start (Home)" aria-label="Back to the start">⏮</button>
+					<button type="button" class="tu-btn tu-btn--ghost lu-sb" data-sc="back" title="A moment back (,)" aria-label="A moment back">◀</button>
+					<input type="range" id="lu-scrub" min="0" max="1" step="1" value="0" aria-label="Rewind: move through the test">
+					<button type="button" class="tu-btn tu-btn--ghost lu-sb" data-sc="fwd" title="A moment forward (.)" aria-label="A moment forward">▶</button>
+					<button type="button" class="tu-btn tu-btn--ghost lu-sb" data-sc="end" title="Back to now (End)" aria-label="Back to now">⏭</button>
+					<span class="lu-scrubt" id="lu-scrubt"></span>
+				</div>
 				<div class="lu-ro" id="lu-ro" aria-live="off">
-					<div><span>Stress</span><b id="lu-r-s">0</b></div>
-					<div><span>Strain</span><b id="lu-r-e">0</b></div>
-					<div><span>Time</span><b id="lu-r-t">0 s</b></div>
-					<div><span>Yielded</span><b id="lu-r-y">0%</b></div>
-					<div><span>Band fronts</span><b id="lu-r-f">0</b></div>
-					<div title="Measured speed of the band fronts, and the formula V / (fronts × εL)"><span>Front speed</span><b id="lu-r-v">–</b></div>
+					<div><span>Stress <button type="button" class="lu-q" data-gl="stress" aria-label="What is stress?">?</button></span><b id="lu-r-s">0</b></div>
+					<div><span>Strain <button type="button" class="lu-q" data-gl="strain" aria-label="What is strain?">?</button></span><b id="lu-r-e">0</b></div>
+					<div><span>Time <button type="button" class="lu-q" data-gl="time" aria-label="What is time?">?</button></span><b id="lu-r-t">0 s</b></div>
+					<div><span>Yielded <button type="button" class="lu-q" data-gl="yielded" aria-label="What is yielded?">?</button></span><b id="lu-r-y">0%</b></div>
+					<div><span>Band fronts <button type="button" class="lu-q" data-gl="fronts" aria-label="What is band fronts?">?</button></span><b id="lu-r-f">0</b></div>
+					<div title="Measured speed of the band fronts, and the formula V / (fronts × εL)"><span>Front speed <button type="button" class="lu-q" data-gl="vfront" aria-label="What is front speed?">?</button></span><b id="lu-r-v">–</b></div>
 				</div>
 				<p class="lu-say" id="lu-say" aria-live="polite"></p>
 				<div class="lu-plots">
-					<figure class="lu-plot"><figcaption>Force on the bar <small>(stress against strain)</small></figcaption><canvas id="lu-chart" class="lu-cv" aria-label="Stress-strain curve being drawn"></canvas></figure>
-					<figure class="lu-plot"><figcaption>Where and when it yielded <small>(position along the bar → , time ↓)</small></figcaption><canvas id="lu-kymo" class="lu-cv" aria-label="Space-time map of the plastic strain along the bar"></canvas></figure>
+					<figure class="lu-plot" id="lu-fchart"><figcaption>Force on the bar <small>(stress against strain)</small></figcaption><canvas id="lu-chart" class="lu-cv" aria-label="Stress-strain curve being drawn"></canvas></figure>
+					<figure class="lu-plot" id="lu-fkymo"><figcaption>Where and when it yielded <small>(position along the bar → , time ↓)</small></figcaption><canvas id="lu-kymo" class="lu-cv" aria-label="Space-time map of the plastic strain along the bar"></canvas></figure>
 				</div>
+			</div>
+			<div class="lu-show" id="lu-show" role="group" aria-label="Show or hide parts of the test">
+				<span class="lu-try__l">Show:</span>
+				<button type="button" class="tu-chip" data-show="key" aria-pressed="true">Colour key</button>
+				<button type="button" class="tu-chip" data-show="ro" aria-pressed="true">Numbers</button>
+				<button type="button" class="tu-chip" data-show="say" aria-pressed="true">What is happening</button>
+				<button type="button" class="tu-chip" data-show="chart" aria-pressed="true">Force chart</button>
+				<button type="button" class="tu-chip" data-show="kymo" aria-pressed="true">Where / when map</button>
+				<button type="button" class="tu-chip" data-show="micro" aria-pressed="true">Inside the metal</button>
 			</div>
 			<div class="lu-try" id="lu-try" role="group" aria-label="Try this">
 				<span class="lu-try__l">Try this:</span>
@@ -96,12 +138,17 @@
 		</div>
 
 		<!-- ============ INSIDE THE METAL ============ -->
-		<div class="tu-card lu-micro">
+		<div class="tu-card lu-micro" id="lu-micro">
 			<div class="lu-mtop"><h2 class="lu-h">Inside the metal: why there is an upper yield point</h2>
 				<label class="lu-ck"><input type="checkbox" id="lu-follow" checked> Follow the band front</label></div>
+			<ol class="lu-mstages" id="lu-mstages" aria-label="Where this slice is in its story">
+				<li data-s="0"><b>1</b> Pinned</li><li data-s="1"><b>2</b> Front arrives</li><li data-s="2"><b>3</b> Breaks free</li><li data-s="3"><b>4</b> Stretched, hardening</li><li data-s="4"><b>5</b> Neck, then break</li>
+			</ol>
 			<canvas id="lu-mcv" class="lu-cv" aria-label="A dislocation held by carbon atoms, breaking free when the band front arrives"></canvas>
+			<div class="lu-mmeter" id="lu-mmeter"></div>
 			<p class="lu-mcap" id="lu-mcap"></p>
-			<p class="lu-note">Click anywhere on the bar above to watch that slice. Not to scale: a real dislocation line is about a millionth of a millimetre across, and millions of them break free together in each grain the front crosses.</p>
+			<ul class="lu-mkey"><li><span class="lu-mk lu-mk--c"></span>carbon atom</li><li><span class="lu-mk lu-mk--d"></span>dislocation: the edge of a row of atoms that has slipped</li><li><span class="lu-mk lu-mk--a"></span>iron atoms (the crystal)</li></ul>
+			<p class="lu-note">Click anywhere on the bar above to watch that slice, or tick Follow the band front. Not to scale: a real dislocation line is about a millionth of a millimetre across, and millions of them break free together in each grain the front crosses.</p>
 		</div>
 
 		<!-- ============ THE ANGLE ============ -->

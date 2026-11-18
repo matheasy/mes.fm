@@ -161,3 +161,49 @@
 /* picked slice: flash the Inside-the-metal card */
 #lu .lu-micro.lu-flash { animation: luFlash 1.4s ease-out; }
 @keyframes luFlash { 0%, 30% { box-shadow: 0 0 0 3px #a78bfa; } 100% { box-shadow: 0 0 0 3px transparent; } }
+
+/* look key + glossary */
+#lu .lu-lookkey {display:grid;grid-template-columns:minmax(9em,14em) minmax(0,1fr);gap:0.15em 0.9em;align-items:center;margin:0 0 0.5em;font-size:0.88em;line-height:1.45;}
+#lu .lu-lk__bar {grid-column:1;grid-row:1;display:block;height:12px;border-radius:6px;border:1px solid var(--lu-line);}
+#lu .lu-lk__ends {grid-column:1;grid-row:2;display:flex;justify-content:space-between;gap:0.5em;font-size:0.82em;color:var(--lu-mut);}
+#lu .lu-lk__txt {grid-column:2;grid-row:1 / span 2;}
+@media (max-width:600px) { #lu .lu-lookkey {grid-template-columns:minmax(0,1fr);} #lu .lu-lk__txt {grid-column:1;grid-row:3;} }
+#lu .lu-gbtn {min-height:38px;font-weight:700;}
+#lu .lu-gloss {border:1px solid var(--lu-line);background:var(--lu-soft);border-radius:0.6em;padding:0.5em 0.7em;margin:0 0 0.6em;}
+#lu .lu-g-top {display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3em;}
+#lu .lu-gclose {min-height:34px;min-width:34px;padding:0.2em 0.5em;}
+#lu .lu-g-list {margin:0;max-height:16em;overflow:auto;display:grid;grid-template-columns:minmax(8em,13em) minmax(0,1fr);gap:0.35em 0.9em;font-size:0.9em;line-height:1.45;}
+#lu .lu-g-list dt {font-weight:700;margin:0;color:var(--lu-ink);}
+#lu .lu-g-list dd {margin:0;color:var(--lu-ink);}
+#lu .lu-g-list .lu-g-on {background:rgba(124,58,237,0.16);border-radius:0.3em;}
+@media (max-width:600px) { #lu .lu-g-list {grid-template-columns:minmax(0,1fr);} #lu .lu-g-list dd {margin-bottom:0.4em;} }
+#lu .lu-q {display:inline-flex;align-items:center;justify-content:center;width:1.45em;height:1.45em;margin-left:0.15em;padding:0;border-radius:50%;border:1px solid var(--lu-line);background:var(--lu-card);color:var(--lu-mut);font-size:0.95em;font-weight:700;line-height:1;cursor:pointer;vertical-align:middle;}
+#lu .lu-q:hover, #lu .lu-q:focus-visible {color:var(--lu-sel);border-color:var(--lu-sel);}
+html body.dark-mode #lu.lu .lu-g-list .lu-g-on {background:rgba(183,148,246,0.2);}
+
+/* rewind slider */
+#lu .lu-scrubw {display:flex;align-items:center;gap:0.35em;flex-wrap:wrap;margin:0.35em 0 0.2em;}
+#lu .lu-sb {min-height:36px;min-width:36px;padding:0.2em 0.45em;}
+#lu #lu-scrub {flex:1 1 14em;min-width:10em;accent-color:var(--accent);height:28px;}
+#lu .lu-scrubt {flex:1 1 100%;font-size:0.82em;color:var(--lu-mut);}
+/* show chips */
+#lu .lu-show {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.6em;}
+#lu .lu-show .tu-chip {min-height:36px;}
+#lu .lu-show .tu-chip[aria-pressed="false"] {opacity:0.6;text-decoration:line-through;}
+#lu .lu-plots--one {grid-template-columns:minmax(0,1fr);}
+/* inside the metal */
+#lu .lu-mstages {list-style:none;display:flex;flex-wrap:wrap;gap:0.3em;padding:0;margin:0.2em 0 0.5em;}
+#lu .lu-mstages li {padding:0.25em 0.6em;border-radius:1em;border:1px solid var(--lu-line);font-size:0.85em;color:var(--lu-mut);background:var(--lu-soft);}
+#lu .lu-mstages li b {display:inline-block;min-width:1.2em;text-align:center;}
+#lu .lu-mstages li.is-done {color:var(--lu-ink);}
+#lu .lu-mstages li.is-now {background:var(--lu-sel);border-color:var(--lu-sel);color:#fff;font-weight:700;}
+#lu .lu-mmeter {margin:0.45em 0 0.1em;font-size:0.9em;}
+#lu .lu-mm__l {display:block;margin-bottom:0.25em;}
+#lu .lu-mm__b {display:block;height:10px;border-radius:5px;background:var(--lu-soft);border:1px solid var(--lu-line);overflow:hidden;}
+#lu .lu-mm__b > span {display:block;height:100%;background:linear-gradient(90deg,#f59e0b,#d4351c);}
+#lu .lu-mm__b--e > span {background:linear-gradient(90deg,#94a3b8,#7c3aed);}
+#lu .lu-mkey {list-style:none;display:flex;flex-wrap:wrap;gap:0.3em 1.2em;padding:0;margin:0.3em 0;font-size:0.85em;color:var(--lu-mut);}
+#lu .lu-mk {display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:0.4em;vertical-align:-1px;}
+#lu .lu-mk--c {background:#b45309;} #lu .lu-mk--d {background:#1d4ed8;border-radius:2px;height:4px;width:18px;vertical-align:3px;} #lu .lu-mk--a {background:rgba(90,105,125,0.45);width:6px;height:6px;}
+html body.dark-mode #lu.lu .lu-mk--c {background:#f5a524;} html body.dark-mode #lu.lu .lu-mk--d {background:#7fb2ff;}
+html body.dark-mode #lu.lu .lu-mstages li.is-now {background:#6d28d9;border-color:#6d28d9;}

@@ -6,8 +6,9 @@
   if (!L || !root) return;
   function $(id) { return document.getElementById(id); }
   var KEY = "mes-luders:v1";
-  var S = { m: "a36", eL: null, uy: null, k: 3, v: 5, sc: 0.5, r: 1, g: null, look: "polish", units: "mpa", thin: true, ghost: true, speed: 1, notches: [] };
+  var S = { m: "a36", eL: null, uy: null, k: 3, v: 5, sc: 0.5, r: 1, g: null, look: "polish", units: "mpa", thin: true, ghost: true, speed: 1, notches: [], show: { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 } };
   try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var kk in sv) if (kk in S) S[kk] = sv[kk]; } catch (e) {}
+  if (!S.show || typeof S.show !== "object") S.show = { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 };
   var Q = L.fromQuery(location.search);
   if (Q.m) { S.m = Q.m; S.eL = null; S.uy = null; S.g = null; }
   ["eL", "uy", "k", "v", "sc", "r", "g"].forEach(function (k) { if (Q[k] != null) S[k] = Q[k]; });
@@ -39,11 +40,41 @@
     kymo = []; lastFr = { t: 0, f: 0 }; vMeas = null; frontsN = 0; agedNote = "";
     ghostLabel = e.m.name.split(" (")[0] + ", k " + fmtK(S.k);
     setRun(false); $("lu-unload").disabled = true; $("lu-reload").disabled = true; $("lu-agemsg").textContent = "";
-    pushKymo(); drawAll(); say();
+    pushKymo(); hist = []; histPos = -1; curveM = sim.curve; eventsM = sim.events; kymoM = kymo; record(true); drawAll(); say();
   }
   var ghostLabel = "", agedNote = "";
 
-  function setRun(on) { running = on; var b = $("lu-go"); b.textContent = on ? "❚❚ Pause" : (sim && sim.t > 0 && !sim.done ? "▶ Go on" : sim && sim.done ? "▶ Pull further" : "▶ Start"); b.setAttribute("aria-pressed", on ? "true" : "false"); }
+  /* ---- rewind: snapshots of the whole test, a slider moves through them ---- */
+  var hist = [], histPos = -1, curveM = null, eventsM = null, kymoM = null, HMAX = 1400;
+  function record(force) {
+    if (histPos >= 0 && histPos < hist.length - 1) branch();
+    var last = hist[hist.length - 1], gap = Math.max(0.02, estTotal() / 900);
+    if (!force && last && sim.t - last.t < gap && !sim.broken) return;
+    curveM = sim.curve; eventsM = sim.events; kymoM = kymo;
+    hist.push({ t: sim.t, e: sim.strain(), snap: sim.snapshot(), kl: kymo.length, end: endStrain, vm: vMeas });
+    if (hist.length > HMAX) { var h2 = [hist[0]]; for (var j = 1; j < hist.length - 1; j += 2) h2.push(hist[j]); h2.push(hist[hist.length - 1]); hist = h2; }
+    histPos = hist.length - 1; scrubUI();
+  }
+  /* pressing Go after rewinding: forget the part of the test after this point */
+  function branch() { hist.length = histPos + 1; curveM = sim.curve; eventsM = sim.events; kymoM = kymo; }
+  function goTo(k) {
+    if (!hist.length) return;
+    k = Math.max(0, Math.min(hist.length - 1, k));
+    if (running) { setRun(false); }
+    var h = hist[k]; histPos = k;
+    sim.restore(h.snap, curveM, eventsM); kymo = kymoM.slice(0, h.kl); endStrain = h.end; vMeas = h.vm; lastFr = { t: sim.t, f: sim.yieldedFraction() };
+    $("lu-unload").disabled = !(sim.s > 1) || sim.broken; $("lu-reload").disabled = !sim.unloadedNow;
+    setRun(false); drawAll(); say(); scrubUI();
+  }
+  function scrubUI() {
+    var r = $("lu-scrub"); if (!r) return;
+    var n = Math.max(1, hist.length - 1); r.max = n; r.value = Math.max(0, histPos);
+    var live = histPos >= hist.length - 1;
+    $("lu-scrubt").textContent = (live ? "" : "Rewound to ") + fT(sim.t) + " · strain " + L.pct(sim.strain(), 2) + (live ? "" : " (press ▶ to go on from here)");
+    r.style.setProperty("--lu-sp", (histPos / n * 100) + "%");
+  }
+
+  function setRun(on) { running = on; var b = $("lu-go"); b.textContent = on ? "❚❚ Pause" : sim && sim.broken ? "↺ New bar" : (sim && sim.t > 0 && !sim.done ? "▶ Go on" : sim && sim.done ? (sim.phase === "hardening" || sim.phase === "necking" ? "▶ Pull until it breaks" : "▶ Pull further") : "▶ Start"); b.setAttribute("aria-pressed", on ? "true" : "false"); }
 
   function pushKymo() {
     var N = sim.p.N, row = new Float32Array(N), rr = new Uint8Array(N);
@@ -62,10 +93,12 @@
     for (var i = 0; i < sub; i++) {
       var ev = sim.step(du / sub, dt / sub);
       for (var j = 0; j < ev.length; j++) onEvent(ev[j]);
+      if (sim.broken) { running = false; sim.done = true; break; }
       if (sim.strain() >= endStrain) { running = false; sim.done = true; break; }
     }
     measureSpeed();
     kymoAcc += dt; if (kymoAcc > Math.max(0.03, estTotal() / 600)) { kymoAcc = 0; pushKymo(); }
+    record(!running);
     if (!running) { setRun(false); afterStop(); }
     drawAll(); say();
   }
@@ -73,6 +106,8 @@
   function onEvent(e) {
     if (e.type === "nucleate") { var where = e.x < 0.06 ? "the left shoulder" : e.x > 0.94 ? "the right shoulder" : (Math.round(e.x * sim.p.Lg) + " mm along the bar" + (nearNotch(e.x) ? ", at the notch" : "")); toast("Band " + e.band + " starts at " + where + " (" + fS(e.s) + ")"); }
     if (e.type === "end") toast("The fronts have crossed the whole bar: now it hardens evenly.");
+    if (e.type === "neck") toast("Necking at " + Math.round(e.x * sim.p.Lg) + " mm: the tensile strength (" + fS(e.s) + ") is reached, one spot starts to thin");
+    if (e.type === "fracture") toast("Broken at " + Math.round(e.x * sim.p.Lg) + " mm after " + L.pct(e.strain, 1) + " stretch");
   }
   function nearNotch(x) { for (var i = 0; i < S.notches.length; i++) if (Math.abs(S.notches[i] - x) < 0.03) return true; return false; }
   function measureSpeed() {
@@ -83,7 +118,7 @@
     } else lastFr = { t: sim.t, f: yf };
   }
   function afterStop() {
-    $("lu-unload").disabled = !(sim.s > 1);
+    $("lu-unload").disabled = !(sim.s > 1) || sim.broken;
     if (seq) seq();
   }
 
@@ -120,14 +155,17 @@
     var dark = isDark();
     /* layout: grips | shoulder | gauge | shoulder | grip */
     var gripW = Math.max(22, w * 0.07), shW = Math.max(16, w * 0.06), pad = w < 500 ? 4 : 10;
-    var stretchPx = 0, gaugeW0 = w - 2 * pad - 2 * gripW - 2 * shW - 30;
-    var scale = gaugeW0 / p.Lg;                                       // px per mm
+    var stretchPx = 0, avail = w - 2 * pad - 2 * gripW - 2 * shW - 24, gaugeW0 = avail - 6;
+    /* room for the longest the bar will get in this run (it can stretch 25-45% before it breaks), so the right grip stays in view */
+    var reach = Math.max(0.06, Math.min(endStrain, p.A + 0.03), sim.P / p.Lg + sim.s / p.E + 0.01);
+    var scale = (avail - (sim.broken ? 14 : 0)) / (p.Lg * (1 + reach));   // px per mm
     var yc = h * 0.53, gh = Math.min(h * 0.46, gaugeW0 * 0.2), sh = Math.min(h * 0.72, gh * 1.6);
     var nuW = S.r / (1 + S.r), thinMul = S.thin ? 15 : 1;
     var elastic = sim.s / p.E;
     /* cumulative positions of slice edges */
     var pos = new Float64Array(N + 1), x0 = pad + gripW + shW; pos[0] = x0;
-    for (var i = 0; i < N; i++) pos[i + 1] = pos[i] + sim.dx * (1 + sim.ep[i] + elastic) * scale;
+    var brk = sim.broken && sim.neck ? sim.neck.c : -1, GAP = 14;
+    for (var i = 0; i < N; i++) pos[i + 1] = pos[i] + sim.dx * (1 + sim.ep[i] + elastic) * scale + (i === brk ? GAP : 0);
     var x1 = pos[N];
     geo = { pos: pos, yc: yc, gh: gh, x0: x0, x1: x1, w: w, h: h };
     /* frame + grips */
@@ -135,7 +173,7 @@
     c.fillStyle = css("--lu-frame"); c.fillRect(0, yc - sh / 2 - 26, w, 8); c.fillRect(0, yc + sh / 2 + 18, w, 8);
     function grip(x, wd) { c.fillStyle = css("--lu-grip"); c.fillRect(x, yc - sh / 2 - 10, wd, sh + 20); c.strokeStyle = css("--lu-gripl"); c.lineWidth = 1; for (var t = 6; t < sh + 14; t += 6) { c.beginPath(); c.moveTo(x + 3, yc - sh / 2 - 7 + t); c.lineTo(x + wd - 3, yc - sh / 2 - 7 + t - 3); c.stroke(); } }
     /* shoulders (plain metal) */
-    var baseCol = look === "scale" ? "#3a414d" : look === "strain" ? rgbStr(L.viridisish(0)) : look === "rate" ? "#141821" : rgbStr(steelHi);
+    var baseCol = look === "scale" ? "#3a414d" : look === "strain" ? rgbStr(L.viridisish(0)) : look === "rate" ? rgbStr(rateCol(0, dark)) : rgbStr(steelHi);
     function shoulder(xa, xb, flip) {
       var r = (sh - gh) / 2;
       c.beginPath();
@@ -166,9 +204,11 @@
           /* lean: look up the slice along the front direction */
           var Xs = X2 - dy * cot * dir, k = cc;
           if (Xs < pos[k]) { while (k > 0 && Xs < pos[k]) k--; } else { while (k < N - 1 && Xs > pos[k + 1]) k++; }
-          var hw = gh / 2 * (1 - nuW * sim.ep[k] * thinMul * 0.5);
+          var epU = sim.neck ? Math.min(sim.ep[k], sim.neck.e0[k]) : sim.ep[k], epN = sim.ep[k] - epU;
+          var hw = gh / 2 * Math.max(0.12, (1 - Math.min(0.3, nuW * epU * thinMul * 0.5)) / (1 + 2.6 * epN));
           var o = (py * pw + px) * 4;
           if (Math.abs(dy) > hw) { d[o + 3] = 0; continue; }
+          if (brk >= 0) { var xcr = pos[brk + 1] - GAP / 2 + Math.sin(dy * 0.55) * 3 + (hsh(0, Math.round(dy * 2)) - 0.5) * 3; if (Math.abs(X2 - xcr) < GAP / 2 - 1) { d[o + 3] = 0; continue; } }
           var st = sim.st[k], f = sim.tgt[k] > 0 ? Math.min(1, sim.ep[k] / Math.max(1e-9, sim.tgt[k])) : (st === 3 ? 1 : 0), col;
           if (sim.p.noYP && !sim.agedTimes) f = Math.min(1, sim.ep[k] / 0.02);
           var nz = hsh(px, py), edge = Math.abs(dy) / (gh / 2);
@@ -183,8 +223,7 @@
           } else if (look === "strain") {
             col = L.viridisish(sim.ep[k] / mxE);
           } else {
-            var rr = Math.min(1, sim.rate[k] * 400);
-            col = [20 + 235 * rr, 24 + 140 * rr * rr, 33 + 30 * rr];
+            col = rateCol(Math.min(1, sim.rate[k] * 400), dark);
           }
           var sh2 = 1 - Math.pow(edge, 6) * 0.25;
           d[o] = col[0] * sh2; d[o + 1] = col[1] * sh2; d[o + 2] = col[2] * sh2; d[o + 3] = 255;
@@ -220,10 +259,18 @@
         c.fillText("front", fx, ty - 7);
       });
     }
+    /* neck / break label */
+    if (sim.neck) { var nx = (pos[sim.neck.c] + pos[sim.neck.c + 1]) / 2; c.font = fnt(12, 1); c.textAlign = "center"; c.fillStyle = css("--lu-upper"); c.fillText(sim.broken ? "broken here" : "neck", nx, yc - gh / 2 - 8); }
     /* selected slice */
     var si = microIdx();
     if (si >= 0) { var sx = (pos[si] + pos[si + 1]) / 2, sy = yc + gh / 2 + 3; c.fillStyle = css("--lu-sel"); c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx - 6, sy + 9); c.lineTo(sx + 6, sy + 9); c.closePath(); c.fill(); }
     if (S.thin && sim.P > 0) { c.font = fnt(10); c.textAlign = "left"; c.fillStyle = css("--lu-mut"); c.textAlign = "right"; c.fillText("thinning drawn ×15", x1, yc + sh / 2 + 14 * TXS()); }
+  }
+  /* "Flowing now" colours: still steel = plain grey (visible on light and dark pages), stretching = orange, fastest = yellow-white */
+  function rateCol(rr, dark) {
+    var b = dark ? [92, 101, 116] : [190, 198, 208], m = [234, 88, 12], t = [255, 236, 140];
+    if (rr <= 0.5) { var u = rr * 2; return [b[0] + (m[0] - b[0]) * u, b[1] + (m[1] - b[1]) * u, b[2] + (m[2] - b[2]) * u]; }
+    var v = (rr - 0.5) * 2; return [m[0] + (t[0] - m[0]) * v, m[1] + (t[1] - m[1]) * v, m[2] + (t[2] - m[2]) * v];
   }
   function rgbStr(a) { return "rgb(" + a[0] + "," + a[1] + "," + a[2] + ")"; }
 
@@ -253,7 +300,7 @@
     var up = sim.upper, sm = sim.summary();
     if (sim.phase !== "elastic" && !sim.p.noYP && !sim.agedTimes) {
       c.strokeStyle = css("--lu-lower"); c.setLineDash([5, 4]); c.lineWidth = 1; var ly = Y(sim.p.sL); c.beginPath(); c.moveTo(mL, ly); c.lineTo(mL + pw, ly); c.stroke(); c.setLineDash([]);
-      c.fillStyle = css("--lu-lower"); c.textAlign = "right"; c.fillText("lower yield ≈ " + fS(sim.p.sL), mL + pw - 4, ly - 6);
+      c.fillStyle = css("--lu-lower"); c.textAlign = "right"; c.fillText("lower yield ≈ " + fS(sim.p.sL), sim.brokenAt || sim.neck ? mL + pw * 0.62 : mL + pw - 4, sim.brokenAt || sim.neck ? ly + 14 : ly - 6);
     }
     if (sm.ludersStrain && up) {
       var by = Y(sm.plateau || sim.p.sL) + 22, xa = X(up.strain), xb = X(sim.ludersEnd.strain);
@@ -264,6 +311,8 @@
     /* curve */
     c.strokeStyle = css("--lu-curve"); c.lineWidth = 2.2; line(c, sim.curve, X, Y);
     if (up) { c.fillStyle = css("--lu-upper"); c.beginPath(); c.arc(X(up.strain), Y(up.s), 4, 0, 7); c.fill(); c.textAlign = "left"; c.font = fnt(11); c.fillText("upper yield " + fS(up.s), X(up.strain) + 7, Y(up.s) - 2); }
+    if (sim.uts) { c.fillStyle = css("--lu-front"); c.beginPath(); c.arc(X(sim.uts.strain), Y(sim.uts.s), 4, 0, 7); c.fill(); c.textAlign = "center"; c.font = fnt(11); c.fillText("tensile strength " + fS(sim.uts.s), X(sim.uts.strain), Y(sim.uts.s) - 9); }
+    if (sim.brokenAt) { var bx = X(sim.brokenAt.strain), by = Y(sim.brokenAt.s); c.strokeStyle = css("--lu-upper"); c.lineWidth = 2.5; c.beginPath(); c.moveTo(bx - 6, by - 6); c.lineTo(bx + 6, by + 6); c.moveTo(bx + 6, by - 6); c.lineTo(bx - 6, by + 6); c.stroke(); c.fillStyle = css("--lu-upper"); c.textAlign = "right"; c.font = fnt(11, 1); c.fillText("breaks", bx - 9, by + 4); }
     var e = sim.strain(); c.fillStyle = css("--lu-curve"); c.beginPath(); c.arc(X(e), Y(sim.s), 4.5, 0, 7); c.fill();
     /* hover */
     if (hoverE != null) {
@@ -289,7 +338,7 @@
       kc.width = N; kc.height = rows;
       var kx = kc.getContext("2d"), img = kx.createImageData(N, rows), d = img.data, useRate = S.look === "rate", kmx = Math.max(sim.p.eL * 1.25, 0.004);
       for (var r0 = 0; r0 < rows; r0++) for (var i0 = 0; i0 < N; i0++) if (kymo[r0].row[i0] > kmx) kmx = kymo[r0].row[i0];
-      for (var r = 0; r < rows; r++) { var row = useRate ? kymo[r].rate : kymo[r].row; for (var i = 0; i < N; i++) { var col = useRate ? [20 + row[i] * 0.92, 24 + row[i] * 0.55 * row[i] / 255, 33] : L.viridisish(row[i] / kmx), o = (r * N + i) * 4; d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255; } }
+      for (var r = 0; r < rows; r++) { var row = useRate ? kymo[r].rate : kymo[r].row; for (var i = 0; i < N; i++) { var col = useRate ? rateCol(row[i] / 255, isDark()) : L.viridisish(row[i] / kmx), o = (r * N + i) * 4; d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255; } }
       kx.putImageData(img, 0, 0);
       c.imageSmoothingEnabled = false;
       var hUsed = ph * (kymo[rows - 1].t / tMax);
@@ -379,13 +428,44 @@
       }
       c.globalAlpha = 1;
     }
+    /* labels on the picture */
+    var lab = function (txt, x, y, tx, ty, col) {
+      c.font = fnt(12, 1); var tw = c.measureText(txt).width;
+      if (tx != null) { c.strokeStyle = col || (dark ? "#cbd5e1" : "#334155"); c.lineWidth = 1.2; c.beginPath(); c.moveTo(x + (tx > x ? tw : 0), y - 4); c.lineTo(tx, ty); c.stroke(); }
+      c.fillStyle = dark ? "rgba(21,26,34,0.85)" : "rgba(246,248,251,0.9)"; c.fillRect(x - 3, y - 13, tw + 6, 17);
+      c.fillStyle = col || (dark ? "#e5e9ef" : "#1e2733"); c.textAlign = "left"; c.fillText(txt, x, y);
+    };
+    if (st === 0 || st === 1) {
+      lab("carbon atoms pin the line", w * 0.06, yLine + 38, pins[2], yLine + 4, carbon);
+      lab("dislocation line (stuck)", w * 0.56, yLine - 34, (pins[5] + pins[6]) / 2, yLine - Math.pow(ratio, 2) * 22 * 0.9, ink);
+    } else if (!sim.neck || !sim.neck.w[i]) {
+      lab("free dislocations slide along →", w * 0.05, 18, null, null, ink);
+      lab("carbon left behind", w * 0.62, h - 12, null, null, carbon);
+    }
+    /* pull arrows at the sides */
+    c.strokeStyle = dark ? "#ff7b61" : "#d4351c"; c.fillStyle = c.strokeStyle; c.lineWidth = 2.5;
+    [[6, -1], [w - 6, 1]].forEach(function (a) { var x = a[0], y = h - 26; c.beginPath(); c.moveTo(x - a[1] * 26, y); c.lineTo(x, y); c.stroke(); c.beginPath(); c.moveTo(x, y); c.lineTo(x - a[1] * 8, y - 5); c.lineTo(x - a[1] * 8, y + 5); c.closePath(); c.fill(); });
+    /* where the slice is on the bar */
+    var bw = Math.min(220, w * 0.38), bx0 = w - bw - 10, by0 = 8;
+    c.fillStyle = dark ? "rgba(21,26,34,0.9)" : "rgba(246,248,251,0.92)"; c.fillRect(bx0 - 6, by0 - 4, bw + 12, 26);
+    for (var q2 = 0; q2 < sim.p.N; q2++) { var sq = sim.st[q2]; c.fillStyle = sq === 3 ? (dark ? "#8b95a5" : "#94a3b8") : sq === 0 ? (dark ? "#3b4452" : "#dbe2ea") : "#f59e0b"; c.fillRect(bx0 + q2 / sim.p.N * bw, by0 + 6, bw / sim.p.N + 0.6, 8); }
+    var mx2 = bx0 + (i + 0.5) / sim.p.N * bw; c.fillStyle = dark ? "#b794f6" : "#7c3aed"; c.beginPath(); c.moveTo(mx2, by0 + 15); c.lineTo(mx2 - 5, by0 + 22); c.lineTo(mx2 + 5, by0 + 22); c.closePath(); c.fill();
+    c.font = fnt(10); c.fillStyle = dark ? "#aab4c0" : "#5b6573"; c.textAlign = "right"; c.fillText("this slice ▲", bx0 - 10, by0 + 15);
+    /* story stage + stress meter */
+    var inNeck = sim.neck && sim.neck.w[i] > 0.3, stage = inNeck ? 4 : st;
+    root.querySelectorAll("#lu-mstages li").forEach(function (li) { var k = +li.getAttribute("data-s"); li.className = k === stage ? "is-now" : k < stage ? "is-done" : ""; });
+    var need = st === 0 ? sim.sU[i] : sim.threshold(i), frac = Math.max(0, Math.min(1, sig / Math.max(1, need)));
+    var mh = st === 0 ? '<span class="lu-mm__l">Pull on this slice: <b>' + fS(sig) + '</b> of the <b>' + fS(need) + '</b> needed to tear the lines free</span><span class="lu-mm__b"><span style="width:' + (frac * 100).toFixed(1) + '%"></span></span>'
+      : '<span class="lu-mm__l">This slice has stretched <b>' + L.pct(sim.ep[i], 1) + '</b> for good' + (inNeck ? " (it is in the neck)" : "") + '</span><span class="lu-mm__b lu-mm__b--e"><span style="width:' + Math.min(100, sim.ep[i] / Math.max(0.05, sim.p.A) * 100).toFixed(1) + '%"></span></span>';
+    var mm = $("lu-mmeter"); if (mm.__h !== mh) { mm.innerHTML = mh; mm.__h = mh; }
     /* caption */
     var cap, xmm = Math.round((i + 0.5) / sim.p.N * sim.p.Lg);
     if (st === 0) cap = "Slice at " + xmm + " mm: <b>pinned.</b> Carbon atoms (orange) sit along the dislocation (blue) and hold it. The line bows as the stress rises (" + fS(sig) + " of the " + fS(sim.sU[i]) + " it needs to break away). " + (sig > sim.p.sL && sim.phase === "elastic" ? "It is already above the lower yield but it cannot move yet." : "");
     else if (st === 1) cap = "Slice at " + xmm + " mm: <b>the front is next door.</b> The stretched slice beside it pulls on it hard (the front is a stress concentration), so it lets go at about the lower yield, " + fS(sim.sF[i]) + ".";
     else if (st === 2) cap = "Slice at " + xmm + " mm: <b>breaking free.</b> The lines have torn away from their carbon atoms. Free dislocations need less stress to move than pinned ones, and they multiply, so this slice suddenly stretches by the whole Lüders strain (" + L.pct(sim.tgt[i] - (sim.agedTimes ? 0 : 0), 1) + ").";
     else cap = "Slice at " + xmm + " mm: <b>yielded</b> (" + L.pct(sim.ep[i], 2) + " plastic strain). Its dislocations are free and tangled; from here it work-hardens like any metal." + (sim.agedTimes ? "" : " Leave it a few weeks, or bake it, and the carbon atoms gather on the dislocations again (strain ageing).");
-    if (sim.p.noYP && !sim.agedTimes) cap = "Slice at " + xmm + " mm: interstitial-free steel. Titanium / niobium have locked every carbon and nitrogen atom into tiny carbides, so nothing pins the dislocations: they start moving gradually everywhere at once. No upper yield point, no band.";
+    if (inNeck) cap = "Slice at " + xmm + " mm: <b>in the neck.</b> Past the tensile strength this spot thins faster than it can harden, so it takes all the stretching (" + L.pct(sim.ep[i], 1) + "). Tiny holes open around impurities and join up" + (sim.broken ? ": that is where it broke." : ", until the bar breaks here.");
+    else if (sim.p.noYP && !sim.agedTimes) cap = "Slice at " + xmm + " mm: interstitial-free steel. Titanium / niobium have locked every carbon and nitrogen atom into tiny carbides, so nothing pins the dislocations: they start moving gradually everywhere at once. No upper yield point, no band.";
     var mc = $("lu-mcap"); if (mc.__h !== cap) { mc.innerHTML = cap; mc.__h = cap; }
   }
 
@@ -397,7 +477,9 @@
     else if (p.noYP && !sim.agedTimes) t = "<b>No yield point.</b> The whole gauge yields at the same time and hardens smoothly; the surface stays the same all over. This is why car makers press visible panels from IF steel.";
     else if (sim.phase === "elastic") t = sim.agedTimes && !sim.bands ? "Pulling again: elastic, the line goes straight back up." : "<b>Elastic.</b> The whole bar stretches evenly by " + L.pct(sim.s / p.E, 3) + ". Nothing is permanent yet. " + (sim.s > p.sL ? "Already past the lower yield (" + fS(p.sL) + ") but still holding: the dislocations are pinned." : "");
     else if (sim.phase === "luders") t = "<b>Lüders plateau.</b> " + fr + " front" + (fr === 1 ? "" : "s") + " crossing the bar at " + (vMeas ? vMeas.toFixed(1) : "…") + " mm/s. Behind a front the steel has stretched " + L.pct(p.eL, 1) + "; ahead of it, not at all. The force stays flat because all the machine's travel goes into moving the front" + (fr > 1 ? "s" : "") + ". The front leans at " + L.frontAngle(S.r).toFixed(1) + "° to the pull.";
-    else if (sim.phase === "hardening") t = sim.agedTimes && !sim.bands ? "Pulled again straight away: no yield point, no new band, it just carries on hardening from where it was." : "<b>Work hardening.</b> The fronts have met. The whole gauge now stretches evenly and gets stronger as it goes (" + fS(sim.s) + ")." + (sim.done ? " Unload it below, or see the whole curve to fracture in the Tensile Test Simulator." : "");
+    else if (sim.phase === "broken") t = "<b>Broken.</b> The neck at " + Math.round(sim.brokenAt.x * p.Lg) + " mm thinned until it tore apart, after " + L.pct(sim.brokenAt.strain, 1) + " stretch over the gauge. Highest force: the tensile strength, " + fS(sim.uts ? sim.uts.s : sim.maxS) + ". Look at the curve: flat (Lüders), rising (hardening), falling (necking), then zero. Drag the slider under the bar to watch any moment again.";
+    else if (sim.phase === "necking") t = "<b>Necking.</b> The steel reached its tensile strength (" + fS(sim.uts.s) + "). Now one spot thins faster than it hardens, so all the stretching goes there and the force falls even though the machine keeps pulling. " + Math.round(sim.neckFrac() * 100) + "% of the way to breaking.";
+    else if (sim.phase === "hardening") t = sim.agedTimes && !sim.bands ? "Pulled again straight away: no yield point, no new band, it just carries on hardening from where it was." : "<b>Work hardening.</b> The fronts have met. The whole gauge now stretches evenly and gets stronger as it goes (" + fS(sim.s) + ")." + (sim.done ? " Press <b>Pull until it breaks</b>, or unload it below and try strain ageing." : "");
     if (el.__h !== t) { el.innerHTML = t; el.__h = t; }
   }
 
@@ -416,6 +498,47 @@
 
   function stageHeight() { var v = $("lu-view"); return v.classList.contains("mes-pfill") ? $("lu-stage").clientHeight || window.innerHeight * 0.8 : 0; }
 
+  /* ---- what the current look means (key under the bar) ---- */
+  var LOOKKEY = {
+    polish: ["Polished bar", "A shiny bar, as it comes out of the machine. Where the steel has yielded (stretched for good), the surface goes dull grey. That dull stripe is the Lüders band.", "linear-gradient(90deg,#d6dce4,#9aa3ae)", "shiny = not yielded yet", "dull = yielded"],
+    scale: ["Mill scale", "Hot-rolled steel has a thin dark skin of oxide (mill scale). It cannot stretch, so it cracks and flakes off wherever the steel underneath has yielded.", "linear-gradient(90deg,#3a414d,#b8b2a6)", "dark skin = not yielded", "light flakes = yielded"],
+    strain: ["Strain map", "Colour shows how much each part has stretched for good (plastic strain), like the DIC cameras used in real labs.", "linear-gradient(90deg,rgb(68,1,84),rgb(59,82,139),rgb(33,145,140),rgb(94,201,98),rgb(253,231,37))", "0% stretch", "most stretch"],
+    rate: ["Flowing now", "Colour shows where the steel is stretching at this moment. During the plateau only the thin band front glows: that is the only place the metal is moving. Behind it the steel has already stretched and stopped; ahead of it, it has not started.", "linear-gradient(90deg,#5c6574,#ea580c,#ffec8c)", "grey = not moving", "yellow = stretching fastest"]
+  };
+  function lookKey() {
+    var k = LOOKKEY[S.look] || LOOKKEY.polish, el = $("lu-lookkey");
+    var h = '<span class="lu-lk__bar" style="background:' + k[2] + '"></span><span class="lu-lk__ends"><span>' + k[3] + '</span><span>' + k[4] + '</span></span><span class="lu-lk__txt"><b>' + k[0] + ':</b> ' + k[1] + '</span>';
+    if (el.__h !== h) { el.innerHTML = h; el.__h = h; }
+  }
+
+  /* ---- show / hide parts ---- */
+  function applyShow() {
+    var sh = S.show;
+    $("lu-lookkey").hidden = !sh.key; $("lu-ro").hidden = !sh.ro; $("lu-say").hidden = !sh.say;
+    $("lu-fchart").hidden = !sh.chart; $("lu-fkymo").hidden = !sh.kymo; $("lu-micro").hidden = !sh.micro;
+    var pl = root.querySelector(".lu-plots"); pl.hidden = !sh.chart && !sh.kymo; pl.classList.toggle("lu-plots--one", !sh.chart !== !sh.kymo);
+    root.querySelectorAll("#lu-show [data-show]").forEach(function (b) { b.setAttribute("aria-pressed", sh[b.getAttribute("data-show")] ? "true" : "false"); });
+  }
+  $("lu-show").addEventListener("click", function (e) { var b = e.target.closest("[data-show]"); if (!b) return; var k = b.getAttribute("data-show"); S.show[k] = S.show[k] ? 0 : 1; save(); applyShow(); setTimeout(drawAll, 30); });
+
+  /* ---- rewind slider ---- */
+  $("lu-scrub").addEventListener("input", function () { goTo(+this.value); });
+  $("lu-scrubw").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-sc]"); if (!b) return; var a = b.getAttribute("data-sc"), step = Math.max(1, Math.round(hist.length / 60));
+    goTo(a === "start" ? 0 : a === "end" ? hist.length - 1 : a === "back" ? histPos - step : histPos + step);
+  });
+
+  /* ---- "?" glossary ---- */
+  var gl = $("lu-gloss");
+  function openGloss(term) {
+    gl.hidden = false; $("lu-gbtn").setAttribute("aria-expanded", "true");
+    gl.querySelectorAll(".lu-g-on").forEach(function (x) { x.classList.remove("lu-g-on"); });
+    if (term) { var dt = gl.querySelector('[data-term="' + term + '"]'); if (dt) { dt.classList.add("lu-g-on"); var dd = dt.nextElementSibling; if (dd) dd.classList.add("lu-g-on"); var box = gl.querySelector(".lu-g-list"); box.scrollTop = dt.offsetTop - box.offsetTop - 6; } }
+  }
+  $("lu-gbtn").addEventListener("click", function () { if (gl.hidden) openGloss(); else { gl.hidden = true; this.setAttribute("aria-expanded", "false"); } });
+  $("lu-gclose").addEventListener("click", function () { gl.hidden = true; $("lu-gbtn").setAttribute("aria-expanded", "false"); });
+  root.addEventListener("click", function (e) { var b = e.target.closest("[data-gl]"); if (b) { e.preventDefault(); openGloss(b.getAttribute("data-gl")); } });
+
   /* ---- settings UI ---- */
   var matSel = $("lu-mat");
   L.MATS.forEach(function (m) { var o = document.createElement("option"); o.value = m.id; o.textContent = m.name; matSel.appendChild(o); });
@@ -433,7 +556,7 @@
     $("lu-sc").value = S.sc; $("lu-scv").textContent = S.sc < 0.15 ? "perfectly even" : S.sc < 0.6 ? "normal" : "patchy";
     $("lu-r").value = S.r; $("lu-rv").textContent = S.r.toFixed(2) + " → " + L.frontAngle(S.r).toFixed(1) + "°";
     $("lu-thin").checked = S.thin; $("lu-ghost").checked = S.ghost; $("lu-speed").value = String(S.speed);
-    seg("lu-look", S.look); seg("lu-units", S.units);
+    seg("lu-look", S.look); lookKey(); applyShow(); seg("lu-units", S.units);
     var af = ageSel(); $("lu-agef").textContent = af.h === 0 ? "no time for ageing" : "≈ " + Math.round(L.ageFraction(af.h, af.T) * 100) + "% of the full yield point returns";
   }
   function seg(id, v) { Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); }); }
@@ -465,7 +588,9 @@
   $("lu-go").addEventListener("click", function () {
     seq = null;
     if (running) { setRun(false); afterStop(); return; }
-    if (sim.done) { endStrain = sim.strain() + 0.025; sim.done = false; }
+    if (sim.broken) { newSim(); return; }
+    if (histPos >= 0 && histPos < hist.length - 1) branch();
+    if (sim.done || sim.strain() >= endStrain - 1e-9) { endStrain = (sim.phase === "hardening" || sim.phase === "necking") ? sim.p.A + 0.03 : sim.strain() + 0.025; sim.done = false; }
     sim.unloadedNow = false;
     $("lu-unload").disabled = true; $("lu-reload").disabled = true;
     setRun(true);
@@ -475,10 +600,11 @@
   $("lu-reload").addEventListener("click", function () { doReload(); });
   function doUnload() {
     setRun(false); sim.unload(); sim.unloadedNow = true; sim.done = false;
-    $("lu-unload").disabled = true; $("lu-reload").disabled = false; pushKymo(); drawAll(); say();
+    $("lu-unload").disabled = true; $("lu-reload").disabled = false; pushKymo(); record(true); drawAll(); say();
     $("lu-agemsg").textContent = "Unloaded with " + L.pct(sim.P / sim.p.Lg, 2) + " permanent stretch. Pick a waiting time and press Pull again.";
   }
   function doReload() {
+    if (sim.neck) { $("lu-agemsg").textContent = "This bar has already started to neck: a real lab would throw it away. Press New bar."; return; }
     var a = ageSel(), f = sim.age(a.h, a.T);
     if (S.ghost) ghost = { pts: sim.curve.slice(), label: "before ageing" };
     sim.unloadedNow = false;
@@ -549,6 +675,8 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === " " && root.contains(document.activeElement) || e.key === "s" || e.key === "S") { e.preventDefault(); $("lu-go").click(); }
     else if (e.key === "r" || e.key === "R") $("lu-reset").click();
+    else if (e.key === "," || e.key === ".") { e.preventDefault(); goTo(histPos + (e.key === "," ? -1 : 1) * Math.max(1, Math.round(hist.length / 120))); }
+    else if ((e.key === "Home" || e.key === "End") && root.contains(document.activeElement) && document.activeElement.id !== "lu-scrub") { e.preventDefault(); goTo(e.key === "Home" ? 0 : hist.length - 1); }
     else if (e.key === "p" || e.key === "P") { var order = ["polish", "scale", "strain", "rate"]; S.look = order[(order.indexOf(S.look) + 1) % 4]; save(); syncUI(); drawAll(); }
   });
 
