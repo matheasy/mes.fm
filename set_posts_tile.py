@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts", "science": "science-posts"}
+HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts", "science": "science-posts", "hutchison": "hutchison-interviews"}
 STAMP = os.path.join(SITE, "img", "posts-tiles.json")
 
 

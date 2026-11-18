@@ -169,7 +169,8 @@ export const SECTIONS = [
     id: "hutchison-interviews",
     title: "Interviews and Presentations",
     items: [
-      { title: "Overview of the Hutchison Effect by George Hathaway in 1993",
+      // pinned: stays the first item of the page, but the hub tile follows the newest item after it (syncTile() in build.mjs)
+      { pinned: true, title: "Overview of the Hutchison Effect by George Hathaway in 1993",
         image: "https://files.peakd.com/file/peakd-hive/mes/23uFRQ9rBT8SgFqiZKinXqjUi8eACNQSQopk5DCk5XjwfUShqNuZrHgHqY322g51Y1dSx.jpeg",
         links: [["Hive", "https://peakd.com/hive-128780/@mes/ikarokgh"], ["3Speak", "https://3speak.tv/watch?v=mes/ikarokgh"], ["YouTube", "https://youtu.be/tppQ1i8gkZo"], ["BitChute", "https://old.bitchute.com/video/7bJmwjkRI9Jg/"], ["Odysee", "https://odysee.com/Hutchison-Effect-George-Hathaway-1993:ccfb717bd02f8275e222b8ac2e5c7ff13133cd30"], ["Summary", "https://inleo.io/threads/view/mes/re-leothreads-fm5gwvqm"]] },
       { title: "John Hutchison Interviewed by Tom Sky in his Vancouver Lab (2007)",

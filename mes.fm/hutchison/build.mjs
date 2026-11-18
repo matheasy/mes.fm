@@ -24,6 +24,7 @@
 //   npm run build
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { SECTIONS } from "./sections.mjs";
@@ -175,7 +176,7 @@ const PAGES = [
   {
     slug: "hutchison-interviews",
     sectionId: "hutchison-interviews",
-    iconVersion: 3,
+    iconVersion: 3, // icon = the newest interview (first item not marked pinned), remade automatically by syncTile()
     tileLabel: "Interviews and Presentations",
     title: "Hutchison Effect Interviews and Presentations",
     description:
@@ -2196,9 +2197,37 @@ var MES_Vars = {
 `;
 }
 
+// Section tile = the newest item, automatically (like conspiracy's Posts tile): set_posts_tile.py --auto remakes
+// img/<slug>-icon.jpg (centre-cropped 900x600) only when the newest item changed since the last build (recorded in
+// mes.fm/img/posts-tiles.json with the ?v= number). Items marked `pinned` (the Hathaway overview) stay first on the
+// page but are skipped here. Never fatal: without python3 / Pillow the old tile stays.
+function syncTile(meta, slug, hub) {
+  const page = PAGES.find((p) => p.slug === slug);
+  const newest = (SECTIONS.find((s) => s.id === page.sectionId)?.items || []).find((i) => !i.standalone && !i.pinned);
+  if (!newest) return;
+  const key = newest.href || (newest.links && newest.links[0] && newest.links[0][1]);
+  if (!key) return;
+  const args = [join(__dirname, "..", "..", "set_posts_tile.py"), "--auto", "--hubs", hub, "--key", key, "--apply"];
+  const mirror = (key.match(/^https:\/\/mes\.fm\/([\w-]+)\/?$/) || [])[1];
+  const image = newest.image || (meta[key] && meta[key].image);
+  if (image) args.push("--image", image);
+  else if (mirror && existsSync(join(__dirname, "..", mirror, "index.html"))) args.push("--slug", mirror);
+  else return;
+  try {
+    execFileSync("python3", args, { stdio: "inherit" });
+  } catch (err) {
+    console.warn(`${slug} tile not refreshed: ${err.message}`);
+  }
+  try {
+    const v = JSON.parse(readFileSync(join(__dirname, "..", "img", "posts-tiles.json"), "utf8"))[slug]?.v;
+    if (v > (page.iconVersion || 0)) page.iconVersion = v;
+  } catch {}
+}
+
 async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
+  syncTile(meta, "hutchison-interviews", "hutchison");
 
   const pages = [{ hub: true, slug: "hutchison", outDir: __dirname }].concat(
     PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
