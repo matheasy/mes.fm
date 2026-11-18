@@ -1,0 +1,128 @@
+	/* MES Voids & Ductile Fracture Simulator. Colours are --df-* custom properties; dark values restated under html body.dark-mode #df.df
+	   (the derived TOOL-DARK block would rewrite literals). The bar / end-view canvases pick their own light / dark colours in app.js. */
+	#df {--df-ink:#1e2733;--df-mut:#5b6573;--df-line:#d5dbe3;--df-soft:#f3f6f9;--df-grid:#e3e8ee;--df-axis:#8a95a3;--df-grip:#4b5563;--df-dead:#0f172a;
+		--df-arrow:#d4351c;--df-curve:#2563eb;--df-fcur:#ea580c;--df-ghost:#b6c0cc;--df-now:#7c3aed;--df-block:#cfd7e0;--df-blockl:#aab4c0;--df-void:#1e2733;
+		--df-part:#8a5a14;--df-crack:#b91c1c;--df-handle:#d97706;--df-red:#b91c1c;--df-l0:#0f766e;--df-l1:#2563eb;--df-fcl:#b91c1c;--df-nowbg:#ede9fe;}
+	html body.dark-mode #df.df {--df-ink:#e5e9ef;--df-mut:#aab4c0;--df-line:#3a424d;--df-soft:#262c34;--df-grid:#323a45;--df-axis:#7a8596;--df-grip:#5b6574;--df-dead:#000000;
+		--df-arrow:#ff7b61;--df-curve:#7fb2ff;--df-fcur:#fb923c;--df-ghost:#4a5361;--df-now:#b794f6;--df-block:#4a5462;--df-blockl:#6b7686;--df-void:#0d1014;
+		--df-part:#e0b06a;--df-crack:#f87171;--df-handle:#fbbf24;--df-red:#fca5a5;--df-l0:#5eead4;--df-l1:#7fb2ff;--df-fcl:#f87171;--df-nowbg:#3b2a63;}
+	#df {color:var(--df-ink);}
+	#df [hidden] {display:none !important;}
+	:where(#df) :is(div, span, p, li, label, b, strong, em, i, small, td, th, h2, h3, output, figcaption, figure) {color:inherit;}
+	#df .tu-label, #df .tu-field > label {text-transform:none;letter-spacing:0.01em;}
+	#df .df-lead {font-size:1.05em;line-height:1.55;margin:0 0 0.9em;}
+	#df .df-h {font-size:1.08em;margin:0 0 0.6em;padding:0;border:0;color:var(--df-ink);}
+	#df .df-hinl {margin:0;flex:1 1 auto;}
+	#df .df-note {font-size:0.88em;color:var(--df-mut);line-height:1.5;margin:0.4em 0;}
+	#df .df-view {padding:0.7em;margin-bottom:0.9em;}
+	#df .df-vbar {display:flex;flex-wrap:wrap;gap:0.5em 0.9em;align-items:center;margin-bottom:0.6em;}
+	#df .df-run {display:flex;flex-wrap:wrap;gap:0.45em;align-items:center;}
+	#df .df-go {min-width:8.5em;min-height:42px;font-weight:700;}
+	#df .df-run .tu-btn {min-height:42px;}
+	#df .df-spd {display:flex;align-items:center;gap:0.35em;font-size:0.85em;color:var(--df-mut);}
+	#df .df-spd select {width:auto;min-height:40px;padding:0.4em 0.5em;}
+	#df .df-look button, #df .df-units button, #df .df-notch button {min-height:38px;}
+	#df .df-vbtns {margin-left:auto;}
+	#df .df-fig {margin:0 0 0.6em;min-width:0;}
+	#df .df-fig figcaption {font-weight:700;font-size:0.9em;margin:0 0 0.25em;}
+	#df .df-fig figcaption small {font-weight:400;color:var(--df-mut);}
+	#df .df-cv {display:block;width:100%;touch-action:pan-y;}
+	#df .df-svg {display:block;width:100%;height:auto;touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+	#df .df-bgrid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:0.9em;align-items:start;}
+	#df .df-cgrid {display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:0.9em;align-items:start;}
+	#df .df-key {display:flex;align-items:center;flex-wrap:wrap;gap:0.4em;font-size:0.8em;color:var(--df-mut);margin-top:0.3em;}
+	#df .df-key i {display:inline-block;width:8em;height:0.8em;border-radius:0.3em;border:1px solid var(--df-line);}
+	#df .df-key em {font-style:normal;margin-right:0.6em;}
+	#df .df-kdead {display:inline-block;width:1em;height:0.8em;background:var(--df-dead);border-radius:0.2em;border:1px solid var(--df-axis);}
+	#df .df-scrubw {display:flex;align-items:center;gap:0.6em;margin:0.2em 0 0.4em;}
+	#df .df-scrubw input {flex:1;min-width:0;}
+	#df .df-scrubt {font-size:0.8em;color:var(--df-mut);white-space:nowrap;font-variant-numeric:tabular-nums;}
+	#df .df-ro {display:grid;grid-template-columns:repeat(6, minmax(0,1fr));gap:0.4em;margin:0.4em 0;}
+	#df .df-ro4 {grid-template-columns:repeat(4, minmax(0,1fr));}
+	#df .df-ro > div {background:var(--df-soft);border:1px solid var(--df-line);border-radius:0.5em;padding:0.35em 0.5em;min-width:0;}
+	#df .df-ro span {display:block;font-size:0.72em;color:var(--df-mut);line-height:1.25;}
+	#df .df-ro b {display:block;font-size:0.98em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+	#df .df-say {min-height:3em;margin:0.4em 0 0.4em;padding:0.55em 0.75em;border-left:4px solid var(--accent);background:var(--df-soft);border-radius:0 0.5em 0.5em 0;line-height:1.5;font-size:0.95em;}
+	#df .df-try, #df .df-loads {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin-top:0.6em;}
+	#df .df-loads {margin:0 0 0.6em;}
+	#df .df-try__l {font-size:0.85em;font-weight:700;color:var(--df-mut);margin-right:0.2em;}
+	#df .df-try .tu-chip, #df .df-loads .tu-chip {min-height:38px;}
+	#df .df-grid2 {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0.9em;align-items:start;margin-bottom:0.9em;}
+	#df .df-set, #df .df-res, #df .df-eqs, #df .df-vid {padding:0.9em;}
+	#df .df-sl {display:grid;grid-template-columns:minmax(9em,13em) minmax(0,1fr) 5.2em;gap:0.6em;align-items:center;margin:0.45em 0;font-size:0.92em;}
+	#df .df-sl input {width:100%;min-width:0;}
+	#df .df-sl output {font-variant-numeric:tabular-nums;text-align:right;font-weight:600;}
+	#df .df-csl {margin:0.2em 0 0.6em;}
+	#df .df-opts {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;margin-top:0.7em;}
+	#df .df-sm {min-height:38px;font-size:0.88em;}
+	#df .df-tiles {display:grid;grid-template-columns:repeat(auto-fill, minmax(10em,1fr));gap:0.5em;}
+	#df .df-tile {background:var(--df-soft);border:1px solid var(--df-line);border-radius:0.6em;padding:0.5em 0.65em;min-width:0;}
+	#df .df-tile span {display:block;font-size:0.78em;color:var(--df-mut);}
+	#df .df-tile b {display:block;font-size:1.25em;font-variant-numeric:tabular-nums;}
+	#df .df-tile small {display:block;font-size:0.75em;color:var(--df-mut);line-height:1.3;}
+	#df .df-stages {display:flex;flex-wrap:wrap;gap:0.4em;list-style:none;margin:0.3em 0 0.4em;padding:0;}
+	#df .df-stages li {flex:1 1 10em;border:1px solid var(--df-line);border-radius:0.5em;padding:0.35em 0.55em;font-size:0.85em;background:var(--df-soft);color:var(--df-mut);}
+	#df .df-stages li b {display:inline-block;width:1.4em;height:1.4em;line-height:1.4em;text-align:center;border-radius:50%;background:var(--df-line);color:var(--df-ink);margin-right:0.3em;font-size:0.85em;}
+	#df .df-stages li.is-done {color:var(--df-ink);}
+	#df .df-stages li.is-now {border-color:var(--df-now);background:var(--df-nowbg);color:var(--df-ink);font-weight:700;}
+	#df .df-stages li.is-now b {background:var(--df-now);color:#fff;}
+	/* SVG */
+	#df .df-t {font:12px system-ui, sans-serif;fill:var(--df-mut);}
+	#df .df-tb {font-weight:700;fill:var(--df-ink);}
+	#df .df-ts {font-size:11px;}
+	#df .df-tf {fill:var(--df-fcur);}
+	#df .df-red {fill:var(--df-red);}
+	#df .df-grid {stroke:var(--df-grid);stroke-width:1;}
+	#df .df-axis {stroke:var(--df-axis);stroke-width:1.2;}
+	#df .df-curve {fill:none;stroke:var(--df-curve);stroke-width:2.6;stroke-linejoin:round;}
+	#df .df-fcurve {fill:none;stroke:var(--df-fcur);stroke-width:2.2;stroke-dasharray:6 3;}
+	#df .df-ghostl {fill:none;stroke:var(--df-ghost);stroke-width:1.6;stroke-dasharray:4 4;}
+	#df .df-now {stroke:var(--df-now);stroke-width:1.4;stroke-dasharray:3 3;}
+	#df .df-nowd {stroke-width:2;stroke-dasharray:none;opacity:0.7;}
+	#df .df-dot {fill:var(--df-curve);stroke:var(--df-soft);stroke-width:2.5;cursor:grab;}
+	#df .df-dotf {fill:var(--df-fcur);}
+	#df .df-mk {fill:var(--df-soft);stroke:var(--df-ink);stroke-width:1.6;}
+	#df .df-mk--c {stroke:var(--df-red);}
+	#df .df-fcl {stroke:var(--df-fcl);stroke-width:1.2;stroke-dasharray:5 4;}
+	#df .df-loc1 {fill:none;stroke:var(--df-l1);stroke-width:2.6;}
+	#df .df-loc0 {fill:none;stroke:var(--df-l0);stroke-width:2.4;stroke-dasharray:7 4;}
+	#df .df-block {fill:var(--df-block);stroke:var(--df-blockl);stroke-width:1.5;}
+	#df .df-cellg {stroke:var(--df-blockl);stroke-width:0.8;stroke-dasharray:3 4;}
+	#df .df-void {fill:var(--df-void);}
+	#df .df-part {fill:var(--df-part);}
+	#df .df-crack {fill:none;stroke:var(--df-crack);stroke-width:4;stroke-linejoin:round;}
+	#df .df-arl {stroke:var(--df-arrow);stroke-width:3.5;}
+	#df .df-arh {fill:var(--df-arrow);}
+	#df .df-handle {fill:var(--df-handle);stroke:var(--df-soft);stroke-width:2.5;cursor:grab;}
+	#df .df-sdrag {cursor:ew-resize;}
+	#df svg {cursor:default;}
+	#df #df-fchart, #df #df-cchart, #df #df-locus {cursor:pointer;}
+	/* maths */
+	#df .df-eqgrid {display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:0.6em;margin:0.6em 0;}
+	#df .df-eq {background:var(--df-soft);border:1px solid var(--df-line);border-radius:0.6em;padding:0.6em 0.75em;min-width:0;}
+	#df .df-eq b {display:block;font-size:0.9em;margin-bottom:0.3em;}
+	#df .df-eq__f {display:block;overflow-x:auto;overflow-y:hidden;padding:0.2em 0;}
+	#df .df-eq small {display:block;font-size:0.8em;color:var(--df-mut);line-height:1.4;margin-top:0.2em;}
+	/* video */
+	#df .df-vidrow {display:grid;grid-template-columns:minmax(0,22em) minmax(0,1fr);gap:0.9em;align-items:start;}
+	#df .df-vidrow p {margin:0 0 0.5em;line-height:1.55;}
+	#df .df-yt {position:relative;display:block;width:100%;padding:0;border:0;border-radius:0.6em;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:16/9;}
+	#df .df-yt img {width:100% !important;height:100% !important;object-fit:cover;display:block;opacity:0.9;}
+	#df .df-ytp {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:44px;border-radius:12px;background:#e11d1d;color:#fff;font-size:22px;line-height:44px;text-align:center;}
+	#df .df-ytf {width:100%;aspect-ratio:16/9;border:0;border-radius:0.6em;display:block;}
+	#df .df-fam {display:flex;flex-wrap:wrap;gap:0.4em 0.9em;align-items:center;margin:0.9em 0;font-size:0.92em;}
+	#df .df-fam__l {font-weight:700;color:var(--df-mut);}
+	/* Fill window / full screen */
+	#df .mes-pfill .df-bgrid, #df .mes-pfill .df-cgrid {gap:1.2em;}
+	@media (max-width: 860px) {
+		#df .df-bgrid, #df .df-cgrid, #df .df-grid2, #df .df-vidrow, #df .df-eqgrid {grid-template-columns:minmax(0,1fr);}
+		#df .df-ro {grid-template-columns:repeat(3, minmax(0,1fr));}
+		#df .df-ro4 {grid-template-columns:repeat(2, minmax(0,1fr));}
+	}
+	@media (max-width: 480px) {
+		#df .df-sl {grid-template-columns:minmax(0,1fr) 4.6em;}
+		#df .df-sl label {grid-column:1 / -1;}
+		#df .df-ro {grid-template-columns:repeat(2, minmax(0,1fr));}
+		#df .df-vbtns {margin-left:0;}
+	}
+	html body.dark-mode #df.df .df-stages li.is-now b {background:#6d28d9;color:#fff;}

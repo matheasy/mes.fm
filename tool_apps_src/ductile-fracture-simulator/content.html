@@ -1,0 +1,169 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu df" id="df">
+		<p class="df-lead">Every piece of metal is full of tiny <strong>voids</strong> and hard particles, far too small to see. Pull it and the voids grow, stretch and finally link up into a crack. That is how a ductile metal breaks. Press <strong>Pull the bar</strong> to watch it happen inside a necking bar, then zoom in on one void and change how it is loaded.</p>
+
+		<!-- ============ THE BAR ============ -->
+		<div class="tu-card df-view" id="df-bview">
+			<div class="df-vbar" id="df-bbar">
+				<div class="df-run">
+					<button type="button" class="tu-btn df-go" id="df-bgo">▶ Pull the bar</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="df-breset" title="Put a new bar in the machine">↺ New bar</button>
+					<label class="df-spd"><span>Speed</span><select id="df-bspeed" class="tu-select" aria-label="Playback speed"><option value="0.25">Slow ×¼</option><option value="0.5">×½</option><option value="1" selected>×1</option><option value="2">×2</option><option value="4">×4</option></select></label>
+				</div>
+				<div class="tu-seg df-look" id="df-blook" role="group" aria-label="Colour the inside of the bar by">
+					<button type="button" data-v="f" aria-pressed="true" title="How much of the metal is voids">Voids</button>
+					<button type="button" data-v="T" aria-pressed="false" title="Stress triaxiality: how much the metal is pulled from every side at once">Triaxiality</button>
+					<button type="button" data-v="e" aria-pressed="false" title="How much the metal has stretched (true strain)">Stretch</button>
+				</div>
+				<span class="df-vbtns"></span>
+			</div>
+			<div class="df-stage" id="df-bstage">
+				<div class="df-bgrid">
+					<figure class="df-fig df-barfig">
+						<figcaption>The bar, cut open along its middle</figcaption>
+						<canvas id="df-bar" class="df-cv" aria-label="A round bar cut open lengthwise: the neck, the voids inside it and the crack"></canvas>
+						<div class="df-key" id="df-bkey"></div>
+					</figure>
+					<div class="df-bright">
+						<figure class="df-fig">
+							<figcaption>Force on the bar <small>(engineering stress against stretch)</small></figcaption>
+							<svg id="df-fchart" class="df-svg" viewBox="0 0 520 300" role="img" aria-label="Force against elongation; drag the dot to go back and forth"></svg>
+						</figure>
+						<figure class="df-fig">
+							<figcaption id="df-endcap">Looking down the bar at its thinnest point</figcaption>
+							<canvas id="df-end" class="df-cv df-endcv" aria-label="The cross-section at the neck: the crack inside, then the dimpled fracture surface"></canvas>
+						</figure>
+					</div>
+				</div>
+				<div class="df-scrubw">
+					<input type="range" id="df-bscrub" min="0" max="1000" step="1" value="0" aria-label="Move through the test">
+					<span class="df-scrubt" id="df-bscrubt"></span>
+				</div>
+				<div class="df-ro" id="df-bro" aria-live="off">
+					<div><span>Stress (force ÷ start area)</span><b id="df-r-s">0</b></div>
+					<div><span>Elongation</span><b id="df-r-el">0%</b></div>
+					<div><span>Neck diameter</span><b id="df-r-d">100%</b></div>
+					<div><span>Triaxiality in the middle</span><b id="df-r-T">0.33</b></div>
+					<div><span>Voids in the middle</span><b id="df-r-f">0%</b></div>
+					<div><span>Crack</span><b id="df-r-c">none</b></div>
+				</div>
+				<p class="df-say" id="df-bsay" aria-live="polite"></p>
+			</div>
+			<div class="df-try" role="group" aria-label="Try this">
+				<span class="df-try__l">Try this:</span>
+				<button type="button" class="tu-chip" data-try="copper">Copper (like the video)</button>
+				<button type="button" class="tu-chip" data-try="notch">Notched bar (like the video's simulation)</button>
+				<button type="button" class="tu-chip" data-try="dirty">A metal full of particles</button>
+				<button type="button" class="tu-chip" data-try="strong">High-strength steel</button>
+				<button type="button" class="tu-chip" data-try="steel">Mild steel cup and cone</button>
+			</div>
+		</div>
+
+		<div class="df-grid2">
+			<div class="tu-card df-set">
+				<h2 class="df-h">The bar</h2>
+				<div class="tu-field"><label for="df-mat">Metal</label><select id="df-mat" class="tu-select"></select></div>
+				<p class="df-note" id="df-matnote"></p>
+				<div class="tu-field"><label>Notch</label><div class="tu-seg df-notch" id="df-notch" role="group" aria-label="Notch"><button type="button" data-v="none" aria-pressed="true">Smooth bar</button><button type="button" data-v="blunt" aria-pressed="false">Blunt notch</button><button type="button" data-v="sharp" aria-pressed="false">Sharp notch</button></div></div>
+				<div class="df-sl"><label for="df-f0">Voids at the start</label><input type="range" id="df-f0" min="0" max="100" step="1"><output id="df-f0v"></output></div>
+				<div class="df-sl"><label for="df-fN">Particles that open voids</label><input type="range" id="df-fN" min="0" max="100" step="1"><output id="df-fNv"></output></div>
+				<div class="df-sl"><label for="df-n">Strain hardening n</label><input type="range" id="df-n" min="0.03" max="0.55" step="0.01"><output id="df-nv"></output></div>
+				<div class="df-opts">
+					<button type="button" class="tu-btn tu-btn--ghost df-sm" id="df-defaults">Back to this metal's numbers</button>
+					<div class="tu-seg df-units" id="df-units" role="group" aria-label="Units"><button type="button" data-v="mpa" aria-pressed="true">MPa</button><button type="button" data-v="ksi" aria-pressed="false">ksi</button></div>
+					<button type="button" class="tu-btn tu-btn--ghost df-sm" id="df-link">🔗 Copy link</button>
+				</div>
+			</div>
+			<div class="tu-card df-res">
+				<h2 class="df-h">Result of this test</h2>
+				<div class="df-tiles" id="df-tiles"></div>
+				<p class="df-note">Reduction of area = how much thinner the neck got before it broke: the standard number for how ductile a metal is. Elongation is measured over a gauge length of 4 diameters.</p>
+			</div>
+		</div>
+
+		<!-- ============ ONE VOID ============ -->
+		<div class="tu-card df-view" id="df-cview">
+			<div class="df-vbar" id="df-cbar">
+				<h2 class="df-h df-hinl">Zoom in: one void, loaded your way</h2>
+				<div class="df-run">
+					<button type="button" class="tu-btn df-go" id="df-cgo">▶ Stretch it</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="df-creset">↺ Start again</button>
+				</div>
+				<span class="df-vbtns"></span>
+			</div>
+			<div class="df-loads" id="df-loads" role="group" aria-label="How it is loaded"></div>
+			<div class="df-stage" id="df-cstage">
+				<div class="df-cgrid">
+					<figure class="df-fig df-cellfig">
+						<figcaption>A little block of metal with its voids <small>(drag the side arrows)</small></figcaption>
+						<svg id="df-cell" class="df-svg" viewBox="0 0 380 380" role="img" aria-label="Nine voids in a block of metal being stretched; drag the arrows at the sides to change the sideways pull"></svg>
+					</figure>
+					<div class="df-cright">
+						<figure class="df-fig">
+							<figcaption>Strength left and void fraction <small>(drag the dot)</small></figcaption>
+							<svg id="df-cchart" class="df-svg" viewBox="0 0 520 260" role="img" aria-label="Strength and void fraction against strain"></svg>
+						</figure>
+						<figure class="df-fig">
+							<figcaption>When does it break? <small>(strain to failure against triaxiality: drag the line)</small></figcaption>
+							<svg id="df-locus" class="df-svg" viewBox="0 0 520 260" role="img" aria-label="Failure strain against stress triaxiality"></svg>
+						</figure>
+					</div>
+				</div>
+				<div class="df-csl">
+					<div class="df-sl"><label for="df-T">Triaxiality T = σm/σe</label><input type="range" id="df-T" min="-0.33" max="3" step="0.01"><output id="df-Tv"></output></div>
+					<div class="df-sl"><label for="df-xi">Lode parameter ξ</label><input type="range" id="df-xi" min="-1" max="1" step="0.05"><output id="df-xiv"></output></div>
+					<div class="df-sl"><label for="df-cscrub">Stretch (equivalent strain)</label><input type="range" id="df-cscrub" min="0" max="1000" step="1" value="0"><output id="df-cscrubv"></output></div>
+				</div>
+				<ol class="df-stages" id="df-stages" aria-label="The four stages of ductile fracture">
+					<li data-s="0"><b>1</b> Nucleation: voids open at particles</li><li data-s="1"><b>2</b> Growth</li><li data-s="2"><b>3</b> Coalescence: the voids link</li><li data-s="3"><b>4</b> Fracture</li>
+				</ol>
+				<div class="df-ro df-ro4" id="df-cro">
+					<div><span>Void fraction f</span><b id="df-c-f">0</b></div>
+					<div><span>Void size (× start)</span><b id="df-c-r">1</b></div>
+					<div><span>Void shape (long ÷ short)</span><b id="df-c-a">1</b></div>
+					<div><span>Strength left</span><b id="df-c-s">100%</b></div>
+				</div>
+				<p class="df-say" id="df-csay" aria-live="polite"></p>
+			</div>
+		</div>
+
+		<!-- ============ THE MATHS ============ -->
+		<div class="tu-card df-eqs">
+			<h2 class="df-h">The model behind it</h2>
+			<p class="df-note">The simulator uses the Gurson-Tvergaard-Needleman (GTN) model: the metal is treated as a matrix with a void fraction f, and every step works out how much the voids grow and how much weaker the block gets.</p>
+			<div class="df-eqgrid">
+				<div class="df-eq"><b>Yield with voids (GTN)</b><span class="df-eq__f mes-tex">\( \displaystyle \Big(\frac{\sigma_e}{\sigma_y}\Big)^2 + 2q_1 f^{*}\cosh\!\Big(\frac{3q_2\,\sigma_m}{2\sigma_y}\Big) - 1 - q_1^2 f^{*2} = 0 \)</span><small>q₁ = 1.5, q₂ = 1. With f* = 0 this is ordinary von Mises yield.</small></div>
+				<div class="df-eq"><b>Void growth</b><span class="df-eq__f mes-tex">\( \displaystyle df = (1-f)\,d\varepsilon_{kk} + A\,d\bar\varepsilon_m + k_\omega\,\omega\, f\, d\varepsilon_e \)</span><small>Growth (the solid metal keeps its volume), nucleation at particles, and smearing in shear (ω = 1 − ξ²).</small></div>
+				<div class="df-eq"><b>Triaxiality across a neck (Bridgman)</b><span class="df-eq__f mes-tex">\( \displaystyle T(\rho) = \frac{1}{3} + \ln\!\Big(1 + \frac{a^2-\rho^2}{2aR}\Big) \)</span><small>a = neck radius, R = radius of the neck's curve. Highest on the axis: that is why the crack starts in the middle.</small></div>
+				<div class="df-eq"><b>Rice-Tracey growth of one void</b><span class="df-eq__f mes-tex">\( \displaystyle \frac{dR}{R} \approx 0.283\, e^{3T/2}\, d\varepsilon_e \)</span><small>Raise T by 1 and a void grows about 4.5 times faster.</small></div>
+			</div>
+			<p class="df-note">Simplified on purpose: a smooth neck shape stands in for a full finite-element model, the material numbers are rough teaching values tuned to the usual reduction of area, and the shear lips of the cup and cone are drawn once two thirds of the section has cracked. Good for seeing the trends, not for designing parts.</p>
+		</div>
+
+		<!-- ============ THE VIDEO ============ -->
+		<div class="tu-card df-vid">
+			<h2 class="df-h">The video this is based on</h2>
+			<div class="df-vidrow">
+				<button type="button" class="df-yt" id="df-yt" data-id="EeiwCbtJWyI" aria-label="Play the video: How and When Metals Fail, by Cornell University on YouTube"><img src="https://i.ytimg.com/vi/EeiwCbtJWyI/hqdefault.jpg" alt="" loading="lazy" width="480" height="360"><span class="df-ytp">▶</span></button>
+				<div>
+					<p><a href="https://www.youtube.com/watch?v=EeiwCbtJWyI" target="_blank" rel="noopener">“How and When Metals Fail”</a> (Cornell University, 2013 IGERT video competition). Jeffrey Bomarito explains that every block of metal holds microscopic voids, that they grow and link when it is pulled, shows a copper bar necking, the dimples on a fracture surface, and a computer model of a notched bar cracking from the centre outwards.</p>
+					<p class="df-note">This page rebuilds those ideas so you can try them: the bar above (copper, or a notched bar), the dimpled fracture surface, and one void loaded in different ways.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="tu-toast" id="df-toast" role="status" aria-live="polite"></div>
+		<nav class="df-fam" aria-label="MES Mechanics of Materials">
+			<span class="df-fam__l">More MES Mechanics of Materials:</span>
+			<a href="/materials">All tools</a>
+			<a href="/tensile-test-simulator">Tensile test simulator</a>
+			<a href="/luders-bands">Lüders bands</a>
+			<a href="/youngs-modulus-calculator">Young's modulus, stress &amp; strain</a>
+			<a href="/shear-stress-calculator">Shear &amp; torsion</a>
+			<a href="/bending-stress-calculator">Bending</a>
+			<a href="/crash-physics">Crash physics</a>
+		</nav>
+{{SEO}}
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	<script src="/main_js/mes-math.js" defer></script>

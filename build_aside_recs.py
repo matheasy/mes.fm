@@ -78,6 +78,7 @@ CALC = {   # path -> (kind, tags)
     "/shear-stress-calculator": ("Calculator", ["physics", "science", "engineering"]),
     "/bending-stress-calculator": ("Calculator", ["physics", "science", "engineering"]),
     "/luders-bands": ("Calculator", ["physics", "science", "engineering"]),
+    "/ductile-fracture-simulator": ("Calculator", ["physics", "science", "engineering"]),
     "/matrix-calculator": ("Calculator", ["algebra", "equations", "school"]),
     "/loan-calculator": ("Calculator", ["money", "finance", "everyday"]),
     "/compound-interest-calculator": ("Calculator", ["money", "finance", "everyday"]),

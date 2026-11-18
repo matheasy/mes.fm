@@ -1,0 +1,35 @@
+		<div class="tu-seo">
+			<h2>How ductile metals break: voids, explained</h2>
+			<p>A <strong>ductile</strong> metal (copper, mild steel, aluminium, stainless steel) does not snap like glass. It stretches, necks down, and only then breaks, leaving a rough grey surface. The reason is hidden inside the metal: it is full of microscopic <strong>voids</strong> and hard particles (oxides, sulfides, carbides), each far smaller than the width of a human hair. When the metal is pulled, these voids grow and link up, and that linking is the crack.</p>
+
+			<h3>The four stages</h3>
+			<ol>
+				<li><strong>Nucleation.</strong> Hard particles either crack or come loose from the softer metal around them, and a void opens at each one. Metals with more particles (free-machining steel, cast alloys) get more voids sooner.</li>
+				<li><strong>Growth.</strong> As the metal keeps stretching, the voids get bigger. How fast depends mostly on the <em>stress triaxiality</em>: if the metal is pulled from the sides as well as along its length, the voids swell up quickly.</li>
+				<li><strong>Coalescence.</strong> When the voids take up a few percent of the volume, the thin bridges of metal between neighbouring voids neck down by themselves and the voids link into a crack. Strength then falls very quickly.</li>
+				<li><strong>Fracture.</strong> The crack runs across the part. Each void becomes a little cup on the broken surface, called a <strong>dimple</strong>. Under a scanning electron microscope a ductile fracture surface is covered with them, often with the particle that started each void still sitting at the bottom.</li>
+			</ol>
+
+			<h3>Why the crack starts in the middle of the neck</h3>
+			<p>Once a round bar starts to neck, the metal in the middle of the neck cannot shrink sideways as freely as the metal at the surface, so it is pulled from every side at once. P. W. Bridgman worked out how this grows across the neck: the triaxiality is 1/3 at the surface and highest on the axis. The voids on the axis therefore grow fastest, link first, and a crack opens in the centre of the bar while the outside still looks whole. The crack grows outwards until only a thin ring is left, which tears off along slanted shear planes: one piece ends up with a <strong>cup</strong>, the other with a <strong>cone</strong>.</p>
+
+			<h3>Stress triaxiality and the Lode parameter</h3>
+			<p>The stress triaxiality is <em>T = σm / σe</em>: the mean (hydrostatic) stress divided by the von Mises equivalent stress. A bar pulled one way has T = 1/3, a wide plate pulled in plane strain about 0.58, the middle of a neck 0.5 to 1, a notched bar 1 to 1.5, and the metal just ahead of a crack tip 2 to 3. Squeezing gives a negative T and closes voids. The Lode parameter ξ says what kind of stretching it is: 1 for a round bar being pulled, 0 for shear and plane strain, −1 for compression. In shear the voids hardly grow but they flatten and rotate, and the metal still fails along a shear band.</p>
+
+			<h3>The model in this simulator</h3>
+			<p>The simulator uses the <strong>Gurson-Tvergaard-Needleman (GTN)</strong> model. Gurson (1977) worked out how a block of metal containing voids yields, Tvergaard added the factors q₁ and q₂ that make it match detailed calculations of real void arrays, and Needleman and Tvergaard (1984) added the sudden loss of strength when the voids link (the f* function with the critical void fraction fc). Chu and Needleman's strain-controlled nucleation opens new voids at particles, and Nahshon and Hutchinson's shear term (2008) lets voids smear out and cause failure in shear. The bar uses Bridgman's formula for the triaxiality across a smooth neck.</p>
+
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is there really empty space inside solid metal?</dt>
+				<dd>Yes, but very little: well under one percent of the volume in a good wrought metal, as pores left from casting and as gaps at particles. Many more voids open during the test itself, as the particles break or come loose.</dd>
+				<dt>Why does a notch make a metal break with less stretch?</dt>
+				<dd>A notch raises the triaxiality in the middle of the bar from the very start. The voids there grow much faster, so the crack starts sooner. Try the notched bar above: the reduction of area drops a lot.</dd>
+				<dt>What is reduction of area?</dt>
+				<dd>How much smaller the cross-section of the neck is when the bar breaks, compared with the start: 1 − (d/d₀)². It is the standard measure of how ductile a metal is: about 90% for pure copper, 60 to 70% for mild steel, under 40% for a less ductile alloy.</dd>
+				<dt>Why are the dimples on the shear lip stretched?</dt>
+				<dd>On the slanted lip the two pieces slide past each other while the voids link, so each void is dragged out into an elongated, often parabola-shaped dimple, all pointing the same way. In the flat middle the voids grow under a pull from every side and the dimples are round.</dd>
+				<dt>How accurate is this?</dt>
+				<dd>It shows the right trends (necking, a crack from the centre, less ductility at higher triaxiality, the cup and cone) with numbers in the textbook range, but it is a teaching model: the neck shape is assumed, not solved, and the material numbers are typical values. Real fracture predictions use finite-element models calibrated with tests on notched bars, as in the video.</dd>
+			</dl>
+		</div>

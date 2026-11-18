@@ -2,6 +2,14 @@
  "generated": "2026-11-18",
  "calculators": [
   {
+   "href": "/ductile-fracture-simulator",
+   "title": "Voids & Ductile Fracture Simulator",
+   "icon": "/img/ductile-fracture-simulator-logo.png",
+   "desc": "Watch microscopic voids grow and link inside a necking bar until it cracks from the middle: cup and cone, dimples, triaxiality.",
+   "added": "2026-11-18",
+   "kind": "calculator"
+  },
+  {
    "href": "/luders-bands",
    "title": "Lüders Band Simulator",
    "icon": "/img/luders-bands-logo.png",
@@ -86,14 +94,6 @@
    "title": "Age Calculator",
    "icon": "/img/age-calculator-logo.png",
    "desc": "Exact age in years, months and days, days lived, next birthday, milestones and the age gap between two people.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/fuel-cost-calculator",
-   "title": "Fuel Cost Calculator",
-   "icon": "/img/fuel-cost-calculator-logo.png",
-   "desc": "What a trip costs in fuel, from distance, L/100 km or mpg and price, split per person, plus EV comparison.",
    "added": "2026-10-23",
    "kind": "calculator"
   }
@@ -198,6 +198,14 @@
  ],
  "latest": [
   {
+   "href": "/ductile-fracture-simulator",
+   "title": "Voids & Ductile Fracture Simulator",
+   "icon": "/img/ductile-fracture-simulator-logo.png",
+   "desc": "Watch microscopic voids grow and link inside a necking bar until it cracks from the middle: cup and cone, dimples, triaxiality.",
+   "added": "2026-11-18",
+   "kind": "calculator"
+  },
+  {
    "href": "/click-test",
    "title": "Click Speed Test",
    "icon": "/img/click-test-logo.png",
@@ -250,14 +258,6 @@
    "title": "Quantum Computer Simulator",
    "icon": "/img/quantum-computing-logo.png",
    "desc": "Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.",
-   "added": "2026-11-13",
-   "kind": "tool"
-  },
-  {
-   "href": "/quantum-safe-check",
-   "title": "Quantum-Safe Website Checker",
-   "icon": "/img/quantum-safe-check-logo.png",
-   "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
    "added": "2026-11-13",
    "kind": "tool"
   }

@@ -78,6 +78,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("watch", "Watch"),
     ("polls", "Polls"),
     ("email", "Mail"),
+    ("ai", "MES AI"),
     ("party", "Party"),
     ("stream-chat", "Stream Chat"),
     ("database", "Video Database"),
@@ -162,7 +163,8 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("bmi-calculator-hindi", "बीएमआई कैलकुलेटर"),   # BMI Calculator in another language (build_tool_apps.py BMI_LANG_SLUGS)
     ("shear-stress-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("bending-stress-calculator", "Mechanics of Materials", "/materials"),   # 2026-10-29: 5th page of the family (beams)
-    ("luders-bands", "Mechanics of Materials", "/materials"),   # 2026-11-10: Lüders band simulator (own source, materials brand)
+    ("luders-bands", "Mechanics of Materials", "/materials"),
+    ("ductile-fracture-simulator", "Mechanics of Materials", "/materials"),   # 2026-11-18: voids & ductile fracture (own source, materials brand)   # 2026-11-10: Lüders band simulator (own source, materials brand)
     ("tensile-test-simulator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("youngs-modulus-calculator", "Mechanics of Materials", "/materials"),   # MES Mechanics of Materials family page (brand option in build_tool_apps.py)
     ("materials", "Mechanics of Materials"),   # also built by build_tool_apps.py
