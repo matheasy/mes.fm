@@ -20,7 +20,7 @@ export const SECTION_LABELS: Record<Section, string> = {
 };
 
 export const SECTION_LINKS: Record<Section, string> = {
-  ai: 'https://mes.fm/ai',
+  ai: 'https://mes.fm/ai-trading',
   mfa: 'https://mes.fm/mfa',
   sov: 'https://mes.fm/sov',
   lp: 'https://mes.fm/lp',

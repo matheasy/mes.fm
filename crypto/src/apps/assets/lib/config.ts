@@ -17,7 +17,7 @@ export const HIVE_ACCOUNT = 'mes';
 export const EVM_ADDRESSES = {
   /** Main / store-of-value wallet (the sov tracker's BTCB/WBTC address) */
   main: '0xe6c0634d02ae5f136500ac9428ed5d9576695ef9',
-  /** mes.fm/ai's wallet */
+  /** mes.fm/ai-trading's wallet */
   ai: '0x89ac35e57216a51cf08f1c14b3ce19d6813ee492',
   /** mes.fm/mfa's wallet */
   mfa: '0xaef8a5ab45652bc612b2ce72b0631c9e052404a5',
@@ -43,7 +43,7 @@ export const GROUPS: GroupConfig[] = [
   { key: 'mathiew', label: 'Hive @mathiew', link: 'https://peakd.com/@mathiew/wallet', address: 'mathiew', sources: ['hive-l1', 'hive-engine', 'magi'] },
   { key: 'artgrafiken', label: 'Hive @artgrafiken', link: 'https://peakd.com/@artgrafiken/wallet', address: 'artgrafiken', sources: ['hive-l1', 'hive-engine', 'magi'] },
   { key: 'main', label: 'Main wallet', address: EVM_ADDRESSES.main, sources: EVM_SOURCES },
-  { key: 'ai', label: 'AI Trading wallet', link: 'https://mes.fm/ai', address: EVM_ADDRESSES.ai, sources: EVM_SOURCES },
+  { key: 'ai', label: 'AI Trading wallet', link: 'https://mes.fm/ai-trading', address: EVM_ADDRESSES.ai, sources: EVM_SOURCES },
   { key: 'mfa', label: 'MikeFA wallet', link: 'https://mes.fm/mfa', address: EVM_ADDRESSES.mfa, sources: EVM_SOURCES },
   { key: 'xrp', label: 'XRP Ledger', address: XRP_ADDRESS, sources: ['xrpl'] },
   { key: 'btc', label: 'Bitcoin', link: `https://mempool.space/address/${BTC_ADDRESS}`, address: BTC_ADDRESS, sources: ['bitcoin'] },

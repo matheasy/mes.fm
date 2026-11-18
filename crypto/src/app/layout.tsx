@@ -80,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 ai: {
                   title: 'MES AI Trading',
                   tagline: 'Read-only AI wallet tracker across BSC, Ethereum, Arbitrum, Polygon and Hyperliquid.',
-                  homeHref: 'https://mes.fm/ai',
+                  homeHref: 'https://mes.fm/ai-trading',
                   wallet: 'ai',
                 },
                 mfa: {

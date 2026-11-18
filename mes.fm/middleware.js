@@ -1,7 +1,7 @@
 // Vercel Edge Middleware — light HTTP Basic Auth gate for the private finance dashboards:
 // /portfolio, /taxes, /sov, /lp, /assets, /random-wallets, /cash, /tokens, /strategy, /ads (+ its data /api/earnings), /search-console (+ /api/search-console, /api/search-console-ai) - and the same pages reached under /finance/..., the one app's
-// own path (Vercel project mes-fm-crypto, basePath /finance, rewritten in vercel.json). mes.fm/ai and
-// mes.fm/mfa are sections of the same app but public by design, so /finance/ai/*, /finance/mfa/* and
+// own path (Vercel project mes-fm-crypto, basePath /finance, rewritten in vercel.json). mes.fm/ai-trading (the AI Trading wallet;
+// mes.fm/ai is the unrelated public MES AI chat page) and mes.fm/mfa are sections of the same app but public by design, so /finance/ai/*, /finance/mfa/* and
 // the app's /finance/_next/* assets are let through. (mes.fm/crypto is the unrelated static MES Crypto
 // hub page and isn't matched at all.)
 //
@@ -30,7 +30,8 @@ export const config = {
     '/assets',
     '/assets/:path*',
     '/finance/:path+',
-    '/ai/:path*',
+    '/ai-trading',
+    '/ai-trading/:path*',
     // the private ads money page (AdSense earnings vs Google Ads spend) and its data
     '/ads',
     '/ads/:path*',
@@ -65,7 +66,7 @@ const PUBLIC_FINANCE = /^\/finance\/(ai|mfa|_next)(\/|$)/;
  * dashboards. The app's own server-side calls go to mes-fm-crypto.vercel.app directly, not through here. */
 function isPublic(url) {
   if (url.searchParams.get('wallet') === 'main') return false;
-  return PUBLIC_FINANCE.test(url.pathname) || /^\/ai(\/|$)/.test(url.pathname);
+  return PUBLIC_FINANCE.test(url.pathname) || /^\/ai-trading(\/|$)/.test(url.pathname);
 }
 
 const USERNAME = 'mes';

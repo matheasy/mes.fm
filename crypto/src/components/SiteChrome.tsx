@@ -82,7 +82,7 @@ function dashboardTabs(wallet?: string) {
       { key: 'strategy', label: 'Strategy', href: 'https://mes.fm/strategy' },
     ],
     wallets: [
-      { key: 'ai', label: 'AI Trading', href: 'https://mes.fm/ai' },
+      { key: 'ai', label: 'AI Trading', href: 'https://mes.fm/ai-trading' },
       { key: 'mfa', label: 'MikeFA Trading', href: 'https://mes.fm/mfa' },
       { key: 'sov', label: 'Store of Value', href: 'https://mes.fm/sov' },
       { key: 'lp', label: 'Liquidity', href: 'https://mes.fm/lp' },

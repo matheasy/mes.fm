@@ -19,7 +19,7 @@ export const WALLET_LABELS: Record<WalletKey, string> = {
 export const WALLET_LINKS: Record<WalletKey, string> = {
   // no dashboard of its own: its balances are on mes.fm/assets, its history on Transactions / Taxes
   main: 'https://mes.fm/assets',
-  ai: 'https://mes.fm/ai',
+  ai: 'https://mes.fm/ai-trading',
   mfa: 'https://mes.fm/mfa',
   sov: 'https://mes.fm/sov',
 };
