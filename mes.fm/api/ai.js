@@ -1,0 +1,271 @@
+// MES AI (mes.fm/ai): AI chat and pictures, paid per prompt in HBD on Hive. No balance, no account here.
+//
+// Flow (the page: tool_apps_src/ai/app.js; shared rules + prices: _ai-lib.js = tool_apps_src/ai/lib.js, byte-identical):
+//   GET  ?op=status                 -> {chat, image, margin, checked, models, image prices}   (chat/image false = key not set yet)
+//   POST {op:"quote", acct, kind:"chat", model, len, messages}  or  {op:"quote", acct, kind:"image", prompt, quality, size}
+//        -> counts the input tokens (Anthropic count_tokens, exact), prices it (cost x MARGIN, up to 0.001 HBD), keeps the
+//           whole request in Upstash for 1 hour under a random id -> {id, memo:"mesai:<id>", price, usd, inTokens, maxOut}
+//   (the page sends `price` HBD to @mes with that memo through Hive Keychain / HiveAuth)
+//   POST {op:"run", id, acct}       -> looks for the transfer in the payer's own account history (from acct, to @mes, HBD,
+//        exact memo, >= price, after the quote); 402 {pending} while it is not in a block yet; marks the id used
+//        (SET NX, so one payment = one answer), then calls the model with output capped at what was paid for:
+//        chat = NDJSON stream {t:"text",v} / {t:"think"} / {t:"done",stop} / {t:"error",msg,retry}; image = JSON {t:"image",b64,mime}.
+//        If the model call fails after payment, a one-use retry is kept for 24 h ("ai:retry:<id>"): the next run of the same
+//        id is free. No refunds (said on the page).
+//
+// Calls go straight to the HTTP APIs with fetch (no SDK: the mes.fm Vercel project has no package manager, like every
+// other function here). Keys: Vercel env ANTHROPIC_API_KEY, OPENAI_API_KEY (plain project-level vars), never sent out.
+// Limits per hour: 300 quotes per IP hash, 60 answers per Hive account, 100 per IP hash. Tests: node tool_apps_src/ai-tests.js
+
+const crypto = require('crypto');
+const A = require('./_ai-lib.js');
+
+const QUOTE_TTL = 3600;
+const LIM = { quoteIp: 300, runAcct: 60, runIp: 100 };
+const HIST_FILTER_LOW = 4; // get_account_history operation filter: transfer (op 2)
+
+function upstash(env, fetchImpl) {
+  return async function redis(commands) {
+    const r = await fetchImpl(`${env.UPSTASH_REDIS_REST_URL}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(commands),
+    });
+    if (!r.ok) throw new Error('redis ' + r.status);
+    return (await r.json()).map((x) => (x ? x.result : null));
+  };
+}
+
+function ipOf(req) {
+  const h = (req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip'])) || '';
+  return String(h).split(',')[0].trim() || 'unknown';
+}
+const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
+
+function send(res, code, obj) {
+  res.statusCode = code;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(obj));
+}
+
+async function readBody(req) {
+  if (req.body && typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string') return JSON.parse(req.body);
+  let s = '';
+  for await (const c of req) { s += c; if (s.length > 1.2e6) throw new Error('too big'); }
+  return s ? JSON.parse(s) : {};
+}
+
+function makeHandler(deps = {}) {
+  const env = deps.env || process.env;
+  const fetchImpl = deps.fetch || fetch;
+  const now = deps.now || Date.now;
+  const redis = deps.redis || upstash(env, fetchImpl);
+  const rpc = deps.rpc || ((m, p) => require('./premium').rpc(m, p, fetchImpl));
+  const salt = env.AI_SALT || env.UPSTASH_REDIS_REST_TOKEN || 'mes-ai';
+
+  async function overLimit(key, max) {
+    const hour = Math.floor(now() / 3600e3);
+    const k = `ai:rl:${key}:${hour}`;
+    const [n] = await redis([['INCR', k], ['EXPIRE', k, '3700']]);
+    return Number(n) > max;
+  }
+
+  function anthropicHeaders(extraBeta) {
+    const h = { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' };
+    if (extraBeta) h['anthropic-beta'] = extraBeta;
+    return h;
+  }
+
+  async function countTokens(model, messages) {
+    let last;
+    for (let i = 0; i < 2; i++) {
+      try {
+        const r = await fetchImpl('https://api.anthropic.com/v1/messages/count_tokens', {
+          method: 'POST', headers: anthropicHeaders(), body: JSON.stringify({ model, system: A.SYSTEM, messages }),
+        });
+        const j = await r.json();
+        if (r.ok && Number.isFinite(j.input_tokens)) return j.input_tokens;
+        last = new Error((j.error && j.error.message) || 'HTTP ' + r.status);
+      } catch (e) { last = e; }
+    }
+    throw last;
+  }
+
+  async function quote(req, res, b) {
+    const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
+    if (!A.validName(acct)) return send(res, 400, { error: 'Log in with your Hive account first.' });
+    const iph = sha(ipOf(req) + salt).slice(0, 24);
+    if (await overLimit('q:' + iph, LIM.quoteIp)) return send(res, 429, { error: 'Too many requests from this network. Try again in an hour.' });
+    let q, stored;
+    if (b.kind === 'image') {
+      if (!env.OPENAI_API_KEY) return send(res, 503, { off: true, error: 'Pictures are not switched on yet.' });
+      const err = A.checkImage(b.prompt, b.quality, b.size);
+      if (err) return send(res, 400, { error: err });
+      // prompt tokens estimated on the safe side (2 characters a token); a few cents of a cent at most
+      q = A.imageQuote(b.quality, b.size, Math.ceil(b.prompt.length / 2) + 8);
+      stored = { kind: 'image', prompt: b.prompt, quality: b.quality, size: b.size };
+    } else {
+      if (!env.ANTHROPIC_API_KEY) return send(res, 503, { off: true, error: 'MES AI chat is not switched on yet.' });
+      const m = A.MODELS[b.model];
+      if (!m) return send(res, 400, { error: 'Pick a model.' });
+      if (!m.caps[b.len]) return send(res, 400, { error: 'Pick an answer length.' });
+      const err = A.checkMessages(b.messages);
+      if (err) return send(res, 400, { error: err });
+      const messages = A.cleanMessages(b.messages);
+      let inTok;
+      try { inTok = await countTokens(m.id, messages); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
+      if (inTok > A.LIMITS.inTokens) return send(res, 400, { error: 'This chat is too long (' + inTok.toLocaleString('en-US') + ' tokens). Start a new chat.' });
+      q = A.chatQuote(b.model, inTok, b.len);
+      stored = { kind: 'chat', model: b.model, len: b.len, messages };
+    }
+    const id = A.newId((n) => crypto.randomBytes(n));
+    const rec = Object.assign(stored, { acct, price: q.price, maxOut: q.maxOut || 0, created: now() });
+    await redis([['SET', 'ai:q:' + id, JSON.stringify(rec), 'EX', String(QUOTE_TTL)]]);
+    return send(res, 200, { id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.costUsd * A.MARGIN, inTokens: q.inTokens, maxOut: q.maxOut || 0, kind: q.kind });
+  }
+
+  async function paid(rec, id) {
+    const hist = await rpc('condenser_api.get_account_history', [rec.acct, -1, 300, HIST_FILTER_LOW, 0]);
+    return A.findPayment(hist, { from: rec.acct, memo: A.memoFor(id), price: rec.price, since: rec.created - 120e3 });
+  }
+
+  async function run(req, res, b) {
+    const id = String(b.id || '');
+    if (!A.validId(id)) return send(res, 400, { error: 'Bad request id.' });
+    const [raw] = await redis([['GET', 'ai:q:' + id]]);
+    const rec = raw ? JSON.parse(raw) : null;
+    if (!rec) return send(res, 404, { error: 'This price ran out (prices are kept for 1 hour). If you already paid, contact us with the memo mesai:' + id + '.' });
+    const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
+    if (acct !== rec.acct) return send(res, 403, { error: 'This request belongs to another Hive account.' });
+
+    const [retry] = await redis([['GETDEL', 'ai:retry:' + id]]);
+    const isRetry = retry === '1';
+    if (!isRetry) {
+      const [used] = await redis([['EXISTS', 'ai:paid:' + id]]);
+      if (Number(used)) return send(res, 409, { error: 'This payment was already used for an answer.' });
+      let pay;
+      try { pay = await paid(rec, id); } catch (e) { return send(res, 502, { pending: true, error: 'The Hive nodes did not answer. Trying again…' }); }
+      if (!pay) return send(res, 402, { pending: true, error: 'The payment is not on the blockchain yet.' });
+      const [ok] = await redis([['SET', 'ai:paid:' + id, JSON.stringify(pay), 'NX', 'EX', String(30 * 86400)]]);
+      if (ok !== 'OK') return send(res, 409, { error: 'This payment was already used for an answer.' });
+      const iph = sha(ipOf(req) + salt).slice(0, 24);
+      // the limits count paid answers, so a paying abuser is slowed, never charged twice: a refused run keeps a free retry
+      if ((await overLimit('ra:' + rec.acct, LIM.runAcct)) || (await overLimit('ri:' + iph, LIM.runIp))) {
+        await redis([['SET', 'ai:retry:' + id, '1', 'EX', '86400']]);
+        return send(res, 429, { retry: true, error: 'Too many answers this hour. Your payment is kept: press Try again later (within 24 hours).' });
+      }
+    }
+    const failed = async (res2, msg, streaming) => {
+      if (!isRetry) await redis([['SET', 'ai:retry:' + id, '1', 'EX', '86400']]).catch(() => {});
+      const out = { t: 'error', msg, retry: !isRetry };
+      if (streaming) { res2.write(JSON.stringify(out) + '\n'); res2.end(); } else send(res2, 502, out);
+    };
+    const who = sha('acct:' + rec.acct + salt).slice(0, 32);
+    if (rec.kind === 'image') return image(res, rec, who, failed);
+    return chat(res, rec, who, failed);
+  }
+
+  async function chat(res, rec, who, failed) {
+    const m = A.MODELS[rec.model];
+    const body = {
+      model: m.id, max_tokens: rec.maxOut, system: A.SYSTEM, messages: rec.messages, stream: true,
+      output_config: { effort: m.effort }, metadata: { user_id: who },
+    };
+    if (m.fallback) body.fallbacks = [{ model: m.fallback }];
+    let r;
+    try {
+      r = await fetchImpl('https://api.anthropic.com/v1/messages', {
+        method: 'POST', headers: anthropicHeaders(m.fallback ? 'server-side-fallback-2026-07-01' : null), body: JSON.stringify(body),
+      });
+    } catch (e) { return failed(res, 'Could not reach the AI service. Your payment is kept: press Try again.', false); }
+    if (!r.ok) {
+      let msg = 'The AI service answered ' + r.status + '.';
+      try { const j = await r.json(); if (j.error && j.error.message) msg += ' ' + j.error.message; } catch (e) {}
+      return failed(res, msg + ' Your payment is kept: press Try again.', false);
+    }
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Accel-Buffering', 'no');
+    let buf = '', stop = null, gotText = false, err = null, usage = null;
+    const dec = new TextDecoder();
+    const handle = (txt) => {
+      const s = A.sseSplit(buf + txt);
+      buf = s.rest;
+      for (const ev of s.events) {
+        const p = A.streamPiece(ev);
+        if (!p) continue;
+        if (p.t === 'text') { if (p.v) { gotText = true; res.write(JSON.stringify(p) + '\n'); } }
+        else if (p.t === 'think') res.write('{"t":"think"}\n');
+        else if (p.t === 'stop') { if (p.stop) stop = p.stop; if (p.usage) usage = p.usage; }
+        else if (p.t === 'error') err = p.msg;
+      }
+    };
+    try {
+      if (r.body && r.body.getReader) {
+        const rd = r.body.getReader();
+        for (;;) { const { done, value } = await rd.read(); if (done) break; handle(dec.decode(value, { stream: true })); }
+      } else {
+        for await (const c of r.body) handle(typeof c === 'string' ? c : dec.decode(c, { stream: true }));
+      }
+      handle('\n\n');
+    } catch (e) { err = err || 'The answer was cut off.'; }
+    if (err) {
+      // a refused or broken answer after text has started: still give the free retry (the provider may have billed us; fine)
+      return failed(res, err + ' Your payment is kept: press Try again.', true);
+    }
+    res.write(JSON.stringify({ t: 'done', stop, out: usage && usage.output_tokens }) + '\n');
+    res.end();
+  }
+
+  async function image(res, rec, who, failed) {
+    let r, j;
+    try {
+      r = await fetchImpl('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: A.IMAGE.id, prompt: rec.prompt, size: rec.size, quality: rec.quality, n: 1,
+          output_format: 'webp', output_compression: 88, moderation: 'auto', safety_identifier: who }),
+      });
+      j = await r.json();
+    } catch (e) { return failed(res, 'Could not reach the picture service. Your payment is kept: press Try again.', false); }
+    const b64 = j && j.data && j.data[0] && j.data[0].b64_json;
+    if (!r.ok || !b64) {
+      const code = j && j.error && j.error.code;
+      const msg = code === 'moderation_blocked' ? 'The picture service refused this description (its safety rules). Change the words and press Try again.'
+        : 'The picture service answered ' + r.status + '.' + (j && j.error && j.error.message ? ' ' + j.error.message : '') + ' Your payment is kept: press Try again.';
+      return failed(res, msg, false);
+    }
+    return send(res, 200, { t: 'image', b64, mime: 'image/webp' });
+  }
+
+  return async function handler(req, res) {
+    try {
+      if (req.method === 'GET') {
+        const op = (req.query && req.query.op) || new URL(req.url, 'https://mes.fm').searchParams.get('op');
+        if (op !== 'status') return send(res, 400, { error: 'Unknown op' });
+        return send(res, 200, {
+          chat: !!env.ANTHROPIC_API_KEY, image: !!env.OPENAI_API_KEY, margin: A.MARGIN, checked: A.PRICES_CHECKED,
+          models: Object.keys(A.MODELS).map((k) => ({ key: k, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
+          imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
+        });
+      }
+      if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
+      const origin = req.headers && req.headers.origin;
+      if (env.VERCEL_ENV === 'production' && origin && origin !== 'https://mes.fm') return send(res, 403, { error: 'Bad origin' });
+      let b;
+      try { b = await readBody(req); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
+      if (b.op === 'quote') return await quote(req, res, b);
+      if (b.op === 'run') return await run(req, res, b);
+      return send(res, 400, { error: 'Unknown op' });
+    } catch (e) {
+      if (!res.headersSent) return send(res, 500, { error: 'Something went wrong on our side. Try again.' });
+      try { res.end(); } catch (e2) {}
+    }
+  };
+}
+
+module.exports = makeHandler();
+module.exports.makeHandler = makeHandler;

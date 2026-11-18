@@ -1,0 +1,95 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu ai" id="ai">
+		<div class="tu-card ai-off" id="ai-off" hidden></div>
+
+		<div class="tu-card ai-pay">
+			<h2 class="ai-h2">You pay per message, in HBD</h2>
+			<p>No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal.</p>
+			<details class="ai-why">
+				<summary>How the price is worked out</summary>
+				<ul>
+					<li><b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.</li>
+					<li>What they charge depends on the <b>model</b>, on how much text is sent (your message <b>plus the whole chat before it</b>, which the AI rereads every time) and on the <b>answer length</b> you pick.</li>
+					<li>The answer can never cost more than you paid: it is cut off at the length you chose. <b>A short answer costs the same as a long one at the same setting</b>: nothing is kept on account, so there is no change to give back. Pick Short for quick questions.</li>
+					<li>Long chats get dearer with every message. Start a new chat when the topic changes.</li>
+					<li>Payments are final. If the AI fails after you paid, you get a free <b>Try again</b> for that message (within 24 hours).</li>
+				</ul>
+				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
+				<p class="tu-note">Prices of the AI companies checked <span id="ai-checked"></span>. HBD is counted as 1 US dollar. Transfers on Hive are public, like every Hive payment.</p>
+			</details>
+		</div>
+
+		<div class="tu-card ai-acct" id="ai-acct-card">
+			<div id="ai-acct"></div>
+			<div id="ai-help"></div>
+		</div>
+
+		<div class="ai-modes" role="tablist" aria-label="What to make">
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 Chat</button>
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ Picture</button>
+		</div>
+
+		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">
+			<div class="ai-bar" id="ai-chatbar">
+				<label class="ai-sr" for="ai-chats">Your chats</label>
+				<select id="ai-chats" class="tu-input ai-chats" data-native></select>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">＋ New chat</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-del" title="Delete this chat from this browser">Delete chat</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="Download this chat as a Markdown file">Download</button>
+			</div>
+			<div class="ai-log" id="ai-log" aria-live="polite" data-mes-tsize="mes-ai:fz" data-mes-tsize-label="Text" data-mes-grip="mes-ai:h" data-mes-grip-mode="max" data-mes-grip-min="220"></div>
+			<div class="ai-compose">
+				<label class="ai-sr" for="ai-in">Your message</label>
+				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="Ask anything: code, research, math, writing…  (Ctrl+Enter sends)"></textarea>
+				<div class="ai-opts">
+					<label class="ai-opt"><span>Model</span><select id="ai-model" class="tu-input" data-native></select></label>
+					<div class="ai-opt" role="group" aria-label="Answer length"><span>Answer</span>
+						<div class="ai-seg" id="ai-len"></div>
+					</div>
+					<div class="ai-price" id="ai-price" aria-live="polite"></div>
+					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Pay &amp; send</button>
+				</div>
+				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
+			</div>
+		</section>
+
+		<section class="tu-card ai-img" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>
+			<label class="tu-label" for="ai-prompt">Describe the picture</label>
+			<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="e.g. A watercolour fox sitting in fresh snow at sunrise, soft light"></textarea>
+			<div class="ai-opts">
+				<label class="ai-opt"><span>Quality</span><select id="ai-q" class="tu-input" data-native><option value="low">Draft (fast, cheap)</option><option value="medium" selected>Good</option><option value="high">Best</option></select></label>
+				<label class="ai-opt"><span>Shape</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">Square</option><option value="1536x1024">Landscape</option><option value="1024x1536">Portrait</option></select></label>
+				<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">Pay &amp; create</button>
+			</div>
+			<p class="tu-note">Pictures are made by OpenAI's <span id="ai-imodel">GPT Image 2</span> and kept only in this browser.</p>
+			<div class="ai-gal" id="ai-gal"></div>
+		</section>
+
+		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
+
+		<div class="tu-card ai-rules">
+			<h3>Rules</h3>
+			<p>By sending a message you agree not to use MES AI for anything illegal, for sexual content involving minors, to harass or threaten people, for malware or attacks on systems you do not own, to make weapons that can cause mass harm, or to pass off made-up pictures of real people as real. The AI companies' own usage policies apply too (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>), and the AI may refuse. Answers can be wrong: check anything important.</p>
+			<p>Privacy: your messages go from our server to Anthropic (chat) or OpenAI (pictures) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.</p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>About MES AI</h2>
+			<p>MES AI lets you use top AI models without a monthly plan: Anthropic's Claude for chat (Sonnet 5.5 for everyday work, Opus 5.5 for hard coding and research) and OpenAI's GPT Image 2 for pictures. You pay a few cents' worth of HBD per message on the Hive blockchain, and only for what you use.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Do I need an account?</dt>
+				<dd>Only a Hive account, with the Hive Keychain browser extension or the Keychain phone app. No email, no password on mes.fm. No Hive account yet? <a href="https://signup.hive.io/" target="_blank" rel="noopener">Get one at signup.hive.io</a>.</dd>
+				<dt>Why pay per message instead of a subscription?</dt>
+				<dd>You only pay for what you use, nothing renews, and there is no balance that could be lost. The price is shown before every message.</dd>
+				<dt>Why did my answer stop in the middle?</dt>
+				<dd>It reached the answer length you paid for. Send "continue" (a new message) or pick Medium or Long next time. Opus thinks before it writes, and that thinking counts toward the length too.</dd>
+				<dt>Something went wrong after I paid.</dt>
+				<dd>Press <b>Try again</b> on that message: one free retry is kept for 24 hours. If that fails too, <a href="/contact?subject=MES%20AI">contact us</a> with the memo of your payment (it starts with mesai:).</dd>
+				<dt>Where is my chat history?</dt>
+				<dd>Only in this browser. Clearing the browser's site data removes it. Use Download to keep a chat as a Markdown file.</dd>
+			</dl>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

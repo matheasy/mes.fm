@@ -1,0 +1,120 @@
+/* MES AI. Colours are --ai-* custom properties, restated for dark mode at the end (html body.dark-mode #ai.ai), because the
+   derived TOOL-DARK block rewrites literal colours. Names never contain a colour word. */
+#ai.ai {
+  --ai-ink: #1f2430; --ai-sub: #5b6270; --ai-line: #d9dde5; --ai-me: #eef1fb; --ai-bot: #ffffff; --ai-code: #f4f5f8; --ai-codeink: #1f2430;
+  --ai-acc: #4f46e5; --ai-acctext: #ffffff; --ai-warn: #8a4b00; --ai-warnbg: #fff4e0; --ai-err: #b42318; --ai-ok: #146c2e; --ai-panel: #f8f9fc;
+}
+#ai .ai-h2 { margin: 0 0 .4em; font-size: 1.35em; }
+#ai .ai-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#ai .ai-sub { color: var(--ai-sub); font-weight: 400; }
+#ai :where(.ai-chat, .ai-img, .ai-log, .ai-m, .ai-who, .ai-text, .ai-pay, .ai-rules, .ai-off, .ai-acct, .ai-gal, figure, figcaption) :is(div, span, p, li, td, th, dt, dd, figcaption) { color: inherit; }
+#ai .ai-pay p, #ai .ai-pay li { line-height: 1.55; }
+#ai .ai-why summary { cursor: pointer; font-weight: 700; color: var(--ai-acc); }
+#ai .ai-why ul { margin: .6em 0; padding-left: 1.2em; }
+#ai .ai-why li { margin: .35em 0; }
+#ai .ai-tablewrap { overflow-x: auto; }
+#ai .ai-ptable { border-collapse: collapse; margin: .5em 0; font-size: .95em; }
+#ai .ai-ptable th, #ai .ai-ptable td { border: 1px solid var(--ai-line); padding: .35em .7em; text-align: left; white-space: nowrap; }
+#ai .ai-ptable th { background: var(--ai-panel); }
+#ai.ai .ai-off { background: var(--ai-warnbg); color: var(--ai-warn); border-color: var(--ai-warn); }
+#ai .ai-off a { color: inherit; text-decoration: underline; }
+#ai .ai-demo { margin: 0; }
+#ai .ai-user, #ai .ai-loginrow { display: flex; align-items: center; gap: .6em; flex-wrap: wrap; }
+#ai .ai-user img { border-radius: 50%; }
+#ai .ai-loginrow .tu-input { max-width: 14em; }
+#ai .ai-loginrow .tu-label { margin: 0; }
+
+#ai .ai-modes { display: flex; gap: .4em; margin: 0 0 -.2em; }
+#ai .ai-mode { font: inherit; padding: .5em 1.1em; border: 1px solid var(--ai-line); border-bottom: none; border-radius: .6em .6em 0 0; background: var(--ai-panel); color: var(--ai-ink); cursor: pointer; }
+#ai .ai-mode[aria-selected="true"] { background: var(--ai-acc); border-color: var(--ai-acc); color: var(--ai-acctext); font-weight: 700; }
+
+#ai .ai-bar { display: flex; flex-wrap: wrap; gap: .45em; align-items: center; margin-bottom: .6em; }
+#ai .ai-chats { flex: 1 1 14em; max-width: 26em; min-width: 0; }
+#ai .ai-log { --mes-gh-d: 34em; max-height: var(--mes-gh, max(22em, calc(100vh - 340px))); min-height: 12em; overflow-y: auto; border: 1px solid var(--ai-line); border-radius: .6em; padding: .7em; background: var(--ai-panel); color: var(--ai-ink); }
+#ai .ai-empty { color: var(--ai-sub); text-align: center; padding: 2em 1em; }
+#ai .ai-empty b { color: var(--ai-ink); }
+#ai .ai-m { margin: 0 0 .9em; padding: .6em .85em; border-radius: .7em; border: 1px solid var(--ai-line); max-width: 100%; box-sizing: border-box; }
+#ai .ai-m--me { background: var(--ai-me); margin-left: 8%; }
+#ai .ai-m--ai { background: var(--ai-bot); margin-right: 4%; }
+#ai .ai-who { font-weight: 700; font-size: .85em; margin-bottom: .3em; display: flex; flex-wrap: wrap; gap: .5em; align-items: baseline; }
+#ai .ai-meta { font-weight: 400; color: var(--ai-sub); font-size: .95em; }
+#ai .ai-meta a { color: var(--ai-sub); }
+#ai .ai-text { line-height: 1.6; overflow-wrap: anywhere; }
+#ai .ai-plain { white-space: pre-wrap; }
+#ai .ai-md > :first-child { margin-top: 0; }
+#ai .ai-md > :last-child { margin-bottom: 0; }
+#ai .ai-md h1, #ai .ai-md h2, #ai .ai-md h3 { font-size: 1.1em; margin: .8em 0 .4em; }
+#ai .ai-md ul, #ai .ai-md ol { padding-left: 1.4em; }
+#ai .ai-md table { border-collapse: collapse; display: block; overflow-x: auto; }
+#ai .ai-md th, #ai .ai-md td { border: 1px solid var(--ai-line); padding: .3em .6em; }
+#ai .ai-md code { background: var(--ai-code); color: var(--ai-codeink); padding: .1em .3em; border-radius: .3em; font-size: .92em; }
+#ai .ai-md pre { position: relative; background: var(--ai-code); color: var(--ai-codeink); padding: .8em 1em; padding-top: 2em; border-radius: .5em; overflow-x: auto; border: 1px solid var(--ai-line); }
+#ai .ai-md pre code { background: none; padding: 0; font-size: .9em; white-space: pre; }
+#ai .ai-md blockquote { border-left: 3px solid var(--ai-line); margin: .5em 0; padding-left: .8em; color: var(--ai-sub); }
+#ai .ai-copy { position: absolute; top: .35em; right: .4em; font: inherit; font-size: .78em; padding: .15em .6em; border-radius: .4em; border: 1px solid var(--ai-line); background: var(--ai-bot); color: var(--ai-ink); cursor: pointer; }
+#ai .ai-thinking { color: var(--ai-sub); font-style: italic; }
+#ai .ai-note { font-size: .9em; color: var(--ai-warn); margin: .5em 0 .3em; }
+#ai .ai-err { color: var(--ai-err); }
+#ai .ai-macts { display: flex; gap: .4em; flex-wrap: wrap; margin-top: .45em; }
+#ai .ai-mini { font: inherit; font-size: .82em; padding: .2em .65em; border-radius: 999px; border: 1px solid var(--ai-line); background: transparent; color: var(--ai-ink); cursor: pointer; }
+#ai .ai-mini:hover { border-color: var(--ai-acc); }
+
+#ai .ai-compose { margin-top: .7em; }
+#ai .ai-in { width: 100%; box-sizing: border-box; resize: vertical; min-height: 4.5em; font-size: 1.05em; line-height: 1.5; }
+#ai .ai-opts { display: flex; flex-wrap: wrap; gap: .6em 1em; align-items: center; margin-top: .55em; }
+#ai .ai-opt { display: inline-flex; align-items: center; gap: .4em; }
+#ai .ai-opt > span { font-weight: 700; font-size: .9em; }
+#ai .ai-opt select { width: auto; }
+#ai .ai-seg { display: inline-flex; border: 1px solid var(--ai-line); border-radius: 999px; overflow: hidden; }
+#ai .ai-seg button { font: inherit; padding: .35em .85em; border: none; background: transparent; color: var(--ai-ink); cursor: pointer; }
+#ai .ai-seg button[aria-pressed="true"] { background: var(--ai-acc); color: var(--ai-acctext); font-weight: 700; }
+#ai .ai-price { flex: 1 1 12em; text-align: right; }
+#ai .ai-send { min-width: 9em; }
+#ai .ai-modelnote { margin: .45em 0 0; }
+#ai.ai-busy .ai-send { opacity: .7; cursor: progress; }
+#ai .ai-msg { margin-top: .7em; }
+#ai.ai.ai .ai-msg.err { color: var(--ai-err); }
+#ai.ai.ai .ai-msg.ok { color: var(--ai-ok); }
+#ai .ai-msg .tu-btn { margin-left: .6em; }
+
+#ai .ai-gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(15em, 1fr)); gap: .8em; margin-top: .8em; }
+#ai .ai-fig { margin: 0; border: 1px solid var(--ai-line); border-radius: .6em; padding: .5em; background: var(--ai-panel); }
+#ai .ai-figimg img { width: 100%; height: auto; display: block; border-radius: .4em; }
+#ai .ai-fig figcaption { font-size: .88em; margin-top: .4em; }
+
+/* Fill window (panel-view.js adds .mes-pfill): the log takes the height */
+#ai .ai-chat.mes-pfill .ai-log { flex: 1 1 auto; max-height: none; }
+#ai .ai-chat.mes-pfill { gap: 0; }
+
+@media (max-width: 640px) {
+  #ai .ai-m--me { margin-left: 0; }
+  #ai .ai-m--ai { margin-right: 0; }
+  #ai .ai-price { text-align: left; flex-basis: 100%; }
+  #ai .ai-send { flex: 1 1 100%; }
+  #ai .ai-log { max-height: var(--mes-gh, max(18em, calc(100vh - 300px))); }
+}
+
+html body.dark-mode #ai.ai {
+  --ai-ink: #e6e8ee; --ai-sub: #a8afbd; --ai-line: #3a3f4b; --ai-me: #262b3d; --ai-bot: #1f2229; --ai-code: #14161b; --ai-codeink: #e6e8ee;
+  --ai-acc: #8b85ff; --ai-acctext: #111111; --ai-warn: #ffc069; --ai-warnbg: #2e2416; --ai-err: #ff8a80; --ai-ok: #7bd88f; --ai-panel: #191b21;
+}
+html body.dark-mode #ai .ai-off { background: var(--ai-warnbg); color: var(--ai-warn); }
+html body.dark-mode #ai .ai-mode { background: var(--ai-panel); color: var(--ai-ink); border-color: var(--ai-line); }
+html body.dark-mode #ai .ai-mode[aria-selected="true"] { background: var(--ai-acc); color: var(--ai-acctext); }
+html body.dark-mode #ai .ai-seg button[aria-pressed="true"] { background: var(--ai-acc); color: var(--ai-acctext); }
+html body.dark-mode #ai .ai-log, html body.dark-mode #ai .ai-m, html body.dark-mode #ai .ai-fig { color: var(--ai-ink); }
+html body.dark-mode #ai .ai-m--me { background: var(--ai-me); }
+html body.dark-mode #ai .ai-m--ai { background: var(--ai-bot); }
+html body.dark-mode #ai .ai-md pre, html body.dark-mode #ai .ai-md code { background: var(--ai-code); color: var(--ai-codeink); }
+html body.dark-mode #ai .ai-copy { background: var(--ai-bot); color: var(--ai-ink); }
+html body.dark-mode #ai .ai-ptable th { background: var(--ai-panel); color: var(--ai-ink); }
+html body.dark-mode #ai .ai-why summary { color: var(--ai-acc); }
+
+/* the shell paints section / table / p / div text #333; set every container's text from our variables (light and dark) */
+#ai.ai :is(.tu-card, section, table, td, th, .ai-compose, .ai-opts, .ai-opt, .ai-price, .ai-bar, .tu-label) { color: var(--ai-ink); }
+#ai.ai :is(.tu-note, .ai-modelnote) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai :is(.tu-card, section, table, td, th, .ai-compose, .ai-opts, .ai-opt, .ai-price, .ai-bar, .tu-label, .ai-pay p, .ai-pay li, .ai-rules p) { color: var(--ai-ink); }
+html body.dark-mode #ai.ai :is(.tu-note, .ai-modelnote, .ai-sub) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-off, html body.dark-mode #ai.ai .ai-off b { color: var(--ai-warn); }
+html body.dark-mode #ai.ai .ai-msg.err { color: var(--ai-err); }
+html body.dark-mode #ai.ai .ai-msg.ok { color: var(--ai-ok); }
