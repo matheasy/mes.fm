@@ -282,10 +282,43 @@
 
 	/* ---------- noise-removed sound ---------- */
 	VE.cleanCache = {};
-	VE.cleanPcm = async function (key) {
-		if (VE.cleanCache[key]) return VE.cleanCache[key];
-		var v = await VE.idbGet("blobs", "c:" + key); if (!v) return null;
-		var r = { start: v.a, rate: v.rate, ch: v.ch.map(function (b) { return new Float32Array(b); }) }; VE.cleanCache[key] = r; return r;
+	// Stored in pieces: "c:<key>" = {a, rate, n, nch, same, parts, part} and "c:<key>:<i>" = {ch: [Int16 buffer per stored channel]}.
+	// One IndexedDB value may be at most ~133 MB in Chrome / Brave, so a 59-minute sound (1.4 GB as floats) can never be one record.
+	// same = the channels are identical (most voice recordings): one channel is kept and both play it. Old projects: {a, rate, ch: [Float32]}.
+	VE.CLEAN_PART = 300;   // seconds per stored piece (5 min x 48 kHz x 2 bytes = 29 MB per channel)
+	var cleanLoads = {};
+	VE.cleanPcm = function (key) {
+		if (VE.cleanCache[key]) return Promise.resolve(VE.cleanCache[key]);
+		if (cleanLoads[key]) return cleanLoads[key];
+		var job = cleanLoads[key] = (async function () {
+			var v = await VE.idbGet("blobs", "c:" + key).catch(function () { return null; }); if (!v) return null;
+			var r;
+			if (v.ch) r = { start: v.a, rate: v.rate, ch: v.ch.map(function (b) { return new Float32Array(b); }) };
+			else {
+				var k0 = v.same ? 1 : v.nch, arr = [], k, i;
+				for (k = 0; k < k0; k++) arr.push(new Float32Array(v.n));
+				for (i = 0; i < v.parts; i++) {
+					var p = await VE.idbGet("blobs", "c:" + key + ":" + i); if (!p) return null;   // a piece is missing: play the original sound
+					for (k = 0; k < k0; k++) V.fromI16(new Int16Array(p.ch[k]), arr[k], i * v.part);
+				}
+				var ch = []; for (k = 0; k < v.nch; k++) ch.push(arr[v.same ? 0 : k]);
+				r = { start: v.a, rate: v.rate, ch: ch };
+			}
+			VE.cleanCache[key] = r; return r;
+		})();
+		job.then(function () { delete cleanLoads[key]; }, function () { delete cleanLoads[key]; });
+		return job;
+	};
+	// keep a noise-removed sound for next time; throws (after removing what it wrote) when the browser refuses (private window, disk full)
+	VE.cleanStore = async function (key, start, rate, ch) {
+		var n = ch[0].length, same = ch.length > 1 && ch.every(function (x) { return x === ch[0]; }), keep = same ? [ch[0]] : ch, part = VE.CLEAN_PART * rate, parts = Math.max(1, Math.ceil(n / part)), i;
+		try {
+			for (i = 0; i < parts; i++) await VE.idbPut("blobs", "c:" + key + ":" + i, { ch: keep.map(function (x) { return V.toI16(x.subarray(i * part, Math.min(n, (i + 1) * part))).buffer; }) });
+			await VE.idbPut("blobs", "c:" + key, { a: start, rate: rate, n: n, nch: ch.length, same: same, parts: parts, part: part });
+		} catch (e) {
+			for (i = 0; i < parts; i++) await VE.idbDel("blobs", "c:" + key + ":" + i).catch(function () { });
+			throw e;
+		}
 	};
 	// the sound buffer a clip plays at source time s: noise-removed when it has one covering s
 	VE.clipPcm = async function (c, s0, s1) {

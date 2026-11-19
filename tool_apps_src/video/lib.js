@@ -350,6 +350,17 @@
 		for (i = 0; i < n; i++) for (c = 0; c < k; c++) { var v = Math.max(-1, Math.min(1, ch[c][i])); dv.setInt16(o, v < 0 ? Math.round(v * 32768) : Math.round(v * 32767), true); o += 2; }
 		return buf;
 	};
+	// long sounds are noise-removed piece by piece: [{r0, r1 (samples read), i0, i1 (samples kept)}]; each piece starts `pre` seconds early
+	// so the AI model has warmed up by the part that is kept (the same warm-up the noise remover uses between its own 10 s chunks)
+	V.dnPieces = function (n, rate, pieceSec, preSec) {
+		var len = Math.max(1, Math.round(pieceSec * rate)), pre = Math.max(0, Math.round((preSec || 0) * rate)), out = [];
+		for (var i0 = 0; i0 < n; i0 += len) { var i1 = Math.min(n, i0 + len); out.push({ r0: Math.max(0, i0 - pre), r1: i1, i0: i0, i1: i1 }); }
+		if (!out.length) out.push({ r0: 0, r1: n, i0: 0, i1: n });
+		return out;
+	};
+	// noise-removed sound is stored as 16-bit numbers (half the space of 32-bit floats, still far below hearing)
+	V.toI16 = function (x) { var y = new Int16Array(x.length); for (var i = 0; i < x.length; i++) { var v = x[i]; y[i] = v >= 1 ? 32767 : v <= -1 ? -32768 : v < 0 ? Math.round(v * 32768) : Math.round(v * 32767); } return y; };
+	V.fromI16 = function (y, out, off) { off = off || 0; for (var i = 0; i < y.length; i++) { var v = y[i]; out[off + i] = v < 0 ? v / 32768 : v / 32767; } return out; };
 	// waveform: max |x| per bin -> Uint8Array (0..255)
 	V.peaks = function (chs, rate, perSec) {
 		var bin = Math.max(1, Math.round(rate / perSec)), n = Math.ceil(chs[0].length / bin), out = new Uint8Array(n);

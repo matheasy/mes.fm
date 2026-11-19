@@ -146,9 +146,9 @@
 	// original outside it) and only once its source is really scheduled (while it is being restarted the original keeps playing: never silence)
 	function cleanCovers(c, t) {
 		if (!c.clean || !c.clean.key) return false;
-		var buf = cleanBufs[c.clean.key], cp = VE.cleanCache[c.clean.key]; if (!buf || !cp) return false;
+		var cp = VE.cleanCache[c.clean.key]; if (!cp) return false;
 		if (!cleanNodes.some(function (n) { return n.id === c.id; })) return false;
-		var s = V.srcAt(c, t); return s >= cp.start - 0.01 && s < cp.start + buf.duration - 0.03;
+		var s = V.srcAt(c, t); return s >= cp.start - 0.01 && s < cp.start + cp.ch[0].length / cp.rate - 0.03;
 	}
 	// noise-removed sound: AudioBuffer sources scheduled from the playhead
 	var cleanGen = 0;
@@ -159,11 +159,13 @@
 		for (var j = 0; j < list.length; j++) {
 			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (gen !== cleanGen || !P.playing || P.rev) return; if (!cp) continue;
 			if (jumpRate((c.speed || 1) * P.rate)) continue;   // jump mode plays no sound
-			var buf = cleanBufs[c.clean.key];
-			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
+			var dur = cp.ch[0].length / cp.rate, long = dur > LONG;
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;
 			if (off < 0) { from += -off / (c.speed || 1); off = 0; }
-			var len = (V.end(c) - from) * (c.speed || 1); if (len <= 0 || off >= buf.duration) continue;
+			var len = (V.end(c) - from) * (c.speed || 1); if (len <= 0 || off >= dur) continue;
+			if (long) { cleanChain(a, c, cp, from, now, off, len); continue; }
+			var buf = cleanBufs[c.clean.key];
+			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
 			if (Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3 && window.HTMLMediaElement) { cleanEl(a, c, cp, from, now, off, len); continue; }
 			var node = a.createBufferSource(), gain = a.createGain(); node.buffer = buf; node.playbackRate.value = (c.speed || 1) * P.rate; gain.gain.value = 0;
 			node.connect(gain).connect(a.destination);
@@ -171,6 +173,28 @@
 			cleanNodes.push({ id: c.id, node: node, gain: gain });
 		}
 		sync();
+	}
+	// a long noise-removed sound (an hour is 700 MB+ as floats) is never copied into one AudioBuffer: 2-minute buffers are made and queued
+	// back to back a little ahead of the playhead (at menu speeds other than 1x its pitch follows the speed: no WAV of an hour either)
+	var LONG = 600, SEG = 120;
+	function cleanChain(a, c, cp, from, now, off, len) {
+		var rate = (c.speed || 1) * P.rate, end = Math.min(off + len, cp.ch[0].length / cp.rate), t0 = a.currentTime + Math.max(0, (from - now) / P.rate), pos = off;
+		var gain = a.createGain(); gain.gain.value = 0; gain.connect(a.destination);
+		var e = { id: c.id, gain: gain, nodes: [], timer: 0, dead: false };
+		function more() {
+			if (e.dead) return;
+			while (pos < end - 1e-4 && t0 + (pos - off) / rate < a.currentTime + 2 * SEG / rate) {
+				var i0 = Math.round(pos * cp.rate), i1 = Math.min(cp.ch[0].length, Math.round(Math.min(end, pos + SEG) * cp.rate)); if (i1 <= i0) break;
+				var b = a.createBuffer(cp.ch.length, i1 - i0, cp.rate); cp.ch.forEach(function (x, k) { b.copyToChannel(x.subarray(i0, i1), k); });
+				var nd = a.createBufferSource(); nd.buffer = b; nd.playbackRate.value = rate; nd.connect(gain);
+				var when = t0 + (pos - off) / rate; nd.start(Math.max(a.currentTime, when), Math.max(0, a.currentTime - when) * rate);
+				nd.onended = (function (x) { return function () { var j = e.nodes.indexOf(x); if (j >= 0) e.nodes.splice(j, 1); }; })(nd);
+				e.nodes.push(nd); pos = i1 / cp.rate;
+			}
+			if (pos < end - 1e-4) e.timer = setTimeout(more, SEG / rate * 400);
+		}
+		e.node = { stop: function () { e.dead = true; clearTimeout(e.timer); e.nodes.forEach(function (x) { try { x.stop(); } catch (er) { /* ignore */ } }); }, disconnect: function () { e.nodes.forEach(function (x) { try { x.disconnect(); } catch (er) { /* ignore */ } }); e.nodes = []; } };
+		more(); cleanNodes.push(e);
 	}
 	// at a menu speed other than 1x the noise-removed sound plays from an <audio> element (a WAV of it) so the voice keeps its pitch
 	var cleanUrls = {};

@@ -743,6 +743,17 @@
 		for (i = 0; i < n; i++) for (c = 0; c < k; c++) { var v = Math.max(-1, Math.min(1, ch[c][i])); dv.setInt16(o, v < 0 ? Math.round(v * 32768) : Math.round(v * 32767), true); o += 2; }
 		return buf;
 	};
+	// long sounds are noise-removed piece by piece: [{r0, r1 (samples read), i0, i1 (samples kept)}]; each piece starts `pre` seconds early
+	// so the AI model has warmed up by the part that is kept (the same warm-up the noise remover uses between its own 10 s chunks)
+	V.dnPieces = function (n, rate, pieceSec, preSec) {
+		var len = Math.max(1, Math.round(pieceSec * rate)), pre = Math.max(0, Math.round((preSec || 0) * rate)), out = [];
+		for (var i0 = 0; i0 < n; i0 += len) { var i1 = Math.min(n, i0 + len); out.push({ r0: Math.max(0, i0 - pre), r1: i1, i0: i0, i1: i1 }); }
+		if (!out.length) out.push({ r0: 0, r1: n, i0: 0, i1: n });
+		return out;
+	};
+	// noise-removed sound is stored as 16-bit numbers (half the space of 32-bit floats, still far below hearing)
+	V.toI16 = function (x) { var y = new Int16Array(x.length); for (var i = 0; i < x.length; i++) { var v = x[i]; y[i] = v >= 1 ? 32767 : v <= -1 ? -32768 : v < 0 ? Math.round(v * 32768) : Math.round(v * 32767); } return y; };
+	V.fromI16 = function (y, out, off) { off = off || 0; for (var i = 0; i < y.length; i++) { var v = y[i]; out[off + i] = v < 0 ? v / 32768 : v / 32767; } return out; };
 	// waveform: max |x| per bin -> Uint8Array (0..255)
 	V.peaks = function (chs, rate, perSec) {
 		var bin = Math.max(1, Math.round(rate / perSec)), n = Math.ceil(chs[0].length / bin), out = new Uint8Array(n);
@@ -1976,10 +1987,43 @@
 
 	/* ---------- noise-removed sound ---------- */
 	VE.cleanCache = {};
-	VE.cleanPcm = async function (key) {
-		if (VE.cleanCache[key]) return VE.cleanCache[key];
-		var v = await VE.idbGet("blobs", "c:" + key); if (!v) return null;
-		var r = { start: v.a, rate: v.rate, ch: v.ch.map(function (b) { return new Float32Array(b); }) }; VE.cleanCache[key] = r; return r;
+	// Stored in pieces: "c:<key>" = {a, rate, n, nch, same, parts, part} and "c:<key>:<i>" = {ch: [Int16 buffer per stored channel]}.
+	// One IndexedDB value may be at most ~133 MB in Chrome / Brave, so a 59-minute sound (1.4 GB as floats) can never be one record.
+	// same = the channels are identical (most voice recordings): one channel is kept and both play it. Old projects: {a, rate, ch: [Float32]}.
+	VE.CLEAN_PART = 300;   // seconds per stored piece (5 min x 48 kHz x 2 bytes = 29 MB per channel)
+	var cleanLoads = {};
+	VE.cleanPcm = function (key) {
+		if (VE.cleanCache[key]) return Promise.resolve(VE.cleanCache[key]);
+		if (cleanLoads[key]) return cleanLoads[key];
+		var job = cleanLoads[key] = (async function () {
+			var v = await VE.idbGet("blobs", "c:" + key).catch(function () { return null; }); if (!v) return null;
+			var r;
+			if (v.ch) r = { start: v.a, rate: v.rate, ch: v.ch.map(function (b) { return new Float32Array(b); }) };
+			else {
+				var k0 = v.same ? 1 : v.nch, arr = [], k, i;
+				for (k = 0; k < k0; k++) arr.push(new Float32Array(v.n));
+				for (i = 0; i < v.parts; i++) {
+					var p = await VE.idbGet("blobs", "c:" + key + ":" + i); if (!p) return null;   // a piece is missing: play the original sound
+					for (k = 0; k < k0; k++) V.fromI16(new Int16Array(p.ch[k]), arr[k], i * v.part);
+				}
+				var ch = []; for (k = 0; k < v.nch; k++) ch.push(arr[v.same ? 0 : k]);
+				r = { start: v.a, rate: v.rate, ch: ch };
+			}
+			VE.cleanCache[key] = r; return r;
+		})();
+		job.then(function () { delete cleanLoads[key]; }, function () { delete cleanLoads[key]; });
+		return job;
+	};
+	// keep a noise-removed sound for next time; throws (after removing what it wrote) when the browser refuses (private window, disk full)
+	VE.cleanStore = async function (key, start, rate, ch) {
+		var n = ch[0].length, same = ch.length > 1 && ch.every(function (x) { return x === ch[0]; }), keep = same ? [ch[0]] : ch, part = VE.CLEAN_PART * rate, parts = Math.max(1, Math.ceil(n / part)), i;
+		try {
+			for (i = 0; i < parts; i++) await VE.idbPut("blobs", "c:" + key + ":" + i, { ch: keep.map(function (x) { return V.toI16(x.subarray(i * part, Math.min(n, (i + 1) * part))).buffer; }) });
+			await VE.idbPut("blobs", "c:" + key, { a: start, rate: rate, n: n, nch: ch.length, same: same, parts: parts, part: part });
+		} catch (e) {
+			for (i = 0; i < parts; i++) await VE.idbDel("blobs", "c:" + key + ":" + i).catch(function () { });
+			throw e;
+		}
 	};
 	// the sound buffer a clip plays at source time s: noise-removed when it has one covering s
 	VE.clipPcm = async function (c, s0, s1) {
@@ -2421,9 +2465,9 @@
 	// original outside it) and only once its source is really scheduled (while it is being restarted the original keeps playing: never silence)
 	function cleanCovers(c, t) {
 		if (!c.clean || !c.clean.key) return false;
-		var buf = cleanBufs[c.clean.key], cp = VE.cleanCache[c.clean.key]; if (!buf || !cp) return false;
+		var cp = VE.cleanCache[c.clean.key]; if (!cp) return false;
 		if (!cleanNodes.some(function (n) { return n.id === c.id; })) return false;
-		var s = V.srcAt(c, t); return s >= cp.start - 0.01 && s < cp.start + buf.duration - 0.03;
+		var s = V.srcAt(c, t); return s >= cp.start - 0.01 && s < cp.start + cp.ch[0].length / cp.rate - 0.03;
 	}
 	// noise-removed sound: AudioBuffer sources scheduled from the playhead
 	var cleanGen = 0;
@@ -2434,11 +2478,13 @@
 		for (var j = 0; j < list.length; j++) {
 			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (gen !== cleanGen || !P.playing || P.rev) return; if (!cp) continue;
 			if (jumpRate((c.speed || 1) * P.rate)) continue;   // jump mode plays no sound
-			var buf = cleanBufs[c.clean.key];
-			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
+			var dur = cp.ch[0].length / cp.rate, long = dur > LONG;
 			var now = P.time(), from = Math.max(now, c.start - (c.xin || 0)), src = V.srcAt(c, from), off = src - cp.start;
 			if (off < 0) { from += -off / (c.speed || 1); off = 0; }
-			var len = (V.end(c) - from) * (c.speed || 1); if (len <= 0 || off >= buf.duration) continue;
+			var len = (V.end(c) - from) * (c.speed || 1); if (len <= 0 || off >= dur) continue;
+			if (long) { cleanChain(a, c, cp, from, now, off, len); continue; }
+			var buf = cleanBufs[c.clean.key];
+			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
 			if (Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3 && window.HTMLMediaElement) { cleanEl(a, c, cp, from, now, off, len); continue; }
 			var node = a.createBufferSource(), gain = a.createGain(); node.buffer = buf; node.playbackRate.value = (c.speed || 1) * P.rate; gain.gain.value = 0;
 			node.connect(gain).connect(a.destination);
@@ -2446,6 +2492,28 @@
 			cleanNodes.push({ id: c.id, node: node, gain: gain });
 		}
 		sync();
+	}
+	// a long noise-removed sound (an hour is 700 MB+ as floats) is never copied into one AudioBuffer: 2-minute buffers are made and queued
+	// back to back a little ahead of the playhead (at menu speeds other than 1x its pitch follows the speed: no WAV of an hour either)
+	var LONG = 600, SEG = 120;
+	function cleanChain(a, c, cp, from, now, off, len) {
+		var rate = (c.speed || 1) * P.rate, end = Math.min(off + len, cp.ch[0].length / cp.rate), t0 = a.currentTime + Math.max(0, (from - now) / P.rate), pos = off;
+		var gain = a.createGain(); gain.gain.value = 0; gain.connect(a.destination);
+		var e = { id: c.id, gain: gain, nodes: [], timer: 0, dead: false };
+		function more() {
+			if (e.dead) return;
+			while (pos < end - 1e-4 && t0 + (pos - off) / rate < a.currentTime + 2 * SEG / rate) {
+				var i0 = Math.round(pos * cp.rate), i1 = Math.min(cp.ch[0].length, Math.round(Math.min(end, pos + SEG) * cp.rate)); if (i1 <= i0) break;
+				var b = a.createBuffer(cp.ch.length, i1 - i0, cp.rate); cp.ch.forEach(function (x, k) { b.copyToChannel(x.subarray(i0, i1), k); });
+				var nd = a.createBufferSource(); nd.buffer = b; nd.playbackRate.value = rate; nd.connect(gain);
+				var when = t0 + (pos - off) / rate; nd.start(Math.max(a.currentTime, when), Math.max(0, a.currentTime - when) * rate);
+				nd.onended = (function (x) { return function () { var j = e.nodes.indexOf(x); if (j >= 0) e.nodes.splice(j, 1); }; })(nd);
+				e.nodes.push(nd); pos = i1 / cp.rate;
+			}
+			if (pos < end - 1e-4) e.timer = setTimeout(more, SEG / rate * 400);
+		}
+		e.node = { stop: function () { e.dead = true; clearTimeout(e.timer); e.nodes.forEach(function (x) { try { x.stop(); } catch (er) { /* ignore */ } }); }, disconnect: function () { e.nodes.forEach(function (x) { try { x.disconnect(); } catch (er) { /* ignore */ } }); e.nodes = []; } };
+		more(); cleanNodes.push(e);
 	}
 	// at a menu speed other than 1x the noise-removed sound plays from an <audio> element (a WAV of it) so the voice keeps its pitch
 	var cleanUrls = {};
@@ -4484,7 +4552,7 @@
 		h += "</div>" + fxSection(list) + '<div class="vd-sec"><b>Clean up</b>';
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + "</div>" + sld("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "<div>" + "</div>" +
-			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-dn-go">Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
+			'<div class="vd-row"><button type="button" class="vd-btn vd-sm' + (cleaning ? "" : " vd-primary") + '" id="vd-dn-go" data-label="Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '">' + (cleaning ? "Cancel" : "Remove noise" + (list.length > 1 ? " (" + list.length + " clips)" : "")) + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other (C)">&#8645; Compare before / after</button></div>' : "") + "</div>";
 		return h;
 	}
@@ -4640,46 +4708,85 @@
 			var s = document.createElement("script"); s.src = "/main_js/denoise.js?v=2"; s.onload = function () { res(window.MESDenoise || null); }; s.onerror = function () { res(null); }; document.head.appendChild(s);
 		});
 	}
-	var cleaning = false;
+	var cleaning = false, dnAbort = null, dnStoreErr = null;
 	// one clip: the fully cleaned sound is kept (c.clean.full) so a new strength later is instant; the sound the export plays =
-	// cleaned + a little of the original mixed back (V.dnBlend: 100% = none, 50% = the noise 20 dB down, 0% = the original)
-	async function cleanClip(c, strength, D, stEl, onFrac) {
+	// cleaned + a little of the original mixed back (V.dnBlend: 100% = none, 50% = the noise 20 dB down, 0% = the original).
+	// Long clips go through in 5-minute pieces (V.dnPieces): only one piece of the original is in memory at a time, the AI model never sees
+	// an hour at once, and the result is stored in pieces too (VE.cleanStore). Identical channels are kept once.
+	async function cleanClip(c, strength, D, stEl, onFrac, signal) {
 		var m = VE.media(c.media); if (!m) return false;
 		var a = c.clean && c.clean.full ? c.clean.a : Math.max(0, c.in - (c.xin || 0) * (c.speed || 1) - 0.25), b = c.clean && c.clean.full ? c.clean.b : Math.min(m.dur, c.out + 0.25);
 		if (c.clean && c.clean.full && (a > c.in - (c.xin || 0) * (c.speed || 1) + 0.01 || b < c.out - 0.01)) { a = Math.max(0, c.in - (c.xin || 0) * (c.speed || 1) - 0.25); b = Math.min(m.dur, c.out + 0.25); }
-		var wetKey = c.clean && c.clean.full && c.clean.a === a && c.clean.b === b ? c.clean.full : null, wet = wetKey ? await VE.cleanPcm(wetKey) : null, dry = null;
-		if (!wet || strength < 0.995) { stEl("reading the sound..."); dry = await VE.pcmRange(m, a, b, function (x) { stEl("reading the sound... " + Math.round(x * 100) + "%"); }); }
-		if (!wet) {
-			stEl("removing noise...");
-			var out = await D.process(dry, 48000, { model: UI.dnModel || "auto", strength: 1, onProgress: function (x) { var fx = x && x.progress != null ? x.progress : x; if (onFrac) onFrac(fx); stEl("removing noise... " + Math.round(fx * 100) + "%"); } });
-			if (!out || !out.length) throw new Error("the noise remover returned no sound");
-			wetKey = V.uid("k"); await VE.idbPut("blobs", "c:" + wetKey, { a: a, rate: 48000, ch: out.map(function (x) { return x.buffer.byteLength === x.length * 4 ? x.buffer : x.slice().buffer; }) });
-			VE.cleanCache[wetKey] = wet = { start: a, rate: 48000, ch: out };
+		var wetKey = c.clean && c.clean.full && c.clean.a === a && c.clean.b === b ? c.clean.full : null, wet = wetKey ? await VE.cleanPcm(wetKey) : null;
+		var RATE = 48000, n = Math.max(1, Math.round((b - a) * RATE)), mixing = strength < 0.995;
+		if (wet && !mixing) { c.clean = { key: wetKey, full: wetKey, a: a, b: b, model: c.clean.model, strength: strength }; return true; }
+		var pieces = V.dnPieces(n, RATE, VE.CLEAN_PART, 3), np = pieces.length, wetOut = wet ? wet.ch : null, mixOut = null, newWet = !wet;
+		function alloc(src, same) { var o = [], k; if (same) { var x = new Float32Array(n); for (k = 0; k < src.length; k++) o.push(x); } else for (k = 0; k < src.length; k++) o.push(new Float32Array(n)); return o; }
+		function put(out, k, part, p) { var x = part.subarray(p.i0 - p.r0, p.i1 - p.r0); out[k].set(x.length > p.i1 - p.i0 ? x.subarray(0, p.i1 - p.i0) : x, p.i0); }
+		function unshare(out) { if (out && out.length > 1 && out[1] === out[0]) for (var k = 1; k < out.length; k++) out[k] = out[0].slice(); }
+		for (var j = 0; j < np; j++) {
+			if (signal && signal.aborted) throw new DOMException("Cancelled", "AbortError");
+			var p = pieces[j], tag = np > 1 ? " (part " + (j + 1) + " of " + np + ")" : "", base = j / np;
+			stEl((newWet ? "removing noise... " : "mixing... ") + Math.round(base * 100) + "%" + tag);
+			var dry = await VE.pcmRange(m, a + p.r0 / RATE, a + p.r1 / RATE, function (x) { if (onFrac) onFrac(base + 0.1 * x / np); });
+			if (signal && signal.aborted) throw new DOMException("Cancelled", "AbortError");
+			var wp = null;
+			if (newWet) {
+				var out = await D.process(dry, RATE, { model: UI.dnModel || "auto", strength: 1, signal: signal, onProgress: function (x) { var fx = x && x.progress != null ? x.progress : x, f = base + (0.1 + 0.9 * fx) / np; if (onFrac) onFrac(f); stEl("removing noise... " + Math.round(f * 100) + "%" + tag); } });
+				if (!out || !out.length) throw new Error("the noise remover returned no sound");
+				var same = out.length > 1 && out.every(function (x) { return x === out[0]; });
+				if (!wetOut) wetOut = alloc(out, same); else if (!same) unshare(wetOut);
+				for (var k = 0; k < wetOut.length; k++) if (k === 0 || wetOut[k] !== wetOut[0]) put(wetOut, k, out[k] || out[0], p);
+				wp = out;
+			} else wp = wetOut.map(function (w) { return w.subarray(p.r0, p.r1); });
+			if (mixing) {
+				if (!mixOut) mixOut = alloc(wetOut, wetOut.length > 1 && wetOut[1] === wetOut[0]); else if (wetOut.length > 1 && wetOut[1] !== wetOut[0]) unshare(mixOut);
+				for (var k2 = 0; k2 < mixOut.length; k2++) if (k2 === 0 || mixOut[k2] !== mixOut[0]) put(mixOut, k2, V.dnBlend(wp[k2] || wp[0], dry[k2] || dry[0], strength), p);
+			}
+			dry = null; wp = null;
+			if (onFrac) onFrac((j + 1) / np);
 		}
+		async function keep(key, ch) {
+			VE.cleanCache[key] = { start: a, rate: RATE, ch: ch };
+			try { await VE.cleanStore(key, a, RATE, ch); } catch (e) { dnStoreErr = e; }   // still works until the tab is closed
+		}
+		if (newWet) { wetKey = V.uid("k"); stEl("saving..."); await keep(wetKey, wetOut); }
 		var key = wetKey;
-		if (strength < 0.995) {
-			var mixed = wet.ch.map(function (w, k) { return V.dnBlend(w, dry[k] || dry[0], strength); });
-			key = V.uid("k"); await VE.idbPut("blobs", "c:" + key, { a: a, rate: 48000, ch: mixed.map(function (x) { return x.buffer; }) });
-			VE.cleanCache[key] = { start: a, rate: 48000, ch: mixed };
-		}
-		c.clean = { key: key, full: wetKey, a: a, b: b, model: (D.lastModel || UI.dnModel || "auto"), strength: strength };
+		if (mixing) { key = V.uid("k"); stEl("saving..."); await keep(key, mixOut); }
+		c.clean = { key: key, full: wetKey, a: a, b: b, model: (newWet ? (D.lastModel || D.used || UI.dnModel || "auto") : c.clean.model), strength: strength };
 		return true;
 	}
+	// what to tell people when the browser would not keep the cleaned sound
+	function storeNote(e) {
+		var msg = e && (e.name === "QuotaExceededError" || /quota|space|too large/i.test(e.message || "")) ? "it ran out of the storage this window allows" : (e && e.message || String(e));
+		return " This browser would not keep the cleaned sound for next time (" + msg + "): it plays and exports until you close this tab. Private windows only let a page keep a little; open mes.fm/video in a normal window to have it remembered.";
+	}
 	async function denoise(list) {
-		if (cleaning) return; var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
+		if (cleaning) { if (dnAbort) dnAbort.abort(); return; }
+		var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
 		var D = await loadDenoise();
 		if (!D || typeof D.process !== "function") { stEl("Noise removal could not load. Check your connection and try again."); return; }
-		cleaning = true; var strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0; var tp = tabTask("Removing noise" + (list.length > 1 ? " from " + list.length + " clips" : ""));
+		cleaning = true; dnAbort = new AbortController(); dnStoreErr = null; dnGoLabel();
+		var strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0; var tp = tabTask("Removing noise" + (list.length > 1 ? " from " + list.length + " clips" : ""));
 		try {
 			if (D.load) { stEl("Loading the noise-removal model..."); await D.load({ model: UI.dnModel || "auto", onProgress: function (x) { stEl("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } }); }
 			for (var j = 0; j < list.length; j++) {
 				var tag = list.length > 1 ? "Clip " + (j + 1) + " of " + list.length + ": " : "";
-				if (await cleanClip(list[j], strength, D, function (t) { stEl(tag + t); }, function (fx) { tp.set((j + fx) / list.length); })) done++;
+				if (await cleanClip(list[j], strength, D, function (t) { stEl(tag + t); }, function (fx) { tp.set((j + fx) / list.length); }, dnAbort.signal)) done++;
 			}
-			tp.done(); VE.commit("Remove noise"); toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + ". Press Play to hear it, or Compare before / after to hear exactly what was taken out.");
-		} catch (e) { tp.fail("Failed"); stEl("Noise removal failed: " + (e && e.message || e)); if (window.console) console.error(e); }
-		cleaning = false;
+			tp.done(); cleaning = false; dnAbort = null; VE.commit("Remove noise");
+			var note = dnStoreErr ? storeNote(dnStoreErr) : "";
+			toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + "." + (note || " Press Play to hear it, or Compare before / after to hear exactly what was taken out."));
+			if (note) stEl("Noise removed." + note);
+		} catch (e) {
+			var aborted = e && e.name === "AbortError";
+			tp.fail(aborted ? "Cancelled" : "Failed");
+			if (aborted) { if (done) VE.commit("Remove noise"); stEl("Cancelled." + (done ? " " + done + " clip" + (done > 1 ? "s were" : " was") + " already done." : " Nothing was changed.")); }
+			else { stEl("Noise removal failed: " + (e && e.message || e) + (/memory|allocation|array buffer/i.test(e && e.message || "") ? ". The browser ran out of memory: close other tabs, or split the clip (S) and clean the parts one at a time." : "")); if (window.console) console.error(e); }
+		}
+		cleaning = false; dnAbort = null; dnGoLabel();
 	}
+	function dnGoLabel() { var go = $("vd-dn-go"); if (go) { go.textContent = cleaning ? "Cancel" : go.getAttribute("data-label") || go.textContent; go.classList.toggle("vd-primary", !cleaning); } }
 	async function normalize(list) {
 		var target = UI.lnTgt || -16, stEl = function (t) { var e = $("vd-ln-st"); if (e) e.textContent = t; }, n = 0;
 		try {
@@ -4896,8 +5003,8 @@
 				else {
 					var D = await loadDenoise(); if (!D || typeof D.process !== "function") throw new Error("noise removal could not load");
 					if (D.load) await D.load({ model: UI.dnModel || "auto", onProgress: function (x) { dnSt("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } });
-					await cleanClip(c, s, D, function (t) { dnSt("Whole clip: " + t); }, function (fx) { tp.set(fx); });
-					tp.done(); VE.commit("Noise removal " + Math.round(s * 100) + "%"); toast(Math.round(s * 100) + "% noise removal applied to the whole clip.");
+					dnStoreErr = null; await cleanClip(c, s, D, function (t) { dnSt("Whole clip: " + t); }, function (fx) { tp.set(fx); });
+					tp.done(); VE.commit("Noise removal " + Math.round(s * 100) + "%"); toast(Math.round(s * 100) + "% noise removal applied to the whole clip." + (dnStoreErr ? storeNote(dnStoreErr) : ""));
 				}
 				applying = false; var keepPos = cl.pos; await load(); cl.pos = keepPos; marker();
 			} catch (e) { tp.fail("Failed"); dnSt("Could not apply: " + (e && e.message || e)); applying = false; dnButtons(); }

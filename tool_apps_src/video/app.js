@@ -1097,7 +1097,7 @@
 		h += "</div>" + fxSection(list) + '<div class="vd-sec"><b>Clean up</b>';
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + "</div>" + sld("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "<div>" + "</div>" +
-			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-dn-go">Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
+			'<div class="vd-row"><button type="button" class="vd-btn vd-sm' + (cleaning ? "" : " vd-primary") + '" id="vd-dn-go" data-label="Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '">' + (cleaning ? "Cancel" : "Remove noise" + (list.length > 1 ? " (" + list.length + " clips)" : "")) + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other (C)">&#8645; Compare before / after</button></div>' : "") + "</div>";
 		return h;
 	}
@@ -1253,46 +1253,85 @@
 			var s = document.createElement("script"); s.src = "/main_js/denoise.js?v=2"; s.onload = function () { res(window.MESDenoise || null); }; s.onerror = function () { res(null); }; document.head.appendChild(s);
 		});
 	}
-	var cleaning = false;
+	var cleaning = false, dnAbort = null, dnStoreErr = null;
 	// one clip: the fully cleaned sound is kept (c.clean.full) so a new strength later is instant; the sound the export plays =
-	// cleaned + a little of the original mixed back (V.dnBlend: 100% = none, 50% = the noise 20 dB down, 0% = the original)
-	async function cleanClip(c, strength, D, stEl, onFrac) {
+	// cleaned + a little of the original mixed back (V.dnBlend: 100% = none, 50% = the noise 20 dB down, 0% = the original).
+	// Long clips go through in 5-minute pieces (V.dnPieces): only one piece of the original is in memory at a time, the AI model never sees
+	// an hour at once, and the result is stored in pieces too (VE.cleanStore). Identical channels are kept once.
+	async function cleanClip(c, strength, D, stEl, onFrac, signal) {
 		var m = VE.media(c.media); if (!m) return false;
 		var a = c.clean && c.clean.full ? c.clean.a : Math.max(0, c.in - (c.xin || 0) * (c.speed || 1) - 0.25), b = c.clean && c.clean.full ? c.clean.b : Math.min(m.dur, c.out + 0.25);
 		if (c.clean && c.clean.full && (a > c.in - (c.xin || 0) * (c.speed || 1) + 0.01 || b < c.out - 0.01)) { a = Math.max(0, c.in - (c.xin || 0) * (c.speed || 1) - 0.25); b = Math.min(m.dur, c.out + 0.25); }
-		var wetKey = c.clean && c.clean.full && c.clean.a === a && c.clean.b === b ? c.clean.full : null, wet = wetKey ? await VE.cleanPcm(wetKey) : null, dry = null;
-		if (!wet || strength < 0.995) { stEl("reading the sound..."); dry = await VE.pcmRange(m, a, b, function (x) { stEl("reading the sound... " + Math.round(x * 100) + "%"); }); }
-		if (!wet) {
-			stEl("removing noise...");
-			var out = await D.process(dry, 48000, { model: UI.dnModel || "auto", strength: 1, onProgress: function (x) { var fx = x && x.progress != null ? x.progress : x; if (onFrac) onFrac(fx); stEl("removing noise... " + Math.round(fx * 100) + "%"); } });
-			if (!out || !out.length) throw new Error("the noise remover returned no sound");
-			wetKey = V.uid("k"); await VE.idbPut("blobs", "c:" + wetKey, { a: a, rate: 48000, ch: out.map(function (x) { return x.buffer.byteLength === x.length * 4 ? x.buffer : x.slice().buffer; }) });
-			VE.cleanCache[wetKey] = wet = { start: a, rate: 48000, ch: out };
+		var wetKey = c.clean && c.clean.full && c.clean.a === a && c.clean.b === b ? c.clean.full : null, wet = wetKey ? await VE.cleanPcm(wetKey) : null;
+		var RATE = 48000, n = Math.max(1, Math.round((b - a) * RATE)), mixing = strength < 0.995;
+		if (wet && !mixing) { c.clean = { key: wetKey, full: wetKey, a: a, b: b, model: c.clean.model, strength: strength }; return true; }
+		var pieces = V.dnPieces(n, RATE, VE.CLEAN_PART, 3), np = pieces.length, wetOut = wet ? wet.ch : null, mixOut = null, newWet = !wet;
+		function alloc(src, same) { var o = [], k; if (same) { var x = new Float32Array(n); for (k = 0; k < src.length; k++) o.push(x); } else for (k = 0; k < src.length; k++) o.push(new Float32Array(n)); return o; }
+		function put(out, k, part, p) { var x = part.subarray(p.i0 - p.r0, p.i1 - p.r0); out[k].set(x.length > p.i1 - p.i0 ? x.subarray(0, p.i1 - p.i0) : x, p.i0); }
+		function unshare(out) { if (out && out.length > 1 && out[1] === out[0]) for (var k = 1; k < out.length; k++) out[k] = out[0].slice(); }
+		for (var j = 0; j < np; j++) {
+			if (signal && signal.aborted) throw new DOMException("Cancelled", "AbortError");
+			var p = pieces[j], tag = np > 1 ? " (part " + (j + 1) + " of " + np + ")" : "", base = j / np;
+			stEl((newWet ? "removing noise... " : "mixing... ") + Math.round(base * 100) + "%" + tag);
+			var dry = await VE.pcmRange(m, a + p.r0 / RATE, a + p.r1 / RATE, function (x) { if (onFrac) onFrac(base + 0.1 * x / np); });
+			if (signal && signal.aborted) throw new DOMException("Cancelled", "AbortError");
+			var wp = null;
+			if (newWet) {
+				var out = await D.process(dry, RATE, { model: UI.dnModel || "auto", strength: 1, signal: signal, onProgress: function (x) { var fx = x && x.progress != null ? x.progress : x, f = base + (0.1 + 0.9 * fx) / np; if (onFrac) onFrac(f); stEl("removing noise... " + Math.round(f * 100) + "%" + tag); } });
+				if (!out || !out.length) throw new Error("the noise remover returned no sound");
+				var same = out.length > 1 && out.every(function (x) { return x === out[0]; });
+				if (!wetOut) wetOut = alloc(out, same); else if (!same) unshare(wetOut);
+				for (var k = 0; k < wetOut.length; k++) if (k === 0 || wetOut[k] !== wetOut[0]) put(wetOut, k, out[k] || out[0], p);
+				wp = out;
+			} else wp = wetOut.map(function (w) { return w.subarray(p.r0, p.r1); });
+			if (mixing) {
+				if (!mixOut) mixOut = alloc(wetOut, wetOut.length > 1 && wetOut[1] === wetOut[0]); else if (wetOut.length > 1 && wetOut[1] !== wetOut[0]) unshare(mixOut);
+				for (var k2 = 0; k2 < mixOut.length; k2++) if (k2 === 0 || mixOut[k2] !== mixOut[0]) put(mixOut, k2, V.dnBlend(wp[k2] || wp[0], dry[k2] || dry[0], strength), p);
+			}
+			dry = null; wp = null;
+			if (onFrac) onFrac((j + 1) / np);
 		}
+		async function keep(key, ch) {
+			VE.cleanCache[key] = { start: a, rate: RATE, ch: ch };
+			try { await VE.cleanStore(key, a, RATE, ch); } catch (e) { dnStoreErr = e; }   // still works until the tab is closed
+		}
+		if (newWet) { wetKey = V.uid("k"); stEl("saving..."); await keep(wetKey, wetOut); }
 		var key = wetKey;
-		if (strength < 0.995) {
-			var mixed = wet.ch.map(function (w, k) { return V.dnBlend(w, dry[k] || dry[0], strength); });
-			key = V.uid("k"); await VE.idbPut("blobs", "c:" + key, { a: a, rate: 48000, ch: mixed.map(function (x) { return x.buffer; }) });
-			VE.cleanCache[key] = { start: a, rate: 48000, ch: mixed };
-		}
-		c.clean = { key: key, full: wetKey, a: a, b: b, model: (D.lastModel || UI.dnModel || "auto"), strength: strength };
+		if (mixing) { key = V.uid("k"); stEl("saving..."); await keep(key, mixOut); }
+		c.clean = { key: key, full: wetKey, a: a, b: b, model: (newWet ? (D.lastModel || D.used || UI.dnModel || "auto") : c.clean.model), strength: strength };
 		return true;
 	}
+	// what to tell people when the browser would not keep the cleaned sound
+	function storeNote(e) {
+		var msg = e && (e.name === "QuotaExceededError" || /quota|space|too large/i.test(e.message || "")) ? "it ran out of the storage this window allows" : (e && e.message || String(e));
+		return " This browser would not keep the cleaned sound for next time (" + msg + "): it plays and exports until you close this tab. Private windows only let a page keep a little; open mes.fm/video in a normal window to have it remembered.";
+	}
 	async function denoise(list) {
-		if (cleaning) return; var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
+		if (cleaning) { if (dnAbort) dnAbort.abort(); return; }
+		var stEl = function (t) { var e = $("vd-dn-st"); if (e) e.textContent = t; };
 		var D = await loadDenoise();
 		if (!D || typeof D.process !== "function") { stEl("Noise removal could not load. Check your connection and try again."); return; }
-		cleaning = true; var strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0; var tp = tabTask("Removing noise" + (list.length > 1 ? " from " + list.length + " clips" : ""));
+		cleaning = true; dnAbort = new AbortController(); dnStoreErr = null; dnGoLabel();
+		var strength = UI.dnStr == null ? 1 : UI.dnStr, done = 0; var tp = tabTask("Removing noise" + (list.length > 1 ? " from " + list.length + " clips" : ""));
 		try {
 			if (D.load) { stEl("Loading the noise-removal model..."); await D.load({ model: UI.dnModel || "auto", onProgress: function (x) { stEl("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } }); }
 			for (var j = 0; j < list.length; j++) {
 				var tag = list.length > 1 ? "Clip " + (j + 1) + " of " + list.length + ": " : "";
-				if (await cleanClip(list[j], strength, D, function (t) { stEl(tag + t); }, function (fx) { tp.set((j + fx) / list.length); })) done++;
+				if (await cleanClip(list[j], strength, D, function (t) { stEl(tag + t); }, function (fx) { tp.set((j + fx) / list.length); }, dnAbort.signal)) done++;
 			}
-			tp.done(); VE.commit("Remove noise"); toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + ". Press Play to hear it, or Compare before / after to hear exactly what was taken out.");
-		} catch (e) { tp.fail("Failed"); stEl("Noise removal failed: " + (e && e.message || e)); if (window.console) console.error(e); }
-		cleaning = false;
+			tp.done(); cleaning = false; dnAbort = null; VE.commit("Remove noise");
+			var note = dnStoreErr ? storeNote(dnStoreErr) : "";
+			toast("Noise removed from " + done + " clip" + (done > 1 ? "s" : "") + "." + (note || " Press Play to hear it, or Compare before / after to hear exactly what was taken out."));
+			if (note) stEl("Noise removed." + note);
+		} catch (e) {
+			var aborted = e && e.name === "AbortError";
+			tp.fail(aborted ? "Cancelled" : "Failed");
+			if (aborted) { if (done) VE.commit("Remove noise"); stEl("Cancelled." + (done ? " " + done + " clip" + (done > 1 ? "s were" : " was") + " already done." : " Nothing was changed.")); }
+			else { stEl("Noise removal failed: " + (e && e.message || e) + (/memory|allocation|array buffer/i.test(e && e.message || "") ? ". The browser ran out of memory: close other tabs, or split the clip (S) and clean the parts one at a time." : "")); if (window.console) console.error(e); }
+		}
+		cleaning = false; dnAbort = null; dnGoLabel();
 	}
+	function dnGoLabel() { var go = $("vd-dn-go"); if (go) { go.textContent = cleaning ? "Cancel" : go.getAttribute("data-label") || go.textContent; go.classList.toggle("vd-primary", !cleaning); } }
 	async function normalize(list) {
 		var target = UI.lnTgt || -16, stEl = function (t) { var e = $("vd-ln-st"); if (e) e.textContent = t; }, n = 0;
 		try {
@@ -1509,8 +1548,8 @@
 				else {
 					var D = await loadDenoise(); if (!D || typeof D.process !== "function") throw new Error("noise removal could not load");
 					if (D.load) await D.load({ model: UI.dnModel || "auto", onProgress: function (x) { dnSt("Loading the noise-removal model... " + Math.round((x && x.progress != null ? x.progress : x) * 100) + "%"); } });
-					await cleanClip(c, s, D, function (t) { dnSt("Whole clip: " + t); }, function (fx) { tp.set(fx); });
-					tp.done(); VE.commit("Noise removal " + Math.round(s * 100) + "%"); toast(Math.round(s * 100) + "% noise removal applied to the whole clip.");
+					dnStoreErr = null; await cleanClip(c, s, D, function (t) { dnSt("Whole clip: " + t); }, function (fx) { tp.set(fx); });
+					tp.done(); VE.commit("Noise removal " + Math.round(s * 100) + "%"); toast(Math.round(s * 100) + "% noise removal applied to the whole clip." + (dnStoreErr ? storeNote(dnStoreErr) : ""));
 				}
 				applying = false; var keepPos = cl.pos; await load(); cl.pos = keepPos; marker();
 			} catch (e) { tp.fail("Failed"); dnSt("Could not apply: " + (e && e.message || e)); applying = false; dnButtons(); }

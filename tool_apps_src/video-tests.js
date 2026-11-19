@@ -400,5 +400,15 @@ eq(V.customSlot(4.99, 5, 1, 10), { t: 4.96, d: 0.04 }, "dropped just before the 
 eq(V.customSlot(7, 5, 1, 10), { t: 4, d: 1 }, "dropped after the playhead: its normal length, ending at the playhead");
 eq(V.customSlot(null, 0.5, 1, 10), { t: 0, d: 0.5 }, "click near the clip start: cut short at the start");
 ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "playhead outside the clip: none");
+{
+	const R = 48000, n = Math.round(3540 * R), ps = V.dnPieces(n, R, 300, 3);
+	ok(ps.length === 12, "59 minutes = 12 five-minute pieces");
+	ok(ps[0].r0 === 0 && ps[1].r0 === 300 * R - 3 * R && ps[1].i0 === 300 * R, "pieces after the first read 3 s early");
+	ok(ps[ps.length - 1].i1 === n && ps.every(function (p, i) { return i === 0 || p.i0 === ps[i - 1].i1; }), "pieces cover every sample once");
+	eq(V.dnPieces(10, R, 300, 3), [{ r0: 0, r1: 10, i0: 0, i1: 10 }], "a short sound is one piece");
+	const x = new Float32Array([0, 0.5, -0.5, 1, -1, 2, -2, 0.25]), y = V.fromI16(V.toI16(x), new Float32Array(8));
+	ok(Math.abs(y[1] - 0.5) < 1e-4 && Math.abs(y[2] + 0.5) < 1e-4 && y[3] === 1 && y[4] === -1 && y[5] === 1 && y[6] === -1, "16-bit storage round trip, clipped at +-1");
+	const big = new Float32Array(20); V.fromI16(new Int16Array([16384, -16384]), big, 10); ok(Math.abs(big[10] - 0.5) < 1e-4 && Math.abs(big[11] + 0.5) < 1e-4 && big[9] === 0, "16-bit piece written at its offset");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
