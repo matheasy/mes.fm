@@ -102,9 +102,14 @@ export function lpSwitch(maps, { min, few = 0.25, keep = ["mes", "youtube", "hiv
 
 // Should a section get the switch? Yes when at least `share` of its items have links on two or more sites and the
 // switch would offer at least two sites (so the posts-only sections of the hubs stay as they were).
+// Also yes for a video section (2+ items, at least half with a video-site link) where at least one item can be opened
+// on another site: e.g. 9/11 Observable Evidence = one full documentary on six sites + YouTube-only clips.
+const VIDEO_SITES = ["youtube", "3speak", "rumble", "odysee", "bitchute", "twitch"];
 export function lpWanted(maps, share = 0.4) {
   const multi = maps.filter((m) => Object.keys(m).length >= 2).length;
-  return maps.length > 0 && multi >= share * maps.length && lpSwitch(maps) !== "";
+  if (maps.length > 0 && multi >= share * maps.length && lpSwitch(maps) !== "") return true;
+  const video = maps.filter((m) => VIDEO_SITES.some((s) => m[s])).length;
+  return maps.length >= 2 && multi >= 1 && video >= maps.length / 2 && lpSwitch(maps, { min: 1 }) !== "";
 }
 
 // The switch on its own line (a section without the search box / chips).
