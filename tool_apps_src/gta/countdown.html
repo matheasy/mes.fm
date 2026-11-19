@@ -1,26 +1,36 @@
 		<section class="gc-main" id="gc-box">
-			<div class="gc-bar"><span class="gc-mode tu-seg" id="gc-mode" role="group" aria-label="Count down to"><button type="button" data-v="local">Midnight where I am</button><button type="button" data-v="first">First in the world</button><button type="button" data-v="zone">Another time zone</button></span>
+			<div class="gc-bar"><span class="gc-mode tu-seg" id="gc-mode" role="group" aria-label="Count from"><button type="button" data-v="local">Midnight where I am</button><button type="button" data-v="first">First in the world</button><button type="button" data-v="zone">Another time zone</button></span>
 				<span class="gc-btns"><button type="button" id="gc-fill" title="Fill the window (W)">⤢ Fill window</button><button type="button" id="gc-fs" title="Full screen (F)">⛶ Full screen</button></span></div>
 			<label class="gc-zone" id="gc-zonef" hidden><span>Time zone</span><select id="gc-zone" class="tu-select"></select></label>
-			<p class="gc-what" id="gc-what">GTA 6 unlocks in</p>
+			<p class="gc-what" id="gc-what">GTA 6 has been out for</p>
 			<div class="gc-digits" aria-live="off"><span><b id="gc-d">–</b><small>days</small></span><span><b id="gc-h">–</b><small>hours</small></span><span><b id="gc-m">–</b><small>minutes</small></span><span><b id="gc-s">–</b><small>seconds</small></span></div>
 			<p class="gc-when" id="gc-when"></p>
 			<div class="gc-prog"><div id="gc-prog"></div></div>
 			<p class="gc-pre" id="gc-pre"></p>
 		</section>
 		<div class="gc-acts">
-			<a class="tu-btn" id="gc-remind" href="/reminder">🔔 Set a reminder</a>
-			<a class="tu-btn tu-btn--ghost" id="gc-gcal" target="_blank" rel="noopener">Add to Google Calendar</a>
-			<button type="button" class="tu-btn tu-btn--ghost" id="gc-ics">Download calendar file (.ics)</button>
+			<a class="tu-btn" href="/gta-6-map">🗺️ Open the GTA 6 map</a>
+			<a class="tu-btn tu-btn--ghost" href="/gta-6-download-time">⬇ Download time</a>
 			<button type="button" class="tu-btn tu-btn--ghost" id="gc-share">🔗 Copy link</button>
 		</div>
+		<div class="tu-card gc-know">
+			<h2 class="gt-h">What to know on launch day</h2>
+			<ul class="gc-list">
+				<li><b>It is out now</b> on PS5 and Xbox Series X|S (Rockstar, November 19, 2026). There is still no PC version announced.</li>
+				<li><b>When it unlocked:</b> Rockstar said midnight local time in every region, so New Zealand played first. The PlayStation Store listing put the USA and Canada on one time, midnight Eastern (9 p.m. on the 18th on the West Coast). Xbox Cloud Gaming started at 1 a.m. Eastern.</li>
+				<li><b>Size:</b> the download needs up to 212 GB depending on the console. Two small updates came out before launch (about 1 GB and 0.6 GB on PS5, about 2.2 GB and 1.6 GB on Xbox). Keep about 50 GB spare for later updates.</li>
+				<li><b>Official map:</b> Rockstar put a free printable map of Leonida and the cover art poster on its official site; a double-sided paper copy comes to the Rockstar Store shortly after launch.</li>
+				<li><b>Pre-order bonus:</b> launch day was the last day to get the Vintage Vice City Pack and a free month of GTA+ with the game.</li>
+				<li><b>Music:</b> <i>Grand Theft Auto VI: The Album</i> (34 new songs) came out the same night on the streaming services.</li>
+				<li><b>Spoilers:</b> Rockstar asked players not to share story spoilers openly, so friends can play Jason and Lucia's story for themselves.</li>
+			</ul>
+		</div>
 		<div class="tu-card">
-			<h2 class="gt-h">When it unlocks around the world</h2>
-			<p class="tu-note">If it unlocks at midnight in each place (how PlayStation usually releases digital games), New Zealand plays first and Hawaii last, 23 hours later. The middle column is that midnight on your own clock.</p>
-			<div class="gc-tablewrap"><table class="tu-table gc-table"><thead><tr><th>City (midnight there)</th><th>Your time</th><th>Starts in</th></tr></thead><tbody id="gc-world"></tbody></table></div>
+			<h2 class="gt-h">How long it has been out around the world</h2>
+			<p class="tu-note">Each city unlocked at its own midnight on November 19 (Rockstar's rule). The middle column is that moment on your own clock. PlayStation players in the USA and Canada got it at midnight Eastern instead.</p>
+			<div class="gc-tablewrap"><table class="tu-table gc-table"><thead><tr><th>City (midnight there)</th><th>Your time</th><th>Out for</th></tr></thead><tbody id="gc-world"></tbody></table></div>
 		</div>
 		<div class="tu-card gc-note">
-			<h2 class="gt-h">How sure is the time?</h2>
-			<p><b>The date is official: November 19, 2026.</b> Rockstar has not said the hour. Most guides expect midnight local time on PlayStation (each region at its own midnight), and Xbox has often used a single worldwide time instead, so the two can differ by hours. This page counts to midnight in your time zone by default; switch to <b>First in the world</b> to count to the New Zealand midnight. We will update it if Rockstar announces an hour.</p>
+			<h2 class="gt-h">Where these facts come from</h2>
 			<p class="tu-note" id="gc-src"></p>
 		</div>

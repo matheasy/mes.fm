@@ -23,78 +23,61 @@
 	if (!/^[a-f0-9]{32}$/.test(S.vid || "")) { var b = new Uint8Array(16); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach(function (_, i) { b[i] = Math.random() * 256; }); S.vid = Array.prototype.map.call(b, function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join(""); save(); }
 	S.mine = S.mine || {}; S.votes = S.votes || {}; S.hvotes = S.hvotes || {}; S.cats = S.cats || []; if (S.hsign == null) S.hsign = true;
 	S.found = S.found || {}; S.notes = S.notes || {}; S.my = Array.isArray(S.my) ? S.my : []; if (S.places == null) S.places = true;
-	(function () { var ch = false; S.my.forEach(function (m) { if (!(m.m >= 2)) { var u = MAP.upgradeXY(m.x, m.y, m.m || 1); m.x = u.x; m.y = u.y; m.m = MAP.MAP_V; ch = true; } }); if (ch) save(); })();
-	function upPins(list) { (list || []).forEach(function (p) { if (!(p.m >= 2)) { var u = MAP.upgradeXY(p.x, p.y, p.m || 1); p.x = u.x; p.y = u.y; } }); return list || []; }
+	(function () { var ch = false; S.my.forEach(function (m) { if (!(m.m >= MAP.MAP_V)) { var u = MAP.upgradeXY(m.x, m.y, m.m || 1); m.x = u.x; m.y = u.y; m.m = MAP.MAP_V; ch = true; } }); if (ch) save(); })();
+	function upPins(list) { (list || []).forEach(function (p) { if (!(p.m >= MAP.MAP_V)) { var u = MAP.upgradeXY(p.x, p.y, p.m || 1); p.x = u.x; p.y = u.y; } }); return list || []; }
 	var T0 = Date.now();
 	function toast(m) { var t = $("gj-toast"); if (!t) return; t.textContent = m; t.classList.add("is-on"); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("is-on"); }, 3600); }
 	var ICON = { secret: "🤫", animal: "🦌", fishing: "🎣", gem: "💎", egg: "🥚", collect: "⭐", activity: "🎯", vehicle: "🚗", stunt: "🏁", other: "📍" };
 	function catColor(id) { for (var i = 0; i < MAP.PIN_CATS.length; i++) if (MAP.PIN_CATS[i][0] === id) return MAP.PIN_CATS[i][2]; return "#6d4c41"; }
 
-	/* ======================= the base map (original sketch; 0..1000) ======================= */
-	var LAND = "M70,130 C150,95 260,110 330,128 C420,150 470,118 560,110 C660,100 760,120 870,108 L905,120 C900,190 860,240 850,300 " +
-		"C845,380 870,440 880,520 C890,600 900,660 870,740 C850,800 800,840 745,860 C705,872 668,850 650,812 C630,770 600,735 575,690 " +
-		"C548,640 530,590 520,530 C512,480 498,420 470,380 C440,335 405,300 360,285 C300,265 245,282 190,268 C140,255 95,232 70,205 Z";
-	var LAKE = "M600,430 C640,410 690,420 700,455 C708,490 670,515 630,505 C595,497 580,455 600,430 Z";
-	var KEYS = [[700, 885, 22, 9], [660, 905, 18, 7], [618, 920, 20, 7], [574, 932, 17, 6], [532, 942, 19, 7], [490, 950, 15, 6], [450, 957, 18, 6], [410, 962, 14, 5]];
-	var ISLES = [[905, 640, 26, 60], [255, 330, 30, 14]];
-	var REG = [  /* name, label x, y, shaded area path (rough) */
-		["Port Gellhorn", 210, 190, "M90,150 C170,120 300,130 360,150 L380,270 C300,262 230,280 170,262 C120,250 90,220 90,150 Z", "#9fb8a6"],
-		["Mount Kalaga", 500, 165, "M400,140 C470,120 560,118 640,120 L660,240 C580,250 500,250 430,235 Z", "#b9a98e"],
-		["Ambrosia", 700, 300, "M640,180 C720,150 820,150 860,170 L850,330 C860,390 870,420 860,430 C790,430 700,400 640,390 C560,380 520,330 560,260 Z", "#c9c08f"],
-		["Grassrivers", 640, 640, "M540,520 C600,540 700,560 760,580 C770,650 760,720 730,780 C690,790 650,770 620,730 C580,680 548,610 540,520 Z", "#8fb38a"],
-		["Vice City", 830, 700, "M790,560 C830,560 870,570 885,610 C892,680 880,740 850,790 C820,800 780,790 770,750 C770,690 775,620 790,560 Z", "#c7a0b3"],
-		["Leonida Keys", 540, 900, null, null]];
-	var ROADS = ["M150,210 C300,205 450,190 600,180 C700,175 800,190 870,200", "M760,180 C780,300 820,420 840,560 C850,640 845,720 830,780",
-		"M600,180 C590,280 600,380 620,470 C640,560 700,640 780,700", "M745,860 C700,890 620,920 520,945 C470,955 430,960 400,962"];
-	/* the v1 shapes above are moved onto the painted v2 picture (affine), so region hit tests and names line up */
-	function upPath(d) { var a = MAP.V1TO2, i = 0, prev = 0; return d.replace(/-?\d+(\.\d+)?/g, function (n) { var v = +n; if (i++ % 2 === 0) { prev = v; return "\u0000" + n; } var x = prev, y = v; return (Math.round((a[0] * x + a[1] * y + a[2]) * 10) / 10) + "," + (Math.round((a[3] * x + a[4] * y + a[5]) * 10) / 10); }).replace(/\u0000-?\d+(\.\d+)?,/g, ""); }
-	LAND = upPath(LAND); LAKE = upPath(LAKE);
-	REG.forEach(function (r) { var u = MAP.upgradeXY(r[1], r[2], 1); r[1] = u.x; r[2] = u.y; if (r[3]) r[3] = upPath(r[3]); });
-	var PAINTED = "/gta-6-map/img/leonida-map.jpg?v=1";
+	/* ======================= the base map (MAP_V 3: our own simplified vector drawing of Leonida; 0..1000) =======================
+	   Shapes, highways and labels live in /gta-6-map/data/leonida-v3.json (made 2026-11-19 from the state's real geography): land (coast,
+	   islands, lakes as holes), urban areas, highways [shield, kind i|u|s, points] and labels [text, x, y, kind c county | t town |
+	   s small town | p place | w water]. Small labels show from zoom 1.8. */
+	var DATA_URL = "/gta-6-map/data/leonida-v3.json?v=1", MAPD = null;
+	/* region names for the Add form: nearest of these label spots (within 240 units), else "Somewhere else" */
+	var REG = [["Vice City", 630, 522], ["Vice Beach", 770, 489], ["Vice-Dale County", 670, 592], ["Leonard County", 653, 352], ["Kelly County", 441, 392],
+		["Lummox County", 498, 180], ["Mariana County", 432, 744], ["Leonida Keys", 470, 880], ["Grassrivers", 462, 671], ["Port Gellhorn", 350, 343],
+		["Ambrosia", 542, 350], ["Hamlet", 546, 695], ["Mount Kalaga", 498, 213]];
 	function drawBase() {
+		if (!MAPD) {
+			fetch(DATA_URL).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { MAPD = d; drawBase(); })
+				.catch(function () { var st = $("gm-status"); if (st) st.textContent = "Could not load the map drawing. Pins still work."; });
+			return drawGrid();
+		}
 		var g = $("gm-base"); g.innerHTML = "";
-		/* painted picture (MAP_V 2); the vector regions stay as invisible hit areas */
-		el("image", { href: PAINTED, x: 0, y: 0, width: 1000, height: 1000, preserveAspectRatio: "none", "class": "gm-pic" }, g);
-		REG.forEach(function (r) { if (r[3]) el("path", { d: r[3], "class": "gm-reg gm-hit", fill: r[4] }, g); });
-		return drawGrid();
-	}
-	function drawSketch() {
-		var g = $("gm-base"); g.innerHTML = "";
-		el("path", { d: LAND, "class": "gm-land" }, g);
-		ISLES.forEach(function (i) { el("ellipse", { cx: i[0], cy: i[1], rx: i[2], ry: i[3], "class": "gm-land" }, g); });
-		KEYS.forEach(function (k) { el("ellipse", { cx: k[0], cy: k[1], rx: k[2], ry: k[3], "class": "gm-land" }, g); });
-		REG.forEach(function (r) { if (r[3]) el("path", { d: r[3], "class": "gm-reg", fill: r[4] }, g); });
-		el("path", { d: LAKE, "class": "gm-water" }, g);
-		el("path", { d: "M520,560 C560,600 600,640 620,700 M560,540 C610,590 660,600 700,640", "class": "gm-river" }, g);
-		for (var i = 0; i < 5; i++) el("path", { d: "M" + (450 + i * 38) + ",200 l14,-26 l14,26", "class": "gm-mtn" }, g);
-		ROADS.forEach(function (d) { el("path", { d: d, "class": "gm-road" }, g); });
-		/* city blocks for Vice City */
-		for (var r = 0; r < 4; r++) for (var c = 0; c < 3; c++) el("rect", { x: 805 + c * 16, y: 650 + r * 18, width: 11, height: 13, rx: 1.5, "class": "gm-block" }, g);
-		el("path", { d: LAND, "class": "gm-coast" }, g);
+		el("path", { d: MAPD.land, "class": "gm-land", "fill-rule": "evenodd" }, g);
+		el("path", { d: MAPD.urban, "class": "gm-urban" }, g);
+		el("path", { d: MAPD.land, "class": "gm-coast", "fill-rule": "evenodd" }, g);
+		MAPD.roads.forEach(function (r) {
+			var d = "M" + r[2].map(function (q) { return q[0] + "," + q[1]; }).join(" L");
+			el("path", { d: d, "class": "gm-hwc" }, g); el("path", { d: d, "class": "gm-hw gm-hw--" + r[1] }, g);
+		});
 		drawGrid();
 	}
 	function drawGrid() {
 		var n = $("gm-names"); n.innerHTML = "";
-		REG.forEach(function (r) { var t = el("text", { x: r[1], y: r[2], "class": "gm-name", "text-anchor": "middle" }, n); t.textContent = r[0]; });
-		var gg = $("gm-gridg"); gg.innerHTML = "";
+		if (MAPD) {
+			MAPD.labels.forEach(function (l) { var t = el("text", { x: l[1], y: l[2], "class": "gm-name gm-name--" + l[3], "text-anchor": "middle" }, n); t.textContent = l[0]; });
+			MAPD.roads.forEach(function (r) {
+				var q = r[2][Math.floor(r[2].length / 2)], t = el("text", { x: q[0], y: q[1], dy: "0.35em", "class": "gm-shield gm-shield--" + r[1], "text-anchor": "middle" }, n);
+				t.textContent = (r[1] === "i" ? "I-" : r[1] === "u" ? "US " : "SR ") + r[0];
+			});
+		}
+		var gg2 = $("gm-gridg"); gg2.innerHTML = "";
 		for (var j = 0; j <= 10; j++) {
-			el("line", { x1: j * 100, y1: 0, x2: j * 100, y2: 1000, "class": "gm-gl" }, gg);
-			el("line", { x1: 0, y1: j * 100, x2: 1000, y2: j * 100, "class": "gm-gl" }, gg);
+			el("line", { x1: j * 100, y1: 0, x2: j * 100, y2: 1000, "class": "gm-gl" }, gg2);
+			el("line", { x1: 0, y1: j * 100, x2: 1000, y2: j * 100, "class": "gm-gl" }, gg2);
 			if (j < 10) {
-				var a = el("text", { x: j * 100 + 50, y: 16, "class": "gm-gt", "text-anchor": "middle" }, gg); a.textContent = "ABCDEFGHIJ"[j];
-				var d = el("text", { x: 8, y: j * 100 + 56, "class": "gm-gt" }, gg); d.textContent = String(j + 1);
+				var a = el("text", { x: j * 100 + 50, y: 16, "class": "gm-gt", "text-anchor": "middle" }, gg2); a.textContent = "ABCDEFGHIJ"[j];
+				var d = el("text", { x: 8, y: j * 100 + 56, "class": "gm-gt" }, gg2); d.textContent = String(j + 1);
 			}
 		}
 	}
 	function gridRef(x, y) { return "ABCDEFGHIJ"[Math.min(9, Math.floor(x / 100))] + (Math.min(9, Math.floor(y / 100)) + 1); }
 	function nearRegion(x, y) {
-		/* inside a shaded area first, else the nearest label */
-		var svg = $("gm-svg"), best = "", bd = 1e9;
-		for (var i = 0; i < REG.length; i++) {
-			var r = REG[i];
-			if (r[3] && svg.createSVGPoint) { var p = $("gm-base").querySelectorAll(".gm-reg")[i]; if (p && p.isPointInFill) { var pt = svg.createSVGPoint(); pt.x = x; pt.y = y; try { if (p.isPointInFill(pt)) return r[0]; } catch (e) { /* old browser */ } } }
-			var dd = (r[1] - x) * (r[1] - x) + (r[2] - y) * (r[2] - y); if (dd < bd) { bd = dd; best = r[0]; }
-		}
+		var best = "", bd = 1e9;
+		REG.forEach(function (r) { var dd = (r[1] - x) * (r[1] - x) + (r[2] - y) * (r[2] - y); if (dd < bd) { bd = dd; best = r[0]; } });
 		return bd < 240 * 240 ? best : "Somewhere else";
 	}
 
@@ -110,6 +93,7 @@
 		var u = 1000 / Math.max(160, Math.min(stage.clientWidth || 600, stage.clientHeight || 600)), k = (0.95 * u / V.z).toFixed(4);   /* u = map units per screen px: pins keep their size on screen */
 		Array.prototype.forEach.call(document.querySelectorAll("#gm-pins > g, #gm-draft > g"), function (p) { p.setAttribute("transform", "translate(" + p.getAttribute("data-x") + "," + p.getAttribute("data-y") + ") scale(" + k + ")"); });
 		$("gm-names").setAttribute("font-size", (14 * u / V.z).toFixed(2));
+		$("gm-svg").classList.toggle("gm-far", V.z < 1.8);
 		$("gm-gridg").setAttribute("font-size", (11 * u / V.z).toFixed(2));
 		placePop();
 	}

@@ -10,13 +10,17 @@
 	"use strict";
 	var G0 = 9.80665, RAD = Math.PI / 180;
 
-	/* ======================= facts (checked 2026-11-07) ======================= */
+	/* ======================= facts (checked 2026-11-19, launch day) ======================= */
 	var FACTS = {
-		release: "2026-11-19", preload: "2026-11-10", sizeGB: 212, platforms: "PS5 and Xbox Series X|S",
-		checked: "2026-11-07",
-		sources: [["Rockstar's file size and preload announcement (Forbes, 3 Nov 2026)", "https://www.forbes.com/sites/paultassi/2026/11/03/gta-6-pre-load-date-and-time-revealed-huge-file-size-confirmed/"],
-			["GameSpot: GTA 6 file size", "https://www.gamespot.com/articles/gta-6-file-size-revealed-and-its-massive/"],
-			["Push Square: release times and preload", "https://www.pushsquare.com/guides/gta-6-release-times-and-preload-when-can-you-start-playing"]]
+		release: "2026-11-19", preload: "2026-11-10", sizeGB: 212, out: true, platforms: "PS5 and Xbox Series X|S",
+		unlock: "midnight local time in each region (Rockstar); PlayStation Store USA + Canada: midnight Eastern; Xbox Cloud Gaming: 1 a.m. Eastern",
+		updatesGB: { ps5: 1.7, xbox: 3.8 },   /* the two updates released before launch (about 1.07 + 0.6 GB on PS5, 2.18 + 1.6 GB on Xbox) */
+		checked: "2026-11-19",
+		sources: [["Rockstar: Grand Theft Auto VI now available (19 Nov 2026)", "https://www.rockstargames.com/newswire/article/39akk424a9oo53/grand-theft-auto-vi-now-available"],
+			["Rockstar: pre-load timing and size (3 Nov 2026)", "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10"],
+			["Rockstar: official Leonida map (media page)", "https://www.rockstargames.com/VI/media"],
+			["Forbes: PlayStation unlock time in North America", "https://www.forbes.com/sites/brianmazique/2026/11/12/gta-6-unlocks-at-midnight-on-november-19-but-millions-of-americans-can-start-playing-the-night-before/"],
+			["GGRecon: the pre-launch updates", "https://www.ggrecon.com/articles/gta-6-update-1-002-before-launch/"]]
 	};
 
 	/* ======================= vehicles (generic, not game vehicles) ======================= */
@@ -453,21 +457,41 @@
 
 
 	/* ======================= community map (mes.fm/gta-6-map, api/gta-map.js) ======================= */
-	/* Map coordinates are 0..1000 on both axes of the map picture (MAP_V = its version: a new picture gets a new number,
-	   and pins keep the version they were made on). Regions are the names Rockstar has published; the picture is a rough fan sketch. */
-	var MAP_V = 2;
-	/* v1 = the first hand-drawn sketch; v2 = the painted picture (img/leonida-map.jpg), laid out from that sketch.
-	   upgradeXY moves a v1 spot onto the v2 picture (least-squares affine from 10 landmarks, ~20 units off at worst). */
+	/* Map coordinates are 0..1000 on both axes of the map (MAP_V = its version: a new map gets a new number, and pins keep the version
+	   they were made on). v1 = the first hand-drawn sketch; v2 = the painted pre-release fan map; v3 (launch day, 2026-11-19) = our own
+	   simplified vector drawing of Leonida from the real geography (coastline, towns, highways), laid out so the state's official map
+	   frame is 1000 tall and centred: x = 141.5 + 1000 * (u - left) / height, y = 1000 * (v - top) / height. */
+	var MAP_V = 3;
+	/* upgradeXY moves a v1 spot onto v2 (least-squares affine) and a v2 spot onto v3. The fan map's geography was invented, so v2 -> v3
+	   is a smooth warp (inverse-distance-weighted shifts) through landmarks: the fan map's region names and the places that kept their
+	   meaning, each paired with the real spot. Exact at the landmarks; elsewhere a pin lands in the right part of the state. */
 	var V1TO2 = [1.050354, -0.031565, -18.8582, 0.001665, 1.025151, -65.0559];
+	var V2TO3 = [[871.1, 643.7, 770, 495], [824.5, 588.3, 655, 536], [851.7, 727.8, 734, 559], [800.4, 551.4, 700, 445], [601.2, 879.1, 515, 880],
+		[425.7, 916.8, 328, 893], [634.9, 604.4, 462, 671], [706.9, 243.7, 542, 350], [500.8, 115.2, 498, 213], [195.2, 145.4, 350, 350],
+		[830.8, 653.9, 630, 522], [519.9, 858.5, 470, 880]];
+	function v2to3(x, y) {
+		var sw = 0, dx = 0, dy = 0;
+		for (var i = 0; i < V2TO3.length; i++) {
+			var L = V2TO3[i], d2 = (x - L[0]) * (x - L[0]) + (y - L[1]) * (y - L[1]);
+			if (d2 < 1e-6) return { x: L[2], y: L[3] };
+			var w = 1 / (d2 * d2); sw += w; dx += w * (L[2] - L[0]); dy += w * (L[3] - L[1]);
+		}
+		return { x: x + dx / sw, y: y + dy / sw };
+	}
 	function upgradeXY(x, y, m) {
-		if (m >= 2) return { x: x, y: y };
-		var a = V1TO2, nx = a[0] * x + a[1] * y + a[2], ny = a[3] * x + a[4] * y + a[5];
-		return { x: Math.round(Math.max(0, Math.min(1000, nx)) * 10) / 10, y: Math.round(Math.max(0, Math.min(1000, ny)) * 10) / 10 };
+		m = m || 1;
+		if (m >= MAP_V) return { x: x, y: y };
+		var nx = x, ny = y, a = V1TO2;
+		if (m < 2) { nx = a[0] * x + a[1] * y + a[2]; ny = a[3] * x + a[4] * y + a[5]; }
+		var u = v2to3(nx, ny);
+		return { x: Math.round(Math.max(0, Math.min(1000, u.x)) * 10) / 10, y: Math.round(Math.max(0, Math.min(1000, u.y)) * 10) / 10 };
 	}
 	var PIN_CATS = [["secret", "Secret", "#c2185b"], ["animal", "Animal", "#2e7d32"], ["fishing", "Fishing", "#0277bd"], ["gem", "Hidden gem", "#f9a825"],
 		["egg", "Easter egg", "#7b1fa2"], ["collect", "Collectible", "#ef6c00"], ["activity", "Activity", "#00838f"], ["vehicle", "Vehicle", "#455a64"],
 		["stunt", "Stunt jump", "#d84315"], ["other", "Other", "#6d4c41"]];
-	var REGIONS = ["Vice City", "Leonida Keys", "Grassrivers", "Port Gellhorn", "Ambrosia", "Mount Kalaga", "Somewhere else"];
+	/* counties and big places of Leonida (Rockstar's official map); the older names stay valid so old pins keep theirs */
+	var REGIONS = ["Vice City", "Vice Beach", "Vice-Dale County", "Leonard County", "Kelly County", "Lummox County", "Mariana County", "Leonida Keys", "Grassrivers",
+		"Port Gellhorn", "Ambrosia", "Hamlet", "Mount Kalaga", "Somewhere else"];
 	var BAD = /\b(n[i1!]gg(a|er|uh)s?|f[a@]gg?(ot|s)?|r[e3]t[a@]rds?|k[i1]kes?|ch[i1]nks?|sp[i1]cs?|tr[a@]nn(y|ies))\b/i;
 	function pinText(v, max, lines) {
 		if (typeof v !== "string") return null;
@@ -583,35 +607,40 @@
 		if (!rec || rec.a !== "vote" || typeof rec.id !== "string" || !/^[a-z0-9]{8}$/.test(rec.id) || [1, -1, 0].indexOf(rec.vt) < 0) return { error: "that is not a vote" };
 		return { id: rec.id, v: rec.vt };
 	}
-	/* ---------- known places: a starter layer written by MES (our own words) from the trailers and Rockstar's region descriptions.
-	   Spots are approximate (x, y in 0..1000 of the v1 sketch, moved onto the picture by upgradeXY); they move to the real spot when the map is redrawn after launch.
+	/* ---------- known places: a starter layer written by MES (our own words): real towns, parks, lakes and islands of Leonida, placed at
+	   their spot on the official map (v3 coordinates). Ids kept from the pre-release list so "found" ticks and notes carry over.
 	   Not votable, never stored on the server. [id, x, y, cat, title, description, region] ---------- */
 	var PLACES = [
-		["k-vc-beach", 868, 690, "gem", "Vice Beach", "The ocean-front strip with art-deco hotels and neon signs, seen in both trailers.", "Vice City"],
-		["k-vc-downtown", 822, 636, "other", "Downtown Vice City", "The high-rise city centre seen from the water and the air in the trailers.", "Vice City"],
-		["k-vc-night", 832, 716, "activity", "Nightlife district", "Clubs, parties and crowded streets after dark, as shown in the trailers.", "Vice City"],
-		["k-vc-marina", 852, 772, "vehicle", "Marina and yachts", "Boats, yachts and speedboats around the city's waterfront, as shown in the trailers.", "Vice City"],
-		["k-vc-bridges", 798, 600, "stunt", "Bay bridges", "Long road bridges between the mainland and the beach islands.", "Vice City"],
-		["k-keys-bridge", 618, 920, "stunt", "Overseas bridges", "A chain of islands joined by long road bridges heading south-west.", "Leonida Keys"],
-		["k-keys-fish", 660, 905, "fishing", "Shallow-water fishing", "Clear, shallow water around the islands: a natural spot for fishing and boats.", "Leonida Keys"],
-		["k-keys-boats", 700, 885, "vehicle", "Island boat traffic", "Boats are the quickest way between the islands.", "Leonida Keys"],
-		["k-keys-end", 452, 957, "gem", "End of the Keys", "The last small islands at the far end of the chain.", "Leonida Keys"],
-		["k-gr-airboat", 642, 652, "vehicle", "Airboats", "Airboats skimming through the wetlands, as shown in the trailers.", "Grassrivers"],
-		["k-gr-gators", 600, 600, "animal", "Alligators", "Alligators were shown in the trailers: expect them near the water.", "Grassrivers"],
-		["k-gr-river", 575, 612, "fishing", "Swamp river fishing", "Slow rivers and channels winding through the wetlands.", "Grassrivers"],
-		["k-gr-birds", 700, 700, "animal", "Wetland birds", "Herons and other water birds in the swamp.", "Grassrivers"],
-		["k-am-town", 700, 300, "other", "Ambrosia town", "A small inland town; Rockstar's region description puts its sugar industry here.", "Ambrosia"],
-		["k-am-bikers", 760, 250, "activity", "Biker hangouts", "Rockstar's description of Ambrosia mentions bikers: look for their bars and clubhouses.", "Ambrosia"],
-		["k-am-fields", 640, 360, "gem", "Cane fields", "Farmland and sugar cane fields around the town.", "Ambrosia"],
-		["k-am-lake", 650, 465, "fishing", "Inland lake", "A lake on our sketch inland; good water for fishing and boats.", "Ambrosia"],
-		["k-mk-hunt", 500, 175, "animal", "Hunting grounds", "Mount Kalaga National Park is the wild north: forests, wildlife and hunting.", "Mount Kalaga"],
-		["k-mk-trails", 590, 200, "vehicle", "Off-road trails", "Dirt roads and trails through the park for trucks, ATVs and bikes.", "Mount Kalaga"],
-		["k-mk-river", 440, 215, "fishing", "Mountain rivers", "Rivers in the national park for quiet fishing.", "Mount Kalaga"],
-		["k-mk-view", 470, 150, "gem", "Park lookout", "High ground in the north with views over the park.", "Mount Kalaga"],
-		["k-pg-town", 210, 205, "other", "Port Gellhorn", "Rockstar describes a run-down port town on the Gulf coast, past its best days.", "Port Gellhorn"],
-		["k-pg-docks", 300, 150, "fishing", "Gulf docks", "Docks and piers on the Gulf coast.", "Port Gellhorn"],
-		["k-pg-beach", 130, 225, "gem", "Gulf beaches", "Quieter beaches along the Gulf coast west of the town.", "Port Gellhorn"]
-	].map(function (r) { var u = upgradeXY(r[1], r[2], 1); return { id: r[0], x: u.x, y: u.y, cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
+		["k-vc-beach", 770, 495, "gem", "Vice Beach", "The ocean-front city on the barrier island east of Vice City: beaches, hotels and neon.", "Vice Beach"],
+		["k-vc-downtown", 655, 536, "other", "Downtown Vice City", "The high-rise centre of Vice City, on the bay south of Crosstown.", "Vice City"],
+		["k-vc-night", 624, 535, "activity", "Little Cuba", "A Vice City neighbourhood just west of downtown.", "Vice City"],
+		["k-vc-marina", 734, 559, "vehicle", "Port Vice City", "The port on the island south of Vice Beach, across the bay from downtown.", "Vice City"],
+		["k-vc-bridges", 700, 445, "stunt", "Bay causeways", "Road causeways hop across Penmarch Isle and Washington Island to Vice Beach.", "Vice City"],
+		["k-vc-airport", 550, 574, "vehicle", "Vice City International Airport (VCIA)", "The big airport west of Vice City, beside Interstate 404 and US 35.", "Vice-Dale County"],
+		["k-vc-starfish", 719, 515, "gem", "Starfish Island", "A small round island in the bay between downtown and Vice Beach.", "Vice City"],
+		["k-keys-bridge", 515, 880, "stunt", "Route 1A bridges", "State Route 1A, a toll road, joins the Keys with long bridges from Key Lento west to Southwind.", "Leonida Keys"],
+		["k-keys-fish", 580, 771, "fishing", "Shoeless Keys", "Shallow water and small islands beside Route 1A near Peregrine Bay.", "Leonida Keys"],
+		["k-keys-boats", 552, 850, "other", "Key Lento", "The biggest town on the Keys, along Route 1A.", "Leonida Keys"],
+		["k-keys-end", 328, 893, "gem", "Mile Zero Air Station", "The end of the road: an air station on the last island, Goose Key, past Southwind.", "Leonida Keys"],
+		["k-gr-airboat", 462, 671, "vehicle", "Grassrivers", "The wetlands town on the south coast, south of Breakwater Quarry.", "Grassrivers"],
+		["k-gr-gators", 517, 743, "animal", "Pelican Valley", "Marsh and channels south of Hamlet in Mariana County: wildlife country.", "Mariana County"],
+		["k-gr-river", 447, 715, "fishing", "Watson Bay", "A fishing town on the marshy south coast of Mariana County.", "Mariana County"],
+		["k-gr-birds", 485, 472, "animal", "Buckskin Swamp", "A big swamp in the middle of Kelly County, between US 183 and US 35.", "Kelly County"],
+		["k-am-town", 542, 350, "other", "Ambrosia", "The inland town on US 35, south of Lake Leonida.", "Ambrosia"],
+		["k-am-bikers", 536, 296, "activity", "Ambrosia Raceway Park", "A race track north of Ambrosia, near the Thrillbilly Mud Club.", "Ambrosia"],
+		["k-am-fields", 466, 375, "gem", "Citrus and dairy farms", "Farm country west of Ambrosia: Tucker's Citrus Farms and Howe Dairy.", "Kelly County"],
+		["k-am-lake", 580, 307, "fishing", "Lake Leonida", "The state's big lake, between Ambrosia and Millport.", "Leonard County"],
+		["k-mk-hunt", 498, 213, "animal", "Mount Kalaga National Park", "The forested hills of Lummox County in the north: wildlife and hunting.", "Mount Kalaga"],
+		["k-mk-trails", 415, 282, "vehicle", "Manifest Canyon", "A canyon in North Kelly County, off Interstate 297.", "Kelly County"],
+		["k-mk-river", 541, 128, "fishing", "Moreau River", "A river reaching the north coast near the Saint Attaway Islands.", "Lummox County"],
+		["k-mk-view", 480, 152, "gem", "MacAlister Gold Mine", "An old gold mine in the hills near Bonanza and Moreau.", "Lummox County"],
+		["k-pg-town", 350, 350, "other", "Port Gellhorn", "The port town on the Gulf coast, at the north end of Interstate 404.", "Port Gellhorn"],
+		["k-pg-docks", 345, 432, "activity", "Gellhorn Raceway", "A race track south of Port Gellhorn, by Borrachero Sound.", "Port Gellhorn"],
+		["k-pg-beach", 337, 529, "gem", "Capri", "A Gulf coast town on US 183 by Capri Sound.", "Kelly County"],
+		["k-hamlet", 546, 695, "other", "Hamlet", "The southern town on US 35, home of the Boone Speedway.", "Hamlet"],
+		["k-millport", 622, 216, "other", "Millport", "A town in Leonard County at the east end of Interstate 297.", "Leonard County"],
+		["k-draper", 305, 289, "other", "Draper Island", "An island town in the north-west, linked to the mainland by Interstate 297.", "Port Gellhorn"]
+	].map(function (r) { return { id: r[0], x: r[1], y: r[2], cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
 	/* group pins that sit closer than r map units (greedy, densest first): [{x, y, ids, pins}] (one entry = a single pin) */
 	function clusterPins(list, r) {
 		var out = [], used = {}, r2 = r * r, a = list.slice();
@@ -644,7 +673,7 @@
 		return { m: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, cat: cat, title: title, desc: note, region: REGIONS.indexOf(b.region) >= 0 ? b.region : "" } };
 	}
 	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
-	var MAP = { MAP_V: MAP_V, upgradeXY: upgradeXY, V1TO2: V1TO2, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
+	var MAP = { MAP_V: MAP_V, upgradeXY: upgradeXY, V1TO2: V1TO2, V2TO3: V2TO3, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
 		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD,
 		HIVE_W: HIVE_W, wv: wv, statusOf: statusOf, hiveOk: hiveOk, scoreOf: scoreOf, explorers: explorers,
 		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord,

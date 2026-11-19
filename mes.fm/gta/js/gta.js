@@ -76,13 +76,17 @@
 	"use strict";
 	var G0 = 9.80665, RAD = Math.PI / 180;
 
-	/* ======================= facts (checked 2026-11-07) ======================= */
+	/* ======================= facts (checked 2026-11-19, launch day) ======================= */
 	var FACTS = {
-		release: "2026-11-19", preload: "2026-11-10", sizeGB: 212, platforms: "PS5 and Xbox Series X|S",
-		checked: "2026-11-07",
-		sources: [["Rockstar's file size and preload announcement (Forbes, 3 Nov 2026)", "https://www.forbes.com/sites/paultassi/2026/11/03/gta-6-pre-load-date-and-time-revealed-huge-file-size-confirmed/"],
-			["GameSpot: GTA 6 file size", "https://www.gamespot.com/articles/gta-6-file-size-revealed-and-its-massive/"],
-			["Push Square: release times and preload", "https://www.pushsquare.com/guides/gta-6-release-times-and-preload-when-can-you-start-playing"]]
+		release: "2026-11-19", preload: "2026-11-10", sizeGB: 212, out: true, platforms: "PS5 and Xbox Series X|S",
+		unlock: "midnight local time in each region (Rockstar); PlayStation Store USA + Canada: midnight Eastern; Xbox Cloud Gaming: 1 a.m. Eastern",
+		updatesGB: { ps5: 1.7, xbox: 3.8 },   /* the two updates released before launch (about 1.07 + 0.6 GB on PS5, 2.18 + 1.6 GB on Xbox) */
+		checked: "2026-11-19",
+		sources: [["Rockstar: Grand Theft Auto VI now available (19 Nov 2026)", "https://www.rockstargames.com/newswire/article/39akk424a9oo53/grand-theft-auto-vi-now-available"],
+			["Rockstar: pre-load timing and size (3 Nov 2026)", "https://www.rockstargames.com/newswire/article/k4ak9okk485712/grand-theft-auto-vi-pre-load-begins-on-november-10"],
+			["Rockstar: official Leonida map (media page)", "https://www.rockstargames.com/VI/media"],
+			["Forbes: PlayStation unlock time in North America", "https://www.forbes.com/sites/brianmazique/2026/11/12/gta-6-unlocks-at-midnight-on-november-19-but-millions-of-americans-can-start-playing-the-night-before/"],
+			["GGRecon: the pre-launch updates", "https://www.ggrecon.com/articles/gta-6-update-1-002-before-launch/"]]
 	};
 
 	/* ======================= vehicles (generic, not game vehicles) ======================= */
@@ -519,21 +523,41 @@
 
 
 	/* ======================= community map (mes.fm/gta-6-map, api/gta-map.js) ======================= */
-	/* Map coordinates are 0..1000 on both axes of the map picture (MAP_V = its version: a new picture gets a new number,
-	   and pins keep the version they were made on). Regions are the names Rockstar has published; the picture is a rough fan sketch. */
-	var MAP_V = 2;
-	/* v1 = the first hand-drawn sketch; v2 = the painted picture (img/leonida-map.jpg), laid out from that sketch.
-	   upgradeXY moves a v1 spot onto the v2 picture (least-squares affine from 10 landmarks, ~20 units off at worst). */
+	/* Map coordinates are 0..1000 on both axes of the map (MAP_V = its version: a new map gets a new number, and pins keep the version
+	   they were made on). v1 = the first hand-drawn sketch; v2 = the painted pre-release fan map; v3 (launch day, 2026-11-19) = our own
+	   simplified vector drawing of Leonida from the real geography (coastline, towns, highways), laid out so the state's official map
+	   frame is 1000 tall and centred: x = 141.5 + 1000 * (u - left) / height, y = 1000 * (v - top) / height. */
+	var MAP_V = 3;
+	/* upgradeXY moves a v1 spot onto v2 (least-squares affine) and a v2 spot onto v3. The fan map's geography was invented, so v2 -> v3
+	   is a smooth warp (inverse-distance-weighted shifts) through landmarks: the fan map's region names and the places that kept their
+	   meaning, each paired with the real spot. Exact at the landmarks; elsewhere a pin lands in the right part of the state. */
 	var V1TO2 = [1.050354, -0.031565, -18.8582, 0.001665, 1.025151, -65.0559];
+	var V2TO3 = [[871.1, 643.7, 770, 495], [824.5, 588.3, 655, 536], [851.7, 727.8, 734, 559], [800.4, 551.4, 700, 445], [601.2, 879.1, 515, 880],
+		[425.7, 916.8, 328, 893], [634.9, 604.4, 462, 671], [706.9, 243.7, 542, 350], [500.8, 115.2, 498, 213], [195.2, 145.4, 350, 350],
+		[830.8, 653.9, 630, 522], [519.9, 858.5, 470, 880]];
+	function v2to3(x, y) {
+		var sw = 0, dx = 0, dy = 0;
+		for (var i = 0; i < V2TO3.length; i++) {
+			var L = V2TO3[i], d2 = (x - L[0]) * (x - L[0]) + (y - L[1]) * (y - L[1]);
+			if (d2 < 1e-6) return { x: L[2], y: L[3] };
+			var w = 1 / (d2 * d2); sw += w; dx += w * (L[2] - L[0]); dy += w * (L[3] - L[1]);
+		}
+		return { x: x + dx / sw, y: y + dy / sw };
+	}
 	function upgradeXY(x, y, m) {
-		if (m >= 2) return { x: x, y: y };
-		var a = V1TO2, nx = a[0] * x + a[1] * y + a[2], ny = a[3] * x + a[4] * y + a[5];
-		return { x: Math.round(Math.max(0, Math.min(1000, nx)) * 10) / 10, y: Math.round(Math.max(0, Math.min(1000, ny)) * 10) / 10 };
+		m = m || 1;
+		if (m >= MAP_V) return { x: x, y: y };
+		var nx = x, ny = y, a = V1TO2;
+		if (m < 2) { nx = a[0] * x + a[1] * y + a[2]; ny = a[3] * x + a[4] * y + a[5]; }
+		var u = v2to3(nx, ny);
+		return { x: Math.round(Math.max(0, Math.min(1000, u.x)) * 10) / 10, y: Math.round(Math.max(0, Math.min(1000, u.y)) * 10) / 10 };
 	}
 	var PIN_CATS = [["secret", "Secret", "#c2185b"], ["animal", "Animal", "#2e7d32"], ["fishing", "Fishing", "#0277bd"], ["gem", "Hidden gem", "#f9a825"],
 		["egg", "Easter egg", "#7b1fa2"], ["collect", "Collectible", "#ef6c00"], ["activity", "Activity", "#00838f"], ["vehicle", "Vehicle", "#455a64"],
 		["stunt", "Stunt jump", "#d84315"], ["other", "Other", "#6d4c41"]];
-	var REGIONS = ["Vice City", "Leonida Keys", "Grassrivers", "Port Gellhorn", "Ambrosia", "Mount Kalaga", "Somewhere else"];
+	/* counties and big places of Leonida (Rockstar's official map); the older names stay valid so old pins keep theirs */
+	var REGIONS = ["Vice City", "Vice Beach", "Vice-Dale County", "Leonard County", "Kelly County", "Lummox County", "Mariana County", "Leonida Keys", "Grassrivers",
+		"Port Gellhorn", "Ambrosia", "Hamlet", "Mount Kalaga", "Somewhere else"];
 	var BAD = /\b(n[i1!]gg(a|er|uh)s?|f[a@]gg?(ot|s)?|r[e3]t[a@]rds?|k[i1]kes?|ch[i1]nks?|sp[i1]cs?|tr[a@]nn(y|ies))\b/i;
 	function pinText(v, max, lines) {
 		if (typeof v !== "string") return null;
@@ -649,35 +673,40 @@
 		if (!rec || rec.a !== "vote" || typeof rec.id !== "string" || !/^[a-z0-9]{8}$/.test(rec.id) || [1, -1, 0].indexOf(rec.vt) < 0) return { error: "that is not a vote" };
 		return { id: rec.id, v: rec.vt };
 	}
-	/* ---------- known places: a starter layer written by MES (our own words) from the trailers and Rockstar's region descriptions.
-	   Spots are approximate (x, y in 0..1000 of the v1 sketch, moved onto the picture by upgradeXY); they move to the real spot when the map is redrawn after launch.
+	/* ---------- known places: a starter layer written by MES (our own words): real towns, parks, lakes and islands of Leonida, placed at
+	   their spot on the official map (v3 coordinates). Ids kept from the pre-release list so "found" ticks and notes carry over.
 	   Not votable, never stored on the server. [id, x, y, cat, title, description, region] ---------- */
 	var PLACES = [
-		["k-vc-beach", 868, 690, "gem", "Vice Beach", "The ocean-front strip with art-deco hotels and neon signs, seen in both trailers.", "Vice City"],
-		["k-vc-downtown", 822, 636, "other", "Downtown Vice City", "The high-rise city centre seen from the water and the air in the trailers.", "Vice City"],
-		["k-vc-night", 832, 716, "activity", "Nightlife district", "Clubs, parties and crowded streets after dark, as shown in the trailers.", "Vice City"],
-		["k-vc-marina", 852, 772, "vehicle", "Marina and yachts", "Boats, yachts and speedboats around the city's waterfront, as shown in the trailers.", "Vice City"],
-		["k-vc-bridges", 798, 600, "stunt", "Bay bridges", "Long road bridges between the mainland and the beach islands.", "Vice City"],
-		["k-keys-bridge", 618, 920, "stunt", "Overseas bridges", "A chain of islands joined by long road bridges heading south-west.", "Leonida Keys"],
-		["k-keys-fish", 660, 905, "fishing", "Shallow-water fishing", "Clear, shallow water around the islands: a natural spot for fishing and boats.", "Leonida Keys"],
-		["k-keys-boats", 700, 885, "vehicle", "Island boat traffic", "Boats are the quickest way between the islands.", "Leonida Keys"],
-		["k-keys-end", 452, 957, "gem", "End of the Keys", "The last small islands at the far end of the chain.", "Leonida Keys"],
-		["k-gr-airboat", 642, 652, "vehicle", "Airboats", "Airboats skimming through the wetlands, as shown in the trailers.", "Grassrivers"],
-		["k-gr-gators", 600, 600, "animal", "Alligators", "Alligators were shown in the trailers: expect them near the water.", "Grassrivers"],
-		["k-gr-river", 575, 612, "fishing", "Swamp river fishing", "Slow rivers and channels winding through the wetlands.", "Grassrivers"],
-		["k-gr-birds", 700, 700, "animal", "Wetland birds", "Herons and other water birds in the swamp.", "Grassrivers"],
-		["k-am-town", 700, 300, "other", "Ambrosia town", "A small inland town; Rockstar's region description puts its sugar industry here.", "Ambrosia"],
-		["k-am-bikers", 760, 250, "activity", "Biker hangouts", "Rockstar's description of Ambrosia mentions bikers: look for their bars and clubhouses.", "Ambrosia"],
-		["k-am-fields", 640, 360, "gem", "Cane fields", "Farmland and sugar cane fields around the town.", "Ambrosia"],
-		["k-am-lake", 650, 465, "fishing", "Inland lake", "A lake on our sketch inland; good water for fishing and boats.", "Ambrosia"],
-		["k-mk-hunt", 500, 175, "animal", "Hunting grounds", "Mount Kalaga National Park is the wild north: forests, wildlife and hunting.", "Mount Kalaga"],
-		["k-mk-trails", 590, 200, "vehicle", "Off-road trails", "Dirt roads and trails through the park for trucks, ATVs and bikes.", "Mount Kalaga"],
-		["k-mk-river", 440, 215, "fishing", "Mountain rivers", "Rivers in the national park for quiet fishing.", "Mount Kalaga"],
-		["k-mk-view", 470, 150, "gem", "Park lookout", "High ground in the north with views over the park.", "Mount Kalaga"],
-		["k-pg-town", 210, 205, "other", "Port Gellhorn", "Rockstar describes a run-down port town on the Gulf coast, past its best days.", "Port Gellhorn"],
-		["k-pg-docks", 300, 150, "fishing", "Gulf docks", "Docks and piers on the Gulf coast.", "Port Gellhorn"],
-		["k-pg-beach", 130, 225, "gem", "Gulf beaches", "Quieter beaches along the Gulf coast west of the town.", "Port Gellhorn"]
-	].map(function (r) { var u = upgradeXY(r[1], r[2], 1); return { id: r[0], x: u.x, y: u.y, cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
+		["k-vc-beach", 770, 495, "gem", "Vice Beach", "The ocean-front city on the barrier island east of Vice City: beaches, hotels and neon.", "Vice Beach"],
+		["k-vc-downtown", 655, 536, "other", "Downtown Vice City", "The high-rise centre of Vice City, on the bay south of Crosstown.", "Vice City"],
+		["k-vc-night", 624, 535, "activity", "Little Cuba", "A Vice City neighbourhood just west of downtown.", "Vice City"],
+		["k-vc-marina", 734, 559, "vehicle", "Port Vice City", "The port on the island south of Vice Beach, across the bay from downtown.", "Vice City"],
+		["k-vc-bridges", 700, 445, "stunt", "Bay causeways", "Road causeways hop across Penmarch Isle and Washington Island to Vice Beach.", "Vice City"],
+		["k-vc-airport", 550, 574, "vehicle", "Vice City International Airport (VCIA)", "The big airport west of Vice City, beside Interstate 404 and US 35.", "Vice-Dale County"],
+		["k-vc-starfish", 719, 515, "gem", "Starfish Island", "A small round island in the bay between downtown and Vice Beach.", "Vice City"],
+		["k-keys-bridge", 515, 880, "stunt", "Route 1A bridges", "State Route 1A, a toll road, joins the Keys with long bridges from Key Lento west to Southwind.", "Leonida Keys"],
+		["k-keys-fish", 580, 771, "fishing", "Shoeless Keys", "Shallow water and small islands beside Route 1A near Peregrine Bay.", "Leonida Keys"],
+		["k-keys-boats", 552, 850, "other", "Key Lento", "The biggest town on the Keys, along Route 1A.", "Leonida Keys"],
+		["k-keys-end", 328, 893, "gem", "Mile Zero Air Station", "The end of the road: an air station on the last island, Goose Key, past Southwind.", "Leonida Keys"],
+		["k-gr-airboat", 462, 671, "vehicle", "Grassrivers", "The wetlands town on the south coast, south of Breakwater Quarry.", "Grassrivers"],
+		["k-gr-gators", 517, 743, "animal", "Pelican Valley", "Marsh and channels south of Hamlet in Mariana County: wildlife country.", "Mariana County"],
+		["k-gr-river", 447, 715, "fishing", "Watson Bay", "A fishing town on the marshy south coast of Mariana County.", "Mariana County"],
+		["k-gr-birds", 485, 472, "animal", "Buckskin Swamp", "A big swamp in the middle of Kelly County, between US 183 and US 35.", "Kelly County"],
+		["k-am-town", 542, 350, "other", "Ambrosia", "The inland town on US 35, south of Lake Leonida.", "Ambrosia"],
+		["k-am-bikers", 536, 296, "activity", "Ambrosia Raceway Park", "A race track north of Ambrosia, near the Thrillbilly Mud Club.", "Ambrosia"],
+		["k-am-fields", 466, 375, "gem", "Citrus and dairy farms", "Farm country west of Ambrosia: Tucker's Citrus Farms and Howe Dairy.", "Kelly County"],
+		["k-am-lake", 580, 307, "fishing", "Lake Leonida", "The state's big lake, between Ambrosia and Millport.", "Leonard County"],
+		["k-mk-hunt", 498, 213, "animal", "Mount Kalaga National Park", "The forested hills of Lummox County in the north: wildlife and hunting.", "Mount Kalaga"],
+		["k-mk-trails", 415, 282, "vehicle", "Manifest Canyon", "A canyon in North Kelly County, off Interstate 297.", "Kelly County"],
+		["k-mk-river", 541, 128, "fishing", "Moreau River", "A river reaching the north coast near the Saint Attaway Islands.", "Lummox County"],
+		["k-mk-view", 480, 152, "gem", "MacAlister Gold Mine", "An old gold mine in the hills near Bonanza and Moreau.", "Lummox County"],
+		["k-pg-town", 350, 350, "other", "Port Gellhorn", "The port town on the Gulf coast, at the north end of Interstate 404.", "Port Gellhorn"],
+		["k-pg-docks", 345, 432, "activity", "Gellhorn Raceway", "A race track south of Port Gellhorn, by Borrachero Sound.", "Port Gellhorn"],
+		["k-pg-beach", 337, 529, "gem", "Capri", "A Gulf coast town on US 183 by Capri Sound.", "Kelly County"],
+		["k-hamlet", 546, 695, "other", "Hamlet", "The southern town on US 35, home of the Boone Speedway.", "Hamlet"],
+		["k-millport", 622, 216, "other", "Millport", "A town in Leonard County at the east end of Interstate 297.", "Leonard County"],
+		["k-draper", 305, 289, "other", "Draper Island", "An island town in the north-west, linked to the mainland by Interstate 297.", "Port Gellhorn"]
+	].map(function (r) { return { id: r[0], x: r[1], y: r[2], cat: r[3], title: r[4], desc: r[5], region: r[6], kind: "k", up: 0, dn: 0, c: 0 }; });
 	/* group pins that sit closer than r map units (greedy, densest first): [{x, y, ids, pins}] (one entry = a single pin) */
 	function clusterPins(list, r) {
 		var out = [], used = {}, r2 = r * r, a = list.slice();
@@ -710,7 +739,7 @@
 		return { m: { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10, cat: cat, title: title, desc: note, region: REGIONS.indexOf(b.region) >= 0 ? b.region : "" } };
 	}
 	function catName(id) { for (var i = 0; i < PIN_CATS.length; i++) if (PIN_CATS[i][0] === id) return PIN_CATS[i][1]; return "Other"; }
-	var MAP = { MAP_V: MAP_V, upgradeXY: upgradeXY, V1TO2: V1TO2, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
+	var MAP = { MAP_V: MAP_V, upgradeXY: upgradeXY, V1TO2: V1TO2, V2TO3: V2TO3, PIN_CATS: PIN_CATS, REGIONS: REGIONS, pinText: pinText, hasLink: hasLink, cleanPin: cleanPin, clipId: clipId,
 		pinStatus: pinStatus, pinRank: pinRank, sortPins: sortPins, filterPins: filterPins, catName: catName, BAD: BAD,
 		HIVE_W: HIVE_W, wv: wv, statusOf: statusOf, hiveOk: hiveOk, scoreOf: scoreOf, explorers: explorers,
 		HIVE_ID: HIVE_ID, hivePinJson: hivePinJson, hiveVoteJson: hiveVoteJson, parseHistory: parseHistory, pinFromRecord: pinFromRecord, voteFromRecord: voteFromRecord,
@@ -1800,78 +1829,61 @@
 	if (!/^[a-f0-9]{32}$/.test(S.vid || "")) { var b = new Uint8Array(16); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach(function (_, i) { b[i] = Math.random() * 256; }); S.vid = Array.prototype.map.call(b, function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join(""); save(); }
 	S.mine = S.mine || {}; S.votes = S.votes || {}; S.hvotes = S.hvotes || {}; S.cats = S.cats || []; if (S.hsign == null) S.hsign = true;
 	S.found = S.found || {}; S.notes = S.notes || {}; S.my = Array.isArray(S.my) ? S.my : []; if (S.places == null) S.places = true;
-	(function () { var ch = false; S.my.forEach(function (m) { if (!(m.m >= 2)) { var u = MAP.upgradeXY(m.x, m.y, m.m || 1); m.x = u.x; m.y = u.y; m.m = MAP.MAP_V; ch = true; } }); if (ch) save(); })();
-	function upPins(list) { (list || []).forEach(function (p) { if (!(p.m >= 2)) { var u = MAP.upgradeXY(p.x, p.y, p.m || 1); p.x = u.x; p.y = u.y; } }); return list || []; }
+	(function () { var ch = false; S.my.forEach(function (m) { if (!(m.m >= MAP.MAP_V)) { var u = MAP.upgradeXY(m.x, m.y, m.m || 1); m.x = u.x; m.y = u.y; m.m = MAP.MAP_V; ch = true; } }); if (ch) save(); })();
+	function upPins(list) { (list || []).forEach(function (p) { if (!(p.m >= MAP.MAP_V)) { var u = MAP.upgradeXY(p.x, p.y, p.m || 1); p.x = u.x; p.y = u.y; } }); return list || []; }
 	var T0 = Date.now();
 	function toast(m) { var t = $("gj-toast"); if (!t) return; t.textContent = m; t.classList.add("is-on"); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("is-on"); }, 3600); }
 	var ICON = { secret: "🤫", animal: "🦌", fishing: "🎣", gem: "💎", egg: "🥚", collect: "⭐", activity: "🎯", vehicle: "🚗", stunt: "🏁", other: "📍" };
 	function catColor(id) { for (var i = 0; i < MAP.PIN_CATS.length; i++) if (MAP.PIN_CATS[i][0] === id) return MAP.PIN_CATS[i][2]; return "#6d4c41"; }
 
-	/* ======================= the base map (original sketch; 0..1000) ======================= */
-	var LAND = "M70,130 C150,95 260,110 330,128 C420,150 470,118 560,110 C660,100 760,120 870,108 L905,120 C900,190 860,240 850,300 " +
-		"C845,380 870,440 880,520 C890,600 900,660 870,740 C850,800 800,840 745,860 C705,872 668,850 650,812 C630,770 600,735 575,690 " +
-		"C548,640 530,590 520,530 C512,480 498,420 470,380 C440,335 405,300 360,285 C300,265 245,282 190,268 C140,255 95,232 70,205 Z";
-	var LAKE = "M600,430 C640,410 690,420 700,455 C708,490 670,515 630,505 C595,497 580,455 600,430 Z";
-	var KEYS = [[700, 885, 22, 9], [660, 905, 18, 7], [618, 920, 20, 7], [574, 932, 17, 6], [532, 942, 19, 7], [490, 950, 15, 6], [450, 957, 18, 6], [410, 962, 14, 5]];
-	var ISLES = [[905, 640, 26, 60], [255, 330, 30, 14]];
-	var REG = [  /* name, label x, y, shaded area path (rough) */
-		["Port Gellhorn", 210, 190, "M90,150 C170,120 300,130 360,150 L380,270 C300,262 230,280 170,262 C120,250 90,220 90,150 Z", "#9fb8a6"],
-		["Mount Kalaga", 500, 165, "M400,140 C470,120 560,118 640,120 L660,240 C580,250 500,250 430,235 Z", "#b9a98e"],
-		["Ambrosia", 700, 300, "M640,180 C720,150 820,150 860,170 L850,330 C860,390 870,420 860,430 C790,430 700,400 640,390 C560,380 520,330 560,260 Z", "#c9c08f"],
-		["Grassrivers", 640, 640, "M540,520 C600,540 700,560 760,580 C770,650 760,720 730,780 C690,790 650,770 620,730 C580,680 548,610 540,520 Z", "#8fb38a"],
-		["Vice City", 830, 700, "M790,560 C830,560 870,570 885,610 C892,680 880,740 850,790 C820,800 780,790 770,750 C770,690 775,620 790,560 Z", "#c7a0b3"],
-		["Leonida Keys", 540, 900, null, null]];
-	var ROADS = ["M150,210 C300,205 450,190 600,180 C700,175 800,190 870,200", "M760,180 C780,300 820,420 840,560 C850,640 845,720 830,780",
-		"M600,180 C590,280 600,380 620,470 C640,560 700,640 780,700", "M745,860 C700,890 620,920 520,945 C470,955 430,960 400,962"];
-	/* the v1 shapes above are moved onto the painted v2 picture (affine), so region hit tests and names line up */
-	function upPath(d) { var a = MAP.V1TO2, i = 0, prev = 0; return d.replace(/-?\d+(\.\d+)?/g, function (n) { var v = +n; if (i++ % 2 === 0) { prev = v; return "\u0000" + n; } var x = prev, y = v; return (Math.round((a[0] * x + a[1] * y + a[2]) * 10) / 10) + "," + (Math.round((a[3] * x + a[4] * y + a[5]) * 10) / 10); }).replace(/\u0000-?\d+(\.\d+)?,/g, ""); }
-	LAND = upPath(LAND); LAKE = upPath(LAKE);
-	REG.forEach(function (r) { var u = MAP.upgradeXY(r[1], r[2], 1); r[1] = u.x; r[2] = u.y; if (r[3]) r[3] = upPath(r[3]); });
-	var PAINTED = "/gta-6-map/img/leonida-map.jpg?v=1";
+	/* ======================= the base map (MAP_V 3: our own simplified vector drawing of Leonida; 0..1000) =======================
+	   Shapes, highways and labels live in /gta-6-map/data/leonida-v3.json (made 2026-11-19 from the state's real geography): land (coast,
+	   islands, lakes as holes), urban areas, highways [shield, kind i|u|s, points] and labels [text, x, y, kind c county | t town |
+	   s small town | p place | w water]. Small labels show from zoom 1.8. */
+	var DATA_URL = "/gta-6-map/data/leonida-v3.json?v=1", MAPD = null;
+	/* region names for the Add form: nearest of these label spots (within 240 units), else "Somewhere else" */
+	var REG = [["Vice City", 630, 522], ["Vice Beach", 770, 489], ["Vice-Dale County", 670, 592], ["Leonard County", 653, 352], ["Kelly County", 441, 392],
+		["Lummox County", 498, 180], ["Mariana County", 432, 744], ["Leonida Keys", 470, 880], ["Grassrivers", 462, 671], ["Port Gellhorn", 350, 343],
+		["Ambrosia", 542, 350], ["Hamlet", 546, 695], ["Mount Kalaga", 498, 213]];
 	function drawBase() {
+		if (!MAPD) {
+			fetch(DATA_URL).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { MAPD = d; drawBase(); })
+				.catch(function () { var st = $("gm-status"); if (st) st.textContent = "Could not load the map drawing. Pins still work."; });
+			return drawGrid();
+		}
 		var g = $("gm-base"); g.innerHTML = "";
-		/* painted picture (MAP_V 2); the vector regions stay as invisible hit areas */
-		el("image", { href: PAINTED, x: 0, y: 0, width: 1000, height: 1000, preserveAspectRatio: "none", "class": "gm-pic" }, g);
-		REG.forEach(function (r) { if (r[3]) el("path", { d: r[3], "class": "gm-reg gm-hit", fill: r[4] }, g); });
-		return drawGrid();
-	}
-	function drawSketch() {
-		var g = $("gm-base"); g.innerHTML = "";
-		el("path", { d: LAND, "class": "gm-land" }, g);
-		ISLES.forEach(function (i) { el("ellipse", { cx: i[0], cy: i[1], rx: i[2], ry: i[3], "class": "gm-land" }, g); });
-		KEYS.forEach(function (k) { el("ellipse", { cx: k[0], cy: k[1], rx: k[2], ry: k[3], "class": "gm-land" }, g); });
-		REG.forEach(function (r) { if (r[3]) el("path", { d: r[3], "class": "gm-reg", fill: r[4] }, g); });
-		el("path", { d: LAKE, "class": "gm-water" }, g);
-		el("path", { d: "M520,560 C560,600 600,640 620,700 M560,540 C610,590 660,600 700,640", "class": "gm-river" }, g);
-		for (var i = 0; i < 5; i++) el("path", { d: "M" + (450 + i * 38) + ",200 l14,-26 l14,26", "class": "gm-mtn" }, g);
-		ROADS.forEach(function (d) { el("path", { d: d, "class": "gm-road" }, g); });
-		/* city blocks for Vice City */
-		for (var r = 0; r < 4; r++) for (var c = 0; c < 3; c++) el("rect", { x: 805 + c * 16, y: 650 + r * 18, width: 11, height: 13, rx: 1.5, "class": "gm-block" }, g);
-		el("path", { d: LAND, "class": "gm-coast" }, g);
+		el("path", { d: MAPD.land, "class": "gm-land", "fill-rule": "evenodd" }, g);
+		el("path", { d: MAPD.urban, "class": "gm-urban" }, g);
+		el("path", { d: MAPD.land, "class": "gm-coast", "fill-rule": "evenodd" }, g);
+		MAPD.roads.forEach(function (r) {
+			var d = "M" + r[2].map(function (q) { return q[0] + "," + q[1]; }).join(" L");
+			el("path", { d: d, "class": "gm-hwc" }, g); el("path", { d: d, "class": "gm-hw gm-hw--" + r[1] }, g);
+		});
 		drawGrid();
 	}
 	function drawGrid() {
 		var n = $("gm-names"); n.innerHTML = "";
-		REG.forEach(function (r) { var t = el("text", { x: r[1], y: r[2], "class": "gm-name", "text-anchor": "middle" }, n); t.textContent = r[0]; });
-		var gg = $("gm-gridg"); gg.innerHTML = "";
+		if (MAPD) {
+			MAPD.labels.forEach(function (l) { var t = el("text", { x: l[1], y: l[2], "class": "gm-name gm-name--" + l[3], "text-anchor": "middle" }, n); t.textContent = l[0]; });
+			MAPD.roads.forEach(function (r) {
+				var q = r[2][Math.floor(r[2].length / 2)], t = el("text", { x: q[0], y: q[1], dy: "0.35em", "class": "gm-shield gm-shield--" + r[1], "text-anchor": "middle" }, n);
+				t.textContent = (r[1] === "i" ? "I-" : r[1] === "u" ? "US " : "SR ") + r[0];
+			});
+		}
+		var gg2 = $("gm-gridg"); gg2.innerHTML = "";
 		for (var j = 0; j <= 10; j++) {
-			el("line", { x1: j * 100, y1: 0, x2: j * 100, y2: 1000, "class": "gm-gl" }, gg);
-			el("line", { x1: 0, y1: j * 100, x2: 1000, y2: j * 100, "class": "gm-gl" }, gg);
+			el("line", { x1: j * 100, y1: 0, x2: j * 100, y2: 1000, "class": "gm-gl" }, gg2);
+			el("line", { x1: 0, y1: j * 100, x2: 1000, y2: j * 100, "class": "gm-gl" }, gg2);
 			if (j < 10) {
-				var a = el("text", { x: j * 100 + 50, y: 16, "class": "gm-gt", "text-anchor": "middle" }, gg); a.textContent = "ABCDEFGHIJ"[j];
-				var d = el("text", { x: 8, y: j * 100 + 56, "class": "gm-gt" }, gg); d.textContent = String(j + 1);
+				var a = el("text", { x: j * 100 + 50, y: 16, "class": "gm-gt", "text-anchor": "middle" }, gg2); a.textContent = "ABCDEFGHIJ"[j];
+				var d = el("text", { x: 8, y: j * 100 + 56, "class": "gm-gt" }, gg2); d.textContent = String(j + 1);
 			}
 		}
 	}
 	function gridRef(x, y) { return "ABCDEFGHIJ"[Math.min(9, Math.floor(x / 100))] + (Math.min(9, Math.floor(y / 100)) + 1); }
 	function nearRegion(x, y) {
-		/* inside a shaded area first, else the nearest label */
-		var svg = $("gm-svg"), best = "", bd = 1e9;
-		for (var i = 0; i < REG.length; i++) {
-			var r = REG[i];
-			if (r[3] && svg.createSVGPoint) { var p = $("gm-base").querySelectorAll(".gm-reg")[i]; if (p && p.isPointInFill) { var pt = svg.createSVGPoint(); pt.x = x; pt.y = y; try { if (p.isPointInFill(pt)) return r[0]; } catch (e) { /* old browser */ } } }
-			var dd = (r[1] - x) * (r[1] - x) + (r[2] - y) * (r[2] - y); if (dd < bd) { bd = dd; best = r[0]; }
-		}
+		var best = "", bd = 1e9;
+		REG.forEach(function (r) { var dd = (r[1] - x) * (r[1] - x) + (r[2] - y) * (r[2] - y); if (dd < bd) { bd = dd; best = r[0]; } });
 		return bd < 240 * 240 ? best : "Somewhere else";
 	}
 
@@ -1887,6 +1899,7 @@
 		var u = 1000 / Math.max(160, Math.min(stage.clientWidth || 600, stage.clientHeight || 600)), k = (0.95 * u / V.z).toFixed(4);   /* u = map units per screen px: pins keep their size on screen */
 		Array.prototype.forEach.call(document.querySelectorAll("#gm-pins > g, #gm-draft > g"), function (p) { p.setAttribute("transform", "translate(" + p.getAttribute("data-x") + "," + p.getAttribute("data-y") + ") scale(" + k + ")"); });
 		$("gm-names").setAttribute("font-size", (14 * u / V.z).toFixed(2));
+		$("gm-svg").classList.toggle("gm-far", V.z < 1.8);
 		$("gm-gridg").setAttribute("font-size", (11 * u / V.z).toFixed(2));
 		placePop();
 	}
@@ -2533,8 +2546,8 @@
 	if (PAGE === "hub") {
 		var target = M.midnight(myTz, REL);
 		(function tick() {
-			var p = countParts(target); $("gh-d").textContent = p.d; $("gh-h").textContent = pad(p.h); $("gh-m").textContent = pad(p.m); $("gh-s").textContent = pad(p.s);
-			if (p.total <= 0) $("gh-cdl").textContent = "It's out! Unlocked at midnight where you are.";
+			var out = Date.now() >= target, p = M.parts(Math.abs(Date.now() - target)); $("gh-d").textContent = p.d; $("gh-h").textContent = pad(p.h); $("gh-m").textContent = pad(p.m); $("gh-s").textContent = pad(p.s);
+			$("gh-cdl").textContent = out ? "since it unlocked where you are" : "until midnight where you are";
 			setTimeout(tick, 1000 - Date.now() % 1000 + 5);
 		})();
 		srcLine($("gh-src"));
@@ -2647,37 +2660,27 @@
 		}
 		$("gc-mode").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (!b) return; CM.mode = b.getAttribute("data-v"); paintMode(); tick(true); });
 		zsel.addEventListener("change", function () { CM.zone = zsel.value; paintMode(); tick(true); });
-		var announced = Date.UTC(2023, 11, 5); /* first trailer: the progress bar runs from there to launch */
 		function tick(once) {
-			var t = tgt(), p = countParts(t), tz = targetTz();
+			var t = tgt(), tz = targetTz(), out = Date.now() >= t, p = M.parts(out ? Date.now() - t : t - Date.now());
 			$("gc-d").textContent = p.d; $("gc-h").textContent = pad(p.h); $("gc-m").textContent = pad(p.m); $("gc-s").textContent = pad(p.s);
-			var label = CM.mode === "first" ? "GTA 6 unlocks first in New Zealand in" : CM.mode === "zone" ? "GTA 6 unlocks in " + zsel.options[zsel.selectedIndex].text.replace(/ \(.*/, "") + " in" : "GTA 6 unlocks where you are in";
-			if (p.total <= 0) { label = "GTA 6 is out!"; var since = Math.floor((Date.now() - t) / 86400000); $("gc-when").textContent = since >= 1 ? "Day " + (since + 1) + " since it unlocked." : "It unlocked at midnight."; }
-			else $("gc-when").textContent = "That is " + whenText(t, myTz) + " your time" + (tz !== myTz ? " (midnight on Nov 19 in " + tz.split("/").pop().replace(/_/g, " ") + ")" : " (midnight)") + ".";
-			$("gc-what").textContent = label;
-			$("gc-prog").style.width = Math.max(0, Math.min(100, (Date.now() - announced) / (t - announced) * 100)).toFixed(3) + "%";
-			var pre = M.midnight(myTz, PRE), pp = countParts(pre);
-			$("gc-pre").textContent = pp.total > 0 ? "Preload opens " + fmtIn(pre, myTz, { weekday: "long", month: "long", day: "numeric" }) + ": " + pp.d + " days " + pp.h + " hours away (the date is official, the hour may vary by store)." : "Preload is open: you can download it now and it unlocks on the 19th.";
+			var where = CM.mode === "first" ? "in New Zealand" : CM.mode === "zone" ? "in " + zsel.options[zsel.selectedIndex].text.replace(/ \(.*/, "") : "where you are";
+			$("gc-what").textContent = out ? "GTA 6 has been out " + where + " for" : "GTA 6 unlocks " + where + " in";
+			$("gc-when").textContent = (out ? "It unlocked " : "It unlocks ") + whenText(t, myTz) + " your time" + (tz !== myTz ? " (midnight on Nov 19 in " + tz.split("/").pop().replace(/_/g, " ") + ")." : " (midnight local time).") + (out ? " Day " + (Math.floor((Date.now() - t) / 86400000) + 1) + " of GTA 6." : "");
+			/* bar = how much of the world has it: first midnight (Auckland) to last (Honolulu) */
+			var u = M.unlockTimes(myTz, REL), share = Math.max(0, Math.min(1, (Date.now() - u.first) / (u.last - u.first)));
+			$("gc-prog").style.width = (share * 100).toFixed(3) + "%";
+			$("gc-pre").textContent = share >= 1 ? "It is out everywhere: the last time zones (Hawaii) unlocked " + agoShort(Date.now() - u.last) + " ago." : "Out in " + Math.round(share * 100) + "% of the world's time zones so far; Hawaii is last, in " + agoShort(u.last - Date.now()) + ".";
 			if (!once) setTimeout(tick, 1000 - Date.now() % 1000 + 5);
 		}
+		function agoShort(ms) { var q = M.parts(ms); return q.d ? q.d + " d " + q.h + " h" : q.h ? q.h + " h " + q.m + " min" : q.m + " min"; }
 		function world() {
 			var tb = $("gc-world"), rows = M.CITIES.map(function (c) { return [c[0], c[1], M.midnight(c[1], REL)]; }).sort(function (a, b) { return a[2] - b[2]; });
 			tb.innerHTML = rows.map(function (r) { var mine = r[1] === myTz; return "<tr" + (mine ? ' class="gc-me"' : "") + "><td>" + esc(r[0]) + (mine ? " <small>(you)</small>" : "") + "</td><td>" + esc(fmtIn(r[2], myTz, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })) + '</td><td data-t="' + r[2] + '"></td></tr>'; }).join("");
 			refreshWorld();
 		}
-		function refreshWorld() { Array.prototype.forEach.call($("gc-world").querySelectorAll("td[data-t]"), function (td) { var p = countParts(+td.getAttribute("data-t")); td.textContent = p.total <= 0 ? "out now" : p.d + "d " + p.h + "h " + p.m + "m"; }); }
+		function refreshWorld() { Array.prototype.forEach.call($("gc-world").querySelectorAll("td[data-t]"), function (td) { var d = Date.now() - +td.getAttribute("data-t"); td.textContent = d >= 0 ? agoShort(d) : "in " + agoShort(-d); }); }
 		setInterval(refreshWorld, 30000);
-		function links() {
-			var tz = targetTz(), title = "GTA 6 unlocks";
-			$("gc-remind").href = "/reminder?title=" + encodeURIComponent(title) + "&t=" + REL + "T00:00&tz=" + encodeURIComponent(tz) + "&u=/gta-6-countdown";
-			var t = tgt(), d = new Date(t), e = new Date(t + 3600000), f = function (x) { return x.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""); };
-			$("gc-gcal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(title) + "&dates=" + f(d) + "/" + f(e) + "&details=" + encodeURIComponent("Countdown: https://mes.fm/gta-6-countdown");
-		}
-		$("gc-ics").addEventListener("click", function () {
-			var t = tgt(), f = function (x) { return new Date(x).toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""); };
-			var ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//MES//GTA 6 Countdown//EN", "BEGIN:VEVENT", "UID:gta6-" + t + "@mes.fm", "DTSTAMP:" + f(Date.now()), "DTSTART:" + f(t), "DTEND:" + f(t + 3600000), "SUMMARY:GTA 6 unlocks", "DESCRIPTION:Countdown: https://mes.fm/gta-6-countdown", "BEGIN:VALARM", "TRIGGER:-PT15M", "ACTION:DISPLAY", "DESCRIPTION:GTA 6 unlocks in 15 minutes", "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
-			var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" })); a.download = "gta-6-unlock.ics"; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-		});
+		function links() { /* reminder links were for the countdown; nothing to set now that it is out */ }
 		$("gc-share").addEventListener("click", function () { var u = location.origin + location.pathname + (CM.mode === "local" ? "" : "?mode=" + CM.mode + (CM.mode === "zone" ? "&tz=" + encodeURIComponent(CM.zone) : "")); copy(u, "Link copied."); });
 		/* fill window / full screen (Esc closes) */
 		var box = $("gc-box");
@@ -2711,7 +2714,7 @@
 				t("Download time", M.durationText(sec), "at about " + mbs.toFixed(mbs < 10 ? 1 : 0) + " MB/s real speed", "big") +
 				t("Best case", M.durationText(raw), "if you got the plan's full speed") +
 				t("Start now, done", fmtIn(fin, myTz, { weekday: "short", hour: "numeric", minute: "2-digit" }), "your time") +
-				t("Start at preload, done", fmtIn(finPre, myTz, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), finPre < rel ? "ready before launch" : "after it unlocks", finPre < rel ? "ok" : "bad") +
+				(finPre < rel ? t("Start at preload, done", fmtIn(finPre, myTz, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), "ready before launch", "ok") : t("Plus updates", "≈ " + Math.round(num($("gd-patch").value, 0) * 8000 / Math.max(0.1, mbpsNow() * eff) / 60) + " min", "the updates part of the time")) +
 				t("Data used", size.toFixed(0) + " GB", "≈ " + Math.round(size / 1200 * 100) + "% of a 1.2 TB monthly cap") + "</div>";
 			/* other speeds */
 			var rows = M.CONNECTIONS.map(function (c) { return [c[0], c[1], M.downloadSeconds(size, c[1], "mbps", eff)]; }), mine = mbpsNow(), maxS = Math.min(rows[0][2], 3 * 86400);

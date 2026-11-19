@@ -122,13 +122,13 @@ def _bl(slug, start, title, page_title, desc, tab, meta_desc):
 # MES GTA 6 Hub (2026-11-07): one source (tool_apps_src/gta: lib.js = MESGTA physics + countdown + download maths, also mes.fm/api/_gta-lib.js for the
 # news function api/gta-news.js; sim.js = the stunt jump simulator UI; app.js = hub / countdown / download / jump calculator) for the hub /gta and three pages.
 # data-page on #gt picks the page. Unofficial fan pages (no Rockstar art or names beyond the game title). Rebuild all four together, bump js_v on all.
-GTA_BRAND = dict(slug="gta", title="MES GTA 6 Hub", tag="Unofficial GTA 6 tools: countdown, download time and a stunt jump simulator.")
-GTA_PAGES = [("gta", "Hub"), ("gta-stunt-jump-simulator", "Stunt Jump Simulator"), ("gta-6-countdown", "Countdown"), ("gta-6-download-time", "Download Time"), ("gta-6-map", "Map"), ("gta-music", "Music")]
+GTA_BRAND = dict(slug="gta", title="MES GTA 6 Hub", tag="Unofficial GTA 6 tools: a players' map of Leonida, launch times, download time and stunt jumps.")
+GTA_PAGES = [("gta", "Hub"), ("gta-stunt-jump-simulator", "Stunt Jump Simulator"), ("gta-6-countdown", "Launch Times"), ("gta-6-download-time", "Download Time"), ("gta-6-map", "Map"), ("gta-music", "Music")]
 GTA_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm.replace("Stunt Jump Simulator", "Stunt Jump")) for sl, nm in GTA_PAGES[1:])
 GTA_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">GTA 6 %s</a></li>' % (sl, nm) for sl, nm in GTA_PAGES[1:])
 def _gta(slug, page, title, page_title, desc, tab, meta_desc):
     fam = "".join('<a href="/%s"%s>%s</a>' % (sl, ' aria-current="page"' if sl == slug else "", "GTA 6 Hub" if sl == "gta" else nm) for sl, nm in GTA_PAGES)
-    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="22",
+    d = dict(title=title, page_title=page_title, tag=GTA_BRAND["tag"], accent="#c2185b", dark="#8e1145", tint="#fce4ec", desc=desc, meta_desc=meta_desc, js_v="23",
              src="gta", lib_from=["clock"], js_parts=["sim3d.js", "sim.js", "map.js"], nav_extra=GTA_NAV_INFO, menu_extra=GTA_NAV_MENU,
              vars={"PAGE": page, "FAM": fam, "BODY": "@%s.html" % page, "SEO": "@seo/%s.html" % page})
     if slug != "gta":
@@ -1423,20 +1423,20 @@ APPS = {
     "snooker": _bl("snooker", "S15", "MES Snooker", "Snooker: Play Free on a Full-Size 12-Foot Table",
                 "Play snooker free on a full-size 12-foot table: reds and colours, breaks, fouls and the black ball finish, with real spin and cushion physics, against the computer, a friend or online. Six-red snooker included.", 3,
                 "Play snooker free on a full-size table: reds, colours, breaks and fouls with real spin physics, against the computer, a friend or online. Six-red too."),
-    "gta": _gta("gta", "hub", "MES GTA 6 Hub", "GTA 6 Hub: Countdown, Download Time and Stunt Jump Simulator (Unofficial)",
-                "Unofficial GTA 6 hub: a countdown to the exact unlock time in your time zone, a download time and storage calculator for the 212 GB install, a stunt jump simulator with real car physics, and the latest GTA headlines.", 0,
-                "Unofficial GTA 6 hub: countdown to your local unlock time, 212 GB download time and storage check, a real-physics stunt jump simulator and GTA news."),
+    "gta": _gta("gta", "hub", "MES GTA 6 Hub", "GTA 6 Hub: Map, Launch Times, Download Time and Stunt Jumps (Unofficial)",
+                "Unofficial GTA 6 hub, now that the game is out: a players' map of Leonida for secrets and hidden gems, launch times around the world, a download time and storage calculator for the up-to-212 GB install, a stunt jump simulator with real car physics, and the latest GTA headlines.", 0,
+                "GTA 6 is out: a players' map of Leonida, launch times around the world, download time and storage check, a real-physics stunt jump simulator and GTA news."),
     "gta-stunt-jump-simulator": _gta("gta-stunt-jump-simulator", "jump", "Stunt Jump Simulator", "Stunt Jump Simulator: Real Car Physics for Ramps, Gaps and Landings",
                 "A free stunt jump simulator with real car physics: suspension, tyre grip, engine power and air drag. Jump cars, bikes and monster trucks over gaps and canyons, see airtime, rotation and landing g-force, and find the speed window for a clean landing.", 1,
                 "Free stunt jump simulator with real car physics: ramps, gaps, canyons, airtime, rotation and landing g-force, plus the speed window for a clean landing."),
-    "gta-6-countdown": _gta("gta-6-countdown", "countdown", "GTA 6 Countdown", "GTA 6 Countdown: Exact Unlock Time in Your Time Zone",
-                "GTA 6 countdown to midnight on November 19, 2026 in your own time zone, the first unlock in the world, unlock times in 18 cities, the preload countdown and a calendar reminder.", 2,
-                "GTA 6 countdown to November 19, 2026: the unlock time in your time zone and around the world, the preload countdown and a calendar reminder."),
+    "gta-6-countdown": _gta("gta-6-countdown", "countdown", "GTA 6 Is Out", "GTA 6 Is Out: Launch Times Around the World and How Long It Has Been Out",
+                "GTA 6 came out on November 19, 2026: how long it has been out in your time zone, when it unlocked in 18 cities, the official unlock rules for PlayStation and Xbox, and what to know on launch day.", 2,
+                "GTA 6 is out: how long since it unlocked where you are, launch times in 18 cities, PlayStation and Xbox unlock rules and launch-day facts."),
     "gta-6-download-time": _gta("gta-6-download-time", "download", "GTA 6 Download Time", "GTA 6 Download Time and Storage Calculator (212 GB)",
-                "How long will GTA 6 take to download? Enter your internet speed to see the time for the 212 GB install, when it finishes if you start at preload, and whether it fits on your PS5 or Xbox Series X|S.", 3,
-                "How long GTA 6 (212 GB) takes to download on your internet, when it finishes if you preload, and whether it fits on your PS5 or Xbox."),
+                "How long will GTA 6 take to download? Enter your internet speed to see the time for the up-to-212 GB install plus the pre-launch updates, when it finishes, and whether it fits on your PS5 or Xbox Series X|S.", 3,
+                "How long GTA 6 (up to 212 GB) takes to download on your internet, when it finishes, and whether it fits on your PS5 or Xbox."),
     "gta-6-map": _gta("gta-6-map", "map", "GTA 6 Map", "GTA 6 Map: Secrets, Animals, Fishing Spots and Hidden Gems (Community Pins)",
-                "A free community GTA 6 map: click the map to pin a secret, a rare animal, a fishing spot, an Easter egg or a hidden gem, and vote other players' pins real or fake so the best finds rise to the top.", 4,
+                "A free community GTA 6 map of Leonida, redrawn on launch day from the real geography: click the map to pin a secret, a rare animal, a fishing spot, an Easter egg or a hidden gem, and vote other players' pins real or fake so the best finds rise to the top.", 4,
                 "Community GTA 6 map: pin secrets, rare animals, fishing spots and hidden gems, and vote other players' finds real or fake. Free, no sign-up."),
     "gta-music": _gta("gta-music", "music", "GTA Radio & Music", "GTA Radio & Music: Copyright-Free GTA Albums, Trailers and Every Game's Stations",
                 "Listen to music for GTA fans: Panda Beats' copyright-free Grand Theft Panda album made for GTA 6 on 3Speak, YouTube or Spotify, the songs in the GTA VI trailers, and the radio stations of every GTA game.", 5,

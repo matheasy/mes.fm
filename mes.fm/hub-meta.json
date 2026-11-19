@@ -346,6 +346,11 @@
 "updated":"2026-10-14",
 "type":"Tool"
 },
+"/expense-splitter":{
+"added":"2026-11-19",
+"updated":"2026-11-19",
+"type":"Calculator"
+},
 "/faster-than-light-shadow-simulator":{
 "added":"2026-10-10",
 "updated":"2026-10-13",
@@ -433,12 +438,12 @@
 },
 "/gta":{
 "added":"2026-11-07",
-"updated":"2026-11-16",
+"updated":"2026-11-19",
 "type":"Game"
 },
 "/gta-stunt-jump-simulator":{
 "added":"2026-11-07",
-"updated":"2026-11-16",
+"updated":"2026-11-19",
 "type":"Simulation"
 },
 "/heart-rate-zone-calculator":{

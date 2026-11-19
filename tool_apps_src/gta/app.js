@@ -105,8 +105,8 @@
 	if (PAGE === "hub") {
 		var target = M.midnight(myTz, REL);
 		(function tick() {
-			var p = countParts(target); $("gh-d").textContent = p.d; $("gh-h").textContent = pad(p.h); $("gh-m").textContent = pad(p.m); $("gh-s").textContent = pad(p.s);
-			if (p.total <= 0) $("gh-cdl").textContent = "It's out! Unlocked at midnight where you are.";
+			var out = Date.now() >= target, p = M.parts(Math.abs(Date.now() - target)); $("gh-d").textContent = p.d; $("gh-h").textContent = pad(p.h); $("gh-m").textContent = pad(p.m); $("gh-s").textContent = pad(p.s);
+			$("gh-cdl").textContent = out ? "since it unlocked where you are" : "until midnight where you are";
 			setTimeout(tick, 1000 - Date.now() % 1000 + 5);
 		})();
 		srcLine($("gh-src"));
@@ -219,37 +219,27 @@
 		}
 		$("gc-mode").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (!b) return; CM.mode = b.getAttribute("data-v"); paintMode(); tick(true); });
 		zsel.addEventListener("change", function () { CM.zone = zsel.value; paintMode(); tick(true); });
-		var announced = Date.UTC(2023, 11, 5); /* first trailer: the progress bar runs from there to launch */
 		function tick(once) {
-			var t = tgt(), p = countParts(t), tz = targetTz();
+			var t = tgt(), tz = targetTz(), out = Date.now() >= t, p = M.parts(out ? Date.now() - t : t - Date.now());
 			$("gc-d").textContent = p.d; $("gc-h").textContent = pad(p.h); $("gc-m").textContent = pad(p.m); $("gc-s").textContent = pad(p.s);
-			var label = CM.mode === "first" ? "GTA 6 unlocks first in New Zealand in" : CM.mode === "zone" ? "GTA 6 unlocks in " + zsel.options[zsel.selectedIndex].text.replace(/ \(.*/, "") + " in" : "GTA 6 unlocks where you are in";
-			if (p.total <= 0) { label = "GTA 6 is out!"; var since = Math.floor((Date.now() - t) / 86400000); $("gc-when").textContent = since >= 1 ? "Day " + (since + 1) + " since it unlocked." : "It unlocked at midnight."; }
-			else $("gc-when").textContent = "That is " + whenText(t, myTz) + " your time" + (tz !== myTz ? " (midnight on Nov 19 in " + tz.split("/").pop().replace(/_/g, " ") + ")" : " (midnight)") + ".";
-			$("gc-what").textContent = label;
-			$("gc-prog").style.width = Math.max(0, Math.min(100, (Date.now() - announced) / (t - announced) * 100)).toFixed(3) + "%";
-			var pre = M.midnight(myTz, PRE), pp = countParts(pre);
-			$("gc-pre").textContent = pp.total > 0 ? "Preload opens " + fmtIn(pre, myTz, { weekday: "long", month: "long", day: "numeric" }) + ": " + pp.d + " days " + pp.h + " hours away (the date is official, the hour may vary by store)." : "Preload is open: you can download it now and it unlocks on the 19th.";
+			var where = CM.mode === "first" ? "in New Zealand" : CM.mode === "zone" ? "in " + zsel.options[zsel.selectedIndex].text.replace(/ \(.*/, "") : "where you are";
+			$("gc-what").textContent = out ? "GTA 6 has been out " + where + " for" : "GTA 6 unlocks " + where + " in";
+			$("gc-when").textContent = (out ? "It unlocked " : "It unlocks ") + whenText(t, myTz) + " your time" + (tz !== myTz ? " (midnight on Nov 19 in " + tz.split("/").pop().replace(/_/g, " ") + ")." : " (midnight local time).") + (out ? " Day " + (Math.floor((Date.now() - t) / 86400000) + 1) + " of GTA 6." : "");
+			/* bar = how much of the world has it: first midnight (Auckland) to last (Honolulu) */
+			var u = M.unlockTimes(myTz, REL), share = Math.max(0, Math.min(1, (Date.now() - u.first) / (u.last - u.first)));
+			$("gc-prog").style.width = (share * 100).toFixed(3) + "%";
+			$("gc-pre").textContent = share >= 1 ? "It is out everywhere: the last time zones (Hawaii) unlocked " + agoShort(Date.now() - u.last) + " ago." : "Out in " + Math.round(share * 100) + "% of the world's time zones so far; Hawaii is last, in " + agoShort(u.last - Date.now()) + ".";
 			if (!once) setTimeout(tick, 1000 - Date.now() % 1000 + 5);
 		}
+		function agoShort(ms) { var q = M.parts(ms); return q.d ? q.d + " d " + q.h + " h" : q.h ? q.h + " h " + q.m + " min" : q.m + " min"; }
 		function world() {
 			var tb = $("gc-world"), rows = M.CITIES.map(function (c) { return [c[0], c[1], M.midnight(c[1], REL)]; }).sort(function (a, b) { return a[2] - b[2]; });
 			tb.innerHTML = rows.map(function (r) { var mine = r[1] === myTz; return "<tr" + (mine ? ' class="gc-me"' : "") + "><td>" + esc(r[0]) + (mine ? " <small>(you)</small>" : "") + "</td><td>" + esc(fmtIn(r[2], myTz, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })) + '</td><td data-t="' + r[2] + '"></td></tr>'; }).join("");
 			refreshWorld();
 		}
-		function refreshWorld() { Array.prototype.forEach.call($("gc-world").querySelectorAll("td[data-t]"), function (td) { var p = countParts(+td.getAttribute("data-t")); td.textContent = p.total <= 0 ? "out now" : p.d + "d " + p.h + "h " + p.m + "m"; }); }
+		function refreshWorld() { Array.prototype.forEach.call($("gc-world").querySelectorAll("td[data-t]"), function (td) { var d = Date.now() - +td.getAttribute("data-t"); td.textContent = d >= 0 ? agoShort(d) : "in " + agoShort(-d); }); }
 		setInterval(refreshWorld, 30000);
-		function links() {
-			var tz = targetTz(), title = "GTA 6 unlocks";
-			$("gc-remind").href = "/reminder?title=" + encodeURIComponent(title) + "&t=" + REL + "T00:00&tz=" + encodeURIComponent(tz) + "&u=/gta-6-countdown";
-			var t = tgt(), d = new Date(t), e = new Date(t + 3600000), f = function (x) { return x.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""); };
-			$("gc-gcal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(title) + "&dates=" + f(d) + "/" + f(e) + "&details=" + encodeURIComponent("Countdown: https://mes.fm/gta-6-countdown");
-		}
-		$("gc-ics").addEventListener("click", function () {
-			var t = tgt(), f = function (x) { return new Date(x).toISOString().replace(/[-:]/g, "").replace(/\.\d+/, ""); };
-			var ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//MES//GTA 6 Countdown//EN", "BEGIN:VEVENT", "UID:gta6-" + t + "@mes.fm", "DTSTAMP:" + f(Date.now()), "DTSTART:" + f(t), "DTEND:" + f(t + 3600000), "SUMMARY:GTA 6 unlocks", "DESCRIPTION:Countdown: https://mes.fm/gta-6-countdown", "BEGIN:VALARM", "TRIGGER:-PT15M", "ACTION:DISPLAY", "DESCRIPTION:GTA 6 unlocks in 15 minutes", "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
-			var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" })); a.download = "gta-6-unlock.ics"; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-		});
+		function links() { /* reminder links were for the countdown; nothing to set now that it is out */ }
 		$("gc-share").addEventListener("click", function () { var u = location.origin + location.pathname + (CM.mode === "local" ? "" : "?mode=" + CM.mode + (CM.mode === "zone" ? "&tz=" + encodeURIComponent(CM.zone) : "")); copy(u, "Link copied."); });
 		/* fill window / full screen (Esc closes) */
 		var box = $("gc-box");
@@ -283,7 +273,7 @@
 				t("Download time", M.durationText(sec), "at about " + mbs.toFixed(mbs < 10 ? 1 : 0) + " MB/s real speed", "big") +
 				t("Best case", M.durationText(raw), "if you got the plan's full speed") +
 				t("Start now, done", fmtIn(fin, myTz, { weekday: "short", hour: "numeric", minute: "2-digit" }), "your time") +
-				t("Start at preload, done", fmtIn(finPre, myTz, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), finPre < rel ? "ready before launch" : "after it unlocks", finPre < rel ? "ok" : "bad") +
+				(finPre < rel ? t("Start at preload, done", fmtIn(finPre, myTz, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), "ready before launch", "ok") : t("Plus updates", "≈ " + Math.round(num($("gd-patch").value, 0) * 8000 / Math.max(0.1, mbpsNow() * eff) / 60) + " min", "the updates part of the time")) +
 				t("Data used", size.toFixed(0) + " GB", "≈ " + Math.round(size / 1200 * 100) + "% of a 1.2 TB monthly cap") + "</div>";
 			/* other speeds */
 			var rows = M.CONNECTIONS.map(function (c) { return [c[0], c[1], M.downloadSeconds(size, c[1], "mbps", eff)]; }), mine = mbpsNow(), maxS = Math.min(rows[0][2], 3 * 86400);
