@@ -135,6 +135,10 @@
       {
         "label": "Telegram",
         "href": "https://t.me/meslinks/35705"
+      },
+      {
+        "label": "More conspiracy links",
+        "href": "https://mes.fm/conspiracy"
       }
     ]
   },
@@ -193,6 +197,32 @@
         "href": "https://t.me/meslinks/35502"
       }
     ]
+  },
+  "https://mes.fm/james-corbett-judy-wood-questions": {
+    "image": "https://mes.fm/james-corbett-judy-wood-questions/img/poster.jpg",
+    "watchLinks": [
+      {
+        "label": "3Speak",
+        "href": "https://3speak.tv/watch?v=mestruth/james-corbett-dodging-quest-700"
+      },
+      {
+        "label": "YouTube",
+        "href": "https://youtu.be/437v-4d0EnE"
+      },
+      {
+        "label": "Rumble",
+        "href": "https://rumble.com/v7iljou-james-corbett-dodging-questions-about-dr.-judy-wood.html"
+      },
+      {
+        "label": "Odysee",
+        "href": "https://odysee.com/@mestruth:9/james-corbett-judy-wood-questions:d559ce09fe"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35720"
+      }
+    ],
+    "namedLinks": []
   },
   "https://mes.fm/judy-wood-rebuttal": {
     "image": "https://mes.fm/judy-wood-rebuttal/img/judy-wood-rebuttal.jpg",

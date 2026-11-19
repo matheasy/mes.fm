@@ -30,6 +30,7 @@ SPOOK_CHIPS = [
     ("offguardian", "Off Guardian", r"off ?guardian"),
     ("gage", "Richard Gage", r"richard gage"),
     ("ashton", "Ashton Forbes", r"ashton forbes"),
+    ("corbett", "James Corbett", r"corbett"),
 ]
 
 HUB_FILTERS = {

@@ -4,13 +4,13 @@
 
 </center>
 
-The MES list of 9/11 disinfo agents, spooks and controlled opposition: **80+ and counting** (81 as of November 18, 2026), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
+The MES list of 9/11 disinfo agents, spooks and controlled opposition: **80+ and counting** (81 as of November 19, 2026), with notes and links. Search their names in the [MES Links Telegram](https://t.me/meslinks) for many more posts.
 
 **Searchable version with filters, pictures and the MES posts about each person:** https://mes.fm/911spooks-database
 
 Kept in: [Google Sheet](https://docs.google.com/spreadsheets/d/1-pBVHR4KCT2nVngaWkUhjpHOw0KoJIqehDT3ah5yCSk/edit?gid=686862064) · [Excel (OneDrive)](https://1drv.ms/x/s!As32ynv0LoaIi6UOFw7QTWr1sVrCtA) · [mes.fm](https://mes.fm/911spooks-database) · [Hive](https://peakd.com/hive-113182/@mestruth/911-spooks-database-ayc) · Download: [CSV](https://mes.fm/911spooks-database/spooks.csv) · [JSON](https://mes.fm/911spooks-database/spooks.json)
 
-First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: November 18, 2026.
+First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestream-112-911-spooks). Last updated: November 19, 2026.
 
 
 ## AE911Truth & thermite (14)
@@ -81,7 +81,7 @@ First shown on [MES Livestream 112: 9/11 Spooks Database](https://mes.fm/livestr
 | **Dollar Vigilante** |  | [Telegram](https://t.me/meslinks/32060) |
 | **Eddie Bravo** |  | [Telegram](https://t.me/meslinks/10630) |
 | **Ian Carroll** |  | [Telegram](https://t.me/meslinks/32060) |
-| **James Corbett** | The Corbett Report | [Hive](https://peakd.com/hive-113182/@mes/yaiugjff) |
+| **James Corbett** | The Corbett Report | [Hive](https://peakd.com/hive-113182/@mes/yaiugjff) · [MES posts (1)](https://mes.fm/911spooks-database#james-corbett) |
 | **James Feulner** | Blue Bacon | [Telegram](https://t.me/meslinks/28608) |
 | **Jamie Andrews** | Anti-virologist | [Telegram](https://t.me/meslinks/30969) |
 | **Jimmy Dore** | The Jimmy Dore Show | [Telegram](https://t.me/meslinks/29703) · [MES posts (1)](https://mes.fm/911spooks-database#jimmy-dore) |

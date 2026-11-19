@@ -75,6 +75,11 @@ const HUB_FILTERS = {
         "ashton",
         "Ashton Forbes",
         "ashton forbes"
+      ],
+      [
+        "corbett",
+        "James Corbett",
+        "corbett"
       ]
     ]
   },
@@ -130,6 +135,11 @@ const HUB_FILTERS = {
         "ashton",
         "Ashton Forbes",
         "ashton forbes"
+      ],
+      [
+        "corbett",
+        "James Corbett",
+        "corbett"
       ]
     ]
   }
@@ -173,7 +183,7 @@ const PAGES = [
     slug: "911spooks-videos",
     sectionId: "911spooks-videos",
     tileLabel: "Videos",
-    iconVersion: 2, // icon = crop of the newest video's thumbnail (img/911spooks-videos-icon.jpg); bump when refreshed
+    iconVersion: 3, // icon = crop of the newest video's thumbnail (img/911spooks-videos-icon.jpg); bump when refreshed
     title: "9/11 Spooks: Videos",
     description:
       "MES videos on 9/11 spooks: Richard Gage on whether the Earth is round or flat, and highlights from the letter Ashton Forbes totally didn't write to himself.",
