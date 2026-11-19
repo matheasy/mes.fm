@@ -14,9 +14,9 @@
     var KIND_NAME = { fix: "Fixes", app: "New apps", mirror: "Mirrors", other: "Other" };
     var KIND_ONE = { fix: "Fix", app: "New app", mirror: "Mirror", other: "Other" };
     /* Built-in lists, or one the user made: a short slug ("ai-ideas" = "Ai ideas"). */
-    var KIND_RE = /^[a-z][a-z0-9-]{1,23}$/;
-    function okKind(k) { return KINDS.indexOf(k) >= 0 || (typeof k === "string" && KIND_RE.test(k) && !/--|-$/.test(k)); }
-    function kindSlug(name) { return String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-+$/g, "").replace(/-+/g, "-").slice(0, 24).replace(/-+$/, ""); }
+    var KIND_RE = /^[a-z0-9][a-z0-9\/-]{1,23}$/;   /* digits and "/" are fine ("9/11"); "all" and "queue" are the page's own tabs */
+    function okKind(k) { return KINDS.indexOf(k) >= 0 || (typeof k === "string" && KIND_RE.test(k) && !/--|-$|\/$|\/\/|^(all|queue)$/.test(k)); }
+    function kindSlug(name) { return String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\/]+/g, "-").replace(/\/+/g, "/").replace(/^[^a-z0-9]+/, "").replace(/-*\/-*/g, "/").replace(/-+/g, "-").slice(0, 24).replace(/[-\/]+$/, ""); }
     function kindName(k) { if (KIND_NAME[k]) return KIND_NAME[k]; var s = String(k).replace(/-/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
     function kindOne(k) { return KIND_ONE[k] || kindName(k); }
     function okOrder(v) { return typeof v === "number" ? isFinite(v) && Math.abs(v) < 1e15 : false; }
@@ -430,7 +430,7 @@
         if (mode === "edit") {
             h += '<textarea class="tu-input ed-ta ed-edt" data-f="t" rows="3" aria-label="Text">' + esc(it.t) + "</textarea>";
             h += '<label class="ed-sub">Note (what was done, why not, links)</label><textarea class="tu-input ed-ta ed-edn" data-f="note" rows="2" aria-label="Note">' + esc(it.note || "") + "</textarea>";
-            h += '<div class="ed-acts"><button type="button" class="tu-btn tu-btn--primary" data-a="save">Save</button><button type="button" class="tu-btn tu-btn--ghost" data-a="cancel">Cancel</button></div>';
+            h += '<div class="ed-acts"><button type="button" class="tu-btn tu-btn--primary" data-a="save">Save</button><button type="button" class="tu-btn tu-btn--ghost" data-a="editpic" title="Add a screenshot or photo to this text (you can also paste one)">&#128247;&#xFE0E; Picture</button><button type="button" class="tu-btn tu-btn--ghost" data-a="cancel">Cancel</button></div>';
         } else {
             h += '<div class="ed-txt">' + E.linkify(it.t) + '</div><button type="button" class="ed-more-btn" data-a="more" hidden>' + (exp[it.id] ? "Show less ▴" : "Show more ▾") + "</button>";
             var p = pics(it.t, true); if (p) h += '<div class="ed-pics">' + p + "</div>";
@@ -479,7 +479,7 @@
         if (ks.__html !== kh) { var kv = ks.value; ks.innerHTML = kh; ks.__html = kh; if (kv) ks.value = kv; }
         root.querySelectorAll(".ed-chip").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.st === pref.st ? "true" : "false"); });
         $("ed-addlbl").textContent = pref.k === "app" ? "New app idea" : pref.k === "fix" ? "New fix" : pref.k === "mirror" ? "New mirror to make" : pref.k === "all" || pref.k === "queue" ? "New item" : "New item in " + E.kindName(pref.k);
-        $("ed-kindwrap").hidden = pref.k !== "all" && pref.k !== "queue";
+        $("ed-listact").hidden = !isUserList(pref.k);
         $("ed-fstar").checked = !!pref.star; $("ed-sort").value = pref.sort; $("ed-sort").disabled = pref.k === "queue";
         $("ed-cols").value = String(pref.cols || 1); $("ed-picedit-on").checked = pref.picEdit !== false;
         paintTools();
@@ -502,7 +502,7 @@
     function add() {
         var ta = $("ed-t"), t = ta.value.trim();
         if (!t) { ta.focus(); return; }
-        var k = pref.k === "all" || pref.k === "queue" ? $("ed-kind").value : pref.k;
+        var k = $("ed-kind").value || (pref.k === "all" || pref.k === "queue" ? "fix" : pref.k);
         change({ op: "add", k: k, t: t, star: $("ed-star").checked }).then(function (r) {
             if (!r) return;
             if (pref.k === "queue" && r.item) { var ql = queueList().filter(function (x) { return x.id !== r.item.id; }); change({ op: "update", id: r.item.id, qo: (ql.length ? ql[ql.length - 1].qo : 0) + 1 }); }
@@ -592,6 +592,8 @@
         }).catch(function (e) { toast("Could not open the picture (" + (e && e.message || e) + "). Pictures from other sites may not allow it: download it and add it with 📷 Picture."); });
     }
     $("ed-picbtn").onclick = function () { $("ed-picin").click(); };
+    var editPicTa = null;
+    $("ed-picin2").onchange = function () { if (editPicTa && document.body.contains(editPicTa)) addPictures(this.files, editPicTa); this.value = ""; };
     $("ed-picin").onchange = function () { addPictures(this.files, $("ed-t")); this.value = ""; };
     // paste a screenshot into the new-item box, a reply box or an edit box
     root.addEventListener("paste", function (e) {
@@ -611,7 +613,7 @@
     /* ---------- filters ---------- */
     root.querySelector(".ed-tabs").addEventListener("click", function (e) {
         if (e.target.closest("#ed-newlist")) { newList(); return; }
-        var b = e.target.closest(".ed-tab"); if (!b) return; pref.k = b.dataset.k; pref.tool = ""; savePref(); render();
+        var b = e.target.closest(".ed-tab"); if (!b) return; pref.k = b.dataset.k; pref.tool = ""; savePref(); render(); syncKind();
     });
     function paintTabs(kinds, c) {
         var box = $("ed-tablist");
@@ -621,13 +623,47 @@
             + '<button type="button" class="ed-tab ed-tabnew" id="ed-newlist" title="Make a list of your own">＋ List</button>';
         if (box.__html !== h) { box.innerHTML = h; box.__html = h; }
     }
+    function syncKind() { if (pref.k !== "all" && pref.k !== "queue") { var ks = $("ed-kind"); if ([].some.call(ks.options, function (o) { return o.value === pref.k; })) ks.value = pref.k; } }
+    function isUserList(k) { return k !== "all" && k !== "queue" && E.KINDS.indexOf(k) < 0; }
+    function saveKinds(a) { lsSet(KINDS_KEY, JSON.stringify(a)); }
+    /* Rename: every item moves to the new list slug (the name shown is made from it). */
+    $("ed-rename").onclick = function () {
+        var old = pref.k; if (!isUserList(old)) return;
+        var name = prompt("New name for the list “" + E.kindName(old) + "” (letters, digits, spaces and / are fine, e.g. 9/11):", E.kindName(old));
+        if (name == null) return;
+        var k = E.kindSlug(name);
+        if (!E.okKind(k)) { toast("Use at least two characters for the name."); return; }
+        if (k === old) { toast("That is already its name."); return; }
+        if (E.kindsOf(items, userKinds()).indexOf(k) >= 0) { toast("There is already a list called “" + E.kindName(k) + "”."); return; }
+        var ids = items.filter(function (it) { return it.k === old; }).map(function (it) { return it.id; });
+        var u = userKinds().filter(function (x) { return x !== old; }); u.push(k); saveKinds(u);
+        pref.k = k; savePref();
+        ids.reduce(function (p, id) { return p.then(function () { return change({ op: "update", id: id, k: k }); }); }, Promise.resolve()).then(function () { render(); syncKind(); toast("Renamed to “" + E.kindName(k) + "”" + (ids.length ? " (" + ids.length + " items moved)" : "")); });
+    };
+    /* Delete: items move to another list first (asked), nothing is lost. */
+    $("ed-dellist").onclick = function () {
+        var old = pref.k; if (!isUserList(old)) return;
+        var ids = items.filter(function (it) { return it.k === old; }).map(function (it) { return it.id; });
+        var to = "other";
+        if (ids.length) {
+            var opts = E.kindsOf(items, userKinds()).filter(function (x) { return x !== old; });
+            var a = prompt("The list “" + E.kindName(old) + "” has " + ids.length + " items. Type the list they should move to:\n" + opts.map(E.kindName).join(", "), E.kindName("other"));
+            if (a == null) return;
+            to = opts.filter(function (x) { return E.kindName(x).toLowerCase() === a.trim().toLowerCase() || x === E.kindSlug(a); })[0];
+            if (!to) { toast("No list called “" + a + "”. Nothing changed."); return; }
+        }
+        if (!confirm("Delete the list “" + E.kindName(old) + "”" + (ids.length ? " and move its " + ids.length + " items to “" + E.kindName(to) + "”" : "") + "?")) return;
+        saveKinds(userKinds().filter(function (x) { return x !== old; }));
+        pref.k = to; savePref();
+        ids.reduce(function (p, id) { return p.then(function () { return change({ op: "update", id: id, k: to }); }); }, Promise.resolve()).then(function () { render(); syncKind(); toast("List deleted" + (ids.length ? ", items moved to " + E.kindName(to) : "")); });
+    };
     function newList() {
         var name = prompt("Name of the new list (for example: Hive posts, Ideas for later):", "");
         if (name == null) return;
         var k = E.kindSlug(name);
-        if (!E.okKind(k)) { toast("Use at least two letters for the name."); return; }
+        if (!E.okKind(k)) { toast("Use at least two characters for the name."); return; }
         var u = userKinds(); if (u.indexOf(k) < 0 && E.KINDS.indexOf(k) < 0) { u.push(k); lsSet(KINDS_KEY, JSON.stringify(u)); }
-        pref.k = k; pref.tool = ""; savePref(); render(); $("ed-t").focus();
+        pref.k = k; pref.tool = ""; savePref(); render(); syncKind(); $("ed-t").focus();
         toast("New list “" + E.kindName(k) + "”: add its first item above.");
     }
     $("ed-cols").onchange = function () { pref.cols = +this.value || 1; savePref(); render(); };
@@ -679,6 +715,7 @@
             open[id] = a; render();
             var ta = $("ed-list").querySelector('.ed-it[data-id="' + id + '"] textarea'); if (ta) { grow(ta); ta.focus(); if (a === "edit") ta.setSelectionRange(ta.value.length, ta.value.length); }
         }
+        else if (a === "editpic") { editPicTa = li.querySelector('[data-f="t"]'); $("ed-picin2").click(); }
         else if (a === "cancel") closeBox(id);
         else if (a === "save") {
             var t = li.querySelector('[data-f="t"]').value, note = li.querySelector('[data-f="note"]').value;
@@ -964,7 +1001,7 @@
     $("ed-backup").addEventListener("toggle", function () { if (this.open && !hiveStarted) { hiveStarted = true; initHive(); } });
 
     /* ---------- start ---------- */
-    render(); paintSync(); load();
+    render(); syncKind(); paintSync(); load();
     document.addEventListener("visibilitychange", function () { if (!document.hidden && !busy) load(true); });
     setInterval(function () { if (!document.hidden && !busy) load(true); }, 60000);
     window.MESEditsDebug = { items: function () { return items; }, load: load, change: change, local: LOCAL };

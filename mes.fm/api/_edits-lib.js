@@ -14,9 +14,9 @@
     var KIND_NAME = { fix: "Fixes", app: "New apps", mirror: "Mirrors", other: "Other" };
     var KIND_ONE = { fix: "Fix", app: "New app", mirror: "Mirror", other: "Other" };
     /* Built-in lists, or one the user made: a short slug ("ai-ideas" = "Ai ideas"). */
-    var KIND_RE = /^[a-z][a-z0-9-]{1,23}$/;
-    function okKind(k) { return KINDS.indexOf(k) >= 0 || (typeof k === "string" && KIND_RE.test(k) && !/--|-$/.test(k)); }
-    function kindSlug(name) { return String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-+$/g, "").replace(/-+/g, "-").slice(0, 24).replace(/-+$/, ""); }
+    var KIND_RE = /^[a-z0-9][a-z0-9\/-]{1,23}$/;   /* digits and "/" are fine ("9/11"); "all" and "queue" are the page's own tabs */
+    function okKind(k) { return KINDS.indexOf(k) >= 0 || (typeof k === "string" && KIND_RE.test(k) && !/--|-$|\/$|\/\/|^(all|queue)$/.test(k)); }
+    function kindSlug(name) { return String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\/]+/g, "-").replace(/\/+/g, "/").replace(/^[^a-z0-9]+/, "").replace(/-*\/-*/g, "/").replace(/-+/g, "-").slice(0, 24).replace(/[-\/]+$/, ""); }
     function kindName(k) { if (KIND_NAME[k]) return KIND_NAME[k]; var s = String(k).replace(/-/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
     function kindOne(k) { return KIND_ONE[k] || kindName(k); }
     function okOrder(v) { return typeof v === "number" ? isFinite(v) && Math.abs(v) < 1e15 : false; }

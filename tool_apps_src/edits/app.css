@@ -130,3 +130,7 @@ html body.dark-mode #ed .ed-more-btn {color:#8ab8f0;}
 html body.dark-mode #ed .ed-mv {background:var(--ed-soft); color:var(--ed-fg); border-color:var(--ed-line);}
 html body.dark-mode #ed .ed-grip {color:var(--ed-mute);}
 #ed input[type="file"][hidden] {display:none !important;}
+
+.ed-lblrow{display:flex;flex-wrap:wrap;align-items:center;gap:.6em;justify-content:space-between}
+.ed-listact{display:inline-flex;gap:.4em}
+.ed-listact[hidden]{display:none}

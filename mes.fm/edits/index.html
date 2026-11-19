@@ -438,6 +438,10 @@ html body.dark-mode #ed .ed-mv {background:var(--ed-soft); color:var(--ed-fg); b
 html body.dark-mode #ed .ed-grip {color:var(--ed-mute);}
 #ed input[type="file"][hidden] {display:none !important;}
 
+.ed-lblrow{display:flex;flex-wrap:wrap;align-items:center;gap:.6em;justify-content:space-between}
+.ed-listact{display:inline-flex;gap:.4em}
+.ed-listact[hidden]{display:none}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -645,13 +649,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div class="tu-card ed-add">
-			<label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label>
+			<div class="ed-lblrow"><label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label><span class="ed-listact" id="ed-listact" hidden><button type="button" class="tu-btn tu-btn--ghost" id="ed-rename" title="Rename this list">✎ Rename list</button><button type="button" class="tu-btn tu-btn--ghost" id="ed-dellist" title="Delete this list (its items move to another list)">🗑 Delete list</button></span></div>
 			<textarea id="ed-t" class="tu-input ed-ta" rows="2" placeholder="What should change? Paste page links (mes.fm/photo). Paste a screenshot here or tap 📷 Picture." spellcheck="true"></textarea>
 			<div class="ed-addrow">
-				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option><option value="mirror">Mirrors</option><option value="other">Other</option></select></label>
+				<label class="ed-kindpick" id="ed-kindwrap">List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option><option value="mirror">Mirrors</option><option value="other">Other</option></select></label>
 				<label class="ed-chk"><input type="checkbox" id="ed-star"> &#9733; Important</label>
 				<button type="button" class="tu-btn tu-btn--ghost ed-picbtn" id="ed-picbtn" title="Add a screenshot or photo (it is saved with this list and its link goes in the text)">&#128247;&#xFE0E; Picture</button>
-				<input type="file" id="ed-picin" accept="image/*" multiple hidden>
+				<input type="file" id="ed-picin" accept="image/*" multiple hidden><input type="file" id="ed-picin2" accept="image/*" multiple hidden>
 				<label class="ed-chk ed-small" title="Opens each picture in the editor first: crop, turn, straighten, highlight or white out parts"><input type="checkbox" id="ed-picedit-on" checked> Crop / edit pictures first</label>
 				<span class="ed-sp"></span>
 				<span class="ed-hint">Ctrl+Enter adds</span>
@@ -769,7 +773,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=3" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

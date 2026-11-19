@@ -5,13 +5,13 @@
 		</div>
 
 		<div class="tu-card ed-add">
-			<label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label>
+			<div class="ed-lblrow"><label class="tu-label" for="ed-t" id="ed-addlbl">New fix</label><span class="ed-listact" id="ed-listact" hidden><button type="button" class="tu-btn tu-btn--ghost" id="ed-rename" title="Rename this list">✎ Rename list</button><button type="button" class="tu-btn tu-btn--ghost" id="ed-dellist" title="Delete this list (its items move to another list)">🗑 Delete list</button></span></div>
 			<textarea id="ed-t" class="tu-input ed-ta" rows="2" placeholder="What should change? Paste page links (mes.fm/photo). Paste a screenshot here or tap 📷 Picture." spellcheck="true"></textarea>
 			<div class="ed-addrow">
-				<label class="ed-kindpick" id="ed-kindwrap" hidden>List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option><option value="mirror">Mirrors</option><option value="other">Other</option></select></label>
+				<label class="ed-kindpick" id="ed-kindwrap">List <select id="ed-kind" class="tu-select"><option value="fix">Fixes</option><option value="app">New apps</option><option value="mirror">Mirrors</option><option value="other">Other</option></select></label>
 				<label class="ed-chk"><input type="checkbox" id="ed-star"> &#9733; Important</label>
 				<button type="button" class="tu-btn tu-btn--ghost ed-picbtn" id="ed-picbtn" title="Add a screenshot or photo (it is saved with this list and its link goes in the text)">&#128247;&#xFE0E; Picture</button>
-				<input type="file" id="ed-picin" accept="image/*" multiple hidden>
+				<input type="file" id="ed-picin" accept="image/*" multiple hidden><input type="file" id="ed-picin2" accept="image/*" multiple hidden>
 				<label class="ed-chk ed-small" title="Opens each picture in the editor first: crop, turn, straighten, highlight or white out parts"><input type="checkbox" id="ed-picedit-on" checked> Crop / edit pictures first</label>
 				<span class="ed-sp"></span>
 				<span class="ed-hint">Ctrl+Enter adds</span>

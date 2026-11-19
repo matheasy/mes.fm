@@ -36,7 +36,7 @@ t('add / update / reply / delete', () => {
 });
 
 t('lists and my order', () => {
-  assert.strictEqual(E.kindSlug('AI Ideas!'), 'ai-ideas'); assert.strictEqual(E.kindSlug('9 Café ideas'), 'cafe-ideas');
+  assert.strictEqual(E.kindSlug('AI Ideas!'), 'ai-ideas'); assert.strictEqual(E.kindSlug('9 Café ideas'), '9-cafe-ideas'); assert.strictEqual(E.kindSlug('9/11'), '9/11'); assert.ok(E.okKind('9/11')); assert.strictEqual(E.kindName('9/11'), '9/11'); assert.ok(!E.okKind('all')); assert.ok(!E.okKind('9/')); assert.ok(!E.okKind('a//b'));
   assert.strictEqual(E.kindName('ai-ideas'), 'Ai ideas'); assert.strictEqual(E.kindName('mirror'), 'Mirrors'); assert.strictEqual(E.kindOne('app'), 'New app');
   assert.ok(!E.okKind('a')); assert.ok(!E.okKind('x--y')); assert.ok(E.okKind('other'));
   const items = [{ id: 'a1aaaa', k: 'fix', t: 'a', st: 'todo', c: 3, u: 3 }, { id: 'b1bbbb', k: 'zz-top', t: 'b', st: 'todo', c: 2, u: 2 }];
