@@ -611,14 +611,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 
 	<p>
 	<a href="https://mes.fm/ai">MES AI</a> sends what you type to an AI company to make the answer: chat messages (with the earlier messages
-	of that chat) go to Anthropic (Claude), picture descriptions go to OpenAI (GPT Image), video descriptions go to xAI (Grok Imagine). They go through our server, which adds our API key;
+	of that chat, and any pictures, PDFs or text files you add to them) go to Anthropic (Claude) or OpenAI (ChatGPT), picture descriptions go to OpenAI (GPT Image), video descriptions go to xAI (Grok Imagine). They go through our server, which adds our API key;
 	the AI companies handle them under their own privacy policies and terms (<a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener">Anthropic</a>,
 	<a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/privacy-policy" target="_blank" rel="noopener">xAI</a>), and we send them a code made from your Hive
 	username (not the name itself) so they can help stop abuse. To match your request to your payment, our server keeps the request, your Hive
 	username and the price for at most one hour, then deletes it; it never stores the answer or the picture. For a video it keeps xAI's job number and temporary link for up to 24 hours so it can hand the finished file to your browser. It keeps a record that a payment id
 	was used (30 days) and short-lived counters per Hive account and per network (a code made from your IP address, one hour) to limit abuse.
 	You pay each message with a normal HBD transfer to @mes on the Hive blockchain: that transfer, its amount and its memo (mesai: plus a random
-	id) are public and permanent, like every Hive payment. Your chats and pictures are kept only in your browser (localStorage and IndexedDB)
+	id) are public and permanent, like every Hive payment. Your chats, pictures and the files you added are kept only in your browser (localStorage and IndexedDB)
 	until you delete them or clear the site's data.
 	</p>
 

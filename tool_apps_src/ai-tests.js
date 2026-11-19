@@ -116,6 +116,7 @@ function fakeRedis() {
     switch (op) {
       case "SET": if (c.includes("NX") && st.has(k)) return null; st.set(k, v); return "OK";
       case "GET": return st.has(k) ? st.get(k) : null;
+      case "MGET": return c.slice(1).map((x) => st.has(x) ? st.get(x) : null);
       case "GETDEL": { const x = st.has(k) ? st.get(k) : null; st.delete(k); return x; }
       case "EXISTS": return st.has(k) ? 1 : 0;
       case "DEL": return st.delete(k) ? 1 : 0;
@@ -395,6 +396,37 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   ok(A.systemFor("sonnet") === A.SYSTEM && /OpenAI/.test(A.systemFor("gpt")), "system prompt names the right company");
   Object.keys(A.MODELS).forEach((k) => ok(A.PROVIDERS[A.MODELS[k].prov], "model " + k + " has a known company"));
   Object.keys(A.IMAGES).forEach((k) => ok(A.PROVIDERS[A.IMAGES[k].prov], "picture model " + k + " has a known company"));
+
+  // files: pictures and PDFs with a message
+  const PIC = { t: "img", mt: "image/jpeg", name: "cat.jpg", data: "/9j/" + "A".repeat(40) };
+  const PDF = { t: "pdf", mt: "application/pdf", name: "notes.pdf", pages: 3, data: "JVBERi0x" + "B".repeat(40) };
+  eq(A.checkMessages([{ role: "user", content: "", files: [PIC] }]), null, "a message can be just a picture");
+  eq(A.checkMessages([{ role: "user", content: "x", files: [{ t: "img", mt: "image/svg+xml", data: "PHN2Zz4AAAA" }] }]), "Pictures must be JPEG, PNG, WebP or GIF.", "no SVG");
+  ok(A.checkMessages([{ role: "user", content: "x", files: [{ t: "exe", mt: "x", data: "AAAAAAAA" }] }]), "only pictures and PDFs");
+  ok(A.checkMessages([{ role: "user", content: "x", files: [{ t: "img", mt: "image/png", data: "not base64!" }] }]), "data must be base64");
+  ok(A.checkMessages([{ role: "assistant", content: "x", files: [PIC] }]), "files only on your own messages");
+  ok(/too big/.test(A.checkMessages([{ role: "user", content: "x", files: [{ t: "pdf", mt: "application/pdf", data: "A".repeat(A.FILES.total + 4) }] }])), "total size cap");
+  const fm = A.cleanMessages([{ role: "user", content: "What is this?", files: [PIC, PDF] }, { role: "assistant", content: "A cat." }]);
+  const an = A.toAnthropic(fm);
+  eq([an[0].content.length, an[0].content[0].type, an[0].content[1].type, an[0].content[2].text, an[1].content], [3, "image", "document", "What is this?", "A cat."], "Anthropic blocks: files then text");
+  const oc2 = A.toOpenAIChat(fm);
+  ok(oc2[0].content[0].image_url.url.indexOf("data:image/jpeg;base64,/9j/") === 0 && oc2[0].content[1].file.filename === "notes.pdf", "OpenAI chat parts");
+  eq(A.toOpenAIResponses(fm)[0].content.map((x) => x.type), ["input_image", "input_file", "input_text"], "OpenAI responses parts");
+  ok(A.estimateChatTokens(fm) > A.estimateChatTokens([{ role: "user", content: "What is this?" }]) + 1600 + 3 * 2500 - 1, "estimate counts files");
+  e = setup();
+  const big = { t: "pdf", mt: "application/pdf", name: "big.pdf", pages: 40, data: "JVBERi0x" + "C".repeat(1600000) };
+  r = mk("POST", { op: "quote", acct: "alice", kind: "chat", model: "sonnet", len: "short", messages: [{ role: "user", content: "Summarize", files: [big, PIC] }] });
+  await e.h(r.req, r.res);
+  const qf = J(r.res);
+  eq(r.res.statusCode, 200, "quote with a 1.2 MB PDF");
+  const ctf = e.calls.find((c) => /count_tokens/.test(c.url));
+  eq(ctf.body.messages[0].content.map((x) => x.type), ["document", "image", "text"], "count_tokens sees the files");
+  ok(JSON.parse(e.redis.st.get("ai:q:" + qf.id)).parts >= 3, "big quote stored in pieces");
+  e.setChain([tr(9, "alice", "mes", qf.price + " HBD", qf.memo, 5, "trx9")]);
+  r = mk("POST", { op: "run", id: qf.id, acct: "alice" });
+  await e.h(r.req, r.res);
+  const mf = e.calls.filter((c) => /api\.anthropic\.com\/v1\/messages$/.test(c.url)).pop();
+  ok(mf && mf.body.messages[0].content[0].source.data === big.data && lines(r.res).some((x) => x.t === "done"), "answer gets the whole PDF back from the pieces");
 
   // origin check in production
   e = setup();

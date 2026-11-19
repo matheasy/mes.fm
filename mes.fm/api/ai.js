@@ -107,7 +107,7 @@ function makeHandler(deps = {}) {
     try {
       const r = await fetchImpl('https://api.openai.com/v1/responses/input_tokens', {
         method: 'POST', headers: { Authorization: 'Bearer ' + env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: A.MODELS[modelKey].id, instructions: sys, input: messages }),
+        body: JSON.stringify({ model: A.MODELS[modelKey].id, instructions: sys, input: A.toOpenAIResponses(messages) }),
       });
       const j = await r.json();
       if (r.ok && Number.isFinite(j.input_tokens)) return Math.ceil(j.input_tokens * 1.05) + 8 + 4 * messages.length;
@@ -146,15 +146,37 @@ function makeHandler(deps = {}) {
       if (err) return send(res, 400, { error: err });
       const messages = A.cleanMessages(b.messages);
       let inTok;
-      try { inTok = m.prov === 'openai' ? await countOpenAI(b.model, messages) : await countTokens(m.id, messages); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
+      try { inTok = m.prov === 'openai' ? await countOpenAI(b.model, messages) : await countTokens(m.id, A.toAnthropic(messages)); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
       if (inTok > A.LIMITS.inTokens) return send(res, 400, { error: 'This chat is too long (' + inTok.toLocaleString('en-US') + ' tokens). Start a new chat.' });
       q = A.chatQuote(b.model, inTok, b.len);
       stored = { kind: 'chat', model: b.model, len: b.len, messages };
     }
     const id = A.newId((n) => crypto.randomBytes(n));
     const rec = Object.assign(stored, { acct, price: q.price, maxOut: q.maxOut || 0, created: now() });
-    await redis([['SET', 'ai:q:' + id, JSON.stringify(rec), 'EX', String(QUOTE_TTL)]]);
+    await saveRec(id, rec);
     return send(res, 200, { id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.costUsd * A.MARGIN, inTokens: q.inTokens, maxOut: q.maxOut || 0, kind: q.kind });
+  }
+
+  // A quote with files can be a few MB: it is kept in pieces of 700 KB (one Upstash command each stays small);
+  // 'ai:q:<id>' is then {parts: n} and the pieces are 'ai:q:<id>:<i>'.
+  const PART = 700000;
+  async function saveRec(id, rec) {
+    const json = JSON.stringify(rec), ttl = String(QUOTE_TTL);
+    if (json.length <= PART) return redis([['SET', 'ai:q:' + id, json, 'EX', ttl]]);
+    const n = Math.ceil(json.length / PART);
+    for (let i = 0; i < n; i++) await redis([['SET', 'ai:q:' + id + ':' + i, json.slice(i * PART, (i + 1) * PART), 'EX', ttl]]);
+    return redis([['SET', 'ai:q:' + id, JSON.stringify({ parts: n }), 'EX', ttl]]);
+  }
+  async function loadRec(id) {
+    const [raw] = await redis([['GET', 'ai:q:' + id]]);
+    let rec = raw ? JSON.parse(raw) : null;
+    if (rec && rec.parts) {
+      const keys = []; for (let i = 0; i < rec.parts; i++) keys.push('ai:q:' + id + ':' + i);
+      const [vals] = await redis([['MGET', ...keys]]);
+      if (!Array.isArray(vals) || vals.some((v) => v == null)) return null;
+      rec = JSON.parse(vals.join(''));
+    }
+    return rec;
   }
 
   async function paid(rec, id) {
@@ -165,8 +187,7 @@ function makeHandler(deps = {}) {
   async function run(req, res, b) {
     const id = String(b.id || '');
     if (!A.validId(id)) return send(res, 400, { error: 'Bad request id.' });
-    const [raw] = await redis([['GET', 'ai:q:' + id]]);
-    const rec = raw ? JSON.parse(raw) : null;
+    const rec = await loadRec(id);
     if (!rec) return send(res, 404, { error: 'This price ran out (prices are kept for 1 hour). If you already paid, contact us with the memo mesai:' + id + '.' });
     const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
     if (acct !== rec.acct) return send(res, 403, { error: 'This request belongs to another Hive account.' });
@@ -204,7 +225,7 @@ function makeHandler(deps = {}) {
     if (m.prov === 'openai') {
       // OpenAI Chat Completions; max_completion_tokens caps the reasoning tokens too, so the bill stays inside the quote
       const body = {
-        model: m.id, messages: [{ role: 'system', content: A.systemFor(rec.model) }].concat(rec.messages), stream: true,
+        model: m.id, messages: [{ role: 'system', content: A.systemFor(rec.model) }].concat(A.toOpenAIChat(rec.messages)), stream: true,
         stream_options: { include_usage: true }, max_completion_tokens: rec.maxOut, reasoning_effort: m.effort, safety_identifier: who,
       };
       let r;
@@ -216,7 +237,7 @@ function makeHandler(deps = {}) {
       return pump(res, r, A.streamPieceOpenAI, failed);
     }
     const body = {
-      model: m.id, max_tokens: rec.maxOut, system: A.SYSTEM, messages: rec.messages, stream: true,
+      model: m.id, max_tokens: rec.maxOut, system: A.SYSTEM, messages: A.toAnthropic(rec.messages), stream: true,
       output_config: { effort: m.effort }, metadata: { user_id: who },
     };
     if (m.fallback) body.fallbacks = [{ model: m.fallback }];

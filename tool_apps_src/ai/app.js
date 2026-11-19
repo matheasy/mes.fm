@@ -106,13 +106,130 @@
 		else { var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} ta.remove(); }
 	}
 
+	/* ---------- files with a message (pictures, PDFs, text files) ---------- */
+	// Pictures are shrunk here to at most 1568 px (what the models look at anyway), PDFs go as they are, text / code files are
+	// added to the message as a code block. The files stay in this browser (IndexedDB 'f:<id>'); messages keep only their names.
+	var PEND = [], TEXT_EXT = /\.(txt|md|markdown|csv|tsv|json|xml|html?|css|m?js|ts|py|java|c|cpp|h|cs|go|rs|rb|php|sh|sql|ya?ml|ini|log|srt|vtt|tex)$/i;
+	var fileUrls = {};
+	function b64(buf) { var b = new Uint8Array(buf), s = "", step = 0x8000; for (var i = 0; i < b.length; i += step) s += String.fromCharCode.apply(null, b.subarray(i, i + step)); return btoa(s); }
+	function pdfPages(buf) { var t = new TextDecoder("latin1").decode(new Uint8Array(buf)), m = t.match(/\/Type\s*\/Page(?![s\w])/g); return m ? m.length : 1; }
+	function pendChars() { return PEND.reduce(function (n, f) { return n + f.data.length; }, 0); }
+	function shrinkImage(file) {
+		var MAX = 1568;
+		return createImageBitmap(file).then(function (bm) {
+			var k = Math.min(1, MAX / Math.max(bm.width, bm.height)), w = Math.round(bm.width * k), h = Math.round(bm.height * k);
+			// small JPEG / PNG / WebP / GIF that need no shrinking go as they are (keeps transparency and GIF animation)
+			if (k === 1 && file.size < 900000 && A.FILES.img.indexOf(file.type) >= 0) return file.arrayBuffer().then(function (buf) { return { mt: file.type, data: b64(buf), w: w, h: h }; });
+			var cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+			var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, w, h); cx.drawImage(bm, 0, 0, w, h);
+			return new Promise(function (res) { cv.toBlob(res, "image/jpeg", 0.86); }).then(function (bl) { return bl.arrayBuffer(); }).then(function (buf) { return { mt: "image/jpeg", data: b64(buf), w: w, h: h }; });
+		});
+	}
+	function addFiles(list) {
+		var files = [].slice.call(list || []);
+		if (!files.length) return;
+		var chain = Promise.resolve(), notes = [];
+		files.forEach(function (f) {
+			chain = chain.then(function () {
+				var name = f.name || "picture", type = f.type || "";
+				if (PEND.length >= A.FILES.perMsg) { notes.push("At most " + A.FILES.perMsg + " files in one message."); return; }
+				if (/^image\//.test(type)) {
+					return shrinkImage(f).then(function (r) {
+						if (pendChars() + r.data.length > A.FILES.total) { notes.push(name + ": too big together with the other files."); return; }
+						PEND.push({ id: A.newId(), t: "img", mt: r.mt, name: name, data: r.data });
+					}, function () { notes.push(name + ": this picture type can't be read here. Use JPEG or PNG."); });
+				}
+				if (type === "application/pdf" || /\.pdf$/i.test(name)) {
+					return f.arrayBuffer().then(function (buf) {
+						var d = b64(buf);
+						if (pendChars() + d.length > A.FILES.total) { notes.push(name + ": too big (PDFs up to about " + Math.round(A.FILES.total * 0.75 / 1e6 * 10) / 10 + " MB together)."); return; }
+						PEND.push({ id: A.newId(), t: "pdf", mt: "application/pdf", name: name, data: d, pages: pdfPages(buf) });
+					});
+				}
+				if (/^text\//.test(type) || TEXT_EXT.test(name) || /json|xml|javascript/.test(type)) {
+					if (f.size > 200000) { notes.push(name + ": text files up to 200 KB."); return; }
+					return f.text().then(function (t) {
+						var inp = $("ai-in"), ext = (name.match(/\.(\w+)$/) || [, ""])[1].toLowerCase();
+						inp.value = (inp.value.trim() ? inp.value.replace(/\s+$/, "") + "\n\n" : "") + name + ":\n```" + ext + "\n" + t.replace(/\s+$/, "") + "\n```\n";
+					});
+				}
+				notes.push(name + ": only pictures, PDFs and text files can be added (save Word files as PDF).");
+			});
+		});
+		chain.then(function () { paintFiles(); paintPrice(); if (notes.length) msg(notes.join(" "), "err"); else msg(""); });
+	}
+	function fileIcon(f) { return f.t === "pdf" ? "📄" : "🖼"; }
+	function paintFiles() {
+		var box = $("ai-files");
+		box.hidden = !PEND.length;
+		box.innerHTML = PEND.map(function (f, i) {
+			var pic = f.t === "img" ? '<img alt="" src="data:' + f.mt + ";base64," + f.data + '">' : '<span class="ai-fic" aria-hidden="true">' + fileIcon(f) + "</span>";
+			return '<span class="ai-file">' + pic + '<span class="ai-fname" title="' + esc(f.name) + '">' + esc(f.name) + (f.pages ? " · " + f.pages + " page" + (f.pages > 1 ? "s" : "") : "") + '</span><button type="button" data-unfile="' + i + '" aria-label="Remove ' + esc(f.name) + '" title="Remove">×</button></span>';
+		}).join("");
+	}
+	$("ai-files").addEventListener("click", function (e) { var b = e.target.closest("[data-unfile]"); if (!b || busy) return; PEND.splice(+b.dataset.unfile, 1); paintFiles(); paintPrice(); });
+	$("ai-attach").addEventListener("click", function () { $("ai-file").click(); });
+	$("ai-file").addEventListener("change", function () { addFiles(this.files); this.value = ""; });
+	$("ai-in").addEventListener("paste", function (e) {
+		var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []);
+		if (fs.length && !e.clipboardData.getData("text/plain")) { e.preventDefault(); addFiles(fs); }
+	});
+	(function () {
+		var zone = document.querySelector("#ai .ai-compose"), n = 0;
+		if (!zone) return;
+		zone.addEventListener("dragenter", function (e) { if (e.dataTransfer && [].indexOf.call(e.dataTransfer.types, "Files") >= 0) { n++; zone.classList.add("ai-drop"); } });
+		zone.addEventListener("dragleave", function () { if (--n <= 0) { n = 0; zone.classList.remove("ai-drop"); } });
+		zone.addEventListener("dragover", function (e) { if (e.dataTransfer && [].indexOf.call(e.dataTransfer.types, "Files") >= 0) e.preventDefault(); });
+		zone.addEventListener("drop", function (e) { n = 0; zone.classList.remove("ai-drop"); if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
+	})();
+	function fileGet(id) { return idbDo("readonly", function (s) { return s.get("f:" + id); }).catch(function () { return null; }); }
+	function filePut(f) { return idbDo("readwrite", function (s) { return s.put({ t: f.t, mt: f.mt, name: f.name, data: f.data, pages: f.pages || 0 }, "f:" + f.id); }); }
+	// fills in the pictures of the shown messages from IndexedDB
+	function paintMsgFiles(log) {
+		log.querySelectorAll("img[data-fk]").forEach(function (im) {
+			var k = im.dataset.fk;
+			im.onclick = function () { if (fileUrls[k]) window.open(fileUrls[k], "_blank", "noopener"); };
+			if (fileUrls[k]) { im.src = fileUrls[k]; return; }
+			fileGet(k).then(function (f) {
+				if (!f) { im.replaceWith(Object.assign(document.createElement("span"), { className: "ai-sub", textContent: "(picture not in this browser)" })); return; }
+				var bin = atob(f.data), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+				fileUrls[k] = URL.createObjectURL(new Blob([u], { type: f.mt })); im.src = fileUrls[k];
+			});
+		});
+	}
+	// the messages to send, with the files' data: the newest files first until the size cap, older ones are noted instead
+	function withFileData(msgs) {
+		var need = [];
+		msgs.forEach(function (m) { (m.fmeta || []).forEach(function (f) { need.push(f.id); }); });
+		return Promise.all(need.map(function (id) { var p = PEND.filter(function (x) { return x.id === id; })[0]; return p ? Promise.resolve(p) : fileGet(id); })).then(function (got) {
+			var by = {}; need.forEach(function (id, i) { by[id] = got[i]; });
+			var room = A.FILES.total, out = msgs.map(function (m) { return { role: m.role, content: m.content }; });
+			for (var i = msgs.length - 1; i >= 0; i--) {
+				var fm = msgs[i].fmeta; if (!fm || !fm.length) continue;
+				var files = [], left = 0;
+				fm.forEach(function (f) {
+					var d = by[f.id];
+					if (d && d.data.length <= room) { room -= d.data.length; files.push({ t: d.t, mt: d.mt, name: d.name, data: d.data, pages: d.pages || undefined }); }
+					else left++;
+				});
+				if (files.length) out[i].files = files;
+				if (left) out[i].content = (out[i].content ? out[i].content + "\n\n" : "") + "[" + left + " file" + (left > 1 ? "s" : "") + " sent with this message earlier " + (left > 1 ? "are" : "is") + " not included again.]";
+			}
+			return out;
+		});
+	}
+
 	/* ---------- chat log ---------- */
 	function modelName(k) { return (A.MODELS[k] && A.MODELS[k].name) || k; }
 	function renderMsg(m, i) {
 		var mine = m.role === "user";
 		var meta = "";
 		if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(A.LENGTHS[m.len] || "") + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="Payment memo">' + esc(m.memo) + "</a>" : "") + "</span>";
-		var body = mine ? '<div class="ai-text ai-plain">' + esc(m.content) + "</div>" : '<div class="ai-text ai-md">' + (m.content ? md(m.content) : m.error ? "" : m.thinking ? '<p class="ai-thinking">Thinking…</p>' : '<p class="ai-thinking">Waiting for the answer…</p>') + "</div>";
+		var mf = mine && m.files && m.files.length ? '<div class="ai-mfiles">' + m.files.map(function (f) {
+			return f.t === "img" ? '<img data-fk="' + esc(f.id) + '" alt="' + esc(f.name || "picture") + '" title="' + esc(f.name || "") + '">' :
+				'<span class="ai-file"><span class="ai-fic" aria-hidden="true">📄</span><span class="ai-fname">' + esc(f.name || "file.pdf") + (f.pages ? " · " + f.pages + " pages" : "") + "</span></span>";
+		}).join("") + "</div>" : "";
+		var body = mine ? mf + (m.content ? '<div class="ai-text ai-plain">' + esc(m.content) + "</div>" : "") : '<div class="ai-text ai-md">' + (m.content ? md(m.content) : m.error ? "" : m.thinking ? '<p class="ai-thinking">Thinking…</p>' : '<p class="ai-thinking">Waiting for the answer…</p>') + "</div>";
 		var foot = "";
 		if (!mine) {
 			if (m.stop === "max_tokens") foot += '<p class="ai-note">The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.</p>';
@@ -129,6 +246,7 @@
 			log.innerHTML = '<div class="ai-empty"><p><b>Ask anything.</b> Each message is paid on its own; the price is next to the Send button.</p><p class="ai-try">Try: <button type="button" class="ai-mini" data-ex="Explain recursion with a short JavaScript example.">Explain recursion</button> <button type="button" class="ai-mini" data-ex="Write a polite email asking my landlord to fix the heating.">Write an email</button> <button type="button" class="ai-mini" data-ex="What is the derivative of x^2 sin x? Show the steps.">Derivative steps</button></p></div>';
 		} else log.innerHTML = c.msgs.map(renderMsg).join("");
 		addCopyButtons(log);
+		paintMsgFiles(log);
 		if (nearEnd || busy) log.scrollTop = log.scrollHeight;
 		paintChats();
 	}
@@ -190,12 +308,12 @@
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
 	function draftMessages() {
 		var text = $("ai-in").value.trim();
-		var hist = cur().msgs.filter(function (m) { return m.content && !m.error; }).map(function (m) { return { role: m.role, content: m.content }; });
+		var hist = cur().msgs.filter(function (m) { return (m.content || (m.files && m.files.length)) && !m.error; }).map(function (m) { var o = { role: m.role, content: m.content || "" }; if (m.files && m.files.length) { o.fmeta = m.files; o.files = m.files; } return o; });
 		// a failed / unanswered exchange is not sent again: keep turns valid
 		var clean = [];
 		hist.forEach(function (m) { if (clean.length % 2 === 0 ? m.role === "user" : m.role === "assistant") clean.push(m); });
 		if (clean.length % 2) clean.pop();
-		if (text) clean.push({ role: "user", content: text });
+		if (text || PEND.length) clean.push({ role: "user", content: text, fmeta: PEND.slice(), files: PEND.slice() });
 		return clean;
 	}
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
@@ -316,25 +434,32 @@
 		if (busy) return;
 		var u = who();
 		var text = $("ai-in").value.trim();
-		if (!text) { $("ai-in").focus(); return; }
+		if (!text && !PEND.length) { $("ai-in").focus(); return; }
 		if (!status.chat) { msg("MES AI chat is coming soon.", "err"); return; }
 		if (!u) { msg("Log in with your Hive account first (above).", "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
-		var msgs = draftMessages();
-		var err = A.checkMessages(msgs);
-		if (err) { msg(err, "err"); return; }
+		var draft = draftMessages(), sentFiles = PEND.slice();
 		var c = cur();
 		// a failed exchange at the end is dropped before the new message
 		while (c.msgs.length && (c.msgs[c.msgs.length - 1].error || c.msgs[c.msgs.length - 1].role === "user") && !c.msgs[c.msgs.length - 1].retryId) c.msgs.pop();
 		setBusy(true);
 		msg("Getting the exact price…");
-		quote({ acct: u.name, kind: "chat", model: S.model, len: S.len, messages: msgs }).then(function (q) {
+		withFileData(draft).then(function (msgs) {
+			var err = A.checkMessages(msgs);
+			if (err) throw new Error(err);
+			return quote({ acct: u.name, kind: "chat", model: S.model, len: S.len, messages: msgs });
+		}).then(function (q) {
 			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
 			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
 			return pay(q).then(function () { return q; });
 		}).then(function (q) {
 			var um = { role: "user", content: text, at: Date.now(), price: q.price, memo: q.memo, model: S.model, len: S.len, acct: u.name };
+			if (sentFiles.length) {
+				um.files = sentFiles.map(function (f) { var o = { id: f.id, t: f.t, name: f.name }; if (f.pages) o.pages = f.pages; return o; });
+				sentFiles.forEach(function (f) { filePut(f).catch(function () {}); });
+				PEND = PEND.filter(function (f) { return sentFiles.indexOf(f) < 0; }); paintFiles();
+			}
 			var am = { role: "assistant", content: "", at: Date.now(), pending: true, model: S.model };
-			if (!c.msgs.length) c.title = text.replace(/\s+/g, " ").slice(0, 60);
+			if (!c.msgs.length) c.title = (text || sentFiles.map(function (f) { return f.name; }).join(", ")).replace(/\s+/g, " ").slice(0, 60);
 			c.msgs.push(um, am); c.at = Date.now();
 			S.chats.sort(function (a, b) { return b.at - a.at; });
 			$("ai-in").value = "";

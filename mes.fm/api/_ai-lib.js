@@ -77,6 +77,11 @@
     maxPromptChars: 4000 };
 
   var LIMITS = { msgChars: 60000, totalChars: 300000, turns: 200, promptChars: 4000, inTokens: 150000 };
+  // Files sent with a message (pictures and PDFs; text files are added to the message text by the page). The whole
+  // request must stay under Vercel's 4.5 MB body limit, so all files of one request together are capped at FILES.total
+  // base64 characters (the page drops older messages' files first). Kept in this browser only.
+  var FILES = { perMsg: 8, total: 3200000, img: ["image/jpeg", "image/png", "image/webp", "image/gif"], pdf: "application/pdf",
+    imgTokens: 1600, pdfPageTokens: 2500 };
 
   var SYSTEM = "You are MES AI, the AI assistant on mes.fm (Math Easy Solutions), running on Anthropic's Claude. " +
     "Help with coding, research, math, writing and everyday questions. Be clear and accurate; say when you are unsure. " +
@@ -101,9 +106,15 @@
   // rough count used only for the "about" estimate while typing and the local preview (the server counts exactly):
   // about 3 characters per token, on the safe side for English (real text is ~4)
   function estimateTokens(s) { s = String(s || ""); return s ? Math.ceil(s.length / 3) + 4 : 0; }
+  // a file's tokens for the price preview (the server counts them exactly): a picture ~1,600, a PDF ~2,500 a page
+  function fileTokens(f) {
+    if (!f) return 0;
+    if (f.t === "pdf") return (f.pages || Math.max(1, Math.ceil(String(f.data || "").length / 60000))) * FILES.pdfPageTokens;
+    return FILES.imgTokens;
+  }
   function estimateChatTokens(messages) {
     var n = estimateTokens(SYSTEM) + 10;
-    (messages || []).forEach(function (m) { n += estimateTokens(m && m.content) + 4; });
+    (messages || []).forEach(function (m) { n += estimateTokens(m && m.content) + 4; (m && m.files || []).forEach(function (f) { n += fileTokens(f); }); });
     return n;
   }
 
@@ -178,21 +189,82 @@
   function checkMessages(messages) {
     if (!Array.isArray(messages) || !messages.length) return "Write a message first.";
     if (messages.length > LIMITS.turns) return "This chat is too long. Start a new chat.";
-    var total = 0;
+    var total = 0, fileChars = 0;
     for (var i = 0; i < messages.length; i++) {
       var m = messages[i];
       if (!m || (m.role !== "user" && m.role !== "assistant") || typeof m.content !== "string") return "Bad message.";
       if (m.role !== (i % 2 === 0 ? "user" : "assistant")) return "Messages must take turns (you, then the AI).";
-      if (!m.content.trim()) return "Empty message.";
+      if (m.files != null) {
+        if (m.role !== "user" || !Array.isArray(m.files)) return "Bad file.";
+        if (m.files.length > FILES.perMsg) return "At most " + FILES.perMsg + " files in one message.";
+        for (var j = 0; j < m.files.length; j++) {
+          var e = checkFile(m.files[j]); if (e) return e;
+          fileChars += m.files[j].data.length;
+        }
+      }
+      if (!m.content.trim() && !(m.files && m.files.length)) return "Empty message.";
       if (m.content.length > LIMITS.msgChars) return "One message is too long (" + LIMITS.msgChars.toLocaleString("en-US") + " characters at most).";
       total += m.content.length;
     }
     if (messages[messages.length - 1].role !== "user") return "The last message must be yours.";
     if (total > LIMITS.totalChars) return "This chat is too long to send. Start a new chat (or remove old messages).";
+    if (fileChars > FILES.total) return "The files are too big together (about " + Math.round(FILES.total * 0.75 / 1e6 * 10) / 10 + " MB at most). Send fewer or smaller files.";
     return null;
   }
+  function checkFile(f) {
+    if (!f || typeof f.data !== "string" || !/^[A-Za-z0-9+/]+=*$/.test(f.data) || f.data.length < 8) return "Bad file.";
+    if (f.t === "img") { if (FILES.img.indexOf(f.mt) < 0) return "Pictures must be JPEG, PNG, WebP or GIF."; }
+    else if (f.t === "pdf") { if (f.mt !== FILES.pdf) return "Bad PDF."; }
+    else return "Only pictures and PDFs can be sent as files.";
+    if (f.name != null && (typeof f.name !== "string" || f.name.length > 200)) return "Bad file name.";
+    return null;
+  }
+  function cleanFile(f) {
+    var o = { t: f.t, mt: f.mt, data: f.data };
+    if (f.name) o.name = String(f.name).replace(/[\u0000-\u001f]/g, "").slice(0, 120);
+    if (f.pages) o.pages = Math.min(2000, Math.max(1, Math.floor(Number(f.pages)) || 1));
+    return o;
+  }
+  // provider formats: Anthropic messages (image / document blocks), OpenAI Chat Completions, OpenAI Responses (token count)
+  function toAnthropic(messages) {
+    return (messages || []).map(function (m) {
+      if (!m.files || !m.files.length) return { role: m.role, content: m.content };
+      var c = m.files.map(function (f) {
+        return f.t === "pdf" ? { type: "document", source: { type: "base64", media_type: f.mt, data: f.data }, title: f.name || undefined }
+          : { type: "image", source: { type: "base64", media_type: f.mt, data: f.data } };
+      });
+      if (m.content.trim()) c.push({ type: "text", text: m.content });
+      return { role: m.role, content: c };
+    });
+  }
+  function toOpenAIChat(messages) {
+    return (messages || []).map(function (m) {
+      if (!m.files || !m.files.length) return { role: m.role, content: m.content };
+      var c = m.files.map(function (f) {
+        var url = "data:" + f.mt + ";base64," + f.data;
+        return f.t === "pdf" ? { type: "file", file: { filename: f.name || "file.pdf", file_data: url } } : { type: "image_url", image_url: { url: url } };
+      });
+      if (m.content.trim()) c.push({ type: "text", text: m.content });
+      return { role: m.role, content: c };
+    });
+  }
+  function toOpenAIResponses(messages) {
+    return (messages || []).map(function (m) {
+      if (!m.files || !m.files.length) return { role: m.role, content: m.content };
+      var c = m.files.map(function (f) {
+        var url = "data:" + f.mt + ";base64," + f.data;
+        return f.t === "pdf" ? { type: "input_file", filename: f.name || "file.pdf", file_data: url } : { type: "input_image", image_url: url };
+      });
+      if (m.content.trim()) c.push({ type: "input_text", text: m.content });
+      return { role: m.role, content: c };
+    });
+  }
   function cleanMessages(messages) {
-    return (messages || []).map(function (m) { return { role: m.role, content: String(m.content) }; });
+    return (messages || []).map(function (m) {
+      var o = { role: m.role, content: String(m.content) };
+      if (m.role === "user" && Array.isArray(m.files) && m.files.length) o.files = m.files.map(cleanFile);
+      return o;
+    });
   }
   function checkImage(prompt, quality, size, model) {
     if (typeof prompt !== "string" || !prompt.trim()) return "Describe the picture first.";
@@ -283,7 +355,11 @@
   // (real English is ~4 characters a token) + room for each message's wrapper
   function safeTokens(sys, messages) {
     var n = String(sys || "").length + 16;
-    (messages || []).forEach(function (m) { n += String(m && m.content || "").length + 8; });
+    (messages || []).forEach(function (m) {
+      n += String(m && m.content || "").length + 8;
+      // a count that can only be too high: a picture 3,000 tokens, a PDF 4,000 a page (or 1 token per 15 base64 characters)
+      (m && m.files || []).forEach(function (f) { n += f.t === "pdf" ? Math.max((f.pages || 1) * 4000, Math.ceil(f.data.length / 15)) : 3000; });
+    });
     return n;
   }
 
@@ -330,6 +406,7 @@
     chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
+    FILES: FILES, checkFile: checkFile, fileTokens: fileTokens, toAnthropic: toAnthropic, toOpenAIChat: toOpenAIChat, toOpenAIResponses: toOpenAIResponses,
     parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece
   };
 });

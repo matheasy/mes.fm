@@ -60,6 +60,18 @@
 #ai .ai-mini:hover { border-color: var(--ai-acc); }
 
 #ai .ai-compose { margin-top: .7em; }
+#ai .ai-compose.ai-drop { outline: 2px dashed var(--ai-acc); outline-offset: 4px; border-radius: .6em; }
+#ai .ai-files { display: flex; flex-wrap: wrap; gap: .5em; margin: 0 0 .5em; }
+#ai .ai-file { display: inline-flex; align-items: center; gap: .45em; border: 1px solid var(--ai-line); border-radius: .5em; padding: .3em .45em; background: var(--ai-panel); color: var(--ai-ink); font-size: .9em; max-width: 16em; }
+#ai .ai-file img { width: 2.6em; height: 2.6em; object-fit: cover; border-radius: .3em; }
+#ai .ai-file .ai-fic { font-size: 1.6em; line-height: 1; }
+#ai .ai-file .ai-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ai .ai-file button { font: inherit; border: 0; background: none; color: var(--ai-sub); cursor: pointer; padding: .1em .3em; font-size: 1.1em; }
+#ai .ai-mfiles { display: flex; flex-wrap: wrap; gap: .5em; margin: .2em 0 .4em; }
+#ai .ai-mfiles img { max-width: 11em; max-height: 9em; border-radius: .4em; border: 1px solid var(--ai-line); cursor: zoom-in; display: block; }
+#ai .ai-mfiles .ai-file { max-width: 20em; }
+#ai .ai-attach { white-space: nowrap; }
+#ai #ai-file, #ai .ai-files[hidden] { display: none !important; }
 #ai .ai-in { width: 100%; box-sizing: border-box; resize: vertical; min-height: 4.5em; font-size: 1.05em; line-height: 1.5; }
 #ai .ai-opts { display: flex; flex-wrap: wrap; gap: .6em 1em; align-items: center; margin-top: .55em; }
 #ai .ai-opt { display: inline-flex; align-items: center; gap: .4em; }

@@ -40,9 +40,12 @@
 			</div>
 			<div class="ai-log" id="ai-log" aria-live="polite" data-mes-tsize="mes-ai:fz" data-mes-tsize-label="Text" data-mes-grip="mes-ai:h" data-mes-grip-mode="max" data-mes-grip-min="220"></div>
 			<div class="ai-compose">
+				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
 				<label class="ai-sr" for="ai-in">Your message</label>
 				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="Ask anything: code, research, math, writing…  (Ctrl+Enter sends)"></textarea>
 				<div class="ai-opts">
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="Add pictures, PDFs or text files (or drop / paste them here)">📎 Add files</button>
+					<input type="file" id="ai-file" multiple hidden accept="image/*,application/pdf,.pdf,.txt,.md,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.ts,.py,.java,.c,.cpp,.h,.cs,.go,.rs,.rb,.php,.sh,.sql,.yaml,.yml,.ini,.log,.srt,.vtt,.tex">
 					<label class="ai-opt"><span>Model</span><select id="ai-model" class="tu-input" data-native></select></label>
 					<div class="ai-opt" role="group" aria-label="Answer length"><span>Answer</span>
 						<div class="ai-seg" id="ai-len"></div>

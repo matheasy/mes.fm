@@ -367,6 +367,18 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #ai .ai-mini:hover { border-color: var(--ai-acc); }
 
 #ai .ai-compose { margin-top: .7em; }
+#ai .ai-compose.ai-drop { outline: 2px dashed var(--ai-acc); outline-offset: 4px; border-radius: .6em; }
+#ai .ai-files { display: flex; flex-wrap: wrap; gap: .5em; margin: 0 0 .5em; }
+#ai .ai-file { display: inline-flex; align-items: center; gap: .45em; border: 1px solid var(--ai-line); border-radius: .5em; padding: .3em .45em; background: var(--ai-panel); color: var(--ai-ink); font-size: .9em; max-width: 16em; }
+#ai .ai-file img { width: 2.6em; height: 2.6em; object-fit: cover; border-radius: .3em; }
+#ai .ai-file .ai-fic { font-size: 1.6em; line-height: 1; }
+#ai .ai-file .ai-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ai .ai-file button { font: inherit; border: 0; background: none; color: var(--ai-sub); cursor: pointer; padding: .1em .3em; font-size: 1.1em; }
+#ai .ai-mfiles { display: flex; flex-wrap: wrap; gap: .5em; margin: .2em 0 .4em; }
+#ai .ai-mfiles img { max-width: 11em; max-height: 9em; border-radius: .4em; border: 1px solid var(--ai-line); cursor: zoom-in; display: block; }
+#ai .ai-mfiles .ai-file { max-width: 20em; }
+#ai .ai-attach { white-space: nowrap; }
+#ai #ai-file, #ai .ai-files[hidden] { display: none !important; }
 #ai .ai-in { width: 100%; box-sizing: border-box; resize: vertical; min-height: 4.5em; font-size: 1.05em; line-height: 1.5; }
 #ai .ai-opts { display: flex; flex-wrap: wrap; gap: .6em 1em; align-items: center; margin-top: .55em; }
 #ai .ai-opt { display: inline-flex; align-items: center; gap: .4em; }
@@ -835,9 +847,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="ai-log" id="ai-log" aria-live="polite" data-mes-tsize="mes-ai:fz" data-mes-tsize-label="Text" data-mes-grip="mes-ai:h" data-mes-grip-mode="max" data-mes-grip-min="220"></div>
 			<div class="ai-compose">
+				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
 				<label class="ai-sr" for="ai-in">Your message</label>
 				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="Ask anything: code, research, math, writing…  (Ctrl+Enter sends)"></textarea>
 				<div class="ai-opts">
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="Add pictures, PDFs or text files (or drop / paste them here)">📎 Add files</button>
+					<input type="file" id="ai-file" multiple hidden accept="image/*,application/pdf,.pdf,.txt,.md,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.ts,.py,.java,.c,.cpp,.h,.cs,.go,.rs,.rb,.php,.sh,.sql,.yaml,.yml,.ini,.log,.srt,.vtt,.tex">
 					<label class="ai-opt"><span>Model</span><select id="ai-model" class="tu-input" data-native></select></label>
 					<div class="ai-opt" role="group" aria-label="Answer length"><span>Answer</span>
 						<div class="ai-seg" id="ai-len"></div>
@@ -997,7 +1012,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=5" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
