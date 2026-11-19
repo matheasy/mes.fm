@@ -238,9 +238,28 @@
         return ["custom_json", { required_auths: [], required_posting_auths: [acc], id: ID, json: JSON.stringify(piece) }];
     }
     function noticeMemo(msgId) { return NOTICE_TXT + msgId; }
-    function noticeOps(from, to, msgId, currency) {
+    /* the amount sent with each message (HBD / HIVE, 3 decimals, never below Hive's 0.001 minimum, capped at 1,000) */
+    function cleanAmount(v) {
+        var n = typeof v === "number" ? v : parseFloat(String(v == null ? "" : v).replace(",", "."));
+        if (!isFinite(n) || n < 0.001) n = 0.001;
+        return Math.min(1000, Math.round(n * 1000) / 1000);
+    }
+    function fmtAmount(n, currency) { return cleanAmount(n).toFixed(3) + " " + (currency === "HIVE" ? "HIVE" : "HBD"); }
+    /* "0.010 HBD" -> {n: 0.01, cur: "HBD"} | null */
+    function parseAmount(str) {
+        var m = /^\s*([0-9]+(?:\.[0-9]+)?)\s+(HBD|HIVE)\s*$/.exec(String(str || ""));
+        return m ? { n: parseFloat(m[1]), cur: m[2] } : null;
+    }
+    /* inbox filter: setting {mode: "off" | "mark" | "hide", min}; amount string or null (unknown, e.g. notices seen before amounts were kept) */
+    function lowPaid(amount, setting) {
+        if (!setting || !setting.mode || setting.mode === "off") return false;
+        var a = parseAmount(amount), min = parseFloat(setting.min);
+        if (!a || !isFinite(min) || min <= 0) return false;
+        return a.n + 1e-9 < min;
+    }
+    function noticeOps(from, to, msgId, currency, amount) {
         return to.filter(function (n) { return n !== from; }).map(function (n) {
-            return ["transfer", { from: from, to: n, amount: "0.001 " + (currency === "HIVE" ? "HIVE" : "HBD"), memo: noticeMemo(msgId) }];
+            return ["transfer", { from: from, to: n, amount: fmtAmount(amount, currency), memo: noticeMemo(msgId) }];
         });
     }
 
@@ -389,7 +408,7 @@
         setKem: setKem, b64: b64, unb64: unb64, hex: hex, utf8: utf8, newId: newId,
         cleanName: cleanName, validName: validName, parseTo: parseTo, passBits: passBits, generatePass: generatePass,
         deriveSeed: deriveSeed, keysFromSeed: keysFromSeed, fingerprint: fingerprint, profileKey: profileKey, mergeProfile: mergeProfile,
-        seal: seal, open: open, split: split, batches: batches, customOp: customOp, noticeMemo: noticeMemo, noticeOps: noticeOps,
+        seal: seal, open: open, split: split, batches: batches, customOp: customOp, noticeMemo: noticeMemo, noticeOps: noticeOps, cleanAmount: cleanAmount, fmtAmount: fmtAmount, parseAmount: parseAmount, lowPaid: lowPaid,
         pieceOf: pieceOf, assemble: assemble, transferOf: transferOf, walk: walk, scanMine: scanMine, fetchFrom: fetchFrom,
         threads: threads, replySubject: replySubject, replyAll: replyAll, quote: quote, estimate: estimate
     };
@@ -591,7 +610,7 @@
 		S.keys = k;
 		S.cache = ls("c:" + S.me) || { top: null, notices: [], classic: [], env: {}, pend: [], nf: {} };
 		S.read = ls("read:" + S.me) || {};
-		show("em-app");
+		show("em-app"); S.showLow = false; paintFilter();
 		paintWho();
 		M.fingerprint(k.pub).then(function (fp) {
 			$("em-keybox").innerHTML = '<b>Your mail key</b><code>' + esc(fp) + '</code><small>Quantum-safe X-Wing (ML-KEM-768 + X25519). People who write to you see the same code.</small>';
@@ -678,11 +697,12 @@
 		return Promise.all(jobs).then(buildThreads);
 	}
 	function buildThreads() {
-		var c = S.cache, msgs = [];
+		var c = S.cache, msgs = [], amts = {};
+		(c.notices || []).forEach(function (n) { if (n.amount) amts[n.from + "/" + n.msgId] = n.amount; });
 		Object.keys(c.env).forEach(function (k) {
 			var e = c.env[k], p = S.open[k];
 			if (!p) return;
-			msgs.push({ key: k, from: e.from, to: e.env.to, msgId: e.msgId, t: e.t, trx: e.trx, payload: p.err ? { s: "(could not be opened)", b: p.err, th: e.msgId } : p, err: p.err });
+			msgs.push({ key: k, amt: e.from === S.me ? (c.sentAmt && c.sentAmt[k]) || null : amts[k] || null, from: e.from, to: e.env.to, msgId: e.msgId, t: e.t, trx: e.trx, payload: p.err ? { s: "(could not be opened)", b: p.err, th: e.msgId } : p, err: p.err });
 		});
 		S.threads = M.threads(msgs, S.me);
 	}
@@ -695,7 +715,7 @@
 		M.scanMine(H.call, me, { top: c.top }).then(function (r) {
 			c.top = r.top;
 			var seenN = {}; c.notices.forEach(function (n) { seenN[n.from + "/" + n.msgId] = 1; });
-			r.notices.forEach(function (n) { if (!seenN[n.from + "/" + n.msgId]) { c.notices.push({ from: n.from, msgId: n.msgId, t: n.t, trx: n.trx }); seenN[n.from + "/" + n.msgId] = 1; } });
+			r.notices.forEach(function (n) { if (!seenN[n.from + "/" + n.msgId]) { c.notices.push({ from: n.from, msgId: n.msgId, t: n.t, trx: n.trx, amount: n.amount }); seenN[n.from + "/" + n.msgId] = 1; } });
 			var seenC = {}; c.classic.forEach(function (x) { seenC[x.trx + x.memo.slice(1, 12)] = 1; });
 			r.classic.forEach(function (x) { var k = x.trx + x.memo.slice(1, 12); if (!seenC[k]) { c.classic.push({ from: x.from, to: x.to, memo: x.memo, amount: x.amount, t: x.t, trx: x.trx }); seenC[k] = 1; } });
 			var asm = M.assemble(c.pend.concat(r.pieces));
@@ -738,6 +758,30 @@
 	/* ================= painting ================= */
 	function unread(th) { return th.msgs.some(function (m) { return m.from !== S.me && !S.read[m.key]; }); }
 	function inFolder(th, f) { return f === "inbox" ? th.inbox : f === "sent" ? th.sent : true; }
+	function fkey() { return "fl:" + S.me; }
+	function fset() { return ls(fkey()) || { mode: "off", min: "" }; }
+	/* a thread is low-paid when it has mail from others and every piece of it paid under my minimum, and I never wrote in it */
+	function lowThread(th) {
+		var f = fset();
+		if (f.mode === "off" || th.msgs.some(function (m) { return m.from === S.me; })) return false;
+		return th.msgs.length > 0 && th.msgs.every(function (m) { return M.lowPaid(m.amt, f); });
+	}
+	function payText(th) {
+		var best = null;
+		th.msgs.forEach(function (m) { var a = M.parseAmount(m.amt); if (a && (!best || a.n > best.n)) best = m; });
+		return best ? (best.from === S.me ? "sent with " : "paid ") + best.amt : "";
+	}
+	function paintFilter() {
+		var f = fset();
+		$("em-fmode").value = f.mode; $("em-fmin").value = f.min;
+		$("em-fsum").textContent = "Spam filter: " + (f.mode === "off" || !f.min ? "off" : (f.mode === "hide" ? "hiding" : "marking") + " mail under " + f.min);
+	}
+	function saveFilter() {
+		var f = { mode: $("em-fmode").value, min: $("em-fmin").value.trim().replace(",", ".") };
+		if (f.min && !(parseFloat(f.min) > 0)) f.min = "";
+		if (!f.min) f.mode = "off";
+		ls(fkey(), f); paintFilter(); paintList();
+	}
 	function matches(th) {
 		if (!S.q) return true;
 		var q = S.q.toLowerCase();
@@ -770,7 +814,16 @@
 			});
 			return;
 		}
-		var list = S.threads.filter(function (t) { return inFolder(t, S.folder) && matches(t); });
+		$("em-filter").hidden = S.folder === "sent";
+		var f = fset(), hid = 0;
+		var list = S.threads.filter(function (t) {
+			if (!inFolder(t, S.folder) || !matches(t)) return false;
+			if (S.folder === "inbox" && f.mode === "hide" && lowThread(t) && !S.showLow) { hid++; return false; }
+			return true;
+		});
+		$("em-fhid").innerHTML = hid ? hid + " hidden. " : "";
+		if (hid) { var sb = el("button", "tu-btn tu-btn--ghost"); sb.type = "button"; sb.textContent = "Show them"; sb.onclick = function () { S.showLow = true; paintList(); }; $("em-fhid").appendChild(sb); }
+		else if (S.showLow && f.mode === "hide") { var hb = el("button", "tu-btn tu-btn--ghost"); hb.type = "button"; hb.textContent = "Hide low-payment mail again"; hb.onclick = function () { S.showLow = false; paintList(); }; $("em-fhid").appendChild(hb); }
 		box.innerHTML = list.length ? "" : '<p class="em-none">' + (S.q ? "Nothing matches." : S.folder === "sent" ? "You haven't sent anything yet." : "No mail yet. Messages people send you show up here.") + '</p>';
 		list.forEach(function (th) {
 			var last = th.last, u = unread(th);
@@ -778,7 +831,7 @@
 			var b = el("button", "em-item" + (u ? " is-unread" : "") + (S.th === th.th ? " is-on" : ""));
 			b.type = "button";
 			b.innerHTML = avatar(th.people[0] || S.me) + '<span class="em-it"><span class="em-ip"><b>' + esc(who) + (th.msgs.length > 1 ? ' <small>' + th.msgs.length + '</small>' : '') + '</b><time>' + esc(when(last.t)) + '</time></span>' +
-				'<span class="em-is">' + esc(th.subject || "(no subject)") + '</span><span class="em-ib">' + (last.from === S.me ? "You: " : "") + esc(String(last.payload.b || "").replace(/\s+/g, " ").slice(0, 120)) + '</span></span>';
+				'<span class="em-is">' + esc(th.subject || "(no subject)") + (lowThread(th) ? ' <span class="em-low" title="Paid less than your minimum">low payment</span>' : '') + (payText(th) ? ' <span class="em-pay">' + esc(payText(th)) + '</span>' : '') + '</span><span class="em-ib">' + (last.from === S.me ? "You: " : "") + esc(String(last.payload.b || "").replace(/\s+/g, " ").slice(0, 120)) + '</span></span>';
 			b.onclick = function () { openThread(th.th); };
 			box.appendChild(b);
 		});
@@ -799,7 +852,7 @@
 			'<p class="em-people">With ' + (th.people.length ? th.people.map(function (p) { return '<a href="https://peakd.com/@' + esc(p) + '" target="_blank" rel="noopener">@' + esc(p) + '</a>'; }).join(", ") : "yourself") + ' · <span class="em-lockt">🔒 end-to-end encrypted, quantum-safe</span></p>';
 		th.msgs.forEach(function (m, i) {
 			var nf = S.cache.nf && S.cache.nf[m.key];
-			html += '<article class="em-msg' + (m.err ? " is-err" : "") + '" data-k="' + esc(m.key) + '"><header>' + avatar(m.from) + '<div><b>@' + esc(m.from) + '</b><small>to ' + m.to.map(function (t) { return "@" + esc(t); }).join(", ") + '</small></div><time title="' + esc(m.t) + ' UTC">' + esc(whenLong(m.t)) + '</time></header>' +
+			html += '<article class="em-msg' + (m.err ? " is-err" : "") + '" data-k="' + esc(m.key) + '"><header>' + avatar(m.from) + '<div><b>@' + esc(m.from) + '</b><small>to ' + m.to.map(function (t) { return "@" + esc(t); }).join(", ") + (m.amt ? ' · ' + (m.from === S.me ? 'sent with ' : 'paid ') + esc(m.amt) : '') + '</small></div><time title="' + esc(m.t) + ' UTC">' + esc(whenLong(m.t)) + '</time></header>' +
 				(m.payload.s && i > 0 ? '<p class="em-msubj">' + esc(m.payload.s) + '</p>' : '') +
 				'<div class="em-mbody">' + renderBody(m.payload.b) + '</div>' +
 				'<footer>' + (nf ? '<button type="button" class="tu-btn" data-act="notice">⚠ Send the delivery notice again</button>' : '') +
@@ -862,7 +915,7 @@
 		$("em-subj").value = o.subject || "";
 		$("em-body").value = o.body || "";
 		$("em-sendnote").textContent = "";
-		$("em-curr").value = prefs.cur || "HBD";
+		$("em-curr").value = prefs.cur || "HBD"; $("em-amt").value = prefs.amt || "0.001";
 		$("em-thread").hidden = true; $("em-classicv").hidden = true; $("em-empty").hidden = true; $("em-cf").hidden = false;
 		narrow(true);
 		checkTo();
@@ -903,14 +956,20 @@
 		var p = M.parseTo($("em-to").value), n = p.names.filter(function (x) { return x !== S.me; }).length;
 		if (!S.me || !p.names.length) { $("em-est").textContent = ""; return; }
 		var e = M.estimate(p.names, S.me, $("em-body").value, $("em-subj").value);
-		var cur = $("em-curr").value;
-		$("em-est").textContent = "About " + (e.bytes / 1000).toFixed(1) + " KB encrypted · Keychain: " + e.txs + " Posting approval" + (e.txs > 1 ? "s" : "") + (n ? " + 1 Active approval for the notice (" + (0.001 * n).toFixed(3) + " " + cur + " in all, the recipients keep it)" : "") + "." +
+		var cur = $("em-curr").value, amt = M.cleanAmount($("em-amt").value);
+		Array.prototype.forEach.call(document.querySelectorAll(".em-pre"), function (b) { b.classList.toggle("is-on", parseFloat(b.dataset.a) === amt); });
+		$("em-est").textContent = "About " + (e.bytes / 1000).toFixed(1) + " KB encrypted · Keychain: " + e.txs + " Posting approval" + (e.txs > 1 ? "s" : "") + (n ? " + 1 Active approval for the payment (" + M.fmtAmount(amt, cur) + " to each of " + n + " = " + (amt * n).toFixed(3) + " " + cur + " in all, the recipients keep it; a bigger amount helps your mail pass their spam filters)" : "") + "." +
 			(e.pieces > M.MAX_PIECES ? " Too long: shorten the message." : "");
 	}
 	$("em-to").addEventListener("input", function () { checkTo(); saveDraft(); });
 	$("em-subj").addEventListener("input", function () { estimate(); saveDraft(); });
 	$("em-body").addEventListener("input", function () { estimate(); saveDraft(); });
 	$("em-curr").addEventListener("change", function () { prefs.cur = this.value; savePrefs(); estimate(); });
+	$("em-amt").addEventListener("input", function () { estimate(); });
+	$("em-amt").addEventListener("change", function () { this.value = M.cleanAmount(this.value); prefs.amt = this.value; savePrefs(); estimate(); });
+	Array.prototype.forEach.call(document.querySelectorAll(".em-pre"), function (b) { b.onclick = function () { $("em-amt").value = b.dataset.a; prefs.amt = b.dataset.a; savePrefs(); estimate(); }; });
+	$("em-fmode").addEventListener("change", saveFilter);
+	$("em-fmin").addEventListener("change", saveFilter);
 	var dT;
 	function saveDraft() { clearTimeout(dT); dT = setTimeout(function () { ls("draft", { to: $("em-to").value, s: $("em-subj").value, b: $("em-body").value, re: draft.re }); }, 400); }
 
@@ -922,7 +981,7 @@
 		if (!p.names.length) { note.textContent = "Add at least one recipient."; return; }
 		if (p.names.length > M.MAX_TO) { note.textContent = "At most " + M.MAX_TO + " recipients."; return; }
 		S.busy = true; btn.disabled = true;
-		var cur = $("em-curr").value, sealed, key;
+		var cur = $("em-curr").value, amt = M.cleanAmount($("em-amt").value), sealed, key;
 		p.names.forEach(function (n) { if (n !== S.me) delete S.keyCache[n]; });
 		note.textContent = "Checking the recipients' keys…";
 		getAccounts(p.names).then(function () {
@@ -950,15 +1009,16 @@
 		}).then(function () {
 			/* it is on chain now: keep it in Sent whatever happens with the notice */
 			S.cache.env[key] = { from: S.me, msgId: sealed.msgId, env: sealed.env, t: new Date().toISOString().slice(0, 19), trx: "" };
+			(S.cache.sentAmt = S.cache.sentAmt || {})[key] = M.fmtAmount(amt, cur);
 			S.open[key] = sealed.payload;
 			var contacts = ls("contacts") || {};
 			return Promise.all(p.names.map(function (n) { return M.fingerprint(S.keyCache[n].key.pub).then(function (fp) { contacts[n] = fp; }); })).then(function () { ls("contacts", contacts); });
 		}).then(function () {
-			var ops = M.noticeOps(S.me, p.names, sealed.msgId, cur);
+			var ops = M.noticeOps(S.me, p.names, sealed.msgId, cur, amt);
 			if (!ops.length) return;
 			note.textContent = "Sending the delivery notice: approve in Keychain (Active key)…";
 			return H.broadcast(ops, "Active", "MES Mail delivery notice").catch(function (e) {
-				S.cache.nf = S.cache.nf || {}; S.cache.nf[key] = { to: p.names, cur: cur };
+				S.cache.nf = S.cache.nf || {}; S.cache.nf[key] = { to: p.names, cur: cur, amt: amt };
 				toast("Saved, but the delivery notice was not sent: " + e.message);
 			});
 		}).then(function () {
@@ -977,7 +1037,7 @@
 	};
 	function resendNotice(m) {
 		var nf = S.cache.nf[m.key];
-		H.broadcast(M.noticeOps(S.me, nf.to, m.msgId, nf.cur), "Active", "MES Mail delivery notice").then(function () {
+		H.broadcast(M.noticeOps(S.me, nf.to, m.msgId, nf.cur, nf.amt), "Active", "MES Mail delivery notice").then(function () {
 			delete S.cache.nf[m.key]; saveCache(); paintThread(); toast("Notice sent.");
 		}).catch(function (e) { toast(e.message); });
 	}

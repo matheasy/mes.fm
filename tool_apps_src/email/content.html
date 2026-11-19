@@ -73,6 +73,15 @@
 			</nav>
 			<section class="em-list" id="em-listpane" aria-label="Conversations">
 				<input class="tu-input em-search" id="em-q" type="search" placeholder="Search your mail" aria-label="Search your mail">
+				<details class="em-filter" id="em-filter">
+					<summary id="em-fsum">Spam filter: off</summary>
+					<div class="em-fbody">
+						<p class="tu-note">Every message arrives with a small payment from the sender (shown on each row). Real people can pay 0.001 or more; spammers sending to thousands of accounts usually will not. Set <b>my minimum</b> to hide or mark mail that paid less. Saved for this account in this browser only; nothing is deleted.</p>
+						<label class="em-check">Mail paid less than <input class="tu-input em-amt" id="em-fmin" inputmode="decimal" aria-label="My minimum amount"> HBD/HIVE:</label>
+						<select class="tu-select" id="em-fmode" aria-label="What to do with it"><option value="off">Do nothing</option><option value="mark">Mark it "low payment"</option><option value="hide">Hide it from my Inbox</option></select>
+						<p class="tu-note" id="em-fhid"></p>
+					</div>
+				</details>
 				<div id="em-list"></div>
 			</section>
 			<section class="em-read" id="em-read" aria-live="polite">
@@ -94,7 +103,8 @@
 					<p class="tu-note em-est" id="em-est"></p>
 					<div class="em-row em-sendrow">
 						<button type="submit" class="tu-btn tu-btn--primary" id="em-send">🔒 Send encrypted</button>
-						<label class="em-cur">Notice paid in <select class="tu-select" id="em-curr"><option value="HBD">HBD</option><option value="HIVE">HIVE</option></select></label>
+						<label class="em-cur">Pay <input class="tu-input em-amt" id="em-amt" inputmode="decimal" value="0.001" aria-label="Amount to send with the message"> <select class="tu-select" id="em-curr" aria-label="Currency"><option value="HBD">HBD</option><option value="HIVE">HIVE</option></select> each</label>
+						<span class="em-presets" id="em-presets"><button type="button" class="em-pre" data-a="0.001">0.001</button><button type="button" class="em-pre" data-a="0.01">0.01</button><button type="button" class="em-pre" data-a="0.1">0.1</button><button type="button" class="em-pre" data-a="1">1</button></span>
 						<button type="button" class="tu-btn tu-btn--ghost" id="em-classic" hidden>Send as a classic memo</button>
 					</div>
 					<p class="tu-note" id="em-sendnote"></p>

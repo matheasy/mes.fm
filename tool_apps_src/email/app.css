@@ -113,3 +113,15 @@ html body.dark-mode #em .em-chip.is-good { background: #12301f; border-color: #2
 html body.dark-mode #em .em-chip.is-warn { background: #33270f; border-color: #6e5320; }
 html body.dark-mode #em .em-chip.is-bad { background: #3a1714; border-color: #7a2f29; }
 html body.dark-mode #em .em-meter span.is-ok { background: #d9a020; }
+
+#em .em-amt { width: 5.5em; display: inline-block; padding: .3em .5em; }
+#em .em-presets { display: inline-flex; gap: .3em; }
+#em .em-pre { border: 1px solid var(--em-line, #c5cbe8); background: transparent; color: inherit; border-radius: 1em; padding: .15em .7em; cursor: pointer; font: inherit; font-size: .85em; }
+#em .em-pre.is-on { background: var(--em-acc, #3b4cca); color: #fff; border-color: transparent; }
+#em .em-filter { margin: 0 .6em .6em; font-size: .9em; }
+#em .em-filter summary { cursor: pointer; color: var(--em-mute); }
+#em .em-fbody { display: grid; gap: .5em; padding-top: .5em; }
+#em .em-low { display: inline-block; font-size: .75em; border: 1px solid currentColor; border-radius: .8em; padding: 0 .5em; color: #b45309; }
+#em .em-pay { font-size: .8em; color: var(--em-mute); }
+body.dark-mode #em .em-low { color: #fbbf24; }
+body.dark-mode #em .em-pre.is-on { color: #fff; background: #4f5fe0; }

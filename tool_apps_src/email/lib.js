@@ -238,9 +238,28 @@
         return ["custom_json", { required_auths: [], required_posting_auths: [acc], id: ID, json: JSON.stringify(piece) }];
     }
     function noticeMemo(msgId) { return NOTICE_TXT + msgId; }
-    function noticeOps(from, to, msgId, currency) {
+    /* the amount sent with each message (HBD / HIVE, 3 decimals, never below Hive's 0.001 minimum, capped at 1,000) */
+    function cleanAmount(v) {
+        var n = typeof v === "number" ? v : parseFloat(String(v == null ? "" : v).replace(",", "."));
+        if (!isFinite(n) || n < 0.001) n = 0.001;
+        return Math.min(1000, Math.round(n * 1000) / 1000);
+    }
+    function fmtAmount(n, currency) { return cleanAmount(n).toFixed(3) + " " + (currency === "HIVE" ? "HIVE" : "HBD"); }
+    /* "0.010 HBD" -> {n: 0.01, cur: "HBD"} | null */
+    function parseAmount(str) {
+        var m = /^\s*([0-9]+(?:\.[0-9]+)?)\s+(HBD|HIVE)\s*$/.exec(String(str || ""));
+        return m ? { n: parseFloat(m[1]), cur: m[2] } : null;
+    }
+    /* inbox filter: setting {mode: "off" | "mark" | "hide", min}; amount string or null (unknown, e.g. notices seen before amounts were kept) */
+    function lowPaid(amount, setting) {
+        if (!setting || !setting.mode || setting.mode === "off") return false;
+        var a = parseAmount(amount), min = parseFloat(setting.min);
+        if (!a || !isFinite(min) || min <= 0) return false;
+        return a.n + 1e-9 < min;
+    }
+    function noticeOps(from, to, msgId, currency, amount) {
         return to.filter(function (n) { return n !== from; }).map(function (n) {
-            return ["transfer", { from: from, to: n, amount: "0.001 " + (currency === "HIVE" ? "HIVE" : "HBD"), memo: noticeMemo(msgId) }];
+            return ["transfer", { from: from, to: n, amount: fmtAmount(amount, currency), memo: noticeMemo(msgId) }];
         });
     }
 
@@ -389,7 +408,7 @@
         setKem: setKem, b64: b64, unb64: unb64, hex: hex, utf8: utf8, newId: newId,
         cleanName: cleanName, validName: validName, parseTo: parseTo, passBits: passBits, generatePass: generatePass,
         deriveSeed: deriveSeed, keysFromSeed: keysFromSeed, fingerprint: fingerprint, profileKey: profileKey, mergeProfile: mergeProfile,
-        seal: seal, open: open, split: split, batches: batches, customOp: customOp, noticeMemo: noticeMemo, noticeOps: noticeOps,
+        seal: seal, open: open, split: split, batches: batches, customOp: customOp, noticeMemo: noticeMemo, noticeOps: noticeOps, cleanAmount: cleanAmount, fmtAmount: fmtAmount, parseAmount: parseAmount, lowPaid: lowPaid,
         pieceOf: pieceOf, assemble: assemble, transferOf: transferOf, walk: walk, scanMine: scanMine, fetchFrom: fetchFrom,
         threads: threads, replySubject: replySubject, replyAll: replyAll, quote: quote, estimate: estimate
     };

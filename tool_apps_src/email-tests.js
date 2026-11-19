@@ -124,6 +124,10 @@ const fakeKem = {
     /* transfers: notices + classic memos */
     const ops = M.noticeOps("alice", ["bob", "alice", "carol"], big.msgId, "HBD");
     ok(ops.length === 2 && ops[0][1].amount === "0.001 HBD" && M.NOTICE_RE.test(ops[0][1].memo), "notice ops skip self");
+    const o2 = M.noticeOps("alice", ["bob"], big.msgId, "HIVE", "0,5");
+    ok(o2[0][1].amount === "0.500 HIVE" && M.noticeOps("a", ["b"], big.msgId, "HBD", 0)[0][1].amount === "0.001 HBD" && M.noticeOps("a", ["b"], big.msgId, "HBD", "x")[0][1].amount === "0.001 HBD", "amount: chosen, floored at 0.001");
+    ok(M.cleanAmount(99999) === 1000 && M.parseAmount("0.010 HBD").n === 0.01 && M.parseAmount("junk") === null, "amount parse / cap");
+    ok(M.lowPaid("0.001 HBD", { mode: "hide", min: 0.01 }) && !M.lowPaid("0.010 HBD", { mode: "hide", min: 0.01 }) && !M.lowPaid("0.001 HBD", { mode: "off", min: 1 }) && !M.lowPaid(null, { mode: "hide", min: 1 }), "lowPaid filter");
     const n = M.transferOf([5, { timestamp: "2026-11-17T10:00:03", trx_id: "x", op: ops[0] }]);
     ok(n && n.msgId === big.msgId && n.from === "alice" && n.to === "bob", "notice parsed");
     const cl = M.transferOf([6, { timestamp: "t", trx_id: "y", op: ["transfer", { from: "bob", to: "alice", amount: "0.001 HBD", memo: "#" + "Z".repeat(60) }] }]);
