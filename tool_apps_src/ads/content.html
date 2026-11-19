@@ -28,7 +28,7 @@
 
 		<section class="tu-card ad-sec">
 			<div class="ad-head"><h2>Day by day</h2><span class="ad-hbtns"><button type="button" class="mes-pbtn" id="ad-notes" title="Chart notes: list, add, edit (shared with the Search Console chart)">Notes</button></span></div>
-			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day: its numbers show in the line above the chart. Right-click a day to add a note.</p>
+			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold and MES AI in purple) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day: its numbers show in the line above the chart. Right-click a day to add a note.</p>
 			<div class="ad-tabs ad-seot" id="ad-seot" role="group" aria-label="Search lines (right axis)">
 				<span class="ad-seol">Search (right axis):</span>
 				<button type="button" class="tu-chip" data-g="gc" aria-pressed="false" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Google clicks</button>
@@ -39,7 +39,7 @@
 			<div class="ad-tabs ad-tabs--sm" data-rangebar role="group" aria-label="Range"></div>
 			<div class="ad-read" id="ad-read" aria-live="polite"></div>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg></div>
-			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--prem"></i>MES Premium (HBD)</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
+			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--prem"></i>MES Premium (HBD)</span><span><i class="ad-key ad-key--ai"></i>MES AI (HBD)</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
 			<p class="tu-note" id="ad-seonote"></p>
 			<p class="tu-note ad-ends" id="ad-ends"></p>
 		</section>
@@ -48,6 +48,14 @@
 			<div class="ad-head"><h2>MES Premium payments</h2></div>
 			<p class="tu-note">People who paid HBD on <a href="/premium">mes.fm/premium</a> for no ads: transfers and subscription payments to @mes with the memo “mes.fm ad-free”, read from the public Hive blockchain (other HBD sent to @mes is not counted). 1 HBD is counted as 1 US dollar. These are in the earnings tiles and the chart above.</p>
 			<div class="ad-wrap"><table class="ad-t" id="t-premium"></table></div>
+		</section>
+
+		<section class="tu-card ad-sec">
+			<div class="ad-head"><h2>MES AI payments</h2></div>
+			<p class="tu-note">Messages, pictures and videos paid on <a href="/ai">mes.fm/ai</a>: HBD transfers to @mes with a “mesai:…” memo, read from the public Hive blockchain. A price is the most the model provider can charge us for that message × 1.5, so the model cost is at most two thirds of it; the tiles count only the third that is sure to be profit in “net”. The models are paid on the Anthropic / OpenAI / xAI bills, not shown here.</p>
+			<div class="ad-wrap"><table class="ad-t" id="t-ai"></table></div>
+			<h3 class="ad-sub">Who uses it most</h3>
+			<div class="ad-wrap"><table class="ad-t" id="t-aitop"></table></div>
 		</section>
 
 		<section class="tu-card ad-sec">

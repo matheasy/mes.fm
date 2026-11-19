@@ -120,12 +120,17 @@
 	}
 	/* in-cell bars (app.js column option b): a thin bar under the number, full cell width, anchored right like the numbers,
 	   so the tables can be scanned by eye without getting wider on phones; MES Premium income = gold */
-	#ad {--ad-n:#9aa5b1;--ad-prem:#c99a06;}
-	body.dark-mode #ad.tu {--ad-n:#6f7a86;--ad-prem:#f2c14e;}
+	#ad {--ad-n:#9aa5b1;--ad-prem:#c99a06;--ad-ai:#7c3aed;}
+	body.dark-mode #ad.tu {--ad-n:#6f7a86;--ad-prem:#f2c14e;--ad-ai:#b794f6;}
 	#ad .pm {color:#856400;}
 	body.dark-mode #ad.tu .pm {color:var(--ad-prem);}
 	#ad .ad-tip .pm {color:#f2c14e;}
 	.ad-key--prem {background:var(--ad-prem);}
+	.ad-key--ai {background:var(--ad-ai);}
+	#ad h3.ad-sub {font-size:1em;margin:1em 0 .4em;}
+	#ad .ai {color:#6d28d9;}
+	body.dark-mode #ad.tu .ai {color:var(--ad-ai);}
+	#ad .ad-tip .ai {color:#b794f6;}
 	.ad-ib {display:flex;justify-content:flex-end;height:4px;margin-top:3px;border-radius:2px;background:rgba(128,128,128,0.14);overflow:hidden;min-width:3.5em;}
 	.ad-ib i {display:block;height:100%;border-radius:2px;opacity:0.85;}
 	@media (max-width: 600px) { .ad-ib {min-width:2.6em;height:3px;} }

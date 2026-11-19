@@ -58,6 +58,7 @@
   // Colour code: revenue blue (.rv), costs red (.cs), profit green / red (.pos / .neg); counts stay neutral.
   var R = function (h) { return h === '–' ? h : '<span class="rv">' + h + '</span>'; };
   var PM = function (h) { return h === '–' ? h : '<span class="pm">' + h + '</span>'; }; // MES Premium (HBD) income: gold
+  var AI = function (h) { return h === '–' ? h : '<span class="ai">' + h + '</span>'; }; // MES AI (HBD) income: purple
   var C = function (h) { return h === '–' ? h : '<span class="cs">' + h + '</span>'; };
   var perK = function (v, pv) { return pv ? money(v / pv * 1000) : '–'; };
   var signedK = function (v, pv) { return pv ? signed(v / pv * 1000) : '–'; };
@@ -273,16 +274,18 @@
     $('ad-setup').innerHTML = missing.length ? '<h2>Waiting for data</h2><ul>' + missing.join('') + '</ul><p class="tu-note">Both run every hour (resending the last 3 days) and once a day at 6 am (the last 35 days), so a day is filled in or corrected on the next run.</p>' : '';
 
     // income = AdSense + MES Premium (HBD paid on mes.fm/premium); "earnings minus spend" counts both
-    var prem = t.prem || 0, inc = t.rev + prem, net = inc - t.spend;
+    // MES AI income counts in "earned"; "net" takes off the most its models can cost (2/3 of the price), so net is a floor.
+    var prem = t.prem || 0, ai = t.ai || 0, inc = t.rev + prem + ai, net = inc - (t.aiCost || 0) - t.spend;
     var T = [];
     if (shows('tot')) T.push(tile(R(money(t.rev)), 'AdSense earnings'),
       tile(PM(money(prem)), 'MES Premium' + (t.premN ? ' (' + t.premN + ' payment' + (t.premN === 1 ? '' : 's') + ', ' + (+t.premHbd.toFixed(3)) + ' HBD)' : ' (no payments yet)')),
+      tile(AI(money(ai)), 'MES AI' + (t.aiN ? ' (' + t.aiN + ' paid message' + (t.aiN === 1 ? '' : 's') + ', ' + (+t.aiHbd.toFixed(3)) + ' HBD; models cost ≤ ' + money(t.aiCost) + ')' : ' (no payments yet)')),
       tile(C(money(t.spend)), 'Google Ads spend'),
-      tile((net < 0 ? '−' : '') + money(Math.abs(net)), 'earnings + Premium − spend', net >= 0 ? 'pos' : 'neg'));
+      tile((net < 0 ? '−' : '') + money(Math.abs(net)), 'earnings + Premium + AI profit − spend', net >= 0 ? 'pos' : 'neg'));
     if (shows('pk')) T.push(tile(R(perK(t.rev, t.pv)), 'AdSense earned per 1,000 views'), tile(C(perK(t.spend, t.pv)), 'ad spend per 1,000 views'),
-      tile((net < 0 ? '−' : '') + perK(Math.abs(net), t.pv), 'net per 1,000 views (with Premium)', net >= 0 ? 'pos' : 'neg'));
+      tile((net < 0 ? '−' : '') + perK(Math.abs(net), t.pv), 'net per 1,000 views (with Premium + AI)', net >= 0 ? 'pos' : 'neg'));
     T.push(tile(int(t.pv), 'page views (AdSense)'),
-      tile(t.spend ? (inc / t.spend).toFixed(2) + '×' : '–', 'earnings + Premium ÷ spend', t.spend ? (inc >= t.spend ? 'pos' : 'neg') : ''),
+      tile(t.spend ? ((net + t.spend) / t.spend).toFixed(2) + '×' : '–', 'earnings + Premium + AI profit ÷ spend', t.spend ? (net >= 0 ? 'pos' : 'neg') : ''),
       tile(int(t.clicks), 'ad clicks bought', 'ad-x'), tile(C(cpc(t.spend, t.clicks)), 'average cost per click', 'ad-x'));
     T.push(tile(int(t.imp), 'ad impressions bought', 'ad-x'));
     if (MODE === 'both') T.push(tile(t.pv ? (t.clicks / t.pv * 1000).toFixed(1) : '–', 'ad clicks per 1,000 views', 'ad-x'));
@@ -381,6 +384,23 @@
       { k: 'cad', t: 'Value', b: 'var(--ad-prem)', v: function (r) { return r.hbd / usd; }, h: function (r) { return PM(money(r.hbd / usd)); } },
     ], pp, { sort: 't', top: 10, empty: d.premium && d.premium.error ? 'Could not read the Hive blockchain just now (' + d.premium.error + ').' : 'No MES Premium payments in this range yet.' });
 
+    // MES AI payments (newest first) and the biggest spenders
+    var ap = (d.premium && d.premium.ai) || [], at = (d.premium && d.premium.aiTop) || [];
+    var userCell = function (r) { return '<a href="https://peakd.com/@' + esc(r.user) + '/wallet" target="_blank" rel="noopener">@' + esc(r.user) + '</a>'; };
+    var hErr = d.premium && d.premium.error ? 'Could not read the Hive blockchain just now (' + d.premium.error + ').' : '';
+    table('t-ai', null, [
+      { k: 't', t: 'When', v: function (r) { return r.t; }, h: function (r) { return esc(r.d) + ' <small>' + esc(r.t.slice(11, 16)) + ' UTC</small>'; } },
+      { k: 'user', t: 'Hive account', v: function (r) { return r.user; }, h: userCell },
+      { k: 'hbd', t: 'HBD', b: 'var(--ad-ai)', v: function (r) { return r.hbd; }, h: function (r) { return AI(r.hbd.toFixed(3)); } },
+      { k: 'cad', t: 'Value', b: 'var(--ad-ai)', v: function (r) { return r.hbd / usd; }, h: function (r) { return AI(money(r.hbd / usd)); } },
+    ], ap, { sort: 't', top: 10, empty: hErr || 'No MES AI payments in this range yet.' });
+    table('t-aitop', null, [
+      { k: 'user', t: 'Hive account', v: function (r) { return r.user; }, h: userCell },
+      { k: 'n', t: 'Paid messages', v: function (r) { return r.n; }, h: function (r) { return int(r.n); } },
+      { k: 'hbd', t: 'HBD', b: 'var(--ad-ai)', v: function (r) { return r.hbd; }, h: function (r) { return AI(r.hbd.toFixed(3)); } },
+      { k: 'cad', t: 'Value', b: 'var(--ad-ai)', v: function (r) { return r.hbd / usd; }, h: function (r) { return AI(money(r.hbd / usd)); } },
+    ], at, { sort: 'hbd', top: 10, empty: hErr || 'Nobody has paid for MES AI in this range yet.' });
+
     // ad visitors who came back (moved here from /stats)
     var rt = (RET && RET.totals) || { arrivals: 0, returned: 0, loyal: 0, returnDays: 0 };
     $('r-tiles').innerHTML = tile(int(rt.arrivals), 'ad visitors (first click)') + tile(pct(rt.returned, rt.arrivals), 'came back at least once') +
@@ -460,7 +480,7 @@
     var W = box.clientWidth || 600, H = box.clientHeight || 200, padL = 46, padB = 22, padT = 8, padR = seo.length ? 44 : 8;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     if (!days.length) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" fill="currentColor" font-size="13">No data yet</text>'; svg.style.color = 'var(--ad-muted)'; return; }
-    var max = 0; days.forEach(function (x) { max = Math.max(max, x.rev + (x.prem || 0), x.spend); });
+    var max = 0; days.forEach(function (x) { max = Math.max(max, x.rev + (x.prem || 0) + (x.ai || 0), x.spend); });
     var nice = niceTop(max);
     var smax = 0; days.forEach(function (x) { var g = gmap[x.d]; if (g) seo.forEach(function (k) { if (g[k] != null) smax = Math.max(smax, g[k]); }); });
     var snice = niceTop(smax);
@@ -469,7 +489,7 @@
     var y2 = function (v) { return padT + ih - v / snice * ih; };
     var css = getComputedStyle($('ad'));
     var cv = function (n) { return css.getPropertyValue(n).trim(); };
-    var cRev = cv('--ad-rev'), cSp = cv('--ad-cost'), cLine = cv('--ad-line'), cMuted = cv('--ad-muted'), cPrem = cv('--ad-prem');
+    var cRev = cv('--ad-rev'), cSp = cv('--ad-cost'), cLine = cv('--ad-line'), cMuted = cv('--ad-muted'), cPrem = cv('--ad-prem'), cAi = cv('--ad-ai');
     var s = '';
     for (var g = 0; g <= 4; g++) {
       var gv = nice * g / 4, gy = y(gv);
@@ -484,6 +504,10 @@
       if (x.prem > 0) { // MES Premium stacked on top of the AdSense bar
         var py = y(x.rev + x.prem), ph = Math.max(1.5, y(x.rev) - py);
         s += '<rect x="' + bx.toFixed(1) + '" y="' + (y(x.rev) - ph).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + ph.toFixed(1) + '" fill="' + cPrem + '" rx="1.5"' + (isToday ? ' fill-opacity="0.55"' : '') + '/>';
+      }
+      if (x.ai > 0) { // MES AI stacked on top of AdSense + Premium
+        var base = x.rev + (x.prem || 0), ay = y(base + x.ai), ah = Math.max(1.5, y(base) - ay);
+        s += '<rect x="' + bx.toFixed(1) + '" y="' + (y(base) - ah).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + ah.toFixed(1) + '" fill="' + cAi + '" rx="1.5"' + (isToday ? ' fill-opacity="0.55"' : '') + '/>';
       }
     });
     var cx = function (i) { return padL + i * bw + bw / 2; };
@@ -509,14 +533,14 @@
     chartPick({ box: box, read$: $('ad-read'), n: days.length, W: W, padL: padL, bw: bw, cx: cx, y0: padT + ih, y1: padT,
       sel: SEL, setSel: function (i) { SEL = i; }, getSel: function () { return SEL; }, day: function (i) { return days[i].d; },
       dots: function (i) {
-        var x = days[i], gx = gmap[x.d], d = [[y(x.rev + (x.prem || 0)), cRev], [y(x.spend), cSp]];
+        var x = days[i], gx = gmap[x.d], d = [[y(x.rev + (x.prem || 0) + (x.ai || 0)), cRev], [y(x.spend), cSp]];
         seo.forEach(function (k) { if (gx && gx[k] != null) d.push([y2(gx[k]), cv('--ad-' + k)]); });
         return d;
       },
       read: function (i) {
         var x = days[i], gx = gmap[x.d], showB = SEOL.some(function (k) { return k.charAt(0) === 'b'; });
         var h = '<b>' + esc(x.d) + (x.d === DATA.today ? ' (today, so far)' : '') + '</b>' +
-          '<span class="ad-read__s">Earned <b>' + R(money(x.rev)) + '</b>' + (x.prem ? '+ Premium <b>' + PM(money(x.prem)) + '</b>' : '') + '</span>' +
+          '<span class="ad-read__s">Earned <b>' + R(money(x.rev)) + '</b>' + (x.prem ? '+ Premium <b>' + PM(money(x.prem)) + '</b>' : '') + (x.ai ? '+ AI <b>' + AI(money(x.ai)) + '</b>' : '') + '</span>' +
           '<span class="ad-read__s">Spent <b>' + C(money(x.spend)) + '</b></span>' +
           '<span class="ad-read__s ad-read__m">' + int(x.pv) + ' views · ' + int(x.clicks) + ' ad clicks</span>';
         if (gx && gx.gc != null) h += '<span class="ad-read__s"><span style="color:var(--ad-gc)">Google ' + int(gx.gc) + ' cl</span><span class="ad-read__m">' + (narrow ? shortN(gx.gi) : int(gx.gi)) + ' impr.' + (gx.gf ? ' (fresh)' : '') + '</span></span>';

@@ -191,6 +191,21 @@ function res() { return { code: 0, headers: {}, setHeader(k, v) { this.headers[k
   ok(Math.abs(ap.totals.prem - 6.25) < 1e-9 && ap.totals.premHbd === 5 && ap.totals.premN === 3, 'premium: HBD = USD, converted to CAD');
   ok(Math.abs(ap.daily[1].prem - 2.5) < 1e-9 && ap.daily[0].rev === 0, 'premium: per day, kept apart from AdSense');
   ok(earnings.aggregate([d1], blobs, 18396.41).totals.prem === 0, 'premium: none without payments');
+  // ---- MES AI income (HBD per message to @mes, memo "mesai:<quote id>")
+  const aiHist = hist.concat([
+    H(9, '2026-11-18T20:00:00', 'transfer', { from: 'alice', to: 'mes', amount: '0.012 HBD', memo: 'mesai:k3j2h1abcd' }),
+    H(10, '2026-11-18T21:00:00', 'transfer', { from: 'bob', to: 'mes', amount: '0.300 HBD', memo: 'mesai:zz9' }),
+    H(11, '2026-11-18T21:30:00', 'transfer', { from: 'bob', to: 'mes', amount: '0.100 HBD', memo: 'mesai:zz8' }),
+    H(12, '2026-11-18T22:00:00', 'transfer', { from: 'carol', to: 'mes', amount: '0.100 HIVE', memo: 'mesai:hive1' }),
+    H(13, '2026-11-18T22:30:00', 'transfer', { from: 'dave', to: 'mes', amount: '0.100 HBD', memo: 'about mesai:x' }),
+  ]);
+  const aip = earnings.aiPayments(aiHist, Date.parse('2026-10-30T00:00:00Z'));
+  ok(aip.length === 3 && aip.every((x) => x.d === '2026-11-18'), 'ai: only HBD with a mesai:<id> memo: ' + aip.length);
+  ok(earnings.premiumPayments(aiHist, Date.parse('2026-10-30T00:00:00Z')).length === 3, 'ai: AI payments are not counted as Premium');
+  const top = earnings.aiByUser(aip);
+  ok(top[0].user === 'bob' && top[0].hbd === 0.4 && top[0].n === 2, 'ai: biggest spender first');
+  const aia = earnings.aggregate(['2026-11-18'], { gads: {}, adsense: {}, ai: earnings.premiumByDay(aip) }, 1, 0.8);
+  ok(Math.abs(aia.totals.ai - 0.515) < 1e-4 && aia.totals.aiN === 3 && Math.abs(aia.totals.aiCost - 0.515 / 1.5) < 1e-4 && aia.totals.prem === 0, 'ai: converted to CAD, model cost at most 2/3');
   const apo = earnings.aggregate(['2026-11-07'], { gads: { '2026-11-07': { lp: [['https://mes.fm/v/syhxvs66', 'X', 1, 1e6]] } }, adsense: { '2026-11-07': { pages: [
     ['https://mes.fm/v/7knbzp66', 0.58, 131, 172, 5], ['https://mes.fm/v/syhxvs66', 0.51, 119, 154, 2], ['https://mes.fm/polls', 0.1, 10, 20, 0], ['https://mes.fm/gradecalculator', 0.6, 116, 380, 2]] } } }, 1);
   const pol = apo.pages.find((p) => p.path === '/polls');
