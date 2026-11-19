@@ -324,7 +324,7 @@ def add_update_note() -> None:
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     import app_update
-    app_update.inject(Path(__file__).resolve().parent, 'copytext', '', 'fm.mes.copytext', 'index.html')
+    app_update.inject(Path(__file__).resolve().parent, 'copytext', '6836608312', 'fm.mes.copytext', 'index.html')
 
 
 if __name__ == "__main__":
