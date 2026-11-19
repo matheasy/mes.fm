@@ -8,7 +8,7 @@ export const SECTIONS = [
     id: "crypto-posts",
     title: "Posts",
     items: [
-  { title: "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)", image: "https://mes.fm/ai/img/logo-big.png", links: [["mes.fm", "https://mes.fm/ai-claude-grok-chatgpt"], ["Hive", "https://peakd.com/@mes/mes-ai-use-claude-chatgpt-grok-with-just-your-hive-account-no-kyc-no-subscription"], ["MES AI", "https://mes.fm/ai"]] },
+  { title: "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)", image: "https://mes.fm/ai/img/logo-big.png", links: [["mes.fm", "https://mes.fm/ai-claude-grok-chatgpt"], ["InLeo", "https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea"], ["MES AI", "https://mes.fm/ai"]] },
   { title: "New Hive Games & Apps on mes.fm: Chess, Billiards, Tic-Tac-Toe, Connect Four, Quantum-Safe Backups (Testers Wanted)", image: "https://mes.fm/hive-games-apps/img/hive-games-apps.jpg", links: [["mes.fm", "https://mes.fm/hive-games-apps"], ["Hive", "https://peakd.com/hive/@mes/new-hive-games-apps-on-mesfm-kwv"]] },
   { title: "MES Premium: Remove All Ads on mes.fm for 1 HBD a Month (Plus the Other Hive Features on mes.fm)", image: "https://mes.fm/premium/img/logo-big.png", links: [["mes.fm", "https://mes.fm/hbd-no-ads"], ["Hive", "https://peakd.com/hive-167922/@mes/mes-premium-remove-all-ads-on-mesfm-for-1-hbd-a-month-5y3"]] },
   { title: "I Used Claude AI to Get My Flagged Funds Out of Hyperliquid", image: "https://mes.fm/claude-hyperliquid-flagged-crypto/img/claude-hyperliquid-flagged-crypto.jpg", links: [["mes.fm", "https://mes.fm/claude-hyperliquid-flagged-crypto"]] },
