@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-18",
+"generated":"2026-11-19",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -213,7 +213,7 @@
 },
 "/copy-text":{
 "added":"2026-10-03",
-"updated":"2026-11-18",
+"updated":"2026-11-19",
 "type":"Tool"
 },
 "/countdown-timer":{
@@ -803,7 +803,7 @@
 },
 "/read-aloud":{
 "added":"2026-10-11",
-"updated":"2026-11-12",
+"updated":"2026-11-19",
 "type":"Browser extension"
 },
 "/redshift-simulator":{
