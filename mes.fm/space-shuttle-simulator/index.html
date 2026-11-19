@@ -473,6 +473,19 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #sx .sx-fig figcaption {color:#d5dae1;border-bottom-color:#2a2e35;}
 	html body.dark-mode #sx .sx-bar i {background:#6ea8fe;}
 	html body.dark-mode #sx .sx-bar--sh i {background:#ff8a3d;}
+	.sx-showm {position:relative;align-self:flex-end;}
+	.sx-showm summary {cursor:pointer;list-style:none;font-size:0.85em;padding:0.4em 0.8em;border:1px solid #c9d2dc;border-radius:0.5em;background:#f4f7fa;color:#223;}
+	.sx-showm summary::-webkit-details-marker {display:none;}
+	.sx-showp {position:absolute;z-index:30;top:calc(100% + 0.3em);left:0;min-width:15em;display:flex;flex-direction:column;gap:0.35em;padding:0.7em 0.8em;background:#fff;border:1px solid #c9d2dc;border-radius:0.5em;box-shadow:0 8px 24px rgba(0,0,0,0.18);}
+	.sx-showr {display:flex;gap:0.35em;flex-wrap:wrap;margin-top:0.3em;}
+	.sx-showr button {cursor:pointer;font:inherit;font-size:0.8em;padding:0.25em 0.6em;border-radius:0.4em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223;}
+	.sx-camv {position:absolute;left:50%;bottom:0.6em;transform:translateX(-50%);z-index:3;display:flex;flex-wrap:wrap;justify-content:center;gap:0.25em;max-width:94%;}
+	.sx-camv button {cursor:pointer;font:inherit;font-size:0.8em;min-height:2em;padding:0 0.6em;border:1px solid rgba(255,255,255,0.22);background:rgba(8,12,22,0.8);color:#f2f5fa;border-radius:0.4em;}
+	.sx-camv button:hover {border-color:#8ec5ff;}
+	.sx-stage[data-v="both"] .sx-camv {left:calc(50% - min(20%, 260px));}
+	@media (max-width:700px) {.sx-stage[data-v="both"] .sx-camv {left:50%;}}
+	html body.dark-mode #sx .sx-showm summary, html body.dark-mode #sx .sx-showr button {background:#2b2f36;border-color:#454c58;color:#e6e8ec;}
+	html body.dark-mode #sx .sx-showp {background:#1f2228;border-color:#454c58;color:#e6e8ec;}
 
 
 	@media print {
@@ -642,6 +655,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #sx .sx-t small{color:#989da4}
 	body.dark-mode .sx-eq{background:#16191d;border:1px solid #28323e}
 	body.dark-mode .sx-eq__n{color:#989da4}
+	body.dark-mode .sx-showm summary{border:1px solid #2f3b49;background:#15191e;color:#d0d0d9}
+	body.dark-mode .sx-showp{background:#1a1a1a;border:1px solid #2f3b49}
+	body.dark-mode .sx-showr button{border:1px solid #2f3b49;background:#15191e;color:#d0d0d9}
+	body.dark-mode .sx-camv button{border:1px solid rgba(51,51,51,0.22)}
+	body.dark-mode .sx-camv button:hover{border-color:#0050a4}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -874,6 +892,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" data-v="3d" aria-pressed="false">3D</button><button type="button" data-v="both" aria-pressed="true">3D + map</button><button type="button" data-v="map" aria-pressed="false">Map</button>
 					</div>
 					<label class="sx-sel"><span>Camera</span><select id="sx-cam" class="tu-select"><option value="earth">Whole Earth</option><option value="shuttle">Follow the Shuttle</option><option value="target">Follow the station</option></select></label>
+					<details class="sx-showm" id="sx-showm"><summary>👁 Show / hide</summary><div class="sx-showp" id="sx-showp"></div></details>
 				</div>
 				<div class="sx-stage" id="sx-stage" data-v="both">
 					<div class="sx-3d" id="sx-3d">
@@ -886,6 +905,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<button type="button" id="sx-png" title="Save the 3D view as a picture" aria-label="Save as PNG">📷</button>
 						</div>
 						<div class="sx-flash" id="sx-flash" hidden></div>
+						<div class="sx-camv" id="sx-camv" role="group" aria-label="Camera angle around the followed craft" hidden>
+							<button type="button" data-cv="behind">Behind</button><button type="button" data-cv="front">Front</button><button type="button" data-cv="above">Above</button><button type="button" data-cv="below">Below</button><button type="button" data-cv="side">Side</button><button type="button" data-cv="other">Other side</button><button type="button" data-cv="in" aria-label="Closer" title="Closer (wheel / pinch)">＋</button><button type="button" data-cv="out" aria-label="Further" title="Further">－</button>
+						</div>
 						<div class="sx-rel" id="sx-rel" hidden>
 							<div class="sx-rel-h"><b>Station view</b> <span id="sx-rel-d"></span></div>
 							<canvas id="sx-relc" width="300" height="220" aria-label="The Shuttle seen from the station: along-track (V-bar) left to right, up and down (R-bar)."></canvas>
@@ -1101,7 +1123,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/space-shuttle-simulator/js/space-shuttle-simulator.js?v=1" defer></script>
+	<script src="/space-shuttle-simulator/js/space-shuttle-simulator.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

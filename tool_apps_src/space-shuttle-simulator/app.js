@@ -40,7 +40,7 @@
 
 	/* ---------------- state ---------------- */
 	var SPEEDS = [1, 2, 5, 10, 30, 60, 120, 300, 600, 1200, 3000];
-	var st = { t: 0, epoch: Date.now(), nodes: [], sel: null, phase: "orbit", trail: [], mapTrail: [], speed: 5, paused: false, j2: pref.j2 !== false, nid: 1, fire: 0 };
+	var st = { t: 0, epoch: Date.now(), nodes: [], sel: null, phase: "orbit", trail: [], mapTrail: [], speed: 5, paused: false, j2: pref.j2 !== false, nid: 1, fire: 0, hide: {} };
 	var needPlan = true;
 	function gm(t) { return S.gmst(st.epoch + t * 1000); }
 	function makeOrbit(alt, inc, raan, u, t) {
@@ -380,12 +380,32 @@
 	function setShow(v) { show = v; pref.show = v; savePref(); $("sx-stage").setAttribute("data-v", v); $("sx-show").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); }); setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 20); }
 	$("sx-show").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (b) setShow(b.getAttribute("data-v")); });
 	setShow(show);
-	$("sx-cam").addEventListener("change", function () { if (this.value === "target" && !st.target) { this.value = "shuttle"; flash("No station in this mission."); } if (viewObj) viewObj.setFollow(this.value); });
+	$("sx-cam").addEventListener("change", function () { if (this.value === "target" && !st.target) { this.value = "shuttle"; flash("No station in this mission."); } if (viewObj) viewObj.setFollow(this.value); camUi(); });
+	function camUi() { var c = $("sx-cam").value; $("sx-camv").hidden = c === "earth"; if (c !== "earth") flash("Drag to swing round it, wheel or pinch to zoom, double-click for behind", 4000); }
+	$("sx-camv").addEventListener("click", function (e) { var b = e.target.closest("[data-cv]"); if (!b || !viewObj) return; var k = b.getAttribute("data-cv"); if (k === "in") viewObj.zoomFollow(0.6); else if (k === "out") viewObj.zoomFollow(1.6); else viewObj.view(k); });
+	/* what to draw: saved per browser */
+	var HIDE_OPTS = [["orbit", "Orbit line"], ["plan", "Path after the burn"], ["trail", "Trail behind the Shuttle"], ["torbit", "Station's orbit"], ["arrows", "Burn arrows"], ["foot", "Landing area"], ["sites", "Runways"], ["borders", "Country borders"], ["hud", "Numbers box (top left)"], ["rel", "Station view"], ["mapgrid", "Map grid"]];
+	st.hide = pref.hide || {}; if (pref.hide == null) st.hide = {};
+	(function () {
+		var box = $("sx-showp");
+		HIDE_OPTS.forEach(function (o) { var l = document.createElement("label"); l.className = "sx-check"; l.innerHTML = '<input type="checkbox" data-h="' + o[0] + '"' + (st.hide[o[0]] ? "" : " checked") + "> " + o[1]; box.appendChild(l); });
+		var row = document.createElement("div"); row.className = "sx-showr"; row.innerHTML = '<button type="button" data-ha="none">Hide all lines</button><button type="button" data-ha="all">Show everything</button>'; box.appendChild(row);
+		box.addEventListener("change", function (e) { var k = e.target.getAttribute("data-h"); if (!k) return; st.hide[k] = !e.target.checked; applyHide(k); });
+		box.addEventListener("click", function (e) { var b = e.target.closest("[data-ha]"); if (!b) return; var none = b.getAttribute("data-ha") === "none";
+			HIDE_OPTS.forEach(function (o) { var lineish = ["orbit", "plan", "trail", "torbit", "arrows", "foot", "mapgrid"].indexOf(o[0]) >= 0; st.hide[o[0]] = none ? (lineish || !!st.hide[o[0]]) : false; });
+			box.querySelectorAll("[data-h]").forEach(function (c) { c.checked = !st.hide[c.getAttribute("data-h")]; }); applyHide("all"); });
+	})();
+	function applyHide(k) {
+		pref.hide = st.hide; savePref();
+		$("sx-hud").hidden = !!st.hide.hud;
+		if (viewObj) viewObj.showSites(!st.hide.sites);
+		if ((k === "borders" || k === "all") && viewObj && window.SXMap.repaint) { window.SXMap.opts = { borders: !st.hide.borders }; viewObj.setTexture(window.SXMap.repaint(window.SXMap.opts)); }
+	}
 
 	/* ---------------- station view ---------------- */
 	var relC = $("sx-relc"), relX = relC.getContext("2d");
 	function drawRel() {
-		var box = $("sx-rel"), has = st.target && st.phase !== "entry" && st.phase !== "landed";
+		var box = $("sx-rel"), has = st.target && st.phase !== "entry" && st.phase !== "landed" && !st.hide.rel;
 		box.hidden = !has; if (!has) return;
 		var sC = st.orb.at(st.t), sT = st.target.at(st.t), L = S.lvlh(sT.r, sT.v, sC.r, sC.v);
 		$("sx-rel-d").textContent = S.fmtKm(L.dist) + " · " + (L.speed < 100 ? L.speed.toFixed(2) + " m/s" : S.fmtV(L.speed));
@@ -439,7 +459,7 @@
 		g.fillStyle = "#050810"; g.fillRect(0, 0, W, H);
 		g.save(); g.translate(ox, oy);
 		var sd = S.sunDir(st.epoch + st.t * 1000), sll = S.latLon(sd, gm(st.t));
-		window.SXMap.base(g, mw, mh, sll);
+		window.SXMap.base(g, mw, mh, sll, !st.hide.mapgrid);
 		if (st.phase === "orbit" || st.phase === "docked") {
 			if (performance.now() - mapCache.t > 250 || needPlan) {
 				var T = st.orb.el.T || 5500, stop = st.orb.el.rp < RE + EI ? st.orb.nextRadius(st.t, RE + EI, false) : null;
@@ -449,14 +469,14 @@
 				if (n && n.after) { var stop2 = n.pred ? n.pred.tE : null; mapCache.plan = futureTrack(n.after, n.t, (n.after.el.T || 5500) * 1.2, 200, stop2); }
 				mapCache.t = performance.now();
 			}
-			if (mapCache.tgt) { g.strokeStyle = "rgba(105,219,124,0.6)"; g.lineWidth = 1.5; window.SXMap.track(g, mapCache.tgt, mw, mh); }
-			g.strokeStyle = "rgba(142,197,255,0.95)"; g.lineWidth = 2; window.SXMap.track(g, mapCache.fut, mw, mh);
-			if (mapCache.plan) { g.strokeStyle = "#ffa94d"; g.setLineDash([6, 5]); g.lineWidth = 2; window.SXMap.track(g, mapCache.plan, mw, mh); g.setLineDash([]); }
+			if (mapCache.tgt && !st.hide.torbit) { g.strokeStyle = "rgba(105,219,124,0.6)"; g.lineWidth = 1.5; window.SXMap.track(g, mapCache.tgt, mw, mh); }
+			if (!st.hide.orbit) { g.strokeStyle = "rgba(142,197,255,0.95)"; g.lineWidth = 2; window.SXMap.track(g, mapCache.fut, mw, mh); }
+			if (mapCache.plan && !st.hide.plan) { g.strokeStyle = "#ffa94d"; g.setLineDash([6, 5]); g.lineWidth = 2; window.SXMap.track(g, mapCache.plan, mw, mh); g.setLineDash([]); }
 		}
-		if (pref.trail !== false && st.mapTrail.length > 1) { g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = 1.5; window.SXMap.track(g, st.mapTrail, mw, mh); }
+		if (pref.trail !== false && !st.hide.trail && st.mapTrail.length > 1) { g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = 1.5; window.SXMap.track(g, st.mapTrail, mw, mh); }
 		// landing prediction for the selected burn (or the current orbit / entry)
 		var n2 = selNode(), pr = st.phase === "entry" || st.phase === "landed" ? null : (n2 && n2.pred) || st.pred;
-		if (pr) {
+		if (pr && !st.hide.foot) {
 			g.strokeStyle = "#ff6b6b"; g.fillStyle = "rgba(255,107,107,0.18)"; g.lineWidth = 2;
 			g.beginPath(); pr.foot.forEach(function (p, i) { var q = window.SXMap.xy(p.lat, p.lon, mw, mh); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); g.stroke();
 			var e = window.SXMap.xy(pr.rel.lat, pr.rel.lon, mw, mh), l = window.SXMap.xy(pr.land.lat, pr.land.lon, mw, mh);
@@ -467,7 +487,7 @@
 			g.strokeStyle = "#ffd43b"; g.lineWidth = 2.5; window.SXMap.track(g, path, mw, mh);
 			dotAt(g, window.SXMap.xy(E.rel.lat, E.rel.lon, mw, mh), "#ffd43b", 4, "Entry interface");
 		}
-		S.SITES.forEach(function (s) { var q = window.SXMap.xy(s.lat * D, s.lon * D, mw, mh); g.fillStyle = "#51cf66"; g.strokeStyle = "#0b1a0b"; g.lineWidth = 1.5; g.beginPath(); g.rect(q[0] - 3.5, q[1] - 3.5, 7, 7); g.fill(); g.stroke(); });
+		if (!st.hide.sites) S.SITES.forEach(function (s) { var q = window.SXMap.xy(s.lat * D, s.lon * D, mw, mh); g.fillStyle = "#51cf66"; g.strokeStyle = "#0b1a0b"; g.lineWidth = 1.5; g.beginPath(); g.rect(q[0] - 3.5, q[1] - 3.5, 7, 7); g.fill(); g.stroke(); });
 		// the station and the Shuttle
 		if (st.target && st.phase !== "landed") { var tq = window.SXMap.xy.apply(null, (function () { var ll = S.latLon(st.target.at(st.t).r, gm(st.t)); return [ll.lat, ll.lon, mw, mh]; })()); dotAt(g, tq, "#69db7c", 5, st.tname); }
 		var me = shuttleLL();
@@ -520,10 +540,10 @@
 	var viewObj = null, THREE = null;
 	function imp(u) { return new Function("u", "return import(u)")(u); }
 	function load3d() {
-		Promise.all([imp("three"), imp("three/addons/controls/OrbitControls.js"), window.SXMap.load()]).then(function (m) {
+		(window.SXMap.opts = { borders: !(pref.hide || {}).borders }, Promise.all([imp("three"), imp("three/addons/controls/OrbitControls.js"), window.SXMap.load()])).then(function (m) {
 			THREE = m[0]; viewObj = window.SXView.create($("sx-3d"), THREE, m[1].OrbitControls);
 			viewObj.setTexture(m[2]); viewObj.setSites(S.SITES); viewObj.setFollow($("sx-cam").value); aimCam();
-			$("sx-load").hidden = true; wirePointer();
+			$("sx-load").hidden = true; wirePointer(); applyHide("all"); camUi();
 		}).catch(function (e) {
 			window.SXMap.load(); $("sx-load").textContent = "The 3D view could not load (" + (e && e.message || "no WebGL") + "). The map and planner still work.";
 			setShow("map");
@@ -547,9 +567,10 @@
 		if (o) {
 			if (needPlan) plan();
 			var T = st.orb.el.T || 5600, stop = st.orb.el.rp < RE + EI ? st.orb.nextRadius(st.t, RE + EI, false) : null;
-			orbPts = stop ? arcPts(st.orb, st.t, stop) : st.orb.ring(st.t, 240);
-			if (n && n.after) planPts = n.pred ? arcPts(n.after, n.t, n.pred.tE) : n.after.ring(n.t, 240);
-			if (st.target) tPts = st.target.ring(st.t, 180);
+			var dense = $("sx-cam").value !== "earth" ? 1440 : 240;
+			orbPts = stop ? arcPts(st.orb, st.t, stop) : st.orb.ring(st.t, dense);
+			if (n && n.after) planPts = n.pred ? arcPts(n.after, n.t, n.pred.tE) : n.after.ring(n.t, dense);
+			if (st.target) tPts = st.target.ring(st.t, dense > 240 ? 1440 : 180);
 		}
 		if (pref.trail !== false) trail = st.trail;
 		var pr = (n && n.pred) || (o ? st.pred : null), surf = null;
@@ -558,7 +579,7 @@
 			orbit: orbPts, plan: planPts, targetOrbit: tPts, trail: trail, node: nodeInfo, others: others,
 			ei: pr ? { lat: pr.rel.lat, lon: pr.rel.lon } : st.entry ? { lat: st.entry.rel.lat, lon: st.entry.rel.lon } : null,
 			land: pr ? pr.land : st.entry && st.entry.site ? { lat: st.entry.site.s.lat * D, lon: st.entry.site.s.lon * D } : null,
-			footprint: pr ? pr.foot.concat([pr.foot[0]]) : null, surfPath: surf });
+			footprint: pr ? pr.foot.concat([pr.foot[0]]) : null, surfPath: surf, hide: st.hide });
 	}
 	function arcPts(o, t0, t1) { var out = []; for (var k = 0; k <= 160; k++) out.push(o.at(t0 + (t1 - t0) * k / 160).r); return out; }
 

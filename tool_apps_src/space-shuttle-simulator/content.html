@@ -18,6 +18,7 @@
 						<button type="button" data-v="3d" aria-pressed="false">3D</button><button type="button" data-v="both" aria-pressed="true">3D + map</button><button type="button" data-v="map" aria-pressed="false">Map</button>
 					</div>
 					<label class="sx-sel"><span>Camera</span><select id="sx-cam" class="tu-select"><option value="earth">Whole Earth</option><option value="shuttle">Follow the Shuttle</option><option value="target">Follow the station</option></select></label>
+					<details class="sx-showm" id="sx-showm"><summary>👁 Show / hide</summary><div class="sx-showp" id="sx-showp"></div></details>
 				</div>
 				<div class="sx-stage" id="sx-stage" data-v="both">
 					<div class="sx-3d" id="sx-3d">
@@ -30,6 +31,9 @@
 							<button type="button" id="sx-png" title="Save the 3D view as a picture" aria-label="Save as PNG">📷</button>
 						</div>
 						<div class="sx-flash" id="sx-flash" hidden></div>
+						<div class="sx-camv" id="sx-camv" role="group" aria-label="Camera angle around the followed craft" hidden>
+							<button type="button" data-cv="behind">Behind</button><button type="button" data-cv="front">Front</button><button type="button" data-cv="above">Above</button><button type="button" data-cv="below">Below</button><button type="button" data-cv="side">Side</button><button type="button" data-cv="other">Other side</button><button type="button" data-cv="in" aria-label="Closer" title="Closer (wheel / pinch)">＋</button><button type="button" data-cv="out" aria-label="Further" title="Further">－</button>
+						</div>
 						<div class="sx-rel" id="sx-rel" hidden>
 							<div class="sx-rel-h"><b>Station view</b> <span id="sx-rel-d"></span></div>
 							<canvas id="sx-relc" width="300" height="220" aria-label="The Shuttle seen from the station: along-track (V-bar) left to right, up and down (R-bar)."></canvas>

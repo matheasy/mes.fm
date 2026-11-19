@@ -123,6 +123,7 @@
 		var eiM = dot(0xffd43b, 0.012), landM = dot(0xff6b6b, 0.014);
 		earth.add(eiM, landM);
 		var siteMs = [];
+		V.showSites = function (on) { siteMs.forEach(function (m) { m.visible = on; }); };
 		V.setSites = function (sites) {
 			siteMs.forEach(function (m) { earth.remove(m); }); siteMs = [];
 			sites.forEach(function (s) { var m = dot(0x51cf66, 0.009); m.position.copy(ll(s.lat * Math.PI / 180, s.lon * Math.PI / 180, 1.002)); earth.add(m); siteMs.push(m); });
@@ -139,13 +140,46 @@
 		V.screen = function (v3) { var p = v3.clone().project(camera); return { x: (p.x + 1) / 2 * size.w, y: (1 - p.y) / 2 * size.h, vis: p.z < 1 && p.z > -1 }; };
 		V.screenOf = function (eci) { return V.screen(T(eci)); };
 
-		var follow = "earth", lastFollow = null, followPos = new THREE.Vector3();
-		V.setFollow = function (f) { follow = f; lastFollow = null; };
+		/* Following the Shuttle or the station: our own controls in that object's frame (forward = along its velocity,
+		   up = away from Earth), so a drag swings the camera all the way round it, above and below, and it turns with the orbit.
+		   yaw 180 deg = behind, 0 = in front; pitch + = above. The whole-Earth view keeps OrbitControls. */
+		var follow = "earth", lastFollow = null, fc = { yaw: Math.PI, pitch: 0.22, dist: 0.0012 }, fdrag = null, pts = {};
+		V.setFollow = function (f) {
+			follow = f; lastFollow = null; controls.enabled = f === "earth";
+			camera.near = f === "earth" ? 1e-5 : 2e-8; camera.updateProjectionMatrix();
+			if (f !== "earth") { fc.yaw = Math.PI; fc.pitch = 0.22; fc.dist = 0.0012; }
+		};
 		V.followTarget = function () { return follow; };
+		V.view = function (k) { // preset follow angles
+			var P = { behind: [Math.PI, 0.15], front: [0, 0.15], above: [Math.PI, 1.45], below: [Math.PI, -1.45], side: [Math.PI / 2, 0.05], other: [-Math.PI / 2, 0.05] }[k];
+			if (P) { fc.yaw = P[0]; fc.pitch = P[1]; }
+		};
+		V.zoomFollow = function (k) { fc.dist = Math.max(4e-6, Math.min(3, fc.dist * k)); };
+		V.dragging = function () { return !!fdrag; };
+		cv.addEventListener("pointerdown", function (e) {
+			if (follow === "earth" || e.defaultPrevented) return;
+			pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+			var ids = Object.keys(pts);
+			fdrag = ids.length === 2 ? { pinch: Math.hypot(pts[ids[0]].x - pts[ids[1]].x, pts[ids[0]].y - pts[ids[1]].y), d: fc.dist } : { x: e.clientX, y: e.clientY };
+			try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+		});
+		cv.addEventListener("pointermove", function (e) {
+			if (!fdrag || !pts[e.pointerId]) return;
+			pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+			var ids = Object.keys(pts);
+			if (fdrag.pinch && ids.length === 2) { var d = Math.hypot(pts[ids[0]].x - pts[ids[1]].x, pts[ids[0]].y - pts[ids[1]].y); fc.dist = Math.max(4e-6, Math.min(3, fdrag.d * fdrag.pinch / Math.max(1, d))); return; }
+			if (fdrag.pinch) return;
+			fc.yaw -= (e.clientX - fdrag.x) * 0.006; fc.pitch = Math.max(-1.55, Math.min(1.55, fc.pitch + (e.clientY - fdrag.y) * 0.006));
+			fdrag.x = e.clientX; fdrag.y = e.clientY;
+		});
+		function upP(e) { delete pts[e.pointerId]; if (!Object.keys(pts).length) fdrag = null; else if (fdrag && fdrag.pinch) fdrag = null; }
+		cv.addEventListener("pointerup", upP); cv.addEventListener("pointercancel", upP);
+		cv.addEventListener("wheel", function (e) { if (follow === "earth") return; e.preventDefault(); V.zoomFollow(Math.exp(e.deltaY * 0.0012)); }, { passive: false });
+		cv.addEventListener("dblclick", function () { if (follow !== "earth") { fc.yaw = Math.PI; fc.pitch = 0.22; } });
 		V.aim = function (dir, dist) { var d = T([dir[0] * RE, dir[1] * RE, dir[2] * RE]).normalize(); if (follow === "earth") { controls.target.set(0, 0, 0); camera.position.copy(d.multiplyScalar(dist || 3.3)); } lastFollow = null; };
 		V.reset = function () {
 			lastFollow = null;
-			if (follow === "earth") { controls.target.set(0, 0, 0); camera.position.set(1.6, 1.6, 3.2); }
+			if (follow === "earth") { controls.target.set(0, 0, 0); camera.position.set(1.6, 1.6, 3.2); } else { fc.yaw = Math.PI; fc.pitch = 0.22; fc.dist = 0.0012; }
 		};
 		function pxScale(obj, px) { var d = camera.position.distanceTo(obj.position), f = 2 * Math.tan(camera.fov * Math.PI / 360) * d / size.h; return f * px; }
 
@@ -154,19 +188,25 @@
 			earth.rotation.y = st.gmst;
 			var s3 = T([st.sun[0] * 1e12, st.sun[1] * 1e12, st.sun[2] * 1e12]).normalize();
 			sun.position.copy(s3).multiplyScalar(50); sunSprite.position.copy(s3).multiplyScalar(500);
-			setLine(orbitL, st.orbit); setLine(planL, st.plan); setLine(targetL, st.targetOrbit); setLine(trailL, st.trail);
+			var H = st.hide || {};
+			setLine(orbitL, H.orbit ? null : st.orbit); setLine(planL, H.plan ? null : st.plan); setLine(targetL, H.torbit ? null : st.targetOrbit); setLine(trailL, H.trail ? null : st.trail);
 			setLine(surfL, st.surfPath ? st.surfPath.map(function (p) { return ll(p.lat, p.lon, 1.003); }) : null, true);
-			setLine(footL, st.footprint ? st.footprint.map(function (p) { return ll(p.lat, p.lon, 1.003); }) : null, true);
-			eiM.visible = !!st.ei; if (st.ei) eiM.position.copy(ll(st.ei.lat, st.ei.lon, 1.004));
-			landM.visible = !!st.land; if (st.land) landM.position.copy(ll(st.land.lat, st.land.lon, 1.004));
+			setLine(footL, st.footprint && !H.foot ? st.footprint.map(function (p) { return ll(p.lat, p.lon, 1.003); }) : null, true);
+			eiM.visible = !!st.ei && !H.foot; if (st.ei) eiM.position.copy(ll(st.ei.lat, st.ei.lon, 1.004));
+			landM.visible = !!st.land && !H.foot; if (st.land) landM.position.copy(ll(st.land.lat, st.land.lon, 1.004));
 			// camera follow
-			var fp = follow === "shuttle" && st.shuttle ? T(st.shuttle.r) : follow === "target" && st.target ? T(st.target.r) : null;
-			if (fp) {
-				if (!lastFollow) { controls.target.copy(fp); var off = camera.position.clone().sub(controls.target); if (off.length() > 0.6) off.setLength(0.12); camera.position.copy(fp).add(off); }
-				else { var d = fp.clone().sub(lastFollow); camera.position.add(d); controls.target.add(d); }
-				lastFollow = fp.clone();
-			} else if (follow === "earth" && lastFollow) { lastFollow = null; }
-			controls.update();
+			var fo = follow === "shuttle" && st.shuttle ? st.shuttle : follow === "target" && st.target ? st.target : null;
+			if (fo) {
+				var fp = T(fo.r), F = T(fo.nose || fo.v).normalize(), U = fp.clone().normalize(), N = new THREE.Vector3().crossVectors(F, U).normalize();
+				F = new THREE.Vector3().crossVectors(U, N).normalize();
+				var cp = Math.cos(fc.pitch), off = F.clone().multiplyScalar(cp * Math.cos(fc.yaw)).add(N.clone().multiplyScalar(cp * Math.sin(fc.yaw))).add(U.clone().multiplyScalar(Math.sin(fc.pitch)));
+				camera.position.copy(fp).add(off.multiplyScalar(fc.dist));
+				camera.up.copy(Math.abs(fc.pitch) > 1.5 ? F.clone().multiplyScalar(fc.pitch > 0 ? 1 : -1) : U);
+				camera.lookAt(fp); controls.target.copy(fp); lastFollow = fp;
+			} else {
+				if (lastFollow) { lastFollow = null; camera.up.set(0, 1, 0); controls.target.set(0, 0, 0); if (camera.position.length() < 1.2) camera.position.setLength(3.3); }
+				controls.update();
+			}
 			// shuttle
 			shuttle.visible = !!st.shuttle;
 			if (st.shuttle) {
@@ -175,7 +215,7 @@
 				if (st.shuttle.nose) fwd = T(st.shuttle.nose).normalize();
 				var x = new THREE.Vector3().crossVectors(up, fwd).normalize(), y = new THREE.Vector3().crossVectors(fwd, x).normalize();
 				shuttle.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, fwd));
-				var k = pxScale(shuttle, st.shuttle.px || 40); shuttle.scale.setScalar(k);
+				var k = Math.max(pxScale(shuttle, st.shuttle.px || 40), 37.2 / RE / 1.6); shuttle.scale.setScalar(k); // never smaller than the real 37 m orbiter
 				plasma.visible = st.shuttle.plasma > 0; plasma.material.opacity = Math.min(1, st.shuttle.plasma || 0);
 				flame.visible = !!st.shuttle.firing;
 			}
@@ -184,11 +224,11 @@
 				station.position.copy(T(st.target.r));
 				var tf = T(st.target.v).normalize(), tu = T(st.target.r).normalize(), tx = new THREE.Vector3().crossVectors(tu, tf).normalize(), ty = new THREE.Vector3().crossVectors(tf, tx);
 				station.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(tf, ty, tx.negate()));
-				station.scale.setScalar(pxScale(station, 30));
+				station.scale.setScalar(Math.max(pxScale(station, 30), 109 / RE / 1.6)); // real ISS ~109 m across
 			}
 			// burn node + arrows
 			nodeM.visible = !!st.node;
-			Object.keys(arrows).forEach(function (k) { arrows[k].visible = !!st.node; });
+			Object.keys(arrows).forEach(function (k) { arrows[k].visible = !!st.node && !H.arrows; });
 			if (st.node) {
 				nodeM.position.copy(T(st.node.r)); nodeM.scale.setScalar(pxScale(nodeM, 8));
 				var L = pxScale(nodeM, 62);

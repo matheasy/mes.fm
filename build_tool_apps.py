@@ -755,7 +755,7 @@ APPS = {
                             tag="Fly it, catch the station, bring it home.", accent="#1e40af", dark="#1e3a8a", tint="#dbeafe",
                             desc="A free 3D Space Shuttle orbit simulator with real physics: plan prograde, normal and radial burns on a real-sized Earth, raise the orbit with a Hohmann transfer, tilt it, catch the ISS or Hubble, then plan the de-orbit burn and watch the entry glide down to Kennedy or Edwards on a ground-track map. Plus an orbit calculator and why the Shuttle could never reach the Moon.",
                             meta_desc="Free 3D Space Shuttle simulator: plan orbit burns, Hohmann transfers and rendezvous with the ISS, then de-orbit and land. Real physics, ground track and calculator.",
-                            js_v="1", js_parts=["map.js", "view3d.js", "tabs.js"]),
+                            js_v="2", js_parts=["map.js", "view3d.js", "tabs.js"]),
     # Metric Tensor Explorer: curvature calculator (Christoffel, Riemann, Ricci, Einstein, Kretschmann, geodesic equations via SymPy in the CAS worker) + a geodesic shooter drawn on surfaces
     # (engine ops metric / geodesics in main_js/cas/engine.py, tests: tool_apps_src/metric-engine-tests.py). Normal-width page in the tools sidebar collection.
     "metric-tensor": dict(title="MES Metric Tensor Explorer", page_title="Metric Tensor Calculator: Christoffel, Riemann and Einstein Tensors",

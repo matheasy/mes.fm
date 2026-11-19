@@ -386,7 +386,7 @@
 	"use strict";
 	if (typeof document === "undefined") return;
 	var M = window.SXMap = {};
-	var W = 2048, H = 1024, land = null, borders = null, tex = null, ready = null;
+	var W = 4096, H = 2048, land = null, borders = null, tex = null, ready = null;
 
 	function decode(topo) {
 		var sc = topo.transform.scale, tr = topo.transform.translate;
@@ -427,7 +427,8 @@
 			});
 		});
 	}
-	function paint() {
+	function paint(opts) {
+		opts = opts || {};
 		var c = document.createElement("canvas"); c.width = W; c.height = H;
 		var g = c.getContext("2d");
 		var oc = g.createLinearGradient(0, 0, 0, H);
@@ -437,20 +438,20 @@
 		[[0, "#eef3f6"], [0.15, "#e2e9ee"], [0.2, "#5d7a52"], [0.27, "#4f7444"], [0.33, "#8a8a5a"], [0.4, "#b9a273"], [0.46, "#5f8a45"], [0.54, "#4b7d3a"], [0.6, "#a8946a"], [0.67, "#7c8a55"], [0.74, "#55764a"], [0.81, "#dfe6ea"], [1, "#f4f7f9"]].forEach(function (s) { lg.addColorStop(s[0], s[1]); });
 		g.fillStyle = lg;
 		land.forEach(function (poly) { pathRings(g, poly, W, H); g.fill("evenodd"); });
-		g.strokeStyle = "rgba(20,30,20,0.35)"; g.lineWidth = 1.2;
-		borders.forEach(function (poly) { pathRings(g, poly, W, H); g.stroke(); });
-		g.strokeStyle = "rgba(230,245,255,0.35)"; g.lineWidth = 1.5;
+		if (opts.borders !== false) { g.strokeStyle = "rgba(20,30,20,0.22)"; g.lineWidth = 1.2; borders.forEach(function (poly) { pathRings(g, poly, W, H); g.stroke(); }); }
+		g.strokeStyle = "rgba(230,245,255,0.28)"; g.lineWidth = 1.6;
 		land.forEach(function (poly) { pathRings(g, poly, W, H); g.stroke(); });
 		return c;
 	}
 	M.load = function () {
 		if (ready) return ready;
 		ready = fetch("/maps/data/countries-110m.json").then(function (r) { if (!r.ok) throw new Error("map " + r.status); return r.json(); })
-			.then(function (t) { var d = decode(t); land = d.land; borders = d.borders; tex = paint(); return tex; })
+			.then(function (t) { var d = decode(t); land = d.land; borders = d.borders; tex = paint(M.opts); return tex; })
 			.catch(function () { var c = document.createElement("canvas"); c.width = 512; c.height = 256; var g = c.getContext("2d"); g.fillStyle = "#0f4c80"; g.fillRect(0, 0, 512, 256); tex = c; return c; });
 		return ready;
 	};
 	M.texture = function () { return tex; };
+	M.repaint = function (opts) { if (land) tex = paint(opts); return tex; };
 
 	/* night shading: a small picture recomputed when the sun has moved */
 	var night = null, nightKey = "";
@@ -482,9 +483,10 @@
 		}
 		ctx.stroke();
 	};
-	M.base = function (ctx, w, h, sun) {
+	M.base = function (ctx, w, h, sun, grid) {
 		if (tex) { ctx.imageSmoothingEnabled = true; ctx.drawImage(tex, 0, 0, w, h); } else { ctx.fillStyle = "#0f4c80"; ctx.fillRect(0, 0, w, h); }
 		if (sun) ctx.drawImage(nightCanvas(sun.lat, sun.lon), 0, 0, w, h);
+		if (grid === false) return;
 		ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1; ctx.beginPath();
 		for (var lo = -150; lo <= 150; lo += 30) { var x = (lo + 180) / 360 * w; ctx.moveTo(x, 0); ctx.lineTo(x, h); }
 		for (var la = -60; la <= 60; la += 30) { var y = (90 - la) / 180 * h; ctx.moveTo(0, y); ctx.lineTo(w, y); }
@@ -618,6 +620,7 @@
 		var eiM = dot(0xffd43b, 0.012), landM = dot(0xff6b6b, 0.014);
 		earth.add(eiM, landM);
 		var siteMs = [];
+		V.showSites = function (on) { siteMs.forEach(function (m) { m.visible = on; }); };
 		V.setSites = function (sites) {
 			siteMs.forEach(function (m) { earth.remove(m); }); siteMs = [];
 			sites.forEach(function (s) { var m = dot(0x51cf66, 0.009); m.position.copy(ll(s.lat * Math.PI / 180, s.lon * Math.PI / 180, 1.002)); earth.add(m); siteMs.push(m); });
@@ -634,13 +637,46 @@
 		V.screen = function (v3) { var p = v3.clone().project(camera); return { x: (p.x + 1) / 2 * size.w, y: (1 - p.y) / 2 * size.h, vis: p.z < 1 && p.z > -1 }; };
 		V.screenOf = function (eci) { return V.screen(T(eci)); };
 
-		var follow = "earth", lastFollow = null, followPos = new THREE.Vector3();
-		V.setFollow = function (f) { follow = f; lastFollow = null; };
+		/* Following the Shuttle or the station: our own controls in that object's frame (forward = along its velocity,
+		   up = away from Earth), so a drag swings the camera all the way round it, above and below, and it turns with the orbit.
+		   yaw 180 deg = behind, 0 = in front; pitch + = above. The whole-Earth view keeps OrbitControls. */
+		var follow = "earth", lastFollow = null, fc = { yaw: Math.PI, pitch: 0.22, dist: 0.0012 }, fdrag = null, pts = {};
+		V.setFollow = function (f) {
+			follow = f; lastFollow = null; controls.enabled = f === "earth";
+			camera.near = f === "earth" ? 1e-5 : 2e-8; camera.updateProjectionMatrix();
+			if (f !== "earth") { fc.yaw = Math.PI; fc.pitch = 0.22; fc.dist = 0.0012; }
+		};
 		V.followTarget = function () { return follow; };
+		V.view = function (k) { // preset follow angles
+			var P = { behind: [Math.PI, 0.15], front: [0, 0.15], above: [Math.PI, 1.45], below: [Math.PI, -1.45], side: [Math.PI / 2, 0.05], other: [-Math.PI / 2, 0.05] }[k];
+			if (P) { fc.yaw = P[0]; fc.pitch = P[1]; }
+		};
+		V.zoomFollow = function (k) { fc.dist = Math.max(4e-6, Math.min(3, fc.dist * k)); };
+		V.dragging = function () { return !!fdrag; };
+		cv.addEventListener("pointerdown", function (e) {
+			if (follow === "earth" || e.defaultPrevented) return;
+			pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+			var ids = Object.keys(pts);
+			fdrag = ids.length === 2 ? { pinch: Math.hypot(pts[ids[0]].x - pts[ids[1]].x, pts[ids[0]].y - pts[ids[1]].y), d: fc.dist } : { x: e.clientX, y: e.clientY };
+			try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+		});
+		cv.addEventListener("pointermove", function (e) {
+			if (!fdrag || !pts[e.pointerId]) return;
+			pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+			var ids = Object.keys(pts);
+			if (fdrag.pinch && ids.length === 2) { var d = Math.hypot(pts[ids[0]].x - pts[ids[1]].x, pts[ids[0]].y - pts[ids[1]].y); fc.dist = Math.max(4e-6, Math.min(3, fdrag.d * fdrag.pinch / Math.max(1, d))); return; }
+			if (fdrag.pinch) return;
+			fc.yaw -= (e.clientX - fdrag.x) * 0.006; fc.pitch = Math.max(-1.55, Math.min(1.55, fc.pitch + (e.clientY - fdrag.y) * 0.006));
+			fdrag.x = e.clientX; fdrag.y = e.clientY;
+		});
+		function upP(e) { delete pts[e.pointerId]; if (!Object.keys(pts).length) fdrag = null; else if (fdrag && fdrag.pinch) fdrag = null; }
+		cv.addEventListener("pointerup", upP); cv.addEventListener("pointercancel", upP);
+		cv.addEventListener("wheel", function (e) { if (follow === "earth") return; e.preventDefault(); V.zoomFollow(Math.exp(e.deltaY * 0.0012)); }, { passive: false });
+		cv.addEventListener("dblclick", function () { if (follow !== "earth") { fc.yaw = Math.PI; fc.pitch = 0.22; } });
 		V.aim = function (dir, dist) { var d = T([dir[0] * RE, dir[1] * RE, dir[2] * RE]).normalize(); if (follow === "earth") { controls.target.set(0, 0, 0); camera.position.copy(d.multiplyScalar(dist || 3.3)); } lastFollow = null; };
 		V.reset = function () {
 			lastFollow = null;
-			if (follow === "earth") { controls.target.set(0, 0, 0); camera.position.set(1.6, 1.6, 3.2); }
+			if (follow === "earth") { controls.target.set(0, 0, 0); camera.position.set(1.6, 1.6, 3.2); } else { fc.yaw = Math.PI; fc.pitch = 0.22; fc.dist = 0.0012; }
 		};
 		function pxScale(obj, px) { var d = camera.position.distanceTo(obj.position), f = 2 * Math.tan(camera.fov * Math.PI / 360) * d / size.h; return f * px; }
 
@@ -649,19 +685,25 @@
 			earth.rotation.y = st.gmst;
 			var s3 = T([st.sun[0] * 1e12, st.sun[1] * 1e12, st.sun[2] * 1e12]).normalize();
 			sun.position.copy(s3).multiplyScalar(50); sunSprite.position.copy(s3).multiplyScalar(500);
-			setLine(orbitL, st.orbit); setLine(planL, st.plan); setLine(targetL, st.targetOrbit); setLine(trailL, st.trail);
+			var H = st.hide || {};
+			setLine(orbitL, H.orbit ? null : st.orbit); setLine(planL, H.plan ? null : st.plan); setLine(targetL, H.torbit ? null : st.targetOrbit); setLine(trailL, H.trail ? null : st.trail);
 			setLine(surfL, st.surfPath ? st.surfPath.map(function (p) { return ll(p.lat, p.lon, 1.003); }) : null, true);
-			setLine(footL, st.footprint ? st.footprint.map(function (p) { return ll(p.lat, p.lon, 1.003); }) : null, true);
-			eiM.visible = !!st.ei; if (st.ei) eiM.position.copy(ll(st.ei.lat, st.ei.lon, 1.004));
-			landM.visible = !!st.land; if (st.land) landM.position.copy(ll(st.land.lat, st.land.lon, 1.004));
+			setLine(footL, st.footprint && !H.foot ? st.footprint.map(function (p) { return ll(p.lat, p.lon, 1.003); }) : null, true);
+			eiM.visible = !!st.ei && !H.foot; if (st.ei) eiM.position.copy(ll(st.ei.lat, st.ei.lon, 1.004));
+			landM.visible = !!st.land && !H.foot; if (st.land) landM.position.copy(ll(st.land.lat, st.land.lon, 1.004));
 			// camera follow
-			var fp = follow === "shuttle" && st.shuttle ? T(st.shuttle.r) : follow === "target" && st.target ? T(st.target.r) : null;
-			if (fp) {
-				if (!lastFollow) { controls.target.copy(fp); var off = camera.position.clone().sub(controls.target); if (off.length() > 0.6) off.setLength(0.12); camera.position.copy(fp).add(off); }
-				else { var d = fp.clone().sub(lastFollow); camera.position.add(d); controls.target.add(d); }
-				lastFollow = fp.clone();
-			} else if (follow === "earth" && lastFollow) { lastFollow = null; }
-			controls.update();
+			var fo = follow === "shuttle" && st.shuttle ? st.shuttle : follow === "target" && st.target ? st.target : null;
+			if (fo) {
+				var fp = T(fo.r), F = T(fo.nose || fo.v).normalize(), U = fp.clone().normalize(), N = new THREE.Vector3().crossVectors(F, U).normalize();
+				F = new THREE.Vector3().crossVectors(U, N).normalize();
+				var cp = Math.cos(fc.pitch), off = F.clone().multiplyScalar(cp * Math.cos(fc.yaw)).add(N.clone().multiplyScalar(cp * Math.sin(fc.yaw))).add(U.clone().multiplyScalar(Math.sin(fc.pitch)));
+				camera.position.copy(fp).add(off.multiplyScalar(fc.dist));
+				camera.up.copy(Math.abs(fc.pitch) > 1.5 ? F.clone().multiplyScalar(fc.pitch > 0 ? 1 : -1) : U);
+				camera.lookAt(fp); controls.target.copy(fp); lastFollow = fp;
+			} else {
+				if (lastFollow) { lastFollow = null; camera.up.set(0, 1, 0); controls.target.set(0, 0, 0); if (camera.position.length() < 1.2) camera.position.setLength(3.3); }
+				controls.update();
+			}
 			// shuttle
 			shuttle.visible = !!st.shuttle;
 			if (st.shuttle) {
@@ -670,7 +712,7 @@
 				if (st.shuttle.nose) fwd = T(st.shuttle.nose).normalize();
 				var x = new THREE.Vector3().crossVectors(up, fwd).normalize(), y = new THREE.Vector3().crossVectors(fwd, x).normalize();
 				shuttle.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, fwd));
-				var k = pxScale(shuttle, st.shuttle.px || 40); shuttle.scale.setScalar(k);
+				var k = Math.max(pxScale(shuttle, st.shuttle.px || 40), 37.2 / RE / 1.6); shuttle.scale.setScalar(k); // never smaller than the real 37 m orbiter
 				plasma.visible = st.shuttle.plasma > 0; plasma.material.opacity = Math.min(1, st.shuttle.plasma || 0);
 				flame.visible = !!st.shuttle.firing;
 			}
@@ -679,11 +721,11 @@
 				station.position.copy(T(st.target.r));
 				var tf = T(st.target.v).normalize(), tu = T(st.target.r).normalize(), tx = new THREE.Vector3().crossVectors(tu, tf).normalize(), ty = new THREE.Vector3().crossVectors(tf, tx);
 				station.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(tf, ty, tx.negate()));
-				station.scale.setScalar(pxScale(station, 30));
+				station.scale.setScalar(Math.max(pxScale(station, 30), 109 / RE / 1.6)); // real ISS ~109 m across
 			}
 			// burn node + arrows
 			nodeM.visible = !!st.node;
-			Object.keys(arrows).forEach(function (k) { arrows[k].visible = !!st.node; });
+			Object.keys(arrows).forEach(function (k) { arrows[k].visible = !!st.node && !H.arrows; });
 			if (st.node) {
 				nodeM.position.copy(T(st.node.r)); nodeM.scale.setScalar(pxScale(nodeM, 8));
 				var L = pxScale(nodeM, 62);
@@ -946,7 +988,7 @@
 
 	/* ---------------- state ---------------- */
 	var SPEEDS = [1, 2, 5, 10, 30, 60, 120, 300, 600, 1200, 3000];
-	var st = { t: 0, epoch: Date.now(), nodes: [], sel: null, phase: "orbit", trail: [], mapTrail: [], speed: 5, paused: false, j2: pref.j2 !== false, nid: 1, fire: 0 };
+	var st = { t: 0, epoch: Date.now(), nodes: [], sel: null, phase: "orbit", trail: [], mapTrail: [], speed: 5, paused: false, j2: pref.j2 !== false, nid: 1, fire: 0, hide: {} };
 	var needPlan = true;
 	function gm(t) { return S.gmst(st.epoch + t * 1000); }
 	function makeOrbit(alt, inc, raan, u, t) {
@@ -1286,12 +1328,32 @@
 	function setShow(v) { show = v; pref.show = v; savePref(); $("sx-stage").setAttribute("data-v", v); $("sx-show").querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); }); setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 20); }
 	$("sx-show").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (b) setShow(b.getAttribute("data-v")); });
 	setShow(show);
-	$("sx-cam").addEventListener("change", function () { if (this.value === "target" && !st.target) { this.value = "shuttle"; flash("No station in this mission."); } if (viewObj) viewObj.setFollow(this.value); });
+	$("sx-cam").addEventListener("change", function () { if (this.value === "target" && !st.target) { this.value = "shuttle"; flash("No station in this mission."); } if (viewObj) viewObj.setFollow(this.value); camUi(); });
+	function camUi() { var c = $("sx-cam").value; $("sx-camv").hidden = c === "earth"; if (c !== "earth") flash("Drag to swing round it, wheel or pinch to zoom, double-click for behind", 4000); }
+	$("sx-camv").addEventListener("click", function (e) { var b = e.target.closest("[data-cv]"); if (!b || !viewObj) return; var k = b.getAttribute("data-cv"); if (k === "in") viewObj.zoomFollow(0.6); else if (k === "out") viewObj.zoomFollow(1.6); else viewObj.view(k); });
+	/* what to draw: saved per browser */
+	var HIDE_OPTS = [["orbit", "Orbit line"], ["plan", "Path after the burn"], ["trail", "Trail behind the Shuttle"], ["torbit", "Station's orbit"], ["arrows", "Burn arrows"], ["foot", "Landing area"], ["sites", "Runways"], ["borders", "Country borders"], ["hud", "Numbers box (top left)"], ["rel", "Station view"], ["mapgrid", "Map grid"]];
+	st.hide = pref.hide || {}; if (pref.hide == null) st.hide = {};
+	(function () {
+		var box = $("sx-showp");
+		HIDE_OPTS.forEach(function (o) { var l = document.createElement("label"); l.className = "sx-check"; l.innerHTML = '<input type="checkbox" data-h="' + o[0] + '"' + (st.hide[o[0]] ? "" : " checked") + "> " + o[1]; box.appendChild(l); });
+		var row = document.createElement("div"); row.className = "sx-showr"; row.innerHTML = '<button type="button" data-ha="none">Hide all lines</button><button type="button" data-ha="all">Show everything</button>'; box.appendChild(row);
+		box.addEventListener("change", function (e) { var k = e.target.getAttribute("data-h"); if (!k) return; st.hide[k] = !e.target.checked; applyHide(k); });
+		box.addEventListener("click", function (e) { var b = e.target.closest("[data-ha]"); if (!b) return; var none = b.getAttribute("data-ha") === "none";
+			HIDE_OPTS.forEach(function (o) { var lineish = ["orbit", "plan", "trail", "torbit", "arrows", "foot", "mapgrid"].indexOf(o[0]) >= 0; st.hide[o[0]] = none ? (lineish || !!st.hide[o[0]]) : false; });
+			box.querySelectorAll("[data-h]").forEach(function (c) { c.checked = !st.hide[c.getAttribute("data-h")]; }); applyHide("all"); });
+	})();
+	function applyHide(k) {
+		pref.hide = st.hide; savePref();
+		$("sx-hud").hidden = !!st.hide.hud;
+		if (viewObj) viewObj.showSites(!st.hide.sites);
+		if ((k === "borders" || k === "all") && viewObj && window.SXMap.repaint) { window.SXMap.opts = { borders: !st.hide.borders }; viewObj.setTexture(window.SXMap.repaint(window.SXMap.opts)); }
+	}
 
 	/* ---------------- station view ---------------- */
 	var relC = $("sx-relc"), relX = relC.getContext("2d");
 	function drawRel() {
-		var box = $("sx-rel"), has = st.target && st.phase !== "entry" && st.phase !== "landed";
+		var box = $("sx-rel"), has = st.target && st.phase !== "entry" && st.phase !== "landed" && !st.hide.rel;
 		box.hidden = !has; if (!has) return;
 		var sC = st.orb.at(st.t), sT = st.target.at(st.t), L = S.lvlh(sT.r, sT.v, sC.r, sC.v);
 		$("sx-rel-d").textContent = S.fmtKm(L.dist) + " · " + (L.speed < 100 ? L.speed.toFixed(2) + " m/s" : S.fmtV(L.speed));
@@ -1345,7 +1407,7 @@
 		g.fillStyle = "#050810"; g.fillRect(0, 0, W, H);
 		g.save(); g.translate(ox, oy);
 		var sd = S.sunDir(st.epoch + st.t * 1000), sll = S.latLon(sd, gm(st.t));
-		window.SXMap.base(g, mw, mh, sll);
+		window.SXMap.base(g, mw, mh, sll, !st.hide.mapgrid);
 		if (st.phase === "orbit" || st.phase === "docked") {
 			if (performance.now() - mapCache.t > 250 || needPlan) {
 				var T = st.orb.el.T || 5500, stop = st.orb.el.rp < RE + EI ? st.orb.nextRadius(st.t, RE + EI, false) : null;
@@ -1355,14 +1417,14 @@
 				if (n && n.after) { var stop2 = n.pred ? n.pred.tE : null; mapCache.plan = futureTrack(n.after, n.t, (n.after.el.T || 5500) * 1.2, 200, stop2); }
 				mapCache.t = performance.now();
 			}
-			if (mapCache.tgt) { g.strokeStyle = "rgba(105,219,124,0.6)"; g.lineWidth = 1.5; window.SXMap.track(g, mapCache.tgt, mw, mh); }
-			g.strokeStyle = "rgba(142,197,255,0.95)"; g.lineWidth = 2; window.SXMap.track(g, mapCache.fut, mw, mh);
-			if (mapCache.plan) { g.strokeStyle = "#ffa94d"; g.setLineDash([6, 5]); g.lineWidth = 2; window.SXMap.track(g, mapCache.plan, mw, mh); g.setLineDash([]); }
+			if (mapCache.tgt && !st.hide.torbit) { g.strokeStyle = "rgba(105,219,124,0.6)"; g.lineWidth = 1.5; window.SXMap.track(g, mapCache.tgt, mw, mh); }
+			if (!st.hide.orbit) { g.strokeStyle = "rgba(142,197,255,0.95)"; g.lineWidth = 2; window.SXMap.track(g, mapCache.fut, mw, mh); }
+			if (mapCache.plan && !st.hide.plan) { g.strokeStyle = "#ffa94d"; g.setLineDash([6, 5]); g.lineWidth = 2; window.SXMap.track(g, mapCache.plan, mw, mh); g.setLineDash([]); }
 		}
-		if (pref.trail !== false && st.mapTrail.length > 1) { g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = 1.5; window.SXMap.track(g, st.mapTrail, mw, mh); }
+		if (pref.trail !== false && !st.hide.trail && st.mapTrail.length > 1) { g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = 1.5; window.SXMap.track(g, st.mapTrail, mw, mh); }
 		// landing prediction for the selected burn (or the current orbit / entry)
 		var n2 = selNode(), pr = st.phase === "entry" || st.phase === "landed" ? null : (n2 && n2.pred) || st.pred;
-		if (pr) {
+		if (pr && !st.hide.foot) {
 			g.strokeStyle = "#ff6b6b"; g.fillStyle = "rgba(255,107,107,0.18)"; g.lineWidth = 2;
 			g.beginPath(); pr.foot.forEach(function (p, i) { var q = window.SXMap.xy(p.lat, p.lon, mw, mh); if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath(); g.fill(); g.stroke();
 			var e = window.SXMap.xy(pr.rel.lat, pr.rel.lon, mw, mh), l = window.SXMap.xy(pr.land.lat, pr.land.lon, mw, mh);
@@ -1373,7 +1435,7 @@
 			g.strokeStyle = "#ffd43b"; g.lineWidth = 2.5; window.SXMap.track(g, path, mw, mh);
 			dotAt(g, window.SXMap.xy(E.rel.lat, E.rel.lon, mw, mh), "#ffd43b", 4, "Entry interface");
 		}
-		S.SITES.forEach(function (s) { var q = window.SXMap.xy(s.lat * D, s.lon * D, mw, mh); g.fillStyle = "#51cf66"; g.strokeStyle = "#0b1a0b"; g.lineWidth = 1.5; g.beginPath(); g.rect(q[0] - 3.5, q[1] - 3.5, 7, 7); g.fill(); g.stroke(); });
+		if (!st.hide.sites) S.SITES.forEach(function (s) { var q = window.SXMap.xy(s.lat * D, s.lon * D, mw, mh); g.fillStyle = "#51cf66"; g.strokeStyle = "#0b1a0b"; g.lineWidth = 1.5; g.beginPath(); g.rect(q[0] - 3.5, q[1] - 3.5, 7, 7); g.fill(); g.stroke(); });
 		// the station and the Shuttle
 		if (st.target && st.phase !== "landed") { var tq = window.SXMap.xy.apply(null, (function () { var ll = S.latLon(st.target.at(st.t).r, gm(st.t)); return [ll.lat, ll.lon, mw, mh]; })()); dotAt(g, tq, "#69db7c", 5, st.tname); }
 		var me = shuttleLL();
@@ -1426,10 +1488,10 @@
 	var viewObj = null, THREE = null;
 	function imp(u) { return new Function("u", "return import(u)")(u); }
 	function load3d() {
-		Promise.all([imp("three"), imp("three/addons/controls/OrbitControls.js"), window.SXMap.load()]).then(function (m) {
+		(window.SXMap.opts = { borders: !(pref.hide || {}).borders }, Promise.all([imp("three"), imp("three/addons/controls/OrbitControls.js"), window.SXMap.load()])).then(function (m) {
 			THREE = m[0]; viewObj = window.SXView.create($("sx-3d"), THREE, m[1].OrbitControls);
 			viewObj.setTexture(m[2]); viewObj.setSites(S.SITES); viewObj.setFollow($("sx-cam").value); aimCam();
-			$("sx-load").hidden = true; wirePointer();
+			$("sx-load").hidden = true; wirePointer(); applyHide("all"); camUi();
 		}).catch(function (e) {
 			window.SXMap.load(); $("sx-load").textContent = "The 3D view could not load (" + (e && e.message || "no WebGL") + "). The map and planner still work.";
 			setShow("map");
@@ -1453,9 +1515,10 @@
 		if (o) {
 			if (needPlan) plan();
 			var T = st.orb.el.T || 5600, stop = st.orb.el.rp < RE + EI ? st.orb.nextRadius(st.t, RE + EI, false) : null;
-			orbPts = stop ? arcPts(st.orb, st.t, stop) : st.orb.ring(st.t, 240);
-			if (n && n.after) planPts = n.pred ? arcPts(n.after, n.t, n.pred.tE) : n.after.ring(n.t, 240);
-			if (st.target) tPts = st.target.ring(st.t, 180);
+			var dense = $("sx-cam").value !== "earth" ? 1440 : 240;
+			orbPts = stop ? arcPts(st.orb, st.t, stop) : st.orb.ring(st.t, dense);
+			if (n && n.after) planPts = n.pred ? arcPts(n.after, n.t, n.pred.tE) : n.after.ring(n.t, dense);
+			if (st.target) tPts = st.target.ring(st.t, dense > 240 ? 1440 : 180);
 		}
 		if (pref.trail !== false) trail = st.trail;
 		var pr = (n && n.pred) || (o ? st.pred : null), surf = null;
@@ -1464,7 +1527,7 @@
 			orbit: orbPts, plan: planPts, targetOrbit: tPts, trail: trail, node: nodeInfo, others: others,
 			ei: pr ? { lat: pr.rel.lat, lon: pr.rel.lon } : st.entry ? { lat: st.entry.rel.lat, lon: st.entry.rel.lon } : null,
 			land: pr ? pr.land : st.entry && st.entry.site ? { lat: st.entry.site.s.lat * D, lon: st.entry.site.s.lon * D } : null,
-			footprint: pr ? pr.foot.concat([pr.foot[0]]) : null, surfPath: surf });
+			footprint: pr ? pr.foot.concat([pr.foot[0]]) : null, surfPath: surf, hide: st.hide });
 	}
 	function arcPts(o, t0, t1) { var out = []; for (var k = 0; k <= 160; k++) out.push(o.at(t0 + (t1 - t0) * k / 160).r); return out; }
 

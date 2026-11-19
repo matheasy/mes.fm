@@ -4,7 +4,7 @@
 	"use strict";
 	if (typeof document === "undefined") return;
 	var M = window.SXMap = {};
-	var W = 2048, H = 1024, land = null, borders = null, tex = null, ready = null;
+	var W = 4096, H = 2048, land = null, borders = null, tex = null, ready = null;
 
 	function decode(topo) {
 		var sc = topo.transform.scale, tr = topo.transform.translate;
@@ -45,7 +45,8 @@
 			});
 		});
 	}
-	function paint() {
+	function paint(opts) {
+		opts = opts || {};
 		var c = document.createElement("canvas"); c.width = W; c.height = H;
 		var g = c.getContext("2d");
 		var oc = g.createLinearGradient(0, 0, 0, H);
@@ -55,20 +56,20 @@
 		[[0, "#eef3f6"], [0.15, "#e2e9ee"], [0.2, "#5d7a52"], [0.27, "#4f7444"], [0.33, "#8a8a5a"], [0.4, "#b9a273"], [0.46, "#5f8a45"], [0.54, "#4b7d3a"], [0.6, "#a8946a"], [0.67, "#7c8a55"], [0.74, "#55764a"], [0.81, "#dfe6ea"], [1, "#f4f7f9"]].forEach(function (s) { lg.addColorStop(s[0], s[1]); });
 		g.fillStyle = lg;
 		land.forEach(function (poly) { pathRings(g, poly, W, H); g.fill("evenodd"); });
-		g.strokeStyle = "rgba(20,30,20,0.35)"; g.lineWidth = 1.2;
-		borders.forEach(function (poly) { pathRings(g, poly, W, H); g.stroke(); });
-		g.strokeStyle = "rgba(230,245,255,0.35)"; g.lineWidth = 1.5;
+		if (opts.borders !== false) { g.strokeStyle = "rgba(20,30,20,0.22)"; g.lineWidth = 1.2; borders.forEach(function (poly) { pathRings(g, poly, W, H); g.stroke(); }); }
+		g.strokeStyle = "rgba(230,245,255,0.28)"; g.lineWidth = 1.6;
 		land.forEach(function (poly) { pathRings(g, poly, W, H); g.stroke(); });
 		return c;
 	}
 	M.load = function () {
 		if (ready) return ready;
 		ready = fetch("/maps/data/countries-110m.json").then(function (r) { if (!r.ok) throw new Error("map " + r.status); return r.json(); })
-			.then(function (t) { var d = decode(t); land = d.land; borders = d.borders; tex = paint(); return tex; })
+			.then(function (t) { var d = decode(t); land = d.land; borders = d.borders; tex = paint(M.opts); return tex; })
 			.catch(function () { var c = document.createElement("canvas"); c.width = 512; c.height = 256; var g = c.getContext("2d"); g.fillStyle = "#0f4c80"; g.fillRect(0, 0, 512, 256); tex = c; return c; });
 		return ready;
 	};
 	M.texture = function () { return tex; };
+	M.repaint = function (opts) { if (land) tex = paint(opts); return tex; };
 
 	/* night shading: a small picture recomputed when the sun has moved */
 	var night = null, nightKey = "";
@@ -100,9 +101,10 @@
 		}
 		ctx.stroke();
 	};
-	M.base = function (ctx, w, h, sun) {
+	M.base = function (ctx, w, h, sun, grid) {
 		if (tex) { ctx.imageSmoothingEnabled = true; ctx.drawImage(tex, 0, 0, w, h); } else { ctx.fillStyle = "#0f4c80"; ctx.fillRect(0, 0, w, h); }
 		if (sun) ctx.drawImage(nightCanvas(sun.lat, sun.lon), 0, 0, w, h);
+		if (grid === false) return;
 		ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1; ctx.beginPath();
 		for (var lo = -150; lo <= 150; lo += 30) { var x = (lo + 180) / 360 * w; ctx.moveTo(x, 0); ctx.lineTo(x, h); }
 		for (var la = -60; la <= 60; la += 30) { var y = (90 - la) / 180 * h; ctx.moveTo(0, y); ctx.lineTo(w, y); }
