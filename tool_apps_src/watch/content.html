@@ -53,6 +53,13 @@
 						<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
 						<label class="wt-check"><input type="checkbox" id="wt-leftck" checked> Show the time left on the picture (−1:12, at the current speed; click it to show when it ends, e.g. @ 10:32 PM; click again for 24-hour time)</label>
 						<label class="wt-check"><input type="checkbox" id="wt-ytcov"> YouTube: cover the information panel YouTube puts over some videos (top left)</label>
+						<div class="wt-capopt" id="wt-capopt" role="group" aria-label="Captions">
+							<b>Captions</b>
+							<span class="wt-capseg" role="group" aria-label="Where the captions go"><button type="button" class="wt-chip" data-cpos="top" aria-pressed="false">Top</button><button type="button" class="wt-chip" data-cpos="middle" aria-pressed="false">Middle</button><button type="button" class="wt-chip" data-cpos="bottom" aria-pressed="true">Bottom</button></span>
+							<span class="wt-capseg" role="group" aria-label="Caption size"><button type="button" class="wt-chip" data-csz="s" aria-pressed="false">Small</button><button type="button" class="wt-chip" data-csz="m" aria-pressed="true">Normal</button><button type="button" class="wt-chip" data-csz="l" aria-pressed="false">Large</button><button type="button" class="wt-chip" data-csz="xl" aria-pressed="false">Huge</button></span>
+							<label class="wt-caplrow" id="wt-caplrow" hidden>Language <select id="wt-caplang"></select></label>
+							<p class="wt-capnote" id="wt-capnote"></p>
+						</div>
 						<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 					</div>
 				</details>
@@ -128,7 +135,7 @@
 			<h3>Zoom and full screen</h3>
 			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. With a mouse, the player is left alone at 100% (click, double-click and dragging the captions work as on YouTube): zoom with the small + / − / Fill strip on the right of the video, or the + and − keys, then drag to move around. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
 			<h3>Captions and 2× on a phone</h3>
-			<p>The <em>CC</em> button under the video (and on the play bar while zoomed in) turns YouTube's captions on and off, in your language when the video has it. Use it when the picture is zoomed: the player's own CC button moves with the zoom and can't be pressed. Press and hold the picture to play at 2× while you hold, like the YouTube app, without YouTube's bar popping up.</p>
+			<p>The <em>CC</em> button under the video (and on the play bar while zoomed in) turns YouTube's captions on and off, in your language when the video has it. Use it when the picture is zoomed: the player's own CC button moves with the zoom and can't be pressed. 3Speak videos get the captions 3Speak made for them (often in several languages: pick one under <em>Options</em>). On 3Speak, Odysee and file videos the page draws the captions itself: drag them anywhere on the picture, or choose Top / Middle / Bottom and a size under <em>Options</em>. YouTube draws its own captions inside its player, where this page can't reach them; with a mouse you can drag them inside the picture. Press and hold the picture to play at 2× while you hold, like the YouTube app, without YouTube's bar popping up.</p>
 			<h3>Keyboard shortcuts</h3>
 			<dl>
 				<dt>Space or K</dt><dd>Play / pause</dd>

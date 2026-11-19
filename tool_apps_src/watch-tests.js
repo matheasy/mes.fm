@@ -140,4 +140,14 @@ W.keepTrack = true; eq(W.item('https://x.com/mes/status/123?s=20').u, 'https://x
 	var sn = W.snap({ q: [it, yt], saved: [it], lists: [{ id: 'l', name: 'n', items: [it, yt] }], chans: [], hist: [it] }, true);
 	ok(sn.q.length === 1 && !sn.saved.length && sn.lists[0].items.length === 1 && !sn.hist.length, 'sync / Hive backups leave local files out');
 })();
+(function () {
+	ok(W.isFileName('CahlenLee_20261118_PlasmaMachineBasics.mp4') && W.isFileName('') && !W.isFileName('Plasma Machine Basics'), 'file-name titles are spotted');
+	var c = W.parseSubs('\uFEFF1\r\n00:00:04,790 --> 00:00:07,849\r\nHey <i>everyone</i>,\r\nhere\r\n\r\n2\r\n00:00:08,029 --> 00:00:09,949\r\nnext\r\n');
+	ok(c.length === 2 && Math.abs(c[0].s - 4.79) < 1e-6 && c[0].t === 'Hey everyone,\nhere' && Math.abs(c[1].e - 9.949) < 1e-6, 'SRT parsed');
+	var v = W.parseSubs('WEBVTT\n\n00:01.500 --> 00:03.000 line:80%\nhi\n\n01:00:00.000 --> 01:00:01.000\nlate');
+	ok(v.length === 2 && v[0].s === 1.5 && v[1].s === 3600, 'VTT parsed');
+	ok(W.cueAt(c, 5) === 'Hey everyone,\nhere' && W.cueAt(c, 7.9) === '' && W.cueAt(c, 9) === 'next', 'caption at a time');
+	ok(W.capPlace({ y: 200, x: -5, sz: 'q' }).y === 92 && W.capPlace({}).y === 86 && W.capPlace({ x: -5 }).x === 10 && W.capPlace({}).sz === 'm', 'caption place clamped');
+	ok(W.capName(12) === 'top' && W.capName(86) === 'bottom' && W.capName(60) === 'custom', 'caption preset names');
+})();
 console.log('watch tests ok:', n);

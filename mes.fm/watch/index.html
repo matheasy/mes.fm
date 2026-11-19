@@ -615,6 +615,19 @@ html body.dark-mode #wt .wt-ytcover .wt-ytcx {background:rgba(0,0,0,.6);color:#f
 	#wt.wt-dropping .wt-drop {display:flex;}
 	#wt .wt-drop span {background:#fff;color:#1f2430;border:3px dashed #c2255c;border-radius:16px;padding:1.2em 1.8em;font-size:1.25em;font-weight:600;box-shadow:0 10px 40px rgba(0,0,0,0.35);}
 	html body.dark-mode #wt .wt-drop span {background:#232934;color:#e6e9ee;border-color:#f06595;}
+	/* captions drawn by the page over our own <video> (3Speak subtitles etc.): drag to move, Options -> Captions for top / middle / bottom */
+	#wt .wt-cap {position:absolute;z-index:4;transform:translate(-50%,-50%);max-width:88%;text-align:center;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;line-height:1.3;}
+	#wt .wt-cap[hidden] {display:none;}
+	#wt .wt-cap.wt-capdrag {cursor:grabbing;outline:2px dashed rgba(255,255,255,0.7);outline-offset:3px;border-radius:0.25em;}
+	#wt .wt-capt {display:inline;white-space:pre-line;background:rgba(8,8,8,0.78);color:#fff;padding:0.08em 0.4em;border-radius:0.2em;-webkit-box-decoration-break:clone;box-decoration-break:clone;text-shadow:0 1px 2px #000;}
+	#wt .wt-stage video::cue {background:rgba(8,8,8,0.78);color:#fff;}
+	#wt .wt-capopt {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.6em;margin-top:0.35em;padding-top:0.45em;border-top:1px solid var(--wt-line);}
+	#wt .wt-capseg {display:inline-flex;flex-wrap:wrap;gap:0.3em;}
+	#wt .wt-capseg .wt-chip {padding:0.2em 0.7em;font-size:0.92em;}
+	#wt .wt-caplrow {display:inline-flex;align-items:center;gap:0.4em;}
+	#wt .wt-caplrow[hidden] {display:none;}
+	#wt .wt-caplrow select {font:inherit;padding:0.2em 0.4em;border:1px solid var(--wt-line);border-radius:0.4em;background:var(--wt-soft);color:var(--wt-fg);}
+	#wt .wt-capnote {flex-basis:100%;margin:0;font-size:0.88em;color:var(--wt-muted);}
 
 
 	@media print {
@@ -781,6 +794,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .wt-ytcover{background:rgba(74,74,89,0.55)}
 	body.dark-mode #wt .wt-ytcover .wt-ytcx{background:rgba(82,82,82,0.55)}
 	body.dark-mode #wt .wt-drop span{background:#1a1a1a;color:#d3d6dc;border:3px dashed #d62966}
+	body.dark-mode #wt .wt-cap.wt-capdrag{outline:2px dashed rgba(51,51,51,0.70)}
+	body.dark-mode #wt .wt-capt{background:rgba(82,82,82,0.78)}
+	body.dark-mode #wt .wt-stage video::cue{background:rgba(82,82,82,0.78)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1048,6 +1064,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<label class="wt-check"><input type="checkbox" id="wt-track"> Keep the sites' tracking codes in links (si=, utm_…, who shared it); off = removed</label>
 						<label class="wt-check"><input type="checkbox" id="wt-leftck" checked> Show the time left on the picture (−1:12, at the current speed; click it to show when it ends, e.g. @ 10:32 PM; click again for 24-hour time)</label>
 						<label class="wt-check"><input type="checkbox" id="wt-ytcov"> YouTube: cover the information panel YouTube puts over some videos (top left)</label>
+						<div class="wt-capopt" id="wt-capopt" role="group" aria-label="Captions">
+							<b>Captions</b>
+							<span class="wt-capseg" role="group" aria-label="Where the captions go"><button type="button" class="wt-chip" data-cpos="top" aria-pressed="false">Top</button><button type="button" class="wt-chip" data-cpos="middle" aria-pressed="false">Middle</button><button type="button" class="wt-chip" data-cpos="bottom" aria-pressed="true">Bottom</button></span>
+							<span class="wt-capseg" role="group" aria-label="Caption size"><button type="button" class="wt-chip" data-csz="s" aria-pressed="false">Small</button><button type="button" class="wt-chip" data-csz="m" aria-pressed="true">Normal</button><button type="button" class="wt-chip" data-csz="l" aria-pressed="false">Large</button><button type="button" class="wt-chip" data-csz="xl" aria-pressed="false">Huge</button></span>
+							<label class="wt-caplrow" id="wt-caplrow" hidden>Language <select id="wt-caplang"></select></label>
+							<p class="wt-capnote" id="wt-capnote"></p>
+						</div>
 						<label class="wt-check"><input type="checkbox" id="wt-priv" checked> Private: keep these videos out of my YouTube / Rumble / BitChute watch history</label>
 					</div>
 				</details>
@@ -1123,7 +1146,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h3>Zoom and full screen</h3>
 			<p>Pinch the video with two fingers (or Ctrl + scroll on a computer), and drag to move around, up to 400%. Double-tap goes to <em>Fill</em> and back; one tap plays or pauses. The player's own control bar at the bottom still works. With a mouse, the player is left alone at 100% (click, double-click and dragging the captions work as on YouTube): zoom with the small + / − / Fill strip on the right of the video, or the + and − keys, then drag to move around. The <em>Zoom</em> button (or Z) adds − / + buttons. <em>Fill</em> crops the black bars so the picture fills a wide phone screen. For zoom in full screen, use the page's own <em>Full screen</em> or <em>Fill window</em> button above the video rather than the player's own full-screen button.</p>
 			<h3>Captions and 2× on a phone</h3>
-			<p>The <em>CC</em> button under the video (and on the play bar while zoomed in) turns YouTube's captions on and off, in your language when the video has it. Use it when the picture is zoomed: the player's own CC button moves with the zoom and can't be pressed. Press and hold the picture to play at 2× while you hold, like the YouTube app, without YouTube's bar popping up.</p>
+			<p>The <em>CC</em> button under the video (and on the play bar while zoomed in) turns YouTube's captions on and off, in your language when the video has it. Use it when the picture is zoomed: the player's own CC button moves with the zoom and can't be pressed. 3Speak videos get the captions 3Speak made for them (often in several languages: pick one under <em>Options</em>). On 3Speak, Odysee and file videos the page draws the captions itself: drag them anywhere on the picture, or choose Top / Middle / Bottom and a size under <em>Options</em>. YouTube draws its own captions inside its player, where this page can't reach them; with a mouse you can drag them inside the picture. Press and hold the picture to play at 2× while you hold, like the YouTube app, without YouTube's bar popping up.</p>
 			<h3>Keyboard shortcuts</h3>
 			<dl>
 				<dt>Space or K</dt><dd>Play / pause</dd>
@@ -1218,7 +1241,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=38" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/watch/js/watch.js?v=39" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -32,12 +32,14 @@
 	var META = {}, metaBusy = 0, metaQ = [];
 	function setMeta(key, t, th) {
 		if (!t && !th) return; META[key] = { t: t, th: th };
-		[S.q, S.saved, S.hist].concat(S.lists.map(function (l) { return l.items; })).forEach(function (L) { L.forEach(function (x) { if (x.key === key) { if (t && !x.t) x.t = t; if (th && !x.th) x.th = th; } }); });
-		if (cur && cur.key === key) { if (t && !cur.t) cur.t = t; if (th && !cur.th) cur.th = th; showMeta(); }
+		// a 3Speak title that is only the uploaded file name gives way to the real (Hive post) title
+		function better(x) { return t && (!x.t || (x.k === '3speak' && W.isFileName(x.t) && !W.isFileName(t))); }
+		[S.q, S.saved, S.hist].concat(S.lists.map(function (l) { return l.items; })).forEach(function (L) { L.forEach(function (x) { if (x.key === key) { if (better(x)) x.t = t; if (th && !x.th) x.th = th; } }); });
+		if (cur && cur.key === key) { if (better(cur)) cur.t = t; if (th && !cur.th) cur.th = th; showMeta(); }
 		save(); renderListSoon();
 	}
 	function needMeta(it) {
-		if ((it.t && it.th) || META[it.key] || metaQ.some(function (x) { return x.key === it.key; })) return;
+		if ((it.t && it.th && !(it.k === '3speak' && W.isFileName(it.t))) || META[it.key] || metaQ.some(function (x) { return x.key === it.key; })) return;
 		if (!/^(youtube|3speak|odysee)$/.test(it.k)) return;
 		META[it.key] = { pending: 1 }; metaQ.push(it); pumpMeta();
 	}
@@ -55,7 +57,13 @@
 		if (it.k === 'bitchute' && it.id) return bitchuteGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		return Promise.resolve(null);
 	}
+	var spkCache = {};
 	function speakInfo(it) {
+		if (spkCache[it.key]) return spkCache[it.key];
+		var p = speakInfo0(it); spkCache[it.key] = p; p.catch(function () { delete spkCache[it.key]; });
+		return p;
+	}
+	function speakInfo0(it) {
 		return fetch('https://play.3speak.tv/api/embed?v=' + encodeURIComponent(it.id).replace('%2F', '/'), { credentials: 'omit' }).then(function (r) {
 			if (!r.ok) throw new Error('3Speak answered ' + r.status + '.'); return r.json();
 		}).then(function (j) {
@@ -63,8 +71,20 @@
 			if (!u) throw new Error('3Speak has no video for that link.');
 			var du = (window.MESYA && MESYA.speakUrl) ? MESYA.speakUrl(u) : u;
 			// relay = 3Speak's own play.3speak.tv/hls address: used when the real address inside it fails (a suspended CDN host, Nov 2026)
-			return { url: du, relay: du !== u ? u : '', title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '' };
+			var info = { url: du, relay: du !== u ? u : '', title: j.title || '', thumb: j.thumbnail || j.thumbnailUrl || '', owner: j.owner || '', hive: j.hivePermlink || j.permlink || '', vp: j.permlink || String(it.id).split('/')[1] || '' };
+			// newer uploads: the embed API's title is the uploaded file name; the real title is on the Hive post
+			if (!W.isFileName(info.title) || !info.owner || !info.hive) return info;
+			return hiveTitle(info.owner, info.hive).then(function (t) { if (t) info.title = t; return info; }, function () { return info; });
 		});
+	}
+	function hiveTitle(author, permlink) {
+		var nodes = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://api.openhive.network'];
+		function tryN(i) {
+			return fetch(nodes[i], { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'bridge.get_post', params: { author: author, permlink: permlink }, id: 1 }) })
+				.then(function (r) { return r.json(); }).then(function (j) { var r = j && j.result; if (!r) throw new Error('no answer'); return String(r.title || (r.json_metadata && r.json_metadata.video && r.json_metadata.video.info && r.json_metadata.video.info.title) || '').trim(); })
+				.catch(function (e) { if (i + 1 < nodes.length) return tryN(i + 1); throw e; });
+		}
+		return tryN(0);
 	}
 	function odyseeInfo(uri) {
 		return fetch('https://api.na-backend.odysee.com/api/v1/proxy?m=resolve', { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ jsonrpc: '2.0', method: 'resolve', params: { urls: [uri] }, id: 1 }) })
@@ -133,6 +153,7 @@
 	function histRec(it) { var i = W.indexOf(S.hist, it.key); return i < 0 ? null : S.hist[i]; }
 	function teardown() {
 		clearInterval(saveT); saveT = 0;
+		capSrc = null;
 		if (yt) { try { yt.destroy(); } catch (e) {} yt = null; } ytBr = null; ytSped = false;
 		if (vm) { try { vm.p.destroy(); } catch (e) {} vm = null; }
 		if (hls) { try { hls.destroy(); } catch (e) {} hls = null; }
@@ -201,12 +222,14 @@
 				var v = document.createElement('video'); v.controls = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.preload = 'auto';
 				if (info.thumb) v.poster = info.thumb;
 				setStage(''); stage.appendChild(v); vid = v;
+				if (mode === 'hls') speakSubs(info, g);
 				v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate;
 				v.addEventListener('loadedmetadata', function () { if (start && start < (v.duration || 1e9) - 5) v.currentTime = start; v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate; }, { once: true });
 				// a (re)load resets the speed to the default on some browsers / hls.js: set it again once it really plays
 				v.addEventListener('playing', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate; } }, { once: true });
 				v.addEventListener('ended', function () { if (g === gen) ended(); });
-				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); } });
+				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); paintCapOpt(); } });
+				v.addEventListener('webkitbeginfullscreen', function () { if (g === gen) applyCC(true); }); v.addEventListener('webkitendfullscreen', function () { if (g === gen) applyCC(true); });
 				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
 				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (!hls && info.relay && v.src !== info.relay) { v.src = info.relay; var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function () {}); } else failed(mode === 'local' ? 'This browser can\'t play this kind of file (' + (String(cur.t).split('.').pop() || 'file').toUpperCase() + '). MP4, WebM, MP3 and M4A play everywhere.' : 'This browser could not play the video file.'); });
 				if (mode === 'local' && !cur.th) grabThumb(v, g);
@@ -253,7 +276,7 @@
 			setStage('<div class="wt-empty"><b>This link can\'t be played here.</b><span>' + (cur.k === 'rumble' ? 'Rumble only lets other sites play its <em>Embed</em> link (on Rumble: Share, then Embed). ' : cur.k === 'odysee' ? 'That is an Odysee channel, not a video. ' : '') +
 				'</span><a class="tu-btn tu-btn--primary" href="' + esc(cur.u) + '" target="_blank" rel="noopener">Open it on ' + esc(W.siteName(cur)) + ' ↗&#xFE0E;</a></div>');
 		}
-		syncSpeed();
+		syncSpeed(); paintCapOpt();
 		if (S.cm) loadComments();
 		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file|local|bitchute)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
@@ -360,12 +383,146 @@
 			return;
 		}
 		if (vid && vid.textTracks) {
-			var tt = vid.textTracks, best = -1, want = (navigator.language || 'en').slice(0, 2);
-			for (var i = 0; i < tt.length; i++) if (/subtitles|captions/.test(tt[i].kind) && (best < 0 || String(tt[i].language).slice(0, 2) === want)) best = i;
-			for (var j = 0; j < tt.length; j++) tt[j].mode = S.cc && j === best ? 'showing' : 'disabled';
-			if (S.cc && best < 0 && !quiet) toast('This video has no captions');
+			var tt = vid.textTracks, best = capTrack();
+			for (var j = 0; j < tt.length; j++) if (tt[j] !== best) tt[j].mode = 'disabled';
+			if (best) { best.mode = S.cc ? (vidFs() ? 'showing' : 'hidden') : 'disabled'; placeNative(best); }
+			if (S.cc && !best && !quiet) toast('This video has no captions');
+			paintCap();
 		}
 	}
+
+	/* ---------- captions in our own <video> (3Speak, Odysee, files): drawn by the page in a box that can be dragged or placed
+	   top / middle / bottom (Options -> Captions). 3Speak keeps its subtitles outside the video: translate.3speak.tv lists them
+	   per video ({lang, cid} SRT files on IPFS), the same list 3Speak's own player reads. In the video element's own full screen
+	   (iPhone, the player's ⛶ button) the browser draws them instead, at the same height (cue.line). */
+	var CAP_LIST = ['https://translate.3speak.tv', 'https://3speak-translator.okinoko.io'];
+	var CAP_FILE = ['https://ipfs-audio.3speak.tv/ipfs/', 'https://checker.3speak.tv/subtitle-proxy/', 'https://hotipfs-3speak-1.b-cdn.net/ipfs/'];
+	var LANGS = { en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian', pt: 'Portuguese', ru: 'Russian', ja: 'Japanese', ko: 'Korean', zh: 'Chinese', ar: 'Arabic', hi: 'Hindi', nl: 'Dutch', pl: 'Polish', tr: 'Turkish', sv: 'Swedish', vi: 'Vietnamese', id: 'Indonesian', uk: 'Ukrainian', fa: 'Persian', th: 'Thai', tl: 'Filipino', ro: 'Romanian', cs: 'Czech', el: 'Greek', he: 'Hebrew', hu: 'Hungarian' };
+	var capSrc = null;   // {g, list: [{lang, cid}], tracks: {lang: TextTrack}} for the 3Speak video playing now
+	function langName(l) { l = String(l || ''); return LANGS[l.slice(0, 2).toLowerCase()] || l || 'Captions'; }
+	function firstOk(urls, kind) {
+		var i = 0;
+		function next() { if (i >= urls.length) return Promise.reject(new Error('no ' + kind)); var u = urls[i++];
+			return fetch(u, { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return kind === 'json' ? r.json() : r.text(); }).catch(next); }
+		return next();
+	}
+	function speakSubs(info, g) {
+		if (!info.owner || !info.vp) return;
+		var path = '/subtitles/' + encodeURIComponent(info.owner) + '/' + encodeURIComponent(info.vp);
+		firstOk(CAP_LIST.map(function (b) { return b + path; }), 'json').then(function (list) {
+			if (g !== gen || !vid || !Array.isArray(list)) return;
+			list = list.filter(function (x) { return x && /^[\w-]{2,12}$/.test(x.lang) && /^[\w]{20,80}$/.test(x.cid); });
+			if (!list.length) return;
+			capSrc = { g: g, list: list, tracks: {} };
+			var want = S.capLang || (navigator.language || 'en').slice(0, 2), pick = list.filter(function (x) { return x.lang === want; })[0] || list.filter(function (x) { return x.lang === 'en'; })[0] || list[0];
+			return speakTrack(pick.lang, g, true);
+		}).catch(function () {}).then(function () { if (g === gen) { paintCC(); paintCapOpt(); } });
+	}
+	function speakTrack(lang, g, quiet) {
+		if (!capSrc || capSrc.g !== g || !vid) return Promise.resolve();
+		if (capSrc.tracks[lang]) { capSrc.cur = lang; applyCC(true); paintCapOpt(); return Promise.resolve(); }
+		var it = capSrc.list.filter(function (x) { return x.lang === lang; })[0]; if (!it) return Promise.resolve();
+		return firstOk(CAP_FILE.map(function (b) { return b + it.cid; }), 'text').then(function (txt) {
+			if (g !== gen || !vid || !capSrc) return;
+			var cues = W.parseSubs(txt); if (!cues.length) throw new Error('empty');
+			var tr = vid.addTextTrack('subtitles', langName(lang), lang);
+			tr.mode = 'disabled';
+			cues.forEach(function (c) { try { tr.addCue(new (window.VTTCue || window.TextTrackCue)(c.s, c.e, c.t)); } catch (e) {} });
+			tr.__mes = 1; tr.addEventListener('cuechange', paintCap);
+			capSrc.tracks[lang] = tr; capSrc.cur = lang;
+			applyCC(true); paintCC(); paintCapOpt();
+		}).catch(function () { if (!quiet && g === gen) toast('Those captions could not be loaded'); });
+	}
+	// the text track the overlay reads: the chosen 3Speak language, else the video's own track in the person's language
+	function capTrack() {
+		if (!vid || !vid.textTracks) return null;
+		if (capSrc && capSrc.g === gen && capSrc.cur && capSrc.tracks[capSrc.cur]) return capSrc.tracks[capSrc.cur];
+		var tt = vid.textTracks, best = null, want = (S.capLang || navigator.language || 'en').slice(0, 2);
+		for (var i = 0; i < tt.length; i++) if (/subtitles|captions/.test(tt[i].kind) && (!best || String(tt[i].language).slice(0, 2) === want)) best = tt[i];
+		if (best && !best.__mesw) { best.__mesw = 1; best.addEventListener('cuechange', paintCap); }
+		return best;
+	}
+	function vidFs() { return !!vid && (document.fullscreenElement === vid || document.webkitFullscreenElement === vid || !!vid.webkitDisplayingFullscreen); }
+	function placeNative(tr) {
+		var c = W.capPlace(S.cap), cues = tr && tr.cues; if (!cues) return;
+		for (var i = 0; i < cues.length; i++) { try { cues[i].snapToLines = false; cues[i].line = c.y; cues[i].position = c.x; cues[i].align = 'center'; } catch (e) {} }
+	}
+	document.addEventListener('fullscreenchange', function () { if (vid) applyCC(true); });
+	document.addEventListener('webkitfullscreenchange', function () { if (vid) applyCC(true); });
+	function capBox() {
+		var st = $('wt-stage'); if (!st) return null;
+		var b = st.querySelector('.wt-cap');
+		if (!b) {
+			b = document.createElement('div'); b.className = 'wt-cap'; b.hidden = true; b.title = 'Drag to move the captions (Options -> Captions for top / middle / bottom)';
+			b.innerHTML = '<span class="wt-capt"></span>'; st.appendChild(b); capDrag(b);
+		}
+		return b;
+	}
+	var CAP_K = { s: 0.042, m: 0.056, l: 0.072, xl: 0.092 };
+	function paintCap() {
+		var b = capBox(); if (!b) return;
+		var tr = vid && S.cc && !vidFs() ? capTrack() : null, txt = '';
+		if (tr && tr.activeCues) for (var i = 0; i < tr.activeCues.length; i++) txt += (txt ? '\n' : '') + String(tr.activeCues[i].text || '').replace(/<[^>]*>/g, '');
+		b.hidden = !txt;
+		if (!txt) return;
+		var c = W.capPlace(S.cap), st = $('wt-stage'), h = st.clientHeight || 300;
+		b.style.top = c.y + '%'; b.style.left = c.x + '%';
+		b.style.fontSize = Math.max(12, Math.round(h * CAP_K[c.sz])) + 'px';
+		var t = b.firstChild; if (t.textContent !== txt) t.textContent = txt;
+	}
+	window.addEventListener('resize', function () { if (vid) paintCap(); });
+	function capDrag(b) {
+		var d = null;
+		b.addEventListener('pointerdown', function (e) {
+			if (e.button) return; e.preventDefault(); e.stopPropagation();
+			var r = $('wt-stage').getBoundingClientRect(), c = W.capPlace(S.cap);
+			d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, cx: c.x, cy: c.y, w: r.width, h: r.height, moved: false };
+			try { b.setPointerCapture(e.pointerId); } catch (x) {} b.classList.add('wt-capdrag');
+		});
+		b.addEventListener('pointermove', function (e) {
+			if (!d || e.pointerId !== d.id) return;
+			var dx = e.clientX - d.x0, dy = e.clientY - d.y0; if (Math.abs(dx) + Math.abs(dy) > 3) d.moved = true;
+			S.cap = W.capPlace({ x: d.cx + dx / d.w * 100, y: d.cy + dy / d.h * 100, sz: (S.cap || {}).sz });
+			// a small pull towards the middle line so it is easy to keep the box centred
+			if (Math.abs(S.cap.x - 50) < 2.5) S.cap.x = 50;
+			paintCap();
+		});
+		function end(e) { if (!d || (e && e.pointerId !== d.id)) return; d = null; b.classList.remove('wt-capdrag'); save(); paintCapOpt(); var tr = capTrack(); if (tr) placeNative(tr); }
+		b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end);
+		b.addEventListener('click', function (e) { e.stopPropagation(); });
+		b.addEventListener('dblclick', function (e) { e.stopPropagation(); S.cap = W.capPlace({ sz: (S.cap || {}).sz }); save(); paintCap(); paintCapOpt(); });
+	}
+	/* Options -> Captions: language (3Speak's list or the video's tracks), where, size */
+	function paintCapOpt() {
+		var box = $('wt-capopt'); if (!box) return;
+		var c = W.capPlace(S.cap), pos = W.capName(c.y), m = cur && W.mode(cur), own = /^(hls|odysee|file|local|bitchute)$/.test(m || '');
+		[].forEach.call(box.querySelectorAll('[data-cpos]'), function (x) { x.setAttribute('aria-pressed', String(x.dataset.cpos === pos)); });
+		[].forEach.call(box.querySelectorAll('[data-csz]'), function (x) { x.setAttribute('aria-pressed', String(x.dataset.csz === c.sz)); });
+		var sel = $('wt-caplang'), opts = [];
+		if (own && capSrc && capSrc.g === gen) opts = capSrc.list.map(function (x) { return [x.lang, langName(x.lang) + ' (3Speak)']; });
+		else if (own && vid && vid.textTracks) for (var i = 0; i < vid.textTracks.length; i++) { var t = vid.textTracks[i]; if (!t.__mes && /subtitles|captions/.test(t.kind)) opts.push([t.language || String(i), t.label || langName(t.language)]); }
+		sel.innerHTML = opts.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join('');
+		$('wt-caplrow').hidden = opts.length < 2;
+		var curL = capSrc && capSrc.g === gen ? capSrc.cur : (capTrack() || {}).language; if (curL) sel.value = curL;
+		$('wt-capnote').textContent = m === 'yt' ? 'YouTube draws its own captions inside its player, where this page can\'t move them. On a computer you can drag them with the mouse inside the picture (zoom at 100%); size and colour are in YouTube\'s ⚙ → Subtitles → Options.'
+			: (m === 'embed' || m === 'vimeo') ? W.siteName(cur) + '\'s own player draws its captions; this page can\'t move them.'
+			: 'Drag the captions on the picture to put them anywhere; double-click them to put them back at the bottom.';
+	}
+	(function () {
+		var box = $('wt-capopt'); if (!box) return;
+		box.addEventListener('click', function (e) {
+			var b = e.target.closest('[data-cpos],[data-csz]'); if (!b) return;
+			var c = W.capPlace(S.cap);
+			if (b.dataset.cpos) { c.y = W.CAP_Y[b.dataset.cpos]; c.x = 50; } else c.sz = b.dataset.csz;
+			S.cap = c; save(); paintCap(); paintCapOpt(); var tr = capTrack(); if (tr) placeNative(tr);
+		});
+		$('wt-caplang').onchange = function () {
+			var l = this.value; S.capLang = l; save();
+			if (capSrc && capSrc.g === gen) { if (!S.cc) { S.cc = true; save(); } speakTrack(l, gen, false); }
+			else applyCC(false);
+			paintCC();
+		};
+	})();
 	function toggleCC() { if (!ccAble()) { toast('This player has no captions the page can switch'); return; } S.cc = !S.cc; save(); applyCC(false); paintCC(); if (!S.cc) toast('Captions off'); }
 	$('wt-cc').onclick = toggleCC;
 	$('wt-slower').onclick = function () { step(-1); };

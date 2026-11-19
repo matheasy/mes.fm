@@ -300,6 +300,40 @@
 		if (j && (j.q || j.saved || j.lists)) return j;
 		throw new Error("That file is not a MES Watch file.");
 	};
+	/* 3Speak's embed API gives the uploaded FILE name as the title for newer uploads ("CahlenLee_20261118_PlasmaMachineBasics.mp4");
+	   the real title is the Hive post's. isFileName = a title that is just a file name. */
+	W.isFileName = function (t) { return !t || /\.(mp4|m4v|mov|mkv|webm|avi|wmv|flv|mpe?g|3gp|ts|m3u8)$/i.test(String(t).trim()); };
+
+	/* captions: SRT or WebVTT text -> [{s, e, t}] (seconds; t keeps line breaks, tags removed), sorted */
+	W.parseSubs = function (text) {
+		var out = [], blocks = String(text || "").replace(/^﻿/, "").replace(/\r\n?/g, "\n").split(/\n{2,}/);
+		function sec(x) { var m = /(?:(\d+):)?(\d{1,2}):(\d{2})[,.](\d{1,3})/.exec(x); if (!m) return NaN; return (+(m[1] || 0)) * 3600 + (+m[2]) * 60 + (+m[3]) + (+(m[4] + "00").slice(0, 3)) / 1000; }
+		blocks.forEach(function (b) {
+			var lines = b.split("\n"), i = 0;
+			while (i < lines.length && lines[i].indexOf("-->") < 0) i++;
+			if (i >= lines.length) return;
+			var p = lines[i].split("-->"), s = sec(p[0]), e = sec(p[1] || "");
+			var t = lines.slice(i + 1).join("\n").replace(/<[^>]*>/g, "").replace(/\{\\[^}]*\}/g, "").trim();
+			if (isFinite(s) && isFinite(e) && e > s && t) out.push({ s: s, e: e, t: t });
+		});
+		return out.sort(function (a, b) { return a.s - b.s; });
+	};
+	// the caption showing at time x (cues are short and sorted: binary search, then step back for overlaps)
+	W.cueAt = function (cues, x) {
+		var lo = 0, hi = cues.length - 1;
+		while (lo <= hi) { var m = (lo + hi) >> 1; if (cues[m].s <= x) lo = m + 1; else hi = m - 1; }
+		for (var k = hi, out = []; k >= 0 && k > hi - 4; k--) if (x >= cues[k].s && x < cues[k].e) out.unshift(cues[k].t);
+		return out.join("\n");
+	};
+	/* where the caption box sits: y = % from the top of the picture to the box's centre (8..92), x = % from the left (10..90).
+	   Presets: bottom 86, middle 50, top 12. */
+	W.CAP_Y = { top: 12, middle: 50, bottom: 86 };
+	W.capPlace = function (c) {
+		c = c || {}; var y = +c.y, x = +c.x;
+		return { y: isFinite(y) ? Math.max(8, Math.min(92, y)) : 86, x: isFinite(x) ? Math.max(10, Math.min(90, x)) : 50, sz: /^(s|m|l|xl)$/.test(c.sz) ? c.sz : "m" };
+	};
+	W.capName = function (y) { var k = Object.keys(W.CAP_Y).filter(function (n) { return Math.abs(W.CAP_Y[n] - y) < 1.5; })[0]; return k || "custom"; };
+
 	root.MESWatch = W;
 	if (typeof module !== "undefined" && module.exports) module.exports = W;
 })(typeof window !== "undefined" ? window : globalThis);
