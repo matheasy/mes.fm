@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="horizontal" android:gravity="center_vertical">
+    <Button android:id="@+id/n_dim_down" style="@style/NBtn" android:text="−" android:contentDescription="Less dim" />
+    <TextView android:id="@+id/n_dim" style="@style/NLabel" android:text="Dim" />
+    <Button android:id="@+id/n_dim_up" style="@style/NBtn" android:text="+" android:contentDescription="More dim" />
+    <Button android:id="@+id/n_vol_down" style="@style/NBtn" android:text="−" android:contentDescription="Volume down a little" />
+    <TextView android:id="@+id/n_vol" style="@style/NLabel" android:text="Vol" />
+    <Button android:id="@+id/n_vol_up" style="@style/NBtn" android:text="+" android:contentDescription="Volume up a little" />
+    <Button android:id="@+id/n_stop" style="@style/NBtn" android:text="✕" android:contentDescription="Turn off" />
+</LinearLayout>
