@@ -48,7 +48,7 @@ export const SECTIONS = [
     items: [
       { title: "Hutchison Effect: Was Tom Sky's Experience a Mini Philadelphia Experiment?!",
         image: "https://images.3speak.tv/images/1795058861094-dce76e2c0819e2fd.webp",
-        links: [["MES", "https://mes.fm/hutchison-tom-sky-testimony"], ["YouTube", "https://youtu.be/rUshNciqucs"], ["Telegram", "https://t.me/meslinks/35718"]] },
+        links: [["MES", "https://mes.fm/hutchison-tom-sky-testimony"], ["3Speak", "https://3speak.tv/watch?v=mes/hutchison-effect-was-tom-sk-270"], ["Hive", "https://peakd.com/hive-128780/@mes/hutchison-effect-was-tom-sk-270"], ["YouTube", "https://youtu.be/rUshNciqucs"], ["Rumble", "https://rumble.com/v7ikf4a-hutchison-effect-was-tom-skys-experience-a-mini-philadelphia-experiment.html"], ["Odysee", "https://odysee.com/@mes:8/hutchison-effect-tom-sky-mini-philadelphia-experiment:d"], ["BitChute", "https://www.bitchute.com/video/jaW1WAPf0tJX/"], ["Telegram", "https://t.me/meslinks/35718"]] },
       { title: "Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE",
         image: "https://images.3speak.tv/images/1790118173447-fc686c3b9719153c.webp",
         links: [["Screenshots", "https://mes.fm/hutchison-levitating-can-live"], ["3Speak", "https://3speak.tv/watch?v=mes/hutchison-effect-plastic-ca-593"], ["YouTube", "https://youtu.be/84_R56cjqMQ"], ["Telegram", "https://t.me/meslinks/35568"], ["BitChute", "https://www.bitchute.com/video/8jwVZeAXX9pO/"], ["Odysee", "https://odysee.com/@mes:8/Hutchison-Effect-Can-Levitates-Live-Playback:a"], ["Rumble", "https://rumble.com/v7fv5tq-hutchison-effect-plastic-can-levitates-and-video-is-played-back-live.html"]] },
