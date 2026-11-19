@@ -136,6 +136,15 @@
 		var blob = new Blob([target.buffer], { type: "video/mp4" });
 		return { blob: blob, size: blob.size, secs: secs, sound: aOk };
 	};
+	// one video clip's own picture at time t, at the file's size (for "Hold this frame")
+	VE.clipFrame = async function (c, t) {
+		var m = VE.media(c.media); if (!m || !m.vt) throw new Error("This clip's picture is not ready yet.");
+		var L = V.layersAt(VE.P, t).filter(function (l) { return l.clip.id === c.id; })[0];
+		var src = L ? L.src : c.in + (t - c.start) * (c.speed || 1);
+		var rd = new VReader(m), cv = document.createElement("canvas"); cv.width = m.w; cv.height = m.h;
+		try { var fr = await rd.frameAt(src); if (!fr) throw new Error("The frame could not be read."); VE.drawFrame(cv.getContext("2d"), fr, m.rot || 0, 0, 0, m.w, m.h); } finally { rd.close(); }
+		return new Promise(function (r) { cv.toBlob(r, "image/png"); });
+	};
 	// one frame at project size from the preview's current state (PNG "snapshot")
 	VE.snapshot = async function () {
 		await VE.ensureFonts(); var p = VE.P, c = document.createElement("canvas"); c.width = p.w; c.height = p.h;

@@ -385,12 +385,14 @@
 
 	/* ---------- dropping media from the bin ---------- */
 	// place media m at the time under clientX on the row under clientY (or the first fitting track); returns the new clip
-	T.placeMedia = function (m, clientX, clientY, atTime) {
+	T.placeMedia = function (m, clientX, clientY, atTime, top) {
 		var type = m.kind === "image" ? "image" : m.kind === "audio" ? "audio" : "video", kind = V.kindFor(type);
 		var t = atTime != null ? atTime : clientX != null ? x2t(clientX) : VE.t, tr = null, isSnd = type === "audio";
 		if (clientY != null) { var row = null; rows.querySelectorAll(".vd-trow").forEach(function (r) { var b = r.getBoundingClientRect(); if (clientY >= b.top && clientY < b.bottom) row = r; }); if (row) { var q = V.track(VE.P, row.getAttribute("data-track")); if (q && q.kind === kind && !q.lock) tr = q; } }
 		var dur = type === "image" ? 5 : m.dur;
 		// no layer under the pointer: the lowest free layer that already holds the same sort of clip (sound with sound, pictures with pictures) or nothing
+		// top = a narration: the top layer if it is free there and holds only sound (or nothing), else a new layer above all the others
+		if (!tr && top) { var t0 = VE.P.tracks[0], cs0 = t0 && V.onTrack(VE.P, t0.id); tr = t0 && !t0.lock && !t0.mag && cs0.every(function (q) { return q.type === "audio"; }) && V.fitOnTrack(VE.P, t0.id, Math.max(0, t), dur) === Math.max(0, t) ? t0 : VE.addTrack("v"); }
 		var tracks = tr ? [tr] : VE.P.tracks.filter(function (x) { if (x.lock) return false; var cs = V.onTrack(VE.P, x.id); return !cs.length || cs.every(function (q) { return (q.type === "audio") === isSnd; }); }).reverse();
 		var c = V.clipDefaults({ id: V.uid("c"), type: type, media: m.id, track: null, start: 0, in: 0, out: dur });
 		for (var j = 0; j < tracks.length; j++) {

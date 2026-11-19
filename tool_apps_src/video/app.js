@@ -337,6 +337,32 @@
 	/* ---------- right-click menu on the timeline ---------- */
 	var ctxEl = null;
 	function ctxClose() { if (ctxEl) { ctxEl.remove(); ctxEl = null; } }
+	// Hold this frame (like Camtasia's extend frame): the video stops on the playhead's picture for a while, everything after it on
+	// that layer (and the clip's linked sound) moves later by that time, and the still is a normal picture clip you can lengthen
+	VE.holdFrame = function (c, secs) {
+		secs = secs || 1; var t = VE.t;
+		if (!c || c.type !== "video" || !V.active(c, t)) { toast("Put the playhead over a video clip first."); return; }
+		var tr = V.track(VE.P, c.track); if (tr && tr.lock) { toast("That layer is locked."); return; }
+		if (P.playing) P.pause();
+		toast("Making a still of this frame…", 2500);
+		VE.clipFrame(c, t).then(function (blob) {
+			var f = new File([blob], (V.short(t) + " still of " + ((VE.media(c.media) || {}).name || "video")).replace(/[\/:*?"<>|.]+/g, "-") + ".png", { type: "image/png" });
+			return importFiles([f]).then(function (ms) {
+				var m = ms && ms[0]; if (!m) throw new Error("The still could not be added.");
+				return new Promise(function (res) { (function wait(n) { if (m.state === "ready" || n > 200) res(m); else setTimeout(function () { wait(n + 1); }, 100); })(0); });
+			});
+		}).then(function (m) {
+			var cc = V.clip(VE.P, c.id); if (!cc) return;
+			var eps = 0.5 / VE.P.fps, ids = V.withLinks(VE.P, [cc.id]);
+			if (t > cc.start + eps && t < V.end(cc) - eps) V.splitAt(VE.P, ids, t, function () { return V.uid("c"); }, 1 / VE.P.fps);
+			var tracks = {}; ids.forEach(function (id) { var q = V.clip(VE.P, id); if (q) tracks[q.track] = 1; });
+			VE.P.clips.forEach(function (q) { if (tracks[q.track] && q.start >= t - eps) q.start += secs; });
+			var still = V.clipDefaults({ id: V.uid("c"), type: "image", media: m.id, track: cc.track, start: t, in: 0, out: secs });
+			["x", "y", "scale", "rot", "op"].forEach(function (k) { still[k] = cc[k]; }); still.crop = JSON.parse(JSON.stringify(cc.crop || { l: 0, t: 0, r: 0, b: 0 }));
+			VE.P.clips.push(still); VE.sel = [still.id]; VE.commit("Hold frame");
+			toast("Held the frame for " + secs + " s. Drag the still's right edge to hold it longer.", 6000);
+		}).catch(function (e) { toast("Could not hold the frame: " + e.message, 7000); });
+	};
 	VE.ctxMenu = function (x, y, info) {
 		ctxClose();
 		var c = info.clip, tr = info.track || (c && V.track(VE.P, c.track)), sel = targets(), cb = readClip(), mac = /Mac|iP/.test(navigator.platform || ""), K = mac ? "⌘" : "Ctrl+", items = [];
@@ -349,6 +375,7 @@
 			it("Duplicate", K + "D", VE.duplicate);
 			sep();
 			it("Split at the playhead", "S", VE.split, !(V.active(c, VE.t) && VE.t > c.start));
+			if (c.type === "video") it("Hold this frame (1 s still)", "", function () { VE.holdFrame(c, 1); }, !V.active(c, VE.t));
 			it("Delete", "Del", function () { VE.del(false); }); it("Ripple delete (close the gap)", "Shift+Del", function () { VE.del(true); });
 			sep();
 			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });
@@ -2386,7 +2413,7 @@
 		return importFiles([file]).then(function (ms) {
 			var m = ms && ms[0]; if (!m) throw new Error("The sound could not be added.");
 			return new Promise(function (res) { (function wait(n) { if (m.state === "ready" || n > 200) res(m); else setTimeout(function () { wait(n + 1); }, 100); })(0); });
-		}).then(function (m) { if (m.state !== "ready") throw new Error("The sound could not be read."); return VE.tl.placeMedia(m, null, null, at); });
+		}).then(function (m) { if (m.state !== "ready") throw new Error("The sound could not be read."); return VE.tl.placeMedia(m, null, null, at, true); });
 	}
 	function openNarrate(mode) {
 		UI.cat = "narr"; UI.noLeft = false; relayout();
@@ -2549,7 +2576,7 @@
 	}
 	$("vd-ntest").onclick = function () { if (REC.mr || REC.counting) return; if (REC.stream) { closeMic(); $("vd-nmicst").textContent = "Mic test stopped."; return; } openMic().catch(function (e) { $("vd-nmicst").textContent = e.message; }); };
 	function recTime() { if (!REC.mr) return; var s = (performance.now() - REC.t0) / 1000; $("vd-nrt").textContent = "● " + Math.floor(s / 60) + ":" + ("0" + Math.floor(s % 60)).slice(-2) + " recording"; }
-	function recKey(e) { if (e.key === "Escape" || e.key === " " || ((e.key === "r" || e.key === "R") && !e.ctrlKey && !e.metaKey && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || ""))) { e.preventDefault(); e.stopPropagation(); stopRec(); } }
+	function recKey(e) { if (e.key === "Backspace" && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) { e.preventDefault(); e.stopPropagation(); recRedo(); return; } if (e.key === "Escape" || e.key === " " || ((e.key === "r" || e.key === "R") && !e.ctrlKey && !e.metaKey && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || ""))) { e.preventDefault(); e.stopPropagation(); stopRec(); } }
 	function startRec() {
 		var canW = ndirReady(), b = $("vd-nrec");
 		Promise.all([REC.stream ? Promise.resolve(REC.stream) : openMic(), canW]).then(function (x) {
@@ -2566,22 +2593,26 @@
 					REC.timer = setInterval(recTime, 250); recTime();
 				};
 				mr.onstop = function () { recDone(); };
-				mr.start(1000); b.textContent = "■ Stop"; b.classList.add("is-on"); $("vd-trrec").classList.add("is-on"); $("vd-trrec").setAttribute("aria-label", "Stop recording"); document.addEventListener("keydown", recKey, true);
+				mr.start(1000); $("vd-nredo").hidden = false; b.textContent = "■ Stop"; b.classList.add("is-on"); $("vd-trrec").classList.add("is-on"); $("vd-trrec").setAttribute("aria-label", "Stop recording"); document.addEventListener("keydown", recKey, true);
 			};
 			if (NS.count) {
-				var n = 3; REC.counting = 1; b.textContent = "■ Cancel"; $("vd-nrt").textContent = "Starting in 3…";
+				var n = 3; REC.counting = 1; $("vd-nredo").hidden = false; b.textContent = "■ Cancel"; $("vd-nrt").textContent = "Starting in 3…";
 				REC.cd = setInterval(function () { if (!REC.counting) { clearInterval(REC.cd); return; } n--; if (n > 0) $("vd-nrt").textContent = "Starting in " + n + "…"; else { clearInterval(REC.cd); go(); } }, 1000);
 			} else go();
 		}).catch(function (e) { $("vd-nmicst").textContent = e.message; toast(e.message, 7000); });
 	}
 	function stopRec() {
-		if (REC.counting) { REC.counting = 0; clearInterval(REC.cd); $("vd-nrt").textContent = ""; $("vd-nrec").textContent = "● Record my voice"; return; }
+		if (REC.counting) { REC.counting = 0; clearInterval(REC.cd); $("vd-nrt").textContent = ""; $("vd-nrec").textContent = "● Record my voice"; $("vd-nredo").hidden = !REC.last; return; }
 		if (REC.mr && REC.mr.state !== "inactive") REC.mr.stop();
 	}
 	function recDone() {
 		var mr = REC.mr, at = REC.at, dur = (performance.now() - REC.t0) / 1000; REC.mr = null; clearInterval(REC.timer); document.removeEventListener("keydown", recKey, true);
 		if (P.playing) P.pause(); P.muted = false; P.sync && P.sync();
 		var b = $("vd-nrec"); b.textContent = "● Record my voice"; b.classList.remove("is-on"); $("vd-trrec").classList.remove("is-on"); $("vd-trrec").setAttribute("aria-label", "Record narration"); b.disabled = true; $("vd-nrt").textContent = "Saving " + dur.toFixed(1) + " s…";
+		if (REC.redo) {   // Start over: throw this take away, go back to where it began and record again
+			REC.redo = false; REC.chunks = []; b.disabled = false; $("vd-nrt").textContent = "Take thrown away. Starting again…";
+			P.seek(at); VE.tl && VE.tl.reveal && VE.tl.reveal(at); setTimeout(startRec, 150); return;
+		}
 		var blob = new Blob(REC.chunks, { type: (mr && mr.mimeType) || "audio/webm" }); REC.chunks = [];
 		Promise.all([loadNarrate(), blob.arrayBuffer()]).then(function (x) {
 			var N = x[0], AC = window.AudioContext || window.webkitAudioContext, ac = new AC();
@@ -2589,12 +2620,22 @@
 				ac.close(); var n = ab.length, m = new Float32Array(n);
 				for (var c = 0; c < ab.numberOfChannels; c++) { var d = ab.getChannelData(c); for (var i = 0; i < n; i++) m[i] += d[i] / ab.numberOfChannels; }
 				if (NS.auto) { var L = V.lufs([m], ab.sampleRate), pk = 0; for (var j = 0; j < n; j++) { var a = m[j] < 0 ? -m[j] : m[j]; if (a > pk) pk = a; } var g = V.normalizeGain(L, pk, -16, -1); if (g !== 1) for (var k = 0; k < n; k++) m[k] *= g; }
-				return finishNarration(N, m, ab.sampleRate, "Voice recording " + stamp(), at, REC.canWrite);
+				return finishNarration(N, m, ab.sampleRate, "Voice recording " + stamp(), at, REC.canWrite).then(function (c) { REC.last = c ? { id: c.id, at: at } : null; return c; });
 			}, function () { ac.close(); throw new Error("The recording could not be read back."); });
-		}).then(function () { $("vd-nrt").textContent = "Added (" + dur.toFixed(1) + " s). Record again to add another take."; }, function (e) { $("vd-nrt").textContent = "Could not add it: " + e.message; })
-			.then(function () { b.disabled = false; });
+		}).then(function () { $("vd-nrt").textContent = "Added (" + dur.toFixed(1) + " s). Record again to add another take, or Start over to replace it."; }, function (e) { $("vd-nrt").textContent = "Could not add it: " + e.message; })
+			.then(function () { b.disabled = false; $("vd-nredo").hidden = !REC.last; });
 	}
 	function recToggle() { if (REC.mr || REC.counting) stopRec(); else startRec(); }
+	// Start over: while recording = throw the take away and restart at the same spot; after a take = remove the clip just added and record it again
+	function recRedo() {
+		if (REC.counting) { stopRec(); startRec(); return; }
+		if (REC.mr) { REC.redo = true; stopRec(); return; }
+		var L = REC.last; if (!L) return; REC.last = null;
+		var c = V.clip(VE.P, L.id), tr = c && V.track(VE.P, c.track);
+		if (c && !(tr && tr.lock)) { V.removeClips(VE.P, V.withLinks(VE.P, [c.id]), false); VE.sel = []; VE.commit("Remove take"); }
+		if (P.playing) P.pause(); P.seek(L.at); VE.tl && VE.tl.reveal && VE.tl.reveal(L.at); startRec();
+	}
+	$("vd-nredo").onclick = recRedo;
 	$("vd-nrec").onclick = recToggle;
 	// the red ● next to Play: opens the Narration panel (meter + status) and starts recording right away (it is the click the browser needs)
 	$("vd-trrec").onclick = function () { if (!(REC.mr || REC.counting) && (UI.cat !== "narr" || UI.noLeft)) { UI.cat = "narr"; UI.noLeft = false; relayout(); } recToggle(); };

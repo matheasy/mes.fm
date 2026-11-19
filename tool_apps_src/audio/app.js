@@ -125,9 +125,9 @@
 		return new Promise(function (res, rej) { var p = oc.decodeAudioData(buf, res, rej); if (p && p.then) p.then(res, rej); });
 	}
 	function abToCh(ab) { var o = [], k; for (k = 0; k < ab.numberOfChannels; k++) o.push(new Float32Array(ab.getChannelData(k))); if (o.length > 2) o = [o[0], o[1]]; if (o.length === 2 && D && D.sameChannels(o)) o = [o[0]]; return o; }
-	function addTrackFrom(ch, name, at) {
+	function addTrackFrom(ch, name, at, top) {
 		var t = A.track({ name: name, nch: ch.length, clips: [A.clip(at || 0, ch)] });
-		S.tracks.push(t); return t;
+		if (top) S.tracks.unshift(t); else S.tracks.push(t); return t;
 	}
 	function openFiles(files) {
 		files = Array.prototype.slice.call(files || []).filter(function (f) { return f && f.size; }); if (!files.length) return;
@@ -733,7 +733,7 @@
 	}
 	function exportLabels() { var txt = S.markers.map(function (m) { var s = (m.t / S.sr).toFixed(6); return s + "\t" + s + "\t" + m.name; }).join("\n") + "\n"; download(new Blob([txt], { type: "text/plain" }), A.fileName((S.name || "audio") + "-markers", "txt")); }
 	function showHelp() {
-		var k = [["Space", "Play / pause"], ["Home / End", "Start / end"], ["← / →", "Move 1 s (Shift = extend selection)"], [MOD + "Z", "Undo"], [MOD + "Shift+Z", "Redo"], [MOD + "X / C / V", "Cut, copy, paste"], ["Delete", "Delete selection"], [MOD + "I", "Split"], [MOD + "T", "Trim to selection"], [MOD + "L", "Silence selection"], [MOD + "D", "Duplicate to new track"], [MOD + "A", "Select all"], ["Esc", "Clear selection / close"], ["M", "Add marker"], ["[ / ]", "Previous / next marker"], ["R", "Record"], ["L", "Loop on / off"], ["+ / −", "Zoom in / out"], ["0", "Fit project"], [MOD + "3", "Zoom to selection"], ["S", "Spectrogram"], ["N", "Noise removal"], ["E", "Effects list"], ["B", "A / B while previewing"], [MOD + "E", "Export"], [MOD + "K", "Search commands"], ["F", "Fill window"], ["Shift+F", "Full screen"], ["?", "This list"]];
+		var k = [["Space", "Play / pause"], ["Home / End", "Start / end"], ["← / →", "Move 1 s (Shift = extend selection)"], [MOD + "Z", "Undo"], [MOD + "Shift+Z", "Redo"], [MOD + "X / C / V", "Cut, copy, paste"], ["Delete", "Delete selection"], [MOD + "I", "Split"], [MOD + "T", "Trim to selection"], [MOD + "L", "Silence selection"], [MOD + "D", "Duplicate to new track"], [MOD + "A", "Select all"], ["Esc", "Clear selection / close"], ["M", "Add marker"], ["[ / ]", "Previous / next marker"], ["R", "Record"], ["Backspace", "Start the recording over"], ["L", "Loop on / off"], ["+ / −", "Zoom in / out"], ["0", "Fit project"], [MOD + "3", "Zoom to selection"], ["S", "Spectrogram"], ["N", "Noise removal"], ["E", "Effects list"], ["B", "A / B while previewing"], [MOD + "E", "Export"], [MOD + "K", "Search commands"], ["F", "Fill window"], ["Shift+F", "Full screen"], ["?", "This list"]];
 		openPanel("Keyboard shortcuts", '<div class="au-help">' + k.map(function (x) { return "<div><kbd>" + esc(x[0]) + "</kbd><span>" + esc(x[1]) + "</span></div>"; }).join("") + '</div><div class="au-note">Ctrl+wheel or pinch zooms; Shift+wheel scrolls sideways. Drag a clip by its title bar to move it (also to another track).</div>');
 		panel = "help";
 	}
@@ -753,13 +753,17 @@
 			(function loopRec() { if (!rec) return; var s = (Date.now() - rec.t0) / 1000; $("au-rect").textContent = A.fmtTime(s, 0); var c = $("au-recmeter"), g = c.getContext("2d"), db = rec.pk > 0 ? 20 * Math.log10(rec.pk) : -90, f = Math.max(0, Math.min(1, (db + 60) / 60)); g.fillStyle = "#0b0d11"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = db > -1 ? "#ef4444" : db > -9 ? "#fbbf24" : "#4ade80"; g.fillRect(0, 2, f * c.width, c.height - 4); requestAnimationFrame(loopRec); })();
 		}).catch(function (e) { toast("No microphone access: " + (e.message || e.name)); });
 	}
+	// Start over: throw away what was recorded so far and keep recording from the same spot
+	function redoRec() {
+		if (!rec) return; rec.chunks.length = 0; rec.n = 0; rec.pk = 0; rec.t0 = Date.now(); toast("Take thrown away. Recording again from the start.");
+	}
 	function stopRec() {
 		if (!rec) return; var r = rec; rec = null; try { r.sp.disconnect(); r.src.disconnect(); } catch (e) {} r.stream.getTracks().forEach(function (t) { t.stop(); });
 		$("au-recbar").hidden = true; $("au-rec").setAttribute("aria-pressed", "false");
 		if (!r.n) { updateEmpty(); return; }
 		var x = new Float32Array(r.n), p = 0; r.chunks.forEach(function (c) { x.set(c, p); p += c.length; });
 		if (r.rate !== S.sr && D) x = D.resample(x, r.rate, S.sr);
-		var first = !S.tracks.length; addTrackFrom([x], "Recording " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), r.at);
+		var first = !S.tracks.length; addTrackFrom([x], "Recording " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), r.at, true);
 		if (first) { S.name = "Recording"; zoomFit(); }
 		commit("Record"); toast("Recorded " + fmt(x.length, 1) + ". Tip: ✨ Remove noise cleans it up.");
 	}
@@ -946,7 +950,7 @@
 		if (e.altKey) return;
 		var step = S.sr * (e.shiftKey ? 1 : 1);
 		switch (k) {
-			case "Delete": case "Backspace": e.preventDefault(); doDelete(); break;
+			case "Delete": case "Backspace": e.preventDefault(); if (rec && e.key === "Backspace") redoRec(); else doDelete(); break;
 			case "Escape": if (root.classList.contains("au-win") && !S.sel && !panel) toggleWin(); else if (panel) closePanel(); else { S.sel = null; afterSel(); } break;
 			case "Home": e.preventDefault(); setCursor(0); S.start = 0; if (playing) playFrom(0); draw(); break;
 			case "End": e.preventDefault(); setCursor(projEnd()); S.start = projEnd() - W * S.spp * 0.9; draw(); break;
@@ -981,7 +985,7 @@
 	$("au-play").onclick = togglePlay; $("au-stop").onclick = function () { stopAll(); drawOver(); };
 	$("au-home").onclick = function () { setCursor(0); S.start = 0; if (playing) playFrom(0); draw(); };
 	$("au-end").onclick = function () { setCursor(projEnd()); draw(); };
-	$("au-rec").onclick = toggleRec; $("au-recstop").onclick = stopRec;
+	$("au-rec").onclick = toggleRec; $("au-recstop").onclick = stopRec; $("au-recredo").onclick = redoRec;
 	$("au-loop").onclick = function () { loop = !loop; store("loop", loop); syncUi(); };
 	$("au-zin").onclick = function () { zoomAt(2, W / 2); }; $("au-zout").onclick = function () { zoomAt(0.5, W / 2); }; $("au-zfit").onclick = zoomFit; $("au-zsel").onclick = zoomSel;
 	$("au-spec").onclick = function () { S.spec = !S.spec; store("spec", S.spec); draw(); };
