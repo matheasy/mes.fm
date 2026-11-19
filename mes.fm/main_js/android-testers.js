@@ -34,7 +34,9 @@
     timer: { name: "MES Timer", pkg: "fm.mes.timer", key: "timerAppBannerHidden",
       ios: "https://apps.apple.com/us/app/id6833587925", extra: " (alarms, countdowns, stopwatch, Pomodoro and interval timer)" },
     copytext: { name: "MES Copy Text", pkg: "fm.mes.copytext", key: "copytextAppBannerHidden",
-      ios: "https://apps.apple.com/us/app/id6836608312", extra: " (save the texts you paste again and again, tap to copy)" }
+      ios: "https://apps.apple.com/us/app/id6836608312", extra: " (save the texts you paste again and again, tap to copy)" },
+    dimvolume: { name: "MES Dim & Volume", pkg: "fm.mes.dimvolume", key: "dimvolumeAppBannerHidden",
+      ios: "", extra: " (dim the screen below its lowest brightness, set the volume in small steps)" }
   };
   function joinUrl(a) { return "https://play.google.com/apps/testing/" + a.pkg; }
   function ext(href, text) { return '<a href="' + href + '" target="_blank" rel="noopener">' + text + "</a>"; }
