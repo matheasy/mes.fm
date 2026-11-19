@@ -186,6 +186,24 @@
     "watchLinks": [],
     "namedLinks": []
   },
+  "https://mes.fm/hutchison-thumb-aluminum": {
+    "image": "https://mes.fm/hutchison-thumb-aluminum/img/og.jpg?v=1",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://inleo.io/threads/view/mes/re-leothreads-2fdy1kxdu"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/34612"
+      },
+      {
+        "label": "Hutchison Effect",
+        "href": "https://mes.fm/hutchison"
+      }
+    ]
+  },
   "https://mes.fm/imagining-motion": {
     "image": "https://mes.fm/imagining-motion/img/imagining-motion-share.jpg",
     "watchLinks": [],

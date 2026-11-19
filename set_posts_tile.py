@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.join(ROOT, "mes.fm")
-HUBS = {"911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts", "science": "science-posts", "hutchison": "hutchison-interviews"}
+HUBS = {"hutchison:hutchison-posts": "hutchison-posts", "911": "911-posts", "911spooks": "911spooks-posts", "bg": "bg-posts", "conspiracy": "conspiracy-posts", "mathiew": "mathiew-posts", "mh370": "mh370-posts", "science": "science-posts", "hutchison": "hutchison-interviews"}
 STAMP = os.path.join(SITE, "img", "posts-tiles.json")
 
 
@@ -160,7 +160,7 @@ def main():
         print(("write " if a.apply else "would write ") + os.path.relpath(out, ROOT))
         if a.apply:
             tile.save(out, quality=88)
-            build = os.path.join(SITE, h, "build.mjs")
+            build = os.path.join(SITE, h.split(":")[0], "build.mjs")  # "folder:page" keys share a hub folder
             if a.auto:
                 v = max(icon_version(build, HUBS[h]), stamp.get(HUBS[h], {}).get("v", 0)) + 1
                 print(f"  {HUBS[h]} tile version -> {v} (posts-tiles.json)")
@@ -171,7 +171,7 @@ def main():
                 stamp[HUBS[h]] = {"key": key, "src": src, "v": v}
                 save_stamp(stamp)
             if not a.auto:
-                subprocess.run(["npm", "run", "build"], cwd=os.path.join(SITE, h), check=True, stdout=subprocess.DEVNULL)
+                subprocess.run(["npm", "run", "build"], cwd=os.path.join(SITE, h.split(":")[0]), check=True, stdout=subprocess.DEVNULL)
     if not a.apply:
         print("dry run: pass --apply to write")
     else:

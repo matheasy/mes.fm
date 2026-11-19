@@ -114,7 +114,7 @@ const PAGES = [
   {
     slug: "hutchison-posts",
     sectionId: "hutchison-posts",
-    iconVersion: 6,
+    iconVersion: 7,
     tileLabel: "Posts and Updates",
     title: "Hutchison Effect Posts and Updates",
     description:
@@ -2228,6 +2228,7 @@ async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
   syncTile(meta, "hutchison-interviews", "hutchison");
+  syncTile(meta, "hutchison-posts", "hutchison:hutchison-posts");
 
   const pages = [{ hub: true, slug: "hutchison", outDir: __dirname }].concat(
     PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
