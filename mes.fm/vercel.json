@@ -61,6 +61,7 @@
     { "source": "/apr-calculator", "destination": "/loan-calculator?tab=apr", "permanent": true },
     { "source": "/:k(time|hours-calculator|time-duration-calculator|hours-between-times|add-time|time-card-calculator|timesheet-calculator|decimal-hours|time-to-decimal|hours-and-minutes-calculator|work-hours-calculator|shift-calculator)", "destination": "/time-calculator", "permanent": true },
     { "source": "/:k(fuel|gas-calculator|gas-cost-calculator|trip-cost-calculator|mpg-calculator|fuel-economy-calculator|petrol-cost-calculator|fuel-calculator|mpg-to-l100km|road-trip-calculator)", "destination": "/fuel-cost-calculator", "permanent": true },
+    { "source": "/:k(split|splitwise|splitwise-alternative|trip-expenses|trip-expense-splitter|expense-split|split-expenses|trip-splitter|group-expenses|cost-splitter|split-costs|tricount|settle-up|travel-expenses|group-trip-calculator)", "destination": "/expense-splitter", "permanent": true },
     { "source": "/:k(tip|tips|tip-calculator-split|split-bill|bill-splitter|split-the-bill|gratuity-calculator|gratuity|tipping|bill-split)", "destination": "/tip-calculator", "permanent": true },
     { "source": "/:k(age|how-old-am-i|age-calc|birthday-calculator|date-of-birth-calculator|dob-calculator|exact-age|chronological-age-calculator|dog-years-calculator|planet-age)", "destination": "/age-calculator", "permanent": true },
     { "source": "/age-difference-calculator", "destination": "/age-calculator#ag-diff", "permanent": true },

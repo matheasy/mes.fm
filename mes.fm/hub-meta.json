@@ -843,7 +843,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-18",
+"updated":"2026-11-19",
 "type":"Tool"
 },
 "/search-engines":{
@@ -878,7 +878,7 @@
 },
 "/site-index":{
 "added":"2026-10-03",
-"updated":"2026-11-17",
+"updated":"2026-11-19",
 "type":"Tool"
 },
 "/site-traffic":{

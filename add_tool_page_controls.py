@@ -105,6 +105,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("signals-fr", "Signaux de marché"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
     ("elections", "Elections"),
     ("debt-clock", "Debt Clock"),
+    ("expense-splitter", "Expense Splitter"),   # 2026-11-19
     ("compound-interest-calculator", "Compound Interest Calculator"),   # 2026-10-23
     ("compound-interest-explained", "Compound Interest Calculator", "/compound-interest-calculator"),   # 2026-10-24 tutorial sub-page (brand option)
     ("loan-calculator", "Loan Calculator"),   # 2026-10-23

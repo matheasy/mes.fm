@@ -1,0 +1,116 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu" id="xs">
+		<div class="xs-top">
+			<div class="xs-trip">
+				<label class="tu-label" for="xs-trips">Trip</label>
+				<div class="xs-triprow">
+					<select id="xs-trips" class="tu-select"></select>
+					<button type="button" class="tu-btn" id="xs-new">+ New trip</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="xs-more" aria-expanded="false" aria-controls="xs-menu">More ▾</button>
+				</div>
+				<div class="xs-menu" id="xs-menu" hidden>
+					<button type="button" data-act="rename">Rename this trip</button>
+					<button type="button" data-act="dup">Make a copy</button>
+					<button type="button" data-act="example">Load the example trip</button>
+					<button type="button" data-act="export">Download a backup (.json)</button>
+					<button type="button" data-act="import">Restore a backup…</button>
+					<button type="button" data-act="del" class="xs-danger">Delete this trip</button>
+				</div>
+				<input type="file" id="xs-file" accept=".json,application/json" hidden>
+			</div>
+			<div class="tu-field tu-field--sm xs-curf"><label for="xs-cur">Main currency</label><select id="xs-cur" class="tu-select"></select></div>
+			<div class="tu-field tu-field--sm xs-daysf"><label for="xs-days">Trip length (nights)</label>
+				<div class="xs-step"><button type="button" data-d="-1" aria-label="One night less">−</button><input id="xs-days" class="tu-input" type="text" inputmode="numeric" autocomplete="off"><button type="button" data-d="1" aria-label="One night more">+</button></div>
+			</div>
+		</div>
+
+		<div class="xs-grid">
+			<div class="xs-col">
+				<section class="tu-card xs-card" id="xs-pcard">
+					<h3 class="xs-h"><span class="xs-num">1</span> Who's coming</h3>
+					<p class="tu-note xs-sub">Nights decide shares of the place you stay. Tags let you leave people out of things: no alcohol, kids at half price, drivers.</p>
+					<div id="xs-people"></div>
+					<form class="xs-addp" id="xs-addp" autocomplete="off">
+						<input id="xs-pname" class="tu-input" type="text" placeholder="Add a name, e.g. Alex" aria-label="New person's name" maxlength="40">
+						<button type="submit" class="tu-btn tu-btn--primary">+ Add</button>
+					</form>
+					<p class="tu-note xs-tip">Tip: type several names at once, separated by commas.</p>
+				</section>
+
+				<section class="tu-card xs-card" id="xs-ecard">
+					<div class="xs-hrow"><h3 class="xs-h"><span class="xs-num">2</span> What was spent</h3><span class="xs-total" id="xs-etotal"></span></div>
+					<div id="xs-exps"></div>
+					<button type="button" class="tu-btn tu-btn--primary xs-adde" id="xs-adde">+ Add an expense</button>
+					<div id="xs-rates" hidden>
+						<h4 class="xs-h4">Exchange rates</h4>
+						<p class="tu-note" style="margin-top:0;">Type the rate you really paid (your card or bank statement), or fetch today's rate.</p>
+						<div id="xs-ratelist"></div>
+					</div>
+				</section>
+			</div>
+
+			<div class="xs-col">
+				<section class="tu-card xs-card xs-res" id="xs-res">
+					<h3 class="xs-h"><span class="xs-num">3</span> Settle up</h3>
+					<div class="xs-stats" id="xs-stats"></div>
+					<div class="xs-moderow">
+						<div class="tu-seg" id="xs-mode" role="group" aria-label="How to settle"><button type="button" data-m="min" aria-pressed="true">Fewest payments</button><button type="button" data-m="hub" aria-pressed="false">Everyone pays one person</button></div>
+						<select id="xs-hub" class="tu-select" aria-label="Who collects and pays out" hidden></select>
+					</div>
+					<ol class="xs-settle" id="xs-settle"></ol>
+					<div class="xs-acts">
+						<button type="button" class="tu-btn tu-btn--primary" id="xs-copy">Copy who pays whom</button>
+						<button type="button" class="tu-btn" id="xs-share">🔗 Copy share link</button>
+						<button type="button" class="tu-btn" id="xs-csv">Download CSV</button>
+					</div>
+					<p class="tu-note" id="xs-sharenote">The share link holds the whole trip, so friends can check the numbers. It is not stored on any server.</p>
+					<h4 class="xs-h4">Who owes whom</h4>
+					<p class="tu-note xs-sub">Tap an arrow when that payment is made. Tap a person to see only their payments.</p>
+					<div class="xs-flow" id="xs-flow"></div>
+				</section>
+
+				<section class="tu-card xs-card">
+					<div class="xs-hrow"><h4 class="xs-h4" style="margin:0;">Paid vs share</h4>
+						<div class="tu-seg xs-chartmode" id="xs-cm" role="group" aria-label="Chart"><button type="button" data-c="bars" aria-pressed="true">Paid vs share</button><button type="button" data-c="bal" aria-pressed="false">Balance</button></div></div>
+					<div id="xs-chart" class="xs-chart"></div>
+					<div id="xs-legend" class="xs-legend"></div>
+				</section>
+
+				<section class="tu-card xs-card">
+					<h4 class="xs-h4" style="margin-top:0;">Each person's share</h4>
+					<div class="tu-table-wrap"><table class="tu-table xs-ptable" id="xs-ptable"></table></div>
+					<p class="tu-note">Click a name to see the expenses behind it.</p>
+				</section>
+
+				<section class="tu-card xs-card" id="xs-paycard">
+					<h4 class="xs-h4" style="margin-top:0;">Payments already made</h4>
+					<div id="xs-pays"></div>
+					<button type="button" class="tu-btn tu-btn--ghost" id="xs-addpay">+ Add a payment</button>
+				</section>
+			</div>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Split trip expenses fairly, even when people stayed different nights</h2>
+			<p>Going away with a group means one person books the cabin, another fills the tank, someone buys the wine and someone else pays for dinner. This splitter keeps the list and works out who owes whom, with the fewest payments to settle up.</p>
+			<h3>How to use it</h3>
+			<ol>
+				<li><b>Add everyone.</b> Set how many nights each person stayed. Tick <i>No alcohol</i> for people who don't drink, <i>Kid</i> for a half share, or make your own tag.</li>
+				<li><b>Add each expense.</b> Say who paid, the amount and how to split it: equally, by nights stayed, by shares, or with exact amounts for some people and the rest split equally.</li>
+				<li><b>Leave people out.</b> On the alcohol bill, choose <i>Leave out: No alcohol</i>. For a dinner on night 2, pick <i>Night 2</i> and only the people who were there pay.</li>
+				<li><b>Settle up.</b> The page lists the payments, such as <i>Alex pays Sam $42.10</i>. Tap one when it is paid, or copy the list into your group chat.</li>
+			</ol>
+			<h3>How the money is worked out</h3>
+			<p>Every amount is turned into whole cents in the trip's main currency. Each expense is split by the chosen weights, and the odd cents left over go to the people who have had the fewest odd cents so far, so nobody always pays the extra penny. Your balance is what you paid minus your share, plus payments you sent, minus payments you received. All balances add up to exactly zero.</p>
+			<p>For settling up, the page looks for small groups of people whose balances cancel out on their own. Each group of <i>k</i> people needs only <i>k</i> − 1 payments, so finding the most such groups gives the fewest payments overall (exact for up to 14 people with something to pay or receive). You can also have everyone pay one person, who then pays out.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is my trip private?</dt><dd>Yes. Everything is saved only in this browser. A share link carries the trip inside the link itself; nothing is sent to mes.fm's servers, and the page's visit counter ignores the link's contents.</dd>
+				<dt>Can I use several currencies?</dt><dd>Yes. Give each expense its own currency and type the exchange rate you got. Everything is settled in the main currency.</dd>
+				<dt>How does "by nights" work?</dt><dd>Each person's share is their nights times their weight. Someone who stayed 1 night of 2 pays half as much as someone who stayed both. A kid counts as half.</dd>
+				<dt>What if someone paid part of a bill for one person?</dt><dd>Use <i>Exact amounts</i>: type that person's amount and leave the others blank, and the rest is split equally among them.</dd>
+				<dt>Can I keep several trips?</dt><dd>Yes, pick them from the Trip list. Download a backup to move them to another device.</dd>
+			</dl>
+			<p>Related: <a href="/tip-calculator">Tip Calculator</a> &middot; <a href="/percentagecalculator">Percentage Calculator</a> &middot; <a href="/fuel-cost-calculator">Fuel Cost Calculator</a> &middot; <a href="/calculator">Calculator</a></p>
+		</div>
+	</div>

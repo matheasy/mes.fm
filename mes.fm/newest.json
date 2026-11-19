@@ -1,6 +1,14 @@
 {
- "generated": "2026-11-18",
+ "generated": "2026-11-19",
  "calculators": [
+  {
+   "href": "/expense-splitter",
+   "title": "Expense Splitter",
+   "icon": "/img/expense-splitter-logo.png",
+   "desc": "Split a group trip fairly: by nights stayed, shares or exact amounts, non-drinkers left out, fewest payments to settle up.",
+   "added": "2026-11-19",
+   "kind": "calculator"
+  },
   {
    "href": "/ductile-fracture-simulator",
    "title": "Voids & Ductile Fracture Simulator",
@@ -86,14 +94,6 @@
    "title": "Loan Calculator",
    "icon": "/img/loan-calculator-logo.png",
    "desc": "Monthly payment, total interest, payoff date and schedule for car, personal and student loans, with extra payments and APR.",
-   "added": "2026-10-23",
-   "kind": "calculator"
-  },
-  {
-   "href": "/age-calculator",
-   "title": "Age Calculator",
-   "icon": "/img/age-calculator-logo.png",
-   "desc": "Exact age in years, months and days, days lived, next birthday, milestones and the age gap between two people.",
    "added": "2026-10-23",
    "kind": "calculator"
   }
@@ -186,17 +186,17 @@
    "desc": "Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.",
    "added": "2026-11-13",
    "kind": "tool"
-  },
-  {
-   "href": "/text",
-   "title": "Text Viewer (TXT, RTF, Code)",
-   "icon": "/img/text-logo.png",
-   "desc": "Open .txt, .md, .rtf, .csv, .json, .html and code files: a formatted reading view or a code view with line numbers, read aloud, edit and save. Nothing is uploaded.",
-   "added": "2026-11-12",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/expense-splitter",
+   "title": "Expense Splitter",
+   "icon": "/img/expense-splitter-logo.png",
+   "desc": "Split a group trip fairly: by nights stayed, shares or exact amounts, non-drinkers left out, fewest payments to settle up.",
+   "added": "2026-11-19",
+   "kind": "calculator"
+  },
   {
    "href": "/ai",
    "title": "MES AI",
@@ -243,22 +243,6 @@
    "icon": "/img/upscale-logo.png",
    "desc": "Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.",
    "added": "2026-11-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/darkroom",
-   "title": "Darkroom: Photo Library & RAW Editor",
-   "icon": "/img/darkroom-logo.png",
-   "desc": "A free Lightroom alternative: rate and keyword your photos, develop RAW files with curves, colour grading, masks and healing, then batch export. Nothing is uploaded.",
-   "added": "2026-11-14",
-   "kind": "tool"
-  },
-  {
-   "href": "/transcript",
-   "title": "Transcript & Timestamps",
-   "icon": "/img/transcript-logo.png",
-   "desc": "Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.",
-   "added": "2026-11-14",
    "kind": "tool"
   }
  ]

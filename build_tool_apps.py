@@ -1643,6 +1643,15 @@ APPS = {
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",
                 js_v="1"),
 
+    # MES Expense Splitter (2026-11-19): split a group trip's costs by nights stayed, shares, exact amounts or tags (no alcohol, kid half share),
+    # multi-currency with typed rates, fewest payments to settle up (exact subset DP up to 14 people), share link ?s= (deflate-raw, no server),
+    # several trips in localStorage. lib.js = MESSplit (tests: node tool_apps_src/expense-splitter-tests.js). Keeps ads; track.js drops its query.
+    "expense-splitter": dict(title="MES Expense Splitter", page_title="Expense Splitter: Split Trip and Group Costs Fairly",
+                tag="Who owes whom after a group trip.", accent="#0d7c66", dark="#0a5e4e", tint="#dcf3ec",
+                desc="Free expense splitter for group trips: add who came and for how many nights, who paid for what, and split each bill equally, by nights, by shares or exact amounts, leaving out people who don't drink or weren't there. Kids at half share, several currencies, the fewest payments to settle up, and a share link. No sign-up, nothing uploaded.",
+                meta_desc="Free trip expense splitter: split costs by nights stayed, shares or exact amounts, leave out non-drinkers, several currencies, fewest payments to settle up.",
+                js_v="1"),
+
     # Round 2026-10-23 (b): everyday calculators. compound-interest + loan share tool_apps_src/money-growth/ (data-mode), the others are standalone.
     "compound-interest-calculator": dict(title="MES Compound Interest Calculator", page_title="Compound Interest Calculator with Monthly Deposits",
                 tag="Watch money grow, year by year.", accent="#047857", dark="#065f46", tint="#d9f5ea", src="money-growth",
