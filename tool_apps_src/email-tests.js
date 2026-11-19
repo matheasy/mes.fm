@@ -173,6 +173,26 @@ const fakeKem = {
     const est = M.estimate(["bob"], "alice", "hello", "hi");
     ok(est.pieces === 1 && est.txs === 1, "estimate small");
 
+    /* drafts */
+    let dl = M.draftPut([], { id: "d1", to: "@bob", subject: "", body: "" }, 1000);
+    ok(dl.length === 1 && dl[0].at === 1000 && dl[0].to === "@bob", "draft added");
+    dl = M.draftPut(dl, { id: "d2", body: "hi" }, 2000);
+    ok(dl.length === 2 && dl[0].id === "d2", "newest draft first");
+    dl = M.draftPut(dl, { id: "d1", to: "@bob", body: "edited" }, 3000);
+    ok(dl.length === 2 && dl[0].id === "d1" && dl[0].body === "edited", "draft replaced by id, moves to top");
+    dl = M.draftPut(dl, { id: "d2", to: " , ", subject: " ", body: "" }, 4000);
+    ok(dl.length === 1 && dl[0].id === "d1", "emptied draft removed");
+    ok(M.draftEmpty({ body: "\n\nOn 2026-11-17 10:00 UTC, @alice wrote:\n> a\n> b" }), "reply quote alone is empty");
+    ok(!M.draftEmpty({ body: "Thanks!\n\nOn 2026-11-17 10:00 UTC, @alice wrote:\n> a" }), "reply with own text kept");
+    ok(M.draftPut(dl, { to: "@x" }).length === 1, "draft without id ignored");
+    ok(M.draftDrop(dl, "d1").length === 0, "draft dropped");
+    let many = []; for (let i = 0; i < 130; i++) many = M.draftPut(many, { id: "x" + i, body: "b" + i }, i + 1);
+    ok(many.length === M.DRAFTS_MAX && many[0].id === "x129", "drafts capped, oldest go");
+    const od = M.draftFromOld({ to: "@bob", s: "Hi", b: "text", re: null }, "o1", 5);
+    ok(od && od.subject === "Hi" && od.body === "text" && od.id === "o1", "old single draft converted");
+    ok(M.draftFromOld({ to: "", s: "", b: "" }, "o2") === null && M.draftFromOld(null, "o3") === null, "empty old draft dropped");
+    ok(M.draftMatch({ to: "@bob", subject: "Plan", body: "x" }, "PLAN") && !M.draftMatch({ to: "", subject: "", body: "" }, "z"), "draft search");
+
     console.log(pass + " passed, " + fail + " failed");
     process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

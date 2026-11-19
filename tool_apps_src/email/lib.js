@@ -402,6 +402,41 @@
         return { bytes: bytes, pieces: Math.ceil(bytes / PIECE), txs: Math.ceil(Math.ceil(bytes / PIECE) / OPS_PER_TX) };
     }
 
+    /* ---------- drafts (kept per account in the browser, never on Hive) ---------- */
+    var DRAFTS_MAX = 100;
+    function cleanDraft(d) {
+        d = d || {};
+        return { id: String(d.id || ""), to: String(d.to || "").slice(0, 400), subject: String(d.subject || "").slice(0, SUBJ_MAX), body: String(d.body || "").slice(0, BODY_MAX),
+            th: d.th ? String(d.th) : null, re: d.re ? String(d.re) : null, at: Number(d.at) || 0 };
+    }
+    /* nothing worth keeping: no recipient, no subject and no text of the person's own (a reply's quote alone does not count) */
+    function draftEmpty(d) {
+        d = d || {};
+        var own = String(d.body || "").split("\n").filter(function (l) { return !/^\s*>/.test(l) && !/^On .* wrote:\s*$/.test(l); }).join("").trim();
+        return !String(d.to || "").replace(/[@,;\s]/g, "") && !String(d.subject || "").trim() && !own;
+    }
+    function sortDrafts(list) { return list.slice().sort(function (a, b) { return b.at - a.at; }); }
+    /* add or replace a draft by id (an empty one is removed); newest first, at most DRAFTS_MAX */
+    function draftPut(list, d, now) {
+        d = cleanDraft(d);
+        if (!d.id) return sortDrafts(list || []);
+        d.at = now || Date.now();
+        var out = (list || []).filter(function (x) { return x && x.id !== d.id; });
+        if (!draftEmpty(d)) out.push(d);
+        return sortDrafts(out).slice(0, DRAFTS_MAX);
+    }
+    function draftDrop(list, id) { return (list || []).filter(function (x) { return x && x.id !== id; }); }
+    /* the old single draft ({to, s, b, re}) of the first version, as a draft of the new kind (null when empty) */
+    function draftFromOld(o, id, now) {
+        if (!o) return null;
+        var d = cleanDraft({ id: id, to: o.to, subject: o.s, body: o.b, re: o.re, at: now || Date.now() });
+        return draftEmpty(d) ? null : d;
+    }
+    function draftMatch(d, q) {
+        q = String(q || "").toLowerCase();
+        return !q || (d.to + " " + d.subject + " " + d.body).toLowerCase().indexOf(q) >= 0;
+    }
+
     var api = {
         ID: ID, V: V, ROUNDS: ROUNDS, PIECE: PIECE, MAX_PIECES: MAX_PIECES, MAX_TO: MAX_TO, SUBJ_MAX: SUBJ_MAX, BODY_MAX: BODY_MAX,
         SINCE: SINCE, F_TRANSFER: F_TRANSFER, F_CUSTOM: F_CUSTOM, NOTICE_RE: NOTICE_RE,
@@ -410,7 +445,8 @@
         deriveSeed: deriveSeed, keysFromSeed: keysFromSeed, fingerprint: fingerprint, profileKey: profileKey, mergeProfile: mergeProfile,
         seal: seal, open: open, split: split, batches: batches, customOp: customOp, noticeMemo: noticeMemo, noticeOps: noticeOps, cleanAmount: cleanAmount, fmtAmount: fmtAmount, parseAmount: parseAmount, lowPaid: lowPaid,
         pieceOf: pieceOf, assemble: assemble, transferOf: transferOf, walk: walk, scanMine: scanMine, fetchFrom: fetchFrom,
-        threads: threads, replySubject: replySubject, replyAll: replyAll, quote: quote, estimate: estimate
+        threads: threads, replySubject: replySubject, replyAll: replyAll, quote: quote, estimate: estimate,
+        DRAFTS_MAX: DRAFTS_MAX, cleanDraft: cleanDraft, draftEmpty: draftEmpty, draftPut: draftPut, draftDrop: draftDrop, draftFromOld: draftFromOld, draftMatch: draftMatch
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     root.MESMail = api;

@@ -402,6 +402,41 @@
         return { bytes: bytes, pieces: Math.ceil(bytes / PIECE), txs: Math.ceil(Math.ceil(bytes / PIECE) / OPS_PER_TX) };
     }
 
+    /* ---------- drafts (kept per account in the browser, never on Hive) ---------- */
+    var DRAFTS_MAX = 100;
+    function cleanDraft(d) {
+        d = d || {};
+        return { id: String(d.id || ""), to: String(d.to || "").slice(0, 400), subject: String(d.subject || "").slice(0, SUBJ_MAX), body: String(d.body || "").slice(0, BODY_MAX),
+            th: d.th ? String(d.th) : null, re: d.re ? String(d.re) : null, at: Number(d.at) || 0 };
+    }
+    /* nothing worth keeping: no recipient, no subject and no text of the person's own (a reply's quote alone does not count) */
+    function draftEmpty(d) {
+        d = d || {};
+        var own = String(d.body || "").split("\n").filter(function (l) { return !/^\s*>/.test(l) && !/^On .* wrote:\s*$/.test(l); }).join("").trim();
+        return !String(d.to || "").replace(/[@,;\s]/g, "") && !String(d.subject || "").trim() && !own;
+    }
+    function sortDrafts(list) { return list.slice().sort(function (a, b) { return b.at - a.at; }); }
+    /* add or replace a draft by id (an empty one is removed); newest first, at most DRAFTS_MAX */
+    function draftPut(list, d, now) {
+        d = cleanDraft(d);
+        if (!d.id) return sortDrafts(list || []);
+        d.at = now || Date.now();
+        var out = (list || []).filter(function (x) { return x && x.id !== d.id; });
+        if (!draftEmpty(d)) out.push(d);
+        return sortDrafts(out).slice(0, DRAFTS_MAX);
+    }
+    function draftDrop(list, id) { return (list || []).filter(function (x) { return x && x.id !== id; }); }
+    /* the old single draft ({to, s, b, re}) of the first version, as a draft of the new kind (null when empty) */
+    function draftFromOld(o, id, now) {
+        if (!o) return null;
+        var d = cleanDraft({ id: id, to: o.to, subject: o.s, body: o.b, re: o.re, at: now || Date.now() });
+        return draftEmpty(d) ? null : d;
+    }
+    function draftMatch(d, q) {
+        q = String(q || "").toLowerCase();
+        return !q || (d.to + " " + d.subject + " " + d.body).toLowerCase().indexOf(q) >= 0;
+    }
+
     var api = {
         ID: ID, V: V, ROUNDS: ROUNDS, PIECE: PIECE, MAX_PIECES: MAX_PIECES, MAX_TO: MAX_TO, SUBJ_MAX: SUBJ_MAX, BODY_MAX: BODY_MAX,
         SINCE: SINCE, F_TRANSFER: F_TRANSFER, F_CUSTOM: F_CUSTOM, NOTICE_RE: NOTICE_RE,
@@ -410,7 +445,8 @@
         deriveSeed: deriveSeed, keysFromSeed: keysFromSeed, fingerprint: fingerprint, profileKey: profileKey, mergeProfile: mergeProfile,
         seal: seal, open: open, split: split, batches: batches, customOp: customOp, noticeMemo: noticeMemo, noticeOps: noticeOps, cleanAmount: cleanAmount, fmtAmount: fmtAmount, parseAmount: parseAmount, lowPaid: lowPaid,
         pieceOf: pieceOf, assemble: assemble, transferOf: transferOf, walk: walk, scanMine: scanMine, fetchFrom: fetchFrom,
-        threads: threads, replySubject: replySubject, replyAll: replyAll, quote: quote, estimate: estimate
+        threads: threads, replySubject: replySubject, replyAll: replyAll, quote: quote, estimate: estimate,
+        DRAFTS_MAX: DRAFTS_MAX, cleanDraft: cleanDraft, draftEmpty: draftEmpty, draftPut: draftPut, draftDrop: draftDrop, draftFromOld: draftFromOld, draftMatch: draftMatch
     };
     if (typeof module !== "undefined" && module.exports) module.exports = api;
     root.MESMail = api;
@@ -440,7 +476,17 @@
 	}
 	function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 	function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
-	function toast(msg) { var t = $("em-toast"); if (!t) { t = el("div", "tu-toast"); t.id = "em-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); } t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 3200); }
+	/* toast(msg) or toast(msg, undoFn): with a function it gets an Undo button and stays longer */
+	function toast(msg, undo) {
+		var t = $("em-toast"); if (!t) { t = el("div", "tu-toast em-toast"); t.id = "em-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+		t.textContent = msg;
+		if (undo) {
+			var b = el("button", "em-undo"); b.type = "button"; b.textContent = "Undo";
+			b.onclick = function () { t.classList.remove("tu-toast--show"); undo(); };
+			t.appendChild(document.createTextNode(" ")); t.appendChild(b);
+		}
+		t.classList.add("tu-toast--show"); clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("tu-toast--show"); }, undo ? 7000 : 3200);
+	}
 	function status(msg, bad) { var s = $("em-status"); s.textContent = msg || ""; s.classList.toggle("is-bad", !!bad); }
 	function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 	function when(t) {
@@ -486,7 +532,10 @@
 			classicSend: function (to, text, cur) { var a = H.user(); return kc(function (k, d) { k.requestTransfer(a, to, "0.001", "#" + text, cur, d, true); }); },
 			decodeMemo: function (memo) { var a = H.user(); return kc(function (k, d) { k.requestVerifyKey(a, memo, "Memo", d); }).then(function (r) { return String(r.result || ""); }); },
 			memoOk: function () { return MH.memoOk(); },
-			onChange: function (fn) { MH.onChange(fn); }
+			onChange: function (fn) { MH.onChange(fn); },
+			accounts: function () { return MH.accounts ? MH.accounts() : []; },
+			/* hive.js's own "Switch account" menu (remembered accounts, add another, log out) */
+			switcher: function (box, opts) { return MH.switcher ? MH.switcher(box, opts) : null; }
 		};
 	} else {
 		/* ---------- pretend chain ---------- */
@@ -499,10 +548,17 @@
 		var ensure = function (c, n) { if (!c.acc[n]) { c.acc[n] = { meta: "", hbd: 5 }; } };
 		var mu = function () { try { return sessionStorage.getItem(LS + "mockuser"); } catch (e) { return null; } };
 		var listeners = [];
+		/* pretend accounts this browser has logged in with (like hive.js's remembered accounts) */
+		var mockUsers = function () { return ls("mockusers") || []; };
+		var addMock = function (n) { ls("mockusers", [n].concat(mockUsers().filter(function (x) { return x !== n; })).slice(0, 20)); };
+		var fire = function () { listeners.forEach(function (f) { try { f(); } catch (e) {} }); };
 		H = {
 			user: function () { return mu(); },
-			login: function (n) { n = M.cleanName(n); if (!M.validName(n)) return Promise.reject(new Error("That is not a valid Hive username.")); var c = chain(); ensure(c, n); save(c); try { sessionStorage.setItem(LS + "mockuser", n); } catch (e) {} return Promise.resolve(n); },
-			logout: function () { try { sessionStorage.removeItem(LS + "mockuser"); } catch (e) {} },
+			login: function (n) { n = M.cleanName(n); if (!M.validName(n)) return Promise.reject(new Error("That is not a valid Hive username.")); var c = chain(); ensure(c, n); save(c); try { sessionStorage.setItem(LS + "mockuser", n); } catch (e) {} addMock(n); return Promise.resolve(n); },
+			logout: function () { var u = mu(); try { sessionStorage.removeItem(LS + "mockuser"); } catch (e) {} if (u) ls("mockusers", mockUsers().filter(function (x) { return x !== u; })); fire(); },
+			accounts: function () { var me = mu(); return mockUsers().map(function (n) { return { name: n, current: n === me, ready: true }; }); },
+			switchTo: function (n) { return H.login(n).then(function (x) { fire(); return x; }); },
+			switcher: function (box, opts) { return miniSwitcher(box, opts); },
 			call: function (m, p) {
 				var c = chain();
 				return sleep(60).then(function () {
@@ -536,11 +592,44 @@
 		window.addEventListener("storage", function (e) { if (e.key === LS + "mockchain" && S.keys) refresh(true); });
 	}
 
+	/* the "Switch account" menu for test mode (the real page uses hive.js's MESHive.switcher, which works the same way) */
+	function miniSwitcher(box, opts) {
+		var wrap = el("span", "em-sw"), btn = el("button", "tu-btn tu-btn--ghost"), pop = el("div", "em-swpop");
+		btn.type = "button"; btn.setAttribute("aria-haspopup", "true"); btn.setAttribute("aria-expanded", "false");
+		pop.hidden = true; pop.setAttribute("role", "menu");
+		wrap.appendChild(btn); wrap.appendChild(pop); box.appendChild(wrap);
+		function label() { btn.textContent = H.user() ? "Switch account \u25BE" : "Accounts \u25BE"; }
+		function close() { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+		function done(u) { close(); label(); if (opts && opts.onSwitch) opts.onSwitch(u ? { name: u } : null); }
+		function fail(e) { close(); if (opts && opts.onError) opts.onError(e); }
+		btn.onclick = function () {
+			if (!pop.hidden) { close(); return; }
+			var l = H.accounts(), u = H.user();
+			pop.innerHTML = l.map(function (a) { return '<button type="button" role="menuitem" data-n="' + esc(a.name) + '"' + (a.current ? ' class="is-cur"' : "") + '>' + avatar(a.name) + ' @' + esc(a.name) + (a.current ? "<small>now</small>" : "") + '</button>'; }).join("") +
+				(l.length ? "<hr>" : "") + '<button type="button" role="menuitem" data-add="1">+ Add another account</button>' + (u ? '<button type="button" role="menuitem" data-out="1">Log out @' + esc(u) + '</button>' : "");
+			pop.hidden = false; btn.setAttribute("aria-expanded", "true");
+			var f = pop.querySelector("button"); if (f) f.focus();
+		};
+		pop.onclick = function (e) {
+			var b = e.target.closest("button"); if (!b) return;
+			if (b.dataset.n) { if (b.classList.contains("is-cur")) close(); else H.switchTo(b.dataset.n).then(done, fail); }
+			else if (b.dataset.add) { var n = prompt("Hive username to add:"); if (n) H.switchTo(n).then(done, fail); else close(); }
+			else if (b.dataset.out) { H.logout(); done(null); }
+		};
+		document.addEventListener("click", function (e) { if (!wrap.contains(e.target)) close(); });
+		wrap.addEventListener("keydown", function (e) { if (e.key === "Escape") { close(); btn.focus(); } });
+		H.onChange(label); label();
+		return wrap;
+	}
+
 	/* ================= state ================= */
 	var S = {
 		me: null, keys: null, published: null, folder: "inbox", th: null, q: "",
 		cache: null, open: {}, threads: [], keyCache: {}, busy: false
 	};
+	/* gen goes up on every account change / lock: async work started for one account checks it and stops,
+	   so account A's passphrase, keys or mail are never used for (or saved under) account B */
+	var gen = 0;
 	var prefs = ls("v1") || { cur: "HBD" };
 	function savePrefs() { ls("v1", prefs); }
 
@@ -561,9 +650,12 @@
 		if (!S.me) { w.innerHTML = '<span class="em-brand">📧 MES Mail</span>'; }
 		else w.innerHTML = avatar(S.me) + '<span><b>@' + esc(S.me) + '</b><small>' + (S.keys ? '🔓 unlocked' : S.published ? '🔒 locked' : 'not set up yet') + '</small></span>';
 		$("em-logout").hidden = !S.me;
+		$("em-switch").hidden = !S.me && !H.accounts().length;
 		$("em-lock").hidden = !S.keys;
 		$("em-refresh").hidden = !S.keys;
 	}
+
+	var refreshing = false;
 
 	/* ================= accounts and keys ================= */
 	function getAccounts(names) {
@@ -576,6 +668,9 @@
 		});
 	}
 	function start() {
+		flushDraft();
+		var g = ++gen;
+		refreshing = false;
 		S.me = H.user();
 		S.keys = null; S.published = null; S.cache = null; S.open = {}; S.threads = []; S.th = null; S.folder = "inbox"; S.q = ""; S.memoTxt = {}; S.cls = null;
 		root.classList.remove("em-reading"); $("em-cf").hidden = true; $("em-thread").hidden = true; $("em-classicv").hidden = true; $("em-empty").hidden = false;
@@ -585,6 +680,7 @@
 		status("Reading your account…");
 		delete S.keyCache[S.me];
 		getAccounts([S.me]).then(function () {
+			if (g !== gen) return;
 			var a = S.keyCache[S.me];
 			if (!a.exists) { status("Hive account @" + S.me + " was not found.", true); return; }
 			S.published = a.key;
@@ -592,15 +688,16 @@
 			var saved = ls("seed:" + S.me);
 			if (S.published && saved) {
 				status("Unlocking…");
-				return loadKem().then(function () { return useSeed(M.unb64(saved), false); }).catch(function (e) { status(e.message, true); show("em-unlock"); });
+				return loadKem().then(function () { return useSeed(M.unb64(saved), false, g); }).catch(function (e) { if (g !== gen) return; status(e.message, true); show("em-unlock"); });
 			}
 			status("");
 			if (S.published) { show("em-unlock"); setTimeout(function () { $("em-up").focus(); }, 50); }
 			else { show("em-setup"); resetSetup(); }
 			loadKem().catch(function (e) { status(e.message, true); });
-		}).catch(function (e) { status("Could not reach a Hive node: " + e.message, true); });
+		}).catch(function (e) { if (g === gen) status("Could not reach a Hive node: " + e.message, true); });
 	}
-	function useSeed(seed, remember) {
+	function useSeed(seed, remember, g) {
+		if (g !== gen) return;
 		var k = M.keysFromSeed(seed);
 		if (S.published && M.hex(k.pub) !== M.hex(S.published.pub)) {
 			ls("seed:" + S.me, null);
@@ -610,12 +707,13 @@
 		S.keys = k;
 		S.cache = ls("c:" + S.me) || { top: null, notices: [], classic: [], env: {}, pend: [], nf: {} };
 		S.read = ls("read:" + S.me) || {};
+		migrateOldDraft();
 		show("em-app"); S.showLow = false; paintFilter();
 		paintWho();
 		M.fingerprint(k.pub).then(function (fp) {
 			$("em-keybox").innerHTML = '<b>Your mail key</b><code>' + esc(fp) + '</code><small>Quantum-safe X-Wing (ML-KEM-768 + X25519). People who write to you see the same code.</small>';
 		});
-		decryptAll().then(function () { paint(); refresh(); });
+		decryptAll(g).then(function () { if (g !== gen) return; paint(); refresh(); });
 	}
 
 	/* ---------- setup ---------- */
@@ -635,11 +733,12 @@
 	$("em-gen").onclick = function () { var g = M.generatePass(); $("em-p1").value = $("em-p2").value = g; $("em-p1").type = $("em-p2").type = "text"; $("em-show").textContent = "Hide"; checkSetup(); };
 	$("em-show").onclick = function () { var t = $("em-p1").type === "password" ? "text" : "password"; $("em-p1").type = $("em-p2").type = t; this.textContent = t === "text" ? "Hide" : "Show"; };
 	$("em-publish").onclick = function () {
-		var btn = this, pass = $("em-p1").value;
+		var btn = this, pass = $("em-p1").value, g = gen, me = S.me;
 		btn.disabled = true;
 		$("em-setupnote").textContent = "Making your keys…";
 		var seed, keys;
-		loadKem().then(function () { return M.deriveSeed(pass, S.me); }).then(function (s) {
+		loadKem().then(function () { return M.deriveSeed(pass, me); }).then(function (s) {
+			if (g !== gen) throw new Error("You switched accounts, so nothing was published.");
 			seed = s; keys = M.keysFromSeed(s);
 			delete S.keyCache[S.me];
 			return getAccounts([S.me]);
@@ -649,10 +748,11 @@
 			$("em-setupnote").textContent = "Approve in Keychain (Posting key)…";
 			return H.broadcast([["account_update2", { account: S.me, json_metadata: "", posting_json_metadata: meta, extensions: [] }]], "Posting", "Publish your MES Mail key");
 		}).then(function () {
+			if (g !== gen) return;
 			S.published = { pub: keys.pub };
 			S.keyCache[S.me] = { exists: true, key: S.published };
 			toast("Your mail key is published. You can receive mail now.");
-			useSeed(seed, $("em-rem1").checked);
+			useSeed(seed, $("em-rem1").checked, g);
 		}).catch(function (e) { $("em-setupnote").textContent = e.message; btn.disabled = false; checkSetup(); });
 	};
 	$("em-unlockf").onsubmit = function (ev) {
@@ -660,8 +760,10 @@
 		var p = $("em-up").value;
 		if (!p) return;
 		$("em-unlocknote").textContent = "Unlocking…";
-		loadKem().then(function () { return M.deriveSeed(p, S.me); }).then(function (seed) {
-			useSeed(seed, $("em-rem2").checked);
+		var g = gen, me = S.me;
+		loadKem().then(function () { return M.deriveSeed(p, me); }).then(function (seed) {
+			if (g !== gen) return;
+			useSeed(seed, $("em-rem2").checked, g);
 			$("em-up").value = ""; $("em-unlocknote").textContent = "";
 		}).catch(function (e) { $("em-unlocknote").textContent = e.message; });
 	};
@@ -679,6 +781,10 @@
 	$("em-lock").onclick = function () { ls("seed:" + S.me, null); S.keys = null; start(); };
 	$("em-refresh").onclick = function () { refresh(); };
 	H.onChange(function () { if (H.user() !== S.me) start(); });
+	H.switcher($("em-switch"), {
+		onSwitch: function (u) { if (u) toast("Now using @" + u.name + "."); },
+		onError: function (e) { status(e && e.message || String(e), true); }
+	});
 
 	/* ================= reading ================= */
 	function saveCache() {
@@ -687,14 +793,15 @@
 		c.notices = c.notices.slice(-600); c.classic = c.classic.slice(-300); c.pend = c.pend.slice(-60);
 		ls("c:" + S.me, c);
 	}
-	function decryptAll() {
-		var c = S.cache, jobs = [];
+	function decryptAll(g) {
+		if (g == null) g = gen;
+		var c = S.cache, open = S.open, me = S.me, sk = S.keys.sk, jobs = [];
 		Object.keys(c.env).forEach(function (k) {
-			if (S.open[k]) return;
+			if (open[k]) return;
 			var e = c.env[k];
-			jobs.push(M.open(e.env, e.msgId, S.me, S.keys.sk).then(function (p) { S.open[k] = p; }, function (er) { S.open[k] = { err: er.message }; }));
+			jobs.push(M.open(e.env, e.msgId, me, sk).then(function (p) { open[k] = p; }, function (er) { open[k] = { err: er.message }; }));
 		});
-		return Promise.all(jobs).then(buildThreads);
+		return Promise.all(jobs).then(function () { if (g === gen) buildThreads(); });
 	}
 	function buildThreads() {
 		var c = S.cache, msgs = [], amts = {};
@@ -706,13 +813,14 @@
 		});
 		S.threads = M.threads(msgs, S.me);
 	}
-	var refreshing = false;
 	function refresh(quiet) {
 		if (refreshing || !S.keys) return;
 		refreshing = true;
 		if (!quiet) status("Checking for mail…");
-		var c = S.cache, me = S.me;
+		var c = S.cache, me = S.me, g = gen, STALE = {};
+		function still() { if (g !== gen) throw STALE; }
 		M.scanMine(H.call, me, { top: c.top }).then(function (r) {
+			still();
 			c.top = r.top;
 			var seenN = {}; c.notices.forEach(function (n) { seenN[n.from + "/" + n.msgId] = 1; });
 			r.notices.forEach(function (n) { if (!seenN[n.from + "/" + n.msgId]) { c.notices.push({ from: n.from, msgId: n.msgId, t: n.t, trx: n.trx, amount: n.amount }); seenN[n.from + "/" + n.msgId] = 1; } });
@@ -744,13 +852,15 @@
 				});
 			}, Promise.resolve());
 		}).then(function () {
+			still();
 			saveCache();
-			return decryptAll();
+			return decryptAll(g);
 		}).then(function () {
+			still();
 			refreshing = false;
 			paint();
 			status(quiet ? "" : "Up to date · " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
-		}).catch(function (e) { refreshing = false; status("Could not check for mail: " + e.message, true); });
+		}).catch(function (e) { if (e === STALE) return; refreshing = false; status("Could not check for mail: " + e.message, true); });
 	}
 	setInterval(function () { if (S.keys && !document.hidden) refresh(true); }, 90000);
 	document.addEventListener("visibilitychange", function () { if (!document.hidden && S.keys) refresh(true); });
@@ -792,6 +902,7 @@
 		$("em-ninbox").textContent = ni ? ni : "";
 		$("em-nsent").textContent = "";
 		$("em-nclassic").textContent = S.cache && S.cache.classic.length ? S.cache.classic.length : "";
+		paintDraftCount();
 		document.title = (ni ? "(" + ni + ") " : "") + document.title.replace(/^\(\d+\) /, "");
 		Array.prototype.forEach.call(document.querySelectorAll(".em-fold"), function (b) { b.classList.toggle("is-on", b.dataset.f === S.folder); b.setAttribute("aria-current", b.dataset.f === S.folder ? "page" : "false"); });
 		paintList();
@@ -801,6 +912,8 @@
 	function paintList() {
 		var box = $("em-list");
 		$("em-q").hidden = S.folder === "classic";
+		$("em-dnote").hidden = S.folder !== "drafts";
+		if (S.folder === "drafts") { $("em-filter").hidden = true; paintDrafts(box); return; }
 		if (S.folder === "classic") {
 			var cl = S.cache.classic.slice().reverse();
 			box.innerHTML = cl.length ? "" : '<p class="em-none">No encrypted Hive memos found in your recent history.</p>';
@@ -838,6 +951,7 @@
 	}
 	function threadOf(id) { return S.threads.filter(function (t) { return t.th === id; })[0]; }
 	function openThread(id) {
+		flushDraft();
 		S.th = id; S.cls = null;
 		$("em-cf").hidden = true; $("em-classicv").hidden = true;
 		var th = threadOf(id);
@@ -877,7 +991,7 @@
 	function narrow(reading) { root.classList.toggle("em-reading", !!reading); if (reading && root.classList.contains("em-w1")) $("em-read").scrollIntoView({ block: "start", behavior: "smooth" }); }
 
 	Array.prototype.forEach.call(document.querySelectorAll(".em-fold"), function (b) {
-		b.onclick = function () { S.folder = b.dataset.f; S.th = null; S.cls = null; $("em-thread").hidden = true; $("em-classicv").hidden = true; $("em-cf").hidden = true; $("em-empty").hidden = false; narrow(false); paint(); };
+		b.onclick = function () { flushDraft(); S.folder = b.dataset.f; S.th = null; S.cls = null; $("em-thread").hidden = true; $("em-classicv").hidden = true; $("em-cf").hidden = true; $("em-empty").hidden = false; narrow(false); paint(); };
 	});
 	$("em-q").addEventListener("input", function () { S.q = this.value.trim(); paintList(); });
 
@@ -905,13 +1019,17 @@
 	}
 
 	/* ================= compose / send ================= */
-	var draft = { th: null, re: null };
+	/* D = the message being written: its draft id, the account it belongs to, thread / reply ids, unsaved typing */
+	var D = { id: null, acct: null, th: null, re: null, dirty: false };
 	function compose(o) {
 		o = o || {};
+		flushDraft();
 		S.folder = S.folder === "classic" ? "inbox" : S.folder;
-		draft = { th: o.th || null, re: o.re || null };
-		$("em-cft").textContent = o.re ? "Reply" : "New message";
-		$("em-to").value = (o.to || []).map(function (n) { return "@" + n; }).join(", ");
+		D = { id: o.id || M.newId(), acct: S.me, th: o.th || null, re: o.re || null, dirty: false };
+		$("em-cft").textContent = o.id ? "Draft" : o.re ? "Reply" : "New message";
+		$("em-dsaved").textContent = o.at ? "Draft saved " + agoText(o.at) + "." : "";
+		$("em-ddiscard").hidden = !o.id;
+		$("em-to").value = o.toText != null ? o.toText : (o.to || []).map(function (n) { return "@" + n; }).join(", ");
 		$("em-subj").value = o.subject || "";
 		$("em-body").value = o.body || "";
 		$("em-sendnote").textContent = "";
@@ -921,7 +1039,7 @@
 		checkTo();
 		setTimeout(function () { (o.to && o.to.length ? $("em-body") : $("em-to")).focus(); if (o.re) { $("em-body").setSelectionRange(0, 0); $("em-body").scrollTop = 0; } }, 30);
 	}
-	$("em-new").onclick = function () { var d = ls("draft"); compose(d && !d.re ? { to: M.parseTo(d.to).names, subject: d.s, body: d.b } : {}); };
+	$("em-new").onclick = function () { compose({}); };
 	var toT;
 	function checkTo() {
 		clearTimeout(toT);
@@ -970,8 +1088,71 @@
 	Array.prototype.forEach.call(document.querySelectorAll(".em-pre"), function (b) { b.onclick = function () { $("em-amt").value = b.dataset.a; prefs.amt = b.dataset.a; savePrefs(); estimate(); }; });
 	$("em-fmode").addEventListener("change", saveFilter);
 	$("em-fmin").addEventListener("change", saveFilter);
-	var dT;
-	function saveDraft() { clearTimeout(dT); dT = setTimeout(function () { ls("draft", { to: $("em-to").value, s: $("em-subj").value, b: $("em-body").value, re: draft.re }); }, 400); }
+
+	/* ================= drafts: one list per account, in this browser only ================= */
+	var dT = null;
+	function dkey(a) { return "drafts:" + a; }
+	function drafts(a) { a = a || S.me; return a ? ls(dkey(a)) || [] : []; }
+	function shortWhen(t) { var d = new Date(t); return d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : d.toLocaleDateString([], { month: "short", day: "numeric" }); }
+	function agoText(t) { return (new Date(t).toDateString() === new Date().toDateString() ? "at " : "on ") + shortWhen(t); }
+	function paintDraftCount() { var n = drafts().length; $("em-ndrafts").textContent = n ? n : ""; }
+	function saveDraft() { D.dirty = true; clearTimeout(dT); dT = setTimeout(writeDraft, 1000); }
+	function writeDraft() {
+		clearTimeout(dT); dT = null;
+		if (!D.dirty || !D.id || !D.acct) return;
+		D.dirty = false;
+		var d = { id: D.id, to: $("em-to").value, subject: $("em-subj").value, body: $("em-body").value, th: D.th, re: D.re };
+		ls(dkey(D.acct), M.draftPut(drafts(D.acct), d));
+		if (D.acct !== S.me) return;
+		var kept = !M.draftEmpty(d);
+		$("em-dsaved").textContent = kept ? "Draft saved " + agoText(Date.now()) + "." : "";
+		$("em-ddiscard").hidden = !kept;
+		paintDraftCount();
+		if (S.folder === "drafts") paintList();
+	}
+	/* write any typing that is still waiting (before the form is reused, the account changes or the page closes) */
+	function flushDraft() { if (D.dirty) writeDraft(); }
+	window.addEventListener("pagehide", flushDraft);
+	document.addEventListener("visibilitychange", function () { if (document.hidden) flushDraft(); });
+	function dropDraft(acct, id) { clearTimeout(dT); dT = null; if (D.id === id) D.dirty = false; ls(dkey(acct), M.draftDrop(drafts(acct), id)); if (acct === S.me) paintDraftCount(); }
+	/* the first version kept one draft for the whole browser: give it to the account that opens first */
+	function migrateOldDraft() {
+		var old = ls("draft");
+		if (!old) return;
+		var d = M.draftFromOld(old, M.newId());
+		if (d) ls(dkey(S.me), M.draftPut(drafts(), d, d.at));
+		ls("draft", null);
+	}
+	function deleteDraft(id) {
+		var me = S.me, d = drafts(me).filter(function (x) { return x.id === id; })[0];
+		if (!d) return;
+		var wasOpen = D.id === id && !$("em-cf").hidden;
+		dropDraft(me, id);
+		if (wasOpen) { D = { id: null, acct: null, th: null, re: null, dirty: false }; $("em-cf").hidden = true; $("em-empty").hidden = false; narrow(false); }
+		paintList();
+		toast("Draft deleted.", function () {
+			if (S.me !== me) return;
+			ls(dkey(me), M.draftPut(drafts(me), d, d.at));
+			paintDraftCount(); paintList();
+		});
+	}
+	$("em-ddiscard").onclick = function () { flushDraft(); deleteDraft(D.id); };
+	function paintDrafts(box) {
+		var list = drafts().filter(function (d) { return M.draftMatch(d, S.q); });
+		box.innerHTML = list.length ? "" : '<p class="em-none">' + (S.q ? "Nothing matches." : "No drafts. Anything you start writing is kept here until you send it.") + '</p>';
+		list.forEach(function (d) {
+			var to = M.parseTo(d.to).names, row = el("div", "em-drow");
+			var b = el("button", "em-item" + (D.id === d.id && !$("em-cf").hidden ? " is-on" : ""));
+			b.type = "button";
+			b.innerHTML = avatar(to[0] || S.me) + '<span class="em-it"><span class="em-ip"><b>' + (to.length ? "To " + esc(to.map(function (n) { return "@" + n; }).join(", ")) : "(no one yet)") + '</b><time>' + esc(shortWhen(d.at)) + '</time></span>' +
+				'<span class="em-is"><span class="em-dtag">Draft</span> ' + esc(d.subject || "(no subject)") + '</span><span class="em-ib">' + esc(String(d.body || "").replace(/\s+/g, " ").slice(0, 120)) + '</span></span>';
+			b.onclick = function () { compose({ id: d.id, toText: d.to, subject: d.subject, body: d.body, th: d.th, re: d.re, at: d.at }); paintList(); };
+			var x = el("button", "em-ddel", "🗑");
+			x.type = "button"; x.title = "Delete this draft"; x.setAttribute("aria-label", "Delete this draft");
+			x.onclick = function () { deleteDraft(d.id); };
+			row.appendChild(b); row.appendChild(x); box.appendChild(row);
+		});
+	}
 
 	$("em-cf").onsubmit = function (ev) {
 		ev.preventDefault();
@@ -981,10 +1162,13 @@
 		if (!p.names.length) { note.textContent = "Add at least one recipient."; return; }
 		if (p.names.length > M.MAX_TO) { note.textContent = "At most " + M.MAX_TO + " recipients."; return; }
 		S.busy = true; btn.disabled = true;
-		var cur = $("em-curr").value, amt = M.cleanAmount($("em-amt").value), sealed, key;
+		var cur = $("em-curr").value, amt = M.cleanAmount($("em-amt").value), sealed, key, g = gen, sendD = { id: D.id, acct: D.acct, th: D.th, re: D.re };
+		flushDraft();
+		function still() { if (g !== gen) throw new Error("You switched accounts, so this message was not sent. It is still in your drafts."); }
 		p.names.forEach(function (n) { if (n !== S.me) delete S.keyCache[n]; });
 		note.textContent = "Checking the recipients' keys…";
 		getAccounts(p.names).then(function () {
+			still();
 			var pubs = {};
 			pubs[S.me] = S.keys.pub;
 			p.names.forEach(function (n) {
@@ -994,7 +1178,7 @@
 				pubs[n] = a.key.pub;
 			});
 			note.textContent = "Encrypting…";
-			return M.seal({ from: S.me, to: p.names, pubs: pubs, payload: { s: $("em-subj").value, b: $("em-body").value, th: draft.th, re: draft.re } });
+			return M.seal({ from: S.me, to: p.names, pubs: pubs, payload: { s: $("em-subj").value, b: $("em-body").value, th: sendD.th, re: sendD.re } });
 		}).then(function (r) {
 			sealed = r; key = S.me + "/" + r.msgId;
 			var batches = M.batches(M.split(r.env, r.msgId));
@@ -1002,18 +1186,22 @@
 				return pr.then(function () {
 					note.textContent = "Saving the encrypted message on Hive" + (batches.length > 1 ? " (" + (i + 1) + " of " + batches.length + ")" : "") + ": approve in Keychain (Posting key)…";
 					return (i ? sleep(TX_GAP) : Promise.resolve()).then(function () {
+						still();
 						return H.broadcast(b.map(function (pc) { return M.customOp(S.me, pc); }), "Posting", "Save an encrypted MES Mail message");
 					});
 				});
 			}, Promise.resolve());
 		}).then(function () {
 			/* it is on chain now: keep it in Sent whatever happens with the notice */
+			dropDraft(sendD.acct, sendD.id);
+			still();
 			S.cache.env[key] = { from: S.me, msgId: sealed.msgId, env: sealed.env, t: new Date().toISOString().slice(0, 19), trx: "" };
 			(S.cache.sentAmt = S.cache.sentAmt || {})[key] = M.fmtAmount(amt, cur);
 			S.open[key] = sealed.payload;
 			var contacts = ls("contacts") || {};
 			return Promise.all(p.names.map(function (n) { return M.fingerprint(S.keyCache[n].key.pub).then(function (fp) { contacts[n] = fp; }); })).then(function () { ls("contacts", contacts); });
 		}).then(function () {
+			still();
 			var ops = M.noticeOps(S.me, p.names, sealed.msgId, cur, amt);
 			if (!ops.length) return;
 			note.textContent = "Sending the delivery notice: approve in Keychain (Active key)…";
@@ -1022,17 +1210,18 @@
 				toast("Saved, but the delivery notice was not sent: " + e.message);
 			});
 		}).then(function () {
-			saveCache(); ls("draft", null);
+			still();
+			saveCache();
 			buildThreads();
 			note.textContent = "";
 			S.busy = false; btn.disabled = false;
 			toast("Sent 🔒");
-			S.folder = draft.re ? S.folder : "sent";
+			S.folder = sendD.re && S.folder !== "drafts" ? S.folder : "sent";
 			openThread(sealed.payload.th);
 		}).catch(function (e) {
 			S.busy = false; btn.disabled = false;
 			note.textContent = e.message;
-			if (sealed && S.cache.env[key]) { saveCache(); buildThreads(); paint(); }
+			if (g === gen && sealed && S.cache.env[key]) { saveCache(); buildThreads(); paint(); }
 		});
 	};
 	function resendNotice(m) {
@@ -1047,8 +1236,10 @@
 		if (!H.memoOk()) { $("em-sendnote").textContent = "The Keychain phone app (HiveAuth) can't encrypt memos. Use the Keychain browser extension."; return; }
 		if (new TextEncoder().encode(text).length > 1400) { $("em-sendnote").textContent = "Too long for a memo: about 1,400 characters at most."; return; }
 		if (!confirm("Send a classic encrypted memo to @" + to + " with 0.001 " + $("em-curr").value + "? It is locked with Hive memo keys, which are NOT quantum-safe.")) return;
+		flushDraft();
+		var sendD = { id: D.id, acct: D.acct };
 		H.classicSend(to, text, $("em-curr").value).then(function () {
-			toast("Memo sent."); ls("draft", null); S.folder = "classic"; refresh(); paint(); narrow(false);
+			toast("Memo sent."); dropDraft(sendD.acct, sendD.id); S.folder = "classic"; refresh(); paint(); narrow(false);
 			$("em-cf").hidden = true; $("em-empty").hidden = false;
 		}).catch(function (e) { $("em-sendnote").textContent = e.message; });
 	};

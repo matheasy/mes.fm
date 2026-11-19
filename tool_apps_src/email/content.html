@@ -7,6 +7,7 @@
 			<div class="em-topbtns">
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-refresh" hidden>↻ Check for mail</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-lock" hidden>🔒 Lock</button>
+				<span class="em-switch" id="em-switch"></span>
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-logout" hidden>Log out</button>
 			</div>
 		</div>
@@ -67,6 +68,7 @@
 				<button type="button" class="tu-btn tu-btn--primary em-compose" id="em-new">✏️ New message</button>
 				<button type="button" class="em-fold" data-f="inbox">📥 Inbox <span class="em-n" id="em-ninbox"></span></button>
 				<button type="button" class="em-fold" data-f="sent">📤 Sent <span class="em-n" id="em-nsent"></span></button>
+				<button type="button" class="em-fold" data-f="drafts">📝 Drafts <span class="em-n" id="em-ndrafts"></span></button>
 				<button type="button" class="em-fold" data-f="all">🗂 All conversations</button>
 				<button type="button" class="em-fold" data-f="classic">🔑 Classic memos <span class="em-n" id="em-nclassic"></span></button>
 				<div class="em-keybox" id="em-keybox"></div>
@@ -82,6 +84,7 @@
 						<p class="tu-note" id="em-fhid"></p>
 					</div>
 				</details>
+				<p class="tu-note em-dnote" id="em-dnote" hidden>Drafts save by themselves while you type. They stay in this browser only: they are not encrypted, and nothing goes to Hive until you press Send.</p>
 				<div id="em-list"></div>
 			</section>
 			<section class="em-read" id="em-read" aria-live="polite">
@@ -107,6 +110,7 @@
 						<span class="em-presets" id="em-presets"><button type="button" class="em-pre" data-a="0.001">0.001</button><button type="button" class="em-pre" data-a="0.01">0.01</button><button type="button" class="em-pre" data-a="0.1">0.1</button><button type="button" class="em-pre" data-a="1">1</button></span>
 						<button type="button" class="tu-btn tu-btn--ghost" id="em-classic" hidden>Send as a classic memo</button>
 					</div>
+					<p class="tu-note em-drow2"><span id="em-dsaved"></span> <button type="button" class="em-link" id="em-ddiscard" hidden>Delete this draft</button></p>
 					<p class="tu-note" id="em-sendnote"></p>
 				</form>
 

@@ -433,6 +433,28 @@ html body.dark-mode #em .em-meter span.is-ok { background: #d9a020; }
 body.dark-mode #em .em-low { color: #fbbf24; }
 body.dark-mode #em .em-pre.is-on { color: #fff; background: #4f5fe0; }
 
+/* account switcher (test mode copy; the live page uses hive.js's .mh-sw menu) and drafts */
+#em .em-switch { display: inline-flex; }
+#em .em-sw { position: relative; display: inline-block; }
+#em .em-swpop { position: absolute; z-index: 50; top: calc(100% + 4px); right: 0; min-width: 15em; background: var(--em-card); border: 1px solid var(--em-line); border-radius: .6em; box-shadow: 0 6px 20px rgba(0,0,0,.18); padding: .35em; text-align: left; }
+#em .em-swpop button { display: flex; align-items: center; gap: .5em; width: 100%; font: inherit; text-align: left; border: 0; background: none; color: inherit; padding: .45em .55em; border-radius: .4em; cursor: pointer; }
+#em .em-swpop button:hover, #em .em-swpop button:focus-visible { background: var(--em-on); }
+#em .em-swpop .em-av { width: 1.6em; height: 1.6em; }
+#em .em-swpop small { margin-left: auto; color: var(--em-mute); }
+#em .em-swpop hr { border: 0; border-top: 1px solid var(--em-line); margin: .3em 0; }
+#em .em-swpop .is-cur { font-weight: 700; }
+#em .em-switch .mh-sw-pop { left: auto; right: 0; }
+#em .em-dnote { margin: 0 .8em .6em; font-size: .86em; }
+#em .em-drow { position: relative; }
+#em .em-drow .em-item { padding-right: 2.8em; }
+#em .em-ddel { position: absolute; right: .4em; bottom: .55em; border: 1px solid transparent; background: none; color: inherit; border-radius: .5em; cursor: pointer; font-size: 1em; padding: .15em .35em; opacity: .7; }
+#em .em-ddel:hover, #em .em-ddel:focus-visible { opacity: 1; border-color: var(--em-line); background: var(--em-card); }
+#em .em-dtag { display: inline-block; font-size: .75em; font-weight: 700; color: var(--em-warn); border: 1px solid currentColor; border-radius: .8em; padding: 0 .5em; }
+#em .em-drow2 { margin: .3em 0 0; min-height: 1.3em; }
+.em-toast .em-undo { font: inherit; font-weight: 700; margin-left: .6em; border: 1px solid rgba(255,255,255,.6); background: transparent; color: inherit; border-radius: .5em; padding: .1em .7em; cursor: pointer; }
+.em-toast.tu-toast--show { pointer-events: auto; }
+#em.em-w1 .em-swpop, #em.em-w1 .em-switch .mh-sw-pop { left: 0; right: auto; }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -561,6 +583,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #em .em-chip.is-bad{border-color:#871e15;background:#25110e}
 	body.dark-mode #em .em-pre{border:1px solid var(--em-line, #252f5f)}
 	body.dark-mode #em .em-low{color:#f7a364}
+	body.dark-mode .em-toast .em-undo{border:1px solid rgba(51,51,51,0.60)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -782,6 +805,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="em-topbtns">
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-refresh" hidden>↻ Check for mail</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-lock" hidden>🔒 Lock</button>
+				<span class="em-switch" id="em-switch"></span>
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-logout" hidden>Log out</button>
 			</div>
 		</div>
@@ -842,6 +866,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn tu-btn--primary em-compose" id="em-new">✏️ New message</button>
 				<button type="button" class="em-fold" data-f="inbox">📥 Inbox <span class="em-n" id="em-ninbox"></span></button>
 				<button type="button" class="em-fold" data-f="sent">📤 Sent <span class="em-n" id="em-nsent"></span></button>
+				<button type="button" class="em-fold" data-f="drafts">📝 Drafts <span class="em-n" id="em-ndrafts"></span></button>
 				<button type="button" class="em-fold" data-f="all">🗂 All conversations</button>
 				<button type="button" class="em-fold" data-f="classic">🔑 Classic memos <span class="em-n" id="em-nclassic"></span></button>
 				<div class="em-keybox" id="em-keybox"></div>
@@ -857,6 +882,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<p class="tu-note" id="em-fhid"></p>
 					</div>
 				</details>
+				<p class="tu-note em-dnote" id="em-dnote" hidden>Drafts save by themselves while you type. They stay in this browser only: they are not encrypted, and nothing goes to Hive until you press Send.</p>
 				<div id="em-list"></div>
 			</section>
 			<section class="em-read" id="em-read" aria-live="polite">
@@ -882,6 +908,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="em-presets" id="em-presets"><button type="button" class="em-pre" data-a="0.001">0.001</button><button type="button" class="em-pre" data-a="0.01">0.01</button><button type="button" class="em-pre" data-a="0.1">0.1</button><button type="button" class="em-pre" data-a="1">1</button></span>
 						<button type="button" class="tu-btn tu-btn--ghost" id="em-classic" hidden>Send as a classic memo</button>
 					</div>
+					<p class="tu-note em-drow2"><span id="em-dsaved"></span> <button type="button" class="em-link" id="em-ddiscard" hidden>Delete this draft</button></p>
 					<p class="tu-note" id="em-sendnote"></p>
 				</form>
 
@@ -981,7 +1008,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/email/js/email.js?v=3" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/email/js/email.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
