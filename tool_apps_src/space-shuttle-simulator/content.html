@@ -1,0 +1,188 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+	<script src="/main_js/panel-view.js" defer></script>
+	<div class="tu sx" id="sx">
+		<div class="sx-tabs" role="tablist" aria-label="Space Shuttle tools">
+			<button type="button" role="tab" data-tab="fly" aria-selected="true">🚀 Fly the Shuttle</button>
+			<button type="button" role="tab" data-tab="deorbit" aria-selected="false">🔥 De-orbit &amp; landing</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">🧮 Orbit calculator</button>
+			<button type="button" role="tab" data-tab="moon" aria-selected="false">🌕 Could it reach the Moon?</button>
+		</div>
+
+		<section data-panel="fly" role="tabpanel">
+			<div class="sx-missions" id="sx-missions" role="group" aria-label="Missions"></div>
+			<p class="sx-goal" id="sx-goal"></p>
+			<section class="sx-view" id="sx-view" aria-label="3D Shuttle simulator">
+				<div class="sx-top" id="sx-pbar">
+					<div class="sx-seg" role="group" aria-label="What to show" id="sx-show">
+						<button type="button" data-v="3d" aria-pressed="false">3D</button><button type="button" data-v="both" aria-pressed="true">3D + map</button><button type="button" data-v="map" aria-pressed="false">Map</button>
+					</div>
+					<label class="sx-sel"><span>Camera</span><select id="sx-cam" class="tu-select"><option value="earth">Whole Earth</option><option value="shuttle">Follow the Shuttle</option><option value="target">Follow the station</option></select></label>
+				</div>
+				<div class="sx-stage" id="sx-stage" data-v="both">
+					<div class="sx-3d" id="sx-3d">
+						<div class="sx-load" id="sx-load">Loading the 3D view…</div>
+						<div class="sx-hud" id="sx-hud" aria-live="off"></div>
+						<div class="sx-run">
+							<button type="button" id="sx-play" title="Pause / play (Space)">❚❚</button>
+							<button type="button" id="sx-slow" title="Slower ([)" aria-label="Slower">−</button><span id="sx-spd">60×</span><button type="button" id="sx-fast" title="Faster (])" aria-label="Faster">+</button>
+							<button type="button" id="sx-warp" title="Jump to just before the next burn (N)">⏭ Next burn</button>
+							<button type="button" id="sx-png" title="Save the 3D view as a picture" aria-label="Save as PNG">📷</button>
+						</div>
+						<div class="sx-flash" id="sx-flash" hidden></div>
+						<div class="sx-rel" id="sx-rel" hidden>
+							<div class="sx-rel-h"><b>Station view</b> <span id="sx-rel-d"></span></div>
+							<canvas id="sx-relc" width="300" height="220" aria-label="The Shuttle seen from the station: along-track (V-bar) left to right, up and down (R-bar)."></canvas>
+							<div class="sx-nudge" role="group" aria-label="Small thruster pushes">
+								<button type="button" data-n="rad:1" title="Push up, away from Earth">▲</button>
+								<button type="button" data-n="pro:-1" title="Push backwards (retrograde)">◀</button>
+								<button type="button" data-n="pro:1" title="Push forwards (prograde)">▶</button>
+								<button type="button" data-n="rad:-1" title="Push down, toward Earth">▼</button>
+								<select id="sx-nsz" aria-label="Push size"><option value="0.1">0.1 m/s</option><option value="0.5" selected>0.5 m/s</option><option value="2">2 m/s</option></select>
+								<button type="button" id="sx-dock" hidden>Dock</button>
+							</div>
+						</div>
+					</div>
+					<div class="sx-mapw"><canvas id="sx-map" aria-label="Ground track map: where the Shuttle passes over the Earth"></canvas><div class="sx-mapkey" id="sx-mapkey"></div></div>
+				</div>
+				<div class="sx-ro" id="sx-ro"></div>
+			</section>
+
+			<div class="sx-cols">
+				<div class="tu-card sx-plan">
+					<div class="sx-plan-h">
+						<h2 class="sx-h">Burn planner</h2>
+						<div class="sx-nodes" id="sx-nodes" role="group" aria-label="Planned burns"></div>
+						<button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-add">+ New burn</button>
+					</div>
+					<div id="sx-node-ed">
+						<div class="sx-when">
+							<span class="sx-lab">When</span> <b id="sx-when">–</b>
+							<div class="sx-chips" id="sx-whenbtns">
+								<button type="button" data-w="m-1">−1 min</button><button type="button" data-w="m1">+1 min</button>
+								<button type="button" data-w="apo">Next apogee</button><button type="button" data-w="peri">Next perigee</button>
+								<button type="button" data-w="node">Next equator crossing</button><button type="button" data-w="now">In 1 minute</button>
+							</div>
+							<p class="tu-note sx-tip">Tip: drag the orange dot along the orbit in the 3D view to move the burn, and drag its arrows to change it.</p>
+						</div>
+						<div class="sx-dvs">
+							<div class="sx-dv" data-ax="pro"><span class="sx-dot" style="background:#e8b500"></span><label for="sx-pro">Prograde <small>(forward, + speeds up)</small></label><input type="range" id="sx-pro-r" min="-1" max="1" step="0.001" aria-label="Prograde slider"><input type="number" id="sx-pro" step="0.1" class="tu-input"><span>m/s</span></div>
+							<div class="sx-dv" data-ax="nrm"><span class="sx-dot" style="background:#9d6ae0"></span><label for="sx-nrm">Normal <small>(tilts the orbit)</small></label><input type="range" id="sx-nrm-r" min="-1" max="1" step="0.001" aria-label="Normal slider"><input type="number" id="sx-nrm" step="0.1" class="tu-input"><span>m/s</span></div>
+							<div class="sx-dv" data-ax="rad"><span class="sx-dot" style="background:#22a8bd"></span><label for="sx-rad">Radial <small>(+ away from Earth)</small></label><input type="range" id="sx-rad-r" min="-1" max="1" step="0.001" aria-label="Radial slider"><input type="number" id="sx-rad" step="0.1" class="tu-input"><span>m/s</span></div>
+						</div>
+						<div class="sx-btnrow">
+							<button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-zero">↺ Reset this burn</button>
+							<button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-del">Delete burn</button>
+							<button type="button" class="tu-btn sx-sm" id="sx-now">🔥 Burn now</button>
+						</div>
+						<div class="sx-preview" id="sx-preview" aria-live="polite"></div>
+					</div>
+					<p class="tu-note" id="sx-none" hidden>No burns planned. Press <b>+ New burn</b> or use an automatic plan.</p>
+				</div>
+				<div class="tu-card sx-auto">
+					<h2 class="sx-h">Automatic plans</h2>
+					<div class="sx-arow"><button type="button" class="tu-btn sx-sm" id="sx-a-hoh">Raise or lower to</button> <input type="number" id="sx-a-alt" class="tu-input sx-num" value="550" min="150" max="2000"> km <small>(two burns, a Hohmann transfer)</small></div>
+					<div class="sx-arow"><button type="button" class="tu-btn sx-sm" id="sx-a-circ">Make it round</button> <small>at the next apogee</small></div>
+					<div class="sx-arow"><button type="button" class="tu-btn sx-sm" id="sx-a-inc">Tilt the orbit by</button> <input type="number" id="sx-a-di" class="tu-input sx-num" value="0.5" step="0.1"> ° <small>(at the equator)</small></div>
+					<div class="sx-arow"><button type="button" class="tu-btn sx-sm" id="sx-a-plane">Match the station's plane</button></div>
+					<div class="sx-arow"><button type="button" class="tu-btn sx-sm" id="sx-a-rdv">Catch the station</button> <small>(waits for the right angle, then a Hohmann transfer)</small></div>
+					<div class="sx-arow"><button type="button" class="tu-btn sx-sm" id="sx-a-deo">De-orbit to</button> <select id="sx-a-site" class="tu-select"></select> with <input type="number" id="sx-a-dv" class="tu-input sx-num" value="90" min="20" max="400"> m/s</div>
+					<p class="tu-note" id="sx-a-note"></p>
+					<div class="sx-opts">
+						<label class="sx-check"><input type="checkbox" id="sx-o-j2" checked> Earth's bulge (J2) turns the orbit</label>
+						<label class="sx-check"><input type="checkbox" id="sx-o-trail" checked> Trail</label>
+						<label class="sx-check"><input type="checkbox" id="sx-o-slow" checked> Slow down before each burn</label>
+					</div>
+					<div class="sx-btnrow"><button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-restart">↺ Restart this mission</button><button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-link">🔗 Copy link</button></div>
+				</div>
+			</div>
+		</section>
+
+		<section data-panel="deorbit" role="tabpanel" hidden>
+			<p class="tu-note sx-lead">Coming home starts half a world away. The Shuttle turned tail-first and fired its two OMS engines for about 2 to 3 minutes, slowing by roughly <b>90 m/s</b> (300 ft/s) out of about 7,700 m/s. That small burn drops the far side of the orbit into the air. About half an hour later it hits the <b>entry interface</b> (120 km), then glides some 7,000 km more to the runway.</p>
+			<div class="tu-card">
+				<div class="sx-chips" id="sx-d-try" role="group" aria-label="Examples"></div>
+				<div class="sx-grid">
+					<div class="tu-field"><span class="tu-label" id="sx-d-alt-l">Orbit height: <b id="sx-d-alt-v"></b></span><input type="range" id="sx-d-alt" min="180" max="620" step="5" aria-labelledby="sx-d-alt-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sx-d-dv-l">De-orbit burn: <b id="sx-d-dv-v"></b></span><input type="range" id="sx-d-dv" min="20" max="400" step="1" aria-labelledby="sx-d-dv-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sx-d-dr-l">Entry steepness (planned drag): <b id="sx-d-dr-v"></b></span><input type="range" id="sx-d-dr" min="0.5" max="2" step="0.05" aria-labelledby="sx-d-dr-l"></div>
+					<div class="tu-field"><span class="tu-label" id="sx-d-m-l">Mass at entry: <b id="sx-d-m-v"></b></span><input type="range" id="sx-d-m" min="80000" max="110000" step="1000" aria-labelledby="sx-d-m-l"></div>
+				</div>
+				<div class="sx-btnrow"><button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-d-reset">↺ Shuttle defaults</button><button type="button" class="tu-btn tu-btn--ghost sx-sm" id="sx-d-solve">Find the burn for a −1.2° entry</button><button type="button" class="tu-btn sx-sm" id="sx-d-fly">🚀 Fly this in 3D</button></div>
+			</div>
+			<div class="sx-dview" id="sx-dview">
+				<div class="sx-dbar" id="sx-dbar"></div>
+				<div class="sx-dstat" id="sx-dstat"></div>
+				<div class="sx-dcharts">
+					<figure class="sx-fig"><figcaption>The whole trip, side view (height not to scale)</figcaption><canvas id="sx-d-trip" height="230"></canvas></figure>
+					<figure class="sx-fig"><figcaption>Entry: height and speed</figcaption><canvas id="sx-d-hv" height="230"></canvas></figure>
+					<figure class="sx-fig"><figcaption>Entry: g-force and heating</figcaption><canvas id="sx-d-gq" height="230"></canvas></figure>
+				</div>
+			</div>
+			<p class="tu-note">How the entry is modelled: a Kepler orbit down to 120 km, then a lifting glide over a round Earth (US Standard Atmosphere layers, lift/drag about 1 above Mach 8 rising to 1.5, ballistic coefficient from the mass, a 250 m² wing and a drag coefficient of 0.84). Like the Shuttle's guidance, the bank angle is chosen every half second so the deceleration follows a planned drag profile; the steepness slider scales it. The heating number is the Sutton-Graves estimate for a 0.8 m nose. It stops at 760 m/s (about 25 km up), where the Shuttle's final approach began, and adds that last 96 km. It is a teaching model, not the real guidance.</p>
+		</section>
+
+		<section data-panel="calc" role="tabpanel" hidden>
+			<p class="tu-note sx-lead">Real numbers for Earth orbits. Type heights like <code>400 km</code>, <code>250 mi</code> or <code>220 nmi</code> (a bare number means km).</p>
+			<div class="tu-card">
+				<div class="sx-chips" id="sx-c-try" role="group" aria-label="Examples"></div>
+				<div class="sx-grid">
+					<label class="tu-field"><span class="tu-label">Perigee height (lowest)</span><input type="text" id="sx-c-hp" class="tu-input" value="400 km"></label>
+					<label class="tu-field"><span class="tu-label">Apogee height (highest)</span><input type="text" id="sx-c-ha" class="tu-input" value="400 km"></label>
+					<label class="tu-field"><span class="tu-label">Inclination (°)</span><input type="number" id="sx-c-i" class="tu-input" value="51.6" step="0.1"></label>
+					<label class="tu-field"><span class="tu-label">Second orbit height (for a transfer)</span><input type="text" id="sx-c-h2" class="tu-input" value="550 km"></label>
+					<label class="tu-field"><span class="tu-label">Plane change (°)</span><input type="number" id="sx-c-di" class="tu-input" value="1" step="0.1"></label>
+					<label class="tu-field"><span class="tu-label">Spacecraft mass (kg)</span><input type="number" id="sx-c-m" class="tu-input" value="115000" step="1000"></label>
+					<label class="tu-field"><span class="tu-label">Engine Isp (s)</span><input type="number" id="sx-c-isp" class="tu-input" value="316"></label>
+					<label class="tu-field"><span class="tu-label">Ballistic coefficient m/(Cd·A) (kg/m²)</span><input type="number" id="sx-c-b" class="tu-input" value="150"></label>
+				</div>
+			</div>
+			<div class="sx-tables" id="sx-c-out"></div>
+		</section>
+
+		<section data-panel="moon" role="tabpanel" hidden>
+			<p class="tu-note sx-lead">The honest answer: <b>no</b>. The Shuttle was a low Earth orbit truck. Its orbital engines held about 10.8 tonnes of propellant, enough for roughly <b>300 m/s</b> of speed change. Leaving Earth orbit for the Moon takes about <b>3,100 m/s</b> more, ten times as much, before you even think about stopping at the Moon or coming back.</p>
+			<div class="tu-card">
+				<div class="sx-grid">
+					<div class="tu-field"><span class="tu-label" id="sx-m-dv-l">Push from a 185 km parking orbit: <b id="sx-m-dv-v"></b></span><input type="range" id="sx-m-dv" min="0" max="3400" step="5" aria-labelledby="sx-m-dv-l"></div>
+				</div>
+				<div class="sx-chips" id="sx-m-try" role="group" aria-label="Pushes"></div>
+				<div class="sx-mview" id="sx-mview"><canvas id="sx-m-c" height="360" aria-label="Earth and the Moon's orbit to scale with the path a push of this size gives."></canvas><div class="sx-mread" id="sx-m-read"></div></div>
+			</div>
+			<div class="sx-tables">
+				<div class="tu-card"><h3 class="sx-h">Speed changes for a Moon landing and return</h3><div id="sx-m-budget"></div></div>
+				<div class="tu-card"><h3 class="sx-h">What the Shuttle would have needed</h3><div id="sx-m-rocket"></div></div>
+			</div>
+			<p class="tu-note">Earth's gravity only (no pull from the Moon, so no figure-eight free return). Real missions also aim at where the Moon will be when they arrive, about 3 days later for Apollo.</p>
+		</section>
+
+		<div class="tu-seo">
+			<h2>What this simulator does</h2>
+			<p>It flies a Space Shuttle around a real-sized Earth with real gravity: every orbit is a true Kepler ellipse in metres and seconds, the Earth turns under it at the right speed, the Sun lights the right half, and (if you leave it on) Earth's equatorial bulge slowly turns the orbit the way it turns the International Space Station's by about 5° a day. You plan burns the way flight controllers did: pick a moment on the orbit, choose how much to push forward, sideways or up, and see the new orbit before you commit.</p>
+			<h3>Missions</h3>
+			<dl>
+				<dt>Raise the orbit</dt><dd>A Hohmann transfer: one burn forward makes the far side of the orbit higher, a second burn half an orbit later makes the new orbit round.</dd>
+				<dt>Tilt the orbit</dt><dd>A push sideways (normal) at the equator turns the orbit's plane. It is expensive: one degree at 7.7 km/s costs 134 m/s, almost half the Shuttle's propellant. That is why launches aim for the right plane from the start.</dd>
+				<dt>Catch the station</dt><dd>The famous puzzle of orbital rendezvous: to catch up with something ahead of you, you drop lower (lower orbits are faster), and to slow down you speed up. The station view shows the Shuttle in the station's frame, with the V-bar (along the orbit) and the R-bar (up and down).</dd>
+				<dt>De-orbit and land</dt><dd>Pick a runway and the planner finds the orbit pass and burn time that bring the glide down near it, about 90 m/s of braking. Then watch the entry: the plasma glow, the g-force and the ground path to the runway.</dd>
+			</dl>
+			<h3>Key equations</h3>
+			<div class="sx-eqs">
+				<div class="sx-eq"><span class="sx-eq__n">Circular speed</span><span class="sx-eq__f mes-tex">\( \displaystyle v = \sqrt{\frac{GM}{r}} \)</span></div>
+				<div class="sx-eq"><span class="sx-eq__n">Vis-viva</span><span class="sx-eq__f mes-tex">\( \displaystyle v^2 = GM\left(\frac{2}{r} - \frac{1}{a}\right) \)</span></div>
+				<div class="sx-eq"><span class="sx-eq__n">Period</span><span class="sx-eq__f mes-tex">\( \displaystyle T = 2\pi\sqrt{\frac{a^3}{GM}} \)</span></div>
+				<div class="sx-eq"><span class="sx-eq__n">Plane change</span><span class="sx-eq__f mes-tex">\( \displaystyle \Delta v = 2v\sin\frac{\Delta i}{2} \)</span></div>
+				<div class="sx-eq"><span class="sx-eq__n">Rocket equation</span><span class="sx-eq__f mes-tex">\( \displaystyle \Delta v = I_{sp}\, g_0 \ln\frac{m_0}{m_1} \)</span></div>
+				<div class="sx-eq"><span class="sx-eq__n">Node drift (J2)</span><span class="sx-eq__f mes-tex">\( \displaystyle \dot\Omega = -\tfrac{3}{2} n J_2 \left(\frac{R_E}{p}\right)^2 \cos i \)</span></div>
+			</div>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How fast did the Space Shuttle go?</dt><dd>About 7.7 km/s (27,700 km/h, 17,500 mph) in a typical 300 to 400 km orbit, going round the Earth every 90 to 92 minutes.</dd>
+				<dt>How big was the de-orbit burn?</dt><dd>Usually about 90 m/s (around 300 ft/s), a 2 to 3 minute firing of both OMS engines, done about an hour before landing on the opposite side of the world.</dd>
+				<dt>What is the entry interface?</dt><dd>The point 400,000 ft (about 120 km) up where the air starts to matter. The Shuttle crossed it at about 7.6 to 7.8 km/s, around 1.2° below horizontal, nose up at 40°.</dd>
+				<dt>Why didn't the Shuttle go to the Moon?</dt><dd>It could not carry enough propellant: about 300 m/s of speed change against the 3,100 m/s needed just to leave Earth orbit, and it had no heat shield for the faster return. See the Moon tab for the numbers.</dd>
+				<dt>How accurate is this?</dt><dd>The orbits, burns, periods and plane changes are exact two-body physics with J2 drift. Air drag is only used for the entry, the Moon's and Sun's pull are left out, and the entry glide is a teaching model of the Shuttle's guidance, so treat landing points as rough (hundreds of km).</dd>
+			</dl>
+		</div>
+	</div>
+	<script src="/main_js/mes-math.js" defer></script>

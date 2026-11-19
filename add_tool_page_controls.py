@@ -303,6 +303,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("quantum-calculator", "Quantum Lab", "/quantum"),
     ("hutchison-effect-simulator", "Hutchison Effect Simulator"),
     ("orbit-simulator", "Orbit Simulator"),
+    ("space-shuttle-simulator", "Space Shuttle Simulator"),   # 2026-11-19
     ("redshift-simulator", "Redshift Simulator"),
     ("metric-tensor", "Metric Tensor Explorer"),
     ("black-hole-simulator", "Black Hole Simulator"),   # also built by build_tool_apps.py (tools sidebar collection, dark stages, four tabs)

@@ -335,6 +335,15 @@ const PAGES = [
     tileLabel: "Orbit Simulator",
   },
   {
+    // Tile only: links to the tool. Icon = img/space-shuttle-simulator-icon.jpg (900x600 crop of the Gemini share image, without the title).
+    slug: "space-shuttle-simulator",
+    section: "tools",
+    href: "/space-shuttle-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Space Shuttle Simulator",
+  },
+  {
     // Tile only: no page is written; links to the tool. Icon = img/metric-tensor-icon.jpg (the user's Grok tile art).
     slug: "metric-tensor",
     section: "tools",

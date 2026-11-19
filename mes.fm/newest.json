@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/space-shuttle-simulator",
+   "title": "Space Shuttle Simulator",
+   "icon": "/img/space-shuttle-simulator-logo.png",
+   "desc": "Fly the Shuttle around a 3D Earth: plan burns, raise and tilt the orbit, catch the ISS or Hubble, then de-orbit and glide down to the runway. Plus why it could never reach the Moon.",
+   "added": "2026-11-19",
+   "kind": "tool"
+  },
+  {
    "href": "/ai",
    "title": "MES AI",
    "icon": "/img/ai-logo.png",
@@ -189,6 +197,14 @@
   }
  ],
  "latest": [
+  {
+   "href": "/space-shuttle-simulator",
+   "title": "Space Shuttle Simulator",
+   "icon": "/img/space-shuttle-simulator-logo.png",
+   "desc": "Fly the Shuttle around a 3D Earth: plan burns, raise and tilt the orbit, catch the ISS or Hubble, then de-orbit and glide down to the runway. Plus why it could never reach the Moon.",
+   "added": "2026-11-19",
+   "kind": "tool"
+  },
   {
    "href": "/expense-splitter",
    "title": "Expense Splitter",

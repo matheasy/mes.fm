@@ -413,7 +413,7 @@
 },
 "/go":{
 "added":"2026-10-06",
-"updated":"2026-11-17",
+"updated":"2026-11-19",
 "type":"Tool"
 },
 "/gpacalculator":{
@@ -895,6 +895,11 @@
 "added":"2026-10-03",
 "updated":"2026-10-21",
 "type":"Tool"
+},
+"/space-shuttle-simulator":{
+"added":"2026-11-19",
+"updated":"2026-11-19",
+"type":"Simulation"
 },
 "/speedreader":{
 "added":"2026-08-31",
