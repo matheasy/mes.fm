@@ -821,9 +821,11 @@
             else if (b.dataset.add) { var n = root.prompt && prompt("Hive username to add:"); if (n) login(n).then(done, fail); else close(); }
             else if (b.dataset.out) { logout(); done(null); }
         });
-        document.addEventListener("click", function (e) { if (!wrap.contains(e.target)) close(); });
+        /* pages repaint their account area: a menu that left the page drops its listeners */
+        function outside(e) { if (!wrap.isConnected) { document.removeEventListener("click", outside); return; } if (!wrap.contains(e.target)) close(); }
+        document.addEventListener("click", outside);
         wrap.addEventListener("keydown", function (e) { if (e.key === "Escape") { close(); btn.focus(); } });
-        onChange(label); label();
+        var off = onChange(function () { if (!wrap.isConnected) { off(); return; } label(); }); label();
         return wrap;
     }
     function need() { var u = user(); if (!u) { var e = new Error("Log in with Hive first."); e.code = "nologin"; throw e; } return u; }

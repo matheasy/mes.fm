@@ -45,15 +45,24 @@
 		if (mock) { a.innerHTML = '<p class="ai-demo"><b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).</p>'; $("ai-help").innerHTML = ""; return; }
 		if (!H) { a.innerHTML = "<p>The Hive login could not load. Reload the page.</p>"; return; }
 		if (u) {
-			a.innerHTML = '<div class="ai-user"><img src="' + esc(H.avatar(u.name)) + '" alt="" width="32" height="32"><span>Paying as <a href="' + esc(H.peakd(u.name) + "/wallet") + '" target="_blank" rel="noopener">@' + esc(u.name) + '</a></span><button type="button" class="tu-btn tu-btn--ghost" data-a="logout">Log out</button></div>';
+			a.innerHTML = '<div class="ai-user"><img src="' + esc(H.avatar(u.name)) + '" alt="" width="32" height="32"><span>Paying as <a href="' + esc(H.peakd(u.name) + "/wallet") + '" target="_blank" rel="noopener">@' + esc(u.name) + '</a></span><span class="ai-sw"></span><button type="button" class="tu-btn tu-btn--ghost" data-a="logout">Log out</button></div>';
 			$("ai-help").innerHTML = "";
+			addSwitcher();
 		} else {
 			a.innerHTML = '<div class="ai-loginrow"><label class="tu-label" for="ai-user">Your Hive username</label><input id="ai-user" class="tu-input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. mes">' +
 				'<button type="button" class="tu-btn tu-btn--primary" data-a="login">Log in with Keychain</button></div>';
+			if (H.accounts && H.accounts().length) { a.querySelector(".ai-loginrow").insertAdjacentHTML("beforeend", '<span class="ai-sw"></span>'); addSwitcher(); }
 			$("ai-user").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
 			H.keychain(1500).then(function (k) { if (!k && !H.user()) $("ai-help").innerHTML = H.helpHtml(); });
 		}
 	}
+	// "Switch account": the Hive accounts logged in on this browser (MESHive.switcher, shared by every Hive page)
+	function addSwitcher() {
+		var el = document.querySelector("#ai-acct .ai-sw");
+		if (!el || !H.switcher) return;
+		H.switcher(el, { onSwitch: function (u) { msg(u ? "Now paying as @" + u.name + "." : "Logged out.", "ok"); paintAcct(); paintPrice(); }, onError: function (e) { msg(e.message, "err"); } });
+	}
+	if (H && H.onChange && !mock) H.onChange(function () { paintAcct(); paintPrice(); });
 	function doLogin() {
 		var inp = $("ai-user");
 		msg("Confirm the login in Hive Keychain…");

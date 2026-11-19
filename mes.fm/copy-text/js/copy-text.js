@@ -1399,17 +1399,24 @@
 		var box = $("cp-hive-user"), u = HV() && HV().user();
 		if (!HV() || !HS()) { box.innerHTML = '<p class="cp-hive-warn is-open">The Hive scripts did not load (blocked or offline). Reload the page to try again.</p>'; $("cp-hive-main").hidden = true; return; }
 		if (u) {
-			box.innerHTML = '<span class="cp-hive-who"><img src="' + HV().avatar(u.name) + '" alt="" width="24" height="24" loading="lazy"> Logged in as <b>@' + esc(u.name) + '</b></span> <button type="button" class="tu-btn tu-btn--ghost" data-h="logout">Log out</button>';
+			box.innerHTML = '<span class="cp-hive-who"><img src="' + HV().avatar(u.name) + '" alt="" width="24" height="24" loading="lazy"> Logged in as <b>@' + esc(u.name) + '</b></span> <span class="cp-hive-sw"></span> <button type="button" class="tu-btn tu-btn--ghost" data-h="logout">Log out</button>';
+			addSwitcher(box);
 			$("cp-hive-main").hidden = false; $("cp-hive-help").innerHTML = "";
 			var ce = $("cp-hive-encrypt"), can = !HS().canEncrypt || HS().canEncrypt();
 			if (!can) ce.checked = false; else if (ce.disabled) { try { ce.checked = localStorage.getItem(ENC_KEY) !== "0"; } catch (e) { ce.checked = true; } }
 			ce.disabled = !can; paintWarn();
 		} else {
 			box.innerHTML = '<div class="cp-hive-login"><input class="tu-input" id="cp-hive-name" type="text" placeholder="Your Hive username" aria-label="Your Hive username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="17">' +
-				' <button type="button" class="tu-btn tu-btn--primary" data-h="login">Log in with Keychain</button></div>';
+				' <button type="button" class="tu-btn tu-btn--primary" data-h="login">Log in with Keychain</button>' + (HV().accounts && HV().accounts().length ? ' <span class="cp-hive-sw"></span>' : '') + '</div>';
+			addSwitcher(box);
 			$("cp-hive-main").hidden = true;
 			HV().keychain(1500).then(function (k) { if (!k && !HV().user()) $("cp-hive-help").innerHTML = HV().helpHtml(); });
 		}
+	}
+	// "Switch account": the Hive accounts logged in on this browser (MESHive.switcher); onChange below repaints the panel
+	function addSwitcher(box) {
+		var el = box.querySelector(".cp-hive-sw");
+		if (el && HV().switcher) HV().switcher(el, { onSwitch: function (u) { if (u) hiveLoad(true); }, onError: function (e) { hmsg(e.message); } });
 	}
 	function openHive(focus) {
 		var p = $("cp-hive"); p.hidden = false; $("cp-hivebtn").setAttribute("aria-expanded", "true");
