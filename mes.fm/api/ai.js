@@ -16,6 +16,9 @@
 // Calls go straight to the HTTP APIs with fetch (no SDK: the mes.fm Vercel project has no package manager, like every
 // other function here). Video (Grok Imagine, xAI): run starts a job (POST /v1/videos/generations), POST {op:"vstatus", id, acct}
 // checks it (GET /v1/videos/<request_id>), GET ?op=vfile&id=&acct= passes the finished file on (xAI's link is temporary).
+// Models per company (MODELS / IMAGES in the lib, each with prov): chat = Anthropic Claude (messages API) or OpenAI GPT (Chat Completions,
+// input counted with /v1/responses/input_tokens); pictures = OpenAI gpt-image-2 or xAI Grok Imagine (/v1/images/generations).
+// OpenAI video (Sora 2) is not offered: OpenAI shut the Videos API down on 2026-09-24.
 // Keys: Vercel env ANTHROPIC_API_KEY, OPENAI_API_KEY, XAI_API_KEY (plain project-level vars), never sent out.
 // Limits per hour: 300 quotes per IP hash, 60 answers per Hive account, 100 per IP hash. Tests: node tool_apps_src/ai-tests.js
 
@@ -95,6 +98,23 @@ function makeHandler(deps = {}) {
     throw last;
   }
 
+  const keyOf = (prov) => (prov === 'openai' ? env.OPENAI_API_KEY : prov === 'xai' ? env.XAI_API_KEY : env.ANTHROPIC_API_KEY);
+
+  // OpenAI's own count (Responses input_tokens) + a little room for the Chat Completions wrapper; if it does not answer,
+  // a count that can only be too high (1 token per character), so the quote still covers the bill
+  async function countOpenAI(modelKey, messages) {
+    const sys = A.systemFor(modelKey);
+    try {
+      const r = await fetchImpl('https://api.openai.com/v1/responses/input_tokens', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: A.MODELS[modelKey].id, instructions: sys, input: messages }),
+      });
+      const j = await r.json();
+      if (r.ok && Number.isFinite(j.input_tokens)) return Math.ceil(j.input_tokens * 1.05) + 8 + 4 * messages.length;
+    } catch (e) {}
+    return A.safeTokens(sys, messages);
+  }
+
   async function quote(req, res, b) {
     const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
     if (!A.validName(acct)) return send(res, 400, { error: 'Log in with your Hive account first.' });
@@ -108,22 +128,25 @@ function makeHandler(deps = {}) {
       q = A.videoQuote(b.model, b.seconds, b.res);
       stored = { kind: 'video', prompt: b.prompt, model: b.model, seconds: q.seconds, res: b.res, audio: b.audio !== false };
     } else if (b.kind === 'image') {
-      if (!env.OPENAI_API_KEY) return send(res, 503, { off: true, error: 'Pictures are coming soon.' });
-      const err = A.checkImage(b.prompt, b.quality, b.size);
+      const model = b.model || 'gpt';
+      const im = A.IMAGES[model];
+      if (!im) return send(res, 400, { error: 'Pick a picture model.' });
+      if (!keyOf(im.prov)) return send(res, 503, { off: true, error: im.name + ' pictures are coming soon.' });
+      const err = A.checkImage(b.prompt, b.quality, b.size, model);
       if (err) return send(res, 400, { error: err });
       // prompt tokens estimated on the safe side (2 characters a token); a few cents of a cent at most
-      q = A.imageQuote(b.quality, b.size, Math.ceil(b.prompt.length / 2) + 8);
-      stored = { kind: 'image', prompt: b.prompt, quality: b.quality, size: b.size };
+      q = A.imageQuote(b.quality, b.size, Math.ceil(b.prompt.length / 2) + 8, model);
+      stored = { kind: 'image', model, prompt: b.prompt, quality: b.quality, size: b.size };
     } else {
-      if (!env.ANTHROPIC_API_KEY) return send(res, 503, { off: true, error: 'MES AI chat is coming soon.' });
       const m = A.MODELS[b.model];
       if (!m) return send(res, 400, { error: 'Pick a model.' });
+      if (!keyOf(m.prov)) return send(res, 503, { off: true, error: m.name + ' is coming soon.' });
       if (!m.caps[b.len]) return send(res, 400, { error: 'Pick an answer length.' });
       const err = A.checkMessages(b.messages);
       if (err) return send(res, 400, { error: err });
       const messages = A.cleanMessages(b.messages);
       let inTok;
-      try { inTok = await countTokens(m.id, messages); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
+      try { inTok = m.prov === 'openai' ? await countOpenAI(b.model, messages) : await countTokens(m.id, messages); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
       if (inTok > A.LIMITS.inTokens) return send(res, 400, { error: 'This chat is too long (' + inTok.toLocaleString('en-US') + ' tokens). Start a new chat.' });
       q = A.chatQuote(b.model, inTok, b.len);
       stored = { kind: 'chat', model: b.model, len: b.len, messages };
@@ -178,6 +201,20 @@ function makeHandler(deps = {}) {
 
   async function chat(res, rec, who, failed) {
     const m = A.MODELS[rec.model];
+    if (m.prov === 'openai') {
+      // OpenAI Chat Completions; max_completion_tokens caps the reasoning tokens too, so the bill stays inside the quote
+      const body = {
+        model: m.id, messages: [{ role: 'system', content: A.systemFor(rec.model) }].concat(rec.messages), stream: true,
+        stream_options: { include_usage: true }, max_completion_tokens: rec.maxOut, reasoning_effort: m.effort, safety_identifier: who,
+      };
+      let r;
+      try {
+        r = await fetchImpl('https://api.openai.com/v1/chat/completions', {
+          method: 'POST', headers: { Authorization: 'Bearer ' + env.OPENAI_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        });
+      } catch (e) { return failed(res, 'Could not reach the AI service. Your payment is kept: press Try again.', false); }
+      return pump(res, r, A.streamPieceOpenAI, failed);
+    }
     const body = {
       model: m.id, max_tokens: rec.maxOut, system: A.SYSTEM, messages: rec.messages, stream: true,
       output_config: { effort: m.effort }, metadata: { user_id: who },
@@ -189,6 +226,11 @@ function makeHandler(deps = {}) {
         method: 'POST', headers: anthropicHeaders(m.fallback ? 'server-side-fallback-2026-07-01' : null), body: JSON.stringify(body),
       });
     } catch (e) { return failed(res, 'Could not reach the AI service. Your payment is kept: press Try again.', false); }
+    return pump(res, r, A.streamPiece, failed);
+  }
+
+  // passes a provider's server-sent events on to the page as NDJSON pieces
+  async function pump(res, r, piece, failed) {
     if (!r.ok) {
       let msg = 'The AI service answered ' + r.status + '.';
       try { const j = await r.json(); if (j.error && j.error.message) msg += ' ' + j.error.message; } catch (e) {}
@@ -204,7 +246,7 @@ function makeHandler(deps = {}) {
       const s = A.sseSplit(buf + txt);
       buf = s.rest;
       for (const ev of s.events) {
-        const p = A.streamPiece(ev);
+        const p = piece(ev);
         if (!p) continue;
         if (p.t === 'text') { if (p.v) { gotText = true; res.write(JSON.stringify(p) + '\n'); } }
         else if (p.t === 'think') res.write('{"t":"think"}\n');
@@ -295,6 +337,8 @@ function makeHandler(deps = {}) {
   }
 
   async function image(res, rec, who, failed) {
+    const im = A.IMAGES[rec.model || 'gpt'];
+    if (im.prov === 'xai') return ximage(res, rec, im, failed);
     let r, j;
     try {
       r = await fetchImpl('https://api.openai.com/v1/images/generations', {
@@ -315,6 +359,26 @@ function makeHandler(deps = {}) {
     return send(res, 200, { t: 'image', b64, mime: 'image/webp' });
   }
 
+  // xAI Grok Imagine pictures: POST /v1/images/generations {model, prompt, n, response_format, aspect_ratio, resolution}
+  async function ximage(res, rec, im, failed) {
+    let r, j;
+    try {
+      r = await fetchImpl('https://api.x.ai/v1/images/generations', {
+        method: 'POST', headers: xaiHeaders(),
+        body: JSON.stringify({ model: im.id, prompt: rec.prompt, n: 1, response_format: 'b64_json',
+          aspect_ratio: A.XIMAGE.ASPECT[rec.size], resolution: rec.quality }),
+      });
+      j = await r.json();
+    } catch (e) { return failed(res, 'Could not reach the picture service. Your payment is kept: press Try again.', false); }
+    const d = j && j.data && j.data[0];
+    if (!r.ok || !d || !d.b64_json) {
+      const em = j && j.error ? (j.error.message || j.error) : '';
+      return failed(res, 'The picture service answered ' + r.status + '.' + (em ? ' ' + em : '') + ' Your payment is kept: press Try again.', false);
+    }
+    const mime = /^image\/(png|jpeg|webp)$/.test(d.mime_type || '') ? d.mime_type : 'image/jpeg';
+    return send(res, 200, { t: 'image', b64: String(d.b64_json).replace(/^data:[^,]*,/, ''), mime });
+  }
+
   return async function handler(req, res) {
     try {
       if (req.method === 'GET') {
@@ -323,8 +387,10 @@ function makeHandler(deps = {}) {
         if (op === 'vfile') return await vfile(req, res, qs);
         if (op !== 'status') return send(res, 400, { error: 'Unknown op' });
         return send(res, 200, {
-          chat: !!env.ANTHROPIC_API_KEY, image: !!env.OPENAI_API_KEY, video: !!env.XAI_API_KEY, margin: A.MARGIN, checked: A.PRICES_CHECKED,
-          models: Object.keys(A.MODELS).map((k) => ({ key: k, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
+          chat: !!(env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY), image: !!(env.OPENAI_API_KEY || env.XAI_API_KEY), video: !!env.XAI_API_KEY,
+          prov: { anthropic: !!env.ANTHROPIC_API_KEY, openai: !!env.OPENAI_API_KEY, xai: !!env.XAI_API_KEY },
+          margin: A.MARGIN, checked: A.PRICES_CHECKED,
+          models: Object.keys(A.MODELS).map((k) => ({ key: k, prov: A.MODELS[k].prov, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
           imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
         });
       }

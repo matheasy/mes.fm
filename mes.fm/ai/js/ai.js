@@ -17,21 +17,28 @@
 
   var MARGIN = 1.5;            // price = API cost x MARGIN (1.5 = 50% profit on cost). Change here only.
   var HBD_USD = 1;             // HBD is pegged to 1 USD; the margin covers small drifts of the peg
-  var PRICES_CHECKED = "2026-11-18";
+  var PRICES_CHECKED = "2026-11-19";
   var PAY_TO = "mes";
   var MEMO_PREFIX = "mesai:";
   var MIN_HBD = 0.001;
 
-  // USD per 1M tokens (Anthropic first-party prices). caps = max_tokens per answer length (includes thinking).
+  // USD per 1M tokens (each company's own standard prices; OpenAI's from developers.openai.com/api/docs/pricing, checked 2026-11-19).
+  // caps = max_tokens / max_completion_tokens per answer length (includes thinking / reasoning tokens).
+  // prov = which company runs it (anthropic | openai): its key must be set in Vercel for the model to be offered.
   var MODELS = {
-    sonnet: { id: "claude-sonnet-5-5", name: "Sonnet 5.5", blurb: "Fast and clever: everyday questions, writing, coding.",
+    sonnet: { prov: "anthropic", id: "claude-sonnet-5-5", name: "Claude Sonnet 5.5", blurb: "Fast and clever: everyday questions, writing, coding.",
       inUsd: 2, outUsd: 10, effort: "low", caps: { short: 1200, medium: 5000, long: 16000 },
       // server-side refusal fallback: Claude Sonnet 5 has the same prices, so the quote still holds
       fallback: "claude-sonnet-5" },
-    opus: { id: "claude-opus-5-5", name: "Opus 5.5", blurb: "The strongest: hard coding, research, long careful answers. Thinks first.",
-      inUsd: 4, outUsd: 20, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 },
-      fallback: null }  // no fallback: Claude Opus 4.8 costs more ($5 / $25), which could go over the quote
+    opus: { prov: "anthropic", id: "claude-opus-5-5", name: "Claude Opus 5.5", blurb: "The strongest: hard coding, research, long careful answers. Thinks first.",
+      inUsd: 4, outUsd: 20, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true,
+      fallback: null },  // no fallback: Claude Opus 4.8 costs more ($5 / $25), which could go over the quote
+    gpt: { prov: "openai", id: "gpt-6.2-sol", name: "ChatGPT: GPT-6.2 Sol", blurb: "OpenAI's balanced model (the one behind ChatGPT): fast, good at everyday questions and code.",
+      inUsd: 2, outUsd: 10, effort: "low", caps: { short: 1200, medium: 5000, long: 16000 }, thinks: true },
+    gptpro: { prov: "openai", id: "gpt-6.2-astra", name: "ChatGPT: GPT-6.2 Astra", blurb: "OpenAI's flagship for complex reasoning and coding. Thinks first, so it costs more.",
+      inUsd: 8, outUsd: 40, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true }
   };
+  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI" };
   var DEFAULT_MODEL = "sonnet";
   var LENGTHS = { short: "Short", medium: "Medium", long: "Long" };
 
@@ -43,6 +50,18 @@
       medium: { "1024x1024": 0.053, "1024x1536": 0.041, "1536x1024": 0.041 },
       high: { "1024x1024": 0.211, "1024x1536": 0.165, "1536x1024": 0.165 }
     } };
+
+  // every picture model the page offers. gpt = OpenAI (quality low/medium/high, size = pixels).
+  // Grok Imagine = xAI (docs.x.ai/developers/pricing, checked 2026-11-19): a flat price per picture; quality = resolution 1k / 2k.
+  // xAI lists no extra price for 2k, so RES_X is our own safe guess like the video one: CHECK it against the first real bills.
+  // The page's shapes (pixel sizes) map to xAI aspect ratios through ASPECT.
+  var IMAGES = {
+    gpt: { prov: "openai", id: "gpt-image-2", name: "GPT Image 2 (ChatGPT)" },
+    grok: { prov: "xai", id: "grok-imagine-image", name: "Grok Imagine (cheapest)", usd: 0.02 },
+    grok2: { prov: "xai", id: "grok-imagine-image-2.0", name: "Grok Imagine 2.0", usd: 0.04 }
+  };
+  var XIMAGE = { res: { "1k": "Standard (1k)", "2k": "Sharp (2k)" }, RES_X: { "1k": 1, "2k": 1.5 },
+    ASPECT: { "1024x1024": "1:1", "1536x1024": "3:2", "1024x1536": "2:3" } };
 
   // xAI Grok Imagine video: USD per second of video (docs.x.ai pricing, checked 2026-11-18). xAI says resolution changes the price too
   // but publishes no rate for it, so RES_X is our own safe guess (x the per-second price): CHECK it against the first real bills and lower it.
@@ -64,6 +83,11 @@
     "Use Markdown: headings only when they help, lists, and fenced code blocks with a language name. " +
     "Write math with plain symbols or inline code, not LaTeX. Each answer has a length limit, so get to the point and finish your answer within it. " +
     "Refuse requests for clearly illegal or seriously harmful content.";
+  // the same instructions, naming the company that really runs the chosen model
+  function systemFor(modelKey) {
+    var m = MODELS[modelKey];
+    return m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+  }
 
   /* ---------- numbers ---------- */
   function hbdFromUsd(usd) {
@@ -93,13 +117,21 @@
     var hbd = hbdFromUsd(usd);
     return { kind: "chat", model: modelKey, modelId: m.id, len: len, inTokens: inTokens, maxOut: cap, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
-  function imageQuote(quality, size, promptTokens) {
+  function imageQuote(quality, size, promptTokens, model) {
+    model = model || "gpt";
+    var im = IMAGES[model];
+    if (!im) throw new Error("Unknown picture model");
+    if (im.prov === "xai") {
+      if (!XIMAGE.RES_X[quality] || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
+      var xu = im.usd * XIMAGE.RES_X[quality], xh = hbdFromUsd(xu);
+      return { kind: "image", model: model, modelId: im.id, quality: quality, size: size, aspect: XIMAGE.ASPECT[size], inTokens: 0, costUsd: xu, hbd: xh, price: fmtHbd(xh) };
+    }
     var row = IMAGE.perImage[quality];
     if (!row || row[size] == null) throw new Error("Unknown image quality or size");
     var t = Math.max(0, Math.ceil(Number(promptTokens) || 0));
     var usd = row[size] + t * IMAGE.textInUsd / 1e6;
     var hbd = hbdFromUsd(usd);
-    return { kind: "image", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+    return { kind: "image", model: "gpt", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
 
   function videoQuote(model, seconds, res) {
@@ -162,9 +194,12 @@
   function cleanMessages(messages) {
     return (messages || []).map(function (m) { return { role: m.role, content: String(m.content) }; });
   }
-  function checkImage(prompt, quality, size) {
+  function checkImage(prompt, quality, size, model) {
     if (typeof prompt !== "string" || !prompt.trim()) return "Describe the picture first.";
     if (prompt.length > LIMITS.promptChars) return "The description is too long (" + LIMITS.promptChars + " characters at most).";
+    var im = IMAGES[model || "gpt"];
+    if (!im) return "Unknown picture model.";
+    if (im.prov === "xai") return !XIMAGE.res[quality] ? "Unknown quality." : !XIMAGE.ASPECT[size] ? "Unknown size." : null;
     if (!IMAGE.perImage[quality]) return "Unknown quality.";
     if (!IMAGE.sizes[size]) return "Unknown size.";
     return null;
@@ -231,6 +266,26 @@
     if (d.type === "error" || ev.event === "error") return { t: "error", msg: (d.error && d.error.message) || "The model stopped with an error." };
     return null;
   }
+  // one OpenAI Chat Completions stream event (data: {choices:[{delta:{content}, finish_reason}], usage}) -> the same pieces as streamPiece.
+  // finish reasons are named like Anthropic's so the page needs one set: length -> max_tokens, content_filter -> refusal.
+  var OAI_STOP = { length: "max_tokens", content_filter: "refusal", stop: "end_turn" };
+  function streamPieceOpenAI(ev) {
+    var d = ev && ev.data;
+    if (!d) return null;                                   // "data: [DONE]" is not JSON
+    if (d.error) return { t: "error", msg: d.error.message || "The model stopped with an error." };
+    var c = d.choices && d.choices[0];
+    if (c && c.finish_reason) return { t: "stop", stop: OAI_STOP[c.finish_reason] || c.finish_reason, usage: d.usage || null };
+    if (c && c.delta && typeof c.delta.content === "string" && c.delta.content) return { t: "text", v: c.delta.content };
+    if (!c && d.usage) return { t: "stop", stop: null, usage: { output_tokens: d.usage.completion_tokens } };
+    return null;
+  }
+  // a token count that is never too low, for when OpenAI's counting endpoint does not answer: 1 token per character
+  // (real English is ~4 characters a token) + room for each message's wrapper
+  function safeTokens(sys, messages) {
+    var n = String(sys || "").length + 16;
+    (messages || []).forEach(function (m) { n += String(m && m.content || "").length + 8; });
+    return n;
+  }
 
   /* ---------- saving chats (cloud file, Hive backup, file backup) ---------- */
   // a chat = {id, title, at, msgs:[{role, content, ...}]}; only finished messages are kept in a backup
@@ -269,6 +324,7 @@
   return {
     cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
+    PROVIDERS: PROVIDERS, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
@@ -294,8 +350,10 @@
 	var LS = "mes-ai:v1", LS_IMG = "mes-ai:imgs";
 	var mock = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]mock=1\b/.test(location.search);
 	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
-	var status = { chat: mock, image: mock, video: mock, known: mock };
-	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; }
+	var status = { chat: mock, image: mock, video: mock, known: mock, prov: { anthropic: true, openai: true, xai: true } };
+	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; status.prov = { anthropic: true, openai: false, xai: false }; }
+	// is this company's key set? (unknown until the status call answers: then everything shows as on)
+	function provOn(p) { return !status.known || !status.prov || !!status.prov[p]; }
 	var busy = false;
 
 	/* ---------- saved state ---------- */
@@ -304,6 +362,8 @@
 	if (!Array.isArray(S.chats)) S.chats = [];
 	if (!A.MODELS[S.model]) S.model = A.DEFAULT_MODEL;
 	if (!A.LENGTHS[S.len]) S.len = "medium";
+	if (!A.IMAGES[S.imod]) S.imod = "gpt";
+	if (!S.iq || typeof S.iq !== "object") S.iq = {};
 	var qTab = /[?&]tab=(img|chat|vid)\b/.exec(location.search);
 	if (qTab) S.tab = qTab[1];
 	if (S.tab !== "img" && S.tab !== "vid") S.tab = "chat";
@@ -435,8 +495,32 @@
 	});
 
 	/* ---------- options + live price ---------- */
-	$("ai-model").innerHTML = Object.keys(A.MODELS).map(function (k) { return '<option value="' + k + '">' + esc(A.MODELS[k].name) + "</option>"; }).join("");
-	$("ai-model").value = S.model;
+	// model lists grouped by company; a company whose key is not set yet shows its models greyed out with "(soon)"
+	function fillModels() {
+		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)" };
+		$("ai-model").innerHTML = Object.keys(groups).map(function (p) {
+			return '<optgroup label="' + groups[p] + '">' + Object.keys(A.MODELS).filter(function (k) { return A.MODELS[k].prov === p; }).map(function (k) {
+				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (soon)") + "</option>";
+			}).join("") + "</optgroup>";
+		}).join("");
+		if (!provOn(A.MODELS[S.model].prov)) { var alt = Object.keys(A.MODELS).filter(function (k) { return provOn(A.MODELS[k].prov); })[0]; if (alt) S.model = alt; }
+		$("ai-model").value = S.model;
+		$("ai-imod").innerHTML = Object.keys(A.IMAGES).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(im.name) + (on ? "" : " (soon)") + "</option>"; }).join("");
+		if (!provOn(A.IMAGES[S.imod].prov)) { var ia = Object.keys(A.IMAGES).filter(function (k) { return provOn(A.IMAGES[k].prov); })[0]; if (ia) S.imod = ia; }
+		$("ai-imod").value = S.imod;
+		fillQuality();
+	}
+	// picture quality: GPT Image = Draft / Good / Best, Grok Imagine = 1k / 2k; each company's last choice is remembered
+	function fillQuality() {
+		var im = A.IMAGES[S.imod], x = im.prov === "xai";
+		var opts = x ? A.XIMAGE.res : { low: "Draft (fast, cheap)", medium: "Good", high: "Best" };
+		var want = S.iq[im.prov] && opts[S.iq[im.prov]] ? S.iq[im.prov] : (x ? "1k" : "medium");
+		$("ai-q").innerHTML = Object.keys(opts).map(function (k) { return '<option value="' + k + '"' + (k === want ? " selected" : "") + ">" + esc(opts[k]) + "</option>"; }).join("");
+		$("ai-imodel").textContent = A.PROVIDERS[im.prov] + "'s " + im.name.replace(/ \(.*\)$/, "");
+	}
+	fillModels();
+	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintPrice(); });
+	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + A.LENGTHS[k] + "</button>"; }).join("");
 	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
@@ -453,17 +537,18 @@
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
 	function paintPrice() {
 		var m = A.MODELS[S.model];
-		$("ai-modelnote").textContent = m.blurb + " Answer up to about " + Math.round(m.caps[S.len] * 0.75).toLocaleString("en-US") + " words" + (S.model === "opus" ? " (its thinking counts too)." : ".");
+		$("ai-modelnote").textContent = m.blurb + " Answer up to about " + Math.round(m.caps[S.len] * 0.75).toLocaleString("en-US") + " words" + (m.thinks ? " (its thinking counts too)." : ".");
 		var msgs = draftMessages(), q = A.chatQuote(S.model, A.estimateChatTokens(msgs.length ? msgs : [{ role: "user", content: "" }]), S.len);
 		var hist = msgs.length > 1 ? ' <span class="ai-sub">incl. ' + Math.floor(msgs.length / 2) + " earlier exchange" + (msgs.length > 3 ? "s" : "") + "</span>" : "";
 		$("ai-price").innerHTML = "about <b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>" + hist;
-		var on = status.chat && !busy;
+		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
 		$("ai-send").textContent = busy ? "Working…" : "Pay & send";
-		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8);
+		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>";
-		$("ai-make").disabled = !(status.image && !busy);
-		$("ai-make").textContent = status.image ? "Pay & create" : "Coming soon";
+		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
+		$("ai-make").disabled = !(ion && !busy);
+		$("ai-make").textContent = ion ? "Pay & create" : "Coming soon";
 		if (typeof paintVprice === "function") paintVprice();
 	}
 	["ai-in", "ai-prompt"].forEach(function (id) { $(id).addEventListener("input", paintPrice); });
@@ -475,13 +560,14 @@
 	(function () {
 		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; });
 		$("ai-checked").textContent = A.PRICES_CHECKED;
-		$("ai-imodel").textContent = A.IMAGE.name;
 		var rows = ["<tr><th>Model</th><th>Short</th><th>Medium</th><th>Long</th></tr>"];
 		Object.keys(A.MODELS).forEach(function (k) {
 			rows.push("<tr><td>" + esc(A.MODELS[k].name) + "</td>" + Object.keys(A.LENGTHS).map(function (l) { return "<td>" + A.chatQuote(k, 500, l).price + " HBD</td>"; }).join("") + "</tr>");
 		});
 		rows.push('<tr><td colspan="4" class="ai-sub">A new chat with a short question (about 500 tokens sent). Longer chats cost more.</td></tr>');
-		rows.push("<tr><th>Picture (square)</th><th>Draft</th><th>Good</th><th>Best</th></tr><tr><td>" + esc(A.IMAGE.name) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
+		rows.push("<tr><th>Picture (square)</th><th>Draft</th><th>Good</th><th>Best</th></tr><tr><td>" + esc(A.IMAGES.gpt.name) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
+		rows.push("<tr><th>Picture (any shape)</th><th>1k</th><th>2k</th><th></th></tr>");
+		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === "xai"; }).forEach(function (k) { rows.push("<tr><td>" + esc(A.IMAGES[k].name) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + A.imageQuote(rq, "1024x1024", 0, k).price + " HBD</td>"; }).join("") + "<td></td></tr>"); });
 		rows.push("<tr><th>Video (480p)</th><th>5 s</th><th>8 s</th><th>15 s</th></tr>");
 		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(A.VIDEO.models[k].name) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
 		rows.push('<tr><td colspan="4" class="ai-sub">720p costs 1.5 times as much and 1080p 2.25 times.</td></tr>');
@@ -498,7 +584,7 @@
 		if (mock) {
 			return new Promise(function (res) {
 				setTimeout(function () {
-					var q = body.kind === "image" ? A.imageQuote(body.quality, body.size, Math.ceil(body.prompt.length / 2) + 8) : A.chatQuote(body.model, A.estimateChatTokens(body.messages), body.len);
+					var q = body.kind === "image" ? A.imageQuote(body.quality, body.size, Math.ceil(body.prompt.length / 2) + 8, body.model) : A.chatQuote(body.model, A.estimateChatTokens(body.messages), body.len);
 					var id = A.newId(); MOCK_Q[id] = { body: body, q: q, tries: 0 };
 					res({ status: 200, id: id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.hbd, inTokens: q.inTokens, maxOut: q.maxOut || 0 });
 				}, 250);
@@ -670,16 +756,16 @@
 	function makeImage(isRetry) {
 		if (busy) return;
 		var u = who();
-		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value;
-		if (!status.image) { msg("Pictures are coming soon.", "err"); return; }
+		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value, imod = S.imod;
+		if (!status.image || !provOn(A.IMAGES[imod].prov)) { msg(A.IMAGES[imod].name + " pictures are coming soon.", "err"); return; }
 		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
-		var err = isRetry ? null : A.checkImage(prompt, quality, size);
+		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod);
 		if (err) { msg(err, "err"); return; }
 		setBusy(true);
-		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", prompt: prompt, quality: quality, size: size }).then(function (q) {
+		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size }).then(function (q) {
 			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
 			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
-			return pay(q).then(function () { return { id: q.id, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name }; });
+			return pay(q).then(function () { return { id: q.id, model: imod, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name }; });
 		});
 		job.then(function (j) {
 			pendingImg = null;
@@ -702,7 +788,7 @@
 			}
 			var key = out.j.id;
 			return idbDo("readwrite", function (s) { return s.put(out.blob, key); }).then(function () {
-				var l = imgList(); l.unshift({ id: key, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() }); imgSave(l.slice(0, 200));
+				var l = imgList(); l.unshift({ id: key, model: out.j.model, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() }); imgSave(l.slice(0, 200));
 				msg("Done. The picture is below (kept in this browser).", "ok"); paintGal();
 			});
 		}).catch(function (e) {
@@ -1014,8 +1100,8 @@
 	}
 	if (!mock) {
 		fetch("/api/ai?op=status", { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
-			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true }; paintOff(); paintPrice();
-		}).catch(function () { status = { chat: false, image: false, video: false, known: true }; paintOff(); paintPrice(); });
+			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true, prov: j.prov || { anthropic: !!j.chat, openai: !!j.image, xai: !!j.video } }; fillModels(); paintOff(); paintPrice();
+		}).catch(function () { status = { chat: false, image: false, video: false, known: true, prov: {} }; fillModels(); paintOff(); paintPrice(); });
 	}
 
 	/* ---------- Fill window for the chat ---------- */

@@ -14,8 +14,10 @@
 	var LS = "mes-ai:v1", LS_IMG = "mes-ai:imgs";
 	var mock = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]mock=1\b/.test(location.search);
 	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
-	var status = { chat: mock, image: mock, video: mock, known: mock };
-	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; }
+	var status = { chat: mock, image: mock, video: mock, known: mock, prov: { anthropic: true, openai: true, xai: true } };
+	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; status.prov = { anthropic: true, openai: false, xai: false }; }
+	// is this company's key set? (unknown until the status call answers: then everything shows as on)
+	function provOn(p) { return !status.known || !status.prov || !!status.prov[p]; }
 	var busy = false;
 
 	/* ---------- saved state ---------- */
@@ -24,6 +26,8 @@
 	if (!Array.isArray(S.chats)) S.chats = [];
 	if (!A.MODELS[S.model]) S.model = A.DEFAULT_MODEL;
 	if (!A.LENGTHS[S.len]) S.len = "medium";
+	if (!A.IMAGES[S.imod]) S.imod = "gpt";
+	if (!S.iq || typeof S.iq !== "object") S.iq = {};
 	var qTab = /[?&]tab=(img|chat|vid)\b/.exec(location.search);
 	if (qTab) S.tab = qTab[1];
 	if (S.tab !== "img" && S.tab !== "vid") S.tab = "chat";
@@ -155,8 +159,32 @@
 	});
 
 	/* ---------- options + live price ---------- */
-	$("ai-model").innerHTML = Object.keys(A.MODELS).map(function (k) { return '<option value="' + k + '">' + esc(A.MODELS[k].name) + "</option>"; }).join("");
-	$("ai-model").value = S.model;
+	// model lists grouped by company; a company whose key is not set yet shows its models greyed out with "(soon)"
+	function fillModels() {
+		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)" };
+		$("ai-model").innerHTML = Object.keys(groups).map(function (p) {
+			return '<optgroup label="' + groups[p] + '">' + Object.keys(A.MODELS).filter(function (k) { return A.MODELS[k].prov === p; }).map(function (k) {
+				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (soon)") + "</option>";
+			}).join("") + "</optgroup>";
+		}).join("");
+		if (!provOn(A.MODELS[S.model].prov)) { var alt = Object.keys(A.MODELS).filter(function (k) { return provOn(A.MODELS[k].prov); })[0]; if (alt) S.model = alt; }
+		$("ai-model").value = S.model;
+		$("ai-imod").innerHTML = Object.keys(A.IMAGES).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(im.name) + (on ? "" : " (soon)") + "</option>"; }).join("");
+		if (!provOn(A.IMAGES[S.imod].prov)) { var ia = Object.keys(A.IMAGES).filter(function (k) { return provOn(A.IMAGES[k].prov); })[0]; if (ia) S.imod = ia; }
+		$("ai-imod").value = S.imod;
+		fillQuality();
+	}
+	// picture quality: GPT Image = Draft / Good / Best, Grok Imagine = 1k / 2k; each company's last choice is remembered
+	function fillQuality() {
+		var im = A.IMAGES[S.imod], x = im.prov === "xai";
+		var opts = x ? A.XIMAGE.res : { low: "Draft (fast, cheap)", medium: "Good", high: "Best" };
+		var want = S.iq[im.prov] && opts[S.iq[im.prov]] ? S.iq[im.prov] : (x ? "1k" : "medium");
+		$("ai-q").innerHTML = Object.keys(opts).map(function (k) { return '<option value="' + k + '"' + (k === want ? " selected" : "") + ">" + esc(opts[k]) + "</option>"; }).join("");
+		$("ai-imodel").textContent = A.PROVIDERS[im.prov] + "'s " + im.name.replace(/ \(.*\)$/, "");
+	}
+	fillModels();
+	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintPrice(); });
+	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + A.LENGTHS[k] + "</button>"; }).join("");
 	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
@@ -173,17 +201,18 @@
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
 	function paintPrice() {
 		var m = A.MODELS[S.model];
-		$("ai-modelnote").textContent = m.blurb + " Answer up to about " + Math.round(m.caps[S.len] * 0.75).toLocaleString("en-US") + " words" + (S.model === "opus" ? " (its thinking counts too)." : ".");
+		$("ai-modelnote").textContent = m.blurb + " Answer up to about " + Math.round(m.caps[S.len] * 0.75).toLocaleString("en-US") + " words" + (m.thinks ? " (its thinking counts too)." : ".");
 		var msgs = draftMessages(), q = A.chatQuote(S.model, A.estimateChatTokens(msgs.length ? msgs : [{ role: "user", content: "" }]), S.len);
 		var hist = msgs.length > 1 ? ' <span class="ai-sub">incl. ' + Math.floor(msgs.length / 2) + " earlier exchange" + (msgs.length > 3 ? "s" : "") + "</span>" : "";
 		$("ai-price").innerHTML = "about <b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>" + hist;
-		var on = status.chat && !busy;
+		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
 		$("ai-send").textContent = busy ? "Working…" : "Pay & send";
-		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8);
+		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>";
-		$("ai-make").disabled = !(status.image && !busy);
-		$("ai-make").textContent = status.image ? "Pay & create" : "Coming soon";
+		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
+		$("ai-make").disabled = !(ion && !busy);
+		$("ai-make").textContent = ion ? "Pay & create" : "Coming soon";
 		if (typeof paintVprice === "function") paintVprice();
 	}
 	["ai-in", "ai-prompt"].forEach(function (id) { $(id).addEventListener("input", paintPrice); });
@@ -195,13 +224,14 @@
 	(function () {
 		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; });
 		$("ai-checked").textContent = A.PRICES_CHECKED;
-		$("ai-imodel").textContent = A.IMAGE.name;
 		var rows = ["<tr><th>Model</th><th>Short</th><th>Medium</th><th>Long</th></tr>"];
 		Object.keys(A.MODELS).forEach(function (k) {
 			rows.push("<tr><td>" + esc(A.MODELS[k].name) + "</td>" + Object.keys(A.LENGTHS).map(function (l) { return "<td>" + A.chatQuote(k, 500, l).price + " HBD</td>"; }).join("") + "</tr>");
 		});
 		rows.push('<tr><td colspan="4" class="ai-sub">A new chat with a short question (about 500 tokens sent). Longer chats cost more.</td></tr>');
-		rows.push("<tr><th>Picture (square)</th><th>Draft</th><th>Good</th><th>Best</th></tr><tr><td>" + esc(A.IMAGE.name) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
+		rows.push("<tr><th>Picture (square)</th><th>Draft</th><th>Good</th><th>Best</th></tr><tr><td>" + esc(A.IMAGES.gpt.name) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
+		rows.push("<tr><th>Picture (any shape)</th><th>1k</th><th>2k</th><th></th></tr>");
+		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === "xai"; }).forEach(function (k) { rows.push("<tr><td>" + esc(A.IMAGES[k].name) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + A.imageQuote(rq, "1024x1024", 0, k).price + " HBD</td>"; }).join("") + "<td></td></tr>"); });
 		rows.push("<tr><th>Video (480p)</th><th>5 s</th><th>8 s</th><th>15 s</th></tr>");
 		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(A.VIDEO.models[k].name) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
 		rows.push('<tr><td colspan="4" class="ai-sub">720p costs 1.5 times as much and 1080p 2.25 times.</td></tr>');
@@ -218,7 +248,7 @@
 		if (mock) {
 			return new Promise(function (res) {
 				setTimeout(function () {
-					var q = body.kind === "image" ? A.imageQuote(body.quality, body.size, Math.ceil(body.prompt.length / 2) + 8) : A.chatQuote(body.model, A.estimateChatTokens(body.messages), body.len);
+					var q = body.kind === "image" ? A.imageQuote(body.quality, body.size, Math.ceil(body.prompt.length / 2) + 8, body.model) : A.chatQuote(body.model, A.estimateChatTokens(body.messages), body.len);
 					var id = A.newId(); MOCK_Q[id] = { body: body, q: q, tries: 0 };
 					res({ status: 200, id: id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.hbd, inTokens: q.inTokens, maxOut: q.maxOut || 0 });
 				}, 250);
@@ -390,16 +420,16 @@
 	function makeImage(isRetry) {
 		if (busy) return;
 		var u = who();
-		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value;
-		if (!status.image) { msg("Pictures are coming soon.", "err"); return; }
+		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value, imod = S.imod;
+		if (!status.image || !provOn(A.IMAGES[imod].prov)) { msg(A.IMAGES[imod].name + " pictures are coming soon.", "err"); return; }
 		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
-		var err = isRetry ? null : A.checkImage(prompt, quality, size);
+		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod);
 		if (err) { msg(err, "err"); return; }
 		setBusy(true);
-		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", prompt: prompt, quality: quality, size: size }).then(function (q) {
+		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size }).then(function (q) {
 			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
 			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
-			return pay(q).then(function () { return { id: q.id, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name }; });
+			return pay(q).then(function () { return { id: q.id, model: imod, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name }; });
 		});
 		job.then(function (j) {
 			pendingImg = null;
@@ -422,7 +452,7 @@
 			}
 			var key = out.j.id;
 			return idbDo("readwrite", function (s) { return s.put(out.blob, key); }).then(function () {
-				var l = imgList(); l.unshift({ id: key, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() }); imgSave(l.slice(0, 200));
+				var l = imgList(); l.unshift({ id: key, model: out.j.model, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() }); imgSave(l.slice(0, 200));
 				msg("Done. The picture is below (kept in this browser).", "ok"); paintGal();
 			});
 		}).catch(function (e) {
@@ -734,8 +764,8 @@
 	}
 	if (!mock) {
 		fetch("/api/ai?op=status", { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
-			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true }; paintOff(); paintPrice();
-		}).catch(function () { status = { chat: false, image: false, video: false, known: true }; paintOff(); paintPrice(); });
+			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true, prov: j.prov || { anthropic: !!j.chat, openai: !!j.image, xai: !!j.video } }; fillModels(); paintOff(); paintPrice();
+		}).catch(function () { status = { chat: false, image: false, video: false, known: true, prov: {} }; fillModels(); paintOff(); paintPrice(); });
 	}
 
 	/* ---------- Fill window for the chat ---------- */

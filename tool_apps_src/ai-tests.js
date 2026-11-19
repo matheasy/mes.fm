@@ -37,7 +37,7 @@ for (const k of Object.keys(A.MODELS)) for (const len of Object.keys(A.LENGTHS))
 eq(bad, 0, "every chat quote covers cost x margin and is a whole 0.001 HBD");
 eq(A.imageQuote("medium", "1024x1024", 40).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6)), "image quote");
 eq(A.imageQuote("low", "1536x1024", 0).price, "0.008", "low landscape 0.005 x 1.5 = 0.0075 -> 0.008");
-let threw = false; try { A.chatQuote("gpt", 1, "short"); } catch (e) { threw = true; } eq(threw, true, "unknown model throws");
+let threw = false; try { A.chatQuote("gpt9", 1, "short"); } catch (e) { threw = true; } eq(threw, true, "unknown model throws");
 threw = false; try { A.chatQuote("sonnet", 1, "huge"); } catch (e) { threw = true; } eq(threw, true, "unknown length throws");
 ok(A.estimateChatTokens([{ role: "user", content: "hello there" }]) > A.estimateTokens(A.SYSTEM), "estimate includes the system prompt");
 
@@ -328,6 +328,73 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     r = mk("POST", { op: "vstatus", id: qf.id, acct: "dan" }); await hv(r.req, r.res);
     eq(J(r.res).retry, false, "only one retry");
   }
+
+  // ChatGPT text models, Grok Imagine pictures (OpenAI + xAI keys, mocked APIs)
+  {
+    const redis = fakeRedis(), calls = [];
+    let chainG = [], countMode = "ok";
+    const env = { OPENAI_API_KEY: "sk-oai", XAI_API_KEY: "xai-k", UPSTASH_REDIS_REST_TOKEN: "x" };
+    const oaiStream = sse([
+      { choices: [{ index: 0, delta: { role: "assistant", content: "" } }] },
+      { choices: [{ index: 0, delta: { content: "Hi " } }] },
+      { choices: [{ index: 0, delta: { content: "there" } }] },
+      { choices: [{ index: 0, delta: {}, finish_reason: "length" }] },
+      { choices: [], usage: { completion_tokens: 1200 } },
+    ]) + "data: [DONE]\n\n";
+    const fetchImpl = async (url, init) => {
+      calls.push({ url, body: init && init.body ? JSON.parse(init.body) : null, headers: init && init.headers });
+      if (/responses\/input_tokens$/.test(url)) return countMode === "ok" ? { ok: true, status: 200, json: async () => ({ object: "response.input_tokens", input_tokens: 100 }) } : { ok: false, status: 500, json: async () => ({}) };
+      if (/v1\/chat\/completions$/.test(url)) return { ok: true, status: 200, body: streamBody(oaiStream) };
+      if (/api\.x\.ai\/v1\/images\/generations$/.test(url)) return { ok: true, status: 200, json: async () => ({ data: [{ b64_json: "/9j/4AAQ", mime_type: "image/jpeg" }], usage: { cost_in_usd_ticks: 1 } }) };
+      throw new Error("unexpected " + url);
+    };
+    const hg = makeHandler({ env, redis, fetch: fetchImpl, now: () => T0, rpc: async () => chainG });
+    r = mk("GET", null, { op: "status" }); await hg(r.req, r.res);
+    eq([J(r.res).chat, J(r.res).image, J(r.res).prov], [true, true, { anthropic: false, openai: true, xai: true }], "status per company");
+    r = mk("POST", { op: "quote", acct: "gus", kind: "chat", model: "sonnet", len: "short", messages: [{ role: "user", content: "hi" }] }); await hg(r.req, r.res);
+    eq(r.res.statusCode, 503, "Claude off without the Anthropic key");
+    const msgs = [{ role: "user", content: "Say hi" }];
+    r = mk("POST", { op: "quote", acct: "gus", kind: "chat", model: "gpt", len: "short", messages: msgs }); await hg(r.req, r.res);
+    const qg = J(r.res);
+    const want = Math.ceil(100 * 1.05) + 8 + 4;
+    eq([r.res.statusCode, qg.inTokens, qg.price], [200, want, A.chatQuote("gpt", want, "short").price], "GPT quote from OpenAI's token count");
+    const cc = calls.find((c) => /input_tokens/.test(c.url));
+    eq([cc.body.model, cc.body.instructions, cc.headers.Authorization], ["gpt-6.2-sol", A.systemFor("gpt"), "Bearer sk-oai"], "token count request");
+    chainG = [tr(1, "gus", "mes", qg.price + " HBD", qg.memo, 5)];
+    r = mk("POST", { op: "run", id: qg.id, acct: "gus" }); await hg(r.req, r.res);
+    const lg = lines(r.res);
+    eq(lg, [{ t: "text", v: "Hi " }, { t: "text", v: "there" }, { t: "done", stop: "max_tokens", out: 1200 }], "GPT answer streamed, length -> max_tokens");
+    const gc = calls.find((c) => /chat\/completions/.test(c.url));
+    eq([gc.body.model, gc.body.max_completion_tokens, gc.body.reasoning_effort, gc.body.stream, gc.body.messages[0].role, /OpenAI's GPT/.test(gc.body.messages[0].content), gc.body.messages[1].content],
+      ["gpt-6.2-sol", 1200, "low", true, "system", true, "Say hi"], "chat completions request");
+    countMode = "down";
+    const long = [{ role: "user", content: "x".repeat(900) }];
+    r = mk("POST", { op: "quote", acct: "gus", kind: "chat", model: "gptpro", len: "medium", messages: long }); await hg(r.req, r.res);
+    eq(J(r.res).inTokens, A.safeTokens(A.systemFor("gptpro"), long), "count down -> safe (high) count");
+    ok(A.safeTokens(A.systemFor("gptpro"), long) > 900, "safe count is at least one token a character");
+    // Grok Imagine picture
+    r = mk("POST", { op: "quote", acct: "gus", kind: "image", model: "grok2", prompt: "A fox", quality: "2k", size: "1536x1024" }); await hg(r.req, r.res);
+    const qx = J(r.res);
+    eq([r.res.statusCode, qx.price], [200, A.imageQuote("2k", "1536x1024", 0, "grok2").price], "Grok picture quote");
+    r = mk("POST", { op: "quote", acct: "gus", kind: "image", model: "grok", prompt: "A fox", quality: "medium", size: "1024x1024" }); await hg(r.req, r.res);
+    eq(r.res.statusCode, 400, "Grok takes 1k / 2k, not GPT qualities");
+    chainG = [tr(2, "gus", "mes", qx.price + " HBD", qx.memo, 5)];
+    r = mk("POST", { op: "run", id: qx.id, acct: "gus" }); await hg(r.req, r.res);
+    eq(J(r.res), { t: "image", b64: "/9j/4AAQ", mime: "image/jpeg" }, "Grok picture answer");
+    const xc = calls.find((c) => /x\.ai\/v1\/images/.test(c.url));
+    eq([xc.body.model, xc.body.aspect_ratio, xc.body.resolution, xc.body.response_format, xc.body.n, xc.headers.Authorization], ["grok-imagine-image-2.0", "3:2", "2k", "b64_json", 1, "Bearer xai-k"], "xAI picture request");
+  }
+  // lib: the new tables
+  eq(A.imageQuote("1k", "1024x1024", 0, "grok").price, "0.030", "Grok 0.02 x 1.5");
+  eq(A.imageQuote("2k", "1024x1536", 0, "grok2").price, "0.090", "Grok 2.0 2k: 0.04 x 1.5 (2k guess) x 1.5");
+  eq(A.imageQuote("medium", "1024x1024", 40).price, A.imageQuote("medium", "1024x1024", 40, "gpt").price, "GPT picture is the default");
+  eq([A.checkImage("a", "2k", "1024x1024", "grok"), A.checkImage("a", "4k", "1024x1024", "grok"), A.checkImage("a", "1k", "1024x1024", "dalle")], [null, "Unknown quality.", "Unknown picture model."], "checkImage per model");
+  eq(A.streamPieceOpenAI({ data: null }), null, "[DONE] ignored");
+  eq(A.streamPieceOpenAI({ data: { error: { message: "bad" } } }), { t: "error", msg: "bad" }, "OpenAI stream error");
+  eq(A.streamPieceOpenAI({ data: { choices: [{ delta: {}, finish_reason: "content_filter" }] } }).stop, "refusal", "content_filter -> refusal");
+  ok(A.systemFor("sonnet") === A.SYSTEM && /OpenAI/.test(A.systemFor("gpt")), "system prompt names the right company");
+  Object.keys(A.MODELS).forEach((k) => ok(A.PROVIDERS[A.MODELS[k].prov], "model " + k + " has a known company"));
+  Object.keys(A.IMAGES).forEach((k) => ok(A.PROVIDERS[A.IMAGES[k].prov], "picture model " + k + " has a known company"));
 
   // origin check in production
   e = setup();

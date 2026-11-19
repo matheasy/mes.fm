@@ -88,12 +88,13 @@
 			<label class="tu-label" for="ai-prompt">Describe the picture</label>
 			<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="e.g. A watercolour fox sitting in fresh snow at sunrise, soft light"></textarea>
 			<div class="ai-opts">
-				<label class="ai-opt"><span>Quality</span><select id="ai-q" class="tu-input" data-native><option value="low">Draft (fast, cheap)</option><option value="medium" selected>Good</option><option value="high">Best</option></select></label>
+				<label class="ai-opt"><span>Model</span><select id="ai-imod" class="tu-input" data-native></select></label>
+				<label class="ai-opt"><span>Quality</span><select id="ai-q" class="tu-input" data-native></select></label>
 				<label class="ai-opt"><span>Shape</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">Square</option><option value="1536x1024">Landscape</option><option value="1024x1536">Portrait</option></select></label>
 				<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">Pay &amp; create</button>
 			</div>
-			<p class="tu-note">Pictures are made by OpenAI's <span id="ai-imodel">GPT Image 2</span> and kept only in this browser.</p>
+			<p class="tu-note">This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.</p>
 			<div class="ai-gal" id="ai-gal"></div>
 		</section>
 
@@ -118,12 +119,12 @@
 		<div class="tu-card ai-rules">
 			<h3>Rules</h3>
 			<p>By sending a message you agree not to use MES AI for anything illegal, for sexual content involving minors, to harass or threaten people, for malware or attacks on systems you do not own, to make weapons that can cause mass harm, or to pass off made-up pictures of real people as real. The AI companies' own usage policies apply too (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), and the AI may refuse. Answers can be wrong: check anything important.</p>
-			<p>Privacy: your messages go from our server to Anthropic (chat), OpenAI (pictures) or xAI (videos) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.</p>
+			<p>Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) or xAI (Grok Imagine pictures and videos) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.</p>
 		</div>
 
 		<div class="tu-seo">
 			<h2>About MES AI</h2>
-			<p>MES AI lets you use top AI models without a monthly plan: Anthropic's Claude for chat (Sonnet 5.5 for everyday work, Opus 5.5 for hard coding and research) OpenAI's GPT Image 2 for pictures and xAI's Grok Imagine for short videos with sound. You pay a few cents' worth of HBD per message on the Hive blockchain, and only for what you use.</p>
+			<p>MES AI lets you use top AI models without a monthly plan: Anthropic's Claude (Sonnet 5.5 for everyday work, Opus 5.5 for hard coding and research) or OpenAI's ChatGPT models (GPT-6.2 Sol and Astra) for chat, OpenAI's GPT Image 2 or xAI's Grok Imagine for pictures, and Grok Imagine for short videos with sound. You pay a few cents' worth of HBD per message on the Hive blockchain, and only for what you use.</p>
 			<h3>Questions</h3>
 			<dl>
 				<dt>Do I need an account?</dt>
@@ -131,7 +132,9 @@
 				<dt>Why pay per message instead of a subscription?</dt>
 				<dd>You only pay for what you use, nothing renews, and there is no balance that could be lost. The price is shown before every message.</dd>
 				<dt>Why did my answer stop in the middle?</dt>
-				<dd>It reached the answer length you paid for. Send "continue" (a new message) or pick Medium or Long next time. Opus thinks before it writes, and that thinking counts toward the length too.</dd>
+				<dd>It reached the answer length you paid for. Send "continue" (a new message) or pick Medium or Long next time. Opus and the ChatGPT models think before they write, and that thinking counts toward the length too.</dd>
+				<dt>Can I make videos with OpenAI's Sora?</dt>
+				<dd>No: OpenAI shut down Sora 2 and its video service for developers on September 24, 2026. Videos here are made by xAI's Grok Imagine.</dd>
 				<dt>Something went wrong after I paid.</dt>
 				<dd>Press <b>Try again</b> on that message: one free retry is kept for 24 hours. If that fails too, <a href="/contact?subject=MES%20AI">contact us</a> with the memo of your payment (it starts with mesai:).</dd>
 				<dt>Where is my chat history?</dt>
