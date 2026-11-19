@@ -347,6 +347,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.in-key {display:inline-block;width:0.8em;height:0.8em;border-radius:2px;margin-right:0.35em;vertical-align:-0.08em;}
 	#in .in-tip {position:absolute;top:6px;pointer-events:none;background:#1e2733;color:#ffffff;font-size:0.85em;line-height:1.5;padding:0.45em 0.65em;border-radius:0.35em;white-space:nowrap;display:none;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 	body.dark-mode #in.tu .in-tip {background:#2e343b;color:#f2f4f6;border:1px solid #4a525c;}
+	/* phones: a line above the chart instead of a box over it */
+	#in .in-tip.in-tip--line, body.dark-mode #in.tu .in-tip.in-tip--line {position:static;display:flex;flex-wrap:wrap;align-items:center;gap:0.15em 0.8em;white-space:normal;min-height:2.6em;background:none;color:var(--in-ink, inherit);border:0;border-bottom:1px dashed var(--in-line);border-radius:0;box-shadow:none;padding:0.25em 0 0.35em;margin-bottom:0.25em;font-size:0.84em;line-height:1.35;}
+	#in .in-tip--line span {display:inline-flex;align-items:center;}
+	#in .in-tip--line .in-tip__hint {color:var(--in-muted);}
 	.in-wrap {overflow-x:auto;}
 	.in-t {width:100%;border-collapse:collapse;font-size:0.9em;}
 	.in-t th, .in-t td {padding:0.45em 0.6em;border-bottom:1px solid var(--in-line);text-align:right;white-space:nowrap;}
@@ -723,7 +727,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/installs/js/installs.js?v=3" defer></script>
+	<script src="/installs/js/installs.js?v=4" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -562,6 +562,17 @@
     var d = CH.days[i], tip = $('db-tip'), cross = $('db-cross');
     var rows = CH.lines.map(function (l) { var q = l.pts.filter(function (p) { return p.d === d; })[0]; return q ? '<span style="color:' + l.color + '">■</span> ' + esc(l.name) + ': <b>' + D.fmt(q.y) + '</b>' : ''; }).filter(Boolean);
     if (!rows.length) { tip.style.display = 'none'; return; }
+    // phones: a line above the chart (a box beside the finger covered the lines)
+    var phone = window.matchMedia && matchMedia('(max-width: 700px)').matches, box = $('db-chart');
+    if (phone) {
+      if (tip.nextSibling !== box) box.parentNode.insertBefore(tip, box);
+      tip.classList.add('db-tip--line');
+      tip.innerHTML = '<b>' + d + '</b>' + rows.map(function (x) { return '<span>' + x + '</span>'; }).join('');
+      tip.style.display = 'flex'; tip.style.left = '';
+      cross.setAttribute('x1', CH.X(i)); cross.setAttribute('x2', CH.X(i)); cross.style.display = '';
+      return;
+    }
+    if (tip.parentNode !== box) { box.appendChild(tip); tip.classList.remove('db-tip--line'); }
     tip.innerHTML = '<b>' + d + '</b><br>' + rows.join('<br>');
     tip.style.display = 'block';
     var px = CH.X(i) * r.width / CH.W;
@@ -636,7 +647,7 @@
   var chart = $('db-chart');
   chart.addEventListener('pointermove', chartHover);
   chart.addEventListener('pointerdown', chartHover);
-  chart.addEventListener('pointerleave', function () { $('db-tip').style.display = 'none'; var c = $('db-cross'); if (c) c.style.display = 'none'; });
+  chart.addEventListener('pointerleave', function () { if ($('db-tip').classList.contains('db-tip--line')) return; $('db-tip').style.display = 'none'; var c = $('db-cross'); if (c) c.style.display = 'none'; });
   var rt = null;
   window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (DATA) renderHistory(); }, 120); });
   (function panels() {

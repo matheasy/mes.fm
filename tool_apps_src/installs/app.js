@@ -156,19 +156,37 @@
     DATES.forEach(function (d, i) { if (i % every === 0) h += '<text x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + d.slice(5) + '</text>'; });
     h += '<line id="in-cross" x1="0" x2="0" y1="' + padT + '" y2="' + (padT + ih) + '" stroke="' + cMuted + '" stroke-dasharray="3 3" visibility="hidden"/>';
     svg.innerHTML = h;
+    // phones: the numbers go in a line ABOVE the chart (like /search-console), so a finger never covers the bars
+    var phone = window.matchMedia && matchMedia('(max-width: 700px)').matches;
+    if (phone) {
+      if (tip.nextSibling !== box) box.parentNode.insertBefore(tip, box);
+      tip.classList.add('in-tip--line');
+      { delete tip.dataset.on; tip.innerHTML = '<span class="in-tip__hint">Tap a day for its numbers</span>'; tip.style.display = 'flex'; }
+    } else if (tip.parentNode !== box) { box.appendChild(tip); tip.classList.remove('in-tip--line'); tip.style.display = 'none'; }
     var move = function (e) {
       var pt = e.touches ? e.touches[0] : e, r = box.getBoundingClientRect(), i = Math.floor((pt.clientX - r.left - padL) / (r.width - padL - padR) * DATES.length);
-      if (i < 0 || i >= DATES.length) { tip.style.display = 'none'; return; }
+      if (i < 0 || i >= DATES.length) { if (!phone) tip.style.display = 'none'; return; }
       var d = DATES[i], day = byD[d], tot = 0, lines = '';
-      S.forEach(function (s) { var v = s.v(day); tot += v; lines += '<br><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ': ' + int(v); });
-      tip.innerHTML = '<b>' + new Date(d + 'T12:00:00Z').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) + '</b><br>' + int(tot) + ' installs' + lines +
-        (day && day.up ? '<br>' + int(day.up) + ' updates' : '') + (day && day.un ? '<br>' + int(day.un) + ' uninstalls (Android)' : '');
-      tip.style.display = 'block';
-      tip.style.left = Math.min(r.width - tip.offsetWidth - 4, Math.max(0, pt.clientX - r.left + 12)) + 'px';
+      var dl = new Date(d + 'T12:00:00Z').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      if (phone) {
+        S.forEach(function (s) { var v = s.v(day); tot += v; if (v) lines += '<span><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ' ' + int(v) + '</span>'; });
+        tip.innerHTML = '<b>' + dl + '</b><span>' + int(tot) + ' installs</span>' + lines +
+          (day && day.up ? '<span>' + int(day.up) + ' updates</span>' : '') + (day && day.un ? '<span>' + int(day.un) + ' uninstalls</span>' : '');
+        tip.dataset.on = '1';
+      } else {
+        S.forEach(function (s) { var v = s.v(day); tot += v; lines += '<br><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ': ' + int(v); });
+        tip.innerHTML = '<b>' + dl + '</b><br>' + int(tot) + ' installs' + lines +
+          (day && day.up ? '<br>' + int(day.up) + ' updates' : '') + (day && day.un ? '<br>' + int(day.un) + ' uninstalls (Android)' : '');
+      }
+      tip.style.display = phone ? 'flex' : 'block';
       var cr = $('in-cross'); if (cr) { var cx = padL + i * bw + bw / 2; cr.setAttribute('x1', cx); cr.setAttribute('x2', cx); cr.setAttribute('visibility', 'visible'); }
+      if (phone) return;
+      // beside the crosshair, flipped to its left past the middle (like /stats), never over the picked day
+      var px = pt.clientX - r.left;
+      tip.style.left = Math.max(0, px > r.width / 2 ? px - tip.offsetWidth - 14 : Math.min(r.width - tip.offsetWidth - 4, px + 14)) + 'px';
     };
     box.onmousemove = move; box.ontouchstart = move; box.ontouchmove = move;
-    box.onmouseleave = function () { tip.style.display = 'none'; var cr = $('in-cross'); if (cr) cr.setAttribute('visibility', 'hidden'); };
+    box.onmouseleave = function () { if (phone) return; tip.style.display = 'none'; var cr = $('in-cross'); if (cr) cr.setAttribute('visibility', 'hidden'); };
   }
 
   // sortable table: cols = [{k, label, f(row) -> html, v(row) -> sort value, cls}]

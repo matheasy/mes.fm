@@ -73,6 +73,8 @@
 	#db .db-tip {position:absolute;top:6px;pointer-events:none;background:#1e2733;color:#ffffff;font-size:0.82em;line-height:1.5;padding:0.45em 0.65em;border-radius:0.35em;white-space:nowrap;display:none;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 	#db .db-tip * {color:#ffffff;}
 	body.dark-mode #db.tu .db-tip {background:#2e343b;border:1px solid #4a525c;}
+	#db .db-tip.db-tip--line, body.dark-mode #db.tu .db-tip.db-tip--line {position:static;flex-wrap:wrap;align-items:center;gap:0.15em 0.8em;white-space:normal;background:none;border:0;border-bottom:1px dashed var(--db-line, #8885);border-radius:0;box-shadow:none;padding:0.25em 0 0.35em;margin-bottom:0.25em;}
+	#db .db-tip--line, #db .db-tip--line * {color:inherit;}
 	.db-cards {display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,22em),1fr));gap:0.9em;}
 	.db-card {border:1px solid var(--db-line);border-top:4px solid var(--pc,#64748b);border-radius:0.6em;padding:0.8em 0.9em;background:var(--db-card);min-width:0;}
 	.db-card.is-failed {border-top-color:var(--db-bad);}
