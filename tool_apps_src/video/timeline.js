@@ -198,11 +198,23 @@
 		if (tr && tr.lock) return;
 		var r = clipEl.getBoundingClientRect(), edge = e.clientX - r.left < 7 ? "l" : r.right - e.clientX < 7 ? "r" : null;
 		if (r.width < 22) edge = null;
+		// Alt + drag a video clip's end (or start): hold that frame as a still for as long as you drag (Camtasia's extend frame)
+		if (edge && e.altKey && c.type === "video") {
+			var gh = document.createElement("div"); gh.className = "vd-holdghost"; clipEl.parentNode.appendChild(gh);
+			drag = { mode: "hold", edge: edge, c: c, x0: e.clientX, el: clipEl, gh: gh, secs: 0, moved: false };
+			holdDraw(); inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
+		}
 		var prim = VE.selected().filter(unlocked), ids = e.altKey ? prim.map(function (x) { return x.id; }) : V.withLinks(VE.P, prim.map(function (x) { return x.id; }));   // linked partners move along (Alt: just this clip)
 		var group = ids.map(function (id) { return V.clip(VE.P, id); }).filter(function (x) { return x && unlocked(x); });
 		drag = { mode: edge ? "trim" : "move", edge: edge, c: c, x0: e.clientX, t0: t, snap: JSON.stringify(VE.P), prim: prim.length, orig: group.map(function (x) { return { c: x, start: x.start, in: x.in, out: x.out, track: x.track, anims: x.anims ? JSON.stringify(x.anims) : null }; }), moved: false, el: clipEl };
 		inner.setPointerCapture(e.pointerId); e.preventDefault();
 	});
+	function holdDraw() {
+		var d = drag, r = d.el.getBoundingClientRect(), pr = (d.gh.offsetParent || d.gh.parentNode).getBoundingClientRect(), w = d.secs * VE.pps;
+		var left = (d.edge === "r" ? r.right : r.left - w) - pr.left;
+		Object.assign(d.gh.style, { left: left + "px", top: (r.top - pr.top) + "px", width: Math.max(2, w) + "px", height: r.height + "px" });
+		d.gh.textContent = d.secs > 0 ? "Hold " + (+d.secs.toFixed(2)) + " s" : "";
+	}
 	// selection box: drawn in the timeline's own coordinates (it scrolls with it); near an edge the timeline scrolls on by itself
 	function pickUpdate() {
 		var d = drag; if (!d || d.mode !== "pick" || !d.box) return;
@@ -261,6 +273,10 @@
 			return;
 		}
 		if (drag.mode === "rowh") { drag.moved = true; drag.tr.h = V.clamp(Math.round(drag.h0 - (e.clientY - drag.y0)), V.ROW_MIN, V.ROW_MAX); T.render(); return; }
+		if (drag.mode === "hold") {
+			var hx = (e.clientX - drag.x0) * (drag.edge === "r" ? 1 : -1), fr = 1 / VE.P.fps; drag.moved = drag.moved || Math.abs(hx) > 3;
+			drag.secs = Math.max(0, Math.round(hx / VE.pps / fr) * fr); holdDraw(); return;
+		}
 		var dx = e.clientX - drag.x0; if (!drag.moved && Math.abs(dx) < 3 && drag.mode === "move" && !rowAt(e.clientY, drag.c)) return;
 		drag.moved = true; var dt = dx / VE.pps, ign = {}; drag.orig.forEach(function (o) { ign[o.c.id] = 1; });
 		if (drag.mode === "trim") {
@@ -343,6 +359,7 @@
 			return;
 		}
 		if (d.mode === "rowh") { if (d.moved) VE.commit("Layer height"); return; }
+		if (d.mode === "hold") { d.gh.remove(); if (d.secs > 0) VE.holdFrame(d.c, d.secs, d.edge === "r" ? "end" : "start"); else VE.emit("notice", "Alt + drag a video clip's end (or start) outwards to hold that frame."); return; }
 		if (d.mode === "track") {
 			rows.classList.remove("is-tdragging"); d.all.forEach(function (r) { r.style.transform = ""; });
 			if (d.moved && d.to !== d.from) { var tg = V.track(VE.P, d.all[d.to].getAttribute("data-track")), L = VE.P.tracks; L.splice(L.indexOf(d.tr), 1); L.splice(L.indexOf(tg) + (d.to > d.from ? 1 : 0), 0, d.tr); VE.commit("Move layer"); }

@@ -339,14 +339,19 @@
 	function ctxClose() { if (ctxEl) { ctxEl.remove(); ctxEl = null; } }
 	// Hold this frame (like Camtasia's extend frame): the video stops on the playhead's picture for a while, everything after it on
 	// that layer (and the clip's linked sound) moves later by that time, and the still is a normal picture clip you can lengthen
-	VE.holdFrame = function (c, secs) {
-		secs = secs || 1; var t = VE.t;
-		if (!c || c.type !== "video" || !V.active(c, t)) { toast("Put the playhead over a video clip first."); return; }
+	// where: "end" = the clip's last frame, added after it; "start" = its first frame, added before it; else the playhead's frame
+	// (a playhead sitting on the clip's end, or a frame either side of it, counts as "end")
+	VE.holdFrame = function (c, secs, where) {
+		secs = Math.max(1 / VE.P.fps, secs || 1); var fr1 = 1 / VE.P.fps;
+		if (!c || c.type !== "video") { toast("Pick a video clip first."); return; }
+		if (!where && Math.abs(VE.t - V.end(c)) <= fr1 + 1e-6) where = "end";
+		if (!where && !V.active(c, VE.t)) { toast("Put the playhead over a video clip first."); return; }
+		var t = where === "end" ? V.end(c) : where === "start" ? c.start : VE.t, grab = where === "end" ? Math.max(c.start, V.end(c) - fr1) : t;
 		var tr = V.track(VE.P, c.track); if (tr && tr.lock) { toast("That layer is locked."); return; }
 		if (P.playing) P.pause();
 		toast("Making a still of this frame…", 2500);
-		VE.clipFrame(c, t).then(function (blob) {
-			var f = new File([blob], (V.short(t) + " still of " + ((VE.media(c.media) || {}).name || "video")).replace(/[\/:*?"<>|.]+/g, "-") + ".png", { type: "image/png" });
+		VE.clipFrame(c, grab).then(function (blob) {
+			var f = new File([blob], (V.short(grab) + " still of " + ((VE.media(c.media) || {}).name || "video")).replace(/[\/:*?"<>|.]+/g, "-") + ".png", { type: "image/png" });
 			return importFiles([f]).then(function (ms) {
 				var m = ms && ms[0]; if (!m) throw new Error("The still could not be added.");
 				return new Promise(function (res) { (function wait(n) { if (m.state === "ready" || n > 200) res(m); else setTimeout(function () { wait(n + 1); }, 100); })(0); });
@@ -354,13 +359,13 @@
 		}).then(function (m) {
 			var cc = V.clip(VE.P, c.id); if (!cc) return;
 			var eps = 0.5 / VE.P.fps, ids = V.withLinks(VE.P, [cc.id]);
-			if (t > cc.start + eps && t < V.end(cc) - eps) V.splitAt(VE.P, ids, t, function () { return V.uid("c"); }, 1 / VE.P.fps);
+			if (!where && t > cc.start + eps && t < V.end(cc) - eps) V.splitAt(VE.P, ids, t, function () { return V.uid("c"); }, 1 / VE.P.fps);
 			var tracks = {}; ids.forEach(function (id) { var q = V.clip(VE.P, id); if (q) tracks[q.track] = 1; });
 			VE.P.clips.forEach(function (q) { if (tracks[q.track] && q.start >= t - eps) q.start += secs; });
 			var still = V.clipDefaults({ id: V.uid("c"), type: "image", media: m.id, track: cc.track, start: t, in: 0, out: secs });
 			["x", "y", "scale", "rot", "op"].forEach(function (k) { still[k] = cc[k]; }); still.crop = JSON.parse(JSON.stringify(cc.crop || { l: 0, t: 0, r: 0, b: 0 }));
 			VE.P.clips.push(still); VE.sel = [still.id]; VE.commit("Hold frame");
-			toast("Held the frame for " + secs + " s. Drag the still's right edge to hold it longer.", 6000);
+			toast("Held the frame for " + (+secs.toFixed(2)) + " s. Drag the still's edge to change it (Alt+drag a video's end or start does this in one move).", 6000);
 		}).catch(function (e) { toast("Could not hold the frame: " + e.message, 7000); });
 	};
 	VE.ctxMenu = function (x, y, info) {
@@ -375,7 +380,12 @@
 			it("Duplicate", K + "D", VE.duplicate);
 			sep();
 			it("Split at the playhead", "S", VE.split, !(V.active(c, VE.t) && VE.t > c.start));
-			if (c.type === "video") it("Hold this frame (1 s still)", "", function () { VE.holdFrame(c, 1); }, !V.active(c, VE.t));
+			if (c.type === "video") {
+				var atEnd = Math.abs(VE.t - V.end(c)) <= 1 / VE.P.fps + 1e-6;
+				if (!atEnd) it("Hold this frame (1 s still)", "", function () { VE.holdFrame(c, 1); }, !V.active(c, VE.t));
+				it("Hold the last frame (1 s still)", "Alt+drag end", function () { VE.holdFrame(c, 1, "end"); });
+				it("Hold the first frame (1 s still)", "Alt+drag start", function () { VE.holdFrame(c, 1, "start"); });
+			}
 			it("Delete", "Del", function () { VE.del(false); }); it("Ripple delete (close the gap)", "Shift+Del", function () { VE.del(true); });
 			sep();
 			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });

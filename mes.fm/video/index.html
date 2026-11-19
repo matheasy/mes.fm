@@ -646,6 +646,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #vd .vd-link, html body.dark-mode #vd .vd-narr a {color:#93c5fd;} html body.dark-mode #vd .vd-nrt {color:#fca5a5;}
 	html body.dark-mode #vd .vd-rec {color:#fecaca;border-color:#b91c1c;} html body.dark-mode #vd .vd-rec.is-on {background:#b91c1c;color:#fff;}
 	#vd .vd-nhead {display:block;font-size:0.95em;margin-top:0.2em;}
+	#vd .vd-holdghost {position:absolute;z-index:5;pointer-events:none;box-sizing:border-box;border:2px dashed #f59e0b;background:rgba(245,158,11,0.22);border-radius:4px;color:#fde68a;font:600 11px/1.2 system-ui,sans-serif;padding:3px 4px;white-space:nowrap;overflow:hidden;}
 	#vd .vd-nrecrow {align-items:center;flex-wrap:wrap;gap:0.4em;}
 	#vd .vd-nai {display:flex;flex-direction:column;gap:0.45em;margin-top:0.3em;padding-top:0.6em;border-top:1px solid var(--vd-line);}
 	#vd .vd-recbig {width:100%;min-height:52px;font-size:1.15em;font-weight:700;background:#dc2626;color:#fff;border:0;border-radius:0.6em;cursor:pointer;}
@@ -906,6 +907,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-nmeter{background:#3b4e68}
 	body.dark-mode #vd .vd-rec{border-color:#dd2222}
 	body.dark-mode #vd .vd-nsave code,body.dark-mode #vd .vd-narr code{background:#3b4e68}
+	body.dark-mode #vd .vd-holdghost{border:2px dashed #c47e08}
 	body.dark-mode #vd .vd-trrec .vd-ti{fill:#f26969}
 	body.dark-mode #vd .vd-krow:hover{background:rgba(26,26,26,0.04)}
 	body.dark-mode #vd .vd-krow.is-chg .vd-kname::after{color:#fcd05f}
@@ -1404,7 +1406,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=64" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=65" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
