@@ -21,6 +21,10 @@
 
     var NODES = ["https://api.hive.blog", "https://api.deathwing.me", "https://api.openhive.network", "https://hive-api.arcange.eu"];
     var LS_USER = "mes-hive-user";
+    /* every account logged in on this browser, so pages can switch between them: [{name, key, via, at, exp?}] newest first,
+       plus each HiveAuth account's own app session {name: session} (a Keychain-extension account needs no session: every
+       action is still approved in Keychain, which refuses an account whose keys it doesn't have) */
+    var LS_USERS = "mes-hive-users", LS_HASES = "mes-hive-has-all";
     var APP = "mes.fm/1";
     var good = 0;                       /* index of the node that answered last */
 
@@ -679,6 +683,7 @@
         var msg = "Log in to " + host + " as @" + name + " (" + new Date().toISOString() + " " + Math.random().toString(36).slice(2, 10) + ")";
         function save(u) {
             var s = ls(); if (s) try { s.setItem(LS_USER, JSON.stringify(u)); } catch (e) {}
+            remember(u);
             emit();
             return u;
         }
@@ -719,7 +724,108 @@
             if (keys.indexOf(pub) < 0) throw hasErr("The Keychain app answered with a key that is not one of @" + name + "'s keys. Pick that account in the app.");
         }, function () {});
     }
-    function logout() { var s = ls(); if (s) try { s.removeItem(LS_USER); s.removeItem(LS_HAS); } catch (e) {} emit(); }
+    function logout() {
+        var u = user(), s = ls();
+        if (s) try { s.removeItem(LS_USER); s.removeItem(LS_HAS); } catch (e) {}
+        if (u) forget(u.name, true);
+        emit();
+    }
+    /* ---------- several accounts on one browser ---------- */
+    function readJ(k, d) { var s = ls(); try { var v = s && JSON.parse(s.getItem(k) || "null"); return v == null ? d : v; } catch (e) { return d; } }
+    function writeJ(k, v) { var s = ls(); if (s) try { s.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    function remember(u) {
+        if (!u || !validName(u.name)) return;
+        var l = readJ(LS_USERS, []).filter(function (x) { return x && x.name !== u.name; });
+        l.unshift({ name: u.name, key: u.key || "", via: u.via || "keychain", at: u.at || Date.now(), exp: u.exp || 0 });
+        writeJ(LS_USERS, l.slice(0, 20));
+        if (u.via === "hiveauth") { var h = hasSession(); if (h && h.name === u.name) { var all = readJ(LS_HASES, {}); all[u.name] = h; writeJ(LS_HASES, all); } }
+    }
+    /* the accounts that can be switched to without logging in again (the current one first) */
+    function accounts() {
+        var cur = user(), all = readJ(LS_HASES, {}), now = Date.now();
+        var l = readJ(LS_USERS, []).filter(function (x) { return x && validName(x.name); });
+        if (cur && !l.some(function (x) { return x.name === cur.name; })) { remember(cur); l = readJ(LS_USERS, []); }
+        return l.map(function (x) {
+            var ok = x.via !== "hiveauth" || !!(all[x.name] && Number(all[x.name].expire) > now + 5000);
+            return { name: x.name, via: x.via, at: x.at, current: !!(cur && cur.name === x.name), ready: ok };
+        }).sort(function (a, b) { return (b.current - a.current) || (b.at - a.at); });
+    }
+    /* switch to a remembered account (no new approval needed); one that needs a fresh login is logged in again */
+    function switchTo(name, opt) {
+        name = cleanName(name);
+        var x = readJ(LS_USERS, []).filter(function (y) { return y && y.name === name; })[0];
+        var cur = user();
+        if (cur && cur.name === name) return Promise.resolve(cur);
+        if (x) {
+            if (x.via === "hiveauth") {
+                var h = readJ(LS_HASES, {})[name];
+                if (h && Number(h.expire) > Date.now() + 5000) {
+                    writeJ(LS_HAS, h);
+                    writeJ(LS_USER, { name: name, key: x.key, at: Date.now(), via: "hiveauth", exp: h.expire });
+                    remember(user()); emit(); return Promise.resolve(user());
+                }
+                return login(name, { via: "hiveauth" });
+            }
+            var s = ls(); if (s) try { s.removeItem(LS_HAS); } catch (e) {}
+            writeJ(LS_USER, { name: name, key: x.key, at: Date.now(), via: "keychain" });
+            remember(user()); emit(); return Promise.resolve(user());
+        }
+        return login(name, opt);
+    }
+    function forget(name, quiet) {
+        name = cleanName(name);
+        writeJ(LS_USERS, readJ(LS_USERS, []).filter(function (x) { return x && x.name !== name; }));
+        var all = readJ(LS_HASES, {}); if (all[name]) { delete all[name]; writeJ(LS_HASES, all); }
+        var cur = user();
+        if (cur && cur.name === name) { var s = ls(); if (s) try { s.removeItem(LS_USER); s.removeItem(LS_HAS); } catch (e) {} if (!quiet) emit(); }
+    }
+    /* A small "@name ▾" account menu any page can drop in: lists the remembered accounts (click = switch), "Add another
+       account" (asks for the name, then the normal login) and "Log out". opts.onSwitch(user) after a change, opts.onError(err). */
+    var swCss = false;
+    function switcher(el, opts) {
+        opts = opts || {};
+        if (!el) return null;
+        if (!swCss && root.document) {
+            swCss = true;
+            var st = document.createElement("style"); st.id = "mh-switch-css";
+            st.textContent = ".mh-sw{position:relative;display:inline-block}.mh-sw>button{font:inherit;cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#222;border-radius:1.2em;padding:.3em .8em}" +
+                ".mh-sw-pop{position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:15em;background:#fff;color:#222;border:1px solid #c3c9d2;border-radius:.6em;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:.35em;text-align:left}" +
+                ".mh-sw-pop button{display:flex;align-items:center;gap:.5em;width:100%;font:inherit;text-align:left;border:0;background:none;color:inherit;padding:.45em .55em;border-radius:.4em;cursor:pointer}" +
+                ".mh-sw-pop button:hover,.mh-sw-pop button:focus-visible{background:#eef1fb}.mh-sw-pop img{width:1.6em;height:1.6em;border-radius:50%}.mh-sw-pop small{color:#666;margin-left:auto}" +
+                ".mh-sw-pop hr{border:0;border-top:1px solid #e3e6ec;margin:.3em 0}.mh-sw-pop .is-cur{font-weight:700}" +
+                "body.dark-mode .mh-sw>button,body.dark-mode .mh-sw-pop{background:#22262e;color:#e6e6e6;border-color:#444b57}body.dark-mode .mh-sw-pop button:hover,body.dark-mode .mh-sw-pop button:focus-visible{background:#30364a}body.dark-mode .mh-sw-pop small{color:#aab}body.dark-mode .mh-sw-pop hr{border-top-color:#3a404c}";
+            document.head.appendChild(st);
+        }
+        var wrap = document.createElement("span"); wrap.className = "mh-sw";
+        var btn = document.createElement("button"); btn.type = "button"; btn.setAttribute("aria-haspopup", "true"); btn.setAttribute("aria-expanded", "false");
+        var pop = document.createElement("div"); pop.className = "mh-sw-pop"; pop.hidden = true; pop.setAttribute("role", "menu");
+        wrap.appendChild(btn); wrap.appendChild(pop); el.appendChild(wrap);
+        function label() { var u = user(); btn.textContent = u ? "Switch account \u25BE" : "Accounts \u25BE"; btn.title = u ? "Logged in as @" + u.name + ": switch to another Hive account" : "Your Hive accounts on this browser"; }
+        function done(u) { close(); if (opts.onSwitch) opts.onSwitch(u); }
+        function fail(e) { if (opts.onError) opts.onError(e); else if (root.alert) alert(e && e.message || e); }
+        function close() { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+        function open() {
+            var l = accounts();
+            pop.innerHTML = l.map(function (a) {
+                return '<button type="button" role="menuitem" data-n="' + esc(a.name) + '"' + (a.current ? ' class="is-cur" aria-current="true"' : "") + '><img alt="" src="' + esc(avatar(a.name)) + '"> @' + esc(a.name) +
+                    "<small>" + (a.current ? "now" : a.ready ? "" : "log in again") + "</small></button>";
+            }).join("") + (l.length ? "<hr>" : "") + '<button type="button" role="menuitem" data-add="1">+ Add another account</button>' +
+                (user() ? '<button type="button" role="menuitem" data-out="1">Log out @' + esc(user().name) + "</button>" : "");
+            pop.hidden = false; btn.setAttribute("aria-expanded", "true");
+            var f = pop.querySelector("button"); if (f) f.focus();
+        }
+        btn.addEventListener("click", function () { if (pop.hidden) open(); else close(); });
+        pop.addEventListener("click", function (e) {
+            var b = e.target.closest("button"); if (!b) return;
+            if (b.dataset.n) { if (b.classList.contains("is-cur")) { close(); return; } switchTo(b.dataset.n).then(done, fail); }
+            else if (b.dataset.add) { var n = root.prompt && prompt("Hive username to add:"); if (n) login(n).then(done, fail); else close(); }
+            else if (b.dataset.out) { logout(); done(null); }
+        });
+        document.addEventListener("click", function (e) { if (!wrap.contains(e.target)) close(); });
+        wrap.addEventListener("keydown", function (e) { if (e.key === "Escape") { close(); btn.focus(); } });
+        onChange(label); label();
+        return wrap;
+    }
     function need() { var u = user(); if (!u) { var e = new Error("Log in with Hive first."); e.code = "nologin"; throw e; } return u; }
 
     function post(o) {
@@ -773,7 +879,7 @@
         NODES: NODES, APP: APP, call: call, render: render, plain: plain, esc: esc,
         parseUrl: parseUrl, validName: validName, cleanName: cleanName, avatar: avatar, peakd: peakd, proxyImg: proxyImg,
         timeAgo: timeAgo, money: money, replyPermlink: replyPermlink,
-        user: user, login: login, logout: logout, onChange: onChange, keychain: keychain, hasKeychain: hasKeychain, signer: signer,
+        user: user, login: login, logout: logout, onChange: onChange, accounts: accounts, switchTo: switchTo, forget: forget, switcher: switcher, keychain: keychain, hasKeychain: hasKeychain, signer: signer,
         post: post, vote: vote, transfer: transfer, recurrentTransfer: recurrentTransfer, helpHtml: helpHtml,
         via: via, memoOk: memoOk, extension: extension, NO_MEMO: NO_MEMO, kcExplain: kcExplain, kcError: kcError, wrapKC: wrapKC,
         hiveAuth: { HOST: HAS_HOST, md5: md5, evpKdf: evpKdf, aesEncrypt: aesEncrypt, aesDecrypt: aesDecrypt, link: hasLink, ops: opsFor,
