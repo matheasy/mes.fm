@@ -1,0 +1,9 @@
+{
+  "appId": "fm.mes.copytext",
+  "appName": "MES Copy Text",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#a16207"
+  }
+}

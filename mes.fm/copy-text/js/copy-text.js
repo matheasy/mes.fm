@@ -1590,7 +1590,7 @@
 	// A- / 100% / A+ for the saved notes (main_js/text-size.js, loaded by pre_js; the input box gets its own via data-mes-tsize)
 	if (window.MESTextSize) {
 		var nfz = document.createElement("span"); nfz.className = "cp-nfzwrap"; nfz.textContent = "Texts";
-		var menu = $("cp-menu"); menu.parentNode.insertBefore(nfz, menu.nextSibling);
+		var mnu = $("cp-menu"); mnu.parentNode.insertBefore(nfz, mnu.nextSibling); // not "menu": a var would overwrite the menu() function
 		MESTextSize.add({ key: KEY + ":nfz", into: nfz, label: "Text size of the saved texts",
 			apply: function (s) { $("cp-out").style.setProperty("--cp-nfz", s); } });
 	}

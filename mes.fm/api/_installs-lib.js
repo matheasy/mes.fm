@@ -15,7 +15,8 @@
     { k: 'gpa', name: 'GPA Calculator', bundle: 'fm.mes.gpacalculator', ios: '6824052607', android: 'fm.mes.gpacalculator', title: /\bgpa\b/i, web: '/gpacalculator' },
     { k: 'fit', name: 'Fitness Calculators', bundle: 'fm.mes.fitnesscalculators', ios: '6824113713', android: 'fm.mes.fitnesscalculators', title: /fitness/i, web: '/bmr-calculator' },
     { k: 'polls', name: 'Polls', bundle: 'fm.mes.polls', ios: '6833587418', android: 'fm.mes.polls', title: /poll/i, web: '/polls' },
-    { k: 'timer', name: 'Timer', bundle: 'fm.mes.timer', ios: '6833587925', android: 'fm.mes.timer', title: /timer/i, web: '/timer' }
+    { k: 'timer', name: 'Timer', bundle: 'fm.mes.timer', ios: '6833587925', android: 'fm.mes.timer', title: /timer/i, web: '/timer' },
+    { k: 'copytext', name: 'Copy Text', bundle: 'fm.mes.copytext', ios: null, android: 'fm.mes.copytext', title: /copy text/i, web: '/copy-text' }
   ];
   I.appByKey = function (k) { for (var i = 0; i < I.APPS.length; i++) if (I.APPS[i].k === k) return I.APPS[i]; return null; };
 
