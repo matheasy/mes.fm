@@ -54,10 +54,10 @@ const PAGES = [
     slug: "crypto-posts",
     sectionId: "crypto-posts",
     tileLabel: "Posts",
-    iconVersion: 4, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
+    iconVersion: 5, // icon = crop of the newest post's image (img/crypto-posts-icon.jpg); bump when refreshed
     title: "MES Crypto: Posts",
     description:
-      "MES crypto posts: new Hive games and apps on mes.fm (chess, billiards, tic-tac-toe, quantum-safe backups), MES Premium (no ads on mes.fm for 1 HBD a month), Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, the Hyperliquid flagged wallet, and getting the funds out with Claude AI.",
+      "MES crypto posts: MES AI (Claude, ChatGPT and Grok paid per message in HBD), new Hive games and apps on mes.fm (chess, billiards, tic-tac-toe, quantum-safe backups), MES Premium (no ads on mes.fm for 1 HBD a month), Canada's first stablecoin CADD on Solana, 3Speak sharing ad revenue, the S&P 500 vs oil, Alex Jones on XRP and a $320M Bitcoin hack, the Hyperliquid flagged wallet, and getting the funds out with Claude AI.",
   },
   {
     slug: "blockchain-tutorials",
