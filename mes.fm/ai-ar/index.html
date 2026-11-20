@@ -962,7 +962,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-off" id="ai-off" hidden></div>
 
 		<div class="tu-card ai-pay" id="ai-pay">
-			<button type="button" class="ai-payhide" id="ai-payhide" title="Hide this box (the About paying link brings it back)">Hide <span aria-hidden="true">✕</span></button>
+			<button type="button" class="ai-payhide" id="ai-payhide" title="إخفاء هذا المربع (رابط حول الدفع يعيده)">إخفاء <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">تدفع لكل رسالة، بعملة HBD</h2>
 			<p>لا اشتراك، ولا حساب، ولا بطاقة. تعرض كل رسالة سعرها قبل أن ترسلها. تدفع ذلك السعر بعملة <b>HBD</b> (دولار Hive) إلى <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> عبر Hive Keychain، فتعود الإجابة فورًا، وهذا كل شيء. <b>السعر هو ما تتقاضاه منا شركة الذكاء الاصطناعي × <span data-margin>1.5</span></b>: النصف الإضافي (50% فوق التكلفة) يُبقي mes.fm وأدواته المجانية قائمة.</p>
 			<details class="ai-why">
@@ -988,12 +988,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 دردشة</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ صورة</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 فيديو</button>
-			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ About paying</button>
+			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ حول الدفع</button>
 		</div>
 
 		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">
 			<div class="ai-bar" id="ai-chatbar">
-				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" aria-controls="ai-side" aria-expanded="true" title="Show or hide your chats">☰ Chats <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" aria-controls="ai-side" aria-expanded="true" title="إظهار محادثاتك أو إخفاؤها">☰ المحادثات <span class="ai-cn"></span></button>
 				<button type="button" class="tu-btn tu-btn--ghost ai-flip" id="ai-flip">⇄</button>
 				<span class="ai-curtitle" id="ai-curtitle"></span>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">＋ محادثة جديدة</button>
@@ -1001,11 +1001,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="ai-wrap">
 			<aside class="ai-side" id="ai-side" aria-label="محادثاتك">
-				<input type="search" id="ai-csearch" class="tu-input ai-csearch" placeholder="Search chats…" aria-label="Search your chats (names and messages)" autocomplete="off">
+				<input type="search" id="ai-csearch" class="tu-input ai-csearch" placeholder="ابحث في المحادثات…" aria-label="ابحث في محادثاتك (الأسماء والرسائل)" autocomplete="off">
 				<div class="ai-stools">
-					<label class="ai-sr" for="ai-csort">Sort</label>
-					<select id="ai-csort" class="tu-input" data-native><option value="recent">Newest first</option><option value="old">Oldest first</option><option value="name">By name</option></select>
-					<button type="button" class="ai-mini" id="ai-addfolder" title="Make a folder to group chats">＋ Folder</button>
+					<label class="ai-sr" for="ai-csort">ترتيب</label>
+					<select id="ai-csort" class="tu-input" data-native><option value="recent">الأحدث أولًا</option><option value="old">الأقدم أولًا</option><option value="name">حسب الاسم</option></select>
+					<button type="button" class="ai-mini" id="ai-addfolder" title="إنشاء مجلد لتجميع المحادثات">＋ مجلد</button>
 				</div>
 				<div class="ai-clist" id="ai-clist" role="list"></div>
 			</aside>
@@ -1028,8 +1028,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
-					<summary>Typical costs for long chats</summary>
-					<p class="tu-note">The whole chat is sent to the AI again with every message, so each message costs more as the chat grows. Price of one message with a Medium answer, by how long the chat already is (1,000 tokens is about 750 words):</p>
+					<summary>التكاليف المعتادة للمحادثات الطويلة</summary>
+					<p class="tu-note">تُرسل المحادثة كاملة إلى الذكاء الاصطناعي مع كل رسالة، لذلك تزداد تكلفة كل رسالة كلما طالت المحادثة. سعر رسالة واحدة بإجابة متوسطة، حسب طول المحادثة الحالي (1,000 رمز تعادل نحو 750 كلمة إنجليزية):</p>
 					<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ttable"></table></div>
 					<p class="tu-note" id="ai-tsession"></p>
 				</details>
@@ -1188,7 +1188,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=0b371aa1" defer></script><script src="/ai/js/ai.js?v=11" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=b7fca390" defer></script><script src="/ai/js/ai.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
