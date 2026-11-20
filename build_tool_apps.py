@@ -1370,6 +1370,15 @@ APPS = {
                 js_v="4", no_ads=True, no_comments=True,
                 pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/select-search.js"],
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
+    # MES Polls owner page (private, mes.fm/polls-stats, behind the middleware.js password like /ads): polls made over time, votes, /polls page
+    # views, question types, the reported / hidden queue (hide / unhide / keep / delete) and a searchable list of every kept poll, read from
+    # api/polls-admin.js (index ZSET poll:all written by api/poll.js); Hive polls made with mes.fm from polls.hivehub.dev. lib.js = MESPollStats.
+    # Wide, ad-free, no sidebar, noindex. Tests: node tool_apps_src/polls-stats-tests.js.
+    "polls-stats": dict(title="MES Polls Stats", page_title="MES Polls Stats: Polls, Votes and Reports",
+                tag="How people use MES Polls.", accent="#3b5bdb", dark="#2f4ac0", tint="#e7ecff",
+                desc="Private page: polls made over time, votes, kinds of question, reported polls and every poll on MES Polls.",
+                js_v="1", no_ads=True, no_comments=True, logo_from="polls",
+                head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     "dashboard": dict(title="MES Dashboard", page_title="MES Dashboard: Channels, Comments and Notifications",
                 tag="Every MES channel in one place.", accent="#4f46e5", dark="#3730a3", tint="#eef2ff",
                 desc="Private dashboard: followers, views, uploads, comments and notifications of the MES channels on YouTube, Rumble, Odysee, BitChute, 3Speak and Hive.",

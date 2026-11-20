@@ -48,6 +48,10 @@ export const config = {
     '/dashboard',
     '/dashboard/:path*',
     '/api/dashboard',
+    // the private MES Polls usage page (polls made, votes, question types, moderation queue) and its data
+    '/polls-stats',
+    '/polls-stats/:path*',
+    '/api/polls-admin',
     // the private list of fixes and new-app ideas (replaces two Telegram groups) and its data
     '/edits',
     '/edits/:path*',

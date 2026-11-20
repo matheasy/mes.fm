@@ -206,6 +206,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("installs", "MES App Installs"),
     ("dashboard", "MES Dashboard"),
     ("edits", "MES Edits"),
+    ("polls-stats", "MES Polls Stats"),
     ("fav", "MES Favourites"),
     ("ratings", "MES Ratings"),
     ("premium", "MES Premium"),

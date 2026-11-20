@@ -13,6 +13,8 @@
 // Moderation (App Store guideline 1.2): new polls whose text contains a slur are refused (BLOCK); anyone can report a poll; once
 // REPORT_HIDE different networks have reported it, it is hidden (GET answers 410, voting stops) until a moderator looks at it.
 // Reported poll ids sit in the sorted set poll:reported (score = reports) for review.
+// Every poll id is also in the sorted set poll:all (score = created ms), the index the owner page mes.fm/polls-stats reads
+// (api/polls-admin.js; polls made before the index existed are found once by a SCAN of poll:* keys).
 //
 // Poll fields: q question (<= 200), d description (<= 600), o 2-20 options (<= 100 each, no duplicates), m = most picks a voter may make
 // (1 = single choice), cl = closing time in ms (0 = open until the creator closes it; such polls close by themselves after a year),
@@ -140,6 +142,22 @@ async function limited(kind, ipH) {
   return c && c.result > LIM[kind];
 }
 
+/** moderation shared with api/polls-admin.js (the password-protected owner page): do = hide | unhide | ok | del */
+async function moderate(id, what, now) {
+  if (!ID_RE.test(String(id || ''))) return { status: 404, body: { error: 'poll not found' } };
+  const g = await getPoll(id);
+  if (!g) { await redis([['ZREM', 'poll:reported', id], ['ZREM', 'poll:all', id]]); return { status: 404, body: { error: 'poll not found' } }; }
+  const K = 'poll:' + id, p = g.p, exp = expiresSec(p);
+  if (what === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id], ['ZREM', 'poll:all', id]]); return { status: 200, body: { ok: true, deleted: true } }; }
+  if (what === 'hide') { p.hid = p.hid || now; await redis([['SET', K, JSON.stringify(p), 'EXAT', exp]]); return { status: 200, body: { ok: true, hidden: true } }; }
+  if (what === 'unhide' || what === 'ok') {
+    delete p.hid;
+    await redis([['SET', K, JSON.stringify(p), 'EXAT', exp], ['DEL', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]);
+    return { status: 200, body: { ok: true, hidden: false } };
+  }
+  return { status: 400, body: { error: 'bad moderation action' } };
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -186,7 +204,7 @@ module.exports = async (req, res) => {
       for (let tries = 0; tries < 4; tries++) {
         const id = newId();
         const out = await redis([['SET', 'poll:' + id, JSON.stringify(p), 'EXAT', expiresSec(p), 'NX']]);
-        if (out && out[0] && out[0].result === 'OK') { res.status(200).json({ id, key, poll: publicPoll(id, p, { n: p.o.map(() => 0), v: 0 }, now, true) }); return; }
+        if (out && out[0] && out[0].result === 'OK') { await redis([['ZADD', 'poll:all', now, id]]); res.status(200).json({ id, key, poll: publicPoll(id, p, { n: p.o.map(() => 0), v: 0 }, now, true) }); return; }
       }
       res.status(502).json({ error: 'could not save, try again' });
       return;
@@ -216,18 +234,8 @@ module.exports = async (req, res) => {
     if (!ID_RE.test(id)) { res.status(404).json({ error: 'poll not found' }); return; }
 
     if (act === 'mod') {
-      const g = await getPoll(id);
-      if (!g) { await redis([['ZREM', 'poll:reported', id]]); res.status(404).json({ error: 'poll not found' }); return; }
-      const K = 'poll:' + id, p = g.p, exp = expiresSec(p);
-      if (b.do === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]); res.status(200).json({ ok: true }); return; }
-      if (b.do === 'hide') { p.hid = p.hid || now; await redis([['SET', K, JSON.stringify(p), 'EXAT', exp]]); res.status(200).json({ ok: true, hidden: true }); return; }
-      if (b.do === 'unhide' || b.do === 'ok') {
-        delete p.hid;
-        await redis([['SET', K, JSON.stringify(p), 'EXAT', exp], ['DEL', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]);
-        res.status(200).json({ ok: true, hidden: false });
-        return;
-      }
-      res.status(400).json({ error: 'bad moderation action' });
+      const r = await moderate(id, b.do, now);
+      res.status(r.status).json(r.body);
       return;
     }
 
@@ -295,7 +303,7 @@ module.exports = async (req, res) => {
       if (!g) { res.status(404).json({ error: 'poll not found' }); return; }
       if (sha('k|' + b.key) !== g.p.h) { res.status(403).json({ error: 'only the person who made this poll can do that' }); return; }
       const K = 'poll:' + id;
-      if (act === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id]]); res.status(200).json({ ok: true }); return; }
+      if (act === 'del') { await redis([['DEL', K, K + ':n', K + ':b', K + ':ip', K + ':r', K + ':rip'], ['ZREM', 'poll:reported', id], ['ZREM', 'poll:all', id]]); res.status(200).json({ ok: true }); return; }
       const p = g.p;
       if (!p.x) p.x = Math.min(now, closesAt(p));
       const exp = expiresSec(p);
@@ -332,4 +340,6 @@ module.exports = async (req, res) => {
   }
 };
 
-module.exports._test = { hasSlur, REASONS, REPORT_HIDE, cleanPoll, counts, publicPoll, parsePicks, isOpen, closesAt, text, IP_POLL, LIM, KEEP, MAX_OPEN };
+module.exports.moderate = moderate;
+module.exports._redis = redis;
+module.exports._test = { hasSlur, ID_RE, expiresSec, REASONS, REPORT_HIDE, cleanPoll, counts, publicPoll, parsePicks, isOpen, closesAt, text, IP_POLL, LIM, KEEP, MAX_OPEN };

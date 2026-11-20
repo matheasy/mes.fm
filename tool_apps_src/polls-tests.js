@@ -21,6 +21,7 @@ global.fetch = async (url, opts) => {
       case "HGETALL": { const h = store.get(k); const r = []; if (h instanceof Map) for (const [x, y] of h) r.push(x, y); return { result: r }; }
       case "HLEN": { const h = store.get(k); return { result: h instanceof Map ? h.size : 0 }; }
       case "ZINCRBY": { const z = hash(k); const v = (Number(z.get(b)) || 0) + Number(a); z.set(b, String(v)); return { result: String(v) }; }
+      case "ZADD": { const z = hash(k); z.set(b, String(a)); return { result: 1 }; }
       case "ZREM": { const z = store.get(k); return { result: z instanceof Map && z.delete(a) ? 1 : 0 }; }
       case "ZREVRANGE": { const z = store.get(k); const r = []; if (z instanceof Map) [...z].sort((x, y) => y[1] - x[1]).slice(Number(a), Number(b) + 1).forEach(([m, sc]) => r.push(m, sc)); return { result: r }; }
       case "DEL": { let n = 0; for (const x of c.slice(1)) if (store.delete(x)) n++; return { result: n }; }
