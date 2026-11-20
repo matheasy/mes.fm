@@ -1159,7 +1159,7 @@
 	}
 
 	/* ---------- Fill window for the chat ---------- */
-	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-chat"), { bar: $("ai-chatbar") }); }
+	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-chat"), { bar: $("ai-chatbar"), t: T }); }
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
 
 	if (H && H.onChange) H.onChange(function () { paintAcct(); });

@@ -190,13 +190,14 @@
   function autoW(w) { return Math.round(Math.max(190, Math.min(320, w * 0.3))); }
   function changed(p) {
     if (p.sec.__mesSide) p.sec.__mesSide.apply(); try { if (p.opts.onChange) p.opts.onChange(p.sec.classList.contains('mes-pfill')); } catch (e) {} try { window.dispatchEvent(new Event('resize')); } catch (e) {} }
+  function L(p, s) { try { return p.opts.t ? p.opts.t(s) || s : s; } catch (e) { return s; } } // opts.t = the page's translate function
   function paint(p) {
     var on = p.sec.classList.contains('mes-pfill'), fs = fsEl() === p.sec;
     p.fill.setAttribute('aria-pressed', on && !fs ? 'true' : 'false');
-    p.fill.textContent = on && !fs ? '✕ Close' : '⤢ Fill window';
-    p.fill.title = on && !fs ? 'Back to the page (Esc)' : 'Cover the browser window with this card (Esc closes)';
+    p.fill.textContent = L(p, on && !fs ? '✕ Close' : '⤢ Fill window');
+    p.fill.title = L(p, on && !fs ? 'Back to the page (Esc)' : 'Cover the browser window with this card (Esc closes)');
     if (p.fs && p.ios) { p.fs.hidden = on; return; }
-    if (p.fs) { p.fs.setAttribute('aria-pressed', fs ? 'true' : 'false'); p.fs.textContent = fs ? '✕ Exit full screen' : resumeP === p ? '⛶ Back to full screen' : '⛶ Full screen'; p.fs.classList.toggle('mes-presume', resumeP === p && !fs); }
+    if (p.fs) { p.fs.setAttribute('aria-pressed', fs ? 'true' : 'false'); p.fs.textContent = L(p, fs ? '✕ Exit full screen' : resumeP === p ? '⛶ Back to full screen' : '⛶ Full screen'); p.fs.classList.toggle('mes-presume', resumeP === p && !fs); }
   }
   function setFill(p, on) {
     if (!on && resumeP === p) { resumeP = null; fsP = null; }
@@ -250,7 +251,7 @@
     });
     g.appendChild(p.fill);
     if (canFs) {
-      p.fs = document.createElement('button'); p.fs.type = 'button'; p.fs.className = 'mes-pbtn'; p.fs.title = 'Show this card on the whole screen';
+      p.fs = document.createElement('button'); p.fs.type = 'button'; p.fs.className = 'mes-pbtn'; p.fs.title = L(p, 'Show this card on the whole screen');
       p.fs.addEventListener('click', function () {
         if (fsEl() === sec) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
         if (open === p) { sec.classList.remove('mes-pfill'); document.documentElement.classList.remove('mes-pfill-on'); open = null; }
@@ -260,8 +261,8 @@
       g.appendChild(p.fs);
     } else if (iosPhone) {
       p.ios = true;
-      p.fs = document.createElement('button'); p.fs.type = 'button'; p.fs.className = 'mes-pbtn'; p.fs.textContent = '⛶ Full screen';
-      p.fs.title = 'Fill the screen (iPhone: for real full screen, Add to Home Screen)';
+      p.fs = document.createElement('button'); p.fs.type = 'button'; p.fs.className = 'mes-pbtn'; p.fs.textContent = L(p, '⛶ Full screen');
+      p.fs.title = L(p, 'Fill the screen (iPhone: for real full screen, Add to Home Screen)');
       p.fs.addEventListener('click', function () { setFill(p, true); iosTip(p); });
       g.appendChild(p.fs);
     }

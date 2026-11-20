@@ -637,7 +637,7 @@
 	function chartBox(sp, opts) {
 		var box = document.createElement("div"); box.className = "ai-chart"; box.__sp = sp;
 		var types = sp.series.length === 1 ? ["bar", "line", "pie"] : ["bar", "line"];
-		box.innerHTML = '<div class="ai-chbar">' + types.map(function (k) { return '<button type="button" class="ai-mini" data-ct="' + k + '" aria-pressed="' + (k === sp.type) + '">' + esc(T({ bar: "Bars", line: "Line", pie: "Pie" }[k])) + "</button>"; }).join("") +
+		box.innerHTML = '<div class="ai-chbar">' + types.map(function (k) { return '<button type="button" class="ai-mini" data-ct="' + k + '" aria-pressed="' + (k === sp.type) + '">' + esc({ bar: T("Bars"), line: T("Line"), pie: T("Pie") }[k]) + "</button>"; }).join("") +
 			'<button type="button" class="ai-mini" data-cpng>' + esc(T("Save picture")) + "</button>" + (opts && opts.close ? '<button type="button" class="ai-mini" data-cclose>' + esc(T("Hide chart")) + "</button>" : "") + '</div><div class="ai-chsvg"></div>';
 		box.addEventListener("click", function (e) {
 			var b = e.target.closest("button"); if (!b) return;
@@ -2120,7 +2120,7 @@
 	}
 
 	/* ---------- Fill window for the chat ---------- */
-	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-chat"), { bar: $("ai-chatbar") }); }
+	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-chat"), { bar: $("ai-chatbar"), t: T }); }
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
 
 	if (H && H.onChange) H.onChange(function () { paintAcct(); });

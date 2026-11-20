@@ -15,6 +15,8 @@ function collect() {
 	const app = fs.readFileSync(path.join(SRC, 'app.js'), 'utf8') + fs.readFileSync(path.join(SRC, 'rich.js'), 'utf8'), html = fs.readFileSync(path.join(SRC, 'content.html'), 'utf8');
 	const keys = new Set(lits(app));
 	(html.match(/\{\{tr:([\s\S]*?)\}\}/g) || []).forEach((x) => keys.add(x.slice(5, -2)));
+	// the Fill window / Full screen buttons of /main_js/panel-view.js (the page passes T as opts.t)
+	['⤢ Fill window', '✕ Close', '⛶ Full screen', '✕ Exit full screen', '⛶ Back to full screen', 'Back to the page (Esc)', 'Cover the browser window with this card (Esc closes)', 'Show this card on the whole screen', 'Fill the screen (iPhone: for real full screen, Add to Home Screen)'].forEach((k) => keys.add(k));
 	Object.keys(A.MODELS).forEach((k) => keys.add(A.MODELS[k].blurb));
 	Object.keys(A.LENGTHS).forEach((k) => keys.add(A.LENGTHS[k]));
 	Object.keys(A.IMAGES).forEach((k) => keys.add(A.IMAGES[k].name));
