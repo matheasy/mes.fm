@@ -57,6 +57,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   tagline: 'Stablecoins, the Magi BTC/HBD pool, ACE and SURGE, across every wallet.',
                   homeHref: 'https://mes.fm/cash',
                 },
+                summary: {
+                  title: 'MES Summary',
+                  tagline: 'The whole portfolio over time: every check since 2019, by section, in USD, CAD and BTC.',
+                  homeHref: 'https://mes.fm/summary',
+                },
                 strategy: {
                   title: 'MES Strategy',
                   tagline: 'Your Cash LP → Tokens → Store of Value rotation: what to move, when, and why.',

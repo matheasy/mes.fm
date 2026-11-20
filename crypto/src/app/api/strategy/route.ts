@@ -24,11 +24,13 @@ export interface StrategyStore {
 function cleanEntry(e: unknown): LogEntry | null {
   if (!e || typeof e !== 'object') return null;
   const x = e as Record<string, unknown>;
-  const b = (v: unknown) => v === 'cash' || v === 'tokens' || v === 'sov';
+  const b = (v: unknown) => v === 'cash' || v === 'lp' || v === 'tokens' || v === 'sov';
   if (typeof x.id !== 'string' || typeof x.moveId !== 'string' || typeof x.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x.date)) return null;
   if (!b(x.from) || !b(x.to)) return null;
   const usd = Number(x.usd);
   if (!Number.isFinite(usd) || usd < 0 || usd > 1e9) return null;
+  const cad = Number(x.cad);
+  const lpUsd = Number(x.lpUsd);
   return {
     id: x.id.slice(0, 40),
     moveId: x.moveId.slice(0, 20),
@@ -36,6 +38,8 @@ function cleanEntry(e: unknown): LogEntry | null {
     usd,
     from: x.from as LogEntry['from'],
     to: x.to as LogEntry['to'],
+    cad: Number.isFinite(cad) && cad > 0 && cad < 10 ? cad : undefined,
+    lpUsd: Number.isFinite(lpUsd) && lpUsd > 0 && lpUsd <= usd ? lpUsd : undefined,
     note: typeof x.note === 'string' ? x.note.slice(0, 300) : undefined,
     skipped: x.skipped === true || undefined,
   };

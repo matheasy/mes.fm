@@ -89,7 +89,7 @@ export const DEFAULT_SETTINGS: Settings = {
   v: 2,
   moves: DEFAULT_MOVES,
   minHoldingUsd: 500,
-  minTradeUsd: 20,
+  minTradeUsd: 100,
   lpBasisUsd: 4777.13,
   sovLevel: true,
   sovSell: 'spread',
@@ -154,7 +154,8 @@ export function normalize(raw: unknown): Settings {
     v: 2,
     moves,
     minHoldingUsd: num(r.minHoldingUsd, d.minHoldingUsd, 0, 1e7),
-    minTradeUsd: num(r.minTradeUsd, d.minTradeUsd, 0, 1e6),
+    // 20 was the old default: saves that still have it move up to the $100 minimum (2026-11-20)
+    minTradeUsd: r.minTradeUsd === 20 ? d.minTradeUsd : num(r.minTradeUsd, d.minTradeUsd, 0, 1e6),
     lpBasisUsd: num(r.lpBasisUsd, d.lpBasisUsd, 0, 1e9),
     sovLevel: r.sovLevel ?? d.sovLevel,
     sovSell: r.sovSell === 'biggest' ? 'biggest' : 'spread',
