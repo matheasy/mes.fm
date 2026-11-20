@@ -40,7 +40,7 @@
 	}
 	function needMeta(it) {
 		if ((it.t && it.th && !(it.k === '3speak' && W.isFileName(it.t))) || META[it.key] || metaQ.some(function (x) { return x.key === it.key; })) return;
-		if (!/^(youtube|3speak|odysee)$/.test(it.k)) return;
+		if (!/^(youtube|3speak|odysee)$/.test(it.k) && !(it.k === 'x' && it.id)) return;
 		META[it.key] = { pending: 1 }; metaQ.push(it); pumpMeta();
 	}
 	function pumpMeta() {
@@ -54,6 +54,7 @@
 		if (it.k === '3speak') return speakInfo(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		if (it.k === 'odysee') return odyseeGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		if (it.k === 'vimeo' && it.id) return vimeoMeta(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
+		if (it.k === 'x' && it.id) return xGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		if (it.k === 'bitchute' && it.id) return bitchuteGet(it).then(function (i) { return { key: it.key, t: i.title, th: i.thumb }; });
 		return Promise.resolve(null);
 	}
@@ -116,7 +117,33 @@
 	}
 	function bcFallback(g) {
 		if (g !== gen || !cur) return;
-		W.noBC[cur.key] = 1; var p = position(); play(cur, p && p.pos > 1 ? { t: Math.floor(p.pos) } : {});
+		if (cur.k === 'x') W.noX[cur.key] = 1; else W.noBC[cur.key] = 1; var p = position(); play(cur, p && p.pos > 1 ? { t: Math.floor(p.pos) } : {});
+	}
+
+	/* X: X's syndication API (CORS only for X's own embed) gives the post's mp4 files; mes.fm/api/x-media looks them up and
+	   the file plays in our own <video>. video.twimg.com answers 403 to any other site's Referer, so while an X video is
+	   showing the page sends no Referer (meta referrer; YouTube / Vimeo / embeds set their own referrerPolicy on the frame).
+	   No video file -> X's own embed (dark card on the black stage), with the post's text as the title. */
+	var xCache = {};
+	function xGet(it) {
+		if (xCache[it.key]) return xCache[it.key];
+		var p = fetch('/api/x-media?id=' + encodeURIComponent(it.id), { credentials: 'omit' })
+			.then(function (r) { if (!r.ok) throw new Error('no info'); return r.json(); })
+			.then(function (j) { if (!j) throw new Error('no info'); return { url: j.url || '', variants: j.variants || [], title: j.title || '', thumb: j.thumb || '', gif: !!j.gif }; });
+		xCache[it.key] = p; p.catch(function () { delete xCache[it.key]; });
+		return p;
+	}
+	function xFile(it) {
+		return xGet(it).then(function (i) {
+			if (!i.url) { if (i.title || i.thumb) setMeta(it.key, i.title, i.thumb); throw new Error('no file'); }
+			var st = $('wt-stage'), px = Math.round(((st && st.clientWidth) || 960) * (window.devicePixelRatio || 1));
+			return { url: W.xPick(i.variants, px) || i.url, title: i.title, thumb: i.thumb, gif: i.gif };
+		});
+	}
+	var refMeta = null;
+	function noReferrer(on) {
+		if (!refMeta) { if (!on) return; refMeta = document.createElement('meta'); refMeta.name = 'referrer'; document.head.appendChild(refMeta); }
+		refMeta.content = on ? 'no-referrer' : 'strict-origin-when-cross-origin';
 	}
 
 	/* Vimeo: title / thumbnail from its oEmbed (CORS-open); the player is Vimeo's iframe driven by its player.js API */
@@ -182,6 +209,7 @@
 		S.i = j; cur = S.q[j]; save();
 		var g = ++gen; teardown();
 		var stage = $('wt-stage'), mode = W.mode(cur), start = opts.t != null ? opts.t : W.resumeAt(cur, histRec(cur));
+		noReferrer(mode === 'xvid');
 		showMeta(); renderList(); needMeta(cur);
 		if (cur.pv && mode === 'yt') { failed('This video is private. YouTube only plays private videos on youtube.com, signed in to an account that may see it.'); syncSpeed(); return; }
 		if (S.histOn !== false) { S.hist = W.touch(S.hist, cur, start, (histRec(cur) || {}).dur || 0); save(); }
@@ -213,14 +241,15 @@
 					} });
 				saveT = setInterval(remember, 5000);
 			}, function (e) { if (g === gen) failed(e.message); });
-		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file' || mode === 'local' || mode === 'bitchute') {
+		} else if (mode === 'hls' || mode === 'odysee' || mode === 'file' || mode === 'local' || mode === 'bitchute' || mode === 'xvid') {
 			setStage('<p class="wt-loading">' + (mode === 'local' ? 'Opening the file…' : 'Loading the video…') + '</p>');
-			var src = mode === 'local' ? localSrc(cur) : mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : mode === 'bitchute' ? bitchuteGet(cur) : Promise.resolve({ url: cur.u, title: cur.t });
+			var src = mode === 'local' ? localSrc(cur) : mode === 'hls' ? speakInfo(cur) : mode === 'odysee' ? odyseeGet(cur) : mode === 'bitchute' ? bitchuteGet(cur) : mode === 'xvid' ? xFile(cur) : Promise.resolve({ url: cur.u, title: cur.t });
 			src.then(function (info) {
 				if (g !== gen) return;
 				if (info.title || info.thumb) setMeta(cur.key, info.title, info.thumb);
 				var v = document.createElement('video'); v.controls = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.autoplay = true; v.preload = 'auto';
 				if (info.thumb) v.poster = info.thumb;
+				if (info.gif) v.loop = true;
 				setStage(''); stage.appendChild(v); vid = v;
 				if (mode === 'hls') speakSubs(info, g);
 				v.defaultPlaybackRate = S.rate; v.playbackRate = S.rate;
@@ -231,7 +260,7 @@
 				v.addEventListener('loadeddata', function () { if (g === gen) { applyCC(true); paintCC(); paintCapOpt(); } });
 				v.addEventListener('webkitbeginfullscreen', function () { if (g === gen) applyCC(true); }); v.addEventListener('webkitendfullscreen', function () { if (g === gen) applyCC(true); });
 				v.addEventListener('ratechange', function () { if (g === gen && !holdOn && Math.abs(v.playbackRate - S.rate) > 0.001) { S.rate = v.playbackRate; save(); syncSpeed(); } });
-				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (!hls && info.relay && v.src !== info.relay) { v.src = info.relay; var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function () {}); } else failed(mode === 'local' ? 'This browser can\'t play this kind of file (' + (String(cur.t).split('.').pop() || 'file').toUpperCase() + '). MP4, WebM, MP3 and M4A play everywhere.' : 'This browser could not play the video file.'); });
+				v.addEventListener('error', function () { if (g !== gen) return; if (mode === 'bitchute' || mode === 'xvid') bcFallback(g); else if (!hls && info.relay && v.src !== info.relay) { v.src = info.relay; var pr2 = v.play(); if (pr2 && pr2.catch) pr2.catch(function () {}); } else failed(mode === 'local' ? 'This browser can\'t play this kind of file (' + (String(cur.t).split('.').pop() || 'file').toUpperCase() + '). MP4, WebM, MP3 and M4A play everywhere.' : 'This browser could not play the video file.'); });
 				if (mode === 'local' && !cur.th) grabThumb(v, g);
 				if (mode === 'hls' && !(window.MESYA && MESYA.hlsNative ? MESYA.hlsNative(v) : v.canPlayType('application/vnd.apple.mpegurl'))) {
 					return (window.Hls ? Promise.resolve() : loadScript(HLS_URL)).then(function () {
@@ -247,7 +276,7 @@
 				}
 				v.src = info.url;
 				var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
-			}).catch(function (e) { if (g !== gen) return; if (mode === 'bitchute') bcFallback(g); else if (e && e.missing) localMissing(g); else failed(e.message); });
+			}).catch(function (e) { if (g !== gen) return; if (mode === 'bitchute' || mode === 'xvid') bcFallback(g); else if (e && e.missing) localMissing(g); else failed(e.message); });
 			saveT = setInterval(remember, 5000);
 		} else if (mode === 'vimeo') {
 			var vf = document.createElement('iframe'); vf.src = cur.e.replace('#', (cur.e.indexOf('?') < 0 ? '?' : '&') + 'autoplay=1#');
@@ -270,7 +299,8 @@
 			}).catch(function (e) { if (g === gen) toast(e.message); });
 			saveT = setInterval(remember, 5000);
 		} else if (mode === 'embed') {
-			var f = document.createElement('iframe'); if (S.priv) { f.setAttribute('credentialless', ''); try { f.credentialless = true; } catch (e) {} } f.src = cur.e; f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.title = W.label(cur);
+			var f = document.createElement('iframe'); if (S.priv) { f.setAttribute('credentialless', ''); try { f.credentialless = true; } catch (e) {} } f.src = cur.e;
+			if (cur.k === 'x') f.src = cur.e + '&theme=dark';   // the stage is black: X's dark card instead of a white one f.allow = 'autoplay; fullscreen; picture-in-picture; encrypted-media'; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin'; f.title = W.label(cur);
 			stage.appendChild(f);
 		} else {
 			setStage('<div class="wt-empty"><b>This link can\'t be played here.</b><span>' + (cur.k === 'rumble' ? 'Rumble only lets other sites play its <em>Embed</em> link (on Rumble: Share, then Embed). ' : cur.k === 'odysee' ? 'That is an Odysee channel, not a video. ' : '') +
@@ -278,7 +308,7 @@
 		}
 		syncSpeed(); paintCapOpt();
 		if (S.cm) loadComments();
-		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file|local|bitchute)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
+		if (S.pz !== false && !S.pzHint && !(finePtr && finePtr.matches) && /^(yt|hls|odysee|file|local|bitchute|xvid)$/.test(mode)) { S.pzHint = 1; save(); setTimeout(function () { toast('Tap the video to play / pause · pinch or double-tap to zoom'); }, 1500); }
 	}
 	function failed(text) {
 		var stage = $('wt-stage');
@@ -356,7 +386,7 @@
 	}
 
 	/* ---------- captions: our own CC button (YouTube's is out of reach while the picture is zoomed, or under the touch layer) ---------- */
-	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file' || m === 'local' || m === 'bitchute') && !!(vid && vid.textTracks && vid.textTracks.length)); }
+	function ccAble() { var m = cur && W.mode(cur); return m === 'yt' || ((m === 'hls' || m === 'odysee' || m === 'file' || m === 'local' || m === 'bitchute' || m === 'xvid') && !!(vid && vid.textTracks && vid.textTracks.length)); }
 	function paintCC() {
 		var on = !!S.cc, ok = ccAble();
 		[$('wt-cc')].concat([].slice.call(document.querySelectorAll('#wt-stage [data-c="cc"]'))).forEach(function (b) {
@@ -495,7 +525,7 @@
 	/* Options -> Captions: language (3Speak's list or the video's tracks), where, size */
 	function paintCapOpt() {
 		var box = $('wt-capopt'); if (!box) return;
-		var c = W.capPlace(S.cap), pos = W.capName(c.y), m = cur && W.mode(cur), own = /^(hls|odysee|file|local|bitchute)$/.test(m || '');
+		var c = W.capPlace(S.cap), pos = W.capName(c.y), m = cur && W.mode(cur), own = /^(hls|odysee|file|local|bitchute|xvid)$/.test(m || '');
 		[].forEach.call(box.querySelectorAll('[data-cpos]'), function (x) { x.setAttribute('aria-pressed', String(x.dataset.cpos === pos)); });
 		[].forEach.call(box.querySelectorAll('[data-csz]'), function (x) { x.setAttribute('aria-pressed', String(x.dataset.csz === c.sz)); });
 		var sel = $('wt-caplang'), opts = [];
@@ -787,7 +817,7 @@
 	$('wt-ytcov').checked = !!S.ytCov;
 	$('wt-ytcov').onchange = function () { S.ytCov = this.checked; delete S.ytCover; save(); ytNote(); };
 	$('wt-priv').checked = S.priv !== false;
-	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && !/^(hls|odysee|file|local|bitchute)$/.test(W.mode(cur))) { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
+	$('wt-priv').onchange = function () { S.priv = this.checked; save(); toast(this.checked ? 'Private: players load without your sign-in (from the next video)' : 'Players can now see your sign-in, so views count in your history'); if (cur && !/^(hls|odysee|file|local|bitchute|xvid)$/.test(W.mode(cur))) { var p = position(); play(cur, p ? { t: Math.floor(p.pos) } : {}); } };
 	function strip(it) { var c = {}; for (var k in it) if (!/^(pos|dur|at)$/.test(k)) c[k] = it[k]; return c; }
 
 	/* "+ List": add the playing video to one of my playlists */
@@ -989,7 +1019,7 @@
 	}
 	function ctlSync(st, z) {
 		var c = st.querySelector('.wt-zbar'); if (!c) return;
-		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file|local|bitchute)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
+		var want = z.k > 1.001 && !zMode && S.zctl !== false && !!cur && /^(yt|hls|odysee|file|local|bitchute|xvid)$/.test(W.mode(cur)) && !!st.querySelector('iframe#wt-yt, video');
 		if (c.hidden === !want) { if (want) ctlTick(); return; }
 		c.hidden = !want; st.classList.toggle('wt-hasctl', want); clearInterval(ctlT);
 		if (vid) vid.controls = !want;   // the video's own bar would show, scaled and moved, under ours
@@ -1017,7 +1047,7 @@
 	}
 	function touchOn() {
 		if (S.pz === false || !cur) return false;
-		var m = W.mode(cur); if (!/^(yt|hls|odysee|file|local|bitchute)$/.test(m)) return false;
+		var m = W.mode(cur); if (!/^(yt|hls|odysee|file|local|bitchute|xvid)$/.test(m)) return false;
 		if (finePtr && finePtr.matches && ((S.zoom || {}).k || 1) <= 1.001) return false;   // mouse at 100%: leave the player alone
 		return !!$('wt-stage').querySelector('iframe#wt-yt, video');
 	}

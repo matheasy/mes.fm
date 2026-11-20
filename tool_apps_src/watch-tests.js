@@ -18,7 +18,7 @@ it = W.item('https://www.bitchute.com/video/AbCdEf123456/'); eq(W.mode(it), 'bit
 it = W.item('https://vimeo.com/1246902394/1608648b3d'); eq([W.mode(it), it.id, it.e, W.canSpeed(it), W.siteName(it)], ['vimeo', '1246902394', 'https://player.vimeo.com/video/1246902394?h=1608648b3d&dnt=1&playsinline=1', true, 'Vimeo'], 'vimeo unlisted');
 it = W.item('https://vimeo.com/user187376030'); eq(W.mode(it), 'open', 'vimeo profile');
 eq([W.vmSpeed(3.05), W.vmSpeed(0.25)], [2, 0.5], 'vimeo speed range');
-it = W.item('https://x.com/mes/status/1234567890123'); eq(W.mode(it), 'embed', 'x');
+it = W.item('https://x.com/mes/status/1234567890123'); eq(W.mode(it), 'xvid', 'x');
 it = W.item('https://example.com/clip.mp4'); eq([W.mode(it), it.t], ['file', 'clip.mp4'], 'direct');
 ok(W.item('notalink').err, 'bad link');
 ok(W.canSpeed(W.item('https://youtu.be/dQw4w9WgXcQ')) && !W.canSpeed(W.item('https://rumble.com/embed/v4abc12/')), 'canSpeed');
@@ -149,5 +149,22 @@ W.keepTrack = true; eq(W.item('https://x.com/mes/status/123?s=20').u, 'https://x
 	ok(W.cueAt(c, 5) === 'Hey everyone,\nhere' && W.cueAt(c, 7.9) === '' && W.cueAt(c, 9) === 'next', 'caption at a time');
 	ok(W.capPlace({ y: 200, x: -5, sz: 'q' }).y === 92 && W.capPlace({}).y === 86 && W.capPlace({ x: -5 }).x === 10 && W.capPlace({}).sz === 'm', 'caption place clamped');
 	ok(W.capName(12) === 'top' && W.capName(86) === 'bottom' && W.capName(60) === 'custom', 'caption preset names');
+})();
+(function () {
+	var it = W.item('https://x.com/TuckerCarlson/status/2123237569076810167');
+	ok(W.mode(it) === 'xvid' && W.canSpeed(it), 'x own player + speed'); W.noX[it.key] = 1; ok(W.mode(it) === 'embed' && !W.canSpeed(it), 'x falls back to the embed'); delete W.noX[it.key];
+	var vs = [{ url: 'a', w: 480 }, { url: 'b', w: 640 }, { url: 'c', w: 1280 }, { url: 'd', w: 1920 }];
+	ok(W.xPick(vs, 400) === 'a' && W.xPick(vs, 700) === 'b' && W.xPick(vs, 1300) === 'c' && W.xPick(vs, 3000) === 'd' && W.xPick([], 500) === '', 'x picks the mp4 for the player size');
+	var xm = require('../mes.fm/api/x-media.js');
+	ok(xm.okMedia('https://video.twimg.com/a/vid/avc1/1280x720/x.mp4') && !xm.okMedia('https://video.twimg.com/a/pl/x.m3u8') && !xm.okMedia('https://evil.com/x.mp4') && !xm.okMedia('http://video.twimg.com/x.mp4'), 'x media url check');
+	ok(xm.token('2123237569076810167').length > 5 && /^[0-9a-z]+$/.test(xm.token('2123237569076810167')), 'x token');
+	var j = { text: 'Look at this &amp; that https://t.co/abc', display_text_range: [0, 23], user: { name: 'Bob' }, mediaDetails: [{ type: 'video', media_url_https: 'https://pbs.twimg.com/m.jpg', video_info: { duration_millis: 61000, variants: [
+		{ content_type: 'application/x-mpegURL', url: 'https://video.twimg.com/a/pl/x.m3u8' }, { content_type: 'video/mp4', bitrate: 10368000, url: 'https://video.twimg.com/a/vid/avc1/1920x1080/d.mp4' },
+		{ content_type: 'video/mp4', bitrate: 832000, url: 'https://video.twimg.com/a/vid/avc1/640x360/b.mp4' }, { content_type: 'video/mp4', bitrate: 2176000, url: 'https://evil.com/vid/1280x720/c.mp4' }] } }] };
+	var r = xm.parse(j, '1');
+	ok(r.title === 'Look at this & that (Bob)' && r.thumb === 'https://pbs.twimg.com/m.jpg' && r.dur === 61 && r.variants.length === 2 && r.variants[0].w === 640 && /640x360/.test(r.url), 'x answer parsed (hls / foreign links dropped)');
+	var q = xm.parse({ text: 'quote', user: { name: 'A' }, quoted_tweet: j }, '2'); ok(/640x360/.test(q.url) && q.title === 'quote (A)', 'x video from a quoted post');
+	var nv = xm.parse({ text: 'no video', user: { name: 'A' } }, '3'); ok(nv.url === '' && nv.title === 'no video (A)', 'x post without a video still gives a title');
+	var bad = 0; try { xm.parse({ __typename: 'TweetTombstone' }, '4'); } catch (e) { bad = 1; } ok(bad, 'x removed post refused');
 })();
 console.log('watch tests ok:', n);

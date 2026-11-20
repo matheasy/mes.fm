@@ -16,11 +16,22 @@
 		if (it.k === "local") return "local";   // a video / sound file from this computer, in our own <video>
 		if (it.k === "vimeo" && it.id && it.e) return "vimeo";   // Vimeo's player + its player.js API (speed, time)
 		if (it.k === "bitchute" && it.id && !W.noBC[it.key]) return "bitchute";   // own <video> from BitChute's file (falls back to its embed)
+		if (it.k === "x" && it.id && !W.noX[it.key]) return "xvid";   // own <video> from the post's video.twimg.com mp4 (falls back to X's embed)
 		if (it.e) return "embed";
 		return "open";
 	};
+	W.noX = {};    // X posts with no playable video file this session: use X's own embed
 	W.noBC = {};   // BitChute videos whose file could not be found / played this session: use BitChute's own player
-	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "local" || m === "bitchute" || m === "vimeo"; };
+	W.canSpeed = function (it) { var m = W.mode(it); return m === "yt" || m === "hls" || m === "odysee" || m === "file" || m === "local" || m === "bitchute" || m === "xvid" || m === "vimeo"; };
+	/* X: pick the mp4 for this screen from /api/x-media's variants (sorted by bitrate): the smallest one at least as wide
+	   as the player in device pixels, capped at 1280 px wide unless the player is bigger than that (1080p files are ~10 Mbit/s) */
+	W.xPick = function (variants, px) {
+		var v = (variants || []).filter(function (x) { return x && x.url; });
+		if (!v.length) return "";
+		var need = Math.max(320, Math.min(px || 1280, 1920));
+		for (var i = 0; i < v.length; i++) if (v[i].w && v[i].w >= need * 0.9) return v[i].url;
+		return v[v.length - 1].url;
+	};
 	W.vmSpeed = function (r) { return Math.max(0.5, Math.min(2, r)); };   // Vimeo's player: 0.5x to 2x
 	W.SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4];
 	W.ytMax = 2;   // YouTube's embed offers up to 2x; raised on ready if getAvailablePlaybackRates() offers more
