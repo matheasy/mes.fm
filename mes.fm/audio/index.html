@@ -370,7 +370,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .au-tl { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .au-rulerrow { display: flex; height: 28px; border-bottom: 1px solid var(--au-line); background: var(--au-panel); }
 .au-corner { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); display: flex; align-items: center; gap: 4px; padding: 0 6px; font-size: 0.85em; color: var(--au-dim); }
-.au-ruler { flex: 1 1 auto; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
+.au-ruler { flex: 1 1 0; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
 .au-scroll { position: relative; overflow-y: auto; overflow-x: hidden; max-height: min(62vh, 640px); min-height: 160px; }
 .au-rows { display: flex; }
 .au-heads { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); background: var(--au-panel); }
@@ -1098,7 +1098,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=8" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

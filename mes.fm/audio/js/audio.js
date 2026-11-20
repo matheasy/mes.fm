@@ -1298,7 +1298,7 @@
 
 	/* ---------------- view ---------------- */
 	var cv = $("au-cv"), over = $("au-over"), ruler = $("au-ruler"), lanes = $("au-lanes"), heads = $("au-heads"), scrollBox = $("au-scroll"), W = 800, dpr = 1;
-	function laneW() { return Math.max(100, lanes.clientWidth); }
+	function laneW() { /* the ruler is always shown; the lanes are hidden (display:none) while the editor is empty */ return Math.max(100, lanes.clientWidth || ruler.clientWidth); }
 	function xOf(n) { return (n - S.start) / S.spp; }
 	function nOf(x) { return Math.round(S.start + x * S.spp); }
 	function clampView() { var end = Math.max(projEnd(), S.sr * 10), maxStart = Math.max(0, end - laneW() * S.spp * 0.5); S.spp = Math.max(1 / 16, Math.min(S.spp, end / 50 + S.sr)); S.start = Math.max(0, Math.min(S.start, maxStart)); }
@@ -2214,7 +2214,7 @@
 	$("au-spec").onclick = function () { S.spec = !S.spec; store("spec", S.spec); draw(); };
 	$("au-addtrack").onclick = addTrack;
 	$("au-vol").oninput = function () { if (master) master.gain.value = +this.value; };
-	if (window.ResizeObserver) new ResizeObserver(function () { draw(); }).observe(lanes); else window.addEventListener("resize", draw);
+	if (window.ResizeObserver) { var ro = new ResizeObserver(function () { draw(); }); ro.observe(lanes); ro.observe(ruler); } else window.addEventListener("resize", draw);
 
 	/* ---------------- start ---------------- */
 	S.spec = !!store("spec"); S.laneH = Math.max(LANE_MIN, Math.min(LANE_MAX, store("laneH") || LANE_DEF));

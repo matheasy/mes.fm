@@ -63,7 +63,7 @@
 .au-tl { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .au-rulerrow { display: flex; height: 28px; border-bottom: 1px solid var(--au-line); background: var(--au-panel); }
 .au-corner { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); display: flex; align-items: center; gap: 4px; padding: 0 6px; font-size: 0.85em; color: var(--au-dim); }
-.au-ruler { flex: 1 1 auto; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
+.au-ruler { flex: 1 1 0; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
 .au-scroll { position: relative; overflow-y: auto; overflow-x: hidden; max-height: min(62vh, 640px); min-height: 160px; }
 .au-rows { display: flex; }
 .au-heads { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); background: var(--au-panel); }
