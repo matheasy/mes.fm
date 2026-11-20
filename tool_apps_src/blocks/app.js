@@ -309,6 +309,8 @@
 	stage.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	stage.addEventListener("pointerdown", function (e) {
 		audio();
+		// the Play / Resume / Rematch overlay sits on the stage: never capture its clicks (that stole them in 3D and on touch)
+		if (e.target.closest && e.target.closest(".bk-ov, button, a, input, select")) return;
 		if (e.pointerType === "mouse") {
 			stage.focus({ preventScroll: true });
 			if (threeOn()) { orb = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { stage.setPointerCapture(e.pointerId); } catch (er) {} }
@@ -363,7 +365,7 @@
 		else if (dy < -cell * 2 && -dy / Math.max(1, dt) > 0.5 && Math.abs(dy) > Math.abs(dx)) { press("hold"); release("hold"); }
 	}
 	stage.addEventListener("pointerup", tEnd); stage.addEventListener("pointercancel", tEnd);
-	stage.addEventListener("dblclick", function () { if (v3) { v3.reset(); camUi(); } });
+	stage.addEventListener("dblclick", function (e) { if (e.target.closest && e.target.closest(".bk-ov")) return; if (v3) { v3.reset(); camUi(); } });
 	stage.addEventListener("wheel", function (e) {
 		if (!threeOn()) return;
 		e.preventDefault();

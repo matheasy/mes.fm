@@ -561,9 +561,9 @@
 		key.target.position.set(W / 2, H / 2, 0); s.add(key); s.add(key.target);
 		var rim = new THREE.PointLight(0x7aa2ff, 30, 40); rim.position.set(14, 4, 6); s.add(rim);
 		// the well: a back panel, side walls and a floor
-		var wellMat = new THREE.MeshStandardMaterial({ color: 0x151a24, roughness: 0.9 });
+		var wellMat = this.backMat = new THREE.MeshStandardMaterial({ color: 0x151a24, roughness: 0.9, transparent: true });
 		var back = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, H + 0.4, 0.3), wellMat); back.position.set(W / 2, H / 2, -0.75); back.receiveShadow = true; s.add(back);
-		var sideMat = new THREE.MeshStandardMaterial({ color: 0x2b3446, roughness: 0.6, metalness: 0.2 });
+		var sideMat = this.sideMat = new THREE.MeshStandardMaterial({ color: 0x2b3446, roughness: 0.6, metalness: 0.2, transparent: true });
 		[[-0.25], [W + 0.25]].forEach(function (p) { var m = new THREE.Mesh(new THREE.BoxGeometry(0.5, H + 0.5, 1.6), sideMat); m.position.set(p[0], H / 2 - 0.25, -0.05); m.castShadow = m.receiveShadow = true; s.add(m); });
 		var floor = new THREE.Mesh(new THREE.BoxGeometry(W + 1, 0.5, 1.6), sideMat); floor.position.set(W / 2, -0.25, -0.05); floor.receiveShadow = true; s.add(floor);
 		// faint grid on the back panel
@@ -589,11 +589,24 @@
 		this.m4 = new THREE.Matrix4(); this.zero = new THREE.Matrix4().makeScale(0, 0, 0);
 		this.w = 300; this.h = 600;
 		this.place();
+		this.fade();
 	}
 	View.prototype.place = function () {
 		var d = this.dist, cx = W / 2, cy = H / 2;
 		this.cam.position.set(cx + Math.sin(this.yaw) * d * Math.cos(this.pitch), cy + Math.sin(this.pitch) * d, Math.cos(this.yaw) * d * Math.cos(this.pitch));
 		this.cam.lookAt(cx, cy, 0);
+		this.fade();
+	};
+	/** the walls fade as the camera swings round, so the blocks are never hidden behind them */
+	View.prototype.fade = function () {
+		if (!this.backMat) return;
+		var front = Math.cos(this.yaw) * Math.cos(this.pitch);           // 1 = straight in front, < 0 = behind
+		var side = Math.abs(Math.sin(this.yaw)) * Math.cos(this.pitch);   // 1 = looking along the well from the side
+		var bo = Math.max(0.1, Math.min(1, (front - 0.15) / 0.45));
+		var so = Math.max(0.15, Math.min(1, 1 - (side - 0.35) / 0.4));
+		this.backMat.opacity = bo; this.backMat.depthWrite = bo > 0.95;
+		this.sideMat.opacity = so; this.sideMat.depthWrite = so > 0.95;
+		if (this.grid) this.grid.material.opacity = 0.55 * bo;
 	};
 	/** orbit all the way round (yaw) and from below to nearly straight above (pitch) */
 	View.prototype.orbit = function (dx, dy) {
@@ -975,6 +988,8 @@
 	stage.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	stage.addEventListener("pointerdown", function (e) {
 		audio();
+		// the Play / Resume / Rematch overlay sits on the stage: never capture its clicks (that stole them in 3D and on touch)
+		if (e.target.closest && e.target.closest(".bk-ov, button, a, input, select")) return;
 		if (e.pointerType === "mouse") {
 			stage.focus({ preventScroll: true });
 			if (threeOn()) { orb = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { stage.setPointerCapture(e.pointerId); } catch (er) {} }
@@ -1029,7 +1044,7 @@
 		else if (dy < -cell * 2 && -dy / Math.max(1, dt) > 0.5 && Math.abs(dy) > Math.abs(dx)) { press("hold"); release("hold"); }
 	}
 	stage.addEventListener("pointerup", tEnd); stage.addEventListener("pointercancel", tEnd);
-	stage.addEventListener("dblclick", function () { if (v3) { v3.reset(); camUi(); } });
+	stage.addEventListener("dblclick", function (e) { if (e.target.closest && e.target.closest(".bk-ov")) return; if (v3) { v3.reset(); camUi(); } });
 	stage.addEventListener("wheel", function (e) {
 		if (!threeOn()) return;
 		e.preventDefault();
