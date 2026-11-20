@@ -200,6 +200,12 @@
         items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k] = (c[it.k] || 0) + 1; c.all++; if (it.qo) c.queue++; } });
         return c;
     }
+    /* The tabs in the order the user dragged them into: keys found in `order` first (in that order), the rest after in their usual order. */
+    function orderTabs(keys, order) {
+        var pos = {}; (Array.isArray(order) ? order : []).forEach(function (k, i) { if (typeof k === "string" && !(k in pos)) pos[k] = i; });
+        return keys.map(function (k, i) { return { k: k, a: k in pos ? 0 : 1, b: k in pos ? pos[k] : i }; })
+            .sort(function (x, y) { return (x.a - y.a) || (x.b - y.b); }).map(function (x) { return x.k; });
+    }
     /* Every list in use: the built-in ones first, then the user's own (A-Z), plus any extra slugs given. */
     function kindsOf(items, extra) {
         var own = {};
@@ -282,7 +288,7 @@
     }
 
     return {
-        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, kindOne: kindOne, kindsOf: kindsOf,
+        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, kindOne: kindOne, kindsOf: kindsOf, orderTabs: orderTabs,
         orderKey: orderKey, between: between, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
         cleanText: cleanText, cleanItem: cleanItem, textKey: textKey, apply: apply, sortNewest: sortNewest,
         esc: esc, linkify: linkify, links: links, imageOf: imageOf, tools: tools, itemTools: itemTools, filter: filter, counts: counts,
@@ -611,15 +617,45 @@
     $("ed-t").value = lsGet("mes-edits:draft", ""); grow($("ed-t"));
 
     /* ---------- filters ---------- */
+    /* Tab order: drag a tab (mouse, finger or pen) to move it, or Alt+Left / Alt+Right on a focused tab. Saved in this browser. */
+    var ORDER_KEY = "mes-edits:taborder", tabDrag = null, tabDragged = 0;
+    function saveTabOrder() { lsSet(ORDER_KEY, JSON.stringify([].map.call($("ed-tablist").querySelectorAll(".ed-tab[data-k]"), function (b) { return b.dataset.k; }))); $("ed-tablist").__html = null; }
+    $("ed-tablist").addEventListener("pointerdown", function (e) {
+        var b = e.target.closest(".ed-tab[data-k]"); if (!b || e.button > 0) return;
+        tabDrag = { b: b, x: e.clientX, y: e.clientY, on: false, id: e.pointerId };
+    });
+    document.addEventListener("pointermove", function (e) {
+        var d = tabDrag; if (!d || e.pointerId !== d.id) return;
+        if (!d.on) { if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) < 8) return; d.on = true; d.b.classList.add("ed-tabdrag"); try { d.b.setPointerCapture(e.pointerId); } catch (er) {} }
+        e.preventDefault();
+        var box = $("ed-tablist"), tabs = [].slice.call(box.querySelectorAll(".ed-tab[data-k]")), best = null, bd = 1e9;
+        tabs.forEach(function (t) { if (t === d.b) return; var r = t.getBoundingClientRect(); var dist = Math.hypot(e.clientX - (r.left + r.width / 2), (e.clientY - (r.top + r.height / 2)) * 2); if (dist < bd) { bd = dist; best = t; } });
+        if (!best) return;
+        var r = best.getBoundingClientRect(), after = e.clientX > r.left + r.width / 2;
+        if (after) { if (best.nextSibling !== d.b) box.insertBefore(d.b, best.nextSibling); } else if (best.previousSibling !== d.b) box.insertBefore(d.b, best);
+    }, { passive: false });
+    function endTabDrag(e) {
+        var d = tabDrag; if (!d || (e && e.pointerId !== d.id)) return; tabDrag = null;
+        if (d.on) { d.b.classList.remove("ed-tabdrag"); tabDragged = Date.now(); saveTabOrder(); toast("Tab order saved (in this browser)."); }
+    }
+    document.addEventListener("pointerup", endTabDrag); document.addEventListener("pointercancel", endTabDrag);
+    $("ed-tablist").addEventListener("keydown", function (e) {
+        var b = e.target.closest(".ed-tab[data-k]"); if (!b || !e.altKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+        e.preventDefault(); var box = $("ed-tablist"), tabs = [].slice.call(box.querySelectorAll(".ed-tab[data-k]")), i = tabs.indexOf(b);
+        if (e.key === "ArrowLeft" && i > 0) box.insertBefore(b, tabs[i - 1]); else if (e.key === "ArrowRight" && i < tabs.length - 1) box.insertBefore(b, tabs[i + 1].nextSibling);
+        b.focus(); saveTabOrder();
+    });
     root.querySelector(".ed-tabs").addEventListener("click", function (e) {
+        if (Date.now() - tabDragged < 400) { e.preventDefault(); return; }
         if (e.target.closest("#ed-newlist")) { newList(); return; }
         var b = e.target.closest(".ed-tab"); if (!b) return; pref.k = b.dataset.k; pref.tool = ""; savePref(); render(); syncKind();
     });
     function paintTabs(kinds, c) {
         var box = $("ed-tablist");
-        var tab = function (k, label) { return '<button type="button" role="tab" class="ed-tab" data-k="' + esc(k) + '" aria-selected="' + (k === pref.k) + '">' + label + ' <span class="ed-n">' + (c[k] || "") + "</span></button>"; };
+        var tab = function (k, label) { return '<button type="button" role="tab" class="ed-tab" title="Drag to change the order (or Alt + ← →)" data-k="' + esc(k) + '" aria-selected="' + (k === pref.k) + '">' + label + ' <span class="ed-n">' + (c[k] || "") + "</span></button>"; };
         var ICON = { fix: "🔧 ", app: "💡 ", mirror: "🪞 ", other: "📌 " };
-        var h = kinds.map(function (k) { return tab(k, (ICON[k] || "🗂 ") + esc(E.kindName(k))); }).join("") + tab("all", "All") + tab("queue", "📋 Queue")
+        var keys = E.orderTabs(kinds.concat(["all", "queue"]), lsJson(ORDER_KEY, []));
+        var h = keys.map(function (k) { return k === "all" ? tab("all", "All") : k === "queue" ? tab("queue", "📋 Queue") : tab(k, (ICON[k] || "🗂 ") + esc(E.kindName(k))); }).join("")
             + '<button type="button" class="ed-tab ed-tabnew" id="ed-newlist" title="Make a list of your own">＋ List</button>';
         if (box.__html !== h) { box.innerHTML = h; box.__html = h; }
     }

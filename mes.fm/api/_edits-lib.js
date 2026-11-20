@@ -200,6 +200,12 @@
         items.forEach(function (it) { c[it.st]++; if (it.st === "todo" || it.st === "doing") { c[it.k] = (c[it.k] || 0) + 1; c.all++; if (it.qo) c.queue++; } });
         return c;
     }
+    /* The tabs in the order the user dragged them into: keys found in `order` first (in that order), the rest after in their usual order. */
+    function orderTabs(keys, order) {
+        var pos = {}; (Array.isArray(order) ? order : []).forEach(function (k, i) { if (typeof k === "string" && !(k in pos)) pos[k] = i; });
+        return keys.map(function (k, i) { return { k: k, a: k in pos ? 0 : 1, b: k in pos ? pos[k] : i }; })
+            .sort(function (x, y) { return (x.a - y.a) || (x.b - y.b); }).map(function (x) { return x.k; });
+    }
     /* Every list in use: the built-in ones first, then the user's own (A-Z), plus any extra slugs given. */
     function kindsOf(items, extra) {
         var own = {};
@@ -282,7 +288,7 @@
     }
 
     return {
-        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, kindOne: kindOne, kindsOf: kindsOf,
+        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, kindOne: kindOne, kindsOf: kindsOf, orderTabs: orderTabs,
         orderKey: orderKey, between: between, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
         cleanText: cleanText, cleanItem: cleanItem, textKey: textKey, apply: apply, sortNewest: sortNewest,
         esc: esc, linkify: linkify, links: links, imageOf: imageOf, tools: tools, itemTools: itemTools, filter: filter, counts: counts,

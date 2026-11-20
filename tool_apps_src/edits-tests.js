@@ -160,3 +160,9 @@ t('backup file', () => {
   });
   console.log('edits tests: ' + n + ' groups passed');
 })().catch((e) => { console.error(e); process.exit(1); });
+
+(function () {
+    var o = E.orderTabs(["fix", "app", "mirror", "other", "911", "all", "queue"], ["queue", "app", "gone"]);
+    if (o.join() !== "queue,app,fix,mirror,other,911,all") throw new Error("orderTabs " + o.join());
+    if (E.orderTabs(["a", "b"], null).join() !== "a,b") throw new Error("orderTabs null");
+})();
