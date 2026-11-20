@@ -252,7 +252,7 @@ APPS = {
                tag="Top AI models for coding, research, writing and pictures. Pay per message, no plan.", accent="#4f46e5", dark="#3730a3", tint="#ecebfd",
                desc="Use top AI models without a subscription: Claude (Sonnet 5.5, Opus 5.5) or ChatGPT (GPT-6.2) for coding, research, math and writing, GPT Image 2 or Grok Imagine for pictures, and Grok Imagine for videos. See the exact price of each message first, pay it in HBD on Hive with Keychain, and get the answer straight away. Chats stay in your browser.",
                meta_desc="AI chat, pictures and videos paid per message in HBD on Hive: Claude or ChatGPT for coding, research and writing, GPT Image or Grok for pictures. No plan, no sign-up.",
-               js_v="7", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
+               js_v="8", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
     "email": dict(title="MES Mail", page_title="MES Mail: Quantum-Safe Encrypted Email for Hive",
                   tag="Private, end-to-end encrypted mail between Hive accounts.", accent="#3b4cca", dark="#2c3a9e", tint="#e6e9fb",
                   desc="Free encrypted email for Hive: send end-to-end encrypted messages to any Hive account, stored on the blockchain and readable only by the people you write to. Quantum-safe (ML-KEM-768 + X25519 and AES-256), threads and replies, Sent folder, classic memo reader. No server, no sign-up.",

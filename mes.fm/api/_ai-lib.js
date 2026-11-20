@@ -86,12 +86,18 @@
   var SYSTEM = "You are MES AI, the AI assistant on mes.fm (Math Easy Solutions), running on Anthropic's Claude. " +
     "Help with coding, research, math, writing and everyday questions. Be clear and accurate; say when you are unsure. " +
     "Use Markdown: headings only when they help, lists, and fenced code blocks with a language name. " +
+    "When you mention a website, page, tool, paper or source, give the full https:// address as a Markdown link, e.g. [Wikipedia: Recursion](https://en.wikipedia.org/wiki/Recursion); for mes.fm tools use https://mes.fm/<page>. Only give addresses you are confident exist (well-known, stable pages); say so when you are not sure. " +
     "Write math with plain symbols or inline code, not LaTeX. Each answer has a length limit, so get to the point and finish your answer within it. " +
     "Refuse requests for clearly illegal or seriously harmful content.";
   // the same instructions, naming the company that really runs the chosen model
-  function systemFor(modelKey) {
-    var m = MODELS[modelKey];
-    return m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+  // lang = the language page the person is on (/ai-es ...): answer in that language unless they write in another one.
+  var LANGS = { es: "Spanish", "pt-BR": "Brazilian Portuguese", fr: "French", de: "German", tr: "Turkish", ru: "Russian", "zh-CN": "Simplified Chinese",
+    hi: "Hindi", id: "Indonesian", vi: "Vietnamese", ar: "Arabic", fa: "Persian (Farsi)" };
+  function cleanLang(l) { return typeof l === "string" && Object.prototype.hasOwnProperty.call(LANGS, l) ? l : "en"; }
+  function systemFor(modelKey, lang) {
+    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+    lang = cleanLang(lang);
+    return lang === "en" ? s : s + " The person is using the " + LANGS[lang] + " version of this page: answer in " + LANGS[lang] + " by default; if they write in another language, answer in the language they write in.";
   }
 
   /* ---------- numbers ---------- */
@@ -113,7 +119,7 @@
     return FILES.imgTokens;
   }
   function estimateChatTokens(messages) {
-    var n = estimateTokens(SYSTEM) + 10;
+    var n = estimateTokens(SYSTEM) + 50;
     (messages || []).forEach(function (m) { n += estimateTokens(m && m.content) + 4; (m && m.files || []).forEach(function (f) { n += fileTokens(f); }); });
     return n;
   }
@@ -400,7 +406,7 @@
   return {
     cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
-    PROVIDERS: PROVIDERS, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
+    PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,

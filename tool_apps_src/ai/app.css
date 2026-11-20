@@ -41,6 +41,8 @@
 #ai .ai-meta a { color: var(--ai-sub); }
 #ai .ai-text { line-height: 1.6; overflow-wrap: anywhere; }
 #ai .ai-plain { white-space: pre-wrap; }
+#ai .ai-text a { color: var(--ai-link, #2f5fd0); text-decoration: underline; overflow-wrap: anywhere; }
+html body.dark-mode #ai.ai .ai-text a { color: #8fb0ff; }
 #ai .ai-md > :first-child { margin-top: 0; }
 #ai .ai-md > :last-child { margin-bottom: 0; }
 #ai .ai-md h1, #ai .ai-md h2, #ai .ai-md h3 { font-size: 1.1em; margin: .8em 0 .4em; }

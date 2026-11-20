@@ -348,6 +348,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #ai .ai-meta a { color: var(--ai-sub); }
 #ai .ai-text { line-height: 1.6; overflow-wrap: anywhere; }
 #ai .ai-plain { white-space: pre-wrap; }
+#ai .ai-text a { color: var(--ai-link, #2f5fd0); text-decoration: underline; overflow-wrap: anywhere; }
+html body.dark-mode #ai.ai .ai-text a { color: #8fb0ff; }
 #ai .ai-md > :first-child { margin-top: 0; }
 #ai .ai-md > :last-child { margin-bottom: 0; }
 #ai .ai-md h1, #ai .ai-md h2, #ai .ai-md h3 { font-size: 1.1em; margin: .8em 0 .4em; }
@@ -592,6 +594,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
 	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
 	body.dark-mode #ai.ai{--ai-warn:#ff8f0a;--ai-err:#e23427;--ai-ok:#30d962}
+	body.dark-mode #ai .ai-text a{color:var(--ai-link, #7a99e1)}
 	body.dark-mode #ai .ai-figimg video{background:#525252}
 	/* TOOL-DARK:END */
 </style>
@@ -1013,7 +1016,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=7" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

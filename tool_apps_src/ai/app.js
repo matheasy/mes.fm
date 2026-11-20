@@ -107,7 +107,35 @@
 			});
 			pre.appendChild(b);
 		});
+		linkify(el);
 		el.querySelectorAll("a[href^='http']").forEach(function (a) { a.target = "_blank"; a.rel = "noopener nofollow"; });
+	}
+	// any web address left as plain text (in answers and in your own messages) becomes a link: https://..., www.x.com, mes.fm/page
+	var LINK_RE = /(\bhttps?:\/\/[^\s<>"'`]+|\bwww\.[a-z0-9-]+(?:\.[a-z0-9-]+)+[^\s<>"'`]*|\b(?:[a-z0-9-]+\.)*(?:mes\.fm|peakd\.com|hive\.blog|ecency\.com|inleo\.io|3speak\.tv|youtube\.com|youtu\.be|github\.com|wikipedia\.org)(?:\/[^\s<>"'`]*)?)/gi;
+	function linkify(root) {
+		var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: function (n) {
+			for (var p = n.parentNode; p && p !== root; p = p.parentNode) if (/^(A|CODE|PRE|BUTTON|SCRIPT|STYLE)$/.test(p.nodeName)) return NodeFilter.FILTER_REJECT;
+			LINK_RE.lastIndex = 0; return LINK_RE.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+		} }), list = [], n;
+		while ((n = w.nextNode())) list.push(n);
+		list.forEach(function (node) {
+			var t = node.nodeValue, frag = document.createDocumentFragment(), last = 0, m;
+			LINK_RE.lastIndex = 0;
+			while ((m = LINK_RE.exec(t))) {
+				var url = m[0], tail = "";
+				while (/[.,;:!?)\]]$/.test(url) && !(url.slice(-1) === ")" && url.split("(").length >= url.split(")").length)) { tail = url.slice(-1) + tail; url = url.slice(0, -1); }
+				if (!url) continue;
+				frag.appendChild(document.createTextNode(t.slice(last, m.index)));
+				var a = document.createElement("a");
+				a.href = /^https?:/i.test(url) ? url : "https://" + url;
+				a.textContent = url;
+				frag.appendChild(a);
+				if (tail) frag.appendChild(document.createTextNode(tail));
+				last = m.index + m[0].length;
+			}
+			frag.appendChild(document.createTextNode(t.slice(last)));
+			node.parentNode.replaceChild(frag, node);
+		});
 	}
 	function copy(text, btn) {
 		var done = function () { var o = btn.textContent; btn.textContent = "Copied"; setTimeout(function () { btn.textContent = o; }, 1200); };
