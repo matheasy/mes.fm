@@ -722,6 +722,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-knote {margin:0 0 0.5em;padding:0.4em 0.6em;border-radius:0.4em;background:rgba(251,191,36,0.12);color:#fde68a;font-size:0.88em;} #vd .vd-knote[hidden] {display:none;}
 	@media (max-width:520px) { #vd .vd-krow {flex-wrap:wrap;} #vd .vd-kname {flex-basis:100%;} }
 
+	/* frame snapshot type menu (PNG / JPEG / WebP) */
+	#vd .vd-snapwrap {display:inline-flex;align-items:stretch;gap:0;} #vd .vd-snapwrap #vd-snap {border-top-right-radius:0;border-bottom-right-radius:0;} #vd .vd-snapdd {border-top-left-radius:0;border-bottom-left-radius:0;padding-left:0.35em;padding-right:0.35em;margin-left:1px;}
+	#vd .vd-snappop {top:auto;bottom:115%;left:auto;right:0;min-width:16em;padding:0.5em 0.6em;gap:0.15em;}
+	#vd .vd-snaphd {font-weight:700;font-size:0.9em;padding:0.1em 0.2em 0.3em;}
+	#vd .vd-snapopt {display:flex;align-items:center;gap:0.45em;padding:0.4em 0.3em;border-radius:0.35em;cursor:pointer;font-size:0.92em;min-height:34px;} #vd .vd-snapopt:hover {background:var(--vd-btnh);} #vd .vd-snapopt small {opacity:0.7;margin-left:auto;font-size:0.85em;}
+	#vd .vd-snapq {display:flex;align-items:center;gap:0.5em;font-size:0.9em;padding:0.35em 0.3em;} #vd .vd-snapq[hidden] {display:none;} #vd .vd-snapq input {flex:1;min-width:0;} #vd #vd-snapqv {min-width:2em;text-align:right;font-variant-numeric:tabular-nums;}
+	#vd .vd-snapnote {font-size:0.8em;opacity:0.75;padding:0.2em 0.3em 0;line-height:1.35;max-width:16em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1140,7 +1148,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" role="menuitem" data-act="openproj">Open project file&hellip;</button>
 						<button type="button" role="menuitem" data-act="new">New project&hellip;</button>
 						<hr>
-						<button type="button" role="menuitem" data-act="snapshot">Save this frame as PNG</button>
+						<button type="button" role="menuitem" data-act="snapshot" id="vd-snapmi">Save this frame as PNG</button>
 						<button type="button" role="menuitem" data-act="export">Export MP4&hellip; <kbd>Ctrl+E</kbd></button>
 						<a role="menuitem" href="/convert-video" target="_blank" rel="noopener">Video Converter (AVI, MKV, WMV to MP4)</a>
 					</div>
@@ -1267,7 +1275,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<span class="vd-sp"></span>
 						<button type="button" class="vd-btn vd-sm vd-ico" id="vd-undo2" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button><button type="button" class="vd-btn vd-sm vd-ico" id="vd-redo2" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
 						<button type="button" class="vd-btn vd-sm" id="vd-split2" title="Split at the playhead (S)">&#9986; <span class="vd-lbl">Split</span></button>
-						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl">PNG</span></button>
+						<span class="vd-menu vd-snapwrap"><button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a picture (PNG, JPEG or WebP: choose with the arrow)"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl" id="vd-snaplbl">PNG</span></button><button type="button" class="vd-btn vd-sm vd-snapdd" id="vd-snapdd" aria-haspopup="true" aria-expanded="false" title="Picture type for saved frames" aria-label="Picture type for saved frames">&#9662;</button><div class="vd-pop vd-snappop" id="vd-snappop" hidden><div class="vd-snaphd">Save frames as</div><label class="vd-snapopt"><input type="radio" name="vd-snapfmt" value="png"> <b>PNG</b> <small>exact, biggest files</small></label><label class="vd-snapopt"><input type="radio" name="vd-snapfmt" value="jpg"> <b>JPEG</b> <small>about 5-10&times; smaller</small></label><label class="vd-snapopt"><input type="radio" name="vd-snapfmt" value="webp"> <b>WebP</b> <small>smallest, newer apps</small></label><label class="vd-snapq" id="vd-snapqrow">Quality <input type="range" id="vd-snapq" min="50" max="100" step="1"> <span id="vd-snapqv">90</span></label><div class="vd-snapnote" id="vd-snapnote"></div></div></span>
 						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; <span class="vd-lbl">Fill window</span></button>
 						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen (Shift+F)">&#9974; <span class="vd-lbl">Full screen</span></button>
 						<button type="button" class="vd-btn vd-sm" id="vd-barbtn" title="Size of these bars: Normal, Compact (one thin row each) or Minimal (the timeline tools hide; their keys still work). Key B. You can also drag an empty part of a bar up or down.">&#9636; <span class="vd-lbl" id="vd-barlbl">Normal</span></button>
@@ -1406,7 +1414,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=65" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=66" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

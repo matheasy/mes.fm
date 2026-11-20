@@ -668,8 +668,38 @@
 	VE.on("play", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="2.5" width="3.2" height="11" rx="0.6"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="0.6"/></svg>'; $("vd-play").setAttribute("aria-label", "Pause"); });
 	VE.on("pause", function () { $("vd-play").innerHTML = '<svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11L13.5 8z"/></svg>'; $("vd-play").setAttribute("aria-label", "Play"); timeText(); });
 	$("vd-fs").onclick = function () { var w = $("vd-stagewrap"); if (document.fullscreenElement) document.exitFullscreen(); else if (w.requestFullscreen) w.requestFullscreen().catch(function () { toast("Full screen is not allowed here."); }); };
-	function snapshot() { VE.snapshot().then(function (b) { download(b, (VE.P.name || "frame").replace(/[\\/:*?"<>|]+/g, "-") + " " + V.tc(VE.t, VE.P.fps).replace(/[:;]/g, "-") + ".png"); }).catch(function (e) { toast("Could not save the frame: " + e.message); }); }
+	/* frame snapshots: PNG / JPEG / WebP + quality, remembered in UI.snapFmt / UI.snapQ */
+	var SNAP = { png: ["image/png", "PNG", "png"], jpg: ["image/jpeg", "JPEG", "jpg"], webp: ["image/webp", "WebP", "webp"] };
+	function snapFmt() { return SNAP[UI.snapFmt] ? UI.snapFmt : "png"; }
+	function snapQ() { var q = +UI.snapQ; return q >= 50 && q <= 100 ? q : 90; }
+	function snapShow() {
+		var f = snapFmt(), n = SNAP[f][1];
+		$("vd-snaplbl").textContent = f === "jpg" ? "JPG" : n; $("vd-snap").title = "Save this frame as a " + n + " picture (change the type with the arrow next to it)";
+		if ($("vd-snapmi")) $("vd-snapmi").textContent = "Save this frame as " + n;
+		document.querySelectorAll('input[name="vd-snapfmt"]').forEach(function (r) { r.checked = r.value === f; });
+		$("vd-snapq").value = snapQ(); $("vd-snapqv").textContent = snapQ(); $("vd-snapqrow").hidden = f === "png";
+		$("vd-snapnote").textContent = f === "png" ? "Every pixel kept exactly. Good for text on screen, but big." : f === "jpg" ? "Opens everywhere. 90 looks the same as PNG for video frames." : "Smaller than JPEG at the same look. Older apps may not open it.";
+	}
+	function snapshot() {
+		var f = snapFmt(), s = SNAP[f];
+		VE.snapshot(s[0], snapQ() / 100).then(function (b) {
+			if (!b) throw new Error("this browser cannot make " + s[1] + " pictures");
+			download(b, (VE.P.name || "frame").replace(/[\\/:*?"<>|]+/g, "-") + " " + V.tc(VE.t, VE.P.fps).replace(/[:;]/g, "-") + "." + (b.type === s[0] ? s[2] : "png"));
+		}).catch(function (e) { toast("Could not save the frame: " + e.message); });
+	}
 	$("vd-snap").onclick = snapshot;
+	(function () {
+		var pop = $("vd-snappop"), dd = $("vd-snapdd");
+		function close() { pop.hidden = true; dd.setAttribute("aria-expanded", "false"); }
+		dd.onclick = function (e) { e.stopPropagation(); pop.hidden = !pop.hidden; dd.setAttribute("aria-expanded", String(!pop.hidden)); };
+		pop.addEventListener("click", function (e) { e.stopPropagation(); });
+		document.addEventListener("click", function () { if (!pop.hidden) close(); });
+		pop.addEventListener("keydown", function (e) { if (e.key === "Escape") { close(); dd.focus(); e.stopPropagation(); } });
+		document.querySelectorAll('input[name="vd-snapfmt"]').forEach(function (r) { r.onchange = function () { UI.snapFmt = this.value; saveUI(); snapShow(); }; });
+		$("vd-snapq").oninput = function () { UI.snapQ = +this.value; $("vd-snapqv").textContent = this.value; };
+		$("vd-snapq").onchange = function () { UI.snapQ = +this.value; saveUI(); };
+		snapShow();
+	})();
 
 	/* ---------- fill window ---------- */
 	function setWin(on) { UI.win = on; saveUI(); app.classList.toggle("vd-winmode", on); document.documentElement.classList.toggle("vd-noscroll", on); $("vd-win").setAttribute("aria-pressed", on); $("vd-win").innerHTML = on ? "&#10006; Leave window" : "&#10530; Fill window"; setTimeout(function () { P.fit(); VE.tl.render(); }, 30); }

@@ -145,13 +145,15 @@
 		try { var fr = await rd.frameAt(src); if (!fr) throw new Error("The frame could not be read."); VE.drawFrame(cv.getContext("2d"), fr, m.rot || 0, 0, 0, m.w, m.h); } finally { rd.close(); }
 		return new Promise(function (r) { cv.toBlob(r, "image/png"); });
 	};
-	// one frame at project size from the preview's current state (PNG "snapshot")
-	VE.snapshot = async function () {
+	// one frame at project size from the preview's current state ("snapshot"); type = image/png (default), image/jpeg or image/webp
+	VE.snapshot = async function (type, quality) {
 		await VE.ensureFonts(); var p = VE.P, c = document.createElement("canvas"); c.width = p.w; c.height = p.h;
 		var layers = V.layersAt(p, VE.t), frames = {}, readers = [];
 		for (var j = 0; j < layers.length; j++) { var cl = layers[j].clip; if (cl.type !== "video") continue; var m = VE.media(cl.media); if (!m || !m.vt) continue; var rd = new VReader(m); readers.push(rd); frames[cl.id] = await rd.frameAt(layers[j].src); }
 		VE.draw(c.getContext("2d"), p.w, p.h, VE.t, function (cl) { var m = VE.media(cl.media); if (!m) return null; if (m.kind === "image") return { img: m.bitmap, w: m.w, h: m.h }; var f = frames[cl.id]; return f ? { img: f, w: m.w, h: m.h, rot: m.rot || 0 } : null; }, { export: true });
 		readers.forEach(function (r) { r.close(); });
-		return new Promise(function (r) { c.toBlob(r, "image/png"); });
+		type = type || "image/png";
+		if (type === "image/jpeg") { var o = document.createElement("canvas"); o.width = c.width; o.height = c.height; var ox = o.getContext("2d"); ox.fillStyle = "#000"; ox.fillRect(0, 0, o.width, o.height); ox.drawImage(c, 0, 0); c = o; }
+		return new Promise(function (r) { c.toBlob(r, type, type === "image/png" ? undefined : quality || 0.9); });
 	};
 })();

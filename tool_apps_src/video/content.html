@@ -14,7 +14,7 @@
 						<button type="button" role="menuitem" data-act="openproj">Open project file&hellip;</button>
 						<button type="button" role="menuitem" data-act="new">New project&hellip;</button>
 						<hr>
-						<button type="button" role="menuitem" data-act="snapshot">Save this frame as PNG</button>
+						<button type="button" role="menuitem" data-act="snapshot" id="vd-snapmi">Save this frame as PNG</button>
 						<button type="button" role="menuitem" data-act="export">Export MP4&hellip; <kbd>Ctrl+E</kbd></button>
 						<a role="menuitem" href="/convert-video" target="_blank" rel="noopener">Video Converter (AVI, MKV, WMV to MP4)</a>
 					</div>
@@ -141,7 +141,7 @@
 						<span class="vd-sp"></span>
 						<button type="button" class="vd-btn vd-sm vd-ico" id="vd-undo2" title="Undo (Ctrl+Z)" aria-label="Undo">&#8630;</button><button type="button" class="vd-btn vd-sm vd-ico" id="vd-redo2" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">&#8631;</button>
 						<button type="button" class="vd-btn vd-sm" id="vd-split2" title="Split at the playhead (S)">&#9986; <span class="vd-lbl">Split</span></button>
-						<button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a PNG picture"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl">PNG</span></button>
+						<span class="vd-menu vd-snapwrap"><button type="button" class="vd-btn vd-sm" id="vd-snap" title="Save this frame as a picture (PNG, JPEG or WebP: choose with the arrow)"><span class="vd-ic1" aria-hidden="true">&#128247;</span><span class="vd-lbl" id="vd-snaplbl">PNG</span></button><button type="button" class="vd-btn vd-sm vd-snapdd" id="vd-snapdd" aria-haspopup="true" aria-expanded="false" title="Picture type for saved frames" aria-label="Picture type for saved frames">&#9662;</button><div class="vd-pop vd-snappop" id="vd-snappop" hidden><div class="vd-snaphd">Save frames as</div><label class="vd-snapopt"><input type="radio" name="vd-snapfmt" value="png"> <b>PNG</b> <small>exact, biggest files</small></label><label class="vd-snapopt"><input type="radio" name="vd-snapfmt" value="jpg"> <b>JPEG</b> <small>about 5-10&times; smaller</small></label><label class="vd-snapopt"><input type="radio" name="vd-snapfmt" value="webp"> <b>WebP</b> <small>smallest, newer apps</small></label><label class="vd-snapq" id="vd-snapqrow">Quality <input type="range" id="vd-snapq" min="50" max="100" step="1"> <span id="vd-snapqv">90</span></label><div class="vd-snapnote" id="vd-snapnote"></div></div></span>
 						<button type="button" class="vd-btn vd-sm" id="vd-pvwin" aria-pressed="false" title="Play the preview filling the browser window (F; Esc leaves)">&#10530; <span class="vd-lbl">Fill window</span></button>
 						<button type="button" class="vd-btn vd-sm" id="vd-fs" title="Preview full screen (Shift+F)">&#9974; <span class="vd-lbl">Full screen</span></button>
 						<button type="button" class="vd-btn vd-sm" id="vd-barbtn" title="Size of these bars: Normal, Compact (one thin row each) or Minimal (the timeline tools hide; their keys still work). Key B. You can also drag an empty part of a bar up or down.">&#9636; <span class="vd-lbl" id="vd-barlbl">Normal</span></button>
