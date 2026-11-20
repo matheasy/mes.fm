@@ -227,7 +227,7 @@ def add_update_note() -> None:
     app_update.inject(APP, "audio", IOS_ID, "fm.mes.audio", "index.html")
 
 
-IOS_ID = ""   # App Store Connect app id, filled in once the record exists
+IOS_ID = "6837411404"   # App Store Connect app id (MES Audio Editor & Recorder)
 
 if __name__ == "__main__":
     main()

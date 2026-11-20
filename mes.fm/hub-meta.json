@@ -96,6 +96,11 @@
 "updated":"2026-11-02",
 "type":"Simulation"
 },
+"/blocks":{
+"added":"2026-11-20",
+"updated":"2026-11-20",
+"type":"Game"
+},
 "/bmi-calculator-kids":{
 "added":"2026-10-27",
 "updated":"2026-11-11",

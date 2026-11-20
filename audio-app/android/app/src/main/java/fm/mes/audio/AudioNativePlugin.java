@@ -99,6 +99,18 @@ public class AudioNativePlugin extends Plugin {
         call.resolve();
     }
 
+    /** readChunk({path, offset, length}) -> {data: base64, size}: the page reads a recording in pieces. */
+    @PluginMethod
+    public void readChunk(PluginCall call) {
+        String p = call.getString("path");
+        if (p == null || !p.startsWith(getContext().getCacheDir().getAbsolutePath())) { call.reject("no such recording"); return; }
+        File f = new File(p); int off = call.getInt("offset", 0), len = call.getInt("length", 2097152);
+        try (java.io.RandomAccessFile r = new java.io.RandomAccessFile(f, "r")) {
+            r.seek(off); int n = (int) Math.max(0, Math.min(len, f.length() - off)); byte[] b = new byte[n]; r.readFully(b);
+            JSObject o = new JSObject(); o.put("data", Base64.encodeToString(b, Base64.NO_WRAP)); o.put("size", f.length()); call.resolve(o);
+        } catch (Exception e) { call.reject(e.getMessage()); }
+    }
+
     @PluginMethod
     public void saveBegin(PluginCall call) {
         String name = call.getString("name", "audio");

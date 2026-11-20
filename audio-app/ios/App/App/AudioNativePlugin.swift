@@ -18,6 +18,7 @@ public class AudioNativePlugin: CAPPlugin, CAPBridgedPlugin, AVAudioRecorderDele
         CAPPluginMethod(name: "level", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "remove", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readChunk", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "saveBegin", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "saveChunk", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "saveEnd", returnType: CAPPluginReturnPromise)
@@ -73,6 +74,15 @@ public class AudioNativePlugin: CAPPlugin, CAPBridgedPlugin, AVAudioRecorderDele
     @objc func remove(_ call: CAPPluginCall) {
         if let p = call.getString("path"), p.hasPrefix(FileManager.default.temporaryDirectory.path) { try? FileManager.default.removeItem(atPath: p) }
         call.resolve()
+    }
+
+    /// readChunk({path, offset, length}) -> {data: base64, size}: the page reads a recording in pieces (fetch of the file URL is unreliable)
+    @objc func readChunk(_ call: CAPPluginCall) {
+        guard let p = call.getString("path"), p.hasPrefix(FileManager.default.temporaryDirectory.path), let h = FileHandle(forReadingAtPath: p) else { call.reject("no such recording"); return }
+        let size = (try? FileManager.default.attributesOfItem(atPath: p)[.size] as? NSNumber)?.intValue ?? 0
+        let off = call.getInt("offset") ?? 0, len = call.getInt("length") ?? 2_097_152
+        h.seek(toFileOffset: UInt64(off)); let d = h.readData(ofLength: len); h.closeFile()
+        call.resolve(["data": d.base64EncodedString(), "size": size])
     }
 
     @objc func saveBegin(_ call: CAPPluginCall) {
