@@ -368,6 +368,14 @@ APPS = {
                         tag="See the hidden data in a photo.", accent="#0f766e", dark="#0a5750", tint="#dcf2ef",
                         desc="Free EXIF viewer: drop a photo to see the camera, date, settings, GPS location, editing software and AI / Content Credentials flags hidden in it, and save a clean copy with all metadata removed. Private: the photo never leaves your browser.",
                         js_v="1"),
+    # MES AI Detector (2026-11-20, mes.fm/ai-detector): evidence, not a verdict. lib.js = MESAID (C2PA / IPTC digital source type / generator PNG text / XMP / EXIF
+    # signals, MP4 container walk, text statistics, ELA + noise maps; tests: node tool_apps_src/ai-detector-tests.js). Optional in-browser models via transformers.js 3.7.6:
+    # onnx-community/ai-image-detect-distilled-ONNX (MIT, 15 MB) and Xenova/distilgpt2 (Apache 2.0, ~85 MB). Paid opinion = copies a prompt and opens /ai.
+    "ai-detector": dict(title="MES AI Detector", page_title="AI Detector for Pictures, Videos and Text: Evidence, Not Guesses",
+                        tag="Was it made with AI? See the evidence.", accent="#9333ea", dark="#6b21a8", tint="#f5ebfe",
+                        desc="Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, and checks text for chatbot patterns. Honest: evidence, not a verdict. Nothing is uploaded.",
+                        meta_desc="Free AI detector for pictures, videos and text. Reads C2PA Content Credentials and AI labels, runs an on-device model, checks text patterns. Evidence, not guesses.",
+                        js_v="1", lib_from=["exif-viewer"]),
     # Domain Lookup (2026-10-14): lib.js = findings from the API answer (tests: tool_apps_src/domain-lookup-tests.js), mes.fm/api/domain-lookup.js = RDAP + DNS over HTTPS + RDAP for IPs + Internet Archive.
     "domain-lookup": dict(title="MES Domain Lookup", page_title="Domain Lookup: Whois, Domain Age, Owner and Hosting",
                           tag="Who is behind a website, and how old is it?", accent="#1d4ed8", dark="#1e3a8a", tint="#e1e9fc",

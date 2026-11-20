@@ -212,6 +212,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("calendar", "Calendar"),      # also built by build_tool_apps.py
     ("search-engines", "Search Engines"),
     ("reverse-image-search", "Reverse Image Search"),   # also built by build_tool_apps.py   # also built by build_tool_apps.py (wide page)
+    ("ai-detector", "AI Detector"),   # also built by build_tool_apps.py
     ("site-index", "Site Index"),
     ("ads", "MES Ads"),
     ("search-console", "MES Search Console"),

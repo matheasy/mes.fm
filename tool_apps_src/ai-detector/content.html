@@ -1,0 +1,175 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu aid" id="aid">
+		<div class="aid-honest" role="note"><b>Evidence, not a verdict.</b> No AI detector is reliable: they miss AI and they wrongly flag real work. This page shows <em>what the file and the text actually contain</em>, says how strong each clue is, and leaves the judgement to you. Everything runs in your browser; nothing is uploaded.</div>
+		<div class="aid-tabs" role="tablist" aria-label="What to check">
+			<button type="button" role="tab" id="aid-t-img" data-tab="img" aria-selected="true">&#128444;&#65038; Picture</button>
+			<button type="button" role="tab" id="aid-t-vid" data-tab="vid" aria-selected="false">&#127916;&#65038; Video</button>
+			<button type="button" role="tab" id="aid-t-text" data-tab="text" aria-selected="false">&#128221;&#65038; Text</button>
+		</div>
+
+		<!-- PICTURE -->
+		<section class="aid-pane" id="aid-p-img" role="tabpanel" aria-labelledby="aid-t-img">
+			<div class="tu-card">
+				<div class="aid-drop" id="aid-idrop" tabindex="0" role="button" aria-label="Choose, drop or paste a picture">
+					<div class="aid-drop__big">Drop a picture here</div>
+					<div class="aid-drop__sub">or <b>click to choose</b> one, or paste it with <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd> + <kbd>V</kbd>. JPEG, PNG, WebP, AVIF, GIF. <b>Use the original file</b>: screenshots and pictures saved from social sites have lost their metadata.</div>
+					<input type="file" id="aid-ifile" accept="image/*" hidden>
+				</div>
+				<form class="aid-url" id="aid-iurlf"><input class="tu-input" id="aid-iurl" type="url" placeholder="…or paste a link to a picture" aria-label="Link to a picture"><button class="tu-btn" type="submit">Check link</button></form>
+				<p class="tu-note">A link is downloaded by your browser (or through mes.fm's picture fetcher when the site blocks that). The picture isn't kept.</p>
+			</div>
+			<div id="aid-iout" hidden>
+				<div class="aid-sum" id="aid-isum"></div>
+				<div class="aid-grid">
+					<div class="tu-card aid-viewcard">
+						<div class="aid-viewbar">
+							<div class="tu-seg" id="aid-iview" role="group" aria-label="View">
+								<button type="button" data-v="orig" aria-pressed="true">Picture</button><button type="button" data-v="ela" aria-pressed="false">Error level</button><button type="button" data-v="noise" aria-pressed="false">Noise</button>
+							</div>
+							<button type="button" class="tu-btn tu-btn--ghost aid-sm" id="aid-ifill" title="Fill the browser window (W)">&#10530; Fill window</button>
+						</div>
+						<div class="aid-stage" id="aid-istage"><canvas id="aid-icv" aria-label="The picture"></canvas><button type="button" class="aid-close" id="aid-iclose" hidden>&#10005; Close</button></div>
+						<div class="aid-viewnote" id="aid-ivnote"></div>
+						<div class="aid-file" id="aid-ifinfo"></div>
+					</div>
+					<div class="aid-side">
+						<h3 class="aid-h">What we found</h3>
+						<div class="aid-sigs" id="aid-isigs"></div>
+						<div class="tu-card aid-model">
+							<div class="aid-model__row"><button type="button" class="tu-btn tu-btn--primary" id="aid-imodel">Run the AI-picture model</button><span class="aid-model__size">15 MB download, once</span></div>
+							<div class="aid-prog" id="aid-iprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
+							<p class="tu-note">An open model (MIT licence) that runs on your device. It is one more weak clue, never proof: it was trained on 2024 generators and is fooled by newer ones, by heavy compression and by edits.</p>
+						</div>
+						<div class="tu-card aid-prompt" id="aid-iprompt" hidden></div>
+					</div>
+				</div>
+				<div class="tu-card aid-next">
+					<h3 class="aid-h">Check further</h3>
+					<ul class="aid-links">
+						<li><a href="https://contentcredentials.org/verify" target="_blank" rel="noopener">Content Credentials Verify</a>: checks the C2PA signature and shows every editing step (you upload the file to that site).</li>
+						<li><a href="/reverse-image-search">Reverse Image Search</a>: find where the picture first appeared. An earlier, bigger copy often settles it.</li>
+						<li><a href="/exif-viewer">EXIF Viewer</a>: every metadata field, the GPS location, and a clean copy.</li>
+						<li><b>Google SynthID</b>: Google hides an invisible watermark in pictures made by Gemini / Imagen. Only Google can read it: upload the picture to the Gemini app and ask &ldquo;Was this made with Google AI?&rdquo;.</li>
+						<li>Look closely yourself: hands and fingers, text and signs, earrings and glasses that don't match, hair blending into the background, light and shadows that disagree, repeated patterns.</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<!-- VIDEO -->
+		<section class="aid-pane" id="aid-p-vid" role="tabpanel" aria-labelledby="aid-t-vid" hidden>
+			<div class="tu-card">
+				<div class="aid-drop" id="aid-vdrop" tabindex="0" role="button" aria-label="Choose or drop a video">
+					<div class="aid-drop__big">Drop a video here</div>
+					<div class="aid-drop__sub">or <b>click to choose</b> one. MP4, MOV, WebM. Big files are fine: only the metadata and a few frames are read.</div>
+					<input type="file" id="aid-vfile" accept="video/*,.mp4,.mov,.m4v,.webm,.mkv" hidden>
+				</div>
+				<p class="tu-note">Videos downloaded from YouTube, X or TikTok have lost their original metadata. The original file from the person who made it tells far more.</p>
+			</div>
+			<div id="aid-vout" hidden>
+				<div class="aid-sum" id="aid-vsum"></div>
+				<div class="aid-grid">
+					<div class="tu-card aid-viewcard">
+						<video id="aid-vid" controls playsinline muted preload="metadata"></video>
+						<div class="aid-file" id="aid-vfinfo"></div>
+						<h3 class="aid-h">Frames</h3>
+						<div class="aid-frames" id="aid-frames"></div>
+						<p class="tu-note">Click a frame to look at its noise pattern. AI video often has noise that is too smooth, or that changes oddly from frame to frame.</p>
+						<div class="aid-stage aid-stage--sm" id="aid-fstage" hidden><canvas id="aid-fcv" aria-label="Frame noise"></canvas></div>
+					</div>
+					<div class="aid-side">
+						<h3 class="aid-h">What we found</h3>
+						<div class="aid-sigs" id="aid-vsigs"></div>
+						<div class="tu-card aid-model">
+							<div class="aid-model__row"><button type="button" class="tu-btn tu-btn--primary" id="aid-vmodel">Run the AI-picture model on the frames</button><span class="aid-model__size">15 MB download, once</span></div>
+							<div class="aid-prog" id="aid-vprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
+							<p class="tu-note">The picture model looks at single frames. It was not trained on video, so it is an even weaker clue here.</p>
+						</div>
+						<div class="tu-card"><h3 class="aid-h">Container details</h3><div class="tu-table-wrap"><table class="tu-table aid-kv" id="aid-vkv"><tbody></tbody></table></div></div>
+					</div>
+				</div>
+				<div class="tu-card aid-next">
+					<h3 class="aid-h">Check further</h3>
+					<ul class="aid-links">
+						<li><a href="https://contentcredentials.org/verify" target="_blank" rel="noopener">Content Credentials Verify</a> reads C2PA in videos too (Sora, Veo and many phones add it).</li>
+						<li>Watch for: objects that melt or appear from nowhere, hands, teeth and text that change between frames, physics that is slightly off, lips not matching the words.</li>
+						<li>Open it in the <a href="/video">Video Editor</a> to step through it frame by frame, or take a frame to <a href="/reverse-image-search">Reverse Image Search</a>.</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<!-- TEXT -->
+		<section class="aid-pane" id="aid-p-text" role="tabpanel" aria-labelledby="aid-t-text" hidden>
+			<div class="tu-card">
+				<label class="tu-label" for="aid-text">Paste the text (150 words or more works best)</label>
+				<textarea id="aid-text" class="tu-input aid-ta" rows="9" placeholder="Paste an essay, an email, a post…" data-mes-tsize="mes-ai-detector:tfz"></textarea>
+				<div class="tu-row aid-acts">
+					<button type="button" class="tu-btn tu-btn--primary" id="aid-tgo">Check the text</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="aid-topen">Open a file…</button><input type="file" id="aid-tfile" accept=".txt,.md,.html,.htm,.csv,.srt,text/*" hidden>
+					<button type="button" class="tu-btn tu-btn--ghost" id="aid-tclear">Clear</button>
+					<span class="aid-count" id="aid-tcount"></span>
+				</div>
+			</div>
+			<div id="aid-tout" hidden>
+				<div class="aid-sum" id="aid-tsum"></div>
+				<div class="tu-stats aid-stats" id="aid-tstats"></div>
+				<div class="aid-grid">
+					<div class="tu-card aid-viewcard">
+						<div class="aid-viewbar"><div class="tu-seg" id="aid-tview" role="group" aria-label="Highlight"><button type="button" data-v="words" aria-pressed="true">Chatbot words</button><button type="button" data-v="lm" aria-pressed="false" disabled>Predictability</button></div></div>
+						<div class="aid-tview" id="aid-trender"></div>
+						<div class="aid-legend" id="aid-tlegend"></div>
+						<h3 class="aid-h">Sentence lengths</h3>
+						<div class="aid-bars" id="aid-tbars"></div>
+						<p class="tu-note">Each bar is one sentence (words). People's writing usually jumps up and down more than a chatbot's.</p>
+					</div>
+					<div class="aid-side">
+						<h3 class="aid-h">What we found</h3>
+						<div class="aid-sigs" id="aid-tsigs"></div>
+						<div class="tu-card aid-model">
+							<div class="aid-model__row"><button type="button" class="tu-btn tu-btn--primary" id="aid-tlm">Measure with a language model</button><span class="aid-model__size">about 85 MB download, once</span></div>
+							<div class="aid-prog" id="aid-tprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
+							<p class="tu-note">distilGPT-2 (Apache 2.0) runs on your device and scores how predictable each word is, like the GLTR research tool. Weak against modern chatbots.</p>
+						</div>
+						<div class="tu-card aid-askai">
+							<h3 class="aid-h">Ask MES AI for an opinion</h3>
+							<p>Claude reads the text and explains what looks human or machine-written. Paid per message in HBD, no account. <b>Still an opinion, not proof.</b></p>
+							<button type="button" class="tu-btn" id="aid-task">Copy the question and open MES AI</button>
+							<p class="tu-note">The text and these findings are copied to your clipboard; paste them into MES AI's chat box.</p>
+						</div>
+					</div>
+				</div>
+				<div class="tu-card aid-next">
+					<h3 class="aid-h">Before you accuse anyone</h3>
+					<ul class="aid-links">
+						<li>Text detectors are wrong often enough that OpenAI withdrew its own in 2023. They flag non-native English writers and very formal writing far more than others.</li>
+						<li>Ask for drafts, version history (Google Docs and Word keep it) or a short chat about the work: much better evidence than any score.</li>
+						<li>Open long documents in the <a href="/text">Text Viewer</a> or the <a href="/docx">Word Viewer</a>, then paste the part you want checked.</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="aid-toast" role="status" aria-live="polite"></div>
+		<div class="tu-seo">
+			<h2>AI detector for pictures, videos and text</h2>
+			<p>Was this picture made with AI? Was this essay written by ChatGPT? MES AI Detector looks for the <strong>evidence</strong> instead of pretending to know: what the file itself says about how it was made, what a small on-device model thinks, and how the text compares with typical chatbot writing. Each clue is marked as pointing to AI, to a real camera or person, or neither, and how strong it is.</p>
+			<h3>What it checks</h3>
+			<ul>
+				<li><strong>Content Credentials (C2PA)</strong>: the signed &ldquo;nutrition label&rdquo; that Adobe Firefly, ChatGPT, Microsoft, Google, Sora, Leica, Sony, Nikon and Samsung phones attach.</li>
+				<li><strong>IPTC digital source type</strong>: the standard field that says &ldquo;made by a trained algorithm&rdquo;, &ldquo;edited with generative AI&rdquo; or &ldquo;captured by a camera&rdquo;.</li>
+				<li><strong>Generator notes</strong>: Stable Diffusion, ComfyUI, NovelAI, InvokeAI and Fooocus save the prompt and settings inside the PNG; Midjourney saves its job ID.</li>
+				<li><strong>Camera data</strong>: make, model, exposure and GPS from the EXIF (a hint toward a real photo, but it can be copied).</li>
+				<li><strong>Error level and noise views</strong>: pictures that show how evenly the file compresses and how the sensor noise is spread. Pasted-in or generated areas sometimes stand out.</li>
+				<li><strong>Text statistics</strong>: sentence-length variety, range of words, words chatbots overuse, leftovers such as &ldquo;Certainly! Here is&rdquo;, and an optional predictability score from a small language model.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>Can any tool prove a picture or text was made by AI?</h4>
+			<p>Only when the file says so itself (Content Credentials or generator notes), and even those can be removed or, without a signature check, faked. Everything else is a probability. A missing label proves nothing: screenshots, social sites and messaging apps remove metadata.</p>
+			<h4>Why not just give a percentage?</h4>
+			<p>Because the percentages other sites show are not as precise as they look. The same text can score 10% on one site and 90% on another. Showing the clues lets you see how much weight they deserve.</p>
+			<h4>Is my file uploaded?</h4>
+			<p>No. Files and text are read by your browser. The optional models are downloaded from Hugging Face once and run on your device. Only if you choose &ldquo;Ask MES AI&rdquo; does the text go to MES AI, which you pay for per message.</p>
+			<p class="tu-note">Related: <a href="/ai">MES AI</a> (chat, pictures and video), <a href="/photo">Photo Editor</a>, <a href="/video">Video Editor</a>, <a href="/text">Text Viewer</a>, <a href="/exif-viewer">EXIF Viewer</a>, <a href="/reverse-image-search">Reverse Image Search</a>.</p>
+		</div>
+	</div>
