@@ -18,9 +18,10 @@
 	function toast(msg) { var t = $("bk-toast"); t.textContent = msg; t.classList.add("tu-toast--show"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("tu-toast--show"); }, 3400); }
 
 	/* ---------- settings + stats ---------- */
-	var S = { md: "m", lv: 1, view: "2d", das: 133, arr: 10, sdf: "20", tc: "both", vol: 0.55, snd: true, ghost: true, grid: true, music: false,
+	var S = { md: "m", lv: 1, view: "2d", das: 133, arr: 10, sdf: "20", tc: "both", vol: 0.55, snd: true, ghost: true, grid: true, music: "",
 		name: "", bot: "2", lbk: "d", stats: { games: 0, lines: 0, pieces: 0, quads: 0, tspins: 0, ms: 0 }, best: { s: [], u: [], m: [], d: {} }, last: null };
 	try { var saved = JSON.parse(localStorage.getItem(LS) || "null"); if (saved && typeof saved === "object") for (var k in S) if (saved[k] !== undefined) S[k] = saved[k]; } catch (e) {}
+	if (S.music === true) S.music = "beat"; else if (!S.music) S.music = "";
 	function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} }
 	(function fromQuery() {
 		var q = new URLSearchParams(location.search);
@@ -61,13 +62,13 @@
 		g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.15, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
 		o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
 	}
-	function noise(dur, vol, freq) {
+	function noise(dur, vol, freq, when) {
 		if (!S.snd || !AC) return;
 		var n = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, n, AC.sampleRate), d = buf.getChannelData(0);
 		for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
 		var s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
 		s.buffer = buf; f.type = "lowpass"; f.frequency.value = freq || 900; g.gain.value = vol || 0.3;
-		s.connect(f); f.connect(g); g.connect(master); s.start();
+		s.connect(f); f.connect(g); g.connect(master); s.start(AC.currentTime + (when || 0));
 	}
 	var SFX = {
 		move: function () { tone(1250, 0.025, "square", 0.035); },
@@ -86,25 +87,57 @@
 		go: function () { tone(990, 0.25, "square", 0.12); }
 	};
 	function sfx(k, a) { try { if (SFX[k]) SFX[k](a); } catch (e) {} }
-	/* a light background beat (our own tune), off by default */
-	var beat = { on: false, next: 0, step: 0, timer: null };
-	var TUNE = [[220, 330], [0, 0], [262, 392], [0, 330], [196, 294], [0, 0], [247, 370], [0, 294]];
-	function beatTick() {
-		if (!AC || !beat.on) return;
-		var spb = 60 / 132 / 2;
-		while (beat.next < AC.currentTime + 0.2) {
-			var st = TUNE[beat.step % TUNE.length], w = beat.next - AC.currentTime;
-			if (st[0]) tone(st[0] / 2, spb * 0.9, "triangle", 0.07, null, Math.max(0, w));
-			if (st[1] && beat.step % 2 === 0) tone(st[1], spb * 0.5, "square", 0.025, null, Math.max(0, w));
-			if (beat.step % 4 === 0) (function (ww) { setTimeout(function () { noise(0.05, 0.12, 2400); }, Math.max(0, ww * 1000)); })(w);
-			beat.next += spb; beat.step++;
+	/* ---------- music (synthesised here, off by default) ----------
+	   "korobeiniki": our own arrangement of the Russian folk song "Korobeiniki" (Nikolay Nekrasov's poem, 1861; the tune is
+	   traditional and in the public domain). "beat": a short loop of our own. A track = melody [note, eighths] (null = rest) and one
+	   bass root per bar (bass plays octave eighths). The tempo rises a little with the level. */
+	function hz(n) {
+		if (!n) return 0;
+		var m = /^([A-G])(#|b)?(\d)$/.exec(n), st = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
+		return 440 * Math.pow(2, (st + (+m[3] - 4) * 12) / 12);
+	}
+	var TRACKS = {
+		korobeiniki: { bpm: 144, lead: "square", mel: [
+			["E5", 2], ["B4", 1], ["C5", 1], ["D5", 2], ["C5", 1], ["B4", 1], ["A4", 2], ["A4", 1], ["C5", 1], ["E5", 2], ["D5", 1], ["C5", 1],
+			["B4", 3], ["C5", 1], ["D5", 2], ["E5", 2], ["C5", 2], ["A4", 2], ["A4", 2], [null, 2],
+			["D5", 3], ["F5", 1], ["A5", 2], ["G5", 1], ["F5", 1], ["E5", 3], ["C5", 1], ["E5", 2], ["D5", 1], ["C5", 1],
+			["B4", 2], ["B4", 1], ["C5", 1], ["D5", 2], ["E5", 2], ["C5", 2], ["A4", 2], ["A4", 2], [null, 2],
+			// the slow middle part
+			["E5", 4], ["C5", 4], ["D5", 4], ["B4", 4], ["C5", 4], ["A4", 4], ["G#4", 4], ["B4", 4],
+			["E5", 4], ["C5", 4], ["D5", 4], ["B4", 4], ["C5", 2], ["E5", 2], ["A5", 4], ["G#5", 8]],
+			bass: ["E2", "A2", "E2", "A2", "D2", "C2", "E2", "A2", "A2", "E2", "A2", "E2", "A2", "E2", "A2", "E2"] },
+		beat: { bpm: 132, lead: "triangle", mel: [["A4", 2], [null, 2], ["C5", 2], ["E5", 2], ["D5", 2], [null, 2], ["B4", 2], ["G4", 2]],
+			bass: ["A2", "G2"], drums: true }
+	};
+	var mus = { on: false, timer: null, next: 0, i: 0, left: 0, eighth: 0 };
+	function musTick() {
+		if (!AC || !mus.on) return;
+		var tr = TRACKS[mus.track], lvl = run.g && run.g.mode !== "z" ? run.g.level : 1;
+		var e8 = 60 / (tr.bpm * (1 + Math.min(19, lvl - 1) * 0.025)) / 2;
+		while (mus.next < AC.currentTime + 0.25) {
+			var w = Math.max(0, mus.next - AC.currentTime);
+			if (mus.left <= 0) {
+				var n = tr.mel[mus.i % tr.mel.length]; mus.i++;
+				mus.left = n[1];
+				if (n[0]) tone(hz(n[0]), e8 * n[1] * 0.92, tr.lead, 0.045, null, w);
+			}
+			var bar = Math.floor(mus.e / 8), root = hz(tr.bass[bar % tr.bass.length]);
+			tone(mus.e % 2 ? root * 2 : root, e8 * 0.85, "triangle", 0.09, null, w);
+			if (tr.drums && mus.e % 4 === 0) noise(0.05, 0.1, 2400, w);
+			mus.left--; mus.e++;
+			mus.next += e8;
 		}
 	}
 	function setBeat(on) {
-		beat.on = on && S.music && S.snd;
-		clearInterval(beat.timer);
-		if (beat.on && audio()) { beat.next = AC.currentTime + 0.05; beat.timer = setInterval(beatTick, 60); }
+		var want = on && S.snd && TRACKS[S.music] ? S.music : "";
+		clearInterval(mus.timer);
+		mus.on = !!want;
+		if (!mus.on || !audio()) return;
+		if (mus.track !== want) { mus.track = want; mus.i = 0; mus.left = 0; mus.e = 0; }
+		mus.next = AC.currentTime + 0.05;
+		mus.timer = setInterval(musTick, 70);
 	}
+	function musicRestart() { mus.i = 0; mus.left = 0; mus.e = 0; }
 
 	/* ---------- the run (current game) ---------- */
 	var run = { g: null, state: "idle", mode: "m", daily: null, t0: 0, goAt: 0, pausedAt: 0, pausedTotal: 0, msgs: [], flash: null, race: null, bot: null, replay: null, lastCount: -1, rec: null };
@@ -126,7 +159,7 @@
 		[].slice.call($("bk-dim").querySelectorAll("button")).forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === S.view ? "true" : "false"); });
 		$("bk-snd").setAttribute("aria-pressed", S.snd ? "true" : "false"); $("bk-snd").textContent = S.snd ? "🔊" : "🔇";
 		$("bk-das").value = S.das; $("bk-arr").value = S.arr; $("bk-sdf").value = S.sdf; $("bk-tc").value = S.tc; $("bk-vol").value = S.vol;
-		$("bk-ghost").checked = !!S.ghost; $("bk-grid").checked = !!S.grid; $("bk-music").checked = !!S.music;
+		$("bk-ghost").checked = !!S.ghost; $("bk-grid").checked = !!S.grid; $("bk-music").value = S.music || ""; $("bk-mus").setAttribute("aria-pressed", S.music ? "true" : "false"); $("bk-mus").title = "Music: " + ({ korobeiniki: "Korobeiniki", beat: "MES beat" }[S.music] || "off") + " (click to change)";
 		$("bk-touch").hidden = !(COARSE && S.tc !== "swipe");
 		$("bk-rname").value = S.name || ""; $("bk-bot").value = S.bot;
 	}
@@ -142,7 +175,8 @@
 	$("bk-vol").addEventListener("input", function () { S.vol = +this.value; if (master) master.gain.value = S.vol; save(); });
 	$("bk-ghost").addEventListener("change", function () { S.ghost = this.checked; save(); });
 	$("bk-grid").addEventListener("change", function () { S.grid = this.checked; save(); });
-	$("bk-music").addEventListener("change", function () { S.music = this.checked; save(); setBeat(run.state === "play"); });
+	$("bk-mus").addEventListener("click", function () { var order = ["", "korobeiniki", "beat"]; $("bk-music").value = order[(order.indexOf(S.music || "") + 1) % 3]; $("bk-music").dispatchEvent(new Event("change")); toast("Music: " + ({ korobeiniki: "Korobeiniki (Russian folk song)", beat: "MES beat" }[S.music] || "off")); setupUi(); });
+	$("bk-music").addEventListener("change", function () { S.music = this.value; save(); musicRestart(); setBeat(run.state === "play"); if (S.music && run.state !== "play") { setBeat(true); setTimeout(function () { if (run.state !== "play") setBeat(false); }, 4000); } });
 
 	/* ---------- starting / stopping ---------- */
 	function newGame(opts) {
@@ -158,7 +192,7 @@
 		run.mode = mode; run.daily = daily; run.msgs = []; run.flash = null; run.replay = null; run.rec = null;
 		run.pausedTotal = 0; run.pausedAt = 0; run.lastCount = -1;
 		run.state = "count"; run.goAt = now() + (opts.countMs != null ? opts.countMs : 1600);
-		resetInput();
+		resetInput(); musicRestart();
 		$("bk-after").hidden = true; $("bk-after").innerHTML = "";
 		$("bk-ov").hidden = true;
 		$("bk-status").textContent = opts.status || (B.MODES[em] ? B.MODES[em].name : "") + (daily ? " · daily race " + daily : "") + " · seed " + seed;
@@ -288,6 +322,7 @@
 			if (run.bot) startBot(); else newGame({ mode: run.mode === "r" ? S.md : run.mode });
 		}
 		else if (key === "m") $("bk-snd").click();
+		else if (key === "b") $("bk-mus").click();
 		else if (key === "v") setView(S.view === "3d" ? "2d" : "3d");
 	});
 	document.addEventListener("keyup", function (e) { var k = KEYS[e.key]; if (k && k !== "pause") release(k); });
