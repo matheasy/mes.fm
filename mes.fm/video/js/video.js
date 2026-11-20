@@ -6184,8 +6184,10 @@
 			.then(function () {
 				if (!got || !got.files || !got.files.length) return;
 				var chain = Promise.resolve();
-				got.files.forEach(function (f) { if (!f.blob) return; chain = chain.then(function () { return addAudioFile(new File([f.blob], f.name || "narration.wav", { type: f.type || "audio/wav" }), VE.t); }); });
-				return chain.then(function () { toast("Added " + got.files.length + " file" + (got.files.length === 1 ? "" : "s") + " from MES Narration at the playhead."); });
+				var media = [];   // videos and pictures (MES Screen Recorder) are imported and put at the end of the timeline; sound goes in at the playhead
+				got.files.forEach(function (f) { if (!f.blob) return; var file = new File([f.blob], f.name || "narration.wav", { type: f.type || f.blob.type || "audio/wav" }); if (/^(video|image)\//.test(file.type)) media.push(file); else chain = chain.then(function () { return addAudioFile(file, VE.t); }); });
+				if (media.length) chain = chain.then(function () { return importFiles(media); }).then(function (out) { var ok = (out || []).filter(function (m) { return m && m.state === "ready"; }); if (ok.length && VE.tl && VE.tl.appendAll) { VE.tl.appendAll(ok); setTimeout(function () { VE.tl.fit(); }, 300); } });
+				return chain.then(function () { toast("Added " + got.files.length + " handed-over file" + (got.files.length === 1 ? "" : "s") + "."); });
 			}).catch(function (e) { toast("Could not take the handed-over file: " + (e && e.message || e)); });
 	}
 	window.MESVideoEditor = VE;   // for testing from the console

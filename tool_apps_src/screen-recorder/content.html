@@ -1,0 +1,138 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu sr" id="sr">
+		<div class="tu-card sr-add">
+			<div class="sr-addrow">
+				<button type="button" class="tu-btn tu-btn--primary" id="sr-add-screen">🖥 Add a screen, window or tab</button>
+				<button type="button" class="tu-btn" id="sr-add-cam">📷 Add the camera</button>
+				<button type="button" class="tu-btn" id="sr-add-mic">🎤 Add a microphone</button>
+			</div>
+			<div class="sr-addopts">
+				<label><input type="checkbox" id="sr-o-sys" checked> Record the sound of the tab / screen too</label>
+				<label><input type="checkbox" id="sr-o-clean" checked> Clean up my voice (noise and echo)</label>
+			</div>
+			<p class="sr-caps" id="sr-caps" aria-live="polite"></p>
+		</div>
+
+		<div class="tu-card sr-view" id="sr-view">
+			<div class="sr-vbar" id="sr-vbar">
+				<span class="sr-vt">Picture</span>
+				<label class="sr-sel">Layout <select id="sr-layout"></select></label>
+				<label class="sr-sel">Size <select id="sr-size"></select></label>
+				<label class="sr-sel">Background <input type="color" id="sr-bg" value="#111111" aria-label="Background colour"></label>
+				<span class="sr-vbtns"></span>
+			</div>
+			<div class="sr-stage" id="sr-stage" data-mes-stage>
+				<div class="sr-cvwrap" id="sr-cvwrap">
+					<canvas id="sr-cv" width="1920" height="1080" aria-label="What will be recorded"></canvas>
+					<div class="sr-ov" id="sr-ov"></div>
+					<div class="sr-count" id="sr-count" hidden></div>
+					<div class="sr-empty" id="sr-empty">
+						<b>Nothing to record yet</b>
+						<span>Add a screen, window or tab, the camera or a microphone above. Add several: drag the boxes here to place them, pull a corner to resize.</span>
+					</div>
+					<div class="sr-recdot" id="sr-recdot" hidden>● REC</div>
+				</div>
+			</div>
+			<div class="sr-ctl" id="sr-ctl">
+				<button type="button" class="sr-big sr-rec" id="sr-rec" disabled>● Record</button>
+				<button type="button" class="sr-big" id="sr-pause" disabled>❚❚ Pause</button>
+				<button type="button" class="sr-big sr-stop" id="sr-stop" disabled>■ Stop</button>
+				<span class="sr-time" id="sr-time" aria-live="off">0:00</span>
+				<button type="button" class="tu-btn" id="sr-shot" disabled>📸 Screenshot</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="sr-pop" hidden title="A small always-on-top window with the timer and buttons, so you can control the recording from other windows">⧉ Pop out the controls</button>
+				<span class="sr-kbd">Keys: R record / stop · P pause · S screenshot</span>
+			</div>
+		</div>
+
+		<div class="tu-card sr-srcs">
+			<h2 class="sr-h">What is being recorded</h2>
+			<ul class="sr-list" id="sr-list"></ul>
+			<p class="sr-none" id="sr-none">No captures yet.</p>
+		</div>
+
+		<div class="tu-card sr-opts">
+			<h2 class="sr-h">Recording options</h2>
+			<div class="sr-grid">
+				<div class="tu-field"><span class="tu-label" id="sr-fmt-l">File type</span>
+					<div class="tu-seg" id="sr-fmt" role="group" aria-labelledby="sr-fmt-l"><button type="button" data-v="mp4" aria-pressed="true">MP4</button><button type="button" data-v="webm" aria-pressed="false">WebM</button></div>
+					<span class="tu-note" id="sr-fmt-n"></span></div>
+				<div class="tu-field"><span class="tu-label" id="sr-q-l">Quality</span>
+					<div class="tu-seg" id="sr-q" role="group" aria-labelledby="sr-q-l"><button type="button" data-v="0.5" aria-pressed="false">Smaller file</button><button type="button" data-v="1" aria-pressed="true">Normal</button><button type="button" data-v="2" aria-pressed="false">Best</button></div></div>
+				<div class="tu-field"><span class="tu-label" id="sr-fps-l">Frames per second</span>
+					<div class="tu-seg" id="sr-fps" role="group" aria-labelledby="sr-fps-l"><button type="button" data-v="15" aria-pressed="false">15</button><button type="button" data-v="30" aria-pressed="true">30</button><button type="button" data-v="60" aria-pressed="false">60</button></div></div>
+				<div class="tu-field"><span class="tu-label" id="sr-cd-l">Countdown before recording</span>
+					<div class="tu-seg" id="sr-cd" role="group" aria-labelledby="sr-cd-l"><button type="button" data-v="0" aria-pressed="false">Off</button><button type="button" data-v="3" aria-pressed="true">3 s</button><button type="button" data-v="5" aria-pressed="false">5 s</button><button type="button" data-v="10" aria-pressed="false">10 s</button></div></div>
+				<div class="tu-field sr-wide"><span class="tu-label" id="sr-to-l">Where recordings go</span>
+					<div class="tu-seg" id="sr-to" role="group" aria-labelledby="sr-to-l"><button type="button" data-v="mem" aria-pressed="true">Keep here, I'll download</button><button type="button" data-v="dir" aria-pressed="false">Straight into a folder</button></div>
+					<span class="sr-dir" id="sr-dirbox" hidden><button type="button" class="tu-btn tu-btn--ghost" id="sr-dirbtn">📁 Choose folder</button> <span id="sr-dirname"></span></span>
+					<span class="tu-note" id="sr-to-n">A folder is best for long recordings: the video is written to disk while you record, so it never fills the memory.</span></div>
+				<div class="tu-field sr-wide"><label><input type="checkbox" id="sr-o-direct" checked> With one screen and nothing else on the picture, record the screen directly (sharpest picture, uses less power, keeps working in the background)</label></div>
+			</div>
+		</div>
+
+		<div class="tu-card sr-out" id="sr-out" hidden>
+			<h2 class="sr-h">Your recordings and screenshots</h2>
+			<p class="tu-note">They stay in this tab until you download them (or are already in your folder). Closing the tab forgets the ones not saved.</p>
+			<ul class="sr-res" id="sr-res"></ul>
+		</div>
+
+		<div class="tu-seo">
+			<h2>A free screen recorder in your browser</h2>
+			<p>MES Screen Recorder records your screen, a window or a browser tab, your camera and your microphone, all at once, straight from this page. There is nothing to install, no account, no watermark and no time limit, and <b>nothing is uploaded</b>: the video is made on your own computer and you save it yourself.</p>
+			<h3>What you can do</h3>
+			<ul>
+				<li><b>Several captures on one picture.</b> Add two screens, a window and the camera: each is a box you can drag and resize on the picture, like picture-in-picture. Layouts put them side by side or in a grid in one click.</li>
+				<li><b>Camera bubble.</b> The camera shows as a round, rounded or square box, mirrored if you like.</li>
+				<li><b>Mix the sound.</b> Your microphone, a second microphone and the sound of a tab or the whole computer are mixed together, each with its own volume slider and level meter.</li>
+				<li><b>Record only part of the screen.</b> Browsers can only share a whole screen, window or tab, so use ✂ Crop on a capture to keep just a region of it.</li>
+				<li><b>Screenshots.</b> Take a still of the whole picture or of one capture at full size, crop it, copy it, save it as PNG or open it in the MES Photo Editor.</li>
+				<li><b>Pause, countdown and a pop-out timer</b> you can keep on top while you work in other windows (Chrome and Edge).</li>
+				<li><b>Voice recorder and webcam recorder.</b> With only a microphone you get a sound file; with only the camera, a webcam video. Both work on phones too.</li>
+				<li><b>Edit it next.</b> Open a recording in the MES Video Editor or the MES Audio Editor with one click.</li>
+			</ul>
+			<h3>What browsers allow (honest notes)</h3>
+			<ul>
+				<li><b>Screen recording needs a computer.</b> Phones and tablets do not let web pages capture the screen; there you can still record the camera and the microphone.</li>
+				<li><b>Sound of the computer:</b> Chrome, Edge, Brave and Opera on Windows can record the whole computer's sound when you share a screen (tick "Also share system audio"). On a Mac or Linux they can record the sound of a <b>tab</b> (share a tab and tick "Also share tab audio"), not of other apps. Firefox and Safari record no tab or system sound.</li>
+				<li><b>MP4 or WebM:</b> recent Chrome, Edge and Safari can record MP4 directly; otherwise the file is WebM, which plays in browsers, VLC and the MES Video Editor (and the MES Video Converter turns it into MP4). WebM files from browsers have no length written in them, so some players can't jump around in them until converted.</li>
+				<li><b>Background tabs:</b> with several captures the picture is drawn by this tab. It keeps recording when you switch to other windows, but leave this tab open, and don't minimise the whole browser window on a Mac.</li>
+				<li><b>Region only:</b> no browser offers "share a rectangle of my screen". Share the screen or window and crop it here.</li>
+			</ul>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is my recording uploaded anywhere?</dt><dd>No. The video and sound are recorded and stored in your browser on your device. Nothing is sent to mes.fm or anyone else.</dd>
+				<dt>How long can I record?</dt><dd>As long as you like. For long recordings choose "Straight into a folder" so the video is written to your disk as you go (Chrome, Edge and Opera; in Brave turn on brave://flags/#file-system-access-api). Otherwise the recording is kept in memory until you download it.</dd>
+				<dt>Why is there an extra window in the share dialog?</dt><dd>That is your browser's own picker: choose a whole screen, one window or one tab. The browser shows a "sharing" bar while it records; "Stop sharing" there removes that capture.</dd>
+				<dt>Can I record a video call?</dt><dd>Yes: share the call's tab or window with its sound and add your microphone. Ask everyone in the call before you record.</dd>
+				<dt>Keyboard shortcuts?</dt><dd>R starts or stops the recording, P pauses, S takes a screenshot (when you are not typing in a box). Delete removes the selected box from the picture.</dd>
+			</dl>
+		</div>
+	</div>
+
+	<div class="sr-modal" id="sr-shotm" hidden role="dialog" aria-modal="true" aria-labelledby="sr-shotm-t">
+		<div class="sr-mbox">
+			<div class="sr-mhead"><b id="sr-shotm-t">Screenshot</b> <span class="sr-mhint">Drag on the picture to choose a part.</span> <button type="button" class="sr-x" data-close aria-label="Close">✕</button></div>
+			<div class="sr-mstage"><div class="sr-mwrap" id="sr-shotwrap"><canvas id="sr-shotcv"></canvas><div class="sr-cropbox" id="sr-shotbox" hidden></div></div></div>
+			<div class="sr-mbar">
+				<span class="sr-msize" id="sr-shotsize"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="sr-shotcrop" disabled>✂ Crop to the box</button>
+				<button type="button" class="tu-btn" id="sr-shotcopy">Copy</button>
+				<button type="button" class="tu-btn" id="sr-shotsave">⬇ Save PNG</button>
+				<button type="button" class="tu-btn" id="sr-shotedit">Edit in Photo Editor</button>
+				<button type="button" class="tu-btn tu-btn--primary" data-close>Done</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="sr-modal" id="sr-cropm" hidden role="dialog" aria-modal="true" aria-labelledby="sr-cropm-t">
+		<div class="sr-mbox">
+			<div class="sr-mhead"><b id="sr-cropm-t">Record only part of this capture</b> <span class="sr-mhint">Drag a box over the part to keep; drag the box or its corners to adjust.</span> <button type="button" class="sr-x" data-close aria-label="Close">✕</button></div>
+			<div class="sr-mstage"><div class="sr-mwrap" id="sr-cropwrap"><canvas id="sr-cropcv"></canvas><div class="sr-cropbox" id="sr-cropbox" hidden><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div></div>
+			<div class="sr-mbar">
+				<span class="sr-msize" id="sr-cropsize"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="sr-cropnone">Whole capture</button>
+				<button type="button" class="tu-btn tu-btn--primary" id="sr-cropok">Use this part</button>
+			</div>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

@@ -5,6 +5,7 @@
     { "source": "/ai", "has": [{ "type": "query", "key": "wallet" }], "destination": "/ai-trading", "permanent": true },
     { "source": "/ai/api/:path*", "destination": "/ai-trading/api/:path*", "permanent": true },
     { "source": "/:k(mes-ai|ai-chat|chat|chatbot|ask-ai|ai-assistant|claude-chat)", "destination": "/ai", "permanent": true },
+    { "source": "/:k(record-screen|screenrecorder|screen-record|screen-capture|screencast|record-my-screen|screenshot|take-screenshot|webcam-recorder|record-webcam|video-recorder|voice-recorder|audio-recorder|sound-recorder|loom-alternative)", "destination": "/screen-recorder", "permanent": true },
     { "source": "/:k(ai-checker|ai-image-detector|ai-image-checker|ai-photo-detector|ai-picture-detector|is-it-ai|is-this-ai|was-it-ai|ai-content-detector|ai-generated-checker|c2pa-checker|content-credentials-checker)", "destination": "/ai-detector", "permanent": true },
     { "source": "/:k(ai-text-detector|ai-writing-detector|chatgpt-detector|gpt-detector|gptzero|gptzero-alternative|ai-essay-checker)", "destination": "/ai-detector?tab=text", "permanent": true },
     { "source": "/:k(ai-video-detector|deepfake-detector|deepfake-checker|sora-detector)", "destination": "/ai-detector?tab=vid", "permanent": true },

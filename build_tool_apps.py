@@ -830,7 +830,7 @@ APPS = {
                          tag="Cut, clean and export audio. No upload. No sign-up.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                          desc="Free online audio editor with AI noise removal: open audio or the sound of a video, remove background noise, hum and clicks, cut, fade and arrange tracks, set the loudness to -14 or -16 LUFS and export WAV, MP3 or M4A. Runs in your browser: nothing is uploaded.",
                          meta_desc="Free online audio editor with AI noise removal. Cut, fade, clean up voice, set LUFS loudness and export WAV, MP3 or M4A. Runs in your browser, nothing uploaded.",
-                         js_v="7", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+                         js_v="8", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -846,6 +846,15 @@ APPS = {
                     js_v="1", lib_from=["image-converter"], pre_js=["/main_js/tab-progress.js?v=1"], share_img="upscale/img/share.jpg",
                     nav_extra="".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % x for x in [("photo", "Photo Editor"), ("compress", "Compressor"), ("image-converter", "Image Converter")]),
                     menu_extra="".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % x for x in [("photo", "Photo Editor"), ("compress", "Compressor"), ("image-converter", "Image Converter")])),
+    # MES Screen Recorder (2026-11-20): screens / windows / tabs + camera + microphones on one picture (canvas, drag / resize boxes), sound mixing, screenshots,
+    # MP4 / WebM, save into a folder, hand-offs to the Video / Audio / Photo editors. lib.js = MESRec (node tests tool_apps_src/screen-recorder-tests.js).
+    "screen-recorder": dict(title="MES Screen Recorder", page_title="Free Screen Recorder: Record Your Screen, Camera and Voice Online",
+                    tag="Record your screen, camera and voice. No install, no upload.", accent="#b91c1c", dark="#991b1b", tint="#fde8e8",
+                    desc="Free online screen recorder: record your screen, a window or a browser tab together with your camera and microphone, several at once on one picture you arrange yourself. Mix the sound, take screenshots, pause, and save MP4 or WebM into a folder. No install, no account, no watermark, nothing uploaded.",
+                    meta_desc="Free online screen recorder: record screen, window or tab with camera and mic, mix sound, take screenshots, save MP4. No install, no watermark, nothing uploaded.",
+                    js_v="1", lib_from=["image-converter"],
+                    nav_extra="".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % x for x in [("video", "Video Editor"), ("audio", "Audio Editor"), ("photo", "Photo Editor")]),
+                    menu_extra="".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s</a></li>' % x for x in [("video", "Video Editor"), ("audio", "Audio Editor"), ("photo", "Photo Editor")])),
     # Atomic Clock Simulator: caesium clock loop (quartz locked to atoms), Ramsey fringes / fountain, clock race, Allan-deviation chart, drift calculator.
     # lib.js = physics + drift maths (node-tested: tool_apps_src/atomic-clock-simulator-tests.js), app.js = UI. Wide page, dark stages, own Theatre button, no sidebar.
     "atomic-clock-simulator": dict(no_sidebar=True, title="MES Atomic Clock Simulator", page_title="Atomic Clock Simulator",
@@ -1568,7 +1577,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="66", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="67", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",

@@ -280,6 +280,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("darkroom", "Darkroom"),
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
     ("upscale", "Upscale"),   # also built by build_tool_apps.py
+    ("screen-recorder", "Screen Recorder"),
     ("3d-fluid-simulator", "3D Fluid Simulator"),   # also built by build_tool_apps.py (wide page, WebGL2 smoke)
     ("buddhabrot", "Buddhabrot Explorer"),
     ("time-dilation", "Time Dilation Simulator"),

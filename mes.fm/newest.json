@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-19",
+ "generated": "2026-11-20",
  "calculators": [
   {
    "href": "/expense-splitter",
@@ -100,6 +100,22 @@
  ],
  "tools": [
   {
+   "href": "/screen-recorder",
+   "title": "Screen Recorder",
+   "icon": "/img/screen-recorder-logo.png",
+   "desc": "Record your screen, a window or a tab with your camera and microphone, take screenshots, mix the sound and save MP4. No install, nothing uploaded.",
+   "added": "2026-11-20",
+   "kind": "tool"
+  },
+  {
+   "href": "/ai-detector",
+   "title": "AI Detector",
+   "icon": "/img/ai-detector-logo.png",
+   "desc": "Was a picture, video or text made with AI? Reads Content Credentials and AI labels, runs an on-device model and checks text patterns. Evidence, not guesses.",
+   "added": "2026-11-20",
+   "kind": "tool"
+  },
+  {
    "href": "/space-shuttle-simulator",
    "title": "Space Shuttle Simulator",
    "icon": "/img/space-shuttle-simulator-logo.png",
@@ -178,25 +194,25 @@
    "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
    "added": "2026-11-13",
    "kind": "tool"
-  },
-  {
-   "href": "/quantum-cryptography",
-   "title": "Quantum Cryptography",
-   "icon": "/img/quantum-cryptography-logo.png",
-   "desc": "Send a key with photons (BB84), watch Shor's algorithm factor and Grover's search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).",
-   "added": "2026-11-13",
-   "kind": "tool"
-  },
-  {
-   "href": "/cryptography",
-   "title": "Cryptography Lab",
-   "icon": "/img/cryptography-logo.png",
-   "desc": "Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.",
-   "added": "2026-11-13",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/screen-recorder",
+   "title": "Screen Recorder",
+   "icon": "/img/screen-recorder-logo.png",
+   "desc": "Record your screen, a window or a tab with your camera and microphone, take screenshots, mix the sound and save MP4. No install, nothing uploaded.",
+   "added": "2026-11-20",
+   "kind": "tool"
+  },
+  {
+   "href": "/ai-detector",
+   "title": "AI Detector",
+   "icon": "/img/ai-detector-logo.png",
+   "desc": "Was a picture, video or text made with AI? Reads Content Credentials and AI labels, runs an on-device model and checks text patterns. Evidence, not guesses.",
+   "added": "2026-11-20",
+   "kind": "tool"
+  },
   {
    "href": "/space-shuttle-simulator",
    "title": "Space Shuttle Simulator",
@@ -243,22 +259,6 @@
    "icon": "/img/email-logo.png",
    "desc": "Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.",
    "added": "2026-11-17",
-   "kind": "tool"
-  },
-  {
-   "href": "/tracking",
-   "title": "Package Tracker",
-   "icon": "/img/tracking-logo.png",
-   "desc": "Paste, scan or photograph any tracking number and open the right carrier’s tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
-   "added": "2026-11-16",
-   "kind": "tool"
-  },
-  {
-   "href": "/upscale",
-   "title": "AI Image Upscaler",
-   "icon": "/img/upscale-logo.png",
-   "desc": "Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.",
-   "added": "2026-11-16",
    "kind": "tool"
   }
  ]
