@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SwrProvider>
-          <div className="mx-auto max-w-[1180px] px-4 pb-6 sm:px-6">
+          <div className="mes-frame mx-auto max-w-[1180px] px-4 pb-6 sm:px-6">
             {/* no `active`: the tab follows the URL - this one app serves Portfolio, Transactions, Taxes, Store of Value, Assets, AI Trading and MikeFA */}
             <SiteChrome
               title={TITLE}

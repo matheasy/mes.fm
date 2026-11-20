@@ -94,6 +94,35 @@ function dashboardTabs(wallet?: string) {
   };
 }
 
+/** Standard | Wide | Theatre, the same `pageMode` / `pageWide` localStorage keys as the static mes.fm pages
+ * (so the choice carries across the site). Wide is the default; ThemeScript applies it before first paint. */
+type PageMode = 'std' | 'wide' | 'theatre';
+function usePageMode(): [PageMode, (m: PageMode) => void] {
+  const [mode, setMode] = useState<PageMode>('wide');
+  useEffect(() => {
+    try {
+      const m = localStorage.getItem('pageMode');
+      if (m === 'std' || m === 'wide' || m === 'theatre') setMode(m);
+    } catch {
+      // blocked storage
+    }
+  }, []);
+  const set = (m: PageMode) => {
+    setMode(m);
+    const d = document.documentElement;
+    d.classList.toggle('page-wide', m !== 'std');
+    d.classList.toggle('page-theatre', m === 'theatre');
+    try {
+      localStorage.setItem('pageMode', m);
+      localStorage.setItem('pageWide', m === 'std' ? '0' : '1');
+    } catch {
+      // blocked storage
+    }
+    window.dispatchEvent(new Event('resize'));
+  };
+  return [mode, set];
+}
+
 /** Same steps + localStorage key as the static pages' A-/A+ (shared across mes.fm). Scales the root
  * font-size, which is what Tailwind's rem-based text-* sizes follow; ThemeScript applies a saved
  * value before first paint. */
@@ -186,6 +215,7 @@ export default function SiteChrome(props: SiteChromeProps) {
   const { title, tagline, homeHref } = page ?? props;
   const wallet = page ? page.wallet : props.wallet;
   const scale = useTextScale();
+  const [pageMode, setPageMode] = usePageMode();
   const theme = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -398,7 +428,22 @@ export default function SiteChrome(props: SiteChromeProps) {
       </div>
 
       <div className="mes-part-of">
-        Part of <a href={CRYPTO_HUB}>MES Crypto</a>
+        <span>
+          Part of <a href={CRYPTO_HUB}>MES Crypto</a>
+        </span>
+        <span className="mes-mode" role="group" aria-label="Page width">
+          {(
+            [
+              ['std', 'Standard'],
+              ['wide', 'Wide'],
+              ['theatre', 'Theatre'],
+            ] as const
+          ).map(([m, l]) => (
+            <button key={m} type="button" className={pageMode === m ? 'is-on' : ''} aria-pressed={pageMode === m} onClick={() => setPageMode(m)}>
+              {l}
+            </button>
+          ))}
+        </span>
       </div>
 
       <ul className="mes-tabs" aria-label="Dashboards">

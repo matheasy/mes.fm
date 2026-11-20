@@ -90,6 +90,15 @@ export default function SummaryPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [hoverI, setHoverI] = useState<number | null>(null);
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const q = window.matchMedia('(max-width: 640px)');
+    const f = () => setNarrow(q.matches);
+    f();
+    q.addEventListener('change', f);
+    return () => q.removeEventListener('change', f);
+  }, []);
 
   const serverOk = store.data != null; // null = no database (local preview)
   const rows: SummaryRow[] = useMemo(() => (serverOk ? store.data!.rows : (localRows ?? [])), [serverOk, store.data, localRows]);
@@ -267,14 +276,54 @@ export default function SummaryPage() {
             <Seg label="Range" value={view.range} options={[['1y', '1 year'], ['2y', '2 years'], ['5y', '5 years'], ['all', 'All']]} onChange={(v) => setV({ range: v })} />
           </div>
         </div>
-        <div className="h-80 w-full">
+        {(() => {
+          const pt = shown[hoverI ?? shown.length - 1];
+          if (!pt) return null;
+          return (
+            <div className="flex min-h-[2.75rem] flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-md border border-bg-border bg-bg/60 px-3 py-1.5 text-sm tabular-nums" aria-live="polite">
+              <span className="text-gray-400">{hoverI == null ? `Latest · ${pt.d}` : pt.d}</span>
+              <span className="font-semibold text-gray-100">Total {fmtUnit(pt.total as number | null, u)}</span>
+              {PARTS.filter((p) => (pt[p] as number | null) ? (pt[p] as number) > 0 : false).map((p) => (
+                <span key={p} className="inline-flex items-center gap-1 text-gray-200">
+                  <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: PART_COLOR[p] }} />
+                  {PART_LABEL[p]} {fmtUnit(pt[p] as number, u)}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
+        <div className="h-80 w-full touch-pan-y">
           {shown.length ? (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={shown} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+              <ComposedChart
+                data={shown}
+                margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+                onMouseMove={(e: { activeTooltipIndex?: number }) => setHoverI(typeof e?.activeTooltipIndex === 'number' ? e.activeTooltipIndex : null)}
+                onMouseLeave={() => setHoverI(null)}
+              >
                 <CartesianGrid stroke="rgb(var(--c-border))" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="d" tick={{ fill: 'rgb(var(--g-400))', fontSize: 12 }} minTickGap={40} />
                 <YAxis tick={{ fill: 'rgb(var(--g-400))', fontSize: 12 }} width={48} tickFormatter={(v: number) => short(v, u)} />
-                <Tooltip {...tipStyle} formatter={(v: number, name: string) => [fmtUnit(v, u), name]} />
+                <Tooltip
+                  {...tipStyle}
+                  cursor={{ stroke: 'rgb(var(--g-300))', strokeWidth: 1.5, strokeDasharray: '4 3' }}
+                  wrapperStyle={narrow ? { display: 'none' } : undefined}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const items = payload.filter((it) => Number(it.value) > 0).sort((a, b) => (b.dataKey === 'total' ? 1 : a.dataKey === 'total' ? -1 : Number(b.value) - Number(a.value)));
+                    return (
+                      <div className="rounded-lg border border-bg-border bg-bg-panel px-3 py-2 text-sm tabular-nums shadow-lg">
+                        <p className="mb-1 text-gray-400">{label}</p>
+                        {items.map((it) => (
+                          <p key={String(it.dataKey)} className={`flex items-center gap-1.5 ${it.dataKey === 'total' ? 'font-semibold text-gray-100' : 'text-gray-200'}`}>
+                            <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: it.dataKey === 'total' ? 'rgb(var(--g-100))' : String(it.color) }} />
+                            {it.name}: {fmtUnit(Number(it.value), u)}
+                          </p>
+                        ))}
+                      </div>
+                    );
+                  }}
+                />
                 {PARTS.map((p) => (
                   <Area key={p} type="monotone" dataKey={p} name={PART_LABEL[p]} stackId="1" stroke={PART_COLOR[p]} fill={PART_COLOR[p]} fillOpacity={0.55} isAnimationActive={false} />
                 ))}
