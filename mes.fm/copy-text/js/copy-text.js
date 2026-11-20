@@ -743,10 +743,15 @@
 		if (withTime) { o.hour = "numeric"; o.minute = "2-digit"; }
 		try { return d.toLocaleString(undefined, o); } catch (e) { return d.toDateString(); }
 	}
+	/* hide / show choices for the Hive bits (this browser): "state" = the backup line above the texts, "list" = the saved-backups list in the panel */
+	function hivePref(k) { try { return localStorage.getItem("mes-copytext:v1:hivehide:" + k) === "1"; } catch (e) { return false; } }
+	function setHivePref(k, on) { try { if (on) localStorage.setItem("mes-copytext:v1:hivehide:" + k, "1"); else localStorage.removeItem("mes-copytext:v1:hivehide:" + k); } catch (e) {} }
+	function paintHivePrefs() { var c = $("cp-hive-showstate"); if (c) c.checked = !hivePref("state"); }
 	function hiveSummary() {
 		var el = $("cp-hivestate"); if (!el) return;
 		hst = CTLib.status(state, hrec);
-		if (!hrec) { el.hidden = true; return; }
+		var hb0 = $("cp-hivebtn"); if (hb0 && hrec) hb0.textContent = "☁ Hive backup" + (hst.off || hst.gone ? " •" : " ✓");
+		if (!hrec || hivePref("state")) { el.hidden = true; return; }
 		var t = "☁ Last Hive backup: " + day(hrec.t, true) + (hrec.acct ? " (@" + hrec.acct + ")" : "") + ". ";
 		if (!hst.off && !hst.gone) { t += "Everything here is backed up."; el.className = "tu-note cp-hivestate is-ok"; }
 		else {
@@ -757,6 +762,9 @@
 		}
 		el.textContent = t;
 		if (hst.off || hst.gone) { var b = document.createElement("button"); b.type = "button"; b.className = "tu-chip"; b.textContent = "Back up now"; b.onclick = function () { openHive(true); }; el.appendChild(b); }
+		var x = document.createElement("button"); x.type = "button"; x.className = "cp-hs-x"; x.textContent = "Hide"; x.title = "Hide this line (bring it back in the Hive backup panel)";
+		x.onclick = function () { setHivePref("state", true); hiveSummary(); paintHivePrefs(); toast("Backup line hidden. The • / ✓ on the Hive backup button still shows it."); };
+		el.appendChild(x);
 		el.hidden = false;
 		var hb = $("cp-hivebtn"); if (hb) hb.textContent = "☁ Hive backup" + (hst.off || hst.gone ? " •" : " ✓");
 	}
@@ -1427,6 +1435,8 @@
 	function closeHive() { $("cp-hive").hidden = true; $("cp-hivebtn").setAttribute("aria-expanded", "false"); $("cp-hivebtn").focus(); }
 	$("cp-hivebtn").onclick = function () { if ($("cp-hive").hidden) openHive(true); else closeHive(); };
 	$("cp-hive-close").onclick = closeHive;
+	$("cp-hive-showstate").onchange = function () { setHivePref("state", !this.checked); hiveSummary(); };
+	paintHivePrefs();
 	$("cp-hive-encrypt").onchange = function () { try { localStorage.setItem(ENC_KEY, this.checked ? "1" : "0"); } catch (e) {} paintWarn(); };
 	if (HS() && HS().encModeUI) HS().encModeUI($("cp-hive-encrypt"), function () { paintUser(); });
 	if (window.MESHive) MESHive.onChange(function () { if (!$("cp-hive").hidden) { hiveList = null; $("cp-hive-list").innerHTML = ""; paintUser(); } });
@@ -1476,10 +1486,12 @@
 	function paintList() {
 		var box = $("cp-hive-list");
 		if (!hiveList || !hiveList.length) { box.innerHTML = ""; hivePick = {}; return; }
+		var folded = hivePref("list"), tog = '<button type="button" class="tu-btn tu-btn--ghost cp-hb-tog" data-h="listtog" aria-expanded="' + !folded + '">' + (folded ? "▸ Show" : "▾ Hide") + ' your backups on Hive (' + hiveList.length + ')</button>';
+		if (folded) { box.innerHTML = tog; return; }
 		var ids = hiveList.map(function (e) { return e.s; });
 		Object.keys(hivePick).forEach(function (k) { if (ids.indexOf(k) < 0) delete hivePick[k]; });
 		var n = Object.keys(hivePick).filter(function (k) { return hivePick[k]; }).length, all = n === hiveList.length;
-		box.innerHTML = '<div class="cp-hb-bar"><label class="cp-hb-all"><input type="checkbox" data-hp="all"' + (all ? " checked" : "") + '> Select all</label>' +
+		box.innerHTML = tog + '<div class="cp-hb-bar"><label class="cp-hb-all"><input type="checkbox" data-hp="all"' + (all ? " checked" : "") + '> Select all</label>' +
 			'<button type="button" class="tu-btn tu-btn--ghost cp-hb-hide" data-h="forgetsel"' + (n ? "" : " disabled") + ' title="Hide the ticked backups from this list (the data stays on the blockchain)">Hide selected' + (n ? " (" + n + ")" : "") + '</button></div>' +
 			'<ul class="cp-hb">' + hiveList.map(function (e, i) {
 				var meta = HS().lockLabel(e) + " · " + esc(kb(e.bytes)) + (e.complete ? "" : " · incomplete");
@@ -1525,6 +1537,7 @@
 				hmsg(x.code === "nokeychain" ? "Hive Keychain is not installed in this browser (see below)." : errText(x), "err");
 				if (x.code === "nokeychain") $("cp-hive-help").innerHTML = HV().helpHtml();
 			});
+		} else if (a === "listtog") { setHivePref("list", !hivePref("list")); paintList(); var tb = $("cp-hive-list").querySelector(".cp-hb-tog"); if (tb) tb.focus();
 		} else if (a === "logout") { HV().logout(); hiveList = null; $("cp-hive-list").innerHTML = ""; hmsg(""); paintUser(); }
 		else if (a === "merge" || a === "replace") restoreFrom(+b.dataset.i, a);
 		else if (a === "forgetsel") {

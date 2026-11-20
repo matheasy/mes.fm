@@ -384,6 +384,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .cp-hivestate.is-due {color:#92400e;}
 	.tu .cp-hivestate.is-ok {color:#1d7a46;}
 	.tu .cp-hivestate .tu-chip {margin-left:0.4em;}
+	.tu .cp-hivestate .cp-hs-x {margin-left:0.6em; font:inherit; font-size:0.9em; background:none; border:0; padding:0.2em 0.3em; color:inherit; opacity:0.75; text-decoration:underline; cursor:pointer;}
+	.tu .cp-hivestate .cp-hs-x:hover {opacity:1;}
+	.tu .cp-hb-tog {margin:0.2em 0 0.4em; font-weight:600;}
+	.tu .cp-hive-showst {margin-top:0.6em; font-size:0.95em;}
 	body.dark-mode #cp .cp-meta {color:#a0a8b3;}
 	body.dark-mode #cp .cp-hs.is-on, body.dark-mode #cp .cp-hivestate.is-ok {color:#6ee7a0;}
 	body.dark-mode #cp .cp-hs.is-off, body.dark-mode #cp .cp-hivestate.is-due {color:#fbbf6a;}
@@ -1043,6 +1047,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</details>
 			</div>
 			<div id="cp-hive-help"></div>
+			<label class="cp-hive-enc cp-hive-showst"><input type="checkbox" id="cp-hive-showstate" checked> <span>Show the "Last Hive backup" line above my texts</span></label>
+
 		</div>
 
 		<div id="cp-out" class="cp-grid" aria-live="polite"></div>
@@ -1132,7 +1138,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/copy-text/js/copy-text.js?v=18" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/copy-text/js/copy-text.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
