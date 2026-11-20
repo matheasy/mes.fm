@@ -13,14 +13,14 @@ for L in np.unique(lab):
     comps.append((sel, v.min(0), v.max(0)))
 W = m.bounds[1] - m.bounds[0]
 thin = lambda c: (c[2] - c[1])[2] < 0.04
-sheets = [c for c in comps if thin(c) and (c[2] - c[1])[0] > 0.85 * W[0] and (c[2] - c[1])[1] > 0.85 * W[1]]
+sheets = [c for c in comps if (c[2] - c[1])[2] < 0.1 and (c[2] - c[1])[0] > 0.85 * W[0] and (c[2] - c[1])[1] > 0.85 * W[1]]
 if sheets:
     z0 = min(c[1][2] for c in sheets) - 0.03; z1 = max(c[2][2] for c in sheets) + 0.03
 elif len(sys.argv) > 4:          # sheet already removed: give its plane by hand, e.g.  in.glb out.glb -0.06 0.06
     z0, z1 = float(sys.argv[3]), float(sys.argv[4])
 else:
     print(src, "no backing sheet, unchanged"); sys.exit()
-core = [c for c in comps if not thin(c) and c[0].sum() >= 30]
+core = [c for c in comps if not thin(c) and not any(c is t for t in sheets) and c[0].sum() >= 30]
 lo = np.min([c[1] for c in core], 0) - 0.02; hi = np.max([c[2] for c in core], 0) + 0.02
 keep = np.ones(len(m.faces), bool); n = 0
 for c in comps:

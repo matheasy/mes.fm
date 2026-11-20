@@ -1059,8 +1059,8 @@
 		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
 	/* Pieces that already have a real 3D model in the "Fantasy armies 3D" set (one or two are added a day; see
 	   tool_apps_src/chess/fantasy3d/README.md). The others use their picture figure until theirs is made. */
-	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR", "bK", "bQ", "bB"];
-	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "fantasy3d", name: "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
+	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR", "wP", "bK", "bQ", "bB", "bN", "bR", "bP"];
+	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "fantasy3d", name: MODELS3D.length >= 12 ? "Fantasy armies 3D" : "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
@@ -1179,7 +1179,7 @@
 	}
 	function model3d(key) {
 		if (M3[key]) return M3[key];
-		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy3d/" + key + ".glb?v=2";
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy3d/" + key + ".glb?v=3";
 		return (M3[key] = fetch(url).then(function (r) { if (!r.ok) throw new Error("model " + r.status); return r.arrayBuffer(); }).then(function (buf) {
 			var d = parseGlb(buf), g = new THREE.BufferGeometry();
 			g.setAttribute("position", new THREE.BufferAttribute(d.pos, 3));
@@ -1389,7 +1389,25 @@
 	/* ---------- camera ---------- */
 	View.prototype.setCam = function (m) { this.endLook(); this.camMode = m; this.free = { yaw: 0, pitch: 0 }; this.render(); };
 	View.prototype.zoom = function (f) {
-		if (this.look3) { this.look3.d = Math.max(0.8, Math.min(12, this.look3.d * f)); this.render(); return; } this.zoomF = Math.max(0.45, Math.min(2.6, this.zoomF * f)); if (this.camMode === "orbit") this.orb.d = Math.max(5, Math.min(40, this.orb.d * f)); this.render(); };
+		if (this.look3) { this.look3.d = Math.max(0.8, Math.min(12, this.look3.d * f)); this.render(); return; } this.zoomF = Math.max(0.45, Math.min(2.6, this.zoomF * f)); if (this.camMode === "orbit") this.orbZoom(f); this.render(); };
+	/* Orbit zoom: the camera closes in on the board centre down to ORB_MIN, then keeps going by gliding forward over the board
+	   (the point it circles moves the way it looks), so from behind one army you can fly in to the other side.
+	   Zooming out brings that point back to the centre first, then moves away. */
+	var ORB_MIN = 4, ORB_REACH = 6.5;
+	View.prototype.orbZoom = function (f) {
+		var o = this.orb; o.tx = o.tx || 0; o.tz = o.tz || 0;
+		var fx = -Math.cos(o.th), fz = -Math.sin(o.th), along = o.tx * fx + o.tz * fz;   // how far the point has moved forward
+		if (f < 1 && o.d * f < ORB_MIN) {
+			var nd = Math.max(ORB_MIN, o.d * f), step = Math.max(0, o.d * (1 - f) - (o.d - nd));   // the part closing in could not use
+			o.d = nd;
+			var na = Math.min(ORB_REACH, along + step) - along;
+			o.tx += fx * na; o.tz += fz * na;
+		} else if (f > 1 && (o.tx || o.tz)) {
+			var back = ORB_MIN * (f - 1), len = Math.hypot(o.tx, o.tz);
+			if (back >= len) { o.tx = 0; o.tz = 0; } else { o.tx -= o.tx / len * back; o.tz -= o.tz / len * back; }
+		} else o.d = Math.max(ORB_MIN, Math.min(40, o.d * f));
+		var r = Math.hypot(o.tx, o.tz); if (r > ORB_REACH) { o.tx *= ORB_REACH / r; o.tz *= ORB_REACH / r; }
+	};
 	View.prototype.orbit = function (dx, dy) {
 		// "grab the board": the board turns the way the pointer moves; dragging down tips the far side towards you (camera rises)
 		if (this.look3) { var L3 = this.look3; L3.th += dx * 0.01; L3.ph = Math.max(0.2, Math.min(1.56, L3.ph - dy * 0.006)); this.render(); return; }
@@ -1432,7 +1450,9 @@
 		}
 		if (mode === "orbit") {
 			var o = this.orb;
-			out.eye.set(o.d * Math.sin(o.ph) * Math.cos(o.th), o.d * Math.cos(o.ph), o.d * Math.sin(o.ph) * Math.sin(o.th));
+			var tx = o.tx || 0, tz = o.tz || 0;
+			out.eye.set(tx + o.d * Math.sin(o.ph) * Math.cos(o.th), o.d * Math.cos(o.ph), tz + o.d * Math.sin(o.ph) * Math.sin(o.th));
+			out.look.set(tx, 0, tz);
 			return out;
 		}
 		var th, ph, d = fit * z;
