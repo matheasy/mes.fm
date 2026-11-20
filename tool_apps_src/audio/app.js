@@ -315,8 +315,8 @@
 	function deleteTrack(id) { stopAll(); var t = trackById(id); S.tracks = S.tracks.filter(function (x) { return x.id !== id; }); S.selT = S.selT.filter(function (x) { return x !== id; }); commit("Delete track " + (t ? t.name : "")); }
 
 	/* ---------------- UI sync ---------------- */
-	function afterChange() { renderHeads(); updateEmpty(); syncUi(); draw(); }
-	function afterSel() { renderHeads(); draw(); }
+	function afterChange() { renderHeads(); updateEmpty(); syncUi(); draw(); simpleSync(); }
+	function afterSel() { renderHeads(); draw(); simpleSync(); }
 	function updateEmpty() { $("au-empty").hidden = S.tracks.length > 0; }
 	function syncUi() {
 		$("au-undo").disabled = !H.canUndo(); $("au-redo").disabled = !H.canRedo();
@@ -438,7 +438,7 @@
 		var x = xOf(p); if (x > W - 10 || x < 0) { S.start = p - W * S.spp * 0.05; draw(); }
 		drawOver(); meter(); playRaf = requestAnimationFrame(playLoop);
 	}
-	function stopPlay(keepCursor) { if (!playing) return; var p = playPos(); playing = false; stopSources(); cancelAnimationFrame(playRaf); $("au-play").textContent = "▶"; $("au-play").setAttribute("aria-label", "Play"); if (keepCursor === "here") S.cursor = Math.round(p); drawOver(); meterClear(); }
+	function stopPlay(keepCursor) { if (!playing) return; var p = playPos(); playing = false; stopSources(); cancelAnimationFrame(playRaf); $("au-play").textContent = "▶"; $("au-play").setAttribute("aria-label", "Play"); setTimeout(simpleSync, 0); if (keepCursor === "here") S.cursor = Math.round(p); drawOver(); meterClear(); }
 	function togglePlay() {
 		if (preview && preview.playing) { stopPreview(); return; }
 		if (playing) { stopPlay("here"); return; }
@@ -742,6 +742,7 @@
 	var rec = null;
 	function toggleRec() { if (rec) return stopRec(); startRec(); }
 	function startRec() {
+		if (window.MESAudioNative && window.MESAudioNative.rec) return startNativeRec();
 		if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast("Recording needs a secure (https) page and a microphone");
 		stopAll(); actx();
 		navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } }).then(function (stream) {
@@ -755,9 +756,11 @@
 	}
 	// Start over: throw away what was recorded so far and keep recording from the same spot
 	function redoRec() {
+		if (rec && rec.native) { var NR = window.MESAudioNative.rec; NR.stop().then(function (r) { if (r && r.discard) r.discard(); return NR.start(); }).then(function () { rec.t0 = Date.now(); toast("Take thrown away. Recording again from the start."); }).catch(function (e) { toast("Could not restart: " + (e.message || e)); }); return; }
 		if (!rec) return; rec.chunks.length = 0; rec.n = 0; rec.pk = 0; rec.t0 = Date.now(); toast("Take thrown away. Recording again from the start.");
 	}
 	function stopRec() {
+		if (rec && rec.native) return stopNativeRec();
 		if (!rec) return; var r = rec; rec = null; try { r.sp.disconnect(); r.src.disconnect(); } catch (e) {} r.stream.getTracks().forEach(function (t) { t.stop(); });
 		$("au-recbar").hidden = true; $("au-rec").setAttribute("aria-pressed", "false");
 		if (!r.n) { updateEmpty(); return; }
@@ -767,6 +770,71 @@
 		if (first) { S.name = "Recording"; zoomFit(); }
 		commit("Record"); toast("Recorded " + fmt(x.length, 1) + ". Tip: ✨ Remove noise cleans it up.");
 	}
+
+	/* the phone app records natively (keeps going with the screen off); window.MESAudioNative.rec = { start(), stop() -> { buf: ArrayBuffer }, level() -> { db } } */
+	function startNativeRec() {
+		var NR = window.MESAudioNative.rec; stopAll();
+		NR.start().then(function () {
+			rec = { native: true, pk: 0, at: S.sel ? S.sel.a : S.cursor, t0: Date.now() };
+			$("au-recbar").hidden = false; $("au-rec").setAttribute("aria-pressed", "true"); $("au-empty").hidden = true; simpleSync();
+			(function loopRec() {
+				if (!rec || !rec.native) return; var s = (Date.now() - rec.t0) / 1000; $("au-rect").textContent = A.fmtTime(s, 0); simpleSync();
+				NR.level().then(function (l) { if (!rec) return; var db = l && isFinite(l.db) ? l.db : -90, c = $("au-recmeter"), g = c.getContext("2d"), f = Math.max(0, Math.min(1, (db + 60) / 60)); g.fillStyle = "#0b0d11"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = db > -1 ? "#ef4444" : db > -9 ? "#fbbf24" : "#4ade80"; g.fillRect(0, 2, f * c.width, c.height - 4); }).catch(function () {});
+				setTimeout(loopRec, 150);
+			})();
+		}).catch(function (e) { toast("No microphone access: " + (e.message || e)); });
+	}
+	function stopNativeRec() {
+		var r = rec; rec = null; $("au-recbar").hidden = true; $("au-rec").setAttribute("aria-pressed", "false"); simpleSync();
+		var bz = busy("Saving the recording");
+		window.MESAudioNative.rec.stop().then(function (o) { if (!o || !o.buf) throw new Error("nothing was recorded"); return decode(o.buf); }).then(function (ab) {
+			bz.done(); var ch = abToCh(ab), first = !S.tracks.length;
+			addTrackFrom(ch, "Recording " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), r.at, true);
+			if (first) { S.name = "Recording"; zoomFit(); }
+			commit("Record"); toast("Recorded " + fmt(ch[0].length, 1) + ". Tip: ✨ Remove noise cleans it up.");
+		}).catch(function (e) { bz.done(); updateEmpty(); toast("Could not read the recording: " + (e.message || e)); });
+	}
+
+	/* ---------------- simple mode (phones, <= 600px): record / open / trim / clean / compare / save, the full editor one tap away ---------------- */
+	var simpleLen = -1, simpleMQ = window.matchMedia ? matchMedia("(max-width: 600px)") : null, simpleOn = false;
+	function simpleWanted() { var p = store("simple"); if (window.MESAudioNative) return p !== false; return !!(simpleMQ && simpleMQ.matches) && p !== false; }
+	function setSimple(on, save) {
+		simpleOn = on; root.classList.toggle("au-simple-on", on); $("au-simple").hidden = !on;
+		$("aus-back").hidden = on || !(window.MESAudioNative || (simpleMQ && simpleMQ.matches));
+		if (save) store("simple", on); if (on) closePanel(); simpleSync(); setTimeout(draw, 30);
+	}
+	function simpleSync() {
+		if (!simpleOn) return; var has = S.tracks.length > 0; root.classList.toggle("au-s-empty", !has && !rec); $("aus-tone").hidden = has; var pe = projEnd(); if (pe !== simpleLen) { simpleLen = pe; if (has) setTimeout(zoomFit, 40); }
+		$("aus-tools").hidden = !has; $("aus-undo").disabled = !H.canUndo(); $("aus-trim").disabled = $("aus-del").disabled = !S.sel;
+		var rb = $("aus-rec"); rb.setAttribute("aria-pressed", rec ? "true" : "false");
+		$("aus-rect").textContent = rec ? "Stop  " + A.fmtTime((Date.now() - rec.t0) / 1000, 0) : (has ? "Record more" : "Record");
+		$("aus-play").textContent = playing ? "⏸" : "▶"; $("aus-play").setAttribute("aria-label", playing ? "Pause" : "Play");
+		$("aus-hint").textContent = S.sel ? "Selected " + fmt(S.sel.b - S.sel.a, 1) + ". Effects apply to the selection; tap outside it to clear." : "Drag across the waveform to select a part, then keep it or delete it. Effects apply to everything.";
+		var t = playing ? playPos() : S.cursor; $("aus-time").textContent = fmt(t, 1) + " / " + fmt(projEnd(), 1);
+	}
+	function simpleSave(mode) {
+		if (!S.tracks.length) return toast("Record or open some audio first"); if (cmp) endCompare(true);
+		var f = $("aus-fmt").value; store("sfmt", f); stopAll(); var bz = busy(mode === "share" ? "Preparing to share" : "Saving");
+		var o = { f: f, a: 0, b: projEnd(), kbps: f === "mp3" ? 192 : 160, name: S.name || "audio", lufs: "none" };
+		makeExport(o, bz).catch(function (e) { if (f !== "m4a") throw e; o.f = "mp3"; o.kbps = 192; return makeExport(o, bz); }).then(function (r) { bz.done(); deliver(r.blob, r.name, mode); })
+			.catch(function (e) { bz.done(); toast("Could not save: " + (e.message || e)); });
+	}
+	(function () {
+		if (typeof window.AudioEncoder !== "function") { var mo = $("aus-fmt").querySelector('option[value="m4a"]'); if (mo) mo.remove(); }
+		var sf = store("sfmt"); if (sf && $("aus-fmt").querySelector('option[value="' + sf + '"]')) $("aus-fmt").value = sf;
+		$("aus-share").hidden = !(window.MESAudioNative || canShareFiles()); if (window.MESAudioNative) $("aus-save").textContent = "⬇ Save to Files";
+		$("aus-rec").onclick = toggleRec; $("aus-open").onclick = function () { $("au-file").click(); };
+		$("aus-play").onclick = function () { togglePlay(); simpleSync(); };
+		$("aus-undo").onclick = function () { undo(); simpleSync(); };
+		$("aus-trim").onclick = doTrim; $("aus-del").onclick = function () { doDelete(); };
+		$("aus-all").onclick = function () { selectAll(); simpleSync(); };
+		$("aus-noise").onclick = function () { if (!S.tracks.length) return; applyFx(fxById("noise"), { model: "deepfilter", strength: 100, hum: "auto" }); };
+		$("aus-enh").onclick = function () { var fx = fxById("enhance"); applyFx(fx, defaultsOf(fx)); };
+		$("aus-save").onclick = function () { simpleSave("save"); }; $("aus-share").onclick = function () { simpleSave("share"); };
+		$("aus-tone").onclick = testClip; $("aus-full").onclick = function () { setSimple(false, true); }; $("aus-back").onclick = function () { setSimple(true, true); };
+		if (simpleMQ && simpleMQ.addEventListener) simpleMQ.addEventListener("change", function () { setSimple(simpleWanted(), false); });
+		setInterval(function () { if (simpleOn && playing) simpleSync(); }, 200);
+	})();
 
 	/* ---------------- test clip ---------------- */
 	function testClip() {
@@ -804,20 +872,36 @@
 	}
 	function doExport() {
 		var f = $("ex-fmt").value, a = $("ex-range").value === "sel" && S.sel ? S.sel.a : 0, b = $("ex-range").value === "sel" && S.sel ? S.sel.b : projEnd();
-		var nch = $("ex-ch").value === "auto" ? (S.tracks.some(function (t) { return !t.mute && (t.nch === 2 || Math.abs(t.pan) > 0.01); }) ? 2 : 1) : +$("ex-ch").value;
-		var rate = $("ex-rate").value === "same" ? S.sr : +$("ex-rate").value, name = $("ex-name").value || "audio", lufs = $("ex-lufs").value;
-		if (f === "mp3") rate = A.mp3Rate(rate);
+		var nch = $("ex-ch").value === "auto" ? null : +$("ex-ch").value;
+		var rate = $("ex-rate").value === "same" ? S.sr : +$("ex-rate").value;
 		stopAll(); var bz = busy("Exporting");
-		tick().then(function () {
-			var mix = A.mix(S.tracks, a, b, nch);
-			if (lufs !== "none") { bz.set(0.1, "Setting loudness"); mix = A.loudnessNormalize(mix, S.sr, +lufs, -1).ch; }
-			if (rate !== S.sr && D) mix = mix.map(function (c) { return D.resample(c, S.sr, rate); });
-			if (f === "wav") return new Blob([A.wav(mix, rate, +$("ex-bits").value)], { type: "audio/wav" });
-			if (f === "mp3") return encMp3(mix, rate, +$("ex-kbps").value, bz);
-			return encM4a(mix, rate, +$("ex-kbps").value, bz);
-		}).then(function (blob) {
-			bz.done(); var fn = A.fileName(name, f); download(blob, fn); toast("Saved " + fn + " (" + (blob.size / 1048576).toFixed(1) + " MB)");
+		makeExport({ f: f, a: a, b: b, nch: nch, rate: rate, name: $("ex-name").value || "audio", lufs: $("ex-lufs").value, bits: +$("ex-bits").value, kbps: +$("ex-kbps").value }, bz).then(function (r) {
+			bz.done(); deliver(r.blob, r.name, "save");
 		}).catch(function (e) { bz.done(); toast("Export failed: " + (e.message || e)); });
+	}
+	/* mix + encode; o = { f: wav | mp3 | m4a, a, b, nch (null = automatic), rate, name, lufs ("none" or a target), bits, kbps } */
+	function makeExport(o, bz) {
+		var f = o.f, rate = o.rate || S.sr, nch = o.nch || (S.tracks.some(function (t) { return !t.mute && (t.nch === 2 || Math.abs(t.pan) > 0.01); }) ? 2 : 1);
+		if (f === "mp3") rate = A.mp3Rate(rate);
+		return tick().then(function () {
+			var mix = A.mix(S.tracks, o.a || 0, o.b == null ? projEnd() : o.b, nch);
+			if (o.lufs && o.lufs !== "none") { bz.set(0.1, "Setting loudness"); mix = A.loudnessNormalize(mix, S.sr, +o.lufs, -1).ch; }
+			if (rate !== S.sr && D) mix = mix.map(function (c) { return D.resample(c, S.sr, rate); });
+			if (f === "wav") return new Blob([A.wav(mix, rate, o.bits || 16)], { type: "audio/wav" });
+			if (f === "mp3") return encMp3(mix, rate, o.kbps || 192, bz);
+			return encM4a(mix, rate, o.kbps || 192, bz);
+		}).then(function (blob) { return { blob: blob, name: A.fileName(o.name || "audio", f) }; });
+	}
+	/* hand a finished file to the person: the app's native save / share (window.MESAudioNative), the Web Share sheet, or a download */
+	function canShareFiles() { try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Uint8Array(1)], "a.m4a", { type: "audio/mp4" })] })); } catch (e) { return false; } }
+	function deliver(blob, name, mode) {
+		var N = window.MESAudioNative, mb = (blob.size / 1048576).toFixed(1) + " MB";
+		if (N && N.save) return N.save(blob, name, mode).then(function (r) { toast(r && r.msg ? r.msg : "Saved " + name + " (" + mb + ")"); }).catch(function (e) { if (!/cancel/i.test(e && e.message || "")) toast("Could not save: " + (e.message || e)); });
+		if (mode === "share" && canShareFiles()) {
+			var file = new File([blob], name, { type: blob.type || "application/octet-stream" });
+			return navigator.share({ files: [file], title: name }).catch(function (e) { if (e && e.name !== "AbortError") { download(blob, name); toast("Saved " + name + " (" + mb + ")"); } });
+		}
+		download(blob, name); toast("Saved " + name + " (" + mb + ")");
 	}
 	function encMp3(ch, rate, kbps, bz) {
 		return (window.lamejs ? Promise.resolve() : loadScript(LAME)).then(function () {
@@ -997,6 +1081,6 @@
 	S.spec = !!store("spec"); S.laneH = Math.max(LANE_MIN, Math.min(LANE_MAX, store("laneH") || LANE_DEF));
 	dragGrip($("au-agrip"), function () { return areaH || scrollBox.clientHeight; }, function (v) { setAreaH(v); }, function () { store("areaH", areaH); }, function () { setAreaH(0, true); });
 	if (areaH) setAreaH(areaH);
-	buildMenus(); H.push("Start", snap()); afterChange(); meterClear(); offerRestore();
-	window.MESAudioEditor = { state: S, openFiles: openFiles, applyFx: applyFx, effects: EFFECTS, commit: commit, testClip: testClip };
+	buildMenus(); H.push("Start", snap()); setSimple(simpleWanted(), false); afterChange(); meterClear(); offerRestore();
+	window.MESAudioEditor = { state: S, openFiles: openFiles, applyFx: applyFx, effects: EFFECTS, commit: commit, testClip: testClip, makeExport: makeExport, setSimple: setSimple, stopRec: stopRec, isRecording: function () { return !!rec; } };
 })();

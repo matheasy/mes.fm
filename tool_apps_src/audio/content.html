@@ -12,6 +12,36 @@
 				<button type="button" class="au-btn au-btn--primary" id="au-export" title="Export WAV, MP3 or M4A (Ctrl+E)">Export</button>
 			</div>
 		</div>
+		<div class="au-simple" id="au-simple" hidden>
+			<div class="au-s-row au-s-main">
+				<button type="button" class="au-s-rec" id="aus-rec" aria-pressed="false"><span class="au-s-dot"></span><span id="aus-rect">Record</span></button>
+				<button type="button" class="au-s-big" id="aus-open">📂<span>Open a file</span></button>
+			</div>
+			<div class="au-s-tools" id="aus-tools" hidden>
+				<div class="au-s-row">
+					<button type="button" class="au-s-btn au-s-play" id="aus-play" aria-label="Play">▶</button>
+					<span class="au-s-time" id="aus-time">0:00</span>
+					<button type="button" class="au-s-btn" id="aus-undo" disabled>↶ Undo</button>
+				</div>
+				<div class="au-s-hint" id="aus-hint">Drag across the waveform to select a part, then keep it or delete it.</div>
+				<div class="au-s-row au-s-wrap">
+					<button type="button" class="au-s-btn" id="aus-trim" disabled>✂ Keep selection</button>
+					<button type="button" class="au-s-btn" id="aus-del" disabled>🗑 Delete selection</button>
+					<button type="button" class="au-s-btn" id="aus-all">Select all</button>
+				</div>
+				<div class="au-s-row au-s-wrap">
+					<button type="button" class="au-s-btn au-s-magic" id="aus-noise">✨ Remove noise</button>
+					<button type="button" class="au-s-btn au-s-magic" id="aus-enh">🎙️ Enhance speech</button>
+				</div>
+				<div class="au-s-row au-s-wrap au-s-save">
+					<select id="aus-fmt" aria-label="File type"><option value="m4a">M4A (small, good)</option><option value="mp3">MP3</option><option value="wav">WAV (largest)</option></select>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-share" hidden>📤 Share</button>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-save">⬇ Save</button>
+				</div>
+			</div>
+			<div class="au-s-row au-s-foot"><button type="button" class="au-s-link" id="aus-tone">Try a noisy test clip</button><button type="button" class="au-s-link" id="aus-full">Full editor (tracks, effects, markers) ›</button></div>
+		</div>
+		<button type="button" class="au-s-back" id="aus-back" hidden>‹ Simple mode</button>
 		<div class="au-trans">
 			<button type="button" class="au-ib" id="au-home" title="Go to start (Home)" aria-label="Go to start">⏮</button>
 			<button type="button" class="au-ib" id="au-play" title="Play / pause (Space)" aria-label="Play">▶</button>

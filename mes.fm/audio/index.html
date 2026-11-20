@@ -532,6 +532,52 @@ body.au-noscroll { overflow: hidden; }
 .au-matchrow { align-items: center; gap: 8px; flex-wrap: wrap; }
 .au-ab button { white-space: nowrap; }
 
+/* simple mode (phones): big buttons over the waveform, the full editor one tap away */
+.au.au-simple-on .au-top, .au.au-simple-on .au-trans, .au.au-simple-on .au-status, .au.au-simple-on .au-hbar, .au.au-simple-on .au-empty, .au.au-simple-on .au-rulerrow .au-corner, .au.au-simple-on .au-cmp-n { display: none !important; }
+.au.au-simple-on { --au-hw: 0px; }
+.au.au-simple-on .au-heads { display: none; }
+.au-simple { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--au-panel); border-bottom: 1px solid var(--au-line); }
+.au-s-row { display: flex; gap: 8px; align-items: center; }
+.au-s-wrap { flex-wrap: wrap; }
+.au-s-wrap > .au-s-btn { flex: 1 1 calc(50% - 8px); }
+.au-s-main > * { flex: 1 1 0; }
+#au .au-s-rec { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 64px; border-radius: 14px; border: 2px solid var(--au-rec); background: #2a1215; color: #fff; font-size: 1.15em; font-weight: 700; flex: 1.4 1 0; }
+#au .au-s-rec[aria-pressed=true] { background: #b91c1c; animation: au-s-pulse 1.2s ease-in-out infinite; }
+.au-s-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--au-rec); flex: none; }
+#au .au-s-rec[aria-pressed=true] .au-s-dot { border-radius: 4px; background: #fff; width: 18px; height: 18px; }
+@keyframes au-s-pulse { 50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.25); } }
+.au-s-big { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 64px; border-radius: 14px; border: 1px solid var(--au-line); background: var(--au-btn); font-size: 1.25em; }
+.au-s-big span { font-size: 0.72em; font-weight: 600; }
+.au-s-tools { display: flex; flex-direction: column; gap: 8px; }
+.au-s-btn { min-height: 46px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--au-line); background: var(--au-btn); font-weight: 600; font-size: 0.98em; }
+.au-s-btn:disabled { opacity: 0.45; }
+#au .au-s-play { min-width: 58px; font-size: 1.3em; background: #0c4a6e; border-color: var(--au-acc); }
+.au-s-time { flex: 1; font: 600 1.05em ui-monospace, Menlo, monospace; text-align: center; color: var(--au-ink); }
+#au .au-s-magic { background: linear-gradient(135deg, #6d28d9, #0369a1); border-color: #8b5cf6; color: #fff; }
+#au .au-s-primary { background: #0369a1; border-color: #0284c7; color: #fff; flex: 1 1 0; }
+.au-s-save select { min-height: 46px; flex: 1.2 1 0; border-radius: 10px !important; }
+.au-s-hint { font-size: 0.86em; color: var(--au-dim); }
+.au-s-foot { justify-content: center; }
+#au .au-s-link, #au .au-s-back { background: none; border: 0; color: var(--au-acc); font-weight: 600; padding: 6px 4px; text-decoration: underline; text-underline-offset: 3px; }
+.au-s-back { align-self: flex-start; margin: 6px 10px; }
+.au.au-simple-on .au-cmpbar { gap: 8px; }
+.au.au-simple-on .au-cmpbar .au-ab--bar { flex: 1 1 100%; display: flex; }
+.au.au-simple-on .au-cmpbar .au-ab--bar button { flex: 1 1 0; min-height: 42px; }
+.au.au-simple-on .au-recbar { padding: 10px 12px; flex-wrap: wrap; }
+.au.au-simple-on .au-recbar .au-btn { min-height: 40px; }
+.au.au-simple-on.au-s-empty .au-main { display: none; }
+.au-s-foot { flex-wrap: wrap; }
+/* simple mode order: Record / Open, waveform, then the tools */
+.au.au-simple-on > * { order: 3; }
+.au.au-simple-on .au-simple { display: contents; }
+.au.au-simple-on .au-s-main { order: 1; padding: 12px 12px 10px; background: var(--au-panel); border-bottom: 1px solid var(--au-line); }
+.au.au-simple-on .au-recbar { order: 2; }
+.au.au-simple-on .au-cmpbar { order: 4; }
+.au.au-simple-on .au-s-tools { order: 5; padding: 10px 12px 4px; background: var(--au-panel); border-top: 1px solid var(--au-line); }
+.au.au-simple-on .au-s-foot { order: 6; padding: 4px 12px 10px; background: var(--au-panel); }
+.au.au-simple-on .au-scroll { height: auto !important; max-height: 280px !important; min-height: 0; }
+.au.au-simple-on .au-agrip { display: none; }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -664,6 +710,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .au-lg--b::before{background:#48505b}
 	body.dark-mode #au .au-q[aria-expanded=true],body.dark-mode #au .au-q:hover{color:#eff0f3}
 	body.dark-mode .au-result{border:1px solid #2ed16c}
+	body.dark-mode #au .au-s-rec[aria-pressed=true] .au-s-dot{background:#1a1a1a}
+	body.dark-mode #au .au-s-magic{border-color:#420bc1}
+	body.dark-mode #au .au-s-primary{border-color:#03a7fc}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -890,6 +939,36 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="au-btn au-btn--primary" id="au-export" title="Export WAV, MP3 or M4A (Ctrl+E)">Export</button>
 			</div>
 		</div>
+		<div class="au-simple" id="au-simple" hidden>
+			<div class="au-s-row au-s-main">
+				<button type="button" class="au-s-rec" id="aus-rec" aria-pressed="false"><span class="au-s-dot"></span><span id="aus-rect">Record</span></button>
+				<button type="button" class="au-s-big" id="aus-open">📂<span>Open a file</span></button>
+			</div>
+			<div class="au-s-tools" id="aus-tools" hidden>
+				<div class="au-s-row">
+					<button type="button" class="au-s-btn au-s-play" id="aus-play" aria-label="Play">▶</button>
+					<span class="au-s-time" id="aus-time">0:00</span>
+					<button type="button" class="au-s-btn" id="aus-undo" disabled>↶ Undo</button>
+				</div>
+				<div class="au-s-hint" id="aus-hint">Drag across the waveform to select a part, then keep it or delete it.</div>
+				<div class="au-s-row au-s-wrap">
+					<button type="button" class="au-s-btn" id="aus-trim" disabled>✂ Keep selection</button>
+					<button type="button" class="au-s-btn" id="aus-del" disabled>🗑 Delete selection</button>
+					<button type="button" class="au-s-btn" id="aus-all">Select all</button>
+				</div>
+				<div class="au-s-row au-s-wrap">
+					<button type="button" class="au-s-btn au-s-magic" id="aus-noise">✨ Remove noise</button>
+					<button type="button" class="au-s-btn au-s-magic" id="aus-enh">🎙️ Enhance speech</button>
+				</div>
+				<div class="au-s-row au-s-wrap au-s-save">
+					<select id="aus-fmt" aria-label="File type"><option value="m4a">M4A (small, good)</option><option value="mp3">MP3</option><option value="wav">WAV (largest)</option></select>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-share" hidden>📤 Share</button>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-save">⬇ Save</button>
+				</div>
+			</div>
+			<div class="au-s-row au-s-foot"><button type="button" class="au-s-link" id="aus-tone">Try a noisy test clip</button><button type="button" class="au-s-link" id="aus-full">Full editor (tracks, effects, markers) ›</button></div>
+		</div>
+		<button type="button" class="au-s-back" id="aus-back" hidden>‹ Simple mode</button>
 		<div class="au-trans">
 			<button type="button" class="au-ib" id="au-home" title="Go to start (Home)" aria-label="Go to start">⏮</button>
 			<button type="button" class="au-ib" id="au-play" title="Play / pause (Space)" aria-label="Play">▶</button>
@@ -1015,7 +1094,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=6" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
