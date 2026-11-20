@@ -1057,7 +1057,10 @@
 
 	var ROOMS = [{ id: "club", name: "Chess club" }, { id: "tournament", name: "Tournament hall" }, { id: "park", name: "Park table" },
 		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
-	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "fantasy3d", name: "Fantasy armies 3D (in progress)" }];
+	/* Pieces that already have a real 3D model in the "Fantasy armies 3D" set (one or two are added a day; see
+	   tool_apps_src/chess/fantasy3d/README.md). The others use their picture figure until theirs is made. */
+	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR", "bK", "bQ", "bB"];
+	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "fantasy3d", name: "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
@@ -1159,7 +1162,7 @@
 	/* "Fantasy armies 3D (in progress)": real 3D figures made with Microsoft TRELLIS (MIT) from the same pictures
 	   (mes.fm/chess/img/fantasy3d/<key>.glb). They are added one or two at a time; a piece with no model yet uses its picture figure.
 	   The files are plain GLBs (one mesh: positions, UVs, indices, one PNG texture), read by the small parser below. */
-	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR"], M3 = {};
+	var M3 = {};
 	function parseGlb(buf) {
 		var dv = new DataView(buf), jl = dv.getUint32(12, true), j = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jl)));
 		var bin = 20 + jl + 8;
@@ -1176,7 +1179,7 @@
 	}
 	function model3d(key) {
 		if (M3[key]) return M3[key];
-		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy3d/" + key + ".glb?v=1";
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy3d/" + key + ".glb?v=2";
 		return (M3[key] = fetch(url).then(function (r) { if (!r.ok) throw new Error("model " + r.status); return r.arrayBuffer(); }).then(function (buf) {
 			var d = parseGlb(buf), g = new THREE.BufferGeometry();
 			g.setAttribute("position", new THREE.BufferAttribute(d.pos, 3));
