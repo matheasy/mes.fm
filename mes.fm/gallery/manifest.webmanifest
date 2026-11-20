@@ -14,7 +14,8 @@
   "file_handlers": [
     { "action": "/gallery", "accept": {
       "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".bmp", ".svg", ".heic"],
-      "video/*": [".mp4", ".m4v", ".mov", ".webm", ".mkv"] } }
+      "video/*": [".mp4", ".m4v", ".mov", ".webm", ".mkv"],
+      "audio/*": [".mp3", ".m4a", ".aac", ".wav", ".flac", ".ogg", ".oga", ".opus"] } }
   ],
   "launch_handler": { "client_mode": "focus-existing" }
 }

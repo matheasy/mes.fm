@@ -962,10 +962,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<section class="tu-card mg-start" id="mg-start">
 			<div class="mg-drop" id="mg-drop">
 				<div class="mg-dropart" aria-hidden="true"><span></span><span></span><span></span></div>
-				<h2 class="mg-droph">Drop a folder of photos and videos here</h2>
+				<h2 class="mg-droph">Drop a folder of photos, videos or music here</h2>
 				<div class="mg-pickbtns">
 					<button type="button" class="tu-btn tu-btn--primary mg-big" id="mg-folder">📁 Open a folder</button>
-					<button type="button" class="tu-btn mg-big2" id="mg-files">🖼️ Open photos or videos</button>
+					<button type="button" class="tu-btn mg-big2" id="mg-files">🖼️ Open photos, videos or sounds</button>
 				</div>
 				<div class="mg-pickbtns">
 					<button type="button" class="tu-btn tu-btn--ghost" id="mg-reopen" hidden></button>
@@ -989,7 +989,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="mg-menu" id="mg-menu" hidden role="menu">
 						<button type="button" role="menuitem" data-act="folder">📁 Open another folder</button>
-						<button type="button" role="menuitem" data-act="files">🖼️ Open photos or videos</button>
+						<button type="button" role="menuitem" data-act="files">🖼️ Open photos, videos or sounds</button>
 						<button type="button" role="menuitem" data-act="add">➕ Add more files to this view</button>
 						<button type="button" role="menuitem" data-act="rescan" id="mg-rescan">🔄 Look for new files</button>
 						<button type="button" role="menuitem" data-act="dups">🔍 Find duplicates</button>
@@ -1001,7 +1001,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="mg-row mg-row2">
 					<div class="mg-search"><input class="tu-input" type="search" id="mg-q" placeholder="Search names and folders…" autocomplete="off" spellcheck="false" aria-label="Search names and folders"></div>
 					<div class="tu-seg mg-seg" role="group" aria-label="Show" id="mg-kind">
-						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button><button type="button" data-kind="dups" aria-pressed="false" title="Pictures that are here more than once" hidden>Copies</button><button type="button" data-kind="hidden" aria-pressed="false" title="Files you hid: open one and press ↺ to show it again" hidden>Hidden</button>
+						<button type="button" data-kind="all" aria-pressed="true">All</button><button type="button" data-kind="image" aria-pressed="false">Photos</button><button type="button" data-kind="video" aria-pressed="false">Videos</button><button type="button" data-kind="audio" aria-pressed="false" title="Sound files: MP3, M4A, WAV, FLAC, OGG…">Sounds</button><button type="button" data-kind="fav" aria-pressed="false" title="Favourites">♥</button><button type="button" data-kind="dups" aria-pressed="false" title="Pictures that are here more than once" hidden>Copies</button><button type="button" data-kind="hidden" aria-pressed="false" title="Files you hid: open one and press ↺ to show it again" hidden>Hidden</button>
 					</div>
 					<label class="mg-sel">Group <select class="tu-input" id="mg-group">
 						<option value="none">None</option><option value="day">Day</option><option value="month">Month</option><option value="year">Year</option><option value="folder">Folder</option><option value="type">Photos / videos</option>
@@ -1044,11 +1044,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<input type="file" id="mg-dirinput" webkitdirectory directory multiple hidden>
-		<input type="file" id="mg-fileinput" accept="image/*,video/*,.heic,.heif,.mkv,.avi,.mov" multiple hidden>
+		<input type="file" id="mg-fileinput" accept="image/*,video/*,audio/*,.heic,.heif,.mkv,.avi,.mov" multiple hidden>
 
 		<div class="tu-seo">
 			<h2>A photo and video viewer for your own folders</h2>
-			<p>MES Gallery shows the photos and videos on your computer the way a good photo app does: rows of thumbnails that fill the screen, grouped by day, month, folder or type, and a big viewer with zoom, slideshow and proper video speed controls. It works on folders with thousands of files, and everything stays on your computer.</p>
+			<p>MES Gallery shows the photos and videos on your computer the way a good photo app does: rows of thumbnails that fill the screen, grouped by day, month, folder or type, and a big viewer with zoom, slideshow and proper video speed controls. Sound files (MP3, M4A, WAV, FLAC, OGG, Opus) play too, with the cover picture from the file when it has one. It works on folders with thousands of files, and everything stays on your computer.</p>
 			<h3>How to use it</h3>
 			<ol>
 				<li><b>Open a folder</b> (subfolders included) or pick some files. You can also drag a folder or files onto the page.</li>
@@ -1145,7 +1145,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/gallery/js/gallery.js?v=4" defer></script>
+	<script src="/gallery/js/gallery.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

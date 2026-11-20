@@ -120,19 +120,24 @@ var MESGallery = (function () {
 		bmp: 'image/bmp', svg: 'image/svg+xml', ico: 'image/x-icon', heic: 'image/heic', heif: 'image/heif', tif: 'image/tiff', tiff: 'image/tiff', jxl: 'image/jxl' };
 	var VID = { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', mkv: 'video/x-matroska', ogv: 'video/ogg', avi: 'video/x-msvideo',
 		'3gp': 'video/3gpp', wmv: 'video/x-ms-wmv', flv: 'video/x-flv', mpg: 'video/mpeg', mpeg: 'video/mpeg', ts: 'video/mp2t', m2ts: 'video/mp2t', mts: 'video/mp2t' };
+	var AUD = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', wav: 'audio/wav', flac: 'audio/flac', ogg: 'audio/ogg', oga: 'audio/ogg', opus: 'audio/ogg',
+		weba: 'audio/webm', aif: 'audio/aiff', aiff: 'audio/aiff', wma: 'audio/x-ms-wma', amr: 'audio/amr', mid: 'audio/midi', midi: 'audio/midi' };
 	/* what most browsers can show; the rest are listed but get a note (HEIC only in Safari, AVI / WMV / FLV / MKV-with-odd-codecs need converting) */
-	var SHOWABLE = { jpg: 1, jpeg: 1, jpe: 1, jfif: 1, png: 1, apng: 1, gif: 1, webp: 1, avif: 1, bmp: 1, svg: 1, ico: 1, mp4: 1, m4v: 1, mov: 1, webm: 1, ogv: 1, mkv: 1 };
+	var SHOWABLE = { jpg: 1, jpeg: 1, jpe: 1, jfif: 1, png: 1, apng: 1, gif: 1, webp: 1, avif: 1, bmp: 1, svg: 1, ico: 1, mp4: 1, m4v: 1, mov: 1, webm: 1, ogv: 1, mkv: 1,
+		mp3: 1, m4a: 1, aac: 1, wav: 1, flac: 1, ogg: 1, oga: 1, opus: 1, weba: 1 };
 
 	function ext(name) { var m = /\.([a-z0-9]{1,5})$/i.exec(name || ''); return m ? m[1].toLowerCase() : ''; }
 	function kindOf(name, mime) {
 		var e = ext(name);
 		if (IMG[e]) return 'image';
 		if (VID[e]) return 'video';
+		if (AUD[e]) return 'audio';
 		if (mime && /^image\//.test(mime)) return 'image';
 		if (mime && /^video\//.test(mime)) return 'video';
+		if (mime && /^audio\//.test(mime)) return 'audio';
 		return null;
 	}
-	function mimeOf(name) { var e = ext(name); return IMG[e] || VID[e] || ''; }
+	function mimeOf(name) { var e = ext(name); return IMG[e] || VID[e] || AUD[e] || ''; }
 	function showable(name) { return !!SHOWABLE[ext(name)]; }
 	function asc(u8, a, b) { var s = ''; for (var i = a; i < b && i < u8.length; i++) s += String.fromCharCode(u8[i]); return s; }
 	/* the real type from the first bytes (a photo saved without an ending, or a .jpg that is really a PNG) */
@@ -143,6 +148,10 @@ var MESGallery = (function () {
 		if (asc(u8, 0, 4) === 'GIF8') return { kind: 'image', ext: 'gif' };
 		if (asc(u8, 0, 4) === 'RIFF' && asc(u8, 8, 12) === 'WEBP') return { kind: 'image', ext: 'webp' };
 		if (asc(u8, 0, 4) === 'RIFF' && asc(u8, 8, 12) === 'AVI ') return { kind: 'video', ext: 'avi' };
+		if (asc(u8, 0, 4) === 'RIFF' && asc(u8, 8, 12) === 'WAVE') return { kind: 'audio', ext: 'wav' };
+		if (asc(u8, 0, 4) === 'fLaC') return { kind: 'audio', ext: 'flac' };
+		if (asc(u8, 0, 3) === 'ID3' || (u8[0] === 0xFF && (u8[1] & 0xE6) === 0xE2)) return { kind: 'audio', ext: 'mp3' };
+		if (asc(u8, 0, 4) === 'FORM' && /^AIF[FC]$/.test(asc(u8, 8, 12))) return { kind: 'audio', ext: 'aiff' };
 		if (u8[0] === 0x42 && u8[1] === 0x4D) return { kind: 'image', ext: 'bmp' };
 		if ((u8[0] === 0x49 && u8[1] === 0x49 && u8[2] === 42) || (u8[0] === 0x4D && u8[1] === 0x4D && u8[3] === 42)) return { kind: 'image', ext: 'tif' };
 		if (u8[0] === 0x1A && u8[1] === 0x45 && u8[2] === 0xDF && u8[3] === 0xA3) { var doc = asc(u8, 0, Math.min(u8.length, 64)); return { kind: 'video', ext: doc.indexOf('webm') >= 0 ? 'webm' : 'mkv' }; }
@@ -151,10 +160,35 @@ var MESGallery = (function () {
 			if (b === 'avif' || b === 'avis') return { kind: 'image', ext: 'avif' };
 			if (/^(heic|heix|hevc|heim|heis|mif1|msf1)$/.test(b)) return { kind: 'image', ext: 'heic' };
 			if (b === 'qt  ') return { kind: 'video', ext: 'mov' };
+			if (/^M4[AB] $/.test(b)) return { kind: 'audio', ext: 'm4a' };
 			return { kind: 'video', ext: 'mp4' };
 		}
 		var head = asc(u8, 0, Math.min(u8.length, 256)).replace(/^﻿/, '').trim();
 		if (/^<\?xml[\s\S]*<svg|^<svg/i.test(head)) return { kind: 'image', ext: 'svg' };
+		return null;
+	}
+
+	/* the cover picture inside an MP3's ID3v2 tag (APIC, or PIC in v2.2): {mime, bytes} or null. Only needs the first bytes of the file. */
+	function id3Picture(u8) {
+		if (!u8 || u8.length < 10 || asc(u8, 0, 3) !== 'ID3') return null;
+		var ver = u8[3], flags = u8[5], size = ((u8[6] & 127) << 21) | ((u8[7] & 127) << 14) | ((u8[8] & 127) << 7) | (u8[9] & 127), end = Math.min(u8.length, 10 + size), p = 10;
+		if (flags & 0x40 && ver >= 3) { var ex = ver === 4 ? (((u8[10] & 127) << 21) | ((u8[11] & 127) << 14) | ((u8[12] & 127) << 7) | (u8[13] & 127)) : ((u8[10] << 24) | (u8[11] << 16) | (u8[12] << 8) | u8[13]) + 4; p += ex; }
+		while (p + (ver === 2 ? 6 : 10) <= end) {
+			var id, fs, hd;
+			if (ver === 2) { id = asc(u8, p, p + 3); fs = (u8[p + 3] << 16) | (u8[p + 4] << 8) | u8[p + 5]; hd = 6; }
+			else { id = asc(u8, p, p + 4); fs = ver === 4 ? (((u8[p + 4] & 127) << 21) | ((u8[p + 5] & 127) << 14) | ((u8[p + 6] & 127) << 7) | (u8[p + 7] & 127)) : ((u8[p + 4] << 24) >>> 0) + (u8[p + 5] << 16) + (u8[p + 6] << 8) + u8[p + 7]; hd = 10; }
+			if (!/^[A-Z0-9]{3,4}$/.test(id) || fs <= 0) break;
+			var d = p + hd, de = Math.min(end, d + fs);
+			if (id === 'APIC' || id === 'PIC') {
+				var enc = u8[d], q = d + 1, mime;
+				if (id === 'PIC') { var f3 = asc(u8, q, q + 3).toLowerCase(); mime = f3 === 'png' ? 'image/png' : 'image/jpeg'; q += 3; }
+				else { var ms = q; while (q < de && u8[q]) q++; mime = asc(u8, ms, q) || 'image/jpeg'; q++; if (mime.indexOf('/') < 0) mime = 'image/' + mime.toLowerCase().replace('jpg', 'jpeg'); }
+				q++;   // picture type
+				if (enc === 1 || enc === 2) { while (q + 1 < de && (u8[q] || u8[q + 1])) q += 2; q += 2; } else { while (q < de && u8[q]) q++; q++; }
+				if (q < de && de - q > 100) return { mime: mime, bytes: u8.slice(q, de) };
+			}
+			p = d + fs;
+		}
 		return null;
 	}
 
@@ -261,6 +295,7 @@ var MESGallery = (function () {
 		var words = fold(opt.q || '').split(/\s+/).filter(Boolean), kind = opt.kind || 'all';
 		return items.filter(function (it) {
 			if (kind === 'image' && it.kind !== 'image') return false;
+			if (kind === 'audio' && it.kind !== 'audio') return false;
 			if (kind === 'video' && it.kind !== 'video') return false;
 			var hid = !!(opt.hidden && opt.hidden[hideKey(it)]);
 			if (kind === 'hidden') { if (!hid) return false; }
@@ -291,7 +326,7 @@ var MESGallery = (function () {
 			var k, label, d;
 			if (by === 'dup') { k = 'd' + (it._dup || 0); label = 'Same picture: ' + (it._dupN || 2) + ' copies'; }
 			else if (by === 'folder') { k = it.folder || ''; label = k || 'Top folder'; }
-			else if (by === 'type') { k = it.kind; label = it.kind === 'video' ? 'Videos' : 'Photos'; }
+			else if (by === 'type') { k = it.kind; label = it.kind === 'video' ? 'Videos' : it.kind === 'audio' ? 'Sounds' : 'Photos'; }
 			else if (by === 'ext') { k = it.ext || '?'; label = (it.ext || 'no ending').toUpperCase(); }
 			else {
 				var t = dateOf(it);
@@ -495,9 +530,9 @@ var MESGallery = (function () {
 		return { name: name, folder: parts.join('/') };
 	}
 	function summary(items) {
-		var s = { images: 0, videos: 0, bytes: 0, first: 0, last: 0 };
+		var s = { images: 0, videos: 0, sounds: 0, bytes: 0, first: 0, last: 0 };
 		items.forEach(function (it) {
-			if (it.kind === 'video') s.videos++; else s.images++;
+			if (it.kind === 'video') s.videos++; else if (it.kind === 'audio') s.sounds++; else s.images++;
 			s.bytes += it.size || 0; var d = dateOf(it);
 			if (d) { if (!s.first || d < s.first) s.first = d; if (d > s.last) s.last = d; }
 		});
@@ -505,7 +540,7 @@ var MESGallery = (function () {
 	}
 	function plural(n, w) { return n.toLocaleString('en-US') + ' ' + w + (n === 1 ? '' : 's'); }
 
-	return { IMG: IMG, VID: VID, ext: ext, kindOf: kindOf, mimeOf: mimeOf, showable: showable, sniff: sniff, imageSize: imageSize, exifDate: exifDate, nameDate: nameDate, dateOf: dateOf,
+	return { IMG: IMG, VID: VID, AUD: AUD, id3Picture: id3Picture, ext: ext, kindOf: kindOf, mimeOf: mimeOf, showable: showable, sniff: sniff, imageSize: imageSize, exifDate: exifDate, nameDate: nameDate, dateOf: dateOf,
 		natCmp: natCmp, SORTS: SORTS, sortItems: sortItems, filterItems: filterItems, groupItems: groupItems, justify: justify, masonry: masonry, squares: squares, layout: layout,
 		visible: visible, fitScale: fitScale, clampPan: clampPan, zoomAbout: zoomAbout, SPEEDS: SPEEDS, speedStep: speedStep, fmtSpeed: fmtSpeed, abCheck: abCheck, setAB: setAB,
 		posterTime: posterTime, nextIndex: nextIndex, SLIDE: SLIDE, fmtBytes: fmtBytes, fmtDur: fmtDur, fmtTime: fmtTime, fmtDate: fmtDate, mp: mp, thumbKey: thumbKey,
@@ -651,7 +686,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 						}
 					} catch (e) { /* unreadable folder: skip */ }
 					active--;
-					if (Date.now() - last > 120) { last = Date.now(); progress('Looking for photos and videos… ' + found.length.toLocaleString() + ' found in ' + folders.toLocaleString() + ' folders', -1); }
+					if (Date.now() - last > 120) { last = Date.now(); progress('Looking for photos, videos and sounds… ' + found.length.toLocaleString() + ' found in ' + folders.toLocaleString() + ' folders', -1); }
 					if (found.length > 0 && Date.now() - t0 > 900 && !ALL.length && found.length > 60) { addItems(found, gen); found = []; refresh(); }
 					pump();
 				})();
@@ -666,7 +701,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		}, function (e) { if (e && e.name !== 'AbortError') toast('Could not open that folder: ' + (e.message || e.name)); });
 	}
 	function openHandle(h) {
-		var gen = begin(h.name); progress('Looking for photos and videos…', -1);
+		var gen = begin(h.name); progress('Looking for photos, videos and sounds…', -1);
 		scanHandle(h, gen).then(function () { finish(gen); });
 	}
 	/* a folder remembered from the last visit: one click asks for permission again */
@@ -808,7 +843,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	}
 
 	/* ---------------- filtering, sorting, layout ---------------- */
-	function aspectOf(it) { return it.ar || (it.kind === 'video' ? 16 / 9 : 4 / 3); }
+	function isAV(it) { return !!it && (it.kind === 'video' || it.kind === 'audio'); }   // plays (video or sound)
+	function aspectOf(it) { return it.ar || (it.kind === 'video' ? 16 / 9 : it.kind === 'audio' ? 1 : 4 / 3); }
 	function refresh(keep) {
 		var nh = hiddenCount();
 		if (P.kind === 'hidden' && !nh) P.kind = 'all';
@@ -823,6 +859,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		var s = G.summary(ALL.filter(function (it) { return !isHidden(it); })), st = [];
 		if (s.images) st.push(G.plural(s.images, 'photo'));
 		if (s.videos) st.push(G.plural(s.videos, 'video'));
+		if (s.sounds) st.push(G.plural(s.sounds, 'sound'));
 		st.push(G.fmtBytes(s.bytes));
 		if (s.first && s.last) { var a = new Date(s.first).getFullYear(), b = new Date(s.last).getFullYear(); st.push(a === b ? '' + a : a + '–' + b); }
 		if (VIEW.length !== ALL.length - nh && P.kind !== 'hidden') st.push(G.plural(VIEW.length, 'match') .replace('matchs', 'matches') + ' showing');
@@ -830,7 +867,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		$('mg-stats').textContent = '· ' + st.join(' · ');
 		$('mg-dupbar').hidden = P.kind !== 'dups';
 		var em = $('mg-empty');
-		if (!ALL.length) { em.hidden = false; em.textContent = scanGen && $('mg-prog').hidden ? 'No photos or videos here. Try another folder, or tick "Include subfolders".' : ''; }
+		if (!ALL.length) { em.hidden = false; em.textContent = scanGen && $('mg-prog').hidden ? 'No photos, videos or sound files here. Try another folder, or tick "Include subfolders".' : ''; }
 		else if (!VIEW.length) { em.hidden = false; em.textContent = P.kind === 'fav' ? 'No favourites yet: tap ♥ on a picture to add it.' : P.kind === 'hidden' ? 'Nothing is hidden.' : ALL.every(isHidden) ? 'Everything here is hidden. Press "Hidden" above to see them again.' : 'Nothing matches your search.'; }
 		else em.hidden = true;
 		if (lastKind !== P.kind) { lastKind = P.kind; rendered.forEach(function (n) { n.remove(); }); rendered.clear(); }
@@ -900,19 +937,19 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		var pick = '<span class="mg-pick" aria-hidden="true">✓</span>';
 		heart = xb + heart;
 		var th = thumbURL.get(it.id), img = th ? '<img alt="" src="' + th + '" class="mg-in" draggable="false">' : '<img alt="" draggable="false">';
-		var ph = it.bad ? '<span class="mg-ph"><b>' + (it.kind === 'video' ? '🎞' : '🖼') + '</b>' + esc((it.ext || '').toUpperCase()) + '<br>' + (it.bad === 'video-err' ? 'can\'t play here' : 'can\'t show here') + '</span>' : it.nothumb ? '<span class="mg-ph"><b>🎞</b>' + esc((it.ext || '').toUpperCase()) + '</span>' : '';
+		var ph = it.bad ? '<span class="mg-ph"><b>' + (it.kind === 'video' ? '🎞' : it.kind === 'audio' ? '♫' : '🖼') + '</b>' + esc((it.ext || '').toUpperCase()) + '<br>' + (it.bad === 'video-err' ? 'can\'t play here' : 'can\'t show here') + '</span>' : it.nothumb ? '<span class="mg-ph"><b>' + (it.kind === 'audio' ? '♫' : '🎞') + '</b>' + esc((it.ext || '').toUpperCase()) + '</span>' : '';
 		if (isList) {
 			return '<span class="mg-lt">' + img + ph.replace('<br>', ' ') + '</span><span class="mg-lname">' + esc(it.name) + '<small>' + esc(it.folder || rootName) + '</small></span>' +
-				'<span class="mg-lc mg-lx">' + (it.kind === 'video' ? (it.dur ? G.fmtDur(it.dur) : 'video') : (it.w ? it.w + '×' + it.h : '')) + '</span>' +
+				'<span class="mg-lc mg-lx">' + (isAV(it) ? (it.dur ? G.fmtDur(it.dur) : it.kind === 'audio' ? 'sound' : 'video') : (it.w ? it.w + '×' + it.h : '')) + '</span>' +
 				'<span class="mg-lc mg-ld">' + G.fmtDate(G.dateOf(it), true) + '</span><span class="mg-lc mg-ls">' + G.fmtBytes(it.size) + '</span>' + keep + heart + pick;
 		}
-		return img + ph + (it.kind === 'video' ? '<span class="mg-badge">' + (it.dur ? G.fmtDur(it.dur) : '') + '</span>' : '') + (r.r ? '<span class="mg-stars">' + '★'.repeat(r.r) + '</span>' : '') +
+		return img + ph + (isAV(it) ? '<span class="mg-badge">' + (it.kind === 'audio' ? '♫ ' : '') + (it.dur ? G.fmtDur(it.dur) : '') + '</span>' : '') + (r.r ? '<span class="mg-stars">' + '★'.repeat(r.r) + '</span>' : '') +
 			'<span class="mg-nm">' + esc(it.name) + '</span>' + keep + heart + pick;
 	}
 	function makeTile(it, isList) {
-		var n = el('div', 'mg-t' + (isList ? ' mg-li' : '') + (it.kind === 'video' ? ' mg-hasbadge' : '') + (SEL.has(it.id) ? ' mg-picked' : ''));
+		var n = el('div', 'mg-t' + (isList ? ' mg-li' : '') + (isAV(it) ? ' mg-hasbadge' : '') + (SEL.has(it.id) ? ' mg-picked' : ''));
 		n.setAttribute('role', 'listitem'); n.tabIndex = 0; n.dataset.id = it.id; n.dataset.view = isList ? 'l' : 't';
-		n.setAttribute('aria-label', it.name + (it.kind === 'video' ? ', video' : ''));
+		n.setAttribute('aria-label', it.name + (it.kind === 'video' ? ', video' : it.kind === 'audio' ? ', sound' : ''));
 		n.innerHTML = tileInner(it, isList);
 		var im = n.querySelector('img'); if (im && !im.classList.contains('mg-in')) im.onload = function () { im.classList.add('mg-in'); };
 		return n;
@@ -969,7 +1006,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		if (n) {
 			var im = n.querySelector('img');
 			if (im) { im.onload = function () { im.classList.add('mg-in'); }; im.src = url; }
-			var b = n.querySelector('.mg-badge'); if (b && it.dur) b.textContent = G.fmtDur(it.dur);
+			var b = n.querySelector('.mg-badge'); if (b && it.dur) b.textContent = (it.kind === 'audio' ? '♫ ' : '') + G.fmtDur(it.dur);
 		}
 		if (V.open) stripThumb(it);
 	}
@@ -978,7 +1015,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		return iget('thumbs', key).then(function (rec) {
 			if (rec && rec.b) { if (rec.w && !it.ar) { it.w = it.w || rec.w; it.h = it.h || rec.h; it.ar = rec.w / rec.h; relayoutSoon(); } if (rec.dur) it.dur = rec.dur; return URL.createObjectURL(rec.b); }
 			if (it.ext === 'svg') { var u = URL.createObjectURL(it.file); return probeImg(u).then(function (d) { if (d && !it.ar) { it.ar = d.w / d.h; relayoutSoon(); } return u; }); }
-			var make = it.kind === 'video' ? videoThumb(it) : imageThumb(it);
+			var make = it.kind === 'video' ? videoThumb(it) : it.kind === 'audio' ? audioThumb(it) : imageThumb(it);
 			return make.then(function (r) {
 				if (!r) return null;
 				var rec2 = { b: r.blob, w: r.w, h: r.h, dur: r.dur || 0 };
@@ -1052,6 +1089,45 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 			v.onerror = function () { fin(null, true); };
 			(document.body || document.documentElement).appendChild(v);
 			v.src = u;
+		});
+	}
+
+	/* sound files: the cover picture inside the file (MP3 ID3 tag) if there is one, else a drawn cover with ♫ and the name; length from the browser */
+	function audioDur(it) {
+		return new Promise(function (res) {
+			var a = document.createElement('audio'), u = URL.createObjectURL(it.file), done = false, to = setTimeout(function () { fin(0); }, 6000);
+			function fin(d) { if (done) return; done = true; clearTimeout(to); try { a.removeAttribute('src'); a.load(); } catch (e) {} URL.revokeObjectURL(u); res(d && isFinite(d) ? d : 0); }
+			a.preload = 'metadata'; a.onloadedmetadata = function () { fin(a.duration); }; a.onerror = function () { fin(0); }; a.src = u;
+		});
+	}
+	function coverCanvas(it) {
+		var c = canvasOf(512, 512), x = c.getContext('2d'), h = 0, nm = String(it.name || '').replace(/\.[^.]+$/, '');
+		for (var i = 0; i < nm.length; i++) h = (h * 31 + nm.charCodeAt(i)) >>> 0;
+		var hue = h % 360, g = x.createLinearGradient(0, 0, 512, 512);
+		g.addColorStop(0, 'hsl(' + hue + ',55%,32%)'); g.addColorStop(1, 'hsl(' + ((hue + 50) % 360) + ',60%,18%)');
+		x.fillStyle = g; x.fillRect(0, 0, 512, 512);
+		x.fillStyle = 'rgba(255,255,255,0.9)'; x.textAlign = 'center'; x.textBaseline = 'middle';
+		x.font = '200px system-ui, sans-serif'; x.fillText('♫', 256, 210);
+		x.font = '600 34px system-ui, sans-serif';
+		var words = nm.replace(/[_]+/g, ' ').split(/\s+/), lines = [], ln = '';
+		words.forEach(function (w) { var t = ln ? ln + ' ' + w : w; if (x.measureText(t).width > 440 && ln) { lines.push(ln); ln = w; } else ln = t; });
+		if (ln) lines.push(ln); if (lines.length > 3) { lines = lines.slice(0, 3); lines[2] = lines[2].replace(/.{0,2}$/, '…'); }
+		lines.forEach(function (l, k) { x.fillText(l, 256, 380 + k * 42, 470); });
+		x.font = '500 22px system-ui, sans-serif'; x.fillStyle = 'rgba(255,255,255,0.6)'; x.fillText((it.ext || '').toUpperCase(), 256, 480);
+		return c;
+	}
+	function audioThumb(it) {
+		var art = it.file.slice(0, 2 * 1024 * 1024).arrayBuffer().then(function (buf) {
+			var pic = G.id3Picture(new Uint8Array(buf));
+			if (!pic || typeof createImageBitmap !== 'function') return null;
+			return createImageBitmap(new Blob([pic.bytes], { type: pic.mime })).then(function (bm) {
+				return drawThumb(bm, bm.width, bm.height).then(function (r) { bm.close && bm.close(); return r; });
+			}, function () { return null; });
+		}).catch(function () { return null; });
+		return Promise.all([art, audioDur(it)]).then(function (a) {
+			var r = a[0], d = a[1];
+			if (!r) return drawThumb(coverCanvas(it), 512, 512).then(function (r2) { r2.dur = d; return r2; });
+			r.dur = d; return r;
 		});
 	}
 
@@ -1310,7 +1386,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		vq('mgv-sub').textContent = (i + 1).toLocaleString() + ' of ' + VIEW.length.toLocaleString() + ' · ' + [G.fmtDate(G.dateOf(it), true), it.folder].filter(Boolean).join(' · ');
 		vw.querySelector('[data-a=prev]').disabled = i === 0 && !V.slide; vw.querySelector('[data-a=next]').disabled = i === VIEW.length - 1 && !V.slide;
 		syncFav();
-		vq('mgv-vbar').hidden = it.kind !== 'video';
+		vq('mgv-vbar').hidden = !isAV(it);
 		vq('mgv-bigplay').hidden = true; V.wantPlay = false;
 		var stage = vq('mgv-stage'), oldMsg = stage.querySelector('.mgv-msg'); if (oldMsg) oldMsg.remove();
 		// old picture slides / fades away
@@ -1324,13 +1400,15 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		var spinT = setTimeout(function () { if (gen === loadGen) vq('mgv-spin').classList.add('mgv-on'); }, 250);
 		var url = URL.createObjectURL(it.file); V.url = url;
 		var m;
-		if (it.kind === 'video') {
-			m = document.createElement('video'); m.className = 'mgv-media'; m.playsInline = true; m.preload = 'auto'; m.loop = !!P.loopAll;
+		if (isAV(it)) {
+			m = document.createElement('video'); m.className = 'mgv-media' + (it.kind === 'audio' ? ' mgv-audio' : ''); m.playsInline = true; m.preload = 'auto'; m.loop = !!P.loopAll;
+			if (it.kind === 'audio') { var cov = thumbURL.get(it.id); if (cov) m.poster = cov; else audioThumb(it).then(function (r) { if (r && r.blob && m === V.media) { var cu = URL.createObjectURL(r.blob); setThumb(it, cu); m.poster = cu; } }); }
 			m.volume = P.vol; m.muted = !!P.muted; m.src = url;
 			V.wantPlay = true; startPlay(m);
 			m.addEventListener('loadedmetadata', function () {
 				if (gen !== loadGen) return; clearTimeout(spinT); vq('mgv-spin').classList.remove('mgv-on');
-				V.natW = m.videoWidth || 1280; V.natH = m.videoHeight || 720; it.dur = m.duration;
+				if (it.kind === 'audio' || !m.videoWidth) { V.natW = m.videoWidth || (it.kind === 'audio' ? 720 : 1280); V.natH = m.videoHeight || 720; } else { V.natW = m.videoWidth; V.natH = m.videoHeight; }
+				it.dur = m.duration;
 				placeNew(m, dir, fromTile); m.playbackRate = V.rate || 1; if (m.paused && V.wantPlay) startPlay(m); syncVideo();
 			});
 			m.addEventListener('playing', function once() { m.removeEventListener('playing', once); setTimeout(function () { thumbFromViewer(it, m); }, 400); });
@@ -1360,9 +1438,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	}
 	function cantShow(it) {
 		var msg = el('div', 'mgv-msg');
-		var heic = /^(heic|heif)$/.test(it.ext), conv = it.kind === 'video';
-		msg.innerHTML = '<b>' + (it.kind === 'video' ? 'This browser can\'t play this video' : 'This browser can\'t show this picture') + '</b>' + esc(it.name) + ' · ' + G.fmtBytes(it.size) + '<br>' +
-			(heic ? 'HEIC photos open in Safari. Other browsers need them converted to JPEG first.' : conv ? 'Convert it to MP4 with the <a href="/convert-video" target="_blank" rel="noopener">MES Video Converter</a>, then open it here.' : 'The file may be damaged or in a format browsers don\'t read.');
+		var heic = /^(heic|heif)$/.test(it.ext), conv = it.kind === 'video', snd = it.kind === 'audio';
+		msg.innerHTML = '<b>' + (conv ? 'This browser can\'t play this video' : snd ? 'This browser can\'t play this sound file' : 'This browser can\'t show this picture') + '</b>' + esc(it.name) + ' · ' + G.fmtBytes(it.size) + '<br>' +
+			(heic ? 'HEIC photos open in Safari. Other browsers need them converted to JPEG first.' : snd ? 'Open it in the <a href="/audio" target="_blank" rel="noopener">MES Audio Editor</a>, which reads more formats, or convert it to MP3.' : conv ? 'Convert it to MP4 with the <a href="/convert-video" target="_blank" rel="noopener">MES Video Converter</a>, then open it here.' : 'The file may be damaged or in a format browsers don\'t read.');
 		vq('mgv-stage').appendChild(msg);
 		if (V.slide) slideTick();
 	}
@@ -1408,7 +1486,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		var s = vq('mgv-stage'); var w = s.clientWidth, h = s.clientHeight; if (vw.classList.contains('mgv-info-open') && w > 700) w -= Math.min(352, w * 0.86);
 		var short = isShort(); vw.classList.toggle('mgv-short', short);
 		if (short) return { w: Math.max(80, w), h: Math.max(80, h), off: 0 };
-		var bottom = 0; if (!vq('mgv-strip').hidden) bottom += 74; if (V.it && V.it.kind === 'video') bottom += vq('mgv-vbar').offsetHeight + 16 || 92;
+		var bottom = 0; if (!vq('mgv-strip').hidden) bottom += 74; if (V.it && isAV(V.it)) bottom += vq('mgv-vbar').offsetHeight + 16 || 92;
 		return { w: Math.max(80, w), h: Math.max(80, h - bottom - 56), off: -(bottom - 56) / 2 };
 	}
 	function fitNow(anim, keepZoom) {
@@ -1690,7 +1768,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		clearTimeout(slideT); cancelAnimationFrame(slideRaf);
 		if (!V.slide) return;
 		var it = V.it;
-		if (it && it.kind === 'video' && P.vidFull && !it.bad) { vq('mgv-sbar').style.width = '0'; return; }   // 'ended' moves on
+		if (it && isAV(it) && P.vidFull && !it.bad) { vq('mgv-sbar').style.width = '0'; return; }   // 'ended' moves on
 		var ms = P.slide * 1000; slideStart = performance.now();
 		(function bar() { var f = Math.min(1, (performance.now() - slideStart) / ms); vq('mgv-sbar').style.width = (f * 100) + '%'; if (f < 1 && V.slide) slideRaf = requestAnimationFrame(bar); })();
 		slideT = setTimeout(function () { if (V.slide) go(1); }, ms);
@@ -1716,12 +1794,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	function fillInfo() {
 		if (!vw || !V.it || !vw.classList.contains('mgv-info-open')) return;
 		var it = V.it, r = rating(it), m = V.media, rows = [];
-		rows.push(['Type', (it.kind === 'video' ? 'Video' : 'Photo') + ' · ' + (it.ext || '?').toUpperCase()]);
+		rows.push(['Type', (it.kind === 'video' ? 'Video' : it.kind === 'audio' ? 'Sound' : 'Photo') + ' · ' + (it.ext || '?').toUpperCase()]);
 		rows.push(['Size', G.fmtBytes(it.size)]);
 		var w = it.w || V.natW, h = it.h || V.natH;
 		if (it.kind === 'video' && m && m.videoWidth) { w = m.videoWidth; h = m.videoHeight; }
-		if (w && h) rows.push(['Dimensions', w + ' × ' + h + (it.kind === 'image' ? ' · ' + G.mp(w, h) : '')]);
-		if (it.kind === 'video' && it.dur) rows.push(['Length', G.fmtDur(it.dur)]);
+		if (w && h && it.kind !== 'audio') rows.push(['Dimensions', w + ' × ' + h + (it.kind === 'image' ? ' · ' + G.mp(w, h) : '')]);
+		if (isAV(it) && it.dur) rows.push(['Length', G.fmtDur(it.dur)]);
 		if (it.kind === 'video' && V.fps) rows.push(['Frame rate', '≈ ' + Math.round(V.fps) + ' fps']);
 		if (it.taken) rows.push(['Taken', G.fmtDate(it.taken, true)]);
 		else if (it.named) rows.push(['Date in name', G.fmtDate(it.named, true)]);
@@ -1731,7 +1809,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 		var html = '<h3>' + esc(it.name) + '</h3><div class="mgv-path">' + esc((rootName ? rootName + '/' : '') + it.path) + '</div>' +
 			'<div class="mgv-rate">' + stars + '<button type="button" data-heart="1" class="mgv-heart2' + (r.f ? ' mgv-lit' : '') + '" aria-label="Favourite">♥</button></div>' +
 			'<dl>' + rows.map(function (x) { return '<dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd>'; }).join('') + '</dl>' +
-			'<div class="mgv-acts">' + (it.kind === 'image' ? '<button type="button" class="mgv-b" data-a="edit">✎ Edit in Photo Editor</button>' : '<button type="button" class="mgv-b" data-a="watch">▶︎ Play in Watch</button><a class="mgv-b" href="/video" target="_blank" rel="noopener" style="text-decoration:none">✂ Video Editor</a>') +
+			'<div class="mgv-acts">' + (it.kind === 'image' ? '<button type="button" class="mgv-b" data-a="edit">✎ Edit in Photo Editor</button>' : '<button type="button" class="mgv-b" data-a="watch">▶︎ Play in Watch</button>' + (it.kind === 'audio' ? '<a class="mgv-b" href="/audio" target="_blank" rel="noopener" style="text-decoration:none">✂ Audio Editor</a>' : '<a class="mgv-b" href="/video" target="_blank" rel="noopener" style="text-decoration:none">✂ Video Editor</a>')) +
 			'<button type="button" class="mgv-b" data-a="opentab">↗ Open in a new tab</button><button type="button" class="mgv-b" data-a="copyname">Copy name</button></div>' +
 			'<div id="mgv-exif"></div>';
 		vq('mgv-info').innerHTML = html;
@@ -1755,9 +1833,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESGallery
 	   BroadcastChannel. Files go over as File objects / file handles, which are not copied, so even huge videos open at once. */
 	var watchCh = null, watchWait = {};
 	function playInWatch() {
-		var it = V.it; if (!it || it.kind !== 'video') return;
+		var it = V.it; if (!isAV(it)) return;
 		var start = VIEW.indexOf(it), list = [];
-		for (var j = start < 0 ? 0 : start; j < VIEW.length && list.length < 200; j++) { var x = VIEW[j]; if (x && x.kind === 'video' && x.file) list.push({ f: x.file, h: x.fh || null }); }
+		for (var j = start < 0 ? 0 : start; j < VIEW.length && list.length < 200; j++) { var x = VIEW[j]; if (x && isAV(x) && x.file) list.push({ f: x.file, h: x.fh || null }); }
 		if (!list.length) list.push({ f: it.file, h: it.fh || null });
 		var m = V.media, at = m && m.tagName === 'VIDEO' ? Math.floor(m.currentTime || 0) : 0;
 		if (m && m.pause) try { m.pause(); } catch (e) {}

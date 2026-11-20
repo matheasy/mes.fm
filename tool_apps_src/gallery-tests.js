@@ -195,4 +195,21 @@ t('hidden files and duplicates', function () {
 	assert.strictEqual(sets.length, 1); assert.strictEqual(sets[0][0], d); assert.strictEqual(sets[0].length, 3);
 	d._dup = 1; d._dupN = 3; assert.strictEqual(G.groupItems([d], 'dup')[0].label, 'Same picture: 3 copies');
 });
+t('sound files', function () {
+	assert.strictEqual(G.kindOf('song.MP3'), 'audio'); assert.strictEqual(G.kindOf('a.flac'), 'audio'); assert.strictEqual(G.kindOf('x', 'audio/ogg'), 'audio');
+	assert.strictEqual(G.mimeOf('a.m4a'), 'audio/mp4'); assert.ok(G.showable('a.wav'));
+	assert.strictEqual(G.sniff(bytes(str('RIFF....WAVEfmt '))).kind, 'audio');
+	assert.strictEqual(G.sniff(bytes(str('ID3\x04\x00\x00\x00\x00\x00\x00ab'))).ext, 'mp3');
+	assert.strictEqual(G.sniff(bytes(str('....ftypM4A isom'))).ext, 'm4a');
+	assert.strictEqual(G.filterItems([{ kind: 'audio', name: 'a.mp3' }, { kind: 'image', name: 'b.jpg' }], { kind: 'audio' }).length, 1);
+	assert.strictEqual(G.summary([{ kind: 'audio', size: 1 }]).sounds, 1);
+	// ID3v2.3 tag with one APIC frame
+	var img = []; for (var i = 0; i < 200; i++) img.push(i & 255);
+	var body = [0].concat(str('image/png'), [0, 3], str('cv'), [0], img);
+	var fr = str('APIC').concat([0, 0, 0, body.length, 0, 0], body), sz = fr.length;
+	var tag = str('ID3').concat([3, 0, 0, (sz >> 21) & 127, (sz >> 14) & 127, (sz >> 7) & 127, sz & 127], fr);
+	var pic = G.id3Picture(bytes(tag));
+	assert.strictEqual(pic.mime, 'image/png'); assert.strictEqual(pic.bytes.length, 200); assert.strictEqual(pic.bytes[5], 5);
+	assert.strictEqual(G.id3Picture(bytes(str('ID3\x03\x00\x00\x00\x00\x00\x00'))), null);
+});
 console.log(n + ' test groups passed' + (process.exitCode ? ' (with failures above)' : ''));

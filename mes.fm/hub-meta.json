@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-19",
+"generated":"2026-11-20",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -393,7 +393,7 @@
 },
 "/gallery":{
 "added":"2026-11-02",
-"updated":"2026-11-17",
+"updated":"2026-11-20",
 "type":"Tool"
 },
 "/gematria":{
@@ -828,7 +828,7 @@
 },
 "/reminder":{
 "added":"2026-10-21",
-"updated":"2026-11-18",
+"updated":"2026-11-20",
 "type":"Tool"
 },
 "/reverse-image-search":{

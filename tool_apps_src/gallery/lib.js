@@ -7,19 +7,24 @@ var MESGallery = (function () {
 		bmp: 'image/bmp', svg: 'image/svg+xml', ico: 'image/x-icon', heic: 'image/heic', heif: 'image/heif', tif: 'image/tiff', tiff: 'image/tiff', jxl: 'image/jxl' };
 	var VID = { mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', mkv: 'video/x-matroska', ogv: 'video/ogg', avi: 'video/x-msvideo',
 		'3gp': 'video/3gpp', wmv: 'video/x-ms-wmv', flv: 'video/x-flv', mpg: 'video/mpeg', mpeg: 'video/mpeg', ts: 'video/mp2t', m2ts: 'video/mp2t', mts: 'video/mp2t' };
+	var AUD = { mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', wav: 'audio/wav', flac: 'audio/flac', ogg: 'audio/ogg', oga: 'audio/ogg', opus: 'audio/ogg',
+		weba: 'audio/webm', aif: 'audio/aiff', aiff: 'audio/aiff', wma: 'audio/x-ms-wma', amr: 'audio/amr', mid: 'audio/midi', midi: 'audio/midi' };
 	/* what most browsers can show; the rest are listed but get a note (HEIC only in Safari, AVI / WMV / FLV / MKV-with-odd-codecs need converting) */
-	var SHOWABLE = { jpg: 1, jpeg: 1, jpe: 1, jfif: 1, png: 1, apng: 1, gif: 1, webp: 1, avif: 1, bmp: 1, svg: 1, ico: 1, mp4: 1, m4v: 1, mov: 1, webm: 1, ogv: 1, mkv: 1 };
+	var SHOWABLE = { jpg: 1, jpeg: 1, jpe: 1, jfif: 1, png: 1, apng: 1, gif: 1, webp: 1, avif: 1, bmp: 1, svg: 1, ico: 1, mp4: 1, m4v: 1, mov: 1, webm: 1, ogv: 1, mkv: 1,
+		mp3: 1, m4a: 1, aac: 1, wav: 1, flac: 1, ogg: 1, oga: 1, opus: 1, weba: 1 };
 
 	function ext(name) { var m = /\.([a-z0-9]{1,5})$/i.exec(name || ''); return m ? m[1].toLowerCase() : ''; }
 	function kindOf(name, mime) {
 		var e = ext(name);
 		if (IMG[e]) return 'image';
 		if (VID[e]) return 'video';
+		if (AUD[e]) return 'audio';
 		if (mime && /^image\//.test(mime)) return 'image';
 		if (mime && /^video\//.test(mime)) return 'video';
+		if (mime && /^audio\//.test(mime)) return 'audio';
 		return null;
 	}
-	function mimeOf(name) { var e = ext(name); return IMG[e] || VID[e] || ''; }
+	function mimeOf(name) { var e = ext(name); return IMG[e] || VID[e] || AUD[e] || ''; }
 	function showable(name) { return !!SHOWABLE[ext(name)]; }
 	function asc(u8, a, b) { var s = ''; for (var i = a; i < b && i < u8.length; i++) s += String.fromCharCode(u8[i]); return s; }
 	/* the real type from the first bytes (a photo saved without an ending, or a .jpg that is really a PNG) */
@@ -30,6 +35,10 @@ var MESGallery = (function () {
 		if (asc(u8, 0, 4) === 'GIF8') return { kind: 'image', ext: 'gif' };
 		if (asc(u8, 0, 4) === 'RIFF' && asc(u8, 8, 12) === 'WEBP') return { kind: 'image', ext: 'webp' };
 		if (asc(u8, 0, 4) === 'RIFF' && asc(u8, 8, 12) === 'AVI ') return { kind: 'video', ext: 'avi' };
+		if (asc(u8, 0, 4) === 'RIFF' && asc(u8, 8, 12) === 'WAVE') return { kind: 'audio', ext: 'wav' };
+		if (asc(u8, 0, 4) === 'fLaC') return { kind: 'audio', ext: 'flac' };
+		if (asc(u8, 0, 3) === 'ID3' || (u8[0] === 0xFF && (u8[1] & 0xE6) === 0xE2)) return { kind: 'audio', ext: 'mp3' };
+		if (asc(u8, 0, 4) === 'FORM' && /^AIF[FC]$/.test(asc(u8, 8, 12))) return { kind: 'audio', ext: 'aiff' };
 		if (u8[0] === 0x42 && u8[1] === 0x4D) return { kind: 'image', ext: 'bmp' };
 		if ((u8[0] === 0x49 && u8[1] === 0x49 && u8[2] === 42) || (u8[0] === 0x4D && u8[1] === 0x4D && u8[3] === 42)) return { kind: 'image', ext: 'tif' };
 		if (u8[0] === 0x1A && u8[1] === 0x45 && u8[2] === 0xDF && u8[3] === 0xA3) { var doc = asc(u8, 0, Math.min(u8.length, 64)); return { kind: 'video', ext: doc.indexOf('webm') >= 0 ? 'webm' : 'mkv' }; }
@@ -38,10 +47,35 @@ var MESGallery = (function () {
 			if (b === 'avif' || b === 'avis') return { kind: 'image', ext: 'avif' };
 			if (/^(heic|heix|hevc|heim|heis|mif1|msf1)$/.test(b)) return { kind: 'image', ext: 'heic' };
 			if (b === 'qt  ') return { kind: 'video', ext: 'mov' };
+			if (/^M4[AB] $/.test(b)) return { kind: 'audio', ext: 'm4a' };
 			return { kind: 'video', ext: 'mp4' };
 		}
 		var head = asc(u8, 0, Math.min(u8.length, 256)).replace(/^﻿/, '').trim();
 		if (/^<\?xml[\s\S]*<svg|^<svg/i.test(head)) return { kind: 'image', ext: 'svg' };
+		return null;
+	}
+
+	/* the cover picture inside an MP3's ID3v2 tag (APIC, or PIC in v2.2): {mime, bytes} or null. Only needs the first bytes of the file. */
+	function id3Picture(u8) {
+		if (!u8 || u8.length < 10 || asc(u8, 0, 3) !== 'ID3') return null;
+		var ver = u8[3], flags = u8[5], size = ((u8[6] & 127) << 21) | ((u8[7] & 127) << 14) | ((u8[8] & 127) << 7) | (u8[9] & 127), end = Math.min(u8.length, 10 + size), p = 10;
+		if (flags & 0x40 && ver >= 3) { var ex = ver === 4 ? (((u8[10] & 127) << 21) | ((u8[11] & 127) << 14) | ((u8[12] & 127) << 7) | (u8[13] & 127)) : ((u8[10] << 24) | (u8[11] << 16) | (u8[12] << 8) | u8[13]) + 4; p += ex; }
+		while (p + (ver === 2 ? 6 : 10) <= end) {
+			var id, fs, hd;
+			if (ver === 2) { id = asc(u8, p, p + 3); fs = (u8[p + 3] << 16) | (u8[p + 4] << 8) | u8[p + 5]; hd = 6; }
+			else { id = asc(u8, p, p + 4); fs = ver === 4 ? (((u8[p + 4] & 127) << 21) | ((u8[p + 5] & 127) << 14) | ((u8[p + 6] & 127) << 7) | (u8[p + 7] & 127)) : ((u8[p + 4] << 24) >>> 0) + (u8[p + 5] << 16) + (u8[p + 6] << 8) + u8[p + 7]; hd = 10; }
+			if (!/^[A-Z0-9]{3,4}$/.test(id) || fs <= 0) break;
+			var d = p + hd, de = Math.min(end, d + fs);
+			if (id === 'APIC' || id === 'PIC') {
+				var enc = u8[d], q = d + 1, mime;
+				if (id === 'PIC') { var f3 = asc(u8, q, q + 3).toLowerCase(); mime = f3 === 'png' ? 'image/png' : 'image/jpeg'; q += 3; }
+				else { var ms = q; while (q < de && u8[q]) q++; mime = asc(u8, ms, q) || 'image/jpeg'; q++; if (mime.indexOf('/') < 0) mime = 'image/' + mime.toLowerCase().replace('jpg', 'jpeg'); }
+				q++;   // picture type
+				if (enc === 1 || enc === 2) { while (q + 1 < de && (u8[q] || u8[q + 1])) q += 2; q += 2; } else { while (q < de && u8[q]) q++; q++; }
+				if (q < de && de - q > 100) return { mime: mime, bytes: u8.slice(q, de) };
+			}
+			p = d + fs;
+		}
 		return null;
 	}
 
@@ -148,6 +182,7 @@ var MESGallery = (function () {
 		var words = fold(opt.q || '').split(/\s+/).filter(Boolean), kind = opt.kind || 'all';
 		return items.filter(function (it) {
 			if (kind === 'image' && it.kind !== 'image') return false;
+			if (kind === 'audio' && it.kind !== 'audio') return false;
 			if (kind === 'video' && it.kind !== 'video') return false;
 			var hid = !!(opt.hidden && opt.hidden[hideKey(it)]);
 			if (kind === 'hidden') { if (!hid) return false; }
@@ -178,7 +213,7 @@ var MESGallery = (function () {
 			var k, label, d;
 			if (by === 'dup') { k = 'd' + (it._dup || 0); label = 'Same picture: ' + (it._dupN || 2) + ' copies'; }
 			else if (by === 'folder') { k = it.folder || ''; label = k || 'Top folder'; }
-			else if (by === 'type') { k = it.kind; label = it.kind === 'video' ? 'Videos' : 'Photos'; }
+			else if (by === 'type') { k = it.kind; label = it.kind === 'video' ? 'Videos' : it.kind === 'audio' ? 'Sounds' : 'Photos'; }
 			else if (by === 'ext') { k = it.ext || '?'; label = (it.ext || 'no ending').toUpperCase(); }
 			else {
 				var t = dateOf(it);
@@ -382,9 +417,9 @@ var MESGallery = (function () {
 		return { name: name, folder: parts.join('/') };
 	}
 	function summary(items) {
-		var s = { images: 0, videos: 0, bytes: 0, first: 0, last: 0 };
+		var s = { images: 0, videos: 0, sounds: 0, bytes: 0, first: 0, last: 0 };
 		items.forEach(function (it) {
-			if (it.kind === 'video') s.videos++; else s.images++;
+			if (it.kind === 'video') s.videos++; else if (it.kind === 'audio') s.sounds++; else s.images++;
 			s.bytes += it.size || 0; var d = dateOf(it);
 			if (d) { if (!s.first || d < s.first) s.first = d; if (d > s.last) s.last = d; }
 		});
@@ -392,7 +427,7 @@ var MESGallery = (function () {
 	}
 	function plural(n, w) { return n.toLocaleString('en-US') + ' ' + w + (n === 1 ? '' : 's'); }
 
-	return { IMG: IMG, VID: VID, ext: ext, kindOf: kindOf, mimeOf: mimeOf, showable: showable, sniff: sniff, imageSize: imageSize, exifDate: exifDate, nameDate: nameDate, dateOf: dateOf,
+	return { IMG: IMG, VID: VID, AUD: AUD, id3Picture: id3Picture, ext: ext, kindOf: kindOf, mimeOf: mimeOf, showable: showable, sniff: sniff, imageSize: imageSize, exifDate: exifDate, nameDate: nameDate, dateOf: dateOf,
 		natCmp: natCmp, SORTS: SORTS, sortItems: sortItems, filterItems: filterItems, groupItems: groupItems, justify: justify, masonry: masonry, squares: squares, layout: layout,
 		visible: visible, fitScale: fitScale, clampPan: clampPan, zoomAbout: zoomAbout, SPEEDS: SPEEDS, speedStep: speedStep, fmtSpeed: fmtSpeed, abCheck: abCheck, setAB: setAB,
 		posterTime: posterTime, nextIndex: nextIndex, SLIDE: SLIDE, fmtBytes: fmtBytes, fmtDur: fmtDur, fmtTime: fmtTime, fmtDate: fmtDate, mp: mp, thumbKey: thumbKey,
