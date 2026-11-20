@@ -87,7 +87,7 @@
     "Help with coding, research, math, writing and everyday questions. Be clear and accurate; say when you are unsure. " +
     "Use Markdown: headings only when they help, lists, and fenced code blocks with a language name. " +
     "When you mention a website, page, tool, paper or source, give the full https:// address as a Markdown link, e.g. [Wikipedia: Recursion](https://en.wikipedia.org/wiki/Recursion); for mes.fm tools use https://mes.fm/<page>. Only give addresses you are confident exist (well-known, stable pages); say so when you are not sure. " +
-    "Write math with plain symbols or inline code, not LaTeX. Each answer has a length limit, so get to the point and finish your answer within it. " +
+    "Write math in LaTeX: $...$ inline and $$...$$ on its own line for displayed equations (never for money amounts). Put tabular data in Markdown tables. When a chart helps, add a fenced code block with the language chart holding JSON like {\"type\":\"bar\",\"title\":\"...\",\"labels\":[\"A\",\"B\"],\"series\":[{\"name\":\"...\",\"data\":[1,2]}]} (type bar, line or pie); the page draws it. Each answer has a length limit, so get to the point and finish your answer within it. " +
     "Refuse requests for clearly illegal or seriously harmful content.";
   // the same instructions, naming the company that really runs the chosen model
   // lang = the language page the person is on (/ai-es ...): answer in that language unless they write in another one.
@@ -133,6 +133,32 @@
     var usd = (inTokens * m.inUsd + cap * m.outUsd) / 1e6;
     var hbd = hbdFromUsd(usd);
     return { kind: "chat", model: modelKey, modelId: m.id, len: len, inTokens: inTokens, maxOut: cap, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+  }
+  /* ---------- cost hints (2026-11-20): only hints; the server's quote is the only price anyone pays ---------- */
+  // what a chat cost so far (sum of the HBD prices paid on its messages, counted in thousandths so no float drift) and its history size
+  // in tokens, roughly (characters / 4), plus a rough price for the next message at that size
+  function chatCostSoFar(chat, modelKey, len) {
+    var msgs = (chat && Array.isArray(chat.msgs)) ? chat.msgs : [], milli = 0, paid = 0, chars = 0;
+    msgs.forEach(function (m) {
+      if (!m) return;
+      if (m.role === "user" && m.price != null && isFinite(parseFloat(m.price))) { milli += Math.round(parseFloat(m.price) * 1000); paid++; }
+      if (!m.error && typeof m.content === "string") chars += m.content.length;
+    });
+    var tokens = Math.ceil(chars / 4), next = MODELS[modelKey] && MODELS[modelKey].caps[len] ? chatQuote(modelKey, tokens, len) : null;
+    return { hbd: milli / 1000, price: fmtHbd(milli / 1000), paid: paid, tokens: tokens, next: next };
+  }
+  // the "Typical costs" table: rows = models, columns = history sizes in tokens (one answer of length len each)
+  function typicalCosts(models, sizes, len) {
+    models = models || ["sonnet", "opus"]; sizes = sizes || [5000, 25000, 50000]; len = len || "medium";
+    return models.filter(function (k) { return MODELS[k]; }).map(function (k) {
+      return { model: k, name: MODELS[k].name, cells: sizes.map(function (t) { var q = chatQuote(k, t, len); return { tokens: t, hbd: q.hbd, price: q.price }; }) };
+    });
+  }
+  // a whole chat of n messages whose history grows evenly to maxTokens: the sum of each message's price
+  function sessionCost(modelKey, len, n, maxTokens) {
+    var milli = 0;
+    for (var i = 1; i <= n; i++) milli += Math.round(chatQuote(modelKey, maxTokens * i / n, len).hbd * 1000);
+    return { hbd: milli / 1000, price: fmtHbd(milli / 1000) };
   }
   function imageQuote(quality, size, promptTokens, model) {
     model = model || "gpt";
@@ -375,10 +401,27 @@
     if (!c || typeof c.id !== "string" || !Array.isArray(c.msgs)) return null;
     var msgs = c.msgs.filter(function (m) { return m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && !m.pending; })
       .map(function (m) { var o = { role: m.role, content: m.content }; ["at", "price", "memo", "model", "len", "stop", "acct"].forEach(function (k) { if (m[k] != null) o[k] = m[k]; }); return o; });
-    return { id: c.id.slice(0, 40), title: String(c.title || "Chat").slice(0, 120), at: Number(c.at) || 0, msgs: msgs };
+    var o = { id: c.id.slice(0, 40), title: String(c.title || "Chat").slice(0, 120), at: Number(c.at) || 0, msgs: msgs };
+    // chat-list extras (2026-11-20): pinned on top, a folder name, and when they / the title were last changed (mt: newest wins in a merge)
+    if (c.pin === true) o.pin = true;
+    var f = cleanFolder(c.folder); if (f) o.folder = f;
+    if (Number(c.mt) > 0) o.mt = Number(c.mt);
+    return o;
   }
-  function backup(chats, now) {
-    return { app: "mes-ai", v: 1, saved: new Date(now || Date.now()).toISOString(), chats: (chats || []).map(cleanChat).filter(function (c) { return c && c.msgs.length; }) };
+  function cleanFolder(f) { return typeof f === "string" ? f.replace(/[\u0000-\u001f<>]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60) : ""; }
+  // folders = the folder names (so an empty folder survives a backup too)
+  function backup(chats, now, folders) {
+    var o = { app: "mes-ai", v: 1, saved: new Date(now || Date.now()).toISOString(), chats: (chats || []).map(cleanChat).filter(function (c) { return c && c.msgs.length; }) };
+    var fl = readFolders({ folders: folders });
+    o.chats.forEach(function (c) { if (c.folder && fl.indexOf(c.folder) < 0) fl.push(c.folder); });
+    if (fl.length) o.folders = fl;
+    return o;
+  }
+  // the folder names in a backup (older backups have none): an array of clean, unique names
+  function readFolders(x) {
+    var o = typeof x === "string" ? (function () { try { return JSON.parse(x); } catch (e) { return null; } })() : x, out = [];
+    ((o && Array.isArray(o.folders)) ? o.folders : []).forEach(function (n) { n = cleanFolder(n); if (n && out.indexOf(n) < 0 && out.length < 200) out.push(n); });
+    return out;
   }
   // accepts a backup object / its JSON text -> chats array, or throws
   function readBackup(x) {
@@ -393,8 +436,14 @@
     (theirs || []).forEach(function (c) {
       c = cleanChat(c); if (!c || !c.msgs.length) return;
       if (!(c.id in byId)) { byId[c.id] = out.length; out.push(c); added++; return; }
-      var i = byId[c.id], m = out[i];
-      if (c.msgs.length > m.msgs.length || (c.msgs.length === m.msgs.length && c.at > m.at)) { out[i] = c; updated++; }
+      var i = byId[c.id], m = out[i], theirs = c.msgs.length > m.msgs.length || (c.msgs.length === m.msgs.length && c.at > m.at);
+      var keep = theirs ? c : m, meta = (c.mt || 0) > (m.mt || 0) ? c : (m.mt || 0) > (c.mt || 0) ? m : keep;
+      if (theirs || meta !== keep) {
+        var n = {}; Object.keys(keep).forEach(function (k) { n[k] = keep[k]; });
+        n.title = meta.title; delete n.pin; delete n.folder; delete n.mt;
+        if (meta.pin) n.pin = true; if (meta.folder) n.folder = meta.folder; if (meta.mt) n.mt = meta.mt;
+        if (theirs || n.title !== m.title || !!n.pin !== !!m.pin || (n.folder || "") !== (m.folder || "")) { out[i] = n; updated++; }
+      }
     });
     out.sort(function (a, b) { return b.at - a.at; });
     return { chats: out, added: added, updated: updated };
@@ -404,18 +453,511 @@
   }
 
   return {
-    cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
+    cleanChat: cleanChat, cleanFolder: cleanFolder, readFolders: readFolders, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
-    chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
+    chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     FILES: FILES, checkFile: checkFile, fileTokens: fileTokens, toAnthropic: toAnthropic, toOpenAIChat: toOpenAIChat, toOpenAIResponses: toOpenAIResponses,
     parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece
   };
 });
+
+/* MES AI rich answers (2026-11-20) -- window.MESAIRich, used by app.js (a js_parts file, so it is in the same served script).
+ *   render(markdown, {pending}) -> sanitised HTML: Markdown (marked + DOMPurify, loaded by app.js) with LaTeX kept out of Markdown's way:
+ *     $...$ / \(...\) inline and $$...$$ / \[...\] display become <span|div class="ai-tex"> typeset later by MathJax 3 (cdnjs, on first use).
+ *   enhance(el, {pending}) -> code blocks get a language tag + Copy, ```chart blocks become SVG charts, tables get filter / sort /
+ *     column resize / Copy / "Show as chart", math is typeset (not while the answer is still streaming).
+ *   openIn(kind, mdText, el) -> "latex" (/latex?tex=), "text" (/text, Markdown), "docx" (/docx, a .docx made here), "pdf" (/pdf, a PDF made here).
+ *   Everything shown comes out of DOMPurify or is built with textContent / escaped strings. */
+(function () {
+	"use strict";
+	var T = function (s, v) { return v ? s.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? v[k] : m; }) : s; };
+	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+
+	/* ---------- math kept out of Markdown ---------- */
+	// splits off code (``` fences and `inline`), then pulls math out of the rest; returns {text with tokens, list:[{tex, d}]}
+	function pullMath(src) {
+		var list = [], tok = function (tex, d) { list.push({ tex: tex.trim(), d: d }); return "MESTEX" + (list.length - 1) + "Z"; };
+		var parts = String(src).split(/(```[\s\S]*?(?:```|$)|`[^`\n]+`)/);
+		for (var i = 0; i < parts.length; i += 2) {
+			parts[i] = parts[i]
+				.replace(/\$\$([\s\S]+?)\$\$/g, function (m, t) { return tok(t, true); })
+				.replace(/\\\[([\s\S]+?)\\\]/g, function (m, t) { return tok(t, true); })
+				.replace(/\\\(([\s\S]+?)\\\)/g, function (m, t) { return tok(t, false); })
+				// $x$ but not money: no space just inside the $ signs, no digit / letter right after the closing $
+				.replace(/(^|[^\\$\w])\$(?![\s$])([^$\n]*?[^\s\\$])\$(?![\w$])/g, function (m, pre, t) { return pre + tok(t, false); });
+		}
+		return { text: parts.join(""), list: list };
+	}
+	function texHtml(x) { return x.d ? '<div class="ai-tex ai-texd" data-tex="' + esc(x.tex) + '">\\[' + esc(x.tex) + "\\]</div>" : '<span class="ai-tex ai-texi" data-tex="' + esc(x.tex) + '">\\(' + esc(x.tex) + "\\)</span>"; }
+	function putMath(html, list) {
+		return html.replace(/<p>\s*MESTEX(\d+)Z\s*<\/p>/g, function (m, n) { var x = list[+n]; return x ? texHtml({ tex: x.tex, d: true }) : m; })
+			.replace(/MESTEX(\d+)Z/g, function (m, n) { var x = list[+n]; return x ? texHtml(x) : m; });
+	}
+	function texList(md) { return pullMath(md).list; }
+
+	var MJ = null;
+	function mathJax() {
+		if (MJ) return MJ;
+		if (window.MathJax && window.MathJax.typesetPromise) return (MJ = Promise.resolve(window.MathJax));
+		window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]], processEscapes: true }, svg: { fontCache: "local" }, options: { processHtmlClass: "ai-tex", ignoreHtmlClass: ".*" }, startup: { typeset: false } };
+		MJ = new Promise(function (res, rej) {
+			var s = document.createElement("script"); s.async = true; s.src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js";
+			s.onload = function () { window.MathJax.startup.promise.then(function () { res(window.MathJax); }, rej); };
+			s.onerror = function () { MJ = null; rej(new Error("MathJax did not load")); };
+			document.head.appendChild(s);
+		});
+		return MJ;
+	}
+	function typeset(el) {
+		// only shown, finished math: MathJax can't measure a detached / hidden element (NaN sizes), and a streaming answer is retyped each piece
+		function pick() { return [].slice.call(el.querySelectorAll(".ai-tex:not(.is-done)")).filter(function (e) { return e.isConnected && e.offsetParent !== null && !e.closest("[data-pending]"); }); }
+		var els = pick();
+		if (!els.length) return Promise.resolve();
+		return mathJax().then(function (M) { els = pick(); return els.length ? M.typesetPromise(els) : null; }).then(function () { els.forEach(function (e) { e.classList.add("is-done"); }); }).catch(function () {});
+	}
+
+	/* ---------- Markdown ---------- */
+	function render(md, mdOn, plain) {
+		var p = pullMath(md), html;
+		if (mdOn && window.marked && window.DOMPurify) html = window.DOMPurify.sanitize(window.marked.parse(p.text, { gfm: true, breaks: false }), { ADD_ATTR: ["target"] });
+		else html = plain(p.text);
+		return putMath(html, p.list);
+	}
+
+	/* ---------- numbers in table cells ---------- */
+	function num(s) {
+		s = String(s).trim().replace(/[\s,\u00a0$€£¥%]/g, "").replace(/^\((.*)\)$/, "-$1").replace(/^−/, "-");
+		return /^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(s) ? parseFloat(s) : NaN;
+	}
+
+	/* ---------- charts (plain SVG, drawn at the box's real width) ---------- */
+	var PAL = ["#4f46e5", "#0ea5e9", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"];
+	function normSpec(o) {
+		if (!o || typeof o !== "object") return null;
+		var type = String(o.type || (o.chart && o.chart.type) || "bar").toLowerCase(), labels = o.labels || o.x || o.categories, series = o.series || o.datasets;
+		if (o.data && !Array.isArray(o.data) && typeof o.data === "object") { labels = labels || o.data.labels; series = series || o.data.datasets || o.data.series; }
+		if (Array.isArray(o.data) && Array.isArray(o.data[0])) {
+			var cols = o.columns || [];
+			labels = o.data.map(function (r) { return r[0]; });
+			series = o.data[0].slice(1).map(function (x, j) { return { name: cols[j + 1] || "", data: o.data.map(function (r) { return r[j + 1]; }) }; });
+		} else if (Array.isArray(o.data) && o.data.length && typeof o.data[0] === "object" && o.data[0] && !Array.isArray(o.data[0]) && !series) {
+			var keys = Object.keys(o.data[0]), lk = keys.filter(function (k) { return isNaN(num(o.data[0][k])); })[0] || keys[0];
+			labels = o.data.map(function (r) { return r[lk]; });
+			series = keys.filter(function (k) { return k !== lk; }).map(function (k) { return { name: k, data: o.data.map(function (r) { return r[k]; }) }; });
+		} else if (Array.isArray(o.data) && !series) series = [{ name: o.name || "", data: o.data }];
+		if (!Array.isArray(series)) return null;
+		series = series.slice(0, 8).map(function (s) { return Array.isArray(s) ? { name: "", data: s } : { name: String((s && (s.name || s.label)) || ""), data: ((s && (s.data || s.values)) || []).slice(0, 300).map(function (v) { return typeof v === "number" ? v : num(v); }) }; });
+		var n = Math.max.apply(null, series.map(function (s) { return s.data.length; }).concat([0]));
+		if (!n) return null;
+		labels = (Array.isArray(labels) ? labels : []).slice(0, n).map(String);
+		while (labels.length < n) labels.push(String(labels.length + 1));
+		type = /pie|doughnut|donut/.test(type) ? "pie" : /line|area|scatter/.test(type) ? "line" : "bar";
+		return { type: type, title: String(o.title || (o.options && o.options.title && o.options.title.text) || "").slice(0, 120), labels: labels, series: series };
+	}
+	function nice(lo, hi) {
+		if (lo === hi) { hi = lo + 1; lo = lo - (lo ? 1 : 0); }
+		var span = hi - lo, step = Math.pow(10, Math.floor(Math.log10(span / 5))), r = span / 5 / step;
+		step *= r > 5 ? 10 : r > 2 ? 5 : r > 1 ? 2 : 1;
+		var a = Math.floor(lo / step) * step, b = Math.ceil(hi / step) * step, ticks = [];
+		for (var v = a; v <= b + step / 2; v += step) ticks.push(+v.toPrecision(12));
+		return { lo: a, hi: b, ticks: ticks };
+	}
+	function fmt(v) { var a = Math.abs(v); return a >= 1e9 ? +(v / 1e9).toFixed(2) + "B" : a >= 1e6 ? +(v / 1e6).toFixed(2) + "M" : a >= 1e4 ? +(v / 1e3).toFixed(1) + "k" : String(+v.toPrecision(6)); }
+	function chartSvg(sp, W) {
+		W = Math.max(260, Math.round(W)); var fs = 12, top = sp.title ? 26 : 8, multi = sp.series.length > 1;
+		var H = Math.round(Math.min(380, Math.max(220, W * 0.55))), o = [];
+		var t = function (x, y, s, a, extra) { return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" font-size="' + fs + '" fill="currentColor"' + (a ? ' text-anchor="' + a + '"' : "") + (extra || "") + ">" + esc(s) + "</text>"; };
+		if (sp.title) o.push('<text x="' + W / 2 + '" y="17" font-size="14" font-weight="700" fill="currentColor" text-anchor="middle">' + esc(sp.title) + "</text>");
+		if (sp.type === "pie") {
+			var d = sp.series[0].data.map(function (v) { return v > 0 ? v : 0; }), sum = d.reduce(function (a, b) { return a + b; }, 0) || 1;
+			var legendW = W > 520 ? Math.min(220, W * 0.38) : 0, R = Math.min((W - legendW) / 2, (H - top) / 2) - 10, cx = (W - legendW) / 2, cy = top + (H - top) / 2, a0 = -Math.PI / 2;
+			d.forEach(function (v, i) {
+				var a1 = a0 + v / sum * Math.PI * 2, big = a1 - a0 > Math.PI ? 1 : 0, c = PAL[i % PAL.length], tip = esc(sp.labels[i] + ": " + fmt(v) + " (" + Math.round(v / sum * 1000) / 10 + "%)");
+				if (v / sum > 0.9999) o.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="' + c + '"><title>' + tip + "</title></circle>");
+				else if (v > 0) o.push('<path d="M' + cx + " " + cy + "L" + (cx + R * Math.cos(a0)).toFixed(1) + " " + (cy + R * Math.sin(a0)).toFixed(1) + "A" + R + " " + R + " 0 " + big + " 1 " + (cx + R * Math.cos(a1)).toFixed(1) + " " + (cy + R * Math.sin(a1)).toFixed(1) + 'Z" fill="' + c + '" stroke="var(--ai-bot,#fff)" stroke-width="1.5"><title>' + tip + "</title></path>");
+				a0 = a1;
+			});
+			var ly = legendW ? top + 10 : H + 6, lx = legendW ? W - legendW + 8 : 8;
+			if (!legendW) H += Math.ceil(d.length / Math.max(1, Math.floor(W / 150))) * 18 + 6;
+			d.forEach(function (v, i) {
+				var x = legendW ? lx : 8 + (i % Math.max(1, Math.floor(W / 150))) * 150, y = legendW ? ly + i * 18 : ly + Math.floor(i / Math.max(1, Math.floor(W / 150))) * 18;
+				o.push('<rect x="' + x + '" y="' + (y - 10) + '" width="11" height="11" rx="2" fill="' + PAL[i % PAL.length] + '"/>' + t(x + 16, y, (sp.labels[i] + " " + Math.round(v / sum * 1000) / 10 + "%").slice(0, 30)));
+			});
+			return '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(sp.title || "Chart") + '">' + o.join("") + "</svg>";
+		}
+		var all = []; sp.series.forEach(function (s) { s.data.forEach(function (v) { if (isFinite(v)) all.push(v); }); });
+		if (!all.length) return "";
+		var sc = nice(Math.min(0, Math.min.apply(null, all)), Math.max(0, Math.max.apply(null, all)));
+		var lw = Math.max.apply(null, sc.ticks.map(function (v) { return fmt(v).length; })) * 7 + 12;
+		if (multi) top += 22;
+		var n = sp.labels.length, l = lw, r = 12, pw = W - l - r, maxLab = Math.max.apply(null, sp.labels.map(function (s) { return s.length; })), slot = pw / n;
+		var rot = maxLab * 6.5 > slot * 0.95, b = rot ? Math.min(90, maxLab * 5 + 20) : 28, ph = H - top - b;
+		var y = function (v) { return top + ph - (v - sc.lo) / (sc.hi - sc.lo) * ph; };
+		sc.ticks.forEach(function (v) { o.push('<line x1="' + l + '" x2="' + (W - r) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '" stroke="currentColor" stroke-opacity="' + (v === 0 ? 0.45 : 0.13) + '"/>' + t(l - 6, y(v) + 4, fmt(v), "end")); });
+		var every = Math.max(1, Math.ceil((rot ? 14 : maxLab * 6.5 + 8) / slot));
+		sp.labels.forEach(function (s, i) {
+			if (i % every) return;
+			var x = l + slot * (i + 0.5), lab = s.length > 24 ? s.slice(0, 23) + "…" : s;
+			o.push(rot ? t(x, top + ph + 12, lab, "end", ' transform="rotate(-38 ' + x.toFixed(1) + " " + (top + ph + 12) + ')"') : t(x, top + ph + 17, lab, "middle"));
+		});
+		if (sp.type === "bar") {
+			var gw = slot * 0.78, bw = gw / sp.series.length;
+			sp.series.forEach(function (s, k) {
+				s.data.forEach(function (v, i) {
+					if (!isFinite(v)) return;
+					var x = l + slot * i + (slot - gw) / 2 + bw * k, y0 = y(Math.max(0, v)), h = Math.abs(y(v) - y(0));
+					o.push('<rect x="' + x.toFixed(1) + '" y="' + y0.toFixed(1) + '" width="' + Math.max(1, bw - 1).toFixed(1) + '" height="' + Math.max(0.5, h).toFixed(1) + '" rx="2" fill="' + PAL[k % PAL.length] + '"><title>' + esc((s.name ? s.name + ", " : "") + sp.labels[i] + ": " + fmt(v)) + "</title></rect>");
+				});
+			});
+		} else {
+			sp.series.forEach(function (s, k) {
+				var pts = [], c = PAL[k % PAL.length];
+				s.data.forEach(function (v, i) { if (isFinite(v)) pts.push([l + slot * (i + 0.5), y(v), v, i]); });
+				o.push('<polyline fill="none" stroke="' + c + '" stroke-width="2.2" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
+				if (pts.length <= 80) pts.forEach(function (p) { o.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.2" fill="' + c + '"><title>' + esc((s.name ? s.name + ", " : "") + sp.labels[p[3]] + ": " + fmt(p[2])) + "</title></circle>"); });
+			});
+		}
+		if (multi) {
+			var x = l;
+			sp.series.forEach(function (s, k) {
+				var nm = (s.name || T("Series {n}", { n: k + 1 })).slice(0, 24);
+				o.push('<rect x="' + x + '" y="' + (top - 18) + '" width="11" height="11" rx="2" fill="' + PAL[k % PAL.length] + '"/>' + t(x + 15, top - 8, nm));
+				x += nm.length * 7 + 30;
+			});
+		}
+		return '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(sp.title || "Chart") + '">' + o.join("") + "</svg>";
+	}
+	var RO = window.ResizeObserver ? new ResizeObserver(function (es) { es.forEach(function (e) { var b = e.target; if (b.__sp && Math.abs((b.__w || 0) - b.clientWidth) > 4) drawChart(b); }); }) : null;
+	function drawChart(box) { box.__w = box.clientWidth; box.querySelector(".ai-chsvg").innerHTML = chartSvg(box.__sp, box.clientWidth - 2); }
+	function chartBox(sp, opts) {
+		var box = document.createElement("div"); box.className = "ai-chart"; box.__sp = sp;
+		var types = sp.series.length === 1 ? ["bar", "line", "pie"] : ["bar", "line"];
+		box.innerHTML = '<div class="ai-chbar">' + types.map(function (k) { return '<button type="button" class="ai-mini" data-ct="' + k + '" aria-pressed="' + (k === sp.type) + '">' + esc(T({ bar: "Bars", line: "Line", pie: "Pie" }[k])) + "</button>"; }).join("") +
+			'<button type="button" class="ai-mini" data-cpng>' + esc(T("Save picture")) + "</button>" + (opts && opts.close ? '<button type="button" class="ai-mini" data-cclose>' + esc(T("Hide chart")) + "</button>" : "") + '</div><div class="ai-chsvg"></div>';
+		box.addEventListener("click", function (e) {
+			var b = e.target.closest("button"); if (!b) return;
+			if (b.dataset.ct) { sp.type = b.dataset.ct; [].forEach.call(box.querySelectorAll("[data-ct]"), function (x) { x.setAttribute("aria-pressed", x === b); }); drawChart(box); }
+			if (b.hasAttribute("data-cpng")) svgPng(box.querySelector("svg"), (sp.title || "chart").replace(/[^\w -]+/g, "").trim().slice(0, 40) || "chart");
+			if (b.hasAttribute("data-cclose")) { box.remove(); if (opts.onClose) opts.onClose(); }
+		});
+		setTimeout(function () { drawChart(box); if (RO) RO.observe(box); }, 0);
+		return box;
+	}
+	function svgText(svg) { // a stand-alone copy with real colours (for pictures and the PDF)
+		var c = svg.cloneNode(true), dark = document.body.classList.contains("dark-mode");
+		c.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+		return new XMLSerializer().serializeToString(c).replace(/currentColor/g, "#222").replace(/var\(--ai-bot,#fff\)/g, "#fff") + (dark ? "" : "");
+	}
+	function svgImage(svg, scale) {
+		var w = svg.width.baseVal.value || svg.getBoundingClientRect().width, h = svg.height.baseVal.value || svg.getBoundingClientRect().height;
+		return new Promise(function (res, rej) {
+			var im = new Image(); im.onload = function () { var cv = document.createElement("canvas"); cv.width = Math.ceil(w * scale); cv.height = Math.ceil(h * scale); var x = cv.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, cv.width, cv.height); x.drawImage(im, 0, 0, cv.width, cv.height); res(cv); };
+			im.onerror = rej; im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText(svg));
+		});
+	}
+	function svgPng(svg, name) { if (!svg) return; svgImage(svg, 2).then(function (cv) { cv.toBlob(function (b) { dl(b, name + ".png"); }); }); }
+	function dl(blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000); }
+
+	/* ---------- tables: filter, sort, resize, copy, chart ---------- */
+	function tableData(t, onlyShown) {
+		var rows = [].slice.call(t.rows).filter(function (r) { return !onlyShown || !r.hidden; });
+		return rows.map(function (r) { return [].map.call(r.cells, function (c) { return c.innerText.replace(/\s+/g, " ").trim(); }); });
+	}
+	function tableSpec(t) {
+		var d = tableData(t, true); if (d.length < 3 || d[0].length < 2) return null;
+		var head = d[0], body = d.slice(1), cols = [];
+		for (var j = 1; j < head.length; j++) { var ok = body.filter(function (r) { return isFinite(num(r[j])); }).length; if (ok >= Math.max(2, body.length * 0.6)) cols.push(j); }
+		if (!cols.length) return null;
+		return { type: body.length > 14 && cols.length < 3 ? "line" : "bar", title: "", labels: body.map(function (r) { return r[0]; }), series: cols.slice(0, 8).map(function (j) { return { name: head[j], data: body.map(function (r) { return num(r[j]); }) }; }) };
+	}
+	function enhanceTable(t, copy) {
+		if (t.parentNode && t.parentNode.classList && t.parentNode.classList.contains("ai-tscroll")) return;
+		var head = t.tHead && t.tHead.rows[0], body = t.tBodies[0]; if (!head || !body) return;
+		var wrap = document.createElement("div"), scroll = document.createElement("div"), bar = document.createElement("div");
+		wrap.className = "ai-tbl"; scroll.className = "ai-tscroll"; bar.className = "ai-tbar";
+		t.parentNode.insertBefore(wrap, t); scroll.appendChild(t); wrap.appendChild(bar); wrap.appendChild(scroll);
+		var rows = [].slice.call(body.rows); rows.forEach(function (r, i) { r.__i = i; });
+		var many = rows.length > 4, canChart = !!tableSpec(t);
+		bar.innerHTML = (many ? '<input type="search" class="ai-tfilter" placeholder="' + esc(T("Filter rows")) + '" aria-label="' + esc(T("Filter rows")) + '"><span class="ai-tcount"></span>' : "") +
+			'<button type="button" class="ai-mini" data-tcopy title="' + esc(T("Copy the table (pastes into Excel or Sheets)")) + '">' + esc(T("Copy table")) + "</button>" +
+			(canChart ? '<button type="button" class="ai-mini" data-tchart>' + esc(T("📊 Show as chart")) + "</button>" : "");
+		var fi = bar.querySelector(".ai-tfilter"), cnt = bar.querySelector(".ai-tcount");
+		function count() { if (!cnt) return; var n = rows.filter(function (r) { return !r.hidden; }).length; cnt.textContent = n === rows.length ? "" : T("{n} of {all} rows", { n: n, all: rows.length }); }
+		if (fi) fi.addEventListener("input", function () { var w = fi.value.toLowerCase().split(/\s+/).filter(Boolean); rows.forEach(function (r) { var s = r.innerText.toLowerCase(); r.hidden = !w.every(function (x) { return s.indexOf(x) >= 0; }); }); count(); });
+		bar.addEventListener("click", function (e) {
+			var b = e.target.closest("button"); if (!b) return;
+			if (b.hasAttribute("data-tcopy")) copy(tableData(t, true).map(function (r) { return r.join("\t"); }).join("\n"), b);
+			if (b.hasAttribute("data-tchart")) {
+				var old = wrap.querySelector(".ai-chart"); if (old) { old.remove(); b.setAttribute("aria-pressed", "false"); return; }
+				var sp = tableSpec(t); if (!sp) return;
+				b.setAttribute("aria-pressed", "true");
+				wrap.appendChild(chartBox(sp, { close: true, onClose: function () { b.setAttribute("aria-pressed", "false"); } }));
+			}
+		});
+		[].forEach.call(head.cells, function (th, j) {
+			th.classList.add("ai-th"); th.tabIndex = 0; th.setAttribute("aria-sort", "none"); th.title = T("Click to sort");
+			var g = document.createElement("span"); g.className = "ai-rz"; g.setAttribute("aria-hidden", "true"); th.appendChild(g);
+			function sort() {
+				var st = th.getAttribute("aria-sort"), next = st === "none" ? "ascending" : st === "ascending" ? "descending" : "none";
+				[].forEach.call(head.cells, function (x) { x.setAttribute("aria-sort", "none"); });
+				th.setAttribute("aria-sort", next);
+				var cell = function (r) { return r.cells[j] ? r.cells[j].innerText.trim() : ""; };
+				var sorted = rows.slice().sort(function (a, b) {
+					if (next === "none") return a.__i - b.__i;
+					var x = cell(a), y = cell(b), nx = num(x), ny = num(y), c = isFinite(nx) && isFinite(ny) ? nx - ny : isFinite(nx) ? -1 : isFinite(ny) ? 1 : x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" });
+					return next === "ascending" ? c : -c;
+				});
+				sorted.forEach(function (r) { body.appendChild(r); });
+			}
+			th.addEventListener("click", function (e) { if (e.target === g) return; sort(); });
+			th.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sort(); } });
+			g.addEventListener("pointerdown", function (e) {
+				e.preventDefault(); e.stopPropagation();
+				if (t.style.tableLayout !== "fixed") { var ws = [].map.call(head.cells, function (c) { return c.offsetWidth; }); [].forEach.call(head.cells, function (c, k) { c.style.width = ws[k] + "px"; }); t.style.width = ws.reduce(function (a, b2) { return a + b2; }, 0) + "px"; t.style.tableLayout = "fixed"; }
+				var x0 = e.clientX, w0 = th.offsetWidth, tw0 = t.offsetWidth;
+				g.setPointerCapture(e.pointerId); wrap.classList.add("is-rz");
+				function mv(ev) { var w = Math.max(40, w0 + ev.clientX - x0); th.style.width = w + "px"; t.style.width = (tw0 + w - w0) + "px"; }
+				function up() { g.removeEventListener("pointermove", mv); g.removeEventListener("pointerup", up); g.removeEventListener("pointercancel", up); wrap.classList.remove("is-rz"); }
+				g.addEventListener("pointermove", mv); g.addEventListener("pointerup", up); g.addEventListener("pointercancel", up);
+			});
+			g.addEventListener("dblclick", function (e) { e.stopPropagation(); [].forEach.call(head.cells, function (c) { c.style.width = ""; }); t.style.width = ""; t.style.tableLayout = ""; });
+		});
+		count();
+	}
+
+	/* ---------- code blocks and chart blocks ---------- */
+	function enhance(el, opts, copy) {
+		opts = opts || {};
+		el.querySelectorAll("pre > code").forEach(function (code) {
+			var pre = code.parentNode, lang = ((code.className.match(/language-([\w+#-]+)/) || [])[1] || "").toLowerCase();
+			if (lang === "chart" || lang === "json-chart") {
+				if (opts.pending) return;
+				var sp = null; try { sp = normSpec(JSON.parse(code.textContent)); } catch (e) { sp = null; }
+				if (!sp) { pre.insertAdjacentHTML("beforebegin", '<p class="ai-note">' + esc(T("This chart could not be drawn (its data is not valid JSON).")) + "</p>"); }
+				else {
+					var box = chartBox(sp, {}); pre.parentNode.insertBefore(box, pre); pre.hidden = true;
+					var tg = document.createElement("button"); tg.type = "button"; tg.className = "ai-mini"; tg.textContent = T("Data");
+					tg.addEventListener("click", function () { pre.hidden = !pre.hidden; tg.setAttribute("aria-pressed", !pre.hidden); });
+					box.querySelector(".ai-chbar").appendChild(tg);
+				}
+			}
+			if (pre.querySelector(".ai-copy")) return;
+			if (lang && lang !== "chart") { var lt = document.createElement("span"); lt.className = "ai-lang-tag"; lt.textContent = lang; pre.appendChild(lt); }
+			var b = document.createElement("button"); b.type = "button"; b.className = "ai-copy"; b.textContent = T("Copy");
+			b.addEventListener("click", function () { copy(code.innerText, b); });
+			pre.appendChild(b);
+		});
+		el.querySelectorAll(".ai-md table").forEach(function (t) { enhanceTable(t, copy); });
+	}
+
+	/* ---------- hand-offs to /latex, /text, /docx, /pdf ---------- */
+	function hput(file) { // same format as MESLinkOpen.sendTo / MESImg (IndexedDB "mes-handoff")
+		return new Promise(function (res, rej) {
+			var r = indexedDB.open("mes-handoff", 1);
+			r.onupgradeneeded = function () { r.result.createObjectStore("h"); };
+			r.onerror = function () { rej(r.error); };
+			r.onsuccess = function () {
+				var db = r.result, id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10), tx = db.transaction("h", "readwrite");
+				tx.objectStore("h").put({ t: Date.now(), files: [{ name: file.name, type: file.type, blob: file }], src: "" }, id);
+				tx.oncomplete = function () { db.close(); res(id); }; tx.onerror = function () { db.close(); rej(tx.error); };
+			};
+		});
+	}
+	// a window is opened inside the click (pop-up blockers), the file is made, then the window goes to the page
+	function sendFile(page, make) {
+		var w = null; try { w = window.open("about:blank", "_blank"); } catch (e) {}
+		if (w) try { w.document.title = T("Opening…"); w.document.body.innerHTML = '<p style="font:16px system-ui;padding:2em">' + esc(T("Making the file…")) + "</p>"; } catch (e) {}
+		return Promise.resolve().then(make).then(function (file) { return hput(file); }).then(function (id) {
+			var url = page + "?handoff=" + encodeURIComponent(id);
+			if (w && !w.closed) { try { w.opener = null; } catch (e) {} w.location.href = url; } else location.href = url;
+		}, function (e) { if (w) w.close(); throw e; });
+	}
+	function baseName(md) { var h = (String(md).match(/^#+\s*(.+)$/m) || [])[1] || String(md).replace(/[#*_`>$\\]/g, " ").trim().split(/\s+/).slice(0, 6).join(" "); return (h.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") || "mes-ai-answer"); }
+
+	// the answer as blocks: {k: h|p|li|code|quote|table|tex|img, ...} read from the shown message (math as TeX, charts as pictures)
+	function blocks(el) {
+		var out = [];
+		function inl(node) { // -> runs [{t, b, i, m (mono), u (link)}]
+			var runs = [];
+			(function walk(n, st) {
+				if (n.nodeType === 3) { if (n.nodeValue) runs.push({ t: n.nodeValue, b: st.b, i: st.i, m: st.m, u: st.u }); return; }
+				if (n.nodeType !== 1 || n.matches("button, .ai-rz, .ai-copy, .ai-lang-tag, .ai-tbar")) return;
+				if (n.classList.contains("ai-tex")) { runs.push({ t: n.dataset.tex || "", i: true, m: false, b: st.b, tex: true }); return; }
+				var s = { b: st.b || /^(B|STRONG|TH)$/.test(n.nodeName), i: st.i || /^(I|EM)$/.test(n.nodeName), m: st.m || n.nodeName === "CODE", u: st.u || (n.nodeName === "A" ? n.href : "") };
+				if (n.nodeName === "BR") { runs.push({ t: "\n" }); return; }
+				[].forEach.call(n.childNodes, function (c) { walk(c, s); });
+			})(node, {});
+			return runs;
+		}
+		(function walk(n, depth, listType) {
+			[].forEach.call(n.children, function (c) {
+				var tag = c.nodeName;
+				if (c.hidden) return;
+				if (/^H[1-6]$/.test(tag)) out.push({ k: "h", lv: +tag[1], runs: inl(c) });
+				else if (tag === "P") out.push({ k: "p", runs: inl(c), d: depth });
+				else if (tag === "UL" || tag === "OL") { var i = 0; [].forEach.call(c.children, function (li) { i++; var sub = [].filter.call(li.children, function (x) { return /^(UL|OL|PRE|TABLE)$/.test(x.nodeName); }); var cl = li.cloneNode(true); [].forEach.call(cl.querySelectorAll("ul, ol, pre, table"), function (x) { x.remove(); }); out.push({ k: "li", runs: inl(cl), d: depth, mark: tag === "OL" ? i + "." : "•" }); sub.forEach(function (s) { var tmp = document.createElement("div"); tmp.appendChild(s.cloneNode(true)); walk(tmp, depth + 1); }); }); }
+				else if (tag === "PRE") { var code = c.querySelector("code") || c; out.push({ k: "code", text: code.innerText.replace(/\s+$/, "") }); }
+				else if (tag === "BLOCKQUOTE") out.push({ k: "quote", runs: inl(c) });
+				else if (tag === "TABLE") out.push({ k: "table", rows: tableData(c, false) });
+				else if (c.classList.contains("ai-texd")) out.push({ k: "tex", tex: c.dataset.tex || "", svg: c.querySelector("svg") });
+				else if (c.classList.contains("ai-chart")) { var sv = c.querySelector("svg"); if (sv) out.push({ k: "img", svg: sv }); }
+				else if (tag === "HR") out.push({ k: "p", runs: [{ t: "" }] });
+				else walk(c, depth, listType);
+			});
+		})(el, 0);
+		return out;
+	}
+
+	// a small .docx (store-only zip, no library): headings, paragraphs with bold / italic / code, lists, code blocks, tables
+	var CRC = (function () { var t = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+	function crc32(u) { var c = 0xffffffff; for (var i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+	function zip(files) {
+		var enc = new TextEncoder(), parts = [], cent = [], off = 0;
+		files.forEach(function (f) {
+			var name = enc.encode(f.name), data = typeof f.data === "string" ? enc.encode(f.data) : f.data, crc = crc32(data);
+			var h = new DataView(new ArrayBuffer(30)); h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x800, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+			parts.push(new Uint8Array(h.buffer), name, data);
+			var c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x800, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+			cent.push(new Uint8Array(c.buffer), name);
+			off += 30 + name.length + data.length;
+		});
+		var csize = cent.reduce(function (a, b) { return a + b.length; }, 0), e = new DataView(new ArrayBuffer(22));
+		e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, csize, true); e.setUint32(16, off, true);
+		return new Blob(parts.concat(cent, [new Uint8Array(e.buffer)]));
+	}
+	function x(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ""); }
+	function docx(el, title) {
+		var B = blocks(el), body = [];
+		function runXml(r, size) {
+			if (r.t === "\n") return "<w:r><w:br/></w:r>";
+			var pr = (r.b ? "<w:b/>" : "") + (r.i ? "<w:i/>" : "") + (r.m || r.tex ? '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>' : "") + (r.u ? '<w:color w:val="1F4FBF"/><w:u w:val="single"/>' : "") + (size ? '<w:sz w:val="' + size + '"/>' : "");
+			var t = r.tex ? "$" + r.t + "$" : r.t;
+			return "<w:r>" + (pr ? "<w:rPr>" + pr + "</w:rPr>" : "") + '<w:t xml:space="preserve">' + x(t) + "</w:t></w:r>" + (r.u && r.u.indexOf(r.t.trim()) < 0 && /^https?:/.test(r.u) ? '<w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t xml:space="preserve"> (' + x(r.u) + ")</w:t></w:r>" : "");
+		}
+		function para(runs, ppr, size) { return "<w:p>" + (ppr ? "<w:pPr>" + ppr + "</w:pPr>" : "") + runs.map(function (r) { return runXml(r, size); }).join("") + "</w:p>"; }
+		B.forEach(function (b) {
+			if (b.k === "h") body.push(para(b.runs.map(function (r) { r.b = true; return r; }), '<w:spacing w:before="240" w:after="120"/>', [0, 36, 32, 28, 26, 24, 24][b.lv]));
+			else if (b.k === "p") body.push(para(b.runs, b.d ? '<w:ind w:left="' + 360 * b.d + '"/>' : "", 0));
+			else if (b.k === "li") body.push(para([{ t: b.mark + " " }].concat(b.runs), '<w:ind w:left="' + (360 + 360 * b.d) + '" w:hanging="300"/>', 0));
+			else if (b.k === "quote") body.push(para(b.runs.map(function (r) { r.i = true; return r; }), '<w:ind w:left="567"/>', 0));
+			else if (b.k === "code") b.text.split("\n").forEach(function (l) { body.push(para([{ t: l || " ", m: true }], '<w:shd w:val="clear" w:fill="F2F3F6"/><w:spacing w:after="0"/>', 19)); });
+			else if (b.k === "tex") body.push(para([{ t: b.tex, tex: true }], '<w:jc w:val="center"/>', 0));
+			else if (b.k === "table" && b.rows.length) {
+				var bd = '<w:tblBorders>' + ["top", "left", "bottom", "right", "insideH", "insideV"].map(function (s) { return "<w:" + s + ' w:val="single" w:sz="4" w:color="BBBBBB"/>'; }).join("") + "</w:tblBorders>";
+				body.push('<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>' + bd + "</w:tblPr>" + b.rows.map(function (r, i) { return "<w:tr>" + r.map(function (c) { return '<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/>' + (i ? "" : '<w:shd w:val="clear" w:fill="EEF0F6"/>') + "</w:tcPr>" + para([{ t: c, b: !i }], "", 0) + "</w:tc>"; }).join("") + "</w:tr>"; }).join("") + "</w:tbl>", "<w:p/>");
+			} else if (b.k === "img") body.push(para([{ t: "[" + T("Chart: see the answer on mes.fm/ai") + "]", i: true }], "", 0));
+		});
+		var doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + body.join("") + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>';
+		var blob = zip([
+			{ name: "[Content_Types].xml", data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>' },
+			{ name: "_rels/.rels", data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>' },
+			{ name: "docProps/core.xml", data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>' + x(title) + '</dc:title><dc:creator>MES AI</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">' + new Date().toISOString().replace(/\.\d+Z$/, "Z") + "</dcterms:created></cp:coreProperties>" },
+			{ name: "word/document.xml", data: doc }
+		]);
+		return new File([blob], title + ".docx", { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+	}
+
+	// a PDF made of page pictures drawn here (any script and symbol works; equations and charts as pictures), no library
+	function pdf(el, title) {
+		var B = blocks(el), PW = 595, PH = 842, S = 2, M = 50, pages = [], cv, cx, y;
+		function page() { cv = document.createElement("canvas"); cv.width = PW * S; cv.height = PH * S; cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height); cx.scale(S, S); cx.textBaseline = "alphabetic"; pages.push(cv); y = M; }
+		function room(h) { if (y + h > PH - M) page(); }
+		function font(r, size) { return (r.i ? "italic " : "") + (r.b ? "700 " : "400 ") + size + "px " + (r.m || r.tex ? "Menlo, Consolas, monospace" : "-apple-system, 'Segoe UI', Roboto, Arial, sans-serif"); }
+		function flow(runs, size, left, color) { // word-wraps runs across lines
+			var lh = size * 1.45, x0 = M + left, xr = PW - M, xp = x0, line = [];
+			function flush() { room(lh); line.forEach(function (w) { cx.font = w.f; cx.fillStyle = w.c; cx.fillText(w.t, w.x, y + size); if (w.u) { cx.fillRect(w.x, y + size + 1.5, w.w, 0.6); } }); y += lh; line = []; xp = x0; }
+			runs.forEach(function (r) {
+				if (r.t === "\n") { flush(); return; }
+				var f = font(r, size), c = r.u ? "#1f4fbf" : color || "#1f2430", t = r.tex ? r.t : r.t;
+				cx.font = f;
+				t.split(/(\s+)/).forEach(function (w) {
+					if (!w) return;
+					var ww = cx.measureText(w).width;
+					if (/^\s+$/.test(w)) { if (xp > x0) xp += cx.measureText(" ").width; return; }
+					if (xp + ww > xr && xp > x0) flush();
+					while (ww > xr - x0 && w.length > 1) { var k = Math.floor(w.length * (xr - x0) / ww); line.push({ t: w.slice(0, k), x: xp, f: f, c: c, u: r.u, w: cx.measureText(w.slice(0, k)).width }); flush(); w = w.slice(k); ww = cx.measureText(w).width; }
+					line.push({ t: w, x: xp, f: f, c: c, u: r.u, w: ww }); xp += ww;
+				});
+			});
+			if (line.length) flush();
+		}
+		var imgs = B.filter(function (b) { return b.svg; }).map(function (b) { return svgImage(b.svg, 3).then(function (c) { b.cv = c; }, function () {}); });
+		return Promise.all(imgs).then(function () {
+			page();
+			cx.font = "700 20px -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+			B.forEach(function (b) {
+				if (b.k === "h") { y += 6; flow(b.runs, [0, 19, 16.5, 14.5, 13, 12, 12][b.lv], 0); y += 2; }
+				else if (b.k === "p") { flow(b.runs, 11, 18 * (b.d || 0)); y += 5; }
+				else if (b.k === "li") { flow([{ t: b.mark + " " }].concat(b.runs), 11, 12 + 18 * b.d); y += 2; }
+				else if (b.k === "quote") { var y0 = y; flow(b.runs, 11, 14, "#555"); cx.fillStyle = "#ccd"; cx.fillRect(M + 3, y0, 2.5, y - y0); y += 5; }
+				else if (b.k === "code") {
+					b.text.split("\n").forEach(function (l) { room(13); cx.fillStyle = "#f2f3f6"; cx.fillRect(M, y, PW - 2 * M, 13); cx.font = "9.5px Menlo, Consolas, monospace"; cx.fillStyle = "#1f2430"; var s = l; while (cx.measureText(s).width > PW - 2 * M - 10 && s.length > 1) s = s.slice(0, -1); cx.fillText(s, M + 5, y + 9.8); y += 13; });
+					y += 7;
+				} else if ((b.k === "tex" || b.k === "img") && b.cv) {
+					var w = b.cv.width / 3, h = b.cv.height / 3, k = Math.min(1, (PW - 2 * M) / w); w *= k; h *= k;
+					if (h > PH - 2 * M) { k = (PH - 2 * M) / h; w *= k; h *= k; }
+					room(h + 8); cx.drawImage(b.cv, b.k === "tex" ? (PW - w) / 2 : M, y, w, h); y += h + 8;
+				} else if (b.k === "tex") { flow([{ t: b.tex, tex: true }], 11, 30); y += 5; }
+				else if (b.k === "table" && b.rows.length) {
+					var n = Math.max.apply(null, b.rows.map(function (r) { return r.length; })), cw = (PW - 2 * M) / n;
+					b.rows.forEach(function (r, i) {
+						cx.font = (i ? "400 " : "700 ") + "9.5px -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+						var lines = r.map(function (c) { var out = [], cur = ""; String(c).split(/\s+/).forEach(function (w) { var tst = cur ? cur + " " + w : w; if (cx.measureText(tst).width > cw - 8 && cur) { out.push(cur); cur = w; } else cur = tst; }); out.push(cur); return out; });
+						var h = Math.max.apply(null, lines.map(function (l) { return l.length; })) * 12 + 6; room(h);
+						if (!i) { cx.fillStyle = "#eef0f6"; cx.fillRect(M, y, PW - 2 * M, h); }
+						cx.strokeStyle = "#c8ccd6"; cx.lineWidth = 0.6;
+						for (var j = 0; j < n; j++) { cx.strokeRect(M + j * cw, y, cw, h); cx.fillStyle = "#1f2430"; (lines[j] || []).forEach(function (l, q) { cx.fillText(l, M + j * cw + 4, y + 12 + q * 12); }); }
+						y += h;
+					});
+					y += 8;
+				}
+			});
+			return Promise.all(pages.map(function (c) { return new Promise(function (res) { c.toBlob(function (bl) { bl.arrayBuffer().then(function (a) { res(new Uint8Array(a)); }); }, "image/jpeg", 0.9); }); }));
+		}).then(function (jpgs) {
+			var enc = new TextEncoder(), parts = [], off = 0, xref = [], n = 2 + jpgs.length * 3;
+			function add(s) { var u = typeof s === "string" ? enc.encode(s) : s; parts.push(u); off += u.length; }
+			function obj(i, body) { xref[i] = off; add(i + " 0 obj\n"); body.forEach(add); add("\nendobj\n"); }
+			add("%PDF-1.4\n%\xe2\xe3\xcf\xd3\n");
+			obj(1, ["<< /Type /Catalog /Pages 2 0 R >>"]);
+			var kids = jpgs.map(function (j, i) { return (3 + i * 3) + " 0 R"; }).join(" ");
+			obj(2, ["<< /Type /Pages /Kids [" + kids + "] /Count " + jpgs.length + " >>"]);
+			jpgs.forEach(function (j, i) {
+				var p = 3 + i * 3, im = p + 1, ct = p + 2, cmd = "q " + PW + " 0 0 " + PH + " 0 0 cm /Im0 Do Q";
+				obj(p, ["<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + PW + " " + PH + "] /Resources << /XObject << /Im0 " + im + " 0 R >> >> /Contents " + ct + " 0 R >>"]);
+				obj(im, ["<< /Type /XObject /Subtype /Image /Width " + PW * S + " /Height " + PH * S + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + j.length + " >>\nstream\n", j, "\nendstream"]);
+				obj(ct, ["<< /Length " + cmd.length + " >>\nstream\n" + cmd + "\nendstream"]);
+			});
+			var info = n + 1; obj(info, ["<< /Title (" + title.replace(/[()\\]/g, "") + ") /Creator (MES AI, mes.fm/ai) >>"]);
+			var xo = off; add("xref\n0 " + (info + 1) + "\n0000000000 65535 f \n");
+			for (var i = 1; i <= info; i++) add(String(xref[i] || 0).padStart(10, "0") + " 00000 n \n");
+			add("trailer\n<< /Size " + (info + 1) + " /Root 1 0 R /Info " + info + " 0 R >>\nstartxref\n" + xo + "\n%%EOF\n");
+			return new File([new Blob(parts)], title + ".pdf", { type: "application/pdf" });
+		});
+	}
+
+	function openIn(kind, md, el) {
+		var name = baseName(md);
+		if (kind === "latex") {
+			var L = texList(md), out = [], len = 0;
+			L.forEach(function (t) { var s = t.d ? "$$\n" + t.tex + "\n$$" : "$" + t.tex + "$"; if (len + s.length < 6000) { out.push(s); len += s.length + 2; } });
+			if (!out.length) return Promise.reject(new Error("This answer has no math to open."));
+			window.open("/latex?tex=" + encodeURIComponent(out.join("\n\n")), "_blank", "noopener");
+			return Promise.resolve(out.length < L.length ? "some" : "all");
+		}
+		if (kind === "text") return sendFile("/text", function () { return new File([md], name + ".md", { type: "text/markdown" }); });
+		if (kind === "docx") return sendFile("/docx", function () { return docx(el, name); });
+		if (kind === "pdf") return sendFile("/pdf", function () { return typeset(el).then(function () { return pdf(el, name); }); });
+		return Promise.reject(new Error("unknown"));
+	}
+
+	window.MESAIRich = { setT: function (fn) { T = fn; }, render: render, enhance: enhance, typeset: typeset, texList: texList, pullMath: pullMath, normSpec: normSpec, chartSvg: chartSvg, num: num, openIn: openIn, blocks: blocks, docx: docx, pdf: pdf, zip: zip, crc32: crc32 };
+	if (typeof module !== "undefined" && module.exports) module.exports = window.MESAIRich;
+})();
 
 /* MES AI -- mes.fm/ai: AI chat (Claude) and pictures (GPT Image), paid per message in HBD.
  * Send: POST /api/ai {op:"quote"} -> exact price + memo "mesai:<id>" -> Keychain / HiveAuth transfer of that HBD to @mes
@@ -458,6 +1000,15 @@
 	function cur() { var c = S.chats.filter(function (x) { return x.id === S.cur; })[0]; return c || (S.chats[0] ? (S.cur = S.chats[0].id, S.chats[0]) : newChat()); }
 
 	function msg(t, kind) { var m = $("ai-msg"); m.hidden = !t; m.textContent = t || ""; m.className = "tu-card ai-msg" + (kind ? " " + kind : ""); }
+
+	/* ---------- the "You pay per message" box can be hidden (mes-ai:payhide = "1"); "About paying" by the tabs brings it back ---------- */
+	(function () {
+		var K = "mes-ai:payhide";
+		function paint(h) { $("ai-pay").hidden = h; $("ai-payshow").hidden = !h; }
+		paint((function () { try { return localStorage.getItem(K) === "1"; } catch (e) { return false; } })());
+		$("ai-payhide").addEventListener("click", function () { try { localStorage.setItem(K, "1"); } catch (e) {} paint(true); $("ai-payshow").focus(); });
+		$("ai-payshow").addEventListener("click", function () { try { localStorage.removeItem(K); } catch (e) {} paint(false); $("ai-pay").scrollIntoView({ block: "nearest", behavior: "smooth" }); $("ai-payhide").focus(); });
+	})();
 
 	/* ---------- account ---------- */
 	var MOCK_USER = { name: "demo" };
@@ -514,21 +1065,12 @@
 			return part.split(/\n{2,}/).map(function (p) { return p.trim() ? "<p>" + esc(p).replace(/\n/g, "<br>").replace(/`([^`]+)`/g, "<code>$1</code>") + "</p>" : ""; }).join("");
 		}).join("");
 	}
-	function md(t) {
-		if (mdReady) return window.DOMPurify.sanitize(window.marked.parse(String(t), { gfm: true, breaks: false }), { ADD_ATTR: ["target"] });
-		return plainMd(t);
-	}
-	function addCopyButtons(el) {
-		el.querySelectorAll("pre").forEach(function (pre) {
-			if (pre.querySelector(".ai-copy")) return;
-			var b = document.createElement("button");
-			b.type = "button"; b.className = "ai-copy"; b.textContent = T("Copy");
-			b.addEventListener("click", function () {
-				var code = pre.querySelector("code") || pre;
-				copy(code.innerText, b);
-			});
-			pre.appendChild(b);
-		});
+	// rich answers (rich.js): Markdown + LaTeX ($...$, $$...$$), tables you can filter / sort / resize, ```chart blocks, code Copy
+	var R = window.MESAIRich;
+	if (R) R.setT(T);
+	function md(t) { return R ? R.render(String(t), mdReady, plainMd) : mdReady ? window.DOMPurify.sanitize(window.marked.parse(String(t), { gfm: true, breaks: false }), { ADD_ATTR: ["target"] }) : plainMd(t); }
+	function addCopyButtons(el, m) {
+		if (R) R.enhance(el, { pending: !!(m && m.pending) }, copy);
 		linkify(el);
 		el.querySelectorAll("a[href^='http']").forEach(function (a) { a.target = "_blank"; a.rel = "noopener nofollow"; });
 	}
@@ -694,9 +1236,23 @@
 			if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
 			if (m.stop === "refusal") foot += '<p class="ai-note">' + T("The AI declined to answer this.") + '</p>';
 			if (m.error) foot += '<p class="ai-note ai-err">' + esc(T(m.error)) + "</p>" + (m.retryId ? '<button type="button" class="tu-btn tu-btn--primary" data-retry="' + i + '">' + T("Try again (free)") + '</button>' : "");
-			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button></div>';
+			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button><span class="ai-openin">' + T("Open in:") +
+				' <button type="button" class="ai-mini" data-open="text" data-oi="' + i + '" title="' + esc(T("Formatted, with Read aloud and Print to PDF")) + '">' + T("Text Viewer") + '</button>' +
+				'<button type="button" class="ai-mini" data-open="docx" data-oi="' + i + '" title="' + esc(T("A Word document of this answer")) + '">' + T("Word") + '</button>' +
+				'<button type="button" class="ai-mini" data-open="pdf" data-oi="' + i + '" title="' + esc(T("A PDF of this answer, with its equations and charts")) + '">PDF</button>' +
+				(R && R.texList(m.content).length ? '<button type="button" class="ai-mini" data-open="latex" data-oi="' + i + '" title="' + esc(T("Open the equations in MES LaTeX Render")) + '">LaTeX</button>' : "") + "</span></div>";
 		}
 		return '<div class="ai-m ' + (mine ? "ai-m--me" : "ai-m--ai") + '" data-i="' + i + '"><div class="ai-who">' + (mine ? T("You") : "MES AI") + meta + "</div>" + body + foot + "</div>";
+	}
+	var elCache = new WeakMap();
+	function msgKey(m, i) { return [i, m.role, (m.content || "").length, (m.content || "").slice(-24), m.pending ? 1 : 0, m.thinking ? 1 : 0, m.error || "", m.retryId || "", m.stop || "", m.price || "", (m.files || []).length, mdReady ? 1 : 0].join("\u0001"); }
+	function msgEl(m, i) {
+		var k = msgKey(m, i), c = elCache.get(m);
+		if (c && c.k === k) return c.el;
+		var d = document.createElement("div"); d.innerHTML = renderMsg(m, i);
+		var el = d.firstChild; if (m.pending) el.setAttribute("data-pending", "1"); addCopyButtons(el, m); paintMsgFiles(el);
+		elCache.set(m, { k: k, el: el });
+		return el;
 	}
 	function renderLog() {
 		var c = cur(), log = $("ai-log");
@@ -706,35 +1262,220 @@
 				' <button type="button" class="ai-mini" data-ex="' + esc(T("Explain recursion with a short JavaScript example.")) + '">' + T("Explain recursion") + '</button>' +
 				' <button type="button" class="ai-mini" data-ex="' + esc(T("Write a polite email asking my landlord to fix the heating.")) + '">' + T("Write an email") + '</button>' +
 				' <button type="button" class="ai-mini" data-ex="' + esc(T("What is the derivative of x^2 sin x? Show the steps.")) + '">' + T("Derivative steps") + '</button></p></div>';
-		} else log.innerHTML = c.msgs.map(renderMsg).join("");
-		addCopyButtons(log);
-		paintMsgFiles(log);
+		} else {
+			// each message is built once and kept (typeset math, sorted tables and charts survive the next repaint); only a changed one is rebuilt
+			var els = c.msgs.map(msgEl);
+			if (log.querySelector(".ai-empty")) log.innerHTML = "";
+			var kids = [].slice.call(log.children);
+			if (kids.length !== els.length || kids.some(function (k, j) { return k !== els[j]; })) { els.forEach(function (e, j) { if (log.children[j] !== e) log.insertBefore(e, log.children[j] || null); }); while (log.children.length > els.length) log.lastChild.remove(); }
+		}
 		if (nearEnd || busy) log.scrollTop = log.scrollHeight;
+		if (R) R.typeset(log);
 		paintChats();
 	}
-	function paintChats() {
-		var sel = $("ai-chats");
-		sel.innerHTML = S.chats.map(function (c) { return '<option value="' + c.id + '"' + (c.id === S.cur ? " selected" : "") + ">" + esc(c.title.slice(0, 60)) + (c.msgs.length ? " (" + Math.ceil(c.msgs.length / 2) + ")" : "") + "</option>"; }).join("");
+	/* ---------- the chat list (2026-11-20): search, pinned on top, folders, rename / move / delete with Undo, sort, left or right ---------- */
+	// S.folders = [{n: name, c: collapsed}], S.csort = "recent" | "old" | "name", S.side = "l" | "r", S.sideOff = list hidden (wide view)
+	if (!Array.isArray(S.folders)) S.folders = [];
+	if (["recent", "old", "name"].indexOf(S.csort) < 0) S.csort = "recent";
+	if (S.side !== "r") S.side = "l";
+	var cq = "", menuFor = null, renaming = null, sideOpenNarrow = false, dragId = null;
+	function folderNames() { return S.folders.map(function (f) { return f.n; }); }
+	function ensureFolder(n) { n = A.cleanFolder(n); if (n && folderNames().indexOf(n) < 0) S.folders.push({ n: n, c: false }); return n; }
+	S.chats.forEach(function (c) { if (c.folder) ensureFolder(c.folder); });
+	function touch(c) { c.mt = Date.now(); }
+	function when(t) {
+		if (!t) return "";
+		var d = new Date(t), now = new Date(), day = 864e5;
+		if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(LOC, { hour: "numeric", minute: "2-digit" });
+		if (now - d < 6 * day) return d.toLocaleDateString(LOC, { weekday: "short" });
+		return d.toLocaleDateString(LOC, d.getFullYear() === now.getFullYear() ? { month: "short", day: "numeric" } : { year: "numeric", month: "short", day: "numeric" });
 	}
-	$("ai-chats").addEventListener("change", function () { if (busy) return; S.cur = this.value; save(); renderLog(); paintPrice(); });
-	$("ai-new").addEventListener("click", function () { if (busy) return; var c = cur(); if (c.msgs.length) newChat(); renderLog(); paintPrice(); $("ai-in").focus(); });
-	$("ai-del").addEventListener("click", function () {
-		if (busy) return;
-		var c = cur();
-		if (c.msgs.length && !confirm(T('Delete "{title}" from this browser?', { title: c.title }))) return;
-		S.chats = S.chats.filter(function (x) { return x.id !== c.id; }); S.cur = null; save(); renderLog(); paintPrice();
+	function sorted(list) {
+		var by = S.csort === "name" ? function (a, b) { return a.title.localeCompare(b.title, LOC, { numeric: true, sensitivity: "base" }); } : S.csort === "old" ? function (a, b) { return a.at - b.at; } : function (a, b) { return b.at - a.at; };
+		return list.slice().sort(by);
+	}
+	function norm(s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+	// a search hit: every word must be in the title or the messages; returns a short snippet around the first word found in the text
+	function hit(c, words) {
+		var title = norm(c.title), text = c.msgs.map(function (m) { return m.content || ""; }).join("\n"), nt = norm(text);
+		if (!words.every(function (w) { return title.indexOf(w) >= 0 || nt.indexOf(w) >= 0; })) return null;
+		var w0 = words.filter(function (w) { return title.indexOf(w) < 0 && nt.indexOf(w) >= 0; })[0] || words.filter(function (w) { return nt.indexOf(w) >= 0; })[0];
+		if (!w0) return { snip: "" };
+		var at = nt.indexOf(w0), a = Math.max(0, at - 40), b = Math.min(text.length, at + w0.length + 60);
+		return { snip: (a ? "…" : "") + text.slice(a, b).replace(/\s+/g, " ") + (b < text.length ? "…" : ""), w: words };
+	}
+	function mark(s, words) { // escaped text with the searched words marked
+		var e = esc(s); if (!words || !words.length) return e;
+		words.forEach(function (w) { if (w.length < 2) return; e = e.replace(new RegExp("(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/&/g, "&amp;").replace(/</g, "&lt;") + ")", "gi"), "<mark>$1</mark>"); });
+		return e;
+	}
+	function rowHtml(c, h, words) {
+		var n = Math.ceil(c.msgs.length / 2), isCur = c.id === S.cur;
+		var title = renaming === c.id ? '<input class="ai-crename" type="text" maxlength="120" value="' + esc(c.title) + '" aria-label="' + esc(T("Chat name")) + '">' : '<span class="ai-ctitle">' + mark(c.title, words) + "</span>";
+		var sub = (n ? (n === 1 ? T("{n} message", { n: 1 }) : T("{n} messages", { n: n })) + " · " : "") + esc(when(c.at)) + (words && c.folder ? " · 📁 " + esc(c.folder) : "");
+		var row = '<div class="ai-crow' + (isCur ? " is-cur" : "") + '" role="listitem" data-cid="' + esc(c.id) + '" draggable="' + (renaming === c.id ? "false" : "true") + '">' +
+			(renaming === c.id ? '<div class="ai-copen">' + title + '</div>' : '<button type="button" class="ai-copen" data-copen="' + esc(c.id) + '"' + (isCur ? ' aria-current="true"' : "") + ">" + title + '<span class="ai-csub">' + sub + "</span>" + (h && h.snip ? '<span class="ai-csnip">' + mark(h.snip, words) + "</span>" : "") + "</button>") +
+			'<button type="button" class="ai-cic ai-cpin" data-cpin="' + esc(c.id) + '" aria-pressed="' + !!c.pin + '" title="' + esc(c.pin ? T("Unpin") : T("Pin to the top")) + '" aria-label="' + esc(c.pin ? T("Unpin") : T("Pin to the top")) + '">📌</button>' +
+			'<button type="button" class="ai-cic" data-cmore="' + esc(c.id) + '" aria-haspopup="true" aria-expanded="' + (menuFor === c.id) + '" title="' + esc(T("More")) + '" aria-label="' + esc(T("More for {title}", { title: c.title })) + '">⋯</button></div>';
+		if (menuFor === c.id) {
+			row += '<div class="ai-cmenu" role="menu">' +
+				'<button type="button" role="menuitem" data-cact="rename">✎ ' + T("Rename") + "</button>" +
+				'<button type="button" role="menuitem" data-cact="pin">📌 ' + (c.pin ? T("Unpin") : T("Pin to the top")) + "</button>" +
+				'<label class="ai-cmove"><span>📁 ' + T("Move to") + '</span><select data-cmove data-native><option value="">' + esc(T("No folder")) + "</option>" + folderNames().map(function (f) { return '<option value="' + esc(f) + '"' + (c.folder === f ? " selected" : "") + ">" + esc(f) + "</option>"; }).join("") + '<option value="\u0001new">' + esc(T("New folder…")) + "</option></select></label>" +
+				'<button type="button" role="menuitem" data-cact="del" class="ai-cdel">🗑 ' + T("Delete") + "</button></div>";
+		}
+		return row;
+	}
+	function paintChats() {
+		var box = $("ai-clist"); if (!box) return;
+		var words = norm(cq).split(/\s+/).filter(Boolean), html = [];
+		if (words.length) {
+			var hits = sorted(S.chats).map(function (c) { return { c: c, h: hit(c, words) }; }).filter(function (x) { return x.h; });
+			html.push('<p class="ai-cnote">' + (hits.length ? (hits.length === 1 ? T("{n} chat found", { n: 1 }) : T("{n} chats found", { n: hits.length })) : T("No chat has that.")) + "</p>");
+			hits.forEach(function (x) { html.push(rowHtml(x.c, x.h, words)); });
+		} else {
+			var pins = sorted(S.chats.filter(function (c) { return c.pin; }));
+			if (pins.length) { html.push('<div class="ai-chead">📌 ' + T("Pinned") + "</div>"); pins.forEach(function (c) { html.push(rowHtml(c)); }); }
+			var fnames = S.folders.slice().sort(function (a, b) { return a.n.localeCompare(b.n, LOC, { numeric: true, sensitivity: "base" }); });
+			fnames.forEach(function (f) {
+				var inF = sorted(S.chats.filter(function (c) { return c.folder === f.n && !c.pin; })), all = S.chats.filter(function (c) { return c.folder === f.n; }).length;
+				html.push('<div class="ai-fhead" data-fold="' + esc(f.n) + '"><button type="button" class="ai-ftog" data-ftog="' + esc(f.n) + '" aria-expanded="' + !f.c + '"><span class="ai-fcar" aria-hidden="true">' + (f.c ? "▸" : "▾") + "</span> 📁 " + esc(f.n) + ' <span class="ai-fn">' + all + "</span></button>" +
+					'<button type="button" class="ai-cic" data-fren="' + esc(f.n) + '" title="' + esc(T("Rename folder")) + '" aria-label="' + esc(T("Rename folder")) + '">✎</button>' +
+					'<button type="button" class="ai-cic" data-fdel="' + esc(f.n) + '" title="' + esc(T("Delete folder (its chats stay)")) + '" aria-label="' + esc(T("Delete folder (its chats stay)")) + '">✕</button></div>');
+				if (!f.c) { html.push('<div class="ai-fbody" data-fold="' + esc(f.n) + '">'); inF.forEach(function (c) { html.push(rowHtml(c)); }); if (!inF.length) html.push('<p class="ai-cnote">' + T("Empty: drag chats here, or use ⋯ › Move to.") + "</p>"); html.push("</div>"); }
+			});
+			var rest = sorted(S.chats.filter(function (c) { return !c.pin && !(c.folder && folderNames().indexOf(c.folder) >= 0); }));
+			if ((pins.length || fnames.length) && (rest.length || dragId !== null)) html.push('<div class="ai-chead" data-fold="">💬 ' + T("Chats") + "</div>");
+			else if (pins.length || fnames.length) html.push('<div class="ai-chead ai-chead--drop" data-fold="">💬 ' + T("Chats") + "</div>");
+			html.push('<div class="ai-fbody" data-fold="">'); rest.forEach(function (c) { html.push(rowHtml(c)); }); html.push("</div>");
+		}
+		box.innerHTML = html.join("");
+		var ct = cur(); $("ai-curtitle").textContent = ct.msgs.length ? ct.title : "";
+		$("ai-sidebtn").querySelector(".ai-cn").textContent = S.chats.filter(function (c) { return c.msgs.length; }).length || "";
+		var ri = box.querySelector(".ai-crename"); if (ri) { ri.focus(); ri.select(); }
+		if (menuFor) { var mm = box.querySelector(".ai-cmenu button"); if (mm && document.activeElement && document.activeElement.closest && !document.activeElement.closest(".ai-cmenu")) mm.focus(); }
+	}
+	function openChat(id) { if (busy) return; S.cur = id; menuFor = null; save(); if (sideOpenNarrow) { sideOpenNarrow = false; paintSide(); } renderLog(); paintPrice(); }
+	function byId(id) { return S.chats.filter(function (c) { return c.id === id; })[0]; }
+
+	// Undo for deletes: the removed chat (or folder) is put back exactly where it was
+	var undoT = null;
+	function undoBar(text, undo) {
+		var u = $("ai-undo"); clearTimeout(undoT);
+		u.innerHTML = '<span></span><button type="button" class="tu-btn tu-btn--ghost">' + T("Undo") + '</button><button type="button" class="ai-cic" aria-label="' + esc(T("Close")) + '">✕</button>';
+		u.firstChild.textContent = text; u.hidden = false;
+		u.children[1].onclick = function () { u.hidden = true; undo(); };
+		u.children[2].onclick = function () { u.hidden = true; };
+		undoT = setTimeout(function () { u.hidden = true; }, 8000);
+	}
+	function delChat(id) {
+		var i = -1; S.chats.forEach(function (c, j) { if (c.id === id) i = j; });
+		if (i < 0 || busy) return;
+		var c = S.chats[i], wasCur = S.cur === id;
+		S.chats.splice(i, 1); if (wasCur) S.cur = null; menuFor = null; save(); renderLog(); paintPrice();
+		if (!c.msgs.length) return;
+		undoBar(T('Deleted "{title}".', { title: c.title.slice(0, 40) }), function () { S.chats.splice(Math.min(i, S.chats.length), 0, c); if (wasCur) S.cur = c.id; save(); renderLog(); paintPrice(); });
+	}
+	function askFolder(def) { var n = prompt(T("Folder name"), def || ""); return n == null ? null : A.cleanFolder(n); }
+	function moveTo(c, f) { c.folder = f || undefined; if (!f) delete c.folder; touch(c); save(); paintChats(); }
+
+	$("ai-csearch").addEventListener("input", function () { cq = this.value; menuFor = null; paintChats(); });
+	$("ai-csearch").addEventListener("keydown", function (e) { if (e.key === "Escape" && this.value) { e.preventDefault(); this.value = cq = ""; paintChats(); } if (e.key === "Enter") { var f = $("ai-clist").querySelector("[data-copen]"); if (f) openChat(f.dataset.copen); } });
+	$("ai-csort").value = S.csort;
+	$("ai-csort").addEventListener("change", function () { S.csort = this.value; save(); paintChats(); });
+	$("ai-addfolder").addEventListener("click", function () { var n = askFolder(); if (!n) return; ensureFolder(n); save(); paintChats(); });
+	$("ai-clist").addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return;
+		var d = b.dataset;
+		if (d.copen) openChat(d.copen);
+		else if (d.cpin) { var c = byId(d.cpin); if (c) { c.pin = !c.pin; if (!c.pin) delete c.pin; touch(c); save(); paintChats(); } }
+		else if (d.cmore) { menuFor = menuFor === d.cmore ? null : d.cmore; paintChats(); }
+		else if (d.cact) {
+			var c2 = byId(menuFor); if (!c2) return;
+			if (d.cact === "rename") { renaming = c2.id; menuFor = null; paintChats(); }
+			if (d.cact === "pin") { c2.pin = !c2.pin; if (!c2.pin) delete c2.pin; touch(c2); menuFor = null; save(); paintChats(); }
+			if (d.cact === "del") delChat(c2.id);
+		}
+		else if (d.ftog) { S.folders.forEach(function (f) { if (f.n === d.ftog) f.c = !f.c; }); save(); paintChats(); }
+		else if (d.fren) {
+			var n = askFolder(d.fren); if (!n || n === d.fren) return;
+			var other = folderNames().indexOf(n) >= 0;
+			S.folders = S.folders.filter(function (f) { return !(other && f.n === d.fren); }); S.folders.forEach(function (f) { if (f.n === d.fren) f.n = n; });
+			S.chats.forEach(function (c) { if (c.folder === d.fren) { c.folder = n; touch(c); } }); save(); paintChats();
+		}
+		else if (d.fdel) {
+			var fi = -1; S.folders.forEach(function (f, j) { if (f.n === d.fdel) fi = j; });
+			if (fi < 0) return;
+			var fo = S.folders[fi], members = S.chats.filter(function (c) { return c.folder === fo.n; });
+			S.folders.splice(fi, 1); members.forEach(function (c) { delete c.folder; touch(c); }); save(); paintChats();
+			undoBar(T('Deleted the folder "{name}" (its chats are under Chats).', { name: fo.n }), function () { S.folders.splice(fi, 0, fo); members.forEach(function (c) { c.folder = fo.n; touch(c); }); save(); paintChats(); });
+		}
 	});
-	$("ai-export").addEventListener("click", function () {
-		var c = cur(); if (!c.msgs.length) return;
-		var t = "# " + c.title + "\n\n" + c.msgs.map(function (m) { return "## " + (m.role === "user" ? T("You") : "MES AI") + "\n\n" + (m.content || ""); }).join("\n\n");
-		var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t], { type: "text/markdown" }));
-		a.download = c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") + ".md" || "chat.md"; a.click();
-		setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+	$("ai-clist").addEventListener("change", function (e) {
+		if (!e.target.matches("[data-cmove]")) return;
+		var c = byId(menuFor), v = e.target.value; if (!c) return;
+		if (v === "\u0001new") { v = askFolder(); if (!v) { paintChats(); return; } ensureFolder(v); }
+		menuFor = null; moveTo(c, v);
 	});
+	$("ai-clist").addEventListener("dblclick", function (e) { var r = e.target.closest("[data-copen]"); if (r && !busy) { renaming = r.dataset.copen; paintChats(); } });
+	$("ai-clist").addEventListener("keydown", function (e) {
+		if (e.target.matches(".ai-crename")) {
+			if (e.key === "Enter") { e.preventDefault(); commitRename(e.target); }
+			if (e.key === "Escape") { e.preventDefault(); renaming = null; paintChats(); }
+			return;
+		}
+		if (e.key === "F2") { var r = e.target.closest("[data-cid]"); if (r) { renaming = r.dataset.cid; paintChats(); } }
+		if (e.key === "Delete" && e.target.matches("[data-copen]")) delChat(e.target.dataset.copen);
+		if (e.key === "Escape" && menuFor) { var id = menuFor; menuFor = null; paintChats(); var mb = $("ai-clist").querySelector('[data-cmore="' + id + '"]'); if (mb) mb.focus(); }
+		if ((e.key === "ArrowDown" || e.key === "ArrowUp") && e.target.matches("[data-copen]")) {
+			var all = [].slice.call($("ai-clist").querySelectorAll("[data-copen]")), k = all.indexOf(e.target) + (e.key === "ArrowDown" ? 1 : -1);
+			if (all[k]) { e.preventDefault(); all[k].focus(); }
+		}
+	});
+	function commitRename(inp) {
+		if (!renaming) return;
+		var c = byId(renaming), v = inp.value.replace(/\s+/g, " ").trim().slice(0, 120);
+		renaming = null;
+		if (c && v && v !== c.title) { c.title = v; touch(c); save(); }
+		setTimeout(paintChats, 0);
+	}
+	$("ai-clist").addEventListener("focusout", function (e) { if (e.target.matches(".ai-crename")) commitRename(e.target); });
+	// drag a chat onto a folder (or onto "Chats" to take it out)
+	$("ai-clist").addEventListener("dragstart", function (e) { var r = e.target.closest("[data-cid]"); if (!r) return; dragId = r.dataset.cid; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", byId(dragId).title); } catch (x) {} r.classList.add("is-drag"); });
+	$("ai-clist").addEventListener("dragend", function () { dragId = null; [].forEach.call($("ai-clist").querySelectorAll(".is-drag, .is-over"), function (x) { x.classList.remove("is-drag", "is-over"); }); });
+	$("ai-clist").addEventListener("dragover", function (e) { var t = dragId && e.target.closest("[data-fold]"); if (!t) return; e.preventDefault(); [].forEach.call($("ai-clist").querySelectorAll(".is-over"), function (x) { if (x !== t) x.classList.remove("is-over"); }); t.classList.add("is-over"); });
+	$("ai-clist").addEventListener("drop", function (e) { var t = dragId && e.target.closest("[data-fold]"); if (!t) return; e.preventDefault(); var c = byId(dragId); if (c) moveTo(c, t.dataset.fold); });
+	document.addEventListener("click", function (e) { if (menuFor && !e.target.closest(".ai-cmenu, [data-cmore]")) { menuFor = null; paintChats(); } });
+
+	// the list on the left or the right, shown or hidden; under ~720 px wide it folds above the chat (☰ opens it)
+	function narrow() { return $("ai-chat").classList.contains("ai-narrow"); }
+	function paintSide() {
+		var ch = $("ai-chat"), open = narrow() ? sideOpenNarrow : !S.sideOff;
+		ch.classList.toggle("ai-side-r", S.side === "r"); ch.classList.toggle("ai-side-off", !open);
+		$("ai-sidebtn").setAttribute("aria-expanded", open);
+		$("ai-flip").hidden = narrow();
+		$("ai-flip").title = S.side === "r" ? T("Put the chat list on the left") : T("Put the chat list on the right");
+		$("ai-flip").setAttribute("aria-label", $("ai-flip").title);
+	}
+	$("ai-sidebtn").addEventListener("click", function () { if (narrow()) sideOpenNarrow = !sideOpenNarrow; else { S.sideOff = !S.sideOff; save(); } paintSide(); if (!$("ai-chat").classList.contains("ai-side-off")) $("ai-csearch").focus(); });
+	$("ai-flip").addEventListener("click", function () { S.side = S.side === "r" ? "l" : "r"; save(); paintSide(); });
+	(function () {
+		var ch = $("ai-chat"), last = null;
+		function fit() { var w = ch.clientWidth; if (!w) return; var n = w < 720; if (n !== last) { last = n; ch.classList.toggle("ai-narrow", n); paintSide(); } }
+		if (window.ResizeObserver) new ResizeObserver(fit).observe(ch); else window.addEventListener("resize", fit);
+		fit(); paintSide();
+	})();
+	$("ai-new").addEventListener("click", function () { if (busy) return; var c = cur(); if (c.msgs.length) newChat(); if (cq) { cq = $("ai-csearch").value = ""; } renderLog(); paintPrice(); $("ai-in").focus(); });
 	$("ai-log").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
 		if (b.dataset.ex) { $("ai-in").value = b.dataset.ex; paintPrice(); $("ai-in").focus(); }
 		if (b.dataset.copy) copy(cur().msgs[+b.dataset.copy].content, b);
+		if (b.dataset.open && R) {
+			var mm = cur().msgs[+b.dataset.oi], box = b.closest(".ai-m"), md0 = box && box.querySelector(".ai-md");
+			if (!mm || !md0) return;
+			if (b.dataset.open !== "latex" && !window.indexedDB) { msg(T("This browser can't hand files to another page."), "err"); return; }
+			R.openIn(b.dataset.open, mm.content, md0).then(function (r) { if (r === "some") msg(T("Only the first equations fit in one link."), "ok"); }, function (e) { msg(T(e.message), "err"); });
+		}
 		if (b.dataset.retry) retry(+b.dataset.retry);
 	});
 
@@ -779,6 +1520,22 @@
 		return clean;
 	}
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
+	// what this chat has cost so far + a rough price for the next message (history ~ characters / 4); only a hint, the quote is the price
+	function paintCost() {
+		var c = cur(), el = $("ai-cost"), k = A.chatCostSoFar(c, S.model, S.len);
+		el.hidden = !c.msgs.length;
+		if (!c.msgs.length) return;
+		el.innerHTML = T("This chat so far: <b>{p} HBD</b>", { p: k.price }) + ' <span class="ai-sub">(' + (k.paid === 1 ? T("{n} paid message", { n: 1 }) : T("{n} paid messages", { n: k.paid })) + ")</span> · " +
+			T("history about {t} tokens", { t: k.tokens.toLocaleString(LOC) }) + " · " + T("next message about <b>{p} HBD</b>", { p: k.next.price }) +
+			'<br><span class="ai-sub">' + T("The whole history is sent again with every message, so long chats cost more. A new chat is cheaper.") + "</span>";
+	}
+	(function () { // "Typical costs" table, worked out from MESAI's prices so it follows them
+		var sizes = [5000, 25000, 50000], rows = A.typicalCosts(["sonnet", "opus"], sizes, "medium");
+		$("ai-ttable").innerHTML = "<tr><th>" + T("Model (Medium answer)") + "</th>" + sizes.map(function (t) { return "<th>" + T("{k}k tokens of history", { k: t / 1000 }) + "</th>"; }).join("") + "</tr>" +
+			rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td>" + r.cells.map(function (c) { return "<td>" + T("about {p} HBD", { p: c.price }) + "</td>"; }).join("") + "</tr>"; }).join("");
+		var ss = A.sessionCost("sonnet", "medium", 30, 50000);
+		$("ai-tsession").textContent = T("A 30-message coding chat that grows to 50k tokens costs about {p} HBD in all on Sonnet. Starting a new chat when the topic changes keeps it cheap.", { p: (Math.round(ss.hbd * 10) / 10).toLocaleString(LOC) });
+	})();
 	function paintPrice() {
 		var m = A.MODELS[S.model];
 		var words = Math.round(m.caps[S.len] * 0.75).toLocaleString(LOC);
@@ -787,6 +1544,7 @@
 		var nEx = Math.floor(msgs.length / 2);
 		var hist = msgs.length > 1 ? ' <span class="ai-sub">' + (nEx === 1 ? T("incl. {n} earlier exchange", { n: nEx }) : T("incl. {n} earlier exchanges", { n: nEx })) + "</span>" : "";
 		$("ai-price").innerHTML = T("about <b>{p} HBD</b>", { p: q.price }) + " <span class=\"ai-sub\">(" + usdOf(q) + ")</span>" + hist;
+		paintCost();
 		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
 		$("ai-send").textContent = busy ? T("Working…") : T("Pay & send");
@@ -1191,10 +1949,10 @@
 	});
 
 	/* ---------- 💾 saving: cloud file (MESCloud), Hive backup (MESHiveStore), file backup ---------- */
-	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at; }).join("|"); }
-	function mergeIn(chats, how) {
+	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at + ":" + (c.mt || 0); }).join("|") + "|" + folderNames().join("/"); }
+	function mergeIn(chats, how, folders) {
 		var r = A.mergeChats(S.chats, chats);
-		S.chats = r.chats; if (!S.chats.some(function (c) { return c.id === S.cur; })) S.cur = S.chats[0] ? S.chats[0].id : null;
+		S.chats = r.chats; (folders || []).forEach(ensureFolder); S.chats.forEach(function (c) { if (c.folder) ensureFolder(c.folder); }); if (!S.chats.some(function (c) { return c.id === S.cur; })) S.cur = S.chats[0] ? S.chats[0].id : null;
 		save(); renderLog(); paintPrice();
 		var body = r.added || r.updated ? (r.added === 1 ? T("{n} new chat", { n: r.added }) : T("{n} new chats", { n: r.added })) + (r.updated ? ", " + T("{n} updated", { n: r.updated }) : "") + "." : T("you already had all of them.");
 		return (how ? how + ": " : "") + body;
@@ -1216,12 +1974,12 @@
 		window.MESLinkOpen.sendTo("text", f, { busy: true }).catch(function (e) { msg(T("Could not open it: {m}", { m: T(e.message) }), "err"); });
 	});
 	$("ai-dl-all").addEventListener("click", function () {
-		var b = A.backup(S.chats); if (!b.chats.length) { msg(T("No chats to back up yet."), "err"); return; }
+		var b = A.backup(S.chats, 0, folderNames()); if (!b.chats.length) { msg(T("No chats to back up yet."), "err"); return; }
 		download("MES AI chats " + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(b, null, 1), "application/json");
 	});
 	$("ai-restore").addEventListener("change", function () {
 		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
-		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), T("Restored")), "ok"); }).catch(function (e) { msg(T(e.message), "err"); });
+		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), T("Restored"), A.readFolders(t)), "ok"); }).catch(function (e) { msg(T(e.message), "err"); });
 	});
 
 	// cloud: one file with every chat; auto-saved a few seconds after each change (MESCloud.changed)
@@ -1236,10 +1994,10 @@
 		exts: [".json"], accept: [{ description: "MES AI chats", accept: { "application/json": [".json"] } }],
 		doc: function () { return cdoc; },
 		name: function (d) { return d.name || "MES AI chats.json"; },
-		bytes: function () { return Promise.resolve(new TextEncoder().encode(JSON.stringify(A.backup(S.chats)))); },
+		bytes: function () { return Promise.resolve(new TextEncoder().encode(JSON.stringify(A.backup(S.chats, 0, folderNames())))); },
 		open: function (u8, name) {
-			var chats = A.readBackup(new TextDecoder().decode(u8));
-			var note = mergeIn(chats, T("From {name}", { name: name }));
+			var txt = new TextDecoder().decode(u8), chats = A.readBackup(txt);
+			var note = mergeIn(chats, T("From {name}", { name: name }), A.readFolders(txt));
 			cdoc = { name: name }; cloudSig = null;      // our merged copy differs from the file: the next save writes it back
 			setTimeout(function () { cloudKeep(); paintSaveState(); msg(note, "ok"); if (cloud) cloud.changed(cdoc); }, 0);
 			return cdoc;
@@ -1295,7 +2053,7 @@
 	$("ai-hv-save").addEventListener("click", function () {
 		if (hvBusy) return;
 		var u = hvReady(); if (!u) return;
-		var one = $("ai-hv-what").value === "chat", b = A.backup(one ? [cur()] : S.chats);
+		var one = $("ai-hv-what").value === "chat", b = A.backup(one ? [cur()] : S.chats, 0, one ? [] : folderNames());
 		if (!b.chats.length) { hmsg(one ? T("This chat is empty.") : T("No chats to save yet."), "err"); return; }
 		var enc = $("ai-hv-enc").checked;
 		if (!enc && !confirm(T("Save WITHOUT encryption?\n\nThe chat text will be public on the Hive blockchain, readable by anyone, and can never be deleted."))) return;
@@ -1323,7 +2081,7 @@
 		var b = e.target.closest("[data-hv]"); if (!b || hvBusy) return;
 		var it = hvList[+b.dataset.hv]; hvBusySet(true);
 		hmsg(it.lock === "pass" ? T("Unlocking with your passphrase…") : it.encrypted ? T("Confirm in Keychain: decrypt with your memo key…") : T("Opening the save…"));
-		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), T("Loaded from Hive")), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
+		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), T("Loaded from Hive"), A.readFolders(d)), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
 	});
 
 	/* ---------- tabs ---------- */
@@ -1331,6 +2089,7 @@
 		S.tab = t; save();
 		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img"); $("ai-tab-vid").setAttribute("aria-selected", t === "vid");
 		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img"; $("ai-vid").hidden = t !== "vid";
+		if (t === "chat" && R) R.typeset($("ai-log"));
 		if (t === "img") paintGal();
 		if (t === "vid") { paintVgal(); paintVjobs(); }
 	}

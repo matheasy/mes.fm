@@ -12,7 +12,7 @@ function lits(code) {
 	return out;
 }
 function collect() {
-	const app = fs.readFileSync(path.join(SRC, 'app.js'), 'utf8'), html = fs.readFileSync(path.join(SRC, 'content.html'), 'utf8');
+	const app = fs.readFileSync(path.join(SRC, 'app.js'), 'utf8') + fs.readFileSync(path.join(SRC, 'rich.js'), 'utf8'), html = fs.readFileSync(path.join(SRC, 'content.html'), 'utf8');
 	const keys = new Set(lits(app));
 	(html.match(/\{\{tr:([\s\S]*?)\}\}/g) || []).forEach((x) => keys.add(x.slice(5, -2)));
 	Object.keys(A.MODELS).forEach((k) => keys.add(A.MODELS[k].blurb));

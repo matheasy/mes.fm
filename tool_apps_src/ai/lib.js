@@ -87,7 +87,7 @@
     "Help with coding, research, math, writing and everyday questions. Be clear and accurate; say when you are unsure. " +
     "Use Markdown: headings only when they help, lists, and fenced code blocks with a language name. " +
     "When you mention a website, page, tool, paper or source, give the full https:// address as a Markdown link, e.g. [Wikipedia: Recursion](https://en.wikipedia.org/wiki/Recursion); for mes.fm tools use https://mes.fm/<page>. Only give addresses you are confident exist (well-known, stable pages); say so when you are not sure. " +
-    "Write math with plain symbols or inline code, not LaTeX. Each answer has a length limit, so get to the point and finish your answer within it. " +
+    "Write math in LaTeX: $...$ inline and $$...$$ on its own line for displayed equations (never for money amounts). Put tabular data in Markdown tables. When a chart helps, add a fenced code block with the language chart holding JSON like {\"type\":\"bar\",\"title\":\"...\",\"labels\":[\"A\",\"B\"],\"series\":[{\"name\":\"...\",\"data\":[1,2]}]} (type bar, line or pie); the page draws it. Each answer has a length limit, so get to the point and finish your answer within it. " +
     "Refuse requests for clearly illegal or seriously harmful content.";
   // the same instructions, naming the company that really runs the chosen model
   // lang = the language page the person is on (/ai-es ...): answer in that language unless they write in another one.
@@ -133,6 +133,32 @@
     var usd = (inTokens * m.inUsd + cap * m.outUsd) / 1e6;
     var hbd = hbdFromUsd(usd);
     return { kind: "chat", model: modelKey, modelId: m.id, len: len, inTokens: inTokens, maxOut: cap, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+  }
+  /* ---------- cost hints (2026-11-20): only hints; the server's quote is the only price anyone pays ---------- */
+  // what a chat cost so far (sum of the HBD prices paid on its messages, counted in thousandths so no float drift) and its history size
+  // in tokens, roughly (characters / 4), plus a rough price for the next message at that size
+  function chatCostSoFar(chat, modelKey, len) {
+    var msgs = (chat && Array.isArray(chat.msgs)) ? chat.msgs : [], milli = 0, paid = 0, chars = 0;
+    msgs.forEach(function (m) {
+      if (!m) return;
+      if (m.role === "user" && m.price != null && isFinite(parseFloat(m.price))) { milli += Math.round(parseFloat(m.price) * 1000); paid++; }
+      if (!m.error && typeof m.content === "string") chars += m.content.length;
+    });
+    var tokens = Math.ceil(chars / 4), next = MODELS[modelKey] && MODELS[modelKey].caps[len] ? chatQuote(modelKey, tokens, len) : null;
+    return { hbd: milli / 1000, price: fmtHbd(milli / 1000), paid: paid, tokens: tokens, next: next };
+  }
+  // the "Typical costs" table: rows = models, columns = history sizes in tokens (one answer of length len each)
+  function typicalCosts(models, sizes, len) {
+    models = models || ["sonnet", "opus"]; sizes = sizes || [5000, 25000, 50000]; len = len || "medium";
+    return models.filter(function (k) { return MODELS[k]; }).map(function (k) {
+      return { model: k, name: MODELS[k].name, cells: sizes.map(function (t) { var q = chatQuote(k, t, len); return { tokens: t, hbd: q.hbd, price: q.price }; }) };
+    });
+  }
+  // a whole chat of n messages whose history grows evenly to maxTokens: the sum of each message's price
+  function sessionCost(modelKey, len, n, maxTokens) {
+    var milli = 0;
+    for (var i = 1; i <= n; i++) milli += Math.round(chatQuote(modelKey, maxTokens * i / n, len).hbd * 1000);
+    return { hbd: milli / 1000, price: fmtHbd(milli / 1000) };
   }
   function imageQuote(quality, size, promptTokens, model) {
     model = model || "gpt";
@@ -375,10 +401,27 @@
     if (!c || typeof c.id !== "string" || !Array.isArray(c.msgs)) return null;
     var msgs = c.msgs.filter(function (m) { return m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && !m.pending; })
       .map(function (m) { var o = { role: m.role, content: m.content }; ["at", "price", "memo", "model", "len", "stop", "acct"].forEach(function (k) { if (m[k] != null) o[k] = m[k]; }); return o; });
-    return { id: c.id.slice(0, 40), title: String(c.title || "Chat").slice(0, 120), at: Number(c.at) || 0, msgs: msgs };
+    var o = { id: c.id.slice(0, 40), title: String(c.title || "Chat").slice(0, 120), at: Number(c.at) || 0, msgs: msgs };
+    // chat-list extras (2026-11-20): pinned on top, a folder name, and when they / the title were last changed (mt: newest wins in a merge)
+    if (c.pin === true) o.pin = true;
+    var f = cleanFolder(c.folder); if (f) o.folder = f;
+    if (Number(c.mt) > 0) o.mt = Number(c.mt);
+    return o;
   }
-  function backup(chats, now) {
-    return { app: "mes-ai", v: 1, saved: new Date(now || Date.now()).toISOString(), chats: (chats || []).map(cleanChat).filter(function (c) { return c && c.msgs.length; }) };
+  function cleanFolder(f) { return typeof f === "string" ? f.replace(/[\u0000-\u001f<>]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 60) : ""; }
+  // folders = the folder names (so an empty folder survives a backup too)
+  function backup(chats, now, folders) {
+    var o = { app: "mes-ai", v: 1, saved: new Date(now || Date.now()).toISOString(), chats: (chats || []).map(cleanChat).filter(function (c) { return c && c.msgs.length; }) };
+    var fl = readFolders({ folders: folders });
+    o.chats.forEach(function (c) { if (c.folder && fl.indexOf(c.folder) < 0) fl.push(c.folder); });
+    if (fl.length) o.folders = fl;
+    return o;
+  }
+  // the folder names in a backup (older backups have none): an array of clean, unique names
+  function readFolders(x) {
+    var o = typeof x === "string" ? (function () { try { return JSON.parse(x); } catch (e) { return null; } })() : x, out = [];
+    ((o && Array.isArray(o.folders)) ? o.folders : []).forEach(function (n) { n = cleanFolder(n); if (n && out.indexOf(n) < 0 && out.length < 200) out.push(n); });
+    return out;
   }
   // accepts a backup object / its JSON text -> chats array, or throws
   function readBackup(x) {
@@ -393,8 +436,14 @@
     (theirs || []).forEach(function (c) {
       c = cleanChat(c); if (!c || !c.msgs.length) return;
       if (!(c.id in byId)) { byId[c.id] = out.length; out.push(c); added++; return; }
-      var i = byId[c.id], m = out[i];
-      if (c.msgs.length > m.msgs.length || (c.msgs.length === m.msgs.length && c.at > m.at)) { out[i] = c; updated++; }
+      var i = byId[c.id], m = out[i], theirs = c.msgs.length > m.msgs.length || (c.msgs.length === m.msgs.length && c.at > m.at);
+      var keep = theirs ? c : m, meta = (c.mt || 0) > (m.mt || 0) ? c : (m.mt || 0) > (c.mt || 0) ? m : keep;
+      if (theirs || meta !== keep) {
+        var n = {}; Object.keys(keep).forEach(function (k) { n[k] = keep[k]; });
+        n.title = meta.title; delete n.pin; delete n.folder; delete n.mt;
+        if (meta.pin) n.pin = true; if (meta.folder) n.folder = meta.folder; if (meta.mt) n.mt = meta.mt;
+        if (theirs || n.title !== m.title || !!n.pin !== !!m.pin || (n.folder || "") !== (m.folder || "")) { out[i] = n; updated++; }
+      }
     });
     out.sort(function (a, b) { return b.at - a.at; });
     return { chats: out, added: added, updated: updated };
@@ -404,12 +453,12 @@
   }
 
   return {
-    cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
+    cleanChat: cleanChat, cleanFolder: cleanFolder, readFolders: readFolders, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
-    chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
+    chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     FILES: FILES, checkFile: checkFile, fileTokens: fileTokens, toAnthropic: toAnthropic, toOpenAIChat: toOpenAIChat, toOpenAIResponses: toOpenAIResponses,

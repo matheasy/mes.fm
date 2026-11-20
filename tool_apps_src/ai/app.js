@@ -40,6 +40,15 @@
 
 	function msg(t, kind) { var m = $("ai-msg"); m.hidden = !t; m.textContent = t || ""; m.className = "tu-card ai-msg" + (kind ? " " + kind : ""); }
 
+	/* ---------- the "You pay per message" box can be hidden (mes-ai:payhide = "1"); "About paying" by the tabs brings it back ---------- */
+	(function () {
+		var K = "mes-ai:payhide";
+		function paint(h) { $("ai-pay").hidden = h; $("ai-payshow").hidden = !h; }
+		paint((function () { try { return localStorage.getItem(K) === "1"; } catch (e) { return false; } })());
+		$("ai-payhide").addEventListener("click", function () { try { localStorage.setItem(K, "1"); } catch (e) {} paint(true); $("ai-payshow").focus(); });
+		$("ai-payshow").addEventListener("click", function () { try { localStorage.removeItem(K); } catch (e) {} paint(false); $("ai-pay").scrollIntoView({ block: "nearest", behavior: "smooth" }); $("ai-payhide").focus(); });
+	})();
+
 	/* ---------- account ---------- */
 	var MOCK_USER = { name: "demo" };
 	function who() { return mock ? MOCK_USER : (H && H.user()); }
@@ -95,21 +104,12 @@
 			return part.split(/\n{2,}/).map(function (p) { return p.trim() ? "<p>" + esc(p).replace(/\n/g, "<br>").replace(/`([^`]+)`/g, "<code>$1</code>") + "</p>" : ""; }).join("");
 		}).join("");
 	}
-	function md(t) {
-		if (mdReady) return window.DOMPurify.sanitize(window.marked.parse(String(t), { gfm: true, breaks: false }), { ADD_ATTR: ["target"] });
-		return plainMd(t);
-	}
-	function addCopyButtons(el) {
-		el.querySelectorAll("pre").forEach(function (pre) {
-			if (pre.querySelector(".ai-copy")) return;
-			var b = document.createElement("button");
-			b.type = "button"; b.className = "ai-copy"; b.textContent = T("Copy");
-			b.addEventListener("click", function () {
-				var code = pre.querySelector("code") || pre;
-				copy(code.innerText, b);
-			});
-			pre.appendChild(b);
-		});
+	// rich answers (rich.js): Markdown + LaTeX ($...$, $$...$$), tables you can filter / sort / resize, ```chart blocks, code Copy
+	var R = window.MESAIRich;
+	if (R) R.setT(T);
+	function md(t) { return R ? R.render(String(t), mdReady, plainMd) : mdReady ? window.DOMPurify.sanitize(window.marked.parse(String(t), { gfm: true, breaks: false }), { ADD_ATTR: ["target"] }) : plainMd(t); }
+	function addCopyButtons(el, m) {
+		if (R) R.enhance(el, { pending: !!(m && m.pending) }, copy);
 		linkify(el);
 		el.querySelectorAll("a[href^='http']").forEach(function (a) { a.target = "_blank"; a.rel = "noopener nofollow"; });
 	}
@@ -275,9 +275,23 @@
 			if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
 			if (m.stop === "refusal") foot += '<p class="ai-note">' + T("The AI declined to answer this.") + '</p>';
 			if (m.error) foot += '<p class="ai-note ai-err">' + esc(T(m.error)) + "</p>" + (m.retryId ? '<button type="button" class="tu-btn tu-btn--primary" data-retry="' + i + '">' + T("Try again (free)") + '</button>' : "");
-			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button></div>';
+			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button><span class="ai-openin">' + T("Open in:") +
+				' <button type="button" class="ai-mini" data-open="text" data-oi="' + i + '" title="' + esc(T("Formatted, with Read aloud and Print to PDF")) + '">' + T("Text Viewer") + '</button>' +
+				'<button type="button" class="ai-mini" data-open="docx" data-oi="' + i + '" title="' + esc(T("A Word document of this answer")) + '">' + T("Word") + '</button>' +
+				'<button type="button" class="ai-mini" data-open="pdf" data-oi="' + i + '" title="' + esc(T("A PDF of this answer, with its equations and charts")) + '">PDF</button>' +
+				(R && R.texList(m.content).length ? '<button type="button" class="ai-mini" data-open="latex" data-oi="' + i + '" title="' + esc(T("Open the equations in MES LaTeX Render")) + '">LaTeX</button>' : "") + "</span></div>";
 		}
 		return '<div class="ai-m ' + (mine ? "ai-m--me" : "ai-m--ai") + '" data-i="' + i + '"><div class="ai-who">' + (mine ? T("You") : "MES AI") + meta + "</div>" + body + foot + "</div>";
+	}
+	var elCache = new WeakMap();
+	function msgKey(m, i) { return [i, m.role, (m.content || "").length, (m.content || "").slice(-24), m.pending ? 1 : 0, m.thinking ? 1 : 0, m.error || "", m.retryId || "", m.stop || "", m.price || "", (m.files || []).length, mdReady ? 1 : 0].join("\u0001"); }
+	function msgEl(m, i) {
+		var k = msgKey(m, i), c = elCache.get(m);
+		if (c && c.k === k) return c.el;
+		var d = document.createElement("div"); d.innerHTML = renderMsg(m, i);
+		var el = d.firstChild; if (m.pending) el.setAttribute("data-pending", "1"); addCopyButtons(el, m); paintMsgFiles(el);
+		elCache.set(m, { k: k, el: el });
+		return el;
 	}
 	function renderLog() {
 		var c = cur(), log = $("ai-log");
@@ -287,35 +301,220 @@
 				' <button type="button" class="ai-mini" data-ex="' + esc(T("Explain recursion with a short JavaScript example.")) + '">' + T("Explain recursion") + '</button>' +
 				' <button type="button" class="ai-mini" data-ex="' + esc(T("Write a polite email asking my landlord to fix the heating.")) + '">' + T("Write an email") + '</button>' +
 				' <button type="button" class="ai-mini" data-ex="' + esc(T("What is the derivative of x^2 sin x? Show the steps.")) + '">' + T("Derivative steps") + '</button></p></div>';
-		} else log.innerHTML = c.msgs.map(renderMsg).join("");
-		addCopyButtons(log);
-		paintMsgFiles(log);
+		} else {
+			// each message is built once and kept (typeset math, sorted tables and charts survive the next repaint); only a changed one is rebuilt
+			var els = c.msgs.map(msgEl);
+			if (log.querySelector(".ai-empty")) log.innerHTML = "";
+			var kids = [].slice.call(log.children);
+			if (kids.length !== els.length || kids.some(function (k, j) { return k !== els[j]; })) { els.forEach(function (e, j) { if (log.children[j] !== e) log.insertBefore(e, log.children[j] || null); }); while (log.children.length > els.length) log.lastChild.remove(); }
+		}
 		if (nearEnd || busy) log.scrollTop = log.scrollHeight;
+		if (R) R.typeset(log);
 		paintChats();
 	}
-	function paintChats() {
-		var sel = $("ai-chats");
-		sel.innerHTML = S.chats.map(function (c) { return '<option value="' + c.id + '"' + (c.id === S.cur ? " selected" : "") + ">" + esc(c.title.slice(0, 60)) + (c.msgs.length ? " (" + Math.ceil(c.msgs.length / 2) + ")" : "") + "</option>"; }).join("");
+	/* ---------- the chat list (2026-11-20): search, pinned on top, folders, rename / move / delete with Undo, sort, left or right ---------- */
+	// S.folders = [{n: name, c: collapsed}], S.csort = "recent" | "old" | "name", S.side = "l" | "r", S.sideOff = list hidden (wide view)
+	if (!Array.isArray(S.folders)) S.folders = [];
+	if (["recent", "old", "name"].indexOf(S.csort) < 0) S.csort = "recent";
+	if (S.side !== "r") S.side = "l";
+	var cq = "", menuFor = null, renaming = null, sideOpenNarrow = false, dragId = null;
+	function folderNames() { return S.folders.map(function (f) { return f.n; }); }
+	function ensureFolder(n) { n = A.cleanFolder(n); if (n && folderNames().indexOf(n) < 0) S.folders.push({ n: n, c: false }); return n; }
+	S.chats.forEach(function (c) { if (c.folder) ensureFolder(c.folder); });
+	function touch(c) { c.mt = Date.now(); }
+	function when(t) {
+		if (!t) return "";
+		var d = new Date(t), now = new Date(), day = 864e5;
+		if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(LOC, { hour: "numeric", minute: "2-digit" });
+		if (now - d < 6 * day) return d.toLocaleDateString(LOC, { weekday: "short" });
+		return d.toLocaleDateString(LOC, d.getFullYear() === now.getFullYear() ? { month: "short", day: "numeric" } : { year: "numeric", month: "short", day: "numeric" });
 	}
-	$("ai-chats").addEventListener("change", function () { if (busy) return; S.cur = this.value; save(); renderLog(); paintPrice(); });
-	$("ai-new").addEventListener("click", function () { if (busy) return; var c = cur(); if (c.msgs.length) newChat(); renderLog(); paintPrice(); $("ai-in").focus(); });
-	$("ai-del").addEventListener("click", function () {
-		if (busy) return;
-		var c = cur();
-		if (c.msgs.length && !confirm(T('Delete "{title}" from this browser?', { title: c.title }))) return;
-		S.chats = S.chats.filter(function (x) { return x.id !== c.id; }); S.cur = null; save(); renderLog(); paintPrice();
+	function sorted(list) {
+		var by = S.csort === "name" ? function (a, b) { return a.title.localeCompare(b.title, LOC, { numeric: true, sensitivity: "base" }); } : S.csort === "old" ? function (a, b) { return a.at - b.at; } : function (a, b) { return b.at - a.at; };
+		return list.slice().sort(by);
+	}
+	function norm(s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+	// a search hit: every word must be in the title or the messages; returns a short snippet around the first word found in the text
+	function hit(c, words) {
+		var title = norm(c.title), text = c.msgs.map(function (m) { return m.content || ""; }).join("\n"), nt = norm(text);
+		if (!words.every(function (w) { return title.indexOf(w) >= 0 || nt.indexOf(w) >= 0; })) return null;
+		var w0 = words.filter(function (w) { return title.indexOf(w) < 0 && nt.indexOf(w) >= 0; })[0] || words.filter(function (w) { return nt.indexOf(w) >= 0; })[0];
+		if (!w0) return { snip: "" };
+		var at = nt.indexOf(w0), a = Math.max(0, at - 40), b = Math.min(text.length, at + w0.length + 60);
+		return { snip: (a ? "…" : "") + text.slice(a, b).replace(/\s+/g, " ") + (b < text.length ? "…" : ""), w: words };
+	}
+	function mark(s, words) { // escaped text with the searched words marked
+		var e = esc(s); if (!words || !words.length) return e;
+		words.forEach(function (w) { if (w.length < 2) return; e = e.replace(new RegExp("(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/&/g, "&amp;").replace(/</g, "&lt;") + ")", "gi"), "<mark>$1</mark>"); });
+		return e;
+	}
+	function rowHtml(c, h, words) {
+		var n = Math.ceil(c.msgs.length / 2), isCur = c.id === S.cur;
+		var title = renaming === c.id ? '<input class="ai-crename" type="text" maxlength="120" value="' + esc(c.title) + '" aria-label="' + esc(T("Chat name")) + '">' : '<span class="ai-ctitle">' + mark(c.title, words) + "</span>";
+		var sub = (n ? (n === 1 ? T("{n} message", { n: 1 }) : T("{n} messages", { n: n })) + " · " : "") + esc(when(c.at)) + (words && c.folder ? " · 📁 " + esc(c.folder) : "");
+		var row = '<div class="ai-crow' + (isCur ? " is-cur" : "") + '" role="listitem" data-cid="' + esc(c.id) + '" draggable="' + (renaming === c.id ? "false" : "true") + '">' +
+			(renaming === c.id ? '<div class="ai-copen">' + title + '</div>' : '<button type="button" class="ai-copen" data-copen="' + esc(c.id) + '"' + (isCur ? ' aria-current="true"' : "") + ">" + title + '<span class="ai-csub">' + sub + "</span>" + (h && h.snip ? '<span class="ai-csnip">' + mark(h.snip, words) + "</span>" : "") + "</button>") +
+			'<button type="button" class="ai-cic ai-cpin" data-cpin="' + esc(c.id) + '" aria-pressed="' + !!c.pin + '" title="' + esc(c.pin ? T("Unpin") : T("Pin to the top")) + '" aria-label="' + esc(c.pin ? T("Unpin") : T("Pin to the top")) + '">📌</button>' +
+			'<button type="button" class="ai-cic" data-cmore="' + esc(c.id) + '" aria-haspopup="true" aria-expanded="' + (menuFor === c.id) + '" title="' + esc(T("More")) + '" aria-label="' + esc(T("More for {title}", { title: c.title })) + '">⋯</button></div>';
+		if (menuFor === c.id) {
+			row += '<div class="ai-cmenu" role="menu">' +
+				'<button type="button" role="menuitem" data-cact="rename">✎ ' + T("Rename") + "</button>" +
+				'<button type="button" role="menuitem" data-cact="pin">📌 ' + (c.pin ? T("Unpin") : T("Pin to the top")) + "</button>" +
+				'<label class="ai-cmove"><span>📁 ' + T("Move to") + '</span><select data-cmove data-native><option value="">' + esc(T("No folder")) + "</option>" + folderNames().map(function (f) { return '<option value="' + esc(f) + '"' + (c.folder === f ? " selected" : "") + ">" + esc(f) + "</option>"; }).join("") + '<option value="\u0001new">' + esc(T("New folder…")) + "</option></select></label>" +
+				'<button type="button" role="menuitem" data-cact="del" class="ai-cdel">🗑 ' + T("Delete") + "</button></div>";
+		}
+		return row;
+	}
+	function paintChats() {
+		var box = $("ai-clist"); if (!box) return;
+		var words = norm(cq).split(/\s+/).filter(Boolean), html = [];
+		if (words.length) {
+			var hits = sorted(S.chats).map(function (c) { return { c: c, h: hit(c, words) }; }).filter(function (x) { return x.h; });
+			html.push('<p class="ai-cnote">' + (hits.length ? (hits.length === 1 ? T("{n} chat found", { n: 1 }) : T("{n} chats found", { n: hits.length })) : T("No chat has that.")) + "</p>");
+			hits.forEach(function (x) { html.push(rowHtml(x.c, x.h, words)); });
+		} else {
+			var pins = sorted(S.chats.filter(function (c) { return c.pin; }));
+			if (pins.length) { html.push('<div class="ai-chead">📌 ' + T("Pinned") + "</div>"); pins.forEach(function (c) { html.push(rowHtml(c)); }); }
+			var fnames = S.folders.slice().sort(function (a, b) { return a.n.localeCompare(b.n, LOC, { numeric: true, sensitivity: "base" }); });
+			fnames.forEach(function (f) {
+				var inF = sorted(S.chats.filter(function (c) { return c.folder === f.n && !c.pin; })), all = S.chats.filter(function (c) { return c.folder === f.n; }).length;
+				html.push('<div class="ai-fhead" data-fold="' + esc(f.n) + '"><button type="button" class="ai-ftog" data-ftog="' + esc(f.n) + '" aria-expanded="' + !f.c + '"><span class="ai-fcar" aria-hidden="true">' + (f.c ? "▸" : "▾") + "</span> 📁 " + esc(f.n) + ' <span class="ai-fn">' + all + "</span></button>" +
+					'<button type="button" class="ai-cic" data-fren="' + esc(f.n) + '" title="' + esc(T("Rename folder")) + '" aria-label="' + esc(T("Rename folder")) + '">✎</button>' +
+					'<button type="button" class="ai-cic" data-fdel="' + esc(f.n) + '" title="' + esc(T("Delete folder (its chats stay)")) + '" aria-label="' + esc(T("Delete folder (its chats stay)")) + '">✕</button></div>');
+				if (!f.c) { html.push('<div class="ai-fbody" data-fold="' + esc(f.n) + '">'); inF.forEach(function (c) { html.push(rowHtml(c)); }); if (!inF.length) html.push('<p class="ai-cnote">' + T("Empty: drag chats here, or use ⋯ › Move to.") + "</p>"); html.push("</div>"); }
+			});
+			var rest = sorted(S.chats.filter(function (c) { return !c.pin && !(c.folder && folderNames().indexOf(c.folder) >= 0); }));
+			if ((pins.length || fnames.length) && (rest.length || dragId !== null)) html.push('<div class="ai-chead" data-fold="">💬 ' + T("Chats") + "</div>");
+			else if (pins.length || fnames.length) html.push('<div class="ai-chead ai-chead--drop" data-fold="">💬 ' + T("Chats") + "</div>");
+			html.push('<div class="ai-fbody" data-fold="">'); rest.forEach(function (c) { html.push(rowHtml(c)); }); html.push("</div>");
+		}
+		box.innerHTML = html.join("");
+		var ct = cur(); $("ai-curtitle").textContent = ct.msgs.length ? ct.title : "";
+		$("ai-sidebtn").querySelector(".ai-cn").textContent = S.chats.filter(function (c) { return c.msgs.length; }).length || "";
+		var ri = box.querySelector(".ai-crename"); if (ri) { ri.focus(); ri.select(); }
+		if (menuFor) { var mm = box.querySelector(".ai-cmenu button"); if (mm && document.activeElement && document.activeElement.closest && !document.activeElement.closest(".ai-cmenu")) mm.focus(); }
+	}
+	function openChat(id) { if (busy) return; S.cur = id; menuFor = null; save(); if (sideOpenNarrow) { sideOpenNarrow = false; paintSide(); } renderLog(); paintPrice(); }
+	function byId(id) { return S.chats.filter(function (c) { return c.id === id; })[0]; }
+
+	// Undo for deletes: the removed chat (or folder) is put back exactly where it was
+	var undoT = null;
+	function undoBar(text, undo) {
+		var u = $("ai-undo"); clearTimeout(undoT);
+		u.innerHTML = '<span></span><button type="button" class="tu-btn tu-btn--ghost">' + T("Undo") + '</button><button type="button" class="ai-cic" aria-label="' + esc(T("Close")) + '">✕</button>';
+		u.firstChild.textContent = text; u.hidden = false;
+		u.children[1].onclick = function () { u.hidden = true; undo(); };
+		u.children[2].onclick = function () { u.hidden = true; };
+		undoT = setTimeout(function () { u.hidden = true; }, 8000);
+	}
+	function delChat(id) {
+		var i = -1; S.chats.forEach(function (c, j) { if (c.id === id) i = j; });
+		if (i < 0 || busy) return;
+		var c = S.chats[i], wasCur = S.cur === id;
+		S.chats.splice(i, 1); if (wasCur) S.cur = null; menuFor = null; save(); renderLog(); paintPrice();
+		if (!c.msgs.length) return;
+		undoBar(T('Deleted "{title}".', { title: c.title.slice(0, 40) }), function () { S.chats.splice(Math.min(i, S.chats.length), 0, c); if (wasCur) S.cur = c.id; save(); renderLog(); paintPrice(); });
+	}
+	function askFolder(def) { var n = prompt(T("Folder name"), def || ""); return n == null ? null : A.cleanFolder(n); }
+	function moveTo(c, f) { c.folder = f || undefined; if (!f) delete c.folder; touch(c); save(); paintChats(); }
+
+	$("ai-csearch").addEventListener("input", function () { cq = this.value; menuFor = null; paintChats(); });
+	$("ai-csearch").addEventListener("keydown", function (e) { if (e.key === "Escape" && this.value) { e.preventDefault(); this.value = cq = ""; paintChats(); } if (e.key === "Enter") { var f = $("ai-clist").querySelector("[data-copen]"); if (f) openChat(f.dataset.copen); } });
+	$("ai-csort").value = S.csort;
+	$("ai-csort").addEventListener("change", function () { S.csort = this.value; save(); paintChats(); });
+	$("ai-addfolder").addEventListener("click", function () { var n = askFolder(); if (!n) return; ensureFolder(n); save(); paintChats(); });
+	$("ai-clist").addEventListener("click", function (e) {
+		var b = e.target.closest("button"); if (!b) return;
+		var d = b.dataset;
+		if (d.copen) openChat(d.copen);
+		else if (d.cpin) { var c = byId(d.cpin); if (c) { c.pin = !c.pin; if (!c.pin) delete c.pin; touch(c); save(); paintChats(); } }
+		else if (d.cmore) { menuFor = menuFor === d.cmore ? null : d.cmore; paintChats(); }
+		else if (d.cact) {
+			var c2 = byId(menuFor); if (!c2) return;
+			if (d.cact === "rename") { renaming = c2.id; menuFor = null; paintChats(); }
+			if (d.cact === "pin") { c2.pin = !c2.pin; if (!c2.pin) delete c2.pin; touch(c2); menuFor = null; save(); paintChats(); }
+			if (d.cact === "del") delChat(c2.id);
+		}
+		else if (d.ftog) { S.folders.forEach(function (f) { if (f.n === d.ftog) f.c = !f.c; }); save(); paintChats(); }
+		else if (d.fren) {
+			var n = askFolder(d.fren); if (!n || n === d.fren) return;
+			var other = folderNames().indexOf(n) >= 0;
+			S.folders = S.folders.filter(function (f) { return !(other && f.n === d.fren); }); S.folders.forEach(function (f) { if (f.n === d.fren) f.n = n; });
+			S.chats.forEach(function (c) { if (c.folder === d.fren) { c.folder = n; touch(c); } }); save(); paintChats();
+		}
+		else if (d.fdel) {
+			var fi = -1; S.folders.forEach(function (f, j) { if (f.n === d.fdel) fi = j; });
+			if (fi < 0) return;
+			var fo = S.folders[fi], members = S.chats.filter(function (c) { return c.folder === fo.n; });
+			S.folders.splice(fi, 1); members.forEach(function (c) { delete c.folder; touch(c); }); save(); paintChats();
+			undoBar(T('Deleted the folder "{name}" (its chats are under Chats).', { name: fo.n }), function () { S.folders.splice(fi, 0, fo); members.forEach(function (c) { c.folder = fo.n; touch(c); }); save(); paintChats(); });
+		}
 	});
-	$("ai-export").addEventListener("click", function () {
-		var c = cur(); if (!c.msgs.length) return;
-		var t = "# " + c.title + "\n\n" + c.msgs.map(function (m) { return "## " + (m.role === "user" ? T("You") : "MES AI") + "\n\n" + (m.content || ""); }).join("\n\n");
-		var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t], { type: "text/markdown" }));
-		a.download = c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") + ".md" || "chat.md"; a.click();
-		setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+	$("ai-clist").addEventListener("change", function (e) {
+		if (!e.target.matches("[data-cmove]")) return;
+		var c = byId(menuFor), v = e.target.value; if (!c) return;
+		if (v === "\u0001new") { v = askFolder(); if (!v) { paintChats(); return; } ensureFolder(v); }
+		menuFor = null; moveTo(c, v);
 	});
+	$("ai-clist").addEventListener("dblclick", function (e) { var r = e.target.closest("[data-copen]"); if (r && !busy) { renaming = r.dataset.copen; paintChats(); } });
+	$("ai-clist").addEventListener("keydown", function (e) {
+		if (e.target.matches(".ai-crename")) {
+			if (e.key === "Enter") { e.preventDefault(); commitRename(e.target); }
+			if (e.key === "Escape") { e.preventDefault(); renaming = null; paintChats(); }
+			return;
+		}
+		if (e.key === "F2") { var r = e.target.closest("[data-cid]"); if (r) { renaming = r.dataset.cid; paintChats(); } }
+		if (e.key === "Delete" && e.target.matches("[data-copen]")) delChat(e.target.dataset.copen);
+		if (e.key === "Escape" && menuFor) { var id = menuFor; menuFor = null; paintChats(); var mb = $("ai-clist").querySelector('[data-cmore="' + id + '"]'); if (mb) mb.focus(); }
+		if ((e.key === "ArrowDown" || e.key === "ArrowUp") && e.target.matches("[data-copen]")) {
+			var all = [].slice.call($("ai-clist").querySelectorAll("[data-copen]")), k = all.indexOf(e.target) + (e.key === "ArrowDown" ? 1 : -1);
+			if (all[k]) { e.preventDefault(); all[k].focus(); }
+		}
+	});
+	function commitRename(inp) {
+		if (!renaming) return;
+		var c = byId(renaming), v = inp.value.replace(/\s+/g, " ").trim().slice(0, 120);
+		renaming = null;
+		if (c && v && v !== c.title) { c.title = v; touch(c); save(); }
+		setTimeout(paintChats, 0);
+	}
+	$("ai-clist").addEventListener("focusout", function (e) { if (e.target.matches(".ai-crename")) commitRename(e.target); });
+	// drag a chat onto a folder (or onto "Chats" to take it out)
+	$("ai-clist").addEventListener("dragstart", function (e) { var r = e.target.closest("[data-cid]"); if (!r) return; dragId = r.dataset.cid; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", byId(dragId).title); } catch (x) {} r.classList.add("is-drag"); });
+	$("ai-clist").addEventListener("dragend", function () { dragId = null; [].forEach.call($("ai-clist").querySelectorAll(".is-drag, .is-over"), function (x) { x.classList.remove("is-drag", "is-over"); }); });
+	$("ai-clist").addEventListener("dragover", function (e) { var t = dragId && e.target.closest("[data-fold]"); if (!t) return; e.preventDefault(); [].forEach.call($("ai-clist").querySelectorAll(".is-over"), function (x) { if (x !== t) x.classList.remove("is-over"); }); t.classList.add("is-over"); });
+	$("ai-clist").addEventListener("drop", function (e) { var t = dragId && e.target.closest("[data-fold]"); if (!t) return; e.preventDefault(); var c = byId(dragId); if (c) moveTo(c, t.dataset.fold); });
+	document.addEventListener("click", function (e) { if (menuFor && !e.target.closest(".ai-cmenu, [data-cmore]")) { menuFor = null; paintChats(); } });
+
+	// the list on the left or the right, shown or hidden; under ~720 px wide it folds above the chat (☰ opens it)
+	function narrow() { return $("ai-chat").classList.contains("ai-narrow"); }
+	function paintSide() {
+		var ch = $("ai-chat"), open = narrow() ? sideOpenNarrow : !S.sideOff;
+		ch.classList.toggle("ai-side-r", S.side === "r"); ch.classList.toggle("ai-side-off", !open);
+		$("ai-sidebtn").setAttribute("aria-expanded", open);
+		$("ai-flip").hidden = narrow();
+		$("ai-flip").title = S.side === "r" ? T("Put the chat list on the left") : T("Put the chat list on the right");
+		$("ai-flip").setAttribute("aria-label", $("ai-flip").title);
+	}
+	$("ai-sidebtn").addEventListener("click", function () { if (narrow()) sideOpenNarrow = !sideOpenNarrow; else { S.sideOff = !S.sideOff; save(); } paintSide(); if (!$("ai-chat").classList.contains("ai-side-off")) $("ai-csearch").focus(); });
+	$("ai-flip").addEventListener("click", function () { S.side = S.side === "r" ? "l" : "r"; save(); paintSide(); });
+	(function () {
+		var ch = $("ai-chat"), last = null;
+		function fit() { var w = ch.clientWidth; if (!w) return; var n = w < 720; if (n !== last) { last = n; ch.classList.toggle("ai-narrow", n); paintSide(); } }
+		if (window.ResizeObserver) new ResizeObserver(fit).observe(ch); else window.addEventListener("resize", fit);
+		fit(); paintSide();
+	})();
+	$("ai-new").addEventListener("click", function () { if (busy) return; var c = cur(); if (c.msgs.length) newChat(); if (cq) { cq = $("ai-csearch").value = ""; } renderLog(); paintPrice(); $("ai-in").focus(); });
 	$("ai-log").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
 		if (b.dataset.ex) { $("ai-in").value = b.dataset.ex; paintPrice(); $("ai-in").focus(); }
 		if (b.dataset.copy) copy(cur().msgs[+b.dataset.copy].content, b);
+		if (b.dataset.open && R) {
+			var mm = cur().msgs[+b.dataset.oi], box = b.closest(".ai-m"), md0 = box && box.querySelector(".ai-md");
+			if (!mm || !md0) return;
+			if (b.dataset.open !== "latex" && !window.indexedDB) { msg(T("This browser can't hand files to another page."), "err"); return; }
+			R.openIn(b.dataset.open, mm.content, md0).then(function (r) { if (r === "some") msg(T("Only the first equations fit in one link."), "ok"); }, function (e) { msg(T(e.message), "err"); });
+		}
 		if (b.dataset.retry) retry(+b.dataset.retry);
 	});
 
@@ -360,6 +559,22 @@
 		return clean;
 	}
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
+	// what this chat has cost so far + a rough price for the next message (history ~ characters / 4); only a hint, the quote is the price
+	function paintCost() {
+		var c = cur(), el = $("ai-cost"), k = A.chatCostSoFar(c, S.model, S.len);
+		el.hidden = !c.msgs.length;
+		if (!c.msgs.length) return;
+		el.innerHTML = T("This chat so far: <b>{p} HBD</b>", { p: k.price }) + ' <span class="ai-sub">(' + (k.paid === 1 ? T("{n} paid message", { n: 1 }) : T("{n} paid messages", { n: k.paid })) + ")</span> · " +
+			T("history about {t} tokens", { t: k.tokens.toLocaleString(LOC) }) + " · " + T("next message about <b>{p} HBD</b>", { p: k.next.price }) +
+			'<br><span class="ai-sub">' + T("The whole history is sent again with every message, so long chats cost more. A new chat is cheaper.") + "</span>";
+	}
+	(function () { // "Typical costs" table, worked out from MESAI's prices so it follows them
+		var sizes = [5000, 25000, 50000], rows = A.typicalCosts(["sonnet", "opus"], sizes, "medium");
+		$("ai-ttable").innerHTML = "<tr><th>" + T("Model (Medium answer)") + "</th>" + sizes.map(function (t) { return "<th>" + T("{k}k tokens of history", { k: t / 1000 }) + "</th>"; }).join("") + "</tr>" +
+			rows.map(function (r) { return "<tr><td>" + esc(r.name) + "</td>" + r.cells.map(function (c) { return "<td>" + T("about {p} HBD", { p: c.price }) + "</td>"; }).join("") + "</tr>"; }).join("");
+		var ss = A.sessionCost("sonnet", "medium", 30, 50000);
+		$("ai-tsession").textContent = T("A 30-message coding chat that grows to 50k tokens costs about {p} HBD in all on Sonnet. Starting a new chat when the topic changes keeps it cheap.", { p: (Math.round(ss.hbd * 10) / 10).toLocaleString(LOC) });
+	})();
 	function paintPrice() {
 		var m = A.MODELS[S.model];
 		var words = Math.round(m.caps[S.len] * 0.75).toLocaleString(LOC);
@@ -368,6 +583,7 @@
 		var nEx = Math.floor(msgs.length / 2);
 		var hist = msgs.length > 1 ? ' <span class="ai-sub">' + (nEx === 1 ? T("incl. {n} earlier exchange", { n: nEx }) : T("incl. {n} earlier exchanges", { n: nEx })) + "</span>" : "";
 		$("ai-price").innerHTML = T("about <b>{p} HBD</b>", { p: q.price }) + " <span class=\"ai-sub\">(" + usdOf(q) + ")</span>" + hist;
+		paintCost();
 		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
 		$("ai-send").textContent = busy ? T("Working…") : T("Pay & send");
@@ -772,10 +988,10 @@
 	});
 
 	/* ---------- 💾 saving: cloud file (MESCloud), Hive backup (MESHiveStore), file backup ---------- */
-	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at; }).join("|"); }
-	function mergeIn(chats, how) {
+	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at + ":" + (c.mt || 0); }).join("|") + "|" + folderNames().join("/"); }
+	function mergeIn(chats, how, folders) {
 		var r = A.mergeChats(S.chats, chats);
-		S.chats = r.chats; if (!S.chats.some(function (c) { return c.id === S.cur; })) S.cur = S.chats[0] ? S.chats[0].id : null;
+		S.chats = r.chats; (folders || []).forEach(ensureFolder); S.chats.forEach(function (c) { if (c.folder) ensureFolder(c.folder); }); if (!S.chats.some(function (c) { return c.id === S.cur; })) S.cur = S.chats[0] ? S.chats[0].id : null;
 		save(); renderLog(); paintPrice();
 		var body = r.added || r.updated ? (r.added === 1 ? T("{n} new chat", { n: r.added }) : T("{n} new chats", { n: r.added })) + (r.updated ? ", " + T("{n} updated", { n: r.updated }) : "") + "." : T("you already had all of them.");
 		return (how ? how + ": " : "") + body;
@@ -797,12 +1013,12 @@
 		window.MESLinkOpen.sendTo("text", f, { busy: true }).catch(function (e) { msg(T("Could not open it: {m}", { m: T(e.message) }), "err"); });
 	});
 	$("ai-dl-all").addEventListener("click", function () {
-		var b = A.backup(S.chats); if (!b.chats.length) { msg(T("No chats to back up yet."), "err"); return; }
+		var b = A.backup(S.chats, 0, folderNames()); if (!b.chats.length) { msg(T("No chats to back up yet."), "err"); return; }
 		download("MES AI chats " + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(b, null, 1), "application/json");
 	});
 	$("ai-restore").addEventListener("change", function () {
 		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
-		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), T("Restored")), "ok"); }).catch(function (e) { msg(T(e.message), "err"); });
+		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), T("Restored"), A.readFolders(t)), "ok"); }).catch(function (e) { msg(T(e.message), "err"); });
 	});
 
 	// cloud: one file with every chat; auto-saved a few seconds after each change (MESCloud.changed)
@@ -817,10 +1033,10 @@
 		exts: [".json"], accept: [{ description: "MES AI chats", accept: { "application/json": [".json"] } }],
 		doc: function () { return cdoc; },
 		name: function (d) { return d.name || "MES AI chats.json"; },
-		bytes: function () { return Promise.resolve(new TextEncoder().encode(JSON.stringify(A.backup(S.chats)))); },
+		bytes: function () { return Promise.resolve(new TextEncoder().encode(JSON.stringify(A.backup(S.chats, 0, folderNames())))); },
 		open: function (u8, name) {
-			var chats = A.readBackup(new TextDecoder().decode(u8));
-			var note = mergeIn(chats, T("From {name}", { name: name }));
+			var txt = new TextDecoder().decode(u8), chats = A.readBackup(txt);
+			var note = mergeIn(chats, T("From {name}", { name: name }), A.readFolders(txt));
 			cdoc = { name: name }; cloudSig = null;      // our merged copy differs from the file: the next save writes it back
 			setTimeout(function () { cloudKeep(); paintSaveState(); msg(note, "ok"); if (cloud) cloud.changed(cdoc); }, 0);
 			return cdoc;
@@ -876,7 +1092,7 @@
 	$("ai-hv-save").addEventListener("click", function () {
 		if (hvBusy) return;
 		var u = hvReady(); if (!u) return;
-		var one = $("ai-hv-what").value === "chat", b = A.backup(one ? [cur()] : S.chats);
+		var one = $("ai-hv-what").value === "chat", b = A.backup(one ? [cur()] : S.chats, 0, one ? [] : folderNames());
 		if (!b.chats.length) { hmsg(one ? T("This chat is empty.") : T("No chats to save yet."), "err"); return; }
 		var enc = $("ai-hv-enc").checked;
 		if (!enc && !confirm(T("Save WITHOUT encryption?\n\nThe chat text will be public on the Hive blockchain, readable by anyone, and can never be deleted."))) return;
@@ -904,7 +1120,7 @@
 		var b = e.target.closest("[data-hv]"); if (!b || hvBusy) return;
 		var it = hvList[+b.dataset.hv]; hvBusySet(true);
 		hmsg(it.lock === "pass" ? T("Unlocking with your passphrase…") : it.encrypted ? T("Confirm in Keychain: decrypt with your memo key…") : T("Opening the save…"));
-		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), T("Loaded from Hive")), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
+		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), T("Loaded from Hive"), A.readFolders(d)), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
 	});
 
 	/* ---------- tabs ---------- */
@@ -912,6 +1128,7 @@
 		S.tab = t; save();
 		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img"); $("ai-tab-vid").setAttribute("aria-selected", t === "vid");
 		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img"; $("ai-vid").hidden = t !== "vid";
+		if (t === "chat" && R) R.typeset($("ai-log"));
 		if (t === "img") paintGal();
 		if (t === "vid") { paintVgal(); paintVjobs(); }
 	}

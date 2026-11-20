@@ -107,6 +107,28 @@ eq([mg.chats.length, mg.added, mg.updated, mg.chats[0].id, mg.chats[0].msgs.leng
 mg = A.mergeChats(mg.chats, [{ id: "a", title: "One", at: 99, msgs: [{ role: "user", content: "hi" }] }]);
 eq([mg.updated, mg.chats[0].msgs.length], [0, 4], "merge never drops messages");
 ok(A.chatMarkdown(A.cleanChat(c1)).indexOf("## MES AI\n\nhello") > 0, "markdown export");
+// cost hints: cost so far, rough next price (characters / 4), the typical-costs table, a 30-message session
+const cs = A.chatCostSoFar({ msgs: [{ role: "user", content: "x".repeat(400), price: "0.010" }, { role: "assistant", content: "y".repeat(3600) }, { role: "user", content: "z".repeat(4000), price: "0.020" }, { role: "assistant", content: "", error: "boom" }] }, "sonnet", "medium");
+eq([cs.price, cs.paid, cs.tokens, cs.next.price], ["0.030", 2, 2000, A.chatQuote("sonnet", 2000, "medium").price], "cost so far sums the paid prices; history = characters / 4");
+eq(A.chatCostSoFar({ msgs: [] }, "sonnet", "medium").price, "0.000", "an empty chat cost nothing");
+const tc = A.typicalCosts();
+eq(tc.map((r) => r.model), ["sonnet", "opus"], "typical costs: Sonnet and Opus");
+eq(tc[0].cells.map((c) => c.price), [5000, 25000, 50000].map((t) => A.chatQuote("sonnet", t, "medium").price), "typical costs = real quotes at 5k / 25k / 50k");
+ok(Math.abs(tc[0].cells[0].hbd - 0.09) < 0.03 && Math.abs(tc[0].cells[2].hbd - 0.22) < 0.05 && Math.abs(tc[1].cells[2].hbd - 0.6) < 0.15, "typical costs are near the published numbers");
+const ss = A.sessionCost("sonnet", "medium", 30, 50000);
+ok(ss.hbd >= 3.5 && ss.hbd <= 5.5, "a 30-message Sonnet chat growing to 50k tokens is about 4 to 5 HBD (" + ss.price + ")");
+// chat-list extras: pin, folder, mt survive a backup; old backups without them still read; newest mt wins the title / pin / folder in a merge
+const c2 = { id: "p", title: "Pinned", at: 30, pin: true, folder: " Work <b> stuff ", mt: 40, msgs: [{ role: "user", content: "q" }, { role: "assistant", content: "a" }] };
+const bk2 = A.backup([c2], T0, ["Empty one", "Work b stuff"]);
+eq([bk2.chats[0].pin, bk2.chats[0].folder, bk2.chats[0].mt, bk2.folders], [true, "Work b stuff", 40, ["Empty one", "Work b stuff"]], "backup keeps pin, folder, mt and folder names");
+eq([A.readFolders(JSON.stringify(bk2)), A.readFolders(JSON.stringify(bk)), A.readFolders("not json")], [["Empty one", "Work b stuff"], [], []], "folder names read back (none in old backups)");
+eq(A.cleanChat({ id: "x", title: "t", at: 1, pin: "yes", folder: 5, msgs: [] }).pin, undefined, "pin must be true");
+mg = A.mergeChats([A.cleanChat(c2)], [{ id: "p", title: "Renamed", at: 30, mt: 50, msgs: c2.msgs }]);
+eq([mg.updated, mg.chats[0].title, mg.chats[0].pin, mg.chats[0].folder], [1, "Renamed", undefined, undefined], "newer rename / unpin / unfile wins");
+mg = A.mergeChats([A.cleanChat(c2)], [{ id: "p", title: "Old name", at: 31, mt: 10, msgs: c2.msgs.concat([{ role: "user", content: "more" }]) }]);
+eq([mg.chats[0].msgs.length, mg.chats[0].title, mg.chats[0].pin, mg.chats[0].folder], [3, "Pinned", true, "Work b stuff"], "longer copy wins messages, newer copy keeps its name / pin / folder");
+mg = A.mergeChats([A.cleanChat(c2)], [A.cleanChat(c2)]);
+eq(mg.updated, 0, "the same chat twice: nothing changes");
 
 /* ---------- the server, end to end ---------- */
 function fakeRedis() {

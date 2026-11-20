@@ -487,6 +487,134 @@ html body.dark-mode #ai.ai .ai-soon, html body.dark-mode #ai.ai .ai-soon b, html
 #ai[dir=rtl] pre, #ai[dir=rtl] code, #ai[dir=rtl] .ai-price, #ai[dir=rtl] .ai-meta { direction: ltr; unicode-bidi: isolate; }
 #ai[dir=rtl] pre { text-align: left; }
 
+/* ---------- 2026-11-20: hide-able price box, the chat list (left or right), rich answers ---------- */
+#ai .ai-pay[hidden], #ai .ai-payshow[hidden], #ai .ai-undo[hidden], #ai .ai-flip[hidden], #ai .ai-tbl tr[hidden] { display: none !important; }
+#ai .ai-pay { position: relative; }
+#ai .ai-payhide { float: right; margin: -.2em -.3em .3em .6em; font: inherit; font-size: .85em; padding: .25em .7em; border: 1px solid var(--ai-line); border-radius: 999px; background: var(--ai-bot); color: var(--ai-sub); cursor: pointer; }
+#ai .ai-payhide:hover, #ai .ai-payhide:focus-visible { color: var(--ai-ink); border-color: var(--ai-acc); }
+#ai .ai-modes { align-items: flex-end; }
+#ai .ai-payshow { margin-left: auto; align-self: center; font: inherit; font-size: .88em; border: 0; background: none; color: var(--ai-link, #2f5fd0); text-decoration: underline; cursor: pointer; padding: .3em .2em; }
+html body.dark-mode #ai.ai .ai-payshow { color: #8fb0ff; }
+html body.dark-mode #ai.ai .ai-payhide { background: var(--ai-bot); color: var(--ai-sub); border-color: var(--ai-line); }
+
+#ai .ai-sidebtn .ai-cn { font-size: .8em; color: var(--ai-sub); }
+#ai .ai-sidebtn[aria-expanded="true"] { border-color: var(--ai-acc); }
+#ai .ai-curtitle { flex: 1 1 8em; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ai-ink); }
+#ai .ai-wrap { display: grid; grid-template-columns: minmax(13em, 17em) minmax(0, 1fr); gap: .8em; align-items: start; }
+#ai .ai-side-r .ai-wrap { grid-template-columns: minmax(0, 1fr) minmax(13em, 17em); }
+#ai .ai-side-r .ai-side { order: 2; }
+#ai .ai-side-off .ai-wrap { grid-template-columns: minmax(0, 1fr); }
+#ai .ai-side-off .ai-side { display: none; }
+#ai .ai-main { min-width: 0; }
+#ai .ai-side { border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); padding: .55em; display: flex; flex-direction: column; gap: .45em; max-height: max(26em, calc(100vh - 260px)); min-height: 12em; position: sticky; top: 70px; box-sizing: border-box; color: var(--ai-ink); }
+#ai .ai-csearch { width: 100%; box-sizing: border-box; }
+#ai .ai-stools { display: flex; gap: .4em; align-items: center; }
+#ai .ai-stools select { flex: 1 1 auto; min-width: 0; padding-top: .25em; padding-bottom: .25em; font-size: .9em; }
+#ai .ai-clist { overflow-y: auto; flex: 1 1 auto; min-height: 0; margin: 0 -.25em; padding: 0 .25em; }
+#ai .ai-chead { font-size: .78em; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ai-sub); margin: .6em .2em .25em; }
+#ai .ai-chead:first-child { margin-top: .1em; }
+#ai .ai-cnote { font-size: .85em; color: var(--ai-sub); margin: .3em .4em .5em; }
+#ai .ai-crow { display: flex; align-items: flex-start; border-radius: .45em; margin: 1px 0; }
+#ai .ai-crow:hover { background: var(--ai-bot); }
+#ai .ai-crow.is-cur { background: var(--ai-me); box-shadow: inset 3px 0 0 var(--ai-acc); }
+#ai .ai-crow.is-drag { opacity: .45; }
+#ai .ai-copen { flex: 1 1 auto; min-width: 0; text-align: left; font: inherit; background: none; border: 0; color: var(--ai-ink); cursor: pointer; padding: .35em .45em; display: flex; flex-direction: column; gap: .1em; border-radius: .45em; }
+#ai .ai-ctitle { font-weight: 600; font-size: .93em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ai .ai-csub { font-size: .76em; color: var(--ai-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ai .ai-csnip { font-size: .8em; color: var(--ai-sub); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#ai .ai-clist mark { background: #fde68a; color: #1f2430; border-radius: .15em; padding: 0 .05em; }
+#ai .ai-crename { width: 100%; box-sizing: border-box; font: inherit; font-size: .93em; padding: .2em .35em; border: 1px solid var(--ai-acc); border-radius: .35em; background: var(--ai-bot); color: var(--ai-ink); }
+#ai .ai-cic { flex: 0 0 auto; font: inherit; font-size: .9em; line-height: 1; min-width: 2em; min-height: 2em; border: 0; border-radius: .4em; background: none; color: var(--ai-sub); cursor: pointer; opacity: .55; }
+#ai .ai-crow:hover .ai-cic, #ai .ai-crow.is-cur .ai-cic, #ai .ai-cic:focus-visible, #ai .ai-cic[aria-expanded="true"], #ai .ai-cpin[aria-pressed="true"], #ai .ai-fhead .ai-cic { opacity: 1; }
+#ai .ai-cpin { filter: grayscale(1); }
+#ai .ai-cpin[aria-pressed="true"] { filter: none; }
+#ai .ai-cic:hover { background: var(--ai-line); color: var(--ai-ink); }
+#ai .ai-cmenu { margin: .1em .3em .45em 1em; padding: .3em; border: 1px solid var(--ai-line); border-radius: .5em; background: var(--ai-bot); display: flex; flex-direction: column; gap: .15em; box-shadow: 0 4px 14px rgba(0, 0, 0, .12); }
+#ai .ai-cmenu button { font: inherit; font-size: .9em; text-align: left; padding: .4em .55em; border: 0; border-radius: .35em; background: none; color: var(--ai-ink); cursor: pointer; }
+#ai .ai-cmenu button:hover, #ai .ai-cmenu button:focus-visible { background: var(--ai-panel); }
+#ai .ai-cmenu .ai-cdel { color: var(--ai-err); }
+#ai .ai-cmove { display: flex; flex-direction: column; gap: .2em; padding: .3em .55em; font-size: .9em; }
+#ai .ai-cmove select { font: inherit; padding: .25em; border: 1px solid var(--ai-line); border-radius: .35em; background: var(--ai-panel); color: var(--ai-ink); }
+#ai .ai-fhead { display: flex; align-items: center; margin-top: .45em; border-radius: .45em; }
+#ai .ai-ftog { flex: 1 1 auto; min-width: 0; text-align: left; font: inherit; font-size: .9em; font-weight: 700; border: 0; background: none; color: var(--ai-ink); cursor: pointer; padding: .35em .3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#ai .ai-fcar { display: inline-block; width: 1em; color: var(--ai-sub); }
+#ai .ai-fn { font-weight: 400; font-size: .85em; color: var(--ai-sub); }
+#ai .ai-fbody { padding-left: .55em; border-left: 2px solid transparent; margin-left: .45em; min-height: .4em; }
+#ai .ai-fbody[data-fold=""] { padding-left: 0; margin-left: 0; border: 0; }
+#ai .is-over { background: var(--ai-me); outline: 2px dashed var(--ai-acc); outline-offset: -2px; }
+#ai .ai-undo { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 2147483000; display: flex; align-items: center; gap: .6em; max-width: calc(100vw - 32px); box-sizing: border-box; padding: .5em .6em .5em 1em; border-radius: .7em; background: #1f2430; color: #f4f5f8; box-shadow: 0 8px 26px rgba(0, 0, 0, .3); font-size: .95em; }
+#ai .ai-undo span { color: #f4f5f8; }
+#ai .ai-undo .tu-btn { color: #c7c4ff; border-color: #6d68e8; background: transparent; }
+#ai .ai-undo .ai-cic { color: #c9ccd4; opacity: 1; }
+/* narrow (the chat box under ~720 px): the list folds above the chat, ☰ opens it */
+#ai .ai-narrow .ai-wrap, #ai .ai-narrow.ai-side-r .ai-wrap { grid-template-columns: minmax(0, 1fr); }
+#ai .ai-narrow .ai-side { order: 0; position: static; max-height: 60vh; }
+#ai .ai-narrow .ai-curtitle { flex-basis: 100%; order: 9; font-size: .92em; }
+#ai .ai-chat.mes-pfill .ai-wrap { flex: 1 1 auto; min-height: 0; align-items: stretch; }
+#ai .ai-chat.mes-pfill .ai-main { display: flex; flex-direction: column; min-height: 0; }
+#ai .ai-chat.mes-pfill .ai-side { position: static; max-height: none; }
+html body.dark-mode #ai.ai :is(.ai-side, .ai-copen, .ai-ftog, .ai-cmenu button, .ai-curtitle) { color: var(--ai-ink); }
+html body.dark-mode #ai.ai :is(.ai-csub, .ai-csnip, .ai-chead, .ai-cnote, .ai-fn, .ai-fcar) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-crow.is-cur { background: var(--ai-me); }
+html body.dark-mode #ai.ai .ai-cmenu { background: var(--ai-bot); border-color: var(--ai-line); }
+html body.dark-mode #ai.ai .ai-cmenu .ai-cdel { color: var(--ai-err); }
+html body.dark-mode #ai.ai .ai-cmove select, html body.dark-mode #ai.ai .ai-crename { background: var(--ai-panel); color: var(--ai-ink); }
+html body.dark-mode #ai.ai .ai-clist mark { background: #8a6d00; color: #fff7d6; }
+html body.dark-mode #ai.ai .ai-undo, html body.dark-mode #ai.ai .ai-undo span { background: #e9ebf2; color: #1f2430; }
+html body.dark-mode #ai.ai .ai-undo .tu-btn { color: #3b33c7; border-color: #3b33c7; }
+html body.dark-mode #ai.ai .ai-undo .ai-cic { color: #444; }
+#ai[dir=rtl] .ai-copen, #ai[dir=rtl] .ai-ftog, #ai[dir=rtl] .ai-cmenu button { text-align: right; }
+
+/* rich answers: math, tables, charts, open in */
+#ai .ai-tex { color: inherit; }
+#ai .ai-tex:not(.is-done) { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .92em; }
+#ai .ai-texd { display: block; margin: .6em 0; overflow-x: auto; overflow-y: hidden; text-align: center; padding: .15em 0; }
+#ai .ai-texd mjx-container { margin: 0 !important; }
+#ai .ai-md mjx-container svg { max-width: 100%; }
+#ai .ai-lang-tag { position: absolute; top: .45em; left: .8em; font-size: .72em; text-transform: lowercase; color: var(--ai-sub); font-family: inherit; }
+#ai .ai-tbl { margin: .6em 0; }
+#ai .ai-tbar { display: flex; flex-wrap: wrap; gap: .4em; align-items: center; margin-bottom: .35em; }
+#ai .ai-tfilter { font: inherit; font-size: .85em; padding: .25em .5em; border: 1px solid var(--ai-line); border-radius: .4em; background: var(--ai-bot); color: var(--ai-ink); width: 12em; max-width: 100%; }
+#ai .ai-tcount { font-size: .8em; color: var(--ai-sub); }
+#ai .ai-tscroll { overflow-x: auto; max-width: 100%; }
+#ai .ai-md .ai-tscroll table { display: table; border-collapse: collapse; margin: 0; }
+#ai .ai-md th.ai-th { position: relative; cursor: pointer; user-select: none; padding-right: 1.4em; background: var(--ai-panel); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#ai .ai-md th.ai-th::after { content: "↕"; position: absolute; right: .45em; opacity: .35; font-size: .8em; }
+#ai .ai-md th[aria-sort="ascending"]::after { content: "▲"; opacity: .9; }
+#ai .ai-md th[aria-sort="descending"]::after { content: "▼"; opacity: .9; }
+#ai .ai-md th.ai-th:focus-visible { outline: 2px solid var(--ai-acc); outline-offset: -2px; }
+#ai .ai-rz { position: absolute; top: 0; right: -3px; width: 8px; height: 100%; cursor: col-resize; z-index: 1; touch-action: none; }
+#ai .ai-rz:hover, #ai .is-rz .ai-rz { background: var(--ai-acc); opacity: .35; }
+#ai .ai-md .ai-tscroll td { overflow-wrap: anywhere; }
+#ai .ai-md tbody tr:nth-child(even) td { background: var(--ai-panel); }
+html body.dark-mode #ai.ai .ai-md tbody tr:nth-child(even) td { background: var(--ai-panel); }
+#ai .ai-chart { margin: .6em 0; padding: .5em; border: 1px solid var(--ai-line); border-radius: .5em; background: var(--ai-bot); color: var(--ai-ink); }
+#ai .ai-chbar { display: flex; flex-wrap: wrap; gap: .35em; margin-bottom: .3em; }
+#ai .ai-chsvg svg { display: block; max-width: 100%; height: auto; }
+#ai .ai-mini[aria-pressed="true"] { background: var(--ai-acc); border-color: var(--ai-acc); color: var(--ai-acctext); }
+#ai .ai-openin { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .35em; margin-left: .3em; font-size: .82em; color: var(--ai-sub); }
+#ai .ai-openin .ai-mini { font-size: 1em; }
+html body.dark-mode #ai.ai :is(.ai-chart, .ai-tbar, .ai-tcount, .ai-openin, .ai-lang-tag) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-chart { color: var(--ai-ink); background: var(--ai-bot); }
+html body.dark-mode #ai.ai .ai-tfilter { background: var(--ai-bot); color: var(--ai-ink); }
+html body.dark-mode #ai.ai .ai-md th.ai-th { background: var(--ai-panel); color: var(--ai-ink); }
+html body.dark-mode #ai.ai .ai-mini[aria-pressed="true"] { background: var(--ai-acc); color: var(--ai-acctext); }
+html body.dark-mode #ai.ai .ai-mini { color: var(--ai-ink); }
+@media (max-width: 640px) {
+  #ai .ai-openin { margin-left: 0; }
+  #ai .ai-modes { flex-wrap: wrap; }
+  #ai .ai-mode { padding: .5em .8em; }
+}
+#ai #ai-addfolder { white-space: nowrap; flex: 0 0 auto; }
+/* cost so far + typical costs (2026-11-20) */
+#ai .ai-cost { margin: .45em 0 0; font-size: .9em; line-height: 1.5; color: var(--ai-ink); }
+#ai .ai-cost[hidden] { display: none; }
+#ai .ai-typ { margin-top: .5em; }
+#ai .ai-typ summary { font-size: .92em; }
+html body.dark-mode #ai.ai .ai-cost { color: var(--ai-ink); }
+html body.dark-mode #ai.ai .ai-cost .ai-sub { color: var(--ai-sub); }
+#ai .ai-chead--drop { opacity: .7; }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -611,6 +739,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ai.ai{--ai-warn:#ff8f0a;--ai-err:#e23427;--ai-ok:#30d962}
 	body.dark-mode #ai .ai-text a{color:var(--ai-link, #7a99e1)}
 	body.dark-mode #ai .ai-figimg video{background:#525252}
+	body.dark-mode #ai .ai-payshow{color:var(--ai-link, #7a99e1)}
+	body.dark-mode #ai .ai-clist mark{background:#584d23;color:#d3d6dc}
+	body.dark-mode #ai .ai-undo{background:#404a63}
+	body.dark-mode #ai .ai-undo .tu-btn{border-color:#211bb1}
+	body.dark-mode #ai .ai-undo .ai-cic{color:#999ca4}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -828,7 +961,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<nav class="ai-lang" aria-label="Language"><details><summary>&#127760; English</summary><ul><li><a href="/ai" hreflang="en" lang="en" aria-current="page">English</a></li><li><a href="/ai-es" hreflang="es" lang="es">Español</a></li><li><a href="/ai-pt" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li><li><a href="/ai-fr" hreflang="fr" lang="fr">Français</a></li><li><a href="/ai-de" hreflang="de" lang="de">Deutsch</a></li><li><a href="/ai-tr" hreflang="tr" lang="tr">Türkçe</a></li><li><a href="/ai-ru" hreflang="ru" lang="ru">Русский</a></li><li><a href="/ai-zh" hreflang="zh-CN" lang="zh-CN">简体中文</a></li><li><a href="/ai-hi" hreflang="hi" lang="hi">हिन्दी</a></li><li><a href="/ai-id" hreflang="id" lang="id">Bahasa Indonesia</a></li><li><a href="/ai-vi" hreflang="vi" lang="vi">Tiếng Việt</a></li><li><a href="/ai-ar" hreflang="ar" lang="ar">العربية</a></li><li><a href="/ai-fa" hreflang="fa" lang="fa">فارسی</a></li></ul></details></nav>
 		<div class="tu-card ai-off" id="ai-off" hidden></div>
 
-		<div class="tu-card ai-pay">
+		<div class="tu-card ai-pay" id="ai-pay">
+			<button type="button" class="ai-payhide" id="ai-payhide" title="Hide this box (the About paying link brings it back)">Hide <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">You pay per message, in HBD</h2>
 			<p>No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.</p>
 			<details class="ai-why">
@@ -854,16 +988,28 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 Chat</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ Picture</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 Video</button>
+			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ About paying</button>
 		</div>
 
 		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">
 			<div class="ai-bar" id="ai-chatbar">
-				<label class="ai-sr" for="ai-chats">Your chats</label>
-				<select id="ai-chats" class="tu-input ai-chats" data-native></select>
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" aria-controls="ai-side" aria-expanded="true" title="Show or hide your chats">☰ Chats <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" id="ai-flip">⇄</button>
+				<span class="ai-curtitle" id="ai-curtitle"></span>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">＋ New chat</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ai-del" title="Delete this chat from this browser">Delete chat</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="Save to your cloud, Hive or a file">💾 Save</button>
 			</div>
+			<div class="ai-wrap">
+			<aside class="ai-side" id="ai-side" aria-label="Your chats">
+				<input type="search" id="ai-csearch" class="tu-input ai-csearch" placeholder="Search chats…" aria-label="Search your chats (names and messages)" autocomplete="off">
+				<div class="ai-stools">
+					<label class="ai-sr" for="ai-csort">Sort</label>
+					<select id="ai-csort" class="tu-input" data-native><option value="recent">Newest first</option><option value="old">Oldest first</option><option value="name">By name</option></select>
+					<button type="button" class="ai-mini" id="ai-addfolder" title="Make a folder to group chats">＋ Folder</button>
+				</div>
+				<div class="ai-clist" id="ai-clist" role="list"></div>
+			</aside>
+			<div class="ai-main">
 			<div class="ai-log" id="ai-log" aria-live="polite" data-mes-tsize="mes-ai:fz" data-mes-tsize-label="Text" data-mes-grip="mes-ai:h" data-mes-grip-mode="max" data-mes-grip-min="220"></div>
 			<div class="ai-compose">
 				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
@@ -880,6 +1026,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Pay &amp; send</button>
 				</div>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
+				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
+				<details class="ai-why ai-typ" id="ai-typ">
+					<summary>Typical costs for long chats</summary>
+					<p class="tu-note">The whole chat is sent to the AI again with every message, so each message costs more as the chat grows. Price of one message with a Medium answer, by how long the chat already is (1,000 tokens is about 750 words):</p>
+					<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ttable"></table></div>
+					<p class="tu-note" id="ai-tsession"></p>
+				</details>
+			</div>
+			</div>
 			</div>
 			<details class="ai-save" id="ai-save">
 				<summary>💾 Save your chats <span class="ai-sub" id="ai-savestate"></span></summary>
@@ -944,6 +1099,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 
 		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
+		<div class="ai-undo" id="ai-undo" role="status" hidden></div>
 
 		<div class="tu-card ai-rules">
 			<h3>Rules</h3>
@@ -1032,7 +1188,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=9" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
