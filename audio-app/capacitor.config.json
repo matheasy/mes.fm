@@ -1,0 +1,12 @@
+{
+  "appId": "fm.mes.audio",
+  "appName": "MES Audio",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0369a1"
+  },
+  "android": {
+    "backgroundColor": "#14161b"
+  }
+}

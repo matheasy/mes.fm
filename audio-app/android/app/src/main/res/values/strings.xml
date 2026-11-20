@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MES Audio</string>
+    <string name="title_activity_main">MES Audio</string>
+    <string name="package_name">fm.mes.audio</string>
+    <string name="custom_url_scheme">fm.mes.audio</string>
+</resources>

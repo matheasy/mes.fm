@@ -31,6 +31,11 @@
 "updated":"2026-11-20",
 "type":"Tool"
 },
+"/ai-detector":{
+"added":"2026-11-20",
+"updated":"2026-11-20",
+"type":"Tool"
+},
 "/alarm-clock":{
 "added":"2026-10-06",
 "updated":"2026-11-18",

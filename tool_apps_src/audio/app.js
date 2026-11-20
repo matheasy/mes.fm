@@ -787,7 +787,7 @@
 	function stopNativeRec() {
 		var r = rec; rec = null; $("au-recbar").hidden = true; $("au-rec").setAttribute("aria-pressed", "false"); simpleSync();
 		var bz = busy("Saving the recording");
-		window.MESAudioNative.rec.stop().then(function (o) { if (!o || !o.buf) throw new Error("nothing was recorded"); return decode(o.buf); }).then(function (ab) {
+		window.MESAudioNative.rec.stop().then(function (o) { if (!o || !o.buf) throw new Error("nothing was recorded"); return decode(o.buf).then(function (ab) { if (o.discard) o.discard(); return ab; }); }).then(function (ab) {
 			bz.done(); var ch = abToCh(ab), first = !S.tracks.length;
 			addTrackFrom(ch, "Recording " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), r.at, true);
 			if (first) { S.name = "Recording"; zoomFit(); }
@@ -822,7 +822,7 @@
 	(function () {
 		if (typeof window.AudioEncoder !== "function") { var mo = $("aus-fmt").querySelector('option[value="m4a"]'); if (mo) mo.remove(); }
 		var sf = store("sfmt"); if (sf && $("aus-fmt").querySelector('option[value="' + sf + '"]')) $("aus-fmt").value = sf;
-		$("aus-share").hidden = !(window.MESAudioNative || canShareFiles()); if (window.MESAudioNative) $("aus-save").textContent = "⬇ Save to Files";
+		$("aus-share").hidden = !(window.MESAudioNative || canShareFiles()); if (window.MESAudioNative) $("aus-save").textContent = window.MESAudioNative.saveLabel || "⬇ Save to Files";
 		$("aus-rec").onclick = toggleRec; $("aus-open").onclick = function () { $("au-file").click(); };
 		$("aus-play").onclick = function () { togglePlay(); simpleSync(); };
 		$("aus-undo").onclick = function () { undo(); simpleSync(); };
@@ -971,6 +971,7 @@
 		{ m: "File", name: "Export…", kb: MOD + "E", fn: openExport },
 		{ m: "File", name: "Export markers as labels (.txt)", fn: exportLabels },
 		{ m: "File", name: "Load the noisy test clip", fn: testClip },
+		{ m: "File", name: "Screen Recorder (record screen, camera, voice)…", fn: function () { window.open("/screen-recorder", "_blank", "noopener"); } },
 		{ m: "File", name: "New project (clear everything)", fn: function () { if (S.tracks.length && !confirm("Clear the whole project? (Undo can bring it back)")) return; stopAll(); S.tracks = []; S.markers = []; S.sel = null; S.selT = []; S.cursor = 0; commit("New project"); } },
 		{ m: "Edit", name: "Undo", kb: MOD + "Z", fn: undo }, { m: "Edit", name: "Redo", kb: MOD + "Shift+Z", fn: redo }, { sep: "Edit" },
 		{ m: "Edit", name: "Cut", kb: MOD + "X", fn: doCut }, { m: "Edit", name: "Copy", kb: MOD + "C", fn: doCopy }, { m: "Edit", name: "Paste", kb: MOD + "V", fn: doPaste },
@@ -1081,6 +1082,18 @@
 	S.spec = !!store("spec"); S.laneH = Math.max(LANE_MIN, Math.min(LANE_MAX, store("laneH") || LANE_DEF));
 	dragGrip($("au-agrip"), function () { return areaH || scrollBox.clientHeight; }, function (v) { setAreaH(v); }, function () { store("areaH", areaH); }, function () { setAreaH(0, true); });
 	if (areaH) setAreaH(areaH);
-	buildMenus(); H.push("Start", snap()); setSimple(simpleWanted(), false); afterChange(); meterClear(); offerRestore();
+	buildMenus(); H.push("Start", snap()); setSimple(simpleWanted(), false); afterChange(); meterClear(); offerRestore(); receiveHandoff();
+	/* files handed over by another MES page (MES Screen Recorder's "Open in Audio Editor"): IndexedDB "mes-handoff", same format as MESImg.handoffSend */
+	function receiveHandoff() {
+		var m = /[?&]handoff=([\w-]+)/.exec(location.search); if (!m || !window.indexedDB) return;
+		try { var u = new URL(location.href); u.searchParams.delete("handoff"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); } catch (e) { /* ignore */ }
+		var got = null, r = indexedDB.open("mes-handoff", 1);
+		r.onupgradeneeded = function () { r.result.createObjectStore("h"); };
+		r.onsuccess = function () {
+			var db = r.result, t = db.transaction("h", "readwrite"), st = t.objectStore("h"), g = st.get(m[1]);
+			g.onsuccess = function () { got = g.result || null; if (got) st.delete(m[1]); };
+			t.oncomplete = function () { db.close(); if (!got || !got.files || !got.files.length) { toast("The handed-over file was not found (it is kept for an hour)."); return; } openFiles(got.files.filter(function (f) { return f.blob; }).map(function (f) { return new File([f.blob], f.name || "recording.webm", { type: f.type || f.blob.type || "" }); })); };
+		};
+	}
 	window.MESAudioEditor = { state: S, openFiles: openFiles, applyFx: applyFx, effects: EFFECTS, commit: commit, testClip: testClip, makeExport: makeExport, setSimple: setSimple, stopRec: stopRec, isRecording: function () { return !!rec; } };
 })();

@@ -577,6 +577,9 @@ body.au-noscroll { overflow: hidden; }
 .au.au-simple-on .au-s-foot { order: 6; padding: 4px 12px 10px; background: var(--au-panel); }
 .au.au-simple-on .au-scroll { height: auto !important; max-height: 280px !important; min-height: 0; }
 .au.au-simple-on .au-agrip { display: none; }
+.au.au-simple-on .au-main { flex: none; }
+.au-s-intro { display: none; margin: 0; padding: 4px 14px 12px; color: var(--au-dim); font-size: 0.95em; line-height: 1.45; background: var(--au-panel); order: 2; }
+.au.au-simple-on.au-s-empty .au-s-intro { display: block; }
 
 
 	@media print {
@@ -944,6 +947,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="au-s-rec" id="aus-rec" aria-pressed="false"><span class="au-s-dot"></span><span id="aus-rect">Record</span></button>
 				<button type="button" class="au-s-big" id="aus-open">📂<span>Open a file</span></button>
 			</div>
+			<p class="au-s-intro">Record your voice or open an audio or video file, then cut it, remove background noise with AI and save or share it. Everything stays on your device.</p>
 			<div class="au-s-tools" id="aus-tools" hidden>
 				<div class="au-s-row">
 					<button type="button" class="au-s-btn au-s-play" id="aus-play" aria-label="Play">▶</button>
@@ -1094,7 +1098,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=7" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

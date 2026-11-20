@@ -270,3 +270,6 @@ body.au-noscroll { overflow: hidden; }
 .au.au-simple-on .au-s-foot { order: 6; padding: 4px 12px 10px; background: var(--au-panel); }
 .au.au-simple-on .au-scroll { height: auto !important; max-height: 280px !important; min-height: 0; }
 .au.au-simple-on .au-agrip { display: none; }
+.au.au-simple-on .au-main { flex: none; }
+.au-s-intro { display: none; margin: 0; padding: 4px 14px 12px; color: var(--au-dim); font-size: 0.95em; line-height: 1.45; background: var(--au-panel); order: 2; }
+.au.au-simple-on.au-s-empty .au-s-intro { display: block; }
