@@ -301,28 +301,46 @@
 		b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	});
 
-	/* touch gestures + 3D tilt on the stage */
-	var tp = {}, tilt = null;
+	/* touch gestures + 3D orbit on the stage.
+	   3D: the mouse drags the camera round the well (left or right button; the game is played with the keys), the wheel zooms,
+	   two fingers orbit + pinch zoom; "🎥 Turn view" makes one finger orbit too (game swipes off until it is turned off). */
+	var tp = {}, orb = null, pinch = 0, orbitMode = false;
+	function threeOn() { return S.view === "3d" && !!v3; }
 	stage.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	stage.addEventListener("pointerdown", function (e) {
 		audio();
-		var touch = e.pointerType !== "mouse";
-		if (!touch) {
+		if (e.pointerType === "mouse") {
 			stage.focus({ preventScroll: true });
-			if (S.view === "3d" && (e.button === 2 || e.shiftKey)) { tilt = { x: e.clientX, y: e.clientY }; try { stage.setPointerCapture(e.pointerId); } catch (er) {} }
+			if (threeOn()) { orb = { id: e.pointerId, x: e.clientX, y: e.clientY }; try { stage.setPointerCapture(e.pointerId); } catch (er) {} }
 			return;
 		}
-		tp[e.pointerId] = { x0: e.clientX, y0: e.clientY, sx: e.clientX, t0: now(), moved: false, sd: false, lx: e.clientX, ly: e.clientY };
+		tp[e.pointerId] = { x0: e.clientX, y0: e.clientY, sx: e.clientX, t0: now(), moved: false, sd: false, x: e.clientX, y: e.clientY };
 		try { stage.setPointerCapture(e.pointerId); } catch (er) {}
-		if (Object.keys(tp).length === 2 && S.view === "3d") tilt = { x: e.clientX, y: e.clientY, two: true };
+		var ids = Object.keys(tp);
+		if (threeOn() && (orbitMode || ids.length === 2)) {
+			if (ids.length === 2) { var a = tp[ids[0]], b2 = tp[ids[1]]; pinch = Math.hypot(a.x - b2.x, a.y - b2.y); if (tp[ids[0]].sd) release("sd"); }
+			orb = { touch: true, x: e.clientX, y: e.clientY };
+		}
 		e.preventDefault();
 	});
 	stage.addEventListener("pointermove", function (e) {
-		if (tilt && (e.pointerType === "mouse" || tilt.two)) {
-			if (v3) v3.tilt((e.clientX - tilt.x) * 0.004, (e.clientY - tilt.y) * 0.004);
-			tilt.x = e.clientX; tilt.y = e.clientY; return;
+		if (orb && e.pointerType === "mouse") {
+			v3.orbit((e.clientX - orb.x) * -0.006, (e.clientY - orb.y) * 0.005);
+			orb.x = e.clientX; orb.y = e.clientY; return;
 		}
-		var p = tp[e.pointerId]; if (!p || S.tc === "btn") return;
+		var p = tp[e.pointerId]; if (!p) return;
+		var lx = p.x, ly = p.y; p.x = e.clientX; p.y = e.clientY;
+		if (orb && orb.touch) {
+			var ids = Object.keys(tp);
+			if (ids.length >= 2) {
+				var a = tp[ids[0]], b2 = tp[ids[1]], d = Math.hypot(a.x - b2.x, a.y - b2.y);
+				if (pinch > 0 && d > 0) v3.zoom(d / pinch);
+				pinch = d;
+				v3.orbit((e.clientX - lx) * -0.004, (e.clientY - ly) * 0.003);   // each finger moves it half as much
+			} else v3.orbit((e.clientX - lx) * -0.008, (e.clientY - ly) * 0.006);
+			return;
+		}
+		if (S.tc === "btn") return;
 		var cell = Math.max(14, L.c * 0.85), dx = e.clientX - p.sx;
 		while (dx >= cell) { press("R"); release("R"); p.sx += cell; dx -= cell; p.moved = true; }
 		while (dx <= -cell) { press("L"); release("L"); p.sx -= cell; dx += cell; p.moved = true; }
@@ -330,21 +348,36 @@
 		if (!p.sd && dy > cell * 1.4 && dy / Math.max(1, dt) < 0.5 && Math.abs(e.clientX - p.x0) < cell * 1.5) { p.sd = true; press("sd"); }
 	});
 	function tEnd(e) {
-		if (tilt && (e.pointerType === "mouse" || tilt.two)) { tilt = null; delete tp[e.pointerId]; return; }
+		if (e.pointerType === "mouse") { orb = null; return; }
 		var p = tp[e.pointerId]; if (!p) return;
 		delete tp[e.pointerId];
+		if (orb && orb.touch) { if (!Object.keys(tp).length) { orb = null; pinch = 0; } return; }
 		if (S.tc === "btn") return;
 		var dx = e.clientX - p.x0, dy = e.clientY - p.y0, dt = now() - p.t0, cell = Math.max(14, L.c * 0.85);
 		if (p.sd) { release("sd"); return; }
 		if (e.type === "pointercancel") return;
 		if (!p.moved && Math.abs(dx) < 12 && Math.abs(dy) < 12 && dt < 350) {
-			var r = stage.getBoundingClientRect();
-			press(e.clientX - r.left < r.width / 2 ? "ccw" : "cw"); release(e.clientX - r.left < r.width / 2 ? "ccw" : "cw");
+			var r = stage.getBoundingClientRect(), k = e.clientX - r.left < r.width / 2 ? "ccw" : "cw";
+			press(k); release(k);
 		} else if (dy > cell * 2 && dy / Math.max(1, dt) > 0.55 && Math.abs(dy) > Math.abs(dx)) { press("hd"); release("hd"); }
 		else if (dy < -cell * 2 && -dy / Math.max(1, dt) > 0.5 && Math.abs(dy) > Math.abs(dx)) { press("hold"); release("hold"); }
 	}
 	stage.addEventListener("pointerup", tEnd); stage.addEventListener("pointercancel", tEnd);
-	stage.addEventListener("dblclick", function () { if (v3) v3.reset(); });
+	stage.addEventListener("dblclick", function () { if (v3) { v3.reset(); camUi(); } });
+	stage.addEventListener("wheel", function (e) {
+		if (!threeOn()) return;
+		e.preventDefault();
+		v3.zoom(Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015)));
+		camUi();
+	}, { passive: false });
+	$("bk-orbit").addEventListener("click", function () { orbitMode = !orbitMode; camUi(); toast(orbitMode ? "One finger now turns the view. Tap 🎥 again to play with swipes." : "Swipes play the game again."); });
+	$("bk-camreset").addEventListener("click", function () { if (v3) v3.reset(); camUi(); });
+	function camUi() {
+		var on = S.view === "3d";
+		$("bk-cam").hidden = !on;
+		$("bk-orbit").hidden = !COARSE;
+		$("bk-orbit").setAttribute("aria-pressed", orbitMode ? "true" : "false");
+	}
 
 	/* gamepad */
 	var padPrev = {};
@@ -383,9 +416,8 @@
 		L.by = Math.round((h - 20 * c) / 2 + 0.3 * c);
 		var b3 = $("bk-3d");
 		if (S.view === "3d") {
-			var pad = c * 0.6;
-			b3.style.left = (L.bx - pad) + "px"; b3.style.top = (L.by - pad) + "px"; b3.style.width = (10 * c + 2 * pad) + "px"; b3.style.height = (20 * c + 2 * pad) + "px";
-			if (v3) v3.size(10 * c + 2 * pad, 20 * c + 2 * pad);
+			b3.style.left = "0px"; b3.style.top = "0px"; b3.style.width = w + "px"; b3.style.height = h + "px";
+			if (v3) v3.size(w, h, c, L.bx + 5 * c, L.by + 10 * c);
 		}
 	}
 	if (window.ResizeObserver) new ResizeObserver(function () { layout(); }).observe(stage); else window.addEventListener("resize", layout);
@@ -451,9 +483,7 @@
 		ctx.clearRect(0, 0, L.w, L.h);
 		var bx = L.bx, by = L.by, three = S.view === "3d" && v3;
 		// frame
-		ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(bx - 3, by - 3, 10 * c + 6, 20 * c + 6);
-		if (!three) drawBoard(g, bx, by, c);
-		else ctx.clearRect(bx - 3, by - 3, 10 * c + 6, 20 * c + 6);
+		if (!three) { ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(bx - 3, by - 3, 10 * c + 6, 20 * c + 6); drawBoard(g, bx, by, c); }
 		if (run.flash && !three) {
 			var a = 1 - (t - run.flash.t0) / 260;
 			if (a > 0) { ctx.fillStyle = "rgba(255,255,255," + (a * 0.85) + ")"; run.flash.rows.forEach(function (r) { ctx.fillRect(bx, by + r * c, 10 * c, c); }); }
@@ -514,12 +544,12 @@
 	/* ---------- 3D ---------- */
 	var v3 = null, v3loading = false;
 	function setView(v) {
-		S.view = v === "3d" ? "3d" : "2d"; save(); setupUi();
+		S.view = v === "3d" ? "3d" : "2d"; save(); setupUi(); camUi();
 		$("bk-3d").hidden = S.view !== "3d";
 		if (S.view === "3d" && !v3 && !v3loading) {
 			if (!window.BK3D) { S.view = "2d"; setupUi(); return; }
 			v3loading = true; $("bk-status").textContent = "Loading the 3D view…";
-			window.BK3D.create($("bk-3d")).then(function (v) { v3 = v; v3loading = false; layout(); $("bk-status").textContent = "3D view: right-drag or two fingers turn the well, double-click resets."; }, function () {
+			window.BK3D.create($("bk-3d")).then(function (v) { v3 = v; v3loading = false; layout(); $("bk-status").textContent = COARSE ? "3D view: two fingers turn and zoom the view (or tap 🎥 Turn view), double-tap resets." : "3D view: drag with the mouse to look round the well, the wheel zooms, double-click resets."; }, function () {
 				v3loading = false; S.view = "2d"; save(); setupUi(); $("bk-3d").hidden = true; toast("The 3D view could not load (no WebGL or offline).");
 			});
 		}
@@ -952,7 +982,7 @@
 	}
 
 	/* ---------- start ---------- */
-	lvOptions(); setupUi();
+	lvOptions(); setupUi(); camUi();
 	wireLogin($("bk-hlogin"));
 	function addPanel() { if (window.MESPanel && !view.__mesPanel) window.MESPanel.add(view, { bar: $("bk-vbar"), stage: stage, onChange: function () { setTimeout(layout, 40); } }); }
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);

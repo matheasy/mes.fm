@@ -18,7 +18,7 @@
 			<div class="bk-view" id="bk-view">
 				<div class="bk-vbar" id="bk-vbar">
 					<span class="bk-vbtns" role="group" aria-label="Game"><button type="button" class="bk-vb bk-vb--go" id="bk-new" title="New game (N)">▶ New game</button><button type="button" class="bk-vb" id="bk-pause" title="Pause (P or Esc)">❚❚ Pause</button></span>
-					<span class="bk-vbtns" role="group" aria-label="View"><span class="tu-seg bk-dim" id="bk-dim" role="group" aria-label="2D or 3D"><button type="button" data-v="2d" aria-pressed="true">2D</button><button type="button" data-v="3d" aria-pressed="false">3D</button></span><button type="button" class="bk-vb" id="bk-snd" aria-pressed="true" title="Sound on / off (M)">🔊</button><button type="button" class="bk-vb" id="bk-setbtn" aria-expanded="false" aria-controls="bk-settings" title="Controls and settings">⚙ Settings</button></span>
+					<span class="bk-vbtns" role="group" aria-label="View"><span class="tu-seg bk-dim" id="bk-dim" role="group" aria-label="2D or 3D"><button type="button" data-v="2d" aria-pressed="true">2D</button><button type="button" data-v="3d" aria-pressed="false">3D</button></span><span class="bk-vbtns" id="bk-cam" hidden><button type="button" class="bk-vb" id="bk-orbit" aria-pressed="false" title="One finger turns the view instead of moving pieces">🎥 Turn view</button><button type="button" class="bk-vb" id="bk-camreset" title="Back to the front view (double-click)">↺ Front view</button></span><button type="button" class="bk-vb" id="bk-snd" aria-pressed="true" title="Sound on / off (M)">🔊</button><button type="button" class="bk-vb" id="bk-setbtn" aria-expanded="false" aria-controls="bk-settings" title="Controls and settings">⚙ Settings</button></span>
 				</div>
 				<div class="bk-stage" id="bk-stage" tabindex="0" aria-label="Falling Blocks board. Arrow keys move, Up rotates, Space drops, C holds, P pauses." data-mes-grip="mes-blocks:h" data-mes-grip-min="320">
 					<div class="bk-3d" id="bk-3d" hidden></div>
@@ -48,7 +48,7 @@
 				</div>
 				<div class="bk-keys">
 					<p><b>Keyboard</b>: <kbd>←</kbd> <kbd>→</kbd> move, <kbd>↓</kbd> soft drop, <kbd>Space</kbd> hard drop, <kbd>↑</kbd> or <kbd>X</kbd> rotate right, <kbd>Z</kbd> or <kbd>Ctrl</kbd> rotate left, <kbd>A</kbd> rotate 180°, <kbd>C</kbd> or <kbd>Shift</kbd> hold, <kbd>P</kbd> or <kbd>Esc</kbd> pause, <kbd>N</kbd> new game, <kbd>R</kbd> restart, <kbd>M</kbd> sound, <kbd>V</kbd> 2D / 3D.</p>
-					<p><b>Touch</b>: drag sideways to move, tap to rotate (left half turns left, right half turns right), drag down slowly for a soft drop, flick down to drop, flick up to hold. In 3D, drag with two fingers (or the right mouse button) to turn the well.</p>
+					<p><b>Touch</b>: drag sideways to move, tap to rotate (left half turns left, right half turns right), drag down slowly for a soft drop, flick down to drop, flick up to hold. In 3D, drag with the mouse (or two fingers, or one finger after tapping 🎥 Turn view) to look all the way round the well; the mouse wheel or a pinch zooms, and double-click or ↺ Front view goes back.</p>
 					<p><b>Gamepad</b>: d-pad moves (up = hard drop, down = soft drop), A rotates right, B rotates left, X rotates 180°, Y or a shoulder button holds, Start pauses.</p>
 				</div>
 			</div>
@@ -137,7 +137,7 @@
 				<dt>What are DAS and ARR?</dt><dd>When you hold left or right, the piece moves once, waits the "auto-repeat delay" (DAS), then moves again every "repeat rate" (ARR) milliseconds. ARR 0 sends it straight to the wall. Lower numbers are faster; good players use around 100 ms and 0-10 ms.</dd>
 				<dt>Why can't I save a Zen game?</dt><dd>Zen has no end and no score race, so there is nothing to rank.</dd>
 				<dt>Can I play on a phone?</dt><dd>Yes: drag to move, tap to turn, flick down to drop, or use the buttons under the board. Fill window gives the board the whole screen.</dd>
-				<dt>Does 3D change the game?</dt><dd>No. It is the same game drawn with depth and light; you can switch between 2D and 3D in the middle of a game.</dd>
+				<dt>Does 3D change the game?</dt><dd>No. It is the same game drawn with depth and light; you can switch between 2D and 3D in the middle of a game, and turn the camera all the way round while you play.</dd>
 			</dl>
 			<p>Related: <a href="/minesweeper">Minesweeper</a> &middot; <a href="/brick-builder">Brick Builder</a> &middot; <a href="/connect-four">Connect Four</a> &middot; <a href="/tools">All MES tools</a></p>
 		</div>

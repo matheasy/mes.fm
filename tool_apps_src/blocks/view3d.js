@@ -1,8 +1,8 @@
 /* MES Falling Blocks: the 3D view (window.BK3D). Only drawing: it reads the same Game object the 2D canvas draws, so 2D / 3D can be switched
    mid-game. three.js 0.170.0 from jsDelivr (unpkg fallback), loaded the first time 3D is chosen.
    Units: 1 = one cell. The visible well is 10 x 20, x 0..10 left to right, y 0..20 bottom to top, z = depth (front face at z = 0.5).
-   API: BK3D.create(container) -> Promise<view>; view.draw(game, opts {ghost, flash:[rows], dark}); view.size(w, h); view.tilt(dx, dy);
-   view.reset(); view.dispose(). */
+   API: BK3D.create(container) -> Promise<view>; view.draw(game, opts {ghost, flash:[rows], dark}); view.size(w, h); view.orbit(dx, dy);
+   view.zoom(f); view.reset(); view.moved(); view.dispose(). */
 (function () {
 	"use strict";
 	if (typeof document === "undefined" || typeof window === "undefined") return;
@@ -28,7 +28,7 @@
 		r.domElement.style.display = "block";
 		var s = this.scene = new THREE.Scene();
 		this.cam = new THREE.PerspectiveCamera(32, 1, 0.5, 200);
-		this.yaw = -0.18; this.pitch = 0.1;
+		this.yaw = -0.18; this.pitch = 0.1; this.dist = 52;
 		s.add(new THREE.HemisphereLight(0xdfe8ff, 0x2a3040, 1.5));
 		var key = new THREE.DirectionalLight(0xffffff, 2.4);
 		key.position.set(-8, 30, 22); key.castShadow = true;
@@ -67,26 +67,31 @@
 		this.place();
 	}
 	View.prototype.place = function () {
-		var d = 52, cx = W / 2, cy = H / 2;
+		var d = this.dist, cx = W / 2, cy = H / 2;
 		this.cam.position.set(cx + Math.sin(this.yaw) * d * Math.cos(this.pitch), cy + Math.sin(this.pitch) * d, Math.cos(this.yaw) * d * Math.cos(this.pitch));
 		this.cam.lookAt(cx, cy, 0);
 	};
-	View.prototype.tilt = function (dx, dy) {
-		this.yaw = Math.max(-0.75, Math.min(0.75, this.yaw + dx));
-		this.pitch = Math.max(-0.4, Math.min(0.75, this.pitch + dy));
+	/** orbit all the way round (yaw) and from below to nearly straight above (pitch) */
+	View.prototype.orbit = function (dx, dy) {
+		this.yaw = (this.yaw + dx) % (Math.PI * 2);
+		this.pitch = Math.max(-1.15, Math.min(1.35, this.pitch + dy));
 		this.place();
 	};
-	View.prototype.reset = function () { this.yaw = -0.18; this.pitch = 0.1; this.place(); };
-	View.prototype.size = function (w, h) {
+	View.prototype.tilt = View.prototype.orbit;
+	/** f > 1 = closer */
+	View.prototype.zoom = function (f) { this.dist = Math.max(26, Math.min(120, this.dist / f)); this.place(); };
+	View.prototype.reset = function () { this.yaw = -0.18; this.pitch = 0.1; this.dist = 52; this.place(); };
+	View.prototype.moved = function () { return Math.abs(this.yaw + 0.18) > 0.01 || Math.abs(this.pitch - 0.1) > 0.01 || Math.abs(this.dist - 52) > 0.5; };
+	/** w x h = the whole stage; c = pixels per cell, (bx, by) = centre of the 2D board, so the front view lines up with it */
+	View.prototype.size = function (w, h, c, bx, by) {
 		w = Math.max(50, Math.round(w)); h = Math.max(80, Math.round(h));
-		if (w === this.w && h === this.h) return;
-		this.w = w; this.h = h;
+		var key = [w, h, c, bx, by].join();
+		if (key === this.key) return;
+		this.key = key; this.w = w; this.h = h;
 		this.renderer.setSize(w, h);
 		this.cam.aspect = w / h;
-		// fit the 10 x 20 well (with a margin) whatever the aspect
-		var fitH = 2 * Math.atan((H + 3) / 2 / 52) * 180 / Math.PI;
-		var fitW = 2 * Math.atan((W + 3) / 2 / 52 / this.cam.aspect) * 180 / Math.PI;
-		this.cam.fov = Math.max(fitH, fitW);
+		this.cam.fov = 2 * Math.atan((h / (c || h / 23)) / 2 / 52) * 180 / Math.PI;
+		if (bx != null) this.cam.setViewOffset(w, h, Math.round(w / 2 - bx), Math.round(h / 2 - by), w, h); else this.cam.clearViewOffset();
 		this.cam.updateProjectionMatrix();
 	};
 	/** draw the game's state; flash = rows (visible index 0 = top) clearing right now */
