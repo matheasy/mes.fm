@@ -1,0 +1,98 @@
+	/* MES Falling Blocks. Colours are custom properties restated for dark mode (the generated TOOL-DARK block rewrites literals).
+	   The board itself is always drawn dark (like the arcade), on the canvas, from app.js. */
+	#bk {--bk-ink:#1d2330;--bk-sub:#566070;--bk-card:#ffffff;--bk-line:#d4d9e1;--bk-btn:#f3f5f8;--bk-btnh:#e6eaf0;--bk-stage:#0f1320;
+		--bk-ok:#e6f6ec;--bk-okline:#2f9e44;--bk-win:#237a35;--bk-lose:#c92a2a;--bk-hi:#fff4d6;}
+	html body.dark-mode #bk.bk {--bk-ink:#e8eaed;--bk-sub:#b4bcc7;--bk-card:#22262d;--bk-line:#3b414b;--bk-btn:#2c3139;--bk-btnh:#363c46;--bk-stage:#0b0e17;
+		--bk-ok:#17301f;--bk-okline:#51cf66;--bk-win:#69db7c;--bk-lose:#ff8787;--bk-hi:#3a3016;}
+	:where(#bk) :is(div, span, p, li, ol, ul, section, label, b, kbd, h2, h3, td, th, small, em, strong, dt, dd) {color:inherit;}
+	#bk {color:var(--bk-ink);}
+	#bk [hidden] {display:none !important;}
+	#bk .bk-tabs {display:flex;gap:0.3em;flex-wrap:wrap;margin:0 0 0.9em;border-bottom:2px solid var(--tint);}
+	#bk .bk-tab {cursor:pointer;border:0;background:transparent;padding:0.7em 1.05em;font-weight:700;font-size:0.95em;color:var(--bk-sub);border-bottom:3px solid transparent;margin-bottom:-2px;min-height:44px;font-family:inherit;}
+	#bk .bk-tab:hover {color:var(--bk-ink);}
+	#bk .bk-tab[aria-selected="true"] {color:var(--bk-ink);border-bottom-color:var(--accent);}
+	#bk .bk-setup .tu-row {align-items:flex-end;}
+	#bk .bk-f-seg {flex:0 1 auto;}
+	#bk .bk-f-num {flex:0 1 12em;}
+	#bk .bk-f-seed {flex:0 1 13em;}
+	#bk .bk-f-name {flex:0 1 14em;}
+	#bk .bk-opt {font-weight:400;color:var(--bk-sub);}
+	#bk .bk-desc {margin:0.6em 0 0;color:var(--bk-sub);line-height:1.5;}
+	#bk .bk-h {font-size:1.1em;margin:0 0 0.5em;}
+	#bk .bk-h3 {font-size:1em;margin:1em 0 0.4em;}
+	#bk .bk-sub {color:var(--bk-sub);margin:0.4em 0;line-height:1.5;}
+	#bk .bk-chk, #bk .bk-checks label {display:flex;gap:0.45em;align-items:center;cursor:pointer;align-self:center;}
+	#bk .bk-checks {display:flex;flex-wrap:wrap;gap:0.4em 1.4em;margin:0.6em 0;}
+	#bk .bk-keys p {margin:0.45em 0;line-height:1.55;color:var(--bk-sub);}
+	#bk kbd {display:inline-block;font:inherit;font-size:0.85em;font-weight:700;padding:0.05em 0.45em;border:1px solid var(--bk-line);border-bottom-width:2px;border-radius:5px;background:var(--bk-btn);color:var(--bk-ink);}
+	/* view */
+	#bk .bk-view {background:var(--bk-card);border:1px solid var(--bk-line);border-radius:12px;padding:0.7em;margin:0.9em 0 0.6em;}
+	#bk .bk-vbar {display:flex;flex-wrap:wrap;gap:0.5em 0.8em;align-items:center;justify-content:space-between;margin-bottom:0.55em;}
+	#bk .bk-vbtns {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	#bk .bk-vb {cursor:pointer;font:inherit;font-size:0.88em;font-weight:600;min-height:38px;min-width:38px;padding:0.3em 0.75em;border-radius:8px;border:1px solid var(--bk-line);background:var(--bk-btn);color:var(--bk-ink);}
+	#bk .bk-vb:hover {background:var(--bk-btnh);}
+	#bk .bk-vb--go {background:var(--accent);border-color:var(--accent);color:#fff;}
+	#bk .bk-vb--go:hover {filter:brightness(1.08);background:var(--accent);}
+	#bk .bk-vb[aria-pressed="false"] {opacity:0.6;}
+	#bk .bk-dim button {min-height:38px;}
+	#bk .bk-stage {position:relative;height:var(--mes-gh, min(80vh, 760px));min-height:320px;background:var(--bk-stage);border-radius:10px;overflow:hidden;outline:none;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+	#bk .bk-stage:focus-visible {box-shadow:0 0 0 3px var(--accent);}
+	#bk .bk-cv {position:absolute;inset:0;width:100%;height:100%;display:block;}
+	#bk .bk-3d {position:absolute;}
+	#bk .bk-3d canvas {width:100% !important;height:100% !important;}
+	#bk .bk-ov {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8em;background:rgba(8,10,18,0.72);color:#f1f3f5;text-align:center;padding:1em;z-index:3;}
+	#bk .bk-ov b {font-size:2.4em;letter-spacing:0.04em;color:#fff;}
+	#bk .bk-ov p {margin:0;color:#dfe3ea;max-width:28em;line-height:1.5;}
+	#bk .bk-ov .bk-ovbtn {cursor:pointer;font:inherit;font-weight:700;font-size:1.05em;padding:0.65em 1.4em;border-radius:10px;border:0;background:var(--accent);color:#fff;min-height:46px;}
+	#bk .bk-ov .bk-ovbtn--ghost {background:transparent;border:1px solid #9aa4b4;color:#f1f3f5;}
+	#bk .bk-touch {display:grid;grid-template-columns:repeat(6, 1fr);gap:0.4em;margin-top:0.55em;}
+	#bk .bk-touch button {cursor:pointer;font:inherit;font-weight:700;font-size:1.15em;min-height:52px;border-radius:10px;border:1px solid var(--bk-line);background:var(--bk-btn);color:var(--bk-ink);touch-action:none;user-select:none;-webkit-user-select:none;}
+	#bk .bk-touch button.on {background:var(--bk-btnh);box-shadow:inset 0 2px 6px rgba(0,0,0,0.25);}
+	#bk .bk-touch [data-k="cw"], #bk .bk-touch [data-k="ccw"] {font-size:1.6em;line-height:1;}
+	#bk .bk-touch .bk-thd {grid-column:1 / -1;background:var(--accent);border-color:var(--accent);color:#fff;font-size:1em;}
+	#bk .bk-status {margin:0.5em 0 0;color:var(--bk-sub);min-height:1.3em;}
+	#bk .bk-after {margin-top:0.7em;border:1px solid var(--bk-okline);background:var(--bk-ok);border-radius:10px;padding:0.8em 0.95em;}
+	#bk .bk-after h3 {margin:0 0 0.4em;font-size:1.15em;}
+	#bk .bk-res {display:flex;flex-wrap:wrap;gap:0.4em 1.4em;margin:0.3em 0 0.6em;}
+	#bk .bk-res span b {font-size:1.15em;}
+	#bk .bk-abtns {display:flex;flex-wrap:wrap;gap:0.45em;}
+	#bk .bk-new-best {display:inline-block;background:var(--bk-hi);border-radius:6px;padding:0.1em 0.5em;font-weight:700;}
+	#bk .bk-win {color:var(--bk-win);} #bk .bk-lose {color:var(--bk-lose);}
+	#bk .bk-settings {margin-top:0.6em;}
+	/* race / lobby / leaderboard */
+	#bk .bk-lobby {list-style:none;margin:0;padding:0;}
+	#bk .bk-lobby li {display:flex;gap:0.6em;align-items:center;justify-content:space-between;padding:0.45em 0;border-bottom:1px solid var(--bk-line);}
+	#bk .bk-wait {margin-top:0.7em;padding:0.7em 0.9em;border:1px dashed var(--bk-line);border-radius:10px;}
+	#bk .bk-link {display:flex;gap:0.4em;flex-wrap:wrap;align-items:center;margin:0.4em 0;}
+	#bk .bk-link input {flex:1 1 16em;}
+	#bk .bk-lbtop {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;justify-content:space-between;}
+	#bk table.bk-tbl {width:100%;border-collapse:collapse;margin-top:0.5em;font-variant-numeric:tabular-nums;}
+	#bk .bk-tbl th, #bk .bk-tbl td {text-align:left;padding:0.45em 0.5em;border-bottom:1px solid var(--bk-line);}
+	#bk .bk-tbl th {font-size:0.85em;color:var(--bk-sub);}
+	#bk .bk-tbl img {width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:0.35em;}
+	#bk .bk-tbl tr.me td {background:var(--bk-hi);}
+	#bk .bk-who img {width:26px;height:26px;border-radius:50%;vertical-align:middle;margin-right:0.35em;}
+	#bk .bk-hrow {display:flex;gap:0.4em;flex-wrap:wrap;}
+	#bk .bk-hrow input {flex:1 1 12em;}
+	#bk .bk-scards {display:grid;grid-template-columns:repeat(auto-fill, minmax(15em, 1fr));gap:0.7em;}
+	#bk .bk-scard {border:1px solid var(--bk-line);border-radius:10px;padding:0.7em 0.9em;background:var(--bk-card);}
+	#bk .bk-scard h3 {margin:0 0 0.4em;font-size:1em;}
+	#bk .bk-scard ol {margin:0;padding-left:1.4em;}
+	#bk .bk-scard p {margin:0.25em 0;}
+	/* Fill window / full screen: the stage takes the rest of the window */
+	#bk .bk-view.mes-pfill {display:flex;flex-direction:column;border-radius:0;}
+	#bk .bk-view.mes-pfill .bk-stage {flex:1 1 auto;height:auto;min-height:0;}
+	#bk .bk-view.mes-pfill .bk-after, #bk .bk-view.mes-pfill .bk-status {flex:0 0 auto;}
+	@media (max-width:640px) {
+		#bk .bk-view {padding:0.45em;}
+		#bk .bk-stage {height:var(--mes-gh, min(68vh, calc(100vw * 1.22), 620px));}
+		#bk .bk-vb {padding:0.3em 0.55em;}
+		#bk .tu-seg button {padding-left:0.55em;padding-right:0.55em;}
+	}
+	@media (orientation:landscape) and (max-height:520px) {
+		#bk .bk-touch {grid-template-columns:repeat(7, 1fr);}
+		#bk .bk-touch .bk-thd {grid-column:auto;}
+		#bk .bk-touch button {min-height:44px;}
+	}
+	/* dark mode lightens --accent for links; white-text buttons keep the deep violet */
+	html body.dark-mode #bk.bk .bk-vb--go, html body.dark-mode #bk.bk .bk-touch .bk-thd, html body.dark-mode #bk.bk .bk-ov .bk-ovbtn:not(.bk-ovbtn--ghost) {background:#6d28d9;border-color:#6d28d9;color:#fff;}

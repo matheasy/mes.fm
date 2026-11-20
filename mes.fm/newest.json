@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/blocks",
+   "title": "Falling Blocks",
+   "icon": "/img/blocks-logo.png",
+   "desc": "Marathon, Sprint 40, Ultra and Zen with T-spins, hold and ghost, in 2D or 3D; daily race, live races and a Hive leaderboard.",
+   "added": "2026-11-20",
+   "kind": "tool"
+  },
+  {
    "href": "/screen-recorder",
    "title": "Screen Recorder",
    "icon": "/img/screen-recorder-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.",
    "added": "2026-11-13",
    "kind": "tool"
-  },
-  {
-   "href": "/quantum-safe-check",
-   "title": "Quantum-Safe Website Checker",
-   "icon": "/img/quantum-safe-check-logo.png",
-   "desc": "Paste links and see if each site's HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.",
-   "added": "2026-11-13",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/blocks",
+   "title": "Falling Blocks",
+   "icon": "/img/blocks-logo.png",
+   "desc": "Marathon, Sprint 40, Ultra and Zen with T-spins, hold and ghost, in 2D or 3D; daily race, live races and a Hive leaderboard.",
+   "added": "2026-11-20",
+   "kind": "tool"
+  },
   {
    "href": "/screen-recorder",
    "title": "Screen Recorder",
@@ -251,14 +259,6 @@
    "icon": "/img/click-test-logo.png",
    "desc": "Clicks per second for mouse, taps (every finger counts) or Space bar; 1 to 100 s, chart, best scores, world record.",
    "added": "2026-11-18",
-   "kind": "tool"
-  },
-  {
-   "href": "/email",
-   "title": "MES Mail",
-   "icon": "/img/email-logo.png",
-   "desc": "Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.",
-   "added": "2026-11-17",
    "kind": "tool"
   }
  ]

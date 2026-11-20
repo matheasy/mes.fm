@@ -1,0 +1,145 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu bk" id="bk">
+		<div class="bk-tabs" id="bk-tabs" role="tablist" aria-label="Falling Blocks sections">
+			<button type="button" class="bk-tab" role="tab" data-t="play" aria-selected="true" aria-controls="bk-p-play">Play</button><button type="button" class="bk-tab" role="tab" data-t="race" aria-selected="false" aria-controls="bk-p-race" tabindex="-1">Race</button><button type="button" class="bk-tab" role="tab" data-t="lb" aria-selected="false" aria-controls="bk-p-lb" tabindex="-1">Leaderboard</button><button type="button" class="bk-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="bk-p-stats" tabindex="-1">Statistics</button>
+		</div>
+
+		<section id="bk-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card bk-setup" id="bk-setup">
+				<div class="tu-row">
+					<div class="tu-field bk-f-seg"><span class="tu-label" id="bk-md-l">Mode</span>
+						<div class="tu-seg" id="bk-md" role="group" aria-labelledby="bk-md-l"><button type="button" data-v="m" aria-pressed="true">Marathon</button><button type="button" data-v="s" aria-pressed="false">Sprint 40</button><button type="button" data-v="u" aria-pressed="false">Ultra 2 min</button><button type="button" data-v="z" aria-pressed="false">Zen</button><button type="button" data-v="d" aria-pressed="false">Daily race</button></div></div>
+					<div class="tu-field bk-f-num" id="bk-lvf"><label for="bk-lv">Start level</label><select id="bk-lv" class="tu-input"></select></div>
+					<div class="tu-field bk-f-seed" id="bk-seedf"><label for="bk-seed">Seed <span class="bk-opt">(empty = random)</span></label><input id="bk-seed" class="tu-input" type="text" maxlength="40" spellcheck="false" autocomplete="off" placeholder="random"></div>
+				</div>
+				<p class="bk-desc" id="bk-desc"></p>
+			</div>
+
+			<div class="bk-view" id="bk-view">
+				<div class="bk-vbar" id="bk-vbar">
+					<span class="bk-vbtns" role="group" aria-label="Game"><button type="button" class="bk-vb bk-vb--go" id="bk-new" title="New game (N)">▶ New game</button><button type="button" class="bk-vb" id="bk-pause" title="Pause (P or Esc)">❚❚ Pause</button></span>
+					<span class="bk-vbtns" role="group" aria-label="View"><span class="tu-seg bk-dim" id="bk-dim" role="group" aria-label="2D or 3D"><button type="button" data-v="2d" aria-pressed="true">2D</button><button type="button" data-v="3d" aria-pressed="false">3D</button></span><button type="button" class="bk-vb" id="bk-snd" aria-pressed="true" title="Sound on / off (M)">🔊</button><button type="button" class="bk-vb" id="bk-setbtn" aria-expanded="false" aria-controls="bk-settings" title="Controls and settings">⚙ Settings</button></span>
+				</div>
+				<div class="bk-stage" id="bk-stage" tabindex="0" aria-label="Falling Blocks board. Arrow keys move, Up rotates, Space drops, C holds, P pauses." data-mes-grip="mes-blocks:h" data-mes-grip-min="320">
+					<div class="bk-3d" id="bk-3d" hidden></div>
+					<canvas id="bk-cv" class="bk-cv"></canvas>
+					<div class="bk-ov" id="bk-ov" hidden></div>
+				</div>
+				<div class="bk-touch" id="bk-touch" hidden>
+					<button type="button" data-k="hold" aria-label="Hold">Hold</button><button type="button" data-k="ccw" aria-label="Rotate left">⟲</button><button type="button" data-k="cw" aria-label="Rotate right">⟳</button><button type="button" data-k="L" aria-label="Move left">◀</button><button type="button" data-k="sd" aria-label="Soft drop">▼</button><button type="button" data-k="R" aria-label="Move right">▶</button><button type="button" data-k="hd" class="bk-thd" aria-label="Hard drop">⤓ Drop</button>
+				</div>
+				<p class="bk-status" id="bk-status" role="status" aria-live="polite"></p>
+				<div class="bk-after" id="bk-after" hidden></div>
+			</div>
+
+			<div class="tu-card bk-settings" id="bk-settings" hidden>
+				<h2 class="bk-h">Controls and settings</h2>
+				<div class="tu-row">
+					<div class="tu-field bk-f-num"><label for="bk-das">Auto-repeat delay (DAS, ms)</label><input id="bk-das" class="tu-input" type="number" min="0" max="400" step="1" inputmode="numeric"></div>
+					<div class="tu-field bk-f-num"><label for="bk-arr">Repeat rate (ARR, ms; 0 = instant)</label><input id="bk-arr" class="tu-input" type="number" min="0" max="200" step="1" inputmode="numeric"></div>
+					<div class="tu-field bk-f-num"><label for="bk-sdf">Soft drop</label><select id="bk-sdf" class="tu-input"><option value="20">20 times faster</option><option value="inst">Straight to the floor</option></select></div>
+					<div class="tu-field bk-f-num"><label for="bk-tc">Touch controls</label><select id="bk-tc" class="tu-input"><option value="both">Swipes + buttons</option><option value="swipe">Swipes only</option><option value="btn">Buttons only</option></select></div>
+					<div class="tu-field bk-f-num"><label for="bk-vol">Volume</label><input id="bk-vol" type="range" min="0" max="1" step="0.05"></div>
+				</div>
+				<div class="bk-checks">
+					<label><input type="checkbox" id="bk-ghost"> Ghost piece (where it will land)</label>
+					<label><input type="checkbox" id="bk-grid"> Grid lines</label>
+					<label><input type="checkbox" id="bk-music"> Background beat</label>
+				</div>
+				<div class="bk-keys">
+					<p><b>Keyboard</b>: <kbd>←</kbd> <kbd>→</kbd> move, <kbd>↓</kbd> soft drop, <kbd>Space</kbd> hard drop, <kbd>↑</kbd> or <kbd>X</kbd> rotate right, <kbd>Z</kbd> or <kbd>Ctrl</kbd> rotate left, <kbd>A</kbd> rotate 180°, <kbd>C</kbd> or <kbd>Shift</kbd> hold, <kbd>P</kbd> or <kbd>Esc</kbd> pause, <kbd>N</kbd> new game, <kbd>R</kbd> restart, <kbd>M</kbd> sound, <kbd>V</kbd> 2D / 3D.</p>
+					<p><b>Touch</b>: drag sideways to move, tap to rotate (left half turns left, right half turns right), drag down slowly for a soft drop, flick down to drop, flick up to hold. In 3D, drag with two fingers (or the right mouse button) to turn the well.</p>
+					<p><b>Gamepad</b>: d-pad moves (up = hard drop, down = soft drop), A rotates right, B rotates left, X rotates 180°, Y or a shoulder button holds, Start pauses.</p>
+				</div>
+			</div>
+		</section>
+
+		<section id="bk-p-race" role="tabpanel" aria-label="Race" hidden>
+			<div class="tu-card">
+				<h2 class="bk-h">Race someone live</h2>
+				<p class="bk-sub">You both get the same pieces. Lines you clear send garbage rows to the other player (2 lines send 1, 3 send 2, 4 send 4, T-spins more). First to clear 40 lines wins, or the one still standing.</p>
+				<div class="tu-row">
+					<div class="tu-field bk-f-name"><label for="bk-rname">Your name</label><input id="bk-rname" class="tu-input" type="text" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<label class="bk-chk"><input type="checkbox" id="bk-rpub" checked> List it so anyone can join</label>
+					<button type="button" class="tu-btn tu-btn--primary" id="bk-rnew">Start a race</button>
+				</div>
+				<div id="bk-rwait" hidden></div>
+				<h3 class="bk-h3">Open races</h3>
+				<div id="bk-lobby"><p class="bk-sub">Loading…</p></div>
+				<p><button type="button" class="tu-btn" id="bk-rlobby">↻ Refresh</button></p>
+			</div>
+			<div class="tu-card">
+				<h2 class="bk-h">Race the computer</h2>
+				<div class="tu-row">
+					<div class="tu-field bk-f-num"><label for="bk-bot">How good</label><select id="bk-bot" class="tu-input"><option value="1">Easy (1 piece a second)</option><option value="2" selected>Medium (2 a second)</option><option value="3">Hard (3 a second)</option><option value="4.5">Expert (4.5 a second)</option></select></div>
+					<button type="button" class="tu-btn tu-btn--primary" id="bk-rbot">Race the computer</button>
+				</div>
+			</div>
+			<div class="tu-card">
+				<h2 class="bk-h">The daily race</h2>
+				<p class="bk-sub">Every UTC day there is one seed for everyone: the same pieces in the same order. Clear 40 lines as fast as you can and save it to Hive for the daily leaderboard. <span id="bk-dcount"></span></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="bk-rdaily">Play today's daily race</button></p>
+			</div>
+		</section>
+
+		<section id="bk-p-lb" role="tabpanel" aria-label="Leaderboard" hidden>
+			<div class="tu-card">
+				<div class="bk-lbtop">
+					<div class="tu-seg" id="bk-lbk" role="group" aria-label="Which leaderboard"><button type="button" data-v="d" aria-pressed="true">Daily race</button><button type="button" data-v="s" aria-pressed="false">Sprint 40</button><button type="button" data-v="u" aria-pressed="false">Ultra 2 min</button><button type="button" data-v="m" aria-pressed="false">Marathon</button></div>
+					<button type="button" class="tu-btn" id="bk-lbref">↻ Refresh</button>
+				</div>
+				<p class="bk-sub" id="bk-lbnote"></p>
+				<div id="bk-lb"><p class="bk-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="bk-h">Your Hive account</h2>
+				<div id="bk-hlogin"></div>
+				<p class="tu-note">Only games saved to Hive appear here, and only after mes.fm has replayed every move of the game from its seed and got exactly the same time, lines and score. Marathon ranks games started at level 1.</p>
+			</div>
+		</section>
+
+		<section id="bk-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded).</p>
+			<div id="bk-stats"></div>
+			<p><button type="button" class="tu-btn" id="bk-sreset">Clear my statistics</button></p>
+		</section>
+
+		<div class="tu-toast bk-toast" id="bk-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Falling blocks, free in your browser</h2>
+			<p>Seven shapes made of four squares fall into a well 10 squares wide. Move and turn each one so they fill whole rows: a full row disappears and everything above it drops. Clear four rows with one long piece for the most points. The game ends when the stack reaches the top. No install, no account, and it works with a keyboard, a touch screen or a gamepad, in 2D or 3D.</p>
+			<h3>Modes</h3>
+			<dl>
+				<dt>Marathon</dt><dd>Start at any level; every 10 lines the pieces fall faster, up to level 20 where they appear on the floor. Clear 150 lines for the end. Highest score wins.</dd>
+				<dt>Sprint 40</dt><dd>Clear 40 lines as fast as you can. The clock stops on the 40th line.</dd>
+				<dt>Ultra 2 min</dt><dd>Two minutes at a steady speed: score as many points as you can. Quads, T-spins and back-to-backs are worth far more than single lines.</dd>
+				<dt>Zen</dt><dd>No speed-up, no clock and no game over: when the stack reaches the top the well empties and you carry on.</dd>
+				<dt>Daily race</dt><dd>A Sprint 40 on the day's seed, the same pieces for everyone in the world, with its own leaderboard per UTC day.</dd>
+				<dt>Race</dt><dd>Live against another person (share a link or join an open race) or the computer. You get the same pieces; the lines you clear push garbage rows into the other well.</dd>
+			</dl>
+			<h3>The rules the page uses</h3>
+			<p>They follow the modern standard most falling-block games share: the pieces come in shuffled bags of all seven, so you never wait long for a long piece; turning a piece next to a wall or the floor tries a few nudges ("wall kicks") before it gives up; you can keep one piece aside with Hold (once per piece); the ghost shows where the piece will land; and a piece touching the floor waits half a second before it locks, which you can stretch by moving it (up to 15 times).</p>
+			<h3>Scoring</h3>
+			<dl>
+				<dt>Lines</dt><dd>1 row 100, 2 rows 300, 3 rows 500, 4 rows (a quad) 800 points, times the level.</dd>
+				<dt>T-spins</dt><dd>Turning the T piece into a tight slot (three of the four corners around its centre filled) scores 400, with 1, 2 or 3 rows 800, 1,200 or 1,600, times the level. A "mini" T-spin scores less.</dd>
+				<dt>Back-to-back</dt><dd>A quad or a T-spin with lines right after another one (with no ordinary clear in between) scores 1.5 times.</dd>
+				<dt>Combo</dt><dd>Clearing rows with piece after piece adds 50 × combo × level.</dd>
+				<dt>Perfect clear</dt><dd>Leaving the whole well empty adds a big bonus.</dd>
+				<dt>Drops</dt><dd>1 point per row of soft drop, 2 per row of hard drop.</dd>
+			</dl>
+			<h3>Saving to Hive and the leaderboard</h3>
+			<p>After a Sprint, Ultra, Marathon or daily race you can save the result to the Hive blockchain with "Save to Hive". It sends one small public message (a custom_json operation with the id mes_blocks) from your Hive account, signed with your posting key through Hive Keychain. It holds the seed, your time, lines, score and every move you made with its timing, so mes.fm can replay the game exactly and check it before it goes on the leaderboard. It costs no HIVE (a little of your free Resource Credits), and like everything on Hive it is public and permanent.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is this Tetris?</dt><dd>No. Tetris is a trademark of The Tetris Company, and this page has nothing to do with it. MES Falling Blocks is our own game in the same old genre of falling-block puzzles, with its own code, art and sounds.</dd>
+				<dt>What are DAS and ARR?</dt><dd>When you hold left or right, the piece moves once, waits the "auto-repeat delay" (DAS), then moves again every "repeat rate" (ARR) milliseconds. ARR 0 sends it straight to the wall. Lower numbers are faster; good players use around 100 ms and 0-10 ms.</dd>
+				<dt>Why can't I save a Zen game?</dt><dd>Zen has no end and no score race, so there is nothing to rank.</dd>
+				<dt>Can I play on a phone?</dt><dd>Yes: drag to move, tap to turn, flick down to drop, or use the buttons under the board. Fill window gives the board the whole screen.</dd>
+				<dt>Does 3D change the game?</dt><dd>No. It is the same game drawn with depth and light; you can switch between 2D and 3D in the middle of a game.</dd>
+			</dl>
+			<p>Related: <a href="/minesweeper">Minesweeper</a> &middot; <a href="/brick-builder">Brick Builder</a> &middot; <a href="/connect-four">Connect Four</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>

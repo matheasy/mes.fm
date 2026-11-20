@@ -1,0 +1,1005 @@
+<!DOCTYPE html>    <html lang="en">
+<!-- MES Falling Blocks -- mes.fm/blocks -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/blocks/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/blocks" />                    <title>MES Falling Blocks | Math Easy Solutions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#6d28d9;color:white;}
+        .button {color:#6d28d9;border:0.125em solid#6d28d9;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#6d28d9; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#6d28d9; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#6d28d9;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#6d28d9;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#6d28d9;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#4c1d95;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#6d28d9;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#6d28d9;border:0.125em solid#6d28d9;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#4c1d95;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#6d28d9;}
+        .dropdown-symbol--dark {color:#6d28d9;}
+        .button--active {background-color:#6d28d9;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#6d28d9;--accent-dark:#4c1d95;--tint:#efe7ff;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #efe7ff;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#efe7ff;border-color:#efe7ff;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #efe7ff;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#efe7ff;border-color:#efe7ff;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#efe7ff;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#efe7ff;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#ae87ea !important;--accent-dark:#ae87ea !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+	/* MES Falling Blocks. Colours are custom properties restated for dark mode (the generated TOOL-DARK block rewrites literals).
+	   The board itself is always drawn dark (like the arcade), on the canvas, from app.js. */
+	#bk {--bk-ink:#1d2330;--bk-sub:#566070;--bk-card:#ffffff;--bk-line:#d4d9e1;--bk-btn:#f3f5f8;--bk-btnh:#e6eaf0;--bk-stage:#0f1320;
+		--bk-ok:#e6f6ec;--bk-okline:#2f9e44;--bk-win:#237a35;--bk-lose:#c92a2a;--bk-hi:#fff4d6;}
+	html body.dark-mode #bk.bk {--bk-ink:#e8eaed;--bk-sub:#b4bcc7;--bk-card:#22262d;--bk-line:#3b414b;--bk-btn:#2c3139;--bk-btnh:#363c46;--bk-stage:#0b0e17;
+		--bk-ok:#17301f;--bk-okline:#51cf66;--bk-win:#69db7c;--bk-lose:#ff8787;--bk-hi:#3a3016;}
+	:where(#bk) :is(div, span, p, li, ol, ul, section, label, b, kbd, h2, h3, td, th, small, em, strong, dt, dd) {color:inherit;}
+	#bk {color:var(--bk-ink);}
+	#bk [hidden] {display:none !important;}
+	#bk .bk-tabs {display:flex;gap:0.3em;flex-wrap:wrap;margin:0 0 0.9em;border-bottom:2px solid #efe7ff;}
+	#bk .bk-tab {cursor:pointer;border:0;background:transparent;padding:0.7em 1.05em;font-weight:700;font-size:0.95em;color:var(--bk-sub);border-bottom:3px solid transparent;margin-bottom:-2px;min-height:44px;font-family:inherit;}
+	#bk .bk-tab:hover {color:var(--bk-ink);}
+	#bk .bk-tab[aria-selected="true"] {color:var(--bk-ink);border-bottom-color:var(--accent);}
+	#bk .bk-setup .tu-row {align-items:flex-end;}
+	#bk .bk-f-seg {flex:0 1 auto;}
+	#bk .bk-f-num {flex:0 1 12em;}
+	#bk .bk-f-seed {flex:0 1 13em;}
+	#bk .bk-f-name {flex:0 1 14em;}
+	#bk .bk-opt {font-weight:400;color:var(--bk-sub);}
+	#bk .bk-desc {margin:0.6em 0 0;color:var(--bk-sub);line-height:1.5;}
+	#bk .bk-h {font-size:1.1em;margin:0 0 0.5em;}
+	#bk .bk-h3 {font-size:1em;margin:1em 0 0.4em;}
+	#bk .bk-sub {color:var(--bk-sub);margin:0.4em 0;line-height:1.5;}
+	#bk .bk-chk, #bk .bk-checks label {display:flex;gap:0.45em;align-items:center;cursor:pointer;align-self:center;}
+	#bk .bk-checks {display:flex;flex-wrap:wrap;gap:0.4em 1.4em;margin:0.6em 0;}
+	#bk .bk-keys p {margin:0.45em 0;line-height:1.55;color:var(--bk-sub);}
+	#bk kbd {display:inline-block;font:inherit;font-size:0.85em;font-weight:700;padding:0.05em 0.45em;border:1px solid var(--bk-line);border-bottom-width:2px;border-radius:5px;background:var(--bk-btn);color:var(--bk-ink);}
+	/* view */
+	#bk .bk-view {background:var(--bk-card);border:1px solid var(--bk-line);border-radius:12px;padding:0.7em;margin:0.9em 0 0.6em;}
+	#bk .bk-vbar {display:flex;flex-wrap:wrap;gap:0.5em 0.8em;align-items:center;justify-content:space-between;margin-bottom:0.55em;}
+	#bk .bk-vbtns {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;}
+	#bk .bk-vb {cursor:pointer;font:inherit;font-size:0.88em;font-weight:600;min-height:38px;min-width:38px;padding:0.3em 0.75em;border-radius:8px;border:1px solid var(--bk-line);background:var(--bk-btn);color:var(--bk-ink);}
+	#bk .bk-vb:hover {background:var(--bk-btnh);}
+	#bk .bk-vb--go {background:var(--accent);border-color:var(--accent);color:#fff;}
+	#bk .bk-vb--go:hover {filter:brightness(1.08);background:var(--accent);}
+	#bk .bk-vb[aria-pressed="false"] {opacity:0.6;}
+	#bk .bk-dim button {min-height:38px;}
+	#bk .bk-stage {position:relative;height:var(--mes-gh, min(80vh, 760px));min-height:320px;background:var(--bk-stage);border-radius:10px;overflow:hidden;outline:none;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+	#bk .bk-stage:focus-visible {box-shadow:0 0 0 3px var(--accent);}
+	#bk .bk-cv {position:absolute;inset:0;width:100%;height:100%;display:block;}
+	#bk .bk-3d {position:absolute;}
+	#bk .bk-3d canvas {width:100% !important;height:100% !important;}
+	#bk .bk-ov {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8em;background:rgba(8,10,18,0.72);color:#f1f3f5;text-align:center;padding:1em;z-index:3;}
+	#bk .bk-ov b {font-size:2.4em;letter-spacing:0.04em;color:#fff;}
+	#bk .bk-ov p {margin:0;color:#dfe3ea;max-width:28em;line-height:1.5;}
+	#bk .bk-ov .bk-ovbtn {cursor:pointer;font:inherit;font-weight:700;font-size:1.05em;padding:0.65em 1.4em;border-radius:10px;border:0;background:var(--accent);color:#fff;min-height:46px;}
+	#bk .bk-ov .bk-ovbtn--ghost {background:transparent;border:1px solid #9aa4b4;color:#f1f3f5;}
+	#bk .bk-touch {display:grid;grid-template-columns:repeat(6, 1fr);gap:0.4em;margin-top:0.55em;}
+	#bk .bk-touch button {cursor:pointer;font:inherit;font-weight:700;font-size:1.15em;min-height:52px;border-radius:10px;border:1px solid var(--bk-line);background:var(--bk-btn);color:var(--bk-ink);touch-action:none;user-select:none;-webkit-user-select:none;}
+	#bk .bk-touch button.on {background:var(--bk-btnh);box-shadow:inset 0 2px 6px rgba(0,0,0,0.25);}
+	#bk .bk-touch [data-k="cw"], #bk .bk-touch [data-k="ccw"] {font-size:1.6em;line-height:1;}
+	#bk .bk-touch .bk-thd {grid-column:1 / -1;background:var(--accent);border-color:var(--accent);color:#fff;font-size:1em;}
+	#bk .bk-status {margin:0.5em 0 0;color:var(--bk-sub);min-height:1.3em;}
+	#bk .bk-after {margin-top:0.7em;border:1px solid var(--bk-okline);background:var(--bk-ok);border-radius:10px;padding:0.8em 0.95em;}
+	#bk .bk-after h3 {margin:0 0 0.4em;font-size:1.15em;}
+	#bk .bk-res {display:flex;flex-wrap:wrap;gap:0.4em 1.4em;margin:0.3em 0 0.6em;}
+	#bk .bk-res span b {font-size:1.15em;}
+	#bk .bk-abtns {display:flex;flex-wrap:wrap;gap:0.45em;}
+	#bk .bk-new-best {display:inline-block;background:var(--bk-hi);border-radius:6px;padding:0.1em 0.5em;font-weight:700;}
+	#bk .bk-win {color:var(--bk-win);} #bk .bk-lose {color:var(--bk-lose);}
+	#bk .bk-settings {margin-top:0.6em;}
+	/* race / lobby / leaderboard */
+	#bk .bk-lobby {list-style:none;margin:0;padding:0;}
+	#bk .bk-lobby li {display:flex;gap:0.6em;align-items:center;justify-content:space-between;padding:0.45em 0;border-bottom:1px solid var(--bk-line);}
+	#bk .bk-wait {margin-top:0.7em;padding:0.7em 0.9em;border:1px dashed var(--bk-line);border-radius:10px;}
+	#bk .bk-link {display:flex;gap:0.4em;flex-wrap:wrap;align-items:center;margin:0.4em 0;}
+	#bk .bk-link input {flex:1 1 16em;}
+	#bk .bk-lbtop {display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;justify-content:space-between;}
+	#bk table.bk-tbl {width:100%;border-collapse:collapse;margin-top:0.5em;font-variant-numeric:tabular-nums;}
+	#bk .bk-tbl th, #bk .bk-tbl td {text-align:left;padding:0.45em 0.5em;border-bottom:1px solid var(--bk-line);}
+	#bk .bk-tbl th {font-size:0.85em;color:var(--bk-sub);}
+	#bk .bk-tbl img {width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:0.35em;}
+	#bk .bk-tbl tr.me td {background:var(--bk-hi);}
+	#bk .bk-who img {width:26px;height:26px;border-radius:50%;vertical-align:middle;margin-right:0.35em;}
+	#bk .bk-hrow {display:flex;gap:0.4em;flex-wrap:wrap;}
+	#bk .bk-hrow input {flex:1 1 12em;}
+	#bk .bk-scards {display:grid;grid-template-columns:repeat(auto-fill, minmax(15em, 1fr));gap:0.7em;}
+	#bk .bk-scard {border:1px solid var(--bk-line);border-radius:10px;padding:0.7em 0.9em;background:var(--bk-card);}
+	#bk .bk-scard h3 {margin:0 0 0.4em;font-size:1em;}
+	#bk .bk-scard ol {margin:0;padding-left:1.4em;}
+	#bk .bk-scard p {margin:0.25em 0;}
+	/* Fill window / full screen: the stage takes the rest of the window */
+	#bk .bk-view.mes-pfill {display:flex;flex-direction:column;border-radius:0;}
+	#bk .bk-view.mes-pfill .bk-stage {flex:1 1 auto;height:auto;min-height:0;}
+	#bk .bk-view.mes-pfill .bk-after, #bk .bk-view.mes-pfill .bk-status {flex:0 0 auto;}
+	@media (max-width:640px) {
+		#bk .bk-view {padding:0.45em;}
+		#bk .bk-stage {height:var(--mes-gh, min(68vh, calc(100vw * 1.22), 620px));}
+		#bk .bk-vb {padding:0.3em 0.55em;}
+		#bk .tu-seg button {padding-left:0.55em;padding-right:0.55em;}
+	}
+	@media (orientation:landscape) and (max-height:520px) {
+		#bk .bk-touch {grid-template-columns:repeat(7, 1fr);}
+		#bk .bk-touch .bk-thd {grid-column:auto;}
+		#bk .bk-touch button {min-height:44px;}
+	}
+	/* dark mode lightens --accent for links; white-text buttons keep the deep violet */
+	html body.dark-mode #bk.bk .bk-vb--go, html body.dark-mode #bk.bk .bk-touch .bk-thd, html body.dark-mode #bk.bk .bk-ov .bk-ovbtn:not(.bk-ovbtn--ghost) {background:#6d28d9;border-color:#6d28d9;color:#fff;}
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #6d28d9;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #6d28d9; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(109,40,217,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content :where(sub,sup){color:inherit}
+	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#722fda;--accent-dark:#7332d7}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #19004b}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#170f28;border-color:#19004b}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#170f28;border-color:#19004b}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#170f28}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode #bk{--bk-stage:#586db1;--bk-okline:#42c75b;--bk-win:#41c85d;--bk-lose:#d53535}
+	body.dark-mode #bk .bk-tabs{border-bottom:2px solid #19004b}
+	body.dark-mode #bk .bk-ov p{color:#949ba8}
+	body.dark-mode #bk .bk-ov .bk-ovbtn--ghost{border:1px solid #586477}
+	/* TOOL-DARK:END */
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/blocks" />            <meta property="og:title" content="MES Falling Blocks | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/blocks/img/logo-big.png" />
+        <meta property="og:description" content="Free falling-block puzzle game: Marathon, Sprint 40, Ultra and Zen, T-spins, hold and ghost, 2D or 3D, live races and a Hive-verified daily leaderboard." />
+
+        <meta name="description" content="Free falling-block puzzle game: Marathon, Sprint 40, Ultra and Zen, T-spins, hold and ghost, 2D or 3D, live races and a Hive-verified daily leaderboard.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="MES Falling Blocks">
+        <meta name="twitter:description" content="Free falling-block puzzle game: Marathon, Sprint 40, Ultra and Zen, T-spins, hold and ghost, 2D or 3D, live races and a Hive-verified daily leaderboard.">
+        <meta name="twitter:image" content="https://mes.fm/blocks/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES Falling Blocks">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Falling Blocks", "url": "https://mes.fm/blocks", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Play a free falling-block puzzle game in your browser: Marathon, Sprint 40 lines, Ultra 2 minutes and Zen, modern rules (7-bag, wall kicks, hold, ghost piece, T-spins, combos, back-to-back), keyboard, touch and gamepad controls, 2D or 3D, a daily race on the same pieces for everyone, live races against a friend or the computer, and a Hive-verified leaderboard."}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/blocks" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/blocks/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/blocks" tabindex="-1">Falling Blocks</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/blocks'><img height="88" width="88" id="logo" class="logo" alt="MES Falling Blocks logo" src="/blocks/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/blocks'>
+                                    <p class="calculator-title">MES Falling Blocks</p>
+                                </a>
+                                <p class="tag-line">Seven shapes, one well: clear the lines.</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/blocks'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 class="page-title">Falling Blocks: Play Free Online, Sprint, Ultra, Races and a Hive Leaderboard</h1>                                        <p class="page-description">Play a free falling-block puzzle game in your browser: Marathon, Sprint 40 lines, Ultra 2 minutes and Zen, modern rules (7-bag, wall kicks, hold, ghost piece, T-spins, combos, back-to-back), keyboard, touch and gamepad controls, 2D or 3D, a daily race on the same pieces for everyone, live races against a friend or the computer, and a Hive-verified leaderboard.</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu bk" id="bk">
+		<div class="bk-tabs" id="bk-tabs" role="tablist" aria-label="Falling Blocks sections">
+			<button type="button" class="bk-tab" role="tab" data-t="play" aria-selected="true" aria-controls="bk-p-play">Play</button><button type="button" class="bk-tab" role="tab" data-t="race" aria-selected="false" aria-controls="bk-p-race" tabindex="-1">Race</button><button type="button" class="bk-tab" role="tab" data-t="lb" aria-selected="false" aria-controls="bk-p-lb" tabindex="-1">Leaderboard</button><button type="button" class="bk-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="bk-p-stats" tabindex="-1">Statistics</button>
+		</div>
+
+		<section id="bk-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card bk-setup" id="bk-setup">
+				<div class="tu-row">
+					<div class="tu-field bk-f-seg"><span class="tu-label" id="bk-md-l">Mode</span>
+						<div class="tu-seg" id="bk-md" role="group" aria-labelledby="bk-md-l"><button type="button" data-v="m" aria-pressed="true">Marathon</button><button type="button" data-v="s" aria-pressed="false">Sprint 40</button><button type="button" data-v="u" aria-pressed="false">Ultra 2 min</button><button type="button" data-v="z" aria-pressed="false">Zen</button><button type="button" data-v="d" aria-pressed="false">Daily race</button></div></div>
+					<div class="tu-field bk-f-num" id="bk-lvf"><label for="bk-lv">Start level</label><select id="bk-lv" class="tu-input"></select></div>
+					<div class="tu-field bk-f-seed" id="bk-seedf"><label for="bk-seed">Seed <span class="bk-opt">(empty = random)</span></label><input id="bk-seed" class="tu-input" type="text" maxlength="40" spellcheck="false" autocomplete="off" placeholder="random"></div>
+				</div>
+				<p class="bk-desc" id="bk-desc"></p>
+			</div>
+
+			<div class="bk-view" id="bk-view">
+				<div class="bk-vbar" id="bk-vbar">
+					<span class="bk-vbtns" role="group" aria-label="Game"><button type="button" class="bk-vb bk-vb--go" id="bk-new" title="New game (N)">▶ New game</button><button type="button" class="bk-vb" id="bk-pause" title="Pause (P or Esc)">❚❚ Pause</button></span>
+					<span class="bk-vbtns" role="group" aria-label="View"><span class="tu-seg bk-dim" id="bk-dim" role="group" aria-label="2D or 3D"><button type="button" data-v="2d" aria-pressed="true">2D</button><button type="button" data-v="3d" aria-pressed="false">3D</button></span><button type="button" class="bk-vb" id="bk-snd" aria-pressed="true" title="Sound on / off (M)">🔊</button><button type="button" class="bk-vb" id="bk-setbtn" aria-expanded="false" aria-controls="bk-settings" title="Controls and settings">⚙ Settings</button></span>
+				</div>
+				<div class="bk-stage" id="bk-stage" tabindex="0" aria-label="Falling Blocks board. Arrow keys move, Up rotates, Space drops, C holds, P pauses." data-mes-grip="mes-blocks:h" data-mes-grip-min="320">
+					<div class="bk-3d" id="bk-3d" hidden></div>
+					<canvas id="bk-cv" class="bk-cv"></canvas>
+					<div class="bk-ov" id="bk-ov" hidden></div>
+				</div>
+				<div class="bk-touch" id="bk-touch" hidden>
+					<button type="button" data-k="hold" aria-label="Hold">Hold</button><button type="button" data-k="ccw" aria-label="Rotate left">⟲</button><button type="button" data-k="cw" aria-label="Rotate right">⟳</button><button type="button" data-k="L" aria-label="Move left">◀</button><button type="button" data-k="sd" aria-label="Soft drop">▼</button><button type="button" data-k="R" aria-label="Move right">▶</button><button type="button" data-k="hd" class="bk-thd" aria-label="Hard drop">⤓ Drop</button>
+				</div>
+				<p class="bk-status" id="bk-status" role="status" aria-live="polite"></p>
+				<div class="bk-after" id="bk-after" hidden></div>
+			</div>
+
+			<div class="tu-card bk-settings" id="bk-settings" hidden>
+				<h2 class="bk-h">Controls and settings</h2>
+				<div class="tu-row">
+					<div class="tu-field bk-f-num"><label for="bk-das">Auto-repeat delay (DAS, ms)</label><input id="bk-das" class="tu-input" type="number" min="0" max="400" step="1" inputmode="numeric"></div>
+					<div class="tu-field bk-f-num"><label for="bk-arr">Repeat rate (ARR, ms; 0 = instant)</label><input id="bk-arr" class="tu-input" type="number" min="0" max="200" step="1" inputmode="numeric"></div>
+					<div class="tu-field bk-f-num"><label for="bk-sdf">Soft drop</label><select id="bk-sdf" class="tu-input"><option value="20">20 times faster</option><option value="inst">Straight to the floor</option></select></div>
+					<div class="tu-field bk-f-num"><label for="bk-tc">Touch controls</label><select id="bk-tc" class="tu-input"><option value="both">Swipes + buttons</option><option value="swipe">Swipes only</option><option value="btn">Buttons only</option></select></div>
+					<div class="tu-field bk-f-num"><label for="bk-vol">Volume</label><input id="bk-vol" type="range" min="0" max="1" step="0.05"></div>
+				</div>
+				<div class="bk-checks">
+					<label><input type="checkbox" id="bk-ghost"> Ghost piece (where it will land)</label>
+					<label><input type="checkbox" id="bk-grid"> Grid lines</label>
+					<label><input type="checkbox" id="bk-music"> Background beat</label>
+				</div>
+				<div class="bk-keys">
+					<p><b>Keyboard</b>: <kbd>←</kbd> <kbd>→</kbd> move, <kbd>↓</kbd> soft drop, <kbd>Space</kbd> hard drop, <kbd>↑</kbd> or <kbd>X</kbd> rotate right, <kbd>Z</kbd> or <kbd>Ctrl</kbd> rotate left, <kbd>A</kbd> rotate 180°, <kbd>C</kbd> or <kbd>Shift</kbd> hold, <kbd>P</kbd> or <kbd>Esc</kbd> pause, <kbd>N</kbd> new game, <kbd>R</kbd> restart, <kbd>M</kbd> sound, <kbd>V</kbd> 2D / 3D.</p>
+					<p><b>Touch</b>: drag sideways to move, tap to rotate (left half turns left, right half turns right), drag down slowly for a soft drop, flick down to drop, flick up to hold. In 3D, drag with two fingers (or the right mouse button) to turn the well.</p>
+					<p><b>Gamepad</b>: d-pad moves (up = hard drop, down = soft drop), A rotates right, B rotates left, X rotates 180°, Y or a shoulder button holds, Start pauses.</p>
+				</div>
+			</div>
+		</section>
+
+		<section id="bk-p-race" role="tabpanel" aria-label="Race" hidden>
+			<div class="tu-card">
+				<h2 class="bk-h">Race someone live</h2>
+				<p class="bk-sub">You both get the same pieces. Lines you clear send garbage rows to the other player (2 lines send 1, 3 send 2, 4 send 4, T-spins more). First to clear 40 lines wins, or the one still standing.</p>
+				<div class="tu-row">
+					<div class="tu-field bk-f-name"><label for="bk-rname">Your name</label><input id="bk-rname" class="tu-input" type="text" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<label class="bk-chk"><input type="checkbox" id="bk-rpub" checked> List it so anyone can join</label>
+					<button type="button" class="tu-btn tu-btn--primary" id="bk-rnew">Start a race</button>
+				</div>
+				<div id="bk-rwait" hidden></div>
+				<h3 class="bk-h3">Open races</h3>
+				<div id="bk-lobby"><p class="bk-sub">Loading…</p></div>
+				<p><button type="button" class="tu-btn" id="bk-rlobby">↻ Refresh</button></p>
+			</div>
+			<div class="tu-card">
+				<h2 class="bk-h">Race the computer</h2>
+				<div class="tu-row">
+					<div class="tu-field bk-f-num"><label for="bk-bot">How good</label><select id="bk-bot" class="tu-input"><option value="1">Easy (1 piece a second)</option><option value="2" selected>Medium (2 a second)</option><option value="3">Hard (3 a second)</option><option value="4.5">Expert (4.5 a second)</option></select></div>
+					<button type="button" class="tu-btn tu-btn--primary" id="bk-rbot">Race the computer</button>
+				</div>
+			</div>
+			<div class="tu-card">
+				<h2 class="bk-h">The daily race</h2>
+				<p class="bk-sub">Every UTC day there is one seed for everyone: the same pieces in the same order. Clear 40 lines as fast as you can and save it to Hive for the daily leaderboard. <span id="bk-dcount"></span></p>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="bk-rdaily">Play today's daily race</button></p>
+			</div>
+		</section>
+
+		<section id="bk-p-lb" role="tabpanel" aria-label="Leaderboard" hidden>
+			<div class="tu-card">
+				<div class="bk-lbtop">
+					<div class="tu-seg" id="bk-lbk" role="group" aria-label="Which leaderboard"><button type="button" data-v="d" aria-pressed="true">Daily race</button><button type="button" data-v="s" aria-pressed="false">Sprint 40</button><button type="button" data-v="u" aria-pressed="false">Ultra 2 min</button><button type="button" data-v="m" aria-pressed="false">Marathon</button></div>
+					<button type="button" class="tu-btn" id="bk-lbref">↻ Refresh</button>
+				</div>
+				<p class="bk-sub" id="bk-lbnote"></p>
+				<div id="bk-lb"><p class="bk-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card">
+				<h2 class="bk-h">Your Hive account</h2>
+				<div id="bk-hlogin"></div>
+				<p class="tu-note">Only games saved to Hive appear here, and only after mes.fm has replayed every move of the game from its seed and got exactly the same time, lines and score. Marathon ranks games started at level 1.</p>
+			</div>
+		</section>
+
+		<section id="bk-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded).</p>
+			<div id="bk-stats"></div>
+			<p><button type="button" class="tu-btn" id="bk-sreset">Clear my statistics</button></p>
+		</section>
+
+		<div class="tu-toast bk-toast" id="bk-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Falling blocks, free in your browser</h2>
+			<p>Seven shapes made of four squares fall into a well 10 squares wide. Move and turn each one so they fill whole rows: a full row disappears and everything above it drops. Clear four rows with one long piece for the most points. The game ends when the stack reaches the top. No install, no account, and it works with a keyboard, a touch screen or a gamepad, in 2D or 3D.</p>
+			<h3>Modes</h3>
+			<dl>
+				<dt>Marathon</dt><dd>Start at any level; every 10 lines the pieces fall faster, up to level 20 where they appear on the floor. Clear 150 lines for the end. Highest score wins.</dd>
+				<dt>Sprint 40</dt><dd>Clear 40 lines as fast as you can. The clock stops on the 40th line.</dd>
+				<dt>Ultra 2 min</dt><dd>Two minutes at a steady speed: score as many points as you can. Quads, T-spins and back-to-backs are worth far more than single lines.</dd>
+				<dt>Zen</dt><dd>No speed-up, no clock and no game over: when the stack reaches the top the well empties and you carry on.</dd>
+				<dt>Daily race</dt><dd>A Sprint 40 on the day's seed, the same pieces for everyone in the world, with its own leaderboard per UTC day.</dd>
+				<dt>Race</dt><dd>Live against another person (share a link or join an open race) or the computer. You get the same pieces; the lines you clear push garbage rows into the other well.</dd>
+			</dl>
+			<h3>The rules the page uses</h3>
+			<p>They follow the modern standard most falling-block games share: the pieces come in shuffled bags of all seven, so you never wait long for a long piece; turning a piece next to a wall or the floor tries a few nudges ("wall kicks") before it gives up; you can keep one piece aside with Hold (once per piece); the ghost shows where the piece will land; and a piece touching the floor waits half a second before it locks, which you can stretch by moving it (up to 15 times).</p>
+			<h3>Scoring</h3>
+			<dl>
+				<dt>Lines</dt><dd>1 row 100, 2 rows 300, 3 rows 500, 4 rows (a quad) 800 points, times the level.</dd>
+				<dt>T-spins</dt><dd>Turning the T piece into a tight slot (three of the four corners around its centre filled) scores 400, with 1, 2 or 3 rows 800, 1,200 or 1,600, times the level. A "mini" T-spin scores less.</dd>
+				<dt>Back-to-back</dt><dd>A quad or a T-spin with lines right after another one (with no ordinary clear in between) scores 1.5 times.</dd>
+				<dt>Combo</dt><dd>Clearing rows with piece after piece adds 50 × combo × level.</dd>
+				<dt>Perfect clear</dt><dd>Leaving the whole well empty adds a big bonus.</dd>
+				<dt>Drops</dt><dd>1 point per row of soft drop, 2 per row of hard drop.</dd>
+			</dl>
+			<h3>Saving to Hive and the leaderboard</h3>
+			<p>After a Sprint, Ultra, Marathon or daily race you can save the result to the Hive blockchain with "Save to Hive". It sends one small public message (a custom_json operation with the id mes_blocks) from your Hive account, signed with your posting key through Hive Keychain. It holds the seed, your time, lines, score and every move you made with its timing, so mes.fm can replay the game exactly and check it before it goes on the leaderboard. It costs no HIVE (a little of your free Resource Credits), and like everything on Hive it is public and permanent.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Is this Tetris?</dt><dd>No. Tetris is a trademark of The Tetris Company, and this page has nothing to do with it. MES Falling Blocks is our own game in the same old genre of falling-block puzzles, with its own code, art and sounds.</dd>
+				<dt>What are DAS and ARR?</dt><dd>When you hold left or right, the piece moves once, waits the "auto-repeat delay" (DAS), then moves again every "repeat rate" (ARR) milliseconds. ARR 0 sends it straight to the wall. Lower numbers are faster; good players use around 100 ms and 0-10 ms.</dd>
+				<dt>Why can't I save a Zen game?</dt><dd>Zen has no end and no score race, so there is nothing to rank.</dd>
+				<dt>Can I play on a phone?</dt><dd>Yes: drag to move, tap to turn, flick down to drop, or use the buttons under the board. Fill window gives the board the whole screen.</dd>
+				<dt>Does 3D change the game?</dt><dd>No. It is the same game drawn with depth and light; you can switch between 2D and 3D in the middle of a game.</dd>
+			</dl>
+			<p>Related: <a href="/minesweeper">Minesweeper</a> &middot; <a href="/brick-builder">Brick Builder</a> &middot; <a href="/connect-four">Connect Four</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>
+	<script src="/main_js/panel-view.js?v=1" defer></script>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/darkroom"><img class="mes-aside__img mes-aside__img--logo" src="/darkroom/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Free Photo Library and RAW Editor, a Lightroom Alternative</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/shapes-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/shapes-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Volume, Area and Surface Area Calculator: Cylinder, Sphere, Cone, Box and More</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/percentagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/percentagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Percentage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/blocks">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/blocks/js/blocks.js?v=1" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

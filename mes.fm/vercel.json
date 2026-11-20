@@ -2,6 +2,7 @@
   "ignoreCommand": "if [ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- ./; then exit 0; else exit 1; fi",
   "cleanUrls": true,
   "redirects": [
+    { "source": "/:k(tetris|tetris-online|tetris-game|play-tetris|free-tetris|tetris-free|falling-blocks|falling-block|falling-blocks-game|block-game|blocks-game|block-puzzle|tetromino|tetrominoes|tetrominos|40-lines|sprint-40|tetris-sprint|tetris-race|tetris-3d|3d-tetris)", "destination": "/blocks", "permanent": true },
     { "source": "/ai", "has": [{ "type": "query", "key": "wallet" }], "destination": "/ai-trading", "permanent": true },
     { "source": "/ai/api/:path*", "destination": "/ai-trading/api/:path*", "permanent": true },
     { "source": "/:k(mes-ai|ai-chat|chat|chatbot|ask-ai|ai-assistant|claude-chat)", "destination": "/ai", "permanent": true },

@@ -1662,6 +1662,14 @@ APPS = {
                 tag="Classic Minesweeper, a daily board and best times.", accent="#475569", dark="#334155", tint="#e7ebf0",
                 desc="Play Minesweeper free in your browser: Beginner, Intermediate, Expert and custom boards, a daily board that is the same for everyone, no-guess boards, chording, flags, touch controls and your best times, with the option to save results to the Hive blockchain for a verified leaderboard.",
                 js_v="2", pre_js=["/main_js/hive.js?v=2"]),
+    # MES Falling Blocks (2026-11-20, mes.fm/blocks; never call it "Tetris": a trademark of The Tetris Company): tool_apps_src/blocks
+    # (lib.js = MESBlocks rules / SRS / scoring / replay check, also mes.fm/api/_blocks-lib.js for api/blocks.js: cp after editing;
+    # view3d.js = the 3D well; app.js = the page). Hive custom_json id mes_blocks, verified leaderboard + live races in api/blocks.js. Tests: blocks-tests.js.
+    "blocks": dict(title="MES Falling Blocks", page_title="Falling Blocks: Play Free Online, Sprint, Ultra, Races and a Hive Leaderboard",
+                tag="Seven shapes, one well: clear the lines.", accent="#6d28d9", dark="#4c1d95", tint="#efe7ff",
+                desc="Play a free falling-block puzzle game in your browser: Marathon, Sprint 40 lines, Ultra 2 minutes and Zen, modern rules (7-bag, wall kicks, hold, ghost piece, T-spins, combos, back-to-back), keyboard, touch and gamepad controls, 2D or 3D, a daily race on the same pieces for everyone, live races against a friend or the computer, and a Hive-verified leaderboard.",
+                meta_desc="Free falling-block puzzle game: Marathon, Sprint 40, Ultra and Zen, T-spins, hold and ghost, 2D or 3D, live races and a Hive-verified daily leaderboard.",
+                js_v="1", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     # MES Chess (2026-11-12): tool_apps_src/chess (lib.js = MESChess rules + engine + PGN + Hive protocol, also mes.fm/api/_chess-lib.js for api/chess.js:
     # cp after editing; view3d.js = the 3D board and venues (three.js on demand); app.js = the page + the computer's Web Worker). Tests: chess-tests.js, chess-api-tests.js.
     "chess": dict(title="MES Chess", page_title="Chess: Play Free Against the Computer, a Friend, Online or on Hive",
