@@ -52,7 +52,7 @@ final class TimerLive {
 
     /** The page's list. Keys with a button change the page has not taken yet keep the native state. */
     static void setItems(Context c, JSONArray incoming, String style, String icon) {
-        prefs(c).edit().putString("icon", "full".equals(icon) ? "full" : "big").apply();
+        prefs(c).edit().putString("icon", "full".equals(icon) || "big".equals(icon) ? icon : "stack").apply();
         JSONObject ch = obj(c, "changes");
         JSONArray old = items(c), out = new JSONArray();
         for (int i = 0; i < incoming.length(); i++) {
@@ -124,6 +124,7 @@ final class TimerLive {
      *   "big" (default): seconds under a minute (45s), then whole minutes (5m, countdowns round up like the Clock app),
      *                    then hours (2h). The exact time is in the notification.
      *   "full":          4:59, 59:59, 1h05 (squeezed, so smaller).
+     *   "stack" (default since 1.0.7) is drawn by stackLines(): minutes over seconds.
      */
     static Object[][] iconParts(long ms, boolean up, String fmtMode) {
         long s = up ? ms / 1000 : (ms + 999) / 1000, h = s / 3600, m = s % 3600 / 60, r = s % 60;
@@ -139,7 +140,50 @@ final class TimerLive {
         return new Object[][]{{String.valueOf(hrs), 1f}, {"h", .55f}};
     }
 
-    static String iconFmt(Context c) { return prefs(c).getString("icon", "big"); }
+    static String iconFmt(Context c) { return prefs(c).getString("icon", "stack"); }
+
+    /**
+     * "stack": two lines that fit the square status-bar icon, so the seconds always show (an S25 owner asked for them):
+     * minutes on top, seconds below ("56" over "12"); from an hour: "1h" over the minutes ("05").
+     */
+    static String[] stackLines(long ms, boolean up) {
+        long s = up ? ms / 1000 : (ms + 999) / 1000, h = s / 3600, m = s % 3600 / 60, r = s % 60;
+        if (h > 0) return new String[]{h + "h", String.format(Locale.US, "%02d", m)};
+        return new String[]{String.valueOf(m), String.format(Locale.US, "%02d", r)};
+    }
+
+    static Icon statusIcon(Context c, long ms, boolean up) {
+        String f = iconFmt(c);
+        if ("stack".equals(f)) return stackIcon(c, stackLines(ms, up));
+        return textIcon(c, iconParts(ms, up, f));
+    }
+
+    /** Two lines of bold digits, each just under half the square, each squeezed sideways only if it is too wide. */
+    static Icon stackIcon(Context c, String[] lines) {
+        int px = Math.max(64, Math.round(24 * c.getResources().getDisplayMetrics().density));
+        Bitmap bm = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bm);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(0xFFFFFFFF);
+        p.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        android.graphics.Rect r = new android.graphics.Rect();
+        p.setTextSize(100f);
+        p.getTextBounds("0123456789", 0, 10, r);
+        float gapY = px * 0.08f, lineH = (px - gapY) / 2f;
+        float size = lineH * 100f / r.height();          // digits exactly one line tall
+        for (int i = 0; i < 2; i++) {
+            String t = lines[i];
+            p.setTextSize(size);
+            p.setTextScaleX(1f);
+            p.getTextBounds(t, 0, t.length(), r);
+            float sx = r.width() > px ? px / (float) r.width() : 1f;
+            p.setTextScaleX(sx);
+            float x = (px - r.width() * sx) / 2f - r.left * sx;
+            float base = i == 0 ? lineH : px;            // top line's baseline at the middle, bottom line's on the bottom edge
+            cv.drawText(t, x, base, p);
+        }
+        return Icon.createWithBitmap(bm);
+    }
 
     static String title(JSONObject it, long now) {
         String k = it.optString("kind"), label = it.optString("label", "");
@@ -208,7 +252,7 @@ final class TimerLive {
             .setSortKey((run ? (up ? "1" : "0") : "2") + String.format(Locale.US, "%013d", up ? 0 : ms));   // countdowns (soonest first), stopwatches, paused
         if (Build.VERSION.SDK_INT < 26) b.setPriority(Notification.PRIORITY_LOW);
         if (big) {
-            b.setSmallIcon(textIcon(c, iconParts(ms, up, iconFmt(c))));
+            b.setSmallIcon(statusIcon(c, ms, up));
             if (Build.VERSION.SDK_INT >= 24) {
                 RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.notif_timer);
                 v.setTextViewText(R.id.nt_time, time);

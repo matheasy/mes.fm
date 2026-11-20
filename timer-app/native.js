@@ -31,8 +31,8 @@
 	var KEY = "mes-timer:v1", OKEY = "mes-timer-app:opts", MAXN = 60, asked = false;
 
 	/* ---------- options ---------- */
-	var O = { live: true, alerts: true, ring: true, style: "auto", icon: "big" };
-	try { var so = JSON.parse(localStorage.getItem(OKEY) || "null"); if (so) Object.keys(O).forEach(function (k) { if (typeof so[k] === typeof O[k]) O[k] = so[k]; }); } catch (e) {}
+	var O = { live: true, alerts: true, ring: true, style: "auto", icon: "stack", iconV: 2 };
+	try { var so = JSON.parse(localStorage.getItem(OKEY) || "null"); if (so) Object.keys(O).forEach(function (k) { if (typeof so[k] === typeof O[k]) O[k] = so[k]; }); if (so && so.iconV !== 2 && O.icon === "big") O.icon = "stack"; O.iconV = 2; } catch (e) {}
 	function saveO() { try { localStorage.setItem(OKEY, JSON.stringify(O)); } catch (e) {} }
 
 	function state() { try { return JSON.parse(localStorage.getItem(KEY) || "null") || {}; } catch (e) { return {}; } }
@@ -267,8 +267,8 @@
 			var il = document.createElement("label"); il.className = "tm-check"; il.style.display = "block"; il.style.margin = ".3em 0";
 			il.appendChild(document.createTextNode("Time in the status-bar icon: "));
 			var isel = document.createElement("select"); isel.id = "tm-app-icon"; isel.style.maxWidth = "100%";
-			[["big", "Big: 45s, then 5m, then 2h"], ["full", "Full time, smaller (4:59)"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; isel.appendChild(op); });
-			isel.value = O.icon === "full" ? "full" : "big";
+			[["stack", "Minutes over seconds (56 above 12), shows the seconds"], ["big", "One big number: 45s, then 5m, then 2h"], ["full", "Full time on one line, smaller (4:59)"]].forEach(function (o) { var op = document.createElement("option"); op.value = o[0]; op.textContent = o[1]; isel.appendChild(op); });
+			isel.value = O.icon === "full" || O.icon === "big" ? O.icon : "stack";
 			isel.addEventListener("change", function () { O.icon = isel.value; saveO(); liveSig = ""; liveUpdate(true); });
 			il.appendChild(isel); box.appendChild(il);
 			var showIcon = function () { il.style.display = sel.value === "chip" ? "none" : "block"; };
