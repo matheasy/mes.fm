@@ -7,6 +7,8 @@
     { "source": "/:k(mes-ai|ai-chat|chat|chatbot|ask-ai|ai-assistant|claude-chat)", "destination": "/ai", "permanent": true },
     { "source": "/:k(ai-image|ai-images|ai-picture)", "destination": "/ai?tab=img", "permanent": true },
     { "source": "/:k(ai-video|ai-videos|grok-video|grok-imagine)", "destination": "/ai?tab=vid", "permanent": true },
+    { "source": "/ai/:lang(es|pt|fr|de|tr|ru|zh|hi|id|vi|ar|fa)", "destination": "/ai-:lang", "permanent": true },
+    { "source": "/:k(ia|chat-ia|ia-espanol|ai-spanish|ai-espanol)", "destination": "/ai-es", "permanent": true },
     { "source": "/cps", "destination": "/click-test", "permanent": true },
     { "source": "/cps-test", "destination": "/click-test", "permanent": true },
     { "source": "/click-speed-test", "destination": "/click-test", "permanent": true },

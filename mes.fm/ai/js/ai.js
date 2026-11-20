@@ -90,9 +90,14 @@
     "Write math with plain symbols or inline code, not LaTeX. Each answer has a length limit, so get to the point and finish your answer within it. " +
     "Refuse requests for clearly illegal or seriously harmful content.";
   // the same instructions, naming the company that really runs the chosen model
-  function systemFor(modelKey) {
-    var m = MODELS[modelKey];
-    return m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+  // lang = the language page the person is on (/ai-es ...): answer in that language unless they write in another one.
+  var LANGS = { es: "Spanish", "pt-BR": "Brazilian Portuguese", fr: "French", de: "German", tr: "Turkish", ru: "Russian", "zh-CN": "Simplified Chinese",
+    hi: "Hindi", id: "Indonesian", vi: "Vietnamese", ar: "Arabic", fa: "Persian (Farsi)" };
+  function cleanLang(l) { return typeof l === "string" && Object.prototype.hasOwnProperty.call(LANGS, l) ? l : "en"; }
+  function systemFor(modelKey, lang) {
+    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+    lang = cleanLang(lang);
+    return lang === "en" ? s : s + " The person is using the " + LANGS[lang] + " version of this page: answer in " + LANGS[lang] + " by default; if they write in another language, answer in the language they write in.";
   }
 
   /* ---------- numbers ---------- */
@@ -114,7 +119,7 @@
     return FILES.imgTokens;
   }
   function estimateChatTokens(messages) {
-    var n = estimateTokens(SYSTEM) + 10;
+    var n = estimateTokens(SYSTEM) + 50;
     (messages || []).forEach(function (m) { n += estimateTokens(m && m.content) + 4; (m && m.files || []).forEach(function (f) { n += fileTokens(f); }); });
     return n;
   }
@@ -401,7 +406,7 @@
   return {
     cleanChat: cleanChat, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
-    PROVIDERS: PROVIDERS, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
+    PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
@@ -425,6 +430,9 @@
 	var root = $("ai");
 	if (!root || !window.MESAI) return;
 	var A = window.MESAI, H = window.MESHive;
+	// translations: language pages set window.AI_I18N = {code, name, locale, dir, s: {"English": "translation"}} before this script
+	var L = window.AI_I18N || null, LANG = (L && L.code) || "en", LOC = (L && L.locale) || "en-US";
+	function T(s, v) { var t = L && L.s && L.s[s]; if (typeof t !== "string" || !t) t = s; return v ? t.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? v[k] : m; }) : t; }
 	var LS = "mes-ai:v1", LS_IMG = "mes-ai:imgs";
 	var mock = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]mock=1\b/.test(location.search);
 	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
@@ -445,8 +453,8 @@
 	var qTab = /[?&]tab=(img|chat|vid)\b/.exec(location.search);
 	if (qTab) S.tab = qTab[1];
 	if (S.tab !== "img" && S.tab !== "vid") S.tab = "chat";
-	function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { msg("This browser's storage is full: old chats could not be saved. Delete some.", "err"); } }
-	function newChat() { var c = { id: A.newId(), title: "New chat", at: Date.now(), msgs: [] }; S.chats.unshift(c); S.cur = c.id; save(); return c; }
+	function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { msg(T("This browser's storage is full: old chats could not be saved. Delete some."), "err"); } }
+	function newChat() { var c = { id: A.newId(), title: T("New chat"), at: Date.now(), msgs: [] }; S.chats.unshift(c); S.cur = c.id; save(); return c; }
 	function cur() { var c = S.chats.filter(function (x) { return x.id === S.cur; })[0]; return c || (S.chats[0] ? (S.cur = S.chats[0].id, S.chats[0]) : newChat()); }
 
 	function msg(t, kind) { var m = $("ai-msg"); m.hidden = !t; m.textContent = t || ""; m.className = "tu-card ai-msg" + (kind ? " " + kind : ""); }
@@ -456,15 +464,15 @@
 	function who() { return mock ? MOCK_USER : (H && H.user()); }
 	function paintAcct() {
 		var u = who(), a = $("ai-acct");
-		if (mock) { a.innerHTML = '<p class="ai-demo"><b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).</p>'; $("ai-help").innerHTML = ""; return; }
-		if (!H) { a.innerHTML = "<p>The Hive login could not load. Reload the page.</p>"; return; }
+		if (mock) { a.innerHTML = '<p class="ai-demo">' + T("<b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).") + '</p>'; $("ai-help").innerHTML = ""; return; }
+		if (!H) { a.innerHTML = "<p>" + T("The Hive login could not load. Reload the page.") + "</p>"; return; }
 		if (u) {
-			a.innerHTML = '<div class="ai-user"><img src="' + esc(H.avatar(u.name)) + '" alt="" width="32" height="32"><span>Paying as <a href="' + esc(H.peakd(u.name) + "/wallet") + '" target="_blank" rel="noopener">@' + esc(u.name) + '</a></span><span class="ai-sw"></span><button type="button" class="tu-btn tu-btn--ghost" data-a="logout">Log out</button></div>';
+			a.innerHTML = '<div class="ai-user"><img src="' + esc(H.avatar(u.name)) + '" alt="" width="32" height="32"><span>' + T("Paying as {who}", { who: '<a href="' + esc(H.peakd(u.name) + "/wallet") + '" target="_blank" rel="noopener">@' + esc(u.name) + '</a>' }) + '</span><span class="ai-sw"></span><button type="button" class="tu-btn tu-btn--ghost" data-a="logout">' + T("Log out") + '</button></div>';
 			$("ai-help").innerHTML = "";
 			addSwitcher();
 		} else {
-			a.innerHTML = '<div class="ai-loginrow"><label class="tu-label" for="ai-user">Your Hive username</label><input id="ai-user" class="tu-input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. mes">' +
-				'<button type="button" class="tu-btn tu-btn--primary" data-a="login">Log in with Keychain</button></div>';
+			a.innerHTML = '<div class="ai-loginrow"><label class="tu-label" for="ai-user">' + T("Your Hive username") + '</label><input id="ai-user" class="tu-input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="' + esc(T("e.g. mes")) + '">' +
+				'<button type="button" class="tu-btn tu-btn--primary" data-a="login">' + T("Log in with Keychain") + '</button></div>';
 			if (H.accounts && H.accounts().length) { a.querySelector(".ai-loginrow").insertAdjacentHTML("beforeend", '<span class="ai-sw"></span>'); addSwitcher(); }
 			$("ai-user").addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
 			H.keychain(1500).then(function (k) { if (!k && !H.user()) $("ai-help").innerHTML = H.helpHtml(); });
@@ -474,14 +482,14 @@
 	function addSwitcher() {
 		var el = document.querySelector("#ai-acct .ai-sw");
 		if (!el || !H.switcher) return;
-		H.switcher(el, { onSwitch: function (u) { msg(u ? "Now paying as @" + u.name + "." : "Logged out.", "ok"); paintAcct(); paintPrice(); }, onError: function (e) { msg(e.message, "err"); } });
+		H.switcher(el, { onSwitch: function (u) { msg(u ? T("Now paying as @{name}.", { name: u.name }) : T("Logged out."), "ok"); paintAcct(); paintPrice(); }, onError: function (e) { msg(e.message, "err"); } });
 	}
 	if (H && H.onChange && !mock) H.onChange(function () { paintAcct(); paintPrice(); });
 	function doLogin() {
 		var inp = $("ai-user");
-		msg("Confirm the login in Hive Keychain…");
-		H.login(inp ? inp.value : "").then(function (u) { msg("Logged in as @" + u.name + ".", "ok"); paintAcct(); paintPrice(); })
-			.catch(function (e) { msg(e.message, "err"); if (e.code === "nokeychain") $("ai-help").innerHTML = H.helpHtml(); });
+		msg(T("Confirm the login in Hive Keychain…"));
+		H.login(inp ? inp.value : "").then(function (u) { msg(T("Logged in as @{name}.", { name: u.name }), "ok"); paintAcct(); paintPrice(); })
+			.catch(function (e) { msg(T(e.message), "err"); if (e.code === "nokeychain") $("ai-help").innerHTML = H.helpHtml(); });
 	}
 	$("ai-acct").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-a]"); if (!b) return;
@@ -514,7 +522,7 @@
 		el.querySelectorAll("pre").forEach(function (pre) {
 			if (pre.querySelector(".ai-copy")) return;
 			var b = document.createElement("button");
-			b.type = "button"; b.className = "ai-copy"; b.textContent = "Copy";
+			b.type = "button"; b.className = "ai-copy"; b.textContent = T("Copy");
 			b.addEventListener("click", function () {
 				var code = pre.querySelector("code") || pre;
 				copy(code.innerText, b);
@@ -552,7 +560,7 @@
 		});
 	}
 	function copy(text, btn) {
-		var done = function () { var o = btn.textContent; btn.textContent = "Copied"; setTimeout(function () { btn.textContent = o; }, 1200); };
+		var done = function () { var o = btn.textContent; btn.textContent = T("Copied"); setTimeout(function () { btn.textContent = o; }, 1200); };
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () {});
 		else { var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} ta.remove(); }
 	}
@@ -583,28 +591,28 @@
 		files.forEach(function (f) {
 			chain = chain.then(function () {
 				var name = f.name || "picture", type = f.type || "";
-				if (PEND.length >= A.FILES.perMsg) { notes.push("At most " + A.FILES.perMsg + " files in one message."); return; }
+				if (PEND.length >= A.FILES.perMsg) { notes.push(T("At most {n} files in one message.", { n: A.FILES.perMsg })); return; }
 				if (/^image\//.test(type)) {
 					return shrinkImage(f).then(function (r) {
-						if (pendChars() + r.data.length > A.FILES.total) { notes.push(name + ": too big together with the other files."); return; }
+						if (pendChars() + r.data.length > A.FILES.total) { notes.push(T("{name}: too big together with the other files.", { name: name })); return; }
 						PEND.push({ id: A.newId(), t: "img", mt: r.mt, name: name, data: r.data });
-					}, function () { notes.push(name + ": this picture type can't be read here. Use JPEG or PNG."); });
+					}, function () { notes.push(T("{name}: this picture type can't be read here. Use JPEG or PNG.", { name: name })); });
 				}
 				if (type === "application/pdf" || /\.pdf$/i.test(name)) {
 					return f.arrayBuffer().then(function (buf) {
 						var d = b64(buf);
-						if (pendChars() + d.length > A.FILES.total) { notes.push(name + ": too big (PDFs up to about " + Math.round(A.FILES.total * 0.75 / 1e6 * 10) / 10 + " MB together)."); return; }
+						if (pendChars() + d.length > A.FILES.total) { notes.push(T("{name}: too big (PDFs up to about {mb} MB together).", { name: name, mb: (Math.round(A.FILES.total * 0.75 / 1e6 * 10) / 10).toLocaleString(LOC) })); return; }
 						PEND.push({ id: A.newId(), t: "pdf", mt: "application/pdf", name: name, data: d, pages: pdfPages(buf) });
 					});
 				}
 				if (/^text\//.test(type) || TEXT_EXT.test(name) || /json|xml|javascript/.test(type)) {
-					if (f.size > 200000) { notes.push(name + ": text files up to 200 KB."); return; }
+					if (f.size > 200000) { notes.push(T("{name}: text files up to 200 KB.", { name: name })); return; }
 					return f.text().then(function (t) {
 						var inp = $("ai-in"), ext = (name.match(/\.(\w+)$/) || [, ""])[1].toLowerCase();
 						inp.value = (inp.value.trim() ? inp.value.replace(/\s+$/, "") + "\n\n" : "") + name + ":\n```" + ext + "\n" + t.replace(/\s+$/, "") + "\n```\n";
 					});
 				}
-				notes.push(name + ": only pictures, PDFs and text files can be added (save Word files as PDF).");
+				notes.push(T("{name}: only pictures, PDFs and text files can be added (save Word files as PDF).", { name: name }));
 			});
 		});
 		chain.then(function () { paintFiles(); paintPrice(); if (notes.length) msg(notes.join(" "), "err"); else msg(""); });
@@ -615,7 +623,7 @@
 		box.hidden = !PEND.length;
 		box.innerHTML = PEND.map(function (f, i) {
 			var pic = f.t === "img" ? '<img alt="" src="data:' + f.mt + ";base64," + f.data + '">' : '<span class="ai-fic" aria-hidden="true">' + fileIcon(f) + "</span>";
-			return '<span class="ai-file">' + pic + '<span class="ai-fname" title="' + esc(f.name) + '">' + esc(f.name) + (f.pages ? " · " + f.pages + " page" + (f.pages > 1 ? "s" : "") : "") + '</span><button type="button" data-unfile="' + i + '" aria-label="Remove ' + esc(f.name) + '" title="Remove">×</button></span>';
+			return '<span class="ai-file">' + pic + '<span class="ai-fname" title="' + esc(f.name) + '">' + esc(f.name) + (f.pages ? " · " + (f.pages === 1 ? T("{n} page", { n: 1 }) : T("{n} pages", { n: f.pages })) : "") + '</span><button type="button" data-unfile="' + i + '" aria-label="' + T("Remove {name}", { name: esc(f.name) }) + '" title="' + esc(T("Remove")) + '">×</button></span>';
 		}).join("");
 	}
 	$("ai-files").addEventListener("click", function (e) { var b = e.target.closest("[data-unfile]"); if (!b || busy) return; PEND.splice(+b.dataset.unfile, 1); paintFiles(); paintPrice(); });
@@ -642,7 +650,7 @@
 			im.onclick = function () { if (fileUrls[k]) window.open(fileUrls[k], "_blank", "noopener"); };
 			if (fileUrls[k]) { im.src = fileUrls[k]; return; }
 			fileGet(k).then(function (f) {
-				if (!f) { im.replaceWith(Object.assign(document.createElement("span"), { className: "ai-sub", textContent: "(picture not in this browser)" })); return; }
+				if (!f) { im.replaceWith(Object.assign(document.createElement("span"), { className: "ai-sub", textContent: T("(picture not in this browser)") })); return; }
 				var bin = atob(f.data), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
 				fileUrls[k] = URL.createObjectURL(new Blob([u], { type: f.mt })); im.src = fileUrls[k];
 			});
@@ -675,26 +683,29 @@
 	function renderMsg(m, i) {
 		var mine = m.role === "user";
 		var meta = "";
-		if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(A.LENGTHS[m.len] || "") + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="Payment memo">' + esc(m.memo) + "</a>" : "") + "</span>";
+		if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(T(A.LENGTHS[m.len] || "")) + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="' + esc(T("Payment memo")) + '">' + esc(m.memo) + "</a>" : "") + "</span>";
 		var mf = mine && m.files && m.files.length ? '<div class="ai-mfiles">' + m.files.map(function (f) {
-			return f.t === "img" ? '<img data-fk="' + esc(f.id) + '" alt="' + esc(f.name || "picture") + '" title="' + esc(f.name || "") + '">' :
-				'<span class="ai-file"><span class="ai-fic" aria-hidden="true">📄</span><span class="ai-fname">' + esc(f.name || "file.pdf") + (f.pages ? " · " + f.pages + " pages" : "") + "</span></span>";
+			return f.t === "img" ? '<img data-fk="' + esc(f.id) + '" alt="' + esc(f.name || T("picture")) + '" title="' + esc(f.name || "") + '">' :
+				'<span class="ai-file"><span class="ai-fic" aria-hidden="true">📄</span><span class="ai-fname">' + esc(f.name || "file.pdf") + (f.pages ? " · " + (f.pages === 1 ? T("{n} page", { n: 1 }) : T("{n} pages", { n: f.pages })) : "") + "</span></span>";
 		}).join("") + "</div>" : "";
-		var body = mine ? mf + (m.content ? '<div class="ai-text ai-plain">' + esc(m.content) + "</div>" : "") : '<div class="ai-text ai-md">' + (m.content ? md(m.content) : m.error ? "" : m.thinking ? '<p class="ai-thinking">Thinking…</p>' : '<p class="ai-thinking">Waiting for the answer…</p>') + "</div>";
+		var body = mine ? mf + (m.content ? '<div class="ai-text ai-plain">' + esc(m.content) + "</div>" : "") : '<div class="ai-text ai-md">' + (m.content ? md(m.content) : m.error ? "" : m.thinking ? '<p class="ai-thinking">' + T("Thinking…") + '</p>' : '<p class="ai-thinking">' + T("Waiting for the answer…") + '</p>') + "</div>";
 		var foot = "";
 		if (!mine) {
-			if (m.stop === "max_tokens") foot += '<p class="ai-note">The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.</p>';
-			if (m.stop === "refusal") foot += '<p class="ai-note">The AI declined to answer this.</p>';
-			if (m.error) foot += '<p class="ai-note ai-err">' + esc(m.error) + "</p>" + (m.retryId ? '<button type="button" class="tu-btn tu-btn--primary" data-retry="' + i + '">Try again (free)</button>' : "");
-			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">Copy answer</button></div>';
+			if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
+			if (m.stop === "refusal") foot += '<p class="ai-note">' + T("The AI declined to answer this.") + '</p>';
+			if (m.error) foot += '<p class="ai-note ai-err">' + esc(T(m.error)) + "</p>" + (m.retryId ? '<button type="button" class="tu-btn tu-btn--primary" data-retry="' + i + '">' + T("Try again (free)") + '</button>' : "");
+			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button></div>';
 		}
-		return '<div class="ai-m ' + (mine ? "ai-m--me" : "ai-m--ai") + '" data-i="' + i + '"><div class="ai-who">' + (mine ? "You" : "MES AI") + meta + "</div>" + body + foot + "</div>";
+		return '<div class="ai-m ' + (mine ? "ai-m--me" : "ai-m--ai") + '" data-i="' + i + '"><div class="ai-who">' + (mine ? T("You") : "MES AI") + meta + "</div>" + body + foot + "</div>";
 	}
 	function renderLog() {
 		var c = cur(), log = $("ai-log");
 		var nearEnd = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
 		if (!c.msgs.length) {
-			log.innerHTML = '<div class="ai-empty"><p><b>Ask anything.</b> Each message is paid on its own; the price is next to the Send button.</p><p class="ai-try">Try: <button type="button" class="ai-mini" data-ex="Explain recursion with a short JavaScript example.">Explain recursion</button> <button type="button" class="ai-mini" data-ex="Write a polite email asking my landlord to fix the heating.">Write an email</button> <button type="button" class="ai-mini" data-ex="What is the derivative of x^2 sin x? Show the steps.">Derivative steps</button></p></div>';
+			log.innerHTML = '<div class="ai-empty"><p>' + T("<b>Ask anything.</b> Each message is paid on its own; the price is next to the Send button.") + '</p><p class="ai-try">' + T("Try:") +
+				' <button type="button" class="ai-mini" data-ex="' + esc(T("Explain recursion with a short JavaScript example.")) + '">' + T("Explain recursion") + '</button>' +
+				' <button type="button" class="ai-mini" data-ex="' + esc(T("Write a polite email asking my landlord to fix the heating.")) + '">' + T("Write an email") + '</button>' +
+				' <button type="button" class="ai-mini" data-ex="' + esc(T("What is the derivative of x^2 sin x? Show the steps.")) + '">' + T("Derivative steps") + '</button></p></div>';
 		} else log.innerHTML = c.msgs.map(renderMsg).join("");
 		addCopyButtons(log);
 		paintMsgFiles(log);
@@ -710,12 +721,12 @@
 	$("ai-del").addEventListener("click", function () {
 		if (busy) return;
 		var c = cur();
-		if (c.msgs.length && !confirm("Delete \"" + c.title + "\" from this browser?")) return;
+		if (c.msgs.length && !confirm(T('Delete "{title}" from this browser?', { title: c.title }))) return;
 		S.chats = S.chats.filter(function (x) { return x.id !== c.id; }); S.cur = null; save(); renderLog(); paintPrice();
 	});
 	$("ai-export").addEventListener("click", function () {
 		var c = cur(); if (!c.msgs.length) return;
-		var t = "# " + c.title + "\n\n" + c.msgs.map(function (m) { return "## " + (m.role === "user" ? "You" : "MES AI") + "\n\n" + (m.content || ""); }).join("\n\n");
+		var t = "# " + c.title + "\n\n" + c.msgs.map(function (m) { return "## " + (m.role === "user" ? T("You") : "MES AI") + "\n\n" + (m.content || ""); }).join("\n\n");
 		var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([t], { type: "text/markdown" }));
 		a.download = c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") + ".md" || "chat.md"; a.click();
 		setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
@@ -733,12 +744,12 @@
 		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)" };
 		$("ai-model").innerHTML = Object.keys(groups).map(function (p) {
 			return '<optgroup label="' + groups[p] + '">' + Object.keys(A.MODELS).filter(function (k) { return A.MODELS[k].prov === p; }).map(function (k) {
-				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (soon)") + "</option>";
+				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (" + T("soon") + ")") + "</option>";
 			}).join("") + "</optgroup>";
 		}).join("");
 		if (!provOn(A.MODELS[S.model].prov)) { var alt = Object.keys(A.MODELS).filter(function (k) { return provOn(A.MODELS[k].prov); })[0]; if (alt) S.model = alt; }
 		$("ai-model").value = S.model;
-		$("ai-imod").innerHTML = Object.keys(A.IMAGES).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(im.name) + (on ? "" : " (soon)") + "</option>"; }).join("");
+		$("ai-imod").innerHTML = Object.keys(A.IMAGES).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(im.name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("");
 		if (!provOn(A.IMAGES[S.imod].prov)) { var ia = Object.keys(A.IMAGES).filter(function (k) { return provOn(A.IMAGES[k].prov); })[0]; if (ia) S.imod = ia; }
 		$("ai-imod").value = S.imod;
 		fillQuality();
@@ -746,15 +757,15 @@
 	// picture quality: GPT Image = Draft / Good / Best, Grok Imagine = 1k / 2k; each company's last choice is remembered
 	function fillQuality() {
 		var im = A.IMAGES[S.imod], x = im.prov === "xai";
-		var opts = x ? A.XIMAGE.res : { low: "Draft (fast, cheap)", medium: "Good", high: "Best" };
+		var opts = x ? A.XIMAGE.res : { low: T("Draft (fast, cheap)"), medium: T("Good"), high: T("Best") };
 		var want = S.iq[im.prov] && opts[S.iq[im.prov]] ? S.iq[im.prov] : (x ? "1k" : "medium");
-		$("ai-q").innerHTML = Object.keys(opts).map(function (k) { return '<option value="' + k + '"' + (k === want ? " selected" : "") + ">" + esc(opts[k]) + "</option>"; }).join("");
-		$("ai-imodel").textContent = A.PROVIDERS[im.prov] + "'s " + im.name.replace(/ \(.*\)$/, "");
+		$("ai-q").innerHTML = Object.keys(opts).map(function (k) { return '<option value="' + k + '"' + (k === want ? " selected" : "") + ">" + esc(x ? T(opts[k]) : opts[k]) + "</option>"; }).join("");
+		$("ai-imodel").textContent = T("{company}'s {model}", { company: A.PROVIDERS[im.prov], model: im.name.replace(/ \(.*\)$/, "") });
 	}
 	fillModels();
 	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintPrice(); });
 	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
-	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + A.LENGTHS[k] + "</button>"; }).join("");
+	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + esc(T(A.LENGTHS[k])) + "</button>"; }).join("");
 	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
 	function draftMessages() {
@@ -770,18 +781,20 @@
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
 	function paintPrice() {
 		var m = A.MODELS[S.model];
-		$("ai-modelnote").textContent = m.blurb + " Answer up to about " + Math.round(m.caps[S.len] * 0.75).toLocaleString("en-US") + " words" + (m.thinks ? " (its thinking counts too)." : ".");
+		var words = Math.round(m.caps[S.len] * 0.75).toLocaleString(LOC);
+		$("ai-modelnote").textContent = T(m.blurb) + " " + (m.thinks ? T("Answer up to about {n} words (its thinking counts too).", { n: words }) : T("Answer up to about {n} words.", { n: words }));
 		var msgs = draftMessages(), q = A.chatQuote(S.model, A.estimateChatTokens(msgs.length ? msgs : [{ role: "user", content: "" }]), S.len);
-		var hist = msgs.length > 1 ? ' <span class="ai-sub">incl. ' + Math.floor(msgs.length / 2) + " earlier exchange" + (msgs.length > 3 ? "s" : "") + "</span>" : "";
-		$("ai-price").innerHTML = "about <b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>" + hist;
+		var nEx = Math.floor(msgs.length / 2);
+		var hist = msgs.length > 1 ? ' <span class="ai-sub">' + (nEx === 1 ? T("incl. {n} earlier exchange", { n: nEx }) : T("incl. {n} earlier exchanges", { n: nEx })) + "</span>" : "";
+		$("ai-price").innerHTML = T("about <b>{p} HBD</b>", { p: q.price }) + " <span class=\"ai-sub\">(" + usdOf(q) + ")</span>" + hist;
 		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
-		$("ai-send").textContent = busy ? "Working…" : "Pay & send";
+		$("ai-send").textContent = busy ? T("Working…") : T("Pay & send");
 		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>";
 		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
 		$("ai-make").disabled = !(ion && !busy);
-		$("ai-make").textContent = ion ? "Pay & create" : "Coming soon";
+		$("ai-make").textContent = ion ? T("Pay & create") : T("Coming soon");
 		if (typeof paintVprice === "function") paintVprice();
 	}
 	["ai-in", "ai-prompt"].forEach(function (id) { $(id).addEventListener("input", paintPrice); });
@@ -793,17 +806,17 @@
 	(function () {
 		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; });
 		$("ai-checked").textContent = A.PRICES_CHECKED;
-		var rows = ["<tr><th>Model</th><th>Short</th><th>Medium</th><th>Long</th></tr>"];
+		var rows = ["<tr><th>" + T("Model") + "</th><th>" + T("Short") + "</th><th>" + T("Medium") + "</th><th>" + T("Long") + "</th></tr>"];
 		Object.keys(A.MODELS).forEach(function (k) {
 			rows.push("<tr><td>" + esc(A.MODELS[k].name) + "</td>" + Object.keys(A.LENGTHS).map(function (l) { return "<td>" + A.chatQuote(k, 500, l).price + " HBD</td>"; }).join("") + "</tr>");
 		});
-		rows.push('<tr><td colspan="4" class="ai-sub">A new chat with a short question (about 500 tokens sent). Longer chats cost more.</td></tr>');
-		rows.push("<tr><th>Picture (square)</th><th>Draft</th><th>Good</th><th>Best</th></tr><tr><td>" + esc(A.IMAGES.gpt.name) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
-		rows.push("<tr><th>Picture (any shape)</th><th>1k</th><th>2k</th><th></th></tr>");
-		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === "xai"; }).forEach(function (k) { rows.push("<tr><td>" + esc(A.IMAGES[k].name) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + A.imageQuote(rq, "1024x1024", 0, k).price + " HBD</td>"; }).join("") + "<td></td></tr>"); });
-		rows.push("<tr><th>Video (480p)</th><th>5 s</th><th>8 s</th><th>15 s</th></tr>");
-		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(A.VIDEO.models[k].name) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
-		rows.push('<tr><td colspan="4" class="ai-sub">720p costs 1.5 times as much and 1080p 2.25 times.</td></tr>');
+		rows.push('<tr><td colspan="4" class="ai-sub">' + T("A new chat with a short question (about 500 tokens sent). Longer chats cost more.") + '</td></tr>');
+		rows.push("<tr><th>" + T("Picture (square)") + "</th><th>" + T("Draft") + "</th><th>" + T("Good") + "</th><th>" + T("Best") + "</th></tr><tr><td>" + esc(T(A.IMAGES.gpt.name)) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
+		rows.push("<tr><th>" + T("Picture (any shape)") + "</th><th>1k</th><th>2k</th><th></th></tr>");
+		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === "xai"; }).forEach(function (k) { rows.push("<tr><td>" + esc(T(A.IMAGES[k].name)) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + A.imageQuote(rq, "1024x1024", 0, k).price + " HBD</td>"; }).join("") + "<td></td></tr>"); });
+		rows.push("<tr><th>" + T("Video (480p)") + "</th><th>" + T("{n} s", { n: 5 }) + "</th><th>" + T("{n} s", { n: 8 }) + "</th><th>" + T("{n} s", { n: 15 }) + "</th></tr>");
+		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(T(A.VIDEO.models[k].name)) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
+		rows.push('<tr><td colspan="4" class="ai-sub">' + T("720p costs 1.5 times as much and 1080p 2.25 times.") + '</td></tr>');
 		$("ai-ptable").innerHTML = rows.join("");
 	})();
 
@@ -823,7 +836,7 @@
 				}, 250);
 			});
 		}
-		return post(Object.assign({ op: "quote" }, body)).then(jsonOf);
+		return post(Object.assign({ op: "quote", lang: LANG }, body)).then(jsonOf);
 	}
 	function pay(q) {
 		if (mock) return new Promise(function (res) { setTimeout(res, 500); });
@@ -851,7 +864,7 @@
 	var MOCK_ANSWER = "Here is a **simulated** answer (local preview: no AI was called and no HBD moved).\n\nRecursion is when a function calls itself on a smaller piece of the problem until it reaches a case it can answer directly:\n\n```js\nfunction factorial(n) {\n  if (n <= 1) return 1;      // the base case\n  return n * factorial(n - 1);\n}\nconsole.log(factorial(5)); // 120\n```\n\n- Every call waits for the smaller one to finish.\n- Without a base case it would never stop.\n\nOn mes.fm this answer would come from the model you picked.";
 	function mockStream(id, onPiece) {
 		var info = MOCK_Q[id]; info.tries++;
-		if (/fail/i.test(JSON.stringify(info.body.messages || "")) && info.tries === 1) return sleep(600).then(function () { onPiece({ t: "error", msg: "Simulated failure after payment.", retry: true }); });
+		if (/fail/i.test(JSON.stringify(info.body.messages || "")) && info.tries === 1) return sleep(600).then(function () { onPiece({ t: "error", msg: T("Simulated failure after payment."), retry: true }); });
 		var words = MOCK_ANSWER.split(/(?=\s)/), i = 0;
 		if (info.body.model === "opus") onPiece({ t: "think" });
 		return new Promise(function (res) {
@@ -864,9 +877,9 @@
 	}
 	function readStream(r, onPiece) {
 		if (r.mock) return mockStream(r.mock, onPiece);
-		if (r.error) { onPiece({ t: "error", msg: r.error.error || "Could not get the answer.", retry: !!r.error.retry }); return Promise.resolve(); }
+		if (r.error) { onPiece({ t: "error", msg: T(r.error.error) || T("Could not get the answer."), retry: !!r.error.retry }); return Promise.resolve(); }
 		var ct = r.headers.get("content-type") || "";
-		if (!/ndjson/.test(ct)) return jsonOf(r).then(function (j) { onPiece({ t: "error", msg: j.msg || j.error || "Could not get the answer (HTTP " + j.status + ").", retry: !!j.retry }); });
+		if (!/ndjson/.test(ct)) return jsonOf(r).then(function (j) { onPiece({ t: "error", msg: T(j.msg || j.error) || T("Could not get the answer (HTTP {s}).", { s: j.status }), retry: !!j.retry }); });
 		var rd = r.body.getReader(), dec = new TextDecoder(), buf = "";
 		return (function pump() {
 			return rd.read().then(function (x) {
@@ -886,21 +899,21 @@
 		var u = who();
 		var text = $("ai-in").value.trim();
 		if (!text && !PEND.length) { $("ai-in").focus(); return; }
-		if (!status.chat) { msg("MES AI chat is coming soon.", "err"); return; }
-		if (!u) { msg("Log in with your Hive account first (above).", "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
+		if (!status.chat) { msg(T("MES AI chat is coming soon."), "err"); return; }
+		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
 		var draft = draftMessages(), sentFiles = PEND.slice();
 		var c = cur();
 		// a failed exchange at the end is dropped before the new message
 		while (c.msgs.length && (c.msgs[c.msgs.length - 1].error || c.msgs[c.msgs.length - 1].role === "user") && !c.msgs[c.msgs.length - 1].retryId) c.msgs.pop();
 		setBusy(true);
-		msg("Getting the exact price…");
+		msg(T("Getting the exact price…"));
 		withFileData(draft).then(function (msgs) {
 			var err = A.checkMessages(msgs);
-			if (err) throw new Error(err);
+			if (err) throw new Error(T(err));
 			return quote({ acct: u.name, kind: "chat", model: S.model, len: S.len, messages: msgs });
 		}).then(function (q) {
-			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
-			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
+			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
+			msg(T("Price: {p} HBD ({usd}). Confirm the payment in Hive Keychain…", { p: q.price, usd: A.fmtUsd(q.usd) }));
 			return pay(q).then(function () { return q; });
 		}).then(function (q) {
 			var um = { role: "user", content: text, at: Date.now(), price: q.price, memo: q.memo, model: S.model, len: S.len, acct: u.name };
@@ -915,16 +928,16 @@
 			S.chats.sort(function (a, b) { return b.at - a.at; });
 			$("ai-in").value = "";
 			save(); renderLog();
-			msg("Paid. Waiting for the blockchain (a few seconds)…");
+			msg(T("Paid. Waiting for the blockchain (a few seconds)…"));
 			return answer(c, am, q.id, u.name);
 		}).catch(function (e) {
 			var m = e && e.message || String(e);
-			msg(/cancel|declin|denied/i.test(m) ? "Payment cancelled: nothing was sent." : m, "err");
+			msg(/cancel|declin|denied/i.test(m) ? T("Payment cancelled: nothing was sent.") : T(m), "err");
 		}).then(function () { setBusy(false); });
 	}
 	function answer(c, am, id, acct) {
 		var last = 0;
-		return runReq(id, acct, function (n) { msg("Waiting for the blockchain… (" + n * 3 + " s)"); }).then(function (r) {
+		return runReq(id, acct, function (n) { msg(T("Waiting for the blockchain… ({s} s)", { s: n * 3 })); }).then(function (r) {
 			msg("");
 			return readStream(r, function (p) {
 				if (p.t === "text") { am.content += p.v; am.thinking = false; if (Date.now() - last > 90) { last = Date.now(); renderLog(); } }
@@ -932,10 +945,10 @@
 				else if (p.t === "done") { am.stop = p.stop; am.pending = false; }
 				else if (p.t === "error") { am.error = p.msg; am.pending = false; am.retryId = p.retry ? id : null; }
 			});
-		}).catch(function () { am.error = "The connection broke before the answer finished."; am.retryId = id; }).then(function () {
+		}).catch(function () { am.error = T("The connection broke before the answer finished."); am.retryId = id; }).then(function () {
 			am.pending = false;
-			if (!am.error && !am.content) { am.error = "No answer came back."; am.retryId = id; }
-			if (am.error && am.content) am.content += "\n\n*(cut off)*";
+			if (!am.error && !am.content) { am.error = T("No answer came back."); am.retryId = id; }
+			if (am.error && am.content) am.content += "\n\n" + T("*(cut off)*");
 			am.acct = acct;
 			save(); renderLog();
 		});
@@ -968,7 +981,7 @@
 		var l = imgList(), g = $("ai-gal");
 		if (!l.length) { g.innerHTML = ""; return; }
 		g.innerHTML = l.map(function (it) {
-			return '<figure class="ai-fig" data-id="' + it.id + '"><div class="ai-figimg"><img alt="' + esc(it.prompt) + '" data-k="' + it.id + '"></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-dl="' + it.id + '">Download</button><button type="button" class="ai-mini" data-again="' + it.id + '">Use this description</button><button type="button" class="ai-mini" data-rm="' + it.id + '">Delete</button></div></figure>';
+			return '<figure class="ai-fig" data-id="' + it.id + '"><div class="ai-figimg"><img alt="' + esc(it.prompt) + '" data-k="' + it.id + '"></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-dl="' + it.id + '">' + T("Download") + '</button><button type="button" class="ai-mini" data-again="' + it.id + '">' + T("Use this description") + '</button><button type="button" class="ai-mini" data-rm="' + it.id + '">' + T("Delete") + '</button></div></figure>';
 		}).join("");
 		g.querySelectorAll("img[data-k]").forEach(function (im) {
 			var k = im.dataset.k;
@@ -981,7 +994,7 @@
 		var l = imgList();
 		if (b.dataset.dl) { var a = document.createElement("a"); a.href = urls[b.dataset.dl]; a.download = "mes-ai-" + b.dataset.dl + ".webp"; a.click(); }
 		if (b.dataset.again) { var it = l.filter(function (x) { return x.id === b.dataset.again; })[0]; if (it) { $("ai-prompt").value = it.prompt; paintPrice(); $("ai-prompt").focus(); } }
-		if (b.dataset.rm && confirm("Delete this picture from this browser?")) { var k = b.dataset.rm; idbDo("readwrite", function (s) { return s.delete(k); }); imgSave(l.filter(function (x) { return x.id !== k; })); paintGal(); }
+		if (b.dataset.rm && confirm(T("Delete this picture from this browser?"))) { var k = b.dataset.rm; idbDo("readwrite", function (s) { return s.delete(k); }); imgSave(l.filter(function (x) { return x.id !== k; })); paintGal(); }
 	});
 	function b64Blob(b64, mime) { var bin = atob(b64), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: mime }); }
 	function mockImage(prompt, size) {
@@ -997,56 +1010,56 @@
 		if (busy) return;
 		var u = who();
 		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value, imod = S.imod;
-		if (!status.image || !provOn(A.IMAGES[imod].prov)) { msg(A.IMAGES[imod].name + " pictures are coming soon.", "err"); return; }
-		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
+		if (!status.image || !provOn(A.IMAGES[imod].prov)) { msg(T("{name} pictures are coming soon.", { name: T(A.IMAGES[imod].name) }), "err"); return; }
+		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); return; }
 		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod);
-		if (err) { msg(err, "err"); return; }
+		if (err) { msg(T(err), "err"); return; }
 		setBusy(true);
 		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size }).then(function (q) {
-			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
-			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
+			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
+			msg(T("Price: {p} HBD ({usd}). Confirm the payment in Hive Keychain…", { p: q.price, usd: A.fmtUsd(q.usd) }));
 			return pay(q).then(function () { return { id: q.id, model: imod, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name }; });
 		});
 		job.then(function (j) {
 			pendingImg = null;
-			msg("Paid. Making the picture (this takes up to a minute)…");
+			msg(T("Paid. Making the picture (this takes up to a minute)…"));
 			if (mock) {
 				var info = MOCK_Q[j.id]; info.tries++;
-				if (/fail/i.test(j.prompt) && info.tries === 1) return { j: j, err: { msg: "Simulated failure after payment.", retry: true } };
+				if (/fail/i.test(j.prompt) && info.tries === 1) return { j: j, err: { msg: T("Simulated failure after payment."), retry: true } };
 				return sleep(1200).then(function () { return mockImage(j.prompt, j.size); }).then(function (blob) { return { j: j, blob: blob }; });
 			}
-			return runReq(j.id, j.acct, function (n) { msg("Waiting for the blockchain… (" + n * 3 + " s)"); }).then(function (r) {
+			return runReq(j.id, j.acct, function (n) { msg(T("Waiting for the blockchain… ({s} s)", { s: n * 3 })); }).then(function (r) {
 				if (r.error) return { j: j, err: { msg: r.error.error, retry: r.error.retry } };
 				return jsonOf(r).then(function (d) { return d.t === "image" ? { j: j, blob: b64Blob(d.b64, d.mime) } : { j: j, err: { msg: d.msg || d.error, retry: d.retry } }; });
 			});
 		}).then(function (out) {
 			if (!out) return;
 			if (out.err) {
-				if (out.err.retry) { pendingImg = out.j; msg(out.err.msg + " ", "err"); addRetryImg(); }
-				else msg(out.err.msg || "The picture failed.", "err");
+				if (out.err.retry) { pendingImg = out.j; msg(T(out.err.msg) + " ", "err"); addRetryImg(); }
+				else msg(T(out.err.msg) || T("The picture failed."), "err");
 				return;
 			}
 			var key = out.j.id;
 			return idbDo("readwrite", function (s) { return s.put(out.blob, key); }).then(function () {
 				var l = imgList(); l.unshift({ id: key, model: out.j.model, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() }); imgSave(l.slice(0, 200));
-				msg("Done. The picture is below (kept in this browser).", "ok"); paintGal();
+				msg(T("Done. The picture is below (kept in this browser)."), "ok"); paintGal();
 			});
 		}).catch(function (e) {
 			var m = e && e.message || String(e);
-			msg(/cancel|declin|denied/i.test(m) ? "Payment cancelled: nothing was sent." : m, "err");
+			msg(/cancel|declin|denied/i.test(m) ? T("Payment cancelled: nothing was sent.") : T(m), "err");
 		}).then(function () { setBusy(false); });
 	}
 	function addRetryImg() {
-		var b = document.createElement("button"); b.type = "button"; b.className = "tu-btn tu-btn--primary"; b.textContent = "Try again (free)";
+		var b = document.createElement("button"); b.type = "button"; b.className = "tu-btn tu-btn--primary"; b.textContent = T("Try again (free)");
 		b.addEventListener("click", function () { makeImage(true); });
 		$("ai-msg").appendChild(b);
 	}
 
 	/* ---------- videos (Grok Imagine): pay, start a job, follow it every 5 s, fetch the file into IndexedDB ---------- */
 	var V = A.VIDEO, LS_VJ = "mes-ai:vjobs", LS_VID = "mes-ai:vids";
-	$("ai-vmodel").innerHTML = Object.keys(V.models).map(function (k) { return '<option value="' + k + '">' + esc(V.models[k].name) + "</option>"; }).join("");
+	$("ai-vmodel").innerHTML = Object.keys(V.models).map(function (k) { return '<option value="' + k + '">' + esc(T(V.models[k].name)) + "</option>"; }).join("");
 	$("ai-vmodel").value = "lite";
-	$("ai-vsec").innerHTML = V.durations.map(function (d) { return '<option value="' + d + '"' + (d === 5 ? " selected" : "") + ">" + d + " seconds</option>"; }).join("");
+	$("ai-vsec").innerHTML = V.durations.map(function (d) { return '<option value="' + d + '"' + (d === 5 ? " selected" : "") + ">" + T("{n} seconds", { n: d }) + "</option>"; }).join("");
 	function paintVres() {
 		var m = V.models[$("ai-vmodel").value], cur = $("ai-vres").value || "480p", max = V.res.indexOf(m.maxRes);
 		$("ai-vres").innerHTML = V.res.filter(function (r, i) { return i <= max; }).map(function (r) { return '<option value="' + r + '">' + r + "</option>"; }).join("");
@@ -1058,7 +1071,7 @@
 		var q = vq();
 		$("ai-vprice").innerHTML = "<b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>";
 		$("ai-vmake").disabled = !(status.video && !busy);
-		$("ai-vmake").textContent = status.video ? "Pay & create" : "Coming soon";
+		$("ai-vmake").textContent = status.video ? T("Pay & create") : T("Coming soon");
 	}
 	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintVprice(); });
 	["ai-vsec", "ai-vres"].forEach(function (id) { $(id).addEventListener("change", paintVprice); });
@@ -1071,16 +1084,16 @@
 		$("ai-vjobs").innerHTML = l.map(function (j) {
 			var mins = Math.max(0, Math.round((Date.now() - j.at) / 60000));
 			return '<div class="ai-vjob' + (j.err ? " ai-vjob--err" : "") + '"><b>' + (j.err ? "⚠ " : "⏳ ") + esc(j.prompt.slice(0, 90)) + '</b><span class="ai-sub"> · ' + esc(j.price) + " HBD · " +
-				(j.err ? esc(j.err) : j.dl ? "downloading…" : "being made (" + mins + " min so far)") + "</span>" +
-				(j.retry ? ' <button type="button" class="tu-btn tu-btn--primary" data-vretry="' + j.id + '">Try again (free)</button>' : "") +
-				(j.err ? ' <button type="button" class="ai-mini" data-vdrop="' + j.id + '">Remove</button>' : "") + "</div>";
+				(j.err ? esc(T(j.err)) : j.dl ? T("downloading…") : T("being made ({n} min so far)", { n: mins })) + "</span>" +
+				(j.retry ? ' <button type="button" class="tu-btn tu-btn--primary" data-vretry="' + j.id + '">' + T("Try again (free)") + '</button>' : "") +
+				(j.err ? ' <button type="button" class="ai-mini" data-vdrop="' + j.id + '">' + T("Remove") + '</button>' : "") + "</div>";
 		}).join("");
 	}
 	var vurls = {};
 	function paintVgal() {
 		var l = vids(), g = $("ai-vgal");
 		g.innerHTML = l.map(function (it) {
-			return '<figure class="ai-fig"><div class="ai-figimg"><video controls playsinline preload="metadata" data-k="' + it.id + '"></video></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.seconds + " s · " + it.res + " · " + it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-vdl="' + it.id + '">Download</button><button type="button" class="ai-mini" data-vagain="' + it.id + '">Use this description</button><button type="button" class="ai-mini" data-vrm="' + it.id + '">Delete</button></div></figure>';
+			return '<figure class="ai-fig"><div class="ai-figimg"><video controls playsinline preload="metadata" data-k="' + it.id + '"></video></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.seconds + " s · " + it.res + " · " + it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-vdl="' + it.id + '">' + T("Download") + '</button><button type="button" class="ai-mini" data-vagain="' + it.id + '">' + T("Use this description") + '</button><button type="button" class="ai-mini" data-vrm="' + it.id + '">' + T("Delete") + '</button></div></figure>';
 		}).join("");
 		g.querySelectorAll("video[data-k]").forEach(function (v) {
 			var k = v.dataset.k;
@@ -1109,7 +1122,7 @@
 	function vstatusReq(j) {
 		if (mock) {
 			var m = MOCK_V[j.id] || (MOCK_V[j.id] = { polls: 0 }); m.polls++;
-			if (/fail/i.test(j.prompt) && !j.retried && m.polls > 1) return Promise.resolve({ status: "failed", retry: true, msg: "Simulated failure." });
+			if (/fail/i.test(j.prompt) && !j.retried && m.polls > 1) return Promise.resolve({ status: "failed", retry: true, msg: T("Simulated failure.") });
 			return Promise.resolve(m.polls > 2 ? { status: "done" } : { status: "pending" });
 		}
 		return post({ op: "vstatus", id: j.id, acct: j.acct }).then(jsonOf);
@@ -1117,7 +1130,7 @@
 	function vfetch(j) {
 		if (mock) return mockVideo(j.prompt);
 		return fetch("/api/ai?op=vfile&id=" + encodeURIComponent(j.id) + "&acct=" + encodeURIComponent(j.acct), { credentials: "omit" }).then(function (r) {
-			if (!r.ok) return jsonOf(r).then(function (e) { throw new Error(e.error || "Could not download the video."); });
+			if (!r.ok) return jsonOf(r).then(function (e) { throw new Error(T(e.error) || T("Could not download the video.")); });
 			return r.blob();
 		});
 	}
@@ -1135,37 +1148,37 @@
 					return vfetch(me).then(function (blob) {
 						return idbDo("readwrite", function (st) { return st.put(blob, "v:" + me.id); }).then(function () {
 							var v = vids(); v.unshift({ id: me.id, prompt: me.prompt, seconds: me.seconds, res: me.res, price: me.price, at: Date.now() }); vidsSave(v.slice(0, 100));
-							vjobsSave(vjobs().filter(function (x) { return x.id !== me.id; })); paintVgal(); msg("Your video is ready (kept in this browser).", "ok");
+							vjobsSave(vjobs().filter(function (x) { return x.id !== me.id; })); paintVgal(); msg(T("Your video is ready (kept in this browser)."), "ok");
 						});
 					}).catch(function (e) { var a = vjobs(), m2 = a.filter(function (x) { return x.id === me.id; })[0]; if (m2) { m2.dl = false; m2.err = e.message; vjobsSave(a); } });
 				}
-				if (s.status === "failed") { me.err = s.msg || "The video failed."; me.retry = !!s.retry; vjobsSave(all); }
+				if (s.status === "failed") { me.err = s.msg || T("The video failed."); me.retry = !!s.retry; vjobsSave(all); }
 				if (s.error) { me.err = s.error; vjobsSave(all); }
 			}).catch(function () { /* network blip: next round */ });
 		})).then(function () { paintVjobs(); if (vjobs().some(function (j) { return !j.err && !j.dl; })) vtimer = setTimeout(vpoll, mock ? 1500 : 5000); });
 	}
 	function startVideo(j, isRetry) {
-		var go = mock ? Promise.resolve({ t: "video" }) : runReq(j.id, j.acct, function (n) { msg("Waiting for the blockchain… (" + n * 3 + " s)"); }).then(function (r) { return r.error ? { err: r.error } : jsonOf(r); });
+		var go = mock ? Promise.resolve({ t: "video" }) : runReq(j.id, j.acct, function (n) { msg(T("Waiting for the blockchain… ({s} s)", { s: n * 3 })); }).then(function (r) { return r.error ? { err: r.error } : jsonOf(r); });
 		return go.then(function (d) {
-			if (d.err || d.t !== "video") { var e = d.err || d; j.err = e.error || e.msg || "The video could not start."; j.retry = !!e.retry; }
-			else { j.err = null; j.retry = false; j.at = Date.now(); if (isRetry) j.retried = true; msg("Paid. Your video is being made: it takes a few minutes.", "ok"); }
+			if (d.err || d.t !== "video") { var e = d.err || d; j.err = e.error || e.msg || T("The video could not start."); j.retry = !!e.retry; }
+			else { j.err = null; j.retry = false; j.at = Date.now(); if (isRetry) j.retried = true; msg(T("Paid. Your video is being made: it takes a few minutes."), "ok"); }
 			var l = vjobs().filter(function (x) { return x.id !== j.id; }); l.unshift(j); vjobsSave(l); vpoll();
 		});
 	}
 	$("ai-vmake").addEventListener("click", function () {
 		if (busy) return;
 		var u = who(), prompt = $("ai-vprompt").value.trim(), model = $("ai-vmodel").value, sec = +$("ai-vsec").value, res = $("ai-vres").value, audio = $("ai-vaudio").checked;
-		if (!status.video) { msg("Videos are coming soon.", "err"); return; }
-		if (!u) { msg("Log in with your Hive account first (above).", "err"); return; }
-		var err = A.checkVideo(prompt, model, sec, res); if (err) { msg(err, "err"); return; }
+		if (!status.video) { msg(T("Videos are coming soon."), "err"); return; }
+		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); return; }
+		var err = A.checkVideo(prompt, model, sec, res); if (err) { msg(T(err), "err"); return; }
 		setBusy(true);
 		var qreq = mock ? Promise.resolve((function () { var q = A.videoQuote(model, sec, res), id = A.newId(); return { status: 200, id: id, memo: A.memoFor(id), price: q.price, usd: q.hbd }; })())
 			: quote({ acct: u.name, kind: "video", prompt: prompt, model: model, seconds: sec, res: res, audio: audio });
 		qreq.then(function (q) {
-			if (q.status !== 200) throw new Error(q.error || "Could not get a price (HTTP " + q.status + ").");
-			msg("Price: " + q.price + " HBD (" + A.fmtUsd(q.usd) + "). Confirm the payment in Hive Keychain…");
+			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
+			msg(T("Price: {p} HBD ({usd}). Confirm the payment in Hive Keychain…", { p: q.price, usd: A.fmtUsd(q.usd) }));
 			return pay(q).then(function () { return startVideo({ id: q.id, acct: u.name, prompt: prompt, seconds: sec, res: res, price: q.price, at: Date.now() }, false); });
-		}).catch(function (e) { var m = e && e.message || String(e); msg(/cancel|declin|denied/i.test(m) ? "Payment cancelled: nothing was sent." : m, "err"); })
+		}).catch(function (e) { var m = e && e.message || String(e); msg(/cancel|declin|denied/i.test(m) ? T("Payment cancelled: nothing was sent.") : T(m), "err"); })
 			.then(function () { setBusy(false); });
 	});
 	$("ai-vid").addEventListener("click", function (e) {
@@ -1174,7 +1187,7 @@
 		if (b.dataset.vdrop) { vjobsSave(vjobs().filter(function (x) { return x.id !== b.dataset.vdrop; })); paintVjobs(); }
 		if (b.dataset.vdl) { var a = document.createElement("a"); a.href = vurls[b.dataset.vdl]; a.download = "mes-ai-" + b.dataset.vdl + (mock ? ".webm" : ".mp4"); a.click(); }
 		if (b.dataset.vagain) { var it = vids().filter(function (x) { return x.id === b.dataset.vagain; })[0]; if (it) { $("ai-vprompt").value = it.prompt; $("ai-vprompt").focus(); } }
-		if (b.dataset.vrm && confirm("Delete this video from this browser?")) { var k = b.dataset.vrm; idbDo("readwrite", function (s) { return s.delete("v:" + k); }); vidsSave(vids().filter(function (x) { return x.id !== k; })); paintVgal(); }
+		if (b.dataset.vrm && confirm(T("Delete this video from this browser?"))) { var k = b.dataset.vrm; idbDo("readwrite", function (s) { return s.delete("v:" + k); }); vidsSave(vids().filter(function (x) { return x.id !== k; })); paintVgal(); }
 	});
 
 	/* ---------- 💾 saving: cloud file (MESCloud), Hive backup (MESHiveStore), file backup ---------- */
@@ -1183,7 +1196,8 @@
 		var r = A.mergeChats(S.chats, chats);
 		S.chats = r.chats; if (!S.chats.some(function (c) { return c.id === S.cur; })) S.cur = S.chats[0] ? S.chats[0].id : null;
 		save(); renderLog(); paintPrice();
-		return (how ? how + ": " : "") + (r.added || r.updated ? r.added + " new chat" + (r.added === 1 ? "" : "s") + (r.updated ? ", " + r.updated + " updated" : "") + "." : "you already had all of them.");
+		var body = r.added || r.updated ? (r.added === 1 ? T("{n} new chat", { n: r.added }) : T("{n} new chats", { n: r.added })) + (r.updated ? ", " + T("{n} updated", { n: r.updated }) : "") + "." : T("you already had all of them.");
+		return (how ? how + ": " : "") + body;
 	}
 	$("ai-export").addEventListener("click", function () { var d = $("ai-save"); d.open = true; d.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
 	function download(name, text, type) {
@@ -1191,23 +1205,23 @@
 		setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
 	}
 	$("ai-dl-md").addEventListener("click", function () {
-		var c = A.cleanChat(cur()); if (!c || !c.msgs.length) { msg("This chat is empty.", "err"); return; }
+		var c = A.cleanChat(cur()); if (!c || !c.msgs.length) { msg(T("This chat is empty."), "err"); return; }
 		download((c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") || "chat") + ".md", A.chatMarkdown(c), "text/markdown");
 	});
 	$("ai-open-text").addEventListener("click", function () {
-		var c = A.cleanChat(cur()); if (!c || !c.msgs.length) { msg("This chat is empty.", "err"); return; }
+		var c = A.cleanChat(cur()); if (!c || !c.msgs.length) { msg(T("This chat is empty."), "err"); return; }
 		var name = (c.title.replace(/[^\w -]+/g, "").trim().slice(0, 50).replace(/ +/g, "-") || "chat") + ".md";
 		var f = new File([A.chatMarkdown(c)], name, { type: "text/markdown" });
 		if (!window.MESLinkOpen) { download(name, A.chatMarkdown(c), "text/markdown"); return; }
-		window.MESLinkOpen.sendTo("text", f, { busy: true }).catch(function (e) { msg("Could not open it: " + e.message, "err"); });
+		window.MESLinkOpen.sendTo("text", f, { busy: true }).catch(function (e) { msg(T("Could not open it: {m}", { m: T(e.message) }), "err"); });
 	});
 	$("ai-dl-all").addEventListener("click", function () {
-		var b = A.backup(S.chats); if (!b.chats.length) { msg("No chats to back up yet.", "err"); return; }
+		var b = A.backup(S.chats); if (!b.chats.length) { msg(T("No chats to back up yet."), "err"); return; }
 		download("MES AI chats " + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify(b, null, 1), "application/json");
 	});
 	$("ai-restore").addEventListener("change", function () {
 		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
-		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), "Restored"), "ok"); }).catch(function (e) { msg(e.message, "err"); });
+		f.text().then(function (t) { msg(mergeIn(A.readBackup(t), T("Restored")), "ok"); }).catch(function (e) { msg(T(e.message), "err"); });
 	});
 
 	// cloud: one file with every chat; auto-saved a few seconds after each change (MESCloud.changed)
@@ -1225,7 +1239,7 @@
 		bytes: function () { return Promise.resolve(new TextEncoder().encode(JSON.stringify(A.backup(S.chats)))); },
 		open: function (u8, name) {
 			var chats = A.readBackup(new TextDecoder().decode(u8));
-			var note = mergeIn(chats, "From " + name);
+			var note = mergeIn(chats, T("From {name}", { name: name }));
 			cdoc = { name: name }; cloudSig = null;      // our merged copy differs from the file: the next save writes it back
 			setTimeout(function () { cloudKeep(); paintSaveState(); msg(note, "ok"); if (cloud) cloud.changed(cdoc); }, 0);
 			return cdoc;
@@ -1244,32 +1258,33 @@
 		q.onupgradeneeded = function () { q.result.createObjectStore("h"); };
 		q.onsuccess = function () { try { var r = q.result.transaction("h").objectStore("h").get(k.hid); r.onsuccess = function () { if (r.result) { r.result.__mclId = k.hid; put(r.result); } }; } catch (e) { /* ignore */ } };
 	})();
-	if (!cloud) $("ai-cloudrow").innerHTML = '<p class="tu-note">The cloud script did not load. Reload the page to try again.</p>';
+	if (!cloud) $("ai-cloudrow").innerHTML = '<p class="tu-note">' + T("The cloud script did not load. Reload the page to try again.") + '</p>';
 	var saveRaw = save;
 	save = function () { saveRaw(); if (cloud && cloud.linked(cdoc)) { cloud.changed(cdoc); paintSaveState(); } };
 	function paintSaveState() {
 		var l = cloud && cloud.link(cdoc);
-		$("ai-savestate").textContent = l ? "· ☁ " + (cloudSig === sig() ? "saved to " : "saving to ") + (l.p === "file" ? l.name : (cloud.providers[l.p] ? cloud.providers[l.p].name : l.p)) : "";
+		var where = l ? (l.p === "file" ? l.name : (cloud.providers[l.p] ? cloud.providers[l.p].name : l.p)) : "";
+		$("ai-savestate").textContent = l ? "· ☁ " + (cloudSig === sig() ? T("saved to {where}", { where: where }) : T("saving to {where}", { where: where })) : "";
 	}
 
 	// Hive: custom_json "mes_store", app "mes-ai", name "chat" (one chat) or "all"; encrypted by default ("mes-ai:hiveenc" "0" = off)
 	var HAPP = "mes-ai", ENC = "mes-ai:hiveenc", hvList = null, hvBusy = false;
 	function HS() { return window.MESHiveStore; }
 	function hmsg(t, cls) { var m = $("ai-hv-msg"); m.textContent = t || ""; m.className = "tu-note ai-hvmsg" + (cls ? " is-" + cls : ""); }
-	function hvErr(e) { return e && e.code === "cancel" ? "Cancelled." : e && e.code === "toobig" ? "Too big for one Hive save (about 150 KB packed). Save one chat at a time, or use the cloud." : (e && e.message) || "Something went wrong."; }
-	function hvKb(n) { return n < 1024 ? n + " bytes" : (n / 1024).toFixed(1) + " KB"; }
-	function hvWhen(t) { var d = new Date(/Z$/.test(t) ? t : t + "Z"); return isNaN(d) ? t : d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+	function hvErr(e) { return e && e.code === "cancel" ? T("Cancelled.") : e && e.code === "toobig" ? T("Too big for one Hive save (about 150 KB packed). Save one chat at a time, or use the cloud.") : (e && e.message && T(e.message)) || T("Something went wrong."); }
+	function hvKb(n) { return n < 1024 ? T("{n} bytes", { n: n }) : (n / 1024).toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " KB"; }
+	function hvWhen(t) { var d = new Date(/Z$/.test(t) ? t : t + "Z"); return isNaN(d) ? t : d.toLocaleString(L ? LOC : undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
 	function paintHvWarn() {
 		var w = $("ai-hv-warn"), enc = $("ai-hv-enc").checked;
-		if (HS() && HS().canEncrypt && !HS().canEncrypt() && !(HS().lockMode && HS().lockMode() === "pass")) w.innerHTML = "⚠ <b>Logged in with the Keychain phone app:</b> it can't use your memo key, so pick <b>🛡 Passphrase</b> under the Encrypt tick, or the save would be public.";
-		else w.innerHTML = enc ? (HS() && HS().lockMode && HS().lockMode() === "pass" ? "🛡 Locked with your passphrase (quantum-safe): only the passphrase opens it." : "🔒 Encrypted with your memo key: only you can open it.") + " Others can see that a backup exists, when, and its size."
-			: "⚠ <b>Public:</b> the chat text will be readable by anyone on the Hive blockchain, forever.";
+		if (HS() && HS().canEncrypt && !HS().canEncrypt() && !(HS().lockMode && HS().lockMode() === "pass")) w.innerHTML = "⚠ " + T("<b>Logged in with the Keychain phone app:</b> it can't use your memo key, so pick <b>🛡 Passphrase</b> under the Encrypt tick, or the save would be public.");
+		else w.innerHTML = enc ? (HS() && HS().lockMode && HS().lockMode() === "pass" ? "🛡 " + T("Locked with your passphrase (quantum-safe): only the passphrase opens it.") : "🔒 " + T("Encrypted with your memo key: only you can open it.")) + " " + T("Others can see that a backup exists, when, and its size.")
+			: "⚠ " + T("<b>Public:</b> the chat text will be readable by anyone on the Hive blockchain, forever.");
 		w.className = "ai-hvwarn" + (enc ? "" : " is-open");
 	}
 	function hvReady() {
-		if (mock) { hmsg("Local preview: Hive saving is switched off here (no real Keychain).", "err"); return null; }
-		if (!HS() || !H) { hmsg("The Hive scripts did not load. Reload the page.", "err"); return null; }
-		var u = H.user(); if (!u) { hmsg("Log in with Hive Keychain first (at the top of the page).", "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return null; }
+		if (mock) { hmsg(T("Local preview: Hive saving is switched off here (no real Keychain)."), "err"); return null; }
+		if (!HS() || !H) { hmsg(T("The Hive scripts did not load. Reload the page."), "err"); return null; }
+		var u = H.user(); if (!u) { hmsg(T("Log in with Hive Keychain first (at the top of the page)."), "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return null; }
 		return u;
 	}
 	function hvBusySet(b) { hvBusy = b; $("ai-hv-save").disabled = b; $("ai-hv-load").disabled = b; }
@@ -1281,33 +1296,34 @@
 		if (hvBusy) return;
 		var u = hvReady(); if (!u) return;
 		var one = $("ai-hv-what").value === "chat", b = A.backup(one ? [cur()] : S.chats);
-		if (!b.chats.length) { hmsg(one ? "This chat is empty." : "No chats to save yet.", "err"); return; }
+		if (!b.chats.length) { hmsg(one ? T("This chat is empty.") : T("No chats to save yet."), "err"); return; }
 		var enc = $("ai-hv-enc").checked;
-		if (!enc && !confirm("Save WITHOUT encryption?\n\nThe chat text will be public on the Hive blockchain, readable by anyone, and can never be deleted.")) return;
+		if (!enc && !confirm(T("Save WITHOUT encryption?\n\nThe chat text will be public on the Hive blockchain, readable by anyone, and can never be deleted."))) return;
 		hvBusySet(true);
-		HS().save(HAPP, one ? "chat" : "all", b, { encrypt: enc, onProgress: function (m) { hmsg(m); } }).then(function (r) {
-			hmsg("Saved " + (one ? "this chat" : b.chats.length + " chats") + " to @" + u.name + " on Hive (" + hvKb(r.bytes) + (enc ? ", encrypted" : ", public") + ").", "ok");
+		HS().save(HAPP, one ? "chat" : "all", b, { encrypt: enc, onProgress: function (m) { hmsg(T(m)); } }).then(function (r) {
+			var what = one ? T("this chat") : (b.chats.length === 1 ? T("{n} chat", { n: 1 }) : T("{n} chats", { n: b.chats.length }));
+			hmsg(T("Saved {what} to @{name} on Hive ({size}).", { what: what, name: u.name, size: hvKb(r.bytes) + ", " + (enc ? T("encrypted") : T("public")) }), "ok");
 			hvList = null; setTimeout(function () { hvLoad(true); }, 4000);
 		}).catch(function (e) { hmsg(hvErr(e), "err"); }).then(function () { hvBusySet(false); });
 	});
 	function hvLoad(quiet) {
 		var u = hvReady(); if (!u || (hvBusy && !quiet)) return;
-		hvBusySet(true); if (!quiet) hmsg("Looking for your saves on Hive…");
+		hvBusySet(true); if (!quiet) hmsg(T("Looking for your saves on Hive…"));
 		HS().list(u.name, { app: HAPP, pages: 30 }).then(function (saves) {
 			hvList = saves.filter(function (e) { return e.name === "chat" || e.name === "all"; }).slice(0, 15);
 			$("ai-hv-list").innerHTML = hvList.length ? '<ul class="ai-hvl">' + hvList.map(function (e, i) {
-				return "<li><span><b>" + esc(hvWhen(e.time)) + "</b> <span class=\"ai-sub\">" + (e.name === "chat" ? "One chat" : "All chats") + " · " + esc(HS().lockLabel ? HS().lockLabel(e) : (e.encrypted ? "encrypted" : "public")) + " · " + hvKb(e.bytes) + (e.complete ? "" : " · incomplete") + "</span></span>" +
-					(e.complete ? '<button type="button" class="tu-btn tu-btn--ghost" data-hv="' + i + '">Add to my chats</button>' : "") + "</li>";
+				return "<li><span><b>" + esc(hvWhen(e.time)) + "</b> <span class=\"ai-sub\">" + (e.name === "chat" ? T("One chat") : T("All chats")) + " · " + esc(HS().lockLabel ? T(HS().lockLabel(e)) : (e.encrypted ? T("encrypted") : T("public"))) + " · " + hvKb(e.bytes) + (e.complete ? "" : " · " + T("incomplete")) + "</span></span>" +
+					(e.complete ? '<button type="button" class="tu-btn tu-btn--ghost" data-hv="' + i + '">' + T("Add to my chats") + '</button>' : "") + "</li>";
 			}).join("") + "</ul>" : "";
-			if (!quiet) hmsg(hvList.length ? "Pick a save to add its chats to yours." : "No MES AI saves found on @" + u.name + " yet.", hvList.length ? "" : "err");
-		}).catch(function (e) { hmsg("Could not read from Hive: " + hvErr(e), "err"); }).then(function () { hvBusySet(false); });
+			if (!quiet) hmsg(hvList.length ? T("Pick a save to add its chats to yours.") : T("No MES AI saves found on @{name} yet.", { name: u.name }), hvList.length ? "" : "err");
+		}).catch(function (e) { hmsg(T("Could not read from Hive: {m}", { m: hvErr(e) }), "err"); }).then(function () { hvBusySet(false); });
 	}
 	$("ai-hv-load").addEventListener("click", function () { hvLoad(false); });
 	$("ai-hv-list").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-hv]"); if (!b || hvBusy) return;
 		var it = hvList[+b.dataset.hv]; hvBusySet(true);
-		hmsg(it.lock === "pass" ? "Unlocking with your passphrase…" : it.encrypted ? "Confirm in Keychain: decrypt with your memo key…" : "Opening the save…");
-		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), "Loaded from Hive"), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
+		hmsg(it.lock === "pass" ? T("Unlocking with your passphrase…") : it.encrypted ? T("Confirm in Keychain: decrypt with your memo key…") : T("Opening the save…"));
+		HS().load(it).then(function (d) { hmsg(mergeIn(A.readBackup(d), T("Loaded from Hive")), "ok"); }).catch(function (x) { hmsg(hvErr(x), "err"); }).then(function () { hvBusySet(false); });
 	});
 
 	/* ---------- tabs ---------- */
@@ -1326,17 +1342,17 @@
 	function paintOff() {
 		var o = $("ai-off");
 		// a service whose key is not set yet: "Coming soon" on its tab, a note in its panel, and its button off
-		[["ai-tab-img", "ai-img", status.image, "🖼️ Picture", "Pictures"], ["ai-tab-vid", "ai-vid", status.video, "🎬 Video", "Videos"]].forEach(function (x) {
+		[["ai-tab-img", "ai-img", status.image, "🖼️ " + T("Picture"), T("Pictures are coming soon.")], ["ai-tab-vid", "ai-vid", status.video, "🎬 " + T("Video"), T("Videos are coming soon.")]].forEach(function (x) {
 			var soon = status.known && !x[2];
-			$(x[0]).innerHTML = x[3] + (soon ? ' <span class="ai-soon-tag">soon</span>' : "");
+			$(x[0]).innerHTML = x[3] + (soon ? ' <span class="ai-soon-tag">' + T("soon") + '</span>' : "");
 			var n = $(x[1]).querySelector(".ai-soon");
-			if (soon && !n) { n = document.createElement("p"); n.className = "ai-soon"; n.innerHTML = "<b>" + x[4] + " are coming soon.</b> The page is ready; this AI service is being connected. Chat works now."; $(x[1]).insertBefore(n, $(x[1]).firstChild); }
+			if (soon && !n) { n = document.createElement("p"); n.className = "ai-soon"; n.innerHTML = "<b>" + x[4] + "</b> " + T("The page is ready; this AI service is being connected. Chat works now."); $(x[1]).insertBefore(n, $(x[1]).firstChild); }
 			if (!soon && n) n.remove();
 		});
 		var off = status.known && !status.chat;
 		o.hidden = !off;
 		if (!off) return;
-		o.innerHTML = '<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).';
+		o.innerHTML = T('<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).');
 	}
 	if (!mock) {
 		fetch("/api/ai?op=status", { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {

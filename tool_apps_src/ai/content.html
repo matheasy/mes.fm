@@ -1,21 +1,22 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
-	<div class="tu ai" id="ai">
+	<div class="tu ai" id="ai"{{AIATTR}}>
+{{LANGSW}}
 		<div class="tu-card ai-off" id="ai-off" hidden></div>
 
 		<div class="tu-card ai-pay">
-			<h2 class="ai-h2">You pay per message, in HBD</h2>
-			<p>No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.</p>
+			<h2 class="ai-h2">{{tr:You pay per message, in HBD}}</h2>
+			<p>{{tr:No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.}}</p>
 			<details class="ai-why">
-				<summary>How the price is worked out</summary>
+				<summary>{{tr:How the price is worked out}}</summary>
 				<ul>
-					<li><b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.</li>
-					<li>What they charge depends on the <b>model</b>, on how much text is sent (your message <b>plus the whole chat before it</b>, which the AI rereads every time) and on the <b>answer length</b> you pick.</li>
-					<li>The answer can never cost more than you paid: it is cut off at the length you chose. <b>A short answer costs the same as a long one at the same setting</b>: nothing is kept on account, so there is no change to give back. Pick Short for quick questions.</li>
-					<li>Long chats get dearer with every message. Start a new chat when the topic changes.</li>
-					<li>Payments are final. If the AI fails after you paid, you get a free <b>Try again</b> for that message (within 24 hours).</li>
+					<li>{{tr:<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.}}</li>
+					<li>{{tr:What they charge depends on the <b>model</b>, on how much text is sent (your message <b>plus the whole chat before it</b>, which the AI rereads every time) and on the <b>answer length</b> you pick.}}</li>
+					<li>{{tr:The answer can never cost more than you paid: it is cut off at the length you chose. <b>A short answer costs the same as a long one at the same setting</b>: nothing is kept on account, so there is no change to give back. Pick Short for quick questions.}}</li>
+					<li>{{tr:Long chats get dearer with every message. Start a new chat when the topic changes.}}</li>
+					<li>{{tr:Payments are final. If the AI fails after you paid, you get a free <b>Try again</b> for that message (within 24 hours).}}</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
-				<p class="tu-note">Prices of the AI companies checked <span id="ai-checked"></span>. HBD is counted as 1 US dollar. Transfers on Hive are public, like every Hive payment.</p>
+				<p class="tu-note">{{tr:Prices of the AI companies checked <span id="ai-checked"></span>. HBD is counted as 1 US dollar. Transfers on Hive are public, like every Hive payment.}}</p>
 			</details>
 		</div>
 
@@ -24,95 +25,95 @@
 			<div id="ai-help"></div>
 		</div>
 
-		<div class="ai-modes" role="tablist" aria-label="What to make">
-			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 Chat</button>
-			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ Picture</button>
-			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 Video</button>
+		<div class="ai-modes" role="tablist" aria-label="{{tr:What to make}}">
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">{{tr:💬 Chat}}</button>
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">{{tr:🖼️ Picture}}</button>
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">{{tr:🎬 Video}}</button>
 		</div>
 
 		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">
 			<div class="ai-bar" id="ai-chatbar">
-				<label class="ai-sr" for="ai-chats">Your chats</label>
+				<label class="ai-sr" for="ai-chats">{{tr:Your chats}}</label>
 				<select id="ai-chats" class="tu-input ai-chats" data-native></select>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">＋ New chat</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ai-del" title="Delete this chat from this browser">Delete chat</button>
-				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="Save to your cloud, Hive or a file">💾 Save</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">{{tr:＋ New chat}}</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-del" title="{{tr:Delete this chat from this browser}}">{{tr:Delete chat}}</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="{{tr:Save to your cloud, Hive or a file}}">{{tr:💾 Save}}</button>
 			</div>
 			<div class="ai-log" id="ai-log" aria-live="polite" data-mes-tsize="mes-ai:fz" data-mes-tsize-label="Text" data-mes-grip="mes-ai:h" data-mes-grip-mode="max" data-mes-grip-min="220"></div>
 			<div class="ai-compose">
 				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
-				<label class="ai-sr" for="ai-in">Your message</label>
-				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="Ask anything: code, research, math, writing…  (Ctrl+Enter sends)"></textarea>
+				<label class="ai-sr" for="ai-in">{{tr:Your message}}</label>
+				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="{{tr:Ask anything: code, research, math, writing…  (Ctrl+Enter sends)}}"></textarea>
 				<div class="ai-opts">
-					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="Add pictures, PDFs or text files (or drop / paste them here)">📎 Add files</button>
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="{{tr:Add pictures, PDFs or text files (or drop / paste them here)}}">{{tr:📎 Add files}}</button>
 					<input type="file" id="ai-file" multiple hidden accept="image/*,application/pdf,.pdf,.txt,.md,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.ts,.py,.java,.c,.cpp,.h,.cs,.go,.rs,.rb,.php,.sh,.sql,.yaml,.yml,.ini,.log,.srt,.vtt,.tex">
-					<label class="ai-opt"><span>Model</span><select id="ai-model" class="tu-input" data-native></select></label>
-					<div class="ai-opt" role="group" aria-label="Answer length"><span>Answer</span>
+					<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-model" class="tu-input" data-native></select></label>
+					<div class="ai-opt" role="group" aria-label="{{tr:Answer length}}"><span>{{tr:Answer}}</span>
 						<div class="ai-seg" id="ai-len"></div>
 					</div>
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Pay &amp; send</button>
+					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">{{tr:Pay &amp; send}}</button>
 				</div>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 			</div>
 			<details class="ai-save" id="ai-save">
-				<summary>💾 Save your chats <span class="ai-sub" id="ai-savestate"></span></summary>
+				<summary>{{tr:💾 Save your chats}} <span class="ai-sub" id="ai-savestate"></span></summary>
 				<div class="ai-savebox">
-					<h4>☁ Cloud: OneDrive, Dropbox, Google Drive or a synced folder</h4>
-					<p class="tu-note">Keeps one file with all your chats (<code>MES AI chats.json</code>, in <code>MES Apps/AI</code>) saved to your own cloud, written straight from your browser, never through mes.fm. It saves a few seconds after each answer, so your chats follow you to other computers: open the same file there.</p>
+					<h4>{{tr:☁ Cloud: OneDrive, Dropbox, Google Drive or a synced folder}}</h4>
+					<p class="tu-note">{{tr:Keeps one file with all your chats (<code>MES AI chats.json</code>, in <code>MES Apps/AI</code>) saved to your own cloud, written straight from your browser, never through mes.fm. It saves a few seconds after each answer, so your chats follow you to other computers: open the same file there.}}</p>
 					<div class="ai-saverow" id="ai-cloudrow"></div>
 
-					<h4><svg class="ai-hivelogo" viewBox="210 240 440 377" width="1.15em" height="1em" aria-hidden="true" focusable="false" style="vertical-align:-0.12em;fill:#e31337"><path d="M323 245 433 429 323 612 215 429Z"/><path d="M378 245h54l91 162h-55Z"/><path d="M468 452h55l-91 160h-54Z"/><path d="M483 245h54l108 184-108 183h-54l107-183Z"/></svg> Hive: a backup on the blockchain</h4>
-					<p class="tu-note">Save this chat or all of them to your own Hive account and load them on any device with Hive Keychain. Encrypted by default: only you can read it. Permanent: Hive never forgets.</p>
+					<h4><svg class="ai-hivelogo" viewBox="210 240 440 377" width="1.15em" height="1em" aria-hidden="true" focusable="false" style="vertical-align:-0.12em;fill:#e31337"><path d="M323 245 433 429 323 612 215 429Z"/><path d="M378 245h54l91 162h-55Z"/><path d="M468 452h55l-91 160h-54Z"/><path d="M483 245h54l108 184-108 183h-54l107-183Z"/></svg> {{tr:Hive: a backup on the blockchain}}</h4>
+					<p class="tu-note">{{tr:Save this chat or all of them to your own Hive account and load them on any device with Hive Keychain. Encrypted by default: only you can read it. Permanent: Hive never forgets.}}</p>
 					<div id="ai-hv-main">
 						<div class="ai-saverow">
-							<label class="ai-opt"><span>Save</span><select id="ai-hv-what" class="tu-input" data-native><option value="chat">This chat</option><option value="all">All chats</option></select></label>
-							<label class="ai-enc"><input type="checkbox" id="ai-hv-enc" checked> <span><b>Encrypt</b> (only you can read it)</span></label>
+							<label class="ai-opt"><span>{{tr:Save}}</span><select id="ai-hv-what" class="tu-input" data-native><option value="chat">{{tr:This chat}}</option><option value="all">{{tr:All chats}}</option></select></label>
+							<label class="ai-enc"><input type="checkbox" id="ai-hv-enc" checked> <span>{{tr:<b>Encrypt</b> (only you can read it)}}</span></label>
 						</div>
 						<p class="ai-hvwarn" id="ai-hv-warn" role="note"></p>
-						<div class="ai-saverow"><button type="button" class="tu-btn tu-btn--primary" id="ai-hv-save">Save to Hive</button> <button type="button" class="tu-btn tu-btn--ghost" id="ai-hv-load">Load from Hive</button></div>
+						<div class="ai-saverow"><button type="button" class="tu-btn tu-btn--primary" id="ai-hv-save">{{tr:Save to Hive}}</button> <button type="button" class="tu-btn tu-btn--ghost" id="ai-hv-load">{{tr:Load from Hive}}</button></div>
 						<p class="tu-note ai-hvmsg" id="ai-hv-msg" aria-live="polite"></p>
 						<div id="ai-hv-list"></div>
 					</div>
 
-					<h4>📄 A file on this computer</h4>
-					<p class="tu-note">Downloaded chats open in our own <a href="/text" target="_blank" rel="noopener">MES Text Viewer</a> (formatted, with Read aloud and Print to PDF) and backups go back into this page with Restore: no other app needed.</p>
+					<h4>{{tr:📄 A file on this computer}}</h4>
+					<p class="tu-note">{{tr:Downloaded chats open in our own <a href="/text" target="_blank" rel="noopener">MES Text Viewer</a> (formatted, with Read aloud and Print to PDF) and backups go back into this page with Restore: no other app needed.}}</p>
 					<div class="ai-saverow">
-						<button type="button" class="tu-btn tu-btn--ghost" id="ai-open-text" title="Read or print this chat in the MES Text Viewer (formatted Markdown)">📖 Open in Text Viewer</button>
-						<button type="button" class="tu-btn tu-btn--ghost" id="ai-dl-md">Download this chat (.md)</button>
-						<button type="button" class="tu-btn tu-btn--ghost" id="ai-dl-all">Back up all chats (.json)</button>
-						<label class="tu-btn tu-btn--ghost ai-filebtn">Restore from a backup<input type="file" id="ai-restore" accept=".json,application/json" hidden></label>
+						<button type="button" class="tu-btn tu-btn--ghost" id="ai-open-text" title="{{tr:Read or print this chat in the MES Text Viewer (formatted Markdown)}}">{{tr:📖 Open in Text Viewer}}</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="ai-dl-md">{{tr:Download this chat (.md)}}</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="ai-dl-all">{{tr:Back up all chats (.json)}}</button>
+						<label class="tu-btn tu-btn--ghost ai-filebtn">{{tr:Restore from a backup}}<input type="file" id="ai-restore" accept=".json,application/json" hidden></label>
 					</div>
 				</div>
 			</details>
 		</section>
 
 		<section class="tu-card ai-img" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>
-			<label class="tu-label" for="ai-prompt">Describe the picture</label>
-			<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="e.g. A watercolour fox sitting in fresh snow at sunrise, soft light"></textarea>
+			<label class="tu-label" for="ai-prompt">{{tr:Describe the picture}}</label>
+			<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A watercolour fox sitting in fresh snow at sunrise, soft light}}"></textarea>
 			<div class="ai-opts">
-				<label class="ai-opt"><span>Model</span><select id="ai-imod" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>Quality</span><select id="ai-q" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>Shape</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">Square</option><option value="1536x1024">Landscape</option><option value="1024x1536">Portrait</option></select></label>
+				<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-imod" class="tu-input" data-native></select></label>
+				<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-q" class="tu-input" data-native></select></label>
+				<label class="ai-opt"><span>{{tr:Shape}}</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">{{tr:Square}}</option><option value="1536x1024">{{tr:Landscape}}</option><option value="1024x1536">{{tr:Portrait}}</option></select></label>
 				<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">Pay &amp; create</button>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">{{tr:Pay &amp; create}}</button>
 			</div>
-			<p class="tu-note">This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.</p>
+			<p class="tu-note">{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}}</p>
 			<div class="ai-gal" id="ai-gal"></div>
 		</section>
 
 		<section class="tu-card ai-img" id="ai-vid" role="tabpanel" aria-labelledby="ai-tab-vid" hidden>
-			<label class="tu-label" for="ai-vprompt">Describe the video</label>
-			<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="e.g. A golden retriever surfing a small wave at sunset, slow motion, the camera follows from the side"></textarea>
+			<label class="tu-label" for="ai-vprompt">{{tr:Describe the video}}</label>
+			<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A golden retriever surfing a small wave at sunset, slow motion, the camera follows from the side}}"></textarea>
 			<div class="ai-opts">
-				<label class="ai-opt"><span>Model</span><select id="ai-vmodel" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>Length</span><select id="ai-vsec" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>Quality</span><select id="ai-vres" class="tu-input" data-native></select></label>
-				<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>Sound</span></label>
+				<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-vmodel" class="tu-input" data-native></select></label>
+				<label class="ai-opt"><span>{{tr:Length}}</span><select id="ai-vsec" class="tu-input" data-native></select></label>
+				<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-vres" class="tu-input" data-native></select></label>
+				<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>{{tr:Sound}}</span></label>
 				<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">Pay &amp; create</button>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">{{tr:Pay &amp; create}}</button>
 			</div>
-			<p class="tu-note">Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.</p>
+			<p class="tu-note">{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}}</p>
 			<div id="ai-vjobs"></div>
 			<div class="ai-gal" id="ai-vgal"></div>
 		</section>
@@ -120,30 +121,11 @@
 		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
 
 		<div class="tu-card ai-rules">
-			<h3>Rules</h3>
-			<p>By sending a message you agree not to use MES AI for anything illegal, for sexual content involving minors, to harass or threaten people, for malware or attacks on systems you do not own, to make weapons that can cause mass harm, or to pass off made-up pictures of real people as real. The AI companies' own usage policies apply too (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), and the AI may refuse. Answers can be wrong: check anything important.</p>
-			<p>Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) or xAI (Grok Imagine pictures and videos) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.</p>
+			<h3>{{tr:Rules}}</h3>
+			<p>{{tr:By sending a message you agree not to use MES AI for anything illegal, for sexual content involving minors, to harass or threaten people, for malware or attacks on systems you do not own, to make weapons that can cause mass harm, or to pass off made-up pictures of real people as real. The AI companies' own usage policies apply too (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), and the AI may refuse. Answers can be wrong: check anything important.}}</p>
+			<p>{{tr:Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) or xAI (Grok Imagine pictures and videos) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.}}</p>
 		</div>
 
-		<div class="tu-seo">
-			<h2>About MES AI</h2>
-			<p>MES AI lets you use top AI models without a monthly plan: Anthropic's Claude (Sonnet 5.5 for everyday work, Opus 5.5 for hard coding and research) or OpenAI's ChatGPT models (GPT-6.2 Sol and Astra) for chat, OpenAI's GPT Image 2 or xAI's Grok Imagine for pictures, and Grok Imagine for short videos with sound. You pay a few cents' worth of HBD per message on the Hive blockchain, and only for what you use.</p>
-			<p>Read the announcement: <a href="/ai-claude-grok-chatgpt">MES AI: Claude, ChatGPT &amp; Grok with just your Hive account</a> (also <a href="https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea" target="_blank" rel="noopener">on InLeo</a>). More Hive and crypto tools and posts: <a href="/crypto">MES Crypto</a>.</p>
-			<h3>Questions</h3>
-			<dl>
-				<dt>Do I need an account?</dt>
-				<dd>Only a Hive account, with the Hive Keychain browser extension or the Keychain phone app. No email, no password on mes.fm. No Hive account yet? <a href="https://signup.hive.io/" target="_blank" rel="noopener">Get one at signup.hive.io</a>.</dd>
-				<dt>Why pay per message instead of a subscription?</dt>
-				<dd>You only pay for what you use, nothing renews, and there is no balance that could be lost. The price is shown before every message.</dd>
-				<dt>Why did my answer stop in the middle?</dt>
-				<dd>It reached the answer length you paid for. Send "continue" (a new message) or pick Medium or Long next time. Opus and the ChatGPT models think before they write, and that thinking counts toward the length too.</dd>
-				<dt>Can I make videos with OpenAI's Sora?</dt>
-				<dd>No: OpenAI shut down Sora 2 and its video service for developers on September 24, 2026. Videos here are made by xAI's Grok Imagine.</dd>
-				<dt>Something went wrong after I paid.</dt>
-				<dd>Press <b>Try again</b> on that message: one free retry is kept for 24 hours. If that fails too, <a href="/contact?subject=MES%20AI">contact us</a> with the memo of your payment (it starts with mesai:).</dd>
-				<dt>Where is my chat history?</dt>
-				<dd>Only in this browser. Clearing the browser's site data removes it. Use Download to keep a chat as a Markdown file.</dd>
-			</dl>
-		</div>
+{{SEO}}
 	</div>
 	<script src="/main_js/panel-view.js?v=1" defer></script>

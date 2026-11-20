@@ -79,6 +79,18 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("polls", "Polls"),
     ("email", "Mail"),
     ("ai", "MES AI"),
+    ("ai-es", "MES AI", "/ai-es"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-pt", "MES AI", "/ai-pt"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-fr", "MES AI", "/ai-fr"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-de", "MES AI", "/ai-de"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-tr", "MES AI", "/ai-tr"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-ru", "MES AI", "/ai-ru"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-zh", "MES AI", "/ai-zh"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-hi", "MES AI", "/ai-hi"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-id", "MES AI", "/ai-id"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-vi", "MES AI", "/ai-vi"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-ar", "MES AI", "/ai-ar"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
+    ("ai-fa", "MES AI", "/ai-fa"),   # MES AI in another language (build_tool_apps.py AI_LANG_SLUGS)
     ("party", "Party"),
     ("stream-chat", "Stream Chat"),
     ("database", "Video Database"),

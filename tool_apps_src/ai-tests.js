@@ -394,6 +394,9 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   eq(A.streamPieceOpenAI({ data: { error: { message: "bad" } } }), { t: "error", msg: "bad" }, "OpenAI stream error");
   eq(A.streamPieceOpenAI({ data: { choices: [{ delta: {}, finish_reason: "content_filter" }] } }).stop, "refusal", "content_filter -> refusal");
   ok(A.systemFor("sonnet") === A.SYSTEM && /OpenAI/.test(A.systemFor("gpt")), "system prompt names the right company");
+  ok(A.systemFor("sonnet", "en") === A.SYSTEM && A.systemFor("sonnet", "xx") === A.SYSTEM, "English / unknown language: plain system prompt");
+  ok(/answer in Spanish by default/.test(A.systemFor("sonnet", "es")) && /OpenAI/.test(A.systemFor("gpt", "fa")) && /Persian/.test(A.systemFor("gpt", "fa")), "language pages ask for answers in their language");
+  ok(A.cleanLang("pt-BR") === "pt-BR" && A.cleanLang("__proto__") === "en" && A.cleanLang(5) === "en", "language whitelist");
   Object.keys(A.MODELS).forEach((k) => ok(A.PROVIDERS[A.MODELS[k].prov], "model " + k + " has a known company"));
   Object.keys(A.IMAGES).forEach((k) => ok(A.PROVIDERS[A.IMAGES[k].prov], "picture model " + k + " has a known company"));
 

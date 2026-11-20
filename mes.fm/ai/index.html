@@ -1,7 +1,7 @@
 <!DOCTYPE html>    <html lang="en">
 <!-- MES AI -- mes.fm/ai -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
-<head>                    <link rel="icon" href="/ai/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/ai" />                    <title>MES AI | Math Easy Solutions</title>
+<head>                    <link rel="icon" href="/ai/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/ai" />                    <title>MES AI | Math Easy Solutions</title><link rel="alternate" hreflang="en" href="https://mes.fm/ai" /><link rel="alternate" hreflang="es" href="https://mes.fm/ai-es" /><link rel="alternate" hreflang="pt-BR" href="https://mes.fm/ai-pt" /><link rel="alternate" hreflang="fr" href="https://mes.fm/ai-fr" /><link rel="alternate" hreflang="de" href="https://mes.fm/ai-de" /><link rel="alternate" hreflang="tr" href="https://mes.fm/ai-tr" /><link rel="alternate" hreflang="ru" href="https://mes.fm/ai-ru" /><link rel="alternate" hreflang="zh-CN" href="https://mes.fm/ai-zh" /><link rel="alternate" hreflang="hi" href="https://mes.fm/ai-hi" /><link rel="alternate" hreflang="id" href="https://mes.fm/ai-id" /><link rel="alternate" hreflang="vi" href="https://mes.fm/ai-vi" /><link rel="alternate" hreflang="ar" href="https://mes.fm/ai-ar" /><link rel="alternate" hreflang="fa" href="https://mes.fm/ai-fa" /><link rel="alternate" hreflang="x-default" href="https://mes.fm/ai" />
         <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
 ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
@@ -471,6 +471,21 @@ html body.dark-mode #ai.ai .ai-vjob { color: var(--ai-ink); }
 #ai .ai-soon-tag { font-size: .72em; font-weight: 700; padding: .05em .45em; border-radius: 999px; background: var(--ai-warnbg); color: var(--ai-warn); vertical-align: .15em; }
 #ai.ai .ai-soon { background: var(--ai-warnbg); color: var(--ai-warn); border: 1px solid var(--ai-warn); border-radius: .5em; padding: .6em .8em; margin: 0 0 .8em; }
 html body.dark-mode #ai.ai .ai-soon, html body.dark-mode #ai.ai .ai-soon b, html body.dark-mode #ai.ai .ai-soon-tag { color: var(--ai-warn); background: var(--ai-warnbg); }
+/* language menu (the /ai-<lang> pages, built by _ai_pages() in build_tool_apps.py) and right-to-left pages (Arabic, Persian) */
+#ai .ai-lang { display: flex; justify-content: flex-end; margin: 0 0 .5em; }
+#ai .ai-lang details { position: relative; font-size: .92em; }
+#ai .ai-lang summary { cursor: pointer; list-style: none; padding: .3em .75em; border: 1px solid var(--ai-line); border-radius: 999px; background: var(--ai-bot); color: var(--ai-ink); font-weight: 600; user-select: none; }
+#ai .ai-lang summary::-webkit-details-marker { display: none; }
+#ai .ai-lang summary::after { content: " \25BE"; }
+#ai .ai-lang ul { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; margin: 0; padding: .35em 0; list-style: none; min-width: 12em; max-height: 70vh; overflow: auto; background: var(--ai-bot); border: 1px solid var(--ai-line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+#ai .ai-lang li a { display: block; padding: .42em 1em; color: var(--ai-ink) !important; text-decoration: none !important; }
+#ai .ai-lang li a:hover, #ai .ai-lang li a:focus { background: var(--ai-panel); }
+#ai .ai-lang li a[aria-current] { font-weight: 700; color: var(--ai-acc) !important; }
+#ai[dir=rtl] .ai-lang { justify-content: flex-start; }
+#ai[dir=rtl] .ai-m--me { margin-left: 0; margin-right: 8%; }
+#ai[dir=rtl] .ai-ptable th, #ai[dir=rtl] .ai-ptable td { text-align: right; }
+#ai[dir=rtl] pre, #ai[dir=rtl] code, #ai[dir=rtl] .ai-price, #ai[dir=rtl] .ai-meta { direction: ltr; unicode-bidi: isolate; }
+#ai[dir=rtl] pre { text-align: left; }
 
 
 	@media print {
@@ -810,6 +825,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">MES AI: Chat with Top AI Models, Pay per Message in HBD</h1>                                        <p class="page-description">Use top AI models without a subscription: Claude (Sonnet 5.5, Opus 5.5) or ChatGPT (GPT-6.2) for coding, research, math and writing, GPT Image 2 or Grok Imagine for pictures, and Grok Imagine for videos. See the exact price of each message first, pay it in HBD on Hive with Keychain, and get the answer straight away. Chats stay in your browser.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu ai" id="ai">
+		<nav class="ai-lang" aria-label="Language"><details><summary>&#127760; English</summary><ul><li><a href="/ai" hreflang="en" lang="en" aria-current="page">English</a></li><li><a href="/ai-es" hreflang="es" lang="es">Español</a></li><li><a href="/ai-pt" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li><li><a href="/ai-fr" hreflang="fr" lang="fr">Français</a></li><li><a href="/ai-de" hreflang="de" lang="de">Deutsch</a></li><li><a href="/ai-tr" hreflang="tr" lang="tr">Türkçe</a></li><li><a href="/ai-ru" hreflang="ru" lang="ru">Русский</a></li><li><a href="/ai-zh" hreflang="zh-CN" lang="zh-CN">简体中文</a></li><li><a href="/ai-hi" hreflang="hi" lang="hi">हिन्दी</a></li><li><a href="/ai-id" hreflang="id" lang="id">Bahasa Indonesia</a></li><li><a href="/ai-vi" hreflang="vi" lang="vi">Tiếng Việt</a></li><li><a href="/ai-ar" hreflang="ar" lang="ar">العربية</a></li><li><a href="/ai-fa" hreflang="fa" lang="fa">فارسی</a></li></ul></details></nav>
 		<div class="tu-card ai-off" id="ai-off" hidden></div>
 
 		<div class="tu-card ai-pay">
@@ -1016,7 +1032,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=8" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

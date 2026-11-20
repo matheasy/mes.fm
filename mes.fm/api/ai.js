@@ -83,12 +83,12 @@ function makeHandler(deps = {}) {
     return h;
   }
 
-  async function countTokens(model, messages) {
+  async function countTokens(model, messages, system) {
     let last;
     for (let i = 0; i < 2; i++) {
       try {
         const r = await fetchImpl('https://api.anthropic.com/v1/messages/count_tokens', {
-          method: 'POST', headers: anthropicHeaders(), body: JSON.stringify({ model, system: A.SYSTEM, messages }),
+          method: 'POST', headers: anthropicHeaders(), body: JSON.stringify({ model, system: system || A.SYSTEM, messages }),
         });
         const j = await r.json();
         if (r.ok && Number.isFinite(j.input_tokens)) return j.input_tokens;
@@ -102,8 +102,8 @@ function makeHandler(deps = {}) {
 
   // OpenAI's own count (Responses input_tokens) + a little room for the Chat Completions wrapper; if it does not answer,
   // a count that can only be too high (1 token per character), so the quote still covers the bill
-  async function countOpenAI(modelKey, messages) {
-    const sys = A.systemFor(modelKey);
+  async function countOpenAI(modelKey, messages, lang) {
+    const sys = A.systemFor(modelKey, lang);
     try {
       const r = await fetchImpl('https://api.openai.com/v1/responses/input_tokens', {
         method: 'POST', headers: { Authorization: 'Bearer ' + env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
@@ -145,11 +145,12 @@ function makeHandler(deps = {}) {
       const err = A.checkMessages(b.messages);
       if (err) return send(res, 400, { error: err });
       const messages = A.cleanMessages(b.messages);
+      const lang = A.cleanLang(b.lang);
       let inTok;
-      try { inTok = m.prov === 'openai' ? await countOpenAI(b.model, messages) : await countTokens(m.id, A.toAnthropic(messages)); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
+      try { inTok = m.prov === 'openai' ? await countOpenAI(b.model, messages, lang) : await countTokens(m.id, A.toAnthropic(messages), A.systemFor(b.model, lang)); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
       if (inTok > A.LIMITS.inTokens) return send(res, 400, { error: 'This chat is too long (' + inTok.toLocaleString('en-US') + ' tokens). Start a new chat.' });
       q = A.chatQuote(b.model, inTok, b.len);
-      stored = { kind: 'chat', model: b.model, len: b.len, messages };
+      stored = { kind: 'chat', model: b.model, len: b.len, lang, messages };
     }
     const id = A.newId((n) => crypto.randomBytes(n));
     const rec = Object.assign(stored, { acct, price: q.price, maxOut: q.maxOut || 0, created: now() });
@@ -225,7 +226,7 @@ function makeHandler(deps = {}) {
     if (m.prov === 'openai') {
       // OpenAI Chat Completions; max_completion_tokens caps the reasoning tokens too, so the bill stays inside the quote
       const body = {
-        model: m.id, messages: [{ role: 'system', content: A.systemFor(rec.model) }].concat(A.toOpenAIChat(rec.messages)), stream: true,
+        model: m.id, messages: [{ role: 'system', content: A.systemFor(rec.model, rec.lang) }].concat(A.toOpenAIChat(rec.messages)), stream: true,
         stream_options: { include_usage: true }, max_completion_tokens: rec.maxOut, reasoning_effort: m.effort, safety_identifier: who,
       };
       let r;
@@ -237,7 +238,7 @@ function makeHandler(deps = {}) {
       return pump(res, r, A.streamPieceOpenAI, failed);
     }
     const body = {
-      model: m.id, max_tokens: rec.maxOut, system: A.SYSTEM, messages: A.toAnthropic(rec.messages), stream: true,
+      model: m.id, max_tokens: rec.maxOut, system: A.systemFor(rec.model, rec.lang), messages: A.toAnthropic(rec.messages), stream: true,
       output_config: { effort: m.effort }, metadata: { user_id: who },
     };
     if (m.fallback) body.fallbacks = [{ model: m.fallback }];
