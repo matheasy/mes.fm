@@ -1263,7 +1263,7 @@ APPS = {
                             tag="Plan your week, rotate your workouts, track your streak.", accent="#1d7a46", dark="#155c34", tint="#e2f3e8",
                             desc="Free workout routine planner: plan each day of your week with times and activities in your own categories, keep a Currently-at marker that moves to the next workout when you finish one, run training lists and rotations, drag and drop everything, log workouts and see your streak and calendar. Import from Excel, print, share as a link. No sign-up.",
                             meta_desc="Free workout routine planner: plan your week, rotate workouts with a Currently-at marker, drag and drop, track your streak, and import or export Excel.",
-                            js_v="3", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"]),
+                            js_v="4", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5"]),
     # Famous Birthdays (new 2026-10-21, mes.fm/birthday; aliases /birthdays /celebrity-birthdays /famous-birthdays /born-today ...): who shares your birthday, born today,
     # name search, filters (field / country / era / living), same date + same year + nearest. Data = mes.fm/birthday/data/MM.json + index.json from Wikidata (CC0),
     # written by build_birthdays.py (+ birthday_extras.json). lib.js = BD (helpers + loader; tests tool_apps_src/birthday-tests.js); Sun sign / Chinese animal from the
@@ -1789,6 +1789,52 @@ def _signals_pages():
 
 
 _signals_pages()
+
+
+# ---------- MES AI in other languages (2026-11-19) ----------
+# Same scheme as Market Signals: one page script (ai/js/ai.js); every UI string goes through T(english) in app.js, translations are
+# tool_apps_src/ai/i18n/<code>.json ({meta, s: {English: translation}}; key list = i18n/en.json from `node tool_apps_src/ai/i18n/extract.js`,
+# `... --check -v` lists what is missing). The build writes mes.fm/ai/js/i18n-<code>.js (window.AI_I18N) and fills {{tr:...}};
+# the explanation / FAQ is seo/<code>.html. The page sends its language with each chat quote, and the server tells the model to answer in it
+# (MESAI.systemFor(model, lang)). A missing language file is simply not built.
+AI_LANG_SLUGS = {"es": "ai-es", "pt-BR": "ai-pt", "fr": "ai-fr", "de": "ai-de", "tr": "ai-tr", "ru": "ai-ru", "zh-CN": "ai-zh",
+                 "hi": "ai-hi", "id": "ai-id", "vi": "ai-vi", "ar": "ai-ar", "fa": "ai-fa"}
+
+
+def _ai_pages():
+    import hashlib
+    d = SRC / "ai" / "i18n"
+    packs = {c: json.loads((d / (c + ".json")).read_text(encoding="utf-8")) for c in AI_LANG_SLUGS if (d / (c + ".json")).exists()}
+    codes = ["en"] + [c for c in AI_LANG_SLUGS if c in packs]
+    path = lambda c: "/ai" if c == "en" else "/" + AI_LANG_SLUGS[c]
+    name = lambda c: "English" if c == "en" else packs[c]["meta"]["name"]
+    hreflang = "".join('<link rel="alternate" hreflang="%s" href="https://mes.fm%s" />' % (c, path(c)) for c in codes) + '<link rel="alternate" hreflang="x-default" href="https://mes.fm/ai" />'
+
+    def switcher(code):
+        if len(codes) < 2:
+            return ""
+        label = "Language" if code == "en" else packs[code]["meta"]["lang_label"]
+        items = "".join('<li><a href="%s" hreflang="%s" lang="%s"%s>%s</a></li>' % (path(c), c, c, ' aria-current="page"' if c == code else "", name(c)) for c in codes)
+        return '\t\t<nav class="ai-lang" aria-label="%s"><details><summary>&#127760; %s</summary><ul>%s</ul></details></nav>' % (label, name(code), items)
+    base = APPS["ai"]
+    base.update(head_extra=hreflang, vars={"SEO": "@seo/en.html", "LANGSW": switcher("en"), "AIATTR": ""})
+    out = SITE / "ai" / "js"
+    for code, P in packs.items():
+        m = P["meta"]
+        js = "window.AI_I18N = " + json.dumps({"code": code, "name": m["name"], "locale": m["locale"], "dir": m["dir"], "s": P["s"]}, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        v = hashlib.md5(js.encode("utf-8")).hexdigest()[:8]
+        if "--apply" in sys.argv:
+            out.mkdir(parents=True, exist_ok=True)
+            f = out / ("i18n-%s.js" % code)
+            if not f.exists() or f.read_text(encoding="utf-8") != js:
+                f.write_text(js, encoding="utf-8")
+        APPS[AI_LANG_SLUGS[code]] = dict(base, title=m["title"], page_title=m["page_title"], tag=m["tag"], desc=m["desc"], meta_desc=m["meta_desc"], src="ai", js_path="ai/js/ai.js",
+                                         logo_from="ai", lang=code, og_locale=m["og_locale"], doc_title=m["doc_title"], tr=P["s"], rtl=m["dir"] == "rtl",
+                                         pre_js=base.get("pre_js", []) + ["/ai/js/i18n-%s.js?v=%s" % (code, v)], head_extra=hreflang,
+                                         vars={"SEO": "@seo/%s.html" % code, "LANGSW": switcher(code), "AIATTR": ' lang="%s"%s' % (code, ' dir="rtl"' if m["dir"] == "rtl" else "")})
+
+
+_ai_pages()
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
 

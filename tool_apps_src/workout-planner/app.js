@@ -55,7 +55,7 @@
 		if (m) h += '<span class="wp-cm">' + esc(m) + '</span>';
 		if (it.note) h += '<span class="wp-cnote" title="' + esc(it.note) + '">✎</span>';
 		if (opt.row && it.done) h += '<span class="wp-stamp">Done ' + esc(W.shortDate(it.done, today())) + '</span>';
-		if (opt.rot && !(it.done && !opt.here && opt.check)) h += opt.here ? '<span class="wp-herepill">📍 Here</span>' : '<button type="button" class="wp-sethere" data-gh="' + it.id + '" aria-label="Mark ' + esc(it.name) + ' as Here">Set here</button>';
+		if (opt.rot && (opt.one || !(it.done && !opt.here && opt.check))) h += opt.here ? '<span class="wp-herepill">📍 Here</span>' : '<button type="button" class="wp-sethere" data-gh="' + it.id + '" aria-label="Mark ' + esc(it.name) + ' as Here">Set here</button>';
 		return h + "</div>";
 	}
 	function cell(d, c) {
@@ -144,7 +144,7 @@
 						'<span class="wp-lbtns"><button type="button" class="wp-ib" data-gmove="' + l.id + "|" + g.id + '|-1"' + (gi ? "" : " disabled") + ' aria-label="Move group up">↑</button><button type="button" class="wp-ib" data-gmove="' + l.id + "|" + g.id + '|1"' + (gi < l.groups.length - 1 ? "" : " disabled") + ' aria-label="Move group down">↓</button>' +
 						(one ? "" : '<button type="button" class="wp-ib" data-greset="' + l.id + "|" + g.id + '" title="Clear every done date" aria-label="Start this checklist again">↺</button>') +
 						(l.groups.length > 1 ? '<button type="button" class="wp-ib wp-danger" data-gdel="' + l.id + "|" + g.id + '" aria-label="Delete group">🗑</button>' : "") + "</span></div>" +
-						'<div class="wp-gitems" data-drop="g|' + l.id + "|" + g.id + '" data-axis="y">' + g.items.map(function (x) { return chip(x, { row: true, check: !one, rot: true, here: cur === x.id }); }).join("") +
+						'<div class="wp-gitems" data-drop="g|' + l.id + "|" + g.id + '" data-axis="y">' + g.items.map(function (x) { return chip(x, { row: true, check: true, one: one, rot: true, here: cur === x.id }); }).join("") +
 						'<button type="button" class="wp-add wp-add--row" data-add="g|' + l.id + "|" + g.id + '">+ Add</button></div>' +
 						(one && g.here ? '<div class="wp-gfoot"><button type="button" class="tu-btn tu-btn--primary wp-sm" data-gdone="' + l.id + "|" + g.id + '">✓ Done, next one</button></div>' : "") + "</div>";
 				}).join("") +
@@ -236,6 +236,7 @@
 		$("wp-ecat").innerHTML = (inWeek ? "" : '<option value="">None</option>') + P.cats.map(function (c) { return '<option value="' + c.id + '"' + (c.id === it.cat ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join("");
 		$("wp-ecat").value = it.cat || "";
 		$("wp-edonel").hidden = inWeek;
+		$("wp-eundo").hidden = inWeek || !it.done;
 		var cur = inWeek ? "c|" + f.where.day + "|" + it.cat : "g|" + f.where.list + "|" + f.where.grp;
 		$("wp-emove").innerHTML = destOptions(cur);
 		$("wp-edh").textContent = inWeek ? W.DOW[W.dayById(P, f.where.day).dow] + " · " + ((W.catById(P, it.cat) || {}).name || "") : (W.listById(P, f.where.list) || {}).name || "Activity";
@@ -281,6 +282,11 @@
 		var f = W.findItem(P, EDIT); if (!f) return;
 		change(function () { W.logItems(P, [f.item], today(), f.where.kind === "g" ? f.where.list : "w"); if (f.where.kind === "g") f.item.done = today(); });
 		toast("Logged " + f.item.name + " for today", true);
+	});
+	$("wp-eundo").addEventListener("click", function () {
+		var f = W.findItem(P, EDIT); if (!f || !f.item.done) return;
+		change(function () { undone(f); });
+		toast("Not done: " + f.item.name, true);
 	});
 	$("wp-edup").addEventListener("click", function () {
 		var f = W.findItem(P, EDIT); if (!f) return; var nid;
@@ -354,11 +360,12 @@
 		var t = e.target, v;
 		if ((v = t.getAttribute("data-done"))) {
 			var f = W.findItem(P, v); if (!f) return; var on = t.checked;
+			var g1 = f.where.kind === "g" ? W.grpById(P, f.where.list, f.where.grp) : null, rot = g1 && g1.mode === "one";
 			change(function () {
-				if (on) { f.item.done = today(); W.logItems(P, [f.item], today(), f.where.list); }
-				else { var d0 = f.item.done; f.item.done = ""; for (var i = P.log.length - 1; i >= 0; i--) if (P.log[i].d === d0 && P.log[i].n === f.item.name && P.log[i].k === f.where.list) { P.log.splice(i, 1); break; } }
+				if (on) { f.item.done = today(); W.logItems(P, [f.item], today(), f.where.list); if (rot && g1.here === f.item.id) g1.here = W.groupNext(g1); }
+				else undone(f);
 			});
-			if (on) toast("Done: " + f.item.name, true);
+			toast((on ? "Done: " : "Not done: ") + f.item.name + (on && rot && g1.here !== f.item.id ? ". Next: " + W.findItem(P, g1.here).item.name : ""), true);
 			return;
 		}
 		if ((v = t.getAttribute("data-time"))) {
@@ -395,6 +402,14 @@
 		var f = W.findItem(P, g.here), date = today();
 		change(function () { f.item.done = date; W.logItems(P, [f.item], date, a[0]); g.here = W.groupNext(g); });
 		toast("Done: " + f.item.name + ". Next: " + W.findItem(P, g.here).item.name, true);
+	}
+	// clear an item's done date and take back its log entry; in a "do one, in turn" group the 📍 goes back to it
+	// when it was the one just finished (the 📍 sits on the item after it)
+	function undone(f) {
+		var it = f.item, d0 = it.done, k = f.where.kind === "g" ? f.where.list : "w";
+		it.done = "";
+		for (var i = P.log.length - 1; i >= 0; i--) if ((!d0 || P.log[i].d === d0) && P.log[i].n === it.name && P.log[i].k === k) { P.log.splice(i, 1); break; }
+		if (f.where.kind === "g") { var g = W.grpById(P, f.where.list, f.where.grp); if (g && g.mode === "one" && W.groupNext({ items: g.items, here: it.id }) === g.here) g.here = it.id; }
 	}
 	function addCat() {
 		if (P.cats.length >= W.LIM.cats) return;
