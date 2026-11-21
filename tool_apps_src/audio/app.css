@@ -54,8 +54,8 @@
 .au-time { font: 600 1.35em/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; padding: 5px 10px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 7px; min-width: 7.3em; text-align: center; color: var(--au-acc); }
 .au-selbox { display: flex; gap: 4px; align-items: center; color: var(--au-dim); font-size: 0.9em; }
 .au-selbox input { width: 6.6em; font-family: ui-monospace, Menlo, monospace; }
-.au-meter { width: 120px; height: 14px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 4px; }
-.au-vol { display: flex; align-items: center; gap: 4px; color: var(--au-dim); }
+.au-meter { width: 40px; flex: 1 1 40px; max-width: 120px; height: 14px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 4px; }
+.au-vol { display: flex; flex-wrap: nowrap; flex: 1 1 150px; max-width: 240px; align-items: center; gap: 4px; color: var(--au-dim); }
 .au-vol input { width: 80px; }
 
 /* main */
@@ -167,7 +167,7 @@ body.au-noscroll { overflow: hidden; }
 	.au-head label.au-pan { display: none; }
 	.au-search { order: 5; max-width: none; flex-basis: 100%; }
 	.au-time { font-size: 1.1em; min-width: 6.5em; }
-	.au-meter { width: 70px; }
+	.au-meter { max-width: 70px; }
 	.au-vol input { width: 60px; }
 	.au-selbox input { width: 5.6em; }
 }

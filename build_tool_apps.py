@@ -830,7 +830,7 @@ APPS = {
                          tag="Cut, clean and export audio. No upload. No sign-up.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                          desc="Free online audio editor with AI noise removal: open audio or the sound of a video, remove background noise, hum and clicks, cut, fade and arrange tracks, set the loudness to -14 or -16 LUFS and export WAV, MP3 or M4A. Runs in your browser: nothing is uploaded.",
                          meta_desc="Free online audio editor with AI noise removal. Cut, fade, clean up voice, set LUFS loudness and export WAV, MP3 or M4A. Runs in your browser, nothing uploaded.",
-                         js_v="9", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+                         js_v="10", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",

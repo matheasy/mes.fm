@@ -1588,9 +1588,17 @@
 		var c = $("au-meter"), g = c.getContext("2d"); if (!analyser) return; mBuf = mBuf || new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(mBuf);
 		var pk = 0; for (var i = 0; i < mBuf.length; i++) { var v = Math.abs(mBuf[i]); if (v > pk) pk = v; }
 		var db = pk > 0 ? 20 * Math.log10(pk) : -90, f = Math.max(0, Math.min(1, (db + 60) / 60));
-		g.fillStyle = "#0b0d11"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = db > -1 ? "#ef4444" : db > -9 ? "#fbbf24" : "#4ade80"; g.fillRect(0, 2, f * c.width, c.height - 4);
+		meterClear(); g.fillStyle = db > -1 ? "#ef4444" : db > -9 ? "#fbbf24" : "#4ade80"; g.fillRect(0, 2, f * c.width, c.height - 4);
 	}
-	function meterClear() { var c = $("au-meter"), g = c.getContext("2d"); g.fillStyle = "#0b0d11"; g.fillRect(0, 0, c.width, c.height); }
+	/* empty meter = a faint dB scale (-60 .. 0, coloured zones), so it reads as a meter while nothing plays */
+	function meterClear() {
+		var c = $("au-meter"), g = c.getContext("2d"), w = c.width, h = c.height;
+		g.fillStyle = "#0b0d11"; g.fillRect(0, 0, w, h);
+		g.fillStyle = "rgba(74,222,128,.16)"; g.fillRect(0, 2, w * 51 / 60, h - 4);
+		g.fillStyle = "rgba(251,191,36,.2)"; g.fillRect(w * 51 / 60, 2, w * 8 / 60, h - 4);
+		g.fillStyle = "rgba(239,68,68,.24)"; g.fillRect(w * 59 / 60, 2, w / 60 + 1, h - 4);
+		g.fillStyle = "rgba(231,233,238,.35)"; for (var d = -48; d < 0; d += 12) g.fillRect(Math.round(w * (d + 60) / 60), h - 5, 1, 3);
+	}
 
 	/* ---------------- edit commands ---------------- */
 	function targets() { var ids = S.selT.length ? S.selT : S.tracks.map(function (t) { return t.id; }); return S.tracks.filter(function (t) { return ids.indexOf(t.id) >= 0; }); }
