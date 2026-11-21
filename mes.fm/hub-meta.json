@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-20",
+"generated":"2026-11-21",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -958,7 +958,7 @@
 },
 "/stream-chat":{
 "added":"2026-10-31",
-"updated":"2026-11-18",
+"updated":"2026-11-21",
 "type":"Tool"
 },
 "/sum-of-integers-calculator":{

@@ -125,3 +125,5 @@ html.sc-overlay-html, html.sc-overlay-html body { background: transparent !impor
 #sc .sc-sendnote { font-size: .85em; color: var(--sc-dim); min-height: 1.1em; }
 #sc .sc-sendnote--ok { color: #86efac; }
 #sc .sc-sendnote--err { color: #fca5a5; }
+#sc .sc-pf--bc { background: #ef4136; border-radius: 3px; }
+#sc .sc-pf--bc::after { content: ""; position: absolute; left: 4px; top: 4px; width: 6px; height: 6px; border: 1.5px solid #fff; border-radius: 1px; box-sizing: border-box; }

@@ -16,7 +16,8 @@
 		tw: { name: 'Twitch', color: '#9146ff' },
 		od: { name: 'Odysee', color: '#e50054' },
 		rm: { name: 'Rumble', color: '#85c742' },
-		ts: { name: '3Speak', color: '#e32933' }
+		ts: { name: '3Speak', color: '#e32933' },
+		bc: { name: 'BitChute', color: '#ef4136' }
 	};
 	C.PAID = { super: 1, sticker: 1, member: 1, gift: 1, bits: 1, sub: 1, tip: 1 };
 	C.isPaid = function (m) { return !!(m && C.PAID[m.kind]); };
@@ -258,6 +259,23 @@
 			try { out.push(JSON.parse(data)); } catch (e) {}
 		});
 		return out;
+	};
+
+	/* ---------- BitChute ---------- */
+	/* a BitChute video link (bitchute.com/video/<id>/, /embed/<id>/) or the id itself */
+	C.bcVideo = function (s) {
+		s = String(s || '').trim();
+		var m = s.match(/bitchute\.com\/(?:video|embed)\/([A-Za-z0-9_-]{6,20})/) || s.match(/^([A-Za-z0-9_-]{8,20})$/);
+		return m ? m[1] : '';
+	};
+	/* a "message" event of chat001.bitchute.com (socket.io): {id, timestamp, amount, profile_id, display_name, content, avatar, type} */
+	C.bcMsg = function (x) {
+		if (!x || x.content == null) return null;
+		var amt = +x.amount || 0, img = String(x.avatar || '');
+		return { id: 'bc:' + (x.id != null ? x.id : (x.profile_id || '') + ':' + (x.timestamp || Date.now())), p: 'bc', uid: x.profile_id ? 'bc:' + x.profile_id : '',
+			name: String(x.display_name || 'BitChute user'), avatar: /^https:\/\//.test(img) && !/blank-profile/.test(img) ? img : '',
+			parts: [{ t: String(x.content) }], kind: amt > 0 ? 'tip' : 'chat', amount: amt > 0 ? amt + ' tokens' : '', note: amt > 0 ? 'Chatbomb' : '',
+			ts: x.timestamp ? (typeof x.timestamp === 'number' ? (x.timestamp < 1e12 ? x.timestamp * 1000 : x.timestamp) : Date.parse(x.timestamp) || Date.now()) : Date.now() };
 	};
 
 	/* ---------- 3Speak ---------- */
@@ -520,6 +538,7 @@
      Twitch   anonymous IRC WebSocket (wss://irc-ws.chat.twitch.tv)
      Odysee   its own comment WebSocket + comment.List as a backup poll
      Rumble   via mes.fm/api/rumble-chat (Rumble's event stream refuses other sites; the function reads it every few seconds)
+     BitChute mes.fm/api/bitchute-chat gives BitChute's anonymous chat token for a video; then its socket.io chat (chat001.bitchute.com)
      3Speak   live.3speak.tv/overlay/<key> says whether the stream is live, /rooms/<room>/listen gives a listener token, then the
               LiveKit room's "chat" data packets (livekit-client from jsDelivr, loaded only when a 3Speak key is set)
    #sc[data-mode] = page | dock | overlay. Settings in localStorage mes-stream-chat:v1 (per browser: OBS keeps its own copy).
@@ -531,17 +550,17 @@
 	if (!root) return;
 	var MODE = root.getAttribute('data-mode') || 'page', KEY = 'mes-stream-chat:v1', FKEY = 'mes-stream-chat:feat';
 	var Q = {}; try { new URLSearchParams(location.search).forEach(function (v, k) { Q[k] = v; }); } catch (e) {}
-	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', rm: '', ts: '', on: { yt: true, tw: true, od: true, rm: true, ts: true }, show: { yt: true, tw: true, od: true, rm: true, ts: true },
+	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', rm: '', ts: '', bc: '', on: { yt: true, tw: true, od: true, rm: true, ts: true, bc: true }, show: { yt: true, tw: true, od: true, rm: true, ts: true, bc: true },
 		paidOnly: false, block: [], words: '', size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
-	var PFS = ['yt', 'tw', 'od', 'rm', 'ts'];
+	var PFS = ['yt', 'tw', 'od', 'rm', 'ts', 'bc'];
 	PFS.forEach(function (p) { if (S.on[p] == null) S.on[p] = true; if (S.show[p] == null) S.show[p] = true; if (S[p] == null) S[p] = ''; });
 	PFS.forEach(function (p) { if (Q[p] != null) { S[p] = Q[p]; S.on[p] = !!Q[p]; } });
 	if (Q.size) S.size = Math.min(3, Math.max(0.6, +Q.size || 1));
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 	function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
 	function $(id) { return document.getElementById(id); }
-	var IMG_OK = /^https:\/\/(yt\d\.ggpht\.com|yt\d\.googleusercontent\.com|lh\d\.googleusercontent\.com|static-cdn\.jtvnw\.net|www\.gstatic\.com|fonts\.gstatic\.com|hugh\.cdn\.rumble\.cloud|3speak\.tv\/img\/u)\//;
+	var IMG_OK = /^https:\/\/(yt\d\.ggpht\.com|yt\d\.googleusercontent\.com|lh\d\.googleusercontent\.com|static-cdn\.jtvnw\.net|www\.gstatic\.com|fonts\.gstatic\.com|hugh\.cdn\.rumble\.cloud|static-\d\.bitchute\.com|bcmedia\.bitchute\.com|3speak\.tv\/img\/u)\//;
 
 	/* Twitch lets people pick dark name colours: mix those with white until they read on the dark chat (relative luminance >= 0.3) */
 	function readable(hex) {
@@ -820,9 +839,49 @@
 				(j.msgs || []).forEach(function (m) { add(m, first); });
 				first = false;
 				status(key, 'rm', 'Rumble ' + id + ': chat open', 'on', 'https://rumble.com/chat/popup/' + id); later(poll, 4000);
-			}).catch(function (e) { status(key, 'rm', 'Rumble ' + id + ': ' + e.message + ', retrying', 'err'); later(poll, 10000); });
+			}).catch(function (e) {
+				if (g !== gen) return;
+				if (/no chat open|HTTP 404/.test(e.message)) { status(key, 'rm', 'Rumble ' + id + ': no chat open at that number yet (paste this stream\'s chat popup link), checking every 15 seconds', 'off', ''); later(poll, 15000); return; }
+				status(key, 'rm', 'Rumble ' + id + ': ' + e.message + ', retrying', 'err'); later(poll, 10000);
+			});
 		}
 		status(key, 'rm', 'Rumble ' + id + ': connecting…'); poll();
+	}
+
+	/* ---------- BitChute ---------- */
+	/* socket.io v4 over a plain WebSocket: "0{...}" open -> send "40" (connect) -> "40{sid}" -> emit join_room <channel id>;
+	   "2" ping -> "3" pong; events arrive as 42["message", {...}], 42["mod_remove", id|word], 42["mod_nuke"]. Only messages sent
+	   after we join show up (BitChute keeps no backlog for viewers). */
+	function bcRun(vid) {
+		var key = 'bc:' + vid, g = gen, ws = null, room = '', tries = 0;
+		function info() {
+			if (g !== gen) return;
+			getJSON('/api/bitchute-chat?id=' + encodeURIComponent(vid)).then(function (j) {
+				if (g !== gen) return;
+				room = j.room; open(j);
+			}).catch(function (e) { if (g !== gen) return; status(key, 'bc', 'BitChute ' + vid + ': ' + e.message + ', retrying', 'err'); later(info, 15000); });
+		}
+		function open(j) {
+			var url = 'wss://chat001.bitchute.com/socket.io/?EIO=4&transport=websocket&cf_auth=' + encodeURIComponent(j.auth);
+			try { ws = new WebSocket(url); } catch (e) { status(key, 'bc', 'BitChute: ' + e.message, 'err'); later(info, 10000); return; }
+			sockets.push(ws);
+			var label = 'BitChute' + (j.title ? ': ' + j.title.slice(0, 40) : ' ' + vid);
+			ws.onmessage = function (e) {
+				if (g !== gen) return;
+				var d = String(e.data);
+				if (d === '2') { ws.send('3'); return; }
+				if (d.charAt(0) === '0') { ws.send('40'); return; }
+				if (d.slice(0, 2) === '40') { ws.send('42' + JSON.stringify(['join_room', room])); tries = 0; status(key, 'bc', label + (j.live ? ' · chat open' : ' · not live yet, chat open'), 'on', 'https://www.bitchute.com/video/' + vid + '/'); return; }
+				if (d.slice(0, 2) === '44') { status(key, 'bc', 'BitChute: the chat refused us, retrying', 'err'); return; }
+				if (d.slice(0, 2) !== '42') return;
+				var ev; try { ev = JSON.parse(d.slice(2)); } catch (x) { return; }
+				if (ev[0] === 'message') { var m = C.bcMsg(ev[1]); if (m) add(m, false); }
+				else if (ev[0] === 'mod_remove' && ev[1] != null) { var t = String(ev[1]); var lt = t.toLowerCase(); feed.items.filter(function (x) { return x.p === 'bc' && (x.id === 'bc:' + t || x.uid === 'bc:' + t || (lt.length > 2 && x.parts[0] && String(x.parts[0].t).toLowerCase().indexOf(lt) >= 0)); }).map(function (x) { return x.id; }).forEach(removeId); }
+				else if (ev[0] === 'mod_nuke') { feed.items.filter(function (x) { return x.p === 'bc'; }).map(function (x) { return x.id; }).forEach(removeId); }
+			};
+			ws.onclose = function () { if (g !== gen) return; tries++; status(key, 'bc', 'BitChute: reconnecting…', 'err'); later(info, Math.min(30000, 3000 * tries)); };
+		}
+		status(key, 'bc', 'BitChute ' + vid + ': connecting…'); info();
 	}
 
 	/* ---------- 3Speak ---------- */
@@ -877,6 +936,7 @@
 		if (S.on.tw) C.list(S.tw).forEach(function (s) { var c = C.twChannel(s); if (c) { any = true; twRun(c); } });
 		if (S.on.od) C.list(S.od).forEach(function (s) { var c = C.odChannel(s); if (c) { any = true; odRun(c); } });
 		if (S.on.rm) C.list(S.rm).forEach(function (s) { var id = C.rmChat(s); if (id) { any = true; rmRun(id); } });
+		if (S.on.bc) C.list(S.bc).forEach(function (s) { var v = C.bcVideo(s); if (v) { any = true; bcRun(v); } });
 		if (S.on.ts) C.list(S.ts).forEach(function (s) { var k = C.tsKey(s); if (k) { any = true; tsRun(k); } });
 		if (!any) status('x', 'yt', 'Add a channel in Settings to start.', 'off');
 	}
@@ -917,8 +977,9 @@
 		' <label class="sc-src"><input type="checkbox" id="sc-on-tw"><span class="sc-pf sc-pf--tw"></span> Twitch <input class="sc-in" id="sc-tw" spellcheck="false" placeholder="channel name"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-od"><span class="sc-pf sc-pf--od"></span> Odysee <input class="sc-in" id="sc-od" spellcheck="false" placeholder="@channel:claim"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-rm"><span class="sc-pf sc-pf--rm"></span> Rumble <input class="sc-in" id="sc-rm" spellcheck="false" placeholder="chat popup link, e.g. rumble.com/chat/popup/450179158"></label>',
+		' <label class="sc-src"><input type="checkbox" id="sc-on-bc"><span class="sc-pf sc-pf--bc"></span> BitChute <input class="sc-in" id="sc-bc" spellcheck="false" placeholder="this stream\'s video link, e.g. bitchute.com/video/Bn6wFTsUutQY"></label>',
 		' <label class="sc-src"><input type="checkbox" id="sc-on-ts"><span class="sc-pf sc-pf--ts"></span> 3Speak <input class="sc-in" id="sc-ts" spellcheck="false" placeholder="OBS chat link from 3Speak (Templates page)"></label>',
-		' <p class="sc-hint">Several channels? Separate them with commas. YouTube finds the live (or scheduled) stream by itself; a video link reads that video only. Rumble: paste each stream\'s chat popup link. 3Speak: paste the chat link from its Templates page (one for all your streams).</p>',
+		' <p class="sc-hint">Several channels? Separate them with commas. YouTube finds the live (or scheduled) stream by itself; a video link reads that video only. Rumble: paste each stream\'s chat popup link. BitChute: paste each stream\'s video link (only messages sent after it connects show). X has no public chat feed, so it can\'t be read here. 3Speak: paste the chat link from its Templates page (one for all your streams).</p>',
 		' <div class="sc-opts"><label><input type="checkbox" id="sc-o-av"> Pictures</label><label><input type="checkbox" id="sc-o-tm"> Times</label><label><input type="checkbox" id="sc-o-dg"> Sound on tips</label>',
 		' <button type="button" class="sc-btn sc-btn--go" id="sc-apply">Save and reconnect</button></div>',
 		' <label class="sc-wordlbl">Hide messages containing (commas between words) <input class="sc-in" id="sc-words" spellcheck="false" placeholder="e.g. streamboo, viewers, followers"></label>',

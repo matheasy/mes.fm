@@ -236,10 +236,10 @@ APPS = {
     # MES Stream Chat (2026-10-31, mes.fm/stream-chat + bare OBS pages stream-chat/dock.html, overlay.html written by hand): YouTube (via api/yt-chat.js),
     # Twitch (anonymous IRC WebSocket) and Odysee (comment WebSocket + comment.List) chats in one feed, read straight from the page. lib.js = MESChat,
     # byte-identical copy at mes.fm/api/_stream-chat-lib.js; tests node tool_apps_src/stream-chat-tests.js. Widget CSS = mes.fm/stream-chat/stream-chat.css (shared, hand-written).
-    "stream-chat": dict(title="MES Stream Chat", page_title="Stream Chat: YouTube, Twitch and Odysee Live Chat in One Window (OBS Dock and Overlay)",
+    "stream-chat": dict(title="MES Stream Chat", page_title="Stream Chat: YouTube, Twitch, Odysee, Rumble and BitChute Live Chat in One Window (OBS Dock and Overlay)",
                  tag="All your live chats in one place.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                  desc="Free multistream chat: see your YouTube, Twitch and Odysee live chats in one window with Super Chats, memberships, bits and tips highlighted, then add it to OBS as a chat dock and on-screen overlay. Nothing to install.",
-                 js_parts=["send.js"], js_v="8"),
+                 js_parts=["send.js"], js_v="9"),
     # MES Polls (2026-10-31, mes.fm/polls; a poll = mes.fm/v/<id>, vercel.json rewrite to /polls?p=<id>): make a poll and share it. Storage = mes.fm/api/poll.js (Upstash),
     # lib.js = MESPoll (page helpers); tests: node tool_apps_src/polls-tests.js (fake Redis). On localhost the page uses an in-browser stand-in (no /api).
     # MES Mail (2026-11-17, mes.fm/email): quantum-safe encrypted mail between Hive accounts. lib.js = MESMail (X-Wing = ML-KEM-768 + X25519

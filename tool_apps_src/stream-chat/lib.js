@@ -16,7 +16,8 @@
 		tw: { name: 'Twitch', color: '#9146ff' },
 		od: { name: 'Odysee', color: '#e50054' },
 		rm: { name: 'Rumble', color: '#85c742' },
-		ts: { name: '3Speak', color: '#e32933' }
+		ts: { name: '3Speak', color: '#e32933' },
+		bc: { name: 'BitChute', color: '#ef4136' }
 	};
 	C.PAID = { super: 1, sticker: 1, member: 1, gift: 1, bits: 1, sub: 1, tip: 1 };
 	C.isPaid = function (m) { return !!(m && C.PAID[m.kind]); };
@@ -258,6 +259,23 @@
 			try { out.push(JSON.parse(data)); } catch (e) {}
 		});
 		return out;
+	};
+
+	/* ---------- BitChute ---------- */
+	/* a BitChute video link (bitchute.com/video/<id>/, /embed/<id>/) or the id itself */
+	C.bcVideo = function (s) {
+		s = String(s || '').trim();
+		var m = s.match(/bitchute\.com\/(?:video|embed)\/([A-Za-z0-9_-]{6,20})/) || s.match(/^([A-Za-z0-9_-]{8,20})$/);
+		return m ? m[1] : '';
+	};
+	/* a "message" event of chat001.bitchute.com (socket.io): {id, timestamp, amount, profile_id, display_name, content, avatar, type} */
+	C.bcMsg = function (x) {
+		if (!x || x.content == null) return null;
+		var amt = +x.amount || 0, img = String(x.avatar || '');
+		return { id: 'bc:' + (x.id != null ? x.id : (x.profile_id || '') + ':' + (x.timestamp || Date.now())), p: 'bc', uid: x.profile_id ? 'bc:' + x.profile_id : '',
+			name: String(x.display_name || 'BitChute user'), avatar: /^https:\/\//.test(img) && !/blank-profile/.test(img) ? img : '',
+			parts: [{ t: String(x.content) }], kind: amt > 0 ? 'tip' : 'chat', amount: amt > 0 ? amt + ' tokens' : '', note: amt > 0 ? 'Chatbomb' : '',
+			ts: x.timestamp ? (typeof x.timestamp === 'number' ? (x.timestamp < 1e12 ? x.timestamp * 1000 : x.timestamp) : Date.parse(x.timestamp) || Date.now()) : Date.now() };
 	};
 
 	/* ---------- 3Speak ---------- */
