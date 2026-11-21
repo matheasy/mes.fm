@@ -66,6 +66,7 @@ const MIRRORS = {
   },
   "Q_Lu-dHR_-A": {
     href: "https://mes.fm/livestream-144-tom-sherman-new-calendar",
+    extra: [["Hive", "https://peakd.com/hive-128780/@mes/mes-livestream-144-tom-sherman-new-calendar-g5v"]],
   },
   "3F_dpWjc-TU": {
     href: "https://mes.fm/livestream-143-911-spooks",
