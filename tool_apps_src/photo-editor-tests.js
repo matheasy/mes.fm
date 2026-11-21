@@ -471,6 +471,15 @@ t("per-letter text size", function () {
 	var segs = P.textSegs("0011", [1, 2, 2, 2], 0, 4, 0); assert.deepStrictEqual(segs.map(function (g) { return [g.s, g.e, g.m, g.k]; }), [[0, 1, 0, 1], [1, 2, 0, 2], [2, 4, 1, 2]]);
 	assert.deepStrictEqual(P.lineScales([{ start: 0, end: 2 }, { start: 3, end: 3 }, { start: 3, end: 4 }], [1, 2, 1, 1]), [2, 1, 1]);
 	assert.deepStrictEqual(P.lineScales([{ start: 0, end: 2 }], null), [1]); });
+t("text on an ellipse", () => {
+  assert.ok(Math.abs(P.ellipseTable(100, 100).P - 2 * Math.PI * 100) < 0.1);
+  const top = P.pathPlace({ rx: 100, ry: 100, adv: [10, 10, 10], start: 0, dir: 1, align: "center" });
+  assert.ok(Math.abs(top.chars[1].x) < 1e-6 && Math.abs(top.chars[1].y + 100) < 1e-6 && Math.abs(top.chars[1].uy + 1) < 1e-6);   // middle letter at the top, standing outside
+  assert.ok(top.chars[0].x < 0 && top.chars[2].x > 0 && top.bounds.length === 4);
+  const bot = P.pathPlace({ rx: 100, ry: 60, adv: [10, 10], start: 180, dir: -1, align: "center" });
+  assert.ok(bot.chars[0].x < bot.chars[1].x && Math.abs(bot.chars[0].uy + 1) < 0.05);   // bottom: reads left to right, standing inside
+  assert.ok(Math.abs(P.ellipseDist(100, 50, 0, -60) - 10) < 1e-6 && Math.abs(P.ellipseDist(100, 50, 70, 0) - 30) < 1e-6);
+});
 t("despill: green / blue / red screens only, inside the region", function () {
 	assert.strictEqual(P.spillChannel([0, 255, 0]), 1); assert.strictEqual(P.spillChannel([30, 60, 220]), 2); assert.strictEqual(P.spillChannel([255, 255, 255]), -1); assert.strictEqual(P.spillChannel([255, 255, 0]), -1); assert.strictEqual(P.spillChannel([0, 0, 0]), -1);
 	var d = new Uint8ClampedArray([20, 90, 30, 255, 200, 200, 200, 255, 10, 120, 10, 255, 0, 255, 0, 0]);

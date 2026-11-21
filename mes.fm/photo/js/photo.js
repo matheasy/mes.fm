@@ -468,6 +468,40 @@ var MESPixel = (function () {
 		var n = String(name || "").toLowerCase(), a = String(alias || "").toLowerCase();
 		return (stackNames || []).some(function (x, i) { var k = String(x).toLowerCase(); return k === a || (k === n && (i === 0 || /^mesfile/i.test(stackNames[0]))); });
 	}
+	/* text on a path (an ellipse or circle, like Photoshop / Photopea "type on a path"). Angles: 0 = top of the ellipse, growing clockwise on screen
+	 * (y down). ellipseTable = cumulative arc length round the ellipse (centre 0,0), so letters are spaced evenly along the line, not by angle. */
+	function ellipseTable(rx, ry, n) {
+		n = n || 1024; rx = Math.max(0.5, Math.abs(rx)); ry = Math.max(0.5, Math.abs(ry)); var s = new Float64Array(n + 1), px = 0, py = -ry, tot = 0;
+		for (var i = 1; i <= n; i++) { var f = i / n * Math.PI * 2, x = rx * Math.sin(f), y = -ry * Math.cos(f); tot += Math.hypot(x - px, y - py); s[i] = tot; px = x; py = y; }
+		return { rx: rx, ry: ry, n: n, s: s, P: tot };
+	}
+	/* the point at arc length d from the top (any d: wraps round), with the clockwise tangent (tx, ty) */
+	function ellipseAt(tab, d) {
+		var P = tab.P, n = tab.n, s = tab.s; d = ((d % P) + P) % P; var lo = 0, hi = n;
+		while (hi - lo > 1) { var m = (lo + hi) >> 1; if (s[m] <= d) lo = m; else hi = m; }
+		var seg = s[hi] - s[lo] || 1, f = (lo + (d - s[lo]) / seg) / n * Math.PI * 2, tx = tab.rx * Math.cos(f), ty = tab.ry * Math.sin(f), tl = Math.hypot(tx, ty) || 1;
+		return { x: tab.rx * Math.sin(f), y: -tab.ry * Math.cos(f), tx: tx / tl, ty: ty / tl, f: f };
+	}
+	function ellipseArcAt(tab, deg) { var f = ((deg % 360) + 360) % 360 / 360 * tab.n, i = Math.floor(f), j = Math.min(tab.n, i + 1); return tab.s[i] + (tab.s[j] - tab.s[i]) * (f - i); }
+	/* where each letter goes: o = {rx, ry, adv: [advance width of each letter], start (deg: where the text is anchored), dir (1 = clockwise, letters
+	 * standing outside the line, e.g. the top of a badge; -1 = anti-clockwise, letters standing inside, e.g. the bottom of a badge, still reading left to
+	 * right), align ("left" = the text starts at the angle, "center", "right" = ends there)}. Returns chars [{x, y, a (rotation), w, ux, uy (letter's up)}]
+	 * at each letter's middle, and bounds [{x, y, a}] at the n + 1 caret places between letters (centre 0,0). */
+	function pathPlace(o) {
+		var tab = ellipseTable(o.rx, o.ry), dir = o.dir < 0 ? -1 : 1, adv = o.adv || [], tot = 0; adv.forEach(function (w) { tot += w; });
+		var s0 = ellipseArcAt(tab, o.start || 0), f = o.align === "center" ? 0.5 : o.align === "right" ? 1 : 0; s0 -= dir * f * tot;
+		var put = function (d) { var p = ellipseAt(tab, s0 + dir * d), rx = p.tx * dir, ry = p.ty * dir; return { x: p.x, y: p.y, a: Math.atan2(ry, rx), ux: ry, uy: -rx }; };
+		var chars = [], bounds = [], acc = 0;
+		for (var i = 0; i < adv.length; i++) { bounds.push(put(acc)); var c = put(acc + adv[i] / 2); c.w = adv[i]; chars.push(c); acc += adv[i]; }
+		bounds.push(put(acc));
+		return { chars: chars, bounds: bounds, total: tot, P: tab.P };
+	}
+	/* how far a point (centre 0,0) is from the ellipse line, roughly in px (good for "is the pointer on the line?") */
+	function ellipseDist(rx, ry, x, y) {
+		rx = Math.max(0.5, Math.abs(rx)); ry = Math.max(0.5, Math.abs(ry)); var f = Math.atan2(x / rx, -y / ry);
+		for (var k = 0; k < 4; k++) { var ex = rx * Math.sin(f), ey = -ry * Math.cos(f), tx = rx * Math.cos(f), ty = ry * Math.sin(f), g = (x - ex) * tx + (y - ey) * ty, h = tx * tx + ty * ty; f += g / (h || 1); }
+		return Math.hypot(x - rx * Math.sin(f), y + ry * Math.cos(f));
+	}
 	function textAnchorShift(align, o, n) {
 		var f = align === "center" ? 0.5 : align === "right" ? 1 : 0, known = o.pad != null && o.mw != null;
 		var ax0 = known ? o.pad + f * o.mw : f * o.w, ax1 = known ? n.pad + f * n.mw : f * n.w, ay0 = known ? o.pad : 0, ay1 = known ? n.pad : 0;
@@ -1001,7 +1035,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, sizeEdit: sizeEdit, sizeSet: sizeSet, sizeNorm: sizeNorm, textSegs: textSegs, lineScales: lineScales, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, ellipseTable: ellipseTable, ellipseAt: ellipseAt, pathPlace: pathPlace, ellipseDist: ellipseDist, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, sizeEdit: sizeEdit, sizeSet: sizeSet, sizeNorm: sizeNorm, textSegs: textSegs, lineScales: lineScales, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask, spillChannel: spillChannel, despill: despill,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
@@ -1143,7 +1177,7 @@ var MESPixel = (function () {
 	};
 
 	/* ---------- text layers ---------- */
-	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0 };
+	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0, pathOn: false, pathRx: 240, pathRy: 240, pathStart: 0, pathDir: "cw", pathSide: "base", pathOff: 0 };
 	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
 	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
 	PE.textSizes = function (t) { return t && Array.isArray(t.rsz) && t.rsz.length === String(t.str).length && t.rsz.length ? t.rsz : null; };
@@ -1261,8 +1295,55 @@ var MESPixel = (function () {
 	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s, start) = width in px,
 	 * bh = height of the text box (the text, or the Auto-fit box when that is taller) */
 	var lmc = null;
+	/* text on a path (Photoshop / Photopea "type on a path"): the letters follow an ellipse round the layer's centre (t.pathOn, pathRx / pathRy = the
+	 * ellipse's half width / height in layer px, pathStart = where the text is anchored in degrees from the top, clockwise; pathDir "cw" = letters stand
+	 * outside the line (top of a badge), "ccw" = inside (bottom of a badge, still read left to right); pathSide = which part of the letters touches the
+	 * line: their bottom (base), middle or top; pathOff = extra px away from the line). One line: Enter becomes a space. The layout keeps the shape the
+	 * straight-text code expects (one line, pad, mw, bh = the ellipse's box) plus .path = every letter's place, used by the renderer and the caret. */
+	PE.textOnPath = function (t) { return !!(t && t.pathOn); };
+	function pathLayout(L, t, key) {
+		var rich = PE.textRich(t), rsz = PE.textSizes(t), base = PE.textMask(t), str = String(t.str).replace(/\n/g, " "), n = str.length, m = lmc || (lmc = mk(8, 8).getContext("2d")), ls = t.ls || 0;
+		var adv = [], ks = [], ms = [], maxK = 1; if ("letterSpacing" in m) m.letterSpacing = "0px";
+		P.textSegs(rich, rsz, 0, n, base).forEach(function (g) { setFont(m, fontFor(t, g.m, t.size * g.k)); var sub = str.slice(g.s, g.e), prev = 0; for (var j = 1; j <= sub.length; j++) { var w = m.measureText(sub.slice(0, j)).width; adv.push(Math.max(0, w - prev + ls)); prev = w; ks.push(g.k); ms.push(g.m); maxK = Math.max(maxK, g.k); } });
+		m._mesFont = null;
+		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, off = +t.pathOff || 0, sh = t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0;
+		var M = Math.ceil(t.size * maxK * 1.3 + sw + sh + Math.abs(off) + 4), rx = Math.max(4, Math.abs(+t.pathRx || 0)), ry = Math.max(4, Math.abs(+t.pathRy || 0)), W = Math.ceil(2 * (rx + M)), H = Math.ceil(2 * (ry + M));
+		var dir = t.pathDir === "ccw" ? -1 : 1, fy = t.pathSide === "top" ? 0.74 : t.pathSide === "mid" ? 0.36 : 0, pl = P.pathPlace({ rx: rx, ry: ry, adv: adv, start: +t.pathStart || 0, dir: dir, align: t.align });
+		var mvp = function (q) { q.x += W / 2; q.y += H / 2; return q; }; pl.chars.forEach(mvp); pl.bounds.forEach(mvp);
+		var yb = ks.map(function (k) { return fy * t.size * k - off; });
+		var measure = function (s2, st) { st = st || 0; var w = 0; for (var i = 0; i < s2.length; i++) w += adv[st + i] || 0; return w; }, lhp = t.size * t.lh;
+		L._lay = { key: key, font: fontFor(t, base), rich: rich, lines: [{ text: str, start: 0, end: n }], lw: [pl.total], lx: [M], base: [M + t.size * 0.92], mw: W - 2 * M, lhp: lhp, pad: M, bgp: 0, bh: H - 2 * M, fit: false, W: W, H: H, size: t.size, measure: measure, km: [1], lhs: [lhp], tops: [0], th: lhp, lastK: 1, rsz: rsz,
+			path: { str: str, chars: pl.chars, bounds: pl.bounds, yb: yb, ks: ks, ms: ms, adv: adv, dir: dir, rx: rx, ry: ry, cx: W / 2, cy: H / 2, fy: fy, off: off, total: pl.total, P: pl.P } };
+		return L._lay;
+	}
+	/* draw the letters of a path text: full = shadow, outline and fill (the layer), else just the letters in black (for layer styles) */
+	function drawPathText(x, t, lay, full) {
+		var p = lay.path, ls = t.ls || 0, sz = t.size, sw = full && t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), cur = null;
+		if ("letterSpacing" in x) x.letterSpacing = "0px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = "center";
+		var each = function (fn) { p.chars.forEach(function (c, i) { var ch = p.str[i]; if (!ch) return; var fn2 = fontFor(t, p.ms[i], sz * p.ks[i]); if (fn2 !== cur) { setFont(x, fn2); cur = fn2; } x.save(); x.translate(c.x, c.y); x.rotate(c.a); fn(ch, -ls / 2, p.yb[i], p.ks[i], c.w - ls, p.ms[i]); x.restore(); }); };
+		var bar = function (k, w, y, mm, f) { if (mm & 4 && w > 0) f(-w / 2 - ls / 2, y + uOff * k, w, uTh * k); };
+		if (!full) { x.fillStyle = "#000"; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.fillText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.fillRect(a, b, c2, d); }); }); return; }
+		if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.fillText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.fillRect(a, b, c2, d); }); }); x.restore(); cur = null; }
+		if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.strokeText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.strokeRect(a, b, c2, d); }); }); }
+		x.fillStyle = t.color; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.fillText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.fillRect(a, b, c2, d); }); });
+	}
+	/* the ellipse of a path text in image coordinates (centre, half axes, turn), for the overlay guide and hit tests */
+	PE.textPathGeom = function (L) {
+		if (!L || !L.text || !L.text.pathOn) return null; var lay = PE.textLayout(L); if (!lay || !lay.path) return null; var p = lay.path;
+		return { cx: L.cx, cy: L.cy, rx: p.rx * Math.abs(L.sx), ry: p.ry * Math.abs(L.sy), rot: L.rot, lay: lay };
+	};
+	/* is a point (image coordinates) on a path text's letters: within about one letter height of the line where the letters are? */
+	PE.textPathHit = function (L, x, y, slackPx) {
+		var g = PE.textPathGeom(L); if (!g) return false; var q = PE.toLayerPt(L, x, y), p = g.lay.path, u = q.x - p.cx, v = q.y - p.cy, d = P.ellipseDist(p.rx, p.ry, u, v);
+		if (!p.chars.length) return Math.abs(d) < L.text.size * 0.7 + (slackPx || 0);   // an empty new text: on the line
+		// near a letter: each letter's middle sits half a letter height up from where its baseline is (up = the letter's own up)
+		var sz = L.text.size, sl = (slackPx || 0) / Math.max(1e-6, Math.abs(L.sx));
+		for (var i = 0; i < p.chars.length; i++) { var c = p.chars[i], k = p.ks[i] || 1, h = (0.37 * sz * k - p.yb[i]), mx = c.x + c.ux * h, my = c.y + c.uy * h; if (Math.hypot(q.x - mx, q.y - my) < Math.max(c.w * 0.75, sz * k * 0.6) + sl) return true; }
+		return false;
+	};
 	PE.textLayout = function (L) {
-		var t = L.text; if (!t) return null; var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
+		var t = L.text; if (!t) return null;
+		if (t.pathOn) { var pkey = JSON.stringify(["path", PE.fontAvailable(t.font), t.str, fontFor(t, PE.textMask(t)), PE.textRich(t), PE.textSizes(t), t.ls || 0, t.align, t.size, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.pathRx, t.pathRy, t.pathStart, t.pathDir, t.pathSide, t.pathOff]); if (L._lay && L._lay.key === pkey) return L._lay; return pathLayout(L, t, pkey); } var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
 		var rsz = PE.textSizes(t), key = JSON.stringify([PE.fontAvailable(t.font), t.str, f, rich, rsz, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
 		if (L._lay && L._lay.key === key) return L._lay;
 		var m = lmc || (lmc = mk(8, 8).getContext("2d")), measure = measurer(t, t.size, m);
@@ -1281,7 +1362,7 @@ var MESPixel = (function () {
 		// round 11: a text whose pixels were drawn in a web font this browser has not got (yet) keeps them: drawing it again now would switch it to the default font
 		var held = PE.textFontHold(L); if (held) { PE.fontNeeded(held); return false; }
 		if (L._drawnFont !== "" && L.canvas && L.canvas.width > 4) PE.fontMissingNote(L.text);
-		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
+		var t = L.text; if (t.pathOn) return renderPathText(L); if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
 		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
 		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d"), sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0;
@@ -1309,11 +1390,20 @@ var MESPixel = (function () {
 		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
 
+	function renderPathText(L) {
+		var t = L.text, lay = PE.textLayout(L), W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
+		var c = mk(W, H); drawPathText(c.getContext("2d"), t, lay, true);
+		L._pad = lay.pad; L._amw = lay.mw; L.canvas = c; L.rev++;   // the ellipse's centre stays where it is (the layer is centred on it)
+		L._drawnFont = PE.fontAvailable(t.font) ? t.font : "";
+		L._glyph = { c: c, g: textDecor(t) ? textGlyphs(L, lay) : null };
+		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
+	}
 	/* round 12: a layer style on a text layer follows the LETTERS, not the text's own Outline / Shadow / background box (a subscriber: "the layer style on
 	 * the text is working on the outline, not just the text itself"). textGlyphs = the letters (and underlines) alone, in the same place on a canvas the size
 	 * of the layer's; kept with the canvas it belongs to, made again after undo / reopening when the layout still matches the pixels. */
 	function textDecor(t) { return !!(t && ((t.strokeOn && t.strokeW > 0) || t.bgOn || t.shadowOn)); }
 	function textGlyphs(L, lay) {
+		if (lay.path) { var cp = mk(lay.W, lay.H); drawPathText(cp.getContext("2d"), L.text, lay, false); return cp; }
 		var t = L.text, c = mk(lay.W, lay.H), x = c.getContext("2d"), rich = lay.rich, base = PE.textMask(t), sz = t.size, uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), ls = t.ls || 0;
 		if ("letterSpacing" in x) x.letterSpacing = ls + "px"; x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = "#000";
 		lay.lines.forEach(function (ln, i) {
@@ -2587,12 +2677,15 @@ var MESPixel = (function () {
 	PE.placeTextEditor = placeEditor;
 	function poke() { blinkOn = true; PE.invalidateOverlay(); }
 	function hitText(e, prefer) {   // the text layer under a point: its whole text box counts (clicking between letters edits, it does not start a new text)
-		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && !PE.isLockedDeep(prefer) && PE.layerAtPoint(prefer, e.x, e.y)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
-		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || PE.isLockedDeep(L)) continue; if (PE.layerAtPoint(L, e.x, e.y)) return L; }
+		if (prefer && prefer.type === "text" && prefer.text && PE.effVisible(prefer) && !PE.isLockedDeep(prefer) && onText(prefer, e)) return prefer;   // only a text layer (the active picture under the click is not "a text to edit")
+		var ls = PE.doc.layers; for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (L.type !== "text" || !L.text || !PE.effVisible(L) || PE.isLockedDeep(L)) continue; if (onText(L, e)) return L; }
 		return null;
 	}
+	/* a text on a curve only counts where its letters are (a click in the middle of a circle of text starts a new text, e.g. a logo's middle line) */
+	function onText(L, e) { return L.text && L.text.pathOn ? PE.textPathHit(L, e.x, e.y, 6 / Math.max(1e-6, PE.view.zoom)) : PE.layerAtPoint(L, e.x, e.y); }
 	function indexAt(L, x, y) {
-		var lay = PE.textLayout(L), p = PE.toLayerPt(L, x, y), n = lay.lines.length, i = 0; if (lay.tops) { while (i < n - 1 && p.y - lay.pad >= lay.tops[i + 1]) i++; } else i = Math.max(0, Math.min(n - 1, Math.floor((p.y - lay.pad) / lay.lhp)));
+		var lay0 = PE.textLayout(L); if (lay0.path) { var q = PE.toLayerPt(L, x, y), best = 0, bd = Infinity; lay0.path.bounds.forEach(function (b, i) { var d = Math.hypot(b.x - q.x, b.y - q.y); if (d < bd) { bd = d; best = i; } }); return best; }   // text on a curve: the nearest place between two letters
+		var lay = lay0, p = PE.toLayerPt(L, x, y), n = lay.lines.length, i = 0; if (lay.tops) { while (i < n - 1 && p.y - lay.pad >= lay.tops[i + 1]) i++; } else i = Math.max(0, Math.min(n - 1, Math.floor((p.y - lay.pad) / lay.lhp)));
 		return P.hitInLine(lay.lines[i], p.x - lay.lx[i], lay.measure);
 	}
 	function caretK(t, i) { var r = PE.textSizes(t); if (!r) return 1; return r[Math.max(0, i - 1)] || r[i] || 1; }   // the caret is as tall as the letter before it
@@ -2613,7 +2706,7 @@ var MESPixel = (function () {
 		if (!te) return; var e = te; te = null; tdrag = null; clearInterval(blinkT); var ta = editor(); ta.style.display = "none"; if (document.activeElement === ta) ta.blur(); var L = e.L;
 		if (PE.doc.layers.indexOf(L) < 0) { PE.invalidateOverlay(); return; }   // gone meanwhile (undo, delete)
 		setTimeout(function () { PE.emit("opts", "text"); }, 0);   // the Done / Cancel buttons go away
-		if (e.isNew && (cancel || !L.text.str.trim())) { dropLayer(L); return; }
+		if (e.isNew && (cancel || !L.text.str.trim())) { if (e.unhide && PE.doc.layers.indexOf(e.unhide) >= 0) { e.unhide.visible = true; PE.emit("layers"); } dropLayer(L); return; }
 		var nm = L.text.str.split("\n")[0].slice(0, 24) || "Text";
 		if (e.isNew) { L.name = nm; PE.commit("Add text"); } else if (JSON.stringify(L.text) !== e.orig) { if (L.text.str !== JSON.parse(e.orig).str) L.name = nm; PE.commit("Edit text"); }
 		PE.invalidate();
@@ -2708,7 +2801,7 @@ var MESPixel = (function () {
 	}
 	var SIDES = [[0, 0.5], [1, 0.5]], ALL8 = [[0, 0], [0.5, 0], [1, 0], [1, 0.5], [1, 1], [0.5, 1], [0, 1], [0, 0.5]];
 	function boxHandles(L) {
-		if (!L || L.type !== "text" || !L.text || L.locked || !PE.effVisible(L)) return []; var lay = PE.textLayout(L), p = lay.pad;
+		if (!L || L.type !== "text" || !L.text || L.text.pathOn || L.locked || !PE.effVisible(L)) return []; var lay = PE.textLayout(L), p = lay.pad;
 		// round 10: the grips sit ON the one box (the frame round the words), like Canva: left / right = box width, with Auto-fit text also corners / top / bottom
 		var f = frameOf(L);
 		return (lay.fit || L.text.fit ? ALL8 : SIDES).map(function (h) { var d = locToDoc(L, f.u0 + h[0] * (f.u1 - f.u0), f.v0 + h[1] * (f.v1 - f.v0)), sc = PE.toScreen(d.x, d.y); return { hx: h[0], hy: h[1], x: d.x, y: d.y, s: { x: sc.x, y: sc.y } }; });
@@ -2768,7 +2861,7 @@ var MESPixel = (function () {
 	};
 	/* round 10: a corner of a text box makes the text bigger / smaller by changing its font size (and the box width, outline, shadow, padding with it),
 	 * so the letters stay sharp, instead of stretching the picture of the text. The opposite corner stays put (Alt: the centre). hx / hy = -1 or 1. */
-	var SCALEK = ["size", "wrapW", "boxH", "strokeW", "shadowBlur", "shadowDx", "shadowDy", "bgPad", "bgRadius", "ls"];
+	var SCALEK = ["size", "wrapW", "boxH", "strokeW", "shadowBlur", "shadowDx", "shadowDy", "bgPad", "bgRadius", "ls", "pathRx", "pathRy", "pathOff"];
 	PE.textScaleStart = function (L, hx, hy, p0, alt) {
 		var hd = heldDrag(L); if (hd) return hd;
 		var a = alt ? PE.textFramePt(L, 0, 0) : PE.textFramePt(L, -hx, -hy), t0 = {}; SCALEK.forEach(function (k) { t0[k] = L.text[k]; });
@@ -2802,6 +2895,12 @@ var MESPixel = (function () {
 	function drawCaret(x, v) {
 		var L = te.L, ta = editor(), lay = PE.textLayout(L), a = ta.selectionStart, b = ta.selectionEnd, sz = lay.size, sc = v.zoom * Math.max(1e-6, Math.abs(L.sx));
 		x.save(); x.translate(v.px, v.py); x.scale(v.zoom, v.zoom); var c = Math.cos(L.rot), s = Math.sin(L.rot); x.transform(c * L.sx, s * L.sx, -s * L.sy, c * L.sy, L.cx, L.cy); x.translate(-L.canvas.width / 2, -L.canvas.height / 2);
+		if (lay.path) {   // text on a curve: the selection and the caret follow the letters round the ellipse
+			var pp = lay.path, kAt = function (i) { return pp.ks[Math.min(pp.ks.length - 1, Math.max(0, i))] || 1; }, ybAt = function (i) { return pp.yb.length ? pp.yb[Math.min(pp.yb.length - 1, Math.max(0, i))] : pp.fy * sz - pp.off; };
+			if (a !== b) { x.fillStyle = "rgba(59,130,246,0.38)"; for (var ci = a; ci < b && ci < pp.chars.length; ci++) { var ch = pp.chars[ci], kk2 = kAt(ci); x.save(); x.translate(ch.x, ch.y); x.rotate(ch.a); x.fillRect(-ch.w / 2, ybAt(ci) - sz * 0.86 * kk2, ch.w, sz * 1.1 * kk2); x.restore(); } }
+			else if (blinkOn) { var fi = focusIdx(ta), bd = pp.bounds[Math.min(pp.bounds.length - 1, fi)], k3 = kAt(fi - 1), y3 = ybAt(fi - 1); x.translate(bd.x, bd.y); x.rotate(bd.a); x.lineCap = "butt"; x.strokeStyle = "rgba(255,255,255,0.95)"; x.lineWidth = 4 / sc; x.beginPath(); x.moveTo(0, y3 - sz * 0.86 * k3); x.lineTo(0, y3 + sz * 0.24 * k3); x.stroke(); x.strokeStyle = "#111"; x.lineWidth = 2 / sc; x.stroke(); }
+			x.restore(); return;
+		}
 		if (a !== b) {
 			x.fillStyle = "rgba(59,130,246,0.38)";
 			lay.lines.forEach(function (ln, i) {
@@ -2815,11 +2914,53 @@ var MESPixel = (function () {
 		}
 		x.restore();
 	}
+	/* ---------- text on a curve (an ellipse / circle) ----------
+	 * Photoshop / Photopea way: draw an ellipse with the Shapes tool, then click its outline with the Text tool. The text then runs along the ellipse,
+	 * centred where you clicked (upper half: letters stand outside the line; lower half: inside, still read left to right) and the ellipse layer is hidden
+	 * (its eye in Layers brings it back). Or tick "On a curve" for any text. The orange dot on the curve slides the text round it. */
+	var hoverE = null, panc = null;
+	function ellipseGeom(L) {
+		var s = L.shape; if (!s || s.kind !== "ellipse") return null; var r = norm(s.a, s.b, s.sq); if (r.w < 4 || r.h < 4) return null;
+		var c = locToDoc(L, r.x + r.w / 2, r.y + r.h / 2); return { L: L, cx: c.x, cy: c.y, rx: r.w / 2 * Math.abs(L.sx), ry: r.h / 2 * Math.abs(L.sy), rot: L.rot, lw: s.o && s.o.stroke ? s.o.width || 0 : 0 };
+	}
+	function ellipseAt(e) {   // the topmost visible ellipse shape layer whose outline is under the pointer (within ~14 screen px)
+		if (!PE.doc) return null; var z = Math.max(1e-6, PE.view.zoom), ls = PE.doc.layers;
+		for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (!L.shape || !PE.effVisible(L) || PE.isLockedDeep(L)) continue; var g = ellipseGeom(L); if (!g) continue;
+			var c = Math.cos(-g.rot), s = Math.sin(-g.rot), dx = e.x - g.cx, dy = e.y - g.cy, qx = c * dx - s * dy, qy = s * dx + c * dy;
+			if (P.ellipseDist(g.rx, g.ry, qx, qy) < 14 / z + g.lw / 2) { g.qx = qx; g.qy = qy; return g; } }
+		return null;
+	}
+	function textOnEllipse(g, e) {
+		var deg = Math.round(Math.atan2(g.qx / g.rx, -g.qy / g.ry) * 180 / Math.PI), lower = Math.abs(deg) > 90;
+		var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; o.pathOn = true; o.pathRx = Math.round(g.rx * 10) / 10; o.pathRy = Math.round(g.ry * 10) / 10; o.pathStart = deg; o.pathDir = lower ? "ccw" : "cw"; o.pathSide = "base"; o.pathOff = 0; o.align = "center"; o.fit = false; o.bgOn = false;
+		var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = g.cx; L.cy = g.cy; L.rot = g.rot;
+		PE.addLayer(L); g.L.visible = false; PE.emit("layers"); openEdit(L, true, 0); if (te) te.unhide = g.L;
+		PE.toast("Type along the ellipse. The ellipse layer is hidden now (its eye in Layers shows it again). Drag the orange dot to slide the text round the curve.", 6000);
+	};
+	function anchorPt(L) {   // the orange dot: where the text is anchored on its curve (image coordinates)
+		if (!L || L.type !== "text" || !L.text || !L.text.pathOn || L.locked || !PE.effVisible(L)) return null; var g = PE.textPathGeom(L); if (!g) return null; var p = g.lay.path, f = (+L.text.pathStart || 0) * Math.PI / 180;
+		return locToDoc(L, p.cx + p.rx * Math.sin(f), p.cy - p.ry * Math.cos(f));
+	}
+	function anchorHit(L, e) { var a = anchorPt(L); if (!a) return false; var s = PE.toScreen(a.x, a.y), sp = scrOf(e); return Math.hypot(s.x - sp.x, s.y - sp.y) < 10; }
+	function ellipsePath(x, cx, cy, rx, ry, rot) { var c0 = PE.toScreen(cx, cy), z = PE.view.zoom; x.beginPath(); x.ellipse(c0.x, c0.y, Math.max(0.5, rx * z), Math.max(0.5, ry * z), rot, 0, Math.PI * 2); }
+	function drawEllipseGuide(x, g, hot) { x.save(); ellipsePath(x, g.cx, g.cy, g.rx, g.ry, g.rot); x.lineWidth = hot ? 3 : 1; x.setLineDash(hot ? [] : [5, 4]); x.strokeStyle = "rgba(0,0,0,0.6)"; x.stroke(); x.lineWidth = hot ? 1.75 : 1; x.strokeStyle = hot ? "#ff9800" : "rgba(255,255,255,0.9)"; x.lineDashOffset = 4.5; x.stroke(); x.restore(); }
+	function drawPathGuide(x, L) {
+		var g = PE.textPathGeom(L); if (!g) return; drawEllipseGuide(x, g, false); var a = anchorPt(L); if (!a) return; var s = PE.toScreen(a.x, a.y);
+		x.save(); x.fillStyle = "#ff9800"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.arc(s.x, s.y, 6.5, 0, Math.PI * 2); x.fill(); x.stroke(); x.restore();
+	}
+	PE.drawTextPathGuide = drawPathGuide;
 	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters; highlight words and move Size to change only their size. Drag a corner of the box to make the text bigger or smaller (Alt = from the centre). Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text the corners change the box and the size follows). To move the text, drag its box outline or the ✥ grip under it, or hold Ctrl/Cmd and drag the text (Shift = straight line). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
 		ui: [{ type: "button", label: "✓ Done", cls: "pe-btn--primary", title: "Finish this text (Ctrl+Enter or Esc)", when: function () { return !!te; }, act: function () { PE.endTextEdit(false); PE.emit("opts", "text"); } },
 			{ type: "button", label: "✕ Cancel", title: "Throw away the changes made since the last step of this text", when: function () { return !!te; }, act: function () { if (!te) return; var L = te.L, o = te.orig, isNew = te.isNew; L.text = JSON.parse(o); PE.renderText(L); PE.touch(L); PE.endTextEdit(isNew); PE.emit("opts", "text"); } },
-			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px", help: "How big the letters are. The box next to the number picks the unit: pt = points like in Word or Google Docs (12 pt = 16 px, 72 pt = 96 px); px = pixels of the image; pt (72/in) = points the way Photoshop, Photopea and GIMP count them for screen images (1 pt = 1 px). Only the number shown changes: the text looks the same." }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px" }, { k: "fit", label: "Auto-fit text", type: "check" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05 }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
-			{ k: "bgOn", label: "Background box", type: "check" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn" },
+			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px", help: "How big the letters are. The box next to the number picks the unit: pt = points like in Word or Google Docs (12 pt = 16 px, 72 pt = 96 px); px = pixels of the image; pt (72/in) = points the way Photoshop, Photopea and GIMP count them for screen images (1 pt = 1 px). Only the number shown changes: the text looks the same." }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px", hide: "pathOn" }, { k: "fit", label: "Auto-fit text", type: "check", hide: "pathOn" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit", hide: "pathOn" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05, hide: "pathOn" }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
+			{ k: "pathOn", label: "On a curve", type: "check", help: "Text that follows a circle or ellipse (like Photoshop / Photopea \u201ctype on a path\u201d). Quickest way: draw an ellipse with the Shapes tool (Shift = circle), then click its outline with the Text tool: the text runs along it and the ellipse is hidden. Or tick this for any text. Drag the orange dot on the curve to slide the text round it; drag a corner of the box to make text and curve bigger together." },
+			{ k: "pathRx", label: "Curve radius \u2194", type: "range", min: 10, max: 3000, step: 1, unit: "px", show: "pathOn" }, { k: "pathRy", label: "Curve radius \u2195", type: "range", min: 10, max: 3000, step: 1, unit: "px", show: "pathOn" },
+			{ type: "button", label: "\u25cb Make it a circle", when: function () { var L = PE.active(); return !!(L && L.type === "text" && L.text && L.text.pathOn && L.text.pathRx !== L.text.pathRy); }, act: function () { var L = PE.active(); if (!L || !L.text) return; PE.optSet("text", "pathRy", L.text.pathRx); PE.emit("opts", "text"); } },
+			{ k: "pathStart", label: "Position on curve", type: "range", min: -180, max: 180, step: 1, unit: "\u00b0", show: "pathOn", help: "Where the text sits round the curve: 0 = top, 90 = right, 180 / -180 = bottom, -90 = left. With Align = Centre the text is centred there, Left starts there, Right ends there. You can also drag the orange dot on the curve." },
+			{ k: "pathDir", label: "Letters", type: "seg", options: [["cw", "Outside (top)"], ["ccw", "Inside (bottom)"]], show: "pathOn", help: "Outside: the letters stand on the outside of the curve and read clockwise, like the top of a round badge. Inside: they stand inside and read the other way, so text along the bottom of a circle still reads left to right." },
+			{ k: "pathSide", label: "Line touches", type: "seg", options: [["base", "Bottom"], ["mid", "Middle"], ["top", "Top"]], show: "pathOn", help: "Which part of the letters touches the curve: their bottom (the usual), their middle (the line runs through them) or their top (they hang from it)." },
+			{ k: "pathOff", label: "Distance from curve", type: "range", min: -200, max: 200, step: 1, unit: "px", show: "pathOn" },
+			{ k: "bgOn", label: "Background box", type: "check", hide: "pathOn" }, { k: "bgColor", label: "Box colour", type: "color", show: "bgOn", hide: "pathOn" }, { k: "bgPad", label: "Padding", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn", hide: "pathOn" }, { k: "bgRadius", label: "Corners", type: "range", min: 0, max: 80, step: 1, unit: "px", show: "bgOn", hide: "pathOn" },
 			{ k: "strokeOn", label: "Outline", type: "check" }, { k: "stroke", label: "Outline colour", type: "color", show: "strokeOn" }, { k: "strokeW", label: "Outline width", type: "range", min: 0, max: 40, step: 1, unit: "px", show: "strokeOn" },
 			{ k: "shadowOn", label: "Shadow", type: "check" }, { k: "shadow", label: "Shadow colour", type: "color", show: "shadowOn" }, { k: "shadowBlur", label: "Blur", type: "range", min: 0, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDx", label: "Shadow X", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" }, { k: "shadowDy", label: "Shadow Y", type: "range", min: -60, max: 60, step: 1, unit: "px", show: "shadowOn" },
 			{ type: "button", label: "Load font file…", act: function () { PE.pickFontFile(); } }, { type: "button", label: "Yellow label", act: function () { preset({ bgOn: true, bgColor: "#ffeb3b", color: "#111111", bold: true, bgPad: 14, bgRadius: 8 }); } }, { type: "button", label: "Red callout", act: function () { preset({ bgOn: true, bgColor: "#e53935", color: "#ffffff", bold: true, bgPad: 14, bgRadius: 10 }); } }, { type: "button", label: "Meme text", act: function () { preset({ bgOn: false, color: "#ffffff", strokeOn: true, stroke: "#000000", strokeW: 6, bold: true, font: "Impact, 'Arial Black', sans-serif", align: "center" }); } }],
@@ -2832,6 +2973,13 @@ var MESPixel = (function () {
 		beforeopt: function (k) { if (te && !PE.hasPendingKey("textstyle")) PE.textCheckpoint("Type text"); if (k === "size") { var Lb = PE.active(); sizeBefore = Lb && Lb.text ? Lb.text.size : null; } },   // round 9: what was typed before a style change is its own undo step
 		onopt: function (k, v) { var L = PE.active(); if (!L || L.type !== "text") return; var t = L.text;
 			if (BITS[k]) { var rg = te && te.L === L ? selRange() : null; if (rg) styleRange(L, BITS[k], rg[0], rg[1], v); else if (PE.textRich(t)) styleRange(L, BITS[k], 0, t.str.length, v); lastSig = ""; }
+			if (k === "pathOn") {   // straight <-> curved: the letters stay about where they were (the layer is centred on the curve's centre)
+				var cr = Math.cos(L.rot), sr = Math.sin(L.rot);
+				if (v) { t.pathOn = false; L._lay = null; var lw0 = PE.textLayout(L).lw.reduce(function (m2, w) { return Math.max(m2, w); }, 0); t.pathOn = true; L._lay = null; var r0 = Math.max(40, Math.round(lw0 / Math.PI * 1.15)); t.pathRx = t.pathRy = r0; t.pathStart = 0; t.pathDir = "cw"; t.pathSide = "base"; t.pathOff = 0; t.align = "center"; t.fit = false; L.cx -= sr * r0 * L.sy; L.cy += cr * r0 * L.sy; }
+				else { var r1 = +t.pathRy || 0; L.cx += sr * r1 * L.sy; L.cy -= cr * r1 * L.sy; }
+				PE.opt.text.pathOn = false;   // the next new text is straight again (tick "On a curve" with no text selected to make curved ones)
+				setTimeout(function () { PE.emit("opts", "text"); }, 0);
+			}
 			if (k === "fit" && v) { var ly = PE.textLayout(L); if (!(t.wrapW > 0)) t.wrapW = Math.round(ly.mw); if (!(t.boxH > 0)) t.boxH = Math.round(ly.bh); setTimeout(function () { PE.emit("opts", "text"); }, 0); }
 			if (k === "size" && te && te.L === L && selRange() && sizeBefore > 0) {   // only the highlighted letters change size (like GIMP / Camtasia / Word)
 				var rg2 = selRange(), n2 = String(t.str).length, ns2 = P.sizeNorm(P.sizeSet(PE.textSizes(t), n2, rg2[0], rg2[1], v / sizeBefore)); t.size = sizeBefore; PE.opt.text.size = sizeBefore;
@@ -2843,21 +2991,27 @@ var MESPixel = (function () {
 		overlay: function (x, v) {
 			var A = PE.active();
 			if (hoverT && hoverT !== A && PE.doc.layers.indexOf(hoverT) >= 0 && !te) drawFrame(x, hoverT, false);
+			if (hoverE && !te) drawEllipseGuide(x, hoverE, true);
+			if (A && A.type === "text" && A.text && A.text.pathOn) drawPathGuide(x, A);
 			if (A && A.type === "text" && A.text) { drawFrame(x, A, !!te); if (te && te.L === A) drawCaret(x, v); }
 			if (A && A.type === "text" && A.text) { PE.drawTextBoxHandles(x, A); drawCorners(x, A); }
 			if (A && A.type === "text" && A.text) PE.drawTextMoveGrip(x, A);
 		},
-		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); } var A = PE.active(), ch = cornerHit(A, e), hh = ch ? { hx: (ch[0] + 1) / 2, hy: (ch[1] + 1) / 2 } : A && A.type === "text" ? PE.textBoxHit(A, e) : null; PE.els.over.style.cursor = hh ? PE.textBoxCursor(hh, A) : (A && PE.textMoveHit(A, e)) ? "move" : "text"; },
+		hover: function (e) { if (!PE.doc) return; var h = hitText(e, null); if (h !== hoverT) { hoverT = h; PE.invalidateOverlay(); }
+			var he = !h && !te ? ellipseAt(e) : null; if ((he && he.L) !== (hoverE && hoverE.L)) { hoverE = he; PE.invalidateOverlay(); } else hoverE = he;
+			if (anchorHit(PE.active(), e)) { PE.els.over.style.cursor = "grab"; return; } if (he) { PE.els.over.style.cursor = "copy"; return; } var A = PE.active(), ch = cornerHit(A, e), hh = ch ? { hx: (ch[0] + 1) / 2, hy: (ch[1] + 1) / 2 } : A && A.type === "text" ? PE.textBoxHit(A, e) : null; PE.els.over.style.cursor = hh ? PE.textBoxCursor(hh, A) : (A && PE.textMoveHit(A, e)) ? "move" : "text"; },
 		move: function (e) {
+			if (panc) { var gq = PE.textPathGeom(panc.L), ql = PE.toLayerPt(panc.L, e.x, e.y), pq = gq.lay.path, deg = Math.atan2((ql.x - pq.cx) / pq.rx, -(ql.y - pq.cy) / pq.ry) * 180 / Math.PI; if (!e.shift) deg = Math.round(deg); else deg = Math.round(deg / 15) * 15; panc.L.text.pathStart = deg; PE.opt.text.pathStart = deg; PE.renderText(panc.L); PE.touch(panc.L); panc.moved = true; if (te && te.L === panc.L) placeEditor(); PE.emit("opts", "text"); return; }
 			if (bsc) { PE.textScaleMove(bsc, e); return; }
 			if (bw) { PE.textBoxMove(bw, e); return; }
 			if (tmv) { var dx = e.x - tmv.x0, dy = e.y - tmv.y0; if (e.shift) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; } if (!tmv.moved && Math.hypot(e.sx - tmv.sx, e.sy - tmv.sy) < 2) return; tmv.L.cx = tmv.cx + dx; tmv.L.cy = tmv.cy + dy; tmv.moved = true; PE.invalidate(); if (te && te.L === tmv.L) placeEditor(); return; }
 			if (tdrag && te) { setSel(tdrag.a, indexAt(te.L, e.x, e.y)); }
 		},
-		up: function () { if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } else if (m0.how !== "grip") { m0.ev._noMove = true; PE.tools.text.down(m0.ev); tdrag = null; } if (te) PE.focusText(); return; }   /* round 12: a click on the outline that did not move still edits the text */ if (bsc) { var s0 = bsc; bsc = null; if (s0.moved) { if (te) PE.textCheckpoint("Text size"); else PE.commit("Text size"); } if (te) PE.focusText(); tdrag = null; return; } if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
+		up: function () { if (panc) { var p0 = panc; panc = null; if (p0.moved) { if (te) PE.textCheckpoint("Move text on curve"); else PE.commit("Move text on curve"); } if (te) PE.focusText(); return; } if (tmv) { var m0 = tmv; tmv = null; if (m0.moved) { if (te) PE.textCheckpoint("Move text"); else PE.commit("Move text"); } else if (m0.how !== "grip") { m0.ev._noMove = true; PE.tools.text.down(m0.ev); tdrag = null; } if (te) PE.focusText(); return; }   /* round 12: a click on the outline that did not move still edits the text */ if (bsc) { var s0 = bsc; bsc = null; if (s0.moved) { if (te) PE.textCheckpoint("Text size"); else PE.commit("Text size"); } if (te) PE.focusText(); tdrag = null; return; } if (bw) { var w0 = bw; bw = null; if (w0.moved) { if (te) PE.textCheckpoint("Text box"); else PE.commit("Text box"); } } tdrag = null; },
 		dbl: function (e) { if (!te || !PE.layerAtPoint(te.L, e.x, e.y)) return; var w = P.wordAt(te.L.text.str, indexAt(te.L, e.x, e.y)); setSel(w[0], w[1]); tdrag = null; lastDbl = { t: Date.now(), x: e.sx, y: e.sy }; },
 		down: function (e) {
-			var A0 = te ? te.L : PE.active(), cq = cornerHit(A0, e); if (cq) { bsc = PE.textScaleStart(A0, cq[0], cq[1], e, e.alt); tdrag = null; return; }   // corner = text size, right here in the Text tool (Alt: about the centre)
+			var A0 = te ? te.L : PE.active(); if (anchorHit(A0, e)) { panc = { L: A0, orig: A0.text.pathStart, moved: false }; tdrag = null; return; }   // the orange dot on a curved text: slide the text round its curve
+			var cq = cornerHit(A0, e); if (cq) { bsc = PE.textScaleStart(A0, cq[0], cq[1], e, e.alt); tdrag = null; return; }   // corner = text size, right here in the Text tool (Alt: about the centre)
 			var hh = A0 && A0.type === "text" ? PE.textBoxHit(A0, e) : null; if (hh) { bw = PE.textBoxStart(A0, hh); return; }
 			var mh = !e._noMove && A0 && PE.textMoveHit(A0, e); if (mh) { tmv = { L: A0, how: mh, ev: e, x0: e.x, y0: e.y, sx: e.sx, sy: e.sy, cx: A0.cx, cy: A0.cy, moved: false }; tdrag = null; return; }
 			var hit = hitText(e, te ? te.L : PE.active());
@@ -2866,13 +3020,15 @@ var MESPixel = (function () {
 				if (Date.now() - lastDbl.t < 450 && Math.hypot(e.sx - lastDbl.x, e.sy - lastDbl.y) < 6) { var lay = PE.textLayout(hit), ln = lay.lines[P.caretLine(lay.lines, idx).line]; setSel(ln.start, ln.end); lastDbl.t = 0; return; }   // triple-click = the whole line
 				var a = e.shift ? anchorIdx(ta) : idx; setSel(a, idx); tdrag = { a: a }; PE.focusText(); return;
 			}
-			if (!hit) { var nearL = te ? te.L : PE.active(); if (nearL && nearL.type === "text" && nearL.text && nearFrame(nearL, e, 14)) hit = nearL; }   // round 9: a click just outside the text's box (aiming for its edge) stays with that text instead of starting a new, default one
+			if (!hit) { var nearL = te ? te.L : PE.active(); if (nearL && nearL.type === "text" && nearL.text && (nearL.text.pathOn ? PE.textPathHit(nearL, e.x, e.y, 14 / Math.max(1e-6, PE.view.zoom)) : nearFrame(nearL, e, 14))) hit = nearL; }   // round 9: a click just outside the text's box (aiming for its edge) stays with that text instead of starting a new, default one
 			if (te && hit === te.L) { var ik = indexAt(hit, e.x, e.y); setSel(ik, ik); tdrag = { a: ik }; PE.focusText(); return; }
 			if (te) { PE.endTextEdit(false); if (!hit) return; }   // a click outside finishes the edit; the next click on empty canvas starts a new text
 			if (hit) { PE.setActive(hit.id); var i2 = indexAt(hit, e.x, e.y); openEdit(hit, false, i2); tdrag = { a: i2 }; return; }
-			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad; L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2;
+			var ell = ellipseAt(e); if (ell) { textOnEllipse(ell, e); return; }   // a click on an ellipse's outline: type along it (Photoshop / Photopea "type on a path")
+			var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); var pd = PE.textLayout(L).pad;
+			if (o.pathOn) { L.cx = e.x; L.cy = e.y + Math.abs(o.pathRy || 0); } else { L.cx = e.x - pd + L.canvas.width / 2; L.cy = e.y - pd + L.canvas.height / 2; }   // a new curved text: the click is where its letters go (top of the circle)
 			PE.addLayer(L); openEdit(L, true, 0);
-		}, cancel: function () { if (tmv) { tmv.L.cx = tmv.cx; tmv.L.cy = tmv.cy; PE.invalidate(); tmv = null; } if (bw) { PE.textBoxAbort(bw); bw = null; } if (bsc) { PE.textBoxAbort(bsc); bsc = null; } PE.endTextEdit(false); hoverT = null; } });
+		}, cancel: function () { if (panc) { panc.L.text.pathStart = panc.orig; PE.renderText(panc.L); PE.touch(panc.L); panc = null; } if (tmv) { tmv.L.cx = tmv.cx; tmv.L.cy = tmv.cy; PE.invalidate(); tmv = null; } if (bw) { PE.textBoxAbort(bw); bw = null; } if (bsc) { PE.textBoxAbort(bsc); bsc = null; } PE.endTextEdit(false); hoverT = null; } });
 	function preset(o) { for (var k in o) PE.optSet("text", k, o[k]); PE.emit("opts", "text"); }
 	/* open the active text layer for editing: at = a point on the canvas (caret there, from a double-click with the Move tool), else everything selected */
 	PE.editActiveText = function (at) { var L = PE.active(); if (L && L.type === "text") { PE.setTool("text"); openEdit(L, false, at ? indexAt(L, at.x, at.y) : "all"); } };
@@ -5831,7 +5987,7 @@ var MESPixel = (function () {
 	function btn(label, cls, title, fn) { var b = el("button", "pe-btn " + (cls || ""), esc(label)); b.type = "button"; if (title) b.title = title; b.addEventListener("click", fn); return b; }
 	function addText(preset, str, rel) {
 		if (!PE.doc) { PE.newDoc(1080, 1080, "#ffffff", "Untitled"); }
-		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.rsz = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
+		var d = PE.doc, o = JSON.parse(JSON.stringify(PE.opt.text)); o.pathOn = false; o.wrapW = 0; o.fit = false; o.boxH = 0; o.rich = null; o.rsz = null; o.bold = false; o.italic = false; o.underline = false; o.bgOn = false; o.strokeOn = false; o.shadowOn = false;
 		for (var k in preset) o[k] = preset[k]; o.str = str; o.size = Math.max(12, Math.round(Math.min(d.w, d.h) * rel));
 		var L = PE.makeLayer({ type: "text", name: str, text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = d.w / 2; L.cy = d.h / 2; PE.addLayer(L); PE.setActive(L.id); PE.commit("Add text"); PE.setTool("move"); PE.invalidate();
 		PE.toast("Double-click the text to type your own words; drag a corner to resize it");
@@ -6157,7 +6313,7 @@ var MESPixel = (function () {
 		var box = $("pe-opts"), t = PE.tool(), id = t.id, kind = PE.opt[id] && PE.optGet(id, "kind"); box.innerHTML = ""; var name = el("span", "pe-opt-name", esc(t.name)); box.appendChild(name);
 		(t.ui || []).forEach(function (u) {
 			if (u.when && !u.when()) return;
-			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return;
+			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return; if (u.hide && PE.optGet(id, u.hide)) return;
 			if (u.type === "note") { box.appendChild(el("span", "pe-opt-note", esc(u.label))); return; }
 			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm" + (u.cls ? " " + u.cls : ""), esc(u.label)); if (u.title) b.title = u.title; b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));

@@ -183,7 +183,7 @@
 		var box = $("pe-opts"), t = PE.tool(), id = t.id, kind = PE.opt[id] && PE.optGet(id, "kind"); box.innerHTML = ""; var name = el("span", "pe-opt-name", esc(t.name)); box.appendChild(name);
 		(t.ui || []).forEach(function (u) {
 			if (u.when && !u.when()) return;
-			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return;
+			if (u.showFor && u.showFor.indexOf(kind) < 0) return; if (u.hideFor && u.hideFor.indexOf(kind) >= 0) return; if (u.show && !PE.optGet(id, u.show)) return; if (u.hide && PE.optGet(id, u.hide)) return;
 			if (u.type === "note") { box.appendChild(el("span", "pe-opt-note", esc(u.label))); return; }
 			if (u.type === "button") { var b = el("button", "pe-btn pe-btn--sm" + (u.cls ? " " + u.cls : ""), esc(u.label)); if (u.title) b.title = u.title; b.type = "button"; b.addEventListener("mousedown", function (e) { e.preventDefault(); }); b.addEventListener("click", u.act); box.appendChild(b); return; }
 			var w = el("label", "pe-opt"), v = PE.optGet(id, u.k), inp; w.appendChild(el("span", "pe-opt-l", esc(u.label)));

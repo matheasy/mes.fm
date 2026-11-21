@@ -132,7 +132,7 @@
 	};
 
 	/* ---------- text layers ---------- */
-	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0 };
+	PE.TEXTDEF = { str: "Text", font: "Arial, Helvetica, sans-serif", size: 64, bold: false, italic: false, underline: false, color: "#000000", align: "left", lh: 1.2, bgOn: false, bgColor: "#ffeb3b", bgPad: 12, bgRadius: 8, strokeOn: false, stroke: "#ffffff", strokeW: 4, shadowOn: false, shadow: "#000000", shadowBlur: 8, shadowDx: 4, shadowDy: 4, ls: 0, wrapW: 0, fit: false, boxH: 0, pathOn: false, pathRx: 240, pathRy: 240, pathStart: 0, pathDir: "cw", pathSide: "base", pathOff: 0 };
 	/* rich text (MESPixel.rich*): t.rich = one style digit per character (1 bold, 2 italic, 4 underline) or null = the layer's own bold / italic / underline */
 	PE.textRich = function (t) { return t && typeof t.rich === "string" && t.rich.length === String(t.str).length && t.rich.length ? t.rich : null; };
 	PE.textSizes = function (t) { return t && Array.isArray(t.rsz) && t.rsz.length === String(t.str).length && t.rsz.length ? t.rsz : null; };
@@ -250,8 +250,55 @@
 	 * lines = [{text, start, end}] with string offsets (MESPixel.wrapLines), lx[i] = left edge of line i, base[i] = its baseline, measure(s, start) = width in px,
 	 * bh = height of the text box (the text, or the Auto-fit box when that is taller) */
 	var lmc = null;
+	/* text on a path (Photoshop / Photopea "type on a path"): the letters follow an ellipse round the layer's centre (t.pathOn, pathRx / pathRy = the
+	 * ellipse's half width / height in layer px, pathStart = where the text is anchored in degrees from the top, clockwise; pathDir "cw" = letters stand
+	 * outside the line (top of a badge), "ccw" = inside (bottom of a badge, still read left to right); pathSide = which part of the letters touches the
+	 * line: their bottom (base), middle or top; pathOff = extra px away from the line). One line: Enter becomes a space. The layout keeps the shape the
+	 * straight-text code expects (one line, pad, mw, bh = the ellipse's box) plus .path = every letter's place, used by the renderer and the caret. */
+	PE.textOnPath = function (t) { return !!(t && t.pathOn); };
+	function pathLayout(L, t, key) {
+		var rich = PE.textRich(t), rsz = PE.textSizes(t), base = PE.textMask(t), str = String(t.str).replace(/\n/g, " "), n = str.length, m = lmc || (lmc = mk(8, 8).getContext("2d")), ls = t.ls || 0;
+		var adv = [], ks = [], ms = [], maxK = 1; if ("letterSpacing" in m) m.letterSpacing = "0px";
+		P.textSegs(rich, rsz, 0, n, base).forEach(function (g) { setFont(m, fontFor(t, g.m, t.size * g.k)); var sub = str.slice(g.s, g.e), prev = 0; for (var j = 1; j <= sub.length; j++) { var w = m.measureText(sub.slice(0, j)).width; adv.push(Math.max(0, w - prev + ls)); prev = w; ks.push(g.k); ms.push(g.m); maxK = Math.max(maxK, g.k); } });
+		m._mesFont = null;
+		var sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, off = +t.pathOff || 0, sh = t.shadowOn ? t.shadowBlur * 2 + Math.max(Math.abs(t.shadowDx), Math.abs(t.shadowDy)) : 0;
+		var M = Math.ceil(t.size * maxK * 1.3 + sw + sh + Math.abs(off) + 4), rx = Math.max(4, Math.abs(+t.pathRx || 0)), ry = Math.max(4, Math.abs(+t.pathRy || 0)), W = Math.ceil(2 * (rx + M)), H = Math.ceil(2 * (ry + M));
+		var dir = t.pathDir === "ccw" ? -1 : 1, fy = t.pathSide === "top" ? 0.74 : t.pathSide === "mid" ? 0.36 : 0, pl = P.pathPlace({ rx: rx, ry: ry, adv: adv, start: +t.pathStart || 0, dir: dir, align: t.align });
+		var mvp = function (q) { q.x += W / 2; q.y += H / 2; return q; }; pl.chars.forEach(mvp); pl.bounds.forEach(mvp);
+		var yb = ks.map(function (k) { return fy * t.size * k - off; });
+		var measure = function (s2, st) { st = st || 0; var w = 0; for (var i = 0; i < s2.length; i++) w += adv[st + i] || 0; return w; }, lhp = t.size * t.lh;
+		L._lay = { key: key, font: fontFor(t, base), rich: rich, lines: [{ text: str, start: 0, end: n }], lw: [pl.total], lx: [M], base: [M + t.size * 0.92], mw: W - 2 * M, lhp: lhp, pad: M, bgp: 0, bh: H - 2 * M, fit: false, W: W, H: H, size: t.size, measure: measure, km: [1], lhs: [lhp], tops: [0], th: lhp, lastK: 1, rsz: rsz,
+			path: { str: str, chars: pl.chars, bounds: pl.bounds, yb: yb, ks: ks, ms: ms, adv: adv, dir: dir, rx: rx, ry: ry, cx: W / 2, cy: H / 2, fy: fy, off: off, total: pl.total, P: pl.P } };
+		return L._lay;
+	}
+	/* draw the letters of a path text: full = shadow, outline and fill (the layer), else just the letters in black (for layer styles) */
+	function drawPathText(x, t, lay, full) {
+		var p = lay.path, ls = t.ls || 0, sz = t.size, sw = full && t.strokeOn ? Math.max(0, t.strokeW || 0) : 0, uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), cur = null;
+		if ("letterSpacing" in x) x.letterSpacing = "0px"; x.textBaseline = "alphabetic"; x.lineJoin = "round"; x.textAlign = "center";
+		var each = function (fn) { p.chars.forEach(function (c, i) { var ch = p.str[i]; if (!ch) return; var fn2 = fontFor(t, p.ms[i], sz * p.ks[i]); if (fn2 !== cur) { setFont(x, fn2); cur = fn2; } x.save(); x.translate(c.x, c.y); x.rotate(c.a); fn(ch, -ls / 2, p.yb[i], p.ks[i], c.w - ls, p.ms[i]); x.restore(); }); };
+		var bar = function (k, w, y, mm, f) { if (mm & 4 && w > 0) f(-w / 2 - ls / 2, y + uOff * k, w, uTh * k); };
+		if (!full) { x.fillStyle = "#000"; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.fillText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.fillRect(a, b, c2, d); }); }); return; }
+		if (t.shadowOn) { x.save(); x.shadowColor = t.shadow; x.shadowBlur = t.shadowBlur; x.shadowOffsetX = t.shadowDx; x.shadowOffsetY = t.shadowDy; x.fillStyle = t.color; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.fillText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.fillRect(a, b, c2, d); }); }); x.restore(); cur = null; }
+		if (sw > 0) { x.strokeStyle = t.stroke; x.lineWidth = sw * 2; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.strokeText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.strokeRect(a, b, c2, d); }); }); }
+		x.fillStyle = t.color; each(function (ch, cx, y, k, w, mm) { if (ch !== " ") x.fillText(ch, cx, y); bar(k, w, y, mm, function (a, b, c2, d) { x.fillRect(a, b, c2, d); }); });
+	}
+	/* the ellipse of a path text in image coordinates (centre, half axes, turn), for the overlay guide and hit tests */
+	PE.textPathGeom = function (L) {
+		if (!L || !L.text || !L.text.pathOn) return null; var lay = PE.textLayout(L); if (!lay || !lay.path) return null; var p = lay.path;
+		return { cx: L.cx, cy: L.cy, rx: p.rx * Math.abs(L.sx), ry: p.ry * Math.abs(L.sy), rot: L.rot, lay: lay };
+	};
+	/* is a point (image coordinates) on a path text's letters: within about one letter height of the line where the letters are? */
+	PE.textPathHit = function (L, x, y, slackPx) {
+		var g = PE.textPathGeom(L); if (!g) return false; var q = PE.toLayerPt(L, x, y), p = g.lay.path, u = q.x - p.cx, v = q.y - p.cy, d = P.ellipseDist(p.rx, p.ry, u, v);
+		if (!p.chars.length) return Math.abs(d) < L.text.size * 0.7 + (slackPx || 0);   // an empty new text: on the line
+		// near a letter: each letter's middle sits half a letter height up from where its baseline is (up = the letter's own up)
+		var sz = L.text.size, sl = (slackPx || 0) / Math.max(1e-6, Math.abs(L.sx));
+		for (var i = 0; i < p.chars.length; i++) { var c = p.chars[i], k = p.ks[i] || 1, h = (0.37 * sz * k - p.yb[i]), mx = c.x + c.ux * h, my = c.y + c.uy * h; if (Math.hypot(q.x - mx, q.y - my) < Math.max(c.w * 0.75, sz * k * 0.6) + sl) return true; }
+		return false;
+	};
 	PE.textLayout = function (L) {
-		var t = L.text; if (!t) return null; var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
+		var t = L.text; if (!t) return null;
+		if (t.pathOn) { var pkey = JSON.stringify(["path", PE.fontAvailable(t.font), t.str, fontFor(t, PE.textMask(t)), PE.textRich(t), PE.textSizes(t), t.ls || 0, t.align, t.size, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.pathRx, t.pathRy, t.pathStart, t.pathDir, t.pathSide, t.pathOff]); if (L._lay && L._lay.key === pkey) return L._lay; return pathLayout(L, t, pkey); } var rich = PE.textRich(t), f = fontFor(t, PE.textMask(t)), dw = PE.doc ? PE.doc.w : 1200, fit = !!(t.fit && t.wrapW > 0 && t.boxH > 0);
 		var rsz = PE.textSizes(t), key = JSON.stringify([PE.fontAvailable(t.font), t.str, f, rich, rsz, t.ls || 0, t.wrapW, t.lh, t.align, t.bgOn && t.bgPad, t.strokeOn && t.strokeW, t.shadowOn && [t.shadowBlur, t.shadowDx, t.shadowDy], t.wrapW > 0 ? 0 : dw, fit && t.boxH]);
 		if (L._lay && L._lay.key === key) return L._lay;
 		var m = lmc || (lmc = mk(8, 8).getContext("2d")), measure = measurer(t, t.size, m);
@@ -270,7 +317,7 @@
 		// round 11: a text whose pixels were drawn in a web font this browser has not got (yet) keeps them: drawing it again now would switch it to the default font
 		var held = PE.textFontHold(L); if (held) { PE.fontNeeded(held); return false; }
 		if (L._drawnFont !== "" && L.canvas && L.canvas.width > 4) PE.fontMissingNote(L.text);
-		var t = L.text; if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
+		var t = L.text; if (t.pathOn) return renderPathText(L); if (t.fit) { var fs = PE.fitTextSize(L); if (fs) t.size = fs; }
 		var lay = PE.textLayout(L), lines = lay.lines, mw = lay.mw, lhp = lay.lhp, bgp = lay.bgp, pad = lay.pad, rich = lay.rich, base = PE.textMask(t), sz = t.size;
 		var W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
 		var oldW = L.canvas.width, oldH = L.canvas.height, c = mk(W, H), x = c.getContext("2d"), sw = t.strokeOn ? Math.max(0, t.strokeW || 0) : 0;
@@ -298,11 +345,20 @@
 		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
 	};
 
+	function renderPathText(L) {
+		var t = L.text, lay = PE.textLayout(L), W = lay.W, H = lay.H; if (W * H > PE.MAXAREA) return;
+		var c = mk(W, H); drawPathText(c.getContext("2d"), t, lay, true);
+		L._pad = lay.pad; L._amw = lay.mw; L.canvas = c; L.rev++;   // the ellipse's centre stays where it is (the layer is centred on it)
+		L._drawnFont = PE.fontAvailable(t.font) ? t.font : "";
+		L._glyph = { c: c, g: textDecor(t) ? textGlyphs(L, lay) : null };
+		if (L.mask) { L.mask = null; } if (L.crop) L.crop = P.clampCrop(L.crop, W, H);
+	}
 	/* round 12: a layer style on a text layer follows the LETTERS, not the text's own Outline / Shadow / background box (a subscriber: "the layer style on
 	 * the text is working on the outline, not just the text itself"). textGlyphs = the letters (and underlines) alone, in the same place on a canvas the size
 	 * of the layer's; kept with the canvas it belongs to, made again after undo / reopening when the layout still matches the pixels. */
 	function textDecor(t) { return !!(t && ((t.strokeOn && t.strokeW > 0) || t.bgOn || t.shadowOn)); }
 	function textGlyphs(L, lay) {
+		if (lay.path) { var cp = mk(lay.W, lay.H); drawPathText(cp.getContext("2d"), L.text, lay, false); return cp; }
 		var t = L.text, c = mk(lay.W, lay.H), x = c.getContext("2d"), rich = lay.rich, base = PE.textMask(t), sz = t.size, uOff = Math.max(1, sz * 0.11), uTh = Math.max(1, sz * 0.065), ls = t.ls || 0;
 		if ("letterSpacing" in x) x.letterSpacing = ls + "px"; x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = "#000";
 		lay.lines.forEach(function (ln, i) {

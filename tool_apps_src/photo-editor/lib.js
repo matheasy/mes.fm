@@ -350,6 +350,40 @@ var MESPixel = (function () {
 		var n = String(name || "").toLowerCase(), a = String(alias || "").toLowerCase();
 		return (stackNames || []).some(function (x, i) { var k = String(x).toLowerCase(); return k === a || (k === n && (i === 0 || /^mesfile/i.test(stackNames[0]))); });
 	}
+	/* text on a path (an ellipse or circle, like Photoshop / Photopea "type on a path"). Angles: 0 = top of the ellipse, growing clockwise on screen
+	 * (y down). ellipseTable = cumulative arc length round the ellipse (centre 0,0), so letters are spaced evenly along the line, not by angle. */
+	function ellipseTable(rx, ry, n) {
+		n = n || 1024; rx = Math.max(0.5, Math.abs(rx)); ry = Math.max(0.5, Math.abs(ry)); var s = new Float64Array(n + 1), px = 0, py = -ry, tot = 0;
+		for (var i = 1; i <= n; i++) { var f = i / n * Math.PI * 2, x = rx * Math.sin(f), y = -ry * Math.cos(f); tot += Math.hypot(x - px, y - py); s[i] = tot; px = x; py = y; }
+		return { rx: rx, ry: ry, n: n, s: s, P: tot };
+	}
+	/* the point at arc length d from the top (any d: wraps round), with the clockwise tangent (tx, ty) */
+	function ellipseAt(tab, d) {
+		var P = tab.P, n = tab.n, s = tab.s; d = ((d % P) + P) % P; var lo = 0, hi = n;
+		while (hi - lo > 1) { var m = (lo + hi) >> 1; if (s[m] <= d) lo = m; else hi = m; }
+		var seg = s[hi] - s[lo] || 1, f = (lo + (d - s[lo]) / seg) / n * Math.PI * 2, tx = tab.rx * Math.cos(f), ty = tab.ry * Math.sin(f), tl = Math.hypot(tx, ty) || 1;
+		return { x: tab.rx * Math.sin(f), y: -tab.ry * Math.cos(f), tx: tx / tl, ty: ty / tl, f: f };
+	}
+	function ellipseArcAt(tab, deg) { var f = ((deg % 360) + 360) % 360 / 360 * tab.n, i = Math.floor(f), j = Math.min(tab.n, i + 1); return tab.s[i] + (tab.s[j] - tab.s[i]) * (f - i); }
+	/* where each letter goes: o = {rx, ry, adv: [advance width of each letter], start (deg: where the text is anchored), dir (1 = clockwise, letters
+	 * standing outside the line, e.g. the top of a badge; -1 = anti-clockwise, letters standing inside, e.g. the bottom of a badge, still reading left to
+	 * right), align ("left" = the text starts at the angle, "center", "right" = ends there)}. Returns chars [{x, y, a (rotation), w, ux, uy (letter's up)}]
+	 * at each letter's middle, and bounds [{x, y, a}] at the n + 1 caret places between letters (centre 0,0). */
+	function pathPlace(o) {
+		var tab = ellipseTable(o.rx, o.ry), dir = o.dir < 0 ? -1 : 1, adv = o.adv || [], tot = 0; adv.forEach(function (w) { tot += w; });
+		var s0 = ellipseArcAt(tab, o.start || 0), f = o.align === "center" ? 0.5 : o.align === "right" ? 1 : 0; s0 -= dir * f * tot;
+		var put = function (d) { var p = ellipseAt(tab, s0 + dir * d), rx = p.tx * dir, ry = p.ty * dir; return { x: p.x, y: p.y, a: Math.atan2(ry, rx), ux: ry, uy: -rx }; };
+		var chars = [], bounds = [], acc = 0;
+		for (var i = 0; i < adv.length; i++) { bounds.push(put(acc)); var c = put(acc + adv[i] / 2); c.w = adv[i]; chars.push(c); acc += adv[i]; }
+		bounds.push(put(acc));
+		return { chars: chars, bounds: bounds, total: tot, P: tab.P };
+	}
+	/* how far a point (centre 0,0) is from the ellipse line, roughly in px (good for "is the pointer on the line?") */
+	function ellipseDist(rx, ry, x, y) {
+		rx = Math.max(0.5, Math.abs(rx)); ry = Math.max(0.5, Math.abs(ry)); var f = Math.atan2(x / rx, -y / ry);
+		for (var k = 0; k < 4; k++) { var ex = rx * Math.sin(f), ey = -ry * Math.cos(f), tx = rx * Math.cos(f), ty = ry * Math.sin(f), g = (x - ex) * tx + (y - ey) * ty, h = tx * tx + ty * ty; f += g / (h || 1); }
+		return Math.hypot(x - rx * Math.sin(f), y + ry * Math.cos(f));
+	}
 	function textAnchorShift(align, o, n) {
 		var f = align === "center" ? 0.5 : align === "right" ? 1 : 0, known = o.pad != null && o.mw != null;
 		var ax0 = known ? o.pad + f * o.mw : f * o.w, ax1 = known ? n.pad + f * n.mw : f * n.w, ay0 = known ? o.pad : 0, ay1 = known ? n.pad : 0;
@@ -883,7 +917,7 @@ var MESPixel = (function () {
 	}
 
 	var api = { FXDEF: FXDEF, FXKEYS: FXKEYS, fxNorm: fxNorm, fxAny: fxAny, fxAngle: fxAngle, fxOffset: fxOffset, fxReach: fxReach, sdField: sdField, sdCover: sdCover, blurF: blurF, shiftF: shiftF, gradAt: gradAt, gradPlane: gradPlane, bevelPlanes: bevelPlanes, alphaBox: alphaBox, fxPlanes: fxPlanes, fxFromPsd: fxFromPsd, fxToPsd: fxToPsd, colorFromPsd: colorFromPsd, modeFromPsd: modeFromPsd, modeToPsd: modeToPsd, rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, parseColor: parseColor, lightness: lightness, edt: edt, outlineAlpha: outlineAlpha, normToolLayout: normToolLayout, moveTool: moveTool, clampCrop: clampCrop, dragCrop: dragCrop, shiftCrop: shiftCrop, projectKind: projectKind, projectBase: projectBase, projectFileName: projectFileName, isZipBytes: isZipBytes, zipEntries: zipEntries, projectPrefix: projectPrefix, pruneRecent: pruneRecent, upsertRecent: upsertRecent, agoText: agoText, diskChanged: diskChanged, layerFileNames: layerFileNames, newProjectId: newProjectId,
-		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, sizeEdit: sizeEdit, sizeSet: sizeSet, sizeNorm: sizeNorm, textSegs: textSegs, lineScales: lineScales, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
+		unionBox: unionBox, boxesTouch: boxesTouch, rectFrom: rectFrom, snapTargets: snapTargets, snapAxis: snapAxis, snapBox: snapBox, guidesOn: guidesOn, linSolve: linSolve, scaleAbout: scaleAbout, wrapLines: wrapLines, textAnchorShift: textAnchorShift, ellipseTable: ellipseTable, ellipseAt: ellipseAt, pathPlace: pathPlace, ellipseDist: ellipseDist, textFrameBox: textFrameBox, textHold: textHold, fontFileMatch: fontFileMatch, angleDeg: angleDeg, degToRot: degToRot, snapAngle: snapAngle, versionedName: versionedName, nameVersion: nameVersion, pixelSig: pixelSig, psdMetaEncode: psdMetaEncode, psdMetaDecode: psdMetaDecode, psdXmp: psdXmp, carryUiState: carryUiState, richMask: richMask, richEdit: richEdit, richSet: richSet, richAll: richAll, richNorm: richNorm, richSegs: richSegs, sizeEdit: sizeEdit, sizeSet: sizeSet, sizeNorm: sizeNorm, textSegs: textSegs, lineScales: lineScales, fitFontSize: fitFontSize, folderProject: folderProject, caretLine: caretLine, hitInLine: hitInLine, wordAt: wordAt, describeSource: describeSource, bytesText: bytesText, panelClamp: panelClamp, panelKey: panelKey, clamp: clamp, hexToRgb: hexToRgb, rgbToHex: rgbToHex, rgbToHsl: rgbToHsl, hslToRgb: hslToRgb, histogram: histogram, identityLUT: identityLUT, applyLUT: applyLUT, levelsLUT: levelsLUT, curveLUT: curveLUT,
 		brightnessContrast: brightnessContrast, exposure: exposure, hueSat: hueSat, vibrance: vibrance, temperature: temperature, invert: invert, grayscale: grayscale, sepia: sepia, threshold: threshold, posterize: posterize,
 		gaussianBlur: gaussianBlur, boxBlur: boxBlur, unsharp: unsharp, noise: noise, pixelate: pixelate, vignette: vignette, convolve: convolve, floodMask: floodMask, growShrinkMask: growShrinkMask, featherMask: featherMask, invertMask: invertMask, spillChannel: spillChannel, despill: despill,
 		maskBounds: maskBounds, opaqueBounds: opaqueBounds, ADJKEYS: ADJKEYS, QFILTERS: QFILTERS, adjNorm: adjNorm, adjAny: adjAny, quickAdjust: quickAdjust, blendByMask: blendByMask, autoLevels: autoLevels, premultiply: premultiply, unpremultiply: unpremultiply };
