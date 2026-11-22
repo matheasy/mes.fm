@@ -30,6 +30,7 @@ HUB = os.path.join(MES, "antigravity", "index.html")
 MARKED = os.path.join(MES, "vector-functions-problems-plus", "node_modules", "marked", "lib", "marked.esm.js")
 TITLE = "GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics"
 DATE = "November 11, 2026"
+UPDATED = "November 21, 2026"
 DESC = ("Owen Liang's GyroTop magnetic spinning top and MES gyroscope experiments question the friction explanation of rising "
         "tops and the mainstream idea of angular momentum.")
 OG = f"https://mes.fm/{SLUG}/img/thumbnail.jpg"
@@ -65,6 +66,19 @@ CSS = r"""
     body.dark .gt-ask { background: rgba(108,182,245,0.1); }
     .gt-back { margin: 1.2em 0 0.4em; font-size: 0.95em; }
     @media (max-width: 520px) { .gt-qs .gt-go { display: none; } }
+    .gt-galbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.4em; flex-wrap: wrap; margin: 0.8em 0 0.4em; font-size: 0.9em; }
+    .gt-galbar span { opacity: 0.8; margin-right: 0.2em; }
+    .gt-galbar button { min-width: 2.4em; min-height: 2.2em; border: 1px solid rgba(39,123,182,0.45); background: transparent; color: inherit;
+      border-radius: 6px; cursor: pointer; font: inherit; }
+    .gt-galbar button[aria-pressed="true"] { background: #277bb6; border-color: #277bb6; color: #fff; }
+    body.dark .gt-galbar button { border-color: rgba(108,182,245,0.45); }
+    body.dark .gt-galbar button[aria-pressed="true"] { background: #2f7fc0; border-color: #2f7fc0; color: #fff; }
+    .gt-gal { display: grid; grid-template-columns: repeat(var(--gt-cols, 3), minmax(0, 1fr)); gap: 0.6em; align-items: start; margin: 0 0 1.2em; }
+    .post-body .gt-gal img { margin: 0; width: 100%; cursor: zoom-in; border: 1px solid rgba(0,0,0,0.12); transition: transform .15s, box-shadow .15s; }
+    .post-body .gt-gal img:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+    body.dark .post-body .gt-gal img { border-color: rgba(255,255,255,0.15); }
+    .gt-galnote { font-size: 0.85em; opacity: 0.75; text-align: right; margin: -0.6em 0 1.2em; }
+    @media (max-width: 600px) { .gt-gal.gt-auto { --gt-cols: 2 !important; } }
 """
 
 
@@ -103,6 +117,11 @@ def split_source(md):
     if not m:
         raise SystemExit("source drift: '---' + '# Follow-up Questions' not found")
     article, rest = md[:m.start()].strip(), md[m.end():]
+    b = re.search(r"^---\s*\n+# (Owen.s GYROTOP Brand)\s*\n", rest, re.M)
+    if not b:
+        raise SystemExit("source drift: '---' + '# Owen's GYROTOP Brand' not found")
+    brand = (b.group(1), rest[b.end():])
+    rest = rest[:b.start()]
     parts = re.split(r"^---\s*$", rest, maxsplit=1, flags=re.M)
     if len(parts) != 2:
         raise SystemExit("source drift: no '---' between the question list and the answers")
@@ -114,7 +133,35 @@ def split_source(md):
     for i, h in enumerate(heads):
         end = heads[i + 1].start() if i + 1 < len(heads) else len(parts[1])
         answers.append((h.group(2), parts[1][h.end():end].strip()))
-    return article, qs, answers
+    bheads = list(re.finditer(r"^##\s+(\d+)\.\s+(.+?)\s*$", brand[1], re.M))
+    if not bheads:
+        raise SystemExit("source drift: no '## n.' sections in the brand chapter")
+    bsecs = [(h.group(2), brand[1][h.end():(bheads[i + 1].start() if i + 1 < len(bheads) else len(brand[1]))].strip())
+             for i, h in enumerate(bheads)]
+    return article, qs, answers, (brand[0], brand[1][:bheads[0].start()].strip(), bsecs)
+
+
+GAL_ALT = {"Product Packaging": "GyroTop packaging photo", "Product Photographs": "GyroTop product photo",
+           "Sales Record": "GyroTop sales record screenshot"}
+GALBAR = ('<div class="gt-galbar" role="group" aria-label="Photo columns"><span>Columns:</span>'
+          + "".join(f'<button type="button" data-cols="{n}" aria-pressed="false">{n}</button>' for n in (1, 2, 3, 4)) + "</div>")
+
+
+def galleries(body, title):
+    """Runs of 2+ images (one per paragraph) become a column grid with a 1-4 column switch; click = the page's image viewer."""
+    n = [0]
+
+    def alt(m):
+        n[0] += 1
+        return f'alt="{GAL_ALT.get(title, "GyroTop photo")} {n[0]}"'
+    run = r'(?:<p><img [^>]*></p>\s*){2,}'
+
+    def wrap(m):
+        imgs = re.findall(r"<img [^>]*>", m.group(0))
+        imgs = [re.sub(r'alt="[^"]*"', alt, i) for i in imgs]
+        return (GALBAR + '\n<div class="gt-gal gt-auto">' + "".join(imgs) + "</div>\n"
+                '<p class="gt-galnote">Click a picture to see it full size.</p>\n')
+    return re.sub(run, wrap, body)
 
 
 def fold(cid, title, inner, top):
@@ -128,7 +175,7 @@ def fold(cid, title, inner, top):
 
 
 def content():
-    article, qs, answers = split_source(open(SRC, encoding="utf-8").read())
+    article, qs, answers, (btitle, bintro, bsecs) = split_source(open(SRC, encoding="utf-8").read())
     thumb = (f'<p><img src="/{SLUG}/img/thumbnail.jpg" width="640" height="360" '
              'alt="GyroTop magnetic spinning top rising against a magnet"></p>\n')
     toc = [("article", "The Article", False), ("questions", "Follow-up Questions", False)]
@@ -144,6 +191,12 @@ def content():
         subs += fold(f"q{i}", f"{i}. {esc(title)}", inner, False)
     chapters.append(fold("questions", "Follow-up Questions",
                          "<p>Questions I was asked about the GyroTop. Click one to jump to my answer.</p>\n" + qlist + subs, True))
+    toc.append(("brand", btitle.replace("GYROTOP", "GyroTop"), False))
+    bsubs = ""
+    for i, (title, body) in enumerate(bsecs, 1):
+        toc.append((f"b{i}", f"{i}. {title}", True))
+        bsubs += fold(f"b{i}", f"{i}. {esc(title)}", galleries(render(body), title), False)
+    chapters.append(fold("brand", esc(btitle), render(bintro) + bsubs, True))
     return "<hr>\n".join(chapters), toc
 
 
@@ -197,7 +250,7 @@ def build():
     T = sub1(r'(?<=<nav class="toc-links" aria-label="Table of contents">\n).*?(?=\n      </nav>)', links, T)
 
     T = sub1(r"<h1>.*?</h1>", f"<h1>{esc(TITLE)}</h1>", T)
-    T = sub1(r'<div class="post-meta">.*?</div>', f'<div class="post-meta">\n      <span>By MES</span>\n      <span>{DATE}</span>\n    </div>', T)
+    T = sub1(r'<div class="post-meta">.*?</div>', f'<div class="post-meta">\n      <span>By MES</span>\n      <span>{DATE}</span>\n      <span>Updated {UPDATED}</span>\n    </div>', T)
     T = sub1(r'\s*<a class="peakd-link"[^>]*>Originally published on Hive &rarr;</a>', "\n    " + PARTOF, T)
     T = sub1(r'(?<=onclick="toggleAllChapters\(\)">Collapse All</button>\n</div>\n).*?(?=\n    </div>\n    <!-- FASTCOMMENTS-BLOCK)', body, T)
     T = sub1(r'\s*<a class="source-link"[^>]*>Originally published on Hive &rarr;</a>\s*<div class="retrieved-note">.*?</div>', "", T)
@@ -212,12 +265,35 @@ def build():
              "        const ownArrow = document.getElementById('arrowIcon-' + own.id);\n"
              "        if (ownArrow) ownArrow.textContent = '▲';\n"
              "      }\n", T)
+    T = sub1(r"(?=    // image-lightbox: click any post-body image)", GAL_JS, T)
     bodypart = T.split("<!-- FASTCOMMENTS-BLOCK")[0].split("<body")[1]
     left = [s for s in ("vector-functions-problems-p-729", "Problems Plus", "speak-video", "MES Math Tutorials", "peakd-link") if s in bodypart]
     if left:
         raise SystemExit(f"leftover template text: {left}")
     return T, toc
 
+
+GAL_JS = r"""    // gt-gal: photo column switch (1-4), shared by every gallery on the page, remembered in this browser
+    (function () {
+      var K = 'mes-gyrotop:galcols', bars = document.querySelectorAll('.gt-galbar');
+      if (!bars.length) return;
+      function set(n, save) {
+        document.querySelectorAll('.gt-gal').forEach(function (g) {
+          if (n) { g.style.setProperty('--gt-cols', n); g.classList.remove('gt-auto'); }
+          else { g.style.removeProperty('--gt-cols'); g.classList.add('gt-auto'); }
+        });
+        var cur = n || (window.matchMedia('(max-width: 600px)').matches ? 2 : 3);
+        document.querySelectorAll('.gt-galbar button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.cols === +cur)); });
+        if (save) { try { localStorage.setItem(K, n); } catch (e) {} }
+      }
+      var saved = 0; try { saved = +localStorage.getItem(K) || 0; } catch (e) {}
+      set(saved >= 1 && saved <= 4 ? saved : 0);
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('.gt-galbar button');
+        if (b) set(+b.dataset.cols, true);
+      });
+    })();
+"""
 
 YT_CLS = 'class="gt-yt"'
 
