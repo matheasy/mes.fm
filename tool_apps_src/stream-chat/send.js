@@ -49,8 +49,12 @@
 							if (google.accounts.oauth2.hasGrantedAllScopes && !google.accounts.oauth2.hasGrantedAllScopes(j, SCOPE)) return rej(new Error('Google did not give access to your YouTube account. Sign in again and tick the YouTube box.'));
 							tok({ a: j.access_token, e: Date.now() + (+j.expires_in || 3600) * 1000, name: (old && !pick && old.name) || '' }); res(j.access_token);
 						},
-						error_callback: function (e) { rej(new Error(e && e.type === 'popup_failed_to_open' ? "The browser blocked Google's window: allow pop-ups for mes.fm." : 'The Google window was closed.')); } });
-					c.requestAccessToken({ prompt: pick ? 'select_account consent' : old ? '' : 'consent' });
+						error_callback: function (e) {
+							// closing Google's window yourself is not an error worth a message (it used to stay at the bottom until a reload)
+							if (e && e.type === 'popup_failed_to_open') rej(new Error("The browser blocked Google's window: allow pop-ups for mes.fm."));
+							else rej(Object.assign(new Error(''), { quiet: true }));
+						} });
+					c.requestAccessToken({ prompt: pick ? 'select_account' : '' });
 				});
 			});
 		}
@@ -113,7 +117,7 @@
 			' <div class="sc-sendrow"><label class="sc-sendto"><span class="sc-pf sc-pf--yt"></span><select id="sc-sendto" aria-label="Send to which YouTube chat"></select></label></div>',
 			' <div class="sc-sendrow"><textarea id="sc-sendin" class="sc-in sc-sendin" rows="1" maxlength="' + MAX + '" placeholder="Type a message for your YouTube chat… (Enter sends)" aria-label="Message"></textarea>',
 			' <button type="button" class="sc-btn sc-btn--go" id="sc-sendgo">Send</button></div>',
-			' <div class="sc-sendnote" id="sc-sendnote" aria-live="polite"></div>',
+			' <div class="sc-sendnote" id="sc-sendnote" hidden><span id="sc-sendnotet" aria-live="polite"></span><button type="button" class="sc-sendnotex" id="sc-sendnotex" title="Hide this message" aria-label="Hide this message">✕</button></div>',
 			'</div>'
 		].join('');
 		var foot = root.querySelector('.sc-foot');
@@ -121,7 +125,9 @@
 		var $ = function (id) { return document.getElementById(id); };
 		var sel = $('sc-sendto'), inp = $('sc-sendin'), go = $('sc-sendgo'), note = $('sc-sendnote');
 
-		function note1(t, kind) { note.textContent = t || ''; note.className = 'sc-sendnote' + (kind ? ' sc-sendnote--' + kind : ''); }
+		var noteT = $('sc-sendnotet');
+		function note1(t, kind) { clearTimeout(note1._t); noteT.textContent = t || ''; note.hidden = !t; note.className = 'sc-sendnote' + (kind ? ' sc-sendnote--' + kind : ''); }
+		$('sc-sendnotex').onclick = function () { note1(''); };
 		function targets() {
 			var L = api.live();
 			if (P.to === 'all') return L;
@@ -144,12 +150,12 @@
 			if (t && (mock || t.a)) {
 				who.appendChild(document.createTextNode('YouTube: ' + (t.name || 'signed in') + ' '));
 				var sw = el('button', 'sc-link', 'Switch'); sw.type = 'button'; sw.title = 'Send as another channel (Brand Account)';
-				sw.onclick = function () { note1('Opening Google…'); ready(true, true).then(function () { note1(''); whoAmI(); paint(); }, function (e) { note1(e.message, 'err'); }); };
+				sw.onclick = function () { note1('Opening Google…'); ready(true, true).then(function () { note1(''); whoAmI(); paint(); }, function (e) { note1(e.message, e.quiet ? '' : 'err'); }); };
 				var so = el('button', 'sc-link', 'Sign out'); so.type = 'button';
 				so.onclick = function () {
 					var a = (tok() || {}).a; tok(null); chatIds = {};
 					try { if (a && a !== 'mock' && window.google && google.accounts) google.accounts.oauth2.revoke(a, function () {}); } catch (e) {}
-					paint(); note1('Signed out.');
+					paint(); note1('Signed out.'); note1._t = setTimeout(function () { note1(''); }, 4000);
 				};
 				who.appendChild(sw); who.appendChild(document.createTextNode(' · ')); who.appendChild(so);
 				go.textContent = 'Send';
@@ -165,7 +171,7 @@
 		}
 		function signIn() {
 			note1('Opening Google…');
-			return ready(true).then(function () { note1('Signed in. Your messages go out as the channel you picked.', 'ok'); paint(); whoAmI(); }, function (e) { note1(e.message, 'err'); throw e; });
+			return ready(true).then(function () { note1('Signed in. Your messages go out as the channel you picked.', 'ok'); paint(); whoAmI(); }, function (e) { note1(e.message, e.quiet ? '' : 'err'); throw e; });
 		}
 		function grow() { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight + 2, 140) + 'px'; }
 		function send() {
@@ -184,7 +190,7 @@
 				if (errs.length === T.length) { note1(errs.join(' · '), 'err'); return; }
 				inp.value = ''; grow();
 				note1(errs.length ? 'Sent, but: ' + errs.join(' · ') : 'Sent' + (T.length > 1 ? ' to ' + T.length + ' chats' : '') + '. It shows up in the chat in a few seconds.', errs.length ? 'err' : 'ok');
-				clearTimeout(send._t); send._t = setTimeout(function () { if (/^Sent/.test(note.textContent)) note1(''); }, 5000);
+				clearTimeout(send._t); send._t = setTimeout(function () { if (/^Sent/.test(noteT.textContent)) note1(''); }, 5000);
 			}, function () {}).then(function () { busy = false; go.disabled = false; inp.focus(); });
 		}
 		go.onclick = send;

@@ -382,8 +382,12 @@
 							if (google.accounts.oauth2.hasGrantedAllScopes && !google.accounts.oauth2.hasGrantedAllScopes(j, SCOPE)) return rej(new Error('Google did not give access to your YouTube account. Sign in again and tick the YouTube box.'));
 							tok({ a: j.access_token, e: Date.now() + (+j.expires_in || 3600) * 1000, name: (old && !pick && old.name) || '' }); res(j.access_token);
 						},
-						error_callback: function (e) { rej(new Error(e && e.type === 'popup_failed_to_open' ? "The browser blocked Google's window: allow pop-ups for mes.fm." : 'The Google window was closed.')); } });
-					c.requestAccessToken({ prompt: pick ? 'select_account consent' : old ? '' : 'consent' });
+						error_callback: function (e) {
+							// closing Google's window yourself is not an error worth a message (it used to stay at the bottom until a reload)
+							if (e && e.type === 'popup_failed_to_open') rej(new Error("The browser blocked Google's window: allow pop-ups for mes.fm."));
+							else rej(Object.assign(new Error(''), { quiet: true }));
+						} });
+					c.requestAccessToken({ prompt: pick ? 'select_account' : '' });
 				});
 			});
 		}
@@ -446,7 +450,7 @@
 			' <div class="sc-sendrow"><label class="sc-sendto"><span class="sc-pf sc-pf--yt"></span><select id="sc-sendto" aria-label="Send to which YouTube chat"></select></label></div>',
 			' <div class="sc-sendrow"><textarea id="sc-sendin" class="sc-in sc-sendin" rows="1" maxlength="' + MAX + '" placeholder="Type a message for your YouTube chat… (Enter sends)" aria-label="Message"></textarea>',
 			' <button type="button" class="sc-btn sc-btn--go" id="sc-sendgo">Send</button></div>',
-			' <div class="sc-sendnote" id="sc-sendnote" aria-live="polite"></div>',
+			' <div class="sc-sendnote" id="sc-sendnote" hidden><span id="sc-sendnotet" aria-live="polite"></span><button type="button" class="sc-sendnotex" id="sc-sendnotex" title="Hide this message" aria-label="Hide this message">✕</button></div>',
 			'</div>'
 		].join('');
 		var foot = root.querySelector('.sc-foot');
@@ -454,7 +458,9 @@
 		var $ = function (id) { return document.getElementById(id); };
 		var sel = $('sc-sendto'), inp = $('sc-sendin'), go = $('sc-sendgo'), note = $('sc-sendnote');
 
-		function note1(t, kind) { note.textContent = t || ''; note.className = 'sc-sendnote' + (kind ? ' sc-sendnote--' + kind : ''); }
+		var noteT = $('sc-sendnotet');
+		function note1(t, kind) { clearTimeout(note1._t); noteT.textContent = t || ''; note.hidden = !t; note.className = 'sc-sendnote' + (kind ? ' sc-sendnote--' + kind : ''); }
+		$('sc-sendnotex').onclick = function () { note1(''); };
 		function targets() {
 			var L = api.live();
 			if (P.to === 'all') return L;
@@ -477,12 +483,12 @@
 			if (t && (mock || t.a)) {
 				who.appendChild(document.createTextNode('YouTube: ' + (t.name || 'signed in') + ' '));
 				var sw = el('button', 'sc-link', 'Switch'); sw.type = 'button'; sw.title = 'Send as another channel (Brand Account)';
-				sw.onclick = function () { note1('Opening Google…'); ready(true, true).then(function () { note1(''); whoAmI(); paint(); }, function (e) { note1(e.message, 'err'); }); };
+				sw.onclick = function () { note1('Opening Google…'); ready(true, true).then(function () { note1(''); whoAmI(); paint(); }, function (e) { note1(e.message, e.quiet ? '' : 'err'); }); };
 				var so = el('button', 'sc-link', 'Sign out'); so.type = 'button';
 				so.onclick = function () {
 					var a = (tok() || {}).a; tok(null); chatIds = {};
 					try { if (a && a !== 'mock' && window.google && google.accounts) google.accounts.oauth2.revoke(a, function () {}); } catch (e) {}
-					paint(); note1('Signed out.');
+					paint(); note1('Signed out.'); note1._t = setTimeout(function () { note1(''); }, 4000);
 				};
 				who.appendChild(sw); who.appendChild(document.createTextNode(' · ')); who.appendChild(so);
 				go.textContent = 'Send';
@@ -498,7 +504,7 @@
 		}
 		function signIn() {
 			note1('Opening Google…');
-			return ready(true).then(function () { note1('Signed in. Your messages go out as the channel you picked.', 'ok'); paint(); whoAmI(); }, function (e) { note1(e.message, 'err'); throw e; });
+			return ready(true).then(function () { note1('Signed in. Your messages go out as the channel you picked.', 'ok'); paint(); whoAmI(); }, function (e) { note1(e.message, e.quiet ? '' : 'err'); throw e; });
 		}
 		function grow() { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight + 2, 140) + 'px'; }
 		function send() {
@@ -517,7 +523,7 @@
 				if (errs.length === T.length) { note1(errs.join(' · '), 'err'); return; }
 				inp.value = ''; grow();
 				note1(errs.length ? 'Sent, but: ' + errs.join(' · ') : 'Sent' + (T.length > 1 ? ' to ' + T.length + ' chats' : '') + '. It shows up in the chat in a few seconds.', errs.length ? 'err' : 'ok');
-				clearTimeout(send._t); send._t = setTimeout(function () { if (/^Sent/.test(note.textContent)) note1(''); }, 5000);
+				clearTimeout(send._t); send._t = setTimeout(function () { if (/^Sent/.test(noteT.textContent)) note1(''); }, 5000);
 			}, function () {}).then(function () { busy = false; go.disabled = false; inp.focus(); });
 		}
 		go.onclick = send;
@@ -551,7 +557,7 @@
 	var MODE = root.getAttribute('data-mode') || 'page', KEY = 'mes-stream-chat:v1', FKEY = 'mes-stream-chat:feat';
 	var Q = {}; try { new URLSearchParams(location.search).forEach(function (v, k) { Q[k] = v; }); } catch (e) {}
 	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', rm: '', ts: '', bc: '', on: { yt: true, tw: true, od: true, rm: true, ts: true, bc: true }, show: { yt: true, tw: true, od: true, rm: true, ts: true, bc: true },
-		paidOnly: false, block: [], words: '', size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
+		paidOnly: false, block: [], words: '', size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page', bare: false };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	var PFS = ['yt', 'tw', 'od', 'rm', 'ts', 'bc'];
 	PFS.forEach(function (p) { if (S.on[p] == null) S.on[p] = true; if (S.show[p] == null) S.show[p] = true; if (S[p] == null) S[p] = ''; });
@@ -969,6 +975,7 @@
 		' <span class="sc-sp"></span>',
 		' <button type="button" class="sc-btn" id="sc-sm" title="Smaller text" aria-label="Smaller text">A-</button><span class="sc-pct" id="sc-pct" title="Text size (click to reset)" role="button" tabindex="0"></span><button type="button" class="sc-btn" id="sc-lg" title="Bigger text" aria-label="Bigger text">A+</button>',
 		' <button type="button" class="sc-btn" id="sc-gear" aria-expanded="false" aria-controls="sc-setup" title="Show or hide the settings">⚙ <span id="sc-gearlbl">Settings</span></button>',
+		MODE === 'dock' ? ' <button type="button" class="sc-btn" id="sc-bareon" title="Hide the top and bottom bars: only the messages show (B)">⤢ Messages only</button>' : '',
 		'</div>',
 		'<p class="sc-warn" id="sc-warn" hidden><span>The text size did not change. A browser extension (for example a text size extension) may be setting the size on this page. Turn it off for mes.fm, or use its own buttons instead.</span><button type="button" class="sc-btn" id="sc-warnx">OK</button></p>',
 		'<div class="sc-setup" id="sc-setup" hidden>',
@@ -1075,6 +1082,20 @@
 	});
 	$('sc-unfeat').onclick = function () { feature(null); };
 	fillSetup(); pfChips(); setupOpen(!!S.setup);
+	/* OBS dock: "Messages only" hides the top bar, status lines, send box and bottom bar; a small tab in the corner brings them back.
+	   Remembered in S.bare (the dock's own browser storage), only used by the dock. */
+	if (MODE === 'dock') {
+		var tab = el('button', 'sc-baretab', '☰'); tab.type = 'button'; tab.id = 'sc-bareoff';
+		tab.title = 'Show the bars again (B)'; tab.setAttribute('aria-label', 'Show the top and bottom bars again');
+		root.appendChild(tab);
+		var bare = function (on) { S.bare = !!on; save(); root.classList.toggle('sc-bare', S.bare); tab.hidden = !S.bare; if (pinned) toBottom(); };
+		$('sc-bareon').onclick = function () { bare(true); tab.focus(); };
+		tab.onclick = function () { bare(false); $('sc-bareon').focus(); };
+		document.addEventListener('keydown', function (e) {
+			if ((e.key === 'b' || e.key === 'B') && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && !e.target.isContentEditable) bare(!S.bare);
+		});
+		bare(S.bare);
+	}
 	try { var lf = JSON.parse(localStorage.getItem(FKEY) || 'null'); if (lf && lf.m && Date.now() - lf.at < 3600000) showFeatured(lf); } catch (e) {}
 
 	/* overlay / dock addresses carry this browser's pairing code */

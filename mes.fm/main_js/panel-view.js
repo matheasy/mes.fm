@@ -224,7 +224,13 @@
     try { var r = (p.sec.requestFullscreen || p.sec.webkitRequestFullscreen).call(p.sec); if (r && r.catch) r.catch(function () { paint(p); }); } catch (e) {}
     paint(p);
   }
-  document.addEventListener('pointerup', function () { if (resumeP && !document.hidden) tryResume(); }, true);
+  // a tap on the card's own buttons (Close / Back to full screen / Hide panel) does what that button says: resuming here first made
+  // Close ask for full screen again, so the card came straight back (a phone after the screen was turned off and on)
+  document.addEventListener('pointerup', function (e) {
+    if (!resumeP || document.hidden) return;
+    var t = e.target; if (t && t.closest && t.closest('.mes-pbtns, .mes-ptb')) return;
+    tryResume();
+  }, true);
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) { hidAt = Date.now(); return; }
     visAt = Date.now(); var el = fsEl(); if (fsP && el !== fsP.sec && !resumeP) armResume(fsP);

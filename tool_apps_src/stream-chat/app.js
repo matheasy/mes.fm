@@ -17,7 +17,7 @@
 	var MODE = root.getAttribute('data-mode') || 'page', KEY = 'mes-stream-chat:v1', FKEY = 'mes-stream-chat:feat';
 	var Q = {}; try { new URLSearchParams(location.search).forEach(function (v, k) { Q[k] = v; }); } catch (e) {}
 	var S = { yt: 'UCmYl-9bhOOotXaNpS-liNiQ, UCUUBq1GPBvvGNz7dpgO14Ow', tw: 'matheasysolutions', od: '@mestruth:9', rm: '', ts: '', bc: '', on: { yt: true, tw: true, od: true, rm: true, ts: true, bc: true }, show: { yt: true, tw: true, od: true, rm: true, ts: true, bc: true },
-		paidOnly: false, block: [], words: '', size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page' };
+		paidOnly: false, block: [], words: '', size: 1, avatars: true, times: false, ding: true, setup: MODE === 'page', bare: false };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
 	var PFS = ['yt', 'tw', 'od', 'rm', 'ts', 'bc'];
 	PFS.forEach(function (p) { if (S.on[p] == null) S.on[p] = true; if (S.show[p] == null) S.show[p] = true; if (S[p] == null) S[p] = ''; });
@@ -435,6 +435,7 @@
 		' <span class="sc-sp"></span>',
 		' <button type="button" class="sc-btn" id="sc-sm" title="Smaller text" aria-label="Smaller text">A-</button><span class="sc-pct" id="sc-pct" title="Text size (click to reset)" role="button" tabindex="0"></span><button type="button" class="sc-btn" id="sc-lg" title="Bigger text" aria-label="Bigger text">A+</button>',
 		' <button type="button" class="sc-btn" id="sc-gear" aria-expanded="false" aria-controls="sc-setup" title="Show or hide the settings">⚙ <span id="sc-gearlbl">Settings</span></button>',
+		MODE === 'dock' ? ' <button type="button" class="sc-btn" id="sc-bareon" title="Hide the top and bottom bars: only the messages show (B)">⤢ Messages only</button>' : '',
 		'</div>',
 		'<p class="sc-warn" id="sc-warn" hidden><span>The text size did not change. A browser extension (for example a text size extension) may be setting the size on this page. Turn it off for mes.fm, or use its own buttons instead.</span><button type="button" class="sc-btn" id="sc-warnx">OK</button></p>',
 		'<div class="sc-setup" id="sc-setup" hidden>',
@@ -541,6 +542,20 @@
 	});
 	$('sc-unfeat').onclick = function () { feature(null); };
 	fillSetup(); pfChips(); setupOpen(!!S.setup);
+	/* OBS dock: "Messages only" hides the top bar, status lines, send box and bottom bar; a small tab in the corner brings them back.
+	   Remembered in S.bare (the dock's own browser storage), only used by the dock. */
+	if (MODE === 'dock') {
+		var tab = el('button', 'sc-baretab', '☰'); tab.type = 'button'; tab.id = 'sc-bareoff';
+		tab.title = 'Show the bars again (B)'; tab.setAttribute('aria-label', 'Show the top and bottom bars again');
+		root.appendChild(tab);
+		var bare = function (on) { S.bare = !!on; save(); root.classList.toggle('sc-bare', S.bare); tab.hidden = !S.bare; if (pinned) toBottom(); };
+		$('sc-bareon').onclick = function () { bare(true); tab.focus(); };
+		tab.onclick = function () { bare(false); $('sc-bareon').focus(); };
+		document.addEventListener('keydown', function (e) {
+			if ((e.key === 'b' || e.key === 'B') && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && !e.target.isContentEditable) bare(!S.bare);
+		});
+		bare(S.bare);
+	}
 	try { var lf = JSON.parse(localStorage.getItem(FKEY) || 'null'); if (lf && lf.m && Date.now() - lf.at < 3600000) showFeatured(lf); } catch (e) {}
 
 	/* overlay / dock addresses carry this browser's pairing code */
