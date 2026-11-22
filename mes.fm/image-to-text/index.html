@@ -340,14 +340,26 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#tr .tr-lf > label {display:block;font-size:0.8em;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--tr-mut);margin:0 0 0.25em;}
 	#tr .tr-swap {font-size:1.2em;line-height:1;padding:0;min-height:44px;min-width:44px;width:44px;flex:0 0 auto;}
 	#tr .tr-col {display:flex;flex-direction:column;gap:0.6em;min-width:0;}
+	/* width grips: the boxes area can be made narrower (--tr-bw, set by app.js), and side by side the split moves (--tr-a / --tr-b) */
+	#tr .tr-main {max-width:var(--tr-bw, none);}
+	#tr .tr-split {display:none;position:relative;cursor:col-resize;touch-action:none;min-width:14px;border-radius:6px;outline-offset:2px;}
+	#tr .tr-split::before {content:"";position:absolute;left:50%;top:12%;bottom:12%;width:4px;margin-left:-2px;border-radius:3px;background:var(--tr-line);transition:background .15s;}
+	#tr .tr-split:hover::before, #tr .tr-split:focus-visible::before, #tr .tr-split.is-on::before {background:var(--tr-acc, #0b7285);}
+	#tr .tr-pane.tr-box {position:relative;}
+	#tr .tr-wgrip {position:absolute;top:calc(50% - 32px);right:0;height:64px;width:14px;cursor:ew-resize;touch-action:none;z-index:2;}
+	#tr .tr-wgrip::before {content:"";position:absolute;right:4px;top:10px;bottom:10px;width:4px;border-radius:3px;background:var(--tr-line);opacity:.9;transition:background .15s;}
+	#tr .tr-wgrip:hover::before, #tr .tr-wgrip:focus-visible::before, #tr .tr-wgrip.is-on::before {background:var(--tr-acc, #0b7285);}
+	#tr .tr-fill .tr-wgrip {display:none;}
 	@media (min-width: 721px) {   /* side by side: one grid so the two boxes line up under From and To and end at the same height */
-		#tr:not(.tr-stack) .tr-main {grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:0.5em;align-items:stretch;}
+		#tr:not(.tr-stack) .tr-main {grid-template-columns:minmax(0,var(--tr-a,1fr)) auto minmax(0,var(--tr-b,1fr));column-gap:0.5em;align-items:stretch;}
 		#tr:not(.tr-stack) .tr-langs {display:contents;}
 		#tr:not(.tr-stack) .tr-lf--from {grid-column:1;grid-row:1;}
 		#tr:not(.tr-stack) .tr-swap {grid-column:2;grid-row:1;align-self:end;}
 		#tr:not(.tr-stack) .tr-lf--to {grid-column:3;grid-row:1;}
 		#tr:not(.tr-stack) .tr-col--in {grid-column:1;grid-row:2;}
 		#tr:not(.tr-stack) .tr-col--out {grid-column:3;grid-row:2;}
+		#tr:not(.tr-stack) .tr-split {display:block;grid-column:2;grid-row:2;}
+		#tr:not(.tr-stack) .tr-col--in .tr-wgrip {display:none;}   /* side by side: the middle grip sets the split, the right box's edge the width */
 		#tr:not(.tr-stack) .tr-col > .tr-box {flex:1 1 auto;}
 		#tr:not(.tr-stack) .tr-col > .tr-box .tr-text {flex:1 1 auto;}
 	}
@@ -1004,6 +1016,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<label class="tr-live" id="tr-livebox"><input type="checkbox" id="tr-live" checked> <span>Translate as I type <span class="tr-dim">(on this device only)</span></span></label>
 					</div>
 				</div>
+				<div class="tr-split" id="tr-split" tabindex="0" role="separator" aria-orientation="vertical" aria-label="Split between the two boxes: drag, or use the arrow keys" title="Drag to change how wide each box is (double-click resets)"></div>
 				<div class="tr-col tr-col--out">
 					<div class="tr-pane tr-pane--out tr-box" data-box="out">
 						<div class="tr-fillbar"><b class="tr-fbt">Translation</b><span class="tr-sp"></span><button type="button" class="tr-ib tr-fz" data-fz="-1" title="Smaller text" aria-label="Smaller text">A&#8722;</button><button type="button" class="tr-ib tr-fz" data-fz="1" title="Bigger text" aria-label="Bigger text">A+</button><button type="button" class="tr-ib" data-fb="copy" title="Copy" aria-label="Copy"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg></button><button type="button" class="tr-ib" data-fb="say" title="Read aloud" aria-label="Read aloud"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg></button><button type="button" class="tr-ib" data-fb="fs" title="Full screen" aria-label="Full screen"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="tr-fbx" data-fillx title="Close (Esc)" aria-label="Close"><svg class="tr-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Close</span></button></div>
@@ -1166,7 +1179,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/text-size.js?v=2" defer></script><script src="/translate/js/translate.js?v=8" defer></script>
+	<script src="/main_js/text-size.js?v=2" defer></script><script src="/translate/js/translate.js?v=9" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

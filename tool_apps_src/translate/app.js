@@ -1153,27 +1153,75 @@
   root.addEventListener("click", function (e) { if (filled === BOX.ocr && e.target.closest("#tr-ouse, #tr-ousesel")) fillClose(); }, true);   // capture: closes before the button scrolls up to the translation
   applyLayout();
 
-  // ---------- text size of the boxes (A- / A+ in a filled / full-screen box, and in the tool rows with Full width) ----------
+  // ---------- text size: each box (your text, translation, text found) has its own size (S.fzb), so A- / A+ change only that box ----------
   var FZ = [0.8, 0.9, 1, 1.15, 1.3, 1.5, 1.75, 2, 2.4, 3];
+  if (!S.fzb || typeof S.fzb !== "object") { var f0 = FZ.indexOf(S.fz) >= 0 ? S.fz : 1; S.fzb = { in: f0, out: f0, ocr: f0 }; }
+  function fzOf(k) { var v = S.fzb[k]; return FZ.indexOf(v) >= 0 ? v : 1; }
+  function boxKey(el) { var b = el && el.closest("[data-box]"); return b ? b.getAttribute("data-box") : "in"; }
   function applyFz() {
-    if (FZ.indexOf(S.fz) < 0) S.fz = 1;
-    root.style.setProperty("--tr-fz", String(S.fz));
-    Array.prototype.forEach.call(root.querySelectorAll("[data-fz]"), function (b) { var d = +b.getAttribute("data-fz"); b.disabled = d < 0 ? S.fz === FZ[0] : S.fz === FZ[FZ.length - 1]; });
+    Array.prototype.forEach.call(root.querySelectorAll(".tr-box[data-box]"), function (bx) {
+      var k = bx.getAttribute("data-box"), v = fzOf(k);
+      bx.style.setProperty("--tr-fz", String(v));
+      Array.prototype.forEach.call(bx.querySelectorAll("[data-fz]"), function (b) { var d = +b.getAttribute("data-fz"); b.disabled = d < 0 ? v === FZ[0] : v === FZ[FZ.length - 1]; });
+    });
     (tsz || []).forEach(function (p) { p.refresh(); });
   }
-  // A- / 100% / A+ pills in the boxes' tool rows (main_js/text-size.js), same saved size as the fill-bar buttons
+  function setFz(k, v) { S.fzb[k] = v; save(); applyFz(); }
+  // A- / 100% / A+ pills in each box's tool row (main_js/text-size.js)
   var tsz = [];
   if (window.MESTextSize) Array.prototype.forEach.call(root.querySelectorAll(".tr-tsz"), function (el) {
-    tsz.push(MESTextSize.add({ into: el, label: "Text size of the boxes", steps: FZ.map(function (v) { return Math.round(v * 1000) / 10; }),
-      get: function () { return Math.round((S.fz || 1) * 1000) / 10; },
-      set: function (p) { S.fz = FZ.reduce(function (a, v) { return Math.abs(v * 100 - p) < Math.abs(a * 100 - p) ? v : a; }, 1); save(); applyFz(); } }));
+    var k = boxKey(el);
+    tsz.push(MESTextSize.add({ into: el, label: k === "out" ? "Text size of the translation" : k === "ocr" ? "Text size of the text found" : "Text size of your text", steps: FZ.map(function (v) { return Math.round(v * 1000) / 10; }),
+      get: function () { return Math.round(fzOf(k) * 1000) / 10; },
+      set: function (p) { setFz(k, FZ.reduce(function (a, v) { return Math.abs(v * 100 - p) < Math.abs(a * 100 - p) ? v : a; }, 1)); } }));
   });
   root.addEventListener("click", function (e) {
     var b = e.target.closest("[data-fz]"); if (!b) return;
-    var i = FZ.indexOf(S.fz) + (+b.getAttribute("data-fz")); S.fz = FZ[Math.max(0, Math.min(FZ.length - 1, i))]; save(); applyFz();
-    toast("Text size " + Math.round(S.fz * 100) + "%");
+    var k = boxKey(b), i = FZ.indexOf(fzOf(k)) + (+b.getAttribute("data-fz")); setFz(k, FZ[Math.max(0, Math.min(FZ.length - 1, i))]);
+    toast("Text size " + Math.round(fzOf(k) * 100) + "%");
   });
   applyFz();
+
+  // ---------- box widths: a grip between the two boxes (side by side) sets their split (S.split, % for your text), and a grip on each
+  // box's right edge makes the boxes narrower or wider (S.bw, % of the space; any layout). Double-click / Enter on a grip resets it. ----------
+  var mainEl = root.querySelector(".tr-main");
+  function applyWidths() {
+    var sp = +S.split || 50; sp = Math.max(20, Math.min(80, sp));
+    mainEl.style.setProperty("--tr-a", sp + "fr"); mainEl.style.setProperty("--tr-b", (100 - sp) + "fr");
+    var bw = +S.bw || 100; bw = Math.max(30, Math.min(100, bw));
+    if (bw < 100) mainEl.style.setProperty("--tr-bw", bw + "%"); else mainEl.style.removeProperty("--tr-bw");
+  }
+  function grip(el, onMove, reset, step) {
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button) return; e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) {} el.classList.add("is-on");
+      function mv(ev) { onMove(ev.clientX); applyWidths(); }
+      function up() { el.classList.remove("is-on"); el.removeEventListener("pointermove", mv); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); save(); window.dispatchEvent(new Event("resize")); }
+      el.addEventListener("pointermove", mv); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    });
+    el.addEventListener("dblclick", function () { reset(); applyWidths(); save(); });
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); step(e.key === "ArrowLeft" ? -1 : 1, e.shiftKey); applyWidths(); save(); }
+      else if (e.key === "Enter" || e.key === "Home") { e.preventDefault(); reset(); applyWidths(); save(); }
+    });
+  }
+  var split = $("tr-split");
+  if (split) grip(split, function (x) {
+    var r = mainEl.getBoundingClientRect(); if (r.width < 50) return;
+    S.split = Math.round(Math.max(20, Math.min(80, (x - r.left) / r.width * 100)));
+  }, function () { S.split = 50; }, function (d, big) { S.split = Math.max(20, Math.min(80, (+S.split || 50) + d * (big ? 10 : 2))); });
+  Array.prototype.forEach.call(root.querySelectorAll('.tr-box[data-box="in"], .tr-box[data-box="out"]'), function (bx) {
+    var g = document.createElement("div");
+    g.className = "tr-wgrip"; g.tabIndex = 0; g.setAttribute("role", "separator"); g.setAttribute("aria-orientation", "vertical");
+    g.setAttribute("aria-label", "Box width: drag, or use the arrow keys"); g.title = "Drag to make the boxes narrower or wider (double-click resets)";
+    bx.appendChild(g);
+    grip(g, function (x) {
+      var host = mainEl.parentElement.getBoundingClientRect(), r = mainEl.getBoundingClientRect(), box = bx.getBoundingClientRect();
+      if (host.width < 50) return;
+      var want = r.width + (x - box.right);           // the edge follows the pointer
+      S.bw = Math.round(Math.max(30, Math.min(100, want / host.width * 100)));
+    }, function () { S.bw = 100; }, function (d, big) { S.bw = Math.max(30, Math.min(100, (+S.bw || 100) + d * (big ? 10 : 3))); });
+  });
+  applyWidths();
 
   // ---------- page mode + start ----------
   if (MODE === "ocr") {

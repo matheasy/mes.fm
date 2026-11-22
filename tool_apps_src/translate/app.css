@@ -33,14 +33,26 @@
 	#tr .tr-lf > label {display:block;font-size:0.8em;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--tr-mut);margin:0 0 0.25em;}
 	#tr .tr-swap {font-size:1.2em;line-height:1;padding:0;min-height:44px;min-width:44px;width:44px;flex:0 0 auto;}
 	#tr .tr-col {display:flex;flex-direction:column;gap:0.6em;min-width:0;}
+	/* width grips: the boxes area can be made narrower (--tr-bw, set by app.js), and side by side the split moves (--tr-a / --tr-b) */
+	#tr .tr-main {max-width:var(--tr-bw, none);}
+	#tr .tr-split {display:none;position:relative;cursor:col-resize;touch-action:none;min-width:14px;border-radius:6px;outline-offset:2px;}
+	#tr .tr-split::before {content:"";position:absolute;left:50%;top:12%;bottom:12%;width:4px;margin-left:-2px;border-radius:3px;background:var(--tr-line);transition:background .15s;}
+	#tr .tr-split:hover::before, #tr .tr-split:focus-visible::before, #tr .tr-split.is-on::before {background:var(--tr-acc, #0b7285);}
+	#tr .tr-pane.tr-box {position:relative;}
+	#tr .tr-wgrip {position:absolute;top:calc(50% - 32px);right:0;height:64px;width:14px;cursor:ew-resize;touch-action:none;z-index:2;}
+	#tr .tr-wgrip::before {content:"";position:absolute;right:4px;top:10px;bottom:10px;width:4px;border-radius:3px;background:var(--tr-line);opacity:.9;transition:background .15s;}
+	#tr .tr-wgrip:hover::before, #tr .tr-wgrip:focus-visible::before, #tr .tr-wgrip.is-on::before {background:var(--tr-acc, #0b7285);}
+	#tr .tr-fill .tr-wgrip {display:none;}
 	@media (min-width: 721px) {   /* side by side: one grid so the two boxes line up under From and To and end at the same height */
-		#tr:not(.tr-stack) .tr-main {grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:0.5em;align-items:stretch;}
+		#tr:not(.tr-stack) .tr-main {grid-template-columns:minmax(0,var(--tr-a,1fr)) auto minmax(0,var(--tr-b,1fr));column-gap:0.5em;align-items:stretch;}
 		#tr:not(.tr-stack) .tr-langs {display:contents;}
 		#tr:not(.tr-stack) .tr-lf--from {grid-column:1;grid-row:1;}
 		#tr:not(.tr-stack) .tr-swap {grid-column:2;grid-row:1;align-self:end;}
 		#tr:not(.tr-stack) .tr-lf--to {grid-column:3;grid-row:1;}
 		#tr:not(.tr-stack) .tr-col--in {grid-column:1;grid-row:2;}
 		#tr:not(.tr-stack) .tr-col--out {grid-column:3;grid-row:2;}
+		#tr:not(.tr-stack) .tr-split {display:block;grid-column:2;grid-row:2;}
+		#tr:not(.tr-stack) .tr-col--in .tr-wgrip {display:none;}   /* side by side: the middle grip sets the split, the right box's edge the width */
 		#tr:not(.tr-stack) .tr-col > .tr-box {flex:1 1 auto;}
 		#tr:not(.tr-stack) .tr-col > .tr-box .tr-text {flex:1 1 auto;}
 	}
