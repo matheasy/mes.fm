@@ -18,3 +18,14 @@ Goal: a real-3D version of the chess "Fantasy armies" set (today's set uses flat
 - Not used, and why: Tripo free = non-commercial; Meshy free = no downloads (Pro needed).
 - When models exist: shrink with gltf-transform (weld, simplify to ~12k triangles, 512 px texture), add set `fantasy3d` to view3d.js
   (keep the picture set), credit line not needed for MIT.
+
+## Splinterlands 3D (2026-11-21)
+
+Splinterlands gave permission (@clayboyn) to use their characters. The picture set (`mes.fm/chess/img/splinterlands/`) is the official
+card art (`https://d36mxiodymuqjm.cloudfront.net/card_art/<Card Name>.png`, transparent cut-outs) trimmed and fitted to 512 px squares.
+The "Splinterlands 3D" set loads `mes.fm/chess/img/splinterlands3d/<key>.glb`, made the same way: `trellis1.py <card art png> <key>.glb`
+(a fresh venv with gradio_client + trimesh is enough). Any piece without a model shows its picture figure.
+- Done 2026-11-21: the whole Life army wK wQ wR wB wN wP (Tyrus Paladium, Angel of Light, Clay Golem, Divine Healer, Sacred Unicorn,
+  Silver Shield Warrior). The free ZeroGPU quota ran out after six runs.
+- Still to make: the Death army bK bQ bR bB bN bP (Zintar Mortalis, Dark Enchantress, Bone Golem, Undead Priest, Corrupted Pegasus,
+  Skeletal Warrior). Check each new model for a flat backing sheet (clean_sheets.py).
