@@ -1977,6 +1977,7 @@ APP_STORE = {
     "gpacalculator": ("MES GPA Calculator", "https://apps.apple.com/us/app/id6824052607"),
     "polls": ("MES Polls", "https://apps.apple.com/us/app/id6833587418"),
     "copy-text": ("MES Copy Text", "https://apps.apple.com/us/app/id6836608312"),
+    "audio": ("MES Audio Editor & Recorder", "https://apps.apple.com/us/app/id6837411404"),
     **{s: ("MES Timer", "https://apps.apple.com/us/app/id6833587925") for s in ("timer", "countdown-timer", "stopwatch", "alarm-clock",
                                                                             "pomodoro-timer", "interval-timer", "countdown-to-date")},
     **{s: _APP_FIT for s in ("bmr-calculator", "tdee-calculator", "body-fat-calculator", "ideal-weight-calculator", "waist-to-hip-ratio-calculator",

@@ -16,7 +16,10 @@
     { k: 'fit', name: 'Fitness Calculators', bundle: 'fm.mes.fitnesscalculators', ios: '6824113713', android: 'fm.mes.fitnesscalculators', title: /fitness/i, web: '/bmr-calculator' },
     { k: 'polls', name: 'Polls', bundle: 'fm.mes.polls', ios: '6833587418', android: 'fm.mes.polls', title: /poll/i, web: '/polls' },
     { k: 'timer', name: 'Timer', bundle: 'fm.mes.timer', ios: '6833587925', android: 'fm.mes.timer', title: /timer/i, web: '/timer' },
-    { k: 'copytext', name: 'Copy Text', bundle: 'fm.mes.copytext', ios: '6836608312', android: 'fm.mes.copytext', title: /copy text/i, web: '/copy-text' }
+    { k: 'copytext', name: 'Copy Text', bundle: 'fm.mes.copytext', ios: '6836608312', android: 'fm.mes.copytext', title: /copy text/i, web: '/copy-text' },
+    { k: 'audio', name: 'Audio Editor', bundle: 'fm.mes.audio', ios: '6837411404', android: 'fm.mes.audio', title: /audio/i, web: '/audio' },
+    { k: 'dimvolume', name: 'Dim & Volume', bundle: 'fm.mes.dimvolume', ios: '6836920574', android: 'fm.mes.dimvolume', title: /dim/i, web: '/mobile-apps#dim-volume' },
+    { k: 'openlimits', name: 'Open Limits', bundle: 'fm.mes.openlimits', ios: null, android: 'fm.mes.openlimits', title: /open limits/i, web: '/mobile-apps#open-limits' }
   ];
   I.appByKey = function (k) { for (var i = 0; i < I.APPS.length; i++) if (I.APPS[i].k === k) return I.APPS[i]; return null; };
 
