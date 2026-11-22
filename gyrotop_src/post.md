@@ -238,3 +238,13 @@ Owen Liang's username on Wikipedia editorial boards was Gyrotop and he had poste
 https://archive.li/lVp48
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23tSz3RpUWG7mcFeoRZERjWJxgLswTfCCoQGixtxJvngTVcvhXUGpCDYZL8vXNiDw7vvm.png)
+
+## GyroTop Automatic Start
+
+Here is the video for the new Gyrotop with automatic start by having a blower from the bottom.
+
+https://www.youtube.com/watch?v=VlhI4vs9rA0
+
+I like it! Makes starting much easier. 
+
+My other recommendation would be to also have a gimbal setup to show the behavior of a conventional gyroscope, which wants to maintain orientation "due to angular momentum". If possible have this same spinning top be able to be placed in gimbals. But no worries if not practical, as the current automatic Gyrotop is good enough in my opinion.

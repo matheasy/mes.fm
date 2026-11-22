@@ -956,7 +956,8 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
     .post-body .gt-gal img:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
     body.dark .post-body .gt-gal img { border-color: rgba(255,255,255,0.15); }
     .gt-galnote { font-size: 0.85em; opacity: 0.75; text-align: right; margin: -0.6em 0 1.2em; }
-    @media (max-width: 600px) { .gt-gal.gt-auto { --gt-cols: 2 !important; } }
+    .gt-gal.gt-mason { display: block; column-count: var(--gt-cols, 3); column-gap: 0.6em; }
+    .post-body .gt-gal.gt-mason img { break-inside: avoid; margin: 0 0 0.6em; }
 </style>
   <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
      real interaction (scroll / pointer / key), or after a 15s idle fallback,
@@ -1016,6 +1017,7 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
       <a class="toc-sub" href="#b3">3. Sales Record</a>
       <a class="toc-sub" href="#b4">4. Online Listings</a>
       <a class="toc-sub" href="#b5">5. First Use of the Brand</a>
+      <a class="toc-sub" href="#b6">GyroTop Automatic Start</a>
   </nav>
   <div class="container">
     <div class="top-bar">
@@ -1097,6 +1099,7 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
       <a class="toc-sub" href="#b3">3. Sales Record</a>
       <a class="toc-sub" href="#b4">4. Online Listings</a>
       <a class="toc-sub" href="#b5">5. First Use of the Brand</a>
+      <a class="toc-sub" href="#b6">GyroTop Automatic Start</a>
       </nav>
     </details>
 
@@ -1231,25 +1234,25 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
 <div class="chapter-toggle chapter-sub" id="b1">
 <h2 class="chapter-toggle-header" onclick="toggleChapter('b1-list')">1. Product Packaging <span id="arrowIcon-b1-list" class="arrow-icon">&#9660;</span></h2>
 <div id="b1-list" class="chapter-toggle-list"><p>Here are photos of the GyroTop that I purchased from Owen Liang, which includes the phrase Gyrotop Co on the back.</p>
-<div class="gt-galbar" role="group" aria-label="Photo columns"><span>Columns:</span><button type="button" data-cols="1" aria-pressed="false">1</button><button type="button" data-cols="2" aria-pressed="false">2</button><button type="button" data-cols="3" aria-pressed="false">3</button><button type="button" data-cols="4" aria-pressed="false">4</button></div>
-<div class="gt-gal gt-auto"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EonkwqXrEA8D73YNAd6GaCi83CkqZkoN98GapoT2xuTFZRePpXAtgvLrpDd3RCf6ynV.jpg" alt="GyroTop packaging photo 1"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Ep5nFvzXHUpnQr1yjiYz5zobr6vddgiUjw7hPoY9okMLVK1qqrD8EnqP4WsrbC6yG2Z.jpg" alt="GyroTop packaging photo 2"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vsSc8c2j5kiP1x73NqHB1DXUQWmvmdcbkZ45czQEJ7UHqkQGKJ3GndTuFdh8k4y5YaY.jpg" alt="GyroTop packaging photo 3"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EokdbUos53prRd9ezcgZuChFd2mTD45pNvaxzSqyzd4gVF3KGWgQRg4J4HwJh5tDDoC.jpg" alt="GyroTop packaging photo 4"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23x1DbcLr4aKhns2YwL5DZRALJAn9UyzGKk4rcNw1RLofeXQGBKM81opR2EkNTxBW4ZRk.jpg" alt="GyroTop packaging photo 5"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23yJJgrftdaCGyHXcWGnfqeyepWjoEJQ2zZMo2ipcDp4GWucfkumkURK565gqyVoyZcvx.jpg" alt="GyroTop packaging photo 6"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eoke7QMSqwy9ZUJzfuqwdjTaJd8TKQV5wVgSbiUMNk3qhsPYFrYBA9srCM7ssk8EwJS.jpg" alt="GyroTop packaging photo 7"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vi4JpQE5inMTtMhUNEzQE52Q1Tm9Fus6ojGMtVwSAce3LtWhN7iCMxi5A6izoZuywbP.jpg" alt="GyroTop packaging photo 8"></div>
+<div class="gt-galbar" role="group" aria-label="Photo columns" data-gal="pack"><span>Columns:</span><button type="button" data-cols="1" aria-pressed="false">1</button><button type="button" data-cols="2" aria-pressed="false">2</button><button type="button" data-cols="3" aria-pressed="false">3</button><button type="button" data-cols="4" aria-pressed="false">4</button></div>
+<div class="gt-gal gt-mason" id="gal-pack" data-wide="3" data-phone="2" style="--gt-cols:3"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EonkwqXrEA8D73YNAd6GaCi83CkqZkoN98GapoT2xuTFZRePpXAtgvLrpDd3RCf6ynV.jpg" alt="GyroTop packaging photo 1"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Ep5nFvzXHUpnQr1yjiYz5zobr6vddgiUjw7hPoY9okMLVK1qqrD8EnqP4WsrbC6yG2Z.jpg" alt="GyroTop packaging photo 2"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vsSc8c2j5kiP1x73NqHB1DXUQWmvmdcbkZ45czQEJ7UHqkQGKJ3GndTuFdh8k4y5YaY.jpg" alt="GyroTop packaging photo 3"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EokdbUos53prRd9ezcgZuChFd2mTD45pNvaxzSqyzd4gVF3KGWgQRg4J4HwJh5tDDoC.jpg" alt="GyroTop packaging photo 4"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23x1DbcLr4aKhns2YwL5DZRALJAn9UyzGKk4rcNw1RLofeXQGBKM81opR2EkNTxBW4ZRk.jpg" alt="GyroTop packaging photo 5"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23yJJgrftdaCGyHXcWGnfqeyepWjoEJQ2zZMo2ipcDp4GWucfkumkURK565gqyVoyZcvx.jpg" alt="GyroTop packaging photo 6"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/Eoke7QMSqwy9ZUJzfuqwdjTaJd8TKQV5wVgSbiUMNk3qhsPYFrYBA9srCM7ssk8EwJS.jpg" alt="GyroTop packaging photo 7"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23vi4JpQE5inMTtMhUNEzQE52Q1Tm9Fus6ojGMtVwSAce3LtWhN7iCMxi5A6izoZuywbP.jpg" alt="GyroTop packaging photo 8"></div>
 <p class="gt-galnote">Click a picture to see it full size.</p>
 </div>
 </div>
 <div class="chapter-toggle chapter-sub" id="b2">
 <h2 class="chapter-toggle-header" onclick="toggleChapter('b2-list')">2. Product Photographs <span id="arrowIcon-b2-list" class="arrow-icon">&#9660;</span></h2>
 <div id="b2-list" class="chapter-toggle-list"><p>Here are some closer up photos of the GyroTop.</p>
-<div class="gt-galbar" role="group" aria-label="Photo columns"><span>Columns:</span><button type="button" data-cols="1" aria-pressed="false">1</button><button type="button" data-cols="2" aria-pressed="false">2</button><button type="button" data-cols="3" aria-pressed="false">3</button><button type="button" data-cols="4" aria-pressed="false">4</button></div>
-<div class="gt-gal gt-auto"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoCk2Exd8hoCEFEVbVM4PatGz3uA95cpdHUAsaqPGPunRsq9mahdHZoQKXwPr6WGd3f.jpg" alt="GyroTop product photo 1"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoiXf35YrCJ3rEqBvYx3dSdGPAaRhtnNRyhsPwtr8jKQGR7JXaf5Y1jyZtYWxgn1HLt.jpg" alt="GyroTop product photo 2"></div>
+<div class="gt-galbar" role="group" aria-label="Photo columns" data-gal="prod"><span>Columns:</span><button type="button" data-cols="1" aria-pressed="false">1</button><button type="button" data-cols="2" aria-pressed="false">2</button></div>
+<div class="gt-gal" id="gal-prod" data-wide="2" data-phone="2" style="--gt-cols:2"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoCk2Exd8hoCEFEVbVM4PatGz3uA95cpdHUAsaqPGPunRsq9mahdHZoQKXwPr6WGd3f.jpg" alt="GyroTop product photo 1"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EoiXf35YrCJ3rEqBvYx3dSdGPAaRhtnNRyhsPwtr8jKQGR7JXaf5Y1jyZtYWxgn1HLt.jpg" alt="GyroTop product photo 2"></div>
 <p class="gt-galnote">Click a picture to see it full size.</p>
 </div>
 </div>
 <div class="chapter-toggle chapter-sub" id="b3">
 <h2 class="chapter-toggle-header" onclick="toggleChapter('b3-list')">3. Sales Record <span id="arrowIcon-b3-list" class="arrow-icon">&#9660;</span></h2>
 <div id="b3-list" class="chapter-toggle-list"><p>I purchased a GyroTop toy from Owen Liang via PayPal on March 29, 2018.</p>
-<div class="gt-galbar" role="group" aria-label="Photo columns"><span>Columns:</span><button type="button" data-cols="1" aria-pressed="false">1</button><button type="button" data-cols="2" aria-pressed="false">2</button><button type="button" data-cols="3" aria-pressed="false">3</button><button type="button" data-cols="4" aria-pressed="false">4</button></div>
-<div class="gt-gal gt-auto"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CfKPvXW7RAYDQDjRFjGF1VrNbS7LfDQPKot9VmZ8H2cM9GJHsr6XG9RE3KdZE6zf1.png" alt="GyroTop sales record screenshot 1"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CSPFDQ8wpoUUgEP9Q3Q1DGfu7jHZodi8QGk4YAoA6Kbz5tJz8Q5eGvMyQDtozYSyW.png" alt="GyroTop sales record screenshot 2"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tSzWXZGujsCmv43CicZXnKzAUKnQYvmY34UdBdC7dkdpkUwhhy8fkXm5jgczPJJ6YiU.png" alt="GyroTop sales record screenshot 3"></div>
-<p class="gt-galnote">Click a picture to see it full size.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CfKPvXW7RAYDQDjRFjGF1VrNbS7LfDQPKot9VmZ8H2cM9GJHsr6XG9RE3KdZE6zf1.png" alt=""></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23t8CSPFDQ8wpoUUgEP9Q3Q1DGfu7jHZodi8QGk4YAoA6Kbz5tJz8Q5eGvMyQDtozYSyW.png" alt=""></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tSzWXZGujsCmv43CicZXnKzAUKnQYvmY34UdBdC7dkdpkUwhhy8fkXm5jgczPJJ6YiU.png" alt=""></p>
 </div>
 </div>
 <div class="chapter-toggle chapter-sub" id="b4">
@@ -1260,9 +1263,8 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
 <p><a target="_blank" rel="noopener" href="https://archive.li/MqvQH">https://archive.li/MqvQH</a></p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tmjazpdUhLZ7SZ4w5FJLBoCfPVFb3wyR2intig88JCprQNXviZ9miNjeyYV6ydcpBQF.png" alt=""></p>
 <p><a target="_blank" rel="noopener" href="https://www.kickstarter.com/profile/419602554/created">https://www.kickstarter.com/profile/419602554/created</a></p>
-<div class="gt-galbar" role="group" aria-label="Photo columns"><span>Columns:</span><button type="button" data-cols="1" aria-pressed="false">1</button><button type="button" data-cols="2" aria-pressed="false">2</button><button type="button" data-cols="3" aria-pressed="false">3</button><button type="button" data-cols="4" aria-pressed="false">4</button></div>
-<div class="gt-gal gt-auto"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23ydSvomk8V22sX67fbfj6hHB6E7RU17DrAVnF4qCFPHgs1iC79wvSndN9ESPUWDs3F7t.png" alt="GyroTop photo 1"><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EocCoQNzUyRz8k4HK1TTipusXRaMrwFEGd8UaV1Vf2ZPAhN8UnogW3hvuXcppNy9p32.png" alt="GyroTop photo 2"></div>
-<p class="gt-galnote">Click a picture to see it full size.</p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23ydSvomk8V22sX67fbfj6hHB6E7RU17DrAVnF4qCFPHgs1iC79wvSndN9ESPUWDs3F7t.png" alt=""></p>
+<p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/EocCoQNzUyRz8k4HK1TTipusXRaMrwFEGd8UaV1Vf2ZPAhN8UnogW3hvuXcppNy9p32.png" alt=""></p>
 <p><a target="_blank" rel="noopener" href="https://archive.li/4eHTV">https://archive.li/4eHTV</a></p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23uRFsafLBgsku9YyErgXRFZqwx18RTq4QayaEYN5at7J39voho5vLaMY1dNebhXdKxjh.png" alt=""></p>
 </div>
@@ -1277,6 +1279,14 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tHZh9dfB4uLK3CEPkTnr9s9jp7j2N4RnmVVhFNKU3z5DpXuSRHdQp9g2qzxToSei8Fu.png" alt=""></p>
 <p><a target="_blank" rel="noopener" href="https://archive.li/lVp48">https://archive.li/lVp48</a></p>
 <p><img loading="lazy" src="https://files.peakd.com/file/peakd-hive/mes/23tSz3RpUWG7mcFeoRZERjWJxgLswTfCCoQGixtxJvngTVcvhXUGpCDYZL8vXNiDw7vvm.png" alt=""></p>
+</div>
+</div>
+<div class="chapter-toggle chapter-sub" id="b6">
+<h2 class="chapter-toggle-header" onclick="toggleChapter('b6-list')">GyroTop Automatic Start <span id="arrowIcon-b6-list" class="arrow-icon">&#9660;</span></h2>
+<div id="b6-list" class="chapter-toggle-list"><p>Here is the video for the new Gyrotop with automatic start by having a blower from the bottom.</p>
+<div class="gt-yt"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/VlhI4vs9rA0" title="YouTube video" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<p>I like it! Makes starting much easier. </p>
+<p>My other recommendation would be to also have a gimbal setup to show the behavior of a conventional gyroscope, which wants to maintain orientation &quot;due to angular momentum&quot;. If possible have this same spinning top be able to be placed in gimbals. But no worries if not practical, as the current automatic Gyrotop is good enough in my opinion.</p>
 </div>
 </div>
 </div>
@@ -1561,24 +1571,26 @@ body.dark-mode .lp button:focus-visible, body.dark .lp button:focus-visible { ou
   
 
   <script>
-    // gt-gal: photo column switch (1-4), shared by every gallery on the page, remembered in this browser
+    // gt-gal: each gallery's column switch, remembered in this browser (mes-gyrotop:cols:<gallery>)
     (function () {
-      var K = 'mes-gyrotop:galcols', bars = document.querySelectorAll('.gt-galbar');
-      if (!bars.length) return;
-      function set(n, save) {
-        document.querySelectorAll('.gt-gal').forEach(function (g) {
-          if (n) { g.style.setProperty('--gt-cols', n); g.classList.remove('gt-auto'); }
-          else { g.style.removeProperty('--gt-cols'); g.classList.add('gt-auto'); }
+      var phone = window.matchMedia('(max-width: 600px)');
+      document.querySelectorAll('.gt-galbar').forEach(function (bar) {
+        var key = bar.dataset.gal, gal = document.getElementById('gal-' + key), K = 'mes-gyrotop:cols:' + key;
+        if (!gal) return;
+        var picked = 0; try { picked = +localStorage.getItem(K) || 0; } catch (e) {}
+        if (!bar.querySelector('[data-cols="' + picked + '"]')) picked = 0;
+        function paint() {
+          var n = picked || +(phone.matches ? gal.dataset.phone : gal.dataset.wide);
+          gal.style.setProperty('--gt-cols', n);
+          bar.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.cols === n)); });
+        }
+        bar.addEventListener('click', function (e) {
+          var b = e.target.closest('button'); if (!b) return;
+          picked = +b.dataset.cols; try { localStorage.setItem(K, picked); } catch (e2) {}
+          paint();
         });
-        var cur = n || (window.matchMedia('(max-width: 600px)').matches ? 2 : 3);
-        document.querySelectorAll('.gt-galbar button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.cols === +cur)); });
-        if (save) { try { localStorage.setItem(K, n); } catch (e) {} }
-      }
-      var saved = 0; try { saved = +localStorage.getItem(K) || 0; } catch (e) {}
-      set(saved >= 1 && saved <= 4 ? saved : 0);
-      document.addEventListener('click', function (e) {
-        var b = e.target.closest && e.target.closest('.gt-galbar button');
-        if (b) set(+b.dataset.cols, true);
+        if (phone.addEventListener) phone.addEventListener('change', paint);
+        paint();
       });
     })();
     // image-lightbox: click any post-body image to pop it out full-viewport, with

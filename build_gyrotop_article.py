@@ -78,7 +78,8 @@ CSS = r"""
     .post-body .gt-gal img:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
     body.dark .post-body .gt-gal img { border-color: rgba(255,255,255,0.15); }
     .gt-galnote { font-size: 0.85em; opacity: 0.75; text-align: right; margin: -0.6em 0 1.2em; }
-    @media (max-width: 600px) { .gt-gal.gt-auto { --gt-cols: 2 !important; } }
+    .gt-gal.gt-mason { display: block; column-count: var(--gt-cols, 3); column-gap: 0.6em; }
+    .post-body .gt-gal.gt-mason img { break-inside: avoid; margin: 0 0 0.6em; }
 """
 
 
@@ -133,35 +134,41 @@ def split_source(md):
     for i, h in enumerate(heads):
         end = heads[i + 1].start() if i + 1 < len(heads) else len(parts[1])
         answers.append((h.group(2), parts[1][h.end():end].strip()))
-    bheads = list(re.finditer(r"^##\s+(\d+)\.\s+(.+?)\s*$", brand[1], re.M))
+    bheads = list(re.finditer(r"^##\s+(?:(\d+)\.\s+)?(.+?)\s*$", brand[1], re.M))
     if not bheads:
         raise SystemExit("source drift: no '## n.' sections in the brand chapter")
-    bsecs = [(h.group(2), brand[1][h.end():(bheads[i + 1].start() if i + 1 < len(bheads) else len(brand[1]))].strip())
+    bsecs = [(h.group(1), h.group(2), brand[1][h.end():(bheads[i + 1].start() if i + 1 < len(bheads) else len(brand[1]))].strip())
              for i, h in enumerate(bheads)]
     return article, qs, answers, (brand[0], brand[1][:bheads[0].start()].strip(), bsecs)
 
 
-GAL_ALT = {"Product Packaging": "GyroTop packaging photo", "Product Photographs": "GyroTop product photo",
-           "Sales Record": "GyroTop sales record screenshot"}
-GALBAR = ('<div class="gt-galbar" role="group" aria-label="Photo columns"><span>Columns:</span>'
-          + "".join(f'<button type="button" data-cols="{n}" aria-pressed="false">{n}</button>' for n in (1, 2, 3, 4)) + "</div>")
+GAL_ALT = {"Product Packaging": "GyroTop packaging photo", "Product Photographs": "GyroTop product photo"}
+# section -> (gallery key, column choices, default columns on wide screens / phones, masonry)
+GAL_CFG = {"Product Packaging": ("pack", (1, 2, 3, 4), 3, 2, True),
+           "Product Photographs": ("prod", (1, 2), 2, 2, False)}
 
 
 def galleries(body, title):
-    """Runs of 2+ images (one per paragraph) become a column grid with a 1-4 column switch; click = the page's image viewer."""
+    """In the sections listed in GAL_CFG, a run of 2+ images (one per paragraph) becomes a column grid with its own column
+    switch (masonry = no gaps under shorter pictures); click = the page's image viewer. Elsewhere pictures stay full width."""
+    cfg = GAL_CFG.get(title)
+    if not cfg:
+        return body
+    key, choices, wide, phone, masonry = cfg
     n = [0]
 
     def alt(m):
         n[0] += 1
         return f'alt="{GAL_ALT.get(title, "GyroTop photo")} {n[0]}"'
-    run = r'(?:<p><img [^>]*></p>\s*){2,}'
 
     def wrap(m):
-        imgs = re.findall(r"<img [^>]*>", m.group(0))
-        imgs = [re.sub(r'alt="[^"]*"', alt, i) for i in imgs]
-        return (GALBAR + '\n<div class="gt-gal gt-auto">' + "".join(imgs) + "</div>\n"
-                '<p class="gt-galnote">Click a picture to see it full size.</p>\n')
-    return re.sub(run, wrap, body)
+        imgs = [re.sub(r'alt="[^"]*"', alt, i) for i in re.findall(r"<img [^>]*>", m.group(0))]
+        bar = (f'<div class="gt-galbar" role="group" aria-label="Photo columns" data-gal="{key}"><span>Columns:</span>'
+               + "".join(f'<button type="button" data-cols="{c}" aria-pressed="false">{c}</button>' for c in choices) + "</div>")
+        cls = "gt-gal gt-mason" if masonry else "gt-gal"
+        return (bar + f'\n<div class="{cls}" id="gal-{key}" data-wide="{wide}" data-phone="{phone}" style="--gt-cols:{wide}">'
+                + "".join(imgs) + "</div>\n" '<p class="gt-galnote">Click a picture to see it full size.</p>\n')
+    return re.sub(r'(?:<p><img [^>]*></p>\s*){2,}', wrap, body)
 
 
 def fold(cid, title, inner, top):
@@ -193,9 +200,10 @@ def content():
                          "<p>Questions I was asked about the GyroTop. Click one to jump to my answer.</p>\n" + qlist + subs, True))
     toc.append(("brand", btitle.replace("GYROTOP", "GyroTop"), False))
     bsubs = ""
-    for i, (title, body) in enumerate(bsecs, 1):
-        toc.append((f"b{i}", f"{i}. {title}", True))
-        bsubs += fold(f"b{i}", f"{i}. {esc(title)}", galleries(render(body), title), False)
+    for i, (num, title, body) in enumerate(bsecs, 1):
+        label = f"{num}. {title}" if num else title
+        toc.append((f"b{i}", label, True))
+        bsubs += fold(f"b{i}", esc(label), galleries(render(body), title), False)
     chapters.append(fold("brand", esc(btitle), render(bintro) + bsubs, True))
     return "<hr>\n".join(chapters), toc
 
@@ -273,24 +281,26 @@ def build():
     return T, toc
 
 
-GAL_JS = r"""    // gt-gal: photo column switch (1-4), shared by every gallery on the page, remembered in this browser
+GAL_JS = r"""    // gt-gal: each gallery's column switch, remembered in this browser (mes-gyrotop:cols:<gallery>)
     (function () {
-      var K = 'mes-gyrotop:galcols', bars = document.querySelectorAll('.gt-galbar');
-      if (!bars.length) return;
-      function set(n, save) {
-        document.querySelectorAll('.gt-gal').forEach(function (g) {
-          if (n) { g.style.setProperty('--gt-cols', n); g.classList.remove('gt-auto'); }
-          else { g.style.removeProperty('--gt-cols'); g.classList.add('gt-auto'); }
+      var phone = window.matchMedia('(max-width: 600px)');
+      document.querySelectorAll('.gt-galbar').forEach(function (bar) {
+        var key = bar.dataset.gal, gal = document.getElementById('gal-' + key), K = 'mes-gyrotop:cols:' + key;
+        if (!gal) return;
+        var picked = 0; try { picked = +localStorage.getItem(K) || 0; } catch (e) {}
+        if (!bar.querySelector('[data-cols="' + picked + '"]')) picked = 0;
+        function paint() {
+          var n = picked || +(phone.matches ? gal.dataset.phone : gal.dataset.wide);
+          gal.style.setProperty('--gt-cols', n);
+          bar.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.cols === n)); });
+        }
+        bar.addEventListener('click', function (e) {
+          var b = e.target.closest('button'); if (!b) return;
+          picked = +b.dataset.cols; try { localStorage.setItem(K, picked); } catch (e2) {}
+          paint();
         });
-        var cur = n || (window.matchMedia('(max-width: 600px)').matches ? 2 : 3);
-        document.querySelectorAll('.gt-galbar button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.cols === +cur)); });
-        if (save) { try { localStorage.setItem(K, n); } catch (e) {} }
-      }
-      var saved = 0; try { saved = +localStorage.getItem(K) || 0; } catch (e) {}
-      set(saved >= 1 && saved <= 4 ? saved : 0);
-      document.addEventListener('click', function (e) {
-        var b = e.target.closest && e.target.closest('.gt-galbar button');
-        if (b) set(+b.dataset.cols, true);
+        if (phone.addEventListener) phone.addEventListener('change', paint);
+        paint();
       });
     })();
 """
