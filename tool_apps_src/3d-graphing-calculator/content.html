@@ -1,7 +1,8 @@
-	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 <!-- MT-FAMILY --><style>.mt-fam{display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.9em;font-size:0.95em}.mt-fam b{font-weight:700;margin-right:0.2em}.mt-fam a{display:inline-block;padding:0.3em 0.85em;border:2px solid var(--accent,#2160d0);border-radius:2em;color:var(--accent,#2160d0);text-decoration:none;font-weight:600;line-height:1.2}.mt-fam a:hover{background:var(--accent,#2160d0);color:#fff}</style><nav class="mt-fam" aria-label="Related math tools"><b>Math tools:</b><a href="/calculator">Calculator</a><a href="/cas-calculator">CAS</a><a href="/derivative-calculator">Derivative</a><a href="/integral-calculator">Integral</a><a href="/2d-graphing-calculator">2D</a></nav><!-- /MT-FAMILY -->
 	<div class="tu g3" id="g3">
 		<div class="g3-layout">
+			<div class="g3-grip" id="g3-grip" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to change the width of the equations list (double-click: normal width)" aria-label="Equations list width"><button type="button" class="g3-griphide" id="g3-griphide" title="Hide the equations list" aria-label="Hide the equations list">‹</button></div>
 			<div class="g3-side" id="g3-side">
 				<div class="g3-side-top">
 					<button type="button" class="tu-btn tu-btn--primary" id="g3-add">+ Add</button>
@@ -39,7 +40,6 @@
 					<span class="g3-sp"></span>
 					<button type="button" id="g3-png" title="Download the graph as a PNG image">PNG</button>
 					<button type="button" id="g3-link" title="Copy a link to this graph">Link</button>
-					<button type="button" id="g3-theatre" class="g3-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
 					<button type="button" id="g3-sidebtn" class="g3-sidebtn" title="Hide or show the equations list so the graph gets the whole width" aria-pressed="false">Hide equations</button>
 					<button type="button" id="g3-win" class="g3-win" title="Fill the browser window (Esc to leave)" aria-pressed="false">Fill window</button>
 					<button type="button" id="g3-full" title="Full screen" aria-label="Full screen">⛶</button>
@@ -75,9 +75,6 @@
 
 		<div class="tu-toast" id="g3-toast" role="status"></div>
 
-		<link rel="stylesheet" href="/main_js/aside.css?v=2">
-		<aside id="mes-aside" class="mes-aside mes-aside--inline" data-aside-family="graphing" aria-label="More like this"><div class="mes-aside__sticky"><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2></div></div></aside>
-		<script src="/main_js/aside.js?v=2" defer></script>
 
 		<section class="tu-seo">
 			<h2>More from MES</h2>

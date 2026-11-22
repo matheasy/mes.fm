@@ -809,21 +809,53 @@ if (typeof module !== 'undefined' && module.exports) module.exports = GC;
 		canvas.toBlob(function (b) { if (!b) return; var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'mes-graph.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); });
 	});
 	$('gc-link').addEventListener('click', function () { copy(location.origin + location.pathname + '?s=' + encodeURIComponent(encode(snapshot())), 'Link copied'); });
-	function paintTheatre() { $('gc-theatre').setAttribute('aria-pressed', String(document.documentElement.classList.contains('page-theatre'))); }
-	$('gc-theatre').addEventListener('click', function () {
-		var on = document.documentElement.classList.toggle('page-theatre');
-		try { localStorage.setItem('pageMode', on ? 'theatre' : 'std'); localStorage.setItem('pageWide', on ? '1' : '0'); } catch (e) {}
-		paintTheatre(); setTimeout(resize, 60);
-	});
-	paintTheatre();
 	/* Fill window: cover the whole browser window (not the Fullscreen API), Esc leaves */
 	var layoutEl = document.querySelector('.gc-layout'), sideBefore = false;
-	function setSide(hide) {
+	function setSide(hide, keep) {
+		if (keep) { try { localStorage.setItem('mes-graph2d:noside', hide ? '1' : '0'); } catch (e) {} }
 		layoutEl.classList.toggle('gc-noside', hide); $('gc-sidebtn').setAttribute('aria-pressed', String(hide));
 		$('gc-sidebtn').textContent = hide ? 'Show equations' : 'Hide equations';
 		setTimeout(function () { setTimeout(resize, 60); }, 40);
 	}
-	$('gc-sidebtn').addEventListener('click', function () { setSide(!layoutEl.classList.contains('gc-noside')); });
+	$('gc-sidebtn').addEventListener('click', function () { setSide(!layoutEl.classList.contains('gc-noside'), !document.body.classList.contains('gc-win')); });
+	$('gc-griphide').addEventListener('click', function (e) { e.stopPropagation(); setSide(true, !document.body.classList.contains('gc-win')); });
+	try { if (localStorage.getItem('mes-graph2d:noside') === '1') setSide(true); } catch (e) {}
+	/* width grip: --gc-sw on the layout, in em of the layout's font size, saved as mes-graph2d:sw */
+	(function () {
+		var grip = $('gc-grip'), KEY = 'mes-graph2d:sw';
+		function em() { return parseFloat(getComputedStyle(layoutEl).fontSize) || 16; }
+		function maxEm() { return Math.max(16, Math.min(48, (layoutEl.clientWidth - 340) / em())); }
+		function apply(v, save) {
+			if (v == null) layoutEl.style.removeProperty('--gc-sw');
+			else { v = Math.max(16, Math.min(maxEm(), v)); layoutEl.style.setProperty('--gc-sw', v.toFixed(2) + 'em'); }
+			grip.setAttribute('aria-valuenow', String(Math.round(cur())));
+			if (save) { try { if (v == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, v.toFixed(2)); } catch (e) {} }
+		}
+		function cur() { var s = layoutEl.querySelector('.gc-side'); return s ? s.getBoundingClientRect().width / em() : 27; }
+		grip.setAttribute('aria-valuemin', '16'); grip.setAttribute('aria-valuemax', '48');
+		try { var sv = parseFloat(localStorage.getItem(KEY)); if (sv > 0) apply(sv); } catch (e) {}
+		var drag = null;
+		grip.addEventListener('pointerdown', function (e) {
+			if (e.target !== grip || e.button > 0) return;
+			e.preventDefault(); grip.setPointerCapture(e.pointerId);
+			drag = { x: e.clientX, w: cur() }; grip.classList.add('is-drag'); document.body.classList.add('gc-dragw');
+		});
+		grip.addEventListener('pointermove', function (e) { if (drag) apply(drag.w + (e.clientX - drag.x) / em()); });
+		function end() { if (!drag) return; drag = null; grip.classList.remove('is-drag'); document.body.classList.remove('gc-dragw'); apply(cur(), true); }
+		grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+		grip.addEventListener('dblclick', function (e) { if (e.target === grip) apply(null, true); });
+		grip.addEventListener('keydown', function (e) {
+			var st = e.shiftKey ? 4 : 1;
+			if (e.key === 'ArrowLeft') apply(cur() - st, true); else if (e.key === 'ArrowRight') apply(cur() + st, true);
+			else if (e.key === 'Home') apply(16, true); else if (e.key === 'End') apply(48, true);
+			else if (e.key === 'Enter') apply(null, true); else return;
+			e.preventDefault();
+		});
+		// one column when the content column is too narrow for list + graph (Standard width beside the sidebar)
+		function narrow() { layoutEl.classList.toggle('gc-one', layoutEl.clientWidth < 820 && !document.body.classList.contains('gc-win')); }
+		narrow();
+		if (window.ResizeObserver) new ResizeObserver(narrow).observe(layoutEl); else window.addEventListener('resize', narrow);
+	})();
 	function setWin(on) {
 		document.body.classList.toggle('gc-win', on); $('gc-win').setAttribute('aria-pressed', String(on));
 		if (on) { sideBefore = layoutEl.classList.contains('gc-noside'); setSide(true); } else setSide(sideBefore);

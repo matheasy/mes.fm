@@ -190,16 +190,16 @@ APPS = {
                        js_v="5", pre_js=["/main_js/mes-ask.js?v=1", "/main_js/unit-price.js?v=1"]),
     # 2D graphing calculator (Desmos-style): lib.js = tokenizer/parser -> compiled JS functions + key-point numerics (node-testable), app.js = canvas UI.
     # Slug keeps the capital D as requested (Vercel is case-sensitive on static paths).
-    "2d-graphing-calculator": dict(no_sidebar=True, title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",
+    "2d-graphing-calculator": dict(title="MES 2D Graphing Calculator", page_title="2D Graphing Calculator",
                                    tag="Plot functions, equations and inequalities.", accent="#2160d0", dark="#1646a0", tint="#e3ecfb",
                                    desc="Free online 2D graphing calculator: plot functions, equations, inequalities, parametric and polar curves, use sliders, and find zeros, maximums, minimums and intersections. Zoom, pan, share a link or save a PNG.",
-                                   js_v="2", pre_js=["/main_js/mes-ask.js?v=1"]),
+                                   js_v="3", pre_js=["/main_js/mes-ask.js?v=1"]),
     # 3D graphing calculator: lib.js = the 2D page's whitelist compiler extended to x,y,z,u,v,t + meshing (grid surfaces with jump detection,
     # surface nets for implicit F(x,y,z)=G, curve pieces; node-testable), app.js = UI + three.js renderer (core module imported lazily from jsDelivr).
-    "3d-graphing-calculator": dict(no_sidebar=True, title="MES 3D Graphing Calculator", page_title="3D Graphing Calculator",
+    "3d-graphing-calculator": dict(title="MES 3D Graphing Calculator", page_title="3D Graphing Calculator",
                                    tag="Plot surfaces in 3D and rotate them", accent="#6a3fc4", dark="#4c2a94", tint="#ece6fa",
                                    desc="Free online 3D graphing calculator: plot surfaces z = f(x, y), equations in x, y and z like spheres and tori, parametric curves and surfaces, with sliders. Rotate, zoom, colour by height, share a link or save a PNG.",
-                                   js_v="2", pre_js=["/main_js/mes-ask.js?v=1"]),
+                                   js_v="3", pre_js=["/main_js/mes-ask.js?v=1"]),
     # days between two dates: own lib.js (DC, date maths) + the calendar's holiday engine (MESCal) via lib_from. Real page at the keyword URL; /days etc. redirect (mes.fm/vercel.json).
     # Ovulation / period / due date: one source (tool_apps_src/ovulation-calculator: lib.js = MESCycle, app.js, app.css, content.html with {{VIEWS}} / {{SEO}}),
     # three pages; tests: node tool_apps_src/ovulation-calculator-tests.js. Dates live only in localStorage mes-cycle:v1 (shared by the three pages).

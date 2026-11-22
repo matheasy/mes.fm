@@ -305,9 +305,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .tu [class$="-eq"] > div {margin:0.25em 0;}
 .tu [class$="-eq__n"] {vertical-align:middle;}
 
-	html body .outer-container {max-width:min(96vw,80em) !important;}
 	.g3-layout {display:grid;grid-template-columns:1fr;gap:1em;--g3-h:62vh;}
-	@media (min-width:860px) {.g3-layout {grid-template-columns:27em 1fr;--g3-h:min(74vh,680px);}}
+	@media (min-width:860px) {.g3-layout {grid-template-columns:var(--g3-sw,27em) minmax(0,1fr);--g3-h:min(74vh,680px);}}
 	.g3-side {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.7em;min-width:0;order:2;}
 	.g3-main {min-width:0;order:1;}
 	@media (min-width:860px) {.g3-side {order:1;max-height:calc(var(--g3-h) + 3.2em);overflow-y:auto;} .g3-main {order:2;}}
@@ -400,8 +399,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	}
 	@media print {.g3-side, .g3-toolbar, .g3-hint {display:none !important;}}
 	/* Theatre: nearly the whole window, a taller stage and a slightly wider side panel */
-	html.page-theatre body .outer-container {max-width:min(98vw,2400px) !important;}
-	@media (min-width:860px) {html.page-theatre .g3-layout {grid-template-columns:29em 1fr;--g3-h:min(84vh,1000px);}}
+	@media (min-width:860px) {html.page-theatre .g3-layout {grid-template-columns:var(--g3-sw,29em) minmax(0,1fr);--g3-h:min(84vh,1000px);}}
 
 	/* Fill window: the whole tool (equations + graph) covers the browser window; Esc or the button leaves it */
 	body.g3-win {overflow:hidden !important;}
@@ -409,13 +407,38 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	body.g3-win .g3-side {max-height:none;overflow-y:auto;}
 	body.g3-win .g3-stage {min-height:0;height:var(--g3-h);}
 	body.g3-win .g3-hint {display:none;}
-	@media (min-width:860px) {body.g3-win .g3-layout {grid-template-columns:27em 1fr;overflow:hidden;--g3-h:calc(100vh - 5.2em);} body.g3-win .g3-side {max-height:calc(100vh - 1.2em);}}
+	@media (min-width:860px) {body.g3-win .g3-layout {grid-template-columns:var(--g3-sw,27em) minmax(0,1fr);overflow:hidden;--g3-h:calc(100vh - 5.2em);} body.g3-win .g3-side {max-height:calc(100vh - 1.2em);}}
 	body.dark-mode.g3-win #g3 .g3-layout {background:#1a1a1a;}
 	body.g3-win .g3-win {background:var(--accent);color:#fff;border-color:var(--accent);}
 
 	/* Hide / show the equations list: the graph takes the whole width (default in Fill window) */
 	.g3-layout.g3-noside {grid-template-columns:1fr !important;}
 	.g3-layout.g3-noside .g3-side {display:none;}
+
+	/* Width grip on the right edge of the equations list (drag, arrow keys, double-click = normal) + a hide button on it.
+	   One column (graph, then equations) when the content column is narrow, e.g. Standard width beside the sidebar. */
+	.g3-layout {position:relative;}
+	.g3-grip {display:none;}
+	@media (min-width:860px) {
+		.g3-grip {display:block;position:absolute;top:0;bottom:0;left:calc(var(--g3-sw,27em) + 0.5em - 7px);width:14px;cursor:col-resize;z-index:5;touch-action:none;border-radius:7px;}
+		html.page-theatre .g3-grip {left:calc(var(--g3-sw,29em) + 0.5em - 7px);}
+		body.g3-win .g3-grip {top:0.6em;bottom:0.6em;left:calc(var(--g3-sw,27em) + 0.9em - 7px);}
+		.g3-grip::before {content:"";position:absolute;left:5px;top:50%;width:4px;height:44px;margin-top:-22px;border-radius:2px;background:#b9c2ce;}
+		.g3-grip:hover::before, .g3-grip:focus-visible::before, .g3-grip.is-drag::before {background:var(--accent);}
+		.g3-grip:hover, .g3-grip.is-drag {background:rgba(120,130,150,0.12);}
+		.g3-grip:focus-visible {outline:2px solid var(--accent);outline-offset:1px;}
+		.g3-griphide {position:absolute;left:-4px;top:4px;width:22px;height:26px;padding:0;border:1px solid #cdd4dd;border-radius:6px;background:#fff;color:#334;font-size:15px;line-height:22px;cursor:pointer;}
+		.g3-griphide:hover {background:var(--accent);border-color:var(--accent);color:#fff;}
+	}
+	.g3-layout.g3-noside .g3-grip, .g3-layout.g3-one .g3-grip {display:none !important;}
+	.g3-layout.g3-one {grid-template-columns:1fr !important;}
+	.g3-layout.g3-one .g3-side {order:2;max-height:none;}
+	.g3-layout.g3-one .g3-main {order:1;}
+	body.g3-dragw, body.g3-dragw * {cursor:col-resize !important;user-select:none !important;}
+	body.dark-mode #g3 .g3-grip::before {background:#5a6474;}
+	body.dark-mode #g3 .g3-grip:hover::before, body.dark-mode #g3 .g3-grip.is-drag::before {background:var(--accent);}
+	body.dark-mode #g3 .g3-griphide {background:#2a2f38;border-color:#4a5363;color:#e6e9ee;}
+	body.dark-mode #g3 .g3-griphide:hover {background:var(--accent);color:#fff;}
 
 
 	@media print {
@@ -572,6 +595,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .mc-link{border:1px solid #28323e;background:#1a1a1a}
 	body.dark-mode .mc-link span{color:#9a9da3}
 	body.dark-mode .mc-link:hover{background:#1b1527}
+	body.dark-mode .g3-grip::before{background:#383d42}
+	body.dark-mode .g3-grip:hover,body.dark-mode .g3-grip.is-drag{background:rgba(71,78,92,0.12)}
+	body.dark-mode .g3-griphide{border:1px solid #2e3844;background:#1a1a1a;color:#bfbfc8}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -748,7 +774,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     }).observe(document.documentElement, {childList: true, subtree: true});
 })();
 </script>
-    </head>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
     <body>            <!-- Google Tag Manager (noscript) -->
             <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -765,7 +791,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
   </ul>
 </div>
-<div id="outer-container" class="outer-container">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/3d-graphing-calculator'><img height="88" width="88" id="logo" class="logo" alt="MES 3D Graphing Calculator logo" src="/3d-graphing-calculator/img/logo.png?v=2"></a>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/3d-graphing-calculator'><img height="88" width="88" id="logo" class="logo" alt="MES 3D Graphing Calculator logo" src="/3d-graphing-calculator/img/logo.png?v=2"></a>
                             <div class="logo-text-container">
                                 <a class="calculator-title-link" href='/3d-graphing-calculator'>
                                     <p class="calculator-title">MES 3D Graphing Calculator</p>
@@ -784,10 +810,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">3D Graphing Calculator</h1>                                        <p class="page-description">Free online 3D graphing calculator: plot surfaces z = f(x, y), equations in x, y and z like spheres and tori, parametric curves and surfaces, with sliders. Rotate, zoom, colour by height, share a link or save a PNG.</p>                                    	<div id="main-content" data-tool data-text-scale>
-	<script>try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}</script>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 <!-- MT-FAMILY --><style>.mt-fam{display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;margin:0 0 0.9em;font-size:0.95em}.mt-fam b{font-weight:700;margin-right:0.2em}.mt-fam a{display:inline-block;padding:0.3em 0.85em;border:2px solid var(--accent,#2160d0);border-radius:2em;color:var(--accent,#2160d0);text-decoration:none;font-weight:600;line-height:1.2}.mt-fam a:hover{background:var(--accent,#2160d0);color:#fff}</style><nav class="mt-fam" aria-label="Related math tools"><b>Math tools:</b><a href="/calculator">Calculator</a><a href="/cas-calculator">CAS</a><a href="/derivative-calculator">Derivative</a><a href="/integral-calculator">Integral</a><a href="/2d-graphing-calculator">2D</a></nav><!-- /MT-FAMILY -->
 	<div class="tu g3" id="g3">
 		<div class="g3-layout">
+			<div class="g3-grip" id="g3-grip" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to change the width of the equations list (double-click: normal width)" aria-label="Equations list width"><button type="button" class="g3-griphide" id="g3-griphide" title="Hide the equations list" aria-label="Hide the equations list">‹</button></div>
 			<div class="g3-side" id="g3-side">
 				<div class="g3-side-top">
 					<button type="button" class="tu-btn tu-btn--primary" id="g3-add">+ Add</button>
@@ -825,7 +852,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<span class="g3-sp"></span>
 					<button type="button" id="g3-png" title="Download the graph as a PNG image">PNG</button>
 					<button type="button" id="g3-link" title="Copy a link to this graph">Link</button>
-					<button type="button" id="g3-theatre" class="g3-theatre" title="Theatre: use nearly the whole window (saved for the whole site)" aria-pressed="false">Theatre</button>
 					<button type="button" id="g3-sidebtn" class="g3-sidebtn" title="Hide or show the equations list so the graph gets the whole width" aria-pressed="false">Hide equations</button>
 					<button type="button" id="g3-win" class="g3-win" title="Fill the browser window (Esc to leave)" aria-pressed="false">Fill window</button>
 					<button type="button" id="g3-full" title="Full screen" aria-label="Full screen">⛶</button>
@@ -861,9 +887,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<div class="tu-toast" id="g3-toast" role="status"></div>
 
-		<link rel="stylesheet" href="/main_js/aside.css?v=2">
-		<aside id="mes-aside" class="mes-aside mes-aside--inline" data-aside-family="graphing" aria-label="More like this"><div class="mes-aside__sticky"><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2></div></div></aside>
-		<script src="/main_js/aside.js?v=2" defer></script>
 
 		<section class="tu-seo">
 			<h2>More from MES</h2>
@@ -893,7 +916,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
 <!-- /MES-BOTTOM-AD -->
                             </div>
-                        </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/days-between-dates-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/days-between-dates-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Days Between Dates Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/gradecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gradecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Final Grade Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
 
                         <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
                                         <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
@@ -941,7 +967,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/mes-ask.js?v=1" defer></script><script src="/3d-graphing-calculator/js/3d-graphing-calculator.js?v=2" defer></script>
+	<script src="/main_js/mes-ask.js?v=1" defer></script><script src="/3d-graphing-calculator/js/3d-graphing-calculator.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
@@ -996,6 +1022,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
     window.addEventListener('resize', function () { if (stuck) fit(); });
     update();
   })();
-</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 
 </html>

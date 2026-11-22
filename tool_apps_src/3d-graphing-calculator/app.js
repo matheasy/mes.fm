@@ -711,21 +711,53 @@
 		out.toBlob(function (b) { if (!b) return; var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'mes-graph-3d.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); });
 	});
 	$('g3-link').addEventListener('click', function () { copy(location.origin + location.pathname + '?s=' + encodeURIComponent(encode(snapshot())), 'Link copied'); });
-	function paintTheatre() { $('g3-theatre').setAttribute('aria-pressed', String(document.documentElement.classList.contains('page-theatre'))); }
-	$('g3-theatre').addEventListener('click', function () {
-		var on = document.documentElement.classList.toggle('page-theatre');
-		try { localStorage.setItem('pageMode', on ? 'theatre' : 'std'); localStorage.setItem('pageWide', on ? '1' : '0'); } catch (e) {}
-		paintTheatre(); setTimeout(function () { resize(); }, 60);
-	});
-	paintTheatre();
 	/* Fill window: cover the whole browser window (not the Fullscreen API), Esc leaves */
 	var layoutEl = document.querySelector('.g3-layout'), sideBefore = false;
-	function setSide(hide) {
+	function setSide(hide, keep) {
+		if (keep) { try { localStorage.setItem('mes-graph3d:noside', hide ? '1' : '0'); } catch (e) {} }
 		layoutEl.classList.toggle('g3-noside', hide); $('g3-sidebtn').setAttribute('aria-pressed', String(hide));
 		$('g3-sidebtn').textContent = hide ? 'Show equations' : 'Hide equations';
 		setTimeout(function () { setTimeout(function () { resize(); }, 60); }, 40);
 	}
-	$('g3-sidebtn').addEventListener('click', function () { setSide(!layoutEl.classList.contains('g3-noside')); });
+	$('g3-sidebtn').addEventListener('click', function () { setSide(!layoutEl.classList.contains('g3-noside'), !document.body.classList.contains('g3-win')); });
+	$('g3-griphide').addEventListener('click', function (e) { e.stopPropagation(); setSide(true, !document.body.classList.contains('g3-win')); });
+	try { if (localStorage.getItem('mes-graph3d:noside') === '1') setSide(true); } catch (e) {}
+	/* width grip: --g3-sw on the layout, in em of the layout's font size, saved as mes-graph3d:sw */
+	(function () {
+		var grip = $('g3-grip'), KEY = 'mes-graph3d:sw';
+		function em() { return parseFloat(getComputedStyle(layoutEl).fontSize) || 16; }
+		function maxEm() { return Math.max(16, Math.min(48, (layoutEl.clientWidth - 340) / em())); }
+		function apply(v, save) {
+			if (v == null) layoutEl.style.removeProperty('--g3-sw');
+			else { v = Math.max(16, Math.min(maxEm(), v)); layoutEl.style.setProperty('--g3-sw', v.toFixed(2) + 'em'); }
+			grip.setAttribute('aria-valuenow', String(Math.round(cur())));
+			if (save) { try { if (v == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, v.toFixed(2)); } catch (e) {} }
+		}
+		function cur() { var s = layoutEl.querySelector('.g3-side'); return s ? s.getBoundingClientRect().width / em() : 27; }
+		grip.setAttribute('aria-valuemin', '16'); grip.setAttribute('aria-valuemax', '48');
+		try { var sv = parseFloat(localStorage.getItem(KEY)); if (sv > 0) apply(sv); } catch (e) {}
+		var drag = null;
+		grip.addEventListener('pointerdown', function (e) {
+			if (e.target !== grip || e.button > 0) return;
+			e.preventDefault(); grip.setPointerCapture(e.pointerId);
+			drag = { x: e.clientX, w: cur() }; grip.classList.add('is-drag'); document.body.classList.add('g3-dragw');
+		});
+		grip.addEventListener('pointermove', function (e) { if (drag) apply(drag.w + (e.clientX - drag.x) / em()); });
+		function end() { if (!drag) return; drag = null; grip.classList.remove('is-drag'); document.body.classList.remove('g3-dragw'); apply(cur(), true); }
+		grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+		grip.addEventListener('dblclick', function (e) { if (e.target === grip) apply(null, true); });
+		grip.addEventListener('keydown', function (e) {
+			var st = e.shiftKey ? 4 : 1;
+			if (e.key === 'ArrowLeft') apply(cur() - st, true); else if (e.key === 'ArrowRight') apply(cur() + st, true);
+			else if (e.key === 'Home') apply(16, true); else if (e.key === 'End') apply(48, true);
+			else if (e.key === 'Enter') apply(null, true); else return;
+			e.preventDefault();
+		});
+		// one column when the content column is too narrow for list + graph (Standard width beside the sidebar)
+		function narrow() { layoutEl.classList.toggle('g3-one', layoutEl.clientWidth < 820 && !document.body.classList.contains('g3-win')); }
+		narrow();
+		if (window.ResizeObserver) new ResizeObserver(narrow).observe(layoutEl); else window.addEventListener('resize', narrow);
+	})();
 	function setWin(on) {
 		document.body.classList.toggle('g3-win', on); $('g3-win').setAttribute('aria-pressed', String(on));
 		if (on) { sideBefore = layoutEl.classList.contains('g3-noside'); setSide(true); } else setSide(sideBefore);
