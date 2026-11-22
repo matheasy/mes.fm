@@ -993,8 +993,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ch-3donly">Pieces <select id="ch-set" class="tu-select ch-sel"></select></label>
 					<label class="ch-3donly">Camera <select id="ch-cam" class="tu-select ch-sel"><option value="auto">My side</option><option value="eye">Player's eye (see the room)</option><option value="top">From above</option><option value="side">From the side</option><option value="white">White's side</option><option value="black">Black's side</option><option value="orbit">Free (drag)</option></select></label>
 					<label class="ch-2donly">Board <select id="ch-theme" class="tu-select ch-sel"><option value="green">Green</option><option value="wood">Wood</option><option value="blue">Blue</option><option value="grey">Grey</option><option value="purple">Purple</option><option value="arena">Battle arena</option></select></label>
-					<label class="ch-2donly">Pieces <select id="ch-p2" class="tu-select ch-sel"><option value="classic">Classic</option><option value="fantasy">Fantasy armies</option></select></label>
-					<button type="button" class="ch-vb" id="ch-arena" title="Battle arena look: original fantasy figures on an arena board (2D) and in a battle arena (3D)">⚔ Battle arena</button>
+					<label class="ch-2donly">Pieces <select id="ch-p2" class="tu-select ch-sel"><option value="classic">Classic</option><option value="fantasy">Fantasy armies</option><option value="splinterlands">Splinterlands</option></select></label>
+					<button type="button" class="ch-vb" id="ch-arena" title="Splinterlands look: the Life army against the Death army, on an arena board (2D) and in the Splinterlands arena (3D)">⚔ Splinterlands</button>
 					<label>Colours <select id="ch-pcol" class="tu-select ch-sel" title="Piece colours: pick a pair that is easy for you to see"><option value="auto">White and black</option><option value="cream">Cream and brown</option><option value="red">White and red</option><option value="green">White and green</option><option value="blueorange">Orange and blue (colour-blind friendly)</option><option value="yellowpurple">Yellow and purple</option><option value="goldsilver">Gold and silver</option></select></label>
 					<span class="ch-shows" role="group" aria-label="Show on the board">Show <label><input type="checkbox" data-sh="names"> Names</label><label><input type="checkbox" data-sh="btns"> Board buttons</label><label><input type="checkbox" data-sh="moves"> Moves</label><label><input type="checkbox" data-sh="type"> Type box</label></span>
 					<button type="button" class="ch-vb ch-3donly" id="ch-view3" title="Back to the normal camera (or double-click the board)">⟲ Reset view</button>
@@ -1101,6 +1101,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-seo">
 			<h2>Play chess free: against the computer, a friend, online or on Hive</h2>
 			<p>A complete chess board in your browser with nothing to install and no account. Play the computer at four levels, a friend on the same phone or computer, or someone online: as a guest with a link, or on the Hive blockchain where every move is signed and kept for good (a live game or slow correspondence chess). Switch between a clean 2D board and a 3D board in a chess club, a tournament hall, a park, a living room or space, with wood, marble, glass or tournament pieces. Variants: Chess960 (Fischer Random), King of the Hill and Three-check.</p>
+			<p><b>Splinterlands pieces and arena.</b> Press <b>⚔ Splinterlands</b> to play with characters from <a href="https://splinterlands.com" target="_blank" rel="noopener">Splinterlands</a>, the trading card game on Hive: the Life army (Tyrus Paladium, Angel of Light, Clay Golem, Divine Healer, Sacred Unicorn, Silver Shield Warrior) against the Death army (Zintar Mortalis, Dark Enchantress, Bone Golem, Undead Priest, Corrupted Pegasus, Skeletal Warrior), in a Splinterlands arena with the six splinter banners. The characters, art and logo belong to Splinterlands and are used with their permission; MES Chess is a fan-made community game, not an official Splinterlands product.</p>
 			<h3>How strong is the computer?</h3>
 			<dl>
 				<dt>Easy</dt><dd>Looks one move ahead and adds a lot of chance, so it leaves pieces hanging and misses tactics. Good for learning the moves.</dd>
@@ -1183,7 +1184,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/chess/js/chess.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

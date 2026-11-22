@@ -1056,11 +1056,11 @@
 	var M = 18;    // squares per metre (a 5.5 cm square): room furniture is sized in metres * M
 
 	var ROOMS = [{ id: "club", name: "Chess club" }, { id: "tournament", name: "Tournament hall" }, { id: "park", name: "Park table" },
-		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "arena", name: "Battle arena" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
+		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "arena", name: "Battle arena" }, { id: "splinterlands", name: "Splinterlands arena" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
 	/* Pieces that already have a real 3D model in the "Fantasy armies 3D" set (one or two are added a day; see
 	   tool_apps_src/chess/fantasy3d/README.md). The others use their picture figure until theirs is made. */
 	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR", "wP", "bK", "bQ", "bB", "bN", "bR", "bP"];
-	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "fantasy3d", name: MODELS3D.length >= 12 ? "Fantasy armies 3D" : "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
+	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "splinterlands", name: "Splinterlands" }, { id: "fantasy3d", name: MODELS3D.length >= 12 ? "Fantasy armies 3D" : "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
@@ -1089,6 +1089,9 @@
 		if (id === "glass") return { light: "#c9dcea", dark: "#3e5f7a", lightV: ["#e4eff8"], darkV: ["#2d4a62"], frame: "#20303e", frameV: ["#2f4558"], coord: "#cfe4f5",
 			w: { color: "#eaf6ff", roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62 }, b: { color: "#1e3a5c", roughness: 0.08, metalness: 0.15, transparent: true, opacity: 0.7 }, accW: "#9fd2ff", accB: "#79b8ff" };
 		if (id === "fantasy3d") return Object.assign(setLook("fantasy"), { models: true });
+		// Splinterlands: the official card art (Life army vs Death army), used with permission from Splinterlands (@clayboyn, 2026-11)
+		if (id === "splinterlands") return Object.assign(setLook("fantasy"), { light: "#d9c391", dark: "#6a557a", lightV: ["#cdb684", "#e3cfa0"], darkV: ["#5e4b6e", "#77628a"], frame: "#3a1f4a", frameV: ["#2a1438", "#d4a63a", "#4a2a5c"], coord: "#f2d27a",
+			w: { color: "#f2e5b8", roughness: 0.35, metalness: 0.5 }, b: { color: "#4b1f5c", roughness: 0.35, metalness: 0.45 }, accW: "#f2d27a", accB: "#8a4fb0", sprites: true, sprDir: "splinterlands", sprAr: 1 });
 		if (id === "fantasy") return { light: "#a89d89", dark: "#3f434b", lightV: ["#a69b88", "#cfc6b5", "#9b9080"], darkV: ["#3a3d44", "#5c606a", "#2e3036"], frame: "#3a2416", frameV: ["#24150b", "#5a3a22", "#2c1a0e"], coord: "#7fe3ff",
 			w: { color: "#d8c690", roughness: 0.35, metalness: 0.55 }, b: { color: "#5b1e22", roughness: 0.35, metalness: 0.45 }, accW: "#e8d9a8", accB: "#7a2a2e", sprites: true };
 		if (id === "tournament") return { light: "#eeeed2", dark: "#769656", lightV: [], darkV: [], frame: "#f5f3ea", frameV: [], coord: "#4b5d3a",
@@ -1139,22 +1142,24 @@
 	   feet at the bottom centre) on a plane that turns to face the camera (and leans back a little when the camera is high), standing on a
 	   small metal base in the side's colour. The textures load once and are shared. */
 	var SPR = {}, SPR_H = { K: 1.32, Q: 1.26, R: 1.12, B: 1.22, N: 1.18, P: 0.92 }, sprGeo = {};
-	function sprMat(key, onload) {
-		if (SPR[key]) return SPR[key];
-		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy/" + key + ".png?v=1";
+	function sprMat(key, onload, dir) {
+		dir = dir || "fantasy"; var ck = dir + "/" + key;
+		if (SPR[ck]) return SPR[ck];
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + dir + "/" + key + ".png?v=1";
 		var t = new THREE.TextureLoader().load(url, function () { onload && onload(); });
 		t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
 		var m = new THREE.MeshStandardMaterial({ map: t, transparent: true, alphaTest: 0.35, roughness: 0.9, metalness: 0, side: THREE.DoubleSide, emissive: "#ffffff", emissiveMap: t, emissiveIntensity: 0.42 });
 		m.userData.keep = true;
 		var d = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: t, alphaTest: 0.35 }); d.userData.keep = true;
-		return (SPR[key] = { m: m, d: d });
+		return (SPR[ck] = { m: m, d: d });
 	}
 	function makeSprite(type, mats) {
 		var white = type === type.toUpperCase(), t = type.toUpperCase(), g = new THREE.Group(), h = SPR_H[t];
 		var base = new THREE.Mesh(sprGeo.base || (sprGeo.base = (function () { var b = new THREE.CylinderGeometry(0.34, 0.37, 0.07, 32); b.translate(0, 0.035, 0); b.userData.keep = true; return b; })()), white ? mats.w : mats.b);
 		base.castShadow = true; base.receiveShadow = true; g.add(base);
-		var geo = sprGeo[t] || (sprGeo[t] = (function () { var p = new THREE.PlaneGeometry(h * 0.8, h); p.translate(0, h / 2, 0); p.userData.keep = true; return p; })());
-		var s = sprMat((white ? "w" : "b") + t, mats.redraw), pl = new THREE.Mesh(geo, s.m);
+		var ar = mats.sprAr || 0.8, gk = t + ar; if (ar !== 0.8) h *= 1.2;   // square card art (Splinterlands) is drawn a bit bigger: wide figures fill less of it
+		var geo = sprGeo[gk] || (sprGeo[gk] = (function () { var p = new THREE.PlaneGeometry(h * ar, h); p.translate(0, h / 2, 0); p.userData.keep = true; return p; })());
+		var s = sprMat((white ? "w" : "b") + t, mats.redraw, mats.sprDir), pl = new THREE.Mesh(geo, s.m);
 		pl.customDepthMaterial = s.d; pl.castShadow = true; pl.position.y = 0.05; pl.rotation.order = "YXZ"; pl.userData.bb = true;
 		g.add(pl); g.userData.bb = pl; g.userData.type = type;
 		return g;
@@ -1284,7 +1289,7 @@
 		if (this.mats) ["w", "b", "accW", "accB"].forEach(function (k) { this.mats[k].dispose(); }, this);
 		this.look = L;
 		this.mats = { w: keep(new THREE.MeshStandardMaterial(L.w)), b: keep(new THREE.MeshStandardMaterial(L.b)), accW: keep(std(L.accW, 0.4)), accB: keep(std(L.accB, 0.4)) };
-		var self = this; this.mats.sprites = !!L.sprites; this.mats.models = !!L.models; this.mats.redraw = function () { self.render(); };
+		var self = this; this.mats.sprites = !!L.sprites; this.mats.models = !!L.models; this.mats.sprDir = L.sprDir || ""; this.mats.sprAr = L.sprAr || 0; this.mats.redraw = function () { self.render(); };
 	};
 	View.prototype.buildBoard = function () {
 		var L = this.look, g = this.boardG, coords = this.coords;
@@ -1388,31 +1393,41 @@
 
 	/* ---------- camera ---------- */
 	View.prototype.setCam = function (m) { this.endLook(); this.camMode = m; this.free = { yaw: 0, pitch: 0 }; this.render(); };
+	/* Free camera everywhere (owner, 2026-11-21: "freely orbit and zoom, never blocked"): the first drag or zoom in any preset camera turns
+	   it into the free orbit camera starting from exactly where the preset was looking, and tells the page (onCamMode) so the menu follows. */
+	View.prototype.toOrbit = function () {
+		if (this.camMode === "orbit" || this.look3) return;
+		var e = this.camTarget().eye, d = Math.max(0.5, e.length());
+		this.orb = { th: Math.atan2(e.z, e.x), ph: Math.acos(Math.max(-1, Math.min(1, e.y / d))), d: d, tx: 0, tz: 0 };
+		this.camMode = "orbit"; this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1;
+		if (this.onCamMode) this.onCamMode("orbit");
+	};
 	View.prototype.zoom = function (f) {
-		if (this.look3) { this.look3.d = Math.max(0.8, Math.min(12, this.look3.d * f)); this.render(); return; } this.zoomF = Math.max(0.45, Math.min(2.6, this.zoomF * f)); if (this.camMode === "orbit") this.orbZoom(f); this.render(); };
-	/* Orbit zoom: the camera closes in on the board centre down to ORB_MIN, then keeps going by gliding forward over the board
-	   (the point it circles moves the way it looks), so from behind one army you can fly in to the other side.
-	   Zooming out brings that point back to the centre first, then moves away. */
-	var ORB_MIN = 4, ORB_REACH = 6.5;
+		if (this.look3) { this.look3.d = Math.max(0.25, Math.min(60, this.look3.d * f)); this.render(); return; }
+		this.toOrbit(); this.orbZoom(f); this.render(); };
+	/* Orbit zoom: the camera closes in on the point it circles down to ORB_MIN, then keeps going by gliding forward the way it looks
+	   (through the whole room, up to ORB_REACH from the centre); zooming out brings that point back to the centre first, then moves away. */
+	var ORB_MIN = 1.2, ORB_REACH = 70, ORB_MAX = 260;
 	View.prototype.orbZoom = function (f) {
 		var o = this.orb; o.tx = o.tx || 0; o.tz = o.tz || 0;
 		var fx = -Math.cos(o.th), fz = -Math.sin(o.th), along = o.tx * fx + o.tz * fz;   // how far the point has moved forward
 		if (f < 1 && o.d * f < ORB_MIN) {
-			var nd = Math.max(ORB_MIN, o.d * f), step = Math.max(0, o.d * (1 - f) - (o.d - nd));   // the part closing in could not use
+			var nd = Math.max(ORB_MIN, o.d * f), step = Math.max(0.15, o.d * (1 - f) - (o.d - nd)) * 2;   // the part closing in could not use
 			o.d = nd;
 			var na = Math.min(ORB_REACH, along + step) - along;
 			o.tx += fx * na; o.tz += fz * na;
 		} else if (f > 1 && (o.tx || o.tz)) {
-			var back = ORB_MIN * (f - 1), len = Math.hypot(o.tx, o.tz);
+			var back = Math.max(0.3, o.d * (f - 1) * 2), len = Math.hypot(o.tx, o.tz);
 			if (back >= len) { o.tx = 0; o.tz = 0; } else { o.tx -= o.tx / len * back; o.tz -= o.tz / len * back; }
-		} else o.d = Math.max(ORB_MIN, Math.min(40, o.d * f));
+		} else o.d = Math.max(ORB_MIN, Math.min(ORB_MAX, o.d * f));
 		var r = Math.hypot(o.tx, o.tz); if (r > ORB_REACH) { o.tx *= ORB_REACH / r; o.tz *= ORB_REACH / r; }
 	};
 	View.prototype.orbit = function (dx, dy) {
-		// "grab the board": the board turns the way the pointer moves; dragging down tips the far side towards you (camera rises)
-		if (this.look3) { var L3 = this.look3; L3.th += dx * 0.01; L3.ph = Math.max(0.2, Math.min(1.56, L3.ph - dy * 0.006)); this.render(); return; }
-		if (this.camMode === "orbit") { this.orb.th += dx * 0.008; this.orb.ph = Math.max(0.05, Math.min(1.45, this.orb.ph - dy * 0.006)); }
-		else { this.free.yaw += dx * 0.008; this.free.pitch = Math.max(-0.9, Math.min(0.9, this.free.pitch - dy * 0.006)); }
+		// "grab the board": the board turns the way the pointer moves; dragging down tips the far side towards you (camera rises).
+		// No limits on turning; up / down goes from straight above to a little below the board edge.
+		if (this.look3) { var L3 = this.look3; L3.th += dx * 0.01; L3.ph = Math.max(0.02, Math.min(2.2, L3.ph - dy * 0.006)); this.render(); return; }
+		this.toOrbit();
+		this.orb.th += dx * 0.008; this.orb.ph = Math.max(0.01, Math.min(1.75, this.orb.ph - dy * 0.006));
 		this.render();
 	};
 	/* Look closer: the camera walks up to one piece, starting in front of its face (each army faces the other), and drags /
@@ -1819,7 +1834,8 @@
 			var rune = light(new THREE.PointLight("#5fd8ff", 40, 90, 1.4)); rune.position.set(0, 8, -6);
 			anims.push(function (t) { cand.intensity = 65 + 12 * Math.sin(t * 7.3) + 10 * Math.sin(t * 13.1); flames.forEach(function (f, i) { f.scale.y = 1.4 + 0.25 * Math.sin(t * 9 + i * 2); }); circle.material.opacity = 0.7 + 0.18 * Math.sin(t * 1.3); circle.rotation.z = t * 0.03; });
 			this.key.intensity = 0.9; this.key.color.set("#c9d6ff");
-		} else if (name === "arena") {
+		} else if (name === "arena" || name === "splinterlands") {
+			var SL = name === "splinterlands", IMG = window.MES_CHESS_IMG || "/chess/img/";
 			// an original fantasy battle arena (card-battle look): the board sits on a stone dais in the middle of a sand floor, the
 			// round arena wall shows the AI-painted crowd (bg-arena.jpg, original art), with braziers and coloured banners
 			scene.background = new THREE.Color("#2a1a2e"); scene.fog = new THREE.Fog("#3a2433", 120, 300);
@@ -1850,13 +1866,27 @@
 			}
 			// banners in five colours (fire, water, earth, light, shadow) on poles
 			var banCols = ["#c0392b", "#2e6fd1", "#2e8b3e", "#e0b23a", "#7d3fb8", "#c0392b", "#2e6fd1", "#2e8b3e", "#e0b23a", "#7d3fb8"];
+			// Splinterlands arena: the six splinters (fire, water, earth, life, death, dragon) with their official icons, used with permission
+			var SPL = ["fire", "water", "earth", "life", "death", "dragon"], SPLC = { fire: "#c8352c", water: "#2a7fd0", earth: "#3a8f3c", life: "#e6d49a", death: "#6e3592", dragon: "#c99a10" };
+			if (SL) banCols = SPL.concat(SPL).slice(0, 12).map(function (k) { return SPLC[k]; });
 			banCols.forEach(function (col, i) {
-				var a = i * Math.PI / 5, x = Math.cos(a) * 80, z = Math.sin(a) * 80, pg = new THREE.Group(); pg.position.set(x, F, z); pg.rotation.y = -a - Math.PI / 2;
+				var a = (i + 0.5) * Math.PI * 2 / banCols.length, x = Math.cos(a) * 80, z = Math.sin(a) * 80, pg = new THREE.Group(); pg.position.set(x, F, z); pg.rotation.y = -a - Math.PI / 2;
 				box(pg, 0.8, 40, 0.8, iron, 0, 20, 0); box(pg, 12, 0.6, 0.6, gold, 0, 38, 0);
 				var bt = tex(64, 160, function (c, w, h) { c.fillStyle = col; c.fillRect(0, 0, w, h - 20); c.beginPath(); c.moveTo(0, h - 20); c.lineTo(w / 2, h); c.lineTo(w, h - 20); c.fill(); c.strokeStyle = "#f2d27a"; c.lineWidth = 5; c.strokeRect(5, 5, w - 10, h - 30); c.fillStyle = "#f2d27a"; c.beginPath(); c.arc(w / 2, 60, 14, 0, Math.PI * 2); c.fill(); });
 				var ban = new THREE.Mesh(new THREE.PlaneGeometry(11, 26), new THREE.MeshStandardMaterial({ map: bt, side: THREE.DoubleSide, roughness: 0.9 })); ban.position.set(0, 24.5, 0.5); pg.add(ban);
+				if (SL) {   // draw the splinter's icon over the gold disc once the SVG has loaded
+					var ic = new Image(); ic.onload = function () { var c = bt.image.getContext("2d"); c.fillStyle = "#2a1438"; c.beginPath(); c.arc(32, 60, 20, 0, Math.PI * 2); c.fill(); c.drawImage(ic, 14, 42, 36, 36); bt.needsUpdate = true; self.render(); };
+					ic.src = IMG + "splinterlands/el-" + SPL[i % 6] + ".svg";
+				}
 				g.add(pg);
 			});
+			if (SL) new THREE.TextureLoader().load(IMG + "splinterlands/logo.png?v=1", function (t) {
+				if (self.room !== g) return;
+				t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+				[0, Math.PI].forEach(function (ry) { var lm = new THREE.Mesh(new THREE.PlaneGeometry(46, 32), new THREE.MeshBasicMaterial({ map: t, transparent: true, fog: false, depthWrite: false }));
+					lm.position.set(Math.sin(ry) * 80, F + 40, -Math.cos(ry) * 80); lm.rotation.y = -ry; g.add(lm); });
+				self.render();
+			}, undefined, function () {});
 			var fireL = light(new THREE.PointLight("#ff9d4a", 120, 120, 1.5)); fireL.position.set(0, 14, 0);
 			var magic = light(new THREE.PointLight("#9b6bff", 50, 100, 1.4)); magic.position.set(-10, 20, -14);
 			anims.push(function (t) { fireL.intensity = 110 + 15 * Math.sin(t * 6.1) + 10 * Math.sin(t * 11.7); fires.forEach(function (f, i) { f.scale.set(1, 1 + 0.18 * Math.sin(t * 8 + i * 1.7), 1); }); });
@@ -2212,12 +2242,12 @@
 	};
 	var pieceCache = {};
 	function pieceSvg(letter) {
-		if (S.p2 === "fantasy") {   // the Fantasy armies figures (AI-painted, original) standing on a coloured disc
-			var fk = "F" + letter;
+		if (S.p2 === "fantasy" || S.p2 === "splinterlands") {   // picture figures standing on a coloured disc: Fantasy armies (AI-painted, original) or Splinterlands card art (used with permission)
+			var SLp = S.p2 === "splinterlands", fk = (SLp ? "S" : "F") + letter;
 			if (pieceCache[fk]) return pieceCache[fk];
-			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * 0.8;
+			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * (SLp ? 1 : 0.8); if (SLp) { hh = Math.min(48, hh * 1.04); ww = hh; }
 			return (pieceCache[fk] = '<g class="ch-pfan"><ellipse cx="22.5" cy="41.2" rx="13.5" ry="3.6" class="' + (fw ? "ch-fbw" : "ch-fbb") + '"/>' +
-				'<image href="' + (window.MES_CHESS_IMG || "/chess/img/") + "fantasy/" + (fw ? "w" : "b") + FL + '.png?v=1" x="' + (22.5 - ww / 2).toFixed(1) + '" y="' + (43 - hh) + '" width="' + ww.toFixed(1) + '" height="' + hh + '" preserveAspectRatio="xMidYMax meet"/></g>');
+				'<image href="' + (window.MES_CHESS_IMG || "/chess/img/") + (SLp ? "splinterlands/" : "fantasy/") + (fw ? "w" : "b") + FL + '.png?v=1" x="' + (22.5 - ww / 2).toFixed(1) + '" y="' + (43 - hh) + '" width="' + ww.toFixed(1) + '" height="' + hh + '" preserveAspectRatio="xMidYMax meet"/></g>');
 		}
 		if (pieceCache[letter]) return pieceCache[letter];
 		var white = letter === letter.toUpperCase(), L = letter.toUpperCase(), cls = white ? "ch-pw" : "ch-pb", out = '<g class="' + cls + '">';
@@ -2444,6 +2474,7 @@
 			v3 = v; v3loading = false;
 			$("ch-3dmsg").hidden = true;
 			v.onLook = showLook;
+			v.onCamMode = function (m) { S.cam = m; save(); $("ch-cam").value = m; };
 			v.setRoom(S.room); v.setSet(S.set); v.setCam(S.cam);
 			if (PCOL[S.pcol] && v.setPieceColors) v.setPieceColors(PCOL[S.pcol]);
 			size3d(); draw3d(true);
@@ -2695,7 +2726,7 @@
 		$("ch-game").value = C.preset(S.game) ? S.game : "standard";
 		segSet("ch-opp", S.opp); segSet("ch-lv", S.lv); segSet("ch-me", S.me); segSet("ch-ofirst", S.ofirst); segSet("ch-dim", S.dim);
 		$("ch-clock").value = S.clock || ""; $("ch-dots").checked = S.dots !== false; $("ch-anal").checked = !!S.anal; $("ch-autoflip").checked = !!S.autoflip; $("ch-sound").checked = S.sound !== false;
-		$("ch-room").value = S.room; $("ch-set").value = S.set; $("ch-cam").value = S.cam; $("ch-theme").value = S.theme; $("ch-p2").value = S.p2 === "fantasy" ? "fantasy" : "classic"; $("ch-pcol").value = PCOL.hasOwnProperty(S.pcol) ? S.pcol : "auto";
+		$("ch-room").value = S.room; $("ch-set").value = S.set; $("ch-cam").value = S.cam; $("ch-theme").value = S.theme; $("ch-p2").value = S.p2 === "fantasy" || S.p2 === "splinterlands" ? S.p2 : "classic"; $("ch-pcol").value = PCOL.hasOwnProperty(S.pcol) ? S.pcol : "auto";
 		root.setAttribute("data-theme", S.theme);
 		var p = C.preset(S.game) || C.PRESETS[0];
 		$("ch-desc").textContent = p.desc + (S.opp === "cpu" ? " Computer: " + C.LEVELS[S.lv].name + " (about " + C.LEVELS[S.lv].elo + " strength)." : "");
@@ -2764,11 +2795,12 @@
 	});
 	$("ch-theme").addEventListener("change", function () { S.theme = this.value; save(); root.setAttribute("data-theme", S.theme); });
 	$("ch-p2").addEventListener("change", function () { S.p2 = this.value; save(); render(true); });
-	/* one click: the Battle arena look (original fantasy art, card-battle style): arena board + fantasy figures in 2D, arena room + 3D figures in 3D */
+	/* one click: the Splinterlands look (official Splinterlands characters, used with permission): arena board + Splinterlands figures in 2D,
+	   Splinterlands arena + Splinterlands figures in 3D. The original "Battle arena" room / board and Fantasy armies stay in the menus. */
 	$("ch-arena").addEventListener("click", function () {
-		S.theme = "arena"; S.p2 = "fantasy"; S.room = "arena"; S.set = "fantasy3d"; save(); syncSetup();
+		S.theme = "arena"; S.p2 = "splinterlands"; S.room = "splinterlands"; S.set = "splinterlands"; save(); syncSetup();
 		if (v3) { v3.setRoom(S.room); v3.setSet(S.set); draw3d(true); }
-		render(true); toast("Battle arena look: arena board and fantasy figures. Switch 2D / 3D to see both.");
+		render(true); toast("Splinterlands look: the Life army (white) against the Death army (black). Switch 2D / 3D to see both.");
 	});
 	$("ch-flip").addEventListener("click", function () { S.flipX = !S.flipX; save(); render(true); });
 	$("ch-new").addEventListener("click", newGame);

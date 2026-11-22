@@ -325,12 +325,12 @@
 	};
 	var pieceCache = {};
 	function pieceSvg(letter) {
-		if (S.p2 === "fantasy") {   // the Fantasy armies figures (AI-painted, original) standing on a coloured disc
-			var fk = "F" + letter;
+		if (S.p2 === "fantasy" || S.p2 === "splinterlands") {   // picture figures standing on a coloured disc: Fantasy armies (AI-painted, original) or Splinterlands card art (used with permission)
+			var SLp = S.p2 === "splinterlands", fk = (SLp ? "S" : "F") + letter;
 			if (pieceCache[fk]) return pieceCache[fk];
-			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * 0.8;
+			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * (SLp ? 1 : 0.8); if (SLp) { hh = Math.min(48, hh * 1.04); ww = hh; }
 			return (pieceCache[fk] = '<g class="ch-pfan"><ellipse cx="22.5" cy="41.2" rx="13.5" ry="3.6" class="' + (fw ? "ch-fbw" : "ch-fbb") + '"/>' +
-				'<image href="' + (window.MES_CHESS_IMG || "/chess/img/") + "fantasy/" + (fw ? "w" : "b") + FL + '.png?v=1" x="' + (22.5 - ww / 2).toFixed(1) + '" y="' + (43 - hh) + '" width="' + ww.toFixed(1) + '" height="' + hh + '" preserveAspectRatio="xMidYMax meet"/></g>');
+				'<image href="' + (window.MES_CHESS_IMG || "/chess/img/") + (SLp ? "splinterlands/" : "fantasy/") + (fw ? "w" : "b") + FL + '.png?v=1" x="' + (22.5 - ww / 2).toFixed(1) + '" y="' + (43 - hh) + '" width="' + ww.toFixed(1) + '" height="' + hh + '" preserveAspectRatio="xMidYMax meet"/></g>');
 		}
 		if (pieceCache[letter]) return pieceCache[letter];
 		var white = letter === letter.toUpperCase(), L = letter.toUpperCase(), cls = white ? "ch-pw" : "ch-pb", out = '<g class="' + cls + '">';
@@ -557,6 +557,7 @@
 			v3 = v; v3loading = false;
 			$("ch-3dmsg").hidden = true;
 			v.onLook = showLook;
+			v.onCamMode = function (m) { S.cam = m; save(); $("ch-cam").value = m; };
 			v.setRoom(S.room); v.setSet(S.set); v.setCam(S.cam);
 			if (PCOL[S.pcol] && v.setPieceColors) v.setPieceColors(PCOL[S.pcol]);
 			size3d(); draw3d(true);
@@ -808,7 +809,7 @@
 		$("ch-game").value = C.preset(S.game) ? S.game : "standard";
 		segSet("ch-opp", S.opp); segSet("ch-lv", S.lv); segSet("ch-me", S.me); segSet("ch-ofirst", S.ofirst); segSet("ch-dim", S.dim);
 		$("ch-clock").value = S.clock || ""; $("ch-dots").checked = S.dots !== false; $("ch-anal").checked = !!S.anal; $("ch-autoflip").checked = !!S.autoflip; $("ch-sound").checked = S.sound !== false;
-		$("ch-room").value = S.room; $("ch-set").value = S.set; $("ch-cam").value = S.cam; $("ch-theme").value = S.theme; $("ch-p2").value = S.p2 === "fantasy" ? "fantasy" : "classic"; $("ch-pcol").value = PCOL.hasOwnProperty(S.pcol) ? S.pcol : "auto";
+		$("ch-room").value = S.room; $("ch-set").value = S.set; $("ch-cam").value = S.cam; $("ch-theme").value = S.theme; $("ch-p2").value = S.p2 === "fantasy" || S.p2 === "splinterlands" ? S.p2 : "classic"; $("ch-pcol").value = PCOL.hasOwnProperty(S.pcol) ? S.pcol : "auto";
 		root.setAttribute("data-theme", S.theme);
 		var p = C.preset(S.game) || C.PRESETS[0];
 		$("ch-desc").textContent = p.desc + (S.opp === "cpu" ? " Computer: " + C.LEVELS[S.lv].name + " (about " + C.LEVELS[S.lv].elo + " strength)." : "");
@@ -877,11 +878,12 @@
 	});
 	$("ch-theme").addEventListener("change", function () { S.theme = this.value; save(); root.setAttribute("data-theme", S.theme); });
 	$("ch-p2").addEventListener("change", function () { S.p2 = this.value; save(); render(true); });
-	/* one click: the Battle arena look (original fantasy art, card-battle style): arena board + fantasy figures in 2D, arena room + 3D figures in 3D */
+	/* one click: the Splinterlands look (official Splinterlands characters, used with permission): arena board + Splinterlands figures in 2D,
+	   Splinterlands arena + Splinterlands figures in 3D. The original "Battle arena" room / board and Fantasy armies stay in the menus. */
 	$("ch-arena").addEventListener("click", function () {
-		S.theme = "arena"; S.p2 = "fantasy"; S.room = "arena"; S.set = "fantasy3d"; save(); syncSetup();
+		S.theme = "arena"; S.p2 = "splinterlands"; S.room = "splinterlands"; S.set = "splinterlands"; save(); syncSetup();
 		if (v3) { v3.setRoom(S.room); v3.setSet(S.set); draw3d(true); }
-		render(true); toast("Battle arena look: arena board and fantasy figures. Switch 2D / 3D to see both.");
+		render(true); toast("Splinterlands look: the Life army (white) against the Death army (black). Switch 2D / 3D to see both.");
 	});
 	$("ch-flip").addEventListener("click", function () { S.flipX = !S.flipX; save(); render(true); });
 	$("ch-new").addEventListener("click", newGame);
