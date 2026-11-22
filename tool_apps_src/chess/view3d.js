@@ -26,7 +26,7 @@
 	/* Pieces that already have a real 3D model in the "Fantasy armies 3D" set (one or two are added a day; see
 	   tool_apps_src/chess/fantasy3d/README.md). The others use their picture figure until theirs is made. */
 	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR", "wP", "bK", "bQ", "bB", "bN", "bR", "bP"];
-	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "splinterlands", name: "Splinterlands" }, { id: "fantasy3d", name: MODELS3D.length >= 12 ? "Fantasy armies 3D" : "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
+	var SETS = [{ id: "wood", name: "Wood" }, { id: "marble", name: "Marble" }, { id: "glass", name: "Glass" }, { id: "tournament", name: "Tournament" }, { id: "fantasy", name: "Fantasy armies" }, { id: "splinterlands", name: "Splinterlands" }, { id: "splinterlands3d", name: "Splinterlands 3D" }, { id: "fantasy3d", name: MODELS3D.length >= 12 ? "Fantasy armies 3D" : "Fantasy armies 3D (" + MODELS3D.length + " of 12 done)" }];
 
 	function tex(w, h, draw) { var c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; }
 	function std(col, rough, extra) { var o = { color: col, roughness: rough === undefined ? 0.85 : rough, metalness: 0 }; if (extra) for (var k in extra) o[k] = extra[k]; return new THREE.MeshStandardMaterial(o); }
@@ -55,6 +55,8 @@
 		if (id === "glass") return { light: "#c9dcea", dark: "#3e5f7a", lightV: ["#e4eff8"], darkV: ["#2d4a62"], frame: "#20303e", frameV: ["#2f4558"], coord: "#cfe4f5",
 			w: { color: "#eaf6ff", roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62 }, b: { color: "#1e3a5c", roughness: 0.08, metalness: 0.15, transparent: true, opacity: 0.7 }, accW: "#9fd2ff", accB: "#79b8ff" };
 		if (id === "fantasy3d") return Object.assign(setLook("fantasy"), { models: true });
+		// Splinterlands 3D: real 3D figures made with Microsoft TRELLIS (MIT) from the Splinterlands card art (mes.fm/chess/img/splinterlands3d/<key>.glb)
+		if (id === "splinterlands3d") return Object.assign(setLook("splinterlands"), { models: true, modelDir: "splinterlands3d" });
 		// Splinterlands: the official card art (Life army vs Death army), used with permission from Splinterlands (@clayboyn, 2026-11)
 		if (id === "splinterlands") return Object.assign(setLook("fantasy"), { light: "#d9c391", dark: "#6a557a", lightV: ["#cdb684", "#e3cfa0"], darkV: ["#5e4b6e", "#77628a"], frame: "#3a1f4a", frameV: ["#2a1438", "#d4a63a", "#4a2a5c"], coord: "#f2d27a",
 			w: { color: "#f2e5b8", roughness: 0.35, metalness: 0.5 }, b: { color: "#4b1f5c", roughness: 0.35, metalness: 0.45 }, accW: "#f2d27a", accB: "#8a4fb0", sprites: true, sprDir: "splinterlands", sprAr: 1 });
@@ -123,7 +125,7 @@
 		var white = type === type.toUpperCase(), t = type.toUpperCase(), g = new THREE.Group(), h = SPR_H[t];
 		var base = new THREE.Mesh(sprGeo.base || (sprGeo.base = (function () { var b = new THREE.CylinderGeometry(0.34, 0.37, 0.07, 32); b.translate(0, 0.035, 0); b.userData.keep = true; return b; })()), white ? mats.w : mats.b);
 		base.castShadow = true; base.receiveShadow = true; g.add(base);
-		var ar = mats.sprAr || 0.8, gk = t + ar; if (ar !== 0.8) h *= 1.2;   // square card art (Splinterlands) is drawn a bit bigger: wide figures fill less of it
+		var ar = mats.sprAr || 0.8, gk = t + ar; if (ar !== 0.8) h *= ({ K: 0.98, Q: 0.92, R: 0.86, B: 0.9, N: 0.9, P: 0.92 })[t];   // square card art (Splinterlands): kept inside its square so the rows are not crowded
 		var geo = sprGeo[gk] || (sprGeo[gk] = (function () { var p = new THREE.PlaneGeometry(h * ar, h); p.translate(0, h / 2, 0); p.userData.keep = true; return p; })());
 		var s = sprMat((white ? "w" : "b") + t, mats.redraw, mats.sprDir), pl = new THREE.Mesh(geo, s.m);
 		pl.customDepthMaterial = s.d; pl.castShadow = true; pl.position.y = 0.05; pl.rotation.order = "YXZ"; pl.userData.bb = true;
@@ -148,17 +150,18 @@
 		if (tx) { var im = j.images[j.textures[tx.index].source || 0], iv = view(im.bufferView); img = new Blob([new Uint8Array(buf, iv.off, iv.len)], { type: im.mimeType || "image/png" }); }
 		return { pos: acc(pr.attributes.POSITION), uv: pr.attributes.TEXCOORD_0 !== undefined ? acc(pr.attributes.TEXCOORD_0) : null, idx: acc(pr.indices), img: img };
 	}
-	function model3d(key) {
-		if (M3[key]) return M3[key];
-		var url = (window.MES_CHESS_IMG || "/chess/img/") + "fantasy3d/" + key + ".glb?v=3";
-		return (M3[key] = fetch(url).then(function (r) { if (!r.ok) throw new Error("model " + r.status); return r.arrayBuffer(); }).then(function (buf) {
+	function model3d(key, dir) {
+		dir = dir || "fantasy3d"; var mk = dir + "/" + key;
+		if (M3[mk]) return M3[mk];
+		var url = (window.MES_CHESS_IMG || "/chess/img/") + dir + "/" + key + ".glb?v=3";
+		return (M3[mk] = fetch(url).then(function (r) { if (!r.ok) throw new Error("model " + r.status); return r.arrayBuffer(); }).then(function (buf) {
 			var d = parseGlb(buf), g = new THREE.BufferGeometry();
 			g.setAttribute("position", new THREE.BufferAttribute(d.pos, 3));
 			if (d.uv) g.setAttribute("uv", new THREE.BufferAttribute(d.uv, 2));
 			g.setIndex(new THREE.BufferAttribute(d.idx, 1));
 			g.computeVertexNormals(); g.computeBoundingBox();
 			var bb = g.boundingBox, s = 1 / (bb.max.y - bb.min.y);       // height 1, feet at y = 0, centred
-			g.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2); g.scale(s, s, s);
+			g.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2); g.scale(s, s, s); g.userData.wide = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) * s;
 			g.userData.keep = true;
 			var m = new THREE.MeshStandardMaterial({ roughness: 0.75, metalness: 0.05, color: "#ffffff" }); m.userData.keep = true;
 			if (!d.img) return { g: g, m: m };
@@ -166,15 +169,16 @@
 				var t = new THREE.Texture(bmp); t.flipY = false; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.needsUpdate = true;
 				m.map = t; m.emissive = new THREE.Color("#ffffff"); m.emissiveMap = t; m.emissiveIntensity = 0.3; m.needsUpdate = true; return { g: g, m: m };
 			});
-		}).catch(function (e) { delete M3[key]; throw e; }));
+		}).catch(function (e) { delete M3[mk]; throw e; }));
 	}
 	function makeModel(type, mats) {
 		var white = type === type.toUpperCase(), t = type.toUpperCase(), key = (white ? "w" : "b") + t, g = new THREE.Group();
 		g.userData.type = type;
 		var stand = makeSprite(type, mats);            // the picture figure stands in until the model has loaded (and if it fails)
 		g.add(stand);
-		model3d(key).then(function (md) {
+		model3d(key, mats.modelDir).then(function (md) {
 			var o = new THREE.Mesh(md.g, md.m), h = SPR_H[t] * 1.02;
+			if (mats.modelDir) h = Math.min(h * 0.92, 0.98 / Math.max(0.5, md.g.userData.wide || 1));   // Splinterlands models: wide figures (golems, horses) are kept inside their square
 			o.scale.set(h, h, h); o.castShadow = true; o.receiveShadow = true;
 			g.remove(stand); delete g.userData.bb; if (white) o.rotation.y = Math.PI;   // each army faces the other one (the models' front is +Z)
 			g.add(o);
@@ -184,7 +188,7 @@
 		return g;
 	}
 	function makePiece(type, mats) {
-		if (mats.models && MODELS3D.indexOf((type === type.toUpperCase() ? "w" : "b") + type.toUpperCase()) >= 0) return makeModel(type, mats);
+		if (mats.models && (mats.modelDir || MODELS3D.indexOf((type === type.toUpperCase() ? "w" : "b") + type.toUpperCase()) >= 0)) return makeModel(type, mats);
 		if (mats.sprites) return makeSprite(type, mats);
 		var white = type === type.toUpperCase(), t = type.toUpperCase(), mat = white ? mats.w : mats.b, acc = white ? mats.accW : mats.accB, g = new THREE.Group(), G = GEO;
 		function add(geo, m, x, y, z) { var o = new THREE.Mesh(geo, m || mat); o.position.set(x || 0, y || 0, z || 0); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; }
@@ -255,7 +259,7 @@
 		if (this.mats) ["w", "b", "accW", "accB"].forEach(function (k) { this.mats[k].dispose(); }, this);
 		this.look = L;
 		this.mats = { w: keep(new THREE.MeshStandardMaterial(L.w)), b: keep(new THREE.MeshStandardMaterial(L.b)), accW: keep(std(L.accW, 0.4)), accB: keep(std(L.accB, 0.4)) };
-		var self = this; this.mats.sprites = !!L.sprites; this.mats.models = !!L.models; this.mats.sprDir = L.sprDir || ""; this.mats.sprAr = L.sprAr || 0; this.mats.redraw = function () { self.render(); };
+		var self = this; this.mats.sprites = !!L.sprites; this.mats.models = !!L.models; this.mats.sprDir = L.sprDir || ""; this.mats.sprAr = L.sprAr || 0; this.mats.modelDir = L.modelDir || ""; this.mats.redraw = function () { self.render(); };
 	};
 	View.prototype.buildBoard = function () {
 		var L = this.look, g = this.boardG, coords = this.coords;
@@ -364,7 +368,7 @@
 	View.prototype.toOrbit = function () {
 		if (this.camMode === "orbit" || this.look3) return;
 		var e = this.camTarget().eye, d = Math.max(0.5, e.length());
-		this.orb = { th: Math.atan2(e.z, e.x), ph: Math.acos(Math.max(-1, Math.min(1, e.y / d))), d: d, tx: 0, tz: 0 };
+		this.orb = { th: Math.atan2(e.z, e.x), ph: Math.acos(Math.max(-1, Math.min(1, e.y / d))), d: d, tx: 0, tz: 0, ty: 0 };
 		this.camMode = "orbit"; this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1;
 		if (this.onCamMode) this.onCamMode("orbit");
 	};
@@ -396,6 +400,16 @@
 		this.orb.th += dx * 0.008; this.orb.ph = Math.max(0.01, Math.min(1.75, this.orb.ph - dy * 0.006));
 		this.render();
 	};
+	/* Pan: slide the camera sideways / up and down in the picture (right-drag, middle-drag, Shift + drag, two fingers, or the arrow keys).
+	   The point the camera circles moves with it, so you can line up on any piece and then orbit / zoom from there. */
+	View.prototype.pan = function (dx, dy) {
+		if (this.look3) return;
+		this.toOrbit();
+		var o = this.orb, k = 0.004 + o.d * 0.0016, sn = Math.sin(o.th), cs = Math.cos(o.th);
+		o.tx = (o.tx || 0) - sn * dx * k; o.tz = (o.tz || 0) + cs * dx * k; o.ty = Math.max(-12, Math.min(40, (o.ty || 0) + dy * k));
+		var r = Math.hypot(o.tx, o.tz); if (r > ORB_REACH) { o.tx *= ORB_REACH / r; o.tz *= ORB_REACH / r; }
+		this.render();
+	};
 	/* Look closer: the camera walks up to one piece, starting in front of its face (each army faces the other), and drags /
 	   zoom then circle round it. inspect(square) -> true when there was a piece; step(+1/-1) = the next piece of the same army;
 	   endLook() / resetView() = the normal camera again. onLook(info|null) tells the page what is being looked at. */
@@ -418,7 +432,7 @@
 		this.look3.th = th; this.look3.ph = ph; this.look3.d = Math.max(this.look3.h * 1.2, d * this.look3.h / (SPR_H[this.look3.type.toUpperCase()] || 1));
 	};
 	View.prototype.endLook = function () { if (!this.look3) return; this.look3 = null; if (this.onLook) this.onLook(null); this.render(); };
-	View.prototype.resetView = function () { this.endLook(); this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1; this.orb = { th: this.flip ? -Math.PI / 2 : Math.PI / 2, ph: 0.75, d: 13 }; this.render(); };
+	View.prototype.resetView = function () { this.endLook(); this.free = { yaw: 0, pitch: 0 }; this.zoomF = 1; this.orb = { th: this.flip ? -Math.PI / 2 : Math.PI / 2, ph: 0.75, d: 13, tx: 0, tz: 0, ty: 0 }; this.render(); };
 	View.prototype.camTarget = function () {
 		var mode = this.camMode, z = this.zoomF, out = { eye: new THREE.Vector3(), look: new THREE.Vector3(0, 0, 0), up: new THREE.Vector3(0, 1, 0) };
 		var fov = this.cam.fov * Math.PI / 180, asp = Math.max(0.3, this.w / this.h);
@@ -431,9 +445,10 @@
 		}
 		if (mode === "orbit") {
 			var o = this.orb;
-			var tx = o.tx || 0, tz = o.tz || 0;
-			out.eye.set(tx + o.d * Math.sin(o.ph) * Math.cos(o.th), o.d * Math.cos(o.ph), tz + o.d * Math.sin(o.ph) * Math.sin(o.th));
-			out.look.set(tx, 0, tz);
+			var tx = o.tx || 0, tz = o.tz || 0, ty = (o.ty || 0) + 0.65 * Math.max(0, Math.min(1, (8 - o.d) / 6.8));   // close up, aim at the figures' chests, not the squares
+			out.look.set(tx, ty, tz);
+			out.eye.set(tx + o.d * Math.sin(o.ph) * Math.cos(o.th), ty + o.d * Math.cos(o.ph), tz + o.d * Math.sin(o.ph) * Math.sin(o.th));
+			if (out.eye.y < 0.3) out.eye.y = 0.3;   // never sink into the board / floor
 			return out;
 		}
 		var th, ph, d = fit * z;

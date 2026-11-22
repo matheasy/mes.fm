@@ -328,7 +328,7 @@
 		if (S.p2 === "fantasy" || S.p2 === "splinterlands") {   // picture figures standing on a coloured disc: Fantasy armies (AI-painted, original) or Splinterlands card art (used with permission)
 			var SLp = S.p2 === "splinterlands", fk = (SLp ? "S" : "F") + letter;
 			if (pieceCache[fk]) return pieceCache[fk];
-			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * (SLp ? 1 : 0.8); if (SLp) { hh = Math.min(48, hh * 1.04); ww = hh; }
+			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * (SLp ? 1 : 0.8); if (SLp) { hh = Math.min(44, hh * 0.92); ww = hh; }
 			return (pieceCache[fk] = '<g class="ch-pfan"><ellipse cx="22.5" cy="41.2" rx="13.5" ry="3.6" class="' + (fw ? "ch-fbw" : "ch-fbb") + '"/>' +
 				'<image href="' + (window.MES_CHESS_IMG || "/chess/img/") + (SLp ? "splinterlands/" : "fantasy/") + (fw ? "w" : "b") + FL + '.png?v=1" x="' + (22.5 - ww / 2).toFixed(1) + '" y="' + (43 - hh) + '" width="' + ww.toFixed(1) + '" height="' + hh + '" preserveAspectRatio="xMidYMax meet"/></g>');
 		}
@@ -606,8 +606,8 @@
 		p3.pts[e.pointerId] = { x: e.clientX, y: e.clientY };
 		try { box3.setPointerCapture(e.pointerId); } catch (er) {}
 		var n = Object.keys(p3.pts).length;
-		p3.drag = { x: e.clientX, y: e.clientY, look: e.button === 2 || e.shiftKey || n > 1, moved: false, d0: 0 };
-		if (n === 2) { var a = Object.values(p3.pts); p3.drag.d0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); }
+		p3.drag = { x: e.clientX, y: e.clientY, look: e.button === 1 || e.button === 2 || e.shiftKey || n > 1, pan: e.button === 1 || e.button === 2 || e.shiftKey, moved: false, d0: 0 };
+		if (n === 2) { var a = Object.values(p3.pts); p3.drag.d0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); p3.drag.mid = { x: (a[0].x + a[1].x) / 2, y: (a[0].y + a[1].y) / 2 }; }
 		e.preventDefault();
 	});
 	box3.addEventListener("pointermove", function (e) {
@@ -616,7 +616,11 @@
 		var pts = Object.values(p3.pts);
 		if (pts.length === 2 && p3.drag.d0) { var d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y); if (d > 0) { v3.zoom(p3.drag.d0 / d); p3.drag.d0 = d; } }
 		if (Math.abs(e.clientX - p3.drag.x) + Math.abs(e.clientY - p3.drag.y) > 6) p3.drag.moved = true;
-		if (p3.drag.look) v3.orbit((e.clientX - prev.x) / (pts.length > 1 ? 2 : 1), (e.clientY - prev.y) / (pts.length > 1 ? 2 : 1));
+		if (pts.length === 2) {   // two fingers: pinch = zoom (above), move together = pan
+			var mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }, m0 = p3.drag.mid || mid;
+			v3.pan(mid.x - m0.x, mid.y - m0.y); p3.drag.mid = mid;
+		} else if (p3.drag.pan) v3.pan(e.clientX - prev.x, e.clientY - prev.y);
+		else if (p3.drag.look) v3.orbit(e.clientX - prev.x, e.clientY - prev.y);
 		else if (p3.drag.moved) v3.orbit(e.clientX - prev.x, e.clientY - prev.y);   // a plain drag looks around the board in every camera mode
 	});
 	function up3(e) {
@@ -965,6 +969,7 @@
 			if (e.key === "Escape") { lookPick = false; v3.endLook(); showLook(null); return; }
 			if (v3.look3 && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); v3.step(e.key === "ArrowLeft" ? -1 : 1); return; }
 		}
+		if (v3 && use3d() && e.shiftKey && /^Arrow/.test(e.key)) { e.preventDefault(); var pk = { ArrowLeft: [-40, 0], ArrowRight: [40, 0], ArrowUp: [0, -40], ArrowDown: [0, 40] }[e.key]; v3.pan(pk[0], pk[1]); return; }
 		if (k === "l" && use3d()) { startLook(); return; }
 		if (k === "n" && mode !== "online" && mode !== "hive") newGame();
 		else if (k === "u") undo();
