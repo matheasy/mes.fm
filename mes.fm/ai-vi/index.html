@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="Ẩn hộp này (liên kết Về thanh toán sẽ đưa nó trở lại)">Ẩn <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">Bạn trả theo từng tin nhắn, bằng HBD</h2>
-			<p>Không đăng ký, không tài khoản, không thẻ. Mỗi tin nhắn hiện giá trước khi bạn gửi. Bạn trả số tiền đó bằng <b>HBD</b> (đồng đô la của Hive) cho <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> qua Hive Keychain, câu trả lời về ngay, và chỉ có vậy. <b>Giá là số tiền công ty AI tính cho chúng tôi × <span data-margin>1.5</span></b>: phần thêm một nửa (50% trên chi phí) giúp mes.fm và các công cụ miễn phí của nó tiếp tục hoạt động.</p>
+			<p>Không đăng ký, không tài khoản, không thẻ. Mỗi tin nhắn hiện giá trước khi bạn gửi. Bạn trả số tiền đó bằng <b>HBD</b> (đồng đô la của Hive) cho <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> qua Hive Keychain, câu trả lời về ngay, và chỉ có vậy. <b>Giá là số tiền công ty AI tính cho chúng tôi × <span data-margin>1.5</span></b> (tính cả phí thanh toán và thuế bán hàng 12% mà chúng tôi trả cho việc sử dụng đó): phần thêm một nửa (50% trên chi phí thực) giúp mes.fm và các công cụ miễn phí của nó tiếp tục hoạt động.</p>
 			<details class="ai-why">
 				<summary>Cách tính giá</summary>
 				<ul>
-					<li><b>Giá = số tiền công ty AI tính cho chúng tôi cho tin nhắn đó × <span data-margin>1.5</span></b>, làm tròn lên 0.001 HBD (giá thấp nhất 0.001 HBD). Phần thêm một nửa giúp mes.fm tiếp tục hoạt động.</li>
+					<li><b>Giá = số tiền công ty AI tính cho chúng tôi cho tin nhắn đó × <span data-margin>1.5</span></b>, trong đó số tiền này đã gồm thuế bán hàng 12% mà chúng tôi trả trên đó (và phí 5.5% của OpenRouter với các mô hình giá rẻ), làm tròn lên 0.001 HBD (giá thấp nhất 0.001 HBD). Phần thêm một nửa giúp mes.fm tiếp tục hoạt động.</li>
 					<li>Số tiền họ tính phụ thuộc vào <b>mô hình</b>, vào lượng văn bản được gửi (tin nhắn của bạn <b>cộng toàn bộ trò chuyện trước đó</b>, mà AI đọc lại mỗi lần) và vào <b>độ dài câu trả lời</b> bạn chọn.</li>
 					<li>Câu trả lời không bao giờ đắt hơn số tiền bạn đã trả: nó bị cắt ở độ dài bạn chọn. <b>Câu trả lời ngắn có giá bằng câu trả lời dài ở cùng mức</b>: không có số dư nào được giữ, nên không có tiền thừa để trả lại. Hãy chọn Ngắn cho câu hỏi nhanh.</li>
 					<li>Trò chuyện dài sẽ đắt hơn theo từng tin nhắn. Hãy bắt đầu trò chuyện mới khi đổi chủ đề.</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-vi.js?v=464ffbb7" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-vi.js?v=6729b654" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

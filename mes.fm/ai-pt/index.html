@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="Ocultar esta caixa (o link Sobre o pagamento a traz de volta)">Ocultar <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">Você paga por mensagem, em HBD</h2>
-			<p>Sem assinatura, sem conta, sem cartão. Cada mensagem mostra o preço antes de você enviar. Você paga esse preço em <b>HBD</b> (a moeda em dólar da Hive) para <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> com o Hive Keychain, a resposta chega na hora, e é só isso. <b>O preço é o que a empresa de IA nos cobra × <span data-margin>1.5</span></b>: a metade extra (50% acima do custo) mantém o mes.fm e suas ferramentas gratuitas funcionando.</p>
+			<p>Sem assinatura, sem conta, sem cartão. Cada mensagem mostra o preço antes de você enviar. Você paga esse preço em <b>HBD</b> (a moeda em dólar da Hive) para <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> com o Hive Keychain, a resposta chega na hora, e é só isso. <b>O preço é o que a empresa de IA nos cobra × <span data-margin>1.5</span></b> (contando as taxas de pagamento e os 12% de imposto sobre vendas que pagamos sobre esse uso): a metade extra (50% acima do custo real) mantém o mes.fm e suas ferramentas gratuitas funcionando.</p>
 			<details class="ai-why">
 				<summary>Como o preço é calculado</summary>
 				<ul>
-					<li><b>Preço = o que a empresa de IA nos cobra por essa mensagem × <span data-margin>1.5</span></b>, arredondado para cima a 0.001 HBD (preço mínimo 0.001 HBD). A metade extra mantém o mes.fm no ar.</li>
+					<li><b>Preço = o que a empresa de IA nos cobra por essa mensagem × <span data-margin>1.5</span></b>, sendo que essa cobrança inclui os 12% de imposto sobre vendas que pagamos sobre ela (e a taxa de 5.5% do OpenRouter nos modelos baratos), arredondado para cima a 0.001 HBD (preço mínimo 0.001 HBD). A metade extra mantém o mes.fm no ar.</li>
 					<li>O valor cobrado depende do <b>modelo</b>, de quanto texto é enviado (sua mensagem <b>mais todo o chat anterior</b>, que a IA relê toda vez) e do <b>tamanho da resposta</b> que você escolher.</li>
 					<li>A resposta nunca pode custar mais do que você pagou: ela é cortada no tamanho que você escolheu. <b>Uma resposta curta custa o mesmo que uma longa na mesma opção</b>: nada fica de saldo, então não há troco para devolver. Escolha Curta para perguntas rápidas.</li>
 					<li>Chats longos ficam mais caros a cada mensagem. Comece um chat novo quando mudar de assunto.</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-pt-BR.js?v=a4e9281d" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-pt-BR.js?v=bf44e11f" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

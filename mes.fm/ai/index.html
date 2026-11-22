@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="Hide this box (the About paying link brings it back)">Hide <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">You pay per message, in HBD</h2>
-			<p>No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.</p>
+			<p>No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b> (counting the payment fees and the 12% sales tax we pay on that use): the extra half (50% on top of the real cost) keeps mes.fm and its free tools running.</p>
 			<details class="ai-why">
 				<summary>How the price is worked out</summary>
 				<ul>
-					<li><b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.</li>
+					<li><b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, where the charge includes the 12% sales tax we pay on it (and OpenRouter’s 5.5% fee for the cheap models), rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.</li>
 					<li>What they charge depends on the <b>model</b>, on how much text is sent (your message <b>plus the whole chat before it</b>, which the AI rereads every time) and on the <b>answer length</b> you pick.</li>
 					<li>The answer can never cost more than you paid: it is cut off at the length you chose. <b>A short answer costs the same as a long one at the same setting</b>: nothing is kept on account, so there is no change to give back. Pick Short for quick questions.</li>
 					<li>Long chats get dearer with every message. Start a new chat when the topic changes.</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

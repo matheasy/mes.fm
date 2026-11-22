@@ -24,7 +24,7 @@
   "<b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).": "<b>Yerel önizleme:</b> ödemeler ve yanıtlar simülasyondur (hesap @demo, hiç HBD gönderilmez).",
   "<b>Logged in with the Keychain phone app:</b> it can't use your memo key, so pick <b>🛡 Passphrase</b> under the Encrypt tick, or the save would be public.": "<b>Keychain telefon uygulamasıyla giriş yaptın:</b> uygulama memo anahtarını kullanamaz, bu yüzden Şifrele kutusunun altında <b>🛡 Parola</b> seçeneğini seç, yoksa yedek herkese açık olur.",
   "<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href=\"?mock=1\">Try the demo</a> (simulated payment and answer).": "<b>MES AI yakında geliyor.</b> Sayfa hazır; yapay zekâ hizmetleri bağlanıyor. <a href=\"?mock=1\">Demoyu dene</a> (simüle ödeme ve yanıt).",
-  "<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.": "<b>Fiyat = yapay zekâ şirketinin o mesaj için bizden aldığı ücret × <span data-margin>1.5</span></b>, 0,001 HBD'ye yukarı yuvarlanır (en düşük fiyat 0,001 HBD). Fazladan yarısı mes.fm'in ayakta kalmasını sağlar.",
+  "<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, where the charge includes the 12% sales tax we pay on it (and OpenRouter’s 5.5% fee for the cheap models), rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.": "<b>Fiyat = yapay zekâ şirketinin o mesaj için bizden aldığı ücret × <span data-margin>1.5</span></b>; bu ücrete, üzerine ödediğimiz %12 satış vergisi (ve ucuz modellerde OpenRouter’ın %5,5 ücreti) dahildir; 0,001 HBD'ye yukarı yuvarlanır (en düşük fiyat 0,001 HBD). Fazladan yarısı mes.fm'in ayakta kalmasını sağlar.",
   "<b>Public:</b> the chat text will be readable by anyone on the Hive blockchain, forever.": "<b>Herkese açık:</b> sohbet metni Hive blokzincirinde herkes tarafından sonsuza dek okunabilir.",
   "A 30-message coding chat that grows to 50k tokens costs about {p} HBD in all on Sonnet. Starting a new chat when the topic changes keeps it cheap.": "50k tokene kadar büyüyen 30 mesajlık bir kodlama sohbeti Sonnet ile toplam yaklaşık {p} HBD tutar. Konu değişince yeni sohbet açmak maliyeti düşük tutar.",
   "A PDF of this answer, with its equations and charts": "Bu yanıtın denklemleri ve grafikleriyle bir PDF’si",
@@ -153,8 +153,7 @@
   "No chats to back up yet.": "Yedeklenecek sohbet yok.",
   "No chats to save yet.": "Kaydedilecek sohbet yok.",
   "No folder": "Klasörsüz",
-  "No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.003 HBD.": "Bugün ücretsiz mesajın kalmadı: 00:00 UTC'de yenilenir. Bu modelde ücretli mesajlar yaklaşık 0.003 HBD tutar.",
-  "No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.": "Abonelik yok, hesap yok, kart yok. Her mesaj, göndermeden önce fiyatını gösterir. Bu fiyatı Hive Keychain ile <b>HBD</b> (Hive'ın dolar coini) olarak <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> hesabına ödersin, yanıt hemen gelir, hepsi bu. <b>Fiyat, yapay zekâ şirketinin bizden aldığı ücret × <span data-margin>1.5</span></b>: fazladan yarısı (maliyetin üstüne %50) mes.fm'in ve ücretsiz araçlarının ayakta kalmasını sağlar.",
+  "No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b> (counting the payment fees and the 12% sales tax we pay on that use): the extra half (50% on top of the real cost) keeps mes.fm and its free tools running.": "Abonelik yok, hesap yok, kart yok. Her mesaj, göndermeden önce fiyatını gösterir. Bu fiyatı Hive Keychain ile <b>HBD</b> (Hive'ın dolar coini) olarak <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> hesabına ödersin, yanıt hemen gelir, hepsi bu. <b>Fiyat, yapay zekâ şirketinin bizden aldığı ücret × <span data-margin>1.5</span></b> (ödeme ücretleri ve bu kullanım için ödediğimiz %12 satış vergisi dahil): fazladan yarısı (gerçek maliyetin üstüne %50) mes.fm'in ve ücretsiz araçlarının ayakta kalmasını sağlar.",
   "Nothing has that.": "Eşleşen bir şey yok.",
   "Now paying as @{name}.": "Artık @{name} olarak ödüyorsun.",
   "Oldest first": "Önce en eski",
@@ -395,6 +394,7 @@
   "＋ New chat": "＋ Yeni sohbet",
   "＋ New picture": "＋ Yeni resim",
   "＋ New video": "＋ Yeni video",
-  "＋ Use with other pictures": "＋ Başka resimlerle kullan"
+  "＋ Use with other pictures": "＋ Başka resimlerle kullan",
+  "No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.004 HBD.": "Bugün ücretsiz mesajın kalmadı: 00:00 UTC'de yenilenir. Bu modelde ücretli mesajlar yaklaşık 0.004 HBD tutar."
  }
 }

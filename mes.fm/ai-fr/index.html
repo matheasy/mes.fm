@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="Masquer cet encadré (le lien À propos du paiement le fait revenir)">Masquer <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">Vous payez par message, en HBD</h2>
-			<p>Pas d'abonnement, pas de compte, pas de carte. Chaque message affiche son prix avant l'envoi. Vous payez ce prix en <b>HBD</b> (la pièce en dollars de Hive) à <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> avec Hive Keychain, la réponse arrive aussitôt, et c'est tout. <b>Le prix est ce que l'entreprise d'IA nous facture × <span data-margin>1.5</span></b> : la moitié en plus (50 % au-dessus du coût) fait tourner mes.fm et ses outils gratuits.</p>
+			<p>Pas d'abonnement, pas de compte, pas de carte. Chaque message affiche son prix avant l'envoi. Vous payez ce prix en <b>HBD</b> (la pièce en dollars de Hive) à <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> avec Hive Keychain, la réponse arrive aussitôt, et c'est tout. <b>Le prix est ce que l'entreprise d'IA nous facture × <span data-margin>1.5</span></b> (en comptant les frais de paiement et la taxe de vente de 12 % que nous payons sur cet usage) : la moitié en plus (50 % au-dessus du coût réel) fait tourner mes.fm et ses outils gratuits.</p>
 			<details class="ai-why">
 				<summary>Comment le prix est calculé</summary>
 				<ul>
-					<li><b>Prix = ce que l'entreprise d'IA nous facture pour ce message × <span data-margin>1.5</span></b>, arrondi au 0.001 HBD supérieur (prix minimum 0.001 HBD). La moitié en plus fait vivre mes.fm.</li>
+					<li><b>Prix = ce que l'entreprise d'IA nous facture pour ce message × <span data-margin>1.5</span></b>, ce montant comprenant la taxe de vente de 12 % que nous payons dessus (et les frais de 5.5 % d’OpenRouter pour les modèles bon marché), arrondi au 0.001 HBD supérieur (prix minimum 0.001 HBD). La moitié en plus fait vivre mes.fm.</li>
 					<li>Leur tarif dépend du <b>modèle</b>, de la quantité de texte envoyée (votre message <b>plus tout le chat précédent</b>, que l'IA relit à chaque fois) et de la <b>longueur de réponse</b> choisie.</li>
 					<li>La réponse ne peut jamais coûter plus que ce que vous avez payé : elle est coupée à la longueur choisie. <b>Une réponse courte coûte autant qu'une longue avec le même réglage</b> : rien n'est gardé en compte, il n'y a donc pas de monnaie à rendre. Choisissez Courte pour les questions rapides.</li>
 					<li>Les longs chats coûtent plus cher à chaque message. Commencez un nouveau chat quand vous changez de sujet.</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=70b987cd" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=17737136" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

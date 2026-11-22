@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="Sembunyikan kotak ini (tautan Tentang pembayaran memunculkannya lagi)">Sembunyikan <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">Kamu membayar per pesan, dalam HBD</h2>
-			<p>Tanpa langganan, tanpa akun, tanpa kartu. Setiap pesan menampilkan harganya sebelum dikirim. Kamu membayar harga itu dalam <b>HBD</b> (koin dolar milik Hive) ke <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> dengan Hive Keychain, jawabannya langsung datang, dan hanya itu. <b>Harga = biaya yang ditagih perusahaan AI kepada kami × <span data-margin>1.5</span></b>: setengah tambahannya (50% di atas biaya) membuat mes.fm dan alat-alat gratisnya tetap berjalan.</p>
+			<p>Tanpa langganan, tanpa akun, tanpa kartu. Setiap pesan menampilkan harganya sebelum dikirim. Kamu membayar harga itu dalam <b>HBD</b> (koin dolar milik Hive) ke <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> dengan Hive Keychain, jawabannya langsung datang, dan hanya itu. <b>Harga = biaya yang ditagih perusahaan AI kepada kami × <span data-margin>1.5</span></b> (termasuk biaya pembayaran dan pajak penjualan 12% yang kami bayar atas pemakaian itu): setengah tambahannya (50% di atas biaya sebenarnya) membuat mes.fm dan alat-alat gratisnya tetap berjalan.</p>
 			<details class="ai-why">
 				<summary>Cara harga dihitung</summary>
 				<ul>
-					<li><b>Harga = biaya yang ditagih perusahaan AI kepada kami untuk pesan itu × <span data-margin>1.5</span></b>, dibulatkan ke atas ke 0,001 HBD (harga terkecil 0,001 HBD). Setengah tambahannya membuat mes.fm tetap berjalan.</li>
+					<li><b>Harga = biaya yang ditagih perusahaan AI kepada kami untuk pesan itu × <span data-margin>1.5</span></b>, dan biaya itu sudah termasuk pajak penjualan 12% yang kami bayar atasnya (serta biaya 5,5% dari OpenRouter untuk model-model murah), dibulatkan ke atas ke 0,001 HBD (harga terkecil 0,001 HBD). Setengah tambahannya membuat mes.fm tetap berjalan.</li>
 					<li>Besarnya biaya tergantung pada <b>model</b>, berapa banyak teks yang dikirim (pesanmu <b>ditambah seluruh obrolan sebelumnya</b>, yang dibaca ulang AI setiap kali) dan <b>panjang jawaban</b> yang kamu pilih.</li>
 					<li>Jawaban tidak akan pernah lebih mahal dari yang kamu bayar: jawaban dipotong di panjang yang kamu pilih. <b>Jawaban pendek harganya sama dengan jawaban panjang di pengaturan yang sama</b>: tidak ada saldo yang disimpan, jadi tidak ada kembalian. Pilih Pendek untuk pertanyaan singkat.</li>
 					<li>Obrolan panjang makin mahal di setiap pesan. Mulai obrolan baru saat topiknya berganti.</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=6d510494" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=4f771f4b" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

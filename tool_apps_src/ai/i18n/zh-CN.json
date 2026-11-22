@@ -24,7 +24,7 @@
   "<b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).": "<b>本地预览：</b>付款和回答都是模拟的（账户 @demo，不会转出 HBD）。",
   "<b>Logged in with the Keychain phone app:</b> it can't use your memo key, so pick <b>🛡 Passphrase</b> under the Encrypt tick, or the save would be public.": "<b>你是用 Keychain 手机应用登录的：</b>它无法使用你的 memo 密钥，请在“加密”勾选框下方选择 <b>🛡 Passphrase</b>（口令），否则保存的内容会是公开的。",
   "<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href=\"?mock=1\">Try the demo</a> (simulated payment and answer).": "<b>MES AI 即将上线。</b>页面已经准备好，AI 服务正在接入。<a href=\"?mock=1\">试试演示</a>（模拟付款和回答）。",
-  "<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.": "<b>价格 = AI 公司就这条消息向我们收取的费用 × <span data-margin>1.5</span></b>，向上取整到 0.001 HBD（最低 0.001 HBD）。多出的一半用来维持 mes.fm 的运行。",
+  "<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, where the charge includes the 12% sales tax we pay on it (and OpenRouter’s 5.5% fee for the cheap models), rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.": "<b>价格 = AI 公司就这条消息向我们收取的费用 × <span data-margin>1.5</span></b>，其中这笔费用包含我们为此支付的 12% 销售税（便宜模型还包含 OpenRouter 5.5% 的手续费），向上取整到 0.001 HBD（最低 0.001 HBD）。多出的一半用来维持 mes.fm 的运行。",
   "<b>Public:</b> the chat text will be readable by anyone on the Hive blockchain, forever.": "<b>公开：</b>任何人都能在 Hive 区块链上读到这段聊天内容，而且永久保留。",
   "A 30-message coding chat that grows to 50k tokens costs about {p} HBD in all on Sonnet. Starting a new chat when the topic changes keeps it cheap.": "一个 30 条消息、增长到 50k 令牌的编程对话，用 Sonnet 总共约 {p} HBD。话题变化时新开对话可以保持便宜。",
   "A PDF of this answer, with its equations and charts": "这条回答的 PDF，含公式和图表",
@@ -153,8 +153,7 @@
   "No chats to back up yet.": "还没有可备份的聊天。",
   "No chats to save yet.": "还没有可保存的聊天。",
   "No folder": "无文件夹",
-  "No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.003 HBD.": "今天的免费消息已用完：将于 00:00 UTC 恢复。此模型的付费消息约 0.003 HBD。",
-  "No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.": "无需订阅，无需注册，无需银行卡。每条消息在发送前都会显示价格。你用 Hive Keychain 以 <b>HBD</b>（Hive 的美元币）把这笔钱付给 <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a>，回答马上就来，就这么简单。<b>价格 = AI 公司向我们收取的费用 × <span data-margin>1.5</span></b>：多出的一半（在成本上加 50%）用来维持 mes.fm 及其免费工具的运行。",
+  "No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b> (counting the payment fees and the 12% sales tax we pay on that use): the extra half (50% on top of the real cost) keeps mes.fm and its free tools running.": "无需订阅，无需注册，无需银行卡。每条消息在发送前都会显示价格。你用 Hive Keychain 以 <b>HBD</b>（Hive 的美元币）把这笔钱付给 <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a>，回答马上就来，就这么简单。<b>价格 = AI 公司向我们收取的费用 × <span data-margin>1.5</span></b>（包括支付手续费和我们为这部分使用支付的 12% 销售税）：多出的一半（在实际成本上加 50%）用来维持 mes.fm 及其免费工具的运行。",
   "Nothing has that.": "没有找到。",
   "Now paying as @{name}.": "现在以 @{name} 付款。",
   "Oldest first": "最早优先",
@@ -395,6 +394,7 @@
   "＋ New chat": "＋ 新聊天",
   "＋ New picture": "＋ 新图片",
   "＋ New video": "＋ 新视频",
-  "＋ Use with other pictures": "＋ 和其他图片一起用"
+  "＋ Use with other pictures": "＋ 和其他图片一起用",
+  "No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.004 HBD.": "今天的免费消息已用完：将于 00:00 UTC 恢复。此模型的付费消息约 0.004 HBD。"
  }
 }

@@ -722,7 +722,7 @@
 		$("ai-freeuse").checked = S.free !== false;
 		$("ai-freeuse").disabled = FREEST.left <= 0;
 		$("ai-freetx").innerHTML = FREEST.left > 0 ? T("Use my free messages: <b>{n} of {m}</b> left today (Short answers, cheap models)", { n: FREEST.left, m: FREEST.perDay })
-			: T("No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.003 HBD.");
+			: T("No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.004 HBD.");
 	}
 	function loadFree() {
 		var u = who(); if (!u) { FREEST.left = null; paintPrice(); return; }

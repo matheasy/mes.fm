@@ -22,10 +22,10 @@ eq(A.hbdFromUsd(0.0321), 0.049, "rounds UP to 0.001");
 eq(A.fmtHbd(0.048), "0.048", "format");
 // Sonnet, 1,000 input tokens, medium (5,000): (1000*2 + 5000*10)/1e6 = 0.052 USD -> x1.5 = 0.078
 let q = A.chatQuote("sonnet", 1000, "medium");
-eq([q.maxOut, q.price, q.modelId], [5000, "0.078", "claude-sonnet-5-5"], "sonnet medium quote");
+eq([q.maxOut, q.price, q.modelId], [5000, "0.088", "claude-sonnet-5-5"], "sonnet medium quote: 0.052 x 1.12 (tax) x 1.5 = 0.08736 -> 0.088");
 // Opus long 30,000 out: (2000*4 + 30000*20)/1e6 = 0.608 -> 0.912
 q = A.chatQuote("opus", 2000, "long");
-eq([q.maxOut, q.price], [30000, "0.912"], "opus long quote");
+eq([q.maxOut, q.price], [30000, "1.022"], "opus long quote: 0.608 x 1.12 x 1.5");
 ok(A.chatQuote("sonnet", 10, "short").hbd >= A.chatQuote("sonnet", 10, "short").costUsd * 1.5 - 1e-12, "price >= cost x margin");
 // the quote is never below cost x margin, over many sizes
 let bad = 0;
@@ -35,8 +35,8 @@ for (const k of Object.keys(A.MODELS)) for (const len of Object.keys(A.LENGTHS))
   if (Math.round(x.hbd * 1000) !== x.hbd * 1000 && Math.abs(Math.round(x.hbd * 1000) - x.hbd * 1000) > 1e-6) bad++;
 }
 eq(bad, 0, "every chat quote covers cost x margin and is a whole 0.001 HBD");
-eq(A.imageQuote("medium", "1024x1024", 40).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6)), "image quote");
-eq(A.imageQuote("low", "1536x1024", 0).price, "0.008", "low landscape 0.005 x 1.5 = 0.0075 -> 0.008");
+eq(A.imageQuote("medium", "1024x1024", 40).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6, "openai")), "image quote");
+eq(A.imageQuote("low", "1536x1024", 0).price, "0.009", "low landscape 0.005 x 1.12 x 1.5 = 0.0084 -> 0.009");
 let threw = false; try { A.chatQuote("gpt9", 1, "short"); } catch (e) { threw = true; } eq(threw, true, "unknown model throws");
 threw = false; try { A.chatQuote("sonnet", 1, "huge"); } catch (e) { threw = true; } eq(threw, true, "unknown length throws");
 ok(A.estimateChatTokens([{ role: "user", content: "hello there" }]) > A.estimateTokens(A.SYSTEM), "estimate includes the system prompt");
@@ -88,8 +88,8 @@ eq(A.streamPiece({ event: "message_delta", data: { type: "message_delta", delta:
 eq(A.streamPiece({ event: "error", data: { type: "error", error: { message: "Overloaded" } } }), { t: "error", msg: "Overloaded" }, "error event");
 
 /* ---------- video prices ---------- */
-eq(A.videoQuote("best", 10, "720p").price, A.fmtHbd(A.hbdFromUsd(0.08 * 10 * A.VIDEO.RES_X["720p"])), "video: per second x length x resolution guess");
-eq(A.videoQuote("lite", 5, "480p").price, "0.150", "lite 5 s 480p = 0.10 USD -> 0.150 HBD");
+eq(A.videoQuote("best", 10, "720p").price, A.fmtHbd(A.hbdFromUsd(0.08 * 10 * A.VIDEO.RES_X["720p"], "xai")), "video: per second x length x resolution guess");
+eq(A.videoQuote("lite", 5, "480p").price, "0.168", "lite 5 s 480p = 0.10 USD x 1.12 x 1.5 -> 0.168 HBD");
 threw = false; try { A.videoQuote("std", 8, "1080p"); } catch (e) { threw = true; } eq(threw, true, "standard stops at 720p");
 threw = false; try { A.videoQuote("best", 7, "480p"); } catch (e) { threw = true; } eq(threw, true, "only the offered lengths");
 ok(A.checkVideo("", "best", 8, "720p"), "video needs a description");
@@ -217,7 +217,7 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   r = mk("POST", { op: "quote", acct: "@Alice", kind: "chat", model: "sonnet", len: "medium", messages: [{ role: "user", content: "Hi" }] });
   await e.h(r.req, r.res);
   const qa = J(r.res);
-  eq([r.res.statusCode, qa.price, qa.inTokens, qa.maxOut, qa.to], [200, "0.078", 1000, 5000, "mes"], "quote from counted tokens");
+  eq([r.res.statusCode, qa.price, qa.inTokens, qa.maxOut, qa.to], [200, "0.088", 1000, 5000, "mes"], "quote from counted tokens");
   ok(A.validId(qa.id) && qa.memo === "mesai:" + qa.id, "quote id + memo");
   const ct = e.calls.find((c) => /count_tokens/.test(c.url));
   eq([ct.body.model, ct.body.system === A.SYSTEM, ct.headers["x-api-key"]], ["claude-sonnet-5-5", true, "sk-test"], "count_tokens request");
@@ -231,12 +231,12 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   await e.h(r.req, r.res);
   eq(r.res.statusCode, 403, "another account cannot use the id");
   // underpaid
-  e.setChain([tr(7, "alice", "mes", "0.077 HBD", qa.memo, 5)]);
+  e.setChain([tr(7, "alice", "mes", "0.087 HBD", qa.memo, 5)]);
   r = mk("POST", { op: "run", id: qa.id, acct: "alice" });
   await e.h(r.req, r.res);
   eq(r.res.statusCode, 402, "underpaid does not count");
   // paid -> streamed answer
-  e.setChain([tr(8, "alice", "mes", "0.078 HBD", qa.memo, 5, "trx8")]);
+  e.setChain([tr(8, "alice", "mes", "0.088 HBD", qa.memo, 5, "trx8")]);
   r = mk("POST", { op: "run", id: qa.id, acct: "alice" });
   await e.h(r.req, r.res);
   let ls = lines(r.res);
@@ -433,8 +433,8 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     eq(r.res.statusCode, 400, "cheapest Grok takes no pictures");
   }
   // lib: the new tables
-  eq(A.imageQuote("1k", "1024x1024", 0, "grok").price, "0.030", "Grok 0.02 x 1.5");
-  eq(A.imageQuote("2k", "1024x1536", 0, "grok2").price, "0.090", "Grok 2.0 2k: 0.04 x 1.5 (2k guess) x 1.5");
+  eq(A.imageQuote("1k", "1024x1024", 0, "grok").price, "0.034", "Grok 0.02 x 1.12 x 1.5");
+  eq(A.imageQuote("2k", "1024x1536", 0, "grok2").price, "0.101", "Grok 2.0 2k: 0.04 x 1.5 (2k guess) x 1.12 x 1.5");
   eq(A.imageQuote("medium", "1024x1024", 40).price, A.imageQuote("medium", "1024x1024", 40, "gpt").price, "GPT picture is the default");
   eq([A.checkImage("a", "2k", "1024x1024", "grok"), A.checkImage("a", "4k", "1024x1024", "grok"), A.checkImage("a", "1k", "1024x1024", "dalle")], [null, "Unknown quality.", "Unknown picture model."], "checkImage per model");
   eq(A.streamPieceOpenAI({ data: null }), null, "[DONE] ignored");
@@ -489,9 +489,9 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   eq(A.checkRefs("x", 6), "Bad picture.", "not a list");
   eq(A.checkRefs([{ mt: "image/png", data: "A".repeat(A.REFS.total + 4) }], 6), "The pictures are too big together. Use fewer or smaller pictures.", "total size cap");
   // prices: GPT adds REFS.gptTokens image tokens at $8 / 1M per picture; Grok adds one output price per picture; video adds REFS.videoUsd
-  eq(A.imageQuote("medium", "1024x1024", 40, "gpt", 2).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6 + 2 * A.REFS.gptTokens * 8 / 1e6)), "GPT edit with 2 pictures");
-  eq(A.imageQuote("1k", "1024x1024", 0, "grok2", 3).price, A.fmtHbd(A.hbdFromUsd(0.04 * 4)), "Grok 2.0 edit with 3 pictures = 4 pictures' price");
-  eq(A.videoQuote("lite", 5, "480p", 1).price, A.fmtHbd(A.hbdFromUsd(0.1 + A.REFS.videoUsd)), "video from a picture");
+  eq(A.imageQuote("medium", "1024x1024", 40, "gpt", 2).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6 + 2 * A.REFS.gptTokens * 8 / 1e6, "openai")), "GPT edit with 2 pictures");
+  eq(A.imageQuote("1k", "1024x1024", 0, "grok2", 3).price, A.fmtHbd(A.hbdFromUsd(0.04 * 4, "xai")), "Grok 2.0 edit with 3 pictures = 4 pictures' price");
+  eq(A.videoQuote("lite", 5, "480p", 1).price, A.fmtHbd(A.hbdFromUsd(0.1 + A.REFS.videoUsd, "xai")), "video from a picture");
   ok(A.imageQuote("high", "1024x1536", 10, "gpt", 6).hbd > A.imageQuote("high", "1024x1536", 10, "gpt", 0).hbd, "more pictures cost more");
   eq(A.checkVideo("", "lite", 5, "480p", true), null, "a video from a picture may skip the description");
   eq(A.checkVideo("", "lite", 5, "480p", false), "Describe the video first.", "a text video needs one");
@@ -600,7 +600,9 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     r = mk("GET", null, { op: "status" }); await hf(r.req, r.res);
     eq(J(r.res).free.on, false, "AI_FREE_USD=0 switches free messages off");
     ok(A.freeWorstUsd("dsflash") > 0 && A.freeWorstUsd("sonnet") === 0, "free worst case only for free models");
-    eq(A.freeMessage("ivy", "2026-11-21"), "mes.fm/ai free messages for @ivy on 2026-11-21", "the signed text");
+    eq([A.chatQuote("dsflash", 1000, "short").price, A.FEES.openrouter, A.realUsd(1, "anthropic")], [A.fmtHbd(A.hbdFromUsd((1000 * 0.3 + 1500 * 1.2) / 1e6, "openrouter")), 1.19, 1.12], "real cost: tax 12%, OpenRouter fee + tax 1.19");
+  ok(A.chatQuote("sonnet", 5000, "medium").hbd + 1e-9 >= A.chatQuote("sonnet", 5000, "medium").costUsd * 1.12 * A.MARGIN, "price covers cost x tax x margin");
+  eq(A.freeMessage("ivy", "2026-11-21"), "mes.fm/ai free messages for @ivy on 2026-11-21", "the signed text");
     Object.keys(A.MODELS).forEach((k) => { const m = A.MODELS[k]; if (m.free) ok(m.prov === "openrouter" && m.text, "free model " + k + " is a cheap text model"); });
   }
 

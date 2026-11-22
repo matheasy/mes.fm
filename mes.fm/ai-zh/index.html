@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="隐藏此框（“关于付款”链接可恢复）">隐藏 <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">按消息付费，用 HBD</h2>
-			<p>无需订阅，无需注册，无需银行卡。每条消息在发送前都会显示价格。你用 Hive Keychain 以 <b>HBD</b>（Hive 的美元币）把这笔钱付给 <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a>，回答马上就来，就这么简单。<b>价格 = AI 公司向我们收取的费用 × <span data-margin>1.5</span></b>：多出的一半（在成本上加 50%）用来维持 mes.fm 及其免费工具的运行。</p>
+			<p>无需订阅，无需注册，无需银行卡。每条消息在发送前都会显示价格。你用 Hive Keychain 以 <b>HBD</b>（Hive 的美元币）把这笔钱付给 <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a>，回答马上就来，就这么简单。<b>价格 = AI 公司向我们收取的费用 × <span data-margin>1.5</span></b>（包括支付手续费和我们为这部分使用支付的 12% 销售税）：多出的一半（在实际成本上加 50%）用来维持 mes.fm 及其免费工具的运行。</p>
 			<details class="ai-why">
 				<summary>价格是怎么算的</summary>
 				<ul>
-					<li><b>价格 = AI 公司就这条消息向我们收取的费用 × <span data-margin>1.5</span></b>，向上取整到 0.001 HBD（最低 0.001 HBD）。多出的一半用来维持 mes.fm 的运行。</li>
+					<li><b>价格 = AI 公司就这条消息向我们收取的费用 × <span data-margin>1.5</span></b>，其中这笔费用包含我们为此支付的 12% 销售税（便宜模型还包含 OpenRouter 5.5% 的手续费），向上取整到 0.001 HBD（最低 0.001 HBD）。多出的一半用来维持 mes.fm 的运行。</li>
 					<li>收费多少取决于<b>模型</b>、发送的文字量（你的消息<b>加上之前的整个聊天</b>，AI 每次都会重读）以及你选择的<b>回答长度</b>。</li>
 					<li>回答的花费绝不会超过你付的钱：到你选择的长度就会截断。<b>同一档位下，短回答和长回答价格相同</b>：我们不保留余额，所以没有找零。快速提问请选“短”。</li>
 					<li>聊天越长，每条消息越贵。换话题时请开始新聊天。</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=a73451e8" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=37c02a01" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

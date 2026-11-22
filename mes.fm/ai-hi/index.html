@@ -1037,11 +1037,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-pay" id="ai-pay">
 			<button type="button" class="ai-payhide" id="ai-payhide" title="यह बॉक्स छिपाएँ (भुगतान के बारे में लिंक इसे वापस लाता है)">छिपाएँ <span aria-hidden="true">✕</span></button>
 			<h2 class="ai-h2">आप हर मैसेज का भुगतान HBD में करते हैं</h2>
-			<p>न सब्सक्रिप्शन, न अकाउंट, न कार्ड। हर मैसेज भेजने से पहले उसकी कीमत दिखती है। आप वह कीमत Hive Keychain से <b>HBD</b> (Hive का डॉलर कॉइन) में <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> को चुकाते हैं, जवाब तुरंत आ जाता है, बस इतना ही। <b>कीमत = AI कंपनी हमसे जो लेती है × <span data-margin>1.5</span></b>: ऊपर का आधा हिस्सा (लागत पर 50% ज़्यादा) mes.fm और इसके मुफ़्त टूल चलाए रखता है।</p>
+			<p>न सब्सक्रिप्शन, न अकाउंट, न कार्ड। हर मैसेज भेजने से पहले उसकी कीमत दिखती है। आप वह कीमत Hive Keychain से <b>HBD</b> (Hive का डॉलर कॉइन) में <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> को चुकाते हैं, जवाब तुरंत आ जाता है, बस इतना ही। <b>कीमत = AI कंपनी हमसे जो लेती है × <span data-margin>1.5</span></b> (पेमेंट फ़ीस और इस इस्तेमाल पर हमारे द्वारा चुकाए जाने वाले 12% सेल्स टैक्स समेत): ऊपर का आधा हिस्सा (असली लागत पर 50% ज़्यादा) mes.fm और इसके मुफ़्त टूल चलाए रखता है।</p>
 			<details class="ai-why">
 				<summary>कीमत कैसे तय होती है</summary>
 				<ul>
-					<li><b>कीमत = उस मैसेज के लिए AI कंपनी हमसे जो लेती है × <span data-margin>1.5</span></b>, 0.001 HBD तक ऊपर की ओर पूर्णांकित (सबसे कम कीमत 0.001 HBD)। ऊपर का आधा हिस्सा mes.fm को चलाए रखता है।</li>
+					<li><b>कीमत = उस मैसेज के लिए AI कंपनी हमसे जो लेती है × <span data-margin>1.5</span></b>, जिसमें उस पर हमारे द्वारा चुकाया जाने वाला 12% सेल्स टैक्स शामिल है (और सस्ते मॉडलों के लिए OpenRouter की 5.5% फ़ीस), 0.001 HBD तक ऊपर की ओर पूर्णांकित (सबसे कम कीमत 0.001 HBD)। ऊपर का आधा हिस्सा mes.fm को चलाए रखता है।</li>
 					<li>वे कितना लेते हैं यह <b>मॉडल</b> पर, भेजे गए टेक्स्ट की मात्रा पर (आपका मैसेज <b>और उससे पहले की पूरी चैट</b>, जिसे AI हर बार दोबारा पढ़ता है) और आपकी चुनी <b>जवाब की लंबाई</b> पर निर्भर करता है।</li>
 					<li>जवाब की कीमत कभी आपके चुकाए पैसे से ज़्यादा नहीं हो सकती: आपकी चुनी लंबाई पर वह कट जाता है। <b>एक ही सेटिंग पर छोटे जवाब की कीमत लंबे जवाब जितनी ही है</b>: कोई बैलेंस नहीं रखा जाता, इसलिए लौटाने को कुछ नहीं बचता। झटपट सवालों के लिए छोटा चुनें।</li>
 					<li>लंबी चैट हर मैसेज के साथ महँगी होती जाती है। विषय बदलने पर नई चैट शुरू करें।</li>
@@ -1305,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=359aec70" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=97438f8c" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -24,7 +24,7 @@
   "<b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).": "<b>معاينة محلية:</b> الدفع والإجابات محاكاة (الحساب @demo، ولا تتحرك أي HBD).",
   "<b>Logged in with the Keychain phone app:</b> it can't use your memo key, so pick <b>🛡 Passphrase</b> under the Encrypt tick, or the save would be public.": "<b>سجّلت الدخول بتطبيق Keychain على الهاتف:</b> لا يمكنه استخدام مفتاح المذكرة (memo) الخاص بك، لذا اختر <b>🛡 عبارة المرور</b> تحت خانة التشفير، وإلا سيكون الحفظ علنيًا.",
   "<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href=\"?mock=1\">Try the demo</a> (simulated payment and answer).": "<b>MES AI قادم قريبًا.</b> الصفحة جاهزة؛ ويجري ربط خدمات الذكاء الاصطناعي. <a href=\"?mock=1\">جرّب العرض التجريبي</a> (دفع وإجابة على سبيل المحاكاة).",
-  "<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.": "<b>السعر = ما تتقاضاه منا شركة الذكاء الاصطناعي عن تلك الرسالة × <span data-margin>1.5</span></b>، مقرّبًا إلى الأعلى لأقرب 0.001 HBD (أقل سعر 0.001 HBD). النصف الإضافي يُبقي mes.fm قائمًا.",
+  "<b>Price = what the AI company charges us for that message × <span data-margin>1.5</span></b>, where the charge includes the 12% sales tax we pay on it (and OpenRouter’s 5.5% fee for the cheap models), rounded up to 0.001 HBD (smallest price 0.001 HBD). The extra half keeps mes.fm running.": "<b>السعر = ما تتقاضاه منا شركة الذكاء الاصطناعي عن تلك الرسالة × <span data-margin>1.5</span></b>، ويشمل هذا المبلغ ضريبة المبيعات البالغة 12% التي ندفعها عليه (ورسوم OpenRouter البالغة 5.5% للنماذج الرخيصة)، مقرّبًا إلى الأعلى لأقرب 0.001 HBD (أقل سعر 0.001 HBD). النصف الإضافي يُبقي mes.fm قائمًا.",
   "<b>Public:</b> the chat text will be readable by anyone on the Hive blockchain, forever.": "<b>علني:</b> سيتمكن أي شخص من قراءة نص المحادثة على بلوكشين Hive إلى الأبد.",
   "A 30-message coding chat that grows to 50k tokens costs about {p} HBD in all on Sonnet. Starting a new chat when the topic changes keeps it cheap.": "محادثة برمجة من 30 رسالة تكبر حتى 50k رمزًا تكلف إجمالًا نحو {p} HBD على Sonnet. بدء محادثة جديدة عند تغيّر الموضوع يبقيها رخيصة.",
   "A PDF of this answer, with its equations and charts": "ملف PDF لهذه الإجابة، مع معادلاتها ورسومها البيانية",
@@ -153,8 +153,7 @@
   "No chats to back up yet.": "لا محادثات للنسخ الاحتياطي بعد.",
   "No chats to save yet.": "لا محادثات للحفظ بعد.",
   "No folder": "بلا مجلد",
-  "No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.003 HBD.": "لم تبقَ رسائل مجانية اليوم: تعود عند 00:00 UTC. تكلّف الرسائل المدفوعة على هذا النموذج نحو 0.003 HBD.",
-  "No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b>: the extra half (50% on top of the cost) keeps mes.fm and its free tools running.": "لا اشتراك، ولا حساب، ولا بطاقة. تعرض كل رسالة سعرها قبل أن ترسلها. تدفع ذلك السعر بعملة <b>HBD</b> (دولار Hive) إلى <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> عبر Hive Keychain، فتعود الإجابة فورًا، وهذا كل شيء. <b>السعر هو ما تتقاضاه منا شركة الذكاء الاصطناعي × <span data-margin>1.5</span></b>: النصف الإضافي (50% فوق التكلفة) يُبقي mes.fm وأدواته المجانية قائمة.",
+  "No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b> (counting the payment fees and the 12% sales tax we pay on that use): the extra half (50% on top of the real cost) keeps mes.fm and its free tools running.": "لا اشتراك، ولا حساب، ولا بطاقة. تعرض كل رسالة سعرها قبل أن ترسلها. تدفع ذلك السعر بعملة <b>HBD</b> (دولار Hive) إلى <a href=\"https://peakd.com/@mes/wallet\" target=\"_blank\" rel=\"noopener\">@mes</a> عبر Hive Keychain، فتعود الإجابة فورًا، وهذا كل شيء. <b>السعر هو ما تتقاضاه منا شركة الذكاء الاصطناعي × <span data-margin>1.5</span></b> (مع احتساب رسوم الدفع وضريبة المبيعات البالغة 12% التي ندفعها على هذا الاستخدام): النصف الإضافي (50% فوق التكلفة الحقيقية) يُبقي mes.fm وأدواته المجانية قائمة.",
   "Nothing has that.": "لا شيء يطابق ذلك.",
   "Now paying as @{name}.": "تدفع الآن باسم @{name}.",
   "Oldest first": "الأقدم أولًا",
@@ -395,6 +394,7 @@
   "＋ New chat": "＋ محادثة جديدة",
   "＋ New picture": "＋ صورة جديدة",
   "＋ New video": "＋ فيديو جديد",
-  "＋ Use with other pictures": "＋ استخدمها مع صور أخرى"
+  "＋ Use with other pictures": "＋ استخدمها مع صور أخرى",
+  "No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.004 HBD.": "لم تبقَ رسائل مجانية اليوم: تعود عند 00:00 UTC. تكلّف الرسائل المدفوعة على هذا النموذج نحو 0.004 HBD."
  }
 }

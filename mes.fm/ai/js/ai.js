@@ -177,8 +177,13 @@
   }
 
   /* ---------- numbers ---------- */
-  function hbdFromUsd(usd) {
-    var h = (Number(usd) || 0) * MARGIN / HBD_USD;
+  /* what one dollar of API use really costs us (2026-11-21, owner's decision): the 12% sales tax (B.C. GST + PST) on every company's credits,
+     and on OpenRouter also its 5.5% fee on credit purchases (tax charged on credits + fee: 1.055 x 1.12 = 1.18, rounded up). So
+     price = API cost x FEES[company] x MARGIN. Change here if the tax or a fee changes (or if GST is claimed back). */
+  var FEES = { anthropic: 1.12, openai: 1.12, xai: 1.12, openrouter: 1.19 };
+  function realUsd(usd, prov) { return (Number(usd) || 0) * (prov ? (FEES[prov] || 1.12) : 1); }
+  function hbdFromUsd(usd, prov) {
+    var h = realUsd(usd, prov) * MARGIN / HBD_USD;
     var milli = Math.ceil(h * 1000 - 1e-7);          // round UP to 0.001 (tiny epsilon so 0.0480000001 stays 0.048)
     return Math.max(MIN_HBD, milli / 1000);
   }
@@ -207,7 +212,7 @@
     if (!cap) throw new Error("Unknown answer length");
     inTokens = Math.max(0, Math.ceil(Number(inTokens) || 0));
     var usd = (inTokens * m.inUsd + cap * m.outUsd) / 1e6;
-    var hbd = hbdFromUsd(usd);
+    var hbd = hbdFromUsd(usd, m.prov);
     return { kind: "chat", model: modelKey, modelId: m.id, len: len, inTokens: inTokens, maxOut: cap, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
   /* ---------- cost hints (2026-11-20): only hints; the server's quote is the only price anyone pays ---------- */
@@ -243,14 +248,14 @@
     if (!im) throw new Error("Unknown picture model");
     if (im.prov === "xai") {
       if (!XIMAGE.RES_X[quality] || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
-      var xu = im.usd * XIMAGE.RES_X[quality] + nRefs * im.usd, xh = hbdFromUsd(xu);
+      var xu = im.usd * XIMAGE.RES_X[quality] + nRefs * im.usd, xh = hbdFromUsd(xu, "xai");
       return { kind: "image", model: model, modelId: im.id, quality: quality, size: size, aspect: XIMAGE.ASPECT[size], inTokens: 0, refs: nRefs, costUsd: xu, hbd: xh, price: fmtHbd(xh) };
     }
     var row = IMAGE.perImage[quality];
     if (!row || row[size] == null) throw new Error("Unknown image quality or size");
     var t = Math.max(0, Math.ceil(Number(promptTokens) || 0));
     var usd = row[size] + t * IMAGE.textInUsd / 1e6 + nRefs * REFS.gptTokens * IMAGE.imageInUsd / 1e6;
-    var hbd = hbdFromUsd(usd);
+    var hbd = hbdFromUsd(usd, "openai");
     return { kind: "image", model: "gpt", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, refs: nRefs, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
 
@@ -263,7 +268,7 @@
     if (ri < 0 || ri > VIDEO.res.indexOf(m.maxRes)) throw new Error("That model can't make " + res + " video");
     nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
     var usd = m.usdSec * d * VIDEO.RES_X[res] + nRefs * REFS.videoUsd;
-    var hbd = hbdFromUsd(usd);
+    var hbd = hbdFromUsd(usd, "xai");
     return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, refs: nRefs, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
   function checkVideo(prompt, model, seconds, res, hasPic) {
@@ -541,7 +546,7 @@
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
     PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
-    hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
+    hbdFromUsd: hbdFromUsd, FEES: FEES, realUsd: realUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
     FREE: FREE, freeMessage: freeMessage, utcDay: utcDay, freeWorstUsd: freeWorstUsd, checkTextOnly: checkTextOnly,
     REFS: REFS, maxRefs: maxRefs, checkRefs: checkRefs, cleanRefs: cleanRefs, dataUrl: dataUrl, xaiPrompt: xaiPrompt, wantsMedia: wantsMedia,
@@ -1769,7 +1774,7 @@
 		$("ai-freeuse").checked = S.free !== false;
 		$("ai-freeuse").disabled = FREEST.left <= 0;
 		$("ai-freetx").innerHTML = FREEST.left > 0 ? T("Use my free messages: <b>{n} of {m}</b> left today (Short answers, cheap models)", { n: FREEST.left, m: FREEST.perDay })
-			: T("No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.003 HBD.");
+			: T("No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.004 HBD.");
 	}
 	function loadFree() {
 		var u = who(); if (!u) { FREEST.left = null; paintPrice(); return; }

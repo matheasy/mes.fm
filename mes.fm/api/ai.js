@@ -189,7 +189,7 @@ function makeHandler(deps = {}) {
     const id = A.newId((n) => crypto.randomBytes(n));
     const rec = Object.assign(stored, { acct, price: q.price, maxOut: q.maxOut || 0, created: now() });
     await saveRec(id, rec);
-    return send(res, 200, { id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.costUsd * A.MARGIN, inTokens: q.inTokens, maxOut: q.maxOut || 0, kind: q.kind });
+    return send(res, 200, { id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.hbd * A.HBD_USD, inTokens: q.inTokens, maxOut: q.maxOut || 0, kind: q.kind });
   }
 
   // A quote with files can be a few MB: it is kept in pieces of 700 KB (one Upstash command each stays small);
