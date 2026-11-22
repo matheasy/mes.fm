@@ -33,21 +33,30 @@
 		var key = new THREE.DirectionalLight(0xffffff, 2.4);
 		key.position.set(-8, 30, 22); key.castShadow = true;
 		key.shadow.mapSize.set(1024, 1024);
+		key.shadow.bias = -0.0006; key.shadow.normalBias = 0.03;
 		var sc = key.shadow.camera; sc.left = -9; sc.right = 9; sc.top = 14; sc.bottom = -14; sc.near = 1; sc.far = 80;
 		key.target.position.set(W / 2, H / 2, 0); s.add(key); s.add(key.target);
 		var rim = new THREE.PointLight(0x7aa2ff, 30, 40); rim.position.set(14, 4, 6); s.add(rim);
+		// soft fill from below so the undersides are not pitch black when the view is turned upwards
+		var under = new THREE.DirectionalLight(0xc8d4ff, 0.7); under.position.set(W / 2 + 6, -24, 14); under.target.position.set(W / 2, H / 2, 0); s.add(under); s.add(under.target);
 		// the well: a back panel, side walls and a floor
-		var wellMat = this.backMat = new THREE.MeshStandardMaterial({ color: 0x151a24, roughness: 0.9, transparent: true });
+		var wellMat = this.backMat = new THREE.MeshStandardMaterial({ color: 0x151a24, roughness: 0.9 });
 		var back = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, H + 0.4, 0.3), wellMat); back.position.set(W / 2, H / 2, -0.75); back.receiveShadow = true; s.add(back);
-		var sideMat = this.sideMat = new THREE.MeshStandardMaterial({ color: 0x2b3446, roughness: 0.6, metalness: 0.2, transparent: true });
-		[[-0.25], [W + 0.25]].forEach(function (p) { var m = new THREE.Mesh(new THREE.BoxGeometry(0.5, H + 0.5, 1.6), sideMat); m.position.set(p[0], H / 2 - 0.25, -0.05); m.castShadow = m.receiveShadow = true; s.add(m); });
-		var floor = new THREE.Mesh(new THREE.BoxGeometry(W + 1, 0.5, 1.6), sideMat); floor.position.set(W / 2, -0.25, -0.05); floor.receiveShadow = true; s.add(floor);
+		var sideMat = this.sideMat = new THREE.MeshStandardMaterial({ color: 0x2b3446, roughness: 0.6, metalness: 0.2 });
+		// the floor has its own material: it fades when the camera goes below the well (it used to share the side walls' one,
+		// so a view from below and to the side left it half see-through with no depth, and the sorting flickered)
+		var floorMat = this.floorMat = sideMat.clone();
+		var self = this; this.walls = [];
+		[[-0.25], [W + 0.25]].forEach(function (p) { var m = new THREE.Mesh(new THREE.BoxGeometry(0.5, H + 0.5, 1.6), sideMat); m.position.set(p[0], H / 2 - 0.25, -0.05); m.castShadow = m.receiveShadow = true; m.renderOrder = 3; s.add(m); self.walls.push(m); });
+		var floor = this.floor = new THREE.Mesh(new THREE.BoxGeometry(W + 1, 0.5, 1.6), floorMat); floor.position.set(W / 2, -0.25, -0.05); floor.receiveShadow = true; floor.renderOrder = 4; s.add(floor);
+		back.renderOrder = 1;
 		// faint grid on the back panel
 		var gpts = [];
 		for (var x = 1; x < W; x++) gpts.push(x, 0, -0.59, x, H, -0.59);
 		for (var y = 1; y < H; y++) gpts.push(0, y, -0.59, W, y, -0.59);
 		var gg = new THREE.BufferGeometry(); gg.setAttribute("position", new THREE.Float32BufferAttribute(gpts, 3));
 		this.grid = new THREE.LineSegments(gg, new THREE.LineBasicMaterial({ color: 0x3a4458, transparent: true, opacity: 0.55 }));
+		this.grid.renderOrder = 2;
 		s.add(this.grid);
 		// cells
 		var geo = new THREE.BoxGeometry(0.94, 0.94, 0.94);
@@ -57,6 +66,7 @@
 		this.cells.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 		s.add(this.cells);
 		this.ghost = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.18, roughness: 0.6, depthWrite: false }), 4);
+		this.ghost.renderOrder = 5;
 		s.add(this.ghost);
 		this.flash = new THREE.Mesh(new THREE.BoxGeometry(W, 1, 1.05), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 }));
 		s.add(this.flash);
@@ -78,10 +88,19 @@
 		if (!this.backMat) return;
 		var front = Math.cos(this.yaw) * Math.cos(this.pitch);           // 1 = straight in front, < 0 = behind
 		var side = Math.abs(Math.sin(this.yaw)) * Math.cos(this.pitch);   // 1 = looking along the well from the side
+		var below = -Math.sin(this.pitch);                                 // 1 = straight below
 		var bo = Math.max(0.1, Math.min(1, (front - 0.15) / 0.45));
 		var so = Math.max(0.15, Math.min(1, 1 - (side - 0.35) / 0.4));
-		this.backMat.opacity = bo; this.backMat.depthWrite = bo > 0.95;
-		this.sideMat.opacity = so; this.sideMat.depthWrite = so > 0.95;
+		var fo = Math.max(0.12, Math.min(1, 1 - (below - 0.2) / 0.35));
+		// a fully shown wall is drawn as a normal solid (opaque pass, writes depth); only a faded one is see-through,
+		// so nothing is left to the per-frame distance sorting of see-through objects that flipped while orbiting
+		function set(m, o) {
+			var t = o < 0.999;
+			if (m.transparent !== t) { m.transparent = t; m.needsUpdate = true; }
+			m.opacity = t ? o : 1; m.depthWrite = !t;
+		}
+		set(this.backMat, bo); set(this.sideMat, so); set(this.floorMat, fo);
+		this.walls.forEach(function (w) { w.castShadow = so > 0.6; });      // a faded wall no longer throws a dark shadow over the blocks
 		if (this.grid) this.grid.material.opacity = 0.55 * bo;
 	};
 	/** orbit all the way round (yaw) and from below to nearly straight above (pitch) */
