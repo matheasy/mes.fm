@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds mes.fm/gyrotop-angular-momentum/index.html -- "GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular
+"""Builds mes.fm/gyrotop-angular-momentum/index.html -- "Gyrotop and Gyroscopes Point to Serious Flaw in Mainstream Angular
 Momentum Physics" (2026-11-11, follow-up questions added 2026-11-14), from gyrotop_src/post.md (the article's markdown, as
 written by MES).
 
@@ -28,10 +28,10 @@ SRC = os.path.join(ROOT, "gyrotop_src", "post.md")
 TEMPLATE = os.path.join(MES, "vector-functions-problems-plus", "index.html")
 HUB = os.path.join(MES, "antigravity", "index.html")
 MARKED = os.path.join(MES, "vector-functions-problems-plus", "node_modules", "marked", "lib", "marked.esm.js")
-TITLE = "GyroTop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics"
+TITLE = "Gyrotop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics"
 DATE = "November 11, 2026"
 UPDATED = "November 21, 2026"
-DESC = ("Owen Liang's GyroTop magnetic spinning top and MES gyroscope experiments question the friction explanation of rising "
+DESC = ("Owen Liang's Gyrotop magnetic spinning top and MES gyroscope experiments question the friction explanation of rising "
         "tops and the mainstream idea of angular momentum.")
 OG = f"https://mes.fm/{SLUG}/img/thumbnail.jpg"
 BRAND_LOGO = "https://mes.fm/img/antigravity-logo.jpg"
@@ -42,7 +42,7 @@ PARTOF = ('<p class="gt-partof">Part of <a href="/antigravity">MES Anti-Gravity<
 esc = lambda t: html.escape(t, quote=True)
 
 CSS = r"""
-    /* ---- GyroTop article (build_gyrotop_article.py) ---- */
+    /* ---- Gyrotop article (build_gyrotop_article.py) ---- */
     .post-body { overflow-wrap: anywhere; }
     .post-body img { max-width: 100%; height: auto; display: block; margin: 1em auto; border-radius: 6px; }
     .post-body blockquote { margin: -0.4em auto 1.2em; text-align: center; font-style: italic; opacity: 0.85; border: 0; padding: 0; }
@@ -142,7 +142,7 @@ def split_source(md):
     return article, qs, answers, (brand[0], brand[1][:bheads[0].start()].strip(), bsecs)
 
 
-GAL_ALT = {"Product Packaging": "GyroTop packaging photo", "Product Photographs": "GyroTop product photo"}
+GAL_ALT = {"Product Packaging": "Gyrotop packaging photo", "Product Photographs": "Gyrotop product photo"}
 # section -> (gallery key, column choices, default columns on wide screens / phones, masonry)
 GAL_CFG = {"Product Packaging": ("pack", (1, 2, 3, 4), 3, 2, True),
            "Product Photographs": ("prod", (1, 2), 2, 2, False)}
@@ -159,7 +159,7 @@ def galleries(body, title):
 
     def alt(m):
         n[0] += 1
-        return f'alt="{GAL_ALT.get(title, "GyroTop photo")} {n[0]}"'
+        return f'alt="{GAL_ALT.get(title, "Gyrotop photo")} {n[0]}"'
 
     def wrap(m):
         imgs = [re.sub(r'alt="[^"]*"', alt, i) for i in re.findall(r"<img [^>]*>", m.group(0))]
@@ -184,7 +184,7 @@ def fold(cid, title, inner, top):
 def content():
     article, qs, answers, (btitle, bintro, bsecs) = split_source(open(SRC, encoding="utf-8").read())
     thumb = (f'<p><img src="/{SLUG}/img/thumbnail.jpg" width="640" height="360" '
-             'alt="GyroTop magnetic spinning top rising against a magnet"></p>\n')
+             'alt="Gyrotop magnetic spinning top rising against a magnet"></p>\n')
     toc = [("article", "The Article", False), ("questions", "Follow-up Questions", False)]
     chapters = [fold("article", "The Article", thumb + render(article), True)]
     qlist = '<ol class="gt-qs">\n' + "\n".join(
@@ -197,8 +197,8 @@ def content():
                  '<p class="gt-back"><a class="gt-qlink" href="#questions">&uarr; Back to the questions</a></p>\n')
         subs += fold(f"q{i}", f"{i}. {esc(title)}", inner, False)
     chapters.append(fold("questions", "Follow-up Questions",
-                         "<p>Questions I was asked about the GyroTop. Click one to jump to my answer.</p>\n" + qlist + subs, True))
-    toc.append(("brand", btitle.replace("GYROTOP", "GyroTop"), False))
+                         "<p>Questions I was asked about the Gyrotop. Click one to jump to my answer.</p>\n" + qlist + subs, True))
+    toc.append(("brand", btitle.replace("GYROTOP", "Gyrotop"), False))
     bsubs = ""
     for i, (num, title, body) in enumerate(bsecs, 1):
         label = f"{num}. {title}" if num else title

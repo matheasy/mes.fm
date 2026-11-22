@@ -4,7 +4,7 @@ This image illustrates the difference between sliding and rolling friction. http
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/242NyrESpxgBYXyF4ndGXKhn8k7r7xJNTMntRXGZ9BwRgUUdT9pgugYPSeg24jkZkW1FN.png)
 
-Owen Liang's magnetic spinning top or GyroTop puts the mainstream explanation to serious doubt. See my three videos illustrating his discovery, as well as the associated thumbnails.
+Owen Liang's magnetic spinning top or Gyrotop puts the mainstream explanation to serious doubt. See my three videos illustrating his discovery, as well as the associated thumbnails.
 
 https://youtu.be/vOW2EX1rQSo
 
@@ -18,7 +18,7 @@ https://youtu.be/rVX4pVWbI84
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23xAXuQ8NmnbKhCktPoe7QzfE8bRMoE1zs48QrzRu6R9Zr6iDMcuX5dCRU2fJK35cEEBK.png)
 
-In the GyroTop, the tip is very sharp and the top has very little room to move, slide, or roll. Rather, moving the top around causes it to automatically re-align against both gravity and magnetic attraction.
+In the Gyrotop, the tip is very sharp and the top has very little room to move, slide, or roll. Rather, moving the top around causes it to automatically re-align against both gravity and magnetic attraction.
 
 I take this further by showing that a gyroscope placed as a spinning top can rise on its own too, thus completely refuting the rolling vs sliding friction theory. See my following videos:
 
@@ -46,7 +46,7 @@ The mainstream explanation of angular momentum is that it is the rotational anal
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23ywuQqhAZgJELaVeyYLPZArCyVeW4fEWpgEfFaPtkGfnZH9TjfLM4tC2RV2g216dHtWP.png)
 
-Owen Liang's GyroTop strongly suggests that spinning tops behave as if they don't have this angular momentum, as the top precesses to tilt against its own spin direction, even to oppose magnetic attraction.
+Owen Liang's Gyrotop strongly suggests that spinning tops behave as if they don't have this angular momentum, as the top precesses to tilt against its own spin direction, even to oppose magnetic attraction.
 
 https://youtu.be/0zGCXrUFiSM
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23xAcSbqcNTAKagnYuCPHpR8QUWeMVrSLwR5NPtARL7cXkRSGEaAmdjcsSJsRncjJX4tg.png)
@@ -85,9 +85,9 @@ https://www.youtube.com/watch?v=rJ7ag17LxA8
 
 https://youtu.be/1Grv5B7AqkE
 
-The above are examples of the truly limitless applications of a true understanding of the GyroTop, and objects in rotation in general. 
+The above are examples of the truly limitless applications of a true understanding of the Gyrotop, and objects in rotation in general. 
 
-I believe the GyroTop should be made available in every physics class around the world!
+I believe the Gyrotop should be made available in every physics class around the world!
 
 ---
 
@@ -127,21 +127,21 @@ But my ice experiments already show that on a low friction surface, such as an i
 
 Some experimental measurements to perform to understand and establish working principles would include measuring the spin rate, the mass, angular momentum, precessional rate, and resulting horizontal inertia. Much of this should be required work for every university in the world!
 
-## 2. Additional GyroTop Testing
+## 2. Additional Gyrotop Testing
 
-In my opinion, it would be great if the GyroTop can be made simpler and easier to setup. Right now it takes a lot of effort in getting it placed just right and then breathing hard into it to get it up to speed. An automated way to spin it up, either via battery and/or magnetic spinning would be great.
+In my opinion, it would be great if the Gyrotop can be made simpler and easier to setup. Right now it takes a lot of effort in getting it placed just right and then breathing hard into it to get it up to speed. An automated way to spin it up, either via battery and/or magnetic spinning would be great.
 
-Regarding additional testing, I think building a much thicker and heavier GyroTop would better demonstrate its ability to change its orientation even though its calculated angular momentum vector would be high. An automated and measured orientation rotation setup would also be great.
+Regarding additional testing, I think building a much thicker and heavier Gyrotop would better demonstrate its ability to change its orientation even though its calculated angular momentum vector would be high. An automated and measured orientation rotation setup would also be great.
 
 Another experiment is to somehow motorize the rotor during operation, to see if it behaves the same. Here is an experiment of a motorized gyroscope in precession:
 
 https://youtu.be/Pbb_RnxeYys
 
-## 3. GyroTop Potential
+## 3. Gyrotop Potential
 
-In my opinion, the GyroTop can be a great science educational toy, but this would depend on the ease of use, particularly to students. Including an apparatus to keep it held up while manually blowing into it and then being able to get the gyro completely upside down without having to manually hold it upside down would be great. Something like a mechanical crank to turn the apparatus upside down. 
+In my opinion, the Gyrotop can be a great science educational toy, but this would depend on the ease of use, particularly to students. Including an apparatus to keep it held up while manually blowing into it and then being able to get the gyro completely upside down without having to manually hold it upside down would be great. Something like a mechanical crank to turn the apparatus upside down. 
 
-I can do my part in testing and promoting any GyroTop variations!
+I can do my part in testing and promoting any Gyrotop variations!
 
 ---
 
@@ -163,7 +163,7 @@ If original records are no longer available, archived webpages, old photographs,
 
 ## 1. Product Packaging
 
-Here are photos of the GyroTop that I purchased from Owen Liang, which includes the phrase Gyrotop Co on the back.
+Here are photos of the Gyrotop that I purchased from Owen Liang, which includes the phrase Gyrotop Co on the back.
 
 ![20261121_214945.jpg](https://files.peakd.com/file/peakd-hive/mes/EonkwqXrEA8D73YNAd6GaCi83CkqZkoN98GapoT2xuTFZRePpXAtgvLrpDd3RCf6ynV.jpg)
 
@@ -183,7 +183,7 @@ Here are photos of the GyroTop that I purchased from Owen Liang, which includes 
 
 ## 2. Product Photographs
 
-Here are some closer up photos of the GyroTop.
+Here are some closer up photos of the Gyrotop.
 
 ![20261121_220703.jpg](https://files.peakd.com/file/peakd-hive/mes/EoCk2Exd8hoCEFEVbVM4PatGz3uA95cpdHUAsaqPGPunRsq9mahdHZoQKXwPr6WGd3f.jpg)
 
@@ -191,7 +191,7 @@ Here are some closer up photos of the GyroTop.
 
 ## 3. Sales Record
 
-I purchased a GyroTop toy from Owen Liang via PayPal on March 29, 2018.
+I purchased a Gyrotop toy from Owen Liang via PayPal on March 29, 2018.
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23t8CfKPvXW7RAYDQDjRFjGF1VrNbS7LfDQPKot9VmZ8H2cM9GJHsr6XG9RE3KdZE6zf1.png)
 
@@ -201,7 +201,7 @@ I purchased a GyroTop toy from Owen Liang via PayPal on March 29, 2018.
 
 ## 4. Online Listings
 
-I have documented MANY of Owen Liang's online listings for the GyroTop: https://mes.fm/antigravity-6-rotation-defy-physics
+I have documented MANY of Owen Liang's online listings for the Gyrotop: https://mes.fm/antigravity-6-rotation-defy-physics
 
 Links and screenshots are shown below: https://archive.li/BR3Tc
 
@@ -227,7 +227,7 @@ Owen Liang created his Gyrotop username on April 1, 2015, and this might be the 
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23twAKVLEX8usp18nVfnRLdBMQRwSpRWhi8uzcBUeMn4HwbTNmKRwpr7GDK3Q6rN42yZF.png)
 
-On May 22, 2016, Owen Liang had posted videos about the GyroTop: https://www.youtube.com/watch?v=ZLnPK2w3TKE
+On May 22, 2016, Owen Liang had posted videos about the Gyrotop: https://www.youtube.com/watch?v=ZLnPK2w3TKE
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/24244XKANBhutsZazuzcFGw6TDrnJ293QkDCdPRsvpz6QCNHvmdgn5o1FHH9E65kAAq6j.png)
 
@@ -239,7 +239,7 @@ https://archive.li/lVp48
 
 ![image.png](https://files.peakd.com/file/peakd-hive/mes/23tSz3RpUWG7mcFeoRZERjWJxgLswTfCCoQGixtxJvngTVcvhXUGpCDYZL8vXNiDw7vvm.png)
 
-## GyroTop Automatic Start
+## Gyrotop Automatic Start
 
 Here is the video for the new Gyrotop with automatic start by having a blower from the bottom.
 

@@ -65,7 +65,7 @@ const PAGES = [
   {
     // Tile only: the hand-built article made by build_gyrotop_article.py; icon = img/gyrotop-angular-momentum-icon.jpg (crop of its thumbnail).
     slug: "gyrotop-angular-momentum",
-    tileLabel: "GyroTop & Angular Momentum",
+    tileLabel: "Gyrotop & Angular Momentum",
     iconVersion: 1,
     tileOnly: true,
   },
