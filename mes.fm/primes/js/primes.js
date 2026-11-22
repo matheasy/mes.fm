@@ -347,14 +347,28 @@
 	function checkNumber(v) { $("pm-n").value = String(v); showTab("check"); runCheck(); window.scrollTo({ top: root.getBoundingClientRect().top + scrollY - 70, behavior: "smooth" }); }
 	root.addEventListener("click", function (e) { var a = e.target.closest("[data-check]"); if (a) { e.preventDefault(); checkNumber(a.dataset.check); } });
 
-	var lastRep = null;
-	function runCheck(ms) {
+	var lastRep = null, lastAuto = null;
+	/* auto: typing runs it after a short pause (auto() below). An auto run gets a shorter factoring budget (0.6 s) so a big
+	   number never freezes typing; "Keep trying" and the Check button still give the full budget. A half-typed expression
+	   ("2^") only shows its error once typing has stopped for a while. */
+	function runCheck(ms, auto) {
 		var src = $("pm-n").value, r = P.parse(src), err = $("pm-err");
-		if (r.err) { err.textContent = r.err; err.hidden = false; return; }
-		err.hidden = true; S.n = src.trim(); save(); if (S.tab === "check") setURL({ n: S.n });
-		var out = $("pm-out"); out.innerHTML = '<div class="tu-card pm-wait">Working it out…</div>';
-		setTimeout(function () { lastRep = P.analyze(r.v, { ms: ms || 1500 }); renderCheck(lastRep); }, 20);
+		if (r.err) { if (auto) { autoErr(err, r.err); return; } err.textContent = r.err; err.hidden = false; return; }
+		clearTimeout(errT); err.hidden = true;
+		if (auto && lastAuto === r.v.toString()) return;
+		lastAuto = r.v.toString();
+		S.n = src.trim(); save(); if (S.tab === "check") setURL({ n: S.n });
+		var out = $("pm-out");
+		if (!auto) out.innerHTML = '<div class="tu-card pm-wait">Working it out…</div>';
+		setTimeout(function () { lastRep = P.analyze(r.v, { ms: ms || (auto ? 600 : 1500) }); renderCheck(lastRep); }, auto ? 0 : 20);
 	}
+	var errT = 0;
+	function autoErr(err, msg) { clearTimeout(errT); errT = setTimeout(function () { err.textContent = msg; err.hidden = false; }, 1100); }
+	function auto(id, fn, wait) {
+		var t = 0, el = $(id); if (!el) return;
+		el.addEventListener("input", function () { clearTimeout(t); t = setTimeout(fn, wait || 380); });
+	}
+	auto("pm-n", function () { runCheck(0, true); });
 	function verdict(rep) {
 		var n = rep.n, a = n < 0n ? -n : n, s = ns(n);
 		if (rep.kind === "zero") return ["pm-v-no", "0 is not prime", "Zero is divisible by every number, so it is neither prime nor composite."];
@@ -470,11 +484,13 @@
 	$("pm-gex").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (b) { $("pm-g").value = b.dataset.v; runGcd(); } });
 	$("pm-gform").addEventListener("submit", function (e) { e.preventDefault(); runGcd(); });
 	var COLS = ["#1d4ed8", "#b45309", "#6d28d9", "#be185d", "#0e7490", "#4d7c0f", "#b91c1c", "#4338ca", "#0f766e", "#854d0e"];
-	function runGcd() {
+	auto("pm-g", function () { runGcd(true); });
+	function runGcd(isAuto) {
 		var r = P.parseList($("pm-g").value), err = $("pm-gerr"), out = $("pm-gout");
-		if (r.err) { err.textContent = r.err; err.hidden = false; return; }
+		if (r.err) { if (isAuto === true) return autoErr(err, r.err); err.textContent = r.err; err.hidden = false; return; }
 		var L = r.v.map(function (x) { return x < 0n ? -x : x; });
-		if (L.length < 2) { err.textContent = "Type at least two numbers."; err.hidden = false; return; }
+		if (L.length < 2) { if (isAuto === true) return; err.textContent = "Type at least two numbers."; err.hidden = false; return; }
+		clearTimeout(errT);
 		if (L.length > 20) { err.textContent = "Up to 20 numbers, please."; err.hidden = false; return; }
 		if (L.some(function (x) { return x.toString().length > 60; })) { err.textContent = "Numbers up to 60 digits here."; err.hidden = false; return; }
 		err.hidden = true; S.g = $("pm-g").value.trim(); save(); if (S.tab === "gcd") setURL({ g: S.g });
@@ -660,6 +676,8 @@
 	function initList() {
 		$("pm-la").value = S.la; $("pm-lb").value = S.lb;
 		$("pm-lform").addEventListener("submit", function (e) { e.preventDefault(); runList(); });
+		auto("pm-la", function () { runList(true); }, 450); auto("pm-lb", function () { runList(true); }, 450);
+		auto("pm-nth", function () { if ($("pm-nth").value.trim()) $("pm-nform").requestSubmit ? $("pm-nform").requestSubmit() : $("pm-nform").dispatchEvent(new Event("submit", { cancelable: true })); }, 450);
 		$("pm-lcopy").onclick = function () { if (lastList.length) copy(lastList.join(", "), G(lastList.length) + " primes copied"); };
 		$("pm-nform").addEventListener("submit", function (e) { e.preventDefault(); var r = P.parse($("pm-nth").value); if (r.err) return out(r.err); var n = Number(r.v); if (n < 1 || n > P.NTH_MAX) return out("n must be between 1 and " + G(P.NTH_MAX) + "."); out("Working…"); setTimeout(function () { var p = P.nthPrime(n); out("The " + ord(n) + ' prime is <a href="?n=' + p + '" data-check="' + p + '"><b>' + G(p) + "</b></a>."); }, 20); });
 		$("pm-cform").addEventListener("submit", function (e) {
@@ -678,9 +696,10 @@
 		addPanel();
 		runList();
 	}
-	function runList() {
+	function runList(isAuto) {
 		var ra = P.parse($("pm-la").value), rb = P.parse($("pm-lb").value), err = $("pm-lerr");
-		function bad(t) { err.textContent = t; err.hidden = false; }
+		function bad(t) { if (isAuto === true) return autoErr(err, t); err.textContent = t; err.hidden = false; }
+		clearTimeout(errT);
 		if (ra.err || rb.err) return bad(ra.err || rb.err);
 		var a = ra.v, b = rb.v; if (b < a) { var t = a; a = b; b = t; }
 		err.hidden = true; S.la = $("pm-la").value.trim(); S.lb = $("pm-lb").value.trim(); save();

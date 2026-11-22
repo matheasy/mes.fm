@@ -964,7 +964,7 @@ APPS = {
                    tag="Is it prime? Factors, divisors, coprime, sieve.", accent="#0e7c66", dark="#0b5e4e", tint="#e3f4ef",
                    desc="Free prime number checker: is it prime, its prime factorization with a factor tree, every divisor, coprime check with GCD and LCM, an animated Sieve of Eratosthenes, the Ulam prime spiral, primes in a range, the nth prime and the prime counting function. Works for huge numbers.",
                    meta_desc="Is it prime? Check any number, see its prime factors and divisors, test if numbers are coprime (GCD, LCM), watch the Sieve of Eratosthenes and the Ulam spiral.",
-                   js_v="1"),
+                   js_v="2"),
     # 3D Fluid Simulator: CPU stable-fluids solver in a 3D box (lib.js, node-tested: tool_apps_src/3d-fluid-simulator-tests.js) + WebGL2 ray-marched smoke with an orbit camera
     # (flat canvas fallback without WebGL2). Wide page like the 2D simulator (own Theatre button, no sidebar).
     "3d-fluid-simulator": dict(title="MES 3D Fluid Simulator", page_title="3D Fluid Simulator: Smoke in a Box",
