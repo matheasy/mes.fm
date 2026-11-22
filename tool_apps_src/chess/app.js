@@ -32,7 +32,7 @@
 
 	/* ---------- saved settings ---------- */
 	var S = { game: "standard", opp: "cpu", lv: "medium", me: "white", alt: 0, clock: "", dots: true, anal: false, autoflip: false, sound: true,
-		dim: "2d", room: "club", set: "wood", cam: "auto", theme: "green", pcol: "auto", flipX: false, show: null,
+		dim: "2d", room: "club", set: "wood", cam: "auto", theme: "green", p2: "classic", pcol: "auto", flipX: false, show: null,
 		name: "", ofirst: "host", opub: true, ht: 5, cur: null, stats: {}, online: null, orec: {}, hive: null, saved: {} };
 	try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) for (var k in saved) S[k] = saved[k]; } catch (e) {}
 	S.show = Object.assign({ names: true, btns: true, moves: true, type: true }, S.show || {});
@@ -325,6 +325,13 @@
 	};
 	var pieceCache = {};
 	function pieceSvg(letter) {
+		if (S.p2 === "fantasy") {   // the Fantasy armies figures (AI-painted, original) standing on a coloured disc
+			var fk = "F" + letter;
+			if (pieceCache[fk]) return pieceCache[fk];
+			var fw = letter === letter.toUpperCase(), FL = letter.toUpperCase(), hh = { K: 50, Q: 49, R: 45, B: 48, N: 47, P: 41 }[FL], ww = hh * 0.8;
+			return (pieceCache[fk] = '<g class="ch-pfan"><ellipse cx="22.5" cy="41.2" rx="13.5" ry="3.6" class="' + (fw ? "ch-fbw" : "ch-fbb") + '"/>' +
+				'<image href="' + (window.MES_CHESS_IMG || "/chess/img/") + "fantasy/" + (fw ? "w" : "b") + FL + '.png?v=1" x="' + (22.5 - ww / 2).toFixed(1) + '" y="' + (43 - hh) + '" width="' + ww.toFixed(1) + '" height="' + hh + '" preserveAspectRatio="xMidYMax meet"/></g>');
+		}
 		if (pieceCache[letter]) return pieceCache[letter];
 		var white = letter === letter.toUpperCase(), L = letter.toUpperCase(), cls = white ? "ch-pw" : "ch-pb", out = '<g class="' + cls + '">';
 		out += '<path class="ch-pf" d="' + PIECE_PATHS.base + '"/>';
@@ -801,7 +808,7 @@
 		$("ch-game").value = C.preset(S.game) ? S.game : "standard";
 		segSet("ch-opp", S.opp); segSet("ch-lv", S.lv); segSet("ch-me", S.me); segSet("ch-ofirst", S.ofirst); segSet("ch-dim", S.dim);
 		$("ch-clock").value = S.clock || ""; $("ch-dots").checked = S.dots !== false; $("ch-anal").checked = !!S.anal; $("ch-autoflip").checked = !!S.autoflip; $("ch-sound").checked = S.sound !== false;
-		$("ch-room").value = S.room; $("ch-set").value = S.set; $("ch-cam").value = S.cam; $("ch-theme").value = S.theme; $("ch-pcol").value = PCOL.hasOwnProperty(S.pcol) ? S.pcol : "auto";
+		$("ch-room").value = S.room; $("ch-set").value = S.set; $("ch-cam").value = S.cam; $("ch-theme").value = S.theme; $("ch-p2").value = S.p2 === "fantasy" ? "fantasy" : "classic"; $("ch-pcol").value = PCOL.hasOwnProperty(S.pcol) ? S.pcol : "auto";
 		root.setAttribute("data-theme", S.theme);
 		var p = C.preset(S.game) || C.PRESETS[0];
 		$("ch-desc").textContent = p.desc + (S.opp === "cpu" ? " Computer: " + C.LEVELS[S.lv].name + " (about " + C.LEVELS[S.lv].elo + " strength)." : "");
@@ -869,6 +876,13 @@
 		S.show[c.getAttribute("data-sh")] = c.checked; save(); applyShow(); setTimeout(size3d, 30);
 	});
 	$("ch-theme").addEventListener("change", function () { S.theme = this.value; save(); root.setAttribute("data-theme", S.theme); });
+	$("ch-p2").addEventListener("change", function () { S.p2 = this.value; save(); render(true); });
+	/* one click: the Battle arena look (original fantasy art, card-battle style): arena board + fantasy figures in 2D, arena room + 3D figures in 3D */
+	$("ch-arena").addEventListener("click", function () {
+		S.theme = "arena"; S.p2 = "fantasy"; S.room = "arena"; S.set = "fantasy3d"; save(); syncSetup();
+		if (v3) { v3.setRoom(S.room); v3.setSet(S.set); draw3d(true); }
+		render(true); toast("Battle arena look: arena board and fantasy figures. Switch 2D / 3D to see both.");
+	});
 	$("ch-flip").addEventListener("click", function () { S.flipX = !S.flipX; save(); render(true); });
 	$("ch-new").addEventListener("click", newGame);
 	$("ch-undo").addEventListener("click", undo);

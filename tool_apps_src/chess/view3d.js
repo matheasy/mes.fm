@@ -22,7 +22,7 @@
 	var M = 18;    // squares per metre (a 5.5 cm square): room furniture is sized in metres * M
 
 	var ROOMS = [{ id: "club", name: "Chess club" }, { id: "tournament", name: "Tournament hall" }, { id: "park", name: "Park table" },
-		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
+		{ id: "home", name: "Living room" }, { id: "space", name: "Space" }, { id: "runes", name: "Rune hall" }, { id: "arena", name: "Battle arena" }, { id: "screens", name: "Video call fans" }, { id: "dark", name: "Plain (fastest)" }];
 	/* Pieces that already have a real 3D model in the "Fantasy armies 3D" set (one or two are added a day; see
 	   tool_apps_src/chess/fantasy3d/README.md). The others use their picture figure until theirs is made. */
 	var MODELS3D = ["wN", "wK", "wQ", "wB", "wR", "wP", "bK", "bQ", "bB", "bN", "bR", "bP"];
@@ -785,6 +785,48 @@
 			var rune = light(new THREE.PointLight("#5fd8ff", 40, 90, 1.4)); rune.position.set(0, 8, -6);
 			anims.push(function (t) { cand.intensity = 65 + 12 * Math.sin(t * 7.3) + 10 * Math.sin(t * 13.1); flames.forEach(function (f, i) { f.scale.y = 1.4 + 0.25 * Math.sin(t * 9 + i * 2); }); circle.material.opacity = 0.7 + 0.18 * Math.sin(t * 1.3); circle.rotation.z = t * 0.03; });
 			this.key.intensity = 0.9; this.key.color.set("#c9d6ff");
+		} else if (name === "arena") {
+			// an original fantasy battle arena (card-battle look): the board sits on a stone dais in the middle of a sand floor, the
+			// round arena wall shows the AI-painted crowd (bg-arena.jpg, original art), with braziers and coloured banners
+			scene.background = new THREE.Color("#2a1a2e"); scene.fog = new THREE.Fog("#3a2433", 120, 300);
+			var sandT = (function () { var rr = rng(57); var t = tex(256, 256, function (c, w, h) { c.fillStyle = "#c9a36a"; c.fillRect(0, 0, w, h); for (var k = 0; k < 2600; k++) { var v = rr(); c.fillStyle = v < 0.5 ? "rgba(120,84,40," + (0.12 + rr() * 0.2) + ")" : "rgba(250,225,170," + (0.1 + rr() * 0.2) + ")"; c.fillRect(rr() * w, rr() * h, 1 + rr() * 3, 1 + rr() * 3); } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(16, 16); return t; })();
+			var daisT = (function () { var rr = rng(61); var t = tex(256, 256, function (c, w, h) { c.fillStyle = "#4d4650"; c.fillRect(0, 0, w, h); for (var y = 0; y < h; y += 64) for (var x = ((y / 64) % 2) * 32; x < w + 64; x += 64) { var v = rr() * 24 - 12; c.fillStyle = "rgb(" + (92 + v) + "," + (84 + v) + "," + (96 + v) + ")"; c.fillRect(x + 2, y + 2, 60, 60); } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); return t; })();
+			F = table(g, std("#ffffff", 0.85, { map: daisT }), std("#3b3440", 0.9), 19, 19, 13.5, true);
+			var fl = new THREE.Mesh(new THREE.CircleGeometry(90, 64), std("#ffffff", 1, { map: sandT })); fl.rotation.x = -Math.PI / 2; fl.position.y = F; fl.receiveShadow = true; g.add(fl);
+			// gold-trimmed steps round the dais, like the frame of a playing card
+			var gold = std("#d4a63a", 0.35, { metalness: 0.7 }), purple = std("#3a1f4a", 0.7);
+			cyl(g, 22, 24, 2, purple, 0, F + 1, 0, 48); cyl(g, 24.4, 24.4, 0.4, gold, 0, F + 2.05, 0, 48);
+			cyl(g, 30, 32, 1, std("#5a5260", 0.9), 0, F + 0.5, 0, 48);
+			// the arena wall: a cylinder seen from inside, the crowd picture repeated round it (mirrored so the joins match)
+			var wallM = new THREE.MeshBasicMaterial({ color: "#5a4a58", side: THREE.BackSide, fog: false });
+			var wall = new THREE.Mesh(new THREE.CylinderGeometry(84, 84, 70, 64, 1, true), wallM); wall.position.y = F + 35; g.add(wall);
+			var aurl = (window.MES_CHESS_IMG || "/chess/img/") + "bg-arena.jpg?v=1", self2 = this;
+			new THREE.TextureLoader().load(aurl, function (t) {
+				if (self2.room !== g) return;
+				t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.wrapS = THREE.MirroredRepeatWrapping; t.repeat.set(3, 0.62); t.offset.set(0, 0.38);
+				wallM.map = t; wallM.color.set("#ffffff"); wallM.needsUpdate = true; self2.render();
+			}, undefined, function () {});
+			var sky = new THREE.Mesh(new THREE.CircleGeometry(84, 48), new THREE.MeshBasicMaterial({ color: "#e89a5a", fog: false })); sky.rotation.x = Math.PI / 2; sky.position.y = F + 70; g.add(sky);
+			// braziers round the dais
+			var iron = std("#2b2622", 0.6, { metalness: 0.5 }), fireM = new THREE.MeshBasicMaterial({ color: "#ffb347" }), fires = [];
+			for (var bi = 0; bi < 6; bi++) {
+				var ba = bi * Math.PI / 3 + Math.PI / 6, bx = Math.cos(ba) * 46, bz = Math.sin(ba) * 46;
+				cyl(g, 0.7, 1.1, 9, iron, bx, F + 4.5, bz, 12); cyl(g, 3, 1.6, 2.2, iron, bx, F + 10, bz, 16);
+				var fire = new THREE.Mesh(new THREE.ConeGeometry(2.2, 5, 10), fireM); fire.position.set(bx, F + 13.5, bz); g.add(fire); fires.push(fire);
+			}
+			// banners in five colours (fire, water, earth, light, shadow) on poles
+			var banCols = ["#c0392b", "#2e6fd1", "#2e8b3e", "#e0b23a", "#7d3fb8", "#c0392b", "#2e6fd1", "#2e8b3e", "#e0b23a", "#7d3fb8"];
+			banCols.forEach(function (col, i) {
+				var a = i * Math.PI / 5, x = Math.cos(a) * 80, z = Math.sin(a) * 80, pg = new THREE.Group(); pg.position.set(x, F, z); pg.rotation.y = -a - Math.PI / 2;
+				box(pg, 0.8, 40, 0.8, iron, 0, 20, 0); box(pg, 12, 0.6, 0.6, gold, 0, 38, 0);
+				var bt = tex(64, 160, function (c, w, h) { c.fillStyle = col; c.fillRect(0, 0, w, h - 20); c.beginPath(); c.moveTo(0, h - 20); c.lineTo(w / 2, h); c.lineTo(w, h - 20); c.fill(); c.strokeStyle = "#f2d27a"; c.lineWidth = 5; c.strokeRect(5, 5, w - 10, h - 30); c.fillStyle = "#f2d27a"; c.beginPath(); c.arc(w / 2, 60, 14, 0, Math.PI * 2); c.fill(); });
+				var ban = new THREE.Mesh(new THREE.PlaneGeometry(11, 26), new THREE.MeshStandardMaterial({ map: bt, side: THREE.DoubleSide, roughness: 0.9 })); ban.position.set(0, 24.5, 0.5); pg.add(ban);
+				g.add(pg);
+			});
+			var fireL = light(new THREE.PointLight("#ff9d4a", 120, 120, 1.5)); fireL.position.set(0, 14, 0);
+			var magic = light(new THREE.PointLight("#9b6bff", 50, 100, 1.4)); magic.position.set(-10, 20, -14);
+			anims.push(function (t) { fireL.intensity = 110 + 15 * Math.sin(t * 6.1) + 10 * Math.sin(t * 11.7); fires.forEach(function (f, i) { f.scale.set(1, 1 + 0.18 * Math.sin(t * 8 + i * 1.7), 1); }); });
+			this.key.intensity = 1.5; this.key.color.set("#ffe2b8");
 		} else if (name === "space") {
 			scene.background = new THREE.Color("#02030a"); scene.fog = null;
 			var starG = new THREE.BufferGeometry(), pts = [];

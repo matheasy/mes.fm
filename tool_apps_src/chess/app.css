@@ -7,11 +7,20 @@
 	#ch[data-theme="blue"] {--ch-l:#dee3e6;--ch-d:#8ca2ad;}
 	#ch[data-theme="grey"] {--ch-l:#d9d9d9;--ch-d:#8b8b8b;}
 	#ch[data-theme="purple"] {--ch-l:#e8e2f2;--ch-d:#8a6fb5;}
+	#ch[data-theme="arena"] {--ch-l:#d9c391;--ch-d:#6a557a;}
+	#ch[data-theme="arena"] .ch-boardwrap {padding:10px;border-radius:12px;background:#2a1a2e url(/chess/img/bg-arena.jpg?v=1) center/cover;}
+	#ch[data-theme="arena"] .ch-board {border:5px solid #d4a63a;border-radius:8px;box-shadow:0 0 0 3px #3a1f4a,0 0 22px rgba(160,100,255,0.55),0 4px 16px rgba(0,0,0,0.5);}
+	#ch[data-theme="arena"] .ch-sq {stroke:rgba(40,20,40,0.25);stroke-width:2;}
+	#ch .ch-fbw {fill:#e8d9a8;stroke:#8a6a2a;stroke-width:0.8;} #ch .ch-fbb {fill:#7a2a2e;stroke:#2a0c0e;stroke-width:0.8;}
+	#ch .ch-pfan image {filter:drop-shadow(0 1px 1.2px rgba(0,0,0,0.6));}
 	html body.dark-mode #ch.ch[data-theme] {--ch-l:#d8d8c0;}
 	html body.dark-mode #ch.ch[data-theme="wood"] {--ch-l:#e0c9a5;--ch-d:#a5785a;}
 	html body.dark-mode #ch.ch[data-theme="blue"] {--ch-l:#cdd4d8;--ch-d:#7d939e;}
 	html body.dark-mode #ch.ch[data-theme="grey"] {--ch-l:#c8c8c8;--ch-d:#7a7a7a;}
 	html body.dark-mode #ch.ch[data-theme="purple"] {--ch-l:#d8d0e6;--ch-d:#7a60a5;}
+	html body.dark-mode #ch.ch[data-theme="arena"] {--ch-l:#cbb483;--ch-d:#5e4b6e;}
+	html body.dark-mode #ch.ch[data-theme="arena"] .ch-board {border-color:#d4a63a;} html body.dark-mode #ch.ch[data-theme="arena"] .ch-sq {stroke:rgba(40,20,40,0.25);}
+	html body.dark-mode #ch.ch .ch-fbw {fill:#e8d9a8;stroke:#8a6a2a;} html body.dark-mode #ch.ch .ch-fbb {fill:#7a2a2e;stroke:#2a0c0e;}
 	html body.dark-mode #ch.ch[data-theme="green"] {--ch-l:#dcdcc2;--ch-d:#6a8a4c;}
 	:where(#ch) :is(div, span, p, li, ol, ul, section, label, b, kbd, h2, h3, h4, td, th, summary, details, code) {color:inherit;}
 	/* MES Connect Four: colours are custom properties (restated for dark mode below) so the derived dark theme leaves them alone */

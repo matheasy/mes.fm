@@ -3,7 +3,7 @@
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
-"updated":"2026-11-11",
+"updated":"2026-11-21",
 "type":"Calculator"
 },
 "/3d-fluid-simulator":{
@@ -13,7 +13,7 @@
 },
 "/3d-graphing-calculator":{
 "added":"2026-10-02",
-"updated":"2026-10-23",
+"updated":"2026-11-21",
 "type":"Calculator"
 },
 "/3d-studio":{
@@ -173,7 +173,7 @@
 },
 "/chess":{
 "added":"2026-11-12",
-"updated":"2026-11-20",
+"updated":"2026-11-21",
 "type":"Game"
 },
 "/click-test":{
