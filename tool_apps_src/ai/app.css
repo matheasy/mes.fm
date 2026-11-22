@@ -376,3 +376,39 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 #ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
 html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
 #ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
+
+/* ---------- 2026-11-21 b: compact composer (send button beside the box, one small options row, notes behind ⓘ) ---------- */
+#ai .ai-inrow { display: flex; gap: .5em; align-items: flex-end; }
+#ai .ai-inrow .ai-in { flex: 1 1 auto; min-width: 0; min-height: 2.9em; }
+#ai .ai-inrow .ai-send { flex: 0 0 auto; min-width: 7.5em; min-height: 2.9em; }
+#ai .ai-compose .ai-opts { margin-top: .4em; gap: .35em .8em; font-size: .92em; }
+#ai .ai-compose .ai-opts select { padding-top: .25em; padding-bottom: .25em; }
+#ai .ai-compose .ai-opts .ai-attach { padding: .3em .7em; }
+#ai .ai-compose .ai-price { flex: 1 1 8em; }
+#ai .ai-det[hidden], #ai .ai-freechip[hidden], #ai .ai-whochip[hidden] { display: none !important; }
+#ai .ai-det { margin-top: .35em; }
+#ai .ai-dettog { flex: 0 0 auto; width: 1.9em; height: 1.9em; padding: 0; border-radius: 50%; border: 1px solid var(--ai-line); background: transparent; color: var(--ai-sub); font: inherit; font-size: 1em; line-height: 1; cursor: pointer; }
+#ai .ai-dettog[aria-expanded="true"], #ai .ai-dettog:hover { border-color: var(--ai-acc); color: var(--ai-acc); }
+#ai .ai-freechip { display: inline-flex; align-items: center; gap: .35em; padding: .2em .65em; border-radius: 999px; border: 1px solid var(--ai-acc); background: var(--ai-me); color: var(--ai-ink); font-weight: 600; cursor: pointer; white-space: nowrap; }
+#ai .ai-whochip { align-self: center; margin-left: auto; font-size: .85em; color: var(--ai-sub); }
+#ai .ai-whochip:not([hidden]) ~ .mes-pbtns, #ai .ai-whochip:not([hidden]) ~ .ai-payshow { margin-left: .5em; }
+#ai .ai-pill { margin-left: auto; }
+#ai .ai-pill + #ai-new { margin-left: 0; }
+#ai .ai-media .ai-compose .ai-refs { margin-bottom: .4em; }
+html body.dark-mode #ai.ai :is(.ai-freechip, .ai-freechip span) { color: var(--ai-ink); background: var(--ai-me); }
+html body.dark-mode #ai.ai :is(.ai-whochip, .ai-dettog) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-acc); }
+/* Fill window: less chrome, the answers / pictures take the height */
+#ai .ai-app.mes-pfill { padding: 6px 10px !important; gap: .3em; }
+#ai.ai-loggedin .ai-app.mes-pfill > .ai-acct { display: none; }
+#ai .ai-app.mes-pfill > section:not([hidden]) { padding: .55em .7em; }
+#ai .ai-app.mes-pfill .ai-bar { margin-bottom: .4em; }
+#ai .ai-app.mes-pfill .ai-mode { padding: .35em .9em; }
+#ai .ai-app.mes-pfill .ai-save:not([open]) { display: none; }
+#ai .ai-app.mes-pfill .ai-side { min-height: 0; }
+#ai .ai-app.mes-pfill .ai-bigpic img, #ai .ai-app.mes-pfill .ai-bigpic video { max-height: max(14em, calc(100vh - 330px)); }
+@media (max-width: 640px) {
+  #ai .ai-inrow { flex-wrap: wrap; }
+  #ai .ai-inrow .ai-send { flex: 1 1 100%; }
+  #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
+}

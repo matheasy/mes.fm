@@ -32,6 +32,7 @@
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">{{tr:💬 Chat}}</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">{{tr:🖼️ Picture}}</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">{{tr:🎬 Video}}</button>
+			<span class="ai-whochip" id="ai-whochip" hidden></span>
 			<button type="button" class="ai-payshow" id="ai-payshow" hidden>{{tr:ⓘ About paying}}</button>
 		</div>
 
@@ -58,7 +59,10 @@
 			<div class="ai-compose">
 				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
 				<label class="ai-sr" for="ai-in">{{tr:Your message}}</label>
-				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="{{tr:Ask anything: code, research, math, writing…  (Ctrl+Enter sends)}}"></textarea>
+				<div class="ai-inrow">
+				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="{{tr:Ask anything: code, research, math, writing…  (Ctrl+Enter sends)}}"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">{{tr:Pay &amp; send}}</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="{{tr:Add pictures, PDFs or text files (or drop / paste them here)}}">{{tr:📎 Add files}}</button>
 					<input type="file" id="ai-file" multiple hidden accept="image/*,application/pdf,.pdf,.txt,.md,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.ts,.py,.java,.c,.cpp,.h,.cs,.go,.rs,.rb,.php,.sh,.sql,.yaml,.yml,.ini,.log,.srt,.vtt,.tex">
@@ -66,10 +70,11 @@
 					<div class="ai-opt" role="group" aria-label="{{tr:Answer length}}"><span>{{tr:Answer}}</span>
 						<div class="ai-seg" id="ai-len"></div>
 					</div>
+					<label class="ai-freechip" id="ai-free" hidden><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label>
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">{{tr:Pay &amp; send}}</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="{{tr:Model info and what this chat has cost}}">ⓘ</button>
 				</div>
-				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
+				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -78,6 +83,7 @@
 					<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ttable"></table></div>
 					<p class="tu-note" id="ai-tsession"></p>
 				</details>
+				</div>
 			</div>
 			</div>
 			</div>
@@ -130,8 +136,11 @@
 			<div class="ai-stage" id="ai-istage" aria-live="polite"></div>
 			<div class="ai-compose" id="ai-icomp">
 				<div class="ai-refs" id="ai-irefs" hidden></div>
-				<label class="tu-label" for="ai-prompt" id="ai-plabel">{{tr:Describe the picture}}</label>
-				<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A watercolour fox sitting in fresh snow at sunrise, soft light}}"></textarea>
+				<label class="ai-sr" for="ai-prompt" id="ai-plabel">{{tr:Describe the picture}}</label>
+				<div class="ai-inrow">
+				<textarea id="ai-prompt" class="tu-input ai-in" rows="2" maxlength="4000" placeholder="{{tr:Describe the picture, e.g. a watercolour fox in fresh snow at sunrise  (Ctrl+Enter)}}"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">{{tr:Pay &amp; create}}</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-iattach" title="{{tr:Add pictures to change or combine (or drop / paste them here)}}">{{tr:🖼️ Add pictures}}</button>
 					<input type="file" id="ai-ifile" multiple hidden accept="image/*">
@@ -139,9 +148,9 @@
 					<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>{{tr:Shape}}</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">{{tr:Square}}</option><option value="1536x1024">{{tr:Landscape}}</option><option value="1024x1536">{{tr:Portrait}}</option></select></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">{{tr:Pay &amp; create}}</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="{{tr:About these models}}">ⓘ</button>
 				</div>
-				<p class="tu-note" id="ai-inote">{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}}</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}}</p>
 			</div>
 			</div>
 			</div>
@@ -165,8 +174,11 @@
 			<div class="ai-stage" id="ai-vstage" aria-live="polite"></div>
 			<div class="ai-compose" id="ai-vcomp">
 				<div class="ai-refs" id="ai-vrefs" hidden></div>
-				<label class="tu-label" for="ai-vprompt" id="ai-vlabel">{{tr:Describe the video}}</label>
-				<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A golden retriever surfing a small wave at sunset, slow motion, the camera follows from the side}}"></textarea>
+				<label class="ai-sr" for="ai-vprompt" id="ai-vlabel">{{tr:Describe the video}}</label>
+				<div class="ai-inrow">
+				<textarea id="ai-vprompt" class="tu-input ai-in" rows="2" maxlength="4000" placeholder="{{tr:Describe the video, e.g. a golden retriever surfing a small wave at sunset, slow motion  (Ctrl+Enter)}}"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">{{tr:Pay &amp; create}}</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-vattach" title="{{tr:Start the video from a picture (or drop / paste one here)}}">{{tr:🖼️ Start from a picture}}</button>
 					<input type="file" id="ai-vfile" hidden accept="image/*">
@@ -175,9 +187,9 @@
 					<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-vres" class="tu-input" data-native></select></label>
 					<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>{{tr:Sound}}</span></label>
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">{{tr:Pay &amp; create}}</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="{{tr:About these models}}">ⓘ</button>
 				</div>
-				<p class="tu-note">{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}}</p>
+				<p class="tu-note ai-det" hidden>{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}}</p>
 			</div>
 			</div>
 			</div>

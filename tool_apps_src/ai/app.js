@@ -56,6 +56,9 @@
 	function who() { return mock ? MOCK_USER : (H && H.user()); }
 	function paintAcct() {
 		var u = who(), a = $("ai-acct");
+		// in Fill window the account card is hidden once logged in; a small "@name" in the tab bar says who pays
+		root.classList.toggle("ai-loggedin", !!u);
+		$("ai-whochip").hidden = !u; $("ai-whochip").textContent = u ? "@" + u.name : "";
 		if (mock) { a.innerHTML = '<p class="ai-demo">' + T("<b>Local preview:</b> payments and answers are simulated (account @demo, no HBD moves).") + '</p>'; $("ai-help").innerHTML = ""; return; }
 		if (!H) { a.innerHTML = "<p>" + T("The Hive login could not load. Reload the page.") + "</p>"; return; }
 		if (u) {
@@ -573,11 +576,11 @@
 	function usdOf(q) { return A.fmtUsd(q.hbd * A.HBD_USD); }
 	// what this chat has cost so far + a rough price for the next message (history ~ characters / 4); only a hint, the quote is the price
 	function paintCost() {
-		var c = cur(), el = $("ai-cost"), k = A.chatCostSoFar(c, S.model, S.len);
+		var c = cur(), el = $("ai-cost"), k = A.chatCostSoFar(c, S.model, freeApplies() ? "short" : S.len);
 		el.hidden = !c.msgs.length;
 		if (!c.msgs.length) return;
 		el.innerHTML = T("This chat so far: <b>{p} HBD</b>", { p: k.price }) + ' <span class="ai-sub">(' + (k.paid === 1 ? T("{n} paid message", { n: 1 }) : T("{n} paid messages", { n: k.paid })) + ")</span> · " +
-			T("history about {t} tokens", { t: k.tokens.toLocaleString(LOC) }) + " · " + T("next message about <b>{p} HBD</b>", { p: k.next.price }) +
+			T("history about {t} tokens", { t: k.tokens.toLocaleString(LOC) }) + " · " + (freeApplies() ? T("next message <b>free</b>") : T("next message about <b>{p} HBD</b>", { p: k.next.price })) +
 			'<br><span class="ai-sub">' + T("The whole history is sent again with every message, so long chats cost more. A new chat is cheaper.") + "</span>";
 	}
 	(function () { // "Typical costs" table, worked out from MESAI's prices so it follows them
@@ -603,7 +606,7 @@
 		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
 		$("ai-send").textContent = busy ? T("Working…") : freeApplies() ? T("Send free") : T("Pay & send");
-		if (freeApplies()) $("ai-price").innerHTML = "<b>" + T("🎁 Free") + '</b> <span class="ai-sub">' + T("{n} of {m} left today · Short answer", { n: FREEST.left, m: FREEST.perDay }) + "</span>";
+		if (freeApplies()) $("ai-price").innerHTML = "<b>" + T("🎁 Free") + '</b> <span class="ai-sub">' + T("Short answer") + "</span>";
 		var nr = M ? M.img.pend.length : 0, iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod, nr);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>" + (nr ? ' <span class="ai-sub">' + (nr === 1 ? T("incl. {n} picture", { n: 1 }) : T("incl. {n} pictures", { n: nr })) + "</span>" : "");
 		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
@@ -721,7 +724,8 @@
 		if (!show) return;
 		$("ai-freeuse").checked = S.free !== false;
 		$("ai-freeuse").disabled = FREEST.left <= 0;
-		$("ai-freetx").innerHTML = FREEST.left > 0 ? T("Use my free messages: <b>{n} of {m}</b> left today (Short answers, cheap models)", { n: FREEST.left, m: FREEST.perDay })
+		$("ai-freetx").textContent = FREEST.left > 0 ? T("🎁 Free: {n}/{m} left today", { n: FREEST.left, m: FREEST.perDay }) : T("🎁 No free messages left today");
+		box.title = FREEST.left > 0 ? T("Use my free messages: {n} of {m} left today (Short answers, cheap models)", { n: FREEST.left, m: FREEST.perDay })
 			: T("No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.004 HBD.");
 	}
 	function loadFree() {
@@ -956,9 +960,11 @@
 		}).join("") + (P.pend.length ? '<span class="ai-refhint">' + (kind === "vid" ? T("The video starts from this picture. Say how it should move.") :
 			P.pend.length === 1 ? T("Say what to change, or how to use it (picture 1).") : T("Refer to them as picture 1, picture 2… e.g. “put the person from picture 1 in front of picture 2”.")) + "</span>" : "") +
 			(P.pend.length > max ? '<span class="ai-refhint ai-err">' + (max ? T("This model takes {n} at most: remove some, or pick another model.", { n: max }) : T("This model can't take pictures: pick another model.")) + "</span>" : "");
-		var lab = $(P.el.label);
+		var lab = $(P.el.label), pr = $(P.el.prompt);
+		if (!P.ph0) P.ph0 = pr.placeholder;
 		if (kind === "img") { lab.textContent = P.pend.length ? T("What should the new picture be?") : T("Describe the picture"); }
 		else lab.textContent = P.pend.length ? T("How should the picture move?") : T("Describe the video");
+		pr.placeholder = P.pend.length ? lab.textContent + "  (Ctrl+Enter)" : P.ph0;
 	}
 	["img", "vid"].forEach(function (kind) {
 		var P = M[kind];
@@ -1087,7 +1093,7 @@
 				if (to === "vid") { M.vid.pend = []; showTab("vid"); }
 				return addRefs(to, [new File([blob], "picture.webp", { type: blob.type || "image/webp" })]).then(function () {
 					var pr = $(M[to].el.prompt);
-					if (d.mact === "edit") pr.placeholder = T("e.g. Make the sky stormy and add a red umbrella");
+					if (d.mact === "edit") pr.placeholder = T("What should change? e.g. make the sky stormy  (Ctrl+Enter)");
 					pr.focus(); $(M[to].el.comp).scrollIntoView({ block: "nearest", behavior: "smooth" });
 				});
 			});
@@ -1097,7 +1103,7 @@
 	$("ai-vid").addEventListener("click", function (e) { if (e.target.closest("#ai-vstage, #ai-vlist")) onMediaClick("vid", e); });
 	$("ai-iall").addEventListener("click", function () { selectMedia("img", null); });
 	$("ai-vall").addEventListener("click", function () { selectMedia("vid", null); });
-	$("ai-inew").addEventListener("click", function () { if (busy) return; M.img.pend = []; paintRefs("img"); $("ai-prompt").value = ""; $("ai-prompt").placeholder = T("e.g. A watercolour fox sitting in fresh snow at sunrise, soft light"); selectMedia("img", null); paintPrice(); $("ai-prompt").focus(); });
+	$("ai-inew").addEventListener("click", function () { if (busy) return; M.img.pend = []; paintRefs("img"); $("ai-prompt").value = ""; selectMedia("img", null); paintPrice(); $("ai-prompt").focus(); });
 	$("ai-vnew").addEventListener("click", function () { if (busy) return; M.vid.pend = []; paintRefs("vid"); $("ai-vprompt").value = ""; selectMedia("vid", null); paintPrice(); $("ai-vprompt").focus(); });
 	document.addEventListener("keydown", function (e) {
 		if ((e.key !== "ArrowLeft" && e.key !== "ArrowRight") || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -1502,6 +1508,22 @@
 			fillModels(); paintOff(); paintPrice();
 		}).catch(function () { status = { chat: false, image: false, video: false, known: true, prov: {} }; fillModels(); paintOff(); paintPrice(); });
 	}
+
+	/* ---------- ⓘ: the notes / costs under each box are folded away (S.det = shown), one choice for all three tabs ---------- */
+	function paintDet() {
+		[].forEach.call(root.querySelectorAll("[data-det]"), function (b) {
+			b.setAttribute("aria-expanded", !!S.det);
+			var box = b.closest(".ai-compose"); [].forEach.call(box.querySelectorAll(".ai-det"), function (d) { d.hidden = !S.det; });
+		});
+	}
+	root.addEventListener("click", function (e) { if (e.target.closest("[data-det]")) { S.det = !S.det; save(); paintDet(); } });
+	paintDet();
+	// the text-size pill of the answers goes into the chat's top bar (it had a row of its own above the answers)
+	(function movePill(n) {
+		var row = $("ai-chat").querySelector(".mes-ts-row--solo"), pill = row && row.querySelector(".mes-ts");
+		if (pill) { pill.classList.add("ai-pill"); $("ai-chatbar").insertBefore(pill, $("ai-new")); if (!row.children.length) row.remove(); return; }
+		if (n < 40) setTimeout(function () { movePill(n + 1); }, 250);
+	})(0);
 
 	/* ---------- Fill window: the whole app (account, the Chat / Picture / Video tabs and their panels), so the tabs work inside it ---------- */
 	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-app"), { bar: $("ai-modes"), t: T }); }

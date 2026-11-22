@@ -684,6 +684,42 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
 #ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
+/* ---------- 2026-11-21 b: compact composer (send button beside the box, one small options row, notes behind ⓘ) ---------- */
+#ai .ai-inrow { display: flex; gap: .5em; align-items: flex-end; }
+#ai .ai-inrow .ai-in { flex: 1 1 auto; min-width: 0; min-height: 2.9em; }
+#ai .ai-inrow .ai-send { flex: 0 0 auto; min-width: 7.5em; min-height: 2.9em; }
+#ai .ai-compose .ai-opts { margin-top: .4em; gap: .35em .8em; font-size: .92em; }
+#ai .ai-compose .ai-opts select { padding-top: .25em; padding-bottom: .25em; }
+#ai .ai-compose .ai-opts .ai-attach { padding: .3em .7em; }
+#ai .ai-compose .ai-price { flex: 1 1 8em; }
+#ai .ai-det[hidden], #ai .ai-freechip[hidden], #ai .ai-whochip[hidden] { display: none !important; }
+#ai .ai-det { margin-top: .35em; }
+#ai .ai-dettog { flex: 0 0 auto; width: 1.9em; height: 1.9em; padding: 0; border-radius: 50%; border: 1px solid var(--ai-line); background: transparent; color: var(--ai-sub); font: inherit; font-size: 1em; line-height: 1; cursor: pointer; }
+#ai .ai-dettog[aria-expanded="true"], #ai .ai-dettog:hover { border-color: var(--ai-acc); color: var(--ai-acc); }
+#ai .ai-freechip { display: inline-flex; align-items: center; gap: .35em; padding: .2em .65em; border-radius: 999px; border: 1px solid var(--ai-acc); background: var(--ai-me); color: var(--ai-ink); font-weight: 600; cursor: pointer; white-space: nowrap; }
+#ai .ai-whochip { align-self: center; margin-left: auto; font-size: .85em; color: var(--ai-sub); }
+#ai .ai-whochip:not([hidden]) ~ .mes-pbtns, #ai .ai-whochip:not([hidden]) ~ .ai-payshow { margin-left: .5em; }
+#ai .ai-pill { margin-left: auto; }
+#ai .ai-pill + #ai-new { margin-left: 0; }
+#ai .ai-media .ai-compose .ai-refs { margin-bottom: .4em; }
+html body.dark-mode #ai.ai :is(.ai-freechip, .ai-freechip span) { color: var(--ai-ink); background: var(--ai-me); }
+html body.dark-mode #ai.ai :is(.ai-whochip, .ai-dettog) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-acc); }
+/* Fill window: less chrome, the answers / pictures take the height */
+#ai .ai-app.mes-pfill { padding: 6px 10px !important; gap: .3em; }
+#ai.ai-loggedin .ai-app.mes-pfill > .ai-acct { display: none; }
+#ai .ai-app.mes-pfill > section:not([hidden]) { padding: .55em .7em; }
+#ai .ai-app.mes-pfill .ai-bar { margin-bottom: .4em; }
+#ai .ai-app.mes-pfill .ai-mode { padding: .35em .9em; }
+#ai .ai-app.mes-pfill .ai-save:not([open]) { display: none; }
+#ai .ai-app.mes-pfill .ai-side { min-height: 0; }
+#ai .ai-app.mes-pfill .ai-bigpic img, #ai .ai-app.mes-pfill .ai-bigpic video { max-height: max(14em, calc(100vh - 330px)); }
+@media (max-width: 640px) {
+  #ai .ai-inrow { flex-wrap: wrap; }
+  #ai .ai-inrow .ai-send { flex: 1 1 100%; }
+  #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
+}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1063,6 +1099,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 चैट</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ तस्वीर</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 वीडियो</button>
+			<span class="ai-whochip" id="ai-whochip" hidden></span>
 			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ भुगतान के बारे में</button>
 		</div>
 
@@ -1089,7 +1126,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ai-compose">
 				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
 				<label class="ai-sr" for="ai-in">आपका मैसेज</label>
-				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="कुछ भी पूछिए: कोड, रिसर्च, गणित, लेखन…  (Ctrl+Enter से भेजें)"></textarea>
+				<div class="ai-inrow">
+				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="कुछ भी पूछिए: कोड, रिसर्च, गणित, लेखन…  (Ctrl+Enter से भेजें)"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">भुगतान करें और भेजें</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="तस्वीरें, PDF या टेक्स्ट फ़ाइलें जोड़ें (या उन्हें यहाँ ड्रॉप / पेस्ट करें)">📎 फ़ाइलें जोड़ें</button>
 					<input type="file" id="ai-file" multiple hidden accept="image/*,application/pdf,.pdf,.txt,.md,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.ts,.py,.java,.c,.cpp,.h,.cs,.go,.rs,.rb,.php,.sh,.sql,.yaml,.yml,.ini,.log,.srt,.vtt,.tex">
@@ -1097,10 +1137,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-opt" role="group" aria-label="जवाब की लंबाई"><span>जवाब</span>
 						<div class="ai-seg" id="ai-len"></div>
 					</div>
+					<label class="ai-freechip" id="ai-free" hidden><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label>
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">भुगतान करें और भेजें</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="मॉडल की जानकारी और इस चैट का अब तक का खर्च">ⓘ</button>
 				</div>
-				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
+				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1109,6 +1150,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ttable"></table></div>
 					<p class="tu-note" id="ai-tsession"></p>
 				</details>
+				</div>
 			</div>
 			</div>
 			</div>
@@ -1161,8 +1203,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ai-stage" id="ai-istage" aria-live="polite"></div>
 			<div class="ai-compose" id="ai-icomp">
 				<div class="ai-refs" id="ai-irefs" hidden></div>
-				<label class="tu-label" for="ai-prompt" id="ai-plabel">तस्वीर का वर्णन करें</label>
-				<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="जैसे: सूर्योदय के समय ताज़ी बर्फ़ में बैठी एक वॉटरकलर लोमड़ी, हल्की रोशनी"></textarea>
+				<label class="ai-sr" for="ai-prompt" id="ai-plabel">तस्वीर का वर्णन करें</label>
+				<div class="ai-inrow">
+				<textarea id="ai-prompt" class="tu-input ai-in" rows="2" maxlength="4000" placeholder="तस्वीर का वर्णन करें, जैसे: सूर्योदय के समय ताज़ी बर्फ़ में एक वॉटरकलर लोमड़ी  (Ctrl+Enter)"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">भुगतान करें और बनाएँ</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-iattach" title="बदलने या मिलाने के लिए तस्वीरें जोड़ें (या यहाँ छोड़ें / पेस्ट करें)">🖼️ तस्वीरें जोड़ें</button>
 					<input type="file" id="ai-ifile" multiple hidden accept="image/*">
@@ -1170,9 +1215,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>क्वालिटी</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>आकार</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">चौकोर</option><option value="1536x1024">लैंडस्केप</option><option value="1024x1536">पोर्ट्रेट</option></select></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">भुगतान करें और बनाएँ</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="इन मॉडलों के बारे में">ⓘ</button>
 				</div>
-				<p class="tu-note" id="ai-inote">यह तस्वीर <span id="ai-imodel">OpenAI के GPT Image 2</span> ने बनाई है और सिर्फ़ इसी ब्राउज़र में रखी गई है। GPT Image 2 लंबे, विस्तृत वर्णन अच्छी तरह मानता है और तस्वीरों में टेक्स्ट अच्छा लिखता है; Grok Imagine सस्ता और तेज़ है।</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>यह तस्वीर <span id="ai-imodel">OpenAI के GPT Image 2</span> ने बनाई है और सिर्फ़ इसी ब्राउज़र में रखी गई है। GPT Image 2 लंबे, विस्तृत वर्णन अच्छी तरह मानता है और तस्वीरों में टेक्स्ट अच्छा लिखता है; Grok Imagine सस्ता और तेज़ है।</p>
 			</div>
 			</div>
 			</div>
@@ -1196,8 +1241,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ai-stage" id="ai-vstage" aria-live="polite"></div>
 			<div class="ai-compose" id="ai-vcomp">
 				<div class="ai-refs" id="ai-vrefs" hidden></div>
-				<label class="tu-label" for="ai-vprompt" id="ai-vlabel">वीडियो का वर्णन करें</label>
-				<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="जैसे: सूर्यास्त के समय छोटी लहर पर सर्फ़ करता एक गोल्डन रिट्रीवर, स्लो मोशन, कैमरा बगल से पीछा करता है"></textarea>
+				<label class="ai-sr" for="ai-vprompt" id="ai-vlabel">वीडियो का वर्णन करें</label>
+				<div class="ai-inrow">
+				<textarea id="ai-vprompt" class="tu-input ai-in" rows="2" maxlength="4000" placeholder="वीडियो का वर्णन करें, जैसे: सूर्यास्त के समय छोटी लहर पर सर्फ़ करता एक गोल्डन रिट्रीवर, स्लो मोशन  (Ctrl+Enter)"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">भुगतान करें और बनाएँ</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-vattach" title="वीडियो किसी तस्वीर से शुरू करें (या यहाँ एक छोड़ें / पेस्ट करें)">🖼️ तस्वीर से शुरू करें</button>
 					<input type="file" id="ai-vfile" hidden accept="image/*">
@@ -1206,9 +1254,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>क्वालिटी</span><select id="ai-vres" class="tu-input" data-native></select></label>
 					<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>आवाज़</span></label>
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">भुगतान करें और बनाएँ</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="इन मॉडलों के बारे में">ⓘ</button>
 				</div>
-				<p class="tu-note">वीडियो xAI का Grok Imagine बनाता है और इसमें कुछ मिनट लगते हैं: आप पेज इस्तेमाल करते रह सकते हैं (या बंद करके वापस आ सकते हैं: काम जारी रहता है)। तैयार वीडियो सिर्फ़ इसी ब्राउज़र में रखे जाते हैं। लाइट और सबसे अच्छा मॉडल पर आवाज़ में होंठों से मेल खाती बोली भी होती है।</p>
+				<p class="tu-note ai-det" hidden>वीडियो xAI का Grok Imagine बनाता है और इसमें कुछ मिनट लगते हैं: आप पेज इस्तेमाल करते रह सकते हैं (या बंद करके वापस आ सकते हैं: काम जारी रहता है)। तैयार वीडियो सिर्फ़ इसी ब्राउज़र में रखे जाते हैं। लाइट और सबसे अच्छा मॉडल पर आवाज़ में होंठों से मेल खाती बोली भी होती है।</p>
 			</div>
 			</div>
 			</div>
@@ -1305,7 +1353,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=97438f8c" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=27fc5180" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

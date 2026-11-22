@@ -684,6 +684,42 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
 #ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
+/* ---------- 2026-11-21 b: compact composer (send button beside the box, one small options row, notes behind ⓘ) ---------- */
+#ai .ai-inrow { display: flex; gap: .5em; align-items: flex-end; }
+#ai .ai-inrow .ai-in { flex: 1 1 auto; min-width: 0; min-height: 2.9em; }
+#ai .ai-inrow .ai-send { flex: 0 0 auto; min-width: 7.5em; min-height: 2.9em; }
+#ai .ai-compose .ai-opts { margin-top: .4em; gap: .35em .8em; font-size: .92em; }
+#ai .ai-compose .ai-opts select { padding-top: .25em; padding-bottom: .25em; }
+#ai .ai-compose .ai-opts .ai-attach { padding: .3em .7em; }
+#ai .ai-compose .ai-price { flex: 1 1 8em; }
+#ai .ai-det[hidden], #ai .ai-freechip[hidden], #ai .ai-whochip[hidden] { display: none !important; }
+#ai .ai-det { margin-top: .35em; }
+#ai .ai-dettog { flex: 0 0 auto; width: 1.9em; height: 1.9em; padding: 0; border-radius: 50%; border: 1px solid var(--ai-line); background: transparent; color: var(--ai-sub); font: inherit; font-size: 1em; line-height: 1; cursor: pointer; }
+#ai .ai-dettog[aria-expanded="true"], #ai .ai-dettog:hover { border-color: var(--ai-acc); color: var(--ai-acc); }
+#ai .ai-freechip { display: inline-flex; align-items: center; gap: .35em; padding: .2em .65em; border-radius: 999px; border: 1px solid var(--ai-acc); background: var(--ai-me); color: var(--ai-ink); font-weight: 600; cursor: pointer; white-space: nowrap; }
+#ai .ai-whochip { align-self: center; margin-left: auto; font-size: .85em; color: var(--ai-sub); }
+#ai .ai-whochip:not([hidden]) ~ .mes-pbtns, #ai .ai-whochip:not([hidden]) ~ .ai-payshow { margin-left: .5em; }
+#ai .ai-pill { margin-left: auto; }
+#ai .ai-pill + #ai-new { margin-left: 0; }
+#ai .ai-media .ai-compose .ai-refs { margin-bottom: .4em; }
+html body.dark-mode #ai.ai :is(.ai-freechip, .ai-freechip span) { color: var(--ai-ink); background: var(--ai-me); }
+html body.dark-mode #ai.ai :is(.ai-whochip, .ai-dettog) { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-acc); }
+/* Fill window: less chrome, the answers / pictures take the height */
+#ai .ai-app.mes-pfill { padding: 6px 10px !important; gap: .3em; }
+#ai.ai-loggedin .ai-app.mes-pfill > .ai-acct { display: none; }
+#ai .ai-app.mes-pfill > section:not([hidden]) { padding: .55em .7em; }
+#ai .ai-app.mes-pfill .ai-bar { margin-bottom: .4em; }
+#ai .ai-app.mes-pfill .ai-mode { padding: .35em .9em; }
+#ai .ai-app.mes-pfill .ai-save:not([open]) { display: none; }
+#ai .ai-app.mes-pfill .ai-side { min-height: 0; }
+#ai .ai-app.mes-pfill .ai-bigpic img, #ai .ai-app.mes-pfill .ai-bigpic video { max-height: max(14em, calc(100vh - 330px)); }
+@media (max-width: 640px) {
+  #ai .ai-inrow { flex-wrap: wrap; }
+  #ai .ai-inrow .ai-send { flex: 1 1 100%; }
+  #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
+}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1063,6 +1099,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 Chat</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ Image</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 Vidéo</button>
+			<span class="ai-whochip" id="ai-whochip" hidden></span>
 			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ À propos du paiement</button>
 		</div>
 
@@ -1089,7 +1126,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ai-compose">
 				<div class="ai-files" id="ai-files" hidden aria-live="polite"></div>
 				<label class="ai-sr" for="ai-in">Votre message</label>
-				<textarea id="ai-in" class="tu-input ai-in" rows="3" placeholder="Demandez ce que vous voulez : code, recherche, maths, rédaction…  (Ctrl+Entrée pour envoyer)"></textarea>
+				<div class="ai-inrow">
+				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="Demandez ce que vous voulez : code, recherche, maths, rédaction…  (Ctrl+Entrée pour envoyer)"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Payer et envoyer</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="Ajoutez des images, des PDF ou des fichiers texte (ou déposez / collez-les ici)">📎 Ajouter des fichiers</button>
 					<input type="file" id="ai-file" multiple hidden accept="image/*,application/pdf,.pdf,.txt,.md,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.ts,.py,.java,.c,.cpp,.h,.cs,.go,.rs,.rb,.php,.sh,.sql,.yaml,.yml,.ini,.log,.srt,.vtt,.tex">
@@ -1097,10 +1137,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-opt" role="group" aria-label="Longueur de la réponse"><span>Réponse</span>
 						<div class="ai-seg" id="ai-len"></div>
 					</div>
+					<label class="ai-freechip" id="ai-free" hidden><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label>
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Payer et envoyer</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="Infos sur le modèle et coût de ce chat">ⓘ</button>
 				</div>
-				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
+				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1109,6 +1150,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ttable"></table></div>
 					<p class="tu-note" id="ai-tsession"></p>
 				</details>
+				</div>
 			</div>
 			</div>
 			</div>
@@ -1161,8 +1203,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ai-stage" id="ai-istage" aria-live="polite"></div>
 			<div class="ai-compose" id="ai-icomp">
 				<div class="ai-refs" id="ai-irefs" hidden></div>
-				<label class="tu-label" for="ai-prompt" id="ai-plabel">Décrivez l'image</label>
-				<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="ex. : Un renard à l'aquarelle assis dans la neige fraîche au lever du soleil, lumière douce"></textarea>
+				<label class="ai-sr" for="ai-prompt" id="ai-plabel">Décrivez l'image</label>
+				<div class="ai-inrow">
+				<textarea id="ai-prompt" class="tu-input ai-in" rows="2" maxlength="4000" placeholder="Décrivez l'image, ex. : un renard à l'aquarelle dans la neige fraîche au lever du soleil  (Ctrl+Enter)"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">Payer et créer</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-iattach" title="Ajoutez des images à modifier ou combiner (ou déposez / collez-les ici)">🖼️ Ajouter des images</button>
 					<input type="file" id="ai-ifile" multiple hidden accept="image/*">
@@ -1170,9 +1215,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>Qualité</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>Format</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">Carré</option><option value="1536x1024">Paysage</option><option value="1024x1536">Portrait</option></select></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">Payer et créer</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="À propos de ces modèles">ⓘ</button>
 				</div>
-				<p class="tu-note" id="ai-inote">Cette image est créée par <span id="ai-imodel">GPT Image 2 d'OpenAI</span> et gardée uniquement dans ce navigateur. GPT Image 2 suit bien les descriptions longues et détaillées et écrit bien du texte dans les images ; Grok Imagine est moins cher et rapide.</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>Cette image est créée par <span id="ai-imodel">GPT Image 2 d'OpenAI</span> et gardée uniquement dans ce navigateur. GPT Image 2 suit bien les descriptions longues et détaillées et écrit bien du texte dans les images ; Grok Imagine est moins cher et rapide.</p>
 			</div>
 			</div>
 			</div>
@@ -1196,8 +1241,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="ai-stage" id="ai-vstage" aria-live="polite"></div>
 			<div class="ai-compose" id="ai-vcomp">
 				<div class="ai-refs" id="ai-vrefs" hidden></div>
-				<label class="tu-label" for="ai-vprompt" id="ai-vlabel">Décrivez la vidéo</label>
-				<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="ex. : Un golden retriever qui surfe une petite vague au coucher du soleil, au ralenti, la caméra le suit de côté"></textarea>
+				<label class="ai-sr" for="ai-vprompt" id="ai-vlabel">Décrivez la vidéo</label>
+				<div class="ai-inrow">
+				<textarea id="ai-vprompt" class="tu-input ai-in" rows="2" maxlength="4000" placeholder="Décrivez la vidéo, ex. : un golden retriever qui surfe une petite vague au coucher du soleil, au ralenti  (Ctrl+Enter)"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">Payer et créer</button>
+				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-vattach" title="Partir d'une image pour la vidéo (ou en déposer / coller une ici)">🖼️ Partir d'une image</button>
 					<input type="file" id="ai-vfile" hidden accept="image/*">
@@ -1206,9 +1254,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>Qualité</span><select id="ai-vres" class="tu-input" data-native></select></label>
 					<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>Son</span></label>
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
-					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">Payer et créer</button>
+					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="À propos de ces modèles">ⓘ</button>
 				</div>
-				<p class="tu-note">Les vidéos sont créées par Grok Imagine de xAI et prennent quelques minutes : vous pouvez continuer à utiliser la page (ou la fermer et revenir : le travail continue). Les vidéos terminées sont gardées uniquement dans ce navigateur. Avec les modèles Lite et Meilleur, le son comprend des paroles synchronisées avec les lèvres.</p>
+				<p class="tu-note ai-det" hidden>Les vidéos sont créées par Grok Imagine de xAI et prennent quelques minutes : vous pouvez continuer à utiliser la page (ou la fermer et revenir : le travail continue). Les vidéos terminées sont gardées uniquement dans ce navigateur. Avec les modèles Lite et Meilleur, le son comprend des paroles synchronisées avec les lèvres.</p>
 			</div>
 			</div>
 			</div>
@@ -1305,7 +1353,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=17737136" defer></script><script src="/ai/js/ai.js?v=15" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=7dd6b64c" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
