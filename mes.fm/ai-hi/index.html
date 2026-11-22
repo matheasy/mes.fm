@@ -380,7 +380,7 @@ html body.dark-mode #ai.ai .ai-text a { color: #8fb0ff; }
 #ai .ai-mfiles img { max-width: 11em; max-height: 9em; border-radius: .4em; border: 1px solid var(--ai-line); cursor: zoom-in; display: block; }
 #ai .ai-mfiles .ai-file { max-width: 20em; }
 #ai .ai-attach { white-space: nowrap; }
-#ai #ai-file, #ai .ai-files[hidden] { display: none !important; }
+#ai #ai-file, #ai #ai-ifile, #ai #ai-vfile, #ai .ai-files[hidden] { display: none !important; }
 #ai .ai-in { width: 100%; box-sizing: border-box; resize: vertical; min-height: 4.5em; font-size: 1.05em; line-height: 1.5; }
 #ai .ai-opts { display: flex; flex-wrap: wrap; gap: .6em 1em; align-items: center; margin-top: .55em; }
 #ai .ai-opt { display: inline-flex; align-items: center; gap: .4em; }
@@ -615,6 +615,69 @@ html body.dark-mode #ai.ai .ai-cost { color: var(--ai-ink); }
 html body.dark-mode #ai.ai .ai-cost .ai-sub { color: var(--ai-sub); }
 #ai .ai-chead--drop { opacity: .7; }
 
+/* ---------- 2026-11-21: Pictures / Videos tabs with the chat layout (side list + search), reference pictures, Fill window with tabs ---------- */
+#ai .ai-media .ai-main { display: flex; flex-direction: column; gap: .6em; }
+#ai .ai-stage { --mes-gh-d: 30em; min-height: 12em; max-height: max(24em, calc(100vh - 360px)); overflow-y: auto; border: 1px solid var(--ai-line); border-radius: .6em; padding: .7em; background: var(--ai-panel); color: var(--ai-ink); box-sizing: border-box; }
+#ai .ai-stage .ai-gal { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr)); gap: .55em; }
+#ai .ai-tile { position: relative; display: block; padding: 0; margin: 0; border: 1px solid var(--ai-line); border-radius: .5em; overflow: hidden; background: var(--ai-bot); cursor: pointer; aspect-ratio: 1; font: inherit; color: var(--ai-ink); }
+#ai .ai-tile img, #ai .ai-tile video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#ai .ai-tile:hover, #ai .ai-tile:focus-visible { border-color: var(--ai-acc); outline: 2px solid var(--ai-acc); outline-offset: -2px; }
+#ai .ai-tilecap { position: absolute; left: 0; right: 0; bottom: 0; padding: .3em .45em; font-size: .75em; line-height: 1.3; text-align: left; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, .75)); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#ai .ai-big { margin: 0; display: flex; flex-direction: column; gap: .5em; }
+#ai .ai-bigpic { position: relative; text-align: center; background: var(--ai-bot); border-radius: .5em; border: 1px solid var(--ai-line); }
+#ai .ai-bigpic img, #ai .ai-bigpic video { max-width: 100%; max-height: max(18em, calc(100vh - 520px)); width: auto; height: auto; display: block; margin: 0 auto; border-radius: .45em; }
+#ai .ai-bigpic video { background: #000; width: 100%; }
+#ai .ai-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 2.2em; height: 2.6em; border: 0; border-radius: .5em; font-size: 1.5em; line-height: 1; cursor: pointer; background: rgba(0, 0, 0, .45); color: #fff; }
+#ai .ai-nav--l { left: .3em; } #ai .ai-nav--r { right: .3em; }
+#ai .ai-nav:hover { background: rgba(0, 0, 0, .7); }
+#ai .ai-big figcaption { display: flex; flex-wrap: wrap; gap: .3em .6em; align-items: center; font-size: .95em; line-height: 1.45; }
+#ai .ai-bigtx { flex: 1 1 18em; overflow-wrap: anywhere; }
+#ai .ai-usedrefs { display: inline-flex; gap: .3em; }
+#ai .ai-mini--hi { border-color: var(--ai-acc); font-weight: 700; }
+#ai .ai-mini.ai-cdel { color: var(--ai-err); }
+#ai .ai-gone { visibility: hidden; }
+#ai .ai-mrow .ai-copen { flex-direction: row; align-items: center; gap: .5em; }
+#ai .ai-mthumb { width: 2.6em; height: 2.6em; flex: 0 0 auto; object-fit: cover; border-radius: .35em; background: var(--ai-line); display: inline-flex; align-items: center; justify-content: center; font-size: 1.1em; }
+#ai .ai-mtx { display: flex; flex-direction: column; gap: .1em; min-width: 0; }
+#ai .ai-refs { display: flex; flex-wrap: wrap; gap: .5em; align-items: center; margin: 0 0 .5em; }
+#ai .ai-refs[hidden] { display: none; }
+#ai .ai-ref { position: relative; display: inline-block; width: 4.2em; height: 4.2em; border-radius: .45em; border: 1px solid var(--ai-line); background: var(--ai-bot); }
+#ai .ai-ref img { width: 100%; height: 100%; object-fit: cover; border-radius: .4em; display: block; }
+#ai .ai-ref--s { width: 2.4em; height: 2.4em; }
+#ai .ai-refn { position: absolute; left: -.35em; top: -.35em; min-width: 1.45em; height: 1.45em; padding: 0 .2em; box-sizing: border-box; border-radius: 999px; background: var(--ai-acc); color: var(--ai-acctext); font-size: .78em; line-height: 1.45em; text-align: center; }
+#ai .ai-ref--s .ai-refn { font-size: .62em; }
+#ai .ai-ref button { position: absolute; right: -.35em; top: -.35em; width: 1.5em; height: 1.5em; padding: 0; border-radius: 999px; border: 1px solid var(--ai-line); background: var(--ai-bot); color: var(--ai-ink); cursor: pointer; font: inherit; font-size: .85em; line-height: 1; }
+#ai .ai-refhint { flex: 1 1 14em; font-size: .88em; color: var(--ai-sub); }
+#ai .ai-refhint.ai-err { color: var(--ai-err); }
+#ai .ai-media .ai-attach[hidden] { display: none; }
+html body.dark-mode #ai.ai :is(.ai-stage, .ai-big figcaption, .ai-bigtx, .ai-tile) { color: var(--ai-ink); }
+html body.dark-mode #ai.ai .ai-refhint { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-refhint.ai-err, html body.dark-mode #ai.ai .ai-mini.ai-cdel { color: var(--ai-err); }
+html body.dark-mode #ai.ai .ai-refn { background: var(--ai-acc); color: var(--ai-acctext); }
+html body.dark-mode #ai.ai .ai-ref button { background: var(--ai-bot); color: var(--ai-ink); border-color: var(--ai-line); }
+html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
+/* the whole app fills the window: tabs on top, the open tab takes the rest, its log / stage fills the height */
+#ai .ai-app.mes-pfill { gap: .4em; }
+#ai .ai-app.mes-pfill > .ai-acct { padding: .35em .7em; margin: 0; }
+#ai .ai-app.mes-pfill > .ai-acct .ai-user img { width: 24px; height: 24px; }
+#ai .ai-app.mes-pfill > section:not([hidden]) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin: 0; overflow: auto; }
+#ai .ai-app.mes-pfill .ai-wrap { flex: 1 1 auto; min-height: 0; align-items: stretch; }
+#ai .ai-app.mes-pfill .ai-main { display: flex; flex-direction: column; min-height: 0; }
+#ai .ai-app.mes-pfill .ai-side { position: static; max-height: none; }
+#ai .ai-app.mes-pfill .ai-log, #ai .ai-app.mes-pfill .ai-stage { flex: 1 1 auto; max-height: none; }
+#ai .ai-app.mes-pfill .ai-bigpic img, #ai .ai-app.mes-pfill .ai-bigpic video { max-height: max(14em, calc(100vh - 460px)); }
+#ai .ai-app.mes-pfill .ai-narrow .ai-side { max-height: 45vh; }
+#ai .ai-modes .mes-pbtns { margin-left: auto; align-self: center; }
+#ai .ai-modes .ai-payshow:not([hidden]) + .mes-pbtns { margin-left: .4em; }
+@media (max-width: 640px) {
+  #ai .ai-stage .ai-gal { grid-template-columns: repeat(auto-fill, minmax(7.5em, 1fr)); }
+  #ai .ai-modes .mes-pbtns { margin-left: 0; flex-basis: 100%; justify-content: flex-end; order: 9; }
+}
+#ai .ai-narrow .ai-stage { max-height: none; }
+/* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
+#ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
+#ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -744,6 +807,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ai .ai-undo{background:#404a63}
 	body.dark-mode #ai .ai-undo .tu-btn{border-color:#211bb1}
 	body.dark-mode #ai .ai-undo .ai-cic{color:#999ca4}
+	body.dark-mode #ai .ai-tilecap{background:linear-gradient(transparent, rgba(82,82,82,0.75))}
+	body.dark-mode #ai .ai-bigpic video{background:#525252}
+	body.dark-mode #ai .ai-nav{background:rgba(82,82,82,0.45)}
+	body.dark-mode #ai .ai-nav:hover{background:rgba(82,82,82,0.70)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -979,12 +1046,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</details>
 		</div>
 
+		<div class="ai-app" id="ai-app">
 		<div class="tu-card ai-acct" id="ai-acct-card">
 			<div id="ai-acct"></div>
 			<div id="ai-help"></div>
 		</div>
 
-		<div class="ai-modes" role="tablist" aria-label="क्या बनाना है">
+		<div class="ai-modes" id="ai-modes" role="tablist" aria-label="क्या बनाना है">
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 चैट</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ तस्वीर</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 वीडियो</button>
@@ -993,8 +1061,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">
 			<div class="ai-bar" id="ai-chatbar">
-				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" aria-controls="ai-side" aria-expanded="true" title="अपनी चैट दिखाएँ या छिपाएँ">☰ चैट <span class="ai-cn"></span></button>
-				<button type="button" class="tu-btn tu-btn--ghost ai-flip" id="ai-flip">⇄</button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" data-side aria-controls="ai-side" aria-expanded="true" title="अपनी चैट दिखाएँ या छिपाएँ">☰ चैट <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" id="ai-flip" data-flip>⇄</button>
 				<span class="ai-curtitle" id="ai-curtitle"></span>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">＋ नई चैट</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="अपने क्लाउड, Hive या फ़ाइल में सेव करें">💾 सेव</button>
@@ -1068,38 +1136,79 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</details>
 		</section>
 
-		<section class="tu-card ai-img" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>
-			<label class="tu-label" for="ai-prompt">तस्वीर का वर्णन करें</label>
-			<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="जैसे: सूर्योदय के समय ताज़ी बर्फ़ में बैठी एक वॉटरकलर लोमड़ी, हल्की रोशनी"></textarea>
-			<div class="ai-opts">
-				<label class="ai-opt"><span>मॉडल</span><select id="ai-imod" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>क्वालिटी</span><select id="ai-q" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>आकार</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">चौकोर</option><option value="1536x1024">लैंडस्केप</option><option value="1024x1536">पोर्ट्रेट</option></select></label>
-				<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">भुगतान करें और बनाएँ</button>
+		<section class="tu-card ai-img ai-media" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>
+			<div class="ai-bar">
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" data-side aria-controls="ai-iside" aria-expanded="true" title="अपनी तस्वीरें दिखाएँ या छिपाएँ">☰ तस्वीरें <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" data-flip>⇄</button>
+				<span class="ai-curtitle" id="ai-icur"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-iall">▦ सभी तस्वीरें</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-inew">＋ नई तस्वीर</button>
 			</div>
-			<p class="tu-note">यह तस्वीर <span id="ai-imodel">OpenAI के GPT Image 2</span> ने बनाई है और सिर्फ़ इसी ब्राउज़र में रखी गई है। GPT Image 2 लंबे, विस्तृत वर्णन अच्छी तरह मानता है और तस्वीरों में टेक्स्ट अच्छा लिखता है; Grok Imagine सस्ता और तेज़ है।</p>
-			<div class="ai-gal" id="ai-gal"></div>
+			<div class="ai-wrap">
+			<aside class="ai-side" id="ai-iside" aria-label="आपकी तस्वीरें">
+				<input type="search" id="ai-isearch" class="tu-input ai-csearch" placeholder="तस्वीरें खोजें…" aria-label="अपनी तस्वीरें उनके वर्णन से खोजें" autocomplete="off">
+				<div class="ai-clist" id="ai-ilist" role="list"></div>
+			</aside>
+			<div class="ai-main">
+			<div class="ai-stage" id="ai-istage" aria-live="polite"></div>
+			<div class="ai-compose" id="ai-icomp">
+				<div class="ai-refs" id="ai-irefs" hidden></div>
+				<label class="tu-label" for="ai-prompt" id="ai-plabel">तस्वीर का वर्णन करें</label>
+				<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="जैसे: सूर्योदय के समय ताज़ी बर्फ़ में बैठी एक वॉटरकलर लोमड़ी, हल्की रोशनी"></textarea>
+				<div class="ai-opts">
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-iattach" title="बदलने या मिलाने के लिए तस्वीरें जोड़ें (या यहाँ छोड़ें / पेस्ट करें)">🖼️ तस्वीरें जोड़ें</button>
+					<input type="file" id="ai-ifile" multiple hidden accept="image/*">
+					<label class="ai-opt"><span>मॉडल</span><select id="ai-imod" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>क्वालिटी</span><select id="ai-q" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>आकार</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">चौकोर</option><option value="1536x1024">लैंडस्केप</option><option value="1024x1536">पोर्ट्रेट</option></select></label>
+					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
+					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">भुगतान करें और बनाएँ</button>
+				</div>
+				<p class="tu-note" id="ai-inote">यह तस्वीर <span id="ai-imodel">OpenAI के GPT Image 2</span> ने बनाई है और सिर्फ़ इसी ब्राउज़र में रखी गई है। GPT Image 2 लंबे, विस्तृत वर्णन अच्छी तरह मानता है और तस्वीरों में टेक्स्ट अच्छा लिखता है; Grok Imagine सस्ता और तेज़ है।</p>
+			</div>
+			</div>
+			</div>
 		</section>
 
-		<section class="tu-card ai-img" id="ai-vid" role="tabpanel" aria-labelledby="ai-tab-vid" hidden>
-			<label class="tu-label" for="ai-vprompt">वीडियो का वर्णन करें</label>
-			<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="जैसे: सूर्यास्त के समय छोटी लहर पर सर्फ़ करता एक गोल्डन रिट्रीवर, स्लो मोशन, कैमरा बगल से पीछा करता है"></textarea>
-			<div class="ai-opts">
-				<label class="ai-opt"><span>मॉडल</span><select id="ai-vmodel" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>लंबाई</span><select id="ai-vsec" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>क्वालिटी</span><select id="ai-vres" class="tu-input" data-native></select></label>
-				<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>आवाज़</span></label>
-				<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">भुगतान करें और बनाएँ</button>
+		<section class="tu-card ai-img ai-media" id="ai-vid" role="tabpanel" aria-labelledby="ai-tab-vid" hidden>
+			<div class="ai-bar">
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" data-side aria-controls="ai-vside" aria-expanded="true" title="अपने वीडियो दिखाएँ या छिपाएँ">☰ वीडियो <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" data-flip>⇄</button>
+				<span class="ai-curtitle" id="ai-vcur"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-vall">▦ सभी वीडियो</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-vnew">＋ नया वीडियो</button>
 			</div>
-			<p class="tu-note">वीडियो xAI का Grok Imagine बनाता है और इसमें कुछ मिनट लगते हैं: आप पेज इस्तेमाल करते रह सकते हैं (या बंद करके वापस आ सकते हैं: काम जारी रहता है)। तैयार वीडियो सिर्फ़ इसी ब्राउज़र में रखे जाते हैं। लाइट और सबसे अच्छा मॉडल पर आवाज़ में होंठों से मेल खाती बोली भी होती है।</p>
+			<div class="ai-wrap">
+			<aside class="ai-side" id="ai-vside" aria-label="आपके वीडियो">
+				<input type="search" id="ai-vsearch" class="tu-input ai-csearch" placeholder="वीडियो खोजें…" aria-label="अपने वीडियो उनके वर्णन से खोजें" autocomplete="off">
+				<div class="ai-clist" id="ai-vlist" role="list"></div>
+			</aside>
+			<div class="ai-main">
 			<div id="ai-vjobs"></div>
-			<div class="ai-gal" id="ai-vgal"></div>
+			<div class="ai-stage" id="ai-vstage" aria-live="polite"></div>
+			<div class="ai-compose" id="ai-vcomp">
+				<div class="ai-refs" id="ai-vrefs" hidden></div>
+				<label class="tu-label" for="ai-vprompt" id="ai-vlabel">वीडियो का वर्णन करें</label>
+				<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="जैसे: सूर्यास्त के समय छोटी लहर पर सर्फ़ करता एक गोल्डन रिट्रीवर, स्लो मोशन, कैमरा बगल से पीछा करता है"></textarea>
+				<div class="ai-opts">
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-vattach" title="वीडियो किसी तस्वीर से शुरू करें (या यहाँ एक छोड़ें / पेस्ट करें)">🖼️ तस्वीर से शुरू करें</button>
+					<input type="file" id="ai-vfile" hidden accept="image/*">
+					<label class="ai-opt"><span>मॉडल</span><select id="ai-vmodel" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>लंबाई</span><select id="ai-vsec" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>क्वालिटी</span><select id="ai-vres" class="tu-input" data-native></select></label>
+					<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>आवाज़</span></label>
+					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
+					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">भुगतान करें और बनाएँ</button>
+				</div>
+				<p class="tu-note">वीडियो xAI का Grok Imagine बनाता है और इसमें कुछ मिनट लगते हैं: आप पेज इस्तेमाल करते रह सकते हैं (या बंद करके वापस आ सकते हैं: काम जारी रहता है)। तैयार वीडियो सिर्फ़ इसी ब्राउज़र में रखे जाते हैं। लाइट और सबसे अच्छा मॉडल पर आवाज़ में होंठों से मेल खाती बोली भी होती है।</p>
+			</div>
+			</div>
+			</div>
 		</section>
 
 		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
 		<div class="ai-undo" id="ai-undo" role="status" hidden></div>
+		</div>
 
 		<div class="tu-card ai-rules">
 			<h3>नियम</h3>
@@ -1188,7 +1297,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=204bb269" defer></script><script src="/ai/js/ai.js?v=12" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=ea754c7f" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

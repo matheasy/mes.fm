@@ -43,7 +43,7 @@
   var LENGTHS = { short: "Short", medium: "Medium", long: "Long" };
 
   // OpenAI gpt-image-2: USD per image by quality and size (OpenAI's image guide), + prompt text at $5 / 1M tokens.
-  var IMAGE = { id: "gpt-image-2", name: "GPT Image 2", textInUsd: 5,
+  var IMAGE = { id: "gpt-image-2", name: "GPT Image 2", textInUsd: 5, imageInUsd: 8,
     sizes: { "1024x1024": "Square", "1024x1536": "Portrait", "1536x1024": "Landscape" },
     perImage: {
       low: { "1024x1024": 0.006, "1024x1536": 0.005, "1536x1024": 0.005 },
@@ -75,6 +75,61 @@
     RES_X: { "480p": 1, "720p": 1.5, "1080p": 2.25 },
     durations: [5, 8, 10, 15],
     maxPromptChars: 4000 };
+
+  /* Reference pictures (2026-11-21): pictures sent with a picture request (change / combine them) or as a video's first frame.
+   * OpenAI POST /v1/images/edits (JSON, images: [{image_url: data URL}], up to 16; gpt-image-2 reads every input at high fidelity).
+   *   Input images cost $8 / 1M image tokens; OpenAI publishes no token count per image for gpt-image-2 (gpt-image-1 at high fidelity was
+   *   about 4,200-6,300 + a few hundred), so each picture is priced as REFS.gptTokens tokens, on the safe side: CHECK against real bills.
+   * xAI POST /v1/images/edits (JSON, image: {url} or images: [{url}] up to 5, named <IMAGE_0>, <IMAGE_1> in the prompt) on grok-imagine-image-2.0
+   *   (edits on the cheapest grok-imagine-image are not documented, so it takes none). xAI bills the input pictures too but publishes no
+   *   price: each one is priced as one more output picture (our safe guess: CHECK it).
+   * xAI video: image: {url} = the first frame (all three models). No extra price is published: REFS.videoUsd per picture is our guess. */
+  var REFS = { side: 1536, total: 3000000, gptTokens: 8000, videoUsd: 0.02,
+    max: { image: { gpt: 6, grok: 0, grok2: 5 }, video: { lite: 1, std: 1, best: 1 } } };
+  function maxRefs(kind, model) { var t = REFS.max[kind === "video" ? "video" : "image"]; return (t && t[model]) || 0; }
+  function checkRefs(refs, max) {
+    if (refs == null) return null;
+    if (!Array.isArray(refs)) return "Bad picture.";
+    if (refs.length > (max || 0)) return max ? (max === 1 ? "One picture at most with this model." : "At most " + max + " pictures with this model.") : "This model can't take pictures. Pick another model.";
+    var n = 0;
+    for (var i = 0; i < refs.length; i++) {
+      var f = refs[i];
+      if (!f || typeof f.data !== "string" || !/^[A-Za-z0-9+/]+=*$/.test(f.data) || f.data.length < 8) return "Bad picture.";
+      if (["image/jpeg", "image/png", "image/webp"].indexOf(f.mt) < 0) return "Pictures must be JPEG, PNG or WebP.";
+      n += f.data.length;
+    }
+    if (n > REFS.total) return "The pictures are too big together. Use fewer or smaller pictures.";
+    return null;
+  }
+  function cleanRefs(refs) { return (refs || []).map(function (f) { return { mt: f.mt, data: f.data }; }); }
+  function dataUrl(f) { return "data:" + f.mt + ";base64," + f.data; }
+  // the person writes "picture 1", "picture 2"; xAI wants <IMAGE_0>, <IMAGE_1>: a short key in front of the prompt tells the model which is which
+  function xaiPrompt(prompt, n) {
+    if (!n) return prompt;
+    var k = []; for (var i = 0; i < n; i++) k.push("picture " + (i + 1) + " = <IMAGE_" + i + ">");
+    return (n === 1 ? "The input picture is <IMAGE_0> (picture 1). " : "Input pictures: " + k.join(", ") + ". ") + prompt;
+  }
+  /* Does a chat message ask for a picture or a video? ("make a picture of ...", "draw ...", "generate an image of ...")
+   * -> {kind: "image"|"video", prompt} or null. Only clear requests at the start of the message count, so questions ABOUT pictures stay in the chat. */
+  var MEDIA_NOUN = "(?:picture|pic|image|photo|photograph|drawing|illustration|painting|sketch|logo|icon|poster|wallpaper|portrait|cartoon|meme|thumbnail|artwork|render)";
+  var WANT_RE = new RegExp("^\\s*(?:(?:hey|hi|ok|okay)[,!]?\\s+)?(?:(?:can|could|would|will)\\s+you\\s+|please\\s+|i\\s+(?:want|need|would\\s+like)\\s+(?:you\\s+to\\s+)?)?(?:please\\s+)?" +
+    "(?:make|create|generate|draw|paint|design|render|produce|give\\s+me|show\\s+me|sketch|animate)\\s+(?:me\\s+|us\\s+)?(?:a|an|the|some|\\d+)?\\s*" +
+    "(?:(?:\\w+[- ]){0,3})?(" + MEDIA_NOUN + "s?|video|clip|animation|gif)\\b\\s*(?:of|showing|with|for|that|where|:)?\\s*", "i");
+  var DRAW_RE = /^\s*(?:please\s+|can you\s+|could you\s+)?(?:draw|paint|sketch)\s+(?:me\s+)?(?!up\b|on\b|from\b|a\s+conclusion|conclusions|attention|the\s+line)(.{3,})/i;
+  function wantsMedia(text) {
+    var t = String(text || "").trim();
+    if (!t || t.length > 2000 || /^\s*(what|why|how|who|which|when|where|is|are|does|do|explain)\b/i.test(t)) return null;
+    var m = WANT_RE.exec(t);
+    if (m) {
+      var video = /^(video|clip|animation|gif)$/i.test(m[1]) || /^\s*\S*\s*animate\b/i.test(t);
+      // the whole request goes on (picture models read "Make a cartoon picture of ..." well; cutting it lost words like "cartoon"),
+      // minus a polite opening and a trailing "?"
+      return { kind: video ? "video" : "image", prompt: t.replace(/^\s*(?:(?:hey|hi|ok|okay)[,!]?\s+)?(?:(?:can|could|would|will)\s+you\s+|please\s+)+/i, "").replace(/\?+$/, "").trim() };
+    }
+    var d = DRAW_RE.exec(t);
+    if (d && t.length < 400) return { kind: "image", prompt: t.replace(/^\s*(?:(?:can|could)\s+you\s+|please\s+)+/i, "").replace(/\?+$/, "").trim() };
+    return null;
+  }
 
   var LIMITS = { msgChars: 60000, totalChars: 300000, turns: 200, promptChars: 4000, inTokens: 150000 };
   // Files sent with a message (pictures and PDFs; text files are added to the message text by the page). The whole
@@ -160,36 +215,38 @@
     for (var i = 1; i <= n; i++) milli += Math.round(chatQuote(modelKey, maxTokens * i / n, len).hbd * 1000);
     return { hbd: milli / 1000, price: fmtHbd(milli / 1000) };
   }
-  function imageQuote(quality, size, promptTokens, model) {
+  function imageQuote(quality, size, promptTokens, model, nRefs) {
     model = model || "gpt";
+    nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
     var im = IMAGES[model];
     if (!im) throw new Error("Unknown picture model");
     if (im.prov === "xai") {
       if (!XIMAGE.RES_X[quality] || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
-      var xu = im.usd * XIMAGE.RES_X[quality], xh = hbdFromUsd(xu);
-      return { kind: "image", model: model, modelId: im.id, quality: quality, size: size, aspect: XIMAGE.ASPECT[size], inTokens: 0, costUsd: xu, hbd: xh, price: fmtHbd(xh) };
+      var xu = im.usd * XIMAGE.RES_X[quality] + nRefs * im.usd, xh = hbdFromUsd(xu);
+      return { kind: "image", model: model, modelId: im.id, quality: quality, size: size, aspect: XIMAGE.ASPECT[size], inTokens: 0, refs: nRefs, costUsd: xu, hbd: xh, price: fmtHbd(xh) };
     }
     var row = IMAGE.perImage[quality];
     if (!row || row[size] == null) throw new Error("Unknown image quality or size");
     var t = Math.max(0, Math.ceil(Number(promptTokens) || 0));
-    var usd = row[size] + t * IMAGE.textInUsd / 1e6;
+    var usd = row[size] + t * IMAGE.textInUsd / 1e6 + nRefs * REFS.gptTokens * IMAGE.imageInUsd / 1e6;
     var hbd = hbdFromUsd(usd);
-    return { kind: "image", model: "gpt", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+    return { kind: "image", model: "gpt", modelId: IMAGE.id, quality: quality, size: size, inTokens: t, refs: nRefs, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
 
-  function videoQuote(model, seconds, res) {
+  function videoQuote(model, seconds, res, nRefs) {
     var m = VIDEO.models[model];
     if (!m) throw new Error("Unknown video model");
     var d = Math.round(Number(seconds));
     if (VIDEO.durations.indexOf(d) < 0) throw new Error("Unknown video length");
     var ri = VIDEO.res.indexOf(res);
     if (ri < 0 || ri > VIDEO.res.indexOf(m.maxRes)) throw new Error("That model can't make " + res + " video");
-    var usd = m.usdSec * d * VIDEO.RES_X[res];
+    nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
+    var usd = m.usdSec * d * VIDEO.RES_X[res] + nRefs * REFS.videoUsd;
     var hbd = hbdFromUsd(usd);
-    return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
+    return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, refs: nRefs, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
-  function checkVideo(prompt, model, seconds, res) {
-    if (typeof prompt !== "string" || !prompt.trim()) return "Describe the video first.";
+  function checkVideo(prompt, model, seconds, res, hasPic) {
+    if (typeof prompt !== "string" || (!prompt.trim() && !hasPic)) return "Describe the video first.";
     if (prompt.length > VIDEO.maxPromptChars) return "The description is too long (" + VIDEO.maxPromptChars + " characters at most).";
     try { videoQuote(model, seconds, res); } catch (e) { return e.message + "."; }
     return null;
@@ -459,6 +516,7 @@
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
+    REFS: REFS, maxRefs: maxRefs, checkRefs: checkRefs, cleanRefs: cleanRefs, dataUrl: dataUrl, xaiPrompt: xaiPrompt, wantsMedia: wantsMedia,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     FILES: FILES, checkFile: checkFile, fileTokens: fileTokens, toAnthropic: toAnthropic, toOpenAIChat: toOpenAIChat, toOpenAIResponses: toOpenAIResponses,

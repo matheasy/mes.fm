@@ -154,8 +154,8 @@
 	function b64(buf) { var b = new Uint8Array(buf), s = "", step = 0x8000; for (var i = 0; i < b.length; i += step) s += String.fromCharCode.apply(null, b.subarray(i, i + step)); return btoa(s); }
 	function pdfPages(buf) { var t = new TextDecoder("latin1").decode(new Uint8Array(buf)), m = t.match(/\/Type\s*\/Page(?![s\w])/g); return m ? m.length : 1; }
 	function pendChars() { return PEND.reduce(function (n, f) { return n + f.data.length; }, 0); }
-	function shrinkImage(file) {
-		var MAX = 1568;
+	function shrinkImage(file, max) {
+		var MAX = max || 1568;
 		return createImageBitmap(file).then(function (bm) {
 			var k = Math.min(1, MAX / Math.max(bm.width, bm.height)), w = Math.round(bm.width * k), h = Math.round(bm.height * k);
 			// small JPEG / PNG / WebP / GIF that need no shrinking go as they are (keeps transparency and GIF animation)
@@ -317,7 +317,7 @@
 	if (!Array.isArray(S.folders)) S.folders = [];
 	if (["recent", "old", "name"].indexOf(S.csort) < 0) S.csort = "recent";
 	if (S.side !== "r") S.side = "l";
-	var cq = "", menuFor = null, renaming = null, sideOpenNarrow = false, dragId = null;
+	var cq = "", menuFor = null, renaming = null, narrowOpen = {}, dragId = null;
 	function folderNames() { return S.folders.map(function (f) { return f.n; }); }
 	function ensureFolder(n) { n = A.cleanFolder(n); if (n && folderNames().indexOf(n) < 0) S.folders.push({ n: n, c: false }); return n; }
 	S.chats.forEach(function (c) { if (c.folder) ensureFolder(c.folder); });
@@ -394,7 +394,7 @@
 		var ri = box.querySelector(".ai-crename"); if (ri) { ri.focus(); ri.select(); }
 		if (menuFor) { var mm = box.querySelector(".ai-cmenu button"); if (mm && document.activeElement && document.activeElement.closest && !document.activeElement.closest(".ai-cmenu")) mm.focus(); }
 	}
-	function openChat(id) { if (busy) return; S.cur = id; menuFor = null; save(); if (sideOpenNarrow) { sideOpenNarrow = false; paintSide(); } renderLog(); paintPrice(); }
+	function openChat(id) { if (busy) return; S.cur = id; menuFor = null; save(); if (narrowOpen["ai-chat"]) { narrowOpen["ai-chat"] = false; paintSide(); } renderLog(); paintPrice(); }
 	function byId(id) { return S.chats.filter(function (c) { return c.id === id; })[0]; }
 
 	// Undo for deletes: the removed chat (or folder) is put back exactly where it was
@@ -486,24 +486,33 @@
 	$("ai-clist").addEventListener("drop", function (e) { var t = dragId && e.target.closest("[data-fold]"); if (!t) return; e.preventDefault(); var c = byId(dragId); if (c) moveTo(c, t.dataset.fold); });
 	document.addEventListener("click", function (e) { if (menuFor && !e.target.closest(".ai-cmenu, [data-cmore]")) { menuFor = null; paintChats(); } });
 
-	// the list on the left or the right, shown or hidden; under ~720 px wide it folds above the chat (☰ opens it)
-	function narrow() { return $("ai-chat").classList.contains("ai-narrow"); }
+	// the list on the left or the right, shown or hidden; under ~720 px wide it folds above the chat (☰ opens it).
+	// The Pictures and Videos tabs have the same side list (2026-11-21): one shared choice (S.side, S.sideOff) for all three tabs.
+	var PANELS = ["ai-chat", "ai-img", "ai-vid"];
+	function narrowOf(id) { return $(id).classList.contains("ai-narrow"); }
 	function paintSide() {
-		var ch = $("ai-chat"), open = narrow() ? sideOpenNarrow : !S.sideOff;
-		ch.classList.toggle("ai-side-r", S.side === "r"); ch.classList.toggle("ai-side-off", !open);
-		$("ai-sidebtn").setAttribute("aria-expanded", open);
-		$("ai-flip").hidden = narrow();
-		$("ai-flip").title = S.side === "r" ? T("Put the chat list on the left") : T("Put the chat list on the right");
-		$("ai-flip").setAttribute("aria-label", $("ai-flip").title);
+		PANELS.forEach(function (id) {
+			var ch = $(id), n = narrowOf(id), open = n ? !!narrowOpen[id] : !S.sideOff, fl = ch.querySelector("[data-flip]");
+			ch.classList.toggle("ai-side-r", S.side === "r"); ch.classList.toggle("ai-side-off", !open);
+			ch.querySelector("[data-side]").setAttribute("aria-expanded", open);
+			fl.hidden = n;
+			fl.title = S.side === "r" ? T("Put the list on the left") : T("Put the list on the right");
+			fl.setAttribute("aria-label", fl.title);
+		});
 	}
-	$("ai-sidebtn").addEventListener("click", function () { if (narrow()) sideOpenNarrow = !sideOpenNarrow; else { S.sideOff = !S.sideOff; save(); } paintSide(); if (!$("ai-chat").classList.contains("ai-side-off")) $("ai-csearch").focus(); });
-	$("ai-flip").addEventListener("click", function () { S.side = S.side === "r" ? "l" : "r"; save(); paintSide(); });
-	(function () {
-		var ch = $("ai-chat"), last = null;
+	PANELS.forEach(function (id) {
+		var ch = $(id), last = null;
+		ch.querySelector("[data-side]").addEventListener("click", function () {
+			if (narrowOf(id)) narrowOpen[id] = !narrowOpen[id]; else { S.sideOff = !S.sideOff; save(); }
+			paintSide();
+			if (!ch.classList.contains("ai-side-off")) { var se = ch.querySelector(".ai-csearch"); if (se) se.focus(); }
+		});
+		ch.querySelector("[data-flip]").addEventListener("click", function () { S.side = S.side === "r" ? "l" : "r"; save(); paintSide(); });
 		function fit() { var w = ch.clientWidth; if (!w) return; var n = w < 720; if (n !== last) { last = n; ch.classList.toggle("ai-narrow", n); paintSide(); } }
 		if (window.ResizeObserver) new ResizeObserver(fit).observe(ch); else window.addEventListener("resize", fit);
-		fit(); paintSide();
-	})();
+		fit();
+	});
+	paintSide();
 	$("ai-new").addEventListener("click", function () { if (busy) return; var c = cur(); if (c.msgs.length) newChat(); if (cq) { cq = $("ai-csearch").value = ""; } renderLog(); paintPrice(); $("ai-in").focus(); });
 	$("ai-log").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
@@ -543,7 +552,7 @@
 		$("ai-imodel").textContent = T("{company}'s {model}", { company: A.PROVIDERS[im.prov], model: im.name.replace(/ \(.*\)$/, "") });
 	}
 	fillModels();
-	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintPrice(); });
+	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintRefs("img"); paintPrice(); });
 	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + esc(T(A.LENGTHS[k])) + "</button>"; }).join("");
 	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); });
@@ -587,17 +596,19 @@
 		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
 		$("ai-send").textContent = busy ? T("Working…") : T("Pay & send");
-		var iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod);
-		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>";
+		var nr = M ? M.img.pend.length : 0, iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod, nr);
+		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>" + (nr ? ' <span class="ai-sub">' + (nr === 1 ? T("incl. {n} picture", { n: 1 }) : T("incl. {n} pictures", { n: nr })) + "</span>" : "");
 		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
 		$("ai-make").disabled = !(ion && !busy);
-		$("ai-make").textContent = ion ? T("Pay & create") : T("Coming soon");
+		$("ai-make").textContent = ion ? (nr ? T("Pay & change") : T("Pay & create")) : T("Coming soon");
+		$("ai-iattach").hidden = !A.maxRefs("image", S.imod) && !nr;
 		if (typeof paintVprice === "function") paintVprice();
 	}
 	["ai-in", "ai-prompt"].forEach(function (id) { $(id).addEventListener("input", paintPrice); });
+	$("ai-vprompt").addEventListener("input", paintVprice);
 	["ai-q", "ai-size"].forEach(function (id) { $(id).addEventListener("change", paintPrice); });
 	$("ai-in").addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); } });
-	$("ai-send").addEventListener("click", send);
+	$("ai-send").addEventListener("click", function () { send(); });
 
 	/* ---------- price table in the "how" box ---------- */
 	(function () {
@@ -627,7 +638,7 @@
 		if (mock) {
 			return new Promise(function (res) {
 				setTimeout(function () {
-					var q = body.kind === "image" ? A.imageQuote(body.quality, body.size, Math.ceil(body.prompt.length / 2) + 8, body.model) : A.chatQuote(body.model, A.estimateChatTokens(body.messages), body.len);
+					var q = body.kind === "image" ? A.imageQuote(body.quality, body.size, Math.ceil(body.prompt.length / 2) + 8, body.model, (body.refs || []).length) : A.chatQuote(body.model, A.estimateChatTokens(body.messages), body.len);
 					var id = A.newId(); MOCK_Q[id] = { body: body, q: q, tries: 0 };
 					res({ status: 200, id: id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.hbd, inTokens: q.inTokens, maxOut: q.maxOut || 0 });
 				}, 250);
@@ -691,11 +702,14 @@
 
 	/* ---------- send a chat message ---------- */
 	function setBusy(b) { busy = b; root.classList.toggle("ai-busy", b); paintPrice(); }
-	function send() {
+	function send(force) {
 		if (busy) return;
 		var u = who();
 		var text = $("ai-in").value.trim();
 		if (!text && !PEND.length) { $("ai-in").focus(); return; }
+		// "make a picture of ..." in the chat: offer the Picture / Video tab instead (the chat models only write text)
+		var wm = force === true ? null : A.wantsMedia(text);
+		if (wm && (wm.kind === "image" ? status.image : status.video)) { offerMedia(wm, text); return; }
 		if (!status.chat) { msg(T("MES AI chat is coming soon."), "err"); return; }
 		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
 		var draft = draftMessages(), sentFiles = PEND.slice();
@@ -759,7 +773,7 @@
 		answer(c, am, id, acct).then(function () { setBusy(false); });
 	}
 
-	/* ---------- pictures ---------- */
+	/* ---------- pictures and videos (2026-11-21: side list + search like the chats, reference pictures, edits) ---------- */
 	var db = null;
 	function idb() {
 		if (db) return db;
@@ -773,57 +787,252 @@
 	function idbDo(mode, fn) { return idb().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("img", mode), s = t.objectStore("img"), r = fn(s); t.oncomplete = function () { res(r && r.result); }; t.onerror = function () { rej(t.error); }; }); }); }
 	function imgList() { try { return JSON.parse(localStorage.getItem(LS_IMG) || "[]"); } catch (e) { return []; } }
 	function imgSave(l) { try { localStorage.setItem(LS_IMG, JSON.stringify(l)); } catch (e) {} }
+	function b64Blob(b64, mime) { var bin = atob(b64), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: mime }); }
 	var urls = {};
-	function paintGal() {
-		var l = imgList(), g = $("ai-gal");
-		if (!l.length) { g.innerHTML = ""; return; }
-		g.innerHTML = l.map(function (it) {
-			return '<figure class="ai-fig" data-id="' + it.id + '"><div class="ai-figimg"><img alt="' + esc(it.prompt) + '" data-k="' + it.id + '"></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-dl="' + it.id + '">' + T("Download") + '</button><button type="button" class="ai-mini" data-again="' + it.id + '">' + T("Use this description") + '</button><button type="button" class="ai-mini" data-rm="' + it.id + '">' + T("Delete") + '</button></div></figure>';
-		}).join("");
-		g.querySelectorAll("img[data-k]").forEach(function (im) {
-			var k = im.dataset.k;
-			if (urls[k]) { im.src = urls[k]; return; }
-			idbDo("readonly", function (s) { return s.get(k); }).then(function (blob) { if (blob) { urls[k] = URL.createObjectURL(blob); im.src = urls[k]; } });
+	// an object URL for a stored blob (pictures: key = id, videos: "v:" + id, reference pictures: "f:" + id as base64)
+	function blobUrl(key) {
+		if (urls[key]) return Promise.resolve(urls[key]);
+		return idbDo("readonly", function (s) { return s.get(key); }).then(function (v) {
+			if (!v) return null;
+			var blob = v instanceof Blob ? v : (v && v.data ? b64Blob(v.data, v.mt) : null);
+			if (!blob) return null;
+			return (urls[key] = URL.createObjectURL(blob));
+		}).catch(function () { return null; });
+	}
+	function fillSrc(scope) {
+		scope.querySelectorAll("[data-src]").forEach(function (el) {
+			var k = el.getAttribute("data-src"); el.removeAttribute("data-src");
+			blobUrl(k).then(function (u) { if (u) el.src = u; else if (el.tagName === "IMG") el.classList.add("ai-gone"); });
 		});
 	}
-	$("ai-gal").addEventListener("click", function (e) {
-		var b = e.target.closest("button"); if (!b) return;
-		var l = imgList();
-		if (b.dataset.dl) { var a = document.createElement("a"); a.href = urls[b.dataset.dl]; a.download = "mes-ai-" + b.dataset.dl + ".webp"; a.click(); }
-		if (b.dataset.again) { var it = l.filter(function (x) { return x.id === b.dataset.again; })[0]; if (it) { $("ai-prompt").value = it.prompt; paintPrice(); $("ai-prompt").focus(); } }
-		if (b.dataset.rm && confirm(T("Delete this picture from this browser?"))) { var k = b.dataset.rm; idbDo("readwrite", function (s) { return s.delete(k); }); imgSave(l.filter(function (x) { return x.id !== k; })); paintGal(); }
+
+	/* reference pictures waiting to be sent: M.img.pend / M.vid.pend = [{id, mt, data, name}] */
+	var M = {
+		img: { pend: [], tab: "img", list: imgList, saveList: imgSave, sel: "isel", q: "", el: { refs: "ai-irefs", side: "ai-ilist", stage: "ai-istage", search: "ai-isearch", prompt: "ai-prompt", cur: "ai-icur", comp: "ai-icomp", label: "ai-plabel", file: "ai-ifile" } },
+		vid: { pend: [], tab: "vid", list: function () { return vids(); }, saveList: function (l) { vidsSave(l); }, sel: "vsel", q: "", el: { refs: "ai-vrefs", side: "ai-vlist", stage: "ai-vstage", search: "ai-vsearch", prompt: "ai-vprompt", cur: "ai-vcur", comp: "ai-vcomp", label: "ai-vlabel", file: "ai-vfile" } }
+	};
+	function maxRefs(kind) { return kind === "img" ? A.maxRefs("image", S.imod) : A.maxRefs("video", $("ai-vmodel").value); }
+	function refChars(kind) { return M[kind].pend.reduce(function (n, f) { return n + f.data.length; }, 0); }
+	// adds pictures (Files or Blobs) as reference pictures 1, 2, ...; shrunk to at most REFS.side px
+	function addRefs(kind, files, front) {
+		files = [].slice.call(files || []).filter(function (f) { return /^image\//.test(f.type || "") || f instanceof Blob; });
+		if (!files.length) return Promise.resolve();
+		var notes = [], chain = Promise.resolve(), P = M[kind];
+		files.forEach(function (f) {
+			chain = chain.then(function () {
+				var max = maxRefs(kind), name = f.name || T("picture");
+				if (!max) { notes.push(T("This model can't take pictures. Pick another model.")); return; }
+				if (P.pend.length >= max) {
+					if (max === 1) P.pend = []; // a video starts from one picture: the new one replaces it
+					else { notes.push(max === 1 ? T("One picture at most with this model.") : T("{n} pictures at most with this model.", { n: max })); return; }
+				}
+				return shrinkImage(f, A.REFS.side).then(function (r) {
+					if (refChars(kind) + r.data.length > A.REFS.total) { notes.push(T("{name}: too big together with the other pictures.", { name: name })); return; }
+					var o = { id: A.newId(), mt: r.mt, data: r.data, name: name };
+					if (front) P.pend.unshift(o); else P.pend.push(o);
+				}, function () { notes.push(T("{name}: this picture type can't be read here. Use JPEG or PNG.", { name: name })); });
+			});
+		});
+		return chain.then(function () { paintRefs(kind); paintPrice(); if (notes.length) msg(notes.join(" "), "err"); });
+	}
+	function paintRefs(kind) {
+		var P = M[kind], box = $(P.el.refs), max = maxRefs(kind);
+		box.hidden = !P.pend.length;
+		box.innerHTML = P.pend.map(function (f, i) {
+			return '<span class="ai-ref"><img alt="" src="data:' + f.mt + ";base64," + f.data + '"><b class="ai-refn">' + (kind === "vid" ? "▶" : i + 1) + "</b>" +
+				'<button type="button" data-unref="' + i + '" aria-label="' + esc(T("Remove picture {n}", { n: i + 1 })) + '" title="' + esc(T("Remove")) + '">×</button></span>';
+		}).join("") + (P.pend.length ? '<span class="ai-refhint">' + (kind === "vid" ? T("The video starts from this picture. Say how it should move.") :
+			P.pend.length === 1 ? T("Say what to change, or how to use it (picture 1).") : T("Refer to them as picture 1, picture 2… e.g. “put the person from picture 1 in front of picture 2”.")) + "</span>" : "") +
+			(P.pend.length > max ? '<span class="ai-refhint ai-err">' + (max ? T("This model takes {n} at most: remove some, or pick another model.", { n: max }) : T("This model can't take pictures: pick another model.")) + "</span>" : "");
+		var lab = $(P.el.label);
+		if (kind === "img") { lab.textContent = P.pend.length ? T("What should the new picture be?") : T("Describe the picture"); }
+		else lab.textContent = P.pend.length ? T("How should the picture move?") : T("Describe the video");
+	}
+	["img", "vid"].forEach(function (kind) {
+		var P = M[kind];
+		$(P.el.refs).addEventListener("click", function (e) { var b = e.target.closest("[data-unref]"); if (!b || busy) return; P.pend.splice(+b.dataset.unref, 1); paintRefs(kind); paintPrice(); });
+		$(P.el.file).addEventListener("change", function () { addRefs(kind, this.files); this.value = ""; });
+		$(P.el.prompt).addEventListener("paste", function (e) {
+			var fs = [].slice.call((e.clipboardData && e.clipboardData.files) || []).filter(function (f) { return /^image\//.test(f.type); });
+			if (fs.length && !e.clipboardData.getData("text/plain")) { e.preventDefault(); addRefs(kind, fs); }
+		});
+		var zone = $(P.el.comp), n = 0;
+		zone.addEventListener("dragenter", function (e) { if (e.dataTransfer && [].indexOf.call(e.dataTransfer.types, "Files") >= 0) { n++; zone.classList.add("ai-drop"); } });
+		zone.addEventListener("dragleave", function () { if (--n <= 0) { n = 0; zone.classList.remove("ai-drop"); } });
+		zone.addEventListener("dragover", function (e) { if (e.dataTransfer && [].indexOf.call(e.dataTransfer.types, "Files") >= 0) e.preventDefault(); });
+		zone.addEventListener("drop", function (e) { n = 0; zone.classList.remove("ai-drop"); if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); addRefs(kind, e.dataTransfer.files); } });
+		$(P.el.search).addEventListener("input", function () { P.q = this.value; paintMedia(kind); });
+		$(P.el.search).addEventListener("keydown", function (e) { if (e.key === "Escape" && this.value) { e.preventDefault(); this.value = P.q = ""; paintMedia(kind); } });
 	});
-	function b64Blob(b64, mime) { var bin = atob(b64), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: mime }); }
-	function mockImage(prompt, size) {
+	$("ai-iattach").addEventListener("click", function () { $("ai-ifile").click(); });
+	$("ai-vattach").addEventListener("click", function () { $("ai-vfile").click(); });
+	// saves the pictures sent with a creation (so "Again with these pictures" can bring them back) -> their ids
+	function keepRefs(pend) { pend.forEach(function (f) { filePut({ id: f.id, t: "img", mt: f.mt, name: f.name, data: f.data }).catch(function () {}); }); return pend.map(function (f) { return f.id; }); }
+	function refsBack(kind, ids) {
+		return Promise.all((ids || []).map(fileGet)).then(function (got) {
+			M[kind].pend = got.filter(Boolean).map(function (f, i) { return { id: A.newId(), mt: f.mt, data: f.data, name: f.name || T("picture") + " " + (i + 1) }; });
+			paintRefs(kind); paintPrice();
+		});
+	}
+
+	/* the side list and the big view */
+	function mediaWords(kind) { return norm(M[kind].q).split(/\s+/).filter(Boolean); }
+	function mediaShown(kind) {
+		var w = mediaWords(kind);
+		return M[kind].list().filter(function (it) { var t = norm(it.prompt); return w.every(function (x) { return t.indexOf(x) >= 0; }); });
+	}
+	function itemSub(kind, it) {
+		var bits = [when(it.at), it.price + " HBD"];
+		if (kind === "vid") bits.unshift(it.seconds + " s");
+		if (it.refs && it.refs.length) bits.push(kind === "vid" ? "🖼️" : "✏️ " + it.refs.length);
+		return bits.join(" · ");
+	}
+	function paintMedia(kind) {
+		var P = M[kind], all = P.list(), shown = mediaShown(kind), words = mediaWords(kind), sel = S[P.sel], vid = kind === "vid";
+		if (sel && !all.some(function (x) { return x.id === sel; })) sel = S[P.sel] = null;
+		var side = $(P.el.side);
+		side.innerHTML = (words.length ? '<p class="ai-cnote">' + (shown.length ? (shown.length === 1 ? T("{n} found", { n: 1 }) : T("{n} found", { n: shown.length })) : T("Nothing has that.")) + "</p>" : "") +
+			(!all.length ? '<p class="ai-cnote">' + (vid ? T("Your videos will be listed here.") : T("Your pictures will be listed here.")) + "</p>" : "") +
+			shown.map(function (it) {
+				return '<div class="ai-crow ai-mrow' + (it.id === sel ? " is-cur" : "") + '" role="listitem"><button type="button" class="ai-copen" data-msel="' + esc(it.id) + '"' + (it.id === sel ? ' aria-current="true"' : "") + ">" +
+					(vid ? '<span class="ai-mthumb ai-mthumb--v" aria-hidden="true">🎬</span>' : '<img class="ai-mthumb" alt="" data-src="' + esc(it.id) + '">') +
+					'<span class="ai-mtx"><span class="ai-ctitle">' + mark(it.prompt.slice(0, 80), words) + '</span><span class="ai-csub">' + esc(itemSub(kind, it)) + "</span></span></button></div>";
+			}).join("");
+		$(kind === "img" ? "ai-img" : "ai-vid").querySelector(".ai-cn").textContent = all.length || "";
+		var stage = $(P.el.stage), it = sel && all.filter(function (x) { return x.id === sel; })[0];
+		$(P.el.cur).textContent = it ? it.prompt.slice(0, 80) : "";
+		if (it) {
+			var i = shown.indexOf(it);
+			stage.innerHTML = '<figure class="ai-big">' +
+				'<div class="ai-bigpic">' + (vid ? '<video controls playsinline preload="metadata" data-src="v:' + esc(it.id) + '"></video>' : '<img alt="' + esc(it.prompt) + '" data-src="' + esc(it.id) + '">') +
+				(i > 0 ? '<button type="button" class="ai-nav ai-nav--l" data-mstep="-1" aria-label="' + esc(T("Previous")) + '">‹</button>' : "") +
+				(i >= 0 && i < shown.length - 1 ? '<button type="button" class="ai-nav ai-nav--r" data-mstep="1" aria-label="' + esc(T("Next")) + '">›</button>' : "") + "</div>" +
+				"<figcaption>" + (it.refs && it.refs.length ? '<span class="ai-usedrefs">' + it.refs.map(function (r, j) { return '<span class="ai-ref ai-ref--s"><img alt="" data-src="f:' + esc(r) + '"><b class="ai-refn">' + (vid ? "▶" : j + 1) + "</b></span>"; }).join("") + "</span>" : "") +
+				'<span class="ai-bigtx">' + esc(it.prompt) + '</span><span class="ai-sub">' + esc(itemSub(kind, it)) + (it.model && !vid && A.IMAGES[it.model] ? " · " + esc(T(A.IMAGES[it.model].name)) : "") + (vid && it.res ? " · " + esc(it.res) : "") + "</span></figcaption>" +
+				'<div class="ai-macts">' +
+				(vid ? "" : '<button type="button" class="ai-mini ai-mini--hi" data-mact="edit">' + T("✏️ Change this picture") + "</button>" +
+					'<button type="button" class="ai-mini" data-mact="addref">' + T("＋ Use with other pictures") + "</button>" +
+					'<button type="button" class="ai-mini" data-mact="tovid">' + T("🎬 Make a video from it") + "</button>") +
+				'<button type="button" class="ai-mini" data-mact="again">' + (it.refs && it.refs.length ? (vid ? T("↺ Again from this picture") : T("↺ Again with these pictures")) : T("↺ Use this description")) + "</button>" +
+				'<button type="button" class="ai-mini" data-mact="dl">' + T("Download") + "</button>" +
+				'<button type="button" class="ai-mini ai-cdel" data-mact="rm">' + T("Delete") + "</button></div></figure>";
+		} else if (shown.length) {
+			stage.innerHTML = '<div class="ai-gal">' + shown.map(function (x) {
+				return '<button type="button" class="ai-tile" data-msel="' + esc(x.id) + '" title="' + esc(x.prompt.slice(0, 200)) + '">' +
+					(vid ? '<video muted playsinline preload="metadata" data-src="v:' + esc(x.id) + '"></video>' : '<img alt="' + esc(x.prompt.slice(0, 120)) + '" data-src="' + esc(x.id) + '">') +
+					'<span class="ai-tilecap">' + esc(x.prompt.slice(0, 70)) + "</span></button>";
+			}).join("") + "</div>";
+		} else if (words.length) {
+			stage.innerHTML = '<div class="ai-empty"><p>' + T("Nothing has that.") + "</p></div>";
+		} else {
+			stage.innerHTML = vid ? '<div class="ai-empty"><p>' + T("<b>Describe a video</b>, or start it from a picture (🖼️ Start from a picture, or 🎬 on any of your pictures). Each video is paid on its own.") + "</p></div>"
+				: '<div class="ai-empty"><p>' + T("<b>Describe a picture</b>, or add pictures to change or combine them. Each picture is paid on its own.") + '</p><p class="ai-try">' + T("Try:") +
+				' <button type="button" class="ai-mini" data-iex="' + esc(T("A watercolour fox sitting in fresh snow at sunrise, soft light")) + '">' + T("Watercolour fox") + "</button>" +
+				' <button type="button" class="ai-mini" data-iex="' + esc(T("A clean flat logo of a square-root sign inside a circle, blue and white")) + '">' + T("A logo") + "</button>" +
+				' <button type="button" class="ai-mini" data-iex="' + esc(T("Put the person from picture 1 in front of the place in picture 2, matching the light")) + '">' + T("Combine two pictures") + "</button></p></div>";
+		}
+		fillSrc(side); fillSrc(stage);
+		if (it && narrowOf(kind === "img" ? "ai-img" : "ai-vid") && narrowOpen[kind === "img" ? "ai-img" : "ai-vid"]) { narrowOpen[kind === "img" ? "ai-img" : "ai-vid"] = false; paintSide(); }
+	}
+	function selectMedia(kind, id) { S[M[kind].sel] = id || null; save(); paintMedia(kind); }
+	function mediaItem(kind, id) { return M[kind].list().filter(function (x) { return x.id === id; })[0]; }
+	function delMedia(kind, id) {
+		var P = M[kind], l = P.list(), i = -1; l.forEach(function (x, j) { if (x.id === id) i = j; });
+		if (i < 0) return;
+		var it = l[i], key = kind === "vid" ? "v:" + id : id, blob = null;
+		idbDo("readonly", function (s) { return s.get(key); }).then(function (b) {
+			blob = b;
+			return idbDo("readwrite", function (s) { return s.delete(key); });
+		}).then(function () {
+			P.saveList(P.list().filter(function (x) { return x.id !== id; }));
+			if (S[P.sel] === id) S[P.sel] = null; save(); paintMedia(kind);
+			undoBar(T('Deleted "{title}".', { title: it.prompt.slice(0, 40) }), function () {
+				if (!blob) return;
+				idbDo("readwrite", function (s) { return s.put(blob, key); }).then(function () { var l2 = P.list(); l2.splice(Math.min(i, l2.length), 0, it); P.saveList(l2); S[P.sel] = id; save(); paintMedia(kind); });
+			});
+		});
+	}
+	function mediaBlob(kind, id) { return idbDo("readonly", function (s) { return s.get(kind === "vid" ? "v:" + id : id); }); }
+	function onMediaClick(kind, e) {
+		var b = e.target.closest("button"); if (!b) return;
+		var P = M[kind], d = b.dataset;
+		if (d.msel) { selectMedia(kind, d.msel); return; }
+		if (d.iex) { $("ai-prompt").value = d.iex; paintPrice(); $("ai-prompt").focus(); return; }
+		if (d.mstep) { var sh = mediaShown(kind), i = sh.map(function (x) { return x.id; }).indexOf(S[P.sel]) + (+d.mstep); if (sh[i]) selectMedia(kind, sh[i].id); return; }
+		var it = mediaItem(kind, S[P.sel]); if (!it || !d.mact) return;
+		if (d.mact === "dl") mediaBlob(kind, it.id).then(function (blob) {
+			if (!blob) return; var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+			a.download = "mes-ai-" + it.id + "." + ((blob.type.split("/")[1] || (kind === "vid" ? "mp4" : "webp")).replace("jpeg", "jpg"));
+			a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+		});
+		if (d.mact === "rm") delMedia(kind, it.id);
+		if (d.mact === "again") { $(P.el.prompt).value = it.prompt; refsBack(kind, it.refs).then(function () { $(P.el.prompt).focus(); }); }
+		if (d.mact === "edit" || d.mact === "addref" || d.mact === "tovid") {
+			var to = d.mact === "tovid" ? "vid" : "img";
+			mediaBlob("img", it.id).then(function (blob) {
+				if (!blob) return;
+				if (d.mact === "edit") { M.img.pend = []; $("ai-prompt").value = ""; }
+				if (to === "vid") { M.vid.pend = []; showTab("vid"); }
+				return addRefs(to, [new File([blob], "picture.webp", { type: blob.type || "image/webp" })]).then(function () {
+					var pr = $(M[to].el.prompt);
+					if (d.mact === "edit") pr.placeholder = T("e.g. Make the sky stormy and add a red umbrella");
+					pr.focus(); $(M[to].el.comp).scrollIntoView({ block: "nearest", behavior: "smooth" });
+				});
+			});
+		}
+	}
+	$("ai-img").addEventListener("click", function (e) { if (e.target.closest("#ai-istage, #ai-ilist")) onMediaClick("img", e); });
+	$("ai-vid").addEventListener("click", function (e) { if (e.target.closest("#ai-vstage, #ai-vlist")) onMediaClick("vid", e); });
+	$("ai-iall").addEventListener("click", function () { selectMedia("img", null); });
+	$("ai-vall").addEventListener("click", function () { selectMedia("vid", null); });
+	$("ai-inew").addEventListener("click", function () { if (busy) return; M.img.pend = []; paintRefs("img"); $("ai-prompt").value = ""; $("ai-prompt").placeholder = T("e.g. A watercolour fox sitting in fresh snow at sunrise, soft light"); selectMedia("img", null); paintPrice(); $("ai-prompt").focus(); });
+	$("ai-vnew").addEventListener("click", function () { if (busy) return; M.vid.pend = []; paintRefs("vid"); $("ai-vprompt").value = ""; selectMedia("vid", null); paintPrice(); $("ai-vprompt").focus(); });
+	document.addEventListener("keydown", function (e) {
+		if ((e.key !== "ArrowLeft" && e.key !== "ArrowRight") || e.altKey || e.ctrlKey || e.metaKey) return;
+		var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT|VIDEO)$/.test(t.tagName))) return;
+		var kind = S.tab === "img" ? "img" : S.tab === "vid" ? "vid" : null; if (!kind || !S[M[kind].sel]) return;
+		var r = $(kind === "img" ? "ai-img" : "ai-vid").getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+		var sh = mediaShown(kind), i = sh.map(function (x) { return x.id; }).indexOf(S[M[kind].sel]) + (e.key === "ArrowRight" ? 1 : -1);
+		if (sh[i]) { e.preventDefault(); selectMedia(kind, sh[i].id); }
+	});
+
+	function mockImage(prompt, size, refs) {
 		var wh = size.split("x").map(Number), cv = document.createElement("canvas"); cv.width = wh[0] / 4; cv.height = wh[1] / 4;
 		var x = cv.getContext("2d"), g = x.createLinearGradient(0, 0, cv.width, cv.height);
 		g.addColorStop(0, "#5b3fd6"); g.addColorStop(1, "#0f766e"); x.fillStyle = g; x.fillRect(0, 0, cv.width, cv.height);
-		x.fillStyle = "#fff"; x.font = "bold 14px sans-serif"; x.fillText("Simulated picture", 12, 24); x.font = "12px sans-serif"; x.fillText(prompt.slice(0, 40), 12, 44);
-		return new Promise(function (res) { cv.toBlob(res, "image/webp", 0.85); });
+		x.fillStyle = "#fff"; x.font = "bold 14px sans-serif"; x.fillText(refs && refs.length ? "Simulated edit" : "Simulated picture", 12, 24); x.font = "12px sans-serif"; x.fillText(prompt.slice(0, 40), 12, 44);
+		// the reference pictures drawn small along the bottom, so an edit visibly used them
+		return Promise.all((refs || []).map(function (r) { return createImageBitmap(b64Blob(r.data, r.mt)).catch(function () { return null; }); })).then(function (bms) {
+			var w = Math.min(70, (cv.width - 16) / Math.max(1, bms.length) - 6);
+			bms.forEach(function (bm, i) { if (bm) x.drawImage(bm, 10 + i * (w + 6), cv.height - w - 10, w, w); });
+			return new Promise(function (res) { cv.toBlob(res, "image/webp", 0.85); });
+		});
 	}
-	var pendingImg = null; // {id, prompt, quality, size, price, acct} when a picture failed after payment
+	var pendingImg = null; // {id, prompt, quality, size, price, acct, refs} when a picture failed after payment
 	$("ai-make").addEventListener("click", function () { makeImage(false); });
+	$("ai-prompt").addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); makeImage(false); } });
 	function makeImage(isRetry) {
 		if (busy) return;
 		var u = who();
-		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value, imod = S.imod;
+		var prompt = $("ai-prompt").value.trim(), quality = $("ai-q").value, size = $("ai-size").value, imod = S.imod, refs = M.img.pend.slice();
 		if (!status.image || !provOn(A.IMAGES[imod].prov)) { msg(T("{name} pictures are coming soon.", { name: T(A.IMAGES[imod].name) }), "err"); return; }
 		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); return; }
-		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod);
+		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod) || A.checkRefs(refs, A.maxRefs("image", imod));
 		if (err) { msg(T(err), "err"); return; }
 		setBusy(true);
-		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size }).then(function (q) {
+		var sendRefs = refs.map(function (f) { return { mt: f.mt, data: f.data }; });
+		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size, refs: sendRefs }).then(function (q) {
 			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
 			msg(T("Price: {p} HBD ({usd}). Confirm the payment in Hive Keychain…", { p: q.price, usd: A.fmtUsd(q.usd) }));
-			return pay(q).then(function () { return { id: q.id, model: imod, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name }; });
+			return pay(q).then(function () { return { id: q.id, model: imod, prompt: prompt, quality: quality, size: size, price: q.price, acct: u.name, refs: refs }; });
 		});
 		job.then(function (j) {
 			pendingImg = null;
-			msg(T("Paid. Making the picture (this takes up to a minute)…"));
+			msg(j.refs && j.refs.length ? T("Paid. Changing the picture (this takes up to a minute)…") : T("Paid. Making the picture (this takes up to a minute)…"));
 			if (mock) {
 				var info = MOCK_Q[j.id]; info.tries++;
 				if (/fail/i.test(j.prompt) && info.tries === 1) return { j: j, err: { msg: T("Simulated failure after payment."), retry: true } };
-				return sleep(1200).then(function () { return mockImage(j.prompt, j.size); }).then(function (blob) { return { j: j, blob: blob }; });
+				return sleep(1200).then(function () { return mockImage(j.prompt, j.size, j.refs); }).then(function (blob) { return { j: j, blob: blob }; });
 			}
 			return runReq(j.id, j.acct, function (n) { msg(T("Waiting for the blockchain… ({s} s)", { s: n * 3 })); }).then(function (r) {
 				if (r.error) return { j: j, err: { msg: r.error.error, retry: r.error.retry } };
@@ -836,10 +1045,14 @@
 				else msg(T(out.err.msg) || T("The picture failed."), "err");
 				return;
 			}
-			var key = out.j.id;
+			var key = out.j.id, refIds = keepRefs(out.j.refs || []);
 			return idbDo("readwrite", function (s) { return s.put(out.blob, key); }).then(function () {
-				var l = imgList(); l.unshift({ id: key, model: out.j.model, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() }); imgSave(l.slice(0, 200));
-				msg(T("Done. The picture is below (kept in this browser)."), "ok"); paintGal();
+				var l = imgList(), rec = { id: key, model: out.j.model, prompt: out.j.prompt, quality: out.j.quality, size: out.j.size, price: out.j.price, at: Date.now() };
+				if (refIds.length) rec.refs = refIds;
+				l.unshift(rec); imgSave(l.slice(0, 300));
+				M.img.pend = []; paintRefs("img"); $("ai-prompt").value = "";
+				msg(T("Done. Your picture is shown (kept in this browser): change it again with ✏️, or make a video from it."), "ok");
+				S.isel = key; save(); paintMedia("img"); paintPrice();
 			});
 		}).catch(function (e) {
 			var m = e && e.message || String(e);
@@ -863,14 +1076,15 @@
 		$("ai-vres").value = V.res.indexOf(cur) <= max ? cur : "480p";
 	}
 	paintVres();
-	function vq() { return A.videoQuote($("ai-vmodel").value, +$("ai-vsec").value, $("ai-vres").value); }
+	function vq() { return A.videoQuote($("ai-vmodel").value, +$("ai-vsec").value, $("ai-vres").value, M ? M.vid.pend.length : 0); }
 	function paintVprice() {
 		var q = vq();
 		$("ai-vprice").innerHTML = "<b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>";
 		$("ai-vmake").disabled = !(status.video && !busy);
 		$("ai-vmake").textContent = status.video ? T("Pay & create") : T("Coming soon");
+		$("ai-vattach").hidden = !A.maxRefs("video", $("ai-vmodel").value);
 	}
-	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintVprice(); });
+	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintRefs("vid"); paintVprice(); });
 	["ai-vsec", "ai-vres"].forEach(function (id) { $(id).addEventListener("change", paintVprice); });
 	function vjobs() { try { return JSON.parse(localStorage.getItem(LS_VJ) || "[]"); } catch (e) { return []; } }
 	function vjobsSave(l) { try { localStorage.setItem(LS_VJ, JSON.stringify(l)); } catch (e) {} }
@@ -885,18 +1099,6 @@
 				(j.retry ? ' <button type="button" class="tu-btn tu-btn--primary" data-vretry="' + j.id + '">' + T("Try again (free)") + '</button>' : "") +
 				(j.err ? ' <button type="button" class="ai-mini" data-vdrop="' + j.id + '">' + T("Remove") + '</button>' : "") + "</div>";
 		}).join("");
-	}
-	var vurls = {};
-	function paintVgal() {
-		var l = vids(), g = $("ai-vgal");
-		g.innerHTML = l.map(function (it) {
-			return '<figure class="ai-fig"><div class="ai-figimg"><video controls playsinline preload="metadata" data-k="' + it.id + '"></video></div><figcaption>' + esc(it.prompt.slice(0, 140)) + '<span class="ai-sub"> · ' + esc(it.seconds + " s · " + it.res + " · " + it.price) + ' HBD</span></figcaption><div class="ai-macts"><button type="button" class="ai-mini" data-vdl="' + it.id + '">' + T("Download") + '</button><button type="button" class="ai-mini" data-vagain="' + it.id + '">' + T("Use this description") + '</button><button type="button" class="ai-mini" data-vrm="' + it.id + '">' + T("Delete") + '</button></div></figure>';
-		}).join("");
-		g.querySelectorAll("video[data-k]").forEach(function (v) {
-			var k = v.dataset.k;
-			if (vurls[k]) { v.src = vurls[k]; return; }
-			idbDo("readonly", function (s) { return s.get("v:" + k); }).then(function (blob) { if (blob) { vurls[k] = URL.createObjectURL(blob); v.src = vurls[k]; } });
-		});
 	}
 	function mockVideo(prompt) {
 		var cv = document.createElement("canvas"); cv.width = 320; cv.height = 180;
@@ -944,8 +1146,10 @@
 					me.dl = true; vjobsSave(all); paintVjobs();
 					return vfetch(me).then(function (blob) {
 						return idbDo("readwrite", function (st) { return st.put(blob, "v:" + me.id); }).then(function () {
-							var v = vids(); v.unshift({ id: me.id, prompt: me.prompt, seconds: me.seconds, res: me.res, price: me.price, at: Date.now() }); vidsSave(v.slice(0, 100));
-							vjobsSave(vjobs().filter(function (x) { return x.id !== me.id; })); paintVgal(); msg(T("Your video is ready (kept in this browser)."), "ok");
+							var v = vids(), rec = { id: me.id, prompt: me.prompt, seconds: me.seconds, res: me.res, price: me.price, at: Date.now() };
+							if (me.refs && me.refs.length) rec.refs = me.refs;
+							v.unshift(rec); vidsSave(v.slice(0, 100));
+							vjobsSave(vjobs().filter(function (x) { return x.id !== me.id; })); S.vsel = me.id; save(); paintMedia("vid"); msg(T("Your video is ready (kept in this browser)."), "ok");
 						});
 					}).catch(function (e) { var a = vjobs(), m2 = a.filter(function (x) { return x.id === me.id; })[0]; if (m2) { m2.dl = false; m2.err = e.message; vjobsSave(a); } });
 				}
@@ -962,30 +1166,57 @@
 			var l = vjobs().filter(function (x) { return x.id !== j.id; }); l.unshift(j); vjobsSave(l); vpoll();
 		});
 	}
-	$("ai-vmake").addEventListener("click", function () {
+	$("ai-vmake").addEventListener("click", makeVideo);
+	$("ai-vprompt").addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); makeVideo(); } });
+	function makeVideo() {
 		if (busy) return;
-		var u = who(), prompt = $("ai-vprompt").value.trim(), model = $("ai-vmodel").value, sec = +$("ai-vsec").value, res = $("ai-vres").value, audio = $("ai-vaudio").checked;
+		var u = who(), prompt = $("ai-vprompt").value.trim(), model = $("ai-vmodel").value, sec = +$("ai-vsec").value, res = $("ai-vres").value, audio = $("ai-vaudio").checked, refs = M.vid.pend.slice();
 		if (!status.video) { msg(T("Videos are coming soon."), "err"); return; }
 		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); return; }
-		var err = A.checkVideo(prompt, model, sec, res); if (err) { msg(T(err), "err"); return; }
+		var err = A.checkVideo(prompt, model, sec, res, refs.length > 0) || A.checkRefs(refs, A.maxRefs("video", model)); if (err) { msg(T(err), "err"); return; }
 		setBusy(true);
-		var qreq = mock ? Promise.resolve((function () { var q = A.videoQuote(model, sec, res), id = A.newId(); return { status: 200, id: id, memo: A.memoFor(id), price: q.price, usd: q.hbd }; })())
-			: quote({ acct: u.name, kind: "video", prompt: prompt, model: model, seconds: sec, res: res, audio: audio });
+		var sendRefs = refs.map(function (f) { return { mt: f.mt, data: f.data }; });
+		var qreq = mock ? Promise.resolve((function () { var q = A.videoQuote(model, sec, res, refs.length), id = A.newId(); return { status: 200, id: id, memo: A.memoFor(id), price: q.price, usd: q.hbd }; })())
+			: quote({ acct: u.name, kind: "video", prompt: prompt, model: model, seconds: sec, res: res, audio: audio, refs: sendRefs });
 		qreq.then(function (q) {
 			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
 			msg(T("Price: {p} HBD ({usd}). Confirm the payment in Hive Keychain…", { p: q.price, usd: A.fmtUsd(q.usd) }));
-			return pay(q).then(function () { return startVideo({ id: q.id, acct: u.name, prompt: prompt, seconds: sec, res: res, price: q.price, at: Date.now() }, false); });
+			return pay(q).then(function () {
+				var refIds = keepRefs(refs); M.vid.pend = []; paintRefs("vid");
+				var j = { id: q.id, acct: u.name, prompt: prompt, seconds: sec, res: res, price: q.price, at: Date.now() };
+				if (refIds.length) j.refs = refIds;
+				return startVideo(j, false);
+			});
 		}).catch(function (e) { var m = e && e.message || String(e); msg(/cancel|declin|denied/i.test(m) ? T("Payment cancelled: nothing was sent.") : T(m), "err"); })
 			.then(function () { setBusy(false); });
-	});
-	$("ai-vid").addEventListener("click", function (e) {
+	}
+	$("ai-vjobs").addEventListener("click", function (e) {
 		var b = e.target.closest("button"); if (!b) return;
 		if (b.dataset.vretry) { var j = vjobs().filter(function (x) { return x.id === b.dataset.vretry; })[0]; if (j) { if (mock) MOCK_V[j.id] = { polls: 0 }; startVideo(j, true); } }
 		if (b.dataset.vdrop) { vjobsSave(vjobs().filter(function (x) { return x.id !== b.dataset.vdrop; })); paintVjobs(); }
-		if (b.dataset.vdl) { var a = document.createElement("a"); a.href = vurls[b.dataset.vdl]; a.download = "mes-ai-" + b.dataset.vdl + (mock ? ".webm" : ".mp4"); a.click(); }
-		if (b.dataset.vagain) { var it = vids().filter(function (x) { return x.id === b.dataset.vagain; })[0]; if (it) { $("ai-vprompt").value = it.prompt; $("ai-vprompt").focus(); } }
-		if (b.dataset.vrm && confirm(T("Delete this video from this browser?"))) { var k = b.dataset.vrm; idbDo("readwrite", function (s) { return s.delete("v:" + k); }); vidsSave(vids().filter(function (x) { return x.id !== k; })); paintVgal(); }
 	});
+
+	/* ---------- chat -> Pictures / Videos: a chat model writes text; "make a picture of ..." is offered to the right tab ---------- */
+	function offerMedia(wm, text) {
+		var isV = wm.kind === "video", m = $("ai-msg");
+		msg(isV ? T("This sounds like a video. The chat models write text; videos are made in the 🎬 Video tab.") : T("This sounds like a picture. The chat models write text; pictures are made in the 🖼️ Picture tab."));
+		var go = document.createElement("button"); go.type = "button"; go.className = "tu-btn tu-btn--primary";
+		go.textContent = isV ? T("🎬 Make it in Video") : T("🖼️ Make it in Picture");
+		go.addEventListener("click", function () {
+			var kind = isV ? "vid" : "img", pics = PEND.filter(function (f) { return f.t === "img"; });
+			showTab(kind);
+			$(M[kind].el.prompt).value = wm.prompt;
+			$("ai-in").value = "";
+			var add = pics.length ? addRefs(kind, pics.map(function (f) { return new File([b64Blob(f.data, f.mt)], f.name || "picture", { type: f.mt }); })) : Promise.resolve();
+			PEND = PEND.filter(function (f) { return f.t !== "img"; }); paintFiles();
+			add.then(function () { msg(T("Check the description and the price, then press Pay & create."), "ok"); paintPrice(); $(M[kind].el.prompt).focus(); });
+		});
+		var anyway = document.createElement("button"); anyway.type = "button"; anyway.className = "tu-btn tu-btn--ghost";
+		anyway.textContent = T("Send it to the chat anyway");
+		anyway.addEventListener("click", function () { msg(""); send(true); });
+		m.appendChild(go); m.appendChild(anyway);
+		go.focus();
+	}
 
 	/* ---------- 💾 saving: cloud file (MESCloud), Hive backup (MESHiveStore), file backup ---------- */
 	function sig() { return S.chats.map(function (c) { return c.id + ":" + c.msgs.filter(function (m) { return !m.pending; }).length + ":" + c.at + ":" + (c.mt || 0); }).join("|") + "|" + folderNames().join("/"); }
@@ -1129,8 +1360,8 @@
 		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img"); $("ai-tab-vid").setAttribute("aria-selected", t === "vid");
 		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img"; $("ai-vid").hidden = t !== "vid";
 		if (t === "chat" && R) R.typeset($("ai-log"));
-		if (t === "img") paintGal();
-		if (t === "vid") { paintVgal(); paintVjobs(); }
+		if (t === "img") paintMedia("img");
+		if (t === "vid") { paintMedia("vid"); paintVjobs(); }
 	}
 	$("ai-tab-chat").addEventListener("click", function () { showTab("chat"); });
 	$("ai-tab-img").addEventListener("click", function () { showTab("img"); });
@@ -1158,8 +1389,8 @@
 		}).catch(function () { status = { chat: false, image: false, video: false, known: true, prov: {} }; fillModels(); paintOff(); paintPrice(); });
 	}
 
-	/* ---------- Fill window for the chat ---------- */
-	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-chat"), { bar: $("ai-chatbar"), t: T }); }
+	/* ---------- Fill window: the whole app (account, the Chat / Picture / Video tabs and their panels), so the tabs work inside it ---------- */
+	function addPanel() { if (window.MESPanel) window.MESPanel.add($("ai-app"), { bar: $("ai-modes"), t: T }); }
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
 
 	if (H && H.onChange) H.onChange(function () { paintAcct(); });

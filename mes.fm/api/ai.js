@@ -2,7 +2,8 @@
 //
 // Flow (the page: tool_apps_src/ai/app.js; shared rules + prices: _ai-lib.js = tool_apps_src/ai/lib.js, byte-identical):
 //   GET  ?op=status                 -> {chat, image, margin, checked, models, image prices}   (chat/image false = key not set yet)
-//   POST {op:"quote", acct, kind:"chat", model, len, messages}  or  {op:"quote", acct, kind:"image", prompt, quality, size}
+//   POST {op:"quote", acct, kind:"chat", model, len, messages}  or  {op:"quote", acct, kind:"image", prompt, quality, size, refs?}
+//        (refs = reference pictures [{mt, data base64}]: picture edits / combining (OpenAI and xAI /v1/images/edits) or a video's first frame)
 //        -> counts the input tokens (Anthropic count_tokens, exact), prices it (cost x MARGIN, up to 0.001 HBD), keeps the
 //           whole request in Upstash for 1 hour under a random id -> {id, memo:"mesai:<id>", price, usd, inTokens, maxOut}
 //   (the page sends `price` HBD to @mes with that memo through Hive Keychain / HiveAuth)
@@ -58,7 +59,7 @@ async function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
   if (typeof req.body === 'string') return JSON.parse(req.body);
   let s = '';
-  for await (const c of req) { s += c; if (s.length > 1.2e6) throw new Error('too big'); }
+  for await (const c of req) { s += c; if (s.length > 4.6e6) throw new Error('too big'); }
   return s ? JSON.parse(s) : {};
 }
 
@@ -123,20 +124,22 @@ function makeHandler(deps = {}) {
     let q, stored;
     if (b.kind === 'video') {
       if (!env.XAI_API_KEY) return send(res, 503, { off: true, error: 'Videos are coming soon.' });
-      const err = A.checkVideo(b.prompt, b.model, b.seconds, b.res);
+      const refs = b.refs == null ? [] : b.refs;
+      const err = A.checkVideo(b.prompt, b.model, b.seconds, b.res, Array.isArray(refs) && refs.length > 0) || A.checkRefs(refs, A.maxRefs('video', b.model));
       if (err) return send(res, 400, { error: err });
-      q = A.videoQuote(b.model, b.seconds, b.res);
-      stored = { kind: 'video', prompt: b.prompt, model: b.model, seconds: q.seconds, res: b.res, audio: b.audio !== false };
+      q = A.videoQuote(b.model, b.seconds, b.res, refs.length);
+      stored = { kind: 'video', prompt: String(b.prompt || ''), model: b.model, seconds: q.seconds, res: b.res, audio: b.audio !== false, refs: A.cleanRefs(refs) };
     } else if (b.kind === 'image') {
       const model = b.model || 'gpt';
       const im = A.IMAGES[model];
       if (!im) return send(res, 400, { error: 'Pick a picture model.' });
       if (!keyOf(im.prov)) return send(res, 503, { off: true, error: im.name + ' pictures are coming soon.' });
-      const err = A.checkImage(b.prompt, b.quality, b.size, model);
+      const refs = b.refs == null ? [] : b.refs;
+      const err = A.checkImage(b.prompt, b.quality, b.size, model) || A.checkRefs(refs, A.maxRefs('image', model));
       if (err) return send(res, 400, { error: err });
-      // prompt tokens estimated on the safe side (2 characters a token); a few cents of a cent at most
-      q = A.imageQuote(b.quality, b.size, Math.ceil(b.prompt.length / 2) + 8, model);
-      stored = { kind: 'image', model, prompt: b.prompt, quality: b.quality, size: b.size };
+      // prompt tokens estimated on the safe side (2 characters a token); a few cents of a cent at most. Reference pictures: A.REFS
+      q = A.imageQuote(b.quality, b.size, Math.ceil(b.prompt.length / 2) + 8, model, refs.length);
+      stored = { kind: 'image', model, prompt: b.prompt, quality: b.quality, size: b.size, refs: A.cleanRefs(refs) };
     } else {
       const m = A.MODELS[b.model];
       if (!m) return send(res, 400, { error: 'Pick a model.' });
@@ -302,7 +305,8 @@ function makeHandler(deps = {}) {
     try {
       r = await fetchImpl('https://api.x.ai/v1/videos/generations', {
         method: 'POST', headers: xaiHeaders(),
-        body: JSON.stringify({ model: m.id, prompt: rec.prompt, duration: rec.seconds, resolution: rec.res, generate_audio: !!rec.audio }),
+        body: JSON.stringify(Object.assign({ model: m.id, duration: rec.seconds, resolution: rec.res, generate_audio: !!rec.audio },
+          rec.prompt ? { prompt: rec.prompt } : {}, rec.refs && rec.refs.length ? { image: { url: A.dataUrl(rec.refs[0]) } } : {})),
       });
       j = await r.json();
     } catch (e) { return failed(res, 'Could not reach the video service. Your payment is kept: press Try again.', false); }
@@ -362,12 +366,16 @@ function makeHandler(deps = {}) {
     const im = A.IMAGES[rec.model || 'gpt'];
     if (im.prov === 'xai') return ximage(res, rec, im, failed);
     let r, j;
+    // with reference pictures: POST /v1/images/edits (JSON, images: [{image_url: data URL}], gpt-image-2 reads them at high fidelity)
+    const edit = rec.refs && rec.refs.length;
+    const body = { model: A.IMAGE.id, prompt: rec.prompt, size: rec.size, quality: rec.quality, n: 1,
+      output_format: 'webp', output_compression: 88, moderation: 'auto', safety_identifier: who };
+    if (edit) body.images = rec.refs.map((f) => ({ image_url: A.dataUrl(f) }));
     try {
-      r = await fetchImpl('https://api.openai.com/v1/images/generations', {
+      r = await fetchImpl('https://api.openai.com/v1/images/' + (edit ? 'edits' : 'generations'), {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: A.IMAGE.id, prompt: rec.prompt, size: rec.size, quality: rec.quality, n: 1,
-          output_format: 'webp', output_compression: 88, moderation: 'auto', safety_identifier: who }),
+        body: JSON.stringify(body),
       });
       j = await r.json();
     } catch (e) { return failed(res, 'Could not reach the picture service. Your payment is kept: press Try again.', false); }
@@ -381,14 +389,19 @@ function makeHandler(deps = {}) {
     return send(res, 200, { t: 'image', b64, mime: 'image/webp' });
   }
 
-  // xAI Grok Imagine pictures: POST /v1/images/generations {model, prompt, n, response_format, aspect_ratio, resolution}
+  // xAI Grok Imagine pictures: POST /v1/images/generations {model, prompt, n, response_format, aspect_ratio, resolution};
+  // with reference pictures POST /v1/images/edits with image: {url} (one) or images: [{url}] (several, <IMAGE_0>... in the prompt)
   async function ximage(res, rec, im, failed) {
     let r, j;
+    const refs = rec.refs || [];
+    const body = { model: im.id, prompt: A.xaiPrompt(rec.prompt, refs.length), n: 1, response_format: 'b64_json',
+      aspect_ratio: A.XIMAGE.ASPECT[rec.size], resolution: rec.quality };
+    if (refs.length === 1) body.image = { url: A.dataUrl(refs[0]) };
+    else if (refs.length > 1) body.images = refs.map((f) => ({ url: A.dataUrl(f) }));
     try {
-      r = await fetchImpl('https://api.x.ai/v1/images/generations', {
+      r = await fetchImpl('https://api.x.ai/v1/images/' + (refs.length ? 'edits' : 'generations'), {
         method: 'POST', headers: xaiHeaders(),
-        body: JSON.stringify({ model: im.id, prompt: rec.prompt, n: 1, response_format: 'b64_json',
-          aspect_ratio: A.XIMAGE.ASPECT[rec.size], resolution: rec.quality }),
+        body: JSON.stringify(body),
       });
       j = await r.json();
     } catch (e) { return failed(res, 'Could not reach the picture service. Your payment is kept: press Try again.', false); }

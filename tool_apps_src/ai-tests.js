@@ -181,7 +181,7 @@ function setup(opts) {
       if (modelMode === "midway") return { ok: true, status: 200, body: streamBody(sse([{ type: "content_block_delta", delta: { type: "text_delta", text: "Hel" } }, { type: "error", error: { message: "Overloaded" } }])) };
       return { ok: true, status: 200, body: streamBody(ANSWER) };
     }
-    if (/images\/generations/.test(url)) return { ok: true, status: 200, json: async () => ({ data: [{ b64_json: "UklGRg==" }] }) };
+    if (/images\/(generations|edits)/.test(url)) return { ok: true, status: 200, json: async () => ({ data: [{ b64_json: "UklGRg==" }] }) };
     throw new Error("unexpected fetch " + url);
   };
   let now = T0;
@@ -350,6 +350,18 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     eq(J(r.res).t, "video", "the retry starts a new job");
     r = mk("POST", { op: "vstatus", id: qf.id, acct: "dan" }); await hv(r.req, r.res);
     eq(J(r.res).retry, false, "only one retry");
+    // a video from a picture: image {url: data URL} = the first frame; the description may be left out
+    const VR = { mt: "image/jpeg", data: "/9j/" + "E".repeat(50) };
+    r = mk("POST", { op: "quote", acct: "dan", kind: "video", prompt: "", model: "lite", seconds: 5, res: "480p", refs: [VR] }); await hv(r.req, r.res);
+    const qp = J(r.res);
+    eq([r.res.statusCode, qp.price], [200, A.videoQuote("lite", 5, "480p", 1).price], "picture-to-video quote");
+    chainV = [tr(3, "dan", "mes", qp.price + " HBD", qp.memo, 5)];
+    const nb = calls.length;
+    r = mk("POST", { op: "run", id: qp.id, acct: "dan" }); await hv(r.req, r.res);
+    const pv = calls.slice(nb).find((c) => /generations$/.test(c.url));
+    eq([pv.body.image && pv.body.image.url.slice(0, 23), "prompt" in pv.body], ["data:image/jpeg;base64,", false], "first frame sent, empty prompt left out");
+    r = mk("POST", { op: "quote", acct: "dan", kind: "video", prompt: "x", model: "lite", seconds: 5, res: "480p", refs: [VR, VR] }); await hv(r.req, r.res);
+    eq(r.res.statusCode, 400, "one start picture at most");
   }
 
   // ChatGPT text models, Grok Imagine pictures (OpenAI + xAI keys, mocked APIs)
@@ -368,7 +380,7 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
       calls.push({ url, body: init && init.body ? JSON.parse(init.body) : null, headers: init && init.headers });
       if (/responses\/input_tokens$/.test(url)) return countMode === "ok" ? { ok: true, status: 200, json: async () => ({ object: "response.input_tokens", input_tokens: 100 }) } : { ok: false, status: 500, json: async () => ({}) };
       if (/v1\/chat\/completions$/.test(url)) return { ok: true, status: 200, body: streamBody(oaiStream) };
-      if (/api\.x\.ai\/v1\/images\/generations$/.test(url)) return { ok: true, status: 200, json: async () => ({ data: [{ b64_json: "/9j/4AAQ", mime_type: "image/jpeg" }], usage: { cost_in_usd_ticks: 1 } }) };
+      if (/api\.x\.ai\/v1\/images\/(generations|edits)$/.test(url)) return { ok: true, status: 200, json: async () => ({ data: [{ b64_json: "/9j/4AAQ", mime_type: "image/jpeg" }], usage: { cost_in_usd_ticks: 1 } }) };
       throw new Error("unexpected " + url);
     };
     const hg = makeHandler({ env, redis, fetch: fetchImpl, now: () => T0, rpc: async () => chainG });
@@ -406,6 +418,16 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     eq(J(r.res), { t: "image", b64: "/9j/4AAQ", mime: "image/jpeg" }, "Grok picture answer");
     const xc = calls.find((c) => /x\.ai\/v1\/images/.test(c.url));
     eq([xc.body.model, xc.body.aspect_ratio, xc.body.resolution, xc.body.response_format, xc.body.n, xc.headers.Authorization], ["grok-imagine-image-2.0", "3:2", "2k", "b64_json", 1, "Bearer xai-k"], "xAI picture request");
+    const XR = { mt: "image/webp", data: "UklGR" + "D".repeat(40) };
+    r = mk("POST", { op: "quote", acct: "gus", kind: "image", model: "grok2", prompt: "Swap picture 1 and picture 2", quality: "1k", size: "1024x1024", refs: [XR, XR] }); await hg(r.req, r.res);
+    const qxe = J(r.res);
+    eq([r.res.statusCode, qxe.price], [200, A.imageQuote("1k", "1024x1024", 0, "grok2", 2).price], "Grok edit quote");
+    chainG = [tr(3, "gus", "mes", qxe.price + " HBD", qxe.memo, 5)];
+    r = mk("POST", { op: "run", id: qxe.id, acct: "gus" }); await hg(r.req, r.res);
+    const xe = calls.find((c) => /x\.ai\/v1\/images\/edits$/.test(c.url));
+    eq([!!xe, xe && xe.body.images.length, xe && xe.body.images[0].url.slice(0, 23), xe && /<IMAGE_1>/.test(xe.body.prompt), xe && xe.body.image], [true, 2, "data:image/webp;base64,", true, undefined], "xAI edit with images[] and <IMAGE_n> names");
+    r = mk("POST", { op: "quote", acct: "gus", kind: "image", model: "grok", prompt: "x", quality: "1k", size: "1024x1024", refs: [XR] }); await hg(r.req, r.res);
+    eq(r.res.statusCode, 400, "cheapest Grok takes no pictures");
   }
   // lib: the new tables
   eq(A.imageQuote("1k", "1024x1024", 0, "grok").price, "0.030", "Grok 0.02 x 1.5");
@@ -452,6 +474,54 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   await e.h(r.req, r.res);
   const mf = e.calls.filter((c) => /api\.anthropic\.com\/v1\/messages$/.test(c.url)).pop();
   ok(mf && mf.body.messages[0].content[0].source.data === big.data && lines(r.res).some((x) => x.t === "done"), "answer gets the whole PDF back from the pieces");
+
+  /* ---------- reference pictures (2026-11-21): edits / combining, a video's first frame, chat -> picture ---------- */
+  const R1 = { mt: "image/jpeg", data: "/9j/" + "B".repeat(60) }, R2 = { mt: "image/png", data: "iVBORw0KGgo" + "C".repeat(60) };
+  eq([A.maxRefs("image", "gpt"), A.maxRefs("image", "grok"), A.maxRefs("image", "grok2"), A.maxRefs("video", "lite"), A.maxRefs("video", "nope")], [6, 0, 5, 1, 0], "picture limits per model");
+  eq(A.checkRefs([R1, R2], 6), null, "two pictures ok");
+  eq(A.checkRefs([R1], 0), "This model can't take pictures. Pick another model.", "no pictures on the cheapest Grok");
+  eq(A.checkRefs([R1, R2], 1), "One picture at most with this model.", "video: one start picture");
+  eq(A.checkRefs([{ mt: "image/gif", data: R1.data }], 6), "Pictures must be JPEG, PNG or WebP.", "gif refused");
+  eq(A.checkRefs([{ mt: "image/png", data: "not base64!" }], 6), "Bad picture.", "bad base64 refused");
+  eq(A.checkRefs("x", 6), "Bad picture.", "not a list");
+  eq(A.checkRefs([{ mt: "image/png", data: "A".repeat(A.REFS.total + 4) }], 6), "The pictures are too big together. Use fewer or smaller pictures.", "total size cap");
+  // prices: GPT adds REFS.gptTokens image tokens at $8 / 1M per picture; Grok adds one output price per picture; video adds REFS.videoUsd
+  eq(A.imageQuote("medium", "1024x1024", 40, "gpt", 2).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6 + 2 * A.REFS.gptTokens * 8 / 1e6)), "GPT edit with 2 pictures");
+  eq(A.imageQuote("1k", "1024x1024", 0, "grok2", 3).price, A.fmtHbd(A.hbdFromUsd(0.04 * 4)), "Grok 2.0 edit with 3 pictures = 4 pictures' price");
+  eq(A.videoQuote("lite", 5, "480p", 1).price, A.fmtHbd(A.hbdFromUsd(0.1 + A.REFS.videoUsd)), "video from a picture");
+  ok(A.imageQuote("high", "1024x1536", 10, "gpt", 6).hbd > A.imageQuote("high", "1024x1536", 10, "gpt", 0).hbd, "more pictures cost more");
+  eq(A.checkVideo("", "lite", 5, "480p", true), null, "a video from a picture may skip the description");
+  eq(A.checkVideo("", "lite", 5, "480p", false), "Describe the video first.", "a text video needs one");
+  eq(A.xaiPrompt("swap them", 2), "Input pictures: picture 1 = <IMAGE_0>, picture 2 = <IMAGE_1>. swap them", "xAI picture names");
+  eq(A.xaiPrompt("make it blue", 1), "The input picture is <IMAGE_0> (picture 1). make it blue", "xAI one picture");
+  eq(A.xaiPrompt("plain", 0), "plain", "no pictures: prompt unchanged");
+  // chat messages that ask for pictures / videos
+  eq(A.wantsMedia("Make a picture of a cat on the moon"), { kind: "image", prompt: "Make a picture of a cat on the moon" }, "make a picture");
+  eq(A.wantsMedia("Can you generate an image of a sunset?"), { kind: "image", prompt: "generate an image of a sunset" }, "polite opening dropped");
+  eq(A.wantsMedia("make a short video of a dog surfing").kind, "video", "video request");
+  eq(A.wantsMedia("Draw me a dragon over a castle").kind, "image", "draw ...");
+  ["What is a picture?", "Make a list of fruits", "draw a conclusion from this", "Explain how to draw a circle", "create a function that sorts", "How do I make an image smaller in CSS?", ""].forEach((t) => eq(A.wantsMedia(t), null, "not a picture request: " + t));
+  // server: GPT edit -> /v1/images/edits with images [{image_url: data URL}]
+  e = setup();
+  r = mk("POST", { op: "quote", acct: "alice", kind: "image", prompt: "Put the person from picture 1 in front of picture 2", quality: "medium", size: "1024x1024", refs: [R1, R2] });
+  await e.h(r.req, r.res);
+  const qe = J(r.res);
+  eq([r.res.statusCode, qe.price], [200, A.imageQuote("medium", "1024x1024", Math.ceil(51 / 2) + 8, "gpt", 2).price], "edit quote includes the pictures");
+  e.setChain([tr(40, "alice", "mes", qe.price + " HBD", qe.memo, 5)]);
+  r = mk("POST", { op: "run", id: qe.id, acct: "alice" });
+  await e.h(r.req, r.res);
+  eq(J(r.res).t, "image", "edit answer");
+  const ec = e.calls.find((c) => /images\/edits$/.test(c.url || ""));
+  eq([!!ec, ec && ec.body.images.length, ec && ec.body.images[0].image_url.slice(0, 23), ec && ec.body.images[1].image_url.slice(0, 22)], [true, 2, "data:image/jpeg;base64,", "data:image/png;base64,"], "edit request to OpenAI");
+  r = mk("POST", { op: "quote", acct: "alice", kind: "image", prompt: "x", quality: "medium", size: "1024x1024", refs: [R1, R1, R1, R1, R1, R1, R1] });
+  await e.h(r.req, r.res);
+  eq(r.res.statusCode, 400, "7 pictures refused (6 at most)");
+  r = mk("POST", { op: "quote", acct: "alice", kind: "image", prompt: "x", quality: "medium", size: "1024x1024" });
+  await e.h(r.req, r.res);
+  e.setChain([tr(41, "alice", "mes", J(r.res).price + " HBD", J(r.res).memo, 5)]);
+  const before = e.calls.length;
+  r = mk("POST", { op: "run", id: J(r.res).id, acct: "alice" }); await e.h(r.req, r.res);
+  ok(e.calls.slice(before).some((c) => /images\/generations$/.test(c.url || "")), "no pictures: generations, not edits");
 
   // origin check in production
   e = setup();

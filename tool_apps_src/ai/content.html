@@ -21,12 +21,13 @@
 			</details>
 		</div>
 
+		<div class="ai-app" id="ai-app">
 		<div class="tu-card ai-acct" id="ai-acct-card">
 			<div id="ai-acct"></div>
 			<div id="ai-help"></div>
 		</div>
 
-		<div class="ai-modes" role="tablist" aria-label="{{tr:What to make}}">
+		<div class="ai-modes" id="ai-modes" role="tablist" aria-label="{{tr:What to make}}">
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">{{tr:💬 Chat}}</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">{{tr:🖼️ Picture}}</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">{{tr:🎬 Video}}</button>
@@ -35,8 +36,8 @@
 
 		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">
 			<div class="ai-bar" id="ai-chatbar">
-				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" aria-controls="ai-side" aria-expanded="true" title="{{tr:Show or hide your chats}}">☰ {{tr:Chats}} <span class="ai-cn"></span></button>
-				<button type="button" class="tu-btn tu-btn--ghost ai-flip" id="ai-flip">⇄</button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" id="ai-sidebtn" data-side aria-controls="ai-side" aria-expanded="true" title="{{tr:Show or hide your chats}}">☰ {{tr:Chats}} <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" id="ai-flip" data-flip>⇄</button>
 				<span class="ai-curtitle" id="ai-curtitle"></span>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-new">{{tr:＋ New chat}}</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="ai-export" title="{{tr:Save to your cloud, Hive or a file}}">{{tr:💾 Save}}</button>
@@ -110,38 +111,79 @@
 			</details>
 		</section>
 
-		<section class="tu-card ai-img" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>
-			<label class="tu-label" for="ai-prompt">{{tr:Describe the picture}}</label>
-			<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A watercolour fox sitting in fresh snow at sunrise, soft light}}"></textarea>
-			<div class="ai-opts">
-				<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-imod" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-q" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>{{tr:Shape}}</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">{{tr:Square}}</option><option value="1536x1024">{{tr:Landscape}}</option><option value="1024x1536">{{tr:Portrait}}</option></select></label>
-				<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">{{tr:Pay &amp; create}}</button>
+		<section class="tu-card ai-img ai-media" id="ai-img" role="tabpanel" aria-labelledby="ai-tab-img" hidden>
+			<div class="ai-bar">
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" data-side aria-controls="ai-iside" aria-expanded="true" title="{{tr:Show or hide your pictures}}">☰ {{tr:Pictures}} <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" data-flip>⇄</button>
+				<span class="ai-curtitle" id="ai-icur"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-iall">{{tr:▦ All pictures}}</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-inew">{{tr:＋ New picture}}</button>
 			</div>
-			<p class="tu-note">{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}}</p>
-			<div class="ai-gal" id="ai-gal"></div>
+			<div class="ai-wrap">
+			<aside class="ai-side" id="ai-iside" aria-label="{{tr:Your pictures}}">
+				<input type="search" id="ai-isearch" class="tu-input ai-csearch" placeholder="{{tr:Search pictures…}}" aria-label="{{tr:Search your pictures by their description}}" autocomplete="off">
+				<div class="ai-clist" id="ai-ilist" role="list"></div>
+			</aside>
+			<div class="ai-main">
+			<div class="ai-stage" id="ai-istage" aria-live="polite"></div>
+			<div class="ai-compose" id="ai-icomp">
+				<div class="ai-refs" id="ai-irefs" hidden></div>
+				<label class="tu-label" for="ai-prompt" id="ai-plabel">{{tr:Describe the picture}}</label>
+				<textarea id="ai-prompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A watercolour fox sitting in fresh snow at sunrise, soft light}}"></textarea>
+				<div class="ai-opts">
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-iattach" title="{{tr:Add pictures to change or combine (or drop / paste them here)}}">{{tr:🖼️ Add pictures}}</button>
+					<input type="file" id="ai-ifile" multiple hidden accept="image/*">
+					<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-imod" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-q" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>{{tr:Shape}}</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">{{tr:Square}}</option><option value="1536x1024">{{tr:Landscape}}</option><option value="1024x1536">{{tr:Portrait}}</option></select></label>
+					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
+					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-make">{{tr:Pay &amp; create}}</button>
+				</div>
+				<p class="tu-note" id="ai-inote">{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}}</p>
+			</div>
+			</div>
+			</div>
 		</section>
 
-		<section class="tu-card ai-img" id="ai-vid" role="tabpanel" aria-labelledby="ai-tab-vid" hidden>
-			<label class="tu-label" for="ai-vprompt">{{tr:Describe the video}}</label>
-			<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A golden retriever surfing a small wave at sunset, slow motion, the camera follows from the side}}"></textarea>
-			<div class="ai-opts">
-				<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-vmodel" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>{{tr:Length}}</span><select id="ai-vsec" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-vres" class="tu-input" data-native></select></label>
-				<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>{{tr:Sound}}</span></label>
-				<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">{{tr:Pay &amp; create}}</button>
+		<section class="tu-card ai-img ai-media" id="ai-vid" role="tabpanel" aria-labelledby="ai-tab-vid" hidden>
+			<div class="ai-bar">
+				<button type="button" class="tu-btn tu-btn--ghost ai-sidebtn" data-side aria-controls="ai-vside" aria-expanded="true" title="{{tr:Show or hide your videos}}">☰ {{tr:Videos}} <span class="ai-cn"></span></button>
+				<button type="button" class="tu-btn tu-btn--ghost ai-flip" data-flip>⇄</button>
+				<span class="ai-curtitle" id="ai-vcur"></span>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-vall">{{tr:▦ All videos}}</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="ai-vnew">{{tr:＋ New video}}</button>
 			</div>
-			<p class="tu-note">{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}}</p>
+			<div class="ai-wrap">
+			<aside class="ai-side" id="ai-vside" aria-label="{{tr:Your videos}}">
+				<input type="search" id="ai-vsearch" class="tu-input ai-csearch" placeholder="{{tr:Search videos…}}" aria-label="{{tr:Search your videos by their description}}" autocomplete="off">
+				<div class="ai-clist" id="ai-vlist" role="list"></div>
+			</aside>
+			<div class="ai-main">
 			<div id="ai-vjobs"></div>
-			<div class="ai-gal" id="ai-vgal"></div>
+			<div class="ai-stage" id="ai-vstage" aria-live="polite"></div>
+			<div class="ai-compose" id="ai-vcomp">
+				<div class="ai-refs" id="ai-vrefs" hidden></div>
+				<label class="tu-label" for="ai-vprompt" id="ai-vlabel">{{tr:Describe the video}}</label>
+				<textarea id="ai-vprompt" class="tu-input ai-in" rows="3" maxlength="4000" placeholder="{{tr:e.g. A golden retriever surfing a small wave at sunset, slow motion, the camera follows from the side}}"></textarea>
+				<div class="ai-opts">
+					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-vattach" title="{{tr:Start the video from a picture (or drop / paste one here)}}">{{tr:🖼️ Start from a picture}}</button>
+					<input type="file" id="ai-vfile" hidden accept="image/*">
+					<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-vmodel" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>{{tr:Length}}</span><select id="ai-vsec" class="tu-input" data-native></select></label>
+					<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-vres" class="tu-input" data-native></select></label>
+					<label class="ai-opt ai-enc"><input type="checkbox" id="ai-vaudio" checked> <span>{{tr:Sound}}</span></label>
+					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
+					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-vmake">{{tr:Pay &amp; create}}</button>
+				</div>
+				<p class="tu-note">{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}}</p>
+			</div>
+			</div>
+			</div>
 		</section>
 
 		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
 		<div class="ai-undo" id="ai-undo" role="status" hidden></div>
+		</div>
 
 		<div class="tu-card ai-rules">
 			<h3>{{tr:Rules}}</h3>

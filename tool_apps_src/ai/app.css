@@ -73,7 +73,7 @@ html body.dark-mode #ai.ai .ai-text a { color: #8fb0ff; }
 #ai .ai-mfiles img { max-width: 11em; max-height: 9em; border-radius: .4em; border: 1px solid var(--ai-line); cursor: zoom-in; display: block; }
 #ai .ai-mfiles .ai-file { max-width: 20em; }
 #ai .ai-attach { white-space: nowrap; }
-#ai #ai-file, #ai .ai-files[hidden] { display: none !important; }
+#ai #ai-file, #ai #ai-ifile, #ai #ai-vfile, #ai .ai-files[hidden] { display: none !important; }
 #ai .ai-in { width: 100%; box-sizing: border-box; resize: vertical; min-height: 4.5em; font-size: 1.05em; line-height: 1.5; }
 #ai .ai-opts { display: flex; flex-wrap: wrap; gap: .6em 1em; align-items: center; margin-top: .55em; }
 #ai .ai-opt { display: inline-flex; align-items: center; gap: .4em; }
@@ -307,3 +307,66 @@ html body.dark-mode #ai.ai .ai-mini { color: var(--ai-ink); }
 html body.dark-mode #ai.ai .ai-cost { color: var(--ai-ink); }
 html body.dark-mode #ai.ai .ai-cost .ai-sub { color: var(--ai-sub); }
 #ai .ai-chead--drop { opacity: .7; }
+
+/* ---------- 2026-11-21: Pictures / Videos tabs with the chat layout (side list + search), reference pictures, Fill window with tabs ---------- */
+#ai .ai-media .ai-main { display: flex; flex-direction: column; gap: .6em; }
+#ai .ai-stage { --mes-gh-d: 30em; min-height: 12em; max-height: max(24em, calc(100vh - 360px)); overflow-y: auto; border: 1px solid var(--ai-line); border-radius: .6em; padding: .7em; background: var(--ai-panel); color: var(--ai-ink); box-sizing: border-box; }
+#ai .ai-stage .ai-gal { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr)); gap: .55em; }
+#ai .ai-tile { position: relative; display: block; padding: 0; margin: 0; border: 1px solid var(--ai-line); border-radius: .5em; overflow: hidden; background: var(--ai-bot); cursor: pointer; aspect-ratio: 1; font: inherit; color: var(--ai-ink); }
+#ai .ai-tile img, #ai .ai-tile video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#ai .ai-tile:hover, #ai .ai-tile:focus-visible { border-color: var(--ai-acc); outline: 2px solid var(--ai-acc); outline-offset: -2px; }
+#ai .ai-tilecap { position: absolute; left: 0; right: 0; bottom: 0; padding: .3em .45em; font-size: .75em; line-height: 1.3; text-align: left; color: #fff; background: linear-gradient(transparent, rgba(0, 0, 0, .75)); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#ai .ai-big { margin: 0; display: flex; flex-direction: column; gap: .5em; }
+#ai .ai-bigpic { position: relative; text-align: center; background: var(--ai-bot); border-radius: .5em; border: 1px solid var(--ai-line); }
+#ai .ai-bigpic img, #ai .ai-bigpic video { max-width: 100%; max-height: max(18em, calc(100vh - 520px)); width: auto; height: auto; display: block; margin: 0 auto; border-radius: .45em; }
+#ai .ai-bigpic video { background: #000; width: 100%; }
+#ai .ai-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 2.2em; height: 2.6em; border: 0; border-radius: .5em; font-size: 1.5em; line-height: 1; cursor: pointer; background: rgba(0, 0, 0, .45); color: #fff; }
+#ai .ai-nav--l { left: .3em; } #ai .ai-nav--r { right: .3em; }
+#ai .ai-nav:hover { background: rgba(0, 0, 0, .7); }
+#ai .ai-big figcaption { display: flex; flex-wrap: wrap; gap: .3em .6em; align-items: center; font-size: .95em; line-height: 1.45; }
+#ai .ai-bigtx { flex: 1 1 18em; overflow-wrap: anywhere; }
+#ai .ai-usedrefs { display: inline-flex; gap: .3em; }
+#ai .ai-mini--hi { border-color: var(--ai-acc); font-weight: 700; }
+#ai .ai-mini.ai-cdel { color: var(--ai-err); }
+#ai .ai-gone { visibility: hidden; }
+#ai .ai-mrow .ai-copen { flex-direction: row; align-items: center; gap: .5em; }
+#ai .ai-mthumb { width: 2.6em; height: 2.6em; flex: 0 0 auto; object-fit: cover; border-radius: .35em; background: var(--ai-line); display: inline-flex; align-items: center; justify-content: center; font-size: 1.1em; }
+#ai .ai-mtx { display: flex; flex-direction: column; gap: .1em; min-width: 0; }
+#ai .ai-refs { display: flex; flex-wrap: wrap; gap: .5em; align-items: center; margin: 0 0 .5em; }
+#ai .ai-refs[hidden] { display: none; }
+#ai .ai-ref { position: relative; display: inline-block; width: 4.2em; height: 4.2em; border-radius: .45em; border: 1px solid var(--ai-line); background: var(--ai-bot); }
+#ai .ai-ref img { width: 100%; height: 100%; object-fit: cover; border-radius: .4em; display: block; }
+#ai .ai-ref--s { width: 2.4em; height: 2.4em; }
+#ai .ai-refn { position: absolute; left: -.35em; top: -.35em; min-width: 1.45em; height: 1.45em; padding: 0 .2em; box-sizing: border-box; border-radius: 999px; background: var(--ai-acc); color: var(--ai-acctext); font-size: .78em; line-height: 1.45em; text-align: center; }
+#ai .ai-ref--s .ai-refn { font-size: .62em; }
+#ai .ai-ref button { position: absolute; right: -.35em; top: -.35em; width: 1.5em; height: 1.5em; padding: 0; border-radius: 999px; border: 1px solid var(--ai-line); background: var(--ai-bot); color: var(--ai-ink); cursor: pointer; font: inherit; font-size: .85em; line-height: 1; }
+#ai .ai-refhint { flex: 1 1 14em; font-size: .88em; color: var(--ai-sub); }
+#ai .ai-refhint.ai-err { color: var(--ai-err); }
+#ai .ai-media .ai-attach[hidden] { display: none; }
+html body.dark-mode #ai.ai :is(.ai-stage, .ai-big figcaption, .ai-bigtx, .ai-tile) { color: var(--ai-ink); }
+html body.dark-mode #ai.ai .ai-refhint { color: var(--ai-sub); }
+html body.dark-mode #ai.ai .ai-refhint.ai-err, html body.dark-mode #ai.ai .ai-mini.ai-cdel { color: var(--ai-err); }
+html body.dark-mode #ai.ai .ai-refn { background: var(--ai-acc); color: var(--ai-acctext); }
+html body.dark-mode #ai.ai .ai-ref button { background: var(--ai-bot); color: var(--ai-ink); border-color: var(--ai-line); }
+html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
+/* the whole app fills the window: tabs on top, the open tab takes the rest, its log / stage fills the height */
+#ai .ai-app.mes-pfill { gap: .4em; }
+#ai .ai-app.mes-pfill > .ai-acct { padding: .35em .7em; margin: 0; }
+#ai .ai-app.mes-pfill > .ai-acct .ai-user img { width: 24px; height: 24px; }
+#ai .ai-app.mes-pfill > section:not([hidden]) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin: 0; overflow: auto; }
+#ai .ai-app.mes-pfill .ai-wrap { flex: 1 1 auto; min-height: 0; align-items: stretch; }
+#ai .ai-app.mes-pfill .ai-main { display: flex; flex-direction: column; min-height: 0; }
+#ai .ai-app.mes-pfill .ai-side { position: static; max-height: none; }
+#ai .ai-app.mes-pfill .ai-log, #ai .ai-app.mes-pfill .ai-stage { flex: 1 1 auto; max-height: none; }
+#ai .ai-app.mes-pfill .ai-bigpic img, #ai .ai-app.mes-pfill .ai-bigpic video { max-height: max(14em, calc(100vh - 460px)); }
+#ai .ai-app.mes-pfill .ai-narrow .ai-side { max-height: 45vh; }
+#ai .ai-modes .mes-pbtns { margin-left: auto; align-self: center; }
+#ai .ai-modes .ai-payshow:not([hidden]) + .mes-pbtns { margin-left: .4em; }
+@media (max-width: 640px) {
+  #ai .ai-stage .ai-gal { grid-template-columns: repeat(auto-fill, minmax(7.5em, 1fr)); }
+  #ai .ai-modes .mes-pbtns { margin-left: 0; flex-basis: 100%; justify-content: flex-end; order: 9; }
+}
+#ai .ai-narrow .ai-stage { max-height: none; }
+/* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
+#ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
+#ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
