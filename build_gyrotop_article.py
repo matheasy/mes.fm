@@ -203,8 +203,16 @@ def content():
     for i, (num, title, body) in enumerate(bsecs, 1):
         label = f"{num}. {title}" if num else title
         toc.append((f"b{i}", label, True))
-        bsubs += fold(f"b{i}", esc(label), galleries(render(body), title), False)
-    chapters.append(fold("brand", esc(btitle), render(bintro) + bsubs, True))
+        back = '<p class="gt-back"><a class="gt-qlink" href="#brand">&uarr; Back to the list</a></p>\n' if num else ""
+        bsubs += fold(f"b{i}", esc(label), galleries(render(body), title) + back, False)
+    intro = render(bintro)
+    ol = re.search(r"<ol>(.*?)</ol>", intro, re.S)
+    if ol:  # the request list links to its sections, like the question list
+        items = [re.sub(r"</?p>", "", li).strip() for li in re.findall(r"<li>(.*?)</li>", ol.group(1), re.S)]
+        links = "\n".join(f'<li><a class="gt-qlink" href="#b{i}"><span>{it}</span><span class="gt-go">Section &darr;</span></a></li>'
+                          for i, it in enumerate(items, 1) if i <= len(bsecs))
+        intro = intro[:ol.start()] + '<ol class="gt-qs">\n' + links + "\n</ol>\n" + intro[ol.end():]
+    chapters.append(fold("brand", esc(btitle), intro + bsubs, True))
     return "<hr>\n".join(chapters), toc
 
 
