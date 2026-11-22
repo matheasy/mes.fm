@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>La respuesta nunca puede costar más de lo que pagaste: se corta en el largo que elegiste. <b>Una respuesta corta cuesta lo mismo que una larga con el mismo ajuste</b>: no se guarda saldo, así que no hay cambio que devolver. Elige Corta para preguntas rápidas.</li>
 					<li>Los chats largos se encarecen con cada mensaje. Empieza un chat nuevo cuando cambies de tema.</li>
 					<li>Los pagos son definitivos. Si la IA falla después de que pagaste, tienes un <b>Intentar de nuevo</b> gratis para ese mensaje (durante 24 horas).</li>
+					<li><b>Mensajes gratis:</b> cada cuenta de Hive recibe <span data-freeday>10</span> mensajes gratis al día con los modelos baratos (DeepSeek, Qwen, Llama), con respuestas cortas. Confirma una vez al día en Keychain (una firma, sin pago).</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">Precios de las empresas de IA revisados <span id="ai-checked"></span>. 1 HBD se cuenta como 1 dólar estadounidense. Las transferencias en Hive son públicas, como todo pago en Hive.</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Pagar y enviar</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>Normas</h3>
 			<p>Al enviar un mensaje aceptas no usar MES AI para nada ilegal, para contenido sexual con menores, para acosar o amenazar a personas, para malware o ataques a sistemas que no son tuyos, para fabricar armas capaces de causar daños masivos, ni para hacer pasar por reales imágenes inventadas de personas reales. También se aplican las políticas de uso de las empresas de IA (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), y la IA puede negarse. Las respuestas pueden estar equivocadas: verifica todo lo importante.</p>
-			<p>Privacidad: tus mensajes van de nuestro servidor a la empresa que gestiona el modelo que elegiste: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) o xAI (imágenes y videos de Grok Imagine) para generar la respuesta; mes.fm guarda la solicitud como máximo una hora (para asociarla a tu pago) y nunca guarda la respuesta. Tus chats e imágenes se quedan solo en este navegador. Más detalles en nuestra <a href="/privacy-policy#mes-ai">política de privacidad</a>.</p>
+			<p>Privacidad: tus mensajes van de nuestro servidor a la empresa que gestiona el modelo que elegiste: Anthropic (Claude), OpenAI (ChatGPT, GPT Image), xAI (imágenes y videos de Grok Imagine) o, para los modelos baratos, OpenRouter para generar la respuesta; mes.fm guarda la solicitud como máximo una hora (para asociarla a tu pago) y nunca guarda la respuesta. Tus chats e imágenes se quedan solo en este navegador. Más detalles en nuestra <a href="/privacy-policy#mes-ai">política de privacidad</a>.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-es.js?v=a137f795" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-es.js?v=c8fabc5d" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

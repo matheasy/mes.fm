@@ -63,6 +63,36 @@ async function readBody(req) {
   return s ? JSON.parse(s) : {};
 }
 
+/* ---------- Hive signature check (Keychain requestSignBuffer: a recoverable secp256k1 signature of sha256(message), 65 bytes hex =
+   recovery byte + r + s) against a public key "STM..." (base58 of the 33-byte compressed point + 4-byte checksum). Node's crypto does
+   the ECDSA; the point is uncompressed here (y^2 = x^3 + 7 mod p). No packages. ---------- */
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+function b58decode(str) {
+  let n = 0n;
+  for (const c of str) { const i = B58.indexOf(c); if (i < 0) return null; n = n * 58n + BigInt(i); }
+  let hex = n.toString(16); if (hex.length % 2) hex = '0' + hex;
+  const lead = (str.match(/^1*/) || [''])[0].length;
+  return Buffer.concat([Buffer.alloc(lead), Buffer.from(n ? hex : '', 'hex')]);
+}
+const P = 2n ** 256n - 2n ** 32n - 977n;
+function modpow(b, e, m) { let r = 1n; b %= m; while (e > 0n) { if (e & 1n) r = r * b % m; b = b * b % m; e >>= 1n; } return r; }
+function pubKeyObject(stm) {
+  if (typeof stm !== 'string' || !/^(STM|TST)/.test(stm)) return null;
+  const raw = b58decode(stm.slice(3));
+  if (!raw || raw.length !== 37 || (raw[0] !== 2 && raw[0] !== 3)) return null;
+  const x = BigInt('0x' + raw.subarray(1, 33).toString('hex'));
+  let y = modpow((x * x * x + 7n) % P, (P + 1n) / 4n, P);
+  if ((y & 1n) !== BigInt(raw[0] & 1)) y = P - y;
+  const b64 = (v) => Buffer.from(v.toString(16).padStart(64, '0'), 'hex').toString('base64url');
+  try { return crypto.createPublicKey({ key: { kty: 'EC', crv: 'secp256k1', x: b64(x), y: b64(y) }, format: 'jwk' }); } catch (e) { return null; }
+}
+function hiveVerify(message, sigHex, stm) {
+  try {
+    const key = pubKeyObject(stm); if (!key || !/^[0-9a-f]{130}$/i.test(sigHex)) return false;
+    return crypto.verify('sha256', Buffer.from(message, 'utf8'), { key, dsaEncoding: 'ieee-p1363' }, Buffer.from(sigHex.slice(2), 'hex'));
+  } catch (e) { return false; }
+}
+
 function makeHandler(deps = {}) {
   const env = deps.env || process.env;
   const fetchImpl = deps.fetch || fetch;
@@ -99,7 +129,7 @@ function makeHandler(deps = {}) {
     throw last;
   }
 
-  const keyOf = (prov) => (prov === 'openai' ? env.OPENAI_API_KEY : prov === 'xai' ? env.XAI_API_KEY : env.ANTHROPIC_API_KEY);
+  const keyOf = (prov) => (prov === 'openai' ? env.OPENAI_API_KEY : prov === 'xai' ? env.XAI_API_KEY : prov === 'openrouter' ? env.OPENROUTER_API_KEY : env.ANTHROPIC_API_KEY);
 
   // OpenAI's own count (Responses input_tokens) + a little room for the Chat Completions wrapper; if it does not answer,
   // a count that can only be too high (1 token per character), so the quote still covers the bill
@@ -145,12 +175,13 @@ function makeHandler(deps = {}) {
       if (!m) return send(res, 400, { error: 'Pick a model.' });
       if (!keyOf(m.prov)) return send(res, 503, { off: true, error: m.name + ' is coming soon.' });
       if (!m.caps[b.len]) return send(res, 400, { error: 'Pick an answer length.' });
-      const err = A.checkMessages(b.messages);
+      const err = A.checkMessages(b.messages) || A.checkTextOnly(b.model, b.messages);
       if (err) return send(res, 400, { error: err });
       const messages = A.cleanMessages(b.messages);
       const lang = A.cleanLang(b.lang);
       let inTok;
-      try { inTok = m.prov === 'openai' ? await countOpenAI(b.model, messages, lang) : await countTokens(m.id, A.toAnthropic(messages), A.systemFor(b.model, lang)); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
+      // OpenRouter has no counting endpoint: the safe count (1 token a character) can only be too high
+      try { inTok = m.prov === 'openrouter' ? A.safeTokens(A.systemFor(b.model, lang), messages) : m.prov === 'openai' ? await countOpenAI(b.model, messages, lang) : await countTokens(m.id, A.toAnthropic(messages), A.systemFor(b.model, lang)); } catch (e) { return send(res, 502, { error: 'Could not price this message right now. Try again in a moment.' }); }
       if (inTok > A.LIMITS.inTokens) return send(res, 400, { error: 'This chat is too long (' + inTok.toLocaleString('en-US') + ' tokens). Start a new chat.' });
       q = A.chatQuote(b.model, inTok, b.len);
       stored = { kind: 'chat', model: b.model, len: b.len, lang, messages };
@@ -224,8 +255,24 @@ function makeHandler(deps = {}) {
     return chat(res, rec, who, failed);
   }
 
+  // cheap models through OpenRouter (OpenAI-style Chat Completions). provider.max_price = the prices we quoted with, so OpenRouter never
+  // routes to a dearer provider; usage.include returns the real cost (usage.cost, USD) in the last piece.
+  function openrouterCall(rec, who, maxOut) {
+    const m = A.MODELS[rec.model];
+    return fetchImpl('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + env.OPENROUTER_API_KEY, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://mes.fm/ai', 'X-Title': 'MES AI' },
+      body: JSON.stringify({ model: m.id, messages: [{ role: 'system', content: A.systemFor(rec.model, rec.lang) }].concat(A.toOpenAIChat(rec.messages)), stream: true,
+        max_tokens: maxOut, user: who, usage: { include: true }, provider: { max_price: { prompt: m.inUsd, completion: m.outUsd }, data_collection: 'deny' } }),
+    });
+  }
   async function chat(res, rec, who, failed) {
     const m = A.MODELS[rec.model];
+    if (m.prov === 'openrouter') {
+      let r;
+      try { r = await openrouterCall(rec, who, rec.maxOut); } catch (e) { return failed(res, 'Could not reach the AI service. Your payment is kept: press Try again.', false); }
+      return pump(res, r, A.streamPieceOpenAI, failed);
+    }
     if (m.prov === 'openai') {
       // OpenAI Chat Completions; max_completion_tokens caps the reasoning tokens too, so the bill stays inside the quote
       const body = {
@@ -254,12 +301,13 @@ function makeHandler(deps = {}) {
     return pump(res, r, A.streamPiece, failed);
   }
 
-  // passes a provider's server-sent events on to the page as NDJSON pieces
+  // passes a provider's server-sent events on to the page as NDJSON pieces; resolves to {ok, usage} (free messages read the real cost)
   async function pump(res, r, piece, failed) {
     if (!r.ok) {
       let msg = 'The AI service answered ' + r.status + '.';
       try { const j = await r.json(); if (j.error && j.error.message) msg += ' ' + j.error.message; } catch (e) {}
-      return failed(res, msg + ' Your payment is kept: press Try again.', false);
+      await failed(res, msg + ' Your payment is kept: press Try again.', false);
+      return { ok: false };
     }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
@@ -290,10 +338,72 @@ function makeHandler(deps = {}) {
     } catch (e) { err = err || 'The answer was cut off.'; }
     if (err) {
       // a refused or broken answer after text has started: still give the free retry (the provider may have billed us; fine)
-      return failed(res, err + ' Your payment is kept: press Try again.', true);
+      await failed(res, err + ' Your payment is kept: press Try again.', true);
+      return { ok: false, usage };
     }
-    res.write(JSON.stringify({ t: 'done', stop, out: usage && usage.output_tokens }) + '\n');
+    res.write(JSON.stringify({ t: 'done', stop, out: usage && (usage.output_tokens || usage.completion_tokens) }) + '\n');
     res.end();
+    return { ok: true, usage };
+  }
+
+  /* ---------- free daily messages (A.FREE): proof of the Hive account = a Keychain signature of A.freeMessage(acct, day) with a posting key ---------- */
+  const freeUsdCap = () => { const v = Number(env.AI_FREE_USD); return Number.isFinite(v) && v >= 0 ? v : A.FREE.usdPerDay; };
+  const freeOn = () => !!env.OPENROUTER_API_KEY && freeUsdCap() > 0;
+  async function freeLeft(acct, day) {
+    const [n] = await redis([['GET', 'ai:free:' + day + ':' + acct]]);
+    return Math.max(0, A.FREE.perDay - (Number(n) || 0));
+  }
+  async function signedBy(acct, day, sig) {
+    const k = 'ai:fsig:' + sha(acct + '|' + day + '|' + sig).slice(0, 32);
+    const [hit] = await redis([['GET', k]]);
+    if (hit === '1') return true;
+    let accts;
+    try { accts = await rpc('condenser_api.get_accounts', [[acct]]); } catch (e) { throw new Error('nodes'); }
+    const a = Array.isArray(accts) && accts[0];
+    if (!a || a.name !== acct || !a.posting) return false;
+    const msg = A.freeMessage(acct, day);
+    const ok = (a.posting.key_auths || []).some((ka) => hiveVerify(msg, sig, ka[0]));
+    if (ok) await redis([['SET', k, '1', 'EX', String(2 * 86400)]]);
+    return ok;
+  }
+  async function free(req, res, b) {
+    if (!freeOn()) return send(res, 503, { off: true, error: 'Free messages are not switched on yet.' });
+    const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
+    if (!A.validName(acct)) return send(res, 400, { error: 'Log in with your Hive account first.' });
+    const today = A.utcDay(now()), day = String(b.day || '');
+    if (day !== today) return send(res, 400, { error: 'resign', resign: true });
+    if (typeof b.sig !== 'string' || !/^[0-9a-f]{130}$/i.test(b.sig)) return send(res, 400, { error: 'resign', resign: true });
+    const m = A.MODELS[b.model];
+    if (!m || !m.free) return send(res, 400, { error: 'Free messages work with the cheap models only.' });
+    const err = A.checkMessages(b.messages) || A.checkTextOnly(b.model, b.messages);
+    if (err) return send(res, 400, { error: err });
+    const messages = A.cleanMessages(b.messages), lang = A.cleanLang(b.lang);
+    if (A.safeTokens(A.systemFor(b.model, lang), messages) > A.FREE.maxIn) return send(res, 400, { long: true, error: 'This chat is too long for a free message. Start a new chat, or pay for this one.' });
+    let ok;
+    try { ok = await signedBy(acct, day, b.sig.toLowerCase()); } catch (e) { return send(res, 502, { error: 'The Hive nodes did not answer. Try again in a moment.' }); }
+    if (!ok) return send(res, 403, { error: 'resign', resign: true });
+    const iph = sha(ipOf(req) + salt).slice(0, 24), worst = Math.ceil(A.freeWorstUsd(b.model) * 1e6), cap = Math.round(freeUsdCap() * 1e6);
+    const ka = 'ai:free:' + day + ':' + acct, ki = 'ai:freeip:' + day + ':' + iph, kb = 'ai:freeusd:' + day;
+    const [na, , ni, , spent] = await redis([['INCR', ka], ['EXPIRE', ka, '90000'], ['INCR', ki], ['EXPIRE', ki, '90000'], ['INCRBY', kb, String(worst)], ['EXPIRE', kb, '90000']]);
+    const undo = () => redis([['DECR', ka], ['DECR', ki], ['DECRBY', kb, String(worst)]]).catch(() => {});
+    if (Number(na) > A.FREE.perDay) { await undo(); return send(res, 429, { left: 0, error: 'You have used today\'s free messages. They come back at 00:00 UTC; paid messages work now.' }); }
+    if (Number(ni) > A.FREE.perIp) { await undo(); return send(res, 429, { error: 'Too many free messages from this network today. Paid messages work now.' }); }
+    if (Number(spent) > cap) { await undo(); return send(res, 429, { budget: true, error: 'Today\'s free messages for everyone are used up. They come back at 00:00 UTC; paid messages work now.' }); }
+    const left = Math.max(0, A.FREE.perDay - Number(na));
+    let r;
+    try { r = await openrouterCall({ model: b.model, lang, messages }, sha('acct:' + acct + salt).slice(0, 32), A.FREE.maxOut); } catch (e) { await undo(); return send(res, 502, { error: 'Could not reach the AI service. Your free message was not used.' }); }
+    const gave = (res2, msg, streaming) => {
+      undo();
+      const out = { t: 'error', msg: msg.replace(/ Your payment is kept: press Try again\./, ' Your free message was not used: send it again.'), retry: false, free: true };
+      if (streaming) { res2.write(JSON.stringify(out) + '\n'); res2.end(); } else send(res2, 502, out);
+    };
+    if (r.ok) { res.setHeader('X-Free-Left', String(left)); }
+    const done = await pump(res, r, A.streamPieceOpenAI, gave);
+    // put back what the worst case reserved beyond the real cost (OpenRouter reports usage.cost in USD)
+    if (done && done.ok && done.usage && Number.isFinite(Number(done.usage.cost))) {
+      const back = worst - Math.ceil(Number(done.usage.cost) * 1e6);
+      if (back > 0) await redis([['DECRBY', kb, String(back)]]).catch(() => {});
+    }
   }
 
   /* ---------- Grok Imagine video: a job that takes minutes. run starts it; the page then asks "vstatus" every few seconds and
@@ -420,10 +530,16 @@ function makeHandler(deps = {}) {
         const qs = req.query && Object.keys(req.query).length ? req.query : Object.fromEntries(new URL(req.url, 'https://mes.fm').searchParams);
         const op = qs.op;
         if (op === 'vfile') return await vfile(req, res, qs);
+        if (op === 'free') {
+          const acct = String(qs.acct || '').replace(/^@/, '').toLowerCase();
+          if (!A.validName(acct)) return send(res, 400, { error: 'Bad account.' });
+          return send(res, 200, { on: freeOn(), perDay: A.FREE.perDay, left: freeOn() ? await freeLeft(acct, A.utcDay(now())) : 0, day: A.utcDay(now()) });
+        }
         if (op !== 'status') return send(res, 400, { error: 'Unknown op' });
         return send(res, 200, {
-          chat: !!(env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY), image: !!(env.OPENAI_API_KEY || env.XAI_API_KEY), video: !!env.XAI_API_KEY,
-          prov: { anthropic: !!env.ANTHROPIC_API_KEY, openai: !!env.OPENAI_API_KEY, xai: !!env.XAI_API_KEY },
+          chat: !!(env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY || env.OPENROUTER_API_KEY), image: !!(env.OPENAI_API_KEY || env.XAI_API_KEY), video: !!env.XAI_API_KEY,
+          prov: { anthropic: !!env.ANTHROPIC_API_KEY, openai: !!env.OPENAI_API_KEY, xai: !!env.XAI_API_KEY, openrouter: !!env.OPENROUTER_API_KEY },
+          free: { on: freeOn(), perDay: A.FREE.perDay },
           margin: A.MARGIN, checked: A.PRICES_CHECKED,
           models: Object.keys(A.MODELS).map((k) => ({ key: k, prov: A.MODELS[k].prov, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
           imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
@@ -437,6 +553,7 @@ function makeHandler(deps = {}) {
       if (b.op === 'quote') return await quote(req, res, b);
       if (b.op === 'run') return await run(req, res, b);
       if (b.op === 'vstatus') return await vstatus(req, res, b);
+      if (b.op === 'free') return await free(req, res, b);
       return send(res, 400, { error: 'Unknown op' });
     } catch (e) {
       if (!res.headersSent) return send(res, 500, { error: 'Something went wrong on our side. Try again.' });
@@ -447,3 +564,4 @@ function makeHandler(deps = {}) {
 
 module.exports = makeHandler();
 module.exports.makeHandler = makeHandler;
+module.exports.hiveVerify = hiveVerify;

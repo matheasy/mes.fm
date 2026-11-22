@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>Yanıt asla ödediğinden fazlasına mal olmaz: seçtiğin uzunlukta kesilir. <b>Aynı ayarda kısa bir yanıt, uzun bir yanıtla aynı fiyattadır</b>: hesapta bakiye tutulmaz, bu yüzden geri verilecek para üstü yoktur. Hızlı sorular için Kısa'yı seç.</li>
 					<li>Uzun sohbetler her mesajla pahalanır. Konu değişince yeni bir sohbet başlat.</li>
 					<li>Ödemeler kesindir. Ödemenden sonra yapay zekâ başarısız olursa, o mesaj için ücretsiz bir <b>Tekrar dene</b> hakkın olur (24 saat içinde).</li>
+					<li><b>Ücretsiz mesajlar:</b> Her Hive hesabı ucuz modellerde (DeepSeek, Qwen, Llama) günde <span data-freeday>10</span> ücretsiz mesaj alır, kısa yanıtlarla. Günde bir kez Keychain'de onayla (bir imza, ödeme yok).</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">Yapay zekâ şirketlerinin fiyatları <span id="ai-checked"></span> tarihinde kontrol edildi. HBD 1 ABD doları sayılır. Hive'daki transferler, her Hive ödemesi gibi, herkese açıktır.</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Öde ve gönder</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>Kurallar</h3>
 			<p>Mesaj göndererek MES AI'ı yasa dışı işler, reşit olmayanları içeren cinsel içerik, insanları taciz etmek veya tehdit etmek, kötü amaçlı yazılım ya da sana ait olmayan sistemlere saldırı, toplu zarar verebilecek silah yapımı veya gerçek kişilerin uydurma resimlerini gerçekmiş gibi sunmak için kullanmamayı kabul edersin. Yapay zekâ şirketlerinin kendi kullanım politikaları da geçerlidir (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>) ve yapay zekâ yanıt vermeyi reddedebilir. Yanıtlar yanlış olabilir: önemli olan her şeyi kontrol et.</p>
-			<p>Gizlilik: Mesajların, yanıtı oluşturmak için sunucumuzdan seçtiğin modeli çalıştıran şirkete gider: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) veya xAI (Grok Imagine resim ve videoları); mes.fm isteği en fazla bir saat tutar (ödemenle eşleştirmek için) ve yanıtı asla saklamaz. Sohbetlerin ve resimlerin yalnızca bu tarayıcıda tutulur. Ayrıntılar <a href="/privacy-policy#mes-ai">gizlilik politikamızda</a>.</p>
+			<p>Gizlilik: Mesajların, yanıtı oluşturmak için sunucumuzdan seçtiğin modeli çalıştıran şirkete gider: Anthropic (Claude), OpenAI (ChatGPT, GPT Image), xAI (Grok Imagine resim ve videoları) veya ucuz modeller için OpenRouter; mes.fm isteği en fazla bir saat tutar (ödemenle eşleştirmek için) ve yanıtı asla saklamaz. Sohbetlerin ve resimlerin yalnızca bu tarayıcıda tutulur. Ayrıntılar <a href="/privacy-policy#mes-ai">gizlilik politikamızda</a>.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-tr.js?v=5d6ab1a5" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-tr.js?v=e95e1a48" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

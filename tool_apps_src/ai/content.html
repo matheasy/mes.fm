@@ -15,6 +15,7 @@
 					<li>{{tr:The answer can never cost more than you paid: it is cut off at the length you chose. <b>A short answer costs the same as a long one at the same setting</b>: nothing is kept on account, so there is no change to give back. Pick Short for quick questions.}}</li>
 					<li>{{tr:Long chats get dearer with every message. Start a new chat when the topic changes.}}</li>
 					<li>{{tr:Payments are final. If the AI fails after you paid, you get a free <b>Try again</b> for that message (within 24 hours).}}</li>
+					<li>{{tr:<b>Free messages:</b> every Hive account gets <span data-freeday>10</span> free messages a day on the cheap models (DeepSeek, Qwen, Llama), with Short answers. Confirm once a day in Keychain (a signature, no payment).}}</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">{{tr:Prices of the AI companies checked <span id="ai-checked"></span>. HBD is counted as 1 US dollar. Transfers on Hive are public, like every Hive payment.}}</p>
@@ -68,6 +69,7 @@
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">{{tr:Pay &amp; send}}</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -188,7 +190,7 @@
 		<div class="tu-card ai-rules">
 			<h3>{{tr:Rules}}</h3>
 			<p>{{tr:By sending a message you agree not to use MES AI for anything illegal, for sexual content involving minors, to harass or threaten people, for malware or attacks on systems you do not own, to make weapons that can cause mass harm, or to pass off made-up pictures of real people as real. The AI companies' own usage policies apply too (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), and the AI may refuse. Answers can be wrong: check anything important.}}</p>
-			<p>{{tr:Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) or xAI (Grok Imagine pictures and videos) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.}}</p>
+			<p>{{tr:Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image), xAI (Grok Imagine pictures and videos) or, for the cheap models, OpenRouter to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.}}</p>
 		</div>
 
 {{SEO}}

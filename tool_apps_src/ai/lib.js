@@ -36,9 +36,29 @@
     gpt: { prov: "openai", id: "gpt-6.2-sol", name: "ChatGPT: GPT-6.2 Sol", blurb: "OpenAI's balanced model (the one behind ChatGPT): fast, good at everyday questions and code.",
       inUsd: 2, outUsd: 10, effort: "low", caps: { short: 1200, medium: 5000, long: 16000 }, thinks: true },
     gptpro: { prov: "openai", id: "gpt-6.2-astra", name: "ChatGPT: GPT-6.2 Astra", blurb: "OpenAI's flagship for complex reasoning and coding. Thinks first, so it costs more.",
-      inUsd: 8, outUsd: 40, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true }
+      inUsd: 8, outUsd: 40, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true },
+    /* cheap models (2026-11-21) through OpenRouter (one key, provider prices passed through; openrouter.ai/api/v1/models, checked 2026-11-21).
+       inUsd / outUsd = the most we let OpenRouter charge: the request sends them as provider.max_price, so a pricier provider is never
+       used and the quote always covers the bill (DeepSeek's own peak price is 2x its off-peak one). text: true = reads text only.
+       free: true = these can be used for the free daily messages (FREE below). */
+    dsflash: { prov: "openrouter", id: "deepseek/deepseek-v4.1-flash-1017", name: "DeepSeek V4.1 Flash", blurb: "Very cheap and quick, good at code and math. Text only.",
+      inUsd: 0.3, outUsd: 1.2, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
+    qwen: { prov: "openrouter", id: "qwen/qwen3.8-flash", name: "Qwen 3.8 Flash", blurb: "Very cheap and quick, good in many languages. Text only.",
+      inUsd: 0.2, outUsd: 0.6, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
+    llama: { prov: "openrouter", id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", blurb: "Meta's open model: cheap, plain answers. Text only.",
+      inUsd: 0.4, outUsd: 1.2, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
+    dspro: { prov: "openrouter", id: "deepseek/deepseek-v4-pro", name: "DeepSeek V4 Pro", blurb: "DeepSeek's stronger model for harder questions, still far cheaper than the big ones. Text only.",
+      inUsd: 1.4, outUsd: 4, caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true, text: true }
   };
-  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI" };
+  /* free daily messages (2026-11-21): FREE.perDay messages a day per Hive account on the models marked free, always a Short answer
+     (FREE.maxOut tokens) and a chat of at most FREE.maxIn tokens (counted the safe way, 1 token a character). The account is proven once a
+     day with a Keychain signature of freeMessage(acct, day) (no payment, no fee). All free messages together stop at FREE.usdPerDay of
+     cost a day (env AI_FREE_USD overrides it); each one first reserves its worst case. Paid from ad and Premium income. */
+  var FREE = { perDay: 10, perIp: 30, maxIn: 12000, maxOut: 1500, usdPerDay: 2 };
+  function freeMessage(acct, day) { return "mes.fm/ai free messages for @" + acct + " on " + day; }
+  function utcDay(ms) { return new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10); }
+  function freeWorstUsd(modelKey) { var m = MODELS[modelKey]; return m && m.free ? (FREE.maxIn * m.inUsd + FREE.maxOut * m.outUsd) / 1e6 : 0; }
+  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter" };
   var DEFAULT_MODEL = "sonnet";
   var LENGTHS = { short: "Short", medium: "Medium", long: "Long" };
 
@@ -150,7 +170,8 @@
     hi: "Hindi", id: "Indonesian", vi: "Vietnamese", ar: "Arabic", fa: "Persian (Farsi)" };
   function cleanLang(l) { return typeof l === "string" && Object.prototype.hasOwnProperty.call(LANGS, l) ? l : "en"; }
   function systemFor(modelKey, lang) {
-    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT")
+      : m && m.prov === "openrouter" ? SYSTEM.replace("running on Anthropic's Claude", "running on " + m.name) : SYSTEM;
     lang = cleanLang(lang);
     return lang === "en" ? s : s + " The person is using the " + LANGS[lang] + " version of this page: answer in " + LANGS[lang] + " by default; if they write in another language, answer in the language they write in.";
   }
@@ -300,6 +321,12 @@
     if (fileChars > FILES.total) return "The files are too big together (about " + Math.round(FILES.total * 0.75 / 1e6 * 10) / 10 + " MB at most). Send fewer or smaller files.";
     return null;
   }
+  // a text-only model gets no pictures / PDFs
+  function checkTextOnly(modelKey, messages) {
+    var m = MODELS[modelKey];
+    if (!m || !m.text) return null;
+    return (messages || []).some(function (x) { return x && x.files && x.files.length; }) ? "This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files." : null;
+  }
   function checkFile(f) {
     if (!f || typeof f.data !== "string" || !/^[A-Za-z0-9+/]+=*$/.test(f.data) || f.data.length < 8) return "Bad file.";
     if (f.t === "img") { if (FILES.img.indexOf(f.mt) < 0) return "Pictures must be JPEG, PNG, WebP or GIF."; }
@@ -437,7 +464,7 @@
     var c = d.choices && d.choices[0];
     if (c && c.finish_reason) return { t: "stop", stop: OAI_STOP[c.finish_reason] || c.finish_reason, usage: d.usage || null };
     if (c && c.delta && typeof c.delta.content === "string" && c.delta.content) return { t: "text", v: c.delta.content };
-    if (!c && d.usage) return { t: "stop", stop: null, usage: { output_tokens: d.usage.completion_tokens } };
+    if (!c && d.usage) return { t: "stop", stop: null, usage: { output_tokens: d.usage.completion_tokens, cost: d.usage.cost } };  // cost: OpenRouter, USD
     return null;
   }
   // a token count that is never too low, for when OpenAI's counting endpoint does not answer: 1 token per character
@@ -516,6 +543,7 @@
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
+    FREE: FREE, freeMessage: freeMessage, utcDay: utcDay, freeWorstUsd: freeWorstUsd, checkTextOnly: checkTextOnly,
     REFS: REFS, maxRefs: maxRefs, checkRefs: checkRefs, cleanRefs: cleanRefs, dataUrl: dataUrl, xaiPrompt: xaiPrompt, wantsMedia: wantsMedia,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,

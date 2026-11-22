@@ -143,6 +143,9 @@ function fakeRedis() {
       case "EXISTS": return st.has(k) ? 1 : 0;
       case "DEL": return st.delete(k) ? 1 : 0;
       case "INCR": { const x = (Number(st.get(k)) || 0) + 1; st.set(k, String(x)); return x; }
+      case "DECR": { const x = (Number(st.get(k)) || 0) - 1; st.set(k, String(x)); return x; }
+      case "INCRBY": { const x = (Number(st.get(k)) || 0) + Number(v); st.set(k, String(x)); return x; }
+      case "DECRBY": { const x = (Number(st.get(k)) || 0) - Number(v); st.set(k, String(x)); return x; }
       case "EXPIRE": return 1;
       default: throw new Error("fake redis " + op);
     }
@@ -385,7 +388,7 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     };
     const hg = makeHandler({ env, redis, fetch: fetchImpl, now: () => T0, rpc: async () => chainG });
     r = mk("GET", null, { op: "status" }); await hg(r.req, r.res);
-    eq([J(r.res).chat, J(r.res).image, J(r.res).prov], [true, true, { anthropic: false, openai: true, xai: true }], "status per company");
+    eq([J(r.res).chat, J(r.res).image, J(r.res).prov], [true, true, { anthropic: false, openai: true, xai: true, openrouter: false }], "status per company");
     r = mk("POST", { op: "quote", acct: "gus", kind: "chat", model: "sonnet", len: "short", messages: [{ role: "user", content: "hi" }] }); await hg(r.req, r.res);
     eq(r.res.statusCode, 503, "Claude off without the Anthropic key");
     const msgs = [{ role: "user", content: "Say hi" }];
@@ -522,6 +525,84 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   const before = e.calls.length;
   r = mk("POST", { op: "run", id: J(r.res).id, acct: "alice" }); await e.h(r.req, r.res);
   ok(e.calls.slice(before).some((c) => /images\/generations$/.test(c.url || "")), "no pictures: generations, not edits");
+
+  /* ---------- cheap models (OpenRouter) and free daily messages (2026-11-21) ---------- */
+  {
+    const crypto = require("crypto");
+    const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    const enc58 = (buf) => { let x = BigInt("0x" + buf.toString("hex")), o = ""; while (x > 0n) { o = B58[Number(x % 58n)] + o; x /= 58n; } return o; };
+    const kp = crypto.generateKeyPairSync("ec", { namedCurve: "secp256k1" }), jw = kp.publicKey.export({ format: "jwk" });
+    const yb = Buffer.from(jw.y, "base64url"), STM = "STM" + enc58(Buffer.concat([Buffer.from([2 + (yb[31] & 1)]), Buffer.from(jw.x, "base64url"), Buffer.alloc(4)]));
+    const signAs = (msg) => "1f" + crypto.sign("sha256", Buffer.from(msg), { key: kp.privateKey, dsaEncoding: "ieee-p1363" }).toString("hex");
+    const { hiveVerify } = require("../mes.fm/api/ai.js");
+    ok(hiveVerify("hello", signAs("hello"), STM) && !hiveVerify("hellO", signAs("hello"), STM) && !hiveVerify("hello", signAs("hello"), "STMxyz"), "Hive signature check (secp256k1, STM key)");
+    const redis = fakeRedis(), calls = [];
+    let chainF = [], orMode = "ok", day = T0;
+    const env = { OPENROUTER_API_KEY: "or-k", UPSTASH_REDIS_REST_TOKEN: "x" };
+    const orStream = sse([{ choices: [{ index: 0, delta: { content: "Four." } }] }, { choices: [{ index: 0, delta: {}, finish_reason: "stop" }] }, { choices: [], usage: { completion_tokens: 3, cost: 0.00002 } }]) + "data: [DONE]\n\n";
+    const fetchImpl = async (url, init) => {
+      calls.push({ url, body: init && init.body ? JSON.parse(init.body) : null, headers: init && init.headers });
+      if (/openrouter\.ai\/api\/v1\/chat\/completions$/.test(url)) return orMode === "down" ? { ok: false, status: 502, json: async () => ({ error: { message: "upstream" } }) } : { ok: true, status: 200, body: streamBody(orStream) };
+      throw new Error("unexpected " + url);
+    };
+    const hf = makeHandler({ env, redis, fetch: fetchImpl, now: () => day, rpc: async (m, p) => m === "condenser_api.get_accounts" ? [{ name: p[0][0], posting: { key_auths: [[STM, 1]] } }] : chainF });
+    r = mk("GET", null, { op: "status" }); await hf(r.req, r.res);
+    eq([J(r.res).chat, J(r.res).prov.openrouter, J(r.res).free], [true, true, { on: true, perDay: A.FREE.perDay }], "status: OpenRouter + free on");
+    // paid cheap model: safe count, max_price = the quoted prices
+    const msgs = [{ role: "user", content: "What is 2+2?" }];
+    r = mk("POST", { op: "quote", acct: "hal", kind: "chat", model: "dsflash", len: "short", messages: msgs }); await hf(r.req, r.res);
+    const qc = J(r.res);
+    eq([r.res.statusCode, qc.inTokens, qc.price], [200, A.safeTokens(A.systemFor("dsflash"), msgs), A.chatQuote("dsflash", A.safeTokens(A.systemFor("dsflash"), msgs), "short").price], "cheap model quote (safe count)");
+    chainF = [tr(1, "hal", "mes", qc.price + " HBD", qc.memo, 5)];
+    r = mk("POST", { op: "run", id: qc.id, acct: "hal" }); await hf(r.req, r.res);
+    eq(lines(r.res).map((x) => x.t), ["text", "done"], "cheap model answer streamed");
+    const oc = calls.find((c) => /openrouter/.test(c.url));
+    eq([oc.body.model, oc.body.max_tokens, oc.body.provider.max_price, oc.body.usage, oc.headers.Authorization], ["deepseek/deepseek-v4.1-flash-1017", 1500, { prompt: 0.3, completion: 1.2 }, { include: true }, "Bearer or-k"], "OpenRouter request with price cap");
+    r = mk("POST", { op: "quote", acct: "hal", kind: "chat", model: "qwen", len: "short", messages: [{ role: "user", content: "What is this?", files: [{ t: "img", mt: "image/jpeg", name: "a.jpg", data: "/9j/" + "A".repeat(40) }] }] }); await hf(r.req, r.res);
+    eq(r.res.statusCode, 400, "text-only model refuses pictures");
+    // free messages
+    const today = A.utcDay(day), sig = signAs(A.freeMessage("ivy", today));
+    const freeBody = (o) => Object.assign({ op: "free", acct: "ivy", day: today, sig, model: "dsflash", messages: msgs }, o);
+    r = mk("GET", null, { op: "free", acct: "ivy" }); await hf(r.req, r.res);
+    eq([J(r.res).on, J(r.res).left], [true, A.FREE.perDay], "free: all left");
+    r = mk("POST", freeBody({ sig: signAs("something else") })); await hf(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).resign], [403, true], "free: wrong signature -> sign again");
+    r = mk("POST", freeBody({ day: "2020-01-01" })); await hf(r.req, r.res);
+    eq(J(r.res).resign, true, "free: yesterday's signature -> sign again");
+    r = mk("POST", freeBody({ model: "sonnet" })); await hf(r.req, r.res);
+    eq(r.res.statusCode, 400, "free: only the cheap models");
+    r = mk("POST", freeBody({ messages: [{ role: "user", content: "x".repeat(A.FREE.maxIn + 10) }] })); await hf(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).long], [400, true], "free: chat too long");
+    r = mk("POST", freeBody()); await hf(r.req, r.res);
+    eq([r.res.statusCode, r.res.headers["X-Free-Left"], lines(r.res).map((x) => x.t)], [200, String(A.FREE.perDay - 1), ["text", "done"]], "free message answered, one used");
+    const fc = calls.filter((c) => /openrouter/.test(c.url)).pop();
+    eq(fc.body.max_tokens, A.FREE.maxOut, "free answers are Short");
+    eq(Number(redis.st.get("ai:freeusd:" + today)), Math.ceil(0.00002 * 1e6), "budget keeps the real cost, the worst case is given back");
+    orMode = "down";
+    r = mk("POST", freeBody()); await hf(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).free], [502, true], "failed free message");
+    orMode = "ok";
+    r = mk("GET", null, { op: "free", acct: "ivy" }); await hf(r.req, r.res);
+    eq(J(r.res).left, A.FREE.perDay - 1, "a failed free message is not counted");
+    for (let i = 0; i < A.FREE.perDay - 1; i++) { r = mk("POST", freeBody()); await hf(r.req, r.res); }
+    r = mk("POST", freeBody()); await hf(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).left], [429, 0], "free: 11th message of the day refused");
+    day += 86400e3;
+    const sig2 = signAs(A.freeMessage("ivy", A.utcDay(day)));
+    r = mk("POST", freeBody({ day: A.utcDay(day), sig: sig2 })); await hf(r.req, r.res);
+    eq(r.res.statusCode, 200, "next day: free again");
+    // the daily budget for everyone
+    env.AI_FREE_USD = "0.000001";
+    const sig3 = signAs(A.freeMessage("jon", A.utcDay(day)));
+    r = mk("POST", { op: "free", acct: "jon", day: A.utcDay(day), sig: sig3, model: "qwen", messages: msgs }); await hf(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).budget], [429, true], "free: daily budget for everyone reached");
+    env.AI_FREE_USD = "0";
+    r = mk("GET", null, { op: "status" }); await hf(r.req, r.res);
+    eq(J(r.res).free.on, false, "AI_FREE_USD=0 switches free messages off");
+    ok(A.freeWorstUsd("dsflash") > 0 && A.freeWorstUsd("sonnet") === 0, "free worst case only for free models");
+    eq(A.freeMessage("ivy", "2026-11-21"), "mes.fm/ai free messages for @ivy on 2026-11-21", "the signed text");
+    Object.keys(A.MODELS).forEach((k) => { const m = A.MODELS[k]; if (m.free) ok(m.prov === "openrouter" && m.text, "free model " + k + " is a cheap text model"); });
+  }
 
   // origin check in production
   e = setup();

@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>پاسخ هرگز بیشتر از مبلغی که پرداختید هزینه ندارد: در طولی که انتخاب کردید بریده می‌شود. <b>پاسخ کوتاه با همان تنظیم، همان قیمت پاسخ بلند را دارد</b>: هیچ موجودی‌ای نگه داشته نمی‌شود، پس باقی‌مانده‌ای برای برگرداندن نیست. برای پرسش‌های سریع «کوتاه» را انتخاب کنید.</li>
 					<li>گفت‌وگوهای طولانی با هر پیام گران‌تر می‌شوند. وقتی موضوع عوض شد، گفت‌وگوی تازه‌ای شروع کنید.</li>
 					<li>پرداخت‌ها قطعی‌اند. اگر هوش مصنوعی پس از پرداخت شما شکست بخورد، برای آن پیام یک <b>تلاش دوباره</b>ی رایگان دارید (تا 24 ساعت).</li>
+					<li><b>پیام‌های رایگان:</b> هر حساب Hive روزانه <span data-freeday>10</span> پیام رایگان روی مدل‌های ارزان (DeepSeek، Qwen، Llama) با پاسخ‌های کوتاه می‌گیرد. روزی یک بار در Keychain تأیید کنید (یک امضا، بدون پرداخت).</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">قیمت‌های شرکت‌های هوش مصنوعی بررسی شده در <span id="ai-checked"></span>. هر HBD یک دلار آمریکا حساب می‌شود. انتقال‌ها روی Hive عمومی‌اند، مثل همهٔ پرداخت‌های Hive.</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">پرداخت &amp; ارسال</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>قوانین</h3>
 			<p>با فرستادن پیام می‌پذیرید که از MES AI برای هیچ کار غیرقانونی، محتوای جنسی مربوط به کودکان، آزار یا تهدید دیگران، بدافزار یا حمله به سیستم‌هایی که مال شما نیستند، ساخت سلاح‌هایی که می‌توانند آسیب گسترده بزنند، یا جا زدن تصویرهای ساختگی از افراد واقعی به‌جای تصویر واقعی استفاده نکنید. سیاست‌های استفادهٔ خود شرکت‌های هوش مصنوعی هم اعمال می‌شود (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>، <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>، <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>) و ممکن است هوش مصنوعی درخواست را رد کند. پاسخ‌ها ممکن است اشتباه باشند: هر چیز مهمی را بررسی کنید.</p>
-			<p>حریم خصوصی: پیام‌های شما از سرور ما به شرکتی می‌رود که مدل انتخابی شما را اجرا می‌کند: Anthropic ‏(Claude)، OpenAI ‏(ChatGPT، GPT Image) یا xAI (تصویر و ویدیوی Grok Imagine) تا پاسخ ساخته شود؛ mes.fm درخواست را حداکثر یک ساعت نگه می‌دارد (برای تطبیق با پرداخت شما) و هرگز پاسخ را ذخیره نمی‌کند. گفت‌وگوها و تصویرهای شما فقط در این مرورگر نگه داشته می‌شوند. جزئیات در <a href="/privacy-policy#mes-ai">سیاست حریم خصوصی</a> ما.</p>
+			<p>حریم خصوصی: پیام‌های شما از سرور ما به شرکتی می‌رود که مدل انتخابی شما را اجرا می‌کند: Anthropic ‏(Claude)، OpenAI ‏(ChatGPT، GPT Image)، xAI (تصویر و ویدیوی Grok Imagine) یا برای مدل‌های ارزان، OpenRouter تا پاسخ ساخته شود؛ mes.fm درخواست را حداکثر یک ساعت نگه می‌دارد (برای تطبیق با پرداخت شما) و هرگز پاسخ را ذخیره نمی‌کند. گفت‌وگوها و تصویرهای شما فقط در این مرورگر نگه داشته می‌شوند. جزئیات در <a href="/privacy-policy#mes-ai">سیاست حریم خصوصی</a> ما.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fa.js?v=fa675ea6" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fa.js?v=92cfef52" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>لا يمكن أن تكلّف الإجابة أكثر مما دفعت: تُقطع عند الطول الذي اخترته. <b>الإجابة القصيرة تكلّف مثل الطويلة عند الإعداد نفسه</b>: لا يُحفظ أي رصيد، فلا يوجد باقٍ يُعاد. اختر «قصيرة» للأسئلة السريعة.</li>
 					<li>تزداد كلفة المحادثات الطويلة مع كل رسالة. ابدأ محادثة جديدة عندما يتغير الموضوع.</li>
 					<li>المدفوعات نهائية. إذا فشل الذكاء الاصطناعي بعد أن دفعت، تحصل على <b>إعادة المحاولة</b> مجانًا لتلك الرسالة (خلال 24 ساعة).</li>
+					<li><b>رسائل مجانية:</b> يحصل كل حساب Hive على <span data-freeday>10</span> رسائل مجانية يوميًا على النماذج الرخيصة (DeepSeek وQwen وLlama)، بإجابات قصيرة. أكّد مرة واحدة يوميًا في Keychain (توقيع، بلا دفع).</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">تم التحقق من أسعار شركات الذكاء الاصطناعي <span id="ai-checked"></span>. تُحسب HBD بدولار أمريكي واحد. التحويلات على Hive علنية، مثل كل مدفوعات Hive.</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">ادفع &amp; أرسل</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>القواعد</h3>
 			<p>بإرسالك رسالة توافق على عدم استخدام MES AI لأي أمر غير قانوني، أو لمحتوى جنسي يتعلق بقاصرين، أو لمضايقة الناس أو تهديدهم، أو لبرمجيات خبيثة أو هجمات على أنظمة لا تملكها، أو لصنع أسلحة قد تُسبب أذى جماعيًا، أو لتقديم صور مختلقة لأشخاص حقيقيين على أنها حقيقية. وتنطبق أيضًا سياسات الاستخدام الخاصة بشركات الذكاء الاصطناعي (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>، <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>، <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>)، وقد يرفض الذكاء الاصطناعي الطلب. قد تكون الإجابات خاطئة: تحقّق من كل ما هو مهم.</p>
-			<p>الخصوصية: تنتقل رسائلك من خادمنا إلى الشركة التي تشغّل النموذج الذي اخترته: Anthropic ‏(Claude) أو OpenAI ‏(ChatGPT وGPT Image) أو xAI (صور وفيديوهات Grok Imagine) لإنشاء الإجابة؛ يحتفظ mes.fm بالطلب ساعة على الأكثر (لمطابقته مع دفعتك) ولا يخزّن الإجابة أبدًا. تبقى محادثاتك وصورك في هذا المتصفح فقط. التفاصيل في <a href="/privacy-policy#mes-ai">سياسة الخصوصية</a> الخاصة بنا.</p>
+			<p>الخصوصية: تنتقل رسائلك من خادمنا إلى الشركة التي تشغّل النموذج الذي اخترته: Anthropic ‏(Claude) أو OpenAI ‏(ChatGPT وGPT Image) أو xAI (صور وفيديوهات Grok Imagine) أو، للنماذج الرخيصة، OpenRouter لإنشاء الإجابة؛ يحتفظ mes.fm بالطلب ساعة على الأكثر (لمطابقته مع دفعتك) ولا يخزّن الإجابة أبدًا. تبقى محادثاتك وصورك في هذا المتصفح فقط. التفاصيل في <a href="/privacy-policy#mes-ai">سياسة الخصوصية</a> الخاصة بنا.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=546a1b86" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=3867ac31" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

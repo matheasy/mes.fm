@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>Jawaban tidak akan pernah lebih mahal dari yang kamu bayar: jawaban dipotong di panjang yang kamu pilih. <b>Jawaban pendek harganya sama dengan jawaban panjang di pengaturan yang sama</b>: tidak ada saldo yang disimpan, jadi tidak ada kembalian. Pilih Pendek untuk pertanyaan singkat.</li>
 					<li>Obrolan panjang makin mahal di setiap pesan. Mulai obrolan baru saat topiknya berganti.</li>
 					<li>Pembayaran bersifat final. Jika AI gagal setelah kamu membayar, kamu mendapat satu kali <b>Coba lagi</b> gratis untuk pesan itu (dalam 24 jam).</li>
+					<li><b>Pesan gratis:</b> setiap akun Hive mendapat <span data-freeday>10</span> pesan gratis per hari di model murah (DeepSeek, Qwen, Llama), dengan jawaban pendek. Konfirmasi sekali sehari di Keychain (tanda tangan, tanpa pembayaran).</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">Harga perusahaan AI dicek pada <span id="ai-checked"></span>. HBD dihitung sebagai 1 dolar AS. Transfer di Hive bersifat publik, seperti semua pembayaran Hive.</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Bayar &amp; kirim</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>Aturan</h3>
 			<p>Dengan mengirim pesan, kamu setuju tidak memakai MES AI untuk hal yang melanggar hukum, konten seksual yang melibatkan anak di bawah umur, melecehkan atau mengancam orang, malware atau serangan ke sistem yang bukan milikmu, membuat senjata yang bisa menimbulkan kerugian massal, atau menyebarkan gambar rekaan orang sungguhan seolah-olah asli. Kebijakan penggunaan perusahaan AI juga berlaku (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), dan AI bisa saja menolak. Jawaban bisa salah: periksa lagi hal yang penting.</p>
-			<p>Privasi: pesanmu dikirim dari server kami ke perusahaan yang menjalankan model yang kamu pilih: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) atau xAI (gambar dan video Grok Imagine) untuk membuat jawabannya; mes.fm menyimpan permintaan paling lama satu jam (untuk mencocokkannya dengan pembayaranmu) dan tidak pernah menyimpan jawabannya. Obrolan dan gambarmu hanya disimpan di browser ini. Detailnya ada di <a href="/privacy-policy#mes-ai">kebijakan privasi</a> kami.</p>
+			<p>Privasi: pesanmu dikirim dari server kami ke perusahaan yang menjalankan model yang kamu pilih: Anthropic (Claude), OpenAI (ChatGPT, GPT Image), xAI (gambar dan video Grok Imagine) atau, untuk model murah, OpenRouter untuk membuat jawabannya; mes.fm menyimpan permintaan paling lama satu jam (untuk mencocokkannya dengan pembayaranmu) dan tidak pernah menyimpan jawabannya. Obrolan dan gambarmu hanya disimpan di browser ini. Detailnya ada di <a href="/privacy-policy#mes-ai">kebijakan privasi</a> kami.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=d90e3cde" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=6d510494" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

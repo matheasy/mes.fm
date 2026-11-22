@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>回答的花费绝不会超过你付的钱：到你选择的长度就会截断。<b>同一档位下，短回答和长回答价格相同</b>：我们不保留余额，所以没有找零。快速提问请选“短”。</li>
 					<li>聊天越长，每条消息越贵。换话题时请开始新聊天。</li>
 					<li>付款后不退款。如果你付款后 AI 出错，这条消息可以在 24 小时内免费<b>重试</b>一次。</li>
+					<li><b>免费消息：</b>每个 Hive 账户每天可在便宜模型（DeepSeek、Qwen、Llama）上获得 <span data-freeday>10</span> 条免费消息，使用简短回答。每天在 Keychain 中确认一次（只是签名，不付款）。</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">AI 公司的价格核对于 <span id="ai-checked"></span>。HBD 按 1 美元计算。和所有 Hive 付款一样，Hive 上的转账是公开的。</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">付款并发送</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>规则</h3>
 			<p>发送消息即表示你同意不将 MES AI 用于任何违法用途、涉及未成年人的色情内容、骚扰或威胁他人、恶意软件或攻击不属于你的系统、制造可造成大规模伤害的武器，或把虚构的真人图片冒充为真实照片。各 AI 公司自己的使用政策同样适用（<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>、<a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>、<a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>），AI 也可能拒绝回答。回答可能有误：重要的事情请自行核实。</p>
-			<p>隐私：你的消息会从我们的服务器发送给运行你所选模型的公司：Anthropic（Claude）、OpenAI（ChatGPT、GPT Image）或 xAI（Grok Imagine 图片和视频），由它生成回答；mes.fm 最多保留请求一小时（用来和你的付款对应），从不保存回答。你的聊天和图片只保存在此浏览器中。详情见我们的<a href="/privacy-policy#mes-ai">隐私政策</a>。</p>
+			<p>隐私：你的消息会从我们的服务器发送给运行你所选模型的公司：Anthropic（Claude）、OpenAI（ChatGPT、GPT Image）、xAI（Grok Imagine 图片和视频），或便宜模型使用的 OpenRouter，由它生成回答；mes.fm 最多保留请求一小时（用来和你的付款对应），从不保存回答。你的聊天和图片只保存在此浏览器中。详情见我们的<a href="/privacy-policy#mes-ai">隐私政策</a>。</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=3dfcf748" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=a73451e8" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

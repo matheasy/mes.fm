@@ -36,9 +36,29 @@
     gpt: { prov: "openai", id: "gpt-6.2-sol", name: "ChatGPT: GPT-6.2 Sol", blurb: "OpenAI's balanced model (the one behind ChatGPT): fast, good at everyday questions and code.",
       inUsd: 2, outUsd: 10, effort: "low", caps: { short: 1200, medium: 5000, long: 16000 }, thinks: true },
     gptpro: { prov: "openai", id: "gpt-6.2-astra", name: "ChatGPT: GPT-6.2 Astra", blurb: "OpenAI's flagship for complex reasoning and coding. Thinks first, so it costs more.",
-      inUsd: 8, outUsd: 40, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true }
+      inUsd: 8, outUsd: 40, effort: "medium", caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true },
+    /* cheap models (2026-11-21) through OpenRouter (one key, provider prices passed through; openrouter.ai/api/v1/models, checked 2026-11-21).
+       inUsd / outUsd = the most we let OpenRouter charge: the request sends them as provider.max_price, so a pricier provider is never
+       used and the quote always covers the bill (DeepSeek's own peak price is 2x its off-peak one). text: true = reads text only.
+       free: true = these can be used for the free daily messages (FREE below). */
+    dsflash: { prov: "openrouter", id: "deepseek/deepseek-v4.1-flash-1017", name: "DeepSeek V4.1 Flash", blurb: "Very cheap and quick, good at code and math. Text only.",
+      inUsd: 0.3, outUsd: 1.2, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
+    qwen: { prov: "openrouter", id: "qwen/qwen3.8-flash", name: "Qwen 3.8 Flash", blurb: "Very cheap and quick, good in many languages. Text only.",
+      inUsd: 0.2, outUsd: 0.6, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
+    llama: { prov: "openrouter", id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", blurb: "Meta's open model: cheap, plain answers. Text only.",
+      inUsd: 0.4, outUsd: 1.2, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
+    dspro: { prov: "openrouter", id: "deepseek/deepseek-v4-pro", name: "DeepSeek V4 Pro", blurb: "DeepSeek's stronger model for harder questions, still far cheaper than the big ones. Text only.",
+      inUsd: 1.4, outUsd: 4, caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true, text: true }
   };
-  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI" };
+  /* free daily messages (2026-11-21): FREE.perDay messages a day per Hive account on the models marked free, always a Short answer
+     (FREE.maxOut tokens) and a chat of at most FREE.maxIn tokens (counted the safe way, 1 token a character). The account is proven once a
+     day with a Keychain signature of freeMessage(acct, day) (no payment, no fee). All free messages together stop at FREE.usdPerDay of
+     cost a day (env AI_FREE_USD overrides it); each one first reserves its worst case. Paid from ad and Premium income. */
+  var FREE = { perDay: 10, perIp: 30, maxIn: 12000, maxOut: 1500, usdPerDay: 2 };
+  function freeMessage(acct, day) { return "mes.fm/ai free messages for @" + acct + " on " + day; }
+  function utcDay(ms) { return new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10); }
+  function freeWorstUsd(modelKey) { var m = MODELS[modelKey]; return m && m.free ? (FREE.maxIn * m.inUsd + FREE.maxOut * m.outUsd) / 1e6 : 0; }
+  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter" };
   var DEFAULT_MODEL = "sonnet";
   var LENGTHS = { short: "Short", medium: "Medium", long: "Long" };
 
@@ -150,7 +170,8 @@
     hi: "Hindi", id: "Indonesian", vi: "Vietnamese", ar: "Arabic", fa: "Persian (Farsi)" };
   function cleanLang(l) { return typeof l === "string" && Object.prototype.hasOwnProperty.call(LANGS, l) ? l : "en"; }
   function systemFor(modelKey, lang) {
-    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT") : SYSTEM;
+    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT")
+      : m && m.prov === "openrouter" ? SYSTEM.replace("running on Anthropic's Claude", "running on " + m.name) : SYSTEM;
     lang = cleanLang(lang);
     return lang === "en" ? s : s + " The person is using the " + LANGS[lang] + " version of this page: answer in " + LANGS[lang] + " by default; if they write in another language, answer in the language they write in.";
   }
@@ -300,6 +321,12 @@
     if (fileChars > FILES.total) return "The files are too big together (about " + Math.round(FILES.total * 0.75 / 1e6 * 10) / 10 + " MB at most). Send fewer or smaller files.";
     return null;
   }
+  // a text-only model gets no pictures / PDFs
+  function checkTextOnly(modelKey, messages) {
+    var m = MODELS[modelKey];
+    if (!m || !m.text) return null;
+    return (messages || []).some(function (x) { return x && x.files && x.files.length; }) ? "This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files." : null;
+  }
   function checkFile(f) {
     if (!f || typeof f.data !== "string" || !/^[A-Za-z0-9+/]+=*$/.test(f.data) || f.data.length < 8) return "Bad file.";
     if (f.t === "img") { if (FILES.img.indexOf(f.mt) < 0) return "Pictures must be JPEG, PNG, WebP or GIF."; }
@@ -437,7 +464,7 @@
     var c = d.choices && d.choices[0];
     if (c && c.finish_reason) return { t: "stop", stop: OAI_STOP[c.finish_reason] || c.finish_reason, usage: d.usage || null };
     if (c && c.delta && typeof c.delta.content === "string" && c.delta.content) return { t: "text", v: c.delta.content };
-    if (!c && d.usage) return { t: "stop", stop: null, usage: { output_tokens: d.usage.completion_tokens } };
+    if (!c && d.usage) return { t: "stop", stop: null, usage: { output_tokens: d.usage.completion_tokens, cost: d.usage.cost } };  // cost: OpenRouter, USD
     return null;
   }
   // a token count that is never too low, for when OpenAI's counting endpoint does not answer: 1 token per character
@@ -516,6 +543,7 @@
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
+    FREE: FREE, freeMessage: freeMessage, utcDay: utcDay, freeWorstUsd: freeWorstUsd, checkTextOnly: checkTextOnly,
     REFS: REFS, maxRefs: maxRefs, checkRefs: checkRefs, cleanRefs: cleanRefs, dataUrl: dataUrl, xaiPrompt: xaiPrompt, wantsMedia: wantsMedia,
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
@@ -1036,11 +1064,13 @@
 	var LS = "mes-ai:v1", LS_IMG = "mes-ai:imgs";
 	var mock = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /[?&]mock=1\b/.test(location.search);
 	var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
-	var status = { chat: mock, image: mock, video: mock, known: mock, prov: { anthropic: true, openai: true, xai: true } };
+	var status = { chat: mock, image: mock, video: mock, known: mock, prov: { anthropic: true, openai: true, xai: true, openrouter: true } };
 	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; status.prov = { anthropic: true, openai: false, xai: false }; }
 	// is this company's key set? (unknown until the status call answers: then everything shows as on)
 	function provOn(p) { return !status.known || !status.prov || !!status.prov[p]; }
 	var busy = false;
+	// free daily messages (A.FREE): on / left come from /api/ai?op=free&acct=; in the local preview a counter in localStorage
+	var FREEST = { on: mock, perDay: A.FREE.perDay, left: null };
 
 	/* ---------- saved state ---------- */
 	function load() { try { return JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { return null; } }
@@ -1093,7 +1123,7 @@
 		if (!el || !H.switcher) return;
 		H.switcher(el, { onSwitch: function (u) { msg(u ? T("Now paying as @{name}.", { name: u.name }) : T("Logged out."), "ok"); paintAcct(); paintPrice(); }, onError: function (e) { msg(e.message, "err"); } });
 	}
-	if (H && H.onChange && !mock) H.onChange(function () { paintAcct(); paintPrice(); });
+	if (H && H.onChange && !mock) H.onChange(function () { paintAcct(); if (FREEST.on) loadFree(); paintPrice(); });
 	function doLogin() {
 		var inp = $("ai-user");
 		msg(T("Confirm the login in Hive Keychain…"));
@@ -1283,7 +1313,8 @@
 	function renderMsg(m, i) {
 		var mine = m.role === "user";
 		var meta = "";
-		if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(T(A.LENGTHS[m.len] || "")) + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="' + esc(T("Payment memo")) + '">' + esc(m.memo) + "</a>" : "") + "</span>";
+		if (mine && m.free) meta = '<span class="ai-meta">' + T("🎁 free") + " · " + esc(modelName(m.model)) + "</span>";
+		else if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(T(A.LENGTHS[m.len] || "")) + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="' + esc(T("Payment memo")) + '">' + esc(m.memo) + "</a>" : "") + "</span>";
 		var mf = mine && m.files && m.files.length ? '<div class="ai-mfiles">' + m.files.map(function (f) {
 			return f.t === "img" ? '<img data-fk="' + esc(f.id) + '" alt="' + esc(f.name || T("picture")) + '" title="' + esc(f.name || "") + '">' :
 				'<span class="ai-file"><span class="ai-fic" aria-hidden="true">📄</span><span class="ai-fname">' + esc(f.name || "file.pdf") + (f.pages ? " · " + (f.pages === 1 ? T("{n} page", { n: 1 }) : T("{n} pages", { n: f.pages })) : "") + "</span></span>";
@@ -1549,7 +1580,7 @@
 	/* ---------- options + live price ---------- */
 	// model lists grouped by company; a company whose key is not set yet shows its models greyed out with "(soon)"
 	function fillModels() {
-		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)" };
+		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)", openrouter: T("Cheap (DeepSeek, Qwen, Llama)") };
 		$("ai-model").innerHTML = Object.keys(groups).map(function (p) {
 			return '<optgroup label="' + groups[p] + '">' + Object.keys(A.MODELS).filter(function (k) { return A.MODELS[k].prov === p; }).map(function (k) {
 				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (" + T("soon") + ")") + "</option>";
@@ -1604,9 +1635,13 @@
 		$("ai-tsession").textContent = T("A 30-message coding chat that grows to 50k tokens costs about {p} HBD in all on Sonnet. Starting a new chat when the topic changes keeps it cheap.", { p: (Math.round(ss.hbd * 10) / 10).toLocaleString(LOC) });
 	})();
 	function paintPrice() {
-		var m = A.MODELS[S.model];
-		var words = Math.round(m.caps[S.len] * 0.75).toLocaleString(LOC);
+		var m = A.MODELS[S.model], fr = freeApplies();
+		var words = Math.round((fr ? A.FREE.maxOut : m.caps[S.len]) * 0.75).toLocaleString(LOC);
+		// a free message always gets a Short answer: the length buttons show that while free messages are on
+		$("ai-len").classList.toggle("is-free", fr);
+		[].forEach.call($("ai-len").children, function (x) { x.setAttribute("aria-pressed", fr ? x.dataset.len === "short" : x.dataset.len === S.len); });
 		$("ai-modelnote").textContent = T(m.blurb) + " " + (m.thinks ? T("Answer up to about {n} words (its thinking counts too).", { n: words }) : T("Answer up to about {n} words.", { n: words }));
+		paintFree();
 		var msgs = draftMessages(), q = A.chatQuote(S.model, A.estimateChatTokens(msgs.length ? msgs : [{ role: "user", content: "" }]), S.len);
 		var nEx = Math.floor(msgs.length / 2);
 		var hist = msgs.length > 1 ? ' <span class="ai-sub">' + (nEx === 1 ? T("incl. {n} earlier exchange", { n: nEx }) : T("incl. {n} earlier exchanges", { n: nEx })) + "</span>" : "";
@@ -1614,7 +1649,8 @@
 		paintCost();
 		var on = status.chat && provOn(m.prov) && !busy;
 		$("ai-send").disabled = !on;
-		$("ai-send").textContent = busy ? T("Working…") : T("Pay & send");
+		$("ai-send").textContent = busy ? T("Working…") : freeApplies() ? T("Send free") : T("Pay & send");
+		if (freeApplies()) $("ai-price").innerHTML = "<b>" + T("🎁 Free") + '</b> <span class="ai-sub">' + T("{n} of {m} left today · Short answer", { n: FREEST.left, m: FREEST.perDay }) + "</span>";
 		var nr = M ? M.img.pend.length : 0, iq = A.imageQuote($("ai-q").value, $("ai-size").value, Math.ceil($("ai-prompt").value.length / 2) + 8, S.imod, nr);
 		$("ai-iprice").innerHTML = "<b>" + iq.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(iq) + ")</span>" + (nr ? ' <span class="ai-sub">' + (nr === 1 ? T("incl. {n} picture", { n: 1 }) : T("incl. {n} pictures", { n: nr })) + "</span>" : "");
 		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
@@ -1631,7 +1667,7 @@
 
 	/* ---------- price table in the "how" box ---------- */
 	(function () {
-		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; });
+		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; }); document.querySelectorAll("[data-freeday]").forEach(function (x) { x.textContent = A.FREE.perDay; });
 		$("ai-checked").textContent = A.PRICES_CHECKED;
 		var rows = ["<tr><th>" + T("Model") + "</th><th>" + T("Short") + "</th><th>" + T("Medium") + "</th><th>" + T("Long") + "</th></tr>"];
 		Object.keys(A.MODELS).forEach(function (k) {
@@ -1719,6 +1755,104 @@
 		})();
 	}
 
+	/* ---------- free daily messages ---------- */
+	function freeKey(a) { return "mes-ai:free:" + a; }
+	function freeApplies() {
+		var m = A.MODELS[S.model], u = who();
+		return !!(FREEST.on && m && m.free && u && FREEST.left > 0 && S.free !== false && provOn(m.prov));
+	}
+	function paintFree() {
+		var m = A.MODELS[S.model], box = $("ai-free"), u = who();
+		var show = FREEST.on && m && m.free && u && FREEST.left != null;
+		box.hidden = !show;
+		if (!show) return;
+		$("ai-freeuse").checked = S.free !== false;
+		$("ai-freeuse").disabled = FREEST.left <= 0;
+		$("ai-freetx").innerHTML = FREEST.left > 0 ? T("Use my free messages: <b>{n} of {m}</b> left today (Short answers, cheap models)", { n: FREEST.left, m: FREEST.perDay })
+			: T("No free messages left today: they come back at 00:00 UTC. Paid messages on this model cost about 0.003 HBD.");
+	}
+	function loadFree() {
+		var u = who(); if (!u) { FREEST.left = null; paintPrice(); return; }
+		if (mock) {
+			var d = null; try { d = JSON.parse(localStorage.getItem(freeKey(u.name) + ":mock") || "null"); } catch (e) {}
+			FREEST.left = d && d.day === A.utcDay() ? d.left : A.FREE.perDay; paintPrice(); return;
+		}
+		fetch("/api/ai?op=free&acct=" + encodeURIComponent(u.name), { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
+			FREEST.on = !!j.on; FREEST.perDay = j.perDay || A.FREE.perDay; FREEST.left = j.on ? j.left : null; paintPrice();
+		}).catch(function () {});
+	}
+	$("ai-freeuse").addEventListener("change", function () { S.free = this.checked; save(); paintPrice(); });
+	// the once-a-day proof of the account: a Keychain signature of A.freeMessage (no payment, no fee); kept for the day
+	function daySig(acct, fresh) {
+		var day = A.utcDay(), k = freeKey(acct) + ":sig", c = null;
+		try { c = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) {}
+		if (!fresh && c && c.day === day && c.sig) return Promise.resolve({ day: day, sig: c.sig });
+		if (mock) return Promise.resolve({ day: day, sig: new Array(131).join("0") });
+		msg(T("Confirm in Hive Keychain once today to use your free messages (a signature, no payment)…"));
+		return H.keychain(1500).then(function (kc) {
+			if (!kc) throw new Error(T("Hive Keychain is needed for free messages."));
+			return new Promise(function (res, rej) {
+				kc.requestSignBuffer(acct, A.freeMessage(acct, day), "Posting", function (r) {
+					if (!r || !r.success || !r.result) return rej(H.kcError ? H.kcError(r || {}) : new Error((r && r.message) || "Cancelled"));
+					try { localStorage.setItem(k, JSON.stringify({ day: day, sig: String(r.result) })); } catch (e) {}
+					res({ day: day, sig: String(r.result) });
+				}, null, "MES AI free messages");
+			});
+		});
+	}
+	function freeReq(body) {
+		if (mock) {
+			var u = who(), id = A.newId(); MOCK_Q[id] = { body: body, tries: 0 };
+			FREEST.left = Math.max(0, FREEST.left - 1);
+			try { localStorage.setItem(freeKey(u.name) + ":mock", JSON.stringify({ day: A.utcDay(), left: FREEST.left })); } catch (e) {}
+			return Promise.resolve({ mock: id });
+		}
+		return post(body);
+	}
+	function sendFree(c, draft, text, u) {
+		setBusy(true);
+		var tries = 0;
+		function go(fresh) {
+			return daySig(u.name, fresh).then(function (ds) {
+				msg(T("Sending your free message…"));
+				return freeReq({ op: "free", acct: u.name, day: ds.day, sig: ds.sig, model: S.model, lang: LANG, messages: draft.map(function (m) { return { role: m.role, content: m.content }; }) });
+			}).then(function (r) {
+				if (r.mock) return r;
+				if (/ndjson/.test(r.headers.get("content-type") || "")) { var l = r.headers.get("X-Free-Left"); if (l != null) FREEST.left = +l; return r; }
+				return jsonOf(r).then(function (j) {
+					if (j.resign && tries++ < 1) { try { localStorage.removeItem(freeKey(u.name) + ":sig"); } catch (e) {} return go(true); }
+					if (j.left === 0) FREEST.left = 0;
+					if (j.budget) FREEST.left = 0;
+					throw new Error(j.resign ? T("Hive could not confirm the signature. Log in again with Keychain and retry.") : T(j.error || j.msg) || T("Could not send it (HTTP {s}).", { s: j.status }));
+				});
+			});
+		}
+		var err = A.checkMessages(draft) || A.checkTextOnly(S.model, draft);
+		if (err) { msg(T(err), "err"); setBusy(false); return; }
+		return go(false).then(function (r) {
+			msg("");
+			var um = { role: "user", content: text, at: Date.now(), free: true, model: S.model, len: "short", acct: u.name };
+			var am = { role: "assistant", content: "", at: Date.now(), pending: true, model: S.model };
+			if (!c.msgs.length) c.title = text.replace(/\s+/g, " ").slice(0, 60);
+			c.msgs.push(um, am); c.at = Date.now();
+			S.chats.sort(function (a, b) { return b.at - a.at; });
+			$("ai-in").value = ""; save(); renderLog();
+			var last = 0;
+			return readStream(r, function (p) {
+				if (p.t === "text") { am.content += p.v; if (Date.now() - last > 90) { last = Date.now(); renderLog(); } }
+				else if (p.t === "done") { am.stop = p.stop; am.pending = false; }
+				else if (p.t === "error") { am.error = p.msg; am.pending = false; if (p.free) FREEST.left++; }
+			}).catch(function () { am.error = T("The connection broke before the answer finished."); }).then(function () {
+				am.pending = false;
+				if (!am.error && !am.content) am.error = T("No answer came back.");
+				save(); renderLog();
+			});
+		}).catch(function (e) {
+			var m = e && e.message || String(e);
+			msg(/cancel|declin|denied/i.test(m) ? T("Cancelled: nothing was sent.") : T(m), "err");
+		}).then(function () { setBusy(false); });
+	}
+
 	/* ---------- send a chat message ---------- */
 	function setBusy(b) { busy = b; root.classList.toggle("ai-busy", b); paintPrice(); }
 	function send(force) {
@@ -1731,10 +1865,16 @@
 		if (wm && (wm.kind === "image" ? status.image : status.video)) { offerMedia(wm, text); return; }
 		if (!status.chat) { msg(T("MES AI chat is coming soon."), "err"); return; }
 		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
+		if (A.MODELS[S.model].text && PEND.length) { msg(T("This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files."), "err"); return; }
 		var draft = draftMessages(), sentFiles = PEND.slice();
 		var c = cur();
 		// a failed exchange at the end is dropped before the new message
 		while (c.msgs.length && (c.msgs[c.msgs.length - 1].error || c.msgs[c.msgs.length - 1].role === "user") && !c.msgs[c.msgs.length - 1].retryId) c.msgs.pop();
+		if (freeApplies()) {
+			draft = draftMessages();   // after dropping the failed exchange
+			if (A.safeTokens(A.systemFor(S.model, LANG), draft) > A.FREE.maxIn) { msg(T("This chat is too long for a free message. Start a new chat, or untick free messages to pay for this one."), "err"); return; }
+			return sendFree(c, draft, text, u);
+		}
 		setBusy(true);
 		msg(T("Getting the exact price…"));
 		withFileData(draft).then(function (msgs) {
@@ -2404,7 +2544,9 @@
 	}
 	if (!mock) {
 		fetch("/api/ai?op=status", { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
-			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true, prov: j.prov || { anthropic: !!j.chat, openai: !!j.image, xai: !!j.video } }; fillModels(); paintOff(); paintPrice();
+			status = { chat: !!j.chat, image: !!j.image, video: !!j.video, known: true, prov: j.prov || { anthropic: !!j.chat, openai: !!j.image, xai: !!j.video } };
+			FREEST.on = !!(j.free && j.free.on); FREEST.perDay = (j.free && j.free.perDay) || A.FREE.perDay; if (FREEST.on) loadFree();
+			fillModels(); paintOff(); paintPrice();
 		}).catch(function () { status = { chat: false, image: false, video: false, known: true, prov: {} }; fillModels(); paintOff(); paintPrice(); });
 	}
 
@@ -2413,6 +2555,6 @@
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
 
 	if (H && H.onChange) H.onChange(function () { paintAcct(); });
-	paintAcct(); renderLog(); showTab(S.tab); paintOff(); paintPrice(); vjobsSave(vjobs().map(function (j) { j.dl = false; return j; })); vpoll();
+	paintAcct(); renderLog(); showTab(S.tab); paintOff(); if (mock) loadFree(); paintPrice(); vjobsSave(vjobs().map(function (j) { j.dl = false; return j; })); vpoll();
 	window.MESAIDebug = { S: S, status: status, send: send, mock: mock };
 })();

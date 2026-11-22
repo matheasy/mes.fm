@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>The answer can never cost more than you paid: it is cut off at the length you chose. <b>A short answer costs the same as a long one at the same setting</b>: nothing is kept on account, so there is no change to give back. Pick Short for quick questions.</li>
 					<li>Long chats get dearer with every message. Start a new chat when the topic changes.</li>
 					<li>Payments are final. If the AI fails after you paid, you get a free <b>Try again</b> for that message (within 24 hours).</li>
+					<li><b>Free messages:</b> every Hive account gets <span data-freeday>10</span> free messages a day on the cheap models (DeepSeek, Qwen, Llama), with Short answers. Confirm once a day in Keychain (a signature, no payment).</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">Prices of the AI companies checked <span id="ai-checked"></span>. HBD is counted as 1 US dollar. Transfers on Hive are public, like every Hive payment.</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Pay &amp; send</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>Rules</h3>
 			<p>By sending a message you agree not to use MES AI for anything illegal, for sexual content involving minors, to harass or threaten people, for malware or attacks on systems you do not own, to make weapons that can cause mass harm, or to pass off made-up pictures of real people as real. The AI companies' own usage policies apply too (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), and the AI may refuse. Answers can be wrong: check anything important.</p>
-			<p>Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) or xAI (Grok Imagine pictures and videos) to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.</p>
+			<p>Privacy: your messages go from our server to the company that runs the model you picked: Anthropic (Claude), OpenAI (ChatGPT, GPT Image), xAI (Grok Imagine pictures and videos) or, for the cheap models, OpenRouter to make the answer; mes.fm keeps the request for at most an hour (to match it to your payment) and never stores the answer. Your chats and pictures are kept only in this browser. Details in our <a href="/privacy-policy#mes-ai">privacy policy</a>.</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

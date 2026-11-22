@@ -677,6 +677,12 @@ html body.dark-mode #ai.ai .ai-tilecap { color: #fff; }
 /* phones in Fill window: the open tab scrolls as one column (squeezing the list + log + composer into the window made them overlap) */
 #ai .ai-app.mes-pfill .ai-narrow .ai-wrap { flex: 0 0 auto; }
 #ai .ai-app.mes-pfill .ai-narrow .ai-log, #ai .ai-app.mes-pfill .ai-narrow .ai-stage { flex: 0 0 auto; min-height: 50vh; max-height: 70vh; }
+/* free daily messages (2026-11-21) */
+#ai .ai-free { margin: .45em 0 0; font-size: .92em; padding: .4em .65em; border-radius: .5em; background: var(--ai-me); border: 1px solid var(--ai-line); color: var(--ai-ink); }
+#ai .ai-free[hidden] { display: none; }
+#ai .ai-free label { display: inline-flex; gap: .45em; align-items: center; cursor: pointer; }
+html body.dark-mode #ai.ai .ai-free, html body.dark-mode #ai.ai .ai-free span { color: var(--ai-ink); background: var(--ai-me); }
+#ai .ai-seg.is-free button:not([data-len="short"]) { opacity: .4; }
 
 
 	@media print {
@@ -1040,6 +1046,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<li>जवाब की कीमत कभी आपके चुकाए पैसे से ज़्यादा नहीं हो सकती: आपकी चुनी लंबाई पर वह कट जाता है। <b>एक ही सेटिंग पर छोटे जवाब की कीमत लंबे जवाब जितनी ही है</b>: कोई बैलेंस नहीं रखा जाता, इसलिए लौटाने को कुछ नहीं बचता। झटपट सवालों के लिए छोटा चुनें।</li>
 					<li>लंबी चैट हर मैसेज के साथ महँगी होती जाती है। विषय बदलने पर नई चैट शुरू करें।</li>
 					<li>भुगतान वापस नहीं होते। अगर भुगतान के बाद AI फ़ेल हो जाए, तो उस मैसेज के लिए आपको एक मुफ़्त <b>फिर से कोशिश</b> मिलती है (24 घंटे के अंदर)।</li>
+					<li><b>मुफ़्त मैसेज:</b> हर Hive अकाउंट को सस्ते मॉडलों (DeepSeek, Qwen, Llama) पर रोज़ <span data-freeday>10</span> मुफ़्त मैसेज मिलते हैं, छोटे जवाबों के साथ। दिन में एक बार Keychain में पुष्टि करें (एक हस्ताक्षर, कोई भुगतान नहीं)।</li>
 				</ul>
 				<div class="ai-tablewrap"><table class="ai-ptable" id="ai-ptable"></table></div>
 				<p class="tu-note">AI कंपनियों की कीमतें <span id="ai-checked"></span> को जाँची गईं। HBD को 1 अमेरिकी डॉलर माना गया है। हर Hive भुगतान की तरह, Hive पर ट्रांसफ़र सार्वजनिक होते हैं।</p>
@@ -1093,6 +1100,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">भुगतान करें और भेजें</button>
 				</div>
+				<p class="ai-free" id="ai-free" hidden><label><input type="checkbox" id="ai-freeuse" checked> <span id="ai-freetx"></span></label></p>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
 				<details class="ai-why ai-typ" id="ai-typ">
@@ -1213,7 +1221,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		<div class="tu-card ai-rules">
 			<h3>नियम</h3>
 			<p>मैसेज भेजकर आप सहमत होते हैं कि MES AI का इस्तेमाल किसी गैरक़ानूनी काम, नाबालिगों से जुड़ी यौन सामग्री, लोगों को परेशान करने या धमकाने, मैलवेयर या उन सिस्टम पर हमलों के लिए जो आपके नहीं हैं, बड़े पैमाने पर नुकसान पहुँचाने वाले हथियार बनाने, या असली लोगों की बनावटी तस्वीरों को असली बताने के लिए नहीं करेंगे। AI कंपनियों की अपनी उपयोग नीतियाँ भी लागू होती हैं (<a href="https://www.anthropic.com/legal/aup" target="_blank" rel="noopener">Anthropic</a>, <a href="https://openai.com/policies/usage-policies/" target="_blank" rel="noopener">OpenAI</a>, <a href="https://x.ai/legal/acceptable-use-policy" target="_blank" rel="noopener">xAI</a>), और AI मना भी कर सकता है। जवाब गलत हो सकते हैं: कोई भी ज़रूरी बात जाँच लें।</p>
-			<p>प्राइवेसी: आपके मैसेज हमारे सर्वर से उस कंपनी को जाते हैं जो आपका चुना मॉडल चलाती है: Anthropic (Claude), OpenAI (ChatGPT, GPT Image) या xAI (Grok Imagine तस्वीरें और वीडियो), ताकि जवाब बन सके; mes.fm अनुरोध को ज़्यादा से ज़्यादा एक घंटे रखता है (आपके भुगतान से मिलाने के लिए) और जवाब कभी स्टोर नहीं करता। आपकी चैट और तस्वीरें सिर्फ़ इसी ब्राउज़र में रहती हैं। पूरी जानकारी हमारी <a href="/privacy-policy#mes-ai">प्राइवेसी पॉलिसी</a> में।</p>
+			<p>प्राइवेसी: आपके मैसेज हमारे सर्वर से उस कंपनी को जाते हैं जो आपका चुना मॉडल चलाती है: Anthropic (Claude), OpenAI (ChatGPT, GPT Image), xAI (Grok Imagine तस्वीरें और वीडियो) या, सस्ते मॉडलों के लिए, OpenRouter, ताकि जवाब बन सके; mes.fm अनुरोध को ज़्यादा से ज़्यादा एक घंटे रखता है (आपके भुगतान से मिलाने के लिए) और जवाब कभी स्टोर नहीं करता। आपकी चैट और तस्वीरें सिर्फ़ इसी ब्राउज़र में रहती हैं। पूरी जानकारी हमारी <a href="/privacy-policy#mes-ai">प्राइवेसी पॉलिसी</a> में।</p>
 		</div>
 
 		<div class="tu-seo">
@@ -1297,7 +1305,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=ea754c7f" defer></script><script src="/ai/js/ai.js?v=13" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=359aec70" defer></script><script src="/ai/js/ai.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

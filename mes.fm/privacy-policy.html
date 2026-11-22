@@ -622,6 +622,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	id) are public and permanent, like every Hive payment. Your chats, pictures and the files you added are kept only in your browser (localStorage and IndexedDB)
 	until you delete them or clear the site's data.
 	</p>
+	<p>
+	The cheap models (DeepSeek, Qwen, Llama) are reached through <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener">OpenRouter</a>,
+	which passes the chat on to the company that runs that model; we ask OpenRouter to use only providers that do not keep or train on the data.
+	<b>Free messages:</b> to give each Hive account its free messages a day, your browser asks Hive Keychain once a day to sign the text
+	"mes.fm/ai free messages for @you on (date)" (a signature, not a payment). Our server checks it against your account's public posting key and
+	keeps a count of free messages per account and per network (a code made from your IP address) for that day, plus a note that the signature was
+	checked (2 days). The free message itself is handled like a paid one: nothing of it is stored on our server.
+	</p>
 
 	<h2 class="mini-title" id="hive-backup">Backups to your Hive account (Copy Text)</h2>
 
