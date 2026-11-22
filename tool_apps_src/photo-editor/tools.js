@@ -384,6 +384,7 @@
 			var pts = boxCorners(L).map(function (p) { return PE.toScreen(p[0], p[1]); }); PE.selOutline(x, pts);
 			if (!L.locked) drawRotHandle(x, L, mv && mv.kind === "rot" ? mv : null);
 			if (!mv && PE.opt.move.tags !== false) PE.selTag(x, pts, L.name + (L.locked ? " 🔒" : ""));
+			if (isTxt(L) && L.text.pathOn && PE.drawTextPathGuide) PE.drawTextPathGuide(x, L);   // text on a curve: its ellipse as a dashed line + the orange dot
 			if (isTxt(L) && PE.drawTextBoxHandles) {   // round 10: one box. Corners = text size (not with Auto-fit text: there the corners resize the box), side pills = box width
 				if (!L.text.fit && !L.locked) for (var j = 0; j < 8; j += 2) { var sj = hScreen(L, HANDLES[j]); PE.handleBox(x, sj.x, sj.y, 4.5); }
 				if (!L.locked) PE.drawTextBoxHandles(x, L); return;
@@ -430,6 +431,7 @@
 			if (d.move) { PE.commit("Move selection"); return; }
 			var o = PE.opt.marquee, r = rectOf(d.a, d.b, e, d.sq); if (r.w < 2 && r.h < 2) { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } return; }
 			PE.selShape(function (x) { if (o.shape === "ellipse") { x.beginPath(); x.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2, r.h / 2, 0, 0, 6.2832); x.fill(); } else x.fillRect(r.x, r.y, r.w, r.h); }, d.mode);
+			if (PE.sel) PE.sel.ell = o.shape === "ellipse" && d.mode === "new" && !(o.feather > 0) ? { cx: r.x + r.w / 2, cy: r.y + r.h / 2, rx: r.w / 2, ry: r.h / 2 } : null;   // an elliptical selection: the Text tool can type along it
 			if (o.feather > 0) PE.selFeather(o.feather); PE.commit("Select");
 		},
 		overlay: function (x) { if (!selDrag || selDrag.move) return; var r = rectOf(selDrag.a, selDrag.b, null, selDrag.sq), s0 = PE.toScreen(r.x, r.y), z = PE.view.zoom; x.lineWidth = 1; [["#000", 0], ["#fff", 5]].forEach(function (p) { x.setLineDash([5, 5]); x.lineDashOffset = p[1]; x.strokeStyle = p[0]; if (PE.opt.marquee.shape === "ellipse") { x.beginPath(); x.ellipse(s0.x + r.w * z / 2, s0.y + r.h * z / 2, r.w * z / 2, r.h * z / 2, 0, 0, 6.2832); x.stroke(); } else x.strokeRect(s0.x, s0.y, r.w * z, r.h * z); }); x.setLineDash([]); x.lineDashOffset = 0; },

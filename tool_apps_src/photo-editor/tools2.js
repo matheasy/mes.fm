@@ -195,6 +195,7 @@
 	PE.textMoveHit = function (L, e) {
 		if (!canMoveText(L)) return false; var sp = scrOf(e), g = moveGrip(L); if (Math.hypot(g.x - sp.x, g.y - sp.y) < 13) return "grip";
 		if (e.ctrl && nearFrame(L, e, 0)) return "ctrl";
+		if (L.text.pathOn) return false;   // text on a curve: its box is the whole ellipse, so its edge must not grab clicks meant for the picture (move it with the grip or Ctrl+drag)
 		var f = frameOf(L), q = PE.toLayerPt(L, e.x, e.y), k = 1 / Math.max(1e-6, PE.view.zoom * Math.abs(L.sx)), ky = 1 / Math.max(1e-6, PE.view.zoom * Math.abs(L.sy));
 		if (!(q.x >= f.u0 - 9 * k && q.x <= f.u1 + 9 * k && q.y >= f.v0 - 9 * ky && q.y <= f.v1 + 9 * ky)) return false;
 		var inner = 3, wS = (f.u1 - f.u0) / k, hS = (f.v1 - f.v0) / ky; if (wS < 40 || hS < 24) inner = -2;   // a small text: only just outside its outline, so clicks on the letters still place the caret
@@ -288,19 +289,30 @@
 		var s = L.shape; if (!s || s.kind !== "ellipse") return null; var r = norm(s.a, s.b, s.sq); if (r.w < 4 || r.h < 4) return null;
 		var c = locToDoc(L, r.x + r.w / 2, r.y + r.h / 2); return { L: L, cx: c.x, cy: c.y, rx: r.w / 2 * Math.abs(L.sx), ry: r.h / 2 * Math.abs(L.sy), rot: L.rot, lw: s.o && s.o.stroke ? s.o.width || 0 : 0 };
 	}
-	function ellipseAt(e) {   // the topmost visible ellipse shape layer whose outline is under the pointer (within ~14 screen px)
-		if (!PE.doc) return null; var z = Math.max(1e-6, PE.view.zoom), ls = PE.doc.layers;
+	/* the ellipse the Text tool would put text on: an ellipse shape layer whose outline is under the pointer (within ~14 screen px), else one the
+	 * pointer is inside of (visible ones only: once used, the ellipse is hidden, so a later click in the middle makes a normal text), else an
+	 * elliptical selection made with the Marquee tool. Subscriber 2026-11-21: "I click on the ellipse, type, and it types in a straight line":
+	 * clicking inside the ellipse used to count as empty canvas. */
+	function ellipseAt(e) {
+		if (!PE.doc) return null; var z = Math.max(1e-6, PE.view.zoom), ls = PE.doc.layers, inside = null;
 		for (var i = ls.length - 1; i >= 0; i--) { var L = ls[i]; if (!L.shape || !PE.effVisible(L) || PE.isLockedDeep(L)) continue; var g = ellipseGeom(L); if (!g) continue;
 			var c = Math.cos(-g.rot), s = Math.sin(-g.rot), dx = e.x - g.cx, dy = e.y - g.cy, qx = c * dx - s * dy, qy = s * dx + c * dy;
-			if (P.ellipseDist(g.rx, g.ry, qx, qy) < 14 / z + g.lw / 2) { g.qx = qx; g.qy = qy; return g; } }
+			g.qx = qx; g.qy = qy;
+			if (P.ellipseDist(g.rx, g.ry, qx, qy) < 14 / z + g.lw / 2) return g;
+			if (!inside && (qx * qx) / (g.rx * g.rx) + (qy * qy) / (g.ry * g.ry) <= 1) inside = g; }
+		if (inside) return inside;
+		var se = PE.sel && PE.sel.ell; if (se && se.rx > 2 && se.ry > 2) { var ux = e.x - se.cx, uy = e.y - se.cy;
+			if ((ux * ux) / (se.rx * se.rx) + (uy * uy) / (se.ry * se.ry) <= 1 || P.ellipseDist(se.rx, se.ry, ux, uy) < 14 / z) return { L: null, sel: true, cx: se.cx, cy: se.cy, rx: se.rx, ry: se.ry, rot: 0, lw: 0, qx: ux, qy: uy }; }
 		return null;
 	}
 	function textOnEllipse(g, e) {
+		var onLine = P.ellipseDist(g.rx, g.ry, g.qx, g.qy) < 14 / Math.max(1e-6, PE.view.zoom) + g.lw / 2;
 		var deg = Math.round(Math.atan2(g.qx / g.rx, -g.qy / g.ry) * 180 / Math.PI), lower = Math.abs(deg) > 90;
+		if (!onLine) deg = lower ? 180 : 0;   // a click inside the ellipse: the text starts centred at the top (or the bottom, for the lower half)
 		var o = JSON.parse(JSON.stringify(PE.opt.text)); o.str = ""; o.pathOn = true; o.pathRx = Math.round(g.rx * 10) / 10; o.pathRy = Math.round(g.ry * 10) / 10; o.pathStart = deg; o.pathDir = lower ? "ccw" : "cw"; o.pathSide = "base"; o.pathOff = 0; o.align = "center"; o.fit = false; o.bgOn = false;
 		var L = PE.makeLayer({ type: "text", name: "Text", text: o, w: 4, h: 4 }); PE.renderText(L); L.cx = g.cx; L.cy = g.cy; L.rot = g.rot;
-		PE.addLayer(L); g.L.visible = false; PE.emit("layers"); openEdit(L, true, 0); if (te) te.unhide = g.L;
-		PE.toast("Type along the ellipse. The ellipse layer is hidden now (its eye in Layers shows it again). Drag the orange dot to slide the text round the curve.", 6000);
+		PE.addLayer(L); if (g.L) g.L.visible = false; else { PE.sel = null; PE.emit("sel"); } PE.emit("layers"); openEdit(L, true, 0); if (te && g.L) te.unhide = g.L;
+		PE.toast("Type now: the letters follow the ellipse" + (g.L ? ". The ellipse is hidden (its eye in Layers shows it again)" : "") + ". Drag the orange dot to slide the text round; untick \u201cOn a curve\u201d for straight text.", 6000);
 	};
 	function anchorPt(L) {   // the orange dot: where the text is anchored on its curve (image coordinates)
 		if (!L || L.type !== "text" || !L.text || !L.text.pathOn || L.locked || !PE.effVisible(L)) return null; var g = PE.textPathGeom(L); if (!g) return null; var p = g.lay.path, f = (+L.text.pathStart || 0) * Math.PI / 180;
@@ -314,7 +326,8 @@
 		x.save(); x.fillStyle = "#ff9800"; x.strokeStyle = "#fff"; x.lineWidth = 2; x.beginPath(); x.arc(s.x, s.y, 6.5, 0, Math.PI * 2); x.fill(); x.stroke(); x.restore();
 	}
 	PE.drawTextPathGuide = drawPathGuide;
-	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters; highlight words and move Size to change only their size. Drag a corner of the box to make the text bigger or smaller (Alt = from the centre). Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text the corners change the box and the size follows). To move the text, drag its box outline or the ✥ grip under it, or hold Ctrl/Cmd and drag the text (Shift = straight line). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
+	PE.textEllipseAt = function (e) { return ellipseAt(e); };
+	PE.defTool({ id: "text", name: "Text / Label", key: "t", icon: "T", opts: JSON.parse(JSON.stringify(PE.TEXTDEF)), hint: "Text on a curve: draw an ellipse with the Shapes tool (or an elliptical selection), then click on or inside it with this tool and type: the letters follow it. Click empty canvas to add text, click a text to edit it (caret where you click, drag to select, double-click a word, triple-click a line). Ctrl/Cmd+B, I, U = bold, italic, underline of the selected letters; highlight words and move Size to change only their size. Drag a corner of the box to make the text bigger or smaller (Alt = from the centre). Drag the white pills on the sides of the box to change its width so the words re-wrap (with Auto-fit text the corners change the box and the size follows). To move the text, drag its box outline or the ✥ grip under it, or hold Ctrl/Cmd and drag the text (Shift = straight line). Enter = new line, Ctrl+Enter, Esc or a click outside = done.",
 		ui: [{ type: "button", label: "✓ Done", cls: "pe-btn--primary", title: "Finish this text (Ctrl+Enter or Esc)", when: function () { return !!te; }, act: function () { PE.endTextEdit(false); PE.emit("opts", "text"); } },
 			{ type: "button", label: "✕ Cancel", title: "Throw away the changes made since the last step of this text", when: function () { return !!te; }, act: function () { if (!te) return; var L = te.L, o = te.orig, isNew = te.isNew; L.text = JSON.parse(o); PE.renderText(L); PE.touch(L); PE.endTextEdit(isNew); PE.emit("opts", "text"); } },
 			{ k: "font", label: "Font", type: "select", options: "fonts" }, { k: "size", label: "Size", type: "range", min: 6, max: 400, step: 1, unit: "px", help: "How big the letters are. The box next to the number picks the unit: pt = points like in Word or Google Docs (12 pt = 16 px, 72 pt = 96 px); px = pixels of the image; pt (72/in) = points the way Photoshop, Photopea and GIMP count them for screen images (1 pt = 1 px). Only the number shown changes: the text looks the same." }, { k: "wrapW", label: "Box width (0 = auto)", type: "range", min: 0, max: 4000, step: 10, unit: "px", hide: "pathOn" }, { k: "fit", label: "Auto-fit text", type: "check", hide: "pathOn" }, { k: "boxH", label: "Box height", type: "range", min: 0, max: 4000, step: 10, unit: "px", show: "fit", hide: "pathOn" }, { k: "bold", label: "Bold", type: "check" }, { k: "italic", label: "Italic", type: "check" }, { k: "underline", label: "Underline", type: "check" }, { k: "align", label: "Align", type: "seg", options: [["left", "Left"], ["center", "Centre"], ["right", "Right"]] }, { k: "lh", label: "Line height", type: "range", min: 0.8, max: 3, step: 0.05, hide: "pathOn" }, { k: "ls", label: "Letter spacing", type: "range", min: -10, max: 60, step: 1, unit: "px" }, { k: "color", label: "Colour", type: "color" },
