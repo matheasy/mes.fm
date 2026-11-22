@@ -209,3 +209,4 @@
 	body.dark-mode #pl .pl-chip--hive {background:#3a1f22;border-color:#7a3f45;color:#ffc2c2;}
 	body.dark-mode #pl .pl-vsrc--justsent {color:#f2c46b;}
 	body.dark-mode #pl-view.mes-pfill {background:#1a1a1a !important;}
+	#pl a#pl-trans {text-decoration:none !important;}

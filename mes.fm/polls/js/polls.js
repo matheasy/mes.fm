@@ -412,6 +412,7 @@
 		$("pl-close").hidden = !(V.owner && open);
 		$("pl-del").hidden = !V.owner;
 		$("pl-report").hidden = V.owner;
+		transBtn(p);
 		var note = [];
 		if (p.hidden) note.push("This poll is hidden from everyone else because people reported it. You can still see it because you made it.");
 		if (open && p.ch) note.push("You can change your vote while the poll is open.");
@@ -820,6 +821,52 @@
 		return frag;
 	}
 
+	/* --- 🌐 Translate: shown when the poll looks like it is in another language than this browser's. Uses the browser's own
+	   LanguageDetector when its model is already there (Chrome / Edge), else a small script + common-word check; the button opens
+	   /translate with the question, options and description (nothing is sent anywhere until the person presses Translate there). --- */
+	var trSeen = {};
+	function trText(p) { return [p.q].concat((p.o || []).map(function (o, i) { return (i + 1) + ". " + o; })).concat(p.d ? ["", p.d] : []).join("\n"); }
+	function scriptOf(t) {
+		var c = { latn: 0, cyrl: 0, arab: 0, hebr: 0, grek: 0, deva: 0, thai: 0, hani: 0, kana: 0, hang: 0 };
+		for (var i = 0; i < t.length; i++) {
+			var k = t.charCodeAt(i);
+			if ((k >= 65 && k <= 90) || (k >= 97 && k <= 122) || (k >= 192 && k <= 591)) c.latn++;
+			else if (k >= 0x400 && k <= 0x4ff) c.cyrl++; else if (k >= 0x600 && k <= 0x6ff) c.arab++; else if (k >= 0x590 && k <= 0x5ff) c.hebr++;
+			else if (k >= 0x370 && k <= 0x3ff) c.grek++; else if (k >= 0x900 && k <= 0x97f) c.deva++; else if (k >= 0xe00 && k <= 0xe7f) c.thai++;
+			else if (k >= 0x3040 && k <= 0x30ff) c.kana++; else if (k >= 0xac00 && k <= 0xd7af) c.hang++; else if (k >= 0x4e00 && k <= 0x9fff) c.hani++;
+		}
+		var best = "latn"; for (var s in c) if (c[s] > c[best]) best = s;
+		return c[best] ? best : "";
+	}
+	var LANG_SCRIPT = { ru: "cyrl", uk: "cyrl", bg: "cyrl", sr: "cyrl", ar: "arab", fa: "arab", ur: "arab", he: "hebr", el: "grek", hi: "deva", mr: "deva", ne: "deva", th: "thai", zh: "hani", ja: "kana", ko: "hang" };
+	var EN = /^(the|a|an|is|are|was|what|which|who|whom|whose|when|where|why|how|do|does|did|you|your|of|to|for|and|or|in|on|at|it|best|would|will|should|could|my|me|we|our|this|that|first|most|favourite|favorite|day|time|with|be|have|has|yes|no|not|better|vs)$/;
+	var NOT_EN = /^(el|la|los|las|que|qué|cuál|cual|de|del|y|es|un|una|le|les|des|et|est|quel|quelle|der|die|das|und|ist|wer|wie|welche|o|os|um|uma|não|nao|qual|che|il|di|per|è|ya|dan|yang|apa|siapa|và|của|là|ai|gì|mi|nie|jest|czy|się|ne|bir|ve|bu|mı|mu|ni|kwa|na|ng|sa|ang|mga)$/;
+	function looksForeign(text, lang) {
+		var sc = scriptOf(text); if (!sc) return false;
+		var mine = LANG_SCRIPT[lang] || "latn";
+		if (sc !== mine && !(sc === "hani" && mine === "kana")) return true;
+		if (sc !== "latn" || lang !== "en") return false;     // same non-Latin script, or a non-English Latin reader: can't tell cheaply
+		var w = text.toLowerCase().split(/[^a-zà-ÿ\u0100-\u024f]+/).filter(Boolean), en = 0, ot = 0;
+		w.forEach(function (x) { if (EN.test(x)) en++; else if (NOT_EN.test(x)) ot++; });
+		if (/[ñãõçßœ¿¡]/.test(text.toLowerCase())) ot += 2;
+		return ot >= 2 && ot > en;
+	}
+	function transBtn(p) {
+		var b = $("pl-trans"); if (!b) return;
+		var lang = String(navigator.language || "en").split("-")[0].toLowerCase(), text = trText(p), key = lang + "|" + text;
+		var base = /(^|\.)mes\.fm$/.test(location.hostname) || location.protocol === "http:" ? "" : "https://mes.fm";   // the app (capacitor / https://localhost) opens the website
+		b.href = base + "/translate?from=auto&to=" + encodeURIComponent(lang) + "&q=" + encodeURIComponent(text.slice(0, 4800));
+		if (key in trSeen) { b.hidden = !trSeen[key]; return; }
+		trSeen[key] = looksForeign(text, lang); b.hidden = !trSeen[key];
+		var LD = window.LanguageDetector;
+		if (LD && LD.availability) LD.availability().then(function (a) {
+			if (a !== "available") return null;
+			return LD.create().then(function (d) { return d.detect(p.q + " " + (p.o || []).join(" ")); });
+		}).then(function (r) {
+			if (!r || !r[0] || r[0].confidence < 0.6 || r[0].detectedLanguage === "und") return;
+			trSeen[key] = r[0].detectedLanguage.split("-")[0] !== lang; b.hidden = !trSeen[key];
+		}).catch(function () {});
+	}
 	/* --- the viewer --- */
 	function openHive(ref) {
 		V.hive = ref; V.id = null; V.owner = false; V.key = "";

@@ -262,7 +262,7 @@ APPS = {
                   tag="Ask a question, share one link, watch the votes come in.", accent="#3b5bdb", dark="#2c47b0", tint="#e7ecfb",
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",
                   meta_desc="Free poll maker: make a poll in seconds, share one short link and watch live results. Single or multiple choice, closing time, no sign-up.",
-                  js_v="3"),
+                  js_v="4"),
     # MES Party (2026-11-07, mes.fm/party; an invitation is mes.fm/p/<id> = vercel rewrite to /party?e=<id>): invitations + RSVPs like Partiful.
     # Shared core tool_apps_src/party/lib.js (= MESParty; byte-identical copy at mes.fm/api/_party-lib.js), server mes.fm/api/party.js (Upstash),
     # tests tool_apps_src/party-tests.js. On localhost / ?mock=1 the page runs on an in-browser stand-in.
@@ -1394,7 +1394,7 @@ APPS = {
     "polls-stats": dict(title="MES Polls Stats", page_title="MES Polls Stats: Polls, Votes and Reports",
                 tag="How people use MES Polls.", accent="#3b5bdb", dark="#2f4ac0", tint="#e7ecff",
                 desc="Private page: polls made over time, votes, kinds of question, reported polls and every poll on MES Polls.",
-                js_v="1", no_ads=True, no_comments=True, logo_from="polls",
+                js_v="2", no_ads=True, no_comments=True, logo_from="polls",
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     "dashboard": dict(title="MES Dashboard", page_title="MES Dashboard: Channels, Comments and Notifications",
                 tag="Every MES channel in one place.", accent="#4f46e5", dark="#3730a3", tint="#eef2ff",

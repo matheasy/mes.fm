@@ -206,15 +206,21 @@
 	}
 
 	/* ---------------- list ---------------- */
+	// Translate: hands the question, its options and description to /translate (it detects the language itself; target = this browser's language)
+	function trLink(p) {
+		var to = String(navigator.language || "en").split("-")[0].toLowerCase();
+		var txt = [p.q].concat(p.o.map(function (o, i) { return (i + 1) + ". " + o; })).concat(p.d ? ["", p.d] : []).join("\n");
+		return "/translate?from=auto&to=" + encodeURIComponent(to) + "&q=" + encodeURIComponent(txt.slice(0, 4800));
+	}
 	function rowHtml(p) {
 		var st = P.status(p), lead = P.leader(p), id = esc(p.id);
 		var out = '<tr class="ps-row' + (OPEN[p.id] ? " is-open" : "") + '" data-id="' + id + '" tabindex="0">' +
 			'<td class="ps-td-q"><span class="ps-qt">' + esc(p.q) + "</span>" + (lead ? '<small>Leading: ' + lead.i.map(function (i) { return esc(p.o[i]); }).join(" / ") + " (" + Math.round(lead.share * 100) + "%)</small>" : "") + "</td>" +
-			'<td class="ps-num">' + p.o.length + '</td><td class="ps-num">' + (p.m > 1 ? "≤ " + p.m : "1") + '</td><td class="ps-num"><b>' + num(p.v) + "</b></td>" +
-			'<td title="' + esc(new Date(p.c).toLocaleString()) + '">' + when(p.c) + "</td>" +
-			"<td>" + (p.x ? "closed " + when(p.x) : p.cl ? (p.open ? ago(p.cl) : when(p.cl)) : '<span class="ps-mut">when closed</span>') + "</td>" +
-			'<td><span class="ps-st ps-st--' + st + '">' + st + "</span></td>" +
-			'<td class="ps-num">' + (p.r ? '<b class="ps-bad">' + p.r + "</b>" : "0") + "</td></tr>";
+			'<td class="ps-num" data-l="Options">' + p.o.length + '</td><td class="ps-num" data-l="Picks">' + (p.m > 1 ? "≤ " + p.m : "1") + '</td><td class="ps-num" data-l="Voters"><b>' + num(p.v) + "</b></td>" +
+			'<td data-l="Made" title="' + esc(new Date(p.c).toLocaleString()) + '">' + when(p.c) + "</td>" +
+			'<td data-l="Closes">' + (p.x ? "closed " + when(p.x) : p.cl ? (p.open ? ago(p.cl) : when(p.cl)) : '<span class="ps-mut">when closed</span>') + "</td>" +
+			'<td data-l="Status"><span class="ps-st ps-st--' + st + '">' + st + "</span></td>" +
+			'<td class="ps-num" data-l="Reports">' + (p.r ? '<b class="ps-bad">' + p.r + "</b>" : "0") + "</td></tr>";
 		if (OPEN[p.id]) {
 			var sum = (p.n || []).reduce(function (a, b) { return a + b; }, 0), max = Math.max.apply(null, (p.n || [0]).concat([1]));
 			out += '<tr class="ps-detail"><td colspan="8">' + (p.d ? '<p class="ps-desc">' + esc(p.d) + "</p>" : "") +
@@ -223,7 +229,7 @@
 					return '<div class="ps-bar"><span class="ps-bl">' + esc(o) + '</span><span class="ps-bt"><i style="width:' + (v / max * 100).toFixed(1) + '%"></i></span><span class="ps-bn">' + num(v) + " <small>" + pct(v, sum) + "</small></span></div>";
 				}).join("") + "</div>" +
 				'<p class="ps-dmeta">Results shown: <b>' + esc({ always: "always", voted: "after voting", closed: "after it closes" }[p.sh] || p.sh) + "</b> · vote changes: <b>" + (p.ch ? "yes" : "no") + "</b> · id <code>" + id + "</code> · " +
-				'<a href="/v/' + id + '" target="_blank" rel="noopener">Open the poll</a> · <button type="button" class="ps-link" data-copy="' + id + '">Copy link</button> · ' +
+				'<a href="/v/' + id + '" target="_blank" rel="noopener">Open the poll</a> · <a href="' + esc(trLink(p)) + '" target="_blank" rel="noopener" title="Open the question and options in MES Translate">🌐 Translate</a> · <button type="button" class="ps-link" data-copy="' + id + '">Copy link</button> · ' +
 				(p.hid ? '<button type="button" class="ps-link" data-mod="unhide" data-id="' + id + '">Show again</button>' : '<button type="button" class="ps-link" data-mod="hide" data-id="' + id + '">Hide</button>') +
 				' · <button type="button" class="ps-link ps-del" data-mod="del" data-id="' + id + '">Delete</button></p></td></tr>';
 		}
