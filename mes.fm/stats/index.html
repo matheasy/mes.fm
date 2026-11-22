@@ -337,6 +337,17 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .ts-break .ts-toggle-btn {font-size:0.8em;padding:0.2em 0.7em;}
 	.st .ts-break .ts-sep {flex:1;}
 	.st .ts-break .ts-grp {display:inline-flex;gap:0.35em;}
+	/* Countries: table rows are buttons that filter the chart; the chart has a country picker */
+	.st .cc-note {font-size:0.82em;color:var(--muted);margin:-0.3em 0 0.8em;}
+	.st .flag {display:inline-block;margin-right:0.45em;font-size:1.1em;line-height:1;vertical-align:-0.08em;}
+	.st .cc-pick {font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:left;}
+	.st .cc-pick:hover {text-decoration:underline;}
+	.st .cc-pick.on {font-weight:700;color:var(--accent);}
+	.st .ts-cc {display:inline-flex;align-items:center;gap:0.35em;font-size:0.8em;}
+	.st .ts-cc select {font:inherit;max-width:13em;padding:0.2em 0.4em;border-radius:0.4em;border:1px solid #c3c9d2;background:#fff;color:#1e2733;}
+	.st .ts-cc.on select {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+	body.dark-mode .st .ts-cc select {background:#22272e;color:#e6e9ed;border-color:#454c56;}
+	body.dark-mode .st .cc-pick.on {color:#7fb6ff;}
 	/* Per-page lines: legend chips, crosshair + shared tooltip, tick boxes in the table */
 	.st .ts-legend {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;font-size:0.8em;}
 	.st .ts-legend[hidden] {display:none;}
@@ -711,8 +722,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Stats</h1>                                        <p class="page-description">Which pages on mes.fm, its calculators and its tools are being read right now. Pick a time range to see the most viewed pages, views over time, and how those views split by device and traffic source. Counts come from a privacy-friendly beacon on each page &mdash; no cookies, no accounts &mdash; and update live.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Stats</h1>                                        <p class="page-description">Which pages on mes.fm, its calculators and its tools are being read right now. Pick a time range to see the most viewed pages, views over time, and how those views split by device, traffic source and country. Counts come from a privacy-friendly beacon on each page &mdash; no cookies, no accounts &mdash; and update live.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="st" id="st">
+		<nav class="mes-snav" data-cur="stats" aria-label="Stats pages"><a href="/stats">Site stats</a> <a href="/installs">App installs</a> <a href="/seo">SEO Checker</a></nav><script src="/main_js/stat-nav.js"></script>
 		<div class="range-tabs" id="rangeTabs">
 			<button type="button" class="range-tab" data-range="24h">24 Hours</button>
 			<button type="button" class="range-tab" data-range="7d">7 Days</button>
@@ -722,7 +734,6 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<p class="updated-at" id="updatedAt">Loading stats&hellip;</p>
-		<p class="st-xlinks"><b>Site stats</b> · <a href="/installs">App installs</a> · <a href="/seo">SEO Checker</a><span class="mes-owner-links" hidden> · <a href="/ads" rel="nofollow">Ad money</a> · <a href="/search-console" rel="nofollow">Search Console</a> · <a href="/dashboard" rel="nofollow">Channels</a> · <a href="/polls-stats" rel="nofollow">Polls</a></span><script>try{if(localStorage.getItem("mes-owner")==="1")document.currentScript.previousElementSibling.hidden=false}catch(e){}</script></p>
 
 		<section class="stats-section">
 			<div class="section-head">
@@ -811,6 +822,26 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</section>
 
+		<section class="stats-section">
+			<h2>Views by Country</h2>
+			<p class="cc-note">Click a country to show only its views in Views Over Time. Countries come from the visitor's connection (Vercel's own country lookup; no IP address is stored) and are counted from November 21, 2026.</p>
+			<div class="brk">
+			<div class="brk-donut" id="countryTotalsDonut"></div>
+			<div class="table-wrap">
+				<table>
+					<thead id="countryTotalsHead">
+						<tr><th>Country</th><th class="views">Views</th></tr>
+					</thead>
+					<tbody id="countryTotalsBody">
+						<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>
+					</tbody>
+					<tfoot id="countryTotalsFoot"></tfoot>
+				</table>
+			</div>
+			</div>
+			<button type="button" id="showMoreCountries" class="show-more-btn" style="display: none;"></button>
+		</section>
+
 		<div class="st-seo">
 			<h2>How to read the stats</h2>
 			<ul>
@@ -883,7 +914,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=18" defer></script>
+	<script src="/stats/js/stats.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

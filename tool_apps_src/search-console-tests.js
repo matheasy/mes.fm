@@ -463,7 +463,8 @@ const sum = (start, end, extra) => Object.assign({ start, end,
   }
   for (const f of ['stats/index.html', 'seo/index.html']) {
     const html = fs.readFileSync(path.join(__dirname, '..', 'mes.fm', f), 'utf8');
-    ok(/class="mes-owner-links" hidden/.test(html) && !/Search Console \(private\)/.test(html), f + ': private links hidden unless the owner flag is set');
+    const nav = (html.match(/<nav class="mes-snav"[\s\S]*?<\/nav>/) || [''])[0];
+    ok(nav && /stat-nav\.js/.test(html) && !/\/ads"|\/search-console"|\/dashboard"|\/polls-stats"/.test(nav) && !/Search Console \(private\)/.test(html), f + ': private links only added by stat-nav.js when the owner flag is set');
   }
 
   console.log(pass + ' passed, ' + fail + ' failed');

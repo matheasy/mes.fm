@@ -3,6 +3,7 @@ const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 
 const TOP_N = 50;
 const SEARCH_SCAN = 3000;
+const COUNTRIES_SINCE = '2026-11-21'; // first day api/track.js counted countries
 
 // Must match the categories api/track.js's detectDevice() / detectSource() can produce.
 const DEVICES = ['desktop', 'mobile', 'tablet', 'tv', 'bot', 'unknown'];
@@ -115,6 +116,7 @@ module.exports = async (req, res) => {
   let leaderboardResultIndex;
   let deviceTotalsResultIndex;
   let sourceTotalsResultIndex;
+  let countryTotalsResultIndex = -1;
 
   if (slim && config) {
     const slimKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
@@ -130,11 +132,12 @@ module.exports = async (req, res) => {
   } else if (!config) {
     commands = [
       ['ZREVRANGE', 'pageviews:leaderboard', '0', String(topN - 1), 'WITHSCORES'],
-      ...(slim ? [] : [['HGETALL', 'pageviews:device-totals'], ['HGETALL', 'pageviews:source-totals']]),
+      ...(slim ? [] : [['HGETALL', 'pageviews:device-totals'], ['HGETALL', 'pageviews:source-totals'], ['HGETALL', 'pageviews:country-totals']]),
     ];
     leaderboardResultIndex = 0;
     deviceTotalsResultIndex = slim ? -1 : 1;
     sourceTotalsResultIndex = slim ? -1 : 2;
+    countryTotalsResultIndex = slim ? -1 : 3;
   } else {
     const leaderboardKeys = bucketKeys.map((k) => `pageviews:leaderboard:${config.unit}:${k}`);
     const deviceTotalsKeys = bucketKeys.map((k) => `pageviews:devicetotals:${config.unit}:${k}`);
@@ -142,6 +145,9 @@ module.exports = async (req, res) => {
     const destLeaderboard = randomKey('lb');
     const destDeviceTotals = randomKey('dt');
     const destSourceTotals = randomKey('so');
+    // countries (from Vercel's x-vercel-ip-country header, counted since 2026-11-21)
+    const countryTotalsKeys = bucketKeys.map((k) => `pageviews:countrytotals:${config.unit}:${k}`);
+    const destCountryTotals = randomKey('co');
 
     commands = [
       ['ZUNIONSTORE', destLeaderboard, String(leaderboardKeys.length), ...leaderboardKeys],
@@ -153,10 +159,14 @@ module.exports = async (req, res) => {
       ['ZUNIONSTORE', destSourceTotals, String(sourceTotalsKeys.length), ...sourceTotalsKeys],
       ['ZREVRANGE', destSourceTotals, '0', '-1', 'WITHSCORES'],
       ['DEL', destSourceTotals],
+      ['ZUNIONSTORE', destCountryTotals, String(countryTotalsKeys.length), ...countryTotalsKeys],
+      ['ZREVRANGE', destCountryTotals, '0', '-1', 'WITHSCORES'],
+      ['DEL', destCountryTotals],
     ];
     leaderboardResultIndex = 1;
     deviceTotalsResultIndex = 4;
     sourceTotalsResultIndex = 7;
+    countryTotalsResultIndex = 10;
   }
 
   let results;
@@ -209,6 +219,13 @@ module.exports = async (req, res) => {
     sourceTotals.push({ source: sourceTotalsRaw[i], views: Number(sourceTotalsRaw[i + 1]) });
   }
   sourceTotals.sort((a, b) => b.views - a.views);
+
+  const countryTotalsRaw = countryTotalsResultIndex >= 0 ? (results[countryTotalsResultIndex]?.result || []) : [];
+  const countryTotals = [];
+  for (let i = 0; i < countryTotalsRaw.length; i += 2) {
+    countryTotals.push({ country: countryTotalsRaw[i], views: Number(countryTotalsRaw[i + 1]) });
+  }
+  countryTotals.sort((a, b) => b.views - a.views);
 
   if (slim) {
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
@@ -308,6 +325,8 @@ module.exports = async (req, res) => {
     ...(search ? { search } : {}),
     deviceTotals,
     sourceTotals,
+    countryTotals,
+    countriesSince: COUNTRIES_SINCE,
     updatedAt: new Date().toISOString(),
   });
 };

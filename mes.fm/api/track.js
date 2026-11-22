@@ -64,6 +64,13 @@ function detectSource(referrerRaw, site, ad) {
   return 'referral';
 }
 
+// Country = Vercel's own x-vercel-ip-country header (ISO 3166-1 alpha-2, worked out by Vercel from the IP; the IP
+// itself is never stored). Anything else (local tests, missing header) counts as "XX" = unknown. Counted since 2026-11-21.
+function detectCountry(headers) {
+  const cc = String((headers && headers['x-vercel-ip-country']) || '').trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(cc) ? cc : 'XX';
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -100,6 +107,7 @@ module.exports = async (req, res) => {
   if (other) site = SITE.SITES[other].host;
   const member = `${site}|${path}`;
   const source = detectSource(body.referrer, site, body.ad);
+  const country = detectCountry(req.headers);
   // Composite members so a single sorted set can hold a per-page breakdown --
   // same "|"-joined-member trick the plain leaderboard already uses, just
   // one level deeper. (No more per-SITE breakdown: every property lives
@@ -122,6 +130,8 @@ module.exports = async (req, res) => {
   const hourlyDeviceTotals = `pageviews:devicetotals:hourly:${hk}`;
   const hourlySourceTotals = `pageviews:sourcetotals:hourly:${hk}`;
   const hourlyPageDeviceSources = `pageviews:pagedevicesources:hourly:${hk}`;
+  const hourlyCountryTotals = `pageviews:countrytotals:hourly:${hk}`;
+  const dailyCountryTotals = `pageviews:countrytotals:daily:${dk}`;
   const dailyLeaderboard = `pageviews:leaderboard:daily:${dk}`;
   const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
   const dailySourceTotals = `pageviews:sourcetotals:daily:${dk}`;
@@ -142,6 +152,9 @@ module.exports = async (req, res) => {
     ['ZINCRBY', dailyDeviceTotals, '1', device],
     ['ZINCRBY', dailySourceTotals, '1', source],
     ['ZINCRBY', dailyPageDeviceSources, '1', pageDeviceSourceMember],
+    ['HINCRBY', 'pageviews:country-totals', country, '1'],
+    ['ZINCRBY', hourlyCountryTotals, '1', country],
+    ['ZINCRBY', dailyCountryTotals, '1', country],
   ];
 
   // A bucket's TTL only needs setting once, not on every view. Remember which
@@ -153,8 +166,8 @@ module.exports = async (req, res) => {
     expiredKeys.add(key);
     commands.push(['EXPIRE', key, String(ttl)]);
   };
-  [hourlyLeaderboard, hourlyDeviceTotals, hourlySourceTotals, hourlyPageDeviceSources].forEach((k) => expireOnce(k, HOUR_TTL));
-  [dailyLeaderboard, dailyDeviceTotals, dailySourceTotals, dailyPageDeviceSources].forEach((k) => expireOnce(k, DAY_TTL));
+  [hourlyLeaderboard, hourlyDeviceTotals, hourlySourceTotals, hourlyPageDeviceSources, hourlyCountryTotals].forEach((k) => expireOnce(k, HOUR_TTL));
+  [dailyLeaderboard, dailyDeviceTotals, dailySourceTotals, dailyPageDeviceSources, dailyCountryTotals].forEach((k) => expireOnce(k, DAY_TTL));
 
   // Google Ads return check (main_js/track.js): every key is the ad visitor's first ad-click day, so a range of days
   // is one cohort of ad visitors. adf = a browser's first ad click (must be today), adr = its Nth later day back.

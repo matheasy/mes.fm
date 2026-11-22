@@ -32,6 +32,9 @@ let topPagesDevices = [];
 let topPagesSources = [];
 let deviceTotalsData = [];
 let sourceTotalsData = [];
+let countryTotalsData = [];
+let countriesSince = '2026-11-21';
+let showAllCountries = false;
 let showAllPages = false;
 const showMoreBtn = document.getElementById('showMorePages');
 
@@ -126,6 +129,7 @@ pgSearchClear.addEventListener('click', function () {
 let pagesSort = { key: 'views', dir: 'desc' };
 let deviceSort = { key: 'views', dir: 'desc' };
 let sourceSort = { key: 'views', dir: 'desc' };
+let countrySort = { key: 'views', dir: 'desc' };
 
 // Which pages currently have their device x source drill-down open,
 // keyed by "site|path". Persists across re-renders (sort clicks, Show
@@ -488,12 +492,12 @@ function renderBreakdown(cfg) {
   const headHtml = '<tr>' + thCell(cfg.title, cfg.keyName, cfg.sort) + thCell('Views', 'views', cfg.sort, 'views') + '<th class="views share-h">Share</th></tr>';
   head.innerHTML = headHtml;
   if (!cfg.data.length) {
-    body.innerHTML = '<tr><td colspan="99" class="empty-state">No data for the past ' + RANGE_LABELS[currentRange] + '.</td></tr>';
+    body.innerHTML = '<tr><td colspan="99" class="empty-state">' + (cfg.empty || 'No data for the past ' + RANGE_LABELS[currentRange] + '.') + '</td></tr>';
     foot.innerHTML = '';
     donut.innerHTML = '';
     return;
   }
-  const sorted = sortRows(cfg.data, cfg.sort);
+  const sorted = cfg.sort.key === '__keep' ? cfg.data.slice() : sortRows(cfg.data, cfg.sort);
   if (cfg.extra && cfg.extra.views > 0) sorted.push(cfg.extra); // always last, whatever the sort
   const total = sorted.reduce(function (sum, r) { return sum + r.views; }, 0);
   body.innerHTML = sorted.map(function (r) {
@@ -523,6 +527,76 @@ function renderSourceTotals() {
   renderBreakdown({ id: 'sourceTotals', title: 'Source', keyName: 'source', data: sourceTotalsData, sort: sourceSort, labels: labels, colors: colors,
     extra: { source: 'unrecorded', views: sourceTotalsData.length ? deviceSum - sourceSum : 0 } });
 }
+
+// ---- Countries (api/track.js counts Vercel's x-vercel-ip-country header since 2026-11-21) ----
+const COUNTRY_PALETTE = ['#2f80ed', '#eb5757', '#27ae60', '#f2994a', '#9b51e0', '#f2c94c', '#0c8599', '#d6336c', '#5c940d', '#5f3dc4'];
+const COUNTRY_OTHER = '#a0a8b2';
+const COUNTRIES_PREVIEW = 12;
+let regionNames = null;
+try { regionNames = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) { /* old browser: codes only */ }
+function countryName(cc) {
+  if (cc === 'XX') return 'Unknown';
+  if (cc === 'others') return 'Other countries';
+  try { return (regionNames && regionNames.of(cc)) || cc; } catch (e) { return cc; }
+}
+function countryFlag(cc) {
+  if (!/^[A-Z]{2}$/.test(cc) || cc === 'XX') return '';
+  return String.fromCodePoint(127397 + cc.charCodeAt(0), 127397 + cc.charCodeAt(1));
+}
+// colour by rank in this range's country list (so the table, donut and chart lines match)
+function countryColors() {
+  const map = { XX: '#c4c9d1', others: COUNTRY_OTHER, unrecorded: '#d5d9de' };
+  countryTotalsData.slice().sort(function (a, b) { return b.views - a.views; }).filter(function (r) { return r.country !== 'XX'; })
+    .forEach(function (r, i) { map[r.country] = i < COUNTRY_PALETTE.length ? COUNTRY_PALETTE[i] : COUNTRY_OTHER; });
+  return map;
+}
+function countryLabel(cc) {
+  const f = countryFlag(cc);
+  return (f ? '<span class="flag" aria-hidden="true">' + f + '</span>' : '') + escapeHtml(countryName(cc));
+}
+function renderCountryTotals() {
+  const colors = countryColors();
+  const labels = {};
+  countryTotalsData.forEach(function (r) {
+    labels[r.country] = '<button type="button" class="cc-pick' + (breakdown === 'cc:' + r.country ? ' on' : '') + '" data-cc="' + escapeHtml(r.country) + '" title="Show only ' + escapeHtml(countryName(r.country)) + ' in Views Over Time">' + countryLabel(r.country) + '</button>';
+  });
+  labels.unrecorded = '<span title="Views from before country counting started (' + fmtDate(countriesSince) + ')">Not recorded (before ' + fmtDate(countriesSince) + ')</span>';
+  const deviceSum = deviceTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
+  const countrySum = countryTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
+  const sorted = sortRows(countryTotalsData, countrySort);
+  const many = sorted.length > COUNTRIES_PREVIEW + 2;
+  const shown = many && !showAllCountries ? sorted.slice(0, COUNTRIES_PREVIEW) : sorted;
+  // rows left out of the preview fold into one "Other countries" row so the shares still add up
+  const rest = many && !showAllCountries ? sorted.slice(COUNTRIES_PREVIEW).reduce(function (a, r) { return a + r.views; }, 0) : 0;
+  const data = rest ? shown.concat([{ country: 'others', views: rest }]) : shown;
+  labels.others = escapeHtml(countryName('others')) + ' (' + (sorted.length - COUNTRIES_PREVIEW) + ')';
+  renderBreakdown({ id: 'countryTotals', title: 'Country', keyName: 'country', data: data, sort: { key: '__keep', dir: 'desc' }, labels: labels, colors: colors,
+    extra: { country: 'unrecorded', views: countryTotalsData.length ? Math.max(0, deviceSum - countrySum) : 0 },
+    empty: 'No country data for the past ' + RANGE_LABELS[currentRange] + ' yet: countries are counted from ' + fmtDate(countriesSince) + '.' });
+  // renderBreakdown re-sorts by cfg.sort; the '__keep' key leaves our order (and the Others row) as it is
+  const head = document.getElementById('countryTotalsHead');
+  head.innerHTML = '<tr>' + thCell('Country', 'country', countrySort) + thCell('Views', 'views', countrySort, 'views') + '<th class="views share-h">Share</th></tr>';
+  const btn = document.getElementById('showMoreCountries');
+  btn.style.display = many ? '' : 'none';
+  btn.textContent = showAllCountries ? 'Show fewer countries' : 'Show all ' + sorted.length + ' countries';
+}
+document.getElementById('showMoreCountries').addEventListener('click', function () {
+  showAllCountries = !showAllCountries;
+  renderCountryTotals();
+});
+document.getElementById('countryTotalsHead').addEventListener('click', function (e) {
+  const th = e.target.closest('th[data-sort-key]');
+  if (!th) return;
+  toggleSort(countrySort, th.dataset.sortKey);
+  renderCountryTotals();
+});
+document.getElementById('countryTotalsBody').addEventListener('click', function (e) {
+  const b = e.target.closest('.cc-pick');
+  if (!b) return;
+  setCountryFilter(breakdown === 'cc:' + b.dataset.cc ? 'all' : b.dataset.cc);
+  const chart = document.getElementById('tsChart');
+  if (chart && chart.getBoundingClientRect().top < 0) chart.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
 
 showMoreBtn.addEventListener('click', function () {
   showAllPages = !showAllPages;
@@ -571,6 +645,8 @@ async function loadStats() {
   document.getElementById('deviceTotalsFoot').innerHTML = '';
   document.getElementById('sourceTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
   document.getElementById('sourceTotalsFoot').innerHTML = '';
+  document.getElementById('countryTotalsBody').innerHTML = '<tr><td colspan="99" class="empty-state">Loading&hellip;</td></tr>';
+  document.getElementById('countryTotalsFoot').innerHTML = '';
   document.getElementById('updatedAt').textContent = 'Loading stats…';
 
   try {
@@ -594,6 +670,11 @@ async function loadStats() {
 
     sourceTotalsData = data.sourceTotals || [];
     renderSourceTotals();
+
+    countryTotalsData = data.countryTotals || [];
+    if (data.countriesSince) countriesSince = data.countriesSince;
+    renderCountryTotals();
+    if (tsRawPoints.length) renderBreakRow(); // the country picker lists this range's countries
 
     document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date(data.updatedAt).toLocaleString();
   } catch (e) {
@@ -820,6 +901,8 @@ let breakdown = 'all';
 const hiddenSplit = new Set(); // split categories greyed out by clicking their chip
 let splitTotal = false; // draw the overall total over a split
 const sourceSeriesCache = {}; // range -> { bucketKey: { source: views } }
+const countrySeriesCache = {}; // range -> { bucketKey: { CC: views } } (?by=country, loaded when a country is picked)
+const COUNTRY_SPLIT_TOP = 6;
 // 'Split by page': the range's N most viewed pages (from the Most Viewed Pages
 // data) as their own lines, plus an "Others" line = total minus those pages.
 const SPLIT_TOP_CHOICES = [3, 5, 10];
@@ -827,7 +910,19 @@ let splitTopN = 5;
 try { const n = parseInt(localStorage.getItem('statsSplitTop'), 10); if (SPLIT_TOP_CHOICES.indexOf(n) !== -1) splitTopN = n; } catch (e) {}
 const PAGE_SPLIT_COLORS = ['#2272c3', '#e8590c', '#2f9e44', '#9c36b5', '#d6336c', '#f08c00', '#0c8599', '#5f3dc4', '#c92a2a', '#5c940d'];
 const OTHERS_COLOR = '#a0a8b2';
-function isSplit() { return breakdown === 'devices' || breakdown === 'sources' || breakdown === 'pages'; }
+function isSplit() { return breakdown === 'devices' || breakdown === 'sources' || breakdown === 'pages' || breakdown === 'countries'; }
+function pickedCountry() { return breakdown.indexOf('cc:') === 0 ? breakdown.slice(3) : ''; }
+function topCountryKeys() {
+  return countryTotalsData.slice().sort(function (a, b) { return b.views - a.views; }).filter(function (r) { return r.country !== 'XX'; })
+    .slice(0, COUNTRY_SPLIT_TOP).map(function (r) { return r.country; });
+}
+function setCountryFilter(cc) {
+  breakdown = cc === 'all' ? 'all' : 'cc:' + cc;
+  hiddenSplit.clear();
+  renderTsChart();
+  renderCountryTotals();
+  if (cc !== 'all') ensureCountrySeries();
+}
 function topSplitKeys() {
   if (topPagesRange !== currentRange) return null;
   return topPagesData.slice().sort(function (a, b) { return b.views - a.views; }).slice(0, splitTopN).map(pageKey);
@@ -859,6 +954,22 @@ function splitSeries(mode, agg) {
         return { key: p.key, views: Math.max(0, p.views - top) };
       })) });
     return out;
+  }
+  if (breakdown === 'countries') {
+    const cc = countrySeriesCache[currentRange];
+    if (!cc) return [];
+    const keys = topCountryKeys();
+    const colors = countryColors();
+    const out = keys.map(function (k) {
+      return { id: k, kind: 'page', label: countryName(k), color: colors[k], points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: (cc[p.key] || {})[k] || 0 }; })) };
+    });
+    out.push({ id: 'others', kind: 'page', label: 'Other countries', color: COUNTRY_OTHER, points: agg(tsRawPoints.map(function (p) {
+      const m = cc[p.key] || {};
+      let sum = 0;
+      Object.keys(m).forEach(function (c) { if (keys.indexOf(c) === -1) sum += m[c]; });
+      return { key: p.key, views: sum };
+    })) });
+    return out.filter(function (x) { return x.points.some(function (p) { return p.views > 0; }); });
   }
   const isSrc = breakdown === 'sources';
   const cats = isSrc ? DEFAULT_SOURCES : DEFAULT_DEVICES;
@@ -894,7 +1005,12 @@ function buildSeries(mode) {
       points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: cache[k][p.key] || 0 }; })) };
   });
   if (showTotal || !pagePts.length) {
-    if (DEFAULT_DEVICES.indexOf(breakdown) !== -1) {
+    const pc = pickedCountry();
+    if (pc && countrySeriesCache[currentRange]) {
+      const cc = countrySeriesCache[currentRange];
+      out.push({ id: 'total', kind: 'total', label: 'Total · ' + countryName(pc), color: countryColors()[pc] || accent,
+        points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: (cc[p.key] || {})[pc] || 0 }; })) });
+    } else if (DEFAULT_DEVICES.indexOf(breakdown) !== -1) {
       out.push({ id: 'total', kind: 'total', label: 'Total · ' + DEVICE_LABELS[breakdown], color: DEVICE_COLORS[breakdown] || accent,
         points: agg(tsRawPoints.map(function (p) { return { key: p.key, views: (p.d || {})[breakdown] || 0 }; })) });
     } else {
@@ -921,7 +1037,15 @@ function renderBreakRow() {
   let html = '<div class="ts-grp">' + BREAK_BUTTONS.filter(function (b) { return b[0] === 'all' || ['desktop', 'mobile', 'tablet'].indexOf(b[0]) !== -1 || has(b[0]); })
     .map(function (b) { return btn('bk', b[0], b[1], breakdown === b[0]); }).join('') + '</div>';
   html += '<div class="ts-grp">' + btn('bk', 'devices', 'Split by device', breakdown === 'devices') + btn('bk', 'sources', 'Split by source', breakdown === 'sources', 'Loads the traffic-source history for this range') +
-    btn('bk', 'pages', 'Split by page', breakdown === 'pages', 'The most viewed pages of this range as their own lines, plus Others') + '</div>';
+    btn('bk', 'pages', 'Split by page', breakdown === 'pages', 'The most viewed pages of this range as their own lines, plus Others') +
+    btn('bk', 'countries', 'Split by country', breakdown === 'countries', 'The ' + COUNTRY_SPLIT_TOP + ' biggest countries of this range as their own lines, plus Other countries') + '</div>';
+  if (countryTotalsData.length) {
+    const pc = pickedCountry();
+    const opts = countryTotalsData.slice().sort(function (a, b) { return b.views - a.views; }).map(function (r) {
+      return '<option value="' + escapeHtml(r.country) + '"' + (pc === r.country ? ' selected' : '') + '>' + escapeHtml((countryFlag(r.country) ? countryFlag(r.country) + ' ' : '') + countryName(r.country)) + ' (' + compactNum(r.views) + ')</option>';
+    }).join('');
+    html += '<label class="ts-cc' + (pc ? ' on' : '') + '"><span>Country</span><select id="tsCountry" aria-label="Show only one country"><option value="all">All countries</option>' + opts + '</select></label>';
+  }
   if (breakdown === 'pages') {
     html += '<div class="ts-grp" title="How many pages get their own line">' + SPLIT_TOP_CHOICES.map(function (n) { return btn('tn', n, 'Top ' + n, splitTopN === n); }).join('') + '</div>';
   }
@@ -934,6 +1058,29 @@ function renderBreakRow() {
     }).join('') + '</div>';
   }
   tsBreakEl.innerHTML = html;
+  const sel = document.getElementById('tsCountry');
+  if (sel) sel.addEventListener('change', function () { setCountryFilter(sel.value); });
+}
+
+async function ensureCountrySeries() {
+  const range = currentRange;
+  if (countrySeriesCache[range]) { renderTsChart(); return; }
+  tsNoteEl.textContent = 'Loading countries…';
+  try {
+    const res = await fetch('/api/stats-series?range=' + encodeURIComponent(range) + '&by=country');
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const map = {};
+    (data.points || []).forEach(function (p) { map[p.key] = p.c || {}; });
+    countrySeriesCache[range] = map;
+  } catch (e) {
+    breakdown = 'all';
+    renderTsChart();
+    renderCountryTotals();
+    tsNoteEl.textContent = 'Country history is temporarily unavailable.';
+    return;
+  }
+  if (range === currentRange) renderTsChart();
 }
 
 // Sources are separate buckets, so they're fetched only when asked for
@@ -991,6 +1138,8 @@ tsBreakEl.addEventListener('click', function (e) {
     renderTsChart();
     if (breakdown === 'sources') ensureSourceSeries();
     if (breakdown === 'pages') ensureTopPageSeries();
+    if (breakdown === 'countries') ensureCountrySeries();
+    renderCountryTotals();
   } else if (b.dataset.tn) {
     splitTopN = parseInt(b.dataset.tn, 10);
     try { localStorage.setItem('statsSplitTop', String(splitTopN)); } catch (e) {}
@@ -1075,6 +1224,8 @@ function renderTsChart() {
   }
   if (breakdown === 'devices') note += ' One line per device type.';
   else if (breakdown === 'sources') note += ' One line per traffic source.';
+  else if (breakdown === 'countries') note += ' One line for each of the ' + COUNTRY_SPLIT_TOP + ' biggest countries of this range; countries are counted from ' + fmtDate(countriesSince) + '.';
+  else if (pickedCountry()) note += ' The Total line counts views from ' + countryName(pickedCountry()) + ' only (counted from ' + fmtDate(countriesSince) + '); ticked pages always show every country.';
   else if (breakdown === 'pages') note += ' One line for each of the ' + splitTopN + ' most viewed pages of this range; Others = every other page.';
   else if (DEFAULT_DEVICES.indexOf(breakdown) !== -1) note += ' The Total line counts ' + DEVICE_LABELS[breakdown].toLowerCase() + ' views only; ticked pages always show all devices.';
   if (!picks.length && breakdown === 'all') note += ' Tick the boxes in Most Viewed Pages to chart individual pages.';
@@ -1201,6 +1352,7 @@ async function loadTimeSeries() {
     ensurePickSeries();
     if (breakdown === 'sources') ensureSourceSeries();
     if (breakdown === 'pages') ensureTopPageSeries();
+    if (breakdown === 'countries' || pickedCountry()) ensureCountrySeries();
   } catch (e) {
     tsNoteEl.textContent = 'Views-over-time data is temporarily unavailable.';
   }

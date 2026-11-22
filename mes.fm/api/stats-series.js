@@ -43,7 +43,10 @@ module.exports = async (req, res) => {
   // device split rides along on the default call for free: the same bucket
   // read that gives the total already holds every device's score.
   const bySource = req.query.by === 'source';
-  const bucketPrefix = `pageviews:${bySource ? 'source' : 'device'}totals:${config.unit === 'hourly' ? 'hourly' : 'daily'}:`;
+  // ?by=country: the countrytotals buckets (api/track.js, counted since 2026-11-21), one command per bucket like ?by=source.
+  // Points carry c: { "CA": n, ... }; their `views` is the sum of the countries, so days before 2026-11-21 are 0.
+  const byCountry = req.query.by === 'country';
+  const bucketPrefix = `pageviews:${byCountry ? 'country' : bySource ? 'source' : 'device'}totals:${config.unit === 'hourly' ? 'hourly' : 'daily'}:`;
   // ?pages=site|path,site|path (max 8): per-page series instead of the site
   // total. One ZMSCORE per bucket on the leaderboard bucket (members are
   // "site|path"), so the cost is the bucket count, not pages x buckets. The
@@ -123,7 +126,7 @@ module.exports = async (req, res) => {
       views += v;
       if (v > 0) parts[raw[j]] = v;
     }
-    return bySource ? { key, views, s: parts } : { key, views, d: parts };
+    return byCountry ? { key, views, c: parts } : bySource ? { key, views, s: parts } : { key, views, d: parts };
   });
 
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
