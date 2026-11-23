@@ -8,12 +8,18 @@
    other side (20px, or the "More like this" rail: jump-aside.css). --toc-wd = the article width the mode asks for, --toc-w = what
    it gets. --toc-shift moves the article (and footer) off centre when a wide sidebar would not fit beside a centred one; it is 0
    at the default 210px on every screen that fitted before, so nothing moves for readers who never drag. */
+/* Standard mode (2026-11-22): the sidebar's OUTER edge (screen side) stays where the default 210px list puts it, so the edge you drag
+   is the one next to the article. --toc-ext = 210px - sidebar width: a narrower list gives the article that room (--toc-gain; it keeps
+   its left edge and grows, never past Wide's 1100px), a wider one keeps the article at 760px and moves it aside (--toc-sh0) instead of
+   pushing the list off the screen side. The clamps below still keep both on screen. Wide / Theatre have their own group layouts. */
 :root { --toc-o: 20px; --toc-sw: clamp(180px, var(--toc-swp, 210px), max(180px, min(520px, calc(100vw - 670px - var(--toc-o)))));
-  --toc-g: calc(var(--toc-sw) + 50px); --toc-wd: 760px; --toc-w: min(var(--toc-wd), calc(100vw - var(--toc-g) - var(--toc-o)));
+  --toc-ext: calc(210px - var(--toc-sw)); --toc-gain: min(340px, max(0px, var(--toc-ext)));
+  --toc-sh0: min(var(--toc-ext), var(--toc-ext) / 2);
+  --toc-g: calc(var(--toc-sw) + 50px); --toc-wd: 760px; --toc-w: min(calc(var(--toc-wd) + var(--toc-gain)), calc(100vw - var(--toc-g) - var(--toc-o)));
   --toc-c: calc((100vw - var(--toc-w)) / 2);
-  --toc-shift: clamp(calc(var(--toc-o) - var(--toc-c)), 0px, calc(var(--toc-c) - var(--toc-g))); }
-html.aside-left { --toc-shift: clamp(calc(var(--toc-g) - var(--toc-c)), 0px, calc(var(--toc-c) - var(--toc-o))); }
-html.page-wide { --toc-wd: max(760px, min(1100px, calc(100vw - 2 * var(--toc-g)))); }  /* article column; room left for the sidebar beside it */
+  --toc-shift: clamp(calc(var(--toc-o) - var(--toc-c)), var(--toc-sh0), calc(var(--toc-c) - var(--toc-g))); }
+html.aside-left { --toc-shift: clamp(calc(var(--toc-g) - var(--toc-c)), calc(0px - var(--toc-sh0)), calc(var(--toc-c) - var(--toc-o))); }
+html.page-wide { --toc-gain: 0px; --toc-sh0: 0px; --toc-wd: max(760px, min(1100px, calc(100vw - 2 * var(--toc-g)))); }  /* article column; room left for the sidebar beside it */
 html.page-theatre { --toc-wd: max(760px, min(2000px, calc(100vw - 2 * var(--toc-g)))); --toc-shift: 0px; }  /* theatre: most of the window, sidebar still beside it */
 html.toc-hidden { --toc-w: var(--toc-wd); --toc-shift: 0px; }
 
