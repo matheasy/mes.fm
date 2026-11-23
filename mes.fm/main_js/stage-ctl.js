@@ -37,7 +37,12 @@
 		/* controls beside the picture: the page's control cards move into a side panel (page: a flex box next to the picture; Fill window / full screen: a column inside the box) */
 		'.mes-cbox{display:flex;gap:12px;align-items:flex-start;margin:0 auto}.mes-cbox.mes-cleft{flex-direction:row-reverse}.mes-cmain{flex:1 1 auto;min-width:0}' +
 		'.mes-cpanel{box-sizing:border-box;border:1px solid #d5dce4;border-radius:0.6em;background:#f7f9fb;color:#223;font-size:0.95em;min-width:0}' +
-		'.mes-cbox>.mes-cpanel{flex:0 0 var(--mes-pw,320px);width:var(--mes-pw,320px);max-height:var(--mes-cph,80vh);overflow:auto;position:sticky;top:66px}' +
+		'.mes-cbox>.mes-cpanel{flex:0 0 var(--mes-pw,320px);width:var(--mes-pw,320px);max-height:var(--mes-cph,80vh);overflow:visible;position:sticky;top:66px;display:flex;flex-direction:column}.mes-cbox>.mes-cpanel>.mes-cpbody{flex:1 1 auto;min-height:0;overflow:auto}' +
+		/* drag grip on the panel's inner edge (the edge touching the picture): resizes the panel */
+		'.mes-cpgrip{position:absolute;top:0;bottom:0;left:-12px;width:12px;cursor:col-resize;touch-action:none;z-index:6;outline:none}.mes-cleft>.mes-cpanel>.mes-cpgrip{left:auto;right:-12px}' +
+		'.mes-fside>.mes-cpanel{position:relative}.mes-fside>.mes-cpanel>.mes-cpgrip{left:-10px;width:10px}.mes-fside.mes-fleft>.mes-cpanel>.mes-cpgrip{left:auto;right:-10px}' +
+		'.mes-cpgrip::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:transparent;transition:background .15s}.mes-cpgrip::after{content:"";position:absolute;left:50%;top:min(50%,40vh);width:6px;height:44px;margin:-22px 0 0 -3px;border-radius:3px;background:#b8c2ce;transition:background .15s}' +
+		'.mes-cpgrip:hover::before,.mes-cpgrip:focus-visible::before,.mes-cpgrip.is-drag::before{background:var(--accent,#277bb6)}.mes-cpgrip:hover::after,.mes-cpgrip:focus-visible::after,.mes-cpgrip.is-drag::after{background:var(--accent,#277bb6)}html.mes-cpdrag,html.mes-cpdrag *{cursor:col-resize !important;user-select:none !important}body.dark-mode .mes-cpgrip::after{background:#5a6472}' +
 		'.mes-cphead{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:0.35em;padding:0.35em 0.5em;background:inherit;border-bottom:1px solid #d5dce4;border-radius:0.6em 0.6em 0 0;font-size:0.82em}' +
 		'.mes-cphead b{margin-right:auto;text-transform:uppercase;letter-spacing:0.05em;font-size:0.9em;color:#556}' +
 		'.mes-cphead button{cursor:pointer;font:inherit;padding:0.2em 0.65em;border-radius:0.35em;border:1px solid #c9d2dc;background:#fff;color:#223;min-height:28px}.mes-cphead button:hover{border-color:var(--accent,#277bb6)}' +
@@ -106,7 +111,7 @@
 			var t = target(o.wrap), hh = heightFor(o.wrap);
 			if ((o.wrap.__sh || 0) !== hh[0] || (o.wrap.__she || 0) !== hh[1]) { o.wrap.__sh = hh[0]; o.wrap.__she = hh[1]; var vn = hh[1] ? '--mes-sh' : '--mes-shmax'; o.wrap.style.removeProperty('--mes-sh'); o.wrap.style.removeProperty('--mes-shmax'); if (hh[0]) o.wrap.style.setProperty(vn, hh[0] + 'px'); ping(); }
 			var cur = parseInt(o.wrap.style.maxWidth, 10) || 0;
-			if (cur !== t) { var now = Date.now(); o.ch = (o.ch || []).filter(function (x) { return now - x < 3000; }); o.ch.push(now); if (o.ch.length > 6 && !o.wrap.__frozen) { o.wrap.__frozen = true; t = target(o.wrap); }   // safety net: a box that keeps changing size is frozen on width-only caps
+			if (cur !== t) { var now = Date.now(); o.ch = (o.ch || []).filter(function (x) { return now - x < 3000; }); o.ch.push(now); if (o.ch.length > 6 && !o.wrap.__frozen && Date.now() - cpLastW > 3500) { o.wrap.__frozen = true; t = target(o.wrap); }   // safety net: a box that keeps changing size is frozen on width-only caps
 				o.wrap.style.maxWidth = t ? t + 'px' : ''; o.wrap.style.marginLeft = o.wrap.style.marginRight = t ? 'auto' : ''; o.bar.style.maxWidth = t ? t + 'px' : ''; ping(); }
 			var cp = o.wrap.__cp;
 			if (cp && cp.mode === 'page' && cp.host === o.wrap) { var bm = t ? (t + cpPw(cp) + 12) + 'px' : ''; if (cp.box.style.maxWidth !== bm) { cp.box.style.maxWidth = bm; ping(); } }
@@ -196,8 +201,8 @@
 			if (!items.length) return;
 			items.forEach(function (it) { it.__cpClaim = true; });
 			var panel = document.createElement('aside'); panel.className = 'mes-cpanel'; panel.setAttribute('aria-label', 'Controls');
-			panel.innerHTML = '<div class="mes-cphead"><b>Controls</b><button type="button" data-cp="flip" title="Move the controls to the other side">⇄ Side</button><button type="button" data-cp="hide" title="Hide the controls panel">✕ Hide</button></div><div class="mes-cpbody"></div>';
-			var cp = { run: run, items: items, host: o.wrap, panel: panel, body: panel.lastChild, box: null, main: null, mode: '', ph: [] };
+			panel.innerHTML = '<div class="mes-cphead"><b>Controls</b><button type="button" data-cp="flip" title="Move the controls to the other side">⇄ Side</button><button type="button" data-cp="hide" title="Hide the controls panel">✕ Hide</button></div><div class="mes-cpbody"></div><div class="mes-cpgrip" role="separator" aria-orientation="vertical" aria-label="Controls panel width" tabindex="0" title="Drag to make the controls wider or narrower (arrow keys too; double-click: standard width)"></div>';
+			var cp = { run: run, items: items, host: o.wrap, panel: panel, body: panel.querySelector('.mes-cpbody'), box: null, main: null, mode: '', ph: [] };
 			run.forEach(function (x) { if (isWrapEl(x)) x.__cp = cp; });
 			panel.addEventListener('click', function (e) {
 				var b = e.target.closest('[data-cp]'); if (!b) return;
@@ -205,10 +210,47 @@
 				if (cp.mode === 'page') { cpPref.on = 0; cpWrite(); cpSyncAll(); apply(); return; }
 				var w = panel.parentNode; if (w && w.__togglePanel) w.__togglePanel();
 			});
-			cps.push(cp);
+			cpGrip(cp); cps.push(cp);
 		});
 	}
-	function cpPw(cp) { var col = cp.box && cp.box.parentNode ? cp.box.parentNode.clientWidth : 1200; return Math.round(Math.max(270, Math.min(380, col * 0.3))); }
+	var CP_WMIN = 220, CP_PIC = 320;   // the narrowest controls panel / picture a drag may leave
+	function cpClampW(w, avail) { return Math.round(Math.max(CP_WMIN, Math.min(w, avail - CP_PIC))); }   // avail = room for panel + picture (gap already taken off)
+	function cpPw(cp) { var col = cp.box && cp.box.parentNode ? cp.box.parentNode.clientWidth : 1200; if (cpPref.w > 0) return cpClampW(cpPref.w, col - 12); return Math.round(Math.max(270, Math.min(380, col * 0.3))); }
+	/* the grip on the panel's inner edge: drag (mouse, touch, pen), arrow keys (Shift = bigger steps), double-click / Enter = standard width. Width saved as mes-cpanel.w (px). */
+	var cpLastW = 0, cpRt = 0;   // cpLastW: when the panel was last resized (the box changes size on purpose then, so the 'keeps changing size' safety net must not freeze it)
+	function cpResizeNow() { if (cpRt) return; cpRt = setTimeout(function () { cpRt = 0; try { window.dispatchEvent(new Event('resize')); } catch (e) { /* ignore */ } }, 50); }   // throttled (ping() debounces, which would wait until the drag stops)
+	function cpCurW(cp) { return cp.panel.getBoundingClientRect().width; }
+	function cpSetW(cp, w) {
+		cpLastW = Date.now(); if (w == null) delete cpPref.w; else cpPref.w = Math.round(w);
+		if (cp.mode === 'page') { cpSizePage(cp); apply(); }
+		else { var wr = cp.panel.parentNode; if (wr) layoutSide(wr); }
+		if (cpPref.w > 0) { var shown = Math.round(cpCurW(cp)); if (shown >= CP_WMIN) cpPref.w = shown; }   // keep what is really shown (a drag past the limit does not store a width the next window can't take)
+		cpAria(cp); cpResizeNow();
+	}
+	function cpAria(cp) { var g = cp.grip; if (!g) return; g.setAttribute('aria-valuenow', Math.round(cpCurW(cp))); g.setAttribute('aria-valuemin', CP_WMIN); }
+	function cpGrip(cp) {
+		var g = cp.panel.querySelector('.mes-cpgrip'); cp.grip = g; var d = null;
+		function dir() { return cpPref.side === 'l' ? 1 : -1; }   // panel on the left: its inner edge is its right edge, so dragging right widens it
+		g.addEventListener('pointerdown', function (e) {
+			if (e.button > 0) return;
+			d = { x: e.clientX, w: cpCurW(cp), id: e.pointerId };
+			try { g.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			g.classList.add('is-drag'); document.documentElement.classList.add('mes-cpdrag'); e.preventDefault();
+		});
+		g.addEventListener('pointermove', function (e) { if (!d || e.pointerId !== d.id) return; cpSetW(cp, d.w + dir() * (e.clientX - d.x)); });
+		function up(e) {
+			if (!d || (e && e.pointerId !== d.id)) return; d = null; cpLastW = Date.now();
+			g.classList.remove('is-drag'); document.documentElement.classList.remove('mes-cpdrag');
+			cpWrite(); ping(); setTimeout(ping, 150);
+		}
+		g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up); g.addEventListener('lostpointercapture', up);
+		g.addEventListener('dblclick', function () { cpSetW(cp, null); cpWrite(); ping(); });
+		g.addEventListener('keydown', function (e) {
+			var step = e.shiftKey ? 64 : 16;
+			if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { cpSetW(cp, cpCurW(cp) + dir() * (e.key === 'ArrowRight' ? step : -step)); cpWrite(); e.preventDefault(); }
+			else if (e.key === 'Enter' || e.key === ' ') { cpSetW(cp, null); cpWrite(); e.preventDefault(); }
+		});
+	}
 	function cpGather(cp) {   // move the control elements into the panel body
 		if (cp.ph.length) return;
 		cp.items.forEach(function (it) { var c = document.createComment('mes-cpanel'); it.parentNode.insertBefore(c, it); cp.ph.push([c, it]); cp.body.appendChild(it); });
@@ -243,7 +285,7 @@
 		} else if (want[0] === 'fill') {
 			cpGather(cp); want[1].appendChild(cp.panel); cp.mode = 'fill';
 		}
-		cpPaint(cp); ping(); setTimeout(ping, 150);
+		cpPaint(cp); ping(); setTimeout(ping, 150); setTimeout(function () { cpAria(cp); }, 200);
 	}
 	function cpSizePage(cp) {
 		if (!cp.box) return;
@@ -304,6 +346,7 @@
 		if (on) {
 			var W = wrap.classList.contains('mes-fill') ? window.innerWidth : CW.get.call(wrap);
 			var pw = Math.round(Math.max(220, Math.min(cpIn(wrap) ? 400 : 380, W * (cpIn(wrap) ? 0.28 : 0.34)))), gap = 10;
+			if (cpIn(wrap) && cpPref.w > 0) { var cs0 = getComputedStyle(wrap); pw = cpClampW(cpPref.w, W - gap - (parseFloat(cs0.paddingLeft) || 0) - (parseFloat(cs0.paddingRight) || 0)); }   // the width the visitor dragged the controls panel to
 			if (wrap.classList.contains('mes-fill')) wrap.style.setProperty('--mes-fw', window.innerWidth + 'px');
 			wrap.style.setProperty('--mes-pw', pw + 'px');
 			wrap.classList.add('mes-fside'); wrap.classList.toggle('mes-fleft', cpPref.side === 'l');
