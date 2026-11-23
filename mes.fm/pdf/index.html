@@ -417,6 +417,14 @@ html.pd-win-on #hdrBarTab, html.pd-win-on #compact-nav, html.pd-win-on .mes-bott
 .pd-compact .pd-bm {position:absolute;z-index:40;left:0;top:0;bottom:0;width:min(22em,88%);box-shadow:6px 0 24px rgba(0,0,0,0.55);} .pd-compact .pd-bm-x {display:inline-block;}
 .pd-main {position:relative;}
 
+/* find bar + page box (2026-11-23, main_js/find-bar.js): the bar takes the workspace colours; matches are painted on the invisible text layer */
+#pd .pd-findwrap {flex:none;} #pd .pd-findwrap .mes-find {--mf-bg:var(--pd-panel);--mf-fg:var(--pd-text);--mf-dim:var(--pd-dim);--mf-line:var(--pd-line);--mf-field:var(--pd-field);--mf-hover:var(--pd-hover);--mf-acc:#ff8a91;}
+#pd .pd-pagebox {color:var(--pd-dim);} #pd .pd-pagebox input {--mf-pl:var(--pd-line);--mf-pf:var(--pd-field);color:var(--pd-text);}
+#pd .pd-page .pd-tl span::highlight(mes-find) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(255,214,0,0.42);}
+#pd .pd-page .pd-tl span::highlight(mes-find-cur) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(249,115,22,0.6);}
+#pd.pd-compact .pd-pagebox .mf-pl {display:none;}
+#pd .pd-findwrap .mes-find {--mf-max:min(28vh,240px);}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -768,6 +776,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="pd-top-r">
 				<button type="button" class="pd-ib" id="pd-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
 				<button type="button" class="pd-ib" id="pd-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>&#8631;</button>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-findbtn" aria-pressed="false" title="Find text in the PDF (Ctrl+F)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-3px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5l5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="pd-lbl"> Find</span></button>
+				<span class="pd-pagebox" id="pd-pagebox"></span>
 				<span class="pd-vsep"></span>
 				<button type="button" class="pd-ib" id="pd-zout" title="Zoom out" aria-label="Zoom out">&minus;</button>
 				<button type="button" class="pd-zoom" id="pd-zoom" title="Click to fit the page width">100%</button>
@@ -784,6 +794,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</div>
 		<div class="pd-morebar" id="pd-morebar" hidden></div>
+		<div class="pd-findwrap" id="pd-findwrap" hidden></div>
 		<div class="pd-opts" id="pd-opts" aria-label="Tool options"></div>
 		<div class="pd-main">
 			<div class="pd-tools" id="pd-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
@@ -903,7 +914,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/pdf/js/pdf.js?v=13" defer></script>
+	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/pdf/js/pdf.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

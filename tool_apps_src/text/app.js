@@ -127,8 +127,8 @@
 		var st = T.stats(D.text);
 		info(D.info.label + " · " + st.lines.toLocaleString() + " lines · " + st.words.toLocaleString() + " words · " + fmtSize(D.size || D.text.length) + " · " + (D.enc || "utf-8").toUpperCase());
 		editor.hidden = true;
-		if (D.view === "code") { readV.hidden = true; codeV.hidden = false; renderCode(my); }
-		else { codeV.hidden = true; readV.hidden = false; renderRead(my).catch(function (e) { if (my === renderGen) readV.innerHTML = "<p>" + esc(e.message || e) + "</p>"; }); }
+		if (D.view === "code") { readV.hidden = true; codeV.hidden = false; renderCode(my); onRendered(); }
+		else { codeV.hidden = true; readV.hidden = false; renderRead(my).catch(function (e) { if (my === renderGen) readV.innerHTML = "<p>" + esc(e.message || e) + "</p>"; }).then(function () { if (my === renderGen) onRendered(); }); }
 	}
 	function purify(html, keepStyle) {
 		return window.DOMPurify.sanitize(html, { FORBID_TAGS: ["style", "link", "meta", "base", "form", "input", "button", "textarea", "select", "iframe", "object", "embed", "script"], FORBID_ATTR: keepStyle ? [] : ["style", "class", "id"], ALLOW_DATA_ATTR: false });
@@ -180,13 +180,14 @@
 	function renderCode(my) {
 		var src = D.text, lang = D.info.kind === "text" ? "" : D.info.lang;
 		codeLines = esc(src).split(/\r\n|\r|\n/); codeShown = 0; codeV.innerHTML = ""; addLines();
-		highlight(src, lang).then(function (h) { if (my !== renderGen || !h) return; codeLines = T.splitHtmlLines(h.replace(/\r\n?/g, "\n")); var n = codeShown; codeShown = 0; codeV.innerHTML = ""; addLines(Math.max(n, Math.min(BATCH, codeLines.length))); });
+		highlight(src, lang).then(function (h) { if (my !== renderGen || !h) return; codeLines = T.splitHtmlLines(h.replace(/\r\n?/g, "\n")); var n = codeShown; codeShown = 0; codeV.innerHTML = ""; addLines(Math.max(n, Math.min(BATCH, codeLines.length))); onRendered(); });
 	}
 	function addLines(n) {
 		var old = codeV.querySelector(".tx-moreb"); if (old) old.remove();
 		var end = Math.min(codeLines.length, codeShown + (n || BATCH)), out = [];
 		for (var i = codeShown; i < end; i++) out.push('<div class="tx-l"><span class="tx-n">' + (i + 1) + '</span><span class="tx-c">' + (codeLines[i] || " ") + "</span></div>");
 		codeV.insertAdjacentHTML("beforeend", out.join("")); codeShown = end;
+		findLinesAdded();
 		if (codeShown < codeLines.length) { var b = document.createElement("button"); b.type = "button"; b.className = "tx-btn tx-moreb"; b.textContent = "Show more lines (" + (codeLines.length - codeShown).toLocaleString() + " left)"; b.onclick = function () { addLines(); }; codeV.appendChild(b); }
 	}
 	stage.addEventListener("scroll", function () { if (D && D.view === "code" && codeLines && codeShown < codeLines.length && stage.scrollTop + stage.clientHeight > stage.scrollHeight - 600) addLines(); });
@@ -265,6 +266,76 @@
 	$("tx-fill").onclick = function () { setFill(!root.classList.contains("tx-fill")); };
 	$("tx-fs").onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else if (root.requestFullscreen) root.requestFullscreen().catch(function () { setFill(true); }); else setFill(true); };
 
+	// ---------- find (Ctrl/Cmd+F, shared bar main_js/find-bar.js) and "Line [ n ] / N" ----------
+	// Code view: searches the whole file (line by line, so a match never spans two lines), even the lines not drawn yet, and draws the
+	// chunk with the match when you go to it. Reading view: searches the laid-out text and groups matches under their headings.
+	var F = window.MESFind, bar = null, lbox = null, starts = null;
+	function codeEl(line) { var ls = codeV.children; return line < codeShown ? ls[line] : null; }
+	function codeRange(h) {
+		var el = codeEl(h.line), c = el && el.querySelector(".tx-c"); if (!c) return null;
+		if (!c._ix) c._ix = F.textIndex(c);
+		return F.range(c._ix, h.col, h.col + (h.b - h.a));
+	}
+	function findSearch(q, o) {
+		if (!D) return { hits: [], note: "Open a file first" };
+		if (D.editing) finishEdit();
+		if (D.view === "code") {
+			starts = T.lineStarts(D.text);
+			var found = F.find(D.text, q, { caseSensitive: o.caseSensitive, wholeWord: o.wholeWord, nl: false }), lines = {};
+			var hits = found.map(function (m) { var lc = T.lineCol(starts, m[0]); lines[lc.line] = 1; return { g: lc.line, gl: "", sub: "Line " + (lc.line + 1), text: D.text, a: m[0], b: m[1], line: lc.line, col: lc.col }; });
+			var nl = Object.keys(lines).length, first = firstLine() - 1, start = 0;
+			for (var k = 0; k < hits.length; k++) if (hits[k].line >= first) { start = k; break; }
+			return { hits: hits, capped: found.length >= 5000, start: start, note: nl > 1 ? "on " + nl.toLocaleString() + " lines" : "" };
+		}
+		var ix = F.textIndex(readV), heads = [].slice.call(readV.querySelectorAll("h1,h2,h3,h4,h5,h6")), hpos = [];
+		var nodeAts = ix.nodes.map(function (x) { return x.at; });
+		heads.forEach(function (h) { for (var i = 0; i < ix.nodes.length; i++) if (h.contains(ix.nodes[i].n)) { hpos.push({ at: ix.nodes[i].at, t: h.textContent.trim().slice(0, 70) }); return; } });
+		var f2 = F.find(ix.s, q, { caseSensitive: o.caseSensitive, wholeWord: o.wholeWord });
+		var h2 = f2.map(function (m) { var hi = -1; for (var j = 0; j < hpos.length && hpos[j].at <= m[0]; j++) hi = j; return { g: hi, gl: hi >= 0 ? hpos[hi].t : (hpos.length ? "Before the first heading" : ""), text: ix.s, a: m[0], b: m[1], r: F.range(ix, m[0], m[1]) }; });
+		var vr = stage.getBoundingClientRect(), st = 0;
+		for (var x = 0; x < h2.length; x++) { var rr = h2[x].r && h2[x].r.getBoundingClientRect(); if (rr && rr.bottom > vr.top) { st = x; break; } }
+		return { hits: h2, capped: f2.length >= 5000, start: st };
+	}
+	var curHit = null;
+	function paintFind() {
+		if (!bar) return; var hs = bar.hits(), all = [], cr = null;
+		hs.forEach(function (h) { var r = h.r || (h.line != null ? codeRange(h) : null); if (h.line != null) h.r = r; if (r) all.push(r); if (h === curHit) cr = r; });
+		F.paint(all, cr); return cr;
+	}
+	function findGo(h) {
+		curHit = h;
+		if (h.line != null && h.line >= codeShown) addLines(h.line + 200 - codeShown);
+		var r = paintFind(); if (r) F.reveal(stage, r.getBoundingClientRect());
+	}
+	function findLinesAdded() { if (bar && bar.isOpen() && D && D.view === "code") { bar.hits().forEach(function (h) { if (h.line >= codeShown - 1) h.r = null; }); paintFind(); } }
+	function onRendered() { if (bar && bar.isOpen()) setTimeout(function () { bar.refresh(true); }, 30); syncLine(); }
+	function openFind() { if (!D) { toast("Open a file first"); return; } bar.open(String(getSelection() || "")); }
+	if (F) {
+		bar = F.bar({ mount: $("tx-findwrap"), placeholder: "Find in this file…", groupWord: "sections", search: findSearch, go: findGo,
+			clear: function () { curHit = null; F.unpaint(); }, onOpen: function () { $("tx-findbtn").setAttribute("aria-pressed", "true"); }, onClose: function () { $("tx-findbtn").setAttribute("aria-pressed", "false"); } });
+		$("tx-findbtn").onclick = function () { if (bar.isOpen()) bar.close(); else openFind(); };
+		F.keys(root, { open: openFind, next: function () { if (bar.isOpen()) bar.next(); else openFind(); }, prev: function () { if (bar.isOpen()) bar.prev(); else openFind(); }, when: function () { return !!D; } });
+		lbox = F.pageBox({ label: "Line", aria: "Go to line: type a line number and press Enter", title: "Go to a line: type its number and press Enter (switches to the Code view)", onGo: gotoLine });
+		$("tx-linebox").appendChild(lbox.el);
+	}
+	var lnc = null; function lineCount() { return D ? (lnc && lnc.text === D.text ? lnc.n : (lnc = { text: D.text, n: T.lineStarts(D.text).length }).n) : 0; }
+	function firstLine() {
+		if (!D) return 0;
+		if (D.view !== "code") { var max = stage.scrollHeight - stage.clientHeight; return max > 0 ? Math.max(1, Math.round(stage.scrollTop / max * (lineCount() - 1)) + 1) : 1; }
+		var vr = stage.getBoundingClientRect(), ls = codeV.children, lo = 0, hi = codeShown - 1;
+		while (lo < hi) { var mid = (lo + hi) >> 1; if (ls[mid].getBoundingClientRect().bottom <= vr.top + 4) lo = mid + 1; else hi = mid; }
+		return lo + 1;
+	}
+	function syncLine() { if (lbox) lbox.set(D ? firstLine() : 0, lineCount()); $("tx-linebox").hidden = !D; }
+	function gotoLine(n) {
+		if (!D) return; if (D.view !== "code") setView("code");
+		var i = Math.min(n, codeLines.length) - 1; if (i >= codeShown) addLines(i + 200 - codeShown);
+		var el = codeV.children[i]; if (!el) return;
+		stage.scrollTop += el.getBoundingClientRect().top - stage.getBoundingClientRect().top - stage.clientHeight / 3;
+		el.classList.remove("is-flash"); void el.offsetWidth; el.classList.add("is-flash"); syncLine();
+	}
+	var lnT = 0; stage.addEventListener("scroll", function () { if (lnT) return; lnT = requestAnimationFrame(function () { lnT = 0; syncLine(); }); });
+
 	// ---------- keys ----------
 	document.addEventListener("keydown", function (e) {
 		var t = e.target, typing = t && (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || t.isContentEditable), mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
@@ -283,5 +354,5 @@
 	// a file handed over by another MES page or the Read Aloud extension, else ?url=
 	if (LO) LO.receive().then(function (f) { if (f) openFile(f); else if (LO.fromQuery()) { $("tx-link").value = LO.fromQuery(); openLink(LO.fromQuery()); } }, function (e) { info(e.message, true); });
 	if (window.MESGrip) MESGrip.add($("tx-stage"), { key: "mes-text:h", min: 200 });
-	window.MESTextDebug = { open: openBytes, openText: openText, get doc() { return D; }, render: render, setView: setView };
+	window.MESTextDebug = { gotoLine: gotoLine, find: function () { return bar; }, open: openBytes, openText: openText, get doc() { return D; }, render: render, setView: setView };
 })();

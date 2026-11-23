@@ -114,10 +114,10 @@
 			var vp = PD.vp(p, 1); tl = document.createElement("div"); tl.className = "pd-tl"; tl._key = p.rot0 + p.rot;
 			tl.style.width = vp.width + "px"; tl.style.height = vp.height + "px"; tl.setAttribute("aria-hidden", "false");
 			var q = (p.rot0 + p.rot) % 180 === 90;
-			p._lines.forEach(function (l) {
+			p._lines.forEach(function (l, li) {
 				var a = vp.toView(l.x, l.y - 0.22 * l.size), b = vp.toView(l.x + l.w, l.y + 0.88 * l.size), x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]), w = Math.abs(a[0] - b[0]), h = Math.abs(a[1] - b[1]);
 				if (w < 1 || h < 1) return;
-				var sp = document.createElement("span"), fs = (q ? w : h) * 0.9; sp.textContent = l.text + " ";   // the space keeps the last word of a line apart from the next line's first
+				var sp = document.createElement("span"), fs = (q ? w : h) * 0.9; sp.textContent = l.text + " "; sp._li = li;   // the space keeps the last word of a line apart from the next line's first
 				measureCtx.font = fs + "px sans-serif"; var mw = measureCtx.measureText(l.text).width || 1;
 				sp.style.cssText = "left:" + x + "px;top:" + y + "px;font-size:" + fs + "px;height:" + (q ? w : h) + "px;transform:" + (q ? "translate(" + w + "px,0) rotate(90deg) " : "") + "scaleX(" + ((q ? h : w) / mw) + ")";
 				tl.appendChild(sp);
@@ -127,6 +127,7 @@
 		tl.style.transform = "scale(" + PD.zoom + ")";
 		return tl.childNodes.length;
 	}
+	PD.textLayer = textLayer;
 	PD.on("layout", function () { if (PD.doc) PD.doc.pages.forEach(function (p) { var el = PD.pageEl(p), tl = el && el.querySelector(".pd-tl"); if (tl) { if (tl._key !== (p.rot0 + p.rot)) tl.remove(); else tl.style.transform = "scale(" + PD.zoom + ")"; } }); });
 	function readStart() {
 		var p = PD.doc && PD.doc.pages[Math.max(0, PD.cur)], v = $("pd-view").getBoundingClientRect();

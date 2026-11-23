@@ -35,4 +35,5 @@ ok(L.kindOf("a.rtf", "", enc("{\\rtf1}").buffer) === "text" && L.kindOf("x.pdf",
 ok(L.kindOf("a.docx") === "docx" && L.kindOf("notes.md") === "text" && L.kindOf("a.doc") === "doc" && L.kindOf("photo.jpg") === "other", "kindOf names");
 ok(L.fix("https://docs.google.com/document/d/1AbCdEfGhIjKlMn/edit", "text").endsWith("format=txt"), "google doc txt");
 ok(L.nameFrom("https://x.com/f/notes.md", "text") === "notes.md" && L.nameFrom("https://x.com/get.php", "text") === "get.txt", "text names");
+{ const ls = T.lineStarts("ab\r\ncd\nef\rg"); ok(JSON.stringify(ls) === "[0,4,7,10]", "lineStarts mixed endings"); const lc = T.lineCol(ls, 8); ok(lc.line === 2 && lc.col === 1, "lineCol"); ok(T.lineCol(ls, 0).line === 0 && T.lineCol([0], 5).col === 5, "lineCol edges"); }
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

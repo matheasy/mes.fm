@@ -109,3 +109,11 @@ html.pd-win-on #hdrBarTab, html.pd-win-on #compact-nav, html.pd-win-on .mes-bott
 .pd-bm-ed {width:100%;background:var(--pd-field);border:1px solid var(--pd-on);border-radius:0.3em;padding:0.35em 0.45em;color:var(--pd-text);}
 .pd-compact .pd-bm {position:absolute;z-index:40;left:0;top:0;bottom:0;width:min(22em,88%);box-shadow:6px 0 24px rgba(0,0,0,0.55);} .pd-compact .pd-bm-x {display:inline-block;}
 .pd-main {position:relative;}
+
+/* find bar + page box (2026-11-23, main_js/find-bar.js): the bar takes the workspace colours; matches are painted on the invisible text layer */
+#pd .pd-findwrap {flex:none;} #pd .pd-findwrap .mes-find {--mf-bg:var(--pd-panel);--mf-fg:var(--pd-text);--mf-dim:var(--pd-dim);--mf-line:var(--pd-line);--mf-field:var(--pd-field);--mf-hover:var(--pd-hover);--mf-acc:#ff8a91;}
+#pd .pd-pagebox {color:var(--pd-dim);} #pd .pd-pagebox input {--mf-pl:var(--pd-line);--mf-pf:var(--pd-field);color:var(--pd-text);}
+#pd .pd-page .pd-tl span::highlight(mes-find) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(255,214,0,0.42);}
+#pd .pd-page .pd-tl span::highlight(mes-find-cur) {color:transparent !important;-webkit-text-fill-color:transparent !important;background-color:rgba(249,115,22,0.6);}
+#pd.pd-compact .pd-pagebox .mf-pl {display:none;}
+#pd .pd-findwrap .mes-find {--mf-max:min(28vh,240px);}

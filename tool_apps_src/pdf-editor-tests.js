@@ -54,4 +54,12 @@ const h = new P.History(3); h.reset("a"); eq(h.canUndo(), false, "nothing to und
 	const tr = P.bmTree([{ t: "a", lv: 0 }, { t: "b", lv: 2 }, { t: "c", lv: 1 }, { t: "d", lv: 0 }]);
 	eq(tr.length, 2, "two top items"); eq(tr[0].kids.length, 2, "a level can only go one deeper"); eq(tr[0].kids[0].b.t, "b", "child order kept");
 }
+{
+	// find: page text and cutting a match into lines
+	const pt = P.pageText([{ text: "Hello world" }, { text: "second line" }]);
+	eq(pt.s, "Hello world second line ", "page text = lines + spaces"); eq(pt.starts, [0, 12], "line starts");
+	const lens = [12, 12];
+	eq(P.lineParts(pt.starts, lens, 6, 11), [{ li: 0, a: 6, b: 11 }], "match inside one line");
+	eq(P.lineParts(pt.starts, lens, 6, 18), [{ li: 0, a: 6, b: 12 }, { li: 1, a: 0, b: 6 }], "match across two lines");
+}
 console.log(n + " checks, " + f + " failed"); process.exit(f ? 1 : 0);

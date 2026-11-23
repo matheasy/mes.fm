@@ -164,3 +164,7 @@ body.dx-filled { overflow: hidden; }
 #dx .dx-tsz .mes-ts button { background: var(--dx-panel); color: var(--dx-ink); min-height: 34px; }
 #dx .dx-tsz .mes-ts .mes-ts-v { border-color: var(--dx-line); }
 #dx .dx-tsz .mes-ts button:hover:not(:disabled) { background: var(--dx-hov); color: var(--dx-ink); }
+/* find bar + page box (2026-11-23, main_js/find-bar.js): same look as /pdf and /text, in the workspace colours */
+#dx .mes-find { --mf-bg: var(--dx-panel); --mf-fg: var(--dx-ink); --mf-dim: var(--dx-mute); --mf-line: var(--dx-line); --mf-field: var(--dx-panel); --mf-hover: var(--dx-hov); --mf-acc: var(--dx-acc); --mf-mark: var(--dx-hit); --mf-markfg: var(--dx-hitink); margin: -4px -4px 8px; }
+#dx .mes-find .mf-row { padding: 2px 0 6px; } #dx .mes-find .mf-qw { flex-basis: 100%; }
+#dx .dx-pagebox { color: var(--dx-mute); } #dx .dx-pagebox input { --mf-pl: var(--dx-line); --mf-pf: var(--dx-panel); color: var(--dx-ink); }

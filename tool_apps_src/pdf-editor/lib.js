@@ -224,6 +224,14 @@
 		flat.forEach(function (b) { var lv = Math.max(0, Math.min(b.lv | 0, stack.length - 1)); stack.length = lv + 1; var node = { b: b, kids: [] }; stack[lv].kids.push(node); stack.push(node); });
 		return root.kids;
 	}
-	var PDM = { rowsOf: rowsOf, bmNorm: bmNorm, bodySize: bodySize, isScanned: isScanned, findToc: findToc, findHeadings: findHeadings, makeBookmarks: makeBookmarks, bmTree: bmTree, newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
+	/* find (2026-11-23): one page's searchable text = its lines (PDM.groupText) joined like the text layer's spans ("line text" + " ");
+	   starts[i] = where line i begins. lineParts(starts, lens, a, b) cuts a match into [{li, a, b}] per line (offsets inside the line). */
+	function pageText(lines) { var s = "", starts = []; (lines || []).forEach(function (l) { starts.push(s.length); s += l.text + " "; }); return { s: s, starts: starts }; }
+	function lineParts(starts, lens, a, b) {
+		var out = [];
+		for (var i = 0; i < starts.length; i++) { var s0 = starts[i], s1 = s0 + lens[i]; if (s1 <= a) continue; if (s0 >= b) break; var x = Math.max(a, s0) - s0, y = Math.min(b, s1) - s0; if (y > x) out.push({ li: i, a: x, b: y }); }
+		return out;
+	}
+	var PDM = { pageText: pageText, lineParts: lineParts, rowsOf: rowsOf, bmNorm: bmNorm, bodySize: bodySize, isScanned: isScanned, findToc: findToc, findHeadings: findHeadings, makeBookmarks: makeBookmarks, bmTree: bmTree, newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
 	if (typeof module !== "undefined" && module.exports) module.exports = PDM; else root.PDM = PDM;
 })(typeof window !== "undefined" ? window : this);

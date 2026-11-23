@@ -9,6 +9,8 @@
 			<div class="pd-top-r">
 				<button type="button" class="pd-ib" id="pd-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
 				<button type="button" class="pd-ib" id="pd-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>&#8631;</button>
+				<button type="button" class="pd-ib pd-ib--txt" id="pd-findbtn" aria-pressed="false" title="Find text in the PDF (Ctrl+F)"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-3px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5l5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="pd-lbl"> Find</span></button>
+				<span class="pd-pagebox" id="pd-pagebox"></span>
 				<span class="pd-vsep"></span>
 				<button type="button" class="pd-ib" id="pd-zout" title="Zoom out" aria-label="Zoom out">&minus;</button>
 				<button type="button" class="pd-zoom" id="pd-zoom" title="Click to fit the page width">100%</button>
@@ -25,6 +27,7 @@
 			</div>
 		</div>
 		<div class="pd-morebar" id="pd-morebar" hidden></div>
+		<div class="pd-findwrap" id="pd-findwrap" hidden></div>
 		<div class="pd-opts" id="pd-opts" aria-label="Tool options"></div>
 		<div class="pd-main">
 			<div class="pd-tools" id="pd-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>

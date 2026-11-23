@@ -288,7 +288,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-11-17",
+"updated":"2026-11-23",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -369,6 +369,11 @@
 "/fav":{
 "added":"2026-10-15",
 "updated":"2026-11-13",
+"type":"Tool"
+},
+"/feeds":{
+"added":"2026-11-23",
+"updated":"2026-11-23",
 "type":"Tool"
 },
 "/file-check":{
@@ -504,6 +509,11 @@
 "/interval-timer":{
 "added":"2026-10-06",
 "updated":"2026-11-18",
+"type":"Tool"
+},
+"/investment-tracker":{
+"added":"2026-11-23",
+"updated":"2026-11-23",
 "type":"Tool"
 },
 "/julia-set-explorer":{
@@ -693,7 +703,7 @@
 },
 "/pdf":{
 "added":"2026-10-15",
-"updated":"2026-11-16",
+"updated":"2026-11-23",
 "type":"Tool"
 },
 "/pdf-tools":{
@@ -983,7 +993,7 @@
 },
 "/text":{
 "added":"2026-11-12",
-"updated":"2026-11-17",
+"updated":"2026-11-23",
 "type":"Tool"
 },
 "/text-size":{

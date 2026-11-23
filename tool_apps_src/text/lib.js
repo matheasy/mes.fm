@@ -228,7 +228,10 @@
     return out;
   }
 
-  var api = { decode: decode, info: info, extOf: extOf, rtfToHtml: rtfToHtml, parseCsv: parseCsv, guessSep: guessSep, stats: stats, shouldUnwrap: shouldUnwrap, paragraphs: paragraphs, linkify: linkify, splitHtmlLines: splitHtmlLines, escapeHtml: escapeHtml, isJson: isJson, LANG: LANG };
+  /* find (2026-11-23): start offset of every line (\n, \r\n or \r) and the line + column of an offset */
+  function lineStarts(t) { var out = [0], re = /\r\n|\r|\n/g, m; t = String(t || ""); while ((m = re.exec(t))) out.push(m.index + m[0].length); return out; }
+  function lineCol(starts, off) { var lo = 0, hi = starts.length - 1; while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (starts[mid] <= off) lo = mid; else hi = mid - 1; } return { line: lo, col: off - starts[lo] }; }
+  var api = { lineStarts: lineStarts, lineCol: lineCol, decode: decode, info: info, extOf: extOf, rtfToHtml: rtfToHtml, parseCsv: parseCsv, guessSep: guessSep, stats: stats, shouldUnwrap: shouldUnwrap, paragraphs: paragraphs, linkify: linkify, splitHtmlLines: splitHtmlLines, escapeHtml: escapeHtml, isJson: isJson, LANG: LANG };
   root.MESText = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

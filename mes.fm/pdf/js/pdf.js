@@ -224,7 +224,15 @@
 		flat.forEach(function (b) { var lv = Math.max(0, Math.min(b.lv | 0, stack.length - 1)); stack.length = lv + 1; var node = { b: b, kids: [] }; stack[lv].kids.push(node); stack.push(node); });
 		return root.kids;
 	}
-	var PDM = { rowsOf: rowsOf, bmNorm: bmNorm, bodySize: bodySize, isScanned: isScanned, findToc: findToc, findHeadings: findHeadings, makeBookmarks: makeBookmarks, bmTree: bmTree, newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
+	/* find (2026-11-23): one page's searchable text = its lines (PDM.groupText) joined like the text layer's spans ("line text" + " ");
+	   starts[i] = where line i begins. lineParts(starts, lens, a, b) cuts a match into [{li, a, b}] per line (offsets inside the line). */
+	function pageText(lines) { var s = "", starts = []; (lines || []).forEach(function (l) { starts.push(s.length); s += l.text + " "; }); return { s: s, starts: starts }; }
+	function lineParts(starts, lens, a, b) {
+		var out = [];
+		for (var i = 0; i < starts.length; i++) { var s0 = starts[i], s1 = s0 + lens[i]; if (s1 <= a) continue; if (s0 >= b) break; var x = Math.max(a, s0) - s0, y = Math.min(b, s1) - s0; if (y > x) out.push({ li: i, a: x, b: y }); }
+		return out;
+	}
+	var PDM = { pageText: pageText, lineParts: lineParts, rowsOf: rowsOf, bmNorm: bmNorm, bodySize: bodySize, isScanned: isScanned, findToc: findToc, findHeadings: findHeadings, makeBookmarks: makeBookmarks, bmTree: bmTree, newId: newId, clamp: clamp, esc: esc, Viewport: Viewport, winAnsiOk: winAnsiOk, wrapLines: wrapLines, LINE_H: LINE_H, ASCENT: ASCENT, PAD: PAD, textHeight: textHeight, groupText: groupText, lineAt: lineAt, bbox: bbox, hit: hit, pick: pick, move: move, resizeBox: resizeBox, distToSegment: distToSegment, simplify: simplify, smooth: smooth, alphaBounds: alphaBounds, whiteToAlpha: whiteToAlpha, hexToRgb: hexToRgb, rgbToHex: rgbToHex, editedName: editedName, formatBytes: formatBytes, History: History, SIZES: SIZES };
 	if (typeof module !== "undefined" && module.exports) module.exports = PDM; else root.PDM = PDM;
 })(typeof window !== "undefined" ? window : this);
 
@@ -1077,6 +1085,82 @@
 	};
 })();
 
+/* PDF Editor: Find (Ctrl/Cmd+F) and the "Page [ n ] / N" box (2026-11-23). The shared bar is main_js/find-bar.js (MESFind).
+   It searches the PDF's own text of every page (pdf.js getTextContent, grouped into lines by PDM.groupText, cached on the page as
+   p._lines), lists the matches by page with a snippet, and highlights them on the page through the invisible text layer that
+   Read aloud already uses (PD.textLayer: one span per line, span._li = line index). Text added with the tools is not searched.
+   Pages with no text at all (scanned pictures) are counted and named in the note. */
+(function () {
+	"use strict";
+	var F = window.MESFind, PD = window.PD, M = window.PDM, $ = function (id) { return document.getElementById(id); };
+	if (!F || !PD || !M) return;
+	var root = $("pd"), view = $("pd-view"), wrap = $("pd-findwrap");
+	if (!root || !wrap) return;
+	async function linesOf(p) {
+		if (p.blank || !p.proxy) return [];
+		if (!p._lines) { try { var tc = await p.proxy.getTextContent(); p._lines = M.groupText(tc.items, tc.styles); } catch (e) { p._lines = []; } }
+		return p._lines;
+	}
+	var shown = [];   // hits currently painted
+	async function search(q, o, progress) {
+		if (!PD.doc) return { hits: [], note: "Open a PDF first" };
+		var pages = PD.doc.pages, hits = [], empty = 0, total = 0, t0 = Date.now(), capped = false;
+		for (var i = 0; i < pages.length; i++) {
+			var p = pages[i]; if (p.blank) continue;
+			if (!p._lines && Date.now() - t0 > 250) progress("Page " + (i + 1) + "/" + pages.length);
+			var lines = await linesOf(p), pt = M.pageText(lines);
+			if (!lines.length) { empty++; continue; }
+			total++;
+			var found = F.find(pt.s, q, { caseSensitive: o.caseSensitive, wholeWord: o.wholeWord, max: 5000 - hits.length });
+			found.forEach(function (m) { hits.push({ g: i, gl: "Page " + (i + 1), text: pt.s, a: m[0], b: m[1], p: p, starts: pt.starts, lens: lines.map(function (l) { return l.text.length + 1; }) }); });
+			if (hits.length >= 5000) { capped = true; break; }
+		}
+		var note = empty ? (empty === pages.length ? "This PDF has no text to search: its pages are pictures (a scan). Bookmarks → Make bookmarks can read them with OCR." : empty + (empty === 1 ? " page has" : " pages have") + " no text (scanned pictures) and could not be searched.") : "";
+		var start = 0; for (var k = 0; k < hits.length; k++) if (hits[k].g >= PD.cur) { start = k; break; }
+		return { hits: hits, note: note, capped: capped, start: start };
+	}
+	function rangesFor(h) {
+		var el = PD.pageEl(h.p), tl = el && el.querySelector(".pd-tl"); if (!tl) return [];
+		var byLi = {}; [].forEach.call(tl.childNodes, function (sp) { byLi[sp._li] = sp; });
+		var parts = M.lineParts(h.starts, h.lens, h.a, h.b), out = [];
+		parts.forEach(function (pt) { var sp = byLi[pt.li], tn = sp && sp.firstChild; if (!tn) return; var r = document.createRange(); r.setStart(tn, Math.min(pt.a, tn.length)); r.setEnd(tn, Math.min(pt.b, tn.length)); out.push(r); });
+		return out;
+	}
+	var curHit = null;
+	async function paintAll(scroll) {
+		var hits = bar.hits(), pages = {};
+		hits.forEach(function (h) { pages[h.g] = h.p; });
+		for (var g in pages) await PD.textLayer(pages[g]);
+		var all = [], cur = [];
+		hits.forEach(function (h) { var rs = rangesFor(h); all = all.concat(rs); if (h === curHit) cur = rs; });
+		F.paint(all, null);
+		if (window.Highlight && CSS.highlights) { var hc = new Highlight(); cur.forEach(function (r) { hc.add(r); }); CSS.highlights.set("mes-find-cur", hc); }
+		if (scroll && cur[0]) F.reveal(view, cur[0].getBoundingClientRect());
+		else if (scroll && curHit) { var el = PD.pageEl(curHit.p); if (el) F.reveal(view, el.getBoundingClientRect()); }
+	}
+	var paintT = 0;
+	function go(h) {
+		curHit = h;
+		var i = PD.doc.pages.indexOf(h.p); if (i >= 0 && i !== PD.cur) { PD.cur = i; PD.emit("cur"); }
+		var el = PD.pageEl(h.p); if (el && !el.querySelector(".pd-tl")) F.reveal(view, el.getBoundingClientRect());
+		clearTimeout(paintT); paintT = setTimeout(function () { paintAll(true); }, 0);
+	}
+	function clear() { curHit = null; F.unpaint(); }
+	var bar = F.bar({ mount: wrap, theme: "dark", groupWord: "pages", placeholder: "Find in this PDF…", search: search, go: go, clear: clear,
+		onOpen: function () { wrap.hidden = false; $("pd-findbtn").setAttribute("aria-pressed", "true"); },
+		onClose: function () { wrap.hidden = true; $("pd-findbtn").setAttribute("aria-pressed", "false"); } });
+	function openFind() { if (!PD.doc) { PD.toast("Open a PDF first"); return; } var sel = String(getSelection() || ""); bar.open(sel); }
+	$("pd-findbtn").onclick = function () { if (bar.isOpen()) bar.close(); else openFind(); };
+	F.keys(root, { open: openFind, next: function () { if (bar.isOpen()) bar.next(); else openFind(); }, prev: function () { if (bar.isOpen()) bar.prev(); else openFind(); }, when: function () { return !!PD.doc; } });
+	PD.on("open", function () { if (bar.isOpen()) bar.refresh(false); else clear(); });
+	PD.on("layout", function () { if (bar.isOpen() && bar.hits().length) { clearTimeout(paintT); paintT = setTimeout(function () { paintAll(false); }, 60); } });
+	/* page box */
+	var pb = F.pageBox({ label: "Page", theme: "dark", aria: "Page number: type one and press Enter", onGo: function (n) { PD.goPage(n - 1); } });
+	$("pd-pagebox").appendChild(pb.el);
+	function syncPage() { pb.set(PD.doc ? PD.cur + 1 : 0, PD.doc ? PD.doc.pages.length : 0); }
+	PD.on("cur", syncPage); PD.on("open", syncPage); PD.on("layout", syncPage); PD.on("history", syncPage); syncPage();
+})();
+
 /* MES PDF Editor -- mes.fm/pdf (wiring: files, drag and drop, zoom, keyboard, window mode). The work is in core.js / tools.js / sign.js / export.js (global PD, helpers in lib.js as PDM). */
 (function () {
 	"use strict";
@@ -1193,10 +1277,10 @@
 			var vp = PD.vp(p, 1); tl = document.createElement("div"); tl.className = "pd-tl"; tl._key = p.rot0 + p.rot;
 			tl.style.width = vp.width + "px"; tl.style.height = vp.height + "px"; tl.setAttribute("aria-hidden", "false");
 			var q = (p.rot0 + p.rot) % 180 === 90;
-			p._lines.forEach(function (l) {
+			p._lines.forEach(function (l, li) {
 				var a = vp.toView(l.x, l.y - 0.22 * l.size), b = vp.toView(l.x + l.w, l.y + 0.88 * l.size), x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]), w = Math.abs(a[0] - b[0]), h = Math.abs(a[1] - b[1]);
 				if (w < 1 || h < 1) return;
-				var sp = document.createElement("span"), fs = (q ? w : h) * 0.9; sp.textContent = l.text + " ";   // the space keeps the last word of a line apart from the next line's first
+				var sp = document.createElement("span"), fs = (q ? w : h) * 0.9; sp.textContent = l.text + " "; sp._li = li;   // the space keeps the last word of a line apart from the next line's first
 				measureCtx.font = fs + "px sans-serif"; var mw = measureCtx.measureText(l.text).width || 1;
 				sp.style.cssText = "left:" + x + "px;top:" + y + "px;font-size:" + fs + "px;height:" + (q ? w : h) + "px;transform:" + (q ? "translate(" + w + "px,0) rotate(90deg) " : "") + "scaleX(" + ((q ? h : w) / mw) + ")";
 				tl.appendChild(sp);
@@ -1206,6 +1290,7 @@
 		tl.style.transform = "scale(" + PD.zoom + ")";
 		return tl.childNodes.length;
 	}
+	PD.textLayer = textLayer;
 	PD.on("layout", function () { if (PD.doc) PD.doc.pages.forEach(function (p) { var el = PD.pageEl(p), tl = el && el.querySelector(".pd-tl"); if (tl) { if (tl._key !== (p.rot0 + p.rot)) tl.remove(); else tl.style.transform = "scale(" + PD.zoom + ")"; } }); });
 	function readStart() {
 		var p = PD.doc && PD.doc.pages[Math.max(0, PD.cur)], v = $("pd-view").getBoundingClientRect();

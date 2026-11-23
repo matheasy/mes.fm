@@ -920,7 +920,7 @@ var MESDocx = (function () {
 		"[data-dxw]>section{box-shadow:0 1px 4px rgba(0,0,0,.35)!important;margin-bottom:16px!important}" +
 		":host(.is-dark) [data-dxw]>section{filter:invert(1) hue-rotate(180deg)}" +
 		":host(.is-dark) [data-dxw]>section img,:host(.is-dark) [data-dxw]>section svg,:host(.is-dark) [data-dxw]>section canvas{filter:invert(1) hue-rotate(180deg)}" +
-		"::highlight(dx-hit){background-color:#fde047;color:#000}::highlight(dx-cur){background-color:#f97316;color:#fff}" +
+		"::highlight(mes-find){background-color:rgba(253,214,40,.6);color:#000}::highlight(mes-find-cur){background-color:#f97316;color:#fff}" +
 		"a[href]{cursor:pointer}";
 	function renderView(d) {
 		var bytes = d.src === "edited" ? d.editedBytes : d.bytes;
@@ -1003,7 +1003,7 @@ var MESDocx = (function () {
 		S.tab = t; save();
 		[].forEach.call(root.querySelectorAll(".dx-stab"), function (b) { var on = b.getAttribute("data-tab") === t; b.classList.toggle("is-on", on); b.setAttribute("aria-selected", String(on)); });
 		[].forEach.call(root.querySelectorAll(".dx-spane"), function (p) { p.hidden = p.getAttribute("data-pane") !== t; });
-		if (t === "find") setTimeout(function () { $("dx-q").focus(); $("dx-q").select(); }, 20);
+		if (t === "find") setTimeout(function () { bar.input.focus(); bar.input.select(); }, 20);
 		fillPane();
 	}
 	[].forEach.call(root.querySelectorAll(".dx-stab"), function (b) { b.onclick = function () { setTab(b.getAttribute("data-tab")); }; });
@@ -1095,61 +1095,56 @@ var MESDocx = (function () {
 		};
 	}
 
-	/* ---------- find ---------- */
-	var hits = [], hitAt = -1;
-	function textIndex(rootEl) {
-		var walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, { acceptNode: function (n) { var p = n.parentNode; return !p || /^(STYLE|SCRIPT)$/.test(p.nodeName) || (p.closest && p.closest("[class$='-comment-popover']")) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; } });
-		var nodes = [], s = "", n;
-		while ((n = walker.nextNode())) { nodes.push({ n: n, at: s.length }); s += n.nodeValue; }
-		return { s: s, nodes: nodes };
+	/* ---------- find (shared bar: main_js/find-bar.js, MESFind) ----------
+	   Searches the page layout (inside the shadow root) or the Edit copy; matches are grouped by page in the view (section.docx),
+	   highlighted with the CSS Custom Highlight API (the ::highlight rules are in SHADOW_CSS, since page rules do not reach a shadow root). */
+	var F = window.MESFind;
+	function pageSections() { return cur && cur.mode !== "edit" && cur.shadow ? [].slice.call(cur.shadow.querySelectorAll("section.d" + cur.id)) : []; }
+	function findSearch(q, o) {
+		var r = activeRoot(); if (!r) return { hits: [], note: cur ? "" : "Open a document first" };
+		var ix = F.textIndex(r, function (e) { return e.matches && e.matches("[class$='-comment-popover']"); });
+		var found = F.find(ix.s, q, { caseSensitive: o.caseSensitive, wholeWord: o.wholeWord, max: 3000 });
+		var secs = pageSections(), pageOf = new Map();
+		if (secs.length) secs.forEach(function (sc, i) { pageOf.set(sc, i); });
+		var ats = ix.nodes.map(function (x) { return x.at; });
+		var hits = found.map(function (m) {
+			var pg = -1; if (secs.length) { var nd = ix.nodes[F.lineOf(ats, m[0])], sc = nd && nd.n.parentNode && nd.n.parentNode.closest && nd.n.parentNode.closest("section.d" + cur.id); pg = sc && pageOf.has(sc) ? pageOf.get(sc) : -1; }
+			return { g: pg, gl: pg >= 0 ? "Page " + (pg + 1) : "", text: ix.s, a: m[0], b: m[1], r: F.range(ix, m[0], m[1]) };
+		});
+		var start = 0, cp = curPage() - 1; if (cp > 0) for (var k = 0; k < hits.length; k++) if (hits[k].g >= cp) { start = k; break; }
+		return { hits: hits, capped: found.length >= 3000, start: start };
 	}
-	function rangeAt(ix, a, b) {
-		var r = document.createRange(), i = 0;
-		function pos(o) { while (i < ix.nodes.length - 1 && ix.nodes[i + 1].at <= o) i++; return ix.nodes[i]; }
-		var na = pos(a); r.setStart(na.n, a - na.at);
-		var nb = pos(b); if (b - nb.at === 0 && i > 0 && nb.at === b) { nb = ix.nodes[i - 1]; r.setEnd(nb.n, nb.n.nodeValue.length); } else r.setEnd(nb.n, Math.min(nb.n.nodeValue.length, b - nb.at));
-		return r;
+	function findGo(h, i, all) {
+		F.paint(all.map(function (x) { return x.r; }), h.r);
+		if (h.r) F.reveal(view, h.r.getBoundingClientRect());
 	}
-	function clearFind() { hits = []; hitAt = -1; if (window.CSS && CSS.highlights) { CSS.highlights.delete("dx-hit"); CSS.highlights.delete("dx-cur"); } $("dx-qn").textContent = ""; $("dx-qlist").innerHTML = ""; }
-	function runFind(keep) {
-		var q = $("dx-q").value, r = activeRoot();
-		var was = hitAt; clearFind();
-		if (!q || !r) return;
-		var ix = textIndex(r), found = D.findAll(ix.s, q, { caseSensitive: $("dx-qcase").checked, wholeWord: $("dx-qword").checked });
-		hits = found.slice(0, 2000).map(function (m) { return { r: rangeAt(ix, m[0], m[1]), a: m[0], b: m[1] }; });
-		if (window.Highlight && CSS.highlights) { var hl = new Highlight(); hits.forEach(function (h) { hl.add(h.r); }); CSS.highlights.set("dx-hit", hl); }
-		$("dx-qlist").innerHTML = hits.slice(0, 200).map(function (h, i) { var a = Math.max(0, h.a - 30), pre = ix.s.slice(a, h.a), post = ix.s.slice(h.b, h.b + 40); return '<button type="button" data-i="' + i + '">' + (a > 0 ? "&hellip;" : "") + esc(pre) + "<mark>" + esc(ix.s.slice(h.a, h.b)) + "</mark>" + esc(post) + "</button>"; }).join("");
-		if (!hits.length) { $("dx-qn").textContent = "No matches"; return; }
-		go(keep && was >= 0 ? Math.min(was, hits.length - 1) : 0);
+	var bar = F.bar({ mount: $("dx-findbar"), fixed: true, groupWord: "pages", placeholder: "Find in this document…", search: findSearch, go: findGo, clear: function () { F.unpaint(); } });
+	var findT = 0;
+	function clearFind() { F.unpaint(); clearTimeout(findT); findT = setTimeout(function () { if (S.tab === "find") bar.refresh(true); }, 400); }
+	function openFind() { if (!S.side) setSide(true); setTab("find"); var sel = String(getSelection() || ""); if (cur && cur.shadow && cur.shadow.getSelection) sel = String(cur.shadow.getSelection() || "") || sel; bar.open(sel); }
+	$("dx-findbtn").onclick = openFind;
+	/* "Page [ n ] / N" (page layout view only) */
+	var pbox = F.pageBox({ label: "Page", aria: "Page number: type one and press Enter", onGo: function (n) { var sc = pageSections()[n - 1]; if (sc) scrollToEl(sc); } });
+	$("dx-pagebox").appendChild(pbox.el);
+	function curPage() {
+		var secs = pageSections(); if (!secs.length) return 0;
+		var vr = view.getBoundingClientRect(), mid = vr.top + Math.min(vr.height, innerHeight - vr.top) / 3;
+		for (var i = 0; i < secs.length; i++) { var r = secs[i].getBoundingClientRect(); if (r.bottom >= mid) return i + 1; }
+		return secs.length;
 	}
-	function go(i) {
-		if (!hits.length) return;
-		hitAt = (i + hits.length) % hits.length;
-		var h = hits[hitAt];
-		if (window.Highlight && CSS.highlights) CSS.highlights.set("dx-cur", new Highlight(h.r));
-		else { var sel = getSelection(); sel.removeAllRanges(); sel.addRange(h.r); }
-		$("dx-qn").textContent = (hitAt + 1) + " of " + hits.length + (hits.length >= 2000 ? "+" : "");
-		[].forEach.call($("dx-qlist").children, function (b, k) { b.classList.toggle("is-on", k === hitAt); });
-		var vr = view.getBoundingClientRect(), rr = h.r.getBoundingClientRect();
-		if (rr.top < vr.top + 20 || rr.bottom > vr.bottom - 20) view.scrollTo({ top: view.scrollTop + rr.top - vr.top - vr.height / 3 });
-	}
-	$("dx-q").addEventListener("input", debounce(function () { runFind(false); }, 180));
-	$("dx-q").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (!hits.length) runFind(false); else go(hitAt + (e.shiftKey ? -1 : 1)); } if (e.key === "Escape") { this.value = ""; clearFind(); } });
-	$("dx-qcase").onchange = $("dx-qword").onchange = function () { runFind(false); };
-	$("dx-qnext").onclick = function () { if (!hits.length) runFind(false); else go(hitAt + 1); };
-	$("dx-qprev").onclick = function () { if (!hits.length) runFind(false); else go(hitAt - 1); };
-	$("dx-qlist").onclick = function (e) { var b = e.target.closest("[data-i]"); if (b) go(+b.getAttribute("data-i")); };
+	function syncPage() { var n = pageSections().length; $("dx-pagebox").hidden = !n; pbox.set(curPage(), n); }
+	var pgT = 0; view.addEventListener("scroll", function () { if (pgT) return; pgT = requestAnimationFrame(function () { pgT = 0; syncPage(); }); });
 	function replaceHit(h, text) {
 		var sel = getSelection(); sel.removeAllRanges(); sel.addRange(h.r);
 		cur.editEl.focus({ preventScroll: true });
 		sel.removeAllRanges(); sel.addRange(h.r);
 		if (!document.execCommand("insertText", false, text)) { h.r.deleteContents(); h.r.insertNode(document.createTextNode(text)); }
 	}
-	$("dx-r1").onclick = function () { if (!cur || cur.mode !== "edit") return; if (!hits.length) runFind(false); if (!hits.length) return; replaceHit(hits[hitAt], $("dx-r").value); markDirty(); runFind(true); };
+	$("dx-r1").onclick = function () { if (!cur || cur.mode !== "edit") return; var h = bar.current(); if (!h) { bar.next(); return; } replaceHit(h, $("dx-r").value); markDirty(); bar.refresh(true); };
 	$("dx-rall").onclick = function () {
-		if (!cur || cur.mode !== "edit") return; runFind(false); var n = hits.length; if (!n) return;
-		for (var i = hits.length - 1; i >= 0; i--) replaceHit(hits[i], $("dx-r").value);
-		markDirty(); clearFind(); $("dx-qn").textContent = n + " replaced";
+		if (!cur || cur.mode !== "edit") return; var hs = bar.hits().slice(), n = hs.length; if (!n) return;
+		for (var i = hs.length - 1; i >= 0; i--) replaceHit(hs[i], $("dx-r").value);
+		markDirty(); F.unpaint(); bar.refresh(false); toast(n + (n === 1 ? " match" : " matches") + " replaced");
 	};
 
 	/* ---------- edit mode ---------- */
@@ -1455,10 +1450,11 @@ var MESDocx = (function () {
 		var t = e.target, typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.nodeName)), inApp = app.contains(t) || app.classList.contains("is-fill");
 		var mod = e.ctrlKey || e.metaKey;
 		if (e.key === "Escape" && app.classList.contains("is-fill") && !document.fullscreenElement) { setFill(false); return; }
+		if (mod && e.key.toLowerCase() === "f" && cur) { var ar = app.getBoundingClientRect(); if (inApp || (ar.bottom > 60 && ar.top < innerHeight - 60)) { e.preventDefault(); openFind(); return; } }
 		if (!inApp) return;
 		if (mod && e.key.toLowerCase() === "o") { e.preventDefault(); pick(); return; }
 		if (!cur) return;
-		if (mod && e.key.toLowerCase() === "f") { e.preventDefault(); if (!S.side) setSide(true); setTab("find"); return; }
+		
 		if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); if (!(cloud && cloud.save(cur))) menu.querySelector('[data-dl="docx"]').click(); return; }
 		if (mod && e.key.toLowerCase() === "p") { e.preventDefault(); printDoc(); return; }
 		if (mod && (e.key === "=" || e.key === "+")) { e.preventDefault(); stepZoom(1); return; }
@@ -1483,6 +1479,7 @@ var MESDocx = (function () {
 		el.innerHTML = bits.join(" &middot; ");
 	}
 	function refreshUi() {
+		setTimeout(syncPage, 0);
 		var on = !!cur, edit = on && cur.mode === "edit";
 		$("dx-mview").setAttribute("aria-pressed", String(!edit)); $("dx-medit").setAttribute("aria-pressed", String(edit));
 		$("dx-edbar").hidden = !edit;

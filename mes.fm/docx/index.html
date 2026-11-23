@@ -471,6 +471,10 @@ body.dx-filled { overflow: hidden; }
 #dx .dx-tsz .mes-ts button { background: var(--dx-panel); color: var(--dx-ink); min-height: 34px; }
 #dx .dx-tsz .mes-ts .mes-ts-v { border-color: var(--dx-line); }
 #dx .dx-tsz .mes-ts button:hover:not(:disabled) { background: var(--dx-hov); color: var(--dx-ink); }
+/* find bar + page box (2026-11-23, main_js/find-bar.js): same look as /pdf and /text, in the workspace colours */
+#dx .mes-find { --mf-bg: var(--dx-panel); --mf-fg: var(--dx-ink); --mf-dim: var(--dx-mute); --mf-line: var(--dx-line); --mf-field: var(--dx-panel); --mf-hover: var(--dx-hov); --mf-acc: var(--dx-acc); --mf-mark: var(--dx-hit); --mf-markfg: var(--dx-hitink); margin: -4px -4px 8px; }
+#dx .mes-find .mf-row { padding: 2px 0 6px; } #dx .mes-find .mf-qw { flex-basis: 100%; }
+#dx .dx-pagebox { color: var(--dx-mute); } #dx .dx-pagebox input { --mf-pl: var(--dx-line); --mf-pf: var(--dx-panel); color: var(--dx-ink); }
 
 
 	@media print {
@@ -828,6 +832,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="dx-ib" id="dx-zout" title="Zoom out (Ctrl -)" aria-label="Zoom out">&minus;</button>
 				<button type="button" class="dx-zoom" id="dx-zoom" title="Zoom: click to fit the page width">100%</button>
 				<button type="button" class="dx-ib" id="dx-zin" title="Zoom in (Ctrl +)" aria-label="Zoom in">+</button>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-findbtn" title="Find text in the document (Ctrl+F)"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="vertical-align:-2px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5l5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg> <span class="dx-lbl">Find</span></button>
+				<span class="dx-pagebox" id="dx-pagebox"></span>
 				<button type="button" class="dx-ib dx-ib--txt" id="dx-fit" aria-pressed="false" title="Fit the page width">&#8596; <span class="dx-lbl">Fit</span></button>
 				<span class="dx-sep"></span>
 				<button type="button" class="dx-ib dx-ib--txt" id="dx-side" aria-pressed="true" title="Show or hide the side panel">&#9776; <span class="dx-lbl">Panel</span></button>
@@ -897,16 +903,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="dx-spane" data-pane="outline"><div id="dx-outline" class="dx-outline"></div></div>
 					<div class="dx-spane" data-pane="find" hidden>
-						<div class="dx-findrow"><input type="search" class="dx-in" id="dx-q" placeholder="Find in document" aria-label="Find in document" autocomplete="off"></div>
-						<div class="dx-findrow"><button type="button" class="dx-ib" id="dx-qprev" title="Previous (Shift+Enter)" aria-label="Previous match">&#8593;</button><button type="button" class="dx-ib" id="dx-qnext" title="Next (Enter)" aria-label="Next match">&#8595;</button><span class="dx-qn" id="dx-qn" aria-live="polite"></span></div>
-						<label class="dx-chk"><input type="checkbox" id="dx-qcase"> Match case</label>
-						<label class="dx-chk"><input type="checkbox" id="dx-qword"> Whole words</label>
+						<div id="dx-findbar"></div>
 						<div id="dx-repl" hidden>
 							<div class="dx-findrow"><input type="text" class="dx-in" id="dx-r" placeholder="Replace with" aria-label="Replace with" autocomplete="off"></div>
 							<div class="dx-findrow"><button type="button" class="dx-btn" id="dx-r1">Replace</button><button type="button" class="dx-btn" id="dx-rall">Replace all</button></div>
 						</div>
 						<p class="dx-hint" id="dx-qhint">Switch to Edit to replace text.</p>
-						<div class="dx-qlist" id="dx-qlist"></div>
 					</div>
 					<div class="dx-spane" data-pane="info" hidden><div id="dx-info"></div></div>
 					<div class="dx-spane" data-pane="notes" hidden>
@@ -1028,7 +1030,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/docx/js/docx.js?v=9" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/docx/js/docx.js?v=10" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

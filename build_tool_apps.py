@@ -1143,7 +1143,7 @@ APPS = {
     "pdf": dict(title="MES PDF Editor", page_title="Free PDF Editor: Sign, Fill, Annotate, Redact and Edit PDFs Online",
                 tag="Sign, fill in, annotate and redact PDFs in your browser.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                 desc="Free online PDF editor and signer: add a typed, drawn or uploaded signature, fill in forms, draw and highlight, add comments, edit text, black out private details, and rotate, delete or reorder pages. Private: your PDF never leaves your browser.",
-                js_v="13", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "outline.js", "export.js"], pre_js=["/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
+                js_v="14", src="pdf-editor", tab=1, nav_extra=PDF_NAV_INFO, menu_extra=PDF_NAV_MENU, home="/pdf-tools", js_parts=["core.js", "tools.js", "form.js", "sign.js", "outline.js", "export.js", "find.js"], pre_js=["/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/find-bar.js?v=1"]),
     # PDF Tools family (2026-10-15): one script (tool_apps_src/pdf-tools/app.js, helpers lib.js = PT, tests tool_apps_src/pdf-tools-tests.js) and one content template; data-mode on #pt picks merge / split / organize / images / toimg / compress, vars.SEO = seo/<mode>.html. Same brand as the PDF editor (slug pdf). pdf.js + pdf-lib from cdnjs on first use; ZIPs use MESImg (lib_from image-converter).
     "merge-pdf": dict(title="Merge PDF", page_title="Merge PDF: Combine PDF Files Online for Free", tag="Combine PDFs into one file.", accent="#d9363e", dark="#a82a31", tint="#fbe3e4",
                     desc="Free online PDF merger: combine two or more PDF files into a single document, put them in any order, and pick which pages to use from each. Private: your files never leave your browser. No sign-up, no watermark.",
@@ -1518,12 +1518,12 @@ APPS = {
                  tag="Open text, RTF, Markdown and code files in your browser.", accent="#0f766e", dark="#0b5a54", tint="#dff3f0",
                  desc="Free online text file viewer: open .txt, .md, .rtf, .csv, .json, .html, .log and code files in your browser. Read them laid out nicely (Markdown and RTF formatted, CSV as a table) or as code with line numbers and colours, read them aloud, change the font and size, edit and download. Private: nothing is uploaded.",
                  meta_desc="Free text file viewer: open TXT, RTF, Markdown, CSV, JSON and code files in a formatted reading view or a code view with line numbers. Read aloud, edit. No upload.",
-                 js_v="4", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2"]),
+                 js_v="5", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2", "/main_js/find-bar.js?v=1"]),
     "docx": dict(title="MES Word Viewer", page_title="DOCX Viewer and Editor: Open Word Documents Online, No Upload",
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",
                  meta_desc="Free DOCX viewer and editor: open Word files with the real page layout, search, word count and comments, edit, then save as .docx, PDF, HTML or text. No upload.",
-                 js_v="9", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2"]),
+                 js_v="10", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2", "/main_js/find-bar.js?v=1"]),
     # MES Spreadsheet Viewer & Editor (2026-10-30, mes.fm/excel): .xlsx / .xlsm / .xls / .ods / .csv / .tsv read and written by SheetJS CE 0.20.3 (Apache-2.0,
     # self-hosted in /main_js/sheetjs/0.20.3/, loaded on first open), virtualised grid, own formula engine + dependency recalc in lib.js (MESXL, node tests
     # tool_apps_src/excel-tests.js), sort / filter view, rows / columns / sheets, undo, print, recent files + autosave in IndexedDB "mes-excel". Nothing is uploaded.

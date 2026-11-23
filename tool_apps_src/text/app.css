@@ -137,3 +137,8 @@ body.tx-filling #compact-nav, body.tx-filling ins.adsbygoogle, body.tx-filling i
 #tx .tx-tsz .mes-ts button { background: var(--tx-panel); color: var(--tx-ink); min-height: 34px; }
 #tx .tx-tsz .mes-ts .mes-ts-v { border-color: var(--tx-line); }
 #tx .tx-tsz .mes-ts button:hover:not(:disabled) { background: var(--tx-hov); color: var(--tx-ink); }
+/* find bar + line box (2026-11-23, main_js/find-bar.js): same look as /pdf and /docx */
+#tx .mes-find { --mf-bg: var(--tx-panel); --mf-fg: var(--tx-ink); --mf-dim: var(--tx-mute); --mf-line: var(--tx-line); --mf-field: var(--tx-panel); --mf-hover: var(--tx-hov); --mf-acc: var(--tx-acc); }
+#tx .tx-linebox { color: var(--tx-mute); } #tx .tx-linebox input { --mf-pl: var(--tx-line); --mf-pf: var(--tx-panel); color: var(--tx-ink); }
+#tx .tx-l.is-flash { animation: txflash 1.6s ease-out; }
+@keyframes txflash { 0%, 40% { background: rgba(253, 214, 40, .45); } 100% { background: transparent; } }

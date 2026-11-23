@@ -17,6 +17,8 @@
 				<button type="button" class="dx-ib" id="dx-zout" title="Zoom out (Ctrl -)" aria-label="Zoom out">&minus;</button>
 				<button type="button" class="dx-zoom" id="dx-zoom" title="Zoom: click to fit the page width">100%</button>
 				<button type="button" class="dx-ib" id="dx-zin" title="Zoom in (Ctrl +)" aria-label="Zoom in">+</button>
+				<button type="button" class="dx-ib dx-ib--txt" id="dx-findbtn" title="Find text in the document (Ctrl+F)"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" style="vertical-align:-2px"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5l5 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg> <span class="dx-lbl">Find</span></button>
+				<span class="dx-pagebox" id="dx-pagebox"></span>
 				<button type="button" class="dx-ib dx-ib--txt" id="dx-fit" aria-pressed="false" title="Fit the page width">&#8596; <span class="dx-lbl">Fit</span></button>
 				<span class="dx-sep"></span>
 				<button type="button" class="dx-ib dx-ib--txt" id="dx-side" aria-pressed="true" title="Show or hide the side panel">&#9776; <span class="dx-lbl">Panel</span></button>
@@ -86,16 +88,12 @@
 					</div>
 					<div class="dx-spane" data-pane="outline"><div id="dx-outline" class="dx-outline"></div></div>
 					<div class="dx-spane" data-pane="find" hidden>
-						<div class="dx-findrow"><input type="search" class="dx-in" id="dx-q" placeholder="Find in document" aria-label="Find in document" autocomplete="off"></div>
-						<div class="dx-findrow"><button type="button" class="dx-ib" id="dx-qprev" title="Previous (Shift+Enter)" aria-label="Previous match">&#8593;</button><button type="button" class="dx-ib" id="dx-qnext" title="Next (Enter)" aria-label="Next match">&#8595;</button><span class="dx-qn" id="dx-qn" aria-live="polite"></span></div>
-						<label class="dx-chk"><input type="checkbox" id="dx-qcase"> Match case</label>
-						<label class="dx-chk"><input type="checkbox" id="dx-qword"> Whole words</label>
+						<div id="dx-findbar"></div>
 						<div id="dx-repl" hidden>
 							<div class="dx-findrow"><input type="text" class="dx-in" id="dx-r" placeholder="Replace with" aria-label="Replace with" autocomplete="off"></div>
 							<div class="dx-findrow"><button type="button" class="dx-btn" id="dx-r1">Replace</button><button type="button" class="dx-btn" id="dx-rall">Replace all</button></div>
 						</div>
 						<p class="dx-hint" id="dx-qhint">Switch to Edit to replace text.</p>
-						<div class="dx-qlist" id="dx-qlist"></div>
 					</div>
 					<div class="dx-spane" data-pane="info" hidden><div id="dx-info"></div></div>
 					<div class="dx-spane" data-pane="notes" hidden>
