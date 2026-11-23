@@ -3,7 +3,8 @@
  *
  * Model (localStorage "mes-investments:v1"):
  *   {v:1, base:"CAD", method:"avg"|"fifo", assets:{key: asset}, tx:[tx], wallets:[wallet], accts:[{id,name}]}
- *   asset  = {k, kind:"s"|"c"|"m", sym, name, cur, mp?}   k = "s:<Yahoo symbol>" | "c:<CoinGecko id>" | "m:<id>" (manual price mp in cur)
+ *   asset  = {k, kind:"s"|"c"|"e"|"m", sym, name, cur, mp?}   k = "s:<Yahoo symbol>" | "c:<CoinGecko id>" | "m:<id>" (manual price mp in cur)
+ *            | "e:<ERC-20 contract>" (a token found in an Ethereum wallet; its price comes with the wallet balance)
  *   tx     = {id, d:"YYYY-MM-DD", t, a:asset key, q, p, fee, fx?, acct?, note?}
  *            t: buy | sell | div (p = cash amount) | in (transfer in, p = cost per unit or 0) | out (transfer out) | split (q = ratio, e.g. 2 for 2-for-1) | fee (p = cash amount)
  *            p and fee are in the asset's currency; fx (optional) = 1 unit of that currency in the base currency on that day.
@@ -173,7 +174,7 @@
 
 	/* Grouped allocation: by "asset" | "kind" | "acct" */
 	I.allocation = function (rows, state, by) {
-		var G = {}, KIND = { s: "Stocks & funds", c: "Crypto", m: "Other" };
+		var G = {}, KIND = { s: "Stocks & funds", c: "Crypto", e: "Crypto", m: "Other" };
 		rows.forEach(function (r) {
 			if (!(r.value > 0)) return;
 			var key = by === "kind" ? KIND[r.a.kind] || "Other" : r.a.sym || r.k;
@@ -317,6 +318,15 @@
 	};
 
 	/* ---------- wallet answers (server sends raw numbers) ---------- */
+	/* Wallet balances {walletId: {b}} -> total quantity per asset, leaving out tokens the person hid on that wallet */
+	I.walletQty = function (state, wb) {
+		var x = {};
+		(state.wallets || []).forEach(function (w) {
+			var b = wb && wb[w.id] && wb[w.id].b, hide = w.hide || [];
+			if (b) Object.keys(b).forEach(function (k) { if (hide.indexOf(k) < 0 && b[k] > 0) x[k] = (x[k] || 0) + b[k]; });
+		});
+		return x;
+	};
 	I.walletOk = function (chain, addr) { var c = I.CHAINS[chain]; return !!(c && c.re.test(String(addr || "").trim())); };
 
 	/* ---------- clean / merge / backup ---------- */
@@ -327,7 +337,7 @@
 		if (I.CURRENCIES.indexOf(s.base) >= 0) o.base = s.base;
 		o.method = s.method === "fifo" ? "fifo" : "avg";
 		Object.keys(s.assets || {}).forEach(function (k) {
-			var a = s.assets[k]; if (!a || !/^[scm]:[\w.\-=^ ]{1,60}$/.test(k)) return;
+			var a = s.assets[k]; if (!a || !(/^[scm]:[\w.\-=^ ]{1,60}$/.test(k) || /^e:0x[0-9a-f]{40}$/.test(k))) return;
 			o.assets[k] = { k: k, kind: k[0], sym: String(a.sym || k.slice(2)).slice(0, 20), name: String(a.name || a.sym || "").slice(0, 80), cur: I.CURRENCIES.indexOf(a.cur) >= 0 ? a.cur : "USD" };
 			if (k[0] === "m") o.assets[k].mp = +a.mp || 0;
 			if (a.cls) o.assets[k].cls = String(a.cls).slice(0, 30);
@@ -343,7 +353,10 @@
 		});
 		(s.wallets || []).forEach(function (w) {
 			if (!w || !I.walletOk(w.chain, w.addr)) return;
-			o.wallets.push({ id: String(w.id || I.uid()).slice(0, 30), chain: w.chain, addr: String(w.addr).trim(), label: String(w.label || "").slice(0, 60) });
+			var c = { id: String(w.id || I.uid()).slice(0, 30), chain: w.chain, addr: String(w.addr).trim(), label: String(w.label || "").slice(0, 60) };
+			var hide = (Array.isArray(w.hide) ? w.hide : []).filter(function (k) { return typeof k === "string" && /^[ce]:[\w.\-]{1,60}$/.test(k); }).slice(0, 200);
+			if (hide.length) c.hide = hide;
+			o.wallets.push(c);
 		});
 		return o;
 	};

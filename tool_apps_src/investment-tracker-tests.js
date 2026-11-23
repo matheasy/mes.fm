@@ -113,5 +113,26 @@ near(A._t.walletParse("eth", { result: "0xde0b6b3a7640000" })["c:ethereum"], 1, 
 near(A._t.walletParse("xrp", { result: { account_data: { Balance: "25000000" } } })["c:ripple"], 25, "xrp balance");
 near(A._t.walletParse("sol", { result: { value: 2500000000 } })["c:solana"], 2.5, "sol balance");
 
+/* ERC-20 tokens */
+const T = A._t;
+near(T.units("1000000", 6), 1, "units 6 dec"); near(T.units("123456789012345678901234", 18), 123456.789012345678901234, "units big 18 dec"); ok(T.units("0x", 18) === 0 && T.units("-5", 2) === 0, "units junk");
+ok(Object.keys(T.TOKENS).length >= 40 && Object.keys(T.TOKENS).every((a) => /^0x[0-9a-f]{40}$/.test(a) && T.cgId(T.TOKENS[a][2])), "token table well formed");
+const ep = T.parseEthplorer({ ETH: { rawBalance: "2000000000000000000", balance: 2 }, tokens: [
+  { tokenInfo: { address: "0xA0b86991c6218b36c1d19d4a2e9eB0cE3606eB48", decimals: "6", symbol: "USDC", price: { rate: 1 } }, rawBalance: "5000000" },
+  { tokenInfo: { address: "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72", decimals: "18", symbol: "ENS", name: "Ethereum Name Service", price: { rate: 4, diff: -1, volume24h: 2e7, marketCapUsd: 1.5e8 } }, rawBalance: "3000000000000000000" },
+  { tokenInfo: { address: "0x9cdf242ef7975d8c68d5c1f5b6905801699b1940", decimals: "18", symbol: "WHITE", price: { rate: 0.0001, volume24h: 65, marketCapUsd: 2e7 } }, rawBalance: "1" + "0".repeat(28) },
+  { tokenInfo: { address: "0x1111111111111111111111111111111111111111", decimals: "18", symbol: "SCAM<b>", price: false }, rawBalance: "1000" },
+  { tokenInfo: { address: "0x2222222222222222222222222222222222222222", decimals: "18", symbol: "TINY", price: { rate: 1, volume24h: 1e9, marketCapUsd: 1e9 } }, rawBalance: "100000000000000000" }] });
+near(ep.b["c:ethereum"], 2, "ethplorer eth"); near(ep.b["c:usd-coin"], 5, "listed token -> coingecko key"); ok(ep.t["c:usd-coin"][0] === "USDC", "listed token name");
+near(ep.b["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"], 3, "traded token -> e: key"); near(ep.q["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"].p, 4, "e: token price");
+ok(!ep.b["e:0x9cdf242ef7975d8c68d5c1f5b6905801699b1940"] && !ep.b["e:0x1111111111111111111111111111111111111111"] && !ep.b["e:0x2222222222222222222222222222222222222222"] && ep.hid === 3, "spam / tiny tokens left out " + ep.hid);
+const usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", list = [usdc, "0xdac17f958d2ee523a2206206994597c13d831ec7"];
+const rp = T.parseEthRpc([{ id: 0, result: "0xde0b6b3a7640000" }, { id: 1, result: "0x" + (2500000).toString(16).padStart(64, "0") }, { id: 2, result: "0x" + "0".repeat(64) }], list);
+near(rp.b["c:ethereum"], 1, "rpc eth"); near(rp.b["c:usd-coin"], 2.5, "rpc token"); ok(!("c:tether" in rp.b), "rpc zero token skipped");
+const ws = I.clean({ base: "USD", assets: { "e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72": { sym: "ENS" }, "e:0xZZ": { sym: "x" } }, tx: [], wallets: [{ id: "w1", chain: "eth", addr: "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe", hide: ["c:usd-coin", "<x>"] }] });
+ok(ws.assets["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"] && Object.keys(ws.assets).length === 1, "clean keeps e: assets"); ok(ws.wallets[0].hide.length === 1, "clean keeps valid hide list");
+const wq = I.walletQty(ws, { w1: { b: { "c:ethereum": 1, "c:usd-coin": 50, "e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72": 3 } } });
+ok(wq["c:ethereum"] === 1 && !wq["c:usd-coin"] && wq["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"] === 3, "hidden token not counted");
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);

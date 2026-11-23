@@ -43,11 +43,9 @@
 	function snapshot() { return JSON.stringify(S); }
 	function restoreSnap(s) { S = I.clean(JSON.parse(s)); save(); render(); }
 	function assetOf(k) { return S.assets[k] || { k: k, kind: k[0], sym: k.slice(2), name: k.slice(2), cur: "USD" }; }
-	function kindBadge(a) { return '<span class="iv-kind iv-kind--' + a.kind + '">' + (a.kind === "c" ? "Crypto" : a.kind === "m" ? "Own price" : "Stock") + "</span>"; }
+	function kindBadge(a) { return '<span class="iv-kind iv-kind--' + a.kind + '">' + (a.kind === "c" ? "Crypto" : a.kind === "e" ? "Token" : a.kind === "m" ? "Own price" : "Stock") + "</span>"; }
 	function walletExtra() {
-		var x = {};
-		S.wallets.forEach(function (w) { var b = WB[w.id] && WB[w.id].b; if (b) Object.keys(b).forEach(function (k) { x[k] = (x[k] || 0) + b[k]; }); });
-		return x;
+		return I.walletQty(S, WB);
 	}
 	function ago(t) { if (!t) return ""; var s = Math.round((Date.now() - t) / 1000); return s < 60 ? "just now" : s < 3600 ? Math.round(s / 60) + " min ago" : s < 86400 ? Math.round(s / 3600) + " h ago" : new Date(t).toLocaleDateString(); }
 
@@ -69,13 +67,26 @@
 			lsSet(KEY + ":prices", JSON.stringify(P));
 		}).catch(function (e) { if (!quiet) toast("Could not get prices: " + e.message); }).then(function () { loading = false; render(); });
 	}
+	var newAssets = false;
 	function refreshWallets(only) {
 		var list = S.wallets.filter(function (w) { return !only || w.id === only; });
 		return Promise.all(list.map(function (w) {
 			w._busy = true;
-			return api("w=" + encodeURIComponent(w.chain + ":" + w.addr)).then(function (r) { WB[w.id] = { b: r.b, at: Date.now() }; delete w._err; })
+			return api("w=" + encodeURIComponent(w.chain + ":" + w.addr)).then(function (r) {
+				WB[w.id] = { b: r.b, at: Date.now(), hid: r.hid || 0, src: r.src || "" };
+				// tokens: make each one an asset (name + symbol from the wallet answer); "e:" tokens bring their own price
+				Object.keys(r.t || {}).forEach(function (k) {
+					if (!S.assets[k] && (/^c:[a-z0-9_-]{1,60}$/.test(k) || /^e:0x[0-9a-f]{40}$/.test(k))) { ensureAsset({ k: k, sym: String(r.t[k][0]).slice(0, 20), name: String(r.t[k][1] || r.t[k][0]).slice(0, 80), cur: "USD" }); newAssets = true; }
+				});
+				Object.keys(r.q || {}).forEach(function (k) { if (/^e:/.test(k)) P.q[k] = r.q[k]; });
+				delete w._err;
+			})
 				.catch(function (e) { w._err = e.message; }).then(function () { w._busy = false; });
-		})).then(function () { lsSet(KEY + ":wb", JSON.stringify(WB)); render(); });
+		})).then(function () {
+			lsSet(KEY + ":wb", JSON.stringify(WB)); lsSet(KEY + ":prices", JSON.stringify(P));
+			if (newAssets) { newAssets = false; save(); refreshPrices(true); }
+			render();
+		});
 	}
 	function paintAgo() { $("iv-ago").textContent = loading ? "Updating…" : P.at ? "Prices " + ago(P.at) : ""; }
 
@@ -146,6 +157,7 @@
 		h += '<div class="iv-detbtns"><button type="button" class="tu-btn" data-addfor="' + esc(r.k) + '">+ Trade for ' + esc(a.sym) + "</button>";
 		if (a.kind === "s") h += ' <a class="tu-btn tu-btn--ghost" href="https://finance.yahoo.com/quote/' + encodeURIComponent(a.sym) + '" target="_blank" rel="noopener">Yahoo Finance ↗</a>';
 		if (a.kind === "c") h += ' <a class="tu-btn tu-btn--ghost" href="https://www.coingecko.com/en/coins/' + encodeURIComponent(r.k.slice(2)) + '" target="_blank" rel="noopener">CoinGecko ↗</a>';
+		if (a.kind === "e") h += ' <a class="tu-btn tu-btn--ghost" href="https://etherscan.io/token/' + encodeURIComponent(r.k.slice(2)) + '" target="_blank" rel="noopener">Etherscan ↗</a>';
 		if (!list.length) h += ' <button type="button" class="tu-btn tu-btn--ghost" data-delasset="' + esc(r.k) + '">Remove</button>';
 		h += "</div>";
 		if (list.length) h += '<table class="iv-mini"><tbody>' + list.slice(0, 12).map(txRowMini).join("") + "</tbody></table>" + (list.length > 12 ? '<p class="tu-note">' + (list.length - 12) + ' older trades on the <a href="#" data-go="tx">Trades</a> tab.</p>' : "");
@@ -374,11 +386,30 @@
 		var fx = P.fx || {};
 		$("iv-wlist").innerHTML = '<div class="iv-wcards">' + S.wallets.map(function (w) {
 			var b = WB[w.id], c = I.CHAINS[w.chain], tot = 0;
-			var lines = c.syms.map(function (s) {
-				var q = b && b.b ? b.b[s[1]] || 0 : null, pr = P.q[s[1]], v = q != null && pr ? I.conv(q * pr.p, pr.c || "USD", S.base, fx) : NaN;
+			var bal = b && b.b ? b.b : null, hide = w.hide || [];
+			// the chain's own coins first (always shown), then its tokens, biggest value first
+			var keys = c.syms.map(function (s) { return s[1]; });
+			var val = function (k) { var pr = P.q[k]; return bal && pr ? I.conv((bal[k] || 0) * pr.p, pr.c || "USD", S.base, fx) : NaN; };
+			var toks = bal ? Object.keys(bal).filter(function (k) { return keys.indexOf(k) < 0 && bal[k] > 0; }) : [];
+			toks.sort(function (x, y) { return (val(y) || 0) - (val(x) || 0); });
+			var shown = toks.filter(function (k) { return hide.indexOf(k) < 0; }), hidden = toks.filter(function (k) { return hide.indexOf(k) >= 0; });
+			var line = function (k, sym, tok) {
+				var q = bal ? bal[k] || 0 : null, v = val(k);
 				if (isFinite(v)) tot += v;
-				return "<div class='iv-wline'><span>" + s[0] + "</span><b>" + (q == null ? "…" : I.fmtQ(q)) + "</b><small>" + (isFinite(v) ? money(v) : "") + "</small></div>";
-			}).join("");
+				return "<div class='iv-wline'><span>" + esc(sym) + "</span><b>" + (q == null ? "…" : I.fmtQ(q)) + "</b><small>" + (isFinite(v) ? money(v) : "") + "</small>" +
+					(tok ? '<button type="button" class="iv-ib iv-whide" data-whide="' + esc(w.id) + '" data-k="' + esc(k) + '" title="Hide this token (not counted)">✕</button>' : "") + "</div>";
+			};
+			var lines = c.syms.map(function (s) { return line(s[1], s[0], false); }).join("");
+			if (shown.length) {
+				var many = shown.length > 6 && !w._open;
+				lines += '<div class="iv-wtoks"><div class="iv-wsub">Tokens</div>' + (many ? shown.slice(0, 5) : shown).map(function (k) { return line(k, assetOf(k).sym, true); }).join("") +
+					(many ? (function () { shown.slice(5).forEach(function (k) { var v = val(k); if (isFinite(v)) tot += v; }); return '<button type="button" class="iv-link" data-wopen="' + esc(w.id) + '">Show all ' + shown.length + " tokens</button>"; })() : "") + "</div>";
+			}
+			var foot = [];
+			if (hidden.length) foot.push('<button type="button" class="iv-link" data-wunhide="' + esc(w.id) + '">' + hidden.length + " hidden by you · show</button>");
+			if (b && b.hid) foot.push('<span title="Tokens with no real trading (often airdropped spam) are left out.">' + b.hid + " unknown or spam token" + (b.hid === 1 ? "" : "s") + " left out</span>");
+			if (b && b.src === "rpc") foot.push("<span>Only popular tokens were checked this time</span>");
+			if (foot.length) lines += '<p class="iv-wnote">' + foot.join(" · ") + "</p>";
 			return '<div class="iv-wcard"><div class="iv-whead"><b>' + esc(w.label || c.name) + '</b><span class="iv-kind iv-kind--c">' + esc(c.name) + "</span></div>" +
 				'<code class="iv-addr" title="' + esc(w.addr) + '">' + esc(w.addr.length > 24 ? w.addr.slice(0, 10) + "…" + w.addr.slice(-8) : w.addr) + "</code>" + lines +
 				(w._err ? '<p class="iv-qnote is-err">' + esc(w._err) + "</p>" : "") +
@@ -387,6 +418,13 @@
 	}
 	$("iv-wlist").addEventListener("click", function (e) {
 		var r = e.target.closest("[data-wre]"); if (r) { refreshWallets(r.dataset.wre); paintWallets(); return; }
+		var hd = e.target.closest("[data-whide]"); if (hd) {
+			var snap1 = snapshot(), w1 = S.wallets.filter(function (w) { return w.id === hd.dataset.whide; })[0]; if (!w1) return;
+			w1.hide = (w1.hide || []).concat([hd.dataset.k]); save(); render();
+			toast(assetOf(hd.dataset.k).sym + " hidden on this wallet", function () { restoreSnap(snap1); }); return;
+		}
+		var uh = e.target.closest("[data-wunhide]"); if (uh) { var w2 = S.wallets.filter(function (w) { return w.id === uh.dataset.wunhide; })[0]; if (w2) { delete w2.hide; save(); render(); } return; }
+		var op = e.target.closest("[data-wopen]"); if (op) { var w3 = S.wallets.filter(function (w) { return w.id === op.dataset.wopen; })[0]; if (w3) { w3._open = true; paintWallets(); } return; }
 		var d = e.target.closest("[data-wdel]"); if (d) { var snap = snapshot(); S.wallets = S.wallets.filter(function (w) { return w.id !== d.dataset.wdel; }); save(); render(); toast("Wallet removed", function () { restoreSnap(snap); }); }
 	});
 
@@ -400,7 +438,7 @@
 	}
 	function needHist() {
 		var keys = {};
-		S.tx.forEach(function (t) { if (t.a[0] !== "m") keys[t.a] = 1; });
+		S.tx.forEach(function (t) { if (t.a[0] === "s" || t.a[0] === "c") keys[t.a] = 1; });
 		return Object.keys(keys).filter(function (k) { return !H[k]; });
 	}
 	var histBusy = false;

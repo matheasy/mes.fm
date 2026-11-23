@@ -5,9 +5,11 @@
 //   GET ?h=s:AAPL | c:hive&s=HIVE         -> {k, c, h: [[YYYY-MM-DD, close], ...]}  (daily, up to 5 years; crypto: Yahoo <SYM>-USD, else CoinGecko 365 days)
 //   GET ?search=apple                      -> {r: [{k, sym, name, kind, ex}]}
 //   GET ?w=btc:<addr> | eth | hive | xrp | sol -> {chain, b: {"c:bitcoin": qty, ...}}
+//       eth also returns ERC-20 tokens: b gets "c:<CoinGecko id>" (popular tokens) or "e:<contract>" (others, with their price
+//       in q: {"e:0x..": {p, c, ch, n}}), t: {key: [symbol, name]}, hid: tokens left out (looks like spam), src: "ethplorer" | "rpc".
 //
 // Sources: Yahoo Finance chart / search (unofficial, may break), CoinGecko public API, open.er-api.com, mempool.space,
-// ethereum-rpc.publicnode.com, api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
+// ethereum-rpc.publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
 // Each item is cached in Upstash (same vars as api/fav.js); without them it still works, just uncached.
 'use strict';
 const crypto = require('crypto');
@@ -97,6 +99,120 @@ function walletParse(chain, j, extra) {
   throw new Error('unknown chain');
 }
 
+/* ---------- ERC-20 tokens ----------
+   Popular tokens: contract -> [symbol, decimals, CoinGecko id, name]. Every contract's symbol and decimals were read from
+   the chain itself (2026-11-23). These always count. Any other token in a wallet counts only when Ethplorer has a price,
+   it trades >= $250k a day, is worth >= $10M in total and the holding is worth >= $1: wallets get airdropped lots of
+   worthless "tokens" that claim big prices. */
+const TOKENS = {
+  '0xdac17f958d2ee523a2206206994597c13d831ec7': ['USDT', 6, 'tether', 'Tether'],
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': ['USDC', 6, 'usd-coin', 'USD Coin'],
+  '0x6b175474e89094c44da98b954eedeac495271d0f': ['DAI', 18, 'dai', 'Dai'],
+  '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': ['WBTC', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+  '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf': ['cbBTC', 8, 'coinbase-wrapped-btc', 'Coinbase Wrapped BTC'],
+  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': ['WETH', 18, 'weth', 'Wrapped Ether'],
+  '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': ['stETH', 18, 'staked-ether', 'Lido Staked Ether'],
+  '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+  '0xae78736cd615f374d3085123a210448e74fc6393': ['rETH', 18, 'rocket-pool-eth', 'Rocket Pool ETH'],
+  '0x514910771af9ca656af840dff83e8264ecf986ca': ['LINK', 18, 'chainlink', 'Chainlink'],
+  '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984': ['UNI', 18, 'uniswap', 'Uniswap'],
+  '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce': ['SHIB', 18, 'shiba-inu', 'Shiba Inu'],
+  '0x6982508145454ce325ddbe47a25d4ec3d2311933': ['PEPE', 18, 'pepe', 'Pepe'],
+  '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': ['AAVE', 18, 'aave', 'Aave'],
+  '0x455e53cbb86018ac2b8092fdcd39d8444affc3f6': ['POL', 18, 'polygon-ecosystem-token', 'Polygon'],
+  '0x5a98fcbea516cf06857215779fd812ca3bef1b32': ['LDO', 18, 'lido-dao', 'Lido DAO'],
+  '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2': ['MKR', 18, 'maker', 'Maker'],
+  '0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3': ['ONDO', 18, 'ondo-finance', 'Ondo'],
+  '0x57e114b691db790c35207b2e685d4a43181e6061': ['ENA', 18, 'ethena', 'Ethena'],
+  '0x4c9edd5852cd905f086c759e8383e09bff1e68b3': ['USDe', 18, 'ethena-usde', 'Ethena USDe'],
+  '0x6c3ea9036406852006290770bedfcaba0e23a0e8': ['PYUSD', 6, 'paypal-usd', 'PayPal USD'],
+  '0xc5f0f7b66764f6ec8c8dff7ba683102295e16409': ['FDUSD', 18, 'first-digital-usd', 'First Digital USD'],
+  '0x8e870d67f660d95d5be530380d0ec0bd388289e1': ['USDP', 18, 'paxos-standard', 'Pax Dollar'],
+  '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8': ['EURA', 18, 'ageur', 'EURA'],
+  '0x45804880de22913dafe09f4980848ece6ecbaf78': ['PAXG', 18, 'pax-gold', 'PAX Gold'],
+  '0x68749665ff8d2d112fa859aa293f07a622782f38': ['XAUt', 6, 'tether-gold', 'Tether Gold'],
+  '0xd533a949740bb3306d119cc777fa900ba034cd52': ['CRV', 18, 'curve-dao-token', 'Curve DAO'],
+  '0xc944e90c64b2c07662a292be6244bdf05cda44a7': ['GRT', 18, 'the-graph', 'The Graph'],
+  '0x4d224452801aced8b2f0aebe155379bb5d594381': ['APE', 18, 'apecoin', 'ApeCoin'],
+  '0x3845badade8e6dff049820680d1f14bd3903a5d0': ['SAND', 18, 'the-sandbox', 'The Sandbox'],
+  '0x0f5d2fb29fb7d3cfee444a200298f468908cc942': ['MANA', 18, 'decentraland', 'Decentraland'],
+  '0x0d8775f648430679a709e98d2b0cb6250d2887ef': ['BAT', 18, 'basic-attention-token', 'Basic Attention Token'],
+  '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85': ['FET', 18, 'fetch-ai', 'Artificial Superintelligence Alliance'],
+  '0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24': ['RNDR', 18, 'render-token', 'Render'],
+  '0xb50721bcf8d664c30412cfbc6cf7a15145234ad1': ['ARB', 18, 'arbitrum', 'Arbitrum'],
+  '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': ['SNX', 18, 'havven', 'Synthetix'],
+  '0xc00e94cb662c3520282e6f5717214004a7f26888': ['COMP', 18, 'compound-governance-token', 'Compound'],
+  '0x111111111117dc0aa78b770fa6a738034120c302': ['1INCH', 18, '1inch', '1inch'],
+  '0xbb0e17ef65f82ab018d8edd776e8dd940327b28b': ['AXS', 18, 'axie-infinity', 'Axie Infinity'],
+  '0x6810e776880c02933d47db1b9fc05908e5386b96': ['GNO', 18, 'gnosis', 'Gnosis'],
+  '0x58b6a8a3302369daec383334672404ee733ab239': ['LPT', 18, 'livepeer', 'Livepeer'],
+  '0x4a220e6096b25eadb88358cb44068a3248254675': ['QNT', 18, 'quant-network', 'Quant'],
+  '0x3c3a81e81dc49a522a592e7622a7e711c06bf354': ['MNT', 18, 'mantle', 'Mantle'],
+  '0xb8c77482e45f1f44de1745f52c74426c631bdd52': ['BNB', 18, 'binancecoin', 'BNB'],
+  '0x75231f58b43240c9718dd58b4967c5114342a86c': ['OKB', 18, 'okb', 'OKB'],
+  '0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3': ['LEO', 18, 'leo-token', 'LEO Token'],
+  '0xd1d2eb1b1e90b638588728b4130137d262c87cae': ['GALA', 8, 'gala', 'Gala'],
+  '0xe28b3b32b6c345a34ff64674606124dd5aceca30': ['INJ', 18, 'injective-protocol', 'Injective'],
+  '0x163f8c2467924be0ae7b5347228cabf260318753': ['WLD', 18, 'worldcoin-wld', 'Worldcoin'],
+  '0x5283d291dbcf85356a21ba090e6db59121208b44': ['BLUR', 18, 'blur', 'Blur'],
+  '0x0b38210ea11411557c13457d4da7dc6ea731b88a': ['API3', 18, 'api3', 'API3']
+};
+const SPAM = { vol: 250000, cap: 10e6, val: 1 };
+// raw integer string + decimals -> number (BigInt, so 18-decimal amounts don't lose the whole part)
+function units(raw, dec) {
+  let n; try { n = BigInt(raw); } catch (e) { return 0; }
+  if (n <= 0n) return 0;
+  const d = 10n ** BigInt(dec || 0);
+  return Number(n / d) + Number(n % d) / Number(d);
+}
+// Ethplorer getAddressInfo -> {b, t, q, hid}. Listed tokens -> "c:<CoinGecko id>" (priced like any coin); other tokens
+// that pass the spam filter -> "e:<contract>" with Ethplorer's own price in q (the page has no other price for them).
+function parseEthplorer(j) {
+  if (!j || !j.ETH || j.error) throw new Error((j && j.error && j.error.message) || 'no answer');
+  const b = { 'c:ethereum': units(j.ETH.rawBalance || '0', 18) || +j.ETH.balance || 0 }, t = {}, q = {};
+  let hid = 0;
+  (j.tokens || []).forEach((x) => {
+    const i = x.tokenInfo || {}, a = String(i.address || '').toLowerCase(), dec = +i.decimals || 0;
+    const n = units(x.rawBalance != null ? x.rawBalance : String(x.balance || 0), dec);
+    if (!n) return;
+    const known = TOKENS[a];
+    if (known) { const k = 'c:' + known[2]; b[k] = (b[k] || 0) + n; t[k] = [known[0], known[3]]; return; }
+    const p = i.price || {};
+    if (p.rate > 0 && (p.volume24h || 0) >= SPAM.vol && (p.marketCapUsd || 0) >= SPAM.cap && n * p.rate >= SPAM.val && /^0x[0-9a-f]{40}$/.test(a)) {
+      const k = 'e:' + a, sym = String(i.symbol || '').replace(/[^\w.$-]/g, '').slice(0, 12) || 'TOKEN';
+      b[k] = n; t[k] = [sym, String(i.name || sym).replace(/[<>]/g, '').slice(0, 60)];
+      q[k] = { p: +p.rate, c: 'USD', ch: isFinite(p.diff) ? +p.diff : null, n: t[k][1] };
+    } else hid++;
+  });
+  return { b, t, q, hid };
+}
+async function ethWallet(addr) {
+  try {
+    const r = parseEthplorer(await getJSON('https://api.ethplorer.io/getAddressInfo/' + addr + '?apiKey=freekey'));
+    return { b: r.b, t: r.t, q: r.q, hid: r.hid, src: 'ethplorer' };
+  } catch (e) {
+    // Fallback: ETH + the popular tokens straight from the chain (one batch call)
+    const list = Object.keys(TOKENS), pad = addr.toLowerCase().slice(2).padStart(64, '0');
+    const body = [{ jsonrpc: '2.0', id: 0, method: 'eth_getBalance', params: [addr, 'latest'] }]
+      .concat(list.map((a, n) => ({ jsonrpc: '2.0', id: n + 1, method: 'eth_call', params: [{ to: a, data: '0x70a08231' + pad }, 'latest'] })));
+    const j = await getJSON('https://ethereum-rpc.publicnode.com', { body: JSON.stringify(body) });
+    return Object.assign({ src: 'rpc' }, parseEthRpc(j, list));
+  }
+}
+function parseEthRpc(j, list) {
+  if (!Array.isArray(j)) throw new Error('no balance');
+  const by = {}; j.forEach((x) => { by[x.id] = x; });
+  if (!by[0] || !by[0].result) throw new Error('no balance');
+  const b = { 'c:ethereum': units(by[0].result, 18) }, t = {};
+  list.forEach((a, n) => {
+    const r = by[n + 1], tk = TOKENS[a];
+    if (!r || !r.result || r.result === '0x') return;
+    const q = units(r.result, tk[1]);
+    if (q) { const k = 'c:' + tk[2]; b[k] = (b[k] || 0) + q; t[k] = [tk[0], tk[3]]; }
+  });
+  return { b, t, hid: 0 };
+}
+
 /* ---------- fetchers ---------- */
 async function yahooQuote(sym) {
   return parseYahooQuote(await getJSON('https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(sym) + '?range=1d&interval=1d'));
@@ -178,7 +294,7 @@ async function wallet(chain, addr) {
   if (c) return c;
   let b;
   if (chain === 'btc') b = walletParse(chain, await getJSON('https://mempool.space/api/address/' + addr));
-  else if (chain === 'eth') b = walletParse(chain, await getJSON('https://ethereum-rpc.publicnode.com', { body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [addr, 'latest'] }) }));
+  else if (chain === 'eth') { const r = Object.assign({ chain }, await ethWallet(addr)); cacheSet([[ck, r]], TTL.w); return r; }
   else if (chain === 'xrp') b = walletParse(chain, await getJSON('https://xrplcluster.com', { body: JSON.stringify({ method: 'account_info', params: [{ account: addr, ledger_index: 'validated' }] }) }));
   else if (chain === 'sol') b = walletParse(chain, await getJSON('https://api.mainnet-beta.solana.com', { body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [addr] }) }));
   else if (chain === 'hive') {
@@ -234,7 +350,7 @@ module.exports = async function handler(req, res) {
     return send(502, { error: String(e && e.message || e).slice(0, 200) });
   }
 };
-module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse };
+module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, units, TOKENS };
 
 if (require.main === module) {
   // node mes.fm/api/invest.js  -> quick live check of every source
@@ -244,7 +360,7 @@ if (require.main === module) {
   });
   (async () => {
     for (const qy of [{ y: 'AAPL,SHOP.TO,VOD.L', c: 'bitcoin,hive' }, { h: 's:AAPL' }, { h: 'c:hive', s: 'HIVE' }, { search: 'tesla' },
-      { w: 'btc:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh' }, { w: 'eth:0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe' }, { w: 'hive:mes' },
+      { w: 'btc:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh' }, { w: 'eth:0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe' }, { w: 'eth:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' }, { w: 'hive:mes' },
       { w: 'xrp:rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh' }, { w: 'sol:9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM' }]) {
       console.log(JSON.stringify(qy), ...(await run(qy)));
     }
