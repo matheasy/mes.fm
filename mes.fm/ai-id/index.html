@@ -1245,10 +1245,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>Model</span><select id="ai-imod" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>Kualitas</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>Bentuk</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">Persegi</option><option value="1536x1024">Lanskap</option><option value="1024x1536">Potret</option></select></label>
+					<label class="ai-freechip" id="ai-ifree" hidden><input type="checkbox" id="ai-ifreeuse" checked> <span id="ai-ifreetx"></span></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="Tentang model ini">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" id="ai-inote" hidden>Gambar ini dibuat oleh <span id="ai-imodel">GPT Image 2 dari OpenAI</span> dan hanya disimpan di browser ini. GPT Image 2 bisa mengikuti deskripsi yang panjang dan rinci, dan pandai menulis teks di dalam gambar; Grok Imagine lebih murah dan cepat.</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>Gambar ini dibuat oleh <span id="ai-imodel">GPT Image 2 dari OpenAI</span> dan hanya disimpan di browser ini. GPT Image 2 bisa mengikuti deskripsi yang panjang dan rinci, dan pandai menulis teks di dalam gambar; Grok Imagine lebih murah dan cepat. Yang murah (FLUX 3 Klein, Recraft V4.1 Flash, Seedream 5.0 Flash) sekitar satu sen; dengan login Hive Anda juga dapat beberapa gambar Recraft gratis setiap hari.</p>
 			</div>
 			</div>
 			</div>
@@ -1287,7 +1288,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="Tentang model ini">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" hidden>Video dibuat oleh Grok Imagine dari xAI dan butuh beberapa menit: kamu tetap bisa memakai halaman ini (atau menutupnya lalu kembali lagi: prosesnya tetap jalan). Video yang selesai hanya disimpan di browser ini. Pada model Lite dan Terbaik, suaranya termasuk ucapan yang cocok dengan gerak bibir.</p>
+				<p class="tu-note ai-det" hidden>Video dibuat oleh Grok Imagine dari xAI dan butuh beberapa menit: kamu tetap bisa memakai halaman ini (atau menutupnya lalu kembali lagi: prosesnya tetap jalan). Video yang selesai hanya disimpan di browser ini. Pada model Lite dan Terbaik, suaranya termasuk ucapan yang cocok dengan gerak bibir. Seedance 2.0 Mini (ByteDance) dan Google Veo 3.1 Lite dibuat lewat OpenRouter, juga dengan suara.</p>
 			</div>
 			</div>
 			</div>
@@ -1319,6 +1320,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>Kamu hanya membayar yang kamu pakai, tidak ada yang diperpanjang otomatis, dan tidak ada saldo yang bisa hilang. Harganya ditampilkan sebelum setiap pesan.</dd>
 				<dt>Kenapa jawabanku berhenti di tengah?</dt>
 				<dd>Jawabannya sudah mencapai panjang yang kamu bayar. Kirim “lanjutkan” (pesan baru) atau pilih Sedang atau Panjang lain kali. Opus dan model ChatGPT berpikir dulu sebelum menulis, dan proses berpikir itu juga dihitung dalam panjangnya.</dd>
+				<dt>Apakah ada gambar dan video yang murah atau gratis?</dt>
+				<dd>Ya. Model gambar murah (FLUX 3 Klein, Recraft V4.1 Flash dan Seedream 5.0 Flash, lewat OpenRouter) sekitar 0,013 sampai 0,033 HBD per gambar, dan dengan akun Hive Anda mendapat <b>3 gambar Recraft gratis sehari</b> (1k, tanpa gambar tambahan; satu tanda tangan Keychain sehari, tanpa bayar). Untuk video, Grok Lite 480p yang termurah (sekitar 0,17 HBD untuk 5 detik); Seedance 2.0 Mini dan Google Veo 3.1 Lite juga tersedia. Gambar belum bisa dibuat di perangkat Anda sendiri: model seperti itu berukuran beberapa GB dan lambat di browser.</dd>
 				<dt>Bisakah aku membuat video dengan Sora dari OpenAI?</dt>
 				<dd>Tidak: OpenAI menutup Sora 2 dan layanan videonya untuk pengembang pada 24 September 2026. Video di sini dibuat oleh Grok Imagine dari xAI.</dd>
 				<dt>Ada masalah setelah aku membayar.</dt>
@@ -1388,7 +1391,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=be085244" defer></script><script src="/ai/js/ai.js?v=18" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=27f52c83" defer></script><script src="/ai/js/ai.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

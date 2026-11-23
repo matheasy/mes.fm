@@ -17,7 +17,7 @@
 
   var MARGIN = 1.5;            // price = API cost x MARGIN (1.5 = 50% profit on cost). Change here only.
   var HBD_USD = 1;             // HBD is pegged to 1 USD; the margin covers small drifts of the peg
-  var PRICES_CHECKED = "2026-11-19";
+  var PRICES_CHECKED = "2026-11-23";
   var PAY_TO = "mes";
   var MEMO_PREFIX = "mesai:";
   var MIN_HBD = 0.001;
@@ -108,9 +108,14 @@
      (FREE.maxOut tokens) and a chat of at most FREE.maxIn tokens (counted the safe way, 1 token a character). The account is proven once a
      day with a Keychain signature of freeMessage(acct, day) (no payment, no fee). All free messages together stop at FREE.usdPerDay of
      cost a day (env AI_FREE_USD overrides it); each one first reserves its worst case. Paid from ad and Premium income. */
-  var FREE = { perDay: 10, perIp: 30, maxIn: 12000, maxOut: 1500, usdPerDay: 2 };
+  var FREE = { perDay: 10, perIp: 30, maxIn: 12000, maxOut: 1500, usdPerDay: 2,
+    // free daily pictures (2026-11-23): pics a day per Hive account (picsIp per network) on the model with a freeId (Recraft V4.1 Flash,
+    // OpenRouter's free copy, 0 USD to us, so they never touch usdPerDay). Same once-a-day signature as the free messages.
+    pics: 3, picsIp: 9, picModel: "recraft" };
   function freeMessage(acct, day) { return "mes.fm/ai free messages for @" + acct + " on " + day; }
   function utcDay(ms) { return new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10); }
+  // a free daily picture: the free model, no reference pictures, 1k
+  function freePicOk(model, quality, nRefs) { var im = IMAGES[model]; return !!(im && im.freeId && model === FREE.picModel && quality === "1k" && !nRefs); }
   function freeWorstUsd(modelKey) { var m = MODELS[modelKey]; return m && m.free ? (FREE.maxIn * m.inUsd + FREE.maxOut * m.outUsd) / 1e6 : 0; }
   var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter", local: "WebLLM" };
   var DEFAULT_MODEL = "sonnet";
@@ -129,26 +134,47 @@
   // Grok Imagine = xAI (docs.x.ai/developers/pricing, checked 2026-11-19): a flat price per picture; quality = resolution 1k / 2k.
   // xAI lists no extra price for 2k, so RES_X is our own safe guess like the video one: CHECK it against the first real bills.
   // The page's shapes (pixel sizes) map to xAI aspect ratios through ASPECT.
+  /* cheap pictures through OpenRouter's Image API (POST /api/v1/images, 2026-11-23). Prices = OpenRouter's own endpoint records
+   * (GET /api/v1/images/models/<id>/endpoints, checked 2026-11-23): a fixed price per picture, so the bill is known before the call.
+   * res = USD per picture by resolution ("1k" / "2k" = OpenRouter's "1K" / "2K"); refUsd = per reference picture (Seedream lists 0;
+   * FLUX 3 Klein lists no input price at all, so 0.003 is our safe guess: CHECK the first real bills). orProv = the provider slug the
+   * request is pinned to (provider.only, no fallbacks), so OpenRouter can never route to a dearer one.
+   * freeId = OpenRouter's free copy of the same model (0 USD): the free daily pictures (FREE.pics) use it. */
   var IMAGES = {
+    klein: { prov: "openrouter", id: "black-forest-labs/flux-3-image-klein", orProv: "black-forest-labs", name: "FLUX 3 Klein (cheapest)", res: { "1k": 0.009, "2k": 0.014 }, refUsd: 0.003 },
+    recraft: { prov: "openrouter", id: "recraft/recraft-v4.1-flash-v2", orProv: "recraft", freeId: "recraft/recraft-v4.1-flash-v2:free", name: "Recraft V4.1 Flash (free a few a day)", res: { "1k": 0.007 }, refUsd: 0 },
+    seedream: { prov: "openrouter", id: "bytedance-seed/seedream-5-0-flash", orProv: "seed", name: "Seedream 5.0 Flash", res: { "1k": 0.018, "2k": 0.018 }, refUsd: 0 },
     gpt: { prov: "openai", id: "gpt-image-2", name: "GPT Image 2 (ChatGPT)" },
-    grok: { prov: "xai", id: "grok-imagine-image", name: "Grok Imagine (cheapest)", usd: 0.02 },
-    grok2: { prov: "xai", id: "grok-imagine-image-2.0", name: "Grok Imagine 2.0", usd: 0.04 }
+    grok: { prov: "xai", id: "grok-imagine-image", name: "Grok Imagine", usd: 0.02 },
+    // grok2: OpenRouter's record for the same xAI model (2026-11-23) prices it by quality too: low 1k $0.04 / 2k $0.06, medium 1k $0.06 /
+    // 2k $0.08, input picture $0.01. We send no quality, so we price it as medium to be safe (0.06, x1.5 for 2k = 0.09).
+    grok2: { prov: "xai", id: "grok-imagine-image-2.0", name: "Grok Imagine 2.0", usd: 0.06 }
   };
+  var DEFAULT_IMAGE = "gpt";
   var XIMAGE = { res: { "1k": "Standard (1k)", "2k": "Sharp (2k)" }, RES_X: { "1k": 1, "2k": 1.5 },
     ASPECT: { "1024x1024": "1:1", "1536x1024": "3:2", "1024x1536": "2:3" } };
 
-  // xAI Grok Imagine video: USD per second of video (docs.x.ai pricing, checked 2026-11-18). xAI says resolution changes the price too
-  // but publishes no rate for it, so RES_X is our own safe guess (x the per-second price): CHECK it against the first real bills and lower it.
+  // Video: usd = USD per second of video by resolution. xAI Grok Imagine (direct): the per-resolution rates OpenRouter publishes for the
+  // same xAI models (GET /api/v1/videos/models pricing_skus, checked 2026-11-23; OpenRouter passes provider prices through). Until then we
+  // charged a 480p rate x a guessed RES_X, which was BELOW the real 720p / 1080p cost (Lite 1080p is $0.14/s, not $0.045/s).
+  // OpenRouter models (POST /api/v1/videos, 2026-11-23):
+  //   Veo 3.1 Lite: $0.05/s 720p, $0.08/s 1080p with sound (cheaper without; we always quote the with-sound rate), lengths 4 / 6 / 8 s only.
+  //   Seedance 2.0 Mini: billed per "video token" ($3.5 per 1M); tokens = width x height x 24 fps / 1024 a second, so 854x480 = $0.0336/s and
+  //   1280x720 = $0.0756/s. The token count is OpenRouter's formula as we understand it: usd here adds ~10% room (0.037 / 0.084): CHECK the
+  //   first real bills (usage.cost). prov = which key is needed; durations = lengths that model takes (default VIDEO.durations).
   var VIDEO = { name: "Grok Imagine",
     models: {
-      lite: { id: "grok-imagine-video-1.5-lite", name: "Lite (cheapest)", usdSec: 0.02, maxRes: "1080p" },
-      std: { id: "grok-imagine-video", name: "Standard", usdSec: 0.05, maxRes: "720p" },
-      best: { id: "grok-imagine-video-1.5", name: "Best (1.5)", usdSec: 0.08, maxRes: "1080p" }
+      lite: { prov: "xai", id: "grok-imagine-video-1.5-lite", name: "Grok Lite (cheapest)", usd: { "480p": 0.02, "720p": 0.03, "1080p": 0.14 } },
+      std: { prov: "xai", id: "grok-imagine-video", name: "Grok Standard", usd: { "480p": 0.05, "720p": 0.07 } },
+      best: { prov: "xai", id: "grok-imagine-video-1.5", name: "Grok Best (1.5)", usd: { "480p": 0.08, "720p": 0.14, "1080p": 0.25 } },
+      seedance: { prov: "openrouter", id: "bytedance/seedance-2.0-mini", orProv: null, name: "Seedance 2.0 Mini", usd: { "480p": 0.037, "720p": 0.084 } },
+      veo: { prov: "openrouter", id: "google/veo-3.1-lite", orProv: null, name: "Google Veo 3.1 Lite", usd: { "720p": 0.05, "1080p": 0.08 }, durations: [4, 6, 8] }
     },
     res: ["480p", "720p", "1080p"],
-    RES_X: { "480p": 1, "720p": 1.5, "1080p": 2.25 },
     durations: [5, 8, 10, 15],
     maxPromptChars: 4000 };
+  function videoRes(model) { var m = VIDEO.models[model]; return m ? VIDEO.res.filter(function (r) { return m.usd[r] != null; }) : []; }
+  function videoDurations(model) { var m = VIDEO.models[model]; return (m && m.durations) || VIDEO.durations; }
 
   /* Reference pictures (2026-11-21): pictures sent with a picture request (change / combine them) or as a video's first frame.
    * OpenAI POST /v1/images/edits (JSON, images: [{image_url: data URL}], up to 16; gpt-image-2 reads every input at high fidelity).
@@ -159,7 +185,7 @@
    *   price: each one is priced as one more output picture (our safe guess: CHECK it).
    * xAI video: image: {url} = the first frame (all three models). No extra price is published: REFS.videoUsd per picture is our guess. */
   var REFS = { side: 1536, total: 3000000, gptTokens: 8000, videoUsd: 0.02,
-    max: { image: { gpt: 6, grok: 0, grok2: 5 }, video: { lite: 1, std: 1, best: 1 } } };
+    max: { image: { gpt: 6, grok: 0, grok2: 5, klein: 4, recraft: 0, seedream: 6 }, video: { lite: 1, std: 1, best: 1, seedance: 1, veo: 1 } } };
   function maxRefs(kind, model) { var t = REFS.max[kind === "video" ? "video" : "image"]; return (t && t[model]) || 0; }
   function checkRefs(refs, max) {
     if (refs == null) return null;
@@ -303,6 +329,11 @@
     nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
     var im = IMAGES[model];
     if (!im) throw new Error("Unknown picture model");
+    if (im.res) {
+      if (im.res[quality] == null || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
+      var ou = im.res[quality] + nRefs * (im.refUsd || 0), oh = hbdFromUsd(ou, im.prov);
+      return { kind: "image", model: model, modelId: im.id, quality: quality, size: size, aspect: XIMAGE.ASPECT[size], inTokens: 0, refs: nRefs, costUsd: ou, hbd: oh, price: fmtHbd(oh) };
+    }
     if (im.prov === "xai") {
       if (!XIMAGE.RES_X[quality] || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
       var xu = im.usd * XIMAGE.RES_X[quality] + nRefs * im.usd, xh = hbdFromUsd(xu, "xai");
@@ -320,12 +351,11 @@
     var m = VIDEO.models[model];
     if (!m) throw new Error("Unknown video model");
     var d = Math.round(Number(seconds));
-    if (VIDEO.durations.indexOf(d) < 0) throw new Error("Unknown video length");
-    var ri = VIDEO.res.indexOf(res);
-    if (ri < 0 || ri > VIDEO.res.indexOf(m.maxRes)) throw new Error("That model can't make " + res + " video");
+    if (videoDurations(model).indexOf(d) < 0) throw new Error("Unknown video length");
+    if (m.usd[res] == null) throw new Error("That model can't make " + res + " video");
     nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
-    var usd = m.usdSec * d * VIDEO.RES_X[res] + nRefs * REFS.videoUsd;
-    var hbd = hbdFromUsd(usd, "xai");
+    var usd = m.usd[res] * d + nRefs * REFS.videoUsd;
+    var hbd = hbdFromUsd(usd, m.prov);
     return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, refs: nRefs, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
   function checkVideo(prompt, model, seconds, res, hasPic) {
@@ -449,6 +479,7 @@
     if (prompt.length > LIMITS.promptChars) return "The description is too long (" + LIMITS.promptChars + " characters at most).";
     var im = IMAGES[model || "gpt"];
     if (!im) return "Unknown picture model.";
+    if (im.res) return im.res[quality] == null ? "Unknown quality." : !XIMAGE.ASPECT[size] ? "Unknown size." : null;
     if (im.prov === "xai") return !XIMAGE.res[quality] ? "Unknown quality." : !XIMAGE.ASPECT[size] ? "Unknown size." : null;
     if (!IMAGE.perImage[quality]) return "Unknown quality.";
     if (!IMAGE.sizes[size]) return "Unknown size.";
@@ -601,7 +632,7 @@
   return {
     cleanChat: cleanChat, cleanFolder: cleanFolder, readFolders: readFolders, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
-    PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
+    PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, DEFAULT_IMAGE: DEFAULT_IMAGE, XIMAGE: XIMAGE, videoRes: videoRes, videoDurations: videoDurations, freePicOk: freePicOk, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, FEES: FEES, realUsd: realUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,
@@ -1268,6 +1299,8 @@
 	var busy = false;
 	// free daily messages (A.FREE): on / left come from /api/ai?op=free&acct=; in the local preview a counter in localStorage
 	var FREEST = { on: mock, perDay: A.FREE.perDay, left: null };
+	// free daily pictures (A.FREE.pics, Recraft's free copy on OpenRouter): same op=free answer (j.pics), same daily signature
+	var PICST = { on: mock, perDay: A.FREE.pics, left: null };
 	// the free model on this device (local.js = window.AILocal): device check, files already in this browser, loading progress
 	var LOCST = { env: null, cached: {}, loaded: null, loading: null, prog: null, gen: false, err: "", want: false };
 	var ATTACH_T = null;
@@ -1795,22 +1828,26 @@
 		}).join("");
 		if (!provOn(A.MODELS[S.model].prov)) { var alt = Object.keys(A.MODELS).filter(function (k) { return provOn(A.MODELS[k].prov); })[0]; if (alt) S.model = alt; }
 		$("ai-model").value = S.model;
-		$("ai-imod").innerHTML = Object.keys(A.IMAGES).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(im.name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("");
+		var igroups = { openrouter: T("Cheap (FLUX, Recraft, Seedream)"), openai: "ChatGPT (OpenAI)", xai: "Grok (xAI)" };
+		$("ai-imod").innerHTML = Object.keys(igroups).map(function (p) {
+			return '<optgroup label="' + esc(igroups[p]) + '">' + Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === p; }).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(im.name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("") + "</optgroup>";
+		}).join("");
 		if (!provOn(A.IMAGES[S.imod].prov)) { var ia = Object.keys(A.IMAGES).filter(function (k) { return provOn(A.IMAGES[k].prov); })[0]; if (ia) S.imod = ia; }
 		$("ai-imod").value = S.imod;
 		fillQuality();
+		if (V) fillVmodels();
 	}
 	// picture quality: GPT Image = Draft / Good / Best, Grok Imagine = 1k / 2k; each company's last choice is remembered
 	function fillQuality() {
-		var im = A.IMAGES[S.imod], x = im.prov === "xai";
-		var opts = x ? A.XIMAGE.res : { low: T("Draft (fast, cheap)"), medium: T("Good"), high: T("Best") };
+		var im = A.IMAGES[S.imod], x = im.prov === "xai" || !!im.res;
+		var opts = im.res ? Object.keys(im.res).reduce(function (o, k) { o[k] = A.XIMAGE.res[k]; return o; }, {}) : x ? A.XIMAGE.res : { low: T("Draft (fast, cheap)"), medium: T("Good"), high: T("Best") };
 		var want = S.iq[im.prov] && opts[S.iq[im.prov]] ? S.iq[im.prov] : (x ? "1k" : "medium");
 		$("ai-q").innerHTML = Object.keys(opts).map(function (k) { return '<option value="' + k + '"' + (k === want ? " selected" : "") + ">" + esc(x ? T(opts[k]) : opts[k]) + "</option>"; }).join("");
 		$("ai-imodel").textContent = T("{company}'s {model}", { company: A.PROVIDERS[im.prov], model: im.name.replace(/ \(.*\)$/, "") });
 	}
 	fillModels();
 	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintRefs("img"); paintPrice(); });
-	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
+	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); paintPrice(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + esc(T(A.LENGTHS[k])) + "</button>"; }).join("");
 	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); if (A.isLocal(S.model)) localPick(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
@@ -1866,6 +1903,8 @@
 		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
 		$("ai-make").disabled = !(ion && !busy);
 		$("ai-make").textContent = ion ? (nr ? T("Pay & change") : T("Pay & create")) : T("Coming soon");
+		paintPicFree();
+		if (picsApplies()) { $("ai-iprice").innerHTML = "<b>" + T("🎁 Free") + "</b>"; if (ion) $("ai-make").textContent = T("Create free"); }
 		$("ai-iattach").hidden = !A.maxRefs("image", S.imod) && !nr;
 		if (typeof paintVprice === "function") paintVprice();
 	}
@@ -1886,10 +1925,13 @@
 		rows.push('<tr><td colspan="4" class="ai-sub">' + T("A new chat with a short question (about 500 tokens sent). Longer chats cost more.") + '</td></tr>');
 		rows.push("<tr><th>" + T("Picture (square)") + "</th><th>" + T("Draft") + "</th><th>" + T("Good") + "</th><th>" + T("Best") + "</th></tr><tr><td>" + esc(T(A.IMAGES.gpt.name)) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
 		rows.push("<tr><th>" + T("Picture (any shape)") + "</th><th>1k</th><th>2k</th><th></th></tr>");
-		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === "xai"; }).forEach(function (k) { rows.push("<tr><td>" + esc(T(A.IMAGES[k].name)) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + A.imageQuote(rq, "1024x1024", 0, k).price + " HBD</td>"; }).join("") + "<td></td></tr>"); });
-		rows.push("<tr><th>" + T("Video (480p)") + "</th><th>" + T("{n} s", { n: 5 }) + "</th><th>" + T("{n} s", { n: 8 }) + "</th><th>" + T("{n} s", { n: 15 }) + "</th></tr>");
-		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(T(A.VIDEO.models[k].name)) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
-		rows.push('<tr><td colspan="4" class="ai-sub">' + T("720p costs 1.5 times as much and 1080p 2.25 times.") + '</td></tr>');
+		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov !== "openai"; }).forEach(function (k) { var im = A.IMAGES[k]; rows.push("<tr><td>" + esc(T(im.name)) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + (!im.res || im.res[rq] != null ? A.imageQuote(rq, "1024x1024", 0, k).price + " HBD" : "–") + "</td>"; }).join("") + "<td></td></tr>"); });
+		rows.push("<tr><th>" + T("Video (lowest quality)") + "</th><th>" + T("Short") + "</th><th>" + T("Medium") + "</th><th>" + T("Long") + "</th></tr>");
+		Object.keys(A.VIDEO.models).forEach(function (k) {
+			var ds = A.videoDurations(k), r0 = A.videoRes(k)[0], pick = [ds[0], ds[Math.floor((ds.length - 1) / 2)], ds[ds.length - 1]];
+			rows.push("<tr><td>" + esc(T(A.VIDEO.models[k].name)) + ' <span class="ai-sub">' + r0 + "</span></td>" + pick.map(function (d) { return "<td>" + A.videoQuote(k, d, r0).price + " HBD <span class=\"ai-sub\">" + T("{n} s", { n: d }) + "</span></td>"; }).join("") + "</tr>");
+		});
+		rows.push('<tr><td colspan="4" class="ai-sub">' + T("Higher quality costs more per second; the exact price is shown before you pay.") + '</td></tr>');
 		$("ai-ptable").innerHTML = rows.join("");
 	})();
 
@@ -1986,13 +2028,58 @@
 		var u = who(); if (!u) { FREEST.left = null; paintPrice(); return; }
 		if (mock) {
 			var d = null; try { d = JSON.parse(localStorage.getItem(freeKey(u.name) + ":mock") || "null"); } catch (e) {}
-			FREEST.left = d && d.day === A.utcDay() ? d.left : A.FREE.perDay; paintPrice(); return;
+			FREEST.left = d && d.day === A.utcDay() ? d.left : A.FREE.perDay;
+			var dp = null; try { dp = JSON.parse(localStorage.getItem(freeKey(u.name) + ":pmock") || "null"); } catch (e) {}
+			PICST.left = dp && dp.day === A.utcDay() ? dp.left : A.FREE.pics; paintPrice(); return;
 		}
 		fetch("/api/ai?op=free&acct=" + encodeURIComponent(u.name), { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
-			FREEST.on = !!j.on; FREEST.perDay = j.perDay || A.FREE.perDay; FREEST.left = j.on ? j.left : null; paintPrice();
+			FREEST.on = !!j.on; FREEST.perDay = j.perDay || A.FREE.perDay; FREEST.left = j.on ? j.left : null;
+			var p = j.pics || {}; PICST.on = !!p.on; PICST.perDay = p.perDay || A.FREE.pics; PICST.left = p.on ? p.left : null; paintPrice();
 		}).catch(function () {});
 	}
 	$("ai-freeuse").addEventListener("change", function () { S.free = this.checked; save(); paintPrice(); });
+	/* free daily pictures: the free model (A.FREE.picModel) at 1k, no pictures added, ticked, some left today */
+	function picsApplies() {
+		var nr = M ? M.img.pend.length : 0;
+		return !!(PICST.on && who() && PICST.left > 0 && S.ifree !== false && A.freePicOk(S.imod, $("ai-q").value, nr) && provOn("openrouter"));
+	}
+	function paintPicFree() {
+		var box = $("ai-ifree"), u = who(), fm = A.FREE.picModel, nr = M ? M.img.pend.length : 0;
+		var show = !!(PICST.on && u && PICST.left != null && S.imod === fm);
+		box.hidden = !show;
+		if (!show) return;
+		var fits = A.freePicOk(S.imod, $("ai-q").value, nr);
+		$("ai-ifreeuse").checked = S.ifree !== false;
+		$("ai-ifreeuse").disabled = PICST.left <= 0 || !fits;
+		$("ai-ifreetx").textContent = PICST.left > 0 ? T("🎁 Free: {n}/{m} pictures left today", { n: PICST.left, m: PICST.perDay }) : T("🎁 No free pictures left today");
+		box.title = !fits ? T("Free pictures are 1k, without pictures added.") : PICST.left > 0 ? T("Use my free pictures: {n} of {m} left today", { n: PICST.left, m: PICST.perDay }) : T("No free pictures left today: they come back at 00:00 UTC.");
+	}
+	$("ai-ifreeuse").addEventListener("change", function () { S.ifree = this.checked; save(); paintPrice(); });
+	// one free picture: the daily signature, then op "freepic" -> JSON {t:"image", b64, mime} like a paid picture
+	function freePic(u, prompt, quality, size) {
+		var tries = 0;
+		function go(fresh) {
+			return daySig(u.name, fresh).then(function (ds) {
+				msg(T("Making your free picture (this takes up to a minute)…"));
+				if (mock) {
+					PICST.left = Math.max(0, PICST.left - 1);
+					try { localStorage.setItem(freeKey(u.name) + ":pmock", JSON.stringify({ day: A.utcDay(), left: PICST.left })); } catch (e) {}
+					if (/fail/i.test(prompt)) { PICST.left++; return sleep(800).then(function () { throw new Error(T("Simulated failure: your free picture was not used.")); }); }
+					return sleep(1000).then(function () { return mockImage(prompt, size, []); });
+				}
+				return post({ op: "freepic", acct: u.name, day: ds.day, sig: ds.sig, model: A.FREE.picModel, prompt: prompt, quality: quality, size: size }).then(function (r) {
+					var l = r.headers.get("X-Free-Left");
+					return jsonOf(r).then(function (j) {
+						if (j.t === "image") { if (l != null) PICST.left = +l; return b64Blob(j.b64, j.mime); }
+						if (j.resign && tries++ < 1) { try { localStorage.removeItem(freeKey(u.name) + ":sig"); } catch (e) {} return go(true); }
+						if (j.left === 0) PICST.left = 0;
+						throw new Error(j.resign ? T("Hive could not confirm the signature. Log in again with Keychain and retry.") : T(j.msg || j.error) || T("Could not make it (HTTP {s}).", { s: j.status }));
+					});
+				});
+			});
+		}
+		return go(false);
+	}
 	// the once-a-day proof of the account: a Keychain signature of A.freeMessage (no payment, no fee); kept for the day
 	function daySig(acct, fresh) {
 		var day = A.utcDay(), k = freeKey(acct) + ":sig", c = null;
@@ -2389,7 +2476,7 @@
 		return M[kind].list().filter(function (it) { var t = norm(it.prompt); return w.every(function (x) { return t.indexOf(x) >= 0; }); });
 	}
 	function itemSub(kind, it) {
-		var bits = [when(it.at), it.price + " HBD"];
+		var bits = [when(it.at), it.free ? T("🎁 free") : it.price + " HBD"];
 		if (kind === "vid") bits.unshift(it.seconds + " s");
 		if (it.refs && it.refs.length) bits.push(kind === "vid" ? "🖼️" : "✏️ " + it.refs.length);
 		return bits.join(" · ");
@@ -2527,6 +2614,18 @@
 		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod) || A.checkRefs(refs, A.maxRefs("image", imod));
 		if (err) { msg(T(err), "err"); return; }
 		setBusy(true);
+		if (!isRetry && picsApplies()) {
+			freePic(u, prompt, quality, size).then(function (blob) {
+				var key = "f" + A.newId();
+				return idbDo("readwrite", function (s) { return s.put(blob, key); }).then(function () {
+					var l = imgList(); l.unshift({ id: key, model: imod, prompt: prompt, quality: quality, size: size, price: "0", free: true, at: Date.now() }); imgSave(l.slice(0, 300));
+					$("ai-prompt").value = "";
+					msg(T("Done. Your free picture is shown (kept in this browser)."), "ok");
+					S.isel = key; save(); paintMedia("img");
+				});
+			}).catch(function (e) { msg(T(e && e.message || String(e)), "err"); }).then(function () { setBusy(false); paintPrice(); });
+			return;
+		}
 		var sendRefs = refs.map(function (f) { return { mt: f.mt, data: f.data }; });
 		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size, refs: sendRefs }).then(function (q) {
 			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
@@ -2574,21 +2673,31 @@
 
 	/* ---------- videos (Grok Imagine): pay, start a job, follow it every 5 s, fetch the file into IndexedDB ---------- */
 	var V = A.VIDEO, LS_VJ = "mes-ai:vjobs", LS_VID = "mes-ai:vids";
-	$("ai-vmodel").innerHTML = Object.keys(V.models).map(function (k) { return '<option value="' + k + '">' + esc(T(V.models[k].name)) + "</option>"; }).join("");
-	$("ai-vmodel").value = "lite";
-	$("ai-vsec").innerHTML = V.durations.map(function (d) { return '<option value="' + d + '"' + (d === 5 ? " selected" : "") + ">" + T("{n} seconds", { n: d }) + "</option>"; }).join("");
-	function paintVres() {
-		var m = V.models[$("ai-vmodel").value], cur = $("ai-vres").value || "480p", max = V.res.indexOf(m.maxRes);
-		$("ai-vres").innerHTML = V.res.filter(function (r, i) { return i <= max; }).map(function (r) { return '<option value="' + r + '">' + r + "</option>"; }).join("");
-		$("ai-vres").value = V.res.indexOf(cur) <= max ? cur : "480p";
+	// video models grouped by company (2026-11-23: + OpenRouter's Seedance 2.0 Mini and Veo 3.1 Lite); each has its own lengths and qualities
+	function fillVmodels() {
+		var cur = $("ai-vmodel").value || "lite", vg = { xai: "Grok (xAI)", openrouter: T("More (Seedance, Veo)") };
+		$("ai-vmodel").innerHTML = Object.keys(vg).map(function (p) {
+			return '<optgroup label="' + esc(vg[p]) + '">' + Object.keys(V.models).filter(function (k) { return V.models[k].prov === p; }).map(function (k) { var on = provOn(p); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(V.models[k].name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("") + "</optgroup>";
+		}).join("");
+		if (!V.models[cur] || !provOn(V.models[cur].prov)) cur = Object.keys(V.models).filter(function (k) { return provOn(V.models[k].prov); })[0] || "lite";
+		$("ai-vmodel").value = cur;
+		paintVres();
 	}
-	paintVres();
+	function paintVres() {
+		var k = $("ai-vmodel").value, rs = A.videoRes(k), cur = $("ai-vres").value, ds = A.videoDurations(k), cs = +$("ai-vsec").value || 5;
+		$("ai-vres").innerHTML = rs.map(function (r) { return '<option value="' + r + '">' + r + "</option>"; }).join("");
+		$("ai-vres").value = rs.indexOf(cur) >= 0 ? cur : rs[0];
+		var near = ds.reduce(function (a, d) { return Math.abs(d - cs) < Math.abs(a - cs) ? d : a; }, ds[0]);
+		$("ai-vsec").innerHTML = ds.map(function (d) { return '<option value="' + d + '"' + (d === near ? " selected" : "") + ">" + T("{n} seconds", { n: d }) + "</option>"; }).join("");
+	}
+	fillVmodels();
 	function vq() { return A.videoQuote($("ai-vmodel").value, +$("ai-vsec").value, $("ai-vres").value, M ? M.vid.pend.length : 0); }
 	function paintVprice() {
 		var q = vq();
 		$("ai-vprice").innerHTML = "<b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>";
-		$("ai-vmake").disabled = !(status.video && !busy);
-		$("ai-vmake").textContent = status.video ? T("Pay & create") : T("Coming soon");
+		var von = status.video && provOn(V.models[$("ai-vmodel").value].prov);
+		$("ai-vmake").disabled = !(von && !busy);
+		$("ai-vmake").textContent = von ? T("Pay & create") : T("Coming soon");
 		$("ai-vattach").hidden = !A.maxRefs("video", $("ai-vmodel").value);
 	}
 	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintRefs("vid"); paintVprice(); });

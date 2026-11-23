@@ -20,6 +20,9 @@
 // Models per company (MODELS / IMAGES in the lib, each with prov): chat = Anthropic Claude (messages API) or OpenAI GPT (Chat Completions,
 // input counted with /v1/responses/input_tokens); pictures = OpenAI gpt-image-2 or xAI Grok Imagine (/v1/images/generations).
 // OpenAI video (Sora 2) is not offered: OpenAI shut the Videos API down on 2026-09-24.
+// OpenRouter (2026-11-23): cheap pictures (FLUX 3 Klein, Recraft V4.1 Flash, Seedream 5.0 Flash; POST /api/v1/images) and videos
+// (Seedance 2.0 Mini, Veo 3.1 Lite; POST /api/v1/videos + GET /api/v1/videos/<id>, the file fetched with our key), and the free daily
+// pictures (op "freepic", Recraft's free copy). Key OPENROUTER_API_KEY; AI_FREE_PICS=0 switches the free pictures off.
 // Keys: Vercel env ANTHROPIC_API_KEY, OPENAI_API_KEY, XAI_API_KEY (plain project-level vars), never sent out.
 // Limits per hour: 300 quotes per IP hash, 60 answers per Hive account, 100 per IP hash. Tests: node tool_apps_src/ai-tests.js
 
@@ -153,7 +156,9 @@ function makeHandler(deps = {}) {
     if (await overLimit('q:' + iph, LIM.quoteIp)) return send(res, 429, { error: 'Too many requests from this network. Try again in an hour.' });
     let q, stored;
     if (b.kind === 'video') {
-      if (!env.XAI_API_KEY) return send(res, 503, { off: true, error: 'Videos are coming soon.' });
+      const vm = A.VIDEO.models[b.model];
+      if (!vm) return send(res, 400, { error: 'Pick a video model.' });
+      if (!keyOf(vm.prov)) return send(res, 503, { off: true, error: 'Videos are coming soon.' });
       const refs = b.refs == null ? [] : b.refs;
       const err = A.checkVideo(b.prompt, b.model, b.seconds, b.res, Array.isArray(refs) && refs.length > 0) || A.checkRefs(refs, A.maxRefs('video', b.model));
       if (err) return send(res, 400, { error: err });
@@ -412,6 +417,7 @@ function makeHandler(deps = {}) {
   const xaiHeaders = () => ({ Authorization: 'Bearer ' + env.XAI_API_KEY, 'Content-Type': 'application/json' });
   async function videoStart(res, rec, id, isRetry, failed) {
     const m = A.VIDEO.models[rec.model];
+    if (m.prov === 'openrouter') return orVideoStart(res, rec, id, isRetry, failed, m);
     let r, j;
     try {
       r = await fetchImpl('https://api.x.ai/v1/videos/generations', {
@@ -441,6 +447,7 @@ function makeHandler(deps = {}) {
     if (v.err) return send(res, v.code, { error: v.err });
     const { id, job } = v;
     if (job.url) return send(res, 200, { status: 'done', duration: job.duration || null });
+    if (job.prov === 'openrouter') return orVideoStatus(res, id, job);
     let r, j;
     try { r = await fetchImpl('https://api.x.ai/v1/videos/' + encodeURIComponent(job.rid), { headers: xaiHeaders() }); j = await r.json(); }
     catch (e) { return send(res, 200, { status: 'pending', note: 'Could not ask the video service; trying again.' }); }
@@ -461,7 +468,8 @@ function makeHandler(deps = {}) {
     if (v.err) return send(res, v.code, { error: v.err });
     if (!v.job.url) return send(res, 409, { error: 'The video is not ready yet.' });
     let r;
-    try { r = await fetchImpl(v.job.url); } catch (e) { return send(res, 502, { error: 'Could not fetch the video.' }); }
+    const auth = v.job.prov === 'openrouter' && /^https:\/\/openrouter\.ai\//.test(v.job.url) ? { headers: { Authorization: 'Bearer ' + env.OPENROUTER_API_KEY } } : undefined;
+    try { r = await fetchImpl(v.job.url, auth); } catch (e) { return send(res, 502, { error: 'Could not fetch the video.' }); }
     if (!r.ok || !r.body) return send(res, 502, { error: 'The video link answered ' + r.status + ' (it may have run out).' });
     res.statusCode = 200;
     const ct = (r.headers && r.headers.get && r.headers.get('content-type')) || '';
@@ -476,6 +484,7 @@ function makeHandler(deps = {}) {
   async function image(res, rec, who, failed) {
     const im = A.IMAGES[rec.model || 'gpt'];
     if (im.prov === 'xai') return ximage(res, rec, im, failed);
+    if (im.prov === 'openrouter') return orimage(res, rec, im, failed, false);
     let r, j;
     // with reference pictures: POST /v1/images/edits (JSON, images: [{image_url: data URL}], gpt-image-2 reads them at high fidelity)
     const edit = rec.refs && rec.refs.length;
@@ -525,6 +534,95 @@ function makeHandler(deps = {}) {
     return send(res, 200, { t: 'image', b64: String(d.b64_json).replace(/^data:[^,]*,/, ''), mime });
   }
 
+  /* ---------- OpenRouter pictures (POST /api/v1/images) and videos (POST /api/v1/videos), 2026-11-23 ----------
+     Pictures: a fixed price per picture (A.IMAGES[..].res), pinned to one provider (provider.only, no fallbacks) so the bill is what was quoted.
+     free = the free daily picture: the model's freeId copy (0 USD). Videos: a job like xAI's; the finished file is fetched with our key. */
+  const orHeaders = () => ({ Authorization: 'Bearer ' + env.OPENROUTER_API_KEY, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://mes.fm/ai', 'X-Title': 'MES AI' });
+  async function orimage(res, rec, im, failed, free) {
+    let r, j;
+    const refs = rec.refs || [];
+    const body = { model: free ? im.freeId : im.id, prompt: rec.prompt, n: 1, aspect_ratio: A.XIMAGE.ASPECT[rec.size], response_format: 'b64_json' };
+    if (Object.keys(im.res).length > 1) body.resolution = String(rec.quality).toUpperCase();
+    if (refs.length) body.input_references = refs.map((f) => ({ type: 'image_url', image_url: { url: A.dataUrl(f) } }));
+    if (!free && im.orProv) body.provider = { only: [im.orProv], allow_fallbacks: false, data_collection: 'deny' };
+    try {
+      r = await fetchImpl('https://openrouter.ai/api/v1/images', { method: 'POST', headers: orHeaders(), body: JSON.stringify(body) });
+      j = await r.json();
+    } catch (e) { return failed(res, 'Could not reach the picture service. Your payment is kept: press Try again.', false); }
+    const d = j && j.data && j.data[0];
+    if (!r.ok || !d || !d.b64_json) {
+      const em = j && j.error ? (j.error.message || j.error) : '';
+      return failed(res, 'The picture service answered ' + r.status + '.' + (em ? ' ' + em : '') + ' Your payment is kept: press Try again.', false);
+    }
+    const mime = /^image\/(png|jpeg|webp)$/.test(d.media_type || '') ? d.media_type : 'image/png';
+    return send(res, 200, { t: 'image', b64: String(d.b64_json).replace(/^data:[^,]*,/, ''), mime });
+  }
+  async function orVideoStart(res, rec, id, isRetry, failed, m) {
+    let r, j;
+    const body = { model: m.id, duration: rec.seconds, resolution: rec.res, aspect_ratio: '16:9', generate_audio: !!rec.audio };
+    if (rec.prompt) body.prompt = rec.prompt;
+    if (rec.refs && rec.refs.length) body.frame_images = [{ type: 'image_url', image_url: { url: A.dataUrl(rec.refs[0]) }, frame_type: 'first_frame' }];
+    if (m.orProv) body.provider = { only: [m.orProv] };
+    try {
+      r = await fetchImpl('https://openrouter.ai/api/v1/videos', { method: 'POST', headers: orHeaders(), body: JSON.stringify(body) });
+      j = await r.json();
+    } catch (e) { return failed(res, 'Could not reach the video service. Your payment is kept: press Try again.', false); }
+    if (!r.ok || !j || !j.id) {
+      return failed(res, 'The video service answered ' + r.status + '.' + (j && j.error ? ' ' + (j.error.message || j.error) : '') + ' Your payment is kept: press Try again.', false);
+    }
+    await redis([['SET', 'ai:vjob:' + id, JSON.stringify({ prov: 'openrouter', rid: String(j.id), acct: rec.acct, retried: isRetry, at: now() }), 'EX', '86400']]);
+    return send(res, 200, { t: 'video', job: id });
+  }
+  async function orVideoStatus(res, id, job) {
+    let r, j;
+    try { r = await fetchImpl('https://openrouter.ai/api/v1/videos/' + encodeURIComponent(job.rid), { headers: orHeaders() }); j = await r.json(); }
+    catch (e) { return send(res, 200, { status: 'pending', note: 'Could not ask the video service; trying again.' }); }
+    const st = j && j.status;
+    const url = j && ((Array.isArray(j.unsigned_urls) && j.unsigned_urls[0]) || (Array.isArray(j.urls) && j.urls[0]));
+    if (r.ok && st === 'completed' && A.okVideoUrl(url)) {
+      job.url = url; job.duration = null;
+      await redis([['SET', 'ai:vjob:' + id, JSON.stringify(job), 'EX', '86400']]);
+      return send(res, 200, { status: 'done', duration: null });
+    }
+    if (st === 'failed' || st === 'cancelled' || st === 'expired' || (!r.ok && r.status !== 429 && r.status < 500)) {
+      if (!job.retried) await redis([['SET', 'ai:retry:' + id, '1', 'EX', '86400'], ['DEL', 'ai:vjob:' + id]]);
+      return send(res, 200, { status: 'failed', retry: !job.retried, msg: 'The video service could not make this video' + (j && j.error ? ' (' + (j.error.message || j.error) + ')' : '') + '.' });
+    }
+    return send(res, 200, { status: 'pending' });
+  }
+
+  /* free daily pictures (A.FREE.pics): the same once-a-day Keychain signature as the free messages; OpenRouter's free copy of Recraft
+     costs us nothing, so only the per-account / per-network counts limit them. AI_FREE_PICS=0 in Vercel switches them off. */
+  const picsOn = () => !!env.OPENROUTER_API_KEY && String(env.AI_FREE_PICS || '') !== '0';
+  async function picsLeft(acct, day) {
+    const [n] = await redis([['GET', 'ai:fpic:' + day + ':' + acct]]);
+    return Math.max(0, A.FREE.pics - (Number(n) || 0));
+  }
+  async function freepic(req, res, b) {
+    if (!picsOn()) return send(res, 503, { off: true, error: 'Free pictures are not switched on yet.' });
+    const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
+    if (!A.validName(acct)) return send(res, 400, { error: 'Log in with your Hive account first.' });
+    const today = A.utcDay(now()), day = String(b.day || '');
+    if (day !== today) return send(res, 400, { error: 'resign', resign: true });
+    if (typeof b.sig !== 'string' || !/^[0-9a-f]{130}$/i.test(b.sig)) return send(res, 400, { error: 'resign', resign: true });
+    const model = A.FREE.picModel;
+    if (!A.freePicOk(b.model, b.quality, (b.refs || []).length)) return send(res, 400, { error: 'Free pictures use ' + A.IMAGES[model].name.replace(/ \(.*\)$/, '') + ' at 1k, without pictures added.' });
+    const err = A.checkImage(b.prompt, b.quality, b.size, model);
+    if (err) return send(res, 400, { error: err });
+    let ok;
+    try { ok = await signedBy(acct, day, b.sig.toLowerCase()); } catch (e) { return send(res, 502, { error: 'The Hive nodes did not answer. Try again in a moment.' }); }
+    if (!ok) return send(res, 403, { error: 'resign', resign: true });
+    const iph = sha(ipOf(req) + salt).slice(0, 24);
+    const ka = 'ai:fpic:' + day + ':' + acct, ki = 'ai:fpicip:' + day + ':' + iph;
+    const [na, , ni] = await redis([['INCR', ka], ['EXPIRE', ka, '90000'], ['INCR', ki], ['EXPIRE', ki, '90000']]);
+    const undo = () => redis([['DECR', ka], ['DECR', ki]]).catch(() => {});
+    if (Number(na) > A.FREE.pics) { await undo(); return send(res, 429, { left: 0, error: 'You have used today\'s free pictures. They come back at 00:00 UTC; paid pictures work now.' }); }
+    if (Number(ni) > A.FREE.picsIp) { await undo(); return send(res, 429, { error: 'Too many free pictures from this network today. Paid pictures work now.' }); }
+    const gave = async (res2, msg) => { await undo(); send(res2, 502, { t: 'error', msg: msg.replace(/ Your payment is kept: press Try again\./, ' Your free picture was not used: try again.'), retry: false, free: true }); };
+    res.setHeader('X-Free-Left', String(Math.max(0, A.FREE.pics - Number(na))));
+    return orimage(res, { prompt: b.prompt, quality: b.quality, size: b.size, refs: [] }, A.IMAGES[model], gave, true);
+  }
+
   return async function handler(req, res) {
     try {
       if (req.method === 'GET') {
@@ -534,13 +632,15 @@ function makeHandler(deps = {}) {
         if (op === 'free') {
           const acct = String(qs.acct || '').replace(/^@/, '').toLowerCase();
           if (!A.validName(acct)) return send(res, 400, { error: 'Bad account.' });
-          return send(res, 200, { on: freeOn(), perDay: A.FREE.perDay, left: freeOn() ? await freeLeft(acct, A.utcDay(now())) : 0, day: A.utcDay(now()) });
+          const dd = A.utcDay(now());
+          return send(res, 200, { on: freeOn(), perDay: A.FREE.perDay, left: freeOn() ? await freeLeft(acct, dd) : 0, day: dd,
+            pics: { on: picsOn(), perDay: A.FREE.pics, left: picsOn() ? await picsLeft(acct, dd) : 0 } });
         }
         if (op !== 'status') return send(res, 400, { error: 'Unknown op' });
         return send(res, 200, {
-          chat: !!(env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY || env.OPENROUTER_API_KEY), image: !!(env.OPENAI_API_KEY || env.XAI_API_KEY), video: !!env.XAI_API_KEY,
+          chat: !!(env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY || env.OPENROUTER_API_KEY), image: !!(env.OPENAI_API_KEY || env.XAI_API_KEY || env.OPENROUTER_API_KEY), video: !!(env.XAI_API_KEY || env.OPENROUTER_API_KEY),
           prov: { anthropic: !!env.ANTHROPIC_API_KEY, openai: !!env.OPENAI_API_KEY, xai: !!env.XAI_API_KEY, openrouter: !!env.OPENROUTER_API_KEY },
-          free: { on: freeOn(), perDay: A.FREE.perDay },
+          free: { on: freeOn(), perDay: A.FREE.perDay, pics: picsOn(), picsPerDay: A.FREE.pics },
           margin: A.MARGIN, checked: A.PRICES_CHECKED,
           models: Object.keys(A.MODELS).filter((k) => A.MODELS[k].prov !== 'local').map((k) => ({ key: k, prov: A.MODELS[k].prov, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
           imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
@@ -555,6 +655,7 @@ function makeHandler(deps = {}) {
       if (b.op === 'run') return await run(req, res, b);
       if (b.op === 'vstatus') return await vstatus(req, res, b);
       if (b.op === 'free') return await free(req, res, b);
+      if (b.op === 'freepic') return await freepic(req, res, b);
       return send(res, 400, { error: 'Unknown op' });
     } catch (e) {
       if (!res.headersSent) return send(res, 500, { error: 'Something went wrong on our side. Try again.' });

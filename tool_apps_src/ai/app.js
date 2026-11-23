@@ -24,6 +24,8 @@
 	var busy = false;
 	// free daily messages (A.FREE): on / left come from /api/ai?op=free&acct=; in the local preview a counter in localStorage
 	var FREEST = { on: mock, perDay: A.FREE.perDay, left: null };
+	// free daily pictures (A.FREE.pics, Recraft's free copy on OpenRouter): same op=free answer (j.pics), same daily signature
+	var PICST = { on: mock, perDay: A.FREE.pics, left: null };
 	// the free model on this device (local.js = window.AILocal): device check, files already in this browser, loading progress
 	var LOCST = { env: null, cached: {}, loaded: null, loading: null, prog: null, gen: false, err: "", want: false };
 	var ATTACH_T = null;
@@ -551,22 +553,26 @@
 		}).join("");
 		if (!provOn(A.MODELS[S.model].prov)) { var alt = Object.keys(A.MODELS).filter(function (k) { return provOn(A.MODELS[k].prov); })[0]; if (alt) S.model = alt; }
 		$("ai-model").value = S.model;
-		$("ai-imod").innerHTML = Object.keys(A.IMAGES).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(im.name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("");
+		var igroups = { openrouter: T("Cheap (FLUX, Recraft, Seedream)"), openai: "ChatGPT (OpenAI)", xai: "Grok (xAI)" };
+		$("ai-imod").innerHTML = Object.keys(igroups).map(function (p) {
+			return '<optgroup label="' + esc(igroups[p]) + '">' + Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === p; }).map(function (k) { var im = A.IMAGES[k], on = provOn(im.prov); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(im.name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("") + "</optgroup>";
+		}).join("");
 		if (!provOn(A.IMAGES[S.imod].prov)) { var ia = Object.keys(A.IMAGES).filter(function (k) { return provOn(A.IMAGES[k].prov); })[0]; if (ia) S.imod = ia; }
 		$("ai-imod").value = S.imod;
 		fillQuality();
+		if (V) fillVmodels();
 	}
 	// picture quality: GPT Image = Draft / Good / Best, Grok Imagine = 1k / 2k; each company's last choice is remembered
 	function fillQuality() {
-		var im = A.IMAGES[S.imod], x = im.prov === "xai";
-		var opts = x ? A.XIMAGE.res : { low: T("Draft (fast, cheap)"), medium: T("Good"), high: T("Best") };
+		var im = A.IMAGES[S.imod], x = im.prov === "xai" || !!im.res;
+		var opts = im.res ? Object.keys(im.res).reduce(function (o, k) { o[k] = A.XIMAGE.res[k]; return o; }, {}) : x ? A.XIMAGE.res : { low: T("Draft (fast, cheap)"), medium: T("Good"), high: T("Best") };
 		var want = S.iq[im.prov] && opts[S.iq[im.prov]] ? S.iq[im.prov] : (x ? "1k" : "medium");
 		$("ai-q").innerHTML = Object.keys(opts).map(function (k) { return '<option value="' + k + '"' + (k === want ? " selected" : "") + ">" + esc(x ? T(opts[k]) : opts[k]) + "</option>"; }).join("");
 		$("ai-imodel").textContent = T("{company}'s {model}", { company: A.PROVIDERS[im.prov], model: im.name.replace(/ \(.*\)$/, "") });
 	}
 	fillModels();
 	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintRefs("img"); paintPrice(); });
-	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
+	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); paintPrice(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + esc(T(A.LENGTHS[k])) + "</button>"; }).join("");
 	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); if (A.isLocal(S.model)) localPick(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
@@ -622,6 +628,8 @@
 		var ion = status.image && provOn(A.IMAGES[S.imod].prov);
 		$("ai-make").disabled = !(ion && !busy);
 		$("ai-make").textContent = ion ? (nr ? T("Pay & change") : T("Pay & create")) : T("Coming soon");
+		paintPicFree();
+		if (picsApplies()) { $("ai-iprice").innerHTML = "<b>" + T("🎁 Free") + "</b>"; if (ion) $("ai-make").textContent = T("Create free"); }
 		$("ai-iattach").hidden = !A.maxRefs("image", S.imod) && !nr;
 		if (typeof paintVprice === "function") paintVprice();
 	}
@@ -642,10 +650,13 @@
 		rows.push('<tr><td colspan="4" class="ai-sub">' + T("A new chat with a short question (about 500 tokens sent). Longer chats cost more.") + '</td></tr>');
 		rows.push("<tr><th>" + T("Picture (square)") + "</th><th>" + T("Draft") + "</th><th>" + T("Good") + "</th><th>" + T("Best") + "</th></tr><tr><td>" + esc(T(A.IMAGES.gpt.name)) + "</td>" + ["low", "medium", "high"].map(function (ql) { return "<td>" + A.imageQuote(ql, "1024x1024", 40).price + " HBD</td>"; }).join("") + "</tr>");
 		rows.push("<tr><th>" + T("Picture (any shape)") + "</th><th>1k</th><th>2k</th><th></th></tr>");
-		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov === "xai"; }).forEach(function (k) { rows.push("<tr><td>" + esc(T(A.IMAGES[k].name)) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + A.imageQuote(rq, "1024x1024", 0, k).price + " HBD</td>"; }).join("") + "<td></td></tr>"); });
-		rows.push("<tr><th>" + T("Video (480p)") + "</th><th>" + T("{n} s", { n: 5 }) + "</th><th>" + T("{n} s", { n: 8 }) + "</th><th>" + T("{n} s", { n: 15 }) + "</th></tr>");
-		Object.keys(A.VIDEO.models).forEach(function (k) { rows.push("<tr><td>" + esc(T(A.VIDEO.models[k].name)) + "</td>" + [5, 8, 15].map(function (d) { return "<td>" + A.videoQuote(k, d, "480p").price + " HBD</td>"; }).join("") + "</tr>"); });
-		rows.push('<tr><td colspan="4" class="ai-sub">' + T("720p costs 1.5 times as much and 1080p 2.25 times.") + '</td></tr>');
+		Object.keys(A.IMAGES).filter(function (k) { return A.IMAGES[k].prov !== "openai"; }).forEach(function (k) { var im = A.IMAGES[k]; rows.push("<tr><td>" + esc(T(im.name)) + "</td>" + ["1k", "2k"].map(function (rq) { return "<td>" + (!im.res || im.res[rq] != null ? A.imageQuote(rq, "1024x1024", 0, k).price + " HBD" : "–") + "</td>"; }).join("") + "<td></td></tr>"); });
+		rows.push("<tr><th>" + T("Video (lowest quality)") + "</th><th>" + T("Short") + "</th><th>" + T("Medium") + "</th><th>" + T("Long") + "</th></tr>");
+		Object.keys(A.VIDEO.models).forEach(function (k) {
+			var ds = A.videoDurations(k), r0 = A.videoRes(k)[0], pick = [ds[0], ds[Math.floor((ds.length - 1) / 2)], ds[ds.length - 1]];
+			rows.push("<tr><td>" + esc(T(A.VIDEO.models[k].name)) + ' <span class="ai-sub">' + r0 + "</span></td>" + pick.map(function (d) { return "<td>" + A.videoQuote(k, d, r0).price + " HBD <span class=\"ai-sub\">" + T("{n} s", { n: d }) + "</span></td>"; }).join("") + "</tr>");
+		});
+		rows.push('<tr><td colspan="4" class="ai-sub">' + T("Higher quality costs more per second; the exact price is shown before you pay.") + '</td></tr>');
 		$("ai-ptable").innerHTML = rows.join("");
 	})();
 
@@ -742,13 +753,58 @@
 		var u = who(); if (!u) { FREEST.left = null; paintPrice(); return; }
 		if (mock) {
 			var d = null; try { d = JSON.parse(localStorage.getItem(freeKey(u.name) + ":mock") || "null"); } catch (e) {}
-			FREEST.left = d && d.day === A.utcDay() ? d.left : A.FREE.perDay; paintPrice(); return;
+			FREEST.left = d && d.day === A.utcDay() ? d.left : A.FREE.perDay;
+			var dp = null; try { dp = JSON.parse(localStorage.getItem(freeKey(u.name) + ":pmock") || "null"); } catch (e) {}
+			PICST.left = dp && dp.day === A.utcDay() ? dp.left : A.FREE.pics; paintPrice(); return;
 		}
 		fetch("/api/ai?op=free&acct=" + encodeURIComponent(u.name), { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
-			FREEST.on = !!j.on; FREEST.perDay = j.perDay || A.FREE.perDay; FREEST.left = j.on ? j.left : null; paintPrice();
+			FREEST.on = !!j.on; FREEST.perDay = j.perDay || A.FREE.perDay; FREEST.left = j.on ? j.left : null;
+			var p = j.pics || {}; PICST.on = !!p.on; PICST.perDay = p.perDay || A.FREE.pics; PICST.left = p.on ? p.left : null; paintPrice();
 		}).catch(function () {});
 	}
 	$("ai-freeuse").addEventListener("change", function () { S.free = this.checked; save(); paintPrice(); });
+	/* free daily pictures: the free model (A.FREE.picModel) at 1k, no pictures added, ticked, some left today */
+	function picsApplies() {
+		var nr = M ? M.img.pend.length : 0;
+		return !!(PICST.on && who() && PICST.left > 0 && S.ifree !== false && A.freePicOk(S.imod, $("ai-q").value, nr) && provOn("openrouter"));
+	}
+	function paintPicFree() {
+		var box = $("ai-ifree"), u = who(), fm = A.FREE.picModel, nr = M ? M.img.pend.length : 0;
+		var show = !!(PICST.on && u && PICST.left != null && S.imod === fm);
+		box.hidden = !show;
+		if (!show) return;
+		var fits = A.freePicOk(S.imod, $("ai-q").value, nr);
+		$("ai-ifreeuse").checked = S.ifree !== false;
+		$("ai-ifreeuse").disabled = PICST.left <= 0 || !fits;
+		$("ai-ifreetx").textContent = PICST.left > 0 ? T("🎁 Free: {n}/{m} pictures left today", { n: PICST.left, m: PICST.perDay }) : T("🎁 No free pictures left today");
+		box.title = !fits ? T("Free pictures are 1k, without pictures added.") : PICST.left > 0 ? T("Use my free pictures: {n} of {m} left today", { n: PICST.left, m: PICST.perDay }) : T("No free pictures left today: they come back at 00:00 UTC.");
+	}
+	$("ai-ifreeuse").addEventListener("change", function () { S.ifree = this.checked; save(); paintPrice(); });
+	// one free picture: the daily signature, then op "freepic" -> JSON {t:"image", b64, mime} like a paid picture
+	function freePic(u, prompt, quality, size) {
+		var tries = 0;
+		function go(fresh) {
+			return daySig(u.name, fresh).then(function (ds) {
+				msg(T("Making your free picture (this takes up to a minute)…"));
+				if (mock) {
+					PICST.left = Math.max(0, PICST.left - 1);
+					try { localStorage.setItem(freeKey(u.name) + ":pmock", JSON.stringify({ day: A.utcDay(), left: PICST.left })); } catch (e) {}
+					if (/fail/i.test(prompt)) { PICST.left++; return sleep(800).then(function () { throw new Error(T("Simulated failure: your free picture was not used.")); }); }
+					return sleep(1000).then(function () { return mockImage(prompt, size, []); });
+				}
+				return post({ op: "freepic", acct: u.name, day: ds.day, sig: ds.sig, model: A.FREE.picModel, prompt: prompt, quality: quality, size: size }).then(function (r) {
+					var l = r.headers.get("X-Free-Left");
+					return jsonOf(r).then(function (j) {
+						if (j.t === "image") { if (l != null) PICST.left = +l; return b64Blob(j.b64, j.mime); }
+						if (j.resign && tries++ < 1) { try { localStorage.removeItem(freeKey(u.name) + ":sig"); } catch (e) {} return go(true); }
+						if (j.left === 0) PICST.left = 0;
+						throw new Error(j.resign ? T("Hive could not confirm the signature. Log in again with Keychain and retry.") : T(j.msg || j.error) || T("Could not make it (HTTP {s}).", { s: j.status }));
+					});
+				});
+			});
+		}
+		return go(false);
+	}
 	// the once-a-day proof of the account: a Keychain signature of A.freeMessage (no payment, no fee); kept for the day
 	function daySig(acct, fresh) {
 		var day = A.utcDay(), k = freeKey(acct) + ":sig", c = null;
@@ -1145,7 +1201,7 @@
 		return M[kind].list().filter(function (it) { var t = norm(it.prompt); return w.every(function (x) { return t.indexOf(x) >= 0; }); });
 	}
 	function itemSub(kind, it) {
-		var bits = [when(it.at), it.price + " HBD"];
+		var bits = [when(it.at), it.free ? T("🎁 free") : it.price + " HBD"];
 		if (kind === "vid") bits.unshift(it.seconds + " s");
 		if (it.refs && it.refs.length) bits.push(kind === "vid" ? "🖼️" : "✏️ " + it.refs.length);
 		return bits.join(" · ");
@@ -1283,6 +1339,18 @@
 		var err = isRetry ? null : A.checkImage(prompt, quality, size, imod) || A.checkRefs(refs, A.maxRefs("image", imod));
 		if (err) { msg(T(err), "err"); return; }
 		setBusy(true);
+		if (!isRetry && picsApplies()) {
+			freePic(u, prompt, quality, size).then(function (blob) {
+				var key = "f" + A.newId();
+				return idbDo("readwrite", function (s) { return s.put(blob, key); }).then(function () {
+					var l = imgList(); l.unshift({ id: key, model: imod, prompt: prompt, quality: quality, size: size, price: "0", free: true, at: Date.now() }); imgSave(l.slice(0, 300));
+					$("ai-prompt").value = "";
+					msg(T("Done. Your free picture is shown (kept in this browser)."), "ok");
+					S.isel = key; save(); paintMedia("img");
+				});
+			}).catch(function (e) { msg(T(e && e.message || String(e)), "err"); }).then(function () { setBusy(false); paintPrice(); });
+			return;
+		}
 		var sendRefs = refs.map(function (f) { return { mt: f.mt, data: f.data }; });
 		var job = isRetry ? Promise.resolve(pendingImg) : quote({ acct: u.name, kind: "image", model: imod, prompt: prompt, quality: quality, size: size, refs: sendRefs }).then(function (q) {
 			if (q.status !== 200) throw new Error(T(q.error) || T("Could not get a price (HTTP {s}).", { s: q.status }));
@@ -1330,21 +1398,31 @@
 
 	/* ---------- videos (Grok Imagine): pay, start a job, follow it every 5 s, fetch the file into IndexedDB ---------- */
 	var V = A.VIDEO, LS_VJ = "mes-ai:vjobs", LS_VID = "mes-ai:vids";
-	$("ai-vmodel").innerHTML = Object.keys(V.models).map(function (k) { return '<option value="' + k + '">' + esc(T(V.models[k].name)) + "</option>"; }).join("");
-	$("ai-vmodel").value = "lite";
-	$("ai-vsec").innerHTML = V.durations.map(function (d) { return '<option value="' + d + '"' + (d === 5 ? " selected" : "") + ">" + T("{n} seconds", { n: d }) + "</option>"; }).join("");
-	function paintVres() {
-		var m = V.models[$("ai-vmodel").value], cur = $("ai-vres").value || "480p", max = V.res.indexOf(m.maxRes);
-		$("ai-vres").innerHTML = V.res.filter(function (r, i) { return i <= max; }).map(function (r) { return '<option value="' + r + '">' + r + "</option>"; }).join("");
-		$("ai-vres").value = V.res.indexOf(cur) <= max ? cur : "480p";
+	// video models grouped by company (2026-11-23: + OpenRouter's Seedance 2.0 Mini and Veo 3.1 Lite); each has its own lengths and qualities
+	function fillVmodels() {
+		var cur = $("ai-vmodel").value || "lite", vg = { xai: "Grok (xAI)", openrouter: T("More (Seedance, Veo)") };
+		$("ai-vmodel").innerHTML = Object.keys(vg).map(function (p) {
+			return '<optgroup label="' + esc(vg[p]) + '">' + Object.keys(V.models).filter(function (k) { return V.models[k].prov === p; }).map(function (k) { var on = provOn(p); return '<option value="' + k + '"' + (on ? "" : " disabled") + ">" + esc(T(V.models[k].name)) + (on ? "" : " (" + T("soon") + ")") + "</option>"; }).join("") + "</optgroup>";
+		}).join("");
+		if (!V.models[cur] || !provOn(V.models[cur].prov)) cur = Object.keys(V.models).filter(function (k) { return provOn(V.models[k].prov); })[0] || "lite";
+		$("ai-vmodel").value = cur;
+		paintVres();
 	}
-	paintVres();
+	function paintVres() {
+		var k = $("ai-vmodel").value, rs = A.videoRes(k), cur = $("ai-vres").value, ds = A.videoDurations(k), cs = +$("ai-vsec").value || 5;
+		$("ai-vres").innerHTML = rs.map(function (r) { return '<option value="' + r + '">' + r + "</option>"; }).join("");
+		$("ai-vres").value = rs.indexOf(cur) >= 0 ? cur : rs[0];
+		var near = ds.reduce(function (a, d) { return Math.abs(d - cs) < Math.abs(a - cs) ? d : a; }, ds[0]);
+		$("ai-vsec").innerHTML = ds.map(function (d) { return '<option value="' + d + '"' + (d === near ? " selected" : "") + ">" + T("{n} seconds", { n: d }) + "</option>"; }).join("");
+	}
+	fillVmodels();
 	function vq() { return A.videoQuote($("ai-vmodel").value, +$("ai-vsec").value, $("ai-vres").value, M ? M.vid.pend.length : 0); }
 	function paintVprice() {
 		var q = vq();
 		$("ai-vprice").innerHTML = "<b>" + q.price + " HBD</b> <span class=\"ai-sub\">(" + usdOf(q) + ")</span>";
-		$("ai-vmake").disabled = !(status.video && !busy);
-		$("ai-vmake").textContent = status.video ? T("Pay & create") : T("Coming soon");
+		var von = status.video && provOn(V.models[$("ai-vmodel").value].prov);
+		$("ai-vmake").disabled = !(von && !busy);
+		$("ai-vmake").textContent = von ? T("Pay & create") : T("Coming soon");
 		$("ai-vattach").hidden = !A.maxRefs("video", $("ai-vmodel").value);
 	}
 	$("ai-vmodel").addEventListener("change", function () { paintVres(); paintRefs("vid"); paintVprice(); });

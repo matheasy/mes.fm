@@ -1245,10 +1245,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>Modèle</span><select id="ai-imod" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>Qualité</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>Format</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">Carré</option><option value="1536x1024">Paysage</option><option value="1024x1536">Portrait</option></select></label>
+					<label class="ai-freechip" id="ai-ifree" hidden><input type="checkbox" id="ai-ifreeuse" checked> <span id="ai-ifreetx"></span></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="À propos de ces modèles">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" id="ai-inote" hidden>Cette image est créée par <span id="ai-imodel">GPT Image 2 d'OpenAI</span> et gardée uniquement dans ce navigateur. GPT Image 2 suit bien les descriptions longues et détaillées et écrit bien du texte dans les images ; Grok Imagine est moins cher et rapide.</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>Cette image est créée par <span id="ai-imodel">GPT Image 2 d'OpenAI</span> et gardée uniquement dans ce navigateur. GPT Image 2 suit bien les descriptions longues et détaillées et écrit bien du texte dans les images ; Grok Imagine est moins cher et rapide. Les modèles bon marché (FLUX 3 Klein, Recraft V4.1 Flash, Seedream 5.0 Flash) coûtent environ un centime ; avec un compte Hive vous avez aussi quelques images Recraft gratuites chaque jour.</p>
 			</div>
 			</div>
 			</div>
@@ -1287,7 +1288,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="À propos de ces modèles">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" hidden>Les vidéos sont créées par Grok Imagine de xAI et prennent quelques minutes : vous pouvez continuer à utiliser la page (ou la fermer et revenir : le travail continue). Les vidéos terminées sont gardées uniquement dans ce navigateur. Avec les modèles Lite et Meilleur, le son comprend des paroles synchronisées avec les lèvres.</p>
+				<p class="tu-note ai-det" hidden>Les vidéos sont créées par Grok Imagine de xAI et prennent quelques minutes : vous pouvez continuer à utiliser la page (ou la fermer et revenir : le travail continue). Les vidéos terminées sont gardées uniquement dans ce navigateur. Avec les modèles Lite et Meilleur, le son comprend des paroles synchronisées avec les lèvres. Seedance 2.0 Mini (ByteDance) et Google Veo 3.1 Lite passent par OpenRouter, avec le son aussi.</p>
 			</div>
 			</div>
 			</div>
@@ -1319,6 +1320,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>Vous ne payez que ce que vous utilisez, rien ne se renouvelle et il n'y a aucun solde à perdre. Le prix s'affiche avant chaque message.</dd>
 				<dt>Pourquoi ma réponse s'est-elle arrêtée au milieu ?</dt>
 				<dd>Elle a atteint la longueur de réponse payée. Envoyez « continue » (un nouveau message) ou choisissez Moyenne ou Longue la prochaine fois. Opus et les modèles ChatGPT réfléchissent avant d'écrire, et cette réflexion compte aussi dans la longueur.</dd>
+				<dt>Y a-t-il des images et vidéos bon marché ou gratuites ?</dt>
+				<dd>Oui. Les modèles d'image bon marché (FLUX 3 Klein, Recraft V4.1 Flash et Seedream 5.0 Flash, via OpenRouter) coûtent de 0,013 à 0,033 HBD par image, et avec votre compte Hive vous avez <b>3 images Recraft gratuites par jour</b> (1k, sans images ajoutées ; une signature Keychain par jour, sans paiement). Pour les vidéos, Grok Lite en 480p est le moins cher (environ 0,17 HBD pour 5 secondes) ; Seedance 2.0 Mini et Google Veo 3.1 Lite sont aussi proposés. Les images ne peuvent pas encore être faites sur votre propre appareil : ces modèles pèsent plusieurs Go et sont lents dans un navigateur.</dd>
 				<dt>Puis-je créer des vidéos avec Sora d'OpenAI ?</dt>
 				<dd>Non : OpenAI a fermé Sora 2 et son service vidéo pour les développeurs le 24 septembre 2026. Ici, les vidéos sont créées par Grok Imagine de xAI.</dd>
 				<dt>Un problème est survenu après mon paiement.</dt>
@@ -1388,7 +1391,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=db096226" defer></script><script src="/ai/js/ai.js?v=18" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=a15f12b2" defer></script><script src="/ai/js/ai.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

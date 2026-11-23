@@ -1245,10 +1245,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>مدل</span><select id="ai-imod" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>کیفیت</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>شکل</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">مربع</option><option value="1536x1024">افقی</option><option value="1024x1536">عمودی</option></select></label>
+					<label class="ai-freechip" id="ai-ifree" hidden><input type="checkbox" id="ai-ifreeuse" checked> <span id="ai-ifreetx"></span></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="درباره این مدل‌ها">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" id="ai-inote" hidden>این تصویر را <span id="ai-imodel">GPT Image 2 از OpenAI</span> می‌سازد و فقط در این مرورگر نگه داشته می‌شود. GPT Image 2 توصیف‌های بلند و دقیق را خوب دنبال می‌کند و متن را در تصویر خوب می‌نویسد؛ Grok Imagine ارزان‌تر و سریع است.</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>این تصویر را <span id="ai-imodel">GPT Image 2 از OpenAI</span> می‌سازد و فقط در این مرورگر نگه داشته می‌شود. GPT Image 2 توصیف‌های بلند و دقیق را خوب دنبال می‌کند و متن را در تصویر خوب می‌نویسد؛ Grok Imagine ارزان‌تر و سریع است. مدل‌های ارزان (FLUX 3 Klein، Recraft V4.1 Flash، Seedream 5.0 Flash) حدود یک سنت هزینه دارند؛ با ورود به Hive هر روز چند تصویر رایگان Recraft هم می‌گیرید.</p>
 			</div>
 			</div>
 			</div>
@@ -1287,7 +1288,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="درباره این مدل‌ها">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" hidden>ویدیوها را Grok Imagine از xAI می‌سازد و چند دقیقه طول می‌کشد: می‌توانید به کار با صفحه ادامه دهید (یا آن را ببندید و برگردید: کار ادامه پیدا می‌کند). ویدیوهای آماده فقط در این مرورگر نگه داشته می‌شوند. در مدل‌های Lite و بهترین، صدا شامل گفتاری است که با حرکت لب‌ها جور است.</p>
+				<p class="tu-note ai-det" hidden>ویدیوها را Grok Imagine از xAI می‌سازد و چند دقیقه طول می‌کشد: می‌توانید به کار با صفحه ادامه دهید (یا آن را ببندید و برگردید: کار ادامه پیدا می‌کند). ویدیوهای آماده فقط در این مرورگر نگه داشته می‌شوند. در مدل‌های Lite و بهترین، صدا شامل گفتاری است که با حرکت لب‌ها جور است. Seedance 2.0 Mini (ByteDance) و Google Veo 3.1 Lite از راه OpenRouter ساخته می‌شوند، با صدا هم.</p>
 			</div>
 			</div>
 			</div>
@@ -1319,6 +1320,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>فقط برای چیزی که استفاده می‌کنید می‌پردازید، چیزی خودکار تمدید نمی‌شود و موجودی‌ای نیست که از دست برود. قیمت پیش از هر پیام نشان داده می‌شود.</dd>
 				<dt>چرا پاسخم وسط کار متوقف شد؟</dt>
 				<dd>به طول پاسخی که برایش پرداختید رسید. «ادامه بده» را بفرستید (یک پیام تازه) یا دفعهٔ بعد «متوسط» یا «بلند» را انتخاب کنید. Opus و مدل‌های ChatGPT پیش از نوشتن فکر می‌کنند و آن فکر کردن هم جزو طول حساب می‌شود.</dd>
+				<dt>آیا تصویر و ویدیوی ارزان یا رایگان هست؟</dt>
+				<dd>بله. مدل‌های ارزان تصویر (FLUX 3 Klein، Recraft V4.1 Flash و Seedream 5.0 Flash از راه OpenRouter) حدود 0.013 تا 0.033 HBD برای هر تصویر هزینه دارند و با حساب Hive هر روز <b>3 تصویر رایگان Recraft</b> می‌گیرید (1k، بدون افزودن تصویر؛ روزی یک امضای Keychain، بدون پرداخت). برای ویدیو، Grok Lite با 480p ارزان‌ترین است (حدود 0.17 HBD برای 5 ثانیه)؛ Seedance 2.0 Mini و Google Veo 3.1 Lite هم هستند. تصویرها هنوز روی دستگاه خودتان ساخته نمی‌شوند: این مدل‌ها چند گیگابایت هستند و در مرورگر کند اجرا می‌شوند.</dd>
 				<dt>آیا می‌توانم با Sora از OpenAI ویدیو بسازم؟</dt>
 				<dd>نه: OpenAI در 24 سپتامبر 2026 ‏Sora 2 و سرویس ویدیوی آن برای توسعه‌دهندگان را تعطیل کرد. ویدیوهای اینجا را Grok Imagine از xAI می‌سازد.</dd>
 				<dt>پس از پرداخت مشکلی پیش آمد.</dt>
@@ -1388,7 +1391,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fa.js?v=71f1e3e6" defer></script><script src="/ai/js/ai.js?v=18" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fa.js?v=152739b1" defer></script><script src="/ai/js/ai.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

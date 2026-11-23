@@ -1245,10 +1245,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>模型</span><select id="ai-imod" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>质量</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>形状</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">正方形</option><option value="1536x1024">横向</option><option value="1024x1536">纵向</option></select></label>
+					<label class="ai-freechip" id="ai-ifree" hidden><input type="checkbox" id="ai-ifreeuse" checked> <span id="ai-ifreetx"></span></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="关于这些模型">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" id="ai-inote" hidden>这张图片由 <span id="ai-imodel">OpenAI 的 GPT Image 2</span> 生成，只保存在此浏览器中。GPT Image 2 能理解长而详细的描述，也很擅长在图片中写字；Grok Imagine 更便宜、更快。</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>这张图片由 <span id="ai-imodel">OpenAI 的 GPT Image 2</span> 生成，只保存在此浏览器中。GPT Image 2 能理解长而详细的描述，也很擅长在图片中写字；Grok Imagine 更便宜、更快。 便宜的模型（FLUX 3 Klein、Recraft V4.1 Flash、Seedream 5.0 Flash）大约一美分一张；登录 Hive 后每天还有几张免费的 Recraft 图片。</p>
 			</div>
 			</div>
 			</div>
@@ -1287,7 +1288,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="关于这些模型">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" hidden>视频由 xAI 的 Grok Imagine 生成，需要几分钟：你可以继续使用本页（也可以关闭后再回来：它会继续生成）。完成的视频只保存在此浏览器中。使用“轻量”和“最佳”模型时，声音包括与口型同步的语音。</p>
+				<p class="tu-note ai-det" hidden>视频由 xAI 的 Grok Imagine 生成，需要几分钟：你可以继续使用本页（也可以关闭后再回来：它会继续生成）。完成的视频只保存在此浏览器中。使用“轻量”和“最佳”模型时，声音包括与口型同步的语音。 Seedance 2.0 Mini（字节跳动）和 Google Veo 3.1 Lite 通过 OpenRouter 生成，同样有声音。</p>
 			</div>
 			</div>
 			</div>
@@ -1319,6 +1320,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>你只为用到的部分付费，不会自动续费，也没有可能丢失的余额。每条消息发送前都会显示价格。</dd>
 				<dt>为什么我的回答停在了中间？</dt>
 				<dd>它达到了你付费的回答长度。发送“继续”（一条新消息），或者下次选择“中”或“长”。Opus 和 ChatGPT 模型会先思考再写，思考过程也计入长度。</dd>
+				<dt>有便宜或免费的图片和视频吗？</dt>
+				<dd>有。便宜的图片模型（FLUX 3 Klein、Recraft V4.1 Flash 和 Seedream 5.0 Flash，通过 OpenRouter 生成）每张约 0.013 到 0.033 HBD，用 Hive 账户每天还有 <b>3 张免费的 Recraft 图片</b>（1k，不能添加图片；每天一次 Keychain 签名，无需付款）。视频方面，480p 的 Grok Lite 最便宜（5 秒约 0.17 HBD）；也提供 Seedance 2.0 Mini 和 Google Veo 3.1 Lite。图片暂时还不能在你自己的设备上生成：这类模型有好几 GB，在浏览器里很慢。</dd>
 				<dt>我能用 OpenAI 的 Sora 做视频吗？</dt>
 				<dd>不能：OpenAI 已于 2026 年 9 月 24 日关闭了 Sora 2 及其面向开发者的视频服务。这里的视频由 xAI 的 Grok Imagine 生成。</dd>
 				<dt>我付款后出了问题。</dt>
@@ -1388,7 +1391,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=0b5344f3" defer></script><script src="/ai/js/ai.js?v=18" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=0212909d" defer></script><script src="/ai/js/ai.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

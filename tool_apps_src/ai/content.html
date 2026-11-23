@@ -155,10 +155,11 @@
 					<label class="ai-opt"><span>{{tr:Model}}</span><select id="ai-imod" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>{{tr:Quality}}</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>{{tr:Shape}}</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">{{tr:Square}}</option><option value="1536x1024">{{tr:Landscape}}</option><option value="1024x1536">{{tr:Portrait}}</option></select></label>
+					<label class="ai-freechip" id="ai-ifree" hidden><input type="checkbox" id="ai-ifreeuse" checked> <span id="ai-ifreetx"></span></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="{{tr:About these models}}">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" id="ai-inote" hidden>{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}}</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>{{tr:This picture is made by <span id="ai-imodel">OpenAI's GPT Image 2</span> and kept only in this browser. GPT Image 2 follows long, detailed descriptions and writes text in pictures well; Grok Imagine is cheaper and quick.}} {{tr:The cheap ones (FLUX 3 Klein, Recraft V4.1 Flash, Seedream 5.0 Flash) cost about a cent; with a Hive login you also get a few free Recraft pictures every day.}}</p>
 			</div>
 			</div>
 			</div>
@@ -197,7 +198,7 @@
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="{{tr:About these models}}">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" hidden>{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}}</p>
+				<p class="tu-note ai-det" hidden>{{tr:Videos are made by xAI's Grok Imagine and take a few minutes: you can keep using the page (or close it and come back: it carries on). Finished videos are kept only in this browser. Sound includes speech that matches the lips on the Lite and Best models.}} {{tr:Seedance 2.0 Mini (ByteDance) and Google Veo 3.1 Lite are made through OpenRouter, also with sound.}}</p>
 			</div>
 			</div>
 			</div>

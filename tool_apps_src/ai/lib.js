@@ -17,7 +17,7 @@
 
   var MARGIN = 1.5;            // price = API cost x MARGIN (1.5 = 50% profit on cost). Change here only.
   var HBD_USD = 1;             // HBD is pegged to 1 USD; the margin covers small drifts of the peg
-  var PRICES_CHECKED = "2026-11-19";
+  var PRICES_CHECKED = "2026-11-23";
   var PAY_TO = "mes";
   var MEMO_PREFIX = "mesai:";
   var MIN_HBD = 0.001;
@@ -108,9 +108,14 @@
      (FREE.maxOut tokens) and a chat of at most FREE.maxIn tokens (counted the safe way, 1 token a character). The account is proven once a
      day with a Keychain signature of freeMessage(acct, day) (no payment, no fee). All free messages together stop at FREE.usdPerDay of
      cost a day (env AI_FREE_USD overrides it); each one first reserves its worst case. Paid from ad and Premium income. */
-  var FREE = { perDay: 10, perIp: 30, maxIn: 12000, maxOut: 1500, usdPerDay: 2 };
+  var FREE = { perDay: 10, perIp: 30, maxIn: 12000, maxOut: 1500, usdPerDay: 2,
+    // free daily pictures (2026-11-23): pics a day per Hive account (picsIp per network) on the model with a freeId (Recraft V4.1 Flash,
+    // OpenRouter's free copy, 0 USD to us, so they never touch usdPerDay). Same once-a-day signature as the free messages.
+    pics: 3, picsIp: 9, picModel: "recraft" };
   function freeMessage(acct, day) { return "mes.fm/ai free messages for @" + acct + " on " + day; }
   function utcDay(ms) { return new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10); }
+  // a free daily picture: the free model, no reference pictures, 1k
+  function freePicOk(model, quality, nRefs) { var im = IMAGES[model]; return !!(im && im.freeId && model === FREE.picModel && quality === "1k" && !nRefs); }
   function freeWorstUsd(modelKey) { var m = MODELS[modelKey]; return m && m.free ? (FREE.maxIn * m.inUsd + FREE.maxOut * m.outUsd) / 1e6 : 0; }
   var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter", local: "WebLLM" };
   var DEFAULT_MODEL = "sonnet";
@@ -129,26 +134,47 @@
   // Grok Imagine = xAI (docs.x.ai/developers/pricing, checked 2026-11-19): a flat price per picture; quality = resolution 1k / 2k.
   // xAI lists no extra price for 2k, so RES_X is our own safe guess like the video one: CHECK it against the first real bills.
   // The page's shapes (pixel sizes) map to xAI aspect ratios through ASPECT.
+  /* cheap pictures through OpenRouter's Image API (POST /api/v1/images, 2026-11-23). Prices = OpenRouter's own endpoint records
+   * (GET /api/v1/images/models/<id>/endpoints, checked 2026-11-23): a fixed price per picture, so the bill is known before the call.
+   * res = USD per picture by resolution ("1k" / "2k" = OpenRouter's "1K" / "2K"); refUsd = per reference picture (Seedream lists 0;
+   * FLUX 3 Klein lists no input price at all, so 0.003 is our safe guess: CHECK the first real bills). orProv = the provider slug the
+   * request is pinned to (provider.only, no fallbacks), so OpenRouter can never route to a dearer one.
+   * freeId = OpenRouter's free copy of the same model (0 USD): the free daily pictures (FREE.pics) use it. */
   var IMAGES = {
+    klein: { prov: "openrouter", id: "black-forest-labs/flux-3-image-klein", orProv: "black-forest-labs", name: "FLUX 3 Klein (cheapest)", res: { "1k": 0.009, "2k": 0.014 }, refUsd: 0.003 },
+    recraft: { prov: "openrouter", id: "recraft/recraft-v4.1-flash-v2", orProv: "recraft", freeId: "recraft/recraft-v4.1-flash-v2:free", name: "Recraft V4.1 Flash (free a few a day)", res: { "1k": 0.007 }, refUsd: 0 },
+    seedream: { prov: "openrouter", id: "bytedance-seed/seedream-5-0-flash", orProv: "seed", name: "Seedream 5.0 Flash", res: { "1k": 0.018, "2k": 0.018 }, refUsd: 0 },
     gpt: { prov: "openai", id: "gpt-image-2", name: "GPT Image 2 (ChatGPT)" },
-    grok: { prov: "xai", id: "grok-imagine-image", name: "Grok Imagine (cheapest)", usd: 0.02 },
-    grok2: { prov: "xai", id: "grok-imagine-image-2.0", name: "Grok Imagine 2.0", usd: 0.04 }
+    grok: { prov: "xai", id: "grok-imagine-image", name: "Grok Imagine", usd: 0.02 },
+    // grok2: OpenRouter's record for the same xAI model (2026-11-23) prices it by quality too: low 1k $0.04 / 2k $0.06, medium 1k $0.06 /
+    // 2k $0.08, input picture $0.01. We send no quality, so we price it as medium to be safe (0.06, x1.5 for 2k = 0.09).
+    grok2: { prov: "xai", id: "grok-imagine-image-2.0", name: "Grok Imagine 2.0", usd: 0.06 }
   };
+  var DEFAULT_IMAGE = "gpt";
   var XIMAGE = { res: { "1k": "Standard (1k)", "2k": "Sharp (2k)" }, RES_X: { "1k": 1, "2k": 1.5 },
     ASPECT: { "1024x1024": "1:1", "1536x1024": "3:2", "1024x1536": "2:3" } };
 
-  // xAI Grok Imagine video: USD per second of video (docs.x.ai pricing, checked 2026-11-18). xAI says resolution changes the price too
-  // but publishes no rate for it, so RES_X is our own safe guess (x the per-second price): CHECK it against the first real bills and lower it.
+  // Video: usd = USD per second of video by resolution. xAI Grok Imagine (direct): the per-resolution rates OpenRouter publishes for the
+  // same xAI models (GET /api/v1/videos/models pricing_skus, checked 2026-11-23; OpenRouter passes provider prices through). Until then we
+  // charged a 480p rate x a guessed RES_X, which was BELOW the real 720p / 1080p cost (Lite 1080p is $0.14/s, not $0.045/s).
+  // OpenRouter models (POST /api/v1/videos, 2026-11-23):
+  //   Veo 3.1 Lite: $0.05/s 720p, $0.08/s 1080p with sound (cheaper without; we always quote the with-sound rate), lengths 4 / 6 / 8 s only.
+  //   Seedance 2.0 Mini: billed per "video token" ($3.5 per 1M); tokens = width x height x 24 fps / 1024 a second, so 854x480 = $0.0336/s and
+  //   1280x720 = $0.0756/s. The token count is OpenRouter's formula as we understand it: usd here adds ~10% room (0.037 / 0.084): CHECK the
+  //   first real bills (usage.cost). prov = which key is needed; durations = lengths that model takes (default VIDEO.durations).
   var VIDEO = { name: "Grok Imagine",
     models: {
-      lite: { id: "grok-imagine-video-1.5-lite", name: "Lite (cheapest)", usdSec: 0.02, maxRes: "1080p" },
-      std: { id: "grok-imagine-video", name: "Standard", usdSec: 0.05, maxRes: "720p" },
-      best: { id: "grok-imagine-video-1.5", name: "Best (1.5)", usdSec: 0.08, maxRes: "1080p" }
+      lite: { prov: "xai", id: "grok-imagine-video-1.5-lite", name: "Grok Lite (cheapest)", usd: { "480p": 0.02, "720p": 0.03, "1080p": 0.14 } },
+      std: { prov: "xai", id: "grok-imagine-video", name: "Grok Standard", usd: { "480p": 0.05, "720p": 0.07 } },
+      best: { prov: "xai", id: "grok-imagine-video-1.5", name: "Grok Best (1.5)", usd: { "480p": 0.08, "720p": 0.14, "1080p": 0.25 } },
+      seedance: { prov: "openrouter", id: "bytedance/seedance-2.0-mini", orProv: null, name: "Seedance 2.0 Mini", usd: { "480p": 0.037, "720p": 0.084 } },
+      veo: { prov: "openrouter", id: "google/veo-3.1-lite", orProv: null, name: "Google Veo 3.1 Lite", usd: { "720p": 0.05, "1080p": 0.08 }, durations: [4, 6, 8] }
     },
     res: ["480p", "720p", "1080p"],
-    RES_X: { "480p": 1, "720p": 1.5, "1080p": 2.25 },
     durations: [5, 8, 10, 15],
     maxPromptChars: 4000 };
+  function videoRes(model) { var m = VIDEO.models[model]; return m ? VIDEO.res.filter(function (r) { return m.usd[r] != null; }) : []; }
+  function videoDurations(model) { var m = VIDEO.models[model]; return (m && m.durations) || VIDEO.durations; }
 
   /* Reference pictures (2026-11-21): pictures sent with a picture request (change / combine them) or as a video's first frame.
    * OpenAI POST /v1/images/edits (JSON, images: [{image_url: data URL}], up to 16; gpt-image-2 reads every input at high fidelity).
@@ -159,7 +185,7 @@
    *   price: each one is priced as one more output picture (our safe guess: CHECK it).
    * xAI video: image: {url} = the first frame (all three models). No extra price is published: REFS.videoUsd per picture is our guess. */
   var REFS = { side: 1536, total: 3000000, gptTokens: 8000, videoUsd: 0.02,
-    max: { image: { gpt: 6, grok: 0, grok2: 5 }, video: { lite: 1, std: 1, best: 1 } } };
+    max: { image: { gpt: 6, grok: 0, grok2: 5, klein: 4, recraft: 0, seedream: 6 }, video: { lite: 1, std: 1, best: 1, seedance: 1, veo: 1 } } };
   function maxRefs(kind, model) { var t = REFS.max[kind === "video" ? "video" : "image"]; return (t && t[model]) || 0; }
   function checkRefs(refs, max) {
     if (refs == null) return null;
@@ -303,6 +329,11 @@
     nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
     var im = IMAGES[model];
     if (!im) throw new Error("Unknown picture model");
+    if (im.res) {
+      if (im.res[quality] == null || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
+      var ou = im.res[quality] + nRefs * (im.refUsd || 0), oh = hbdFromUsd(ou, im.prov);
+      return { kind: "image", model: model, modelId: im.id, quality: quality, size: size, aspect: XIMAGE.ASPECT[size], inTokens: 0, refs: nRefs, costUsd: ou, hbd: oh, price: fmtHbd(oh) };
+    }
     if (im.prov === "xai") {
       if (!XIMAGE.RES_X[quality] || !XIMAGE.ASPECT[size]) throw new Error("Unknown image quality or size");
       var xu = im.usd * XIMAGE.RES_X[quality] + nRefs * im.usd, xh = hbdFromUsd(xu, "xai");
@@ -320,12 +351,11 @@
     var m = VIDEO.models[model];
     if (!m) throw new Error("Unknown video model");
     var d = Math.round(Number(seconds));
-    if (VIDEO.durations.indexOf(d) < 0) throw new Error("Unknown video length");
-    var ri = VIDEO.res.indexOf(res);
-    if (ri < 0 || ri > VIDEO.res.indexOf(m.maxRes)) throw new Error("That model can't make " + res + " video");
+    if (videoDurations(model).indexOf(d) < 0) throw new Error("Unknown video length");
+    if (m.usd[res] == null) throw new Error("That model can't make " + res + " video");
     nRefs = Math.max(0, Math.floor(Number(nRefs) || 0));
-    var usd = m.usdSec * d * VIDEO.RES_X[res] + nRefs * REFS.videoUsd;
-    var hbd = hbdFromUsd(usd, "xai");
+    var usd = m.usd[res] * d + nRefs * REFS.videoUsd;
+    var hbd = hbdFromUsd(usd, m.prov);
     return { kind: "video", model: model, modelId: m.id, seconds: d, res: res, refs: nRefs, costUsd: usd, hbd: hbd, price: fmtHbd(hbd) };
   }
   function checkVideo(prompt, model, seconds, res, hasPic) {
@@ -449,6 +479,7 @@
     if (prompt.length > LIMITS.promptChars) return "The description is too long (" + LIMITS.promptChars + " characters at most).";
     var im = IMAGES[model || "gpt"];
     if (!im) return "Unknown picture model.";
+    if (im.res) return im.res[quality] == null ? "Unknown quality." : !XIMAGE.ASPECT[size] ? "Unknown size." : null;
     if (im.prov === "xai") return !XIMAGE.res[quality] ? "Unknown quality." : !XIMAGE.ASPECT[size] ? "Unknown size." : null;
     if (!IMAGE.perImage[quality]) return "Unknown quality.";
     if (!IMAGE.sizes[size]) return "Unknown size.";
@@ -601,7 +632,7 @@
   return {
     cleanChat: cleanChat, cleanFolder: cleanFolder, readFolders: readFolders, backup: backup, readBackup: readBackup, mergeChats: mergeChats, chatMarkdown: chatMarkdown,
     MARGIN: MARGIN, HBD_USD: HBD_USD, PRICES_CHECKED: PRICES_CHECKED, PAY_TO: PAY_TO, MEMO_PREFIX: MEMO_PREFIX, MIN_HBD: MIN_HBD,
-    PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, XIMAGE: XIMAGE, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
+    PROVIDERS: PROVIDERS, LANGS: LANGS, cleanLang: cleanLang, IMAGES: IMAGES, DEFAULT_IMAGE: DEFAULT_IMAGE, XIMAGE: XIMAGE, videoRes: videoRes, videoDurations: videoDurations, freePicOk: freePicOk, systemFor: systemFor, streamPieceOpenAI: streamPieceOpenAI, safeTokens: safeTokens,
     MODELS: MODELS, DEFAULT_MODEL: DEFAULT_MODEL, LENGTHS: LENGTHS, IMAGE: IMAGE, LIMITS: LIMITS, SYSTEM: SYSTEM,
     hbdFromUsd: hbdFromUsd, FEES: FEES, realUsd: realUsd, fmtHbd: fmtHbd, fmtUsd: fmtUsd, estimateTokens: estimateTokens, estimateChatTokens: estimateChatTokens,
     chatQuote: chatQuote, chatCostSoFar: chatCostSoFar, typicalCosts: typicalCosts, sessionCost: sessionCost, imageQuote: imageQuote, VIDEO: VIDEO, videoQuote: videoQuote, checkVideo: checkVideo, okVideoUrl: okVideoUrl,

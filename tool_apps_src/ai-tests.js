@@ -123,7 +123,8 @@ eq(A.streamPiece({ event: "message_delta", data: { type: "message_delta", delta:
 eq(A.streamPiece({ event: "error", data: { type: "error", error: { message: "Overloaded" } } }), { t: "error", msg: "Overloaded" }, "error event");
 
 /* ---------- video prices ---------- */
-eq(A.videoQuote("best", 10, "720p").price, A.fmtHbd(A.hbdFromUsd(0.08 * 10 * A.VIDEO.RES_X["720p"], "xai")), "video: per second x length x resolution guess");
+eq(A.videoQuote("best", 10, "720p").price, A.fmtHbd(A.hbdFromUsd(0.14 * 10, "xai")), "video: per-second rate of that resolution x length");
+eq(A.videoQuote("lite", 10, "1080p").price, A.fmtHbd(A.hbdFromUsd(0.14 * 10, "xai")), "Grok Lite 1080p = $0.14/s (OpenRouter's published xAI rate), not a 480p guess x 2.25");
 eq(A.videoQuote("lite", 5, "480p").price, "0.168", "lite 5 s 480p = 0.10 USD x 1.12 x 1.5 -> 0.168 HBD");
 threw = false; try { A.videoQuote("std", 8, "1080p"); } catch (e) { threw = true; } eq(threw, true, "standard stops at 720p");
 threw = false; try { A.videoQuote("best", 7, "480p"); } catch (e) { threw = true; } eq(threw, true, "only the offered lengths");
@@ -474,7 +475,7 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   }
   // lib: the new tables
   eq(A.imageQuote("1k", "1024x1024", 0, "grok").price, "0.034", "Grok 0.02 x 1.12 x 1.5");
-  eq(A.imageQuote("2k", "1024x1536", 0, "grok2").price, "0.101", "Grok 2.0 2k: 0.04 x 1.5 (2k guess) x 1.12 x 1.5");
+  eq(A.imageQuote("2k", "1024x1536", 0, "grok2").price, "0.152", "Grok 2.0 2k: 0.06 (medium) x 1.5 (2k) x 1.12 x 1.5, above the published $0.08");
   eq(A.imageQuote("medium", "1024x1024", 40).price, A.imageQuote("medium", "1024x1024", 40, "gpt").price, "GPT picture is the default");
   eq([A.checkImage("a", "2k", "1024x1024", "grok"), A.checkImage("a", "4k", "1024x1024", "grok"), A.checkImage("a", "1k", "1024x1024", "dalle")], [null, "Unknown quality.", "Unknown picture model."], "checkImage per model");
   eq(A.streamPieceOpenAI({ data: null }), null, "[DONE] ignored");
@@ -530,7 +531,7 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   eq(A.checkRefs([{ mt: "image/png", data: "A".repeat(A.REFS.total + 4) }], 6), "The pictures are too big together. Use fewer or smaller pictures.", "total size cap");
   // prices: GPT adds REFS.gptTokens image tokens at $8 / 1M per picture; Grok adds one output price per picture; video adds REFS.videoUsd
   eq(A.imageQuote("medium", "1024x1024", 40, "gpt", 2).price, A.fmtHbd(A.hbdFromUsd(0.053 + 40 * 5 / 1e6 + 2 * A.REFS.gptTokens * 8 / 1e6, "openai")), "GPT edit with 2 pictures");
-  eq(A.imageQuote("1k", "1024x1024", 0, "grok2", 3).price, A.fmtHbd(A.hbdFromUsd(0.04 * 4, "xai")), "Grok 2.0 edit with 3 pictures = 4 pictures' price");
+  eq(A.imageQuote("1k", "1024x1024", 0, "grok2", 3).price, A.fmtHbd(A.hbdFromUsd(0.06 * 4, "xai")), "Grok 2.0 edit with 3 pictures = 4 pictures' price");
   eq(A.videoQuote("lite", 5, "480p", 1).price, A.fmtHbd(A.hbdFromUsd(0.1 + A.REFS.videoUsd, "xai")), "video from a picture");
   ok(A.imageQuote("high", "1024x1536", 10, "gpt", 6).hbd > A.imageQuote("high", "1024x1536", 10, "gpt", 0).hbd, "more pictures cost more");
   eq(A.checkVideo("", "lite", 5, "480p", true), null, "a video from a picture may skip the description");
@@ -587,7 +588,7 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
     };
     const hf = makeHandler({ env, redis, fetch: fetchImpl, now: () => day, rpc: async (m, p) => m === "condenser_api.get_accounts" ? [{ name: p[0][0], posting: { key_auths: [[STM, 1]] } }] : chainF });
     r = mk("GET", null, { op: "status" }); await hf(r.req, r.res);
-    eq([J(r.res).chat, J(r.res).prov.openrouter, J(r.res).free], [true, true, { on: true, perDay: A.FREE.perDay }], "status: OpenRouter + free on");
+    eq([J(r.res).chat, J(r.res).prov.openrouter, J(r.res).free], [true, true, { on: true, perDay: A.FREE.perDay, pics: true, picsPerDay: A.FREE.pics }], "status: OpenRouter + free on");
     // paid cheap model: safe count, max_price = the quoted prices
     const msgs = [{ role: "user", content: "What is 2+2?" }];
     r = mk("POST", { op: "quote", acct: "hal", kind: "chat", model: "dsflash", len: "short", messages: msgs }); await hf(r.req, r.res);
@@ -644,6 +645,118 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   ok(A.chatQuote("sonnet", 5000, "medium").hbd + 1e-9 >= A.chatQuote("sonnet", 5000, "medium").costUsd * 1.12 * A.MARGIN, "price covers cost x tax x margin");
   eq(A.freeMessage("ivy", "2026-11-21"), "mes.fm/ai free messages for @ivy on 2026-11-21", "the signed text");
     Object.keys(A.MODELS).forEach((k) => { const m = A.MODELS[k]; if (m.free) ok(m.prov === "openrouter" && m.text, "free model " + k + " is a cheap text model"); });
+
+  // OpenRouter pictures + videos + free daily pictures (2026-11-23, mocked API)
+  {
+    const redis = fakeRedis(), calls = [];
+    let chainO = [], imgMode = "ok", vstate = "pending", day = T0;
+    const env = { OPENROUTER_API_KEY: "or-k", UPSTASH_REDIS_REST_TOKEN: "x" };
+    const fetchImpl = async (url, init) => {
+      calls.push({ url, body: init && init.body ? JSON.parse(init.body) : null, headers: init && init.headers });
+      if (/openrouter\.ai\/api\/v1\/images$/.test(url)) return imgMode === "down" ? { ok: false, status: 502, json: async () => ({ error: { message: "upstream" } }) }
+        : { ok: true, status: 200, json: async () => ({ created: 1, data: [{ b64_json: "iVBORw0K", media_type: "image/png" }], usage: { cost: 0.009 } }) };
+      if (/openrouter\.ai\/api\/v1\/videos$/.test(url)) return { ok: true, status: 202, json: async () => ({ id: "vj1", polling_url: "https://openrouter.ai/api/v1/videos/vj1", status: "pending" }) };
+      if (/openrouter\.ai\/api\/v1\/videos\/vj1$/.test(url)) return { ok: true, status: 200, json: async () => vstate === "done" ? { id: "vj1", status: "completed", unsigned_urls: ["https://openrouter.ai/api/v1/videos/vj1/content?index=0"], usage: { cost: 0.2 } } : vstate === "failed" ? { id: "vj1", status: "failed", error: "nope" } : { id: "vj1", status: "in_progress" } };
+      if (/videos\/vj1\/content/.test(url)) return { ok: true, status: 200, headers: { get: () => "video/mp4" }, body: { getReader() { let d = false; return { read: async () => d ? { done: true } : (d = true, { done: false, value: new Uint8Array([9]) }) }; } } };
+      throw new Error("unexpected " + url);
+    };
+    const ho = makeHandler({ env, redis, fetch: fetchImpl, now: () => day, rpc: async (m, p) => m === "condenser_api.get_accounts" ? [{ name: p[0][0], posting: { key_auths: [[STM, 1]] } }] : chainO });
+    r = mk("GET", null, { op: "status" }); await ho(r.req, r.res);
+    eq([J(r.res).image, J(r.res).video], [true, true], "OpenRouter key alone switches pictures + videos on");
+    // prices: fixed per picture from the tables
+    eq(A.imageQuote("1k", "1024x1024", 0, "klein").price, A.fmtHbd(A.hbdFromUsd(0.009, "openrouter")), "FLUX 3 Klein 1k = $0.009 x fee x margin");
+    eq(A.imageQuote("2k", "1536x1024", 0, "klein", 2).price, A.fmtHbd(A.hbdFromUsd(0.014 + 2 * 0.003, "openrouter")), "Klein 2k + 2 pictures");
+    eq(A.imageQuote("2k", "1024x1024", 0, "seedream", 3).price, A.fmtHbd(A.hbdFromUsd(0.018, "openrouter")), "Seedream: pictures in are free");
+    eq([A.checkImage("a", "2k", "1024x1024", "recraft"), A.checkImage("a", "1k", "1024x1024", "recraft")], ["Unknown quality.", null], "Recraft: 1k only");
+    eq([A.maxRefs("image", "klein"), A.maxRefs("image", "recraft"), A.maxRefs("image", "seedream"), A.maxRefs("video", "veo")], [4, 0, 6, 1], "picture limits of the new models");
+    ok(A.imageQuote("1k", "1024x1024", 0, "recraft").hbd < A.imageQuote("1k", "1024x1024", 0, "grok").hbd, "Recraft is cheaper than the cheapest Grok");
+    // paid picture
+    r = mk("POST", { op: "quote", acct: "kim", kind: "image", model: "klein", prompt: "A red fox", quality: "2k", size: "1024x1536" }); await ho(r.req, r.res);
+    const qk = J(r.res);
+    eq([r.res.statusCode, qk.price], [200, A.imageQuote("2k", "1024x1536", 0, "klein").price], "Klein quote");
+    chainO = [tr(1, "kim", "mes", qk.price + " HBD", qk.memo, 5)];
+    r = mk("POST", { op: "run", id: qk.id, acct: "kim" }); await ho(r.req, r.res);
+    eq(J(r.res), { t: "image", b64: "iVBORw0K", mime: "image/png" }, "OpenRouter picture answer");
+    const ki = calls.find((c) => /v1\/images$/.test(c.url));
+    eq([ki.body.model, ki.body.resolution, ki.body.aspect_ratio, ki.body.response_format, ki.body.provider, ki.headers.Authorization],
+      ["black-forest-labs/flux-3-image-klein", "2K", "2:3", "b64_json", { only: ["black-forest-labs"], allow_fallbacks: false, data_collection: "deny" }, "Bearer or-k"], "Image API request pinned to the provider we priced");
+    const KR = { mt: "image/png", data: "iVBORw0K" + "A".repeat(40) };
+    r = mk("POST", { op: "quote", acct: "kim", kind: "image", model: "seedream", prompt: "Put picture 1 on a beach", quality: "1k", size: "1024x1024", refs: [KR] }); await ho(r.req, r.res);
+    const qs2 = J(r.res);
+    chainO = [tr(2, "kim", "mes", qs2.price + " HBD", qs2.memo, 5)];
+    let nb = calls.length;
+    r = mk("POST", { op: "run", id: qs2.id, acct: "kim" }); await ho(r.req, r.res);
+    const se = calls.slice(nb).find((c) => /v1\/images$/.test(c.url));
+    eq([se.body.input_references.length, se.body.input_references[0].image_url.url.slice(0, 22)], [1, "data:image/png;base64,"], "reference pictures as input_references");
+    imgMode = "down";
+    r = mk("POST", { op: "quote", acct: "kim", kind: "image", model: "recraft", prompt: "A cat", quality: "1k", size: "1024x1024" }); await ho(r.req, r.res);
+    const qr = J(r.res); chainO = [tr(3, "kim", "mes", qr.price + " HBD", qr.memo, 5)];
+    r = mk("POST", { op: "run", id: qr.id, acct: "kim" }); await ho(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).retry], [502, true], "failed OpenRouter picture keeps a free retry");
+    imgMode = "ok";
+    nb = calls.length;
+    r = mk("POST", { op: "run", id: qr.id, acct: "kim" }); await ho(r.req, r.res);
+    const rc = calls.slice(nb).find((c) => /v1\/images$/.test(c.url));
+    eq([J(r.res).t, "resolution" in rc.body], ["image", false], "retry works; one-size model gets no resolution field");
+    // video
+    eq(A.videoQuote("seedance", 5, "480p").price, A.fmtHbd(A.hbdFromUsd(0.037 * 5, "openrouter")), "Seedance 2.0 Mini 480p");
+    eq(A.videoQuote("veo", 8, "1080p").price, A.fmtHbd(A.hbdFromUsd(0.08 * 8, "openrouter")), "Veo 3.1 Lite 1080p with sound");
+    threw = false; try { A.videoQuote("veo", 5, "720p"); } catch (e) { threw = true; } eq(threw, true, "Veo takes 4 / 6 / 8 s only");
+    threw = false; try { A.videoQuote("veo", 4, "480p"); } catch (e) { threw = true; } eq(threw, true, "Veo starts at 720p");
+    eq([A.videoDurations("veo"), A.videoRes("seedance"), A.videoRes("std")], [[4, 6, 8], ["480p", "720p"], ["480p", "720p"]], "per-model lengths / resolutions");
+    r = mk("POST", { op: "quote", acct: "kim", kind: "video", prompt: "A fox runs", model: "veo", seconds: 6, res: "720p", audio: false, refs: [KR] }); await ho(r.req, r.res);
+    const qv = J(r.res);
+    eq([r.res.statusCode, qv.price], [200, A.videoQuote("veo", 6, "720p", 1).price], "Veo quote");
+    chainO = [tr(4, "kim", "mes", qv.price + " HBD", qv.memo, 5)];
+    r = mk("POST", { op: "run", id: qv.id, acct: "kim" }); await ho(r.req, r.res);
+    eq(J(r.res), { t: "video", job: qv.id }, "OpenRouter video job started");
+    const vc = calls.find((c) => /v1\/videos$/.test(c.url));
+    eq([vc.body.model, vc.body.duration, vc.body.resolution, vc.body.generate_audio, vc.body.frame_images[0].frame_type], ["google/veo-3.1-lite", 6, "720p", false, "first_frame"], "Video API request");
+    r = mk("POST", { op: "vstatus", id: qv.id, acct: "kim" }); await ho(r.req, r.res);
+    eq(J(r.res).status, "pending", "in_progress -> pending");
+    vstate = "done";
+    r = mk("POST", { op: "vstatus", id: qv.id, acct: "kim" }); await ho(r.req, r.res);
+    eq(J(r.res).status, "done", "completed -> done");
+    nb = calls.length;
+    r = mk("GET", null, { op: "vfile", id: qv.id, acct: "kim" }); await ho(r.req, r.res);
+    const fc = calls.slice(nb)[0];
+    eq([r.res.headers["Content-Type"], fc.headers && fc.headers.Authorization], ["video/mp4", "Bearer or-k"], "file fetched from OpenRouter with our key");
+    r = mk("POST", { op: "quote", acct: "kim", kind: "video", prompt: "B", model: "seedance", seconds: 5, res: "480p" }); await ho(r.req, r.res);
+    const qv2 = J(r.res); chainO = [tr(5, "kim", "mes", qv2.price + " HBD", qv2.memo, 5)];
+    vstate = "failed";
+    r = mk("POST", { op: "run", id: qv2.id, acct: "kim" }); await ho(r.req, r.res);
+    r = mk("POST", { op: "vstatus", id: qv2.id, acct: "kim" }); await ho(r.req, r.res);
+    eq([J(r.res).status, J(r.res).retry], ["failed", true], "failed OpenRouter video -> free retry");
+    // free daily pictures
+    const today = A.utcDay(day), sig = signAs(A.freeMessage("liv", today));
+    const fp = (o) => Object.assign({ op: "freepic", acct: "liv", day: today, sig, model: "recraft", prompt: "A lighthouse", quality: "1k", size: "1536x1024" }, o);
+    r = mk("GET", null, { op: "free", acct: "liv" }); await ho(r.req, r.res);
+    eq(J(r.res).pics, { on: true, perDay: A.FREE.pics, left: A.FREE.pics }, "free pictures left");
+    nb = calls.length;
+    r = mk("POST", fp()); await ho(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).t, r.res.headers["X-Free-Left"]], [200, "image", String(A.FREE.pics - 1)], "free picture made");
+    const fq = calls.slice(nb).find((c) => /v1\/images$/.test(c.url));
+    eq([fq.body.model, "provider" in fq.body], ["recraft/recraft-v4.1-flash-v2:free", false], "free picture uses the free copy");
+    r = mk("POST", fp({ model: "klein" })); await ho(r.req, r.res);
+    eq(r.res.statusCode, 400, "free pictures only on the free model");
+    r = mk("POST", fp({ sig: "0".repeat(130) })); await ho(r.req, r.res);
+    eq(J(r.res).resign, true, "bad signature -> sign again");
+    imgMode = "down";
+    r = mk("POST", fp()); await ho(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).free], [502, true], "failed free picture");
+    imgMode = "ok";
+    r = mk("GET", null, { op: "free", acct: "liv" }); await ho(r.req, r.res);
+    eq(J(r.res).pics.left, A.FREE.pics - 1, "a failed free picture is not counted");
+    for (let i = 0; i < A.FREE.pics - 1; i++) { r = mk("POST", fp()); await ho(r.req, r.res); }
+    r = mk("POST", fp()); await ho(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).left], [429, 0], "free pictures: one too many refused");
+    env.AI_FREE_PICS = "0";
+    r = mk("GET", null, { op: "status" }); await ho(r.req, r.res);
+    eq(J(r.res).free.pics, false, "AI_FREE_PICS=0 switches them off");
+    ok(A.freePicOk("recraft", "1k", 0) && !A.freePicOk("recraft", "1k", 1) && !A.freePicOk("klein", "1k", 0), "freePicOk");
+    // every quote covers the most the provider can bill (published per-unit prices x fee x margin)
+    Object.keys(A.VIDEO.models).forEach((k) => A.videoRes(k).forEach((rs) => ok(A.videoQuote(k, A.videoDurations(k)[0], rs).hbd + 1e-9 >= A.VIDEO.models[k].usd[rs] * A.videoDurations(k)[0] * A.MARGIN, "video " + k + " " + rs + " covers cost")));
+  }
   }
 
   // origin check in production

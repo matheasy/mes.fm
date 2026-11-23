@@ -1245,10 +1245,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="ai-opt"><span>النموذج</span><select id="ai-imod" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>الجودة</span><select id="ai-q" class="tu-input" data-native></select></label>
 					<label class="ai-opt"><span>الشكل</span><select id="ai-size" class="tu-input" data-native><option value="1024x1024">مربع</option><option value="1536x1024">أفقي</option><option value="1024x1536">عمودي</option></select></label>
+					<label class="ai-freechip" id="ai-ifree" hidden><input type="checkbox" id="ai-ifreeuse" checked> <span id="ai-ifreetx"></span></label>
 					<div class="ai-price" id="ai-iprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="عن هذه النماذج">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" id="ai-inote" hidden>هذه الصورة من إنشاء <span id="ai-imodel">GPT Image 2 من OpenAI</span> وتُحفظ في هذا المتصفح فقط. يتبع GPT Image 2 الأوصاف الطويلة والمفصلة ويكتب النصوص داخل الصور جيدًا؛ أما Grok Imagine فأرخص وسريع.</p>
+				<p class="tu-note ai-det" id="ai-inote" hidden>هذه الصورة من إنشاء <span id="ai-imodel">GPT Image 2 من OpenAI</span> وتُحفظ في هذا المتصفح فقط. يتبع GPT Image 2 الأوصاف الطويلة والمفصلة ويكتب النصوص داخل الصور جيدًا؛ أما Grok Imagine فأرخص وسريع. النماذج الرخيصة (FLUX 3 Klein وRecraft V4.1 Flash وSeedream 5.0 Flash) تكلف نحو سنت واحد؛ ومع تسجيل الدخول بـ Hive تحصل أيضًا على بضع صور Recraft مجانية كل يوم.</p>
 			</div>
 			</div>
 			</div>
@@ -1287,7 +1288,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-vprice" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="عن هذه النماذج">ⓘ</button>
 				</div>
-				<p class="tu-note ai-det" hidden>تُنشأ الفيديوهات بواسطة Grok Imagine من xAI وتستغرق بضع دقائق: يمكنك متابعة استخدام الصفحة (أو إغلاقها والعودة: سيستمر العمل). تُحفظ الفيديوهات المكتملة في هذا المتصفح فقط. يتضمن الصوت كلامًا يطابق حركة الشفاه في نموذجَي Lite والأفضل.</p>
+				<p class="tu-note ai-det" hidden>تُنشأ الفيديوهات بواسطة Grok Imagine من xAI وتستغرق بضع دقائق: يمكنك متابعة استخدام الصفحة (أو إغلاقها والعودة: سيستمر العمل). تُحفظ الفيديوهات المكتملة في هذا المتصفح فقط. يتضمن الصوت كلامًا يطابق حركة الشفاه في نموذجَي Lite والأفضل. يُنشأ Seedance 2.0 Mini (ByteDance) وGoogle Veo 3.1 Lite عبر OpenRouter، مع الصوت أيضًا.</p>
 			</div>
 			</div>
 			</div>
@@ -1319,6 +1320,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dd>لا تدفع إلا مقابل ما تستخدمه، ولا يتجدد شيء تلقائيًا، ولا يوجد رصيد قد يضيع. يظهر السعر قبل كل رسالة.</dd>
 				<dt>لماذا توقفت إجابتي في المنتصف؟</dt>
 				<dd>لقد بلغت طول الإجابة الذي دفعت مقابله. أرسل «تابع» (رسالة جديدة) أو اختر «متوسطة» أو «طويلة» في المرة القادمة. يفكر Opus ونماذج ChatGPT قبل أن تكتب، ويُحسب هذا التفكير ضمن الطول أيضًا.</dd>
+				<dt>هل توجد صور وفيديوهات رخيصة أو مجانية؟</dt>
+				<dd>نعم. نماذج الصور الرخيصة (FLUX 3 Klein وRecraft V4.1 Flash وSeedream 5.0 Flash عبر OpenRouter) تكلف نحو 0.013 إلى 0.033 HBD للصورة، ومع حساب Hive تحصل على <b>3 صور Recraft مجانية يوميًا</b> (بدقة 1k ومن دون صور مضافة؛ توقيع Keychain مرة في اليوم، بلا دفع). وفي الفيديو يكون Grok Lite بدقة 480p الأرخص (نحو 0.17 HBD لخمس ثوانٍ)؛ ويتوفر أيضًا Seedance 2.0 Mini وGoogle Veo 3.1 Lite. لا يمكن إنشاء الصور على جهازك بعد: هذه النماذج حجمها عدة غيغابايت وبطيئة في المتصفح.</dd>
 				<dt>هل يمكنني إنشاء فيديوهات بـ Sora من OpenAI؟</dt>
 				<dd>لا: أوقفت OpenAI ‏Sora 2 وخدمة الفيديو للمطورين في 24 سبتمبر 2026. الفيديوهات هنا يُنشئها Grok Imagine من xAI.</dd>
 				<dt>حدث خطأ بعد أن دفعت.</dt>
@@ -1388,7 +1391,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=c21ef072" defer></script><script src="/ai/js/ai.js?v=18" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=cb482ed9" defer></script><script src="/ai/js/ai.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
