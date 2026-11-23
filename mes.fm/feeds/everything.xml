@@ -5,13 +5,22 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 06:00:04 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 18:14:59 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>RSS Feeds</title>
+    <link>https://mes.fm/feeds</link>
+    <guid isPermaLink="true">https://mes.fm/feeds</guid>
+    <pubDate>Mon, 23 Nov 2026 18:14:59 GMT</pubDate>
+    <category>Tools</category>
+    <description>Follow everything new on MES in any feed reader: tools, posts, livestreams and videos. No account, no algorithm; updates announced on Hive with Podping.</description>
+    <media:thumbnail url="https://mes.fm/img/feeds-logo.png"/>
+  </item>
   <item>
     <title>33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚</title>
     <link>https://mes.fm/33-countries-supplies</link>
@@ -722,15 +731,6 @@
     <category>Tools</category>
     <description>Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.</description>
     <media:thumbnail url="https://mes.fm/img/stream-chat-logo.png"/>
-  </item>
-  <item>
-    <title>Spreadsheet Viewer (Excel files)</title>
-    <link>https://mes.fm/excel</link>
-    <guid isPermaLink="true">https://mes.fm/excel</guid>
-    <pubDate>Sat, 31 Oct 2026 05:13:37 GMT</pubDate>
-    <category>Tools</category>
-    <description>Open .xlsx, .xls, .ods and CSV files, edit cells and formulas, sort and filter, save as .xlsx or CSV. Fast with big files, nothing is uploaded.</description>
-    <media:thumbnail url="https://mes.fm/img/excel-logo.png"/>
   </item>
 </channel>
 </rss>

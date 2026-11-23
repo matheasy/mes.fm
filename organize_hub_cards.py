@@ -36,7 +36,7 @@ PAGES = {
         ("text", "Text &amp; Symbols", ["translate", "emoji", "latex", "fonts", "font-finder", "symbols", "copy-text", "pronounce", "define", "enigma", "cryptography"]),
         ("time", "Time &amp; Focus", ["birthday-personality", "speedreader", "typing-test", "typing-test-transcribe", "typing-test-voice", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date", "clock", "timezone", "calendar", "reminder", "party", "workout-planner", "birthday"]),
         ("media", "Media &amp; Web", ["seo", "quantum-safe-check", "youtube-thumbnail", "transcript", "stats", "fav", "share", "search", "search-engines", "reverse-image-search", "ai-detector", "domain-lookup", "site-traffic", "database", "ping", "feeds", "polls", "email", "ai", "stream-chat", "mic-test", "youtube-audio", "watch", "file-check", "storage", "archive", "site-index", "go", "browser", "videospeed", "read-aloud", "dark-mode", "volume-booster", "text-size"]),
-        ("money", "Money &amp; Markets", ["signals", "debt-clock", "elections"]),
+        ("money", "Money &amp; Markets", ["investment-tracker", "signals", "debt-clock", "elections"]),
         ("home", "Home &amp; Car", ["tracking", "jump-start"]),
         ("kids", "Kids &amp; Toddlers", ["kids"]),
         ("games", "Games &amp; Chance", ["chess", "poker", "backgammon", "tic-tac-toe", "minesweeper", "blocks", "click-test", "connect-four", "billiards", "nba-picks", "nfl-picks", "mlb-picks", "nhl-picks", "la-liga-picks", "premier-league-picks", "march-madness", "random-number-generator", "dice-roller", "gta"]),

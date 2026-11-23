@@ -9,9 +9,14 @@
    "group": "site",
    "url": "https://mes.fm/feeds/everything.xml",
    "count": 80,
-   "updated": "2026-11-22T23:00:04-07:00",
-   "newest": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+   "updated": "2026-11-23T11:14:59-07:00",
+   "newest": "RSS Feeds",
    "latest": [
+    {
+     "t": "RSS Feeds",
+     "l": "https://mes.fm/feeds",
+     "d": "2026-11-23"
+    },
     {
      "t": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
      "l": "https://mes.fm/33-countries-supplies",
@@ -31,11 +36,6 @@
      "t": "AI Detector",
      "l": "https://mes.fm/ai-detector",
      "d": "2026-11-20"
-    },
-    {
-     "t": "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)",
-     "l": "https://mes.fm/ai-claude-grok-chatgpt",
-     "d": "2026-11-19"
     }
    ]
   },
@@ -48,9 +48,14 @@
    "group": "site",
    "url": "https://mes.fm/feeds/tools.xml",
    "count": 50,
-   "updated": "2026-11-20T11:19:58-07:00",
-   "newest": "Falling Blocks",
+   "updated": "2026-11-23T11:14:59-07:00",
+   "newest": "RSS Feeds",
    "latest": [
+    {
+     "t": "RSS Feeds",
+     "l": "https://mes.fm/feeds",
+     "d": "2026-11-23"
+    },
     {
      "t": "Falling Blocks",
      "l": "https://mes.fm/blocks",
@@ -69,11 +74,6 @@
     {
      "t": "Space Shuttle Simulator",
      "l": "https://mes.fm/space-shuttle-simulator",
-     "d": "2026-11-19"
-    },
-    {
-     "t": "Expense Splitter",
-     "l": "https://mes.fm/expense-splitter",
      "d": "2026-11-19"
     }
    ]

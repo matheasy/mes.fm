@@ -84,6 +84,7 @@ CALC = {   # path -> (kind, tags)
     "/compound-interest-calculator": ("Calculator", ["money", "finance", "everyday"]),
     "/expense-splitter": ("Calculator", ["money", "finance", "everyday"]),
     "/debt-clock": ("Tool", ["money", "finance"]),
+    "/investment-tracker": ("Tool", ["money", "finance", "crypto"]),
     "/fuel-cost-calculator": ("Calculator", ["everyday", "health"]),
     "/time-calculator": ("Calculator", ["everyday", "health"]),
     "/tip-calculator": ("Calculator", ["everyday", "health"]),

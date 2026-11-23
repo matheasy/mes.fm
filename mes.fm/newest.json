@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/investment-tracker",
+   "title": "Investment Tracker",
+   "icon": "/img/investment-tracker-logo.png",
+   "desc": "A private portfolio tracker for stocks, ETFs and crypto: live prices, gains, dividends, realized gains by tax year, wallet balances and CSV import.",
+   "added": "2026-11-23",
+   "kind": "tool"
+  },
+  {
    "href": "/feeds",
    "title": "RSS Feeds",
    "icon": "/img/feeds-logo.png",
@@ -186,17 +194,17 @@
    "desc": "A free Lightroom alternative: rate and keyword your photos, develop RAW files with curves, colour grading, masks and healing, then batch export. Nothing is uploaded.",
    "added": "2026-11-14",
    "kind": "tool"
-  },
-  {
-   "href": "/transcript",
-   "title": "Transcript & Timestamps",
-   "icon": "/img/transcript-logo.png",
-   "desc": "Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.",
-   "added": "2026-11-14",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/investment-tracker",
+   "title": "Investment Tracker",
+   "icon": "/img/investment-tracker-logo.png",
+   "desc": "A private portfolio tracker for stocks, ETFs and crypto: live prices, gains, dividends, realized gains by tax year, wallet balances and CSV import.",
+   "added": "2026-11-23",
+   "kind": "tool"
+  },
   {
    "href": "/feeds",
    "title": "RSS Feeds",
@@ -252,14 +260,6 @@
    "desc": "Chat with top AI models (Claude Sonnet and Opus) for coding, research and writing, and make pictures. See the price first, pay per message in HBD. No plan.",
    "added": "2026-11-18",
    "kind": "tool"
-  },
-  {
-   "href": "/ductile-fracture-simulator",
-   "title": "Voids & Ductile Fracture Simulator",
-   "icon": "/img/ductile-fracture-simulator-logo.png",
-   "desc": "Watch microscopic voids grow and link inside a necking bar until it cracks from the middle: cup and cone, dimples, triaxiality.",
-   "added": "2026-11-18",
-   "kind": "calculator"
   }
  ]
 }

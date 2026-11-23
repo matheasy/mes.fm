@@ -104,6 +104,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("browser-storage", "Storage Analyzer", "/storage"),   # 2026-11-07 sub-page (brand option)
     ("gallery", "Gallery"),
     ("signals", "Market Signals"),
+    ("investment-tracker", "Investment Tracker"),   # 2026-11-23
     ("signals-fa", "سیگنال‌های بازار"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
     ("signals-ar", "إشارات السوق"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)
     ("signals-es", "Señales del mercado"),   # Market Signals in another language (build_tool_apps.py SIG_LANG_SLUGS)

@@ -1,0 +1,160 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu" id="iv">
+		<div class="iv-bar">
+			<div class="tu-field tu-field--sm"><label for="iv-base">Show totals in</label><select id="iv-base" class="tu-select"></select></div>
+			<div class="tu-field tu-field--sm"><label for="iv-method">Cost basis</label>
+				<select id="iv-method" class="tu-select"><option value="avg">Average cost (ACB)</option><option value="fifo">First in, first out (FIFO)</option></select></div>
+			<div class="iv-refresh"><button type="button" class="tu-btn tu-btn--ghost" id="iv-reload">↻ Refresh prices</button><span class="iv-ago" id="iv-ago"></span></div>
+		</div>
+
+		<div class="iv-hero" id="iv-hero"></div>
+		<div class="iv-warn" id="iv-warn" hidden></div>
+
+		<div class="iv-tabs" role="tablist" id="iv-tabs">
+			<button type="button" role="tab" data-tab="hold" aria-selected="true">Holdings</button>
+			<button type="button" role="tab" data-tab="tx">Trades</button>
+			<button type="button" role="tab" data-tab="wal">Wallets</button>
+			<button type="button" role="tab" data-tab="chart">Charts</button>
+			<button type="button" role="tab" data-tab="gain">Gains &amp; taxes</button>
+			<button type="button" role="tab" data-tab="data">Import &amp; save</button>
+		</div>
+
+		<!-- add trade (shared by Holdings and Trades) -->
+		<section class="tu-card iv-add" id="iv-add">
+			<form id="iv-quick" class="iv-quick" autocomplete="off">
+				<label class="tu-label" for="iv-qtext">Quick add</label>
+				<div class="iv-qrow">
+					<input id="iv-qtext" class="tu-input" type="text" placeholder="e.g. buy 10 AAPL at 150 on 2026-01-05   ·   sell 0.1 BTC @ 60000" spellcheck="false">
+					<button type="submit" class="tu-btn tu-btn--primary">Add</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="iv-formbtn" aria-expanded="false">Full form ▾</button>
+				</div>
+				<p class="iv-qnote" id="iv-qnote"></p>
+			</form>
+			<form id="iv-form" class="iv-form" autocomplete="off" hidden>
+				<input type="hidden" id="iv-fid">
+				<div class="tu-row">
+					<div class="tu-field tu-field--sm"><label for="iv-ft">Type</label><select id="iv-ft" class="tu-select"></select></div>
+					<div class="tu-field iv-assetf"><label for="iv-fa">Stock, fund or coin</label>
+						<div class="iv-ac"><input id="iv-fa" class="tu-input" type="text" placeholder="Search: Apple, VOO, SHOP.TO, Bitcoin, HIVE…" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="iv-acl" aria-autocomplete="list"><ul id="iv-acl" class="iv-acl" role="listbox" hidden></ul></div>
+						<span class="iv-picked" id="iv-picked"></span></div>
+					<div class="tu-field tu-field--sm"><label for="iv-fd">Date</label><input id="iv-fd" class="tu-input" type="date"></div>
+				</div>
+				<div class="tu-row iv-frow2">
+					<div class="tu-field tu-field--sm" id="iv-fqw"><label for="iv-fq" id="iv-fql">Quantity</label><input id="iv-fq" class="tu-input" type="text" inputmode="decimal"></div>
+					<div class="tu-field tu-field--sm" id="iv-fpw"><label for="iv-fp" id="iv-fpl">Price per unit</label><div class="tu-suffix"><input id="iv-fp" class="tu-input" type="text" inputmode="decimal"><span id="iv-fpc">USD</span></div></div>
+					<div class="tu-field tu-field--sm" id="iv-ffw"><label for="iv-ff">Fee</label><input id="iv-ff" class="tu-input" type="text" inputmode="decimal" placeholder="0"></div>
+					<div class="tu-field tu-field--sm" id="iv-fxw"><label for="iv-fx" id="iv-fxl">Rate that day</label><input id="iv-fx" class="tu-input" type="text" inputmode="decimal" placeholder="today's"></div>
+				</div>
+				<div class="tu-row">
+					<div class="tu-field"><label for="iv-fn">Note (optional)</label><input id="iv-fn" class="tu-input" type="text" maxlength="200" placeholder="e.g. RRSP, Kraken, cold wallet"></div>
+				</div>
+				<p class="iv-ftotal" id="iv-ftotal"></p>
+				<div class="iv-factions"><button type="submit" class="tu-btn tu-btn--primary" id="iv-fsave">Add trade</button><button type="button" class="tu-btn tu-btn--ghost" id="iv-fcancel">Cancel</button></div>
+			</form>
+		</section>
+
+		<section class="iv-panel" data-panel="hold">
+			<div class="iv-empty" id="iv-empty" hidden>
+				<h3>Start your portfolio</h3>
+				<p>Add a trade above (type "buy 10 AAPL at 150"), import a CSV from your broker or exchange, or add a crypto wallet address. Everything stays in this browser.</p>
+				<p><button type="button" class="tu-btn" id="iv-example">Try an example portfolio</button> <button type="button" class="tu-btn tu-btn--ghost" data-go="data">Import a CSV</button> <button type="button" class="tu-btn tu-btn--ghost" data-go="wal">Add a wallet</button></p>
+			</div>
+			<div class="tu-table-wrap"><table class="tu-table iv-table" id="iv-htable"></table></div>
+			<label class="iv-check"><input type="checkbox" id="iv-showsold"> Show assets I no longer hold</label>
+		</section>
+
+		<section class="iv-panel" data-panel="tx" hidden>
+			<div class="iv-filters">
+				<input id="iv-tsearch" class="tu-input" type="search" placeholder="Filter: symbol, note…" aria-label="Filter trades">
+				<select id="iv-ttype" class="tu-select" aria-label="Type"></select>
+				<select id="iv-tyear" class="tu-select" aria-label="Year"></select>
+			</div>
+			<div class="tu-table-wrap"><table class="tu-table iv-table" id="iv-ttable"></table></div>
+		</section>
+
+		<section class="iv-panel" data-panel="wal" hidden>
+			<p class="tu-note">Paste a public wallet address and its balance is read from the blockchain and added to your holdings (no keys, nothing to sign). Native coins only for now: BTC, ETH, HIVE + HBD (incl. Hive Power and savings), XRP, SOL. Tokens like USDC on Ethereum are not counted.</p>
+			<form id="iv-wform" class="iv-wform" autocomplete="off">
+				<select id="iv-wchain" class="tu-select" aria-label="Blockchain"></select>
+				<input id="iv-waddr" class="tu-input" type="text" placeholder="Address" spellcheck="false" aria-label="Address">
+				<input id="iv-wlabel" class="tu-input" type="text" placeholder="Label (optional)" maxlength="60" aria-label="Label">
+				<button type="submit" class="tu-btn tu-btn--primary">+ Add wallet</button>
+			</form>
+			<p class="iv-qnote" id="iv-wnote"></p>
+			<div id="iv-wlist"></div>
+		</section>
+
+		<section class="iv-panel" data-panel="chart" hidden>
+			<div class="tu-card iv-ccard">
+				<div class="iv-chead"><h3>Value over time</h3>
+					<div class="tu-seg" id="iv-range"><button type="button" data-r="1m">1M</button><button type="button" data-r="3m">3M</button><button type="button" data-r="6m">6M</button><button type="button" data-r="ytd">YTD</button><button type="button" data-r="1y">1Y</button><button type="button" data-r="all">All</button></div></div>
+				<div class="iv-chart" id="iv-line"></div>
+				<p class="tu-note" id="iv-linenote"></p>
+			</div>
+			<div class="tu-card iv-ccard">
+				<div class="iv-chead"><h3>Where your money is</h3>
+					<div class="tu-seg" id="iv-alloc"><button type="button" data-g="asset">By asset</button><button type="button" data-g="kind">Stocks vs crypto</button></div></div>
+				<div class="iv-donutwrap" id="iv-donut"></div>
+			</div>
+		</section>
+
+		<section class="iv-panel" data-panel="gain" hidden>
+			<p class="tu-note">Realized gains from your sells, by year, using the cost basis method chosen at the top. Fees are included. This is a helper for your records, not tax advice: check the rules where you live (Canada uses average cost; the US lets you pick lots).</p>
+			<div id="iv-gains"></div>
+		</section>
+
+		<section class="iv-panel" data-panel="data" hidden>
+			<div class="tu-card iv-dcard">
+				<h3>Import trades from a CSV</h3>
+				<p class="tu-note">Export your history from your broker or exchange (Coinbase, Kraken, Wealthsimple, Questrade, Interactive Brokers, Robinhood…) and drop the file here, or paste it. Columns are matched automatically; you can change them before importing.</p>
+				<div class="iv-drop" id="iv-drop" tabindex="0">Drop a .csv file here or <button type="button" class="tu-btn tu-btn--ghost" id="iv-csvpick">Choose a file</button><input type="file" id="iv-csvfile" accept=".csv,.tsv,.txt,text/csv" hidden></div>
+				<textarea id="iv-csvtext" class="tu-input iv-csvtext" rows="4" placeholder="…or paste CSV text here" spellcheck="false"></textarea>
+				<div id="iv-map"></div>
+			</div>
+			<div class="tu-card iv-dcard">
+				<h3>Save and move to another device</h3>
+				<p class="tu-note">Your portfolio lives only in this browser. Keep a copy:</p>
+				<div class="iv-btns">
+					<button type="button" class="tu-btn" id="iv-bkp">⬇ Download a backup (.json)</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="iv-rst">Restore a backup…</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="iv-csvout">⬇ Trades as CSV</button>
+					<input type="file" id="iv-rstfile" accept=".json,application/json" hidden>
+				</div>
+				<h4>☁ Your own cloud</h4>
+				<p class="tu-note">Keep the backup file in your Dropbox, OneDrive, Google Drive or a folder on this computer; it is saved again after each change.</p>
+				<div id="iv-cloudrow"></div>
+				<h4>🐝 Save to Hive</h4>
+				<div id="iv-hive">
+					<div id="iv-hv-user"></div>
+					<div id="iv-hv-main" hidden>
+						<label class="iv-check"><input type="checkbox" id="iv-hv-enc" checked> Encrypt (recommended)</label>
+						<p class="iv-hvwarn" id="iv-hv-warn"></p>
+						<div class="iv-btns"><button type="button" class="tu-btn tu-btn--primary" id="iv-hv-save">Save my portfolio to Hive</button><button type="button" class="tu-btn tu-btn--ghost" id="iv-hv-load">Find my saves</button></div>
+					</div>
+					<p class="iv-qnote" id="iv-hv-msg"></p>
+					<div id="iv-hv-list"></div>
+					<div id="iv-hv-help"></div>
+				</div>
+				<h4>Start over</h4>
+				<p><button type="button" class="tu-btn tu-btn--ghost iv-danger" id="iv-wipe">Delete everything on this page</button></p>
+			</div>
+		</section>
+		<p class="iv-foot">Prices: Yahoo Finance (stocks and funds, may be delayed), CoinGecko (crypto), open.er-api.com (exchange rates). Only the symbols you hold and wallet addresses are sent to look prices up, never amounts. Not financial advice.</p>
+	</div>
+
+	<div class="tu-seo">
+		<h2>A free portfolio tracker for stocks, funds and crypto</h2>
+		<p>Add your trades once and see what everything is worth now, what it cost you, your gain or loss on each holding, dividends and interest, and your realized gains for each tax year. Stocks and ETFs from most exchanges (US, Canada, UK, Europe, Asia), mutual funds, and thousands of cryptocurrencies are priced automatically; anything else (a house, gold coins, a private company) can be added with your own price.</p>
+		<h3>How is my gain worked out?</h3>
+		<p>Each buy adds to your cost (fees included). When you sell, the cost of the units sold is taken away using the method you pick: <b>average cost</b> (the adjusted cost base used in Canada: every unit costs the average of what you paid) or <b>first in, first out</b> (the oldest units are sold first). Realized gain = what you got for the sale minus fees minus that cost. Unrealized gain = today's value of what you still hold minus its cost.</p>
+		<h3>Different currencies</h3>
+		<p>Every holding keeps its own currency (a Toronto stock in CAD, a US stock in USD, crypto in USD) and totals are shown in the currency you choose. For tax records you can type the exchange rate of the trade's day into "Rate that day"; otherwise today's rate is used for the cost too.</p>
+		<h3>Wallets</h3>
+		<p>Paste a public Bitcoin, Ethereum, Hive, XRP or Solana address and its balance is read live from the blockchain and added to your holdings. A public address can only be read, never spent, so it is safe to use. Hive balances include Hive Power, savings and HBD.</p>
+		<h3>Importing from a broker or exchange</h3>
+		<p>Most brokers and exchanges let you download your transaction history as a CSV file. Drop it on the Import tab: the date, type, symbol, quantity, price and fee columns are found by their names (you can change them), staking and reward income becomes coins received at that day's value, and rows that can't be read are listed so nothing disappears silently.</p>
+		<h3>Is my data private?</h3>
+		<p>Yes. There is no account and your portfolio is never uploaded: it is kept in this browser. To look prices up the page sends only the list of symbols (never quantities or amounts) and, for wallets, the public address. You can keep a backup file, save it to your own cloud folder, or save it encrypted to the Hive blockchain to open it on another device.</p>
+		<h3>Is this financial advice?</h3>
+		<p>No. It is a record-keeping tool. Prices can be delayed or missing, and tax rules differ by country: check with an accountant before filing.</p>
+	</div>

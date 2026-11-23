@@ -5,13 +5,22 @@
   <link>https://mes.fm/tools</link>
   <description>New free calculators and tools on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Fri, 20 Nov 2026 18:19:58 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 18:14:59 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/tools.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>New MES Calculators &amp; Tools</title><link>https://mes.fm/tools</link></image>
   <podcast:guid>d20538e6-7ed6-5439-8d17-06a28a7778f2</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>RSS Feeds</title>
+    <link>https://mes.fm/feeds</link>
+    <guid isPermaLink="true">https://mes.fm/feeds</guid>
+    <pubDate>Mon, 23 Nov 2026 18:14:59 GMT</pubDate>
+    <category>Tools</category>
+    <description>Follow everything new on MES in any feed reader: tools, posts, livestreams and videos. No account, no algorithm; updates announced on Hive with Podping.</description>
+    <media:thumbnail url="https://mes.fm/img/feeds-logo.png"/>
+  </item>
   <item>
     <title>Falling Blocks</title>
     <link>https://mes.fm/blocks</link>
@@ -452,15 +461,6 @@
     <category>Tools</category>
     <description>Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).</description>
     <media:thumbnail url="https://mes.fm/img/spin-simulator-logo.png"/>
-  </item>
-  <item>
-    <title>Light &amp; Metamaterials Lab</title>
-    <link>https://mes.fm/negative-index</link>
-    <guid isPermaLink="true">https://mes.fm/negative-index</guid>
-    <pubDate>Mon, 02 Nov 2026 03:28:59 GMT</pubDate>
-    <category>Tools</category>
-    <description>Negative refraction, the flat and perfect lens, a live Maxwell simulation of a metamaterial, diffraction gratings and ten things light can do.</description>
-    <media:thumbnail url="https://mes.fm/img/negative-index-logo.png"/>
   </item>
 </channel>
 </rss>
