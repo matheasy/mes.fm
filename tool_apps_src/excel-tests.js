@@ -47,7 +47,7 @@ eq(X.parseInput("=A1+1"), { f: "A1+1" }, "input formula");
 eq(X.parseInput("'007"), { t: "s", v: "007" }, "input apostrophe text");
 eq(X.parseInput("1,2,3"), { t: "s", v: "1,2,3" }, "input not a number");
 eq(X.parseInput(""), { t: "z" }, "input empty");
-eq(X.parseInput("2026-10-30"), { t: "n", v: 46325, z: "yyyy-mm-dd" }, "input ISO date = Excel serial");
+eq(X.parseInput("2026-10-30"), { t: "n", v: 46325, z: "yyyy-mm-dd", date: true }, "input ISO date = Excel serial");
 eq(X.parseInput("2026-02-30"), { t: "s", v: "2026-02-30" }, "input impossible date stays text");
 eq(X.parseInput("="), { t: "s", v: "=" }, "input lone equals");
 

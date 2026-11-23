@@ -98,6 +98,39 @@
 		if (pct) v = v / 100;
 		return { v: v, pct: pct };
 	}
+	/* typed dates -> serial number + a format that looks like what was typed. "date: true" lets the page swap in the
+	   column's own date format (a date typed under "24-May-2026" rows becomes 22-Nov-2026, like Excel). */
+	var MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
+	function monOf(w) { w = String(w).toLowerCase().replace(/\.$/, ""); if (MON[w]) return MON[w]; var k = w.slice(0, 3); return w.length >= 3 && MON[k] && "january february march april may june july august september october november december".split(" ")[MON[k] - 1].indexOf(w) === 0 ? MON[k] : 0; }
+	function serialOf(y, mo, da) {
+		if (y < 100) y += y < 50 ? 2000 : 1900;
+		var t = Date.UTC(y, mo - 1, da), dd = new Date(t);
+		if (y < 1900 || y > 9999 || dd.getUTCMonth() !== mo - 1 || dd.getUTCDate() !== da) return null;
+		return (t - Date.UTC(1899, 11, 30)) / 864e5;
+	}
+	function parseDateText(text, now) {
+		var s = String(text).trim().replace(/\s+/g, " "), m, y, mo, da, z, v;
+		var curY = (now || new Date()).getFullYear();
+		if ((m = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(s))) { y = +m[1]; mo = +m[2]; da = +m[3]; z = "yyyy-mm-dd"; }
+		else if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(s))) {   // 11/22/2026 (month first, unless the first number can only be a day)
+			var a = +m[1], b = +m[2]; y = +m[3];
+			if (a > 12 && b <= 12) { da = a; mo = b; z = "d/m/yyyy"; } else { mo = a; da = b; z = "m/d/yyyy"; }
+		}
+		else if ((m = /^([A-Za-z]{3,9}\.?) (\d{1,2})(?:st|nd|rd|th)?,? (\d{4})$/.exec(s)) && (mo = monOf(m[1]))) { da = +m[2]; y = +m[3]; z = "mmm d, yyyy"; }   // Nov 22, 2026
+		else if ((m = /^(\d{1,2})(?:st|nd|rd|th)?[ -]([A-Za-z]{3,9}\.?)[ ,-]+(\d{2}|\d{4})$/.exec(s)) && (mo = monOf(m[2]))) { da = +m[1]; y = +m[3]; z = /-/.test(s) ? "d-mmm-yyyy" : "d mmm yyyy"; }   // 22-Nov-2026, 22 Nov 2026
+		else if ((m = /^([A-Za-z]{3,9}\.?) (\d{1,2})(?:st|nd|rd|th)?$/.exec(s)) && (mo = monOf(m[1]))) { da = +m[2]; y = curY; z = "mmm d"; }   // Nov 22 (this year)
+		else if ((m = /^(\d{1,2})[ -]([A-Za-z]{3,9}\.?)$/.exec(s)) && (mo = monOf(m[2]))) { da = +m[1]; y = curY; z = "d-mmm"; }
+		else return null;
+		v = serialOf(y, mo, da);
+		return v == null ? null : { t: "n", v: v, z: z, date: true };
+	}
+	/* is this number format a date (or date + time) format? */
+	function isDateFmt(z) {
+		if (!z || z === "General") return false;
+		var q = String(z).replace(/"[^"]*"/g, "").replace(/\\./g, "").replace(/\[[^\]]*\]/g, "");
+		return /[dy]/i.test(q) || /m{3,}/i.test(q);
+	}
+
 	function parseInput(text) {
 		var s = text == null ? "" : String(text);
 		if (s === "") return { t: "z" };
@@ -105,11 +138,8 @@
 		if (s[0] === "'") return { t: "s", v: s.slice(1) };
 		var u = s.trim().toUpperCase();
 		if (u === "TRUE" || u === "FALSE") return { t: "b", v: u === "TRUE" };
-		var dm = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s.trim());
-		if (dm) {
-			var y = +dm[1], mo = +dm[2], da = +dm[3], t = Date.UTC(y, mo - 1, da), dd = new Date(t);
-			if (y >= 1900 && dd.getUTCMonth() === mo - 1 && dd.getUTCDate() === da) return { t: "n", v: (t - Date.UTC(1899, 11, 30)) / 864e5, z: "yyyy-mm-dd" };
-		}
+		var dt = parseDateText(s);
+		if (dt) return dt;
 		var n = parseNumberText(s);
 		if (n) return n.pct ? { t: "n", v: n.v, z: "0%" } : { t: "n", v: n.v };
 		return { t: "s", v: s };
@@ -961,7 +991,7 @@
 	var api = {
 		colName: colName, colIndex: colIndex, parseA1: parseA1, a1: a1, parseRange: parseRange, rangeA1: rangeA1, inRange: inRange, MAXR: MAXR, MAXC: MAXC,
 		detectDelimiter: detectDelimiter, parseDelimited: parseDelimited, toDelimited: toDelimited,
-		parseNumberText: parseNumberText, parseInput: parseInput,
+		parseNumberText: parseNumberText, parseInput: parseInput, parseDateText: parseDateText, isDateFmt: isDateFmt,
 		Err: Err, isErr: isErr, err: err, ERRCODE: ERRCODE, ERRNUM: ERRNUM, Unknown: Unknown,
 		tokenize: tokenize, parse: parse, refsOf: refsOf, unknownFunctions: unknownFunctions, evaluate: evaluate, calc: calc, FUNCTIONS: FUNCTIONS, refreshFunctions: refreshFunctions,
 		FN: FN, LAZY: LAZY, VOLATILE: VOLATILE, Range: Range, Arr: Arr, isMulti: isMulti, toArr: toArr, mapArr: mapArr, broadcast: broadcast, scalar: scalar,

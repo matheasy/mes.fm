@@ -401,8 +401,12 @@ html body.dark-mode #xl .xl-btn--primary:hover { background: #24834f; }
 #xl .xl-rh { justify-content: flex-end; padding-right: 6px; font-variant-numeric: tabular-nums; }
 #xl .xl-ch.is-on, #xl .xl-rh.is-on { background: var(--xl-headon); color: var(--xl-ink); font-weight: 600; }
 #xl .xl-ch .xl-sorti { margin-left: 3px; color: var(--xl-acc); }
-#xl .xl-rz { position: absolute; top: 0; right: -4px; width: 9px; height: 100%; cursor: col-resize; z-index: 2; touch-action: none; }
-#xl .xl-rz:hover, #xl .xl-rz.is-drag { background: var(--xl-acc); opacity: .5; }
+#xl .xl-rz { position: absolute; top: 0; width: 10px; cursor: col-resize; z-index: 2; touch-action: none; }
+#xl .xl-rrz { position: absolute; left: 0; height: 9px; cursor: row-resize; z-index: 2; touch-action: none; }
+#xl .xl-rz::after, #xl .xl-rrz::after { content: ""; position: absolute; background: var(--xl-acc); opacity: 0; transition: opacity .12s; }
+#xl .xl-rz::after { left: 4px; top: 0; width: 2px; height: 100%; }
+#xl .xl-rrz::after { left: 0; top: 3px; height: 3px; width: 100%; }
+#xl .xl-rz:hover::after, #xl .xl-rz.is-drag::after, #xl .xl-rrz:hover::after { opacity: .85; }
 #xl .xl-scroll { position: absolute; right: 0; bottom: 0; overflow: auto; outline: none; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 #xl .xl-scroll:focus-visible { box-shadow: inset 0 0 0 2px var(--xl-acc); }
 #xl .xl-sizer { position: relative; }
@@ -1077,7 +1081,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/excel/js/excel.js?v=10" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/excel/js/excel.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

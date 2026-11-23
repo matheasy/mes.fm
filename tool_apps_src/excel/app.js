@@ -185,8 +185,8 @@
 		if (!wb) return;
 		setFrozen();
 		var v = view();
-		FR = base * RH;
 		NR = v ? v.rows.length : Math.max(nRows + 60, 120) - base;
+		buildRows();
 		NC = Math.max(nCols + 6, 26, FC + 6);
 		colX = [0]; for (var c = 0; c < NC; c++) colX.push(colX[c] + colW(c));
 		FW = colX[FC];
@@ -204,7 +204,7 @@
 		sty($("xl-fcols"), { top: CHH + FR, left: HW, width: FW, display: FW ? "" : "none" });
 		sty($("xl-rowh"), { top: CHH + FR, width: HW });
 		sty(scroll, { top: CHH + FR, left: HW + FW });
-		sty(sizer, { width: colX[NC] - FW + 40, height: Math.min(NR * RH, MAXH) + RH });
+		sty(sizer, { width: colX[NC] - FW + 40, height: Math.min(YD(NR), MAXH) + RH });
 		toolState();
 	}
 	function actualRow(dr) { if (dr < 0) return dr + base; var v = view(); return v ? v.rows[dr] : dr + base; }
@@ -216,9 +216,45 @@
 	}
 	// display row of an actual row, or of the next one showing (hidden rows): for merged cells and pictures
 	function drNear(ar, last) { for (var r = ar; r <= Math.max(ar, last == null ? ar + 2000 : last); r++) { var d = displayRow(r); if (d != null) return d; } return null; }
+	/* row heights: a row's own height (set here or in the file), in our pixels. Excel's 15 pt default row = our 24 px, so
+	   file heights are scaled the same way (px = pt x 1.6) and dragging a row stores pt = px / 1.6 back into the file.
+	   rY = top of every scrolling display row (null while every row is the default height); fY = tops of the frozen rows. */
+	var rY = null, fY = [0, RH];
+	function rowPx(ar) {
+		if (ar == null) return RH;
+		var m = ws()["!rows"], o = m && m[ar];
+		if (!o) return RH;
+		var px = o.hpt ? o.hpt * 1.6 : o.hpx ? o.hpx * 1.2 : RH;
+		return Math.max(8, Math.min(600, Math.round(px)));
+	}
+	function buildRows() {
+		var m = ws()["!rows"], any = false;
+		if (m) for (var i = 0; i < m.length; i++) { var o = m[i]; if (o && (o.hpt || o.hpx) && rowPx(i) !== RH) { any = true; break; } }
+		fY = [0]; for (var f = 0; f < base; f++) fY.push(fY[f] + rowPx(f));
+		FR = fY[base];
+		if (!any) { rY = null; return; }
+		rY = new Float64Array(NR + 1);
+		for (var d = 0; d < NR; d++) rY[d + 1] = rY[d] + rowPx(actualRow(d));
+	}
+	// top of display row d (frozen rows: negative d, measured up from the first scrolling row)
+	function YD(d) {
+		if (d < 0) return fY[Math.max(0, d + base)] - FR;
+		if (!rY) return d * RH;
+		return d <= NR ? rY[d] : rY[NR] + (d - NR) * RH;
+	}
+	function HD(a, b) { return YD(b + 1) - YD(a); }
+	function rowH(d) { return YD(d + 1) - YD(d); }
+	function drAt(y) {
+		if (!rY) return Math.floor(y / RH);
+		if (y >= rY[NR]) return NR + Math.floor((y - rY[NR]) / RH);
+		var lo = 0, hi = NR - 1; while (lo < hi) { var mi = (lo + hi + 1) >> 1; if (rY[mi] <= y) lo = mi; else hi = mi - 1; } return lo;
+	}
+	// the drag handle on the line under a row number
+	function rrzHtml(rw, y) { return rw.ar == null ? "" : '<span class="xl-rrz" data-rrz="' + rw.ar + '" data-rd="' + rw.dr + '" title="Drag to change the height (double-click: normal height)" style="top:' + (y - 4) + "px;width:" + HW + 'px"></span>'; }
+	function frAt(y) { for (var f = 0; f < base; f++) if (y < fY[f + 1]) return f; return base - 1; }
 	function colAt(x) { var lo = 0, hi = NC - 1; while (lo < hi) { var m = (lo + hi + 1) >> 1; if (colX[m] <= x) lo = m; else hi = m - 1; } return lo; }
 	function scrollInfo() {
-		var vh = scroll.clientHeight, st = scroll.scrollTop, T = NR * RH, H = Math.min(T, MAXH);
+		var vh = scroll.clientHeight, st = scroll.scrollTop, T = YD(NR), H = Math.min(T, MAXH);
 		var P = (T > H && H > vh) ? st / (H + RH - vh) * (T + RH - vh) : st;
 		return { vh: vh, vw: scroll.clientWidth, st: st, sl: scroll.scrollLeft, P: P, T: T, H: H };
 	}
@@ -273,7 +309,7 @@
 						var mw = colX[cb + 1] - colX[ca], d0 = displayRow(g.s.r);
 						// a merge cut by the frozen line: only the part holding its top-left cell shows the text
 						if (g.s.c < dom.c0 || d0 == null || d0 < dom.r0) tl = tl ? Object.assign({}, tl, { t: "z", w: "", v: null, f: null }) : { t: "z", xs: ((d[g.s.r] || [])[g.s.c] || {}).xs };
-						if (mw > 0 && rb >= ra) h.push(cellHtml(tl, g.s.r, g.s.c, xOf(ca), yOf(ra), mw, (rb - ra + 1) * RH, " mg"));
+						if (mw > 0 && rb >= ra) h.push(cellHtml(tl, g.s.r, g.s.c, xOf(ca), yOf(ra), mw, HD(ra, rb), " mg"));
 						continue;
 					}
 				}
@@ -283,10 +319,10 @@
 					if (tx.length * 7 > w && !(L0 && (L0.fill || L0.wrap || (L0.ha && L0.ha !== "left")))) {
 						var c2 = c + 1, ww = w, kk = k + 1;
 						while (kk < cols.length && cols[kk].c === c2 && ww < tx.length * 7.5 + 8 && ww < 2400 && !(row[c2] && disp(row[c2]) !== "") && !(M && M.at.has(ar * 16384 + c2))) { ww += cols[kk].w; c2++; kk++; }
-						if (ww > w) { late += cellHtml(cell, ar, c, cc.x, rw.y, ww, RH, " ofl"); continue; }
+						if (ww > w) { late += cellHtml(cell, ar, c, cc.x, rw.y, ww, rowH(rw.dr), " ofl"); continue; }
 					}
 				}
-				h.push(cellHtml(cell, ar, c, cc.x, rw.y, w, RH, ""));
+				h.push(cellHtml(cell, ar, c, cc.x, rw.y, w, rowH(rw.dr), ""));
 			}
 			h.push(late);
 		}
@@ -294,11 +330,11 @@
 		var R = selRect(), a = Math.max(R.r1, dom.r0, rows[0].dr - 1), b = Math.min(R.r2, dom.r1, rows[rows.length - 1].dr + 1);
 		var c0 = Math.max(R.c1, dom.c0), c1 = Math.min(R.c2, dom.c1);
 		var multi = R.r1 !== R.r2 || R.c1 !== R.c2;
-		if (multi && b >= a && c1 >= c0) h.push('<div class="xl-selbox" style="left:' + xOf(c0) + "px;top:" + yOf(a) + "px;width:" + (colX[c1 + 1] - colX[c0]) + "px;height:" + ((b - a + 1) * RH) + 'px"></div>');
+		if (multi && b >= a && c1 >= c0) h.push('<div class="xl-selbox" style="left:' + xOf(c0) + "px;top:" + yOf(a) + "px;width:" + (colX[c1 + 1] - colX[c0]) + "px;height:" + HD(a, b) + 'px"></div>');
 		if (sel.ar >= dom.r0 && sel.ar <= dom.r1 && sel.ac >= dom.c0 && sel.ac <= dom.c1 && sel.ar >= rows[0].dr - 1 && sel.ar <= rows[rows.length - 1].dr + 1) {
-			var aw = colX[sel.ac + 1] - colX[sel.ac], ah = RH, ax = xOf(sel.ac), ay = yOf(sel.ar);
+			var aw = colX[sel.ac + 1] - colX[sel.ac], ah = rowH(sel.ar), ax = xOf(sel.ac), ay = yOf(sel.ar);
 			var am = M && M.at.get(actualRow(sel.ar) * 16384 + sel.ac);
-			if (am != null) { var gg = M.list[am]; ax = xOf(Math.max(gg.s.c, dom.c0)); aw = colX[Math.min(gg.e.c, dom.c1) + 1] - colX[Math.max(gg.s.c, dom.c0)]; var t0 = displayRow(gg.s.r), t1 = displayRow(gg.e.r); if (t0 != null && t1 != null) { ay = yOf(Math.max(t0, dom.r0)); ah = (Math.min(t1, dom.r1) - Math.max(t0, dom.r0) + 1) * RH; } }
+			if (am != null) { var gg = M.list[am]; ax = xOf(Math.max(gg.s.c, dom.c0)); aw = colX[Math.min(gg.e.c, dom.c1) + 1] - colX[Math.max(gg.s.c, dom.c0)]; var t0 = displayRow(gg.s.r), t1 = displayRow(gg.e.r); if (t0 != null && t1 != null) { ay = yOf(Math.max(t0, dom.r0)); ah = HD(Math.max(t0, dom.r0), Math.min(t1, dom.r1)); } }
 			if (!(editing && editing.si !== si)) h.push('<div class="xl-act' + (editing && isFormulaText(edText()) ? " is-ed" : "") + '" style="left:' + ax + "px;top:" + ay + "px;width:" + aw + "px;height:" + ah + 'px"></div>');
 		}
 		h.push(spillBox(dom, yOf, xOf, rows), clipBox(dom, yOf, xOf, rows), refBoxes(dom, yOf, xOf, rows), fillPrevBox(dom, yOf, xOf, rows), fillHandle(dom, xOf, yOf, rows));
@@ -307,14 +343,14 @@
 	function draw() {
 		if (!wb) return;
 		var I = scrollInfo(), R = selRect();
-		var r0 = Math.max(0, Math.floor(I.P / RH)), r1 = Math.min(NR - 1, Math.floor((I.P + I.vh) / RH));
+		var r0 = Math.max(0, drAt(I.P)), r1 = Math.min(NR - 1, drAt(I.P + I.vh));
 		var c0 = Math.max(FC, colAt(I.sl + FW)), c1 = Math.min(NC - 1, colAt(I.sl + FW + I.vw));
 		var srows = [], frows = [], scols = [], fcols = [], rh = [], hh = [], hf = [];
-		for (var dr = r0; dr <= r1; dr++) srows.push({ dr: dr, ar: actualRow(dr), y: I.st + dr * RH - I.P });
-		for (var fr = 0; fr < base; fr++) frows.push({ dr: fr - base, ar: fr, y: fr * RH });
+		for (var dr = r0; dr <= r1; dr++) srows.push({ dr: dr, ar: actualRow(dr), y: I.st + YD(dr) - I.P });
+		for (var fr = 0; fr < base; fr++) frows.push({ dr: fr - base, ar: fr, y: fY[fr] });
 		for (var c = c0; c <= c1; c++) { var w = colX[c + 1] - colX[c]; if (w) scols.push({ c: c, x: colX[c] - FW, w: w }); }
 		for (var c3 = 0; c3 < FC; c3++) { var w3 = colX[c3 + 1] - colX[c3]; if (w3) fcols.push({ c: c3, x: colX[c3], w: w3 }); }
-		var ySc = function (d) { return I.st + d * RH - I.P; }, yFz = function (d) { return (d + base) * RH; }, xSc = function (cc) { return colX[cc] - FW; }, xFz = function (cc) { return colX[cc]; };
+		var ySc = function (d) { return I.st + YD(d) - I.P; }, yFz = function (d) { return YD(d) + FR; }, xSc = function (cc) { return colX[cc] - FW; }, xFz = function (cc) { return colX[cc]; };
 		var domS = { r0: 0, r1: NR - 1, c0: FC, c1: NC - 1 }, domF = { r0: -base, r1: -1, c0: FC, c1: NC - 1 };
 		cellsEl.innerHTML = block(srows, scols, domS, ySc, xSc);
 		var v = views[wb.SheetNames[si]], hidShown = S.showHidden;
@@ -322,31 +358,31 @@
 			var w2 = colX[c2 + 1] - colX[c2]; if (!w2) return;
 			var srt = v && v.sort && v.sort.c === c2 ? '<span class="xl-sorti">' + (v.sort.dir > 0 ? "▲" : "▼") + "</span>" : "";
 			var flt = v && v.filters && v.filters.some(function (f) { return f.c === c2; }) ? '<span class="xl-sorti">▾</span>' : "";
-			out.push('<div class="xl-ch' + (c2 >= R.c1 && c2 <= R.c2 ? " is-on" : "") + (hidShown && colHid(c2) ? " is-hid" : "") + '" data-c="' + c2 + '" style="left:' + colX[c2] + "px;width:" + w2 + "px;height:" + CHH + 'px">' + X.colName(c2) + srt + flt + '<span class="xl-rz" data-rz="' + c2 + '"></span></div>');
+			out.push('<div class="xl-ch' + (c2 >= R.c1 && c2 <= R.c2 ? " is-on" : "") + (hidShown && colHid(c2) ? " is-hid" : "") + '" data-c="' + c2 + '" style="left:' + colX[c2] + "px;width:" + w2 + "px;height:" + CHH + 'px">' + X.colName(c2) + srt + flt + '</div><span class="xl-rz" data-rz="' + c2 + '" title="Drag to change the width (double-click: fit)" style="left:' + (colX[c2 + 1] - 5) + 'px;height:' + CHH + 'px"></span>');
 		};
 		for (var c2 = c0; c2 <= c1; c2++) colHead(c2, hh);
 		for (var c4 = 0; c4 < FC; c4++) colHead(c4, hf);
 		var chIn = $("xl-colh-in"); chIn.innerHTML = hh.join(""); chIn.style.transform = "translateX(" + (-I.sl) + "px)";
 		$("xl-colhf").innerHTML = hf.join("");
-		srows.forEach(function (rw) { rh.push('<div class="xl-rh' + (rw.dr >= R.r1 && rw.dr <= R.r2 ? " is-on" : "") + (hidShown && rw.ar != null && rowHid(rw.ar) ? " is-hid" : "") + '" data-dr="' + rw.dr + '" style="top:' + (rw.dr * RH - I.P) + "px;width:" + HW + "px;height:" + RH + 'px">' + (rw.ar == null ? "" : rw.ar + 1) + "</div>"); });
+		srows.forEach(function (rw) { rh.push('<div class="xl-rh' + (rw.dr >= R.r1 && rw.dr <= R.r2 ? " is-on" : "") + (hidShown && rw.ar != null && rowHid(rw.ar) ? " is-hid" : "") + '" data-dr="' + rw.dr + '" style="top:' + (YD(rw.dr) - I.P) + "px;width:" + HW + "px;height:" + rowH(rw.dr) + 'px">' + (rw.ar == null ? "" : rw.ar + 1) + "</div>" + rrzHtml(rw, YD(rw.dr + 1) - I.P)); });
 		var rhIn = $("xl-rowh-in"); rhIn.innerHTML = rh.join(""); rhIn.style.transform = "";
 		if (FW) {
 			var fc = $("xl-fcols"); fc.style.height = I.vh + "px";
-			$("xl-fcol-in").innerHTML = block(srows.map(function (rw) { return { dr: rw.dr, ar: rw.ar, y: rw.dr * RH - I.P }; }), fcols, { r0: 0, r1: NR - 1, c0: 0, c1: FC - 1 }, function (d) { return d * RH - I.P; }, xFz);
+			$("xl-fcol-in").innerHTML = block(srows.map(function (rw) { return { dr: rw.dr, ar: rw.ar, y: YD(rw.dr) - I.P }; }), fcols, { r0: 0, r1: NR - 1, c0: 0, c1: FC - 1 }, function (d) { return YD(d) - I.P; }, xFz);
 		}
 		if (base) {
 			var fIn = $("xl-frz-in"); fIn.innerHTML = block(frows, scols, domF, yFz, xSc); fIn.style.transform = "translateX(" + (-I.sl) + "px)";
 			if (FW) $("xl-frzc").innerHTML = block(frows, fcols, { r0: -base, r1: -1, c0: 0, c1: FC - 1 }, yFz, xFz);
-			$("xl-frzh").innerHTML = frows.map(function (rw) { return '<div class="xl-rh' + (rw.dr >= R.r1 && rw.dr <= R.r2 ? " is-on" : "") + '" data-dr="' + rw.dr + '" style="top:' + rw.y + "px;width:" + HW + "px;height:" + RH + 'px">' + (rw.ar + 1) + "</div>"; }).join("");
+			$("xl-frzh").innerHTML = frows.map(function (rw) { return '<div class="xl-rh' + (rw.dr >= R.r1 && rw.dr <= R.r2 ? " is-on" : "") + '" data-dr="' + rw.dr + '" style="top:' + rw.y + "px;width:" + HW + "px;height:" + rowH(rw.dr) + 'px">' + (rw.ar + 1) + "</div>" + rrzHtml(rw, fY[rw.ar + 1]); }).join("");
 		}
 		if (editing && editing.where === "cell") placeEditor();
 	}
 
 	/* ---------- charts and pictures (drawn into the scrolling area, redrawn only when something changes) ---------- */
-	function yOfAr(ar) { if (ar < base) return (ar - base) * RH; var d = drNear(ar); return d == null ? null : d * RH; }
+	function yOfAr(ar) { if (ar < base) return YD(ar - base); var d = drNear(ar); return d == null ? null : YD(d); }
 	// Excel position (column / row + offset in Excel pixels) -> our grid
 	function gridX(c, off) { var x = c < colX.length ? colX[c] : colX[colX.length - 1], ex = xlColPx(c), ow = colX[c + 1] - colX[c]; return x + (ex ? Math.min(off, ex) / ex * ow : 0) - FW; }
-	function gridY(r, off) { var y = yOfAr(r); if (y == null) return null; var ex = xlRowPx(r); return y + (ex ? Math.min(off, ex) / ex * RH : 0); }
+	function gridY(r, off) { var y = yOfAr(r); if (y == null) return null; var ex = xlRowPx(r); return y + (ex ? Math.min(off, ex) / ex * rowPx(r) : 0); }
 	function walk(start, off, len, size, max) { var c = start, left = off + len; while (c < max && left > size(c)) { left -= size(c); c++; } return { c: c, off: left }; }
 	function rectOf(a) {
 		if (!a.from) { if (!a.pos || !a.ext) return null; var px = walk(0, 0, a.pos.x, xlColPx, NC + 200), py = walk(0, 0, a.pos.y, xlRowPx, nRows + 2000); a = { from: { c: px.c, co: px.off, r: py.c, ro: py.off }, ext: a.ext }; }
@@ -408,7 +444,7 @@
 		var box = $("xl-objs"); if (!box) return;
 		var x = wb && sx();
 		var mine = ws()["!mescharts"];
-		if ((!x || !x.objects.length) && !(mine && mine.length) || !S.objs || isSF() || NR * RH > MAXH) { box.innerHTML = ""; return; }
+		if ((!x || !x.objects.length) && !(mine && mine.length) || !S.objs || isSF() || YD(NR) > MAXH) { box.innerHTML = ""; return; }
 		var html = [], dark = isDark();
 		(x ? x.objects : []).forEach(function (o, i) {
 			if (o.hidden) return;
@@ -458,8 +494,8 @@
 	function reveal(dr, c) {
 		var I = scrollInfo();
 		if (dr >= 0) {
-			var y = dr * RH, P = I.P;
-			if (y < P) P = y; else if (y + RH > P + I.vh) P = y + RH - I.vh;
+			var y = YD(dr), hh = rowH(dr), P = I.P;
+			if (y < P) P = y; else if (y + hh > P + I.vh) P = y + hh - I.vh;
 			if (P !== I.P) scroll.scrollTop = (I.T > I.H && I.H > I.vh) ? P * (I.H + RH - I.vh) / (I.T + RH - I.vh) : P;
 		}
 		if (c < FC) return;
@@ -512,11 +548,11 @@
 	function placeEditor() {
 		var I = scrollInfo(), dr = editing.dr, c = editing.c;
 		ed.style.visibility = editing.si != null && editing.si !== si ? "hidden" : "";
-		var top = dr < 0 ? CHH + (dr + base) * RH : CHH + FR + dr * RH - I.P, left = c < FC ? HW + colX[c] : HW + colX[c] - I.sl;
+		var top = dr < 0 ? CHH + YD(dr) + FR : CHH + FR + YD(dr) - I.P, left = c < FC ? HW + colX[c] : HW + colX[c] - I.sl;
 		ed.style.left = left + "px"; ed.style.top = top + "px";
 		ed.style.minWidth = (colX[c + 1] - colX[c] + 1) + "px"; ed.style.height = "auto";
 		ed.style.width = "1px"; ed.style.width = Math.min(grid.clientWidth - left - 4, Math.max(colX[c + 1] - colX[c] + 1, ed.scrollWidth + 6)) + "px";
-		ed.style.height = Math.max(RH + 1, ed.scrollHeight + 2) + "px";
+		ed.style.height = Math.max(rowH(dr) + 1, ed.scrollHeight + 2) + "px";
 		paintEdHL();
 	}
 	function startEdit(text, where) {
@@ -546,7 +582,7 @@
 		editing = null; ed.hidden = true; hlRefs = []; paintEdHL(); note(""); render();
 		return true;
 	}
-	function buildCell(text, old) {
+	function buildCell(text, old, pos) {
 		var p = X.parseInput(text), cell;
 		if (p.f != null) {
 			var ast;
@@ -566,7 +602,29 @@
 		if (old && old.s) cell.s = old.s;
 		if (old && old.ml) cell.ml = old.ml;
 		if (old && old.xs != null) { cell.xs = old.xs; cell.xz = old.xz; if (!cell.z && old.xz && old.t === "z" && p.t === "n") cell.z = old.xz; }
+		if (p.f == null && p.t === "n") {
+			// like Excel: a date typed under dates (or a number under formatted numbers) takes the column's format
+			var ownD = old && (X.isDateFmt(old.z) ? old.z : X.isDateFmt(old.xz) ? old.xz : null);
+			if (p.date) { var dz = ownD || (pos && neighbourFmt(pos.r, pos.c, true)); cell.z = dz || p.z; }
+			else if (!p.z && !cell.z && pos) { var nz = neighbourFmt(pos.r, pos.c, false); if (nz) cell.z = nz; }
+		}
 		return cell;
+	}
+	// the number format of the nearest filled cell above (else below) in the same column, if it is the same kind (date / number)
+	function neighbourFmt(r, c, wantDate) {
+		var d = data();
+		for (var dir = -1; dir <= 1; dir += 2) {
+			for (var i = 1, rr = r + dir; i <= 12 && rr >= 0 && rr < d.length + 1; i++, rr += dir) {
+				var row = d[rr], cl = row && row[c];
+				if (!cl || cl.t === "z" || (cl.t === "s" && cl.v === "")) continue;
+				if (cl.t !== "n") break;
+				var z = cl.z || cl.xz;
+				if (!z || z === "General") break;
+				if (X.isDateFmt(z) === wantDate) return z;
+				break;
+			}
+		}
+		return null;
 	}
 	function ensureCalc() {
 		if (!calc) calc = new X.Calc({ sheets: wb.SheetNames.map(function (n) { return { name: n, get data() { var w = wb.Sheets[n]; if (!w["!data"]) w["!data"] = []; return w["!data"]; } }; }), names: bookNames, tables: calcTables });
@@ -590,7 +648,7 @@
 	}
 	function setCells(list, label) {
 		var s = si, ch = [];
-		list.forEach(function (x) { var b = getCell(x.r, x.c); var a = buildCell(x.text, b); if (!b && !a) return; ch.push({ r: x.r, c: x.c, b: b, a: a }); });
+		list.forEach(function (x) { var b = getCell(x.r, x.c); var a = buildCell(x.text, b, x); if (!b && !a) return; ch.push({ r: x.r, c: x.c, b: b, a: a }); });
 		if (!ch.length) return;
 		var res = writeCells(s, ch, "a");
 		pushUndo({ k: "cells", si: s, ch: ch, label: label });
@@ -940,7 +998,7 @@
 	function hitCell(e, el) {
 		var r = el.getBoundingClientRect(), I = scrollInfo();
 		var x = e.clientX - r.left + I.sl, y = e.clientY - r.top;
-		return { dr: Math.min(NR - 1, Math.max(0, Math.floor((y + I.P) / RH))), c: Math.max(FC, colAt(Math.max(0, x) + FW)) };
+		return { dr: Math.min(NR - 1, Math.max(0, drAt(y + I.P))), c: Math.max(FC, colAt(Math.max(0, x) + FW)) };
 	}
 	var drag = null;
 	scroll.addEventListener("pointerdown", function (e) {
@@ -978,8 +1036,8 @@
 	function frozenDown(e) {
 		if (!wb || e.button > 0) return;
 		var r = this.getBoundingClientRect(), id = this.id, x = e.clientX - r.left, y = e.clientY - r.top, dr, c;
-		if (id === "xl-fcols") { dr = Math.min(NR - 1, Math.max(0, Math.floor((y + scrollInfo().P) / RH))); c = Math.min(FC - 1, colAt(x)); }
-		else { dr = Math.min(-1, Math.floor(y / RH) - base); c = id === "xl-frzc" ? Math.min(FC - 1, colAt(x)) : Math.max(FC, colAt(x + scroll.scrollLeft + FW)); }
+		if (id === "xl-fcols") { dr = Math.min(NR - 1, Math.max(0, drAt(y + scrollInfo().P))); c = Math.min(FC - 1, colAt(x)); }
+		else { dr = Math.min(-1, frAt(y) - base); c = id === "xl-frzc" ? Math.min(FC - 1, colAt(x)) : Math.max(FC, colAt(x + scroll.scrollLeft + FW)); }
 		if (editing && tryPoint({ dr: dr, c: c }, e)) return;
 		if (editing && !commitEdit()) return;
 		e.preventDefault(); scroll.focus({ preventScroll: true });
@@ -987,7 +1045,45 @@
 		select(dr, c, e.shiftKey);
 	}
 	["xl-frz", "xl-frzc", "xl-fcols"].forEach(function (id) { $(id).addEventListener("pointerdown", frozenDown); });
+	// resize rows: drag the line under a row number (all selected rows when the row is part of a row selection)
+	function rowsToSize(ar) {
+		var R0 = selRect(), out = [];
+		if (sel.mode === "row" || sel.mode === "all") for (var d = R0.r1; d <= R0.r2; d++) { var a = actualRow(d); if (a != null) out.push(a); }
+		return out.indexOf(ar) >= 0 ? out : [ar];
+	}
+	function setRowPx(list, px) {
+		var w = ws(), m = w["!rows"] || (w["!rows"] = []);
+		list.forEach(function (ar) {
+			var o = Object.assign({}, m[ar] || {});
+			if (px == null) { delete o.hpt; delete o.hpx; delete o.customHeight; }
+			else { o.hpt = Math.round(px / 1.6 * 4) / 4; delete o.hpx; o.customHeight = 1; }   // only hpt: SheetJS writes hpx as if it were points
+			m[ar] = Object.keys(o).length ? o : undefined;
+		});
+	}
+	var rrz = null;
+	function rowRzDown(e, h) {
+		e.preventDefault(); e.stopPropagation();
+		if (editing && !commitEdit()) return;
+		var ar = +h.getAttribute("data-rrz"), dr = +h.getAttribute("data-rd");
+		rrz = { list: rowsToSize(ar), y: e.clientY, h0: rowH(dr), moved: false };
+		var mv = function (ev) {
+			if (!rrz) return;
+			var px = Math.max(8, Math.min(600, Math.round(rrz.h0 + ev.clientY - rrz.y)));
+			rrz.moved = true; setRowPx(rrz.list, px); layout(); render();
+			note("Row height: " + Math.round(px / 1.6 * 4) / 4 + " pt (" + px + " px)" + (rrz.list.length > 1 ? " · " + rrz.list.length + " rows" : ""));
+		};
+		var up = function () {
+			document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+			var was = rrz; rrz = null; if (was && was.moved) { note(""); drawObjects(); file.dirty = true; renderName(); autosave(); }
+		};
+		document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+	}
+	function rowRzDbl(e) {
+		var h = e.target.closest && e.target.closest("[data-rrz]"); if (!h || !wb) return;
+		e.preventDefault(); setRowPx(rowsToSize(+h.getAttribute("data-rrz")), null); layout(); render(); drawObjects(); file.dirty = true; renderName(); autosave();
+	}
 	function rowHeadDown(e) {
+		var hz = e.target.closest("[data-rrz]"); if (hz && wb) { rowRzDown(e, hz); return; }
 		var t = e.target.closest("[data-dr]"); if (!t || !wb) return;
 		if (editing && !commitEdit()) return;
 		e.preventDefault(); scroll.focus({ preventScroll: true });
@@ -996,6 +1092,8 @@
 		sel.ac = 0; sel.fc = Math.max(0, Math.max(nCols, 1) - 1); sel.mode = "row"; clampSel(); showActive(); render();
 	}
 	$("xl-rowh").addEventListener("pointerdown", rowHeadDown);
+	$("xl-rowh").addEventListener("dblclick", rowRzDbl);
+	$("xl-frzh").addEventListener("dblclick", rowRzDbl);
 	$("xl-frzh").addEventListener("pointerdown", rowHeadDown);
 	$("xl-corner").addEventListener("pointerdown", function (e) { if (!wb) return; e.preventDefault(); sel = { ar: minRow(), ac: 0, fr: Math.max(minRow(), dataN() - 1), fc: Math.max(0, nCols - 1), mode: "all" }; clampSel(); showActive(); render(); scroll.focus({ preventScroll: true }); });
 	var rz = null;
@@ -1004,7 +1102,10 @@
 		var h = e.target.closest("[data-rz]");
 		if (h) {
 			e.preventDefault(); var c = +h.getAttribute("data-rz");
-			rz = { c: c, x: e.clientX, w: colX[c + 1] - colX[c], h: h }; h.classList.add("is-drag");
+			var R0 = selRect(), cols = [];
+			if (sel.mode === "col" || sel.mode === "all") for (var cc = R0.c1; cc <= R0.c2; cc++) cols.push(cc);
+			if (cols.indexOf(c) < 0) cols = [c];
+			rz = { c: c, cols: cols, x: e.clientX, w: colX[c + 1] - colX[c], h: h }; h.classList.add("is-drag");
 			try { this.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
 			return;
 		}
@@ -1018,10 +1119,10 @@
 	$("xl-colh").addEventListener("pointermove", function (e) {
 		if (!rz) return;
 		var w = Math.max(16, Math.round(rz.w + e.clientX - rz.x)), cs = ws()["!cols"] || (ws()["!cols"] = []);
-		cs[rz.c] = Object.assign({}, cs[rz.c] || {}, { wpx: w, width: +(w / 7.2).toFixed(2) }); delete cs[rz.c].wch; delete cs[rz.c].hidden; delete cs[rz.c].MDW;
-		layout(); render();
+		rz.cols.forEach(function (c) { cs[c] = Object.assign({}, cs[c] || {}, { wpx: w, width: +(w / 7.2).toFixed(2) }); delete cs[c].wch; delete cs[c].hidden; delete cs[c].MDW; });
+		layout(); render(); note("Column width: " + (w / 7.2).toFixed(2) + " (" + w + " px)" + (rz.cols.length > 1 ? " · " + rz.cols.length + " columns" : ""));
 	});
-	$("xl-colh").addEventListener("pointerup", function () { if (rz) { rz.h.classList.remove("is-drag"); rz = null; drawObjects(); file.dirty = true; renderName(); autosave(); } });
+	$("xl-colh").addEventListener("pointerup", function () { if (rz) { rz.h.classList.remove("is-drag"); rz = null; note(""); drawObjects(); file.dirty = true; renderName(); autosave(); } });
 	$("xl-colh").addEventListener("dblclick", function (e) {
 		var h = e.target.closest("[data-rz]"); if (!h) return;
 		var c = +h.getAttribute("data-rz"), d = data(), mx = 4;
@@ -1631,7 +1732,7 @@
 		if (d0 == null || d1 == null) return null;
 		var a = Math.max(d0, dom.r0), b = Math.min(d1, dom.r1), c0 = Math.max(g.s.c, dom.c0), c1 = Math.min(g.e.c, dom.c1);
 		if (a > b || c0 > c1) return null;
-		return { l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: (b - a + 1) * RH };
+		return { l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: HD(a, b) };
 	}
 	function boxDiv(b, cls, extra) { return b ? '<div class="' + cls + '" style="left:' + b.l + "px;top:" + b.t + "px;width:" + b.w + "px;height:" + b.h + "px;" + (extra || "") + '"></div>' : ""; }
 	function refBoxes(dom, yOf, xOf) {
@@ -1660,14 +1761,14 @@
 		if (!fillDrag || !fillDrag.prev) return "";
 		var p = fillDrag.prev, a = Math.max(p.r1, dom.r0), b = Math.min(p.r2, dom.r1), c0 = Math.max(p.c1, dom.c0), c1 = Math.min(p.c2, dom.c1);
 		if (a > b || c0 > c1) return "";
-		return boxDiv({ l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: (b - a + 1) * RH }, "xl-fillprev");
+		return boxDiv({ l: xOf(c0), t: yOf(a), w: colX[c1 + 1] - colX[c0], h: HD(a, b) }, "xl-fillprev");
 	}
 	function fillHandle(dom, xOf, yOf) {
 		if (!wb || editing || sel.mode === "all") return "";
 		var R = selRect();
 		if (R.r2 < dom.r0 || R.r2 > dom.r1 || R.c2 < dom.c0 || R.c2 > dom.c1 || R.c2 >= NC) return "";
 		var w = colX[R.c2 + 1] - colX[R.c2]; if (!w) return "";
-		return '<div class="xl-fh" data-fh="1" title="Drag to fill (double-click: fill down to the end of the data)" style="left:' + (xOf(R.c2) + w - 5) + "px;top:" + (yOf(R.r2) + RH - 5) + 'px"></div>';
+		return '<div class="xl-fh" data-fh="1" title="Drag to fill (double-click: fill down to the end of the data)" style="left:' + (xOf(R.c2) + w - 5) + "px;top:" + (yOf(R.r2) + rowH(R.r2) - 5) + 'px"></div>';
 	}
 	function withMl(L, ml) { return O ? O.mergeLook(L, ml) : L; }
 	function fmtState() { /* cell format toolbar: not built */ }
@@ -2298,7 +2399,7 @@
 	scroll.addEventListener("keydown", function (e) {
 		if (!wb || editing || !(e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey))) return;
 		e.preventDefault(); var g = grid.getBoundingClientRect(), I = scrollInfo();
-		cmOpen(g.left + HW + colX[sel.ac + 1] - (sel.ac < FC ? 0 : I.sl), g.top + CHH + FR + (sel.ar + 1) * RH - I.P, "cell");
+		cmOpen(g.left + HW + colX[sel.ac + 1] - (sel.ac < FC ? 0 : I.sl), g.top + CHH + FR + YD(sel.ar + 1) - I.P, "cell");
 	});
 
 	/* ---------- light / dark switch in the top bar (Fill window and full screen hide the page's own one) ---------- */
@@ -2312,7 +2413,7 @@
 	themeIcon();
 
 	/* ---------- fill window / full screen ---------- */
-	function addPanel() { if (window.MESPanel) window.MESPanel.add(app, { bar: $("xl-pv"), onChange: function () { layout(); render(); } }); }
+	function addPanel() { if (window.MESPanel) window.MESPanel.add(app, { bar: $("xl-pv"), noEsc: true, onChange: function () { layout(); render(); } }); }
 	if (window.MESPanel) addPanel(); else window.addEventListener("load", addPanel);
 
 	/* ---------- start ---------- */

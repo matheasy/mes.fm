@@ -195,7 +195,7 @@
     var on = p.sec.classList.contains('mes-pfill'), fs = fsEl() === p.sec;
     p.fill.setAttribute('aria-pressed', on && !fs ? 'true' : 'false');
     p.fill.textContent = L(p, on && !fs ? '✕ Close' : '⤢ Fill window');
-    p.fill.title = L(p, on && !fs ? 'Back to the page (Esc)' : 'Cover the browser window with this card (Esc closes)');
+    p.fill.title = p.opts.noEsc ? L(p, on && !fs ? 'Back to the page' : 'Cover the browser window with this card') : L(p, on && !fs ? 'Back to the page (Esc)' : 'Cover the browser window with this card (Esc closes)');
     if (p.fs && p.ios) { p.fs.hidden = on; return; }
     if (p.fs) { p.fs.setAttribute('aria-pressed', fs ? 'true' : 'false'); p.fs.textContent = L(p, fs ? '✕ Exit full screen' : resumeP === p ? '⛶ Back to full screen' : '⛶ Full screen'); p.fs.classList.toggle('mes-presume', resumeP === p && !fs); }
   }
@@ -210,7 +210,7 @@
     if (on) { try { p.sec.focus({ preventScroll: true }); } catch (e) {} }
   }
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && open && !fsEl()) { e.preventDefault(); var p = open; setFill(p, false); try { p.fill.focus({ preventScroll: true }); } catch (x) {} }
+    if (e.key === 'Escape' && open && !fsEl() && !open.opts.noEsc) { e.preventDefault(); var p = open; setFill(p, false); try { p.fill.focus({ preventScroll: true }); } catch (x) {} }
   });
   /* phones: locking the screen (or switching apps) ends full screen, and a page may only ask for it again after a tap. So the card
      stays covering the window, a "Back to full screen" pill shows, and the next tap anywhere puts it back on the whole screen. */
@@ -242,6 +242,9 @@
     if (el) resumeP = null;
     if (open && el !== open.sec) { var p = open; open = null; p.sec.classList.remove('mes-pfill'); document.documentElement.classList.remove('mes-pfill-on'); paint(p); changed(p); }
     if (el && el.__mesPanel) { var q = el.__mesPanel; q.sec.classList.add('mes-pfill'); open = q; paint(q); changed(q); }
+    // opts.noEsc (a page that uses Esc itself, e.g. a spreadsheet cancelling a cell edit): in real full screen ask the browser to give
+    // Esc to the page (Keyboard Lock, Chrome / Edge / Opera / Brave); leaving full screen is then a long press of Esc or the button
+    try { if (navigator.keyboard && navigator.keyboard.lock) { if (el && el.__mesPanel && el.__mesPanel.opts.noEsc) navigator.keyboard.lock(['Escape']).catch(function () {}); else if (!el) navigator.keyboard.unlock(); } } catch (x) {}
   }
   document.addEventListener('fullscreenchange', onFs); document.addEventListener('webkitfullscreenchange', onFs);
   function add(sec, opts) {
