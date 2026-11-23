@@ -285,8 +285,8 @@
             ul.insertBefore(n, after ? ref.nextSibling : ref);
         });
     }
-    /* "🤖 AI" (-> /ai, MES AI) promoted in every burger / side menu (2026-11-21): right after the menu's first item (Home, or a calculator
-       mini-site's own home), so it is the second item everywhere. Menus that already link /ai are left alone. data-mai makes main.js skip
+    /* "🤖 AI" (-> /ai, MES AI) in every burger / side menu: right below "Premium: No Ads" (2026-11-23, was the second item); a menu
+       without the Premium item gets it after its first item (Home, or a calculator mini-site's own home). Menus that already link /ai are left alone. data-mai makes main.js skip
        it when it counts the active tab; it is highlighted on /ai and its language pages (/ai-es ...). */
     function aiMenu() {
         var seen = [];
@@ -296,14 +296,15 @@
             var first = (ul.querySelector("a.navbar__link--first") || {}).parentNode;
             if (!first || first.parentNode !== ul) first = [].filter.call(ul.children, function (li) { return li.matches("li.navbar__item:not(.navbar__item--social)") && li.querySelector("a.navbar__link"); })[0];
             if (!first) return;
+            var prem = ul.querySelector("li[data-prem]"), at = prem && prem.parentNode === ul ? prem : first;
             var n = first.cloneNode(true); n.className = "navbar__item"; n.setAttribute("data-mai", "1");
             ["data-fav", "data-top", "data-prem", "data-mapps"].forEach(function (k) { n.removeAttribute(k); });
             var l = n.querySelector("a.navbar__link"); if (!l) return;
             l.className = "navbar__link"; l.setAttribute("href", "/ai"); ["target", "rel", "id", "title"].forEach(function (k) { l.removeAttribute(k); });
-            l.title = "MES AI: Claude, ChatGPT and Grok, pay per message";
+            l.title = "MES AI: free chat on your device, 10 free messages a day, or Claude / ChatGPT / Grok per message";
             l.textContent = "\ud83e\udd16 AI";
             if (/^\/ai(-[a-z]{2})?\/?$/.test(location.pathname)) { l.setAttribute("aria-current", "page"); l.classList.add("active-tab"); }
-            ul.insertBefore(n, first.nextSibling);
+            ul.insertBefore(n, at.nextSibling);
         });
     }
     function menuExtras() { favMenu(); appsMenu(); aiMenu(); }
