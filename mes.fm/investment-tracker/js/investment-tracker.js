@@ -20,7 +20,7 @@
 	I.CURRENCIES = ["USD", "CAD", "EUR", "GBP", "AUD", "NZD", "CHF", "JPY", "CNY", "HKD", "SGD", "INR", "KRW", "VND", "PHP", "IDR", "THB", "MYR", "MXN", "BRL", "ZAR", "SEK", "NOK", "DKK", "PLN", "TRY", "AED", "ILS"];
 	I.CHAINS = {
 		btc: { name: "Bitcoin", syms: [["BTC", "c:bitcoin", "Bitcoin"]], re: /^(bc1[02-9ac-hj-np-z]{11,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, ex: "bc1q…" },
-		eth: { name: "Ethereum, Base, Arbitrum, BNB Chain", short: "4 networks", noun: "Ethereum (0x…)", syms: [["ETH", "c:ethereum", "Ethereum"], ["BNB", "c:binancecoin", "BNB"]], re: /^0x[0-9a-fA-F]{40}$/, ex: "0x… (read on Ethereum, Base, Arbitrum and BNB Chain)" },
+		eth: { name: "Ethereum + 12 more networks (0x…)", short: "13 networks", noun: "Ethereum (0x…)", syms: [["ETH", "c:ethereum", "Ethereum"], ["BNB", "c:binancecoin", "BNB"], ["POL", "c:polygon-ecosystem-token", "Polygon"], ["AVAX", "c:avalanche-2", "Avalanche"], ["xDAI", "c:xdai", "xDAI"], ["MNT", "c:mantle", "Mantle"], ["S", "c:sonic-3", "Sonic"], ["CELO", "c:celo", "Celo"]], re: /^0x[0-9a-fA-F]{40}$/, ex: "0x… (read on Ethereum, Base, Arbitrum, BNB Chain, Polygon, Optimism, Avalanche and 6 more)" },
 		hive: { name: "Hive", syms: [["HIVE", "c:hive", "Hive"], ["HBD", "c:hive_dollar", "Hive Backed Dollar"]], re: /^[a-z][a-z0-9.-]{2,15}$/, ex: "your Hive username" },
 		xrp: { name: "XRP Ledger", syms: [["XRP", "c:ripple", "XRP"]], re: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/, ex: "r…" },
 		sol: { name: "Solana", syms: [["SOL", "c:solana", "Solana"]], re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, ex: "a Solana address" }
@@ -328,7 +328,9 @@
 		return x;
 	};
 	/* The networks an Ethereum (0x) address is read on: [id, name, native coin key, symbol] (order of the wallet card) */
-	I.EVM_NETS = [["eth", "Ethereum", "c:ethereum", "ETH"], ["base", "Base", "c:ethereum", "ETH"], ["arb", "Arbitrum", "c:ethereum", "ETH"], ["bnb", "BNB Chain", "c:binancecoin", "BNB"]];
+	I.EVM_NETS = [["eth", "Ethereum", "c:ethereum", "ETH"], ["base", "Base", "c:ethereum", "ETH"], ["arb", "Arbitrum", "c:ethereum", "ETH"], ["bnb", "BNB Chain", "c:binancecoin", "BNB"],
+		["pol", "Polygon", "c:polygon-ecosystem-token", "POL"], ["op", "Optimism", "c:ethereum", "ETH"], ["avax", "Avalanche", "c:avalanche-2", "AVAX"], ["linea", "Linea", "c:ethereum", "ETH"],
+		["scroll", "Scroll", "c:ethereum", "ETH"], ["gno", "Gnosis", "c:xdai", "xDAI"], ["mnt", "Mantle", "c:mantle", "MNT"], ["sonic", "Sonic", "c:sonic-3", "S"], ["celo", "Celo", "c:celo", "CELO"]];
 	I.walletOk = function (chain, addr) { var c = I.CHAINS[chain]; return !!(c && c.re.test(String(addr || "").trim())); };
 
 	/* ---------- clean / merge / backup ---------- */
@@ -785,7 +787,7 @@
 		if (S.wallets.some(function (w) { return w.chain === ch && w.addr === ad; })) { note.textContent = "That wallet is already in the list."; note.className = "iv-qnote is-err"; return; }
 		var w = { id: I.uid(), chain: ch, addr: ad, label: $("iv-wlabel").value.trim() };
 		S.wallets.push(w);
-		I.CHAINS[ch].syms.forEach(function (s) { ensureAsset({ k: s[1], sym: s[0], name: s[2], cur: "USD" }); });
+		(ch === "eth" ? I.CHAINS[ch].syms.slice(0, 1) : I.CHAINS[ch].syms).forEach(function (s) { ensureAsset({ k: s[1], sym: s[0], name: s[2], cur: "USD" }); });
 		save(); $("iv-waddr").value = ""; $("iv-wlabel").value = ""; note.textContent = "Reading the balance…"; note.className = "iv-qnote";
 		render();
 		refreshWallets(w.id).then(function () { var x = S.wallets.filter(function (y) { return y.id === w.id; })[0]; note.textContent = x && x._err ? "Couldn't read it: " + x._err : "✓ Added."; note.className = "iv-qnote " + (x && x._err ? "is-err" : "is-ok"); refreshPrices(true); });
@@ -829,7 +831,7 @@
 			});
 			if (b && b.n) {
 				var empty = I.EVM_NETS.filter(function (g) { return g[0] !== "eth" && b.n[g[0]] && !lines.match(new RegExp('iv-wnet">' + g[1] + "<")); }).map(function (g) { return g[1]; });
-				if (empty.length) lines += '<p class="iv-wnote">Nothing on ' + empty.join(", ") + "</p>";
+				if (empty.length) lines += '<p class="iv-wnote"' + (empty.length > 4 ? ' title="' + esc(empty.join(", ")) + '"' : "") + ">Nothing on " + (empty.length > 4 ? (empty.length === I.EVM_NETS.length - 1 ? "the other " : "") + empty.length + " other networks (" + esc(empty.slice(0, 3).join(", ")) + " …)" : esc(empty.join(", "))) + "</p>";
 				if (b.nerr && b.nerr.length) lines += '<p class="iv-wnote iv-down">Could not read ' + b.nerr.map(function (n) { return I.EVM_NETS.filter(function (g) { return g[0] === n; }).map(function (g) { return g[1]; })[0] || n; }).join(", ") + " this time</p>";
 			}
 			var hidden = { length: hiddenN };

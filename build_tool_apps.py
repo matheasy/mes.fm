@@ -429,7 +429,7 @@ APPS = {
                       tag="Stocks, funds, crypto and wallets in one place. Private, no sign-up.", accent="#15803d", dark="#166534", tint="#dcfce7",
                       desc="Free portfolio tracker for stocks, ETFs, mutual funds and crypto: add your trades or import a CSV from your broker or exchange, add Bitcoin, Ethereum, Hive, XRP and Solana wallet addresses, and see live value, gains and losses, dividends, realized gains by tax year (average cost or FIFO), value over time and allocation charts in any currency. No account: your portfolio stays in your browser.",
                       meta_desc="Free private portfolio tracker for stocks, ETFs and crypto: live prices, gains, dividends, tax-year realized gains, wallet balances, CSV import. No sign-up.",
-                      js_v="3", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
+                      js_v="4", pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3"]),
     "elections": dict(title="MES Elections", page_title="Elections Tracker: 2026 US Midterms, Canada and BC Results, Election Calendar",
                       tag="Results and market odds side by side, with every source. No spin.", accent="#0f6e6e", dark="#0a4f4f", tint="#dff3f2",
                       desc="Free, neutral elections tracker: the 2026 US midterms with every House, Senate and governor race priced by Polymarket and Kalshi, a build-your-own-outcome seat map, Canada's 2025 federal election and today's House of Commons, British Columbia's 2024 and 2026 elections with seats-versus-votes and majority tools, and a calendar of upcoming elections worldwide with sources.",

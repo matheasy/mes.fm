@@ -11,7 +11,7 @@
 //       n: {eth|base|arb|bnb: {key: qty}}, nerr: [networks that failed this time].
 //
 // Sources: Yahoo Finance chart / search (unofficial, may break), CoinGecko public API, open.er-api.com, mempool.space,
-// ethereum-rpc / base-rpc / arbitrum-one-rpc / bsc-rpc .publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
+// ethereum / base / arbitrum-one / bsc / polygon-bor / optimism / avalanche-c-chain / linea / scroll / gnosis / mantle / sonic / celo -rpc.publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
 // Each item is cached in Upstash (same vars as api/fav.js); without them it still works, just uncached.
 'use strict';
 const crypto = require('crypto');
@@ -161,7 +161,7 @@ const TOKENS = {
 };
 /* Other networks an Ethereum address also lives on. Each has a built-in token list (contract -> [symbol, decimals,
    CoinGecko id, name]; symbols and decimals read from each chain 2026-11-23) read with one batch call to publicnode,
-   so there is no spam to filter. Native coin: ETH on Base / Arbitrum, BNB on BNB Chain. */
+   so there is no spam to filter. Native coin: ETH on Base / Arbitrum / Optimism / Linea / Scroll, BNB, POL, AVAX, xDAI, MNT, S, CELO on the others. */
 const NETS = {
   base: { name: 'Base', rpc: 'https://base-rpc.publicnode.com', native: ['c:ethereum', 'ETH', 'Ethereum'], tokens: {
     '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': ['USDC', 6, 'usd-coin', 'USD Coin'],
@@ -217,6 +217,98 @@ const NETS = {
     '0xbf5140a22578168fd562dccf235e5d43a02ce9b1': ['UNI', 18, 'uniswap', 'Uniswap'],
     '0x4338665cbb7b2485a8855a139b75d5e34ab0db94': ['LTC', 18, 'litecoin', 'Litecoin'],
     '0x2859e4544c4bb03966803b044a93563bd2d0dd4d': ['SHIB', 18, 'shiba-inu', 'Shiba Inu']
+  } },
+  pol: { name: 'Polygon', rpc: 'https://polygon-bor-rpc.publicnode.com', native: ['c:polygon-ecosystem-token', 'POL', 'Polygon'], tokens: {
+    '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0x2791bca1f2de4661ed88a30c99a7a9449aa84174': ['USDC.e', 6, 'usd-coin', 'USD Coin'],
+    '0xc2132d05d31c914a87c6611c10748aeb04b58e8f': ['USDT', 6, 'tether', 'Tether'],
+    '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063': ['DAI', 18, 'dai', 'Dai'],
+    '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6': ['WBTC', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+    '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270': ['WPOL', 18, 'polygon-ecosystem-token', 'Wrapped POL'],
+    '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39': ['LINK', 18, 'chainlink', 'Chainlink'],
+    '0xd6df932a45c0f255f85145f286ea0b292b21c90b': ['AAVE', 18, 'aave', 'Aave'],
+    '0xb33eaad8d922b1083446dc23f610c2567fb5180f': ['UNI', 18, 'uniswap', 'Uniswap'],
+    '0xb5c064f955d8e7f38fe0460c556a72987494ee17': ['QUICK', 18, 'quickswap', 'QuickSwap'],
+    '0xbbba073c31bf03b8acf7c28ef0738decf3695683': ['SAND', 18, 'the-sandbox', 'The Sandbox'],
+    '0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4': ['MANA', 18, 'decentraland', 'Decentraland'],
+    '0x172370d5cd63279efa6d502dab29171933a610af': ['CRV', 18, 'curve-dao-token', 'Curve']
+  } },
+  op: { name: 'Optimism', rpc: 'https://optimism-rpc.publicnode.com', native: ['c:ethereum', 'ETH', 'Ethereum'], tokens: {
+    '0x0b2c639c533813f4aa9d7837caf62653d097ff85': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0x7f5c764cbc14f9669b88837ca1490cca17c31607': ['USDC.e', 6, 'usd-coin', 'USD Coin'],
+    '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58': ['USDT', 6, 'tether', 'Tether'],
+    '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1': ['DAI', 18, 'dai', 'Dai'],
+    '0x4200000000000000000000000000000000000006': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x4200000000000000000000000000000000000042': ['OP', 18, 'optimism', 'Optimism'],
+    '0x68f180fcce6836688e9084f035309e29bf0a2095': ['WBTC', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+    '0x1f32b1c2345538c0c6f582fcb022739c4a194ebb': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+    '0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6': ['LINK', 18, 'chainlink', 'Chainlink'],
+    '0x8700daec35af8ff88c16bdf0418774cb3d7599b4': ['SNX', 18, 'havven', 'Synthetix'],
+    '0x9560e827af36c94d2ac33a39bce1fe78631088db': ['VELO', 18, 'velodrome-finance', 'Velodrome'],
+    '0x6fd9d7ad17242c41f7131d257212c54a0e816691': ['UNI', 18, 'uniswap', 'Uniswap'],
+    '0x76fb31fb4af56892a25e32cfc43de717950c9278': ['AAVE', 18, 'aave', 'Aave']
+  } },
+  avax: { name: 'Avalanche', rpc: 'https://avalanche-c-chain-rpc.publicnode.com', native: ['c:avalanche-2', 'AVAX', 'Avalanche'], tokens: {
+    '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664': ['USDC.e', 6, 'usd-coin', 'USD Coin'],
+    '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7': ['USDT', 6, 'tether', 'Tether'],
+    '0xc7198437980c041c805a1edcba50c1ce5db95118': ['USDT.e', 6, 'tether', 'Tether'],
+    '0xd586e7f844cea2f87f50152665bcbc2c279d8d70': ['DAI.e', 18, 'dai', 'Dai'],
+    '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7': ['WAVAX', 18, 'avalanche-2', 'Wrapped AVAX'],
+    '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab': ['WETH.e', 18, 'weth', 'Wrapped Ether'],
+    '0x152b9d0fdc40c096757f570a51e494bd4b943e50': ['BTC.b', 8, 'bitcoin-avalanche-bridged-btc-b', 'Bitcoin (bridged)'],
+    '0x50b7545627a5162f82a992c33b87adc75187b218': ['WBTC.e', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+    '0x2b2c81e08f1af8835a78bb2a90ae924ace0ea4be': ['sAVAX', 18, 'benqi-liquid-staked-avax', 'Staked AVAX'],
+    '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd': ['JOE', 18, 'joe', 'JOE'],
+    '0x5947bb275c521040051d82396192181b413227a3': ['LINK.e', 18, 'chainlink', 'Chainlink'],
+    '0x63a72806098bd3d9520cc43356dd78afe5d386d9': ['AAVE.e', 18, 'aave', 'Aave'],
+    '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5': ['QI', 18, 'benqi', 'BENQI']
+  } },
+  linea: { name: 'Linea', rpc: 'https://linea-rpc.publicnode.com', native: ['c:ethereum', 'ETH', 'Ethereum'], tokens: {
+    '0x176211869ca2b568f2a7d4ee941e073a821ee1ff': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0xa219439258ca9da29e9cc4ce5596924745e12b93': ['USDT', 6, 'tether', 'Tether'],
+    '0x4af15ec2a0bd43db75dd04e62faa3b8ef36b00d5': ['DAI', 18, 'dai', 'Dai'],
+    '0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x3aab2285ddcddad8edf438c1bab47e1a9d05a9b4': ['WBTC', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+    '0xb5bedd42000b71fdde22d3ee8a79bd49a568fc8f': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+    '0x1789e0043623282d5dcc7f213d703c6d8bafbb04': ['LINEA', 18, 'linea', 'Linea']
+  } },
+  scroll: { name: 'Scroll', rpc: 'https://scroll-rpc.publicnode.com', native: ['c:ethereum', 'ETH', 'Ethereum'], tokens: {
+    '0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0xf55bec9cafdbe8730f096aa55dad6d22d44099df': ['USDT', 6, 'tether', 'Tether'],
+    '0xca77eb3fefe3725dc33bccb54edefc3d9f764f97': ['DAI', 18, 'dai', 'Dai'],
+    '0x5300000000000000000000000000000000000004': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x3c1bca5a656e69edcd0d4e36bebb3fcdaca60cf1': ['WBTC', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+    '0xf610a9dfb7c89644979b4a0f27063e9e7d7cda32': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+    '0xd29687c813d741e2f938f4ac377128810e217b1b': ['SCR', 18, 'scroll', 'Scroll']
+  } },
+  gno: { name: 'Gnosis', rpc: 'https://gnosis-rpc.publicnode.com', native: ['c:xdai', 'xDAI', 'xDAI'], tokens: {
+    '0xddafbb505ad214d7b80b1f830fccc89b60fb7a83': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0x4ecaba5870353805a9f068101a40e0f32ed605c6': ['USDT', 6, 'tether', 'Tether'],
+    '0xe91d153e0b41518a2ce8dd3d7944fa863463a97d': ['WXDAI', 18, 'xdai', 'Wrapped xDAI'],
+    '0xaf204776c7245bf4147c2612bf6e5972ee483701': ['sDAI', 18, 'savings-xdai', 'Savings xDAI'],
+    '0x6a023ccd1ff6f2045c3309768ead9e68f978f6e1': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x6c76971f98945ae98dd7d4dfca8711ebea946ea6': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+    '0x9c58bacc331c9aa871afd802db6379a98e80cedb': ['GNO', 18, 'gnosis', 'Gnosis']
+  } },
+  mnt: { name: 'Mantle', rpc: 'https://mantle-rpc.publicnode.com', native: ['c:mantle', 'MNT', 'Mantle'], tokens: {
+    '0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0x201eba5cc46d216ce6dc03f6a759e8e766e956ae': ['USDT', 6, 'tether', 'Tether'],
+    '0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8': ['WMNT', 18, 'mantle', 'Wrapped Mantle'],
+    '0xcda86a272531e8640cd7f1a92c01839911b90bb0': ['mETH', 18, 'mantle-staked-ether', 'Mantle Staked Ether']
+  } },
+  sonic: { name: 'Sonic', rpc: 'https://sonic-rpc.publicnode.com', native: ['c:sonic-3', 'S', 'Sonic'], tokens: {
+    '0x29219dd400f2bf60e5a23d13be72b486d4038894': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0x039e2fb66102314ce7b64ce5ce3e5183bc94ad38': ['wS', 18, 'sonic-3', 'Wrapped Sonic'],
+    '0x50c42deacd8fc9773493ed674b675be577f2634b': ['WETH', 18, 'weth', 'Wrapped Ether']
+  } },
+  celo: { name: 'Celo', rpc: 'https://celo-rpc.publicnode.com', native: ['c:celo', 'CELO', 'Celo'], tokens: {
+    '0xceba9300f2b948710d2653dd7b07f33a8b32118c': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e': ['USDT', 6, 'tether', 'Tether'],
+    '0x765de816845861e75a25fca122bb6898b8b1282a': ['USDm', 18, 'celo-dollar', 'Mento Dollar (cUSD)'],
+    '0xd8763cba276a3738e6de85b4b3bf5fded6d6ca73': ['EURm', 18, 'celo-euro', 'Mento Euro (cEUR)']
   } }
 };
 const SPAM = { vol: 250000, cap: 10e6, val: 1 };
@@ -254,6 +346,8 @@ function rpcBatch(addr, list) {
   return [{ jsonrpc: '2.0', id: 0, method: 'eth_getBalance', params: [addr, 'latest'] }]
     .concat(list.map((a, n) => ({ jsonrpc: '2.0', id: n + 1, method: 'eth_call', params: [{ to: a, data: '0x70a08231' + pad }, 'latest'] })));
 }
+// The holdings line of a coin uses one name on every network: USDC.e / USDbC / DAI.e / USDT0 -> USDC / USDC / DAI / USDT
+function plainSym(sym) { return sym === 'USDbC' ? 'USDC' : sym.replace(/\.e$/, ''); }
 // net: undefined = Ethereum (TOKENS), else a NETS key
 function parseEthRpc(j, list, net) {
   if (!Array.isArray(j)) throw new Error('no balance');
@@ -266,7 +360,7 @@ function parseEthRpc(j, list, net) {
     const r = by[n + 1], tk = tokens[a];
     if (!r || !r.result || r.result === '0x' || !tk) return;
     const q = units(r.result, tk[1]);
-    if (q) { const k = 'c:' + tk[2]; b[k] = (b[k] || 0) + q; t[k] = t[k] || [tk[0], tk[3]]; }
+    if (q) { const k = 'c:' + tk[2]; b[k] = (b[k] || 0) + q; t[k] = t[k] || (k === nat[0] ? [nat[1], nat[2]] : [plainSym(tk[0]), tk[3]]); }
   });
   if (!net && !b['c:ethereum']) b['c:ethereum'] = 0;
   return { b, t, hid: 0 };
@@ -285,7 +379,7 @@ async function ethNet(addr, net) {
   const list = Object.keys(NETS[net].tokens);
   return parseEthRpc(await getJSON(NETS[net].rpc, { body: JSON.stringify(rpcBatch(addr, list)) }), list, net);
 }
-// One address, four networks. b = everything added up (what the holdings use); n = per network, for the wallet card;
+// One address, every EVM network in NETS (+ Ethereum). b = everything added up (what the holdings use); n = per network, for the wallet card;
 // nerr = networks that could not be read this time (the rest still count).
 async function ethWallet(addr) {
   const nets = ['eth'].concat(Object.keys(NETS));
@@ -443,7 +537,7 @@ module.exports = async function handler(req, res) {
     return send(502, { error: String(e && e.message || e).slice(0, 200) });
   }
 };
-module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, units, TOKENS, NETS, ethWallet };
+module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, plainSym, units, TOKENS, NETS, ethWallet };
 
 if (require.main === module) {
   // node mes.fm/api/invest.js  -> quick live check of every source

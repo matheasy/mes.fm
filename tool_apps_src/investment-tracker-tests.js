@@ -135,11 +135,14 @@ const wq = I.walletQty(ws, { w1: { b: { "c:ethereum": 1, "c:usd-coin": 50, "e:0x
 ok(wq["c:ethereum"] === 1 && !wq["c:usd-coin"] && wq["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"] === 3, "hidden token not counted");
 
 /* other networks */
-ok(["base", "arb", "bnb"].every((n) => Object.keys(T.NETS[n].tokens).length >= 10 && Object.keys(T.NETS[n].tokens).every((a) => /^0x[0-9a-f]{40}$/.test(a) && T.cgId(T.NETS[n].tokens[a][2]))), "network token tables well formed");
+ok(Object.keys(T.NETS).every((n) => Object.keys(T.NETS[n].tokens).length >= 3 && /^https:\/\/[a-z0-9-]+-rpc\.publicnode\.com$/.test(T.NETS[n].rpc) && T.cgId(T.NETS[n].native[0].slice(2)) && Object.keys(T.NETS[n].tokens).every((a) => /^0x[0-9a-f]{40}$/.test(a) && T.cgId(T.NETS[n].tokens[a][2]))), "network token tables well formed");
+const pl = Object.keys(T.NETS.pol.tokens);
+{ const r = T.parseEthRpc([{ id: 0, result: "0xde0b6b3a7640000" }].concat(pl.map((a, i) => ({ id: i + 1, result: a === "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359" ? "0x" + (2500000).toString(16).padStart(64, "0") : "0x0" }))), pl, "pol");
+  ok(r.b["c:polygon-ecosystem-token"] === 1 && r.b["c:usd-coin"] === 2.5 && !r.b["c:ethereum"], "polygon: POL native + USDC"); }
 const bl = Object.keys(T.NETS.bnb.tokens), usdtB = "0x55d398326f99059ff775485246999027b3197955";
 const rb = T.parseEthRpc([{ id: 0, result: "0x1bc16d674ec80000" }].concat(bl.map((a, i) => ({ id: i + 1, result: a === usdtB ? "0x" + (10n ** 19n).toString(16).padStart(64, "0") : "0x0" }))), bl, "bnb");
 near(rb.b["c:binancecoin"], 2, "bnb native is BNB"); near(rb.b["c:tether"], 10, "bnb usdt 18 decimals"); ok(!rb.b["c:ethereum"], "bnb has no eth key");
-ok(I.EVM_NETS.length === 4 && I.walletOk("eth", "0xF977814e90dA44bFA03b6295A0616a897441aceC"), "evm networks");
+ok(I.EVM_NETS.length === 1 + Object.keys(T.NETS).length && I.EVM_NETS.slice(1).every((g) => T.NETS[g[0]] && T.NETS[g[0]].native[0] === g[2]) && I.walletOk("eth", "0xF977814e90dA44bFA03b6295A0616a897441aceC"), "evm networks");
 
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);
