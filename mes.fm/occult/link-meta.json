@@ -1,4 +1,22 @@
 {
+  "https://mes.fm/33-countries-supplies": {
+    "image": "https://mes.fm/33-countries-supplies/img/33-countries-stockpile-supplies.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive",
+        "href": "https://peakd.com/hive-124838/@mestruth/re-peaksnaps-toxvsp"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35725"
+      },
+      {
+        "label": "Article (archived)",
+        "href": "https://archive.is/IOTAy"
+      }
+    ]
+  },
   "https://mes.fm/one-armed-twin": {
     "image": "https://images.hive.blog/DQmTF9X8cxE21iu3rgrFQc9ZYctSoXgEDxt2GyNnR5guvEr/image",
     "watchLinks": [

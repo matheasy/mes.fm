@@ -2,7 +2,7 @@
 //
 // mes.fm/occult is a small tile hub: Video Series, Videos and a tile-only Occult Livestreams tile (-> /livestreams#occult), plus the "Important Links" list (the MES Occult
 // YouTube playlist). Content lives in sections.mjs (hand-maintained, newest first). Like free-energy these pages KEEP AdSense.
-// Pages written (see PAGES): the hub mes.fm/occult/index.html plus mes.fm/occult-series/index.html and mes.fm/occult-videos/index.html. Never hand-edit those generated files.
+// Pages written (see PAGES): the hub mes.fm/occult/index.html plus mes.fm/occult-series, occult-posts and occult-videos (index.html each). Never hand-edit those generated files.
 //
 // Tile artwork: mes.fm/img/<slug>-icon.jpg (900x600): occult-series = newest series video (Trump birthday coincidences), occult-videos = newest video (One-Armed Twin),
 // occult-livestreams = newest video in the livestreams "Occult" filter (Trailer for MES Livestream 134). Replace the files (same names) any time, no rebuild needed.
@@ -49,6 +49,15 @@ const PAGES = [
     title: "MES Occult Videos",
     description:
       "MES occult videos, newest first: occult connections of the one-armed twin in Star Wars, 9/11 and The Matrix by Brain Graft, with links to the MES Occult video series and livestreams.",
+  },
+  {
+    slug: "occult-posts",
+    sectionId: "occult-posts",
+    tileLabel: "Posts",
+    iconVersion: 2, // icon = img/occult-posts-icon.jpg, remade from the newest post by syncPostsTile() (set_posts_tile.py --auto, version in img/posts-tiles.json)
+    title: "MES Occult Posts",
+    description:
+      "MES occult posts, newest first: Hive and Telegram posts on numbers, symbols and strange coincidences in the news, like 33 countries telling citizens to stockpile emergency supplies.",
   },
   {
     // Tile only: no page is written. Links to the "Occult" chip of mes.fm/livestreams; icon = img/occult-livestreams-icon.jpg (Trailer for MES Livestream 134, the newest video in that filter).
@@ -1641,6 +1650,7 @@ ${hasLinkPref ? LP_CSS : ""}</style>
         <li class="info-bar__item"><a target="_self" class="info-bar__item__text" href='/occult'>Occult</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/occult-series'>Series</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/occult-videos'>Videos</a></li>
+        <li class="info-bar__item"><a class="info-bar__item__text" href='/occult-posts'>Posts</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/conspiracy'>Conspiracy</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/911'>9/11 Truth</a></li>
         <li class="info-bar__item"><a class="info-bar__item__text" href='/calculators'>Calculators</a></li>
@@ -1691,7 +1701,7 @@ ${sectionsHtml}
             <li class="social__logo social__patreon"><a class="social__link" href="https://www.patreon.com/matheasysolutions" target="_blank"></a></li>
           </ul></div></li>
           <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/">Home</a></li>
-          <li class="navbar__item"><a target="_self" class="navbar__link" href="/occult">MES Occult Video Series</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-series">Series</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-videos">Videos</a></li>
+          <li class="navbar__item"><a target="_self" class="navbar__link" href="/occult">MES Occult Video Series</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-series">Series</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-videos">Videos</a></li><li class="navbar__item"><a class="navbar__link" href="/occult-posts">Posts</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="/conspiracy">Conspiracy</a></li>
           <li class="navbar__item"><a target="_self" class="navbar__link" href="https://mes.fm/math">Math Tutorials</a></li>
           <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
@@ -2025,9 +2035,33 @@ var MES_Vars = {
 `;
 }
 
+function syncPostsTile(meta) {
+  const page = PAGES.find((p) => p.slug === "occult-posts");
+  const newest = (SECTIONS.find((s) => s.id === page.sectionId)?.items || []).find((i) => !i.standalone);
+  if (!newest) return;
+  const key = newest.href || (newest.links && newest.links[0] && newest.links[0][1]);
+  if (!key) return;
+  const args = [join(__dirname, "..", "..", "set_posts_tile.py"), "--auto", "--hubs", "occult", "--key", key, "--apply"];
+  const slug = (key.match(/^https:\/\/mes\.fm\/([\w-]+)\/?$/) || [])[1];
+  const image = newest.image || (meta[key] && meta[key].image);
+  if (slug && existsSync(join(__dirname, "..", slug, "index.html"))) args.push("--slug", slug);
+  else if (image) args.push("--image", image);
+  else return;
+  try {
+    execFileSync("python3", args, { stdio: "inherit" });
+  } catch (err) {
+    console.warn(`Posts tile not refreshed: ${err.message}`);
+  }
+  try {
+    const v = JSON.parse(readFileSync(join(__dirname, "..", "img", "posts-tiles.json"), "utf8"))[page.slug]?.v;
+    if (v > (page.iconVersion || 0)) page.iconVersion = v;
+  } catch {}
+}
+
 async function main() {
   console.log(`Resolving link metadata for ${SECTIONS.flatMap((s) => s.items).filter((i) => !i.links && !i.standalone).length} scraped items ...`);
   const meta = await resolveAllMeta(SECTIONS);
+  syncPostsTile(meta);
 
   const pages = [{ hub: true, slug: "occult", outDir: __dirname }].concat(
     PAGES.filter((p) => !p.tileOnly).map((p) => ({ ...p, outDir: join(__dirname, "..", p.slug) }))
