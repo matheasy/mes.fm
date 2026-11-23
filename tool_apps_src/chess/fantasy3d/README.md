@@ -27,5 +27,6 @@ The "Splinterlands 3D" set loads `mes.fm/chess/img/splinterlands3d/<key>.glb`, m
 (a fresh venv with gradio_client + trimesh is enough). Any piece without a model shows its picture figure.
 - Done 2026-11-21: the whole Life army wK wQ wR wB wN wP (Tyrus Paladium, Angel of Light, Clay Golem, Divine Healer, Sacred Unicorn,
   Silver Shield Warrior). The free ZeroGPU quota ran out after six runs.
-- Still to make: the Death army bK bQ bR bB bN bP (Zintar Mortalis, Dark Enchantress, Bone Golem, Undead Priest, Corrupted Pegasus,
-  Skeletal Warrior). Check each new model for a flat backing sheet (clean_sheets.py).
+- Done 2026-11-22: the whole Death army bK bQ bR bB bN bP (Zintar Mortalis, Dark Enchantress, Bone Golem, Undead Priest,
+  Corrupted Pegasus, Skeletal Warrior). All six are real 3D (depth 0.34-0.99) and clean_sheets.py found no backing sheet, so
+  both armies are complete. clean_sheets.py needs scipy + networkx in the venv as well.

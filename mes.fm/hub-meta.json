@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-21",
+"generated":"2026-11-22",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -173,7 +173,7 @@
 },
 "/chess":{
 "added":"2026-11-12",
-"updated":"2026-11-21",
+"updated":"2026-11-22",
 "type":"Game"
 },
 "/click-test":{
