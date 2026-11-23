@@ -1291,7 +1291,7 @@
 
 	/* ---------- the "You pay per message" box can be hidden (mes-ai:payhide = "1"); "About paying" by the tabs brings it back ---------- */
 	(function () {
-		var K = "mes-ai:payhide";
+		var K = "mes-ai:payhide2";  // new key 2026-11-22: the box now shows the free ways too, so it comes back once for people who hid the old one
 		function paint(h) { $("ai-pay").hidden = h; $("ai-payshow").hidden = !h; }
 		paint((function () { try { return localStorage.getItem(K) === "1"; } catch (e) { return false; } })());
 		$("ai-payhide").addEventListener("click", function () { try { localStorage.setItem(K, "1"); } catch (e) {} paint(true); $("ai-payshow").focus(); });
@@ -2151,6 +2151,16 @@
 		}
 	});
 	$("ai-stop").addEventListener("click", function () { if (window.AILocal) window.AILocal.stop(); });
+	// the three ways at the top: pick that kind of model and go to the chat box
+	$("ai-pay").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-way]"); if (!b) return;
+		var w = b.dataset.way, want = w === "local" ? "local1b" : w === "free" ? "qwen" : (A.isLocal(S.model) || A.MODELS[S.model].free ? A.DEFAULT_MODEL : S.model);
+		if (w === "local" && A.isLocal(S.model)) want = S.model;
+		if (S.tab !== "chat" && $("ai-tab-chat")) $("ai-tab-chat").click();
+		var sel = $("ai-model"); sel.value = want; sel.dispatchEvent(new Event("change"));
+		if (w === "free" && !who()) { $("ai-acct-card").scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+		$("ai-in").scrollIntoView({ block: "center", behavior: "smooth" }); $("ai-in").focus({ preventScroll: true });
+	});
 	function sendLocal() {
 		if (busy) return;
 		if (!window.AILocal) { msg(T("Not available on this device."), "err"); return; }

@@ -4,8 +4,14 @@
 		<div class="tu-card ai-off" id="ai-off" hidden></div>
 
 		<div class="tu-card ai-pay" id="ai-pay">
-			<button type="button" class="ai-payhide" id="ai-payhide" title="{{tr:Hide this box (the About paying link brings it back)}}">{{tr:Hide}} <span aria-hidden="true">✕</span></button>
-			<h2 class="ai-h2">{{tr:You pay per message, in HBD}}</h2>
+			<button type="button" class="ai-payhide" id="ai-payhide" title="{{tr:Hide this box (the Free &amp; paid link brings it back)}}">{{tr:Hide}} <span aria-hidden="true">✕</span></button>
+			<h2 class="ai-h2">{{tr:Three ways to use MES AI: two are free}}</h2>
+			<ul class="ai-ways">
+				<li><span class="ai-wayic" aria-hidden="true">🖥️</span><div><b>{{tr:Free on this device}}</b> {{tr:Small AI models run inside your browser on your own computer. No account, no payment, and nothing you type leaves your device. Weaker than the big models, but fine for quick questions.}}</div><button type="button" class="ai-mini ai-wayb" data-way="local">{{tr:Try it}}</button></li>
+				<li><span class="ai-wayic" aria-hidden="true">🎁</span><div><b>{{tr:<span data-freeday>10</span> free messages a day}}</b> {{tr:Log in with your Hive account to use the cheap models (DeepSeek, Qwen, Llama) for free every day, with short answers.}}</div><button type="button" class="ai-mini ai-wayb" data-way="free">{{tr:Use them}}</button></li>
+				<li><span class="ai-wayic" aria-hidden="true">💳</span><div><b>{{tr:Top models, pay per message}}</b> {{tr:Claude, ChatGPT, GPT Image and Grok for hard work, pictures and videos. Pay a few cents of HBD per message, nothing more.}}</div><button type="button" class="ai-mini ai-wayb" data-way="paid">{{tr:Pick one}}</button></li>
+			</ul>
+			<h3 class="ai-h3">{{tr:How paying works}}</h3>
 			<p>{{tr:No subscription, no account, no card. Each message shows its price before you send it. You pay that price in <b>HBD</b> (Hive's dollar coin) to <a href="https://peakd.com/@mes/wallet" target="_blank" rel="noopener">@mes</a> with Hive Keychain, the answer comes straight back, and that is the whole deal. <b>The price is what the AI company charges us × <span data-margin>1.5</span></b> (counting the payment fees and the 12% sales tax we pay on that use): the extra half (50% on top of the real cost) keeps mes.fm and its free tools running.}}</p>
 			<details class="ai-why">
 				<summary>{{tr:How the price is worked out}}</summary>
@@ -33,7 +39,7 @@
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">{{tr:🖼️ Picture}}</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">{{tr:🎬 Video}}</button>
 			<span class="ai-whochip" id="ai-whochip" hidden></span>
-			<button type="button" class="ai-payshow" id="ai-payshow" hidden>{{tr:ⓘ About paying}}</button>
+			<button type="button" class="ai-payshow" id="ai-payshow" hidden>{{tr:ⓘ Free &amp; paid}}</button>
 		</div>
 
 		<section class="tu-card ai-chat" id="ai-chat" role="tabpanel" aria-labelledby="ai-tab-chat">

@@ -427,3 +427,11 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
 #ai .ai-local .ai-lfine { font-size: .85em; }
 @media (max-width: 640px) { #ai .ai-inrow .ai-stop { min-width: 0; } }
 #ai .ai-attach:disabled { opacity: .45; cursor: not-allowed; }
+/* 2026-11-22: the three ways (free on this device, free daily messages, pay per message) at the top */
+#ai .ai-ways { list-style: none; margin: .2em 0 .8em; padding: 0; display: grid; gap: .45em; }
+#ai .ai-ways li { display: flex; gap: .6em; align-items: center; padding: .5em .7em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); }
+#ai .ai-ways li > div { flex: 1 1 auto; min-width: 0; }
+#ai .ai-wayic { font-size: 1.4em; flex: 0 0 auto; }
+#ai .ai-wayb { flex: 0 0 auto; white-space: nowrap; font-size: .9em; }
+#ai .ai-h3 { margin: .2em 0 .3em; font-size: 1.05em; }
+@media (max-width: 560px) { #ai .ai-ways li { flex-wrap: wrap; } #ai .ai-wayb { margin-left: 2.2em; } }

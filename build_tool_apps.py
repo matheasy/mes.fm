@@ -248,11 +248,11 @@ APPS = {
     # MES AI (2026-11-18, mes.fm/ai; the AI Trading wallet app moved to /ai-trading): Claude / ChatGPT chat, GPT Image / Grok pictures, Grok videos, paid per message in HBD.
     # Shared rules + prices tool_apps_src/ai/lib.js (= MESAI; byte-identical copy at mes.fm/api/_ai-lib.js), server mes.fm/api/ai.js,
     # tests tool_apps_src/ai-tests.js. On localhost / ?mock=1 the page runs on an in-browser stand-in.
-    "ai": dict(title="MES AI", page_title="MES AI: Chat with Top AI Models, Pay per Message in HBD",
-               tag="Top AI models for coding, research, writing and pictures. Pay per message, no plan.", accent="#4f46e5", dark="#3730a3", tint="#ecebfd",
-               desc="Use top AI models without a subscription: Claude (Sonnet 5.5, Opus 5.5) or ChatGPT (GPT-6.2) for coding, research, math and writing, GPT Image 2 or Grok Imagine for pictures, and Grok Imagine for videos. See the exact price of each message first, pay it in HBD on Hive with Keychain, and get the answer straight away. Chats stay in your browser.",
-               meta_desc="AI chat, pictures and videos paid per message in HBD on Hive: Claude or ChatGPT for coding, research and writing, GPT Image or Grok for pictures. No plan, no sign-up.",
-               js_v="17", js_parts=["rich.js", "local.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
+    "ai": dict(title="MES AI", page_title="MES AI: Free AI Chat or Top Models, Pay per Message in HBD",
+               tag="Free AI on your own computer, 10 free messages a day with Hive, or top AI models paid per message.", accent="#4f46e5", dark="#3730a3", tint="#ecebfd",
+               desc="Chat with AI for free: small models run privately in your browser with no account, and every Hive account gets 10 free messages a day. For harder work use Claude, ChatGPT, GPT Image 2 or Grok Imagine and pay per message in HBD, with the exact price shown first. No plan, no sign-up; chats stay in your browser.",
+               meta_desc="Free AI chat that runs privately in your browser, 10 free messages a day with Hive, or Claude, ChatGPT and Grok paid per message in HBD. No plan, no sign-up.",
+               js_v="18", js_parts=["rich.js", "local.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
     "email": dict(title="MES Mail", page_title="MES Mail: Quantum-Safe Encrypted Email for Hive",
                   tag="Private, end-to-end encrypted mail between Hive accounts.", accent="#3b4cca", dark="#2c3a9e", tint="#e6e9fb",
                   desc="Free encrypted email for Hive: send end-to-end encrypted messages to any Hive account, stored on the blockchain and readable only by the people you write to. Quantum-safe (ML-KEM-768 + X25519 and AES-256), threads and replies, Sent folder, classic memo reader. No server, no sign-up.",
