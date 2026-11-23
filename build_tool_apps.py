@@ -830,7 +830,7 @@ APPS = {
                          tag="Cut, clean and export audio. No upload. No sign-up.", accent="#0369a1", dark="#075985", tint="#e0f2fe",
                          desc="Free online audio editor with AI noise removal: open audio or the sound of a video, remove background noise, hum and clicks, cut, fade and arrange tracks, set the loudness to -14 or -16 LUFS and export WAV, MP3 or M4A. Runs in your browser: nothing is uploaded.",
                          meta_desc="Free online audio editor with AI noise removal. Cut, fade, clean up voice, set LUFS loudness and export WAV, MP3 or M4A. Runs in your browser, nothing uploaded.",
-                         js_v="10", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
+                         js_v="11", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/denoise.js?v=2"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js"]),
     # Bulk Image Converter: PNG / JPEG / WebP in bulk in the browser (canvas), optional resize, ZIP download. lib.js = MESImg (formats, sizes, names, ZIP writer; node-tested: tool_apps_src/image-converter-tests.js), shared with the photo editor.
     "image-converter": dict(title="MES Bulk Image Converter", page_title="Bulk Image Converter: PNG to JPG, JPG to PNG, WebP",
                          tag="Convert many images at once. Nothing is uploaded.", accent="#0f766e", dark="#0b5a54", tint="#e2f3f1",
@@ -1869,6 +1869,52 @@ def _ai_pages():
 
 
 _ai_pages()
+
+
+# ---------- MES Audio Editor in other languages (2026-11-22; India is most of the /audio traffic) ----------
+# Same scheme as Market Signals / MES AI: one page script (audio/js/audio.js); every UI string goes through T(english) in app.js, translations are
+# tool_apps_src/audio/i18n/<code>.json ({meta, s: {English: translation}}; key list = i18n/en.json from `node tool_apps_src/audio/i18n/extract.js`,
+# `... --check -v` lists what is missing). The build writes mes.fm/audio/js/i18n-<code>.js (window.AU_I18N) and fills {{tr:...}};
+# the explanation / FAQ is seo/<code>.html. Urdu is right-to-left inside the page text only (the timeline and the site shell stay LTR).
+# A missing language file is simply not built.
+AU_LANG_SLUGS = {"hi": "audio-editor-hindi", "bn": "audio-editor-bangla", "ta": "audio-editor-tamil", "te": "audio-editor-telugu", "mr": "audio-editor-marathi",
+                 "ur": "audio-editor-urdu", "es": "editor-de-audio", "pt-BR": "editor-de-audio-pt", "id": "editor-audio"}
+
+
+def _audio_pages():
+    import hashlib
+    d = SRC / "audio" / "i18n"
+    packs = {c: json.loads((d / (c + ".json")).read_text(encoding="utf-8")) for c in AU_LANG_SLUGS if (d / (c + ".json")).exists()}
+    codes = ["en"] + [c for c in AU_LANG_SLUGS if c in packs]
+    path = lambda c: "/audio" if c == "en" else "/" + AU_LANG_SLUGS[c]
+    name = lambda c: "English" if c == "en" else packs[c]["meta"]["name"]
+    hreflang = "".join('<link rel="alternate" hreflang="%s" href="https://mes.fm%s" />' % (c, path(c)) for c in codes) + '<link rel="alternate" hreflang="x-default" href="https://mes.fm/audio" />'
+
+    def switcher(code):
+        if len(codes) < 2:
+            return ""
+        label = "Language" if code == "en" else packs[code]["meta"]["lang_label"]
+        items = "".join('<li><a href="%s" hreflang="%s" lang="%s"%s>%s</a></li>' % (path(c), c, c, ' aria-current="page"' if c == code else "", name(c)) for c in codes)
+        return '\t\t<nav class="au-lang" aria-label="%s"><details><summary>&#127760; %s</summary><ul>%s</ul></details></nav>' % (label, name(code), items)
+    base = APPS["audio"]
+    base.update(head_extra=hreflang if len(codes) > 1 else "", vars={"SEO": "@seo/en.html", "LANGSW": switcher("en"), "AUATTR": ""})
+    out = SITE / "audio" / "js"
+    for code, P in packs.items():
+        m = P["meta"]
+        js = "window.AU_I18N = " + json.dumps({"code": code, "name": m["name"], "locale": m["locale"], "dir": m["dir"], "s": P["s"]}, ensure_ascii=False, separators=(",", ":")) + ";\n"
+        v = hashlib.md5(js.encode("utf-8")).hexdigest()[:8]
+        if "--apply" in sys.argv:
+            out.mkdir(parents=True, exist_ok=True)
+            f = out / ("i18n-%s.js" % code)
+            if not f.exists() or f.read_text(encoding="utf-8") != js:
+                f.write_text(js, encoding="utf-8")
+        APPS[AU_LANG_SLUGS[code]] = dict(base, title=m["title"], page_title=m["page_title"], tag=m["tag"], desc=m["desc"], meta_desc=m["meta_desc"], src="audio", js_path="audio/js/audio.js",
+                                         logo_from="audio", lang=code, og_locale=m["og_locale"], doc_title=m["doc_title"], tr=P["s"], rtl=m["dir"] == "rtl",
+                                         pre_js=["/audio/js/i18n-%s.js?v=%s" % (code, v)] + base.get("pre_js", []), head_extra=hreflang,
+                                         vars={"SEO": "@seo/%s.html" % code, "LANGSW": switcher(code), "AUATTR": ' lang="%s"%s' % (code, ' dir="rtl"' if m["dir"] == "rtl" else "")})
+
+
+_audio_pages()
 LEGACY_SEL = re.compile(r"\.outer-container|\.outer-page-content|\.side-bar|\.page-box|^img$|^table$")
 
 

@@ -1,0 +1,1183 @@
+<!DOCTYPE html>    <html lang="ur">
+<!-- MES آڈیو ایڈیٹر -- mes.fm/audio-editor-urdu -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>                    <link rel="icon" href="/audio/img/logo.png?v=2" type="image/png" /><link rel="canonical" href="https://mes.fm/audio-editor-urdu" />                    <title>آڈیو سے شور ہٹائیں: مفت آن لائن آڈیو ایڈیٹر | MES</title><link rel="alternate" hreflang="en" href="https://mes.fm/audio" /><link rel="alternate" hreflang="hi" href="https://mes.fm/audio-editor-hindi" /><link rel="alternate" hreflang="bn" href="https://mes.fm/audio-editor-bangla" /><link rel="alternate" hreflang="ta" href="https://mes.fm/audio-editor-tamil" /><link rel="alternate" hreflang="te" href="https://mes.fm/audio-editor-telugu" /><link rel="alternate" hreflang="mr" href="https://mes.fm/audio-editor-marathi" /><link rel="alternate" hreflang="ur" href="https://mes.fm/audio-editor-urdu" /><link rel="alternate" hreflang="es" href="https://mes.fm/editor-de-audio" /><link rel="alternate" hreflang="pt-BR" href="https://mes.fm/editor-de-audio-pt" /><link rel="alternate" hreflang="id" href="https://mes.fm/editor-audio" /><link rel="alternate" hreflang="x-default" href="https://mes.fm/audio" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <style>html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, sub, tt, var, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;color:#333333;}
+sup {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:super;color:black;}
+b {margin:0;padding:0;border:0;font-size:100%;font-family:Helvetica,Arial,Optima,Sans Pro;vertical-align:baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display:block;}
+body {background-color:#e2e2e2;line-height:1;}
+ol, ul {list-style:none;}
+blockquote, q {quotes:none;}
+blockquote:before, blockquote:after,
+q:before, q:after {content:'';content:none;}
+table {border-collapse:collapse;border-spacing:0;}
+a {text-decoration:none;}
+sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:center;padding:0.5em;background-color:#0369a1;color:white;}
+        .button {color:#0369a1;border:0.125em solid#0369a1;margin:0.7em 0;padding:0.5em 0.2em;text-align:center;-moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none; cursor:pointer;}
+        .button--subscribe {line-height:1.2;}
+        .button--share-calc {display: inline-block;padding-left: 1em;padding-right: 1em;margin-top: 0.5em;margin-bottom: 0.5em;}
+        .italic {font-style:italic;}
+        .bold {font-weight:700;}
+        .list {list-style-type:disc;}
+        .list__indent {line-height:1.2;margin-left:2em;margin-top:0.4em;margin-bottom:0.2em;font-size: 0.95em;}
+        .time {font-style:italic;font-weight:100;color:#939393;}
+        .small-text {font-size:0.9em;}
+        .big-text {font-size:1.1em;}
+        .link {color:#0369a1; font-weight:700;}
+        .link--dark {color: blue; font-weight: 700;}
+        .link--dark:hover {text-decoration: underline;}
+        .basic-table {margin:1em auto;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.5em 1em; text-align: center;}
+        .basic-table th {background-color: #ededed}
+        .basic-table--full {width:100%;}
+        .sponsored-ad {text-align:right;display:block;font-size:0.7em;margin-bottom:0.3em;font-style:italic;}
+        .box-border {border:0.1em solid#0369a1; padding:1em;margin-bottom: 1.2em;}
+        .selected {background-color:#0369a1;color:white;}
+        .right-arrow {font-size:2em;vertical-align:middle;margin:0 0.2em;display:inline-block;color:#0369a1;}
+        .share-calc-url {border: 2px solid black;font-size:0.9em;display:inline-block;width:15.5em;padding:0.45em 0.8em;font-weight:700;vertical-align:middle;color:#0369a1;background-color:#fdc010;}
+        .share-calc-url-container {margin-bottom: 0.5em;display: inline-block;}
+        .scissors-icon {vertical-align:middle;cursor: pointer;}
+        .hide {display:none;}
+        .crypto-container {background-color: #257bb6; padding: 10px; border-radius: 5px;}
+        .crypto-text {color: white; line-height: 1.4; padding: 5px;}.header2 {font-size:1.1em; margin-top:1.3em;margin-bottom:0.5em;}
+.header3 {font-size:1.0em; margin-top:1.0em;margin-bottom:0.3em;}
+.sentence {margin-top:0.5em; margin-bottom:0.5em;line-height:1.5}
+.sentence--indent {margin-left:1.5em;}
+
+.shadow {box-shadow:0.2em 0.2em 0.5em #999999;}
+.link:hover {color:#075985;text-decoration:underline; cursor:pointer;}
+
+.outer-container {width:68.25em;margin:0 auto;}
+.inner-container {padding:1em 2em 1em 2em;overflow:hidden;background-color:white;box-shadow:0 0 1em #BBBBBB;}
+.header {position:relative;margin-bottom: 0.7em;}
+.logo-image-container {display:table-cell;}
+.logo {display:block;}
+.logo-text-container {display:table-cell;vertical-align:middle;padding-left:1.5em;}
+.calculator-title-link {display: block;}
+.calculator-title {margin-bottom:0.3em;font-size:1.8em;}
+.tag-line {font-size:1.2em;}
+
+.social-container {position:absolute;right:0;top:0;}
+.social-container--bottom {position:absolute;right:0;bottom:0;}
+.social {display: table-cell;}
+.social__text {display:table-cell;font-size:1.2em;vertical-align:middle;padding-right:0.6em;font-style:italic;color:#0369a1;}.social__logo {float:left;}
+.social__logo:not(:last-child) {margin-right:0.5em;}
+.social__link {height:2em;width:2em;display:block;}
+.social__fb {background: url(https://mes.fm/main_img/social-sprites.png) 0 0;}
+.social__gplus {background: url(https://mes.fm/main_img/social-sprites.png) -2em 0;}
+.social__insta {background: url(https://mes.fm/main_img/social-sprites.png) -4em 0;}
+.social__pin {background: url(https://mes.fm/main_img/social-sprites.png) -6em 0;}
+.social__twitter {background: url(https://mes.fm/main_img/social-sprites.png) -8em 0;}
+.social__yt {background: url(https://mes.fm/main_img/social-sprites.png) -10em 0;}
+.social__patreon {background: url(https://mes.fm/main_img/social-sprites.png) -12em 0;}
+.social__steemit {background: url(https://mes.fm/main_img/social-sprites.png) -14em 0;}
+.social__hive {background: url(https://mes.fm/main_img/social-sprites.png) -16em 0;}
+.social__telegram {background: url(https://mes.fm/main_img/social-sprites.png) -18em 0;}
+
+.info-bar-container {display: table-cell;}
+.info-bar {display:inline-block;margin-left:-2em;padding-left:1.1em;overflow:hidden;}
+.info-bar__item {float:left;}
+.info-bar__item__text {display:block;text-align:center;padding:0.7em 1em 0.7em 1em;font-size:0.9em;color:white}
+.info-bar__logo-container {display: table-cell;vertical-align: middle;}
+.info-bar__logo {display: block; margin-left: 0.8em;}
+
+.outer-page-content {width:45.5em;display:inline-block;}
+.page-content {padding:1.2em 2.25em 0 0;}
+.color-box {width:1.2em;height:1.2em;display:inline-block;margin-right:0.5em;}
+.page-title {display:inline-block;font-size:1.5em;font-weight:400;margin-bottom:0.3em;}
+.page-description {line-height:1.3;}
+#main-content {margin:1.5em 0;position:relative;}
+
+.side-bar {width:18.75em;float:right;}
+.navbar-container {margin:2.1em 0.8em;}
+.navbar {margin-bottom:-1em;}
+.button--navbar {padding:0.7em 0.2em;font-size:1.2em;margin-bottom:0;color:#0369a1;border:0.125em solid#0369a1;}
+
+.navbar__item:hover {cursor:pointer;}
+.navbar__link  {display:block;color:white;padding:0.7em 1em 0.7em 1.4em;}
+.navbar__link--first {padding-top:0.8em;}
+.navbar__dropdown-item {color:#222222;}
+.navbar__dropdown-item:hover {text-decoration:underline;}
+.dropdown-symbol {margin-left:1em;color:white;}
+
+.latest-article {margin-top:1em;padding:0.5em;text-align:center;box-shadow:0 0 1em #BBBBBB;}
+.latest-article__tag:first-child {margin-bottom:0.5em;line-height:normal;}
+.latest-article__title:last-child {text-align:left;font-weight:700;}
+.latest-article__logo {vertical-align:bottom;margin-bottom:0.5em;}
+
+.footer {padding:2em;}
+.footer__item-container {display:table;width:100%;margin-bottom:1.6em;}
+.footer__item {display:table-cell;}
+.footer__item--extra-padding {padding-left:2.5em;}
+.footer__text {color:white;line-height:1.5;}
+.footer__text--title {display:inline-block;margin-bottom:1.6em;font-size:1.3em;font-style:italic;}
+.footer__text--extra-info {float:right;}
+.footer__text:not(.footer__text--copyright):hover {text-decoration:underline; cursor:pointer;}
+.footer__text--black {color:#000;}
+.footer__separator {color:white;}
+#copyright-year {color:white;}
+
+.active-tab {background-color:#fdc010;color: #222222;}
+.navbar__link:hover:not(.navbar__dropdown-item):not(.active-tab),.info-bar__item__text:hover:not(.active-tab) {background-color:#075985;}
+        .info-bar,.color-box,.navbar,.footer {background-color:#0369a1;}
+        .dropdown-symbol--dark {color:#0369a1;}
+        .button--active {background-color:#0369a1;color:white;}
+        .navbar__dropdown-container {color: #222222;background-color:#fdc010;}
+        .header2--top {margin-top: 0.5em;}
+        .basic-table td, .basic-table th {border: 1px solid black; padding:0.3em 0.5em; text-align: center;}
+        /* RESPONSIVE-FIX-INSERTED */
+@media (max-width: 768px) {
+  .outer-container { width: 100% !important; margin: 0 !important; }
+  .outer-page-content { width: 100% !important; display: block !important; }
+  .side-bar { width: 100% !important; float: none !important; }
+  .page-box { width: auto !important; display: block !important; margin: 0 auto 0.5em auto !important; }
+  img { max-width: 100% !important; height: auto !important; }
+  table { max-width: 100% !important; }
+
+  #info-bar > .info-bar__item:has(a[href$="index.html"]),
+  #info-bar > .info-bar__item:has(a[href*="donate"]),
+  #info-bar > .info-bar__item:has(a[href*="substack.com"]),
+  #info-bar > .info-bar__item:has(a[href*="mes.fm/links"]) { display: none !important; }
+}
+
+.inner-container { position: relative !important; }
+.header .social-container { display: none !important; }
+.side-bar { width: auto !important; float: none !important; }
+.navbar-container { margin: 0 !important; box-shadow: none !important; }
+.navbar__item--social { display: list-item; padding: 1em 1.6em 1em 1.4em; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.navbar__item--social .social-container--navbar { position: static !important; display: flex; flex-wrap: wrap; align-items: center; gap: 0.6em; }
+.navbar__item--social .social__text { color: white; margin: 0; }
+.navbar__item--social .social { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0; padding: 0; }
+.navbar__item--social .info-bar__logo-container { display: block; margin-top: 0.4em; }
+#navbar-button {
+  position: absolute !important; top: 16px !important; right: 16px !important; z-index: 20;
+  width: 44px; height: 44px; padding: 0; margin: 0 !important;
+  background: transparent !important; border: none !important;
+  font-size: 0;
+}
+
+@media (max-width: 768px) {
+  .header { padding-right: 4em !important; box-sizing: border-box; }
+}
+#navbar-button::before {
+  content: ""; display: block; margin: 0 auto;
+  width: 26px; height: 4px; background: currentColor; border-radius: 1px;
+  box-shadow: 0 7px 0 currentColor, 0 -7px 0 currentColor;
+}
+#navbar { display: none; }
+#navbar.hide {
+  display: block !important; box-sizing: border-box;
+  position: absolute; top: 76px; right: 16px; z-index: 19;
+  width: 16em; max-width: 90vw; max-height: 75vh; overflow-y: auto;
+  scrollbar-gutter: stable;
+  box-shadow: 0 0.25em 1em rgba(0,0,0,0.3);
+  border-radius: 0.25em;
+}
+
+#navbar.hide { display: flex !important; flex-direction: column; }
+.navbar__item--social { order: 999; }
+.navbar__item--social .info-bar__logo-container { display: block !important; }
+
+.outer-container { width: auto !important; max-width: 50em; margin: 0 auto !important; }
+.outer-page-content { width: 100% !important; display: block !important; }
+.page-content { padding-right: 0 !important; }
+
+</style>	<style>
+	.hide {display:none;}
+	a,a:hover {text-decoration: none !important;color:white;}
+	a.active-tab:hover {color:#222222;}
+	.navbar {border:none;}
+
+	/* the tool itself (scoped to #main-content) */
+	/* shared widget kit for the calculator tool pages (build_tool_apps.py prepends this to each app's own CSS) */
+	.tu {margin:1em 0;--accent:#0369a1;--accent-dark:#075985;--tint:#e0f2fe;}
+	.tu *, .tu *::before, .tu *::after {box-sizing:border-box;}
+	.tu a {color:var(--accent);text-decoration:underline !important;}
+	.tu a:hover {color:var(--accent-dark);}
+	.tu button, .tu input, .tu select {font:inherit;}
+	.tu h2 {font-size:1.05em;color:#1e2733;margin:1.4em 0 0.6em;padding-bottom:0.3em;border-bottom:2px solid #e0f2fe;}
+	.tu h3 {font-size:0.98em;color:#1e2733;margin:1em 0 0.4em;}
+	.tu p {line-height:1.5;margin:0.5em 0;}
+	.tu-card {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:1em 1.1em;}
+	.tu-card--tint {background:#e0f2fe;border-color:#e0f2fe;}
+	.tu-row {display:flex;flex-wrap:wrap;gap:0.9em 1.1em;align-items:flex-end;}
+	.tu-field {display:flex;flex-direction:column;gap:0.3em;flex:1 1 11em;min-width:0;}
+	.tu-field--sm {flex:0 1 8em;}
+	.tu-field > label, .tu-label {font-size:0.75em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#667;}
+	.tu-input, .tu-select {width:100%;font-size:1.05em;padding:0.55em 0.65em;border:1px solid #b9c1cc;border-radius:0.4em;background:#fff;color:#222;}
+	.tu-input:focus, .tu-select:focus {outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #e0f2fe;}
+	.tu-input--big {font-size:1.35em;padding:0.55em 0.7em;}
+	.tu-suffix {position:relative;}
+	.tu-suffix .tu-input {padding-right:3.2em;}
+	.tu-suffix span {position:absolute;right:0.7em;top:50%;transform:translateY(-50%);font-size:0.85em;color:#667085;pointer-events:none;}
+	.tu-btn {cursor:pointer;padding:0.5em 0.95em;border-radius:0.35em;border:0.125em solid var(--accent);background:#fff;color:var(--accent);font-size:0.9em;line-height:1.1;}
+	.tu-btn:hover {background:var(--accent);color:#fff;}
+	.tu-btn--primary {background:var(--accent);color:#fff;}
+	.tu-btn--primary:hover {background:var(--accent-dark);border-color:var(--accent-dark);}
+	.tu-btn--ghost {border-color:#c3c9d2;color:#555;}
+	.tu-btn--ghost:hover {background:#eef1f5;color:#222;border-color:#c3c9d2;}
+	.tu-seg {display:inline-flex;border:1px solid #b9c1cc;border-radius:0.4em;overflow:hidden;background:#fff;}
+	.tu-seg button {cursor:pointer;border:0;background:transparent;padding:0.55em 0.9em;color:#555;font-size:0.95em;border-right:1px solid #dfe4ea;}
+	.tu-seg button:last-child {border-right:0;}
+	.tu-seg button:hover {background:#f4f6f9;}
+	.tu-seg button[aria-pressed="true"] {background:var(--accent);color:#fff;}
+	.tu-chips {display:flex;flex-wrap:wrap;gap:0.4em;margin:0.6em 0 0;}
+	.tu-chip {cursor:pointer;font-size:0.82em;padding:0.35em 0.8em;border-radius:1.2em;border:1px solid #c3c9d2;background:#fff;color:#555;}
+	.tu-chip:hover {border-color:var(--accent);color:var(--accent);}
+	.tu-chip[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+	.tu-stats {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:0.8em;margin:1em 0;}
+	.tu-stat {background:#fff;border:1px solid #dfe4ea;border-radius:0.55em;padding:0.8em 1em;}
+	.tu-stat--hero {background:#e0f2fe;border-color:#e0f2fe;}
+	.tu-stat__label {font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#667;}
+	.tu-stat__value {font-size:1.7em;font-weight:700;color:#1e2733;line-height:1.2;margin:0.15em 0;word-break:break-word;}
+	.tu-stat__sub {font-size:0.85em;color:#555d6b;line-height:1.35;}
+	.tu-pos {color:#1f7a3d !important;}
+	.tu-neg {color:#b3261e !important;}
+	.tu-table-wrap {overflow-x:auto;}
+	.tu-table {width:100%;border-collapse:collapse;font-size:0.95em;}
+	.tu-table th, .tu-table td {text-align:right;padding:0.5em 0.7em;border-bottom:1px solid #e3e7ec;color:#333;white-space:nowrap;}
+	.tu-table th:first-child, .tu-table td:first-child {text-align:left;}
+	.tu-table th {font-size:0.75em;text-transform:uppercase;letter-spacing:0.03em;color:#6a7280;background:#fff;}
+	.tu-table tr.is-active td {background:#e0f2fe;font-weight:700;}
+	.tu-note {font-size:0.85em;color:#6a7280;line-height:1.45;}
+	.tu-toast {position:fixed;left:50%;bottom:2em;transform:translateX(-50%) translateY(0.5em);background:#1e2733;color:#fff;padding:0.6em 1.1em;border-radius:2em;font-size:0.9em;box-shadow:0 0.4em 1.2em rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity 0.15s, transform 0.15s;z-index:60;}
+	.tu-toast--show {opacity:1;transform:translateX(-50%) translateY(0);}
+	.tu-seo {margin-top:2em;border-top:1px solid #e3e3e3;padding-top:1.2em;}
+	/* SEO-HEADINGS: headlines and questions stand out from the body text (also added to built pages by add_seo_heading_style.py) */
+	body .tu-seo {font-size:1.04em;line-height:1.65;}
+	body .tu-seo h2 {font-size:1.45em;font-weight:800;line-height:1.25;margin:0 0 0.6em;color:#1e2733;border-bottom:0;padding-bottom:0;}
+	body .tu-seo h3 {font-size:1.2em;font-weight:800;line-height:1.3;margin:1.6em 0 0.5em;padding:0.15em 0 0.15em 0.65em;border-left:5px solid var(--accent,#4a6fa5);color:#1e2733;}
+	body .tu-seo h4, body .tu-seo dt {font-size:1.08em;font-weight:700;font-style:normal;line-height:1.35;margin:1.3em 0 0.3em;color:#1e2733;}
+	body .tu-seo dd {margin:0 0 0.6em;} body .tu-seo p, body .tu-seo li, body .tu-seo dd {line-height:1.65;}
+	body.dark-mode .tu-seo h2, body.dark-mode .tu-seo h3, body.dark-mode .tu-seo h4, body.dark-mode .tu-seo dt {color:#f2f2f2;}
+	.tu sup, .tu sub {font-size:0.72em !important;line-height:0;vertical-align:baseline;position:relative;} .tu sup {top:-0.5em;} .tu sub {top:0.3em;}
+	.tu div[class$="-eq"] {overflow-y:hidden;}
+	.tu-seo ul {list-style:disc;margin:0.5em 0 0.5em 1.5em;line-height:1.5;}
+	.tu-svg-line {fill:none;stroke:#1e2733;stroke-width:2;}
+	.tu-svg-accent {fill:none;stroke:var(--accent);stroke-width:3;}
+	.tu-svg-fill {fill:var(--accent);}
+	.tu-svg-tint {fill:#e0f2fe;}
+	.tu-svg-text {font-size:13px;fill:#333;}
+	.tu-svg-grid {stroke:#dfe4ea;stroke-width:1;fill:none;}
+	/* selected states: the derived dark theme would darken these, so restate them for dark mode */
+	/* the dark theme lightens --accent so it reads on dark; text on filled accent surfaces then has to be dark */
+	body.dark-mode .tu .tu-seg button[aria-pressed="true"], body.dark-mode .tu .tu-chip[aria-pressed="true"], body.dark-mode .tu .uc-cat[aria-selected="true"],
+	body.dark-mode .tu .tu-btn:hover, body.dark-mode .tu .tu-btn--primary, body.dark-mode .tu .tu-btn--primary:hover {background:var(--accent);border-color:var(--accent);color:#0b1416;}
+	body.dark-mode .tu .tu-btn--ghost:hover {background:#2e2e2e;border-color:#666;color:#eee;}
+	body.dark-mode .tu .uc-cat[aria-selected="true"] span {color:#0b1416;}
+	body.dark-mode .tu .tu-svg-tint {fill:rgba(255,255,255,0.09);}
+	body.dark-mode .tu .gm-card[aria-pressed="true"] {border-color:var(--accent);background:rgba(255,255,255,0.08);}
+	/* dark mode: the tool's accent lightened (same hue) so links, outlines and the text on filled buttons keep their contrast on the dark page */
+	body.dark-mode .tu {--accent:#05a1f6 !important;--accent-dark:#05a1f6 !important;}
+	@media (max-width:600px) {
+		.tu-stat__value {font-size:1.45em;}
+		.tu-field--sm {flex:1 1 7em;}
+	}
+	@media print {
+		.tu-btn, .tu-chips, .tu-seg {display:none !important;}
+	}
+
+/* row layout options on the grade / GPA / weighted-average calculators (names on-off, table layout) */
+.tu .rw-bar {display:flex;gap:0.4em;flex-wrap:wrap;margin:0.5em 0 0.1em;}
+.tu .gc-n {display:none;}
+.tu [data-names="0"] .rw-name {display:none !important;}
+.tu [data-names="0"] .rw-num, .tu [data-table="1"] .rw-num {display:block !important;flex:0 0 1.7em;text-align:right;color:#8a93a0;font-size:0.85em;padding-bottom:0.7em;}
+.tu [data-table="1"] .rw-head, .tu [data-table="1"] .rw-row {display:grid !important;grid-template-columns:var(--rw-cols);gap:0.3em;align-items:center;}
+.tu [data-table="1"] .rw-head {font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#667;padding:0.4em 0 0.2em;border-bottom:2px solid #d5dae1;} .tu [data-table="1"] .rw-head span {text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} .tu [data-table="1"] .rw-head span:first-child {text-align:right;}
+.tu [data-table="1"] .rw-row {padding:0.22em 0;border-bottom:1px solid #eceff3;}
+.tu [data-table="1"] .rw-row > * {order:0 !important;flex:none !important;margin:0 !important;min-width:0 !important;width:auto !important;}
+.tu [data-table="1"] .rw-row .rw-num {padding:0;}
+.tu [data-table="1"] .rw-f label {display:none;}
+.tu [data-table="1"] .rw-row .tu-input, .tu [data-table="1"] .rw-row .tu-select {padding:0.35em 0.2em;width:100%;min-width:0;text-align:center;}
+.tu [data-table="1"] .rw-row .rw-name .tu-input {text-align:left;padding-left:0.4em;}
+.tu [data-table="1"] .rw-del {padding:0.25em 0 !important;font-size:0.95em !important;}
+.tu [data-table="1"] .rw-pts {padding:0 !important;font-size:0.78em;text-align:center;}
+body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-mode .tu [data-table="1"] .rw-row {border-bottom-color:#333;}
+/* equation boxes typeset by main_js/mes-math.js (MathJax) */
+.tu [class$="-eq__f"].mes-tex {font-family:inherit;white-space:normal;display:inline-block;vertical-align:middle;max-width:100%;overflow-x:auto;overflow-y:hidden;}
+.tu [class$="-eq"] mjx-container {margin:0.15em 0 !important;}
+.tu [class$="-eq"] > div {margin:0.25em 0;}
+.tu [class$="-eq__n"] {vertical-align:middle;}
+
+/* MES Audio Editor: always-dark workspace. Every colour is a --au-* custom property so the derived TOOL-DARK block leaves it alone
+   (and the shell's `*{color:#333}` reset is undone with color:inherit). Never put a colour word in a variable name. */
+.au {
+	--au-bg: #14161b; --au-panel: #1c1f26; --au-panel2: #232733; --au-line: #333948; --au-ink: #e7e9ee; --au-dim: #a3aab8; --au-acc: #38bdf8; --au-acc2: #0ea5e9;
+	--au-sel: rgba(56, 189, 248, 0.22); --au-selb: #7dd3fc; --au-play: #fbbf24; --au-wave: #5eead4; --au-clip: #1f3b43; --au-clipb: #2d5560; --au-rec: #ef4444; --au-good: #4ade80; --au-warn: #fbbf24;
+	--au-mark: #f472b6; --au-btn: #2a2f3c; --au-btnh: #353b4b; --au-focus: #7dd3fc;
+	position: relative; background: var(--au-bg); color: var(--au-ink); border-radius: 10px; font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--au-line); margin: 0 0 1.2em; user-select: none; -webkit-user-select: none;
+}
+.au * { color: inherit; box-sizing: border-box; }
+.au button, .au select, .au input { font: inherit; }
+.au button { cursor: pointer; }
+#au button:focus-visible, #au input:focus-visible, #au select:focus-visible, #au canvas:focus-visible { outline: 2px solid var(--au-focus); outline-offset: 1px; }
+#au input[type=text], #au input[type=search], #au input[type=number], #au select, #au textarea { background: var(--au-bg); color: var(--au-ink); border: 1px solid var(--au-line); border-radius: 6px; padding: 4px 7px; color-scheme: dark; }
+#au input[type=range] { accent-color: var(--au-acc); }
+#au input[type=checkbox] { accent-color: var(--au-acc); }
+.au-btn { background: var(--au-btn); border: 1px solid var(--au-line); border-radius: 7px; padding: 6px 11px; color: var(--au-ink); white-space: nowrap; line-height: 1.2; }
+.au-btn:hover { background: var(--au-btnh); }
+.au-btn:disabled { opacity: 0.45; cursor: default; }
+#au .au-btn--primary { background: #0369a1; border-color: #0284c7; color: #fff; font-weight: 600; }
+#au .au-btn--primary:hover { background: #0284c7; }
+#au .au-btn--magic { background: linear-gradient(135deg, #7c3aed, #0369a1); border-color: #8b5cf6; color: #fff; font-weight: 600; }
+#au .au-btn--magic:hover { filter: brightness(1.12); }
+.au-btn--sm { padding: 3px 8px; font-size: 0.9em; }
+.au-ib { background: var(--au-btn); border: 1px solid var(--au-line); border-radius: 7px; min-width: 34px; height: 34px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; }
+.au-ib:hover { background: var(--au-btnh); }
+.au-ib[aria-pressed=true] { background: #0c4a6e; border-color: var(--au-acc); }
+#au .au-ib--rec { color: var(--au-rec); }
+#au .au-ib--rec[aria-pressed=true] { background: #7f1d1d; color: #fff; border-color: var(--au-rec); }
+.au-vsep { width: 1px; align-self: stretch; background: var(--au-line); margin: 0 3px; }
+
+/* top bar */
+.au-top { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 7px 8px; background: var(--au-panel); border-bottom: 1px solid var(--au-line); }
+.au-menus { display: flex; gap: 2px; }
+.au-menu { position: relative; }
+.au-menu > button { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 5px 9px; }
+.au-menu > button:hover, .au-menu > button[aria-expanded=true] { background: var(--au-btnh); }
+.au-mlist { position: absolute; top: 100%; left: 0; z-index: 30; min-width: 250px; max-height: 70vh; overflow: auto; background: var(--au-panel2); border: 1px solid var(--au-line); border-radius: 8px; padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.au-mlist button { display: flex; width: 100%; justify-content: space-between; gap: 16px; text-align: left; background: transparent; border: 0; border-radius: 5px; padding: 6px 9px; }
+.au-mlist button:hover, .au-mlist button:focus { background: var(--au-btnh); }
+.au-mlist button:disabled { opacity: 0.4; }
+.au-mlist kbd, .au-sres kbd { font: 0.82em ui-monospace, Menlo, monospace; color: var(--au-dim); }
+.au-mlist hr { border: 0; border-top: 1px solid var(--au-line); margin: 4px 2px; }
+.au-search { position: relative; flex: 1 1 200px; min-width: 150px; max-width: 360px; }
+.au-search input { width: 100%; }
+.au-sres { position: absolute; top: calc(100% + 3px); left: 0; right: 0; z-index: 31; background: var(--au-panel2); border: 1px solid var(--au-line); border-radius: 8px; padding: 4px; max-height: 50vh; overflow: auto; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.au-sres button { display: flex; width: 100%; justify-content: space-between; gap: 10px; background: transparent; border: 0; border-radius: 5px; padding: 6px 9px; text-align: left; }
+.au-sres button[aria-selected=true], .au-sres button:hover { background: var(--au-btnh); }
+.au-top-r { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-left: auto; }
+
+/* transport */
+.au-trans { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 7px 8px; background: var(--au-panel); border-bottom: 1px solid var(--au-line); }
+#au .au-time { color: var(--au-acc); }
+.au-time { font: 600 1.35em/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; padding: 5px 10px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 7px; min-width: 7.3em; text-align: center; color: var(--au-acc); }
+.au-selbox { display: flex; gap: 4px; align-items: center; color: var(--au-dim); font-size: 0.9em; }
+.au-selbox input { width: 6.6em; font-family: ui-monospace, Menlo, monospace; }
+.au-meter { width: 40px; flex: 1 1 40px; max-width: 120px; height: 14px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 4px; }
+.au-vol { display: flex; flex-wrap: nowrap; flex: 1 1 150px; max-width: 240px; align-items: center; gap: 4px; color: var(--au-dim); }
+.au-vol input { width: 80px; }
+
+/* main */
+.au-main { display: flex; min-height: 0; flex: 1 1 auto; }
+.au-tl { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.au-rulerrow { display: flex; height: 28px; border-bottom: 1px solid var(--au-line); background: var(--au-panel); }
+.au-corner { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); display: flex; align-items: center; gap: 4px; padding: 0 6px; font-size: 0.85em; color: var(--au-dim); }
+.au-ruler { flex: 1 1 0; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
+.au-scroll { position: relative; overflow-y: auto; overflow-x: hidden; max-height: min(62vh, 640px); min-height: 160px; }
+.au-rows { display: flex; }
+.au-heads { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); background: var(--au-panel); }
+.au-head { border-bottom: 1px solid var(--au-line); padding: 6px 7px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.au-head.is-sel { background: #1a2a33; }
+.au-head-r { display: flex; gap: 4px; align-items: center; }
+.au-head input.au-tname { width: 100%; padding: 2px 5px; font-weight: 600; background: transparent; border-color: transparent; }
+.au-head input.au-tname:hover, .au-head input.au-tname:focus { border-color: var(--au-line); background: var(--au-bg); }
+.au-head .au-ms { min-width: 26px; height: 24px; padding: 0 5px; font-size: 0.82em; font-weight: 700; }
+.au-head .au-ms[aria-pressed=true] { background: #854d0e; border-color: var(--au-warn); }
+.au-head .au-ms.au-solo[aria-pressed=true] { background: #166534; border-color: var(--au-good); }
+.au-head label { display: flex; align-items: center; gap: 4px; font-size: 0.8em; color: var(--au-dim); }
+.au-head label input[type=range] { flex: 1 1 auto; min-width: 0; }
+.au-head .au-gv { min-width: 3.4em; text-align: right; font-variant-numeric: tabular-nums; }
+.au-lanes { flex: 1 1 auto; min-width: 0; position: relative; }
+.au-lanes canvas { display: block; position: absolute; left: 0; top: 0; touch-action: pan-y; }
+#au-over { pointer-events: none; }
+.au-hbar { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-top: 1px solid var(--au-line); background: var(--au-panel); }
+.au-hbar input[type=range] { flex: 1 1 auto; }
+.au-hbar span { color: var(--au-dim); font-size: 0.85em; white-space: nowrap; }
+
+/* empty state */
+.au-empty { position: absolute; inset: 28px 0 0 0; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--au-bg); z-index: 5; }
+.au-empty-in { max-width: 560px; text-align: center; }
+.au-empty-t { font-size: 1.5em; font-weight: 700; margin-bottom: 6px; }
+.au-empty-s { color: var(--au-dim); margin-bottom: 14px; }
+.au-empty-b { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.au-empty-r { margin-top: 14px; }
+.au-drop { position: absolute; inset: 0; z-index: 40; background: rgba(3, 105, 161, 0.35); border: 3px dashed var(--au-acc); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4em; font-weight: 700; pointer-events: none; }
+
+/* side panel */
+.au-side { flex: 0 0 340px; border-left: 1px solid var(--au-line); background: var(--au-panel); display: flex; flex-direction: column; min-height: 0; max-height: calc(min(62vh, 640px) + 70px); overflow: auto; }
+.au-side[hidden] { display: none; }
+.au-ph { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 9px 11px; border-bottom: 1px solid var(--au-line); font-weight: 700; }
+.au-ph button { background: transparent; border: 0; font-size: 1.2em; padding: 0 4px; }
+.au-pb { padding: 10px 11px; display: flex; flex-direction: column; gap: 10px; }
+.au-f { display: flex; flex-direction: column; gap: 4px; }
+.au-f > span { font-size: 0.88em; color: var(--au-dim); display: flex; justify-content: space-between; gap: 6px; }
+.au-f > span b { color: var(--au-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.au-f select, .au-f input[type=text], .au-f input[type=number] { width: 100%; }
+.au-chk { display: flex; gap: 7px; align-items: flex-start; font-size: 0.93em; }
+.au-chk input { margin-top: 3px; }
+.au-note { font-size: 0.85em; color: var(--au-dim); line-height: 1.45; }
+#au .au-note b { color: var(--au-ink); }
+#au .au-note a { color: var(--au-acc); }
+.au-target { font-size: 0.85em; background: var(--au-bg); border: 1px solid var(--au-line); border-radius: 6px; padding: 6px 8px; color: var(--au-dim); }
+.au-ab { display: flex; gap: 0; border: 1px solid var(--au-line); border-radius: 8px; overflow: hidden; }
+.au-ab button { flex: 1 1 50%; background: var(--au-btn); border: 0; padding: 8px 6px; font-weight: 600; }
+#au .au-ab button[aria-pressed=true] { background: #0369a1; color: #fff; }
+.au-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.au-stats { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 0.9em; }
+.au-stats span:nth-child(odd) { color: var(--au-dim); }
+.au-stats span:nth-child(even) { font-variant-numeric: tabular-nums; text-align: right; }
+.au-eqcv { width: 100%; height: 110px; background: var(--au-bg); border: 1px solid var(--au-line); border-radius: 6px; }
+.au-prog { height: 8px; background: var(--au-bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--au-line); }
+.au-prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #0284c7, #7c3aed); transition: width .15s; }
+.au-marks { display: flex; flex-direction: column; gap: 4px; }
+.au-mk { display: flex; gap: 5px; align-items: center; }
+.au-mk input { flex: 1 1 auto; min-width: 0; }
+.au-mk button { padding: 2px 7px; }
+.au-mk .au-mt { font: 0.85em ui-monospace, Menlo, monospace; color: var(--au-dim); background: transparent; border: 0; }
+.au-fxlist { display: flex; flex-direction: column; gap: 3px; }
+.au-fxlist button { text-align: left; display: flex; gap: 9px; align-items: center; padding: 7px 9px; background: var(--au-btn); border: 1px solid var(--au-line); border-radius: 7px; }
+.au-fxlist button:hover { background: var(--au-btnh); }
+.au-fxlist small { color: var(--au-dim); display: block; font-size: 0.82em; }
+
+/* busy overlay */
+.au-busy { position: absolute; inset: 0; z-index: 50; background: rgba(10, 12, 16, 0.72); display: flex; align-items: center; justify-content: center; }
+.au-busy-in { width: min(380px, 90%); background: var(--au-panel2); border: 1px solid var(--au-line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.au-busy-t { font-weight: 700; }
+.au-busy-m { color: var(--au-dim); font-size: 0.9em; }
+
+/* recording */
+.au-recbar { display: flex; gap: 10px; align-items: center; padding: 7px 10px; background: #3b0d0d; border-bottom: 1px solid var(--au-rec); }
+.au-recbar[hidden] { display: none; }
+.au-recdot { width: 12px; height: 12px; border-radius: 50%; background: var(--au-rec); animation: au-blink 1s infinite; }
+@keyframes au-blink { 50% { opacity: .3; } }
+
+.au-status { display: flex; flex-wrap: wrap; gap: 14px; padding: 5px 10px; font-size: 0.82em; color: var(--au-dim); background: var(--au-panel); border-top: 1px solid var(--au-line); }
+.au-status .au-hint { margin-left: auto; }
+.au-toast { position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); z-index: 60; background: #0b0d11; border: 1px solid var(--au-acc); border-radius: 8px; padding: 8px 14px; max-width: 90%; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
+.au-toast button { margin-left: 10px; }
+
+.au-help { columns: 2 220px; font-size: 0.88em; }
+.au-help div { break-inside: avoid; display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+.au-help kbd { font: 0.9em ui-monospace, Menlo, monospace; background: var(--au-bg); border: 1px solid var(--au-line); border-radius: 4px; padding: 0 5px; color: var(--au-ink); }
+
+/* fill window / full screen */
+.au.au-win { position: fixed; inset: 0; z-index: 9999; margin: 0; border-radius: 0; border: 0; }
+.au.au-win .au-scroll, .au:fullscreen .au-scroll { max-height: none; flex: 1 1 auto; }
+.au.au-win .au-tl, .au:fullscreen .au-tl { min-height: 0; }
+.au.au-win .au-main, .au:fullscreen .au-main { flex: 1 1 auto; min-height: 0; }
+.au.au-win .au-side, .au:fullscreen .au-side { max-height: none; }
+.au:fullscreen { border-radius: 0; }
+body.au-noscroll { overflow: hidden; }
+
+@media (max-width: 800px) {
+	.au-main { flex-direction: column; }
+	.au-side { flex: 0 0 auto; border-left: 0; border-top: 1px solid var(--au-line); max-height: none; }
+	.au { --au-hw: 112px; }
+	.au-head label.au-pan { display: none; }
+	.au-search { order: 5; max-width: none; flex-basis: 100%; }
+	.au-time { font-size: 1.1em; min-width: 6.5em; }
+	.au-meter { max-width: 70px; }
+	.au-vol input { width: 60px; }
+	.au-selbox input { width: 5.6em; }
+}
+@media (max-width: 480px) {
+	.au-top-r .au-txt { display: none; }
+	.au-menu > button { padding: 5px 6px; }
+}
+.au [hidden] { display: none !important; }
+
+/* compare bar (after an effect), before / after picture, help "?" buttons, result box */
+.au-cmpbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 7px 10px; background: #102a36; border-bottom: 1px solid var(--au-acc2); }
+.au-cmp-t { white-space: nowrap; }
+.au-cmp-n { color: var(--au-dim); font-size: 0.88em; flex: 1 1 260px; }
+#au .au-cmp-n kbd, #au .au-note kbd { font: 0.9em ui-monospace, Menlo, monospace; background: var(--au-bg); border: 1px solid var(--au-line); border-radius: 4px; padding: 0 4px; color: var(--au-ink); }
+.au-cmp-r { display: flex; gap: 6px; margin-left: auto; }
+.au-ab--bar { min-width: 190px; }
+.au-ab--bar button { padding: 6px 12px; }
+#au .au-ab--bar button[data-w=before][aria-pressed=true] { background: #a16207; }
+.au-listen { display: flex; align-items: center; gap: 8px; }
+.au-listen-l { font-weight: 600; white-space: nowrap; }
+.au-listen .au-ab { flex: 1 1 auto; }
+.au-step { font-size: 0.92em; margin-top: 4px; padding-top: 8px; border-top: 1px dashed var(--au-line); }
+.au-cmpwrap { display: flex; flex-direction: column; gap: 4px; }
+.au-cmpcv { width: 100%; height: 150px; border: 1px solid var(--au-line); border-radius: 6px; background: #0b0d11; }
+.au-cmpleg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.82em; color: var(--au-dim); align-items: center; }
+.au-lg::before { content: ""; display: inline-block; width: 12px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.au-lg--b::before { background: #5b6472; }
+.au-lg--a::before { background: #5eead4; }
+#au-cmpnum { flex-basis: 100%; color: var(--au-ink); }
+#au .au-q { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-left: 5px; padding: 0; border-radius: 50%; border: 1px solid var(--au-acc); background: transparent; color: var(--au-acc); font: 700 11px/1 system-ui, sans-serif; vertical-align: 1px; }
+#au .au-q[aria-expanded=true], #au .au-q:hover { background: var(--au-acc); color: #0b0d11; }
+.au-qpop { font-size: 0.86em; line-height: 1.5; background: var(--au-bg); border: 1px solid var(--au-line); border-left: 3px solid var(--au-acc); border-radius: 6px; padding: 7px 9px; margin-top: -4px; }
+#au .au-qpop b { color: var(--au-ink); }
+.au-result { display: flex; flex-direction: column; gap: 6px; padding: 8px; border: 1px solid #166534; background: #0f241a; border-radius: 8px; }
+#au .au-ok { color: var(--au-good); font-weight: 700; }
+#au .au-warnnote { color: var(--au-warn); }
+
+/* resize grips */
+.au-head { position: relative; }
+.au-hgrip { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; cursor: ns-resize; display: flex; align-items: center; justify-content: center; touch-action: none; }
+.au-hgrip span, .au-agrip span { display: block; width: 34px; height: 3px; border-radius: 2px; background: var(--au-line); }
+.au-hgrip:hover span, .au-hgrip.is-drag span, .au-hgrip:focus-visible span, .au-agrip:hover span, .au-agrip.is-drag span, .au-agrip:focus-visible span { background: var(--au-acc); }
+.au-agrip { height: 11px; cursor: ns-resize; display: flex; align-items: center; justify-content: center; background: var(--au-panel); border-top: 1px solid var(--au-line); touch-action: none; }
+.au.au-win .au-agrip, .au:fullscreen .au-agrip { display: none; }
+.au.au-win .au-scroll, .au:fullscreen .au-scroll { height: auto !important; max-height: none !important; }
+@media (pointer: coarse) { .au-hgrip { height: 16px; } .au-agrip { height: 18px; } }
+.au-f > span .au-q { margin-right: auto; }
+/* empty state in the page flow (an absolute box overflowed the short track area on phones) */
+.au-tl:has(> .au-empty:not([hidden])) > :is(.au-scroll, .au-agrip, .au-hbar) { display: none; }
+.au-tl > .au-empty:not([hidden]) { position: relative; inset: auto; flex: 1 1 auto; min-height: 220px; }
+.au-ab button + button { border-left: 1px solid var(--au-line); }
+#au .au-ab button#au-pn[aria-pressed=true], #au .au-ab--bar button[data-w=noise][aria-pressed=true] { background: #b91c1c; color: #fff; }
+.au-lg--n::before { background: #f87171; }
+.au-cmp-ck { display: inline-flex; align-items: center; gap: 5px; font-size: 0.88em; white-space: nowrap; cursor: pointer; }
+.au-matchrow { align-items: center; gap: 8px; flex-wrap: wrap; }
+.au-ab button { white-space: nowrap; }
+
+/* simple mode (phones): big buttons over the waveform, the full editor one tap away */
+.au.au-simple-on .au-top, .au.au-simple-on .au-trans, .au.au-simple-on .au-status, .au.au-simple-on .au-hbar, .au.au-simple-on .au-empty, .au.au-simple-on .au-rulerrow .au-corner, .au.au-simple-on .au-cmp-n { display: none !important; }
+.au.au-simple-on { --au-hw: 0px; }
+.au.au-simple-on .au-heads { display: none; }
+.au-simple { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--au-panel); border-bottom: 1px solid var(--au-line); }
+.au-s-row { display: flex; gap: 8px; align-items: center; }
+.au-s-wrap { flex-wrap: wrap; }
+.au-s-wrap > .au-s-btn { flex: 1 1 calc(50% - 8px); }
+.au-s-main > * { flex: 1 1 0; }
+#au .au-s-rec { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 64px; border-radius: 14px; border: 2px solid var(--au-rec); background: #2a1215; color: #fff; font-size: 1.15em; font-weight: 700; flex: 1.4 1 0; }
+#au .au-s-rec[aria-pressed=true] { background: #b91c1c; animation: au-s-pulse 1.2s ease-in-out infinite; }
+.au-s-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--au-rec); flex: none; }
+#au .au-s-rec[aria-pressed=true] .au-s-dot { border-radius: 4px; background: #fff; width: 18px; height: 18px; }
+@keyframes au-s-pulse { 50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.25); } }
+.au-s-big { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 64px; border-radius: 14px; border: 1px solid var(--au-line); background: var(--au-btn); font-size: 1.25em; }
+.au-s-big span { font-size: 0.72em; font-weight: 600; }
+.au-s-tools { display: flex; flex-direction: column; gap: 8px; }
+.au-s-btn { min-height: 46px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--au-line); background: var(--au-btn); font-weight: 600; font-size: 0.98em; }
+.au-s-btn:disabled { opacity: 0.45; }
+#au .au-s-play { min-width: 58px; font-size: 1.3em; background: #0c4a6e; border-color: var(--au-acc); }
+.au-s-time { flex: 1; font: 600 1.05em ui-monospace, Menlo, monospace; text-align: center; color: var(--au-ink); }
+#au .au-s-magic { background: linear-gradient(135deg, #6d28d9, #0369a1); border-color: #8b5cf6; color: #fff; }
+#au .au-s-primary { background: #0369a1; border-color: #0284c7; color: #fff; flex: 1 1 0; }
+.au-s-save select { min-height: 46px; flex: 1.2 1 0; border-radius: 10px !important; }
+.au-s-hint { font-size: 0.86em; color: var(--au-dim); }
+.au-s-foot { justify-content: center; }
+#au .au-s-link, #au .au-s-back { background: none; border: 0; color: var(--au-acc); font-weight: 600; padding: 6px 4px; text-decoration: underline; text-underline-offset: 3px; }
+.au-s-back { align-self: flex-start; margin: 6px 10px; }
+.au.au-simple-on .au-cmpbar { gap: 8px; }
+.au.au-simple-on .au-cmpbar .au-ab--bar { flex: 1 1 100%; display: flex; }
+.au.au-simple-on .au-cmpbar .au-ab--bar button { flex: 1 1 0; min-height: 42px; }
+.au.au-simple-on .au-recbar { padding: 10px 12px; flex-wrap: wrap; }
+.au.au-simple-on .au-recbar .au-btn { min-height: 40px; }
+.au.au-simple-on.au-s-empty .au-main { display: none; }
+.au-s-foot { flex-wrap: wrap; }
+/* simple mode order: Record / Open, waveform, then the tools */
+.au.au-simple-on > * { order: 3; }
+.au.au-simple-on .au-simple { display: contents; }
+.au.au-simple-on .au-s-main { order: 1; padding: 12px 12px 10px; background: var(--au-panel); border-bottom: 1px solid var(--au-line); }
+.au.au-simple-on .au-recbar { order: 2; }
+.au.au-simple-on .au-cmpbar { order: 4; }
+.au.au-simple-on .au-s-tools { order: 5; padding: 10px 12px 4px; background: var(--au-panel); border-top: 1px solid var(--au-line); }
+.au.au-simple-on .au-s-foot { order: 6; padding: 4px 12px 10px; background: var(--au-panel); }
+.au.au-simple-on .au-scroll { height: auto !important; max-height: 280px !important; min-height: 0; }
+.au.au-simple-on .au-agrip { display: none; }
+.au.au-simple-on .au-main { flex: none; }
+.au-s-intro { display: none; margin: 0; padding: 4px 14px 12px; color: var(--au-dim); font-size: 0.95em; line-height: 1.45; background: var(--au-panel); order: 2; }
+.au.au-simple-on.au-s-empty .au-s-intro { display: block; }
+/* language menu above the editor (the translated pages: build_tool_apps.py _audio_pages) */
+.au-lang { display: flex; justify-content: flex-end; margin: 0 0 .5em; }
+.au-lang details { position: relative; font-size: .92em; }
+.au-lang summary { cursor: pointer; list-style: none; padding: .3em .75em; border: 1px solid #cbd5e1; border-radius: 999px; background: #ffffff; color: #1e293b; font-weight: 600; user-select: none; }
+.au-lang summary::-webkit-details-marker { display: none; }
+.au-lang summary::after { content: " \25BE"; }
+.au-lang ul { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; margin: 0; padding: .35em 0; list-style: none; min-width: 12em; max-height: 70vh; overflow: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.au-lang li a { display: block; padding: .42em 1em; color: #1e293b !important; text-decoration: none !important; }
+.au-lang li a:hover, .au-lang li a:focus { background: #f1f5f9; }
+.au-lang li a[aria-current] { font-weight: 700; color: #0369a1 !important; }
+html body.dark-mode .au-lang summary, html body.dark-mode .au-lang ul { background: #1c1f26; border-color: #333948; color: #e7e9ee; }
+html body.dark-mode .au-lang li a { color: #e7e9ee !important; }
+html body.dark-mode .au-lang li a:hover, html body.dark-mode .au-lang li a:focus { background: #2a2f3c; }
+html body.dark-mode .au-lang li a[aria-current] { color: #7dd3fc !important; }
+/* right-to-left pages (Urdu): text, menus and panels run right to left; the timeline, transport and meters stay left to right (time runs left to right) */
+#au[dir=rtl] .au-main, #au[dir=rtl] .au-trans, #au[dir=rtl] .au-hbar, #au[dir=rtl] .au-recbar { direction: ltr; }
+#au[dir=rtl] .au-side, #au[dir=rtl] .au-empty, #au[dir=rtl] .au-head { direction: rtl; }
+#au[dir=rtl] .au-selbox input, #au[dir=rtl] .au-time, #au[dir=rtl] kbd { direction: ltr; unicode-bidi: isolate; }
+#au:lang(ur) { line-height: 1.7; }
+html[lang=ur] .tu-seo { direction: rtl; text-align: right; line-height: 1.8; }
+
+
+	@media print {
+		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
+		.outer-container, .inner-container, .outer-page-content, .page-content { width:auto !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+	}
+	/* Mobile layout: stack header/nav/footer, full-width calculator inputs */
+	@media (max-width: 600px) {
+		.inner-container { padding: 1em 0.75em; }
+
+		.header { display: flex; flex-wrap: wrap; align-items: center; }
+		.logo-image-container { flex: 0 0 auto; }
+		.logo-text-container { display: block; flex: 1 1 0; min-width: 0; padding-left: 0.75em; vertical-align: initial; }
+		.calculator-title { font-size: 1.3em; }
+		.tag-line { font-size: 1em; }
+		.social-container, .social-container--bottom { position: static; flex: 0 0 100%; margin-top: 0.5em; }
+		.social-container { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
+		.social-container .social__text { margin: 0; font-size: 0.9em; }
+		.social { display: flex; gap: 0.4em; }
+		.social-container .info-bar__logo-container { margin-left: auto; }
+		#mes-logo { width: 110px; height: auto; }
+
+		.info-bar-container { display: block; width: 100%; }
+		.info-bar { display: flex; flex-wrap: wrap; margin-left: 0; padding-left: 0; width: 100%; }
+		.info-bar__item { float: none; flex: 1 1 33%; min-width: 0; }
+		.info-bar__item__text { padding: 0.5em 0.2em; font-size: 0.75em; text-align: center; white-space: normal; line-height: 1.2; }
+		.navbar-container { margin: 1em 0; width: 100%; box-sizing: border-box; }
+		.button--navbar { box-sizing: border-box; width: 100%; }
+		.navbar { width: 100%; }
+		.navbar__link { box-sizing: border-box; }
+
+		.page-content { padding: 1.2em 0 0 0; }
+
+		.footer { padding: 1.25em 0.75em; }
+		.footer__item-container { display: block; }
+		.footer__item { display: block; margin-bottom: 0.75em; }
+		.footer__item--extra-padding { padding-left: 0; }
+		.footer__text--extra-info { float: none; display: block; margin-top: 0.5em; }
+	}
+/* Floating compact header bar: once the full header + nav scroll out of
+   view, a slim fixed bar (small logo, title, as many nav links as fit)
+   slides in, and the hamburger is pinned into its right end. Toggled by
+   the compact-nav script below. Ported from mes.fm/math's version (see
+   its build.mjs) -- display-controls.js pins the A-/A+/moon buttons into its right end.
+
+   Hidden by default via the inline style="display:none" on the element
+   itself (not just this stylesheet's "display: none" below) -- some
+   browser extensions strip or neutralize cosmetic-looking CSS for
+   elements named "sticky-*"/"*-bar" (a common ad/cookie-bar filter
+   pattern), which left an earlier version's raw unstyled markup visible
+   above the real header on mes.fm/math. The inline attribute is a
+   fallback the JS clears itself, independent of this stylesheet
+   surviving intact. */
+#compact-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 15;
+  display: none; align-items: center; gap: 12px;
+  padding: 0 80px 0 12px; box-sizing: border-box;
+  background: #ffffff; border-bottom: 3px solid #0369a1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  transform: translateY(-110%); transition: transform 0.2s ease;
+}
+#compact-nav.is-visible { display: flex; }
+body.is-stuck #compact-nav { transform: none; }
+#compact-nav .compact-nav-logo { display: block; width: 32px; height: 32px; border-radius: 6px; flex: 0 0 auto; }
+#compact-nav .compact-nav-title {
+  flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 1.05em; color: #1a1a1a;
+  text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#compact-nav .compact-nav-links { display: flex; flex: 1 1 0; min-width: 0; overflow: hidden; margin: 0 0 0 8px; padding: 0; list-style: none; }
+#compact-nav .compact-nav-links li { flex: 0 0 auto; }
+#compact-nav .compact-nav-links a { display: block; padding: 0 10px; line-height: 52px; font-size: 0.9em; color: #0369a1; text-decoration: none; white-space: nowrap; }
+#compact-nav .compact-nav-links a:hover { background: rgba(3,105,161,0.12); }
+body.is-stuck #navbar-button { position: fixed !important; top: 4px !important; right: 8px !important; display: flex; align-items: center; }
+body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
+@media (max-width: 700px) {
+  #compact-nav .compact-nav-title { display: none; }
+  #compact-nav .compact-nav-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  #compact-nav { padding-right: 70px; gap: 8px; }
+}
+
+	/* TOOL-DARK:START -- generated by add_tool_page_controls.py, do not edit */
+	body.dark-mode .page-content :where(div,span,p,li,ul,ol,h1,h2,h3,h4,h5,h6,td,th,label,summary,small,strong,b,em,i,code,pre,legend,figcaption,dl,dt,dd,blockquote,caption,cite,button,input,select,textarea){color:#d8d8d8}
+	body.dark-mode .page-content :where(sub,sup){color:inherit}
+	body.dark-mode .page-content :where([aria-pressed="true"],[aria-selected="true"],.tu-btn--primary) :where(small,span,b,strong){color:inherit}
+	body.dark-mode .page-content code{background-color:#33363d;color:#f0a8bd}
+	body.dark-mode .page-content .btn-default{background-color:#2e2e2e;background-image:none;color:#ddd;border-color:#555}
+	body.dark-mode .tu{--accent:#0fa7fb;--accent-dark:#16a6f3}
+	body.dark-mode .tu h2{color:#d1d6dc;border-bottom:2px solid #033150}
+	body.dark-mode .tu h3{color:#d1d6dc}
+	body.dark-mode .tu-card{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-card--tint{background:#12222d;border-color:#033150}
+	body.dark-mode .tu-field > label,body.dark-mode .tu-label{color:#9a9aa2}
+	body.dark-mode .tu-input,body.dark-mode .tu-select{border:1px solid #404a58;background:#1a1a1a;color:#dddddd}
+	body.dark-mode .tu-suffix span{color:#989ca4}
+	body.dark-mode .tu-btn{background:#1a1a1a}
+	body.dark-mode .tu-btn--ghost{border-color:#3a424d;color:#aaaaaa}
+	body.dark-mode .tu-btn--ghost:hover{background:#191c20;color:#dddddd;border-color:#3a424d}
+	body.dark-mode .tu-seg{border:1px solid #404a58;background:#1a1a1a}
+	body.dark-mode .tu-seg button{color:#aaaaaa;border-right:1px solid #28323e}
+	body.dark-mode .tu-seg button:hover{background:#16191d}
+	body.dark-mode .tu-chip{border:1px solid #3a424d;background:#1a1a1a;color:#aaaaaa}
+	body.dark-mode .tu-stat{background:#1a1a1a;border:1px solid #28323e}
+	body.dark-mode .tu-stat--hero{background:#12222d;border-color:#033150}
+	body.dark-mode .tu-stat__label{color:#9a9aa2}
+	body.dark-mode .tu-stat__value{color:#d1d6dc}
+	body.dark-mode .tu-stat__sub{color:#9a9ea4}
+	body.dark-mode .tu-pos{color:#7dde9d !important}
+	body.dark-mode .tu-neg{color:#e87973 !important}
+	body.dark-mode .tu-table th,body.dark-mode .tu-table td{border-bottom:1px solid #29323d;color:#cccccc}
+	body.dark-mode .tu-table th{color:#9a9da3;background:#1a1a1a}
+	body.dark-mode .tu-table tr.is-active td{background:#12222d}
+	body.dark-mode .tu-note{color:#9a9da3}
+	body.dark-mode .tu-toast{background:#3c4f67}
+	body.dark-mode .tu-seo{border-top:1px solid #333333}
+	body.dark-mode .tu-svg-line{stroke:#394a60}
+	body.dark-mode .tu-svg-text{fill:#cccccc}
+	body.dark-mode .tu-svg-grid{stroke:#28323e}
+	body.dark-mode .tu [data-names="0"] .rw-num,body.dark-mode .tu [data-table="1"] .rw-num{color:#999da3}
+	body.dark-mode .tu [data-table="1"] .rw-head{color:#9a9aa2;border-bottom:2px solid #2b323c}
+	body.dark-mode .tu [data-table="1"] .rw-row{border-bottom:1px solid #27313f}
+	body.dark-mode .au{--au-acc2:#18aef1;--au-sel:rgba(56,189,248,0.22);--au-clip:#589eb2;--au-clipb:#589eb1}
+	body.dark-mode #au .au-btn--primary{border-color:#03a7fc}
+	body.dark-mode #au .au-btn--magic{border-color:#420bc1}
+	body.dark-mode .au-time{background:#404c63}
+	body.dark-mode .au-meter{background:#404c63}
+	body.dark-mode .au-busy{background:rgba(63,75,100,0.72)}
+	body.dark-mode .au-toast{background:#404c63}
+	body.dark-mode .au-cmpcv{background:#404c63}
+	body.dark-mode .au-lg--b::before{background:#48505b}
+	body.dark-mode #au .au-q[aria-expanded=true],body.dark-mode #au .au-q:hover{color:#eff0f3}
+	body.dark-mode .au-result{border:1px solid #2ed16c}
+	body.dark-mode #au .au-s-rec[aria-pressed=true] .au-s-dot{background:#1a1a1a}
+	body.dark-mode #au .au-s-magic{border-color:#420bc1}
+	body.dark-mode #au .au-s-primary{border-color:#03a7fc}
+	body.dark-mode .au-lang summary{border:1px solid #293747;background:#1a1a1a;color:#93a7c8}
+	body.dark-mode .au-lang ul{background:#1a1a1a;border:1px solid #293747}
+	body.dark-mode .au-lang li a{color:#93a7c8 !important}
+	body.dark-mode .au-lang li a:hover,body.dark-mode .au-lang li a:focus{background:#151a1e}
+	body.dark-mode .au-lang li a[aria-current]{color:#5fc4fc !important}
+	/* TOOL-DARK:END */
+</style>
+        <meta property="fb:app_id" content="" />
+        <meta name="author" content="Math Easy Solutions Staff">
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mes.fm/audio-editor-urdu" />            <meta property="og:title" content="آڈیو سے شور ہٹائیں: مفت آن لائن آڈیو ایڈیٹر | MES" />        <meta property="og:image" content="https://mes.fm/audio/img/logo-big.png" />
+        <meta property="og:locale" content="ur_PK" />        <meta property="og:description" content="مفت آن لائن آڈیو ایڈیٹر: AI سے بیک گراؤنڈ شور ہٹائیں، کاٹیں، فیڈ کریں، لاؤڈنیس سیٹ کریں اور WAV، MP3 یا M4A میں محفوظ کریں۔ نہ اپ لوڈ، نہ سائن اپ۔" />
+
+        <meta name="description" content="مفت آن لائن آڈیو ایڈیٹر: AI سے بیک گراؤنڈ شور ہٹائیں، کاٹیں، فیڈ کریں، لاؤڈنیس سیٹ کریں اور WAV، MP3 یا M4A میں محفوظ کریں۔ نہ اپ لوڈ، نہ سائن اپ۔">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="twitter:title" content="آڈیو سے شور ہٹائیں: مفت آن لائن آڈیو ایڈیٹر | MES">
+        <meta name="twitter:description" content="مفت آن لائن آڈیو ایڈیٹر: AI سے بیک گراؤنڈ شور ہٹائیں، کاٹیں، فیڈ کریں، لاؤڈنیس سیٹ کریں اور WAV، MP3 یا M4A میں محفوظ کریں۔ نہ اپ لوڈ، نہ سائن اپ۔">
+        <meta name="twitter:image" content="https://mes.fm/audio/img/logo-big.png">
+        <meta name="twitter:image:alt" content="MES آڈیو ایڈیٹر">
+        <script type="application/ld+json">
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES آڈیو ایڈیٹر", "url": "https://mes.fm/audio-editor-urdu", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "AI سے شور ہٹانے والا مفت آن لائن آڈیو ایڈیٹر: آڈیو یا ویڈیو کی آواز کھولیں، بیک گراؤنڈ شور، ہم اور کلک ہٹائیں، کاٹیں، فیڈ کریں، ٹریک ترتیب دیں، لاؤڈنیس -14 یا -16 LUFS پر سیٹ کریں اور WAV، MP3 یا M4A میں ایکسپورٹ کریں۔ سب کچھ آپ کے براؤزر میں چلتا ہے: کچھ بھی اپ لوڈ نہیں ہوتا۔", "inLanguage": "ur"}
+        </script>            <!-- Google Tag Manager -->
+            <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-PL6QNQR');</script>
+            <!-- End Google Tag Manager -->
+<!-- Legacy Universal Analytics removed: every UA property stopped processing data in 2023; pageviews are tracked via main_js/track.js (+ GTM) -->
+    <!-- ADSENSE-DEFERRED: load adsbygoogle.js (auto ads + consent) on the first
+     real interaction (scroll / pointer / key), or after a 15s idle fallback,
+     so its ad + consent JS (doubleclick ads ~100KB, Funding Choices ~70KB,
+     sodar, osd) never runs during the page-load / Lighthouse trace window. -->
+    <script>
+    (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
+      var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
+      var done = false;
+      function go() {
+        if (done) return;
+        done = true;
+        EVT.forEach(function (e) { removeEventListener(e, go); });
+        var s = document.createElement('script');
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1461238060884369';
+        document.head.appendChild(s);
+      }
+      EVT.forEach(function (e) { addEventListener(e, go, { passive: true }); });
+      setTimeout(go, 15000);
+    })();
+    </script>
+    <script>
+/* autoads-header-gap-guard: guards two gaps against Google Auto ads (in-page ad blocks,
+   class `google-auto-placed`), plus Google's separate "annotation" text-ad
+   formats, which are a different Auto ads mechanism than the in-page blocks
+   above. 1) Logo header <-> nav bar: on desktop, any in-page ad caught here
+   is relocated to just below the whole header+nav+logo-badge complex
+   (before .outer-page-content) and allowed to show if it fills; on mobile
+   (max-width: 768px, this repo's existing responsive breakpoint) it is
+   hidden outright instead -- no ad shows below the nav bar on mobile at
+   all. 2) Comments toggle (#comments-button) <-> comments widget
+   (#comments-box): on every device, any in-page ad caught here is relocated
+   to just after the comments box and allowed to show if it fills.
+   3) Annotation/related-entry chips -- any element carrying the
+   `google-anno-skip` class, which covers every chip variant Google serves
+   (`google-anno-sc` pill/badge tooltips, `goog-rentry` related-entry
+   tooltips, `google-anno-sa-qtx` tooltip text) -- and 4) in-text link ads
+   (`<a class="google-anno">` wrapping a `<span class="google-anno-t">`
+   around an ordinary word, e.g. turning "Calculate" into a
+   double-underlined, clickable ad): both are only guarded inside #header,
+   #footer, the top .info-bar-container nav, or the .side-bar "Site
+   Navigation" widget -- chips are hidden outright there, and in-text links
+   are unwrapped back to plain text there, so the word stays readable
+   without the ad behavior. Elsewhere in the actual page content both are
+   left alone on purpose. Unlike the in-page ad blocks, Google serves many
+   of these chips/links per page load, so removing the guarded-zone ones
+   doesn't cost the page its one shot at an ad the way deleting the in-page
+   block did -- no relocate/poll needed, just hide/unwrap on sight.
+   In the first two cases Google's own placeholder-collapse doesn't reliably
+   fire once we've moved the node, so we poll it: if no real ad iframe shows
+   up within ~2s, we force the reserved space to 0 ourselves, so an unfilled
+   slot never leaves a blank gap. */
+(function () {
+    function isMobile() {
+        return window.matchMedia('(max-width: 768px)').matches;
+    }
+    function isBetween(before, after, el) {
+        if (!before || !after) return false;
+        return !!(before.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+               !!(after.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+    function collapseIfUnfilled(node) {
+        var attempts = 0;
+        var poll = setInterval(function () {
+            attempts++;
+            if (!node.isConnected) {
+                clearInterval(poll);
+                return;
+            }
+            if (node.querySelector('iframe')) {
+                clearInterval(poll);
+                return;
+            }
+            if (attempts >= 10) {
+                node.style.setProperty('display', 'none', 'important');
+                clearInterval(poll);
+            }
+        }, 200);
+    }
+    function handleHeaderNavZone(node) {
+        var header = document.getElementById('header');
+        var nav = document.querySelector('.info-bar-container');
+        if (!isBetween(header, nav, node)) return false;
+        if (isMobile()) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        var target = document.querySelector('.outer-page-content');
+        if (target) {
+            target.before(node);
+        } else if (nav) {
+            nav.after(node);
+        }
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function handleCommentsZone(node) {
+        var button = document.getElementById('comments-button');
+        var box = document.getElementById('comments-box');
+        if (!isBetween(button, box, node)) return false;
+        box.after(node);
+        collapseIfUnfilled(node);
+        return true;
+    }
+    function inAnnotationGuardedZone(el) {
+        return !!(el.closest('#header') || el.closest('#footer') || el.closest('.side-bar') || el.closest('.info-bar-container'));
+    }
+    function handleAnnotationChip(node) {
+        if (node.classList && node.classList.contains('google-anno-skip') && inAnnotationGuardedZone(node)) {
+            node.style.setProperty('display', 'none', 'important');
+            return true;
+        }
+        return false;
+    }
+    function handleInTextLinkAd(node) {
+        if (node.classList && node.classList.contains('google-anno') && node.parentNode && inAnnotationGuardedZone(node)) {
+            node.replaceWith(document.createTextNode(node.textContent));
+            return true;
+        }
+        return false;
+    }
+    function handle(node) {
+        if (node.nodeType !== 1) return;
+        if (node.classList && node.classList.contains('google-auto-placed')) {
+            if (handleHeaderNavZone(node)) return;
+            handleCommentsZone(node);
+            return;
+        }
+        if (handleAnnotationChip(node)) return;
+        if (handleInTextLinkAd(node)) return;
+        if (node.querySelectorAll) {
+            node.querySelectorAll('.google-auto-placed').forEach(function (n) {
+                if (handleHeaderNavZone(n)) return;
+                handleCommentsZone(n);
+            });
+            node.querySelectorAll('.google-anno-skip').forEach(function (n) {
+                handleAnnotationChip(n);
+            });
+            node.querySelectorAll('.google-anno').forEach(function (n) {
+                handleInTextLinkAd(n);
+            });
+        }
+    }
+    new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+            m.addedNodes.forEach(handle);
+        });
+    }).observe(document.documentElement, {childList: true, subtree: true});
+})();
+</script>
+    <!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+    <body>            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL6QNQR"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->        <div id="compact-nav" aria-hidden="true" style="display:none">
+  <a href="/audio-editor-urdu" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="/audio/img/logo.png?v=2"></a>
+  <a class="compact-nav-title" href="/audio-editor-urdu" tabindex="-1">Audio Editor</a>
+  <ul class="compact-nav-links">
+    <li><a href="/math" tabindex="-1">Math Tutorials</a></li>
+    <li><a href="/calculators" tabindex="-1">Calculators</a></li>
+    <li><a href="/tools" tabindex="-1">Tools</a></li>
+    <li><a href="/mobile-apps" tabindex="-1">Mobile Apps</a></li>
+    <li><a href="/puzzles" tabindex="-1">Puzzles</a></li>
+    <li><a href="/memes" tabindex="-1">Memes</a></li>
+    <li><a href="/" tabindex="-1"><b>MES.fm</b></a></li>
+  </ul>
+</div>
+<div id="outer-container" class="outer-container has-aside">                <div class = "inner-container">                        <div id="header" class="header" role="banner">                                <a class="logo-image-container" href='/audio-editor-urdu'><img height="88" width="88" id="logo" class="logo" alt="MES آڈیو ایڈیٹر logo" src="/audio/img/logo.png?v=2"></a>
+                            <div class="logo-text-container">
+                                <a class="calculator-title-link" href='/audio-editor-urdu'>
+                                    <p class="calculator-title">MES آڈیو ایڈیٹر</p>
+                                </a>
+                                <p dir="rtl" class="tag-line">آڈیو کاٹیں، صاف کریں اور ایکسپورٹ کریں۔ نہ اپ لوڈ، نہ سائن اپ۔</p>                            </div>
+
+                            <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
+                        <div class="info-bar-container" role="navigation" aria-label="Primary">
+                            <ul id="info-bar" class="info-bar shadow">
+                                <li class="info-bar__item"><a class="info-bar__item__text" href='/audio-editor-urdu'>Home</a></li>                                    <li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/calculators'>Calculators</a></li><li class="info-bar__item"><a class="info-bar__item__text" href='https://mes.fm/tools'>Tools</a></li>                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" href='/contact'>Contact Us</a></li>
+                                    <li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' href='https://mes.fm/donate.html'>Donate</a></li><li class="info-bar__item info-bar__item--utility" style="display:none !important;"><a class="info-bar__item__text" target='_blank' rel="nofollow" href='https://matheasy.substack.com/'>Subscribe</a></li>
+                                    <li class="info-bar__item info-bar__item--mes"><a class="info-bar__item__text" href="/" style="font-weight:bold;">MES.fm</a></li></ul>
+                        </div>
+                                                        <!-- (Responsive) Horizontal -->
+                                                        <div class="outer-page-content">
+                            <div class="page-content" role="main">                                    <div class="color-box"></div>
+                                    <h1 dir="rtl" class="page-title">AI سے بیک گراؤنڈ شور ہٹانے والا مفت آن لائن آڈیو ایڈیٹر</h1>                                        <p dir="rtl" class="page-description">AI سے شور ہٹانے والا مفت آن لائن آڈیو ایڈیٹر: آڈیو یا ویڈیو کی آواز کھولیں، بیک گراؤنڈ شور، ہم اور کلک ہٹائیں، کاٹیں، فیڈ کریں، ٹریک ترتیب دیں، لاؤڈنیس -14 یا -16 LUFS پر سیٹ کریں اور WAV، MP3 یا M4A میں ایکسپورٹ کریں۔ سب کچھ آپ کے براؤزر میں چلتا ہے: کچھ بھی اپ لوڈ نہیں ہوتا۔</p>                                    	<div id="main-content" data-tool data-text-scale>
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+		<nav class="au-lang" aria-label="زبان"><details><summary>&#127760; اردو</summary><ul><li><a href="/audio" hreflang="en" lang="en">English</a></li><li><a href="/audio-editor-hindi" hreflang="hi" lang="hi">हिन्दी</a></li><li><a href="/audio-editor-bangla" hreflang="bn" lang="bn">বাংলা</a></li><li><a href="/audio-editor-tamil" hreflang="ta" lang="ta">தமிழ்</a></li><li><a href="/audio-editor-telugu" hreflang="te" lang="te">తెలుగు</a></li><li><a href="/audio-editor-marathi" hreflang="mr" lang="mr">मराठी</a></li><li><a href="/audio-editor-urdu" hreflang="ur" lang="ur" aria-current="page">اردو</a></li><li><a href="/editor-de-audio" hreflang="es" lang="es">Español</a></li><li><a href="/editor-de-audio-pt" hreflang="pt-BR" lang="pt-BR">Português</a></li><li><a href="/editor-audio" hreflang="id" lang="id">Bahasa Indonesia</a></li></ul></details></nav>
+	<div class="tu au" id="au" tabindex="-1" lang="ur" dir="rtl">
+		<div class="au-top">
+			<div class="au-menus" id="au-menus"></div>
+			<div class="au-search"><input type="search" id="au-search" placeholder="🔍 کمانڈ اور ایفیکٹ تلاش کریں… (Ctrl+K)" aria-label="کمانڈ اور ایفیکٹ تلاش کریں" autocomplete="off"><div class="au-sres" id="au-sres" role="listbox" hidden></div></div>
+			<div class="au-top-r">
+				<button type="button" class="au-ib" id="au-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
+				<button type="button" class="au-ib" id="au-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
+				<button type="button" class="au-ib" id="au-winbtn" aria-pressed="false" title="براؤزر ونڈو بھریں (F)">⤢ <span class="au-txt">&nbsp;ونڈو بھریں</span></button>
+				<button type="button" class="au-ib" id="au-fsbtn" title="فل اسکرین (Shift+F)" aria-label="فل اسکرین">⛶</button>
+				<button type="button" class="au-btn au-btn--magic" id="au-noisebtn" title="AI سے بیک گراؤنڈ شور ہٹائیں (N)">✨ شور ہٹائیں</button>
+				<button type="button" class="au-btn au-btn--primary" id="au-export" title="WAV، MP3 یا M4A میں ایکسپورٹ (Ctrl+E)">ایکسپورٹ</button>
+			</div>
+		</div>
+		<div class="au-simple" id="au-simple" hidden>
+			<div class="au-s-row au-s-main">
+				<button type="button" class="au-s-rec" id="aus-rec" aria-pressed="false"><span class="au-s-dot"></span><span id="aus-rect">ریکارڈ</span></button>
+				<button type="button" class="au-s-big" id="aus-open">📂<span>فائل کھولیں</span></button>
+			</div>
+			<p class="au-s-intro">اپنی آواز ریکارڈ کریں یا کوئی آڈیو یا ویڈیو فائل کھولیں، پھر اسے کاٹیں، AI سے بیک گراؤنڈ شور ہٹائیں اور محفوظ یا شیئر کریں۔ سب کچھ آپ کی ڈیوائس پر رہتا ہے۔</p>
+			<div class="au-s-tools" id="aus-tools" hidden>
+				<div class="au-s-row">
+					<button type="button" class="au-s-btn au-s-play" id="aus-play" aria-label="چلائیں">▶</button>
+					<span class="au-s-time" id="aus-time">0:00</span>
+					<button type="button" class="au-s-btn" id="aus-undo" disabled>↶ Undo</button>
+				</div>
+				<div class="au-s-hint" id="aus-hint">کوئی حصہ منتخب کرنے کے لیے ویوفارم پر کھینچیں، پھر اسے رکھیں یا مٹائیں۔</div>
+				<div class="au-s-row au-s-wrap">
+					<button type="button" class="au-s-btn" id="aus-trim" disabled>✂ منتخب حصہ رکھیں</button>
+					<button type="button" class="au-s-btn" id="aus-del" disabled>🗑 منتخب حصہ مٹائیں</button>
+					<button type="button" class="au-s-btn" id="aus-all">سب منتخب کریں</button>
+				</div>
+				<div class="au-s-row au-s-wrap">
+					<button type="button" class="au-s-btn au-s-magic" id="aus-noise">✨ شور ہٹائیں</button>
+					<button type="button" class="au-s-btn au-s-magic" id="aus-enh">🎙️ آواز بہتر کریں</button>
+				</div>
+				<div class="au-s-row au-s-wrap au-s-save">
+					<select id="aus-fmt" aria-label="فائل کی قسم"><option value="m4a">M4A (چھوٹی، اچھی)</option><option value="mp3">MP3</option><option value="wav">WAV (سب سے بڑی)</option></select>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-share" hidden>📤 شیئر</button>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-save">⬇ محفوظ کریں</button>
+				</div>
+			</div>
+			<div class="au-s-row au-s-foot"><button type="button" class="au-s-link" id="aus-tone">شور والی ٹیسٹ کلپ آزمائیں</button><button type="button" class="au-s-link" id="aus-full">مکمل ایڈیٹر (ٹریک، ایفیکٹ، مارکر) ›</button></div>
+		</div>
+		<button type="button" class="au-s-back" id="aus-back" hidden>‹ آسان موڈ</button>
+		<div class="au-trans">
+			<button type="button" class="au-ib" id="au-home" title="شروع میں جائیں (Home)" aria-label="شروع میں جائیں">⏮</button>
+			<button type="button" class="au-ib" id="au-play" title="چلائیں / روکیں (Space)" aria-label="چلائیں">▶</button>
+			<button type="button" class="au-ib" id="au-stop" title="روکیں" aria-label="روکیں">⏹</button>
+			<button type="button" class="au-ib" id="au-end" title="آخر میں جائیں (End)" aria-label="آخر میں جائیں">⏭</button>
+			<button type="button" class="au-ib au-ib--rec" id="au-rec" aria-pressed="false" title="مائیکروفون سے ریکارڈ کریں (R)" aria-label="ریکارڈ">⏺</button>
+			<button type="button" class="au-ib" id="au-loop" aria-pressed="false" title="منتخب حصے کو لوپ کریں (L)" aria-label="لوپ">🔁</button>
+			<span class="au-time" id="au-time" title="پلے ہیڈ / کرسر">0:00.000</span>
+			<span class="au-selbox"><span>انتخاب</span><input type="text" id="au-sa" aria-label="انتخاب کی شروعات" placeholder="شروعات" spellcheck="false"><span>–</span><input type="text" id="au-sb" aria-label="انتخاب کا اختتام" placeholder="اختتام" spellcheck="false"><span id="au-slen"></span></span>
+			<span class="au-vsep"></span>
+			<button type="button" class="au-ib" id="au-zout" title="زوم آؤٹ (−)" aria-label="زوم آؤٹ">−</button>
+			<button type="button" class="au-ib" id="au-zin" title="زوم اِن (+)" aria-label="زوم اِن">+</button>
+			<button type="button" class="au-ib" id="au-zfit" title="پورا پروجیکٹ دکھائیں (0)">فٹ</button>
+			<button type="button" class="au-ib" id="au-zsel" title="انتخاب پر زوم کریں (Ctrl+3)">انتخاب</button>
+			<button type="button" class="au-ib" id="au-spec" aria-pressed="false" title="اسپیکٹروگرام ویو (S)">اسپیکٹروگرام</button>
+			<span class="au-vsep"></span>
+			<span class="au-vol"><span aria-hidden="true">🔊</span><input type="range" id="au-vol" min="0" max="1.5" step="0.01" value="1" aria-label="پلے بیک والیوم"><canvas class="au-meter" id="au-meter" width="120" height="14" role="img" aria-label="پلے بیک لیول میٹر" title="پلے بیک لیول: چلتے وقت آواز کتنی اونچی ہے (سبز ٹھیک، پیلا اونچا، سرخ بہت اونچا)"></canvas></span>
+		</div>
+		<div class="au-recbar" id="au-recbar" hidden><span class="au-recdot"></span><b>ریکارڈنگ</b><span id="au-rect">0:00</span><canvas class="au-meter" id="au-recmeter" width="160" height="14"></canvas><button type="button" class="au-btn au-btn--sm" id="au-recredo" title="یہ ٹیک ہٹا کر دوبارہ ریکارڈنگ شروع کریں (Backspace)">↺ دوبارہ شروع کریں</button><button type="button" class="au-btn au-btn--sm" id="au-recstop">⏹ ریکارڈنگ روکیں</button></div>
+		<div class="au-cmpbar" id="au-cmpbar" hidden></div>
+		<div class="au-main">
+			<div class="au-tl" id="au-tl">
+				<div class="au-rulerrow"><div class="au-corner"><button type="button" class="au-btn au-btn--sm" id="au-addtrack" title="خالی ٹریک شامل کریں">+ ٹریک</button></div><canvas class="au-ruler" id="au-ruler" aria-label="ٹائم لائن: پلے ہیڈ ہلانے کے لیے کلک کریں، منتخب کرنے کے لیے کھینچیں"></canvas></div>
+				<div class="au-scroll" id="au-scroll">
+					<div class="au-rows"><div class="au-heads" id="au-heads"></div><div class="au-lanes" id="au-lanes"><canvas id="au-cv" tabindex="0" role="application" aria-label="ٹریک: منتخب کرنے کے لیے کھینچیں، کلپ ہلانے کے لیے اس کی عنوان پٹی کھینچیں"></canvas><canvas id="au-over"></canvas></div></div>
+				</div>
+				<div class="au-agrip" id="au-agrip" role="separator" aria-orientation="horizontal" tabindex="0" title="ٹریک والے حصے کو اونچا یا چھوٹا کرنے کے لیے کھینچیں (ڈبل کلک: پہلے جیسا)" aria-label="ٹریک والے حصے کا سائز بدلیں: کھینچیں، یا اوپر نیچے تیر والی کلیدیں دبائیں"><span></span></div>
+				<div class="au-hbar"><span id="au-vrange">0:00 – 0:00</span><input type="range" id="au-hs" min="0" max="1000" value="0" aria-label="ٹائم لائن اسکرول کریں"><span id="au-zoomlab"></span></div>
+				<div class="au-empty" id="au-empty">
+					<div class="au-empty-in">
+						<div class="au-empty-t">مفت آن لائن آڈیو ایڈیٹر</div>
+						<div class="au-empty-s">آڈیو (MP3، WAV، M4A، OGG، FLAC) یا ویڈیو (MP4، MOV، WebM، AVI، MKV، WMV) کھولیں یا یہاں چھوڑیں اور اس کی آواز ایڈٹ کریں۔ AI سے بیک گراؤنڈ شور ہٹائیں، کاٹیں، فیڈ کریں، لاؤڈنیس سیٹ کریں اور ایکسپورٹ کریں۔ سب کچھ آپ کی ڈیوائس پر رہتا ہے۔</div>
+						<div class="au-empty-b"><button type="button" class="au-btn au-btn--primary" id="au-e-open">آڈیو یا ویڈیو کھولیں</button> <button type="button" class="au-btn" id="au-e-rec">⏺ ریکارڈ</button> <button type="button" class="au-btn" id="au-e-tone">شور والی ٹیسٹ کلپ آزمائیں</button></div>
+						<div class="au-empty-r" id="au-restore" hidden></div>
+					</div>
+				</div>
+			</div>
+			<aside class="au-side" id="au-side" hidden aria-label="ایفیکٹ کی سیٹنگ">
+				<div class="au-ph"><span id="au-ptitle">ایفیکٹ</span><button type="button" id="au-pclose" title="بند کریں (Esc)" aria-label="بند کریں">✕</button></div>
+				<div class="au-pb" id="au-pbody"></div>
+			</aside>
+		</div>
+		<div class="au-status"><span id="au-st-len">کوئی آڈیو نہیں</span><span id="au-st-rate"></span><span id="au-st-sel"></span><span class="au-hint" id="au-hint">Space = چلائیں · کھینچیں = منتخب کریں · Ctrl+وہیل = زوم · ? = شارٹ کٹس</span></div>
+		<input type="file" id="au-file" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm,.mp4,.mov,.m4v,.mkv,.avi,.wmv,.asf,.flv,.mpg,.mpeg,.ts,.mts,.m2ts,.3gp,.vob,.aif,.aiff,.caf" multiple hidden>
+	</div>
+
+		<div class="tu-seo">
+		<h2>AI سے شور ہٹانے والا مفت آن لائن آڈیو ایڈیٹر</h2>
+		<p>MES Audio Editor، Audacity جیسا ایک آڈیو ایڈیٹر ہے جو آپ کے براؤزر میں چلتا ہے۔ آڈیو یا کسی ویڈیو کی آواز کھولیں، اسے کاٹیں اور کئی ٹریکس پر آگے پیچھے کریں، فیڈ اِن اور فیڈ آؤٹ کریں، YouTube یا پوڈکاسٹ کے لیے لاؤڈنیس سیٹ کریں اور نیورل نیٹ ورک سے بیک گراؤنڈ شور ہٹائیں۔ <b>کچھ بھی اپ لوڈ نہیں ہوتا</b>: ڈی کوڈنگ، ایڈیٹنگ، AI ماڈل اور ایکسپورٹ، سب آپ کی ڈیوائس پر ہی چلتا ہے۔</p>
+		<h3>آڈیو سے شور کیسے ہٹتا ہے</h3>
+		<p>ڈیفالٹ ماڈل <b>DeepFilterNet 3</b> ہے (Hendrik Schröter اور ساتھی، MIT / Apache-2.0)، جو گفتگو کو بہتر بنانے والا نیٹ ورک ہے: یہ پنکھا، اے سی، ٹریفک، سرسراہٹ، کی بورڈ اور کمرے کا شور ہٹاتا ہے اور آواز کو قدرتی رکھتا ہے۔ پہلی بار 8.6 MB ڈاؤن لوڈ ہوتا ہے، اس کے بعد براؤزر اسے رکھ لیتا ہے، اور یہ WebAssembly کے ذریعے پروسیسر پر لیپ ٹاپ میں اصل وقت سے تقریباً 10 سے 30 گنا تیز چلتا ہے (10 منٹ کی ریکارڈنگ ایک منٹ سے کافی کم میں ہو جاتی ہے)۔ آڈیو 48 kHz پر پروسیس ہوتا ہے اور پھر آپ کے پروجیکٹ کے ریٹ پر واپس بدل دیا جاتا ہے۔ <b>RNNoise</b> (Xiph، BSD) ایک چھوٹا، تیز اور نرم متبادل ہے۔ <b>اسپیکٹرل گیٹ</b> کو کسی ڈاؤن لوڈ کی ضرورت نہیں: چند سیکنڈ صرف شور والے منتخب کریں، “منتخب حصے سے شور سیکھیں” دبائیں، پھر لگائیں؛ یہ موسیقی پر مسلسل سرسراہٹ کے لیے بھی موزوں ہے، جہاں گفتگو والے ماڈل صحیح ٹول نہیں۔ <b>طاقت</b> طے کرتی ہے کہ شور کتنا کم کیا جائے، تاکہ آپ کمرے کی تھوڑی آواز رکھ سکیں۔ “ہم ہٹائیں” 50 یا 60 Hz کی بجلی کی بھنبھناہٹ اور اس کے ہارمونکس کاٹ دیتا ہے۔</p>
+		<p>منتخب حصے کو پروسیس کر کے سننے کے لیے <b>پری ویو</b> دبائیں، پھر چلتے چلتے <b>پہلے</b> (آپ کی اصل آواز) اور <b>بعد میں</b> کے درمیان بدلیں (بٹن B)؛ پینل دونوں ویوفارم ایک دوسرے کے اوپر دکھاتا ہے، پیچھے سرمئی اور آگے روشن، اور بتاتا ہے کہ بیک گراؤنڈ شور کتنا کم ہوا۔ <b>لگائیں</b> کے بعد ٹریکس کے اوپر <b>موازنہ</b> پٹی پورے ٹریک کا اصل یا صاف شدہ روپ چلاتی ہے، اور Undo (Ctrl+Z) اسے واپس لے لیتا ہے۔ گفتگو والے ماڈل آوازوں پر تربیت یافتہ ہیں: موسیقی یا گانے پر وہ ساز بھی ہٹا سکتے ہیں، اس لیے پہلے پری ویو کریں۔</p>
+		<h3>“میں نے شور ہٹایا مگر میری ویڈیو اب بھی شور والی لگتی ہے”</h3>
+		<p>صاف آواز صرف اس فائل میں ہے جو آپ ایکسپورٹ کرتے ہیں۔ Camtasia، Premiere، CapCut یا کسی اور ویڈیو ایڈیٹر میں ویڈیو کلپ کے ساتھ اس کی اپنی (شور والی) آواز اب بھی رہتی ہے: وہ ٹریک میوٹ کریں یا ہٹائیں اور ایکسپورٹ کی گئی فائل استعمال کریں، ورنہ دونوں سنائی دیں گی۔ بجلی کی ہم، بجلی سے آنے والی 50 Hz (پاکستان، یورپ، ایشیا، افریقہ، آسٹریلیا) یا 60 Hz (شمالی امریکہ) کی دھیمی بھنبھناہٹ ہے؛ اگر سنائی دے تو شور ہٹانے میں “بجلی کی ہم” چالو کریں یا “ہم ہٹائیں” استعمال کریں۔</p>
+		<h3>سوالات</h3>
+		<dl>
+			<dt>میں کون سی فائلیں کھول سکتا ہوں؟</dt><dd>جو بھی آپ کا براؤزر ڈی کوڈ کر سکے: MP3، WAV، M4A / AAC، OGG / Opus، FLAC اور MP4، MOV اور WebM ویڈیوز کا آڈیو ٹریک۔ AVI، MKV، WMV، FLV، MPG اور ایسی دوسری ویڈیوز، جنہیں براؤزر نہیں پڑھ پاتا، ان کی آواز <a href="/convert-video">Video Converter</a> کا انجن نکالتا ہے: MP3، PCM یا AAC آواز والی AVI براہِ راست، باقی سب صفحے میں ffmpeg سے (تقریباً 31 MB کا ایک بار کا ڈاؤن لوڈ)۔ کئی فائلیں الگ الگ ٹریکس کے طور پر کھلتی ہیں جنہیں آپ ایک قطار میں رکھ سکتے ہیں۔</dd>
+			<dt>YouTube یا پوڈکاسٹ کے لیے اپنے آڈیو کی لاؤڈنیس درست کیسے کروں؟</dt><dd>ایفیکٹس → نارملائز / لاؤڈنیس → −1 dBTP ٹرو پیک سیلنگ کے ساتھ −14 LUFS (YouTube، Spotify) یا −16 LUFS (پوڈکاسٹ، Apple) چنیں۔ میٹر پہلے اور بعد کی انٹیگریٹڈ لاؤڈنیس، لاؤڈنیس رینج اور ٹرو پیک دکھاتا ہے۔ ایکسپورٹ والے ڈائیلاگ میں بھی یہ محفوظ کرتے وقت ہو سکتا ہے۔</dd>
+			<dt>“آواز بہتر کریں” کیا کرتا ہے؟</dt><dd>آواز کی ریکارڈنگ کے لیے ایک کلک: AI سے شور ہٹانا، گڑگڑاہٹ کے لیے لو کٹ، آواز صاف کرنے والا EQ، ہلکا کمپریسر اور −16 LUFS تک لاؤڈنیس۔ ہر قدم بند کیا جا سکتا ہے۔</dd>
+			<dt>کن فارمیٹس میں ایکسپورٹ کر سکتا ہوں؟</dt><dd>WAV (16-bit، 24-bit یا 32-bit float)، MP3 (64 سے 320 kbps، صفحے میں lamejs سے انکوڈ) اور M4A / AAC، جہاں براؤزر میں AAC انکوڈر ہو (Chrome، Edge اور Safari)۔ پورا پروجیکٹ یا صرف منتخب حصہ ایکسپورٹ کریں، اور مارکرز کو ایسی ٹیکسٹ فائل کے طور پر جسے Audacity امپورٹ کر سکے۔</dd>
+			<dt>کیا میرا کام محفوظ ہوتا ہے؟</dt><dd>ہر تبدیلی کے چند سیکنڈ بعد پروجیکٹ اسی براؤزر (IndexedDB) میں محفوظ ہو جاتا ہے، تاکہ ٹیب بند کرنے کے بعد بھی آپ اسے واپس لا سکیں۔ کسی سرور پر کچھ نہیں بھیجا جاتا۔</dd>
+			<dt>کیا میں کسی ویڈیو کی آواز ایڈٹ کر سکتا ہوں؟</dt><dd>ہاں: ویڈیو کھولیں، اس کی آواز صاف اور ایڈٹ کریں، WAV یا M4A ایکسپورٹ کریں، اور اسے <a href="/compress-video">Video Compressor</a> یا اپنے ویڈیو ایڈیٹر سے واپس جوڑیں۔ آڈیو فائلیں چھوٹی کرنی ہوں تو <a href="/compress">MES Compressor</a> چھوٹی MP3 بناتا ہے۔</dd>
+			<dt>کی بورڈ شارٹ کٹس؟</dt><dd>Space چلائیں / روکیں، Ctrl+Z / Ctrl+Shift+Z Undo / Redo، Ctrl+X / C / V کاٹیں، کاپی، پیسٹ، Delete، Ctrl+I تقسیم، Ctrl+T ٹرم، Ctrl+L خاموشی، M مارکر، R ریکارڈ، + / − زوم، N شور ہٹانا، F ونڈو بھریں۔ پوری فہرست کے لیے ایڈیٹر میں ? دبائیں۔</dd>
+		</dl>
+	</div>
+	</div>                                    <!-- PC (Responsive/Rectangle) Matched Content -->
+                                                                        <div id="comments-button" class="hide-div-button button">Comments</div>
+                                    <div id="comments-box" class="hide">
+                                        <div id="fastcomments-widget"></div>                                    </div>
+<!-- MES-BOTTOM-AD -->
+<div class="mes-bottom-ad" data-ad-slot="1532113018" data-ad-mode="rect" style="clear:both;text-align:center;margin:1.5em auto 1.75em;min-height:330px;"><span style="display:block;font-size:11px;line-height:16px;color:#595959;margin-bottom:4px;">Advertisement</span><div class="mes-bottom-ad__slot" style="width:100%;min-height:310px;margin:0 auto;"></div></div>
+<!-- /MES-BOTTOM-AD -->
+                            </div>
+                        <!-- MES-ASIDE -->
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/relative-time-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/relative-time-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Relative Time Calculator: How Long Does an Hour Feel at Another Age?</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<!-- /MES-ASIDE -->
+</div>
+
+                        <!-- side bar -->                            <div class="side-bar">                                    <div class="navbar-container shadow" role="navigation" aria-label="Site menu">
+                                        <div class="button button--navbar" id="navbar-button" style="position:relative;">Site Navigation<span class="dropdown-symbol dropdown-symbol--dark" style="position:absolute;right:0.75em;top:50%;transform:translateY(-50%);margin-left:0;">&#9660;</span></div>    <ul id="navbar" class="navbar">
+    <li class="navbar__item navbar__item--social"><div class="social-container social-container--navbar"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li>
+    <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a></div></li>
+        <li class="navbar__item"><a class="navbar__link navbar__link--first" href="/audio-editor-urdu">Home</a></li>    <li class="navbar__item"><a class="navbar__link" href="/calculators">Calculators</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/tools">Tools</a></li>
+    <li class="navbar__item"><a class="navbar__link" href="/browser">Browser Extensions</a></li>
+    <!-- MOBILE-APPS-DROPDOWN-REMOVED: every linked app was a dead App Store / Play Store listing (lapsed developer account) -- add an entry back here for each app once it is relaunched -->
+    <li class="navbar__item"><a target="_blank" class="navbar__link" target='_blank' href="https://teespring.com/stores/mes-store">Store</a></li><li class="navbar__item"><a class="navbar__link" target="_blank" rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a></li></ul>
+                                    </div>                                        <!-- (Responsive) Vertical -->
+
+                            </div>                            <!-- (Responsive) Horizontal -->
+                                            </div><div id="footer" class="footer" role="contentinfo">
+            <div class="footer__item-container">
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/calculators.html">Calculators</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm/tools">Tools</a>
+            </div>
+
+            <div class="footer__item footer__item--extra-padding">
+                <a class="footer__text footer__text--title" href="https://mes.fm/mobile-apps">Mobile Apps</a>
+            </div>
+
+            <div class="footer__item">
+                <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
+            </div>
+        </div>
+        <a class="footer__text" href="/contact">Contact Us</a><span class="footer__separator"> | </span>
+        <a class="footer__text" href="/privacy-policy">Privacy Policy</a><span class="footer__separator"> | </span>
+        <a class="footer__text" target='_blank' href="https://mes.fm/donate.html">Donate</a><span class="footer__separator"> | </span><a class="footer__text" target='_blank' rel="nofollow" href="https://matheasy.substack.com/">Subscribe</a>
+        <div class="footer__text--extra-info"><span class="footer__text footer__text--copyright">Copyright &copy; <span id="copyright-year">2013</span>&nbsp;Math Easy Solutions</span></div>
+    </div>
+
+
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script>
+        var MES_Vars = {
+            mobile:false,
+            hide_search:false,
+            current_tab:0
+        }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
+	<script src="/audio/js/i18n-ur.js?v=0782545d" defer></script><script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/denoise.js?v=2" defer></script><script src="/audio/js/audio.js?v=11" defer></script>
+            <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
+  // Floating compact header bar (see #compact-nav CSS): appears once the
+  // header + nav bar have scrolled off the top; nav links that don't fit
+  // are dropped from the right, least important first, rather than
+  // wrapping. The last link is kept longest, so drop from the one before
+  // it first. Visibility is driven from here via the inline style
+  // attribute (not just a CSS class) so the bar stays hidden even if the
+  // stylesheet rules for it get stripped -- see the CSS comment above
+  // #compact-nav. Identical across every page that has this bar.
+  (function () {
+    var bar = document.getElementById('compact-nav');
+    var nav = document.querySelector('.info-bar-container');
+    var links = bar && bar.querySelector('.compact-nav-links');
+    if (!bar || !nav || !links) return;
+    var items = Array.prototype.slice.call(links.children);
+    var stuck = false, ticking = false, hideTimer;
+
+    function fit() {
+      items.forEach(function (li) { li.style.display = ''; });
+      var order = items.slice(0, -1).reverse();
+      for (var i = 0; i < order.length && links.scrollWidth > links.clientWidth; i++) {
+        order[i].style.display = 'none';
+      }
+      if (links.scrollWidth > links.clientWidth) items[items.length - 1].style.display = 'none';
+    }
+
+    function update() {
+      ticking = false;
+      var now = nav.getBoundingClientRect().bottom < 0;
+      if (now === stuck) return;
+      stuck = now;
+      bar.setAttribute('aria-hidden', stuck ? 'false' : 'true');
+      Array.prototype.forEach.call(bar.querySelectorAll('a'), function (a) {
+        a.tabIndex = stuck ? 0 : -1;
+      });
+      if (stuck) {
+        clearTimeout(hideTimer);
+        bar.style.display = 'flex';
+        fit();
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { document.body.classList.add('is-stuck'); });
+        });
+      } else {
+        document.body.classList.remove('is-stuck');
+        hideTimer = setTimeout(function () { bar.style.display = 'none'; }, 220);
+      }
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (stuck) fit(); });
+    update();
+  })();
+</script><script src="/main_js/display-controls.js?v=1.7" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+
+</html>

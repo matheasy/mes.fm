@@ -186,6 +186,27 @@ function dfnChild() { return (async function () {
 		ok(Math.abs(A.noiseFloor([y], sr) - A.noiseFloor([out], sr)) > 15, "noiseFloor() sees the change the page reports");
 	}
 })(); }
+/* translations (the language pages: build_tool_apps.py AU_LANG_SLUGS): every language has every key, same {placeholders} and tags, no ASCII ", an FAQ file;
+   the noise report carries the numbers the translated pages format themselves */
+if (process.argv.indexOf("--dfn") < 0) (function () {
+	var fs = require("fs"), I = require(path.join(__dirname, "audio/i18n/extract.js")), dir = path.join(__dirname, "audio/i18n");
+	var en = JSON.parse(fs.readFileSync(path.join(dir, "en.json"), "utf8")).strings;
+	ok(JSON.stringify(en) === JSON.stringify(I.keys), "i18n/en.json is up to date (run node tool_apps_src/audio/i18n/extract.js)");
+	ok(I.keys.indexOf("Noise removal (AI)") >= 0 && I.keys.indexOf("Removing noise (AI)") >= 0 && I.keys.indexOf("Voice clarity") >= 0, "effect names, progress messages and EQ presets are keys");
+	var src = fs.readFileSync(path.join(__dirname, "../build_tool_apps.py"), "utf8"), m = /^AU_LANG_SLUGS = \{([\s\S]*?)\}/m.exec(src), codes = m ? (m[1].match(/"([a-zA-Z-]+)":/g) || []).map(function (x) { return x.slice(1, -2); }) : [];
+	ok(codes.length >= 9 && codes[0] === "hi", "AU_LANG_SLUGS lists the languages, Hindi first");
+	codes.forEach(function (c) {
+		var f = path.join(dir, c + ".json"); if (!fs.existsSync(f)) { ok(false, c + ".json exists"); return; }
+		var L = JSON.parse(fs.readFileSync(f, "utf8")), miss = [], bad = [];
+		I.keys.forEach(function (k) { var t = L.s && L.s[k]; if (typeof t !== "string" || !t.trim()) miss.push(k); else if (I.phs(t) !== I.phs(k) || I.tags(t) !== I.tags(k) || (t.indexOf('"') >= 0 && k.indexOf('"') < 0)) bad.push(k); });
+		ok(!miss.length, c + ": every key translated" + (miss.length ? " (missing " + miss.length + ", e.g. " + miss[0] + ")" : ""));
+		ok(!bad.length, c + ": same placeholders / tags, no ASCII quote" + (bad.length ? " (e.g. " + bad[0] + ")" : ""));
+		["name", "title", "page_title", "tag", "desc", "meta_desc", "doc_title", "og_locale", "locale", "dir", "lang_label"].forEach(function (k) { ok(L.meta && L.meta[k], c + ": meta." + k); });
+		ok((L.meta && L.meta.dir) === (c === "ur" ? "rtl" : "ltr"), c + ": text direction");
+		ok(fs.existsSync(path.join(__dirname, "audio/seo/" + c + ".html")), c + ": seo/" + c + ".html");
+	});
+	var r = A.noiseReport(-39, -84); ok(r.b === -39 && r.a === -84 && r.db === 45, "noiseReport returns before / after for the translated text");
+})();
 /* run in a child process: onnxruntime-node aborts in its own native teardown when the process exits */
 if (process.argv.indexOf("--dfn") >= 0) {
 	pass = 0; fail = 0; dfnChild().catch(function (e) { console.log("FAIL: DeepFilterNet end-to-end threw: " + (e && e.stack || e)); }).then(function () { console.log("@@" + pass + "/" + fail); process.reallyExit(0); });

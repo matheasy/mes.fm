@@ -1,110 +1,93 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
-	<div class="tu au" id="au" tabindex="-1">
+{{LANGSW}}
+	<div class="tu au" id="au" tabindex="-1"{{AUATTR}}>
 		<div class="au-top">
 			<div class="au-menus" id="au-menus"></div>
-			<div class="au-search"><input type="search" id="au-search" placeholder="🔍 Search commands and effects… (Ctrl+K)" aria-label="Search commands and effects" autocomplete="off"><div class="au-sres" id="au-sres" role="listbox" hidden></div></div>
+			<div class="au-search"><input type="search" id="au-search" placeholder="{{tr:🔍 Search commands and effects… (Ctrl+K)}}" aria-label="{{tr:Search commands and effects}}" autocomplete="off"><div class="au-sres" id="au-sres" role="listbox" hidden></div></div>
 			<div class="au-top-r">
-				<button type="button" class="au-ib" id="au-undo" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>↶</button>
-				<button type="button" class="au-ib" id="au-redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo" disabled>↷</button>
-				<button type="button" class="au-ib" id="au-winbtn" aria-pressed="false" title="Fill the browser window (F)">⤢ <span class="au-txt">&nbsp;Fill window</span></button>
-				<button type="button" class="au-ib" id="au-fsbtn" title="Full screen (Shift+F)" aria-label="Full screen">⛶</button>
-				<button type="button" class="au-btn au-btn--magic" id="au-noisebtn" title="Remove background noise with AI (N)">✨ Remove noise</button>
-				<button type="button" class="au-btn au-btn--primary" id="au-export" title="Export WAV, MP3 or M4A (Ctrl+E)">Export</button>
+				<button type="button" class="au-ib" id="au-undo" title="{{tr:Undo (Ctrl+Z)}}" aria-label="{{tr:Undo}}" disabled>↶</button>
+				<button type="button" class="au-ib" id="au-redo" title="{{tr:Redo (Ctrl+Shift+Z)}}" aria-label="{{tr:Redo}}" disabled>↷</button>
+				<button type="button" class="au-ib" id="au-winbtn" aria-pressed="false" title="{{tr:Fill the browser window (F)}}">⤢ <span class="au-txt">&nbsp;{{tr:Fill window}}</span></button>
+				<button type="button" class="au-ib" id="au-fsbtn" title="{{tr:Full screen (Shift+F)}}" aria-label="{{tr:Full screen}}">⛶</button>
+				<button type="button" class="au-btn au-btn--magic" id="au-noisebtn" title="{{tr:Remove background noise with AI (N)}}">{{tr:✨ Remove noise}}</button>
+				<button type="button" class="au-btn au-btn--primary" id="au-export" title="{{tr:Export WAV, MP3 or M4A (Ctrl+E)}}">{{tr:Export}}</button>
 			</div>
 		</div>
 		<div class="au-simple" id="au-simple" hidden>
 			<div class="au-s-row au-s-main">
-				<button type="button" class="au-s-rec" id="aus-rec" aria-pressed="false"><span class="au-s-dot"></span><span id="aus-rect">Record</span></button>
-				<button type="button" class="au-s-big" id="aus-open">📂<span>Open a file</span></button>
+				<button type="button" class="au-s-rec" id="aus-rec" aria-pressed="false"><span class="au-s-dot"></span><span id="aus-rect">{{tr:Record}}</span></button>
+				<button type="button" class="au-s-big" id="aus-open">📂<span>{{tr:Open a file}}</span></button>
 			</div>
-			<p class="au-s-intro">Record your voice or open an audio or video file, then cut it, remove background noise with AI and save or share it. Everything stays on your device.</p>
+			<p class="au-s-intro">{{tr:Record your voice or open an audio or video file, then cut it, remove background noise with AI and save or share it. Everything stays on your device.}}</p>
 			<div class="au-s-tools" id="aus-tools" hidden>
 				<div class="au-s-row">
-					<button type="button" class="au-s-btn au-s-play" id="aus-play" aria-label="Play">▶</button>
+					<button type="button" class="au-s-btn au-s-play" id="aus-play" aria-label="{{tr:Play}}">▶</button>
 					<span class="au-s-time" id="aus-time">0:00</span>
-					<button type="button" class="au-s-btn" id="aus-undo" disabled>↶ Undo</button>
+					<button type="button" class="au-s-btn" id="aus-undo" disabled>{{tr:↶ Undo}}</button>
 				</div>
-				<div class="au-s-hint" id="aus-hint">Drag across the waveform to select a part, then keep it or delete it.</div>
+				<div class="au-s-hint" id="aus-hint">{{tr:Drag across the waveform to select a part, then keep it or delete it.}}</div>
 				<div class="au-s-row au-s-wrap">
-					<button type="button" class="au-s-btn" id="aus-trim" disabled>✂ Keep selection</button>
-					<button type="button" class="au-s-btn" id="aus-del" disabled>🗑 Delete selection</button>
-					<button type="button" class="au-s-btn" id="aus-all">Select all</button>
+					<button type="button" class="au-s-btn" id="aus-trim" disabled>{{tr:✂ Keep selection}}</button>
+					<button type="button" class="au-s-btn" id="aus-del" disabled>{{tr:🗑 Delete selection}}</button>
+					<button type="button" class="au-s-btn" id="aus-all">{{tr:Select all}}</button>
 				</div>
 				<div class="au-s-row au-s-wrap">
-					<button type="button" class="au-s-btn au-s-magic" id="aus-noise">✨ Remove noise</button>
-					<button type="button" class="au-s-btn au-s-magic" id="aus-enh">🎙️ Enhance speech</button>
+					<button type="button" class="au-s-btn au-s-magic" id="aus-noise">{{tr:✨ Remove noise}}</button>
+					<button type="button" class="au-s-btn au-s-magic" id="aus-enh">{{tr:🎙️ Enhance speech}}</button>
 				</div>
 				<div class="au-s-row au-s-wrap au-s-save">
-					<select id="aus-fmt" aria-label="File type"><option value="m4a">M4A (small, good)</option><option value="mp3">MP3</option><option value="wav">WAV (largest)</option></select>
-					<button type="button" class="au-s-btn au-s-primary" id="aus-share" hidden>📤 Share</button>
-					<button type="button" class="au-s-btn au-s-primary" id="aus-save">⬇ Save</button>
+					<select id="aus-fmt" aria-label="{{tr:File type}}"><option value="m4a">{{tr:M4A (small, good)}}</option><option value="mp3">MP3</option><option value="wav">{{tr:WAV (largest)}}</option></select>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-share" hidden>{{tr:📤 Share}}</button>
+					<button type="button" class="au-s-btn au-s-primary" id="aus-save">{{tr:⬇ Save}}</button>
 				</div>
 			</div>
-			<div class="au-s-row au-s-foot"><button type="button" class="au-s-link" id="aus-tone">Try a noisy test clip</button><button type="button" class="au-s-link" id="aus-full">Full editor (tracks, effects, markers) ›</button></div>
+			<div class="au-s-row au-s-foot"><button type="button" class="au-s-link" id="aus-tone">{{tr:Try a noisy test clip}}</button><button type="button" class="au-s-link" id="aus-full">{{tr:Full editor (tracks, effects, markers) ›}}</button></div>
 		</div>
-		<button type="button" class="au-s-back" id="aus-back" hidden>‹ Simple mode</button>
+		<button type="button" class="au-s-back" id="aus-back" hidden>{{tr:‹ Simple mode}}</button>
 		<div class="au-trans">
-			<button type="button" class="au-ib" id="au-home" title="Go to start (Home)" aria-label="Go to start">⏮</button>
-			<button type="button" class="au-ib" id="au-play" title="Play / pause (Space)" aria-label="Play">▶</button>
-			<button type="button" class="au-ib" id="au-stop" title="Stop" aria-label="Stop">⏹</button>
-			<button type="button" class="au-ib" id="au-end" title="Go to end (End)" aria-label="Go to end">⏭</button>
-			<button type="button" class="au-ib au-ib--rec" id="au-rec" aria-pressed="false" title="Record from the microphone (R)" aria-label="Record">⏺</button>
-			<button type="button" class="au-ib" id="au-loop" aria-pressed="false" title="Loop the selection (L)" aria-label="Loop">🔁</button>
-			<span class="au-time" id="au-time" title="Playhead / cursor">0:00.000</span>
-			<span class="au-selbox"><span>Sel</span><input type="text" id="au-sa" aria-label="Selection start" placeholder="start" spellcheck="false"><span>–</span><input type="text" id="au-sb" aria-label="Selection end" placeholder="end" spellcheck="false"><span id="au-slen"></span></span>
+			<button type="button" class="au-ib" id="au-home" title="{{tr:Go to start (Home)}}" aria-label="{{tr:Go to start}}">⏮</button>
+			<button type="button" class="au-ib" id="au-play" title="{{tr:Play / pause (Space)}}" aria-label="{{tr:Play}}">▶</button>
+			<button type="button" class="au-ib" id="au-stop" title="{{tr:Stop}}" aria-label="{{tr:Stop}}">⏹</button>
+			<button type="button" class="au-ib" id="au-end" title="{{tr:Go to end (End)}}" aria-label="{{tr:Go to end}}">⏭</button>
+			<button type="button" class="au-ib au-ib--rec" id="au-rec" aria-pressed="false" title="{{tr:Record from the microphone (R)}}" aria-label="{{tr:Record}}">⏺</button>
+			<button type="button" class="au-ib" id="au-loop" aria-pressed="false" title="{{tr:Loop the selection (L)}}" aria-label="{{tr:Loop}}">🔁</button>
+			<span class="au-time" id="au-time" title="{{tr:Playhead / cursor}}">0:00.000</span>
+			<span class="au-selbox"><span>{{tr:Sel}}</span><input type="text" id="au-sa" aria-label="{{tr:Selection start}}" placeholder="{{tr:start}}" spellcheck="false"><span>–</span><input type="text" id="au-sb" aria-label="{{tr:Selection end}}" placeholder="{{tr:end}}" spellcheck="false"><span id="au-slen"></span></span>
 			<span class="au-vsep"></span>
-			<button type="button" class="au-ib" id="au-zout" title="Zoom out (−)" aria-label="Zoom out">−</button>
-			<button type="button" class="au-ib" id="au-zin" title="Zoom in (+)" aria-label="Zoom in">+</button>
-			<button type="button" class="au-ib" id="au-zfit" title="Fit the whole project (0)">Fit</button>
-			<button type="button" class="au-ib" id="au-zsel" title="Zoom to the selection (Ctrl+3)">Sel</button>
-			<button type="button" class="au-ib" id="au-spec" aria-pressed="false" title="Spectrogram view (S)">Spectrogram</button>
+			<button type="button" class="au-ib" id="au-zout" title="{{tr:Zoom out (−)}}" aria-label="{{tr:Zoom out}}">−</button>
+			<button type="button" class="au-ib" id="au-zin" title="{{tr:Zoom in (+)}}" aria-label="{{tr:Zoom in}}">+</button>
+			<button type="button" class="au-ib" id="au-zfit" title="{{tr:Fit the whole project (0)}}">{{tr:Fit}}</button>
+			<button type="button" class="au-ib" id="au-zsel" title="{{tr:Zoom to the selection (Ctrl+3)}}">{{tr:Sel}}</button>
+			<button type="button" class="au-ib" id="au-spec" aria-pressed="false" title="{{tr:Spectrogram view (S)}}">{{tr:Spectrogram}}</button>
 			<span class="au-vsep"></span>
-			<span class="au-vol"><span aria-hidden="true">🔊</span><input type="range" id="au-vol" min="0" max="1.5" step="0.01" value="1" aria-label="Playback volume"><canvas class="au-meter" id="au-meter" width="120" height="14" role="img" aria-label="Playback level meter" title="Playback level: how loud the sound is while it plays (green fine, yellow loud, red too loud)"></canvas></span>
+			<span class="au-vol"><span aria-hidden="true">🔊</span><input type="range" id="au-vol" min="0" max="1.5" step="0.01" value="1" aria-label="{{tr:Playback volume}}"><canvas class="au-meter" id="au-meter" width="120" height="14" role="img" aria-label="{{tr:Playback level meter}}" title="{{tr:Playback level: how loud the sound is while it plays (green fine, yellow loud, red too loud)}}"></canvas></span>
 		</div>
-		<div class="au-recbar" id="au-recbar" hidden><span class="au-recdot"></span><b>Recording</b><span id="au-rect">0:00</span><canvas class="au-meter" id="au-recmeter" width="160" height="14"></canvas><button type="button" class="au-btn au-btn--sm" id="au-recredo" title="Throw this take away and start recording again (Backspace)">↺ Start over</button><button type="button" class="au-btn au-btn--sm" id="au-recstop">⏹ Stop recording</button></div>
+		<div class="au-recbar" id="au-recbar" hidden><span class="au-recdot"></span><b>{{tr:Recording}}</b><span id="au-rect">0:00</span><canvas class="au-meter" id="au-recmeter" width="160" height="14"></canvas><button type="button" class="au-btn au-btn--sm" id="au-recredo" title="{{tr:Throw this take away and start recording again (Backspace)}}">{{tr:↺ Start over}}</button><button type="button" class="au-btn au-btn--sm" id="au-recstop">{{tr:⏹ Stop recording}}</button></div>
 		<div class="au-cmpbar" id="au-cmpbar" hidden></div>
 		<div class="au-main">
 			<div class="au-tl" id="au-tl">
-				<div class="au-rulerrow"><div class="au-corner"><button type="button" class="au-btn au-btn--sm" id="au-addtrack" title="Add an empty track">+ Track</button></div><canvas class="au-ruler" id="au-ruler" aria-label="Timeline: click to move the playhead, drag to select"></canvas></div>
+				<div class="au-rulerrow"><div class="au-corner"><button type="button" class="au-btn au-btn--sm" id="au-addtrack" title="{{tr:Add an empty track}}">{{tr:+ Track}}</button></div><canvas class="au-ruler" id="au-ruler" aria-label="{{tr:Timeline: click to move the playhead, drag to select}}"></canvas></div>
 				<div class="au-scroll" id="au-scroll">
-					<div class="au-rows"><div class="au-heads" id="au-heads"></div><div class="au-lanes" id="au-lanes"><canvas id="au-cv" tabindex="0" role="application" aria-label="Tracks: drag to select, drag a clip's title bar to move it"></canvas><canvas id="au-over"></canvas></div></div>
+					<div class="au-rows"><div class="au-heads" id="au-heads"></div><div class="au-lanes" id="au-lanes"><canvas id="au-cv" tabindex="0" role="application" aria-label="{{tr:Tracks: drag to select, drag a clip's title bar to move it}}"></canvas><canvas id="au-over"></canvas></div></div>
 				</div>
-				<div class="au-agrip" id="au-agrip" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to make the track area taller or shorter (double-click: back to normal)" aria-label="Resize the track area: drag, or use the up and down arrow keys"><span></span></div>
-				<div class="au-hbar"><span id="au-vrange">0:00 – 0:00</span><input type="range" id="au-hs" min="0" max="1000" value="0" aria-label="Scroll the timeline"><span id="au-zoomlab"></span></div>
+				<div class="au-agrip" id="au-agrip" role="separator" aria-orientation="horizontal" tabindex="0" title="{{tr:Drag to make the track area taller or shorter (double-click: back to normal)}}" aria-label="{{tr:Resize the track area: drag, or use the up and down arrow keys}}"><span></span></div>
+				<div class="au-hbar"><span id="au-vrange">0:00 – 0:00</span><input type="range" id="au-hs" min="0" max="1000" value="0" aria-label="{{tr:Scroll the timeline}}"><span id="au-zoomlab"></span></div>
 				<div class="au-empty" id="au-empty">
 					<div class="au-empty-in">
-						<div class="au-empty-t">Free online audio editor</div>
-						<div class="au-empty-s">Open or drop audio (MP3, WAV, M4A, OGG, FLAC) or a video (MP4, MOV, WebM, AVI, MKV, WMV) to edit its sound. Remove background noise with AI, cut, fade, set the loudness and export. Everything stays on your device.</div>
-						<div class="au-empty-b"><button type="button" class="au-btn au-btn--primary" id="au-e-open">Open audio or video</button> <button type="button" class="au-btn" id="au-e-rec">⏺ Record</button> <button type="button" class="au-btn" id="au-e-tone">Try a noisy test clip</button></div>
+						<div class="au-empty-t">{{tr:Free online audio editor}}</div>
+						<div class="au-empty-s">{{tr:Open or drop audio (MP3, WAV, M4A, OGG, FLAC) or a video (MP4, MOV, WebM, AVI, MKV, WMV) to edit its sound. Remove background noise with AI, cut, fade, set the loudness and export. Everything stays on your device.}}</div>
+						<div class="au-empty-b"><button type="button" class="au-btn au-btn--primary" id="au-e-open">{{tr:Open audio or video}}</button> <button type="button" class="au-btn" id="au-e-rec">{{tr:⏺ Record}}</button> <button type="button" class="au-btn" id="au-e-tone">{{tr:Try a noisy test clip}}</button></div>
 						<div class="au-empty-r" id="au-restore" hidden></div>
 					</div>
 				</div>
 			</div>
-			<aside class="au-side" id="au-side" hidden aria-label="Effect settings">
-				<div class="au-ph"><span id="au-ptitle">Effect</span><button type="button" id="au-pclose" title="Close (Esc)" aria-label="Close">✕</button></div>
+			<aside class="au-side" id="au-side" hidden aria-label="{{tr:Effect settings}}">
+				<div class="au-ph"><span id="au-ptitle">{{tr:Effect}}</span><button type="button" id="au-pclose" title="{{tr:Close (Esc)}}" aria-label="{{tr:Close}}">✕</button></div>
 				<div class="au-pb" id="au-pbody"></div>
 			</aside>
 		</div>
-		<div class="au-status"><span id="au-st-len">No audio</span><span id="au-st-rate"></span><span id="au-st-sel"></span><span class="au-hint" id="au-hint">Space = play · drag = select · Ctrl+wheel = zoom · ? = shortcuts</span></div>
+		<div class="au-status"><span id="au-st-len">{{tr:No audio}}</span><span id="au-st-rate"></span><span id="au-st-sel"></span><span class="au-hint" id="au-hint">{{tr:Space = play · drag = select · Ctrl+wheel = zoom · ? = shortcuts}}</span></div>
 		<input type="file" id="au-file" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.oga,.opus,.flac,.webm,.mp4,.mov,.m4v,.mkv,.avi,.wmv,.asf,.flv,.mpg,.mpeg,.ts,.mts,.m2ts,.3gp,.vob,.aif,.aiff,.caf" multiple hidden>
 	</div>
 
-	<div class="tu-seo">
-		<h2>A free online audio editor with AI noise removal</h2>
-		<p>MES Audio Editor is an Audacity-style editor that runs in your browser. Open audio or the sound of a video, cut and rearrange it on several tracks, fade in and out, set the loudness for YouTube or podcasts, and remove background noise with a neural network. <b>Nothing is uploaded</b>: decoding, editing, the AI models and the export all run on your device.</p>
-		<h3>How the noise removal works</h3>
-		<p>The default model is <b>DeepFilterNet 3</b> (Hendrik Schröter and contributors, MIT / Apache-2.0), a speech-enhancement network that removes fans, air conditioning, traffic, hiss, keyboard and room noise while keeping the voice natural. It is an 8.6 MB download the first time, kept by your browser afterwards, and runs on the processor through WebAssembly at roughly 10 to 30 times real time on a laptop (a 10-minute recording takes well under a minute). The audio is processed at 48 kHz and converted back to your project's rate. <b>RNNoise</b> (Xiph, BSD) is a smaller, faster and gentler alternative. The <b>Spectral gate</b> needs no download: select a few seconds of noise only, press "Learn noise from selection", then apply it; it suits steady hiss on music too, where the speech models are not the right tool. <b>Strength</b> limits how far the noise is pushed down, so you can keep a little room sound. Hum removal notches 50 or 60 Hz mains hum and its harmonics.</p>
-		<p>Use <b>Preview</b> to hear the selection processed, then switch between <b>Before</b> (your original) and <b>After</b> while it plays (key B); the panel draws both waveforms on top of each other, grey behind and bright in front, and says how far the background noise went down. After <b>Apply</b>, the <b>Compare</b> bar above the tracks plays the Original or the Cleaned version of the whole track, and Undo (Ctrl+Z) takes it back. Speech models are trained on voices: on music or singing they can remove instruments too, so preview first.</p>
-		<h3>"I applied it but my video still sounds noisy"</h3>
-		<p>The cleaned sound is only in the file you export. In Camtasia, Premiere, CapCut or another video editor the video clip still carries its own (noisy) sound: mute or delete that track and use the exported file instead, otherwise you hear both. Mains hum is the low 50 Hz (Europe, Asia, Africa, Australia) or 60 Hz (North America) buzz from the electricity; turn on "Mains hum" in the noise removal or use Hum removal if you hear one.</p>
-		<h3>Questions</h3>
-		<dl>
-			<dt>Which files can I open?</dt><dd>Anything your browser can decode: MP3, WAV, M4A / AAC, OGG / Opus, FLAC and the audio track of MP4, MOV and WebM videos. The sound of AVI, MKV, WMV, FLV, MPG and other videos the browser cannot read is pulled out by the <a href="/convert-video">Video Converter</a>'s engine: AVI with MP3, PCM or AAC sound directly, anything else with ffmpeg in the page (a one-time download of about 31 MB). Several files open as separate tracks you can line up.</dd>
-			<dt>How do I make my audio the right loudness for YouTube or a podcast?</dt><dd>Effects → Normalize / loudness → choose −14 LUFS (YouTube, Spotify) or −16 LUFS (podcasts, Apple) with a −1 dBTP true-peak ceiling. The meter shows the integrated loudness, loudness range and true peak before and after. The export dialog can also do it on the way out.</dd>
-			<dt>What does "Enhance speech" do?</dt><dd>One click for a voice recording: AI noise removal, a low cut for rumble, a voice-clarity EQ, a gentle compressor and loudness to −16 LUFS. Each step can be switched off.</dd>
-			<dt>Which formats can I export?</dt><dd>WAV (16-bit, 24-bit or 32-bit float), MP3 (64 to 320 kbps, encoded in the page with lamejs) and M4A / AAC where the browser has an AAC encoder (Chrome, Edge and Safari). Export the whole project or only the selection, and markers as a text file Audacity can import.</dd>
-			<dt>Is my work saved?</dt><dd>The project is saved in this browser (IndexedDB) a few seconds after each change, so you can restore it after closing the tab. Nothing is sent to a server.</dd>
-			<dt>Can I edit the sound of a video?</dt><dd>Yes: open the video, clean and edit its sound, export a WAV or M4A, and put it back with the <a href="/compress-video">Video Compressor</a> or your video editor. To shrink audio files, the <a href="/compress">MES Compressor</a> makes small MP3s.</dd>
-			<dt>Keyboard shortcuts?</dt><dd>Space play / pause, Ctrl+Z / Ctrl+Shift+Z undo / redo, Ctrl+X / C / V cut, copy, paste, Delete, Ctrl+I split, Ctrl+T trim, Ctrl+L silence, M marker, R record, + / − zoom, N noise removal, F fill the window. Press ? in the editor for the full list.</dd>
-		</dl>
-	</div>
+	{{SEO}}

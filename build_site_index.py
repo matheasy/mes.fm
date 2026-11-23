@@ -290,6 +290,10 @@ def generator_maps():
     m = re.search(r"^SIG_LANG_SLUGS = \{(.*?)\}", src, re.M | re.S)     # Market Signals in other languages (same loop pattern)
     if m:
         apps |= set(re.findall(r':\s*"([a-z0-9-]+)"', m.group(1)))
+    for var in ("AI_LANG_SLUGS", "AU_LANG_SLUGS"):                     # MES AI / Audio Editor in other languages (same loop pattern)
+        m = re.search(r"^%s = \{(.*?)\}" % var, src, re.M | re.S)
+        if m:
+            apps |= set(re.findall(r':\s*"([a-z0-9-]+)"', m.group(1)))
     for a in apps:
         owned.setdefault(a, "build_tool_apps.py")
     # build.mjs: its own directory + every `slug: "x"` it emits (tile hubs list their section pages that way)

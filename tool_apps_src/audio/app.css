@@ -273,3 +273,23 @@ body.au-noscroll { overflow: hidden; }
 .au.au-simple-on .au-main { flex: none; }
 .au-s-intro { display: none; margin: 0; padding: 4px 14px 12px; color: var(--au-dim); font-size: 0.95em; line-height: 1.45; background: var(--au-panel); order: 2; }
 .au.au-simple-on.au-s-empty .au-s-intro { display: block; }
+/* language menu above the editor (the translated pages: build_tool_apps.py _audio_pages) */
+.au-lang { display: flex; justify-content: flex-end; margin: 0 0 .5em; }
+.au-lang details { position: relative; font-size: .92em; }
+.au-lang summary { cursor: pointer; list-style: none; padding: .3em .75em; border: 1px solid #cbd5e1; border-radius: 999px; background: #ffffff; color: #1e293b; font-weight: 600; user-select: none; }
+.au-lang summary::-webkit-details-marker { display: none; }
+.au-lang summary::after { content: " \25BE"; }
+.au-lang ul { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; margin: 0; padding: .35em 0; list-style: none; min-width: 12em; max-height: 70vh; overflow: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.au-lang li a { display: block; padding: .42em 1em; color: #1e293b !important; text-decoration: none !important; }
+.au-lang li a:hover, .au-lang li a:focus { background: #f1f5f9; }
+.au-lang li a[aria-current] { font-weight: 700; color: #0369a1 !important; }
+html body.dark-mode .au-lang summary, html body.dark-mode .au-lang ul { background: #1c1f26; border-color: #333948; color: #e7e9ee; }
+html body.dark-mode .au-lang li a { color: #e7e9ee !important; }
+html body.dark-mode .au-lang li a:hover, html body.dark-mode .au-lang li a:focus { background: #2a2f3c; }
+html body.dark-mode .au-lang li a[aria-current] { color: #7dd3fc !important; }
+/* right-to-left pages (Urdu): text, menus and panels run right to left; the timeline, transport and meters stay left to right (time runs left to right) */
+#au[dir=rtl] .au-main, #au[dir=rtl] .au-trans, #au[dir=rtl] .au-hbar, #au[dir=rtl] .au-recbar { direction: ltr; }
+#au[dir=rtl] .au-side, #au[dir=rtl] .au-empty, #au[dir=rtl] .au-head { direction: rtl; }
+#au[dir=rtl] .au-selbox input, #au[dir=rtl] .au-time, #au[dir=rtl] kbd { direction: ltr; unicode-bidi: isolate; }
+#au:lang(ur) { line-height: 1.7; }
+html[lang=ur] .tu-seo { direction: rtl; text-align: right; line-height: 1.8; }

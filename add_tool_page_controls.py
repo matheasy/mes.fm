@@ -278,6 +278,15 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("photo", "Photo Editor"),
     ("draw", "Draw"),   # 2026-11-10   # also built by build_tool_apps.py (wide page, always-dark editor workspace)
     ("audio", "Audio Editor"),   # also built by build_tool_apps.py (always-dark editor workspace, MESDenoise)
+    ("audio-editor-hindi", "Audio Editor", "/audio-editor-hindi"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("audio-editor-bangla", "Audio Editor", "/audio-editor-bangla"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("audio-editor-tamil", "Audio Editor", "/audio-editor-tamil"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("audio-editor-telugu", "Audio Editor", "/audio-editor-telugu"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("audio-editor-marathi", "Audio Editor", "/audio-editor-marathi"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("audio-editor-urdu", "Audio Editor", "/audio-editor-urdu"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("editor-de-audio", "Audio Editor", "/editor-de-audio"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("editor-de-audio-pt", "Audio Editor", "/editor-de-audio-pt"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
+    ("editor-audio", "Audio Editor", "/editor-audio"),   # MES Audio Editor in another language (build_tool_apps.py AU_LANG_SLUGS)
     ("darkroom", "Darkroom"),
     ("image-converter", "Image Converter"),   # also built by build_tool_apps.py
     ("upscale", "Upscale"),   # also built by build_tool_apps.py

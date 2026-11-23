@@ -174,10 +174,10 @@
 	};
 	/* plain-English summary of a before / after noise floor */
 	A.noiseReport = function (before, after) {
-		if (!isFinite(before)) return { db: 0, text: "This part is silent: there is no noise to remove." };
+		if (!isFinite(before)) return { db: 0, b: before, a: after, text: "This part is silent: there is no noise to remove." };
 		var aft = isFinite(after) ? after : -120, d = before - aft;
-		if (d < 3) return { db: d, text: "Background noise " + before.toFixed(0) + " dB → " + aft.toFixed(0) + " dB: almost no steady noise was found to remove." };
-		return { db: d, text: "Background noise " + before.toFixed(0) + " dB → " + aft.toFixed(0) + " dB (" + d.toFixed(0) + " dB quieter)." };
+		if (d < 3) return { db: d, b: before, a: aft, text: "Background noise " + before.toFixed(0) + " dB → " + aft.toFixed(0) + " dB: almost no steady noise was found to remove." };
+		return { db: d, b: before, a: aft, text: "Background noise " + before.toFixed(0) + " dB → " + aft.toFixed(0) + " dB (" + d.toFixed(0) + " dB quieter)." };
 	};
 	A.normalizePeakGain = function (ch, targetDb) { var p = A.peak(ch); return p > 0 ? targetDb - A.gainToDb(p) : 0; };
 
