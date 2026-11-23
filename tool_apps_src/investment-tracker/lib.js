@@ -21,9 +21,22 @@
 	I.CHAINS = {
 		btc: { name: "Bitcoin", syms: [["BTC", "c:bitcoin", "Bitcoin"]], re: /^(bc1[02-9ac-hj-np-z]{11,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, ex: "bc1q…" },
 		eth: { name: "Ethereum + 12 more networks (0x…)", short: "13 networks", noun: "Ethereum (0x…)", syms: [["ETH", "c:ethereum", "Ethereum"], ["BNB", "c:binancecoin", "BNB"], ["POL", "c:polygon-ecosystem-token", "Polygon"], ["AVAX", "c:avalanche-2", "Avalanche"], ["xDAI", "c:xdai", "xDAI"], ["MNT", "c:mantle", "Mantle"], ["S", "c:sonic-3", "Sonic"], ["CELO", "c:celo", "Celo"]], re: /^0x[0-9a-fA-F]{40}$/, ex: "0x… (read on Ethereum, Base, Arbitrum, BNB Chain, Polygon, Optimism, Avalanche and 6 more)" },
-		hive: { name: "Hive", syms: [["HIVE", "c:hive", "Hive"], ["HBD", "c:hive_dollar", "Hive Backed Dollar"]], re: /^[a-z][a-z0-9.-]{2,15}$/, ex: "your Hive username" },
+		hive: { name: "Hive (+ Hive Engine tokens)", short: "Hive", noun: "Hive", syms: [["HIVE", "c:hive", "Hive"], ["HBD", "c:hive_dollar", "Hive Backed Dollar"]], re: /^[a-z][a-z0-9.-]{2,15}$/, ex: "your Hive username (HIVE, HBD, Hive Power, savings and Hive Engine tokens)" },
 		xrp: { name: "XRP Ledger", syms: [["XRP", "c:ripple", "XRP"]], re: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/, ex: "r…" },
-		sol: { name: "Solana", syms: [["SOL", "c:solana", "Solana"]], re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, ex: "a Solana address" }
+		sol: { name: "Solana (+ tokens)", short: "Solana", noun: "Solana", syms: [["SOL", "c:solana", "Solana"]], re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, ex: "a Solana address (SOL and its tokens)" },
+		trx: { name: "TRON (+ USDT and tokens)", short: "TRON", noun: "TRON", syms: [["TRX", "c:tron", "TRON"]], re: /^T[1-9A-HJ-NP-Za-km-z]{33}$/, ex: "T… (TRX incl. staked, USDT and popular tokens)" },
+		ltc: { name: "Litecoin", syms: [["LTC", "c:litecoin", "Litecoin"]], re: /^(ltc1[02-9ac-hj-np-z]{11,87}|[LM3][1-9A-HJ-NP-Za-km-z]{25,34})$/, ex: "ltc1… or L…" },
+		doge: { name: "Dogecoin", syms: [["DOGE", "c:dogecoin", "Dogecoin"]], re: /^[DA9][1-9A-HJ-NP-Za-km-z]{25,34}$/, ex: "D…" },
+		ada: { name: "Cardano", syms: [["ADA", "c:cardano", "Cardano"]], re: /^(addr1[02-9ac-hj-np-z]{50,120}|stake1[02-9ac-hj-np-z]{50,60})$/, ex: "addr1… or stake1… (stake1 = the whole wallet incl. rewards)" }
+	};
+	/* Token keys: "e:0x…" ERC-20 contract, "e:<base58 mint>" Solana token, "e:he:SYMBOL" Hive Engine token */
+	I.EKEY = /^e:(0x[0-9a-f]{40}|[1-9A-HJ-NP-Za-km-z]{32,44}|he:[A-Z0-9.]{1,12})$/;
+	/* Where to look a token up */
+	I.tokenLink = function (k) {
+		var x = String(k).slice(2);
+		if (/^0x/.test(x)) return ["Etherscan", "https://etherscan.io/token/" + x];
+		if (/^he:/.test(x)) return ["Tribaldex", "https://tribaldex.com/trade/" + encodeURIComponent(x.slice(3))];
+		return ["Solscan", "https://solscan.io/token/" + x];
 	};
 
 	I.uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); };
@@ -341,7 +354,7 @@
 		if (I.CURRENCIES.indexOf(s.base) >= 0) o.base = s.base;
 		o.method = s.method === "fifo" ? "fifo" : "avg";
 		Object.keys(s.assets || {}).forEach(function (k) {
-			var a = s.assets[k]; if (!a || !(/^[scm]:[\w.\-=^ ]{1,60}$/.test(k) || /^e:0x[0-9a-f]{40}$/.test(k))) return;
+			var a = s.assets[k]; if (!a || !(/^[scm]:[\w.\-=^ ]{1,60}$/.test(k) || I.EKEY.test(k))) return;
 			o.assets[k] = { k: k, kind: k[0], sym: String(a.sym || k.slice(2)).slice(0, 20), name: String(a.name || a.sym || "").slice(0, 80), cur: I.CURRENCIES.indexOf(a.cur) >= 0 ? a.cur : "USD" };
 			if (k[0] === "m") o.assets[k].mp = +a.mp || 0;
 			if (a.cls) o.assets[k].cls = String(a.cls).slice(0, 30);
@@ -358,7 +371,7 @@
 		(s.wallets || []).forEach(function (w) {
 			if (!w || !I.walletOk(w.chain, w.addr)) return;
 			var c = { id: String(w.id || I.uid()).slice(0, 30), chain: w.chain, addr: String(w.addr).trim(), label: String(w.label || "").slice(0, 60) };
-			var hide = (Array.isArray(w.hide) ? w.hide : []).filter(function (k) { return typeof k === "string" && /^[ce]:[\w.\-]{1,60}$/.test(k); }).slice(0, 200);
+			var hide = (Array.isArray(w.hide) ? w.hide : []).filter(function (k) { return typeof k === "string" && (/^c:[\w.\-]{1,60}$/.test(k) || I.EKEY.test(k)); }).slice(0, 200);
 			if (hide.length) c.hide = hide;
 			o.wallets.push(c);
 		});

@@ -73,12 +73,12 @@
 		return Promise.all(list.map(function (w) {
 			w._busy = true;
 			return api("w=" + encodeURIComponent(w.chain + ":" + w.addr)).then(function (r) {
-				WB[w.id] = { b: r.b, n: r.n || null, nerr: r.nerr || [], at: Date.now(), hid: r.hid || 0, src: r.src || "" };
+				WB[w.id] = { b: r.b, n: r.n || null, nerr: r.nerr || [], at: Date.now(), hid: r.hid || 0, src: r.src || "", terr: r.terr ? 1 : 0 };
 				// tokens: make each one an asset (name + symbol from the wallet answer); "e:" tokens bring their own price
 				Object.keys(r.t || {}).forEach(function (k) {
-					if (!S.assets[k] && (/^c:[a-z0-9_-]{1,60}$/.test(k) || /^e:0x[0-9a-f]{40}$/.test(k))) { ensureAsset({ k: k, sym: String(r.t[k][0]).slice(0, 20), name: String(r.t[k][1] || r.t[k][0]).slice(0, 80), cur: "USD" }); newAssets = true; }
+					if (!S.assets[k] && (/^c:[a-z0-9_-]{1,60}$/.test(k) || I.EKEY.test(k))) { ensureAsset({ k: k, sym: String(r.t[k][0]).slice(0, 20), name: String(r.t[k][1] || r.t[k][0]).slice(0, 80), cur: "USD" }); newAssets = true; }
 				});
-				Object.keys(r.q || {}).forEach(function (k) { if (/^e:/.test(k)) P.q[k] = r.q[k]; });
+				Object.keys(r.q || {}).forEach(function (k) { if (I.EKEY.test(k)) P.q[k] = r.q[k]; });
 				delete w._err;
 			})
 				.catch(function (e) { w._err = e.message; }).then(function () { w._busy = false; });
@@ -157,7 +157,7 @@
 		h += '<div class="iv-detbtns"><button type="button" class="tu-btn" data-addfor="' + esc(r.k) + '">+ Trade for ' + esc(a.sym) + "</button>";
 		if (a.kind === "s") h += ' <a class="tu-btn tu-btn--ghost" href="https://finance.yahoo.com/quote/' + encodeURIComponent(a.sym) + '" target="_blank" rel="noopener">Yahoo Finance ↗</a>';
 		if (a.kind === "c") h += ' <a class="tu-btn tu-btn--ghost" href="https://www.coingecko.com/en/coins/' + encodeURIComponent(r.k.slice(2)) + '" target="_blank" rel="noopener">CoinGecko ↗</a>';
-		if (a.kind === "e") h += ' <a class="tu-btn tu-btn--ghost" href="https://etherscan.io/token/' + encodeURIComponent(r.k.slice(2)) + '" target="_blank" rel="noopener">Etherscan ↗</a>';
+		if (a.kind === "e") { var tl = I.tokenLink(r.k); h += ' <a class="tu-btn tu-btn--ghost" href="' + esc(tl[1]) + '" target="_blank" rel="noopener">' + tl[0] + " ↗</a>"; }
 		if (!list.length) h += ' <button type="button" class="tu-btn tu-btn--ghost" data-delasset="' + esc(r.k) + '">Remove</button>';
 		h += "</div>";
 		if (list.length) h += '<table class="iv-mini"><tbody>' + list.slice(0, 12).map(txRowMini).join("") + "</tbody></table>" + (list.length > 12 ? '<p class="tu-note">' + (list.length - 12) + ' older trades on the <a href="#" data-go="tx">Trades</a> tab.</p>' : "");
@@ -428,6 +428,7 @@
 			if (hidden.length) foot.push('<button type="button" class="iv-link" data-wunhide="' + esc(w.id) + '">' + hidden.length + " hidden by you · show</button>");
 			if (b && b.hid) foot.push('<span title="Tokens with no real trading (often airdropped spam) are left out.">' + b.hid + " unknown or spam token" + (b.hid === 1 ? "" : "s") + " left out</span>");
 			if (b && b.src === "rpc") foot.push("<span>Only popular tokens were checked this time</span>");
+			if (b && b.terr) foot.push('<span class="iv-down">Tokens could not be read this time</span>');
 			if (foot.length) lines += '<p class="iv-wnote">' + foot.join(" · ") + "</p>";
 			return '<div class="iv-wcard"><div class="iv-whead"><b>' + esc(w.label || c.noun || c.name) + '</b><span class="iv-kind iv-kind--c">' + esc(c.short || c.name) + "</span></div>" +
 				'<code class="iv-addr" title="' + esc(w.addr) + '">' + esc(w.addr.length > 24 ? w.addr.slice(0, 10) + "…" + w.addr.slice(-8) : w.addr) + "</code>" + lines +

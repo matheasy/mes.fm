@@ -144,5 +144,40 @@ const rb = T.parseEthRpc([{ id: 0, result: "0x1bc16d674ec80000" }].concat(bl.map
 near(rb.b["c:binancecoin"], 2, "bnb native is BNB"); near(rb.b["c:tether"], 10, "bnb usdt 18 decimals"); ok(!rb.b["c:ethereum"], "bnb has no eth key");
 ok(I.EVM_NETS.length === 1 + Object.keys(T.NETS).length && I.EVM_NETS.slice(1).every((g) => T.NETS[g[0]] && T.NETS[g[0]].native[0] === g[2]) && I.walletOk("eth", "0xF977814e90dA44bFA03b6295A0616a897441aceC"), "evm networks");
 
+/* Solana */
+const acct = (mint, amount, decimals) => ({ account: { data: { parsed: { info: { mint, tokenAmount: { amount: String(amount), decimals } } } } } });
+const USDCm = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", GOOD = "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump", FAKE = "9dwPiStDBwJJqC3QzMnjpJP7xohZbMVmHELFx3uy3KRq";
+const tal = T.solTally([{ result: { value: [acct(USDCm, 1500000, 6), acct(USDCm, 500000, 6), acct(GOOD, 2000000, 6), acct(FAKE, 9e12, 6), acct("bad<mint>", 5, 0)] } }, { result: { value: [acct("So11111111111111111111111111111111111111112", 5e8, 9)] } }]);
+near(tal[USDCm], 2, "sol tally adds accounts of one mint"); ok(!tal["bad<mint>"], "sol tally drops bad mints");
+const jupRec = [{ id: GOOD, symbol: "jelly<x>", name: "Jelly", usdPrice: 2, liquidity: 2e6, mcap: 4e7, stats24h: { buyVolume: 1e5, sellVolume: 1e5, priceChange: -3 } },
+  { id: FAKE, symbol: "NVDA", name: "NVIDIA", usdPrice: 7e-5, liquidity: 15000, mcap: 57000, isVerified: true, stats24h: { buyVolume: 300 } }];
+const ps = T.parseSol(3e9, tal, jupRec);
+near(ps.b["c:solana"], 3.5, "SOL + wrapped SOL"); near(ps.b["c:usd-coin"], 2, "listed SPL -> coingecko key"); ok(ps.t["c:usd-coin"][0] === "USDC" && !ps.t["c:solana"], "sol names");
+near(ps.b["e:" + GOOD], 2, "traded SPL -> e:<mint>"); ok(ps.q["e:" + GOOD].p === 2 && ps.q["e:" + GOOD].ch === -3 && ps.t["e:" + GOOD][0] === "jellyx", "SPL price, change, safe symbol");
+ok(!ps.b["e:" + FAKE] && ps.hid === 1, "'verified' junk token left out");
+ok(Object.keys(T.SPL).every((m) => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m) && T.cgId(T.SPL[m][2])), "SPL table well formed");
+
+/* TRON */
+ok(T.tronHex("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t") === "0xa614f803b6fd780986a42c78ec9c7f77e6ded13c" && T.tronHex("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6u") === null, "tron address -> hex, bad checksum refused");
+ok(Object.keys(T.TRC20).every((a) => T.tronHex(a) && T.cgId(T.TRC20[a][2])), "TRC-20 table well formed");
+const tg = T.parseTrongrid({ data: [{ balance: 5e6, frozenV2: [{ amount: 2e6 }, { type: "ENERGY", amount: 1e6 }, { type: "TRON_POWER" }], unfrozenV2: [{ unfreeze_amount: 1e6 }], delegated_frozenV2_balance_for_bandwidth: 1e6,
+  trc20: [{ TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t: "12500000" }, { TXspamspamspamspamspamspamspamspam1: "99" }, { TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9: "0" }] }] });
+near(tg.b["c:tron"], 10, "TRX incl. staked, unstaking, delegated"); near(tg.b["c:tether"], 12.5, "TRC-20 USDT"); ok(tg.hid === 1 && tg.t["c:tether"][0] === "USDT", "unknown TRC-20 left out");
+ok(T.parseTrongrid({ data: [] }).b["c:tron"] === 0, "unused TRON address = 0");
+
+/* Hive Engine */
+const he = T.parseHiveEngine([{ symbol: "LEO", balance: "100", stake: "50", pendingUnstake: "0", delegationsOut: "10" }, { symbol: "SWAP.HIVE", balance: "20" }, { symbol: "SWAP.BTC", balance: "0.01" },
+  { symbol: "DEAD", balance: "1000" }, { symbol: "DUST", balance: "1" }, { symbol: "ZERO", balance: "0" }],
+  [{ symbol: "LEO", lastPrice: "0.5", highestBid: "0.4", priceChangePercent: "-1.5%" }, { symbol: "DEAD", lastPrice: "1", highestBid: "0" }, { symbol: "DUST", lastPrice: "0.1", highestBid: "0.1" }], 0.25);
+near(he.b["e:he:LEO"], 160, "HE balance + stake + delegated out"); near(he.q["e:he:LEO"].p, 0.125, "HE price = HIVE price x last trade"); ok(he.q["e:he:LEO"].ch === -1.5, "HE change");
+near(he.b["c:hive"], 20, "SWAP.HIVE -> HIVE"); near(he.b["c:bitcoin"], 0.01, "SWAP.BTC -> BTC"); ok(he.t["c:bitcoin"][0] === "BTC" && !he.t["c:hive"], "swap names");
+ok(!he.b["e:he:DEAD"] && !he.b["e:he:DUST"] && he.hid === 2, "no-bid / dust HE tokens left out");
+
+/* token keys + new wallets */
+ok(I.EKEY.test("e:" + GOOD) && I.EKEY.test("e:he:SWAP.HIVE") && I.EKEY.test("e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72") && !I.EKEY.test("e:he:<b>") && !I.EKEY.test("e:0xZZ"), "token key rule");
+ok(I.tokenLink("e:" + GOOD)[0] === "Solscan" && I.tokenLink("e:he:LEO")[0] === "Tribaldex" && I.tokenLink("e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72")[0] === "Etherscan", "token links");
+const ws2 = I.clean({ base: "USD", assets: { ["e:" + GOOD]: { sym: "JELLY" }, "e:he:LEO": { sym: "LEO" } }, tx: [], wallets: [{ id: "s", chain: "sol", addr: "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9", hide: ["e:he:LEO", "e:" + GOOD] }, { id: "t", chain: "trx", addr: "TT1DyeqXaaJkt6UhVYFWUXBXknaXnBudTK" }, { id: "l", chain: "ltc", addr: "ltc1qr07zu594qf63xm7l7x6pu3a2v39m2z6hh5pp4t" }, { id: "d", chain: "doge", addr: "DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L" }, { id: "a", chain: "ada", addr: "stake1u84nmqs3fcg6cxsv8dkw4anyd7fuvak2tw2pygwz2gumuegct98mh" }] });
+ok(Object.keys(ws2.assets).length === 2 && ws2.wallets.length === 5 && ws2.wallets[0].hide.length === 2, "clean keeps Solana / Hive Engine tokens and the new wallets");
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);

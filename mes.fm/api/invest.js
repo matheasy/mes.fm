@@ -4,14 +4,16 @@
 //   GET ?y=AAPL,SHOP.TO&c=bitcoin,hive   -> {v, at, q: {"s:AAPL": {p, c, ch, n}, "c:hive": {...}}, fx: {USD:1, CAD:1.37, ...}, miss: [keys]}
 //   GET ?h=s:AAPL | c:hive&s=HIVE         -> {k, c, h: [[YYYY-MM-DD, close], ...]}  (daily, up to 5 years; crypto: Yahoo <SYM>-USD, else CoinGecko 365 days)
 //   GET ?search=apple                      -> {r: [{k, sym, name, kind, ex}]}
-//   GET ?w=btc:<addr> | eth | hive | xrp | sol -> {chain, b: {"c:bitcoin": qty, ...}}
+//   GET ?w=btc:<addr> | eth | hive | xrp | sol | trx | ltc | doge | ada -> {chain, b: {"c:bitcoin": qty, ...}}
+//       sol / trx / hive also return tokens (t, q, hid as for eth; sol "e:<mint>", hive "e:he:<SYMBOL>"); terr = tokens could not be read this time.
 //       eth also returns ERC-20 tokens: b gets "c:<CoinGecko id>" (popular tokens) or "e:<contract>" (others, with their price
 //       in q: {"e:0x..": {p, c, ch, n}}), t: {key: [symbol, name]}, hid: tokens left out (looks like spam), src: "ethplorer" | "rpc".
 //       The same address is also read on Base, Arbitrum and BNB Chain (built-in token lists): b = all networks added up,
 //       n: {eth|base|arb|bnb: {key: qty}}, nerr: [networks that failed this time].
 //
 // Sources: Yahoo Finance chart / search (unofficial, may break), CoinGecko public API, open.er-api.com, mempool.space,
-// ethereum / base / arbitrum-one / bsc / polygon-bor / optimism / avalanche-c-chain / linea / scroll / gnosis / mantle / sonic / celo -rpc.publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
+// ethereum / base / arbitrum-one / bsc / polygon-bor / optimism / avalanche-c-chain / linea / scroll / gnosis / mantle / sonic / celo -rpc.publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com / solana-rpc.publicnode.com, lite-api.jup.ag (Solana token info),
+// api.trongrid.io / tron-rpc.publicnode.com, Hive Engine RPC nodes, litecoinspace.org, api.bitcore.io / api.blockcypher.com / dogechain.info (DOGE), api.koios.rest (Cardano).
 // Each item is cached in Upstash (same vars as api/fav.js); without them it still works, just uncached.
 'use strict';
 const crypto = require('crypto');
@@ -27,7 +29,11 @@ const RE = {
   eth: /^0x[0-9a-fA-F]{40}$/,
   hive: /^[a-z][a-z0-9.-]{2,15}$/,
   xrp: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/,
-  sol: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+  sol: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+  trx: /^T[1-9A-HJ-NP-Za-km-z]{33}$/,
+  ltc: /^(ltc1[02-9ac-hj-np-z]{11,87}|[LM3][1-9A-HJ-NP-Za-km-z]{25,34})$/,
+  doge: /^[DA9][1-9A-HJ-NP-Za-km-z]{25,34}$/,
+  ada: /^(addr1[02-9ac-hj-np-z]{50,120}|stake1[02-9ac-hj-np-z]{50,60})$/
 };
 
 const up = () => !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
@@ -87,8 +93,8 @@ function parseYahooHist(j) {
   return out;
 }
 const asset = (s) => { const m = String(s || '').match(/^\s*([\d.]+)\s+([A-Z]+)/); return m ? +m[1] : 0; };
-function walletParse(chain, j, extra) {
-  if (chain === 'btc') { const c = j.chain_stats || {}, m = j.mempool_stats || {}; return { 'c:bitcoin': ((c.funded_txo_sum || 0) - (c.spent_txo_sum || 0) + (m.funded_txo_sum || 0) - (m.spent_txo_sum || 0)) / 1e8 }; }
+function walletParse(chain, j, extra, key) {
+  if (chain === 'btc') { const c = j.chain_stats || {}, m = j.mempool_stats || {}; return { [key || 'c:bitcoin']: ((c.funded_txo_sum || 0) - (c.spent_txo_sum || 0) + (m.funded_txo_sum || 0) - (m.spent_txo_sum || 0)) / 1e8 }; }
   if (chain === 'eth') { if (!j.result) throw new Error('no balance'); return { 'c:ethereum': Number(BigInt(j.result)) / 1e18 }; }
   if (chain === 'xrp') { const a = j.result && j.result.account_data; if (!a) { if (j.result && j.result.error === 'actNotFound') return { 'c:ripple': 0 }; throw new Error('no account'); } return { 'c:ripple': +a.Balance / 1e6 }; }
   if (chain === 'sol') { if (!j.result || j.result.value == null) throw new Error('no balance'); return { 'c:solana': j.result.value / 1e9 }; }
@@ -312,6 +318,7 @@ const NETS = {
   } }
 };
 const SPAM = { vol: 250000, cap: 10e6, val: 1 };
+const TRON_NET = { name: 'TRON', native: ['c:tron', 'TRX', 'TRON'], natDec: 6, tokens: null };
 // raw integer string + decimals -> number (BigInt, so 18-decimal amounts don't lose the whole part)
 function units(raw, dec) {
   let n; try { n = BigInt(raw); } catch (e) { return 0; }
@@ -351,10 +358,10 @@ function plainSym(sym) { return sym === 'USDbC' ? 'USDC' : sym.replace(/\.e$/, '
 // net: undefined = Ethereum (TOKENS), else a NETS key
 function parseEthRpc(j, list, net) {
   if (!Array.isArray(j)) throw new Error('no balance');
-  const N = net ? NETS[net] : null, tokens = N ? N.tokens : TOKENS, nat = N ? N.native : ['c:ethereum', 'ETH', 'Ethereum'];
+  const N = net ? (typeof net === 'object' ? net : NETS[net]) : null, tokens = N ? N.tokens : TOKENS, nat = N ? N.native : ['c:ethereum', 'ETH', 'Ethereum'];
   const by = {}; j.forEach((x) => { by[x.id] = x; });
   if (!by[0] || !by[0].result) throw new Error('no balance');
-  const b = {}, t = {}, eth = units(by[0].result, 18);
+  const b = {}, t = {}, eth = units(by[0].result, (N && N.natDec) || 18);
   if (eth) { b[nat[0]] = eth; t[nat[0]] = [nat[1], nat[2]]; }
   list.forEach((a, n) => {
     const r = by[n + 1], tk = tokens[a];
@@ -398,6 +405,226 @@ async function ethWallet(addr) {
   });
   if (out.b['c:ethereum'] == null) out.b['c:ethereum'] = 0;
   return out;
+}
+
+/* ---------- Solana tokens ----------
+   Every SPL token account (Token + Token-2022 programs) is read with getTokenAccountsByOwner. Popular mints (list below,
+   symbol + decimals checked against Jupiter 2026-11-23) count as "c:<CoinGecko id>". Any other mint is looked up on
+   Jupiter's token API (symbol, price, liquidity) and counts as "e:<mint>" only when it has >= $100k of liquidity, a >= $10M
+   market cap and >= $25k of trading in 24 h, and the holding is worth >= $1. Jupiter's own "verified" tag is not enough
+   (it was on a fake "NVIDIA" token with a $57k market cap). Wallets get airdropped lots of junk. */
+const SPL = {
+  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': ['USDC', 6, 'usd-coin', 'USD Coin'],
+  'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': ['USDT', 6, 'tether', 'Tether'],
+  'Dn4noZ5jgGfkntzcQSUZ8czkreiZ1ForXYoV2H8Dm7S1': ['USDT', 6, 'tether', 'Tether (Wormhole)'],
+  '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo': ['PYUSD', 6, 'paypal-usd', 'PayPal USD'],
+  'So11111111111111111111111111111111111111112': ['SOL', 9, 'solana', 'Solana'],
+  'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN': ['JUP', 6, 'jupiter-exchange-solana', 'Jupiter'],
+  'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263': ['BONK', 5, 'bonk', 'Bonk'],
+  'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm': ['WIF', 6, 'dogwifcoin', 'dogwifhat'],
+  'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL': ['JTO', 9, 'jito-governance-token', 'Jito'],
+  'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3': ['PYTH', 6, 'pyth-network', 'Pyth Network'],
+  '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R': ['RAY', 6, 'raydium', 'Raydium'],
+  'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE': ['ORCA', 6, 'orca', 'Orca'],
+  'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn': ['JitoSOL', 9, 'jito-staked-sol', 'Jito Staked SOL'],
+  'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So': ['mSOL', 9, 'msol', 'Marinade Staked SOL'],
+  'bSo13r4TkiE4KumL71LsHTPpL2euBYLFx6h9HP3piy1': ['bSOL', 9, 'blazestake-staked-sol', 'BlazeStake Staked SOL'],
+  'jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v': ['JupSOL', 9, 'jupiter-staked-sol', 'Jupiter Staked SOL'],
+  '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4': ['JLP', 6, 'jupiter-perpetuals-liquidity-provider-token', 'Jupiter Perps LP'],
+  '85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ': ['W', 6, 'wormhole', 'Wormhole'],
+  'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof': ['RENDER', 8, 'render-token', 'Render'],
+  '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr': ['POPCAT', 9, 'popcat', 'Popcat'],
+  '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN': ['TRUMP', 6, 'official-trump', 'Official Trump'],
+  '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv': ['PENGU', 6, 'pudgy-penguins', 'Pudgy Penguins'],
+  'cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij': ['cbBTC', 8, 'coinbase-wrapped-btc', 'Coinbase Wrapped BTC'],
+  '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs': ['ETH', 8, 'ethereum-wormhole', 'Ether (Wormhole)'],
+  '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump': ['FARTCOIN', 6, 'fartcoin', 'Fartcoin'],
+  'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux': ['HNT', 8, 'helium', 'Helium'],
+  'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5': ['MEW', 5, 'cat-in-a-dogs-world', 'cat in a dogs world'],
+  'DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7': ['DRIFT', 6, 'drift-protocol', 'Drift'],
+  'KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS': ['KMNO', 6, 'kamino', 'Kamino'],
+  'Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs': ['GRASS', 9, 'grass', 'Grass']
+};
+const SOL_SPAM = { liq: 100000, cap: 10e6, vol: 25000, val: 1 }, SOL_LOOKUP = 300;
+const SOL_RPCS = ['https://api.mainnet-beta.solana.com', 'https://solana-rpc.publicnode.com'];
+const SOL_PROGRAMS = ['TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'];
+const B58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+// token accounts (jsonParsed, any number of answers) -> {mint: amount}
+function solTally(lists) {
+  const m = {};
+  lists.forEach((j) => ((j && j.result && j.result.value) || []).forEach((x) => {
+    const i = x && x.account && x.account.data && x.account.data.parsed && x.account.data.parsed.info;
+    if (!i || !B58.test(i.mint || '') || !i.tokenAmount) return;
+    const n = units(i.tokenAmount.amount || '0', +i.tokenAmount.decimals || 0);
+    if (n > 0) m[i.mint] = (m[i.mint] || 0) + n;
+  }));
+  return m;
+}
+// lamports + {mint: amount} + Jupiter token records -> {b, t, q, hid, more}; more = mints not looked up (over the cap)
+function parseSol(lamports, tally, jup) {
+  const b = { 'c:solana': (+lamports || 0) / 1e9 }, t = {}, q = {}, info = {};
+  (jup || []).forEach((x) => { if (x && x.id) info[x.id] = x; });
+  let hid = 0, more = 0, asked = 0;
+  Object.keys(tally).forEach((mint) => {
+    const n = tally[mint], k0 = SPL[mint];
+    if (k0) { const k = 'c:' + k0[2]; b[k] = (b[k] || 0) + n; if (k !== 'c:solana') t[k] = [k0[0], k0[3]]; return; }
+    const x = info[mint];
+    if (!x) { if (asked++ >= SOL_LOOKUP) more++; else hid++; return; }
+    const p = +x.usdPrice || 0;
+    const d = x.stats24h || {}, vol = (+d.buyVolume || 0) + (+d.sellVolume || 0);
+    if (p > 0 && (+x.liquidity || 0) >= SOL_SPAM.liq && (+x.mcap || 0) >= SOL_SPAM.cap && vol >= SOL_SPAM.vol && n * p >= SOL_SPAM.val) {
+      const k = 'e:' + mint, sym = String(x.symbol || '').replace(/[^\w.$-]/g, '').slice(0, 12) || 'TOKEN';
+      b[k] = n; t[k] = [sym, String(x.name || sym).replace(/[<>]/g, '').slice(0, 60)];
+      const ch = d.priceChange;
+      q[k] = { p, c: 'USD', ch: isFinite(ch) && ch !== null ? +ch : null, n: t[k][1] };
+    } else hid++;
+  });
+  return { b, t, q, hid: hid + more, more };
+}
+async function solRpc(body) {
+  let err;
+  for (const u of SOL_RPCS) { try { const j = await getJSON(u, { body: JSON.stringify(body), ms: 9000 }); if (j && j.result) return j; err = new Error((j && j.error && j.error.message) || 'no answer'); } catch (e) { err = e; } }
+  throw err;
+}
+async function solWallet(addr) {
+  const [bal, ...tok] = await Promise.allSettled([solRpc({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [addr] })]
+    .concat(SOL_PROGRAMS.map((p) => solRpc({ jsonrpc: '2.0', id: 1, method: 'getTokenAccountsByOwner', params: [addr, { programId: p }, { encoding: 'jsonParsed' }] }))));
+  if (bal.status === 'rejected') throw bal.reason;
+  const tally = solTally(tok.filter((r) => r.status === 'fulfilled').map((r) => r.value));
+  const unknown = Object.keys(tally).filter((m) => !SPL[m]).slice(0, SOL_LOOKUP), jup = [];
+  const parts = []; for (let i = 0; i < unknown.length; i += 100) parts.push(unknown.slice(i, i + 100));
+  const rs = await Promise.allSettled(parts.map((p) => getJSON('https://lite-api.jup.ag/tokens/v2/search?query=' + p.join(','), { ms: 8000 })));
+  rs.forEach((r) => { if (r.status === 'fulfilled' && Array.isArray(r.value)) jup.push(...r.value); });
+  const out = parseSol(bal.value.result.value, tally, jup);
+  if (tok.some((r) => r.status === 'rejected')) out.terr = 1;
+  if (parts.length && rs.every((r) => r.status === 'rejected')) out.terr = 1;
+  delete out.more;
+  return out;
+}
+
+/* ---------- TRON ----------
+   TRX (incl. staked / delegated / unstaking TRX) and TRC-20 tokens from TronGrid's account endpoint. Only the listed
+   tokens count (symbol + decimals read from the chain 2026-11-23); TRON wallets get a lot of spam tokens. Backup:
+   publicnode's TRON JSON-RPC (TRX on hand + listed tokens, no staked TRX). */
+const TRC20 = {
+  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t': ['USDT', 6, 'tether', 'Tether'],
+  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8': ['USDC', 6, 'usd-coin', 'USD Coin'],
+  'TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn': ['USDD', 18, 'usdd', 'USDD'],
+  'TUpMhErZL2fhh4sVNULAbNKLokS4GjC1F4': ['TUSD', 18, 'true-usd', 'TrueUSD'],
+  'TNUC9Qb1rRpS5CbWLmNMxXBjyFoydXjWFR': ['WTRX', 6, 'tron', 'Wrapped TRX'],
+  'TN3W4H6rK2ce4vX9YnFQHwKENnHjoxb3m9': ['BTC', 8, 'bitcoin', 'Bitcoin (TRON)'],
+  'THb4CqiFdwNHsWsQCs4JhzwjMWys4aqCbF': ['ETH', 18, 'ethereum', 'Ethereum (TRON)'],
+  'TAFjULxiVgT4qWk6UZwjqwZXTSaGaqnVp4': ['BTT', 18, 'bittorrent', 'BitTorrent'],
+  'TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7': ['WIN', 6, 'wink', 'WINkLink'],
+  'TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9': ['JST', 18, 'just', 'JUST'],
+  'TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S': ['SUN', 18, 'sun-token', 'Sun'],
+  'TFczxzPhnThNSqr5by8tvxsdCFRRz6cPNq': ['NFT', 6, 'apenft', 'APENFT'],
+  'TU3kjFuhtEo42tsCBtfYUAZxoqQ4yuSLQ5': ['sTRX', 18, 'staked-trx', 'Staked TRX']
+};
+const B58A = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+// TRON base58 address -> 0x + 20-byte hex (the EVM-style form TRON's JSON-RPC takes); null if the checksum is wrong
+function tronHex(a) {
+  let n = 0n;
+  for (const c of String(a)) { const i = B58A.indexOf(c); if (i < 0) return null; n = n * 58n + BigInt(i); }
+  const h = n.toString(16).padStart(50, '0');
+  if (h.length !== 50 || h.slice(0, 2) !== '41') return null;
+  const sum = crypto.createHash('sha256').update(crypto.createHash('sha256').update(Buffer.from(h.slice(0, 42), 'hex')).digest()).digest('hex').slice(0, 8);
+  return sum === h.slice(42) ? '0x' + h.slice(2, 42) : null;
+}
+function parseTrongrid(j) {
+  if (!j || !Array.isArray(j.data)) throw new Error((j && j.Error) || 'no answer');
+  const a = j.data[0];
+  if (!a) return { b: { 'c:tron': 0 }, t: {}, hid: 0 };
+  let sun = +a.balance || 0;
+  (a.frozenV2 || []).forEach((f) => { sun += +f.amount || 0; });
+  (a.unfrozenV2 || []).forEach((f) => { sun += +f.unfreeze_amount || 0; });
+  const r = a.account_resource || {};
+  sun += (+a.delegated_frozenV2_balance_for_bandwidth || 0) + (+r.delegated_frozenV2_balance_for_energy || 0);
+  const b = { 'c:tron': sun / 1e6 }, t = {};
+  let hid = 0;
+  (a.trc20 || []).forEach((o) => Object.keys(o || {}).forEach((c) => {
+    const tk = TRC20[c];
+    if (!tk) { if (String(o[c]) !== '0') hid++; return; }
+    const n = units(String(o[c]), tk[1]);
+    if (n) { const k = 'c:' + tk[2]; b[k] = (b[k] || 0) + n; if (k !== 'c:tron') t[k] = [tk[0], tk[3]]; }
+  }));
+  return { b, t, hid };
+}
+async function trxWallet(addr) {
+  try { return parseTrongrid(await getJSON('https://api.trongrid.io/v1/accounts/' + addr)); } catch (e) {
+    const hex = tronHex(addr); if (!hex) throw new Error('That does not look like a TRON address.');
+    const list = Object.keys(TRC20), hl = list.map(tronHex);
+    if (!TRON_NET.tokens) { TRON_NET.tokens = {}; list.forEach((a, i) => { TRON_NET.tokens[hl[i]] = TRC20[a]; }); }
+    const r = parseEthRpc(await getJSON('https://tron-rpc.publicnode.com/jsonrpc', { body: JSON.stringify(rpcBatch(hex, hl)) }), hl, TRON_NET);
+    return Object.assign(r, { src: 'rpc' });
+  }
+}
+
+/* ---------- Hive Engine (tokens on Hive: LEO, BEE, SPS, STEM ...) ----------
+   Balance + staked + unstaking + delegated out. SWAP.* tokens are 1:1 with their coin. Others are priced in HIVE from the
+   Hive Engine market (last trade) and count only when someone is bidding for them and the holding is worth >= $0.50. */
+const HE_RPCS = ['https://api.hive-engine.com/rpc/contracts', 'https://engine.rishipanthee.com/contracts', 'https://herpc.dtools.dev/contracts'];
+const HE_SWAP = { 'SWAP.HIVE': 'c:hive', 'SWAP.HBD': 'c:hive_dollar', 'SWAP.BTC': 'c:bitcoin', 'SWAP.ETH': 'c:ethereum', 'SWAP.LTC': 'c:litecoin', 'SWAP.DOGE': 'c:dogecoin', 'SWAP.USDT': 'c:tether', 'SWAP.BNB': 'c:binancecoin', 'SWAP.MATIC': 'c:polygon-ecosystem-token' };
+const HE_MIN = 0.5;
+function heQty(x) { return ['balance', 'stake', 'pendingUnstake', 'delegationsOut', 'pendingUndelegations'].reduce((s, f) => s + (parseFloat(x[f]) || 0), 0); }
+function parseHiveEngine(bals, metrics, hiveUsd) {
+  const b = {}, t = {}, q = {}, mk = {};
+  (metrics || []).forEach((m) => { if (m && m.symbol) mk[m.symbol] = m; });
+  let hid = 0;
+  (bals || []).forEach((x) => {
+    const sym = String(x && x.symbol || ''), n = heQty(x || {});
+    if (!(n > 0) || !/^[A-Z0-9.]{1,12}$/.test(sym)) return;
+    if (HE_SWAP[sym]) { const k = HE_SWAP[sym]; b[k] = (b[k] || 0) + n; if (!/^c:hive/.test(k)) t[k] = [sym.slice(5), sym + ' (Hive Engine)']; return; }
+    const m = mk[sym], last = m ? parseFloat(m.lastPrice) || 0 : 0, bid = m ? parseFloat(m.highestBid) || 0 : 0;
+    const p = last * (hiveUsd || 0);
+    if (!(bid > 0) || !(p > 0) || n * p < HE_MIN) { hid++; return; }
+    const k = 'e:he:' + sym;
+    b[k] = n; t[k] = [sym, sym + ' (Hive Engine)'];
+    q[k] = { p, c: 'USD', ch: m.priceChangePercent != null && isFinite(parseFloat(m.priceChangePercent)) ? parseFloat(m.priceChangePercent) : null, n: t[k][1] };
+  });
+  return { b, t, q, hid };
+}
+async function heFind(contract, table, query) {
+  let err;
+  for (const u of HE_RPCS) {
+    try { const j = await getJSON(u, { body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'find', params: { contract, table, query, limit: 1000 } }), ms: 7000 }); if (j && Array.isArray(j.result)) return j.result; err = new Error('no answer'); } catch (e) { err = e; }
+  }
+  throw err;
+}
+async function heWallet(account) {
+  const bals = await heFind('tokens', 'balances', { account });
+  const syms = bals.filter((x) => heQty(x) > 0 && !HE_SWAP[x.symbol]).map((x) => x.symbol);
+  const [metrics, hq] = await Promise.all([syms.length ? heFind('market', 'metrics', { symbol: { $in: syms } }) : [], quotes([], ['hive'])]);
+  return parseHiveEngine(bals, metrics, hq.q['c:hive'] && hq.q['c:hive'].p);
+}
+
+/* ---------- Litecoin, Dogecoin, Cardano ---------- */
+// DOGE: BitPay's Bitcore API, then BlockCypher, then Dogechain (all keyless, each with its own rate limit)
+async function dogeWallet(addr) {
+  const tries = [
+    async () => { const j = await getJSON('https://api.bitcore.io/api/DOGE/mainnet/address/' + addr + '/balance'); if (j.balance == null) throw new Error('no balance'); return (+j.balance || 0) / 1e8; },
+    async () => { const j = await getJSON('https://api.blockcypher.com/v1/doge/main/addrs/' + addr + '/balance'); if (j.final_balance == null) throw new Error('no balance'); return (+j.final_balance || 0) / 1e8; },
+    async () => { const j = await getJSON('https://dogechain.info/api/v1/address/balance/' + addr); if (!j.success) throw new Error('no balance'); return +j.balance || 0; }
+  ];
+  let err;
+  for (const f of tries) { try { return { 'c:dogecoin': await f() }; } catch (e) { err = e; } }
+  throw err;
+}
+// A Cardano wallet spreads its coins over many addresses that share one stake key: read the whole stake account
+// (coins + unclaimed staking rewards) when there is one.
+async function adaWallet(addr) {
+  const K = 'https://api.koios.rest/api/v1/';
+  let stake = /^stake1/.test(addr) ? addr : null, bal = 0;
+  if (!stake) {
+    const a = (await getJSON(K + 'address_info', { body: JSON.stringify({ _addresses: [addr] }) }))[0];
+    if (!a) return { 'c:cardano': 0 };
+    stake = a.stake_address; bal = (+a.balance || 0) / 1e6;
+  }
+  if (stake) {
+    const s = (await getJSON(K + 'account_info', { body: JSON.stringify({ _stake_addresses: [stake] }) }))[0];
+    if (s) return { 'c:cardano': ((+s.total_balance || 0) + 0) / 1e6 };
+  }
+  return { 'c:cardano': bal };
 }
 
 /* ---------- fetchers ---------- */
@@ -483,13 +710,21 @@ async function wallet(chain, addr) {
   if (chain === 'btc') b = walletParse(chain, await getJSON('https://mempool.space/api/address/' + addr));
   else if (chain === 'eth') { const r = Object.assign({ chain }, await ethWallet(addr)); cacheSet([[ck, r]], TTL.w); return r; }
   else if (chain === 'xrp') b = walletParse(chain, await getJSON('https://xrplcluster.com', { body: JSON.stringify({ method: 'account_info', params: [{ account: addr, ledger_index: 'validated' }] }) }));
-  else if (chain === 'sol') b = walletParse(chain, await getJSON('https://api.mainnet-beta.solana.com', { body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [addr] }) }));
+  else if (chain === 'sol' || chain === 'trx') { const r = Object.assign({ chain }, await (chain === 'sol' ? solWallet(addr) : trxWallet(addr))); cacheSet([[ck, r]], TTL.w); return r; }
+  else if (chain === 'ltc') b = walletParse('btc', await getJSON('https://litecoinspace.org/api/address/' + addr), null, 'c:litecoin');
+  else if (chain === 'doge') b = await dogeWallet(addr);
+  else if (chain === 'ada') b = await adaWallet(addr);
   else if (chain === 'hive') {
-    const [a, g] = await Promise.all([
+    const [a, g, he] = await Promise.all([
       getJSON('https://api.hive.blog', { body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'condenser_api.get_accounts', params: [[addr]] }) }),
-      getJSON('https://api.hive.blog', { body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'condenser_api.get_dynamic_global_properties', params: [] }) })
+      getJSON('https://api.hive.blog', { body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'condenser_api.get_dynamic_global_properties', params: [] }) }),
+      heWallet(addr).catch(() => null)
     ]);
     b = walletParse(chain, a, g.result);
+    // Hive Engine tokens ride along; if Hive Engine is down the HIVE / HBD balance still counts
+    const r = { chain, b, t: {}, q: {}, hid: 0 };
+    if (he) { Object.keys(he.b).forEach((k) => { b[k] = (b[k] || 0) + he.b[k]; }); r.t = he.t; r.q = he.q; r.hid = he.hid; } else r.terr = 1;
+    cacheSet([[ck, r]], TTL.w); return r;
   }
   const r = { chain, b };
   cacheSet([[ck, r]], TTL.w);
@@ -517,7 +752,7 @@ module.exports = async function handler(req, res) {
       return send(200, await search(s), 'public, max-age=300');
     }
     if (q.w) {
-      const m = String(q.w).match(/^(btc|eth|hive|xrp|sol):(.{3,100})$/);
+      const m = String(q.w).match(/^(btc|eth|hive|xrp|sol|trx|ltc|doge|ada):(.{3,130})$/);
       if (!m || !RE[m[1]].test(m[2])) return send(400, { error: 'That does not look like a ' + (m ? m[1].toUpperCase() : '') + ' address.' });
       return send(200, await wallet(m[1], m[2]));
     }
@@ -537,7 +772,7 @@ module.exports = async function handler(req, res) {
     return send(502, { error: String(e && e.message || e).slice(0, 200) });
   }
 };
-module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, plainSym, units, TOKENS, NETS, ethWallet };
+module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, plainSym, units, solTally, parseSol, SPL, parseTrongrid, tronHex, TRC20, parseHiveEngine, heQty, TOKENS, NETS, ethWallet };
 
 if (require.main === module) {
   // node mes.fm/api/invest.js  -> quick live check of every source
