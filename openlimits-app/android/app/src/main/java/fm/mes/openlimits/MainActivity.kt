@@ -172,14 +172,18 @@ private fun HomeScreen(onAdd: () -> Unit) {
         dismissButton = { TextButton(onClick = { disclosure = false }) { Text("Not now") } },
     )
 
-    editing?.let { r -> EditDialog(s, r, onClose = { editing = null }) }
+    editing?.let { r -> key(r.pkg) { EditDialog(s, r, onClose = { editing = null }) } }
 }
 
 @Composable
 private fun AppRow(s: State, day: String, r: AppRule, onClick: () -> Unit) {
-    val used = Logic.opens(s, day, r.pkg)
+    val used = Logic.used(s, day, r)
+    val allow = Logic.allowance(s, day, r)
+    val earned = Logic.earned(s, day, r)
+    val extras = Logic.extras(s, day, r)
     val left = Logic.left(s, day, r)
-    val frac = (used.opens.toFloat() / r.limit).coerceIn(0f, 1f)
+    val per = Logic.periodWord(r)
+    val frac = (used.toFloat() / allow.coerceAtLeast(1)).coerceIn(0f, 1f)
     val color = when { !r.on -> MaterialTheme.colorScheme.onSurfaceVariant; left == 0 -> Bad; left <= 1 -> Warn; else -> Ok }
     Card(Modifier.fillMaxWidth().clickable(onClick = onClick), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -190,10 +194,11 @@ private fun AppRow(s: State, day: String, r: AppRule, onClick: () -> Unit) {
                 Text(
                     when {
                         !r.on -> "Paused: no limit right now"
-                        left == 0 -> "Locked · ${used.opens} of ${r.limit} opens used" + (if (used.extra > 0) " · +${used.extra} extra" else "")
-                        else -> "${used.opens} of ${r.limit} opens · $left left"
+                        left == 0 -> "Locked · $used of $allow opens used $per" + (if (extras > 0) " · +$extras extra" else "")
+                        else -> "$used of $allow opens $per · $left left" + (Logic.perDay(s, day, r)?.let { " (about $it a day)" } ?: "")
                     }, fontSize = 14.sp, color = color,
                 )
+                if (earned > 0) Text("\uD83E\uDDEE $earned earned with maths $per", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.height(6.dp))
                 LinearProgressIndicator(progress = { frac }, modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
                     color = color, trackColor = MaterialTheme.colorScheme.surfaceVariant, drawStopIndicator = {})
@@ -205,7 +210,7 @@ private fun AppRow(s: State, day: String, r: AppRule, onClick: () -> Unit) {
 @Composable
 private fun WeekChart(s: State, today: LocalDate) {
     val h = Logic.history(s, today, 7)
-    val limitTotal = s.apps.filter { it.on }.sumOf { it.limit }
+    val limitTotal = s.apps.filter { it.on }.sumOf { if (it.weekly) (it.limit + 6) / 7 else it.limit }
     val max = maxOf(h.maxOf { it.second }, limitTotal, 1)
     val bar = MaterialTheme.colorScheme.primary
     val over = Bad
@@ -281,6 +286,8 @@ private fun SettingsCard(s: State) {
                 else Store.update(ctx) { it.copy(settings = it.settings.copy(strict = v)) }
             }
             Spacer(Modifier.height(10.dp))
+            MathSettings(s)
+            Spacer(Modifier.height(10.dp))
             NudgeSettings(s)
             Spacer(Modifier.height(10.dp))
             NotifySettings(s)
@@ -289,6 +296,64 @@ private fun SettingsCard(s: State) {
         }
     }
     if (strictWait) WaitDialog("Turn off strict mode?", onDone = { strictWait = false; Store.update(ctx) { it.copy(settings = it.settings.copy(strict = false)) } }, onCancel = { strictWait = false })
+}
+
+/** Solve to unlock: when maths is asked, how hard, how many in a row, how many opens can be earned. */
+@Composable
+private fun MathSettings(s: State) {
+    val ctx = LocalContext.current
+    fun set(f: (Settings) -> Settings) = Store.update(ctx) { it.copy(settings = f(it.settings)) }
+    var tryIt by remember { mutableStateOf(false) }
+    Text("\uD83E\uDDEE Solve to unlock", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 4.dp))
+    Text("Earn opens with maths: solve problems in a row on the pause screen. Earned opens keep your streak.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(Modifier.padding(top = 4.dp)) {
+        Maths.MODES.forEach { (v, t) ->
+            Row(Modifier.fillMaxWidth().clickable { set { it.copy(mathMode = v) } }, verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(selected = s.settings.mathMode == v, onClick = { set { it.copy(mathMode = v) } }); Text(t, color = MaterialTheme.colorScheme.onSurface)
+            }
+        }
+    }
+    if (s.settings.mathMode != Maths.OFF) {
+        Text("How hard", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 6.dp))
+        Column {
+            Maths.LEVELS.forEach { (v, t) ->
+                Row(Modifier.fillMaxWidth().clickable { set { it.copy(mathLevel = v) } }, verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = s.settings.mathLevel == v, onClick = { set { it.copy(mathLevel = v) } }); Text(t, color = MaterialTheme.colorScheme.onSurface)
+                }
+            }
+        }
+        Text("Problems in a row", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 6.dp))
+        Text("A wrong answer starts the count again.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Choices(listOf(1, 2, 3, 4, 5), s.settings.mathCount, { "$it" }) { v -> set { it.copy(mathCount = v) } }
+        if (s.settings.mathMode == Maths.WHEN_LOCKED || s.settings.mathMode == Maths.EVERY_OPEN) {
+            Text("Most opens to earn per app per day", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(top = 6.dp))
+            Choices(listOf(1, 2, 3, 5, 10, 0), s.settings.mathMax, { if (it == 0) "No limit" else "$it" }) { v -> set { it.copy(mathMax = v) } }
+        }
+        TextButton(onClick = { tryIt = true }, contentPadding = PaddingValues(0.dp)) { Text("Try a problem") }
+    }
+    if (tryIt) AlertDialog(
+        onDismissRequest = { tryIt = false }, confirmButton = {}, containerColor = Color(0xFF1E1B4B),
+        text = { MathPanel(s.settings.mathLevel, s.settings.mathCount, onCancel = { tryIt = false }) { tryIt = false; android.widget.Toast.makeText(ctx, "Solved! That's how you'd earn an open.", android.widget.Toast.LENGTH_SHORT).show() } },
+    )
+}
+
+@Composable
+private fun PeriodPicker(weekly: Boolean, onPick: (Boolean) -> Unit) {
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        SegmentedButton(selected = !weekly, onClick = { onPick(false) }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text("Per day") }
+        SegmentedButton(selected = weekly, onClick = { onPick(true) }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text("Per week") }
+    }
+}
+
+/** − n + in steps of 1 (5 from 50 up, for weekly limits). */
+@Composable
+private fun LimitStepper(value: Int, max: Int, onChange: (Int) -> Unit) {
+    val step = if (value >= 50) 5 else 1
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        OutlinedButton(onClick = { onChange((value - step).coerceAtLeast(1)) }) { Text("−", fontSize = 20.sp) }
+        Text("$value", fontSize = 34.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp))
+        OutlinedButton(onClick = { onChange((value + step).coerceAtMost(max)) }) { Text("+", fontSize = 20.sp) }
+    }
 }
 
 /** Notifications: one after each open, a warning when few are left, and the status-bar counter. */
@@ -370,6 +435,7 @@ private fun WaitDialog(title: String, onDone: () -> Unit, onCancel: () -> Unit) 
 private fun EditDialog(s: State, r: AppRule, onClose: () -> Unit) {
     val ctx = LocalContext.current
     var limit by remember { mutableIntStateOf(r.limit) }
+    var weekly by remember { mutableStateOf(r.weekly) }
     var on by remember { mutableStateOf(r.on) }
     var msg by remember { mutableStateOf(r.msg) }
     var sound by remember { mutableIntStateOf(r.sound) }
@@ -387,12 +453,10 @@ private fun EditDialog(s: State, r: AppRule, onClose: () -> Unit) {
         title = { Text(r.label) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text("Opens per day", fontWeight = FontWeight.SemiBold)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedButton(onClick = { if (limit > 1) limit-- }) { Text("−", fontSize = 20.sp) }
-                    Text("$limit", fontSize = 32.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp))
-                    OutlinedButton(onClick = { if (limit < 99) limit++ }) { Text("+", fontSize = 20.sp) }
-                }
+                PeriodPicker(weekly) { w -> if (w != weekly) { limit = if (w) (limit * 7).coerceAtMost(500) else ((limit + 6) / 7).coerceIn(1, 99); weekly = w } }
+                Text(if (weekly) "Opens per week" else "Opens per day", fontWeight = FontWeight.SemiBold)
+                LimitStepper(limit, if (weekly) 500 else 99) { limit = it }
+                if (weekly) Text("Monday to Sunday. About ${(limit + 6) / 7} a day; spend them when you like.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(8.dp))
                 SwitchRow("Limit is on", "Turn off to pause this limit without losing it.", on) { on = it }
                 if (s.settings.nudge) {
@@ -403,7 +467,7 @@ private fun EditDialog(s: State, r: AppRule, onClose: () -> Unit) {
                 TextButton(onClick = { apply(null) }, colors = ButtonDefaults.textButtonColors(contentColor = Bad)) { Text("Remove this app") }
             }
         },
-        confirmButton = { Button(onClick = { Nudger.stop(); Nudger.stopRec(); apply(r.copy(limit = limit, on = on, msg = msg.trim(), sound = sound)) }) { Text("Save") } },
+        confirmButton = { Button(onClick = { Nudger.stop(); Nudger.stopRec(); apply(r.copy(limit = limit, on = on, msg = msg.trim(), sound = sound, weekly = weekly)) }) { Text("Save") } },
         dismissButton = { TextButton(onClick = onClose) { Text("Cancel") } },
     )
     pending?.let { go -> WaitDialog("Loosen this limit?", onDone = { pending = null; go() }, onCancel = { pending = null }) }
@@ -441,23 +505,21 @@ private fun AddScreen(onDone: () -> Unit) {
     }
     picked?.let { a ->
         var limit by remember(a.pkg) { mutableIntStateOf(5) }
+        var weekly by remember(a.pkg) { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { picked = null },
             icon = { AppIcon(a.pkg, a.label, 48.dp) },
-            title = { Text("How many opens a day?") },
+            title = { Text(if (weekly) "How many opens a week?" else "How many opens a day?") },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     Text(a.label, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedButton(onClick = { if (limit > 1) limit-- }) { Text("−", fontSize = 20.sp) }
-                        Text("$limit", fontSize = 36.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp))
-                        OutlinedButton(onClick = { if (limit < 99) limit++ }) { Text("+", fontSize = 20.sp) }
-                    }
-                    Text("After $limit opens it locks until midnight.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    PeriodPicker(weekly) { w -> if (w != weekly) { limit = if (w) (limit * 7).coerceAtMost(500) else ((limit + 6) / 7).coerceIn(1, 99); weekly = w } }
+                    LimitStepper(limit, if (weekly) 500 else 99) { limit = it }
+                    Text(if (weekly) "After $limit opens it locks until Monday (about ${(limit + 6) / 7} a day)." else "After $limit opens it locks until midnight.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             confirmButton = { Button(onClick = {
-                Store.update(ctx) { it.copy(apps = it.apps + AppRule(a.pkg, a.label, limit)) }
+                Store.update(ctx) { it.copy(apps = it.apps + AppRule(a.pkg, a.label, limit, weekly = weekly)) }
                 picked = null; onDone()
             }) { Text("Add limit") } },
             dismissButton = { TextButton(onClick = { picked = null }) { Text("Cancel") } },

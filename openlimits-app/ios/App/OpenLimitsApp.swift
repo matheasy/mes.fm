@@ -2,11 +2,36 @@ import SwiftUI
 import FamilyControls
 import ManagedSettings
 import Charts
+import UserNotifications
 
 @main
 struct OpenLimitsApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var body: some Scene {
         WindowGroup { ContentView().tint(Color("AccentColor")) }
+    }
+}
+
+/// Which limit's maths screen to show (set when the "Tap to solve and unlock" notification is tapped).
+@MainActor
+final class MathRouter: ObservableObject {
+    static let shared = MathRouter()
+    @Published var pending: UUID?
+}
+
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(_ app: UIApplication, didFinishLaunchingWithOptions o: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+    func userNotificationCenter(_ c: UNUserNotificationCenter, didReceive r: UNNotificationResponse, withCompletionHandler done: @escaping () -> Void) {
+        if let s = r.notification.request.content.userInfo["mathLimit"] as? String, let id = UUID(uuidString: s) {
+            Task { @MainActor in MathRouter.shared.pending = id }
+        }
+        done()
+    }
+    func userNotificationCenter(_ c: UNUserNotificationCenter, willPresent n: UNNotification, withCompletionHandler done: @escaping (UNNotificationPresentationOptions) -> Void) {
+        done([.banner, .sound])
     }
 }
 
@@ -18,6 +43,7 @@ final class Model: ObservableObject {
     @Published var prefs = Prefs()
     @Published var authorized = false
     @Published var error: String?
+    var isDemo = false
 
     init() { refresh() }
 
@@ -29,13 +55,18 @@ final class Model: ObservableObject {
         if authorized { Shields.reconcile() }
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-demo") { demo() }
+        if ProcessInfo.processInfo.arguments.contains("-demoMath"), MathRouter.shared.pending == nil, let l = limits.first { MathRouter.shared.pending = l.id }
         #endif
     }
 
     #if DEBUG
     /// Sample limits for store screenshots in the simulator (Screen Time doesn't work there). Never saved.
     private func demo() {
-        let a = LimitItem(name: "Instagram", limit: 8), b = LimitItem(name: "TikTok", limit: 5), c = LimitItem(name: "YouTube", limit: 4)
+        isDemo = true
+        // Fixed ids so a refresh keeps the same limits (the maths sheet holds one by id).
+        var a = LimitItem(name: "Instagram", limit: 8), b = LimitItem(name: "TikTok", limit: 5), c = LimitItem(name: "YouTube", limit: 40)
+        a.id = UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!; b.id = UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!
+        c.id = UUID(uuidString: "00000000-0000-0000-0000-00000000000C")!; c.weekly = true
         limits = [a, b, c]
         var d: [String: [String: DayCount]] = [:]
         let cal = Calendar.current
@@ -44,10 +75,10 @@ final class Model: ObservableObject {
             let day = Logic.dayKey(cal.date(byAdding: .day, value: -(i + 1), to: Date())!)
             d[day] = [a.id.uuidString: DayCount(o: v[0]), b.id.uuidString: DayCount(o: v[1]), c.id.uuidString: DayCount(o: v[2])]
         }
-        d[Logic.dayKey()] = [a.id.uuidString: DayCount(o: 3), b.id.uuidString: DayCount(o: 2), c.id.uuidString: DayCount(o: 4)]
+        d[Logic.dayKey()] = [a.id.uuidString: DayCount(o: 8), b.id.uuidString: DayCount(o: 2), c.id.uuidString: DayCount(o: 4)]
         days = d
         authorized = true
-        prefs.pause = 30; prefs.warnAt = 3
+        prefs.pause = 30; prefs.warnAt = 3; prefs.mathMode = MathMode.whenLocked; prefs.mathLevel = 2; prefs.mathCount = 3
     }
     #endif
 
@@ -97,6 +128,21 @@ final class Model: ObservableObject {
     func setStrict(_ v: Bool) { var p = Shared.prefs; p.strict = v; Shared.prefs = p; refresh() }
     func setPrefs(_ f: (inout Prefs) -> Void) { var p = Shared.prefs; f(&p); Shared.prefs = p; refresh(); if p.notify || p.warnAt > 0 { Notes.ask() } }
 
+    /// The maths was solved: earn one open if it is locked, then open it. Returns the minutes it is open for, or nil.
+    func mathSolved(_ l: LimitItem) -> Int? {
+        if isDemo { return l.session }
+        let day = Logic.dayKey()
+        let p = Shared.prefs
+        if Logic.left(Shared.days, day, l) == 0 {
+            guard Logic.canEarn(p, Shared.days, day, l) else { error = "No more opens to earn today for this limit."; return nil }
+            Shared.addEarned(l.id)
+        }
+        let ok = Shields.open(l, extra: false)
+        refresh()
+        if !ok { error = "Couldn't start the open. Try again."; return nil }
+        return max(15, l.session)
+    }
+
     func openAnyway(_ l: LimitItem) {
         if !Shields.open(l, extra: true) { error = "Couldn't start the extra open. Try again." }
         refresh()
@@ -109,6 +155,8 @@ final class Model: ObservableObject {
 
 struct ContentView: View {
     @StateObject private var m = Model()
+    @ObservedObject private var router = MathRouter.shared
+    @State private var mathFor: LimitItem?
     @Environment(\.scenePhase) private var phase
     @State private var editing: LimitItem?
     @State private var adding = false
@@ -147,6 +195,12 @@ struct ContentView: View {
                         LimitRow(l: l, days: m.days, sessionEnd: m.sessionEnds[l.id.uuidString])
                             .contentShape(Rectangle())
                             .onTapGesture { editing = l }
+                        if l.on && Logic.needsMath(m.prefs, m.days, Logic.dayKey(), l) {
+                            Button { mathFor = l } label: {
+                                Label(Logic.left(m.days, Logic.dayKey(), l) == 0 ? "Solve maths for 1 more open" : "Solve to unlock", systemImage: "function")
+                                    .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity)
+                            }.buttonStyle(.borderedProminent)
+                        }
                         if l.on && Logic.left(m.days, Logic.dayKey(), l) == 0 && !m.prefs.strict {
                             HoldButton(title: "Hold 5 seconds to open anyway") { m.openAnyway(l) }
                         }
@@ -156,7 +210,7 @@ struct ContentView: View {
                 } header: { Text("Today") }
 
                 if !m.limits.isEmpty {
-                    Section("Last 7 days") { WeekChart(days: m.days, total: m.limits.filter(\.on).reduce(0) { $0 + $1.limit }) }
+                    Section("Last 7 days") { WeekChart(days: m.days, total: m.limits.filter(\.on).reduce(0) { $0 + ($1.weekly ? ($1.limit + 6) / 7 : $1.limit) }) }
                 }
 
                 Section("Settings") {
@@ -187,10 +241,12 @@ struct ContentView: View {
                     Text("With a wait, the first tap on Open starts it and a notification tells you when it's over. Notifications show on the lock screen; iPhone has no status-bar counter like Android.")
                 }
 
+                MathSection(m: m)
+
                 NudgeSection(m: m)
 
                 Section("How it works") {
-                    Text("When you open a limited app, a lock screen asks if you really want to. Tap Open to use one of today's opens: the app stays open for the minutes you chose, then locks again. When the opens are used up, it stays locked until midnight.")
+                    Text("When you open a limited app, a lock screen asks if you really want to. Tap Open to use one of your opens: the app stays open for the minutes you chose, then locks again. When the opens are used up, it stays locked until midnight (or Monday for a weekly limit), unless you solve maths problems to earn one more open.")
                         .font(.subheadline).foregroundStyle(.secondary)
                     Link("Made by MES · mes.fm", destination: URL(string: "https://mes.fm/mobile-apps")!)
                     Link("Want a feature? Tell us at mes.fm/contact", destination: URL(string: "https://mes.fm/contact?subject=Open%20Limits%20app%20idea")!)
@@ -199,13 +255,22 @@ struct ContentView: View {
             .navigationTitle("Open Limits")
             .sheet(isPresented: $adding) { EditView(model: m, item: LimitItem(), isNew: true) }
             .sheet(item: $editing) { l in EditView(model: m, item: l, isNew: false) }
+            .sheet(item: $mathFor) { l in MathUnlockView(m: m, l: l) }
             .sheet(isPresented: $strictOff) {
                 WaitSheet(title: "Turn off strict mode?") { m.setStrict(false) }
             }
         }
-        .onChange(of: phase) { p in if p == .active { m.refresh() } }
+        .onChange(of: phase) { p in if p == .active { m.refresh(); takePending() } }
+        .onChange(of: router.pending) { _ in takePending() }
+        .onAppear { takePending() }
     }
     @State private var strictOff = false
+
+    private func takePending() {
+        guard let id = router.pending else { return }
+        router.pending = nil
+        if let l = m.limits.first(where: { $0.id == id }) { editing = nil; adding = false; mathFor = l }
+    }
 }
 
 struct AppsLabel: View {
@@ -230,21 +295,26 @@ struct LimitRow: View {
     let days: [String: [String: DayCount]]
     let sessionEnd: Double?
     var body: some View {
-        let c = Logic.used(days, Logic.dayKey(), l.id)
-        let left = Logic.left(days, Logic.dayKey(), l)
+        let day = Logic.dayKey()
+        let c = Logic.period(days, day, l)
+        let left = Logic.left(days, day, l)
+        let allowed = l.limit + c.e
+        let when = l.weekly ? "this week" : "today"
         let color: Color = !l.on ? .secondary : left == 0 ? .red : left <= 1 ? .orange : .green
         let openNow = (sessionEnd ?? 0) > Date().timeIntervalSince1970
         VStack(alignment: .leading, spacing: 6) {
             AppsLabel(l: l)
             Group {
                 if !l.on { Text("Paused: no limit right now") }
-                else if left == 0 { Text("Locked · \(c.o) of \(l.limit) opens used" + (c.x > 0 ? " · +\(c.x) extra" : "")) }
-                else { Text("\(c.o) of \(l.limit) opens · \(left) left · \(l.session) min each") }
+                else if left == 0 { Text("Locked \(l.weekly ? "until Monday" : "for today") · \(c.o) of \(allowed) opens used" + (c.x > 0 ? " · +\(c.x) extra" : "")) }
+                else if let per = Logic.perDayHint(days, day, l) { Text("\(c.o) of \(allowed) opens used this week · \(left) left, about \(per) a day") }
+                else { Text("\(c.o) of \(allowed) opens \(when) · \(left) left · \(l.session) min each") }
             }.font(.subheadline).foregroundStyle(color)
+            if c.e > 0 { Text("\(c.e) earned with maths \(when)").font(.caption).foregroundStyle(.secondary) }
             if openNow, let e = sessionEnd {
                 Text("Open now, locks again at \(Date(timeIntervalSince1970: e).formatted(date: .omitted, time: .shortened))").font(.caption).foregroundStyle(.secondary)
             }
-            ProgressView(value: Double(min(c.o, l.limit)), total: Double(l.limit)).tint(color)
+            ProgressView(value: Double(min(c.o, allowed)), total: Double(max(1, allowed))).tint(color)
         }.padding(.vertical, 4)
     }
 }
@@ -265,7 +335,7 @@ struct WeekChart: View {
             }
             .chartXAxis { AxisMarks(values: .stride(by: .day)) { _ in AxisValueLabel(format: .dateTime.weekday(.abbreviated)) } }
             .frame(height: 150)
-            Text("Opens per day, all limits · dashed line = your total limit (\(total))").font(.caption).foregroundStyle(.secondary)
+            Text("Opens per day, all limits · dashed line = your total daily limit (\(total); weekly limits count as a seventh)").font(.caption).foregroundStyle(.secondary)
         }.padding(.vertical, 6)
     }
 }
@@ -343,14 +413,27 @@ struct EditView: View {
                     Section("Name (optional)") { TextField("e.g. Social apps", text: $item.name) }
                 }
                 Section {
-                    Stepper(value: $item.limit, in: 1...99) {
-                        HStack { Text("Opens per day"); Spacer(); Text("\(item.limit)").font(.title2.bold()) }
+                    Picker("Budget", selection: Binding(get: { item.weekly }, set: { v in
+                        item.weekly = v
+                        item.limit = v ? min(500, item.limit * 7) : max(1, min(99, (item.limit + 6) / 7))
+                    })) {
+                        Text("Per day").tag(false)
+                        Text("Per week").tag(true)
+                    }.pickerStyle(.segmented)
+                    Stepper {
+                        HStack { Text(item.weekly ? "Opens per week" : "Opens per day"); Spacer(); Text("\(item.limit)").font(.title2.bold()) }
+                    } onIncrement: {
+                        item.limit = min(item.maxLimit, item.limit + (item.weekly && item.limit >= 20 ? 5 : 1))
+                    } onDecrement: {
+                        item.limit = max(1, item.limit - (item.weekly && item.limit > 20 ? 5 : 1))
                     }
                     Picker("Each open lasts", selection: $item.session) {
                         ForEach([15, 20, 30, 45, 60], id: \.self) { Text("\($0) min").tag($0) }
                     }
                 } footer: {
-                    Text("After \(item.limit) opens it locks until midnight. Apple doesn't allow an open shorter than 15 minutes.")
+                    Text(item.weekly
+                         ? "\(item.limit) opens to spend however you like from Monday to Sunday (about \((item.limit + 6) / 7) a day). After that it locks until Monday. Apple doesn't allow an open shorter than 15 minutes."
+                         : "After \(item.limit) opens it locks until midnight. Apple doesn't allow an open shorter than 15 minutes.")
                 }
                 if model.prefs.nudge {
                     Section {
@@ -478,5 +561,125 @@ struct NudgeEditor: View {
                      : "No recording yet: the message is read out instead.").font(.caption).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+
+/// Settings: solve maths to unlock.
+struct MathSection: View {
+    @ObservedObject var m: Model
+    var body: some View {
+        Section {
+            Picker("Solve to unlock", selection: Binding(get: { m.prefs.mathMode }, set: { v in m.setPrefs { $0.mathMode = v } })) {
+                Text("Off").tag(MathMode.off)
+                Text("When locked").tag(MathMode.whenLocked)
+                Text("Every open").tag(MathMode.everyOpen)
+            }
+            if m.prefs.mathMode != MathMode.off {
+                Picker("Level", selection: Binding(get: { m.prefs.mathLevel }, set: { v in m.setPrefs { $0.mathLevel = v } })) {
+                    ForEach(1...5, id: \.self) { n in Text(MathGen.levelName(n)).tag(n) }
+                }
+                Stepper(value: Binding(get: { m.prefs.mathCount }, set: { v in m.setPrefs { $0.mathCount = v } }), in: 1...5) {
+                    HStack { Text("Problems in a row"); Spacer(); Text("\(m.prefs.mathCount)").bold() }
+                }
+                Picker("Most opens to earn a day", selection: Binding(get: { m.prefs.mathMax }, set: { v in m.setPrefs { $0.mathMax = v } })) {
+                    ForEach([0, 1, 2, 3, 5, 10], id: \.self) { v in Text(v == 0 ? "No limit" : "\(v) per app").tag(v) }
+                }
+            }
+        } header: { Text("Solve to unlock (maths)") } footer: {
+            switch m.prefs.mathMode {
+            case MathMode.off: Text("Off: when an app is locked, it stays locked.")
+            case MathMode.everyOpen: Text("Every open needs \(m.prefs.mathCount) correct answers in a row. When the opens are used up, solving earns one more open. A wrong answer shows the right one and starts the count again. Earned opens don't break your streak.")
+            default: Text("When an app is locked, solve \(m.prefs.mathCount) maths \(m.prefs.mathCount == 1 ? "problem" : "problems") in a row to earn one more open. A wrong answer shows the right one and starts the count again. Earned opens don't break your streak.")
+            }
+        }
+    }
+}
+
+/// The maths screen: N correct answers in a row unlock the limit.
+struct MathUnlockView: View {
+    @ObservedObject var m: Model
+    let l: LimitItem
+    @Environment(\.dismiss) private var dismiss
+    @State private var problem = MathProblem(text: "", answer: 0)
+    @State private var input = ""
+    @State private var right = 0
+    @State private var note: String?
+    @State private var wrong = false
+    @State private var openedFor: Int?
+    @FocusState private var focused: Bool
+
+    private var name: String { l.name.isEmpty ? Notes.name(l) : l.name }
+    private var need: Int { m.prefs.mathCount }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 22) {
+                if let mins = openedFor {
+                    Spacer()
+                    Image(systemName: "lock.open.fill").font(.system(size: 54)).foregroundStyle(.green)
+                    Text("Unlocked").font(.largeTitle.bold())
+                    Text("Unlocked for \(mins) minutes: go back to \(name).").font(.title3).multilineTextAlignment(.center)
+                    Button("Done") { dismiss() }.buttonStyle(.borderedProminent).controlSize(.large)
+                    Spacer()
+                } else {
+                    let locked = Logic.left(m.days, Logic.dayKey(), l) == 0
+                    let more = Logic.earnLeft(m.prefs, m.days, Logic.dayKey(), l).map { " (\($0) left to earn today)" } ?? ""
+                    Text(locked ? "Solve \(need) \(need == 1 ? "problem" : "problems") to earn 1 more open of \(name)\(more)"
+                                : "Solve \(need) \(need == 1 ? "problem" : "problems") to open \(name)")
+                        .font(.headline).multilineTextAlignment(.center).padding(.top, 8)
+                    HStack(spacing: 10) {
+                        ForEach(0..<need, id: \.self) { i in
+                            Circle().fill(i < right ? Color.green : Color.secondary.opacity(0.25)).frame(width: 16, height: 16)
+                        }
+                    }
+                    Text(MathGen.levelName(m.prefs.mathLevel)).font(.caption).foregroundStyle(.secondary)
+                    Text(problem.text + (problem.text.contains("=") ? "" : " = ?"))
+                        .font(.system(size: 40, weight: .bold, design: .rounded)).minimumScaleFactor(0.5).lineLimit(1)
+                        .padding(.vertical, 6)
+                    TextField("Answer", text: $input)
+                        .keyboardType(.numberPad).font(.system(size: 34, weight: .semibold, design: .rounded))
+                        .multilineTextAlignment(.center).frame(maxWidth: 220)
+                        .padding(10).background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.12)))
+                        .focused($focused)
+                        .onChange(of: input) { v in let d = v.filter(\.isNumber); if d != v || d.count > 6 { input = String(d.prefix(6)) } }
+                        .onSubmit(check)
+                    if let note { Text(note).font(.subheadline).foregroundStyle(wrong ? .red : .green).multilineTextAlignment(.center) }
+                    Button(action: check) { Text("Check").font(.headline).frame(maxWidth: 220) }
+                        .buttonStyle(.borderedProminent).controlSize(.large).disabled(input.isEmpty)
+                    Spacer()
+                }
+            }
+            .padding()
+            .navigationTitle("Solve to unlock")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(openedFor == nil ? "Not now" : "Close") { dismiss() } } }
+            .onAppear { next(); focused = true }
+        }
+    }
+
+    private func next() {
+        var g = SystemRandomNumberGenerator()
+        var p = MathGen.make(level: m.prefs.mathLevel, rng: &g)
+        while p == problem { p = MathGen.make(level: m.prefs.mathLevel, rng: &g) }
+        problem = p; input = ""
+    }
+
+    private func check() {
+        guard let v = Int(input) else { return }
+        if v == problem.answer {
+            right += 1; wrong = false
+            if right >= need {
+                if let mins = m.mathSolved(l) { openedFor = mins; note = nil } else { note = m.error ?? "Couldn't unlock."; wrong = true }
+                return
+            }
+            note = "Correct! \(need - right) more to go"
+        } else {
+            wrong = true
+            let shown = problem.text.contains("=") ? "x = \(problem.answer)" : "\(problem.text) = \(problem.answer)"
+            note = "Not quite: \(shown). Try this one."
+            right = 0
+        }
+        next()
     }
 }

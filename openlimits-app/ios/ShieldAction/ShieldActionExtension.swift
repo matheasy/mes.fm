@@ -1,9 +1,15 @@
 import Foundation
 import ManagedSettings
 
-/// The shield's buttons. "Not now" (the big one) closes the app; "Open" uses one of today's opens.
+/// The shield's buttons. "Not now" (the big one) closes the app; "Open" uses one of today's opens;
+/// "Solve maths" sends a notification that opens the app's maths screen.
 class ShieldActionExtension: ShieldActionDelegate {
     private func act(_ action: ShieldAction, _ l: LimitItem?, _ done: @escaping (ShieldActionResponse) -> Void) {
+        // Solve to unlock: the shield can't take typed answers, so a notification opens the app on the maths screen.
+        if action == .secondaryButtonPressed, let l, Logic.needsMath(Shared.prefs, Shared.days, Logic.dayKey(), l) {
+            Notes.mathPrompt(l)
+            done(.close); return
+        }
         guard action == .secondaryButtonPressed, let l, Logic.left(Shared.days, Logic.dayKey(), l) > 0 else {
             // "Not now" / "OK": the nudge sound (and message) as the app closes.
             if let l { Notes.nudge(l, locked: Logic.left(Shared.days, Logic.dayKey(), l) == 0) }

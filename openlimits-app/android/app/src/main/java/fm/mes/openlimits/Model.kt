@@ -13,6 +13,8 @@ data class AppRule(
     val msg: String = "",
     /** Sound for this app: -1 = same as the default, else Sound.OFF / SPEAK / REC. */
     val sound: Int = -1,
+    /** true = [limit] opens per week (Monday to Sunday) instead of per day. */
+    val weekly: Boolean = false,
 )
 
 /** Opens of one app on one day. */
@@ -22,6 +24,8 @@ data class DayApp(
     val extra: Int = 0,
     /** Why it was opened: reason id -> count. */
     val reasons: Map<String, Int> = emptyMap(),
+    /** Opens earned that day by solving maths problems (they raise the allowance and keep the streak). */
+    val earned: Int = 0,
 )
 
 data class Settings(
@@ -49,7 +53,66 @@ data class Settings(
     val vol: Int = 80,
     /** Play the nudge sound only when the app is locked (else on every pause screen too). */
     val soundLockedOnly: Boolean = false,
+    /** Solve to unlock: Maths.OFF / WHEN_LOCKED (solve to earn one more open) / EVERY_OPEN (solve before every open). */
+    val mathMode: Int = Maths.WHEN_LOCKED,
+    /** How hard the problems are, 1-5 (see Maths.LEVELS). */
+    val mathLevel: Int = 2,
+    /** Problems in a row for one unlock. */
+    val mathCount: Int = 3,
+    /** Most opens one app can earn with maths per day (0 = no limit). */
+    val mathMax: Int = 3,
 )
+
+/** Solve-to-unlock maths problems. Answers are whole numbers, never negative. */
+object Maths {
+    const val OFF = 0
+    const val WHEN_LOCKED = 1
+    const val EVERY_OPEN = 2
+    val MODES = listOf(OFF to "Off", WHEN_LOCKED to "When locked: earn one more open", EVERY_OPEN to "Before every open")
+    val LEVELS = listOf(
+        1 to "Easy: add and subtract to 20",
+        2 to "Times tables",
+        3 to "Two-digit numbers",
+        4 to "Percents and fractions",
+        5 to "Algebra: solve for x",
+    )
+
+    data class Problem(val text: String, val answer: Int)
+
+    fun make(level: Int, r: java.util.Random): Problem {
+        fun n(a: Int, b: Int) = a + r.nextInt(b - a + 1)
+        return when (level.coerceIn(1, 5)) {
+            1 -> { val a = n(1, 20); val b = n(1, 20); if (r.nextBoolean() || a < b) Problem("$a + $b", a + b) else Problem("$a \u2212 $b", a - b) }
+            2 -> { val a = n(2, 12); val b = n(2, 12); Problem("$a \u00D7 $b", a * b) }
+            3 -> when (r.nextInt(3)) {
+                0 -> { val a = n(10, 99); val b = n(10, 99); Problem("$a + $b", a + b) }
+                1 -> { val a = n(20, 99); val b = n(10, a); Problem("$a \u2212 $b", a - b) }
+                else -> { val a = n(11, 25); val b = n(2, 9); Problem("$a \u00D7 $b", a * b) }
+            }
+            4 -> if (r.nextBoolean()) {
+                val p = listOf(10, 20, 25, 50, 75)[r.nextInt(5)]
+                val unit = 100 / gcd(p, 100)
+                val base = unit * n(1, 200 / unit).coerceAtLeast(1)
+                Problem("$p% of $base", p * base / 100)
+            } else {
+                val d = n(2, 10); val num = n(1, d - 1); val base = d * n(2, 12)
+                Problem("$num/$d of $base", num * base / d)
+            }
+            else -> if (r.nextBoolean()) {
+                val x = n(1, 12); val a = n(2, 9); val b = n(1, 30)
+                Problem("${a}x + $b = ${a * x + b}", x)
+            } else {
+                val x = n(3, 15); val b = n(1, x - 1); val a = n(2, 6)
+                Problem("$a(x \u2212 $b) = ${a * (x - b)}", x)
+            }
+        }
+    }
+
+    private fun gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)
+
+    /** Read what was typed: digits only (spaces ignored); null when it isn't a whole number. */
+    fun parse(t: String): Int? = t.trim().replace(" ", "").takeIf { it.matches(Regex("\\d{1,6}")) }?.toInt()
+}
 
 /** How a nudge message sounds. */
 object Sound {
@@ -102,7 +165,44 @@ object Logic {
 
     fun opens(s: State, day: String, pkg: String): DayApp = s.days[day]?.get(pkg) ?: DayApp()
 
-    fun left(s: State, day: String, rule: AppRule): Int = (rule.limit - opens(s, day, rule.pkg).opens).coerceAtLeast(0)
+    /** The days that count for [rule] on [day]: just that day, or Monday to [day] for a weekly limit. */
+    fun periodDays(rule: AppRule, day: String): List<String> {
+        if (!rule.weekly) return listOf(day)
+        val d = LocalDate.parse(day)
+        val mon = d.minusDays((d.dayOfWeek.value - 1).toLong())
+        return (0..(d.dayOfWeek.value - 1)).map { dayKey(mon.plusDays(it.toLong())) }
+    }
+    /** Opens used in the period (the day, or the week so far). */
+    fun used(s: State, day: String, rule: AppRule): Int = periodDays(rule, day).sumOf { opens(s, it, rule.pkg).opens }
+    /** Opens earned with maths in the period. */
+    fun earned(s: State, day: String, rule: AppRule): Int = periodDays(rule, day).sumOf { opens(s, it, rule.pkg).earned }
+    /** Emergency opens in the period. */
+    fun extras(s: State, day: String, rule: AppRule): Int = periodDays(rule, day).sumOf { opens(s, it, rule.pkg).extra }
+    /** The period's allowance: the limit plus opens earned with maths. */
+    fun allowance(s: State, day: String, rule: AppRule): Int = rule.limit + earned(s, day, rule)
+    fun left(s: State, day: String, rule: AppRule): Int = (allowance(s, day, rule) - used(s, day, rule)).coerceAtLeast(0)
+    /** Days left in the week, today included (7 on Monday, 1 on Sunday). */
+    fun daysLeftInWeek(day: String): Int = 8 - LocalDate.parse(day).dayOfWeek.value
+    /** "about 4 a day" share for a weekly limit (null for a daily one). */
+    fun perDay(s: State, day: String, rule: AppRule): Int? =
+        if (!rule.weekly) null else (left(s, day, rule) + daysLeftInWeek(day) - 1) / daysLeftInWeek(day)
+    /** "today" / "this week". */
+    fun periodWord(rule: AppRule): String = if (rule.weekly) "this week" else "today"
+    /** When a locked app opens again. */
+    fun unlocksAt(rule: AppRule): String = if (rule.weekly) "Monday" else "midnight"
+
+    /** Can one more open be earned with maths for [rule] today? */
+    fun canEarn(s: State, day: String, rule: AppRule): Boolean =
+        s.settings.mathMode != Maths.OFF && (s.settings.mathMax == 0 || opens(s, day, rule.pkg).earned < s.settings.mathMax)
+    /** Opens still to earn today (null = no limit). */
+    fun earnLeft(s: State, day: String, rule: AppRule): Int? =
+        if (s.settings.mathMax == 0) null else (s.settings.mathMax - opens(s, day, rule.pkg).earned).coerceAtLeast(0)
+
+    fun addEarned(s: State, day: String, pkg: String): State {
+        val today = s.days[day].orEmpty()
+        val cur = today[pkg] ?: DayApp()
+        return s.copy(days = prune(s.days + (day to (today + (pkg to cur.copy(earned = cur.earned + 1)))), day))
+    }
 
     /**
      * Decide what happens when [rule]'s app comes to the front at [now] (ms).
@@ -117,7 +217,7 @@ object Logic {
 
     /** Can the pause screen be skipped (no wait, no question, and not the last open)? Then the open is counted silently. */
     fun silent(s: State, day: String, rule: AppRule): Boolean =
-        s.settings.pause == 0 && !s.settings.ask && left(s, day, rule) > 1 &&
+        s.settings.pause == 0 && !s.settings.ask && left(s, day, rule) > 1 && s.settings.mathMode != Maths.EVERY_OPEN &&
             nudgeText(s, day, rule) == null && nudgeSound(s, rule, locked = false) == Sound.OFF
 
     /** Fill in {app} and {left} in a nudge message. */
@@ -155,9 +255,13 @@ object Logic {
     }
 
     /** A day is kept when no app went over its limit and no emergency open was used. */
+    /** Opens earned with maths don't break it; for a weekly limit the week so far must be within the allowance. */
     fun dayKept(s: State, day: String): Boolean {
         val d = s.days[day] ?: return true
-        return s.apps.none { r -> val o = d[r.pkg] ?: return@none false; o.extra > 0 || o.opens > r.limit }
+        return s.apps.none { r ->
+            val o = d[r.pkg] ?: return@none false
+            o.extra > 0 || (if (r.weekly) used(s, day, r) > allowance(s, day, r) else o.opens > r.limit + o.earned)
+        }
     }
 
     /** Days in a row kept, ending yesterday (today counts too once it is kept so far). */
@@ -191,25 +295,25 @@ object Logic {
     fun loosens(old: AppRule?, new: AppRule?): Boolean = when {
         old == null -> false
         new == null -> old.on
-        else -> old.on && (!new.on || new.limit > old.limit)
+        else -> old.on && (!new.on || new.limit * (if (new.weekly) 1 else 7) > old.limit * (if (old.weekly) 1 else 7))
     }
 
     /** Text for the notification after an open: (title, body, isWarning). */
     fun openMessage(s: State, day: String, rule: AppRule, extra: Boolean): Triple<String, String, Boolean> {
-        val o = opens(s, day, rule.pkg)
         val left = left(s, day, rule)
         val warn = s.settings.warnAt
         val n = nudgeText(s, day, rule)
-        val m = openBase(rule, o, left, warn, extra)
+        val m = openBase(rule, used(s, day, rule), allowance(s, day, rule), extras(s, day, rule), left, warn, extra)
         return if (n == null) m else Triple(m.first, m.second + "\n" + n, m.third)
     }
 
-    private fun openBase(rule: AppRule, o: DayApp, left: Int, warn: Int, extra: Boolean): Triple<String, String, Boolean> {
+    private fun openBase(rule: AppRule, used: Int, allow: Int, extras: Int, left: Int, warn: Int, extra: Boolean): Triple<String, String, Boolean> {
+        val p = periodWord(rule)
         return when {
-            extra -> Triple("${rule.label}: extra open", "Over today's limit (${o.extra} extra). It locks again when you leave.", true)
-            left == 0 -> Triple("${rule.label}: last open used", "${o.opens}/${rule.limit} opens used. It locks until midnight.", true)
-            warn > 0 && left <= warn -> Triple("WARNING: $left ${if (left == 1) "open" else "opens"} left of ${rule.label}", "${o.opens}/${rule.limit} opens used today.", true)
-            else -> Triple("${rule.label}: ${o.opens}/${rule.limit} opens used", "$left left today.", false)
+            extra -> Triple("${rule.label}: extra open", "Over the limit $p ($extras extra). It locks again when you leave.", true)
+            left == 0 -> Triple("${rule.label}: last open used", "$used/$allow opens used $p. It locks until ${unlocksAt(rule)}.", true)
+            warn > 0 && left <= warn -> Triple("WARNING: $left ${if (left == 1) "open" else "opens"} left of ${rule.label}", "$used/$allow opens used $p.", true)
+            else -> Triple("${rule.label}: $used/$allow opens used", "$left left $p.", false)
         }
     }
 
@@ -220,7 +324,7 @@ object Logic {
         val sorted = on.sortedBy { left(s, day, it) }
         val first = sorted.first()
         val title = "${left(s, day, first)} ${if (left(s, day, first) == 1) "open" else "opens"} left of ${first.label}"
-        val body = sorted.joinToString(" · ") { "${it.label} ${opens(s, day, it.pkg).opens}/${it.limit}" }
+        val body = sorted.joinToString(" · ") { "${it.label} ${used(s, day, it)}/${allowance(s, day, it)}" + (if (it.weekly) " wk" else "") }
         return title to body
     }
 
@@ -235,19 +339,22 @@ object Logic {
             s.apps.forEach { put(JSONObject().put("p", it.pkg).put("l", it.label).put("n", it.limit).put("on", it.on).apply {
                 if (it.msg.isNotEmpty()) put("m", it.msg)
                 if (it.sound >= 0) put("s", it.sound)
+                if (it.weekly) put("w", true)
             }) }
         })
         o.put("set", JSONObject().put("pause", s.settings.pause).put("grace", s.settings.grace)
             .put("ask", s.settings.ask).put("strict", s.settings.strict)
             .put("notify", s.settings.notify).put("warn", s.settings.warnAt).put("bar", s.settings.bar)
             .put("nudge", s.settings.nudge).put("msg", s.settings.msg).put("snd", s.settings.sound)
-            .put("vol", s.settings.vol).put("sndLock", s.settings.soundLockedOnly))
+            .put("vol", s.settings.vol).put("sndLock", s.settings.soundLockedOnly)
+            .put("mm", s.settings.mathMode).put("ml", s.settings.mathLevel).put("mc", s.settings.mathCount).put("mx", s.settings.mathMax))
         val days = JSONObject()
         s.days.forEach { (day, m) ->
             val dj = JSONObject()
             m.forEach { (pkg, a) ->
                 val aj = JSONObject().put("o", a.opens)
                 if (a.extra > 0) aj.put("x", a.extra)
+                if (a.earned > 0) aj.put("e", a.earned)
                 if (a.reasons.isNotEmpty()) aj.put("r", JSONObject(a.reasons as Map<*, *>))
                 dj.put(pkg, aj)
             }
@@ -266,8 +373,9 @@ object Logic {
             o.optJSONArray("apps")?.let { a ->
                 for (i in 0 until a.length()) {
                     val j = a.getJSONObject(i)
-                    apps += AppRule(j.getString("p"), j.optString("l", j.getString("p")), j.optInt("n", 5).coerceIn(1, 99), j.optBoolean("on", true),
-                        j.optString("m", "").take(MSG_MAX), j.optInt("s", -1).coerceIn(-1, Sound.REC))
+                    val wk = j.optBoolean("w", false)
+                    apps += AppRule(j.getString("p"), j.optString("l", j.getString("p")), j.optInt("n", 5).coerceIn(1, if (wk) 500 else 99), j.optBoolean("on", true),
+                        j.optString("m", "").take(MSG_MAX), j.optInt("s", -1).coerceIn(-1, Sound.REC), wk)
                 }
             }
             val sj = o.optJSONObject("set") ?: JSONObject()
@@ -284,6 +392,10 @@ object Logic {
                 sound = sj.optInt("snd", Sound.OFF).coerceIn(Sound.OFF, Sound.REC),
                 vol = sj.optInt("vol", 80).coerceIn(0, 100),
                 soundLockedOnly = sj.optBoolean("sndLock", false),
+                mathMode = sj.optInt("mm", Maths.WHEN_LOCKED).coerceIn(Maths.OFF, Maths.EVERY_OPEN),
+                mathLevel = sj.optInt("ml", 2).coerceIn(1, 5),
+                mathCount = sj.optInt("mc", 3).coerceIn(1, 5),
+                mathMax = sj.optInt("mx", 3).coerceIn(0, 10),
             )
             val days = mutableMapOf<String, Map<String, DayApp>>()
             o.optJSONObject("days")?.let { dj ->
@@ -294,7 +406,7 @@ object Logic {
                         val aj = pj.getJSONObject(pkg)
                         val r = mutableMapOf<String, Int>()
                         aj.optJSONObject("r")?.let { rj -> rj.keys().forEach { k -> r[k] = rj.optInt(k) } }
-                        m[pkg] = DayApp(aj.optInt("o"), aj.optInt("x"), r)
+                        m[pkg] = DayApp(aj.optInt("o"), aj.optInt("x"), r, aj.optInt("e"))
                     }
                     days[day] = m
                 }

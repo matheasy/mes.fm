@@ -1,26 +1,30 @@
 # MES Open Limits — store listing
 
-**App name (Play, 30 max):** Open Limits: App Open Limiter
-**App name (App Store, 30 max):** Open Limits: Limit App Opens
-**Subtitle (iOS, 30):** Open apps on purpose
-**Short description (Play, 80):** Limit how many times a day you open Instagram, TikTok or any app. Then it locks.
+**App name (Play, 30 max):** Open Limits: Solve to Unlock
+**App name (App Store, 30 max):** Open Limits: Solve to Unlock
+**Subtitle (iOS, 30):** Solve maths to earn app opens
+**Short description (Play, 80):** Daily or weekly open limits for any app. Solve maths problems to earn one more.
+**Promotional text (iOS, 170):** New: solve maths problems to earn one more open when an app is locked, and weekly budgets (e.g. 40 Instagram opens a week). Earned opens keep your streak.
 
 **Full description:**
-Open Limits lets you choose how many times a day you can open an app. Instagram 5 times, TikTok 3 times, YouTube 4 times: when the opens are used up, the app locks until midnight.
+Open Limits gives every app a number of opens, and when they're used up you have to solve maths to get another one.
 
-How it works
-• Pick the apps you want to open less and give each one a daily number of opens.
-• Every time you open one, a calm pause screen shows "This would be open 3 of 5 today". Breathe for a few seconds, then open it, or tap Not now.
-• When an app's opens are used up, it's locked for the rest of the day.
+Solve to unlock
+When Instagram (or TikTok, YouTube, any app) is locked, you don't just get a second chance. You earn it: solve 3 maths problems in a row and you get one more open. Get one wrong and the count starts again.
+• Pick how hard: easy adding, times tables, two-digit numbers, percents and fractions, or algebra (solve for x).
+• Pick how many problems in a row (1 to 5) and how many opens you can earn a day.
+• Or turn on "Before every open": solve a problem every time you open the app.
+• Earned opens don't break your streak. It's effort, not a loophole: a few seconds of thinking is often enough to notice you didn't really want the app.
 
-Made to be simple, with a few things other blockers don't do
-• Breathing pause: the Open button only works after a short countdown (or turn it off).
-• "Why are you opening it?" Tap Reply, Post, Look something up or Just bored, and see your reasons for the week. (Android)
-• Coming back to an app within a few minutes doesn't use another open.
-• Hold-to-open-anyway for real emergencies: it counts as an extra open and breaks your streak. Strict mode turns it off completely.
-• Strict mode also makes you wait 30 seconds before you can loosen a limit.
-• Streaks and a 7-day chart of your opens.
-• Group limits (iPhone): several apps can share the same opens.
+Daily or weekly budgets
+• Give each app opens per day (Instagram 5 a day), or per week (40 Instagram opens from Monday to Sunday) and spend them when you like. Open Limits shows "28 left this week, about 4 a day".
+• Counts opens, not minutes: one quick check is one open, however short.
+
+Nudges in your own words (and voice)
+• Write your own message for each app ("Checking your portfolio won't make it go up") and have it read out, or record yourself, a parent or a friend saying it.
+
+Also
+• Breathing pause before Open, a "Why are you opening it?" question (Android), coming back within a few minutes counts as the same open, hold-to-open for emergencies (Strict mode turns it off), streaks and a 7-day chart.
 
 Private
 No account, no ads, no tracking. Your limits and counts stay on your phone.
