@@ -5,7 +5,8 @@
 //   GET ?h=s:AAPL | c:hive&s=HIVE         -> {k, c, h: [[YYYY-MM-DD, close], ...]}  (daily, up to 5 years; crypto: Yahoo <SYM>-USD, else CoinGecko 365 days)
 //   GET ?search=apple                      -> {r: [{k, sym, name, kind, ex}]}
 //   GET ?w=btc:<addr> | eth | hive | xrp | sol | trx | ltc | doge | ada -> {chain, b: {"c:bitcoin": qty, ...}}
-//       sol / trx / hive also return tokens (t, q, hid as for eth; sol "e:<mint>", hive "e:he:<SYMBOL>"); terr = tokens could not be read this time.
+//       sol / trx / hive / xrp / ada also return tokens (t, q, hid as for eth; sol "e:<mint>", hive "e:he:<SYMBOL>",
+//       xrp "e:xrp:<CURRENCY>.<issuer>", ada "e:ada:<policy id + asset name hex>"); terr = tokens could not be read this time.
 //       eth also returns ERC-20 tokens: b gets "c:<CoinGecko id>" (popular tokens) or "e:<contract>" (others, with their price
 //       in q: {"e:0x..": {p, c, ch, n}}), t: {key: [symbol, name]}, hid: tokens left out (looks like spam), src: "ethplorer" | "rpc".
 //       The same address is also read on Base, Arbitrum and BNB Chain (built-in token lists): b = all networks added up,
@@ -13,7 +14,7 @@
 //
 // Sources: Yahoo Finance chart / search (unofficial, may break), CoinGecko public API, open.er-api.com, mempool.space,
 // ethereum / base / arbitrum-one / bsc / polygon-bor / optimism / avalanche-c-chain / linea / scroll / gnosis / mantle / sonic / celo -rpc.publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com / solana-rpc.publicnode.com, lite-api.jup.ag (Solana token info),
-// api.trongrid.io / tron-rpc.publicnode.com, Hive Engine RPC nodes, litecoinspace.org, api.bitcore.io / api.blockcypher.com / dogechain.info (DOGE), api.koios.rest (Cardano).
+// api.trongrid.io / tron-rpc.publicnode.com, Hive Engine RPC nodes, litecoinspace.org, api.bitcore.io / api.blockcypher.com / dogechain.info (DOGE), api.koios.rest (Cardano), api.geckoterminal.com (Cardano / XRPL token prices).
 // Each item is cached in Upstash (same vars as api/fav.js); without them it still works, just uncached.
 'use strict';
 const crypto = require('crypto');
@@ -611,20 +612,100 @@ async function dogeWallet(addr) {
   throw err;
 }
 // A Cardano wallet spreads its coins over many addresses that share one stake key: read the whole stake account
-// (coins + unclaimed staking rewards) when there is one.
+// (coins + unclaimed staking rewards + native tokens) when there is one.
 async function adaWallet(addr) {
   const K = 'https://api.koios.rest/api/v1/';
-  let stake = /^stake1/.test(addr) ? addr : null, bal = 0;
+  let stake = /^stake1/.test(addr) ? addr : null, bal = 0, assets = null;
   if (!stake) {
     const a = (await getJSON(K + 'address_info', { body: JSON.stringify({ _addresses: [addr] }) }))[0];
-    if (!a) return { 'c:cardano': 0 };
+    if (!a) return { b: { 'c:cardano': 0 }, t: {}, q: {}, hid: 0 };
     stake = a.stake_address; bal = (+a.balance || 0) / 1e6;
   }
-  if (stake) {
-    const s = (await getJSON(K + 'account_info', { body: JSON.stringify({ _stake_addresses: [stake] }) }))[0];
-    if (s) return { 'c:cardano': ((+s.total_balance || 0) + 0) / 1e6 };
-  }
-  return { 'c:cardano': bal };
+  const [info, toks] = await Promise.allSettled([
+    stake ? getJSON(K + 'account_info', { body: JSON.stringify({ _stake_addresses: [stake] }) }) : Promise.resolve(null),
+    stake ? getJSON(K + 'account_assets', { body: JSON.stringify({ _stake_addresses: [stake] }), ms: 9000 }) : getJSON(K + 'address_assets', { body: JSON.stringify({ _addresses: [addr] }), ms: 9000 })
+  ]);
+  const s = info.status === 'fulfilled' && info.value && info.value[0];
+  if (s) bal = (+s.total_balance || 0) / 1e6; else if (info.status === 'rejected' && stake && !bal) throw info.reason;
+  if (toks.status === 'fulfilled' && Array.isArray(toks.value)) assets = toks.value;
+  const out = await gtTokens('cardano', adaTokenList(assets || []), { 'c:cardano': bal });
+  if (!assets) out.terr = 1;
+  return out;
+}
+/* Cardano native tokens -> [{id (policy + name hex), qty, sym, name}]. NFTs (one of a kind, no decimals) are skipped:
+   a wallet can hold hundreds and they have no market price. */
+function hexText(h) {
+  if (!/^([0-9a-f]{2})*$/i.test(h || '')) return '';
+  const s = Buffer.from(h, 'hex').toString('utf8');
+  return /^[\x20-\x7e]{1,32}$/.test(s) ? s : '';
+}
+function adaTokenList(assets) {
+  const m = {};
+  (assets || []).forEach((x) => {
+    const pol = String(x && x.policy_id || '').toLowerCase(), nm = String(x.asset_name || '').toLowerCase(), dec = +x.decimals || 0;
+    if (!/^[0-9a-f]{56}$/.test(pol) || !/^[0-9a-f]{0,64}$/.test(nm)) return;
+    let raw; try { raw = BigInt(x.quantity || '0'); } catch (e) { return; }
+    if (raw <= 0n || (dec === 0 && raw === 1n)) return;
+    const id = pol + nm, txt = hexText(nm) || nm.slice(0, 8) || 'TOKEN';
+    if (m[id]) m[id].qty += units(String(raw), dec); else m[id] = { id, qty: units(String(raw), dec), sym: txt.replace(/[^\w.$-]/g, '').slice(0, 12) || 'TOKEN', name: txt.replace(/[<>]/g, '').slice(0, 60) };
+  });
+  return Object.values(m);
+}
+// Cardano tokens with a CoinGecko id (price history for charts): policy id + asset name hex -> [symbol, CoinGecko id, name]
+const ADA_MAP = { '279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f534e454b': ['SNEK', 'snek', 'Snek'], '29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c64d494e': ['MIN', 'minswap', 'Minswap'] };
+/* XRP Ledger tokens: trust lines with a positive balance (a negative one means this account issued it). */
+const XRPL_MAP = { 'RLUSD.rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De': ['RLUSD', 'ripple-usd', 'Ripple USD'], 'SOLO.rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz': ['SOLO', 'solo-coin', 'Sologenic'], 'CSC.rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr': ['CSC', 'casinocoin', 'CasinoCoin'] };
+function xrplCur(c) { c = String(c || ''); if (/^[A-Za-z0-9?!@#$%^&*<>(){}[\]|]{3}$/.test(c)) return c; if (/^[0-9A-F]{40}$/i.test(c)) return hexText(c.replace(/(00)+$/i, '')) || c.slice(0, 8); return ''; }
+function xrplTokenList(lines) {
+  const m = {};
+  (lines || []).forEach((l) => {
+    const n = parseFloat(l && l.balance), cur = String(l && l.currency || ''), iss = String(l && l.account || '');
+    if (!(n > 0) || !/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(iss) || !(/^[A-Za-z0-9]{3}$/.test(cur) || /^[0-9A-F]{40}$/i.test(cur))) return;
+    const id = (cur.length === 40 ? cur.toUpperCase() : cur) + '.' + iss, txt = xrplCur(cur) || 'TOKEN';
+    if (m[id]) m[id].qty += n; else m[id] = { id, qty: n, sym: txt.replace(/[^\w.$-]/g, '').slice(0, 12) || 'TOKEN', name: txt.replace(/[<>]/g, '').slice(0, 40) + ' (' + iss.slice(0, 6) + '…)' };
+  });
+  return Object.values(m);
+}
+/* Prices for Cardano / XRPL tokens from GeckoTerminal (CoinGecko's free on-chain price API: 30 tokens a call).
+   A token counts only when its pools hold >= $25k, it traded >= $100 in 24 h and the holding is worth >= $1. */
+const GT_SPAM = { res: 25000, vol: 100, val: 1 }, GT_MAX = 90;
+function parseGt(net, list, attrs, b) {
+  const t = {}, q = {}, a = attrs || {}, pr = a.token_prices || {}, rs = a.total_reserve_in_usd || {}, vo = a.h24_volume_usd || {}, chg = a.h24_price_change_percentage || {};
+  const find = (o, id) => o[id] != null ? o[id] : o[id.toLowerCase()];
+  let hid = 0;
+  list.forEach((x, i) => {
+    const known = net === 'xrpl' ? XRPL_MAP[xrplCur(x.id.split('.')[0]) + '.' + x.id.split('.')[1]] : ADA_MAP[x.id];
+    const p = parseFloat(find(pr, x.id)) || 0;
+    if (known) { const k = 'c:' + known[1]; b[k] = (b[k] || 0) + x.qty; t[k] = [known[0], known[2]]; return; }
+    if (i >= GT_MAX || !(p > 0) || (parseFloat(find(rs, x.id)) || 0) < GT_SPAM.res || (parseFloat(find(vo, x.id)) || 0) < GT_SPAM.vol || x.qty * p < GT_SPAM.val) { hid++; return; }
+    const k = 'e:' + (net === 'xrpl' ? 'xrp:' : 'ada:') + x.id;
+    b[k] = (b[k] || 0) + x.qty; t[k] = [x.sym, x.name];
+    const c = parseFloat(find(chg, x.id));
+    q[k] = { p, c: 'USD', ch: isFinite(c) ? c : null, n: x.name };
+  });
+  return { b, t, q, hid };
+}
+async function gtTokens(net, list, b) {
+  const look = list.slice(0, GT_MAX), parts = [], attrs = { token_prices: {}, total_reserve_in_usd: {}, h24_volume_usd: {}, h24_price_change_percentage: {} };
+  for (let i = 0; i < look.length; i += 30) parts.push(look.slice(i, i + 30));
+  const rs = await Promise.allSettled(parts.map((p) => getJSON('https://api.geckoterminal.com/api/v2/simple/networks/' + net + '/token_price/' + p.map((x) => x.id).join(',') + '?include_24hr_vol=true&include_total_reserve_in_usd=true&include_24hr_price_change=true', { ms: 8000 })));
+  rs.forEach((r) => { const a = r.status === 'fulfilled' && r.value && r.value.data && r.value.data.attributes; if (a) Object.keys(attrs).forEach((f) => Object.assign(attrs[f], a[f] || {})); });
+  const out = parseGt(net, list, attrs, b);
+  if (parts.length && rs.every((r) => r.status === 'rejected')) out.terr = 1;
+  return out;
+}
+async function xrpWallet(addr) {
+  const X = 'https://xrplcluster.com';
+  const [ai, al] = await Promise.allSettled([
+    getJSON(X, { body: JSON.stringify({ method: 'account_info', params: [{ account: addr, ledger_index: 'validated' }] }) }),
+    getJSON(X, { body: JSON.stringify({ method: 'account_lines', params: [{ account: addr, ledger_index: 'validated', limit: 400 }] }) })
+  ]);
+  if (ai.status === 'rejected') throw ai.reason;
+  const b = walletParse('xrp', ai.value);
+  const lines = al.status === 'fulfilled' && al.value.result && al.value.result.lines;
+  const out = await gtTokens('xrpl', xrplTokenList(lines || []), b);
+  if (al.status === 'rejected' || (!lines && !(al.value.result && al.value.result.error === 'actNotFound'))) out.terr = 1;
+  return out;
 }
 
 /* ---------- fetchers ---------- */
@@ -709,11 +790,10 @@ async function wallet(chain, addr) {
   let b;
   if (chain === 'btc') b = walletParse(chain, await getJSON('https://mempool.space/api/address/' + addr));
   else if (chain === 'eth') { const r = Object.assign({ chain }, await ethWallet(addr)); cacheSet([[ck, r]], TTL.w); return r; }
-  else if (chain === 'xrp') b = walletParse(chain, await getJSON('https://xrplcluster.com', { body: JSON.stringify({ method: 'account_info', params: [{ account: addr, ledger_index: 'validated' }] }) }));
+  else if (chain === 'xrp' || chain === 'ada') { const r = Object.assign({ chain }, await (chain === 'xrp' ? xrpWallet(addr) : adaWallet(addr))); cacheSet([[ck, r]], TTL.w); return r; }
   else if (chain === 'sol' || chain === 'trx') { const r = Object.assign({ chain }, await (chain === 'sol' ? solWallet(addr) : trxWallet(addr))); cacheSet([[ck, r]], TTL.w); return r; }
   else if (chain === 'ltc') b = walletParse('btc', await getJSON('https://litecoinspace.org/api/address/' + addr), null, 'c:litecoin');
   else if (chain === 'doge') b = await dogeWallet(addr);
-  else if (chain === 'ada') b = await adaWallet(addr);
   else if (chain === 'hive') {
     const [a, g, he] = await Promise.all([
       getJSON('https://api.hive.blog', { body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'condenser_api.get_accounts', params: [[addr]] }) }),
@@ -772,7 +852,7 @@ module.exports = async function handler(req, res) {
     return send(502, { error: String(e && e.message || e).slice(0, 200) });
   }
 };
-module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, plainSym, units, solTally, parseSol, SPL, parseTrongrid, tronHex, TRC20, parseHiveEngine, heQty, TOKENS, NETS, ethWallet };
+module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, plainSym, units, solTally, parseSol, SPL, parseTrongrid, tronHex, TRC20, parseHiveEngine, heQty, adaTokenList, xrplTokenList, xrplCur, parseGt, hexText, TOKENS, NETS, ethWallet };
 
 if (require.main === module) {
   // node mes.fm/api/invest.js  -> quick live check of every source

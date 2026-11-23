@@ -22,20 +22,23 @@
 		btc: { name: "Bitcoin", syms: [["BTC", "c:bitcoin", "Bitcoin"]], re: /^(bc1[02-9ac-hj-np-z]{11,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, ex: "bc1q…" },
 		eth: { name: "Ethereum + 12 more networks (0x…)", short: "13 networks", noun: "Ethereum (0x…)", syms: [["ETH", "c:ethereum", "Ethereum"], ["BNB", "c:binancecoin", "BNB"], ["POL", "c:polygon-ecosystem-token", "Polygon"], ["AVAX", "c:avalanche-2", "Avalanche"], ["xDAI", "c:xdai", "xDAI"], ["MNT", "c:mantle", "Mantle"], ["S", "c:sonic-3", "Sonic"], ["CELO", "c:celo", "Celo"]], re: /^0x[0-9a-fA-F]{40}$/, ex: "0x… (read on Ethereum, Base, Arbitrum, BNB Chain, Polygon, Optimism, Avalanche and 6 more)" },
 		hive: { name: "Hive (+ Hive Engine tokens)", short: "Hive", noun: "Hive", syms: [["HIVE", "c:hive", "Hive"], ["HBD", "c:hive_dollar", "Hive Backed Dollar"]], re: /^[a-z][a-z0-9.-]{2,15}$/, ex: "your Hive username (HIVE, HBD, Hive Power, savings and Hive Engine tokens)" },
-		xrp: { name: "XRP Ledger", syms: [["XRP", "c:ripple", "XRP"]], re: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/, ex: "r…" },
+		xrp: { name: "XRP Ledger (+ tokens)", short: "XRP Ledger", noun: "XRP Ledger", syms: [["XRP", "c:ripple", "XRP"]], re: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/, ex: "r… (XRP and its tokens: RLUSD, SOLO …)" },
 		sol: { name: "Solana (+ tokens)", short: "Solana", noun: "Solana", syms: [["SOL", "c:solana", "Solana"]], re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, ex: "a Solana address (SOL and its tokens)" },
 		trx: { name: "TRON (+ USDT and tokens)", short: "TRON", noun: "TRON", syms: [["TRX", "c:tron", "TRON"]], re: /^T[1-9A-HJ-NP-Za-km-z]{33}$/, ex: "T… (TRX incl. staked, USDT and popular tokens)" },
 		ltc: { name: "Litecoin", syms: [["LTC", "c:litecoin", "Litecoin"]], re: /^(ltc1[02-9ac-hj-np-z]{11,87}|[LM3][1-9A-HJ-NP-Za-km-z]{25,34})$/, ex: "ltc1… or L…" },
 		doge: { name: "Dogecoin", syms: [["DOGE", "c:dogecoin", "Dogecoin"]], re: /^[DA9][1-9A-HJ-NP-Za-km-z]{25,34}$/, ex: "D…" },
-		ada: { name: "Cardano", syms: [["ADA", "c:cardano", "Cardano"]], re: /^(addr1[02-9ac-hj-np-z]{50,120}|stake1[02-9ac-hj-np-z]{50,60})$/, ex: "addr1… or stake1… (stake1 = the whole wallet incl. rewards)" }
+		ada: { name: "Cardano (+ tokens)", short: "Cardano", noun: "Cardano", syms: [["ADA", "c:cardano", "Cardano"]], re: /^(addr1[02-9ac-hj-np-z]{50,120}|stake1[02-9ac-hj-np-z]{50,60})$/, ex: "addr1… or stake1… (ADA, rewards and tokens like SNEK, MIN)" }
 	};
-	/* Token keys: "e:0x…" ERC-20 contract, "e:<base58 mint>" Solana token, "e:he:SYMBOL" Hive Engine token */
-	I.EKEY = /^e:(0x[0-9a-f]{40}|[1-9A-HJ-NP-Za-km-z]{32,44}|he:[A-Z0-9.]{1,12})$/;
+	/* Token keys: "e:0x…" ERC-20 contract, "e:<base58 mint>" Solana token, "e:he:SYMBOL" Hive Engine token,
+	   "e:xrp:<CUR>.<issuer>" XRP Ledger token, "e:ada:<policy id + asset name hex>" Cardano token */
+	I.EKEY = /^e:(0x[0-9a-f]{40}|[1-9A-HJ-NP-Za-km-z]{32,44}|he:[A-Z0-9.]{1,12}|xrp:([A-Za-z0-9]{3}|[0-9A-F]{40})\.r[1-9A-HJ-NP-Za-km-z]{24,34}|ada:[0-9a-f]{56,120})$/;
 	/* Where to look a token up */
 	I.tokenLink = function (k) {
 		var x = String(k).slice(2);
 		if (/^0x/.test(x)) return ["Etherscan", "https://etherscan.io/token/" + x];
 		if (/^he:/.test(x)) return ["Tribaldex", "https://tribaldex.com/trade/" + encodeURIComponent(x.slice(3))];
+		if (/^xrp:/.test(x)) { var pr = x.slice(4).split("."); return ["XRPSCAN", "https://xrpscan.com/token/" + encodeURIComponent(pr[0]) + "." + pr[1]]; }
+		if (/^ada:/.test(x)) return ["Cardanoscan", "https://cardanoscan.io/token/" + x.slice(4)];
 		return ["Solscan", "https://solscan.io/token/" + x];
 	};
 

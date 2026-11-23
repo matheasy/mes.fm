@@ -179,5 +179,20 @@ ok(I.tokenLink("e:" + GOOD)[0] === "Solscan" && I.tokenLink("e:he:LEO")[0] === "
 const ws2 = I.clean({ base: "USD", assets: { ["e:" + GOOD]: { sym: "JELLY" }, "e:he:LEO": { sym: "LEO" } }, tx: [], wallets: [{ id: "s", chain: "sol", addr: "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9", hide: ["e:he:LEO", "e:" + GOOD] }, { id: "t", chain: "trx", addr: "TT1DyeqXaaJkt6UhVYFWUXBXknaXnBudTK" }, { id: "l", chain: "ltc", addr: "ltc1qr07zu594qf63xm7l7x6pu3a2v39m2z6hh5pp4t" }, { id: "d", chain: "doge", addr: "DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L" }, { id: "a", chain: "ada", addr: "stake1u84nmqs3fcg6cxsv8dkw4anyd7fuvak2tw2pygwz2gumuegct98mh" }] });
 ok(Object.keys(ws2.assets).length === 2 && ws2.wallets.length === 5 && ws2.wallets[0].hide.length === 2, "clean keeps Solana / Hive Engine tokens and the new wallets");
 
+/* Cardano + XRPL tokens */
+const SNEKID = "279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f534e454b", NIGHTP = "0691b2fecca1ac4f53cb6dfb00b7013e561d1f34403b957cbb5af1fa";
+const adl = T.adaTokenList([{ policy_id: SNEKID.slice(0, 56), asset_name: SNEKID.slice(56), decimals: 0, quantity: "5000" }, { policy_id: NIGHTP, asset_name: "4e49474854", decimals: 6, quantity: "2500000" },
+  { policy_id: "000ffeb007da43324aefe044555fbe5bc469c38aa5063f95dc2ff72a", asset_name: "536e656b2052657761726473", decimals: 0, quantity: "1" }, { policy_id: "zz", asset_name: "", quantity: "9" }]);
+ok(adl.length === 2 && adl[1].sym === "NIGHT" && adl[1].qty === 2.5, "cardano tokens: NFTs and bad ids skipped, decimals applied");
+const gb = { "c:cardano": 10 }, ga = T.parseGt("cardano", adl, { token_prices: { [SNEKID]: "0.0004", [NIGHTP + "4e49474854"]: "0.05" }, total_reserve_in_usd: { [SNEKID]: "1e6", [NIGHTP + "4e49474854"]: "5e5" }, h24_volume_usd: { [SNEKID]: "8e4", [NIGHTP + "4e49474854"]: "50" }, h24_price_change_percentage: {} }, gb);
+near(ga.b["c:snek"], 5000, "SNEK -> coingecko key"); ok(!ga.b["e:ada:" + NIGHTP + "4e49474854"] && ga.hid === 1, "low-volume cardano token left out");
+const xl = T.xrplTokenList([{ currency: "524C555344000000000000000000000000000000", account: "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De", balance: "12.5" }, { currency: "CSC", account: "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr", balance: "-3" },
+  { currency: "YLW", account: "rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG", balance: "100" }, { currency: "<x>", account: "rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG", balance: "1" }]);
+ok(xl.length === 2 && xl[0].sym === "RLUSD" && T.xrplCur("CSC") === "CSC", "xrpl lines: issued (negative) and bad codes skipped, hex codes decoded");
+const xb = { "c:ripple": 5 }, xg = T.parseGt("xrpl", xl, { token_prices: { "YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG": "0.2" }, total_reserve_in_usd: { "YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG": "40000" }, h24_volume_usd: { "YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG": "900" }, h24_price_change_percentage: { "YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG": "4" } }, xb);
+near(xg.b["c:ripple-usd"], 12.5, "RLUSD -> coingecko key"); near(xg.q["e:xrp:YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG"].p, 0.2, "xrpl token price"); ok(xg.q["e:xrp:YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG"].ch === 4, "xrpl change");
+ok(I.EKEY.test("e:xrp:YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG") && I.EKEY.test("e:xrp:524C555344000000000000000000000000000000.rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De") && I.EKEY.test("e:ada:" + SNEKID) && !I.EKEY.test("e:xrp:<x>.r1"), "xrpl / cardano token keys");
+ok(I.tokenLink("e:xrp:YLW.rBWr5wTBJhc5osje2PcRZkaWFcamqjnDBG")[0] === "XRPSCAN" && I.tokenLink("e:ada:" + SNEKID)[0] === "Cardanoscan", "xrpl / cardano links");
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);
