@@ -403,9 +403,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ad .ad-seot .ad-key--ln {width:0.75em;height:0.75em;border:2px solid #fff;border-radius:50%;background:var(--k);box-sizing:border-box;}
 	#ad .ad-seot .ad-key--dash {border-style:dotted;}
 	#ad .ad-hbtns {display:inline-flex;gap:0.4em;flex-wrap:wrap;margin-left:auto;}
-	.ad-vsf {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:flex-end;margin:0 0 0.8em;}
-	.ad-vsf label {display:flex;flex-direction:column;gap:0.2em;font-size:0.85em;color:var(--ad-muted);min-width:0;max-width:100%;}
-	.ad-vsf select {min-width:8em;max-width:min(24em,90vw);}
+	.ad-vsf label {display:inline-flex;align-items:center;gap:0.4em;color:var(--ad-muted);min-width:0;max-width:100%;white-space:nowrap;}
+	#ad .ad-vsf select {min-width:7em;max-width:min(18em,60vw);font-size:1em;padding:0.25em 0.4em;}
 	#ad .ad-tiles .tu-stat small {display:block;font-size:0.7em;font-weight:400;color:var(--ad-muted);}
 	#ad .ad-tiles .tu-stat small.ad-up {color:var(--ad-good);font-weight:700;font-size:0.75em;}
 	#ad .ad-tiles .tu-stat small.ad-dn {color:var(--ad-bad);font-weight:700;font-size:0.75em;}
@@ -454,11 +453,18 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#ad .ad-read .gs-nread {color:var(--ad-ink);}
 	.ad-chart {touch-action:pan-y;cursor:crosshair;outline:none;}
 	.ad-chart:focus-visible {box-shadow:0 0 0 2px var(--accent);border-radius:4px;}
-	#ad .ad-tabs--sm {font-size:0.86em;margin:0 0 0.3em;}
+	/* control row right at each chart (range / currency / search lines; Ads vs SEO: country / page / days): one scrollable row on phones */
+	#ad .ad-cbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0;font-size:0.86em;margin:0.2em 0 0.3em;}
+	#ad .ad-cbar > * {display:flex;align-items:center;gap:0.35em;padding:0 0.7em;border-left:1px solid var(--ad-line);margin:0;}
+	#ad .ad-cbar > *:first-child {padding-left:0;border-left:0;}
+	#ad .ad-cbar .ad-seot {font-size:1em;}
 	#ad .ad-sec.mes-pfill .ad-read {flex:0 0 auto;}
 	@media (max-width: 600px) {
-		#ad .ad-tabs--sm {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
-		#ad .ad-tabs--sm .tu-chip {flex:0 0 auto;}
+		#ad .ad-cbar {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+		#ad .ad-cbar::-webkit-scrollbar {display:none;}
+		#ad .ad-cbar > * {flex:0 0 auto;flex-wrap:nowrap;}
+		#ad .ad-cbar .tu-chip {flex:0 0 auto;white-space:nowrap;}
+		#ad .ad-vsf select {max-width:42vw;}
 	}
 
 
@@ -683,15 +689,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card ad-sec">
 			<div class="ad-head"><h2>Day by day</h2><span class="ad-hbtns"><button type="button" class="mes-pbtn" id="ad-notes" title="Chart notes: list, add, edit (shared with the Search Console chart)">Notes</button></span></div>
-			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold and MES AI in purple) and Google Ads spend (line), in the currency chosen at the top. Hover or tap a day: its numbers show in the line above the chart. Right-click a day to add a note.</p>
-			<div class="ad-tabs ad-seot" id="ad-seot" role="group" aria-label="Search lines (right axis)">
-				<span class="ad-seol">Search (right axis):</span>
+			<p class="tu-note">AdSense earnings (blue bars, with MES Premium stacked on top in gold and MES AI in purple) and Google Ads spend (line), in the currency chosen above the chart. Hover or tap a day: its numbers show in the line above the chart. Right-click a day to add a note.</p>
+			<div class="ad-cbar" role="toolbar" aria-label="Chart controls">
+				<div class="ad-tabs" data-rangebar role="group" aria-label="Range"></div>
+				<div class="ad-tabs" data-curbar role="group" aria-label="Currency"></div>
+				<div class="ad-tabs ad-seot" id="ad-seot" role="group" aria-label="Search lines (right axis)">
+				<span class="ad-seol">Search:</span>
 				<button type="button" class="tu-chip" data-g="gc" aria-pressed="false" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Google clicks</button>
 				<button type="button" class="tu-chip" data-g="gi" aria-pressed="false" style="--k:var(--ad-gi)"><i class="ad-key ad-key--ln"></i>Google impressions</button>
 				<button type="button" class="tu-chip" data-g="bc" aria-pressed="false" style="--k:var(--ad-bc)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing clicks</button>
 				<button type="button" class="tu-chip" data-g="bi" aria-pressed="false" style="--k:var(--ad-bi)"><i class="ad-key ad-key--ln ad-key--dash"></i>Bing impressions</button>
 			</div>
-			<div class="ad-tabs ad-tabs--sm" data-rangebar role="group" aria-label="Range"></div>
+			</div>
 			<div class="ad-read" id="ad-read" aria-live="polite"></div>
 			<div class="ad-chart" id="ad-chart"><svg id="ad-svg" preserveAspectRatio="none" role="img" aria-label="Daily earnings and spend"></svg></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--rev"></i>AdSense earnings</span><span><i class="ad-key ad-key--prem"></i>MES Premium (HBD)</span><span><i class="ad-key ad-key--ai"></i>MES AI (HBD)</span><span><i class="ad-key ad-key--spend"></i>Google Ads spend</span></div>
@@ -727,13 +736,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="tu-card ad-sec">
 			<div class="ad-head"><h2>Ads vs SEO</h2></div>
-			<p class="tu-note">Do the ads grow search traffic? Pick a country and / or a landing page: ad spend and ad clicks (Google Ads) next to organic clicks and impressions (Google Search Console) per day, and the days after the first ad spend compared with the same number of days before it.</p>
-			<form class="ad-vsf" id="ad-vsf">
+			<p class="tu-note">Do the ads grow search traffic? Pick a country and / or a landing page (just above the chart): ad spend and ad clicks (Google Ads) next to organic clicks and impressions (Google Search Console) per day, and the days after the first ad spend compared with the same number of days before it.</p>
+			<div class="tu-stats ad-tiles" id="ad-vstiles"></div>
+			<form class="ad-vsf ad-cbar" id="ad-vsf" aria-label="Chart controls">
 				<label>Country <select id="ad-vscc" class="tu-input"><option value="">All countries</option></select></label>
 				<label>Landing page <select id="ad-vspage" class="tu-input"><option value="">All pages</option></select></label>
-				<label>Days <select id="ad-vsdays" class="tu-input"><option>30</option><option>60</option><option selected>90</option><option>180</option></select></label>
+				<div class="ad-tabs" id="ad-vsdays" role="group" aria-label="Days"><button type="button" class="tu-chip" data-vd="30" aria-pressed="false">30 days</button><button type="button" class="tu-chip" data-vd="60" aria-pressed="false">60</button><button type="button" class="tu-chip" data-vd="90" aria-pressed="true">90</button><button type="button" class="tu-chip" data-vd="180" aria-pressed="false">180</button></div>
+				<div class="ad-tabs" data-curbar role="group" aria-label="Currency"></div>
 			</form>
-			<div class="tu-stats ad-tiles" id="ad-vstiles"></div>
 			<div class="ad-read" id="ad-vsread" aria-live="polite"></div>
 			<div class="ad-chart" id="ad-vschart"><svg id="ad-vssvg" preserveAspectRatio="none" role="img" aria-label="Ad spend against organic search per day"></svg></div>
 			<div class="ad-legend"><span><i class="ad-key ad-key--spend"></i>Ad spend</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-cost)"></i>Ad clicks</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-gc)"></i>Organic clicks</span><span><i class="ad-key ad-key--ln ad-key--dash" style="--k:var(--ad-gi)"></i>Organic impressions (own scale)</span></div>
@@ -820,7 +830,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=17" defer></script>
+	<script src="/earnings/js/earnings.js?v=18" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -96,9 +96,8 @@
 	#ad .ad-seot .ad-key--ln {width:0.75em;height:0.75em;border:2px solid #fff;border-radius:50%;background:var(--k);box-sizing:border-box;}
 	#ad .ad-seot .ad-key--dash {border-style:dotted;}
 	#ad .ad-hbtns {display:inline-flex;gap:0.4em;flex-wrap:wrap;margin-left:auto;}
-	.ad-vsf {display:flex;flex-wrap:wrap;gap:0.5em 1em;align-items:flex-end;margin:0 0 0.8em;}
-	.ad-vsf label {display:flex;flex-direction:column;gap:0.2em;font-size:0.85em;color:var(--ad-muted);min-width:0;max-width:100%;}
-	.ad-vsf select {min-width:8em;max-width:min(24em,90vw);}
+	.ad-vsf label {display:inline-flex;align-items:center;gap:0.4em;color:var(--ad-muted);min-width:0;max-width:100%;white-space:nowrap;}
+	#ad .ad-vsf select {min-width:7em;max-width:min(18em,60vw);font-size:1em;padding:0.25em 0.4em;}
 	#ad .ad-tiles .tu-stat small {display:block;font-size:0.7em;font-weight:400;color:var(--ad-muted);}
 	#ad .ad-tiles .tu-stat small.ad-up {color:var(--ad-good);font-weight:700;font-size:0.75em;}
 	#ad .ad-tiles .tu-stat small.ad-dn {color:var(--ad-bad);font-weight:700;font-size:0.75em;}
@@ -147,9 +146,16 @@
 	#ad .ad-read .gs-nread {color:var(--ad-ink);}
 	.ad-chart {touch-action:pan-y;cursor:crosshair;outline:none;}
 	.ad-chart:focus-visible {box-shadow:0 0 0 2px var(--accent);border-radius:4px;}
-	#ad .ad-tabs--sm {font-size:0.86em;margin:0 0 0.3em;}
+	/* control row right at each chart (range / currency / search lines; Ads vs SEO: country / page / days): one scrollable row on phones */
+	#ad .ad-cbar {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0;font-size:0.86em;margin:0.2em 0 0.3em;}
+	#ad .ad-cbar > * {display:flex;align-items:center;gap:0.35em;padding:0 0.7em;border-left:1px solid var(--ad-line);margin:0;}
+	#ad .ad-cbar > *:first-child {padding-left:0;border-left:0;}
+	#ad .ad-cbar .ad-seot {font-size:1em;}
 	#ad .ad-sec.mes-pfill .ad-read {flex:0 0 auto;}
 	@media (max-width: 600px) {
-		#ad .ad-tabs--sm {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
-		#ad .ad-tabs--sm .tu-chip {flex:0 0 auto;}
+		#ad .ad-cbar {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+		#ad .ad-cbar::-webkit-scrollbar {display:none;}
+		#ad .ad-cbar > * {flex:0 0 auto;flex-wrap:nowrap;}
+		#ad .ad-cbar .tu-chip {flex:0 0 auto;white-space:nowrap;}
+		#ad .ad-vsf select {max-width:42vw;}
 	}

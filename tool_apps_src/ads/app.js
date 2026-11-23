@@ -208,13 +208,17 @@
     MODE = b.dataset.m; try { localStorage.setItem('mes-ads:mode', MODE); } catch (x) {}
     setMode(); if (DATA) render();
   };
-  function setCur() { document.querySelectorAll('#ad-cur button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.c === CUR ? 'true' : 'false'); }); }
+  // currency: the top switch plus a copy in each chart's control row ([data-curbar]), kept in step
+  function setCur() {
+    document.querySelectorAll('#ad [data-curbar]').forEach(function (bar) { if (!bar.firstElementChild) bar.innerHTML = $('ad-cur').innerHTML; });
+    document.querySelectorAll('#ad-cur button, #ad [data-curbar] button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.c === CUR ? 'true' : 'false'); });
+  }
   setCur();
-  $('ad-cur').onclick = function (e) {
-    var b = e.target.closest('button[data-c]'); if (!b || b.dataset.c === CUR) return;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('#ad-cur button[data-c], #ad [data-curbar] button[data-c]'); if (!b || b.dataset.c === CUR) return;
     CUR = b.dataset.c; try { localStorage.setItem('mes-ads:cur', CUR); } catch (x) {}
-    setCur(); if (DATA) render();
-  };
+    setCur(); if (DATA) render(); else if (VS) drawVs();
+  });
   function load() {
     setTabs();
     $('ad-meta').textContent = 'Loading…';
@@ -575,10 +579,17 @@
     ps.innerHTML = opt('', 'All pages') + (spentP.length ? '<optgroup label="Ad landing pages">' + spentP.map(function (p) { return opt(p, p); }).join('') + '</optgroup>' : '') +
       (restP.length ? '<optgroup label="Other pages">' + restP.slice(0, 300).map(function (p) { return opt(p, p); }).join('') + '</optgroup>' : '');
     [[cs, VSSEL.cc], [ps, VSSEL.page]].forEach(function (x) { if (x[1] && !x[0].querySelector('option[value="' + CSS.escape(x[1]) + '"]')) x[0].insertAdjacentHTML('beforeend', opt(x[1], x[1])); x[0].value = x[1]; });
-    $('ad-vsdays').value = VSSEL.days;
+    paintVsDays();
   }
+  function paintVsDays() { document.querySelectorAll('#ad-vsdays button[data-vd]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.vd === VSSEL.days ? 'true' : 'false'); }); }
+  paintVsDays();
+  $('ad-vsdays').onclick = function (e) {
+    var b = e.target.closest('button[data-vd]'); if (!b || b.dataset.vd === VSSEL.days) return;
+    VSSEL.days = b.dataset.vd; paintVsDays(); $('ad-vsf').onchange();
+  };
+  $('ad-vsf').onsubmit = function (e) { e.preventDefault(); };
   $('ad-vsf').onchange = function () {
-    VSSEL = { cc: $('ad-vscc').value, page: $('ad-vspage').value, days: $('ad-vsdays').value };
+    VSSEL = { cc: $('ad-vscc').value, page: $('ad-vspage').value, days: VSSEL.days };
     try { localStorage.setItem('mes-ads:vs', JSON.stringify(VSSEL)); } catch (e) {}
     loadVs();
   };
