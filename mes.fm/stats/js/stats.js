@@ -1133,7 +1133,7 @@ function renderBreakRow() {
   if (countryTotalsData.length) {
     const pc = pickedCountry();
     const opts = countryTotalsData.slice().sort(function (a, b) { return b.views - a.views; }).map(function (r) {
-      return '<option value="' + escapeHtml(r.country) + '"' + (pc === r.country ? ' selected' : '') + '>' + escapeHtml((countryFlag(r.country) ? countryFlag(r.country) + ' ' : '') + countryName(r.country)) + ' (' + compactNum(r.views) + ')</option>';
+      return '<option value="' + escapeHtml(r.country) + '" data-search="' + escapeHtml(r.country) + '"' + (pc === r.country ? ' selected' : '') + '>' + escapeHtml((countryFlag(r.country) ? countryFlag(r.country) + ' ' : '') + countryName(r.country)) + ' (' + compactNum(r.views) + ')</option>';
     }).join('');
     html += '<label class="ts-cc' + (pc ? ' on' : '') + '"><span>Country</span><select id="tsCountry" aria-label="Show only one country"><option value="all">All countries</option>' + opts + '</select></label>';
   }
@@ -1151,6 +1151,8 @@ function renderBreakRow() {
   tsBreakEl.innerHTML = html;
   const sel = document.getElementById('tsCountry');
   if (sel) sel.addEventListener('change', function () { setCountryFilter(sel.value); });
+  /* site rule: a list of 10+ choices gets a search box (main_js/select-search.js) */
+  if (sel && window.MESSelect && sel.options.length >= 10) MESSelect.enhance(sel, { placeholder: 'Search countries…', noun: 'countries' });
 }
 
 async function ensureCountrySeries() {
