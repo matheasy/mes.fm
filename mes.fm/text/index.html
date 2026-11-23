@@ -449,6 +449,10 @@ body.tx-filling #compact-nav, body.tx-filling ins.adsbygoogle, body.tx-filling i
 #tx .tx-linebox { color: var(--tx-mute); } #tx .tx-linebox input { --mf-pl: var(--tx-line); --mf-pf: var(--tx-panel); color: var(--tx-ink); }
 #tx .tx-l.is-flash { animation: txflash 1.6s ease-out; }
 @keyframes txflash { 0%, 40% { background: rgba(253, 214, 40, .45); } 100% { background: transparent; } }
+/* TeX in Markdown (2026-11-23): MathJax SVG, follows the text colour; wide display maths scrolls inside its own box */
+#tx .tx-texd { margin: 0.8em 0; overflow-x: auto; overflow-y: hidden; text-align: center; }
+#tx .tx-tex:not(.is-done) { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.92em; color: var(--tx-mute); }
+#tx .tx-tex mjx-container { color: inherit; }
 
 
 	@media print {
@@ -918,7 +922,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/text/js/text.js?v=5" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/text/js/text.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

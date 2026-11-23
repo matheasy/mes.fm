@@ -401,6 +401,11 @@
 "updated":"2026-10-14",
 "type":"Simulation"
 },
+"/free-kick":{
+"added":"2026-11-23",
+"updated":"2026-11-23",
+"type":"Game"
+},
 "/fuel-cost-calculator":{
 "added":"2026-10-23",
 "updated":"2026-10-23",

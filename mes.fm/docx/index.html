@@ -475,6 +475,19 @@ body.dx-filled { overflow: hidden; }
 #dx .mes-find { --mf-bg: var(--dx-panel); --mf-fg: var(--dx-ink); --mf-dim: var(--dx-mute); --mf-line: var(--dx-line); --mf-field: var(--dx-panel); --mf-hover: var(--dx-hov); --mf-acc: var(--dx-acc); --mf-mark: var(--dx-hit); --mf-markfg: var(--dx-hitink); margin: -4px -4px 8px; }
 #dx .mes-find .mf-row { padding: 2px 0 6px; } #dx .mes-find .mf-qw { flex-basis: 100%; }
 #dx .dx-pagebox { color: var(--dx-mute); } #dx .dx-pagebox input { --mf-pl: var(--dx-line); --mf-pf: var(--dx-panel); color: var(--dx-ink); }
+/* equations (2026-11-23): span.dx-eq = a Word equation drawn as MathML; the LaTeX equation editor dialog */
+#dx .dx-eq { cursor: pointer; border-radius: 3px; padding: 0 1px; }
+#dx .dx-eq:hover { outline: 1px dashed var(--dx-acc); outline-offset: 1px; }
+#dx .dx-eqd { display: block; text-align: center; margin: 0.5em 0; }
+#dx .dx-eq math { font-size: 1.05em; }
+#dx .dx-eqdlg { position: fixed; inset: 0; z-index: 2147483100; background: rgba(15, 20, 30, 0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+#dx .dx-eqbox { background: var(--dx-panel); color: var(--dx-ink); border: 1px solid var(--dx-line); border-radius: 10px; width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 14px 16px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+#dx .dx-eqh { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } #dx .dx-eqh .dx-ib { margin-left: auto; } #dx .dx-eqsub { color: var(--dx-mute); font-size: 13px; }
+#dx .dx-eqtex { width: 100%; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 15px; resize: vertical; }
+#dx .dx-eqchips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; } #dx .dx-eqchips .dx-btn { padding: 3px 9px; font-size: 13px; }
+#dx .dx-eqprev { min-height: 3.2em; border: 1px dashed var(--dx-line); border-radius: 6px; padding: 10px; margin: 8px 0 4px; overflow-x: auto; text-align: center; font-size: 1.25em; background: var(--dx-pbg); color: var(--dx-pink); }
+#dx .dx-eqmsg.is-err { color: var(--dx-err); }
+#dx .dx-eqf { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; } #dx .dx-eqlink { font-size: 13px; color: var(--dx-acc); }
 
 
 	@media print {
@@ -885,6 +898,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="dx-eb" data-cmd="unlink" title="Remove the link" aria-label="Remove the link">&#10799;&#128279;</button>
 				<button type="button" class="dx-eb" data-cmd="image" title="Insert a picture" aria-label="Insert a picture">&#128444;</button>
 				<button type="button" class="dx-eb" data-cmd="table" title="Insert a table" aria-label="Insert a table">&#9638;</button>
+				<button type="button" class="dx-eb" data-cmd="equation" title="Insert an equation: type it in LaTeX, see it as you type (click an equation to change it)" aria-label="Insert an equation">&#8721;</button>
 				<button type="button" class="dx-eb" data-cmd="insertHorizontalRule" title="Horizontal line" aria-label="Horizontal line">&#8213;</button>
 				<button type="button" class="dx-eb" data-cmd="removeFormat" title="Clear formatting" aria-label="Clear formatting">T&#824;</button>
 				<span class="dx-sep"></span>
@@ -1030,7 +1044,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/docx/js/docx.js?v=10" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/main_js/omml.js?v=1" defer></script><script src="/docx/js/docx.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

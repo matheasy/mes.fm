@@ -967,7 +967,7 @@
 			(function walk(n, st) {
 				if (n.nodeType === 3) { if (n.nodeValue) runs.push({ t: n.nodeValue, b: st.b, i: st.i, m: st.m, u: st.u }); return; }
 				if (n.nodeType !== 1 || n.matches("button, .ai-rz, .ai-copy, .ai-lang-tag, .ai-tbar")) return;
-				if (n.classList.contains("ai-tex")) { runs.push({ t: n.dataset.tex || "", i: true, m: false, b: st.b, tex: true }); return; }
+				if (n.classList.contains("ai-tex")) { runs.push({ t: n.dataset.tex || "", i: true, m: false, b: st.b, tex: true, svg: n.querySelector("svg") }); return; }
 				var s = { b: st.b || /^(B|STRONG|TH)$/.test(n.nodeName), i: st.i || /^(I|EM)$/.test(n.nodeName), m: st.m || n.nodeName === "CODE", u: st.u || (n.nodeName === "A" ? n.href : "") };
 				if (n.nodeName === "BR") { runs.push({ t: "\n" }); return; }
 				[].forEach.call(n.childNodes, function (c) { walk(c, s); });
@@ -1011,11 +1011,25 @@
 		return new Blob(parts.concat(cent, [new Uint8Array(e.buffer)]));
 	}
 	function x(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ""); }
-	function docx(el, title) {
-		var B = blocks(el), body = [];
+	// Word equations (2026-11-23): TeX -> MathJax.tex2mml -> OMML (main_js/omml.js, loaded on first use); a failure keeps the TeX as text
+	var OM = null;
+	function omml() { return OM || (OM = new Promise(function (res, rej) { if (window.MESOmml) return res(window.MESOmml); var s = document.createElement("script"); s.src = "/main_js/omml.js?v=1"; s.onload = function () { res(window.MESOmml); }; s.onerror = function () { OM = null; rej(new Error("omml")); }; document.head.appendChild(s); })); }
+	function withOmml(B) {
+		var all = []; B.forEach(function (b) { if (b.k === "tex") all.push(b); (b.runs || []).forEach(function (r) { if (r.tex) all.push(r); }); });
+		if (!all.length) return Promise.resolve(B);
+		return Promise.all([mathJax(), omml()]).then(function (r) {
+			var M = r[0], O = r[1];
+			all.forEach(function (o) { var tex = o.k === "tex" ? o.tex : o.t; try { o.omml = O.fromMathML(M.tex2mml(tex, { display: o.k === "tex" }), o.k === "tex"); } catch (e) { o.omml = ""; } });
+			return B;
+		}, function () { return B; });
+	}
+	function docx(el, title) { return withOmml(blocks(el)).then(function (B) { return docxFile(B, title); }); }
+	function docxFile(B, title) {
+		var body = [];
 		function runXml(r, size) {
 			if (r.t === "\n") return "<w:r><w:br/></w:r>";
 			var pr = (r.b ? "<w:b/>" : "") + (r.i ? "<w:i/>" : "") + (r.m || r.tex ? '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>' : "") + (r.u ? '<w:color w:val="1F4FBF"/><w:u w:val="single"/>' : "") + (size ? '<w:sz w:val="' + size + '"/>' : "");
+			if (r.tex && r.omml) return r.omml;
 			var t = r.tex ? "$" + r.t + "$" : r.t;
 			return "<w:r>" + (pr ? "<w:rPr>" + pr + "</w:rPr>" : "") + '<w:t xml:space="preserve">' + x(t) + "</w:t></w:r>" + (r.u && r.u.indexOf(r.t.trim()) < 0 && /^https?:/.test(r.u) ? '<w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t xml:space="preserve"> (' + x(r.u) + ")</w:t></w:r>" : "");
 		}
@@ -1026,13 +1040,13 @@
 			else if (b.k === "li") body.push(para([{ t: b.mark + " " }].concat(b.runs), '<w:ind w:left="' + (360 + 360 * b.d) + '" w:hanging="300"/>', 0));
 			else if (b.k === "quote") body.push(para(b.runs.map(function (r) { r.i = true; return r; }), '<w:ind w:left="567"/>', 0));
 			else if (b.k === "code") b.text.split("\n").forEach(function (l) { body.push(para([{ t: l || " ", m: true }], '<w:shd w:val="clear" w:fill="F2F3F6"/><w:spacing w:after="0"/>', 19)); });
-			else if (b.k === "tex") body.push(para([{ t: b.tex, tex: true }], '<w:jc w:val="center"/>', 0));
+			else if (b.k === "tex") body.push(b.omml ? '<w:p><w:pPr><w:jc w:val="center"/></w:pPr>' + b.omml + "</w:p>" : para([{ t: b.tex, tex: true }], '<w:jc w:val="center"/>', 0));
 			else if (b.k === "table" && b.rows.length) {
 				var bd = '<w:tblBorders>' + ["top", "left", "bottom", "right", "insideH", "insideV"].map(function (s) { return "<w:" + s + ' w:val="single" w:sz="4" w:color="BBBBBB"/>'; }).join("") + "</w:tblBorders>";
 				body.push('<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>' + bd + "</w:tblPr>" + b.rows.map(function (r, i) { return "<w:tr>" + r.map(function (c) { return '<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/>' + (i ? "" : '<w:shd w:val="clear" w:fill="EEF0F6"/>') + "</w:tcPr>" + para([{ t: c, b: !i }], "", 0) + "</w:tc>"; }).join("") + "</w:tr>"; }).join("") + "</w:tbl>", "<w:p/>");
 			} else if (b.k === "img") body.push(para([{ t: "[" + T("Chart: see the answer on mes.fm/ai") + "]", i: true }], "", 0));
 		});
-		var doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + body.join("") + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>';
+		var doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><w:body>' + body.join("") + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>';
 		var blob = zip([
 			{ name: "[Content_Types].xml", data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>' },
 			{ name: "_rels/.rels", data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>' },
@@ -1120,6 +1134,207 @@
 		});
 	}
 
+	/* ---------- a real PDF (2026-11-23): selectable, searchable text in an embedded Unicode font (DejaVu Sans, subset), equations drawn
+	   as vector paths straight from MathJax's SVG, tables / code / lists / links; pdf-lib 1.17.1 (cdnjs) + @pdf-lib/fontkit 1.1.1 + DejaVu
+	   (jsDelivr), loaded on first use. Characters the font lacks (emoji, Chinese ...) are drawn as small pictures of that word; charts are
+	   pictures too. If the libraries cannot load, the older picture-only pdf() is used. */
+	var LIBS = { pdf: "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js", fk: "https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js", font: "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/" };
+	var scr = {}, fontBytes = {};
+	function js(u) { return scr[u] || (scr[u] = new Promise(function (res, rej) { var s = document.createElement("script"); s.src = u; s.onload = res; s.onerror = function () { delete scr[u]; rej(new Error("load")); }; document.head.appendChild(s); })); }
+	function fontFile(n) { return fontBytes[n] || (fontBytes[n] = fetch(LIBS.font + n).then(function (r) { if (!r.ok) throw new Error("font"); return r.arrayBuffer(); }).catch(function (e) { delete fontBytes[n]; throw e; })); }
+	function mul(m, n) { return [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]]; }
+	function tf(s) { // an SVG transform attribute -> matrix
+		var m = [1, 0, 0, 1, 0, 0], re = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g, a;
+		while ((a = re.exec(s || ""))) {
+			var v = a[2].split(/[\s,]+/).filter(Boolean).map(Number), t;
+			if (a[1] === "matrix") t = v; else if (a[1] === "translate") t = [1, 0, 0, 1, v[0] || 0, v[1] || 0]; else if (a[1] === "scale") t = [v[0], 0, 0, v[1] == null ? v[0] : v[1], 0, 0];
+			else if (a[1] === "rotate") { var r = (v[0] || 0) * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r); t = [c, sn, -sn, c, 0, 0]; if (v.length > 2) t = mul(mul([1, 0, 0, 1, v[1], v[2]], t), [1, 0, 0, 1, -v[1], -v[2]]); }
+			else if (a[1] === "skewX") t = [1, 0, Math.tan(v[0] * Math.PI / 180), 1, 0, 0]; else t = [1, Math.tan(v[0] * Math.PI / 180), 0, 1, 0, 0];
+			m = mul(m, t);
+		}
+		return m;
+	}
+	// SVG path data -> pdf-lib operators (own parser: pdf-lib's drawSvgPath draws quadratic curves wrongly, and MathJax glyphs are made of them)
+	function pathOps(P, d) {
+		var t = String(d).match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:e[-+]?\d+)?/g) || [], i = 0, ops = [], cmd = "", x = 0, y = 0, sx = 0, sy = 0, cx = null, cy = null, qx = null, qy = null;
+		function n() { return +t[i++]; }
+		function more() { return i < t.length && !/^[a-zA-Z]$/.test(t[i]); }
+		function cub(x1, y1, x2, y2, x3, y3) { ops.push(P.appendBezierCurve(x1, y1, x2, y2, x3, y3)); cx = x2; cy = y2; qx = qy = null; x = x3; y = y3; }
+		function quad(x1, y1, x2, y2) { ops.push(P.appendBezierCurve(x + 2 / 3 * (x1 - x), y + 2 / 3 * (y1 - y), x2 + 2 / 3 * (x1 - x2), y2 + 2 / 3 * (y1 - y2), x2, y2)); qx = x1; qy = y1; cx = cy = null; x = x2; y = y2; }
+		while (i < t.length) {
+			if (/^[a-zA-Z]$/.test(t[i])) cmd = t[i++];
+			var r = cmd === cmd.toLowerCase(), C = cmd.toUpperCase(), ox = r ? x : 0, oy = r ? y : 0;
+			if (C === "Z") { ops.push(P.closePath()); x = sx; y = sy; cx = qx = null; continue; }
+			if (!more()) { i++; continue; }
+			if (C === "M") { x = ox + n(); y = oy + n(); sx = x; sy = y; ops.push(P.moveTo(x, y)); cx = qx = null; cmd = r ? "l" : "L"; continue; }
+			if (C === "L") { x = ox + n(); y = oy + n(); ops.push(P.lineTo(x, y)); cx = qx = null; continue; }
+			if (C === "H") { x = ox + n(); ops.push(P.lineTo(x, y)); cx = qx = null; continue; }
+			if (C === "V") { y = (r ? y : 0) + n(); ops.push(P.lineTo(x, y)); cx = qx = null; continue; }
+			if (C === "C") { var a1 = ox + n(), b1 = oy + n(), a2 = ox + n(), b2 = oy + n(); cub(a1, b1, a2, b2, ox + n(), oy + n()); continue; }
+			if (C === "S") { var rx = cx == null ? x : 2 * x - cx, ry = cy == null ? y : 2 * y - cy, s2 = ox + n(), t2 = oy + n(); cub(rx, ry, s2, t2, ox + n(), oy + n()); continue; }
+			if (C === "Q") { var q1 = ox + n(), q2 = oy + n(); quad(q1, q2, ox + n(), oy + n()); continue; }
+			if (C === "T") { var tx = qx == null ? x : 2 * x - qx, ty = qy == null ? y : 2 * y - qy; quad(tx, ty, ox + n(), oy + n()); continue; }
+			if (C === "A") { n(); n(); n(); n(); n(); x = ox + n(); y = oy + n(); ops.push(P.lineTo(x, y)); cx = qx = null; continue; }
+			i++;
+		}
+		return ops;
+	}
+	function svgBox(svg) { var vb = (svg.getAttribute("viewBox") || "0 0 0 0").split(/[\s,]+/).map(Number); return { x: vb[0], y: vb[1], w: vb[2], h: vb[3] }; }
+	// draws a MathJax SVG with its left edge at x (pt) and baseline at yb (PDF y, pt); 1000 SVG units = size pt
+	function drawSvg(P, page, svg, x, yb, size, F, color) {
+		var b = svgBox(svg), k = size / 1000, base = [k, 0, 0, -k, x - b.x * k, yb];
+		var black = color || P.rgb(0, 0, 0);
+		var rgbC = black.red != null ? [black.red, black.green, black.blue] : [0, 0, 0];
+		function path(m, d, stroke, sw) {
+			var ops = pathOps(P, d); if (!ops.length) return;
+			page.pushOperators.apply(page, [P.pushGraphicsState(), P.concatTransformationMatrix(m[0], m[1], m[2], m[3], m[4], m[5]), stroke ? P.setStrokingRgbColor(rgbC[0], rgbC[1], rgbC[2]) : P.setFillingRgbColor(rgbC[0], rgbC[1], rgbC[2])].concat(stroke ? [P.setLineWidth(sw || 30)] : [], ops, [stroke ? P.stroke() : P.fill(), P.popGraphicsState()]));
+		}
+		(function walk(n, m) {
+			if (n.nodeType !== 1) return;
+			var tag = n.nodeName.toLowerCase(); if (tag === "defs" || tag === "title" || tag === "desc" || n.getAttribute("data-mml-node") === "merror" && false) return;
+			if (n.getAttribute("visibility") === "hidden" || n.style && n.style.display === "none") return;
+			var mm = n.getAttribute("transform") ? mul(m, tf(n.getAttribute("transform"))) : m;
+			if (tag === "path") { var d = n.getAttribute("d"); if (d && d.trim()) path(mm, d, n.getAttribute("fill") === "none", +n.getAttribute("stroke-width") || 0); return; }
+			if (tag === "rect") { var rx = +n.getAttribute("x") || 0, ry = +n.getAttribute("y") || 0, rw = +n.getAttribute("width") || 0, rh = +n.getAttribute("height") || 0; if (rw > 0 && rh > 0 && n.getAttribute("fill") !== "none") path(mm, "M" + rx + " " + ry + "h" + rw + "v" + rh + "h" + -rw + "Z"); return; }
+			if (tag === "line") { path(mm, "M" + (+n.getAttribute("x1") || 0) + " " + (+n.getAttribute("y1") || 0) + "L" + (+n.getAttribute("x2") || 0) + " " + (+n.getAttribute("y2") || 0), true, +n.getAttribute("stroke-width") || 40); return; }
+			if (tag === "use") {
+				var id = (n.getAttribute("href") || n.getAttribute("xlink:href") || "").replace(/^#/, ""), ref = id && svg.querySelector('[id="' + id.replace(/"/g, "") + '"]');
+				if (ref) walk(ref.cloneNode(true), mul(mm, [1, 0, 0, 1, +n.getAttribute("x") || 0, +n.getAttribute("y") || 0]));
+				return;
+			}
+			if (tag === "text") {
+				var t = n.textContent; if (!t) return; var fs = parseFloat(n.getAttribute("font-size")) || 1000, f = F.reg;
+				var fm = mul(mm, [1, 0, 0, -1, 0, 0]);
+				page.pushOperators(P.pushGraphicsState(), P.concatTransformationMatrix(fm[0], fm[1], fm[2], fm[3], fm[4], fm[5]));
+				try { page.drawText(F.safe(t, f), { x: +n.getAttribute("x") || 0, y: -(+n.getAttribute("y") || 0), size: fs, font: f, color: black }); } catch (e) { /* unknown glyphs */ }
+				page.pushOperators(P.popGraphicsState());
+				return;
+			}
+			[].forEach.call(n.childNodes, function (c) { walk(c, mm); });
+		})(svg, base);
+	}
+	function pdfVec(el, title) {
+		var B = blocks(el), P, doc, F = {}, sets = {};
+		return js(LIBS.pdf).then(function () { P = window.PDFLib; return js(LIBS.fk).catch(function () {}); }).then(function () {
+			return P.PDFDocument.create();
+		}).then(function (d) {
+			doc = d;
+			var names = { reg: "DejaVuSans.ttf", bold: "DejaVuSans-Bold.ttf", it: "DejaVuSans-Oblique.ttf", bi: "DejaVuSans-BoldOblique.ttf", mono: "DejaVuSansMono.ttf" };
+			var std = { reg: "Helvetica", bold: "HelveticaBold", it: "HelveticaOblique", bi: "HelveticaBoldOblique", mono: "Courier" };
+			var useTtf = !!window.fontkit; if (useTtf) doc.registerFontkit(window.fontkit);
+			return Promise.all(Object.keys(names).map(function (k) {
+				var p = useTtf ? fontFile(names[k]).then(function (bytes) { return doc.embedFont(bytes, { subset: true }); }) : Promise.reject();
+				return p.catch(function () { return doc.embedFont(P.StandardFonts[std[k]]); }).then(function (f) { F[k] = f; sets[k] = new Set(f.getCharacterSet()); });
+			}));
+		}).then(function () {
+			return Promise.all(B.filter(function (b) { return b.k === "img" && b.svg; }).map(function (b) { return svgImage(b.svg, 3).then(function (c) { return new Promise(function (res) { c.toBlob(function (bl) { bl.arrayBuffer().then(function (a) { return doc.embedPng(a); }).then(function (im) { b.png = im; b.pw = c.width / 3; b.ph = c.height / 3; res(); }, function () { res(); }); }); }); }, function () {}); }));
+		}).then(function () {
+			var PW = 595.28, PH = 841.89, M = 54, W = PW - 2 * M, page, y, ink = P.rgb(0.12, 0.14, 0.19), blue = P.rgb(0.12, 0.31, 0.75), grey = P.rgb(0.42, 0.45, 0.5);
+			F.safe = function (t, f) { var s = sets[Object.keys(F).filter(function (k) { return F[k] === f; })[0]] || sets.reg, o = ""; for (var c of t) o += s.has(c.codePointAt(0)) ? c : "?"; return o; };
+			function newPage() { page = doc.addPage([PW, PH]); y = M; }
+			function room(h) { if (y + h > PH - M) newPage(); }
+			function fontOf(r) { return r.m || r.tex ? F.mono : r.b && r.i ? F.bi : r.b ? F.bold : r.i ? F.it : F.reg; }
+			function setOf(f) { for (var k in F) if (F[k] === f && sets[k]) return sets[k]; return sets.reg; }
+			function ok(t, f) { var s = setOf(f); for (var c of t) if (!s.has(c.codePointAt(0))) return false; return true; }
+			var picCache = {};
+			function wordPic(t, size, r) { // a word with characters the font does not have (emoji, CJK...): a small picture, measured by the browser
+				var key = t + "|" + size + "|" + !!r.b; if (picCache[key]) return picCache[key];
+				var cv = document.createElement("canvas"), cx = cv.getContext("2d"), S = 4, f = (r.b ? "700 " : "400 ") + size * S + "px -apple-system, 'Segoe UI', 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif";
+				cx.font = f; var w = Math.ceil(cx.measureText(t).width) + 2; cv.width = w; cv.height = Math.ceil(size * S * 1.35);
+				cx.font = f; cx.fillStyle = r.u ? "#1f4fbf" : "#1f2430"; cx.textBaseline = "alphabetic"; cx.fillText(t, 1, size * S * 1.02);
+				return (picCache[key] = new Promise(function (res) { cv.toBlob(function (bl) { bl.arrayBuffer().then(function (a) { return doc.embedPng(a); }).then(function (im) { res({ im: im, w: w / S, h: cv.height / S, asc: size * 1.02 }); }, function () { res(null); }); }); }));
+			}
+			var links = [];
+			function addLink(x1, y1, x2, y2, url) { links.push({ page: page, r: [x1, y1, x2, y2], url: url }); }
+			// one paragraph of runs, wrapped; inline math is placed on the baseline at its own height
+			function flow(runs, size, left, color, extraLead) {
+				var items = [], x0 = M + left, maxW = W - left;
+				runs.forEach(function (r) {
+					if (r.t === "\n") { items.push({ br: true }); return; }
+					if (r.tex && r.svg) { var bx = svgBox(r.svg), k = size / 1000; items.push({ m: r.svg, w: bx.w * k, asc: -bx.y * k, desc: (bx.h + bx.y) * k }); return; }
+					var f = fontOf(r), sz = r.m || r.tex ? size * 0.92 : size;
+					String(r.t).split(/(\s+)/).forEach(function (wd) {
+						if (!wd) return;
+						if (/^\s+$/.test(wd)) { items.push({ sp: f.widthOfTextAtSize(" ", sz) }); return; }
+						if (ok(wd, f)) items.push({ t: wd, f: f, sz: sz, w: f.widthOfTextAtSize(wd, sz), u: r.u, c: r.u ? blue : color || ink });
+						else items.push({ pic: wd, sz: sz, r: r, w: 0 });
+					});
+				});
+				return Promise.all(items.map(function (it) { return it.pic ? wordPic(it.pic, it.sz, it.r).then(function (p) { it.p = p; it.w = p ? p.w : 0; }) : null; })).then(function () {
+					var line = [], xp = 0;
+					function flush() {
+						while (line.length && line[line.length - 1].sp) line.pop();
+						var asc = size * 0.93, desc = size * 0.27;
+						line.forEach(function (it) { if (it.m) { asc = Math.max(asc, it.asc + 1); desc = Math.max(desc, it.desc + 1); } });
+						room(asc + desc); var yb = PH - (y + asc), xx = x0;
+						line.forEach(function (it) {
+							if (it.sp) { xx += it.sp; return; }
+							if (it.m) drawSvg(P, page, it.m, xx, yb, size, F, color || ink);
+							else if (it.p) page.drawImage(it.p.im, { x: xx, y: yb - (it.p.h - it.p.asc), width: it.p.w, height: it.p.h });
+							else if (it.t) { page.drawText(it.t, { x: xx, y: yb, size: it.sz, font: it.f, color: it.c }); if (it.u) { page.drawLine({ start: { x: xx, y: yb - 1.4 }, end: { x: xx + it.w, y: yb - 1.4 }, thickness: 0.5, color: blue }); if (/^(https?:|mailto:)/.test(it.u)) addLink(xx, yb - 2, xx + it.w, yb + it.sz * 0.8, it.u); } }
+							xx += it.w;
+						});
+						y += asc + desc + size * (0.3 + (extraLead || 0)); line = []; xp = 0;
+					}
+					items.forEach(function (it) {
+						if (it.br) { flush(); return; }
+						if (it.sp) { if (line.length) { line.push(it); xp += it.sp; } return; }
+						if (xp + it.w > maxW && line.length) flush();
+						if (it.t && it.w > maxW) { // a very long word: cut it
+							var s = it.t; while (s) { var n = s.length; while (n > 1 && it.f.widthOfTextAtSize(s.slice(0, n), it.sz) > maxW - xp) n--; var part = s.slice(0, n); line.push({ t: part, f: it.f, sz: it.sz, w: it.f.widthOfTextAtSize(part, it.sz), u: it.u, c: it.c }); s = s.slice(n); if (s) flush(); else xp += line[line.length - 1].w; }
+							return;
+						}
+						if (it.m && it.w > maxW) { var k2 = maxW / it.w; it.w *= k2; it.asc *= k2; it.desc *= k2; }
+						line.push(it); xp += it.w;
+					});
+					if (line.length) flush();
+				});
+			}
+			newPage();
+			var chain = Promise.resolve();
+			B.forEach(function (b) {
+				chain = chain.then(function () {
+					if (b.k === "h") { y += 7; var hs = [0, 19, 16, 14, 12.5, 11.5, 11.5][b.lv] || 12; return flow(b.runs.map(function (r) { var c = {}; for (var q in r) c[q] = r[q]; c.b = true; return c; }), hs, 0).then(function () { y += 2; }); }
+					if (b.k === "p") return flow(b.runs, 10.5, 18 * (b.d || 0)).then(function () { y += 5; });
+					if (b.k === "li") return flow([{ t: b.mark + " " }].concat(b.runs), 10.5, 14 + 18 * b.d).then(function () { y += 2; });
+					if (b.k === "quote") { var y0 = y, p0 = page; return flow(b.runs, 10.5, 16, grey).then(function () { if (page === p0) page.drawRectangle({ x: M + 3, y: PH - y, width: 2.5, height: y - y0 - 3, color: P.rgb(0.8, 0.82, 0.88) }); y += 5; }); }
+					if (b.k === "code") {
+						var cs = 8.8, lh = cs * 1.45, cw = F.mono.widthOfTextAtSize("M", cs), per = Math.max(10, Math.floor((W - 12) / cw));
+						b.text.split("\n").forEach(function (l) {
+							var parts = []; if (!l) parts.push(""); while (l.length) { parts.push(l.slice(0, per)); l = l.slice(per); }
+							parts.forEach(function (s) { room(lh); page.drawRectangle({ x: M, y: PH - y - lh, width: W, height: lh, color: P.rgb(0.95, 0.953, 0.965) }); if (s) page.drawText(F.safe(s, F.mono), { x: M + 6, y: PH - y - lh + cs * 0.42, size: cs, font: F.mono, color: ink }); y += lh; });
+						});
+						y += 8; return;
+					}
+					if (b.k === "tex" && b.svg) {
+						var bx = svgBox(b.svg), size = 12, k = size / 1000, w = bx.w * k, asc = -bx.y * k, desc = (bx.h + bx.y) * k;
+						if (w > W) { size *= W / w; k = size / 1000; w = W; asc = -bx.y * k; desc = (bx.h + bx.y) * k; }
+						y += 4; room(asc + desc); drawSvg(P, page, b.svg, M + (W - w) / 2, PH - (y + asc), size, F, ink); y += asc + desc + 9; return;
+					}
+					if (b.k === "tex") return flow([{ t: b.tex, tex: true }], 10.5, 30).then(function () { y += 5; });
+					if (b.k === "img" && b.png) { var iw = b.pw, ih = b.ph, s2 = Math.min(1, W / iw, (PH - 2 * M) / ih); iw *= s2; ih *= s2; room(ih + 8); page.drawImage(b.png, { x: M, y: PH - y - ih, width: iw, height: ih }); y += ih + 8; return; }
+					if (b.k === "table" && b.rows.length) {
+						var n = Math.max.apply(null, b.rows.map(function (r) { return r.length; })), colW = W / n, ts = 9, tl = ts * 1.3;
+						b.rows.forEach(function (r, i) {
+							var f = i ? F.reg : F.bold;
+							var lines = []; for (var j = 0; j < n; j++) { var out = [], cur = ""; String(r[j] == null ? "" : r[j]).split(/\s+/).forEach(function (wd) { wd = F.safe(wd, f); var tst = cur ? cur + " " + wd : wd; if (f.widthOfTextAtSize(tst, ts) > colW - 8 && cur) { out.push(cur); cur = wd; } else cur = tst; }); out.push(cur); lines.push(out); }
+							var h = Math.max.apply(null, lines.map(function (l) { return l.length; })) * tl + 6; room(h);
+							if (!i) page.drawRectangle({ x: M, y: PH - y - h, width: W, height: h, color: P.rgb(0.933, 0.94, 0.965) });
+							for (var c = 0; c < n; c++) { page.drawRectangle({ x: M + c * colW, y: PH - y - h, width: colW, height: h, borderColor: P.rgb(0.78, 0.8, 0.84), borderWidth: 0.6 }); lines[c].forEach(function (l, q) { if (l) page.drawText(l, { x: M + c * colW + 4, y: PH - y - 3 - ts - q * tl, size: ts, font: f, color: ink }); }); }
+							y += h;
+						});
+						y += 8;
+					}
+				});
+			});
+			return chain.then(function () {
+				links.forEach(function (L) { try { var a = doc.context.register(doc.context.obj({ Type: "Annot", Subtype: "Link", Rect: L.r, Border: [0, 0, 0], A: { Type: "Action", S: "URI", URI: P.PDFString.of(L.url) } })); L.page.node.addAnnot(a); } catch (e) { /* no link */ } });
+				doc.setTitle(title.replace(/-/g, " ")); doc.setCreator("MES AI, mes.fm/ai"); doc.setProducer("MES AI (pdf-lib)");
+				return doc.save();
+			});
+		}).then(function (bytes) { return new File([bytes], title + ".pdf", { type: "application/pdf" }); });
+	}
+
 	function openIn(kind, md, el) {
 		var name = baseName(md);
 		if (kind === "latex") {
@@ -1131,11 +1346,11 @@
 		}
 		if (kind === "text") return sendFile("/text", function () { return new File([md], name + ".md", { type: "text/markdown" }); });
 		if (kind === "docx") return sendFile("/docx", function () { return docx(el, name); });
-		if (kind === "pdf") return sendFile("/pdf", function () { return typeset(el).then(function () { return pdf(el, name); }); });
+		if (kind === "pdf") return sendFile("/pdf", function () { return typeset(el).then(function () { return pdfVec(el, name).catch(function () { return pdf(el, name); }); }); });
 		return Promise.reject(new Error("unknown"));
 	}
 
-	window.MESAIRich = { setT: function (fn) { T = fn; }, render: render, enhance: enhance, typeset: typeset, texList: texList, pullMath: pullMath, normSpec: normSpec, chartSvg: chartSvg, num: num, openIn: openIn, blocks: blocks, docx: docx, pdf: pdf, zip: zip, crc32: crc32 };
+	window.MESAIRich = { setT: function (fn) { T = fn; }, render: render, enhance: enhance, typeset: typeset, texList: texList, pullMath: pullMath, normSpec: normSpec, chartSvg: chartSvg, num: num, openIn: openIn, blocks: blocks, docx: docx, pdf: pdf, pdfVec: pdfVec, zip: zip, crc32: crc32 };
 	if (typeof module !== "undefined" && module.exports) module.exports = window.MESAIRich;
 })();
 

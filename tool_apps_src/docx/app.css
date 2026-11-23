@@ -168,3 +168,16 @@ body.dx-filled { overflow: hidden; }
 #dx .mes-find { --mf-bg: var(--dx-panel); --mf-fg: var(--dx-ink); --mf-dim: var(--dx-mute); --mf-line: var(--dx-line); --mf-field: var(--dx-panel); --mf-hover: var(--dx-hov); --mf-acc: var(--dx-acc); --mf-mark: var(--dx-hit); --mf-markfg: var(--dx-hitink); margin: -4px -4px 8px; }
 #dx .mes-find .mf-row { padding: 2px 0 6px; } #dx .mes-find .mf-qw { flex-basis: 100%; }
 #dx .dx-pagebox { color: var(--dx-mute); } #dx .dx-pagebox input { --mf-pl: var(--dx-line); --mf-pf: var(--dx-panel); color: var(--dx-ink); }
+/* equations (2026-11-23): span.dx-eq = a Word equation drawn as MathML; the LaTeX equation editor dialog */
+#dx .dx-eq { cursor: pointer; border-radius: 3px; padding: 0 1px; }
+#dx .dx-eq:hover { outline: 1px dashed var(--dx-acc); outline-offset: 1px; }
+#dx .dx-eqd { display: block; text-align: center; margin: 0.5em 0; }
+#dx .dx-eq math { font-size: 1.05em; }
+#dx .dx-eqdlg { position: fixed; inset: 0; z-index: 2147483100; background: rgba(15, 20, 30, 0.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+#dx .dx-eqbox { background: var(--dx-panel); color: var(--dx-ink); border: 1px solid var(--dx-line); border-radius: 10px; width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 14px 16px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+#dx .dx-eqh { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } #dx .dx-eqh .dx-ib { margin-left: auto; } #dx .dx-eqsub { color: var(--dx-mute); font-size: 13px; }
+#dx .dx-eqtex { width: 100%; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 15px; resize: vertical; }
+#dx .dx-eqchips { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; } #dx .dx-eqchips .dx-btn { padding: 3px 9px; font-size: 13px; }
+#dx .dx-eqprev { min-height: 3.2em; border: 1px dashed var(--dx-line); border-radius: 6px; padding: 10px; margin: 8px 0 4px; overflow-x: auto; text-align: center; font-size: 1.25em; background: var(--dx-pbg); color: var(--dx-pink); }
+#dx .dx-eqmsg.is-err { color: var(--dx-err); }
+#dx .dx-eqf { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; } #dx .dx-eqlink { font-size: 13px; color: var(--dx-acc); }

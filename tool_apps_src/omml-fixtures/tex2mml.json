@@ -1,0 +1,46 @@
+[
+ {
+  "tex": "a^2+b^2=c^2",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>"
+ },
+ {
+  "tex": "\\triangle ABC \\sim \\triangle ACD \\sim \\triangle CBD",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mi mathvariant=\"normal\">&#x25B3;</mi><mi>A</mi><mi>B</mi><mi>C</mi><mo>&#x223C;</mo><mi mathvariant=\"normal\">&#x25B3;</mi><mi>A</mi><mi>C</mi><mi>D</mi><mo>&#x223C;</mo><mi mathvariant=\"normal\">&#x25B3;</mi><mi>C</mi><mi>B</mi><mi>D</mi></math>"
+ },
+ {
+  "tex": "\\frac{AC}{AB}=\\frac{AD}{AC} \\Longrightarrow AC^2 = AB\\cdot AD",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mfrac><mrow><mi>A</mi><mi>C</mi></mrow><mrow><mi>A</mi><mi>B</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mi>A</mi><mi>D</mi></mrow><mrow><mi>A</mi><mi>C</mi></mrow></mfrac><mo stretchy=\"false\">&#x27F9;</mo><mi>A</mi><msup><mi>C</mi><mn>2</mn></msup><mo>=</mo><mi>A</mi><mi>B</mi><mo>&#x22C5;</mo><mi>A</mi><mi>D</mi></math>"
+ },
+ {
+  "tex": "\\begin{aligned} AC^2 + BC^2 &= AB\\cdot AD + AB\\cdot DB \\\\ &= AB(AD+DB) \\\\ &= AB^2 \\end{aligned}",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mtable displaystyle=\"true\" columnalign=\"right left\" columnspacing=\"0em\" rowspacing=\"3pt\"><mtr><mtd><mi>A</mi><msup><mi>C</mi><mn>2</mn></msup><mo>+</mo><mi>B</mi><msup><mi>C</mi><mn>2</mn></msup></mtd><mtd><mi></mi><mo>=</mo><mi>A</mi><mi>B</mi><mo>&#x22C5;</mo><mi>A</mi><mi>D</mi><mo>+</mo><mi>A</mi><mi>B</mi><mo>&#x22C5;</mo><mi>D</mi><mi>B</mi></mtd></mtr><mtr><mtd></mtd><mtd><mi></mi><mo>=</mo><mi>A</mi><mi>B</mi><mo stretchy=\"false\">(</mo><mi>A</mi><mi>D</mi><mo>+</mo><mi>D</mi><mi>B</mi><mo stretchy=\"false\">)</mo></mtd></mtr><mtr><mtd></mtd><mtd><mi></mi><mo>=</mo><mi>A</mi><msup><mi>B</mi><mn>2</mn></msup></mtd></mtr></mtable></math>"
+ },
+ {
+  "tex": "\\|u+v\\|^2 = \\|u\\|^2 + 2\\langle u,v\\rangle + \\|v\\|^2",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mo data-mjx-texclass=\"ORD\">&#x2225;</mo><mi>u</mi><mo>+</mo><mi>v</mi><msup><mo data-mjx-texclass=\"ORD\">&#x2225;</mo><mn>2</mn></msup><mo>=</mo><mo data-mjx-texclass=\"ORD\">&#x2225;</mo><mi>u</mi><msup><mo data-mjx-texclass=\"ORD\">&#x2225;</mo><mn>2</mn></msup><mo>+</mo><mn>2</mn><mo fence=\"false\" stretchy=\"false\">&#x27E8;</mo><mi>u</mi><mo>,</mo><mi>v</mi><mo fence=\"false\" stretchy=\"false\">&#x27E9;</mo><mo>+</mo><mo data-mjx-texclass=\"ORD\">&#x2225;</mo><mi>v</mi><msup><mo data-mjx-texclass=\"ORD\">&#x2225;</mo><mn>2</mn></msup></math>"
+ },
+ {
+  "tex": "\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mrow data-mjx-texclass=\"INNER\"><mo data-mjx-texclass=\"OPEN\">(</mo><mtable columnspacing=\"1em\" rowspacing=\"4pt\"><mtr><mtd><mn>1</mn></mtd><mtd><mn>2</mn></mtd></mtr><mtr><mtd><mn>3</mn></mtd><mtd><mn>4</mn></mtd></mtr></mtable><mo data-mjx-texclass=\"CLOSE\">)</mo></mrow></math>"
+ },
+ {
+  "tex": "\\left(\\frac{a}{b}\\right)^2 + \\int_0^1 x\\,dx + \\hat{x} + \\sqrt[3]{8} + \\sqrt{x} + \\mathbb{R} + \\text{if } x",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><msup><mrow data-mjx-texclass=\"INNER\"><mo data-mjx-texclass=\"OPEN\">(</mo><mfrac><mi>a</mi><mi>b</mi></mfrac><mo data-mjx-texclass=\"CLOSE\">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msubsup><mo data-mjx-texclass=\"OP\">&#x222B;</mo><mn>0</mn><mn>1</mn></msubsup><mi>x</mi><mstyle scriptlevel=\"0\"><mspace width=\"0.167em\"></mspace></mstyle><mi>d</mi><mi>x</mi><mo>+</mo><mrow data-mjx-texclass=\"ORD\"><mover><mi>x</mi><mo stretchy=\"false\">^</mo></mover></mrow><mo>+</mo><mroot><mn>8</mn><mn>3</mn></mroot><mo>+</mo><msqrt><mi>x</mi></msqrt><mo>+</mo><mrow data-mjx-texclass=\"ORD\"><mi mathvariant=\"double-struck\">R</mi></mrow><mo>+</mo><mtext>if&#xA0;</mtext><mi>x</mi></math>"
+ },
+ {
+  "tex": "\\lim_{x\\to 0}\\frac{\\sin x}{x}=1",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><munder><mo data-mjx-texclass=\"OP\" movablelimits=\"true\">lim</mo><mrow data-mjx-texclass=\"ORD\"><mi>x</mi><mo accent=\"false\" stretchy=\"false\">&#x2192;</mo><mn>0</mn></mrow></munder><mfrac><mrow><mi>sin</mi><mo data-mjx-texclass=\"NONE\">&#x2061;</mo><mi>x</mi></mrow><mi>x</mi></mfrac><mo>=</mo><mn>1</mn></math>"
+ },
+ {
+  "tex": "\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><munderover><mo data-mjx-texclass=\"OP\">&#x2211;</mo><mrow data-mjx-texclass=\"ORD\"><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mrow data-mjx-texclass=\"ORD\"><mi>n</mi></mrow></munderover><mi>i</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo stretchy=\"false\">(</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo stretchy=\"false\">)</mo></mrow><mn>2</mn></mfrac></math>"
+ },
+ {
+  "tex": "x_1, x^{2}_{3}, \\overline{AB}, \\vec{v}, \\binom{n}{k}",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><msub><mi>x</mi><mn>1</mn></msub><mo>,</mo><msubsup><mi>x</mi><mrow data-mjx-texclass=\"ORD\"><mn>3</mn></mrow><mrow data-mjx-texclass=\"ORD\"><mn>2</mn></mrow></msubsup><mo>,</mo><mover><mrow><mi>A</mi><mi>B</mi></mrow><mo accent=\"true\">&#x2015;</mo></mover><mo>,</mo><mrow data-mjx-texclass=\"ORD\"><mover><mi>v</mi><mo stretchy=\"false\">&#x2192;</mo></mover></mrow><mo>,</mo><mrow data-mjx-texclass=\"ORD\"><mrow data-mjx-texclass=\"OPEN\"><mo minsize=\"2.047em\" maxsize=\"2.047em\">(</mo></mrow><mfrac linethickness=\"0\"><mi>n</mi><mi>k</mi></mfrac><mrow data-mjx-texclass=\"CLOSE\"><mo minsize=\"2.047em\" maxsize=\"2.047em\">)</mo></mrow></mrow></math>"
+ },
+ {
+  "tex": "\\boxed{E=mc^2}",
+  "mml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><menclose notation=\"box\"><mrow data-mjx-texclass=\"ORD\"><mstyle displaystyle=\"true\" scriptlevel=\"0\"><mrow data-mjx-texclass=\"ORD\"><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow></mstyle></mrow></menclose></math>"
+ }
+]

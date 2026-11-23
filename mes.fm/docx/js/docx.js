@@ -275,6 +275,8 @@ var MESDocx = (function () {
 			var tag = (n.nodeName || "").toUpperCase();
 			if (SKIP[tag]) return;
 			if (tag === "BR") { open(ctx).runs.push({ br: true }); return; }
+			// a Word equation kept from the file or made with the equation editor (span.dx-eq data-omml = the OMML, data-tex = its LaTeX)
+			if (hasClass(n, "dx-eq")) { var om = gattr(n, "data-omml") || ""; if (/^<m:oMath(Para)?[\s>]/.test(om)) open(ctx).runs.push({ eq: om, tex: gattr(n, "data-tex") || "" }); return; }
 			if (tag === "IMG") {
 				var src = gattr(n, "src") || ""; if (!src) return;
 				var w = +(gattr(n, "width") || n.naturalWidth || 0), h = +(gattr(n, "height") || n.naturalHeight || 0);
@@ -346,7 +348,7 @@ var MESDocx = (function () {
 	function same(a, b) { var ks = ["b", "i", "u", "s", "sup", "sub", "code", "mark", "href"]; for (var i = 0; i < ks.length; i++) if ((a[ks[i]] || null) !== (b[ks[i]] || null)) return false; return true; }
 
 	/* ---------- block model -> .docx ---------- */
-	var NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+	var NS = 'xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
 	var XMLH = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
 	function w3c(d) { return (d || new Date()).toISOString().replace(/\.\d+Z$/, "Z"); }
 
@@ -408,7 +410,7 @@ var MESDocx = (function () {
 			}
 			return out;
 		}
-		function one(r) { return r.br ? "<w:r><w:br/></w:r>" : r.img ? imgRun(r) : r.text != null ? textRun(r) : ""; }
+		function one(r) { return r.br ? "<w:r><w:br/></w:r>" : r.eq ? r.eq : r.img ? imgRun(r) : r.text != null ? textRun(r) : ""; }
 		function para(b, cellAlign) {
 			var pp = "";
 			var style = b.list ? "ListParagraph" : { Normal: "", Title: "Title", Quote: "Quote", Code: "CodeBlock" }[b.style];
@@ -540,7 +542,7 @@ var MESDocx = (function () {
 	}
 
 	/* ---------- other formats ---------- */
-	function plainRuns(rs) { return (rs || []).map(function (r) { return r.br ? "\n" : r.img ? (r.img.alt ? "[" + r.img.alt + "]" : "[picture]") : r.text || ""; }).join(""); }
+	function plainRuns(rs) { return (rs || []).map(function (r) { return r.br ? "\n" : r.eq ? (r.tex ? "$" + r.tex + "$" : "[equation]") : r.img ? (r.img.alt ? "[" + r.img.alt + "]" : "[picture]") : r.text || ""; }).join(""); }
 	function toText(model) {
 		var out = [], prevList = false;
 		function walk(bl, indent) {
@@ -578,6 +580,7 @@ var MESDocx = (function () {
 		var s = "";
 		(rs || []).forEach(function (r) {
 			if (r.br) { s += "  \n"; return; }
+			if (r.eq) { s += r.tex ? (/^<m:oMathPara/.test(r.eq) ? "\n\n$$" + r.tex + "$$\n\n" : "$" + r.tex + "$") : "[equation]"; return; }
 			if (r.img) { var d = dataUri(r.img.src); s += "![" + mdEsc(r.img.alt || "") + "](" + (d ? "image-" + (++imgN.n) + "." + (IMG_EXT[d.mime] || "png") : r.img.src) + ")"; return; }
 			var t = r.code ? "`" + r.text.replace(/`/g, "\u02CB") + "`" : mdEsc(r.text);
 			var lead = /^\s*/.exec(t)[0], trail = /\s*$/.exec(t)[0]; t = t.trim();
@@ -627,6 +630,7 @@ var MESDocx = (function () {
 		var s = "";
 		(rs || []).forEach(function (r) {
 			if (r.br) { s += "<br>"; return; }
+			if (r.eq) { s += r.tex ? "\\(" + htmlEsc(r.tex) + "\\)" : "[equation]"; return; }
 			if (r.img) { var src = /^(data:image\/|https?:)/i.test(r.img.src) ? r.img.src : ""; if (src) s += '<img src="' + htmlEsc(src) + '" alt="' + htmlEsc(r.img.alt) + '"' + (r.img.w ? ' width="' + Math.round(r.img.w) + '"' : "") + ">"; return; }
 			var t = htmlEsc(r.text);
 			if (r.code) t = "<code>" + t + "</code>";
@@ -961,6 +965,7 @@ var MESDocx = (function () {
 				var t = body.querySelector("[id='" + CSS.escape(a.getAttribute("href").slice(1)) + "'], a[name='" + CSS.escape(a.getAttribute("href").slice(1)) + "']");
 				e.preventDefault(); if (t) scrollToEl(t);
 			});
+			betterMath(bytes, body);
 			d.rendered = d.src;
 			d.pages = body.querySelectorAll("section." + cls).length;
 			refreshUi(); applyZoom();
@@ -1191,9 +1196,7 @@ var MESDocx = (function () {
 	function setMode(d, mode, html) {
 		if (!d) return;
 		if (mode === "edit") {
-			var ready = d.editEl ? Promise.resolve() : (html != null ? Promise.resolve(html) : (note("Preparing the editor&hellip;"), libMammoth().then(function () {
-				return window.mammoth.convertToHtml({ arrayBuffer: d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength) }, { styleMap: STYLE_MAP });
-			}).then(function (res) { d.mWarn = (res.messages || []).filter(function (m) { return m.type === "warning"; }).length; return res.value; }))).then(function (h) { if (h != null) makeEditor(d, h); });
+			var ready = d.editEl ? Promise.resolve() : (html != null ? Promise.resolve(html) : (note("Preparing the editor&hellip;"), mammothHtml(d).then(function (res) { d.mWarn = (res.messages || []).filter(function (m) { return m.type === "warning"; }).length; return res.value; }))).then(function (h) { if (h != null) makeEditor(d, h); });
 			return ready.then(function () {
 				d.scroll = view.scrollTop; d.mode = "edit"; if (d.host) d.host.hidden = true; d.edwrap.hidden = false;
 				clearFind();
@@ -1215,7 +1218,7 @@ var MESDocx = (function () {
 		var ed = document.createElement("div"); ed.className = "dx-ed"; ed.contentEditable = "true"; ed.spellcheck = true; ed.setAttribute("role", "textbox"); ed.setAttribute("aria-multiline", "true"); ed.setAttribute("aria-label", "Document text");
 		var ps = d.page; ed.style.width = Math.round(ps.w / 15) + "px"; ed.style.minHeight = Math.round(ps.h / 15) + "px";
 		ed.style.padding = Math.round(ps.top / 15) + "px " + Math.round(ps.right / 15) + "px " + Math.round(ps.bottom / 15) + "px " + Math.round(ps.left / 15) + "px";
-		ed.innerHTML = cleanHtml(html) || "<p><br></p>";
+		ed.innerHTML = cleanHtml(html) || "<p><br></p>"; fillEqs(d, ed);
 		d.edwrap.appendChild(ed); view.appendChild(d.edwrap); d.editEl = ed;
 		try { document.execCommand("defaultParagraphSeparator", false, "p"); } catch (e) { /* old browsers */ }
 		ed.addEventListener("input", function () { markDirty(); });
@@ -1230,7 +1233,7 @@ var MESDocx = (function () {
 			if (e.key === "Tab") { var li = sel().anchorNode; li = li && (li.nodeType === 1 ? li : li.parentNode); li = li && li.closest ? li.closest("li") : null; if (li) { e.preventDefault(); document.execCommand(e.shiftKey ? "outdent" : "indent"); markDirty(); } }
 			if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); cmd("link"); }
 		});
-		ed.addEventListener("click", function (e) { if (e.target.nodeName === "IMG") showImgBar(e.target); else hideImgBar(); });
+		ed.addEventListener("click", function (e) { var q = e.target.closest && e.target.closest(".dx-eq"); if (q) { e.preventDefault(); openEq(q); return; } if (e.target.nodeName === "IMG") showImgBar(e.target); else hideImgBar(); });
 		ed.addEventListener("keyup", syncBar); ed.addEventListener("mouseup", syncBar);
 	}
 	function sel() { return getSelection(); }
@@ -1259,6 +1262,7 @@ var MESDocx = (function () {
 			if (s.isCollapsed && !a) document.execCommand("insertHTML", false, '<a href="' + esc(u) + '">' + esc(u) + "</a>");
 			else if (a && s.isCollapsed) a.setAttribute("href", u); else document.execCommand("createLink", false, u);
 		} else if (c === "image") { $("dx-imgin").click(); return; }
+		else if (c === "equation") { openEq(null); return; }
 		else if (c === "table") {
 			var r = prompt("Table size: columns x rows", "3 x 3"); if (!r) return;
 			var m = /(\d+)\D+(\d+)/.exec(r) || [0, 3, 3], cols = Math.max(1, Math.min(12, +m[1])), rows = Math.max(1, Math.min(60, +m[2]));
@@ -1320,6 +1324,130 @@ var MESDocx = (function () {
 	};
 	view.addEventListener("scroll", function () { if (!imgBar.hidden) hideImgBar(); });
 
+
+	/* ---------- Word equations (2026-11-23) ----------
+	   mammoth drops OMML, so before Edit mode each <m:oMath> / <m:oMathPara> of word/document.xml is swapped for a marker run, and the
+	   markers become span.dx-eq (data-omml = the original OMML, drawn as MathML by the browser through main_js/omml.js). D.fromDom keeps
+	   them and the writer puts the OMML back unchanged. The equation editor (∑ in the Edit toolbar, or click an equation) turns LaTeX into
+	   OMML: MathJax.tex2mml (cdnjs tex-svg, loaded on first use) -> MESOmml.fromMathML. */
+	var OMML = window.MESOmml;
+	function mammothHtml(d) {
+		return Promise.all([libMammoth(), libZip()]).then(function () { return window.JSZip.loadAsync(d.bytes); }).then(function (z) {
+			var f = z.file("word/document.xml"); return f ? f.async("string").then(function (xml) { return { z: z, xml: xml }; }) : { z: z, xml: "" };
+		}).then(function (o) {
+			d.eqs = [];
+			if (!/<m:oMath[\s>]/.test(o.xml)) return d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength);
+			var xml = o.xml.replace(/<m:oMathPara(?=[\s>])[\s\S]*?<\/m:oMathPara>/g, function (m) { d.eqs.push(m); return "<w:r><w:t>\u27e6MESEQ" + (d.eqs.length - 1) + "\u27e7</w:t></w:r>"; })
+				.replace(/<m:oMath(?=[\s>])[\s\S]*?<\/m:oMath>/g, function (m) { d.eqs.push(m); return "<w:r><w:t>\u27e6MESEQ" + (d.eqs.length - 1) + "\u27e7</w:t></w:r>"; });
+			o.z.file("word/document.xml", xml); return o.z.generateAsync({ type: "arraybuffer" });
+		}).then(function (buf) { return window.mammoth.convertToHtml({ arrayBuffer: buf }, { styleMap: STYLE_MAP }); });
+	}
+	function eqSpan(omml, tex, mml) {
+		var sp = document.createElement("span"), disp = /^<m:oMathPara/.test(omml);
+		sp.className = "dx-eq" + (disp ? " dx-eqd" : ""); sp.contentEditable = "false"; sp.setAttribute("data-omml", omml); if (tex) sp.setAttribute("data-tex", tex);
+		sp.title = tex ? "Equation: click to change it" : "Equation from the file: click to replace it with one typed in LaTeX";
+		var m = mml || (OMML ? OMML.toMathML(omml) : ""); sp.innerHTML = m && /^<math[\s>]/.test(m.trim()) ? m : "[equation]";
+		[].forEach.call(sp.querySelectorAll("*"), function (e) { [].slice.call(e.attributes).forEach(function (a) { if (/^on/i.test(a.name) || /href/i.test(a.name)) e.removeAttribute(a.name); }); });
+		return sp;
+	}
+	function fillEqs(d, box) {
+		if (!d.eqs || !d.eqs.length) return;
+		var w = document.createTreeWalker(box, NodeFilter.SHOW_TEXT), list = [], n;
+		while ((n = w.nextNode())) if (n.nodeValue.indexOf("\u27e6MESEQ") >= 0) list.push(n);
+		list.forEach(function (t) {
+			var parts = t.nodeValue.split(/\u27e6MESEQ(\d+)\u27e7/), frag = document.createDocumentFragment();
+			parts.forEach(function (p, i) { if (i % 2) { var om = d.eqs[+p]; if (om) frag.appendChild(eqSpan(om)); } else if (p) frag.appendChild(document.createTextNode(p)); });
+			t.parentNode.replaceChild(frag, t);
+		});
+	}
+	var MJ = null;
+	function mathJax() {
+		if (MJ) return MJ;
+		if (window.MathJax && window.MathJax.tex2mml) return (MJ = Promise.resolve(window.MathJax));
+		window.MathJax = { options: { ignoreHtmlClass: ".*", processHtmlClass: "dx-none" }, startup: { typeset: false } };
+		MJ = loadScript("https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js").then(function () { return window.MathJax.startup.promise; }).then(function () { return window.MathJax; }, function (e) { MJ = null; throw e; });
+		return MJ;
+	}
+	/* page view: docx-preview draws Word equations as MathML with every letter in an <ms> (shown as a quoted string, upright). Redraw each
+	   one from its own OMML with MESOmml.toMathML (italic letters, display equations in display style), when the counts match. */
+	function betterMath(bytes, body) {
+		var ms = body.querySelectorAll("math"); if (!ms.length || !OMML) return;
+		window.JSZip.loadAsync(bytes).then(function (z) { return mainPath(z).then(function (mp) { var f = mp && z.file(mp); return f ? f.async("string") : ""; }); }).then(function (xml) {
+			var list = [], re = /<m:oMathPara(?=[\s>])[\s\S]*?<\/m:oMathPara>|<m:oMath(?=[\s>])[\s\S]*?<\/m:oMath>/g, m;
+			while ((m = re.exec(xml))) { var disp = /^<m:oMathPara/.test(m[0]); (disp ? m[0].match(/<m:oMath(?=[\s>])[\s\S]*?<\/m:oMath>/g) || [] : [m[0]]).forEach(function (o) { list.push(disp ? "<m:oMathPara>" + o + "</m:oMathPara>" : o); }); }
+			if (list.length !== ms.length) return;
+			[].forEach.call(ms, function (el, i) { try { var t = document.createElement("template"); t.innerHTML = OMML.toMathML(list[i]); var nm = t.content.firstElementChild; if (nm && nm.nodeName.toLowerCase() === "math") { if (/^<m:oMathPara/.test(list[i])) { nm.setAttribute("display", "block"); nm.style.margin = "0.4em 0"; } el.replaceWith(nm); } } catch (e) { /* keep docx-preview's */ } });
+		}).catch(function () { });
+	}
+	var eqDlg = null, eqTarget = null, eqRange = null;
+	function openEq(span) {
+		if (!cur || cur.mode !== "edit") return;
+		eqTarget = span; eqRange = null;
+		var s0 = getSelection(); if (!span && s0.rangeCount && inEditor(s0.anchorNode)) eqRange = s0.getRangeAt(0).cloneRange();
+		if (!eqDlg) {
+			eqDlg = document.createElement("div"); eqDlg.className = "dx-eqdlg"; eqDlg.hidden = true;
+			eqDlg.innerHTML = '<div class="dx-eqbox" role="dialog" aria-modal="true" aria-label="Equation"><div class="dx-eqh"><b>Equation</b> <span class="dx-eqsub">type it in LaTeX</span><button type="button" class="dx-ib" data-eq="x" aria-label="Close">&#10005;</button></div>' +
+				'<textarea class="dx-in dx-eqtex" rows="4" spellcheck="false" placeholder="e.g.  a^2 + b^2 = c^2   or   \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}"></textarea>' +
+				'<div class="dx-eqchips">' + [["Fraction", "\\frac{a}{b}"], ["Root", "\\sqrt{x}"], ["Power", "x^{2}"], ["Index", "x_{i}"], ["Sum", "\\sum_{i=1}^{n}"], ["Integral", "\\int_{a}^{b}"], ["Limit", "\\lim_{x \\to 0}"], ["Matrix", "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"], ["Aligned", "\\begin{aligned} a &= b \\\\ &= c \\end{aligned}"], ["α β π", "\\alpha \\beta \\pi"], ["≤ ≠ ≈", "\\le \\ne \\approx"], ["→ ⟹", "\\to \\Longrightarrow"]].map(function (c) { return '<button type="button" class="dx-btn" data-ins="' + esc(c[1]) + '">' + esc(c[0]) + "</button>"; }).join("") + "</div>" +
+				'<label class="dx-chk"><input type="checkbox" class="dx-eqdisp"> On its own line (centred)</label>' +
+				'<div class="dx-eqprev" aria-live="polite"></div><p class="dx-hint dx-eqmsg"></p>' +
+				'<div class="dx-eqf"><a href="/latex" target="_blank" rel="noopener" class="dx-eqlink">More symbols: MES LaTeX Render &#8599;</a><span class="dx-grow"></span><button type="button" class="dx-btn" data-eq="del">Delete equation</button><button type="button" class="dx-btn" data-eq="x">Cancel</button><button type="button" class="dx-btn dx-btn--primary" data-eq="ok">Insert</button></div></div>';
+			root.appendChild(eqDlg);
+			var ta = eqDlg.querySelector(".dx-eqtex"), prev = eqDlg.querySelector(".dx-eqprev"), msg = eqDlg.querySelector(".dx-eqmsg"), t = 0;
+			eqDlg.preview = function () {
+				var tex = ta.value.trim(); eqDlg.mml = ""; if (!tex) { prev.innerHTML = ""; msg.textContent = ""; return; }
+				msg.textContent = "Loading the equation maker…";
+				mathJax().then(function (M) {
+					var disp = eqDlg.querySelector(".dx-eqdisp").checked, mml = M.tex2mml(tex, { display: disp });
+					var err = /<merror/.test(mml) ? (/<mtext[^>]*>([^<]*)<\/mtext>/.exec(mml) || [0, "Check the LaTeX"])[1] : "";
+					prev.innerHTML = err ? "" : mml; msg.textContent = err ? "Not quite: " + err : ""; msg.classList.toggle("is-err", !!err); eqDlg.mml = err ? "" : mml;
+				}, function () { msg.textContent = "The equation maker could not load. Check your connection."; });
+			};
+			ta.addEventListener("input", function () { clearTimeout(t); t = setTimeout(eqDlg.preview, 220); });
+			ta.addEventListener("keydown", function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); eqDlg.querySelector('[data-eq="ok"]').click(); } if (e.key === "Escape") { e.preventDefault(); closeEq(); } });
+			eqDlg.querySelector(".dx-eqdisp").onchange = eqDlg.preview;
+			eqDlg.addEventListener("click", function (e) {
+				var b = e.target.closest("button"); if (!b) { if (e.target === eqDlg) closeEq(); return; }
+				if (b.dataset.ins != null) { var a = ta.selectionStart, z = ta.selectionEnd; ta.setRangeText(b.dataset.ins, a, z, "end"); ta.focus(); eqDlg.preview(); return; }
+				if (b.dataset.eq === "x") closeEq();
+				else if (b.dataset.eq === "del") { if (eqTarget) { eqTarget.remove(); markDirty(); } closeEq(); }
+				else if (b.dataset.eq === "ok") insertEq();
+			});
+		}
+		var ta2 = eqDlg.querySelector(".dx-eqtex");
+		ta2.value = span ? span.getAttribute("data-tex") || "" : (eqRange && !eqRange.collapsed ? String(eqRange) : "");
+		eqDlg.querySelector(".dx-eqdisp").checked = span ? span.classList.contains("dx-eqd") : false;
+		eqDlg.querySelector('[data-eq="ok"]').textContent = span ? "Update" : "Insert";
+		eqDlg.querySelector('[data-eq="del"]').hidden = !span;
+		eqDlg.querySelector(".dx-eqsub").textContent = span && !span.getAttribute("data-tex") ? "this one came from the file: type LaTeX to replace it" : "type it in LaTeX";
+		eqDlg.querySelector(".dx-eqprev").innerHTML = span && !span.getAttribute("data-tex") ? span.innerHTML : "";
+		eqDlg.hidden = false; setTimeout(function () { ta2.focus(); ta2.select(); }, 20);
+		if (ta2.value) eqDlg.preview(); else mathJax().catch(function () {});
+		eqDlg.querySelector(".dx-eqlink").href = "/latex" + (ta2.value ? "?tex=" + encodeURIComponent(ta2.value) : "");
+	}
+	function closeEq() { if (eqDlg) eqDlg.hidden = true; eqTarget = null; }
+	function insertEq() {
+		var tex = eqDlg.querySelector(".dx-eqtex").value.trim(), disp = eqDlg.querySelector(".dx-eqdisp").checked;
+		if (!tex) return;
+		mathJax().then(function (M) {
+			var mml = M.tex2mml(tex, { display: disp }); if (/<merror/.test(mml)) { eqDlg.preview(); return; }
+			if (!OMML) { toast("The equation helper did not load."); return; }
+			var sp = eqSpan(OMML.fromMathML(mml, disp), tex, mml);
+			if (eqTarget) eqTarget.replaceWith(sp);
+			else {
+				var ed = cur.editEl, r = eqRange;
+				if (!r || !ed.contains(r.startContainer)) { r = document.createRange(); r.selectNodeContents(ed.lastElementChild || ed); r.collapse(false); }
+				r.deleteContents();
+				var blk = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentNode; blk = blk.closest ? blk.closest("p,h1,h2,h3,h4,h5,h6") : null;
+				var after = document.createTextNode("\u00a0");
+				if (disp && blk && ed.contains(blk) && blk.textContent.trim()) { var np = document.createElement("p"); np.appendChild(sp); blk.after(np); var np2 = document.createElement("p"); np2.appendChild(after); np.after(np2); }   // a display equation gets its own paragraph
+				else { r.insertNode(sp); sp.after(after); }
+				var s1 = getSelection(); s1.removeAllRanges(); var r2 = document.createRange(); r2.setStartAfter(after); s1.addRange(r2);
+			}
+			markDirty(); closeEq();
+		});
+	}
+
 	/* ---------- building the edited .docx ---------- */
 	function editModel(d) {
 		var clone = d.editEl.cloneNode(true), live = d.editEl.querySelectorAll("img"), imgs = clone.querySelectorAll("img"), text = Math.round((d.page.w - d.page.left - d.page.right) / 15);
@@ -1346,8 +1474,8 @@ var MESDocx = (function () {
 	/* ---------- export / download / print ---------- */
 	function currentModel(d) {
 		if (d.editEl) return editModel(d);
-		return libMammoth().then(function () { return window.mammoth.convertToHtml({ arrayBuffer: d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength) }, { styleMap: STYLE_MAP }); })
-			.then(function (res) { var box = document.createElement("div"); box.innerHTML = cleanHtml(res.value); return D.fromDom(box); });
+		return mammothHtml(d)
+			.then(function (res) { var box = document.createElement("div"); box.innerHTML = cleanHtml(res.value); fillEqs(d, box); return D.fromDom(box); });
 	}
 	var menu = $("dx-menu"), dlBtn = $("dx-dl");
 	dlBtn.onclick = function (e) { e.stopPropagation(); var open = menu.hidden; menu.hidden = !open; dlBtn.setAttribute("aria-expanded", String(open)); if (open) { $("dx-dl-docx-s").textContent = cur && (cur.everEdited || cur.blank) ? "your edited version" : "the document as opened"; $("dx-dl-orig").hidden = !(cur && cur.bytes && cur.everEdited); var f = menu.querySelector("button:not([hidden])"); if (f) f.focus(); } };

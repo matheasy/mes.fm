@@ -231,7 +231,27 @@
   /* find (2026-11-23): start offset of every line (\n, \r\n or \r) and the line + column of an offset */
   function lineStarts(t) { var out = [0], re = /\r\n|\r|\n/g, m; t = String(t || ""); while ((m = re.exec(t))) out.push(m.index + m[0].length); return out; }
   function lineCol(starts, off) { var lo = 0, hi = starts.length - 1; while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (starts[mid] <= off) lo = mid; else hi = mid - 1; } return { line: lo, col: off - starts[lo] }; }
-  var api = { lineStarts: lineStarts, lineCol: lineCol, decode: decode, info: info, extOf: extOf, rtfToHtml: rtfToHtml, parseCsv: parseCsv, guessSep: guessSep, stats: stats, shouldUnwrap: shouldUnwrap, paragraphs: paragraphs, linkify: linkify, splitHtmlLines: splitHtmlLines, escapeHtml: escapeHtml, isJson: isJson, LANG: LANG };
+  /* TeX in Markdown (2026-11-23, same rules as MES AI's answers): code (``` fences, `inline`) is left alone; $$..$$ and \[..\] = display,
+     \(..\) and $..$ = inline ($ only when no space sits just inside the signs and no letter / digit follows, so $5 and $10 stay money).
+     pullMath(md) -> {text with MESTEX<n>Z tokens, list: [{tex, d}]}; putMath(html, list, esc) puts <span class="tx-tex"> back. */
+  function pullMath(src) {
+    var list = [], tok = function (tex, d) { list.push({ tex: tex.trim(), d: d }); return "MESTEX" + (list.length - 1) + "Z"; };
+    var parts = String(src).split(/(```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]+`)/);
+    for (var i = 0; i < parts.length; i += 2) {
+      parts[i] = parts[i]
+        .replace(/\$\$([\s\S]+?)\$\$/g, function (m, t) { return tok(t, true); })
+        .replace(/\\\[([\s\S]+?)\\\]/g, function (m, t) { return tok(t, true); })
+        .replace(/\\\(([\s\S]+?)\\\)/g, function (m, t) { return tok(t, false); })
+        .replace(/(^|[^\\$\w])\$(?![\s$])([^$\n]*?[^\s\\$])\$(?![\w$])/g, function (m, pre, t) { return pre + tok(t, false); });
+    }
+    return { text: parts.join(""), list: list };
+  }
+  function putMath(html, list) {
+    function one(x, d) { return d ? '<div class="tx-tex tx-texd" data-tex="' + escapeHtml(x.tex) + '">\\[' + escapeHtml(x.tex) + "\\]</div>" : '<span class="tx-tex tx-texi" data-tex="' + escapeHtml(x.tex) + '">\\(' + escapeHtml(x.tex) + "\\)</span>"; }
+    return String(html).replace(/<p>\s*MESTEX(\d+)Z\s*<\/p>/g, function (m, n) { var x = list[+n]; return x ? one(x, true) : m; })
+      .replace(/MESTEX(\d+)Z/g, function (m, n) { var x = list[+n]; return x ? one(x, x.d) : m; });
+  }
+  var api = { pullMath: pullMath, putMath: putMath, lineStarts: lineStarts, lineCol: lineCol, decode: decode, info: info, extOf: extOf, rtfToHtml: rtfToHtml, parseCsv: parseCsv, guessSep: guessSep, stats: stats, shouldUnwrap: shouldUnwrap, paragraphs: paragraphs, linkify: linkify, splitHtmlLines: splitHtmlLines, escapeHtml: escapeHtml, isJson: isJson, LANG: LANG };
   root.MESText = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -378,8 +398,11 @@
 			readV.innerHTML = '<p class="tx-morenote">Formatting…</p>';
 			return Promise.all([loadScript(LIB.purify), k === "md" ? loadScript(LIB.marked) : null]).then(function () {
 				if (my !== renderGen) return;
-				var html = k === "md" ? window.marked.parse(t, { gfm: true, breaks: false }) : t.replace(/^[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*$/i, "");
-				readV.innerHTML = purify(html); fixLinks(readV);
+				var pm = k === "md" ? T.pullMath(t) : null;
+				var html = k === "md" ? window.marked.parse(pm.text, { gfm: true, breaks: false }) : t.replace(/^[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*$/i, "");
+				html = purify(html); if (pm && pm.list.length) html = T.putMath(html, pm.list);
+				readV.innerHTML = html; fixLinks(readV);
+				if (pm && pm.list.length) typesetTex(readV, my);
 				readV.querySelectorAll("table").forEach(function (tb) { var w = document.createElement("div"); w.className = "tx-tablewrap"; tb.parentNode.insertBefore(w, tb); w.appendChild(tb); });
 			});
 		}
@@ -405,6 +428,18 @@
 		readV.innerHTML = html || "<p>(Empty file)</p>";
 		if (art && S.font === "sans") readV.style.fontFamily = "ui-monospace, Menlo, Consolas, monospace"; else readV.style.fontFamily = "";
 		return Promise.resolve();
+	}
+	/* TeX in Markdown ($..$, $$..$$, \(..\), \[..\]) is typeset with MathJax 3 (SVG, cdnjs, loaded only when a file has some) */
+	var MJ = null;
+	function mathJax() {
+		if (MJ) return MJ;
+		if (window.MathJax && window.MathJax.typesetPromise) return (MJ = Promise.resolve(window.MathJax));
+		window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]], processEscapes: true }, svg: { fontCache: "local" }, options: { processHtmlClass: "tx-tex", ignoreHtmlClass: ".*" }, startup: { typeset: false } };
+		MJ = loadScript("https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js").then(function () { return window.MathJax.startup.promise; }).then(function () { return window.MathJax; }, function (e) { MJ = null; throw e; });
+		return MJ;
+	}
+	function typesetTex(el, my) {
+		mathJax().then(function (M) { if (my !== renderGen) return; var els = [].slice.call(el.querySelectorAll(".tx-tex")); return M.typesetPromise(els).then(function () { els.forEach(function (e) { e.classList.add("is-done"); }); if (bar && bar.isOpen()) bar.refresh(true); }); }).catch(function () { /* the TeX stays readable as text */ });
 	}
 	function highlight(src, lang) {
 		if (!src || src.length > 1.5e6) return Promise.resolve(null);

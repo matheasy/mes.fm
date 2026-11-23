@@ -275,6 +275,8 @@ var MESDocx = (function () {
 			var tag = (n.nodeName || "").toUpperCase();
 			if (SKIP[tag]) return;
 			if (tag === "BR") { open(ctx).runs.push({ br: true }); return; }
+			// a Word equation kept from the file or made with the equation editor (span.dx-eq data-omml = the OMML, data-tex = its LaTeX)
+			if (hasClass(n, "dx-eq")) { var om = gattr(n, "data-omml") || ""; if (/^<m:oMath(Para)?[\s>]/.test(om)) open(ctx).runs.push({ eq: om, tex: gattr(n, "data-tex") || "" }); return; }
 			if (tag === "IMG") {
 				var src = gattr(n, "src") || ""; if (!src) return;
 				var w = +(gattr(n, "width") || n.naturalWidth || 0), h = +(gattr(n, "height") || n.naturalHeight || 0);
@@ -346,7 +348,7 @@ var MESDocx = (function () {
 	function same(a, b) { var ks = ["b", "i", "u", "s", "sup", "sub", "code", "mark", "href"]; for (var i = 0; i < ks.length; i++) if ((a[ks[i]] || null) !== (b[ks[i]] || null)) return false; return true; }
 
 	/* ---------- block model -> .docx ---------- */
-	var NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+	var NS = 'xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
 	var XMLH = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
 	function w3c(d) { return (d || new Date()).toISOString().replace(/\.\d+Z$/, "Z"); }
 
@@ -408,7 +410,7 @@ var MESDocx = (function () {
 			}
 			return out;
 		}
-		function one(r) { return r.br ? "<w:r><w:br/></w:r>" : r.img ? imgRun(r) : r.text != null ? textRun(r) : ""; }
+		function one(r) { return r.br ? "<w:r><w:br/></w:r>" : r.eq ? r.eq : r.img ? imgRun(r) : r.text != null ? textRun(r) : ""; }
 		function para(b, cellAlign) {
 			var pp = "";
 			var style = b.list ? "ListParagraph" : { Normal: "", Title: "Title", Quote: "Quote", Code: "CodeBlock" }[b.style];
@@ -540,7 +542,7 @@ var MESDocx = (function () {
 	}
 
 	/* ---------- other formats ---------- */
-	function plainRuns(rs) { return (rs || []).map(function (r) { return r.br ? "\n" : r.img ? (r.img.alt ? "[" + r.img.alt + "]" : "[picture]") : r.text || ""; }).join(""); }
+	function plainRuns(rs) { return (rs || []).map(function (r) { return r.br ? "\n" : r.eq ? (r.tex ? "$" + r.tex + "$" : "[equation]") : r.img ? (r.img.alt ? "[" + r.img.alt + "]" : "[picture]") : r.text || ""; }).join(""); }
 	function toText(model) {
 		var out = [], prevList = false;
 		function walk(bl, indent) {
@@ -578,6 +580,7 @@ var MESDocx = (function () {
 		var s = "";
 		(rs || []).forEach(function (r) {
 			if (r.br) { s += "  \n"; return; }
+			if (r.eq) { s += r.tex ? (/^<m:oMathPara/.test(r.eq) ? "\n\n$$" + r.tex + "$$\n\n" : "$" + r.tex + "$") : "[equation]"; return; }
 			if (r.img) { var d = dataUri(r.img.src); s += "![" + mdEsc(r.img.alt || "") + "](" + (d ? "image-" + (++imgN.n) + "." + (IMG_EXT[d.mime] || "png") : r.img.src) + ")"; return; }
 			var t = r.code ? "`" + r.text.replace(/`/g, "\u02CB") + "`" : mdEsc(r.text);
 			var lead = /^\s*/.exec(t)[0], trail = /\s*$/.exec(t)[0]; t = t.trim();
@@ -627,6 +630,7 @@ var MESDocx = (function () {
 		var s = "";
 		(rs || []).forEach(function (r) {
 			if (r.br) { s += "<br>"; return; }
+			if (r.eq) { s += r.tex ? "\\(" + htmlEsc(r.tex) + "\\)" : "[equation]"; return; }
 			if (r.img) { var src = /^(data:image\/|https?:)/i.test(r.img.src) ? r.img.src : ""; if (src) s += '<img src="' + htmlEsc(src) + '" alt="' + htmlEsc(r.img.alt) + '"' + (r.img.w ? ' width="' + Math.round(r.img.w) + '"' : "") + ">"; return; }
 			var t = htmlEsc(r.text);
 			if (r.code) t = "<code>" + t + "</code>";

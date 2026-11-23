@@ -128,5 +128,16 @@ eq(D.modelStats(model), { paragraphs: 20, headings: 2, lists: 6, tables: 1, imag
 eq([D.baseName("C:\\x\\Report.final.docx"), D.fmtBytes(1536), D.minutes(0.5), D.minutes(75)], ["Report.final", "1.5 KB", "30 s", "1 h 15 min"], "names + formats");
 eq(D.dataUri(png).data.length, 77, "base64 decode");
 
+// equations (2026-11-23): span.dx-eq keeps the file's OMML through Edit mode and is written back as is
+(function () {
+	var om = '<m:oMath><m:f><m:num><m:r><m:t>a</m:t></m:r></m:num><m:den><m:r><m:t>b</m:t></m:r></m:den></m:f></m:oMath>';
+	var m2 = D.fromDom(el("div", {}, el("p", {}, "x = ", el("span", { "class": "dx-eq", "data-omml": om, "data-tex": "\\frac{a}{b}" }, "a/b"), " ok"), el("p", {}, el("span", { "class": "dx-eq", "data-omml": "<w:r>bad</w:r>" }))));
+	eq(m2[0].runs.filter(function (r) { return r.eq; }).length, 1, "equation run kept");
+	eq(m2.length, 2, "an equation span with bad data is dropped (empty paragraph kept)");
+	var doc = new TextDecoder().decode(D.toDocxParts(m2, { title: "E", page: ps }).filter(function (f) { return f.name === "word/document.xml"; })[0].data);
+	ok(doc.indexOf(om) > 0 && /xmlns:m="http:\/\/schemas.openxmlformats.org\/officeDocument\/2006\/math"/.test(doc), "OMML written with the math namespace");
+	ok(doc.indexOf("<w:r>bad</w:r>") < 0, "bad data never written");
+	ok(/\$\\frac\{a\}\{b\}\$/.test(D.toMarkdown(m2)), "Markdown gets the LaTeX");
+})();
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

@@ -231,7 +231,27 @@
   /* find (2026-11-23): start offset of every line (\n, \r\n or \r) and the line + column of an offset */
   function lineStarts(t) { var out = [0], re = /\r\n|\r|\n/g, m; t = String(t || ""); while ((m = re.exec(t))) out.push(m.index + m[0].length); return out; }
   function lineCol(starts, off) { var lo = 0, hi = starts.length - 1; while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (starts[mid] <= off) lo = mid; else hi = mid - 1; } return { line: lo, col: off - starts[lo] }; }
-  var api = { lineStarts: lineStarts, lineCol: lineCol, decode: decode, info: info, extOf: extOf, rtfToHtml: rtfToHtml, parseCsv: parseCsv, guessSep: guessSep, stats: stats, shouldUnwrap: shouldUnwrap, paragraphs: paragraphs, linkify: linkify, splitHtmlLines: splitHtmlLines, escapeHtml: escapeHtml, isJson: isJson, LANG: LANG };
+  /* TeX in Markdown (2026-11-23, same rules as MES AI's answers): code (``` fences, `inline`) is left alone; $$..$$ and \[..\] = display,
+     \(..\) and $..$ = inline ($ only when no space sits just inside the signs and no letter / digit follows, so $5 and $10 stay money).
+     pullMath(md) -> {text with MESTEX<n>Z tokens, list: [{tex, d}]}; putMath(html, list, esc) puts <span class="tx-tex"> back. */
+  function pullMath(src) {
+    var list = [], tok = function (tex, d) { list.push({ tex: tex.trim(), d: d }); return "MESTEX" + (list.length - 1) + "Z"; };
+    var parts = String(src).split(/(```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]+`)/);
+    for (var i = 0; i < parts.length; i += 2) {
+      parts[i] = parts[i]
+        .replace(/\$\$([\s\S]+?)\$\$/g, function (m, t) { return tok(t, true); })
+        .replace(/\\\[([\s\S]+?)\\\]/g, function (m, t) { return tok(t, true); })
+        .replace(/\\\(([\s\S]+?)\\\)/g, function (m, t) { return tok(t, false); })
+        .replace(/(^|[^\\$\w])\$(?![\s$])([^$\n]*?[^\s\\$])\$(?![\w$])/g, function (m, pre, t) { return pre + tok(t, false); });
+    }
+    return { text: parts.join(""), list: list };
+  }
+  function putMath(html, list) {
+    function one(x, d) { return d ? '<div class="tx-tex tx-texd" data-tex="' + escapeHtml(x.tex) + '">\\[' + escapeHtml(x.tex) + "\\]</div>" : '<span class="tx-tex tx-texi" data-tex="' + escapeHtml(x.tex) + '">\\(' + escapeHtml(x.tex) + "\\)</span>"; }
+    return String(html).replace(/<p>\s*MESTEX(\d+)Z\s*<\/p>/g, function (m, n) { var x = list[+n]; return x ? one(x, true) : m; })
+      .replace(/MESTEX(\d+)Z/g, function (m, n) { var x = list[+n]; return x ? one(x, x.d) : m; });
+  }
+  var api = { pullMath: pullMath, putMath: putMath, lineStarts: lineStarts, lineCol: lineCol, decode: decode, info: info, extOf: extOf, rtfToHtml: rtfToHtml, parseCsv: parseCsv, guessSep: guessSep, stats: stats, shouldUnwrap: shouldUnwrap, paragraphs: paragraphs, linkify: linkify, splitHtmlLines: splitHtmlLines, escapeHtml: escapeHtml, isJson: isJson, LANG: LANG };
   root.MESText = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -36,4 +36,8 @@ ok(L.kindOf("a.docx") === "docx" && L.kindOf("notes.md") === "text" && L.kindOf(
 ok(L.fix("https://docs.google.com/document/d/1AbCdEfGhIjKlMn/edit", "text").endsWith("format=txt"), "google doc txt");
 ok(L.nameFrom("https://x.com/f/notes.md", "text") === "notes.md" && L.nameFrom("https://x.com/get.php", "text") === "get.txt", "text names");
 { const ls = T.lineStarts("ab\r\ncd\nef\rg"); ok(JSON.stringify(ls) === "[0,4,7,10]", "lineStarts mixed endings"); const lc = T.lineCol(ls, 8); ok(lc.line === 2 && lc.col === 1, "lineCol"); ok(T.lineCol(ls, 0).line === 0 && T.lineCol([0], 5).col === 5, "lineCol edges"); }
+{ const pm = T.pullMath("Price $5 and $10. Area $a^2+b^2=c^2$ and\n$$\\frac{a}{b}$$\nalso \\(x\\) and \\[y\\] but `$code$`");
+  ok(pm.list.length === 4 && pm.list[3].tex === "a^2+b^2=c^2" && pm.list[0].d && pm.list[1].d && !pm.list[2].d && !pm.list[3].d, "pullMath finds 4, keeps money and code");
+  ok(/\$5 and \$10/.test(pm.text) && /`\$code\$`/.test(pm.text), "pullMath leaves money and code");
+  const h = T.putMath("<p>MESTEX0Z</p><p>x MESTEX3Z</p>", pm.list); ok(/^<div class="tx-tex tx-texd"/.test(h) && /<span class="tx-tex tx-texi" data-tex="a\^2\+b\^2=c\^2">/.test(h), "putMath"); ok(T.putMath("MESTEX0Z", [{ tex: "<b>", d: false }]).indexOf("<b>") < 0, "putMath escapes"); }
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

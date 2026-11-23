@@ -140,8 +140,11 @@
 			readV.innerHTML = '<p class="tx-morenote">Formatting…</p>';
 			return Promise.all([loadScript(LIB.purify), k === "md" ? loadScript(LIB.marked) : null]).then(function () {
 				if (my !== renderGen) return;
-				var html = k === "md" ? window.marked.parse(t, { gfm: true, breaks: false }) : t.replace(/^[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*$/i, "");
-				readV.innerHTML = purify(html); fixLinks(readV);
+				var pm = k === "md" ? T.pullMath(t) : null;
+				var html = k === "md" ? window.marked.parse(pm.text, { gfm: true, breaks: false }) : t.replace(/^[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*$/i, "");
+				html = purify(html); if (pm && pm.list.length) html = T.putMath(html, pm.list);
+				readV.innerHTML = html; fixLinks(readV);
+				if (pm && pm.list.length) typesetTex(readV, my);
 				readV.querySelectorAll("table").forEach(function (tb) { var w = document.createElement("div"); w.className = "tx-tablewrap"; tb.parentNode.insertBefore(w, tb); w.appendChild(tb); });
 			});
 		}
@@ -167,6 +170,18 @@
 		readV.innerHTML = html || "<p>(Empty file)</p>";
 		if (art && S.font === "sans") readV.style.fontFamily = "ui-monospace, Menlo, Consolas, monospace"; else readV.style.fontFamily = "";
 		return Promise.resolve();
+	}
+	/* TeX in Markdown ($..$, $$..$$, \(..\), \[..\]) is typeset with MathJax 3 (SVG, cdnjs, loaded only when a file has some) */
+	var MJ = null;
+	function mathJax() {
+		if (MJ) return MJ;
+		if (window.MathJax && window.MathJax.typesetPromise) return (MJ = Promise.resolve(window.MathJax));
+		window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]], processEscapes: true }, svg: { fontCache: "local" }, options: { processHtmlClass: "tx-tex", ignoreHtmlClass: ".*" }, startup: { typeset: false } };
+		MJ = loadScript("https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js").then(function () { return window.MathJax.startup.promise; }).then(function () { return window.MathJax; }, function (e) { MJ = null; throw e; });
+		return MJ;
+	}
+	function typesetTex(el, my) {
+		mathJax().then(function (M) { if (my !== renderGen) return; var els = [].slice.call(el.querySelectorAll(".tx-tex")); return M.typesetPromise(els).then(function () { els.forEach(function (e) { e.classList.add("is-done"); }); if (bar && bar.isOpen()) bar.refresh(true); }); }).catch(function () { /* the TeX stays readable as text */ });
 	}
 	function highlight(src, lang) {
 		if (!src || src.length > 1.5e6) return Promise.resolve(null);
