@@ -62,6 +62,7 @@
 				<div class="ai-inrow">
 				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="{{tr:Ask anything: code, research, math, writing…  (Ctrl+Enter sends)}}"></textarea>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">{{tr:Pay &amp; send}}</button>
+				<button type="button" class="tu-btn ai-stop" id="ai-stop" hidden title="{{tr:Stop the answer here}}">{{tr:■ Stop}}</button>
 				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="{{tr:Add pictures, PDFs or text files (or drop / paste them here)}}">{{tr:📎 Add files}}</button>
@@ -74,6 +75,7 @@
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="{{tr:Model info and what this chat has cost}}">ⓘ</button>
 				</div>
+				<div class="ai-local" id="ai-local" aria-live="polite" hidden></div>
 				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>

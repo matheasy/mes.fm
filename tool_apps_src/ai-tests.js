@@ -13,6 +13,41 @@ function ok(c, m) { eq(!!c, true, m); }
 eq(fs.readFileSync(path.join(__dirname, "ai/lib.js"), "utf8") === fs.readFileSync(path.join(__dirname, "../mes.fm/api/_ai-lib.js"), "utf8"), true,
   "mes.fm/api/_ai-lib.js is a byte copy of tool_apps_src/ai/lib.js (cp it)");
 
+/* ---------- free models on this device (WebLLM, prov "local") ---------- */
+const LOCALS = Object.keys(A.MODELS).filter((k) => A.isLocal(k));
+eq(LOCALS, ["local1b", "localqwen", "local3b"], "three local models, smallest first");
+LOCALS.forEach((k) => {
+  const m = A.MODELS[k];
+  ok(/-q4f16_1-MLC$/.test(m.id) && m.id32 === m.id.replace("q4f16_1", "q4f32_1"), k + ": WebLLM prebuilt ids (f16 + f32 build)");
+  ok(m.text && !m.free && m.inUsd === 0 && m.outUsd === 0, k + ": text only, not a free-message model, no price");
+  ok(m.mb > 500 && m.vram > 0 && m.vram32 > m.vram, k + ": download size + memory");
+  ok(Object.keys(A.LENGTHS).every((l) => m.caps[l] > 0 && m.caps[l] < A.LOCAL.ctx / 2), k + ": answers fit the small memory");
+  ok(A.systemFor(k).length < 400 && A.systemFor(k).indexOf(m.name) > 0, k + ": short system prompt naming the model");
+});
+ok(LOCALS.every((k, i) => i === 0 || A.MODELS[k].mb > A.MODELS[LOCALS[i - 1]].mb), "sizes grow");
+ok(/^https:\/\/cdn\.jsdelivr\.net\/npm\/@mlc-ai\/web-llm@\d+\.\d+\.\d+\/lib\/index\.js$/.test(A.LOCAL.url) && A.LOCAL.url.indexOf(A.LOCAL.ver) > 0, "WebLLM pinned to an exact version");
+eq(A.localCheck("local1b", {}).why, "nogpu", "no WebGPU");
+eq(A.localCheck("local1b", { gpu: true }).why, "noadapter", "WebGPU but no adapter");
+eq(A.localCheck("local1b", { gpu: true, adapter: true, f16: true, maxBuf: 64 * 1048576 }).why, "small", "tiny GPU buffer");
+let lc = A.localCheck("local1b", { gpu: true, adapter: true, f16: true, mem: 8 });
+eq([lc.ok, lc.id, lc.f32], [true, "Llama-3.2-1B-Instruct-q4f16_1-MLC", false], "f16 build when shader-f16 exists");
+lc = A.localCheck("localqwen", { gpu: true, adapter: true, f16: false, mem: null });
+eq([lc.ok, lc.id, lc.f32], [true, "Qwen3-1.7B-q4f32_1-MLC", true], "f32 build without shader-f16; unknown memory is not a no");
+eq(A.localCheck("local3b", { gpu: true, adapter: true, f16: true, mem: 4 }).why, "lowmem", "3B needs more than a 4 GB device");
+eq(A.localCheck("local1b", { gpu: true, adapter: true, f16: true, mem: 2 }).ok, true, "1B runs on a 2 GB device");
+eq(A.localCheck("sonnet", { gpu: true, adapter: true }).ok, false, "not a local model");
+ok(Object.keys(A.LOCAL_WHY).length === 4, "every reason has a text");
+const longMsgs = []; for (let i = 0; i < 40; i++) longMsgs.push({ role: i % 2 ? "assistant" : "user", content: "word ".repeat(300) });
+longMsgs.push({ role: "user", content: "last question" });
+const ltr = A.localTrim("sys", longMsgs, 900);
+ok(ltr && ltr.messages[0].role === "user" && ltr.messages[ltr.messages.length - 1].content === "last question" && ltr.dropped > 0, "trim drops the oldest exchanges, keeps the last question");
+ok(ltr.messages.reduce((t, m) => t + A.estimateTokens(m.content) + 4, 0) + A.estimateTokens("sys") + 900 <= A.LOCAL.ctx, "trimmed chat fits the model's memory");
+eq(A.localTrim("sys", [{ role: "user", content: "hi" }], 400), { messages: [{ role: "user", content: "hi" }], dropped: 0 }, "short chat unchanged");
+eq(A.localTrim("sys", [{ role: "user", content: "x".repeat(20000) }], 400), null, "one message too long -> null");
+eq(A.splitThink("<think>let me see</think>\n\nHello"), { text: "Hello", think: false }, "finished thinking is hidden");
+eq(A.splitThink("<think>still going"), { text: "", think: true }, "open thinking block");
+eq(A.splitThink("Plain answer"), { text: "Plain answer", think: false }, "no thinking");
+
 /* ---------- prices ---------- */
 eq(A.MARGIN, 1.5, "margin");
 eq(A.hbdFromUsd(0), 0.001, "minimum 0.001 HBD");
@@ -207,6 +242,11 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   r = mk("POST", { op: "quote", acct: "alice", kind: "chat", model: "sonnet", len: "medium", messages: [{ role: "user", content: "Hi" }] });
   await e.h(r.req, r.res);
   eq([r.res.statusCode, J(r.res).off], [503, true], "quote without a key: not switched on yet");
+  r = mk("POST", { op: "quote", acct: "alice", kind: "chat", model: "local1b", len: "short", messages: [{ role: "user", content: "Hi" }] });
+  await setup().h(r.req, r.res);
+  eq(r.res.statusCode, 400, "a local model is never quoted or sent to a company");
+  r = mk("GET", null, { op: "status" }); await setup().h(r.req, r.res);
+  ok(J(r.res).models.every((x) => x.prov !== "local"), "status lists only server models");
 
   e = setup();
   r = mk("POST", { op: "quote", acct: "Alice!", kind: "chat", model: "sonnet", len: "medium", messages: [{ role: "user", content: "Hi" }] });

@@ -173,6 +173,7 @@ function makeHandler(deps = {}) {
     } else {
       const m = A.MODELS[b.model];
       if (!m) return send(res, 400, { error: 'Pick a model.' });
+      if (m.prov === 'local') return send(res, 400, { error: 'This model runs on your own device: nothing is sent to mes.fm.' });
       if (!keyOf(m.prov)) return send(res, 503, { off: true, error: m.name + ' is coming soon.' });
       if (!m.caps[b.len]) return send(res, 400, { error: 'Pick an answer length.' });
       const err = A.checkMessages(b.messages) || A.checkTextOnly(b.model, b.messages);
@@ -541,7 +542,7 @@ function makeHandler(deps = {}) {
           prov: { anthropic: !!env.ANTHROPIC_API_KEY, openai: !!env.OPENAI_API_KEY, xai: !!env.XAI_API_KEY, openrouter: !!env.OPENROUTER_API_KEY },
           free: { on: freeOn(), perDay: A.FREE.perDay },
           margin: A.MARGIN, checked: A.PRICES_CHECKED,
-          models: Object.keys(A.MODELS).map((k) => ({ key: k, prov: A.MODELS[k].prov, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
+          models: Object.keys(A.MODELS).filter((k) => A.MODELS[k].prov !== 'local').map((k) => ({ key: k, prov: A.MODELS[k].prov, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
           imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
         });
       }

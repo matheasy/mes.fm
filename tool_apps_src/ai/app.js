@@ -20,10 +20,13 @@
 	var status = { chat: mock, image: mock, video: mock, known: mock, prov: { anthropic: true, openai: true, xai: true, openrouter: true } };
 	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; status.prov = { anthropic: true, openai: false, xai: false }; }
 	// is this company's key set? (unknown until the status call answers: then everything shows as on)
-	function provOn(p) { return !status.known || !status.prov || !!status.prov[p]; }
+	function provOn(p) { if (p === "local") return true; return !status.known || !status.prov || !!status.prov[p]; }
 	var busy = false;
 	// free daily messages (A.FREE): on / left come from /api/ai?op=free&acct=; in the local preview a counter in localStorage
 	var FREEST = { on: mock, perDay: A.FREE.perDay, left: null };
+	// the free model on this device (local.js = window.AILocal): device check, files already in this browser, loading progress
+	var LOCST = { env: null, cached: {}, loaded: null, loading: null, prog: null, gen: false, err: "", want: false };
+	var ATTACH_T = null;
 
 	/* ---------- saved state ---------- */
 	function load() { try { return JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { return null; } }
@@ -269,7 +272,8 @@
 	function renderMsg(m, i) {
 		var mine = m.role === "user";
 		var meta = "";
-		if (mine && m.free) meta = '<span class="ai-meta">' + T("🎁 free") + " · " + esc(modelName(m.model)) + "</span>";
+		if (mine && m.local) meta = '<span class="ai-meta">' + T("🖥️ free, on this device") + " · " + esc(modelName(m.model)) + "</span>";
+		else if (mine && m.free) meta = '<span class="ai-meta">' + T("🎁 free") + " · " + esc(modelName(m.model)) + "</span>";
 		else if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(T(A.LENGTHS[m.len] || "")) + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="' + esc(T("Payment memo")) + '">' + esc(m.memo) + "</a>" : "") + "</span>";
 		var mf = mine && m.files && m.files.length ? '<div class="ai-mfiles">' + m.files.map(function (f) {
 			return f.t === "img" ? '<img data-fk="' + esc(f.id) + '" alt="' + esc(f.name || T("picture")) + '" title="' + esc(f.name || "") + '">' :
@@ -278,7 +282,9 @@
 		var body = mine ? mf + (m.content ? '<div class="ai-text ai-plain">' + esc(m.content) + "</div>" : "") : '<div class="ai-text ai-md">' + (m.content ? md(m.content) : m.error ? "" : m.thinking ? '<p class="ai-thinking">' + T("Thinking…") + '</p>' : '<p class="ai-thinking">' + T("Waiting for the answer…") + '</p>') + "</div>";
 		var foot = "";
 		if (!mine) {
-			if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
+			if (m.stop === "max_tokens" && A.isLocal(m.model)) foot += '<p class="ai-note">' + T('The answer reached its length. Send "continue" for more, or pick a longer answer.') + '</p>';
+			else if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
+			if (m.stop === "stopped") foot += '<p class="ai-note">' + T("Stopped.") + '</p>';
 			if (m.stop === "refusal") foot += '<p class="ai-note">' + T("The AI declined to answer this.") + '</p>';
 			if (m.error) foot += '<p class="ai-note ai-err">' + esc(T(m.error)) + "</p>" + (m.retryId ? '<button type="button" class="tu-btn tu-btn--primary" data-retry="' + i + '">' + T("Try again (free)") + '</button>' : "");
 			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button><span class="ai-openin">' + T("Open in:") +
@@ -536,9 +542,10 @@
 	/* ---------- options + live price ---------- */
 	// model lists grouped by company; a company whose key is not set yet shows its models greyed out with "(soon)"
 	function fillModels() {
-		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)", openrouter: T("Cheap (DeepSeek, Qwen, Llama)") };
+		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)", openrouter: T("Cheap (DeepSeek, Qwen, Llama)"), local: T("🎁 Free, on this device") };
 		$("ai-model").innerHTML = Object.keys(groups).map(function (p) {
 			return '<optgroup label="' + groups[p] + '">' + Object.keys(A.MODELS).filter(function (k) { return A.MODELS[k].prov === p; }).map(function (k) {
+				if (p === "local") { var lk = LOCST.env ? A.localCheck(k, LOCST.env) : null; return '<option value="' + k + '">' + esc(A.MODELS[k].name) + " · " + esc(gb(A.MODELS[k].mb)) + (lk && !lk.ok ? " · " + T("not on this device") : "") + "</option>"; }
 				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (" + T("soon") + ")") + "</option>";
 			}).join("") + "</optgroup>";
 		}).join("");
@@ -561,7 +568,7 @@
 	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintRefs("img"); paintPrice(); });
 	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + esc(T(A.LENGTHS[k])) + "</button>"; }).join("");
-	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); });
+	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); if (A.isLocal(S.model)) localPick(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
 	function draftMessages() {
 		var text = $("ai-in").value.trim();
@@ -592,6 +599,9 @@
 	})();
 	function paintPrice() {
 		var m = A.MODELS[S.model], fr = freeApplies();
+		if (m.prov === "local") return paintLocalPrice();
+		$("ai-local").hidden = true; $("ai-stop").hidden = true;
+		$("ai-attach").disabled = false; if (ATTACH_T != null) $("ai-attach").title = ATTACH_T;
 		var words = Math.round((fr ? A.FREE.maxOut : m.caps[S.len]) * 0.75).toLocaleString(LOC);
 		// a free message always gets a Short answer: the length buttons show that while free messages are on
 		$("ai-len").classList.toggle("is-free", fr);
@@ -626,7 +636,7 @@
 		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; }); document.querySelectorAll("[data-freeday]").forEach(function (x) { x.textContent = A.FREE.perDay; });
 		$("ai-checked").textContent = A.PRICES_CHECKED;
 		var rows = ["<tr><th>" + T("Model") + "</th><th>" + T("Short") + "</th><th>" + T("Medium") + "</th><th>" + T("Long") + "</th></tr>"];
-		Object.keys(A.MODELS).forEach(function (k) {
+		Object.keys(A.MODELS).filter(function (k) { return !A.isLocal(k); }).forEach(function (k) {
 			rows.push("<tr><td>" + esc(A.MODELS[k].name) + "</td>" + Object.keys(A.LENGTHS).map(function (l) { return "<td>" + A.chatQuote(k, 500, l).price + " HBD</td>"; }).join("") + "</tr>");
 		});
 		rows.push('<tr><td colspan="4" class="ai-sub">' + T("A new chat with a short question (about 500 tokens sent). Longer chats cost more.") + '</td></tr>');
@@ -812,6 +822,130 @@
 
 	/* ---------- send a chat message ---------- */
 	function setBusy(b) { busy = b; root.classList.toggle("ai-busy", b); paintPrice(); }
+
+	/* ---------- free model on this device (local.js = window.AILocal, WebLLM) ---------- */
+	function gb(mb) { return mb >= 1000 ? T("{n} GB", { n: (Math.round(mb / 100) / 10).toLocaleString(LOC) }) : T("{n} MB", { n: mb }); }
+	function localNow() { var ck = A.localCheck(S.model, LOCST.env || {}); return { m: A.MODELS[S.model], ck: ck }; }
+	// picked (or saved) a local model: look at the device, then whether its files are already in this browser
+	function localPick() {
+		if (!window.AILocal) return;
+		window.AILocal.detect().then(function (env) {
+			var first = !LOCST.env; LOCST.env = env;
+			if (first) fillModels();
+			var x = localNow();
+			paintPrice();
+			if (x.ck.ok && LOCST.cached[x.ck.id] == null) window.AILocal.has(x.ck.id).then(function (h) { LOCST.cached[x.ck.id] = !!h; paintPrice(); });
+		});
+	}
+	function paintLocalPrice() {
+		if (ATTACH_T == null) ATTACH_T = $("ai-attach").title;
+		var x = localNow(), m = x.m, ck = x.ck, box = $("ai-local");
+		$("ai-free").hidden = true;
+		$("ai-len").classList.remove("is-free");
+		[].forEach.call($("ai-len").children, function (b) { b.setAttribute("aria-pressed", b.dataset.len === S.len); });
+		$("ai-modelnote").textContent = T(m.blurb) + " " + T("Answer up to about {n} words.", { n: Math.round(m.caps[S.len] * 0.75).toLocaleString(LOC) });
+		$("ai-price").innerHTML = "<b>" + T("🎁 Free") + '</b> <span class="ai-sub">' + T("runs on your computer") + "</span>";
+		$("ai-cost").hidden = true;
+		var ready = LOCST.loaded === ck.id, cached = LOCST.cached[ck.id];
+		$("ai-send").disabled = busy || !!LOCST.loading || (LOCST.env && !ck.ok);
+		$("ai-send").textContent = busy ? T("Working…") : LOCST.loading ? T("Loading…") : T("Send free");
+		$("ai-stop").hidden = !LOCST.gen;
+		$("ai-attach").disabled = true; $("ai-attach").title = T("This model reads text only.");
+		box.hidden = false;
+		var h = "";
+		if (!LOCST.env) h = '<p class="ai-lmain">' + T("Checking what your device can do…") + "</p>";
+		else if (!ck.ok) {
+			h = '<p class="ai-lmain ai-lbad">⚠️ <b>' + T("Not available on this device.") + "</b> " + esc(T(A.LOCAL_WHY[ck.why] || "")) + "</p>" +
+				'<p class="ai-sub">' + T("You can still chat for free: log in with Hive and use the free daily messages on the cheap models (DeepSeek, Qwen, Llama).") +
+				' <button type="button" class="ai-mini" data-lact="usefree">' + T("Use free messages") + "</button></p>";
+		} else if (LOCST.loading) {
+			var pr = LOCST.prog || {}, pc = Math.max(0, Math.min(100, Math.round((pr.progress || 0) * 100))), secs = Math.round((Date.now() - LOCST.t0) / 1000);
+			var starting = cached || (LOCST.dlDone && !pr.dl) || /^Loading/.test(pr.text || "");
+			h = '<p class="ai-lmain">' + (starting ? T("Starting {name} from this browser…", { name: esc(m.name) }) : T("Downloading {name} ({size})…", { name: esc(m.name), size: gb(m.mb) })) + " <b>" + pc + "%</b></p>" +
+				'<div class="ai-lbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pc + '"><i style="width:' + pc + '%"></i></div>' +
+				'<p class="ai-sub ai-ltx">' + T("{s} s so far.", { s: secs }) + " " + (LOCST.retry ? T("The connection dropped: carrying on where it stopped (try {n}).", { n: LOCST.retry + 1 }) : starting ? "" : T("The first numbers can take a minute on a slow connection.")) + "</p>";
+		} else if (ready) {
+			h = '<p class="ai-lmain">✓ ' + T("{name} is running on your computer. Nothing you type leaves this device.", { name: esc(m.name) }) + "</p>";
+		} else if (cached) {
+			h = '<p class="ai-lmain">✓ ' + T("{name} is already downloaded ({size}, kept in this browser). It starts when you send a message.", { name: esc(m.name), size: gb(m.mb) }) + "</p>";
+		} else {
+			h = '<p class="ai-lmain' + (LOCST.want ? " ai-lask" : "") + '">' + T("{name} needs a one-time download of about <b>{size}</b>. Your browser keeps it, so next time it starts without downloading. It runs on your graphics chip: nothing you type is sent anywhere.", { name: esc(m.name), size: gb(m.mb) }) + "</p>" +
+				'<p><button type="button" class="tu-btn tu-btn--primary" data-lact="dl">' + T("Download {size} and start", { size: gb(m.mb) }) + "</button>" + (LOCST.want ? ' <button type="button" class="tu-btn tu-btn--ghost" data-lact="cancel">' + T("Cancel") + "</button>" : "") + "</p>";
+		}
+		if (LOCST.env && ck.ok && ck.f32) h += '<p class="ai-sub">' + T("Your graphics chip has no 16-bit support, so a slower version is used.") + "</p>";
+		if (LOCST.err) h += '<p class="ai-note ai-err">' + esc(LOCST.err) + "</p>";
+		if (LOCST.env && ck.ok && (cached || ready) && !LOCST.loading) h += '<p class="ai-sub"><button type="button" class="ai-mini" data-lact="rm"' + (busy ? " disabled" : "") + ">" + T("Remove downloaded model") + "</button> " + T("(frees {size})", { size: gb(m.mb) }) + "</p>";
+		h += '<p class="ai-sub ai-lfine">' + T("Free and private, but much weaker than the paid models: good for quick questions, drafts and simple code. Made possible by WebLLM.") + "</p>";
+		if (box.innerHTML !== h) box.innerHTML = h;
+	}
+	function localErr(e) {
+		var t = String((e && e.message) || e || "");
+		if (/shader-f16/i.test(t)) return T("Your graphics chip can't run this version of the model.");
+		if (/device was lost|out of memory|OOM/i.test(t)) return T("The graphics chip ran out of memory. Close other tabs or pick a smaller model.");
+		if (/quota|storage|QuotaExceeded/i.test(t)) return T("Not enough free disk space for the browser to keep the model.");
+		if (/fetch|network|Failed to load|import|Request failed|Cache/i.test(t)) return T("The download failed. Check your connection and try again.");
+		return T("The model could not start: {e}", { e: t.slice(0, 200) });
+	}
+	function localLoad(then) {
+		var x = localNow(); if (!x.ck.ok || LOCST.loading) return;
+		LOCST.loading = x.ck.id; LOCST.prog = null; LOCST.err = ""; LOCST.want = false; LOCST.retry = 0; LOCST.dlDone = false; LOCST.t0 = Date.now(); paintPrice();
+		var last = 0, tick = setInterval(function () { if (LOCST.loading) paintPrice(); else clearInterval(tick); }, 1000);
+		window.AILocal.load(x.ck.id, function (p) { if (p.retry) LOCST.retry = p.retry; else LOCST.prog = p; if (p.dl && p.progress >= 1) LOCST.dlDone = true; if (Date.now() - last > 150) { last = Date.now(); paintPrice(); } }).then(function () {
+			LOCST.loaded = x.ck.id; LOCST.cached[x.ck.id] = true; LOCST.loading = null; paintPrice();
+			if (then) then();
+		}, function (e) { LOCST.loading = null; LOCST.err = localErr(e); paintPrice(); });
+	}
+	$("ai-local").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-lact]"); if (!b) return;
+		var a = b.dataset.lact, x = localNow();
+		if (a === "dl") localLoad(function () { if ($("ai-in").value.trim()) sendLocal(); });
+		else if (a === "cancel") { LOCST.want = false; paintPrice(); }
+		else if (a === "usefree") { S.model = "qwen"; save(); $("ai-model").value = S.model; paintPrice(); $("ai-acct-card").scrollIntoView({ block: "center" }); }
+		else if (a === "rm") {
+			if (!confirm(T("Remove {name} from this browser? It will need to download again ({size}) next time.", { name: x.m.name, size: gb(x.m.mb) }))) return;
+			window.AILocal.remove(x.ck.id).then(function () { LOCST.cached[x.ck.id] = false; if (LOCST.loaded === x.ck.id) LOCST.loaded = null; msg(T("Removed: the space is free again."), "ok"); paintPrice(); }, function (er) { msg(localErr(er), "err"); });
+		}
+	});
+	$("ai-stop").addEventListener("click", function () { if (window.AILocal) window.AILocal.stop(); });
+	function sendLocal() {
+		if (busy) return;
+		if (!window.AILocal) { msg(T("Not available on this device."), "err"); return; }
+		if (!LOCST.env) { window.AILocal.detect().then(function (env) { LOCST.env = env; fillModels(); sendLocal(); }); return; }
+		var x = localNow(), m = x.m, ck = x.ck;
+		if (!ck.ok) { msg(T(A.LOCAL_WHY[ck.why] || ""), "err"); paintPrice(); return; }
+		if (PEND.length) { msg(T("This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files."), "err"); return; }
+		var text = $("ai-in").value.trim(); if (!text) { $("ai-in").focus(); return; }
+		if (LOCST.loaded !== ck.id) {
+			if (LOCST.loading) return;
+			// the first time: the panel asks before downloading; already in this browser: just start it
+			var go = function (c) { if (c) localLoad(sendLocal); else { LOCST.want = true; paintPrice(); msg(T("Download the model first: it is free, but about {size}.", { size: gb(m.mb) })); $("ai-local").scrollIntoView({ block: "nearest", behavior: "smooth" }); } };
+			if (LOCST.cached[ck.id] != null) go(LOCST.cached[ck.id]); else window.AILocal.has(ck.id).then(function (h) { LOCST.cached[ck.id] = !!h; go(h); });
+			return;
+		}
+		var c = cur();
+		while (c.msgs.length && (c.msgs[c.msgs.length - 1].error || c.msgs[c.msgs.length - 1].role === "user") && !c.msgs[c.msgs.length - 1].retryId) c.msgs.pop();
+		var sys = A.systemFor(S.model, LANG), maxOut = m.caps[S.len];
+		var tr = A.localTrim(sys, draftMessages().map(function (q) { return { role: q.role, content: q.content || "" }; }), maxOut);
+		if (!tr) { msg(T("This message is too long for the small model on this device. Shorten it, or pick a paid model."), "err"); return; }
+		msg(tr.dropped ? T("The oldest {n} messages were left out: the model on this device remembers only a short chat.", { n: tr.dropped }) : "");
+		var um = { role: "user", content: text, at: Date.now(), model: S.model, len: S.len, local: true };
+		var am = { role: "assistant", content: "", at: Date.now(), pending: true, model: S.model };
+		if (!c.msgs.length) c.title = text.replace(/\s+/g, " ").slice(0, 60);
+		c.msgs.push(um, am); c.at = Date.now();
+		S.chats.sort(function (a, b) { return b.at - a.at; });
+		$("ai-in").value = ""; save(); renderLog();
+		LOCST.gen = true; setBusy(true);
+		var raw = "", last = 0;
+		window.AILocal.chat(ck.id, [{ role: "system", content: sys }].concat(tr.messages), maxOut, function (p) {
+			if (p.t === "text") { raw += p.v; var st = A.splitThink(raw); am.content = st.text; am.thinking = st.think; if (Date.now() - last > 90) { last = Date.now(); renderLog(); } }
+			else if (p.t === "done") am.stop = p.stop;
+		}).catch(function (e) { am.error = localErr(e); }).then(function () {
+			am.pending = false; am.thinking = false;
+			if (!am.error && !am.content) am.error = am.stop === "stopped" ? T("Stopped before it wrote anything.") : T("No answer came back.");
+			LOCST.gen = false; save(); renderLog(); setBusy(false);
+		});
+	}
+	if (A.isLocal(S.model)) localPick();
 	function send(force) {
 		if (busy) return;
 		var u = who();
@@ -820,6 +954,7 @@
 		// "make a picture of ..." in the chat: offer the Picture / Video tab instead (the chat models only write text)
 		var wm = force === true ? null : A.wantsMedia(text);
 		if (wm && (wm.kind === "image" ? status.image : status.video)) { offerMedia(wm, text); return; }
+		if (A.isLocal(S.model)) return sendLocal();
 		if (!status.chat) { msg(T("MES AI chat is coming soon."), "err"); return; }
 		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
 		if (A.MODELS[S.model].text && PEND.length) { msg(T("This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files."), "err"); return; }

@@ -719,6 +719,21 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
   #ai .ai-inrow .ai-send { flex: 1 1 100%; }
   #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
 }
+/* ---------- 2026-11-22: free model on this device (WebLLM) ---------- */
+#ai .ai-stop[hidden], #ai .ai-local[hidden] { display: none !important; }
+#ai .ai-inrow .ai-stop { flex: 0 0 auto; min-height: 2.9em; border: 1px solid var(--ai-err); background: transparent; color: var(--ai-err); font-weight: 700; }
+#ai.ai-busy .ai-inrow .ai-stop { opacity: 1; cursor: pointer; }
+#ai .ai-local { margin-top: .5em; padding: .55em .8em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
+#ai .ai-local p { margin: .25em 0; }
+#ai .ai-local .ai-lmain { line-height: 1.45; }
+#ai .ai-local .ai-lask { padding: .3em .5em; border-left: 3px solid var(--ai-acc); background: var(--ai-me); border-radius: .3em; }
+#ai .ai-local .ai-lbad b { color: var(--ai-warn); }
+#ai .ai-local .ai-lbar { height: .55em; border-radius: 999px; background: var(--ai-line); overflow: hidden; margin: .35em 0; }
+#ai .ai-local .ai-lbar i { display: block; height: 100%; background: var(--ai-acc); transition: width .2s; }
+#ai .ai-local .ai-ltx { font-size: .85em; overflow-wrap: anywhere; }
+#ai .ai-local .ai-lfine { font-size: .85em; }
+@media (max-width: 640px) { #ai .ai-inrow .ai-stop { min-width: 0; } }
+#ai .ai-attach:disabled { opacity: .45; cursor: not-allowed; }
 
 
 	@media print {
@@ -1129,6 +1144,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ai-inrow">
 				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="اسأل عن أي شيء: برمجة، بحث، رياضيات، كتابة…  (Ctrl+Enter للإرسال)"></textarea>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">ادفع &amp; أرسل</button>
+				<button type="button" class="tu-btn ai-stop" id="ai-stop" hidden title="أوقف الإجابة هنا">■ إيقاف</button>
 				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="أضف صورًا أو ملفات PDF أو ملفات نصية (أو اسحبها / الصقها هنا)">📎 إضافة ملفات</button>
@@ -1141,6 +1157,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="معلومات النموذج وكم كلّفت هذه المحادثة">ⓘ</button>
 				</div>
+				<div class="ai-local" id="ai-local" aria-live="polite" hidden></div>
 				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
@@ -1276,8 +1293,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>عن MES AI</h2>
 			<p>يتيح لك MES AI استخدام أفضل نماذج الذكاء الاصطناعي بلا اشتراك شهري: Claude من Anthropic (‏Sonnet 5.5 للعمل اليومي، وOpus 5.5 للبرمجة الصعبة والبحث) أو نماذج ChatGPT من OpenAI (‏GPT-6.2 Sol وAstra) للدردشة، وGPT Image 2 من OpenAI أو Grok Imagine من xAI للصور، وGrok Imagine لمقاطع فيديو قصيرة بالصوت. تدفع بضعة سنتات من HBD لكل رسالة على بلوكشين Hive، ولا تدفع إلا مقابل ما تستخدمه.</p>
 			<p>اقرأ الإعلان: <a href="/ai-claude-grok-chatgpt">MES AI: ‏Claude وChatGPT &amp; Grok بحساب Hive فقط</a> (وأيضًا <a href="https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea" target="_blank" rel="noopener">على InLeo</a>). مزيد من أدوات Hive والعملات المشفرة ومنشوراتها: <a href="/crypto">MES Crypto</a>.</p>
+			<p>مزيد من مشاريع الذكاء الاصطناعي على Hive: <a href="https://dhenz14.github.io/" target="_blank" rel="noopener">تطبيقات TheyCallMeDan</a>.</p>
 			<h3>أسئلة</h3>
 			<dl>
+				<dt>هل يوجد نموذج مجاني لا يحتاج إلى حساب Hive؟</dt>
+				<dd>نعم: النماذج الثلاثة ضمن <b>مجاني، على هذا الجهاز</b> (Llama 3.2 1B وQwen3 1.7B وLlama 3.2 3B). تعمل داخل متصفحك على شريحة الرسوميات في جهازك بفضل WebLLM: بلا تكلفة، وبلا تسجيل دخول، ولا يُرسل أي شيء تكتبه إلى mes.fm أو إلى أي شركة ذكاء اصطناعي. في المرة الأولى يُنزَّل النموذج مرة واحدة (نحو 0.7 إلى 1.8 غيغابايت) ويحتفظ به متصفحك؛ وزر <b>إزالة النموذج المنزَّل</b> يحرّر المساحة. تحتاج إلى WebGPU (Chrome أو Edge أو Brave على الحاسوب، أو Safari 26 وما بعده) وذاكرة كافية، وتقرأ النص فقط، وتتذكر محادثة قصيرة فقط، وهي أضعف بكثير من النماذج المدفوعة: مناسبة للأسئلة السريعة والمسودات والشيفرة البسيطة. إن لم يستطع جهازك تشغيلها، فاستخدم الرسائل المجانية اليومية.</dd>
 				<dt>هل أحتاج إلى حساب؟</dt>
 				<dd>حساب Hive فقط، مع إضافة المتصفح Hive Keychain أو تطبيق Keychain على الهاتف. لا بريد إلكتروني ولا كلمة مرور على mes.fm. ليس لديك حساب Hive بعد؟ <a href="https://signup.hive.io/" target="_blank" rel="noopener">أنشئ واحدًا على signup.hive.io</a>.</dd>
 				<dt>لماذا الدفع لكل رسالة بدلًا من الاشتراك؟</dt>
@@ -1353,7 +1373,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=4a71ffa1" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-ar.js?v=9435263c" defer></script><script src="/ai/js/ai.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

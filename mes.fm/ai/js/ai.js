@@ -48,8 +48,62 @@
     llama: { prov: "openrouter", id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", blurb: "Meta's open model: cheap, plain answers. Text only.",
       inUsd: 0.4, outUsd: 1.2, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
     dspro: { prov: "openrouter", id: "deepseek/deepseek-v4-pro", name: "DeepSeek V4 Pro", blurb: "DeepSeek's stronger model for harder questions, still far cheaper than the big ones. Text only.",
-      inUsd: 1.4, outUsd: 4, caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true, text: true }
+      inUsd: 1.4, outUsd: 4, caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true, text: true },
+    /* On this device (2026-11-22): FREE, runs in the visitor's own browser with WebLLM (LOCAL below) on the graphics chip (WebGPU).
+       Nothing is sent to mes.fm or to any AI company, no Hive login, no payment; never priced and refused by the server.
+       id = WebLLM prebuilt model id (f16 build: needs WebGPU "shader-f16"), id32 = the f32 build for GPUs without it.
+       mb = download size in MB (the weights, the same for both builds), vram / vram32 = graphics memory WebLLM says each build needs (MB).
+       caps = answer length in tokens (the model's whole memory is LOCAL.ctx tokens, so answers stay short). */
+    local1b: { prov: "local", id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", id32: "Llama-3.2-1B-Instruct-q4f32_1-MLC", name: "Llama 3.2 1B",
+      blurb: "Free and private: runs on your own computer, nothing is sent anywhere. The fastest and smallest, much weaker than the paid models. Text only.",
+      mb: 700, vram: 879, vram32: 1129, inUsd: 0, outUsd: 0, caps: { short: 400, medium: 900, long: 1600 }, text: true },
+    localqwen: { prov: "local", id: "Qwen3-1.7B-q4f16_1-MLC", id32: "Qwen3-1.7B-q4f32_1-MLC", name: "Qwen3 1.7B",
+      blurb: "Free and private: runs on your own computer, nothing is sent anywhere. A bit stronger and good in many languages, still much weaker than the paid models. Text only.",
+      mb: 970, vram: 2037, vram32: 2635, inUsd: 0, outUsd: 0, caps: { short: 400, medium: 900, long: 1600 }, text: true },
+    local3b: { prov: "local", id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", id32: "Llama-3.2-3B-Instruct-q4f32_1-MLC", name: "Llama 3.2 3B",
+      blurb: "Free and private: runs on your own computer, nothing is sent anywhere. The best of the three, for strong computers; still weaker than the paid models. Text only.",
+      mb: 1810, vram: 2264, vram32: 2952, inUsd: 0, outUsd: 0, caps: { short: 400, medium: 900, long: 1600 }, text: true }
   };
+  /* WebLLM (MIT, github.com/mlc-ai/web-llm): one self-contained ES module, loaded with import() only when a local model is picked.
+     Pinned; the models come from huggingface.co/mlc-ai and are kept by the browser (Cache API) after the first download. */
+  var LOCAL = { ver: "0.2.87", url: "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.87/lib/index.js", ctx: 4096 };
+  var LOCAL_WHY = {
+    nogpu: "This browser has no WebGPU, which is needed to run AI on your own device. Chrome, Edge or Brave on a computer have it (Safari 26 and newer too).",
+    noadapter: "WebGPU is there but found no usable graphics chip (it may be switched off, or the computer is too old).",
+    lowmem: "This device does not have enough memory for this model. Try a smaller one.",
+    small: "This graphics chip is too small for AI models."
+  };
+  function isLocal(k) { return !!(MODELS[k] && MODELS[k].prov === "local"); }
+  /* can model k run here? env = {gpu: navigator.gpu present, adapter: got one, f16: "shader-f16" feature, maxBuf: adapter maxBufferSize (bytes),
+     mem: navigator.deviceMemory (GB, rounded down, at most 8, or null)} -> {ok, id, vram, why (LOCAL_WHY key), f32} */
+  function localCheck(k, env) {
+    var m = MODELS[k]; env = env || {};
+    if (!m || m.prov !== "local") return { ok: false, why: "nogpu" };
+    if (!env.gpu) return { ok: false, why: "nogpu" };
+    if (!env.adapter) return { ok: false, why: "noadapter" };
+    if (env.maxBuf && env.maxBuf < 128 * 1048576) return { ok: false, why: "small" };
+    var f32 = !env.f16, vram = f32 ? m.vram32 : m.vram;
+    // deviceMemory is the whole computer's memory: the model (plus the browser) should fit in about half of it
+    if (env.mem && env.mem * 1024 * 0.55 < vram) return { ok: false, why: "lowmem", vram: vram };
+    return { ok: true, id: f32 ? m.id32 : m.id, vram: vram, f32: f32 };
+  }
+  /* fit a chat into the local model's memory (LOCAL.ctx tokens incl. the answer): drop the oldest exchanges first.
+     -> {messages, dropped (messages left out)} or null when even the last message alone is too long */
+  function localTrim(sys, messages, maxOut) {
+    var budget = LOCAL.ctx - (maxOut || 0) - estimateTokens(sys) - 32, msgs = (messages || []).slice(), dropped = 0;
+    var size = function (l) { return l.reduce(function (n, m) { return n + estimateTokens(m.content) + 4; }, 0); };
+    while (msgs.length > 1 && size(msgs) > budget) { msgs.splice(0, msgs.length > 2 ? 2 : 1); dropped += 2; }
+    if (!msgs.length || size(msgs) > budget) return null;
+    if (msgs[0].role !== "user") { msgs.shift(); dropped++; }
+    return { messages: msgs, dropped: Math.min(dropped, (messages || []).length) };
+  }
+  // small models may write their thinking in <think>...</think>: -> {text (without it), think: still inside an open block}
+  function splitThink(t) {
+    t = String(t || "");
+    var out = t.replace(/<think>[\s\S]*?<\/think>\s*/g, ""), open = out.indexOf("<think>");
+    if (open >= 0) return { text: out.slice(0, open), think: true };
+    return { text: out.replace(/^\s+/, ""), think: false };
+  }
   /* free daily messages (2026-11-21): FREE.perDay messages a day per Hive account on the models marked free, always a Short answer
      (FREE.maxOut tokens) and a chat of at most FREE.maxIn tokens (counted the safe way, 1 token a character). The account is proven once a
      day with a Keychain signature of freeMessage(acct, day) (no payment, no fee). All free messages together stop at FREE.usdPerDay of
@@ -58,7 +112,7 @@
   function freeMessage(acct, day) { return "mes.fm/ai free messages for @" + acct + " on " + day; }
   function utcDay(ms) { return new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10); }
   function freeWorstUsd(modelKey) { var m = MODELS[modelKey]; return m && m.free ? (FREE.maxIn * m.inUsd + FREE.maxOut * m.outUsd) / 1e6 : 0; }
-  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter" };
+  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter", local: "WebLLM" };
   var DEFAULT_MODEL = "sonnet";
   var LENGTHS = { short: "Short", medium: "Medium", long: "Long" };
 
@@ -169,8 +223,11 @@
   var LANGS = { es: "Spanish", "pt-BR": "Brazilian Portuguese", fr: "French", de: "German", tr: "Turkish", ru: "Russian", "zh-CN": "Simplified Chinese",
     hi: "Hindi", id: "Indonesian", vi: "Vietnamese", ar: "Arabic", fa: "Persian (Farsi)" };
   function cleanLang(l) { return typeof l === "string" && Object.prototype.hasOwnProperty.call(LANGS, l) ? l : "en"; }
+  // the local models have a small memory (LOCAL.ctx tokens), so they get a short version
+  var LOCAL_SYSTEM = "You are MES AI, a small AI model running privately on the user's own device inside mes.fm (Math Easy Solutions). " +
+    "Be helpful, clear and brief. Say when you are not sure. Use Markdown and fenced code blocks. Use LaTeX ($...$) only for real math formulas, never around plain words or names.";
   function systemFor(modelKey, lang) {
-    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT")
+    var m = MODELS[modelKey], s = m && m.prov === "local" ? LOCAL_SYSTEM.replace("You are MES AI", "You are MES AI (" + m.name + ")") : m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT")
       : m && m.prov === "openrouter" ? SYSTEM.replace("running on Anthropic's Claude", "running on " + m.name) : SYSTEM;
     lang = cleanLang(lang);
     return lang === "en" ? s : s + " The person is using the " + LANGS[lang] + " version of this page: answer in " + LANGS[lang] + " by default; if they write in another language, answer in the language they write in.";
@@ -553,7 +610,8 @@
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     FILES: FILES, checkFile: checkFile, fileTokens: fileTokens, toAnthropic: toAnthropic, toOpenAIChat: toOpenAIChat, toOpenAIResponses: toOpenAIResponses,
-    parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece
+    parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece,
+    LOCAL: LOCAL, LOCAL_WHY: LOCAL_WHY, isLocal: isLocal, localCheck: localCheck, localTrim: localTrim, splitThink: splitThink
   };
 });
 
@@ -1050,6 +1108,140 @@
 	if (typeof module !== "undefined" && module.exports) module.exports = window.MESAIRich;
 })();
 
+/* MES AI "on this device" (2026-11-22): a small open model running in the visitor's browser with WebLLM (MIT, github.com/mlc-ai/web-llm)
+ * on the graphics chip (WebGPU). Nothing is sent to mes.fm or to an AI company: the model files come once from huggingface.co and the
+ * browser keeps them (Cache API, "webllm/*" caches). WebLLM itself (one self-contained ES module, MESAI.LOCAL.url) is import()ed only
+ * when a local model is used. The engine runs in a module Web Worker made from a Blob (so the page stays smooth), or on the page if a
+ * worker can't be made. window.AILocal = {detect, has, remove, load, chat, stop, loaded}; used by app.js. Rules (models, device check,
+ * history trim): lib.js (MESAI.MODELS with prov "local", localCheck, localTrim, splitThink). */
+(function () {
+	"use strict";
+	var A = window.MESAI;
+	if (!A || !A.LOCAL) return;
+	var libP = null, engine = null, engineId = null, worker = null, envP = null, loadP = null;
+	// the import is hidden from older parsers / bundlers the same way as the 3D graphing calculator does it
+	function webllm() {
+		if (!libP) libP = new Function("u", "return import(u)")(A.LOCAL.url).catch(function (e) { libP = null; throw e; });
+		return libP;
+	}
+	// what this browser and graphics chip can do -> env for MESAI.localCheck
+	function detect() {
+		if (envP) return envP;
+		var mem = typeof navigator.deviceMemory === "number" ? navigator.deviceMemory : null;
+		if (!navigator.gpu) return (envP = Promise.resolve({ gpu: false, mem: mem }));
+		envP = Promise.resolve().then(function () { return navigator.gpu.requestAdapter({ powerPreference: "high-performance" }); }).then(function (ad) {
+			if (!ad) return { gpu: true, adapter: false, mem: mem };
+			return { gpu: true, adapter: true, f16: !!(ad.features && ad.features.has("shader-f16")), maxBuf: (ad.limits && ad.limits.maxBufferSize) || 0, mem: mem };
+		}).catch(function () { return { gpu: true, adapter: false, mem: mem }; });
+		return envP;
+	}
+	function has(id) { return webllm().then(function (w) { return w.hasModelInCache(id); }).catch(function () { return false; }); }
+	function unload() {
+		var e = engine; engine = null; engineId = null;
+		if (e) try { e.unload(); } catch (x) {}
+		if (worker) { try { worker.terminate(); } catch (x) {} worker = null; }
+	}
+	function remove(id) {
+		if (engineId === id) unload();
+		return webllm().then(function (w) { return w.deleteModelAllInfoInCache(id); });
+	}
+	function makeWorker() {
+		var src = "import { WebWorkerMLCEngineHandler } from " + JSON.stringify(A.LOCAL.url) + ";\nconst h = new WebWorkerMLCEngineHandler();\nself.onmessage = (e) => h.onmessage(e);\n";
+		return new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })), { type: "module" });
+	}
+	/* Download the model's weight files into WebLLM's own cache ("webllm/model", keyed by the huggingface.co URL exactly as WebLLM asks for
+	   it) before WebLLM starts. WebLLM downloads 4 pieces at a time and gives up on the first dropped connection; on slow or shaky
+	   connections that never finished. Here: 2 at a time, each piece retried, progress by the byte. Pieces already saved are skipped. */
+	function prefetch(id, onProgress) {
+		return webllm().then(function (w) {
+			var rec = (w.prebuiltAppConfig.model_list || []).filter(function (m) { return m.model_id === id; })[0];
+			if (!rec || !window.caches) return;
+			var base = rec.model.replace(/\/?$/, "/"); if (!/\/resolve\/.+\//.test(base)) base += "resolve/main/";
+			return caches.open("webllm/model").then(function (cache) {
+				return fetch(base + "tensor-cache.json").then(function (r) { if (!r.ok) throw new Error("Request failed " + r.status); return r.json(); }).then(function (man) {
+					return cache.keys().then(function (ks) {
+						var have = {}; ks.forEach(function (k) { have[k.url] = 1; });
+						var list = (man.records || []).map(function (x) { return { url: new URL(x.dataPath, base).href, n: x.nbytes || 0 }; });
+						var total = list.reduce(function (t, x) { return t + x.n; }, 0) || 1, done = 0, live = {};
+						var todo = list.filter(function (x) { if (have[x.url]) { done += x.n; return false; } return true; });
+						if (!todo.length) return;
+						var report = function () { var b = done; Object.keys(live).forEach(function (k) { b += live[k]; }); onProgress && onProgress({ progress: Math.min(1, b / total), dl: true }); };
+						report();
+						var one = function (x, tries) {
+							live[x.url] = 0;
+							return fetch(x.url).then(function (r) {
+								if (!r.ok || !r.body) throw new Error("Request failed " + r.status);
+								var rd = r.body.getReader(), parts = [];
+								return (function pump() {
+									return rd.read().then(function (c) {
+										if (c.done) return;
+										parts.push(c.value); live[x.url] += c.value.length; report();
+										return pump();
+									});
+								})().then(function () { return cache.put(new Request(x.url), new Response(new Blob(parts), { headers: { "Content-Type": "application/octet-stream" } })); });
+							}).then(function () { delete live[x.url]; done += x.n; report(); }, function (e) {
+								delete live[x.url]; report();
+								if (tries >= 6 || /quota/i.test(String(e && e.name) + String(e && e.message))) throw e;
+								return new Promise(function (ok) { setTimeout(ok, 1000 + tries * 1500); }).then(function () { return one(x, tries + 1); });
+							});
+						};
+						var next = 0, lane = function () { if (next >= todo.length) return Promise.resolve(); var x = todo[next++]; return one(x, 0).then(lane); };
+						return Promise.all([lane(), lane()]);
+					});
+				});
+			});
+		});
+	}
+	// load (download the first time) model id; onProgress({progress 0..1, text}) -> Promise
+	function load(id, onProgress) {
+		if (engine && engineId === id) return Promise.resolve();
+		if (loadP && loadP.id === id) return loadP;
+		unload();
+		var cfg = { initProgressCallback: function (p) { try { onProgress && onProgress(p || {}); } catch (e) {} } };
+		var p = prefetch(id, onProgress).then(webllm).then(function (w) {
+			var viaWorker = function () { worker = makeWorker(); return w.CreateWebWorkerMLCEngine(worker, id, cfg); };
+			var onPage = function () { if (worker) { try { worker.terminate(); } catch (x) {} worker = null; } return w.CreateMLCEngine(id, cfg); };
+			var go;
+			try { go = viaWorker().catch(function (e) { if (/shader-f16|device was lost|out of memory|quota|storage/i.test(String(e && e.message))) throw e; return onPage(); }); }
+			catch (e) { go = onPage(); }
+			return go;
+		}).then(function (e) { engine = e; engineId = id; loadP = null; }, function (e) { loadP = null; unload(); throw e; });
+		p.id = id; loadP = p;
+		return p;
+	}
+	/* a dropped connection on one of WebLLM's 4 parallel downloads fails the whole load ("Cache.add() encountered a network error"),
+	   but the pieces already saved stay in the cache, so trying again carries on from there */
+	function isNet(e) { return /network|Request failed|Failed to fetch|Load failed|Cache/i.test(String(e && (e.message || e))); }
+	function loadRetry(id, onProgress, tries) {
+		tries = tries || 0;
+		return load(id, onProgress).catch(function (e) {
+			if (!isNet(e) || tries >= 7) throw e;
+			try { onProgress && onProgress({ retry: tries + 1, progress: null }); } catch (x) {}
+			return new Promise(function (r) { setTimeout(r, 1500 + tries * 1500); }).then(function () { return loadRetry(id, onProgress, tries + 1); });
+		});
+	}
+	/* stream an answer: messages = [{role, content}] incl. the system message; onPiece({t: "text", v} | {t: "done", stop}) */
+	function chat(id, messages, maxOut, onPiece) {
+		if (!engine || engineId !== id) return Promise.reject(new Error("The model is not loaded."));
+		var req = { messages: messages, stream: true, max_tokens: maxOut, temperature: 0.6, top_p: 0.9 };
+		if (/^Qwen3/.test(id)) req.extra_body = { enable_thinking: false };  // a small model's thinking would eat most of its short memory
+		return engine.chat.completions.create(req).then(function (it) {
+			var stop = null, iter = it[Symbol.asyncIterator]();
+			return (function next() {
+				return iter.next().then(function (x) {
+					if (x.done) { onPiece({ t: "done", stop: stop === "length" ? "max_tokens" : stop === "abort" ? "stopped" : "end_turn" }); return; }
+					var c = x.value && x.value.choices && x.value.choices[0];
+					if (c && c.delta && c.delta.content) onPiece({ t: "text", v: c.delta.content });
+					if (c && c.finish_reason) stop = c.finish_reason;
+					return next();
+				});
+			})();
+		});
+	}
+	function stop() { if (engine) try { engine.interruptGenerate(); } catch (e) {} }
+	window.AILocal = { detect: detect, has: has, remove: remove, load: loadRetry, chat: chat, stop: stop, unload: unload, loaded: function () { return engineId; } };
+})();
+
 /* MES AI -- mes.fm/ai: AI chat (Claude) and pictures (GPT Image), paid per message in HBD.
  * Send: POST /api/ai {op:"quote"} -> exact price + memo "mesai:<id>" -> Keychain / HiveAuth transfer of that HBD to @mes
  * (MESHive.transfer) -> POST /api/ai {op:"run"} (402 while the transfer is not in a block yet: retried every 3 s) ->
@@ -1072,10 +1264,13 @@
 	var status = { chat: mock, image: mock, video: mock, known: mock, prov: { anthropic: true, openai: true, xai: true, openrouter: true } };
 	if (mock && /[?&]soon=1\b/.test(location.search)) { status.image = false; status.video = false; status.prov = { anthropic: true, openai: false, xai: false }; }
 	// is this company's key set? (unknown until the status call answers: then everything shows as on)
-	function provOn(p) { return !status.known || !status.prov || !!status.prov[p]; }
+	function provOn(p) { if (p === "local") return true; return !status.known || !status.prov || !!status.prov[p]; }
 	var busy = false;
 	// free daily messages (A.FREE): on / left come from /api/ai?op=free&acct=; in the local preview a counter in localStorage
 	var FREEST = { on: mock, perDay: A.FREE.perDay, left: null };
+	// the free model on this device (local.js = window.AILocal): device check, files already in this browser, loading progress
+	var LOCST = { env: null, cached: {}, loaded: null, loading: null, prog: null, gen: false, err: "", want: false };
+	var ATTACH_T = null;
 
 	/* ---------- saved state ---------- */
 	function load() { try { return JSON.parse(localStorage.getItem(LS) || "null"); } catch (e) { return null; } }
@@ -1321,7 +1516,8 @@
 	function renderMsg(m, i) {
 		var mine = m.role === "user";
 		var meta = "";
-		if (mine && m.free) meta = '<span class="ai-meta">' + T("🎁 free") + " · " + esc(modelName(m.model)) + "</span>";
+		if (mine && m.local) meta = '<span class="ai-meta">' + T("🖥️ free, on this device") + " · " + esc(modelName(m.model)) + "</span>";
+		else if (mine && m.free) meta = '<span class="ai-meta">' + T("🎁 free") + " · " + esc(modelName(m.model)) + "</span>";
 		else if (mine && m.price) meta = '<span class="ai-meta">' + esc(m.price) + " HBD · " + esc(modelName(m.model)) + " · " + esc(T(A.LENGTHS[m.len] || "")) + (m.memo ? ' · <a href="' + (mock ? "#" : "https://hivehub.dev/@" + esc(m.acct || "") + "/wallet") + '" target="_blank" rel="noopener" title="' + esc(T("Payment memo")) + '">' + esc(m.memo) + "</a>" : "") + "</span>";
 		var mf = mine && m.files && m.files.length ? '<div class="ai-mfiles">' + m.files.map(function (f) {
 			return f.t === "img" ? '<img data-fk="' + esc(f.id) + '" alt="' + esc(f.name || T("picture")) + '" title="' + esc(f.name || "") + '">' :
@@ -1330,7 +1526,9 @@
 		var body = mine ? mf + (m.content ? '<div class="ai-text ai-plain">' + esc(m.content) + "</div>" : "") : '<div class="ai-text ai-md">' + (m.content ? md(m.content) : m.error ? "" : m.thinking ? '<p class="ai-thinking">' + T("Thinking…") + '</p>' : '<p class="ai-thinking">' + T("Waiting for the answer…") + '</p>') + "</div>";
 		var foot = "";
 		if (!mine) {
-			if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
+			if (m.stop === "max_tokens" && A.isLocal(m.model)) foot += '<p class="ai-note">' + T('The answer reached its length. Send "continue" for more, or pick a longer answer.') + '</p>';
+			else if (m.stop === "max_tokens") foot += '<p class="ai-note">' + T('The answer reached the length you paid for. Send "continue" for more, or pick a longer answer.') + '</p>';
+			if (m.stop === "stopped") foot += '<p class="ai-note">' + T("Stopped.") + '</p>';
 			if (m.stop === "refusal") foot += '<p class="ai-note">' + T("The AI declined to answer this.") + '</p>';
 			if (m.error) foot += '<p class="ai-note ai-err">' + esc(T(m.error)) + "</p>" + (m.retryId ? '<button type="button" class="tu-btn tu-btn--primary" data-retry="' + i + '">' + T("Try again (free)") + '</button>' : "");
 			if (m.content && !m.pending) foot += '<div class="ai-macts"><button type="button" class="ai-mini" data-copy="' + i + '">' + T("Copy answer") + '</button><span class="ai-openin">' + T("Open in:") +
@@ -1588,9 +1786,10 @@
 	/* ---------- options + live price ---------- */
 	// model lists grouped by company; a company whose key is not set yet shows its models greyed out with "(soon)"
 	function fillModels() {
-		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)", openrouter: T("Cheap (DeepSeek, Qwen, Llama)") };
+		var groups = { anthropic: "Claude (Anthropic)", openai: "ChatGPT (OpenAI)", openrouter: T("Cheap (DeepSeek, Qwen, Llama)"), local: T("🎁 Free, on this device") };
 		$("ai-model").innerHTML = Object.keys(groups).map(function (p) {
 			return '<optgroup label="' + groups[p] + '">' + Object.keys(A.MODELS).filter(function (k) { return A.MODELS[k].prov === p; }).map(function (k) {
+				if (p === "local") { var lk = LOCST.env ? A.localCheck(k, LOCST.env) : null; return '<option value="' + k + '">' + esc(A.MODELS[k].name) + " · " + esc(gb(A.MODELS[k].mb)) + (lk && !lk.ok ? " · " + T("not on this device") : "") + "</option>"; }
 				return '<option value="' + k + '"' + (provOn(p) ? "" : " disabled") + ">" + esc(A.MODELS[k].name.replace(/^ChatGPT: /, "")) + (provOn(p) ? "" : " (" + T("soon") + ")") + "</option>";
 			}).join("") + "</optgroup>";
 		}).join("");
@@ -1613,7 +1812,7 @@
 	$("ai-imod").addEventListener("change", function () { S.imod = this.value; save(); fillQuality(); paintRefs("img"); paintPrice(); });
 	$("ai-q").addEventListener("change", function () { S.iq[A.IMAGES[S.imod].prov] = this.value; save(); });
 	$("ai-len").innerHTML = Object.keys(A.LENGTHS).map(function (k) { return '<button type="button" data-len="' + k + '" aria-pressed="' + (k === S.len) + '">' + esc(T(A.LENGTHS[k])) + "</button>"; }).join("");
-	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); });
+	$("ai-model").addEventListener("change", function () { S.model = this.value; save(); paintPrice(); if (A.isLocal(S.model)) localPick(); });
 	$("ai-len").addEventListener("click", function (e) { var b = e.target.closest("[data-len]"); if (!b) return; S.len = b.dataset.len; save(); [].forEach.call(this.children, function (x) { x.setAttribute("aria-pressed", x === b); }); paintPrice(); });
 	function draftMessages() {
 		var text = $("ai-in").value.trim();
@@ -1644,6 +1843,9 @@
 	})();
 	function paintPrice() {
 		var m = A.MODELS[S.model], fr = freeApplies();
+		if (m.prov === "local") return paintLocalPrice();
+		$("ai-local").hidden = true; $("ai-stop").hidden = true;
+		$("ai-attach").disabled = false; if (ATTACH_T != null) $("ai-attach").title = ATTACH_T;
 		var words = Math.round((fr ? A.FREE.maxOut : m.caps[S.len]) * 0.75).toLocaleString(LOC);
 		// a free message always gets a Short answer: the length buttons show that while free messages are on
 		$("ai-len").classList.toggle("is-free", fr);
@@ -1678,7 +1880,7 @@
 		document.querySelectorAll("[data-margin]").forEach(function (x) { x.textContent = A.MARGIN; }); document.querySelectorAll("[data-freeday]").forEach(function (x) { x.textContent = A.FREE.perDay; });
 		$("ai-checked").textContent = A.PRICES_CHECKED;
 		var rows = ["<tr><th>" + T("Model") + "</th><th>" + T("Short") + "</th><th>" + T("Medium") + "</th><th>" + T("Long") + "</th></tr>"];
-		Object.keys(A.MODELS).forEach(function (k) {
+		Object.keys(A.MODELS).filter(function (k) { return !A.isLocal(k); }).forEach(function (k) {
 			rows.push("<tr><td>" + esc(A.MODELS[k].name) + "</td>" + Object.keys(A.LENGTHS).map(function (l) { return "<td>" + A.chatQuote(k, 500, l).price + " HBD</td>"; }).join("") + "</tr>");
 		});
 		rows.push('<tr><td colspan="4" class="ai-sub">' + T("A new chat with a short question (about 500 tokens sent). Longer chats cost more.") + '</td></tr>');
@@ -1864,6 +2066,130 @@
 
 	/* ---------- send a chat message ---------- */
 	function setBusy(b) { busy = b; root.classList.toggle("ai-busy", b); paintPrice(); }
+
+	/* ---------- free model on this device (local.js = window.AILocal, WebLLM) ---------- */
+	function gb(mb) { return mb >= 1000 ? T("{n} GB", { n: (Math.round(mb / 100) / 10).toLocaleString(LOC) }) : T("{n} MB", { n: mb }); }
+	function localNow() { var ck = A.localCheck(S.model, LOCST.env || {}); return { m: A.MODELS[S.model], ck: ck }; }
+	// picked (or saved) a local model: look at the device, then whether its files are already in this browser
+	function localPick() {
+		if (!window.AILocal) return;
+		window.AILocal.detect().then(function (env) {
+			var first = !LOCST.env; LOCST.env = env;
+			if (first) fillModels();
+			var x = localNow();
+			paintPrice();
+			if (x.ck.ok && LOCST.cached[x.ck.id] == null) window.AILocal.has(x.ck.id).then(function (h) { LOCST.cached[x.ck.id] = !!h; paintPrice(); });
+		});
+	}
+	function paintLocalPrice() {
+		if (ATTACH_T == null) ATTACH_T = $("ai-attach").title;
+		var x = localNow(), m = x.m, ck = x.ck, box = $("ai-local");
+		$("ai-free").hidden = true;
+		$("ai-len").classList.remove("is-free");
+		[].forEach.call($("ai-len").children, function (b) { b.setAttribute("aria-pressed", b.dataset.len === S.len); });
+		$("ai-modelnote").textContent = T(m.blurb) + " " + T("Answer up to about {n} words.", { n: Math.round(m.caps[S.len] * 0.75).toLocaleString(LOC) });
+		$("ai-price").innerHTML = "<b>" + T("🎁 Free") + '</b> <span class="ai-sub">' + T("runs on your computer") + "</span>";
+		$("ai-cost").hidden = true;
+		var ready = LOCST.loaded === ck.id, cached = LOCST.cached[ck.id];
+		$("ai-send").disabled = busy || !!LOCST.loading || (LOCST.env && !ck.ok);
+		$("ai-send").textContent = busy ? T("Working…") : LOCST.loading ? T("Loading…") : T("Send free");
+		$("ai-stop").hidden = !LOCST.gen;
+		$("ai-attach").disabled = true; $("ai-attach").title = T("This model reads text only.");
+		box.hidden = false;
+		var h = "";
+		if (!LOCST.env) h = '<p class="ai-lmain">' + T("Checking what your device can do…") + "</p>";
+		else if (!ck.ok) {
+			h = '<p class="ai-lmain ai-lbad">⚠️ <b>' + T("Not available on this device.") + "</b> " + esc(T(A.LOCAL_WHY[ck.why] || "")) + "</p>" +
+				'<p class="ai-sub">' + T("You can still chat for free: log in with Hive and use the free daily messages on the cheap models (DeepSeek, Qwen, Llama).") +
+				' <button type="button" class="ai-mini" data-lact="usefree">' + T("Use free messages") + "</button></p>";
+		} else if (LOCST.loading) {
+			var pr = LOCST.prog || {}, pc = Math.max(0, Math.min(100, Math.round((pr.progress || 0) * 100))), secs = Math.round((Date.now() - LOCST.t0) / 1000);
+			var starting = cached || (LOCST.dlDone && !pr.dl) || /^Loading/.test(pr.text || "");
+			h = '<p class="ai-lmain">' + (starting ? T("Starting {name} from this browser…", { name: esc(m.name) }) : T("Downloading {name} ({size})…", { name: esc(m.name), size: gb(m.mb) })) + " <b>" + pc + "%</b></p>" +
+				'<div class="ai-lbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pc + '"><i style="width:' + pc + '%"></i></div>' +
+				'<p class="ai-sub ai-ltx">' + T("{s} s so far.", { s: secs }) + " " + (LOCST.retry ? T("The connection dropped: carrying on where it stopped (try {n}).", { n: LOCST.retry + 1 }) : starting ? "" : T("The first numbers can take a minute on a slow connection.")) + "</p>";
+		} else if (ready) {
+			h = '<p class="ai-lmain">✓ ' + T("{name} is running on your computer. Nothing you type leaves this device.", { name: esc(m.name) }) + "</p>";
+		} else if (cached) {
+			h = '<p class="ai-lmain">✓ ' + T("{name} is already downloaded ({size}, kept in this browser). It starts when you send a message.", { name: esc(m.name), size: gb(m.mb) }) + "</p>";
+		} else {
+			h = '<p class="ai-lmain' + (LOCST.want ? " ai-lask" : "") + '">' + T("{name} needs a one-time download of about <b>{size}</b>. Your browser keeps it, so next time it starts without downloading. It runs on your graphics chip: nothing you type is sent anywhere.", { name: esc(m.name), size: gb(m.mb) }) + "</p>" +
+				'<p><button type="button" class="tu-btn tu-btn--primary" data-lact="dl">' + T("Download {size} and start", { size: gb(m.mb) }) + "</button>" + (LOCST.want ? ' <button type="button" class="tu-btn tu-btn--ghost" data-lact="cancel">' + T("Cancel") + "</button>" : "") + "</p>";
+		}
+		if (LOCST.env && ck.ok && ck.f32) h += '<p class="ai-sub">' + T("Your graphics chip has no 16-bit support, so a slower version is used.") + "</p>";
+		if (LOCST.err) h += '<p class="ai-note ai-err">' + esc(LOCST.err) + "</p>";
+		if (LOCST.env && ck.ok && (cached || ready) && !LOCST.loading) h += '<p class="ai-sub"><button type="button" class="ai-mini" data-lact="rm"' + (busy ? " disabled" : "") + ">" + T("Remove downloaded model") + "</button> " + T("(frees {size})", { size: gb(m.mb) }) + "</p>";
+		h += '<p class="ai-sub ai-lfine">' + T("Free and private, but much weaker than the paid models: good for quick questions, drafts and simple code. Made possible by WebLLM.") + "</p>";
+		if (box.innerHTML !== h) box.innerHTML = h;
+	}
+	function localErr(e) {
+		var t = String((e && e.message) || e || "");
+		if (/shader-f16/i.test(t)) return T("Your graphics chip can't run this version of the model.");
+		if (/device was lost|out of memory|OOM/i.test(t)) return T("The graphics chip ran out of memory. Close other tabs or pick a smaller model.");
+		if (/quota|storage|QuotaExceeded/i.test(t)) return T("Not enough free disk space for the browser to keep the model.");
+		if (/fetch|network|Failed to load|import|Request failed|Cache/i.test(t)) return T("The download failed. Check your connection and try again.");
+		return T("The model could not start: {e}", { e: t.slice(0, 200) });
+	}
+	function localLoad(then) {
+		var x = localNow(); if (!x.ck.ok || LOCST.loading) return;
+		LOCST.loading = x.ck.id; LOCST.prog = null; LOCST.err = ""; LOCST.want = false; LOCST.retry = 0; LOCST.dlDone = false; LOCST.t0 = Date.now(); paintPrice();
+		var last = 0, tick = setInterval(function () { if (LOCST.loading) paintPrice(); else clearInterval(tick); }, 1000);
+		window.AILocal.load(x.ck.id, function (p) { if (p.retry) LOCST.retry = p.retry; else LOCST.prog = p; if (p.dl && p.progress >= 1) LOCST.dlDone = true; if (Date.now() - last > 150) { last = Date.now(); paintPrice(); } }).then(function () {
+			LOCST.loaded = x.ck.id; LOCST.cached[x.ck.id] = true; LOCST.loading = null; paintPrice();
+			if (then) then();
+		}, function (e) { LOCST.loading = null; LOCST.err = localErr(e); paintPrice(); });
+	}
+	$("ai-local").addEventListener("click", function (e) {
+		var b = e.target.closest("[data-lact]"); if (!b) return;
+		var a = b.dataset.lact, x = localNow();
+		if (a === "dl") localLoad(function () { if ($("ai-in").value.trim()) sendLocal(); });
+		else if (a === "cancel") { LOCST.want = false; paintPrice(); }
+		else if (a === "usefree") { S.model = "qwen"; save(); $("ai-model").value = S.model; paintPrice(); $("ai-acct-card").scrollIntoView({ block: "center" }); }
+		else if (a === "rm") {
+			if (!confirm(T("Remove {name} from this browser? It will need to download again ({size}) next time.", { name: x.m.name, size: gb(x.m.mb) }))) return;
+			window.AILocal.remove(x.ck.id).then(function () { LOCST.cached[x.ck.id] = false; if (LOCST.loaded === x.ck.id) LOCST.loaded = null; msg(T("Removed: the space is free again."), "ok"); paintPrice(); }, function (er) { msg(localErr(er), "err"); });
+		}
+	});
+	$("ai-stop").addEventListener("click", function () { if (window.AILocal) window.AILocal.stop(); });
+	function sendLocal() {
+		if (busy) return;
+		if (!window.AILocal) { msg(T("Not available on this device."), "err"); return; }
+		if (!LOCST.env) { window.AILocal.detect().then(function (env) { LOCST.env = env; fillModels(); sendLocal(); }); return; }
+		var x = localNow(), m = x.m, ck = x.ck;
+		if (!ck.ok) { msg(T(A.LOCAL_WHY[ck.why] || ""), "err"); paintPrice(); return; }
+		if (PEND.length) { msg(T("This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files."), "err"); return; }
+		var text = $("ai-in").value.trim(); if (!text) { $("ai-in").focus(); return; }
+		if (LOCST.loaded !== ck.id) {
+			if (LOCST.loading) return;
+			// the first time: the panel asks before downloading; already in this browser: just start it
+			var go = function (c) { if (c) localLoad(sendLocal); else { LOCST.want = true; paintPrice(); msg(T("Download the model first: it is free, but about {size}.", { size: gb(m.mb) })); $("ai-local").scrollIntoView({ block: "nearest", behavior: "smooth" }); } };
+			if (LOCST.cached[ck.id] != null) go(LOCST.cached[ck.id]); else window.AILocal.has(ck.id).then(function (h) { LOCST.cached[ck.id] = !!h; go(h); });
+			return;
+		}
+		var c = cur();
+		while (c.msgs.length && (c.msgs[c.msgs.length - 1].error || c.msgs[c.msgs.length - 1].role === "user") && !c.msgs[c.msgs.length - 1].retryId) c.msgs.pop();
+		var sys = A.systemFor(S.model, LANG), maxOut = m.caps[S.len];
+		var tr = A.localTrim(sys, draftMessages().map(function (q) { return { role: q.role, content: q.content || "" }; }), maxOut);
+		if (!tr) { msg(T("This message is too long for the small model on this device. Shorten it, or pick a paid model."), "err"); return; }
+		msg(tr.dropped ? T("The oldest {n} messages were left out: the model on this device remembers only a short chat.", { n: tr.dropped }) : "");
+		var um = { role: "user", content: text, at: Date.now(), model: S.model, len: S.len, local: true };
+		var am = { role: "assistant", content: "", at: Date.now(), pending: true, model: S.model };
+		if (!c.msgs.length) c.title = text.replace(/\s+/g, " ").slice(0, 60);
+		c.msgs.push(um, am); c.at = Date.now();
+		S.chats.sort(function (a, b) { return b.at - a.at; });
+		$("ai-in").value = ""; save(); renderLog();
+		LOCST.gen = true; setBusy(true);
+		var raw = "", last = 0;
+		window.AILocal.chat(ck.id, [{ role: "system", content: sys }].concat(tr.messages), maxOut, function (p) {
+			if (p.t === "text") { raw += p.v; var st = A.splitThink(raw); am.content = st.text; am.thinking = st.think; if (Date.now() - last > 90) { last = Date.now(); renderLog(); } }
+			else if (p.t === "done") am.stop = p.stop;
+		}).catch(function (e) { am.error = localErr(e); }).then(function () {
+			am.pending = false; am.thinking = false;
+			if (!am.error && !am.content) am.error = am.stop === "stopped" ? T("Stopped before it wrote anything.") : T("No answer came back.");
+			LOCST.gen = false; save(); renderLog(); setBusy(false);
+		});
+	}
+	if (A.isLocal(S.model)) localPick();
 	function send(force) {
 		if (busy) return;
 		var u = who();
@@ -1872,6 +2198,7 @@
 		// "make a picture of ..." in the chat: offer the Picture / Video tab instead (the chat models only write text)
 		var wm = force === true ? null : A.wantsMedia(text);
 		if (wm && (wm.kind === "image" ? status.image : status.video)) { offerMedia(wm, text); return; }
+		if (A.isLocal(S.model)) return sendLocal();
 		if (!status.chat) { msg(T("MES AI chat is coming soon."), "err"); return; }
 		if (!u) { msg(T("Log in with your Hive account first (above)."), "err"); $("ai-acct-card").scrollIntoView({ block: "center" }); return; }
 		if (A.MODELS[S.model].text && PEND.length) { msg(T("This model reads text only. Pick Claude or ChatGPT for pictures and PDFs, or remove the files."), "err"); return; }

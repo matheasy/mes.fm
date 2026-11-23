@@ -719,6 +719,21 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
   #ai .ai-inrow .ai-send { flex: 1 1 100%; }
   #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
 }
+/* ---------- 2026-11-22: free model on this device (WebLLM) ---------- */
+#ai .ai-stop[hidden], #ai .ai-local[hidden] { display: none !important; }
+#ai .ai-inrow .ai-stop { flex: 0 0 auto; min-height: 2.9em; border: 1px solid var(--ai-err); background: transparent; color: var(--ai-err); font-weight: 700; }
+#ai.ai-busy .ai-inrow .ai-stop { opacity: 1; cursor: pointer; }
+#ai .ai-local { margin-top: .5em; padding: .55em .8em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
+#ai .ai-local p { margin: .25em 0; }
+#ai .ai-local .ai-lmain { line-height: 1.45; }
+#ai .ai-local .ai-lask { padding: .3em .5em; border-left: 3px solid var(--ai-acc); background: var(--ai-me); border-radius: .3em; }
+#ai .ai-local .ai-lbad b { color: var(--ai-warn); }
+#ai .ai-local .ai-lbar { height: .55em; border-radius: 999px; background: var(--ai-line); overflow: hidden; margin: .35em 0; }
+#ai .ai-local .ai-lbar i { display: block; height: 100%; background: var(--ai-acc); transition: width .2s; }
+#ai .ai-local .ai-ltx { font-size: .85em; overflow-wrap: anywhere; }
+#ai .ai-local .ai-lfine { font-size: .85em; }
+@media (max-width: 640px) { #ai .ai-inrow .ai-stop { min-width: 0; } }
+#ai .ai-attach:disabled { opacity: .45; cursor: not-allowed; }
 
 
 	@media print {
@@ -1129,6 +1144,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ai-inrow">
 				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="Demandez ce que vous voulez : code, recherche, maths, rédaction…  (Ctrl+Entrée pour envoyer)"></textarea>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Payer et envoyer</button>
+				<button type="button" class="tu-btn ai-stop" id="ai-stop" hidden title="Arrêter la réponse ici">■ Arrêter</button>
 				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="Ajoutez des images, des PDF ou des fichiers texte (ou déposez / collez-les ici)">📎 Ajouter des fichiers</button>
@@ -1141,6 +1157,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="Infos sur le modèle et coût de ce chat">ⓘ</button>
 				</div>
+				<div class="ai-local" id="ai-local" aria-live="polite" hidden></div>
 				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
@@ -1276,8 +1293,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>À propos de MES AI</h2>
 			<p>MES AI vous permet d'utiliser les meilleurs modèles d'IA sans forfait mensuel : Claude d'Anthropic (Sonnet 5.5 pour le travail courant, Opus 5.5 pour le code difficile et la recherche) ou les modèles ChatGPT d'OpenAI (GPT-6.2 Sol et Astra) pour discuter, GPT Image 2 d'OpenAI ou Grok Imagine de xAI pour les images, et Grok Imagine pour de courtes vidéos avec son. Vous payez quelques centimes en HBD par message sur la blockchain Hive, et seulement ce que vous utilisez.</p>
 			<p>Lisez l'annonce : <a href="/ai-claude-grok-chatgpt">MES AI : Claude, ChatGPT et Grok avec votre seul compte Hive</a> (aussi <a href="https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea" target="_blank" rel="noopener">sur InLeo</a>). Plus d'outils et d'articles sur Hive et la crypto : <a href="/crypto">MES Crypto</a>.</p>
+			<p>Plus de projets d’IA sur Hive : <a href="https://dhenz14.github.io/" target="_blank" rel="noopener">les applis de TheyCallMeDan</a>.</p>
 			<h3>Questions</h3>
 			<dl>
+				<dt>Y a-t-il un modèle gratuit sans compte Hive ?</dt>
+				<dd>Oui : les trois modèles de <b>Gratuit, sur cet appareil</b> (Llama 3.2 1B, Qwen3 1.7B et Llama 3.2 3B). Ils tournent dans votre navigateur, sur votre propre puce graphique, grâce à WebLLM : ils ne coûtent rien, ne demandent aucune connexion, et rien de ce que vous tapez n’est envoyé à mes.fm ni à une entreprise d’IA. La première fois, le modèle est téléchargé une seule fois (environ 0,7 à 1,8 Go) et votre navigateur le garde ; <b>Supprimer le modèle téléchargé</b> libère la place. Il faut WebGPU (Chrome, Edge ou Brave sur ordinateur, ou Safari 26 et plus) et assez de mémoire ; ils ne lisent que du texte, ne retiennent qu’une courte discussion et sont bien plus faibles que les modèles payants : bien pour les questions rapides, les brouillons et le code simple. Si votre appareil ne peut pas les faire tourner, utilisez les messages gratuits du jour.</dd>
 				<dt>Ai-je besoin d'un compte ?</dt>
 				<dd>Seulement d'un compte Hive, avec l'extension Hive Keychain pour navigateur ou l'appli Keychain sur téléphone. Pas d'e-mail, pas de mot de passe sur mes.fm. Pas encore de compte Hive ? <a href="https://signup.hive.io/" target="_blank" rel="noopener">Créez-en un sur signup.hive.io</a>.</dd>
 				<dt>Pourquoi payer par message plutôt qu'un abonnement ?</dt>
@@ -1353,7 +1373,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=7dd6b64c" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fr.js?v=03cbe434" defer></script><script src="/ai/js/ai.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

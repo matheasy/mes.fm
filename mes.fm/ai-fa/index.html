@@ -719,6 +719,21 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
   #ai .ai-inrow .ai-send { flex: 1 1 100%; }
   #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
 }
+/* ---------- 2026-11-22: free model on this device (WebLLM) ---------- */
+#ai .ai-stop[hidden], #ai .ai-local[hidden] { display: none !important; }
+#ai .ai-inrow .ai-stop { flex: 0 0 auto; min-height: 2.9em; border: 1px solid var(--ai-err); background: transparent; color: var(--ai-err); font-weight: 700; }
+#ai.ai-busy .ai-inrow .ai-stop { opacity: 1; cursor: pointer; }
+#ai .ai-local { margin-top: .5em; padding: .55em .8em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
+#ai .ai-local p { margin: .25em 0; }
+#ai .ai-local .ai-lmain { line-height: 1.45; }
+#ai .ai-local .ai-lask { padding: .3em .5em; border-left: 3px solid var(--ai-acc); background: var(--ai-me); border-radius: .3em; }
+#ai .ai-local .ai-lbad b { color: var(--ai-warn); }
+#ai .ai-local .ai-lbar { height: .55em; border-radius: 999px; background: var(--ai-line); overflow: hidden; margin: .35em 0; }
+#ai .ai-local .ai-lbar i { display: block; height: 100%; background: var(--ai-acc); transition: width .2s; }
+#ai .ai-local .ai-ltx { font-size: .85em; overflow-wrap: anywhere; }
+#ai .ai-local .ai-lfine { font-size: .85em; }
+@media (max-width: 640px) { #ai .ai-inrow .ai-stop { min-width: 0; } }
+#ai .ai-attach:disabled { opacity: .45; cursor: not-allowed; }
 
 
 	@media print {
@@ -1129,6 +1144,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ai-inrow">
 				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="هر چیزی بپرسید: کد، پژوهش، ریاضی، نوشتن…  (Ctrl+Enter برای ارسال)"></textarea>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">پرداخت &amp; ارسال</button>
+				<button type="button" class="tu-btn ai-stop" id="ai-stop" hidden title="پاسخ را همین‌جا متوقف کن">■ توقف</button>
 				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="تصویر، PDF یا فایل متنی اضافه کنید (یا اینجا رها / جای‌گذاری کنید)">📎 افزودن فایل</button>
@@ -1141,6 +1157,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="اطلاعات مدل و هزینه این گفت‌وگو تا اینجا">ⓘ</button>
 				</div>
+				<div class="ai-local" id="ai-local" aria-live="polite" hidden></div>
 				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
@@ -1276,8 +1293,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>دربارهٔ MES AI</h2>
 			<p>MES AI به شما امکان می‌دهد بدون اشتراک ماهانه از بهترین مدل‌های هوش مصنوعی استفاده کنید: Claude از Anthropic ‏(Sonnet 5.5 برای کارهای روزمره، Opus 5.5 برای برنامه‌نویسی دشوار و پژوهش) یا مدل‌های ChatGPT از OpenAI ‏(GPT-6.2 Sol و Astra) برای گفت‌وگو، GPT Image 2 از OpenAI یا Grok Imagine از xAI برای تصویر، و Grok Imagine برای ویدیوهای کوتاه با صدا. برای هر پیام چند سنت HBD روی بلاکچین Hive می‌پردازید، و فقط برای چیزی که استفاده می‌کنید.</p>
 			<p>اطلاعیه را بخوانید: <a href="/ai-claude-grok-chatgpt">MES AI: ‏Claude، ChatGPT &amp; Grok فقط با حساب Hive شما</a> (همچنین <a href="https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea" target="_blank" rel="noopener">در InLeo</a>). ابزارها و نوشته‌های بیشتر دربارهٔ Hive و رمزارز: <a href="/crypto">MES Crypto</a>.</p>
+			<p>پروژه‌های هوش مصنوعی بیشتر روی Hive: <a href="https://dhenz14.github.io/" target="_blank" rel="noopener">برنامه‌های TheyCallMeDan</a>.</p>
 			<h3>پرسش‌ها</h3>
 			<dl>
+				<dt>آیا مدل رایگانی هست که حساب Hive نخواهد؟</dt>
+				<dd>بله: سه مدلِ گروه <b>رایگان، روی این دستگاه</b> (Llama 3.2 1B، Qwen3 1.7B و Llama 3.2 3B). این‌ها با WebLLM درون مرورگر و روی تراشهٔ گرافیکی خود شما اجرا می‌شوند: هزینه‌ای ندارند، ورود نمی‌خواهند و هیچ چیز از آنچه می‌نویسید به mes.fm یا هیچ شرکت هوش مصنوعی فرستاده نمی‌شود. بار اول مدل فقط یک بار دانلود می‌شود (حدود ۰٫۷ تا ۱٫۸ گیگابایت) و مرورگر آن را نگه می‌دارد؛ <b>حذف مدل دانلودشده</b> فضا را آزاد می‌کند. به WebGPU (Chrome، Edge یا Brave روی رایانه، یا Safari 26 و جدیدتر) و حافظهٔ کافی نیاز دارند، فقط متن می‌خوانند، فقط یک گفتگوی کوتاه را به یاد می‌سپارند و بسیار ضعیف‌تر از مدل‌های پولی‌اند: برای پرسش‌های کوتاه، پیش‌نویس و کد ساده خوب‌اند. اگر دستگاه شما نمی‌تواند اجرایشان کند، از پیام‌های رایگان روزانه استفاده کنید.</dd>
 				<dt>آیا به حساب کاربری نیاز دارم؟</dt>
 				<dd>فقط یک حساب Hive، همراه با افزونهٔ مرورگر Hive Keychain یا برنامهٔ Keychain گوشی. بدون ایمیل، بدون رمز عبور در mes.fm. هنوز حساب Hive ندارید؟ <a href="https://signup.hive.io/" target="_blank" rel="noopener">در signup.hive.io یکی بسازید</a>.</dd>
 				<dt>چرا پرداخت برای هر پیام به‌جای اشتراک؟</dt>
@@ -1353,7 +1373,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fa.js?v=1e6a5928" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-fa.js?v=0569ff3f" defer></script><script src="/ai/js/ai.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

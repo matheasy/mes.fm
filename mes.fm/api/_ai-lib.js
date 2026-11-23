@@ -48,8 +48,62 @@
     llama: { prov: "openrouter", id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", blurb: "Meta's open model: cheap, plain answers. Text only.",
       inUsd: 0.4, outUsd: 1.2, caps: { short: 1500, medium: 5000, long: 16000 }, text: true, free: true },
     dspro: { prov: "openrouter", id: "deepseek/deepseek-v4-pro", name: "DeepSeek V4 Pro", blurb: "DeepSeek's stronger model for harder questions, still far cheaper than the big ones. Text only.",
-      inUsd: 1.4, outUsd: 4, caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true, text: true }
+      inUsd: 1.4, outUsd: 4, caps: { short: 3000, medium: 10000, long: 30000 }, thinks: true, text: true },
+    /* On this device (2026-11-22): FREE, runs in the visitor's own browser with WebLLM (LOCAL below) on the graphics chip (WebGPU).
+       Nothing is sent to mes.fm or to any AI company, no Hive login, no payment; never priced and refused by the server.
+       id = WebLLM prebuilt model id (f16 build: needs WebGPU "shader-f16"), id32 = the f32 build for GPUs without it.
+       mb = download size in MB (the weights, the same for both builds), vram / vram32 = graphics memory WebLLM says each build needs (MB).
+       caps = answer length in tokens (the model's whole memory is LOCAL.ctx tokens, so answers stay short). */
+    local1b: { prov: "local", id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", id32: "Llama-3.2-1B-Instruct-q4f32_1-MLC", name: "Llama 3.2 1B",
+      blurb: "Free and private: runs on your own computer, nothing is sent anywhere. The fastest and smallest, much weaker than the paid models. Text only.",
+      mb: 700, vram: 879, vram32: 1129, inUsd: 0, outUsd: 0, caps: { short: 400, medium: 900, long: 1600 }, text: true },
+    localqwen: { prov: "local", id: "Qwen3-1.7B-q4f16_1-MLC", id32: "Qwen3-1.7B-q4f32_1-MLC", name: "Qwen3 1.7B",
+      blurb: "Free and private: runs on your own computer, nothing is sent anywhere. A bit stronger and good in many languages, still much weaker than the paid models. Text only.",
+      mb: 970, vram: 2037, vram32: 2635, inUsd: 0, outUsd: 0, caps: { short: 400, medium: 900, long: 1600 }, text: true },
+    local3b: { prov: "local", id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", id32: "Llama-3.2-3B-Instruct-q4f32_1-MLC", name: "Llama 3.2 3B",
+      blurb: "Free and private: runs on your own computer, nothing is sent anywhere. The best of the three, for strong computers; still weaker than the paid models. Text only.",
+      mb: 1810, vram: 2264, vram32: 2952, inUsd: 0, outUsd: 0, caps: { short: 400, medium: 900, long: 1600 }, text: true }
   };
+  /* WebLLM (MIT, github.com/mlc-ai/web-llm): one self-contained ES module, loaded with import() only when a local model is picked.
+     Pinned; the models come from huggingface.co/mlc-ai and are kept by the browser (Cache API) after the first download. */
+  var LOCAL = { ver: "0.2.87", url: "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.87/lib/index.js", ctx: 4096 };
+  var LOCAL_WHY = {
+    nogpu: "This browser has no WebGPU, which is needed to run AI on your own device. Chrome, Edge or Brave on a computer have it (Safari 26 and newer too).",
+    noadapter: "WebGPU is there but found no usable graphics chip (it may be switched off, or the computer is too old).",
+    lowmem: "This device does not have enough memory for this model. Try a smaller one.",
+    small: "This graphics chip is too small for AI models."
+  };
+  function isLocal(k) { return !!(MODELS[k] && MODELS[k].prov === "local"); }
+  /* can model k run here? env = {gpu: navigator.gpu present, adapter: got one, f16: "shader-f16" feature, maxBuf: adapter maxBufferSize (bytes),
+     mem: navigator.deviceMemory (GB, rounded down, at most 8, or null)} -> {ok, id, vram, why (LOCAL_WHY key), f32} */
+  function localCheck(k, env) {
+    var m = MODELS[k]; env = env || {};
+    if (!m || m.prov !== "local") return { ok: false, why: "nogpu" };
+    if (!env.gpu) return { ok: false, why: "nogpu" };
+    if (!env.adapter) return { ok: false, why: "noadapter" };
+    if (env.maxBuf && env.maxBuf < 128 * 1048576) return { ok: false, why: "small" };
+    var f32 = !env.f16, vram = f32 ? m.vram32 : m.vram;
+    // deviceMemory is the whole computer's memory: the model (plus the browser) should fit in about half of it
+    if (env.mem && env.mem * 1024 * 0.55 < vram) return { ok: false, why: "lowmem", vram: vram };
+    return { ok: true, id: f32 ? m.id32 : m.id, vram: vram, f32: f32 };
+  }
+  /* fit a chat into the local model's memory (LOCAL.ctx tokens incl. the answer): drop the oldest exchanges first.
+     -> {messages, dropped (messages left out)} or null when even the last message alone is too long */
+  function localTrim(sys, messages, maxOut) {
+    var budget = LOCAL.ctx - (maxOut || 0) - estimateTokens(sys) - 32, msgs = (messages || []).slice(), dropped = 0;
+    var size = function (l) { return l.reduce(function (n, m) { return n + estimateTokens(m.content) + 4; }, 0); };
+    while (msgs.length > 1 && size(msgs) > budget) { msgs.splice(0, msgs.length > 2 ? 2 : 1); dropped += 2; }
+    if (!msgs.length || size(msgs) > budget) return null;
+    if (msgs[0].role !== "user") { msgs.shift(); dropped++; }
+    return { messages: msgs, dropped: Math.min(dropped, (messages || []).length) };
+  }
+  // small models may write their thinking in <think>...</think>: -> {text (without it), think: still inside an open block}
+  function splitThink(t) {
+    t = String(t || "");
+    var out = t.replace(/<think>[\s\S]*?<\/think>\s*/g, ""), open = out.indexOf("<think>");
+    if (open >= 0) return { text: out.slice(0, open), think: true };
+    return { text: out.replace(/^\s+/, ""), think: false };
+  }
   /* free daily messages (2026-11-21): FREE.perDay messages a day per Hive account on the models marked free, always a Short answer
      (FREE.maxOut tokens) and a chat of at most FREE.maxIn tokens (counted the safe way, 1 token a character). The account is proven once a
      day with a Keychain signature of freeMessage(acct, day) (no payment, no fee). All free messages together stop at FREE.usdPerDay of
@@ -58,7 +112,7 @@
   function freeMessage(acct, day) { return "mes.fm/ai free messages for @" + acct + " on " + day; }
   function utcDay(ms) { return new Date(ms == null ? Date.now() : ms).toISOString().slice(0, 10); }
   function freeWorstUsd(modelKey) { var m = MODELS[modelKey]; return m && m.free ? (FREE.maxIn * m.inUsd + FREE.maxOut * m.outUsd) / 1e6 : 0; }
-  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter" };
+  var PROVIDERS = { anthropic: "Anthropic", openai: "OpenAI", xai: "xAI", openrouter: "OpenRouter", local: "WebLLM" };
   var DEFAULT_MODEL = "sonnet";
   var LENGTHS = { short: "Short", medium: "Medium", long: "Long" };
 
@@ -169,8 +223,11 @@
   var LANGS = { es: "Spanish", "pt-BR": "Brazilian Portuguese", fr: "French", de: "German", tr: "Turkish", ru: "Russian", "zh-CN": "Simplified Chinese",
     hi: "Hindi", id: "Indonesian", vi: "Vietnamese", ar: "Arabic", fa: "Persian (Farsi)" };
   function cleanLang(l) { return typeof l === "string" && Object.prototype.hasOwnProperty.call(LANGS, l) ? l : "en"; }
+  // the local models have a small memory (LOCAL.ctx tokens), so they get a short version
+  var LOCAL_SYSTEM = "You are MES AI, a small AI model running privately on the user's own device inside mes.fm (Math Easy Solutions). " +
+    "Be helpful, clear and brief. Say when you are not sure. Use Markdown and fenced code blocks. Use LaTeX ($...$) only for real math formulas, never around plain words or names.";
   function systemFor(modelKey, lang) {
-    var m = MODELS[modelKey], s = m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT")
+    var m = MODELS[modelKey], s = m && m.prov === "local" ? LOCAL_SYSTEM.replace("You are MES AI", "You are MES AI (" + m.name + ")") : m && m.prov === "openai" ? SYSTEM.replace("running on Anthropic's Claude", "running on OpenAI's GPT")
       : m && m.prov === "openrouter" ? SYSTEM.replace("running on Anthropic's Claude", "running on " + m.name) : SYSTEM;
     lang = cleanLang(lang);
     return lang === "en" ? s : s + " The person is using the " + LANGS[lang] + " version of this page: answer in " + LANGS[lang] + " by default; if they write in another language, answer in the language they write in.";
@@ -553,6 +610,7 @@
     newId: newId, validId: validId, memoFor: memoFor, idFromMemo: idFromMemo, validName: validName,
     checkMessages: checkMessages, cleanMessages: cleanMessages, checkImage: checkImage,
     FILES: FILES, checkFile: checkFile, fileTokens: fileTokens, toAnthropic: toAnthropic, toOpenAIChat: toOpenAIChat, toOpenAIResponses: toOpenAIResponses,
-    parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece
+    parseAmount: parseAmount, findPayment: findPayment, sseSplit: sseSplit, streamPiece: streamPiece,
+    LOCAL: LOCAL, LOCAL_WHY: LOCAL_WHY, isLocal: isLocal, localCheck: localCheck, localTrim: localTrim, splitThink: splitThink
   };
 });

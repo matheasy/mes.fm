@@ -719,6 +719,21 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
   #ai .ai-inrow .ai-send { flex: 1 1 100%; }
   #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
 }
+/* ---------- 2026-11-22: free model on this device (WebLLM) ---------- */
+#ai .ai-stop[hidden], #ai .ai-local[hidden] { display: none !important; }
+#ai .ai-inrow .ai-stop { flex: 0 0 auto; min-height: 2.9em; border: 1px solid var(--ai-err); background: transparent; color: var(--ai-err); font-weight: 700; }
+#ai.ai-busy .ai-inrow .ai-stop { opacity: 1; cursor: pointer; }
+#ai .ai-local { margin-top: .5em; padding: .55em .8em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
+#ai .ai-local p { margin: .25em 0; }
+#ai .ai-local .ai-lmain { line-height: 1.45; }
+#ai .ai-local .ai-lask { padding: .3em .5em; border-left: 3px solid var(--ai-acc); background: var(--ai-me); border-radius: .3em; }
+#ai .ai-local .ai-lbad b { color: var(--ai-warn); }
+#ai .ai-local .ai-lbar { height: .55em; border-radius: 999px; background: var(--ai-line); overflow: hidden; margin: .35em 0; }
+#ai .ai-local .ai-lbar i { display: block; height: 100%; background: var(--ai-acc); transition: width .2s; }
+#ai .ai-local .ai-ltx { font-size: .85em; overflow-wrap: anywhere; }
+#ai .ai-local .ai-lfine { font-size: .85em; }
+@media (max-width: 640px) { #ai .ai-inrow .ai-stop { min-width: 0; } }
+#ai .ai-attach:disabled { opacity: .45; cursor: not-allowed; }
 
 
 	@media print {
@@ -1129,6 +1144,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ai-inrow">
 				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="Tanya apa saja: kode, riset, matematika, tulisan…  (Ctrl+Enter untuk kirim)"></textarea>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">Bayar &amp; kirim</button>
+				<button type="button" class="tu-btn ai-stop" id="ai-stop" hidden title="Hentikan jawaban di sini">■ Berhenti</button>
 				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="Tambahkan gambar, PDF, atau file teks (atau seret / tempel di sini)">📎 Tambah file</button>
@@ -1141,6 +1157,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="Info model dan biaya chat ini sejauh ini">ⓘ</button>
 				</div>
+				<div class="ai-local" id="ai-local" aria-live="polite" hidden></div>
 				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
@@ -1276,8 +1293,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>Tentang MES AI</h2>
 			<p>MES AI membuatmu bisa memakai model AI teratas tanpa paket bulanan: Claude dari Anthropic (Sonnet 5.5 untuk pekerjaan sehari-hari, Opus 5.5 untuk coding dan riset yang sulit) atau model ChatGPT dari OpenAI (GPT-6.2 Sol dan Astra) untuk obrolan, GPT Image 2 dari OpenAI atau Grok Imagine dari xAI untuk gambar, dan Grok Imagine untuk video pendek bersuara. Kamu membayar HBD senilai beberapa sen per pesan di blockchain Hive, dan hanya untuk yang kamu pakai.</p>
 			<p>Baca pengumumannya: <a href="/ai-claude-grok-chatgpt">MES AI: Claude, ChatGPT &amp; Grok hanya dengan akun Hive-mu</a> (juga <a href="https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea" target="_blank" rel="noopener">di InLeo</a>). Alat dan tulisan Hive dan kripto lainnya: <a href="/crypto">MES Crypto</a>.</p>
+			<p>Proyek AI lain di Hive: <a href="https://dhenz14.github.io/" target="_blank" rel="noopener">aplikasi buatan TheyCallMeDan</a>.</p>
 			<h3>Pertanyaan</h3>
 			<dl>
+				<dt>Apakah ada model gratis tanpa akun Hive?</dt>
+				<dd>Ada: tiga model di <b>Gratis, di perangkat ini</b> (Llama 3.2 1B, Qwen3 1.7B, dan Llama 3.2 3B). Model ini berjalan di dalam browsermu, di chip grafismu sendiri, dengan WebLLM: tanpa biaya, tanpa login, dan tidak ada yang kamu ketik dikirim ke mes.fm atau perusahaan AI mana pun. Pertama kali, model diunduh sekali saja (sekitar 0,7 sampai 1,8 GB) dan disimpan browsermu; <b>Hapus model yang diunduh</b> mengosongkan ruangnya. Perlu WebGPU (Chrome, Edge, atau Brave di komputer, atau Safari 26 ke atas) dan memori yang cukup; model ini hanya membaca teks, hanya mengingat obrolan singkat, dan jauh lebih lemah dari model berbayar: cocok untuk pertanyaan singkat, draf, dan kode sederhana. Kalau perangkatmu tidak mampu, pakai pesan gratis harian.</dd>
 				<dt>Apakah aku perlu akun?</dt>
 				<dd>Hanya akun Hive, dengan ekstensi browser Hive Keychain atau aplikasi ponsel Keychain. Tidak perlu email, tidak perlu kata sandi di mes.fm. Belum punya akun Hive? <a href="https://signup.hive.io/" target="_blank" rel="noopener">Buat di signup.hive.io</a>.</dd>
 				<dt>Kenapa bayar per pesan, bukan berlangganan?</dt>
@@ -1353,7 +1373,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=bef78e76" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-id.js?v=3bed6d21" defer></script><script src="/ai/js/ai.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

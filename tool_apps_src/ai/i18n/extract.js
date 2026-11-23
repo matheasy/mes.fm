@@ -22,6 +22,7 @@ function collect() {
 	Object.keys(A.IMAGES).forEach((k) => keys.add(A.IMAGES[k].name));
 	Object.keys(A.XIMAGE.res).forEach((k) => keys.add(A.XIMAGE.res[k]));
 	Object.keys(A.VIDEO.models).forEach((k) => keys.add(A.VIDEO.models[k].name));
+	Object.keys(A.LOCAL_WHY).forEach((k) => keys.add(A.LOCAL_WHY[k]));
 	return [...keys].filter((k) => k && /[A-Za-z]/.test(k)).sort();
 }
 function phs(s) { return (String(s).match(/\{\w+\}/g) || []).sort().join(','); }

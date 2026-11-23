@@ -719,6 +719,21 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
   #ai .ai-inrow .ai-send { flex: 1 1 100%; }
   #ai .ai-compose .ai-price { text-align: left; flex-basis: auto; }
 }
+/* ---------- 2026-11-22: free model on this device (WebLLM) ---------- */
+#ai .ai-stop[hidden], #ai .ai-local[hidden] { display: none !important; }
+#ai .ai-inrow .ai-stop { flex: 0 0 auto; min-height: 2.9em; border: 1px solid var(--ai-err); background: transparent; color: var(--ai-err); font-weight: 700; }
+#ai.ai-busy .ai-inrow .ai-stop { opacity: 1; cursor: pointer; }
+#ai .ai-local { margin-top: .5em; padding: .55em .8em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
+#ai .ai-local p { margin: .25em 0; }
+#ai .ai-local .ai-lmain { line-height: 1.45; }
+#ai .ai-local .ai-lask { padding: .3em .5em; border-left: 3px solid var(--ai-acc); background: var(--ai-me); border-radius: .3em; }
+#ai .ai-local .ai-lbad b { color: var(--ai-warn); }
+#ai .ai-local .ai-lbar { height: .55em; border-radius: 999px; background: var(--ai-line); overflow: hidden; margin: .35em 0; }
+#ai .ai-local .ai-lbar i { display: block; height: 100%; background: var(--ai-acc); transition: width .2s; }
+#ai .ai-local .ai-ltx { font-size: .85em; overflow-wrap: anywhere; }
+#ai .ai-local .ai-lfine { font-size: .85em; }
+@media (max-width: 640px) { #ai .ai-inrow .ai-stop { min-width: 0; } }
+#ai .ai-attach:disabled { opacity: .45; cursor: not-allowed; }
 
 
 	@media print {
@@ -1129,6 +1144,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="ai-inrow">
 				<textarea id="ai-in" class="tu-input ai-in" rows="2" placeholder="想问什么都行：编程、研究、数学、写作……（Ctrl+Enter 发送）"></textarea>
 				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ai-send">付款并发送</button>
+				<button type="button" class="tu-btn ai-stop" id="ai-stop" hidden title="在此停止回答">■ 停止</button>
 				</div>
 				<div class="ai-opts">
 					<button type="button" class="tu-btn tu-btn--ghost ai-attach" id="ai-attach" title="添加图片、PDF 或文本文件（也可以拖放 / 粘贴到这里）">📎 添加文件</button>
@@ -1141,6 +1157,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="ai-price" id="ai-price" aria-live="polite"></div>
 					<button type="button" class="ai-dettog" data-det aria-expanded="false" title="模型信息和本次聊天的花费">ⓘ</button>
 				</div>
+				<div class="ai-local" id="ai-local" aria-live="polite" hidden></div>
 				<div class="ai-det" hidden>
 				<p class="ai-modelnote tu-note" id="ai-modelnote"></p>
 				<p class="ai-cost" id="ai-cost" aria-live="polite" hidden></p>
@@ -1276,8 +1293,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h2>关于 MES AI</h2>
 			<p>MES AI 让你无需月度套餐就能使用顶尖 AI 模型：聊天可用 Anthropic 的 Claude（日常工作用 Sonnet 5.5，困难的编程和研究用 Opus 5.5）或 OpenAI 的 ChatGPT 模型（GPT-6.2 Sol 和 Astra），图片可用 OpenAI 的 GPT Image 2 或 xAI 的 Grok Imagine，带声音的短视频可用 Grok Imagine。你在 Hive 区块链上为每条消息支付几美分的 HBD，只为你用到的部分付费。</p>
 			<p>阅读公告：<a href="/ai-claude-grok-chatgpt">MES AI：只用你的 Hive 账户就能使用 Claude、ChatGPT 和 Grok</a>（也可在 <a href="https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea" target="_blank" rel="noopener">InLeo 上阅读</a>）。更多 Hive 和加密货币工具与文章：<a href="/crypto">MES Crypto</a>。</p>
+			<p>更多 Hive 上的 AI 项目：<a href="https://dhenz14.github.io/" target="_blank" rel="noopener">TheyCallMeDan 的应用</a>。</p>
 			<h3>常见问题</h3>
 			<dl>
+				<dt>有不需要 Hive 账户的免费模型吗？</dt>
+				<dd>有：<b>免费，在此设备上</b> 分组中的三个模型（Llama 3.2 1B、Qwen3 1.7B 和 Llama 3.2 3B）。它们借助 WebLLM 在你的浏览器里、用你自己的显卡运行：不花钱、不用登录，你输入的任何内容都不会发送到 mes.fm 或任何 AI 公司。第一次使用时模型只需下载一次（约 0.7 到 1.8 GB），之后由浏览器保存；<b>删除已下载的模型</b> 可释放空间。它们需要 WebGPU（电脑上的 Chrome、Edge 或 Brave，或 Safari 26 及更新版本）和足够的内存，只能读文字，只记得较短的对话，而且比付费模型弱得多：适合简单问题、草稿和简单代码。如果你的设备运行不了，请使用每日免费消息。</dd>
 				<dt>我需要注册账户吗？</dt>
 				<dd>只需要一个 Hive 账户，配合 Hive Keychain 浏览器扩展或 Keychain 手机应用。在 mes.fm 上不需要邮箱，也不需要密码。还没有 Hive 账户？<a href="https://signup.hive.io/" target="_blank" rel="noopener">在 signup.hive.io 注册一个</a>。</dd>
 				<dt>为什么按消息付费，而不是订阅？</dt>
@@ -1353,7 +1373,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=e0313620" defer></script><script src="/ai/js/ai.js?v=16" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=34717d45" defer></script><script src="/ai/js/ai.js?v=17" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
