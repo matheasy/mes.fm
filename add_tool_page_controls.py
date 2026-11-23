@@ -134,6 +134,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("blocks", "Falling Blocks"),   # 2026-11-20
     ("click-test", "Click Speed Test"),   # 2026-11-18
     ("connect-four", "Connect Four"),   # 2026-11-07
+    ("free-kick", "Free Kicks & Penalties"),   # 2026-11-23
     ("chess", "Chess"),   # 2026-11-12
     ("billiards", "Billiards"),   # 2026-11-09
     ("8-ball", "8-Ball Pool", "/billiards"),

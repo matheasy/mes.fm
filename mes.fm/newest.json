@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/free-kick",
+   "title": "Free Kicks & Penalties",
+   "icon": "/img/free-kick-logo.png",
+   "desc": "Curl it round the wall, dip it, knuckle it, win the shootout. Kick or keep vs the computer, a friend or online.",
+   "added": "2026-11-23",
+   "kind": "tool"
+  },
+  {
    "href": "/investment-tracker",
    "title": "Investment Tracker",
    "icon": "/img/investment-tracker-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.",
    "added": "2026-11-16",
    "kind": "tool"
-  },
-  {
-   "href": "/darkroom",
-   "title": "Darkroom: Photo Library & RAW Editor",
-   "icon": "/img/darkroom-logo.png",
-   "desc": "A free Lightroom alternative: rate and keyword your photos, develop RAW files with curves, colour grading, masks and healing, then batch export. Nothing is uploaded.",
-   "added": "2026-11-14",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/free-kick",
+   "title": "Free Kicks & Penalties",
+   "icon": "/img/free-kick-logo.png",
+   "desc": "Curl it round the wall, dip it, knuckle it, win the shootout. Kick or keep vs the computer, a friend or online.",
+   "added": "2026-11-23",
+   "kind": "tool"
+  },
   {
    "href": "/investment-tracker",
    "title": "Investment Tracker",
@@ -252,14 +260,6 @@
    "desc": "Split a group trip fairly: by nights stayed, shares or exact amounts, non-drinkers left out, fewest payments to settle up.",
    "added": "2026-11-19",
    "kind": "calculator"
-  },
-  {
-   "href": "/ai",
-   "title": "MES AI",
-   "icon": "/img/ai-logo.png",
-   "desc": "Chat with top AI models (Claude Sonnet and Opus) for coding, research and writing, and make pictures. See the price first, pay per message in HBD. No plan.",
-   "added": "2026-11-18",
-   "kind": "tool"
   }
  ]
 }

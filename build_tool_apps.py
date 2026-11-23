@@ -1696,6 +1696,13 @@ APPS = {
                 tag="Four in a row, and every variation.", accent="#1d4ed8", dark="#1e3a8a", tint="#e0e9ff",
                 desc="Play Connect Four free against the computer at several levels, a friend on the same device or someone online (as a guest or on the Hive blockchain), with variants: connect 3, 5 or 6, bigger and smaller boards, Pop Out, PopTen-style rules, misere, three players and your own size.",
                 js_v="2", pre_js=["/main_js/hive.js?v=2"]),
+    # MES Free Kicks & Penalties (2026-11-23): tool_apps_src/free-kick (lib.js = MESFreeKick physics + rules + computer + Hive protocol, also
+    # mes.fm/api/_free-kick-lib.js for api/free-kick.js: cp after editing; view3d.js = FK3D). Tests: node tool_apps_src/free-kick-tests.js.
+    "free-kick": dict(title="MES Free Kicks & Penalties", page_title="Free Kicks & Penalties: Curl It, Dip It, Beat the Keeper",
+                tag="Set pieces with real ball physics: kick, keep, play anyone.", accent="#1b7a3a", dark="#145c2b", tint="#dff1e4",
+                desc="Take free kicks from any spot, curl them around the wall or dip them over it, hit knuckleballs and win penalty shootouts. Real ball physics (drag, curl, dip, knuckle), a wall that can jump and a keeper that dives. Play the computer, a friend, someone online or a Hive user, as the kicker or the goalkeeper, in 3D or 2D.",
+                meta_desc="Free kicks and penalty shootouts with real ball physics: curl, dip, knuckleballs, a jumping wall and a diving keeper. Play the computer, a friend or online.",
+                js_v="1", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",

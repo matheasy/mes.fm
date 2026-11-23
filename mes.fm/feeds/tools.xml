@@ -5,13 +5,22 @@
   <link>https://mes.fm/tools</link>
   <description>New free calculators and tools on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 18:14:59 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 18:17:05 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/tools.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>New MES Calculators &amp; Tools</title><link>https://mes.fm/tools</link></image>
   <podcast:guid>d20538e6-7ed6-5439-8d17-06a28a7778f2</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Investment Tracker</title>
+    <link>https://mes.fm/investment-tracker</link>
+    <guid isPermaLink="true">https://mes.fm/investment-tracker</guid>
+    <pubDate>Mon, 23 Nov 2026 18:17:05 GMT</pubDate>
+    <category>Tools</category>
+    <description>A private portfolio tracker for stocks, ETFs and crypto: live prices, gains, dividends, realized gains by tax year, wallet balances and CSV import.</description>
+    <media:thumbnail url="https://mes.fm/img/investment-tracker-logo.png"/>
+  </item>
   <item>
     <title>RSS Feeds</title>
     <link>https://mes.fm/feeds</link>
@@ -452,15 +461,6 @@
     <category>Tools</category>
     <description>View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.</description>
     <media:thumbnail url="https://mes.fm/img/gallery-logo.png"/>
-  </item>
-  <item>
-    <title>Spin Simulator</title>
-    <link>https://mes.fm/spin-simulator</link>
-    <guid isPermaLink="true">https://mes.fm/spin-simulator</guid>
-    <pubDate>Mon, 02 Nov 2026 03:29:36 GMT</pubDate>
-    <category>Tools</category>
-    <description>Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).</description>
-    <media:thumbnail url="https://mes.fm/img/spin-simulator-logo.png"/>
   </item>
 </channel>
 </rss>

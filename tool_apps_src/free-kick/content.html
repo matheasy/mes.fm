@@ -1,0 +1,161 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<script src="/main_js/panel-view.js" defer></script>
+	<div class="tu fk" id="fk">
+		<div class="fk-tabs" id="fk-tabs" role="tablist" aria-label="Free kicks sections">
+			<button type="button" class="fk-tab" role="tab" data-t="play" aria-selected="true" aria-controls="fk-p-play">Play</button><button type="button" class="fk-tab" role="tab" data-t="online" aria-selected="false" aria-controls="fk-p-online" tabindex="-1">Play online</button><button type="button" class="fk-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="fk-p-stats" tabindex="-1">Statistics</button><button type="button" class="fk-tab" role="tab" data-t="how" aria-selected="false" aria-controls="fk-p-how" tabindex="-1">How it works</button>
+		</div>
+
+		<section id="fk-p-play" role="tabpanel" aria-label="Play">
+			<div class="tu-card fk-setup" id="fk-setup">
+				<div class="tu-row">
+					<div class="tu-field fk-f-mode"><label for="fk-mode">Game</label>
+						<select id="fk-mode" class="tu-select"></select></div>
+					<div class="tu-field fk-f-seg fk-match"><span class="tu-label" id="fk-opp-l">Play against</span>
+						<div class="tu-seg" id="fk-opp" role="group" aria-labelledby="fk-opp-l"><button type="button" data-v="cpu" aria-pressed="true">Computer</button><button type="button" data-v="local" aria-pressed="false">A friend here</button></div></div>
+					<div class="tu-field fk-f-seg fk-match fk-cpu"><span class="tu-label" id="fk-first-l">You start as</span>
+						<div class="tu-seg" id="fk-first" role="group" aria-labelledby="fk-first-l"><button type="button" data-v="0" aria-pressed="true">Kicker</button><button type="button" data-v="1" aria-pressed="false">Keeper</button></div></div>
+					<div class="tu-field fk-f-seg fk-lvwrap"><span class="tu-label" id="fk-lv-l">Computer level</span>
+						<div class="tu-seg" id="fk-lv" role="group" aria-labelledby="fk-lv-l"><button type="button" data-v="none" aria-pressed="false" class="fk-nogk">No keeper</button><button type="button" data-v="easy" aria-pressed="false">Easy</button><button type="button" data-v="medium" aria-pressed="true">Medium</button><button type="button" data-v="hard" aria-pressed="false">Hard</button><button type="button" data-v="pro" aria-pressed="false">Pro</button></div></div>
+				</div>
+				<p class="fk-desc" id="fk-desc"></p>
+				<div class="fk-opts">
+					<label class="fk-spreadwrap"><input type="checkbox" id="fk-spread" checked> Aim spread (real shots miss a little, more when you blast it)</label>
+					<label><input type="checkbox" id="fk-live" checked> Keeper reacts live (click where to dive while the ball flies)</label>
+					<label><span>Guide</span> <select id="fk-guide" class="tu-select fk-mini"><option value="full">Full path</option><option value="start">First part</option><option value="off">Off</option></select></label>
+					<label><span>Speed</span> <select id="fk-slow" class="tu-select fk-mini"><option value="1">Real time</option><option value="0.5">Slow motion ½</option><option value="0.25">Slow motion ¼</option></select></label>
+				</div>
+			</div>
+
+			<div class="fk-view" id="fk-view">
+				<div class="fk-vbar">
+					<p class="fk-status" id="fk-status" role="status" aria-live="polite"></p>
+					<span class="fk-vbtns" id="fk-pbar" role="group" aria-label="Game"><button type="button" class="fk-vb fk-vb--main" id="fk-new" title="Start again (N)">↺ New game</button><button type="button" class="fk-vb" id="fk-dim" title="Switch between the 3D view and the 2D view from above (V)">2D</button><select id="fk-cam" class="tu-select fk-mini" title="Camera (C)" aria-label="Camera"><option value="behind">Behind the ball</option><option value="keeper">Keeper's view</option><option value="tv">TV camera</option><option value="high">High behind</option></select><button type="button" class="fk-vb" id="fk-hsave" hidden title="Write this match's kicks and result to your Hive account (self-reported)">⬢ Save to Hive</button></span>
+				</div>
+				<div class="fk-score" id="fk-score" aria-label="Score"></div>
+				<div class="fk-online-bar" id="fk-obar" hidden></div>
+				<div class="fk-stage" id="fk-stage">
+					<canvas class="fk-cv" id="fk-cv" aria-label="The pitch and the goal. Click or tap in the goal to aim (or to choose where the keeper dives)."></canvas>
+					<div class="fk-3d" id="fk-3d" hidden></div>
+					<canvas class="fk-map" id="fk-map" hidden aria-label="Pitch from above: drag the ball to move the free kick"></canvas>
+					<div class="fk-banner" id="fk-banner" hidden></div>
+					<div class="fk-hint" id="fk-hint"></div>
+					<div class="fk-load" id="fk-load" hidden>Loading the 3D view…</div>
+				</div>
+
+				<div class="fk-ctl" id="fk-ctl">
+					<div class="fk-kick" id="fk-kickctl">
+						<div class="fk-sl"><label for="fk-power">Power <b id="fk-powerv"></b></label><input type="range" id="fk-power" min="10" max="34" step="0.5" value="24"></div>
+						<div class="fk-sl"><label for="fk-curl">Curl <b id="fk-curlv"></b></label><input type="range" id="fk-curl" min="-12" max="12" step="0.5" value="0"></div>
+						<div class="fk-sl"><label for="fk-dip">Dip / float <b id="fk-dipv"></b></label><input type="range" id="fk-dip" min="-6" max="10" step="0.5" value="0"></div>
+						<div class="fk-styles" role="group" aria-label="Quick styles"><button type="button" class="fk-vb" data-style="place">Placed</button><button type="button" class="fk-vb" data-style="curl">Curler</button><button type="button" class="fk-vb" data-style="dip">Dipper</button><button type="button" class="fk-vb" data-style="knuckle">Knuckleball</button><button type="button" class="fk-vb" data-style="chip">Chip</button><button type="button" class="fk-vb" data-style="blast">Blast</button></div>
+						<button type="button" class="fk-shoot" id="fk-shoot" title="Shoot (Space). Hold to charge the power.">⚽ Shoot</button>
+					</div>
+					<div class="fk-keep" id="fk-keepctl" hidden>
+						<p class="fk-keepnote" id="fk-keepnote">Click in the goal where to dive, then choose when.</p>
+						<div class="tu-seg" id="fk-when" role="group" aria-label="When to dive"><button type="button" data-v="0" aria-pressed="false">Early (guess)</button><button type="button" data-v="180" aria-pressed="true">On the kick</button><button type="button" data-v="320" aria-pressed="false">Wait and read</button><button type="button" data-v="-1" aria-pressed="false">Stay</button></div>
+						<button type="button" class="fk-shoot fk-shoot--gk" id="fk-dive">🧤 Ready</button>
+					</div>
+					<div class="fk-fkset" id="fk-fkset" hidden>
+						<p class="fk-spot" id="fk-spot"></p>
+						<div class="fk-fkrow">
+							<button type="button" class="fk-vb" id="fk-rand" title="A random free-kick spot (R)">🎲 Random spot</button>
+							<label>Wall <select id="fk-wall" class="tu-select fk-mini"><option value="auto">Auto</option><option value="0">None</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label>
+							<label><input type="checkbox" id="fk-jump"> Wall jumps</label>
+							<label class="fk-slw">Wall shift <input type="range" id="fk-shift" min="-150" max="150" step="10" value="0"></label>
+							<label class="fk-slw">Keeper starts <input type="range" id="fk-kx" min="-150" max="150" step="5" value="0"></label>
+							<button type="button" class="fk-vb" id="fk-autokx">Auto keeper</button>
+						</div>
+						<p class="tu-note fk-mapnote">Drag the ball on the pitch (from above) to move the free kick. The wall stands 9.15 m away, as the rules say.</p>
+					</div>
+				</div>
+				<ol class="fk-log" id="fk-log" aria-label="Kicks"></ol>
+			</div>
+			<p class="tu-note">Keys: <kbd>Space</kbd> shoot / ready, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, <kbd>R</kbd> random spot, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
+		</section>
+
+		<section id="fk-p-online" role="tabpanel" aria-label="Play online" hidden>
+			<div class="tu-card">
+				<h2 class="fk-h">Play someone online as a guest</h2>
+				<p class="fk-sub">No account needed. Make a match and send the link to a friend, or pick an open match below. You take turns: the kicker aims, the keeper chooses a dive without seeing the shot, and mes.fm's server works out what happens.</p>
+				<div class="tu-row">
+					<div class="tu-field fk-f-name"><label for="fk-name">Your name</label><input id="fk-name" class="tu-input" maxlength="24" autocomplete="nickname" placeholder="Guest"></div>
+					<div class="tu-field"><label for="fk-omode">Match</label><select id="fk-omode" class="tu-select"><option value="P">Penalty shootout</option><option value="F">Free-kick match</option></select></div>
+					<div class="tu-field fk-f-seg"><span class="tu-label" id="fk-ofirst-l">Who kicks first</span>
+						<div class="tu-seg" id="fk-ofirst" role="group" aria-labelledby="fk-ofirst-l"><button type="button" data-v="host" aria-pressed="true">Me</button><button type="button" data-v="guest" aria-pressed="false">The other player</button><button type="button" data-v="random" aria-pressed="false">Random</button></div></div>
+				</div>
+				<label class="fk-chk"><input type="checkbox" id="fk-opub" checked> List my match under "Open matches" so anyone can join</label>
+				<p><button type="button" class="tu-btn tu-btn--primary" id="fk-ocreate">Make a guest match</button></p>
+			</div>
+			<div class="tu-card">
+				<div class="fk-lobhead"><h2 class="fk-h">Open matches</h2><button type="button" class="tu-btn" id="fk-orefresh">↻ Refresh</button></div>
+				<div id="fk-lobby"><p class="fk-sub">Loading…</p></div>
+			</div>
+			<div class="tu-card fk-hive" id="fk-hive">
+				<h2 class="fk-h"><span class="fk-hivelogo" aria-hidden="true">⬢</span> Play on Hive</h2>
+				<p class="fk-sub">Every kick and dive is signed with your Hive account (Hive Keychain or the Keychain phone app) and kept on the Hive blockchain. For each kick the keeper first posts a sealed dive (a hash), then the kicker posts the shot, then the keeper opens the seal. Both browsers replay the same physics, so nobody can change a kick or the result, and the aim spread comes from the keeper's seal, so the kicker cannot know it in advance.</p>
+				<div id="fk-hlogin"></div>
+				<div id="fk-hmake" hidden>
+					<div class="tu-row">
+						<div class="tu-field fk-f-name"><label for="fk-hto">Challenge an account (optional)</label><input id="fk-hto" class="tu-input" maxlength="17" autocomplete="off" spellcheck="false" placeholder="@username, or leave empty"></div>
+					</div>
+					<p class="fk-sub">Match and who kicks first: the settings above.</p>
+					<p><button type="button" class="tu-btn tu-btn--primary" id="fk-hcreate">Make a Hive match</button></p>
+				</div>
+				<div class="fk-lobhead"><h3 class="fk-h3">Open Hive matches</h3><button type="button" class="tu-btn" id="fk-hrefresh">↻ Refresh</button></div>
+				<div id="fk-hlobby"><p class="fk-sub">Loading…</p></div>
+				<div id="fk-hminebox" hidden><h3 class="fk-h3">My Hive matches</h3><div id="fk-hmine"></div></div>
+				<h3 class="fk-h3">Recently on Hive</h3>
+				<div id="fk-hrecent"><p class="fk-sub">Loading…</p></div>
+			</div>
+			<p class="tu-note">Guest matches are kept on mes.fm's server for a few hours, then deleted: only the kicks and the names you type. Hive matches and saved results are public and permanent, like everything on Hive.</p>
+		</section>
+
+		<section id="fk-p-stats" role="tabpanel" aria-label="Statistics" hidden>
+			<p class="tu-note">Kept in this browser only (nothing is uploaded).</p>
+			<div id="fk-stats"></div>
+		</section>
+
+		<section id="fk-p-how" role="tabpanel" aria-label="How it works" hidden>
+			<div class="tu-card fk-how">
+				<h2 class="fk-h">The physics of a free kick</h2>
+				<p>Every kick is simulated a thousand times a second. Three forces act on the ball in the air:</p>
+				<ul>
+					<li><b>Gravity</b> pulls it down at 9.81 m/s².</li>
+					<li><b>Air drag</b> slows it down. A football's drag changes with speed: below about 12 m/s the air flows smoothly around it and the drag is high; at shooting speeds the boundary layer turns turbulent and the drag nearly halves (the "drag crisis"). That is why a hard shot keeps its pace and a soft one dies.</li>
+					<li><b>The Magnus force</b> pushes a spinning ball sideways: side spin curls it, top spin makes it dip, back spin makes it float. The force grows with the spin and with the speed, so a curler bends most late in its flight, once it has slowed down relative to its spin.</li>
+				</ul>
+				<p>With almost no spin at high speed, the air peels off the ball unevenly and the ball wobbles from side to side: the <b>knuckleball</b>. Keepers hate it because they can't predict it.</p>
+				<p>The ball bounces off the ground (it loses about half its speed on each bounce), the posts and the bar, the wall players (who can jump) and the keeper, who can reach about 3.25 m from where he stands and needs about 0.12 s plus 0.085 s per metre to get his hands there after deciding to move.</p>
+				<h3 class="fk-h3">Rules used</h3>
+				<ul>
+					<li>A penalty is taken from 11 m. A <b>shootout</b> is five kicks each, taking turns; if one side can no longer catch up it ends early. Still level after five each: sudden death, one kick each until one scores and the other doesn't.</li>
+					<li>At a free kick the wall must stand at least <b>9.15 m</b> from the ball. The number of players is up to the defending side; the "Auto" wall uses what most teams do (5 from close and central, 2 from wide or far out).</li>
+					<li>The whole ball must cross the whole goal line between the posts and under the bar for a goal.</li>
+				</ul>
+			</div>
+		</section>
+
+		<div class="tu-toast" id="fk-toast" role="status" aria-live="polite"></div>
+
+		<div class="tu-seo">
+			<h2>Free kicks, penalties and set pieces with real ball physics</h2>
+			<p>Take free kicks from any spot outside the box, curl them around the wall or dip them over it, smash knuckleballs from 30 metres, and settle it with a penalty shootout. Play the computer at four levels, a friend on the same device, someone online with a link, or another Hive user with every kick signed on the blockchain. You can be the kicker or the goalkeeper: as the keeper, click where to dive while the ball is in the air, or guess before the kick like keepers do at penalties.</p>
+			<h3>How to take a free kick</h3>
+			<ol>
+				<li>Choose <b>Free-kick practice</b> and drag the ball on the small pitch (or press Random spot).</li>
+				<li>Click or tap in the goal where you want the ball to go. The dotted line shows its path (turn the guide off for a real test).</li>
+				<li>Set the power, the curl (side spin) and the dip (top spin; negative = back spin, the ball floats). Curl does not change where you aim: it changes the path, so you can bend the ball around the wall and still hit your spot.</li>
+				<li>Press Shoot (or hold it to charge the power).</li>
+			</ol>
+			<h3>Questions</h3>
+			<dl>
+				<dt>How fast is a free kick?</dt><dd>Good free kicks leave the boot at 25 to 30 m/s (90 to 110 km/h). Penalties are usually 20 to 28 m/s. The fastest shots measured are over 40 m/s.</dd>
+				<dt>Why does the ball curve?</dt><dd>Spin. The ball drags air round with it, so the air leaves the ball deflected to one side and the ball is pushed the other way: the Magnus effect. The same effect makes a tennis ball with top spin dip.</dd>
+				<dt>What is a knuckleball?</dt><dd>A hard shot with almost no spin. The air separates from the seams and panels at slightly different places from moment to moment, so the ball moves unpredictably in the air. Try the Knuckleball style: power over 27 m/s, curl and dip at 0.</dd>
+				<dt>Where should I aim a penalty?</dt><dd>High in a corner is almost unstoppable but easy to miss; low and hard into the corner is the safe choice. Keepers dive early at penalties, so a soft shot down the middle (a "Panenka") works if the keeper guesses, and looks silly if he stays.</dd>
+				<dt>How does the computer keeper work?</dt><dd>It watches the ball: after its reaction time (0.44 s on Easy down to 0.22 s on Pro, a little longer when a wall blocks its view) it dives to where it thinks the ball will cross the line, with less error on the higher levels. At penalties it sometimes guesses a side before the kick, like real keepers.</dd>
+				<dt>How do online and Hive matches stay fair?</dt><dd>The keeper chooses a dive without seeing the shot. In guest matches mes.fm's server holds both choices until both are in and adds the aim spread from a secret number. On Hive the keeper posts a sealed dive first, so the kicker can't see it, and opens the seal after the kick.</dd>
+			</dl>
+			<p>Related: <a href="/billiards">Billiards</a> &middot; <a href="/car-sandbox">Car Sandbox</a> &middot; <a href="/gta-stunt-jump-simulator">Stunt Jump Simulator</a> &middot; <a href="/premier-league-picks">Premier League Picks</a> &middot; <a href="/tools">All MES tools</a></p>
+		</div>
+	</div>

@@ -5,13 +5,22 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 18:14:59 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 18:17:05 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Investment Tracker</title>
+    <link>https://mes.fm/investment-tracker</link>
+    <guid isPermaLink="true">https://mes.fm/investment-tracker</guid>
+    <pubDate>Mon, 23 Nov 2026 18:17:05 GMT</pubDate>
+    <category>Tools</category>
+    <description>A private portfolio tracker for stocks, ETFs and crypto: live prices, gains, dividends, realized gains by tax year, wallet balances and CSV import.</description>
+    <media:thumbnail url="https://mes.fm/img/investment-tracker-logo.png"/>
+  </item>
   <item>
     <title>RSS Feeds</title>
     <link>https://mes.fm/feeds</link>
@@ -722,15 +731,6 @@
     <category>Tools</category>
     <description>Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.</description>
     <media:thumbnail url="https://mes.fm/img/polls-logo.png"/>
-  </item>
-  <item>
-    <title>Stream Chat</title>
-    <link>https://mes.fm/stream-chat</link>
-    <guid isPermaLink="true">https://mes.fm/stream-chat</guid>
-    <pubDate>Sat, 31 Oct 2026 19:04:47 GMT</pubDate>
-    <category>Tools</category>
-    <description>Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.</description>
-    <media:thumbnail url="https://mes.fm/img/stream-chat-logo.png"/>
   </item>
 </channel>
 </rss>

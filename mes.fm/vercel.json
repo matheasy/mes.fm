@@ -593,6 +593,7 @@
     { "source": "/inflationcalculator/money-facts/1", "destination": "/inflationcalculator/money-facts", "permanent": true },
     { "source": "/trouble", "destination": "/troubleshooting", "permanent": true },
     { "source": "/:k(youtubers-earnings|youtuber-earnings|youtuber-income)", "destination": "/how-much-do-youtubers-make", "permanent": true },
+    { "source": "/:k(penalty|penalties|penalty-shootout|penalty-kick|shootout|free-kicks|freekick|free-kick-game|set-pieces|set-piece|soccer-game|football-game|soccer|football)", "destination": "/free-kick", "permanent": true },
     { "source": "/ymc", "destination": "/youtubemoney", "permanent": true },
     { "source": "/ymc/:path*", "destination": "/youtubemoney/:path*", "permanent": true },
     { "source": "/sjw", "destination": "/sjwkeyboard", "permanent": true },
