@@ -136,3 +136,15 @@ html body.dark-mode #ed .ed-grip {color:var(--ed-mute);}
 .ed-lblrow{display:flex;flex-wrap:wrap;align-items:center;gap:.6em;justify-content:space-between}
 .ed-listact{display:inline-flex;gap:.4em}
 .ed-listact[hidden]{display:none}
+
+/* list tools: find a list, pin the current list, A-Z or own order */
+#ed .ed-tabctl {display:inline-flex; flex-wrap:wrap; align-items:center; gap:0.35em; margin-left:auto;}
+#ed .ed-tctl, #ed .ed-tfind {font:inherit; font-size:0.92em; padding:0.4em 0.75em; border:1px solid var(--ed-line); border-radius:2em; background:var(--ed-bg); color:var(--ed-fg);}
+#ed .ed-tctl {cursor:pointer;}
+#ed .ed-tctl[aria-pressed="true"] {border-color:var(--ed-acc); color:var(--ed-acc); font-weight:600;}
+#ed .ed-tfind {width:11em;}
+#ed .ed-tab.is-pin {border-width:2px;}
+#ed .ed-pinmk {font-size:0.8em; margin-right:0.25em;}
+html body.dark-mode #ed .ed-tctl, html body.dark-mode #ed .ed-tfind {background:var(--ed-bg); color:var(--ed-fg); border-color:var(--ed-line);}
+html body.dark-mode #ed .ed-tctl[aria-pressed="true"] {color:#ff8fb1; border-color:#ff8fb1;}
+@media (max-width: 640px) { #ed .ed-tabctl {margin-left:0; width:100%;} #ed .ed-tfind {flex:1; width:auto;} }

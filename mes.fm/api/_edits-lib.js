@@ -17,8 +17,31 @@
     var KIND_RE = /^[a-z0-9][a-z0-9\/-]{1,23}$/;   /* digits and "/" are fine ("9/11"); "all" and "queue" are the page's own tabs */
     function okKind(k) { return KINDS.indexOf(k) >= 0 || (typeof k === "string" && KIND_RE.test(k) && !/--|-$|\/$|\/\/|^(all|queue)$/.test(k)); }
     function kindSlug(name) { return String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\/]+/g, "-").replace(/\/+/g, "/").replace(/^[^a-z0-9]+/, "").replace(/-*\/-*/g, "/").replace(/-+/g, "-").slice(0, 24).replace(/[-\/]+$/, ""); }
-    function kindName(k) { if (KIND_NAME[k]) return KIND_NAME[k]; var s = String(k).replace(/-/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
-    function kindOne(k) { return KIND_ONE[k] || kindName(k); }
+    /* names = the list names the user typed (meta.names: "ai" -> "AI"), so capitals they chose are kept. */
+    function kindName(k, names) { if (names && typeof names[k] === "string" && names[k]) return names[k]; if (KIND_NAME[k]) return KIND_NAME[k]; var s = String(k).replace(/-/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
+    function kindOne(k, names) { return (names && names[k]) || KIND_ONE[k] || kindName(k); }
+    /* Tab settings kept on the server (edits:meta), so every device shows the same: names, pinned lists, order mode (custom = dragged, az = A-Z). */
+    function cleanName(name) { return String(name || "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 40); }
+    function cleanMeta(m) {
+        m = m && typeof m === "object" ? m : {};
+        var names = {}, pins = [];
+        if (m.names && typeof m.names === "object") Object.keys(m.names).slice(0, 300).forEach(function (k) { var n = cleanName(m.names[k]); if (okKind(k) && n && kindSlug(n) === k) names[k] = n; });
+        if (Array.isArray(m.pins)) m.pins.slice(0, 100).forEach(function (k) { if (typeof k === "string" && (okKind(k) || k === "all" || k === "queue") && pins.indexOf(k) < 0) pins.push(k); });
+        return { names: names, pins: pins, mode: m.mode === "az" ? "az" : "custom" };
+    }
+    /* The tab order: pinned lists first (in pin order), then the rest dragged (custom) or A-Z by the name shown; All / Queue stay
+       where they are in custom mode and come first (after pins) in A-Z mode. */
+    function sortTabs(keys, meta, order) {
+        meta = cleanMeta(meta);
+        var pinned = meta.pins.filter(function (k) { return keys.indexOf(k) >= 0; });
+        var rest = keys.filter(function (k) { return pinned.indexOf(k) < 0; });
+        if (meta.mode === "az") {
+            var fixed = rest.filter(function (k) { return k === "all" || k === "queue"; });
+            rest = fixed.concat(rest.filter(function (k) { return k !== "all" && k !== "queue"; })
+                .sort(function (a, b) { return kindName(a, meta.names).localeCompare(kindName(b, meta.names), undefined, { sensitivity: "base", numeric: true }); }));
+        } else rest = orderTabs(rest, order);
+        return pinned.concat(rest);
+    }
     function okOrder(v) { return typeof v === "number" ? isFinite(v) && Math.abs(v) < 1e15 : false; }
     var STATE_NAME = { todo: "To do", doing: "Doing", done: "Done", wont: "Won't do" };
 
@@ -288,7 +311,7 @@
     }
 
     return {
-        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, kindOne: kindOne, kindsOf: kindsOf, orderTabs: orderTabs,
+        KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, cleanMeta: cleanMeta, cleanName: cleanName, sortTabs: sortTabs, kindOne: kindOne, kindsOf: kindsOf, orderTabs: orderTabs,
         orderKey: orderKey, between: between, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
         cleanText: cleanText, cleanItem: cleanItem, textKey: textKey, apply: apply, sortNewest: sortNewest,
         esc: esc, linkify: linkify, links: links, imageOf: imageOf, tools: tools, itemTools: itemTools, filter: filter, counts: counts,

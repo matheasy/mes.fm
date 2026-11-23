@@ -1384,7 +1384,7 @@ APPS = {
     "edits": dict(title="MES Edits", page_title="MES Edits: Fixes and New App Ideas",
                 tag="Fixes and new app ideas, in one list.", accent="#b4234f", dark="#8a1a3c", tint="#fdeaf0",
                 desc="Private list of fixes and new app ideas for mes.fm.",
-                js_v="5", no_ads=True, no_comments=True,
+                js_v="6", no_ads=True, no_comments=True,
                 pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/select-search.js"],
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Polls owner page (private, mes.fm/polls-stats, behind the middleware.js password like /ads): polls made over time, votes, /polls page

@@ -7,6 +7,8 @@
 //   POST { op: "delete", id }                 -> { ok: true }
 //   POST { op: "img", data: "<base64 JPEG>" } -> { id, url }   (a picture pasted or picked on the page, phones too; kept as edits:img:<id>)
 //   GET ?img=<id>.jpg                         -> the picture (same password)
+//   POST { op: "meta", meta: { names, pins, mode } } -> { meta }   (list names with the user's capitals, pinned lists, A-Z or own tab order;
+//                                                                    kept as edits:meta; GET returns it next to items)
 //   POST { op: "import", items: [...] }       -> { added, skipped }   (Telegram import / JSON restore: same id or same text = skipped,
 //                                                                       unless the incoming copy of a same-id item is newer, then it replaces it)
 // Item = { id, k: "fix"|"app", t, st: "todo"|"doing"|"done"|"wont", star, note, rs: [{ t, at, by }], c, u, d, src? }
@@ -17,6 +19,7 @@ const E = require('./_edits-lib.js');
 
 const KEY = 'edits:items';
 const IMG = 'edits:img:';
+const META = 'edits:meta';
 const IMG_MAX = 700000; // base64 characters (~520 KB JPEG); the page shrinks pictures well under this
 const IMG_ID = /^[a-f0-9]{16}$/;
 const ORIGINS = ['https://mes.fm', 'https://www.mes.fm'];
@@ -44,7 +47,8 @@ async function respond(req, deps) {
     for (const id of Object.keys(raw)) { try { const it = JSON.parse(raw[id]); if (it && it.id === id) out[id] = it; } catch (e) { /* skip */ } }
     return out;
   };
-  if (req.method === 'GET') return { status: 200, body: { items: E.sortNewest(Object.values(await read())) } };
+  const meta = async () => { let m = null; try { m = deps.getMeta ? JSON.parse((await deps.getMeta()) || 'null') : null; } catch (e) { m = null; } return E.cleanMeta(m); };
+  if (req.method === 'GET') return { status: 200, body: { items: E.sortNewest(Object.values(await read())), meta: await meta() } };
   if (req.method !== 'POST') return { status: 405, body: { error: 'GET or POST' } };
   if (req.origin && !req.local && !ORIGINS.includes(String(req.origin))) return { status: 403, body: { error: 'wrong origin' } };
   if (!/^application\/json/i.test(String(req.contentType || ''))) return { status: 415, body: { error: 'JSON only' } };
@@ -58,6 +62,11 @@ async function respond(req, deps) {
     const id = require('crypto').randomBytes(8).toString('hex');
     await deps.putImg(id, d);
     return { status: 200, body: { id, url: 'https://mes.fm/api/edits?img=' + id + '.jpg' } };
+  }
+  if (body && body.op === 'meta') {
+    const m = E.cleanMeta(body.meta);
+    if (deps.putMeta) await deps.putMeta(JSON.stringify(m));
+    return { status: 200, body: { meta: m } };
   }
   const out = E.apply(await read(), body);
   if (out.put && out.put.length) await deps.put(out.put);
@@ -73,6 +82,8 @@ async function handler(req, res) {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   try {
     const out = await respond({ method: req.method, body: req.body, origin: req.headers.origin, contentType: req.headers['content-type'], img: req.query && req.query.img }, {
+      getMeta: async () => { const r = await redis([['GET', META]]); return r[0] && r[0].result; },
+      putMeta: async (v) => { await redis([['SET', META, v]]); },
       getImg: async (id) => { const r = await redis([['GET', IMG + id]]); return r[0] && r[0].result; },
       putImg: async (id, b64) => { await redis([['SET', IMG + id, b64]]); },
       all: async () => { const r = await redis([['HGETALL', KEY]]); return pairs(r[0] && r[0].result); },

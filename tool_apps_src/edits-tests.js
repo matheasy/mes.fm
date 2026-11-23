@@ -166,3 +166,23 @@ t('backup file', () => {
     if (o.join() !== "queue,app,fix,mirror,other,911,all") throw new Error("orderTabs " + o.join());
     if (E.orderTabs(["a", "b"], null).join() !== "a,b") throw new Error("orderTabs null");
 })();
+
+(async function () {
+    // list names keep the user's capitals, pins come first, A-Z mode sorts by the name shown
+    var m = E.cleanMeta({ names: { ai: "AI", "hive-posts": "Hive posts", x: "nope", fix: "Fixes!" , bad: "Other" }, pins: ["mirror", "mirror", "zz zz"], mode: "az" });
+    if (m.names.ai !== "AI" || m.names["hive-posts"] !== "Hive posts" || m.names.bad || m.names.x) throw new Error("cleanMeta names " + JSON.stringify(m.names));
+    if (m.pins.join() !== "mirror" || m.mode !== "az") throw new Error("cleanMeta pins/mode");
+    if (E.kindName("ai", m.names) !== "AI" || E.kindName("ai") !== "Ai") throw new Error("kindName names");
+    var t = E.sortTabs(["fix", "app", "mirror", "other", "ai", "zebra", "all", "queue"], m, []);
+    if (t.join() !== "mirror,all,queue,ai,fix,app,other,zebra") throw new Error("sortTabs az " + t.join());
+    var c = E.sortTabs(["fix", "app", "all"], { pins: ["all"] }, ["app"]);
+    if (c.join() !== "all,app,fix") throw new Error("sortTabs custom " + c.join());
+    // meta op round trip through the API
+    var store = null;
+    var deps = { all: async () => ({}), put: async () => {}, del: async () => {}, getMeta: async () => store, putMeta: async (v) => { store = v; } };
+    var r = await api.respond({ method: 'POST', body: { op: 'meta', meta: { names: { ai: "AI" }, pins: ["ai"] } }, contentType: 'application/json' }, deps);
+    if (r.status !== 200 || r.body.meta.names.ai !== "AI") throw new Error("meta post");
+    var g = await api.respond({ method: 'GET' }, deps);
+    if (g.body.meta.pins[0] !== "ai") throw new Error("meta get");
+    console.log("edits meta tests passed");
+})().catch((e) => { console.error(e); process.exit(1); });
