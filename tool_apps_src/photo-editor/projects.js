@@ -38,6 +38,7 @@
 		remember({ fh: h, file: { name: h.name, dir: info.dir || "" } }); drawBar();
 	};
 	PE.unlinkProject = function () { link = null; drawBar(); };
+	PE.setProjectLink = function (l) { link = l || null; drawBar(); };   // round 13: tabs.js gives each tab its own linked file
 	function ensurePerm(h, ask) { var o = { mode: "readwrite" }; if (!h.queryPermission) return Promise.resolve(true); return h.queryPermission(o).then(function (p) { return p === "granted" ? true : ask ? h.requestPermission(o).then(function (q) { return q === "granted"; }) : false; }); }
 	function writeHandle(h, blob) { return h.createWritable().then(function (w) { return w.write(blob).then(function () { return w.close(); }, function (e) { try { w.abort(); } catch (x) {} throw e; }); }); }
 
@@ -157,8 +158,8 @@
 	function update(fn) { chain = chain.then(function () { return getList().then(function (list) { return fn(list); }).then(function (list) { if (!list) return; var pr = P.pruneRecent(list, MAX_RECENT, BUDGET), gone = pr.drop.concat(pr.dropAuto); recent = pr.keep; return putList(pr.keep).then(function () { return gone.length ? idb(function (st) { return Promise.all(gone.map(function (id) { return rq(st.delete("auto:" + id)); })); }) : null; }); }); }).catch(function () {}).then(function () { PE.emit("recent"); }); return chain; }
 	function thumbOf() { var d = PE.doc, s = Math.min(1, 160 / Math.max(d.w, d.h)); try { return PE.flatten({ scale: s, fill: "#2b2b33" }).toDataURL("image/jpeg", 0.72); } catch (e) { return ""; } }
 	/* note the open project in the list (fields = extra fields: fh / file / bytes) */
-	function remember(fields) {
-		var d = PE.doc; if (!d || !d.pid) return chain; var L = cur(), e = Object.assign({ id: d.pid, name: d.name || "Untitled", w: d.w, h: d.h, t: Date.now(), thumb: thumbOf() }, fields || {});
+	function remember(fields, ctx) {
+		var d = ctx ? ctx.d : PE.doc; if (!d || !d.pid) return chain; var L = ctx ? ctx.L : cur(), e = Object.assign({ id: d.pid, name: d.name || "Untitled", w: d.w, h: d.h, t: Date.now(), thumb: ctx ? ctx.thumb : thumbOf() }, fields || {});
 		if (L && !("fh" in (fields || {}))) { e.fh = L.handle; e.file = { name: L.name, dir: L.dir }; }
 		if (e.fh && e.fh._folder) { e.fh = e.fh._folder; e.file = Object.assign({}, e.file || { name: e.fh.name }, { folder: true }); }   // a project folder: IndexedDB keeps the real folder handle
 		return update(function (list) { return P.upsertRecent(list, e); });
@@ -167,10 +168,12 @@
 	var asTimer = 0;
 	function autosaveNow(extra, always) {
 		var d = PE.doc; if (!d || (PE.hist.stack.length < 2 && !always)) return Promise.resolve();
-		return PE.projectBlob().then(function (b) { return idb(function (st) { return rq(st.put({ blob: b, t: Date.now(), name: d.name, w: d.w, h: d.h, pid: d.pid }, "auto:" + d.pid)); }).then(function () { return remember(Object.assign({ bytes: b.size, at: Date.now() }, extra || {})); }); }).catch(function () {});
+		var ctx = { d: d, L: cur(), thumb: thumbOf() };   // round 13: the tab may be switched before the blob is ready
+		return PE.projectBlob().then(function (b) { return idb(function (st) { return rq(st.put({ blob: b, t: Date.now(), name: d.name, w: d.w, h: d.h, pid: d.pid }, "auto:" + d.pid)); }).then(function () { return remember(Object.assign({ bytes: b.size, at: Date.now() }, extra || {}), ctx); }); }).catch(function () {});
 	}
 	PE.autosaveNow = autosaveNow;
-	PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { autosaveNow(); }, 5000); };
+	PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { asTimer = 0; autosaveNow(); }, 5000); };
+	PE.flushAutosave = function () { if (asTimer) { clearTimeout(asTimer); asTimer = 0; autosaveNow(); } };   // round 13: before a tab switch
 	/* the single "auto" autosave of rounds 1-4 becomes the first recent project */
 	function migrate() {
 		return idb(function (st) { return rq(st.get("auto")); }).then(function (r) {

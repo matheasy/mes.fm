@@ -21,6 +21,7 @@
 	var link = null;
 	function cur() { if (link && link.doc !== PE.doc) link = null; return link; }
 	PE.psdLink = cur;
+	PE.setPsdLink = function (l, dirty) { link = l || null; if (link) link.savedEdits = dirty ? -1 : edits; PE.emit("psdlink"); };   // round 13: per tab
 	PE.linkPsd = function (h, name, info) {
 		info = info || {}; if (!PE.doc) return; var nv = P.nameVersion(h ? h.name : name || (PE.doc.name || "image") + ".psd");
 		link = { doc: PE.doc, handle: h || null, name: h ? h.name : name, base: nv.base, n: nv.n, lm: info.lm || 0, savedAt: 0, savedEdits: edits, opened: !!info.opened };

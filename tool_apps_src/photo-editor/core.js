@@ -626,6 +626,7 @@
 	/* ---------- documents ---------- */
 	PE.newDoc = function (w, h, bg, name) {
 		w = Math.round(w); h = Math.round(h); if (!(w > 0 && h > 0) || w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { PE.toast("That size is too large for a browser (max " + PE.MAXPX + " px a side)"); return false; }
+		if (PE.beforeNewDoc) PE.beforeNewDoc(null);   // round 13: tabs.js keeps the open document in its own tab
 		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled", comps: [], pid: P.newProjectId() }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 		var L = PE.makeLayer({ name: bg ? "Background" : "Layer 1" }); if (bg) { var x = L.canvas.getContext("2d"); x.fillStyle = bg; x.fillRect(0, 0, w, h); }
 		PE.doc.layers.push(L); PE.doc.activeId = L.id; PE.commit("New document"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit(); return true;
@@ -826,6 +827,7 @@
 		return Promise.all(p.layers.map(function (m, i) {
 			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.shape = m.shape && typeof m.shape === "object" ? m.shape : null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.adj = m.adj && typeof m.adj === "object" ? P.adjNorm(m.adj) : null; L.maskOff = !!m.maskOff; if (L.type === "text" && L.text) { try { var tl0 = PE.textLayout(L); L._pad = tl0.pad; L._amw = tl0.mw; } catch (x) {} } layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
+			if (PE.beforeNewDoc && PE.beforeNewDoc(p.pid || opts.pid || null) === "fresh") { p.pid = null; opts.pid = null; }   // round 13: the same project is open (with changes) in another tab: this one becomes a copy
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], light: p.light && typeof p.light === "object" ? { angle: +p.light.angle || 120, alt: +p.light.alt || 30 } : null, pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});

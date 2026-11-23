@@ -1671,6 +1671,7 @@ var MESPixel = (function () {
 	/* ---------- documents ---------- */
 	PE.newDoc = function (w, h, bg, name) {
 		w = Math.round(w); h = Math.round(h); if (!(w > 0 && h > 0) || w > PE.MAXPX || h > PE.MAXPX || w * h > PE.MAXAREA) { PE.toast("That size is too large for a browser (max " + PE.MAXPX + " px a side)"); return false; }
+		if (PE.beforeNewDoc) PE.beforeNewDoc(null);   // round 13: tabs.js keeps the open document in its own tab
 		PE.doc = { w: w, h: h, layers: [], activeId: 0, next: 1, name: name || "Untitled", comps: [], pid: P.newProjectId() }; PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 		var L = PE.makeLayer({ name: bg ? "Background" : "Layer 1" }); if (bg) { var x = L.canvas.getContext("2d"); x.fillStyle = bg; x.fillRect(0, 0, w, h); }
 		PE.doc.layers.push(L); PE.doc.activeId = L.id; PE.commit("New document"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit(); return true;
@@ -1871,6 +1872,7 @@ var MESPixel = (function () {
 		return Promise.all(p.layers.map(function (m, i) {
 			return loadPng(by["layer-" + m.id + ".png"]).then(function (c) { var L = PE.makeLayer({ canvas: c, name: m.name, type: m.type, text: m.text }); L.id = m.id; L.eq = m.eq || null; L.shape = m.shape && typeof m.shape === "object" ? m.shape : null; L.src = m.src || (m.type === "group" ? null : { how: fileName === "autosave" ? "autosave" : "project", file: fileName === "autosave" ? "" : fileName || "" }); ["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "group", "collapsed"].forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); L.crop = m.crop ? P.clampCrop(m.crop, c.width, c.height) : null; L.fx = m.fx && typeof m.fx === "object" ? m.fx : null; L.adj = m.adj && typeof m.adj === "object" ? P.adjNorm(m.adj) : null; L.maskOff = !!m.maskOff; if (L.type === "text" && L.text) { try { var tl0 = PE.textLayout(L); L._pad = tl0.pad; L._amw = tl0.mw; } catch (x) {} } layers[i] = L; return m.hasMask ? loadPng(by["mask-" + m.id + ".png"]).then(function (mc) { L.mask = mc; }) : null; });
 		})).then(function () {
+			if (PE.beforeNewDoc && PE.beforeNewDoc(p.pid || opts.pid || null) === "fresh") { p.pid = null; opts.pid = null; }   // round 13: the same project is open (with changes) in another tab: this one becomes a copy
 			PE.doc = { w: p.w, h: p.h, layers: layers, activeId: p.active, next: p.next || 1000, name: p.name || "Untitled", comps: p.comps || [], light: p.light && typeof p.light === "object" ? { angle: +p.light.angle || 120, alt: +p.light.alt || 30 } : null, pid: p.pid || opts.pid || P.newProjectId(), file: PE.mkSrc(fileName === "autosave" ? { how: "autosave" } : Object.assign({ how: "project", file: fileName }, meta || {}, { how: "project" })) }; PE.relink(); PE.sel = null; H.stack = []; H.idx = -1; lastSel = { ver: -1 };
 			PE.commit("Open project"); PE.dirty = false; PE.emit("docsize"); PE.emit("sel"); PE.fit();
 		});
@@ -4541,6 +4543,7 @@ var MESPixel = (function () {
 		remember({ fh: h, file: { name: h.name, dir: info.dir || "" } }); drawBar();
 	};
 	PE.unlinkProject = function () { link = null; drawBar(); };
+	PE.setProjectLink = function (l) { link = l || null; drawBar(); };   // round 13: tabs.js gives each tab its own linked file
 	function ensurePerm(h, ask) { var o = { mode: "readwrite" }; if (!h.queryPermission) return Promise.resolve(true); return h.queryPermission(o).then(function (p) { return p === "granted" ? true : ask ? h.requestPermission(o).then(function (q) { return q === "granted"; }) : false; }); }
 	function writeHandle(h, blob) { return h.createWritable().then(function (w) { return w.write(blob).then(function () { return w.close(); }, function (e) { try { w.abort(); } catch (x) {} throw e; }); }); }
 
@@ -4660,8 +4663,8 @@ var MESPixel = (function () {
 	function update(fn) { chain = chain.then(function () { return getList().then(function (list) { return fn(list); }).then(function (list) { if (!list) return; var pr = P.pruneRecent(list, MAX_RECENT, BUDGET), gone = pr.drop.concat(pr.dropAuto); recent = pr.keep; return putList(pr.keep).then(function () { return gone.length ? idb(function (st) { return Promise.all(gone.map(function (id) { return rq(st.delete("auto:" + id)); })); }) : null; }); }); }).catch(function () {}).then(function () { PE.emit("recent"); }); return chain; }
 	function thumbOf() { var d = PE.doc, s = Math.min(1, 160 / Math.max(d.w, d.h)); try { return PE.flatten({ scale: s, fill: "#2b2b33" }).toDataURL("image/jpeg", 0.72); } catch (e) { return ""; } }
 	/* note the open project in the list (fields = extra fields: fh / file / bytes) */
-	function remember(fields) {
-		var d = PE.doc; if (!d || !d.pid) return chain; var L = cur(), e = Object.assign({ id: d.pid, name: d.name || "Untitled", w: d.w, h: d.h, t: Date.now(), thumb: thumbOf() }, fields || {});
+	function remember(fields, ctx) {
+		var d = ctx ? ctx.d : PE.doc; if (!d || !d.pid) return chain; var L = ctx ? ctx.L : cur(), e = Object.assign({ id: d.pid, name: d.name || "Untitled", w: d.w, h: d.h, t: Date.now(), thumb: ctx ? ctx.thumb : thumbOf() }, fields || {});
 		if (L && !("fh" in (fields || {}))) { e.fh = L.handle; e.file = { name: L.name, dir: L.dir }; }
 		if (e.fh && e.fh._folder) { e.fh = e.fh._folder; e.file = Object.assign({}, e.file || { name: e.fh.name }, { folder: true }); }   // a project folder: IndexedDB keeps the real folder handle
 		return update(function (list) { return P.upsertRecent(list, e); });
@@ -4670,10 +4673,12 @@ var MESPixel = (function () {
 	var asTimer = 0;
 	function autosaveNow(extra, always) {
 		var d = PE.doc; if (!d || (PE.hist.stack.length < 2 && !always)) return Promise.resolve();
-		return PE.projectBlob().then(function (b) { return idb(function (st) { return rq(st.put({ blob: b, t: Date.now(), name: d.name, w: d.w, h: d.h, pid: d.pid }, "auto:" + d.pid)); }).then(function () { return remember(Object.assign({ bytes: b.size, at: Date.now() }, extra || {})); }); }).catch(function () {});
+		var ctx = { d: d, L: cur(), thumb: thumbOf() };   // round 13: the tab may be switched before the blob is ready
+		return PE.projectBlob().then(function (b) { return idb(function (st) { return rq(st.put({ blob: b, t: Date.now(), name: d.name, w: d.w, h: d.h, pid: d.pid }, "auto:" + d.pid)); }).then(function () { return remember(Object.assign({ bytes: b.size, at: Date.now() }, extra || {}), ctx); }); }).catch(function () {});
 	}
 	PE.autosaveNow = autosaveNow;
-	PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { autosaveNow(); }, 5000); };
+	PE.scheduleAutosave = function () { clearTimeout(asTimer); asTimer = setTimeout(function () { asTimer = 0; autosaveNow(); }, 5000); };
+	PE.flushAutosave = function () { if (asTimer) { clearTimeout(asTimer); asTimer = 0; autosaveNow(); } };   // round 13: before a tab switch
 	/* the single "auto" autosave of rounds 1-4 becomes the first recent project */
 	function migrate() {
 		return idb(function (st) { return rq(st.get("auto")); }).then(function (r) {
@@ -4918,6 +4923,7 @@ var MESPixel = (function () {
 	var link = null;
 	function cur() { if (link && link.doc !== PE.doc) link = null; return link; }
 	PE.psdLink = cur;
+	PE.setPsdLink = function (l, dirty) { link = l || null; if (link) link.savedEdits = dirty ? -1 : edits; PE.emit("psdlink"); };   // round 13: per tab
 	PE.linkPsd = function (h, name, info) {
 		info = info || {}; if (!PE.doc) return; var nv = P.nameVersion(h ? h.name : name || (PE.doc.name || "image") + ".psd");
 		link = { doc: PE.doc, handle: h || null, name: h ? h.name : name, base: nv.base, n: nv.n, lm: info.lm || 0, savedAt: 0, savedEdits: edits, opened: !!info.opened };
@@ -6143,6 +6149,294 @@ var MESPixel = (function () {
 	PE.saveProject = function () { if (PE.doc && cloud.save(PE.doc)) return; return orig.apply(this, arguments); };
 })();
 
+/* MES Photo Editor round 13: several documents open at once (tabs) + a style / layer clipboard that works across tabs and reloads.
+ * - Each tab keeps its own document, undo history, selection, linked project / PSD file, zoom and unsaved flag. The tab that is shown lives in the
+ *   usual globals (PE.doc, PE.hist, PE.sel, PE.dirty, the links in projects.js / psd.js); the others are parked in their tab record. Switching = park + restore.
+ * - core.js calls PE.beforeNewDoc(pid) whenever a document is about to replace PE.doc (New image, Open picture / PSD / GIMP / project, Recent...):
+ *   the open document is parked in its tab and the new one gets a new tab, except an untouched "New image" (replaced, like a browser's empty tab) and
+ *   the same project reloaded ("Open theirs"), which stay in their tab.
+ * - Layer style clipboard = {fx, adj, opacity, blend} in localStorage, so it survives tab switches AND reloads (the subscriber's report: "I can only have one
+ *   file open at a time, and the copied style is lost when I refresh to move to the other file").
+ * - Layer clipboard = several layers / whole groups (transforms, text, masks, crops, styles kept; text stays editable), in memory + IndexedDB ("layerclip").
+ *   Move / Copy layers to another tab. */
+(function () {
+	"use strict";
+	var PE = window.PE, P = window.MESPixel; if (!PE || !P) return;
+	var el = function (t, c, h) { return PE.el(t, c, h); }, esc = function (s) { return PE.esc(s); };
+	var tabs = [], cur = null, seq = 0, strip = null;
+	var isMac = /Mac|iPhone|iPad/.test(navigator.platform), MOD = isMac ? "⌘" : "Ctrl+", SK = isMac ? "⌃⌥" : "Ctrl+Alt+";   // ⌘⌥C opens the browser's inspector on a Mac: Control+Option there
+	PE.styleKey = function (k) { return SK + k; };
+
+	/* ---------- tab records ---------- */
+	function mk() { return { id: ++seq }; }
+	function liveDirty() { return !!(PE.doc && PE.dirty && PE.hist.stack.length > 1); }
+	function tabDirty(t) { return t === cur ? liveDirty() : !!(t.doc && t.dirty && t.stack && t.stack.length > 1); }
+	function tabDoc(t) { return t === cur ? PE.doc : t.doc; }
+	function park(t) {
+		if (!t) return; var v = PE.view;
+		t.doc = PE.doc; t.stack = PE.hist.stack; t.idx = PE.hist.idx; t.sel = PE.sel; t.dirty = PE.dirty;
+		t.link = PE.projectLink ? PE.projectLink() : null; t.psd = PE.psdLink ? PE.psdLink() : null; t.psdDirty = PE.psdDirty ? PE.psdDirty() : false;
+		t.view = { zoom: v.zoom, px: v.px, py: v.py, w: v.w, h: v.h, fit: !!PE.autoFit };
+	}
+	function restore(t) {
+		PE.doc = t.doc || null; PE.hist.stack = t.stack || []; PE.hist.idx = t.idx == null ? -1 : t.idx; PE.sel = t.sel || null; if (PE.sel) PE.sel.ver = ++PE.selSeq; PE.dirty = !!t.dirty;
+		if (PE.setProjectLink) PE.setProjectLink(t.link || null); if (PE.setPsdLink) PE.setPsdLink(t.psd || null, t.psdDirty);
+		if (PE.doc) PE.relink();
+		if (PE.setMulti) PE.setMulti([]);
+		PE.emit("sel"); PE.emit("history"); PE.emit("layers"); PE.emit("comps"); PE.emit("active"); PE.emit("docsize");
+		var v = PE.view, s = t.view;
+		if (PE.doc) { if (!s || s.fit || s.w !== v.w || s.h !== v.h) PE.fit(); else { PE.autoFit = false; v.zoom = s.zoom; v.px = s.px; v.py = s.py; PE.emit("view"); } }
+		if (PE.toolId && /^(crop|layercrop|text)$/.test(PE.toolId)) PE.setTool("move");
+		PE.invalidate(); if (PE.invalidateOverlay) PE.invalidateOverlay(); if (PE.saveState) PE.saveState();
+	}
+	function canLeave() { if (PE.pointerBusy && PE.pointerBusy()) return false; if (PE.modalOpen && PE.modalOpen()) return false; return true; }
+	function settle() {   // finish what is going on in the shown tab before it is parked
+		PE.flushPending(); var tl = PE.tool && PE.tool(); if (tl && tl.cancel) { try { tl.cancel(); } catch (e) {} } if (PE.flushAutosave) PE.flushAutosave();
+	}
+	/* a "New image" nobody has touched yet: opening a file replaces it instead of keeping an empty tab around */
+	function pristine() { var H = PE.hist; return !!PE.doc && H.stack.length === 1 && H.stack[0].label === "New document" && !PE.doc.file && !(PE.projectLink && PE.projectLink()) && !PE.dirty; }
+	PE.beforeNewDoc = function (pid) {
+		if (!PE.doc) { if (!cur) { cur = mk(); tabs.push(cur); } setTimeout(draw, 0); return; }
+		if (pid && PE.doc.pid === pid) return;   // the same project read again (Open theirs, reopen): same tab
+		var fresh = false;
+		if (pid) tabs.slice().forEach(function (t) { if (t !== cur && t.doc && t.doc.pid === pid) { if (tabDirty(t)) fresh = true; else tabs.splice(tabs.indexOf(t), 1); } });
+		if (pristine()) { setTimeout(draw, 0); return fresh ? "fresh" : undefined; }
+		settle(); park(cur); var t = mk(); tabs.splice(tabs.indexOf(cur) + 1, 0, t); cur = t;
+		if (PE.setProjectLink) PE.setProjectLink(null); if (PE.setPsdLink) PE.setPsdLink(null);   // the new document starts without a file link
+		if (PE.setMulti) PE.setMulti([]);
+		setTimeout(draw, 0); return fresh ? "fresh" : undefined;
+	};
+	PE.tabs = function () { return tabs.slice(); };
+	PE.tabCurrent = function () { return cur; };
+	PE.tabName = function (t) { var d = tabDoc(t); return d ? d.name || "Untitled" : "Empty"; };
+	PE.switchTab = function (t) {
+		if (!t || t === cur || tabs.indexOf(t) < 0) return true; if (!canLeave()) { PE.toast("Finish what you are doing first (close the dialog / let go of the mouse)"); return false; }
+		settle(); park(cur); cur = t; restore(t); draw(); return true;
+	};
+	PE.closeTab = function (t) {
+		t = t || cur; if (!t || tabs.indexOf(t) < 0) return;
+		if (t === cur && !canLeave()) return;
+		if (tabDirty(t) && !window.confirm("Close “" + PE.tabName(t) + "”?\n\nIt has changes that are not saved in a project file. The last autosave stays in File → Open recent.")) return;
+		var i = tabs.indexOf(t);
+		if (t !== cur) { tabs.splice(i, 1); draw(); return; }
+		settle(); tabs.splice(i, 1); cur = null;
+		var nx = tabs[i] || tabs[i - 1];
+		if (nx) { cur = nx; restore(nx); } else restore({});
+		draw();
+	};
+	PE.newTab = function () { PE.dlgNew(); };
+	function step(d) { if (tabs.length < 2) return; var i = tabs.indexOf(cur); PE.switchTab(tabs[(i + d + tabs.length) % tabs.length]); }
+	PE.stepTab = step;
+	/* reopening a recent project that is already open just shows its tab */
+	var _openRecent = PE.openRecent;
+	if (_openRecent) PE.openRecent = function (e) {
+		var t = e && tabs.filter(function (x) { var d = tabDoc(x); return d && d.pid === e.id; })[0];
+		if (t) { PE.switchTab(t); PE.toast("“" + PE.tabName(t) + "” is already open in a tab"); return Promise.resolve(); }
+		return _openRecent.apply(this, arguments);
+	};
+	window.addEventListener("beforeunload", function (e) { if (window.__mesCloudLeaving) return; if (tabs.some(function (t) { return t !== cur && tabDirty(t); })) { e.preventDefault(); e.returnValue = ""; } });
+
+	/* ---------- the tab strip ---------- */
+	function draw() {
+		strip = strip || document.getElementById("pe-tabs"); if (!strip) return;
+		var show = tabs.length > 0 && !!PE.doc; strip.hidden = !show; if (!show) { strip.innerHTML = ""; return; }
+		var focused = strip.contains(document.activeElement) ? document.activeElement.getAttribute("data-tab") : null;
+		strip.innerHTML = "";
+		var list = el("div", "pe-tabl"); list.setAttribute("role", "tablist"); list.setAttribute("aria-label", "Open pictures and projects"); strip.appendChild(list);
+		tabs.forEach(function (t) {
+			var d = tabDoc(t), on = t === cur, dirty = tabDirty(t), w = el("div", "pe-tab" + (on ? " is-on" : "") + (dirty ? " is-dirty" : ""));
+			var b = el("button", "pe-tab-b", '<span class="pe-tab-n">' + esc(PE.tabName(t)) + '</span><span class="pe-tab-dot" aria-hidden="true"></span>');
+			b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; b.setAttribute("data-tab", String(t.id));
+			var lk = on ? (PE.projectLink && PE.projectLink()) : t.link;
+			b.title = PE.tabName(t) + (d ? " · " + d.w + " × " + d.h : "") + (lk ? " · " + lk.name : "") + (dirty ? " · unsaved changes" : "") + "\nRight-click: move / copy layers here, rename, close";
+			b.addEventListener("click", function () { PE.switchTab(t); });
+			b.addEventListener("auxclick", function (e) { if (e.button === 1) { e.preventDefault(); PE.closeTab(t); } });
+			b.addEventListener("dblclick", function () { if (t === cur) renameTab(); });
+			b.addEventListener("contextmenu", function (e) { e.preventDefault(); tabMenu(t, e.clientX, e.clientY); });
+			b.addEventListener("keydown", function (e) {
+				var i = tabs.indexOf(t), j = -1;
+				if (e.key === "ArrowRight") j = (i + 1) % tabs.length; else if (e.key === "ArrowLeft") j = (i - 1 + tabs.length) % tabs.length; else if (e.key === "Home") j = 0; else if (e.key === "End") j = tabs.length - 1;
+				else if (e.key === "Delete") { e.preventDefault(); PE.closeTab(t); return; } else return;
+				e.preventDefault(); e.stopPropagation(); if (PE.switchTab(tabs[j])) { var nb = strip.querySelector('[data-tab="' + tabs[j].id + '"]'); if (nb) nb.focus(); }
+			});
+			var x = el("button", "pe-tab-x", "✕"); x.type = "button"; x.tabIndex = -1; x.title = "Close " + PE.tabName(t); x.setAttribute("aria-label", "Close " + PE.tabName(t));
+			x.addEventListener("click", function (e) { e.stopPropagation(); PE.closeTab(t); });
+			w.appendChild(b); w.appendChild(x); list.appendChild(w);
+		});
+		var add = el("button", "pe-tab-add", "＋"); add.type = "button"; add.title = "New image or open another picture / project in a new tab"; add.setAttribute("aria-label", "New tab");
+		add.addEventListener("click", function () { var r = add.getBoundingClientRect(); PE.popMenu([{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open picture / PSD / project…", act: function () { PE.pickOpen(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); } }, "-", { label: "New image from the copied layers", dis: !hasLayerClip(), act: pasteAsNewDoc }], r.left, r.bottom + 2); });
+		strip.appendChild(add);
+		if (focused) { var fb = strip.querySelector('[data-tab="' + focused + '"]'); if (fb) fb.focus(); }
+		var on = strip.querySelector(".pe-tab.is-on"); if (on && on.scrollIntoView && list.scrollWidth > list.clientWidth) { var lr = list.getBoundingClientRect(), orr = on.getBoundingClientRect(); if (orr.left < lr.left || orr.right > lr.right) list.scrollLeft += orr.left - lr.left - 20; }
+	}
+	PE.drawTabs = draw;
+	var dq = 0; function soon() { if (dq) return; dq = setTimeout(function () { dq = 0; draw(); }, 30); }
+	PE.on("history", soon); PE.on("docsize", soon); PE.on("psdlink", soon);
+	function renameTab() {
+		var d = PE.doc; if (!d) return; var v = window.prompt("Name of this picture / project:", d.name || "Untitled"); if (v == null) return; v = v.trim(); if (!v || v === d.name) return;
+		d.name = v; PE.dirty = true; if (PE.saveState) PE.saveState(); if (PE.rememberProject) PE.rememberProject({}); draw();
+	}
+	function tabMenu(t, x, y) {
+		var on = t === cur, others = tabs.filter(function (o) { return o !== cur; }), n = pickedRoots().length;
+		var items = [];
+		if (!on) {
+			items.push({ label: "Show this tab", act: function () { PE.switchTab(t); } });
+			items.push({ label: "Move " + (n > 1 ? n + " selected layers" : "the selected layer") + " here", dis: !n, act: function () { moveLayersTo(t, true); } });
+			items.push({ label: "Copy " + (n > 1 ? n + " selected layers" : "the selected layer") + " here", dis: !n, act: function () { moveLayersTo(t, false); } });
+			items.push("-");
+		} else items.push({ label: "✎ Rename", act: renameTab });
+		items.push({ label: "Close", act: function () { PE.closeTab(t); } });
+		if (others.length && on) items.push({ label: "Close the other tabs", act: function () { closeOthers(); } });
+		PE.popMenu(items, x, y);
+	}
+	function closeOthers() {
+		var list = tabs.filter(function (o) { return o !== cur; }), dirty = list.filter(tabDirty);
+		if (dirty.length && !window.confirm(dirty.length + " of the other tabs " + (dirty.length > 1 ? "have" : "has") + " changes that are not saved in a project file. Close them anyway? (Their last autosave stays in File → Open recent.)")) return;
+		tabs = [cur]; draw();
+	}
+	/* drop files on the tab strip = open them in new tabs (a drop on the picture adds them as layers) */
+	function wireStrip() {
+		strip = document.getElementById("pe-tabs"); if (!strip) return;
+		strip.addEventListener("dragover", function (e) { if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); strip.classList.add("is-drop"); } });
+		strip.addEventListener("dragleave", function () { strip.classList.remove("is-drop"); });
+		strip.addEventListener("drop", function (e) { strip.classList.remove("is-drop"); if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return; e.preventDefault(); e.stopPropagation(); PE.openFiles(e.dataTransfer.files, { how: "drop" }); });
+		strip.addEventListener("wheel", function (e) { var l = strip.querySelector(".pe-tabl"); if (l && Math.abs(e.deltaY) > Math.abs(e.deltaX) && l.scrollWidth > l.clientWidth) { l.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wireStrip); else wireStrip();
+
+	/* ---------- layer style clipboard (survives tab switches and reloads) ---------- */
+	var SKEY = "mes-photo-editor:style";
+	function clone(o) { return o == null ? null : JSON.parse(JSON.stringify(o)); }
+	function readStyle() { try { var s = JSON.parse(localStorage.getItem(SKEY) || "null"); return s && typeof s === "object" ? s : null; } catch (e) { return null; } }
+	function styleText(s) { var a = []; if (s.fx && PE.hasFx({ fx: s.fx })) a.push("layer style"); if (s.adj && P.adjAny && P.adjAny(s.adj)) a.push("colour adjustments"); if (s.opacity != null && s.opacity < 1) a.push("opacity " + Math.round(s.opacity * 100) + "%"); if (s.blend && s.blend !== "source-over") a.push("blend mode"); return a.length ? a.join(", ") : "plain style (no effects)"; }
+	PE.styleOf = function (L) { return { fx: clone(L.fx), adj: clone(L.adj), opacity: L.opacity == null ? 1 : L.opacity, blend: L.blend || "source-over" }; };
+	PE.copyLayerStyle = function (L) {
+		L = L || PE.active(); if (!L) { PE.toast("Select a layer first"); return; } if (PE.isGroup(L)) { PE.toast("Select a layer (not a group) to copy its style"); return; }
+		var s = PE.styleOf(L); s.name = L.name; s.t = Date.now();
+		try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) { PE.toast("Could not keep the style (browser storage is full)"); return; }
+		PE.toast("Copied the style of “" + L.name + "” (" + styleText(s) + "). Paste it on any layer, in any tab, even after a reload: " + SK + "V");
+	};
+	PE.hasStyleClip = function () { return !!readStyle(); };
+	PE.styleClipText = function () { var s = readStyle(); return s ? "“" + (s.name || "a layer") + "”: " + styleText(s) : ""; };
+	PE.pasteLayerStyle = function (L) {
+		var s = readStyle(); if (!s) { PE.toast("Copy a style first: right-click a layer → Copy layer style (" + SK + "C)"); return; }
+		if (!PE.doc) { PE.toast("Open an image first"); return; }
+		var picked = PE.multi && PE.multi().length > 1 ? PE.multi() : [L || PE.active()], set = [];
+		picked.forEach(function (x) { if (!x) return; (PE.isGroup(x) ? PE.descendants(x) : [x]).forEach(function (y) { if (!PE.isGroup(y) && set.indexOf(y) < 0) set.push(y); }); });
+		var locked = set.filter(function (y) { return y.locked; }).length; set = set.filter(function (y) { return !y.locked; });
+		if (!set.length) { PE.toast(locked ? "That layer is locked" : "Select a layer first"); return; }
+		set.forEach(function (y) { y.fx = clone(s.fx); y.adj = clone(s.adj); y.opacity = s.opacity == null ? 1 : +s.opacity; y.blend = s.blend || "source-over"; });
+		PE.invalidate(); PE.commit("Paste layer style"); PE.emit("layers"); PE.emit("active");
+		PE.toast("Pasted the style of “" + (s.name || "a layer") + "” on " + (set.length > 1 ? set.length + " layers" : "“" + set[0].name + "”") + (locked ? " (" + locked + " locked layer" + (locked > 1 ? "s" : "") + " left alone)" : ""));
+	};
+
+	/* ---------- layer clipboard (several layers / groups), in memory + IndexedDB ---------- */
+	var KEYS = ["name", "type", "cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "locked", "collapsed", "_pad", "_amw", "_drawnFont", "maskOff"];
+	var JKEYS = ["text", "eq", "shape", "crop", "fx", "adj", "src"];
+	var LC = null, lcRec = null, lcLoaded = false;
+	function idb(fn) { return new Promise(function (res, rej) { var r = indexedDB.open("mes-photo-editor", 1); r.onupgradeneeded = function () { r.result.createObjectStore("kv"); }; r.onsuccess = function () { var db = r.result; var st = db.transaction("kv", "readwrite").objectStore("kv"); Promise.resolve(fn(st)).then(res, rej); }; r.onerror = function () { rej(r.error); }; }); }
+	function rq(r) { return new Promise(function (res, rej) { r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }
+	try { idb(function (st) { return rq(st.get("layerclip")); }).then(function (r) { lcLoaded = true; if (r && r.items && !LC) lcRec = r; }).catch(function () { lcLoaded = true; }); } catch (e) { lcLoaded = true; }
+	function hasLayerClip() { return !!(LC || lcRec); }
+	PE.hasLayerClip = hasLayerClip;
+	/* the selected layers, groups counted once (a layer inside a picked group comes with its group) */
+	function pickedRoots() {
+		if (!PE.doc) return []; var m = PE.multi ? PE.multi() : [], list = m.length > 1 ? m : (PE.active() ? [PE.active()] : []);
+		return list.filter(function (L) { for (var p = L._p; p; p = p._p) if (list.indexOf(p) >= 0) return false; return true; });
+	}
+	function blockList(roots) { var set = new Set(); roots.forEach(function (R) { PE.blockOf(R).forEach(function (x) { set.add(x); }); }); return PE.doc.layers.filter(function (x) { return set.has(x); }); }
+	function snapItem(L) {
+		var m = {}; KEYS.forEach(function (k) { if (L[k] !== undefined) m[k] = L[k]; }); JKEYS.forEach(function (k) { if (L[k]) m[k] = clone(L[k]); });
+		var c = PE.mk(L.canvas.width, L.canvas.height); c.getContext("2d").drawImage(L.canvas, 0, 0); var mk2 = null; if (L.mask) { mk2 = PE.mk(L.mask.width, L.mask.height); mk2.getContext("2d").drawImage(L.mask, 0, 0); }
+		return { id: L.id, group: L.group || null, meta: m, canvas: c, mask: mk2 };
+	}
+	function makeClip(roots) { var list = blockList(roots); return { t: Date.now(), w: PE.doc.w, h: PE.doc.h, from: PE.doc.name || "Untitled", n: roots.length, items: list.map(snapItem) }; }
+	function toBlob(c) { return new Promise(function (res) { c.toBlob(function (b) { res(b); }, "image/png"); }); }
+	function saveClip(clip) {
+		var jobs = clip.items.map(function (it) { return Promise.all([toBlob(it.canvas), it.mask ? toBlob(it.mask) : null]).then(function (bs) { return { id: it.id, group: it.group, meta: it.meta, png: bs[0], mask: bs[1] }; }); });
+		Promise.all(jobs).then(function (items) { if (LC !== clip) return; var rec = { t: clip.t, w: clip.w, h: clip.h, from: clip.from, n: clip.n, items: items }; return idb(function (st) { return rq(st.put(rec, "layerclip")); }); }).catch(function () {});
+	}
+	function loadClip() {
+		if (LC) return Promise.resolve(LC); if (!lcRec) return Promise.resolve(null);
+		var rec = lcRec;
+		return Promise.all(rec.items.map(function (it) {
+			var dec = function (b) { if (!b) return Promise.resolve(null); return createImageBitmap(b).then(function (bm) { var c = PE.mk(bm.width, bm.height); c.getContext("2d").drawImage(bm, 0, 0); return c; }); };
+			return Promise.all([dec(it.png), dec(it.mask)]).then(function (cs) { return { id: it.id, group: it.group, meta: it.meta, canvas: cs[0], mask: cs[1] }; });
+		})).then(function (items) { LC = { t: rec.t, w: rec.w, h: rec.h, from: rec.from, n: rec.n, items: items, newest: false }; return LC; });
+	}
+	PE.copyLayers = function (quiet) {
+		if (!PE.doc) { PE.toast("Open an image first"); return null; } var roots = pickedRoots(); if (!roots.length) { PE.toast("Select a layer first"); return null; }
+		LC = makeClip(roots); LC.newest = true; lcRec = null; saveClip(LC);
+		if (!quiet) PE.toast("Copied " + (roots.length > 1 ? roots.length + " layers" : PE.isGroup(roots[0]) ? "the group “" + roots[0].name + "”" : "“" + roots[0].name + "”") + ". Paste in any tab: " + MOD + "V (or Layer → Paste layers)");
+		return LC;
+	};
+	PE.layerClipNewest = function () { return !!(LC && LC.newest); };
+	PE.layerClipOld = function () { if (LC) LC.newest = false; };   // a picture / single layer was copied since (app.js)
+	/* put the clip's layers into the shown document, above the active layer, in its group. Same canvas size = same spot, else the same spot
+	 * relative to the centre. Returns the new top-level layers. */
+	function insertClip(clip, label) {
+		var d = PE.doc; if (!d || !clip || !clip.items.length) return [];
+		var dx = clip.w === d.w ? 0 : (d.w - clip.w) / 2, dy = clip.h === d.h ? 0 : (d.h - clip.h) / 2, map = {}, made = [];
+		clip.items.forEach(function (it) {
+			if (!it.canvas) return; var m = it.meta, L = PE.makeLayer({ canvas: it.canvas === null ? null : cloneC(it.canvas), type: m.type, name: m.name, text: m.text ? clone(m.text) : null });
+			KEYS.forEach(function (k) { if (m[k] !== undefined) L[k] = m[k]; }); JKEYS.forEach(function (k) { if (m[k]) L[k] = clone(m[k]); });
+			if (L.src) L.src = Object.assign({}, L.src, { copy: true }); L.mask = it.mask ? cloneC(it.mask) : null; L.cx += dx; L.cy += dy;
+			map[it.id] = L; made.push({ L: L, g: it.group });
+		});
+		var A = PE.active(), at = A ? d.layers.indexOf(A) + 1 : d.layers.length, parent = A ? A.group || null : null;
+		made.forEach(function (o) { o.L.group = o.g && map[o.g] ? map[o.g].id : parent; });
+		var list = made.map(function (o) { return o.L; }); Array.prototype.splice.apply(d.layers, [at, 0].concat(list));
+		var roots = list.filter(function (L) { return L.group === parent; }); d.activeId = roots[roots.length - 1].id; PE.relink();
+		PE.commit(label || ("Paste " + (roots.length > 1 ? roots.length + " layers" : "layer"))); if (PE.setMulti) PE.setMulti(roots.length > 1 ? roots.map(function (L) { return L.id; }) : []);
+		PE.emit("layers"); PE.invalidate(); if (PE.setTool) PE.setTool("move"); return roots;
+	}
+	function cloneC(c) { var n = PE.mk(c.width, c.height); n.getContext("2d").drawImage(c, 0, 0); return n; }
+	PE.pasteLayers = function () {
+		if (!PE.doc) { pasteAsNewDoc(); return; }
+		if (!hasLayerClip()) { PE.toast("Copy layers first: select them and press " + MOD + "C (or Layer → Copy layers)"); return; }
+		loadClip().then(function (clip) { if (!clip) { PE.toast("Nothing to paste"); return; } var r = insertClip(clip); if (r.length) PE.toast("Pasted " + (r.length > 1 ? r.length + " layers" : "“" + r[0].name + "”") + " from “" + clip.from + "”"); }).catch(function () { PE.toast("Could not read the copied layers"); });
+	};
+	/* a new tab the size of the copied layers' picture */
+	function pasteAsNewDoc() {
+		if (!hasLayerClip()) { PE.toast("Copy layers first (select them, " + MOD + "C)"); return; }
+		loadClip().then(function (clip) { if (!clip) return; if (!PE.newDoc(clip.w, clip.h, null, (clip.from || "Untitled") + " (copy)")) return; var d = PE.doc, blank = d.layers[0]; insertClip(clip, "Paste layers"); d.layers = d.layers.filter(function (L) { return L !== blank; }); PE.relink(); PE.commit("New image from copied layers"); PE.historyStartHere(); PE.fit(); PE.emit("layers"); });
+	}
+	PE.pasteAsNewDoc = pasteAsNewDoc;
+	/* Move / Copy the selected layers into another tab (the target tab is shown afterwards) */
+	function moveLayersTo(t, move) {
+		if (!t || t === cur) return; var roots = pickedRoots(); if (!roots.length) { PE.toast("Select the layers to " + (move ? "move" : "copy") + " first"); return; }
+		var lockedRoot = move && roots.some(function (L) { return L.locked; }); if (lockedRoot) { PE.toast("A selected layer is locked: unlock it to move it (or copy it instead)"); return; }
+		PE.flushPending(); var clip = makeClip(roots), name = PE.tabName(t), from = PE.doc.name || "Untitled";
+		if (move) {
+			var d = PE.doc, gone = new Set(blockList(roots)); d.layers = d.layers.filter(function (L) { return !gone.has(L); });
+			if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[d.layers.length - 1].id; PE.relink(); if (PE.setMulti) PE.setMulti([]);
+			PE.commit("Move " + (roots.length > 1 ? roots.length + " layers" : "layer") + " to “" + name + "”");
+		}
+		if (!PE.switchTab(t)) return;
+		var r = insertClip(clip, (move ? "Move in " : "Copy in ") + (roots.length > 1 ? roots.length + " layers" : "layer") + " from “" + from + "”");
+		PE.toast((move ? "Moved " : "Copied ") + (r.length > 1 ? r.length + " layers" : "“" + (r[0] && r[0].name) + "”") + " here from “" + from + "”" + (move ? " (Undo in each tab puts it back)" : ""));
+	}
+	PE.moveLayersTo = moveLayersTo;
+	/* menu helpers for app.js */
+	PE.tabTargets = function () { return tabs.filter(function (t) { return t !== cur; }).map(function (t) { return { t: t, name: PE.tabName(t) }; }); };
+	PE.layerTabItems = function () {
+		var o = PE.tabTargets(), items = [];
+		o.forEach(function (x) { items.push({ label: "Move to “" + x.name + "”", act: function () { moveLayersTo(x.t, true); } }); });
+		o.forEach(function (x) { items.push({ label: "Copy to “" + x.name + "”", act: function () { moveLayersTo(x.t, false); } }); });
+		return items;
+	};
+	/* Layer → Move layers to… : a small chooser */
+	PE.dlgMoveLayers = function (move) {
+		var o = PE.tabTargets(); if (!o.length) { PE.toast("Open another picture or project first (File → Open, or ＋ next to the tabs): the layers move into that tab"); return; }
+		if (!pickedRoots().length) { PE.toast("Select the layers first (Ctrl-click to pick several)"); return; }
+		var w = el("div", "pe-fx"); w.appendChild(el("p", "pe-hint2", (move ? "Move" : "Copy") + " the selected layers into:"));
+		var m; o.forEach(function (x) { var b = el("button", "pe-btn pe-tabpick", esc(x.name)); b.type = "button"; b.addEventListener("click", function () { m.close(); moveLayersTo(x.t, move); }); w.appendChild(b); });
+		w.appendChild(el("p", "pe-hint2", "Their size, place, text, masks and styles come along. Text stays editable. Undo works in each tab."));
+		m = PE.modal({ title: move ? "Move layers to another tab" : "Copy layers to another tab", body: w, buttons: [{ label: "Cancel", act: function (mm) { mm.close(); } }] });
+	};
+	if (window.PEdebug === undefined) window.PEtabs = { tabs: function () { return tabs; }, cur: function () { return cur; } };
+})();
+
 /* MES Photo Editor -- mes.fm/photo-editor. UI: menus, tool + options bars, colour / layers / history panels, files (open, drop, paste, PSD, project),
  * shortcuts, autosave. Engine = core.js (layers, history, selection), tools.js / tools2.js, dialogs.js; pixel maths = lib.js (MESPixel, node-tested). */
 (function () {
@@ -6478,7 +6772,7 @@ var MESPixel = (function () {
 	/* a small menu at the pointer (right-click on a layer, the Mask button) */
 	function popMenu(items, x, y) {
 		var old = root.querySelector(".pe-cmenu"); if (old) old.remove(); var m = el("div", "pe-cmenu pe-pop"); m.setAttribute("role", "menu");
-		items.forEach(function (it) { if (it === "-") { m.appendChild(el("div", "pe-sep")); return; } var b = el("button", "pe-item", "<span>" + esc(it.label) + "</span>"); b.type = "button"; b.setAttribute("role", "menuitem"); if (it.dis) b.disabled = true; b.addEventListener("click", function () { m.remove(); it.act(); }); m.appendChild(b); });
+		items.forEach(function (it) { if (it === "-") { m.appendChild(el("div", "pe-sep")); return; } var b = el("button", "pe-item", "<span>" + esc(it.label) + "</span>" + (it.key ? "<kbd>" + esc(it.key) + "</kbd>" : "")); b.type = "button"; b.setAttribute("role", "menuitem"); if (it.title) b.title = it.title; if (it.dis) b.disabled = true; b.addEventListener("click", function () { m.remove(); it.act(); }); m.appendChild(b); });
 		root.appendChild(m); var rr = root.getBoundingClientRect(), w = m.offsetWidth, h = m.offsetHeight; m.style.left = Math.max(4, Math.min(x - rr.left, rr.width - w - 4)) + "px"; m.style.top = Math.max(4, Math.min(y - rr.top, rr.height - h - 4)) + "px";
 		var f = m.querySelector("button:not(:disabled)"); if (f) f.focus();
 		var off = function (e) { if (!m.contains(e.target)) { m.remove(); document.removeEventListener("pointerdown", off, true); document.removeEventListener("keydown", esck, true); } }, esck = function (e) { if (e.key === "Escape") { e.stopPropagation(); m.remove(); document.removeEventListener("pointerdown", off, true); document.removeEventListener("keydown", esck, true); } };
@@ -6493,7 +6787,10 @@ var MESPixel = (function () {
 	}
 	function layerMenu(L, x, y) {
 		var grp = PE.isGroup(L), items = [{ label: "✎ Rename", act: function () { renameLayer(L.id); } }, { label: "⧉ Duplicate", act: function () { PE.duplicateLayer(L); } }];
-		if (!grp) items = items.concat(["-", { label: "fx Layer style: bevel, stroke, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "Copy layer style", dis: !PE.hasFx(L), act: function () { PE.copyLayerStyle(L); } }, { label: "Paste layer style", dis: !(PE.hasStyleClip && PE.hasStyleClip()), act: function () { PE.pasteLayerStyle(L); } }, { label: "Clear layer style", dis: !PE.hasFx(L), act: function () { L.fx = null; PE.commit("Remove layer style"); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
+		var nm = PE.multi().length, tabsTo = PE.layerTabItems ? PE.layerTabItems() : [];   // round 13: copy / paste / move layers between tabs
+		items = items.concat([{ label: "Copy " + (nm > 1 ? nm + " layers" : grp ? "group" : "layer") + " (for any tab)", key: MOD + "C", act: function () { PE.copyLayers(); } }, { label: "Paste layers", dis: !(PE.hasLayerClip && PE.hasLayerClip()), key: MOD + "V", act: function () { PE.pasteLayers(); } }], tabsTo.length ? ["-"].concat(tabsTo) : []);
+		if (grp) items = items.concat(["-", { label: "Paste layer style on every layer in this group", dis: !(PE.hasStyleClip && PE.hasStyleClip()), key: PE.styleKey("V"), act: function () { PE.pasteLayerStyle(L); } }]);
+		if (!grp) items = items.concat(["-", { label: "fx Layer style: bevel, stroke, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "Copy layer style", key: PE.styleKey("C"), title: "Layer style + colour adjustments + opacity + blend mode. Stays copied when you switch tabs or reload", act: function () { PE.copyLayerStyle(L); } }, { label: "Paste layer style", key: PE.styleKey("V"), dis: !(PE.hasStyleClip && PE.hasStyleClip()), title: PE.styleClipText ? PE.styleClipText() : "", act: function () { PE.pasteLayerStyle(L); } }, { label: "Clear layer style", dis: !PE.hasFx(L), act: function () { L.fx = null; PE.commit("Remove layer style"); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
 		if (!grp && L.crop) items.push({ label: "Show the whole layer (uncrop)", act: function () { PE.clearLayerCrop(L); } });
 		if (!grp) items = items.concat(["-"], maskItems(L));
 		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" : "🔒 Lock", act: function () { L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); } }, { label: "🗑 Delete layer", act: function () { PE.deleteLayer(); } }]);
@@ -6622,7 +6919,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	 * browser's re-encoded PNG can differ by colour profile / scale, so comparing pixels alone sometimes missed it and the copy came back at its full size). */
 	PE.clipLayer = null; var clipAway = true;
 	window.addEventListener("blur", function () { clipAway = true; });
-	function remember(c, xf, layer) { PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); PE.clipLayer = layer || null; clipAway = false; memoSave(c, xf, layer); }
+	function remember(c, xf, layer) { if (PE.layerClipOld) PE.layerClipOld(); PE.clipCanvas = c; PE.clipXf = xf; PE.clipSig = sig(c); PE.clipLayer = layer || null; clipAway = false; memoSave(c, xf, layer); }
 	/* the copy also survives in localStorage (size, place, turn, crop, style, text; not the pixels: those are the PNG on the system clipboard), so a paste in another
 	 * tab, after a reload or after reopening the project still lands with the copied size on the copied spot. The pasted picture is recognised by its fingerprint. */
 	var MEMO = "mes-photo-editor:clip";
@@ -6647,6 +6944,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	function sameAsClip(im) { var a = PE.clipSig, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!PE.clipCanvas) return false; if (!clipAway) return true; if (!a) return false; var r = w / a.w; if (Math.abs(h / a.h - r) > 0.02 || !(Math.abs(r - 1) < 0.02 || Math.abs(r - 2) < 0.04 || Math.abs(r - 0.5) < 0.02)) return false; var b = sig(im); if (!b) return false; var diff = 0; for (var i = 0; i < a.d.length; i++) diff += Math.abs(a.d[i] - b.d[i]); return diff / a.d.length < 14; }
 	function copySel(cut) {
 		var L = PE.active(); if (!PE.doc || !L) return; var c, xf;
+		if (!PE.sel && !cut && PE.copyLayers && (PE.multi().length > 1 || PE.isGroup(L))) { PE.copyLayers(); clipAway = false; return; }   // round 13: several layers / a group, for this or another tab
 		/* a text / equation / shape layer is copied as itself (still editable when pasted, like Duplicate), even when a selection is left over from earlier:
 		 * text and equations always, a shape when the selection holds all of it. A selection only cuts pixels out of picture layers. */
 		var vec = !PE.isGroup(L) && (L.type === "text" && L.text || L.eq || L.shape), wholeVec = false;
@@ -6675,9 +6973,10 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		if (L && xf && (xf.sx !== 1 || xf.sy !== 1 || xf.rot)) { L.sx = xf.sx; L.sy = xf.sy; L.rot = xf.rot; PE.invalidate(); PE.commit("Paste in place"); }
 		PE.setTool("move");
 	}
-	function pasteInternal() { if (PE.clipCanvas) pasteOwn(); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { if (!pasteRemembered(im)) paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
+	function pasteInternal() { if (PE.layerClipNewest && PE.layerClipNewest()) { PE.pasteLayers(); return; } if (PE.clipCanvas) pasteOwn(); else if (navigator.clipboard && navigator.clipboard.read) { navigator.clipboard.read().then(function (items) { for (var i = 0; i < items.length; i++) { var t = items[i].types.filter(function (t) { return /^image\//.test(t); })[0]; if (t) { items[i].getType(t).then(function (b) { return PE.decodeFile(b); }).then(function (im) { if (!pasteRemembered(im)) paintClipboardImage(im, "Pasted image"); }); return; } } PE.toast("Nothing to paste"); }).catch(function () { PE.toast("Use Ctrl+V to paste an image"); }); } else PE.toast("Use Ctrl+V to paste an image"); }
 	document.addEventListener("paste", function (e) {
 		if (/INPUT|TEXTAREA|SELECT/.test((e.target || {}).tagName || "") || PE.modalOpen()) return; var items = (e.clipboardData && e.clipboardData.items) || [];
+		if (PE.layerClipNewest && PE.layerClipNewest()) { var ext = clipAway && Array.prototype.some.call(items, function (it) { return it.kind === "file" && /^image\//.test(it.type); }); if (!ext) { e.preventDefault(); PE.pasteLayers(); return; } }   // round 13: layers copied with Ctrl+C (several / a group)
 		var gf = []; for (var j = 0; j < items.length; j++) if (items[j].kind === "file") { var ff = items[j].getAsFile(); if (ff && /\.xcf$/i.test(ff.name)) gf.push(ff); }
 		if (gf.length) { e.preventDefault(); openFiles(gf, { place: !!PE.doc, how: "paste" }); return; }   // a GIMP file copied in the file manager
 		for (var i = 0; i < items.length; i++) if (items[i].kind === "file" && /^image\//.test(items[i].type)) { var f = items[i].getAsFile(); e.preventDefault(); PE.decodeFile(f).then(function (im) { if (PE.doc && sameAsClip(im)) pasteOwn(); else if (!pasteRemembered(im)) paintClipboardImage(im, "Pasted image"); }).catch(function () { PE.toast("Can't read that image"); }); return; }
@@ -6803,7 +7102,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 			if (e && (e.name === "NotReadableError" || e.name === "NotFoundError")) { PE.toast("Could not read “" + f.name + "”. If it is in OneDrive or iCloud, make it available on this computer first (right-click → Always keep on this device), then drop it again. If it is a folder (an unzipped project), use File → Open project folder…"); return; }
 			PE.toast(e && e.message || String(e)); });
 	}
-	function confirmReplace() { if (!PE.doc || !PE.dirty || PE.hist.stack.length < 2) return true; return window.confirm("Replace the current image? Unsaved changes will be lost (you can still restore the last auto-saved session)."); }
+	function confirmReplace() { return true; }   // round 13: an opened file goes into a new tab (tabs.js), nothing is replaced
 	PE.openFiles = openFiles; PE.confirmReplace = confirmReplace;
 	/* File -> Open: the browser's file picker that returns file handles (so a project opened this way can be saved back in place), else the plain file input */
 	var OPEN_ACCEPT = "image/*,.psd,.xcf,.mesproj,.zip";
@@ -6841,10 +7140,10 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 	var isMac = /Mac|iPhone|iPad/.test(navigator.platform), MOD = isMac ? "⌘" : "Ctrl+";
 	function adj(list) { return list.map(function (a) { return { label: a.title, act: function () { if (needDoc()) PE.runAdjust(a.id); } }; }); }
 	var MENUS = [
-		{ label: "File", items: [{ label: "New image…", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open project folder…", icon: "📁", title: "Open an unzipped project: a folder with project.json and the layer PNGs in it (Chrome / Edge: Save then writes back into that folder)", act: function () { PE.openProjectFolderPicker(); } }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
+		{ label: "File", items: [{ label: "New image…", title: "Opens in a new tab: the pictures already open stay open", act: function () { PE.dlgNew(); } }, { label: "Open image / PSD / GIMP / project…", key: MOD + "O", act: pickOpen }, { label: "Open project file…", icon: "📂", title: "Open a .mesproj (or a .zip with a project in it) so that Save writes back to the same file", act: function () { PE.openProjectPicker(); } }, { label: "Open project folder…", icon: "📁", title: "Open an unzipped project: a folder with project.json and the layer PNGs in it (Chrome / Edge: Save then writes back into that folder)", act: function () { PE.openProjectFolderPicker(); } }, { label: "Close this tab", act: function () { if (PE.closeTab) PE.closeTab(); }, title: "Close the picture / project in this tab (the others stay open)" }, { label: "Open recent…", act: function () { PE.dlgRecent(); }, title: "Projects autosaved in this browser and project files opened or saved here" }, { label: "Insert equation (LaTeX)…", act: function () { PE.dlgEquation(null, null); } }, { label: "Place image(s) as layers…", act: function () { if (!needDoc()) return; pickFiles("image/*,.xcf", true, function (fs) { openFiles(fs, { place: true }); }); } }, "-",
 			{ label: function () { var L = PE.psdHome && PE.psdHome() && PE.psdLink(); return L ? "Save " + (L.handle ? L.name : "PSD") : "Save project"; }, tag: "keeps layers", icon: "💾", hi: true, key: MOD + "S", act: saveProject, title: "Saves every layer, group, mask and text. A picture opened from a PSD (or saved as one) saves to that PSD; otherwise a .mesproj project file. Once it is in a file, this writes to that same file" }, { label: "Save project as…", key: MOD + "Alt+Shift+S", act: function () { PE.saveProjectAs(); }, title: "Save the project under a new name or in another folder" }, { label: function () { return (PE.autoFileOn() ? "✓ " : "") + "Auto-save to the project file"; }, act: function () { PE.setAutoFile(!PE.autoFileOn()); }, title: "Write changes into the linked project file 20 s after you stop editing, so a synced folder (OneDrive…) always has the latest" }, { label: "Download project as .zip", act: function () { PE.downloadProjectZip(); }, title: "The same project as a normal .zip file (project.json + one PNG per layer): drop it on the editor to keep working" }, "-", { label: "Export as PNG / JPEG / WebP…", key: MOD + "Shift+S", act: function () { if (needDoc()) PE.dlgExport(); } }, { label: "Export the selected group as its own image…", act: function () { if (needDoc()) PE.dlgExportGroup(); } }, { label: "Export all comps as pictures (ZIP)…", act: function () { if (needDoc()) PE.dlgExportComps(); } }, { label: "Export every layer as PNG (ZIP)…", act: function () { PE.dlgExportLayers(); }, title: "One PNG per layer plus layers.json with the positions, for other apps" }, { label: function () { var L = PE.psdLink && PE.psdLink(); return L && L.handle ? "Save to " + L.name : "Save as PSD (Photoshop)"; }, act: savePsd, title: "A Photoshop file with the layers. Once saved (or opened from a PSD), this writes to the same PSD again" }, { label: "Save as a new PSD…", act: function () { if (needDoc()) PE.savePsdAs(); }, title: "Pick a new name or folder for the PSD; later saves go there" }, { label: "Save as GIMP file (.xcf)", act: function () { PE.saveXcf(); } }, "-",
 			{ label: "Where are my images? (files, folder, autosave)…", act: function () { PE.dlgFolder("where"); } }, { label: "Keep working on another computer…", act: function () { PE.dlgFolder("move"); } }, { label: "Connect a folder on this computer…", act: function () { PE.dlgFolder("folder"); } }, "-", { label: "Copy merged image to clipboard", act: function () { if (needDoc()) copyMerged(); } }, { label: "Share as a link (temporary upload)…", act: function () { if (needDoc()) PE.dlgShare(); } }, "-", { label: "Compress this picture (MES Compressor)…", title: "Opens mes.fm/compress in a new tab with this picture already in it: make the file smaller, aim for a size in KB. Nothing is uploaded.", act: function () { PE.sendPicture("/compress", "the Compressor"); } }, { label: "Convert this picture (PNG / JPG / WebP)…", title: "Opens the Bulk Image Converter in a new tab with this picture in it. Nothing is uploaded.", act: function () { PE.sendPicture("/image-converter", "the Image Converter"); } }, { label: "Bulk convert many images…", act: function () { window.open("/image-converter", "_blank"); } }, "-", { label: "Develop this photo in MES Darkroom…", title: "Opens MES Darkroom (a free Lightroom-style photo library and RAW developer) in a new tab with this picture in it. Nothing is uploaded.", act: function () { PE.sendPicture("/darkroom", "MES Darkroom"); } }, { label: "Organise and develop RAW photos (MES Darkroom)…", act: function () { window.open("/darkroom", "_blank"); } }] },
-		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-",
+		{ label: "Edit", items: [{ label: "Undo", key: MOD + "Z", act: function () { PE.undo(); } }, { label: "Redo", key: MOD + "Shift+Z", act: function () { PE.redo(); } }, "-", { label: "Cut", key: MOD + "X", act: function () { copySel(true); } }, { label: "Copy", key: MOD + "C", act: function () { copySel(false); } }, { label: "Copy merged", act: function () { if (needDoc()) copyMerged(); } }, { label: "Paste as new layer", key: MOD + "V", act: pasteInternal }, "-", { label: "Copy layers (for any tab)", title: "Copies the selected layers or groups with their size, place, text, masks and styles, to paste in this or another tab (also after a reload)", act: function () { if (needDoc()) PE.copyLayers(); } }, { label: "Paste layers", act: function () { PE.pasteLayers(); } }, { label: "Copy layer style", key: PE.styleKey("C"), act: function () { if (needDoc()) PE.copyLayerStyle(); } }, { label: "Paste layer style", key: PE.styleKey("V"), act: function () { if (needDoc()) PE.pasteLayerStyle(); } }, "-",
 			{ label: "Erase selection with AI (remove object)", act: function () { if (needSel()) PE.aiEraseRun(); } }, { label: "Clear selection (transparent)", key: "Del", act: clearSel }, { label: "Remove a colour (make it see-through)…", act: function () { if (needDoc()) PE.removeColorDialog(PE.wandColor); } }, { label: "Fill with foreground colour", key: "Alt+Backspace", act: function () { if (needDoc()) fillSel(PE.fg); } }, { label: "Fill with background colour", key: MOD + "Backspace", act: function () { if (needDoc()) fillSel(PE.bg); } }, "-",
 			{ label: "Select all", key: MOD + "A", act: function () { if (needDoc()) { PE.selAll(); PE.commit("Select all"); } } }, { label: "Deselect", key: MOD + "D", act: function () { if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } }, { label: "Invert selection", key: MOD + "Shift+I", act: function () { if (needDoc()) { PE.selInvert(); PE.commit("Invert selection"); } } },
 			{ label: "Feather selection…", act: function () { if (needSel()) promptNum("Feather selection", "Radius", 8, 1, 200, function (v) { PE.selFeather(v); PE.commit("Feather"); }); } }, { label: "Grow selection…", act: function () { if (needSel()) promptNum("Grow selection", "By", 4, 1, 100, function (v) { PE.selGrow(v, true); PE.commit("Grow selection"); }); } }, { label: "Shrink selection…", act: function () { if (needSel()) promptNum("Shrink selection", "By", 4, 1, 100, function (v) { PE.selGrow(v, false); PE.commit("Shrink selection"); }); } }] },
@@ -6853,6 +7152,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		{ label: "Layer", items: [{ label: "Group layers", key: MOD + "G", act: function () { if (needDoc()) groupSelected(); } }, { label: "Ungroup", key: MOD + "Shift+G", act: function () { if (needDoc()) PE.ungroup(); } }, "-", { label: "New layer (empty)", key: MOD + "Shift+N", act: function () { if (needDoc()) PE.newRasterLayer(); } }, { label: "New solid colour layer… (white, black, any colour)", act: function () { PE.dlgFillLayer(); } }, { label: "Duplicate layer", key: MOD + "J", act: function () { if (needDoc()) PE.duplicateLayer(); } }, { label: "Delete layer", act: function () { if (needDoc()) PE.deleteLayer(); } }, { label: "Layer via copy (selection)", act: function () { if (needDoc()) PE.layerFromSelection(false); } }, { label: "Layer via cut (selection)", act: function () { if (needDoc()) PE.layerFromSelection(true); } }, "-",
 			{ label: "Merge down", key: MOD + "E", act: function () { if (needDoc()) PE.mergeDown(); } }, { label: "Merge visible", act: function () { if (needDoc()) PE.mergeVisible(); } }, "-", { label: "Remove background (AI)…", act: function () { PE.aiRemoveBackground(); } }, { label: "Add layer mask", act: function () { if (needDoc()) PE.addMask(PE.active(), true); } }, { label: "Apply layer mask", act: function () { if (needDoc()) PE.applyMask(); } }, { label: "Delete layer mask", act: function () { if (needDoc()) PE.deleteMask(); } }, { label: "How layer masks work", act: function () { PE.maskHelp(); } }, { label: "Rasterize text layer", act: function () { var L = PE.active(); if (L && L.type === "text") { PE.rasterize(L); PE.commit("Rasterize"); } } }, "-",
 			{ label: "Align: left", act: function () { align("left"); } }, { label: "Align: centre horizontally", act: function () { align("hcenter"); } }, { label: "Align: right", act: function () { align("right"); } }, { label: "Align: top", act: function () { align("top"); } }, { label: "Align: centre vertically", act: function () { align("vcenter"); } }, { label: "Align: bottom", act: function () { align("bottom"); } }, "-",
+			{ label: "Copy layer style", key: PE.styleKey("C"), title: "Layer style + colour adjustments + opacity + blend mode. Stays copied when you switch tabs or reload", act: function () { if (needDoc()) PE.copyLayerStyle(); } }, { label: "Paste layer style", key: PE.styleKey("V"), title: "On the selected layer(s); on a group: on every layer in it", act: function () { if (needDoc()) PE.pasteLayerStyle(); } }, { label: "Move layers to another tab…", act: function () { if (needDoc()) PE.dlgMoveLayers(true); } }, { label: "Copy layers to another tab…", act: function () { if (needDoc()) PE.dlgMoveLayers(false); } }, "-",
 			{ label: "Layer style…", act: function () { PE.dlgLayerStyle(); }, title: "Bevel and emboss, stroke, inner / drop shadow, inner / outer glow, satin, colour and gradient overlay: live, change or remove them any time" }, { label: "Layer style: bevel and emboss…", act: function () { PE.dlgLayerStyle(null, "bevel"); } }, { label: "Layer style: stroke (outline)…", act: function () { PE.dlgLayerStyle(null, "outline"); } }, { label: "Layer style: drop shadow…", act: function () { PE.dlgLayerStyle(null, "shadow"); } }, { label: "Layer style: glow…", act: function () { PE.dlgLayerStyle(null, "glow"); } }, { label: "Outline / shadow as a new layer (pixels)…", act: function () { PE.dlgEffect("outline"); } }, { label: "Crop layer (hide its edges)", key: "Y", act: function () { var L = PE.active(); if (needDoc() && L && !PE.isGroup(L)) PE.setTool("layercrop"); } }, { label: "Show the whole layer (uncrop)", act: function () { if (needDoc()) PE.clearLayerCrop(); } }, { label: "Round corners…", act: function () { PE.dlgRoundCorners(); } }, "-", { label: "Fit layer inside canvas", act: function () { fitLayer(false); } }, { label: "Fill canvas with layer", act: function () { fitLayer(true); } }, { label: "Reset layer scale / rotation", act: resetTransform }, { label: "Flip layer horizontally", act: function () { if (needDoc()) PE.flipLayer(true); } }, { label: "Flip layer vertically", act: function () { if (needDoc()) PE.flipLayer(false); } }, "-", { label: "Move layer up", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 1); } }, { label: "Move layer down", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -1); } }, { label: "Bring to front", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, 999); } }, { label: "Send to back", act: function () { var L = PE.active(); if (L) PE.stepLayer(L, -999); } }] },
 		{ label: "Adjust", items: adj(PE.ADJUST) }, { label: "Filter", items: adj(PE.FILTERS) },
 		{ label: "View", items: [{ label: "Zoom in", key: MOD + "+", act: function () { PE.setZoom(PE.view.zoom * 1.25); } }, { label: "Zoom out", key: MOD + "−", act: function () { PE.setZoom(PE.view.zoom / 1.25); } }, { label: "Fit on screen", key: MOD + "0", act: function () { PE.fit(); } }, { label: "Actual pixels (100%)", key: MOD + "1", act: function () { PE.setZoom(1); } }, "-", { label: "Pixel grid (when zoomed in)", act: function () { PE.showGrid = !PE.showGrid; PE.invalidate(); } }, { label: "Full window mode", key: "F", act: function () { toggleWin(); } }] },
@@ -6946,6 +7246,7 @@ $("pe-share").addEventListener("click", function () { if (needDoc()) PE.dlgShare
 		if (mod) {
 			if (low === "z") { e.preventDefault(); e.shiftKey ? PE.redo() : PE.undo(); return; } if (low === "y") { e.preventDefault(); PE.redo(); return; }
 			if (!has && low !== "v" && low !== "o") return;
+			if (e.altKey && !e.shiftKey && (e.code === "KeyC" || e.code === "KeyV")) { e.preventDefault(); if (e.code === "KeyC") PE.copyLayerStyle(); else PE.pasteLayerStyle(); return; }   // round 13: layer style clipboard
 			if ((low === "b" || low === "u" || (low === "i" && !e.shiftKey)) && !e.altKey) { var AL = PE.active(); if (AL && AL.type === "text" && AL.text && PE.textToggleStyle) { e.preventDefault(); PE.textToggleStyle(low === "b" ? 1 : low === "i" ? 2 : 4); return; } }   // bold / italic / underline the whole active text layer
 			if (low === "a") { e.preventDefault(); PE.selAll(); PE.commit("Select all"); } else if (low === "d") { e.preventDefault(); if (PE.sel) { PE.selClear(); PE.commit("Deselect"); } } else if (low === "i" && e.shiftKey) { e.preventDefault(); PE.selInvert(); PE.commit("Invert selection"); }
 			else if (low === "c") { e.preventDefault(); e.shiftKey ? copyMerged() : copySel(false); } else if (low === "x") { e.preventDefault(); copySel(true); } else if (low === "j") { e.preventDefault(); PE.duplicateLayer(); } else if (low === "g") { e.preventDefault(); e.shiftKey ? PE.ungroup() : groupSelected(); } else if (low === "e") { e.preventDefault(); PE.mergeDown(); }

@@ -669,6 +669,24 @@ html body.dark-mode #pe .pe-tabs button[aria-pressed="true"] {color:#fff;}
 #pe .pe-psdname { display: flex; align-items: center; gap: .5em; margin: .2em 0 .6em; }
 #pe .pe-psdname span { font-weight: 600; }
 #pe .pe-psdname input { flex: 1; min-width: 0; padding: .45em .6em; font-size: 1.05em; }
+	/* round 13: document tabs */
+	#pe .pe-tabs {display:flex;align-items:stretch;gap:0.2em;background:var(--pe-bg);border-bottom:1px solid var(--pe-line);padding:0.25em 0.4em 0;flex:none;min-height:2.3em;}
+	#pe .pe-tabs[hidden] {display:none;}
+	#pe .pe-tabs.is-drop {outline:2px dashed var(--pe-on);outline-offset:-3px;}
+	#pe .pe-tabl {display:flex;gap:0.2em;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;min-width:0;flex:0 1 auto;}
+	#pe .pe-tab {display:flex;align-items:center;flex:none;max-width:15em;background:var(--pe-panel2);border:1px solid var(--pe-line);border-bottom:0;border-radius:0.45em 0.45em 0 0;color:var(--pe-dim);}
+	#pe .pe-tab.is-on {background:var(--pe-panel);color:var(--pe-text);border-color:var(--pe-on);box-shadow:inset 0 2px 0 var(--pe-on);}
+	#pe .pe-tab-b {flex:0 1 auto;text-transform:none;letter-spacing:normal;width:auto;max-width:none;display:flex;align-items:center;gap:0.4em;min-width:0;background:none;border:0;color:inherit;padding:0.35em 0.2em 0.35em 0.7em;font-size:0.92em;cursor:pointer;}
+	#pe .pe-tab-n {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#pe .pe-tab-dot {width:0.5em;height:0.5em;border-radius:50%;flex:none;background:transparent;}
+	#pe .pe-tab.is-dirty .pe-tab-dot {background:var(--pe-acc2);}
+	#pe .pe-tab-x {flex:none;width:auto;min-width:0;background:none;border:0;color:inherit;opacity:0.6;padding:0.2em 0.5em;border-radius:0.3em;font-size:0.85em;cursor:pointer;line-height:1;}
+	#pe .pe-tab-x:hover {opacity:1;background:var(--pe-hover);}
+	#pe .pe-tab-b:focus-visible, #pe .pe-tab-add:focus-visible {outline:2px solid var(--pe-on);outline-offset:-2px;border-radius:0.3em;}
+	#pe .pe-tab-add {flex:none;width:auto;min-width:0;text-transform:none;background:none;border:1px solid transparent;color:var(--pe-text);border-radius:0.35em;padding:0 0.7em;margin-bottom:0.25em;font-size:1em;cursor:pointer;}
+	#pe .pe-tab-add:hover {background:var(--pe-hover);}
+	#pe .pe-tabpick {display:block;width:100%;text-align:left;margin:0.3em 0;}
+	@media (max-width:700px) { #pe .pe-tab {max-width:10em;} #pe .pe-tab-b {padding:0.45em 0.2em 0.45em 0.6em;} #pe .pe-tab-x {padding:0.45em 0.6em;opacity:0.85;} }
 
 
 	@media print {
@@ -1031,6 +1049,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="pe-btn pe-btn--save" id="pe-save" title="Save project: a .mesproj file that keeps every layer, group and comp (Ctrl+S)"><span aria-hidden="true">💾</span> Save project<span class="pe-dot" aria-hidden="true"></span></button><span class="pe-projst" id="pe-projst" hidden></span><button type="button" class="pe-btn" id="pe-copy" title="Copy the image to the clipboard (selection only, if there is one)" aria-label="Copy image to clipboard">⧉ Copy</button><button type="button" class="pe-btn" id="pe-share" title="Get a link to this picture (temporary upload to a free file host)" aria-label="Share image as a link">🔗 Link</button><button type="button" class="pe-btn pe-btn--primary" id="pe-export">Export</button>
 			</div>
 		</div>
+		<div class="pe-tabs" id="pe-tabs" hidden></div>
 		<div class="pe-opts" id="pe-opts" aria-label="Tool options"></div>
 		<div class="pe-main">
 			<div class="pe-tools" id="pe-tools" role="toolbar" aria-label="Tools" aria-orientation="vertical"></div>
@@ -1148,7 +1167,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/photo/js/photo.js?v=63" defer></script>
+	<script src="/main_js/cloud-files.js?v=3" defer></script><script src="/photo/js/photo.js?v=64" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
