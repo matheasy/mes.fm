@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -339,9 +341,23 @@ private fun MathSettings(s: State) {
 
 @Composable
 private fun PeriodPicker(weekly: Boolean, onPick: (Boolean) -> Unit) {
-    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        SegmentedButton(selected = !weekly, onClick = { onPick(false) }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text("Per day") }
-        SegmentedButton(selected = weekly, onClick = { onPick(true) }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text("Per week") }
+    val cs = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(50))
+            .background(cs.surfaceVariant).padding(4.dp)
+    ) {
+        listOf(false to "Per day", true to "Per week").forEach { (w, label) ->
+            val on = w == weekly
+            Box(
+                Modifier.weight(1f).clip(RoundedCornerShape(50))
+                    .background(if (on) cs.primary else Color.Transparent)
+                    .clickable { onPick(w) }.padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(label, fontWeight = if (on) FontWeight.Bold else FontWeight.Normal,
+                    color = if (on) cs.onPrimary else cs.onSurfaceVariant, maxLines = 1)
+            }
+        }
     }
 }
 
@@ -349,10 +365,25 @@ private fun PeriodPicker(weekly: Boolean, onPick: (Boolean) -> Unit) {
 @Composable
 private fun LimitStepper(value: Int, max: Int, onChange: (Int) -> Unit) {
     val step = if (value >= 50) 5 else 1
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        OutlinedButton(onClick = { onChange((value - step).coerceAtLeast(1)) }) { Text("−", fontSize = 20.sp) }
-        Text("$value", fontSize = 34.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 20.dp))
-        OutlinedButton(onClick = { onChange((value + step).coerceAtMost(max)) }) { Text("+", fontSize = 20.sp) }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+        StepButton("−", "Fewer", value > 1) { onChange((value - step).coerceAtLeast(1)) }
+        Text("$value", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 96.dp))
+        StepButton("+", "More", value < max) { onChange((value + step).coerceAtMost(max)) }
+    }
+}
+
+@Composable
+private fun StepButton(sym: String, desc: String, enabled: Boolean, onClick: () -> Unit) {
+    val cs = MaterialTheme.colorScheme
+    Box(
+        Modifier.size(52.dp).clip(CircleShape)
+            .background(if (enabled) cs.primaryContainer else cs.surfaceVariant)
+            .clickable(enabled = enabled, onClickLabel = desc, onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(sym, fontSize = 28.sp, fontWeight = FontWeight.Bold,
+            color = if (enabled) cs.onPrimaryContainer else cs.onSurfaceVariant.copy(alpha = 0.5f))
     }
 }
 
