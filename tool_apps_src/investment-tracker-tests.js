@@ -134,5 +134,12 @@ ok(ws.assets["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"] && Object.keys(ws.a
 const wq = I.walletQty(ws, { w1: { b: { "c:ethereum": 1, "c:usd-coin": 50, "e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72": 3 } } });
 ok(wq["c:ethereum"] === 1 && !wq["c:usd-coin"] && wq["e:0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"] === 3, "hidden token not counted");
 
+/* other networks */
+ok(["base", "arb", "bnb"].every((n) => Object.keys(T.NETS[n].tokens).length >= 10 && Object.keys(T.NETS[n].tokens).every((a) => /^0x[0-9a-f]{40}$/.test(a) && T.cgId(T.NETS[n].tokens[a][2]))), "network token tables well formed");
+const bl = Object.keys(T.NETS.bnb.tokens), usdtB = "0x55d398326f99059ff775485246999027b3197955";
+const rb = T.parseEthRpc([{ id: 0, result: "0x1bc16d674ec80000" }].concat(bl.map((a, i) => ({ id: i + 1, result: a === usdtB ? "0x" + (10n ** 19n).toString(16).padStart(64, "0") : "0x0" }))), bl, "bnb");
+near(rb.b["c:binancecoin"], 2, "bnb native is BNB"); near(rb.b["c:tether"], 10, "bnb usdt 18 decimals"); ok(!rb.b["c:ethereum"], "bnb has no eth key");
+ok(I.EVM_NETS.length === 4 && I.walletOk("eth", "0xF977814e90dA44bFA03b6295A0616a897441aceC"), "evm networks");
+
 console.log(bad ? bad + " of " + n + " checks FAILED" : "all " + n + " checks passed");
 process.exit(bad ? 1 : 0);

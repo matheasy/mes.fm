@@ -20,7 +20,7 @@
 	I.CURRENCIES = ["USD", "CAD", "EUR", "GBP", "AUD", "NZD", "CHF", "JPY", "CNY", "HKD", "SGD", "INR", "KRW", "VND", "PHP", "IDR", "THB", "MYR", "MXN", "BRL", "ZAR", "SEK", "NOK", "DKK", "PLN", "TRY", "AED", "ILS"];
 	I.CHAINS = {
 		btc: { name: "Bitcoin", syms: [["BTC", "c:bitcoin", "Bitcoin"]], re: /^(bc1[02-9ac-hj-np-z]{11,87}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, ex: "bc1q…" },
-		eth: { name: "Ethereum", syms: [["ETH", "c:ethereum", "Ethereum"]], re: /^0x[0-9a-fA-F]{40}$/, ex: "0x…" },
+		eth: { name: "Ethereum, Base, Arbitrum, BNB Chain", short: "4 networks", noun: "Ethereum (0x…)", syms: [["ETH", "c:ethereum", "Ethereum"], ["BNB", "c:binancecoin", "BNB"]], re: /^0x[0-9a-fA-F]{40}$/, ex: "0x… (read on Ethereum, Base, Arbitrum and BNB Chain)" },
 		hive: { name: "Hive", syms: [["HIVE", "c:hive", "Hive"], ["HBD", "c:hive_dollar", "Hive Backed Dollar"]], re: /^[a-z][a-z0-9.-]{2,15}$/, ex: "your Hive username" },
 		xrp: { name: "XRP Ledger", syms: [["XRP", "c:ripple", "XRP"]], re: /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/, ex: "r…" },
 		sol: { name: "Solana", syms: [["SOL", "c:solana", "Solana"]], re: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/, ex: "a Solana address" }
@@ -327,6 +327,8 @@
 		});
 		return x;
 	};
+	/* The networks an Ethereum (0x) address is read on: [id, name, native coin key, symbol] (order of the wallet card) */
+	I.EVM_NETS = [["eth", "Ethereum", "c:ethereum", "ETH"], ["base", "Base", "c:ethereum", "ETH"], ["arb", "Arbitrum", "c:ethereum", "ETH"], ["bnb", "BNB Chain", "c:binancecoin", "BNB"]];
 	I.walletOk = function (chain, addr) { var c = I.CHAINS[chain]; return !!(c && c.re.test(String(addr || "").trim())); };
 
 	/* ---------- clean / merge / backup ---------- */

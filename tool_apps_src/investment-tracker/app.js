@@ -73,7 +73,7 @@
 		return Promise.all(list.map(function (w) {
 			w._busy = true;
 			return api("w=" + encodeURIComponent(w.chain + ":" + w.addr)).then(function (r) {
-				WB[w.id] = { b: r.b, at: Date.now(), hid: r.hid || 0, src: r.src || "" };
+				WB[w.id] = { b: r.b, n: r.n || null, nerr: r.nerr || [], at: Date.now(), hid: r.hid || 0, src: r.src || "" };
 				// tokens: make each one an asset (name + symbol from the wallet answer); "e:" tokens bring their own price
 				Object.keys(r.t || {}).forEach(function (k) {
 					if (!S.assets[k] && (/^c:[a-z0-9_-]{1,60}$/.test(k) || /^e:0x[0-9a-f]{40}$/.test(k))) { ensureAsset({ k: k, sym: String(r.t[k][0]).slice(0, 20), name: String(r.t[k][1] || r.t[k][0]).slice(0, 80), cur: "USD" }); newAssets = true; }
@@ -372,7 +372,7 @@
 		e.preventDefault();
 		var ch = $("iv-wchain").value, ad = $("iv-waddr").value.trim(), note = $("iv-wnote");
 		if (ch === "hive") ad = ad.replace(/^@/, "").toLowerCase();
-		if (!I.walletOk(ch, ad)) { note.textContent = "That doesn't look like a " + I.CHAINS[ch].name + " address."; note.className = "iv-qnote is-err"; return; }
+		if (!I.walletOk(ch, ad)) { note.textContent = "That doesn't look like a " + (I.CHAINS[ch].noun || I.CHAINS[ch].name) + " address."; note.className = "iv-qnote is-err"; return; }
 		if (S.wallets.some(function (w) { return w.chain === ch && w.addr === ad; })) { note.textContent = "That wallet is already in the list."; note.className = "iv-qnote is-err"; return; }
 		var w = { id: I.uid(), chain: ch, addr: ad, label: $("iv-wlabel").value.trim() };
 		S.wallets.push(w);
@@ -387,30 +387,49 @@
 		$("iv-wlist").innerHTML = '<div class="iv-wcards">' + S.wallets.map(function (w) {
 			var b = WB[w.id], c = I.CHAINS[w.chain], tot = 0;
 			var bal = b && b.b ? b.b : null, hide = w.hide || [];
-			// the chain's own coins first (always shown), then its tokens, biggest value first
-			var keys = c.syms.map(function (s) { return s[1]; });
-			var val = function (k) { var pr = P.q[k]; return bal && pr ? I.conv((bal[k] || 0) * pr.p, pr.c || "USD", S.base, fx) : NaN; };
-			var toks = bal ? Object.keys(bal).filter(function (k) { return keys.indexOf(k) < 0 && bal[k] > 0; }) : [];
-			toks.sort(function (x, y) { return (val(y) || 0) - (val(x) || 0); });
-			var shown = toks.filter(function (k) { return hide.indexOf(k) < 0; }), hidden = toks.filter(function (k) { return hide.indexOf(k) >= 0; });
-			var line = function (k, sym, tok) {
-				var q = bal ? bal[k] || 0 : null, v = val(k);
-				if (isFinite(v)) tot += v;
+			var price = function (k, q) { var pr = P.q[k]; return pr ? I.conv(q * pr.p, pr.c || "USD", S.base, fx) : NaN; };
+			// wallet total = everything not hidden, all networks added up (same numbers the holdings use)
+			if (bal) Object.keys(bal).forEach(function (k) { if (hide.indexOf(k) < 0) { var v = price(k, bal[k]); if (isFinite(v)) tot += v; } });
+			var line = function (k, q, sym, tok) {
+				var v = q == null ? NaN : price(k, q);
 				return "<div class='iv-wline'><span>" + esc(sym) + "</span><b>" + (q == null ? "…" : I.fmtQ(q)) + "</b><small>" + (isFinite(v) ? money(v) : "") + "</small>" +
-					(tok ? '<button type="button" class="iv-ib iv-whide" data-whide="' + esc(w.id) + '" data-k="' + esc(k) + '" title="Hide this token (not counted)">✕</button>' : "") + "</div>";
+					(tok ? '<button type="button" class="iv-ib iv-whide" data-whide="' + esc(w.id) + '" data-k="' + esc(k) + '" title="Hide this token on this wallet (not counted)">✕</button>' : "") + "</div>";
 			};
-			var lines = c.syms.map(function (s) { return line(s[1], s[0], false); }).join("");
-			if (shown.length) {
-				var many = shown.length > 6 && !w._open;
-				lines += '<div class="iv-wtoks"><div class="iv-wsub">Tokens</div>' + (many ? shown.slice(0, 5) : shown).map(function (k) { return line(k, assetOf(k).sym, true); }).join("") +
-					(many ? (function () { shown.slice(5).forEach(function (k) { var v = val(k); if (isFinite(v)) tot += v; }); return '<button type="button" class="iv-link" data-wopen="' + esc(w.id) + '">Show all ' + shown.length + " tokens</button>"; })() : "") + "</div>";
+			// one group per network: its own coin first (always shown), then its tokens, biggest value first, dust under 1 cent left out
+			var groups = b && b.n ? I.EVM_NETS.filter(function (g) { return b.n[g[0]]; }).map(function (g) { return { id: g[0], name: g[1], nat: [g[2], g[3]], bal: b.n[g[0]] }; })
+				: [{ id: "", name: "", nat: c.syms[0] ? [c.syms[0][1], c.syms[0][0]] : null, bal: bal, syms: c.syms }];
+			// coins that are some network's own coin (ETH, BNB) never get a hide button: hiding works per key, so it would hide them everywhere
+			var natAll = {}; I.EVM_NETS.forEach(function (g) { natAll[g[2]] = 1; }); c.syms.forEach(function (s) { natAll[s[1]] = 1; });
+			var hiddenN = 0, lines = "";
+			groups.forEach(function (g) {
+				var natKeys = g.syms ? g.syms.map(function (s) { return s[1]; }) : g.nat ? [g.nat[0]] : [];
+				var toks = g.bal ? Object.keys(g.bal).filter(function (k) { if (natKeys.indexOf(k) >= 0 || !(g.bal[k] > 0)) return false; var v = price(k, g.bal[k]); return !(isFinite(v) && v < 0.01); }) : [];
+				toks.sort(function (x, y) { return (price(y, g.bal[y]) || 0) - (price(x, g.bal[x]) || 0); });
+				var shown = toks.filter(function (k) { return hide.indexOf(k) < 0; }); hiddenN += toks.length - shown.length;
+				var natQ = function (k) { return g.bal ? g.bal[k] || 0 : null; };
+				// an empty extra network gets one short line instead of a section
+				if (g.id && g.id !== "eth" && !shown.length && !(natQ(g.nat[0]) > 0)) return;
+				var h = g.name ? '<div class="iv-wnet">' + esc(g.name) + "</div>" : "";
+				h += g.syms ? g.syms.map(function (s) { return line(s[1], natQ(s[1]), s[0], false); }).join("") : line(g.nat[0], natQ(g.nat[0]), g.nat[1], false);
+				if (shown.length) {
+					var open = w._open && w._open[g.id || "x"], many = shown.length > 6 && !open;
+					h += '<div class="iv-wtoks">' + (g.name ? "" : '<div class="iv-wsub">Tokens</div>') + (many ? shown.slice(0, 5) : shown).map(function (k) { return line(k, g.bal[k], assetOf(k).sym, !natAll[k]); }).join("") +
+						(many ? '<button type="button" class="iv-link" data-wopen="' + esc(w.id) + '" data-net="' + esc(g.id || "x") + '">Show all ' + shown.length + " tokens</button>" : "") + "</div>";
+				}
+				lines += h;
+			});
+			if (b && b.n) {
+				var empty = I.EVM_NETS.filter(function (g) { return g[0] !== "eth" && b.n[g[0]] && !lines.match(new RegExp('iv-wnet">' + g[1] + "<")); }).map(function (g) { return g[1]; });
+				if (empty.length) lines += '<p class="iv-wnote">Nothing on ' + empty.join(", ") + "</p>";
+				if (b.nerr && b.nerr.length) lines += '<p class="iv-wnote iv-down">Could not read ' + b.nerr.map(function (n) { return I.EVM_NETS.filter(function (g) { return g[0] === n; }).map(function (g) { return g[1]; })[0] || n; }).join(", ") + " this time</p>";
 			}
+			var hidden = { length: hiddenN };
 			var foot = [];
 			if (hidden.length) foot.push('<button type="button" class="iv-link" data-wunhide="' + esc(w.id) + '">' + hidden.length + " hidden by you · show</button>");
 			if (b && b.hid) foot.push('<span title="Tokens with no real trading (often airdropped spam) are left out.">' + b.hid + " unknown or spam token" + (b.hid === 1 ? "" : "s") + " left out</span>");
 			if (b && b.src === "rpc") foot.push("<span>Only popular tokens were checked this time</span>");
 			if (foot.length) lines += '<p class="iv-wnote">' + foot.join(" · ") + "</p>";
-			return '<div class="iv-wcard"><div class="iv-whead"><b>' + esc(w.label || c.name) + '</b><span class="iv-kind iv-kind--c">' + esc(c.name) + "</span></div>" +
+			return '<div class="iv-wcard"><div class="iv-whead"><b>' + esc(w.label || c.noun || c.name) + '</b><span class="iv-kind iv-kind--c">' + esc(c.short || c.name) + "</span></div>" +
 				'<code class="iv-addr" title="' + esc(w.addr) + '">' + esc(w.addr.length > 24 ? w.addr.slice(0, 10) + "…" + w.addr.slice(-8) : w.addr) + "</code>" + lines +
 				(w._err ? '<p class="iv-qnote is-err">' + esc(w._err) + "</p>" : "") +
 				'<div class="iv-wfoot"><span class="iv-muted">' + (w._busy ? "Updating…" : b ? "Read " + ago(b.at) : "") + " · " + money(tot) + '</span><span><button type="button" class="iv-ib" data-wre="' + w.id + '" title="Read again">↻</button><button type="button" class="iv-ib" data-wdel="' + w.id + '" title="Remove">🗑</button></span></div></div>';
@@ -424,7 +443,7 @@
 			toast(assetOf(hd.dataset.k).sym + " hidden on this wallet", function () { restoreSnap(snap1); }); return;
 		}
 		var uh = e.target.closest("[data-wunhide]"); if (uh) { var w2 = S.wallets.filter(function (w) { return w.id === uh.dataset.wunhide; })[0]; if (w2) { delete w2.hide; save(); render(); } return; }
-		var op = e.target.closest("[data-wopen]"); if (op) { var w3 = S.wallets.filter(function (w) { return w.id === op.dataset.wopen; })[0]; if (w3) { w3._open = true; paintWallets(); } return; }
+		var op = e.target.closest("[data-wopen]"); if (op) { var w3 = S.wallets.filter(function (w) { return w.id === op.dataset.wopen; })[0]; if (w3) { w3._open = w3._open || {}; w3._open[op.dataset.net] = true; paintWallets(); } return; }
 		var d = e.target.closest("[data-wdel]"); if (d) { var snap = snapshot(); S.wallets = S.wallets.filter(function (w) { return w.id !== d.dataset.wdel; }); save(); render(); toast("Wallet removed", function () { restoreSnap(snap); }); }
 	});
 

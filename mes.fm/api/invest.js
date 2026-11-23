@@ -7,9 +7,11 @@
 //   GET ?w=btc:<addr> | eth | hive | xrp | sol -> {chain, b: {"c:bitcoin": qty, ...}}
 //       eth also returns ERC-20 tokens: b gets "c:<CoinGecko id>" (popular tokens) or "e:<contract>" (others, with their price
 //       in q: {"e:0x..": {p, c, ch, n}}), t: {key: [symbol, name]}, hid: tokens left out (looks like spam), src: "ethplorer" | "rpc".
+//       The same address is also read on Base, Arbitrum and BNB Chain (built-in token lists): b = all networks added up,
+//       n: {eth|base|arb|bnb: {key: qty}}, nerr: [networks that failed this time].
 //
 // Sources: Yahoo Finance chart / search (unofficial, may break), CoinGecko public API, open.er-api.com, mempool.space,
-// ethereum-rpc.publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
+// ethereum-rpc / base-rpc / arbitrum-one-rpc / bsc-rpc .publicnode.com, api.ethplorer.io (freekey), api.hive.blog, xrplcluster.com, api.mainnet-beta.solana.com.
 // Each item is cached in Upstash (same vars as api/fav.js); without them it still works, just uncached.
 'use strict';
 const crypto = require('crypto');
@@ -157,6 +159,66 @@ const TOKENS = {
   '0x5283d291dbcf85356a21ba090e6db59121208b44': ['BLUR', 18, 'blur', 'Blur'],
   '0x0b38210ea11411557c13457d4da7dc6ea731b88a': ['API3', 18, 'api3', 'API3']
 };
+/* Other networks an Ethereum address also lives on. Each has a built-in token list (contract -> [symbol, decimals,
+   CoinGecko id, name]; symbols and decimals read from each chain 2026-11-23) read with one batch call to publicnode,
+   so there is no spam to filter. Native coin: ETH on Base / Arbitrum, BNB on BNB Chain. */
+const NETS = {
+  base: { name: 'Base', rpc: 'https://base-rpc.publicnode.com', native: ['c:ethereum', 'ETH', 'Ethereum'], tokens: {
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': ['USDbC', 6, 'usd-coin', 'USD Coin'],
+    '0xfde4c96c8593536e31f229ea8f37b2ada2699bb2': ['USDT', 6, 'tether', 'Tether'],
+    '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': ['DAI', 18, 'dai', 'Dai'],
+    '0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42': ['EURC', 6, 'euro-coin', 'EURC'],
+    '0x4200000000000000000000000000000000000006': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22': ['cbETH', 18, 'coinbase-wrapped-staked-eth', 'Coinbase Wrapped Staked ETH'],
+    '0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+    '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf': ['cbBTC', 8, 'coinbase-wrapped-btc', 'Coinbase Wrapped BTC'],
+    '0x940181a94a35a4569e4529a3cdfb74e38fd98631': ['AERO', 18, 'aerodrome-finance', 'Aerodrome'],
+    '0x4ed4e862860bed51a9570b96d89af5e1b0efefed': ['DEGEN', 18, 'degen-base', 'Degen'],
+    '0x532f27101965dd16442e59d40670faf5ebb142e4': ['BRETT', 18, 'based-brett', 'Brett'],
+    '0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b': ['VIRTUAL', 18, 'virtual-protocol', 'Virtuals Protocol'],
+    '0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4': ['TOSHI', 18, 'toshi', 'Toshi'],
+    '0x88fb150bdc53a65fe94dea0c9ba0a6daf8c6e196': ['LINK', 18, 'chainlink', 'Chainlink']
+  } },
+  arb: { name: 'Arbitrum', rpc: 'https://arbitrum-one-rpc.publicnode.com', native: ['c:ethereum', 'ETH', 'Ethereum'], tokens: {
+    '0xaf88d065e77c8cc2239327c5edb3a432268e5831': ['USDC', 6, 'usd-coin', 'USD Coin'],
+    '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8': ['USDC.e', 6, 'usd-coin', 'USD Coin'],
+    '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': ['USDT', 6, 'tether', 'Tether'],
+    '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1': ['DAI', 18, 'dai', 'Dai'],
+    '0x82af49447d8a07e3bd95bd0d56f35241523fbab1': ['WETH', 18, 'weth', 'Wrapped Ether'],
+    '0x5979d7b546e38e414f7e9822514be443a4800529': ['wstETH', 18, 'wrapped-steth', 'Wrapped stETH'],
+    '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f': ['WBTC', 8, 'wrapped-bitcoin', 'Wrapped Bitcoin'],
+    '0x912ce59144191c1204e64559fe8253a0e49e6548': ['ARB', 18, 'arbitrum', 'Arbitrum'],
+    '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a': ['GMX', 18, 'gmx', 'GMX'],
+    '0xf97f4df75117a78c1a5a0dbb814af92458539fb4': ['LINK', 18, 'chainlink', 'Chainlink'],
+    '0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0': ['UNI', 18, 'uniswap', 'Uniswap'],
+    '0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8': ['PENDLE', 18, 'pendle', 'Pendle'],
+    '0x539bde0d7dbd336b79148aa742883198bbf60342': ['MAGIC', 18, 'magic', 'Magic'],
+    '0x9623063377ad1b27544c965ccd7342f7ea7e88c7': ['GRT', 18, 'the-graph', 'The Graph']
+  } },
+  bnb: { name: 'BNB Chain', rpc: 'https://bsc-rpc.publicnode.com', native: ['c:binancecoin', 'BNB', 'BNB'], tokens: {
+    '0x55d398326f99059ff775485246999027b3197955': ['USDT', 18, 'tether', 'Tether'],
+    '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': ['USDC', 18, 'usd-coin', 'USD Coin'],
+    '0xe9e7cea3dedca5984780bafc599bd69add087d56': ['BUSD', 18, 'binance-usd', 'Binance USD'],
+    '0xc5f0f7b66764f6ec8c8dff7ba683102295e16409': ['FDUSD', 18, 'first-digital-usd', 'First Digital USD'],
+    '0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3': ['DAI', 18, 'dai', 'Dai'],
+    '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c': ['WBNB', 18, 'wbnb', 'Wrapped BNB'],
+    '0x2170ed0880ac9a755fd29b2688956bd959f933f8': ['ETH', 18, 'ethereum', 'Ethereum'],
+    '0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c': ['BTCB', 18, 'bitcoin-bep2', 'Binance Bitcoin'],
+    '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82': ['CAKE', 18, 'pancakeswap-token', 'PancakeSwap'],
+    '0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe': ['XRP', 18, 'ripple', 'XRP'],
+    '0xba2ae424d960c26247dd6c32edc70b295c744c43': ['DOGE', 8, 'dogecoin', 'Dogecoin'],
+    '0x3ee2200efb3400fabb9aacf31297cbdd1d435d47': ['ADA', 18, 'cardano', 'Cardano'],
+    '0x7083609fce4d1d8dc0c979aab8c869ea2c873402': ['DOT', 18, 'polkadot', 'Polkadot'],
+    '0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd': ['LINK', 18, 'chainlink', 'Chainlink'],
+    '0x4b0f1812e5df2a09796481ff14017e6005508003': ['TWT', 18, 'trust-wallet-token', 'Trust Wallet Token'],
+    '0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3': ['TRX', 6, 'tron', 'TRON'],
+    '0x1ce0c2827e2ef14d5c4f29a091d735a204794041': ['AVAX', 18, 'avalanche-2', 'Avalanche'],
+    '0xbf5140a22578168fd562dccf235e5d43a02ce9b1': ['UNI', 18, 'uniswap', 'Uniswap'],
+    '0x4338665cbb7b2485a8855a139b75d5e34ab0db94': ['LTC', 18, 'litecoin', 'Litecoin'],
+    '0x2859e4544c4bb03966803b044a93563bd2d0dd4d': ['SHIB', 18, 'shiba-inu', 'Shiba Inu']
+  } }
+};
 const SPAM = { vol: 250000, cap: 10e6, val: 1 };
 // raw integer string + decimals -> number (BigInt, so 18-decimal amounts don't lose the whole part)
 function units(raw, dec) {
@@ -186,31 +248,62 @@ function parseEthplorer(j) {
   });
   return { b, t, q, hid };
 }
-async function ethWallet(addr) {
+// ETH + listed tokens from a publicnode RPC batch: [{id 0: eth_getBalance}, {id n: balanceOf(token n-1)}]
+function rpcBatch(addr, list) {
+  const pad = addr.toLowerCase().slice(2).padStart(64, '0');
+  return [{ jsonrpc: '2.0', id: 0, method: 'eth_getBalance', params: [addr, 'latest'] }]
+    .concat(list.map((a, n) => ({ jsonrpc: '2.0', id: n + 1, method: 'eth_call', params: [{ to: a, data: '0x70a08231' + pad }, 'latest'] })));
+}
+// net: undefined = Ethereum (TOKENS), else a NETS key
+function parseEthRpc(j, list, net) {
+  if (!Array.isArray(j)) throw new Error('no balance');
+  const N = net ? NETS[net] : null, tokens = N ? N.tokens : TOKENS, nat = N ? N.native : ['c:ethereum', 'ETH', 'Ethereum'];
+  const by = {}; j.forEach((x) => { by[x.id] = x; });
+  if (!by[0] || !by[0].result) throw new Error('no balance');
+  const b = {}, t = {}, eth = units(by[0].result, 18);
+  if (eth) { b[nat[0]] = eth; t[nat[0]] = [nat[1], nat[2]]; }
+  list.forEach((a, n) => {
+    const r = by[n + 1], tk = tokens[a];
+    if (!r || !r.result || r.result === '0x' || !tk) return;
+    const q = units(r.result, tk[1]);
+    if (q) { const k = 'c:' + tk[2]; b[k] = (b[k] || 0) + q; t[k] = t[k] || [tk[0], tk[3]]; }
+  });
+  if (!net && !b['c:ethereum']) b['c:ethereum'] = 0;
+  return { b, t, hid: 0 };
+}
+async function ethMain(addr) {
   try {
     const r = parseEthplorer(await getJSON('https://api.ethplorer.io/getAddressInfo/' + addr + '?apiKey=freekey'));
     return { b: r.b, t: r.t, q: r.q, hid: r.hid, src: 'ethplorer' };
   } catch (e) {
     // Fallback: ETH + the popular tokens straight from the chain (one batch call)
-    const list = Object.keys(TOKENS), pad = addr.toLowerCase().slice(2).padStart(64, '0');
-    const body = [{ jsonrpc: '2.0', id: 0, method: 'eth_getBalance', params: [addr, 'latest'] }]
-      .concat(list.map((a, n) => ({ jsonrpc: '2.0', id: n + 1, method: 'eth_call', params: [{ to: a, data: '0x70a08231' + pad }, 'latest'] })));
-    const j = await getJSON('https://ethereum-rpc.publicnode.com', { body: JSON.stringify(body) });
-    return Object.assign({ src: 'rpc' }, parseEthRpc(j, list));
+    const list = Object.keys(TOKENS);
+    return Object.assign({ src: 'rpc' }, parseEthRpc(await getJSON('https://ethereum-rpc.publicnode.com', { body: JSON.stringify(rpcBatch(addr, list)) }), list));
   }
 }
-function parseEthRpc(j, list) {
-  if (!Array.isArray(j)) throw new Error('no balance');
-  const by = {}; j.forEach((x) => { by[x.id] = x; });
-  if (!by[0] || !by[0].result) throw new Error('no balance');
-  const b = { 'c:ethereum': units(by[0].result, 18) }, t = {};
-  list.forEach((a, n) => {
-    const r = by[n + 1], tk = TOKENS[a];
-    if (!r || !r.result || r.result === '0x') return;
-    const q = units(r.result, tk[1]);
-    if (q) { const k = 'c:' + tk[2]; b[k] = (b[k] || 0) + q; t[k] = [tk[0], tk[3]]; }
+async function ethNet(addr, net) {
+  const list = Object.keys(NETS[net].tokens);
+  return parseEthRpc(await getJSON(NETS[net].rpc, { body: JSON.stringify(rpcBatch(addr, list)) }), list, net);
+}
+// One address, four networks. b = everything added up (what the holdings use); n = per network, for the wallet card;
+// nerr = networks that could not be read this time (the rest still count).
+async function ethWallet(addr) {
+  const nets = ['eth'].concat(Object.keys(NETS));
+  const rs = await Promise.allSettled([ethMain(addr)].concat(Object.keys(NETS).map((k) => ethNet(addr, k))));
+  if (rs.every((r) => r.status === 'rejected')) throw rs[0].reason;
+  const out = { b: {}, t: {}, q: {}, n: {}, nerr: [], hid: 0, src: '' };
+  rs.forEach((r, i) => {
+    const net = nets[i];
+    if (r.status === 'rejected') { out.nerr.push(net); return; }
+    const v = r.value;
+    out.n[net] = v.b;
+    Object.keys(v.b).forEach((k) => { out.b[k] = (out.b[k] || 0) + v.b[k]; });
+    Object.assign(out.q, v.q || {});
+    Object.keys(v.t || {}).forEach((k) => { if (!out.t[k]) out.t[k] = v.t[k]; });
+    if (net === 'eth') { out.hid = v.hid || 0; out.src = v.src; }
   });
-  return { b, t, hid: 0 };
+  if (out.b['c:ethereum'] == null) out.b['c:ethereum'] = 0;
+  return out;
 }
 
 /* ---------- fetchers ---------- */
@@ -350,7 +443,7 @@ module.exports = async function handler(req, res) {
     return send(502, { error: String(e && e.message || e).slice(0, 200) });
   }
 };
-module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, units, TOKENS };
+module.exports._t = { ySym, cgId, parseYahooQuote, parseYahooHist, walletParse, parseEthplorer, parseEthRpc, units, TOKENS, NETS, ethWallet };
 
 if (require.main === module) {
   // node mes.fm/api/invest.js  -> quick live check of every source

@@ -90,6 +90,8 @@
 	.iv-wline span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:7em;}
 	.iv-wline .iv-whide {font-size:0.8em;padding:0.1em 0.35em;opacity:0.55;align-self:center;}
 	.iv-wline .iv-whide:hover, .iv-wline .iv-whide:focus-visible {opacity:1;}
+	.iv-wnet {font-size:0.85em;font-weight:700;margin-top:0.6em;padding-top:0.3em;color:var(--iv-mut);}
+	.iv-wnet:first-of-type {margin-top:0.2em;}
 	.iv-wsub {font-size:0.8em;font-weight:700;color:var(--iv-mut);margin-top:0.5em;text-transform:none;}
 	.iv-wtoks .iv-link {font-size:0.88em;margin-top:0.3em;}
 	.iv-wnote {font-size:0.82em;color:var(--iv-mut);margin:0.5em 0 0;line-height:1.4;}
