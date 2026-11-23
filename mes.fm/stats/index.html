@@ -348,6 +348,29 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	.st .ts-cc.on select {border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
 	body.dark-mode .st .ts-cc select {background:#22272e;color:#e6e9ed;border-color:#454c56;}
 	body.dark-mode .st .cc-pick.on {color:#7fb6ff;}
+	/* Countries per page (2026-11-22): in a page's open row, and the Pages list of one country */
+	.st .cc-pages {font:inherit;font-size:0.75em;margin-left:0.5em;padding:0.1em 0.55em;border-radius:1em;border:1px solid #c3c9d2;background:#fff;color:#1e2733;cursor:pointer;vertical-align:0.1em;}
+	.st .cc-pages:hover, .st .cc-pages.on {border-color:var(--accent);color:var(--accent);}
+	.st .pg-cc {margin-top:0.8em;max-width:34em;}
+	.st .pg-cc-head {font-weight:700;font-size:0.9em;margin-bottom:0.3em;}
+	.st .pg-cc-head small, .st .cc-pages-head small {font-weight:400;color:var(--muted);}
+	.st .pg-cc-msg {font-size:0.85em;color:var(--muted);margin:0.4em 0;}
+	.st .pg-cc-table {width:100%;font-size:0.88em;}
+	.st .pg-cc-table td {padding:0.25em 0.4em;}
+	.st .pg-cc-table a {word-break:break-all;}
+	.st .pc-bar {display:inline-block;width:5em;height:0.55em;border-radius:0.3em;background:#e3e7ec;vertical-align:middle;overflow:hidden;}
+	.st .pc-bar i {display:block;height:100%;background:var(--accent);}
+	.st .pg-cc-more {font:inherit;font-size:0.82em;margin-top:0.4em;background:none;border:0;color:var(--accent);cursor:pointer;padding:0;text-decoration:underline;}
+	.st .cc-pages-box {margin-top:1em;padding:0.8em 1em;border:1px solid #d5dae1;border-radius:0.6em;}
+	.st .cc-pages-box[hidden] {display:none;}
+	.st .cc-pages-head {display:flex;align-items:center;gap:0.5em;margin-bottom:0.5em;}
+	.st .cc-pages-close {margin-left:auto;font:inherit;font-size:1.3em;line-height:1;background:none;border:0;cursor:pointer;color:inherit;}
+	body.dark-mode .st .cc-pages {background:#22272e;color:#e6e9ed;border-color:#454c56;}
+	body.dark-mode .st .cc-pages:hover, body.dark-mode .st .cc-pages.on {border-color:#7fb6ff;color:#7fb6ff;}
+	body.dark-mode .st .pc-bar {background:#323943;}
+	body.dark-mode .st .pc-bar i {background:#5a9cf0;}
+	body.dark-mode .st .pg-cc-more {color:#7fb6ff;}
+	body.dark-mode .st .cc-pages-box {border-color:#3a414b;}
 	/* Per-page lines: legend chips, crosshair + shared tooltip, tick boxes in the table */
 	.st .ts-legend {display:flex;flex-wrap:wrap;gap:0.35em;align-items:center;margin-top:0.5em;font-size:0.8em;}
 	.st .ts-legend[hidden] {display:none;}
@@ -824,7 +847,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 
 		<section class="stats-section">
 			<h2>Views by Country</h2>
-			<p class="cc-note">Click a country to show only its views in Views Over Time. Countries come from the visitor's connection (Vercel's own country lookup; no IP address is stored) and are counted from November 21, 2026.</p>
+			<p class="cc-note">Click a country to show only its views in Views Over Time, or its <b>Pages</b> button to see which pages it reads (open a page's &#9656; row above for that page's countries). Countries come from the visitor's connection (Vercel's own country lookup; no IP address is stored) and are counted from November 21, 2026.</p>
 			<div class="brk">
 			<div class="brk-donut" id="countryTotalsDonut"></div>
 			<div class="table-wrap">
@@ -840,6 +863,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			</div>
 			<button type="button" id="showMoreCountries" class="show-more-btn" style="display: none;"></button>
+			<div id="ccPagesBox" class="cc-pages-box" hidden></div>
 		</section>
 
 		<div class="st-seo">
@@ -848,7 +872,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li>Use the <strong>range tabs</strong> to switch between the past 24 hours, 7 days, 30 days, 365 days or all tracked history &mdash; your choice is remembered next visit.</li>
 				<li><strong>Views Over Time</strong> is hourly for the last 24 hours and daily otherwise; flip to <strong>Weekly</strong> to smooth out day-to-day noise. The dashed segment is the current, still-filling-in period. Hover or tab to a point to see its exact count.</li>
 				<li>Type in the search box above <strong>Most Viewed Pages</strong> to find any page, not just the top 50 (it searches the 3,000 most viewed); <strong>#</strong> is the page&rsquo;s rank across the site. Esc clears it.</li>
-				<li>In <strong>Most Viewed Pages</strong>, click any column heading to sort, or click the <strong>&#9656;</strong> beside a page to see its full device &times; source breakdown.</li>
+				<li>In <strong>Most Viewed Pages</strong>, click any column heading to sort, or click the <strong>&#9656;</strong> beside a page to see its full device &times; source breakdown and which countries read it (counted from November 22, 2026).</li>
 			</ul>
 
 			<h3>What counts as a view?</h3>
@@ -914,7 +938,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/stats/js/stats.js?v=19" defer></script>
+	<script src="/stats/js/stats.js?v=20" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

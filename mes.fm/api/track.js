@@ -136,6 +136,10 @@ module.exports = async (req, res) => {
   const dailyDeviceTotals = `pageviews:devicetotals:daily:${dk}`;
   const dailySourceTotals = `pageviews:sourcetotals:daily:${dk}`;
   const dailyPageDeviceSources = `pageviews:pagedevicesources:daily:${dk}`;
+  // Countries per page (since 2026-11-22): member = site|path|CC, read by api/stats.js ?pc=page / ?pc=country.
+  const pageCountryMember = `${site}|${path}|${country}`;
+  const hourlyPageCountries = `pageviews:pagecountries:hourly:${hk}`;
+  const dailyPageCountries = `pageviews:pagecountries:daily:${dk}`;
 
   const commands = [
     ['ZINCRBY', 'pageviews:leaderboard', '1', member],
@@ -155,6 +159,9 @@ module.exports = async (req, res) => {
     ['HINCRBY', 'pageviews:country-totals', country, '1'],
     ['ZINCRBY', hourlyCountryTotals, '1', country],
     ['ZINCRBY', dailyCountryTotals, '1', country],
+    ['ZINCRBY', 'pageviews:pagecountries', '1', pageCountryMember],
+    ['ZINCRBY', hourlyPageCountries, '1', pageCountryMember],
+    ['ZINCRBY', dailyPageCountries, '1', pageCountryMember],
   ];
 
   // A bucket's TTL only needs setting once, not on every view. Remember which
@@ -166,8 +173,8 @@ module.exports = async (req, res) => {
     expiredKeys.add(key);
     commands.push(['EXPIRE', key, String(ttl)]);
   };
-  [hourlyLeaderboard, hourlyDeviceTotals, hourlySourceTotals, hourlyPageDeviceSources, hourlyCountryTotals].forEach((k) => expireOnce(k, HOUR_TTL));
-  [dailyLeaderboard, dailyDeviceTotals, dailySourceTotals, dailyPageDeviceSources, dailyCountryTotals].forEach((k) => expireOnce(k, DAY_TTL));
+  [hourlyLeaderboard, hourlyDeviceTotals, hourlySourceTotals, hourlyPageDeviceSources, hourlyCountryTotals, hourlyPageCountries].forEach((k) => expireOnce(k, HOUR_TTL));
+  [dailyLeaderboard, dailyDeviceTotals, dailySourceTotals, dailyPageDeviceSources, dailyCountryTotals, dailyPageCountries].forEach((k) => expireOnce(k, DAY_TTL));
 
   // Google Ads return check (main_js/track.js): every key is the ad visitor's first ad-click day, so a range of days
   // is one cohort of ad visitors. adf = a browser's first ad click (must be today), adr = its Nth later day back.

@@ -424,7 +424,7 @@ function renderTopPages() {
     const label = pageLabel(p);
     const key = pageKey(p);
     const isExpanded = expandedPages.has(key);
-    const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device × source breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
+    const toggle = '<button type="button" class="expand-toggle" data-page-key="' + escapeHtml(key) + '" aria-expanded="' + isExpanded + '" title="Show device, source and country breakdown">' + (isExpanded ? '▾' : '▸') + '</button>';
     const picked = picks.indexOf(key) !== -1;
     const pick = '<input type="checkbox" class="pg-pick" data-page-key="' + escapeHtml(key) + '" title="Show in chart" aria-label="Show ' + escapeHtml(label) + ' in chart"' +
       (picked ? ' checked style="accent-color:' + colorFor(key) + '"' : (picks.length >= MAX_PICKS ? ' disabled' : '')) + '>';
@@ -432,8 +432,9 @@ function renderTopPages() {
       breakdownKeys.map(function (k) { return breakdownCell(p, k); }).join('') +
       '<td class="views sticky-col sticky-right">' + p.views.toLocaleString() + '</td></tr>';
     if (!isExpanded) return row;
-    return row + '<tr class="detail-row"><td colspan="99">' + renderMatrixDetail(p) + '</td></tr>';
+    return row + '<tr class="detail-row"><td colspan="99">' + renderMatrixDetail(p) + '<div class="pg-cc" data-page-key="' + escapeHtml(key) + '">' + pageCountriesHtml(key) + '</div></td></tr>';
   }).join('');
+  loadExpandedCountries();
 
   // Totals reflect the full top-N dataset (not just the "Show N" preview
   // slice), same as Views by Device/Source -- but unlike those tables
@@ -528,6 +529,93 @@ function renderSourceTotals() {
     extra: { source: 'unrecorded', views: sourceTotalsData.length ? deviceSum - sourceSum : 0 } });
 }
 
+// ---- Countries per page (api/track.js counts pageviews:pagecountries since 2026-11-22) ----
+// /api/stats?pc=page&page=<site|path> -> that page's countries; ?pc=country&cc=XX -> pages viewed from one country.
+const PAGE_CC_SINCE = '2026-11-22';
+const pcCache = {}; // range|kind|key -> { rows, total, all } or 'loading' / 'error'
+function pcFetch(kind, key) {
+  const id = currentRange + '|' + kind + '|' + key;
+  const c = pcCache[id];
+  if (c && c !== 'error') return Promise.resolve(c);
+  pcCache[id] = 'loading';
+  const q = kind === 'page' ? '&pc=page&page=' + encodeURIComponent(key) : '&pc=country&cc=' + encodeURIComponent(key);
+  return fetch('/api/stats?range=' + encodeURIComponent(currentRange) + q)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (j) { pcCache[id] = { rows: j.rows || [], total: j.total || 0 }; return pcCache[id]; })
+    .catch(function () { pcCache[id] = 'error'; return 'error'; });
+}
+function pcShareRows(rows, total, labelFn, max) {
+  return rows.slice(0, max).map(function (r) {
+    const w = rows[0].views ? Math.max(1.5, r.views / rows[0].views * 100) : 0;
+    return '<tr><td>' + labelFn(r) + '</td><td class="views">' + r.views.toLocaleString() + '</td>' +
+      '<td class="views share"><span class="pc-bar"><i style="width:' + w.toFixed(1) + '%"></i></span> <span class="share-pct">' + pctText(r.views, total) + '</span></td></tr>';
+  }).join('');
+}
+function pageCountriesHtml(key) {
+  const c = pcCache[currentRange + '|page|' + key];
+  if (!c || c === 'loading') return '<p class="pg-cc-msg">Loading countries&hellip;</p>';
+  if (c === 'error') return '<p class="pg-cc-msg">Could not load the countries for this page.</p>';
+  if (!c.rows.length) return '<p class="pg-cc-msg">No countries recorded for this page in the past ' + RANGE_LABELS[currentRange] + ' (countries per page are counted from ' + fmtDate(PAGE_CC_SINCE) + ').</p>';
+  const many = c.rows.length > 12;
+  return '<div class="pg-cc-head">Countries <small>(' + c.rows.length + ', counted from ' + fmtDate(PAGE_CC_SINCE) + ')</small></div>' +
+    '<table class="pg-cc-table"><tbody>' + pcShareRows(c.rows, c.total, function (r) { return countryLabel(r.country); }, many && !c.all ? 12 : 300) + '</tbody></table>' +
+    (many ? '<button type="button" class="pg-cc-more" data-page-key="' + escapeHtml(key) + '">' + (c.all ? 'Show fewer' : 'Show all ' + c.rows.length + ' countries') + '</button>' : '');
+}
+function loadExpandedCountries() {
+  expandedPages.forEach(function (key) {
+    const c = pcCache[currentRange + '|page|' + key];
+    if (c && c !== 'error') return;
+    pcFetch('page', key).then(function () {
+      document.querySelectorAll('.pg-cc').forEach(function (el) {
+        if (el.dataset.pageKey === key) el.innerHTML = pageCountriesHtml(key);
+      });
+    });
+  });
+}
+document.getElementById('topPagesBody').addEventListener('click', function (e) {
+  const b = e.target.closest('.pg-cc-more');
+  if (!b) return;
+  const c = pcCache[currentRange + '|page|' + b.dataset.pageKey];
+  if (!c || typeof c !== 'object') return;
+  c.all = !c.all;
+  b.closest('.pg-cc').innerHTML = pageCountriesHtml(b.dataset.pageKey);
+});
+let ccPagesShown = '';
+let ccPagesAll = false;
+function renderCountryPages() {
+  const box = document.getElementById('ccPagesBox');
+  if (!box) return;
+  if (!ccPagesShown) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const cc = ccPagesShown;
+  const c = pcCache[currentRange + '|country|' + cc];
+  const head = '<div class="cc-pages-head"><b>Pages viewed from ' + countryLabel(cc) + '</b> <small>past ' + RANGE_LABELS[currentRange] + '</small>' +
+    '<button type="button" class="cc-pages-close" aria-label="Close" title="Close">&times;</button></div>';
+  if (!c || c === 'loading') { box.innerHTML = head + '<p class="pg-cc-msg">Loading&hellip;</p>'; return; }
+  if (c === 'error') { box.innerHTML = head + '<p class="pg-cc-msg">Could not load the pages for this country.</p>'; return; }
+  if (!c.rows.length) { box.innerHTML = head + '<p class="pg-cc-msg">No pages recorded yet: countries per page are counted from ' + fmtDate(PAGE_CC_SINCE) + '.</p>'; return; }
+  const many = c.rows.length > 25;
+  box.innerHTML = head + '<div class="table-wrap"><table class="pg-cc-table"><tbody>' +
+    pcShareRows(c.rows, c.total, function (r) {
+      return '<a href="' + escapeHtml('https://' + r.site + r.path) + '" target="_blank" rel="noopener">' + escapeHtml(pageLabel(r)) + '</a>';
+    }, many && !ccPagesAll ? 25 : 300) + '</tbody></table></div>' +
+    (many ? '<button type="button" class="pg-cc-more cc-pages-more">' + (ccPagesAll ? 'Show fewer' : 'Show all ' + c.rows.length + ' pages') + '</button>' : '');
+}
+function showCountryPages(cc) {
+  ccPagesShown = ccPagesShown === cc ? '' : cc;
+  ccPagesAll = false;
+  renderCountryPages();
+  if (!ccPagesShown) return;
+  pcFetch('country', cc).then(function () { if (ccPagesShown === cc) renderCountryPages(); });
+}
+document.addEventListener('click', function (e) {
+  const b = e.target.closest('#ccPagesBox .cc-pages-close, #ccPagesBox .cc-pages-more');
+  if (!b) return;
+  if (b.classList.contains('cc-pages-close')) { ccPagesShown = ''; renderCountryPages(); renderCountryTotals(); return; }
+  ccPagesAll = !ccPagesAll;
+  renderCountryPages();
+});
+
 // ---- Countries (api/track.js counts Vercel's x-vercel-ip-country header since 2026-11-21) ----
 const COUNTRY_PALETTE = ['#2f80ed', '#eb5757', '#27ae60', '#f2994a', '#9b51e0', '#f2c94c', '#0c8599', '#d6336c', '#5c940d', '#5f3dc4'];
 const COUNTRY_OTHER = '#a0a8b2';
@@ -558,7 +646,7 @@ function renderCountryTotals() {
   const colors = countryColors();
   const labels = {};
   countryTotalsData.forEach(function (r) {
-    labels[r.country] = '<button type="button" class="cc-pick' + (breakdown === 'cc:' + r.country ? ' on' : '') + '" data-cc="' + escapeHtml(r.country) + '" title="Show only ' + escapeHtml(countryName(r.country)) + ' in Views Over Time">' + countryLabel(r.country) + '</button>';
+    labels[r.country] = '<button type="button" class="cc-pick' + (breakdown === 'cc:' + r.country ? ' on' : '') + '" data-cc="' + escapeHtml(r.country) + '" title="Show only ' + escapeHtml(countryName(r.country)) + ' in Views Over Time">' + countryLabel(r.country) + '</button>' + (r.country === 'XX' ? '' : ' <button type="button" class="cc-pages' + (ccPagesShown === r.country ? ' on' : '') + '" data-cc="' + escapeHtml(r.country) + '" title="Pages viewed from ' + escapeHtml(countryName(r.country)) + '">Pages</button>');
   });
   labels.unrecorded = '<span title="Views from before country counting started (' + fmtDate(countriesSince) + ')">Not recorded (before ' + fmtDate(countriesSince) + ')</span>';
   const deviceSum = deviceTotalsData.reduce(function (sum, d) { return sum + d.views; }, 0);
@@ -591,6 +679,8 @@ document.getElementById('countryTotalsHead').addEventListener('click', function 
   renderCountryTotals();
 });
 document.getElementById('countryTotalsBody').addEventListener('click', function (e) {
+  const pg = e.target.closest('.cc-pages');
+  if (pg) { showCountryPages(pg.dataset.cc); renderCountryTotals(); return; }
   const b = e.target.closest('.cc-pick');
   if (!b) return;
   setCountryFilter(breakdown === 'cc:' + b.dataset.cc ? 'all' : b.dataset.cc);
@@ -672,6 +762,7 @@ async function loadStats() {
     renderSourceTotals();
 
     countryTotalsData = data.countryTotals || [];
+    if (ccPagesShown) { renderCountryPages(); pcFetch('country', ccPagesShown).then(renderCountryPages); }
     if (data.countriesSince) countriesSince = data.countriesSince;
     renderCountryTotals();
     if (tsRawPoints.length) renderBreakRow(); // the country picker lists this range's countries

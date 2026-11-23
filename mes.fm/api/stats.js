@@ -4,6 +4,8 @@ const { lastNDayKeys, lastNHourKeys } = require('./_bucket-keys');
 const TOP_N = 50;
 const SEARCH_SCAN = 3000;
 const COUNTRIES_SINCE = '2026-11-21'; // first day api/track.js counted countries
+const PAGE_COUNTRIES_SINCE = '2026-11-22'; // first day it counted countries per page (pageviews:pagecountries*)
+const PC_SCAN = 20000; // most site|path|CC members read for one ?pc= answer
 
 // Must match the categories api/track.js's detectDevice() / detectSource() can produce.
 const DEVICES = ['desktop', 'mobile', 'tablet', 'tv', 'bot', 'unknown'];
@@ -98,6 +100,53 @@ module.exports = async (req, res) => {
   const bucketKeys = config
     ? (config.unit === 'hourly' ? lastNHourKeys(config.count, new Date()) : lastNDayKeys(config.count, new Date()))
     : null;
+
+  // ?pc=page&page=<site|path> -> that page's views per country; ?pc=country&cc=IN -> the pages viewed from one
+  // country. One union of the range's pagecountries buckets (or the all-time set) + one read, filtered here.
+  const pc = String(req.query.pc || '');
+  if (pc === 'page' || pc === 'country') {
+    const want = pc === 'page' ? String(req.query.page || '').slice(0, 220) : String(req.query.cc || '').toUpperCase();
+    if (pc === 'page' ? !/^[^|]+\|\/.*/.test(want) : !/^[A-Z]{2}$/.test(want)) {
+      res.status(400).json({ error: pc === 'page' ? 'invalid page' : 'invalid country' });
+      return;
+    }
+    let cmds;
+    let idx;
+    if (config) {
+      const keys = bucketKeys.map((k) => `pageviews:pagecountries:${config.unit}:${k}`);
+      const dest = randomKey('pc');
+      cmds = [['ZUNIONSTORE', dest, String(keys.length), ...keys], ['ZREVRANGE', dest, '0', String(PC_SCAN - 1), 'WITHSCORES'], ['DEL', dest]];
+      idx = 1;
+    } else {
+      cmds = [['ZREVRANGE', 'pageviews:pagecountries', '0', String(PC_SCAN - 1), 'WITHSCORES']];
+      idx = 0;
+    }
+    let raw = [];
+    try {
+      const out = await runPipeline(cmds);
+      raw = (out && out[idx] && out[idx].result) || [];
+    } catch {
+      res.status(502).json({ error: 'stats store unreachable' });
+      return;
+    }
+    const rows = [];
+    let total = 0;
+    for (let i = 0; i < raw.length; i += 2) {
+      const m = String(raw[i]);
+      const cut = m.lastIndexOf('|');
+      const page = m.slice(0, cut);
+      const cc = m.slice(cut + 1);
+      const views = Number(raw[i + 1]);
+      if (pc === 'page' ? page !== want : cc !== want) continue;
+      total += views;
+      if (pc === 'page') rows.push({ country: cc, views });
+      else rows.push({ ...parseMember(page, views) });
+    }
+    rows.sort((a, b) => b.views - a.views);
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
+    res.status(200).json({ range, pc, [pc === 'page' ? 'page' : 'country']: want, total, rows: rows.slice(0, 300), since: PAGE_COUNTRIES_SINCE, updatedAt: new Date().toISOString() });
+    return;
+  }
 
   // ?slim=1 (homepage "Popular" section): leaderboard only -- no device/source
   // totals and no per-page breakdown round trip, so the Redis work is one union + one range.
@@ -327,6 +376,7 @@ module.exports = async (req, res) => {
     sourceTotals,
     countryTotals,
     countriesSince: COUNTRIES_SINCE,
+    pageCountriesSince: PAGE_COUNTRIES_SINCE,
     updatedAt: new Date().toISOString(),
   });
 };
