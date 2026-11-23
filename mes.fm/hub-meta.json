@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-23",
+"generated":"2026-11-22",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -28,7 +28,7 @@
 },
 "/ai":{
 "added":"2026-11-18",
-"updated":"2026-11-22",
+"updated":"2026-11-21",
 "type":"Tool"
 },
 "/ai-detector":{
@@ -53,7 +53,7 @@
 },
 "/audio":{
 "added":"2026-10-28",
-"updated":"2026-11-22",
+"updated":"2026-11-21",
 "type":"Tool"
 },
 "/baby-feeding-log":{
@@ -288,7 +288,7 @@
 },
 "/docx":{
 "added":"2026-10-26",
-"updated":"2026-11-23",
+"updated":"2026-11-17",
 "type":"Tool"
 },
 "/domain-lookup":{
@@ -369,11 +369,6 @@
 "/fav":{
 "added":"2026-10-15",
 "updated":"2026-11-13",
-"type":"Tool"
-},
-"/feeds":{
-"added":"2026-11-23",
-"updated":"2026-11-23",
 "type":"Tool"
 },
 "/file-check":{
@@ -509,11 +504,6 @@
 "/interval-timer":{
 "added":"2026-10-06",
 "updated":"2026-11-18",
-"type":"Tool"
-},
-"/investment-tracker":{
-"added":"2026-11-23",
-"updated":"2026-11-23",
 "type":"Tool"
 },
 "/julia-set-explorer":{
@@ -703,7 +693,7 @@
 },
 "/pdf":{
 "added":"2026-10-15",
-"updated":"2026-11-23",
+"updated":"2026-11-16",
 "type":"Tool"
 },
 "/pdf-tools":{
@@ -723,7 +713,7 @@
 },
 "/photo":{
 "added":"2026-10-16",
-"updated":"2026-11-22",
+"updated":"2026-11-21",
 "type":"Tool"
 },
 "/photoelectric-effect-simulator":{
@@ -868,7 +858,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-22",
+"updated":"2026-11-19",
 "type":"Tool"
 },
 "/search-engines":{
@@ -903,7 +893,7 @@
 },
 "/site-index":{
 "added":"2026-10-03",
-"updated":"2026-11-22",
+"updated":"2026-11-19",
 "type":"Tool"
 },
 "/site-traffic":{
@@ -953,7 +943,7 @@
 },
 "/stats":{
 "added":"2026-09-24",
-"updated":"2026-11-23",
+"updated":"2026-11-22",
 "type":"Tool"
 },
 "/stopwatch":{
@@ -993,7 +983,7 @@
 },
 "/text":{
 "added":"2026-11-12",
-"updated":"2026-11-23",
+"updated":"2026-11-17",
 "type":"Tool"
 },
 "/text-size":{

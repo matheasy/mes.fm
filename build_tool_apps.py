@@ -278,6 +278,14 @@ APPS = {
                  tag="Type it. Hear it. In your own voice.", accent="#6d28d9", dark="#4c1d95", tint="#ede9fe",
                  desc="Free text to speech narration tool: type a script and get a voice-over in 28 natural English voices or in your own voice from a 15-second sample. Runs in your browser, nothing uploaded. Download MP3, M4A or WAV, or add it to the MES Video Editor.",
                  js_v="5", pre_js=["/main_js/voice-picker.js?v=1", "/main_js/tab-progress.js?v=1", "/main_js/narrate.js?v=1"]),
+    # MES Feeds (2026-11-23, mes.fm/feeds): RSS feeds written by build_feeds.py (feeds/*.xml + index.json), copy / Feedly / Inoreader
+    # buttons, and an owner-only Podping sender (custom_json pp_<medium>_update via MESHive). Source tool_apps_src/feeds/.
+    "feeds": dict(title="MES Feeds", page_title="RSS Feeds: Follow MES Without an Account",
+                  tag="Follow MES your way.", accent="#c2410c", dark="#9a3412", tint="#fdeee4",
+                  desc="Free RSS feeds for everything new on MES: calculators and tools, posts on 9/11, the Hutchison Effect, conspiracy, science and crypto, livestreams and YouTube videos. Paste a link into any feed reader; new items are announced on Hive with Podping.",
+                  meta_desc="RSS feeds for everything new on MES: tools, posts, livestreams and videos. Paste a link into any feed reader; updates are announced on Hive with Podping.",
+                  js_v="1", pre_js=["/main_js/hive.js?v=2"],
+                  head_extra='<link rel="alternate" type="application/rss+xml" title="Everything new on MES" href="https://mes.fm/feeds/everything.xml">'),
     "ping": dict(title="MES Ping Test", page_title="Ping Test: Continuous Latency, Jitter and Packet Loss Test",
                  tag="Like ping -t, in your browser.", accent="#0e7490", dark="#155e75", tint="#dcf1f6",
                  desc="Free continuous ping test: check latency, jitter and packet loss to Cloudflare 1.1.1.1, Google 8.8.8.8, mes.fm or any website, with a live chart, ping-style log and plain-word verdicts for gaming, calls and streaming. Nothing to install.",

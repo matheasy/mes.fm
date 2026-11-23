@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-20",
+ "generated": "2026-11-23",
  "calculators": [
   {
    "href": "/expense-splitter",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/feeds",
+   "title": "RSS Feeds",
+   "icon": "/img/feeds-logo.png",
+   "desc": "Follow everything new on MES in any feed reader: tools, posts, livestreams and videos. No account, no algorithm; updates announced on Hive with Podping.",
+   "added": "2026-11-23",
+   "kind": "tool"
+  },
+  {
    "href": "/blocks",
    "title": "Falling Blocks",
    "icon": "/img/blocks-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.",
    "added": "2026-11-14",
    "kind": "tool"
-  },
-  {
-   "href": "/quantum-computing",
-   "title": "Quantum Computer Simulator",
-   "icon": "/img/quantum-computing-logo.png",
-   "desc": "Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.",
-   "added": "2026-11-13",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/feeds",
+   "title": "RSS Feeds",
+   "icon": "/img/feeds-logo.png",
+   "desc": "Follow everything new on MES in any feed reader: tools, posts, livestreams and videos. No account, no algorithm; updates announced on Hive with Podping.",
+   "added": "2026-11-23",
+   "kind": "tool"
+  },
   {
    "href": "/blocks",
    "title": "Falling Blocks",
@@ -252,14 +260,6 @@
    "desc": "Watch microscopic voids grow and link inside a necking bar until it cracks from the middle: cup and cone, dimples, triaxiality.",
    "added": "2026-11-18",
    "kind": "calculator"
-  },
-  {
-   "href": "/click-test",
-   "title": "Click Speed Test",
-   "icon": "/img/click-test-logo.png",
-   "desc": "Clicks per second for mouse, taps (every finger counts) or Space bar; 1 to 100 s, chart, best scores, world record.",
-   "added": "2026-11-18",
-   "kind": "tool"
   }
  ]
 }

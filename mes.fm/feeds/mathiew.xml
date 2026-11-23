@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+  <title>MES Mathiew Posts</title>
+  <link>https://mes.fm/mathiew</link>
+  <description>New MES Mathiew posts on mes.fm.</description>
+  <language>en</language>
+  <lastBuildDate>Tue, 17 Nov 2026 22:04:36 GMT</lastBuildDate>
+  <atom:link href="https://mes.fm/feeds/mathiew.xml" rel="self" type="application/rss+xml"/>
+  <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Mathiew Posts</title><link>https://mes.fm/mathiew</link></image>
+  <podcast:guid>35f64285-c993-568f-b67e-6f839869636d</podcast:guid>
+  <podcast:medium>blog</podcast:medium>
+  <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
+  <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>New Augmented Reality Glasses 🥽✨</title>
+    <link>https://mes.fm/ar-glasses-reflection</link>
+    <guid isPermaLink="true">https://mes.fm/ar-glasses-reflection</guid>
+    <pubDate>Tue, 17 Nov 2026 22:04:36 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>New augmented reality glasses! A Mathiew photo post from MES, a selfie with a screen showing in one lens, mirrored here from the Hive blockchain and Telegram, with comments.</description>
+    <media:thumbnail url="https://mes.fm/ar-glasses-reflection/img/ar-glasses-reflection.jpg"/>
+  </item>
+  <item>
+    <title>Graduated from Clown College! 🙌🧑‍🎓🎪</title>
+    <link>https://mes.fm/graduated-clown-college</link>
+    <guid isPermaLink="true">https://mes.fm/graduated-clown-college</guid>
+    <pubDate>Sun, 15 Nov 2026 01:51:08 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>MES graduated from Clown College! A Mathiew photo post from MES, wearing a tiny graduation cap, mirrored here from the Hive blockchain and Telegram, with comments.</description>
+    <media:thumbnail url="https://mes.fm/graduated-clown-college/img/graduated-clown-college.jpg"/>
+  </item>
+  <item>
+    <title>Local Elections Requiring a Mandatory Mark of the BC, Canada Voting Sticker</title>
+    <link>https://mes.fm/richmond-elections-sticker-2026</link>
+    <guid isPermaLink="true">https://mes.fm/richmond-elections-sticker-2026</guid>
+    <pubDate>Wed, 28 Oct 2026 05:45:15 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>MES votes in the October 2026 Richmond, BC local elections and gets the mandatory &quot;I Voted&quot; sticker: Moloch or Baal? Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/richmond-elections-sticker-2026/img/i-voted-sticker.jpg"/>
+  </item>
+  <item>
+    <title>MES Is NOT Robbin&#x27; a Bank #notarobber 🥷🌚</title>
+    <link>https://mes.fm/mathiew-not-robber</link>
+    <guid isPermaLink="true">https://mes.fm/mathiew-not-robber</guid>
+    <pubDate>Tue, 06 Oct 2026 05:36:22 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>MES is NOT robbin&#x27; a bank #notarobber: a tongue-in-cheek Mathiew post and video from MES, mirrored here from the Hive blockchain and Telegram, with comments.</description>
+    <media:thumbnail url="https://mes.fm/mathiew-not-robber/img/mathiew-not-robber-1.jpg"/>
+  </item>
+  <item>
+    <title>Neice Gave Me a Haircut</title>
+    <link>https://mes.fm/haircut-neice</link>
+    <guid isPermaLink="true">https://mes.fm/haircut-neice</guid>
+    <pubDate>Mon, 28 Sep 2026 05:56:56 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>My niece decided to give me a haircut -- with strips of paper taped on instead of scissors. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/haircut-neice/img/haircut-neice-1.jpg"/>
+  </item>
+  <item>
+    <title>MES Goes Undercover to Check If Iran Built Underwater Mini-Nukes</title>
+    <link>https://mes.fm/swim-iran-nukes</link>
+    <guid isPermaLink="true">https://mes.fm/swim-iran-nukes</guid>
+    <pubDate>Mon, 14 Sep 2026 19:47:27 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>MES going undercover with new swim gear to check if Iran built underwater cold fusion mini-nukes under the Strait of Hormuz. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://snipboard.io/vXIQB0.jpg"/>
+  </item>
+  <item>
+    <title>Full Moon Lookin&#x27; Like It&#x27;s Got a Hat On</title>
+    <link>https://mes.fm/full-moon-hat</link>
+    <guid isPermaLink="true">https://mes.fm/full-moon-hat</guid>
+    <pubDate>Sat, 29 Aug 2026 04:55:50 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>The full moon at dusk with a dark band of cloud across the top -- lookin&#x27; like it&#x27;s got a hat on. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/full-moon-hat/img/full-moon-hat-1.jpg"/>
+  </item>
+  <item>
+    <title>Lightning Lighting Up the Entire Sky</title>
+    <link>https://mes.fm/lightning-sky</link>
+    <guid isPermaLink="true">https://mes.fm/lightning-sky</guid>
+    <pubDate>Sun, 23 Aug 2026 06:34:14 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>Lightning lighting up the entire sky, filmed in Richmond, BC, Canada. Watch the video, mirrored from the Hive blockchain by Mathiew.</description>
+    <media:thumbnail url="https://images.3speak.tv/images/1787466250311-2f93b430cbf2ad0d.webp"/>
+  </item>
+</channel>
+</rss>

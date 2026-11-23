@@ -1,0 +1,37 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu fd" id="fd">
+		<div class="tu-card fd-intro">
+			<p><b>RSS</b> lets you follow MES without an account, an algorithm or a platform that can shut the door: paste a feed link into any feed reader (Feedly, Inoreader, NetNewsWire, Thunderbird...) and every new post, tool or video shows up there.</p>
+			<p class="fd-why">Reddit switched off its RSS feeds on November 13, 2026. These feeds are plain files on mes.fm, and new items are also announced on the Hive blockchain through <a href="https://podping.org" rel="noopener" target="_blank">Podping</a>, so apps that listen to Hive can pick them up within seconds.</p>
+			<div class="fd-filter" role="group" aria-label="Show">
+				<button type="button" class="tu-chip" data-g="all" aria-pressed="true">All feeds</button>
+				<button type="button" class="tu-chip" data-g="site" aria-pressed="false">Site</button>
+				<button type="button" class="tu-chip" data-g="video" aria-pressed="false">Videos</button>
+				<button type="button" class="tu-chip" data-g="hub" aria-pressed="false">Topics</button>
+			</div>
+		</div>
+		<div class="fd-grid" id="fd-grid" aria-live="polite"><p class="fd-load">Loading the feeds…</p></div>
+
+		<div class="tu-card fd-owner" id="fd-owner" hidden>
+			<h2 class="fd-h">Send a Podping</h2>
+			<p class="fd-note">Tells every app watching Hive that these feeds changed. Signed with your <b>Posting</b> key (Hive Keychain or the Keychain app). One custom_json per kind of feed (<code>pp_blog_update</code>, <code>pp_video_update</code>). For all Podping apps to trust them, the account must be registered with @podping once (email new@podping.org).</p>
+			<div class="fd-acct" id="fd-acct"></div>
+			<div class="fd-pick" id="fd-pick"></div>
+			<div class="fd-row">
+				<button type="button" class="tu-btn tu-btn--primary" id="fd-send">Send Podping</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fd-new">Tick only feeds with new items</button>
+			</div>
+			<div class="fd-log" id="fd-log" role="status"></div>
+		</div>
+
+		<div class="tu-seo">
+			<h3>What is an RSS feed?</h3>
+			<p>An RSS feed is a small file that lists a site's newest items with their titles, links and dates. A feed reader checks it for you, so you see new posts from every site you follow in one place, in order, with nothing filtered out.</p>
+			<h3>How do I follow MES with RSS?</h3>
+			<p>Press <b>Copy link</b> on a feed and paste it into your feed reader's "Add feed" or "Subscribe" box, or press <b>Feedly</b> or <b>Inoreader</b> to subscribe there in one click. <b>Everything new</b> has all of it; the topic feeds follow just one hub.</p>
+			<h3>What is Podping?</h3>
+			<p>Podping is an open way to say "this feed just changed" on the Hive blockchain, made by the Podcasting 2.0 project. Instead of checking every feed every hour, apps watch Hive and fetch a feed only when it is announced. It is free and nobody owns it.</p>
+			<h3>Can I play these in a podcast app?</h3>
+			<p>Not yet: the feeds link to pages and videos but carry no audio files, so podcast apps can list them but cannot play them. They work in every RSS reader.</p>
+		</div>
+	</div>

@@ -496,7 +496,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
   .calc__text--title { margin-bottom: 0.5em; }
 }
 </style>
-<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --><link rel="stylesheet" id="mes-hubf-static" href="/main_js/hub-filter.css?v=1"><link rel="stylesheet" id="mes-mini-static" href="/main_js/mini-pills.css?v=1"></head>
+<!-- HUB-THEATRE-HEAD --><link rel="stylesheet" href="/main_js/hub-theatre.css?v=1"><script>try{var m=localStorage.getItem('pageMode')||'wide',c=document.documentElement.classList;if(m==='theatre')c.add('page-theatre');if(m!=='std')c.add('page-wide');if(localStorage.getItem('asideHidden')==='1')c.add('aside-hidden');if(localStorage.getItem('asideSide')==='left')c.add('aside-left')}catch(e){}</script><!-- /HUB-THEATRE-HEAD --><link rel="stylesheet" id="mes-hubf-static" href="/main_js/hub-filter.css?v=1"><link rel="stylesheet" id="mes-mini-static" href="/main_js/mini-pills.css?v=1"><link rel="alternate" type="application/rss+xml" title="Everything new on MES" href="https://mes.fm/feeds/everything.xml"><link rel="alternate" type="application/rss+xml" title="New MES Calculators &amp; Tools" href="https://mes.fm/feeds/tools.xml">
+</head>
     <body>        <div id="compact-nav" aria-hidden="true" style="display:none">
   <a href="/tools" tabindex="-1"><img class="compact-nav-logo" alt="" width="32" height="32" src="https://mes.fm/img/logo-mark.png"></a>
   <a class="compact-nav-title" href="/tools" tabindex="-1">Tools</a>
@@ -528,7 +529,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                     <h1 class="page-title">Tools</h1>                                        <p class="page-description">Free online tools for all your needs.</p>	<div id="main-content">
 		<div class="hub-filter">
 			<input type="search" id="hub-search" placeholder="Search tools&hellip;" aria-label="Search tools" autocomplete="off">
-			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (155)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (8)</button><button type="button" data-c="text" aria-pressed="false">Text &amp; Symbols (11)</button><button type="button" data-c="time" aria-pressed="false">Time &amp; Focus (19)</button><button type="button" data-c="media" aria-pressed="false">Media &amp; Web (33)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Markets (3)</button><button type="button" data-c="home" aria-pressed="false">Home &amp; Car (2)</button><button type="button" data-c="kids" aria-pressed="false">Kids &amp; Toddlers (1)</button><button type="button" data-c="games" aria-pressed="false">Games &amp; Chance (19)</button><button type="button" data-c="photos" aria-pressed="false">Photos &amp; Images (20)</button><button type="button" data-c="sky" aria-pressed="false">Sky &amp; Space (4)</button><button type="button" data-c="sim" aria-pressed="false">Simulations (43)</button></div>
+			<div class="hub-chips" id="hub-chips"><button type="button" data-c="all" aria-pressed="true">All (156)</button><button type="button" data-c="popular" aria-pressed="false">&#9733; Popular (8)</button><button type="button" data-c="text" aria-pressed="false">Text &amp; Symbols (11)</button><button type="button" data-c="time" aria-pressed="false">Time &amp; Focus (19)</button><button type="button" data-c="media" aria-pressed="false">Media &amp; Web (34)</button><button type="button" data-c="money" aria-pressed="false">Money &amp; Markets (3)</button><button type="button" data-c="home" aria-pressed="false">Home &amp; Car (2)</button><button type="button" data-c="kids" aria-pressed="false">Kids &amp; Toddlers (1)</button><button type="button" data-c="games" aria-pressed="false">Games &amp; Chance (19)</button><button type="button" data-c="photos" aria-pressed="false">Photos &amp; Images (20)</button><button type="button" data-c="sky" aria-pressed="false">Sky &amp; Space (4)</button><button type="button" data-c="sim" aria-pressed="false">Simulations (43)</button></div>
 		</div>
 		<section class="hub-cat hub-cat--mini hub-cat--newest" data-cat="newest" id="newest">
 			<h2 class="hub-cat__title">New tools</h2>
@@ -931,135 +932,142 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		        </td>
 			</tr>
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/search-engines">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/feeds">
+					<div class="calc__img-container"><img class="calc__img" src="img/feeds-logo.png?v=1" alt="MES Feeds logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">RSS Feeds</span>
+						<span class="calc__text--desc">Follow everything new on MES in any feed reader: tools, posts, livestreams and videos. No account, no algorithm; updates announced on Hive with Podping.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/search-engines">
 					<div class="calc__img-container"><img class="calc__img" src="img/search-engines-logo.png?v=2" alt="MES Search Engines logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Search Engines</span>
 						<span class="calc__text--desc">Type one search and open it in Google, Bing, DuckDuckGo, Brave and 60+ more at once. Compare results and check for censorship.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/seo">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/seo">
 					<div class="calc__img-container"><img class="calc__img" src="img/seo-logo.png?v=2" alt="MES SEO Checker logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">SEO Checker</span>
 						<span class="calc__text--desc">Check any page's SEO: title, description, headings, canonical, robots, social cards and a report of every mes.fm page.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/share">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/share">
 					<div class="calc__img-container"><img class="calc__img" src="img/share-logo.png?v=1" alt="MES Share Launcher logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Share Launcher</span>
 						<span class="calc__text--desc">Paste your post once and get ready-to-paste text for 30+ social sites, with the link placed where each site wants it.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/go">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/go">
 					<div class="calc__img-container"><img class="calc__img" src="img/go-logo.png" alt="short links logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Short Links</span>
 						<span class="calc__text--desc">Every mes.fm short link in one searchable list, sorted by category, with a helper for new ones.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/site-index">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/site-index">
 					<div class="calc__img-container"><img class="calc__img" src="img/site-index-logo.png?v=2" alt="MES Site Index logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Site Index</span>
 						<span class="calc__text--desc">Every page on mes.fm, sorted by template and generator, with an audit of missing descriptions, share images and broken links.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/search">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/search">
 					<div class="calc__img-container"><img class="calc__img" src="img/search-logo.png?v=2" alt="MES Site Search logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Site Search</span>
 						<span class="calc__text--desc">Search every page on mes.fm: calculators, tools, math tutorials, memes, puzzles, 9/11 and Hutchison Effect posts.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/site-traffic">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/site-traffic">
 					<div class="calc__img-container"><img class="calc__img" src="img/site-traffic-logo.png?v=2" alt="MES Site Traffic and Rank logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Site Traffic &amp; Rank</span>
 						<span class="calc__text--desc">How popular is a website? Public popularity rank and 30-day trend, domain age, hosting and Internet Archive history. An honest alternative to traffic-estimate extensions.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/storage">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/storage">
 					<div class="calc__img-container"><img class="calc__img" src="img/storage-logo.png?v=2" alt="MES Storage Analyzer logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Storage Analyzer</span>
 						<span class="calc__text--desc">What is filling up your disk? Pick a folder and see it as a sunburst or treemap, with the largest files, file types, old files and duplicates. Nothing is uploaded.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/stream-chat">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/stream-chat">
 					<div class="calc__img-container"><img class="calc__img" src="img/stream-chat-logo.png?v=2" alt="MES Stream Chat logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Stream Chat</span>
 						<span class="calc__text--desc">Your YouTube, Twitch and Odysee live chats in one window, Super Chats and tips highlighted. Add it to OBS as a chat dock and on-screen overlay.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/text-size">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/text-size">
 					<div class="calc__img-container"><img class="calc__img" src="img/text-size-logo.png?v=3" alt="text size logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Text Size</span>
 						<span class="calc__text--desc">Our own browser extension: A- and A+ for any website, text only, remembered per site. Free and private.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/transcript">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/transcript">
 					<div class="calc__img-container"><img class="calc__img" src="img/transcript-logo.png?v=2" alt="MES Transcript &amp; Timestamps logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Transcript &amp; Timestamps</span>
 						<span class="calc__text--desc">Get a YouTube video's transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/database">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/database">
 					<div class="calc__img-container"><img class="calc__img" src="img/database-logo.png?v=2" alt="MES Video Database logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Video Database</span>
 						<span class="calc__text--desc">Every MES video since 2011 with its links on YouTube, Hive, 3Speak, Rumble, Odysee, BitChute and Telegram. Search, filter by series or site, sort and share.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/videospeed">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/videospeed">
 					<div class="calc__img-container"><img class="calc__img" src="img/videospeed-logo.png" alt="video speed controller logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Video Speed Controller</span>
 						<span class="calc__text--desc">Our own browser extension: play any video from 0.1x to 16x with keyboard shortcuts. Free and private.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/volume-booster">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/volume-booster">
 					<div class="calc__img-container"><img class="calc__img" src="img/volume-booster-logo.png?v=2" alt="volume booster logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Volume Booster</span>
 						<span class="calc__text--desc">Our own browser extension: make quiet videos louder, up to 600%, with a soft limiter. Free and private.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/watch">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/watch">
 					<div class="calc__img-container"><img class="calc__img" src="img/watch-logo.png?v=2" alt="MES Watch logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Watch</span>
 						<span class="calc__text--desc">Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations or comments. Up next list, save for later, resume, speed.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/youtube-audio">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/youtube-audio">
 					<div class="calc__img-container"><img class="calc__img" src="img/youtube-audio-logo.png?v=2" alt="MES YouTube Audio Analyzer logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">YouTube Audio Analyzer</span>
 						<span class="calc__text--desc">How loud is that video? Loudness in LUFS, true peak, waveform, spectrogram, silences and clipping for YouTube, 3Speak, Rumble, Odysee or your own files.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/youtube-thumbnail">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/youtube-thumbnail">
 					<div class="calc__img-container"><img class="calc__img" src="img/youtube-thumbnail-logo.png?v=2" alt="MES YouTube Thumbnail Grabber logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">YouTube Thumbnail Grabber</span>
@@ -1186,103 +1194,103 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		        </td>
 			</tr>
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/gta">
-					<div class="calc__img-container"><img class="calc__img" src="img/gta-logo.png?v=1" alt="MES GTA 6 Hub logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">GTA 6 Hub</span>
-						<span class="calc__text--desc">Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.</span>
-					</div></a>
-		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/la-liga-picks">
-					<div class="calc__img-container"><img class="calc__img" src="img/la-liga-picks-logo.png?v=2" alt="MES La Liga Picks logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">La Liga Picks</span>
-						<span class="calc__text--desc">Predict the La Liga table and track it live: top 4, Europe, relegation, exact places, friends and a leaderboard.</span>
-					</div></a>
-		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/march-madness">
-					<div class="calc__img-container"><img class="calc__img" src="img/march-madness-logo.png?v=2" alt="MES March Madness logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">March Madness</span>
-						<span class="calc__text--desc">NCAA bracket maker for the men&rsquo;s and women&rsquo;s tournaments: the odds of every pick, live scores and win chances, sharing and a leaderboard.</span>
-					</div></a>
-		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/minesweeper">
-					<div class="calc__img-container"><img class="calc__img" src="img/minesweeper-logo.png?v=2" alt="MES Minesweeper logo" width="88" height="88"></div>
-					<div class="calc__text">
-						<span class="calc__text--title">Minesweeper</span>
-						<span class="calc__text--desc">Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.</span>
-					</div></a>
-		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/blocks">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/blocks">
 					<div class="calc__img-container"><img class="calc__img" src="img/blocks-logo.png?v=1" alt="MES Falling Blocks logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Falling Blocks</span>
 						<span class="calc__text--desc">Marathon, Sprint 40, Ultra and Zen with T-spins, hold and ghost, in 2D or 3D; daily race, live races and a Hive leaderboard.</span>
 					</div></a>
 		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/gta">
+					<div class="calc__img-container"><img class="calc__img" src="img/gta-logo.png?v=1" alt="MES GTA 6 Hub logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">GTA 6 Hub</span>
+						<span class="calc__text--desc">Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.</span>
+					</div></a>
+		        </td>
 			</tr>
 			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/mlb-picks">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/la-liga-picks">
+					<div class="calc__img-container"><img class="calc__img" src="img/la-liga-picks-logo.png?v=2" alt="MES La Liga Picks logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">La Liga Picks</span>
+						<span class="calc__text--desc">Predict the La Liga table and track it live: top 4, Europe, relegation, exact places, friends and a leaderboard.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/march-madness">
+					<div class="calc__img-container"><img class="calc__img" src="img/march-madness-logo.png?v=2" alt="MES March Madness logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">March Madness</span>
+						<span class="calc__text--desc">NCAA bracket maker for the men&rsquo;s and women&rsquo;s tournaments: the odds of every pick, live scores and win chances, sharing and a leaderboard.</span>
+					</div></a>
+		        </td>
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/minesweeper">
+					<div class="calc__img-container"><img class="calc__img" src="img/minesweeper-logo.png?v=2" alt="MES Minesweeper logo" width="88" height="88"></div>
+					<div class="calc__text">
+						<span class="calc__text--title">Minesweeper</span>
+						<span class="calc__text--desc">Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.</span>
+					</div></a>
+		        </td>
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/mlb-picks">
 					<div class="calc__img-container"><img class="calc__img" src="img/mlb-picks-logo.png?v=2" alt="MES MLB Picks logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">MLB Picks</span>
 						<span class="calc__text--desc">Your AL, NL, division and World Series picks against the standings and the postseason, with friends and a leaderboard.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/nba-picks">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/nba-picks">
 					<div class="calc__img-container"><img class="calc__img" src="img/nba-picks-logo.png?v=2" alt="MES NBA Picks logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">NBA Picks</span>
 						<span class="calc__text--desc">Your predicted NBA standings (East, West, whole league, divisions) and playoff bracket against the live table: a picture of every pick, friends and a leaderboard.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/nfl-picks">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/nfl-picks">
 					<div class="calc__img-container"><img class="calc__img" src="img/nfl-picks-logo.png?v=2" alt="MES NFL Picks logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">NFL Picks</span>
 						<span class="calc__text--desc">Your AFC, NFC, division and Super Bowl picks against the live standings: playoff seeds, bracket, friends and a leaderboard.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/nhl-picks">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/nhl-picks">
 					<div class="calc__img-container"><img class="calc__img" src="img/nhl-picks-logo.png?v=2" alt="MES NHL Picks logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">NHL Picks</span>
 						<span class="calc__text--desc">Your East, West, division and Stanley Cup picks against the live standings and the playoffs, with a leaderboard.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/poker">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/poker">
 					<div class="calc__img-container"><img class="calc__img" src="img/poker-logo.png?v=2" alt="MES Poker logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Poker</span>
 						<span class="calc__text--desc">Play Texas Hold'em against computer players with play money, and calculate your odds for any hand.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/premier-league-picks">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/premier-league-picks">
 					<div class="calc__img-container"><img class="calc__img" src="img/premier-league-picks-logo.png?v=2" alt="MES Premier League Picks logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Premier League Picks</span>
 						<span class="calc__text--desc">Predict the Premier League table and track it live: top 4, Europe, relegation, exact places and a leaderboard.</span>
 					</div></a>
 		        </td>
-			</tr>
-			<tr class="calc-row">
-				<td class="calc-container"><a class="calc-link" href="https://mes.fm/random-number-generator">
+				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/random-number-generator">
 					<div class="calc__img-container"><img class="calc__img" src="img/random-number-generator-logo.png?v=2" alt="MES Random Number Generator logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Random Number Generator</span>
 						<span class="calc__text--desc">Random numbers, dice, coin flips, cards and a list picker, with the odds and a fairness test.</span>
 					</div></a>
 		        </td>
-				<td class="calc-container calc-container--last"><a class="calc-link" href="https://mes.fm/tic-tac-toe">
+			</tr>
+			<tr class="calc-row">
+				<td class="calc-container"><a class="calc-link" href="https://mes.fm/tic-tac-toe">
 					<div class="calc__img-container"><img class="calc__img" src="img/tic-tac-toe-logo.png?v=3" alt="MES Tic-Tac-Toe logo" width="88" height="88"></div>
 					<div class="calc__text">
 						<span class="calc__text--title">Tic-Tac-Toe</span>

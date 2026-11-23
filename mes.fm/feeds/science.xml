@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+  <title>MES Science Posts</title>
+  <link>https://mes.fm/science</link>
+  <description>New MES Science posts on mes.fm.</description>
+  <language>en</language>
+  <lastBuildDate>Fri, 06 Nov 2026 21:41:24 GMT</lastBuildDate>
+  <atom:link href="https://mes.fm/feeds/science.xml" rel="self" type="application/rss+xml"/>
+  <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Science Posts</title><link>https://mes.fm/science</link></image>
+  <podcast:guid>004217d1-9926-5ac2-9d20-f8fe687dec1c</podcast:guid>
+  <podcast:medium>blog</podcast:medium>
+  <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
+  <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Made a Sortable Database of All My Telegram Posts (26,000+ and Counting) 🤯💯</title>
+    <link>https://mes.fm/telegram-database</link>
+    <guid isPermaLink="true">https://mes.fm/telegram-database</guid>
+    <pubDate>Fri, 06 Nov 2026 21:41:24 GMT</pubDate>
+    <category>Science</category>
+    <description>MES made a sortable, searchable database of every post of the MES Links Telegram channel: 26,000+ posts at mes.fm/telegram. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/telegram-database/img/telegram-database.jpg"/>
+  </item>
+  <item>
+    <title>Space Shuttle Columbia Disaster Shook a House on Earth</title>
+    <link>https://mes.fm/space-shuttle-columbia-disaster-shook-house</link>
+    <guid isPermaLink="true">https://mes.fm/space-shuttle-columbia-disaster-shook-house</guid>
+    <pubDate>Sun, 01 Nov 2026 05:09:48 GMT</pubDate>
+    <category>Science</category>
+    <description>Fox News live footage of the Space Shuttle Columbia disaster on February 1, 2003: residents far below said their house and windows shook like a tornado.</description>
+    <media:thumbnail url="https://mes.fm/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg"/>
+  </item>
+  <item>
+    <title>Fungi Decomposin&#x27; Dog Poop 🦠💩👀</title>
+    <link>https://mes.fm/fungi-poop</link>
+    <guid isPermaLink="true">https://mes.fm/fungi-poop</guid>
+    <pubDate>Mon, 05 Oct 2026 06:23:37 GMT</pubDate>
+    <category>Science</category>
+    <description>Fungi decomposin&#x27; dog poop: a white, fuzzy mold colony breaking down a pile of dog poop on the ground. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/fungi-poop/img/fungi-poop-1.jpg"/>
+  </item>
+  <item>
+    <title>USA Launches America.gov, an AI Chat Site for Government Services</title>
+    <link>https://mes.fm/america-gov-ai-chat</link>
+    <guid isPermaLink="true">https://mes.fm/america-gov-ai-chat</guid>
+    <pubDate>Thu, 01 Oct 2026 21:14:10 GMT</pubDate>
+    <category>Science</category>
+    <description>USA launched America.gov, an AI chat site where users can ask about government services. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg"/>
+  </item>
+  <item>
+    <title>Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream</title>
+    <link>https://mes.fm/mendeleev-chemical-table-dream</link>
+    <guid isPermaLink="true">https://mes.fm/mendeleev-chemical-table-dream</guid>
+    <pubDate>Tue, 22 Sep 2026 19:59:40 GMT</pubDate>
+    <category>Science</category>
+    <description>Dmitri Mendeleev said he came up with the Periodic Table of Chemical Elements in a dream. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmUTrX5k5PiS72xqnGTE2NXcv5iiEykGj1gRXDap9Nd2Re/telegram-cloud-photo-size-1-5015179805296627018-y.jpg"/>
+  </item>
+  <item>
+    <title>Is Corn Starch the Key to Martin Fleischmann&#x27;s Cold Fusion Experiments?</title>
+    <link>https://mes.fm/fleischmann-corn-starch</link>
+    <guid isPermaLink="true">https://mes.fm/fleischmann-corn-starch</guid>
+    <pubDate>Fri, 04 Sep 2026 05:48:11 GMT</pubDate>
+    <category>Science</category>
+    <description>A tub of Fleischmann&#x27;s Canada Corn Starch -- is corn starch the key to Martin Fleischmann&#x27;s cold fusion experiments?! Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/fleischmann-corn-starch/img/fleischmann-corn-starch-1.jpg"/>
+  </item>
+  <item>
+    <title>Demystifying the Ferrocell: Specular Reflection</title>
+    <link>https://mes.fm/ferrocell-specular-reflection</link>
+    <guid isPermaLink="true">https://mes.fm/ferrocell-specular-reflection</guid>
+    <pubDate>Tue, 01 Sep 2026 04:32:41 GMT</pubDate>
+    <category>Science</category>
+    <description>Demystifying the ferrocell: the holographic colored lines are specular reflection off nanoparticles aligned along the magnetic field, not the field lines themselves -- with tutorial and simulation videos. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://files.peakd.com/file/peakd-hive/mes/23vhny5FYdGt5Vi9vRPtqXcPUCNTMTAhM3FtxDNqwoqgWWWmd6Ua5nzvWDPZbD1AZts7y.png"/>
+  </item>
+</channel>
+</rss>

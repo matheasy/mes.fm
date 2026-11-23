@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+  <title>MES Bob Greenyer Posts</title>
+  <link>https://mes.fm/bg</link>
+  <description>New MES Bob Greenyer posts on mes.fm.</description>
+  <language>en</language>
+  <lastBuildDate>Sat, 19 Sep 2026 06:20:29 GMT</lastBuildDate>
+  <atom:link href="https://mes.fm/feeds/bg.xml" rel="self" type="application/rss+xml"/>
+  <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Bob Greenyer Posts</title><link>https://mes.fm/bg</link></image>
+  <podcast:guid>e23e2d5e-2c6e-5b46-ad4a-3be37643dc48</podcast:guid>
+  <podcast:medium>blog</podcast:medium>
+  <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
+  <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Bob Greenyer&#x27;s Subscriber Calls Him a Rich Fake Con Man</title>
+    <link>https://mes.fm/bob-greenyer-con-man-subscriber</link>
+    <guid isPermaLink="true">https://mes.fm/bob-greenyer-con-man-subscriber</guid>
+    <pubDate>Sat, 19 Sep 2026 06:20:29 GMT</pubDate>
+    <category>Bob Greenyer</category>
+    <description>Scrollin&#x27; through the Substack newsfeed, MES finds a gem from one of Bob Greenyer&#x27;s own subscribers. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmTZmdAv4cnboKCKr4at5M1xuabiTn2VceMThQryfD4taw/telegram-cloud-photo-size-1-5005902109001583833-y.jpg"/>
+  </item>
+  <item>
+    <title>9/11 Revisionist Spammin&#x27; Dust Baggie Nonsense</title>
+    <link>https://mes.fm/911-spammer-dust-baggie</link>
+    <guid isPermaLink="true">https://mes.fm/911-spammer-dust-baggie</guid>
+    <pubDate>Fri, 18 Sep 2026 18:47:44 GMT</pubDate>
+    <category>Bob Greenyer</category>
+    <description>Norman aka 9/11 Revisionist aka 9/11 Spammer spams the internet with Bob Greenyer dust baggie nonsense almost every day. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmYTAsxYWVLfMYvmz8LcX6NMYwu3yMPdddfMXSTAek5rSu/telegram-cloud-photo-size-1-5001700763402708281-y.jpg"/>
+  </item>
+  <item>
+    <title>9/11 Revisionist = 9/11 Spammer</title>
+    <link>https://mes.fm/911-revisionist-spammer</link>
+    <guid isPermaLink="true">https://mes.fm/911-revisionist-spammer</guid>
+    <pubDate>Tue, 08 Sep 2026 01:43:21 GMT</pubDate>
+    <category>Bob Greenyer</category>
+    <description>MES lays out the timing: Norman aka 9/11 Revisionist copied MES&#x27;s livestream thumbnail, spammed Andrew Mason with Bob Greenyer dust-sample links 48 minutes after MES called Mason out, and blocked MES -- all around the same time. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmbpgZNh1aVMsLjBor5QupBNRbH4wS7ZFmbcoRMmmoPjPh/telegram-cloud-photo-size-1-4969851364699737239-y.jpg"/>
+  </item>
+</channel>
+</rss>

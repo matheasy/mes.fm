@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+  <title>MES Posts</title>
+  <link>https://mes.fm/feeds</link>
+  <description>Every new post on mes.fm: 9/11, Hutchison Effect, conspiracy, science and crypto.</description>
+  <language>en</language>
+  <lastBuildDate>Mon, 23 Nov 2026 06:00:04 GMT</lastBuildDate>
+  <atom:link href="https://mes.fm/feeds/posts.xml" rel="self" type="application/rss+xml"/>
+  <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Posts</title><link>https://mes.fm/feeds</link></image>
+  <podcast:guid>3b3fc869-e01c-5372-a1c0-dd48025d2f57</podcast:guid>
+  <podcast:medium>blog</podcast:medium>
+  <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
+  <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚</title>
+    <link>https://mes.fm/33-countries-supplies</link>
+    <guid isPermaLink="true">https://mes.fm/33-countries-supplies</guid>
+    <pubDate>Mon, 23 Nov 2026 06:00:04 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>33 countries tell their citizens to stockpile emergency supplies (New York Sun): the MES Truth Hive snap and Telegram post, with the screenshot of the article.</description>
+    <media:thumbnail url="https://mes.fm/33-countries-supplies/img/33-countries-stockpile-supplies.jpg"/>
+  </item>
+  <item>
+    <title>MES AI: Use Claude, ChatGPT &amp; Grok With Just Your Hive Account (No KYC, No Subscription)</title>
+    <link>https://mes.fm/ai-claude-grok-chatgpt</link>
+    <guid isPermaLink="true">https://mes.fm/ai-claude-grok-chatgpt</guid>
+    <pubDate>Thu, 19 Nov 2026 21:56:45 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Chat with Claude, ChatGPT and Grok using only your Hive account and HBD: no KYC, no subscription, pay per message, encrypted quantum-safe Hive backups and cloud sync.</description>
+    <media:thumbnail url="https://mes.fm/ai/img/logo-big.png"/>
+  </item>
+  <item>
+    <title>James Corbett dodging questions about Dr. Judy Wood 🤡😤</title>
+    <link>https://mes.fm/james-corbett-judy-wood-questions</link>
+    <guid isPermaLink="true">https://mes.fm/james-corbett-judy-wood-questions</guid>
+    <pubDate>Thu, 19 Nov 2026 21:37:45 GMT</pubDate>
+    <category>9/11 Spooks</category>
+    <description>Throwback to 2013: James Corbett gets asked about Dr. Judy Wood&#x27;s book, the dustification and the toasted cars, and goes on a 3 minute rant instead of answering.</description>
+    <media:thumbnail url="https://mes.fm/james-corbett-judy-wood-questions/img/poster.jpg"/>
+  </item>
+  <item>
+    <title>Hutchison Effect: Was Tom Sky&#x27;s Experience a Mini Philadelphia Experiment?!</title>
+    <link>https://mes.fm/hutchison-tom-sky-testimony</link>
+    <guid isPermaLink="true">https://mes.fm/hutchison-tom-sky-testimony</guid>
+    <pubDate>Thu, 19 Nov 2026 03:31:29 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>Photographer Tom Sky&#x27;s health effects after filming the Hutchison Effect in John Hutchison&#x27;s Vancouver lab in 2007, with highlights from MES Livestream 141. A mini Philadelphia Experiment?</description>
+    <media:thumbnail url="https://images.3speak.tv/images/1795058861094-dce76e2c0819e2fd.webp"/>
+  </item>
+  <item>
+    <title>Epic HD photos of Hutchison Effect samples, including the aluminum bar with the thumb print</title>
+    <link>https://mes.fm/hutchison-thumb-aluminum</link>
+    <guid isPermaLink="true">https://mes.fm/hutchison-thumb-aluminum</guid>
+    <pubDate>Thu, 19 Nov 2026 02:09:00 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>Ten HD photos of Hutchison Effect metal samples, including the aluminum bar Alexis Pezzaro made the thumb print on. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/hutchison-thumb-aluminum/img/og.jpg?v=1"/>
+  </item>
+  <item>
+    <title>New Augmented Reality Glasses 🥽✨</title>
+    <link>https://mes.fm/ar-glasses-reflection</link>
+    <guid isPermaLink="true">https://mes.fm/ar-glasses-reflection</guid>
+    <pubDate>Tue, 17 Nov 2026 22:04:36 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>New augmented reality glasses! A Mathiew photo post from MES, a selfie with a screen showing in one lens, mirrored here from the Hive blockchain and Telegram, with comments.</description>
+    <media:thumbnail url="https://mes.fm/ar-glasses-reflection/img/ar-glasses-reflection.jpg"/>
+  </item>
+  <item>
+    <title>New Hive Games &amp; Apps on mes.fm: Chess, Billiards, Tic-Tac-Toe, Connect Four, Quantum-Safe Backups (Testers Wanted)</title>
+    <link>https://mes.fm/hive-games-apps</link>
+    <guid isPermaLink="true">https://mes.fm/hive-games-apps</guid>
+    <pubDate>Mon, 16 Nov 2026 20:47:43 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Chess, billiards, tic-tac-toe, Connect Four and Minesweeper you can play on Hive, Hive polls and quantum-safe Hive backups on mes.fm. Testers wanted.</description>
+    <media:thumbnail url="https://mes.fm/hive-games-apps/img/hive-games-apps.jpg"/>
+  </item>
+  <item>
+    <title>Graduated from Clown College! 🙌🧑‍🎓🎪</title>
+    <link>https://mes.fm/graduated-clown-college</link>
+    <guid isPermaLink="true">https://mes.fm/graduated-clown-college</guid>
+    <pubDate>Sun, 15 Nov 2026 01:51:08 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>MES graduated from Clown College! A Mathiew photo post from MES, wearing a tiny graduation cap, mirrored here from the Hive blockchain and Telegram, with comments.</description>
+    <media:thumbnail url="https://mes.fm/graduated-clown-college/img/graduated-clown-college.jpg"/>
+  </item>
+  <item>
+    <title>John Hutchison Health Update and Press Release</title>
+    <link>https://mes.fm/hutchison-health-press-release-2026</link>
+    <guid isPermaLink="true">https://mes.fm/hutchison-health-press-release-2026</guid>
+    <pubDate>Fri, 13 Nov 2026 06:42:23 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>November 12, 2026 press release: inventor John Hutchison is fighting advanced bladder cancer and acute kidney decline, and complaints have been filed against four Northern California healthcare networks.</description>
+    <media:thumbnail url="https://mes.fm/hutchison-health-press-release-2026/img/share.jpg"/>
+  </item>
+  <item>
+    <title>Trump Tells Future President Stephen A. Smith He Can Beat Obama</title>
+    <link>https://mes.fm/trump-stephen-a-smith-obama</link>
+    <guid isPermaLink="true">https://mes.fm/trump-stephen-a-smith-obama</guid>
+    <pubDate>Fri, 13 Nov 2026 04:36:20 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Trump tells future president Stephen A. Smith he can beat Obama, presumably in a game of basketball: the MES Truth Hive thread and Telegram post, with both photos.</description>
+    <media:thumbnail url="https://mes.fm/trump-stephen-a-smith-obama/img/trump-stephen-a-smith-interview.jpg"/>
+  </item>
+  <item>
+    <title>Rolling Stone Wrote an Article on Ashton Forbes 😅</title>
+    <link>https://mes.fm/ashton-forbes-rolling-stone</link>
+    <guid isPermaLink="true">https://mes.fm/ashton-forbes-rolling-stone</guid>
+    <pubDate>Thu, 12 Nov 2026 21:25:45 GMT</pubDate>
+    <category>9/11 Spooks</category>
+    <description>Rolling Stone wrote an article on Ashton Forbes and the MH370 teleportation cartoons: his family feared a &quot;psychological break&quot; and won&#x27;t discuss MH370 with him.</description>
+    <media:thumbnail url="https://mes.fm/ashton-forbes-rolling-stone/img/rolling-stone-headline.jpg"/>
+  </item>
+  <item>
+    <title>Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin&#x27;</title>
+    <link>https://mes.fm/spooks-news-nov-2026</link>
+    <guid isPermaLink="true">https://mes.fm/spooks-news-nov-2026</guid>
+    <pubDate>Mon, 09 Nov 2026 05:44:12 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Spooky 9/11 news: Ashton Forbes suspended from X, Norman spamming Curt Weldon dust baggie nonsense, Dallas (Fully Charged Zone) plagiarizing 9/11 Alchemy, OffGuardian&#x27;s hit-piece and David Hughes.</description>
+    <media:thumbnail url="https://mes.fm/spooks-news-nov-2026/img/spooks-news-og.jpg"/>
+  </item>
+  <item>
+    <title>9/11 Survivor Ron DiFrancesco says his contact lens melted to his eyes</title>
+    <link>https://mes.fm/911-contact-lens-melted</link>
+    <guid isPermaLink="true">https://mes.fm/911-contact-lens-melted</guid>
+    <pubDate>Sun, 08 Nov 2026 06:14:06 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Ron DiFrancesco, the last known survivor from the South Tower on 9/11, says his contact lens melted to his eyes, which sounds more like a cold melting Hutchison Effect than fire.</description>
+    <media:thumbnail url="https://mes.fm/911-contact-lens-melted/img/poster.jpg"/>
+  </item>
+  <item>
+    <title>Part 33: Electromagnetic Field Interference on 9/11</title>
+    <link>https://mes.fm/911truth-33-emf-911</link>
+    <guid isPermaLink="true">https://mes.fm/911truth-33-emf-911</guid>
+    <pubDate>Sun, 08 Nov 2026 06:14:06 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>MES compiles over an hour of 9/11 footage with electromagnetic field interference at the WTC, Pentagon and Shanksville: camera glitches, power outages, levitation reports and Earth&#x27;s magnetic field shifting. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://files.peakd.com/file/peakd-hive/mes/24244XqiweEFHBsrHxS9Y7pu4M9Fq3VTuypqMNFHE3uEUeLmPH7y9mbmMZNAzaG2TJFZ3.jpeg"/>
+  </item>
+  <item>
+    <title>Made a Sortable Database of All My Telegram Posts (26,000+ and Counting) 🤯💯</title>
+    <link>https://mes.fm/telegram-database</link>
+    <guid isPermaLink="true">https://mes.fm/telegram-database</guid>
+    <pubDate>Fri, 06 Nov 2026 21:41:24 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>MES made a sortable, searchable database of every post of the MES Links Telegram channel: 26,000+ posts at mes.fm/telegram. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/telegram-database/img/telegram-database.jpg"/>
+  </item>
+  <item>
+    <title>Project Blue Beam News: Politics talkin&#x27; UFOs and Aliens 🛸👽</title>
+    <link>https://mes.fm/projectbluebeam-news-nov-2026</link>
+    <guid isPermaLink="true">https://mes.fm/projectbluebeam-news-nov-2026</guid>
+    <pubDate>Thu, 05 Nov 2026 02:49:23 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>MES checks up on #ProjectBlueBeam news: Ashton Forbes on Tucker for MH370, Hannity on aliens, China&#x27;s reptilian deal, UFO disclosure, Moon 2028 and Tim Pool&#x27;s O&#x27;Hare UFO.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmcv2uB7mf4ULMgDUqPgezKGmxg2odh4PfZZyoGYATJKhC/img35679.jpg"/>
+  </item>
+  <item>
+    <title>Part 13: Helicopter Footage of the Twin Towers Turning to Dust (Fast Forward 45X Speed)</title>
+    <link>https://mes.fm/911truth-13-helicopter-towers-dustification</link>
+    <guid isPermaLink="true">https://mes.fm/911truth-13-helicopter-towers-dustification</guid>
+    <pubDate>Wed, 04 Nov 2026 22:36:33 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>MES&#x27;s 45X fast-forward of 1.5 hours of NIST FOIA helicopter footage: the Twin Towers turning to dust, the second “plane” and both towers falling. Mirrored from Hive.</description>
+    <media:thumbnail url="https://cdn.steemitimages.com/DQmeREUDRftakgE5BGUyzyNnb8DBqAWnCbFk3Jo8GHJhsrs/#911Truth%20Part%2013%20Chopper%20WTC%201%20and%202%20Fast%20Forward.jpeg"/>
+  </item>
+  <item>
+    <title>Compilation of the 2nd &quot;Plane&quot; Impact and Giant Column of Fumes Thousands of Feet in the Air</title>
+    <link>https://mes.fm/911-plane-compilation-fumes</link>
+    <guid isPermaLink="true">https://mes.fm/911-plane-compilation-fumes</guid>
+    <pubDate>Tue, 03 Nov 2026 19:14:45 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>A compilation of 6 videos of the second &quot;plane&quot; impact, the delayed explosion, and the giant column of fumes that rises thousands of feet into the air on 9/11.</description>
+    <media:thumbnail url="https://mes.fm/911-plane-compilation-fumes/img/poster.jpg"/>
+  </item>
+  <item>
+    <title>Part 9: North &amp; South Towers Literally Turning to Dust (Fast Forward 45X Speed)</title>
+    <link>https://mes.fm/911truth-9-north-south-towers-dustification</link>
+    <guid isPermaLink="true">https://mes.fm/911truth-9-north-south-towers-dustification</guid>
+    <pubDate>Tue, 03 Nov 2026 17:50:53 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>MES&#x27;s fast-forwarded (45X) video of the WTC North and South Towers pouring out thick dust before our eyes, from 8:46 AM to 10:23 AM on 9/11. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://files.peakd.com/file/peakd-hive/mes/242NuzfdM7niLudiLjTZbMavzDth8UmnMtNbR27358JsjN7hU8AK7Y6DhCato461frgui.jpeg"/>
+  </item>
+  <item>
+    <title>MES Premium: Remove All Ads on mes.fm for 1 HBD a Month (Plus the Other Hive Features on mes.fm)</title>
+    <link>https://mes.fm/hbd-no-ads</link>
+    <guid isPermaLink="true">https://mes.fm/hbd-no-ads</guid>
+    <pubDate>Tue, 03 Nov 2026 03:17:54 GMT</pubDate>
+    <category>Crypto</category>
+    <description>MES Premium switches off every ad on mes.fm for 1 HBD a month, paid with Hive Keychain, plus Hive comments, Hive polls, Copy Text Hive backups and the Share Launcher -- mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://mes.fm/premium/img/logo-big.png"/>
+  </item>
+  <item>
+    <title>Richard Gage: &quot;We Are Necessarily Gatekeepers&quot; of 9/11 Truth 🤡</title>
+    <link>https://mes.fm/richard-gage-gatekeeper</link>
+    <guid isPermaLink="true">https://mes.fm/richard-gage-gatekeeper</guid>
+    <pubDate>Mon, 02 Nov 2026 22:41:17 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>On the 9/11 War Room, AE911Truth&#x27;s Richard Gage says the five people writing the 9/11 Truth and Accountability Report are &quot;necessarily gatekeepers&quot;.</description>
+    <media:thumbnail url="https://mes.fm/richard-gage-gatekeeper/img/poster.jpg"/>
+  </item>
+  <item>
+    <title>MSNBC Live 9/11 Flight Explorer Data Shows United 175 Still Airborne After the South Tower &quot;Crash&quot;</title>
+    <link>https://mes.fm/ua175-airborne-flight-explorer</link>
+    <guid isPermaLink="true">https://mes.fm/ua175-airborne-flight-explorer</guid>
+    <pubDate>Mon, 02 Nov 2026 05:41:10 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>A clearer version of MSNBC&#x27;s live 9/11 coverage shows Flight Explorer still listing United 175 airborne over Connecticut after its alleged South Tower crash.</description>
+    <media:thumbnail url="https://mes.fm/ua175-airborne-flight-explorer/img/poster.jpg"/>
+  </item>
+  <item>
+    <title>Space Shuttle Columbia Disaster Shook a House on Earth 🌪️🏠🚀</title>
+    <link>https://mes.fm/space-shuttle-columbia-disaster-shook-house</link>
+    <guid isPermaLink="true">https://mes.fm/space-shuttle-columbia-disaster-shook-house</guid>
+    <pubDate>Sun, 01 Nov 2026 05:09:48 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Fox News live footage of the Space Shuttle Columbia disaster on February 1, 2003: residents far below said their house and windows shook like a tornado.</description>
+    <media:thumbnail url="https://mes.fm/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg"/>
+  </item>
+  <item>
+    <title>Dr. Judy Wood&#x27;s Rebuttal to All the “Debunkers”</title>
+    <link>https://mes.fm/judy-wood-rebuttal</link>
+    <guid isPermaLink="true">https://mes.fm/judy-wood-rebuttal</guid>
+    <pubDate>Wed, 28 Oct 2026 05:45:15 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Dr. Judy Wood has written a rebuttal to all &quot;debunkers&quot;: her book Where Did the Towers Go? Get it through inter-library loan, wheredidthetowersgo.com or Amazon.</description>
+    <media:thumbnail url="https://mes.fm/judy-wood-rebuttal/img/judy-wood-rebuttal.jpg"/>
+  </item>
+  <item>
+    <title>Local Elections Requiring a Mandatory Mark of the BC, Canada Voting Sticker</title>
+    <link>https://mes.fm/richmond-elections-sticker-2026</link>
+    <guid isPermaLink="true">https://mes.fm/richmond-elections-sticker-2026</guid>
+    <pubDate>Wed, 28 Oct 2026 05:45:15 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>MES votes in the October 2026 Richmond, BC local elections and gets the mandatory &quot;I Voted&quot; sticker: Moloch or Baal? Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/richmond-elections-sticker-2026/img/i-voted-sticker.jpg"/>
+  </item>
+  <item>
+    <title>Imagining Motion: Pain, Cancer, RETURN, and Volition — conversation for John Hutchison</title>
+    <link>https://mes.fm/imagining-motion</link>
+    <guid isPermaLink="true">https://mes.fm/imagining-motion</guid>
+    <pubDate>Tue, 27 Oct 2026 04:34:42 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>Nancy Hutchison&#x27;s conversation for John Hutchison: pain as a reference hijacker, the turned note, baking soda as a buffer, and volition keeping the 18% open.</description>
+    <media:thumbnail url="https://mes.fm/imagining-motion/img/imagining-motion-share.jpg"/>
+  </item>
+  <item>
+    <title>9/11 Holding the Truth (2017) by Andrew Johnson</title>
+    <link>https://mes.fm/911-holding-truth</link>
+    <guid isPermaLink="true">https://mes.fm/911-holding-truth</guid>
+    <pubDate>Tue, 27 Oct 2026 03:25:53 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Read Andrew Johnson&#x27;s 9/11 Holding the Truth (2017) free online: the sequel to Finding the Truth, on how the 9/11 cover-up of Dr. Judy Wood&#x27;s evidence works.</description>
+    <media:thumbnail url="https://mes.fm/911-holding-truth/img/og.jpg"/>
+  </item>
+  <item>
+    <title>9/11 Finding the Truth (2011) by Andrew Johnson</title>
+    <link>https://mes.fm/911-finding-truth</link>
+    <guid isPermaLink="true">https://mes.fm/911-finding-truth</guid>
+    <pubDate>Tue, 27 Oct 2026 03:25:53 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Read Andrew Johnson&#x27;s book 9/11 Finding the Truth (2011) free online: his articles on Dr. Judy Wood&#x27;s 9/11 evidence and the cover-up that followed.</description>
+    <media:thumbnail url="https://mes.fm/911-finding-truth/img/og.jpg"/>
+  </item>
+  <item>
+    <title>Future President Stephen A. Smith Sitting Next to Jerry Jones, Owner of the Dallas Cowboys</title>
+    <link>https://mes.fm/stephen-smith-jerry-jones-cowboys</link>
+    <guid isPermaLink="true">https://mes.fm/stephen-smith-jerry-jones-cowboys</guid>
+    <pubDate>Tue, 27 Oct 2026 03:25:53 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Future president Stephen A. Smith sits next to Dallas Cowboys owner Jerry Jones at the Cowboys vs Eagles game: the MES Truth Hive thread and Telegram post.</description>
+    <media:thumbnail url="https://mes.fm/stephen-smith-jerry-jones-cowboys/img/stephen-a-smith-jerry-jones-cowboys.jpg"/>
+  </item>
+  <item>
+    <title>TURN, RETURN, and the Operator Differential — transcript for John Hutchison</title>
+    <link>https://mes.fm/hutchison-nancy-turn-return</link>
+    <guid isPermaLink="true">https://mes.fm/hutchison-nancy-turn-return</guid>
+    <pubDate>Mon, 26 Oct 2026 05:07:56 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>Nancy Hutchison&#x27;s conversation transcript for John Hutchison: TURN, RECEPTION and RETURN, the Avatar as a steerable interferometer, and why John&#x27;s lab comes first.</description>
+    <media:thumbnail url="https://mes.fm/hutchison-nancy-turn-return/img/turn-return-share.jpg"/>
+  </item>
+  <item>
+    <title>Dear Dr. David A. Fetzer...</title>
+    <link>https://mes.fm/david-hughes-fetzer-2.0</link>
+    <guid isPermaLink="true">https://mes.fm/david-hughes-fetzer-2.0</guid>
+    <pubDate>Sun, 25 Oct 2026 05:32:30 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>MES answers German Studies professor David A. Hughes, aka Jim Fetzer 2.0: Hurricane Erin is evidence, not a hypothesis; Buildings 3-6, the Hutchison Effect and the magnetometer data. Mirrored from Hive.</description>
+    <media:thumbnail url="https://mes.fm/david-hughes-fetzer-2.0/img/hurricane-meme-og.jpg"/>
+  </item>
+  <item>
+    <title>Future President Stephen A. Smith Having Dinner with Trump at the White House</title>
+    <link>https://mes.fm/stephen-smith-trump-dinner</link>
+    <guid isPermaLink="true">https://mes.fm/stephen-smith-trump-dinner</guid>
+    <pubDate>Sat, 24 Oct 2026 18:33:06 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>MES Truth on Stephen A. Smith&#x27;s White House dinner with Trump, Kid Rock and Bill Maher: the CNN clip, the original Hive thread and Telegram post, and his possible presidential bid.</description>
+    <media:thumbnail url="https://mes.fm/stephen-smith-trump-dinner/img/stephen-a-smith-trump-dinner-cnn.jpg"/>
+  </item>
+  <item>
+    <title>Tucker Carlson Jumps on the MH370 Teleportation Cartoons Bandwagon</title>
+    <link>https://mes.fm/tucker-carlson-mh370-cartoons</link>
+    <guid isPermaLink="true">https://mes.fm/tucker-carlson-mh370-cartoons</guid>
+    <pubDate>Tue, 20 Oct 2026 19:57:58 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Tucker Carlson is jumpin&#x27; on the MH370 Teleportation cartoons bandwagon and even including the biggest clown on the internet in Ashton Forbes. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://snipboard.io/qyuA5S.jpg"/>
+  </item>
+  <item>
+    <title>Happy 81st Birthday, Captain John Hutchison!</title>
+    <link>https://mes.fm/hutchison-birthday-2026</link>
+    <guid isPermaLink="true">https://mes.fm/hutchison-birthday-2026</guid>
+    <pubDate>Mon, 19 Oct 2026 18:01:38 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>Captain John Hutchison turns 81 on October 20, 2026. Happy birthday message, mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/hutchison-birthday-2026/img/og.jpg?v=2"/>
+  </item>
+  <item>
+    <title>MH370 Teleportation Cartoons are a Litmus Test for Spooks</title>
+    <link>https://mes.fm/mh370-litmus-spooks</link>
+    <guid isPermaLink="true">https://mes.fm/mh370-litmus-spooks</guid>
+    <pubDate>Sun, 18 Oct 2026 01:34:42 GMT</pubDate>
+    <category>9/11 Spooks</category>
+    <description>The MH370 teleportation cartoons are a good litmus test to spot spooks and clowns: Steven Greer&#x27;s Einstein-Rosen bridge, Ashton Forbes interviewed by Tim Ventura, Norman spamming Bob Greenyer&#x27;s dust baggie nonsense, and Norman now spamming Andrew Johnson and Dr. Judy Wood about Salvatore Pais. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmUbPhYLJApryihLsPh92imJHKrzJrbpDAuiHEX8brG5Lv/telegram-cloud-photo-size-1-5089256253007007191-y.jpg"/>
+  </item>
+  <item>
+    <title>New US Ambassador on Human Trafficking Is Lookin&#x27; Very... Human</title>
+    <link>https://mes.fm/us-ambassador-thornhill-human-trafficking</link>
+    <guid isPermaLink="true">https://mes.fm/us-ambassador-thornhill-human-trafficking</guid>
+    <pubDate>Wed, 14 Oct 2026 05:02:55 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>MES Truth on the new US Ambassador-at-Large to Monitor and Combat Trafficking in Persons, Ambassador Thornhill: the State Department post and the original Hive post. Mirrored from the Hive blockchain and X.</description>
+    <media:thumbnail url="https://mes.fm/us-ambassador-thornhill-human-trafficking/img/ambassador-thornhill-portrait.jpg"/>
+  </item>
+  <item>
+    <title>Mark Conlon aka 9/11 Planes Research Is Back with a New Telegram Channel</title>
+    <link>https://mes.fm/911planesresearch-telegram</link>
+    <guid isPermaLink="true">https://mes.fm/911planesresearch-telegram</guid>
+    <pubDate>Tue, 13 Oct 2026 17:46:52 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Mark Conlon aka 9/11 Planes Research is back with a new Telegram channel, @planesresearch911. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/911planesresearch-telegram/img/planes-research.jpg"/>
+  </item>
+  <item>
+    <title>I Used Claude AI to Get My Flagged Funds Out of Hyperliquid</title>
+    <link>https://mes.fm/claude-hyperliquid-flagged-crypto</link>
+    <guid isPermaLink="true">https://mes.fm/claude-hyperliquid-flagged-crypto</guid>
+    <pubDate>Sun, 11 Oct 2026 19:22:28 GMT</pubDate>
+    <category>Crypto</category>
+    <description>MES used Claude AI to withdraw funds that the Hyperliquid crypto exchange had flagged: Claude confirmed the USDC arrived on Arbitrum with a read-only RPC check -- mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/claude-hyperliquid-flagged-crypto/img/claude-hyperliquid-flagged-crypto.jpg"/>
+  </item>
+  <item>
+    <title>Hive Cryptocurrency Overview and How to Sign Up</title>
+    <link>https://mes.fm/hive-crypto-tutorial</link>
+    <guid isPermaLink="true">https://mes.fm/hive-crypto-tutorial</guid>
+    <pubDate>Sun, 11 Oct 2026 05:41:57 GMT</pubDate>
+    <category>Crypto</category>
+    <description>An overview of the Hive cryptocurrency and blockchain, how it differs from Steem and Tron, how it works (dPoS, witnesses, HBD, Resource Credits), plus a tutorial on creating a Hive account and importing it into Hive Keychain. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://files.peakd.com/file/peakd-hive/mes/23wgKYRaBpYAQeNXcxxUawtEkWHEHZkuhsZZj3znyWp53zY1Jdr2YMr5rB2PUTJJbRMRz.jpeg"/>
+  </item>
+  <item>
+    <title>Abby Martin Outed Herself as a 9/11 Spook as Far Back as 2012</title>
+    <link>https://mes.fm/abby-martin-911-spook</link>
+    <guid isPermaLink="true">https://mes.fm/abby-martin-911-spook</guid>
+    <pubDate>Fri, 09 Oct 2026 19:18:46 GMT</pubDate>
+    <category>9/11 Spooks</category>
+    <description>Abby Martin outed herself as a 9/11 spook as far back as 2012 when she replied to a MES subscriber&#x27;s now deleted X account with the usual disinfo talking points. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://snipboard.io/hKE7BS.jpg"/>
+  </item>
+  <item>
+    <title>Is Drew Ponder Ashton Forbes&#x27; AI MH370 Spam Bot?</title>
+    <link>https://mes.fm/mh370-drew-ponder-spammer</link>
+    <guid isPermaLink="true">https://mes.fm/mh370-drew-ponder-spammer</guid>
+    <pubDate>Fri, 09 Oct 2026 06:44:19 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>A new MH370 teleportation cartoons spammer has spawned on X: Drew Ponder. Is it Ashton Forbes cloning himself with an AI Grok bot? Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQme9Zc6tLWjeJwJLbWAqV6vgUp2B3QMP8pwKSFk2mLLJSi/telegram-cloud-photo-size-1-5062375328306632663-y.jpg"/>
+  </item>
+  <item>
+    <title>Los Alamos Report Appendix C of the Hutchison Effect</title>
+    <link>https://mes.fm/los-alamos-appendix-hutchison-effect</link>
+    <guid isPermaLink="true">https://mes.fm/los-alamos-appendix-hutchison-effect</guid>
+    <pubDate>Wed, 07 Oct 2026 18:32:54 GMT</pubDate>
+    <category>Hutchison Effect</category>
+    <description>Appendix C of the 1983 Los Alamos / US Army Intelligence preliminary report on the Hutchison Effect: photos of every page and a full text transcript. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://mes.fm/los-alamos-appendix-hutchison-effect/img/appendix-c-share.jpg"/>
+  </item>
+  <item>
+    <title>Bob Greenyer&#x27;s Claims About Dr. Judy Wood &amp; 9/11</title>
+    <link>https://mes.fm/bg-notes</link>
+    <guid isPermaLink="true">https://mes.fm/bg-notes</guid>
+    <pubDate>Tue, 06 Oct 2026 18:25:36 GMT</pubDate>
+    <category>9/11 Spooks</category>
+    <description>Examining Bob Greenyer&#x27;s (BG) claims regarding Dr. Judy Wood and 9/11, including a disputed Nature co-authorship claim, the atomic clock/decay rate claim, and the fused Bible timeline.</description>
+    <media:thumbnail url="https://mes.fm/img/bg-logo-big.jpg"/>
+  </item>
+  <item>
+    <title>MES Is NOT Robbin&#x27; a Bank #notarobber 🥷🌚</title>
+    <link>https://mes.fm/mathiew-not-robber</link>
+    <guid isPermaLink="true">https://mes.fm/mathiew-not-robber</guid>
+    <pubDate>Tue, 06 Oct 2026 05:36:22 GMT</pubDate>
+    <category>Mathiew</category>
+    <description>MES is NOT robbin&#x27; a bank #notarobber: a tongue-in-cheek Mathiew post and video from MES, mirrored here from the Hive blockchain and Telegram, with comments.</description>
+    <media:thumbnail url="https://mes.fm/mathiew-not-robber/img/mathiew-not-robber-1.jpg"/>
+  </item>
+  <item>
+    <title>North Tower Quiet Dustification vs Bethlehem Steel HQ Loud Demolition</title>
+    <link>https://mes.fm/911-dustification-vs-demolition</link>
+    <guid isPermaLink="true">https://mes.fm/911-dustification-vs-demolition</guid>
+    <pubDate>Mon, 05 Oct 2026 22:21:35 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Comparison between the 500,000 ton North Tower dustification on 9/11 and the 16,000 ton Bethlehem Steel HQ demolition: the dustification is quiet, the explosive demolition is very loud. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://mes.fm/911-dustification-vs-demolition/img/poster.jpg"/>
+  </item>
+  <item>
+    <title>Fungi Decomposin&#x27; Dog Poop 🦠💩👀</title>
+    <link>https://mes.fm/fungi-poop</link>
+    <guid isPermaLink="true">https://mes.fm/fungi-poop</guid>
+    <pubDate>Mon, 05 Oct 2026 06:23:37 GMT</pubDate>
+    <category>Science</category>
+    <description>Fungi decomposin&#x27; dog poop: a white, fuzzy mold colony breaking down a pile of dog poop on the ground. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/fungi-poop/img/fungi-poop-1.jpg"/>
+  </item>
+  <item>
+    <title>Amaterasu Solar Bought a Dr. Judy Wood Quote Coffee Mug</title>
+    <link>https://mes.fm/amaterasu-solar-judy-wood-quote</link>
+    <guid isPermaLink="true">https://mes.fm/amaterasu-solar-judy-wood-quote</guid>
+    <pubDate>Mon, 05 Oct 2026 06:11:54 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>Amaterasu Solar bought a Dr. Judy Wood quote coffee mug (&quot;Know what you know&quot;) from the MES store. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/amaterasu-solar-judy-wood-quote/img/amaterasu-solar-judy-wood-quote-1.png"/>
+  </item>
+  <item>
+    <title>YouTube Reinstated My Curt Weldon Video After Muting the &quot;Hate Speech&quot; Part 🤐▶️</title>
+    <link>https://mes.fm/curt-weldon-911-dew-muted</link>
+    <guid isPermaLink="true">https://mes.fm/curt-weldon-911-dew-muted</guid>
+    <pubDate>Thu, 01 Oct 2026 22:10:38 GMT</pubDate>
+    <category>9/11 Truth</category>
+    <description>YouTube reinstated my edited Curt Weldon 9/11 directed energy video after I muted the &quot;hate speech&quot; part. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://mes.fm/curt-weldon-911-dew-muted/img/youtube-reinstated-email.jpg"/>
+  </item>
+  <item>
+    <title>USA Launches America.gov, an AI Chat Site for Government Services</title>
+    <link>https://mes.fm/america-gov-ai-chat</link>
+    <guid isPermaLink="true">https://mes.fm/america-gov-ai-chat</guid>
+    <pubDate>Thu, 01 Oct 2026 21:14:10 GMT</pubDate>
+    <category>Science</category>
+    <description>USA launched America.gov, an AI chat site where users can ask about government services. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg"/>
+  </item>
+  <item>
+    <title>Alex Jones Teams Up with UFO Expert Steven Greer</title>
+    <link>https://mes.fm/alex-jones-steven-greer-live</link>
+    <guid isPermaLink="true">https://mes.fm/alex-jones-steven-greer-live</guid>
+    <pubDate>Thu, 01 Oct 2026 21:03:06 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Alien prober Alex Jones teams up with illegal alien prober Steven Greer; Tucker Carlson says Trump put him in a magical spell -- mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/alex-jones-steven-greer-live/img/alex-jones-steven-greer-live.jpg"/>
+  </item>
+</channel>
+</rss>

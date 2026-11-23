@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+  <title>MES Crypto Posts</title>
+  <link>https://mes.fm/crypto</link>
+  <description>New MES Crypto posts on mes.fm.</description>
+  <language>en</language>
+  <lastBuildDate>Thu, 19 Nov 2026 21:56:45 GMT</lastBuildDate>
+  <atom:link href="https://mes.fm/feeds/crypto.xml" rel="self" type="application/rss+xml"/>
+  <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Crypto Posts</title><link>https://mes.fm/crypto</link></image>
+  <podcast:guid>d57dd8ab-c8ad-5835-bc72-68fa1ede490d</podcast:guid>
+  <podcast:medium>blog</podcast:medium>
+  <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
+  <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>MES AI: Use Claude, ChatGPT &amp; Grok With Just Your Hive Account (No KYC, No Subscription)</title>
+    <link>https://mes.fm/ai-claude-grok-chatgpt</link>
+    <guid isPermaLink="true">https://mes.fm/ai-claude-grok-chatgpt</guid>
+    <pubDate>Thu, 19 Nov 2026 21:56:45 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Chat with Claude, ChatGPT and Grok using only your Hive account and HBD: no KYC, no subscription, pay per message, encrypted quantum-safe Hive backups and cloud sync.</description>
+    <media:thumbnail url="https://mes.fm/ai/img/logo-big.png"/>
+  </item>
+  <item>
+    <title>New Hive Games &amp; Apps on mes.fm: Chess, Billiards, Tic-Tac-Toe, Connect Four, Quantum-Safe Backups (Testers Wanted)</title>
+    <link>https://mes.fm/hive-games-apps</link>
+    <guid isPermaLink="true">https://mes.fm/hive-games-apps</guid>
+    <pubDate>Mon, 16 Nov 2026 20:47:43 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Chess, billiards, tic-tac-toe, Connect Four and Minesweeper you can play on Hive, Hive polls and quantum-safe Hive backups on mes.fm. Testers wanted.</description>
+    <media:thumbnail url="https://mes.fm/hive-games-apps/img/hive-games-apps.jpg"/>
+  </item>
+  <item>
+    <title>MES Premium: Remove All Ads on mes.fm for 1 HBD a Month (Plus the Other Hive Features on mes.fm)</title>
+    <link>https://mes.fm/hbd-no-ads</link>
+    <guid isPermaLink="true">https://mes.fm/hbd-no-ads</guid>
+    <pubDate>Tue, 03 Nov 2026 03:17:54 GMT</pubDate>
+    <category>Crypto</category>
+    <description>MES Premium switches off every ad on mes.fm for 1 HBD a month, paid with Hive Keychain, plus Hive comments, Hive polls, Copy Text Hive backups and the Share Launcher -- mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://mes.fm/premium/img/logo-big.png"/>
+  </item>
+  <item>
+    <title>I Used Claude AI to Get My Flagged Funds Out of Hyperliquid</title>
+    <link>https://mes.fm/claude-hyperliquid-flagged-crypto</link>
+    <guid isPermaLink="true">https://mes.fm/claude-hyperliquid-flagged-crypto</guid>
+    <pubDate>Sun, 11 Oct 2026 19:22:28 GMT</pubDate>
+    <category>Crypto</category>
+    <description>MES used Claude AI to withdraw funds that the Hyperliquid crypto exchange had flagged: Claude confirmed the USDC arrived on Arbitrum with a read-only RPC check -- mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/claude-hyperliquid-flagged-crypto/img/claude-hyperliquid-flagged-crypto.jpg"/>
+  </item>
+  <item>
+    <title>Hive Cryptocurrency Overview and How to Sign Up</title>
+    <link>https://mes.fm/hive-crypto-tutorial</link>
+    <guid isPermaLink="true">https://mes.fm/hive-crypto-tutorial</guid>
+    <pubDate>Sun, 11 Oct 2026 05:41:57 GMT</pubDate>
+    <category>Crypto</category>
+    <description>An overview of the Hive cryptocurrency and blockchain, how it differs from Steem and Tron, how it works (dPoS, witnesses, HBD, Resource Credits), plus a tutorial on creating a Hive account and importing it into Hive Keychain. Mirrored from the Hive blockchain.</description>
+    <media:thumbnail url="https://files.peakd.com/file/peakd-hive/mes/23wgKYRaBpYAQeNXcxxUawtEkWHEHZkuhsZZj3znyWp53zY1Jdr2YMr5rB2PUTJJbRMRz.jpeg"/>
+  </item>
+  <item>
+    <title>Canada&#x27;s First Stablecoin $CADD Is Live on Solana</title>
+    <link>https://mes.fm/cadd-stablecoin-solana</link>
+    <guid isPermaLink="true">https://mes.fm/cadd-stablecoin-solana</guid>
+    <pubDate>Wed, 23 Sep 2026 19:23:44 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Canada&#x27;s first ever stablecoin is live on Solana as $CADD. Read the announcement, mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/cadd-stablecoin-solana/img/cadd-stablecoin-solana.jpg"/>
+  </item>
+  <item>
+    <title>3Speak Now Pays Users a 10% Share of Ad Revenue for Watching</title>
+    <link>https://mes.fm/3speak-ad-revenue-sharing</link>
+    <guid isPermaLink="true">https://mes.fm/3speak-ad-revenue-sharing</guid>
+    <pubDate>Thu, 17 Sep 2026 21:31:02 GMT</pubDate>
+    <category>Crypto</category>
+    <description>3Speak now pays users that watch videos a 10% share of the ad revenue, plus a bonus 10% from MES videos. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmYC1gpEkjBkby4mqB1xU2SP5Cnv1bvohTQtKzD1kGPjWk/telegram-cloud-photo-size-1-4999448963589021590-y.jpg"/>
+  </item>
+  <item>
+    <title>The Top 10 S&amp;P 500 Stocks Are 41% of the Market, and Oil Is at Record Lows Vs. Stocks</title>
+    <link>https://mes.fm/stock-market-vs-oil</link>
+    <guid isPermaLink="true">https://mes.fm/stock-market-vs-oil</guid>
+    <pubDate>Thu, 17 Sep 2026 18:51:40 GMT</pubDate>
+    <category>Crypto</category>
+    <description>The top 10 S&amp;P 500 stocks make up 41% of the total US stock market, bigger than the dot-com bubble. Meanwhile oil prices are still at record lows relative to the S&amp;P 500. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmdvuyozcMSZ2zM1rVXEqXz7Q2YosiM3Gq5Dog4FQGsdSc/telegram-cloud-photo-size-1-4999448963589020306-y.jpg"/>
+  </item>
+  <item>
+    <title>Crypto News: Alex Jones on Your $XRP and a $320M $BTC Hack</title>
+    <link>https://mes.fm/alex-jones-xrp-bitcoin</link>
+    <guid isPermaLink="true">https://mes.fm/alex-jones-xrp-bitcoin</guid>
+    <pubDate>Mon, 07 Sep 2026 21:23:41 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Crypto news checkup: Alex Jones warns the government will seize your $XRP, and $320 million in $BTC is drained by self-styled &quot;white hat&quot; hackers. Mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://mes.fm/alex-jones-xrp-bitcoin/img/crypto-news-1-10Sz8k.jpg"/>
+  </item>
+  <item>
+    <title>The Hyperliquid Crypto Exchange Flagged My Wallet Address</title>
+    <link>https://mes.fm/hyperliquid-flagged-address</link>
+    <guid isPermaLink="true">https://mes.fm/hyperliquid-flagged-address</guid>
+    <pubDate>Wed, 26 Aug 2026 20:48:19 GMT</pubDate>
+    <category>Crypto</category>
+    <description>The Hyperliquid crypto exchange flagged MES&#x27;s wallet address over a 3-month-old $9 donation linked to the Iran exchange Ompfinex, following Trump&#x27;s economic sanctions on Iran -- mirrored from the Hive blockchain and Telegram.</description>
+    <media:thumbnail url="https://img.leopedia.io/DQmNyMvvspTTTFaNxWzjgJDxJ6ZC3fPpsQ3ggDnjGjgToS1/telegram-cloud-photo-size-1-4936468297599880198-y.jpg"/>
+  </item>
+</channel>
+</rss>

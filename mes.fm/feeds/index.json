@@ -1,0 +1,579 @@
+{
+ "feeds": [
+  {
+   "id": "everything",
+   "title": "Everything new on MES",
+   "desc": "New calculators, tools, posts, livestreams and videos from MES.",
+   "page": "https://mes.fm",
+   "medium": "blog",
+   "group": "site",
+   "url": "https://mes.fm/feeds/everything.xml",
+   "count": 80,
+   "updated": "2026-11-22T23:00:04-07:00",
+   "newest": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+   "latest": [
+    {
+     "t": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+     "l": "https://mes.fm/33-countries-supplies",
+     "d": "2026-11-22"
+    },
+    {
+     "t": "Falling Blocks",
+     "l": "https://mes.fm/blocks",
+     "d": "2026-11-20"
+    },
+    {
+     "t": "Screen Recorder",
+     "l": "https://mes.fm/screen-recorder",
+     "d": "2026-11-20"
+    },
+    {
+     "t": "AI Detector",
+     "l": "https://mes.fm/ai-detector",
+     "d": "2026-11-20"
+    },
+    {
+     "t": "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)",
+     "l": "https://mes.fm/ai-claude-grok-chatgpt",
+     "d": "2026-11-19"
+    }
+   ]
+  },
+  {
+   "id": "tools",
+   "title": "New MES Calculators & Tools",
+   "desc": "New free calculators and tools on mes.fm.",
+   "page": "https://mes.fm/tools",
+   "medium": "blog",
+   "group": "site",
+   "url": "https://mes.fm/feeds/tools.xml",
+   "count": 50,
+   "updated": "2026-11-20T11:19:58-07:00",
+   "newest": "Falling Blocks",
+   "latest": [
+    {
+     "t": "Falling Blocks",
+     "l": "https://mes.fm/blocks",
+     "d": "2026-11-20"
+    },
+    {
+     "t": "Screen Recorder",
+     "l": "https://mes.fm/screen-recorder",
+     "d": "2026-11-20"
+    },
+    {
+     "t": "AI Detector",
+     "l": "https://mes.fm/ai-detector",
+     "d": "2026-11-20"
+    },
+    {
+     "t": "Space Shuttle Simulator",
+     "l": "https://mes.fm/space-shuttle-simulator",
+     "d": "2026-11-19"
+    },
+    {
+     "t": "Expense Splitter",
+     "l": "https://mes.fm/expense-splitter",
+     "d": "2026-11-19"
+    }
+   ]
+  },
+  {
+   "id": "posts",
+   "title": "MES Posts",
+   "desc": "Every new post on mes.fm: 9/11, Hutchison Effect, conspiracy, science and crypto.",
+   "page": "https://mes.fm/feeds",
+   "medium": "blog",
+   "group": "site",
+   "url": "https://mes.fm/feeds/posts.xml",
+   "count": 50,
+   "updated": "2026-11-22T23:00:04-07:00",
+   "newest": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+   "latest": [
+    {
+     "t": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+     "l": "https://mes.fm/33-countries-supplies",
+     "d": "2026-11-22"
+    },
+    {
+     "t": "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)",
+     "l": "https://mes.fm/ai-claude-grok-chatgpt",
+     "d": "2026-11-19"
+    },
+    {
+     "t": "James Corbett dodging questions about Dr. Judy Wood 🤡😤",
+     "l": "https://mes.fm/james-corbett-judy-wood-questions",
+     "d": "2026-11-19"
+    },
+    {
+     "t": "Hutchison Effect: Was Tom Sky's Experience a Mini Philadelphia Experiment?!",
+     "l": "https://mes.fm/hutchison-tom-sky-testimony",
+     "d": "2026-11-18"
+    },
+    {
+     "t": "Epic HD photos of Hutchison Effect samples, including the aluminum bar with the thumb print",
+     "l": "https://mes.fm/hutchison-thumb-aluminum",
+     "d": "2026-11-18"
+    }
+   ]
+  },
+  {
+   "id": "livestreams",
+   "title": "MES Livestreams",
+   "desc": "New MES livestreams.",
+   "page": "https://mes.fm/livestreams",
+   "medium": "video",
+   "group": "video",
+   "url": "https://mes.fm/feeds/livestreams.xml",
+   "count": 50,
+   "updated": "2026-09-11T23:14:12+00:00",
+   "newest": "MES Livestream 140: Real 9/11 Avengers Meetup",
+   "latest": [
+    {
+     "t": "MES Livestream 140: Real 9/11 Avengers Meetup",
+     "l": "https://mes.fm/livestream-140-real-911-avengers",
+     "d": "2026-09-11"
+    },
+    {
+     "t": "MES Livestream 139: BeneficenceTV gives updates on his radiant energy research",
+     "l": "https://www.youtube.com/watch?v=3ThCGaJwVE8",
+     "d": "2026-08-23"
+    },
+    {
+     "t": "MES Livestream 138: Chris Shak examines the 9/11 Memorial Museum",
+     "l": "https://www.youtube.com/watch?v=gwjOnGmthgQ",
+     "d": "2026-08-09"
+    },
+    {
+     "t": "MES Livestream 137: 50 Shades of 9/11 Disinfo Clowns",
+     "l": "https://www.youtube.com/watch?v=g1ZNVUp6m8Y",
+     "d": "2026-07-26"
+    },
+    {
+     "t": "MES Livestream 136: Dr. Judy Wood Discusses Anomalies in Hurricanes and Tornadoes",
+     "l": "https://www.youtube.com/watch?v=bzSV49z7s-M",
+     "d": "2026-07-12"
+    }
+   ]
+  },
+  {
+   "id": "youtube",
+   "title": "MES YouTube (Math Easy Solutions)",
+   "desc": "New videos on the Math Easy Solutions YouTube channel.",
+   "page": "https://mes.fm/youtube",
+   "medium": "video",
+   "group": "video",
+   "url": "https://mes.fm/feeds/youtube.xml",
+   "count": 50,
+   "updated": "2026-10-02T05:27:46+00:00",
+   "newest": "Problems Plus 6: Cable wound around a spool",
+   "latest": [
+    {
+     "t": "Problems Plus 6: Cable wound around a spool",
+     "l": "https://www.youtube.com/watch?v=8KoSB4DSXyQ",
+     "d": "2026-10-02"
+    },
+    {
+     "t": "Trailer for MES Livestream 141: John Hutchison shows Tom Sky levitation footage he missed",
+     "l": "https://www.youtube.com/watch?v=XXeHqPUgbLU",
+     "d": "2026-09-26"
+    },
+    {
+     "t": "Problems Plus 5: Launch Angle of 56° maximizes TOTAL distance a projectile travels",
+     "l": "https://www.youtube.com/watch?v=KwGXk61Gumc",
+     "d": "2026-09-25"
+    },
+    {
+     "t": "Hutchison Effect: Plastic Can Levitates and Video is Played Back LIVE",
+     "l": "https://www.youtube.com/watch?v=84_R56cjqMQ",
+     "d": "2026-09-22"
+    },
+    {
+     "t": "Problems Plus 4: Curvature from Parametric Equations that involve Integrals",
+     "l": "https://www.youtube.com/watch?v=q45sniCahKE",
+     "d": "2026-09-22"
+    }
+   ]
+  },
+  {
+   "id": "mestruth",
+   "title": "MES Truth YouTube",
+   "desc": "New videos on the MES Truth YouTube channel.",
+   "page": "https://mes.fm/youtube-mestruth",
+   "medium": "video",
+   "group": "video",
+   "url": "https://mes.fm/feeds/mestruth.xml",
+   "count": 50,
+   "updated": "2026-10-05T22:20:22+00:00",
+   "newest": "North Tower quiet dustification vs Bethlehem Steel HQ loud demolition",
+   "latest": [
+    {
+     "t": "North Tower quiet dustification vs Bethlehem Steel HQ loud demolition",
+     "l": "https://www.youtube.com/watch?v=3kCSMkXQfuk",
+     "d": "2026-10-05"
+    },
+    {
+     "t": "YouTube reinstated my Curt Weldon video after muting the \"hate speech\" part 🤐▶️",
+     "l": "https://www.youtube.com/watch?v=hr7SAWmU-oM",
+     "d": "2026-10-01"
+    },
+    {
+     "t": "Former Congressman Curt Weldon & Firefighters testimony: Towers turned to dust on 9/11",
+     "l": "https://www.youtube.com/watch?v=ns2AlXigat8",
+     "d": "2026-09-30"
+    },
+    {
+     "t": "Jules Naudet footage of the first \"plane\" on 9/11 + slow / fast motion analysis",
+     "l": "https://www.youtube.com/watch?v=oQvAkD0DTEE",
+     "d": "2026-09-27"
+    },
+    {
+     "t": "NYPD Commissioner Bernie Kerik says 9/11 Jumpers \"Evaporated\" and most of bodies disintegrated",
+     "l": "https://www.youtube.com/watch?v=g9edp1aPOUM",
+     "d": "2026-09-20"
+    }
+   ]
+  },
+  {
+   "id": "911",
+   "title": "MES 9/11 Truth Posts",
+   "desc": "New MES 9/11 Truth posts on mes.fm.",
+   "page": "https://mes.fm/911",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/911.xml",
+   "count": 50,
+   "updated": "2026-11-08T22:44:12-07:00",
+   "newest": "Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin'",
+   "latest": [
+    {
+     "t": "Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin'",
+     "l": "https://mes.fm/spooks-news-nov-2026",
+     "d": "2026-11-08"
+    },
+    {
+     "t": "9/11 Survivor Ron DiFrancesco says his contact lens melted to his eyes",
+     "l": "https://mes.fm/911-contact-lens-melted",
+     "d": "2026-11-07"
+    },
+    {
+     "t": "Part 33: Electromagnetic Field Interference on 9/11",
+     "l": "https://mes.fm/911truth-33-emf-911",
+     "d": "2026-11-07"
+    },
+    {
+     "t": "Part 13: Helicopter Footage of the Twin Towers Turning to Dust (Fast Forward 45X Speed)",
+     "l": "https://mes.fm/911truth-13-helicopter-towers-dustification",
+     "d": "2026-11-04"
+    },
+    {
+     "t": "Compilation of the 2nd \"Plane\" Impact and Giant Column of Fumes Thousands of Feet in the Air",
+     "l": "https://mes.fm/911-plane-compilation-fumes",
+     "d": "2026-11-03"
+    }
+   ]
+  },
+  {
+   "id": "911spooks",
+   "title": "MES 9/11 Spooks Posts",
+   "desc": "New MES 9/11 Spooks posts on mes.fm.",
+   "page": "https://mes.fm/911spooks",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/911spooks.xml",
+   "count": 19,
+   "updated": "2026-11-19T14:37:45-07:00",
+   "newest": "James Corbett dodging questions about Dr. Judy Wood 🤡😤",
+   "latest": [
+    {
+     "t": "James Corbett dodging questions about Dr. Judy Wood 🤡😤",
+     "l": "https://mes.fm/james-corbett-judy-wood-questions",
+     "d": "2026-11-19"
+    },
+    {
+     "t": "Rolling Stone Wrote an Article on Ashton Forbes 😅",
+     "l": "https://mes.fm/ashton-forbes-rolling-stone",
+     "d": "2026-11-12"
+    },
+    {
+     "t": "Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin'",
+     "l": "https://mes.fm/spooks-news-nov-2026",
+     "d": "2026-11-08"
+    },
+    {
+     "t": "Richard Gage: \"We Are Necessarily Gatekeepers\" of 9/11 Truth 🤡",
+     "l": "https://mes.fm/richard-gage-gatekeeper",
+     "d": "2026-11-02"
+    },
+    {
+     "t": "Dear Dr. David A. Fetzer...",
+     "l": "https://mes.fm/david-hughes-fetzer-2.0",
+     "d": "2026-10-24"
+    }
+   ]
+  },
+  {
+   "id": "hutchison",
+   "title": "MES Hutchison Effect Posts",
+   "desc": "New MES Hutchison Effect posts on mes.fm.",
+   "page": "https://mes.fm/hutchison",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/hutchison.xml",
+   "count": 19,
+   "updated": "2026-11-18T20:31:29-07:00",
+   "newest": "Hutchison Effect: Was Tom Sky's Experience a Mini Philadelphia Experiment?!",
+   "latest": [
+    {
+     "t": "Hutchison Effect: Was Tom Sky's Experience a Mini Philadelphia Experiment?!",
+     "l": "https://mes.fm/hutchison-tom-sky-testimony",
+     "d": "2026-11-18"
+    },
+    {
+     "t": "Epic HD photos of Hutchison Effect samples, including the aluminum bar with the thumb print",
+     "l": "https://mes.fm/hutchison-thumb-aluminum",
+     "d": "2026-11-18"
+    },
+    {
+     "t": "John Hutchison Health Update and Press Release",
+     "l": "https://mes.fm/hutchison-health-press-release-2026",
+     "d": "2026-11-12"
+    },
+    {
+     "t": "Imagining Motion: Pain, Cancer, RETURN, and Volition — conversation for John Hutchison",
+     "l": "https://mes.fm/imagining-motion",
+     "d": "2026-10-26"
+    },
+    {
+     "t": "TURN, RETURN, and the Operator Differential — transcript for John Hutchison",
+     "l": "https://mes.fm/hutchison-nancy-turn-return",
+     "d": "2026-10-25"
+    }
+   ]
+  },
+  {
+   "id": "conspiracy",
+   "title": "MES Conspiracy Posts",
+   "desc": "New MES Conspiracy posts on mes.fm.",
+   "page": "https://mes.fm/conspiracy",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/conspiracy.xml",
+   "count": 34,
+   "updated": "2026-11-22T23:00:04-07:00",
+   "newest": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+   "latest": [
+    {
+     "t": "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚",
+     "l": "https://mes.fm/33-countries-supplies",
+     "d": "2026-11-22"
+    },
+    {
+     "t": "Trump Tells Future President Stephen A. Smith He Can Beat Obama",
+     "l": "https://mes.fm/trump-stephen-a-smith-obama",
+     "d": "2026-11-12"
+    },
+    {
+     "t": "Rolling Stone Wrote an Article on Ashton Forbes 😅",
+     "l": "https://mes.fm/ashton-forbes-rolling-stone",
+     "d": "2026-11-12"
+    },
+    {
+     "t": "Spooky News Checkup: Ashton Forbes, 9/11 Revisionist, Off-Guardian wildin'",
+     "l": "https://mes.fm/spooks-news-nov-2026",
+     "d": "2026-11-08"
+    },
+    {
+     "t": "Made a Sortable Database of All My Telegram Posts (26,000+ and Counting) 🤯💯",
+     "l": "https://mes.fm/telegram-database",
+     "d": "2026-11-06"
+    }
+   ]
+  },
+  {
+   "id": "science",
+   "title": "MES Science Posts",
+   "desc": "New MES Science posts on mes.fm.",
+   "page": "https://mes.fm/science",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/science.xml",
+   "count": 7,
+   "updated": "2026-11-06T14:41:24-07:00",
+   "newest": "Made a Sortable Database of All My Telegram Posts (26,000+ and Counting) 🤯💯",
+   "latest": [
+    {
+     "t": "Made a Sortable Database of All My Telegram Posts (26,000+ and Counting) 🤯💯",
+     "l": "https://mes.fm/telegram-database",
+     "d": "2026-11-06"
+    },
+    {
+     "t": "Space Shuttle Columbia Disaster Shook a House on Earth",
+     "l": "https://mes.fm/space-shuttle-columbia-disaster-shook-house",
+     "d": "2026-10-31"
+    },
+    {
+     "t": "Fungi Decomposin' Dog Poop 🦠💩👀",
+     "l": "https://mes.fm/fungi-poop",
+     "d": "2026-10-04"
+    },
+    {
+     "t": "USA Launches America.gov, an AI Chat Site for Government Services",
+     "l": "https://mes.fm/america-gov-ai-chat",
+     "d": "2026-10-01"
+    },
+    {
+     "t": "Dmitri Mendeleev Said He Came Up With the Periodic Table in a Dream",
+     "l": "https://mes.fm/mendeleev-chemical-table-dream",
+     "d": "2026-09-22"
+    }
+   ]
+  },
+  {
+   "id": "crypto",
+   "title": "MES Crypto Posts",
+   "desc": "New MES Crypto posts on mes.fm.",
+   "page": "https://mes.fm/crypto",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/crypto.xml",
+   "count": 10,
+   "updated": "2026-11-19T14:56:45-07:00",
+   "newest": "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)",
+   "latest": [
+    {
+     "t": "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)",
+     "l": "https://mes.fm/ai-claude-grok-chatgpt",
+     "d": "2026-11-19"
+    },
+    {
+     "t": "New Hive Games & Apps on mes.fm: Chess, Billiards, Tic-Tac-Toe, Connect Four, Quantum-Safe Backups (Testers Wanted)",
+     "l": "https://mes.fm/hive-games-apps",
+     "d": "2026-11-16"
+    },
+    {
+     "t": "MES Premium: Remove All Ads on mes.fm for 1 HBD a Month (Plus the Other Hive Features on mes.fm)",
+     "l": "https://mes.fm/hbd-no-ads",
+     "d": "2026-11-02"
+    },
+    {
+     "t": "I Used Claude AI to Get My Flagged Funds Out of Hyperliquid",
+     "l": "https://mes.fm/claude-hyperliquid-flagged-crypto",
+     "d": "2026-10-11"
+    },
+    {
+     "t": "Hive Cryptocurrency Overview and How to Sign Up",
+     "l": "https://mes.fm/hive-crypto-tutorial",
+     "d": "2026-10-10"
+    }
+   ]
+  },
+  {
+   "id": "bg",
+   "title": "MES Bob Greenyer Posts",
+   "desc": "New MES Bob Greenyer posts on mes.fm.",
+   "page": "https://mes.fm/bg",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/bg.xml",
+   "count": 3,
+   "updated": "2026-09-18T23:20:29-07:00",
+   "newest": "Bob Greenyer's Subscriber Calls Him a Rich Fake Con Man",
+   "latest": [
+    {
+     "t": "Bob Greenyer's Subscriber Calls Him a Rich Fake Con Man",
+     "l": "https://mes.fm/bob-greenyer-con-man-subscriber",
+     "d": "2026-09-18"
+    },
+    {
+     "t": "9/11 Revisionist Spammin' Dust Baggie Nonsense",
+     "l": "https://mes.fm/911-spammer-dust-baggie",
+     "d": "2026-09-18"
+    },
+    {
+     "t": "9/11 Revisionist = 9/11 Spammer",
+     "l": "https://mes.fm/911-revisionist-spammer",
+     "d": "2026-09-07"
+    }
+   ]
+  },
+  {
+   "id": "mh370",
+   "title": "MES MH370 Posts",
+   "desc": "New MES MH370 posts on mes.fm.",
+   "page": "https://mes.fm/mh370",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/mh370.xml",
+   "count": 8,
+   "updated": "2026-11-12T14:25:45-07:00",
+   "newest": "Rolling Stone Wrote an Article on Ashton Forbes 😅",
+   "latest": [
+    {
+     "t": "Rolling Stone Wrote an Article on Ashton Forbes 😅",
+     "l": "https://mes.fm/ashton-forbes-rolling-stone",
+     "d": "2026-11-12"
+    },
+    {
+     "t": "Project Blue Beam News: Politics talkin' UFOs and Aliens 🛸👽",
+     "l": "https://mes.fm/projectbluebeam-news-nov-2026",
+     "d": "2026-11-04"
+    },
+    {
+     "t": "Tucker Carlson Jumps on the MH370 Teleportation Cartoons Bandwagon",
+     "l": "https://mes.fm/tucker-carlson-mh370-cartoons",
+     "d": "2026-10-20"
+    },
+    {
+     "t": "MH370 Teleportation Cartoons are a Litmus Test for Spooks",
+     "l": "https://mes.fm/mh370-litmus-spooks",
+     "d": "2026-10-17"
+    },
+    {
+     "t": "Is Drew Ponder Ashton Forbes' AI MH370 Spam Bot?",
+     "l": "https://mes.fm/mh370-drew-ponder-spammer",
+     "d": "2026-10-08"
+    }
+   ]
+  },
+  {
+   "id": "mathiew",
+   "title": "MES Mathiew Posts",
+   "desc": "New MES Mathiew posts on mes.fm.",
+   "page": "https://mes.fm/mathiew",
+   "medium": "blog",
+   "group": "hub",
+   "url": "https://mes.fm/feeds/mathiew.xml",
+   "count": 8,
+   "updated": "2026-11-17T15:04:36-07:00",
+   "newest": "New Augmented Reality Glasses 🥽✨",
+   "latest": [
+    {
+     "t": "New Augmented Reality Glasses 🥽✨",
+     "l": "https://mes.fm/ar-glasses-reflection",
+     "d": "2026-11-17"
+    },
+    {
+     "t": "Graduated from Clown College! 🙌🧑‍🎓🎪",
+     "l": "https://mes.fm/graduated-clown-college",
+     "d": "2026-11-14"
+    },
+    {
+     "t": "Local Elections Requiring a Mandatory Mark of the BC, Canada Voting Sticker",
+     "l": "https://mes.fm/richmond-elections-sticker-2026",
+     "d": "2026-10-27"
+    },
+    {
+     "t": "MES Is NOT Robbin' a Bank #notarobber 🥷🌚",
+     "l": "https://mes.fm/mathiew-not-robber",
+     "d": "2026-10-05"
+    },
+    {
+     "t": "Neice Gave Me a Haircut",
+     "l": "https://mes.fm/haircut-neice",
+     "d": "2026-09-27"
+    }
+   ]
+  }
+ ]
+}

@@ -19,4 +19,8 @@ fi
 if git diff --cached --name-only | grep -qE '^mes\.fm/(math-qa|livestream)-[^/]+/index\.html$'; then
   python3 build_upcoming_streams.py --apply >/dev/null 2>&1 && git add mes.fm/reminder/upcoming.json
 fi
+# mes.fm/feeds/*.xml (RSS feeds, see build_feeds.py): rebuilt (no network) when a commit touches one of their sources
+if git diff --cached --name-only | grep -qE '^mes\.fm/((tools|calculators)\.html|[^/]+/sections\.mjs|livestreams/playlist\.json|math/youtube(-mestruth)?-videos\.json)$' || git diff --cached --name-only --diff-filter=A | grep -qE '^mes\.fm/[^/]+/index\.html$'; then
+  python3 build_feeds.py --offline --apply >/dev/null 2>&1 && git add mes.fm/feeds
+fi
 exit 0

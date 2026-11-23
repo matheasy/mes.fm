@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+  <title>New MES Calculators &amp; Tools</title>
+  <link>https://mes.fm/tools</link>
+  <description>New free calculators and tools on mes.fm.</description>
+  <language>en</language>
+  <lastBuildDate>Fri, 20 Nov 2026 18:19:58 GMT</lastBuildDate>
+  <atom:link href="https://mes.fm/feeds/tools.xml" rel="self" type="application/rss+xml"/>
+  <image><url>https://mes.fm/img/logo-mark.png</url><title>New MES Calculators &amp; Tools</title><link>https://mes.fm/tools</link></image>
+  <podcast:guid>d20538e6-7ed6-5439-8d17-06a28a7778f2</podcast:guid>
+  <podcast:medium>blog</podcast:medium>
+  <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
+  <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Falling Blocks</title>
+    <link>https://mes.fm/blocks</link>
+    <guid isPermaLink="true">https://mes.fm/blocks</guid>
+    <pubDate>Fri, 20 Nov 2026 18:19:58 GMT</pubDate>
+    <category>Tools</category>
+    <description>Marathon, Sprint 40, Ultra and Zen with T-spins, hold and ghost, in 2D or 3D; daily race, live races and a Hive leaderboard.</description>
+    <media:thumbnail url="https://mes.fm/img/blocks-logo.png"/>
+  </item>
+  <item>
+    <title>Screen Recorder</title>
+    <link>https://mes.fm/screen-recorder</link>
+    <guid isPermaLink="true">https://mes.fm/screen-recorder</guid>
+    <pubDate>Fri, 20 Nov 2026 18:18:16 GMT</pubDate>
+    <category>Tools</category>
+    <description>Record your screen, a window or a tab with your camera and microphone, take screenshots, mix the sound and save MP4. No install, nothing uploaded.</description>
+    <media:thumbnail url="https://mes.fm/img/screen-recorder-logo.png"/>
+  </item>
+  <item>
+    <title>AI Detector</title>
+    <link>https://mes.fm/ai-detector</link>
+    <guid isPermaLink="true">https://mes.fm/ai-detector</guid>
+    <pubDate>Fri, 20 Nov 2026 18:14:31 GMT</pubDate>
+    <category>Tools</category>
+    <description>Was a picture, video or text made with AI? Reads Content Credentials and AI labels, runs an on-device model and checks text patterns. Evidence, not guesses.</description>
+    <media:thumbnail url="https://mes.fm/img/ai-detector-logo.png"/>
+  </item>
+  <item>
+    <title>Space Shuttle Simulator</title>
+    <link>https://mes.fm/space-shuttle-simulator</link>
+    <guid isPermaLink="true">https://mes.fm/space-shuttle-simulator</guid>
+    <pubDate>Thu, 19 Nov 2026 18:37:46 GMT</pubDate>
+    <category>Tools</category>
+    <description>Fly the Shuttle around a 3D Earth: plan burns, raise and tilt the orbit, catch the ISS or Hubble, then de-orbit and glide down to the runway. Plus why it could never reach the Moon.</description>
+    <media:thumbnail url="https://mes.fm/img/space-shuttle-simulator-logo.png"/>
+  </item>
+  <item>
+    <title>Expense Splitter</title>
+    <link>https://mes.fm/expense-splitter</link>
+    <guid isPermaLink="true">https://mes.fm/expense-splitter</guid>
+    <pubDate>Thu, 19 Nov 2026 18:23:34 GMT</pubDate>
+    <category>Calculators</category>
+    <description>Split a group trip fairly: by nights stayed, shares or exact amounts, non-drinkers left out, fewest payments to settle up.</description>
+    <media:thumbnail url="https://mes.fm/img/expense-splitter-logo.png"/>
+  </item>
+  <item>
+    <title>MES AI</title>
+    <link>https://mes.fm/ai</link>
+    <guid isPermaLink="true">https://mes.fm/ai</guid>
+    <pubDate>Wed, 18 Nov 2026 22:18:14 GMT</pubDate>
+    <category>Tools</category>
+    <description>Chat with top AI models (Claude Sonnet and Opus) for coding, research and writing, and make pictures. See the price first, pay per message in HBD. No plan.</description>
+    <media:thumbnail url="https://mes.fm/img/ai-logo.png"/>
+  </item>
+  <item>
+    <title>Voids &amp; Ductile Fracture Simulator</title>
+    <link>https://mes.fm/ductile-fracture-simulator</link>
+    <guid isPermaLink="true">https://mes.fm/ductile-fracture-simulator</guid>
+    <pubDate>Wed, 18 Nov 2026 22:10:50 GMT</pubDate>
+    <category>Calculators</category>
+    <description>Watch microscopic voids grow and link inside a necking bar until it cracks from the middle: cup and cone, dimples, triaxiality.</description>
+    <media:thumbnail url="https://mes.fm/img/ductile-fracture-simulator-logo.png"/>
+  </item>
+  <item>
+    <title>Click Speed Test</title>
+    <link>https://mes.fm/click-test</link>
+    <guid isPermaLink="true">https://mes.fm/click-test</guid>
+    <pubDate>Wed, 18 Nov 2026 18:25:10 GMT</pubDate>
+    <category>Tools</category>
+    <description>Clicks per second for mouse, taps (every finger counts) or Space bar; 1 to 100 s, chart, best scores, world record.</description>
+    <media:thumbnail url="https://mes.fm/img/click-test-logo.png"/>
+  </item>
+  <item>
+    <title>MES Mail</title>
+    <link>https://mes.fm/email</link>
+    <guid isPermaLink="true">https://mes.fm/email</guid>
+    <pubDate>Tue, 17 Nov 2026 22:34:38 GMT</pubDate>
+    <category>Tools</category>
+    <description>Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.</description>
+    <media:thumbnail url="https://mes.fm/img/email-logo.png"/>
+  </item>
+  <item>
+    <title>Package Tracker</title>
+    <link>https://mes.fm/tracking</link>
+    <guid isPermaLink="true">https://mes.fm/tracking</guid>
+    <pubDate>Mon, 16 Nov 2026 18:04:33 GMT</pubDate>
+    <category>Tools</category>
+    <description>Paste, scan or photograph any tracking number and open the right carrier’s tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.</description>
+    <media:thumbnail url="https://mes.fm/img/tracking-logo.png"/>
+  </item>
+  <item>
+    <title>AI Image Upscaler</title>
+    <link>https://mes.fm/upscale</link>
+    <guid isPermaLink="true">https://mes.fm/upscale</guid>
+    <pubDate>Mon, 16 Nov 2026 17:57:05 GMT</pubDate>
+    <category>Tools</category>
+    <description>Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.</description>
+    <media:thumbnail url="https://mes.fm/img/upscale-logo.png"/>
+  </item>
+  <item>
+    <title>Darkroom: Photo Library &amp; RAW Editor</title>
+    <link>https://mes.fm/darkroom</link>
+    <guid isPermaLink="true">https://mes.fm/darkroom</guid>
+    <pubDate>Sat, 14 Nov 2026 18:39:32 GMT</pubDate>
+    <category>Tools</category>
+    <description>A free Lightroom alternative: rate and keyword your photos, develop RAW files with curves, colour grading, masks and healing, then batch export. Nothing is uploaded.</description>
+    <media:thumbnail url="https://mes.fm/img/darkroom-logo.png"/>
+  </item>
+  <item>
+    <title>Transcript &amp; Timestamps</title>
+    <link>https://mes.fm/transcript</link>
+    <guid isPermaLink="true">https://mes.fm/transcript</guid>
+    <pubDate>Sat, 14 Nov 2026 18:13:19 GMT</pubDate>
+    <category>Tools</category>
+    <description>Get a YouTube video&#x27;s transcript with clickable times, make chapter timestamps for your description, download TXT, SRT or VTT. 3Speak, Odysee and files too.</description>
+    <media:thumbnail url="https://mes.fm/img/transcript-logo.png"/>
+  </item>
+  <item>
+    <title>Quantum Computer Simulator</title>
+    <link>https://mes.fm/quantum-computing</link>
+    <guid isPermaLink="true">https://mes.fm/quantum-computing</guid>
+    <pubDate>Fri, 13 Nov 2026 18:39:16 GMT</pubDate>
+    <category>Tools</category>
+    <description>Drag gates onto up to 10 qubits and watch the state vector and Bloch sphere step by step: Bell, teleportation, Grover, QFT and Shor examples, shots and OpenQASM.</description>
+    <media:thumbnail url="https://mes.fm/img/quantum-computing-logo.png"/>
+  </item>
+  <item>
+    <title>Quantum-Safe Website Checker</title>
+    <link>https://mes.fm/quantum-safe-check</link>
+    <guid isPermaLink="true">https://mes.fm/quantum-safe-check</guid>
+    <pubDate>Fri, 13 Nov 2026 18:14:59 GMT</pubDate>
+    <category>Tools</category>
+    <description>Paste links and see if each site&#x27;s HTTPS uses post-quantum encryption (X25519MLKEM768), with its TLS version and certificate, graded A to F.</description>
+    <media:thumbnail url="https://mes.fm/img/quantum-safe-check-logo.png"/>
+  </item>
+  <item>
+    <title>Quantum Cryptography</title>
+    <link>https://mes.fm/quantum-cryptography</link>
+    <guid isPermaLink="true">https://mes.fm/quantum-cryptography</guid>
+    <pubDate>Fri, 13 Nov 2026 18:14:59 GMT</pubDate>
+    <category>Tools</category>
+    <description>Send a key with photons (BB84), watch Shor&#x27;s algorithm factor and Grover&#x27;s search find, see what is quantum-safe, and run real post-quantum ML-KEM (Kyber).</description>
+    <media:thumbnail url="https://mes.fm/img/quantum-cryptography-logo.png"/>
+  </item>
+  <item>
+    <title>Cryptography Lab</title>
+    <link>https://mes.fm/cryptography</link>
+    <guid isPermaLink="true">https://mes.fm/cryptography</guid>
+    <pubDate>Fri, 13 Nov 2026 17:52:07 GMT</pubDate>
+    <category>Tools</category>
+    <description>Encrypt, decrypt and crack Caesar and Vigenère ciphers, build RSA keys from primes step by step, Diffie-Hellman, hashes and real AES password encryption.</description>
+    <media:thumbnail url="https://mes.fm/img/cryptography-logo.png"/>
+  </item>
+  <item>
+    <title>Text Viewer (TXT, RTF, Code)</title>
+    <link>https://mes.fm/text</link>
+    <guid isPermaLink="true">https://mes.fm/text</guid>
+    <pubDate>Fri, 13 Nov 2026 06:43:22 GMT</pubDate>
+    <category>Tools</category>
+    <description>Open .txt, .md, .rtf, .csv, .json, .html and code files: a formatted reading view or a code view with line numbers, read aloud, edit and save. Nothing is uploaded.</description>
+    <media:thumbnail url="https://mes.fm/img/text-logo.png"/>
+  </item>
+  <item>
+    <title>Narration</title>
+    <link>https://mes.fm/narration</link>
+    <guid isPermaLink="true">https://mes.fm/narration</guid>
+    <pubDate>Thu, 12 Nov 2026 22:26:31 GMT</pubDate>
+    <category>Tools</category>
+    <description>Type a script, get a voice-over: 28 natural voices or your own voice from a 15-second sample. MP3, M4A or WAV, or straight into the Video Editor.</description>
+    <media:thumbnail url="https://mes.fm/img/narration-logo.png"/>
+  </item>
+  <item>
+    <title>Car Sandbox</title>
+    <link>https://mes.fm/car-sandbox</link>
+    <guid isPermaLink="true">https://mes.fm/car-sandbox</guid>
+    <pubDate>Thu, 12 Nov 2026 18:41:17 GMT</pubDate>
+    <category>Tools</category>
+    <description>Drive cars, trucks and a lunar rover in 3D on a test track, the Moon, Mars or Ceres: jumps, a loop, crashes, computer cars, loose objects and any gravity you like.</description>
+    <media:thumbnail url="https://mes.fm/img/car-sandbox-logo.png"/>
+  </item>
+  <item>
+    <title>Chess</title>
+    <link>https://mes.fm/chess</link>
+    <guid isPermaLink="true">https://mes.fm/chess</guid>
+    <pubDate>Thu, 12 Nov 2026 18:39:10 GMT</pubDate>
+    <category>Tools</category>
+    <description>Play the computer, a friend, online or on Hive, in 2D or 3D venues, with Chess960, clocks and analysis.</description>
+    <media:thumbnail url="https://mes.fm/img/chess-logo.png"/>
+  </item>
+  <item>
+    <title>Bridge Builder</title>
+    <link>https://mes.fm/bridge-builder</link>
+    <guid isPermaLink="true">https://mes.fm/bridge-builder</guid>
+    <pubDate>Wed, 11 Nov 2026 18:29:01 GMT</pubDate>
+    <category>Tools</category>
+    <description>Design a truss, arch or cable bridge, check every member, auto-size it for the lowest cost, then drive trucks over it, blow wind and shake it with an earthquake.</description>
+    <media:thumbnail url="https://mes.fm/img/bridge-builder-logo.png"/>
+  </item>
+  <item>
+    <title>Brick Builder (3D building bricks)</title>
+    <link>https://mes.fm/brick-builder</link>
+    <guid isPermaLink="true">https://mes.fm/brick-builder</guid>
+    <pubDate>Tue, 10 Nov 2026 17:57:55 GMT</pubDate>
+    <category>Tools</category>
+    <description>Build with virtual bricks in 3D, start from example builds for kids and bridges, test how much weight your build holds and follow the steps with real bricks.</description>
+    <media:thumbnail url="https://mes.fm/img/brick-builder-logo.png"/>
+  </item>
+  <item>
+    <title>Lüders Band Simulator</title>
+    <link>https://mes.fm/luders-bands</link>
+    <guid isPermaLink="true">https://mes.fm/luders-bands</guid>
+    <pubDate>Tue, 10 Nov 2026 17:51:47 GMT</pubDate>
+    <category>Calculators</category>
+    <description>Pull a mild steel bar and watch the yield band run along it at 55° while the force stays flat. Notches, machine stiffness, strain ageing.</description>
+    <media:thumbnail url="https://mes.fm/img/luders-bands-logo.png"/>
+  </item>
+  <item>
+    <title>Prime Numbers</title>
+    <link>https://mes.fm/primes</link>
+    <guid isPermaLink="true">https://mes.fm/primes</guid>
+    <pubDate>Tue, 10 Nov 2026 17:48:31 GMT</pubDate>
+    <category>Calculators</category>
+    <description>Is it prime? Prime factors, divisors, coprime, GCD and LCM, the sieve and the prime spiral.</description>
+    <media:thumbnail url="https://mes.fm/img/primes-logo.png"/>
+  </item>
+  <item>
+    <title>Quantum Calculators</title>
+    <link>https://mes.fm/quantum-calculator</link>
+    <guid isPermaLink="true">https://mes.fm/quantum-calculator</guid>
+    <pubDate>Tue, 10 Nov 2026 17:31:19 GMT</pubDate>
+    <category>Calculators</category>
+    <description>de Broglie wavelength, photon energy, the uncertainty principle, tunnelling probability, particle in a box, the Bohr model, Compton shift and blackbody radiation, with every formula shown.</description>
+    <media:thumbnail url="https://mes.fm/img/quantum-logo.png"/>
+  </item>
+  <item>
+    <title>Quantum Lab</title>
+    <link>https://mes.fm/quantum</link>
+    <guid isPermaLink="true">https://mes.fm/quantum</guid>
+    <pubDate>Tue, 10 Nov 2026 17:31:19 GMT</pubDate>
+    <category>Tools</category>
+    <description>Watch a wave packet tunnel through a barrier, build double-slit stripes one particle at a time, run a Bell test on entangled pairs, send atoms through Stern-Gerlach magnets and explore hydrogen orbitals.</description>
+    <media:thumbnail url="https://mes.fm/img/quantum-logo.png"/>
+  </item>
+  <item>
+    <title>Billiards: 8-Ball, 9-Ball &amp; Snooker</title>
+    <link>https://mes.fm/billiards</link>
+    <guid isPermaLink="true">https://mes.fm/billiards</guid>
+    <pubDate>Mon, 09 Nov 2026 21:26:27 GMT</pubDate>
+    <category>Tools</category>
+    <description>Pool and snooker with real spin physics, against the computer, a friend or a Hive player, plus trick-shot challenges.</description>
+    <media:thumbnail url="https://mes.fm/img/billiards-logo.png"/>
+  </item>
+  <item>
+    <title>Watch</title>
+    <link>https://mes.fm/watch</link>
+    <guid isPermaLink="true">https://mes.fm/watch</guid>
+    <pubDate>Sun, 08 Nov 2026 05:18:10 GMT</pubDate>
+    <category>Tools</category>
+    <description>Watch YouTube, 3Speak, Odysee and Rumble videos on a plain page: no recommendations or comments. Up next list, save for later, resume, speed.</description>
+    <media:thumbnail url="https://mes.fm/img/watch-logo.png"/>
+  </item>
+  <item>
+    <title>GTA 6 Hub</title>
+    <link>https://mes.fm/gta</link>
+    <guid isPermaLink="true">https://mes.fm/gta</guid>
+    <pubDate>Sat, 07 Nov 2026 20:17:45 GMT</pubDate>
+    <category>Tools</category>
+    <description>Unofficial GTA 6 tools: the unlock time in your time zone, how long the 212 GB download takes, a stunt jump simulator and the latest news.</description>
+    <media:thumbnail url="https://mes.fm/img/gta-logo.png"/>
+  </item>
+  <item>
+    <title>Stunt Jump Simulator</title>
+    <link>https://mes.fm/gta-stunt-jump-simulator</link>
+    <guid isPermaLink="true">https://mes.fm/gta-stunt-jump-simulator</guid>
+    <pubDate>Sat, 07 Nov 2026 20:17:45 GMT</pubDate>
+    <category>Tools</category>
+    <description>Jump cars, bikes and monster trucks over gaps and canyons with real suspension physics: airtime, rotation, landing g-force and the speed window for a clean landing.</description>
+    <media:thumbnail url="https://mes.fm/img/gta-stunt-jump-simulator-logo.png"/>
+  </item>
+  <item>
+    <title>Relative Speed &amp; Strength Calculator</title>
+    <link>https://mes.fm/relative-speed-calculator</link>
+    <guid isPermaLink="true">https://mes.fm/relative-speed-calculator</guid>
+    <pubDate>Sat, 07 Nov 2026 19:58:54 GMT</pubDate>
+    <category>Calculators</category>
+    <description>Animal speeds (running, flying, swimming), strength, jumps and falls scaled to human size.</description>
+    <media:thumbnail url="https://mes.fm/img/relative-speed-calculator-logo.png"/>
+  </item>
+  <item>
+    <title>Party Invitations &amp; RSVP</title>
+    <link>https://mes.fm/party</link>
+    <guid isPermaLink="true">https://mes.fm/party</guid>
+    <pubDate>Sat, 07 Nov 2026 19:53:11 GMT</pubDate>
+    <category>Tools</category>
+    <description>Make a themed invitation, send one link and see who&#x27;s coming: Going / Maybe / Can&#x27;t go, plus-ones, waitlist, what to bring. No sign-up for anyone.</description>
+    <media:thumbnail url="https://mes.fm/img/party-logo.png"/>
+  </item>
+  <item>
+    <title>Connect Four</title>
+    <link>https://mes.fm/connect-four</link>
+    <guid isPermaLink="true">https://mes.fm/connect-four</guid>
+    <pubDate>Sat, 07 Nov 2026 19:51:25 GMT</pubDate>
+    <category>Tools</category>
+    <description>Connect 3, 4, 5 or 6 on any board, against the computer, a friend or a Hive player.</description>
+    <media:thumbnail url="https://mes.fm/img/connect-four-logo.png"/>
+  </item>
+  <item>
+    <title>Relative Time Calculator</title>
+    <link>https://mes.fm/relative-time-calculator</link>
+    <guid isPermaLink="true">https://mes.fm/relative-time-calculator</guid>
+    <pubDate>Sat, 07 Nov 2026 19:47:03 GMT</pubDate>
+    <category>Calculators</category>
+    <description>How long an hour feels at another age: share of life, felt life and animal lifespans.</description>
+    <media:thumbnail url="https://mes.fm/img/relative-time-calculator-logo.png"/>
+  </item>
+  <item>
+    <title>Minesweeper</title>
+    <link>https://mes.fm/minesweeper</link>
+    <guid isPermaLink="true">https://mes.fm/minesweeper</guid>
+    <pubDate>Sat, 07 Nov 2026 19:44:43 GMT</pubDate>
+    <category>Tools</category>
+    <description>Classic levels, daily board, no-guess boards and hexagons; best times saved, optionally on Hive.</description>
+    <media:thumbnail url="https://mes.fm/img/minesweeper-logo.png"/>
+  </item>
+  <item>
+    <title>Maps: Projections, Globe &amp; Capitals</title>
+    <link>https://mes.fm/maps</link>
+    <guid isPermaLink="true">https://mes.fm/maps</guid>
+    <pubDate>Sat, 07 Nov 2026 19:42:47 GMT</pubDate>
+    <category>Tools</category>
+    <description>Morph between 28 map projections, spin a globe with day and night, explore countries, capitals and states, drag countries to their true size, measure great circles and play a geography quiz.</description>
+    <media:thumbnail url="https://mes.fm/img/maps-logo.png"/>
+  </item>
+  <item>
+    <title>Tic-Tac-Toe</title>
+    <link>https://mes.fm/tic-tac-toe</link>
+    <guid isPermaLink="true">https://mes.fm/tic-tac-toe</guid>
+    <pubDate>Sat, 07 Nov 2026 02:46:26 GMT</pubDate>
+    <category>Tools</category>
+    <description>Classic, ultimate, 3D, gomoku, Notakto and more, against the computer, a friend or someone online.</description>
+    <media:thumbnail url="https://mes.fm/img/tic-tac-toe-logo.png"/>
+  </item>
+  <item>
+    <title>Font Finder: What Font Is This?</title>
+    <link>https://mes.fm/font-finder</link>
+    <guid isPermaLink="true">https://mes.fm/font-finder</guid>
+    <pubDate>Sat, 07 Nov 2026 02:42:44 GMT</pubDate>
+    <category>Tools</category>
+    <description>Drop or paste a picture and find the font among 2,000+ free fonts and the fonts on your computer, with your letters shown next to each match. Private: nothing is uploaded.</description>
+    <media:thumbnail url="https://mes.fm/img/font-finder-logo.png"/>
+  </item>
+  <item>
+    <title>Crash Physics Simulator</title>
+    <link>https://mes.fm/crash-physics</link>
+    <guid isPermaLink="true">https://mes.fm/crash-physics</guid>
+    <pubDate>Thu, 05 Nov 2026 18:15:09 GMT</pubDate>
+    <category>Tools</category>
+    <description>Fire anything at anything: pick the material, speed and plate thickness and see if it bounces, sticks or goes through. Crash cars, drop eggs, read the g-forces.</description>
+    <media:thumbnail url="https://mes.fm/img/crash-physics-logo.png"/>
+  </item>
+  <item>
+    <title>YouTube Audio Analyzer</title>
+    <link>https://mes.fm/youtube-audio</link>
+    <guid isPermaLink="true">https://mes.fm/youtube-audio</guid>
+    <pubDate>Wed, 04 Nov 2026 22:42:31 GMT</pubDate>
+    <category>Tools</category>
+    <description>How loud is that video? Loudness in LUFS, true peak, waveform, spectrogram, silences and clipping for YouTube, 3Speak, Rumble, Odysee or your own files.</description>
+    <media:thumbnail url="https://mes.fm/img/youtube-audio-logo.png"/>
+  </item>
+  <item>
+    <title>Maxwell&#x27;s Vortices</title>
+    <link>https://mes.fm/maxwell-vortices</link>
+    <guid isPermaLink="true">https://mes.fm/maxwell-vortices</guid>
+    <pubDate>Wed, 04 Nov 2026 03:04:45 GMT</pubDate>
+    <category>Tools</category>
+    <description>A wire bent into a loop becomes a magnet, the electron&#x27;s magnetic moment, Maxwell&#x27;s 1861 spinning cells and idle wheels carrying currents and waves, and two magnets attracting or repelling.</description>
+    <media:thumbnail url="https://mes.fm/img/maxwell-vortices-logo.png"/>
+  </item>
+  <item>
+    <title>Quaternion Lab</title>
+    <link>https://mes.fm/quaternions</link>
+    <guid isPermaLink="true">https://mes.fm/quaternions</guid>
+    <pubDate>Wed, 04 Nov 2026 03:04:45 GMT</pubDate>
+    <category>Tools</category>
+    <description>Multiply i, j, k and watch a 3D hand half-turn, see why i² = −1, compare SLERP with Euler angles on a robot arm, convert rotations and see the 720° spinor turn.</description>
+    <media:thumbnail url="https://mes.fm/img/quaternions-logo.png"/>
+  </item>
+  <item>
+    <title>Spin Wave Field</title>
+    <link>https://mes.fm/spin-wave-field</link>
+    <guid isPermaLink="true">https://mes.fm/spin-wave-field</guid>
+    <pubDate>Wed, 04 Nov 2026 03:04:45 GMT</pubDate>
+    <category>Tools</category>
+    <description>A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.</description>
+    <media:thumbnail url="https://mes.fm/img/spin-wave-field-logo.png"/>
+  </item>
+  <item>
+    <title>Spin-½ Lab</title>
+    <link>https://mes.fm/spin-half</link>
+    <guid isPermaLink="true">https://mes.fm/spin-half</guid>
+    <pubDate>Wed, 04 Nov 2026 03:04:45 GMT</pubDate>
+    <category>Tools</category>
+    <description>Dirac&#x27;s belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.</description>
+    <media:thumbnail url="https://mes.fm/img/spin-half-logo.png"/>
+  </item>
+  <item>
+    <title>Practice Tests (FSA Style)</title>
+    <link>https://mes.fm/practice-tests</link>
+    <guid isPermaLink="true">https://mes.fm/practice-tests</guid>
+    <pubDate>Tue, 03 Nov 2026 03:42:01 GMT</pubDate>
+    <category>Calculators</category>
+    <description>Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.</description>
+    <media:thumbnail url="https://mes.fm/img/practice-tests-logo.png"/>
+  </item>
+  <item>
+    <title>Hologram Simulator</title>
+    <link>https://mes.fm/hologram</link>
+    <guid isPermaLink="true">https://mes.fm/hologram</guid>
+    <pubDate>Tue, 03 Nov 2026 03:38:19 GMT</pubDate>
+    <category>Tools</category>
+    <description>Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.</description>
+    <media:thumbnail url="https://mes.fm/img/hologram-logo.png"/>
+  </item>
+  <item>
+    <title>Gallery</title>
+    <link>https://mes.fm/gallery</link>
+    <guid isPermaLink="true">https://mes.fm/gallery</guid>
+    <pubDate>Tue, 03 Nov 2026 03:36:36 GMT</pubDate>
+    <category>Tools</category>
+    <description>View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.</description>
+    <media:thumbnail url="https://mes.fm/img/gallery-logo.png"/>
+  </item>
+  <item>
+    <title>Spin Simulator</title>
+    <link>https://mes.fm/spin-simulator</link>
+    <guid isPermaLink="true">https://mes.fm/spin-simulator</guid>
+    <pubDate>Mon, 02 Nov 2026 03:29:36 GMT</pubDate>
+    <category>Tools</category>
+    <description>Neutrons that must turn 720° to come back, the Einstein-de Haas effect (flip a magnet, the iron turns) and the Barnett effect (spin iron, it magnetizes).</description>
+    <media:thumbnail url="https://mes.fm/img/spin-simulator-logo.png"/>
+  </item>
+  <item>
+    <title>Light &amp; Metamaterials Lab</title>
+    <link>https://mes.fm/negative-index</link>
+    <guid isPermaLink="true">https://mes.fm/negative-index</guid>
+    <pubDate>Mon, 02 Nov 2026 03:28:59 GMT</pubDate>
+    <category>Tools</category>
+    <description>Negative refraction, the flat and perfect lens, a live Maxwell simulation of a metamaterial, diffraction gratings and ten things light can do.</description>
+    <media:thumbnail url="https://mes.fm/img/negative-index-logo.png"/>
+  </item>
+</channel>
+</rss>
