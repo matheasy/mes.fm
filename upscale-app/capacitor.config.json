@@ -1,0 +1,12 @@
+{
+  "appId": "fm.mes.upscale",
+  "appName": "MES Upscale",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#6d28d9"
+  },
+  "android": {
+    "backgroundColor": "#14161b"
+  }
+}
