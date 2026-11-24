@@ -1,0 +1,12 @@
+{
+  "appId": "fm.mes.ai",
+  "appName": "MES AI",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#4f46e5"
+  },
+  "android": {
+    "backgroundColor": "#14161b"
+  }
+}

@@ -1,0 +1,38 @@
+# XcodeGen spec for the MES Audio iOS project (run `xcodegen generate` here after editing).
+# Capacitor (SPM mode) only rewrites CapApp-SPM/Package.swift on `npx cap sync`, never this project, so the two coexist.
+name: App
+options:
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: BS5YQPDA5X
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "2"
+    SWIFT_VERSION: "5.0"
+packages:
+  CapApp-SPM:
+    path: CapApp-SPM
+targets:
+  App:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes: ["Info.plist", "public", "public/**"]
+      - path: App/public
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: CapApp-SPM
+    configFiles:
+      Debug: ../debug.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fm.mes.ai
+        INFOPLIST_FILE: App/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        OTHER_SWIFT_FLAGS: "$(inherited)"
