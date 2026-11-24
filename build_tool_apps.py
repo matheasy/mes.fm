@@ -415,6 +415,14 @@ APPS = {
                        desc="Free interactive guide to jump-starting a car: drag the jumper cable clamps in the right order on a simulated engine bay and see what goes wrong if you don't, use a jump pack, push-start a manual, decode your battery's date code (like F-15), see how cold cuts cranking power, and check the battery's voltage.",
                        meta_desc="Jump-start a car step by step: drag the clamps in order on a simulator, decode your battery's date code, and check its voltage and cold cranking power.",
                        js_v="4"),
+    # MES Flight Tracker (2026-11-24, mes.fm/flights): live air traffic on a MapLibre GL 5.24.1 map (OpenFreeMap tiles). Positions = mes.fm/api/flights.js
+    # (adsb.lol, ODbL; grid-snapped cells cached in Upstash so visitors share upstream calls); lib.js = MESFlights, byte-identical copy at
+    # mes.fm/api/_flights-lib.js; tests: node tool_apps_src/flights-tests.js. Local / ?mock=1 = mes.fm/flights/data/sample.json (node mes.fm/api/flights.js --sample).
+    "flights": dict(title="MES Flight Tracker", page_title="Flight Tracker: Live Air Traffic Map of Planes Near You",
+                    tag="Every plane in the sky near you, live, free and without an account.", accent="#0e5aa7", dark="#0a3f78", tint="#dbeafe",
+                    desc="Free live flight tracker: see the planes flying near you or anywhere on a world map, coloured by altitude and moving almost in real time. Click a plane for its flight number, registration, aircraft type, altitude, speed, climb rate, squawk, usual route and the trail it has flown; follow it, filter by altitude, military, helicopters or emergencies, and search by callsign or registration. Open ADS-B data from adsb.lol.",
+                    meta_desc="Free live flight tracker map: planes near you by altitude, with flight number, aircraft type, route, speed and trail. Search by callsign. No sign-up.",
+                    js_v="1", pre_js=["/main_js/panel-view.js"]),
     "debt-clock": dict(title="MES Debt Clock", page_title="Debt Clock: US National Debt, World Debt and Canada's Debt, Live Estimate",
                        tag="The national debt, ticking: from official figures, with the maths shown.", accent="#9b1c31", dark="#6b1220", tint="#f9e3e6",
                        desc="Free live debt clock: a running estimate of the US national debt from the Treasury's daily figures, plus world government debt and Canada's federal debt, the share per person, household and taxpayer, debt-to-GDP, interest per second, the deficit, and charts back to 1790. Every number shows its source and how it is estimated.",

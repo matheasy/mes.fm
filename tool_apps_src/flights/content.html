@@ -1,0 +1,99 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu fl" id="fl">
+		<div class="fl-view" id="fl-view">
+			<div class="fl-bar" id="fl-bar">
+				<form class="fl-search" id="fl-sform" role="search">
+					<input type="search" id="fl-q" autocomplete="off" spellcheck="false" maxlength="10" placeholder="Callsign, registration or type: ACA855, C-GHAZ, B789" aria-label="Find a flight by callsign, registration, aircraft type or ICAO code">
+					<button type="submit" class="tu-btn">Find</button>
+				</form>
+				<span class="fl-count" id="fl-count" aria-live="polite">&hellip;</span>
+				<span class="fl-vbtns" id="fl-vbtns"></span>
+			</div>
+			<div class="fl-tools" id="fl-tools">
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-near">&#x1F4CD; Near me</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="fl-pause" aria-pressed="false">&#x23F8;&#xFE0E; Pause</button>
+				<details class="fl-dd" id="fl-fdd">
+					<summary>Filters <span class="fl-badge" id="fl-fbadge" hidden></span></summary>
+					<div class="fl-ddbox">
+						<div class="fl-range">
+							<label for="fl-amin">Lowest altitude <b id="fl-amin-v">0 ft</b></label>
+							<input type="range" id="fl-amin" min="0" max="45000" step="1000" value="0">
+							<label for="fl-amax">Highest altitude <b id="fl-amax-v">any</b></label>
+							<input type="range" id="fl-amax" min="1000" max="50000" step="1000" value="50000">
+						</div>
+						<label class="fl-ck"><input type="checkbox" id="fl-ground" checked> Show planes on the ground</label>
+						<label class="fl-ck"><input type="checkbox" id="fl-heli" checked> Show helicopters</label>
+						<label class="fl-ck"><input type="checkbox" id="fl-onlyheli"> Only helicopters</label>
+						<label class="fl-ck"><input type="checkbox" id="fl-onlymil"> Only military</label>
+						<label class="fl-ck"><input type="checkbox" id="fl-onlyemerg"> Only emergencies (squawk 7500 / 7600 / 7700)</label>
+						<button type="button" class="tu-btn tu-btn--ghost" id="fl-freset">Reset filters</button>
+					</div>
+				</details>
+				<details class="fl-dd" id="fl-mdd">
+					<summary>Map</summary>
+					<div class="fl-ddbox">
+						<label class="fl-row">Map look <select id="fl-style"><option value="auto">Follow light / dark mode</option><option value="positron">Light</option><option value="dark">Dark</option><option value="liberty">Detailed</option></select></label>
+						<label class="fl-row">Units <select id="fl-units"><option value="aviation">Aviation (ft, knots)</option><option value="metric">Metric (m, km/h)</option><option value="imperial">Imperial (ft, mph)</option></select></label>
+						<label class="fl-ck"><input type="checkbox" id="fl-labels" checked> Show callsigns on the map</label>
+						<label class="fl-ck"><input type="checkbox" id="fl-globe"> Globe when zoomed out</label>
+						<label class="fl-ck"><input type="checkbox" id="fl-mil"> Add military aircraft worldwide</label>
+					</div>
+				</details>
+			</div>
+			<div class="fl-stage" id="fl-stage" data-mes-grip="mes-flights:h" data-mes-grip-min="320">
+				<div class="fl-map" id="fl-map" role="application" aria-label="Map of live air traffic"></div>
+				<div class="fl-load" id="fl-load">Loading the map&hellip;</div>
+				<div class="fl-msg" id="fl-msg" role="status" hidden></div>
+				<div class="fl-legend" id="fl-legend" aria-hidden="true"></div>
+				<aside class="fl-info" id="fl-info" aria-live="polite" hidden></aside>
+				<div class="fl-pausebox" id="fl-pausebox" hidden>
+					<p id="fl-pausetext">Paused.</p>
+					<button type="button" class="tu-btn" id="fl-resume">&#x25B6;&#xFE0E; Resume live planes</button>
+				</div>
+			</div>
+			<p class="fl-attr">Plane positions: <a href="https://adsb.lol/" target="_blank" rel="noopener">adsb.lol</a>, open data under the <a href="https://opendatacommons.org/licenses/odbl/summary/" target="_blank" rel="noopener">ODbL</a>, collected by volunteers&rsquo; receivers. Usual routes: adsb.lol route data (can be wrong). Map: <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a>, &copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a>, data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors.</p>
+		</div>
+
+		<div class="tu-card fl-listcard">
+			<div class="fl-lhead"><b>Planes on the map</b> <span class="fl-lcount" id="fl-lcount"></span></div>
+			<div class="fl-tablewrap">
+				<table class="fl-table" id="fl-table">
+					<thead><tr>
+						<th scope="col"><button type="button" data-s="cs">Flight</button></th>
+						<th scope="col"><button type="button" data-s="type">Type</button></th>
+						<th scope="col"><button type="button" data-s="reg">Registration</button></th>
+						<th scope="col"><button type="button" data-s="alt">Altitude</button></th>
+						<th scope="col"><button type="button" data-s="gs">Speed</button></th>
+						<th scope="col"><button type="button" data-s="vr">Climb</button></th>
+					</tr></thead>
+					<tbody id="fl-tbody"></tbody>
+				</table>
+			</div>
+			<p class="tu-note" id="fl-lnote"></p>
+		</div>
+
+		<div class="tu-seo">
+			<h2>Live air traffic on a map, free and without an account</h2>
+			<p>MES Flight Tracker shows the planes flying near you, or anywhere you move the map, almost as they move: every aircraft whose transponder is heard by a volunteer receiver. Click a plane to see its flight number, registration, aircraft type, altitude, speed, climb or descent, squawk code, its usual route and the trail it has flown. Follow a plane and the map keeps it in the middle. Filter by altitude, show only military aircraft, helicopters or emergencies, and search by callsign or registration.</p>
+			<h3>Where the data comes from</h3>
+			<p>Aircraft send their position, altitude and speed by radio (ADS-B, at 1090 MHz) about twice a second. Thousands of people around the world run small receivers and share what they hear with <a href="https://adsb.lol/" target="_blank" rel="noopener">adsb.lol</a>, which publishes it as open data under the ODbL licence. Planes without ADS-B are sometimes located by timing the same signal at several receivers (MLAT). This page asks for the area you are looking at every ten seconds and moves each plane forward along its track in between, so it glides instead of jumping.</p>
+			<h3>What it cannot show</h3>
+			<ul>
+				<li><b>Oceans and remote areas:</b> receivers are on land, so planes far out over the sea, the poles or empty deserts drop off the map until they come back in range.</li>
+				<li><b>Schedules, delays and gates:</b> there are none here; the route shown is the usual route for that flight number from community data, and it can be wrong or out of date.</li>
+				<li><b>Some aircraft on purpose:</b> military and private planes sometimes switch their position off or hide behind anonymous codes.</li>
+				<li><b>Very large areas at once:</b> to keep the free data feed working for everybody, the page loads at most a circle 250 nautical miles (about 460 km) across from the middle of the map. Zoom in, or drag the map, to load another area.</li>
+			</ul>
+			<h3>Questions</h3>
+			<h4>What do the colours mean?</h4>
+			<p>The colour is the altitude: orange low down, green in the middle, blue and purple high up near cruising height, grey on the ground. The scale is in the corner of the map.</p>
+			<h4>What is a squawk code?</h4>
+			<p>A four-digit code air traffic control gives each flight. Three are special: 7500 means a hijack, 7600 a radio failure and 7700 a general emergency. Planes using them are marked in red; the "Only emergencies" filter shows just those.</p>
+			<h4>Why does a plane stop moving or disappear?</h4>
+			<p>It flew out of range of every receiver, landed and switched off, or the area you are viewing is not loaded (see the dashed circle when you zoom far out). The page keeps moving a plane along its last track for about a minute and a half, then waits for a new position.</p>
+			<h4>Is this an official or safety tool?</h4>
+			<p>No. It is for curiosity and learning only: never use it for navigation, safety or meeting someone at the airport. For arrival times ask the airline or airport.</p>
+			<h4>Does it track me?</h4>
+			<p>No. Your location is only used if you press "Near me", and only in your browser to move the map. Your settings are kept in your browser.</p>
+		</div>
+	</div>

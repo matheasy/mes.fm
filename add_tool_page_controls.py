@@ -323,6 +323,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("hologram", "Hologram Simulator"),
     ("quantum-computing", "Quantum Computer Simulator"),   # also built by build_tool_apps.py
     ("maps", "Maps"),
+    ("flights", "Flight Tracker"),
     ("heart-simulator", "Heart Simulator"),
     ("quantum", "Quantum Lab"),   # MES Quantum Lab (one source, six pages; build_tool_apps.py _qm)
     ("quantum-tunneling", "Quantum Lab", "/quantum"),
