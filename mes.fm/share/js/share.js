@@ -590,3 +590,8 @@
 	syncMode();
 	render();
 })();
+
+// power layout: Fill window / Full screen, post box big, the site texts below / right / left / hidden (main_js/split-view.js)
+if (window.MESSplitView) MESSplitView.add({ root: document.getElementById("sl"), area: document.getElementById("sl-split"),
+  a: document.getElementById("sl-inw"), b: document.getElementById("sl-outw"), bar: document.getElementById("sl-pwbar"),
+  key: "mes-share:pw", title: "Site texts:", hide: [document.querySelector("#sl > .tu-seo")], focus: document.getElementById("sl-blob") });

@@ -497,6 +497,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-hero.cg-warn {background:#33270f;}
 	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-bk td.qc-ok {color:#86efac;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-bk td.qc-mid {color:#fcd34d;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-bk td.qc-bad {color:#fca5a5;}
 
+/* power layout of the cipher card (main_js/split-view.js): Fill window / Full screen, the two boxes fill the window, side by side or stacked, grip resizes */
+.cg-pwbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;justify-content:flex-end;margin:-0.3em 0 0.4em;}
+#cg .cg-cipcard.mes-pfill {padding:10px 14px !important;}
+#cg .cg-cipcard.mes-pfill .cg-iobox {display:flex;flex-direction:column;}
+#cg .cg-cipcard.mes-pfill .cg-iobox > .mes-ts-row, #cg .cg-cipcard.mes-pfill .cg-iobox > label {flex:0 0 auto;}
+#cg .cg-cipcard.mes-pfill .cg-ta {flex:1 1 auto;min-height:3em;height:auto !important;resize:none;}
+#cg .cg-cipcard.mes-pfill .cg-mid-btns {flex:0 0 auto;align-self:center;padding:0.3em;}
+#cg .cg-cipcard.mes-pfill .cg-acts {flex:0 0 auto;margin-top:0.5em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1117,7 +1126,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/quantum-safe-check"><img class="mes-aside__img mes-aside__img--logo" src="/quantum-safe-check/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Is This Website Quantum-Safe? Post-Quantum TLS Checker</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/letter-recognition"><img class="mes-aside__img mes-aside__img--logo" src="/letter-recognition/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Letter and Digit Recognition: Train a Neural Network and Test It by Drawing</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/quantum-safe-check"><img class="mes-aside__img mes-aside__img--logo" src="/quantum-safe-check/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Is This Website Quantum-Safe? Post-Quantum TLS Checker</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/upscale"><img class="mes-aside__img mes-aside__img--logo" src="/upscale/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">AI Image Upscaler: Make Pictures Bigger and Sharper</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/bmicalculator"><img class="mes-aside__img mes-aside__img--logo" src="/bmicalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">BMI Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1167,7 +1176,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:1
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/cryptography/js/cryptography.js?v=4" defer></script>
+	<script src="/cryptography/js/cryptography.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -497,4 +497,7 @@
 
 	showTab(S.tab);
 	window.MESCryptoDebug = { S: S, showTab: showTab, runCipher: runCipher, doCrack: function () { if (!inited.crack) { inited.crack = 1; initCrack(); } doCrack(); } };
+	// power layout of the cipher card: Fill window / Full screen, the two boxes fill the window side by side or stacked (main_js/split-view.js)
+	if (window.MESSplitView && $("cg-cipcard")) MESSplitView.add({ root: $("cg-cipcard"), area: $("cg-io"), a: $("cg-in").parentNode, b: $("cg-out").parentNode,
+		gripAfter: $("cg-midbtns"), bar: $("cg-pwbar"), key: "mes-cryptography:pw", lays: ["r", "b"], labels: { r: "Side by side", b: "Stacked" }, title: "Boxes:", focus: $("cg-in") });
 })();

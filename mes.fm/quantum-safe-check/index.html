@@ -497,6 +497,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode :is(#cg,#qc,#qs).tu .cg-hero.cg-warn {background:#33270f;}
 	html body.dark-mode :is(#cg,#qc,#qs).tu .qc-bk td.qc-ok {color:#86efac;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-bk td.qc-mid {color:#fcd34d;} html body.dark-mode :is(#cg,#qc,#qs).tu .qc-bk td.qc-bad {color:#fca5a5;}
 
+/* power layout of the cipher card (main_js/split-view.js): Fill window / Full screen, the two boxes fill the window, side by side or stacked, grip resizes */
+.cg-pwbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;justify-content:flex-end;margin:-0.3em 0 0.4em;}
+#cg .cg-cipcard.mes-pfill {padding:10px 14px !important;}
+#cg .cg-cipcard.mes-pfill .cg-iobox {display:flex;flex-direction:column;}
+#cg .cg-cipcard.mes-pfill .cg-iobox > .mes-ts-row, #cg .cg-cipcard.mes-pfill .cg-iobox > label {flex:0 0 auto;}
+#cg .cg-cipcard.mes-pfill .cg-ta {flex:1 1 auto;min-height:3em;height:auto !important;resize:none;}
+#cg .cg-cipcard.mes-pfill .cg-mid-btns {flex:0 0 auto;align-self:center;padding:0.3em;}
+#cg .cg-cipcard.mes-pfill .cg-acts {flex:0 0 auto;margin-top:0.5em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -983,7 +992,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:2
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/cryptography/js/cryptography.js?v=4" defer></script>
+	<script src="/cryptography/js/cryptography.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

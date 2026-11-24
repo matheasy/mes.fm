@@ -83,3 +83,13 @@
 	.tu .sl-fcopy {position:absolute;top:0.35em;right:0.35em;display:inline-flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;padding:0;cursor:pointer;border:1px solid transparent;border-radius:0.4em;background:transparent;color:var(--accent);}
 	.tu .sl-fcopy:hover {background:var(--tint);border-color:var(--accent);}
 	body.dark-mode #sl .sl-fcopy {background:transparent;}
+
+	/* power layout (main_js/split-view.js): Fill window / Full screen, post box big, site texts below / right / left / hidden */
+	.tu .sl-pwbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;justify-content:flex-end;margin:-0.3em 0 0.4em;}
+	#sl.mes-pfill {padding:8px 12px !important;}
+	#sl.mes-pfill .sl-inw {display:flex;flex-direction:column;gap:0.6em;}
+	#sl.mes-pfill .sl-inw > .tu-card {margin:0;display:flex;flex-direction:column;flex:1 0 auto;}
+	#sl.mes-pfill .sl-inw .sl-blob {min-height:6em;}
+	#sl.mes-pfill.msv-h .sl-inw .sl-blob, #sl.mes-pfill .sl-inw .sl-blob {resize:vertical;}
+	#sl.mes-pfill .sl-outw > .tu-field:first-child {margin-top:0 !important;}
+	#sl.mes-pfill .sl-outw {padding:0 0.2em;}

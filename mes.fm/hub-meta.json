@@ -243,7 +243,7 @@
 },
 "/cryptography":{
 "added":"2026-11-13",
-"updated":"2026-11-17",
+"updated":"2026-11-24",
 "type":"Tool"
 },
 "/dark-mode":{
@@ -813,12 +813,12 @@
 },
 "/quantum-cryptography":{
 "added":"2026-11-13",
-"updated":"2026-11-14",
+"updated":"2026-11-24",
 "type":"Simulation"
 },
 "/quantum-safe-check":{
 "added":"2026-11-13",
-"updated":"2026-11-14",
+"updated":"2026-11-24",
 "type":"Tool"
 },
 "/quaternions":{
@@ -893,7 +893,7 @@
 },
 "/share":{
 "added":"2026-09-28",
-"updated":"2026-11-17",
+"updated":"2026-11-24",
 "type":"Tool"
 },
 "/shear-stress-calculator":{
@@ -1048,7 +1048,7 @@
 },
 "/translate":{
 "added":"2026-10-24",
-"updated":"2026-11-21",
+"updated":"2026-11-24",
 "type":"Tool"
 },
 "/trigonometry":{

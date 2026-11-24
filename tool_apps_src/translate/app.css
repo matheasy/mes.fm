@@ -282,3 +282,14 @@
 	body.dark-mode #tr.tr .tr-fullw[aria-pressed="true"] {background:var(--tr-tint);border-color:var(--tr-acc);color:var(--tr-accd);}
 	body.dark-mode #tr.tr button span, body.dark-mode #tr.tr .tr-tab span {color:inherit;}
 	@media (max-width: 440px) { #tr .tr-fbx span {display:none;} #tr .tr-fbx {padding:0.3em 0.55em;} #tr .tr-fill .tr-fillbar {flex-wrap:nowrap;} }
+
+	/* Fill window / Full screen of the whole translation card (main_js/panel-view.js): both boxes fill the window, side by side or stacked */
+	#tr .tr-tx.mes-pfill {padding:10px 14px !important;}
+	#tr .tr-tx.mes-pfill > .tr-head, #tr .tr-tx.mes-pfill > .tr-srcrow, #tr .tr-tx.mes-pfill > .tr-foot {flex:0 0 auto;}
+	#tr .tr-tx.mes-pfill .tr-main {flex:1 1 auto;min-height:0;max-width:none;grid-template-rows:auto minmax(0,1fr);}
+	#tr.tr-stack .tr-tx.mes-pfill .tr-main {grid-template-rows:auto minmax(0,1fr) minmax(0,1fr);}
+	#tr .tr-tx.mes-pfill .tr-col {min-height:0;}
+	#tr .tr-tx.mes-pfill .tr-col > .tr-box {flex:1 1 auto;min-height:0;}
+	#tr .tr-tx.mes-pfill .tr-col > .tr-box .tr-text {flex:1 1 auto;min-height:3em;height:auto;resize:none;overflow:auto;}
+	#tr .tr-tx.mes-pfill .tr-wgrip {display:none;}
+	@media (max-width:720px) { #tr .tr-tx.mes-pfill .tr-main {grid-template-rows:auto minmax(0,1fr) minmax(0,1fr);} }

@@ -13,7 +13,8 @@
 
 		<!-- ============ Ciphers ============ -->
 		<section class="cg-pane" data-pane="cipher">
-			<div class="tu-card">
+			<div class="tu-card cg-cipcard" id="cg-cipcard">
+				<div class="cg-pwbar" id="cg-pwbar"></div>
 				<div class="cg-ctl">
 					<label class="cg-inl">Cipher <select id="cg-c" class="tu-select">
 						<option value="caesar">Caesar shift</option><option value="rot13">ROT13</option><option value="atbash">Atbash</option><option value="affine">Affine</option>
@@ -28,10 +29,10 @@
 					<label class="cg-inl" data-for="keyword">Keyword <input id="cg-kw" class="tu-input cg-mid" type="text" value="ZEBRAS" spellcheck="false" autocomplete="off"></label>
 					<label class="cg-inl" data-for="rail">Rails <input type="range" id="cg-rails" min="2" max="10" value="3"> <b id="cg-railsv">3</b></label>
 				</div>
-				<div class="cg-io">
+				<div class="cg-io" id="cg-io">
 					<div class="cg-iobox"><label for="cg-in" class="cg-lab" id="cg-inlab">Your message</label>
 						<textarea id="cg-in" data-mes-tsize="mes-cryptography:tsize-in" class="tu-input cg-ta" rows="5" spellcheck="false">Attack at dawn. Meet me by the old bridge.</textarea></div>
-					<div class="cg-mid-btns"><button type="button" class="tu-btn tu-btn--ghost" id="cg-swap" title="Put the result in the box and flip Encrypt / Decrypt">⇅ Swap</button></div>
+					<div class="cg-mid-btns" id="cg-midbtns"><button type="button" class="tu-btn tu-btn--ghost" id="cg-swap" title="Put the result in the box and flip Encrypt / Decrypt">⇅ Swap</button></div>
 					<div class="cg-iobox"><label for="cg-out" class="cg-lab" id="cg-outlab">Encrypted</label>
 						<textarea id="cg-out" data-mes-tsize="mes-cryptography:tsize-out" class="tu-input cg-ta cg-ta--out" rows="5" readonly spellcheck="false"></textarea></div>
 				</div>

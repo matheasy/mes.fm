@@ -1723,4 +1723,10 @@
     var g0 = gen + 1;
     translate(false, true).then(function () { if (!outText && gen === g0 && $("tr-msg").hidden) msg("Press <b>Translate</b> to translate the text from the link.", "info"); });
   }
+  // Fill window / Full screen of the whole translation card: both boxes fill the window (main_js/panel-view.js, loaded by pre_js)
+  (function cardFill() {
+    if (!window.MESPanel) { if ((cardFill.n = (cardFill.n || 0) + 1) < 100) setTimeout(cardFill, 60); return; }
+    var card = $("tr-tx"); if (!card) return;
+    MESPanel.add(card, { bar: card.querySelector(".tr-view"), onChange: function (on) { window.dispatchEvent(new Event("resize")); if (on) { try { inp.focus({ preventScroll: true }); } catch (e) {} } } });
+  })();
 })();

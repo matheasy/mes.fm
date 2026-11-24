@@ -391,6 +391,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.tu .sl-fcopy:hover {background:#eeeafb;border-color:var(--accent);}
 	body.dark-mode #sl .sl-fcopy {background:transparent;}
 
+	/* power layout (main_js/split-view.js): Fill window / Full screen, post box big, site texts below / right / left / hidden */
+	.tu .sl-pwbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;justify-content:flex-end;margin:-0.3em 0 0.4em;}
+	#sl.mes-pfill {padding:8px 12px !important;}
+	#sl.mes-pfill .sl-inw {display:flex;flex-direction:column;gap:0.6em;}
+	#sl.mes-pfill .sl-inw > .tu-card {margin:0;display:flex;flex-direction:column;flex:1 0 auto;}
+	#sl.mes-pfill .sl-inw .sl-blob {min-height:6em;}
+	#sl.mes-pfill.msv-h .sl-inw .sl-blob, #sl.mes-pfill .sl-inw .sl-blob {resize:vertical;}
+	#sl.mes-pfill .sl-outw > .tu-field:first-child {margin-top:0 !important;}
+	#sl.mes-pfill .sl-outw {padding:0 0.2em;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -752,7 +762,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Share Launcher</h1>                                        <p class="page-description">Free social media share launcher: paste your post once and get ready-to-paste text for X, Facebook, Instagram, TikTok, YouTube, Threads, Bluesky, Reddit and 20+ more sites, with the link placed where each site wants it.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu" id="sl">
+		<div class="sl-split" id="sl-split">
+		<div class="sl-inw" id="sl-inw">
 		<div class="tu-card">
+			<div class="sl-pwbar" id="sl-pwbar"></div>
 			<div class="tu-field">
 				<label id="sl-mode-label">What are you sharing?</label>
 				<div class="tu-seg" id="sl-modes" role="group" aria-labelledby="sl-mode-label">
@@ -813,6 +826,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="tu-chips"><button type="button" class="tu-chip" id="sl-snip-add">+ Add text</button></div>
 		</details>
 
+		</div>
+		<div class="sl-outw" id="sl-outw">
 		<div class="tu-field" style="margin-top:1em;">
 			<input id="sl-search" class="tu-input" type="search" placeholder="Search sites… (e.g. Reddit, TikTok, Facebook)" autocomplete="off">
 		</div>
@@ -830,6 +845,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div id="sl-out" aria-live="polite"></div>
+		</div>
+		</div>
 		<div class="tu-toast" id="sl-toast" role="status"></div>
 
 		<div class="tu-seo">
@@ -922,7 +939,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/share/js/share.js?v=10" defer></script>
+	<script src="/main_js/panel-view.js" defer></script><script src="/main_js/split-view.js" defer></script><script src="/share/js/share.js?v=11" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
