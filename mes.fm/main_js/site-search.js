@@ -817,6 +817,75 @@
         if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(retry, 300); }); else setTimeout(retry, 300);
     })();
 
+    /* "⤢ Fill window" everywhere (2026-11-24, after a subscriber could not find the Photo Editor's Full window button and the owner had the
+       same trouble on other tools). When a page has its own Fill window / Full window button (stage-ctl.js View bar, panel-view.js cards,
+       the Photo Editor, Darkroom, Draw, games ... found by data-mes-fill or by the button's words), a "⤢ Fill window" button is added to the
+       end of the page's width switch (Standard | Wide | Theatre, and so to its copy in the floating bar); it just clicks the page's own
+       button. A one-time tip (localStorage mes-fillhint) points at the page's button the first time such a page is opened. */
+    (function fillShortcut() {
+        var RX = /^[\s⤢⛶↗]*(fill (the )?(browser )?window|full window)\b/i;
+        function vis(b) { return !!(b && b.getClientRects().length && getComputedStyle(b).visibility !== "hidden"); }
+        function target() {
+            var list = document.querySelectorAll("[data-mes-fill], button"), best = null;
+            for (var i = 0; i < list.length; i++) {
+                var b = list[i];
+                if (b.classList.contains("mes-fillsc") || b.closest("#mes-barmode, #hdrMorePanel, .mes-fillhint")) continue;
+                if (!b.hasAttribute("data-mes-fill") && !RX.test((b.textContent || "").trim())) continue;
+                if (vis(b)) return b; if (!best) best = b;
+            }
+            return best;
+        }
+        function mk() {
+            var b = document.createElement("button"); b.type = "button"; b.className = "mes-fillsc"; b.textContent = "⤢ Fill window";
+            b.title = "Make the tool fill the browser window (the tool's own Fill window button). Esc goes back";
+            b.addEventListener("click", function () {
+                var t = target(); if (!t) return;
+                try { t.scrollIntoView({ block: "nearest" }); } catch (e) { /* ignore */ }
+                t.click();
+            });
+            return b;
+        }
+        function css() {
+            if (document.getElementById("mes-fillsc-css")) return;
+            var st = document.createElement("style"); st.id = "mes-fillsc-css";
+            st.textContent = ".mes-mode .mes-fillsc,.hub-mode .mes-fillsc,.toc-mode .mes-fillsc,#mes-barmode .mes-fillsc{font-weight:700;color:#1559ad}" +
+                ":is(body.dark-mode,body.dark) :is(.mes-mode,.hub-mode,.toc-mode,#mes-barmode) .mes-fillsc{color:#9cc4ff}" +
+                ".mes-fillhint{position:fixed;z-index:2147483600;max-width:270px;background:#1d6fd1;color:#fff;font:14px/1.4 Arial,Helvetica,sans-serif;padding:10px 32px 10px 12px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3)}" +
+                ".mes-fillhint b{color:#fff}.mes-fillhint::before{content:'';position:absolute;top:-7px;left:var(--ax,24px);border:7px solid transparent;border-top:0;border-bottom-color:#1d6fd1}" +
+                ".mes-fillhint button{position:absolute;top:4px;right:6px;background:none;border:0;color:#fff;font:400 20px/1 system-ui,sans-serif;cursor:pointer;padding:2px 4px}";
+            document.head.appendChild(st);
+        }
+        function add() {
+            var t = target(); if (!t) return false;
+            css();
+            Array.prototype.forEach.call(document.querySelectorAll(".mes-mode, .hub-mode, .toc-mode, #mes-barmode"), function (g) {
+                if (g.querySelector(".mes-fillsc")) return;
+                if (g.id === "mes-barmode" && Array.prototype.some.call(g.querySelectorAll("button"), function (x) { return /Fill window/.test(x.textContent); })) return;
+                g.appendChild(mk());
+            });
+            hint(t);
+            return true;
+        }
+        function hint(t) {
+            try { if (localStorage.getItem("mes-fillhint") === "1") return; } catch (e) { return; }
+            if (!vis(t)) return;
+            var r = t.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight - 60) return;   /* only when the button is on screen */
+            try { localStorage.setItem("mes-fillhint", "1"); } catch (e) { /* ignore */ }
+            var h = document.createElement("div"); h.className = "mes-fillhint"; h.setAttribute("role", "status");
+            var key = /Full window/i.test(t.textContent) ? " (key F)" : "";
+            h.innerHTML = "Tip: <b>" + (t.textContent || "Fill window").trim().replace(/[<>&]/g, "") + "</b>" + key + " makes this tool fill your whole browser window. Press it again to go back.";
+            var x = document.createElement("button"); x.type = "button"; x.setAttribute("aria-label", "Close tip"); x.textContent = "×"; h.appendChild(x);
+            document.body.appendChild(h);
+            var w = h.offsetWidth, left = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 8));
+            h.style.left = left + "px"; h.style.top = (r.bottom + 10) + "px"; h.style.setProperty("--ax", Math.max(10, Math.min(w - 24, r.left + r.width / 2 - left - 7)) + "px");
+            function close() { h.remove(); removeEventListener("scroll", close, true); t.removeEventListener("click", close); }
+            x.addEventListener("click", close); t.addEventListener("click", close); addEventListener("scroll", close, true); setTimeout(close, 14000);
+        }
+        var n = 0;
+        function retry() { add(); if (++n < 6) setTimeout(retry, 900 * n); }   /* pages build their buttons late; the width switch / floating bar copy also come later */
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(retry, 500); }); else setTimeout(retry, 500);
+    })();
+
     /* Typing on a phone held sideways (2026-11-07): with the keyboard open the visible strip is only ~100-200px tall, the
        floating compact bar takes 60px of it, and the browser's own autofill strip (key / card / pin) sits over the bottom
        without the browser counting it, so the field ended up hidden. While a text field has focus and the visible area

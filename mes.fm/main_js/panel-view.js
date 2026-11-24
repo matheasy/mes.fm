@@ -13,6 +13,8 @@
   if (window.MESPanel) return;
   var css = '.mes-pbtns{display:inline-flex;gap:.35em;flex-wrap:wrap}' +
     '.mes-pbtn,.mes-ptb{font:inherit;font-size:.82em;line-height:1.2;padding:.3em .7em;border-radius:999px;border:1px solid #b9c2cc;background:transparent;color:inherit;cursor:pointer;white-space:nowrap}' +
+    /* 2026-11-24: Fill window / Full screen are easy to miss, so they are blue-outlined, bold pills (pressed = filled blue) */
+    '.mes-pbtn{border-color:#1d6fd1;color:#1559ad;font-weight:700}body.dark-mode .mes-pbtn:not([aria-pressed="true"]):not(.mes-presume){border-color:#6ea8fe;color:#9cc4ff}' +
     '.mes-pbtn:hover,.mes-ptb:hover{background:rgba(128,128,128,.12)}' +
     '.mes-pbtn[aria-pressed="true"]{background:#1d6fd1;border-color:#1d6fd1;color:#fff}' +
     '.mes-pbtn.mes-presume{background:#1d6fd1;border-color:#1d6fd1;color:#fff;font-weight:700;animation:mesPres 1.4s ease-in-out infinite}@keyframes mesPres{50%{box-shadow:0 0 0 6px rgba(29,111,209,.35)}}' +

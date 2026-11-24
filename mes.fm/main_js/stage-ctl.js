@@ -16,6 +16,7 @@
 	var css = '.mes-sbar{display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;justify-content:flex-end;margin:0 auto 0.35em;font-size:0.8em;color:#667}' +
 		'.mes-sbar .mes-sl{margin-right:0.3em;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-size:0.85em}' +
 		'.mes-sbar button{cursor:pointer;font:inherit;padding:0.2em 0.7em;border-radius:0.35em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223}' +
+		'.mes-sbar button[data-fill]{font-weight:700;border-color:#1d6fd1;color:#1559ad;background:#eef5fd}body.dark-mode .mes-sbar button[data-fill]:not([aria-pressed="true"]){border-color:#6ea8fe;color:#9cc4ff;background:#1d2733}' +   /* 2026-11-24: make Fill window easy to spot */
 		'.mes-sbar button:hover{border-color:var(--accent,#277bb6)}.mes-sbar button[aria-pressed="true"]{background:var(--accent,#277bb6);border-color:var(--accent,#277bb6);color:#fff}' +
 		'.mes-grip{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;z-index:30;touch-action:none;opacity:0.65;background:linear-gradient(135deg,transparent 0 52%,rgba(255,255,255,0.75) 52% 58%,transparent 58% 70%,rgba(255,255,255,0.75) 70% 76%,transparent 76%)}' +
 		'.mes-grip:hover{opacity:1}' +
@@ -131,7 +132,7 @@
 		if (wrap.__mesStage) return; wrap.__mesStage = true;
 		var bar = document.createElement('div'); bar.className = 'mes-sbar'; bar.setAttribute('role', 'group'); bar.setAttribute('aria-label', 'Size of the simulation');
 		bar.innerHTML = '<span class="mes-sl">View</span>' + SIZES.map(function (z) { return '<button type="button" data-s="' + z[0] + '" title="' + z[1] + ' simulation box">' + z[1] + '</button>'; }).join('') +
-			'<button type="button" data-fill="1" title="Fill the browser window (Esc leaves)">⤢ Fill window</button>' +
+			'<button type="button" data-fill="1" title="Fill the browser window with the simulation (Esc leaves). Your browser\'s own full screen: F11 on Windows, Ctrl+Cmd+F on a Mac">⤢ Fill window</button>' +
 			'<button type="button" data-cpb="1" hidden title="Put the controls in a panel beside the picture (or back under it)">⇆ Controls beside</button>' +
 			'<button type="button" data-hide="1" title="Hide the graphs, readouts and menus under the picture so only the simulation shows">▾ Hide stats</button>';
 		wrap.parentNode.insertBefore(bar, wrap);

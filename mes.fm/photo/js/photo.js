@@ -1703,16 +1703,38 @@ var MESPixel = (function () {
 		var n = PE.makeLayer({ canvas: clone(B.canvas), type: B.type, name: B.name + (suffix || ""), text: B.text ? JSON.parse(JSON.stringify(B.text)) : null });
 		["cx", "cy", "sx", "sy", "rot", "visible", "opacity", "blend", "collapsed", "_pad", "_amw", "_drawnFont"].forEach(function (k) { if (B[k] !== undefined) n[k] = B[k]; }); if (B.eq) n.eq = JSON.parse(JSON.stringify(B.eq)); if (B.shape) n.shape = JSON.parse(JSON.stringify(B.shape)); if (B.mask) n.mask = clone(B.mask); if (B.src) n.src = Object.assign({}, B.src, { copy: true }); if (B.crop) n.crop = Object.assign({}, B.crop); if (B.fx) n.fx = JSON.parse(JSON.stringify(B.fx)); if (B.adj) n.adj = JSON.parse(JSON.stringify(B.adj)); return n;
 	};
-	PE.duplicateLayer = function (L) {
-		L = L || PE.active(); if (!L) return; var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
+	/* Duplicate / Delete act on every picked layer (Layers panel Ctrl / Shift-click or the Move tool's multi-pick), as ONE undo step; a group stands for
+	   its members. With nothing extra picked they act on the active layer as before. (A subscriber picked many layers and only one was deleted.) */
+	function pickedRoots(L) {
+		if (L) return [L]; var set = PE.moveSet ? PE.moveSet() : []; if (set.length) return set; var A = PE.active(); return A ? [A] : [];
+	}
+	function dupOne(L) {
+		var d = PE.doc, block = PE.blockOf(L), map = {}, copies = block.map(function (B) {
 			var n = PE.copyLayerObj(B, B === L ? " copy" : ""); map[B.id] = n; return n; });
 		copies.forEach(function (n, i) { var B = block[i]; n.group = B === L ? L.group : (map[B.group] ? map[B.group].id : L.group); });
-		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); d.activeId = copies[copies.length - 1].id; PE.relink(); PE.commit("Duplicate " + (PE.isGroup(L) ? "group" : "layer"));
+		var at = d.layers.indexOf(L) + 1; Array.prototype.splice.apply(d.layers, [at, 0].concat(copies)); return copies[copies.length - 1];
+	}
+	PE.duplicateLayer = function (L) {
+		var d = PE.doc; if (!d) return; var list = pickedRoots(L); if (!list.length) return;
+		list.sort(function (a, b) { return d.layers.indexOf(b) - d.layers.indexOf(a); });   // top first, so inserting copies never shifts the ones still to do
+		var tops = list.map(dupOne); d.activeId = tops[0].id; PE.relink();
+		if (list.length > 1 && PE.setMulti) PE.setMulti(tops.map(function (n) { return n.id; }));
+		PE.commit(list.length > 1 ? "Duplicate " + list.length + " layers" : "Duplicate " + (PE.isGroup(list[0]) ? "group" : "layer"));
 	};
 	PE.deleteLayer = function (L) {
-		L = L || PE.active(); if (!L) return; var d = PE.doc, i = d.layers.indexOf(L), gone = PE.blockOf(L);
+		var d = PE.doc; if (!d) return; var list = pickedRoots(L); if (!list.length) return;
+		var gone = []; list.forEach(function (R) { PE.blockOf(R).forEach(function (B) { if (gone.indexOf(B) < 0) gone.push(B); }); });
+		var i = Math.min.apply(null, gone.map(function (B) { return d.layers.indexOf(B); }));
 		d.layers = d.layers.filter(function (x) { return gone.indexOf(x) < 0; });
-		if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[Math.max(0, Math.min(i - gone.length + 1, d.layers.length - 1))].id; PE.relink(); PE.commit("Delete " + (PE.isGroup(L) ? "group" : "layer"));
+		if (!d.layers.length) d.layers.push(PE.makeLayer({ name: "Layer 1" })); d.activeId = d.layers[Math.max(0, Math.min(i, d.layers.length - 1))].id; PE.relink();
+		if (PE.setMulti) PE.setMulti([]);
+		PE.commit(list.length > 1 ? "Delete " + list.length + " layers" : "Delete " + (PE.isGroup(list[0]) ? "group" : "layer"));
+	};
+	/* lock / hide every picked layer together (the right-click menu) */
+	PE.setPickedFlag = function (key, on, L) {
+		var list = (L && PE.multi && PE.multi().indexOf(L) < 0) ? [L] : pickedRoots(); if (!list.length) return;
+		list.forEach(function (x) { x[key] = on; if (key === "visible" && PE.touch) PE.touch(x); });
+		var n = list.length > 1 ? " " + list.length + " layers" : " layer"; PE.commit(key === "locked" ? (on ? "Lock" : "Unlock") + n : (on ? "Show" : "Hide") + n);
 	};
 	/* move a layer (with its members, if a group) next to `target`: zone "above" (higher in the stack) / "below" / "into" (target is a group: becomes its top member) */
 	PE.relocate = function (src, target, zone) {
@@ -6793,7 +6815,8 @@ var MESPixel = (function () {
 		if (!grp) items = items.concat(["-", { label: "fx Layer style: bevel, stroke, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "Copy layer style", key: PE.styleKey("C"), title: "Layer style + colour adjustments + opacity + blend mode. Stays copied when you switch tabs or reload", act: function () { PE.copyLayerStyle(L); } }, { label: "Paste layer style", key: PE.styleKey("V"), dis: !(PE.hasStyleClip && PE.hasStyleClip()), title: PE.styleClipText ? PE.styleClipText() : "", act: function () { PE.pasteLayerStyle(L); } }, { label: "Clear layer style", dis: !PE.hasFx(L), act: function () { L.fx = null; PE.commit("Remove layer style"); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
 		if (!grp && L.crop) items.push({ label: "Show the whole layer (uncrop)", act: function () { PE.clearLayerCrop(L); } });
 		if (!grp) items = items.concat(["-"], maskItems(L));
-		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" : "🔒 Lock", act: function () { L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); } }, { label: "🗑 Delete layer", act: function () { PE.deleteLayer(); } }]);
+		var inSet = nm > 1 && PE.multi().indexOf(L) >= 0, many = inSet ? " " + nm + " layers" : "";   // right-click on one of several picked layers = act on all of them
+		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" + many : "🔒 Lock" + many, act: function () { PE.setPickedFlag("locked", !L.locked, L); } }].concat(inSet ? [{ label: "👁 Hide" + many, act: function () { PE.setPickedFlag("visible", false, L); } }, { label: "⧉ Duplicate" + many, act: function () { PE.duplicateLayer(); } }] : []).concat([{ label: "🗑 Delete " + (inSet ? nm + " layers" : grp ? "group" : "layer"), act: function () { if (inSet) PE.deleteLayer(); else PE.deleteLayer(L); } }]));
 		popMenu(items, x, y);
 	}
 	/* The list keeps where it is scrolled to. It scrolls only to show the active layer when that changed from outside the list (picked on the picture,
@@ -6874,7 +6897,7 @@ var MESPixel = (function () {
 	var opTimer = 0; $("pe-opacity").addEventListener("input", function () { var L = PE.active(); if (!L) return; L.opacity = this.value / 100; $("pe-opacity-v").textContent = this.value + "%"; PE.invalidate(); PE.later("opacity", function () { PE.commit("Layer opacity"); }, 400); });
 	function lbtn(id, fn) { $(id).addEventListener("click", function () { if (PE.doc) fn(); }); }
 	lbtn("pe-lrename", function () { var L = PE.active(); if (L) renameLayer(L.id); }); lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lfill", function () { PE.dlgFillLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
-	lbtn("pe-lock", function () { var L = PE.active(); L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); });
+	lbtn("pe-lock", function () { var L = PE.active(); if (L) PE.setPickedFlag("locked", !L.locked); });
 	lbtn("pe-mask-btn", function () { var L = PE.active(); if (!L) return; if (!L.mask) { PE.addMask(L, true); return; } var r = $("pe-mask-btn").getBoundingClientRect(); popMenu(maskItems(L), r.left, r.bottom + 4); });
 	$("pe-mask-help").addEventListener("click", function () { PE.maskHelp(); });
 	lbtn("pe-lstyle", function () { PE.dlgLayerStyle(); }); lbtn("pe-lcrop", function () { var L = PE.active(); if (!L || PE.isGroup(L)) { PE.toast("Select a layer (not a group) to crop"); return; } PE.setTool("layercrop"); });

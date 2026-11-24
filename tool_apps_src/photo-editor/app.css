@@ -380,3 +380,10 @@ html body.dark-mode #pe .pe-tabs button[aria-pressed="true"] {color:#fff;}
 	#pe .pe-tab-add:hover {background:var(--pe-hover);}
 	#pe .pe-tabpick {display:block;width:100%;text-align:left;margin:0.3em 0;}
 	@media (max-width:700px) { #pe .pe-tab {max-width:10em;} #pe .pe-tab-b {padding:0.45em 0.2em 0.45em 0.6em;} #pe .pe-tab-x {padding:0.45em 0.6em;opacity:0.85;} }
+	/* 2026-11-24: Full window / Full screen were easy to miss (a subscriber could not find them): bold violet-outlined buttons placed FIRST in the right-hand
+	   button row, so they are on screen on narrow windows too (that row scrolls sideways there) */
+	#pe .pe-top-r #pe-winbtn, #pe .pe-top-r #pe-fsbtn {order:-2;white-space:nowrap;flex:none;font-weight:700;border-color:#8b6cf5;background:rgba(124,58,237,0.28);color:#fff;}
+	#pe .pe-top-r #pe-winbtn:hover, #pe .pe-top-r #pe-fsbtn:hover {background:rgba(124,58,237,0.5);}
+	#pe .pe-top-r #pe-winbtn[aria-pressed="true"], #pe .pe-top-r #pe-fsbtn[aria-pressed="true"] {background:#6d28d9;border-color:#6d28d9;}
+	#pe .pe-top-r .pe-vsep--fill {order:-1;}
+	html body.dark-mode #pe .pe-top-r #pe-winbtn, html body.dark-mode #pe .pe-top-r #pe-fsbtn {border-color:#8b6cf5;} html body.dark-mode #pe .pe-top-r #pe-winbtn[aria-pressed="true"], html body.dark-mode #pe .pe-top-r #pe-fsbtn[aria-pressed="true"] {border-color:#6d28d9;}

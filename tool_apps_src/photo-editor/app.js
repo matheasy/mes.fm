@@ -354,7 +354,8 @@
 		if (!grp) items = items.concat(["-", { label: "fx Layer style: bevel, stroke, shadow, glow…", act: function () { PE.dlgLayerStyle(L); } }, { label: "Copy layer style", key: PE.styleKey("C"), title: "Layer style + colour adjustments + opacity + blend mode. Stays copied when you switch tabs or reload", act: function () { PE.copyLayerStyle(L); } }, { label: "Paste layer style", key: PE.styleKey("V"), dis: !(PE.hasStyleClip && PE.hasStyleClip()), title: PE.styleClipText ? PE.styleClipText() : "", act: function () { PE.pasteLayerStyle(L); } }, { label: "Clear layer style", dis: !PE.hasFx(L), act: function () { L.fx = null; PE.commit("Remove layer style"); } }, { label: "⛶ Crop this layer (hide edges)", act: function () { PE.setTool("layercrop"); } }]);
 		if (!grp && L.crop) items.push({ label: "Show the whole layer (uncrop)", act: function () { PE.clearLayerCrop(L); } });
 		if (!grp) items = items.concat(["-"], maskItems(L));
-		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" : "🔒 Lock", act: function () { L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); } }, { label: "🗑 Delete layer", act: function () { PE.deleteLayer(); } }]);
+		var inSet = nm > 1 && PE.multi().indexOf(L) >= 0, many = inSet ? " " + nm + " layers" : "";   // right-click on one of several picked layers = act on all of them
+		items = items.concat(["-", { label: L.locked ? "🔓 Unlock" + many : "🔒 Lock" + many, act: function () { PE.setPickedFlag("locked", !L.locked, L); } }].concat(inSet ? [{ label: "👁 Hide" + many, act: function () { PE.setPickedFlag("visible", false, L); } }, { label: "⧉ Duplicate" + many, act: function () { PE.duplicateLayer(); } }] : []).concat([{ label: "🗑 Delete " + (inSet ? nm + " layers" : grp ? "group" : "layer"), act: function () { if (inSet) PE.deleteLayer(); else PE.deleteLayer(L); } }]));
 		popMenu(items, x, y);
 	}
 	/* The list keeps where it is scrolled to. It scrolls only to show the active layer when that changed from outside the list (picked on the picture,
@@ -435,7 +436,7 @@
 	var opTimer = 0; $("pe-opacity").addEventListener("input", function () { var L = PE.active(); if (!L) return; L.opacity = this.value / 100; $("pe-opacity-v").textContent = this.value + "%"; PE.invalidate(); PE.later("opacity", function () { PE.commit("Layer opacity"); }, 400); });
 	function lbtn(id, fn) { $(id).addEventListener("click", function () { if (PE.doc) fn(); }); }
 	lbtn("pe-lrename", function () { var L = PE.active(); if (L) renameLayer(L.id); }); lbtn("pe-lnew", function () { PE.newRasterLayer(); }); lbtn("pe-lfill", function () { PE.dlgFillLayer(); }); lbtn("pe-lgroup", function () { groupSelected(); }); lbtn("pe-ldup", function () { PE.duplicateLayer(); }); lbtn("pe-ldel", function () { PE.deleteLayer(); }); lbtn("pe-lmerge", function () { PE.mergeDown(); });
-	lbtn("pe-lock", function () { var L = PE.active(); L.locked = !L.locked; PE.commit(L.locked ? "Lock layer" : "Unlock layer"); });
+	lbtn("pe-lock", function () { var L = PE.active(); if (L) PE.setPickedFlag("locked", !L.locked); });
 	lbtn("pe-mask-btn", function () { var L = PE.active(); if (!L) return; if (!L.mask) { PE.addMask(L, true); return; } var r = $("pe-mask-btn").getBoundingClientRect(); popMenu(maskItems(L), r.left, r.bottom + 4); });
 	$("pe-mask-help").addEventListener("click", function () { PE.maskHelp(); });
 	lbtn("pe-lstyle", function () { PE.dlgLayerStyle(); }); lbtn("pe-lcrop", function () { var L = PE.active(); if (!L || PE.isGroup(L)) { PE.toast("Select a layer (not a group) to crop"); return; } PE.setTool("layercrop"); });
