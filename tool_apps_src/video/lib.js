@@ -728,7 +728,7 @@
 
 	/* ---------- audio effects (non-destructive: a gain envelope worked out from the clip's own sound) ---------- */
 	V.AFX_DEFAULT = {
-		level: { on: false, target: -20, maxUp: 12, maxDown: 12, win: 3, gate: -50 },   // leveler: brings the loudness over a few seconds to the target (dBFS RMS)
+		level: { on: false, target: -20, maxUp: 12, maxDown: 12, win: 3, gate: -50, lim: true, ceil: -1 },   // lim = limiter: no peak goes above ceil dBFS   // leveler: brings the loudness over a few seconds to the target (dBFS RMS)
 		comp: { on: false, thr: -24, ratio: 3, knee: 6, att: 0.01, rel: 0.2, makeup: null },   // compressor (makeup null = automatic)
 		duck: { on: false, amt: 12, gate: -45 }   // ducking: this clip is lowered while other clips have sound (music under a voice)
 	};
@@ -794,8 +794,50 @@
 			var cg = V.compGain(x, A.comp, lev.hop), mk = V.compMakeup(A.comp, A.level && A.level.on ? A.level.target : -18);
 			for (i = 0; i < n; i++) tot[i] = (lg ? lg[i] : 0) + cg[i] + mk;
 		} else if (lg) tot.set(lg);
+		if (A.level && A.level.on && A.level.lim !== false && lev.peak) V.limitGain(tot, lev.peak, A.level.ceil == null ? -1 : A.level.ceil, lev.hop);
 		var g = new Float32Array(n); for (i = 0; i < n; i++) g[i] = Math.pow(10, Math.min(24, tot[i]) / 20);
 		return { start: lev.start, hop: lev.hop, g: g };
+	};
+	// limiter on a gain curve (dB per block, changed in place): no block's peak + gain may pass the ceiling. It looks 3 blocks (30 ms)
+	// ahead and back, because the gain is drawn as a straight line between blocks, and lets go again at about 40 dB a second
+	V.limitGain = function (tot, peak, ceil, hop) {
+		var n = tot.length, w = 3, cap = new Float32Array(n), i, j, up = 40 * hop, prev = Infinity;
+		for (i = 0; i < n; i++) cap[i] = ceil - (peak[i] > -120 ? peak[i] : -120);
+		for (i = 0; i < n; i++) {
+			var m = tot[i]; for (j = Math.max(0, i - w); j <= Math.min(n - 1, i + w); j++) if (cap[j] < m) m = cap[j];
+			if (m > prev + up) m = prev + up; tot[i] = m; prev = m;
+		}
+		return tot;
+	};
+	// before / after picture of a clip's levels between source times s0 and s1, in n columns: b / a = loudness (dB, RMS power average),
+	// pb / pa = loudest peak in the column (dB). env = V.fxEnvelope result (null = no change)
+	V.levelColumns = function (lev, env, s0, s1, n) {
+		var b = new Float32Array(n), a = new Float32Array(n), pb = new Float32Array(n), pa = new Float32Array(n), N = lev.rms.length;
+		for (var c = 0; c < n; c++) {
+			var i0 = Math.max(0, Math.floor((s0 + (s1 - s0) * c / n - lev.start) / lev.hop)), i1 = Math.min(N, Math.max(i0 + 1, Math.ceil((s0 + (s1 - s0) * (c + 1) / n - lev.start) / lev.hop)));
+			var eb = 0, ea = 0, k = 0, mb = -120, ma = -120;
+			for (var i = i0; i < i1; i++) { var gd = env ? 20 * Math.log10(Math.max(1e-6, env.g[i] || 1)) : 0, r = lev.rms[i], q = lev.peak ? lev.peak[i] : r; eb += Math.pow(10, r / 10); ea += Math.pow(10, (r + gd) / 10); k++; if (q > mb) mb = q; if (q + gd > ma) ma = q + gd; }
+			b[c] = k ? Math.max(-120, 10 * Math.log10(eb / k)) : -120; a[c] = k ? Math.max(-120, 10 * Math.log10(ea / k)) : -120; pb[c] = mb; pa[c] = ma;
+		}
+		return { b: b, a: a, pb: pb, pa: pa };
+	};
+	// how even the sound is: loudness of 0.4 s pieces with sound in them (above gate), quiet parts = 10th percentile, loud = 90th,
+	// plus the loudest peak; before and after the effects
+	V.levelStats = function (lev, env, s0, s1, gate) {
+		gate = gate == null ? -50 : gate;
+		var N = lev.rms.length, i0 = Math.max(0, Math.floor((s0 - lev.start) / lev.hop)), i1 = Math.min(N, Math.ceil((s1 - lev.start) / lev.hop)), W = Math.max(1, Math.round(0.4 / lev.hop));
+		var B = [], A = [], pkB = -120, pkA = -120;
+		for (var s = i0; s < i1; s += W) {
+			var eb = 0, ea = 0, k = 0, e = Math.min(i1, s + W);
+			for (var i = s; i < e; i++) {
+				var gd = env ? 20 * Math.log10(Math.max(1e-6, env.g[i] || 1)) : 0, q = lev.peak ? lev.peak[i] : lev.rms[i];
+				if (q > pkB) pkB = q; if (q + gd > pkA) pkA = q + gd;
+				if (lev.rms[i] > gate) { eb += Math.pow(10, lev.rms[i] / 10); ea += Math.pow(10, (lev.rms[i] + gd) / 10); k++; }
+			}
+			if (k >= 0.3 * (e - s)) { B.push(10 * Math.log10(eb / k)); A.push(10 * Math.log10(ea / k)); }
+		}
+		function pc(arr, p) { if (!arr.length) return null; var x = arr.slice().sort(function (u, v) { return u - v; }); return x[Math.min(x.length - 1, Math.max(0, Math.round(p * (x.length - 1))))]; }
+		return { n: B.length, before: { lo: pc(B, 0.1), hi: pc(B, 0.9), peak: pkB }, after: { lo: pc(A, 0.1), hi: pc(A, 0.9), peak: pkA } };
 	};
 	// envelope value at source time s (linear between blocks; outside it the nearest end)
 	V.envAt = function (env, s) {

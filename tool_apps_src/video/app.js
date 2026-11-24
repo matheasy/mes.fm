@@ -1165,7 +1165,7 @@
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + "</div>" + sld("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "<div>" + "</div>" +
 			'<div class="vd-row"><button type="button" class="vd-btn vd-sm' + (cleaning ? "" : " vd-primary") + '" id="vd-dn-go" data-label="Remove noise' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '">' + (cleaning ? "Cancel" : "Remove noise" + (list.length > 1 ? " (" + list.length + " clips)" : "")) + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? (list.length > 1 ? cleaned + " of " + list.length + " clips have" : "This clip has") + " noise removed (" + esc((c.clean && c.clean.model) || "") + ")." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
-		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other (C)">&#8645; Compare before / after</button></div>' : "") + "</div>";
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other">&#8645; Compare before / after</button></div>' : "") + "</div>";
 		return h;
 	}
 	function renderMulti(sel) {
@@ -1748,7 +1748,8 @@
 	var KACT = [
 		["play", "Play / pause", "Playback", ["Space"]], ["pause", "Stop", "Playback", ["K"]],
 		["fwd", "Play forward (again: 2×, 4×)", "Playback", ["L"]], ["rev", "Play backwards (again: 2×, 4×)", "Playback", ["J"]],
-		["frameBack", "One frame back", "Playback", [","]], ["frameFwd", "One frame forward", "Playback", ["."]],
+		["secBack", "One second back", "Playback", ["Z"]], ["secFwd", "One second forward", "Playback", ["X"]],
+		["frameBack", "One frame back", "Playback", ["C", ","]], ["frameFwd", "One frame forward", "Playback", ["V", "."]],
 		["slower", "Speed 0.05× slower", "Preview speed", ["["]], ["faster", "Speed 0.05× faster", "Preview speed", ["]"]],
 		["speed1", "Speed 1× (press again: back)", "Preview speed", ["U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", ["P"]],
 		["presetDown", "Previous speed in the list", "Preview speed", ["<"]], ["presetUp", "Next speed in the list", "Preview speed", [">"]],
@@ -1763,6 +1764,7 @@
 		pause: function () { P.pause(); },
 		fwd: function () { if (P.playing && !P.rev) P.play(Math.min(8, P.rate * 2)); else P.play(1); },
 		rev: function () { if (P.playing && P.rev) P.reverse(Math.min(8, P.rate * 2)); else P.reverse(1); },
+		secBack: function () { VE.stepFrame(-1, true); }, secFwd: function () { VE.stepFrame(1, true); },
 		frameBack: function () { VE.stepFrame(-1); }, frameFwd: function () { VE.stepFrame(1); },
 		slower: function () { P.nudgeSpeed(-1); }, faster: function () { P.nudgeSpeed(1); },
 		speed1: function () { VE.speedKey(1); }, speed2: function () { VE.speedKey(2); },
@@ -1970,9 +1972,20 @@
 		var A = V.afxOf(list[0]), L = A.level, Cm = A.comp, D = A.duck;
 		function chk(id, on, label) { return '<label><input type="checkbox" id="' + id + '"' + (on ? " checked" : "") + "> " + label + "</label>"; }
 		var h = '<div class="vd-sec"><b>Audio effects</b><p class="vd-sub">Worked out from the sound as you play and export; your files are not changed.</p>';
-		h += '<div class="vd-fx' + (L.on ? " is-on" : "") + '">' + chk("vd-fx-lev", L.on, "Leveler (auto-level)") + '<p class="vd-sub">Brings quiet and loud parts to the same loudness over a few seconds.</p>' +
-			(L.on ? '<div class="vd-grid">' + num("vd-fx-lt", "Target loudness", L.target, 1, -40, -6, "dB", "Average level (RMS, dBFS) the leveler aims for; -20 suits speech") + num("vd-fx-lu", "Most boost", L.maxUp, 1, 0, 30, "dB") + num("vd-fx-ld", "Most cut", L.maxDown, 1, 0, 30, "dB") +
-				'<label class="vd-f"><span>Speed</span><select id="vd-fx-lw">' + WINS.map(function (w) { return '<option value="' + w[0] + '"' + (Math.abs(L.win - w[0]) < 1e-6 ? " selected" : "") + ">" + w[1] + "</option>"; }).join("") + "</select></label></div>" : "") + "</div>";
+		var LP = [[-23, "Quiet"], [-20, "Normal"], [-16, "Louder"], [-13, "Loudest"]], lt = Math.round(L.target * 10) / 10, lr = Math.max(L.maxUp, L.maxDown);
+		h += '<div class="vd-fx' + (L.on ? " is-on" : "") + '">' + chk("vd-fx-lev", L.on, "Leveler (auto-level)") + '<p class="vd-sub">Like someone riding the volume knob for you: it turns quiet parts up and loud parts down, so the whole clip sits at one loudness.</p>' +
+			(L.on ? '<canvas class="vd-lvpic" id="vd-fx-pic" height="96" aria-label="Sound level before (grey) and after (green) the leveler"></canvas>' +
+				'<div class="vd-lvkey"><span class="vd-lvk-b">Before</span><span class="vd-lvk-a">After</span><span class="vd-lvk-t">Loudness it aims for</span>' + (L.lim !== false ? '<span class="vd-lvk-c">Never above</span>' : "") + "</div>" +
+				'<p class="vd-sub vd-lvinfo" id="vd-fx-lvinfo"></p>' +
+				'<div class="vd-f"><span>Make it louder or quieter</span>' + seg("vd-fx-lp", LP.map(function (q) { return [String(q[0]), q[1], q[1] + " (" + q[0] + " dB)"]; }), String(lt), "Loudness presets") + "</div>" +
+				sld("vd-fx-lt", "Loudness", lt, 0.5, -40, -6, "dB", "How loud the leveler makes the sound (average level). Right = louder. -20 dB is a normal speaking level; -16 is louder, like most YouTube videos", -32, -10) +
+				sld("vd-fx-lr", "How far it may turn up or down", lr, 1, 0, 30, "dB", "Small = gentle (keeps some of the natural ups and downs); big = very even. 12 dB suits most voices", 0, 30) +
+				'<div class="vd-f"><span>How fast it reacts</span>' + seg("vd-fx-lw", WINS.map(function (w) { return [String(w[0]), w[1]]; }), String(WINS.filter(function (w) { return Math.abs(L.win - w[0]) < 1e-6; }).map(function (w) { return w[0]; })[0] || ""), "How fast the leveler reacts") + "</div>" +
+				'<div class="vd-checks"><label><input type="checkbox" id="vd-fx-llim"' + (L.lim !== false ? " checked" : "") + "> Never clip (limiter)</label></div>" +
+				'<p class="vd-sub">The limiter catches the loudest peaks just before they reach ' + (L.ceil == null ? -1 : L.ceil) + ' dB, so you can turn the loudness up without crackling or distortion.</p>' +
+				'<details class="vd-more" id="vd-fx-lmore"' + (UI.lvMore ? " open" : "") + '><summary>More settings</summary><div class="vd-grid">' + num("vd-fx-lu", "Most boost", L.maxUp, 1, 0, 30, "dB", "The most it turns a quiet part up") + num("vd-fx-ld", "Most cut", L.maxDown, 1, 0, 30, "dB", "The most it turns a loud part down") +
+				num("vd-fx-lc", "Never above", L.ceil == null ? -1 : L.ceil, 0.5, -12, 0, "dB", "The limiter's ceiling: no peak goes above this (-1 dB is safe for YouTube)") + num("vd-fx-lg", "Ignore sound below", L.gate, 1, -80, -20, "dB", "Quieter than this counts as silence: it is not turned up (so background hiss between sentences stays quiet)") + "</div></details>" +
+				'<p class="vd-sub vd-lvhow"><b>To make it louder:</b> press <i>Louder</i> or move <i>Loudness</i> to the right. Everything comes up to that level together, and the limiter keeps the peaks from clipping, so it stays even and clean.</p>' : "") + "</div>";
 		h += '<div class="vd-fx' + (Cm.on ? " is-on" : "") + '">' + chk("vd-fx-cmp", Cm.on, "Compressor") + '<p class="vd-sub">Turns down the loudest moments (above the threshold) so peaks and shouts sit closer to the rest.</p>' +
 			(Cm.on ? '<div class="vd-grid">' + num("vd-fx-ct", "Threshold", Cm.thr, 1, -60, 0, "dB") + '<label class="vd-f"><span>Ratio</span><select id="vd-fx-cr">' + RATIOS.map(function (r) { return '<option value="' + r + '"' + (Math.abs(Cm.ratio - r) < 1e-6 ? " selected" : "") + ">" + r + ":1</option>"; }).join("") + "</select></label>" +
 				num("vd-fx-ca", "Attack", Math.round(Cm.att * 1000), 5, 10, 500, "ms") + num("vd-fx-cl", "Release", Math.round(Cm.rel * 1000), 10, 20, 3000, "ms") +
@@ -1994,11 +2007,22 @@
 		}
 		function on(id, fn) { var el = $(id); if (el) el.addEventListener("change", function () { fn(el); }); }
 		function n(el) { return parseFloat(el.value); }
+		// sliders: live while dragging (picture and sound follow), one undo step on release (wireRanges)
+		function live(group, fn) { return function (v) { if (!isFinite(v)) return; list.forEach(function (c) { var A = V.afxOf(c); c.afx = c.afx || {}; c.afx[group] = Object.assign(A[group], fn(v)); }); drawLv(list[0]); }; }
+		INSP_LIVE["vd-fx-lt"] = [live("level", function (v) { return { target: V.clamp(v, -40, -6) }; }), "Leveler loudness"];
+		INSP_LIVE["vd-fx-lr"] = [live("level", function (v) { v = V.clamp(v, 0, 30); return { maxUp: v, maxDown: v }; }), "Leveler range"];
 		on("vd-fx-lev", function (el) { set("level", { on: el.checked }, el.checked ? "Leveler on" : "Leveler off"); });
-		on("vd-fx-lt", function (el) { if (isFinite(n(el))) set("level", { target: V.clamp(n(el), -40, -6) }, "Leveler target"); });
+		on("vd-fx-lt", function (el) { if (isFinite(n(el))) set("level", { target: V.clamp(n(el), -40, -6) }, "Leveler loudness"); });
+		on("vd-fx-lr", function (el) { if (isFinite(n(el))) { var v = V.clamp(n(el), 0, 30); set("level", { maxUp: v, maxDown: v }, "Leveler range"); } });
 		on("vd-fx-lu", function (el) { if (isFinite(n(el))) set("level", { maxUp: V.clamp(n(el), 0, 30) }, "Leveler boost"); });
 		on("vd-fx-ld", function (el) { if (isFinite(n(el))) set("level", { maxDown: V.clamp(n(el), 0, 30) }, "Leveler cut"); });
-		on("vd-fx-lw", function (el) { set("level", { win: +el.value }, "Leveler speed"); });
+		on("vd-fx-lc", function (el) { if (isFinite(n(el))) set("level", { ceil: V.clamp(n(el), -12, 0) }, "Limiter ceiling"); });
+		on("vd-fx-lg", function (el) { if (isFinite(n(el))) set("level", { gate: V.clamp(n(el), -80, -20) }, "Leveler silence level"); });
+		on("vd-fx-llim", function (el) { set("level", { lim: el.checked }, el.checked ? "Limiter on" : "Limiter off"); });
+		var lp = $("vd-fx-lp"); if (lp) lp.onclick = function (e) { var b = e.target.closest("[data-v]"); if (b) set("level", { target: +b.getAttribute("data-v") }, "Leveler loudness"); };
+		var lw = $("vd-fx-lw"); if (lw) lw.onclick = function (e) { var b = e.target.closest("[data-v]"); if (b) set("level", { win: +b.getAttribute("data-v") }, "Leveler speed"); };
+		var lm = $("vd-fx-lmore"); if (lm) lm.addEventListener("toggle", function () { UI.lvMore = lm.open; saveUI(); });
+		drawLv(list[0]);
 		on("vd-fx-cmp", function (el) { set("comp", { on: el.checked }, el.checked ? "Compressor on" : "Compressor off"); });
 		on("vd-fx-ct", function (el) { if (isFinite(n(el))) set("comp", { thr: V.clamp(n(el), -60, 0) }, "Compressor threshold"); });
 		on("vd-fx-cr", function (el) { set("comp", { ratio: +el.value }, "Compressor ratio"); });
@@ -2009,6 +2033,32 @@
 		on("vd-fx-da", function (el) { if (isFinite(n(el))) set("duck", { amt: V.clamp(n(el), 1, 40) }, "Ducking amount"); });
 		on("vd-fx-dg", function (el) { if (isFinite(n(el))) set("duck", { gate: V.clamp(n(el), -70, -10) }, "Ducking voice level"); });
 	}
+	// leveler picture: the clip's loudness over time before (grey) and after (green), the target (white dashes) and the limiter's
+	// ceiling (red dashes), with the quiet / loud parts in numbers underneath
+	function drawLv(c) {
+		var cv = $("vd-fx-pic"), info = $("vd-fx-lvinfo"); if (!cv || !c) return;
+		var d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(120, cv.clientWidth || 260), h = 96;
+		if (cv.width !== Math.round(w * d)) cv.width = Math.round(w * d); cv.height = Math.round(h * d);
+		var g = cv.getContext("2d"); g.setTransform(d, 0, 0, d, 0, 0); g.fillStyle = "#0b0f15"; g.fillRect(0, 0, w, h);
+		var L = V.afxOf(c).level, lev = VE.levelsFor(c), lpb = document.querySelectorAll("#vd-fx-lp [data-v]"), y = function (db) { return h - 4 - (V.clamp(db, -60, 0) + 60) / 60 * (h - 8); };
+		for (var b = 0; b < lpb.length; b++) lpb[b].setAttribute("aria-pressed", Math.abs(+lpb[b].getAttribute("data-v") - L.target) < 0.05);   // presets follow the Loudness slider
+		g.font = "10px Arial, sans-serif"; g.textBaseline = "middle";
+		[-12, -24, -36, -48].forEach(function (db) { g.fillStyle = "rgba(148,163,184,0.18)"; g.fillRect(0, Math.round(y(db)), w, 1); g.fillStyle = "rgba(148,163,184,0.6)"; g.fillText(db + " dB", 3, y(db) - 6); });
+		if (!lev) { g.fillStyle = "#cbd5e1"; g.textAlign = "center"; g.fillText("Analysing the sound...", w / 2, h / 2); g.textAlign = "start"; if (info) info.textContent = ""; return; }
+		var env = VE.fxEnv(c), s0 = c.in || 0, s1 = c.out > s0 ? c.out : s0 + 1, n = Math.max(40, Math.round(w)), col = V.levelColumns(lev, env, s0, s1, n), dx = w / n, i;
+		g.fillStyle = "rgba(100,116,139,0.55)"; for (i = 0; i < n; i++) { var yb = y(col.b[i]); g.fillRect(i * dx, yb, dx + 0.6, h - yb); }
+		g.fillStyle = "rgba(34,197,94,0.22)"; g.beginPath(); g.moveTo(0, h); for (i = 0; i < n; i++) g.lineTo(i * dx + dx / 2, y(col.a[i])); g.lineTo(w, h); g.closePath(); g.fill();
+		g.strokeStyle = "#4ade80"; g.lineWidth = 1.6; g.beginPath(); for (i = 0; i < n; i++) { if (i) g.lineTo(i * dx + dx / 2, y(col.a[i])); else g.moveTo(dx / 2, y(col.a[i])); } g.stroke();
+		g.setLineDash([5, 4]); g.lineWidth = 1.2; g.strokeStyle = "rgba(255,255,255,0.85)"; g.beginPath(); g.moveTo(0, y(L.target) + 0.5); g.lineTo(w, y(L.target) + 0.5); g.stroke();
+		if (L.lim !== false) { var cl = L.ceil == null ? -1 : L.ceil; g.strokeStyle = "#f87171"; g.beginPath(); g.moveTo(0, y(cl) + 0.5); g.lineTo(w, y(cl) + 0.5); g.stroke(); }
+		g.setLineDash([]);
+		if (!info) return;
+		var st = V.levelStats(lev, env, s0, s1, L.gate), B = st.before, A = st.after, f = function (x) { return (x > 0 ? "+" : "") + (Math.round(x * 10) / 10) + " dB"; };
+		if (!st.n || B.lo == null) { info.textContent = "This clip is nearly silent: there is nothing to level."; return; }
+		info.innerHTML = "<b>Before:</b> quiet parts " + f(B.lo) + ", loud parts " + f(B.hi) + " (" + Math.round(B.hi - B.lo) + " dB apart). <b>After:</b> " + f(A.lo) + " / " + f(A.hi) + " (" + Math.round(Math.max(0, A.hi - A.lo)) + " dB apart). " +
+			(A.peak > 0 ? '<span class="vd-lvbad">The loudest peak reaches ' + f(A.peak) + ": it will clip (crackle). Tick Never clip or lower the loudness.</span>" : "Loudest peak " + f(A.peak) + ", so it never clips.");
+	}
+	VE.on("levels", function () { var c = VE.selected()[0]; if (c) setTimeout(function () { drawLv(c); }, 200); });
 	// work out the sound levels the effects need, then redraw the waveforms and update the preview
 	var fxRun = null, fxAgain = false;
 	function fxKick() {
@@ -2080,14 +2130,46 @@
 	// where you are looking. Saved as fractions of the free space (UI.tpPos = {x, y}), so it stays in place when the window resizes.
 	(function () {
 		var bar = app.querySelector(".vd-transport"), grip = $("vd-tpgrip"), rst = $("vd-tpreset"), box = app.querySelector(".vd-center");
+		// size grip in the bottom-right corner (like the Read Aloud player): drag = bigger / smaller, so the small text is easy to read
+		var sz = document.createElement("span"); sz.className = "vd-tpsize"; sz.id = "vd-tpsize"; sz.tabIndex = 0; sz.setAttribute("role", "slider");
+		sz.setAttribute("aria-label", "Size of the playback bar"); sz.setAttribute("aria-valuemin", "60"); sz.setAttribute("aria-valuemax", "250");
+		sz.title = "Drag to make this bar bigger or smaller (arrow keys too; double-click: normal size)"; bar.appendChild(sz);
+		function scl() { return Math.max(0.6, Math.min(2.5, +UI.tpScale || 1)); }
+		var wasFloat = null;
 		function place() {
-			var on = app.classList.contains("vd-pvfill") && UI.tpPos;
+			var on = app.classList.contains("vd-pvfill") && UI.tpPos, s = scl();
 			bar.classList.toggle("is-float", !!on); rst.hidden = !on;
-			if (!on) { bar.style.left = bar.style.top = ""; return; }
-			var W = box.clientWidth, H = box.clientHeight, w = bar.offsetWidth, h = bar.offsetHeight;
+			if (!!on !== wasFloat) { var first = wasFloat === null; wasFloat = !!on; if (!first) requestAnimationFrame(function () { P.fit(); }); }   // a moved bar may cover the picture: re-fit without reserving room for it
+			sz.setAttribute("aria-valuenow", Math.round(s * 100)); sz.setAttribute("aria-valuetext", Math.round(s * 100) + "%");
+			if (!on) { bar.style.left = bar.style.top = ""; bar.style.removeProperty("--vd-tps"); return; }
+			bar.style.setProperty("--vd-tps", s);
+			var W = box.clientWidth, H = box.clientHeight, w = bar.offsetWidth * s, h = bar.offsetHeight * s;
 			bar.style.left = Math.round(Math.max(0, W - w) * UI.tpPos.x) + "px"; bar.style.top = Math.round(Math.max(0, H - h) * UI.tpPos.y) + "px";
 		}
 		VE.placeBar = place;
+		// change the size keeping the bar's top-left corner where it is
+		function setScale(s) {
+			if (!UI.tpPos) UI.tpPos = { x: 0.5, y: 1 };
+			var r = bar.getBoundingClientRect(), b = box.getBoundingClientRect(), left = r.left - b.left, top = r.top - b.top;
+			UI.tpScale = Math.round(Math.max(0.6, Math.min(2.5, s)) * 100) / 100; place();
+			var w = bar.offsetWidth * scl(), h = bar.offsetHeight * scl(), W = Math.max(1, b.width - w), H = Math.max(1, b.height - h);
+			UI.tpPos = { x: Math.max(0, Math.min(1, left / W)), y: Math.max(0, Math.min(1, top / H)) }; place();
+		}
+		sz.addEventListener("pointerdown", function (e) {
+			if (e.button !== 0) return; e.preventDefault(); e.stopPropagation();
+			if (!UI.tpPos) { UI.tpPos = { x: 0.5, y: 1 }; place(); }
+			var x0 = e.clientX, y0 = e.clientY, s0 = scl(), w0 = Math.max(80, bar.getBoundingClientRect().width);
+			bar.classList.add("is-move"); try { sz.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			function mv(ev) { setScale(s0 * (w0 + (ev.clientX - x0) + (ev.clientY - y0)) / w0); }
+			function up() { bar.classList.remove("is-move"); sz.removeEventListener("pointermove", mv); sz.removeEventListener("pointerup", up); sz.removeEventListener("pointercancel", up); saveUI(); toast("Playback bar size: " + Math.round(scl() * 100) + "%", 1400); }
+			sz.addEventListener("pointermove", mv); sz.addEventListener("pointerup", up); sz.addEventListener("pointercancel", up);
+		});
+		sz.addEventListener("dblclick", function (e) { e.stopPropagation(); setScale(1); saveUI(); });
+		sz.addEventListener("keydown", function (e) {
+			var d = e.key === "ArrowUp" || e.key === "ArrowRight" ? 1 : e.key === "ArrowDown" || e.key === "ArrowLeft" ? -1 : 0;
+			if (e.key === "Enter" || e.key === "Home") { e.preventDefault(); e.stopPropagation(); setScale(1); saveUI(); return; }
+			if (!d) return; e.preventDefault(); e.stopPropagation(); setScale(scl() + d * (e.shiftKey ? 0.25 : 0.05)); saveUI();
+		});
 		function reset() { UI.tpPos = null; saveUI(); place(); }
 		function empty(t) { return t === grip || t === bar || (t.classList && (t.classList.contains("vd-sp") || t.classList.contains("vd-div"))); }
 		bar.addEventListener("pointerdown", function (e) {
@@ -2435,7 +2517,7 @@
 		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
 		el.addEventListener("click", function () { if (held) { held = false; return; } nudge(1); });   // keyboard Enter / Space
 	});
-	$("vd-vzguide").onclick = function () { P.guides(!P.guides()); vzRender(); };
+	$("vd-vzguide").onclick = function () { var on = !P.guides(); P.guides(on); vzRender(); toast(on ? "Guides on: yellow = action safe (90%), blue = title safe (80%), white lines = thirds and the centre. Press G or Guides again to hide them." : "Guides off.", on ? 4500 : 1400); };
 	$("vd-vzhand").onclick = function () { P.setHand(!P.hand); };
 	VE.on("view", function () { $("vd-vzhand").setAttribute("aria-pressed", !!P.hand); });
 	$("vd-vzdim").onclick = function () { P.dimOutside(!P.dimOutside()); vzRender(); };

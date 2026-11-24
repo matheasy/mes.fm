@@ -275,14 +275,16 @@
 		ctx.lineWidth = Math.max(1, dpr); ctx.strokeStyle = "rgba(0,0,0,0.85)"; ctx.strokeRect(Math.round(fx) - 1.5 * dpr, Math.round(fy) - 1.5 * dpr, Math.round(fw) + 3 * dpr, Math.round(fh) + 3 * dpr);
 		ctx.strokeStyle = "rgba(226,232,240,0.85)"; ctx.strokeRect(Math.round(fx) - 0.5 * dpr, Math.round(fy) - 0.5 * dpr, Math.round(fw) + dpr, Math.round(fh) + dpr);
 		if (VS.guides) {
-			ctx.setLineDash([6 * dpr, 5 * dpr]); ctx.lineWidth = dpr;
-			[[0.05, "rgba(250,204,21,0.8)"], [0.1, "rgba(56,189,248,0.8)"]].forEach(function (q) { ctx.strokeStyle = q[1]; ctx.strokeRect(fx + fw * q[0], fy + fh * q[0], fw * (1 - 2 * q[0]), fh * (1 - 2 * q[0])); });
-			ctx.setLineDash([]); ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.beginPath();
-			var mx = fx + fw / 2, my = fy + fh / 2, a = 12 * dpr; ctx.moveTo(mx - a, my); ctx.lineTo(mx + a, my); ctx.moveTo(mx, my - a); ctx.lineTo(mx, my + a);
-			for (var g = 1; g < 3; g++) { ctx.moveTo(fx + fw * g / 3, fy); ctx.lineTo(fx + fw * g / 3, fy + fh); ctx.moveTo(fx, fy + fh * g / 3); ctx.lineTo(fx + fw, fy + fh * g / 3); }
-			ctx.strokeStyle = "rgba(255,255,255,0.22)"; ctx.stroke();
-			ctx.font = Math.round(10 * dpr) + "px Arial, sans-serif"; ctx.fillStyle = "rgba(250,204,21,0.9)"; ctx.textBaseline = "top"; ctx.fillText("action safe 90%", fx + fw * 0.05 + 4 * dpr, fy + fh * 0.05 + 3 * dpr);
-			ctx.fillStyle = "rgba(56,189,248,0.95)"; ctx.fillText("title safe 80%", fx + fw * 0.1 + 4 * dpr, fy + fh * 0.1 + 3 * dpr);
+			// every guide line is drawn twice: a wide dark line under a thinner bright one, so it shows on white slides and dark video alike
+			var gl = function (draw, col, w) { ctx.lineWidth = (w + 2) * dpr; ctx.strokeStyle = "rgba(0,0,0,0.7)"; ctx.beginPath(); draw(); ctx.stroke(); ctx.lineWidth = w * dpr; ctx.strokeStyle = col; ctx.beginPath(); draw(); ctx.stroke(); };
+			ctx.setLineDash([8 * dpr, 5 * dpr]);
+			[[0.05, "#facc15"], [0.1, "#38bdf8"]].forEach(function (q) { gl(function () { ctx.rect(fx + fw * q[0], fy + fh * q[0], fw * (1 - 2 * q[0]), fh * (1 - 2 * q[0])); }, q[1], 1.5); });
+			ctx.setLineDash([]);
+			var mx = fx + fw / 2, my = fy + fh / 2, a = 14 * dpr;
+			gl(function () { for (var g = 1; g < 3; g++) { ctx.moveTo(fx + fw * g / 3, fy); ctx.lineTo(fx + fw * g / 3, fy + fh); ctx.moveTo(fx, fy + fh * g / 3); ctx.lineTo(fx + fw, fy + fh * g / 3); } }, "rgba(255,255,255,0.55)", 1);
+			gl(function () { ctx.moveTo(mx - a, my); ctx.lineTo(mx + a, my); ctx.moveTo(mx, my - a); ctx.lineTo(mx, my + a); }, "#ffffff", 1.5);
+			ctx.font = "700 " + Math.round(11 * dpr) + "px Arial, sans-serif"; ctx.textBaseline = "top";
+			[["action safe 90%", "#facc15", 0.05], ["title safe 80%", "#38bdf8", 0.1]].forEach(function (q) { var tx = fx + fw * q[2] + 4 * dpr, ty = fy + fh * q[2] + 4 * dpr, tw = ctx.measureText(q[0]).width; ctx.fillStyle = "rgba(2,6,23,0.8)"; ctx.fillRect(tx - 3 * dpr, ty - 2 * dpr, tw + 6 * dpr, 15 * dpr); ctx.fillStyle = q[1]; ctx.fillText(q[0], tx, ty); });
 		}
 		ctx.restore();
 		if (guides && drag && drag.mode === "move") {   // snap guide lines across the whole stage
@@ -329,7 +331,7 @@
 		cv.style.width = bw + "px"; cv.style.height = bh + "px";
 		if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
 		if (isFit || !ow) {
-			// "Fit clear" keeps the frame below the zoom bar; both fits keep it above a transport bar that floats over the stage (Fill window)
+			// "Fit clear" keeps the frame below the zoom bar; both fits keep it above the transport bar docked at the bottom of the stage (Fill window); a moved bar may cover it
 			var m = Math.round(14 * d), top = Math.max(m, fitClear ? clearTop() * d : 0), bot = Math.max(m, clearBottom() * d);
 			view = V.viewFit(pw, Math.max(2 * m + 2, ph - top - bot + 2 * m), VE.P.w, VE.P.h, m); view.oy += top - m;
 		}
@@ -341,7 +343,8 @@
 	// how far down the zoom bar reaches inside the stage (CSS px)
 	function clearTop() { var bar = document.getElementById("vd-vz"); if (!bar || bar.offsetParent === null) return 0; var a = bar.getBoundingClientRect(), b = wrap.getBoundingClientRect(); return Math.max(0, a.bottom - b.top + 6); }
 	// how far a bar floating over the bottom of the stage (the Fill window transport) reaches up into it (CSS px)
-	function clearBottom() { var bar = wrap.parentNode && wrap.parentNode.querySelector(".vd-transport"); if (!bar || bar.offsetParent === null || getComputedStyle(bar).position !== "absolute") return 0; var a = bar.getBoundingClientRect(), b = wrap.getBoundingClientRect(); return Math.max(0, b.bottom - a.top + 6); }
+	// a bar the person has moved (.is-float) may sit on top of the picture: only the bar docked at the bottom keeps the frame clear of it
+	function clearBottom() { var bar = wrap.parentNode && wrap.parentNode.querySelector(".vd-transport"); if (!bar || bar.offsetParent === null || bar.classList.contains("is-float") || getComputedStyle(bar).position !== "absolute") return 0; var a = bar.getBoundingClientRect(), b = wrap.getBoundingClientRect(); return Math.max(0, b.bottom - a.top + 6); }
 	P.zoomFit = function (clear) { isFit = true; fitClear = !!clear; fit(); };
 	P.barShown = function (on) { if (on != null) { VS.bar = !!on; saveVS(); if (isFit && fitClear) requestAnimationFrame(fit); } return VS.bar !== false; };
 	// zoom to pct (100 = one frame pixel per screen pixel) around a stage point (canvas px; default the middle)
