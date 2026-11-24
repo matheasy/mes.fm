@@ -5,13 +5,22 @@
   <link>https://mes.fm/tools</link>
   <description>New free calculators and tools on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 18:39:46 GMT</lastBuildDate>
+  <lastBuildDate>Tue, 24 Nov 2026 21:22:44 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/tools.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>New MES Calculators &amp; Tools</title><link>https://mes.fm/tools</link></image>
   <podcast:guid>d20538e6-7ed6-5439-8d17-06a28a7778f2</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Gyroscope &amp; Spinning Top Simulator</title>
+    <link>https://mes.fm/gyroscope-simulator</link>
+    <guid isPermaLink="true">https://mes.fm/gyroscope-simulator</guid>
+    <pubDate>Tue, 24 Nov 2026 21:22:44 GMT</pubDate>
+    <category>Tools</category>
+    <description>Precession, nutation, a sleeping top, tops that rise by friction, a tippe top that flips, a gyroscope on ice, and the MES / Owen Liang Gyrotop experiments next to the textbook model.</description>
+    <media:thumbnail url="https://mes.fm/img/gyroscope-simulator-logo.png"/>
+  </item>
   <item>
     <title>Free Kicks &amp; Penalties</title>
     <link>https://mes.fm/free-kick</link>
@@ -452,15 +461,6 @@
     <category>Calculators</category>
     <description>Grade 4 and 7 numeracy and reading practice with new questions every time and every answer explained.</description>
     <media:thumbnail url="https://mes.fm/img/practice-tests-logo.png"/>
-  </item>
-  <item>
-    <title>Hologram Simulator</title>
-    <link>https://mes.fm/hologram</link>
-    <guid isPermaLink="true">https://mes.fm/hologram</guid>
-    <pubDate>Tue, 03 Nov 2026 03:38:19 GMT</pubDate>
-    <category>Tools</category>
-    <description>Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.</description>
-    <media:thumbnail url="https://mes.fm/img/hologram-logo.png"/>
   </item>
 </channel>
 </rss>

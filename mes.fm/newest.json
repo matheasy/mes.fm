@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/flights",
+   "title": "Flight Tracker: Live Air Traffic",
+   "icon": "/img/flights-logo.png",
+   "desc": "See the planes flying near you or anywhere on a live map, coloured by altitude: flight number, aircraft type, usual route, speed, climb and trail. Follow a plane, filter and search.",
+   "added": "2026-11-24",
+   "kind": "tool"
+  },
+  {
    "href": "/gyroscope-simulator",
    "title": "Gyroscope & Spinning Top Simulator",
    "icon": "/img/gyroscope-simulator-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.",
    "added": "2026-11-17",
    "kind": "tool"
-  },
-  {
-   "href": "/tracking",
-   "title": "Package Tracker",
-   "icon": "/img/tracking-logo.png",
-   "desc": "Paste, scan or photograph any tracking number and open the right carrier’s tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
-   "added": "2026-11-16",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/flights",
+   "title": "Flight Tracker: Live Air Traffic",
+   "icon": "/img/flights-logo.png",
+   "desc": "See the planes flying near you or anywhere on a live map, coloured by altitude: flight number, aircraft type, usual route, speed, climb and trail. Follow a plane, filter and search.",
+   "added": "2026-11-24",
+   "kind": "tool"
+  },
   {
    "href": "/gyroscope-simulator",
    "title": "Gyroscope & Spinning Top Simulator",
@@ -251,14 +259,6 @@
    "icon": "/img/ai-detector-logo.png",
    "desc": "Was a picture, video or text made with AI? Reads Content Credentials and AI labels, runs an on-device model and checks text patterns. Evidence, not guesses.",
    "added": "2026-11-20",
-   "kind": "tool"
-  },
-  {
-   "href": "/space-shuttle-simulator",
-   "title": "Space Shuttle Simulator",
-   "icon": "/img/space-shuttle-simulator-logo.png",
-   "desc": "Fly the Shuttle around a 3D Earth: plan burns, raise and tilt the orbit, catch the ISS or Hubble, then de-orbit and glide down to the runway. Plus why it could never reach the Moon.",
-   "added": "2026-11-19",
    "kind": "tool"
   }
  ]

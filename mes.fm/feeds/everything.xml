@@ -5,13 +5,22 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 18:39:46 GMT</lastBuildDate>
+  <lastBuildDate>Tue, 24 Nov 2026 21:22:44 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Gyroscope &amp; Spinning Top Simulator</title>
+    <link>https://mes.fm/gyroscope-simulator</link>
+    <guid isPermaLink="true">https://mes.fm/gyroscope-simulator</guid>
+    <pubDate>Tue, 24 Nov 2026 21:22:44 GMT</pubDate>
+    <category>Tools</category>
+    <description>Precession, nutation, a sleeping top, tops that rise by friction, a tippe top that flips, a gyroscope on ice, and the MES / Owen Liang Gyrotop experiments next to the textbook model.</description>
+    <media:thumbnail url="https://mes.fm/img/gyroscope-simulator-logo.png"/>
+  </item>
   <item>
     <title>Free Kicks &amp; Penalties</title>
     <link>https://mes.fm/free-kick</link>
@@ -722,15 +731,6 @@
     <category>Tools</category>
     <description>The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.</description>
     <media:thumbnail url="https://mes.fm/img/neuron-simulator-logo.png"/>
-  </item>
-  <item>
-    <title>Heart Simulator</title>
-    <link>https://mes.fm/heart-simulator</link>
-    <guid isPermaLink="true">https://mes.fm/heart-simulator</guid>
-    <pubDate>Sun, 01 Nov 2026 03:22:18 GMT</pubDate>
-    <category>Tools</category>
-    <description>An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.</description>
-    <media:thumbnail url="https://mes.fm/img/heart-simulator-logo.png"/>
   </item>
 </channel>
 </rss>
