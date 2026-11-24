@@ -27,6 +27,7 @@
 // Limits per hour: 300 quotes per IP hash, 60 answers per Hive account, 100 per IP hash. Tests: node tool_apps_src/ai-tests.js
 
 const crypto = require('crypto');
+const APP_ORIGINS = /^(capacitor:\/\/localhost|https:\/\/localhost)$/;
 const A = require('./_ai-lib.js');
 
 const QUOTE_TTL = 3600;
@@ -625,6 +626,19 @@ function makeHandler(deps = {}) {
 
   return async function handler(req, res) {
     try {
+      // the MES AI iPhone / Android app (Capacitor: capacitor://localhost on iOS, https://localhost on Android) may use the
+      // status / free-message / free-picture calls only: paid ops stay website-only (store rules on paying with crypto)
+      const aorigin = String((req.headers && req.headers.origin) || '');
+      const fromApp = APP_ORIGINS.test(aorigin);
+      if (fromApp) {
+        res.setHeader('Access-Control-Allow-Origin', aorigin);
+        res.setHeader('Vary', 'Origin');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Access-Control-Expose-Headers', 'X-Free-Left');
+        res.setHeader('Access-Control-Max-Age', '86400');
+      }
+      if (req.method === 'OPTIONS') { res.statusCode = fromApp ? 204 : 405; return res.end(); }
       if (req.method === 'GET') {
         const qs = req.query && Object.keys(req.query).length ? req.query : Object.fromEntries(new URL(req.url, 'https://mes.fm').searchParams);
         const op = qs.op;
@@ -648,9 +662,10 @@ function makeHandler(deps = {}) {
       }
       if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
       const origin = req.headers && req.headers.origin;
-      if (env.VERCEL_ENV === 'production' && origin && origin !== 'https://mes.fm') return send(res, 403, { error: 'Bad origin' });
+      if (env.VERCEL_ENV === 'production' && origin && origin !== 'https://mes.fm' && !fromApp) return send(res, 403, { error: 'Bad origin' });
       let b;
       try { b = await readBody(req); } catch (e) { return send(res, 400, { error: 'Bad JSON' }); }
+      if (fromApp && b.op !== 'free' && b.op !== 'freepic') return send(res, 403, { error: 'Paid models are on mes.fm/ai.' });
       if (b.op === 'quote') return await quote(req, res, b);
       if (b.op === 'run') return await run(req, res, b);
       if (b.op === 'vstatus') return await vstatus(req, res, b);
