@@ -149,4 +149,80 @@ ok(C.padLaunch(lpd, { x: 0, y: 0, z: 0 }, false, 1) === null && C.padLaunch(lpd,
 var bv = C.padLaunch(bst, { x: 5, y: 0, z: 0 }, false, 1); near(bv.x, bst.v, 1e-9, "boost along its direction"); ok(C.padLaunch(bst, { x: 60, y: 0, z: 0 }, false, 1) === null, "boost never slows");
 near(C.springHeight(20, 9.81), 400 / 19.62, 1e-9, "spring height");
 ok(C.mapDecode(C.mapEncode({ p: [spr, lpd, bst], r: [] })).p.map(function (p) { return p.pad; }).join() === "spring,press,boost", "pads survive a map link");
+// ---------- aircraft ----------
+C.PLANE_ORDER.forEach(function (k) {
+	var P = C.CARS[k], A = P.fly; ok(C.isPlane(k) && !C.isPlane("sports"), "isPlane " + k);
+	ok(P.wf > P.wb && P.wb < 0 && P.wf > 0, k + ": nose wheel ahead of the centre of mass, main wheels just behind it (tricycle)");
+	// lift curve: continuous at the stall, biggest at the stall angle, falls after it
+	[0, 1, 2].forEach(function (f) {
+		var aP = A.aS + A.flap[f][2], a = C.liftCoef(A, aP - 1e-6, f), b = C.liftCoef(A, aP + 1e-6, f), c = C.liftCoef(A, aP + 0.15, f);
+		near(a.CL, b.CL, 1e-4, k + " lift continuous at the stall, flaps " + f); ok(c.CL < a.CL * 0.85 && c.s > 0.5, k + " lift falls after the stall, flaps " + f);
+		ok(C.liftCoef(A, 0.05, f).s === 0, k + " not stalled at 3 degrees");
+	});
+	ok(C.liftCoef(A, 0.1, 2).CL > C.liftCoef(A, 0.1, 0).CL, k + " flaps add lift");
+	ok(C.dragCoef(A, 0.1, 2, 0.8, 0) > C.dragCoef(A, 0.1, 0, 0.8, 0), k + " flaps add drag");
+	ok(C.dragCoef(A, 0.1, 0, 1.2, 0) > C.dragCoef(A, 0.1, 0, 0.4, 0), k + " more lift = more induced drag");
+	// no air: no lift, no control, only the engine
+	var m = C.aero(A, { x: 0, y: -3, z: 40 }, { x: 0.3, y: 0.2, z: 0.4 }, { elev: 1, ail: 1, rud: 1, flap: 0, thr: 1 }, 0);
+	ok(m.F.y === 0 && m.F.x === 0 && m.T.x === 0 && m.T.y === 0 && m.T.z === 0 && m.F.z > 0, k + " on the Moon only thrust, no lift or control");
+	ok(C.stallSpeed(A, P.mass, 1.62, 0, 0) === Infinity, k + " Moon: can never fly");
+	// level flight is symmetric
+	var e = C.aero(A, { x: 0, y: 0, z: 60 }, { x: 0, y: 0, z: 0 }, { elev: 0, ail: 0, rud: 0, flap: 0, thr: 0.5 }, 1.225);
+	ok(Math.abs(e.T.y) < 1e-9 && Math.abs(e.T.z) < 1e-9 && Math.abs(e.F.x) < 1e-9, k + " no roll / yaw / side force when flying straight");
+	ok(e.F.y > 0, k + " lift is up at a positive wing setting");
+	// controls push the right way; damping opposes turns; weathervane turns the nose into the airflow
+	var base = { elev: 0, ail: 0, rud: 0, flap: 0, thr: 0.5 }, vb = { x: 0, y: 0, z: 60 }, w0 = { x: 0, y: 0, z: 0 };
+	ok(C.aero(A, vb, w0, Object.assign({}, base, { elev: 1 }), 1.225).T.x < e.T.x, k + " stick back = nose up (-X torque)");
+	ok(C.aero(A, vb, w0, Object.assign({}, base, { ail: 1 }), 1.225).T.z > 0, k + " right aileron = roll right (+Z torque)");
+	ok(C.aero(A, vb, w0, Object.assign({}, base, { rud: 1 }), 1.225).T.y < 0, k + " right rudder = nose right (-Y torque)");
+	ok(C.aero(A, vb, { x: 0, y: 0, z: 1 }, base, 1.225).T.z < 0, k + " roll damping");
+	ok(C.aero(A, vb, { x: -1, y: 0, z: 0 }, base, 1.225).T.x > e.T.x, k + " pitch damping");
+	ok(C.aero(A, { x: 6, y: 0, z: 60 }, w0, base, 1.225).T.y > 0, k + " sliding left turns the nose left (weathervane)");
+	ok(C.aero(A, { x: 6, y: 0, z: 60 }, w0, base, 1.225).T.z > 0, k + " dihedral rolls away from a slide");
+	// pitch is statically stable: more angle of attack = more nose-down moment
+	var lo = C.aero(A, { x: 0, y: -2, z: 60 }, w0, base, 1.225), hi = C.aero(A, { x: 0, y: -8, z: 60 }, w0, base, 1.225);
+	ok(hi.T.x > lo.T.x && hi.alpha > lo.alpha, k + " stable in pitch");
+	// damping cap: one step can never reverse a fast roll
+	var unc = C.aero(A, { x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 5 }, base, 1.225), cap = C.aero(A, { x: 0, y: 0, z: 200 }, { x: 0, y: 0, z: 5 }, base, 1.225, 1 / 60, A.I);
+	ok(Math.abs(cap.T.z) <= Math.abs(unc.T.z) + 1e-9 && Math.abs(cap.T.z) / A.I[2] / 60 <= 5 * 0.8 + 1e-6, k + " damping capped so one step never reverses a roll");
+	// speeds on Earth, Mars, Jupiter-g
+	var vsE = C.stallSpeed(A, P.mass, 9.81, 1.225, 0), vsF = C.stallSpeed(A, P.mass, 9.81, 1.225, 2), vsM = C.stallSpeed(A, P.mass, 3.71, 0.02, 0);
+	ok(vsF < vsE, k + " flaps lower the stall speed");
+	near(vsM / vsE, Math.sqrt((3.71 / 0.02) / (9.81 / 1.225)), 1e-9, k + " Mars stall speed ratio = sqrt((g/rho) ratio)");
+	ok(C.topSpeed(A, P.mass, 9.81, 1.225) > vsE * 1.6, k + " flies well above its stall speed on Earth");
+});
+var LP = C.CARS.plane.fly, JT = C.CARS.jet.fly;
+near(C.stallSpeed(LP, 1100, 9.81, 1.225, 0) * 3.6, 92, 8, "light plane stalls near 90 km/h clean (Cessna 172: ~87)");
+near(C.topSpeed(LP, 1100, 9.81, 1.225) * 3.6, 225, 25, "light plane tops out near 225 km/h (Cessna 172: ~226)");
+ok(C.topSpeed(LP, 1100, 24.79, 1.225) === 0, "light plane cannot hold itself up at Jupiter's gravity");
+ok(C.topSpeed(JT, 4800, 24.79, 1.225) > C.stallSpeed(JT, 4800, 24.79, 1.225, 0), "the jet can fly at Jupiter's gravity");
+ok(C.stallSpeed(LP, 1100, 3.71, 0.02, 0) * 3.6 > 400, "Mars: the light plane would need over 400 km/h");
+near(C.thrust(LP, 0, 1), LP.T0, 1e-9, "static thrust"); near(C.thrust(LP, 60, 1), LP.eta * LP.P / 60, 1e-9, "propeller thrust = eta P / v");
+ok(C.thrust(LP, 30, 0.5) === C.thrust(LP, 30, 1) / 2 && C.thrust(LP, 30, -1) === 0, "throttle scales thrust");
+// a 2-D longitudinal flight: take-off roll distance + a stable climb
+function fly2d(A, mass, secs, ctlf) {
+	var st = { x: 0, y: 0, vx: 0, vy: 0, th: 0, q: 0, air: false, rotX: null, liftX: null }, dt = 1 / 240, g = 9.81, maxH = 0;
+	for (var i = 0; i < secs / dt; i++) {
+		var t = i * dt, ctl = ctlf(st, t), f = [Math.cos(st.th), Math.sin(st.th)], u = [-Math.sin(st.th), Math.cos(st.th)];
+		var vb = { x: 0, y: st.vx * u[0] + st.vy * u[1], z: st.vx * f[0] + st.vy * f[1] }, o = C.aero(A, vb, { x: -st.q, y: 0, z: 0 }, ctl, 1.225, dt, A.I);
+		var Fx = o.F.z * f[0] + o.F.y * u[0], Fy = o.F.z * f[1] + o.F.y * u[1] - mass * g, M = -o.T.x;
+		if (st.y <= 0) { var N = Math.max(0, -Fy); Fy += N; Fx -= 0.02 * N; if (st.vy < 0) st.vy = 0; if (st.th < 0) { st.th = 0; st.q = Math.max(0, st.q); } M = Math.max(M, 0) - (st.th <= 0 ? 0 : 0); }
+		st.vx += Fx / mass * dt; st.vy += Fy / mass * dt; st.q += M / A.I[0] * dt; st.q *= st.y <= 0 ? 0.9 : 1; st.th += st.q * dt; st.x += st.vx * dt; st.y = Math.max(0, st.y + st.vy * dt);
+		if (st.y > 0.5 && st.liftX == null) st.liftX = st.x;
+		maxH = Math.max(maxH, st.y);
+	}
+	st.maxH = maxH; return st;
+}
+var to = fly2d(LP, 1100, 40, function (s) { var v = Math.hypot(s.vx, s.vy); return { thr: 1, flap: 1, elev: v > 27 ? Math.max(-0.4, Math.min(0.6, (0.14 - s.th) * 3 - s.q)) : 0 }; });
+ok(to.liftX != null && to.liftX > 120 && to.liftX < 400, "light plane lifts off in a few hundred metres (" + Math.round(to.liftX) + " m)");
+ok(to.y > 60 && to.th > 0 && to.th < 0.5, "and climbs steadily (" + Math.round(to.y) + " m after 40 s)");
+// attitude
+var at = C.attitude({ x: 0, y: 0, z: 1 }, { x: 0, y: 1, z: 0 }); near(at.pitch, 0, 1e-9, "level pitch"); near(at.bank, 0, 1e-9, "level bank");
+var r = 0.5, bk = C.attitude({ x: 0, y: 0, z: 1 }, { x: -Math.sin(r), y: Math.cos(r), z: 0 }); near(bk.bank, r, 1e-9, "bank right = + (up vector leans right = -X)");
+near(C.attitude({ x: 0, y: Math.sin(0.3), z: Math.cos(0.3) }, { x: 0, y: Math.cos(0.3), z: -Math.sin(0.3) }).pitch, 0.3, 1e-9, "nose up = +");
+ok(C.landingRate(0.5).indexOf("Butter") === 0 && C.landingRate(5) === "Hard landing" && C.landingRate(9) === "Crash landing", "landing grades");
+ok(C.onRunway(C.RUNWAY.x + 200, C.RUNWAY.z) && !C.onRunway(0, 0), "runway area");
+var terE = C.makeTerrain("earth"), h0 = terE.height(C.RUNWAY.x - 200, C.RUNWAY.z), h1 = terE.height(C.RUNWAY.x + 200, C.RUNWAY.z + 10);
+near(h0, 0, 1e-9, "runway flat (west end)"); near(h1, 0, 1e-9, "runway flat (east end)");
+ok(C.parseQuery("w=earth&car=plane").car === "plane", "plane in a link");
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

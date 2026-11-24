@@ -504,6 +504,52 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-touch .cs-t-launch {width:4.2em;height:4.2em;background:rgba(155,93,229,0.75);border-color:#fff;font-size:1.1em;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cs-pulse 1s infinite alternate;}
 	.cs-t-launch small {font-size:0.55em;}
 	@keyframes cs-pulse {from {transform:scale(1);} to {transform:scale(1.08);}}
+	/* ---------- planes: flight HUD + touch stick / throttle ---------- */
+	.cs-fhud {position:absolute;left:50%;bottom:0.6em;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.3em 0.7em;max-width:min(36em, 64%);background:var(--cs-glass);color:var(--cs-ink);border-radius:0.6em;padding:0.4em 0.6em;font-size:0.8em;line-height:1.35;pointer-events:none;backdrop-filter:blur(4px);z-index:2;}
+	.cs-fhud canvas {width:96px;height:96px;border-radius:50%;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
+	.cs-fcol {display:flex;flex-direction:column;min-width:11em;}
+	.cs-frow {display:flex;align-items:center;gap:0.45em;}
+	.cs-frow span {color:var(--cs-dim);min-width:4.6em;}
+	.cs-frow b {color:var(--cs-ink);font-variant-numeric:tabular-nums;}
+	.cs-fbar {display:inline-block;width:4.5em;height:0.5em;border-radius:0.3em;background:rgba(255,255,255,0.2);overflow:hidden;}
+	.cs-fbar i {display:block;height:100%;width:0;background:#4dabf7;}
+	.cs-fstall {position:absolute;left:50%;top:-2.1em;transform:translateX(-50%);background:#e03131;color:#fff;font-weight:800;letter-spacing:0.15em;padding:0.15em 0.7em;border-radius:0.35em;animation:cs-blink 0.5s steps(2) infinite;}
+	@keyframes cs-blink {50% {opacity:0.25;}}
+	.cs-flesson {flex-basis:100%;text-align:center;font-size:0.92em;color:#ffd8a8;}
+	.cs-flesson:empty {display:none;}
+	.cs-flying .cs-speedo span::after {content:" ground";}
+	.cs-has-touch .cs-fhud {bottom:auto;top:0.5em;left:0.5em;transform:none;font-size:0.68em;max-width:min(26em, 52%);justify-content:flex-start;}
+	.cs-has-touch .cs-flesson {font-size:0.85em;}
+	.cs-flying.cs-has-touch .cs-hud, .cs-flying.cs-has-touch .cs-speedo {display:none !important;}
+	.cs-has-touch .cs-flesson {text-align:left;}
+	.cs-has-touch .cs-fhud canvas {width:64px;height:64px;}
+	.cs-has-touch .cs-fhud .cs-fstall {top:auto;bottom:-2em;}
+	.cs-replaying .cs-fhud, .cs-hide-info .cs-fhud {display:none !important;}
+	.cs-touch > .cs-tfly {display:none;}
+	.cs-flying .cs-touch > .cs-tl, .cs-flying .cs-touch > .cs-tr {display:none;}
+	.cs-flying .cs-touch > .cs-tfly {display:flex;flex:1;justify-content:space-between;align-items:flex-end;}
+	.cs-stick {width:8.5em;height:8.5em;border-radius:50%;border:2px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.38);position:relative;touch-action:none;flex:none;}
+	.cs-stick::before {content:"";position:absolute;left:50%;top:8%;bottom:8%;width:1px;background:rgba(255,255,255,0.25);}
+	.cs-stick::after {content:"";position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,0.25);}
+	.cs-stick i {position:absolute;left:50%;top:50%;width:3.2em;height:3.2em;margin:-1.6em 0 0 -1.6em;border-radius:50%;background:rgba(77,171,247,0.75);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+	.cs-tfr {display:flex;gap:0.45em;align-items:flex-end;}
+	.cs-thr {width:3.4em;height:9em;border-radius:0.9em;border:2px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.45);position:relative;overflow:hidden;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;color:#fff;font-size:0.85em;padding-top:0.3em;}
+	.cs-thr i {position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(47,158,68,0.75);}
+	.cs-thr b, .cs-thr small {position:relative;color:#fff;line-height:1.1;}
+	.cs-thr small {font-size:0.8em;}
+	.cs-touch #cs-t-flap, .cs-touch #cs-t-fbrk {display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;font-family:inherit;font-size:0.72em;}
+	.cs-touch #cs-t-flap small, .cs-touch #cs-t-fbrk small, .cs-touch #cs-t-rudl small, .cs-touch #cs-t-rudr small {font-size:0.62em;display:block;color:#fff;opacity:0.85;}
+	.cs-touch #cs-t-rudl, .cs-touch #cs-t-rudr {display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;font-family:inherit;}
+	@media (max-width:640px), (max-height:430px) {
+		.cs-stick {width:6.6em;height:6.6em;}
+		.cs-stick i {width:2.6em;height:2.6em;margin:-1.3em 0 0 -1.3em;}
+		.cs-thr {height:7em;width:3em;}
+		.cs-fcol {min-width:9em;}
+	}
+	html body.dark-mode #cs .cs-fhud {background:rgba(12,16,24,0.62);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-frow b {color:#f2f5fa;}
+	html body.dark-mode #cs .cs-frow span {color:#b7c0cf;}
+	html body.dark-mode #cs .cs-flesson {color:#ffd8a8;}
 
 
 	@media print {
@@ -661,6 +707,12 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-edside{background:rgba(26,26,26,0.04)}
 	body.dark-mode .cs-ed .cs-eddel{border-color:rgba(186,0,0,0.50)}
 	body.dark-mode .cs-touch .cs-t-launch{border-color:#333333}
+	body.dark-mode .cs-fbar{background:rgba(26,26,26,0.20)}
+	body.dark-mode .cs-stick{border:2px solid rgba(51,51,51,0.40)}
+	body.dark-mode .cs-stick::before{background:rgba(26,26,26,0.25)}
+	body.dark-mode .cs-stick::after{background:rgba(26,26,26,0.25)}
+	body.dark-mode .cs-stick i{border:2px solid #333333}
+	body.dark-mode .cs-thr{border:2px solid rgba(51,51,51,0.40)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -675,7 +727,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta name="twitter:image" content="https://mes.fm/car-sandbox/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Car Sandbox">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Car Sandbox", "url": "https://mes.fm/car-sandbox", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Car Sandbox", "url": "https://mes.fm/car-sandbox", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, fly a light plane or a stunt jet off the runway, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -872,14 +924,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">3D Car Sandbox: Drive on the Moon, Mars and a Test Track with Real Physics</h1>                                        <p class="page-description">A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">3D Car Sandbox: Drive on the Moon, Mars and a Test Track with Real Physics</h1>                                        <p class="page-description">A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, fly a light plane or a stunt jet off the runway, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<script src="/main_js/panel-view.js" defer></script>
 	<div class="tu cs" id="cs">
 		<section class="cs-view" id="cs-view" aria-label="Car sandbox">
 			<div class="cs-top" id="cs-pbar">
 				<label class="cs-sel"><span>World</span><select id="cs-world" class="tu-select"></select></label>
-				<label class="cs-sel"><span>Car</span><select id="cs-car" class="tu-select"></select></label>
+				<label class="cs-sel"><span>Vehicle</span><select id="cs-car" class="tu-select"></select></label>
 				<label class="cs-sel"><span>Camera</span><select id="cs-cam" class="tu-select"></select></label>
 				<label class="cs-sel"><span>Weather</span><select id="cs-wx" class="tu-select"></select></label>
 			</div>
@@ -894,6 +946,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-lap" id="cs-lap" hidden><b id="cs-lapnow"></b><span id="cs-lapbest"></span></div>
 				</div>
 				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
+				<div class="cs-fhud" id="cs-fhud" hidden aria-live="off">
+					<canvas id="cs-ahi" width="120" height="120" aria-label="Artificial horizon: pitch and bank"></canvas>
+					<div class="cs-fcol">
+						<div class="cs-frow"><span>Air speed</span><b id="cs-fias">0</b></div>
+						<div class="cs-frow"><span>Height</span><b id="cs-falt">0</b></div>
+						<div class="cs-frow"><span>Climb</span><b id="cs-fvs">0</b></div>
+						<div class="cs-frow"><span>Throttle</span><i class="cs-fbar"><i id="cs-fthr"></i></i><b id="cs-fthrn">0%</b></div>
+						<div class="cs-frow"><span>Flaps</span><b id="cs-fflap">Up</b><span id="cs-fbrk"></span></div>
+					</div>
+					<div class="cs-fstall" id="cs-fstall" hidden>STALL</div>
+					<div class="cs-flesson" id="cs-flesson"></div>
+				</div>
 				<div class="cs-sbtns">
 					<button type="button" id="cs-mapbtn" title="Show or hide the map" aria-label="Map" aria-pressed="true">🗺</button>
 					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
@@ -959,6 +1023,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<li><kbd>B</kbd> map editor: place ramps, loops, springs, launch pads, boost strips and draw your own roads · <kbd>L</kbd> fire a launch pad · <kbd>[</kbd> <kbd>]</kbd> slower / faster game</li>
 						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
+						<li>✈ <kbd>J</kbd> jump into a plane (or pick one under Vehicle) · <kbd>S</kbd> / <kbd>W</kbd> nose up / down · <kbd>A</kbd> <kbd>D</kbd> roll · <kbd>Q</kbd> <kbd>E</kbd> rudder · <kbd>Shift</kbd> / <kbd>Z</kbd> throttle up / down · <kbd>V</kbd> flaps · <kbd>Space</kbd> wheel brakes · <kbd>R</kbd> in the air = wings level</li>
 						<li>Stuck or upside down? Press <kbd>R</kbd> or ↺ Reset (it also flips back by itself after a few seconds)</li>
 						<li>Drag the picture to look around · a game controller works too</li>
 					</ul>
@@ -981,6 +1046,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-edhint" id="cs-edhint"></div>
 				</div>
 				<div class="cs-touch" id="cs-touch" hidden>
+					<div class="cs-tfly" id="cs-tfly">
+						<div class="cs-stick" id="cs-stick" aria-label="Control stick: drag to pitch and roll"><i id="cs-knob"></i></div>
+						<div class="cs-tfr">
+							<div class="cs-tcol"><button type="button" id="cs-t-flap" class="cs-t-sm" aria-label="Flaps">Flaps<small id="cs-t-flapn">T/O</small></button><button type="button" id="cs-t-fbrk" class="cs-t-sm" aria-label="Wheel brakes">Brake<small>wheels</small></button><button type="button" id="cs-t-freset" class="cs-t-sm cs-t-reset" aria-label="Level the wings or reset">↺<small>Reset</small></button></div>
+							<div class="cs-tcol"><button type="button" id="cs-t-rudl" class="cs-t-sm" aria-label="Rudder left">◀<small>Rudder</small></button><button type="button" id="cs-t-rudr" class="cs-t-sm" aria-label="Rudder right">▶<small>Rudder</small></button></div>
+							<div class="cs-thr" id="cs-thr" role="slider" aria-label="Throttle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><i id="cs-thrfill"></i><b>THR</b><small id="cs-thrn">0%</small></div>
+						</div>
+					</div>
 					<div class="cs-tl"><button type="button" id="cs-t-left" aria-label="Steer left">◀</button><button type="button" id="cs-t-right" aria-label="Steer right">▶</button></div>
 					<div class="cs-tr"><button type="button" id="cs-t-launch" class="cs-t-launch" aria-label="Launch" hidden>🚀<small>Launch</small></button><div class="cs-tcol"><button type="button" id="cs-t-reset" class="cs-t-sm cs-t-reset" aria-label="Reset: put the car back on its wheels">↺<small>Reset</small></button><button type="button" id="cs-t-boost" class="cs-t-sm" aria-label="Boost">⚡<small>Boost</small></button><button type="button" id="cs-t-hb" class="cs-t-sm" aria-label="Handbrake">HB<small>Drift</small></button></div><button type="button" id="cs-t-brake" class="cs-pedal" aria-label="Brake or reverse"><span class="cs-parr">▼</span><b>BRAKE</b><small>hold = reverse</small></button><button type="button" id="cs-t-gas" class="cs-pedal" aria-label="Gas: accelerate"><span class="cs-parr">▲</span><b>GAS</b></button></div>
 				</div>
@@ -999,6 +1072,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-todticks" aria-hidden="true"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
 					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn tu-btn--ghost" data-cycle>▶ Run the day</button><select class="tu-select" data-cyspd aria-label="Length of a day"></select></div>
 					<p class="tu-note">Drag through sunrise and sunset to see the sun move, the sky change colour and the shadows grow. At dusk the lamp posts and headlights switch on.</p>
+				</div>
+				<div class="cs-card" id="cs-pcard">
+					<div class="cs-ch">✈ Fly a plane <span class="cs-gname" id="cs-pname"></span></div>
+					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn" id="cs-fly">✈ Fly the light plane (J)</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-flyjet">Stunt jet</button></div>
+					<div class="cs-row cs-wrapb" id="cs-prow" hidden><button type="button" class="tu-btn tu-btn--ghost" id="cs-runway">🛫 To the runway</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-airstart">☁ Start in the air</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-backcar">🚗 Back to a car</button></div>
+					<label class="cs-lab"><input type="checkbox" id="cs-pinv"> Invert pitch (W = nose up)</label>
+					<p class="tu-note" id="cs-pfacts"></p>
+					<p class="tu-note">How to take off: flaps at T/O (V), full throttle (hold Shift), and at lift-off speed pull back gently (S). Lift grows with the square of the air speed, with the air's density and with the wing's angle; push the angle past about 15° and the airflow breaks away from the wing: a stall. Land at a slow sink rate, under 2.5 m/s, for a good landing.</p>
 				</div>
 				<div class="cs-card">
 					<div class="cs-ch">Other cars</div>
@@ -1070,6 +1151,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li><b>Jumps scale with 1 / g.</b> Leave a ramp at the same speed and angle and you fly six times as far and six times as long on the Moon, and 35 times as far on Ceres. The dust thrown up by the wheels follows the same arcs, and on airless worlds it falls straight back without drifting.</li>
 			</ul>
 			<p>There is also air drag (none on the Moon and Ceres, very little on Mars), rolling resistance, a tapering engine force, and crashes: when a car's velocity changes much faster than gravity and its springs could do it, that is an impact. The felt g-force is shown, the body dents where it was hit, and the engine gets weaker as the damage goes up.</p>
+			<h3>Flying a plane</h3>
+			<p>Pick the light plane or the stunt jet under Vehicle, or press J. The test-track worlds have a 470 m runway north of the oval; any long flat road works too. The flight model is simple but honest: lift grows with the air's density, the wing area, the square of the air speed and the angle at which the wing meets the air, up to about 15 degrees; past that the airflow breaks away from the top of the wing and the plane stalls. Drag has two parts, the plain push of the air and the induced drag that comes with making lift (that is why a plane flying slowly needs more power, not less). Ailerons roll it, the elevator pitches it, the rudder yaws it, flaps give more lift and more drag so it can fly slower, and the plane is stable on its own: let go and it settles into a gentle climb or descent. A touchdown is graded by how fast you were sinking: under 2.5 m/s is a good landing.</p>
+			<p>The worlds make the lesson: on the Moon and Ceres there is no air, so the wings lift nothing and the control surfaces do nothing. Mars has about 1.6% of Earth's air, so the light plane would need over 400 km/h to lift off. At Jupiter's gravity the light plane is too heavy to fly at all, while the jet, with ten times the push, still can. (A real propeller or jet engine needs air too; in this sandbox the engine keeps pushing so you can feel what the wings do.)</p>
 			<h3>Questions</h3>
 			<dl>
 				<dt>Why does the car slide so much on the Moon?</dt>
@@ -1108,7 +1192,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/gta"><img class="mes-aside__img mes-aside__img--logo" src="/gta/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GTA 6 Hub: Countdown, Download Time and Stunt Jump Simulator (Unofficial)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/earth-curvature-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/earth-curvature-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Earth Curvature Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/gta"><img class="mes-aside__img mes-aside__img--logo" src="/gta/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GTA 6 Hub: Map, Launch Times, Download Time and Stunt Jumps (Unofficial)</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/earth-curvature-calculator"><img class="mes-aside__img mes-aside__img--logo" src="/earth-curvature-calculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Earth Curvature Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1158,7 +1242,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/car-sandbox/js/car-sandbox.js?v=11" defer></script>
+	<script src="/car-sandbox/js/car-sandbox.js?v=12" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

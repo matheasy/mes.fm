@@ -58,6 +58,105 @@
 	};
 	C.STYLE = { sports: "coupe", suv: "suv", truck: "pickup", bus: "bus", monster: "suv" };
 	C.CAR_ORDER = ["sports", "suv", "truck", "bus", "monster", "buggy", "rover", "kart"];
+
+	/* ---------- aircraft ----------
+	   A plane is a "car" with fly: {...}: the same Rapier vehicle controller carries it on its wheels (two main wheels + a twin nose wheel,
+	   wxf = nose half track), and C.aero adds the air forces every physics step. Body axes as for the cars: +Z nose, +Y up, +X left wing.
+	   fly: S wing area (m^2), b span, c chord, e span efficiency, CL0 lift at zero angle, CLa lift slope (/rad, finite wing), aS stall angle,
+	   CD0 parasite drag, flap = [lift, drag, stall-angle change, nose-down pitch] per notch (0, 1, 2), P engine power (W) + eta propeller
+	   efficiency (thrust = eta P / v, capped at the static thrust T0) or jet: true (thrust T0 falling 10% by 250 m/s),
+	   Cm* pitch (0 / angle / elevator / pitch-rate damping), Cl* roll (aileron / damping / dihedral), Cn* yaw (weathervane / rudder / damping),
+	   CY sideways force, I = [pitch, yaw, roll] moments of inertia (kg m^2), cols = fuselage boxes [half x, half y, half z, y, z]
+	   (the tail box sits higher, like the upswept tail, so the plane can rotate ~15 degrees before the tail touches). Values are typical light-aircraft / small-jet numbers. */
+	C.CARS.plane = { name: "Light plane", mass: 1100, l: 7.6, w: 1.15, h: 1.3, cab: null, wr: 0.28, ww: 0.16, wx: 1.25, wxf: 0.1, wf: 2.2, wb: -0.42, ry: -0.6, rest: 0.42, k: 46,
+		drive: "rwd", F: 3300, vmax: 70, cdA: 0.5, grip: 0.9, steer: 0.5, color: "#f4f4f2",
+		fly: { S: 16.2, b: 11, c: 1.5, e: 0.8, CL0: 0.3, CLa: 5.0, aS: 0.27, CD0: 0.032, flap: [[0, 0, 0, 0], [0.35, 0.014, -0.02, 0.03], [0.62, 0.045, -0.035, 0.06]],
+			P: 120000, eta: 0.8, T0: 3300, Cm0: 0.04, Cma: -0.9, Cme: 0.36, Cmq: -12, Cla: 0.09, Clp: -0.45, Clb: 0.09, Cnb: 0.12, Cnr: -0.15, Cnd: 0.075, CY: -0.6, I: [1350, 2450, 1300],
+			wingY: 0.78, wingZ: -0.15, fz: -0.8, tail: [1.7, 0.22, -3.95], eye: [0.28, 0.62, 0.3], cols: [[0.575, 0.65, 2.4, 0.05, 0.6], [0.3, 0.3, 1.4, 0.35, -3.2]], vRot: 28, desc: "A four-seat, 160 hp single-engine plane like a Cessna 172: lifts off at about 100 km/h, cruises near 210 km/h." } };
+	C.CARS.jet = { name: "Stunt jet", mass: 4800, l: 11.5, w: 1.5, h: 1.5, cab: null, wr: 0.32, ww: 0.2, wx: 1.6, wxf: 0.12, wf: 3.6, wb: -0.6, ry: -0.75, rest: 0.45, k: 50,
+		drive: "rwd", F: 36000, vmax: 260, cdA: 1.0, grip: 0.9, steer: 0.45, color: "#3d5a80",
+		fly: { S: 24, b: 9.4, c: 2.8, e: 0.75, CL0: 0.1, CLa: 4.2, aS: 0.3, CD0: 0.022, flap: [[0, 0, 0, 0], [0.3, 0.02, -0.02, 0.02], [0.55, 0.06, -0.04, 0.04]],
+			jet: true, T0: 36000, Cm0: 0.01, Cma: -0.6, Cme: 0.3, Cmq: -14, Cla: 0.05,  Clp: -0.35, Clb: 0.04, Cnb: 0.1, Cnr: -0.18, Cnd: 0.06, CY: -0.7, I: [28000, 33000, 6500],
+			wingY: 0.05, wingZ: -0.8, fz: -0.45, tail: [2.3, 0.3, -5.3], eye: [0, 0.74, 2.3], cols: [[0.75, 0.75, 3.0, 0.05, 2.35], [0.6, 0.45, 2.8, 0.2, -3.45]], vRot: 60, desc: "A small aerobatic jet trainer with 36 kN of thrust: needs about 200 km/h to lift off, rolls fast and climbs straight up." } };
+	C.PLANE_ORDER = ["plane", "jet"];
+	C.isPlane = function (k) { return !!(C.CARS[k] && C.CARS[k].fly); };
+	C.FLAPS = ["Up", "Takeoff (10°)", "Landing (30°)"];
+	C.AIR_EARTH = 1.225;
+
+	/* lift coefficient at angle of attack a (rad) with flaps notch f: straight line up to the stall angle, then it falls away towards
+	   the flat-plate value 1.1 sin 2a (what a wing does after the airflow breaks away from its top). Returns {CL, s (0 = flying, 1 = stalled)} */
+	C.liftCoef = function (A, a, f) {
+		var F = A.flap[f | 0] || A.flap[0], aP = A.aS + F[2], aN = -(A.aS * 0.8), CL0 = A.CL0 + F[0];
+		var lin = CL0 + A.CLa * a, plate = 1.1 * Math.sin(2 * a);
+		if (a <= aP && a >= aN) return { CL: lin, s: 0 };
+		var edge = a > aP ? aP : aN, peak = CL0 + A.CLa * edge, k = Math.exp(-Math.abs(a - edge) / 0.09);
+		return { CL: peak * k + plate * (1 - k), s: 1 - k };
+	};
+	C.dragCoef = function (A, a, f, CL, s) {
+		var F = A.flap[f | 0] || A.flap[0], AR = A.b * A.b / A.S, sn = Math.sin(a);
+		return A.CD0 + F[1] + CL * CL / (Math.PI * A.e * AR) + 1.28 * sn * sn * s;
+	};
+	C.thrust = function (A, v, thr) { thr = Math.max(0, Math.min(1, thr)); if (A.jet) return thr * A.T0 * Math.max(0.6, 1 - Math.abs(v) / 2500); return thr * Math.min(A.T0, A.eta * A.P / Math.max(1, Math.abs(v))); };
+	/* stall speed in level flight: weight = lift at the biggest CL. rho 0 (the Moon) = Infinity */
+	C.stallSpeed = function (A, mass, g, rho, f) {
+		if (!(rho > 0)) return Infinity; if (g <= 0) return 0;
+		var F = A.flap[f | 0] || A.flap[0], clMax = A.CL0 + F[0] + A.CLa * (A.aS + F[2]);
+		return Math.sqrt(2 * mass * g / (rho * A.S * clMax));
+	};
+	/* fastest level flight: thrust = drag (bisection over speed); 0 if it can never hold itself up */
+	C.topSpeed = function (A, mass, g, rho) {
+		if (!(rho > 0)) return 0;
+		function excess(v) { var q = 0.5 * rho * v * v, CL = mass * g / (q * A.S), D = q * A.S * (A.CD0 + CL * CL / (Math.PI * A.e * A.b * A.b / A.S)); return C.thrust(A, v, 1) - D; }
+		var vs = C.stallSpeed(A, mass, g, rho, 0), hi = 400, lo = vs * 1.02;
+		if (excess(lo) < 0) { var best = -1; for (var v = lo; v < hi; v += 2) if (excess(v) >= 0) { best = v; break; } if (best < 0) return 0; lo = best; }
+		if (excess(hi) > 0) return hi;
+		for (var i = 0; i < 50; i++) { var m = (lo + hi) / 2; if (excess(m) > 0) lo = m; else hi = m; }
+		return lo;
+	};
+	/* the air forces on an aircraft. vb = velocity through the air in body axes {x, y, z}, wb = turn rate in body axes (rad/s),
+	   ctl = {elev (+1 = stick back = nose up), ail (+1 = roll right), rud (+1 = yaw right), flap 0..2, thr 0..1}, rho = air density,
+	   I + dt (optional) = cap each damping torque so it can never reverse a turn within one physics step.
+	   Returns force F and torque T in body axes (N, N m) plus alpha, beta (rad), V, q (dynamic pressure), CL, stall (0..1). */
+	C.aero = function (A, vb, wb, ctl, rho, dt, I) {
+		var V = Math.sqrt(vb.x * vb.x + vb.y * vb.y + vb.z * vb.z), out = { F: { x: 0, y: 0, z: 0 }, T: { x: 0, y: 0, z: 0 }, alpha: 0, beta: 0, V: V, q: 0, CL: 0, stall: 0, thrust: 0 };
+		var f = ctl.flap | 0, Fl = A.flap[f] || A.flap[0];
+		out.thrust = C.thrust(A, vb.z, ctl.thr); out.F.z += out.thrust;
+		if (!(rho > 0) || V < 0.5) return out;
+		var q = 0.5 * rho * V * V, S = A.S, a = Math.atan2(-vb.y, vb.z), bt = Math.asin(Math.max(-1, Math.min(1, vb.x / V)));
+		/* flying backwards (a > 90 degrees) keeps the flat-plate behaviour */
+		var aw = a > Math.PI / 2 ? Math.PI - a : a < -Math.PI / 2 ? -Math.PI - a : a;
+		var L = C.liftCoef(A, aw, f), CD = C.dragCoef(A, aw, f, L.CL, L.s) + 0.4 * bt * bt;
+		out.alpha = a; out.beta = bt; out.q = q; out.CL = L.CL; out.stall = L.s;
+		/* lift: at right angles to the airflow and to the wing span, in the plane's symmetry plane; drag: against the airflow */
+		var vyz = Math.sqrt(vb.y * vb.y + vb.z * vb.z) || 1, lift = q * S * L.CL * (vyz * vyz) / (V * V), drag = q * S * CD, side = q * S * A.CY * bt;
+		out.F.y += lift * vb.z / vyz; out.F.z += lift * -vb.y / vyz;
+		out.F.x += -drag * vb.x / V + side; out.F.y += -drag * vb.y / V; out.F.z += -drag * vb.z / V;
+		/* turning moments. Damping uses the turn rate scaled by span or chord / 2V (V at least 8 m/s so it stays sensible while taxiing) */
+		var Vd = Math.max(8, V), pitchUp = -wb.x, rollR = wb.z, yawL = wb.y, auth = 1 - 0.55 * L.s; /* controls go soft in a stall */
+		var CmU = A.Cm0 - Fl[3] + A.Cma * aw + A.Cme * (ctl.elev || 0) * auth, ClR = A.Cla * (ctl.ail || 0) * auth + A.Clb * bt, CnL = A.Cnb * bt - A.Cnd * (ctl.rud || 0);
+		var dP = q * S * A.c * A.Cmq * pitchUp * A.c / (2 * Vd), dR = q * S * A.b * A.Clp * rollR * A.b / (2 * Vd), dY = q * S * A.b * A.Cnr * yawL * A.b / (2 * Vd);
+		if (dt && I) { /* never more than 80% of the way to stopping the turn in one step */
+			var cap = function (d, w, i) { var m = 0.8 * i * Math.abs(w) / dt; return Math.max(-m, Math.min(m, d)); };
+			dP = cap(dP, pitchUp, I[0]); dY = cap(dY, yawL, I[1]); dR = cap(dR, rollR, I[2]);
+		}
+		out.T.x = -(q * S * A.c * CmU + dP); out.T.z = q * S * A.b * ClR + dR; out.T.y = q * S * A.b * CnL + dY;
+		return out;
+	};
+	/* the throttle, flaps etc. are kept on the plane; this turns held keys into smooth control positions */
+	C.ease = function (cur, want, rate, dt) { var d = want - cur, m = rate * dt; return cur + Math.max(-m, Math.min(m, d)); };
+	/* artificial horizon numbers from the plane's forward / up vectors (world, Y up): pitch (+ = nose up) and bank (+ = right wing down), radians */
+	C.attitude = function (f, u) {
+		var pitch = Math.asin(Math.max(-1, Math.min(1, f.y)));
+		/* left wing = up x forward; bank = how far the left wing is raised */
+		var lx = u.y * f.z - u.z * f.y, ly = u.z * f.x - u.x * f.z, lz = u.x * f.y - u.y * f.x;
+		var bank = Math.atan2(ly, u.y);
+		void lx; void lz; return { pitch: pitch, bank: bank };
+	};
+	/* how a touchdown went, from the sink rate (m/s, positive = down) */
+	C.landingRate = function (vs) { return vs < 1 ? "Butter! Perfect landing" : vs < 2.5 ? "Good landing" : vs < 4 ? "Firm landing" : vs < 6 ? "Hard landing" : "Crash landing"; };
+	/* the runway on the test-track worlds: along X, north of the oval */
+	C.RUNWAY = { x: 0, z: 180, len: 470, w: 26 };
+	C.onRunway = function (x, z, pad) { var R = C.RUNWAY; pad = pad || 0; return Math.abs(x - R.x) <= R.len / 2 + pad && Math.abs(z - R.z) <= R.w / 2 + pad; };
 	C.PAINT = ["#d62828", "#2b6cb0", "#f2b705", "#16a34a", "#7b2cbf", "#ff8800", "#e5e5e5", "#222222", "#0ea5e9", "#db2777"];
 
 	/* ---------- weather ----------
@@ -206,6 +305,8 @@
 				var inField = (Math.abs(x) < T.half + T.r - 10 && Math.abs(z - T.cz) < T.r - 8) || (Math.abs(x) < T.half && Math.abs(z - T.cz) < T.r);
 				var flat = inField ? 0 : Math.min(1, Math.max(0, (d - T.width * 0.5 - 6) / 26));
 				if (Math.hypot(x, z - 70) < 50) flat = Math.min(flat, Math.max(0, (Math.hypot(x, z - 70) - 30) / 20));
+				var R = C.RUNWAY, rd = Math.max(Math.abs(x - R.x) - R.len / 2, Math.abs(z - R.z) - R.w / 2); /* the runway and its grass strip are flat */
+				if (rd < 40) flat = Math.min(flat, Math.max(0, (rd - 10) / 30));
 				return Math.max(0, hills + 3) * flat * flat + edge(x, z);
 			};
 		} else if (W.dunes) {

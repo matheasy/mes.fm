@@ -117,8 +117,9 @@
 		buildMapContent(false);
 		applyLighting();
 		/* the player's car at the start, then the computer cars */
-		var start = startPose(0);
-		cars.push(makeCar(S.car && C.CARS[S.car] ? S.car : W.car, S.color || null, start, true));
+		var ptype = S.car && C.CARS[S.car] ? S.car : W.car, start = C.isPlane(ptype) ? planeStart() : startPose(0);
+		cars.push(makeCar(ptype, S.color || null, start, true));
+		buildRunway();
 		player = 0; lapReset(); if (ghostMesh) { scene.remove(ghostMesh); ghostMesh = null; } ghostKey = ""; ghost = null;
 		setTraffic(S.traffic);
 		camSnap = true;
@@ -130,6 +131,8 @@
 		var a = i * 0.9; return { x: Math.sin(a) * (i ? 14 + i * 3 : 0), z: -Math.cos(a) * (i ? 14 + i * 3 : 0), yaw: 0 };
 	}
 	function hAt(x, z) { return C.gridHeight(ter, groundH, x, z); }
+	/* a plane starts at the west end of the runway on the test-track worlds, facing down it (+X) */
+	function planeStart() { if (W.track) { var R = C.RUNWAY; return { x: R.x - R.len / 2 + 22, z: R.z, yaw: Math.PI / 2 }; } return startPose(0); }
 	/* ---------- day and night ---------- */
 	var NIGHT_SKY = { earth: ["#01030a", "#0c1730"], jupiter: ["#030208", "#1a1420"], mars: ["#04030a", "#1e1418"], moon: ["#000000", "#020308"], ceres: ["#000000", "#020205"] };
 	var dayK = 1, skyRef = null;
@@ -533,6 +536,43 @@
 		[-1, 1].forEach(function (sd) { var pl = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 5, 8), poleM), x = p0.x + lx * half * sd, z = p0.z + lz * half * sd; pl.position.set(x, hAt(x, z) + 2.5, z); pl.castShadow = true; pieceGroup.add(pl); });
 		var ban = new THREE.Mesh(new THREE.BoxGeometry(pth.w + 1.4, 0.9, 0.2), new THREE.MeshStandardMaterial({ map: chkTex })); ban.position.set(p0.x, hAt(p0.x, p0.z) + 5, p0.z); ban.rotation.y = p0.dir; pieceGroup.add(ban);
 	}
+	/* the runway on the test-track worlds: asphalt with edge lines, centre-line dashes, threshold bars and the numbers 09 / 27,
+	   edge lights, a hangar and a windsock. The ground under it is flat (C.makeTerrain), so the physics needs nothing extra. */
+	function buildRunway() {
+		if (!W.track) return;
+		var R = C.RUNWAY, PX = 2048, PY = Math.round(PX * R.w / R.len), mpp = R.len / PX;
+		var tex = canvasTex(PX, PY, function (g, w, h) {
+			var r = C.rng(17), id = g.createImageData(w, h);
+			for (var q = 0; q < w * h; q++) { var v = 58 + r() * 18; id.data[q * 4] = v; id.data[q * 4 + 1] = v; id.data[q * 4 + 2] = v + 4; id.data[q * 4 + 3] = 255; }
+			g.putImageData(id, 0, 0); g.fillStyle = "#eeeeea";
+			var m = function (v) { return v / mpp; };
+			g.fillRect(0, m(1), w, m(0.9)); g.fillRect(0, h - m(1.9), w, m(0.9)); /* edge lines */
+			for (var x = m(70); x < w - m(70); x += m(50)) g.fillRect(x, h / 2 - m(0.45), m(30), m(0.9)); /* centre line */
+			[m(6), w - m(6) - m(30)].forEach(function (x0) { for (var b = 0; b < 8; b++) { var y = m(2.4) + b * m(1.45); if (b >= 4) y += h - 2 * m(2.4) - 8 * m(1.45) + m(0.1); g.fillRect(x0, y, m(30), m(1.0)); } }); /* threshold bars */
+			g.font = "bold " + Math.round(m(9)) + "px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+			g.save(); g.translate(m(50), h / 2); g.rotate(Math.PI / 2); g.fillText("09", 0, 0); g.restore();
+			g.save(); g.translate(w - m(50), h / 2); g.rotate(-Math.PI / 2); g.fillText("27", 0, 0); g.restore();
+		});
+		tex.anisotropy = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+		var geo = new THREE.PlaneGeometry(R.len, R.w); geo.rotateX(-Math.PI / 2);
+		var rm = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -2 }));
+		if (W.g > 20) rm.material.color.set("#d8ccb4");
+		rm.position.set(R.x, 0.035, R.z); rm.receiveShadow = true; worldGroup.add(rm);
+		/* edge lights every 30 m (they glow at night like the lamp posts) */
+		var n = Math.floor(R.len / 30) + 1, lg = new THREE.InstancedMesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), new THREE.MeshBasicMaterial({ color: 0xfff1b0 }), n * 2), k = 0;
+		for (var i = 0; i < n; i++) [-1, 1].forEach(function (sd) { tmpM.compose(new THREE.Vector3(R.x - R.len / 2 + i * 30, 0.2, R.z + sd * (R.w / 2 + 1)), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)); lg.setMatrixAt(k++, tmpM); });
+		worldGroup.add(lg);
+		/* hangar north of the west end + windsock */
+		var hx = R.x - R.len / 2 + 70, hz = R.z - R.w / 2 - 34, hg = new THREE.Group();
+		var hb = new THREE.Mesh(new THREE.BoxGeometry(30, 7, 22), mat("#9aa5b1", { metalness: 0.4, roughness: 0.6 })); hb.position.y = 3.5; hb.castShadow = hb.receiveShadow = true; hg.add(hb);
+		var roofG = new THREE.CylinderGeometry(11, 11, 30, 18, 1, false, -Math.PI / 2, Math.PI); roofG.rotateZ(Math.PI / 2); roofG.scale(1, 0.35, 1);
+		var rf = new THREE.Mesh(roofG, mat("#7d8893", { metalness: 0.5, roughness: 0.5 })); rf.position.y = 7; rf.castShadow = true; hg.add(rf);
+		var door = new THREE.Mesh(new THREE.PlaneGeometry(22, 6), mat("#3a4048")); door.position.set(0, 3, 11.01); hg.add(door);
+		hg.position.set(hx, 0, hz); worldGroup.add(hg); fixedBox(15, 5, 11, hx, 5, hz, { x: 0, y: 0, z: 0, w: 1 });
+		var sx = R.x - R.len / 2 + 40, sz = R.z + R.w / 2 + 12;
+		var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 6, 6), mat("#dddddd")); pole.position.set(sx, 3, sz); worldGroup.add(pole);
+		var sock = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.12, 2.2, 10, 1, true), mat("#ff6b1a", { side: THREE.DoubleSide })); sock.rotation.z = -Math.PI / 2 + 0.25; sock.position.set(sx + 1.1, 5.7, sz); worldGroup.add(sock);
+	}
 	function buildBorder() {
 		var s = ter.size / 2, h = 80;
 		[[s, 0, 1, s], [-s, 0, 1, s], [0, s, s, 1], [0, -s, s, 1]].forEach(function (b) { fixedBox(b[2], h, b[3], b[0], h - 10, b[1], { x: 0, y: 0, z: 0, w: 1 }, 0.2); });
@@ -543,7 +583,7 @@
 			var N = 260, trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.35, 2.4, 6), mat("#6b4a2b"), N), crown = new THREE.InstancedMesh(new THREE.ConeGeometry(2.2, 6, 8), mat("#2f6b2f"), N), n = 0;
 			for (var t = 0; t < 2000 && n < N; t++) {
 				var x = (r() * 2 - 1) * half, z = (r() * 2 - 1) * half;
-				if (C.trackDist(x, z) < 22 || Math.hypot(x, z - 70) < 55 || (Math.abs(x) < C.TRACK.half + C.TRACK.r && Math.abs(z - C.TRACK.cz) < C.TRACK.r)) continue;
+				if (C.trackDist(x, z) < 22 || Math.hypot(x, z - 70) < 55 || C.onRunway(x, z, 45) || (Math.abs(x) < C.TRACK.half + C.TRACK.r && Math.abs(z - C.TRACK.cz) < C.TRACK.r)) continue;
 				var y = hAt(x, z), sc = 0.7 + r() * 0.8;
 				tmpM.compose(new THREE.Vector3(x, y + 1.2 * sc, z), new THREE.Quaternion(), new THREE.Vector3(sc, sc, sc)); trunk.setMatrixAt(n, tmpM);
 				tmpM.compose(new THREE.Vector3(x, y + 5 * sc, z), new THREE.Quaternion(), new THREE.Vector3(sc, sc, sc)); crown.setMatrixAt(n, tmpM);
@@ -614,6 +654,7 @@
 		void g; return body;
 	}
 	function makeCarMesh(d, color) {
+		if (d.fly) return makePlaneMesh(d, color);
 		var g = new THREE.Group(), paint = new THREE.MeshStandardMaterial({ color: color, metalness: 0.35, roughness: 0.42 }), dents = [];
 		var hw = d.w / 2, hh = d.h / 2, hl = d.l / 2;
 		var glass = new THREE.MeshStandardMaterial({ color: 0x18222e, metalness: 0.7, roughness: 0.08, side: THREE.DoubleSide });
@@ -660,24 +701,119 @@
 		return { group: g, wheels: wheels, dents: dents, flame: flame, paint: paint, lightF: lightF, lightR: lightR };
 	}
 
+	/* ---------- aircraft mesh (low-poly, body axes: +Z nose, +Y up, +X left wing) ----------
+	   returns the same parts as a car (wheels with piv / spin, dents, flame, lights) plus surf = moving control surfaces + propeller */
+	function makePlaneMesh(d, color) {
+		var A = d.fly, jet = !!A.jet, g = new THREE.Group(), dents = [];
+		var paint = new THREE.MeshStandardMaterial({ color: color, metalness: 0.3, roughness: 0.45 });
+		var trim = mat(jet ? "#e8eef5" : "#b3261e", { metalness: 0.3, roughness: 0.45 }), dark = mat("#22262c", { roughness: 0.6, metalness: 0.4 });
+		var glass = new THREE.MeshStandardMaterial({ color: 0x2a3d52, metalness: 0.5, roughness: 0.08, transparent: true, opacity: 0.45, depthWrite: false, side: THREE.DoubleSide });
+		function add(m, x, y, z) { m.position.set(x || 0, y || 0, z || 0); m.castShadow = true; g.add(m); return m; }
+		function cyl(a, b, r, mt) { var v = new THREE.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), L = v.length(), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 6), mt); m.position.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v.normalize()); m.castShadow = true; g.add(m); return m; }
+		/* a flat outline (u = across / along, v) extruded to a thin plate; axis "x" = plate lies in the y-z plane (fin), "y" = in the x-z plane (wings) */
+		function plate(pts, th, axis, mt) {
+			var geo = new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(function (p) { return new THREE.Vector2(p[0], p[1]); })), { depth: th, bevelEnabled: false });
+			geo.translate(0, 0, -th / 2); if (axis === "x") geo.rotateY(-Math.PI / 2); else geo.rotateX(Math.PI / 2);
+			geo.computeVertexNormals(); var m = new THREE.Mesh(geo, mt); m.castShadow = true; g.add(m); return m;
+		}
+		function hinge(x, y, z, w, h, l, mt) { var piv = new THREE.Group(), m = new THREE.Mesh(new THREE.BoxGeometry(w, h, l), mt); m.position.z = -l / 2; m.castShadow = true; piv.add(m); piv.position.set(x, y, z); g.add(piv); return piv; }
+		/* fuselage: a lathe outline turned to lie along Z, a bit taller than wide, the tail cone swept up */
+		var prof = jet ? [[0, -6.25], [0.42, -6.2], [0.6, -5], [0.72, -2], [0.75, 0], [0.7, 2], [0.56, 3.5], [0.34, 4.6], [0.1, 5.25], [0, 5.35]]
+			: [[0, -4.62], [0.08, -4.6], [0.24, -4.0], [0.4, -2.9], [0.53, -1.6], [0.6, -0.6], [0.6, 0.6], [0.57, 1.6], [0.5, 2.45], [0.36, 2.95], [0, 3.0]];
+		var fg = new THREE.LatheGeometry(prof.map(function (p) { return new THREE.Vector2(p[0], p[1]); }), 16); fg.rotateX(Math.PI / 2);
+		var fp = fg.attributes.position; for (var i = 0; i < fp.count; i++) { var y = fp.getY(i) * (jet ? 1.1 : 1.18), z = fp.getZ(i); if (!jet && z < -1.4) y += (-1.4 - z) * 0.11; fp.setY(i, y + 0.05); }
+		fg.computeVertexNormals(); var fus = add(new THREE.Mesh(fg, paint)); dents.push(fus);
+		var surf = {};
+		if (!jet) {
+			/* cabin windows + windscreen, high wing on struts, cowling with spinner and a two-blade propeller */
+			[-1, 1].forEach(function (sx) { add(new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.34, 1.45), glass), sx * 0.5, 0.42, 0.2); });
+			var ws = new THREE.BufferGeometry(); ws.setAttribute("position", new THREE.BufferAttribute(new Float32Array([-0.44, 0.42, 1.05, 0.44, 0.42, 1.05, 0.3, 0.77, 0.6, -0.44, 0.42, 1.05, 0.3, 0.77, 0.6, -0.3, 0.77, 0.6]), 3)); ws.computeVertexNormals(); add(new THREE.Mesh(ws, glass));
+			var wing = add(new THREE.Mesh(shapeBox(new THREE.BoxGeometry(A.b, 0.14, A.c - 0.3, 10, 1, 2), function (v) { var k = Math.abs(v.x) / (A.b / 2); if (k > 0.55) { v.z *= 1 - (k - 0.55) * 0.5; v.y *= 1 - (k - 0.55) * 0.5; } }), paint), 0, A.wingY, A.wingZ + 0.15);
+			wing.receiveShadow = true;
+			add(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, A.c * 0.55), trim), A.b / 2 - 0.05, A.wingY, A.wingZ + 0.25); add(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.15, A.c * 0.55), trim), -A.b / 2 + 0.05, A.wingY, A.wingZ + 0.25);
+			var te = A.wingZ + 0.15 - (A.c - 0.3) / 2;
+			surf.ailL = hinge(A.b * 0.34, A.wingY, te, A.b * 0.28, 0.07, 0.34, paint); surf.ailR = hinge(-A.b * 0.34, A.wingY, te, A.b * 0.28, 0.07, 0.34, paint);
+			surf.flapL = hinge(1.55, A.wingY - 0.02, te, 2.0, 0.07, 0.34, paint); surf.flapR = hinge(-1.55, A.wingY - 0.02, te, 2.0, 0.07, 0.34, paint);
+			[-1, 1].forEach(function (sx) { cyl([sx * 0.52, -0.25, -0.05], [sx * 2.5, A.wingY - 0.06, -0.15], 0.035, dark); });
+			add(new THREE.Mesh(new THREE.BoxGeometry(A.tail[0] * 2, 0.07, 0.72), paint), 0, A.tail[1], A.tail[2] + 0.1);
+			surf.elev = hinge(0, A.tail[1], A.tail[2] - 0.26, A.tail[0] * 2 - 0.2, 0.05, 0.36, trim);
+			plate([[-3.45, 0.42], [-4.42, 1.72], [-4.72, 1.72], [-4.68, 0.35]], 0.08, "x", paint);
+			surf.rud = hinge(0, 1.05, -4.7, 0.06, 1.3, 0.32, trim);
+			add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.04, 2.6), trim), 0, 0.02, 0.3).scale.set(1, 1, 1); /* stripe */
+			var sp = new THREE.ConeGeometry(0.17, 0.38, 12); sp.rotateX(Math.PI / 2); add(new THREE.Mesh(sp, trim), 0, 0.05, 3.18);
+			var prop = new THREE.Group(); prop.position.set(0, 0.05, 3.08); g.add(prop);
+			surf.blades = [0, Math.PI].map(function (a) { var bl = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.92, 0.03), dark); bl.position.set(0, Math.cos(a) * 0.48, 0); bl.rotation.y = 0.25; prop.add(bl); return bl; });
+			var disc = new THREE.Mesh(new THREE.CircleGeometry(0.95, 24), new THREE.MeshBasicMaterial({ color: 0x777777, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide })); disc.position.z = 0.01; prop.add(disc);
+			surf.prop = prop; surf.disc = disc;
+			add(new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.14, 0.06), dark), 0, 0.06, 1.0); /* instrument panel, seen from the cockpit */
+			add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.5), mat("#4a3b30")), 0.28, -0.02, 0.1); add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 0.5), mat("#4a3b30")), -0.28, -0.02, 0.1); /* seats */
+		} else {
+			/* bubble canopy, swept wings and tail, side intakes, nozzle with an afterburner flame */
+			var cg = new THREE.SphereGeometry(1, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2); var can = add(new THREE.Mesh(cg, glass), 0, 0.55, 2.2); can.scale.set(0.46, 0.42, 1.35);
+			var wl = plate([[0.6, 1.0], [4.7, -1.5], [4.7, -2.55], [0.6, -2.6]], 0.14, "y", paint), wr = plate([[-0.6, 1.0], [-4.7, -1.5], [-4.7, -2.55], [-0.6, -2.6]], 0.14, "y", paint);
+			wl.position.y = wr.position.y = A.wingY; wl.receiveShadow = wr.receiveShadow = true;
+			surf.ailL = hinge(3.5, A.wingY, -2.45, 2.2, 0.07, 0.4, trim); surf.ailR = hinge(-3.5, A.wingY, -2.45, 2.2, 0.07, 0.4, trim);
+			surf.flapL = hinge(1.6, A.wingY - 0.02, -2.5, 1.7, 0.07, 0.4, paint); surf.flapR = hinge(-1.6, A.wingY - 0.02, -2.5, 1.7, 0.07, 0.4, paint);
+			var hl = plate([[0.4, -4.6], [2.3, -5.5], [2.3, -5.95], [0.4, -6.0]], 0.08, "y", paint), hr = plate([[-0.4, -4.6], [-2.3, -5.5], [-2.3, -5.95], [-0.4, -6.0]], 0.08, "y", paint);
+			hl.position.y = hr.position.y = A.tail[1];
+			surf.elev = hinge(0, A.tail[1], -5.95, 4.2, 0.05, 0.35, trim);
+			plate([[-3.9, 0.55], [-5.5, 2.4], [-6.15, 2.4], [-6.2, 0.55]], 0.1, "x", paint);
+			surf.rud = hinge(0, 1.5, -6.15, 0.07, 1.6, 0.35, trim);
+			[-1, 1].forEach(function (sx) { add(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.55, 2.2), paint), sx * 0.72, -0.05, -0.6); add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.45, 0.05), dark), sx * 0.72, -0.05, 0.52); });
+			var nz = new THREE.CylinderGeometry(0.38, 0.45, 0.7, 14, 1, true); nz.rotateX(Math.PI / 2); add(new THREE.Mesh(nz, dark), 0, 0.05, -6.4);
+			[-1, 1].forEach(function (sx) { add(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 2.8), trim), sx * 0.74, 0.25, 1.0); });
+			add(new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.08), dark), 0, 0.5, 2.95);
+		}
+		/* landing gear: legs + the four wheels (two close together at the nose) */
+		var tyre = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 }), rim = mat("#c8ccd2", { metalness: 0.8, roughness: 0.3 }), wheels = [], wy = d.ry - d.rest;
+		[[d.wxf, d.wf], [-d.wxf, d.wf], [d.wx, d.wb], [-d.wx, d.wb]].forEach(function (p) {
+			var piv = new THREE.Group(), spin = new THREE.Group(), tg = new THREE.CylinderGeometry(d.wr, d.wr, d.ww, 16, 1); tg.rotateZ(Math.PI / 2);
+			var t = new THREE.Mesh(tg, tyre); t.castShadow = true; spin.add(t);
+			var rg = new THREE.CylinderGeometry(d.wr * 0.55, d.wr * 0.55, d.ww + 0.02, 10, 1); rg.rotateZ(Math.PI / 2); spin.add(new THREE.Mesh(rg, rim));
+			piv.add(spin); piv.position.set(p[0], wy, p[1]); g.add(piv); wheels.push({ piv: piv, spin: spin });
+		});
+		cyl([0, d.ry + 0.1, d.wf], [0, wy, d.wf], 0.05, dark);
+		[-1, 1].forEach(function (sx) { cyl([sx * 0.35, d.ry + 0.1, d.wb], [sx * d.wx, wy, d.wb], 0.05, dark); });
+		/* lights: red nav light on the left wing tip, green on the right, landing light (lightF), red beacon on the fin (lightR) */
+		var lightF = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3c4, emissiveIntensity: 1.2 }), lightR = new THREE.MeshStandardMaterial({ color: 0x550000, emissive: 0xff2222, emissiveIntensity: 0.6 });
+		var tipX = jet ? 4.7 : A.b / 2, tipZ = jet ? 2.1 : A.wingZ + 0.4;
+		add(new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), mat("#ff3030", { emissive: 0xff2020, emissiveIntensity: 1.5 })), tipX, A.wingY, tipZ);
+		add(new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), mat("#30ff60", { emissive: 0x20ff50, emissiveIntensity: 1.5 })), -tipX, A.wingY, tipZ);
+		add(new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.05), lightF), jet ? 0 : 1.6, jet ? -0.45 : A.wingY - 0.02, jet ? 3.6 : A.wingZ + (A.c - 0.3) / 2 + 0.16);
+		add(new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), lightR), 0, jet ? 2.45 : 1.78, jet ? -5.9 : -4.6);
+		var flame = new THREE.Mesh(new THREE.ConeGeometry(0.34, jet ? 2.2 : 0.1, 12), new THREE.MeshBasicMaterial({ color: 0xffa04a, transparent: true, opacity: 0.85 }));
+		flame.rotation.x = -Math.PI / 2; flame.position.set(0, 0.05, jet ? -7.8 : -5); flame.visible = false; g.add(flame);
+		dents.forEach(function (m) { m.userData.orig = m.geometry.attributes.position.array.slice(); });
+		return { group: g, wheels: wheels, dents: dents, flame: flame, paint: paint, lightF: lightF, lightR: lightR, surf: surf };
+	}
+
 	function makeCar(type, color, pose, isPlayer) {
 		var d = C.CARS[type]; color = color || (isPlayer ? d.color : C.PAINT[(cars.length * 3 + 1) % C.PAINT.length]);
 		var y0 = hAt(pose.x, pose.z) + d.wr + d.rest - d.ry + 0.4;
-		var I = [d.mass * (d.h * d.h + d.l * d.l) / 12 * 1.4, d.mass * (d.w * d.w + d.l * d.l) / 12 * 1.4, d.mass * (d.w * d.w + d.h * d.h) / 12 * 1.4];
+		var A = d.fly, I = A ? A.I : [d.mass * (d.h * d.h + d.l * d.l) / 12 * 1.4, d.mass * (d.w * d.w + d.l * d.l) / 12 * 1.4, d.mass * (d.w * d.w + d.h * d.h) / 12 * 1.4];
 		var q = qYaw(pose.yaw);
+		if (pose.y != null) y0 = pose.y;
+		/* planes: centre of mass on the body origin, almost no built-in damping (the air does it, and on the Moon nothing does) */
 		var body = phys.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(pose.x, y0, pose.z).setRotation(q)
-			.setAdditionalMassProperties(d.mass, { x: 0, y: -d.h * 0.45, z: 0 }, { x: I[0], y: I[1], z: I[2] }, { x: 0, y: 0, z: 0, w: 1 }).setCcdEnabled(true).setAngularDamping(0.4).setLinearDamping(0.02));
-		phys.createCollider(RAPIER.ColliderDesc.cuboid(d.w / 2, d.h / 2, d.l / 2).setDensity(0).setFriction(0.45).setRestitution(0.15), body);
+			.setAdditionalMassProperties(d.mass, { x: 0, y: A ? 0 : -d.h * 0.45, z: 0 }, { x: I[0], y: I[1], z: I[2] }, { x: 0, y: 0, z: 0, w: 1 }).setCcdEnabled(true).setAngularDamping(A ? 0.05 : 0.4).setLinearDamping(A ? 0 : 0.02));
+		if (pose.v) body.setLinvel({ x: Math.sin(pose.yaw) * pose.v, y: 0, z: Math.cos(pose.yaw) * pose.v }, true);
+		if (A) { /* fuselage, wing, tailplane */
+			A.cols.forEach(function (b) { phys.createCollider(RAPIER.ColliderDesc.cuboid(b[0], b[1], b[2]).setTranslation(0, b[3], b[4]).setDensity(0).setFriction(0.4).setRestitution(0.1), body); });
+			phys.createCollider(RAPIER.ColliderDesc.cuboid(A.b / 2, 0.07, A.c / 2).setTranslation(0, A.wingY, A.wingZ).setDensity(0).setFriction(0.4).setRestitution(0.1), body);
+			phys.createCollider(RAPIER.ColliderDesc.cuboid(A.tail[0], 0.05, 0.4).setTranslation(0, A.tail[1], A.tail[2]).setDensity(0).setFriction(0.4), body);
+		} else phys.createCollider(RAPIER.ColliderDesc.cuboid(d.w / 2, d.h / 2, d.l / 2).setDensity(0).setFriction(0.45).setRestitution(0.15), body);
 		if (d.cab) phys.createCollider(RAPIER.ColliderDesc.cuboid(d.w * 0.4, d.cab[0] / 2, d.l * d.cab[1] / 2).setTranslation(0, d.h / 2 + d.cab[0] / 2, d.l * d.cab[2]).setDensity(0).setFriction(0.4), body);
 		var veh = phys.createVehicleController(body), k = d.k;
 		veh.indexUpAxis = 1; veh.setIndexForwardAxis = 2; /* Rapier's default forward axis is X; our cars face +Z */
-		[[d.wx, d.wf], [-d.wx, d.wf], [d.wx, d.wb], [-d.wx, d.wb]].forEach(function (p, i) {
+		var wxf = d.wxf != null ? d.wxf : d.wx;
+		[[wxf, d.wf], [-wxf, d.wf], [d.wx, d.wb], [-d.wx, d.wb]].forEach(function (p, i) {
 			veh.addWheel({ x: p[0], y: d.ry, z: p[1] }, { x: 0, y: -1, z: 0 }, { x: -1, y: 0, z: 0 }, d.rest, d.wr);
 			veh.setWheelSuspensionStiffness(i, k); veh.setWheelSuspensionCompression(i, 0.69 * Math.sqrt(k)); veh.setWheelSuspensionRelaxation(i, 1.0 * Math.sqrt(k));
 			veh.setWheelMaxSuspensionTravel(i, d.rest * 1.2); veh.setWheelFrictionSlip(i, gripOf(d)); veh.setWheelSideFrictionStiffness(i, 1.0);
 		});
 		d.key = type; var vis = makeCarMesh(d, color); scene.add(vis.group);
-		var car = { type: type, d: d, body: body, veh: veh, group: vis.group, wheels: vis.wheels, dents: vis.dents, flame: vis.flame, paint: vis.paint, lightF: vis.lightF, lightR: vis.lightR, color: color,
+		var car = { type: type, d: d, body: body, veh: veh, group: vis.group, wheels: vis.wheels, dents: vis.dents, flame: vis.flame, paint: vis.paint, lightF: vis.lightF, lightR: vis.lightR, color: color, surf: vis.surf || null,
+			fly: A ? { thr: pose.thr || 0, flap: pose.y != null ? 0 : 1, elev: 0, ail: 0, rud: 0, brk: 0, o: null, air: pose.y != null, airT: 0, t0: simT, x0: pose.x, z0: pose.z, lastVy: 0, maxAgl: 0, dead: false } : null,
 			ai: !isPlayer, lane: (cars.length % 3) - 1, steer: 0, in: { th: 0, br: 0, st: 0, hb: 0, boost: 0 }, damage: 0, lastV: null, gS: 1, gPeak: 0, air: null, upsideT: 0, stuckT: 0, revT: 0, smokeT: 0, id: cars.length, born: simT };
 		setSuspForce(car);
 		return car;
@@ -709,10 +845,11 @@
 	function resetCar(c, here) {
 		var t = c.body.translation(), r = c.body.rotation();
 		var yaw = Math.atan2(2 * (r.w * r.y + r.x * r.z), 1 - 2 * (r.y * r.y + r.x * r.x));
-		var p = here ? { x: t.x, z: t.z, yaw: yaw } : startPose(c.id);
+		var p = here ? { x: t.x, z: t.z, yaw: yaw } : c.d.fly && !c.ai ? planeStart() : startPose(c.id);
 		c.body.setTranslation({ x: p.x, y: Math.max(hAt(p.x, p.z), here ? t.y - 1 : -1e9) + c.d.wr + c.d.rest + 1.2, z: p.z }, true);
 		c.body.setRotation(qYaw(p.yaw), true); c.body.setLinvel({ x: 0, y: 0, z: 0 }, true); c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
 		c.lastV = null; c.upsideT = 0; c.air = null; c.born = simT;
+		if (c.fly) { c.fly.air = false; c.fly.thr = 0; c.fly.elev = c.fly.ail = c.fly.rud = 0; if (!here) c.fly.flap = 1; c.body.resetTorques(true); }
 		if (c === cars[player]) lapReset();
 	}
 	function repair(c) {
@@ -851,13 +988,13 @@
 	};
 
 	/* ===================== input ===================== */
-	var keys = {}, touch = { th: 0, br: 0, l: 0, r: 0, hb: 0, boost: 0 }, kbActive = false;
+	var keys = {}, touch = { th: 0, br: 0, l: 0, r: 0, hb: 0, boost: 0, pit: 0, rol: 0, rudl: 0, rudr: 0, fbrk: 0 }, kbActive = false;
 	function inField(e) { var t = e.target; return t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || t.isContentEditable); }
 	function driving() { return kbActive || view.classList.contains("mes-pfill") || !!document.fullscreenElement; }
 	document.addEventListener("keydown", function (e) {
 		if (edOpen && phys) { edKey(e); return; }
 		if (inField(e) || !phys) return;
-		var k = e.key.toLowerCase(), drive = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", " ", "shift"].indexOf(k) >= 0;
+		var k = e.key.toLowerCase(), flying = !!(cars[player] && cars[player].d.fly), drive = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", " ", "shift"].indexOf(k) >= 0 || (flying && ["q", "e", "z", "control"].indexOf(k) >= 0);
 		if (!driving()) { if (drive && stageVisible() && !e.ctrlKey && !e.metaKey && document.activeElement === document.body && k !== " ") { /* allow driving without clicking first if the picture is mostly on screen */ kbActive = true; } else return; }
 		if (drive) e.preventDefault();
 		if (e.repeat && !drive) return;
@@ -869,6 +1006,8 @@
 		if (k === "y") { replayStart(); return; }
 		if (k === "b") { edOpenNow(); return; }
 		if (k === "l") { launchKey = true; return; }
+		if (k === "j") { togglePlane(); return; }
+		if (k === "v") { if (flying) flapPress = true; else toast("V = flaps, in a plane (press J to fly one)"); return; }
 		if (k === "[" || k === "]") { stepSpeed(k === "]" ? 1 : -1); return; }
 		if (k === "n") { setNight(dayK >= 0.45); return; }
 		if (k === "k") { var wl = C.weatherFor(S.world); if (wl.length < 2) { setWeather("rain"); return; } setWeather(wl[(wl.indexOf(S.weather) + 1) % wl.length]); return; }
@@ -886,7 +1025,12 @@
 	document.addEventListener("keyup", function (e) { keys[e.key.toLowerCase()] = false; });
 	window.addEventListener("blur", function () { keys = {}; });
 	/* the player's car on its roof or side: a big "Flip back over" button after 1.2 s, and it flips back by itself after 6 s */
-	function playerReset() { if (replay) replayStop(true); resetCar(cars[player], true); toast("Back on its wheels"); $("cs-unflip").hidden = true; }
+	function playerReset() {
+		if (replay) replayStop(true); var c = cars[player];
+		if (c.d.fly && !c.anyContact && planeAgl(c, c.body.translation()) > 3) { planeLevel(c); toast("Wings level · flying on"); }
+		else { resetCar(c, true); toast("Back on its wheels"); }
+		$("cs-unflip").hidden = true;
+	}
 	var unflipShown = -1;
 	function unflipTick(c) {
 		var el = $("cs-unflip"), t = c.upsideT, show = t > 1.2 && !autoPilot;
@@ -908,6 +1052,30 @@
 		/* the gas pedal pulses until it is first pressed, so a newcomer sees which one makes the car go */
 		var gasEl = $("cs-t-gas"); if (gasEl) { gasEl.classList.add("cs-hint"); gasEl.addEventListener("pointerdown", function () { gasEl.classList.remove("cs-hint"); }, { once: true }); }
 		var lb = $("cs-t-launch"); if (lb) { lb.addEventListener("pointerdown", function (e) { e.preventDefault(); launchKey = true; initAudio(); }); lb.addEventListener("contextmenu", function (e) { e.preventDefault(); }); }
+		/* plane: a stick that springs back to the middle, a throttle that stays where you leave it, rudder / brake / flaps buttons */
+		var stick = $("cs-stick"), knob = $("cs-knob");
+		if (stick) {
+			var sid = null, smove = function (e) { var r = stick.getBoundingClientRect(), R = r.width / 2, dx = (e.clientX - r.left - R) / (R * 0.75), dy = (e.clientY - r.top - R) / (R * 0.75), m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; } touch.rol = dx; touch.pit = dy; knob.style.transform = "translate(" + (dx * R * 0.6) + "px," + (dy * R * 0.6) + "px)"; };
+			stick.addEventListener("pointerdown", function (e) { e.preventDefault(); sid = e.pointerId; try { stick.setPointerCapture(sid); } catch (x) { /* ignore */ } smove(e); initAudio(); });
+			stick.addEventListener("pointermove", function (e) { if (e.pointerId === sid) smove(e); });
+			var send = function () { sid = null; touch.rol = touch.pit = 0; knob.style.transform = ""; };
+			stick.addEventListener("pointerup", send); stick.addEventListener("pointercancel", send); stick.addEventListener("lostpointercapture", send);
+		}
+		var thr = $("cs-thr");
+		if (thr) {
+			var tid = null, tset = function (e) { var r = thr.getBoundingClientRect(), v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); var c = cars[player]; if (c && c.fly) { c.fly.thr = v; updatePlaneHud(c); } };
+			thr.addEventListener("pointerdown", function (e) { e.preventDefault(); tid = e.pointerId; try { thr.setPointerCapture(tid); } catch (x) { /* ignore */ } tset(e); initAudio(); });
+			thr.addEventListener("pointermove", function (e) { if (e.pointerId === tid) tset(e); });
+			thr.addEventListener("pointerup", function () { tid = null; }); thr.addEventListener("pointercancel", function () { tid = null; });
+			thr.addEventListener("keydown", function (e) { var c = cars[player]; if (!c || !c.fly) return; if (e.key === "ArrowUp") c.fly.thr = Math.min(1, c.fly.thr + 0.1); else if (e.key === "ArrowDown") c.fly.thr = Math.max(0, c.fly.thr - 0.1); else return; e.preventDefault(); e.stopPropagation(); updatePlaneHud(c); });
+		}
+		[["cs-t-rudl", "rudl"], ["cs-t-rudr", "rudr"], ["cs-t-fbrk", "fbrk"]].forEach(function (p) {
+			var el = $(p[0]); if (!el) return;
+			var on = function (e) { e.preventDefault(); touch[p[1]] = 1; el.classList.add("on"); try { el.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } }, off = function () { touch[p[1]] = 0; el.classList.remove("on"); };
+			el.addEventListener("pointerdown", on); el.addEventListener("pointerup", off); el.addEventListener("pointercancel", off); el.addEventListener("lostpointercapture", off); el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+		});
+		var fl = $("cs-t-flap"); if (fl) fl.addEventListener("pointerdown", function (e) { e.preventDefault(); flapPress = true; });
+		var fr = $("cs-t-freset"); if (fr) fr.addEventListener("click", playerReset);
 		var rs = $("cs-t-reset"); if (rs) { rs.addEventListener("click", playerReset); rs.addEventListener("contextmenu", function (e) { e.preventDefault(); }); }
 		showTouch();
 	}
@@ -923,13 +1091,26 @@
 			if (rt > 0.05) th = rt; if (lt > 0.05) br = lt;
 			if (gp.buttons[0] && gp.buttons[0].pressed) hb = 1; if (gp.buttons[3] && gp.buttons[3].pressed) launchKey = true; if (gp.buttons[2] && gp.buttons[2].pressed) boost = 1;
 		}
-		return { th: th, br: br, st: st, hb: hb, boost: boost };
+		/* plane: W / S (arrows) pitch, A / D roll, Q / E rudder, Shift / Z (or Ctrl) throttle, Space brakes, V flaps */
+		var pit = ((keys.s || keys.arrowdown) ? 1 : 0) - ((keys.w || keys.arrowup) ? 1 : 0) + (touch.pit || 0);
+		var rol = ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0) + (touch.rol || 0);
+		var yaw = (keys.e || touch.rudr ? 1 : 0) - (keys.q || touch.rudl ? 1 : 0), thrD = (keys.shift ? 1 : 0) - (keys.z || keys.control ? 1 : 0), brk = keys[" "] || touch.fbrk ? 1 : 0;
+		if (gp) {
+			var a0 = gp.axes[0] || 0, a1 = gp.axes[1] || 0, a2 = gp.axes[2] || 0;
+			if (Math.abs(a0) > 0.1) rol = a0; if (Math.abs(a1) > 0.1) pit = a1; if (Math.abs(a2) > 0.15) yaw = a2;
+			if (gp.buttons[4] && gp.buttons[4].pressed) yaw = -1; if (gp.buttons[5] && gp.buttons[5].pressed) yaw = 1;
+			if (rt > 0.05 || lt > 0.05) thrD = rt - lt; if (gp.buttons[0] && gp.buttons[0].pressed) brk = 1;
+			var xb = gp.buttons[2] && gp.buttons[2].pressed; if (xb && !gpFlap) flapPress = true; gpFlap = xb;
+		}
+		return { th: th, br: br, st: st, hb: hb, boost: boost, pit: Math.max(-1, Math.min(1, pit)), rol: Math.max(-1, Math.min(1, rol)), yaw: yaw, thrD: thrD, brk: brk };
 	}
+	var gpFlap = false;
 
 	/* ===================== driving one car ===================== */
 	function fwdOf(c) { var r = c.body.rotation(); tmpQ.set(r.x, r.y, r.z, r.w); return new THREE.Vector3(0, 0, 1).applyQuaternion(tmpQ); }
 	function upOf(c) { var r = c.body.rotation(); tmpQ.set(r.x, r.y, r.z, r.w); return new THREE.Vector3(0, 1, 0).applyQuaternion(tmpQ); }
 	function aiInput(c, dt) {
+		if (c.d.fly) return { th: 0, br: 1, st: 0, hb: 1, boost: 0, pit: 0, rol: 0, yaw: 0, thrD: -1, brk: 1 }; /* a plane nobody flies: engine off, brakes on */
 		var t = c.body.translation(), f = fwdOf(c), yaw = Math.atan2(f.x, f.z), v = c.veh.currentVehicleSpeed(), d = c.d;
 		var me = cars[player], target, mode = S.ai;
 		if (mode === "park") return { th: 0, br: 0.4, st: 0, hb: 1, boost: 0 };
@@ -951,7 +1132,93 @@
 		}
 		return { th: o.throttle, br: o.brake, st: o.steer, hb: 0, boost: mode === "chase" && Math.abs(o.ang || 0) < 0.15 ? 1 : 0 };
 	}
+	/* ===================== flying a plane ===================== */
+	var flapPress = false, planeV3 = null;
+	/* the air moving over the ground: a steady breeze plus gusts in rain, storms and Martian dust (m/s, world axes) */
+	function windAt(t) {
+		var X = wx(), w = X.wind || 0; if (!w || !W.rho) return { x: 0, y: 0, z: 0 };
+		var a = simT * 0.35, gx = (C.noise(a, t.z * 0.01, 5) - 0.5) * 2, gz = (C.noise(t.x * 0.01, a, 9) - 0.5) * 2, gy = (C.noise(a * 1.7, t.x * 0.02, 13) - 0.5) * 2;
+		return { x: w * (0.5 + 0.8 * gx), y: w * 0.35 * gy, z: w * 0.8 * gz };
+	}
+	function planeAgl(c, t) { var d = c.d; return Math.max(0, t.y - hAt(t.x, t.z) + (d.ry - d.rest * 0.75 - d.wr)); }
+	function flyPlane(c, inp, dt) {
+		var d = c.d, A = d.fly, F = c.fly, dmg = c.damage / 100, me = c === cars[player] && !c.ai;
+		if (!planeV3) planeV3 = { q: new THREE.Quaternion(), qi: new THREE.Quaternion(), a: new THREE.Vector3(), b: new THREE.Vector3() };
+		/* controls move at a real speed, never jump */
+		var pit = (inp.pit || 0) * (S.pinv ? -1 : 1);
+		F.elev = C.ease(F.elev, Math.max(-1, Math.min(1, pit)), pit ? 2.6 : 4, dt);
+		F.ail = C.ease(F.ail, Math.max(-1, Math.min(1, inp.rol || 0)), inp.rol ? 3 : 5, dt);
+		F.rud = C.ease(F.rud, Math.max(-1, Math.min(1, inp.yaw || 0)), inp.yaw ? 3 : 5, dt);
+		if (inp.thrD) F.thr = Math.max(0, Math.min(1, F.thr + inp.thrD * 0.5 * dt));
+		if (me && flapPress) { flapPress = false; F.flap = (F.flap + 1) % 3; toast("Flaps: " + C.FLAPS[F.flap] + (F.flap ? " · more lift, more drag, lower stall speed" : "")); syncPlaneTouch(); }
+		F.brk = inp.brk ? 1 : 0;
+		if (c.damage < 100) F.dead = false;
+		if (c.damage >= 100 && !F.dead) { F.dead = true; if (me) toast("💥 The engine is wrecked: glide down and land (Repair or R)"); }
+		var thrEff = F.dead ? 0 : F.thr * (1 - dmg * 0.5);
+		/* wheels: nose-wheel steering (rudder, and the aileron keys too while on the ground), brakes on the main wheels */
+		var v = c.veh.currentVehicleSpeed(), grip = gripOf(d) * wx().grip;
+		var steerIn = Math.max(-1, Math.min(1, F.rud + (c.anyContact ? F.ail * 0.7 : 0)));
+		c.steer += (-steerIn * d.steer / (1 + Math.abs(v) / 9) - c.steer) * Math.min(1, dt * 8);
+		c.veh.setWheelSteering(0, c.steer); c.veh.setWheelSteering(1, c.steer);
+		var anyContact = false;
+		for (var i = 0; i < 4; i++) {
+			var N = Math.max(0, c.veh.wheelSuspensionForce(i) || 0), lim = grip * N, e = 0;
+			if (c.veh.wheelIsInContact(i)) anyContact = true;
+			if (i > 1 && F.brk && Math.abs(v) > 0.3) e = -Math.sign(v) * d.mass * Math.abs(gravity) * 0.4;
+			c.veh.setWheelEngineForce(i, Math.max(-lim, Math.min(lim, e)));
+			c.veh.setWheelFrictionSlip(i, grip);
+			c.veh.setWheelBrake(i, (F.brk || thrEff < 0.02) && Math.abs(v) < 1.2 ? d.mass * 0.004 : 0);
+		}
+		/* the air: velocity and turn rate in the plane's own axes -> lift, drag, thrust and turning moments -> back to world axes */
+		var r = c.body.rotation(), q = planeV3.q.set(r.x, r.y, r.z, r.w), qi = planeV3.qi.copy(q).invert(), t = c.body.translation(), lv = c.body.linvel(), av = c.body.angvel(), wd = windAt(t);
+		var vb = planeV3.a.set(lv.x - wd.x, lv.y - wd.y, lv.z - wd.z).applyQuaternion(qi), wb = planeV3.b.set(av.x, av.y, av.z).applyQuaternion(qi);
+		var o = C.aero(A, { x: vb.x, y: vb.y, z: vb.z }, { x: wb.x, y: wb.y, z: wb.z }, { elev: F.elev, ail: F.ail, rud: F.rud, flap: F.flap, thr: thrEff }, W.rho, dt, A.I);
+		F.o = o;
+		var fw = planeV3.a.set(o.F.x, o.F.y, o.F.z).applyQuaternion(q);
+		c.body.resetForces(true); c.body.resetTorques(true);
+		var roll = anyContact && Math.hypot(lv.x, lv.z) > 0.3 ? d.mass * Math.abs(gravity) * 0.015 / Math.max(0.3, Math.hypot(lv.x, lv.z)) : 0; /* tyre rolling resistance */
+		c.body.addForce({ x: fw.x - lv.x * roll, y: fw.y, z: fw.z - lv.z * roll }, true);
+		var tw = planeV3.b.set(o.T.x, o.T.y, o.T.z).applyQuaternion(q); c.body.addTorque({ x: tw.x, y: tw.y, z: tw.z }, true);
+		c.anyContact = anyContact; c.airT = anyContact ? 0 : (c.airT || 0) + dt;
+		c.in = { th: thrEff, br: F.brk, st: 0, hb: 0, boost: thrEff > 0.95 && A.jet ? 1 : 0 };
+		c.flame.visible = !!A.jet && thrEff > 0.9;
+		c.lightR.emissiveIntensity = (simT % 1.2) < 0.12 ? 4 : 0.3; c.lightF.emissiveIntensity = dayK < 0.45 || F.flap ? 4 : 1;
+		if (me) planeEvents(c, t, lv, dt);
+	}
+	/* take-off, touchdown (graded by the sink rate), records, and flying round the edge of the map */
+	function planeEvents(c, t, lv, dt) {
+		var F = c.fly, agl = planeAgl(c, t);
+		if (!c.anyContact && agl > 1.5) {
+			if (!F.air) { F.air = true; F.t0 = simT; F.x0 = t.x; F.z0 = t.z; F.maxAgl = 0; if (W.rho && simT - (c.born || 0) > 1) toast("🛫 Lift-off at " + C.fmtSpeed(F.o ? F.o.V : Math.hypot(lv.x, lv.z), S.units) + (W.rho ? "" : " (thrown, not flying: no air!)")); }
+			F.maxAgl = Math.max(F.maxAgl, agl); F.lastVy = lv.y;
+		} else if (c.anyContact && F.air) {
+			F.air = false;
+			var sink = Math.max(0, -F.lastVy), tf = simT - F.t0, dist = Math.hypot(t.x - F.x0, t.z - F.z0);
+			if (tf > 1.5) {
+				var grade = C.landingRate(sink), rw = W.track && C.onRunway(t.x, t.z) ? " on the runway" : "";
+				if (sink >= 6 && S.damage) { c.damage = Math.min(100, c.damage + (sink - 5) * 12); dent(c, new THREE.Vector3(0, -c.d.h / 2, 0), new THREE.Vector3(0, 1, 0), sink); sfx("crash", Math.min(1, sink / 12)); shake = Math.min(1, sink / 12); }
+				var best = REC.landing == null || sink < REC.landing ? (REC.landing = sink, " · best landing yet!") : "";
+				if (tf > (REC.flight || 0)) REC.flight = tf; if (F.maxAgl > (REC.alt || 0)) REC.alt = F.maxAgl; saveRec();
+				toast((sink < 4 ? "🛬 " : "💥 ") + grade + rw + " · sank at " + sink.toFixed(1) + " m/s · flew " + C.fmtDist(dist, S.units) + " in " + C.fmtLap(tf) + best);
+			}
+		}
+		/* the world is only a few hundred metres across: fly off one edge and come back in at the other */
+		var half = ter.size / 2 - 28;
+		if (F.air && (Math.abs(t.x) > half || Math.abs(t.z) > half)) {
+			var nx = Math.abs(t.x) > half ? -Math.sign(t.x) * (half - 2) : t.x, nz = Math.abs(t.z) > half ? -Math.sign(t.z) * (half - 2) : t.z, ny = Math.max(t.y, hAt(nx, nz) + 25);
+			c.body.setTranslation({ x: nx, y: ny, z: nz }, true); if (c.pv) c.pv.ok = false; camSnap = true;
+			if (!F.wrapTold) { F.wrapTold = true; toast("Edge of the map: you flew round to the other side"); }
+		}
+	}
+	/* a plane reset: in the air = wings level, keep flying; on the ground = upright where it is */
+	function planeLevel(c) {
+		var t = c.body.translation(), f = fwdOf(c), yaw = Math.atan2(f.x, f.z), A = c.d.fly, v = Math.max(A.vRot * 1.4, Math.hypot(c.body.linvel().x, c.body.linvel().z));
+		c.body.setRotation(qYaw(yaw), true); c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+		c.body.setLinvel({ x: Math.sin(yaw) * v, y: 0, z: Math.cos(yaw) * v }, true); c.body.setTranslation({ x: t.x, y: Math.max(t.y, hAt(t.x, t.z) + 30), z: t.z }, true);
+		c.fly.elev = c.fly.ail = c.fly.rud = 0; c.fly.thr = Math.max(c.fly.thr, 0.75); c.lastV = null; c.born = simT;
+	}
 	function driveCar(c, inp, dt) {
+		if (c.d.fly) { flyPlane(c, inp, dt); return; }
 		var d = c.d, v = c.veh.currentVehicleSpeed(), dmg = c.damage / 100;
 		var maxSt = d.steer / (1 + Math.abs(v) / 22);
 		c.steer += (inp.st * maxSt - c.steer) * Math.min(1, dt * (inp.st ? 7 : 9));
@@ -1146,7 +1413,7 @@
 			if (c.ai && c.upsideT > 3) resetCar(c, true);
 			if (ci === player) unflipTick(c);
 			if (t.y < -60 || t.y > 4000 && gravity > 0.5) resetCar(c, false);
-			if (ci === player) { trackAir(c, t, lv); lapTick(c, t); }
+			if (ci === player) { if (!c.d.fly) trackAir(c, t, lv); lapTick(c, t); }
 			/* dust behind wheels on dusty worlds, smoke from wrecks */
 			var XW = wx();
 			if (W.track && (XW.p === "rain" || XW.snowy) && c.anyContact && Math.hypot(lv.x, lv.z) > 5 && Math.random() < 0.7) {
@@ -1224,7 +1491,7 @@
 	}
 
 	/* ===================== camera ===================== */
-	var CAMS = [["chase", "Chase"], ["far", "Far chase"], ["hood", "Driver's seat"], ["side", "Side"], ["top", "Top down"], ["tv", "TV cameras"], ["orbit", "Orbit (drag)"]];
+	var CAMS = [["chase", "Chase"], ["far", "Far chase"], ["hood", "Driver's seat / cockpit"], ["side", "Side"], ["top", "Top down"], ["tv", "TV cameras"], ["orbit", "Orbit (drag)"]];
 	var camSnap = true, camPos = null, camLook = null, camHead = 0, tvPos = null, shake = 0, free = { yaw: 0, pitch: 0, zoom: 1 }, orbit = { yaw: 0.6, pitch: 0.35, dist: 14 };
 	function cycleCam(dir) { var i = CAMS.findIndex(function (c) { return c[0] === S.cam; }); S.cam = CAMS[(i + dir + CAMS.length) % CAMS.length][0]; $("cs-cam").value = S.cam; camSnap = true; free.yaw = free.pitch = 0; save(); toast("Camera: " + CAMS.find(function (c) { return c[0] === S.cam; })[1]); }
 	function updateCamera(dt) {
@@ -1236,6 +1503,8 @@
 		if (camSnap) camHead = head; else camHead += C.wrap(head - camHead) * Math.min(1, dt * 3);
 		var hd = camHead + free.yaw, size = Math.max(c.d.l, 3), want = new THREE.Vector3(), look = pos.clone();
 		var mode = S.cam;
+		if (c.d.fly && (mode === "chase" || mode === "far" || mode === "hood")) { planeCamera(c, t, cq, mode, dt); return; }
+		if (c.d.fly) size = Math.max(size, c.d.fly.b * 0.8);
 		if (mode === "chase" || mode === "far") {
 			var dist = (mode === "far" ? 2.6 : 1.45) * size * free.zoom + 2, hgt = (mode === "far" ? 1.0 : 0.55) * size + 1 + free.pitch * dist;
 			want.set(t.x - Math.sin(hd) * dist, t.y + hgt, t.z - Math.cos(hd) * dist); look.y += c.d.h + 0.6;
@@ -1259,6 +1528,29 @@
 		camera.position.copy(camPos);
 		if (shake > 0) { camera.position.x += (Math.random() - 0.5) * shake * 0.6; camera.position.y += (Math.random() - 0.5) * shake * 0.6; shake = Math.max(0, shake - dt * 2.5); }
 		camera.lookAt(look); camSnap = false;
+	}
+	/* plane cameras: the chase camera sits behind the plane along its (smoothed) nose direction, so it follows climbs, dives and
+	   loops; the horizon stays level until the nose points nearly straight up or down, then the camera rolls with the plane so it
+	   never flips. Cockpit = the pilot's seat, rolling with the plane. */
+	var pcF = null, pcOff = null;
+	function planeCamera(c, t, cq, mode, dt) {
+		var A = c.d.fly, f = new THREE.Vector3(0, 0, 1).applyQuaternion(cq), u = new THREE.Vector3(0, 1, 0).applyQuaternion(cq);
+		if (mode === "hood") {
+			var eye = new THREE.Vector3(A.eye[0], A.eye[1], A.eye[2]).applyQuaternion(cq).add(t);
+			var lk = new THREE.Vector3(Math.sin(free.yaw) * 10, -0.6 + free.pitch * 10, Math.cos(free.yaw) * 10).applyQuaternion(cq).add(eye);
+			camera.position.copy(eye); camera.up.copy(u); camera.lookAt(lk); camera.fov = 72 * free.zoom; camera.updateProjectionMatrix(); camSnap = false; return;
+		}
+		if (!pcF || camSnap) pcF = f.clone(); else pcF.lerp(f, 1 - Math.exp(-dt * 3.5)).normalize();
+		var dir = pcF.clone(); if (free.yaw) dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), free.yaw);
+		var size = Math.max(c.d.l, A.b * 0.85), far = mode === "far", dist = (far ? 2.4 : 1.3) * size * free.zoom + 3, hgt = (far ? 0.55 : 0.3) * size + 1.2 + free.pitch * dist;
+		var off = dir.clone().multiplyScalar(-dist); off.y += hgt;
+		if (!pcOff || camSnap) pcOff = off.clone(); else pcOff.lerp(off, 1 - Math.exp(-dt * 9));
+		var pos = t.clone().add(pcOff), gh = hAt(pos.x, pos.z) + 0.8; if (pos.y < gh) pos.y = gh;
+		camera.position.copy(pos);
+		if (shake > 0) { camera.position.x += (Math.random() - 0.5) * shake * 0.8; camera.position.y += (Math.random() - 0.5) * shake * 0.8; shake = Math.max(0, shake - dt * 2.5); }
+		var kk = Math.max(0, Math.min(1, (Math.abs(dir.y) - 0.6) / 0.35)), upv = new THREE.Vector3(0, 1, 0).multiplyScalar(1 - kk).addScaledVector(u, kk);
+		if (upv.lengthSq() < 1e-4) upv.copy(u); camera.up.copy(upv.normalize());
+		camera.fov = 62; camera.updateProjectionMatrix(); camera.lookAt(t.clone().addScaledVector(dir, 6).addScaledVector(u, 0.6)); camSnap = false;
 	}
 	function setupCamDrag() {
 		var cv = renderer.domElement, ptr = {}, moved = 0;
@@ -1292,6 +1584,12 @@
 	function engineSound(c) {
 		if (!eng || !ac) return;
 		var on = S.sound && !paused && !replay && stageVisible() && !document.hidden;
+		if (c.fly) { /* propeller drone or jet whine, following the throttle */
+			var th = c.fly.dead ? 0 : c.fly.thr, jf = c.d.fly.jet ? 120 + th * 460 : 46 + th * 58;
+			eng.o1.frequency.setTargetAtTime(jf, ac.currentTime, 0.12); eng.o2.frequency.setTargetAtTime(jf * (c.d.fly.jet ? 1.5 : 0.5), ac.currentTime, 0.12);
+			eng.lp.frequency.setTargetAtTime(W.rho ? (c.d.fly.jet ? 900 + th * 2500 : 420 + th * 900) : 220, ac.currentTime, 0.1);
+			eng.g.gain.setTargetAtTime(on ? (c.fly.dead ? 0 : 0.045 + th * 0.1) : 0, ac.currentTime, 0.15); return;
+		}
 		var v = Math.abs(c.veh.currentVehicleSpeed()), gearSpan = c.d.vmax / 5, ratio = (v % gearSpan) / gearSpan, gear = Math.min(5, Math.floor(v / gearSpan));
 		var rpm = 0.25 + ratio * 0.75 * (gear ? 1 : 1.2) + (c.in.th && !c.anyContact ? 0.4 : 0);
 		var base = c.d.mass > 5000 ? 32 : c.d.mass < 400 ? 70 : 45, f = base + rpm * base * 2.2;
@@ -1301,6 +1599,11 @@
 	}
 	function sfx(kind, amt) {
 		if (!ac || !S.sound || !noiseBuf) return; amt = amt == null ? 0.5 : amt;
+		if (kind === "stall") { /* the stall warning horn: a short reedy beep */
+			var so = ac.createOscillator(), sg = ac.createGain(), s0 = ac.currentTime; so.type = "square"; so.frequency.value = 880;
+			sg.gain.setValueAtTime(0.0001, s0); sg.gain.exponentialRampToValueAtTime(0.09 * amt, s0 + 0.01); sg.gain.setValueAtTime(0.09 * amt, s0 + 0.18); sg.gain.exponentialRampToValueAtTime(0.0001, s0 + 0.24);
+			so.connect(sg); sg.connect(eng.master); so.start(s0); so.stop(s0 + 0.26); return;
+		}
 		if (kind === "boing" || kind === "boost") { /* a pitch sweep: a spring's boing / a whoosh up */
 			var o = ac.createOscillator(), og = ac.createGain(), t0 = ac.currentTime, up = kind === "boost";
 			o.type = up ? "sawtooth" : "sine"; o.frequency.setValueAtTime(up ? 180 : 120, t0); o.frequency.exponentialRampToValueAtTime(up ? 900 : 520, t0 + (up ? 0.35 : 0.12)); if (!up) o.frequency.exponentialRampToValueAtTime(180, t0 + 0.45);
@@ -1349,6 +1652,72 @@
 	var hudT = 0, toastT = null;
 	function toast(t) { var el = $("cs-toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove("show"); }, 2600); }
 	function saveRec() { try { localStorage.setItem(RKEY, JSON.stringify(REC)); } catch (e) { /* ignore */ } }
+	/* ---------- switching to / from a plane ---------- */
+	function togglePlane(kind) {
+		var c = cars[player], isP = !!(c && c.d.fly);
+		if (kind) { if (isP && c.type === kind) return; if (!isP) S.lastCar = S.car || null; S.car = kind; }
+		else if (isP) S.car = S.lastCar && !C.isPlane(S.lastCar) ? S.lastCar : null;
+		else { S.lastCar = S.car || null; S.car = S.plane && C.isPlane(S.plane) ? S.plane : "plane"; }
+		if (C.isPlane(S.car)) S.plane = S.car;
+		save(); $("cs-car").value = S.car || ""; swapPlayerCar(); syncUrl();
+		if (C.isPlane(S.car)) planeHello(); else toast("Back in a car: " + C.CARS[cars[player].type].name);
+	}
+	function planeHello() {
+		var c = cars[player]; if (!c || !c.d.fly) return;
+		toast(!W.rho ? "✈ " + c.d.name + " on " + W.name.replace(/ \(.*/, "") + ": no air here, so it can't fly. Watch the note at the bottom." : "✈ " + c.d.name + ": hold Shift for full throttle, pull back (S) at about " + C.fmtSpeed(C.stallSpeed(c.d.fly, c.d.mass, Math.abs(gravity), W.rho, 1) * 1.1, S.units));
+	}
+	/* a fresh plane 150 m up, already flying, over the runway (or the middle of the world) */
+	function airStart() {
+		var c = cars[player], type = c && c.d.fly ? c.type : S.plane && C.isPlane(S.plane) ? S.plane : "plane", A = C.CARS[type].fly;
+		var st = planeStart(), y = hAt(st.x, st.z) + 150, v = W.rho ? Math.max(A.vRot * 1.7, C.stallSpeed(A, C.CARS[type].mass, Math.abs(gravity), W.rho, 0) * 1.4) : A.vRot;
+		if (!c.d.fly) { S.lastCar = S.car || null; S.car = type; S.plane = type; save(); $("cs-car").value = type; syncUrl(); }
+		var nc = makeCar(type, null, { x: st.x, z: st.z, yaw: st.yaw, y: y, v: v, thr: 0.75 }, true);
+		removeCar(c); cars[player] = nc; nc.id = player; camSnap = true; lapReset(); ghostKey = ""; updateHud(true);
+		toast("☁ Flying at 150 m · " + C.fmtSpeed(v, S.units) + (W.rho ? "" : " · no air: it just falls"));
+	}
+	/* what the wings can do here, as a one-line lesson under the flight HUD */
+	var lessonKey = "";
+	function planeLesson(c) {
+		var A = c.d.fly, rho = W.rho, g = Math.abs(gravity), m = c.d.mass, nm = W.name.replace(/ \(.*/, "").replace(/^The /, "the "), f = c.fly.flap, k = [S.world, c.type, g.toFixed(2), f, S.units].join("|");
+		if (k === lessonKey) return null; lessonKey = k;
+		var fs = function (v) { return C.fmtSpeed(v, S.units); };
+		if (!(rho > 0)) return "No air on " + nm + ": the wings make no lift and the elevator, ailerons and rudder push on nothing, so it can only roll along (a real engine would need air too; this one keeps pushing). A launch pad 🚀 can throw it.";
+		if (g < 0.05) return "Zero gravity: there is no weight to hold up, so any speed is flying speed.";
+		var vs = C.stallSpeed(A, m, g, rho, f), top = C.topSpeed(A, m, g, rho), air = rho < 0.5 ? "Thin air (" + (rho / C.AIR_EARTH * 100).toFixed(1) + "% of Earth's): " : "";
+		if (!top) return "Too heavy for these wings: at " + (g / 9.81).toFixed(1) + " × Earth's gravity it needs over " + fs(vs) + " to fly and the engine can't push it that fast. Lower gravity, or take the stunt jet.";
+		if (rho < 0.5) return air + "it would need about " + fs(vs * 1.1) + " to lift off, a very long run; real Mars aircraft use huge, very light wings or spinning rotors (Ingenuity).";
+		return "Lift-off ≈ " + fs(vs * 1.1) + " · stall " + fs(vs) + " with these flaps · top speed ≈ " + fs(top);
+	}
+	var ahiCtx = null;
+	function drawHorizon(c) {
+		var cv = $("cs-ahi"); if (!cv || !c.d.fly) return; var g = ahiCtx || (ahiCtx = cv.getContext("2d")), W2 = cv.width, R = W2 / 2;
+		var ip = ipose(c), f = new THREE.Vector3(0, 0, 1).applyQuaternion(ip.q), u = new THREE.Vector3(0, 1, 0).applyQuaternion(ip.q), at = C.attitude(f, u), pp = R / 0.6; /* pixels per radian: ±35 degrees fills the dial */
+		g.save(); g.clearRect(0, 0, W2, W2); g.beginPath(); g.arc(R, R, R, 0, 7); g.clip(); g.translate(R, R); g.rotate(-at.bank);
+		var y0 = at.pitch * pp; g.fillStyle = "#3b8fe0"; g.fillRect(-W2, -W2 * 2 + y0, W2 * 2, W2 * 2); g.fillStyle = "#8a5a2b"; g.fillRect(-W2, y0, W2 * 2, W2 * 2);
+		g.strokeStyle = "#fff"; g.lineWidth = 2; g.beginPath(); g.moveTo(-W2, y0); g.lineTo(W2, y0); g.stroke();
+		g.lineWidth = 1; g.font = "9px sans-serif"; g.fillStyle = "#fff"; g.textAlign = "left"; g.textBaseline = "middle";
+		for (var d = -30; d <= 30; d += 10) { if (!d) continue; var yy = y0 - d * Math.PI / 180 * pp, wl = d % 20 ? 10 : 18; g.beginPath(); g.moveTo(-wl, yy); g.lineTo(wl, yy); g.stroke(); g.fillText(String(Math.abs(d)), wl + 2, yy); }
+		g.restore(); g.save(); g.translate(R, R);
+		g.strokeStyle = "#ffd43b"; g.lineWidth = 3; g.beginPath(); g.moveTo(-R * 0.6, 0); g.lineTo(-R * 0.18, 0); g.lineTo(-R * 0.08, R * 0.1); g.moveTo(R * 0.6, 0); g.lineTo(R * 0.18, 0); g.lineTo(R * 0.08, R * 0.1); g.stroke();
+		g.fillStyle = "#ffd43b"; g.beginPath(); g.arc(0, 0, 2.5, 0, 7); g.fill();
+		g.rotate(-at.bank); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(0, -R + 3); g.lineTo(-5, -R + 12); g.lineTo(5, -R + 12); g.closePath(); g.fill(); g.restore();
+		g.save(); g.translate(R, R); g.strokeStyle = "rgba(255,255,255,0.8)"; g.lineWidth = 2; [-60, -30, -20, -10, 0, 10, 20, 30, 60].forEach(function (b) { var a = b * Math.PI / 180 - Math.PI / 2, r1 = R - 1, r2 = R - (b % 30 ? 5 : 9); g.beginPath(); g.moveTo(Math.cos(a) * r1, Math.sin(a) * r1); g.lineTo(Math.cos(a) * r2, Math.sin(a) * r2); g.stroke(); }); g.restore();
+	}
+	var stallBeepT = 0;
+	function updatePlaneHud(c) {
+		var F = c.fly, A = c.d.fly, o = F.o || { V: 0, alpha: 0, stall: 0 }, t = c.body.translation(), lv = c.body.linvel(), agl = planeAgl(c, t), us = S.units === "mph";
+		$("cs-fias").textContent = W.rho ? C.fmtSpeed(o.V, S.units) + (us ? "" : " · " + Math.round(o.V * 1.943844) + " kt") : "no air";
+		$("cs-falt").textContent = us ? Math.round(agl * 3.28084) + " ft" : (agl < 10 ? agl.toFixed(1) : Math.round(agl)) + " m";
+		$("cs-fvs").textContent = (lv.y >= 0 ? "+" : "−") + (us ? Math.round(Math.abs(lv.y) * 196.85) + " ft/min" : Math.abs(lv.y).toFixed(1) + " m/s");
+		$("cs-fthr").style.width = Math.round(F.thr * 100) + "%"; $("cs-fthrn").textContent = (F.dead ? "dead " : "") + Math.round(F.thr * 100) + "%";
+		$("cs-fflap").textContent = ["Up", "T/O", "Landing"][F.flap]; $("cs-fbrk").textContent = F.brk ? "· BRAKES" : "";
+		var aLim = A.aS + A.flap[F.flap][2], warn = W.rho > 0 && !c.anyContact && agl > 2 && (o.stall > 0.05 || (o.alpha > aLim - 0.035 && o.V > 3));
+		$("cs-fstall").hidden = !warn;
+		if (warn) { stallBeepT -= 0.1; if (stallBeepT <= 0) { stallBeepT = 0.5; sfx("stall", 0.7); } } else stallBeepT = 0;
+		var les = planeLesson(c); if (les != null) $("cs-flesson").textContent = les;
+		var tv = $("cs-thrfill"); if (tv) { tv.style.height = Math.round(F.thr * 100) + "%"; $("cs-thrn").textContent = Math.round(F.thr * 100) + "%"; $("cs-thr").setAttribute("aria-valuenow", String(Math.round(F.thr * 100))); }
+	}
+	function syncPlaneTouch() { var c = cars[player]; if (c && c.fly) $("cs-t-flapn").textContent = ["Up", "T/O", "Land"][c.fly.flap]; }
 	function updateHud(force) {
 		var c = cars[player]; if (!c) return;
 		var v = c.body.linvel(), sp = Math.hypot(v.x, v.y, v.z);
@@ -1360,6 +1729,11 @@
 		$("cs-dmg").style.width = c.damage + "%"; $("cs-dmg").style.background = c.damage > 75 ? "#e03131" : c.damage > 40 ? "#f08c00" : "#37b24d";
 		$("cs-hdmg").textContent = Math.round(c.damage) + "%";
 		$("cs-hcar").textContent = C.CARS[c.type].name + (cars.length > 1 ? " (" + (player + 1) + "/" + cars.length + ")" : "");
+		var flying = !!c.d.fly; root.classList.toggle("cs-flying", flying); $("cs-fhud").hidden = !flying; $("cs-prow").hidden = !flying;
+		if (flying) { updatePlaneHud(c); syncPlaneTouch(); } else lessonKey = "";
+		var pf = C.PLANE_ORDER.map(function (k) { var P = C.CARS[k], vs = C.stallSpeed(P.fly, P.mass, Math.abs(gravity), W.rho, 1); return P.name + ": " + (W.rho > 0 && Math.abs(gravity) > 0.05 ? (C.topSpeed(P.fly, P.mass, Math.abs(gravity), W.rho) ? "lifts off at about " + C.fmtSpeed(vs * 1.1, S.units) + " here" : "too heavy to fly at this gravity") : !W.rho ? "can't fly: no air" : "floats: no gravity"); }).join(" · ");
+		if ($("cs-pfacts").textContent !== pf) $("cs-pfacts").textContent = pf;
+		$("cs-pname").textContent = flying ? c.d.name : "";
 		var lb = $("cs-lap"); lb.hidden = !hasLap(); ghostLoad();
 		if (hasLap()) {
 			var best = REC.laps[lapKey()];
@@ -1368,15 +1742,15 @@
 		}
 		$("cs-air").textContent = c.air ? "In the air " + (simT - c.air.t0).toFixed(1) + " s" : "";
 		var bl = REC.laps[lapKey()];
-		$("cs-rec").textContent = (hasLap() ? "Best lap here (" + C.CARS[c.type].name + ", " + gravity.toFixed(2) + " m/s²): " + C.fmtLap(bl && bl.time) + " · " : "") + "Top " + C.fmtSpeed(REC.top, S.units) + " · longest jump " + C.fmtDist(REC.jump, S.units) + " · most air " + REC.air.toFixed(1) + " s · biggest crash " + REC.crash.toFixed(0) + " g" + (REC.stunt ? " · best stunt: " + REC.stunt : "");
+		$("cs-rec").textContent = (hasLap() ? "Best lap here (" + C.CARS[c.type].name + ", " + gravity.toFixed(2) + " m/s²): " + C.fmtLap(bl && bl.time) + " · " : "") + "Top " + C.fmtSpeed(REC.top, S.units) + " · longest jump " + C.fmtDist(REC.jump, S.units) + " · most air " + REC.air.toFixed(1) + " s · biggest crash " + REC.crash.toFixed(0) + " g" + (REC.stunt ? " · best stunt: " + REC.stunt : "") + (REC.flight ? " · longest flight " + C.fmtLap(REC.flight) + ", highest " + C.fmtDist(REC.alt || 0, S.units) + (REC.landing != null ? ", softest landing " + REC.landing.toFixed(1) + " m/s" : "") : "");
 	}
 
 	/* ===================== main loop ===================== */
-	var todSave = 3, acc = 0, lastFrame = 0, frames = 0, mmT = 0;
+	var todSave = 3, acc = 0, lastFrame = 0, frames = 0, mmT = 0, frameDt = 1 / 60;
 	function frame(now) {
 		requestAnimationFrame(frame);
 		if (!phys) return;
-		var dt = Math.min(0.1, (now - (lastFrame || now)) / 1000); lastFrame = now;
+		var dt = Math.min(0.1, (now - (lastFrame || now)) / 1000); lastFrame = now; frameDt = dt;
 		var vis = !document.hidden && stageOnScreen();
 		if (!vis) return;
 		advance(dt);
@@ -1400,6 +1774,7 @@
 		}
 		parts.step(paused ? 0 : dt * S.speed);
 		syncMeshes(); updateCamera(dt);
+		if (cars[player] && cars[player].fly && S.show.info !== false) drawHorizon(cars[player]);
 		hudT -= dt; if (hudT < 0) { hudT = 0.1; updateHud(); }
 		if (cars[player]) engineSound(cars[player]);
 	}
@@ -1426,6 +1801,12 @@
 				var w = c.wheels[i], sl = c.veh.wheelSuspensionLength(i), cp = c.veh.wheelChassisConnectionPointCs(i);
 				if (sl == null || !cp) continue;
 				w.piv.position.set(cp.x, cp.y - sl, cp.z); w.piv.rotation.y = c.veh.wheelSteering(i) || 0; w.spin.rotation.x = c.veh.wheelRotation(i) || 0;
+			}
+			if (c.surf && c.fly) { /* control surfaces follow the controls; the propeller turns with the throttle (or windmills in the airflow) */
+				var Fp = c.fly, su = c.surf, fa = [0, 0.18, 0.5][Fp.flap];
+				su.ailL.rotation.x = -Fp.ail * 0.35; su.ailR.rotation.x = Fp.ail * 0.35; su.elev.rotation.x = Fp.elev * 0.4; su.rud.rotation.y = Fp.rud * 0.4;
+				su.flapL.rotation.x = su.flapR.rotation.x = su.flapL.rotation.x + (-fa - su.flapL.rotation.x) * 0.08;
+				if (su.prop) { var rps = Fp.dead ? (Fp.o ? Fp.o.V * 0.15 : 0) : 6 + Fp.thr * 40; su.prop.rotation.z += rps * frameDt * (paused ? 0 : 1); var blur = !Fp.dead && Fp.thr > 0.25; su.disc.material.opacity = blur ? 0.16 : 0; su.blades.forEach(function (b) { b.visible = !blur; }); }
 			}
 		});
 		objs.forEach(function (o) { var ip = ipose(o); o.mesh.position.copy(ip.t); o.mesh.quaternion.copy(ip.q); });
@@ -1465,14 +1846,20 @@
 	}
 	function setupUI() {
 		opt($("cs-world"), C.WORLD_ORDER.map(function (w) { return [w, C.WORLDS[w].name]; }), S.world);
-		opt($("cs-car"), [["", "Best for this world"]].concat(C.CAR_ORDER.map(function (k) { return [k, C.CARS[k].name]; })), S.car || "");
+		var og = function (lab, ks) { return '<optgroup label="' + lab + '">' + ks.map(function (k) { return '<option value="' + k + '">' + C.CARS[k].name + "</option>"; }).join("") + "</optgroup>"; };
+		$("cs-car").innerHTML = '<option value="">Best for this world</option>' + og("Cars", C.CAR_ORDER) + og("Aircraft ✈", C.PLANE_ORDER); $("cs-car").value = S.car || "";
 		opt($("cs-cam"), CAMS, S.cam);
 		function wxOpts() { opt($("cs-wx"), Object.keys(C.WEATHER).map(function (k) { return [k, C.WEATHER[k].icon + " " + C.WEATHER[k].name]; }), C.weatherFor(S.world).indexOf(S.weather) >= 0 ? S.weather : "clear"); Array.prototype.forEach.call($("cs-wx").options, function (o) { o.disabled = C.weatherFor(S.world).indexOf(o.value) < 0; }); }
 		wxOpts(); $("cs-world").addEventListener("change", wxOpts);
 		$("cs-wx").addEventListener("change", function () { setWeather(this.value); });
 		$("cs-wdesc").textContent = C.WORLDS[S.world].desc;
 		$("cs-world").addEventListener("change", function () { S.world = this.value; S.g = null; S.car = null; $("cs-car").value = ""; save(); $("cs-wdesc").textContent = C.WORLDS[S.world].desc; buildWorld(); syncUrl(); });
-		$("cs-car").addEventListener("change", function () { S.car = this.value || null; save(); swapPlayerCar(); syncUrl(); });
+		$("cs-car").addEventListener("change", function () { var v = this.value || null; if (C.isPlane(v)) { togglePlane(v); this.blur(); return; } S.car = v; if (v) S.lastCar = v; save(); swapPlayerCar(); syncUrl(); });
+		$("cs-fly").addEventListener("click", function () { togglePlane("plane"); }); $("cs-flyjet").addEventListener("click", function () { togglePlane("jet"); });
+		$("cs-backcar").addEventListener("click", function () { if (cars[player].d.fly) togglePlane(); });
+		$("cs-runway").addEventListener("click", function () { var c = cars[player]; if (!c.d.fly) return; if (!W.track) { toast("Only the test-track worlds have a runway: any long flat road works too"); return; } resetCar(c, false); camSnap = true; toast("🛫 On the runway: flaps T/O, full throttle (Shift), pull back (S) at lift-off speed"); });
+		$("cs-airstart").addEventListener("click", airStart);
+		$("cs-pinv").checked = !!S.pinv; $("cs-pinv").addEventListener("change", function () { S.pinv = this.checked; save(); });
 		$("cs-cam").addEventListener("change", function () { S.cam = this.value; camSnap = true; camReset(); save(); });
 		$("cs-camreset").addEventListener("click", camReset);
 		var sw = $("cs-paint"); sw.innerHTML = C.PAINT.map(function (c) { return '<button type="button" style="background:' + c + '" data-c="' + c + '" aria-label="Paint ' + c + '"></button>'; }).join("");
@@ -1540,8 +1927,9 @@
 		setupTouch();
 	}
 	function swapPlayerCar() {
-		var old = cars[player], t = old.body.translation(), f = fwdOf(old);
-		var c = makeCar(S.car && C.CARS[S.car] ? S.car : W.car, S.color, { x: t.x, z: t.z, yaw: Math.atan2(f.x, f.z) }, true);
+		var old = cars[player], t = old.body.translation(), f = fwdOf(old), type = S.car && C.CARS[S.car] ? S.car : W.car;
+		var pose = C.isPlane(type) && W.track && !old.d.fly ? planeStart() : { x: t.x, z: t.z, yaw: Math.atan2(f.x, f.z) };
+		var c = makeCar(type, C.isPlane(type) ? null : S.color, pose, true);
 		removeCar(old); cars[player] = c; c.id = player; camSnap = true; lapReset(); ghostKey = ""; updateHud(true);
 	}
 	function syncUrl() { try { history.replaceState(null, "", location.pathname + "?" + C.query(S) + (sharedMap && sharedMap.world === S.world && /map=/.test(location.hash) ? location.hash : "")); } catch (e) { /* ignore */ } }
@@ -1581,6 +1969,7 @@
 			for (var q = 0; q <= 200; q++) { var tp = C.trackPoint(q / 200 * C.trackLength()); if (q) g.lineTo(tp.x, tp.z); else g.moveTo(tp.x, tp.z); }
 			g.closePath(); g.stroke(); var p0 = C.trackPoint(0); g.fillStyle = "#fff"; g.fillRect(p0.x - 1, p0.z - C.TRACK.width / 2, 2, C.TRACK.width); g.restore();
 		}
+		if (W.track) { var RW = C.RUNWAY; g.save(); g.scale(N / s, N / s); g.translate(s / 2, s / 2); g.fillStyle = "#3e4045"; g.fillRect(RW.x - RW.len / 2, RW.z - RW.w / 2, RW.len, RW.w); g.fillStyle = "#e8e8e4"; for (var rx = RW.x - RW.len / 2 + 60; rx < RW.x + RW.len / 2 - 60; rx += 50) g.fillRect(rx, RW.z - 0.8, 30, 1.6); g.restore(); }
 		return (mmBg = cv);
 	}
 	var PCOL = { pad: "#2fb344", ramp: "#e8a400", gap: "#e8a400", table: "#d9822b", whoops: "#d9822b", loop: "#e04b2a", pipe: "#5b8fc7", bank: "#5b8fc7", block: "#8a9099" };
@@ -1893,6 +2282,11 @@
 		/* let the computer drive the player's car (testing the lap timer): MESCarSandbox.auto(seconds) */
 		auto: function (sec) { var a = S.ai; S.ai = "cruise"; autoPilot = true; for (var i = 0; i < sec * 60; i++) advance(1 / 60); autoPilot = false; S.ai = a; render(); return { laps: lap.laps, last: lap.last, best: REC.laps[lapKey()], hud: $("cs-lapnow").textContent + " | " + $("cs-lapbest").textContent, toast: $("cs-toast").textContent }; },
 		car: function () { return cars[player]; }, replay: function () { replayStart(); return replay ? { len: replay.len, frames: replay.frames.length } : null; }, replayStep: function (sec) { for (var i = 0; i < sec * 60; i++) advance(1 / 60); render(); return replay ? replay.t : null; }, night: setNight, weather: setWeather, tod: function (h) { setTod(h); return { day: dayK, sun: sunLight.intensity, hemi: hemi.intensity }; }, ghostShown: function () { return !!(ghostMesh && ghostMesh.visible); },
+		/* planes: fly("plane" | "jet"), airStart(), plane() = its state, setThr(0..1), flap(n); run(sec, {pit, rol, rudl, rudr, fbrk}) flies it */
+		fly: function (k) { togglePlane(k || "plane"); return this.plane(); }, airStart: function () { airStart(); return this.plane(); },
+		plane: function () { var c = cars[player]; if (!c || !c.fly) return null; var t = c.body.translation(), lv = c.body.linvel(), F = c.fly, ip = { q: new THREE.Quaternion(c.body.rotation().x, c.body.rotation().y, c.body.rotation().z, c.body.rotation().w) }, at = C.attitude(new THREE.Vector3(0, 0, 1).applyQuaternion(ip.q), new THREE.Vector3(0, 1, 0).applyQuaternion(ip.q));
+			return { type: c.type, x: +t.x.toFixed(1), y: +t.y.toFixed(1), z: +t.z.toFixed(1), agl: +planeAgl(c, t).toFixed(1), vs: +lv.y.toFixed(2), V: F.o ? +F.o.V.toFixed(1) : 0, alpha: F.o ? +(F.o.alpha * 57.3).toFixed(1) : 0, stall: F.o ? +F.o.stall.toFixed(2) : 0, pitch: +(at.pitch * 57.3).toFixed(1), bank: +(at.bank * 57.3).toFixed(1), thr: F.thr, flap: F.flap, air: F.air, contact: c.anyContact, damage: Math.round(c.damage), hud: $("cs-fias").textContent + " | " + $("cs-falt").textContent + " | " + $("cs-fvs").textContent, lesson: $("cs-flesson").textContent, toast: $("cs-toast").textContent }; },
+		setThr: function (v) { var c = cars[player]; if (c && c.fly) c.fly.thr = v; }, flap: function (n) { var c = cars[player]; if (c && c.fly) c.fly.flap = n; },
 		render: function () { render(); drawMini(); }, editor: function () { edOpenNow(); return ed; }, editorDraw: function () { drawEditor(); }, advance: function (dt) { advance(dt); }, camera: function () { return camera; }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();

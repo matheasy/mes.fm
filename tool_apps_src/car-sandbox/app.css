@@ -197,3 +197,49 @@
 	.cs-touch .cs-t-launch {width:4.2em;height:4.2em;background:rgba(155,93,229,0.75);border-color:#fff;font-size:1.1em;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:cs-pulse 1s infinite alternate;}
 	.cs-t-launch small {font-size:0.55em;}
 	@keyframes cs-pulse {from {transform:scale(1);} to {transform:scale(1.08);}}
+	/* ---------- planes: flight HUD + touch stick / throttle ---------- */
+	.cs-fhud {position:absolute;left:50%;bottom:0.6em;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.3em 0.7em;max-width:min(36em, 64%);background:var(--cs-glass);color:var(--cs-ink);border-radius:0.6em;padding:0.4em 0.6em;font-size:0.8em;line-height:1.35;pointer-events:none;backdrop-filter:blur(4px);z-index:2;}
+	.cs-fhud canvas {width:96px;height:96px;border-radius:50%;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
+	.cs-fcol {display:flex;flex-direction:column;min-width:11em;}
+	.cs-frow {display:flex;align-items:center;gap:0.45em;}
+	.cs-frow span {color:var(--cs-dim);min-width:4.6em;}
+	.cs-frow b {color:var(--cs-ink);font-variant-numeric:tabular-nums;}
+	.cs-fbar {display:inline-block;width:4.5em;height:0.5em;border-radius:0.3em;background:rgba(255,255,255,0.2);overflow:hidden;}
+	.cs-fbar i {display:block;height:100%;width:0;background:#4dabf7;}
+	.cs-fstall {position:absolute;left:50%;top:-2.1em;transform:translateX(-50%);background:#e03131;color:#fff;font-weight:800;letter-spacing:0.15em;padding:0.15em 0.7em;border-radius:0.35em;animation:cs-blink 0.5s steps(2) infinite;}
+	@keyframes cs-blink {50% {opacity:0.25;}}
+	.cs-flesson {flex-basis:100%;text-align:center;font-size:0.92em;color:#ffd8a8;}
+	.cs-flesson:empty {display:none;}
+	.cs-flying .cs-speedo span::after {content:" ground";}
+	.cs-has-touch .cs-fhud {bottom:auto;top:0.5em;left:0.5em;transform:none;font-size:0.68em;max-width:min(26em, 52%);justify-content:flex-start;}
+	.cs-has-touch .cs-flesson {font-size:0.85em;}
+	.cs-flying.cs-has-touch .cs-hud, .cs-flying.cs-has-touch .cs-speedo {display:none !important;}
+	.cs-has-touch .cs-flesson {text-align:left;}
+	.cs-has-touch .cs-fhud canvas {width:64px;height:64px;}
+	.cs-has-touch .cs-fhud .cs-fstall {top:auto;bottom:-2em;}
+	.cs-replaying .cs-fhud, .cs-hide-info .cs-fhud {display:none !important;}
+	.cs-touch > .cs-tfly {display:none;}
+	.cs-flying .cs-touch > .cs-tl, .cs-flying .cs-touch > .cs-tr {display:none;}
+	.cs-flying .cs-touch > .cs-tfly {display:flex;flex:1;justify-content:space-between;align-items:flex-end;}
+	.cs-stick {width:8.5em;height:8.5em;border-radius:50%;border:2px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.38);position:relative;touch-action:none;flex:none;}
+	.cs-stick::before {content:"";position:absolute;left:50%;top:8%;bottom:8%;width:1px;background:rgba(255,255,255,0.25);}
+	.cs-stick::after {content:"";position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,0.25);}
+	.cs-stick i {position:absolute;left:50%;top:50%;width:3.2em;height:3.2em;margin:-1.6em 0 0 -1.6em;border-radius:50%;background:rgba(77,171,247,0.75);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+	.cs-tfr {display:flex;gap:0.45em;align-items:flex-end;}
+	.cs-thr {width:3.4em;height:9em;border-radius:0.9em;border:2px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.45);position:relative;overflow:hidden;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;color:#fff;font-size:0.85em;padding-top:0.3em;}
+	.cs-thr i {position:absolute;left:0;right:0;bottom:0;height:0;background:rgba(47,158,68,0.75);}
+	.cs-thr b, .cs-thr small {position:relative;color:#fff;line-height:1.1;}
+	.cs-thr small {font-size:0.8em;}
+	.cs-touch #cs-t-flap, .cs-touch #cs-t-fbrk {display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;font-family:inherit;font-size:0.72em;}
+	.cs-touch #cs-t-flap small, .cs-touch #cs-t-fbrk small, .cs-touch #cs-t-rudl small, .cs-touch #cs-t-rudr small {font-size:0.62em;display:block;color:#fff;opacity:0.85;}
+	.cs-touch #cs-t-rudl, .cs-touch #cs-t-rudr {display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;font-family:inherit;}
+	@media (max-width:640px), (max-height:430px) {
+		.cs-stick {width:6.6em;height:6.6em;}
+		.cs-stick i {width:2.6em;height:2.6em;margin:-1.3em 0 0 -1.3em;}
+		.cs-thr {height:7em;width:3em;}
+		.cs-fcol {min-width:9em;}
+	}
+	html body.dark-mode #cs .cs-fhud {background:rgba(12,16,24,0.62);color:#f2f5fa;}
+	html body.dark-mode #cs .cs-frow b {color:#f2f5fa;}
+	html body.dark-mode #cs .cs-frow span {color:#b7c0cf;}
+	html body.dark-mode #cs .cs-flesson {color:#ffd8a8;}
