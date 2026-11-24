@@ -55,3 +55,11 @@
 	body.dark-mode #en .en-win input {background:#111;color:#ffd75e;}
 	body.dark-mode #en .en-sock[data-c] {color:#111;}
 	body.dark-mode #en code {background:#2a2a2a;color:#ddd;}
+
+	/* power layout of the Message card (main_js/split-view.js): Fill window / Full screen, input and output fill the window side by side or stacked */
+	.tu .en-pwbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;justify-content:flex-end;margin:-0.3em 0 0.4em;}
+	#en .en-msgcard.mes-pfill {padding:10px 14px !important;}
+	#en .en-msgcard.mes-pfill .en-io {align-items:stretch;}
+	#en .en-msgcard.mes-pfill .en-io > .tu-field {display:flex;flex-direction:column;}
+	#en .en-msgcard.mes-pfill .en-io textarea {flex:1 1 auto;min-height:3em;height:auto !important;resize:none;}
+	#en .en-msgcard.mes-pfill > .tu-row, #en .en-msgcard.mes-pfill > .tu-note {flex:0 0 auto;}

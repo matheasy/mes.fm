@@ -16,7 +16,8 @@
      title,           // text in front of the switch, e.g. "Results:"
      def,             // default layout (default lays[0])
      hide,            // elements hidden while filling (e.g. the explanation text)
-     onChange(on)     // after every change (redraw grids etc.)
+     onChange(on),    // after every change (redraw grids etc.)
+     panel            // false = no Fill window buttons: the page turns the layout on itself with root.classList.add('msv-on') + api.apply()
    }) -> {apply(), set(lay)} or null (no MESPanel / no root) */
 (function () {
   if (window.MESSplitView) return;
@@ -28,28 +29,27 @@
     'body.dark-mode .msv-lay button{background:#262626;border-color:#4a4a4a;color:#d8dde3}' +
     'body.dark-mode .msv-lay button[aria-pressed="true"]{background:var(--accent,#6ea8fe);border-color:var(--accent,#6ea8fe);color:#111}' +
     '.msv-grip{display:none}' +
-    '.mes-pfill .msv-lay{display:inline-flex}' +
-    '.mes-pfill .msv-x{display:none!important}' +
-    '.mes-pfill .msv-area{display:flex!important;flex-direction:column;flex:1 1 auto;min-height:0;min-width:0;gap:0!important}' +
-    '.mes-pfill .msv-area>.msv-a{flex:0 0 var(--msv-f,50%);min-height:5em;min-width:12em;overflow:auto;box-sizing:border-box;margin:0!important}' +
-    '.mes-pfill .msv-area>.msv-b{flex:1 1 0;min-height:0;min-width:0;overflow:auto;box-sizing:border-box;margin:0!important}' +
-    '.mes-pfill .msv-grip{display:flex;flex:0 0 12px;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;outline:none}' +
-    '.mes-pfill .msv-grip::before{content:"";width:3.5em;height:4px;border-radius:2px;background:#9aa3af;opacity:.7}' +
-    '.mes-pfill .msv-grip:hover::before,.mes-pfill .msv-grip:focus-visible::before,.mes-pfill .msv-grip.is-drag::before{background:var(--accent,#1d6fd1);opacity:1}' +
-    '.mes-pfill.msv-r .msv-area,.mes-pfill.msv-l .msv-area{flex-direction:row}' +
-    '.mes-pfill.msv-r .msv-grip,.mes-pfill.msv-l .msv-grip{cursor:col-resize}' +
-    '.mes-pfill.msv-r .msv-grip::before,.mes-pfill.msv-l .msv-grip::before{width:4px;height:3.5em}' +
-    '.mes-pfill.msv-l .msv-area>.msv-b{order:-2}.mes-pfill.msv-l .msv-grip{order:-1}' +
-    '.mes-pfill.msv-h .msv-area>.msv-a{flex:1 1 auto}.mes-pfill.msv-h .msv-area>.msv-b,.mes-pfill.msv-h .msv-grip{display:none!important}' +
-    '@media (max-width:700px){.mes-pfill.msv-r .msv-area,.mes-pfill.msv-l .msv-area{flex-direction:column}' +
-    '.mes-pfill.msv-l .msv-area>.msv-b,.mes-pfill.msv-l .msv-grip{order:0}' +
-    '.mes-pfill.msv-r .msv-grip,.mes-pfill.msv-l .msv-grip{cursor:row-resize}' +
-    '.mes-pfill.msv-r .msv-grip::before,.mes-pfill.msv-l .msv-grip::before{width:3.5em;height:4px}}';
+    ':is(.mes-pfill,.msv-on) .msv-x{display:none!important}' +
+    ':is(.mes-pfill,.msv-on) .msv-area{display:flex!important;flex-direction:column;flex:1 1 auto;min-height:0;min-width:0;gap:0!important}' +
+    ':is(.mes-pfill,.msv-on) .msv-area>.msv-a{flex:0 0 var(--msv-f,50%);min-height:5em;min-width:12em;overflow:auto;box-sizing:border-box;margin:0!important}' +
+    ':is(.mes-pfill,.msv-on) .msv-area>.msv-b{flex:1 1 0;min-height:0;min-width:0;overflow:auto;box-sizing:border-box;margin:0!important}' +
+    ':is(.mes-pfill,.msv-on) .msv-grip{display:flex;flex:0 0 12px;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;outline:none}' +
+    ':is(.mes-pfill,.msv-on) .msv-grip::before{content:"";width:3.5em;height:4px;border-radius:2px;background:#9aa3af;opacity:.7}' +
+    ':is(.mes-pfill,.msv-on) .msv-grip:hover::before,:is(.mes-pfill,.msv-on) .msv-grip:focus-visible::before,:is(.mes-pfill,.msv-on) .msv-grip.is-drag::before{background:var(--accent,#1d6fd1);opacity:1}' +
+    ':is(.mes-pfill,.msv-on).msv-r .msv-area,:is(.mes-pfill,.msv-on).msv-l .msv-area{flex-direction:row}' +
+    ':is(.mes-pfill,.msv-on).msv-r .msv-grip,:is(.mes-pfill,.msv-on).msv-l .msv-grip{cursor:col-resize}' +
+    ':is(.mes-pfill,.msv-on).msv-r .msv-grip::before,:is(.mes-pfill,.msv-on).msv-l .msv-grip::before{width:4px;height:3.5em}' +
+    ':is(.mes-pfill,.msv-on).msv-l .msv-area>.msv-b{order:-2}:is(.mes-pfill,.msv-on).msv-l .msv-grip{order:-1}' +
+    ':is(.mes-pfill,.msv-on).msv-h .msv-area>.msv-a{flex:1 1 auto}:is(.mes-pfill,.msv-on).msv-h .msv-area>.msv-b,:is(.mes-pfill,.msv-on).msv-h .msv-grip{display:none!important}' +
+    '@media (max-width:700px){:is(.mes-pfill,.msv-on).msv-r .msv-area,:is(.mes-pfill,.msv-on).msv-l .msv-area{flex-direction:column}' +
+    ':is(.mes-pfill,.msv-on).msv-l .msv-area>.msv-b,:is(.mes-pfill,.msv-on).msv-l .msv-grip{order:0}' +
+    ':is(.mes-pfill,.msv-on).msv-r .msv-grip,:is(.mes-pfill,.msv-on).msv-l .msv-grip{cursor:row-resize}' +
+    ':is(.mes-pfill,.msv-on).msv-r .msv-grip::before,:is(.mes-pfill,.msv-on).msv-l .msv-grip::before{width:3.5em;height:4px}}';
   var NAMES = { b: 'Below', r: 'Right', l: 'Left', h: 'Hidden' };
 
   function add(o) {
     if (!o || !o.root || !o.a || !o.b) return null;
-    if (!window.MESPanel) { var n = 0; (function wait() { if (window.MESPanel) add(o); else if (++n < 100) setTimeout(wait, 60); })(); return null; }
+    if (o.panel !== false && !window.MESPanel) { var n = 0; (function wait() { if (window.MESPanel) add(o); else if (++n < 100) setTimeout(wait, 60); })(); return null; }
     if (!document.getElementById('msv-css')) { var st = document.createElement('style'); st.id = 'msv-css'; st.textContent = CSS; document.head.appendChild(st); }
     var root = o.root, area = o.area || root, lays = o.lays || ['b', 'r', 'l', 'h'], labels = o.labels || {};
     var PW = { lay: o.def || lays[0], b: 0.45, s: 0.5 };
@@ -69,9 +69,10 @@
       lay.addEventListener('click', function (e) { var b = e.target.closest('button[data-lay]'); if (b) set(b.dataset.lay); });
     }
     var side = function () { return (PW.lay === 'r' || PW.lay === 'l') && window.innerWidth > 700; };
-    var changed = function () { if (o.onChange) { try { o.onChange(root.classList.contains('mes-pfill')); } catch (e) {} } };
+    var changed = function () { if (o.onChange) { try { o.onChange(root.classList.contains('mes-pfill') || root.classList.contains('msv-on')); } catch (e) {} } };
     function apply() {
       ['b', 'r', 'l', 'h'].forEach(function (k) { root.classList.toggle('msv-' + k, PW.lay === k); });
+      if (lay) lay.style.display = root.classList.contains('mes-pfill') || root.classList.contains('msv-on') ? 'inline-flex' : 'none';
       if (lay) Array.prototype.forEach.call(lay.querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', b.dataset.lay === PW.lay ? 'true' : 'false'); });
       var f = side() ? PW.s : PW.b;
       area.style.setProperty('--msv-f', (f * 100).toFixed(1) + '%');
@@ -103,7 +104,7 @@
     });
     window.addEventListener('resize', apply);
     apply();
-    MESPanel.add(root, { bar: bar, onChange: function (on) { apply(); changed(); if (on && o.focus) { try { o.focus.focus({ preventScroll: true }); } catch (e) {} } } });
+    if (o.panel !== false) MESPanel.add(root, { bar: bar, onChange: function (on) { apply(); changed(); if (on && o.focus) { try { o.focus.focus({ preventScroll: true }); } catch (e) {} } } });
     return { apply: apply, set: set };
   }
   window.MESSplitView = { add: add };

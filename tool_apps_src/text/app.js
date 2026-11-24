@@ -137,7 +137,7 @@
 	function renderRead(my) {
 		var k = D.info.kind, t = D.text;
 		if (k === "md" || k === "html") {
-			readV.innerHTML = '<p class="tx-morenote">Formatting…</p>';
+			if (!(D.editing && readV.childNodes.length)) readV.innerHTML = '<p class="tx-morenote">Formatting…</p>';   // a live preview keeps the old text until the new one is ready
 			return Promise.all([loadScript(LIB.purify), k === "md" ? loadScript(LIB.marked) : null]).then(function () {
 				if (my !== renderGen) return;
 				var pm = k === "md" ? T.pullMath(t) : null;
@@ -208,12 +208,31 @@
 	stage.addEventListener("scroll", function () { if (D && D.view === "code" && codeLines && codeShown < codeLines.length && stage.scrollTop + stage.clientHeight > stage.scrollHeight - 600) addLines(); });
 
 	// ---------- edit / save ----------
+	// live preview while editing: the formatted view beside / under the editor (main_js/split-view.js, panel:false; Off = the editor alone)
+	var prev = window.MESSplitView ? MESSplitView.add({ root: root, area: stage, a: editor, b: readV, bar: $("tx-prevbar"), key: "mes-text:prev", panel: false,
+		lays: ["r", "b", "h"], labels: { r: "Right", b: "Below", h: "Off" }, title: "Preview:", onChange: function () { if (D && D.editing) previewSoon(0); } }) : null;
+	var prevT = 0;
+	function previewSoon(ms) {
+		clearTimeout(prevT);
+		prevT = setTimeout(function () {
+			if (!D || !D.editing || !prev || root.classList.contains("msv-h")) return;
+			syncEdit(); D.info = T.info(D.name, D.text);
+			var ratio = editor.scrollHeight > editor.clientHeight ? editor.scrollTop / (editor.scrollHeight - editor.clientHeight) : 0;
+			var my = ++renderGen; readV.hidden = false;
+			renderRead(my).then(function () { if (my === renderGen && readV.scrollHeight > readV.clientHeight) readV.scrollTop = ratio * (readV.scrollHeight - readV.clientHeight); }, function () {});
+		}, ms == null ? 350 : ms);
+	}
+	editor.addEventListener("input", function () { previewSoon(); });
+	editor.addEventListener("scroll", function () { if (root.classList.contains("msv-on") && editor.scrollHeight > editor.clientHeight) readV.scrollTop = editor.scrollTop / (editor.scrollHeight - editor.clientHeight) * (readV.scrollHeight - readV.clientHeight); });
 	function startEdit() {
-		if (!D) return; D.editing = true; readV.hidden = codeV.hidden = true; editor.hidden = false; editor.value = D.text; editor.focus();
+		if (!D) return; D.editing = true; readV.hidden = codeV.hidden = true; editor.hidden = false; editor.value = D.text;
+		if (prev) { root.classList.add("msv-on"); prev.apply(); previewSoon(0); }
+		editor.focus();
 		$("tx-edit").textContent = "Done editing"; $("tx-edit").setAttribute("aria-pressed", "true");
 	}
 	function finishEdit() {
-		if (!D || !D.editing) return; D.editing = false;
+		if (!D || !D.editing) return; D.editing = false; clearTimeout(prevT);
+		if (prev) { root.classList.remove("msv-on"); prev.apply(); }
 		if (editor.value !== D.text) { D.text = editor.value; D.dirty = true; D.bytes = null; D.size = new Blob([D.text]).size; D.enc = "utf-8"; D.info = T.info(D.name, D.text); }
 		$("tx-edit").textContent = "Edit"; $("tx-edit").setAttribute("aria-pressed", "false"); render();
 	}

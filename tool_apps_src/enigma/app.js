@@ -268,4 +268,8 @@
 
 	load(); fromQuery();
 	drawBoards(); refresh(); cribWhereUI(); compute();
+	// power layout of the Message card: Fill window / Full screen, input and output side by side or stacked with a grip (main_js/split-view.js)
+	if (window.MESSplitView && document.getElementById("en-msgcard")) MESSplitView.add({ root: document.getElementById("en-msgcard"), area: document.getElementById("en-io"),
+		a: document.getElementById("en-in").parentNode, b: document.getElementById("en-out").parentNode, bar: document.getElementById("en-pwbar"),
+		key: "mes-enigma:pw", lays: ["r", "b"], labels: { r: "Side by side", b: "Stacked" }, title: "Boxes:", focus: document.getElementById("en-in") });
 })();
