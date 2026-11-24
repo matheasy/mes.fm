@@ -602,6 +602,24 @@
       .then(function (d) { if (seq !== vsSeq) return; VS = d; drawVs(); })
       .catch(function (e) { if (seq === vsSeq) $('ad-vsnote').textContent = 'Could not load (' + e.message + ').'; });
   }
+  // which series the Ads vs SEO chart draws (localStorage mes-ads:vsshow) + optional 7-day average
+  var VSHOW = { spend: 1, adClicks: 1, oc: 1, oi: 1, avg: 0 };
+  try { var vsh = JSON.parse(localStorage.getItem('mes-ads:vsshow') || 'null'); if (vsh && typeof vsh === 'object') Object.keys(VSHOW).forEach(function (k) { if (k in vsh) VSHOW[k] = vsh[k] ? 1 : 0; }); } catch (e) {}
+  function paintVst() { document.querySelectorAll('#ad-vst button[data-v]').forEach(function (b) { b.setAttribute('aria-pressed', VSHOW[b.dataset.v] ? 'true' : 'false'); }); }
+  paintVst();
+  $('ad-vst').onclick = function (e) {
+    var b = e.target.closest('button[data-v]'); if (!b) return;
+    VSHOW[b.dataset.v] = VSHOW[b.dataset.v] ? 0 : 1;
+    try { localStorage.setItem('mes-ads:vsshow', JSON.stringify(VSHOW)); } catch (x) {}
+    paintVst(); if (VS) drawVs();
+  };
+  function avg7(rows, k) {   // trailing 7-day average of the days that have a value
+    return rows.map(function (r, i) {
+      if (r[k] == null) return null;
+      var t = 0, c = 0; for (var j = Math.max(0, i - 6); j <= i; j++) if (rows[j][k] != null) { t += rows[j][k]; c++; }
+      return c ? t / c : null;
+    });
+  }
   function pctCh(v) { if (v == null || !isFinite(v)) return ''; return ' <small class="' + (v >= 0 ? 'ad-up' : 'ad-dn') + '">' + (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%</small>'; }
   function drawVs() {
     if (!VS) return;
@@ -631,26 +649,33 @@
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     if (!rows.length) { svg.innerHTML = ''; return; }
     var iw = W - padL - padR, ih = H - padT - padB, bw = iw / rows.length;
-    var mS = niceTop(Math.max.apply(null, rows.map(function (r) { return r.spend; }).concat([0]))), mC = niceTop(Math.max.apply(null, rows.map(function (r) { return Math.max(r.adClicks || 0, r.oc || 0); }).concat([0])));
-    var mI = Math.max.apply(null, rows.map(function (r) { return r.oi || 0; }).concat([1]));
+    var sh = VSHOW, ser = {};   // the drawn values: plain or 7-day average
+    ['spend', 'adClicks', 'oc', 'oi'].forEach(function (k) { ser[k] = sh.avg ? avg7(rows, k) : rows.map(function (r) { return r[k] == null ? null : r[k]; }); });
+    var vmax = function (k) { return Math.max.apply(null, ser[k].map(function (v) { return v || 0; }).concat([0])); };
+    var mS = niceTop(sh.spend ? vmax('spend') : 0), mC = niceTop(Math.max(sh.adClicks ? vmax('adClicks') : 0, sh.oc ? vmax('oc') : 0));
+    var mI = Math.max(vmax('oi'), 1);
     var css = getComputedStyle($('ad')), cv = function (k) { return css.getPropertyValue(k).trim(); };
     var cx = function (i) { return padL + i * bw + bw / 2; }, ys = function (v) { return padT + ih - v / mS * ih; }, yc = function (v) { return padT + ih - v / mC * ih; }, yi = function (v) { return padT + ih - v / mI * ih * 0.95; };
+    var leftOn = sh.spend, rightOn = sh.adClicks || sh.oc;
     var s = '';
     for (var g = 0; g <= 4; g++) {
       var gy = padT + ih * g / 4;
       s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cv('--ad-line') + '"/>' +
-        '<text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cv('--ad-cost') + '">' + axisMoney(mS * (4 - g) / 4) + '</text>' +
-        '<text x="' + (W - padR + 6) + '" y="' + (gy + 4) + '" font-size="11" fill="' + cv('--ad-gc') + '">' + shortN(mC * (4 - g) / 4) + '</text>';
+        (leftOn ? '<text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cv('--ad-cost') + '">' + axisMoney(mS * (4 - g) / 4) + '</text>' : '') +
+        (rightOn ? '<text x="' + (W - padR + 6) + '" y="' + (gy + 4) + '" font-size="11" fill="' + cv('--ad-gc') + '">' + shortN(mC * (4 - g) / 4) + '</text>' : '');
     }
     if (ba.start && ba.n) { var si = rows.findIndex(function (r) { return r.d === ba.start; }); if (si > -1) s += '<line x1="' + (padL + si * bw).toFixed(1) + '" x2="' + (padL + si * bw).toFixed(1) + '" y1="' + padT + '" y2="' + (padT + ih) + '" stroke="' + cv('--ad-muted') + '" stroke-dasharray="4 3"/><text x="' + (padL + si * bw + 4).toFixed(1) + '" y="' + (padT + 11) + '" font-size="10.5" fill="' + cv('--ad-muted') + '">first ad spend</text>'; }
-    rows.forEach(function (r, i) { if (r.spend > 0) s += '<rect x="' + (padL + i * bw + bw * 0.15).toFixed(1) + '" y="' + ys(r.spend).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + Math.max(0, padT + ih - ys(r.spend)).toFixed(1) + '" fill="' + cv('--ad-cost') + '" fill-opacity="0.35" rx="1"/>'; });
+    if (sh.spend) ser.spend.forEach(function (v, i) { if (v > 0) s += '<rect x="' + (padL + i * bw + bw * 0.15).toFixed(1) + '" y="' + ys(v).toFixed(1) + '" width="' + Math.max(1, bw * 0.7).toFixed(1) + '" height="' + Math.max(0, padT + ih - ys(v)).toFixed(1) + '" fill="' + cv('--ad-cost') + '" fill-opacity="0.35" rx="1"/>'; });
     var line = function (key, y, col, dash) {
       var run = [], out = '';
       var flush = function () { if (run.length > 1) out += '<polyline points="' + run.join(' ') + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>'; run = []; };
-      rows.forEach(function (r, i) { if (r[key] == null) flush(); else run.push(cx(i).toFixed(1) + ',' + y(r[key]).toFixed(1)); });
+      ser[key].forEach(function (v, i) { if (v == null) flush(); else run.push(cx(i).toFixed(1) + ',' + y(v).toFixed(1)); });
       flush(); return out;
     };
-    s += line('oi', yi, cv('--ad-gi'), '6 4') + line('adClicks', yc, cv('--ad-cost'), '') + line('oc', yc, cv('--ad-gc'), '');
+    if (sh.oi) s += line('oi', yi, cv('--ad-gi'), '6 4');
+    if (sh.adClicks) s += line('adClicks', yc, cv('--ad-cost'), '');
+    if (sh.oc) s += line('oc', yc, cv('--ad-gc'), '');
+    if (!sh.spend && !sh.adClicks && !sh.oc && !sh.oi) s += '<text x="' + (W / 2) + '" y="' + (padT + ih / 2) + '" text-anchor="middle" font-size="13" fill="' + cv('--ad-muted') + '">Nothing picked: choose a line under the chart.</text>';
     var every = Math.ceil(rows.length / Math.max(2, Math.floor(iw / 60)));
     rows.forEach(function (r, i) { if (i % every === 0) s += '<text x="' + cx(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cv('--ad-muted') + '">' + r.d.slice(5) + '</text>'; });
     if (window.MESNotes) s += window.MESNotes.marks({ days: rows.map(function (r) { return r.d; }), X: cx, y0: padT + ih, y1: padT, size: 6 });
@@ -658,11 +683,12 @@
     svg.innerHTML = s;
     chartPick({ box: box, read$: $('ad-vsread'), n: rows.length, W: W, padL: padL, bw: bw, cx: cx, y0: padT + ih, y1: padT,
       sel: VSEL, setSel: function (i) { VSEL = i; }, getSel: function () { return VSEL; }, day: function (i) { return rows[i].d; },
-      dots: function (i) { var r = rows[i]; return [[r.adClicks != null ? yc(r.adClicks) : null, cv('--ad-cost')], [r.oc != null ? yc(r.oc) : null, cv('--ad-gc')], [r.oi != null ? yi(r.oi) : null, cv('--ad-gi')]]; },
+      dots: function (i) { return [[sh.adClicks && ser.adClicks[i] != null ? yc(ser.adClicks[i]) : null, cv('--ad-cost')], [sh.oc && ser.oc[i] != null ? yc(ser.oc[i]) : null, cv('--ad-gc')], [sh.oi && ser.oi[i] != null ? yi(ser.oi[i]) : null, cv('--ad-gi')]]; },
       read: function (i) {
         var r = rows[i];
         return '<b>' + esc(r.d) + '</b><span class="ad-read__s">Spent <b>' + C(money(r.spend)) + '</b></span><span class="ad-read__s ad-read__m">' + int(r.adClicks) + ' ad clicks</span>' +
-          '<span class="ad-read__s">Organic: ' + (r.oc == null ? '<span class="ad-read__m">no data yet</span>' : '<span style="color:var(--ad-gc)">' + int(r.oc) + ' clicks</span><span class="ad-read__m">' + int(r.oi) + ' impr.' + (r.of ? ' (fresh)' : '') + '</span>') + '</span>';
+          '<span class="ad-read__s">Organic: ' + (r.oc == null ? '<span class="ad-read__m">no data yet</span>' : '<span style="color:var(--ad-gc)">' + int(r.oc) + ' clicks</span><span class="ad-read__m">' + int(r.oi) + ' impr.' + (r.of ? ' (fresh)' : '') + '</span>') + '</span>' +
+          (sh.avg && ser.oc[i] != null ? '<span class="ad-read__s ad-read__m">7-day avg: ' + (+ser.oc[i].toFixed(1)) + ' clicks, ' + int(Math.round(ser.oi[i] || 0)) + ' impr.</span>' : '');
       } });
     if (window.MESNotes) window.MESNotes.attach(box);
   }

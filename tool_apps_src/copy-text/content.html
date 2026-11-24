@@ -1,6 +1,9 @@
 	<div class="tu" id="cp">
-		<div class="tu-card cp-add">
-			<div class="tu-field">
+		<div class="tu-card cp-add" id="cp-add">
+			<div class="cp-pwbar" id="cp-pwbar">
+				<div class="cp-pwlay" id="cp-pwlay" role="group" aria-label="Where the saved texts go"><span>Saved texts:</span><button type="button" data-lay="b" aria-pressed="true">Below</button><button type="button" data-lay="r" aria-pressed="false">Right</button><button type="button" data-lay="l" aria-pressed="false">Left</button><button type="button" data-lay="h" aria-pressed="false">Hidden</button></div>
+			</div>
+			<div class="tu-field cp-infield">
 				<label for="cp-new-text">Add text to keep</label>
 				<textarea id="cp-new-text" data-mes-tsize="mes-copytext:v1:infz" data-mes-tsize-label="Text size in the box" class="tu-input cp-new-text" rows="4" spellcheck="true" placeholder="Paste or type anything you want to copy again later: an email reply, an address, a link, a code snippet, a signature…"></textarea>
 			</div>
@@ -16,6 +19,8 @@
 			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded, unless you turn on <em>☁ Sync</em> (to your own OneDrive, Dropbox, Google Drive or iCloud) or <em>☁ Hive backup</em> (encrypted by default).</p>
 		</div>
 
+		<div class="cp-pwgrip" id="cp-pwgrip" role="separator" tabindex="0" aria-label="Drag to change the size of the text box" title="Drag to resize · double-click: back to the normal size"></div>
+		<div class="cp-list" id="cp-list">
 		<div class="tu-card cp-splitbox" id="cp-splitbox" hidden></div>
 
 		<div class="cp-boards" id="cp-boards" role="tablist" aria-label="Boards"></div>
@@ -88,6 +93,7 @@
 		</div>
 
 		<div id="cp-out" class="cp-grid" aria-live="polite"></div>
+		</div>
 		<div class="tu-toast cp-undo" id="cp-toast" role="status"><span id="cp-toast-msg"></span><button type="button" id="cp-toast-undo" hidden>Undo</button></div>
 
 		<div class="tu-seo">

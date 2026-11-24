@@ -570,6 +570,44 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #cp .cp-bkrow {display:inline-flex;align-items:center;gap:0.35em;cursor:pointer;}
 #cp .cp-bkrow small {opacity:0.7;}
 
+	/* Power layout (Fill window / Full screen of the whole tool, main_js/panel-view.js): text box big, saved texts below / right / left / hidden, grip resizes */
+	.tu .cp-pwbar {display:flex;flex-wrap:wrap;gap:0.4em;align-items:center;justify-content:flex-end;margin:-0.3em 0 0.4em;}
+	.tu .cp-pwbar .mes-pbtns {display:inline-flex;gap:0.35em;}
+	.tu .cp-pwlay {display:none;align-items:center;gap:0;font-size:0.85em;margin-right:auto;}
+	.tu .cp-pwlay > span {color:#667;margin-right:0.45em;}
+	.tu .cp-pwlay button {cursor:pointer;border:1px solid #c3c9d2;background:#fff;color:#444;padding:0.3em 0.7em;font:inherit;margin-left:-1px;}
+	.tu .cp-pwlay button:first-of-type {border-radius:0.4em 0 0 0.4em;margin-left:0;}
+	.tu .cp-pwlay button:last-of-type {border-radius:0 0.4em 0.4em 0;}
+	.tu .cp-pwlay button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+	body.dark-mode #cp .cp-pwlay > span {color:#a0a8b3;}
+	body.dark-mode #cp .cp-pwlay button {background:#262626;border-color:#4a4a4a;color:#d8dde3;}
+	body.dark-mode #cp .cp-pwlay button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#141006;}
+	.tu .cp-pwgrip {display:none;}
+	#cp.mes-pfill {gap:0;padding:8px 12px !important;}
+	#cp.mes-pfill > .tu-seo, #cp.mes-pfill > #android-testers-banner, #cp.mes-pfill > .tu-note:not(.cp-status) {display:none !important;}
+	#cp.mes-pfill .cp-pwlay {display:inline-flex;}
+	#cp.mes-pfill .cp-add {flex:0 0 var(--cp-pws, 45%);min-height:8em;min-width:14em;margin:0;display:flex;flex-direction:column;padding:0.7em 0.9em;box-sizing:border-box;overflow:hidden;}
+	#cp.mes-pfill .cp-add > .tu-note {display:none;}
+	#cp.mes-pfill .cp-infield {flex:1 1 auto;display:flex;flex-direction:column;min-height:0;margin:0;}
+	#cp.mes-pfill .cp-infield > .mes-ts-row, #cp.mes-pfill .cp-infield > label {flex:0 0 auto;}
+	#cp.mes-pfill .cp-new-text {flex:1 1 auto;min-height:3em;height:auto !important;resize:none;}
+	#cp.mes-pfill .cp-add > .tu-row {flex:0 0 auto;margin-top:0.5em !important;}
+	#cp.mes-pfill .cp-list {flex:1 1 0;min-height:0;min-width:0;overflow:auto;padding:0 0.2em;}
+	#cp.mes-pfill .cp-list .cp-boards {margin-top:0.4em;}
+	#cp.mes-pfill .cp-pwgrip {display:flex;flex:0 0 12px;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;}
+	#cp.mes-pfill .cp-pwgrip::before {content:"";width:3.5em;height:4px;border-radius:2px;background:#9aa3af;opacity:0.7;}
+	#cp.mes-pfill .cp-pwgrip:hover::before, #cp.mes-pfill .cp-pwgrip:focus-visible::before, #cp.mes-pfill .cp-pwgrip.is-drag::before {background:var(--accent);opacity:1;}
+	#cp.mes-pfill .cp-pwgrip:focus-visible {outline:none;}
+	#cp.mes-pfill.cp-lay-r, #cp.mes-pfill.cp-lay-l {flex-direction:row !important;}
+	#cp.mes-pfill.cp-lay-r .cp-pwgrip, #cp.mes-pfill.cp-lay-l .cp-pwgrip {cursor:col-resize;}
+	#cp.mes-pfill.cp-lay-r .cp-pwgrip::before, #cp.mes-pfill.cp-lay-l .cp-pwgrip::before {width:4px;height:3.5em;}
+	#cp.mes-pfill.cp-lay-l .cp-list {order:-2;}
+	#cp.mes-pfill.cp-lay-l .cp-pwgrip {order:-1;}
+	#cp.mes-pfill.cp-lay-h .cp-add {flex:1 1 auto;}
+	#cp.mes-pfill.cp-lay-h .cp-list, #cp.mes-pfill.cp-lay-h .cp-pwgrip {display:none;}
+	#cp.mes-pfill > .cp-undo {position:fixed;}
+	@media (max-width:700px) { #cp.mes-pfill.cp-lay-r, #cp.mes-pfill.cp-lay-l {flex-direction:column !important;} #cp.mes-pfill.cp-lay-l .cp-list, #cp.mes-pfill.cp-lay-l .cp-pwgrip {order:0;} #cp.mes-pfill.cp-lay-r .cp-pwgrip, #cp.mes-pfill.cp-lay-l .cp-pwgrip {cursor:row-resize;} #cp.mes-pfill.cp-lay-r .cp-pwgrip::before, #cp.mes-pfill.cp-lay-l .cp-pwgrip::before {width:3.5em;height:4px;} }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -750,6 +788,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .tu .cp-sync-opt{border:1px solid #6c582a;background:#251d0e}
 	body.dark-mode .tu .cp-sync-where{color:#b9b0a0}
 	body.dark-mode .tu .cp-sync-err{color:#ec786f}
+	body.dark-mode .tu .cp-pwlay > span{color:#9a9aa2}
+	body.dark-mode .tu .cp-pwlay button{border:1px solid #3a424d;background:#1a1a1a;color:#bbbbbb}
+	body.dark-mode #cp.mes-pfill .cp-pwgrip::before{background:#24282e}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -963,8 +1004,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
                                     <h1 class="page-title">Copy Text</h1>                                        <p class="page-description">Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.</p><p class="mes-applink mes-apppill" id="mes-apppill" data-app="mes-copy-text"><a href="https://apps.apple.com/us/app/id6836608312" target="_blank" rel="noopener" title="Get the free MES Copy Text app on the App Store"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" style="width:1.1em;height:1.1em;vertical-align:-0.2em;margin-right:0.4em;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18.5h2"></path></svg><span>New: <b>MES Copy Text</b> is free on the App Store for iPhone and iPad</span></a><button type="button" class="mes-apppill__x" aria-label="Close" title="Hide this note">&times;</button></p><script>(function(){var p=document.getElementById("mes-apppill");if(!p)return;var k="mes-apppill:"+p.getAttribute("data-app");try{if(localStorage.getItem(k))p.hidden=true}catch(e){}p.querySelector("button").onclick=function(){p.hidden=true;try{localStorage.setItem(k,"1")}catch(e){}}})()</script><style>.mes-apppill{display:flex;align-items:center;gap:.25em;width:fit-content;max-width:100%;box-sizing:border-box;margin:.5em 0 .3em;padding:.15em .2em .15em .85em;border:1px solid currentColor;border-radius:1.4em;font-size:.95em;line-height:1.35}.mes-apppill[hidden]{display:none}.mes-apppill a{display:flex;align-items:center;gap:.45em;padding:.25em 0;text-decoration:none}.mes-apppill a svg{flex:none;margin:0!important}.mes-apppill a:hover span{text-decoration:underline}.mes-apppill__x{flex:none;display:flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;padding:0;margin:0;border:0;border-radius:50%;background:none;color:inherit;font:inherit;font-size:1.25em;line-height:1;cursor:pointer;opacity:.7}.mes-apppill__x:hover,.mes-apppill__x:focus-visible{opacity:1;background:rgba(127,127,127,.22)}</style>                                    	<div id="main-content" data-tool data-text-scale>
 	<div class="tu" id="cp">
-		<div class="tu-card cp-add">
-			<div class="tu-field">
+		<div class="tu-card cp-add" id="cp-add">
+			<div class="cp-pwbar" id="cp-pwbar">
+				<div class="cp-pwlay" id="cp-pwlay" role="group" aria-label="Where the saved texts go"><span>Saved texts:</span><button type="button" data-lay="b" aria-pressed="true">Below</button><button type="button" data-lay="r" aria-pressed="false">Right</button><button type="button" data-lay="l" aria-pressed="false">Left</button><button type="button" data-lay="h" aria-pressed="false">Hidden</button></div>
+			</div>
+			<div class="tu-field cp-infield">
 				<label for="cp-new-text">Add text to keep</label>
 				<textarea id="cp-new-text" data-mes-tsize="mes-copytext:v1:infz" data-mes-tsize-label="Text size in the box" class="tu-input cp-new-text" rows="4" spellcheck="true" placeholder="Paste or type anything you want to copy again later: an email reply, an address, a link, a code snippet, a signature…"></textarea>
 			</div>
@@ -980,6 +1024,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p class="tu-note" style="margin-bottom:0;">Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to save. Everything stays in this browser: nothing is uploaded, unless you turn on <em>☁ Sync</em> (to your own OneDrive, Dropbox, Google Drive or iCloud) or <em>☁ Hive backup</em> (encrypted by default).</p>
 		</div>
 
+		<div class="cp-pwgrip" id="cp-pwgrip" role="separator" tabindex="0" aria-label="Drag to change the size of the text box" title="Drag to resize · double-click: back to the normal size"></div>
+		<div class="cp-list" id="cp-list">
 		<div class="tu-card cp-splitbox" id="cp-splitbox" hidden></div>
 
 		<div class="cp-boards" id="cp-boards" role="tablist" aria-label="Boards"></div>
@@ -1052,6 +1098,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</div>
 
 		<div id="cp-out" class="cp-grid" aria-live="polite"></div>
+		</div>
 		<div class="tu-toast cp-undo" id="cp-toast" role="status"><span id="cp-toast-msg"></span><button type="button" id="cp-toast-undo" hidden>Undo</button></div>
 
 		<div class="tu-seo">
@@ -1138,7 +1185,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/copy-text/js/copy-text.js?v=19" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/panel-view.js" defer></script><script src="/copy-text/js/copy-text.js?v=20" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

@@ -95,6 +95,9 @@
 	.ad-key--dash {border-top-style:dashed;}
 	#ad .ad-seot .ad-key--ln {width:0.75em;height:0.75em;border:2px solid #fff;border-radius:50%;background:var(--k);box-sizing:border-box;}
 	#ad .ad-seot .ad-key--dash {border-style:dotted;}
+	#ad .ad-vst {margin:0.5em 0 0;}
+	#ad .ad-seot .ad-key--bar {width:0.75em;height:0.75em;border-radius:2px;background:var(--k);opacity:0.6;}
+	#ad .ad-seot .ad-key--avg {width:1em;height:0.6em;border-radius:0;background:none;border-bottom:2px solid currentColor;border-left:2px solid currentColor;}
 	#ad .ad-hbtns {display:inline-flex;gap:0.4em;flex-wrap:wrap;margin-left:auto;}
 	.ad-vsf label {display:inline-flex;align-items:center;gap:0.4em;color:var(--ad-muted);min-width:0;max-width:100%;white-space:nowrap;}
 	#ad .ad-vsf select {min-width:7em;max-width:min(18em,60vw);font-size:1em;padding:0.25em 0.4em;}

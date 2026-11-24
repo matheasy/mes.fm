@@ -310,15 +310,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 #tx.tx {
 	--tx-bg: #eef1f5; --tx-panel: #ffffff; --tx-line: #d5dbe3; --tx-ink: #1f2933; --tx-mute: #5b6673; --tx-acc: #0f766e; --tx-accfg: #ffffff; --tx-hov: #e3ebe9;
 	--tx-pbg: #ffffff; --tx-pink: #1c1c1e; --tx-plink: #0b63c5; --tx-pline: #e1e4e8; --tx-pcode: #f3f4f6; --tx-pmute: #6b7280;
-	--tx-gut: #f6f7f9; --tx-num: #9aa1aa; --tx-err: #b42318;
+	--tx-gut: #f6f7f9; --tx-num: #737b85; --tx-err: #b42318;
 	--k1: #a626a4; --k2: #50a14f; --k3: #986801; --k4: #4078f2; --k5: #e45649; --k6: #0184bc; --k7: #a0a1a7;
 	color: var(--tx-ink); position: relative; --tf: 1;
 }
 html body.dark-mode #tx.tx {
 	--tx-bg: #16191e; --tx-panel: #20242a; --tx-line: #363c45; --tx-ink: #e4e7eb; --tx-mute: #a3acb7; --tx-acc: #2bb5a6; --tx-accfg: #06231f; --tx-hov: #2a3236;
-	--tx-gut: #1b1e23; --tx-num: #6b737d; --tx-err: #ff8a80;
+	--tx-gut: #1b1e23; --tx-num: #8d96a1; --tx-err: #ff8a80;
 }
-#tx :where(div, span, p, li, td, th, label, b, i, u, s, em, strong, article, h1, h2, h3, h4, h5, h6, dt, dd, summary, small, blockquote, figcaption, caption, code, pre, sup, sub) { color: inherit; }
+#tx :where(div, span, p, li, table, thead, tbody, tfoot, tr, td, th, label, b, i, u, s, em, strong, article, h1, h2, h3, h4, h5, h6, dt, dd, summary, small, blockquote, figcaption, caption, code, pre, sup, sub) { color: inherit; }
 #tx .tx-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px; background: var(--tx-panel); border: 1px solid var(--tx-line); border-radius: 10px 10px 0 0; }
 #tx .tx-sp { flex: 1; }
 #tx .tx-name { font-weight: 600; max-width: 22em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--tx-mute); }
@@ -922,7 +922,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/text/js/text.js?v=6" defer></script>
+	<script src="/main_js/height-grip.js?v=2" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/main_js/text-size.js?v=2" defer></script><script src="/main_js/find-bar.js?v=1" defer></script><script src="/text/js/text.js?v=7" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

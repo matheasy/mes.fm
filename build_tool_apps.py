@@ -563,7 +563,7 @@ APPS = {
                       tag="Save text once, copy it anytime, synced to your own cloud.", accent="#a16207", dark="#7a4a05", tint="#fbf1d9",
                       desc="Free online copy and paste notepad: save the texts you paste again and again (replies, signatures, addresses, links, hashtags, prompts) on boards and copy any of them with one click. Private, kept in your browser, with file backups and optional encrypted backups to your Hive account.",
                       meta_desc="Free copy and paste notepad: save texts you reuse on boards, copy any with one click. Private, in your browser, with encrypted Hive backups.",
-                      js_v="19", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/text-size.js?v=2"]),
+                      js_v="20", js_parts=["sync.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/text-size.js?v=2", "/main_js/panel-view.js"]),
     # Typing Test: WPM / accuracy / consistency test (time, words, passage, own text; 5 difficulty levels; weak-key practice; challenge links). lib.js = word lists, seeded text,
     # typing state machine + results maths (node-testable: tool_apps_src/typing-test-tests.js), app.js = UI. Medium-wide page, no sidebar. localStorage "mes-typingtest:v1".
     "typing-test": dict(title="MES Typing Test", page_title="Typing Test",
@@ -1377,7 +1377,7 @@ APPS = {
     "ads": dict(title="MES Ads", page_title="Ads: Earnings vs Spend",
                 tag="AdSense earnings vs Google Ads spend.", accent="#2e7d32", dark="#1b5e20", tint="#e8f5e9",
                 desc="AdSense earnings against Google Ads spend per day, landing page, country, device and campaign, and whether ad visitors come back.",
-                js_v="18", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
+                js_v="19", no_ads=True, js_path="earnings/js/earnings.js", logo_from="earnings",
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Search Console (private, mes.fm/search-console, behind the middleware.js password like /ads): Google Search Console
     # (pushed by google-ads/search-console-gsc-script.js -> api/search-console-ingest.js) + Bing Webmaster API (env BING_WEBMASTER_KEY),
@@ -1533,7 +1533,7 @@ APPS = {
                  tag="Open text, RTF, Markdown and code files in your browser.", accent="#0f766e", dark="#0b5a54", tint="#dff3f0",
                  desc="Free online text file viewer: open .txt, .md, .rtf, .csv, .json, .html, .log and code files in your browser. Read them laid out nicely (Markdown and RTF formatted, CSV as a table) or as code with line numbers and colours, read them aloud, change the font and size, edit and download. Private: nothing is uploaded.",
                  meta_desc="Free text file viewer: open TXT, RTF, Markdown, CSV, JSON and code files in a formatted reading view or a code view with line numbers. Read aloud, edit. No upload.",
-                 js_v="6", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2", "/main_js/find-bar.js?v=1"]),
+                 js_v="7", pre_js=["/main_js/height-grip.js?v=2", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2", "/main_js/text-size.js?v=2", "/main_js/find-bar.js?v=1"]),
     "docx": dict(title="MES Word Viewer", page_title="DOCX Viewer and Editor: Open Word Documents Online, No Upload",
                  tag="Open, read and edit Word documents in your browser.", accent="#2b579a", dark="#1e3f73", tint="#e3ebf7",
                  desc="Free online DOCX viewer and editor: open Word documents in your browser with the real page layout, zoom, outline, search, word count, comments and tracked changes. Print or save as PDF, edit the text and download a new .docx, or save as HTML, Markdown or text. Private: nothing is uploaded.",

@@ -1,5 +1,5 @@
 {
-"generated":"2026-11-23",
+"generated":"2026-11-24",
 "pages":{
 "/2d-graphing-calculator":{
 "added":"2026-10-02",
@@ -223,7 +223,7 @@
 },
 "/copy-text":{
 "added":"2026-10-03",
-"updated":"2026-11-20",
+"updated":"2026-11-24",
 "type":"Tool"
 },
 "/countdown-timer":{
@@ -998,7 +998,7 @@
 },
 "/text":{
 "added":"2026-11-12",
-"updated":"2026-11-23",
+"updated":"2026-11-24",
 "type":"Tool"
 },
 "/text-size":{

@@ -85,7 +85,14 @@
 			</form>
 			<div class="ad-read" id="ad-vsread" aria-live="polite"></div>
 			<div class="ad-chart" id="ad-vschart"><svg id="ad-vssvg" preserveAspectRatio="none" role="img" aria-label="Ad spend against organic search per day"></svg></div>
-			<div class="ad-legend"><span><i class="ad-key ad-key--spend"></i>Ad spend</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-cost)"></i>Ad clicks</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-gc)"></i>Organic clicks</span><span><i class="ad-key ad-key--ln ad-key--dash" style="--k:var(--ad-gi)"></i>Organic impressions (own scale)</span></div>
+			<div class="ad-tabs ad-seot ad-vst" id="ad-vst" role="group" aria-label="What the chart shows">
+				<span class="ad-seol">Show:</span>
+				<button type="button" class="tu-chip" data-v="spend" aria-pressed="true" style="--k:var(--ad-cost)"><i class="ad-key ad-key--bar"></i>Ad spend</button>
+				<button type="button" class="tu-chip" data-v="adClicks" aria-pressed="true" style="--k:var(--ad-cost)"><i class="ad-key ad-key--ln"></i>Ad clicks</button>
+				<button type="button" class="tu-chip" data-v="oc" aria-pressed="true" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Organic clicks</button>
+				<button type="button" class="tu-chip" data-v="oi" aria-pressed="true" style="--k:var(--ad-gi)"><i class="ad-key ad-key--ln ad-key--dash"></i>Organic impressions (own scale)</button>
+				<button type="button" class="tu-chip" data-v="avg" aria-pressed="false" title="Draw each line as the average of the last 7 days: smooths out weekends"><i class="ad-key ad-key--avg"></i>7-day average</button>
+			</div>
 			<p class="tu-note" id="ad-vsnote"></p>
 		</section>
 

@@ -1614,4 +1614,51 @@
 		MESTextSize.add({ key: KEY + ":nfz", into: nfz, label: "Text size of the saved texts",
 			apply: function (s) { $("cp-out").style.setProperty("--cp-nfz", s); } });
 	}
+
+	// Power layout: Fill window / Full screen of the whole tool (main_js/panel-view.js). The text box gets the room; the saved texts sit
+	// below, right, left or are hidden (the person picks), and the grip between them resizes. Choices in localStorage KEY:pw.
+	(function powerLayout() {
+		if (!window.MESPanel) { if ((powerLayout.n = (powerLayout.n || 0) + 1) < 100) setTimeout(powerLayout, 60); return; }
+		var root = $("cp"), grip = $("cp-pwgrip"), lay = $("cp-pwlay");
+		var PW = { lay: "b", b: 0.45, s: 0.5 };
+		try { var o = JSON.parse(localStorage.getItem(KEY + ":pw") || "null"); if (o && /^[brlh]$/.test(o.lay)) PW.lay = o.lay; if (o && o.b > 0.1 && o.b < 0.9) PW.b = +o.b; if (o && o.s > 0.1 && o.s < 0.9) PW.s = +o.s; } catch (e) {}
+		var save = function () { try { localStorage.setItem(KEY + ":pw", JSON.stringify(PW)); } catch (e) {} };
+		var side = function () { return (PW.lay === "r" || PW.lay === "l") && window.innerWidth > 700; };
+		function apply() {
+			["b", "r", "l", "h"].forEach(function (k) { root.classList.toggle("cp-lay-" + k, PW.lay === k); });
+			Array.prototype.forEach.call(lay.querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.dataset.lay === PW.lay ? "true" : "false"); });
+			var f = side() ? PW.s : PW.b;
+			if (PW.lay === "l" && side()) f = PW.s;
+			root.style.setProperty("--cp-pws", (f * 100).toFixed(1) + "%");
+			grip.setAttribute("aria-orientation", side() ? "vertical" : "horizontal");
+			grip.setAttribute("aria-valuenow", Math.round(f * 100)); grip.setAttribute("aria-valuemin", "15"); grip.setAttribute("aria-valuemax", "85");
+		}
+		lay.addEventListener("click", function (e) {
+			var b = e.target.closest("button[data-lay]"); if (!b) return;
+			PW.lay = b.dataset.lay; save(); apply(); layoutSoon();
+		});
+		function setFrac(f) { f = Math.max(0.15, Math.min(0.85, f)); if (side()) PW.s = f; else PW.b = f; apply(); }
+		grip.addEventListener("pointerdown", function (e) {
+			if (e.button > 0) return; e.preventDefault();
+			grip.setPointerCapture(e.pointerId); grip.classList.add("is-drag");
+			var r = root.getBoundingClientRect(), cs = getComputedStyle(root), pl = parseFloat(cs.paddingLeft) || 0, pt = parseFloat(cs.paddingTop) || 0;
+			var mv = function (ev) {
+				if (side()) { var w = r.width - pl * 2, x = ev.clientX - r.left - pl; setFrac(PW.lay === "l" ? 1 - x / w : x / w); }
+				else { var h = r.height - pt * 2; setFrac((ev.clientY - r.top - pt) / h); }
+			};
+			var up = function () { grip.classList.remove("is-drag"); grip.removeEventListener("pointermove", mv); grip.removeEventListener("pointerup", up); grip.removeEventListener("pointercancel", up); save(); layoutSoon(); };
+			grip.addEventListener("pointermove", mv); grip.addEventListener("pointerup", up); grip.addEventListener("pointercancel", up);
+		});
+		grip.addEventListener("dblclick", function () { if (side()) PW.s = 0.5; else PW.b = 0.45; apply(); save(); layoutSoon(); });
+		grip.addEventListener("keydown", function (e) {
+			var st = e.shiftKey ? 0.1 : 0.03, f = side() ? PW.s : PW.b, d = 0;
+			if (side()) { if (e.key === "ArrowLeft") d = PW.lay === "l" ? st : -st; else if (e.key === "ArrowRight") d = PW.lay === "l" ? -st : st; }
+			else { if (e.key === "ArrowUp") d = -st; else if (e.key === "ArrowDown") d = st; }
+			if (e.key === "Enter" || e.key === "Home") { grip.dispatchEvent(new MouseEvent("dblclick")); e.preventDefault(); return; }
+			if (!d) return; e.preventDefault(); setFrac(f + d); save(); layoutSoon();
+		});
+		window.addEventListener("resize", apply);
+		apply();
+		MESPanel.add(root, { bar: $("cp-pwbar"), onChange: function (on) { apply(); layoutSoon(); if (on) { try { $("cp-new-text").focus({ preventScroll: true }); } catch (e) {} } } });
+	})();
 })();

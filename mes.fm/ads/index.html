@@ -402,6 +402,9 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.ad-key--dash {border-top-style:dashed;}
 	#ad .ad-seot .ad-key--ln {width:0.75em;height:0.75em;border:2px solid #fff;border-radius:50%;background:var(--k);box-sizing:border-box;}
 	#ad .ad-seot .ad-key--dash {border-style:dotted;}
+	#ad .ad-vst {margin:0.5em 0 0;}
+	#ad .ad-seot .ad-key--bar {width:0.75em;height:0.75em;border-radius:2px;background:var(--k);opacity:0.6;}
+	#ad .ad-seot .ad-key--avg {width:1em;height:0.6em;border-radius:0;background:none;border-bottom:2px solid currentColor;border-left:2px solid currentColor;}
 	#ad .ad-hbtns {display:inline-flex;gap:0.4em;flex-wrap:wrap;margin-left:auto;}
 	.ad-vsf label {display:inline-flex;align-items:center;gap:0.4em;color:var(--ad-muted);min-width:0;max-width:100%;white-space:nowrap;}
 	#ad .ad-vsf select {min-width:7em;max-width:min(18em,60vw);font-size:1em;padding:0.25em 0.4em;}
@@ -746,7 +749,14 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</form>
 			<div class="ad-read" id="ad-vsread" aria-live="polite"></div>
 			<div class="ad-chart" id="ad-vschart"><svg id="ad-vssvg" preserveAspectRatio="none" role="img" aria-label="Ad spend against organic search per day"></svg></div>
-			<div class="ad-legend"><span><i class="ad-key ad-key--spend"></i>Ad spend</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-cost)"></i>Ad clicks</span><span><i class="ad-key ad-key--ln" style="--k:var(--ad-gc)"></i>Organic clicks</span><span><i class="ad-key ad-key--ln ad-key--dash" style="--k:var(--ad-gi)"></i>Organic impressions (own scale)</span></div>
+			<div class="ad-tabs ad-seot ad-vst" id="ad-vst" role="group" aria-label="What the chart shows">
+				<span class="ad-seol">Show:</span>
+				<button type="button" class="tu-chip" data-v="spend" aria-pressed="true" style="--k:var(--ad-cost)"><i class="ad-key ad-key--bar"></i>Ad spend</button>
+				<button type="button" class="tu-chip" data-v="adClicks" aria-pressed="true" style="--k:var(--ad-cost)"><i class="ad-key ad-key--ln"></i>Ad clicks</button>
+				<button type="button" class="tu-chip" data-v="oc" aria-pressed="true" style="--k:var(--ad-gc)"><i class="ad-key ad-key--ln"></i>Organic clicks</button>
+				<button type="button" class="tu-chip" data-v="oi" aria-pressed="true" style="--k:var(--ad-gi)"><i class="ad-key ad-key--ln ad-key--dash"></i>Organic impressions (own scale)</button>
+				<button type="button" class="tu-chip" data-v="avg" aria-pressed="false" title="Draw each line as the average of the last 7 days: smooths out weekends"><i class="ad-key ad-key--avg"></i>7-day average</button>
+			</div>
 			<p class="tu-note" id="ad-vsnote"></p>
 		</section>
 
@@ -830,7 +840,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/earnings/js/earnings.js?v=18" defer></script>
+	<script src="/earnings/js/earnings.js?v=19" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
