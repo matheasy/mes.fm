@@ -5,13 +5,22 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 18:17:05 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 18:39:46 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Free Kicks &amp; Penalties</title>
+    <link>https://mes.fm/free-kick</link>
+    <guid isPermaLink="true">https://mes.fm/free-kick</guid>
+    <pubDate>Mon, 23 Nov 2026 18:39:46 GMT</pubDate>
+    <category>Tools</category>
+    <description>Curl it round the wall, dip it, knuckle it, win the shootout. Kick or keep vs the computer, a friend or online.</description>
+    <media:thumbnail url="https://mes.fm/img/free-kick-logo.png"/>
+  </item>
   <item>
     <title>Investment Tracker</title>
     <link>https://mes.fm/investment-tracker</link>
@@ -722,15 +731,6 @@
     <category>Tools</category>
     <description>An animated heart synced to a Wiggers diagram, pressure-volume loops with disease presets, an ECG rhythm trainer with calipers and a hemodynamics calculator.</description>
     <media:thumbnail url="https://mes.fm/img/heart-simulator-logo.png"/>
-  </item>
-  <item>
-    <title>Polls</title>
-    <link>https://mes.fm/polls</link>
-    <guid isPermaLink="true">https://mes.fm/polls</guid>
-    <pubDate>Sun, 01 Nov 2026 03:13:48 GMT</pubDate>
-    <category>Tools</category>
-    <description>Make a poll in seconds and share one short link: one or several picks, a closing time, live result bars and a pie chart. No sign-up.</description>
-    <media:thumbnail url="https://mes.fm/img/polls-logo.png"/>
   </item>
 </channel>
 </rss>

@@ -36,7 +36,7 @@ EXT_TAB = "<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='
 
 # simulator pages whose boxes (.fl-wrap, .lm-wrap, ...) get the shared View bar from main_js/stage-ctl.js
 STAGE_CTL = {"julia-set-explorer", "fluid-simulator", "light-in-a-medium", "black-hole-simulator", "mandelbrot", "buddhabrot", "time-dilation", "metric-tensor", "orbit-simulator", "double-pendulum", "electromagnetic-fields-simulator", "photoelectric-effect-simulator", "solar-system-today", "atomic-clock-simulator",
-             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics", "quantum", "quantum-tunneling", "quantum-double-slit", "quantum-entanglement", "hydrogen-atom", "quantum-calculator"}
+             "michelson-morley-experiment", "faster-than-light-shadow-simulator", "fountain-clock", "magnetic-isopotentials", "hutchison-effect-simulator", "heart-simulator", "neuron-simulator", "negative-index", "spin-simulator", "gyroscope-simulator", "hologram", "maxwell-vortices","spin-wave-field", "spin-half", "quaternions", "crash-physics", "quantum", "quantum-tunneling", "quantum-double-slit", "quantum-entanglement", "hydrogen-atom", "quantum-calculator"}
 
 # PDF family nav (2026-10-16): Home = the PDF Tools hub, then the editor and the six tools, ahead of Calculators / Tools
 PDF_NAV_INFO = '<li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf\'>Editor</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/merge-pdf\'>Merge</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/split-pdf\'>Split</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/organize-pdf\'>Organize</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/jpg-to-pdf\'>Images to PDF</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/pdf-to-jpg\'>PDF to images</a></li><li class="info-bar__item"><a class="info-bar__item__text" href=\'/compress-pdf\'>Compress</a></li>'
@@ -676,6 +676,14 @@ APPS = {
                            tag="Turn it twice. Spin is real.", accent="#6d28d9", dark="#5b21b6", tint="#ede9fe",
                            desc="A free spin simulator: a neutron interferometer where the spin must turn 720 degrees, not 360, to come back (Rauch and Werner, 1975), with live counts and a field scan; the Einstein-de Haas effect, where flipping a hanging iron rod's magnetization makes it turn; and the Barnett effect, where spinning iron magnetizes it.",
                            js_v="1"),
+    # Gyroscope & Spinning Top Simulator (2026-11-24): symmetric top / gyroscope on a pivot (Euler's equations, RK4, spin + precession friction, a holder
+    # that turns, magnetic pull), a top with a round tip on a table (6 DOF, sliding friction + rolling resistance: rising top, tippe top), a gyroscope on a
+    # stand on an ice block (exact Lagrange equations, stick / slip), and a tab comparing MES / Owen Liang's Gyrotop experiments with the textbook model.
+    # lib.js = MESGyro (node: tool_apps_src/gyroscope-simulator-tests.js); three.js 0.170.0 loaded at runtime; box .gy-wrap gets the stage-ctl View bar.
+    "gyroscope-simulator": dict(title="MES Gyroscope & Spinning Top Simulator", page_title="Gyroscope & Spinning Top Simulator: Precession, Nutation, Rising Tops and the Gyrotop",
+                                tag="Why doesn't it fall? Spin it and see.", accent="#0e7490", dark="#155e75", tint="#cffafe",
+                                desc="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.",
+                                js_v="2"),
     # Maxwell's Vortices (2026-11-03): a charge going round is a magnet (3D Biot-Savart: wire, bending, loop, Bohr electron, proton / neutron models, dipole far field),
     # Maxwell's 1861 spinning cells + idle wheels on a square lattice (current, loop, induction, elastic waves), two dipole magnets with Maxwell-stress check
     # (lib.js = MESVortex, node-tested: tool_apps_src/maxwell-vortices-tests.js). Inspired by Chantal Roth's Mechanical Universe demos (credited on the page).

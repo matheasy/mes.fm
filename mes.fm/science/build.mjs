@@ -263,6 +263,15 @@ const PAGES = [
     tileLabel: "Spin Simulator",
   },
   {
+    // Tile only: Gyroscope & Spinning Top Simulator (MES / Owen Liang Gyrotop experiments tab). Icon = img/gyroscope-simulator-icon.jpg (tile art).
+    slug: "gyroscope-simulator",
+    section: "tools",
+    href: "/gyroscope-simulator",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Gyroscope Simulator",
+  },
+  {
     // Tile only: Spin-½ Lab (inspired by Chantal Roth's Mechanical Universe). Icon = img/spin-half-icon.jpg (Gemini share art).
     slug: "spin-half",
     section: "tools",

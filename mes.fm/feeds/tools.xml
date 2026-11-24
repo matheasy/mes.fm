@@ -5,13 +5,22 @@
   <link>https://mes.fm/tools</link>
   <description>New free calculators and tools on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 18:17:05 GMT</lastBuildDate>
+  <lastBuildDate>Mon, 23 Nov 2026 18:39:46 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/tools.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>New MES Calculators &amp; Tools</title><link>https://mes.fm/tools</link></image>
   <podcast:guid>d20538e6-7ed6-5439-8d17-06a28a7778f2</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Free Kicks &amp; Penalties</title>
+    <link>https://mes.fm/free-kick</link>
+    <guid isPermaLink="true">https://mes.fm/free-kick</guid>
+    <pubDate>Mon, 23 Nov 2026 18:39:46 GMT</pubDate>
+    <category>Tools</category>
+    <description>Curl it round the wall, dip it, knuckle it, win the shootout. Kick or keep vs the computer, a friend or online.</description>
+    <media:thumbnail url="https://mes.fm/img/free-kick-logo.png"/>
+  </item>
   <item>
     <title>Investment Tracker</title>
     <link>https://mes.fm/investment-tracker</link>
@@ -452,15 +461,6 @@
     <category>Tools</category>
     <description>Record interference fringes live, play the hologram back with real wave optics, see parallax and the twin image, compare hologram types and compute a phase hologram of your drawing.</description>
     <media:thumbnail url="https://mes.fm/img/hologram-logo.png"/>
-  </item>
-  <item>
-    <title>Gallery</title>
-    <link>https://mes.fm/gallery</link>
-    <guid isPermaLink="true">https://mes.fm/gallery</guid>
-    <pubDate>Tue, 03 Nov 2026 03:36:36 GMT</pubDate>
-    <category>Tools</category>
-    <description>View the photos and videos in your folders: fast thumbnails, rows, masonry or list, slideshow, zoom, favourites, and video speed 0.25x to 4x with A-B loops. Nothing is uploaded.</description>
-    <media:thumbnail url="https://mes.fm/img/gallery-logo.png"/>
   </item>
 </channel>
 </rss>

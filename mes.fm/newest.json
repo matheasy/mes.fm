@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-23",
+ "generated": "2026-11-24",
  "calculators": [
   {
    "href": "/expense-splitter",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/gyroscope-simulator",
+   "title": "Gyroscope & Spinning Top Simulator",
+   "icon": "/img/gyroscope-simulator-logo.png",
+   "desc": "Precession, nutation, a sleeping top, tops that rise by friction, a tippe top that flips, a gyroscope on ice, and the MES / Owen Liang Gyrotop experiments next to the textbook model.",
+   "added": "2026-11-24",
+   "kind": "tool"
+  },
+  {
    "href": "/free-kick",
    "title": "Free Kicks & Penalties",
    "icon": "/img/free-kick-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Paste, scan or photograph any tracking number and open the right carrier’s tracking page: USPS, UPS, FedEx, DHL, Royal Mail, Canada Post and 50 more.",
    "added": "2026-11-16",
    "kind": "tool"
-  },
-  {
-   "href": "/upscale",
-   "title": "AI Image Upscaler",
-   "icon": "/img/upscale-logo.png",
-   "desc": "Make photos, anime and drawings 2x, 4x or 8x bigger, or 4K wide, with sharp AI detail. Runs in your browser: nothing is uploaded.",
-   "added": "2026-11-16",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/gyroscope-simulator",
+   "title": "Gyroscope & Spinning Top Simulator",
+   "icon": "/img/gyroscope-simulator-logo.png",
+   "desc": "Precession, nutation, a sleeping top, tops that rise by friction, a tippe top that flips, a gyroscope on ice, and the MES / Owen Liang Gyrotop experiments next to the textbook model.",
+   "added": "2026-11-24",
+   "kind": "tool"
+  },
   {
    "href": "/free-kick",
    "title": "Free Kicks & Penalties",
@@ -252,14 +260,6 @@
    "desc": "Fly the Shuttle around a 3D Earth: plan burns, raise and tilt the orbit, catch the ISS or Hubble, then de-orbit and glide down to the runway. Plus why it could never reach the Moon.",
    "added": "2026-11-19",
    "kind": "tool"
-  },
-  {
-   "href": "/expense-splitter",
-   "title": "Expense Splitter",
-   "icon": "/img/expense-splitter-logo.png",
-   "desc": "Split a group trip fairly: by nights stayed, shares or exact amounts, non-drinkers left out, fewest payments to settle up.",
-   "added": "2026-11-19",
-   "kind": "calculator"
   }
  ]
 }

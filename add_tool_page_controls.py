@@ -313,6 +313,7 @@ TOOLS = [  # (directory, compact-bar title[, home path of the site the page belo
     ("gta-music", "MES GTA 6 Hub", "/gta"),
     ("neuron-simulator", "Neuron Simulator"),
     ("spin-simulator", "Spin Simulator"),
+    ("gyroscope-simulator", "Gyroscope Simulator"),
     ("spin-half", "Spin-½ Lab"),
     ("quaternions", "Quaternion Lab"),
     ("maxwell-vortices", "Maxwell's Vortices"),

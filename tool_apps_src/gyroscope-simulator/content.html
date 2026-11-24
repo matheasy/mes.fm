@@ -1,0 +1,142 @@
+	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
+	<div class="tu gy" id="gy">
+		<div class="gy-tabs" role="tablist" aria-label="Gyroscope simulator parts">
+			<button type="button" role="tab" data-tab="pivot" aria-selected="true">Gyroscope on a pivot</button>
+			<button type="button" role="tab" data-tab="floor" aria-selected="false">Top on a table</button>
+			<button type="button" role="tab" data-tab="ice" aria-selected="false">Gyroscope on ice</button>
+			<button type="button" role="tab" data-tab="mes" aria-selected="false">MES &amp; Owen Liang experiments</button>
+			<button type="button" role="tab" data-tab="calc" aria-selected="false">Calculator</button>
+		</div>
+
+		<p class="tu-note gy-lead" id="gy-lead"></p>
+
+		<!-- ============================== shared 3D stage (pivot / floor / ice) ============================== -->
+		<div id="gy-simbox">
+			<div class="gy-wrap"><div class="gy-stage" id="gy-stage">
+				<canvas id="gy-c" tabindex="0" role="img" aria-label="A 3D view of the spinning top or gyroscope. Drag to turn the view, scroll or pinch to zoom."></canvas>
+				<div class="gy-msg" id="gy-msg" hidden></div>
+				<div class="gy-run"><button type="button" id="gy-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="gy-restart" title="Start this run again">↺ Restart</button><button type="button" id="gy-step" title="Advance a little (while paused)">Step ›</button><button type="button" id="gy-view" title="Back to the starting view">⟲ View</button><button type="button" id="gy-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="gy-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
+				<div class="gy-legend" id="gy-legend" aria-hidden="true"></div>
+			</div>
+			<div class="gy-readouts" id="gy-ro" aria-live="off"></div></div>
+
+			<div class="gy-graphs">
+				<div class="gy-gwrap"><div class="gy-stage gy-stage--g" id="gy-p-stage"><canvas id="gy-p" role="img" aria-label="The path of the tip of the spin axis seen from above."></canvas></div></div>
+				<div class="gy-gwrap"><div class="gy-stage gy-stage--g" id="gy-t-stage"><canvas id="gy-t" role="img" aria-label="Graph over time of the chosen quantities."></canvas></div>
+					<div class="gy-gsel" id="gy-gsel" role="group" aria-label="What to plot"></div></div>
+			</div>
+
+			<div class="tu-card gy-controls">
+				<div class="gy-chips" id="gy-pre" role="group" aria-label="Examples"></div>
+				<p class="tu-note gy-note" id="gy-pnote" aria-live="polite"></p>
+
+				<!-- pivot + floor -->
+				<div class="gy-grid" data-for="pivot floor">
+					<div class="tu-field"><label class="tu-label" for="gy-body">What is spinning</label><select id="gy-body" class="tu-select"></select></div>
+					<div class="tu-field"><span class="tu-label" id="gy-rpm-l">Spin: <b id="gy-rpm-v"></b></span><input type="range" id="gy-rpm" min="0" max="1" step="0.001" aria-labelledby="gy-rpm-l"><span class="tu-note" id="gy-rpm-n"></span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-tilt-l">Tilt from vertical: <b id="gy-tilt-v"></b></span><input type="range" id="gy-tilt" min="0.5" max="170" step="0.5" aria-labelledby="gy-tilt-l"></div>
+					<div class="tu-field" data-for="pivot"><span class="tu-label">How it is let go</span><div class="tu-seg" role="group" aria-label="Start"><button type="button" id="gy-st-steady" aria-pressed="true">At the steady precession speed</button><button type="button" id="gy-st-rest" aria-pressed="false">From rest (no push)</button></div></div>
+				</div>
+				<div class="gy-grid" data-for="pivot">
+					<div class="tu-field"><span class="tu-label" id="gy-ks-l">Spin friction: <b id="gy-ks-v"></b></span><input type="range" id="gy-ks" min="0" max="1" step="0.001" aria-labelledby="gy-ks-l"><span class="tu-note">Slows the spin (bearing / air).</span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-kp-l">Precession friction: <b id="gy-kp-v"></b></span><input type="range" id="gy-kp" min="0" max="1" step="0.001" aria-labelledby="gy-kp-l"><span class="tu-note">Friction at the pivot that resists the axis swinging round.</span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-push-l">Push the precession along: <b id="gy-push-v"></b></span><input type="range" id="gy-push" min="-1" max="1" step="0.001" aria-labelledby="gy-push-l"><span class="tu-note">A steady twist about the vertical, like nudging it with a stick (negative = holding it back).</span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-hold-l">Turn the holder: <b id="gy-hold-v"></b></span><input type="range" id="gy-hold" min="-6" max="6" step="0.05" aria-labelledby="gy-hold-l"><span class="tu-note">The stand turns about the vertical; pivot friction acts against the top's turning <i>relative to the stand</i>.</span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-mag-l">Magnetic pull down on the top: <b id="gy-mag-v"></b></span><input type="range" id="gy-mag" min="-1" max="3" step="0.01" aria-labelledby="gy-mag-l"><span class="tu-note">As a multiple of its weight, pulling at its centre of mass (a Gyrotop is held to its seat by a magnet).</span></div>
+				</div>
+				<div class="gy-grid" data-for="floor">
+					<div class="tu-field"><span class="tu-label" id="gy-mu-l">Sliding friction at the tip: <b id="gy-mu-v"></b></span><input type="range" id="gy-mu" min="0" max="1" step="0.01" aria-labelledby="gy-mu-l"><span class="tu-note">Coefficient of friction μ (wood on wood ≈ 0.3; tape or rubber more).</span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-crr-l">Rolling resistance: <b id="gy-crr-v"></b></span><input type="range" id="gy-crr" min="0" max="0.4" step="0.005" aria-labelledby="gy-crr-l"><span class="tu-note">A torque c·N·a against the tip rolling (the tip and floor flatten a little).</span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-tipr-l">Tip radius: <b id="gy-tipr-v"></b></span><input type="range" id="gy-tipr" min="0.2" max="10" step="0.1" aria-labelledby="gy-tipr-l"><span class="tu-note">A sharper tip slides less, so it rises more slowly.</span></div>
+				</div>
+
+				<!-- ice -->
+				<div class="gy-grid" data-for="ice">
+					<div class="tu-field"><label class="tu-label" for="gy-ibody">Gyroscope</label><select id="gy-ibody" class="tu-select"></select></div>
+					<div class="tu-field"><span class="tu-label" id="gy-irpm-l">Spin: <b id="gy-irpm-v"></b></span><input type="range" id="gy-irpm" min="0" max="1" step="0.001" aria-labelledby="gy-irpm-l"><span class="tu-note" id="gy-irpm-n"></span></div>
+					<div class="tu-field"><span class="tu-label" id="gy-imb-l">Block + stand mass: <b id="gy-imb-v"></b></span><input type="range" id="gy-imb" min="0.1" max="10" step="0.05" aria-labelledby="gy-imb-l"></div>
+					<div class="tu-field"><span class="tu-label" id="gy-imu-l">Grip of the ice (static friction): <b id="gy-imu-v"></b></span><input type="range" id="gy-imu" min="0" max="0.2" step="0.001" aria-labelledby="gy-imu-l"><span class="tu-note">Wet ice on ice can be 0.01-0.05; a block on an air table ≈ 0.</span></div>
+					<div class="tu-field"><span class="tu-label">How it is let go</span><div class="tu-seg" role="group" aria-label="Start"><button type="button" id="gy-ist-steady" aria-pressed="true">Already precessing</button><button type="button" id="gy-ist-rest" aria-pressed="false">From rest</button></div></div>
+				</div>
+
+				<div class="gy-checks">
+					<label class="gy-check"><input type="checkbox" id="gy-showL" checked> Angular momentum arrow</label>
+					<label class="gy-check"><input type="checkbox" id="gy-showT" checked> Torque arrow</label>
+					<label class="gy-check"><input type="checkbox" id="gy-trail" checked> Trail of the axis</label>
+					<span class="tu-field gy-inline"><span class="tu-label" id="gy-spd-l">Time: <b id="gy-spd-v"></b></span><input type="range" id="gy-spd" min="-3" max="0.7" step="0.01" aria-labelledby="gy-spd-l"></span>
+				</div>
+				<p class="tu-note gy-note">The spin in the picture is drawn slower than it really is (a fast rotor would just look still or blurred); everything else, and every number, is the real motion.</p>
+			</div>
+		</div>
+
+		<!-- ============================== MES & Owen Liang ============================== -->
+		<section data-panel="mes" hidden>
+			<div class="gy-credit">
+				<p><b>Owen Liang</b> invented the <b>Gyrotop</b>, a small magnetic spinning top that is held to its seat by a magnet, so it can be tilted, carried around and even turned upside down while it spins. MES (Math Easy Solutions) bought one in 2018 and has since filmed many gyroscope experiments of his own. Read the article this tab is based on: <a href="/gyrotop-angular-momentum">Gyrotop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics</a>, and see the <a href="/experiments-series">MES Experiments series</a> and <a href="/antigravity-series">MES Anti-Gravity series</a>.</p>
+				<p>The article describes what was seen on video; it does not give measured numbers. So below, each observation is set next to what textbook mechanics (Newton's laws, angular momentum and friction) predicts for the same setup, with a button that runs that setup in the simulator. Where the two agree, it says so; where they differ, it says how, and what measurement would settle it.</p>
+			</div>
+			<div class="gy-exps" id="gy-exps"></div>
+			<div class="gy-gwrap gy-icechart"><div class="gy-stage gy-stage--g" id="gy-ic-stage"><canvas id="gy-ic" role="img" aria-label="Sideways force the block needs for the gyroscope to precess, against spin speed, with the ice's grip as a horizontal line."></canvas></div></div>
+			<p class="tu-note gy-note" id="gy-icnote"></p>
+		</section>
+
+		<!-- ============================== calculator ============================== -->
+		<section data-panel="calc" hidden>
+			<div class="tu-card">
+				<div class="gy-grid">
+					<div class="tu-field"><label class="tu-label" for="gc-m">Mass of the top / gyroscope (kg)</label><input class="tu-input" id="gc-m" type="number" step="any" min="0" value="0.14"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-l">Pivot to centre of mass (cm)</label><input class="tu-input" id="gc-l" type="number" step="any" value="4"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-rm">Rotor mass (kg)</label><input class="tu-input" id="gc-rm" type="number" step="any" min="0" value="0.1"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-rr">Rotor radius (cm)</label><input class="tu-input" id="gc-rr" type="number" step="any" min="0" value="3.4"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-shape">Rotor shape</label><select id="gc-shape" class="tu-select"><option value="0.5">Solid disc (I = ½mr²)</option><option value="0.9" selected>Heavy rim + thin web (I ≈ 0.9mr²)</option><option value="1">Thin ring (I = mr²)</option><option value="0.4">Solid ball (I = ⅖mr²)</option></select></div>
+					<div class="tu-field"><label class="tu-label" for="gc-i1">Moment of inertia across the axis, about the centre of mass (kg m²)</label><input class="tu-input" id="gc-i1" type="number" step="any" min="0" value="6.5e-5"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-rpm">Spin (rpm)</label><input class="tu-input" id="gc-rpm" type="number" step="any" value="3000"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-tilt">Tilt from vertical (degrees)</label><input class="tu-input" id="gc-tilt" type="number" step="any" value="60"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-mb">Ice: block + stand mass (kg)</label><input class="tu-input" id="gc-mb" type="number" step="any" min="0" value="1.5"></div>
+					<div class="tu-field"><label class="tu-label" for="gc-mu">Ice: static friction μ</label><input class="tu-input" id="gc-mu" type="number" step="any" min="0" value="0.03"></div>
+				</div>
+				<div class="gy-readouts gy-readouts--calc" id="gc-out"></div>
+				<p class="tu-note">I₁ is about the centre of mass; the formulas add m·l² for the pivot. All formulas are the standard ones for a symmetric top, listed below.</p>
+			</div>
+		</section>
+
+		<div class="tu-seo" id="gy-seo">
+			<h2>How the simulator works</h2>
+			<p>Everything here follows Newton's laws for a rigid body. The top or gyroscope is <b>symmetric</b> about its spin axis, with moment of inertia I₃ about that axis and I₁ across it. Its orientation is kept as a quaternion and its angular velocity in its own axes, and both are stepped forward with the 4th-order Runge-Kutta method in tiny time steps (0.1-0.2 ms), so energy and angular momentum stay constant to better than one part in a million when there is no friction (the page checks this: see "Energy drift" in the readouts).</p>
+			<div class="gy-eq">
+				<div><span class="gy-eq__n">Euler's equations</span><span class="gy-eq__f mes-tex">\( \displaystyle \mathbf I\,\dot{\boldsymbol\omega} + \boldsymbol\omega\times(\mathbf I\boldsymbol\omega) = \boldsymbol\tau \)</span></div>
+				<div><span class="gy-eq__n">Gravity torque about the pivot</span><span class="gy-eq__f mes-tex">\( \displaystyle \boldsymbol\tau = l\,\hat{\mathbf e}_3 \times m\mathbf g, \qquad |\boldsymbol\tau| = m g l \sin\theta \)</span></div>
+				<div><span class="gy-eq__n">Steady precession</span><span class="gy-eq__f mes-tex">\( \displaystyle I_1' \cos\theta\,\Omega^2 - I_3\omega_3\,\Omega + m g l = 0, \qquad \Omega \approx \frac{m g l}{I_3\,\omega_3} \)</span></div>
+				<div><span class="gy-eq__n">Nutation (fast top)</span><span class="gy-eq__f mes-tex">\( \displaystyle \omega_n \approx \frac{I_3\,\omega_3}{I_1'}, \qquad \Delta\theta \approx \frac{2 I_1' m g l \sin\theta}{(I_3\omega_3)^2} \)</span></div>
+				<div><span class="gy-eq__n">Sleeping top</span><span class="gy-eq__f mes-tex">\( \displaystyle \omega_3^2 > \frac{4 I_1' m g l}{I_3^2} \)</span></div>
+				<div><span class="gy-eq__n">Gyroscope on ice</span><span class="gy-eq__f mes-tex">\( \displaystyle F = m\,l\,\Omega^2 \sin\theta \;<\; \mu_s (M+m) g \;\Rightarrow\; \text{the block stays put} \)</span></div>
+			</div>
+			<p>Here I₁′ = I₁ + m l² is the moment of inertia across the axis about the pivot, l the distance from the pivot (or tip) to the centre of mass, θ the tilt from vertical and ω₃ the spin.</p>
+			<h3>Gyroscope on a pivot</h3>
+			<p>The pivot is a fixed point. Gravity's torque is horizontal, at right angles to the axis, so it does not tip the top over: it turns the angular momentum sideways, and the axis goes round (<b>precession</b>). Let go from rest and the axis first drops a little, then bobs up and down while it goes round (<b>nutation</b>): the little loops in the "seen from above" picture. Start it at exactly the steady precession speed and there is no bobbing. Two kinds of friction can be switched on: <b>spin friction</b> slows the spin about the axis, and <b>precession friction</b> resists the axis swinging round. Both are measured relative to the stand, so when you turn the stand ("Turn the holder"), friction drags on the top's motion relative to it.</p>
+			<h3>Top on a table</h3>
+			<p>Here nothing holds the tip: the top stands on a round tip of radius a on a flat floor, free to slide, roll and hop (six degrees of freedom). The floor's push N is worked out at every step so the tip stays on the floor; friction at the tip is Coulomb sliding friction μN (smoothed for slip speeds below 3 mm/s), and an optional rolling resistance torque c·N·a. Without friction a top on a table never rises. With sliding friction, the tip slides sideways as it spins; that friction pushes the precession along and the top rises quickly at first, then rolls round in a circle; rolling resistance then brings it up the rest of the way until it "sleeps" upright. A tippe top (centre of mass below the centre of its ball) is turned upside down by the same friction.</p>
+			<h3>Gyroscope on ice</h3>
+			<p>A gyroscope sits on a pivot stand fixed to a block, and the block sits on ice. For the axis to go round, its centre of mass must move in a circle, which needs a sideways force m·l·Ω² from the stand. The ice can give the block a sideways force up to μ<sub>s</sub>(M+m)g without slipping. Faster spin means slower precession Ω, so much less force (it goes as 1/spin²): above a certain spin the ice holds the block still; below it, the block slides round. On perfectly frictionless ice the block always moves, in a small circle of radius m·l/(M+m), so that the centre of mass of everything stays still, at any spin. The motion is solved exactly with Lagrange's equations for the block and the gyroscope together.</p>
+			<h3>Questions</h3>
+			<dl>
+				<dt>Why doesn't a spinning gyroscope fall?</dt><dd>Gravity's torque changes the direction of its angular momentum, not its size. A torque at right angles to the angular momentum swings it round, so the axis precesses instead of falling. It does sink a little at first (the nutation dip), and friction slowly brings it down.</dd>
+				<dt>What makes a spinning top stand up?</dt><dd>In the textbook account, friction at the tip. The round tip slides on the table as the top spins; the friction force pushes the precession along, and a gyroscope whose precession is hurried rises. A top with no friction at its tip never rises. MES's experiments (see the MES tab) point out that a gyroscope set on its foot rises too, and that less precession friction and more tip friction help.</dd>
+				<dt>Why does the precession speed go down when the spin goes up?</dt><dd>The precession rate is about m g l / L, gravity's torque divided by the angular momentum. Twice the spin means half the precession.</dd>
+				<dt>What is a sleeping top?</dt><dd>A top spinning upright so fast that it hardly moves at all. Above the sleeping speed (shown in the readouts) an upright top is stable; as friction slows it below that speed it "wakes up", wobbles and falls.</dd>
+				<dt>Is the simulator a proof that the textbook is right?</dt><dd>No. A simulator can only show what a model predicts. This one uses the standard model on purpose, so you can compare its predictions with experiments such as MES's and Owen Liang's. Real measurements (spin speed, precession rate, the ice's friction, the block's movement) are what decide.</dd>
+			</dl>
+			<div class="gy-further"><h3>Further</h3>
+				<ul>
+					<li>MES: <a href="/gyrotop-angular-momentum">Gyrotop and Gyroscopes Point to Serious Flaw in Mainstream Angular Momentum Physics</a> (2026), <a href="/experiments-series">MES Experiments</a>, <a href="/antigravity-series">MES Anti-Gravity series</a>.</li>
+					<li>Owen Liang's Gyrotop (ebay user "gyrotop" since 2015; videos since 2016).</li>
+					<li>H. Goldstein, C. Poole, J. Safko, Classical Mechanics, 3rd ed., section 5.7 (the heavy symmetric top).</li>
+					<li>J. Perry (1890), Spinning Tops, the "Romance of Science" lectures.</li>
+					<li>N. M. Hugenholtz (1952), On tops rising by friction, Physica 18, 515-527. C. M. Cohen (1977), The tippe top revisited, American Journal of Physics 45, 12-17.</li>
+					<li>H. Hunt, Cambridge University Engineering Department, "Gyroscope on ice" (the frictionless-ice picture discussed in the MES tab).</li>
+				</ul>
+			</div>
+			<p>Related: <a href="/spin-simulator">Spin Simulator</a> · <a href="/double-pendulum">Double Pendulum</a> · <a href="/orbit-simulator">Orbit Simulator</a> · <a href="/quaternions">Quaternion Lab</a> · <a href="/antigravity">MES Anti-Gravity</a> · <a href="/experiments">MES Experiments</a></p>
+		</div>
+		<script src="/main_js/mes-math.js" defer></script>
+	</div>
