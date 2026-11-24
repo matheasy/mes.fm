@@ -416,12 +416,31 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#fk .fk-tblw {overflow-x:auto;}
 	#fk .fk-tbl {border-collapse:collapse;width:100%;font-size:0.92em;}
 	#fk .fk-tbl th, #fk .fk-tbl td {padding:0.4em 0.6em;border-bottom:1px solid var(--fk-line);text-align:left;}
+	/* power bar, on-pitch shoot button, camera reset */
+	#fk .fk-meter {position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:3;pointer-events:none;}
+	#fk .fk-mval {background:rgba(0,0,0,0.6);color:#fff;font-size:0.8em;padding:2px 7px;border-radius:10px;white-space:nowrap;min-width:4.6em;text-align:center;}
+	#fk .fk-mtrack {position:relative;width:22px;height:min(46vh, 260px);min-height:120px;border-radius:12px;background:rgba(0,0,0,0.45);border:2px solid rgba(255,255,255,0.85);overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.35);}
+	#fk .fk-mzone {position:absolute;left:0;right:0;top:0;height:25%;background:repeating-linear-gradient(45deg, rgba(255,80,80,0.35) 0 4px, transparent 4px 8px);}
+	#fk .fk-mfill {position:absolute;left:0;right:0;bottom:0;height:0;border-radius:0 0 10px 10px;}
+	#fk .fk-mmark {position:absolute;left:-2px;right:-2px;height:3px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.5);transform:translateY(50%);}
+	#fk .fk-oshoot {position:absolute;right:14px;bottom:14px;z-index:3;width:84px;height:84px;border-radius:50%;border:3px solid rgba(255,255,255,0.92);background:radial-gradient(circle at 35% 30%, #2fae55, #13692f);color:#fff;font:inherit;font-weight:800;cursor:pointer;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 4px 14px rgba(0,0,0,0.45);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+	#fk .fk-oshoot i {font-style:normal;font-size:1.7em;line-height:1;}
+	#fk .fk-oshoot span {font-size:0.78em;letter-spacing:0.03em;}
+	#fk .fk-oshoot.is-gk {background:radial-gradient(circle at 35% 30%, #4ea76d, #1f5a37);}
+	#fk.fk-charging .fk-oshoot {transform:scale(0.94);background:radial-gradient(circle at 35% 30%, #f6a823, #c25e00);}
+	#fk .fk-map:not([hidden]) ~ .fk-oshoot {bottom:auto;top:40%;}
+	#fk .fk-camreset {position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:3;font:inherit;font-size:0.85em;font-weight:700;padding:0.35em 0.9em;min-height:36px;border-radius:18px;border:1px solid rgba(255,255,255,0.7);background:rgba(0,0,0,0.6);color:#fff;cursor:pointer;}
+	#fk .fk-3d canvas {cursor:grab;}
+	#fk .fk-gkwrap {display:inline-flex;align-items:center;gap:0.2em;}
+	#fk.fk-charging .fk-shoot {box-shadow:0 0 0 3px rgba(240,140,0,0.35);}
 	/* fill window / full screen */
 	#fk .fk-view.mes-pfill {display:flex;flex-direction:column;margin:0;border-radius:0;}
 	#fk .fk-view.mes-pfill .fk-stage {flex:1 1 auto;height:auto;min-height:200px;}
 	#fk .fk-view.mes-pfill .fk-log {display:none;}
 	#fk .fk-view.mes-pside .fk-stage {height:var(--mes-sh, 100%);}
 	@media (max-width: 700px) {
+		#fk .fk-oshoot {width:72px;height:72px;right:10px;bottom:10px;}
+		#fk .fk-mtrack {height:min(36vh, 200px);}
 		#fk .fk-kick {grid-template-columns:repeat(2, minmax(0,1fr));}
 		#fk .fk-styles {grid-column:1 / 3;}
 		#fk .fk-shoot {grid-column:1 / 3;grid-row:auto;min-height:52px;}
@@ -567,6 +586,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #fk .fk-banner.is-plain .fk-bin{background:rgba(63,100,82,0.72)}
 	body.dark-mode #fk .fk-res--save,body.dark-mode #fk .fk-res--blocked{color:#ffdb5c}
 	body.dark-mode #fk .fk-hivelogo{color:#f26880}
+	body.dark-mode #fk .fk-mval{background:rgba(82,82,82,0.60)}
+	body.dark-mode #fk .fk-mtrack{background:rgba(82,82,82,0.45);border:2px solid rgba(51,51,51,0.85)}
+	body.dark-mode #fk .fk-mmark{background:#1a1a1a}
+	body.dark-mode #fk .fk-oshoot{border:3px solid rgba(51,51,51,0.92)}
+	body.dark-mode #fk .fk-camreset{border:1px solid rgba(51,51,51,0.70);background:rgba(82,82,82,0.60)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -803,6 +827,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="fk-spreadwrap"><input type="checkbox" id="fk-spread" checked> Aim spread (real shots miss a little, more when you blast it)</label>
 					<label><input type="checkbox" id="fk-live" checked> Keeper reacts live (click where to dive while the ball flies)</label>
 					<label><span>Guide</span> <select id="fk-guide" class="tu-select fk-mini"><option value="full">Full path</option><option value="start">First part</option><option value="off">Off</option></select></label>
+					<label><span>Power</span> <select id="fk-pmode" class="tu-select fk-mini"><option value="meter">Hold and let go (power bar)</option><option value="slider">Use the slider</option></select></label>
 					<label><span>Speed</span> <select id="fk-slow" class="tu-select fk-mini"><option value="1">Real time</option><option value="0.5">Slow motion ½</option><option value="0.25">Slow motion ¼</option></select></label>
 				</div>
 			</div>
@@ -810,7 +835,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="fk-view" id="fk-view">
 				<div class="fk-vbar">
 					<p class="fk-status" id="fk-status" role="status" aria-live="polite"></p>
-					<span class="fk-vbtns" id="fk-pbar" role="group" aria-label="Game"><button type="button" class="fk-vb fk-vb--main" id="fk-new" title="Start again (N)">↺ New game</button><button type="button" class="fk-vb" id="fk-dim" title="Switch between the 3D view and the 2D view from above (V)">2D</button><select id="fk-cam" class="tu-select fk-mini" title="Camera (C)" aria-label="Camera"><option value="behind">Behind the ball</option><option value="keeper">Keeper's view</option><option value="tv">TV camera</option><option value="high">High behind</option></select><button type="button" class="fk-vb" id="fk-hsave" hidden title="Write this match's kicks and result to your Hive account (self-reported)">⬢ Save to Hive</button></span>
+					<span class="fk-vbtns" id="fk-pbar" role="group" aria-label="Game"><button type="button" class="fk-vb fk-vb--main" id="fk-new" title="Start again (N)">↺ New game</button><button type="button" class="fk-vb" id="fk-dim" title="Switch between the 3D view and the 2D view from above (V)">2D</button><select id="fk-cam" class="tu-select fk-mini" title="Camera (C). Drag the picture to orbit anywhere, wheel or pinch to zoom." aria-label="Camera"><option value="behind">Behind the ball</option><option value="ball">Follow the ball</option><option value="keeper">Keeper's view</option><option value="tv">TV camera</option><option value="high">High behind</option></select><label class="fk-gkwrap" id="fk-gkwrap" title="How good the goalkeeper is"><span aria-hidden="true">🧤</span><select id="fk-gk" class="tu-select fk-mini" aria-label="Keeper level"><option value="none">No keeper</option><option value="easy">Easy keeper</option><option value="medium">Medium keeper</option><option value="hard">Hard keeper</option><option value="pro">Pro keeper</option></select></label><button type="button" class="fk-vb" id="fk-snd" title="Sound on / off (M)" aria-pressed="true">🔊</button><button type="button" class="fk-vb" id="fk-hsave" hidden title="Write this match's kicks and result to your Hive account (self-reported)">⬢ Save to Hive</button></span>
 				</div>
 				<div class="fk-score" id="fk-score" aria-label="Score"></div>
 				<div class="fk-online-bar" id="fk-obar" hidden></div>
@@ -821,15 +846,18 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="fk-banner" id="fk-banner" hidden></div>
 					<div class="fk-hint" id="fk-hint"></div>
 					<div class="fk-load" id="fk-load" hidden>Loading the 3D view…</div>
+					<div class="fk-meter" id="fk-meter" hidden aria-hidden="true"><b class="fk-mval" id="fk-mval">Power</b><div class="fk-mtrack"><div class="fk-mzone"></div><div class="fk-mfill" id="fk-mfill"></div><div class="fk-mmark" id="fk-mmark" title="The slider's power"></div></div></div>
+					<button type="button" class="fk-oshoot" id="fk-oshoot" hidden aria-label="Shoot: hold, let go at the power you want"><i aria-hidden="true">⚽</i><span>Hold</span></button>
+					<button type="button" class="fk-camreset" id="fk-camreset" hidden title="Back to the camera you picked (0 or double-click)">🎥 Reset view</button>
 				</div>
 
 				<div class="fk-ctl" id="fk-ctl">
 					<div class="fk-kick" id="fk-kickctl">
-						<div class="fk-sl"><label for="fk-power">Power <b id="fk-powerv"></b></label><input type="range" id="fk-power" min="10" max="34" step="0.5" value="24"></div>
+						<div class="fk-sl"><label for="fk-power">Power target <b id="fk-powerv"></b></label><input type="range" id="fk-power" min="10" max="34" step="0.5" value="24"></div>
 						<div class="fk-sl"><label for="fk-curl">Curl <b id="fk-curlv"></b></label><input type="range" id="fk-curl" min="-12" max="12" step="0.5" value="0"></div>
 						<div class="fk-sl"><label for="fk-dip">Dip / float <b id="fk-dipv"></b></label><input type="range" id="fk-dip" min="-6" max="10" step="0.5" value="0"></div>
 						<div class="fk-styles" role="group" aria-label="Quick styles"><button type="button" class="fk-vb" data-style="place">Placed</button><button type="button" class="fk-vb" data-style="curl">Curler</button><button type="button" class="fk-vb" data-style="dip">Dipper</button><button type="button" class="fk-vb" data-style="knuckle">Knuckleball</button><button type="button" class="fk-vb" data-style="chip">Chip</button><button type="button" class="fk-vb" data-style="blast">Blast</button></div>
-						<button type="button" class="fk-shoot" id="fk-shoot" title="Shoot (Space). Hold to charge the power.">⚽ Shoot</button>
+						<button type="button" class="fk-shoot" id="fk-shoot" title="Hold to shoot (or hold Space): the power bar goes up and down, let go at the power you want. The white mark on the bar is the slider's power.">⚽ Hold to shoot</button>
 					</div>
 					<div class="fk-keep" id="fk-keepctl" hidden>
 						<p class="fk-keepnote" id="fk-keepnote">Click in the goal where to dive, then choose when.</p>
@@ -851,7 +879,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<ol class="fk-log" id="fk-log" aria-label="Kicks"></ol>
 			</div>
-			<p class="tu-note">Keys: <kbd>Space</kbd> shoot / ready, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, <kbd>R</kbd> random spot, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
+			<p class="tu-note">Keys: hold <kbd>Space</kbd> and let go to shoot (or press it for keeper Ready), <kbd>Esc</kbd> cancel a shot, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, drag the 3D picture to orbit (right-drag or <kbd>Shift</kbd> to move, wheel / pinch / <kbd>+</kbd> <kbd>-</kbd> to zoom, <kbd>0</kbd> resets), <kbd>M</kbd> sound, <kbd>R</kbd> random spot, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
 		</section>
 
 		<section id="fk-p-online" role="tabpanel" aria-label="Play online" hidden>
@@ -926,7 +954,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<li>Choose <b>Free-kick practice</b> and drag the ball on the small pitch (or press Random spot).</li>
 				<li>Click or tap in the goal where you want the ball to go. The dotted line shows its path (turn the guide off for a real test).</li>
 				<li>Set the power, the curl (side spin) and the dip (top spin; negative = back spin, the ball floats). Curl does not change where you aim: it changes the path, so you can bend the ball around the wall and still hit your spot.</li>
-				<li>Press Shoot (or hold it to charge the power).</li>
+				<li>Hold Shoot (or Space): the power bar swings up and down. Let go at the power you want (the white mark is the slider's target). Prefer the slider? Set Power to "Use the slider".</li>
 			</ol>
 			<h3>Questions</h3>
 			<dl>
@@ -934,7 +962,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dt>Why does the ball curve?</dt><dd>Spin. The ball drags air round with it, so the air leaves the ball deflected to one side and the ball is pushed the other way: the Magnus effect. The same effect makes a tennis ball with top spin dip.</dd>
 				<dt>What is a knuckleball?</dt><dd>A hard shot with almost no spin. The air separates from the seams and panels at slightly different places from moment to moment, so the ball moves unpredictably in the air. Try the Knuckleball style: power over 27 m/s, curl and dip at 0.</dd>
 				<dt>Where should I aim a penalty?</dt><dd>High in a corner is almost unstoppable but easy to miss; low and hard into the corner is the safe choice. Keepers dive early at penalties, so a soft shot down the middle (a "Panenka") works if the keeper guesses, and looks silly if he stays.</dd>
-				<dt>How does the computer keeper work?</dt><dd>It watches the ball: after its reaction time (0.44 s on Easy down to 0.22 s on Pro, a little longer when a wall blocks its view) it dives to where it thinks the ball will cross the line, with less error on the higher levels. At penalties it sometimes guesses a side before the kick, like real keepers.</dd>
+				<dt>How does the computer keeper work?</dt><dd>It watches the ball: after its reaction time (0.33 s on Easy down to 0.18 s on Pro, a little longer when a wall blocks its view) it dives to where it thinks the ball will cross the line, with less error on the higher levels. At penalties it sometimes guesses a side before the kick, like real keepers.</dd>
 				<dt>How do online and Hive matches stay fair?</dt><dd>The keeper chooses a dive without seeing the shot. In guest matches mes.fm's server holds both choices until both are in and adds the aim spread from a secret number. On Hive the keeper posts a sealed dive first, so the kicker can't see it, and opens the seal after the kick.</dd>
 			</dl>
 			<p>Related: <a href="/billiards">Billiards</a> &middot; <a href="/car-sandbox">Car Sandbox</a> &middot; <a href="/gta-stunt-jump-simulator">Stunt Jump Simulator</a> &middot; <a href="/premier-league-picks">Premier League Picks</a> &middot; <a href="/tools">All MES tools</a></p>
@@ -999,7 +1027,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/free-kick/js/free-kick.js?v=1" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/free-kick/js/free-kick.js?v=2" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

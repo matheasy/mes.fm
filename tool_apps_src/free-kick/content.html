@@ -22,6 +22,7 @@
 					<label class="fk-spreadwrap"><input type="checkbox" id="fk-spread" checked> Aim spread (real shots miss a little, more when you blast it)</label>
 					<label><input type="checkbox" id="fk-live" checked> Keeper reacts live (click where to dive while the ball flies)</label>
 					<label><span>Guide</span> <select id="fk-guide" class="tu-select fk-mini"><option value="full">Full path</option><option value="start">First part</option><option value="off">Off</option></select></label>
+					<label><span>Power</span> <select id="fk-pmode" class="tu-select fk-mini"><option value="meter">Hold and let go (power bar)</option><option value="slider">Use the slider</option></select></label>
 					<label><span>Speed</span> <select id="fk-slow" class="tu-select fk-mini"><option value="1">Real time</option><option value="0.5">Slow motion ½</option><option value="0.25">Slow motion ¼</option></select></label>
 				</div>
 			</div>
@@ -29,7 +30,7 @@
 			<div class="fk-view" id="fk-view">
 				<div class="fk-vbar">
 					<p class="fk-status" id="fk-status" role="status" aria-live="polite"></p>
-					<span class="fk-vbtns" id="fk-pbar" role="group" aria-label="Game"><button type="button" class="fk-vb fk-vb--main" id="fk-new" title="Start again (N)">↺ New game</button><button type="button" class="fk-vb" id="fk-dim" title="Switch between the 3D view and the 2D view from above (V)">2D</button><select id="fk-cam" class="tu-select fk-mini" title="Camera (C)" aria-label="Camera"><option value="behind">Behind the ball</option><option value="keeper">Keeper's view</option><option value="tv">TV camera</option><option value="high">High behind</option></select><button type="button" class="fk-vb" id="fk-hsave" hidden title="Write this match's kicks and result to your Hive account (self-reported)">⬢ Save to Hive</button></span>
+					<span class="fk-vbtns" id="fk-pbar" role="group" aria-label="Game"><button type="button" class="fk-vb fk-vb--main" id="fk-new" title="Start again (N)">↺ New game</button><button type="button" class="fk-vb" id="fk-dim" title="Switch between the 3D view and the 2D view from above (V)">2D</button><select id="fk-cam" class="tu-select fk-mini" title="Camera (C). Drag the picture to orbit anywhere, wheel or pinch to zoom." aria-label="Camera"><option value="behind">Behind the ball</option><option value="ball">Follow the ball</option><option value="keeper">Keeper's view</option><option value="tv">TV camera</option><option value="high">High behind</option></select><label class="fk-gkwrap" id="fk-gkwrap" title="How good the goalkeeper is"><span aria-hidden="true">🧤</span><select id="fk-gk" class="tu-select fk-mini" aria-label="Keeper level"><option value="none">No keeper</option><option value="easy">Easy keeper</option><option value="medium">Medium keeper</option><option value="hard">Hard keeper</option><option value="pro">Pro keeper</option></select></label><button type="button" class="fk-vb" id="fk-snd" title="Sound on / off (M)" aria-pressed="true">🔊</button><button type="button" class="fk-vb" id="fk-hsave" hidden title="Write this match's kicks and result to your Hive account (self-reported)">⬢ Save to Hive</button></span>
 				</div>
 				<div class="fk-score" id="fk-score" aria-label="Score"></div>
 				<div class="fk-online-bar" id="fk-obar" hidden></div>
@@ -40,15 +41,18 @@
 					<div class="fk-banner" id="fk-banner" hidden></div>
 					<div class="fk-hint" id="fk-hint"></div>
 					<div class="fk-load" id="fk-load" hidden>Loading the 3D view…</div>
+					<div class="fk-meter" id="fk-meter" hidden aria-hidden="true"><b class="fk-mval" id="fk-mval">Power</b><div class="fk-mtrack"><div class="fk-mzone"></div><div class="fk-mfill" id="fk-mfill"></div><div class="fk-mmark" id="fk-mmark" title="The slider's power"></div></div></div>
+					<button type="button" class="fk-oshoot" id="fk-oshoot" hidden aria-label="Shoot: hold, let go at the power you want"><i aria-hidden="true">⚽</i><span>Hold</span></button>
+					<button type="button" class="fk-camreset" id="fk-camreset" hidden title="Back to the camera you picked (0 or double-click)">🎥 Reset view</button>
 				</div>
 
 				<div class="fk-ctl" id="fk-ctl">
 					<div class="fk-kick" id="fk-kickctl">
-						<div class="fk-sl"><label for="fk-power">Power <b id="fk-powerv"></b></label><input type="range" id="fk-power" min="10" max="34" step="0.5" value="24"></div>
+						<div class="fk-sl"><label for="fk-power">Power target <b id="fk-powerv"></b></label><input type="range" id="fk-power" min="10" max="34" step="0.5" value="24"></div>
 						<div class="fk-sl"><label for="fk-curl">Curl <b id="fk-curlv"></b></label><input type="range" id="fk-curl" min="-12" max="12" step="0.5" value="0"></div>
 						<div class="fk-sl"><label for="fk-dip">Dip / float <b id="fk-dipv"></b></label><input type="range" id="fk-dip" min="-6" max="10" step="0.5" value="0"></div>
 						<div class="fk-styles" role="group" aria-label="Quick styles"><button type="button" class="fk-vb" data-style="place">Placed</button><button type="button" class="fk-vb" data-style="curl">Curler</button><button type="button" class="fk-vb" data-style="dip">Dipper</button><button type="button" class="fk-vb" data-style="knuckle">Knuckleball</button><button type="button" class="fk-vb" data-style="chip">Chip</button><button type="button" class="fk-vb" data-style="blast">Blast</button></div>
-						<button type="button" class="fk-shoot" id="fk-shoot" title="Shoot (Space). Hold to charge the power.">⚽ Shoot</button>
+						<button type="button" class="fk-shoot" id="fk-shoot" title="Hold to shoot (or hold Space): the power bar goes up and down, let go at the power you want. The white mark on the bar is the slider's power.">⚽ Hold to shoot</button>
 					</div>
 					<div class="fk-keep" id="fk-keepctl" hidden>
 						<p class="fk-keepnote" id="fk-keepnote">Click in the goal where to dive, then choose when.</p>
@@ -70,7 +74,7 @@
 				</div>
 				<ol class="fk-log" id="fk-log" aria-label="Kicks"></ol>
 			</div>
-			<p class="tu-note">Keys: <kbd>Space</kbd> shoot / ready, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, <kbd>R</kbd> random spot, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
+			<p class="tu-note">Keys: hold <kbd>Space</kbd> and let go to shoot (or press it for keeper Ready), <kbd>Esc</kbd> cancel a shot, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, drag the 3D picture to orbit (right-drag or <kbd>Shift</kbd> to move, wheel / pinch / <kbd>+</kbd> <kbd>-</kbd> to zoom, <kbd>0</kbd> resets), <kbd>M</kbd> sound, <kbd>R</kbd> random spot, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
 		</section>
 
 		<section id="fk-p-online" role="tabpanel" aria-label="Play online" hidden>
@@ -145,7 +149,7 @@
 				<li>Choose <b>Free-kick practice</b> and drag the ball on the small pitch (or press Random spot).</li>
 				<li>Click or tap in the goal where you want the ball to go. The dotted line shows its path (turn the guide off for a real test).</li>
 				<li>Set the power, the curl (side spin) and the dip (top spin; negative = back spin, the ball floats). Curl does not change where you aim: it changes the path, so you can bend the ball around the wall and still hit your spot.</li>
-				<li>Press Shoot (or hold it to charge the power).</li>
+				<li>Hold Shoot (or Space): the power bar swings up and down. Let go at the power you want (the white mark is the slider's target). Prefer the slider? Set Power to "Use the slider".</li>
 			</ol>
 			<h3>Questions</h3>
 			<dl>
@@ -153,7 +157,7 @@
 				<dt>Why does the ball curve?</dt><dd>Spin. The ball drags air round with it, so the air leaves the ball deflected to one side and the ball is pushed the other way: the Magnus effect. The same effect makes a tennis ball with top spin dip.</dd>
 				<dt>What is a knuckleball?</dt><dd>A hard shot with almost no spin. The air separates from the seams and panels at slightly different places from moment to moment, so the ball moves unpredictably in the air. Try the Knuckleball style: power over 27 m/s, curl and dip at 0.</dd>
 				<dt>Where should I aim a penalty?</dt><dd>High in a corner is almost unstoppable but easy to miss; low and hard into the corner is the safe choice. Keepers dive early at penalties, so a soft shot down the middle (a "Panenka") works if the keeper guesses, and looks silly if he stays.</dd>
-				<dt>How does the computer keeper work?</dt><dd>It watches the ball: after its reaction time (0.44 s on Easy down to 0.22 s on Pro, a little longer when a wall blocks its view) it dives to where it thinks the ball will cross the line, with less error on the higher levels. At penalties it sometimes guesses a side before the kick, like real keepers.</dd>
+				<dt>How does the computer keeper work?</dt><dd>It watches the ball: after its reaction time (0.33 s on Easy down to 0.18 s on Pro, a little longer when a wall blocks its view) it dives to where it thinks the ball will cross the line, with less error on the higher levels. At penalties it sometimes guesses a side before the kick, like real keepers.</dd>
 				<dt>How do online and Hive matches stay fair?</dt><dd>The keeper chooses a dive without seeing the shot. In guest matches mes.fm's server holds both choices until both are in and adds the aim spread from a secret number. On Hive the keeper posts a sealed dive first, so the kicker can't see it, and opens the seal after the kick.</dd>
 			</dl>
 			<p>Related: <a href="/billiards">Billiards</a> &middot; <a href="/car-sandbox">Car Sandbox</a> &middot; <a href="/gta-stunt-jump-simulator">Stunt Jump Simulator</a> &middot; <a href="/premier-league-picks">Premier League Picks</a> &middot; <a href="/tools">All MES tools</a></p>

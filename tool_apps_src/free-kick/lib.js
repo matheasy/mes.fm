@@ -431,10 +431,10 @@
 
 	/* ======================================================= computer players ======================================================= */
 	B.LEVELS = {
-		easy: { name: "Easy", react: 440, noise: 0.6, guess: 0.12, aim: 1.6 },
-		medium: { name: "Medium", react: 340, noise: 0.4, guess: 0.15, aim: 1.15 },
-		hard: { name: "Hard", react: 270, noise: 0.28, guess: 0.2, aim: 0.85 },
-		pro: { name: "Pro", react: 225, noise: 0.18, guess: 0.22, aim: 0.65 }
+		easy: { name: "Easy", react: 330, noise: 0.6, guess: 0.12, aim: 1.6 },
+		medium: { name: "Medium", react: 270, noise: 0.4, guess: 0.15, aim: 1.15 },
+		hard: { name: "Hard", react: 215, noise: 0.28, guess: 0.2, aim: 0.85 },
+		pro: { name: "Pro", react: 180, noise: 0.18, guess: 0.22, aim: 0.65 }
 	};
 	B.LEVEL_IDS = ["easy", "medium", "hard", "pro"];
 	/** the computer keeper reacting to a shot (it watches the ball, so it is decided after the kick) */

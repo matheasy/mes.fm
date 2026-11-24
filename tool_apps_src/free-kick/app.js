@@ -17,7 +17,7 @@
 
 	/* ===================================================================== settings ===================================================================== */
 	var KEY = "mes-free-kick:v1";
-	var S = { mode: "PF", opp: "cpu", first: 0, lv: "medium", plv: "medium", spread: true, live: true, guide: "full", slow: 1, dim: "3d", cam: "behind",
+	var S = { mode: "PF", opp: "cpu", first: 0, lv: "medium", plv: "medium", spread: true, live: true, guide: "full", slow: 1, dim: "3d", cam: "behind", pmode: "meter", snd: true,
 		power: 24, curl: 0, dip: 0, when: 180, spot: { bx: -6, by: 21, wall: "auto", j: 0, off: 0, kx: null }, stats: {}, name: "", opub: true, ofirst: "host", omode: "P", saved: {} };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in sv) S[k] = sv[k]; } catch (e) { /* defaults */ }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
@@ -123,13 +123,52 @@
 		start(curSetup(), M.pendShot, act, false);
 	}
 
+	/* ===================================================================== sound (made in the browser, no files) ===================================================================== */
+	var AC = null, noiseBuf = null;
+	function audio() {
+		if (!S.snd) return null;
+		try {
+			if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C(); noiseBuf = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate); var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+			if (AC.state === "suspended") AC.resume();
+		} catch (e) { return null; }
+		return AC;
+	}
+	function noise(t0, dur, type, f0, f1, q, vol, att) {
+		var n = AC.createBufferSource(), fl = AC.createBiquadFilter(), g = AC.createGain();
+		n.buffer = noiseBuf; n.loop = true; fl.type = type; fl.Q.value = q;
+		fl.frequency.setValueAtTime(f0, t0); fl.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+		g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + (att || 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+		n.connect(fl); fl.connect(g); g.connect(AC.destination); n.start(t0); n.stop(t0 + dur + 0.05);
+	}
+	function tone(t0, dur, type, f0, f1, vol) {
+		var o = AC.createOscillator(), g = AC.createGain(); o.type = type;
+		o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+		g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+		o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+	}
+	function sfx(kind, power) {
+		if (!S.snd || !audio()) return;
+		var t = AC.currentTime;
+		try {
+			if (kind === "kick") { var v = 0.35 + clamp(((power || 24) - 10) / 24, 0, 1) * 0.45; tone(t, 0.13, "sine", 150, 45, v); noise(t, 0.06, "bandpass", 1800, 600, 1.2, v * 0.5); }
+			else if (kind === "post" || kind === "bar") { tone(t, 0.9, "triangle", 880, 860, 0.22); tone(t, 0.6, "sine", 1760, 1740, 0.12); tone(t, 0.4, "square", 2630, 2600, 0.025); noise(t, 0.05, "highpass", 3000, 2500, 0.7, 0.2); }
+			else if (kind === "keeper") { noise(t, 0.09, "lowpass", 900, 300, 0.8, 0.5); tone(t, 0.08, "sine", 110, 60, 0.3); }
+			else if (kind === "wall") { noise(t, 0.08, "lowpass", 700, 250, 0.8, 0.45); tone(t, 0.1, "sine", 95, 55, 0.3); }
+			else if (kind === "net") { noise(t, 0.35, "bandpass", 4200, 1500, 0.9, 0.18); }
+			else if (kind === "goal") { noise(t, 2.6, "bandpass", 650, 900, 0.6, 0.42, 0.35); noise(t + 0.1, 2.3, "bandpass", 1300, 1600, 0.8, 0.18, 0.3); }
+			else if (kind === "ooh") { noise(t, 1.3, "bandpass", 420, 300, 1.4, 0.3, 0.2); }
+			else if (kind === "whistle") { tone(t, 0.25, "sine", 2900, 2950, 0.1); tone(t + 0.3, 0.45, "sine", 2900, 2920, 0.1); }
+			else if (kind === "tick") tone(t, 0.05, "sine", 900, 900, 0.08);
+		} catch (e) { /* audio is a nice-to-have */ }
+	}
+
 	/* ===================================================================== animation ===================================================================== */
 	var RUN = 0.75;
 	function start(setup, shot, act, live, opts) {
 		opts = opts || {};
 		hideBanner();
 		var sim = B.simulate(setup, shot, act, { frames: true });
-		A = { setup: setup, shot: shot, act: act, live: !!live && !act, sim: sim, t: -RUN, t0: performance.now(), last: performance.now(), wall: B.wallSpots(setup), done: false, onEnd: opts.onEnd, n: opts.n };
+		A = { evI: 0, kicked: false, setup: setup, shot: shot, act: act, live: !!live && !act, sim: sim, t: -RUN, t0: performance.now(), last: performance.now(), wall: B.wallSpots(setup), done: false, onEnd: opts.onEnd, n: opts.n };
 		ph = "anim";
 		render();
 		requestAnimationFrame(tick);
@@ -145,6 +184,8 @@
 		if (!A || A.done) return;
 		var dt = Math.min(0.05, (now - A.last) / 1000); A.last = now;
 		A.t += dt * (A.t < 0 ? 1 : +S.slow);
+		if (!A.kicked && A.t >= 0) { A.kicked = true; sfx("kick", A.shot.spd / 100); }
+		while (A.sim.ev && A.evI < A.sim.ev.length && A.sim.ev[A.evI][0] <= A.t) { var ev = A.sim.ev[A.evI++][1]; sfx(ev === "goal" ? "net" : ev); }
 		if (A.t >= A.sim.t + 0.15) { A.t = A.sim.t; endKick(); return; }
 		draw();
 		requestAnimationFrame(tick);
@@ -174,6 +215,7 @@
 		if (M.kind === "challenge") { M.goals = M.log.filter(function (x) { return x.ok; }).length + (item.ok ? 1 : 0); }
 		M.log.push(item);
 		ph = "result";
+		sfx(r.res === "goal" ? "goal" : "ooh");
 		var txt = B.RES_TEXT[r.res] || r.res;
 		if (M.kind === "target") txt += item.pts ? " +" + item.pts : " (no target)";
 		if (M.kind === "challenge" && r.res === "goal" && !item.ok) txt = "Goal, but not the way the challenge asks";
@@ -270,6 +312,7 @@
 		$("fk-curlv").textContent = S.curl === 0 ? "none" : Math.abs(S.curl).toFixed(1) + (S.curl > 0 ? " → right" : " ← left");
 		$("fk-dipv").textContent = S.dip === 0 ? "none" : S.dip > 0 ? "dip " + S.dip : "float " + (-S.dip);
 		$("fk-hint").textContent = hintText();
+		meter();
 		$("fk-hsave").hidden = !(mode === "local" && M && M.kind === "match" && M.st.win && M.st.win.p >= -1 && !S.saved[M.seed]);
 		draw();
 	}
@@ -342,9 +385,9 @@
 
 	function guidePath(setup) {
 		if (S.guide === "off" || ph !== "aim") return null;
-		var key = B.setupStr(setup) + "|" + aim.x.toFixed(2) + aim.z.toFixed(2) + S.power + S.curl + S.dip;
+		var pw = curPower(), key = B.setupStr(setup) + "|" + aim.x.toFixed(2) + aim.z.toFixed(2) + pw.toFixed(2) + S.curl + S.dip;
 		if (guidePath.key === key) return guidePath.val;
-		var sh = B.aimFor(setup, aim.x, aim.z, S.power, S.curl, S.dip), r = B.simulate(setup, sh, null, { frames: true, noKeeper: true, maxT: 3 });
+		var sh = B.aimFor(setup, aim.x, aim.z, pw, S.curl, S.dip), r = B.simulate(setup, sh, null, { frames: true, noKeeper: true, maxT: 3 });
 		var f = r.frames, pts = [], cut = S.guide === "start" ? Math.min(f.length / 3, 28) : f.length / 3;
 		for (var i = 0; i < cut; i++) pts.push([f[i * 3], f[i * 3 + 1], f[i * 3 + 2]]);
 		guidePath.key = key; guidePath.val = { pts: pts, res: r.res };
@@ -458,7 +501,7 @@
 			if (k.dive && k.s > 0.15) {
 				c.translate((A2[0] + H2[0]) / 2, (A2[1] + H2[1]) / 2);
 				if (dx < 0) { c.scale(-1, 1); c.rotate(Math.atan2(dy, -dx)); } else c.rotate(ang);
-				var w = len * 1.15, h = w * im.height / im.width; c.drawImage(im, -w / 2, -h / 2, w, h);
+				var w = 2.15 * sc, h = w * im.height / im.width; c.drawImage(im, len / 2 - w * 0.98, -h / 2, w, h);
 			} else {
 				var hh = 1.95 * sc, ww = hh * im.width / im.height; c.drawImage(im, A2[0] - ww / 2, G2S(0, 0)[1] - hh, ww, hh);
 			}
@@ -560,8 +603,10 @@
 		v3.frame({
 			setup: s, wall: A ? A.wall : B.wallSpots(s), lift: A ? B.wallLift(s, Math.max(0, A.t)) : 0, ball: bp, keeper: k, kicker: prog, flying: !!(A && A.t > 0),
 			guide: gp ? gp.pts : null, aim: ph === "aim" ? aim : null, dive: ph === "keep" ? dive : (A && A.act && A.act.d >= 0 ? { x: A.act.tx / 100, z: A.act.tz / 100 } : null),
-			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(), t: A ? A.t : 0
+			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(),
+			t: A ? A.t : ph === "result" && last ? 9 : 0, anim: !!A, run: RUN, settle: !A && ph === "result" && !!last, res: last && ph === "result" ? last.sim.res : null, charge: charge ? charge.v : 0
 		});
+		$("fk-camreset").hidden = !v3.isFree();
 	}
 
 	/* ===================================================================== input ===================================================================== */
@@ -583,25 +628,64 @@
 		if (ph === "anim" && A && A.live && !A.act) { liveDive(x, z); return true; }
 		return false;
 	}
-	var drag = null;
+	/* pointers: in the goal = aim (or dive); anywhere else in 3D = orbit the camera (right / middle button or Shift = move it,
+	   two fingers = pinch to zoom and move, wheel = zoom). In 2D: the pitch from above = move the free-kick spot. */
+	var drag = null, ptrs = {}, pinch = null, lastScroll = 0;
+	window.addEventListener("scroll", function () { lastScroll = performance.now(); }, { passive: true });
+	function in3d(e) { return S.dim === "3d" && v3 && e.target.closest && e.target.closest("#fk-3d"); }
+	function pinchInfo() { var ids = Object.keys(ptrs); if (ids.length < 2) return null; var a = ptrs[ids[0]], b = ptrs[ids[1]]; return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
 	$("fk-stage").addEventListener("pointerdown", function (e) {
-		if (e.target.closest(".fk-banner") || e.button > 0) return;
+		if (e.target.closest(".fk-banner") || e.target.closest("button, select, input, .fk-meter")) return;
 		var p = stagePoint(e);
+		ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+		if (in3d(e) && Object.keys(ptrs).length >= 2) { drag = null; pinch = pinchInfo(); e.preventDefault(); return; }
 		// dragging the ball on the pitch (2D) / the mini map (3D)
-		if (root.classList.contains("fk-candrag")) {
+		if (root.classList.contains("fk-candrag") && e.button === 0) {
 			if (e.target === mapCv && MAP) { drag = { map: true }; mapCv.setPointerCapture(e.pointerId); moveSpot(e); e.preventDefault(); return; }
 			if (S.dim === "2d" && p.y > L.gh) { drag = { map: false }; cv.setPointerCapture(e.pointerId); moveSpot(e); e.preventDefault(); return; }
 		}
 		if (e.target === mapCv) return;
+		if (in3d(e)) {
+			var panIt = e.button === 1 || e.button === 2 || e.shiftKey;
+			if (!panIt) { var g3 = goalPick(e); if (g3 && onGoal(g3)) { drag = { goal: true }; e.preventDefault(); return; } }
+			drag = { cam: panIt ? "pan" : "orbit", x: e.clientX, y: e.clientY, moved: 0 }; v3.dragging = true;
+			try { e.target.setPointerCapture(e.pointerId); } catch (x) { /* old */ }
+			e.preventDefault(); return;
+		}
+		if (e.button > 0) return;
 		var g = goalPick(e);
 		if (g && onGoal(g)) { drag = { goal: true }; e.preventDefault(); }
 	});
 	window.addEventListener("pointermove", function (e) {
+		if (ptrs[e.pointerId]) { ptrs[e.pointerId].x = e.clientX; ptrs[e.pointerId].y = e.clientY; }
+		if (pinch && v3) { var q = pinchInfo(); if (q) { if (q.d > 10 && pinch.d > 10) v3.zoom(pinch.d / q.d); v3.pan(q.x - pinch.x, q.y - pinch.y); pinch = q; draw(); } return; }
 		if (!drag) { if (v3 && S.dim === "3d" && e.target.closest && e.target.closest("#fk-3d")) v3.hover(e.clientX, e.clientY); return; }
+		if (drag.cam) {
+			var dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
+			if (drag.cam === "pan") v3.pan(dx, dy); else v3.orbit(dx, dy);
+			$("fk-camreset").hidden = false; return;
+		}
 		if (drag.goal) { if (ph === "aim" || ph === "keep") onGoal(goalPick(e)); return; }
 		moveSpot(e);
 	});
-	window.addEventListener("pointerup", function () { if (drag && !drag.goal) { save(); render(); } drag = null; });
+	function ptrUp(e) {
+		delete ptrs[e.pointerId];
+		if (pinch) { if (Object.keys(ptrs).length < 2) pinch = null; return; }
+		if (drag && drag.cam) { if (v3) v3.dragging = false; drag = null; return; }
+		if (drag && !drag.goal) { save(); render(); }
+		drag = null;
+	}
+	window.addEventListener("pointerup", ptrUp);
+	window.addEventListener("pointercancel", ptrUp);
+	$("fk-3d").addEventListener("contextmenu", function (e) { e.preventDefault(); });
+	$("fk-3d").addEventListener("dblclick", function (e) { if (v3 && v3.isFree() && !goalPick(e)) resetCam(); });
+	$("fk-3d").addEventListener("wheel", function (e) {
+		if (!v3 || S.dim !== "3d") return;
+		if (performance.now() - lastScroll < 350 && !e.ctrlKey) return;     // the page is being scrolled past the game
+		e.preventDefault();
+		v3.zoom(Math.exp((e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY) * 0.0012));
+		$("fk-camreset").hidden = false;
+	}, { passive: false });
 	function moveSpot(e) {
 		var x, y;
 		if (drag && drag.map) { var r = mapCv.getBoundingClientRect(); x = (e.clientX - r.left - MAP.px) / MAP.ps; y = (e.clientY - r.top - MAP.py) / MAP.ps; }
@@ -624,27 +708,58 @@
 		["power", "curl", "dip"].forEach(function (k) { $("fk-" + k).value = S[k]; });
 		guidePath.key = null; save(); render();
 	});
-	// Shoot: a click shoots at the slider power; holding charges the power (it swings up and down) and shoots on release
-	var hold = null;
-	$("fk-shoot").addEventListener("pointerdown", function (e) {
-		if (ph !== "aim") return;
-		hold = { t0: performance.now(), id: e.pointerId };
-		this.setPointerCapture(e.pointerId);
+	/* Shoot: hold the button (or Space) and the power bar swings up and down; let go at the power you want.
+	   With "Power: slider" a press shoots at once with the slider's power. */
+	var charge = null, PMIN = 10, PMAX = 34, SWEEP = 0.95;
+	function curPower() { return charge ? PMIN + charge.v * (PMAX - PMIN) : +S.power; }
+	function chargeStart() {
+		if (ph !== "aim" || charge) return;
+		audio();
+		if (S.pmode === "slider") { shoot(S.power); return; }
+		charge = { t0: performance.now(), v: 0 };
+		root.classList.add("fk-charging");
 		(function swing() {
-			if (!hold) return;
-			var el = (performance.now() - hold.t0) / 1000;
-			if (el > 0.22) { var u = (el - 0.22) / 1.4 % 2, v = u < 1 ? u : 2 - u; hold.p = 10 + v * 24; $("fk-shoot").style.setProperty("--fk-pw", Math.round(v * 100) + "%"); $("fk-shoot").textContent = "⚽ " + hold.p.toFixed(0) + " m/s"; }
+			if (!charge) return;
+			var el = (performance.now() - charge.t0) / 1000, u = el / SWEEP % 2;
+			charge.v = u < 1 ? u : 2 - u;
+			meter(); draw();
 			requestAnimationFrame(swing);
 		})();
-	});
-	function releaseShoot() {
-		if (!hold) return;
-		var p = hold.p; hold = null;
-		$("fk-shoot").style.removeProperty("--fk-pw"); $("fk-shoot").textContent = "⚽ Shoot";
-		if (p) { S.power = Math.round(p * 2) / 2; $("fk-power").value = S.power; save(); }
-		shoot(S.power);
 	}
-	$("fk-shoot").addEventListener("pointerup", releaseShoot);
+	function chargeEnd(cancel) {
+		if (!charge) return;
+		var c = charge, held = performance.now() - c.t0, p = PMIN + c.v * (PMAX - PMIN);
+		charge = null; root.classList.remove("fk-charging"); meter();
+		if (cancel) { guidePath.key = null; render(); return; }
+		if (held < 110) { toast("Hold Shoot (or Space): the power bar goes up and down. Let go at the power you want."); guidePath.key = null; render(); return; }
+		shoot(Math.round(p * 10) / 10);
+	}
+	function meter() {
+		var show = ph === "aim" && S.pmode === "meter";
+		$("fk-meter").hidden = !show; $("fk-oshoot").hidden = !(ph === "aim" || ph === "keep");
+		$("fk-oshoot").classList.toggle("is-gk", ph === "keep");
+		$("fk-oshoot").querySelector("span").textContent = ph === "keep" ? "Ready" : S.pmode === "meter" ? (charge ? "Let go!" : "Hold") : "Shoot";
+		if (!show) return;
+		var v = charge ? charge.v : (S.power - PMIN) / (PMAX - PMIN), pw = curPower();
+		$("fk-mfill").style.height = (charge ? v * 100 : 0) + "%";
+		$("fk-mfill").style.background = "hsl(" + Math.round(120 - v * 120) + ",85%,48%)";
+		$("fk-mmark").style.bottom = clamp((S.power - PMIN) / (PMAX - PMIN), 0, 1) * 100 + "%";
+		$("fk-mval").textContent = charge ? pw.toFixed(0) + " m/s" : "Power";
+		var sb = $("fk-shoot"); sb.style.setProperty("--fk-pw", charge ? Math.round(v * 100) + "%" : "0%"); sb.textContent = charge ? "⚽ " + pw.toFixed(0) + " m/s · let go!" : S.pmode === "meter" ? "⚽ Hold to shoot" : "⚽ Shoot";
+	}
+	["fk-shoot", "fk-oshoot"].forEach(function (id) {
+		var el = $(id);
+		el.addEventListener("pointerdown", function (e) {
+			if (e.button > 0) return;
+			e.preventDefault(); e.stopPropagation();
+			if (ph === "keep") { keeperReady(); return; }
+			try { el.setPointerCapture(e.pointerId); } catch (x) { /* old */ }
+			chargeStart();
+		});
+		el.addEventListener("pointerup", function (e) { e.stopPropagation(); chargeEnd(false); });
+		el.addEventListener("pointercancel", function () { chargeEnd(true); });
+		el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+	});
 	$("fk-shoot").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); shoot(S.power); } });
 	$("fk-dive").addEventListener("click", keeperReady);
 	segBind("fk-when", "when", function (v) { return +v; }, render);
@@ -671,6 +786,9 @@
 		set("fk-opp", S.opp); set("fk-first", S.first); set("fk-when", S.when); set("fk-ofirst", S.ofirst);
 		var md = modeOf(S.mode);
 		set("fk-lv", md.np === 2 ? S.lv : S.plv);
+		$("fk-gk").value = md.np === 2 ? S.lv : S.plv;
+		$("fk-lv-l").textContent = md.np === 2 ? "Computer level (kicks and keeps)" : md.id === "PK" ? "Kicker level" : "Keeper level";
+		[].forEach.call($("fk-gk").options, function (o) { o.hidden = o.value === "none" && md.np === 2; });
 	}
 	function syncSetup() {
 		var md = modeOf(S.mode);
@@ -678,6 +796,7 @@
 		root.classList.toggle("fk-ismatch", md.np === 2);
 		root.classList.toggle("fk-iscpu", md.np === 2 && S.opp === "cpu");
 		root.classList.toggle("fk-nolv", !!md.ch || md.id === "T" || (md.np === 2 && S.opp === "local"));
+		$("fk-gkwrap").hidden = !!md.ch || md.id === "T" || md.id === "PK" || (md.np === 2 && S.opp === "local") || mode !== "local";
 		root.classList.toggle("fk-ispractice", md.np === 1 && md.id !== "PK");
 		$("fk-desc").textContent = md.desc + (md.ch && S.stats.ch && S.stats.ch[md.id] ? " ✓ Done before." : "");
 		$("fk-spread").checked = S.spread; $("fk-live").checked = S.live; $("fk-guide").value = S.guide; $("fk-slow").value = String(S.slow);
@@ -698,7 +817,14 @@
 	$("fk-slow").addEventListener("change", function () { S.slow = +this.value; save(); });
 	$("fk-new").addEventListener("click", function () { if (mode === "online") return onLeave(); if (mode === "hive") return hiveLeave(); newMatch(); });
 	$("fk-dim").addEventListener("click", function () { S.dim = S.dim === "3d" ? "2d" : "3d"; save(); applyDim(); });
-	$("fk-cam").addEventListener("change", function () { S.cam = this.value; save(); draw(); });
+	$("fk-cam").addEventListener("change", function () { S.cam = this.value; save(); if (v3) v3.resetView(); draw(); });
+	function resetCam() { if (v3) v3.resetView(); draw(); }
+	$("fk-camreset").addEventListener("click", resetCam);
+	$("fk-pmode").value = S.pmode; $("fk-pmode").addEventListener("change", function () { S.pmode = this.value; save(); render(); });
+	function syncSnd() { $("fk-snd").textContent = S.snd ? "🔊" : "🔇"; $("fk-snd").setAttribute("aria-pressed", String(!!S.snd)); }
+	$("fk-snd").addEventListener("click", function () { S.snd = !S.snd; save(); syncSnd(); if (S.snd) { audio(); sfx("tick"); } });
+	syncSnd();
+	$("fk-gk").addEventListener("change", function () { var b2 = $("fk-lv").querySelector('[data-v="' + this.value + '"]'); if (b2) b2.click(); });
 	$("fk-rand").addEventListener("click", randomSpot);
 	function randomSpot() { var sp = B.randomSpot(Math.random); S.spot.bx = sp.bx; S.spot.by = sp.by; S.spot.kx = null; guidePath.key = null; save(); render(); }
 	$("fk-wall").addEventListener("change", function () { S.spot.wall = this.value === "auto" ? "auto" : +this.value; S.spot.kx = null; guidePath.key = null; save(); render(); });
@@ -716,7 +842,8 @@
 			liveDive(k === "ArrowLeft" ? (s.kx || 0) - 2.8 : k === "ArrowRight" ? (s.kx || 0) + 2.8 : (s.kx || 0), k === "ArrowUp" ? 2.3 : hi ? 1.9 : 0.6);
 			e.preventDefault(); return;
 		}
-		if (k === " " && (ph === "aim" || ph === "keep")) { e.preventDefault(); if (ph === "aim") shoot(S.power); else keeperReady(); return; }
+		if (k === " " && (ph === "aim" || ph === "keep")) { e.preventDefault(); if (e.repeat) return; if (ph === "aim") chargeStart(); else keeperReady(); return; }
+		if (k === "Escape" && charge) { chargeEnd(true); return; }
 		if (k.indexOf("Arrow") === 0 && (ph === "aim" || ph === "keep")) {
 			if (e.target.type === "range") return;
 			var t = ph === "aim" ? aim : dive;
@@ -725,10 +852,15 @@
 		}
 		if (e.ctrlKey || e.metaKey || e.altKey) return;
 		if (k === "v" || k === "V") $("fk-dim").click();
-		else if ((k === "c" || k === "C") && S.dim === "3d") { var o = ["behind", "keeper", "tv", "high"]; S.cam = o[(o.indexOf(S.cam) + 1) % o.length]; $("fk-cam").value = S.cam; save(); draw(); }
+		else if ((k === "c" || k === "C") && S.dim === "3d") { var o = ["behind", "ball", "keeper", "tv", "high"]; S.cam = o[(o.indexOf(S.cam) + 1) % o.length]; $("fk-cam").value = S.cam; save(); draw(); }
 		else if ((k === "r" || k === "R") && !$("fk-fkset").hidden) randomSpot();
+		else if ((k === "0" || k === "Home") && v3 && v3.isFree()) resetCam();
+		else if (k === "m" || k === "M") $("fk-snd").click();
+		else if ((k === "+" || k === "=" || k === "-") && v3 && S.dim === "3d") { v3.zoom(k === "-" ? 1.15 : 0.87); }
 		else if (k === "n" || k === "N") $("fk-new").click();
 	});
+	document.addEventListener("keyup", function (e) { if (e.key === " " && charge) { e.preventDefault(); chargeEnd(false); } });
+	window.addEventListener("blur", function () { chargeEnd(true); });
 	window.addEventListener("resize", function () { draw(); });
 	if (window.ResizeObserver) new ResizeObserver(function () { draw(); }).observe($("fk-stage"));
 	new MutationObserver(function () { draw(); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
@@ -1154,5 +1286,5 @@
 	if (qs.get("g")) join(qs.get("g"));
 	else if (qs.get("hive") && /^[a-z][a-z0-9.-]{2,15}\/[a-z0-9]{8}$/.test(qs.get("hive"))) { var hp = qs.get("hive").split("/"); hiveEnter(hp[0], hp[1], []); }
 	else if (S.online && S.online.id) { api("GET", null, "?id=" + S.online.id).then(function (r) { if (r.g && r.g.status !== "over") { on.key = S.online.key; on.seat = S.online.seat; startOnline({ g: r.g, key: S.online.key, seat: S.online.seat }); } else { S.online = null; save(); } }); }
-	window.MESFreeKickDebug = { state: function () { return { M: M, ph: ph, A: A, aim: aim, dive: dive, mode: mode }; }, shoot: shoot, step: function (s) { if (A) { A.t += s; if (A.t >= A.sim.t) { A.t = A.sim.t; endKick(); } else draw(); } }, setAim: function (x, z) { aim = { x: x, z: z }; render(); }, next: next, liveDive: liveDive, B: B };
+	window.MESFreeKickDebug = { state: function () { return { M: M, ph: ph, A: A, aim: aim, dive: dive, mode: mode }; }, shoot: shoot, step: function (s) { if (A) { A.t += s; if (A.t >= A.sim.t) { A.t = A.sim.t; endKick(); } else draw(); } }, setAim: function (x, z) { aim = { x: x, z: z }; render(); }, next: next, liveDive: liveDive, B: B, view: function () { return v3; }, charge: function () { return charge; } };
 })();

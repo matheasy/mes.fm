@@ -1702,7 +1702,7 @@ APPS = {
                 tag="Set pieces with real ball physics: kick, keep, play anyone.", accent="#1b7a3a", dark="#145c2b", tint="#dff1e4",
                 desc="Take free kicks from any spot, curl them around the wall or dip them over it, hit knuckleballs and win penalty shootouts. Real ball physics (drag, curl, dip, knuckle), a wall that can jump and a keeper that dives. Play the computer, a friend, someone online or a Hive user, as the kicker or the goalkeeper, in 3D or 2D.",
                 meta_desc="Free kicks and penalty shootouts with real ball physics: curl, dip, knuckleballs, a jumping wall and a diving keeper. Play the computer, a friend or online.",
-                js_v="1", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
+                js_v="2", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",
