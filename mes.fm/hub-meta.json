@@ -466,6 +466,11 @@
 "updated":"2026-11-19",
 "type":"Simulation"
 },
+"/gyroscope-simulator":{
+"added":"2026-11-24",
+"updated":"2026-11-24",
+"type":"Simulation"
+},
 "/heart-rate-zone-calculator":{
 "added":"2026-10-14",
 "updated":"2026-11-04",
@@ -1003,7 +1008,7 @@
 },
 "/text-size":{
 "added":"2026-10-11",
-"updated":"2026-11-11",
+"updated":"2026-11-24",
 "type":"Browser extension"
 },
 "/tic-tac-toe":{

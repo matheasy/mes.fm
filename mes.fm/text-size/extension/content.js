@@ -19,6 +19,7 @@
      live: the tracked elements still to walk when the level changes (pruned of detached ones now and then; they stay in orig). */
   var orig = new WeakMap(), live = new Set(), sinceTrim = 0;
   var observer = null, queue = [], pending = false;
+  var fights = new WeakMap();
   var SYNC_MAX = 1500;   // up to this many new elements are scaled at once, before the browser paints; a bigger insertion goes through the idle queue
 
   // ---- settings -----------------------------------------------------------------------------------------------------------
@@ -75,8 +76,13 @@
     for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\S/.test(n.data)) return true;
     return false;
   }
+  /* Rich-text editors (contenteditable: ProseMirror in Telegram Web, Slate, Lexical, Google's composers...) watch their own DOM and redraw any
+     node whose attributes change. Writing a font size into them made Telegram's editor redraw, we wrote it back, and the tab froze for good
+     on the first key press (1.2.3). So editable content keeps the page's size; plain <textarea> / <input> are still scaled. */
+  var gaveUp = new WeakSet();
   function wanted(el) {
     if (el.nodeType !== 1 || SKIP[el.tagName] || el.namespaceURI !== 'http://www.w3.org/1999/xhtml' && !FORM[el.tagName]) return false;
+    if (el.isContentEditable || gaveUp.has(el)) return false;
     return FORM[el.tagName] || hasText(el);
   }
 
@@ -163,6 +169,10 @@
                take that as the element's new original. Our own write sets the same value again, so the second round is a no-op. */
             var t = m.target;
             if (!live.has(t)) continue;
+            /* safety net: a page that keeps rewriting style="" after every write of ours would loop; after 20 rewrites in 2 s leave it alone */
+            var now = Date.now(), f = fights.get(t);
+            if (!f || now - f.t > 2000) { f = { t: now, n: 0 }; fights.set(t, f); }
+            if (++f.n > 20) { putInline(t, orig.get(t), false); live.delete(t); gaveUp.add(t); continue; }
             var o = orig.get(t), want = T.scaled(o.fs, level), cur = t.style.getPropertyValue('font-size');
             if (cur === want + 'px') continue;
             if (cur && cur !== o.inl.fs) { orig.delete(t); live.delete(t); add.push(t); } else putInline(t, o, true);
