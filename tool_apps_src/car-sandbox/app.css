@@ -134,7 +134,7 @@
 	.cs-unflip small {font-weight:600;font-size:0.75em;color:#1a1a1a;}
 	.cs-unflip[hidden] {display:none;}
 	/* narrow picture (side panel open, phone): speed moves under the buttons so it never covers the lap box or the buttons */
-	.cs-narrow .cs-sbtns {flex-wrap:wrap;justify-content:flex-end;max-width:58%;}
+	.cs-narrow .cs-sbtns {flex-wrap:wrap;justify-content:flex-end;max-width:74%;}
 	.cs-narrow.cs-has-touch .cs-speedo, .cs-narrow .cs-speedo {top:var(--cs-spt, 3.4em);bottom:auto;right:0.7em;left:auto;transform:none;margin-top:0;}
 	.cs-narrow .cs-hud {max-width:40%;}
 
@@ -243,3 +243,38 @@
 	html body.dark-mode #cs .cs-frow b {color:#f2f5fa;}
 	html body.dark-mode #cs .cs-frow span {color:#b7c0cf;}
 	html body.dark-mode #cs .cs-flesson {color:#ffd8a8;}
+	/* Restart / Repair on the picture, camera "Behind" (2026-11-25) */
+	.cs-sbtns .cs-brestart {background:rgba(28,126,214,0.78);border-color:rgba(165,216,255,0.9);color:#fff;font-weight:700;}
+	.cs-sbtns .cs-bfix {background:rgba(47,158,68,0.72);border-color:rgba(140,233,154,0.9);color:#fff;font-weight:700;}
+	html body.dark-mode #cs .cs-sbtns .cs-brestart {background:rgba(28,126,214,0.85);color:#fff;}
+	html body.dark-mode #cs .cs-sbtns .cs-bfix {background:rgba(47,158,68,0.8);color:#fff;}
+	.cs-sbtns #cs-camreset {background:rgba(250,176,5,0.88);border-color:#fff;color:#1a1a1a;font-weight:700;}
+	html body.dark-mode #cs .cs-sbtns #cs-camreset {background:rgba(250,176,5,0.9);color:#1a1a1a;}
+	.cs-narrow .cs-bl {display:none;}
+	.cs-pop #cs-night {margin-left:0.4em;padding:0 0.5em;font-size:1em;}
+	.cs-touch .cs-t-reset, .cs-touch .cs-t-reset small {color:#1a1a1a !important;opacity:1 !important;}
+	/* easy flying on touch screens: stick + Take off + speed; no rudder / flaps / brake buttons */
+	.cs-sk {display:none;position:absolute;color:rgba(255,255,255,0.8);font-size:0.62em;font-weight:700;pointer-events:none;text-shadow:0 1px 2px #000;}
+	.cs-peasy .cs-sk {display:block;}
+	.cs-sk-u {top:3%;left:50%;transform:translateX(-50%);} .cs-sk-d {bottom:3%;left:50%;transform:translateX(-50%);}
+	.cs-sk-l {left:5%;top:50%;transform:translateY(-50%);} .cs-sk-r {right:5%;top:50%;transform:translateY(-50%);}
+	.cs-touch .cs-t-toff {display:none;width:auto;height:3em;padding:0 1.1em;border-radius:1.5em;background:rgba(28,126,214,0.9);border-color:#fff;font-size:1.05em;font-weight:800;flex-direction:row;gap:0.35em;align-items:center;justify-content:center;line-height:1;animation:cs-pulse 1.2s ease-in-out infinite alternate;align-self:flex-end;margin-bottom:0.4em;}
+	.cs-touch .cs-t-toff small {font-size:0.85em;font-weight:800;color:#fff;}
+	.cs-thr b {font-size:0.8em;}
+	.cs-peasy.cs-pground .cs-touch .cs-t-toff {display:flex;}
+	.cs-peasy .cs-touch #cs-t-rudl, .cs-peasy .cs-touch #cs-t-rudr, .cs-peasy .cs-touch #cs-t-flap {display:none;}
+	.cs-peasy:not(.cs-pground) .cs-touch #cs-t-fbrk {display:none;}
+	.cs-touch .cs-t-pmode {background:rgba(77,171,247,0.45);font-size:0.72em;}
+	.cs-touch .cs-t-pmode small {font-size:0.62em;display:block;color:#fff;opacity:0.85;}
+	.cs-fhelp {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;background:rgba(12,16,24,0.9);color:#f2f5fa;border:1px solid rgba(255,255,255,0.3);border-radius:0.8em;padding:0.7em 2.2em 0.7em 1em;font-size:0.86em;max-width:min(30em, 92%);max-height:88%;overflow:auto;backdrop-filter:blur(6px);box-shadow:0 6px 24px rgba(0,0,0,0.4);}
+	.cs-fhelp[hidden] {display:none;}
+	.cs-fhelp b, .cs-fhelp li, .cs-fhelp span {color:#f2f5fa;}
+	.cs-fhelp ul {margin:0.35em 0 0.5em;padding-left:1.1em;}
+	.cs-fhelp li {margin:0.15em 0;}
+	.cs-fhelp .cs-helpx {color:#f2f5fa;}
+	.cs-fhelp .cs-mini {color:#f2f5fa;border-color:rgba(255,255,255,0.4);margin-right:0.4em;}
+	.cs-fhelp #cs-fhok {background:#1c7ed6;border-color:#1c7ed6;font-weight:700;}
+	.cs-editing .cs-fhelp, .cs-replaying .cs-fhelp {display:none !important;}
+	html body.dark-mode #cs .cs-fhelp #cs-fhok {background:#1c7ed6;border-color:#1c7ed6;color:#fff;}
+	#cs .cs-card .tu-btn--ghost[aria-pressed="true"] {background:#d9480f;border-color:#d9480f;color:#fff;}
+	html body.dark-mode #cs .cs-card .tu-btn--ghost[aria-pressed="true"] {background:#ff8a50;border-color:#ff8a50;color:#111;}

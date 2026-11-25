@@ -34,12 +34,13 @@
 				<div class="cs-sbtns">
 					<button type="button" id="cs-mapbtn" title="Show or hide the map" aria-label="Map" aria-pressed="true">🗺</button>
 					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
-					<button type="button" id="cs-night" title="Night driving (N)" aria-label="Night driving" aria-pressed="false">🌙</button>
 					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
 					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
-					<button type="button" id="cs-camreset" title="Back to the normal camera angle (double-click the picture)" hidden>↺ View</button>
-					<button type="button" id="cs-sreset" title="Put the car back on its wheels (R)">↺ Reset</button>
+					<button type="button" id="cs-camreset" title="Camera back behind the car (double-click the picture)" hidden>↺<span class="cs-bl"> Behind</span></button>
+					<button type="button" id="cs-sreset" title="Put the car back on its wheels (R)">↺<span class="cs-bl"> Wheels</span></button>
+					<button type="button" id="cs-srepair" class="cs-bfix" title="Repair the car where it is: dents gone, engine like new (X)" aria-label="Repair">🔧<span class="cs-bl"> Repair</span></button>
+					<button type="button" id="cs-restart" class="cs-brestart" title="Restart: everything back to the start, fully repaired (T)" aria-label="Restart">⟲<span class="cs-bl"> Restart</span></button>
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
 				</div>
 				<div class="cs-mm" id="cs-mm">
@@ -69,7 +70,7 @@
 					<b>Sound</b>
 					<label class="cs-prow"><input type="checkbox" data-snd> Sound on</label>
 					<label class="cs-prow">Volume <input type="range" min="0" max="100" step="1" data-vol aria-label="Volume"><span data-volnum></span></label>
-					<b>Time of day <span data-todlab></span></b>
+					<b>Time of day <span data-todlab></span> <button type="button" class="cs-mini" id="cs-night" aria-pressed="false" title="Night / day (N)">🌙</button></b>
 					<input type="range" data-tod min="0" max="24" step="0.05" aria-label="Time of day (hours)">
 					<div class="cs-prow"><button type="button" class="cs-mini" data-cycle>▶ Run the day</button><select data-cyspd aria-label="Length of a day"></select></div>
 					<b>Game</b>
@@ -90,16 +91,22 @@
 					<ul>
 						<li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or the arrow keys · <kbd>S</kbd> at a stop = reverse</li>
 						<li><kbd>Space</kbd> handbrake (drift) · <kbd>Shift</kbd> boost</li>
-						<li><kbd>R</kbd> back on your wheels · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
+						<li><kbd>R</kbd> back on your wheels · <kbd>X</kbd> 🔧 repair · <kbd>T</kbd> ⟲ restart at the start · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
 						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
 						<li><kbd>B</kbd> map editor: place ramps, loops, springs, launch pads, boost strips and draw your own roads · <kbd>L</kbd> fire a launch pad · <kbd>[</kbd> <kbd>]</kbd> slower / faster game</li>
 						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
-						<li>✈ <kbd>J</kbd> jump into a plane (or pick one under Vehicle) · <kbd>S</kbd> / <kbd>W</kbd> nose up / down · <kbd>A</kbd> <kbd>D</kbd> roll · <kbd>Q</kbd> <kbd>E</kbd> rudder · <kbd>Shift</kbd> / <kbd>Z</kbd> throttle up / down · <kbd>V</kbd> flaps · <kbd>Space</kbd> wheel brakes · <kbd>R</kbd> in the air = wings level</li>
+						<li>✈ <kbd>J</kbd> jump into a plane · easy flying: hold <kbd>W</kbd> to take off, <kbd>A</kbd> <kbd>D</kbd> turn, <kbd>W</kbd> / <kbd>S</kbd> climb / dive, let go = level flight, <kbd>Shift</kbd> / <kbd>Z</kbd> faster / slower · <kbd>R</kbd> in the air = wings level</li>
 						<li>Stuck or upside down? Press <kbd>R</kbd> or ↺ Reset (it also flips back by itself after a few seconds)</li>
-						<li>Drag the picture to look around · a game controller works too</li>
+						<li>Drag the picture to look around: the camera drifts back behind the car by itself (or double-click) · a game controller works too</li>
 					</ul>
+				</div>
+				<div class="cs-fhelp" id="cs-fhelp" hidden>
+					<button type="button" class="cs-helpx" id="cs-fhelpx" aria-label="Close">×</button>
+					<b>✈ <span id="cs-fhtitle">Easy flying</span></b>
+					<ul id="cs-fhlist"></ul>
+					<div class="cs-row"><button type="button" class="cs-mini" id="cs-fhok">Got it</button><button type="button" class="cs-mini" id="cs-fhmode"></button></div>
 				</div>
 				<div class="cs-ed" id="cs-ed" hidden>
 					<div class="cs-edtop">
@@ -120,11 +127,12 @@
 				</div>
 				<div class="cs-touch" id="cs-touch" hidden>
 					<div class="cs-tfly" id="cs-tfly">
-						<div class="cs-stick" id="cs-stick" aria-label="Control stick: drag to pitch and roll"><i id="cs-knob"></i></div>
+						<div class="cs-stick" id="cs-stick" aria-label="Control stick: drag to turn and climb"><i id="cs-knob"></i><span class="cs-sk cs-sk-u">climb</span><span class="cs-sk cs-sk-d">dive</span><span class="cs-sk cs-sk-l">◀</span><span class="cs-sk cs-sk-r">▶</span></div>
+						<button type="button" id="cs-t-toff" class="cs-t-toff" aria-label="Take off">🛫<small>Take off</small></button>
 						<div class="cs-tfr">
-							<div class="cs-tcol"><button type="button" id="cs-t-flap" class="cs-t-sm" aria-label="Flaps">Flaps<small id="cs-t-flapn">T/O</small></button><button type="button" id="cs-t-fbrk" class="cs-t-sm" aria-label="Wheel brakes">Brake<small>wheels</small></button><button type="button" id="cs-t-freset" class="cs-t-sm cs-t-reset" aria-label="Level the wings or reset">↺<small>Reset</small></button></div>
+							<div class="cs-tcol"><button type="button" id="cs-t-pmode" class="cs-t-sm cs-t-pmode" aria-label="Easy or realistic flying">Easy<small>flying</small></button><button type="button" id="cs-t-flap" class="cs-t-sm" aria-label="Flaps">Flaps<small id="cs-t-flapn">T/O</small></button><button type="button" id="cs-t-fbrk" class="cs-t-sm" aria-label="Wheel brakes">Brake<small>wheels</small></button><button type="button" id="cs-t-freset" class="cs-t-sm cs-t-reset" aria-label="Level the wings or reset">↺<small>Reset</small></button></div>
 							<div class="cs-tcol"><button type="button" id="cs-t-rudl" class="cs-t-sm" aria-label="Rudder left">◀<small>Rudder</small></button><button type="button" id="cs-t-rudr" class="cs-t-sm" aria-label="Rudder right">▶<small>Rudder</small></button></div>
-							<div class="cs-thr" id="cs-thr" role="slider" aria-label="Throttle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><i id="cs-thrfill"></i><b>THR</b><small id="cs-thrn">0%</small></div>
+							<div class="cs-thr" id="cs-thr" role="slider" aria-label="Throttle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><i id="cs-thrfill"></i><b id="cs-thrlab">THR</b><small id="cs-thrn">0%</small></div>
 						</div>
 					</div>
 					<div class="cs-tl"><button type="button" id="cs-t-left" aria-label="Steer left">◀</button><button type="button" id="cs-t-right" aria-label="Steer right">▶</button></div>
@@ -150,9 +158,10 @@
 					<div class="cs-ch">✈ Fly a plane <span class="cs-gname" id="cs-pname"></span></div>
 					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn" id="cs-fly">✈ Fly the light plane (J)</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-flyjet">Stunt jet</button></div>
 					<div class="cs-row cs-wrapb" id="cs-prow" hidden><button type="button" class="tu-btn tu-btn--ghost" id="cs-runway">🛫 To the runway</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-airstart">☁ Start in the air</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-backcar">🚗 Back to a car</button></div>
-					<label class="cs-lab"><input type="checkbox" id="cs-pinv"> Invert pitch (W = nose up)</label>
+					<div class="cs-row cs-wrapb" role="group" aria-label="How hard flying is"><button type="button" class="tu-btn tu-btn--ghost" id="cs-peasy" aria-pressed="true">Easy flying</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-preal" aria-pressed="false">Realistic</button><button type="button" class="cs-mini" id="cs-phow">How to fly?</button></div>
+					<label class="cs-lab"><input type="checkbox" id="cs-pinv"> Invert up / down</label>
 					<p class="tu-note" id="cs-pfacts"></p>
-					<p class="tu-note">How to take off: flaps at T/O (V), full throttle (hold Shift), and at lift-off speed pull back gently (S). Lift grows with the square of the air speed, with the air's density and with the wing's angle; push the angle past about 15° and the airflow breaks away from the wing: a stall. Land at a slow sink rate, under 2.5 m/s, for a good landing.</p>
+					<p class="tu-note"><b>Easy flying</b> (the default): press Take off or hold W / ↑, then steer with A / D (or the stick left / right) and climb or dive with W / S (stick up / down). Let go and the plane levels its wings and holds its height; it won't stall and it flares by itself before touching down, so to land just dive gently at the runway. Shift / Z = faster / slower. <b>Realistic</b>: you work the elevator, ailerons, rudder, throttle and flaps yourself. How to take off then: flaps at T/O (V), full throttle (hold Shift), and at lift-off speed pull back gently (S). Lift grows with the square of the air speed, with the air's density and with the wing's angle; push the angle past about 15° and the airflow breaks away from the wing: a stall. Land at a slow sink rate, under 2.5 m/s, for a good landing.</p>
 				</div>
 				<div class="cs-card">
 					<div class="cs-ch">Other cars</div>
@@ -181,8 +190,8 @@
 					<div class="cs-row cs-wrapb">
 						<button type="button" class="tu-btn tu-btn--ghost" onclick="document.getElementById('cs-rpbtn').click()">🎬 Instant replay (Y)</button>
 						<button type="button" class="tu-btn" id="cs-reset">↺ Back on wheels (R)</button>
-						<button type="button" class="tu-btn tu-btn--ghost" id="cs-start">⟲ To the start</button>
-						<button type="button" class="tu-btn tu-btn--ghost" id="cs-repair">🔧 Repair all</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cs-start">⟲ Restart (T)</button>
+						<button type="button" class="tu-btn tu-btn--ghost" id="cs-repair">🔧 Repair all (X = mine)</button>
 						<button type="button" class="tu-btn tu-btn--ghost" id="cs-pause">❚❚ Pause</button>
 					</div>
 					<div class="cs-checks">

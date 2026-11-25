@@ -152,6 +152,62 @@
 		var bank = Math.atan2(ly, u.y);
 		void lx; void lz; return { pitch: pitch, bank: bank };
 	};
+	/* Easy flying: the stick asks for a turn and a climb, and this flies the real controls for you (the air forces stay the same).
+	   P = memory kept on the plane {i, hold, toff}; s = {pitch, bank (+ = right wing down), V (air speed), vs (climb, m/s), alpha, q (nose-up
+	   rate), p (roll-right rate), beta, agl, y, ground, vs0 (stall speed, flaps up), vRot, top, aLim (stall angle with the flaps now)};
+	   inp = {climb (+1 = up), turn (+1 = right), spd 0..1 (cruise speed between safe-slow and fast), go (take-off pressed), brk}.
+	   Let go of the stick and it levels the wings and holds its height; it never lets the wing stall, flares by itself near the
+	   ground, and on the ground it brakes unless you are taking off. Returns {elev, ail, rud, thr, flap, brk, toff}. */
+	C.easyPilot = function (P, s, inp, dt) {
+		var D = Math.PI / 180, cl = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+		var climb = cl(inp.climb || 0, -1, 1), turn = cl(inp.turn || 0, -1, 1), V = Math.max(0, s.V || 0);
+		var vMin = s.vs0 * 1.3, vMax = Math.max(vMin + 8, (s.top || vMin * 2) * 0.9), vc = vMin + cl(inp.spd == null ? 0.15 : inp.spd, 0, 1) * (vMax - vMin);
+		var out = { elev: 0, ail: 0, rud: 0, thr: 0, flap: 1, brk: 0, toff: !!P.toff };
+		/* after a touchdown it stays landed (small bounces included) until you take off again */
+		var ground = s.ground || (s.agl < 2 && V < s.vs0 * 0.6); /* just put down, still settling on its wheels */
+		if (ground && !P.toff) P.landed = true;
+		if (P.landed && !ground && (s.agl > 4 || climb > 0.3 || inp.go)) P.landed = false;
+		if (ground || P.landed) {
+			if (inp.go || climb > 0.3) { P.toff = true; P.landed = false; }
+			P.hold = null; P.i = 0;
+			if (P.toff) {
+				out.thr = 1; out.rud = turn * 0.7;
+				/* rotate at lift-off speed: nose up to ~9 degrees */
+				if (V > s.vRot) out.elev = cl(7 * (10 * D - s.pitch) - 1.5 * s.q, -1, 1);
+			} else { out.brk = 1; out.rud = turn; out.elev = -0.6; out.flap = 0; } /* flaps up + nose down = the wing stops lifting, so the brakes can grip */
+			out.toff = !!P.toff; return out;
+		}
+		if (P.toff && s.agl > 30) { P.toff = false; P.hold = s.y + Math.max(0, s.vs) * 1.5; }
+		var gT;
+		if (P.toff) gT = 8 * D;
+		else if (Math.abs(climb) > 0.05) { gT = climb > 0 ? climb * 14 * D : climb * 20 * D; P.hold = null; }
+		else { if (P.hold == null) P.hold = s.y + s.vs * 1.2; gT = Math.asin(cl((P.hold - s.y) * 0.2, -5, 5) / Math.max(V, 12)); }
+		/* too slow: lower the nose to get speed back; near the ground: never sink faster than a gentle flare allows */
+		if (V < s.vs0 * 1.15) gT = Math.min(gT, -4 * D);
+		/* aglA = clearance over the highest ground in the next ~3 s of flight: rising ground ahead makes it climb */
+		var clr = s.aglA == null ? s.agl : Math.min(s.agl, s.aglA);
+		var vsMax = 1.1 + Math.max(0, clr) * 0.3; gT = Math.max(gT, -Math.asin(cl(vsMax / Math.max(V, 1), 0, 1)));
+		if (s.aglA != null && s.aglA < 14 && s.agl - s.aglA > 1.5) { gT = Math.max(gT, Math.asin(cl((14 - s.aglA) / 3 / Math.max(V, 1), 0, 0.3))); P.rise = true; } else P.rise = false;
+		var g = Math.asin(cl(s.vs / Math.max(V, 1), -1, 1)), err = gT - g;
+		P.i = cl((P.i || 0) + err * dt * 2.5, -0.6, 0.6);
+		/* a banked wing needs more lift (1 / cos bank) to hold its height: pull a little more in turns */
+		/* the elevator bites harder the faster it flies (force ~ V^2), so the gains shrink with speed: no porpoising when fast */
+		var kv = cl(Math.pow(s.vs0 * 1.5 / Math.max(V, 1), 2), 0.12, 1.4);
+		var cb = Math.max(0.3, Math.cos(s.bank)), elev = (2.4 * err + P.i) * kv - 1.1 * s.q * Math.sqrt(kv) + 0.5 * (1 / cb - 1) * kv;
+		/* stall protection: the stick can't pull the wing past ~80% of its stall angle */
+		var aCap = (s.aLim || 0.25) * 0.75; if (s.alpha > aCap) elev -= 9 * (s.alpha - aCap);
+		out.elev = cl(elev, -1, 1);
+		var bankT = turn * 40 * D;
+		out.ail = cl(2.2 * (bankT - s.bank) - 0.4 * s.p, -1, 1);
+		out.rud = cl(-3 * (s.beta || 0), -1, 1);
+		out.thr = P.toff ? 1 : cl(0.45 + 0.1 * (vc - V) + 2.5 * Math.sin(gT), 0, 1);
+		/* landing flaps low down on the way in (more drag = slower touchdown), take-off flaps when slow, else up */
+		out.flap = s.agl < 40 && s.vs < -0.5 && !P.toff ? 2 : V < s.vs0 * 1.45 ? 1 : 0;
+		if (out.flap === 2) out.thr = V > s.vs0 * 1.35 ? 0 : Math.min(out.thr, 0.3);
+		if (P.rise) out.thr = 1;
+		out.toff = !!P.toff;
+		return out;
+	};
 	/* how a touchdown went, from the sink rate (m/s, positive = down) */
 	C.landingRate = function (vs) { return vs < 1 ? "Butter! Perfect landing" : vs < 2.5 ? "Good landing" : vs < 4 ? "Firm landing" : vs < 6 ? "Hard landing" : "Crash landing"; };
 	/* the runway on the test-track worlds: along X, north of the oval */
@@ -676,7 +732,7 @@
 	function load(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v && typeof v === "object" ? Object.assign(d, v) : d; } catch (e) { return d; } }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var usLocale = /^en-(US|LR|MM)/.test(navigator.language || "");
-	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, tod: 13, cycle: false, cycleMin: 6, weather: "clear", vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true, map: true }, speed: 1, drive: "fast", mm: { z: 1, rot: true, big: false } });
+	var S = load(KEY, { world: "earth", car: null, color: null, cam: "chase", traffic: 3, ai: "cruise", g: null, sound: true, units: usLocale ? "mph" : "kmh", shadows: true, damage: true, touch: "auto", slow: false, help: true, tod: 13, cycle: false, cycleMin: 6, weather: "clear", vol: 0.7, show: { info: true, lap: true, speed: true, msg: true, ghost: true, map: true }, speed: 1, drive: "fast", mm: { z: 1, rot: true, big: false }, pEasy: true });
 	if (!S.show || typeof S.show !== "object") S.show = { info: true, lap: true, speed: true, msg: true, ghost: true };
 	if (S.ghost === false) { S.show.ghost = false; delete S.ghost; }
 	if (typeof S.vol !== "number") S.vol = 0.7;
@@ -684,6 +740,7 @@
 	if (S.slow) { S.speed = 0.25; } delete S.slow;
 	if (!C.SPEEDS.some(function (x) { return x[0] === S.speed; })) S.speed = 1;
 	if (!C.DRIVE[S.drive]) S.drive = "fast";
+	if (typeof S.pEasy !== "boolean") S.pEasy = true;
 	if (!S.mm || typeof S.mm !== "object") S.mm = { z: 1, rot: true, big: false };
 	if (S.show.map === undefined) S.show.map = true;
 	/* custom maps per world (pieces, roads, oval on / off), kept in this browser */
@@ -1509,7 +1566,7 @@
 		var t = c.body.translation(), r = c.body.rotation();
 		var yaw = Math.atan2(2 * (r.w * r.y + r.x * r.z), 1 - 2 * (r.y * r.y + r.x * r.x));
 		var p = here ? { x: t.x, z: t.z, yaw: yaw } : c.d.fly && !c.ai ? planeStart() : startPose(c.id);
-		c.body.setTranslation({ x: p.x, y: Math.max(hAt(p.x, p.z), here ? t.y - 1 : -1e9) + c.d.wr + c.d.rest + 1.2, z: p.z }, true);
+		c.body.setTranslation({ x: p.x, y: Math.max(hAt(p.x, p.z), here ? t.y - 1 : -1e9) + c.d.wr + c.d.rest - c.d.ry + (here ? 1.2 : 0.4), z: p.z }, true);
 		c.body.setRotation(qYaw(p.yaw), true); c.body.setLinvel({ x: 0, y: 0, z: 0 }, true); c.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
 		c.lastV = null; c.upsideT = 0; c.air = null; c.born = simT;
 		if (c.fly) { c.fly.air = false; c.fly.thr = 0; c.fly.elev = c.fly.ail = c.fly.rud = 0; if (!here) c.fly.flap = 1; c.body.resetTorques(true); }
@@ -1675,6 +1732,8 @@
 		if (k === "n") { setNight(dayK >= 0.45); return; }
 		if (k === "k") { var wl = C.weatherFor(S.world); if (wl.length < 2) { setWeather("rain"); return; } setWeather(wl[(wl.indexOf(S.weather) + 1) % wl.length]); return; }
 		if (k === "r") playerReset();
+		else if (k === "t") restartAll();
+		else if (k === "x") repairHere();
 		else if (k === "c") cycleCam(1);
 		else if (k === "tab") { e.preventDefault(); switchCar(e.shiftKey ? -1 : 1); }
 		else if (k === "g") flipGravity();
@@ -1693,6 +1752,20 @@
 		if (c.d.fly && !c.anyContact && planeAgl(c, c.body.translation()) > 3) { planeLevel(c); toast("Wings level · flying on"); }
 		else { resetCar(c, true); toast("Back on its wheels"); }
 		$("cs-unflip").hidden = true;
+	}
+	/* Restart: every car back to its start spot, fully repaired, gravity flip and pause ended (T). Repair: the car you drive, where it is (X). */
+	function restartAll() {
+		if (replay) replayStop(true);
+		if (paused) { paused = false; $("cs-pause").textContent = "❚❚ Pause"; }
+		if (gFlip > 0) { gFlip = 0; setGravity(gravity); }
+		cars.forEach(function (c) { resetCar(c, false); repair(c); c.stuckT = c.revT = 0; c.gPeak = 0; if (c.fly) { c.fly.ap = null; c.fly.toff = false; c.fly.dead = false; } });
+		camSnap = true; camBackNow(); $("cs-unflip").hidden = true; updateHud(true);
+		toast("⟲ Back to the start · everything repaired");
+	}
+	function repairHere() {
+		var c = cars[player]; if (!c) return; var was = c.damage;
+		repair(c); c.gPeak = 0; if (c.fly) c.fly.dead = false; updateHud(true);
+		toast(was > 0.5 ? "🔧 Repaired: dents gone, engine like new" : "🔧 Nothing to repair: the car is like new");
 	}
 	var unflipShown = -1;
 	function unflipTick(c) {
@@ -1726,11 +1799,11 @@
 		}
 		var thr = $("cs-thr");
 		if (thr) {
-			var tid = null, tset = function (e) { var r = thr.getBoundingClientRect(), v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); var c = cars[player]; if (c && c.fly) { c.fly.thr = v; updatePlaneHud(c); } };
+			var tid = null, tset = function (e) { var r = thr.getBoundingClientRect(), v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); var c = cars[player]; if (c && c.fly) { if (easyOn()) c.fly.spd = v; else c.fly.thr = v; updatePlaneHud(c); } };
 			thr.addEventListener("pointerdown", function (e) { e.preventDefault(); tid = e.pointerId; try { thr.setPointerCapture(tid); } catch (x) { /* ignore */ } tset(e); initAudio(); });
 			thr.addEventListener("pointermove", function (e) { if (e.pointerId === tid) tset(e); });
 			thr.addEventListener("pointerup", function () { tid = null; }); thr.addEventListener("pointercancel", function () { tid = null; });
-			thr.addEventListener("keydown", function (e) { var c = cars[player]; if (!c || !c.fly) return; if (e.key === "ArrowUp") c.fly.thr = Math.min(1, c.fly.thr + 0.1); else if (e.key === "ArrowDown") c.fly.thr = Math.max(0, c.fly.thr - 0.1); else return; e.preventDefault(); e.stopPropagation(); updatePlaneHud(c); });
+			thr.addEventListener("keydown", function (e) { var c = cars[player]; if (!c || !c.fly) return; var k = easyOn() ? "spd" : "thr"; if (c.fly[k] == null) c.fly[k] = 0.15; if (e.key === "ArrowUp") c.fly[k] = Math.min(1, c.fly[k] + 0.1); else if (e.key === "ArrowDown") c.fly[k] = Math.max(0, c.fly[k] - 0.1); else return; e.preventDefault(); e.stopPropagation(); updatePlaneHud(c); });
 		}
 		[["cs-t-rudl", "rudl"], ["cs-t-rudr", "rudr"], ["cs-t-fbrk", "fbrk"]].forEach(function (p) {
 			var el = $(p[0]); if (!el) return;
@@ -1739,6 +1812,8 @@
 		});
 		var fl = $("cs-t-flap"); if (fl) fl.addEventListener("pointerdown", function (e) { e.preventDefault(); flapPress = true; });
 		var fr = $("cs-t-freset"); if (fr) fr.addEventListener("click", playerReset);
+		var to = $("cs-t-toff"); if (to) { to.addEventListener("pointerdown", function (e) { e.preventDefault(); toffPress = true; initAudio(); }); to.addEventListener("contextmenu", function (e) { e.preventDefault(); }); }
+		var pm = $("cs-t-pmode"); if (pm) pm.addEventListener("click", function () { setPEasy(!easyOn()); });
 		var rs = $("cs-t-reset"); if (rs) { rs.addEventListener("click", playerReset); rs.addEventListener("contextmenu", function (e) { e.preventDefault(); }); }
 		showTouch();
 	}
@@ -1796,45 +1871,66 @@
 		return { th: o.throttle, br: o.brake, st: o.steer, hb: 0, boost: mode === "chase" && Math.abs(o.ang || 0) < 0.15 ? 1 : 0 };
 	}
 	/* ===================== flying a plane ===================== */
-	var flapPress = false, planeV3 = null;
+	var flapPress = false, toffPress = false, planeV3 = null;
 	/* the air moving over the ground: a steady breeze plus gusts in rain, storms and Martian dust (m/s, world axes) */
 	function windAt(t) {
 		var X = wx(), w = X.wind || 0; if (!w || !W.rho) return { x: 0, y: 0, z: 0 };
 		var a = simT * 0.35, gx = (C.noise(a, t.z * 0.01, 5) - 0.5) * 2, gz = (C.noise(t.x * 0.01, a, 9) - 0.5) * 2, gy = (C.noise(a * 1.7, t.x * 0.02, 13) - 0.5) * 2;
 		return { x: w * (0.5 + 0.8 * gx), y: w * 0.35 * gy, z: w * 0.8 * gz };
 	}
+	function aheadClear(c, t, lv) { var hm = hAt(t.x, t.z), half = ter.size / 2 - 28; for (var k = 0.6; k <= 2.41; k += 0.6) { var px = t.x + lv.x * k, pz = t.z + lv.z * k; if (Math.abs(px) > half || Math.abs(pz) > half) break; /* past the wrap line the plane comes back in on the other side */ hm = Math.max(hm, hAt(px, pz)); } var d = c.d; return t.y - hm + (d.ry - d.rest * 0.75 - d.wr); }
 	function planeAgl(c, t) { var d = c.d; return Math.max(0, t.y - hAt(t.x, t.z) + (d.ry - d.rest * 0.75 - d.wr)); }
 	function flyPlane(c, inp, dt) {
 		var d = c.d, A = d.fly, F = c.fly, dmg = c.damage / 100, me = c === cars[player] && !c.ai;
 		if (!planeV3) planeV3 = { q: new THREE.Quaternion(), qi: new THREE.Quaternion(), a: new THREE.Vector3(), b: new THREE.Vector3() };
-		/* controls move at a real speed, never jump */
-		var pit = (inp.pit || 0) * (S.pinv ? -1 : 1);
-		F.elev = C.ease(F.elev, Math.max(-1, Math.min(1, pit)), pit ? 2.6 : 4, dt);
-		F.ail = C.ease(F.ail, Math.max(-1, Math.min(1, inp.rol || 0)), inp.rol ? 3 : 5, dt);
-		F.rud = C.ease(F.rud, Math.max(-1, Math.min(1, inp.yaw || 0)), inp.yaw ? 3 : 5, dt);
-		if (inp.thrD) F.thr = Math.max(0, Math.min(1, F.thr + inp.thrD * 0.5 * dt));
-		if (me && flapPress) { flapPress = false; F.flap = (F.flap + 1) % 3; toast("Flaps: " + C.FLAPS[F.flap] + (F.flap ? " · more lift, more drag, lower stall speed" : "")); syncPlaneTouch(); }
-		F.brk = inp.brk ? 1 : 0;
+		var r = c.body.rotation(), q = planeV3.q.set(r.x, r.y, r.z, r.w), qi = planeV3.qi.copy(q).invert(), t = c.body.translation(), lv = c.body.linvel(), av = c.body.angvel(), wd = windAt(t);
+		var vb = planeV3.a.set(lv.x - wd.x, lv.y - wd.y, lv.z - wd.z).applyQuaternion(qi), wb = planeV3.b.set(av.x, av.y, av.z).applyQuaternion(qi);
+		/* Easy flying (the default): the stick asks for a turn and a climb and C.easyPilot works the real controls */
+		var ap = null;
+		if (me && S.pEasy !== false && W.rho > 0 && Math.abs(gravity) > 0.05) {
+			if (F.spd == null) F.spd = 0.15;
+			if (inp.thrD) F.spd = Math.max(0, Math.min(1, F.spd + inp.thrD * 0.4 * dt));
+			var fv = new THREE.Vector3(0, 0, 1).applyQuaternion(q), uv = new THREE.Vector3(0, 1, 0).applyQuaternion(q), at = C.attitude(fv, uv), Vb = vb.length();
+			var cIn = -(inp.pit || 0) * (S.pinv ? -1 : 1);
+			ap = C.easyPilot(F.ap || (F.ap = {}), { pitch: at.pitch, bank: at.bank, V: Vb, vs: lv.y, alpha: Math.atan2(-vb.y, Math.max(0.5, vb.z)), q: -wb.x, p: wb.z, beta: Vb > 1 ? Math.asin(Math.max(-1, Math.min(1, vb.x / Vb))) : 0,
+				agl: planeAgl(c, t), aglA: aheadClear(c, t, lv), y: t.y, ground: !!c.anyContact, vs0: C.stallSpeed(A, d.mass, Math.abs(gravity), W.rho, 0), vRot: A.vRot * Math.sqrt(C.AIR_EARTH / W.rho) * Math.sqrt(Math.abs(gravity) / 9.81), top: C.topSpeed(A, d.mass, Math.abs(gravity), W.rho), aLim: A.aS + A.flap[F.flap][2] },
+				{ climb: cIn, turn: inp.rol || 0, spd: F.spd, go: toffPress, brk: inp.brk }, dt);
+			toffPress = false;
+			F.elev = C.ease(F.elev, ap.elev, 8, dt); F.ail = C.ease(F.ail, ap.ail, 8, dt); F.rud = C.ease(F.rud, ap.rud, 6, dt);
+			F.thr = C.ease(F.thr, ap.thr, 0.8, dt);
+			if (F.flap !== ap.flap) { F.flap = ap.flap; syncPlaneTouch(); }
+			F.brk = ap.brk || inp.brk ? 1 : 0; F.toff = ap.toff;
+			if (flapPress) flapPress = false;
+		} else {
+			if (F.ap) { F.ap = null; F.toff = false; }
+			/* controls move at a real speed, never jump */
+			var pit = (inp.pit || 0) * (S.pinv ? -1 : 1);
+			F.elev = C.ease(F.elev, Math.max(-1, Math.min(1, pit)), pit ? 2.6 : 4, dt);
+			F.ail = C.ease(F.ail, Math.max(-1, Math.min(1, inp.rol || 0)), inp.rol ? 3 : 5, dt);
+			F.rud = C.ease(F.rud, Math.max(-1, Math.min(1, inp.yaw || 0)), inp.yaw ? 3 : 5, dt);
+			if (inp.thrD) F.thr = Math.max(0, Math.min(1, F.thr + inp.thrD * 0.5 * dt));
+			if (me && flapPress) { flapPress = false; F.flap = (F.flap + 1) % 3; toast("Flaps: " + C.FLAPS[F.flap] + (F.flap ? " · more lift, more drag, lower stall speed" : "")); syncPlaneTouch(); }
+			F.brk = inp.brk ? 1 : 0;
+			if (me) toffPress = false;
+		}
 		if (c.damage < 100) F.dead = false;
-		if (c.damage >= 100 && !F.dead) { F.dead = true; if (me) toast("💥 The engine is wrecked: glide down and land (Repair or R)"); }
+		if (c.damage >= 100 && !F.dead) { F.dead = true; if (me) toast("💥 The engine is wrecked: glide down and land (🔧 Repair = X)"); }
 		var thrEff = F.dead ? 0 : F.thr * (1 - dmg * 0.5);
 		/* wheels: nose-wheel steering (rudder, and the aileron keys too while on the ground), brakes on the main wheels */
 		var v = c.veh.currentVehicleSpeed(), grip = gripOf(d) * wx().grip;
-		var steerIn = Math.max(-1, Math.min(1, F.rud + (c.anyContact ? F.ail * 0.7 : 0)));
+		var steerIn = Math.max(-1, Math.min(1, ap && c.anyContact ? (inp.rol || 0) * 0.8 : F.rud + (c.anyContact ? F.ail * 0.7 : 0)));
 		c.steer += (-steerIn * d.steer / (1 + Math.abs(v) / 9) - c.steer) * Math.min(1, dt * 8);
 		c.veh.setWheelSteering(0, c.steer); c.veh.setWheelSteering(1, c.steer);
 		var anyContact = false;
 		for (var i = 0; i < 4; i++) {
 			var N = Math.max(0, c.veh.wheelSuspensionForce(i) || 0), lim = grip * N, e = 0;
 			if (c.veh.wheelIsInContact(i)) anyContact = true;
-			if (i > 1 && F.brk && Math.abs(v) > 0.3) e = -Math.sign(v) * d.mass * Math.abs(gravity) * 0.4;
+			if ((i > 1 || ap) && F.brk && Math.abs(v) > 0.3) /* easy flying brakes the nose wheel too */ e = -Math.sign(v) * d.mass * Math.abs(gravity) * 0.4;
 			c.veh.setWheelEngineForce(i, Math.max(-lim, Math.min(lim, e)));
 			c.veh.setWheelFrictionSlip(i, grip);
 			c.veh.setWheelBrake(i, (F.brk || thrEff < 0.02) && Math.abs(v) < 1.2 ? d.mass * 0.004 : 0);
 		}
 		/* the air: velocity and turn rate in the plane's own axes -> lift, drag, thrust and turning moments -> back to world axes */
-		var r = c.body.rotation(), q = planeV3.q.set(r.x, r.y, r.z, r.w), qi = planeV3.qi.copy(q).invert(), t = c.body.translation(), lv = c.body.linvel(), av = c.body.angvel(), wd = windAt(t);
-		var vb = planeV3.a.set(lv.x - wd.x, lv.y - wd.y, lv.z - wd.z).applyQuaternion(qi), wb = planeV3.b.set(av.x, av.y, av.z).applyQuaternion(qi);
 		var o = C.aero(A, { x: vb.x, y: vb.y, z: vb.z }, { x: wb.x, y: wb.y, z: wb.z }, { elev: F.elev, ail: F.ail, rud: F.rud, flap: F.flap, thr: thrEff }, W.rho, dt, A.I);
 		F.o = o;
 		var fw = planeV3.a.set(o.F.x, o.F.y, o.F.z).applyQuaternion(q);
@@ -1852,7 +1948,7 @@
 	function planeEvents(c, t, lv, dt) {
 		var F = c.fly, agl = planeAgl(c, t);
 		if (!c.anyContact && agl > 1.5) {
-			if (!F.air) { F.air = true; F.t0 = simT; F.x0 = t.x; F.z0 = t.z; F.maxAgl = 0; if (W.rho && simT - (c.born || 0) > 1) toast("🛫 Lift-off at " + C.fmtSpeed(F.o ? F.o.V : Math.hypot(lv.x, lv.z), S.units) + (W.rho ? "" : " (thrown, not flying: no air!)")); }
+			if (!F.air) { F.air = true; F.t0 = simT; F.x0 = t.x; F.z0 = t.z; F.maxAgl = 0; if (W.rho && simT - (c.born || 0) > 1 && (!F.o || F.o.V > C.stallSpeed(c.d.fly, c.d.mass, Math.abs(gravity), W.rho, 2) * 0.8)) toast("🛫 Lift-off at " + C.fmtSpeed(F.o ? F.o.V : Math.hypot(lv.x, lv.z), S.units) + (W.rho ? "" : " (thrown, not flying: no air!)")); }
 			F.maxAgl = Math.max(F.maxAgl, agl); F.lastVy = lv.y;
 		} else if (c.anyContact && F.air) {
 			F.air = false;
@@ -2076,7 +2172,7 @@
 			if (c.ai && c.upsideT > 3) resetCar(c, true);
 			if (ci === player) unflipTick(c);
 			if (t.y < -60 || t.y > 4000 && gravity > 0.5) resetCar(c, false);
-			if (ci === player) { if (!c.d.fly) trackAir(c, t, lv); lapTick(c, t); }
+			if (ci === player && !c.d.fly) { trackAir(c, t, lv); lapTick(c, t); }
 			/* dust behind wheels on dusty worlds, smoke from wrecks */
 			var XW = wx();
 			if (W.track && (XW.p === "rain" || XW.snowy) && c.anyContact && Math.hypot(lv.x, lv.z) > 5 && Math.random() < 0.7) {
@@ -2116,7 +2212,7 @@
 		if (ci === player && !landing) {
 			felt = Math.max(felt, dv / 0.08 / C.G0 * 0.6);
 			if (felt > REC.crash) { REC.crash = felt; saveRec(); }
-			if (dv > 5) toast("Crash! " + felt.toFixed(0) + " g" + (c.damage >= 100 ? " · wrecked (Repair or R)" : " · damage " + Math.round(c.damage) + "%") + (dv > 9 ? " · Y = instant replay" : ""));
+			if (dv > 5) toast("Crash! " + felt.toFixed(0) + " g" + (c.damage >= 100 ? " · wrecked (🔧 Repair = X)" : " · damage " + Math.round(c.damage) + "%") + (dv > 9 ? " · Y = instant replay" : ""));
 			shake = Math.min(1, dv / 20);
 		}
 	}
@@ -2155,8 +2251,9 @@
 
 	/* ===================== camera ===================== */
 	var CAMS = [["chase", "Chase"], ["far", "Far chase"], ["hood", "Driver's seat / cockpit"], ["side", "Side"], ["top", "Top down"], ["tv", "TV cameras"], ["orbit", "Orbit (drag)"]];
+	var camHeld = false, camIdle = 9, camBack = false;
 	var camSnap = true, camPos = null, camLook = null, camHead = 0, tvPos = null, shake = 0, free = { yaw: 0, pitch: 0, zoom: 1 }, orbit = { yaw: 0.6, pitch: 0.35, dist: 14 };
-	function cycleCam(dir) { var i = CAMS.findIndex(function (c) { return c[0] === S.cam; }); S.cam = CAMS[(i + dir + CAMS.length) % CAMS.length][0]; $("cs-cam").value = S.cam; camSnap = true; free.yaw = free.pitch = 0; save(); toast("Camera: " + CAMS.find(function (c) { return c[0] === S.cam; })[1]); }
+	function cycleCam(dir) { var i = CAMS.findIndex(function (c) { return c[0] === S.cam; }); S.cam = CAMS[(i + dir + CAMS.length) % CAMS.length][0]; $("cs-cam").value = S.cam; camSnap = true; camBackNow(); save(); toast("Camera: " + CAMS.find(function (c) { return c[0] === S.cam; })[1]); }
 	function updateCamera(dt) {
 		var c = cars[player]; if (!c) return;
 		var ip = ipose(c), t = ip.t.clone(), lv = c.body.linvel(), cq = ip.q.clone(), pos = t.clone();
@@ -2164,6 +2261,7 @@
 		var head = sp > 3 && c.veh.currentVehicleSpeed() > 0 ? Math.atan2(lv.x, lv.z) : Math.atan2(fwd.x, fwd.z);
 		if (c.veh.currentVehicleSpeed() < -1) head = Math.atan2(fwd.x, fwd.z);
 		if (camSnap) camHead = head; else camHead += C.wrap(head - camHead) * Math.min(1, dt * 3);
+		camEase(dt, sp);
 		var hd = camHead + free.yaw, size = Math.max(c.d.l, 3), want = new THREE.Vector3(), look = pos.clone();
 		var mode = S.cam;
 		if (c.d.fly && (mode === "chase" || mode === "far" || mode === "hood")) { planeCamera(c, t, cq, mode, dt); return; }
@@ -2213,25 +2311,40 @@
 		if (shake > 0) { camera.position.x += (Math.random() - 0.5) * shake * 0.8; camera.position.y += (Math.random() - 0.5) * shake * 0.8; shake = Math.max(0, shake - dt * 2.5); }
 		var kk = Math.max(0, Math.min(1, (Math.abs(dir.y) - 0.6) / 0.35)), upv = new THREE.Vector3(0, 1, 0).multiplyScalar(1 - kk).addScaledVector(u, kk);
 		if (upv.lengthSq() < 1e-4) upv.copy(u); camera.up.copy(upv.normalize());
-		camera.fov = 62; camera.updateProjectionMatrix(); camera.lookAt(t.clone().addScaledVector(dir, 6).addScaledVector(u, 0.6)); camSnap = false;
+		camera.fov = 62; camera.updateProjectionMatrix(); camera.lookAt(t.clone().addScaledVector(dir, 12).addScaledVector(u, 1.2)); camSnap = false; /* aim a little ahead of the plane so more sky and horizon show */
 	}
 	function setupCamDrag() {
 		var cv = renderer.domElement, ptr = {}, moved = 0;
-		cv.addEventListener("pointerdown", function (e) { ptr[e.pointerId] = [e.clientX, e.clientY]; moved = 0; kbActive = true; cv.focus({ preventScroll: true }); initAudio(); try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
+		cv.addEventListener("pointerdown", function (e) { ptr[e.pointerId] = [e.clientX, e.clientY]; moved = 0; camHeld = true; camBack = false; kbActive = true; cv.focus({ preventScroll: true }); initAudio(); try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } });
 		cv.addEventListener("pointermove", function (e) {
 			var p = ptr[e.pointerId]; if (!p) return; var ids = Object.keys(ptr);
 			if (ids.length === 2) { var a = ptr[ids[0]], b = ptr[ids[1]], d0 = Math.hypot(a[0] - b[0], a[1] - b[1]); ptr[e.pointerId] = [e.clientX, e.clientY]; a = ptr[ids[0]]; b = ptr[ids[1]]; var d1 = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d0 && d1) zoom(d0 / d1); return; }
 			var dx = e.clientX - p[0], dy = e.clientY - p[1]; ptr[e.pointerId] = [e.clientX, e.clientY]; moved += Math.abs(dx) + Math.abs(dy); if (moved < 4) return;
 			if (S.cam === "orbit" || (replay && replay.cam === "orbit")) { orbit.yaw -= dx * 0.008; orbit.pitch = Math.max(-0.05, Math.min(1.4, orbit.pitch + dy * 0.006)); }
-			else { free.yaw -= dx * 0.006 * (S.cam === "hood" ? -0.8 : 1); free.pitch = Math.max(-0.6, Math.min(1.2, free.pitch + dy * 0.004 * (S.cam === "hood" ? -1 : 1))); $("cs-camreset").hidden = false; }
+			else { free.yaw = C.wrap(free.yaw - dx * 0.006 * (S.cam === "hood" ? -0.8 : 1)); free.pitch = Math.max(-0.6, Math.min(1.2, free.pitch + dy * 0.004 * (S.cam === "hood" ? -1 : 1))); }
+			camIdle = 0;
 		});
-		function up(e) { delete ptr[e.pointerId]; }
+		function up(e) { delete ptr[e.pointerId]; camHeld = Object.keys(ptr).length > 0; camIdle = 0; }
 		cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
 		cv.addEventListener("wheel", function (e) { if (!e.ctrlKey && !view.classList.contains("mes-pfill") && !document.fullscreenElement) return; e.preventDefault(); zoom(Math.exp(e.deltaY * 0.001)); }, { passive: false });
 		cv.addEventListener("dblclick", camReset);
 	}
-	function zoom(k) { free.zoom = Math.max(0.4, Math.min(3, free.zoom * k)); $("cs-camreset").hidden = false; }
-	function camReset() { free.yaw = free.pitch = 0; free.zoom = 1; $("cs-camreset").hidden = true; }
+	function zoom(k) { free.zoom = Math.max(0.4, Math.min(3, free.zoom * k)); }
+	/* "Behind the car": glide back to the normal view (also double-click / double-tap the picture). After you let go of a drag the
+	   camera also drifts back behind by itself once the car is moving (1.6 s later), so you never have to orbit back by hand. */
+	function camReset() { camBack = true; }
+	function camBackNow() { free.yaw = free.pitch = 0; free.zoom = 1; camBack = false; orbit.yaw = camHead + Math.PI; orbit.pitch = 0.35; }
+	function camEase(dt, sp) {
+		camIdle += dt; var auto = !camHeld && camIdle > 1.6 && sp > 2.5 && (S.cam === "chase" || S.cam === "far" || S.cam === "hood" || S.cam === "side");
+		if (camBack || auto) {
+			var kb = 1 - Math.exp(-dt * (camBack ? 7 : 2.2));
+			free.yaw += (0 - free.yaw) * kb; free.pitch += (0 - free.pitch) * kb;
+			if (camBack) { free.zoom += (1 - free.zoom) * kb; if (S.cam === "orbit") { orbit.yaw += C.wrap(camHead + Math.PI - orbit.yaw) * kb; orbit.pitch += (0.35 - orbit.pitch) * kb; } }
+			if (Math.abs(free.yaw) < 0.004 && Math.abs(free.pitch) < 0.004) { free.yaw = free.pitch = 0; if (camBack && Math.abs(free.zoom - 1) < 0.01 && (S.cam !== "orbit" || Math.abs(C.wrap(camHead + Math.PI - orbit.yaw)) < 0.01)) { free.zoom = 1; camBack = false; } }
+		}
+		var off = Math.abs(free.yaw) > 0.06 || Math.abs(free.pitch) > 0.06 || Math.abs(free.zoom - 1) > 0.06 || (S.cam === "orbit" && Math.abs(C.wrap(camHead + Math.PI - orbit.yaw)) > 0.3), b = $("cs-camreset");
+		if (b.hidden === off) b.hidden = !off;
+	}
 
 	/* ===================== sound (Web Audio) ===================== */
 	var ac = null, eng = null, noiseBuf = null;
@@ -2323,11 +2436,31 @@
 		else { S.lastCar = S.car || null; S.car = S.plane && C.isPlane(S.plane) ? S.plane : "plane"; }
 		if (C.isPlane(S.car)) S.plane = S.car;
 		save(); $("cs-car").value = S.car || ""; swapPlayerCar(); syncUrl();
-		if (C.isPlane(S.car)) planeHello(); else toast("Back in a car: " + C.CARS[cars[player].type].name);
+		if (C.isPlane(S.car)) { planeHello(); fhelpShow(); } else { toast("Back in a car: " + C.CARS[cars[player].type].name); $("cs-fhelp").hidden = true; }
 	}
+	function easyOn() { return S.pEasy !== false; }
+	function setPEasy(on, quiet) {
+		S.pEasy = !!on; save(); root.classList.toggle("cs-peasy", S.pEasy);
+		$("cs-peasy").setAttribute("aria-pressed", String(S.pEasy)); $("cs-preal").setAttribute("aria-pressed", String(!S.pEasy));
+		var pm = $("cs-t-pmode"); if (pm) pm.innerHTML = (S.pEasy ? "Easy" : "Real") + "<small>flying</small>";
+		$("cs-thrlab").textContent = S.pEasy ? "SPEED" : "THR"; fhelpFill();
+		var c = cars[player]; if (c && c.fly) { if (!S.pEasy) { c.fly.ap = null; c.fly.toff = false; } else if (c.fly.spd == null) c.fly.spd = 0.15; updatePlaneHud(c); }
+		if (!quiet) toast(S.pEasy ? "Easy flying: the stick turns and climbs, let go = level flight" : "Realistic flying: elevator, ailerons, rudder, throttle and flaps are yours");
+	}
+	function fhelpFill() {
+		var tch = root.classList.contains("cs-has-touch"), e = easyOn(), li;
+		if (e) li = tch ? ["Tap <b>🛫 Take off</b> (or push the stick up): the plane speeds down the runway and lifts off by itself", "<b>Stick left / right</b> = turn, <b>up / down</b> = climb / dive", "<b>Let go</b> and it flies level, holding its height. It won't stall", "<b>SPEED</b> slider = how fast it cruises", "To land: line up with the runway and dive gently; it flares by itself and brakes when the wheels touch", "↺ Reset in the air = wings level"]
+			: ["Hold <b>W</b> (or ↑) on the runway: it speeds up and lifts off by itself", "<b>A</b> / <b>D</b> = turn, <b>W</b> / <b>S</b> = climb / dive", "<b>Let go</b> and it flies level, holding its height. It won't stall", "<b>Shift</b> / <b>Z</b> = faster / slower", "To land: line up with the runway and dive gently; it flares by itself and brakes when the wheels touch", "<b>R</b> in the air = wings level · <b>T</b> = back to the runway"];
+		else li = tch ? ["Throttle up (THR slider), flaps T/O, and at lift-off speed pull the stick down (back) gently", "Stick = elevator and ailerons, ◀ ▶ = rudder", "Too slow or too steep and the wing stalls", "Land at under 2.5 m/s sink rate"]
+			: ["Flaps T/O (<b>V</b>), full throttle (hold <b>Shift</b>), at lift-off speed pull back (<b>S</b>)", "<b>W</b> / <b>S</b> = nose down / up, <b>A</b> / <b>D</b> = roll, <b>Q</b> / <b>E</b> = rudder, <b>Z</b> = less throttle", "Too slow or too steep and the wing stalls", "Land at under 2.5 m/s sink rate"];
+		$("cs-fhtitle").textContent = e ? "Easy flying" : "Realistic flying";
+		$("cs-fhlist").innerHTML = li.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+		$("cs-fhmode").textContent = e ? "Switch to realistic" : "Switch to easy";
+	}
+	function fhelpShow(force) { if (!force && S.fhelpSeen) return; fhelpFill(); $("cs-fhelp").hidden = false; $("cs-help").hidden = true; }
 	function planeHello() {
 		var c = cars[player]; if (!c || !c.d.fly) return;
-		toast(!W.rho ? "✈ " + c.d.name + " on " + W.name.replace(/ \(.*/, "") + ": no air here, so it can't fly. Watch the note at the bottom." : "✈ " + c.d.name + ": hold Shift for full throttle, pull back (S) at about " + C.fmtSpeed(C.stallSpeed(c.d.fly, c.d.mass, Math.abs(gravity), W.rho, 1) * 1.1, S.units));
+		toast(!W.rho ? "✈ " + c.d.name + " on " + W.name.replace(/ \(.*/, "") + ": no air here, so it can't fly. Watch the note at the bottom." : easyOn() ? "✈ " + c.d.name + ": " + (root.classList.contains("cs-has-touch") ? "tap 🛫 Take off" : "hold W to take off") : "✈ " + c.d.name + ": hold Shift for full throttle, pull back (S) at about " + C.fmtSpeed(C.stallSpeed(c.d.fly, c.d.mass, Math.abs(gravity), W.rho, 1) * 1.1, S.units));
 	}
 	/* a fresh plane 150 m up, already flying, over the runway (or the middle of the world) */
 	function airStart() {
@@ -2372,13 +2505,15 @@
 		$("cs-fias").textContent = W.rho ? C.fmtSpeed(o.V, S.units) + (us ? "" : " · " + Math.round(o.V * 1.943844) + " kt") : "no air";
 		$("cs-falt").textContent = us ? Math.round(agl * 3.28084) + " ft" : (agl < 10 ? agl.toFixed(1) : Math.round(agl)) + " m";
 		$("cs-fvs").textContent = (lv.y >= 0 ? "+" : "−") + (us ? Math.round(Math.abs(lv.y) * 196.85) + " ft/min" : Math.abs(lv.y).toFixed(1) + " m/s");
-		$("cs-fthr").style.width = Math.round(F.thr * 100) + "%"; $("cs-fthrn").textContent = (F.dead ? "dead " : "") + Math.round(F.thr * 100) + "%";
+		var ez = easyOn() && W.rho > 0;
+		$("cs-fthr").style.width = Math.round(F.thr * 100) + "%"; $("cs-fthrn").textContent = (F.dead ? "dead " : "") + Math.round(F.thr * 100) + "%" + (ez ? " auto" : "");
+		root.classList.toggle("cs-pground", !!c.anyContact && !F.toff && ez);
 		$("cs-fflap").textContent = ["Up", "T/O", "Landing"][F.flap]; $("cs-fbrk").textContent = F.brk ? "· BRAKES" : "";
 		var aLim = A.aS + A.flap[F.flap][2], warn = W.rho > 0 && !c.anyContact && agl > 2 && (o.stall > 0.05 || (o.alpha > aLim - 0.035 && o.V > 3));
 		$("cs-fstall").hidden = !warn;
 		if (warn) { stallBeepT -= 0.1; if (stallBeepT <= 0) { stallBeepT = 0.5; sfx("stall", 0.7); } } else stallBeepT = 0;
 		var les = planeLesson(c); if (les != null) $("cs-flesson").textContent = les;
-		var tv = $("cs-thrfill"); if (tv) { tv.style.height = Math.round(F.thr * 100) + "%"; $("cs-thrn").textContent = Math.round(F.thr * 100) + "%"; $("cs-thr").setAttribute("aria-valuenow", String(Math.round(F.thr * 100))); }
+		var tv = $("cs-thrfill"), tval = ez ? (F.spd == null ? 0.15 : F.spd) : F.thr; if (tv) { tv.style.height = Math.round(tval * 100) + "%"; $("cs-thrn").textContent = Math.round(tval * 100) + "%"; $("cs-thr").setAttribute("aria-valuenow", String(Math.round(tval * 100))); }
 	}
 	function syncPlaneTouch() { var c = cars[player]; if (c && c.fly) $("cs-t-flapn").textContent = ["Up", "T/O", "Land"][c.fly.flap]; }
 	function updateHud(force) {
@@ -2521,9 +2656,14 @@
 		$("cs-fly").addEventListener("click", function () { togglePlane("plane"); }); $("cs-flyjet").addEventListener("click", function () { togglePlane("jet"); });
 		$("cs-backcar").addEventListener("click", function () { if (cars[player].d.fly) togglePlane(); });
 		$("cs-runway").addEventListener("click", function () { var c = cars[player]; if (!c.d.fly) return; if (!W.track) { toast("Only the test-track worlds have a runway: any long flat road works too"); return; } resetCar(c, false); camSnap = true; toast("🛫 On the runway: flaps T/O, full throttle (Shift), pull back (S) at lift-off speed"); });
-		$("cs-airstart").addEventListener("click", airStart);
+		$("cs-airstart").addEventListener("click", function () { airStart(); fhelpShow(); });
+		$("cs-peasy").addEventListener("click", function () { setPEasy(true); }); $("cs-preal").addEventListener("click", function () { setPEasy(false); });
+		$("cs-phow").addEventListener("click", function () { fhelpShow(true); });
+		$("cs-fhok").addEventListener("click", function () { $("cs-fhelp").hidden = true; S.fhelpSeen = true; save(); });
+		$("cs-fhelpx").addEventListener("click", function () { $("cs-fhelp").hidden = true; S.fhelpSeen = true; save(); });
+		$("cs-fhmode").addEventListener("click", function () { setPEasy(!easyOn()); });
 		$("cs-pinv").checked = !!S.pinv; $("cs-pinv").addEventListener("change", function () { S.pinv = this.checked; save(); });
-		$("cs-cam").addEventListener("change", function () { S.cam = this.value; camSnap = true; camReset(); save(); });
+		$("cs-cam").addEventListener("change", function () { S.cam = this.value; camSnap = true; camBackNow(); save(); });
 		$("cs-camreset").addEventListener("click", camReset);
 		var sw = $("cs-paint"); sw.innerHTML = C.PAINT.map(function (c) { return '<button type="button" style="background:' + c + '" data-c="' + c + '" aria-label="Paint ' + c + '"></button>'; }).join("");
 		sw.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.color = b.dataset.c; save(); var c = cars[player]; c.color = S.color; c.paint.color.set(S.color); });
@@ -2549,7 +2689,7 @@
 		$("cs-clear").addEventListener("click", function () { clearObjs(); toast("Objects cleared"); });
 		/* car actions */
 		$("cs-reset").addEventListener("click", playerReset); $("cs-sreset").addEventListener("click", playerReset); $("cs-unflip").addEventListener("click", playerReset);
-		$("cs-start").addEventListener("click", function () { resetCar(cars[player], false); repair(cars[player]); });
+		$("cs-start").addEventListener("click", restartAll); $("cs-restart").addEventListener("click", restartAll); $("cs-srepair").addEventListener("click", repairHere);
 		$("cs-repair").addEventListener("click", function () { cars.forEach(repair); toast("All cars repaired"); });
 		$("cs-pause").addEventListener("click", togglePause);
 		/* sound + what to show: the same controls on the picture (⚙) and in the panel stay in step */
@@ -2588,6 +2728,7 @@
 		if (window.MESPanel) window.MESPanel.add(view, { bar: $("cs-pbar"), stage: stage, onChange: function () { setTimeout(resize, 30); kbActive = true; } });
 		else document.addEventListener("DOMContentLoaded", function () { if (window.MESPanel) window.MESPanel.add(view, { bar: $("cs-pbar"), stage: stage, onChange: function () { setTimeout(resize, 30); } }); });
 		setupTouch();
+		setPEasy(easyOn(), true);
 	}
 	function swapPlayerCar() {
 		var old = cars[player], t = old.body.translation(), f = fwdOf(old), type = S.car && C.CARS[S.car] ? S.car : W.car;

@@ -152,6 +152,62 @@
 		var bank = Math.atan2(ly, u.y);
 		void lx; void lz; return { pitch: pitch, bank: bank };
 	};
+	/* Easy flying: the stick asks for a turn and a climb, and this flies the real controls for you (the air forces stay the same).
+	   P = memory kept on the plane {i, hold, toff}; s = {pitch, bank (+ = right wing down), V (air speed), vs (climb, m/s), alpha, q (nose-up
+	   rate), p (roll-right rate), beta, agl, y, ground, vs0 (stall speed, flaps up), vRot, top, aLim (stall angle with the flaps now)};
+	   inp = {climb (+1 = up), turn (+1 = right), spd 0..1 (cruise speed between safe-slow and fast), go (take-off pressed), brk}.
+	   Let go of the stick and it levels the wings and holds its height; it never lets the wing stall, flares by itself near the
+	   ground, and on the ground it brakes unless you are taking off. Returns {elev, ail, rud, thr, flap, brk, toff}. */
+	C.easyPilot = function (P, s, inp, dt) {
+		var D = Math.PI / 180, cl = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+		var climb = cl(inp.climb || 0, -1, 1), turn = cl(inp.turn || 0, -1, 1), V = Math.max(0, s.V || 0);
+		var vMin = s.vs0 * 1.3, vMax = Math.max(vMin + 8, (s.top || vMin * 2) * 0.9), vc = vMin + cl(inp.spd == null ? 0.15 : inp.spd, 0, 1) * (vMax - vMin);
+		var out = { elev: 0, ail: 0, rud: 0, thr: 0, flap: 1, brk: 0, toff: !!P.toff };
+		/* after a touchdown it stays landed (small bounces included) until you take off again */
+		var ground = s.ground || (s.agl < 2 && V < s.vs0 * 0.6); /* just put down, still settling on its wheels */
+		if (ground && !P.toff) P.landed = true;
+		if (P.landed && !ground && (s.agl > 4 || climb > 0.3 || inp.go)) P.landed = false;
+		if (ground || P.landed) {
+			if (inp.go || climb > 0.3) { P.toff = true; P.landed = false; }
+			P.hold = null; P.i = 0;
+			if (P.toff) {
+				out.thr = 1; out.rud = turn * 0.7;
+				/* rotate at lift-off speed: nose up to ~9 degrees */
+				if (V > s.vRot) out.elev = cl(7 * (10 * D - s.pitch) - 1.5 * s.q, -1, 1);
+			} else { out.brk = 1; out.rud = turn; out.elev = -0.6; out.flap = 0; } /* flaps up + nose down = the wing stops lifting, so the brakes can grip */
+			out.toff = !!P.toff; return out;
+		}
+		if (P.toff && s.agl > 30) { P.toff = false; P.hold = s.y + Math.max(0, s.vs) * 1.5; }
+		var gT;
+		if (P.toff) gT = 8 * D;
+		else if (Math.abs(climb) > 0.05) { gT = climb > 0 ? climb * 14 * D : climb * 20 * D; P.hold = null; }
+		else { if (P.hold == null) P.hold = s.y + s.vs * 1.2; gT = Math.asin(cl((P.hold - s.y) * 0.2, -5, 5) / Math.max(V, 12)); }
+		/* too slow: lower the nose to get speed back; near the ground: never sink faster than a gentle flare allows */
+		if (V < s.vs0 * 1.15) gT = Math.min(gT, -4 * D);
+		/* aglA = clearance over the highest ground in the next ~3 s of flight: rising ground ahead makes it climb */
+		var clr = s.aglA == null ? s.agl : Math.min(s.agl, s.aglA);
+		var vsMax = 1.1 + Math.max(0, clr) * 0.3; gT = Math.max(gT, -Math.asin(cl(vsMax / Math.max(V, 1), 0, 1)));
+		if (s.aglA != null && s.aglA < 14 && s.agl - s.aglA > 1.5) { gT = Math.max(gT, Math.asin(cl((14 - s.aglA) / 3 / Math.max(V, 1), 0, 0.3))); P.rise = true; } else P.rise = false;
+		var g = Math.asin(cl(s.vs / Math.max(V, 1), -1, 1)), err = gT - g;
+		P.i = cl((P.i || 0) + err * dt * 2.5, -0.6, 0.6);
+		/* a banked wing needs more lift (1 / cos bank) to hold its height: pull a little more in turns */
+		/* the elevator bites harder the faster it flies (force ~ V^2), so the gains shrink with speed: no porpoising when fast */
+		var kv = cl(Math.pow(s.vs0 * 1.5 / Math.max(V, 1), 2), 0.12, 1.4);
+		var cb = Math.max(0.3, Math.cos(s.bank)), elev = (2.4 * err + P.i) * kv - 1.1 * s.q * Math.sqrt(kv) + 0.5 * (1 / cb - 1) * kv;
+		/* stall protection: the stick can't pull the wing past ~80% of its stall angle */
+		var aCap = (s.aLim || 0.25) * 0.75; if (s.alpha > aCap) elev -= 9 * (s.alpha - aCap);
+		out.elev = cl(elev, -1, 1);
+		var bankT = turn * 40 * D;
+		out.ail = cl(2.2 * (bankT - s.bank) - 0.4 * s.p, -1, 1);
+		out.rud = cl(-3 * (s.beta || 0), -1, 1);
+		out.thr = P.toff ? 1 : cl(0.45 + 0.1 * (vc - V) + 2.5 * Math.sin(gT), 0, 1);
+		/* landing flaps low down on the way in (more drag = slower touchdown), take-off flaps when slow, else up */
+		out.flap = s.agl < 40 && s.vs < -0.5 && !P.toff ? 2 : V < s.vs0 * 1.45 ? 1 : 0;
+		if (out.flap === 2) out.thr = V > s.vs0 * 1.35 ? 0 : Math.min(out.thr, 0.3);
+		if (P.rise) out.thr = 1;
+		out.toff = !!P.toff;
+		return out;
+	};
 	/* how a touchdown went, from the sink rate (m/s, positive = down) */
 	C.landingRate = function (vs) { return vs < 1 ? "Butter! Perfect landing" : vs < 2.5 ? "Good landing" : vs < 4 ? "Firm landing" : vs < 6 ? "Hard landing" : "Crash landing"; };
 	/* the runway on the test-track worlds: along X, north of the oval */
