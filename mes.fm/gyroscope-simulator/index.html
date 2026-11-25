@@ -398,6 +398,22 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:560px) {.gy-run {max-width:75%;top:0.4em;right:0.4em;} .gy-run button {font-size:0.72em;padding:0 0.45em;} .gy-ro b {font-size:1.02em;} .gy-tabs button {padding:0.45em 0.6em;font-size:0.9em;}}
 	html body.dark-mode #gy .gy-chips button[aria-pressed="true"], html body.dark-mode #gy .gy-gsel button[aria-pressed="true"] {background:#0e7490;border-color:#0e7490;color:#fff;}
 	.gy-gsel button[aria-pressed="true"] {background:#0e7490;border-color:#0e7490;color:#fff;}
+	/* MES setups (ice cube, string): on-screen timer like the videos, playback row, comparison panel */
+	.gy-clock {position:absolute;left:0.6em;top:0.6em;padding:0.15em 0.5em;border-radius:0.3em;background:#cfd8c8;color:#1c2418;border:2px solid #f2f4ee;font:700 1.35em/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:0.04em;font-variant-numeric:tabular-nums;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,0.5);}
+	.gy-hplay {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin-bottom:0.9em;}
+	.gy-hplay > .tu-field {flex:1 1 14em;min-width:0;}
+	#gy-hplay {display:flex;flex-wrap:wrap;flex-direction:row;}
+	#gy-hplay button {flex:1 0 auto;}
+	.gy-hscrubf input {width:100%;accent-color:var(--accent);}
+	.gy-cmp {margin-top:1em;}
+	.gy-cmp:empty {display:none;}
+	.gy-cmp__lead {margin:0 0 0.7em;padding:0.6em 0.9em;border-radius:0.5em;background:#fff8e6;border:1px solid #e3c98a;}
+	html body.dark-mode #gy .gy-cmp__lead {background:#2a2412;border-color:#5a4a20;}
+	.gy-cmp h4 {margin:0 0 0.35em;font-size:0.82em;text-transform:uppercase;letter-spacing:0.04em;}
+	.gy-cmp ul {margin:0.3em 0 0;padding-left:1.3em;list-style:disc outside;}
+	.gy-cmp li {display:list-item;}
+	.gy-cmp li {margin:0.25em 0;}
+	.gy-cmp .gy-col p {margin:0 0 0.3em;}
 
 
 	@media print {
@@ -536,21 +552,23 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .gy-eq__n{color:#989da4}
 	body.dark-mode .gy-further{border:1px solid #321263;background:#170e25}
 	body.dark-mode .gy-gsel button[aria-pressed="true"]{border-color:#17bbe8}
+	body.dark-mode .gy-clock{background:#3d4239;color:#e0e4de;border:2px solid #373e28}
+	body.dark-mode .gy-cmp__lead{background:#28210f;border:1px solid #9e7b26}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/gyroscope-simulator" />            <meta property="og:title" content="MES Gyroscope & Spinning Top Simulator | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/gyroscope-simulator/img/logo-big.png" />
-        <meta property="og:description" content="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions." />
+        <meta property="og:description" content="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, MES's gyroscope on an ice cube and hanging on a string over minutes of slowing spin, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions." />
 
-        <meta name="description" content="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, MES's gyroscope on an ice cube and hanging on a string over minutes of slowing spin, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES Gyroscope & Spinning Top Simulator">
-        <meta name="twitter:description" content="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.">
+        <meta name="twitter:description" content="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, MES's gyroscope on an ice cube and hanging on a string over minutes of slowing spin, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.">
         <meta name="twitter:image" content="https://mes.fm/gyroscope-simulator/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES Gyroscope & Spinning Top Simulator">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Gyroscope & Spinning Top Simulator", "url": "https://mes.fm/gyroscope-simulator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES Gyroscope & Spinning Top Simulator", "url": "https://mes.fm/gyroscope-simulator", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, MES's gyroscope on an ice cube and hanging on a string over minutes of slowing spin, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -747,13 +765,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">Gyroscope & Spinning Top Simulator: Precession, Nutation, Rising Tops and the Gyrotop</h1>                                        <p class="page-description">A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">Gyroscope & Spinning Top Simulator: Precession, Nutation, Rising Tops and the Gyrotop</h1>                                        <p class="page-description">A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, MES's gyroscope on an ice cube and hanging on a string over minutes of slowing spin, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu gy" id="gy">
 		<div class="gy-tabs" role="tablist" aria-label="Gyroscope simulator parts">
 			<button type="button" role="tab" data-tab="pivot" aria-selected="true">Gyroscope on a pivot</button>
 			<button type="button" role="tab" data-tab="floor" aria-selected="false">Top on a table</button>
-			<button type="button" role="tab" data-tab="ice" aria-selected="false">Gyroscope on ice</button>
+			<button type="button" role="tab" data-tab="cube" aria-selected="false">MES: gyro on an ice cube</button>
+			<button type="button" role="tab" data-tab="string" aria-selected="false">MES: gyro on a string</button>
+			<button type="button" role="tab" data-tab="ice" aria-selected="false">Heavy block on ice</button>
 			<button type="button" role="tab" data-tab="mes" aria-selected="false">MES &amp; Owen Liang experiments</button>
 			<button type="button" role="tab" data-tab="calc" aria-selected="false">Calculator</button>
 		</div>
@@ -765,6 +785,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="gy-wrap"><div class="gy-stage" id="gy-stage">
 				<canvas id="gy-c" tabindex="0" role="img" aria-label="A 3D view of the spinning top or gyroscope. Drag to turn the view, scroll or pinch to zoom."></canvas>
 				<div class="gy-msg" id="gy-msg" hidden></div>
+				<div class="gy-clock" id="gy-clock" hidden aria-hidden="true">0:00</div>
 				<div class="gy-run"><button type="button" id="gy-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="gy-restart" title="Start this run again">↺ Restart</button><button type="button" id="gy-step" title="Advance a little (while paused)">Step ›</button><button type="button" id="gy-view" title="Back to the starting view">⟲ View</button><button type="button" id="gy-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="gy-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
 				<div class="gy-legend" id="gy-legend" aria-hidden="true"></div>
 			</div>
@@ -809,14 +830,26 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="tu-field"><span class="tu-label">How it is let go</span><div class="tu-seg" role="group" aria-label="Start"><button type="button" id="gy-ist-steady" aria-pressed="true">Already precessing</button><button type="button" id="gy-ist-rest" aria-pressed="false">From rest</button></div></div>
 				</div>
 
+				<!-- MES's setups: ice cube, string -->
+				<div data-for="cube string">
+					<div class="gy-hplay">
+						<div class="tu-field"><span class="tu-label">Playback speed</span><div class="tu-seg" id="gy-hplay" role="group" aria-label="Playback speed"><button type="button" data-v="1">1×</button><button type="button" data-v="5">5×</button><button type="button" data-v="10">10×</button><button type="button" data-v="30">30×</button><button type="button" data-v="60">60×</button></div></div>
+						<div class="tu-field gy-hscrubf"><label class="tu-label" for="gy-hscrub">Jump to: <b id="gy-hpos"></b></label><input type="range" id="gy-hscrub" min="0" max="1" step="0.0005" value="0"></div>
+					</div>
+					<div class="gy-grid" id="gy-hgf"></div>
+					<div class="tu-field"><span class="tu-label">How it is let go</span><div class="tu-seg" role="group" aria-label="Release"><button type="button" id="gy-hst-rest" aria-pressed="true">From rest (as in the video)</button><button type="button" id="gy-hst-gentle" aria-pressed="false">Gently, already precessing</button></div></div>
+					<p class="tu-note gy-note">The whole run (minutes of real time) is worked out first and then played back; changing a number starts it again. Clicking or dragging on the graph jumps to that moment. Foot friction that slowly damps the release wobble is included (5×10⁻⁵ N·m·s).</p>
+				</div>
+
 				<div class="gy-checks">
 					<label class="gy-check"><input type="checkbox" id="gy-showL" checked> Angular momentum arrow</label>
 					<label class="gy-check"><input type="checkbox" id="gy-showT" checked> Torque arrow</label>
 					<label class="gy-check"><input type="checkbox" id="gy-trail" checked> Trail of the axis</label>
-					<span class="tu-field gy-inline"><span class="tu-label" id="gy-spd-l">Time: <b id="gy-spd-v"></b></span><input type="range" id="gy-spd" min="-3" max="0.7" step="0.01" aria-labelledby="gy-spd-l"></span>
+					<span class="tu-field gy-inline" data-for="pivot floor ice"><span class="tu-label" id="gy-spd-l">Time: <b id="gy-spd-v"></b></span><input type="range" id="gy-spd" min="-3" max="0.7" step="0.01" aria-labelledby="gy-spd-l"></span>
 				</div>
 				<p class="tu-note gy-note">The spin in the picture is drawn slower than it really is (a fast rotor would just look still or blurred); everything else, and every number, is the real motion.</p>
 			</div>
+			<div class="gy-cmp" id="gy-cmp" data-for="cube string" aria-live="polite"></div>
 		</div>
 
 		<!-- ============================== MES & Owen Liang ============================== -->
@@ -949,7 +982,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/gyroscope-simulator/js/gyroscope-simulator.js?v=2" defer></script>
+	<script src="/main_js/stage-ctl.js?v=2" defer></script><script src="/gyroscope-simulator/js/gyroscope-simulator.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

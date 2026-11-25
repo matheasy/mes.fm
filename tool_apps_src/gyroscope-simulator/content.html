@@ -3,7 +3,9 @@
 		<div class="gy-tabs" role="tablist" aria-label="Gyroscope simulator parts">
 			<button type="button" role="tab" data-tab="pivot" aria-selected="true">Gyroscope on a pivot</button>
 			<button type="button" role="tab" data-tab="floor" aria-selected="false">Top on a table</button>
-			<button type="button" role="tab" data-tab="ice" aria-selected="false">Gyroscope on ice</button>
+			<button type="button" role="tab" data-tab="cube" aria-selected="false">MES: gyro on an ice cube</button>
+			<button type="button" role="tab" data-tab="string" aria-selected="false">MES: gyro on a string</button>
+			<button type="button" role="tab" data-tab="ice" aria-selected="false">Heavy block on ice</button>
 			<button type="button" role="tab" data-tab="mes" aria-selected="false">MES &amp; Owen Liang experiments</button>
 			<button type="button" role="tab" data-tab="calc" aria-selected="false">Calculator</button>
 		</div>
@@ -15,6 +17,7 @@
 			<div class="gy-wrap"><div class="gy-stage" id="gy-stage">
 				<canvas id="gy-c" tabindex="0" role="img" aria-label="A 3D view of the spinning top or gyroscope. Drag to turn the view, scroll or pinch to zoom."></canvas>
 				<div class="gy-msg" id="gy-msg" hidden></div>
+				<div class="gy-clock" id="gy-clock" hidden aria-hidden="true">0:00</div>
 				<div class="gy-run"><button type="button" id="gy-play" aria-pressed="true">❚❚ Pause</button><button type="button" id="gy-restart" title="Start this run again">↺ Restart</button><button type="button" id="gy-step" title="Advance a little (while paused)">Step ›</button><button type="button" id="gy-view" title="Back to the starting view">⟲ View</button><button type="button" id="gy-png" aria-label="Save as PNG" title="Save as a picture">📷</button><button type="button" class="gy-fs" aria-label="Full screen" title="Full screen">⛶</button></div>
 				<div class="gy-legend" id="gy-legend" aria-hidden="true"></div>
 			</div>
@@ -59,14 +62,26 @@
 					<div class="tu-field"><span class="tu-label">How it is let go</span><div class="tu-seg" role="group" aria-label="Start"><button type="button" id="gy-ist-steady" aria-pressed="true">Already precessing</button><button type="button" id="gy-ist-rest" aria-pressed="false">From rest</button></div></div>
 				</div>
 
+				<!-- MES's setups: ice cube, string -->
+				<div data-for="cube string">
+					<div class="gy-hplay">
+						<div class="tu-field"><span class="tu-label">Playback speed</span><div class="tu-seg" id="gy-hplay" role="group" aria-label="Playback speed"><button type="button" data-v="1">1×</button><button type="button" data-v="5">5×</button><button type="button" data-v="10">10×</button><button type="button" data-v="30">30×</button><button type="button" data-v="60">60×</button></div></div>
+						<div class="tu-field gy-hscrubf"><label class="tu-label" for="gy-hscrub">Jump to: <b id="gy-hpos"></b></label><input type="range" id="gy-hscrub" min="0" max="1" step="0.0005" value="0"></div>
+					</div>
+					<div class="gy-grid" id="gy-hgf"></div>
+					<div class="tu-field"><span class="tu-label">How it is let go</span><div class="tu-seg" role="group" aria-label="Release"><button type="button" id="gy-hst-rest" aria-pressed="true">From rest (as in the video)</button><button type="button" id="gy-hst-gentle" aria-pressed="false">Gently, already precessing</button></div></div>
+					<p class="tu-note gy-note">The whole run (minutes of real time) is worked out first and then played back; changing a number starts it again. Clicking or dragging on the graph jumps to that moment. Foot friction that slowly damps the release wobble is included (5×10⁻⁵ N·m·s).</p>
+				</div>
+
 				<div class="gy-checks">
 					<label class="gy-check"><input type="checkbox" id="gy-showL" checked> Angular momentum arrow</label>
 					<label class="gy-check"><input type="checkbox" id="gy-showT" checked> Torque arrow</label>
 					<label class="gy-check"><input type="checkbox" id="gy-trail" checked> Trail of the axis</label>
-					<span class="tu-field gy-inline"><span class="tu-label" id="gy-spd-l">Time: <b id="gy-spd-v"></b></span><input type="range" id="gy-spd" min="-3" max="0.7" step="0.01" aria-labelledby="gy-spd-l"></span>
+					<span class="tu-field gy-inline" data-for="pivot floor ice"><span class="tu-label" id="gy-spd-l">Time: <b id="gy-spd-v"></b></span><input type="range" id="gy-spd" min="-3" max="0.7" step="0.01" aria-labelledby="gy-spd-l"></span>
 				</div>
 				<p class="tu-note gy-note">The spin in the picture is drawn slower than it really is (a fast rotor would just look still or blurred); everything else, and every number, is the real motion.</p>
 			</div>
+			<div class="gy-cmp" id="gy-cmp" data-for="cube string" aria-live="polite"></div>
 		</div>
 
 		<!-- ============================== MES & Owen Liang ============================== -->

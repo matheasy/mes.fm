@@ -91,3 +91,19 @@
 	@media (max-width:560px) {.gy-run {max-width:75%;top:0.4em;right:0.4em;} .gy-run button {font-size:0.72em;padding:0 0.45em;} .gy-ro b {font-size:1.02em;} .gy-tabs button {padding:0.45em 0.6em;font-size:0.9em;}}
 	html body.dark-mode #gy .gy-chips button[aria-pressed="true"], html body.dark-mode #gy .gy-gsel button[aria-pressed="true"] {background:#0e7490;border-color:#0e7490;color:#fff;}
 	.gy-gsel button[aria-pressed="true"] {background:#0e7490;border-color:#0e7490;color:#fff;}
+	/* MES setups (ice cube, string): on-screen timer like the videos, playback row, comparison panel */
+	.gy-clock {position:absolute;left:0.6em;top:0.6em;padding:0.15em 0.5em;border-radius:0.3em;background:#cfd8c8;color:#1c2418;border:2px solid #f2f4ee;font:700 1.35em/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:0.04em;font-variant-numeric:tabular-nums;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,0.5);}
+	.gy-hplay {display:flex;flex-wrap:wrap;gap:0.6em 1.4em;align-items:flex-end;margin-bottom:0.9em;}
+	.gy-hplay > .tu-field {flex:1 1 14em;min-width:0;}
+	#gy-hplay {display:flex;flex-wrap:wrap;flex-direction:row;}
+	#gy-hplay button {flex:1 0 auto;}
+	.gy-hscrubf input {width:100%;accent-color:var(--accent);}
+	.gy-cmp {margin-top:1em;}
+	.gy-cmp:empty {display:none;}
+	.gy-cmp__lead {margin:0 0 0.7em;padding:0.6em 0.9em;border-radius:0.5em;background:#fff8e6;border:1px solid #e3c98a;}
+	html body.dark-mode #gy .gy-cmp__lead {background:#2a2412;border-color:#5a4a20;}
+	.gy-cmp h4 {margin:0 0 0.35em;font-size:0.82em;text-transform:uppercase;letter-spacing:0.04em;}
+	.gy-cmp ul {margin:0.3em 0 0;padding-left:1.3em;list-style:disc outside;}
+	.gy-cmp li {display:list-item;}
+	.gy-cmp li {margin:0.25em 0;}
+	.gy-cmp .gy-col p {margin:0 0 0.3em;}

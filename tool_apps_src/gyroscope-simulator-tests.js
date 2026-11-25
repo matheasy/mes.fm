@@ -93,5 +93,55 @@ ic = runIce(M.rpm(wc) * 2, {}, false, 2); near(ic.mx, 0, 1e-12, "above the criti
 ic = runIce(M.rpm(wc) * 0.6, {}, false, 2); ok(ic.mx > 1e-3 && ic.s.slid > 1e-3, "below the critical spin the block slides (" + ic.mx + ")");
 ok(ic.dE < 0, "sliding on ice loses energy");
 
+/* --- MES's setups: gyro on an ice cube, gyro hanging on a string --- */
+var GY = { m: 0.15, I1: 5e-5, I3: 6e-5, l: 0.045, kn: 0, ks: 0 };
+function hp(o) { var p = Object.assign({}, GY), k; for (k in o) p[k] = o[k]; return p; }
+function hrun(p, rpm, T, start, dt) { var s = M.hgState(p, Math.PI / 2, M.radps(rpm), start), n = Math.round(T / (dt || 1e-3)); for (var i = 0; i < n; i++) s = M.hgStep(p, s, dt || 1e-3); return s; }
+/* mass matrix symmetric and equal to the old ice-block one for a flat base */
+var Mh = M.hgMass(hp({ type: "cube", mb: 0.015 }), 0, 0, 1.1, 0.4, new Float64Array(25)), Mi = M.iceMass({ m: 0.15, I1: 5e-5, I3: 6e-5, l: 0.045, mb: 0.015 }, 1.1, 0.4), bad = 0;
+for (var ii = 0; ii < 5; ii++) for (var jj = 0; jj < 5; jj++) { if (Math.abs(Mh[ii * 5 + jj] - Mh[jj * 5 + ii]) > 1e-15) bad++; if (Math.abs(Mh[ii * 5 + jj] - Mi[ii][jj]) > 1e-15) bad++; }
+ok(bad === 0, "ice-cube mass matrix symmetric and equal to the block model's");
+/* frictionless tray: energy, momentum and the centre of mass of everything kept; cube circles at m l / (M + m) */
+var pc = hp({ type: "cube", mb: 0.015, mus: 0, muk: 0 }), sc = M.hgState(pc, Math.PI / 2, M.radps(5000)), E0c = M.hgEnergy(pc, sc), C0 = M.hgCOM(pc, sc), mxd = 0;
+for (var k2 = 0; k2 < 4000; k2++) { sc = M.hgStep(pc, sc, 1e-3); mxd = Math.max(mxd, Math.hypot(sc.x[0], sc.x[1])); }
+near((M.hgEnergy(pc, sc) - E0c) / Math.abs(E0c), 0, 1e-7, "frictionless tray: energy kept");
+var Cc = M.hgCOM(pc, sc); near(Math.hypot(Cc[0] - C0[0], Cc[1] - C0[1]), 0, 1e-8, "frictionless tray: centre of mass of cube + gyro stays still");
+var Pm = M.hgMomentum(pc, sc); near(Math.hypot(Pm[0], Pm[1]), 0, 1e-8, "frictionless tray: no net sideways momentum (let go from rest)");
+near(mxd, 2 * M.hgFreeCircle(pc), 0.03 * M.hgFreeCircle(pc), "frictionless tray: cube circles with radius m l / (M + m) (" + mxd + ")");
+near(M.hgSpin(sc), M.radps(5000), 1e-6 * M.radps(5000), "spin about the axis kept on the frictionless tray");
+/* grip: let go gently above the critical spin the cube never moves; below it, it slides */
+var pg = hp({ type: "cube", mb: 0.015, mus: 0.05, muk: 0.03, kn: 5e-5 }), wcr = M.rpm(M.hgCritical(pg));
+near(M.hgPush(pg, M.hgCritical(pg)), 0.05 * (0.165) * 9.81, 1e-9, "critical spin: needed push = static friction");
+var sg1 = hrun(pg, wcr * 1.3, 4, "gentle"); ok(Math.hypot(sg1.x[0], sg1.x[1]) === 0 && sg1.stuck, "above the critical spin the cube stays exactly still");
+var sg2 = hrun(pg, wcr * 0.7, 4, "gentle"); ok(Math.hypot(sg2.x[0], sg2.x[1]) > 0.003, "below the critical spin the cube slides (" + Math.hypot(sg2.x[0], sg2.x[1]) + " m)");
+/* spin slow-down: ks from the half-time */
+var pk = hp({ type: "cube", mb: 0.015, mus: 0.05, muk: 0.03, kn: 5e-5 }); pk.ks = M.hgKs(pk, 20 / Math.LN2);
+var sk = hrun(pk, 6000, 20, "gentle"); near(M.rpm(M.hgSpin(sk)) / 6000, 0.5, 0.01, "spin halves in the chosen time");
+/* string: energy and vertical angular momentum kept, spin kept while the tilt changes */
+var ps = hp({ type: "string", mb: 0, L: 1.5 }), ss = M.hgState(ps, Math.PI / 2, M.radps(6000)), E0s = M.hgEnergy(ps, ss), L0s = M.hgLz(ps, ss), thMin = 9, thMax = 0;
+for (var k3 = 0; k3 < 15000; k3++) { ss = M.hgStep(ps, ss, 1e-3); thMin = Math.min(thMin, ss.x[2]); thMax = Math.max(thMax, ss.x[2]); }
+near((M.hgEnergy(ps, ss) - E0s) / Math.abs(E0s), 0, 1e-7, "string: energy kept");
+near(M.hgLz(ps, ss) - L0s, 0, 1e-7 * GY.I3 * M.radps(6000), "string: vertical angular momentum about the ceiling point kept");
+ok(thMax - thMin > 1 * D, "string: the tilt does change (" + ((thMax - thMin) / D).toFixed(2) + " deg)");
+near(M.hgSpin(ss), M.radps(6000), 1e-6 * M.radps(6000), "spin w3 unchanged with no twist along the axis (Euler: I3 w3' = tau3)");
+/* string with the centre of mass at the knot and no spin: a simple pendulum, period 2 pi sqrt(L / g) */
+var pp = hp({ type: "string", mb: 0, L: 1.5, l: 0 }), sp2 = M.hgState(pp, Math.PI / 2, 0), last = 0, cr = [];
+sp2.x[0] = 0.01; for (var k4 = 0; k4 < 15000; k4++) { sp2 = M.hgStep(pp, sp2, 1e-3); if (last < 0 && sp2.x[0] >= 0) cr.push(sp2.t); last = sp2.x[0]; }
+near((cr[cr.length - 1] - cr[0]) / (cr.length - 1), 2 * Math.PI * Math.sqrt(1.5 / 9.81), 2e-3, "string: pendulum period sqrt(L/g) with the gyro not spinning");
+near(M.hgPendulum(pp), Math.sqrt(9.81 / 1.5), 1e-12, "pendulum rate formula");
+/* step size: halving dt hardly changes a string run */
+var sa = hrun(ps, 6000, 3, "rest", 1e-3), sb = hrun(ps, 6000, 3, "rest", 5e-4);
+near(sa.x[0], sb.x[0], 2e-5, "string run converged in the step size"); near(sa.x[2], sb.x[2], 1.5e-4, "string tilt converged in the step size (fast nutation, 0.01 deg)");
+/* circle radius from a path */
+var rows = []; for (var k5 = 0; k5 <= 500; k5++) { var tt = k5 * 0.02; rows.push([tt, 0.03 * Math.cos(2 * tt), 0.03 * Math.sin(2 * tt), 0, 1.57, 0, 300, 2, 0, 0, 0]); }
+var rr = M.hgRadius(rows); near(rr[rows.length - 1], 0.03, 3e-4, "radius of a traced circle");
+/* the MES ice-cube run (gentle): still until near the critical spin, then moving */
+var pm = hp({ type: "cube", mb: 0.015, mus: 0.05, muk: 0.03, kn: 5e-5 }); pm.ks = M.hgKs(pm, 184 / Math.LN2);
+var RN = M.hgRunner(pm, Math.PI / 2, M.radps(6000), 200, { start: "gentle" }); RN.step(1e9);
+var SU = M.hgSummary(pm, RN.rows, M.hgRadius(RN.rows));
+ok(!SU.fromRelease && SU.onset != null, "MES ice cube: still at first, then starts to move");
+near(M.rpm(SU.wOnset), M.rpm(M.hgCritical(pm)), 0.03 * M.rpm(M.hgCritical(pm)), "it starts to move at the critical spin");
+ok(SU.grow != null && SU.grow < 10, "Coulomb friction: the circle reaches 90% of its size within seconds (" + SU.grow + " s)");
+
 console.log((fail ? "FAILED " : "ok ") + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

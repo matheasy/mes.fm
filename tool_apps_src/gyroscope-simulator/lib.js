@@ -268,6 +268,216 @@
 	/* frictionless ice: the whole system's centre of mass stays still, so the pivot (and block) circles with radius m l sin(t) / (mb + m) */
 	function iceCircle(p, theta) { return p.m * p.l * Math.sin(theta == null ? Math.PI / 2 : theta) / (p.mb + p.m); }
 
+	/* =============================================== 4. MES's real setups: gyro on an ice cube, gyro hanging on a string =============================================== */
+	/* One model for both. Generalized coordinates q = [X, Y, theta, phi, psi]: X, Y = horizontal position of the pivot (the foot of the gyro);
+	   theta, phi, psi = the gyro's tilt from vertical, azimuth of its axis, spin angle (same convention as qTilt).
+	   cube:   the foot sits in a dimple on top of a small ice cube of mass mb; the cube slides on a wet tray (pivot height constant).
+	   string: the foot (axle nut) hangs from a massless string of length L from a ceiling point at the origin: Z = -sqrt(L^2 - X^2 - Y^2).
+	   T = 1/2 mb |P'|^2 + 1/2 m |P' + l e3'|^2 + 1/2 I1 (th'^2 + s^2 ph'^2) + 1/2 I3 (ps' + c ph')^2, V = (mb + m) g Z + m g l cos(theta).
+	   Mass matrix written out exactly; its derivatives (for the velocity terms) by central differences.
+	   Friction: Rayleigh terms ks (spin, at the rotor bearings: makes the spin decay over minutes), kn (nutation damping at the foot, on theta'),
+	   kp (foot friction on the precession, on phi'), cair (air drag on the pivot's motion), and for the cube Coulomb stick / slip (mus, muk) +
+	   an optional water-film drag cw (N s/m) on the cube. p = {type, m, I1, I3, l, mb, L, g, ks, kc (constant spin friction torque), kn, kp, cair, mus, muk, cw} */
+	function hgZ(p, X, Y) { if (p.type !== "string") return [0, 0, 0]; var S = Math.sqrt(Math.max(1e-12, p.L * p.L - X * X - Y * Y)); return [-S, X / S, Y / S]; }
+	function hgMass(p, X, Y, th, ph, out) {
+		var z = hgZ(p, X, Y), zX = z[1], zY = z[2], A = p.mb + p.m, ml = p.m * p.l, s = Math.sin(th), c = Math.cos(th), sp = Math.sin(ph), cp = Math.cos(ph), I1p = p.I1 + p.m * p.l * p.l;
+		out[0] = A * (1 + zX * zX); out[1] = out[5] = A * zX * zY; out[6] = A * (1 + zY * zY);
+		out[2] = out[10] = ml * (c * cp - zX * s); out[3] = out[15] = -ml * s * sp;
+		out[7] = out[11] = ml * (c * sp - zY * s); out[8] = out[16] = ml * s * cp;
+		out[4] = out[20] = out[9] = out[21] = 0;
+		out[12] = I1p; out[13] = out[17] = 0; out[14] = out[22] = 0;
+		out[18] = I1p * s * s + p.I3 * c * c; out[19] = out[23] = p.I3 * c; out[24] = p.I3;
+		return out;
+	}
+	var _M = new Float64Array(25), _Ma = new Float64Array(25), _Mb = new Float64Array(25);
+	function qf(Mx, v) { var t = 0; for (var i = 0; i < 5; i++) { var r = 0; for (var j = 0; j < 5; j++) r += Mx[i * 5 + j] * v[j]; t += v[i] * r; } return t; }
+	/* h = M' v - dT/dq + dV/dq + friction (everything except the cube's Coulomb force); also returns the mass matrix in _M */
+	function hgRest(p, x, v, h) {
+		var e = 1e-6, g = p.g == null ? G : p.g, i, j, k;
+		hgMass(p, x[0], x[1], x[2], x[3], _M);
+		/* M' v: derivative of M along the velocity (M does not depend on psi) */
+		hgMass(p, x[0] + e * v[0], x[1] + e * v[1], x[2] + e * v[2], x[3] + e * v[3], _Ma); hgMass(p, x[0] - e * v[0], x[1] - e * v[1], x[2] - e * v[2], x[3] - e * v[3], _Mb);
+		for (i = 0; i < 5; i++) { var s = 0; for (j = 0; j < 5; j++) s += (_Ma[i * 5 + j] - _Mb[i * 5 + j]) * v[j]; h[i] = s / (2 * e); }
+		/* - dT/dq_k = - 1/2 v^T dM/dq_k v */
+		for (k = (p.type === "string" ? 0 : 2); k < 4; k++) {
+			var xa = [x[0], x[1], x[2], x[3]], xb = [x[0], x[1], x[2], x[3]]; xa[k] += e; xb[k] -= e;
+			hgMass(p, xa[0], xa[1], xa[2], xa[3], _Ma); hgMass(p, xb[0], xb[1], xb[2], xb[3], _Mb);
+			h[k] -= 0.5 * (qf(_Ma, v) - qf(_Mb, v)) / (2 * e);
+		}
+		/* gravity */
+		var z = hgZ(p, x[0], x[1]); h[0] += (p.mb + p.m) * g * z[1]; h[1] += (p.mb + p.m) * g * z[2]; h[2] += -p.m * g * p.l * Math.sin(x[2]);
+		/* friction at the foot, at the bearings, air */
+		h[2] += (p.kn || 0) * v[2]; h[3] += (p.kp || 0) * v[3];
+		h[4] += (p.ks || 0) * v[4] + (p.kc ? p.kc * Math.tanh(v[4] / 0.5) : 0);
+		var cd = (p.cair || 0) + (p.type === "cube" ? (p.cw || 0) : 0); if (cd) { h[0] += cd * v[0]; h[1] += cd * v[1]; }
+		return h;
+	}
+	function solveFlat(Mx, b, n, idx) {          /* Gaussian elimination on the rows / columns listed in idx */
+		var A = [], i, j, k; for (i = 0; i < n; i++) { A.push([]); for (j = 0; j < n; j++) A[i].push(Mx[idx[i] * 5 + idx[j]]); A[i].push(b[i]); }
+		for (i = 0; i < n; i++) {
+			var piv = i; for (j = i + 1; j < n; j++) if (Math.abs(A[j][i]) > Math.abs(A[piv][i])) piv = j;
+			var t = A[i]; A[i] = A[piv]; A[piv] = t;
+			for (j = i + 1; j < n; j++) { var f = A[j][i] / A[i][i]; for (k = i; k <= n; k++) A[j][k] -= f * A[i][k]; }
+		}
+		var out = new Array(n); for (i = n - 1; i >= 0; i--) { var s = A[i][n]; for (j = i + 1; j < n; j++) s -= A[i][j] * out[j]; out[i] = s / A[i][i]; }
+		return out;
+	}
+	var _h = new Float64Array(5);
+	/* normal force of the tray on the cube: weight of both + m times the vertical acceleration of the gyro's centre of mass */
+	function hgNormal(p, x, v, a) { var g = p.g == null ? G : p.g; return (p.mb + p.m) * g + p.m * p.l * (-Math.sin(x[2]) * a[2] - Math.cos(x[2]) * v[2] * v[2]); }
+	/* accelerations. cube held still (stuck) or sliding with kinetic friction; string: free. returns {a, F (horizontal friction on the cube), N} */
+	function hgAccel(p, x, v, stuck) {
+		var h = hgRest(p, x, v, _h);
+		if (p.type === "cube" && stuck) {
+			var r = solveFlat(_M, [-h[2], -h[3], -h[4]], 3, [2, 3, 4]), a = [0, 0, r[0], r[1], r[2]];
+			var F = [_M[2] * a[2] + _M[3] * a[3] + h[0], _M[7] * a[2] + _M[8] * a[3] + h[1]];
+			return { a: a, F: F, N: hgNormal(p, x, v, a) };
+		}
+		if (p.type !== "cube") { var a2 = solveFlat(_M, [-h[0], -h[1], -h[2], -h[3], -h[4]], 5, [0, 1, 2, 3, 4]); return { a: a2, F: [0, 0], N: 0 }; }
+		var sp = Math.hypot(v[0], v[1]), N = (p.mb + p.m) * (p.g == null ? G : p.g), Fk = [0, 0], a3;
+		var muk = Math.min(p.muk == null ? (p.mus || 0) : p.muk, p.mus || 0);
+		for (var it = 0; it < 2; it++) {
+			var fk = muk * Math.max(0, N), d = sp > 1e-12 ? [-v[0] / sp, -v[1] / sp] : [0, 0];
+			Fk = [fk * d[0], fk * d[1]];
+			a3 = solveFlat(_M, [Fk[0] - h[0], Fk[1] - h[1], -h[2], -h[3], -h[4]], 5, [0, 1, 2, 3, 4]);
+			N = hgNormal(p, x, v, a3);
+		}
+		return { a: a3, F: Fk, N: N };
+	}
+	/* start = "rest": let go from rest by hand (axis at tilt theta toward +x, spinning, nothing else moving; string hanging straight down,
+	   cube still) -- the release dip and nutation are included. start = "gentle": the hand lets go while the gyro already precesses at the
+	   steady rate (cube / string still at rest), so there is almost no nutation. */
+	function hgState(p, theta, w3, start) {
+		var x = [0, 0, theta, 0, 0], v = [0, 0, 0, 0, w3];
+		if (start === "gentle") { var sp = steadyPrecession({ m: p.m, l: p.l, I1: p.I1, I3: p.I3 }, w3, theta, p.g), W = sp.ok ? sp.slow : 0; v[3] = W; v[4] = w3 - W * Math.cos(theta); }
+		return { x: x, v: v, t: 0, stuck: p.type === "cube" && p.mus > 0, slid: 0 };
+	}
+	function hgStep(p, s, dt) {
+		var stuck = s.stuck, x0 = s.x, v0 = s.v;
+		if (p.type === "cube" && stuck) { var chk = hgAccel(p, x0, v0, true); if (Math.hypot(chk.F[0], chk.F[1]) > (p.mus || 0) * Math.max(0, chk.N)) stuck = false; }
+		function f(x, v) { return hgAccel(p, x, v, stuck).a; }
+		var a1 = f(x0, v0), x2 = [], v2 = [], i;
+		for (i = 0; i < 5; i++) { x2[i] = x0[i] + v0[i] * dt / 2; v2[i] = v0[i] + a1[i] * dt / 2; }
+		var a2 = f(x2, v2), x3 = [], v3 = [];
+		for (i = 0; i < 5; i++) { x3[i] = x0[i] + v2[i] * dt / 2; v3[i] = v0[i] + a2[i] * dt / 2; }
+		var a3 = f(x3, v3), x4 = [], v4 = [];
+		for (i = 0; i < 5; i++) { x4[i] = x0[i] + v3[i] * dt; v4[i] = v0[i] + a3[i] * dt; }
+		var a4 = f(x4, v4), x = [], v = [];
+		for (i = 0; i < 5; i++) { x[i] = x0[i] + dt / 6 * (v0[i] + 2 * v2[i] + 2 * v3[i] + v4[i]); v[i] = v0[i] + dt / 6 * (a1[i] + 2 * a2[i] + 2 * a3[i] + a4[i]); }
+		var slid = s.slid || 0;
+		if (p.type === "cube") {
+			if (stuck) { x[0] = x0[0]; x[1] = x0[1]; v[0] = v[1] = 0; }
+			else {
+				/* kinetic friction can't reverse the cube within a step: if it would, or the cube is crawling slower than vst (Karnopp's
+				   stick band, default 0.5 mm/s), stop it and see whether static friction can hold it */
+				if (v0[0] * v[0] + v0[1] * v[1] < 0 || Math.hypot(v[0], v[1]) < (p.vst == null ? 5e-4 : p.vst)) {
+					var t2 = hgAccel(p, x, [0, 0, v[2], v[3], v[4]], true);
+					if (Math.hypot(t2.F[0], t2.F[1]) <= (p.mus || 0) * Math.max(0, t2.N)) { v[0] = 0; v[1] = 0; stuck = true; }
+				}
+				slid += Math.hypot(x[0] - x0[0], x[1] - x0[1]);
+			}
+		}
+		x[4] = x[4] % TAU;
+		return { x: x, v: v, t: s.t + dt, stuck: stuck, slid: slid };
+	}
+	/* quantities you can see or measure */
+	function hgSpin(s) { return s.v[4] + s.v[3] * Math.cos(s.x[2]); }                        /* w3: angular velocity along the axis */
+	function hgPivot(p, s) { return [s.x[0], s.x[1], hgZ(p, s.x[0], s.x[1])[0]]; }
+	function hgCOM(p, s) { var x = s.x, k = p.m / (p.mb + p.m), sn = Math.sin(x[2]); return [x[0] + k * p.l * sn * Math.cos(x[3]), x[1] + k * p.l * sn * Math.sin(x[3])]; }
+	function hgEnergy(p, s) {
+		hgMass(p, s.x[0], s.x[1], s.x[2], s.x[3], _M); var g = p.g == null ? G : p.g;
+		return 0.5 * qf(_M, s.v) + (p.mb + p.m) * g * hgZ(p, s.x[0], s.x[1])[0] + p.m * g * p.l * Math.cos(s.x[2]);
+	}
+	/* horizontal momentum of everything (cube + gyro) */
+	function hgMomentum(p, s) {
+		var x = s.x, v = s.v, c = Math.cos(x[2]), sn = Math.sin(x[2]), cp = Math.cos(x[3]), sp = Math.sin(x[3]), ml = p.m * p.l, A = p.mb + p.m;
+		return [A * v[0] + ml * (c * cp * v[2] - sn * sp * v[3]), A * v[1] + ml * (c * sp * v[2] + sn * cp * v[3])];
+	}
+	/* vertical angular momentum about the vertical line through the origin (ceiling point / cube start): kept constant when nothing
+	   twists the system about that line (no friction; Coulomb friction on the cube breaks it). Lz = p_phi + X p_Y - Y p_X with p = M v */
+	function hgLz(p, s) {
+		hgMass(p, s.x[0], s.x[1], s.x[2], s.x[3], _M); var q = [0, 0, 0, 0, 0], i, j;
+		for (i = 0; i < 5; i++) for (j = 0; j < 5; j++) q[i] += _M[i * 5 + j] * s.v[j];
+		return q[3] + s.x[0] * q[1] - s.x[1] * q[0];
+	}
+	/* standard-model formulas used for the "what to expect" lines */
+	function hgPrec(p, w3) { return p.m * (p.g == null ? G : p.g) * p.l / (p.I3 * w3); }                   /* fast-gyro precession, horizontal axis */
+	function hgPush(p, w3) { var W = hgPrec(p, w3); return p.m * p.l * W * W; }                            /* sideways push on a still foot */
+	function hgCritical(p) {                                                                               /* spin below which the cube must slip */
+		if (!(p.mus > 0)) return Infinity; var g = p.g == null ? G : p.g;
+		return p.m * g * p.l / p.I3 * Math.sqrt(p.m * p.l / (p.mus * (p.mb + p.m) * g));
+	}
+	function hgFreeCircle(p) { return p.m * p.l / (p.mb + p.m); }                                         /* frictionless tray: cube circle radius */
+	/* string: steady precession at rate W, everything turning together: pivot radius r = W^2 l / (W^2 - g/L) (small swings);
+	   negative = the foot is on the same side as the centre of mass. Resonance when W = sqrt(g/L), the pendulum's own rate. */
+	function hgStringRadius(p, W) { var g = p.g == null ? G : p.g, w0 = g / p.L; return W * W * p.l / (W * W - w0); }
+	function hgPendulum(p) { return Math.sqrt((p.g == null ? G : p.g) / p.L); }
+	/* spin friction for a chosen spin-down: spin falls to 1/e in tau seconds (viscous) */
+	function hgKs(p, tau) { return tau > 0 ? p.I3 / tau : 0; }
+
+	/* plain-words summary of a finished run (used by the page and the tests). Times in s, lengths in m, angles in rad.
+	   rise = how far the axis came up above where it started (positive = rose), after the first 5 s. */
+	function hgSummary(p, rows, rad) {
+		var n = rows.length, out = { type: p.type, end: rows[n - 1][0], spinEnd: rows[n - 1][6], rmax: 0, tmax: 0, wmax: 0, onset: null, wOnset: null, grow: null, release: 0, rise: -Infinity, sink: 0, theta0: rows[0][4] };
+		var i, i3 = 0;
+		for (i = 0; i < n; i++) { if (rows[i][0] <= 3) { i3 = i; out.release = Math.max(out.release, Math.hypot(rows[i][1] - rows[0][1], rows[i][2] - rows[0][2])); } }
+		for (i = 0; i < n; i++) {
+			if (rad[i] > out.rmax) { out.rmax = rad[i]; out.tmax = rows[i][0]; out.wmax = rows[i][6]; }
+			if (rows[i][0] > 5) { var up = rows[0][4] - rows[i][4]; if (up > out.rise) out.rise = up; if (-up > out.sink) out.sink = -up; }
+		}
+		if (!isFinite(out.rise)) out.rise = 0;
+		/* largest come-back: how far the axis rose again after having sunk lower earlier (bobbing), after the first 5 s */
+		var low = -Infinity; out.back = 0; for (i = 0; i < n; i++) if (rows[i][0] > 5) { low = Math.max(low, rows[i][4]); out.back = Math.max(out.back, low - rows[i][4]); }
+		out.fromRelease = rad[i3] > 0.002;
+		if (!out.fromRelease) for (i = i3; i < n; i++) if (rad[i] > 0.002) { out.onset = rows[i][0]; out.wOnset = rows[i][6]; break; }
+		var start = out.fromRelease ? i3 : (out.onset == null ? -1 : rows.findIndex(function (r) { return r[0] >= out.onset; }));
+		if (start >= 0) {
+			var top = 0, k; for (k = start; k < n; k++) top = Math.max(top, rad[k]);
+			for (k = start; k < n; k++) if (rad[k] >= 0.9 * top) { out.grow = rows[k][0] - rows[start][0]; out.r90 = 0.9 * top; break; }
+		}
+		return out;
+	}
+	/* Run the whole experiment (minutes) and keep samples. Returns a runner: {step(budgetMs) -> done?, rows, s}. A row:
+	   [t, X, Y, Z, theta, phi, w3, phi', stuck(0/1), F (N), N (N)] -- the page plays them back and draws the graphs. */
+	function hgRunner(p, theta, w3, T, opt) {
+		opt = opt || {}; var dt = opt.dt || 1e-3, every = opt.every || 0.02, s = hgState(p, theta, w3, opt.start), rows = [], next = 0, fell = false, why = "";
+		function keep() {
+			var r = [s.t, s.x[0], s.x[1], hgZ(p, s.x[0], s.x[1])[0], s.x[2], s.x[3], hgSpin(s), s.v[3], s.stuck ? 1 : 0, 0, 0];
+			if (p.type === "cube") { var I = hgAccel(p, s.x, s.v, s.stuck); r[9] = Math.hypot(I.F[0], I.F[1]); r[10] = I.N; }
+			rows.push(r);
+		}
+		keep(); next = every;
+		var R = {
+			rows: rows, get s() { return s; }, get fell() { return fell; }, get why() { return why; }, T: T,
+			step: function (budgetMs, nowFn) {
+				var t0 = nowFn ? nowFn() : 0, n = 0;
+				while (s.t < T - 1e-9 && !fell) {
+					s = hgStep(p, s, dt); n++;
+					if (s.t >= next - 1e-9) { keep(); next += every; }
+					var th = s.x[2];
+					if (!isFinite(th) || th > 170 * DEG || th < 10 * DEG) { fell = true; why = "fell"; keep(); break; }
+					if (p.type === "string" && Math.hypot(s.x[0], s.x[1]) > 0.9 * p.L) { fell = true; why = "swing"; keep(); break; }
+					if (nowFn && (n & 63) === 0 && nowFn() - t0 > budgetMs) break;
+				}
+				return s.t >= T - 1e-9 || fell;
+			}
+		};
+		return R;
+	}
+	/* The size of the circle the foot (cube / string bottom) traces: for each row, over the last full precession turn,
+	   radius = average distance of the foot from the middle of its path. Also the distance from where it started. */
+	function hgRadius(rows) {
+		var out = new Array(rows.length), j = 0, n = rows.length, i;
+		for (i = 0; i < n; i++) {
+			var r = rows[i], W = Math.abs(r[7]), win = Math.min(30, Math.max(0.3, W > 1e-3 ? TAU / W : 30));
+			while (j < i && rows[j][0] < r[0] - win) j++;
+			var cx = 0, cy = 0, k, m = i - j + 1; for (k = j; k <= i; k++) { cx += rows[k][1]; cy += rows[k][2]; } cx /= m; cy /= m;
+			var d = 0; for (k = j; k <= i; k++) d += Math.hypot(rows[k][1] - cx, rows[k][2] - cy); d /= m;
+			out[i] = r[0] - rows[j][0] < 0.8 * win ? Math.min(d, Math.hypot(r[1] - rows[0][1], r[2] - rows[0][2])) : d;
+		}
+		return out;
+	}
+
 	/* ---------- examples ---------- */
 	var PRESETS = {
 		pivot: [
@@ -294,6 +504,23 @@
 			{ id: "slow", name: "Slow spin: the block moves", rpm: 420, mus: 0.03, note: "Faster precession needs a bigger sideways push: more than the grip, so the block slides round. The sliding friction then holds the precession back, so the gyroscope slowly sinks." },
 			{ id: "zero", name: "Ice with no friction", rpm: 3000, mus: 0, note: "No friction at all: the block circles so that the centre of mass of everything stays still (the Cambridge picture)." },
 			{ id: "drop", name: "Let go from rest", rpm: 2500, mus: 0.03, start: "rest", note: "Released with no precession: the nutation wobble shakes the block a little at first." }
+		],
+		/* MES's own setups. Gyro numbers for a Super Precision-type toy gyroscope (150 g, rotor in a cage); friction values are guesses to
+		   be replaced by measurements (tilt the tray until the cube slides: tan(angle) = mu_s). half = seconds for the spin to halve. */
+		cube: [
+			{ id: "mes", name: "MES's ice cube (let go from rest)", mus: 0.05, muk: 0.03, cw: 0, start: "rest", note: "15 g ice cube on a wet tray, gyro let go from rest at 6,000 rpm, spin halving every 3 minutes. Grip μs = 0.05, sliding μk = 0.03 (guesses: measure them)." },
+			{ id: "gentle", name: "Same, let go gently", mus: 0.05, muk: 0.03, cw: 0, start: "gentle", note: "The hand lets go while the gyro is already precessing at the steady rate, so there is no release wobble." },
+			{ id: "slippery", name: "Very slippery when sliding", mus: 0.05, muk: 0.003, cw: 0, start: "gentle", note: "Same grip, but once it slides the water film makes it very slippery (μk = 0.003)." },
+			{ id: "water", name: "Water-film drag, no grip", mus: 0, muk: 0, cw: 0.3, start: "gentle", note: "No static grip at all; the water film drags the cube in proportion to its speed (0.3 N·s/m)." },
+			{ id: "zero", name: "Frictionless tray", mus: 0, muk: 0, cw: 0, start: "rest", note: "No friction of any kind: the whole system's centre of mass stays still, so the cube circles at m·l/(M+m) at every spin." },
+			{ id: "small", name: "Smaller ice cube (5 g)", mus: 0.05, muk: 0.03, cw: 0, mb: 5, start: "rest", note: "A 5 g cube instead of 15 g." }
+		],
+		string: [
+			{ id: "mes", name: "MES's string (1.5 m)", L: 1.5, air: 0.003, start: "rest", note: "Hanging by its axle nut from a 1.5 m string, let go from rest with the axis level at 6,000 rpm; spin halving every 3 minutes, a little air drag." },
+			{ id: "gentle", name: "Same, let go gently", L: 1.5, air: 0.003, start: "gentle", note: "Let go while already precessing at the steady rate (the string still hangs straight down)." },
+			{ id: "short", name: "Short string (0.7 m)", L: 0.7, air: 0.01, start: "gentle", note: "A shorter string swings faster on its own (√(g/L) = 3.7 rad/s), so the precession takes longer to catch up with it." },
+			{ id: "long", name: "Long string (6 m)", L: 6, air: 0.003, start: "gentle", note: "A long string swings slowly on its own (1.3 rad/s), slower than the precession from the start." },
+			{ id: "nofric", name: "No friction: spin stays put", L: 1.5, air: 0, half: 0, start: "gentle", T: 120, note: "No bearing friction and no air: watch the spin readout stay exactly the same while the tilt and swing change." }
 		]
 	};
 
@@ -303,7 +530,9 @@
 		I1p: I1p, steadyPrecession: steadyPrecession, fastTopPrecession: fastTopPrecession, nutationRate: nutationRate, nutationDip: nutationDip, sleepSpin: sleepSpin, rpm: rpm, radps: radps,
 		pivotState: pivotState, pivotStep: pivotStep, pivotInfo: pivotInfo, pivotDeriv: pivotDeriv,
 		floorState: floorState, floorStep: floorStep, floorInfo: floorInfo, floorDeriv: floorDeriv,
-		iceState: iceState, iceStep: iceStep, iceCOM: iceCOM, iceEnergy: iceEnergy, iceForce: iceForce, iceCriticalSpin: iceCriticalSpin, iceCircle: iceCircle, iceMass: iceMass
+		iceState: iceState, iceStep: iceStep, iceCOM: iceCOM, iceEnergy: iceEnergy, iceForce: iceForce, iceCriticalSpin: iceCriticalSpin, iceCircle: iceCircle, iceMass: iceMass,
+		hgMass: hgMass, hgState: hgState, hgStep: hgStep, hgAccel: hgAccel, hgSpin: hgSpin, hgPivot: hgPivot, hgCOM: hgCOM, hgEnergy: hgEnergy, hgMomentum: hgMomentum, hgLz: hgLz,
+		hgPrec: hgPrec, hgPush: hgPush, hgCritical: hgCritical, hgFreeCircle: hgFreeCircle, hgStringRadius: hgStringRadius, hgPendulum: hgPendulum, hgKs: hgKs, hgRunner: hgRunner, hgRadius: hgRadius, hgSummary: hgSummary
 	};
 	if (typeof module !== "undefined" && module.exports) module.exports = api; else root.MESGyro = api;
 })(this);
