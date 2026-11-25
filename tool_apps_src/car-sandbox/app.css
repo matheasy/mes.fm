@@ -139,17 +139,18 @@
 	.cs-narrow .cs-hud {max-width:40%;}
 
 	/* mini-map */
-	.cs-mm {position:absolute;left:0.6em;bottom:0.7em;width:150px;height:150px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.55);box-shadow:0 2px 10px rgba(0,0,0,.45);background:#222;z-index:2;}
+	.cs-mm {position:absolute;left:0.6em;bottom:0.7em;width:150px;height:150px;z-index:2;}
 	.cs-mm.big {width:230px;height:230px;}
-	.cs-mm canvas {width:100%;height:100%;display:block;cursor:grab;touch-action:none;}
-	.cs-mm.cs-mmdrag {box-shadow:0 0 0 3px #4dabf7, 0 6px 18px rgba(0,0,0,.5);transition:none;}
-	.cs-mm.cs-mmdrag canvas {cursor:grabbing;}
+	.cs-mm canvas {width:100%;height:100%;display:block;cursor:grab;touch-action:none;border-radius:50%;border:2px solid rgba(255,255,255,0.55);box-shadow:0 2px 10px rgba(0,0,0,.45);background:#222;box-sizing:border-box;}
+	.cs-mm.cs-mmdrag canvas {box-shadow:0 0 0 3px #4dabf7, 0 6px 18px rgba(0,0,0,.5);transition:none;cursor:grabbing;}
 	.cs-mm.cs-mmdrag .cs-mmb {opacity:0 !important;}
 	.cs-mmscale {position:absolute;left:50%;bottom:6%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;}
-	.cs-mmb {position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:2px;padding-top:12%;opacity:0;transition:opacity .2s;pointer-events:none;}
-	.cs-mm:hover .cs-mmb, .cs-mm:focus-within .cs-mmb {opacity:1;pointer-events:auto;}
-	.cs-mmb button {width:24px;height:24px;padding:0;border-radius:6px;border:1px solid rgba(255,255,255,0.4);background:rgba(12,16,24,0.75);color:#fff;font-size:12px;line-height:1;cursor:pointer;}
-	@media (hover:none) { .cs-mmb {opacity:1;pointer-events:auto;padding-top:0;align-content:flex-end;padding-bottom:16%;} .cs-mmb button {width:22px;height:22px;} }
+	/* buttons in an arc outside the circle (placed by mmButtons in app.js) */
+	.cs-mmb {position:absolute;left:0;top:0;width:0;height:0;}
+	.cs-mmb button {position:absolute;width:24px;height:24px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,0.45);background:rgba(12,16,24,0.72);color:#fff;font-size:12px;line-height:1;cursor:pointer;opacity:0.6;transition:opacity .2s, transform .15s;box-shadow:0 1px 4px rgba(0,0,0,.4);backdrop-filter:blur(3px);}
+	.cs-mm:hover .cs-mmb button, .cs-mmb button:focus-visible {opacity:1;}
+	.cs-mmb button:hover {transform:scale(1.15);background:rgba(12,16,24,0.92);}
+	@media (hover:none) { .cs-mmb button {opacity:0.9;width:26px;height:26px;} }
 	.cs-has-touch .cs-mm {left:auto;right:0.6em;bottom:auto;top:3.4em;width:118px;height:118px;}
 	.cs-has-touch .cs-mm.big {width:170px;height:170px;}
 	.cs-replaying .cs-mm, .cs-hide-map .cs-mm {display:none !important;}
@@ -340,8 +341,6 @@
 	.cs-hx {position:absolute;top:0.25em;right:0.25em;width:1.7em;height:1.7em;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,0.12);color:#f2f5fa;font:inherit;font-size:0.8em;line-height:1;cursor:pointer;pointer-events:auto;opacity:0.7;z-index:1;}
 	.cs-hx:hover, .cs-hx:focus-visible {opacity:1;background:rgba(255,255,255,0.28);}
 	.cs-hud {padding-right:2.2em;}
-	.cs-speedo {padding:1.1em 0 0;}
-	.cs-speedo .cs-hx {top:-0.2em;right:-0.2em;font-size:0.55em;text-shadow:none;}
 	.cs-nlogw {position:relative;align-self:flex-start;max-width:100%;padding-right:1.9em;}
 	.cs-nlogw .cs-hx {top:auto;bottom:0;right:0;}
 	.cs-nlog:empty + .cs-hx, .cs-nlogw:has(.cs-nlog:empty) .cs-hx {display:none;}
@@ -364,7 +363,7 @@
 	.cs-cpaint button[aria-pressed="true"] {border-color:#fff;box-shadow:0 0 0 2px #d9480f;}
 	.cs-pop {max-height:calc(100% - 4em);overflow:auto;}
 	/* fold arrows: the picture's button row and the select bar above it */
-	.cs-sbtns .cs-fold {min-width:1.9em;padding:0;}
+	.cs-sbtns .cs-fold {min-width:1.9em;padding:0;font-weight:700;}
 	.cs-hide-btns .cs-sbtns > :not(.cs-fold) {display:none !important;}
 	.cs-topfold {align-self:flex-end;margin-left:auto;cursor:pointer;font:inherit;font-size:0.8em;padding:0.3em 0.7em;border-radius:1em;border:1px solid var(--cs-cardline);background:transparent;color:var(--cs-text);}
 	.cs-hide-top .cs-top .cs-sel {display:none !important;}

@@ -2769,7 +2769,7 @@
 		$("cs-shhud").hidden = !(hud && hud.hidden); $("cs-shspeed").hidden = S.show.speed !== false;
 		if (S.show.chat !== false) { var un = $("cs-nunread"); un.hidden = true; un.textContent = ""; }
 		var bf = $("cs-btnsfold"), tf = $("cs-topfold"), cb = $("cs-nchatbtn");
-		if (bf) { bf.textContent = S.show.btns === false ? "▾" : "▴"; bf.title = S.show.btns === false ? "Show the buttons" : "Hide these buttons"; bf.setAttribute("aria-expanded", String(S.show.btns !== false)); }
+		if (bf) { bf.textContent = S.show.btns === false ? "◂" : "▸"; bf.title = S.show.btns === false ? "Show the buttons" : "Hide these buttons"; bf.setAttribute("aria-expanded", String(S.show.btns !== false)); }
 		if (tf) { tf.textContent = S.show.top === false ? "▾ World, vehicle, camera, weather" : "▴ Hide"; tf.setAttribute("aria-expanded", String(S.show.top !== false)); }
 		if (cb && cb.firstChild) { cb.firstChild.nodeValue = S.show.chat === false ? "💬▴" : "💬"; cb.title = S.show.chat === false ? "Show the chat again" : "Chat with the room (Enter)"; }
 		if (typeof netBoard === "function") netBoard();
@@ -3019,9 +3019,19 @@
 	/* the mini-map can be dragged anywhere on the picture; its spot (S.mm.pos = share of the free room across / down) is kept */
 	function mmPlace() {
 		var el = $("cs-mm"), p = S.mm.pos; $("cs-mmhome").hidden = !p;
-		if (!p) { el.style.left = el.style.top = el.style.right = el.style.bottom = ""; return; }
+		if (!p) { el.style.left = el.style.top = el.style.right = el.style.bottom = ""; mmButtons(); return; }
 		var W2 = stage.clientWidth - el.offsetWidth, H2 = stage.clientHeight - el.offsetHeight;
 		el.style.right = el.style.bottom = "auto"; el.style.left = Math.round(Math.max(0, W2) * p.x) + "px"; el.style.top = Math.round(Math.max(0, H2) * p.y) + "px";
+		mmButtons();
+	}
+	/* the map's buttons sit in an arc just outside its circle, on the side facing the middle of the picture, so they never cover the map */
+	function mmButtons() {
+		var el = $("cs-mm"); if (!el || el.hidden) return;
+		var bs = Array.prototype.filter.call($("cs-mmb").children, function (b) { return !b.hidden; });
+		var r = el.offsetWidth / 2, sr = stage.getBoundingClientRect(), er = el.getBoundingClientRect();
+		var cx = er.left + r - sr.left, cy = er.top + r - sr.top, base = Math.atan2(sr.height / 2 - cy, sr.width / 2 - cx);
+		var bw = bs.length ? bs[0].offsetWidth || 24 : 24, R = r + bw / 2 + 7, step = (bw + 5) / R, a0 = base - step * (bs.length - 1) / 2;
+		bs.forEach(function (b, i) { var a = a0 + step * i; b.style.left = Math.round(r + Math.cos(a) * R - bw / 2) + "px"; b.style.top = Math.round(r + Math.sin(a) * R - bw / 2) + "px"; });
 	}
 	function setupMiniDrag() {
 		var el = $("cs-mm"), cv = $("cs-mmc"), d = null, dragged = false;
