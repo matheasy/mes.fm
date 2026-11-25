@@ -35,6 +35,7 @@
 					<button type="button" id="cs-mapbtn" title="Show or hide the map" aria-label="Map" aria-pressed="true">🗺</button>
 					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
 					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
+					<button type="button" id="cs-netbtn" title="Play online with friends: rooms, chat and races" aria-label="Online with friends" aria-expanded="false">🌐<span id="cs-netn"></span><span class="cs-bl"> Online</span></button>
 					<button type="button" id="cs-carsbtn" title="Computer cars: how many and what they do" aria-label="Computer cars" aria-expanded="false">🚗<span class="cs-bl"> Cars</span></button>
 					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
@@ -57,6 +58,32 @@
 						<button type="button" data-mm="hide" title="Hide the map" aria-label="Hide the map">✕</button>
 					</div>
 				</div>
+				<div class="cs-pop cs-npop" id="cs-npop" hidden>
+					<b>🌐 Online with friends</b>
+					<div id="cs-noff" class="cs-ncol">
+						<label class="cs-nlab">Your name <input type="text" id="cs-nname" class="cs-nin" maxlength="20" placeholder="Driver" autocomplete="nickname"></label>
+						<button type="button" class="cs-nbtn" id="cs-nmake">＋ Make a room</button>
+						<label class="cs-nlab">Or join a friend's room <span class="cs-nj"><input type="text" id="cs-ncode" class="cs-nin" maxlength="120" placeholder="Code, like k7m2pq" autocomplete="off" spellcheck="false"><button type="button" class="cs-nbtn" id="cs-njoin">Join</button></span></label>
+						<small class="cs-nstat" id="cs-nstat2" aria-live="polite"></small>
+						<small>2 to 8 players, connected straight to each other. Some strict school, work or mobile networks block such connections (there is no relay server).</small>
+					</div>
+					<div id="cs-non" class="cs-ncol" hidden>
+						<div class="cs-ncode">Room <b id="cs-ncodeb"></b> <button type="button" class="cs-mini" id="cs-ncopy">🔗 Copy link</button></div>
+						<small class="cs-nstat" id="cs-nstat" aria-live="polite"></small>
+						<ul class="cs-nlist" id="cs-nlist"></ul>
+						<div class="cs-prow" id="cs-nhostrow"><select id="cs-nlaps" aria-label="Laps"><option value="1">1 lap</option><option value="3" selected>3 laps</option><option value="5">5 laps</option><option value="10">10 laps</option></select><button type="button" class="cs-nbtn" id="cs-nstart">🏁 Start a race</button><button type="button" class="cs-mini" id="cs-nstop" hidden>End the race</button></div>
+						<small id="cs-njoinrow"><span id="cs-nwait"></span></small>
+						<div class="cs-prow"><button type="button" class="cs-mini" id="cs-nleave">Leave the room</button></div>
+					</div>
+					<div class="cs-prow"><button type="button" class="cs-mini" id="cs-npopx">Close</button></div>
+				</div>
+				<div class="cs-net" id="cs-net" hidden>
+					<div class="cs-nboard" id="cs-nboard" hidden></div>
+					<div class="cs-nlog" id="cs-nlog" aria-live="polite"></div>
+					<form class="cs-nform" id="cs-nform"><input type="text" id="cs-nmsg" maxlength="200" placeholder="Say something… (Enter sends, Esc closes)" autocomplete="off" aria-label="Chat message"><button type="submit">Send</button></form>
+					<button type="button" class="cs-nchatbtn" id="cs-nchatbtn" title="Chat with the room (Enter)" aria-label="Chat">💬</button>
+				</div>
+				<div class="cs-ncount" id="cs-ncount" hidden></div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
 				<button type="button" class="cs-unflip" id="cs-unflip" hidden>↺ Flip back over <small id="cs-unflipn"></small></button>
 				<div class="cs-replay" id="cs-replay" hidden>
@@ -178,6 +205,11 @@
 					<p class="tu-note"><b>Easy flying</b> (the default): press Take off or hold W / ↑, then steer with A / D (or the stick left / right) and climb or dive with W / S (stick up / down). Let go and the plane levels its wings and holds its height; it won't stall and it flares by itself before touching down, so to land just dive gently at the runway. Shift / Z = faster / slower. <b>Realistic</b>: you work the elevator, ailerons, rudder, throttle and flaps yourself. How to take off then: flaps at T/O (V), full throttle (hold Shift), and at lift-off speed pull back gently (S). Lift grows with the square of the air speed, with the air's density and with the wing's angle; push the angle past about 15° and the airflow breaks away from the wing: a stall. Land at a slow sink rate, under 2.5 m/s, for a good landing.</p>
 				</div>
 				<div class="cs-card">
+					<div class="cs-ch">🌐 Online with friends <span class="cs-gname" id="cs-nlabel"></span></div>
+					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn" id="cs-nopen">🌐 Play online</button></div>
+					<p class="tu-note">Make a room and send the link (or the 6-letter code) to up to 7 friends. Everyone drives on the host's world, gravity and map, sees the others' cars and planes with their names, can bump into them and chat (Enter). On a lap circuit the host can start a race: a countdown on the grid, then everyone's lap times. Each browser runs its own physics and computer cars, so crates and computer cars are only on your own screen. No account and no relay server: the cars talk straight to each other, which some strict networks block.</p>
+				</div>
+				<div class="cs-card">
 					<div class="cs-ch">Other cars</div>
 					<label class="cs-lab">Computer cars: <b id="cs-tnum">3</b><input type="range" id="cs-traffic" min="0" max="12" step="1"></label>
 					<label class="cs-lab">They should <select id="cs-ai" class="tu-select"></select></label>
@@ -250,6 +282,8 @@
 			<h3>Flying a plane</h3>
 			<p>Pick the light plane or the stunt jet under Vehicle, or press J. The test-track worlds have a 470 m runway north of the oval; any long flat road works too. The flight model is simple but honest: lift grows with the air's density, the wing area, the square of the air speed and the angle at which the wing meets the air, up to about 15 degrees; past that the airflow breaks away from the top of the wing and the plane stalls. Drag has two parts, the plain push of the air and the induced drag that comes with making lift (that is why a plane flying slowly needs more power, not less). Ailerons roll it, the elevator pitches it, the rudder yaws it, flaps give more lift and more drag so it can fly slower, and the plane is stable on its own: let go and it settles into a gentle climb or descent. A touchdown is graded by how fast you were sinking: under 2.5 m/s is a good landing.</p>
 			<p>The worlds make the lesson: on the Moon and Ceres there is no air, so the wings lift nothing and the control surfaces do nothing. Mars has about 1.6% of Earth's air, so the light plane would need over 400 km/h to lift off. At Jupiter's gravity the light plane is too heavy to fly at all, while the jet, with ten times the push, still can. (A real propeller or jet engine needs air too; in this sandbox the engine keeps pushing so you can feel what the wings do.)</p>
+			<h3>Playing online with friends</h3>
+			<p>Press 🌐 Online on the picture, type your name and make a room, then send your friends the link (or the 6-letter code). Up to 8 people can drive together on the host's world, gravity and map. Each browser runs its own physics and sends its car's position about 15 times a second straight to the others (WebRTC, no game server in between), so other players' cars glide smoothly, carry name tags, and you can bump into them. Chat with Enter. On a lap circuit the host can start a race: everyone is put on the grid, a countdown runs, and the board shows everyone's laps and finishing times. Computer cars and loose objects are separate on each screen. Some strict school, work and mobile networks block direct connections between browsers; then joining fails, because there is no relay server.</p>
 			<h3>Questions</h3>
 			<dl>
 				<dt>Why does the car slide so much on the Moon?</dt>

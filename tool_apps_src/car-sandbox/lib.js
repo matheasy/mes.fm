@@ -714,5 +714,120 @@
 	};
 	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); if (s.tod != null && Math.abs(s.tod - 13) > 0.01) p.set("t", String(+(+s.tod).toFixed(2))); if (s.speed && s.speed !== 1) p.set("spd", String(s.speed)); if (s.drive && s.drive !== "fast") p.set("dr", s.drive); return p.toString(); };
 
+	/* ---------- online with friends: WebRTC rooms (signalling in mes.fm/api/car-room.js) ----------
+	   Every browser runs its own physics; each one sends its own car's pose ~15 times a second over an unreliable data channel
+	   (68-byte binary packets, below) and draws the others as smoothly interpolated "remote" cars about 120 ms in the past.
+	   Events (names, chat, room settings, race start, laps) are small JSON objects on a second, reliable channel. Star layout:
+	   joiners connect only to the host, who passes every packet / event on to the others. */
+	C.NET = { V: 1, ABC: "abcdefghjkmnpqrstuvwxyz23456789", HZ: 15, DELAY: 120, MAXP: 8, EXTRA: 250, STALE: 8000, LEN: 68 };
+	C.NET.TYPES = C.CAR_ORDER.concat(C.PLANE_ORDER);
+	C.netCodeOk = function (s) { return typeof s === "string" && /^[a-hj-km-np-z2-9]{6}$/.test(s); };
+	C.netPeerOk = function (s) { return typeof s === "string" && /^[A-Za-z0-9]{12}$/.test(s); };
+	C.netCode = function (rnd) { rnd = rnd || Math.random; var s = ""; for (var i = 0; i < 6; i++) s += C.NET.ABC[Math.floor(rnd() * C.NET.ABC.length) % C.NET.ABC.length]; return s; };
+	C.netPeerId = function (rnd) { rnd = rnd || Math.random; var a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", s = ""; for (var i = 0; i < 12; i++) s += a[Math.floor(rnd() * 62) % 62]; return s; };
+	/* a room code typed by hand or a whole share link pasted in */
+	C.netParseCode = function (t) { t = String(t || "").trim(); var m = /[?&#]room=([A-Za-z0-9]{6})/.exec(t); if (m) t = m[1]; t = t.toLowerCase().replace(/[\s-]/g, ""); return C.netCodeOk(t) ? t : null; };
+	C.netName = function (v) { if (typeof v !== "string") return "Driver"; var s = v.replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/[​-‏‪-‮⁦-⁩]/g, "").replace(/\s+/g, " ").trim().slice(0, 20); return s || "Driver"; };
+	C.netText = function (v) { if (typeof v !== "string") return ""; return v.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/[​-‏‪-‮⁦-⁩]/g, "").replace(/\s+/g, " ").trim().slice(0, 200); };
+	C.netColor = function (v) { return typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null; };
+	/* one car's state -> 68 bytes. o = {slot, seq, t (ms), type, brake, boost, air, thr 0..1, flap 0..2, p:[x,y,z], q:[x,y,z,w], v:[x,y,z], w:[[y, steer, rot] x4]} */
+	C.netEncode = function (o) {
+		var b = new ArrayBuffer(C.NET.LEN), d = new DataView(b), ti = C.NET.TYPES.indexOf(o.type);
+		d.setUint8(0, 0x43); d.setUint8(1, o.slot & 255); d.setUint16(2, o.seq & 65535); d.setUint32(4, Math.max(0, Math.round(o.t)) >>> 0);
+		d.setUint8(8, ti < 0 ? 0 : ti); d.setUint8(9, (o.brake ? 1 : 0) | (o.boost ? 2 : 0) | (o.air ? 4 : 0));
+		d.setUint8(10, Math.max(0, Math.min(255, Math.round((o.thr || 0) * 255)))); d.setUint8(11, Math.max(0, Math.min(2, o.flap | 0)));
+		for (var i = 0; i < 3; i++) d.setFloat32(12 + i * 4, o.p[i]);
+		var q = o.q, qn = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+		for (i = 0; i < 4; i++) d.setInt16(24 + i * 2, Math.round(q[i] / qn * 32767));
+		for (i = 0; i < 3; i++) d.setFloat32(32 + i * 4, Math.max(-2000, Math.min(2000, (o.v && o.v[i]) || 0)));
+		for (i = 0; i < 4; i++) { var w = (o.w && o.w[i]) || [0, 0, 0], r = ((w[2] % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; d.setInt16(44 + i * 6, Math.max(-32767, Math.min(32767, Math.round(w[0] * 1000)))); d.setInt16(46 + i * 6, Math.max(-32767, Math.min(32767, Math.round(w[1] * 10000)))); d.setInt16(48 + i * 6, Math.round(r * 10000)); }
+		return b;
+	};
+	C.netDecode = function (b) {
+		if (!b || b.byteLength !== C.NET.LEN) return null;
+		var d = new DataView(b); if (d.getUint8(0) !== 0x43) return null;
+		var ti = d.getUint8(8); if (ti >= C.NET.TYPES.length) return null;
+		var f = d.getUint8(9), o = { slot: d.getUint8(1), seq: d.getUint16(2), t: d.getUint32(4), type: C.NET.TYPES[ti], brake: !!(f & 1), boost: !!(f & 2), air: !!(f & 4), thr: d.getUint8(10) / 255, flap: Math.min(2, d.getUint8(11)), p: [], q: [], v: [], w: [] };
+		for (var i = 0; i < 3; i++) { o.p.push(d.getFloat32(12 + i * 4)); o.v.push(d.getFloat32(32 + i * 4)); }
+		for (i = 0; i < 4; i++) o.q.push(d.getInt16(24 + i * 2) / 32767);
+		var qn = Math.hypot(o.q[0], o.q[1], o.q[2], o.q[3]); if (!(qn > 0.5)) return null; o.q = o.q.map(function (x) { return x / qn; });
+		for (i = 0; i < 4; i++) o.w.push([d.getInt16(44 + i * 6) / 1000, d.getInt16(46 + i * 6) / 10000, d.getInt16(48 + i * 6) / 10000]);
+		if (!o.p.concat(o.v).every(isFinite) || o.p.some(function (x) { return Math.abs(x) > 1e5; })) return null;
+		return o;
+	};
+	/* the slot byte is rewritten by the host before passing a packet on, so a joiner can't pretend to be another car */
+	C.netSetSlot = function (b, slot) { var c = b.slice(0); new DataView(c).setUint8(1, slot & 255); return c; };
+	/* clock: receive time minus send time, kept at its lowest (= the fastest packet), creeping up 1 ms a second so it follows clock drift */
+	C.netClock = function (est, sendT, recvT) {
+		var o = recvT - sendT;
+		if (est.off == null || o < est.off || recvT - est.last > 20000) est.off = o; else est.off = Math.min(o, est.off + (recvT - est.last) * 0.001);
+		est.last = recvT; return est.off;
+	};
+	/* a remote car's packets, oldest first; old / repeated / out-of-order packets are dropped */
+	C.netPush = function (buf, s, max) {
+		max = max || 40;
+		if (buf.length && s.t <= buf[buf.length - 1].t) { if (buf.some(function (x) { return x.t === s.t; })) return false; buf.push(s); buf.sort(function (a, b) { return a.t - b.t; }); }
+		else buf.push(s);
+		while (buf.length > max) buf.shift();
+		return true;
+	};
+	function nlerpQ(a, b, k) { var dt = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3], sg = dt < 0 ? -1 : 1, q = [0, 1, 2, 3].map(function (i) { return a[i] + (b[i] * sg - a[i]) * k; }), n = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return q.map(function (x) { return x / n; }); }
+	function lerpA(a, b, k) { var d = b - a; d = ((d + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; return a + d * k; }
+	C.netNlerp = nlerpQ;
+	/* the pose at sender time t: between two packets = interpolated, after the last one = carried on along its velocity for at most
+	   NET.EXTRA ms (then it waits), before the first = the first. Returns null for an empty buffer. */
+	C.netSample = function (buf, t) {
+		if (!buf.length) return null;
+		var first = buf[0], last = buf[buf.length - 1], r;
+		if (t <= first.t) r = { p: first.p.slice(), q: first.q.slice(), w: first.w, src: first, k: "first" };
+		else if (t >= last.t) { var e = Math.min(t - last.t, C.NET.EXTRA) / 1000; r = { p: last.p.map(function (x, i) { return x + last.v[i] * e; }), q: last.q.slice(), w: last.w, src: last, k: t - last.t > C.NET.EXTRA ? "late" : "extra" }; }
+		else {
+			for (var i = buf.length - 1; i > 0; i--) if (buf[i - 1].t <= t) break;
+			var a = buf[i - 1], b = buf[i], k = (t - a.t) / Math.max(1, b.t - a.t);
+			if (Math.hypot(b.p[0] - a.p[0], b.p[1] - a.p[1], b.p[2] - a.p[2]) > 30) k = 1; /* a reset: jump, don't slide across the map */
+			r = { p: a.p.map(function (x, j) { return x + (b.p[j] - x) * k; }), q: nlerpQ(a.q, b.q, k), w: a.w.map(function (wa, j) { var wb = b.w[j]; return [wa[0] + (wb[0] - wa[0]) * k, wa[1] + (wb[1] - wa[1]) * k, lerpA(wa[2], wb[2], k)]; }), src: k < 0.5 ? a : b, k: "lerp" };
+		}
+		r.v = r.src.v; r.type = r.src.type; r.brake = r.src.brake; r.boost = r.src.boost; r.air = r.src.air; r.thr = r.src.thr; r.flap = r.src.flap;
+		return r;
+	};
+	/* JSON events on the reliable channel: only these kinds and fields get through */
+	C.netClean = function (o) {
+		if (!o || typeof o !== "object" || typeof o.t !== "string") return null;
+		var e = { t: o.t };
+		if (typeof o.s === "number" && o.s >= 0 && o.s < 16) e.s = o.s | 0;
+		switch (o.t) {
+			case "hello": case "me": e.name = C.netName(o.name); e.car = C.CARS[o.car] ? o.car : "sports"; e.color = C.netColor(o.color) || "#d9480f"; if (o.v != null) e.v = o.v | 0; break;
+			case "welcome": e.slot = Math.max(1, Math.min(15, o.slot | 0)); e.room = C.netRoom(o.room); if (!e.room) return null; break;
+			case "room": e.room = C.netRoom(o.room); if (!e.room) return null; break;
+			case "peers": e.list = (Array.isArray(o.list) ? o.list : []).slice(0, 16).map(function (p) { return { s: Math.max(0, Math.min(15, p.s | 0)), name: C.netName(p.name), car: C.CARS[p.car] ? p.car : "sports", color: C.netColor(p.color) || "#d9480f" }; }); break;
+			case "chat": e.txt = C.netText(o.txt); if (!e.txt) return null; break;
+			case "race": e.laps = Math.max(1, Math.min(10, o.laps | 0)); e.cd = Math.max(3, Math.min(10, o.cd | 0)); e.id = String(o.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 10); break;
+			case "stop": break;
+			case "lap": e.id = String(o.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 10); e.n = Math.max(0, Math.min(99, o.n | 0)); e.time = +o.time; e.total = +o.total; if (!(e.time > 0 && e.time < 36000 && e.total > 0 && e.total < 36000)) return null; e.fin = !!o.fin; break;
+			case "bye": case "full": break;
+			default: return null;
+		}
+		return e;
+	};
+	C.netRoom = function (r) {
+		if (!r || typeof r !== "object" || !C.WORLDS[r.w]) return null;
+		var g = +r.g; if (!isFinite(g) || g < 0 || g > 300) g = C.WORLDS[r.w].g;
+		var o = { w: r.w, g: g, host: C.netName(r.host) };
+		if (typeof r.map === "string" && /^[A-Za-z0-9_-]{1,12000}$/.test(r.map)) o.map = r.map;
+		if (C.WEATHER[r.wx]) o.wx = r.wx;
+		return o;
+	};
+	/* race grid: two lanes behind the start line, 9 m apart, a car's position by its slot */
+	C.netGrid = function (slot) { return { s: -12 - Math.floor(slot / 2) * 9, lane: slot % 2 ? 3 : -3 }; };
+	/* race results: finished first (by total time), then most laps, then who got there first */
+	C.raceOrder = function (rows) {
+		return rows.slice().sort(function (a, b) {
+			if (!!a.fin !== !!b.fin) return a.fin ? -1 : 1;
+			if (a.fin) return a.total - b.total;
+			if ((b.n || 0) !== (a.n || 0)) return (b.n || 0) - (a.n || 0);
+			return (a.total || 1e9) - (b.total || 1e9);
+		});
+	};
+
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCar = C;
 })(typeof window !== "undefined" ? window : this);

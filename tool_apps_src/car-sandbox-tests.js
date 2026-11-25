@@ -225,4 +225,49 @@ ok(C.onRunway(C.RUNWAY.x + 200, C.RUNWAY.z) && !C.onRunway(0, 0), "runway area")
 var terE = C.makeTerrain("earth"), h0 = terE.height(C.RUNWAY.x - 200, C.RUNWAY.z), h1 = terE.height(C.RUNWAY.x + 200, C.RUNWAY.z + 10);
 near(h0, 0, 1e-9, "runway flat (west end)"); near(h1, 0, 1e-9, "runway flat (east end)");
 ok(C.parseQuery("w=earth&car=plane").car === "plane", "plane in a link");
+// ---------- online: codes, packets, interpolation, events ----------
+var rr = 0.123; function rnd() { rr = (rr * 9301 + 49297) % 233280 / 233280; return rr; }
+for (var ci = 0; ci < 50; ci++) { var cd = C.netCode(rnd); ok(C.netCodeOk(cd), "room code " + cd); ok(C.netPeerOk(C.netPeerId(rnd)), "peer id"); }
+ok(!C.netCodeOk("abcde1") && !C.netCodeOk("ABCDEF") && !C.netCodeOk("abcdefg"), "bad room codes refused (1, capitals, length)");
+ok(C.netParseCode("https://mes.fm/car-sandbox?room=k7m2pq") === "k7m2pq" && C.netParseCode(" K7M-2PQ ") === "k7m2pq" && C.netParseCode("hello") === null, "codes from links / typed");
+ok(C.netName("  <b>Bob</b>‮  ") === "bBob/b" && C.netName("") === "Driver" && C.netName("x".repeat(40)).length === 20, "names cleaned");
+var st0 = { slot: 3, seq: 70000, t: 123456.7, type: "jet", brake: true, boost: false, air: true, thr: 0.6, flap: 2, p: [12.5, -3.25, 4000.125], q: [0.1, 0.7, -0.2, 0.67], v: [30, -2, 5], w: [[0.31, 0.2, 7.5], [-0.1, -0.33, -1], [0, 0, 3.14], [0.2, 0, 0]] };
+var pk = C.netEncode(st0); ok(pk.byteLength === C.NET.LEN, "packet is " + C.NET.LEN + " bytes");
+var de = C.netDecode(pk);
+ok(de && de.slot === 3 && de.seq === 70000 - 65536 && de.t === 123457 && de.type === "jet" && de.brake && !de.boost && de.air && de.flap === 2, "packet header round trip");
+near(de.thr, 0.6, 0.003, "throttle"); near(de.p[2], 4000.125, 1e-3, "position"); near(de.v[0], 30, 1e-4, "velocity");
+var qn0 = Math.hypot.apply(null, st0.q); for (var qi = 0; qi < 4; qi++) near(de.q[qi], st0.q[qi] / qn0, 1e-4, "quaternion " + qi);
+near(de.w[0][0], 0.31, 1e-3, "wheel height"); near(de.w[1][1], -0.33, 1e-4, "steer"); near(Math.cos(de.w[0][2]), Math.cos(7.5), 1e-3, "wheel turn kept modulo 2 pi");
+ok(C.netDecode(new ArrayBuffer(10)) === null && C.netDecode(new ArrayBuffer(C.NET.LEN)) === null, "junk packets refused");
+var bad1 = C.netEncode(st0); new DataView(bad1).setUint8(8, 200); ok(C.netDecode(bad1) === null, "unknown vehicle refused");
+var bad2 = C.netEncode(st0); new DataView(bad2).setFloat32(12, NaN); ok(C.netDecode(bad2) === null, "NaN refused");
+ok(C.netDecode(C.netSetSlot(pk, 5)).slot === 5 && C.netDecode(pk).slot === 3, "host rewrites the slot on a copy");
+// clock offset follows the fastest packet
+var est = {}; C.netClock(est, 1000, 5100); C.netClock(est, 1100, 5180); ok(est.off === 4080, "clock takes the fastest packet");
+C.netClock(est, 1200, 5400); ok(est.off > 4080 && est.off < 4081, "clock creeps up slowly " + est.off);
+// buffer: order, duplicates, length
+var bf = []; [100, 300, 200, 300].forEach(function (t) { C.netPush(bf, { t: t }); }); ok(bf.map(function (x) { return x.t; }).join() === "100,200,300", "buffer sorted, duplicate dropped");
+for (var bi = 0; bi < 60; bi++) C.netPush(bf, { t: 400 + bi }); ok(bf.length === 40, "buffer capped");
+// interpolation
+function snap(t, x, yaw, vx) { return { t: t, p: [x, 1, 0], q: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)], v: [vx || 0, 0, 0], w: [[0.2, 0, 0], [0.2, 0, 0], [0.2, 0, 0], [0.2, 0, 6]], type: "sports" }; }
+var ib = [snap(0, 0, 0, 10), snap(100, 1, 0.4, 10), snap(200, 2, 0.8, 10)];
+var sm = C.netSample(ib, 150); near(sm.p[0], 1.5, 1e-9, "lerp position"); near(2 * Math.atan2(sm.q[1], sm.q[3]), 0.6, 1e-3, "nlerp turn"); ok(sm.k === "lerp", "lerp kind");
+var se = C.netSample(ib, 300); near(se.p[0], 3, 1e-9, "extrapolates along velocity"); ok(se.k === "extra", "extra kind");
+var sl = C.netSample(ib, 1000); near(sl.p[0], 2 + 10 * C.NET.EXTRA / 1000, 1e-9, "extrapolation capped"); ok(sl.k === "late", "late kind");
+near(C.netSample(ib, -50).p[0], 0, 1e-9, "before the first = first"); ok(C.netSample([], 5) === null, "empty buffer");
+var wb = [snap(0, 0, 0), snap(100, 0, 0)]; wb[0].w[0][2] = 3.0; wb[1].w[0][2] = -3.0; near(Math.abs(C.netSample(wb, 50).w[0][2]), Math.PI, 0.02, "wheel angle takes the short way round");
+var jb = [snap(0, 0, 0), snap(100, 500, 0)]; near(C.netSample(jb, 20).p[0], 500, 1e-9, "a reset jumps instead of sliding");
+var fq = [snap(0, 0, 0), snap(100, 0, 0)]; fq[1].q = fq[1].q.map(function (x) { return -x; }); near(Math.abs(C.netSample(fq, 50).q[3]), 1, 1e-9, "same turn with a flipped quaternion sign");
+// events
+ok(C.netClean({ t: "chat", txt: "  hi\u0000 there " }).txt === "hi there", "chat cleaned"); ok(C.netClean({ t: "chat", txt: "" }) === null, "empty chat dropped");
+ok(C.netClean({ t: "eval", x: 1 }) === null && C.netClean(null) === null && C.netClean({ t: 5 }) === null, "unknown events dropped");
+var he = C.netClean({ t: "hello", name: "Sam", car: "nope", color: "red", extra: 1 }); ok(he.car === "sports" && he.color === "#d9480f" && he.extra === undefined, "hello cleaned");
+ok(C.netClean({ t: "room", room: { w: "mars", g: 999 } }).room.g === C.WORLDS.mars.g && C.netClean({ t: "room", room: { w: "pluto" } }) === null, "room cleaned");
+ok(C.netClean({ t: "room", room: { w: "earth", g: 3, map: "bad map!" } }).room.map === undefined, "bad map string dropped");
+ok(C.netClean({ t: "lap", n: 2, time: 41.2, total: 80 }).n === 2 && C.netClean({ t: "lap", n: 2, time: -1, total: 80 }) === null, "lap events checked");
+ok(C.netClean({ t: "race", laps: 50, cd: 1 }).laps === 10 && C.netClean({ t: "race", laps: 50, cd: 1 }).cd === 3, "race limits");
+// grid + results
+var g0 = C.netGrid(0), g1 = C.netGrid(1), g2 = C.netGrid(2); ok(g0.s === g1.s && g0.lane === -g1.lane && g2.s < g0.s && g0.s < 0, "grid: two lanes behind the line");
+var ro = C.raceOrder([{ name: "a", n: 2, total: 90 }, { name: "b", fin: true, n: 3, total: 130 }, { name: "c", fin: true, n: 3, total: 120 }, { name: "d", n: 2, total: 85 }, { name: "e" }]);
+ok(ro.map(function (x) { return x.name; }).join("") === "cbdae", "race order " + ro.map(function (x) { return x.name; }).join(""));
 console.log(bad ? bad + " of " + n + " checks failed" : "all " + n + " checks passed"); process.exit(bad ? 1 : 0);

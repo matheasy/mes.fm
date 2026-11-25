@@ -290,3 +290,48 @@
 	.cs-cpop .cs-prow .cs-mini {align-self:auto;margin-top:0.4em;color:var(--cs-ink);border-color:var(--cs-line);}
 	html body.dark-mode #cs .cs-cpop .cs-mini, html body.dark-mode #cs .cs-cai button, html body.dark-mode #cs .cs-cstep {color:#f2f5fa;}
 	html body.dark-mode #cs .cs-cai button[aria-pressed="true"] {color:#fff;}
+
+	/* online with friends */
+	#cs-netbtn.cs-on {background:#1d6f3f;border-color:#3fbf72;}
+	.cs-npop {width:min(21em, 90%);max-width:min(21em, 90%);}
+	.cs-ncol {display:flex;flex-direction:column;gap:0.45em;}
+	.cs-nlab {display:flex;flex-direction:column;gap:0.2em;font-size:0.95em;}
+	.cs-nj {display:flex;gap:0.3em;}
+	.cs-nin {font:inherit;font-size:1em;min-width:0;flex:1;padding:0.35em 0.5em;border-radius:0.4em;border:1px solid var(--cs-line);background:rgba(255,255,255,0.1);color:var(--cs-ink);}
+	.cs-nin::placeholder {color:var(--cs-dim);}
+	.cs-nbtn {cursor:pointer;font:inherit;font-weight:700;padding:0.4em 0.8em;border-radius:0.45em;border:1px solid #f08a4b;background:#d9480f;color:#fff;}
+	.cs-nbtn:hover {background:#e8590c;}
+	.cs-nstat {color:#ffd8a8;min-height:1em;}
+	.cs-npop small {color:var(--cs-dim);line-height:1.35;}
+	.cs-npop small.cs-nstat {color:#ffd8a8;}
+	.cs-ncode {font-size:1.05em;display:flex;align-items:center;gap:0.5em;flex-wrap:wrap;}
+	.cs-ncode b {font-family:ui-monospace, SFMono-Regular, Menlo, monospace;font-size:1.25em;letter-spacing:0.08em;color:#ffd8a8;margin:0;}
+	.cs-nlist {list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.2em;}
+	.cs-nlist li {display:flex;align-items:center;gap:0.4em;}
+	.cs-nlist li i {width:0.8em;height:0.8em;border-radius:50%;flex:none;border:1px solid rgba(255,255,255,0.5);}
+	.cs-npop select {padding:0.3em;}
+	.cs-net {position:absolute;left:50%;bottom:0.7em;transform:translateX(-50%);width:min(24em, 64%);display:flex;flex-direction:column;align-items:stretch;gap:0.3em;pointer-events:none;z-index:3;}
+	.cs-nlog {display:flex;flex-direction:column;gap:0.15em;font-size:0.8em;}
+	.cs-nl {background:rgba(12,16,24,0.62);color:#f2f5fa;padding:0.2em 0.6em;border-radius:0.5em;align-self:flex-start;max-width:100%;overflow-wrap:anywhere;transition:opacity 1s;backdrop-filter:blur(4px);}
+	.cs-nl.sys {color:#ffd8a8;font-style:italic;}
+	.cs-nl.old {opacity:0;}
+	.cs-chatting .cs-nl.old {opacity:0.8;}
+	.cs-nform {display:none;gap:0.3em;pointer-events:auto;}
+	.cs-chatting .cs-nform {display:flex;}
+	.cs-nform input {flex:1;min-width:0;font:inherit;font-size:0.9em;padding:0.4em 0.6em;border-radius:0.45em;border:1px solid var(--cs-line);background:rgba(12,16,24,0.85);color:#f2f5fa;}
+	.cs-nform button {font:inherit;font-size:0.9em;cursor:pointer;border-radius:0.45em;border:1px solid #f08a4b;background:#d9480f;color:#fff;padding:0 0.8em;}
+	.cs-nchatbtn {pointer-events:auto;align-self:flex-end;cursor:pointer;font:inherit;width:2.3em;height:2.3em;border-radius:50%;border:1px solid var(--cs-line);background:rgba(12,16,24,0.62);color:#fff;}
+	.cs-chatting .cs-nchatbtn {display:none;}
+	.cs-nboard {align-self:flex-end;background:rgba(12,16,24,0.72);color:#f2f5fa;border-radius:0.55em;padding:0.4em 0.7em;font-size:0.8em;min-width:13em;backdrop-filter:blur(4px);}
+	.cs-nbh {font-weight:700;margin-bottom:0.2em;}
+	.cs-nbr {display:flex;gap:0.4em;align-items:baseline;}
+	.cs-nbr b {flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	.cs-nbr i {font-style:normal;font-variant-numeric:tabular-nums;color:#ffd8a8;}
+	.cs-nbr.me b {color:#8ce99a;}
+	.cs-ncount {position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:min(7em, 18vw);font-weight:900;color:#fff;text-shadow:0 4px 24px rgba(0,0,0,.7);pointer-events:none;z-index:4;}
+	.cs-stage:has(.cs-help:not([hidden])) .cs-net {bottom:4.8em;}
+	.cs-has-touch .cs-net {bottom:auto;top:3.4em;width:min(20em, 56%);}
+	.cs-replaying .cs-net, .cs-editing .cs-net {display:none !important;}
+	html body.dark-mode #cs .cs-npop small {color:#b7c0cf;}
+	html body.dark-mode #cs .cs-npop small.cs-nstat, html body.dark-mode #cs .cs-nl.sys {color:#ffd8a8;}
+	html body.dark-mode #cs .cs-nl, html body.dark-mode #cs .cs-nboard {color:#f2f5fa;}

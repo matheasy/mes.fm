@@ -714,6 +714,121 @@
 	};
 	C.query = function (s) { var p = new URLSearchParams(); p.set("w", s.world); if (s.car && C.CARS[s.car]) p.set("car", s.car); if (s.g != null && Math.abs(s.g - C.WORLDS[s.world].g) > 1e-6) p.set("g", String(+s.g.toFixed(3))); if (s.traffic) p.set("cars", s.traffic); if (s.ai && s.ai !== "cruise") p.set("ai", s.ai); if (s.weather && s.weather !== "clear" && C.weatherFor(s.world).indexOf(s.weather) >= 0) p.set("wx", s.weather); if (s.tod != null && Math.abs(s.tod - 13) > 0.01) p.set("t", String(+(+s.tod).toFixed(2))); if (s.speed && s.speed !== 1) p.set("spd", String(s.speed)); if (s.drive && s.drive !== "fast") p.set("dr", s.drive); return p.toString(); };
 
+	/* ---------- online with friends: WebRTC rooms (signalling in mes.fm/api/car-room.js) ----------
+	   Every browser runs its own physics; each one sends its own car's pose ~15 times a second over an unreliable data channel
+	   (68-byte binary packets, below) and draws the others as smoothly interpolated "remote" cars about 120 ms in the past.
+	   Events (names, chat, room settings, race start, laps) are small JSON objects on a second, reliable channel. Star layout:
+	   joiners connect only to the host, who passes every packet / event on to the others. */
+	C.NET = { V: 1, ABC: "abcdefghjkmnpqrstuvwxyz23456789", HZ: 15, DELAY: 120, MAXP: 8, EXTRA: 250, STALE: 8000, LEN: 68 };
+	C.NET.TYPES = C.CAR_ORDER.concat(C.PLANE_ORDER);
+	C.netCodeOk = function (s) { return typeof s === "string" && /^[a-hj-km-np-z2-9]{6}$/.test(s); };
+	C.netPeerOk = function (s) { return typeof s === "string" && /^[A-Za-z0-9]{12}$/.test(s); };
+	C.netCode = function (rnd) { rnd = rnd || Math.random; var s = ""; for (var i = 0; i < 6; i++) s += C.NET.ABC[Math.floor(rnd() * C.NET.ABC.length) % C.NET.ABC.length]; return s; };
+	C.netPeerId = function (rnd) { rnd = rnd || Math.random; var a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", s = ""; for (var i = 0; i < 12; i++) s += a[Math.floor(rnd() * 62) % 62]; return s; };
+	/* a room code typed by hand or a whole share link pasted in */
+	C.netParseCode = function (t) { t = String(t || "").trim(); var m = /[?&#]room=([A-Za-z0-9]{6})/.exec(t); if (m) t = m[1]; t = t.toLowerCase().replace(/[\s-]/g, ""); return C.netCodeOk(t) ? t : null; };
+	C.netName = function (v) { if (typeof v !== "string") return "Driver"; var s = v.replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/[​-‏‪-‮⁦-⁩]/g, "").replace(/\s+/g, " ").trim().slice(0, 20); return s || "Driver"; };
+	C.netText = function (v) { if (typeof v !== "string") return ""; return v.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/[​-‏‪-‮⁦-⁩]/g, "").replace(/\s+/g, " ").trim().slice(0, 200); };
+	C.netColor = function (v) { return typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : null; };
+	/* one car's state -> 68 bytes. o = {slot, seq, t (ms), type, brake, boost, air, thr 0..1, flap 0..2, p:[x,y,z], q:[x,y,z,w], v:[x,y,z], w:[[y, steer, rot] x4]} */
+	C.netEncode = function (o) {
+		var b = new ArrayBuffer(C.NET.LEN), d = new DataView(b), ti = C.NET.TYPES.indexOf(o.type);
+		d.setUint8(0, 0x43); d.setUint8(1, o.slot & 255); d.setUint16(2, o.seq & 65535); d.setUint32(4, Math.max(0, Math.round(o.t)) >>> 0);
+		d.setUint8(8, ti < 0 ? 0 : ti); d.setUint8(9, (o.brake ? 1 : 0) | (o.boost ? 2 : 0) | (o.air ? 4 : 0));
+		d.setUint8(10, Math.max(0, Math.min(255, Math.round((o.thr || 0) * 255)))); d.setUint8(11, Math.max(0, Math.min(2, o.flap | 0)));
+		for (var i = 0; i < 3; i++) d.setFloat32(12 + i * 4, o.p[i]);
+		var q = o.q, qn = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+		for (i = 0; i < 4; i++) d.setInt16(24 + i * 2, Math.round(q[i] / qn * 32767));
+		for (i = 0; i < 3; i++) d.setFloat32(32 + i * 4, Math.max(-2000, Math.min(2000, (o.v && o.v[i]) || 0)));
+		for (i = 0; i < 4; i++) { var w = (o.w && o.w[i]) || [0, 0, 0], r = ((w[2] % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI; d.setInt16(44 + i * 6, Math.max(-32767, Math.min(32767, Math.round(w[0] * 1000)))); d.setInt16(46 + i * 6, Math.max(-32767, Math.min(32767, Math.round(w[1] * 10000)))); d.setInt16(48 + i * 6, Math.round(r * 10000)); }
+		return b;
+	};
+	C.netDecode = function (b) {
+		if (!b || b.byteLength !== C.NET.LEN) return null;
+		var d = new DataView(b); if (d.getUint8(0) !== 0x43) return null;
+		var ti = d.getUint8(8); if (ti >= C.NET.TYPES.length) return null;
+		var f = d.getUint8(9), o = { slot: d.getUint8(1), seq: d.getUint16(2), t: d.getUint32(4), type: C.NET.TYPES[ti], brake: !!(f & 1), boost: !!(f & 2), air: !!(f & 4), thr: d.getUint8(10) / 255, flap: Math.min(2, d.getUint8(11)), p: [], q: [], v: [], w: [] };
+		for (var i = 0; i < 3; i++) { o.p.push(d.getFloat32(12 + i * 4)); o.v.push(d.getFloat32(32 + i * 4)); }
+		for (i = 0; i < 4; i++) o.q.push(d.getInt16(24 + i * 2) / 32767);
+		var qn = Math.hypot(o.q[0], o.q[1], o.q[2], o.q[3]); if (!(qn > 0.5)) return null; o.q = o.q.map(function (x) { return x / qn; });
+		for (i = 0; i < 4; i++) o.w.push([d.getInt16(44 + i * 6) / 1000, d.getInt16(46 + i * 6) / 10000, d.getInt16(48 + i * 6) / 10000]);
+		if (!o.p.concat(o.v).every(isFinite) || o.p.some(function (x) { return Math.abs(x) > 1e5; })) return null;
+		return o;
+	};
+	/* the slot byte is rewritten by the host before passing a packet on, so a joiner can't pretend to be another car */
+	C.netSetSlot = function (b, slot) { var c = b.slice(0); new DataView(c).setUint8(1, slot & 255); return c; };
+	/* clock: receive time minus send time, kept at its lowest (= the fastest packet), creeping up 1 ms a second so it follows clock drift */
+	C.netClock = function (est, sendT, recvT) {
+		var o = recvT - sendT;
+		if (est.off == null || o < est.off || recvT - est.last > 20000) est.off = o; else est.off = Math.min(o, est.off + (recvT - est.last) * 0.001);
+		est.last = recvT; return est.off;
+	};
+	/* a remote car's packets, oldest first; old / repeated / out-of-order packets are dropped */
+	C.netPush = function (buf, s, max) {
+		max = max || 40;
+		if (buf.length && s.t <= buf[buf.length - 1].t) { if (buf.some(function (x) { return x.t === s.t; })) return false; buf.push(s); buf.sort(function (a, b) { return a.t - b.t; }); }
+		else buf.push(s);
+		while (buf.length > max) buf.shift();
+		return true;
+	};
+	function nlerpQ(a, b, k) { var dt = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3], sg = dt < 0 ? -1 : 1, q = [0, 1, 2, 3].map(function (i) { return a[i] + (b[i] * sg - a[i]) * k; }), n = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return q.map(function (x) { return x / n; }); }
+	function lerpA(a, b, k) { var d = b - a; d = ((d + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; return a + d * k; }
+	C.netNlerp = nlerpQ;
+	/* the pose at sender time t: between two packets = interpolated, after the last one = carried on along its velocity for at most
+	   NET.EXTRA ms (then it waits), before the first = the first. Returns null for an empty buffer. */
+	C.netSample = function (buf, t) {
+		if (!buf.length) return null;
+		var first = buf[0], last = buf[buf.length - 1], r;
+		if (t <= first.t) r = { p: first.p.slice(), q: first.q.slice(), w: first.w, src: first, k: "first" };
+		else if (t >= last.t) { var e = Math.min(t - last.t, C.NET.EXTRA) / 1000; r = { p: last.p.map(function (x, i) { return x + last.v[i] * e; }), q: last.q.slice(), w: last.w, src: last, k: t - last.t > C.NET.EXTRA ? "late" : "extra" }; }
+		else {
+			for (var i = buf.length - 1; i > 0; i--) if (buf[i - 1].t <= t) break;
+			var a = buf[i - 1], b = buf[i], k = (t - a.t) / Math.max(1, b.t - a.t);
+			if (Math.hypot(b.p[0] - a.p[0], b.p[1] - a.p[1], b.p[2] - a.p[2]) > 30) k = 1; /* a reset: jump, don't slide across the map */
+			r = { p: a.p.map(function (x, j) { return x + (b.p[j] - x) * k; }), q: nlerpQ(a.q, b.q, k), w: a.w.map(function (wa, j) { var wb = b.w[j]; return [wa[0] + (wb[0] - wa[0]) * k, wa[1] + (wb[1] - wa[1]) * k, lerpA(wa[2], wb[2], k)]; }), src: k < 0.5 ? a : b, k: "lerp" };
+		}
+		r.v = r.src.v; r.type = r.src.type; r.brake = r.src.brake; r.boost = r.src.boost; r.air = r.src.air; r.thr = r.src.thr; r.flap = r.src.flap;
+		return r;
+	};
+	/* JSON events on the reliable channel: only these kinds and fields get through */
+	C.netClean = function (o) {
+		if (!o || typeof o !== "object" || typeof o.t !== "string") return null;
+		var e = { t: o.t };
+		if (typeof o.s === "number" && o.s >= 0 && o.s < 16) e.s = o.s | 0;
+		switch (o.t) {
+			case "hello": case "me": e.name = C.netName(o.name); e.car = C.CARS[o.car] ? o.car : "sports"; e.color = C.netColor(o.color) || "#d9480f"; if (o.v != null) e.v = o.v | 0; break;
+			case "welcome": e.slot = Math.max(1, Math.min(15, o.slot | 0)); e.room = C.netRoom(o.room); if (!e.room) return null; break;
+			case "room": e.room = C.netRoom(o.room); if (!e.room) return null; break;
+			case "peers": e.list = (Array.isArray(o.list) ? o.list : []).slice(0, 16).map(function (p) { return { s: Math.max(0, Math.min(15, p.s | 0)), name: C.netName(p.name), car: C.CARS[p.car] ? p.car : "sports", color: C.netColor(p.color) || "#d9480f" }; }); break;
+			case "chat": e.txt = C.netText(o.txt); if (!e.txt) return null; break;
+			case "race": e.laps = Math.max(1, Math.min(10, o.laps | 0)); e.cd = Math.max(3, Math.min(10, o.cd | 0)); e.id = String(o.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 10); break;
+			case "stop": break;
+			case "lap": e.id = String(o.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 10); e.n = Math.max(0, Math.min(99, o.n | 0)); e.time = +o.time; e.total = +o.total; if (!(e.time > 0 && e.time < 36000 && e.total > 0 && e.total < 36000)) return null; e.fin = !!o.fin; break;
+			case "bye": case "full": break;
+			default: return null;
+		}
+		return e;
+	};
+	C.netRoom = function (r) {
+		if (!r || typeof r !== "object" || !C.WORLDS[r.w]) return null;
+		var g = +r.g; if (!isFinite(g) || g < 0 || g > 300) g = C.WORLDS[r.w].g;
+		var o = { w: r.w, g: g, host: C.netName(r.host) };
+		if (typeof r.map === "string" && /^[A-Za-z0-9_-]{1,12000}$/.test(r.map)) o.map = r.map;
+		if (C.WEATHER[r.wx]) o.wx = r.wx;
+		return o;
+	};
+	/* race grid: two lanes behind the start line, 9 m apart, a car's position by its slot */
+	C.netGrid = function (slot) { return { s: -12 - Math.floor(slot / 2) * 9, lane: slot % 2 ? 3 : -3 }; };
+	/* race results: finished first (by total time), then most laps, then who got there first */
+	C.raceOrder = function (rows) {
+		return rows.slice().sort(function (a, b) {
+			if (!!a.fin !== !!b.fin) return a.fin ? -1 : 1;
+			if (a.fin) return a.total - b.total;
+			if ((b.n || 0) !== (a.n || 0)) return (b.n || 0) - (a.n || 0);
+			return (a.total || 1e9) - (b.total || 1e9);
+		});
+	};
+
 	if (typeof module !== "undefined" && module.exports) module.exports = C; else root.MESCar = C;
 })(typeof window !== "undefined" ? window : this);
 
@@ -818,7 +933,7 @@
 	function clearWorld() {
 		if (worldGroup) { scene.remove(worldGroup); worldGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (m) { if (m.map) m.map.dispose(); m.dispose(); }); } }); }
 		if (skyGroup) scene.remove(skyGroup); skyGroup = null; skyRef = null;
-		cars.forEach(function (c) { scene.remove(c.group); }); objs.forEach(function (o) { scene.remove(o.mesh); });
+		cars.forEach(function (c) { scene.remove(c.group); }); objs.forEach(function (o) { scene.remove(o.mesh); }); netWorldCleared();
 		cars = []; objs = []; statics = []; pieceBodies = []; ovalBodies = []; lapPath = null; mmBg = null; parts.clear(); lampMat = null; groundMat = trackMat = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
 		if (phys) { phys.free(); phys = null; }
 	}
@@ -844,6 +959,7 @@
 		setTraffic(S.traffic);
 		camSnap = true;
 		updateGravityUI(); updateHud(true); applyShow();
+		netWorldBuilt();
 	}
 	function startPose(i) {
 		if (lapPath) { var q = C.pathPoint(lapPath, i ? 30 + i * 16 : (lapPath.closed ? -8 : 4)), ln = (i % 2 ? 1 : -1) * (i ? Math.min(3.5, lapPath.w / 3) : 0); return { x: q.x + Math.cos(q.dir) * ln, z: q.z - Math.sin(q.dir) * ln, yaw: q.dir }; }
@@ -956,7 +1072,7 @@
 	}
 	function setWeather(k) {
 		if (C.weatherFor(S.world).indexOf(k) < 0) { toast(W.rho ? "Not on this world" : "No air on " + W.name.replace(/ \(.*/, "") + ", so no weather"); return; }
-		S.weather = k; save(); applyLighting(); updateGravityUI(); syncUrl();
+		S.weather = k; save(); applyLighting(); updateGravityUI(); syncUrl(); netRoomChanged();
 		var X = wx(); $("cs-wx").value = k;
 		toast(X.name + (X.grip < 1 ? ": tyre grip " + Math.round(X.grip * 100) + "% of dry, so brake earlier" : ""));
 	}
@@ -1085,6 +1201,7 @@
 	function hashStr(t) { var h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
 	function disposeKids(gr) { while (gr.children.length) { var o = gr.children.pop(); o.traverse(function (q) { if (q.geometry) q.geometry.dispose(); }); } }
 	function buildMapContent(rebuild) {
+		if (rebuild) netRoomChanged();
 		pieceBodies.forEach(function (b) { phys.removeRigidBody(b); }); pieceBodies = []; disposeKids(pieceGroup); statics = []; pads = [];
 		var m = curMap(), on = ovalOn();
 		ovalGroup.visible = on; ovalBodies.forEach(function (b) { b.setEnabled(on); });
@@ -1714,6 +1831,7 @@
 	document.addEventListener("keydown", function (e) {
 		if (edOpen && phys) { edKey(e); return; }
 		if (inField(e) || !phys) return;
+		if (e.key === "Enter" && NET && NET.live && !e.repeat) { e.preventDefault(); netChatOpen(); return; }
 		var k = e.key.toLowerCase(), flying = !!(cars[player] && cars[player].d.fly), drive = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", " ", "shift"].indexOf(k) >= 0 || (flying && ["q", "e", "z", "control"].indexOf(k) >= 0);
 		if (!driving()) { if (drive && stageVisible() && !e.ctrlKey && !e.metaKey && document.activeElement === document.body && k !== " ") { /* allow driving without clicking first if the picture is mostly on screen */ kbActive = true; } else return; }
 		if (drive) e.preventDefault();
@@ -2115,7 +2233,7 @@
 				if (isBest) { REC.laps[lapKey()] = { time: e.time, splits: e.splits }; saveRec(); var r = c.body.rotation(); ghostRec.push(C.ghostSample(e.time, t, r)); ghostSave(ghostRec); }
 				ghostRec = [];
 				toast("Lap " + lap.laps + ": " + C.fmtLap(e.time) + (isBest ? (best ? "  · new best by " + (best.time - e.time).toFixed(2) + " s!" : "  · first lap set!") : "  (+" + (e.time - best.time).toFixed(2) + ")"));
-				sfx("pop", 1);
+				sfx("pop", 1); if (NET) netLap(e);
 			}
 			else if (e.t === "wrong" && simT - wrongT > 4) { wrongT = simT; toast("Wrong way! Laps run the other way round"); }
 		});
@@ -2145,6 +2263,7 @@
 	}
 	function step(dt) {
 		var pin = readInput();
+		netHold(); netDrive(dt);
 		cars.forEach(function (c, i) { driveCar(c, i === player && !autoPilot ? pin : aiInput(c, dt), dt); c.veh.updateVehicle(dt); c.preE = carEnergy(c); });
 		phys.step(eventQ);
 		cars.forEach(energyGuard);
@@ -2402,13 +2521,15 @@
 
 	/* ===================== gravity ===================== */
 	function setGravity(g) {
+		if (NET && !NET.host && !netApplying && NET.live) { updateGravityUI(); toast("In an online room the host sets the gravity"); return; }
 		if (Math.abs(g - gravity) > 1e-6) lap.valid = false; /* a new gravity starts a new set of best laps */
 		gravity = g; S.g = Math.abs(g - W.g) < 1e-6 ? null : g; save();
 		phys.gravity = { x: 0, y: gFlip > 0 ? Math.abs(g) * 0.6 : -g, z: 0 };
 		cars.forEach(function (c) { c.body.wakeUp(); setSuspForce(c); }); objs.forEach(function (o) { o.body.wakeUp(); });
-		updateGravityUI();
+		updateGravityUI(); netRoomChanged();
 	}
 	function flipGravity() {
+		if (NET && NET.live && !NET.host) { toast("In an online room the host sets the gravity"); return; }
 		if (gFlip > 0) { gFlip = 0; setGravity(gravity); return; }
 		gFlip = 2.5; lap.valid = false; phys.gravity = { x: 0, y: Math.max(1.5, gravity) * 0.6, z: 0 };
 		cars.forEach(function (c) { c.body.wakeUp(); }); objs.forEach(function (o) { o.body.wakeUp(); });
@@ -2617,6 +2738,7 @@
 		var c = cars[player];
 		if (c && sunLight.userData.dir) { var t2 = c.body.translation(); sunLight.target.position.set(t2.x, t2.y, t2.z); sunLight.position.set(t2.x, t2.y, t2.z).addScaledVector(sunLight.userData.dir, 150); }
 		if (skyGroup) skyGroup.position.copy(camera.position);
+		netSync();
 		headlights();
 	}
 	function render() { renderer.render(scene, camera); }
@@ -2653,7 +2775,7 @@
 		wxOpts(); $("cs-world").addEventListener("change", wxOpts);
 		$("cs-wx").addEventListener("change", function () { setWeather(this.value); });
 		$("cs-wdesc").textContent = C.WORLDS[S.world].desc;
-		$("cs-world").addEventListener("change", function () { S.world = this.value; S.g = null; S.car = null; $("cs-car").value = ""; save(); $("cs-wdesc").textContent = C.WORLDS[S.world].desc; buildWorld(); syncUrl(); });
+		$("cs-world").addEventListener("change", function () { if (NET && NET.live && !NET.host) { this.value = S.world; toast("In an online room the host picks the world"); return; } S.world = this.value; S.g = null; S.car = null; $("cs-car").value = ""; save(); $("cs-wdesc").textContent = C.WORLDS[S.world].desc; buildWorld(); syncUrl(); });
 		$("cs-car").addEventListener("change", function () { var v = this.value || null; if (C.isPlane(v)) { togglePlane(v); this.blur(); return; } S.car = v; if (v) S.lastCar = v; save(); swapPlayerCar(); syncUrl(); });
 		$("cs-fly").addEventListener("click", function () { togglePlane("plane"); }); $("cs-flyjet").addEventListener("click", function () { togglePlane("jet"); });
 		$("cs-backcar").addEventListener("click", function () { if (cars[player].d.fly) togglePlane(); });
@@ -3108,13 +3230,493 @@
 
 	/* ===================== start ===================== */
 	setupDomOnly();
+	/* ===================== online with friends (WebRTC) =====================
+	   Signalling (offer / answer, every ICE candidate inside the SDP: no trickle) goes through mes.fm/api/car-room.js; on 127.0.0.1 /
+	   localhost / ?mock=1 a localStorage stand-in does the same, so two tabs can test it. Star layout: each joiner has one
+	   RTCPeerConnection to the host with two data channels: "s" (unreliable, unordered: 68-byte car packets, C.netEncode) and "r"
+	   (reliable: JSON events, C.netClean). The host passes packets and events on to the others. Every browser runs its own physics;
+	   another player's car is a dynamic body with no gravity steered by its velocity towards where that player says it is, so bumps
+	   push both cars a little and then it slides back to its true place. Computer cars and loose objects stay on each screen. */
+	var NET = null, remotes = {}, netApplying = false, netIv = null, netRoomT = null, NKEY = "mes-car-sandbox:net";
+	var NETP = load(NKEY, { name: "" });
+	var MOCK = /^(127\.0\.0\.1|localhost)$/.test(location.hostname) || /[?&]mock=1/.test(location.search);
+	var ICE = [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun.cloudflare.com:3478" }];
+	function netMyName() { return C.netName(NETP.name || ""); }
+	/* ---------- signalling client (real API or the localStorage stand-in) ---------- */
+	var MK = "mes-car-sandbox:mock:";
+	function mget(k) { try { return JSON.parse(localStorage.getItem(MK + k)); } catch (e) { return null; } }
+	function mset(k, v) { try { if (v == null) localStorage.removeItem(MK + k); else localStorage.setItem(MK + k, JSON.stringify(v)); } catch (e) { /* ignore */ } }
+	function mockSig(op, b) {
+		var r = b.code ? mget("r:" + b.code) : null;
+		if (op === "info") return r ? { ok: true, body: { host: r.host, name: r.name, room: r.room } } : { ok: false, status: 404, body: { error: "No room with that code (rooms close 3 hours after the host leaves)." } };
+		if (op === "new") { var code = C.netCode(); mset("r:" + code, { host: b.peer, name: C.netName(b.name), room: b.room, created: Date.now() }); return { ok: true, body: { code: code } }; }
+		if (op === "send") { if (!r) return { ok: false, status: 404, body: { error: "That room has closed." } }; var box = mget("m:" + b.code + ":" + b.to) || []; box.push({ from: b.from, kind: b.kind, sdp: b.sdp || null, name: C.netName(b.name), at: Date.now() }); mset("m:" + b.code + ":" + b.to, box.slice(-30)); return { ok: true, body: { ok: true } }; }
+		if (op === "recv") { var m = mget("m:" + b.code + ":" + b.peer) || []; mset("m:" + b.code + ":" + b.peer, null); return { ok: true, body: { msgs: m, alive: !!r } }; }
+		if (op === "room") { if (r && r.host === b.peer) { r.room = b.room; mset("r:" + b.code, r); } return { ok: true, body: { ok: true } }; }
+		if (op === "close") { if (r && r.host === b.peer) mset("r:" + b.code, null); return { ok: true, body: { ok: true } }; }
+		return { ok: false, status: 400, body: { error: "?" } };
+	}
+	function sig(op, b) {
+		if (MOCK) return new Promise(function (res) { setTimeout(function () { res(mockSig(op, b)); }, 30); });
+		var f = op === "info" ? fetch("/api/car-room?code=" + encodeURIComponent(b.code), { cache: "no-store" })
+			: fetch("/api/car-room", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ act: op }, b)), keepalive: op === "close" });
+		return f.then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }, function () { return { ok: false, status: r.status, body: { error: "The room server did not answer properly." } }; }); }, function () { return { ok: false, status: 0, body: { error: "Could not reach the room server: check your connection." } }; });
+	}
+	/* ---------- connections ---------- */
+	function gathered(pc) {
+		return new Promise(function (res) {
+			if (pc.iceGatheringState === "complete") { res(); return; }
+			var t = setTimeout(res, 3500);
+			pc.addEventListener("icegatheringstatechange", function () { if (pc.iceGatheringState === "complete") { clearTimeout(t); res(); } });
+		});
+	}
+	function wireChan(L, dc) {
+		dc.binaryType = "arraybuffer";
+		if (dc.label === "s") L.s = dc; else L.r = dc;
+		dc.onopen = function () { if (dc.label === "r") netLinkOpen(L); };
+		dc.onclose = function () { if (dc.label === "r") netLinkGone(L); };
+		dc.onmessage = function (ev) { if (dc.label === "s") netGotState(L, ev.data); else netGotEvent(L, ev.data); };
+	}
+	function newLink(peer) {
+		var L = { peer: peer, pc: new RTCPeerConnection({ iceServers: ICE }), s: null, r: null, slot: 0, name: "", car: "sports", color: "#888888", born: performance.now(), open: false };
+		L.pc.onconnectionstatechange = function () { var st = L.pc.connectionState; if (st === "failed" || st === "closed") netLinkGone(L); };
+		return L;
+	}
+	function sendR(L, e) { if (L && L.r && L.r.readyState === "open") { try { L.r.send(JSON.stringify(e)); } catch (x) { /* closing */ } } }
+	function sendS(L, b) { if (L && L.s && L.s.readyState === "open" && L.s.bufferedAmount < 64000) { try { L.s.send(b); } catch (x) { /* closing */ } } }
+	function links() { return NET && NET.host ? Object.keys(NET.links).map(function (k) { return NET.links[k]; }) : NET && NET.hostLink ? [NET.hostLink] : []; }
+	function bcastR(e, except) { links().forEach(function (L) { if (L !== except && L.open) sendR(L, e); }); }
+	/* ---------- host ---------- */
+	function netMake() {
+		if (NET) return;
+		if (!window.RTCPeerConnection) { netStatus("This browser can't do peer-to-peer connections (WebRTC)."); return; }
+		var peer = C.netPeerId();
+		netStatus("Making a room…");
+		sig("new", { peer: peer, name: netMyName(), room: netRoomObj() }).then(function (r) {
+			if (!r.ok) { netStatus(r.body.error || "Could not make a room."); return; }
+			NET = { code: r.body.code, peer: peer, host: true, slot: 0, links: {}, roster: {}, live: true, t0: performance.now(), seq: 0, pend: 0, race: null };
+			NET.roster[0] = { name: netMyName(), car: cars[player].type, color: cars[player].color };
+			netStart(); netPoll();
+			toast("Room " + r.body.code + " is open: send the link to your friends");
+			netCopyLink(true);
+		});
+	}
+	function netPoll() {
+		if (!NET || !NET.host) return;
+		sig("recv", { code: NET.code, peer: NET.peer }).then(function (r) {
+			if (!NET || !NET.host) return;
+			if (r.ok) {
+				if (r.body.alive === false) { netStatus("The room expired: make a new one."); }
+				(r.body.msgs || []).forEach(function (m) { if (m.kind === "offer" && C.netPeerOk(m.from) && typeof m.sdp === "string") netAccept(m); });
+			}
+			var full = Object.keys(NET.links).length >= C.NET.MAXP - 1;
+			NET.pollT = setTimeout(netPoll, NET.pend > 0 ? 1000 : full ? 8000 : document.hidden ? 5000 : 2000);
+		});
+	}
+	function freeSlot() { for (var s = 1; s < C.NET.MAXP; s++) { var used = false; for (var k in NET.links) if (NET.links[k].slot === s) used = true; if (!used) return s; } return 0; }
+	function netAccept(m) {
+		var old = NET.links[m.from]; if (old) { try { old.pc.close(); } catch (e) { /* ignore */ } delete NET.links[m.from]; }
+		var slot = freeSlot();
+		if (!slot) { sig("send", { code: NET.code, from: NET.peer, to: m.from, kind: "bye" }); return; }
+		var L = newLink(m.from); L.slot = slot; L.name = C.netName(m.name); NET.links[m.from] = L; NET.pend++;
+		L.pc.ondatachannel = function (ev) { wireChan(L, ev.channel); };
+		L.pc.setRemoteDescription({ type: "offer", sdp: m.sdp }).then(function () { return L.pc.createAnswer(); }).then(function (a) { return L.pc.setLocalDescription(a); }).then(function () { return gathered(L.pc); })
+			.then(function () { return sig("send", { code: NET.code, from: NET.peer, to: m.from, kind: "answer", sdp: L.pc.localDescription.sdp, name: netMyName() }); })
+			.catch(function (e) { console.warn("car-room accept", e); netLinkGone(L); });
+		setTimeout(function () { if (NET && NET.links[L.peer] === L && !L.open) { netLinkGone(L); } }, 30000);
+		netStatus(L.name + " is connecting…");
+	}
+	/* ---------- joiner ---------- */
+	function netJoin(code) {
+		if (NET) return;
+		code = C.netParseCode(code); if (!code) { netStatus("That isn't a room code: 6 letters and digits, like k7m2pq."); return; }
+		if (!window.RTCPeerConnection) { netStatus("This browser can't do peer-to-peer connections (WebRTC)."); return; }
+		netStatus("Looking for room " + code + "…");
+		sig("info", { code: code }).then(function (r) {
+			if (!r.ok) { netStatus(r.body.error || "No room with that code."); return; }
+			var peer = C.netPeerId(), L = newLink(r.body.host);
+			NET = { code: code, peer: peer, host: false, slot: -1, hostLink: L, roster: {}, live: false, t0: performance.now(), seq: 0, race: null, hostName: C.netName(r.body.name) };
+			wireChan(L, L.pc.createDataChannel("s", { ordered: false, maxRetransmits: 0 }));
+			wireChan(L, L.pc.createDataChannel("r", { ordered: true }));
+			netStatus("Connecting to " + NET.hostName + "'s room (" + (C.WORLDS[r.body.room.w] || C.WORLDS.earth).name + ")…");
+			netUi();
+			L.pc.createOffer().then(function (o) { return L.pc.setLocalDescription(o); }).then(function () { return gathered(L.pc); })
+				.then(function () { return sig("send", { code: code, from: peer, to: r.body.host, kind: "offer", sdp: L.pc.localDescription.sdp, name: netMyName() }); })
+				.then(function (s) { if (!s.ok) throw new Error(s.body.error || "send failed"); netWaitAnswer(L, Date.now()); })
+				.catch(function (e) { netFail("Could not start the connection: " + (e && e.message || e)); });
+		});
+	}
+	function netWaitAnswer(L, since) {
+		if (!NET || NET.hostLink !== L || L.open) return;
+		if (Date.now() - since > 30000) { netFail("No answer from the host after 30 seconds. They may have left, or one of your networks blocks direct connections."); return; }
+		sig("recv", { code: NET.code, peer: NET.peer }).then(function (r) {
+			if (!NET || NET.hostLink !== L) return;
+			var got = false;
+			if (r.ok) {
+				if (r.body.alive === false) { netFail("That room has closed."); return; }
+				(r.body.msgs || []).forEach(function (m) {
+					if (m.from !== L.peer) return;
+					if (m.kind === "bye") { got = true; netFail("That room is full (8 players)."); }
+					else if (m.kind === "answer" && !L.answered) { got = true; L.answered = true; L.pc.setRemoteDescription({ type: "answer", sdp: m.sdp }).catch(function (e) { netFail("Bad answer from the host: " + e.message); }); netStatus("Answer received: opening the direct connection…"); }
+				});
+			}
+			if (!got && !L.answered) setTimeout(function () { netWaitAnswer(L, since); }, 1000);
+			else if (L.answered) setTimeout(function () { if (NET && NET.hostLink === L && !L.open) netFail("The direct connection did not open. One of your networks (school, work or some mobile networks) probably blocks peer-to-peer connections; there is no relay server here."); }, 15000);
+		});
+	}
+	function netFail(t) { netLeave(true); netStatus(t); toast("Online: " + t.split(".")[0]); }
+	/* ---------- a connection opened / closed ---------- */
+	function netLinkOpen(L) {
+		L.open = true;
+		if (NET.host) { NET.pend = Math.max(0, NET.pend - 1); return; } /* the joiner speaks first (hello) */
+		var c = cars[player]; sendR(L, { t: "hello", name: netMyName(), car: c.type, color: c.color, v: C.NET.V });
+	}
+	function netLinkGone(L) {
+		if (!NET || L.gone) return; L.gone = true;
+		try { L.pc.close(); } catch (e) { /* ignore */ }
+		if (NET.host) {
+			if (NET.links[L.peer] === L) delete NET.links[L.peer];
+			if (!L.open) NET.pend = Math.max(0, NET.pend - 1);
+			if (L.slot && NET.roster[L.slot]) { toast((L.name || "A player") + " left"); delete NET.roster[L.slot]; remoteDrop(remotes[L.slot]); delete remotes[L.slot]; netPeers(); }
+			netUi();
+		} else if (NET.hostLink === L && L.open) { netLeave(true); netStatus("The host closed the room (or the connection dropped)."); toast("Online: the room closed"); }
+	}
+	/* ---------- data in ---------- */
+	function netGotState(L, data) {
+		if (!(data instanceof ArrayBuffer)) return;
+		var pk = C.netDecode(data); if (!pk) return;
+		if (NET.host) {
+			if (!L.slot || !L.hello) return;
+			pk.slot = L.slot; var fw = C.netSetSlot(data, L.slot);
+			links().forEach(function (o) { if (o !== L && o.open) sendS(o, fw); });
+		} else if (pk.slot === NET.slot) return;
+		netState(pk);
+	}
+	function netGotEvent(L, data) {
+		if (typeof data !== "string" || data.length > 20000) return;
+		var o; try { o = JSON.parse(data); } catch (e) { return; }
+		var e = C.netClean(o); if (!e) return;
+		if (NET.host) {
+			e.s = L.slot;
+			if (e.t === "hello") {
+				L.hello = true; L.name = e.name; L.car = e.car; L.color = e.color;
+				NET.roster[L.slot] = { name: e.name, car: e.car, color: e.color };
+				sendR(L, { t: "welcome", slot: L.slot, room: netRoomObj() });
+				if (NET.race) sendR(L, { t: "race", laps: NET.race.laps, cd: 3, id: NET.race.id, late: 1 });
+				netPeers(); toast(e.name + " joined"); netSay(null, e.name + " joined the room"); netStatus(""); netUi(); return;
+			}
+			if (!L.hello) return;
+			if (e.t === "me") { L.name = e.name; L.car = e.car; L.color = e.color; NET.roster[L.slot] = { name: e.name, car: e.car, color: e.color }; netPeers(); return; }
+			if (e.t === "chat" || e.t === "lap") bcastR(e, L);
+			if (e.t === "bye") { netLinkGone(L); return; }
+			if (["chat", "lap"].indexOf(e.t) < 0) return; /* joiners may not send room / race / peers events */
+		}
+		netEvent(e);
+	}
+	function netState(pk) {
+		var R = remotes[pk.slot], now = performance.now();
+		if (!R) { var ro = NET.roster[pk.slot] || {}; R = remotes[pk.slot] = { slot: pk.slot, buf: [], est: {}, name: ro.name || "Player", color: ro.color || "#888888", type: null }; }
+		R.lastRecv = now; C.netClock(R.est, pk.t, now); C.netPush(R.buf, pk);
+		if (phys && R.type !== pk.type) remoteBuild(R, pk.type);
+	}
+	function netEvent(e) {
+		if (e.t === "welcome") {
+			NET.slot = e.slot; NET.live = true; NET.roster[e.slot] = { name: netMyName(), car: cars[player].type, color: cars[player].color };
+			netApplyRoom(e.room); netStart(); netStatus(""); netSpot();
+			toast("You're in " + (e.room.host || "the host") + "'s room"); netSay(null, "Joined " + (e.room.host || "the host") + "'s room. Press Enter to chat.");
+		} else if (e.t === "room") netApplyRoom(e.room);
+		else if (e.t === "peers") {
+			var keep = {}; NET.roster = {};
+			e.list.forEach(function (p) { NET.roster[p.s] = { name: p.name, car: p.car, color: p.color }; keep[p.s] = 1; var R = remotes[p.s]; if (R) remoteLook(R, p.name, p.color); });
+			Object.keys(remotes).forEach(function (s) { if (!keep[s]) { remoteDrop(remotes[s]); delete remotes[s]; } });
+			/* the first list: same paint as someone already in the room and no paint picked = take another one for this room */
+			if (!NET.painted && NET.slot > 0) {
+				NET.painted = true;
+				var mc = cars[player], taken = e.list.filter(function (p) { return p.s !== NET.slot; }).map(function (p) { return p.color; });
+				if (!S.color && taken.indexOf(mc.color) >= 0) { var free = C.PAINT.filter(function (x) { return taken.indexOf(x) < 0; }), pc = free[(NET.slot * 3) % free.length] || mc.color; mc.color = pc; mc.paint.color.set(pc); }
+			}
+			netUi();
+		} else if (e.t === "chat") { var ro = NET.roster[e.s]; netSay(ro ? ro.name : "Player", e.txt); sfx("pop", 0.4); }
+		else if (e.t === "race") raceStart(e);
+		else if (e.t === "stop") { NET.race = null; $("cs-ncount").hidden = true; netBoard(); netUi(); toast("Race ended"); }
+		else if (e.t === "lap" && NET.race && e.id === NET.race.id) { var rr = NET.race.rows[e.s] || (NET.race.rows[e.s] = {}); rr.n = e.n; rr.total = e.total; rr.fin = e.fin; rr.time = e.time; netBoard(); if (e.fin) { var rn = NET.roster[e.s]; toast((rn ? rn.name : "Someone") + " finished: " + C.fmtLap(e.total)); } }
+	}
+	/* the host's peers list (with the host itself as slot 0) */
+	function netPeers() {
+		if (!NET || !NET.host) return;
+		var c = cars[player]; NET.roster[0] = { name: netMyName(), car: c.type, color: c.color };
+		var list = Object.keys(NET.roster).map(function (s) { var r = NET.roster[s]; if (remotes[s]) remoteLook(remotes[s], r.name, r.color); return { s: +s, name: r.name, car: r.car, color: r.color }; });
+		bcastR({ t: "peers", list: list }); netUi();
+	}
+	/* ---------- the room's world ---------- */
+	function netRoomObj() { return { w: S.world, g: gravity, map: C.mapEncode(curMap()), wx: S.weather, dr: S.drive, host: netMyName() }; }
+	function netRoomChanged() {
+		if (!NET || !NET.host || netApplying) return;
+		clearTimeout(netRoomT);
+		netRoomT = setTimeout(function () { if (!NET || !NET.host) return; var r = netRoomObj(); bcastR({ t: "room", room: r }); sig("room", { code: NET.code, peer: NET.peer, room: r }); }, 500);
+	}
+	function netApplyRoom(r) {
+		if (!r) return;
+		netApplying = true;
+		try {
+			var wasMap = W ? C.mapEncode(curMap()) : "", newWorld = S.world !== r.w;
+			S.world = r.w; if (r.dr && C.DRIVE[r.dr]) S.drive = r.dr;
+			var m = r.map ? C.mapDecode(r.map) : null;
+			sharedMap = m ? { world: r.w, m: m } : null;
+			S.g = Math.abs(r.g - C.WORLDS[r.w].g) < 1e-6 ? null : r.g;
+			if (r.wx && C.weatherFor(r.w).indexOf(r.wx) >= 0) S.weather = r.wx;
+			$("cs-world").value = S.world; $("cs-wdesc").textContent = C.WORLDS[S.world].desc;
+			if (newWorld || !W || (r.map && r.map !== wasMap)) buildWorld();
+			else { if (Math.abs(gravity - r.g) > 1e-6) setGravity(r.g); applyLighting(); }
+			$("cs-wx").value = S.weather; syncGameUI();
+		} finally { netApplying = false; }
+	}
+	/* ---------- other players' cars ---------- */
+	function remoteBuild(R, type) {
+		remoteDrop(R); R.type = type; var d = R.d = C.CARS[type];
+		R.vis = makeCarMesh(d, R.color); scene.add(R.vis.group);
+		R.label = netLabel(R.name); scene.add(R.label);
+		if (!phys) return;
+		var s = R.buf.length ? R.buf[R.buf.length - 1] : null, p = s ? s.p : [0, -500, 0], q = s ? s.q : [0, 0, 0, 1];
+		var w = d.w || 1.8, h = d.h || 1.4, l = d.l || 4.5;
+		R.body = phys.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p[0], p[1], p[2]).setRotation({ x: q[0], y: q[1], z: q[2], w: q[3] }).setGravityScale(0).setCcdEnabled(true).setLinearDamping(0).setAngularDamping(0.5));
+		R.col = phys.createCollider(RAPIER.ColliderDesc.cuboid(w / 2, h / 2, l / 2).setDensity(d.mass / (w * h * l)).setFriction(0.4).setRestitution(0.15), R.body);
+		R.col.setSensor(true); R.passT = performance.now() + 600; /* starts as a ghost until it is clear of my car */
+	}
+	function remoteDrop(R) {
+		if (!R) return;
+		if (R.vis) { scene.remove(R.vis.group); R.vis.group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); R.vis = null; }
+		if (R.label) { scene.remove(R.label); R.label.material.map.dispose(); R.label.material.dispose(); R.label = null; }
+		if (R.body && phys) { try { phys.removeRigidBody(R.body); } catch (e) { /* world already freed */ } }
+		R.body = null; R.type = null;
+	}
+	function remoteLook(R, name, color) {
+		if (name !== R.name) { R.name = name; if (R.label) { scene.remove(R.label); R.label.material.map.dispose(); R.label.material.dispose(); R.label = netLabel(name); scene.add(R.label); } }
+		if (color !== R.color) { R.color = color; if (R.vis) R.vis.paint.color.set(color); }
+	}
+	function netLabel(name) {
+		var cv = document.createElement("canvas"), g = cv.getContext("2d"); g.font = "bold 34px system-ui, sans-serif";
+		var w = Math.ceil(g.measureText(name).width) + 30; cv.width = w; cv.height = 52; g.font = "bold 34px system-ui, sans-serif";
+		g.fillStyle = "rgba(10,14,22,0.72)"; var r = 14; g.beginPath(); g.moveTo(r, 0); g.arcTo(w, 0, w, 52, r); g.arcTo(w, 52, 0, 52, r); g.arcTo(0, 52, 0, 0, r); g.arcTo(0, 0, w, 0, r); g.fill();
+		g.fillStyle = "#fff"; g.textBaseline = "middle"; g.fillText(name, 15, 27);
+		var tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+		var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, sizeAttenuation: false, transparent: true }));
+		sp.scale.set(0.06 * w / 52, 0.06, 1); sp.renderOrder = 10; sp.center.set(0.5, 0);
+		return sp;
+	}
+	function remoteSample(R, now) { return R.buf.length && R.est.off != null ? C.netSample(R.buf, now - R.est.off - C.NET.DELAY) : null; }
+	/* called before every physics step: steer each remote body towards its player's pose (a bump pushes it, then it slides back) */
+	var nq1 = null, nq2 = null;
+	function netDrive(dt) {
+		if (!NET) return;
+		if (!nq1) { nq1 = new THREE.Quaternion(); nq2 = new THREE.Quaternion(); }
+		var now = performance.now();
+		for (var k in remotes) {
+			var R = remotes[k]; if (!R.body) continue;
+			var s = remoteSample(R, now); if (!s) continue;
+			var t = R.body.translation(), dx = s.p[0] - t.x, dy = s.p[1] - t.y, dz = s.p[2] - t.z, err = Math.hypot(dx, dy, dz);
+			/* a jump (reset, lag): move it there as a ghost, solid again only once it is clear of my car, so it never explodes out of it */
+			if (err > 4) { R.body.setTranslation({ x: s.p[0], y: s.p[1], z: s.p[2] }, true); R.body.setRotation({ x: s.q[0], y: s.q[1], z: s.q[2], w: s.q[3] }, true); R.body.setLinvel({ x: s.v[0], y: s.v[1], z: s.v[2] }, true); R.body.setAngvel({ x: 0, y: 0, z: 0 }, true); R.col.setSensor(true); R.passT = now + 600; continue; }
+			if (R.passT && now > R.passT) { var mc = cars[player], mt = mc && mc.body.translation(), rr = (R.d.l || 4.5) / 2 + (mc ? mc.d.l / 2 : 2.5) + 0.5; if (!mt || Math.hypot(mt.x - t.x, mt.y - t.y, mt.z - t.z) > rr) { R.col.setSensor(false); R.passT = 0; } }
+			var kk = 8, still = s.k === "late";
+			R.body.setLinvel({ x: (still ? 0 : s.v[0]) + dx * kk, y: (still ? 0 : s.v[1]) + dy * kk, z: (still ? 0 : s.v[2]) + dz * kk }, true);
+			var r = R.body.rotation(); nq1.set(s.q[0], s.q[1], s.q[2], s.q[3]); nq2.set(r.x, r.y, r.z, r.w).invert(); nq1.multiply(nq2);
+			if (nq1.w < 0) { nq1.x = -nq1.x; nq1.y = -nq1.y; nq1.z = -nq1.z; nq1.w = -nq1.w; }
+			var ang = 2 * Math.acos(Math.min(1, nq1.w)), sn = Math.sqrt(Math.max(1e-12, 1 - nq1.w * nq1.w)), wk = Math.min(ang * 10, 20) / sn;
+			R.body.setAngvel({ x: nq1.x * wk, y: nq1.y * wk, z: nq1.z * wk }, true);
+		}
+	}
+	/* every frame: draw each remote car where its player says it is (interpolated), wheels, lights, name tag */
+	function netSync() {
+		if (!NET) return;
+		var now = performance.now();
+		for (var k in remotes) {
+			var R = remotes[k]; if (!R.vis) continue;
+			var s = remoteSample(R, now); if (!s) { R.vis.group.visible = false; if (R.label) R.label.visible = false; continue; }
+			var g = R.vis.group, d = R.d; g.visible = true; g.position.set(s.p[0], s.p[1], s.p[2]); g.quaternion.set(s.q[0], s.q[1], s.q[2], s.q[3]);
+			var wxf = d.wxf != null ? d.wxf : d.wx, cp = [[wxf, d.wf], [-wxf, d.wf], [d.wx, d.wb], [-d.wx, d.wb]];
+			for (var i = 0; i < 4; i++) { var w = R.vis.wheels[i]; if (!w || !s.w[i]) continue; w.piv.position.set(cp[i][0], s.w[i][0], cp[i][1]); w.piv.rotation.y = s.w[i][1]; w.spin.rotation.x = s.w[i][2]; }
+			if (R.vis.flame) R.vis.flame.visible = !!s.boost;
+			if (R.vis.lightR) R.vis.lightR.emissiveIntensity = s.brake ? 3.2 : (dayK < 0.45 ? 1.1 : 0.5);
+			if (R.vis.lightF) R.vis.lightF.emissiveIntensity = dayK < 0.45 ? 5 : 1.2;
+			if (R.vis.surf && R.vis.surf.prop) R.vis.surf.prop.rotation.z += (6 + s.thr * 40) * frameDt;
+			if (R.label) { R.label.visible = true; R.label.position.set(s.p[0], s.p[1] + (d.h || 1.4) + 1.1, s.p[2]); R.label.material.opacity = now - R.lastRecv > 3000 ? 0.45 : 1; }
+		}
+	}
+	function netWorldCleared() { for (var k in remotes) remoteDrop(remotes[k]); }
+	function netWorldBuilt() {
+		if (!NET) return;
+		for (var k in remotes) { var R = remotes[k], t = R.buf.length ? R.buf[R.buf.length - 1].type : null; if (t) remoteBuild(R, t); }
+		netRoomChanged(); if (NET.race) { NET.race = null; netBoard(); }
+		if (!NET.host && NET.live) netSpot();
+	}
+	/* ---------- sending my car, 15 times a second (a timer, so it carries on when the picture is off screen) ---------- */
+	function netStart() {
+		clearInterval(netIv);
+		netIv = setInterval(netSend, Math.round(1000 / C.NET.HZ));
+		netUi();
+	}
+	function netSend() {
+		if (!NET || !NET.live || !phys) return;
+		var c = cars[player]; if (!c) return;
+		var t = c.body.translation(), r = c.body.rotation(), lv = c.body.linvel(), w = [];
+		for (var i = 0; i < 4; i++) { var sl = c.veh.wheelSuspensionLength(i), cp = c.veh.wheelChassisConnectionPointCs(i); w.push([cp && sl != null ? cp.y - sl : c.d.ry - c.d.rest, c.veh.wheelSteering(i) || 0, c.veh.wheelRotation(i) || 0]); }
+		var b = C.netEncode({ slot: NET.slot, seq: NET.seq++, t: performance.now() - NET.t0, type: c.type, brake: !!(c.in && (c.in.br > 0 || c.in.hb)), boost: !!(c.in && c.in.boost && c.in.th > 0), air: !!(c.fly && c.fly.air), thr: c.fly ? c.fly.thr : (c.in ? c.in.th : 0), flap: c.fly ? c.fly.flap : 0, p: [t.x, t.y, t.z], q: [r.x, r.y, r.z, r.w], v: [lv.x, lv.y, lv.z], w: w });
+		links().forEach(function (L) { if (L.open && (!NET.host || L.hello)) sendS(L, b); });
+		/* tell the others when my car or paint changes */
+		if (c.type !== NET.myCar || c.color !== NET.myColor) {
+			NET.myCar = c.type; NET.myColor = c.color;
+			if (NET.host) netPeers(); else sendR(NET.hostLink, { t: "me", name: netMyName(), car: c.type, color: c.color });
+		}
+		/* forget players whose packets stopped long ago */
+		var now = performance.now();
+		for (var k in remotes) if (now - remotes[k].lastRecv > 20000) { remoteDrop(remotes[k]); delete remotes[k]; }
+		netCountdown();
+	}
+	/* ---------- races ---------- */
+	function netRaceStart() {
+		if (!NET || !NET.host) return;
+		if (!hasLap()) { toast("Races need a lap circuit: the Earth or Jupiter-g test track, or a closed road"); return; }
+		var e = { t: "race", laps: +$("cs-nlaps").value || 3, cd: 5, id: Math.random().toString(36).slice(2, 10) };
+		bcastR(e); raceStart(e);
+	}
+	function netRaceStop() { if (!NET || !NET.host) return; bcastR({ t: "stop" }); netEvent({ t: "stop" }); }
+	function raceStart(e) {
+		if (!hasLap()) { toast("The host started a race, but there is no lap circuit on your map"); return; }
+		if (cars[player] && cars[player].d.fly) togglePlane();
+		var rows = {}; Object.keys(NET.roster).forEach(function (s) { rows[s] = { n: 0, total: null, fin: false }; });
+		NET.race = { id: e.id, laps: e.laps, goAt: performance.now() + e.cd * 1000, go: false, t0: null, rows: rows };
+		if (replay) replayStop(true); paused = false; $("cs-pause").textContent = "❚❚ Pause";
+		lapReset(); repair(cars[player]); camSnap = true;
+		toast("🏁 Race: " + e.laps + " lap" + (e.laps > 1 ? "s" : "") + ". Get ready!"); netBoard(); netUi();
+	}
+	function gridPose(slot) {
+		var g = C.netGrid(slot), q = lapPath ? C.pathPoint(lapPath, lapPath.closed ? g.s : Math.max(0, 4 + g.s + 12)) : C.trackPoint(g.s);
+		return { x: q.x + Math.cos(q.dir) * g.lane, z: q.z - Math.sin(q.dir) * g.lane, yaw: q.dir };
+	}
+	/* a joiner starts on its own spot (the grid on a lap circuit, else beside the start), not on top of the host */
+	function netSpot() {
+		var c = cars[player]; if (!c || NET.slot < 1) return;
+		var p = hasLap() && !c.d.fly ? gridPose(NET.slot) : (function () { var s0 = c.d.fly ? planeStart() : startPose(0), off = NET.slot * 7; return { x: s0.x + Math.cos(s0.yaw) * off, z: s0.z - Math.sin(s0.yaw) * off, yaw: s0.yaw }; })();
+		c.body.setTranslation({ x: p.x, y: hAt(p.x, p.z) + c.d.wr + c.d.rest - c.d.ry + 0.4, z: p.z }, true);
+		c.body.setRotation(qYaw(p.yaw), true); c.body.setLinvel({ x: 0, y: 0, z: 0 }, true); c.body.setAngvel({ x: 0, y: 0, z: 0 }, true); c.lastV = null; camSnap = true; lapReset();
+	}
+	/* in step(): hold my car on the grid until the countdown ends */
+	function netHold() {
+		var R = NET && NET.race; if (!R || R.go) return;
+		var c = cars[player]; if (!c || c.d.fly) return;
+		if (performance.now() >= R.goAt) { R.go = true; R.t0 = simT; lapReset(); toast("GO!"); sfx("pop", 1); return; }
+		var p = gridPose(Math.max(0, NET.slot));
+		c.body.setTranslation({ x: p.x, y: hAt(p.x, p.z) + c.d.wr + c.d.rest - c.d.ry + 0.05, z: p.z }, true);
+		c.body.setRotation(qYaw(p.yaw), true); c.body.setLinvel({ x: 0, y: 0, z: 0 }, true); c.body.setAngvel({ x: 0, y: 0, z: 0 }, true); c.lastV = null;
+	}
+	function netCountdown() {
+		var R = NET && NET.race, el = $("cs-ncount");
+		if (!R || R.go) { if (!el.hidden && (!R || performance.now() - R.goAt > 900)) el.hidden = true; else if (R && R.go && !el.hidden) el.textContent = "GO!"; return; }
+		var left = Math.ceil((R.goAt - performance.now()) / 1000); el.hidden = false; el.textContent = left > 0 ? String(left) : "GO!";
+	}
+	/* from lapTick: a lap I finished */
+	function netLap(e) {
+		var R = NET && NET.race; if (!R || !R.go || R.t0 == null) return;
+		var me = R.rows[NET.slot] || (R.rows[NET.slot] = {}); if (me.fin) return;
+		me.n = lap.laps; me.time = e.time; me.total = simT - R.t0; me.fin = me.n >= R.laps;
+		var ev = { t: "lap", id: R.id, n: me.n, time: e.time, total: me.total, fin: me.fin };
+		if (NET.host) bcastR(Object.assign({ s: 0 }, ev)); else sendR(NET.hostLink, ev);
+		if (me.fin) { var pos = C.raceOrder(raceRows()).findIndex(function (x) { return x.s === NET.slot; }) + 1; setTimeout(function () { toast("🏁 You finished " + (["1st", "2nd", "3rd"][pos - 1] || pos + "th") + " in " + C.fmtLap(me.total)); }, 1300); }
+		netBoard();
+	}
+	function raceRows() { var R = NET.race; return Object.keys(R.rows).map(function (s) { var r = R.rows[s], ro = NET.roster[s]; return { s: +s, name: ro ? ro.name : "Player", n: r.n || 0, total: r.total, fin: r.fin }; }); }
+	function netBoard() {
+		var el = $("cs-nboard");
+		if (!NET || !NET.race) { el.hidden = true; return; }
+		var R = NET.race;
+		el.hidden = false;
+		el.innerHTML = '<div class="cs-nbh">🏁 Race · ' + R.laps + ' lap' + (R.laps > 1 ? "s" : "") + '</div>' + C.raceOrder(raceRows()).map(function (r, i) {
+			var me = r.s === NET.slot;
+			return '<div class="cs-nbr' + (me ? " me" : "") + '"><span>' + (i + 1) + '.</span><b>' + esc(r.name) + '</b><i>' + (r.fin ? "🏁 " + C.fmtLap(r.total) : "Lap " + Math.min(R.laps, (r.n || 0) + 1) + "/" + R.laps + (r.total ? " · " + C.fmtLap(r.total) : "")) + '</i></div>';
+		}).join("");
+	}
+	/* ---------- chat ---------- */
+	function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+	function netSay(who, txt) {
+		var log = $("cs-nlog"), d = document.createElement("div"); d.className = "cs-nl" + (who ? "" : " sys");
+		d.innerHTML = who ? "<b>" + esc(who) + ":</b> " + esc(txt) : esc(txt);
+		log.appendChild(d); while (log.children.length > 6) log.removeChild(log.firstChild);
+		setTimeout(function () { d.classList.add("old"); }, 12000);
+	}
+	function netChatSend(txt) {
+		txt = C.netText(txt); if (!txt || !NET || !NET.live) return;
+		var e = { t: "chat", txt: txt };
+		if (NET.host) bcastR(Object.assign({ s: 0 }, e)); else sendR(NET.hostLink, e);
+		netSay(netMyName(), txt);
+	}
+	function netChatOpen() { var n = $("cs-net"); n.classList.add("cs-chatting"); var i = $("cs-nmsg"); i.focus(); }
+	function netChatClose() { $("cs-net").classList.remove("cs-chatting"); $("cs-nmsg").blur(); }
+	/* ---------- leaving ---------- */
+	function netLeave(quiet) {
+		if (!NET) return;
+		var N = NET;
+		links().forEach(function (L) { sendR(L, { t: "bye" }); });
+		setTimeout(function () { (N.host ? Object.keys(N.links).map(function (k) { return N.links[k]; }) : [N.hostLink]).forEach(function (L) { L.gone = true; try { L.pc.close(); } catch (e) { /* ignore */ } }); }, 80);
+		if (N.host) { clearTimeout(N.pollT); sig("close", { code: N.code, peer: N.peer }); }
+		clearInterval(netIv); clearTimeout(netRoomT);
+		NET = null;
+		for (var k in remotes) remoteDrop(remotes[k]); remotes = {};
+		$("cs-ncount").hidden = true; $("cs-nlog").innerHTML = ""; netBoard();
+		if (!quiet) toast("You left the room");
+		netUi();
+	}
+	window.addEventListener("pagehide", function () { if (NET) netLeave(true); });
+	/* ---------- UI ---------- */
+	function netStatus(t) { $("cs-nstat").textContent = t || ""; $("cs-nstat2").textContent = t || ""; }
+	function netLink() { return location.origin + "/car-sandbox?room=" + NET.code; }
+	function netCopyLink(silent) {
+		if (!NET) return; var u = netLink();
+		(navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { if (!silent) toast("Room link copied: send it to your friends"); else netStatus("Link copied. Send it to your friends, or tell them the code."); }, function () { if (!silent) prompt("Copy this link", u); });
+	}
+	function netUi() {
+		var on = !!NET, live = on && NET.live;
+		$("cs-noff").hidden = on; $("cs-non").hidden = !on;
+		$("cs-net").hidden = !live;
+		var n = live ? Object.keys(NET.roster).length : 0;
+		$("cs-netn").textContent = live ? " " + n : ""; $("cs-netbtn").classList.toggle("cs-on", live);
+		$("cs-nlabel").textContent = live ? "room " + NET.code + " · " + n + " player" + (n === 1 ? "" : "s") : "";
+		$("cs-nopen").textContent = live ? "🌐 Room " + NET.code + " (open)" : "🌐 Play online";
+		if (!on) return;
+		$("cs-ncodeb").textContent = NET.code;
+		var list = Object.keys(NET.roster).map(function (s) { var r = NET.roster[s]; return '<li><i style="background:' + r.color + '"></i>' + esc(r.name) + (+s === 0 ? " <small>host</small>" : "") + (+s === NET.slot ? " <small>you</small>" : "") + ' <small>' + esc((C.CARS[r.car] || {}).name || "") + '</small></li>'; }).join("");
+		$("cs-nlist").innerHTML = list || "<li><small>Waiting for players…</small></li>";
+		$("cs-nhostrow").hidden = !NET.host; $("cs-njoinrow").hidden = NET.host;
+		$("cs-nstart").hidden = !!NET.race; $("cs-nstop").hidden = !NET.race;
+		$("cs-nwait").textContent = NET.host ? "" : "The host picks the world, gravity and map, and starts races.";
+	}
+	function netPop(open) { var p = $("cs-npop"); p.hidden = open == null ? !p.hidden : !open; $("cs-netbtn").setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("cs-pop").hidden = true; $("cs-cpop").hidden = true; $("cs-nname").value = NETP.name || ""; netUi(); } }
+	function setupNet() {
+		$("cs-netbtn").addEventListener("click", function () { netPop(); });
+		$("cs-nopen").addEventListener("click", function () { netPop(true); stage.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+		$("cs-npopx").addEventListener("click", function () { netPop(false); });
+		$("cs-nname").addEventListener("change", function () { NETP.name = C.netName(this.value); this.value = NETP.name; try { localStorage.setItem(NKEY, JSON.stringify(NETP)); } catch (e) { /* ignore */ } if (NET && NET.live) { if (NET.host) netPeers(); else sendR(NET.hostLink, { t: "me", name: netMyName(), car: cars[player].type, color: cars[player].color }); } });
+		$("cs-nmake").addEventListener("click", function () { $("cs-nname").dispatchEvent(new Event("change")); netMake(); });
+		$("cs-njoin").addEventListener("click", function () { $("cs-nname").dispatchEvent(new Event("change")); netJoin($("cs-ncode").value); });
+		$("cs-ncode").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); $("cs-njoin").click(); } });
+		$("cs-ncopy").addEventListener("click", function () { netCopyLink(false); });
+		$("cs-nleave").addEventListener("click", function () { netLeave(false); netStatus(""); });
+		$("cs-nstart").addEventListener("click", netRaceStart);
+		$("cs-nstop").addEventListener("click", netRaceStop);
+		$("cs-nchatbtn").addEventListener("click", function () { if ($("cs-net").classList.contains("cs-chatting")) netChatClose(); else netChatOpen(); });
+		$("cs-nform").addEventListener("submit", function (e) { e.preventDefault(); var i = $("cs-nmsg"); netChatSend(i.value); i.value = ""; netChatClose(); });
+		$("cs-nmsg").addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); netChatClose(); } e.stopPropagation(); });
+		netUi();
+		var q = /[?&]room=([A-Za-z0-9]{6})/.exec(location.search);
+		if (q) { netPop(true); $("cs-ncode").value = q[1]; netJoin(q[1]); }
+	}
 	function setupDomOnly() { msg("Loading the 3D engine and the physics (about 1 MB)…"); }
 	var test = document.createElement("canvas");
 	if (!(test.getContext("webgl2") || test.getContext("webgl"))) { msg("Your browser has WebGL switched off, so the 3D view can't start. Try another browser, or turn on hardware acceleration."); return; }
 	loadLibs().then(function (m) {
 		THREE = m[0]; RAPIER = m[1];
 		initRenderer(); parts.init(); setupUI(); setupMapUI(); setupCamDrag();
-		buildWorld(); msg("");
+		buildWorld(); msg(""); setupNet();
 		if (Q.world || Q.car || Q.g != null) syncUrl();
 		requestAnimationFrame(frame);
 	}).catch(function (e) { console.error(e); msg("The 3D engine could not load (" + (e && e.message || e) + "). Check your connection and reload the page."); });
@@ -3131,6 +3733,7 @@
 		plane: function () { var c = cars[player]; if (!c || !c.fly) return null; var t = c.body.translation(), lv = c.body.linvel(), F = c.fly, ip = { q: new THREE.Quaternion(c.body.rotation().x, c.body.rotation().y, c.body.rotation().z, c.body.rotation().w) }, at = C.attitude(new THREE.Vector3(0, 0, 1).applyQuaternion(ip.q), new THREE.Vector3(0, 1, 0).applyQuaternion(ip.q));
 			return { type: c.type, x: +t.x.toFixed(1), y: +t.y.toFixed(1), z: +t.z.toFixed(1), agl: +planeAgl(c, t).toFixed(1), vs: +lv.y.toFixed(2), V: F.o ? +F.o.V.toFixed(1) : 0, alpha: F.o ? +(F.o.alpha * 57.3).toFixed(1) : 0, stall: F.o ? +F.o.stall.toFixed(2) : 0, pitch: +(at.pitch * 57.3).toFixed(1), bank: +(at.bank * 57.3).toFixed(1), thr: F.thr, flap: F.flap, air: F.air, contact: c.anyContact, damage: Math.round(c.damage), hud: $("cs-fias").textContent + " | " + $("cs-falt").textContent + " | " + $("cs-fvs").textContent, lesson: $("cs-flesson").textContent, toast: $("cs-toast").textContent }; },
 		setThr: function (v) { var c = cars[player]; if (c && c.fly) c.fly.thr = v; }, flap: function (n) { var c = cars[player]; if (c && c.fly) c.fly.flap = n; },
+		net: function () { return NET ? { code: NET.code, host: NET.host, slot: NET.slot, live: NET.live, roster: NET.roster, race: NET.race, remotes: Object.keys(remotes).map(function (k) { var R = remotes[k], s = remoteSample(R, performance.now()); return { slot: R.slot, name: R.name, type: R.type, n: R.buf.length, p: s && s.p.map(function (x) { return +x.toFixed(2); }), body: !!R.body }; }), log: $("cs-nlog").textContent, board: $("cs-nboard").textContent } : null; }, netMake: netMake, netJoin: netJoin, netLeave: netLeave, netChat: netChatSend, netRace: function (n) { $("cs-nlaps").value = String(n || 1); netRaceStart(); }, netSend: netSend,
 		render: function () { render(); drawMini(); }, editor: function () { edOpenNow(); return ed; }, editorDraw: function () { drawEditor(); }, advance: function (dt) { advance(dt); }, camera: function () { return camera; }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();
