@@ -862,7 +862,7 @@
 		PS.hair = new THREE.SphereGeometry(0.119, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.5);
 		PS.hand = new THREE.SphereGeometry(0.048, 10, 8);
 		PS.glove = new THREE.BoxGeometry(0.12, 0.15, 0.06);
-		PS.boot = new THREE.BoxGeometry(0.105, 0.075, 0.27);
+		PS.boot = new THREE.BoxGeometry(0.088, 0.062, 0.235);
 		PS.shorts = new THREE.CylinderGeometry(0.165, 0.175, 0.24, 14);
 		PS.neck = new THREE.CylinderGeometry(0.05, 0.055, 0.1, 10);
 		PS.eye = new THREE.SphereGeometry(0.014, 6, 5);
@@ -905,12 +905,12 @@
 			m(P.cap(0.072, 0.26), skin, 0, -0.2, 0, h);
 			var k = grp(0, -0.43, 0, h);
 			m(P.cap(0.058, 0.27), mat(kit.socks, 0.8), 0, -0.19, 0, k);
-			m(P.boot, mat("#151515", 0.45), 0, -0.415, 0.045, k);
+			boots.push(m(P.boot, mat("#151515", 0.45), 0, -0.42, 0.04, k));
 			return { h: h, k: k };
 		}
-		var L = arm(1), R = arm(-1), LL = leg(1), RL = leg(-1);
+		var boots = [], L = arm(1), R = arm(-1), LL = leg(1), RL = leg(-1);
 		var shadow = this.blob(0.42); shadow.material = this.shadowMat; this.scene.add(shadow);
-		return { root: root, body: body, pelvis: pelvis, torso: torso, head: head, aL: L.s, eL: L.e, aR: R.s, eR: R.e, lL: LL.h, kL: LL.k, lR: RL.h, kR: RL.k, shadow: shadow };
+		return { root: root, body: body, pelvis: pelvis, torso: torso, head: head, aL: L.s, eL: L.e, aR: R.s, eR: R.e, lL: LL.h, kL: LL.k, lR: RL.h, kR: RL.k, shadow: shadow, boots: boots };
 	};
 	/** set a pose. p: pelvis offset (py), pelvis tilt (prx, prz), torso lean (tx, ty), head (hx), arms (aLx, aLz, eL, aRx, aRz, eR), legs (lLx, lLz, kL, lRx, lRz, kR) */
 	function pose(P, p) {
@@ -924,6 +924,10 @@
 		P.lR.rotation.set(p.lRx || 0, 0, p.lRz || 0); P.kR.rotation.set(p.kR || 0, 0, 0);
 	}
 	function mix(a, b, u) { var o = {}, k; for (k in a) o[k] = a[k]; for (k in b) o[k] = (a[k] || 0) + ((b[k] || 0) - (a[k] || 0)) * u; for (k in a) if (!(k in b)) o[k] = a[k] * (1 - u); return o; }
+	function alerp(a, b, u) { var d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return a + d * u; }
+	/* the same pose with left and right swapped (a left-footed kicker) */
+	var SWAP = { aLx: "aRx", aRx: "aLx", aLz: "aRz", aRz: "aLz", eL: "eR", eR: "eL", lLx: "lRx", lRx: "lLx", lLz: "lRz", lRz: "lLz", kL: "kR", kR: "kL" }, NEG = { aLz: 1, aRz: 1, lLz: 1, lRz: 1, prz: 1, pry: 1, ty: 1, tz: 1, hy: 1, px: 1 };
+	function mirrorPose(p) { var o = {}; for (var k in p) { var k2 = SWAP[k] || k; o[k2] = NEG[k2] ? -p[k] : p[k]; } return o; }
 	function sm(u) { u = u < 0 ? 0 : u > 1 ? 1 : u; return u * u * (3 - 2 * u); }
 	var POSE = {
 		stand: { aLz: 0.13, aRz: -0.13, eL: -0.25, eR: -0.25, kL: 0.05, kR: 0.05 },
@@ -934,6 +938,25 @@
 		cheer: { aLz: 2.55, aRz: -2.55, eL: -0.2, eR: -0.2, hx: -0.35, kL: 0.05, kR: 0.05 },
 		sad: { tx: 0.35, hx: 0.5, aLz: 0.05, aRz: -0.05, eL: -0.1, eR: -0.1, kL: 0.1, kR: 0.1 }
 	};
+	/* the lowest point of a person in the world (the boots only, or every part): from each part's box corners */
+	var BOX = null, VV = null;
+	function lowY(P, bootsOnly) {
+		if (!VV) VV = new THREE.Vector3();
+		P.root.updateMatrixWorld(true);
+		var lo = 99;
+		function one(o) {
+			if (!o.isMesh || o.material.transparent) return;
+			if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+			var bb = o.geometry.boundingBox;
+			for (var i = 0; i < 8; i++) { VV.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(o.matrixWorld); if (VV.y < lo) lo = VV.y; }
+		}
+		if (bootsOnly) P.boots.forEach(one); else P.root.traverse(one);
+		return lo;
+	}
+	/* stand the person on the ground (feet planted, whatever the pose does to the legs), or at height "base" in the air */
+	function plantP(P, base) { P.root.position.y += (base || 0) + 0.003 - lowY(P, true); }
+	/* never let any part go under the grass (a diving keeper) */
+	function aboveP(P) { var lo = lowY(P, false); if (lo < 0.008) P.root.position.y += 0.008 - lo; }
 	View.prototype.place = function (P, x, y, z, face) { P.root.position.set(x, z, y); P.root.rotation.y = face; P.shadow.position.set(x, 0.013, y); };
 
 	View.prototype.ringMesh = function (col, r, cross) {
@@ -993,20 +1016,25 @@
 			else if (I.lift > 0.01) pr = mix(POSE.wall, POSE.tuck, sm(I.lift * 4));
 			else { pr = mix(POSE.wall, { hx: 0.1 }, 0); pr.py = Math.sin(clock * 2.1 + i * 1.7) * 0.006; pr.ty = Math.sin(clock * 0.9 + i) * 0.04; }
 			pose(P, pr);
-			self.place(P, p.x, p.y, I.lift, face);
+			self.place(P, p.x, p.y, I.lift, face); plantP(P, I.lift);
 			var ss = Math.max(0.4, 1 - I.lift * 1.2); P.shadow.scale.set(ss, ss, 1);
 		});
 		// ---- keeper (3D body: hands go exactly where the physics puts them; the body keeps its size)
-		var k = I.keeper, K = this.keeperP, kface = Math.atan2(s.bx - k.ax, s.by - k.y) * 0.85;
+		var k = I.keeper, K = this.keeperP, kface = Math.atan2(s.bx - k.ax, Math.max(0.5, s.by - k.y)) * 0.85;
 		if (k.dive) {
 			var e = k.s, dx = k.hx - k.ax, dz = k.hz - k.az, ang = Math.atan2(dx, dz);    // body axis, from vertical
-			var reach = 1.08 + 0.08 * e, hipX = k.hx - Math.sin(ang) * reach, hipZ = k.hz - Math.cos(ang) * reach;
+			// the model is longer (hands to feet ~2.1 m) than the physics capsule, so it lies flatter when the hands are low:
+			// otherwise the legs end up under the grass
+			var LEG = 0.95, reach = 1.08 + 0.08 * e, need = (k.hz - 0.06) / (reach + LEG);
+			if (Math.cos(ang) > need) { var aMin = Math.acos(Math.max(-1, Math.min(1, need))); ang = (ang < 0 || (ang === 0 && k.hx < (s.kx || 0)) ? -1 : 1) * aMin; }
+			var hipX = k.hx - Math.sin(ang) * reach, hipZ = k.hz - Math.cos(ang) * reach;
 			var stand = { x: (s.kx || 0), z: 0.84 }, u = sm(Math.min(1, e * 1.6));
 			var px = stand.x + (hipX - stand.x) * u, pz = stand.z + (hipZ - stand.z) * u;
 			// after the kick is over the keeper drops to the grass
 			if (I.settle && e >= 0.999) { if (!this.fallT) this.fallT = now; var fu = sm((now - this.fallT) / 520); pz = pz + (Math.max(0.24, Math.min(pz, 0.26 + Math.abs(Math.cos(ang)) * 0.6)) - pz) * fu; }
 			else this.fallT = 0;
-			if (pz < 0.2) pz = 0.2;
+			var floorZ = Math.cos(ang * u) * LEG * 0.97 + 0.04;   // feet never under the grass, at any moment of the dive
+			if (pz < floorZ) pz = floorZ; if (pz < 0.2) pz = 0.2;
 			var dp = mix(POSE.ready, { aLz: 2.95, aRz: -2.95, eL: -0.05, eR: -0.05, aLx: -0.15, aRx: -0.15, lLx: 0.12, lLz: 0.22, kL: 0.35, lRx: -0.15, lRz: -0.08, kR: 0.15, tx: 0.08, hx: 0.1, py: 0 }, sm(Math.min(1, e * 2.2)));
 			dp.prz = -ang * u; dp.py = 0; dp.px = 0;
 			pose(K, dp);
@@ -1014,6 +1042,7 @@
 			// place: root at (px, keeperY) on the ground, pelvis lifted to pz
 			K.root.position.set(px, 0, k.y); K.root.rotation.y = kface * (1 - u);
 			K.pelvis.position.set(0, pz / (K.body.scale.x), 0);
+			aboveP(K);
 			K.shadow.position.set(px, 0.013, k.y); var kss = Math.max(0.6, 1.4 - pz * 0.5); K.shadow.scale.set(kss * (1 + Math.abs(Math.sin(ang)) * 1.2), kss * 0.7, 1);
 		} else {
 			this.fallT = 0;
@@ -1022,12 +1051,14 @@
 			kp.py = (kp.py || 0) + bob; kp.ty = sway * 0.4; kp.px = 0;
 			if (I.flying) { kp.py -= 0.03; kp.aLx -= 0.15; kp.aRx -= 0.15; }
 			pose(K, kp);
-			this.place(K, k.ax + Math.sin(clock * 0.8) * 0.04 * (I.flying ? 0 : 1), k.y, 0, kface);
+			this.place(K, k.ax + Math.sin(clock * 0.8) * 0.04 * (I.flying ? 0 : 1), k.y, 0, kface); plantP(K, 0);
 			K.shadow.scale.set(1, 1, 1);
 		}
 		if (I.settle && !this.resT) this.resT = now; if (!I.settle) this.resT = 0;
-		// ---- kicker: run-up from behind and to the left, plant, strike with the right foot, follow through
-		var dxg = -s.bx, dyg = G.lineY - s.by, dl = Math.sqrt(dxg * dxg + dyg * dyg), ux = dxg / dl, uy = dyg / dl, lx = uy, ly = -ux;   // u: to goal, l: the kicker's left
+		// ---- kicker: run-up from behind and to the side of the standing foot, plant, strike, follow through.
+		// A left-footed kicker (I.foot "L") runs in from the other side and every pose is mirrored.
+		var lf = I.foot === "L", fs = lf ? -1 : 1;
+		var dxg = -s.bx, dyg = G.lineY - s.by, dl = Math.sqrt(dxg * dxg + dyg * dyg), ux = dxg / dl, uy = dyg / dl, lx = uy * fs, ly = -ux * fs;   // u: to goal, l: the side he runs in from
 		var face = Math.atan2(ux, uy), C = this.kickerP;
 		var start = { x: s.bx - ux * 3.3 + lx * 1.6, y: s.by - uy * 3.3 + ly * 1.6 }, plant = { x: s.bx - ux * 0.42 + lx * 0.2, y: s.by - uy * 0.42 + ly * 0.2 };
 		var t = I.t, kxp, kyp, kp2, kface2 = face;
@@ -1038,7 +1069,8 @@
 		} else if (I.anim && t < -0.12) {
 			var pr = (t + I.run) / (I.run - 0.12); pr = Math.max(0, Math.min(1, pr));
 			kxp = start.x + (plant.x - start.x) * pr; kyp = start.y + (plant.y - start.y) * pr;
-			kface2 = Math.atan2(plant.x - start.x, plant.y - start.y) * (1 - pr * 0.6) + face * pr * 0.6;
+			// angles blended the short way round (a plain blend spun him 360 degrees on a penalty, where the angle crosses +-180)
+			kface2 = alerp(Math.atan2(plant.x - start.x, plant.y - start.y), face, pr * 0.6);
 			var ph2 = pr * Math.PI * 5, sw = Math.sin(ph2);
 			kp2 = { tx: 0.22, py: -0.03 + Math.abs(Math.cos(ph2)) * 0.05, lLx: -sw * 0.85, kL: 0.3 + Math.max(0, sw) * 1.1, lRx: sw * 0.85, kR: 0.3 + Math.max(0, -sw) * 1.1, aLx: sw * 0.8, aRx: -sw * 0.8, aLz: 0.15, aRz: -0.15, eL: -1.2, eR: -1.2 };
 		} else {
@@ -1054,8 +1086,12 @@
 				if (I.res === "goal") { kp2.py = Math.abs(Math.sin((now - this.resT) / 160)) * 0.12 * ru; kp2.aLz += Math.sin(now / 120) * 0.15; }
 			}
 		}
-		pose(C, kp2);
-		this.place(C, kxp, kyp, 0, kface2);
+		pose(C, lf ? mirrorPose(kp2) : kp2);
+		// turn smoothly from the frame before (never the long way round)
+		if (this.kFace === undefined || !I.anim && !I.settle && this.kWasAnim) this.kFace = kface2;
+		this.kFace = alerp(this.kFace, kface2, 0.35); this.kWasAnim = I.anim || I.settle;
+		this.place(C, kxp, kyp, 0, this.kFace);
+		plantP(C, I.res === "goal" && I.settle && kp2.py > 0.01 ? kp2.py : 0);
 		// ---- ball (rolls / spins with its movement)
 		this.ball.position.copy(V(b[0], b[1], b[2]));
 		if (this.prevBall) { var mvx = b[0] - this.prevBall[0], mvy = b[1] - this.prevBall[1], d = Math.sqrt(mvx * mvx + mvy * mvy); if (d > 1e-4 && d < 2) { this.ball.rotateOnWorldAxis(new THREE.Vector3(mvy / d, 0, -mvx / d).normalize(), -d / G.R); } }
@@ -1095,11 +1131,11 @@
 		else {
 			// behind the ball: fit the ball (near the bottom) and the crossbar (near the top), and the goal's width
 			var bkd = 7, hh = 2.4, gd = Math.sqrt(s.bx * s.bx + (s.by - G.lineY) * (s.by - G.lineY)) + bkd;
-			var aB = Math.atan2(-(hh - 0.1), bkd), aT = Math.atan2(2.7 - hh, gd), asp = this.w / this.h;
+			var aB = Math.atan2(-(hh + 0.12), bkd), aT = Math.atan2(2.7 - hh, gd), asp = this.w / this.h;
 			var vf = (aT - aB) * 1.2, needH = Math.atan(5.6 / gd);
 			vf = Math.max(vf, 2 * Math.atan(Math.tan(needH) / asp));
 			var mid = (aT + aB) / 2 - (vf - (aT - aB) * 1.2) * 0.1;
-			e3 = V(s.bx + bk.x * bkd - uy * 1.7, s.by + bk.y * bkd + ux * 1.7, hh);
+			e3 = V(s.bx + bk.x * bkd - uy * 1.7 * fs, s.by + bk.y * bkd + ux * 1.7 * fs, hh);     // on the other side from the run-up, so the kicker never fills the picture
 			l3 = V(s.bx + bk.x * bkd - bk.x * 10 * Math.cos(mid), s.by + bk.y * bkd - bk.y * 10 * Math.cos(mid), hh + 10 * Math.sin(mid));
 			this.behindFov = vf * 180 / Math.PI;
 		}
@@ -1107,10 +1143,12 @@
 		if (this.free) {
 			var F = this.free, cp = Math.cos(F.pitch);
 			e3 = new THREE.Vector3(F.target.x + F.dist * cp * Math.sin(F.yaw), F.target.y + F.dist * Math.sin(F.pitch), F.target.z + F.dist * cp * Math.cos(F.yaw));
-			if (e3.y < 0.25) e3.y = 0.25;
 			l3 = F.target.clone(); fov = F.fov;
 		}
+		// keep every camera inside the stadium: in front of the stands, under the roofs (it used to fly out behind the crowd)
+		clampEye(e3);
 		var lerp = this.camInit ? (this.free ? 0.45 : 0.14) : 1; this.camInit = true;
+		if (this.holdCam) lerp = 0;      // while the ball is being dragged on the pitch the camera stays put
 		var ck = I.cam + (this.free ? "f" : "");
 		if (this.lastCam !== ck) lerp = 0.3; this.lastCam = ck;
 		this.eye.lerp(e3, lerp); this.look.lerp(l3, lerp);
@@ -1119,6 +1157,14 @@
 		this.renderer.render(sc, this.cam);
 		this.dirty = false;
 	};
+	/* the stands: behind the goal (leaning back, front edge ~z -10), both sides (x +-44), the far end (z 112), roofs at 25 m */
+	function clampEye(e) {
+		if (e.y < 0.25) e.y = 0.25; if (e.y > 21) e.y = 21;
+		var zmin = -8.5 + Math.max(0, e.y - 1) * 0.42;     // the stand behind the goal leans back
+		if (e.z < zmin) e.z = zmin; if (e.z > 106) e.z = 106;
+		if (e.x < -40) e.x = -40; if (e.x > 40) e.x = 40;
+		return e;
+	}
 	View.prototype.netBulge = function (b, now) {
 		var G = this.G, inGoal = b[1] < G.lineY - 0.25 && Math.abs(b[0]) < G.halfW && b[2] < G.barZ;
 		if (inGoal) { this.bulge = { x: b[0], z: b[2], y: b[1], t: now }; }
@@ -1154,10 +1200,10 @@
 		this.ensureFree(); var F = this.free, k = F.dist * 0.0016;
 		var right = new THREE.Vector3(Math.cos(F.yaw), 0, -Math.sin(F.yaw)), fwd = new THREE.Vector3(-Math.sin(F.yaw), 0, -Math.cos(F.yaw));
 		F.target.addScaledVector(right, -dx * k).addScaledVector(fwd, dy * k);
-		F.target.x = Math.max(-60, Math.min(60, F.target.x)); F.target.z = Math.max(-25, Math.min(90, F.target.z));
+		F.target.x = Math.max(-34, Math.min(34, F.target.x)); F.target.z = Math.max(-3, Math.min(95, F.target.z));
 		this.kick();
 	};
-	View.prototype.zoom = function (f) { this.ensureFree(); this.free.dist = Math.max(1.5, Math.min(110, this.free.dist * f)); this.kick(); };
+	View.prototype.zoom = function (f) { this.ensureFree(); this.free.dist = Math.max(1.5, Math.min(70, this.free.dist * f)); this.kick(); };
 	View.prototype.resetView = function () { this.free = null; this.kick(); };
 	View.prototype.isFree = function () { return !!this.free; };
 	View.prototype.kick = function () { this.dirty = true; if (!this.loopOn) this.draw(); this.startLoop(); };
@@ -1171,7 +1217,21 @@
 		if (Math.abs(hit.x) > 6.5 || hit.y > 4.2 || hit.y < -0.4) return null;
 		return { x: hit.x, z: hit.y };
 	};
-	View.prototype.hover = function (cx, cy) { var g = this.pickGoal(cx, cy); this.renderer.domElement.style.cursor = g ? "crosshair" : this.dragging ? "grabbing" : "grab"; };
+	/** where the pointer meets the grass, in pitch coordinates {x, y}, or null */
+	View.prototype.pickGround = function (cx, cy) {
+		var r = this.renderer.domElement.getBoundingClientRect();
+		var nd = new THREE.Vector2((cx - r.left) / r.width * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+		this.ray.setFromCamera(nd, this.cam);
+		var hit = new THREE.Vector3();
+		if (!this.ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+		return { x: hit.x, y: hit.z };
+	};
+	/** the ball's position on the screen (client pixels) */
+	View.prototype.ballScreen = function () {
+		var r = this.renderer.domElement.getBoundingClientRect(), v = this.ball.position.clone().project(this.cam);
+		return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height, front: v.z < 1 };
+	};
+	View.prototype.hover = function (cx, cy, overBall) { var g = this.pickGoal(cx, cy); this.renderer.domElement.style.cursor = overBall ? "move" : g ? "crosshair" : this.dragging ? "grabbing" : "grab"; };
 	window.FK3D = { create: create, load: load };
 })();
 
@@ -1195,7 +1255,7 @@
 	/* ===================================================================== settings ===================================================================== */
 	var KEY = "mes-free-kick:v1";
 	var S = { mode: "PF", opp: "cpu", first: 0, lv: "medium", plv: "medium", spread: true, live: true, guide: "full", slow: 1, dim: "3d", cam: "behind", pmode: "meter", snd: true,
-		power: 24, curl: 0, dip: 0, when: 180, spot: { bx: -6, by: 21, wall: "auto", j: 0, off: 0, kx: null }, stats: {}, name: "", opub: true, ofirst: "host", omode: "P", saved: {} };
+		power: 24, curl: 0, dip: 0, when: 180, foot: "R", map: "auto", mapBig: false, mapPos: null, mapW: 0, spot: { bx: -6, by: 21, wall: "auto", j: 0, off: 0, kx: null }, stats: {}, name: "", opub: true, ofirst: "host", omode: "P", saved: {} };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in sv) S[k] = sv[k]; } catch (e) { /* defaults */ }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var toastT = 0;
@@ -1475,7 +1535,6 @@
 		var kick = ph === "aim", keep = ph === "keep";
 		$("fk-kickctl").hidden = !(kick || (ph !== "keep" && !keep && humanKicksSafe()));
 		$("fk-keepctl").hidden = !keep;
-		$("fk-shoot").disabled = !kick;
 		var fkset = mode === "local" && M && M.kind === "practice" && M.v === "PF";
 		$("fk-fkset").hidden = !fkset;
 		root.classList.toggle("fk-candrag", fkset && (ph === "aim" || ph === "result"));
@@ -1484,9 +1543,10 @@
 			$("fk-spot").innerHTML = "<b>" + B.distance(s.bx, s.by).toFixed(1) + " m</b> from goal · " + Math.round(B.angleDeg(s.bx, s.by)) + "° " + (s.bx > 0.3 ? "right" : s.bx < -0.3 ? "left" : "straight on") + " · wall " + s.n;
 			$("fk-wall").value = String(S.spot.wall); $("fk-jump").checked = !!S.spot.j; $("fk-shift").value = S.spot.off || 0;
 			$("fk-kx").value = Math.round((s.kx || 0) * 100);
+			$("fk-mapside").value = S.map;
 		}
 		$("fk-powerv").textContent = (+S.power).toFixed(1) + " m/s (" + Math.round(S.power * 3.6) + " km/h)";
-		$("fk-curlv").textContent = S.curl === 0 ? "none" : Math.abs(S.curl).toFixed(1) + (S.curl > 0 ? " → right" : " ← left");
+		$("fk-curlv").textContent = S.curl === 0 ? "none" : Math.abs(S.curl).toFixed(1) + (S.curl > 0 ? " → right" : " ← left") + ((S.curl < 0) === (S.foot !== "L") ? " (inside of the foot)" : " (outside of the foot)");
 		$("fk-dipv").textContent = S.dip === 0 ? "none" : S.dip > 0 ? "dip " + S.dip : "float " + (-S.dip);
 		$("fk-hint").textContent = hintText();
 		meter();
@@ -1495,7 +1555,7 @@
 	}
 	function humanKicksSafe() { try { return M && ph !== "anim" && ph !== "result" && ph !== "over" && ph !== "wait" && humanKicks(); } catch (e) { return false; } }
 	function hintText() {
-		if (ph === "aim") return "Click in the goal to aim" + (S.guide !== "off" ? " · the dotted line is the path" : "");
+		if (ph === "aim") return "Click in the goal to aim" + (root.classList.contains("fk-candrag") ? " · drag the ball to move it" : "");
 		if (ph === "keep") return "Click in the goal where to dive";
 		if (ph === "anim" && A && A.live && !A.act) return "Click in the goal to dive!";
 		if (ph === "wait") return "Waiting for the other player…";
@@ -1589,6 +1649,7 @@
 		var c = ctx, d = dark();
 		c.setTransform(L.dpr, 0, 0, L.dpr, 0, 0);
 		c.clearRect(0, 0, L.w, L.h);
+		placeOverlays(0, 0, null);
 		drawGoalPanel(c, s, d);
 		drawPitch(c, s, d, P2S, L.ps, { x0: 0, y0: L.gh, w: L.w, h: L.h - L.gh });
 	}
@@ -1742,16 +1803,93 @@
 	}
 	/* the mini map in 3D mode */
 	var MAP = null;
+	function mapSide() { if (S.map === "left" || S.map === "right") return S.map; var s = L && L.s; return s && s.bx > 0.5 ? "left" : "right"; }
 	function drawMap() {
-		var show = S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF";
-		mapCv.hidden = !show;
-		if (!show) return;
-		var w = Math.min(220, Math.round(L.w * 0.34)), h = Math.round(w * 0.8), dpr = sizeCanvas(mapCv, w, h), s = L.s;
+		var can = S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF", show = can && S.map !== "off";
+		mapCv.hidden = !show; $("fk-mapbar").hidden = !show; $("fk-mapgrip").hidden = !show; $("fk-mapshow").hidden = !(can && S.map === "off");
+		if (!show) { placeOverlays(0, 0, null); return; }
+		// small on phones, a little bigger on request; never more than ~40% of the picture's height
+		var w = Math.round(L.w * (S.mapBig ? 0.36 : 0.24)); w = Math.max(116, Math.min(S.mapBig ? 300 : 200, w, Math.round(L.h * (S.mapBig ? 0.55 : 0.4) / 0.8)));
+		if (S.mapW) w = Math.round(clamp(S.mapW, 110, Math.min(L.w * 0.7, L.h * 0.85 / 0.8)));
+		var h = Math.round(w * 0.8), dpr = sizeCanvas(mapCv, w, h), s = L.s;
+		placeOverlays(w, h, S.mapPos ? "free" : mapSide());
 		var ymax = Math.max(24, s.by + 5), xr = Math.max(16, Math.abs(s.bx) + 5), ps = Math.min(w / (2 * xr), h / (ymax + 3));
 		MAP = { ps: ps, px: w / 2, py: 2.5 * ps };
 		mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		drawPitch(mctx, s, dark(), function (x, y) { return [MAP.px + x * MAP.ps, MAP.py + y * MAP.ps]; }, ps, { x0: 0, y0: 0, w: w, h: h });
 	}
+
+	/* where the map, its buttons, the round Shoot button and the power bar go, so they never sit on top of each other */
+	function placeOverlays(mw, mh, side) {
+		var W = L.w, H = L.h, os = $("fk-oshoot"), osz = W < 700 ? 72 : 84, gap = 8, mtr = $("fk-meter");
+		var mapS = mapCv.style, bar = $("fk-mapbar").style, shw = $("fk-mapshow").style;
+		var mside = side === "free" ? "right" : side || mapSide(), grip = $("fk-mapgrip").style, mx, my;
+		// map rectangle (left, top) in the picture: a corner, or wherever it was dragged (kept as fractions so it survives resizes)
+		if (side === "free") { mx = Math.round(clamp(S.mapPos.x, 0, 1) * Math.max(0, W - mw)); my = Math.round(clamp(S.mapPos.y, 0, 1) * Math.max(0, H - mh)); }
+		else { mx = mside === "left" ? gap : W - gap - mw; my = H - gap - mh; }
+		MAPR = { x: mx, y: my, w: mw, h: mh };
+		mapS.left = mx + "px"; mapS.top = my + "px"; mapS.right = "auto"; mapS.bottom = "auto";
+		bar.left = mx + 4 + "px"; bar.right = "auto"; bar.top = my + 4 + "px"; bar.bottom = "auto";
+		// the resize corner sits on the corner nearest the middle of the picture, so dragging it outwards grows the map
+		var gl = mx + mw / 2 > W / 2, gt = my + mh / 2 > H / 2;
+		grip.left = (gl ? mx - 2 : mx + mw - 20) + "px"; grip.top = (gt ? my - 2 : my + mh - 20) + "px";
+		grip.cursor = gl === gt ? "nwse-resize" : "nesw-resize"; GRIP = { l: gl, t: gt };
+		shw.left = mside === "left" ? gap + "px" : "auto"; shw.right = mside === "right" ? gap + "px" : "auto";
+		// Shoot: bottom right; above the map when the map is on the right (or on the left when there is no room above it)
+		var shootLeft = false, sb = 14;
+		if (side === "right") { if (H - mh - gap * 2 >= osz + 60) sb = mh + gap + 12; else shootLeft = true; }
+		if (side === "free") {      // moved by hand: Shoot stays bottom right unless the map is on top of it
+			var sx0 = W - 14 - osz, sy0 = H - 14 - osz;
+			if (mx < sx0 + osz && mx + mw > sx0 && my < sy0 + osz && my + mh > sy0) shootLeft = true;
+			side = null;
+		}
+		os.style.right = shootLeft ? "auto" : "14px"; os.style.left = shootLeft ? "14px" : "auto"; os.style.bottom = sb + "px";
+		// power bar: middle of the left edge; when the map (or Shoot) takes the bottom left, it goes to the top of the other free edge
+		var trk = mtr.querySelector(".fk-mtrack"), st2 = mtr.style;
+		if (side === "left" && !shootLeft) {      // map bottom left, Shoot bottom right: the bar on the right, above Shoot
+			var avR = H - (sb + osz) - 40 - 26;
+			trk.style.height = Math.max(70, Math.min(240, H * 0.42, avR)) + "px";
+			st2.left = "auto"; st2.right = 14 + (osz - 26) / 2 + "px"; st2.top = "36px"; st2.transform = "none";
+		} else if (shootLeft) {                    // map bottom right and no room above it: Shoot bottom left, the bar above it
+			var avL = H - (14 + osz) - 40 - 26;
+			trk.style.height = Math.max(70, Math.min(240, H * 0.42, avL)) + "px";
+			st2.left = 14 + (osz - 26) / 2 + "px"; st2.right = "auto"; st2.top = "36px"; st2.transform = "none";
+		} else {
+			trk.style.height = Math.max(90, Math.min(260, H * 0.46)) + "px";
+			st2.left = "12px"; st2.right = "auto"; st2.top = "50%"; st2.transform = "translateY(-50%)";
+		}
+	}
+	/* move the map (drag ✥) and resize it (drag the corner) */
+	var MAPR = null, GRIP = null;
+	function mapDrag(el, onMove, onEnd) {
+		el.addEventListener("pointerdown", function (e) {
+			if (e.button > 0 || !MAPR) return;
+			e.preventDefault(); e.stopPropagation();
+			try { el.setPointerCapture(e.pointerId); } catch (x) { /* old */ }
+			var st = { x: e.clientX, y: e.clientY, r: { x: MAPR.x, y: MAPR.y, w: MAPR.w, h: MAPR.h } };
+			function mv(ev) { onMove(st, ev.clientX - st.x, ev.clientY - st.y); render(); }
+			function up() { el.removeEventListener("pointermove", mv); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); save(); if (onEnd) onEnd(); }
+			el.addEventListener("pointermove", mv); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+		});
+	}
+	function setMapRect(x, y, w, h) {
+		var W = L.w, H = L.h;
+		S.mapPos = { x: W - w > 0 ? clamp(x / (W - w), 0, 1) : 0, y: H - h > 0 ? clamp(y / (H - h), 0, 1) : 0 };
+	}
+	mapDrag($("fk-mapmove"), function (st, dx, dy) { if (S.map === "off") S.map = "auto"; setMapRect(st.r.x + dx, st.r.y + dy, st.r.w, st.r.h); });
+	mapDrag($("fk-mapgrip"), function (st, dx, dy) {
+		var r = st.r, g = GRIP || { l: true, t: true }, grow = Math.max(g.l ? -dx : dx, (g.t ? -dy : dy) / 0.8);
+		var w = Math.round(clamp(r.w + grow, 110, Math.min(L.w * 0.7, L.h * 0.85 / 0.8))), h = Math.round(w * 0.8);
+		S.mapW = w;
+		// keep the far corner where it was
+		setMapRect(g.l ? r.x + r.w - w : r.x, g.t ? r.y + r.h - h : r.y, w, h);
+	});
+	$("fk-mapgrip").addEventListener("dblclick", function () { S.mapW = 0; S.mapBig = false; save(); render(); });
+	$("fk-mapflip").addEventListener("click", function () { S.mapPos = null; S.map = mapSide() === "left" ? "right" : "left"; save(); render(); });
+	$("fk-maphide").addEventListener("click", function () { S.map = "off"; save(); render(); });
+	$("fk-mapshow").addEventListener("click", function () { S.map = "auto"; save(); render(); });
+	$("fk-mapsize").addEventListener("click", function () { S.mapBig = !S.mapBig; S.mapW = 0; save(); render(); });
+	$("fk-mapside").addEventListener("change", function () { S.map = this.value; S.mapPos = null; save(); render(); });
 
 	/* ===================================================================== 3D ===================================================================== */
 	var v3 = null, v3loading = false;
@@ -1780,10 +1918,11 @@
 		v3.frame({
 			setup: s, wall: A ? A.wall : B.wallSpots(s), lift: A ? B.wallLift(s, Math.max(0, A.t)) : 0, ball: bp, keeper: k, kicker: prog, flying: !!(A && A.t > 0),
 			guide: gp ? gp.pts : null, aim: ph === "aim" ? aim : null, dive: ph === "keep" ? dive : (A && A.act && A.act.d >= 0 ? { x: A.act.tx / 100, z: A.act.tz / 100 } : null),
-			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(),
+			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(), foot: S.foot,
 			t: A ? A.t : ph === "result" && last ? 9 : 0, anim: !!A, run: RUN, settle: !A && ph === "result" && !!last, res: last && ph === "result" ? last.sim.res : null, charge: charge ? charge.v : 0
 		});
 		$("fk-camreset").hidden = !v3.isFree();
+		if (!(S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF")) placeOverlays(0, 0, null);
 	}
 
 	/* ===================================================================== input ===================================================================== */
@@ -1822,6 +1961,11 @@
 			if (S.dim === "2d" && p.y > L.gh) { drag = { map: false }; cv.setPointerCapture(e.pointerId); moveSpot(e); e.preventDefault(); return; }
 		}
 		if (e.target === mapCv) return;
+		if (in3d(e) && root.classList.contains("fk-candrag") && e.button === 0 && !e.shiftKey && nearBall3d(e)) {
+			drag = { ground: true }; v3.holdCam = true;
+			try { e.target.setPointerCapture(e.pointerId); } catch (x) { /* old */ }
+			e.preventDefault(); return;
+		}
 		if (in3d(e)) {
 			var panIt = e.button === 1 || e.button === 2 || e.shiftKey;
 			if (!panIt) { var g3 = goalPick(e); if (g3 && onGoal(g3)) { drag = { goal: true }; e.preventDefault(); return; } }
@@ -1836,7 +1980,7 @@
 	window.addEventListener("pointermove", function (e) {
 		if (ptrs[e.pointerId]) { ptrs[e.pointerId].x = e.clientX; ptrs[e.pointerId].y = e.clientY; }
 		if (pinch && v3) { var q = pinchInfo(); if (q) { if (q.d > 10 && pinch.d > 10) v3.zoom(pinch.d / q.d); v3.pan(q.x - pinch.x, q.y - pinch.y); pinch = q; draw(); } return; }
-		if (!drag) { if (v3 && S.dim === "3d" && e.target.closest && e.target.closest("#fk-3d")) v3.hover(e.clientX, e.clientY); return; }
+		if (!drag) { if (v3 && S.dim === "3d" && e.target.closest && e.target.closest("#fk-3d")) v3.hover(e.clientX, e.clientY, root.classList.contains("fk-candrag") && nearBall3d(e)); return; }
 		if (drag.cam) {
 			var dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
 			if (drag.cam === "pan") v3.pan(dx, dy); else v3.orbit(dx, dy);
@@ -1849,6 +1993,7 @@
 		delete ptrs[e.pointerId];
 		if (pinch) { if (Object.keys(ptrs).length < 2) pinch = null; return; }
 		if (drag && drag.cam) { if (v3) v3.dragging = false; drag = null; return; }
+		if (drag && drag.ground && v3) { v3.holdCam = false; v3.kick(); }
 		if (drag && !drag.goal) { save(); render(); }
 		drag = null;
 	}
@@ -1863,9 +2008,18 @@
 		v3.zoom(Math.exp((e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY) * 0.0012));
 		$("fk-camreset").hidden = false;
 	}, { passive: false });
+	/* is the pointer on (or close to) the ball in the 3D picture? */
+	function nearBall3d(e) {
+		if (!v3 || A) return false;
+		var bs = v3.ballScreen(); if (!bs.front) return false;
+		if (Math.hypot(e.clientX - bs.x, e.clientY - bs.y) < 34) return true;
+		var g = v3.pickGround(e.clientX, e.clientY), s = curSetup();
+		return !!g && Math.hypot(g.x - s.bx, g.y - s.by) < 0.9;
+	}
 	function moveSpot(e) {
 		var x, y;
-		if (drag && drag.map) { var r = mapCv.getBoundingClientRect(); x = (e.clientX - r.left - MAP.px) / MAP.ps; y = (e.clientY - r.top - MAP.py) / MAP.ps; }
+		if (drag && drag.ground) { var g = v3 && v3.pickGround(e.clientX, e.clientY); if (!g) return; x = g.x; y = g.y; }
+		else if (drag && drag.map) { var r = mapCv.getBoundingClientRect(); x = (e.clientX - r.left - MAP.px) / MAP.ps; y = (e.clientY - r.top - MAP.py) / MAP.ps; }
 		else { var p = stagePoint(e), w = S2P(p.x, p.y); x = w.x; y = w.y; }
 		x = clamp(Math.round(x * 2) / 2, -30, 30); y = clamp(Math.round(y * 2) / 2, 6, 45);
 		if (B.inBox(x, y)) { if (Math.abs(x) < G.boxX - 0.01) { if (y > G.boxY - 3) y = G.boxY + 0.5; else x = x < 0 ? -G.boxX - 0.5 : G.boxX + 0.5; } }
@@ -1880,7 +2034,8 @@
 	root.querySelector(".fk-styles").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-style]"); if (!b) return;
 		var st = STYLES[b.getAttribute("data-style")], s = curSetup();
-		S.power = st[0]; S.curl = st[1] * (b.getAttribute("data-style") === "curl" && aim.x < s.bx ? -1 : 1); S.dip = st[2];
+		// a curler bends the way the kicking foot naturally curls it (inside of the right foot = right to left)
+		S.power = st[0]; S.curl = st[1] * (b.getAttribute("data-style") === "curl" && S.foot !== "L" ? -1 : 1); S.dip = st[2];
 		if (b.getAttribute("data-style") === "chip") { aim.z = Math.max(aim.z, 1.2); }
 		["power", "curl", "dip"].forEach(function (k) { $("fk-" + k).value = S[k]; });
 		guidePath.key = null; save(); render();
@@ -1922,9 +2077,8 @@
 		$("fk-mfill").style.background = "hsl(" + Math.round(120 - v * 120) + ",85%,48%)";
 		$("fk-mmark").style.bottom = clamp((S.power - PMIN) / (PMAX - PMIN), 0, 1) * 100 + "%";
 		$("fk-mval").textContent = charge ? pw.toFixed(0) + " m/s" : "Power";
-		var sb = $("fk-shoot"); sb.style.setProperty("--fk-pw", charge ? Math.round(v * 100) + "%" : "0%"); sb.textContent = charge ? "⚽ " + pw.toFixed(0) + " m/s · let go!" : S.pmode === "meter" ? "⚽ Hold to shoot" : "⚽ Shoot";
 	}
-	["fk-shoot", "fk-oshoot"].forEach(function (id) {
+	["fk-oshoot"].forEach(function (id) {
 		var el = $(id);
 		el.addEventListener("pointerdown", function (e) {
 			if (e.button > 0) return;
@@ -1937,8 +2091,9 @@
 		el.addEventListener("pointercancel", function () { chargeEnd(true); });
 		el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	});
-	$("fk-shoot").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); shoot(S.power); } });
-	$("fk-dive").addEventListener("click", keeperReady);
+	segBind("fk-foot", "foot", null, function () { if (S.curl) { S.curl = -S.curl; $("fk-curl").value = S.curl; } guidePath.key = null; save(); render(); });
+	segBind("fk-gl", "guide", null, function () { $("fk-guide").value = S.guide; guidePath.key = null; render(); });
+	[].forEach.call(root.querySelectorAll("[data-spot]"), function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-spot").split(","); S.spot.bx = +v[0]; S.spot.by = +v[1]; S.spot.kx = null; guidePath.key = null; save(); render(); }); });
 	segBind("fk-when", "when", function (v) { return +v; }, render);
 	segBind("fk-opp", "opp", null, function () { syncSetup(); newMatch(); });
 	segBind("fk-first", "first", function (v) { return +v; }, function () { newMatch(); });
@@ -1960,7 +2115,7 @@
 	}
 	function syncSegs() {
 		function set(id, val) { [].forEach.call($(id).querySelectorAll("[data-v]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === String(val))); }); }
-		set("fk-opp", S.opp); set("fk-first", S.first); set("fk-when", S.when); set("fk-ofirst", S.ofirst);
+		set("fk-opp", S.opp); set("fk-first", S.first); set("fk-when", S.when); set("fk-ofirst", S.ofirst); set("fk-foot", S.foot); set("fk-gl", S.guide);
 		var md = modeOf(S.mode);
 		set("fk-lv", md.np === 2 ? S.lv : S.plv);
 		$("fk-gk").value = md.np === 2 ? S.lv : S.plv;
@@ -1990,7 +2145,7 @@
 	$("fk-mode").addEventListener("change", function () { if (mode !== "local") return toast("Leave the online match first."); S.mode = this.value; save(); syncSetup(); newMatch(); });
 	$("fk-spread").addEventListener("change", function () { S.spread = this.checked; save(); });
 	$("fk-live").addEventListener("change", function () { S.live = this.checked; save(); if (mode === "local" && (ph === "keep" || ph === "ready")) next(); });
-	$("fk-guide").addEventListener("change", function () { S.guide = this.value; guidePath.key = null; save(); render(); });
+	$("fk-guide").addEventListener("change", function () { S.guide = this.value; guidePath.key = null; save(); syncSegs(); render(); });
 	$("fk-slow").addEventListener("change", function () { S.slow = +this.value; save(); });
 	$("fk-new").addEventListener("click", function () { if (mode === "online") return onLeave(); if (mode === "hive") return hiveLeave(); newMatch(); });
 	$("fk-dim").addEventListener("click", function () { S.dim = S.dim === "3d" ? "2d" : "3d"; save(); applyDim(); });

@@ -37,7 +37,10 @@
 				<div class="fk-stage" id="fk-stage">
 					<canvas class="fk-cv" id="fk-cv" aria-label="The pitch and the goal. Click or tap in the goal to aim (or to choose where the keeper dives)."></canvas>
 					<div class="fk-3d" id="fk-3d" hidden></div>
-					<canvas class="fk-map" id="fk-map" hidden aria-label="Pitch from above: drag the ball to move the free kick"></canvas>
+					<canvas class="fk-map" id="fk-map" hidden aria-label="Pitch from above: tap or drag to move the free kick"></canvas>
+						<div class="fk-mapbar" id="fk-mapbar" hidden><button type="button" id="fk-mapmove" class="fk-mapmove" title="Drag to move the map anywhere on the picture" aria-label="Move the map">✥</button><button type="button" id="fk-mapflip" title="Move the map to the other side">⇄</button><button type="button" id="fk-mapsize" title="Bigger / smaller map">⤢</button><button type="button" id="fk-maphide" title="Hide the map">✕</button></div>
+						<button type="button" class="fk-mapgrip" id="fk-mapgrip" hidden title="Drag to make the map bigger or smaller (double-click: normal size)" aria-label="Resize the map"></button>
+						<button type="button" class="fk-mapshow" id="fk-mapshow" hidden title="Show the map from above">🗺 Map</button>
 					<div class="fk-banner" id="fk-banner" hidden></div>
 					<div class="fk-hint" id="fk-hint"></div>
 					<div class="fk-load" id="fk-load" hidden>Loading the 3D view…</div>
@@ -52,12 +55,16 @@
 						<div class="fk-sl"><label for="fk-curl">Curl <b id="fk-curlv"></b></label><input type="range" id="fk-curl" min="-12" max="12" step="0.5" value="0"></div>
 						<div class="fk-sl"><label for="fk-dip">Dip / float <b id="fk-dipv"></b></label><input type="range" id="fk-dip" min="-6" max="10" step="0.5" value="0"></div>
 						<div class="fk-styles" role="group" aria-label="Quick styles"><button type="button" class="fk-vb" data-style="place">Placed</button><button type="button" class="fk-vb" data-style="curl">Curler</button><button type="button" class="fk-vb" data-style="dip">Dipper</button><button type="button" class="fk-vb" data-style="knuckle">Knuckleball</button><button type="button" class="fk-vb" data-style="chip">Chip</button><button type="button" class="fk-vb" data-style="blast">Blast</button></div>
-						<button type="button" class="fk-shoot" id="fk-shoot" title="Hold to shoot (or hold Space): the power bar goes up and down, let go at the power you want. The white mark on the bar is the slider's power.">⚽ Hold to shoot</button>
+						<div class="fk-krow">
+							<div class="fk-kopt"><span class="tu-label" id="fk-foot-l">Kicking foot</span><div class="tu-seg fk-seg" id="fk-foot" role="group" aria-labelledby="fk-foot-l"><button type="button" data-v="R" aria-pressed="true">Right</button><button type="button" data-v="L" aria-pressed="false">Left</button></div></div>
+							<div class="fk-kopt"><span class="tu-label" id="fk-gl-l">Aiming line</span><div class="tu-seg fk-seg" id="fk-gl" role="group" aria-labelledby="fk-gl-l"><button type="button" data-v="full" aria-pressed="true">Full</button><button type="button" data-v="start" aria-pressed="false">Short</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
+						</div>
+						<p class="tu-note fk-shootnote">Shoot with the round button on the pitch (or hold <kbd>Space</kbd>): the power bar goes up and down, let go at the power you want.</p>
 					</div>
 					<div class="fk-keep" id="fk-keepctl" hidden>
 						<p class="fk-keepnote" id="fk-keepnote">Click in the goal where to dive, then choose when.</p>
 						<div class="tu-seg" id="fk-when" role="group" aria-label="When to dive"><button type="button" data-v="0" aria-pressed="false">Early (guess)</button><button type="button" data-v="180" aria-pressed="true">On the kick</button><button type="button" data-v="320" aria-pressed="false">Wait and read</button><button type="button" data-v="-1" aria-pressed="false">Stay</button></div>
-						<button type="button" class="fk-shoot fk-shoot--gk" id="fk-dive">🧤 Ready</button>
+						<p class="tu-note fk-shootnote">Then press the round <b>Ready</b> button on the pitch (or <kbd>Space</kbd>).</p>
 					</div>
 					<div class="fk-fkset" id="fk-fkset" hidden>
 						<p class="fk-spot" id="fk-spot"></p>
@@ -67,14 +74,16 @@
 							<label><input type="checkbox" id="fk-jump"> Wall jumps</label>
 							<label class="fk-slw">Wall shift <input type="range" id="fk-shift" min="-150" max="150" step="10" value="0"></label>
 							<label class="fk-slw">Keeper starts <input type="range" id="fk-kx" min="-150" max="150" step="5" value="0"></label>
-							<button type="button" class="fk-vb" id="fk-autokx">Auto keeper</button>
-						</div>
-						<p class="tu-note fk-mapnote">Drag the ball on the pitch (from above) to move the free kick. The wall stands 9.15 m away, as the rules say.</p>
+								<button type="button" class="fk-vb" id="fk-autokx">Auto keeper</button>
+								<label>Map <select id="fk-mapside" class="tu-select fk-mini"><option value="auto">Away from the ball</option><option value="left">Left</option><option value="right">Right</option><option value="off">Hidden</option></select></label>
+							</div>
+							<div class="fk-spots" role="group" aria-label="Quick spots"><span>Quick spots:</span><button type="button" class="fk-vb" data-spot="0,22">Straight on</button><button type="button" class="fk-vb" data-spot="-9,20">Left edge</button><button type="button" class="fk-vb" data-spot="9,20">Right edge</button><button type="button" class="fk-vb" data-spot="-4,28">Long range</button><button type="button" class="fk-vb" data-spot="-19,13">Wide left</button><button type="button" class="fk-vb" data-spot="19,13">Wide right</button></div>
+							<p class="tu-note fk-mapnote">Move the free kick: drag the ball itself on the pitch, or tap / drag on the map. The wall stands 9.15 m away, as the rules say.</p>
 					</div>
 				</div>
 				<ol class="fk-log" id="fk-log" aria-label="Kicks"></ol>
 			</div>
-			<p class="tu-note">Keys: hold <kbd>Space</kbd> and let go to shoot (or press it for keeper Ready), <kbd>Esc</kbd> cancel a shot, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, drag the 3D picture to orbit (right-drag or <kbd>Shift</kbd> to move, wheel / pinch / <kbd>+</kbd> <kbd>-</kbd> to zoom, <kbd>0</kbd> resets), <kbd>M</kbd> sound, <kbd>R</kbd> random spot, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
+			<p class="tu-note">Keys: hold <kbd>Space</kbd> and let go to shoot (or press it for keeper Ready), <kbd>Esc</kbd> cancel a shot, <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> move the aim (or the dive), <kbd>V</kbd> 2D / 3D, <kbd>C</kbd> camera, drag the 3D picture to orbit (right-drag or <kbd>Shift</kbd> to move, wheel / pinch / <kbd>+</kbd> <kbd>-</kbd> to zoom, <kbd>0</kbd> resets), <kbd>M</kbd> sound, <kbd>R</kbd> random spot, drag the ball on the pitch to move it, <kbd>N</kbd> new game, <kbd>W</kbd> fill window, <kbd>F</kbd> full screen. As the keeper in a live kick: <kbd>←</kbd> <kbd>→</kbd> dive, <kbd>↑</kbd> jump (with <kbd>Shift</kbd> = high). Settings and statistics stay in this browser.</p>
 		</section>
 
 		<section id="fk-p-online" role="tabpanel" aria-label="Play online" hidden>

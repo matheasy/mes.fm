@@ -18,7 +18,7 @@
 	/* ===================================================================== settings ===================================================================== */
 	var KEY = "mes-free-kick:v1";
 	var S = { mode: "PF", opp: "cpu", first: 0, lv: "medium", plv: "medium", spread: true, live: true, guide: "full", slow: 1, dim: "3d", cam: "behind", pmode: "meter", snd: true,
-		power: 24, curl: 0, dip: 0, when: 180, spot: { bx: -6, by: 21, wall: "auto", j: 0, off: 0, kx: null }, stats: {}, name: "", opub: true, ofirst: "host", omode: "P", saved: {} };
+		power: 24, curl: 0, dip: 0, when: 180, foot: "R", map: "auto", mapBig: false, mapPos: null, mapW: 0, spot: { bx: -6, by: 21, wall: "auto", j: 0, off: 0, kx: null }, stats: {}, name: "", opub: true, ofirst: "host", omode: "P", saved: {} };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in sv) S[k] = sv[k]; } catch (e) { /* defaults */ }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 	var toastT = 0;
@@ -298,7 +298,6 @@
 		var kick = ph === "aim", keep = ph === "keep";
 		$("fk-kickctl").hidden = !(kick || (ph !== "keep" && !keep && humanKicksSafe()));
 		$("fk-keepctl").hidden = !keep;
-		$("fk-shoot").disabled = !kick;
 		var fkset = mode === "local" && M && M.kind === "practice" && M.v === "PF";
 		$("fk-fkset").hidden = !fkset;
 		root.classList.toggle("fk-candrag", fkset && (ph === "aim" || ph === "result"));
@@ -307,9 +306,10 @@
 			$("fk-spot").innerHTML = "<b>" + B.distance(s.bx, s.by).toFixed(1) + " m</b> from goal · " + Math.round(B.angleDeg(s.bx, s.by)) + "° " + (s.bx > 0.3 ? "right" : s.bx < -0.3 ? "left" : "straight on") + " · wall " + s.n;
 			$("fk-wall").value = String(S.spot.wall); $("fk-jump").checked = !!S.spot.j; $("fk-shift").value = S.spot.off || 0;
 			$("fk-kx").value = Math.round((s.kx || 0) * 100);
+			$("fk-mapside").value = S.map;
 		}
 		$("fk-powerv").textContent = (+S.power).toFixed(1) + " m/s (" + Math.round(S.power * 3.6) + " km/h)";
-		$("fk-curlv").textContent = S.curl === 0 ? "none" : Math.abs(S.curl).toFixed(1) + (S.curl > 0 ? " → right" : " ← left");
+		$("fk-curlv").textContent = S.curl === 0 ? "none" : Math.abs(S.curl).toFixed(1) + (S.curl > 0 ? " → right" : " ← left") + ((S.curl < 0) === (S.foot !== "L") ? " (inside of the foot)" : " (outside of the foot)");
 		$("fk-dipv").textContent = S.dip === 0 ? "none" : S.dip > 0 ? "dip " + S.dip : "float " + (-S.dip);
 		$("fk-hint").textContent = hintText();
 		meter();
@@ -318,7 +318,7 @@
 	}
 	function humanKicksSafe() { try { return M && ph !== "anim" && ph !== "result" && ph !== "over" && ph !== "wait" && humanKicks(); } catch (e) { return false; } }
 	function hintText() {
-		if (ph === "aim") return "Click in the goal to aim" + (S.guide !== "off" ? " · the dotted line is the path" : "");
+		if (ph === "aim") return "Click in the goal to aim" + (root.classList.contains("fk-candrag") ? " · drag the ball to move it" : "");
 		if (ph === "keep") return "Click in the goal where to dive";
 		if (ph === "anim" && A && A.live && !A.act) return "Click in the goal to dive!";
 		if (ph === "wait") return "Waiting for the other player…";
@@ -412,6 +412,7 @@
 		var c = ctx, d = dark();
 		c.setTransform(L.dpr, 0, 0, L.dpr, 0, 0);
 		c.clearRect(0, 0, L.w, L.h);
+		placeOverlays(0, 0, null);
 		drawGoalPanel(c, s, d);
 		drawPitch(c, s, d, P2S, L.ps, { x0: 0, y0: L.gh, w: L.w, h: L.h - L.gh });
 	}
@@ -565,16 +566,93 @@
 	}
 	/* the mini map in 3D mode */
 	var MAP = null;
+	function mapSide() { if (S.map === "left" || S.map === "right") return S.map; var s = L && L.s; return s && s.bx > 0.5 ? "left" : "right"; }
 	function drawMap() {
-		var show = S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF";
-		mapCv.hidden = !show;
-		if (!show) return;
-		var w = Math.min(220, Math.round(L.w * 0.34)), h = Math.round(w * 0.8), dpr = sizeCanvas(mapCv, w, h), s = L.s;
+		var can = S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF", show = can && S.map !== "off";
+		mapCv.hidden = !show; $("fk-mapbar").hidden = !show; $("fk-mapgrip").hidden = !show; $("fk-mapshow").hidden = !(can && S.map === "off");
+		if (!show) { placeOverlays(0, 0, null); return; }
+		// small on phones, a little bigger on request; never more than ~40% of the picture's height
+		var w = Math.round(L.w * (S.mapBig ? 0.36 : 0.24)); w = Math.max(116, Math.min(S.mapBig ? 300 : 200, w, Math.round(L.h * (S.mapBig ? 0.55 : 0.4) / 0.8)));
+		if (S.mapW) w = Math.round(clamp(S.mapW, 110, Math.min(L.w * 0.7, L.h * 0.85 / 0.8)));
+		var h = Math.round(w * 0.8), dpr = sizeCanvas(mapCv, w, h), s = L.s;
+		placeOverlays(w, h, S.mapPos ? "free" : mapSide());
 		var ymax = Math.max(24, s.by + 5), xr = Math.max(16, Math.abs(s.bx) + 5), ps = Math.min(w / (2 * xr), h / (ymax + 3));
 		MAP = { ps: ps, px: w / 2, py: 2.5 * ps };
 		mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		drawPitch(mctx, s, dark(), function (x, y) { return [MAP.px + x * MAP.ps, MAP.py + y * MAP.ps]; }, ps, { x0: 0, y0: 0, w: w, h: h });
 	}
+
+	/* where the map, its buttons, the round Shoot button and the power bar go, so they never sit on top of each other */
+	function placeOverlays(mw, mh, side) {
+		var W = L.w, H = L.h, os = $("fk-oshoot"), osz = W < 700 ? 72 : 84, gap = 8, mtr = $("fk-meter");
+		var mapS = mapCv.style, bar = $("fk-mapbar").style, shw = $("fk-mapshow").style;
+		var mside = side === "free" ? "right" : side || mapSide(), grip = $("fk-mapgrip").style, mx, my;
+		// map rectangle (left, top) in the picture: a corner, or wherever it was dragged (kept as fractions so it survives resizes)
+		if (side === "free") { mx = Math.round(clamp(S.mapPos.x, 0, 1) * Math.max(0, W - mw)); my = Math.round(clamp(S.mapPos.y, 0, 1) * Math.max(0, H - mh)); }
+		else { mx = mside === "left" ? gap : W - gap - mw; my = H - gap - mh; }
+		MAPR = { x: mx, y: my, w: mw, h: mh };
+		mapS.left = mx + "px"; mapS.top = my + "px"; mapS.right = "auto"; mapS.bottom = "auto";
+		bar.left = mx + 4 + "px"; bar.right = "auto"; bar.top = my + 4 + "px"; bar.bottom = "auto";
+		// the resize corner sits on the corner nearest the middle of the picture, so dragging it outwards grows the map
+		var gl = mx + mw / 2 > W / 2, gt = my + mh / 2 > H / 2;
+		grip.left = (gl ? mx - 2 : mx + mw - 20) + "px"; grip.top = (gt ? my - 2 : my + mh - 20) + "px";
+		grip.cursor = gl === gt ? "nwse-resize" : "nesw-resize"; GRIP = { l: gl, t: gt };
+		shw.left = mside === "left" ? gap + "px" : "auto"; shw.right = mside === "right" ? gap + "px" : "auto";
+		// Shoot: bottom right; above the map when the map is on the right (or on the left when there is no room above it)
+		var shootLeft = false, sb = 14;
+		if (side === "right") { if (H - mh - gap * 2 >= osz + 60) sb = mh + gap + 12; else shootLeft = true; }
+		if (side === "free") {      // moved by hand: Shoot stays bottom right unless the map is on top of it
+			var sx0 = W - 14 - osz, sy0 = H - 14 - osz;
+			if (mx < sx0 + osz && mx + mw > sx0 && my < sy0 + osz && my + mh > sy0) shootLeft = true;
+			side = null;
+		}
+		os.style.right = shootLeft ? "auto" : "14px"; os.style.left = shootLeft ? "14px" : "auto"; os.style.bottom = sb + "px";
+		// power bar: middle of the left edge; when the map (or Shoot) takes the bottom left, it goes to the top of the other free edge
+		var trk = mtr.querySelector(".fk-mtrack"), st2 = mtr.style;
+		if (side === "left" && !shootLeft) {      // map bottom left, Shoot bottom right: the bar on the right, above Shoot
+			var avR = H - (sb + osz) - 40 - 26;
+			trk.style.height = Math.max(70, Math.min(240, H * 0.42, avR)) + "px";
+			st2.left = "auto"; st2.right = 14 + (osz - 26) / 2 + "px"; st2.top = "36px"; st2.transform = "none";
+		} else if (shootLeft) {                    // map bottom right and no room above it: Shoot bottom left, the bar above it
+			var avL = H - (14 + osz) - 40 - 26;
+			trk.style.height = Math.max(70, Math.min(240, H * 0.42, avL)) + "px";
+			st2.left = 14 + (osz - 26) / 2 + "px"; st2.right = "auto"; st2.top = "36px"; st2.transform = "none";
+		} else {
+			trk.style.height = Math.max(90, Math.min(260, H * 0.46)) + "px";
+			st2.left = "12px"; st2.right = "auto"; st2.top = "50%"; st2.transform = "translateY(-50%)";
+		}
+	}
+	/* move the map (drag ✥) and resize it (drag the corner) */
+	var MAPR = null, GRIP = null;
+	function mapDrag(el, onMove, onEnd) {
+		el.addEventListener("pointerdown", function (e) {
+			if (e.button > 0 || !MAPR) return;
+			e.preventDefault(); e.stopPropagation();
+			try { el.setPointerCapture(e.pointerId); } catch (x) { /* old */ }
+			var st = { x: e.clientX, y: e.clientY, r: { x: MAPR.x, y: MAPR.y, w: MAPR.w, h: MAPR.h } };
+			function mv(ev) { onMove(st, ev.clientX - st.x, ev.clientY - st.y); render(); }
+			function up() { el.removeEventListener("pointermove", mv); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); save(); if (onEnd) onEnd(); }
+			el.addEventListener("pointermove", mv); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+		});
+	}
+	function setMapRect(x, y, w, h) {
+		var W = L.w, H = L.h;
+		S.mapPos = { x: W - w > 0 ? clamp(x / (W - w), 0, 1) : 0, y: H - h > 0 ? clamp(y / (H - h), 0, 1) : 0 };
+	}
+	mapDrag($("fk-mapmove"), function (st, dx, dy) { if (S.map === "off") S.map = "auto"; setMapRect(st.r.x + dx, st.r.y + dy, st.r.w, st.r.h); });
+	mapDrag($("fk-mapgrip"), function (st, dx, dy) {
+		var r = st.r, g = GRIP || { l: true, t: true }, grow = Math.max(g.l ? -dx : dx, (g.t ? -dy : dy) / 0.8);
+		var w = Math.round(clamp(r.w + grow, 110, Math.min(L.w * 0.7, L.h * 0.85 / 0.8))), h = Math.round(w * 0.8);
+		S.mapW = w;
+		// keep the far corner where it was
+		setMapRect(g.l ? r.x + r.w - w : r.x, g.t ? r.y + r.h - h : r.y, w, h);
+	});
+	$("fk-mapgrip").addEventListener("dblclick", function () { S.mapW = 0; S.mapBig = false; save(); render(); });
+	$("fk-mapflip").addEventListener("click", function () { S.mapPos = null; S.map = mapSide() === "left" ? "right" : "left"; save(); render(); });
+	$("fk-maphide").addEventListener("click", function () { S.map = "off"; save(); render(); });
+	$("fk-mapshow").addEventListener("click", function () { S.map = "auto"; save(); render(); });
+	$("fk-mapsize").addEventListener("click", function () { S.mapBig = !S.mapBig; S.mapW = 0; save(); render(); });
+	$("fk-mapside").addEventListener("change", function () { S.map = this.value; S.mapPos = null; save(); render(); });
 
 	/* ===================================================================== 3D ===================================================================== */
 	var v3 = null, v3loading = false;
@@ -603,10 +681,11 @@
 		v3.frame({
 			setup: s, wall: A ? A.wall : B.wallSpots(s), lift: A ? B.wallLift(s, Math.max(0, A.t)) : 0, ball: bp, keeper: k, kicker: prog, flying: !!(A && A.t > 0),
 			guide: gp ? gp.pts : null, aim: ph === "aim" ? aim : null, dive: ph === "keep" ? dive : (A && A.act && A.act.d >= 0 ? { x: A.act.tx / 100, z: A.act.tz / 100 } : null),
-			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(),
+			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(), foot: S.foot,
 			t: A ? A.t : ph === "result" && last ? 9 : 0, anim: !!A, run: RUN, settle: !A && ph === "result" && !!last, res: last && ph === "result" ? last.sim.res : null, charge: charge ? charge.v : 0
 		});
 		$("fk-camreset").hidden = !v3.isFree();
+		if (!(S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF")) placeOverlays(0, 0, null);
 	}
 
 	/* ===================================================================== input ===================================================================== */
@@ -645,6 +724,11 @@
 			if (S.dim === "2d" && p.y > L.gh) { drag = { map: false }; cv.setPointerCapture(e.pointerId); moveSpot(e); e.preventDefault(); return; }
 		}
 		if (e.target === mapCv) return;
+		if (in3d(e) && root.classList.contains("fk-candrag") && e.button === 0 && !e.shiftKey && nearBall3d(e)) {
+			drag = { ground: true }; v3.holdCam = true;
+			try { e.target.setPointerCapture(e.pointerId); } catch (x) { /* old */ }
+			e.preventDefault(); return;
+		}
 		if (in3d(e)) {
 			var panIt = e.button === 1 || e.button === 2 || e.shiftKey;
 			if (!panIt) { var g3 = goalPick(e); if (g3 && onGoal(g3)) { drag = { goal: true }; e.preventDefault(); return; } }
@@ -659,7 +743,7 @@
 	window.addEventListener("pointermove", function (e) {
 		if (ptrs[e.pointerId]) { ptrs[e.pointerId].x = e.clientX; ptrs[e.pointerId].y = e.clientY; }
 		if (pinch && v3) { var q = pinchInfo(); if (q) { if (q.d > 10 && pinch.d > 10) v3.zoom(pinch.d / q.d); v3.pan(q.x - pinch.x, q.y - pinch.y); pinch = q; draw(); } return; }
-		if (!drag) { if (v3 && S.dim === "3d" && e.target.closest && e.target.closest("#fk-3d")) v3.hover(e.clientX, e.clientY); return; }
+		if (!drag) { if (v3 && S.dim === "3d" && e.target.closest && e.target.closest("#fk-3d")) v3.hover(e.clientX, e.clientY, root.classList.contains("fk-candrag") && nearBall3d(e)); return; }
 		if (drag.cam) {
 			var dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
 			if (drag.cam === "pan") v3.pan(dx, dy); else v3.orbit(dx, dy);
@@ -672,6 +756,7 @@
 		delete ptrs[e.pointerId];
 		if (pinch) { if (Object.keys(ptrs).length < 2) pinch = null; return; }
 		if (drag && drag.cam) { if (v3) v3.dragging = false; drag = null; return; }
+		if (drag && drag.ground && v3) { v3.holdCam = false; v3.kick(); }
 		if (drag && !drag.goal) { save(); render(); }
 		drag = null;
 	}
@@ -686,9 +771,18 @@
 		v3.zoom(Math.exp((e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY) * 0.0012));
 		$("fk-camreset").hidden = false;
 	}, { passive: false });
+	/* is the pointer on (or close to) the ball in the 3D picture? */
+	function nearBall3d(e) {
+		if (!v3 || A) return false;
+		var bs = v3.ballScreen(); if (!bs.front) return false;
+		if (Math.hypot(e.clientX - bs.x, e.clientY - bs.y) < 34) return true;
+		var g = v3.pickGround(e.clientX, e.clientY), s = curSetup();
+		return !!g && Math.hypot(g.x - s.bx, g.y - s.by) < 0.9;
+	}
 	function moveSpot(e) {
 		var x, y;
-		if (drag && drag.map) { var r = mapCv.getBoundingClientRect(); x = (e.clientX - r.left - MAP.px) / MAP.ps; y = (e.clientY - r.top - MAP.py) / MAP.ps; }
+		if (drag && drag.ground) { var g = v3 && v3.pickGround(e.clientX, e.clientY); if (!g) return; x = g.x; y = g.y; }
+		else if (drag && drag.map) { var r = mapCv.getBoundingClientRect(); x = (e.clientX - r.left - MAP.px) / MAP.ps; y = (e.clientY - r.top - MAP.py) / MAP.ps; }
 		else { var p = stagePoint(e), w = S2P(p.x, p.y); x = w.x; y = w.y; }
 		x = clamp(Math.round(x * 2) / 2, -30, 30); y = clamp(Math.round(y * 2) / 2, 6, 45);
 		if (B.inBox(x, y)) { if (Math.abs(x) < G.boxX - 0.01) { if (y > G.boxY - 3) y = G.boxY + 0.5; else x = x < 0 ? -G.boxX - 0.5 : G.boxX + 0.5; } }
@@ -703,7 +797,8 @@
 	root.querySelector(".fk-styles").addEventListener("click", function (e) {
 		var b = e.target.closest("[data-style]"); if (!b) return;
 		var st = STYLES[b.getAttribute("data-style")], s = curSetup();
-		S.power = st[0]; S.curl = st[1] * (b.getAttribute("data-style") === "curl" && aim.x < s.bx ? -1 : 1); S.dip = st[2];
+		// a curler bends the way the kicking foot naturally curls it (inside of the right foot = right to left)
+		S.power = st[0]; S.curl = st[1] * (b.getAttribute("data-style") === "curl" && S.foot !== "L" ? -1 : 1); S.dip = st[2];
 		if (b.getAttribute("data-style") === "chip") { aim.z = Math.max(aim.z, 1.2); }
 		["power", "curl", "dip"].forEach(function (k) { $("fk-" + k).value = S[k]; });
 		guidePath.key = null; save(); render();
@@ -745,9 +840,8 @@
 		$("fk-mfill").style.background = "hsl(" + Math.round(120 - v * 120) + ",85%,48%)";
 		$("fk-mmark").style.bottom = clamp((S.power - PMIN) / (PMAX - PMIN), 0, 1) * 100 + "%";
 		$("fk-mval").textContent = charge ? pw.toFixed(0) + " m/s" : "Power";
-		var sb = $("fk-shoot"); sb.style.setProperty("--fk-pw", charge ? Math.round(v * 100) + "%" : "0%"); sb.textContent = charge ? "⚽ " + pw.toFixed(0) + " m/s · let go!" : S.pmode === "meter" ? "⚽ Hold to shoot" : "⚽ Shoot";
 	}
-	["fk-shoot", "fk-oshoot"].forEach(function (id) {
+	["fk-oshoot"].forEach(function (id) {
 		var el = $(id);
 		el.addEventListener("pointerdown", function (e) {
 			if (e.button > 0) return;
@@ -760,8 +854,9 @@
 		el.addEventListener("pointercancel", function () { chargeEnd(true); });
 		el.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 	});
-	$("fk-shoot").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); shoot(S.power); } });
-	$("fk-dive").addEventListener("click", keeperReady);
+	segBind("fk-foot", "foot", null, function () { if (S.curl) { S.curl = -S.curl; $("fk-curl").value = S.curl; } guidePath.key = null; save(); render(); });
+	segBind("fk-gl", "guide", null, function () { $("fk-guide").value = S.guide; guidePath.key = null; render(); });
+	[].forEach.call(root.querySelectorAll("[data-spot]"), function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-spot").split(","); S.spot.bx = +v[0]; S.spot.by = +v[1]; S.spot.kx = null; guidePath.key = null; save(); render(); }); });
 	segBind("fk-when", "when", function (v) { return +v; }, render);
 	segBind("fk-opp", "opp", null, function () { syncSetup(); newMatch(); });
 	segBind("fk-first", "first", function (v) { return +v; }, function () { newMatch(); });
@@ -783,7 +878,7 @@
 	}
 	function syncSegs() {
 		function set(id, val) { [].forEach.call($(id).querySelectorAll("[data-v]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === String(val))); }); }
-		set("fk-opp", S.opp); set("fk-first", S.first); set("fk-when", S.when); set("fk-ofirst", S.ofirst);
+		set("fk-opp", S.opp); set("fk-first", S.first); set("fk-when", S.when); set("fk-ofirst", S.ofirst); set("fk-foot", S.foot); set("fk-gl", S.guide);
 		var md = modeOf(S.mode);
 		set("fk-lv", md.np === 2 ? S.lv : S.plv);
 		$("fk-gk").value = md.np === 2 ? S.lv : S.plv;
@@ -813,7 +908,7 @@
 	$("fk-mode").addEventListener("change", function () { if (mode !== "local") return toast("Leave the online match first."); S.mode = this.value; save(); syncSetup(); newMatch(); });
 	$("fk-spread").addEventListener("change", function () { S.spread = this.checked; save(); });
 	$("fk-live").addEventListener("change", function () { S.live = this.checked; save(); if (mode === "local" && (ph === "keep" || ph === "ready")) next(); });
-	$("fk-guide").addEventListener("change", function () { S.guide = this.value; guidePath.key = null; save(); render(); });
+	$("fk-guide").addEventListener("change", function () { S.guide = this.value; guidePath.key = null; save(); syncSegs(); render(); });
 	$("fk-slow").addEventListener("change", function () { S.slow = +this.value; save(); });
 	$("fk-new").addEventListener("click", function () { if (mode === "online") return onLeave(); if (mode === "hive") return hiveLeave(); newMatch(); });
 	$("fk-dim").addEventListener("click", function () { S.dim = S.dim === "3d" ? "2d" : "3d"; save(); applyDim(); });
