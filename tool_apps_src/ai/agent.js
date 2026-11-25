@@ -91,6 +91,27 @@
 			return api.post({ op: "astep", id: task.id, acct: task.acct, messages: task.msgs, lang: api.LANG }).then(api.jsonOf);
 		}
 
+		// the step lines in the person's language (MESAI.agentStepText is the English original, used by tests)
+		function stepText(tool, input, label) {
+			input = input || {}; var w = input.why ? String(input.why) : "", txt = String(input.text || "");
+			switch (tool) {
+				case "list_tabs": return T("Looking at your tabs");
+				case "open_tab": return T("Opening {u}", { u: String(input.url || "") });
+				case "go_to": return T("Going to {u}", { u: String(input.url || "") });
+				case "switch_tab": return T("Switching tab");
+				case "close_tab": return T("Closing a tab");
+				case "read_page": return input.find ? T("Reading the page (looking for “{f}”)", { f: input.find }) : T("Reading the page");
+				case "screenshot": return T("Taking a screenshot");
+				case "click": return (w || T("Clicking")) + (label ? " (" + label + ")" : "");
+				case "type": return (w || T("Typing")) + ": “" + txt.slice(0, 80) + (txt.length > 80 ? "…" : "") + "”";
+				case "select_option": return (w || T("Choosing")) + ": " + String(input.option || "");
+				case "scroll": return T("Scrolling");
+				case "press_key": return T("Pressing {k}", { k: String(input.key || "") });
+				case "wait": return T("Waiting {n} s", { n: Number(input.seconds) || 1 });
+			}
+			return tool;
+		}
+
 		/* ---------- the loop ---------- */
 		var running = false, stopWanted = false;
 		function stopTask(why) {
@@ -158,11 +179,11 @@
 		// one tool step: ask first when needed, do it in the extension, turn the answer into a tool_result
 		function run1(tu) {
 			var name = tu.name, inp = tu.input || {};
-			var entry = { k: "step", t: A.agentStepText(name, inp), st: "run" };
+			var entry = { k: "step", t: stepText(name, inp), st: "run" };
 			task.log.push(entry); paint();
 			var labelP = (inp.ref != null && /^(click|type|press_key|select_option)$/.test(name)) ? ext("label", { ref: inp.ref, tab: inp.tab }).then(function (x) { return x && x.label || ""; }, function () { return ""; }) : Promise.resolve("");
 			return labelP.then(function (label) {
-				entry.t = A.agentStepText(name, inp, label); paint();
+				entry.t = stepText(name, inp, label); paint();
 				var acts = /^(click|type|press_key|select_option)$/.test(name);
 				if (A.agentRisky(name, inp, label) || (G.askAll && acts)) return ask(entry.t).then(function (ans) { return { ans: ans, label: label }; });
 				return { ans: "allow", label: label };

@@ -12,7 +12,7 @@ function lits(code) {
 	return out;
 }
 function collect() {
-	const app = fs.readFileSync(path.join(SRC, 'app.js'), 'utf8') + fs.readFileSync(path.join(SRC, 'rich.js'), 'utf8'), html = fs.readFileSync(path.join(SRC, 'content.html'), 'utf8');
+	const app = fs.readFileSync(path.join(SRC, 'app.js'), 'utf8') + fs.readFileSync(path.join(SRC, 'rich.js'), 'utf8') + fs.readFileSync(path.join(SRC, 'agent.js'), 'utf8'), html = fs.readFileSync(path.join(SRC, 'content.html'), 'utf8');
 	const keys = new Set(lits(app));
 	(html.match(/\{\{tr:([\s\S]*?)\}\}/g) || []).forEach((x) => keys.add(x.slice(5, -2)));
 	// the Fill window / Full screen buttons of /main_js/panel-view.js (the page passes T as opts.t)
@@ -23,6 +23,7 @@ function collect() {
 	Object.keys(A.XIMAGE.res).forEach((k) => keys.add(A.XIMAGE.res[k]));
 	Object.keys(A.VIDEO.models).forEach((k) => keys.add(A.VIDEO.models[k].name));
 	Object.keys(A.LOCAL_WHY).forEach((k) => keys.add(A.LOCAL_WHY[k]));
+	Object.keys(A.AGENT.plans).forEach((k) => keys.add(A.AGENT.plans[k].name));
 	return [...keys].filter((k) => k && /[A-Za-z]/.test(k)).sort();
 }
 function phs(s) { return (String(s).match(/\{\w+\}/g) || []).sort().join(','); }

@@ -1177,7 +1177,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 聊天</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ 图片</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 视频</button>
-			<button type="button" role="tab" class="ai-mode" id="ai-tab-agent" aria-selected="false" aria-controls="ai-agt">🧭 Browser</button>
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-agent" aria-selected="false" aria-controls="ai-agt">🧭 浏览器</button>
 			<span class="ai-whochip" id="ai-whochip" hidden></span>
 			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ 免费与付费</button>
 		</div>
@@ -1345,30 +1345,30 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 		</section>
 
 		<section class="tu-card ai-agt" id="ai-agt" role="tabpanel" aria-labelledby="ai-tab-agent" hidden>
-			<h3 class="ai-h2" id="browser">🧭 Let MES AI work in your browser</h3>
-			<p class="tu-note">Give it a job and watch: it opens tabs in its own window, reads pages, clicks and types, and tells you what it did. It asks you before anything is sent, posted, paid or deleted, and never types passwords or card numbers. You pay once per task (a budget in HBD); a task can take many steps.</p>
+			<h3 class="ai-h2" id="browser">🧭 让 MES AI 在你的浏览器里工作</h3>
+			<p class="tu-note">给它一个任务，然后看着它做：它在自己的窗口里打开标签页、阅读网页、点击和输入，并告诉你它做了什么。任何发送、发布、付款或删除之前都会先问你，而且从不输入密码或卡号。每个任务付一次钱（一笔 HBD 预算）；一个任务可以有很多步。</p>
 			<div class="ag-ext" id="ag-ext"></div>
 			<div class="ag-bar" id="ag-bar" hidden><div class="ag-track"><div class="ag-fill" id="ag-barfill"></div></div><span id="ag-bartxt"></span></div>
 			<div class="ag-log" id="ag-log" aria-live="polite"></div>
 			<div class="ag-ask" id="ag-ask" role="alertdialog" aria-labelledby="ag-asktxt" hidden>
-				<p><b>MES AI wants to:</b> <span id="ag-asktxt"></span></p>
-				<div class="ag-askbtns"><button type="button" class="tu-btn tu-btn--primary" id="ag-allow">✓ Allow</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-skip">✗ No, skip it</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-askstop">■ Stop the task</button></div>
+				<p><b>MES AI 想要：</b> <span id="ag-asktxt"></span></p>
+				<div class="ag-askbtns"><button type="button" class="tu-btn tu-btn--primary" id="ag-allow">✓ 允许</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-skip">✗ 不，跳过</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-askstop">■ 停止任务</button></div>
 			</div>
-			<div class="ag-run"><button type="button" class="tu-btn ag-stop" id="ag-stop" hidden>■ 停止</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-cont" hidden>▶ Continue</button></div>
-			<label class="ai-sr" for="ag-in">What should MES AI do in your browser?</label>
+			<div class="ag-run"><button type="button" class="tu-btn ag-stop" id="ag-stop" hidden>■ 停止</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-cont" hidden>▶ 继续</button></div>
+			<label class="ai-sr" for="ag-in">MES AI 应该在你的浏览器里做什么？</label>
 			<div class="ai-inrow">
 				<textarea id="ag-in" class="tu-input ai-in" rows="3" maxlength="8000"></textarea>
-				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ag-go">Pay &amp; start the task</button>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ag-go">付款并开始任务</button>
 			</div>
 			<div class="ai-opts" id="ag-opts">
 				<label class="ai-opt"><span>模型</span><select id="ag-model" class="tu-input" data-native></select></label>
-				<label class="ai-opt"><span>Task size</span><select id="ag-plan" class="tu-input" data-native></select></label>
-				<label class="ai-opt ai-enc"><input type="checkbox" id="ag-askall"> <span>Ask me before every click</span></label>
+				<label class="ai-opt"><span>任务大小</span><select id="ag-plan" class="tu-input" data-native></select></label>
+				<label class="ai-opt ai-enc"><input type="checkbox" id="ag-askall"> <span>每次点击前都先问我</span></label>
 				<div class="ai-price" id="ag-price" aria-live="polite"></div>
 			</div>
-			<p class="tu-note ag-small">The budget is the most the AI may cost for this task; when it runs out the task stops and you can start a new one. Budget left over stays usable for follow-ups on the same task for 24 hours but is not refunded. Claude Sonnet is cheaper and fine for most tasks; Opus is for hard ones.</p>
-			<button type="button" class="tu-btn tu-btn--ghost" id="ag-new" hidden>＋ New task</button>
-			<details class="ag-past" id="ag-past" hidden><summary>Earlier tasks</summary><ul id="ag-pastlist"></ul><button type="button" class="tu-btn tu-btn--ghost" id="ag-clearpast">Clear this list</button></details>
+			<p class="tu-note ag-small">预算是这个任务中 AI 最多可以花的钱；用完后任务会停止，你可以开始一个新任务。剩余的预算在 24 小时内可继续用于同一任务的后续指令，但不退款。Claude Sonnet 更便宜，适合大多数任务；Opus 用于难的任务。</p>
+			<button type="button" class="tu-btn tu-btn--ghost" id="ag-new" hidden>＋ 新任务</button>
+			<details class="ag-past" id="ag-past" hidden><summary>之前的任务</summary><ul id="ag-pastlist"></ul><button type="button" class="tu-btn tu-btn--ghost" id="ag-clearpast">清空此列表</button></details>
 		</section>
 
 		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
@@ -1468,7 +1468,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=0212909d" defer></script><script src="/ai/js/ai.js?v=22" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-zh-CN.js?v=19c50743" defer></script><script src="/ai/js/ai.js?v=23" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
