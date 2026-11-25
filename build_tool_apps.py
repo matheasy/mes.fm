@@ -789,7 +789,7 @@ APPS = {
                             head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
                                        '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
                                        '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
-                            js_v="12"),
+                            js_v="13"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
@@ -1732,7 +1732,7 @@ APPS = {
                 tag="Set pieces with real ball physics: kick, keep, play anyone.", accent="#1b7a3a", dark="#145c2b", tint="#dff1e4",
                 desc="Take free kicks from any spot, curl them around the wall or dip them over it, hit knuckleballs and win penalty shootouts. Real ball physics (drag, curl, dip, knuckle), a wall that can jump and a keeper that dives. Play the computer, a friend, someone online or a Hive user, as the kicker or the goalkeeper, in 3D or 2D.",
                 meta_desc="Free kicks and penalty shootouts with real ball physics: curl, dip, knuckleballs, a jumping wall and a diving keeper. Play the computer, a friend or online.",
-                js_v="3", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
+                js_v="4", js_parts=["view3d.js"], pre_js=["/main_js/hive.js?v=2"]),
     "poker": dict(title="MES Poker", page_title="Texas Hold'em Poker: Play Free and Calculate Your Odds",
                 tag="Play Hold'em, see your odds.", accent="#166534", dark="#14532d", tint="#dcf3e3",
                 desc="Play Texas Hold'em poker free against computer players with play money, plus a poker odds calculator: your chance to win against random hands, outs, pot odds and hand rankings, and your session statistics kept on your device.",

@@ -17,7 +17,7 @@
 
 	/* ===================================================================== settings ===================================================================== */
 	var KEY = "mes-free-kick:v1";
-	var S = { mode: "PF", opp: "cpu", first: 0, lv: "medium", plv: "medium", spread: true, live: true, guide: "full", slow: 1, dim: "3d", cam: "behind", pmode: "meter", snd: true,
+	var S = { mode: "PF", opp: "cpu", first: 0, lv: "medium", plv: "medium", spread: true, live: true, guide: "full", slow: 1, dim: "3d", cam: "behind", pmode: "meter", snd: true, react: "slow",
 		power: 24, curl: 0, dip: 0, when: 180, foot: "R", map: "auto", mapBig: false, mapPos: null, mapW: 0, spot: { bx: -6, by: 21, wall: "auto", j: 0, off: 0, kx: null }, stats: {}, name: "", opub: true, ofirst: "host", omode: "P", saved: {} };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var k in sv) S[k] = sv[k]; } catch (e) { /* defaults */ }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
@@ -86,7 +86,7 @@
 			// the computer kicks
 			var setup = curSetup(), n = kickN(), intended = B.aiKick(setup, M.lv || "medium", M.seed, n);
 			M.pendShot = B.applyError(intended, M.seed, n, 1);
-			if (S.live) { ph = "ready"; banner('<b>You are the keeper.</b><br>Click in the goal while the ball is in the air to dive there.', "Ready ▶", function () { start(setup, M.pendShot, null, true); }); }
+			if (S.live) { ph = "ready"; banner('<b>You are the keeper.</b><br>Watch the kicker run in. Click in the goal (or ← → ↑) to dive there.' + (S.react !== "real" ? '<br>The game slows down when he strikes, so you can react.' : ""), "Ready ▶", function () { start(setup, M.pendShot, null, true); }); }
 			else ph = "keep";
 		}
 		render();
@@ -104,7 +104,7 @@
 		M.lastAim = intended;
 		if (humanKeeps()) {
 			M.pendShot = shot;
-			if (S.live) { ph = "handover"; banner("<b>Keeper's turn.</b><br>Kicker, look away from the goal! Keeper: click in the goal while the ball flies to dive.", "I'm the keeper: go ▶", function () { start(setup, shot, null, true); }); }
+			if (S.live) { ph = "handover"; banner("<b>Keeper's turn.</b><br>Kicker, look away from the goal! Keeper: click in the goal (or ← → ↑) to dive; the game slows down when the ball is struck.", "I'm the keeper: go ▶", function () { start(setup, shot, null, true); }); }
 			else { ph = "handover"; banner("<b>Keeper's turn.</b><br>Hand over: the keeper picks a dive without seeing the shot.", "I'm the keeper ▶", function () { ph = "keep"; hideBanner(); render(); }); }
 			render();
 			return;
@@ -163,12 +163,14 @@
 	}
 
 	/* ===================================================================== animation ===================================================================== */
-	var RUN = 0.75;
+	var RUN = 0.75, REACT = { slow: 0.3, bit: 0.55, real: 1 };
 	function start(setup, shot, act, live, opts) {
 		opts = opts || {};
 		hideBanner();
 		var sim = B.simulate(setup, shot, act, { frames: true });
-		A = { evI: 0, kicked: false, setup: setup, shot: shot, act: act, live: !!live && !act, sim: sim, t: -RUN, t0: performance.now(), last: performance.now(), wall: B.wallSpots(setup), done: false, onEnd: opts.onEnd, n: opts.n };
+		// a person in goal (live dive) gets a longer, readable run-up
+		var run = live && !act ? 1.6 : RUN;
+		A = { evI: 0, kicked: false, setup: setup, shot: shot, act: act, live: !!live && !act, sim: sim, t: -run, run: run, t0: performance.now(), last: performance.now(), wall: B.wallSpots(setup), done: false, onEnd: opts.onEnd, n: opts.n };
 		ph = "anim";
 		render();
 		requestAnimationFrame(tick);
@@ -183,7 +185,11 @@
 	function tick(now) {
 		if (!A || A.done) return;
 		var dt = Math.min(0.05, (now - A.last) / 1000); A.last = now;
-		A.t += dt * (A.t < 0 ? 1 : +S.slow);
+		// live keeper: once the ball is struck the game runs in slow motion until a dive is picked (human reaction time;
+		// the physics clock, and so the dive's timing, is not changed)
+		var sp = A.t < 0 ? (A.live && !A.act ? 0.75 : 1) : +S.slow;
+		if (A.live && !A.act && A.t >= -0.05) sp *= REACT[S.react] || 1;
+		A.t += dt * sp;
 		if (!A.kicked && A.t >= 0) { A.kicked = true; sfx("kick", A.shot.spd / 100); }
 		while (A.sim.ev && A.evI < A.sim.ev.length && A.sim.ev[A.evI][0] <= A.t) { var ev = A.sim.ev[A.evI++][1]; sfx(ev === "goal" ? "net" : ev); }
 		if (A.t >= A.sim.t + 0.15) { A.t = A.sim.t; endKick(); return; }
@@ -320,7 +326,7 @@
 	function hintText() {
 		if (ph === "aim") return "Click in the goal to aim" + (root.classList.contains("fk-candrag") ? " · drag the ball to move it" : "");
 		if (ph === "keep") return "Click in the goal where to dive";
-		if (ph === "anim" && A && A.live && !A.act) return "Click in the goal to dive!";
+		if (ph === "anim" && A && A.live && !A.act) return A.t < 0 ? "Watch the kicker · click in the goal (or ← → ↑) to dive" : "Dive now! Click where the ball is going";
 		if (ph === "wait") return "Waiting for the other player…";
 		return "";
 	}
@@ -677,12 +683,12 @@
 		var st = $("fk-stage");
 		v3.size(st.clientWidth, st.clientHeight);
 		var gp = guidePath(s), k = keeperNow(), bp = ballNow();
-		var prog = A ? clamp(1 + A.t / RUN, 0, 1) : ph === "result" ? 1 : 0;
+		var prog = A ? clamp(1 + A.t / (A.run || RUN), 0, 1) : ph === "result" ? 1 : 0;
 		v3.frame({
 			setup: s, wall: A ? A.wall : B.wallSpots(s), lift: A ? B.wallLift(s, Math.max(0, A.t)) : 0, ball: bp, keeper: k, kicker: prog, flying: !!(A && A.t > 0),
 			guide: gp ? gp.pts : null, aim: ph === "aim" ? aim : null, dive: ph === "keep" ? dive : (A && A.act && A.act.d >= 0 ? { x: A.act.tx / 100, z: A.act.tz / 100 } : null),
 			targets: M && M.kind === "target" ? B.TARGETS : M && M.ch && M.ch.tgt ? [M.ch.tgt] : null, cam: S.cam, dark: dark(), foot: S.foot,
-			t: A ? A.t : ph === "result" && last ? 9 : 0, anim: !!A, run: RUN, settle: !A && ph === "result" && !!last, res: last && ph === "result" ? last.sim.res : null, charge: charge ? charge.v : 0
+			t: A ? A.t : ph === "result" && last ? 9 : 0, anim: !!A, run: A ? A.run || RUN : RUN, settle: !A && ph === "result" && !!last, res: last && ph === "result" ? last.sim.res : null, charge: charge ? charge.v : 0
 		});
 		$("fk-camreset").hidden = !v3.isFree();
 		if (!(S.dim === "3d" && v3 && mode === "local" && M && M.v === "PF")) placeOverlays(0, 0, null);
@@ -910,6 +916,7 @@
 	$("fk-live").addEventListener("change", function () { S.live = this.checked; save(); if (mode === "local" && (ph === "keep" || ph === "ready")) next(); });
 	$("fk-guide").addEventListener("change", function () { S.guide = this.value; guidePath.key = null; save(); syncSegs(); render(); });
 	$("fk-slow").addEventListener("change", function () { S.slow = +this.value; save(); });
+	$("fk-react").value = S.react; $("fk-react").addEventListener("change", function () { S.react = this.value; save(); });
 	$("fk-new").addEventListener("click", function () { if (mode === "online") return onLeave(); if (mode === "hive") return hiveLeave(); newMatch(); });
 	$("fk-dim").addEventListener("click", function () { S.dim = S.dim === "3d" ? "2d" : "3d"; save(); applyDim(); });
 	$("fk-cam").addEventListener("change", function () { S.cam = this.value; save(); if (v3) v3.resetView(); draw(); });

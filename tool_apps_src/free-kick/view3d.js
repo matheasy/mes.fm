@@ -183,7 +183,7 @@
 			m(P.cap(0.052, 0.2), kit.gloves ? mat(kit.shirt, 0.6) : skin, 0, -0.15, 0, s);
 			var e = grp(0, -0.29, 0, s);
 			m(P.cap(0.045, 0.19), kit.gloves ? mat(kit.shirt, 0.6) : skin, 0, -0.12, 0, e);
-			if (kit.gloves) m(P.glove, mat(kit.gloves, 0.5), 0, -0.28, 0.005, e); else m(P.hand, skin, 0, -0.26, 0, e);
+			if (kit.gloves) m(P.glove, mat(kit.gloves, 0.5), 0, -0.28, 0.005, e).userData.glove = 1; else m(P.hand, skin, 0, -0.26, 0, e);
 			return { s: s, e: e };
 		}
 		function leg(sx) {
@@ -313,15 +313,27 @@
 			// otherwise the legs end up under the grass
 			var LEG = 0.95, reach = 1.08 + 0.08 * e, need = (k.hz - 0.06) / (reach + LEG);
 			if (Math.cos(ang) > need) { var aMin = Math.acos(Math.max(-1, Math.min(1, need))); ang = (ang < 0 || (ang === 0 && k.hx < (s.kx || 0)) ? -1 : 1) * aMin; }
+			var sd = ang > 0 || (ang === 0 && k.hx >= (s.kx || 0)) ? 1 : -1;      // +1: diving to his left (world +x)
+			// once the ball is past him (or the kick is over) he falls to the grass on his side, like a real keeper landing
+			var ballPast = I.settle || b[1] < k.y - 0.3;
+			if (e >= 0.999 && ballPast) { if (!this.fallT) this.fallT = now; } else if (!I.settle) this.fallT = 0;
+			var fu = this.fallT ? Math.min(1, (now - this.fallT) / 430) : 0; fu = fu * fu;      // gravity-like: slow, then fast
+			if (fu > 0) ang = ang + (sd * 1.42 - ang) * fu;
 			var hipX = k.hx - Math.sin(ang) * reach, hipZ = k.hz - Math.cos(ang) * reach;
 			var stand = { x: (s.kx || 0), z: 0.84 }, u = sm(Math.min(1, e * 1.6));
 			var px = stand.x + (hipX - stand.x) * u, pz = stand.z + (hipZ - stand.z) * u;
-			// after the kick is over the keeper drops to the grass
-			if (I.settle && e >= 0.999) { if (!this.fallT) this.fallT = now; var fu = sm((now - this.fallT) / 520); pz = pz + (Math.max(0.24, Math.min(pz, 0.26 + Math.abs(Math.cos(ang)) * 0.6)) - pz) * fu; }
-			else this.fallT = 0;
+			pz -= 0.15 * Math.sin(Math.PI * Math.min(1, e / 0.3)) * (1 - u);       // the "load": hips drop before the push-off
+			if (fu > 0) pz = pz + (0.27 - pz) * fu;
 			var floorZ = Math.cos(ang * u) * LEG * 0.97 + 0.04;   // feet never under the grass, at any moment of the dive
 			if (pz < floorZ) pz = floorZ; if (pz < 0.2) pz = 0.2;
-			var dp = mix(POSE.ready, { aLz: 2.95, aRz: -2.95, eL: -0.05, eR: -0.05, aLx: -0.15, aRx: -0.15, lLx: 0.12, lLz: 0.22, kL: 0.35, lRx: -0.15, lRz: -0.08, kR: 0.15, tx: 0.08, hx: 0.1, py: 0 }, sm(Math.min(1, e * 2.2)));
+			// poses for a dive to his left (mirrored for the right): load = step out with the near foot, hands low and wide;
+			// fly = pushed off the near leg (straight, trailing), far knee driven up, both arms stretched to the ball; land = curled on his side
+			var LOAD = { lLx: -0.3, lLz: 0.38, kL: 0.55, lRx: -0.35, lRz: -0.1, kR: 0.75, aLx: -0.6, aLz: 0.9, aRx: -0.6, aRz: -0.7, eL: -0.6, eR: -0.6, tx: 0.25, hx: -0.2 };
+			var FLY = { aLz: 2.95, aRz: -2.8, aLx: -0.2, aRx: -0.35, eL: -0.06, eR: -0.2, lLx: 0.12, lLz: 0.12, kL: 0.1, lRx: -0.95, lRz: -0.15, kR: 1.25, tx: 0.06, hx: 0.05 };
+			var LAND = { aLz: 2.7, aRz: -2.2, aLx: -0.4, aRx: -0.9, eL: -0.3, eR: -0.9, lLx: -0.35, lLz: 0.1, kL: 0.7, lRx: -0.9, lRz: -0.2, kR: 1.3, tx: 0.25, hx: 0.25 };
+			var dp = mix(mix(POSE.ready, LOAD, sm(e / 0.18)), FLY, sm((e - 0.08) / 0.6));
+			if (fu > 0) dp = mix(dp, LAND, fu);
+			if (sd < 0) dp = mirrorPose(dp);
 			dp.prz = -ang * u; dp.py = 0; dp.px = 0;
 			pose(K, dp);
 			K.pelvis.position.set(0, 0, 0);
@@ -332,12 +344,14 @@
 			K.shadow.position.set(px, 0.013, k.y); var kss = Math.max(0.6, 1.4 - pz * 0.5); K.shadow.scale.set(kss * (1 + Math.abs(Math.sin(ang)) * 1.2), kss * 0.7, 1);
 		} else {
 			this.fallT = 0;
-			var bob = Math.sin(clock * 3.4) * 0.012, sway = Math.sin(clock * 1.3) * 0.05;
+			var kHop = 0, bob = Math.sin(clock * 3.4) * 0.012, sway = Math.sin(clock * 1.3) * 0.05;
 			var kp = I.res === "goal" && I.settle ? mix(POSE.ready, POSE.sad, sm((now - (this.resT || now)) / 400)) : mix(POSE.ready, {}, 0);
 			kp.py = (kp.py || 0) + bob; kp.ty = sway * 0.4; kp.px = 0;
 			if (I.flying) { kp.py -= 0.03; kp.aLx -= 0.15; kp.aRx -= 0.15; }
+			// the "set" (split step) real keepers do just before the strike: a small hop, then low and balanced
+			if (I.anim && I.t > -0.32 && I.t < 0.08) { var hop = Math.sin(Math.PI * (I.t + 0.32) / 0.4); kHop = 0.06 * Math.max(0, hop); kp.aLz += 0.2; kp.aRz -= 0.2; }
 			pose(K, kp);
-			this.place(K, k.ax + Math.sin(clock * 0.8) * 0.04 * (I.flying ? 0 : 1), k.y, 0, kface); plantP(K, 0);
+			this.place(K, k.ax + Math.sin(clock * 0.8) * 0.04 * (I.flying ? 0 : 1), k.y, 0, kface); plantP(K, kHop);
 			K.shadow.scale.set(1, 1, 1);
 		}
 		if (I.settle && !this.resT) this.resT = now; if (!I.settle) this.resT = 0;
@@ -408,9 +422,12 @@
 				g.position.copy(V(t.x, G.lineY + 0.01, t.z)); f.position.copy(g.position); self.targetGroup.add(g); self.targetGroup.add(f);
 			});
 		}
+		// ---- in the keeper's own view only his gloves show (the camera is where his head is, so his body used to fill the picture)
+		var fp = I.cam === "keeper" && !this.free;
+		if (this.fpOn !== fp) { this.fpOn = fp; this.keeperP.root.traverse(function (o) { if (o.isMesh) o.visible = !fp || !!o.userData.glove; }); this.keeperP.shadow.visible = !fp; }
 		// ---- camera
 		var e3, l3, bk = { x: -ux, y: -uy };
-		if (I.cam === "keeper") { e3 = V((s.kx || 0) * 0.6, -1.7, 1.75); l3 = V(b[0] * 0.5 + s.bx * 0.5, b[1] * 0.5 + s.by * 0.5, Math.max(0.6, b[2] * 0.6)); }
+		if (I.cam === "keeper") { e3 = V((s.kx || 0) * 0.8, I.keeper.y - 0.3, 1.72); l3 = V(b[0] * 0.5 + s.bx * 0.5, b[1] * 0.5 + s.by * 0.5, Math.max(0.6, b[2] * 0.6)); }
 		else if (I.cam === "tv") { var sd = s.bx > 0 ? -1 : 1; e3 = V(sd * 30, s.by * 0.55 + 3, 13); l3 = V(b[0] * 0.4, Math.max(2, b[1] * 0.55), 1); }
 		else if (I.cam === "high") { e3 = V(s.bx + bk.x * 13, s.by + bk.y * 13, 9); l3 = V(0, 0, 1); }
 		else if (I.cam === "ball" && I.flying) { e3 = V(b[0] + bk.x * 3.2, b[1] + bk.y * 3.2, b[2] + 0.9); l3 = V(b[0] * 0.3, Math.min(b[1], 3), Math.max(1, b[2])); }
