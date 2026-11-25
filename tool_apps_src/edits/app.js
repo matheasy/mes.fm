@@ -331,24 +331,45 @@
     /* Tab order: drag a tab (mouse, finger or pen) to move it, or Alt+Left / Alt+Right on a focused tab. Saved in this browser. */
     var ORDER_KEY = "mes-edits:taborder", tabDrag = null, tabDragged = 0;
     function saveTabOrder() { lsSet(ORDER_KEY, JSON.stringify([].map.call($("ed-tablist").querySelectorAll(".ed-tab[data-k]"), function (b) { return b.dataset.k; }))); $("ed-tablist").__html = null; }
+    /* Smooth drag: the held tab follows the finger, the others glide to their new places (FLIP). Places are read from layout
+       (offsetLeft / offsetTop), never from the moving pictures, so a tab can't flip back and forth while the others are still gliding. */
+    function tabBox(t) {   // where the element sits in the layout: its box minus whatever translate it shows right now (also mid-glide)
+        var q = t.getBoundingClientRect(), m = getComputedStyle(t).transform, tx = 0, ty = 0;
+        if (m && m !== "none") { var v = m.match(/-?[\d.e]+/g).map(Number); if (v.length === 6) { tx = v[4]; ty = v[5]; } else if (v.length === 16) { tx = v[12]; ty = v[13]; } }
+        return { l: q.left - tx, t: q.top - ty, w: q.width, h: q.height };
+    }
+    function followTab(d, x, y) { var r = tabBox(d.b); d.b.style.transform = "translate(" + (x - d.ox - r.l) + "px," + (y - d.oy - r.t) + "px)"; }
     $("ed-tablist").addEventListener("pointerdown", function (e) {
         var b = e.target.closest(".ed-tab[data-k]"); if (!b || e.button > 0) return;
-        tabDrag = { b: b, x: e.clientX, y: e.clientY, on: false, id: e.pointerId };
+        var r = tabBox(b); tabDrag = { b: b, x: e.clientX, y: e.clientY, ox: e.clientX - r.l, oy: e.clientY - r.t, on: false, id: e.pointerId };
     });
     document.addEventListener("pointermove", function (e) {
         var d = tabDrag; if (!d || e.pointerId !== d.id) return;
         if (!d.on) { if (Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) < 8) return; d.on = true; d.b.classList.add("ed-tabdrag"); try { d.b.setPointerCapture(e.pointerId); } catch (er) {} }
         e.preventDefault();
-        var box = $("ed-tablist"), tabs = [].slice.call(box.querySelectorAll(".ed-tab[data-k]")), best = null, bd = 1e9;
-        tabs.forEach(function (t) { if (t === d.b) return; var r = t.getBoundingClientRect(); var dist = Math.hypot(e.clientX - (r.left + r.width / 2), (e.clientY - (r.top + r.height / 2)) * 2); if (dist < bd) { bd = dist; best = t; } });
-        if (!best) return;
-        var r = best.getBoundingClientRect(), after = e.clientX > r.left + r.width / 2;
-        if (after) { if (best.nextSibling !== d.b) box.insertBefore(d.b, best.nextSibling); } else if (best.previousSibling !== d.b) box.insertBefore(d.b, best);
+        var box = $("ed-tablist"), tabs = [].slice.call(box.querySelectorAll(".ed-tab[data-k]")), best = null, bd = 1e9, cx = e.clientX - d.ox + d.b.offsetWidth / 2, cy = e.clientY - d.oy + d.b.offsetHeight / 2;
+        tabs.forEach(function (t) { if (t === d.b) return; var r = tabBox(t); var dist = Math.hypot(cx - (r.l + r.w / 2), (cy - (r.t + r.h / 2)) * 2); if (dist < bd) { bd = dist; best = t; } });
+        if (best) {
+            var r = tabBox(best), after = cx > r.l + r.w / 2, ref = after ? best.nextSibling : best;
+            if (after ? best.nextElementSibling !== d.b : best.previousElementSibling !== d.b) {
+                var before = new Map(); tabs.forEach(function (t) { if (t !== d.b) { var q = t.getBoundingClientRect(); before.set(t, q); } });
+                box.insertBefore(d.b, ref);
+                tabs.forEach(function (t) {
+                    if (t === d.b) return; var q0 = before.get(t), q1; t.style.transition = "none"; t.style.transform = ""; q1 = t.getBoundingClientRect();
+                    var dx = q0.left - q1.left, dy = q0.top - q1.top; if (!dx && !dy) { t.style.transition = ""; return; }
+                    t.style.transform = "translate(" + dx + "px," + dy + "px)"; void t.offsetWidth;
+                    t.style.transition = "transform .18s ease"; t.style.transform = "";
+                });
+            }
+        }
+        followTab(d, e.clientX, e.clientY);
     }, { passive: false });
     function endTabDrag(e) {
         var d = tabDrag; if (!d || (e && e.pointerId !== d.id)) return; tabDrag = null;
         if (d.on) {
-            d.b.classList.remove("ed-tabdrag"); tabDragged = Date.now(); saveTabOrder();
+            d.b.classList.remove("ed-tabdrag"); d.b.style.transition = "transform .16s ease"; d.b.style.transform = "";
+            setTimeout(function () { d.b.style.transition = ""; }, 200);
+            tabDragged = Date.now(); saveTabOrder();
             var dom = [].map.call($("ed-tablist").querySelectorAll(".ed-tab[data-k]"), function (b) { return b.dataset.k; });
             meta.pins = dom.filter(function (k) { return meta.pins.indexOf(k) >= 0; });
             if (meta.mode === "az") { meta.mode = "custom"; saveMeta("Switched to your own order: tab order saved."); } else if (meta.pins.length) saveMeta("Tab order saved."); else toast("Tab order saved (in this browser).");
@@ -573,11 +594,18 @@
         d.li.style.left = (x - d.dx) + "px"; d.li.style.top = (y - d.dy) + "px";
         var others = [].filter.call($("ed-list").children, function (c) { return c !== d.li && c !== d.ph; }), before = null;
         for (var i = 0; i < others.length; i++) {
-            var b = others[i].getBoundingClientRect();
+            var q = tabBox(others[i]), b = { top: q.t, bottom: q.t + q.h, left: q.l, right: q.l + q.w, width: q.w, height: q.h };   // layout place, not the gliding picture
             if (y < b.top || (y <= b.bottom && x < b.left + b.width / 2 && y < b.top + b.height * 0.75) || (y < b.top + b.height / 2 && x <= b.right)) { before = others[i]; break; }
         }
-        if (before) { if (d.ph.nextSibling !== before) $("ed-list").insertBefore(d.ph, before); }
-        else if ($("ed-list").lastChild !== d.ph) $("ed-list").appendChild(d.ph);
+        var list = $("ed-list"), move = before ? d.ph.nextSibling !== before : list.lastChild !== d.ph;
+        if (!move) return;
+        var r0 = new Map(); others.forEach(function (c) { r0.set(c, c.getBoundingClientRect()); });
+        if (before) list.insertBefore(d.ph, before); else list.appendChild(d.ph);
+        others.forEach(function (c) {   // the other cards glide to their new places
+            var a = r0.get(c); c.style.transition = "none"; c.style.transform = ""; var z = c.getBoundingClientRect(), dx = a.left - z.left, dy = a.top - z.top;
+            if (!dx && !dy) { c.style.transition = ""; return; }
+            c.style.transform = "translate(" + dx + "px," + dy + "px)"; void c.offsetWidth; c.style.transition = "transform .18s ease"; c.style.transform = "";
+        });
     }
     function autoScroll() {
         if (!drag) return;
