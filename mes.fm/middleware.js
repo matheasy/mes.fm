@@ -59,6 +59,10 @@ export const config = {
     '/api/edits',
     // Karo's dashboard for alpinewestcreative.com (stats, Search Console, SEO): pages at /awc/..., data at /api/awc/...
     // (her domain proxies /stats, /search-console, /seo there). Own login: karo / rome (mes / 911 works too).
+    // MES Galleries owner page + its data (Karo's login works here too); the client page /galleries and /api/galleries stay public
+    '/galleries-studio',
+    '/galleries-studio/:path*',
+    '/api/galleries-admin',
     '/awc',
     '/awc/:path*',
     '/api/awc/:path*',
@@ -80,7 +84,7 @@ const REALM = 'mes.fm';
 
 // Karo's own login for the alpinewestcreative.com dashboard (api/_site.js); her Search Console numbers arrive from
 // an Apps Script with its own key, so that one URL is not behind the login.
-const AWC = /^\/(awc|api\/awc)(\/|$)/;
+const AWC = /^\/(awc|api\/awc|galleries-studio|api\/galleries-admin)(\/|$)/;
 const AWC_OPEN = /^\/api\/awc\/(search-console-ingest|p)\/?$/;  // the Apps Script ingest (has its key) and her page-view beacon
 const AWC_USERS = [['karo', 'rome'], [USERNAME, PASSWORD]];
 

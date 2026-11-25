@@ -1,0 +1,59 @@
+.gl { --gl-ink:#2a2622; --gl-mute:#6b625a; --gl-line:#e5ded6; --gl-bg:#faf7f3; --gl-acc:#7a5c3e; }
+:where(#gl) :is(div, span, p, li, label, figure, figcaption, section, td, th, strong, b, h2, h3, pre) { color: inherit; }
+#gl { color: var(--gl-ink); }
+#gl [hidden] { display: none !important; }
+#gl .gl-mocknote { background: #fff6dc; border: 1px dashed #d9b44a; padding: .5em .8em; border-radius: 8px; color: #5a4300; }
+#gl .gl-from { text-transform: uppercase; letter-spacing: .12em; font-size: .8em; color: var(--gl-mute); margin: 0; }
+#gl h2 { font-weight: 400; margin: .2em 0 .4em; }
+#gl .gl-gate { max-width: 30em; margin: 1em auto; text-align: center; }
+#gl .gl-gform .tu-input { text-align: center; }
+#gl .gl-code { font-size: 1.6em; letter-spacing: .3em; }
+#gl .gl-bar { display: flex; flex-wrap: wrap; gap: .5em; justify-content: space-between; align-items: center; }
+#gl .gl-chips { display: flex; flex-wrap: wrap; gap: .4em; }
+#gl .gl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: 8px; margin-top: .8em; }
+#gl .gl-tile { position: relative; margin: 0; aspect-ratio: 1; background: #ece6df; border-radius: 6px; overflow: hidden; }
+#gl .gl-tile img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; max-width: none !important; }
+#gl .gl-open { all: unset; cursor: pointer; display: block; width: 100%; height: 100%; }
+#gl .gl-open:focus-visible { outline: 3px solid var(--gl-acc); }
+#gl .gl-fav { position: absolute; right: 6px; bottom: 6px; border: 0; border-radius: 50%; width: 34px; height: 34px; background: rgba(0,0,0,.45); color: #fff; font-size: 17px; cursor: pointer; }
+#gl .gl-fav.on, #gl .gl-vfav.on { color: #ff5d7a; }
+#gl .gl-vbadge { position: absolute; left: 6px; top: 6px; background: rgba(0,0,0,.6); color: #fff; font-size: .75em; padding: 2px 7px; border-radius: 10px; }
+#gl .gl-x { position: absolute; right: 4px; top: 4px; border: 0; border-radius: 50%; width: 26px; height: 26px; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; }
+#gl .gl-tile figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-size: .72em; background: rgba(0,0,0,.55); color: #fff; padding: 2px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#gl .gl-bad { outline: 2px dashed #c33; }
+.gl-view { position: fixed; inset: 0; z-index: 2147483647; background: #0d0c0b; display: flex; flex-direction: column; }
+body.gl-viewing #compact-nav { display: none !important; }
+.gl-view .gl-vbar { display: flex; justify-content: space-between; align-items: center; color: #eee; padding: 8px 12px; font: 14px sans-serif; }
+.gl-view .gl-vbtn { background: none; border: 0; color: #eee; font-size: 22px; padding: 4px 10px; cursor: pointer; }
+.gl-view .gl-vbody { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.gl-view .gl-vbody img, .gl-view .gl-vbody video { max-width: 100% !important; max-height: 100% !important; width: auto !important; height: auto !important; object-fit: contain; }
+.gl-view .gl-vload { color: #ccc; }
+.gl-view .gl-vnav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.12); color: #fff; border: 0; font-size: 34px; width: 48px; height: 72px; cursor: pointer; border-radius: 8px; }
+.gl-view .gl-vprev { left: 8px; } .gl-view .gl-vnext { right: 8px; }
+#gl .gl-tabs { display: flex; gap: .3em; border-bottom: 1px solid var(--gl-line); margin-bottom: .8em; }
+#gl .gl-tabs button { background: none; border: 0; padding: .6em 1em; cursor: pointer; font: inherit; color: var(--gl-mute); border-bottom: 3px solid transparent; }
+#gl .gl-tabs button.on { color: var(--gl-ink); border-bottom-color: var(--gl-acc); font-weight: 600; }
+#gl .gl-grow { display: flex; justify-content: space-between; gap: 1em; align-items: center; flex-wrap: wrap; margin-bottom: .6em; }
+#gl .gl-pill { font-size: .75em; padding: 2px 8px; border-radius: 10px; background: #eee; color: #555; }
+#gl .gl-pill.on { background: #dff3e4; color: #1d6b36; }
+#gl .gl-erow { display: flex; gap: 1em; flex-wrap: wrap; align-items: flex-end; }
+#gl .gl-erow > * { flex: 1 1 12em; }
+#gl .gl-agree { display: flex; gap: .5em; align-items: flex-start; margin: .6em 0; }
+#gl .gl-drop { border: 2px dashed var(--gl-line); border-radius: 12px; padding: 1.4em; text-align: center; margin: 1em 0; }
+#gl .gl-drop.over { border-color: var(--gl-acc); background: #fbf3ea; }
+#gl .gl-danger { color: #b3261e; }
+#gl .gl-tbl { border-collapse: collapse; width: 100%; } #gl .gl-tbl td, #gl .gl-tbl th { border-bottom: 1px solid var(--gl-line); padding: .35em .5em; text-align: left; }
+#gl .gl-ctext { white-space: normal; line-height: 1.6; background: var(--gl-bg); border: 1px solid var(--gl-line); border-radius: 8px; padding: 1em 1.2em; max-height: 60vh; overflow: auto; }
+#gl .gl-contract .gl-ctext { max-height: none; }
+#gl .gl-pad { width: 100%; max-width: 32em; height: 10em; background: #fff; border: 1px solid #bbb; border-radius: 8px; touch-action: none; display: block; }
+#gl .gl-sigimg { max-width: 18em !important; background: #fff; border-radius: 6px; padding: 4px; }
+#gl .gl-signed { border-top: 1px solid var(--gl-line); margin-top: 1em; padding-top: .6em; }
+#gl .gl-tpl { border: 1px solid var(--gl-line); border-radius: 8px; padding: .6em; margin-bottom: .6em; display: grid; gap: .4em; }
+#gl .gl-flds { display: grid; grid-template-columns: repeat(auto-fill, minmax(14em, 1fr)); gap: 0 1em; }
+#gl .gl-outbox { margin-top: 1.5em; font-size: .9em; } #gl .gl-mail pre { white-space: pre-wrap; background: var(--gl-bg); padding: .5em; border-radius: 6px; }
+#gl .gl-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #222; color: #fff; padding: .7em 1.1em; border-radius: 10px; z-index: 2147483647; max-width: 90vw; }
+html body.dark-mode #gl.gl { --gl-ink:#ece6df; --gl-mute:#b5aba1; --gl-line:#3e3832; --gl-bg:#24201c; --gl-acc:#d6a775; }
+html body.dark-mode #gl .gl-mocknote { background: #3a3110; color: #f3dc8f; }
+html body.dark-mode #gl .gl-tile { background: #2b2622; }
+html body.dark-mode #gl .gl-pill { background: #3a3530; color: #ddd; } html body.dark-mode #gl .gl-pill.on { background: #1f4a2c; color: #bdf0cb; }
+html body.dark-mode #gl .gl-drop.over { background: #2e261d; } html body.dark-mode #gl .gl-danger { color: #ff8a80; }

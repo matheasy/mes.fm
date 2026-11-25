@@ -5,13 +5,22 @@
   <link>https://mes.fm/feeds</link>
   <description>Every new post on mes.fm: 9/11, Hutchison Effect, conspiracy, science and crypto.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 06:00:04 GMT</lastBuildDate>
+  <lastBuildDate>Tue, 24 Nov 2026 21:36:16 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/posts.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Posts</title><link>https://mes.fm/feeds</link></image>
   <podcast:guid>3b3fc869-e01c-5372-a1c0-dd48025d2f57</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Scam Alert: Fake &quot;Community Reward&quot; Comments Are Stealing Hive Keys</title>
+    <link>https://mes.fm/hive-rewards-scam</link>
+    <guid isPermaLink="true">https://mes.fm/hive-rewards-scam</guid>
+    <pubDate>Tue, 24 Nov 2026 21:36:16 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Fake &quot;community reward&quot; comments on Hive lead to a key-stealing page. How to spot them, and what to do right away if you entered your active or owner keys.</description>
+    <media:thumbnail url="https://mes.fm/hive-rewards-scam/img/share.jpg"/>
+  </item>
   <item>
     <title>33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚</title>
     <link>https://mes.fm/33-countries-supplies</link>
@@ -452,15 +461,6 @@
     <category>Science</category>
     <description>USA launched America.gov, an AI chat site where users can ask about government services. Mirrored from the Hive blockchain and Telegram.</description>
     <media:thumbnail url="https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg"/>
-  </item>
-  <item>
-    <title>Alex Jones Teams Up with UFO Expert Steven Greer</title>
-    <link>https://mes.fm/alex-jones-steven-greer-live</link>
-    <guid isPermaLink="true">https://mes.fm/alex-jones-steven-greer-live</guid>
-    <pubDate>Thu, 01 Oct 2026 21:03:06 GMT</pubDate>
-    <category>Conspiracy</category>
-    <description>Alien prober Alex Jones teams up with illegal alien prober Steven Greer; Tucker Carlson says Trump put him in a magical spell -- mirrored from the Hive blockchain and Telegram.</description>
-    <media:thumbnail url="https://mes.fm/alex-jones-steven-greer-live/img/alex-jones-steven-greer-live.jpg"/>
   </item>
 </channel>
 </rss>

@@ -263,6 +263,20 @@ APPS = {
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",
                   meta_desc="Free poll maker: make a poll in seconds, share one short link and watch live results. Single or multiple choice, closing time, no sign-up.",
                   js_v="4"),
+    # MES Galleries (2026-11-24): private client galleries (encrypted photos + videos on Cloudflare R2) and e-signed contracts, a ShootProof
+    # replacement for Karo (alpinewestcreative.com). Client page mes.fm/galleries (?g=<gallery> / ?c=<contract>&t=<token>), owner page
+    # mes.fm/galleries-studio (behind middleware.js, karo / rome). One source tool_apps_src/galleries/ (lib.js = MESGal, also mes.fm/api/_galleries-lib.js).
+    "galleries": dict(title="MES Galleries", page_title="Private Client Galleries",
+                  tag="Private photo and video galleries.", accent="#7a5c3e", dark="#5b442d", tint="#f5ede4",
+                  desc="Your private photo and video gallery: open it with the link and your email address, mark favourites, download and sign agreements.",
+                  js_v="1", no_ads=True, no_comments=True, vars={"MODE": "client", "SEO": "@seo/galleries.html"},
+                  head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
+    "galleries-studio": dict(title="MES Galleries", page_title="MES Galleries: Studio",
+                  tag="Galleries and contracts for your clients.", accent="#7a5c3e", dark="#5b442d", tint="#f5ede4",
+                  desc="Private owner page: make galleries, upload photos and videos, send contracts for signing.",
+                  js_v="1", no_ads=True, no_comments=True, src="galleries", js_path="galleries/js/galleries.js", logo_from="galleries",
+                  vars={"MODE": "studio", "SEO": "@seo/studio.html"},
+                  head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Party (2026-11-07, mes.fm/party; an invitation is mes.fm/p/<id> = vercel rewrite to /party?e=<id>): invitations + RSVPs like Partiful.
     # Shared core tool_apps_src/party/lib.js (= MESParty; byte-identical copy at mes.fm/api/_party-lib.js), server mes.fm/api/party.js (Upstash),
     # tests tool_apps_src/party-tests.js. On localhost / ?mock=1 the page runs on an in-browser stand-in.
@@ -690,8 +704,8 @@ APPS = {
     # lib.js = MESGyro (node: tool_apps_src/gyroscope-simulator-tests.js); three.js 0.170.0 loaded at runtime; box .gy-wrap gets the stage-ctl View bar.
     "gyroscope-simulator": dict(title="MES Gyroscope & Spinning Top Simulator", page_title="Gyroscope & Spinning Top Simulator: Precession, Nutation, Rising Tops and the Gyrotop",
                                 tag="Why doesn't it fall? Spin it and see.", accent="#0e7490", dark="#155e75", tint="#cffafe",
-                                desc="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, a gyroscope on an ice block, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.",
-                                js_v="2"),
+                                desc="A free 3D gyroscope and spinning top simulator: precession, nutation, a sleeping top, spin and precession friction, a top that rises on a table and a tippe top that flips, MES's gyroscope on an ice cube and hanging on a string over minutes of slowing spin, and MES and Owen Liang's Gyrotop experiments set side by side with the textbook predictions.",
+                                js_v="3"),
     # Maxwell's Vortices (2026-11-03): a charge going round is a magnet (3D Biot-Savart: wire, bending, loop, Bohr electron, proton / neutron models, dipole far field),
     # Maxwell's 1861 spinning cells + idle wheels on a square lattice (current, loop, induction, elastic waves), two dipole magnets with Maxwell-stress check
     # (lib.js = MESVortex, node-tested: tool_apps_src/maxwell-vortices-tests.js). Inspired by Chantal Roth's Mechanical Universe demos (credited on the page).

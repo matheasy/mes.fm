@@ -5,13 +5,31 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Tue, 24 Nov 2026 21:22:44 GMT</lastBuildDate>
+  <lastBuildDate>Tue, 24 Nov 2026 21:38:25 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Flight Tracker: Live Air Traffic</title>
+    <link>https://mes.fm/flights</link>
+    <guid isPermaLink="true">https://mes.fm/flights</guid>
+    <pubDate>Tue, 24 Nov 2026 21:38:25 GMT</pubDate>
+    <category>Tools</category>
+    <description>See the planes flying near you or anywhere on a live map, coloured by altitude: flight number, aircraft type, usual route, speed, climb and trail. Follow a plane, filter and search.</description>
+    <media:thumbnail url="https://mes.fm/img/flights-logo.png"/>
+  </item>
+  <item>
+    <title>Scam Alert: Fake &quot;Community Reward&quot; Comments Are Stealing Hive Keys</title>
+    <link>https://mes.fm/hive-rewards-scam</link>
+    <guid isPermaLink="true">https://mes.fm/hive-rewards-scam</guid>
+    <pubDate>Tue, 24 Nov 2026 21:36:16 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Fake &quot;community reward&quot; comments on Hive lead to a key-stealing page. How to spot them, and what to do right away if you entered your active or owner keys.</description>
+    <media:thumbnail url="https://mes.fm/hive-rewards-scam/img/share.jpg"/>
+  </item>
   <item>
     <title>Gyroscope &amp; Spinning Top Simulator</title>
     <link>https://mes.fm/gyroscope-simulator</link>
@@ -713,24 +731,6 @@
     <category>Conspiracy</category>
     <description>Fox News live footage of the Space Shuttle Columbia disaster on February 1, 2003: residents far below said their house and windows shook like a tornado.</description>
     <media:thumbnail url="https://mes.fm/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg"/>
-  </item>
-  <item>
-    <title>3D Studio (3D modeler for 3D printing)</title>
-    <link>https://mes.fm/3d-studio</link>
-    <guid isPermaLink="true">https://mes.fm/3d-studio</guid>
-    <pubDate>Sun, 01 Nov 2026 03:28:45 GMT</pubDate>
-    <category>Tools</category>
-    <description>Build 3D models from boxes, cylinders, text and holes, start from templates, check them for 3D printing and export STL or 3MF. Nothing is uploaded.</description>
-    <media:thumbnail url="https://mes.fm/img/3d-studio-logo.png"/>
-  </item>
-  <item>
-    <title>Neuron Simulator</title>
-    <link>https://mes.fm/neuron-simulator</link>
-    <guid isPermaLink="true">https://mes.fm/neuron-simulator</guid>
-    <pubDate>Sun, 01 Nov 2026 03:27:57 GMT</pubDate>
-    <category>Tools</category>
-    <description>The Hodgkin-Huxley action potential, nerve conduction with myelin and MS, EPSP summation, the neuromuscular junction and a Nernst / Goldman calculator.</description>
-    <media:thumbnail url="https://mes.fm/img/neuron-simulator-logo.png"/>
   </item>
 </channel>
 </rss>

@@ -5,13 +5,22 @@
   <link>https://mes.fm/crypto</link>
   <description>New MES Crypto posts on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Thu, 19 Nov 2026 21:56:45 GMT</lastBuildDate>
+  <lastBuildDate>Tue, 24 Nov 2026 21:36:16 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/crypto.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Crypto Posts</title><link>https://mes.fm/crypto</link></image>
   <podcast:guid>d57dd8ab-c8ad-5835-bc72-68fa1ede490d</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Scam Alert: Fake &quot;Community Reward&quot; Comments Are Stealing Hive Keys</title>
+    <link>https://mes.fm/hive-rewards-scam</link>
+    <guid isPermaLink="true">https://mes.fm/hive-rewards-scam</guid>
+    <pubDate>Tue, 24 Nov 2026 21:36:16 GMT</pubDate>
+    <category>Crypto</category>
+    <description>Fake &quot;community reward&quot; comments on Hive lead to a key-stealing page. How to spot them, and what to do right away if you entered your active or owner keys.</description>
+    <media:thumbnail url="https://mes.fm/hive-rewards-scam/img/share.jpg"/>
+  </item>
   <item>
     <title>MES AI: Use Claude, ChatGPT &amp; Grok With Just Your Hive Account (No KYC, No Subscription)</title>
     <link>https://mes.fm/ai-claude-grok-chatgpt</link>
