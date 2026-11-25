@@ -86,13 +86,13 @@
 
   /* ---------- the simulation ----------
      opts: mat (material object), sL, uy, eL, K, n, E (GPa), Lg (gauge length mm), N (slices), k (machine / specimen stiffness), V (mm/min),
-           scatter (0..1, how uneven the steel is), seed, r (r-value), shoulder (stress concentration at the fillets, fraction), notches [x 0..1] */
+           scatter (0..1, how uneven the steel is), seed, r (r-value), lean (0 = chosen by the unevenness, 1 = every band leans one way (drawn as \\), -1 = the other way (/), 2 = each new band the other way than the last), shoulder (stress concentration at the fillets, fraction), notches [x 0..1] */
   function Sim(o) {
     var m = o.mat || L.MATS[0];
     var p = this.p = {
       sL: o.sL != null ? o.sL : m.sL, uy: o.uy != null ? o.uy : m.uy, eL: o.eL != null ? o.eL : m.eL, K: o.K != null ? o.K : m.K, n: o.n != null ? o.n : m.n,
       E: (o.E != null ? o.E : m.E) * 1000, Lg: o.Lg || 50, N: o.N || 160, k: o.k != null ? o.k : 3, V: o.V != null ? o.V : 5, scatter: o.scatter != null ? o.scatter : 0.5,
-      seed: o.seed != null ? o.seed : 7, r: o.r != null ? o.r : 1, shoulder: o.shoulder != null ? o.shoulder : 0.03, notches: (o.notches || []).slice(), noYP: !!(o.noYP || m.noYP)
+      seed: o.seed != null ? o.seed : 7, r: o.r != null ? o.r : 1, shoulder: o.shoulder != null ? o.shoulder : 0.03, notches: (o.notches || []).slice(), lean: o.lean || 0, noYP: !!(o.noYP || m.noYP)
     };
     if (p.uy < 1) p.uy = 1;
     if (!(p.eL > 0)) { p.eL = 0; p.noYP = true; }
@@ -209,7 +209,7 @@
         if (i > 0 && this.st[i - 1] !== 0) { nb = this.band[i - 1]; nd = this.dir[i - 1]; }
         else if (i < N - 1 && this.st[i + 1] !== 0) { nb = this.band[i + 1]; nd = this.dir[i + 1]; }
         if (!nb) {
-          this.bands++; nb = this.bands; nd = (this.noise[i] > 0) ? 1 : -1;
+          this.bands++; nb = this.bands; nd = p.lean === 1 || p.lean === -1 ? p.lean : p.lean === 2 ? (this.bands % 2 ? -1 : 1) : (this.noise[i] > 0) ? 1 : -1;
           var e = { type: "nucleate", band: nb, x: (i + 0.5) / N, t: this.t, s: s0, strain: this.strain() };
           ev.push(e); this.events.push(e);
           if (this.upper == null || s0 > this.upper.s) this.upper = { s: s0, strain: this.strain() };
@@ -354,7 +354,7 @@
   L.MPA_KSI = 0.1450377;
 
   /* share-link state */
-  L.KEYS = ["m", "eL", "uy", "k", "v", "sc", "r", "g", "n"];
+  L.KEYS = ["m", "eL", "uy", "k", "v", "sc", "r", "g", "n", "ln"];
   L.toQuery = function (s) { var q = []; L.KEYS.forEach(function (k) { if (s[k] != null && s[k] !== "") q.push(k + "=" + encodeURIComponent(s[k])); }); return q.join("&"); };
   L.fromQuery = function (str) {
     var o = {}; (str || "").replace(/^\?/, "").split("&").forEach(function (kv) { if (!kv) return; var a = kv.split("="), k = decodeURIComponent(a[0]), v = decodeURIComponent(a[1] || ""); if (L.KEYS.indexOf(k) < 0) return; if (k === "m" || k === "n") { if (/^[a-z0-9,.]{1,60}$/.test(v)) o[k] = v; } else { var x = parseFloat(v); if (isFinite(x)) o[k] = x; } });

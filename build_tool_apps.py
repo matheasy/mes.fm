@@ -962,7 +962,7 @@ APPS = {
     "luders-bands": dict(title="Lüders Band Simulator", page_title="Lüders Bands: Simulator and Explanation (Yield Point, Plateau, Stretcher Strains)",
                       tag="Watch a yield band run along a steel bar.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
                       desc="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.",
-                      js_v="8", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="9", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Voids & Ductile Fracture Simulator (2026-11-18, mes.fm/ductile-fracture-simulator): 7th page of the materials brand, OWN source (tool_apps_src/ductile-fracture-simulator:
     # lib.js = MESVoid = GTN porous plasticity (growth, nucleation, shear term, coalescence) + a necking round bar with Bridgman triaxiality, crack from the centre, cup and cone,
     # dimples; tests node tool_apps_src/ductile-fracture-simulator-tests.js). Based on Cornell's "How and When Metals Fail" video (EeiwCbtJWyI).

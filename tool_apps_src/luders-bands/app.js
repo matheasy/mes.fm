@@ -6,12 +6,13 @@
   if (!L || !root) return;
   function $(id) { return document.getElementById(id); }
   var KEY = "mes-luders:v1";
-  var S = { m: "a36", eL: null, uy: null, k: 3, v: 5, sc: 0.5, r: 1, g: null, look: "polish", units: "mpa", thin: true, ghost: true, speed: 1, notches: [], show: { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 } };
+  var S = { m: "a36", eL: null, uy: null, k: 3, v: 5, sc: 0.5, r: 1, g: null, look: "polish", units: "mpa", thin: true, ghost: true, speed: 1, notches: [], lean: 0, show: { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 } };
   try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var kk in sv) if (kk in S) S[kk] = sv[kk]; } catch (e) {}
   if (!S.show || typeof S.show !== "object") S.show = { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 };
   var Q = L.fromQuery(location.search);
   if (Q.m) { S.m = Q.m; S.eL = null; S.uy = null; S.g = null; }
   ["eL", "uy", "k", "v", "sc", "r", "g"].forEach(function (k) { if (Q[k] != null) S[k] = Q[k]; });
+  if (Q.ln != null && [0, 1, -1, 2].indexOf(Q.ln) >= 0) S.lean = Q.ln;
   if (Q.n) S.notches = Q.n.split(",").map(parseFloat).filter(function (x) { return x > 0.02 && x < 0.98; }).slice(0, 6);
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -35,7 +36,7 @@
   function newSim(keepGhost) {
     if (keepGhost !== false && sim && S.ghost && sim.curve.length > 10) ghost = { pts: sim.curve.slice(), label: ghostLabel };
     var e = eff();
-    sim = new L.Sim({ mat: e.m, sL: e.sL, eL: e.eL, uy: e.uy, k: S.k, V: S.v, scatter: S.sc, r: S.r, notches: S.notches, seed: 7 });
+    sim = new L.Sim({ mat: e.m, sL: e.sL, eL: e.eL, uy: e.uy, k: S.k, V: S.v, scatter: S.sc, r: S.r, notches: S.notches, lean: +S.lean || 0, seed: 7 });
     endStrain = Math.max(0.04, (e.eL || 0) + 0.035);
     kymo = []; lastFr = { t: 0, f: 0 }; vMeas = null; frontsN = 0; agedNote = "";
     ghostLabel = e.m.name.split(" (")[0] + ", k " + fmtK(S.k);
@@ -563,7 +564,7 @@
     $("lu-sc").value = S.sc; $("lu-scv").textContent = S.sc < 0.15 ? "perfectly even" : S.sc < 0.6 ? "normal" : "patchy";
     $("lu-r").value = S.r; $("lu-rv").textContent = S.r.toFixed(2) + " → " + L.frontAngle(S.r).toFixed(1) + "°";
     $("lu-thin").checked = S.thin; $("lu-ghost").checked = S.ghost; $("lu-speed").value = String(S.speed);
-    seg("lu-look", S.look); lookKey(); applyShow(); seg("lu-units", S.units);
+    seg("lu-look", S.look); lookKey(); applyShow(); seg("lu-units", S.units); seg("lu-lean", String(+S.lean || 0));
     var af = ageSel(); $("lu-agef").textContent = af.h === 0 ? "no time for ageing" : "≈ " + Math.round(L.ageFraction(af.h, af.T) * 100) + "% of the full yield point returns";
   }
   function seg(id, v) { Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); }); }
@@ -582,11 +583,12 @@
   $("lu-ghost").addEventListener("change", function () { S.ghost = this.checked; save(); drawAll(); });
   $("lu-speed").addEventListener("change", function () { S.speed = +this.value; save(); });
   $("lu-look").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.look = b.getAttribute("data-v"); save(); syncUI(); drawAll(); });
+  $("lu-lean").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.lean = +b.getAttribute("data-v"); changed(true); toast(S.lean === 0 ? "Lean: chosen by the bar (new bar)" : S.lean === 2 ? "Each new band leans the other way (new bar)" : "Every band leans " + (S.lean < 0 ? "╱" : "╲") + " (new bar)"); });
   $("lu-units").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.units = b.getAttribute("data-v"); save(); syncUI(); drawAll(); say(); });
   $("lu-agesel").addEventListener("change", syncUI);
   $("lu-clrnotch").addEventListener("click", function () { S.notches = []; changed(true); });
   $("lu-link").addEventListener("click", function () {
-    var q = L.toQuery({ m: S.m, eL: S.eL, uy: S.uy, k: S.k, v: S.v, sc: S.sc, r: S.r, g: S.g, n: S.notches.length ? S.notches.map(function (x) { return x.toFixed(3); }).join(",") : null });
+    var q = L.toQuery({ m: S.m, eL: S.eL, uy: S.uy, k: S.k, v: S.v, sc: S.sc, r: S.r, g: S.g, n: S.notches.length ? S.notches.map(function (x) { return x.toFixed(3); }).join(",") : null, ln: S.lean ? S.lean : null });
     var url = location.origin + location.pathname + (q ? "?" + q : "");
     (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { toast("Link copied"); }, function () { prompt("Copy this link:", url); });
   });
@@ -688,9 +690,11 @@
   });
 
   /* ---- front-angle figure ---- */
-  var angDrag = false;
+  var angDrag = false, aLean = 1;
+  try { aLean = localStorage.getItem("mes-luders:alean") === "-1" ? -1 : 1; } catch (e) {}
+  function setALean(v, quiet) { aLean = v; [].forEach.call(document.querySelectorAll("#lu .lu-alean button"), function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-l") === v)); }); try { localStorage.setItem("mes-luders:alean", String(v)); } catch (e) {} if (!quiet) drawAngle(); }
   function drawAngle() {
-    var svg = $("lu-ang"), r = +$("lu-ar").value, th = L.frontAngle(r), my = +$("lu-aa").value, k = TXS();
+    var svg = $("lu-ang"), r = +$("lu-ar").value, th = L.frontAngle(r), my = +$("lu-aa").value, k = TXS(), sg = aLean;
     $("lu-arv").textContent = r.toFixed(2) + " → " + th.toFixed(1) + "°"; $("lu-aav").textContent = my.toFixed(1) + "°";
     var cx = 220, cy = 150, R0 = 90, e = 0.32, ax = R0 * (1 + e), ay = R0 * (1 - e * r / (1 + r));
     function P(deg, len) { var t = deg * Math.PI / 180; return [cx + Math.cos(t) * len, cy - Math.sin(t) * len]; }
@@ -702,11 +706,11 @@
     [th, -th].forEach(function (d) { var a = P(d, 135), b = P(d + 180, 135); g += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" class="lu-a-band"/>'; });
     [th, -th, 180 - th, 180 + th].forEach(function (d) { var q = P(d, R0); g += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="5" class="lu-a-pt"/>'; });
     var lineE = L.lineStrain(my, r), ok = Math.abs(lineE) < 0.02;
-    var h1 = P(my, R0), h0 = P(my + 180, R0);
+    var h1 = P(sg * my, R0), h0 = P(sg * my + 180, R0);
     g += '<line x1="' + h0[0] + '" y1="' + h0[1] + '" x2="' + h1[0] + '" y2="' + h1[1] + '" class="lu-a-my' + (ok ? ' lu-a-ok' : '') + '"/>';
     g += '<circle cx="' + h1[0] + '" cy="' + h1[1] + '" r="11" class="lu-a-h' + (ok ? ' lu-a-ok' : '') + '" id="lu-ah"/>';
-    g += '<path d="M' + (cx + 34) + ',' + cy + ' A34,34 0 0 0 ' + P(th, 34)[0] + ',' + P(th, 34)[1] + '" class="lu-a-arc"/>';
-    g += '<text x="' + (cx + 40) + '" y="' + (cy - 8) + '" class="lu-a-t lu-a-th" style="font-size:' + Math.round(14 * k) + 'px">θ</text>';
+    g += '<path d="M' + (cx + 34) + ',' + cy + ' A34,34 0 0 ' + (sg > 0 ? 0 : 1) + ' ' + P(sg * th, 34)[0] + ',' + P(sg * th, 34)[1] + '" class="lu-a-arc"/>';
+    g += '<text x="' + (cx + 40) + '" y="' + (sg > 0 ? cy - 8 : cy + 8 + Math.round(14 * k)) + '" class="lu-a-t lu-a-th" style="font-size:' + Math.round(14 * k) + 'px">' + (sg > 0 ? 'θ' : '−θ') + '</text>';
     svg.innerHTML = g;
     /* readout: grows / shrinks, with a centre-zero meter */
     var pc = Math.round(Math.abs(lineE) * 100), w = Math.min(50, Math.abs(lineE) * 50);
@@ -715,7 +719,7 @@
       : lineE > 0 ? "<b>Gets longer</b> by " + pc + "% of the pull. Turn it more upright."
       : "<b>Gets shorter</b> by " + pc + "% of the pull. Turn it back towards the pull.";
     $("lu-angout").innerHTML = meter + '<span class="lu-angtxt">' + txt + "</span>";
-    $("lu-angst").innerHTML = 'Band: ' + th.toFixed(1) + '° · test line: ' + my.toFixed(1) + '° ' + (ok ? '<span class="lu-good">✓ on the band</span>' : lineE > 0 ? '(grows)' : '(shrinks)');
+    $("lu-angst").innerHTML = 'Band: ±' + th.toFixed(1) + '° · test line: ' + (sg > 0 ? '╱ ' : '╲ ') + my.toFixed(1) + '° ' + (ok ? '<span class="lu-good">✓ on the band</span>' : lineE > 0 ? '(grows)' : '(shrinks)');
   }
   $("lu-ar").addEventListener("input", drawAngle);
   $("lu-aa").addEventListener("input", drawAngle);
@@ -723,7 +727,8 @@
   angSvg.addEventListener("pointerdown", function (e) { if (e.target.id === "lu-ah" || e.target.classList.contains("lu-a-my")) { stopSweep(); angDrag = true; angSvg.setPointerCapture(e.pointerId); e.preventDefault(); } });
   angSvg.addEventListener("pointermove", function (e) {
     if (!angDrag) return; var pt = angSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; pt = pt.matrixTransform(angSvg.getScreenCTM().inverse()); var x = pt.x - 220, y = 150 - pt.y;
-    var d = Math.atan2(y, x) * 180 / Math.PI; if (d < 0) d += 180; if (d > 90) d = 180 - d;
+    var d = Math.atan2(y, x) * 180 / Math.PI; if (d < 0) d += 180; var sNew = 1; if (d > 90) { d = 180 - d; sNew = -1; }
+    if (sNew !== aLean && d > 1) setALean(sNew, true);
     $("lu-aa").value = Math.round(d * 10) / 10; drawAngle();
   });
   angSvg.addEventListener("pointerup", function () { angDrag = false; });
@@ -742,6 +747,16 @@
   function setWide(w) { awide = w; $("lu-angview").classList.toggle("lu-awide-on", !!w); [].forEach.call(document.querySelectorAll("#lu .lu-awide button"), function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-w") === w)); }); try { localStorage.setItem("mes-luders:awide", w); } catch (e) {} }
   [].forEach.call(document.querySelectorAll("#lu .lu-awide button"), function (b) { b.addEventListener("click", function () { setWide(+b.getAttribute("data-w")); }); });
   setWide(awide);
+  [].forEach.call(document.querySelectorAll("#lu .lu-alean button"), function (b) { b.addEventListener("click", function () { setALean(+b.getAttribute("data-l")); }); });
+  setALean(aLean, true);
+  /* picture beside the text when the card is wide enough; ⇄ Side swaps them */
+  var angC = root.querySelector(".lu-angc"), aSideR = false;
+  try { aSideR = localStorage.getItem("mes-luders:aside") === "R"; } catch (e) {}
+  function angLayout() { var two = angC.clientWidth >= 880 && !awide; if (two !== angC.classList.contains("lu-ang2")) { angC.classList.toggle("lu-ang2", two); setTimeout(drawAngle, 30); } angC.classList.toggle("lu-angR", aSideR); }
+  $("lu-aside").addEventListener("click", function () { aSideR = !aSideR; try { localStorage.setItem("mes-luders:aside", aSideR ? "R" : "L"); } catch (e) {} angLayout(); });
+  if (window.ResizeObserver) new ResizeObserver(angLayout).observe(angC); window.addEventListener("resize", angLayout);
+  [].forEach.call(document.querySelectorAll("#lu .lu-awide button"), function (b) { b.addEventListener("click", angLayout); });
+  angLayout();
   function addAngPanel() { var v = $("lu-angview"); if (window.MESPanel && !v.__mesPanel) { window.MESPanel.add(v, { bar: v.querySelector(".lu-angbtns"), onChange: function () { setTimeout(drawAngle, 40); } }); } }
   if (document.readyState === "complete") addAngPanel(); else window.addEventListener("load", addAngPanel);
   setTimeout(addAngPanel, 1500);
@@ -777,24 +792,44 @@
       var w = document.createElement("div"); w.className = "lu-sec"; w.setAttribute("data-sec", d[0]);
       el.parentNode.insertBefore(w, el);
       var bar = document.createElement("div"); bar.className = "lu-secbar";
-      bar.innerHTML = '<button type="button" class="lu-sgrip" aria-label="Drag to move this section" title="Drag to move this section">⠿</button><button type="button" class="lu-stitle" aria-expanded="true"><span class="lu-scar" aria-hidden="true">▾</span> ' + d[2] + '</button><span class="lu-smove"><button type="button" data-mv="-1" aria-label="Move up" title="Move up">▲</button><button type="button" data-mv="1" aria-label="Move down" title="Move down">▼</button></span>';
+      bar.innerHTML = '<button type="button" class="lu-sgrip" aria-label="Drag to move this section" title="Drag to move this section">⠿</button><button type="button" class="lu-stitle" aria-expanded="true"><span class="lu-scar" aria-hidden="true">▾</span> ' + d[2] + '</button><button type="button" class="lu-shalf" aria-pressed="false" title="Half width: two half-width sections sit side by side">½ width</button><span class="lu-smove"><button type="button" data-mv="-1" aria-label="Move up" title="Move up">▲</button><button type="button" data-mv="1" aria-label="Move down" title="Move down">▼</button></span>';
       w.appendChild(bar); w.appendChild(el); wraps[d[0]] = w;
     });
-    var host = wraps.test && wraps.test.parentNode;
-    if (!host) return;
+    var outer = wraps.test && wraps.test.parentNode;
+    if (!outer) return;
+    var host = document.createElement("div"); host.className = "lu-secs";
+    var firstSec = outer.querySelector(":scope > .lu-sec"); outer.insertBefore(host, firstSec);
+    [].slice.call(outer.querySelectorAll(":scope > .lu-sec")).forEach(function (w) { host.appendChild(w); });
+    var pair = document.createElement("div"); pair.className = "lu-pair";
+    pair.innerHTML = '<button type="button" aria-pressed="false" title="Each section bar also has a ½ button">▥ The test and Inside the metal side by side</button>';
+    outer.insertBefore(pair, host);
     function list() { return Array.prototype.slice.call(host.querySelectorAll(":scope > .lu-sec")); }
     function save2() { lay.order = list().map(function (w) { return w.getAttribute("data-sec"); }); try { localStorage.setItem(LKEY, JSON.stringify(lay)); } catch (e) {} }
     function setCol(w, on) { w.classList.toggle("is-col", on); var t = w.querySelector(".lu-stitle"); t.setAttribute("aria-expanded", on ? "false" : "true"); t.querySelector(".lu-scar").textContent = on ? "▸" : "▾"; }
-    var tail = list()[list().length - 1].nextSibling;
+    lay.half = lay.half || {};
+    function setHalf(w, on) { w.classList.toggle("is-half", on); w.querySelector(".lu-shalf").setAttribute("aria-pressed", String(on)); }
+    function pairOn() { var L3 = list(); return !!(lay.half.test && lay.half.micro && Math.abs(L3.indexOf(wraps.test) - L3.indexOf(wraps.micro)) === 1); }
+    function syncPair() { pair.querySelector("button").setAttribute("aria-pressed", String(pairOn())); }
+    function halfOk() { var ok = host.clientWidth >= 980; if (ok !== host.classList.contains("lu-halfok")) { host.classList.toggle("lu-halfok", ok); redraw(); } pair.hidden = !ok; }
+    if (window.ResizeObserver) new ResizeObserver(halfOk).observe(host);
+    pair.addEventListener("click", function () {
+      var on = !pairOn();
+      lay.half.test = on ? 1 : 0; lay.half.micro = on ? 1 : 0; setHalf(wraps.test, on); setHalf(wraps.micro, on);
+      if (on) { host.insertBefore(wraps.micro, wraps.test.nextSibling); setCol(wraps.test, false); setCol(wraps.micro, false); lay.col.test = lay.col.micro = 0; }
+      save2(); syncPair(); redraw();
+    });
+    var tail = null;
     if (Array.isArray(lay.order)) { var seen = {}; lay.order.concat(SECS.map(function (d) { return d[0]; })).forEach(function (k) { if (wraps[k] && !seen[k]) { seen[k] = 1; host.insertBefore(wraps[k], tail); } }); }
-    var toast2 = $("lu-toast"); if (toast2) host.appendChild(toast2);
-    Object.keys(wraps).forEach(function (k) { setCol(wraps[k], !!lay.col[k]); });
+    var toast2 = $("lu-toast"); if (toast2) outer.insertBefore(toast2, host.nextSibling);
+    Object.keys(wraps).forEach(function (k) { setCol(wraps[k], !!lay.col[k]); setHalf(wraps[k], !!lay.half[k]); });
+    halfOk(); syncPair();
     function redraw() { setTimeout(function () { drawAll(); drawAngle(); }, 30); }
     host.addEventListener("click", function (e) {
       var w = e.target.closest(".lu-sec"); if (!w || e.target.closest(".lu-sec") !== w) return;
+      if (e.target.closest(".lu-shalf")) { var hk = w.getAttribute("data-sec"), hon = !w.classList.contains("is-half"); setHalf(w, hon); lay.half[hk] = hon ? 1 : 0; save2(); syncPair(); redraw(); return; }
       if (e.target.closest(".lu-stitle")) { var on = !w.classList.contains("is-col"); setCol(w, on); lay.col[w.getAttribute("data-sec")] = on ? 1 : 0; save2(); if (!on) redraw(); return; }
       var mv = e.target.closest(".lu-secbar [data-mv]");
-      if (mv) { var L2 = list(), i = L2.indexOf(w), j = i + (+mv.getAttribute("data-mv")); if (j < 0 || j >= L2.length) return; host.insertBefore(w, +mv.getAttribute("data-mv") > 0 ? L2[j].nextSibling : L2[j]); save2(); redraw(); mv.focus(); }
+      if (mv) { var L2 = list(), i = L2.indexOf(w), j = i + (+mv.getAttribute("data-mv")); if (j < 0 || j >= L2.length) return; host.insertBefore(w, +mv.getAttribute("data-mv") > 0 ? L2[j].nextSibling : L2[j]); save2(); syncPair(); redraw(); mv.focus(); }
     });
     /* drag by the grip: the section follows the pointer between the others */
     var drag = null;
@@ -811,15 +846,15 @@
       if (before !== cur) { if (before) host.insertBefore(drag.w, before); else { var last = L2[L2.length - 1]; host.insertBefore(drag.w, last.nextSibling); } }
       if (y < 60) window.scrollBy(0, -14); else if (y > window.innerHeight - 60) window.scrollBy(0, 14);
     });
-    function endDrag() { if (!drag) return; drag.w.classList.remove("is-drag"); host.classList.remove("lu-dragging"); drag = null; save2(); redraw(); }
+    function endDrag() { if (!drag) return; drag.w.classList.remove("is-drag"); host.classList.remove("lu-dragging"); drag = null; save2(); syncPair(); redraw(); }
     host.addEventListener("pointerup", endDrag); host.addEventListener("pointercancel", endDrag);
     host.addEventListener("keydown", function (e) {
       var g = e.target.closest(".lu-sgrip"); if (!g || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
       e.preventDefault(); var b = g.closest(".lu-sec").querySelector('[data-mv="' + (e.key === "ArrowUp" ? -1 : 1) + '"]'); b.click(); g.focus();
     });
     var rb = document.createElement("button"); rb.type = "button"; rb.className = "lu-secreset"; rb.textContent = "Reset section order";
-    rb.addEventListener("click", function () { SECS.forEach(function (d) { if (wraps[d[0]]) host.insertBefore(wraps[d[0]], toast2 || null); setCol(wraps[d[0]], false); }); lay = { col: {} }; try { localStorage.removeItem(LKEY); } catch (e) {} redraw(); });
-    host.insertBefore(rb, toast2 || null);
+    rb.addEventListener("click", function () { SECS.forEach(function (d) { if (wraps[d[0]]) { host.appendChild(wraps[d[0]]); setCol(wraps[d[0]], false); setHalf(wraps[d[0]], false); } }); lay = { col: {}, half: {} }; syncPair(); try { localStorage.removeItem(LKEY); } catch (e) {} redraw(); });
+    outer.insertBefore(rb, host.nextSibling);
   })();
 
   /* ---- fill window / full screen ---- */

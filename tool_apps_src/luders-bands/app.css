@@ -224,3 +224,34 @@ html body.dark-mode #lu.lu .lu-mstages li.is-now {background:#6d28d9;border-colo
 #lu.lu-dragging, #lu .lu-dragging {user-select:none;}
 #lu .lu-dragging .lu-sgrip {cursor:grabbing !important;}
 #lu .lu-secreset {display:block;margin:0 0 1em auto;background:none;border:0;color:var(--lu-mut);text-decoration:underline;cursor:pointer;font-size:0.82em;}
+/* 55° figure beside its text (figure left by default, ⇄ Side swaps); stacked when the card is narrow or the figure is Wide */
+#lu .lu-angbody {display:block;}
+#lu .lu-angc.lu-ang2 .lu-angbody {display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:1.4em;align-items:start;}
+#lu .lu-angc.lu-ang2 .lu-angview:not(.mes-pfill) {margin:0;max-width:none;position:sticky;top:72px;}
+#lu .lu-angc.lu-ang2.lu-angR .lu-angview {order:2;}
+#lu .lu-angc:not(.lu-ang2) #lu-aside {display:none;}
+#lu .lu-angtext > :first-child {margin-top:0;}
+#lu .lu-dsteps {padding-left:1.5em;line-height:1.6;margin:0.5em 0;}
+#lu .lu-dsteps li {margin:0 0 0.7em;}
+#lu .lu-eq {display:block;overflow-x:auto;overflow-y:hidden;margin:0.45em 0;padding:0.45em 0.7em;background:var(--lu-soft);border:1px solid var(--lu-line);border-radius:0.5em;}
+#lu .lu-whichway ul {padding-left:1.3em;line-height:1.55;margin:0.4em 0;}
+#lu .lu-whichway li {margin:0 0 0.35em;}
+#lu .lu-alean button {min-width:2.2em;}
+#lu .lu-leanrow {display:flex;flex-wrap:wrap;align-items:center;gap:0.4em 0.7em;margin:0.5em 0 0.2em;}
+#lu .lu-leanl {font-size:0.9em;font-weight:600;}
+#lu .lu-lean button {min-width:2.4em;}
+#lu .lu-leannote {margin-top:0.2em;font-size:0.85em;}
+/* sections can be half width, so two sit side by side (e.g. The test + Inside the metal) */
+#lu .lu-secs {display:flex;flex-wrap:wrap;gap:0 1em;align-items:flex-start;}
+#lu .lu-secs > .lu-sec {flex:1 1 100%;min-width:0;}
+#lu .lu-secs.lu-halfok > .lu-sec.is-half {flex:1 1 calc(50% - 0.5em);max-width:calc(50% - 0.5em);}
+#lu .lu-secs.lu-halfok > .lu-sec.is-half .lu-grid2 {grid-template-columns:minmax(0,1fr);}
+#lu .lu-secbar .lu-shalf[aria-pressed="true"] {border-color:var(--lu-line);color:var(--lu-ink);background:var(--lu-soft);}
+#lu .lu-secs:not(.lu-halfok) .lu-shalf {display:none;}
+#lu .lu-secbar .lu-shalf {margin-left:auto;}
+#lu .lu-secbar .lu-shalf + .lu-smove {margin-left:0;}
+#lu .lu-pair {margin:0 0 0.6em;font-size:0.85em;}
+#lu .lu-pair button {background:none;border:1px solid var(--lu-line);border-radius:0.5em;color:var(--lu-ink);cursor:pointer;font:inherit;padding:0.25em 0.7em;min-height:32px;}
+#lu .lu-pair button[aria-pressed="true"] {background:var(--accent);border-color:var(--accent);color:#fff;}
+html body.dark-mode #lu .lu-pair button[aria-pressed="true"] {background:#2f6690;border-color:#4b8ac0;color:#fff;}
+#lu .lu-pair[hidden] {display:none;}

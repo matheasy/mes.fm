@@ -72,6 +72,10 @@ for (const m of L.MATS) {
 /* query round trip and junk */
 { const q = L.toQuery({ m: "a36", eL: 0.02, k: 3, n: "0.5" }); const o = L.fromQuery("?" + q + "&evil=<x>&m2=1"); ok(o.m === "a36" && o.eL === 0.02 && o.k === 3 && o.n === "0.5" && !o.evil, "query round trip"); ok(!L.fromQuery("m=<script>").m, "query rejects junk"); }
 
+/* which way the band leans */
+for (const ln of [1, -1]) { const s = new L.Sim({ mat: L.mat("a36"), lean: ln }); s.runTo(0.03); let all = true; for (let i = 0; i < s.p.N; i++) if (s.dir[i] && s.dir[i] !== ln) all = false; ok(s.bands > 0 && all, "lean " + ln + ": every band leans that way"); }
+{ const o = L.fromQuery("ln=-1"); ok(o.ln === -1, "lean in the link"); }
+
 /* colours */
 ok(L.viridisish(0).length === 3 && L.viridisish(1)[0] === 253, "colour map");
 
