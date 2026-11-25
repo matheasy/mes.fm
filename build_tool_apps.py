@@ -252,7 +252,7 @@ APPS = {
                tag="Free AI on your own computer, 10 free messages a day with Hive, or top AI models paid per message.", accent="#4f46e5", dark="#3730a3", tint="#ecebfd",
                desc="Chat with AI for free: small models run privately in your browser with no account, and every Hive account gets 10 free messages a day. For harder work use Claude, ChatGPT, GPT Image 2 or Grok Imagine and pay per message in HBD, with the exact price shown first. No plan, no sign-up; chats stay in your browser.",
                meta_desc="Free AI chat that runs privately in your browser, 10 free messages a day with Hive, or Claude, ChatGPT and Grok paid per message in HBD. No plan, no sign-up.",
-               js_v="20", js_parts=["rich.js", "local.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
+               js_v="21", js_parts=["rich.js", "local.js"], pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/cloud-files.js?v=3", "/main_js/link-open.js?v=2"]),
     "email": dict(title="MES Mail", page_title="MES Mail: Quantum-Safe Encrypted Email for Hive",
                   tag="Private, end-to-end encrypted mail between Hive accounts.", accent="#3b4cca", dark="#2c3a9e", tint="#e6e9fb",
                   desc="Free encrypted email for Hive: send end-to-end encrypted messages to any Hive account, stored on the blockchain and readable only by the people you write to. Quantum-safe (ML-KEM-768 + X25519 and AES-256), threads and replies, Sent folder, classic memo reader. No server, no sign-up.",

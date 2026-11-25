@@ -1535,7 +1535,8 @@
 	function newChat() { var c = { id: A.newId(), title: T("New chat"), at: Date.now(), msgs: [] }; S.chats.unshift(c); S.cur = c.id; save(); return c; }
 	function cur() { var c = S.chats.filter(function (x) { return x.id === S.cur; })[0]; return c || (S.chats[0] ? (S.cur = S.chats[0].id, S.chats[0]) : newChat()); }
 
-	function msg(t, kind) { var m = $("ai-msg"); m.hidden = !t; m.textContent = t || ""; m.className = "tu-card ai-msg" + (kind ? " " + kind : ""); }
+	var msgT = 0;
+	function msg(t, kind) { var m = $("ai-msg"); clearTimeout(msgT); m.hidden = !t; m.textContent = t || ""; m.className = "tu-card ai-msg" + (kind ? " " + kind : ""); if (t && kind === "ok") msgT = setTimeout(function () { if (m.textContent === t) m.hidden = true; }, 5000); }   // "done" notes go away by themselves
 
 	/* ---------- the "You pay per message" box can be hidden (mes-ai:payhide = "1"); "About paying" by the tabs brings it back ---------- */
 	(function () {
@@ -2416,12 +2417,12 @@
 			h = '<p class="ai-lmain">✓ ' + T("{name} is already downloaded ({size}, kept in this browser). It starts when you send a message.", { name: esc(m.name), size: gb(m.mb) }) + "</p>";
 		} else {
 			h = '<p class="ai-lmain' + (LOCST.want ? " ai-lask" : "") + '">' + T("{name} needs a one-time download of about <b>{size}</b>. Your browser keeps it, so next time it starts without downloading. It runs on your graphics chip: nothing you type is sent anywhere.", { name: esc(m.name), size: gb(m.mb) }) + "</p>" +
-				'<p><button type="button" class="tu-btn tu-btn--primary" data-lact="dl">' + T("Download {size} and start", { size: gb(m.mb) }) + "</button>" + (LOCST.want ? ' <button type="button" class="tu-btn tu-btn--ghost" data-lact="cancel">' + T("Cancel") + "</button>" : "") + "</p>";
+				'<p class="ai-lbtns"><button type="button" class="tu-btn tu-btn--primary" data-lact="dl">' + T("Download {size} and start", { size: gb(m.mb) }) + "</button>" + (LOCST.want ? ' <button type="button" class="tu-btn tu-btn--ghost" data-lact="cancel">' + T("Cancel") + "</button>" : "") + "</p>";
 		}
 		if (LOCST.env && ck.ok && ck.f32) h += '<p class="ai-sub">' + T("Your graphics chip has no 16-bit support, so a slower version is used.") + "</p>";
 		if (LOCST.err) h += '<p class="ai-note ai-err">' + esc(LOCST.err) + "</p>";
 		if (LOCST.env && ck.ok && (cached || ready) && !LOCST.loading) h += '<p class="ai-sub"><button type="button" class="ai-mini" data-lact="rm"' + (busy ? " disabled" : "") + ">" + T("Remove downloaded model") + "</button> " + T("(frees {size})", { size: gb(m.mb) }) + "</p>";
-		h += '<p class="ai-sub ai-lfine">' + T("Free and private, but much weaker than the paid models: good for quick questions, drafts and simple code. Made possible by WebLLM.") + "</p>";
+		if (!(ready || cached)) h += '<p class="ai-sub ai-lfine">' + T("Free and private, but much weaker than the paid models: good for quick questions, drafts and simple code. Made possible by WebLLM.") + "</p>";   // once it is there, the fine print only takes room
 		if (box.innerHTML !== h) box.innerHTML = h;
 	}
 	function localErr(e) {

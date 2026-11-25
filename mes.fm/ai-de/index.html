@@ -393,7 +393,7 @@ html body.dark-mode #ai.ai .ai-text a { color: #8fb0ff; }
 #ai .ai-send { min-width: 9em; }
 #ai .ai-modelnote { margin: .45em 0 0; }
 #ai.ai-busy .ai-send { opacity: .7; cursor: progress; }
-#ai .ai-msg { margin-top: .7em; }
+#ai .ai-msg { margin-top: .5em; padding: .45em .8em; font-size: .95em; }
 #ai.ai.ai .ai-msg.err { color: var(--ai-err); }
 #ai.ai.ai .ai-msg.ok { color: var(--ai-ok); }
 #ai .ai-msg .tu-btn { margin-left: .6em; }
@@ -723,8 +723,13 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
 #ai .ai-stop[hidden], #ai .ai-local[hidden] { display: none !important; }
 #ai .ai-inrow .ai-stop { flex: 0 0 auto; min-height: 2.9em; border: 1px solid var(--ai-err); background: transparent; color: var(--ai-err); font-weight: 700; }
 #ai.ai-busy .ai-inrow .ai-stop { opacity: 1; cursor: pointer; }
-#ai .ai-local { margin-top: .5em; padding: .55em .8em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
-#ai .ai-local p { margin: .25em 0; }
+#ai .ai-local { margin-top: .4em; padding: .4em .7em; border: 1px solid var(--ai-line); border-radius: .6em; background: var(--ai-panel); color: var(--ai-ink); font-size: .95em; }
+#ai .ai-local p { margin: .2em 0; }
+#ai .ai-local { display: flex; flex-wrap: wrap; align-items: center; column-gap: .9em; }
+#ai .ai-local > p, #ai .ai-local > .ai-lbar { flex: 1 1 100%; }
+#ai .ai-local > .ai-lmain { flex: 1 1 26em; }
+#ai .ai-local > .ai-lbtns { flex: 0 0 auto; margin: .2em 0; }
+#ai .ai-local .ai-lfine { font-size: .8em; opacity: .85; }
 #ai .ai-local .ai-lmain { line-height: 1.45; }
 #ai .ai-local .ai-lask { padding: .3em .5em; border-left: 3px solid var(--ai-acc); background: var(--ai-me); border-radius: .3em; }
 #ai .ai-local .ai-lbad b { color: var(--ai-warn); }
@@ -1391,7 +1396,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-de.js?v=2d387818" defer></script><script src="/ai/js/ai.js?v=20" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-de.js?v=2d387818" defer></script><script src="/ai/js/ai.js?v=21" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
