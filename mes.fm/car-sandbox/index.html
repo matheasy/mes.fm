@@ -643,6 +643,41 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #cs .cs-npop small.cs-nstat, html body.dark-mode #cs .cs-nl.sys {color:#ffd8a8;}
 	html body.dark-mode #cs .cs-nl, html body.dark-mode #cs .cs-nboard {color:#f2f5fa;}
 
+	/* quick hide: a small ✕ on each on-screen box, a ▸ pill where it was to bring it back */
+	.cs-hx {position:absolute;top:0.25em;right:0.25em;width:1.7em;height:1.7em;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,0.12);color:#f2f5fa;font:inherit;font-size:0.8em;line-height:1;cursor:pointer;pointer-events:auto;opacity:0.7;z-index:1;}
+	.cs-hx:hover, .cs-hx:focus-visible {opacity:1;background:rgba(255,255,255,0.28);}
+	.cs-hud {padding-right:2.2em;}
+	.cs-speedo {padding:1.1em 0 0;}
+	.cs-speedo .cs-hx {top:-0.2em;right:-0.2em;font-size:0.55em;text-shadow:none;}
+	.cs-nlogw {position:relative;align-self:flex-start;max-width:100%;padding-right:1.9em;}
+	.cs-nlogw .cs-hx {top:auto;bottom:0;right:0;}
+	.cs-nlog:empty + .cs-hx, .cs-nlogw:has(.cs-nlog:empty) .cs-hx {display:none;}
+	.cs-hide-chat .cs-nlogw, .cs-hide-chat .cs-nform {display:none !important;}
+	.cs-shpill {position:absolute;z-index:3;cursor:pointer;font:inherit;font-size:0.78em;font-weight:700;padding:0.3em 0.75em;border-radius:1em;border:1px solid var(--cs-line);background:var(--cs-glass);color:var(--cs-ink);backdrop-filter:blur(4px);}
+	.cs-shpill:hover {background:rgba(12,16,24,0.85);}
+	.cs-shhud {left:0.6em;top:0.6em;}
+	.cs-shspeed {right:0.8em;bottom:0.7em;}
+	.cs-has-touch .cs-shspeed {bottom:auto;top:3.4em;right:50%;transform:translateX(50%);}
+	.cs-shboard {position:static;align-self:flex-end;pointer-events:auto;}
+	.cs-nboard {position:relative;padding-right:2.2em;pointer-events:auto;}
+	.cs-nchatbtn {position:relative;}
+	.cs-nchatbtn b {position:absolute;top:-0.35em;right:-0.35em;min-width:1.3em;height:1.3em;border-radius:1em;background:#e03131;color:#fff;font-size:0.7em;line-height:1.3em;text-align:center;}
+	.cs-replaying .cs-shpill, .cs-editing .cs-shpill {display:none !important;}
+	html body.dark-mode #cs .cs-shpill, html body.dark-mode #cs .cs-hx {color:#f2f5fa;}
+	.cs-fhud {padding-right:2.2em;}
+	.cs-cpop select {width:100%;padding:0.3em;}
+	.cs-cpaint {display:flex;flex-wrap:wrap;gap:0.3em;}
+	.cs-cpaint button {width:1.6em;height:1.6em;border-radius:50%;border:2px solid rgba(255,255,255,0.35);cursor:pointer;padding:0;}
+	.cs-cpaint button[aria-pressed="true"] {border-color:#fff;box-shadow:0 0 0 2px #d9480f;}
+	.cs-pop {max-height:calc(100% - 4em);overflow:auto;}
+	/* fold arrows: the picture's button row and the select bar above it */
+	.cs-sbtns .cs-fold {min-width:1.9em;padding:0;}
+	.cs-hide-btns .cs-sbtns > :not(.cs-fold) {display:none !important;}
+	.cs-topfold {align-self:flex-end;margin-left:auto;cursor:pointer;font:inherit;font-size:0.8em;padding:0.3em 0.7em;border-radius:1em;border:1px solid var(--cs-cardline);background:transparent;color:var(--cs-text);}
+	.cs-hide-top .cs-top .cs-sel {display:none !important;}
+	.cs-hide-top .cs-topfold {margin-left:0;}
+	html body.dark-mode #cs .cs-topfold {color:#e6eaf0;border-color:#3a414c;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -822,6 +857,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-nbtn{border:1px solid #bc5210}
 	body.dark-mode .cs-nlist li i{border:1px solid rgba(51,51,51,0.50)}
 	body.dark-mode .cs-nform button{border:1px solid #bc5210}
+	body.dark-mode .cs-hx{background:rgba(26,26,26,0.12)}
+	body.dark-mode .cs-hx:hover,body.dark-mode .cs-hx:focus-visible{background:rgba(26,26,26,0.28)}
+	body.dark-mode .cs-cpaint button{border:2px solid rgba(51,51,51,0.35)}
+	body.dark-mode .cs-cpaint button[aria-pressed="true"]{border-color:#333333}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1043,10 +1082,13 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<label class="cs-sel"><span>Vehicle</span><select id="cs-car" class="tu-select"></select></label>
 				<label class="cs-sel"><span>Camera</span><select id="cs-cam" class="tu-select"></select></label>
 				<label class="cs-sel"><span>Weather</span><select id="cs-wx" class="tu-select"></select></label>
+				<button type="button" class="cs-topfold" id="cs-topfold" aria-expanded="true" title="Hide the world / vehicle / camera / weather boxes">▴ Hide</button>
 			</div>
 			<div class="cs-stage" id="cs-stage">
 				<div class="cs-load" id="cs-load">Loading…</div>
+				<button type="button" class="cs-shpill cs-shhud" id="cs-shhud" hidden title="Show the car box again" aria-label="Show the car and g-force box">▸ Car box</button>
 				<div class="cs-hud" aria-live="off">
+					<button type="button" class="cs-hx" data-hide="hud" title="Hide this box (the ▸ pill brings it back)" aria-label="Hide the car box">✕</button>
 					<div class="cs-hcar" id="cs-hcar"></div>
 					<div class="cs-hrow"><span>Gravity</span><b id="cs-hgrav"></b></div>
 					<div class="cs-hrow"><span>Felt</span><b id="cs-hg">1.0 g</b><span>peak</span><b id="cs-hpeak">0 g</b></div>
@@ -1054,8 +1096,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="cs-air" id="cs-air"></div>
 					<div class="cs-lap" id="cs-lap" hidden><b id="cs-lapnow"></b><span id="cs-lapbest"></span></div>
 				</div>
-				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
+				<div class="cs-speedo"><button type="button" class="cs-hx" data-hide="speed" title="Hide the speedometer" aria-label="Hide the speedometer">✕</button><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
+				<button type="button" class="cs-shpill cs-shspeed" id="cs-shspeed" hidden title="Show the speedometer again" aria-label="Show the speedometer">▸ Speed</button>
 				<div class="cs-fhud" id="cs-fhud" hidden aria-live="off">
+					<button type="button" class="cs-hx" data-hide="hud" title="Hide the flight box (the ▸ pill brings it back)" aria-label="Hide the flight box">✕</button>
 					<canvas id="cs-ahi" width="120" height="120" aria-label="Artificial horizon: pitch and bank"></canvas>
 					<div class="cs-fcol">
 						<div class="cs-frow"><span>Air speed</span><b id="cs-fias">0</b></div>
@@ -1080,6 +1124,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" id="cs-srepair" class="cs-bfix" title="Repair the car where it is: dents gone, engine like new (X)" aria-label="Repair">🔧<span class="cs-bl"> Repair</span></button>
 					<button type="button" id="cs-restart" class="cs-brestart" title="Restart: everything back to the start, fully repaired (T)" aria-label="Restart">⟲<span class="cs-bl"> Restart</span></button>
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
+					<button type="button" id="cs-btnsfold" class="cs-fold" title="Hide these buttons" aria-label="Hide or show the buttons" aria-expanded="true">▴</button>
 				</div>
 				<div class="cs-mm" id="cs-mm">
 					<canvas id="cs-mmc" title="Open the map editor (B)"></canvas>
@@ -1115,9 +1160,10 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				</div>
 				<div class="cs-net" id="cs-net" hidden>
 					<div class="cs-nboard" id="cs-nboard" hidden></div>
-					<div class="cs-nlog" id="cs-nlog" aria-live="polite"></div>
+					<button type="button" class="cs-shpill cs-shboard" id="cs-shboard" hidden title="Show the race board again">▸ 🏁 Race board</button>
+					<div class="cs-nlogw"><button type="button" class="cs-hx" data-hide="chat" title="Hide the chat (💬 ▴ brings it back)" aria-label="Hide the chat">▾</button><div class="cs-nlog" id="cs-nlog" aria-live="polite"></div></div>
 					<form class="cs-nform" id="cs-nform"><input type="text" id="cs-nmsg" maxlength="200" placeholder="Say something… (Enter sends, Esc closes)" autocomplete="off" aria-label="Chat message"><button type="submit">Send</button></form>
-					<button type="button" class="cs-nchatbtn" id="cs-nchatbtn" title="Chat with the room (Enter)" aria-label="Chat">💬</button>
+					<button type="button" class="cs-nchatbtn" id="cs-nchatbtn" title="Chat with the room (Enter)" aria-label="Chat">💬<b id="cs-nunread" hidden></b></button>
 				</div>
 				<div class="cs-ncount" id="cs-ncount" hidden></div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
@@ -1132,6 +1178,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" id="cs-rpx">✕ Back to driving</button>
 				</div>
 				<div class="cs-pop cs-cpop" id="cs-cpop" hidden>
+					<b>Your vehicle</b>
+					<select id="cs-cvcar" aria-label="Your vehicle"></select>
+					<div class="cs-cpaint" id="cs-cpaint" role="group" aria-label="Paint"></div>
+					<b>World</b>
+					<select id="cs-cvworld" aria-label="World"></select>
 					<b>Computer cars: <span id="cs-ctnum">3</span></b>
 					<div class="cs-prow"><button type="button" class="cs-cstep" data-cstep="-1" aria-label="One car fewer">−</button><input type="range" id="cs-ctraffic" min="0" max="12" step="1" aria-label="Number of computer cars"><button type="button" class="cs-cstep" data-cstep="1" aria-label="One more car">＋</button></div>
 					<b>What they do</b>
@@ -1158,6 +1209,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<label class="cs-prow"><input type="checkbox" data-show="lap"> Lap timer</label>
 					<label class="cs-prow"><input type="checkbox" data-show="speed"> Speedometer</label>
 					<label class="cs-prow"><input type="checkbox" data-show="msg"> Messages (jumps, crashes, laps)</label>
+					<label class="cs-prow"><input type="checkbox" data-show="chat"> Online chat</label>
+					<label class="cs-prow"><input type="checkbox" data-show="board"> Race board</label>
 					<label class="cs-prow"><input type="checkbox" data-show="ghost"> Ghost of my best lap</label>
 					<button type="button" class="cs-mini" id="cs-popx">Close</button>
 				</div>
@@ -1294,6 +1347,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<label><input type="checkbox" data-show="lap"> Lap timer</label>
 						<label><input type="checkbox" data-show="speed"> Speedometer</label>
 						<label><input type="checkbox" data-show="msg"> Messages</label>
+						<label><input type="checkbox" data-show="chat"> Online chat</label>
+						<label><input type="checkbox" data-show="board"> Race board</label>
 					</div>
 					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn tu-btn--ghost" id="cs-png">📷 Save picture</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-link">🔗 Copy link</button></div>
 				</div>
@@ -1408,7 +1463,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/car-sandbox/js/car-sandbox.js?v=15" defer></script>
+	<script src="/car-sandbox/js/car-sandbox.js?v=16" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

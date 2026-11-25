@@ -2761,10 +2761,33 @@
 		var m = $("cs-mute"); m.textContent = !S.sound || S.vol === 0 ? "🔇" : S.vol < 0.4 ? "🔉" : "🔊"; m.setAttribute("aria-pressed", String(!S.sound));
 	}
 	function applyShow() {
-		["info", "lap", "speed", "msg"].forEach(function (k) { root.classList.toggle("cs-hide-" + k, S.show[k] === false); });
+		["info", "lap", "speed", "msg", "chat", "board", "btns", "top"].forEach(function (k) { root.classList.toggle("cs-hide-" + k, S.show[k] === false); });
 		if ($("cs-mm")) applyMini();
 		root.querySelectorAll("[data-show]").forEach(function (b) { b.checked = S.show[b.dataset.show] !== false; });
 		var hud = root.querySelector(".cs-hud"); if (hud) hud.hidden = S.show.info === false && (S.show.lap === false || !(W && W.track));
+		/* the little "▸" pills that bring a hidden box back where it was */
+		$("cs-shhud").hidden = !(hud && hud.hidden); $("cs-shspeed").hidden = S.show.speed !== false;
+		if (S.show.chat !== false) { var un = $("cs-nunread"); un.hidden = true; un.textContent = ""; }
+		var bf = $("cs-btnsfold"), tf = $("cs-topfold"), cb = $("cs-nchatbtn");
+		if (bf) { bf.textContent = S.show.btns === false ? "▾" : "▴"; bf.title = S.show.btns === false ? "Show the buttons" : "Hide these buttons"; bf.setAttribute("aria-expanded", String(S.show.btns !== false)); }
+		if (tf) { tf.textContent = S.show.top === false ? "▾ World, vehicle, camera, weather" : "▴ Hide"; tf.setAttribute("aria-expanded", String(S.show.top !== false)); }
+		if (cb && cb.firstChild) { cb.firstChild.nodeValue = S.show.chat === false ? "💬▴" : "💬"; cb.title = S.show.chat === false ? "Show the chat again" : "Chat with the room (Enter)"; }
+		if (typeof netBoard === "function") netBoard();
+	}
+	/* one click on a box's ✕ hides it, the pill (or 💬 for the chat) brings it back; also in ⚙ and the panel's Show on screen */
+	function quickHide(k, on) {
+		if (k === "hud") { S.show.info = on; S.show.lap = on; } else S.show[k] = on;
+		save(); applyShow();
+		if (!on) toast(k === "hud" ? "Car box hidden · ▸ top left brings it back" : k === "speed" ? "Speedometer hidden · ▸ Speed brings it back" : k === "chat" ? "Chat hidden · 💬 brings it back" : "Race board hidden · ▸ brings it back");
+	}
+	function setupQuickHide() {
+		root.querySelectorAll(".cs-hx[data-hide]").forEach(function (b) { b.addEventListener("click", function (e) { e.stopPropagation(); quickHide(b.dataset.hide, false); }); });
+		$("cs-shhud").addEventListener("click", function () { quickHide("hud", true); });
+		$("cs-shspeed").addEventListener("click", function () { quickHide("speed", true); });
+		$("cs-shboard").addEventListener("click", function () { quickHide("board", true); });
+		$("cs-btnsfold").addEventListener("click", function () { S.show.btns = S.show.btns === false; save(); applyShow(); });
+		$("cs-topfold").addEventListener("click", function () { S.show.top = S.show.top === false; save(); applyShow(); });
+		$("cs-nboard").addEventListener("click", function (e) { if (e.target.closest(".cs-hx")) quickHide("board", false); });
 	}
 	function setupUI() {
 		opt($("cs-world"), C.WORLD_ORDER.map(function (w) { return [w, C.WORLDS[w].name]; }), S.world);
@@ -2811,7 +2834,16 @@
 		root.querySelectorAll("[data-cstep]").forEach(function (b) { b.addEventListener("click", function () { setTrafficN(S.traffic + +b.dataset.cstep); syncUrl(); toast(S.traffic ? S.traffic + " computer car" + (S.traffic > 1 ? "s" : "") : "No computer cars"); }); });
 		$("cs-ai").addEventListener("change", function () { setAi(this.value); });
 		$("cs-cai").addEventListener("click", function (e) { var b = e.target.closest("[data-ai]"); if (b) setAi(b.dataset.ai); });
-		$("cs-carsbtn").addEventListener("click", function () { var p = $("cs-cpop"); p.hidden = !p.hidden; this.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("cs-pop").hidden = true; trafficUI(); } });
+		$("cs-carsbtn").addEventListener("click", function () { var p = $("cs-cpop"); p.hidden = !p.hidden; this.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("cs-pop").hidden = true; $("cs-npop").hidden = true; trafficUI(); cpopSync(); } });
+		/* the 🚗 popover also picks your vehicle, paint and world: copies of the top bar's selects / the panel's paint, which do the work */
+		function cpopSync() {
+			[["cs-cvcar", "cs-car"], ["cs-cvworld", "cs-world"]].forEach(function (p) { var a = $(p[0]), b = $(p[1]); if (a.innerHTML !== b.innerHTML) a.innerHTML = b.innerHTML; a.value = b.value; });
+			var c = cars[player]; $("cs-cpaint").querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(!!c && x.dataset.c === c.color)); });
+		}
+		$("cs-cpaint").innerHTML = $("cs-paint").innerHTML;
+		$("cs-cvcar").addEventListener("change", function () { var b = $("cs-car"); b.value = this.value; b.dispatchEvent(new Event("change")); this.blur(); setTimeout(cpopSync, 50); });
+		$("cs-cvworld").addEventListener("change", function () { var b = $("cs-world"); b.value = this.value; b.dispatchEvent(new Event("change")); this.blur(); setTimeout(cpopSync, 50); });
+		$("cs-cpaint").addEventListener("click", function (e) { var x = e.target.closest("button"); if (!x) return; var b = $("cs-paint").querySelector('[data-c="' + x.dataset.c + '"]'); if (b) b.click(); cpopSync(); });
 		$("cs-cpopx").addEventListener("click", function () { $("cs-cpop").hidden = true; $("cs-carsbtn").setAttribute("aria-expanded", "false"); });
 		$("cs-cswitch").addEventListener("click", function () { switchCar(1); });
 		$("cs-switch").addEventListener("click", function () { switchCar(1); });
@@ -3628,10 +3660,11 @@
 	function raceRows() { var R = NET.race; return Object.keys(R.rows).map(function (s) { var r = R.rows[s], ro = NET.roster[s]; return { s: +s, name: ro ? ro.name : "Player", n: r.n || 0, total: r.total, fin: r.fin }; }); }
 	function netBoard() {
 		var el = $("cs-nboard");
-		if (!NET || !NET.race) { el.hidden = true; return; }
+		var pill = $("cs-shboard");
+		if (!NET || !NET.race) { el.hidden = true; pill.hidden = true; return; }
 		var R = NET.race;
-		el.hidden = false;
-		el.innerHTML = '<div class="cs-nbh">🏁 Race · ' + R.laps + ' lap' + (R.laps > 1 ? "s" : "") + '</div>' + C.raceOrder(raceRows()).map(function (r, i) {
+		el.hidden = S.show.board === false; pill.hidden = S.show.board !== false;
+		el.innerHTML = '<button type="button" class="cs-hx" title="Hide the race board" aria-label="Hide the race board">✕</button><div class="cs-nbh">🏁 Race · ' + R.laps + ' lap' + (R.laps > 1 ? "s" : "") + '</div>' + C.raceOrder(raceRows()).map(function (r, i) {
 			var me = r.s === NET.slot;
 			return '<div class="cs-nbr' + (me ? " me" : "") + '"><span>' + (i + 1) + '.</span><b>' + esc(r.name) + '</b><i>' + (r.fin ? "🏁 " + C.fmtLap(r.total) : "Lap " + Math.min(R.laps, (r.n || 0) + 1) + "/" + R.laps + (r.total ? " · " + C.fmtLap(r.total) : "")) + '</i></div>';
 		}).join("");
@@ -3643,6 +3676,7 @@
 		d.innerHTML = who ? "<b>" + esc(who) + ":</b> " + esc(txt) : esc(txt);
 		log.appendChild(d); while (log.children.length > 6) log.removeChild(log.firstChild);
 		setTimeout(function () { d.classList.add("old"); }, 12000);
+		if (S.show.chat === false && who) { var un = $("cs-nunread"); un.textContent = String((+un.textContent || 0) + 1); un.hidden = false; }
 	}
 	function netChatSend(txt) {
 		txt = C.netText(txt); if (!txt || !NET || !NET.live) return;
@@ -3650,7 +3684,7 @@
 		if (NET.host) bcastR(Object.assign({ s: 0 }, e)); else sendR(NET.hostLink, e);
 		netSay(netMyName(), txt);
 	}
-	function netChatOpen() { var n = $("cs-net"); n.classList.add("cs-chatting"); var i = $("cs-nmsg"); i.focus(); }
+	function netChatOpen() { if (S.show.chat === false) quickHide("chat", true); var n = $("cs-net"); n.classList.add("cs-chatting"); var i = $("cs-nmsg"); i.focus(); }
 	function netChatClose() { $("cs-net").classList.remove("cs-chatting"); $("cs-nmsg").blur(); }
 	/* ---------- leaving ---------- */
 	function netLeave(quiet) {
@@ -3703,7 +3737,7 @@
 		$("cs-nleave").addEventListener("click", function () { netLeave(false); netStatus(""); });
 		$("cs-nstart").addEventListener("click", netRaceStart);
 		$("cs-nstop").addEventListener("click", netRaceStop);
-		$("cs-nchatbtn").addEventListener("click", function () { if ($("cs-net").classList.contains("cs-chatting")) netChatClose(); else netChatOpen(); });
+		$("cs-nchatbtn").addEventListener("click", function () { if (S.show.chat === false) { quickHide("chat", true); return; } if ($("cs-net").classList.contains("cs-chatting")) netChatClose(); else netChatOpen(); });
 		$("cs-nform").addEventListener("submit", function (e) { e.preventDefault(); var i = $("cs-nmsg"); netChatSend(i.value); i.value = ""; netChatClose(); });
 		$("cs-nmsg").addEventListener("keydown", function (e) { if (e.key === "Escape") { e.preventDefault(); netChatClose(); } e.stopPropagation(); });
 		netUi();
@@ -3716,7 +3750,7 @@
 	loadLibs().then(function (m) {
 		THREE = m[0]; RAPIER = m[1];
 		initRenderer(); parts.init(); setupUI(); setupMapUI(); setupCamDrag();
-		buildWorld(); msg(""); setupNet();
+		buildWorld(); msg(""); setupNet(); setupQuickHide(); applyShow();
 		if (Q.world || Q.car || Q.g != null) syncUrl();
 		requestAnimationFrame(frame);
 	}).catch(function (e) { console.error(e); msg("The 3D engine could not load (" + (e && e.message || e) + "). Check your connection and reload the page."); });

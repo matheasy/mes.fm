@@ -7,10 +7,13 @@
 				<label class="cs-sel"><span>Vehicle</span><select id="cs-car" class="tu-select"></select></label>
 				<label class="cs-sel"><span>Camera</span><select id="cs-cam" class="tu-select"></select></label>
 				<label class="cs-sel"><span>Weather</span><select id="cs-wx" class="tu-select"></select></label>
+				<button type="button" class="cs-topfold" id="cs-topfold" aria-expanded="true" title="Hide the world / vehicle / camera / weather boxes">▴ Hide</button>
 			</div>
 			<div class="cs-stage" id="cs-stage">
 				<div class="cs-load" id="cs-load">Loading…</div>
+				<button type="button" class="cs-shpill cs-shhud" id="cs-shhud" hidden title="Show the car box again" aria-label="Show the car and g-force box">▸ Car box</button>
 				<div class="cs-hud" aria-live="off">
+					<button type="button" class="cs-hx" data-hide="hud" title="Hide this box (the ▸ pill brings it back)" aria-label="Hide the car box">✕</button>
 					<div class="cs-hcar" id="cs-hcar"></div>
 					<div class="cs-hrow"><span>Gravity</span><b id="cs-hgrav"></b></div>
 					<div class="cs-hrow"><span>Felt</span><b id="cs-hg">1.0 g</b><span>peak</span><b id="cs-hpeak">0 g</b></div>
@@ -18,8 +21,10 @@
 					<div class="cs-air" id="cs-air"></div>
 					<div class="cs-lap" id="cs-lap" hidden><b id="cs-lapnow"></b><span id="cs-lapbest"></span></div>
 				</div>
-				<div class="cs-speedo"><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
+				<div class="cs-speedo"><button type="button" class="cs-hx" data-hide="speed" title="Hide the speedometer" aria-label="Hide the speedometer">✕</button><b id="cs-speed">0</b><span id="cs-sunit">km/h</span></div>
+				<button type="button" class="cs-shpill cs-shspeed" id="cs-shspeed" hidden title="Show the speedometer again" aria-label="Show the speedometer">▸ Speed</button>
 				<div class="cs-fhud" id="cs-fhud" hidden aria-live="off">
+					<button type="button" class="cs-hx" data-hide="hud" title="Hide the flight box (the ▸ pill brings it back)" aria-label="Hide the flight box">✕</button>
 					<canvas id="cs-ahi" width="120" height="120" aria-label="Artificial horizon: pitch and bank"></canvas>
 					<div class="cs-fcol">
 						<div class="cs-frow"><span>Air speed</span><b id="cs-fias">0</b></div>
@@ -44,6 +49,7 @@
 					<button type="button" id="cs-srepair" class="cs-bfix" title="Repair the car where it is: dents gone, engine like new (X)" aria-label="Repair">🔧<span class="cs-bl"> Repair</span></button>
 					<button type="button" id="cs-restart" class="cs-brestart" title="Restart: everything back to the start, fully repaired (T)" aria-label="Restart">⟲<span class="cs-bl"> Restart</span></button>
 					<button type="button" id="cs-helpbtn" title="How to drive" aria-label="How to drive">?</button>
+					<button type="button" id="cs-btnsfold" class="cs-fold" title="Hide these buttons" aria-label="Hide or show the buttons" aria-expanded="true">▴</button>
 				</div>
 				<div class="cs-mm" id="cs-mm">
 					<canvas id="cs-mmc" title="Open the map editor (B)"></canvas>
@@ -79,9 +85,10 @@
 				</div>
 				<div class="cs-net" id="cs-net" hidden>
 					<div class="cs-nboard" id="cs-nboard" hidden></div>
-					<div class="cs-nlog" id="cs-nlog" aria-live="polite"></div>
+					<button type="button" class="cs-shpill cs-shboard" id="cs-shboard" hidden title="Show the race board again">▸ 🏁 Race board</button>
+					<div class="cs-nlogw"><button type="button" class="cs-hx" data-hide="chat" title="Hide the chat (💬 ▴ brings it back)" aria-label="Hide the chat">▾</button><div class="cs-nlog" id="cs-nlog" aria-live="polite"></div></div>
 					<form class="cs-nform" id="cs-nform"><input type="text" id="cs-nmsg" maxlength="200" placeholder="Say something… (Enter sends, Esc closes)" autocomplete="off" aria-label="Chat message"><button type="submit">Send</button></form>
-					<button type="button" class="cs-nchatbtn" id="cs-nchatbtn" title="Chat with the room (Enter)" aria-label="Chat">💬</button>
+					<button type="button" class="cs-nchatbtn" id="cs-nchatbtn" title="Chat with the room (Enter)" aria-label="Chat">💬<b id="cs-nunread" hidden></b></button>
 				</div>
 				<div class="cs-ncount" id="cs-ncount" hidden></div>
 				<div class="cs-toast" id="cs-toast" role="status"></div>
@@ -96,6 +103,11 @@
 					<button type="button" id="cs-rpx">✕ Back to driving</button>
 				</div>
 				<div class="cs-pop cs-cpop" id="cs-cpop" hidden>
+					<b>Your vehicle</b>
+					<select id="cs-cvcar" aria-label="Your vehicle"></select>
+					<div class="cs-cpaint" id="cs-cpaint" role="group" aria-label="Paint"></div>
+					<b>World</b>
+					<select id="cs-cvworld" aria-label="World"></select>
 					<b>Computer cars: <span id="cs-ctnum">3</span></b>
 					<div class="cs-prow"><button type="button" class="cs-cstep" data-cstep="-1" aria-label="One car fewer">−</button><input type="range" id="cs-ctraffic" min="0" max="12" step="1" aria-label="Number of computer cars"><button type="button" class="cs-cstep" data-cstep="1" aria-label="One more car">＋</button></div>
 					<b>What they do</b>
@@ -122,6 +134,8 @@
 					<label class="cs-prow"><input type="checkbox" data-show="lap"> Lap timer</label>
 					<label class="cs-prow"><input type="checkbox" data-show="speed"> Speedometer</label>
 					<label class="cs-prow"><input type="checkbox" data-show="msg"> Messages (jumps, crashes, laps)</label>
+					<label class="cs-prow"><input type="checkbox" data-show="chat"> Online chat</label>
+					<label class="cs-prow"><input type="checkbox" data-show="board"> Race board</label>
 					<label class="cs-prow"><input type="checkbox" data-show="ghost"> Ghost of my best lap</label>
 					<button type="button" class="cs-mini" id="cs-popx">Close</button>
 				</div>
@@ -258,6 +272,8 @@
 						<label><input type="checkbox" data-show="lap"> Lap timer</label>
 						<label><input type="checkbox" data-show="speed"> Speedometer</label>
 						<label><input type="checkbox" data-show="msg"> Messages</label>
+						<label><input type="checkbox" data-show="chat"> Online chat</label>
+						<label><input type="checkbox" data-show="board"> Race board</label>
 					</div>
 					<div class="cs-row cs-wrapb"><button type="button" class="tu-btn tu-btn--ghost" id="cs-png">📷 Save picture</button><button type="button" class="tu-btn tu-btn--ghost" id="cs-link">🔗 Copy link</button></div>
 				</div>
