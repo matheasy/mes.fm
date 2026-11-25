@@ -2754,10 +2754,10 @@
 			stage.innerHTML = '<div class="ai-empty"><p>' + T("Nothing has that.") + "</p></div>";
 		} else {
 			stage.innerHTML = vid ? '<div class="ai-empty"><p>' + T("<b>Describe a video</b>, or start it from a picture (🖼️ Start from a picture, or 🎬 on any of your pictures). Each video is paid on its own.") + "</p></div>"
-				: '<div class="ai-empty"><p>' + T("<b>Describe a picture</b>, or add pictures to change or combine them. Each picture is paid on its own.") + '</p><p class="ai-try">' + T("Try:") +
+				: '<div class="ai-empty"><p>' + (window.MES_AI_APP ? T("<b>Describe a picture.</b> Free with your Hive login: 3 pictures a day.") : T("<b>Describe a picture</b>, or add pictures to change or combine them. Each picture is paid on its own.")) + '</p><p class="ai-try">' + T("Try:") +
 				' <button type="button" class="ai-mini" data-iex="' + esc(T("A watercolour fox sitting in fresh snow at sunrise, soft light")) + '">' + T("Watercolour fox") + "</button>" +
 				' <button type="button" class="ai-mini" data-iex="' + esc(T("A clean flat logo of a square-root sign inside a circle, blue and white")) + '">' + T("A logo") + "</button>" +
-				' <button type="button" class="ai-mini" data-iex="' + esc(T("Put the person from picture 1 in front of the place in picture 2, matching the light")) + '">' + T("Combine two pictures") + "</button></p></div>";
+				' <button type="button" class="ai-mini" data-iex="' + esc(window.MES_AI_APP ? T("A cosy cabin in snowy mountains at sunset, warm light in the windows") : T("Put the person from picture 1 in front of the place in picture 2, matching the light")) + '">' + (window.MES_AI_APP ? T("Snowy cabin") : T("Combine two pictures")) + "</button></p></div>";
 		}
 		fillSrc(side); fillSrc(stage);
 		if (it && narrowOf(kind === "img" ? "ai-img" : "ai-vid") && narrowOpen[kind === "img" ? "ai-img" : "ai-vid"]) { narrowOpen[kind === "img" ? "ai-img" : "ai-vid"] = false; paintSide(); }

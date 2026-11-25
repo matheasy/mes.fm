@@ -131,6 +131,7 @@ body.dark-mode #app-foot{color:#a3a3b8;}
 #app-foot a{color:#4f46e5;font-weight:600;margin-right:1.1em;}
 body.dark-mode #app-foot a{color:#c7c4ff;}
 #app-foot strong{color:inherit;}
+[hidden]{display:none !important;}
 /* free tiers only */
 #ai-pay,#ai-payshow,#ai-help,#ai-tab-vid,#ai-vid,#ai-cloudrow,#ai-open-text,#ai-cost,#ai-typ,#ai-freeuse,#ai-ifreeuse,[data-det],.ai-det,#ai-attach,#ai-iattach,#ai-irefs,#ai-files{display:none !important;}
 .tu-toast{z-index:2147483647 !important;bottom:calc(env(safe-area-inset-bottom) + 1.5em) !important;}
@@ -252,6 +253,10 @@ def main() -> None:
         ('\t\tsetBusy(true);\n\t\tmsg(T("Getting the exact price…"));',
          '\t\tif (window.MES_AI_APP) { msg(FREEST.left === 0 ? T("No free messages left today: they come back at 00:00 UTC.") : T("Free messages are not ready yet: log in with Hive above and try again."), "err"); return; }\n\t\tsetBusy(true);\n\t\tmsg(T("Getting the exact price…"));'),
         ('\t\t$("ai-iattach").hidden =', APP_PRICE),
+        ('T("<b>Describe a picture</b>, or add pictures to change or combine them. Each picture is paid on its own.")',
+         '(window.MES_AI_APP ? T("<b>Describe a picture.</b> Free with your Hive login: 3 pictures a day.") : T("<b>Describe a picture</b>, or add pictures to change or combine them. Each picture is paid on its own."))'),
+        ("""esc(T("Put the person from picture 1 in front of the place in picture 2, matching the light")) + '">' + T("Combine two pictures")""",
+         """esc(window.MES_AI_APP ? T("A cosy cabin in snowy mountains at sunset, warm light in the windows") : T("Put the person from picture 1 in front of the place in picture 2, matching the light")) + '">' + (window.MES_AI_APP ? T("Snowy cabin") : T("Combine two pictures"))"""),
         ("""o.innerHTML = T('<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).');""",
          """o.innerHTML = window.MES_AI_APP ? T("<b>Can't reach MES AI right now.</b> Check your internet connection, then close and reopen the app.") : T('<b>MES AI is coming soon.</b> The page is ready; the AI services are being connected. <a href="?mock=1">Try the demo</a> (simulated payment and answer).');"""),
     ], "ai.js")
