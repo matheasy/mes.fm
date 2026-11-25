@@ -2499,16 +2499,22 @@ var MESPixel = (function () {
 		if (s.target === "pixel" && s.pre && s.bb && !L.mask) { var b = s.bb, p0 = s.pre; PE.cropLayerTo(L, { x: Math.min(p0.x, b.x0), y: Math.min(p0.y, b.y0), w: Math.max(p0.x + p0.w, b.x1) - Math.min(p0.x, b.x0), h: Math.max(p0.y + p0.h, b.y1) - Math.min(p0.y, b.y0) }); }
 		PE.commit(label);
 	}
+	/* The end point of each paint stroke, tied to its history step, so Shift-click keeps drawing straight lines after Undo / Redo:
+	   history restores make new layer objects (same ids), so match by layer id, and after Undo the line starts from the end of the stroke before. */
+	var paintPts = [];   // {snap: the history step the stroke made, lid, x, y}: positions are looked up in the stack, so trimming old steps can't shift them
+	function ptAt(p) { var H = PE.hist; return H.stack.indexOf(p.snap); }
+	function notePaint(lid, x, y) { var H = PE.hist, k = H.idx; paintPts = paintPts.filter(function (p) { var i = ptAt(p); return i >= 0 && i < k; }); paintPts.push({ snap: H.stack[k], lid: lid, x: x, y: y }); PE.lastPaint = { x: x, y: y }; }
+	function paintPt() { var L = PE.active(), k = PE.hist.idx; if (!L) return null; for (var i = paintPts.length - 1; i >= 0; i--) { var j = ptAt(paintPts[i]); if (j >= 0 && j <= k) return paintPts[i].lid === L.id ? paintPts[i] : null; } return null; }
 	function paintTool(id, name, key, icon, kind, opts, ui, extra) {
 		var t = { id: id, name: name, key: key, icon: icon, opts: opts, ui: ui, hint: "Drag to paint. [ and ] change the size, Shift-click draws a straight line from the last point.",
 			cursorSize: function () { return PE.opt[id].size; },
 			down: function (e) {
 				var o = PE.opt[id]; if (kind === "clone" && e.alt) { PE.cloneSrc = { x: e.x, y: e.y }; PE.toast("Clone source set"); PE.invalidateOverlay(); return; }
 				if (!beginStroke(kind, e)) return;
-				if (e.shift && PE.lastPaint && PE.lastPaint.L === PE.active() && kind !== "clone") { stroke.last = { x: PE.lastPaint.x, y: PE.lastPaint.y }; strokeTo(e, false); } else strokeTo(e, true);
+				var lp = paintPt(); if (e.shift && lp && kind !== "clone") { stroke.last = { x: lp.x, y: lp.y }; strokeTo(e, false); } else strokeTo(e, true);
 			},
 			move: function (e) { if (stroke) strokeTo(e, false); },
-			up: function (e) { if (stroke) { PE.lastPaint = { L: stroke.L, x: e.x, y: e.y }; endStroke(name.split(" ")[0]); } },
+			up: function (e) { if (stroke) { var lid = stroke.L.id, lx = stroke.last ? stroke.last.x : e.x, ly = stroke.last ? stroke.last.y : e.y; endStroke(name.split(" ")[0]); notePaint(lid, lx, ly); } },
 			abort: function () { if (stroke) { stroke.L.live = null; stroke = null; PE.invalidate(); } }, cancel: function () { if (stroke) { endStroke(name); } } };
 		if (extra) for (var k in extra) t[k] = extra[k]; PE.defTool(t);
 	}
