@@ -21,7 +21,8 @@
   if (window.MESChapters) return;
 
   var TIME = '(?:\\d{1,2}:)?\\d{1,2}:\\d{2}';
-  var RE_START = new RegExp('^\\s*[\\[(]?(' + TIME + ')[\\])]?\\s*(?:[-–—:|.]\\s*)?(\\S.*)$');
+  // an optional list dash / bullet before the time ("- 4:44 – Title", the format MES uses in descriptions)
+  var RE_START = new RegExp('^\\s*(?:[-–•*]\\s+)?[\\[(]?(' + TIME + ')[\\])]?\\s*(?:[-–—:|.]\\s*)?(\\S.*)$');
   var RE_END = new RegExp('^\\s*(\\S.*?)\\s*(?:[-–—:|]\\s*)?[\\[(]?(' + TIME + ')[\\])]?\\s*$');
   var SEP = /^[\s\-–—:.,)\]]+|[\s\-–—:(\[,]+$/g;
 

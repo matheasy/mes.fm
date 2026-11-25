@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="MES Math Q/A 74 livestream, Wednesday November 18, 2026 at 10:30 AM Pacific: what are Lüders bands? Why mild steel yields in visible bands that sweep along a bar, and the upper and lower yield points.">
+  <meta name="description" content="MES Math Q/A 74: what are Lüders bands? Why stretched mild steel yields in one slanted band that creeps along the bar at about 55° while the force stays flat.">
   <meta name="author" content="MES">
   <link rel="canonical" href="https://mes.fm/math-qa-74-luders-bands" />
   <!-- OG-TAGS:START -->
@@ -11,12 +11,12 @@
   <meta property="og:site_name" content="MES Truth">
   <meta property="og:url" content="https://mes.fm/math-qa-74-luders-bands">
   <meta property="og:title" content="MES Math Q/A 74: What are Lüders bands?">
-  <meta property="og:description" content="MES Math Q/A 74 livestream, Wednesday November 18, 2026 at 10:30 AM Pacific: what are Lüders bands? Why mild steel yields in visible bands that sweep along a bar, and the upper and lower yield points.">
+  <meta property="og:description" content="MES Math Q/A 74: what are Lüders bands? Why stretched mild steel yields in one slanted band that creeps along the bar at about 55° while the force stays flat.">
   <meta property="og:image" content="https://mes.fm/math-qa-74-luders-bands/img/thumbnail.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@MathEasySolns">
   <meta name="twitter:title" content="MES Math Q/A 74: What are Lüders bands?">
-  <meta name="twitter:description" content="MES Math Q/A 74 livestream, Wednesday November 18, 2026 at 10:30 AM Pacific: what are Lüders bands? Why mild steel yields in visible bands that sweep along a bar, and the upper and lower yield points.">
+  <meta name="twitter:description" content="MES Math Q/A 74: what are Lüders bands? Why stretched mild steel yields in one slanted band that creeps along the bar at about 55° while the force stays flat.">
   <meta name="twitter:image" content="https://mes.fm/math-qa-74-luders-bands/img/thumbnail.jpg">
   <!-- OG-TAGS:END -->
   <link rel="icon" href="https://mes.fm/img/favicon.ico?v=1.0" type="image/x-icon" />
@@ -587,6 +587,8 @@
      sodar, osd) never runs during the page-load / Lighthouse trace window. -->
     <script>
     (function () {
+      /* MES-ADFREE: paid ad-free on mes.fm/premium (localStorage mes-adfree = {user, until}): never load AdSense */
+      try { var af = JSON.parse(localStorage.getItem('mes-adfree') || 'null'); if (af && !af.off && +af.until > Date.now()) { document.documentElement.classList.add('mes-adfree'); return; } } catch (e) {}
       var EVT = ['scroll', 'pointerdown', 'keydown', 'touchstart'];
       var done = false;
       function go() {
@@ -603,7 +605,8 @@
       setTimeout(go, 15000);
     })();
     </script>
-<!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
+
+  <meta name="mes:hive" content="mes/mes-ljxtwq8"><!-- MES-ASIDE-HEAD --><link rel="stylesheet" href="/main_js/aside.css?v=2"><script>try{if(localStorage.getItem('asideSide')==='left')document.documentElement.classList.add('aside-left')}catch(e){}try{if(localStorage.getItem('pageWide')==='1')document.documentElement.classList.add('page-wide')}catch(e){}try{if(localStorage.getItem('pageMode')==='theatre')document.documentElement.classList.add('page-theatre')}catch(e){}try{if(localStorage.getItem('asideHidden')==='1')document.documentElement.classList.add('aside-hidden')}catch(e){}</script><!-- /MES-ASIDE-HEAD --></head>
 <body class="dark">
 
   <div id="compact-nav" aria-hidden="true" style="display:none">
@@ -676,32 +679,58 @@
     <!-- MES-COLS-START --><div class="mes-cols"><div class="mes-col-main"><div class="part-of">Part of <a href="/math-qa">MES Math Q/A Livestreams</a> &middot; <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-" target="_blank" rel="noopener">YouTube playlist &rarr;</a></div>
 
     <h1>MES Math Q/A 74: What are Lüders bands?</h1>
-    <div class="page-subtitle">Livestream Q/A &middot; Wednesday, November 18, 2026 at 10:30&nbsp;AM Pacific &middot; live on YouTube (this page will switch to the <a href="https://3speak.tv/user/mes" target="_blank" rel="noopener">3Speak</a> replay once the stream is over and uploaded)</div>
+    <div class="page-subtitle">Livestream Q/A &middot; November 18, 2026 &middot; mirrored from the <a href="https://peakd.com/hive-181335/@mes/mes-ljxtwq8">Hive blockchain</a></div>
 
     <article>
       <div class="video-embed" id="videoEmbed" google-side-rail-overlap="false">
-        <iframe src="https://www.youtube-nocookie.com/embed/Ru8CRD3UBAo" title="MES Math Q/A 74: What are Lüders bands?" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <video id="m74Video" controls playsinline preload="metadata" poster="/math-qa-74-luders-bands/img/thumbnail.jpg"></video>
         <button class="theater-toggle-btn" id="wideToggle" type="button" aria-pressed="false" style="top:46px;">Wide View</button>
         <button class="theater-toggle-btn" id="theaterToggle" type="button" aria-pressed="false" style="top:82px;">Theater Mode</button>
-        <a class="video-badge" href="https://youtube.com/live/Ru8CRD3UBAo" target="_blank" rel="noopener">View on YouTube &nearr;</a>
+        <a class="video-badge" href="https://3speak.tv/watch?v=mes/mes-ljxtwq8" target="_blank" rel="noopener">View on 3Speak &nearr;</a>
       </div>
-      <p>Lüders bands are the stripes of yielded metal that appear on mild steel when it is pulled past its yield point: instead of stretching evenly, the bar yields in a narrow band that then sweeps along it while the load stays almost flat. In this livestream Q/A, MES looks at what Lüders bands are, the upper and lower yield points behind them, and why they matter for steel sheet and engineering design.</p>
-      <p>If you have math or science related questions, I may have answers!</p>
-      <p>Livestreaming on <a href="https://mes.fm/timezone#t=10:30&amp;d=2026-11-18&amp;z=Los_Angeles,New_York,Tehran,London">Wednesday, November 18, 2026 at 10:30&nbsp;AM Pacific</a> &ndash; <a href="https://mes.fm/reminder?title=MES+Math+Q%2FA+74%3A+What+are+L%C3%BCders+bands%3F&amp;t=2026-11-18T10%3A30&amp;tz=America%2FVancouver&amp;u=https%3A%2F%2Fmes.fm%2Fmath-qa-74-luders-bands&amp;len=120">Set Reminder!</a></p>
+      <p>Lüders bands are the slanted stripes that appear when you stretch a mild steel bar: tiny carbon atoms lock the metal in place, so it takes extra force to break one spot free, and once it does, that band keeps stretching and slowly creeps along the bar while the force stays the same. The band leans at about 55° because stretching makes the bar longer but also narrower, and only a line at that angle stays the same length, so the stretched and unstretched metal can stay joined along it without tearing or wrinkling.</p>
+      <p>Livestreamed on Wednesday, November 18, 2026 at 10:30&nbsp;AM PST.</p>
       <p>Try it: the <a href="https://mes.fm/luders-bands">Lüders Bands simulator</a> shows a band forming and travelling along a steel bar, and the <a href="https://mes.fm/materials">Mechanics of Materials Calculator</a> draws the full stress-strain curve.</p>
-      <p>This page currently embeds the live YouTube broadcast. Once the stream is over and uploaded to 3Speak, this page will switch to the 3Speak replay like the other MES Math Q/A pages.</p>
+      <p><strong>Timestamps</strong> (added by Claude AI):</p>
+      <p style="line-height:1.8;">
+        - 0:00 – Stream setup (OBS, MES Stream Chat dock)<br>
+        - 4:44 – New mes.fm pages and the edits list<br>
+        - 6:04 – Testing the stream chat (YouTube, Rumble, 3Speak)<br>
+        - 9:45 – 9/11 Spooks Database<br>
+        - 11:19 – Click speed test (record clip)<br>
+        - 12:47 – The "AR glasses" are just normal glasses<br>
+        - 13:24 – Claude making apps (App Store review)<br>
+        - 15:19 – Edits: queue option, typing in the stream chat<br>
+        - 19:14 – Faraday cage: finding the ground rod (electrician visit)<br>
+        - 21:53 – Hutchison Effect Simulator<br>
+        - 24:44 – What are Lüders bands?<br>
+        - 25:35 – Slip bands<br>
+        - 28:47 – How and when metals fail (voids, ductile fracture)<br>
+        - 32:08 – Banning a Twitch spammer<br>
+        - 33:31 – Lüders bands: the shoulders and grain size<br>
+        - 34:52 – MES Lüders Bands Simulator<br>
+        - 39:48 – Dr. Judy Wood saw Lüders bands in a Hutchison sample<br>
+        - 44:05 – Strain aging and bake hardening<br>
+        - 47:46 – Why the band leans at about 55°<br>
+        - 48:45 – Tensile test: elastic, plastic, unloading and reloading, necking<br>
+        - 51:29 – Short break<br>
+        - 53:25 – The 54.7° angle: the line that does not change length<br>
+        - 56:33 – Dr. Judy Wood discussing Lüders bands<br>
+        - 57:57 – Wrap-up<br>
+      </p>
+      <img src="/math-qa-74-luders-bands/img/thumbnail.jpg" alt="MES Math Q/A 74: What are Lüders bands?" width="1280" height="720" style="max-width:100%;height:auto;border-radius:4px;display:block;margin:0.6em 0 1.4em;">
 
       <ul class="source-list">
-        <li>Watch on: <a href="https://youtube.com/live/Ru8CRD3UBAo" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://rumble.com/v7i79e4-mes-math-qa-74-what-are-lders-bands.html" target="_blank" rel="noopener">Rumble</a> &middot; <a href="https://odysee.com/@mes:8/MES-Math-QA-74-Luders-Bands" target="_blank" rel="noopener">Odysee</a> &middot; <a href="https://www.bitchute.com/video/ZVQOt4g7UfD8/" target="_blank" rel="noopener">BitChute</a> &middot; <a href="https://x.com/i/broadcasts/2XybbzYglvzdle" target="_blank" rel="noopener">X</a> &middot; <a href="https://www.twitch.tv/matheasysolutions" target="_blank" rel="noopener">Twitch</a></li>
-        <li>Simulator: <a href="https://mes.fm/luders-bands">&#127959;&#65039; Lüders Bands &#128290;</a> &middot; <a href="https://mes.fm/materials">Mechanics of Materials Calculator</a></li>
+        <li>Watch on: <a href="https://3speak.tv/watch?v=mes/mes-ljxtwq8" target="_blank" rel="noopener">3Speak</a> &middot; <a href="https://youtube.com/live/Ru8CRD3UBAo" target="_blank" rel="noopener">YouTube</a> &middot; <a href="https://rumble.com/v7i79e4-mes-math-qa-74-what-are-lders-bands.html" target="_blank" rel="noopener">Rumble</a> &middot; <a href="https://odysee.com/@mes:8/MES-Math-QA-74-Luders-Bands" target="_blank" rel="noopener">Odysee</a> &middot; <a href="https://www.bitchute.com/video/ZVQOt4g7UfD8/" target="_blank" rel="noopener">BitChute</a> &middot; <a href="https://x.com/i/broadcasts/2XybbzYglvzdle" target="_blank" rel="noopener">X</a> &middot; <a href="https://t.me/meslinks/35704" target="_blank" rel="noopener">Telegram</a></li>
+        <li>Simulator: <a href="https://mes.fm/luders-bands">&#127959;&#65039; Lüders Bands Simulator &#128290;</a> &middot; <a href="https://mes.fm/materials">Mechanics of Materials Calculator</a></li>
         <li>See more: <a href="https://www.youtube.com/playlist?list=PLai3U8-WIK0F1GgkU63uA9NIncxDS2q0-" target="_blank" rel="noopener">MES Math Q/A YouTube Playlist</a></li>
         <li>More math: <a href="https://mes.fm/math">mes.fm/math</a></li>
       </ul>
 
       <hr>
 
-      <a class="source-link" href="https://t.me/meslinks/35704" target="_blank" rel="noopener">Originally posted on Telegram &rarr;</a>
-      <div class="retrieved-note">Links retrieved from YouTube and Telegram on November 11, 2026.</div>
+      <a class="source-link" href="https://peakd.com/hive-181335/@mes/mes-ljxtwq8" target="_blank" rel="noopener">Originally posted on the Hive blockchain &rarr;</a>
+      <div class="retrieved-note">Text and image retrieved from the Hive blockchain on November 25, 2026.</div>
     </article>
     <!-- FASTCOMMENTS-BLOCK: Comments toggle + lazy FastComments widget, see main_js/comments.js -->
     <div id="comments-button" class="mes-comments-toggle">Comments</div>
@@ -887,7 +916,7 @@
     // navigation multiply into their font-size -- headings, chapter titles
     // ("Playlist"), cards and buttons stay fixed.
     (function () {
-      var STEPS = [87.5, 100, 112.5, 125, 137.5, 150];
+      var STEPS = [75, 87.5, 100, 112.5, 125, 137.5, 150, 162.5, 175, 200];
       var body = document.body;
       var downBtn = document.getElementById('textSizeDown');
       var upBtn = document.getElementById('textSizeUp');
@@ -906,6 +935,58 @@
       apply();
     })();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+  <script src="/main_js/video-speed-hold.js?v=1" defer></script>
+  <script src="/main_js/video-chapters.js?v=1" defer></script>
+  <script>
+    // m74-video: plays the 3Speak-hosted HLS stream directly (via hls.js), like the other MES Math Q/A mirrors.
+    // The manifest URL is resolved at runtime from 3Speak's public embed API (re-uploads keep the slug); a freshly
+    // posted video may still be processing there, so if playback fails the player swaps itself for the YouTube
+    // embed of the same stream.
+    (function () {
+      var video = document.getElementById('m74Video');
+      var embed = document.getElementById('videoEmbed');
+      var SLUG = 'mes/mes-ljxtwq8';
+      var YT_ID = 'Ru8CRD3UBAo';
+      var fellBack = false;
+
+      function toYouTube() {
+        if (fellBack) return;
+        fellBack = true;
+        var frame = document.createElement('iframe');
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + YT_ID;
+        frame.title = 'YouTube video';
+        frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        frame.allowFullscreen = true;
+        embed.replaceChild(frame, video);
+        var badge = embed.querySelector('.video-badge');
+        badge.href = 'https://www.youtube.com/watch?v=' + YT_ID;
+        badge.innerHTML = 'View on YouTube &nearr;';
+        embed.classList.remove('controls-hidden');
+      }
+
+      function play(src) {
+        // hls.js whenever MediaSource exists: some desktop Chromes answer "maybe" for native HLS and then fail
+        if (window.Hls && Hls.isSupported()) {
+          var hls = new Hls();
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.ERROR, function (e, data) { if (data && data.fatal) toYouTube(); });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = src;
+          video.addEventListener('error', toYouTube);
+        } else {
+          toYouTube();
+        }
+      }
+
+      fetch('https://play.3speak.tv/api/embed?v=' + SLUG)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { if (d && d.videoUrl && !d.isPlaceholder) play(d.videoUrl); else toYouTube(); })
+        .catch(toYouTube);
+    })();
+  </script>
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script>var MES_Vars = { mobile: false, hide_search: false, current_tab: 1, info_bar_tab: 0 };</script>
   <script src="/main_js/main.js?v=1.0.5"></script>
@@ -964,5 +1045,5 @@
     update();
   })();
 </script>
-<!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=1" defer></script><!-- /MES-ASIDE-JS --><script src="/main_js/site-search.js?v=1" defer></script><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
+<script src="/main_js/site-search.js?v=1" defer></script><!-- MES-ASIDE-JS --><script src="/main_js/aside.js?v=2" defer></script><!-- /MES-ASIDE-JS --><!-- MES-BOTTOM-AD-JS --><script src="/main_js/bottom-ad.js?v=1" defer></script><!-- /MES-BOTTOM-AD-JS --></body>
 </html>
