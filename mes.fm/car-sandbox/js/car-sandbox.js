@@ -934,7 +934,7 @@
 		if (worldGroup) { scene.remove(worldGroup); worldGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (m) { if (m.map) m.map.dispose(); m.dispose(); }); } }); }
 		if (skyGroup) scene.remove(skyGroup); skyGroup = null; skyRef = null;
 		cars.forEach(function (c) { scene.remove(c.group); }); objs.forEach(function (o) { scene.remove(o.mesh); }); netWorldCleared();
-		cars = []; objs = []; statics = []; pieceBodies = []; ovalBodies = []; lapPath = null; mmBg = null; parts.clear(); lampMat = null; groundMat = trackMat = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
+		cars = []; objs = []; statics = []; pieceBodies = []; ovalBodies = []; lampPoles = []; lampInst = null; lapPath = null; mmBg = null; parts.clear(); lampMat = null; groundMat = trackMat = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
 		if (phys) { phys.free(); phys = null; }
 	}
 
@@ -1155,6 +1155,52 @@
 		var body = phys.createRigidBody(RAPIER.RigidBodyDesc.fixed());
 		phys.createCollider(RAPIER.ColliderDesc.heightfield(n, n, groundH, { x: s, y: 1, z: s }).setFriction(W.track ? 1.0 : 0.85).setRestitution(0.05), body);
 		if (W.track) buildTrack();
+	}
+	/* lamp posts stand as fixed bodies until a car comes at them with some speed, then they become loose (~25 kg poles) and fall over */
+	var lampPoles = [], lampInst = null, lpM = null, lpQ = null, lpV = null, lpS = null;
+	function lampTick() {
+		if (!lampPoles.length || !ovalOn()) return;
+		var movers = cars.map(function (c) { return c.body; });
+		if (typeof remotes !== "undefined") for (var k in remotes) if (remotes[k].body) movers.push(remotes[k].body);
+		lampPoles.forEach(function (L) {
+			if (L.down) {
+				/* loose but not hit yet: the first push tips it over in the direction it was pushed (a pole is anchored at the
+				   base, so it falls instead of sliding along upright); never touched within 3 s = fixed again */
+				if (!L.tipped) {
+					var lv = L.body.linvel(), hs = Math.hypot(lv.x, lv.z);
+					if (hs > 0.4) { var w = Math.min(2.6, 0.5 + hs * 0.25) / hs; L.body.setAngvel({ x: lv.z * w, y: 0, z: -lv.x * w }, true); L.tipped = true; sfx("crash", 0.5); }
+					else if (simT - L.at > 3) { L.down = false; L.body.setBodyType(RAPIER.RigidBodyType.Fixed, true); L.body.setTranslation({ x: L.x, y: 3.5, z: L.z }, true); L.body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true); lampSync(true); }
+				}
+				return;
+			}
+			for (var j = 0; j < movers.length; j++) {
+				var b = movers[j], t = b.translation(), v = b.linvel(), sp = Math.hypot(v.x, v.z);
+				if (sp < 2.5) continue;
+				var fx = t.x + v.x * 0.12, fz = t.z + v.z * 0.12; /* where it will be in a moment */
+				if (Math.hypot(fx - L.x, fz - L.z) < 2.8 && Math.abs(t.y - 3.5) < 5) { lampKnock(L); break; }
+			}
+		});
+	}
+	function lampKnock(L) {
+		L.down = true; L.tipped = false; L.at = simT; L.body.setBodyType(RAPIER.RigidBodyType.Dynamic, true); L.body.setAngularDamping(0.3); L.body.setLinearDamping(0.05);
+	}
+	function lampReset() {
+		lampPoles.forEach(function (L) { if (!L.down) return; L.down = false; L.tipped = false; L.body.setBodyType(RAPIER.RigidBodyType.Fixed, true); L.body.setTranslation({ x: L.x, y: 3.5, z: L.z }, true); L.body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true); });
+		lampSync(true);
+	}
+	/* fallen (or falling) poles: move their instances, the lamp head turning with the pole */
+	function lampSync(all) {
+		if (!lampInst) return;
+		if (!lpM) { lpM = new THREE.Matrix4(); lpQ = new THREE.Quaternion(); lpV = new THREE.Vector3(); lpS = new THREE.Vector3(1, 1, 1); }
+		var ch = false;
+		lampPoles.forEach(function (L) {
+			if (!L.down && !all) return;
+			var t = L.body.translation(), r = L.body.rotation(); lpQ.set(r.x, r.y, r.z, r.w); lpV.set(t.x, t.y, t.z);
+			lpM.compose(lpV, lpQ, lpS); lampInst.poles.setMatrixAt(L.i, lpM);
+			var hp = L.head.clone().applyQuaternion(lpQ).add(lpV), hq = lpQ.clone().multiply(L.hq);
+			lpM.compose(hp, hq, lpS); lampInst.lamps.setMatrixAt(L.i, lpM); ch = true;
+		});
+		if (ch) { lampInst.poles.instanceMatrix.needsUpdate = true; lampInst.lamps.instanceMatrix.needsUpdate = true; lampInst.poles.computeBoundingSphere(); lampInst.lamps.computeBoundingSphere(); }
 	}
 	var ovalGroup = null, ovalBodies = [], pieceGroup = null, pieceBodies = [], collect = null, roadMat = null, lapPath = null, mmBg = null;
 
@@ -1434,8 +1480,9 @@
 			for (var li = 0; li < LN; li++) { var lp = C.trackPoint(li * 40 + 10), ox = Math.cos(lp.dir), oz = -Math.sin(lp.dir), side = C.TRACK.width / 2 + 1.5, px = lp.x + ox * side, pz = lp.z + oz * side;
 				tmpM.compose(new THREE.Vector3(px, 3.5, pz), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)); poles.setMatrixAt(li, tmpM);
 				tmpM.compose(new THREE.Vector3(px - ox * 0.6, 7, pz - oz * 0.6), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), lp.dir), new THREE.Vector3(1, 1, 1)); lamps.setMatrixAt(li, tmpM);
-				var lb = phys.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(px, 3.5, pz)); phys.createCollider(RAPIER.ColliderDesc.cylinder(3.5, 0.12), lb); ovalBodies.push(lb); }
-			poles.castShadow = true; ovalGroup.add(poles, lamps);
+				var lb = phys.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(px, 3.5, pz).setCcdEnabled(true)); phys.createCollider(RAPIER.ColliderDesc.cylinder(3.5, 0.12).setDensity(220).setFriction(0.6), lb); ovalBodies.push(lb);
+				lampPoles.push({ body: lb, i: li, x: px, z: pz, head: new THREE.Vector3(-ox * 0.6, 3.5, -oz * 0.6), hq: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), lp.dir), down: false }); }
+			poles.castShadow = true; ovalGroup.add(poles, lamps); lampInst = { poles: poles, lamps: lamps };
 			/* grandstand by the start straight */
 			var p0 = C.trackPoint(0), gs = new THREE.Group();
 			for (var row = 0; row < 6; row++) { var bx = new THREE.Mesh(new THREE.BoxGeometry(60, 0.9, 1.6), mat(row % 2 ? "#9aa3ad" : "#b8c0c8")); bx.position.set(0, row * 0.9 + 0.45, row * 1.5); bx.castShadow = bx.receiveShadow = true; gs.add(bx); }
@@ -1876,9 +1923,9 @@
 		if (replay) replayStop(true);
 		if (paused) { paused = false; $("cs-pause").textContent = "❚❚ Pause"; }
 		if (gFlip > 0) { gFlip = 0; setGravity(gravity); }
-		cars.forEach(function (c) { resetCar(c, false); repair(c); c.stuckT = c.revT = 0; c.gPeak = 0; if (c.fly) { c.fly.ap = null; c.fly.toff = false; c.fly.dead = false; } });
+		cars.forEach(function (c) { resetCar(c, false); repair(c); c.stuckT = c.revT = 0; c.gPeak = 0; if (c.fly) { c.fly.ap = null; c.fly.toff = false; c.fly.dead = false; } }); lampReset();
 		camSnap = true; camBackNow(); $("cs-unflip").hidden = true; updateHud(true);
-		toast("⟲ Back to the start · everything repaired");
+		toast("⟲ Back to the start · everything repaired, lamp posts standing again");
 	}
 	function repairHere() {
 		var c = cars[player]; if (!c) return; var was = c.damage;
@@ -2263,7 +2310,7 @@
 	}
 	function step(dt) {
 		var pin = readInput();
-		netHold(); netDrive(dt);
+		netHold(); netDrive(dt); lampTick();
 		cars.forEach(function (c, i) { driveCar(c, i === player && !autoPilot ? pin : aiInput(c, dt), dt); c.veh.updateVehicle(dt); c.preE = carEnergy(c); });
 		phys.step(eventQ);
 		cars.forEach(energyGuard);
@@ -2738,7 +2785,7 @@
 		var c = cars[player];
 		if (c && sunLight.userData.dir) { var t2 = c.body.translation(); sunLight.target.position.set(t2.x, t2.y, t2.z); sunLight.position.set(t2.x, t2.y, t2.z).addScaledVector(sunLight.userData.dir, 150); }
 		if (skyGroup) skyGroup.position.copy(camera.position);
-		netSync();
+		netSync(); lampSync(false);
 		headlights();
 	}
 	function render() { renderer.render(scene, camera); }
@@ -3793,6 +3840,7 @@
 		plane: function () { var c = cars[player]; if (!c || !c.fly) return null; var t = c.body.translation(), lv = c.body.linvel(), F = c.fly, ip = { q: new THREE.Quaternion(c.body.rotation().x, c.body.rotation().y, c.body.rotation().z, c.body.rotation().w) }, at = C.attitude(new THREE.Vector3(0, 0, 1).applyQuaternion(ip.q), new THREE.Vector3(0, 1, 0).applyQuaternion(ip.q));
 			return { type: c.type, x: +t.x.toFixed(1), y: +t.y.toFixed(1), z: +t.z.toFixed(1), agl: +planeAgl(c, t).toFixed(1), vs: +lv.y.toFixed(2), V: F.o ? +F.o.V.toFixed(1) : 0, alpha: F.o ? +(F.o.alpha * 57.3).toFixed(1) : 0, stall: F.o ? +F.o.stall.toFixed(2) : 0, pitch: +(at.pitch * 57.3).toFixed(1), bank: +(at.bank * 57.3).toFixed(1), thr: F.thr, flap: F.flap, air: F.air, contact: c.anyContact, damage: Math.round(c.damage), hud: $("cs-fias").textContent + " | " + $("cs-falt").textContent + " | " + $("cs-fvs").textContent, lesson: $("cs-flesson").textContent, toast: $("cs-toast").textContent }; },
 		setThr: function (v) { var c = cars[player]; if (c && c.fly) c.fly.thr = v; }, flap: function (n) { var c = cars[player]; if (c && c.fly) c.fly.flap = n; },
+		lamps: function () { return lampPoles.map(function (L) { var t = L.body.translation(); return { x: L.x, z: L.z, down: L.down, tipped: !!L.tipped, y: +t.y.toFixed(2), px: +t.x.toFixed(1), pz: +t.z.toFixed(1) }; }); },
 		net: function () { return NET ? { code: NET.code, host: NET.host, slot: NET.slot, live: NET.live, roster: NET.roster, race: NET.race, remotes: Object.keys(remotes).map(function (k) { var R = remotes[k], s = remoteSample(R, performance.now()); return { slot: R.slot, name: R.name, type: R.type, n: R.buf.length, p: s && s.p.map(function (x) { return +x.toFixed(2); }), body: !!R.body }; }), log: $("cs-nlog").textContent, board: $("cs-nboard").textContent } : null; }, netMake: netMake, netJoin: netJoin, netLeave: netLeave, netChat: netChatSend, netRace: function (n) { $("cs-nlaps").value = String(n || 1); netRaceStart(); }, netSend: netSend,
 		render: function () { render(); drawMini(); }, editor: function () { edOpenNow(); return ed; }, editorDraw: function () { drawEditor(); }, advance: function (dt) { advance(dt); }, camera: function () { return camera; }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
