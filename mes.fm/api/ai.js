@@ -118,12 +118,14 @@ function makeHandler(deps = {}) {
     return h;
   }
 
-  async function countTokens(model, messages, system) {
+  async function countTokens(model, messages, system, tools) {
     let last;
     for (let i = 0; i < 2; i++) {
       try {
+        const body = { model, system: system || A.SYSTEM, messages };
+        if (tools) body.tools = tools;
         const r = await fetchImpl('https://api.anthropic.com/v1/messages/count_tokens', {
-          method: 'POST', headers: anthropicHeaders(), body: JSON.stringify({ model, system: system || A.SYSTEM, messages }),
+          method: 'POST', headers: anthropicHeaders(), body: JSON.stringify(body),
         });
         const j = await r.json();
         if (r.ok && Number.isFinite(j.input_tokens)) return j.input_tokens;
@@ -156,7 +158,11 @@ function makeHandler(deps = {}) {
     const iph = sha(ipOf(req) + salt).slice(0, 24);
     if (await overLimit('q:' + iph, LIM.quoteIp)) return send(res, 429, { error: 'Too many requests from this network. Try again in an hour.' });
     let q, stored;
-    if (b.kind === 'video') {
+    if (b.kind === 'agent') {
+      if (!env.ANTHROPIC_API_KEY) return send(res, 503, { off: true, error: 'Browser tasks are coming soon.' });
+      try { q = A.agentQuote(b.model, b.plan); } catch (e) { return send(res, 400, { error: e.message }); }
+      stored = { kind: 'agent', model: b.model, plan: b.plan };
+    } else if (b.kind === 'video') {
       const vm = A.VIDEO.models[b.model];
       if (!vm) return send(res, 400, { error: 'Pick a video model.' });
       if (!keyOf(vm.prov)) return send(res, 503, { off: true, error: 'Videos are coming soon.' });
@@ -196,7 +202,7 @@ function makeHandler(deps = {}) {
     const id = A.newId((n) => crypto.randomBytes(n));
     const rec = Object.assign(stored, { acct, price: q.price, maxOut: q.maxOut || 0, created: now() });
     await saveRec(id, rec);
-    return send(res, 200, { id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.hbd * A.HBD_USD, inTokens: q.inTokens, maxOut: q.maxOut || 0, kind: q.kind });
+    return send(res, 200, { id, memo: A.memoFor(id), to: A.PAY_TO, price: q.price, usd: q.hbd * A.HBD_USD, inTokens: q.inTokens || 0, maxOut: q.maxOut || 0, kind: q.kind, steps: q.steps || 0 });
   }
 
   // A quote with files can be a few MB: it is kept in pieces of 700 KB (one Upstash command each stays small);
@@ -259,6 +265,7 @@ function makeHandler(deps = {}) {
     const who = sha('acct:' + rec.acct + salt).slice(0, 32);
     if (rec.kind === 'image') return image(res, rec, who, failed);
     if (rec.kind === 'video') return videoStart(res, rec, id, isRetry, failed);
+    if (rec.kind === 'agent') return agentOpen(res, rec, id);
     return chat(res, rec, who, failed);
   }
 
@@ -624,6 +631,64 @@ function makeHandler(deps = {}) {
     return orimage(res, { prompt: b.prompt, quality: b.quality, size: b.size, refs: [] }, A.IMAGES[model], gave, true);
   }
 
+
+  /* ---------- 🧭 browser tasks (A.AGENT): run turns the payment into a task budget; the page then sends one "astep" per model turn
+     (the tool results come from the MES AI Helper extension in the person's browser). Money in micro-USD of API cost. ---------- */
+  const TK = (id) => 'ai:task:' + id;
+  async function agentOpen(res, rec, id) {
+    const p = A.AGENT.plans[rec.plan];
+    const task = { acct: rec.acct, model: rec.model, plan: rec.plan, budget: Math.round(p.usd * 1e6), maxSteps: p.steps, created: now() };
+    const ttl = String(A.AGENT.ttl);
+    await redis([['SET', TK(id), JSON.stringify(task), 'EX', ttl], ['SET', TK(id) + ':spent', '0', 'EX', ttl], ['SET', TK(id) + ':n', '0', 'EX', ttl]]);
+    return send(res, 200, { task: id, budget: task.budget, maxSteps: task.maxSteps, model: rec.model });
+  }
+  async function astep(req, res, b) {
+    const id = String(b.id || '');
+    if (!A.validId(id)) return send(res, 400, { error: 'Bad task id.' });
+    const [raw, sp, nn] = await redis([['GET', TK(id)], ['GET', TK(id) + ':spent'], ['GET', TK(id) + ':n']]);
+    if (!raw) return send(res, 404, { error: 'This task has ended (tasks are kept for 24 hours). Start a new task.' });
+    const task = JSON.parse(raw);
+    const acct = String(b.acct || '').trim().replace(/^@/, '').toLowerCase();
+    if (acct !== task.acct) return send(res, 403, { error: 'This task belongs to another Hive account.' });
+    const spent = Number(sp) || 0, steps = Number(nn) || 0;
+    const info = () => ({ spent, budget: task.budget, steps, maxSteps: task.maxSteps });
+    if (steps >= task.maxSteps) return send(res, 402, Object.assign({ out: 'steps', error: 'This task has used all its steps. Start a new task to carry on.' }, info()));
+    const err = A.checkAgentMessages(b.messages);
+    if (err) return send(res, 400, { error: err });
+    const lang = A.cleanLang(b.lang), m = A.MODELS[task.model], sys = A.agentSystem(lang);
+    const messages = A.cleanAgentMessages(b.messages);
+    const [lk] = await redis([['SET', TK(id) + ':lock', '1', 'NX', 'EX', '150']]);
+    if (lk !== 'OK') return send(res, 409, { error: 'The task is already working on a step.' });
+    const unlock = () => redis([['DEL', TK(id) + ':lock']]).catch(() => {});
+    try {
+      let inTok;
+      try { inTok = await countTokens(m.id, messages, sys, A.AGENT_TOOLS); } catch (e) { return send(res, 502, { error: 'Could not price this step right now. Press Continue to try again.' }); }
+      const left = (task.budget - spent) / 1e6, maxOut = A.agentMaxOut(task.model, inTok, left);
+      if (!maxOut) return send(res, 402, Object.assign({ out: 'budget', error: 'This task\'s budget is used up. Start a new task to carry on.' }, info()));
+      const worst = Math.ceil(A.agentStepWorst(task.model, inTok, maxOut) * 1e6);
+      const [after] = await redis([['INCRBY', TK(id) + ':spent', String(worst)]]);
+      if (Number(after) > task.budget) { await redis([['DECRBY', TK(id) + ':spent', String(worst)]]); return send(res, 402, Object.assign({ out: 'budget', error: 'This task\'s budget is used up. Start a new task to carry on.' }, info())); }
+      // prompt cache: mark the last block of the newest message, so the next step reads everything before it at a tenth of the price
+      const last = messages[messages.length - 1].content;
+      last[last.length - 1].cache_control = { type: 'ephemeral' };
+      const body = { model: m.id, max_tokens: maxOut, system: sys, tools: A.AGENT_TOOLS, messages, metadata: { user_id: sha('acct:' + task.acct + salt).slice(0, 32) } };
+      let r, j;
+      try {
+        r = await fetchImpl('https://api.anthropic.com/v1/messages', { method: 'POST', headers: anthropicHeaders(), body: JSON.stringify(body) });
+        j = await r.json();
+      } catch (e) { r = null; }
+      if (!r || !r.ok || !j || !Array.isArray(j.content)) {
+        await redis([['DECRBY', TK(id) + ':spent', String(worst)]]).catch(() => {});
+        const why = j && j.error && j.error.message ? ' ' + j.error.message : '';
+        return send(res, 502, { error: 'The AI service did not answer (' + (r ? r.status : 'no connection') + ').' + why + ' Nothing was taken from the budget: press Continue.' });
+      }
+      const real = Math.ceil(A.agentStepCost(task.model, j.usage) * 1e6);
+      const back = Math.max(0, worst - Math.min(real, worst));
+      const [sp2, n2] = await redis([['DECRBY', TK(id) + ':spent', String(back)], ['INCR', TK(id) + ':n']]);
+      return send(res, 200, { content: j.content, stop: j.stop_reason, spent: Number(sp2), budget: task.budget, steps: Number(n2), maxSteps: task.maxSteps, stepUsd: real / 1e6 });
+    } finally { await unlock(); }
+  }
+
   return async function handler(req, res) {
     try {
       // the MES AI iPhone / Android app (Capacitor: capacitor://localhost on iOS, https://localhost on Android) may use the
@@ -655,6 +720,7 @@ function makeHandler(deps = {}) {
           chat: !!(env.ANTHROPIC_API_KEY || env.OPENAI_API_KEY || env.OPENROUTER_API_KEY), image: !!(env.OPENAI_API_KEY || env.XAI_API_KEY || env.OPENROUTER_API_KEY), video: !!(env.XAI_API_KEY || env.OPENROUTER_API_KEY),
           prov: { anthropic: !!env.ANTHROPIC_API_KEY, openai: !!env.OPENAI_API_KEY, xai: !!env.XAI_API_KEY, openrouter: !!env.OPENROUTER_API_KEY },
           free: { on: freeOn(), perDay: A.FREE.perDay, pics: picsOn(), picsPerDay: A.FREE.pics },
+          agent: !!env.ANTHROPIC_API_KEY,
           margin: A.MARGIN, checked: A.PRICES_CHECKED,
           models: Object.keys(A.MODELS).filter((k) => A.MODELS[k].prov !== 'local').map((k) => ({ key: k, prov: A.MODELS[k].prov, id: A.MODELS[k].id, name: A.MODELS[k].name, inUsd: A.MODELS[k].inUsd, outUsd: A.MODELS[k].outUsd, caps: A.MODELS[k].caps })),
           imagePrices: { id: A.IMAGE.id, perImage: A.IMAGE.perImage },
@@ -669,6 +735,7 @@ function makeHandler(deps = {}) {
       if (b.op === 'quote') return await quote(req, res, b);
       if (b.op === 'run') return await run(req, res, b);
       if (b.op === 'vstatus') return await vstatus(req, res, b);
+      if (b.op === 'astep') return await astep(req, res, b);
       if (b.op === 'free') return await free(req, res, b);
       if (b.op === 'freepic') return await freepic(req, res, b);
       return send(res, 400, { error: 'Unknown op' });

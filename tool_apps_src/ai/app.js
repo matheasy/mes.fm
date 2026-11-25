@@ -38,9 +38,9 @@
 	if (!A.LENGTHS[S.len]) S.len = "medium";
 	if (!A.IMAGES[S.imod]) S.imod = "gpt";
 	if (!S.iq || typeof S.iq !== "object") S.iq = {};
-	var qTab = /[?&]tab=(img|chat|vid)\b/.exec(location.search);
+	var qTab = /[?&]tab=(img|chat|vid|agent)\b/.exec(location.search) || (/^#browser\b/.test(location.hash) ? [0, "agent"] : null);
 	if (qTab) S.tab = qTab[1];
-	if (S.tab !== "img" && S.tab !== "vid") S.tab = "chat";
+	if (S.tab !== "img" && S.tab !== "vid" && S.tab !== "agent") S.tab = "chat";
 	function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { msg(T("This browser's storage is full: old chats could not be saved. Delete some."), "err"); } }
 	function newChat() { var c = { id: A.newId(), title: T("New chat"), at: Date.now(), msgs: [] }; S.chats.unshift(c); S.cur = c.id; save(); return c; }
 	function cur() { var c = S.chats.filter(function (x) { return x.id === S.cur; })[0]; return c || (S.chats[0] ? (S.cur = S.chats[0].id, S.chats[0]) : newChat()); }
@@ -1699,8 +1699,8 @@
 	/* ---------- tabs ---------- */
 	function showTab(t) {
 		S.tab = t; save();
-		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img"); $("ai-tab-vid").setAttribute("aria-selected", t === "vid");
-		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img"; $("ai-vid").hidden = t !== "vid";
+		$("ai-tab-chat").setAttribute("aria-selected", t === "chat"); $("ai-tab-img").setAttribute("aria-selected", t === "img"); $("ai-tab-vid").setAttribute("aria-selected", t === "vid"); $("ai-tab-agent").setAttribute("aria-selected", t === "agent");
+		$("ai-chat").hidden = t !== "chat"; $("ai-img").hidden = t !== "img"; $("ai-vid").hidden = t !== "vid"; $("ai-agt").hidden = t !== "agent";
 		if (t === "chat" && R) R.typeset($("ai-log"));
 		if (t === "img") paintMedia("img");
 		if (t === "vid") { paintMedia("vid"); paintVjobs(); }
@@ -1708,6 +1708,9 @@
 	$("ai-tab-chat").addEventListener("click", function () { showTab("chat"); });
 	$("ai-tab-img").addEventListener("click", function () { showTab("img"); });
 	$("ai-tab-vid").addEventListener("click", function () { showTab("vid"); });
+	$("ai-tab-agent").addEventListener("click", function () { showTab("agent"); });
+	// 🧭 Browser tasks (agent.js = window.AIAgent): the AI works in the person's browser through the MES AI Helper extension
+	if (window.AIAgent) window.AIAgent({ $: $, T: T, A: A, esc: esc, mock: mock, LANG: LANG, LOC: LOC, md: md, who: who, msg: msg, quote: quote, pay: pay, runReq: runReq, post: post, jsonOf: jsonOf, status: function () { return status; } });
 
 	/* ---------- switched on? ---------- */
 	function paintOff() {

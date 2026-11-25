@@ -748,6 +748,41 @@ html body.dark-mode #ai.ai .ai-dettog[aria-expanded="true"] { color: var(--ai-ac
 #ai .ai-h3 { margin: .2em 0 .3em; font-size: 1.05em; }
 @media (max-width: 560px) { #ai .ai-ways li { flex-wrap: wrap; } #ai .ai-wayb { margin-left: 2.2em; } }
 
+/* 🧭 Browser tasks (agent.js) */
+#ai :where(.ai-agt) :is(div, span, p, li, h3, b, summary, label) { color: inherit; }
+#ai .ai-agt { background: var(--ai-panel); color: var(--ai-ink); }
+#ai .ag-ext { border: 1px solid var(--ai-line); border-radius: .6em; padding: .7em .9em; margin: .6em 0; }
+#ai .ag-ext.ok { border-color: #16a34a; color: #15803d; font-weight: 600; }
+#ai .ag-ext ol { margin: .5em 0; padding-left: 1.3em; } #ai .ag-ext li { margin: .4em 0; line-height: 1.5; }
+#ai .ag-ext code { background: rgba(127,127,127,.15); padding: 0 .3em; border-radius: .3em; }
+#ai .ag-bar { display: flex; align-items: center; gap: .7em; margin: .5em 0; font-size: .92em; color: var(--ai-sub); }
+#ai .ag-track { flex: 0 0 9em; height: .6em; border-radius: 1em; background: rgba(127,127,127,.25); overflow: hidden; }
+#ai .ag-fill { height: 100%; background: var(--ai-acc); width: 0; transition: width .3s; }
+#ai .ag-log { max-height: min(60vh, 34em); overflow: auto; border: 1px solid var(--ai-line); border-radius: .6em; padding: .7em .9em; margin: .5em 0; }
+#ai .ag-empty { color: var(--ai-sub); margin: .3em 0; }
+#ai .ag-title { margin: 0 0 .5em; font-size: 1.05em; }
+#ai .ag-u { background: var(--ai-acc); color: var(--ai-acctext); border-radius: .7em; padding: .45em .8em; margin: .5em 0 .5em auto; max-width: 85%; width: fit-content; white-space: pre-wrap; }
+#ai .ag-a { margin: .5em 0; line-height: 1.55; }
+#ai .ag-s { font-size: .92em; margin: .25em 0; padding-left: 1.6em; text-indent: -1.6em; color: var(--ai-sub); }
+#ai .ag-s .ag-ic { display: inline-block; width: 1.4em; text-indent: 0; text-align: center; font-weight: 700; }
+#ai .ag-s.ag-ok .ag-ic { color: #16a34a; } #ai .ag-s.ag-err .ag-ic { color: #dc2626; } #ai .ag-s.ag-no .ag-ic { color: #b45309; }
+#ai .ag-shot { max-width: min(100%, 26em); border: 1px solid var(--ai-line); border-radius: .4em; margin: .3em 0; text-indent: 0; }
+#ai .ag-n { font-size: .92em; margin: .4em 0; font-style: italic; color: var(--ai-sub); }
+#ai .ag-n.err { color: #dc2626; font-style: normal; }
+#ai .ag-ask { border: 2px solid #f59e0b; background: rgba(245,158,11,.1); border-radius: .7em; padding: .7em .9em; margin: .6em 0; }
+#ai .ag-ask p { margin: 0 0 .5em; }
+#ai .ag-askbtns { display: flex; flex-wrap: wrap; gap: .5em; }
+#ai .ag-run { margin: .3em 0; }
+#ai .ag-stop { background: #dc2626; border-color: #dc2626; color: #fff; }
+#ai .ag-small { font-size: .88em; }
+#ai .ag-past { margin-top: .8em; } #ai .ag-past summary { cursor: pointer; font-weight: 700; }
+#ai .ag-past li { margin: .5em 0; } #ai .ag-sum { font-size: .9em; color: var(--ai-sub); white-space: pre-wrap; }
+html body.dark-mode #ai .ag-ext.ok { color: #4ade80; border-color: #22c55e; }
+html body.dark-mode #ai .ag-n.err, html body.dark-mode #ai .ag-s.ag-err .ag-ic { color: #f87171; }
+html body.dark-mode #ai .ag-stop { background: #dc2626; color: #fff; }
+#ai .ag-bar[hidden] { display: none; }
+#ai .ag-ext a.tu-btn--primary, html body.dark-mode #ai .ag-ext a.tu-btn--primary { color: #fff; text-decoration: none; display: inline-block; margin: .1em 0; }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -881,6 +916,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ai .ai-bigpic video{background:#525252}
 	body.dark-mode #ai .ai-nav{background:rgba(82,82,82,0.45)}
 	body.dark-mode #ai .ai-nav:hover{background:rgba(82,82,82,0.70)}
+	body.dark-mode #ai .ag-ext.ok{border-color:#1ee166;color:#73e89f}
+	body.dark-mode #ai .ag-ext code{background:rgba(82,82,82,0.15)}
+	body.dark-mode #ai .ag-track{background:rgba(82,82,82,0.25)}
+	body.dark-mode #ai .ag-s.ag-ok .ag-ic{color:#6fec9d}
+	body.dark-mode #ai .ag-s.ag-err .ag-ic{color:#e87272}
+	body.dark-mode #ai .ag-s.ag-no .ag-ic{color:#f7a364}
+	body.dark-mode #ai .ag-n.err{color:#e87272}
+	body.dark-mode #ai .ag-ask{border:2px solid #c47e08}
+	body.dark-mode #ai .ag-stop{border-color:#b01c1c}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1133,6 +1177,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-chat" aria-selected="true" aria-controls="ai-chat">💬 चैट</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-img" aria-selected="false" aria-controls="ai-img">🖼️ तस्वीर</button>
 			<button type="button" role="tab" class="ai-mode" id="ai-tab-vid" aria-selected="false" aria-controls="ai-vid">🎬 वीडियो</button>
+			<button type="button" role="tab" class="ai-mode" id="ai-tab-agent" aria-selected="false" aria-controls="ai-agt">🧭 Browser</button>
 			<span class="ai-whochip" id="ai-whochip" hidden></span>
 			<button type="button" class="ai-payshow" id="ai-payshow" hidden>ⓘ मुफ़्त और पेड</button>
 		</div>
@@ -1299,6 +1344,33 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 		</section>
 
+		<section class="tu-card ai-agt" id="ai-agt" role="tabpanel" aria-labelledby="ai-tab-agent" hidden>
+			<h3 class="ai-h2" id="browser">🧭 Let MES AI work in your browser</h3>
+			<p class="tu-note">Give it a job and watch: it opens tabs in its own window, reads pages, clicks and types, and tells you what it did. It asks you before anything is sent, posted, paid or deleted, and never types passwords or card numbers. You pay once per task (a budget in HBD); a task can take many steps.</p>
+			<div class="ag-ext" id="ag-ext"></div>
+			<div class="ag-bar" id="ag-bar" hidden><div class="ag-track"><div class="ag-fill" id="ag-barfill"></div></div><span id="ag-bartxt"></span></div>
+			<div class="ag-log" id="ag-log" aria-live="polite"></div>
+			<div class="ag-ask" id="ag-ask" role="alertdialog" aria-labelledby="ag-asktxt" hidden>
+				<p><b>MES AI wants to:</b> <span id="ag-asktxt"></span></p>
+				<div class="ag-askbtns"><button type="button" class="tu-btn tu-btn--primary" id="ag-allow">✓ Allow</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-skip">✗ No, skip it</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-askstop">■ Stop the task</button></div>
+			</div>
+			<div class="ag-run"><button type="button" class="tu-btn ag-stop" id="ag-stop" hidden>■ रोकें</button> <button type="button" class="tu-btn tu-btn--ghost" id="ag-cont" hidden>▶ Continue</button></div>
+			<label class="ai-sr" for="ag-in">What should MES AI do in your browser?</label>
+			<div class="ai-inrow">
+				<textarea id="ag-in" class="tu-input ai-in" rows="3" maxlength="8000"></textarea>
+				<button type="button" class="tu-btn tu-btn--primary ai-send" id="ag-go">Pay &amp; start the task</button>
+			</div>
+			<div class="ai-opts" id="ag-opts">
+				<label class="ai-opt"><span>मॉडल</span><select id="ag-model" class="tu-input" data-native></select></label>
+				<label class="ai-opt"><span>Task size</span><select id="ag-plan" class="tu-input" data-native></select></label>
+				<label class="ai-opt ai-enc"><input type="checkbox" id="ag-askall"> <span>Ask me before every click</span></label>
+				<div class="ai-price" id="ag-price" aria-live="polite"></div>
+			</div>
+			<p class="tu-note ag-small">The budget is the most the AI may cost for this task; when it runs out the task stops and you can start a new one. Budget left over stays usable for follow-ups on the same task for 24 hours but is not refunded. Claude Sonnet is cheaper and fine for most tasks; Opus is for hard ones.</p>
+			<button type="button" class="tu-btn tu-btn--ghost" id="ag-new" hidden>＋ New task</button>
+			<details class="ag-past" id="ag-past" hidden><summary>Earlier tasks</summary><ul id="ag-pastlist"></ul><button type="button" class="tu-btn tu-btn--ghost" id="ag-clearpast">Clear this list</button></details>
+		</section>
+
 		<p class="tu-card ai-msg" id="ai-msg" role="status" hidden></p>
 		<div class="ai-undo" id="ai-undo" role="status" hidden></div>
 		</div>
@@ -1396,7 +1468,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=361e0d61" defer></script><script src="/ai/js/ai.js?v=21" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/link-open.js?v=2" defer></script><script src="/ai/js/i18n-hi.js?v=361e0d61" defer></script><script src="/ai/js/ai.js?v=22" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

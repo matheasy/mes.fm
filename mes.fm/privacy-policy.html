@@ -622,6 +622,14 @@ sub {vertical-align:sub;}        .warning-message {font-size:1em;text-align:cent
 	id) are public and permanent, like every Hive payment. Your chats, pictures and the files you added are kept only in your browser (localStorage and IndexedDB)
 	until you delete them or clear the site's data.
 	</p>
+	<p id="mes-ai-browser">
+	<b>Browser tasks (the 🧭 Browser tab and the MES AI Helper extension).</b> When you give MES AI a task in your browser, the free MES AI Helper
+	extension reads the pages the AI is working on (their text, the list of buttons and fields, and screenshots when the AI asks for one) and sends that to
+	the mes.fm/ai page, which sends it with your task to Anthropic (Claude) to decide the next step. Our server keeps the task's budget, step count and your
+	Hive username for 24 hours; it does not store the pages, screenshots or answers. The extension only takes orders from the mes.fm/ai page, opens its
+	tabs in a separate window, never types into password, card or one-time-code fields, and asks you before steps that send, post, pay or delete. Tasks are
+	kept only in your browser. You can switch the extension off or stop a task from its toolbar button, or remove it at any time.
+	</p>
 	<p>
 	The cheap models (DeepSeek, Qwen, Llama) are reached through <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener">OpenRouter</a>,
 	which passes the chat on to the company that runs that model; we ask OpenRouter to use only providers that do not keep or train on the data.

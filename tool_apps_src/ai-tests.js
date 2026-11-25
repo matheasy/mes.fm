@@ -759,6 +759,60 @@ const lines = (res) => res.out.trim().split("\n").map((l) => JSON.parse(l));
   }
   }
 
+  // 🧭 browser tasks: quote -> pay -> budget -> steps (non-streaming tool use), budget never passed, failures cost nothing
+  {
+    const redis = fakeRedis(), calls = [];
+    let mode = "tool", inTok = 3000;
+    const env = { UPSTASH_REDIS_REST_TOKEN: "x", ANTHROPIC_API_KEY: "sk-test" };
+    const fetchImpl = async (url, init) => {
+      const body = JSON.parse(init.body); calls.push({ url, body });
+      if (/count_tokens/.test(url)) return { ok: true, status: 200, json: async () => ({ input_tokens: inTok }) };
+      if (mode === "down") return { ok: false, status: 529, json: async () => ({ error: { message: "Overloaded" } }) };
+      const content = mode === "tool" ? [{ type: "text", text: "Opening it." }, { type: "tool_use", id: "toolu_1", name: "open_tab", input: { url: "https://example.com" } }] : [{ type: "text", text: "Done." }];
+      return { ok: true, status: 200, json: async () => ({ content, stop_reason: mode === "tool" ? "tool_use" : "end_turn", usage: { input_tokens: 200, cache_creation_input_tokens: inTok - 200, cache_read_input_tokens: 0, output_tokens: 120 } }) };
+    };
+    let chainA = [];
+    const ha = makeHandler({ env, redis, fetch: fetchImpl, now: () => T0, rpc: async () => chainA });
+    let r = mk("POST", { op: "quote", acct: "alice", kind: "agent", model: "sonnet", plan: "small" }); await ha(r.req, r.res);
+    const qg = J(r.res);
+    eq([r.res.statusCode, qg.price, qg.steps], [200, A.agentQuote("sonnet", "small").price, 25], "agent quote = plan price");
+    ok(A.agentQuote("sonnet", "small").hbd + 1e-9 >= 0.2 * A.FEES.anthropic * A.MARGIN, "agent price covers the budget x fee x margin");
+    r = mk("POST", { op: "quote", acct: "alice", kind: "agent", model: "dsflash", plan: "small" }); await ha(r.req, r.res);
+    eq(r.res.statusCode, 400, "only Claude for browser tasks");
+    chainA = [tr(30, "alice", "mes", qg.price + " HBD", qg.memo, 5)];
+    r = mk("POST", { op: "run", id: qg.id, acct: "alice" }); await ha(r.req, r.res);
+    const tk = J(r.res);
+    eq([r.res.statusCode, tk.task, tk.budget, tk.maxSteps], [200, qg.id, 200000, 25], "paid task gets its budget");
+    const msgs = [{ role: "user", content: [{ type: "text", text: "Open example.com" }] }];
+    r = mk("POST", { op: "astep", id: qg.id, acct: "alice", messages: msgs }); await ha(r.req, r.res);
+    let st = J(r.res);
+    const real = Math.ceil(A.agentStepCost("sonnet", { input_tokens: 200, cache_creation_input_tokens: 2800, output_tokens: 120 }) * 1e6);
+    eq([r.res.statusCode, st.stop, st.steps, st.spent], [200, "tool_use", 1, real], "step charges only the real cost");
+    const mc = calls.filter((c) => /v1\/messages$/.test(c.url)).pop();
+    ok(mc.body.tools.length === A.AGENT_TOOLS.length && mc.body.messages[0].content[0].cache_control && mc.body.max_tokens === A.AGENT.maxOut, "tools + prompt cache + answer cap sent");
+    r = mk("POST", { op: "astep", id: qg.id, acct: "bob", messages: msgs }); await ha(r.req, r.res);
+    eq(r.res.statusCode, 403, "someone else's task refused");
+    const bad = msgs.concat([{ role: "assistant", content: st.content }, { role: "user", content: [{ type: "tool_result", tool_use_id: "toolu_X", content: "x" }] }]);
+    r = mk("POST", { op: "astep", id: qg.id, acct: "alice", messages: bad }); await ha(r.req, r.res);
+    eq(r.res.statusCode, 400, "a tool result for an unknown tool step is refused");
+    const good = msgs.concat([{ role: "assistant", content: st.content }, { role: "user", content: [{ type: "tool_result", tool_use_id: "toolu_1", content: [{ type: "text", text: "{\"tab\":5}" }] }] }]);
+    mode = "down";
+    r = mk("POST", { op: "astep", id: qg.id, acct: "alice", messages: good }); await ha(r.req, r.res);
+    eq([r.res.statusCode, Number(redis.st.get("ai:task:" + qg.id + ":spent"))], [502, real], "a failed step takes nothing from the budget");
+    mode = "end";
+    r = mk("POST", { op: "astep", id: qg.id, acct: "alice", messages: good }); await ha(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).stop, J(r.res).steps], [200, "end_turn", 2], "second step ends the task");
+    inTok = 90000;   // a step whose worst case does not fit the rest of the budget
+    r = mk("POST", { op: "astep", id: qg.id, acct: "alice", messages: good }); await ha(r.req, r.res);
+    eq([r.res.statusCode, J(r.res).out], [402, "budget"], "budget used up -> refused, never over");
+    ok(Number(redis.st.get("ai:task:" + qg.id + ":spent")) <= 200000, "spent never passes the budget");
+    eq(A.checkAgentMessages([{ role: "user", content: [{ type: "tool_result", tool_use_id: "a", content: "x" }] }]) != null, true, "tool result without a tool step");
+    const pics = []; for (let i = 0; i < 5; i++) pics.push({ role: "assistant", content: [{ type: "tool_use", id: "t" + i, name: "screenshot", input: {} }] }, { role: "user", content: [{ type: "tool_result", tool_use_id: "t" + i, content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "AAAA" } }] }] });
+    const trimmed = A.agentTrimImages([{ role: "user", content: "go" }].concat(pics));
+    eq(trimmed.reduce((n, m) => n + (Array.isArray(m.content) ? m.content.filter((b) => b.type === "tool_result" && b.content[0].type === "image").length : 0), 0), A.AGENT.maxImages, "only the newest screenshots are kept");
+    ok(A.agentRisky("click", { why: "Open compose" }, "Send") && !A.agentRisky("click", { why: "Open compose" }, "Compose") && A.agentRisky("click", { confirm: true }, ""), "risky steps are asked first");
+  }
+
   // origin check in production
   e = setup();
   e.env.VERCEL_ENV = "production";
