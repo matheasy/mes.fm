@@ -148,12 +148,15 @@
 	/* buttons in an arc outside the circle (placed by mmButtons in app.js) */
 	.cs-mmb {position:absolute;left:0;top:0;width:0;height:0;}
 	.cs-mmb button {position:absolute;width:24px;height:24px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,0.45);background:rgba(12,16,24,0.72);color:#fff;font-size:12px;line-height:1;cursor:pointer;opacity:0;pointer-events:none;transform:scale(0.5);transition:opacity .18s, transform .18s;box-shadow:0 1px 4px rgba(0,0,0,.4);backdrop-filter:blur(3px);}
-	.cs-mm.cs-mmopen .cs-mmb button {opacity:1;pointer-events:auto;transform:none;}
-	.cs-mm.cs-mmopen .cs-mmb button:hover {transform:scale(1.15);background:rgba(12,16,24,0.92);}
-	.cs-mmmore {position:absolute;width:26px;height:26px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,0.55);background:rgba(12,16,24,0.82);color:#fff;font-size:15px;font-weight:700;line-height:1;cursor:pointer;z-index:1;box-shadow:0 1px 4px rgba(0,0,0,.45);transition:background .15s, transform .15s;}
-	.cs-mmmore:hover {transform:scale(1.1);}
-	.cs-mm.cs-mmopen .cs-mmmore {background:#d9480f;border-color:#f08a4b;}
-	@media (hover:none) { .cs-mmb button {width:28px;height:28px;} .cs-mmmore {width:30px;height:30px;} }
+	.cs-mm.cs-mmnear .cs-mmb button, .cs-mm.cs-mmopen .cs-mmb button, .cs-mmb:focus-within button {opacity:1;pointer-events:auto;transform:none;}
+	.cs-mm.cs-mmnear .cs-mmb button:hover, .cs-mm.cs-mmopen .cs-mmb button:hover {transform:scale(1.15);background:rgba(12,16,24,0.92);}
+	/* touch only: a curved ••• tab just outside the circle (an SVG arc; only the arc itself takes taps) */
+	.cs-mmmore {display:none;position:absolute;padding:0;border:0;background:none;pointer-events:none;cursor:pointer;z-index:1;}
+	.cs-mmmore svg {display:block;overflow:visible;}
+	.cs-mmtab {fill:none;stroke:rgba(12,16,24,0.85);stroke-width:15;stroke-linecap:round;pointer-events:stroke;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+	.cs-mmdot {fill:#fff;pointer-events:none;}
+	.cs-mm.cs-mmopen .cs-mmtab {stroke:#d9480f;}
+	@media (hover:none) { .cs-mmb button {width:28px;height:28px;} .cs-mmmore {display:block;} }
 	.cs-has-touch .cs-mm {left:auto;right:0.6em;bottom:auto;top:3.4em;width:118px;height:118px;}
 	.cs-has-touch .cs-mm.big {width:170px;height:170px;}
 	.cs-replaying .cs-mm, .cs-hide-map .cs-mm {display:none !important;}

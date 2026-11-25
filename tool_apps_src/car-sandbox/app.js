@@ -2197,10 +2197,11 @@
 		var r = el.offsetWidth / 2, sr = stage.getBoundingClientRect(), er = el.getBoundingClientRect();
 		var cx = er.left + r - sr.left, cy = er.top + r - sr.top, base = Math.atan2(sr.height / 2 - cy, sr.width / 2 - cx);
 		var bw = bs.length ? bs[0].offsetWidth || 24 : 24, R = r + bw / 2 + 7, step = (bw + 5) / R, a0 = base - step * (bs.length - 1) / 2;
-		/* the ⋯ toggle sits on the circle's upper-left edge, or just before the arc when the map is pushed into a top / left corner */
-		var mb = $("cs-mmmore"), mw = mb.offsetWidth || 26, ta = -2.36, tx = cx + Math.cos(ta) * r, ty = cy + Math.sin(ta) * r;
-		if (tx < mw || ty < mw) ta = a0 - step;
-		mb.style.left = Math.round(r + Math.cos(ta) * (r - 2) - mw / 2) + "px"; mb.style.top = Math.round(r + Math.sin(ta) * (r - 2) - mw / 2) + "px";
+		/* touch: a curved ••• tab just outside the circle opens the arc */
+		var mb = $("cs-mmmore"), rr = r + 9, ta = a0 - step * 1.2; /* the tab sits just before where the arc of buttons starts */
+		var m = 22, sz = 2 * r + 2 * m, h = 0.3, p = function (a, q) { return (r + m + Math.cos(a) * q).toFixed(1) + " " + (r + m + Math.sin(a) * q).toFixed(1); };
+		mb.style.left = mb.style.top = -m + "px"; mb.style.width = mb.style.height = sz + "px";
+		mb.innerHTML = '<svg viewBox="0 0 ' + sz + ' ' + sz + '" width="' + sz + '" height="' + sz + '" aria-hidden="true"><path class="cs-mmtab" d="M ' + p(ta - h, rr) + ' A ' + rr + ' ' + rr + ' 0 0 1 ' + p(ta + h, rr) + '"/>' + [-0.12, 0, 0.12].map(function (k) { return '<circle class="cs-mmdot" r="1.9" cx="' + (r + m + Math.cos(ta + k) * rr).toFixed(1) + '" cy="' + (r + m + Math.sin(ta + k) * rr).toFixed(1) + '"/>'; }).join("") + '</svg>';
 		bs.forEach(function (b, i) { var a = a0 + step * i; b.style.transitionDelay = (i * 22) + "ms"; b.style.left = Math.round(r + Math.cos(a) * R - bw / 2) + "px"; b.style.top = Math.round(r + Math.sin(a) * R - bw / 2) + "px"; });
 	}
 	function setupMiniDrag() {
@@ -2420,6 +2421,13 @@
 		syncGameUI();
 		/* the arc of map buttons only shows while the mouse is on or near the map (touch: the ⋯ button opens it for a few seconds) */
 		var mmEl = $("cs-mm");
+		/* mouse: the arc shows while the pointer is on or near the map; touch: the curved ••• tab outside the circle opens / closes it */
+		stage.addEventListener("pointermove", function (e) {
+			if (e.pointerType !== "mouse" || mmEl.hidden) return;
+			var r = mmEl.getBoundingClientRect(), rad = r.width / 2, d = Math.hypot(e.clientX - r.left - rad, e.clientY - r.top - rad);
+			mmEl.classList.toggle("cs-mmnear", d < rad + 48);
+		});
+		stage.addEventListener("pointerleave", function () { mmEl.classList.remove("cs-mmnear"); });
 		function mmOpen(on) { mmEl.classList.toggle("cs-mmopen", on); var b = $("cs-mmmore"); b.setAttribute("aria-expanded", String(on)); b.title = on ? "Close the map buttons" : "Map buttons: zoom, direction, size, editor, hide"; }
 		$("cs-mmmore").addEventListener("click", function (e) { e.stopPropagation(); mmOpen(!mmEl.classList.contains("cs-mmopen")); });
 		$("cs-mmb").addEventListener("click", function (e) {
