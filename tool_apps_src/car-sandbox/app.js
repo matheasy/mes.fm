@@ -1080,11 +1080,11 @@
 		}
 		var thr = $("cs-thr");
 		if (thr) {
-			var tid = null, tset = function (e) { var r = thr.getBoundingClientRect(), v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); var c = cars[player]; if (c && c.fly) { if (easyOn()) c.fly.spd = v; else c.fly.thr = v; updatePlaneHud(c); } };
+			var tid = null, tset = function (e) { var r = thr.getBoundingClientRect(), v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); var c = cars[player]; if (c && c.fly) { if (easyActive()) c.fly.spd = v; else c.fly.thr = v; updatePlaneHud(c); } };
 			thr.addEventListener("pointerdown", function (e) { e.preventDefault(); tid = e.pointerId; try { thr.setPointerCapture(tid); } catch (x) { /* ignore */ } tset(e); initAudio(); });
 			thr.addEventListener("pointermove", function (e) { if (e.pointerId === tid) tset(e); });
 			thr.addEventListener("pointerup", function () { tid = null; }); thr.addEventListener("pointercancel", function () { tid = null; });
-			thr.addEventListener("keydown", function (e) { var c = cars[player]; if (!c || !c.fly) return; var k = easyOn() ? "spd" : "thr"; if (c.fly[k] == null) c.fly[k] = 0.15; if (e.key === "ArrowUp") c.fly[k] = Math.min(1, c.fly[k] + 0.1); else if (e.key === "ArrowDown") c.fly[k] = Math.max(0, c.fly[k] - 0.1); else return; e.preventDefault(); e.stopPropagation(); updatePlaneHud(c); });
+			thr.addEventListener("keydown", function (e) { var c = cars[player]; if (!c || !c.fly) return; var k = easyActive() ? "spd" : "thr"; if (c.fly[k] == null) c.fly[k] = 0.15; if (e.key === "ArrowUp") c.fly[k] = Math.min(1, c.fly[k] + 0.1); else if (e.key === "ArrowDown") c.fly[k] = Math.max(0, c.fly[k] - 0.1); else return; e.preventDefault(); e.stopPropagation(); updatePlaneHud(c); });
 		}
 		[["cs-t-rudl", "rudl"], ["cs-t-rudr", "rudr"], ["cs-t-fbrk", "fbrk"]].forEach(function (p) {
 			var el = $(p[0]); if (!el) return;
@@ -1720,11 +1720,13 @@
 		if (C.isPlane(S.car)) { planeHello(); fhelpShow(); } else { toast("Back in a car: " + C.CARS[cars[player].type].name); $("cs-fhelp").hidden = true; }
 	}
 	function easyOn() { return S.pEasy !== false; }
+	/* easy flying only works where there is air and weight to fly against (not on the Moon / Ceres or at zero g) */
+	function easyActive() { return easyOn() && W && W.rho > 0 && Math.abs(gravity) > 0.05; }
 	function setPEasy(on, quiet) {
-		S.pEasy = !!on; save(); root.classList.toggle("cs-peasy", S.pEasy);
+		S.pEasy = !!on; save(); root.classList.toggle("cs-peasy", easyActive());
 		$("cs-peasy").setAttribute("aria-pressed", String(S.pEasy)); $("cs-preal").setAttribute("aria-pressed", String(!S.pEasy));
 		var pm = $("cs-t-pmode"); if (pm) pm.innerHTML = (S.pEasy ? "Easy" : "Real") + "<small>flying</small>";
-		$("cs-thrlab").textContent = S.pEasy ? "SPEED" : "THR"; fhelpFill();
+		$("cs-thrlab").textContent = easyActive() ? "SPEED" : "THR"; fhelpFill();
 		var c = cars[player]; if (c && c.fly) { if (!S.pEasy) { c.fly.ap = null; c.fly.toff = false; } else if (c.fly.spd == null) c.fly.spd = 0.15; updatePlaneHud(c); }
 		if (!quiet) toast(S.pEasy ? "Easy flying: the stick turns and climbs, let go = level flight" : "Realistic flying: elevator, ailerons, rudder, throttle and flaps are yours");
 	}
@@ -1786,7 +1788,7 @@
 		$("cs-fias").textContent = W.rho ? C.fmtSpeed(o.V, S.units) + (us ? "" : " · " + Math.round(o.V * 1.943844) + " kt") : "no air";
 		$("cs-falt").textContent = us ? Math.round(agl * 3.28084) + " ft" : (agl < 10 ? agl.toFixed(1) : Math.round(agl)) + " m";
 		$("cs-fvs").textContent = (lv.y >= 0 ? "+" : "−") + (us ? Math.round(Math.abs(lv.y) * 196.85) + " ft/min" : Math.abs(lv.y).toFixed(1) + " m/s");
-		var ez = easyOn() && W.rho > 0;
+		var ez = easyActive(); root.classList.toggle("cs-peasy", ez); if ($("cs-thrlab").textContent !== (ez ? "SPEED" : "THR")) $("cs-thrlab").textContent = ez ? "SPEED" : "THR";
 		$("cs-fthr").style.width = Math.round(F.thr * 100) + "%"; $("cs-fthrn").textContent = (F.dead ? "dead " : "") + Math.round(F.thr * 100) + "%" + (ez ? " auto" : "");
 		root.classList.toggle("cs-pground", !!c.anyContact && !F.toff && ez);
 		$("cs-fflap").textContent = ["Up", "T/O", "Landing"][F.flap]; $("cs-fbrk").textContent = F.brk ? "· BRAKES" : "";
@@ -1936,7 +1938,7 @@
 		$("cs-car").addEventListener("change", function () { var v = this.value || null; if (C.isPlane(v)) { togglePlane(v); this.blur(); return; } S.car = v; if (v) S.lastCar = v; save(); swapPlayerCar(); syncUrl(); });
 		$("cs-fly").addEventListener("click", function () { togglePlane("plane"); }); $("cs-flyjet").addEventListener("click", function () { togglePlane("jet"); });
 		$("cs-backcar").addEventListener("click", function () { if (cars[player].d.fly) togglePlane(); });
-		$("cs-runway").addEventListener("click", function () { var c = cars[player]; if (!c.d.fly) return; if (!W.track) { toast("Only the test-track worlds have a runway: any long flat road works too"); return; } resetCar(c, false); camSnap = true; toast("🛫 On the runway: flaps T/O, full throttle (Shift), pull back (S) at lift-off speed"); });
+		$("cs-runway").addEventListener("click", function () { var c = cars[player]; if (!c.d.fly) return; if (!W.track) { toast("Only the test-track worlds have a runway: any long flat road works too"); return; } resetCar(c, false); camSnap = true; toast(easyActive() ? "🛫 On the runway: " + (root.classList.contains("cs-has-touch") ? "tap Take off" : "hold W to take off") : "🛫 On the runway: flaps T/O, full throttle (Shift), pull back (S) at lift-off speed"); });
 		$("cs-airstart").addEventListener("click", function () { airStart(); fhelpShow(); });
 		$("cs-peasy").addEventListener("click", function () { setPEasy(true); }); $("cs-preal").addEventListener("click", function () { setPEasy(false); });
 		$("cs-phow").addEventListener("click", function () { fhelpShow(true); });
