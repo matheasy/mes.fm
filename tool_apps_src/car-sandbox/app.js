@@ -2197,7 +2197,11 @@
 		var r = el.offsetWidth / 2, sr = stage.getBoundingClientRect(), er = el.getBoundingClientRect();
 		var cx = er.left + r - sr.left, cy = er.top + r - sr.top, base = Math.atan2(sr.height / 2 - cy, sr.width / 2 - cx);
 		var bw = bs.length ? bs[0].offsetWidth || 24 : 24, R = r + bw / 2 + 7, step = (bw + 5) / R, a0 = base - step * (bs.length - 1) / 2;
-		bs.forEach(function (b, i) { var a = a0 + step * i; b.style.left = Math.round(r + Math.cos(a) * R - bw / 2) + "px"; b.style.top = Math.round(r + Math.sin(a) * R - bw / 2) + "px"; });
+		/* the ⋯ toggle sits on the circle's upper-left edge, or just before the arc when the map is pushed into a top / left corner */
+		var mb = $("cs-mmmore"), mw = mb.offsetWidth || 26, ta = -2.36, tx = cx + Math.cos(ta) * r, ty = cy + Math.sin(ta) * r;
+		if (tx < mw || ty < mw) ta = a0 - step;
+		mb.style.left = Math.round(r + Math.cos(ta) * (r - 2) - mw / 2) + "px"; mb.style.top = Math.round(r + Math.sin(ta) * (r - 2) - mw / 2) + "px";
+		bs.forEach(function (b, i) { var a = a0 + step * i; b.style.transitionDelay = (i * 22) + "ms"; b.style.left = Math.round(r + Math.cos(a) * R - bw / 2) + "px"; b.style.top = Math.round(r + Math.sin(a) * R - bw / 2) + "px"; });
 	}
 	function setupMiniDrag() {
 		var el = $("cs-mm"), cv = $("cs-mmc"), d = null, dragged = false;
@@ -2414,6 +2418,10 @@
 		root.querySelectorAll("[data-drive]").forEach(function (x) { x.innerHTML = C.DRIVE_ORDER.map(function (k) { return '<option value="' + k + '">' + C.DRIVE[k].name + "</option>"; }).join(""); });
 		root.addEventListener("change", function (e) { var t = e.target; if (t.matches("[data-speed]")) setSpeed(+t.value); else if (t.matches("[data-drive]")) { setDrive(t.value); toast("Cars: " + C.DRIVE[S.drive].name + (S.drive === "real" ? " (the real numbers)" : " (more power and grip)")); } });
 		syncGameUI();
+		/* the arc of map buttons only shows while the mouse is on or near the map (touch: the ⋯ button opens it for a few seconds) */
+		var mmEl = $("cs-mm");
+		function mmOpen(on) { mmEl.classList.toggle("cs-mmopen", on); var b = $("cs-mmmore"); b.setAttribute("aria-expanded", String(on)); b.title = on ? "Close the map buttons" : "Map buttons: zoom, direction, size, editor, hide"; }
+		$("cs-mmmore").addEventListener("click", function (e) { e.stopPropagation(); mmOpen(!mmEl.classList.contains("cs-mmopen")); });
 		$("cs-mmb").addEventListener("click", function (e) {
 			var b = e.target.closest("button"); if (!b) return; var a = b.dataset.mm;
 			if (a === "in") S.mm.z = Math.max(0, S.mm.z - 1); else if (a === "out") S.mm.z = Math.min(MM_R.length - 1, S.mm.z + 1);

@@ -454,10 +454,13 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.cs-mmscale {position:absolute;left:50%;bottom:6%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;}
 	/* buttons in an arc outside the circle (placed by mmButtons in app.js) */
 	.cs-mmb {position:absolute;left:0;top:0;width:0;height:0;}
-	.cs-mmb button {position:absolute;width:24px;height:24px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,0.45);background:rgba(12,16,24,0.72);color:#fff;font-size:12px;line-height:1;cursor:pointer;opacity:0.6;transition:opacity .2s, transform .15s;box-shadow:0 1px 4px rgba(0,0,0,.4);backdrop-filter:blur(3px);}
-	.cs-mm:hover .cs-mmb button, .cs-mmb button:focus-visible {opacity:1;}
-	.cs-mmb button:hover {transform:scale(1.15);background:rgba(12,16,24,0.92);}
-	@media (hover:none) { .cs-mmb button {opacity:0.9;width:26px;height:26px;} }
+	.cs-mmb button {position:absolute;width:24px;height:24px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,0.45);background:rgba(12,16,24,0.72);color:#fff;font-size:12px;line-height:1;cursor:pointer;opacity:0;pointer-events:none;transform:scale(0.5);transition:opacity .18s, transform .18s;box-shadow:0 1px 4px rgba(0,0,0,.4);backdrop-filter:blur(3px);}
+	.cs-mm.cs-mmopen .cs-mmb button {opacity:1;pointer-events:auto;transform:none;}
+	.cs-mm.cs-mmopen .cs-mmb button:hover {transform:scale(1.15);background:rgba(12,16,24,0.92);}
+	.cs-mmmore {position:absolute;width:26px;height:26px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,0.55);background:rgba(12,16,24,0.82);color:#fff;font-size:15px;font-weight:700;line-height:1;cursor:pointer;z-index:1;box-shadow:0 1px 4px rgba(0,0,0,.45);transition:background .15s, transform .15s;}
+	.cs-mmmore:hover {transform:scale(1.1);}
+	.cs-mm.cs-mmopen .cs-mmmore {background:#d9480f;border-color:#f08a4b;}
+	@media (hover:none) { .cs-mmb button {width:28px;height:28px;} .cs-mmmore {width:30px;height:30px;} }
 	.cs-has-touch .cs-mm {left:auto;right:0.6em;bottom:auto;top:3.4em;width:118px;height:118px;}
 	.cs-has-touch .cs-mm.big {width:170px;height:170px;}
 	.cs-replaying .cs-mm, .cs-hide-map .cs-mm {display:none !important;}
@@ -824,6 +827,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-unflip small{color:#e5e5e5}
 	body.dark-mode .cs-mm canvas{border:2px solid rgba(51,51,51,0.55);background:#525252}
 	body.dark-mode .cs-mmb button{border:1px solid rgba(51,51,51,0.45)}
+	body.dark-mode .cs-mmmore{border:1px solid rgba(51,51,51,0.55)}
+	body.dark-mode .cs-mm.cs-mmopen .cs-mmmore{border-color:#bc5210}
 	body.dark-mode .cs-ed{background:#3e4c66}
 	body.dark-mode .cs-ed button,body.dark-mode .cs-ed select{background:rgba(26,26,26,0.08)}
 	body.dark-mode .cs-ed select option{color:#eeeeee;background:#1a1a1a}
@@ -1128,6 +1133,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<div class="cs-mm" id="cs-mm">
 					<canvas id="cs-mmc" title="Open the map editor (B)"></canvas>
 					<span class="cs-mmscale" id="cs-mmscale"></span>
+					<button type="button" class="cs-mmmore" id="cs-mmmore" title="Map buttons" aria-label="Show the map buttons" aria-expanded="false">⋯</button>
 					<div class="cs-mmb" id="cs-mmb">
 						<button type="button" data-mm="in" title="Zoom in" aria-label="Zoom the map in">＋</button>
 						<button type="button" data-mm="out" title="Zoom out" aria-label="Zoom the map out">−</button>
