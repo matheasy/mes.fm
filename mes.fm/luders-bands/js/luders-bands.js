@@ -373,7 +373,7 @@
   if (!L || !root) return;
   function $(id) { return document.getElementById(id); }
   var KEY = "mes-luders:v1";
-  var S = { m: "a36", eL: null, uy: null, k: 3, v: 5, sc: 0.5, r: 1, g: null, look: "polish", units: "mpa", thin: true, ghost: true, speed: 1, notches: [], lean: 0, show: { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 } };
+  var S = { m: "a36", eL: null, uy: null, k: 3, v: 5, sc: 0.5, r: 1, g: null, look: "polish", units: "mpa", thin: true, ghost: true, speed: 1, notches: [], lean: 0, mview: "side", show: { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 } };
   try { var sv = JSON.parse(localStorage.getItem(KEY) || "null"); if (sv) for (var kk in sv) if (kk in S) S[kk] = sv[kk]; } catch (e) {}
   if (!S.show || typeof S.show !== "object") S.show = { ro: 1, say: 1, key: 1, chart: 1, kymo: 1, micro: 1 };
   var Q = L.fromQuery(location.search);
@@ -758,35 +758,116 @@
   }
   var followIdx = -1, followSim = null;
   var mT0 = 0, mState = { glide: 0, last: -1, lastSt: -1, free: 0 };
+  /* Side view: a cut through the crystal. Rows of iron atoms, the slip plane between two of them, and an edge dislocation =
+     one extra half-row of atoms pushed in from the top. It glides along the slip plane; each time one crosses the whole
+     block, the top half has slid one atom spacing over the bottom half (that is the permanent stretch). Carbon atoms sit
+     in the roomy spot just under the end of the extra half-row and hold it there until the pull is big enough. */
+  function drawSide(c, w, h, i, st, dark, live) {
+    var a = Math.max(18, Math.min(26, h / 9)), yS = h * 0.52, rows = Math.ceil(yS / a) + 1;
+    var bx0 = Math.max(44, w * 0.07), bx1 = w - Math.max(44, w * 0.07), M = Math.floor((bx1 - bx0) / a), bw = M * a, s0 = a * 0.9;
+    var xpin = bx0 + bw * 0.38, margin = a * 2, cyc = bw + 2 * margin;
+    var ink = dark ? "#7fb2ff" : "#1d4ed8", carbon = dark ? "#f5a524" : "#b45309", fe = dark ? "#6b7685" : "#a5b0be", feE = dark ? "#8792a2" : "#7d8896";
+    /* where the dislocation is, and how many have crossed the block */
+    var xd, n = 0;
+    if (st === 0 || st === 1) { xd = xpin + Math.pow(mState.ratio, 2) * a * 0.45; mState.slid = 0; }
+    else {
+      if (live) mState.glide += (st === 2 ? 3.2 : 1.1) * Math.max(0.3, Math.min(3, S.speed));
+      var d0 = xpin - (bx0 - margin) + mState.glide;
+      n = Math.floor(d0 / cyc); xd = bx0 - margin + (d0 - n * cyc);
+      mState.slid = n;
+    }
+    var nShow = Math.min(n, 3);
+    function slip(x, r) { return 0.5 - Math.atan((x - xd) / (s0 * (1 + 0.7 * r))) / Math.PI; }   /* 1 = already slipped (left of the dislocation), 0 = not yet */
+    /* the slip plane */
+    c.setLineDash([6, 5]); c.strokeStyle = dark ? "rgba(203,213,225,0.35)" : "rgba(51,65,85,0.35)"; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(bx0 - a * 1.5, yS); c.lineTo(bx1 + a * 1.5, yS); c.stroke(); c.setLineDash([]);
+    /* atoms: bottom half, then top half (shifted by nShow whole spacings plus the slip field) */
+    var rA = a * 0.36, core = [];
+    for (var r = 0; r < rows; r++) {
+      var yb = yS + a / 2 + r * a, yt = yS - a / 2 - r * a;
+      for (var j = 0; j <= M; j++) {
+        var xb0 = bx0 + j * a, xb = xb0 - 0.4 * a * slip(xb0, r);
+        if (yb < h + a) { c.fillStyle = fe; c.beginPath(); c.arc(xb, yb, rA, 0, 7); c.fill(); }
+        var xt0 = bx0 + j * a + nShow * a, xt = xt0 + 0.6 * a * slip(xt0, r);
+        if (yt > -a) { c.fillStyle = fe; c.beginPath(); c.arc(xt, yt, rA, 0, 7); c.fill(); if (Math.abs(xt - xd) < a * 0.5) core.push([xt, yt]); }
+      }
+    }
+    /* the extra half-row: the top atoms whose column ends at the slip plane */
+    var cx = null; if (core.length) { core.sort(function (p, q) { return q[1] - p[1]; }); cx = core[0][0]; }
+    var onScreen = xd > bx0 - a && xd < bx1 + a;
+    if (onScreen && cx != null) {
+      core.forEach(function (p) { if (Math.abs(p[0] - cx) < a * 0.35) { c.fillStyle = ink; c.beginPath(); c.arc(p[0], p[1], rA, 0, 7); c.fill(); } });
+      /* ⊥ mark at the end of the half-row */
+      c.strokeStyle = ink; c.lineWidth = 3; c.beginPath(); c.moveTo(cx, yS - a * 0.35); c.lineTo(cx, yS + a * 0.05); c.moveTo(cx - a * 0.45, yS + a * 0.05); c.lineTo(cx + a * 0.45, yS + a * 0.05); c.stroke();
+    }
+    /* carbon atoms: tucked into the roomy spot under the end of the half-row (where it was pinned) */
+    var bnd = st === 0 || st === 1 ? 1 : 0, R = L.rng(11);
+    for (var k = 0; k < 5; k++) {
+      var ox = (k - 2) * a * 0.42 + (R() - 0.5) * a * 0.15, oy = a * 0.12 + (k % 2) * a * 0.32;
+      var fx = R() * w, fy = yS + a * (1 + R() * (rows - 1));
+      var x = xpin + ox, y = yS + oy;   /* carbon is far too slow to move during a test: it stays where it was, the dislocation leaves it */
+      c.fillStyle = carbon; c.beginPath(); c.arc(x, y, a * 0.19, 0, 7); c.fill();
+    }
+    /* labels */
+    var lab = function (txt, x, y, tx, ty, col) {
+      c.font = fnt(12, 1); var tw = c.measureText(txt).width; x = Math.max(4, Math.min(w - tw - 6, x));
+      if (tx != null) { c.strokeStyle = col || (dark ? "#cbd5e1" : "#334155"); c.lineWidth = 1.2; c.beginPath(); c.moveTo(x + (tx > x + tw / 2 ? tw : 0), y - 4); c.lineTo(tx, ty); c.stroke(); }
+      c.fillStyle = dark ? "rgba(21,26,34,0.88)" : "rgba(246,248,251,0.92)"; c.fillRect(x - 3, y - 13, tw + 6, 17);
+      c.fillStyle = col || (dark ? "#e5e9ef" : "#1e2733"); c.textAlign = "left"; c.fillText(txt, x, y);
+    };
+    var tc = dark ? "#cbd5e1" : "#334155";
+    /* the push along the slip plane: top half → , bottom half ← */
+    c.strokeStyle = dark ? "#ff7b61" : "#d4351c"; c.fillStyle = c.strokeStyle; c.lineWidth = 2.5;
+    [[bx1 + a * 0.6, yS - a * 1.5, 1], [bx0 - a * 0.6, yS + a * 1.5, -1]].forEach(function (q) { var x = q[0], y = q[1], d = q[2]; c.beginPath(); c.moveTo(x - d * 22, y); c.lineTo(x, y); c.stroke(); c.beginPath(); c.moveTo(x, y); c.lineTo(x - d * 8, y - 5); c.lineTo(x - d * 8, y + 5); c.closePath(); c.fill(); });
+    lab("iron atoms", bx0 - 6, 16, bx0 + a * 1.4, yS - a * 2.5, tc);
+    lab("slip plane", bx0 + a * 0.2, yS - 6, null, null, tc);
+    if (onScreen && cx != null) lab(st === 0 || st === 1 ? "dislocation = an extra half-row of atoms (stuck)" : "dislocation (free): sliding along →", Math.min(cx + a * 0.8, w - 260), yS - a * 2.6, cx + 2, yS - a * 0.9, ink);
+    if (bnd > 0.5) lab("carbon atoms hold it", xpin - a * 4.5, yS + a * 2.2, xpin, yS + a * 0.35, carbon);
+    else lab("carbon left behind", xpin - a * 3, h - 10, xpin, yS + a * 0.6, carbon);
+    if (mState.switchT && performance.now() - mState.switchT < 2200) { c.font = fnt(13, 1); var mt = "→ next slice: " + Math.round((i + 0.5) / sim.p.N * sim.p.Lg) + " mm, just ahead of the front", tw2 = c.measureText(mt).width; c.fillStyle = dark ? "#6d28d9" : "#7c3aed"; c.fillRect(w / 2 - tw2 / 2 - 8, h - 30, tw2 + 16, 22); c.fillStyle = "#fff"; c.textAlign = "center"; c.fillText(mt, w / 2, h - 14); c.textAlign = "left"; }
+    else if (n > 0) lab("top half has slid " + n + " atom" + (n === 1 ? "" : "s") + " along →", bx1 - 250, h - 10, null, null, ink);
+  }
   function drawMicro(ts) {
     var cv = $("lu-mcv"); if (!cv || !sim) return;
-    var F = fit(cv, Math.max(170, Math.min(240, cv.parentNode.clientWidth * 0.32))), c = F.c, w = F.w, h = F.h;
+    var F = fit(cv, S.mview === "top" ? Math.max(170, Math.min(240, cv.parentNode.clientWidth * 0.32)) : Math.max(200, Math.min(270, cv.parentNode.clientWidth * 0.36))), c = F.c, w = F.w, h = F.h;
     var i = microIdx(); if (i < 0) i = 0;
     var st = sim.st[i], dark = isDark();
     c.fillStyle = dark ? "#151a22" : "#f6f8fb"; c.fillRect(0, 0, w, h);
+    var follow = $("lu-follow").checked, live = running && !document.hidden;
+    var snap = false;
+    if (i !== mState.last) { if (mState.last >= 0 && follow) mState.switchT = performance.now(); mState.last = i; mState.glide = 0; mState.slid = 0; snap = true; }
+    /* smooth changes (following the front switches slices; the picture eases instead of jumping) */
+    var ratio0 = st === 0 ? Math.min(1, sim.s / Math.max(1, sim.sU[i])) : 1;
+    var fArr0 = sim.tgt[i] > 0 ? Math.min(1, sim.ep[i] / sim.tgt[i]) : 1;
+    var boundT = st === 0 || st === 1 ? 1 : st === 3 && sim.agedTimes ? 0.2 : Math.max(0, 1 - fArr0 * 1.3);
+    var ez = live && !snap ? 0.12 : 1;
+    mState.bound = mState.bound == null ? boundT : mState.bound + (boundT - mState.bound) * ez;
+    mState.ratio = mState.ratio == null ? ratio0 : mState.ratio + (ratio0 - mState.ratio) * ez;
+    var sig = sim.s;
+    if (S.mview !== "top") { drawSide(c, w, h, i, st, dark, live); }
+    else {
     /* lattice */
     var a = 16; c.fillStyle = dark ? "rgba(160,175,195,0.20)" : "rgba(90,105,125,0.18)";
     for (var y = a / 2; y < h; y += a) for (var x = a / 2; x < w; x += a) { c.beginPath(); c.arc(x, y, 2.2, 0, 7); c.fill(); }
     var yLine = h * 0.5, pins = [], np = 9;
     for (var k = 0; k < np; k++) pins.push(w * (0.08 + 0.84 * k / (np - 1)));
-    var thr = sim.threshold(i), sig = sim.s, ratio = st === 0 ? Math.min(1, sig / Math.max(1, sim.sU[i])) : 1;
-    if (i !== mState.last) { mState.last = i; mState.glide = 0; }
+    var thr = sim.threshold(i), ratio = st === 0 ? Math.min(1, sig / Math.max(1, sim.sU[i])) : 1;
     var running2 = running ? 1 : 0;
     if (st === 2 || st === 3) mState.glide += (st === 2 ? 2.2 : 0.6) * running2 * Math.max(0.3, S.speed);
     var ink = dark ? "#7fb2ff" : "#1d4ed8", carbon = dark ? "#f5a524" : "#b45309";
     /* carbon atoms */
     var fArr = sim.tgt[i] > 0 ? Math.min(1, sim.ep[i] / sim.tgt[i]) : 1;
-    var R = L.rng(i * 31 + 5);
+    var R = L.rng(5);
     for (k = 0; k < 46; k++) {
       var cx = R() * w, cy0 = yLine + (R() - 0.5) * 10, cyFree = R() * h;
-      var bound = st === 0 ? 1 : st === 3 && sim.agedTimes ? 0.2 : Math.max(0, 1 - fArr * 1.3);
+      var bound = mState.bound;
       var cy = cy0 * bound + cyFree * (1 - bound);
       c.fillStyle = carbon; c.beginPath(); c.arc(cx, cy, 3.1, 0, 7); c.fill();
     }
     c.strokeStyle = ink; c.lineWidth = 3; c.lineCap = "round";
     if (st === 0 || st === 1) {
       /* pinned line, bowing between pins as the stress rises */
-      var bow = Math.pow(ratio, 2) * 22 * (st === 1 ? 1.15 : 1);
+      var bow = Math.pow(mState.ratio, 2) * 22 * (st === 1 ? 1.15 : 1);
       c.beginPath(); c.moveTo(pins[0], yLine);
       for (k = 1; k < np; k++) { var mx = (pins[k - 1] + pins[k]) / 2; c.quadraticCurveTo(mx, yLine - bow * 2, pins[k], yLine); }
       c.stroke();
@@ -814,12 +895,15 @@
       lab("carbon atoms pin the line", w * 0.06, yLine + 38, pins[2], yLine + 4, carbon);
       lab("dislocation line (stuck)", w * 0.56, yLine - 34, (pins[5] + pins[6]) / 2, yLine - Math.pow(ratio, 2) * 22 * 0.9, ink);
     } else if (!sim.neck || !sim.neck.w[i]) {
-      lab("free dislocations slide along →", w * 0.05, 18, null, null, ink);
+      lab("free dislocation lines, seen from above: each slides up the picture", w * 0.05, 18, null, null, ink);
       lab("carbon left behind", w * 0.62, h - 12, null, null, carbon);
     }
-    /* pull arrows at the sides */
+    }
+    /* pull arrows at the sides (the side view draws its own: top half one way, bottom half the other) */
+    if (S.mview === "top") {
     c.strokeStyle = dark ? "#ff7b61" : "#d4351c"; c.fillStyle = c.strokeStyle; c.lineWidth = 2.5;
     [[6, -1], [w - 6, 1]].forEach(function (a) { var x = a[0], y = h - 26; c.beginPath(); c.moveTo(x - a[1] * 26, y); c.lineTo(x, y); c.stroke(); c.beginPath(); c.moveTo(x, y); c.lineTo(x - a[1] * 8, y - 5); c.lineTo(x - a[1] * 8, y + 5); c.closePath(); c.fill(); });
+    }
     /* where the slice is on the bar */
     var bw = Math.min(220, w * 0.38), bx0 = w - bw - 10, by0 = 8;
     c.fillStyle = dark ? "rgba(21,26,34,0.9)" : "rgba(246,248,251,0.92)"; c.fillRect(bx0 - 6, by0 - 4, bw + 12, 26);
@@ -931,7 +1015,7 @@
     $("lu-sc").value = S.sc; $("lu-scv").textContent = S.sc < 0.15 ? "perfectly even" : S.sc < 0.6 ? "normal" : "patchy";
     $("lu-r").value = S.r; $("lu-rv").textContent = S.r.toFixed(2) + " → " + L.frontAngle(S.r).toFixed(1) + "°";
     $("lu-thin").checked = S.thin; $("lu-ghost").checked = S.ghost; $("lu-speed").value = String(S.speed);
-    seg("lu-look", S.look); lookKey(); applyShow(); seg("lu-units", S.units); seg("lu-lean", String(+S.lean || 0));
+    seg("lu-look", S.look); lookKey(); applyShow(); seg("lu-units", S.units); seg("lu-lean", String(+S.lean || 0)); seg("lu-mview", S.mview === "top" ? "top" : "side");
     var af = ageSel(); $("lu-agef").textContent = af.h === 0 ? "no time for ageing" : "≈ " + Math.round(L.ageFraction(af.h, af.T) * 100) + "% of the full yield point returns";
   }
   function seg(id, v) { Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-v") === v ? "true" : "false"); }); }
@@ -950,6 +1034,7 @@
   $("lu-ghost").addEventListener("change", function () { S.ghost = this.checked; save(); drawAll(); });
   $("lu-speed").addEventListener("change", function () { S.speed = +this.value; save(); });
   $("lu-look").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.look = b.getAttribute("data-v"); save(); syncUI(); drawAll(); });
+  $("lu-mview").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.mview = b.getAttribute("data-v"); mState.ratio = mState.bound = null; save(); syncUI(); drawAll(); });
   $("lu-lean").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.lean = +b.getAttribute("data-v"); changed(true); toast(S.lean === 0 ? "Lean: chosen by the bar (new bar)" : S.lean === 2 ? "Each new band leans the other way (new bar)" : "Every band leans " + (S.lean < 0 ? "╱" : "╲") + " (new bar)"); });
   $("lu-units").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.units = b.getAttribute("data-v"); save(); syncUI(); drawAll(); say(); });
   $("lu-agesel").addEventListener("change", syncUI);
@@ -1173,7 +1258,7 @@
     function list() { return Array.prototype.slice.call(host.querySelectorAll(":scope > .lu-sec")); }
     function save2() { lay.order = list().map(function (w) { return w.getAttribute("data-sec"); }); try { localStorage.setItem(LKEY, JSON.stringify(lay)); } catch (e) {} }
     function setCol(w, on) { w.classList.toggle("is-col", on); var t = w.querySelector(".lu-stitle"); t.setAttribute("aria-expanded", on ? "false" : "true"); t.querySelector(".lu-scar").textContent = on ? "▸" : "▾"; }
-    lay.half = lay.half || {};
+    if (!lay.half) { lay.half = { test: 1, micro: 1 }; lay.defPair = 1; }
     function setHalf(w, on) { w.classList.toggle("is-half", on); w.querySelector(".lu-shalf").setAttribute("aria-pressed", String(on)); }
     function pairOn() { var L3 = list(); return !!(lay.half.test && lay.half.micro && Math.abs(L3.indexOf(wraps.test) - L3.indexOf(wraps.micro)) === 1); }
     function syncPair() { pair.querySelector("button").setAttribute("aria-pressed", String(pairOn())); }
@@ -1186,6 +1271,7 @@
       save2(); syncPair(); redraw();
     });
     var tail = null;
+    if (lay.defPair && !Array.isArray(lay.order)) lay.order = ["test", "micro", "set", "angle", "photos"];
     if (Array.isArray(lay.order)) { var seen = {}; lay.order.concat(SECS.map(function (d) { return d[0]; })).forEach(function (k) { if (wraps[k] && !seen[k]) { seen[k] = 1; host.insertBefore(wraps[k], tail); } }); }
     var toast2 = $("lu-toast"); if (toast2) outer.insertBefore(toast2, host.nextSibling);
     Object.keys(wraps).forEach(function (k) { setCol(wraps[k], !!lay.col[k]); setHalf(wraps[k], !!lay.half[k]); });

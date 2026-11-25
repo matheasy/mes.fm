@@ -148,14 +148,37 @@
 		<!-- ============ INSIDE THE METAL ============ -->
 		<div class="tu-card lu-micro" id="lu-micro">
 			<div class="lu-mtop"><h2 class="lu-h">Inside the metal: why there is an upper yield point</h2>
-				<label class="lu-ck"><input type="checkbox" id="lu-follow" checked> Follow the band front</label></div>
+				<span class="lu-mctl"><span class="tu-seg lu-mview" id="lu-mview" role="group" aria-label="Which view"><button type="button" data-v="side" aria-pressed="true" title="A cut through the crystal: you see the atoms">Side view: atoms</button><button type="button" data-v="top" aria-pressed="false" title="Looking down on the slip plane: you see whole dislocation lines">Top view: lines</button></span>
+				<label class="lu-ck"><input type="checkbox" id="lu-follow" checked> Follow the band front</label></span></div>
 			<ol class="lu-mstages" id="lu-mstages" aria-label="Where this slice is in its story">
 				<li data-s="0"><b>1</b> Pinned</li><li data-s="1"><b>2</b> Front arrives</li><li data-s="2"><b>3</b> Breaks free</li><li data-s="3"><b>4</b> Stretched, hardening</li><li data-s="4"><b>5</b> Neck, then break</li>
 			</ol>
 			<canvas id="lu-mcv" class="lu-cv" aria-label="A dislocation held by carbon atoms, breaking free when the band front arrives"></canvas>
 			<div class="lu-mmeter" id="lu-mmeter"></div>
 			<p class="lu-mcap" id="lu-mcap"></p>
-			<ul class="lu-mkey"><li><span class="lu-mk lu-mk--c"></span>carbon atom</li><li><span class="lu-mk lu-mk--d"></span>dislocation: the edge of a row of atoms that has slipped</li><li><span class="lu-mk lu-mk--a"></span>iron atoms (the crystal)</li></ul>
+			<ul class="lu-mkey"><li><span class="lu-mk lu-mk--c"></span>carbon atom</li><li><span class="lu-mk lu-mk--d"></span>dislocation: the end of an extra half-row of atoms (the ruck)</li><li><span class="lu-mk lu-mk--a"></span>iron atoms (the crystal)</li></ul>
+			<details class="lu-mhelp" id="lu-mhelp" open>
+				<summary>What am I looking at? (in plain words)</summary>
+				<div class="lu-mhgrid">
+					<div class="lu-mhcard">
+						<svg viewBox="0 0 240 92" class="lu-mhsvg" aria-hidden="true"><path d="M8,70 H86 Q100,70 104,52 Q110,34 116,52 Q120,70 134,70 H232" class="lu-mh-rug"/><path d="M128,40 h34 M162,40 l-8,-5 M162,40 l-8,5" class="lu-mh-arr"/><text x="8" y="88" class="lu-mh-t">a ruck in a rug: easy to push along</text></svg>
+						<p><b>1. Metal stretches like you move a heavy rug.</b> Dragging the whole rug at once is too hard. Instead you push a ruck (a little wrinkle) across it, and the rug ends up moved by one ruck's width. Metal does the same: rows of atoms slip over each other one small step at a time, not all at once.</p>
+					</div>
+					<div class="lu-mhcard">
+						<svg viewBox="0 0 240 92" class="lu-mhsvg" aria-hidden="true"><g class="lu-mh-fe"><circle cx="40" cy="20" r="6"/><circle cx="64" cy="20" r="6"/><circle cx="86" cy="20" r="6"/><circle cx="106" cy="20" r="6"/><circle cx="126" cy="20" r="6"/><circle cx="148" cy="20" r="6"/><circle cx="172" cy="20" r="6"/><circle cx="196" cy="20" r="6"/><circle cx="40" cy="42" r="6"/><circle cx="65" cy="42" r="6"/><circle cx="88" cy="42" r="6"/><circle cx="127" cy="42" r="6"/><circle cx="150" cy="42" r="6"/><circle cx="173" cy="42" r="6"/><circle cx="196" cy="42" r="6"/><circle cx="40" cy="68" r="6"/><circle cx="66" cy="68" r="6"/><circle cx="93" cy="68" r="6"/><circle cx="121" cy="68" r="6"/><circle cx="148" cy="68" r="6"/><circle cx="172" cy="68" r="6"/><circle cx="196" cy="68" r="6"/></g><circle cx="107" cy="42" r="6" class="lu-mh-d"/><path d="M107,48 v6 M99,54 h16" class="lu-mh-dl"/><circle cx="104" cy="62" r="3.5" class="lu-mh-c"/><circle cx="112" cy="61" r="3.5" class="lu-mh-c"/></svg>
+						<p><b>2. The ruck in a metal is called a dislocation.</b> Somewhere in the crystal there is one extra half-row of atoms squeezed in (blue, ⊥). Push sideways and it hops along one atom at a time. When it has crossed the whole crystal, the top half has slid one atom over the bottom half. Billions of these hops make the bar longer.</p>
+					</div>
+					<div class="lu-mhcard">
+						<p><b>3. Carbon atoms are the doorstop.</b> Under the end of the extra half-row the atoms are spread apart, so there is a roomy spot. Small carbon atoms (orange) love that spot. <b>They moved there long before the test</b>: while the steel cooled at the mill, or over weeks on the shelf. During the test they hardly move at all.</p>
+						<p>With carbon sitting under it, the dislocation is stuck. It takes extra force to tear it away: that is the <b>upper yield point</b>. Once it is torn free it slides on easily and leaves the carbon behind, so the force drops to the <b>lower yield</b>.</p>
+					</div>
+					<div class="lu-mhcard">
+						<p><b>4. Side view vs top view.</b> The side view is a thin slice through the crystal, so the dislocation shows up as one ⊥. In real life it is a long <b>line</b> running into the picture. The top view looks down on that line: carbon atoms hold it at many points, so under stress it bows out between them like a rope held by nails. That is why it looks curvy.</p>
+						<p>After it breaks free the top view shows <b>many wavy lines</b>: the free dislocations multiply and sweep across one after another. They are wavy because lines are flexible and keep catching on things; when they tangle, the steel gets harder (work hardening).</p>
+					</div>
+				</div>
+				<p class="lu-note">Watch it in order: tick <b>Follow the band front</b> and press Start. Each slice goes 1 Pinned → 2 Front arrives → 3 Breaks free → 4 Stretched. When that slice is done the picture jumps to the next slice ahead of the front (a purple note says so).</p>
+			</details>
 			<p class="lu-note">Click anywhere on the bar above to watch that slice, or tick Follow the band front. Not to scale: a real dislocation line is about a millionth of a millimetre across, and millions of them break free together in each grain the front crosses.</p>
 		</div>
 

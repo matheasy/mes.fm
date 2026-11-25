@@ -789,7 +789,7 @@ APPS = {
                             head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
                                        '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
                                        '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
-                            js_v="13"),
+                            js_v="14"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
@@ -962,7 +962,7 @@ APPS = {
     "luders-bands": dict(title="Lüders Band Simulator", page_title="Lüders Bands: Simulator and Explanation (Yield Point, Plateau, Stretcher Strains)",
                       tag="Watch a yield band run along a steel bar.", accent="#2f6690", dark="#22496a", tint="#e1edf6",
                       desc="Free interactive Lüders band simulator: pull a mild steel bar and watch the yield band form at the shoulder and run along the bar at 55° while the force stays flat. Upper and lower yield, the Lüders plateau, band speed, machine stiffness, notches, strain ageing and bake hardening, real photos and the full explanation.",
-                      js_v="9", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
+                      js_v="10", share_img="luders-bands/img/logo-big.png", vars={"PHOTOS": "@photos.html", "SEO": "@seo.html"}, brand=MAT_BRAND, tab=5, nav_extra=MAT_NAV_INFO, menu_extra=MAT_NAV_MENU),
     # Voids & Ductile Fracture Simulator (2026-11-18, mes.fm/ductile-fracture-simulator): 7th page of the materials brand, OWN source (tool_apps_src/ductile-fracture-simulator:
     # lib.js = MESVoid = GTN porous plasticity (growth, nucleation, shear term, coalescence) + a necking round bar with Bridgman triaxiality, crack from the centre, cup and cone,
     # dimples; tests node tool_apps_src/ductile-fracture-simulator-tests.js). Based on Cornell's "How and When Metals Fail" video (EeiwCbtJWyI).
