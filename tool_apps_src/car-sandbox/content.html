@@ -35,6 +35,7 @@
 					<button type="button" id="cs-mapbtn" title="Show or hide the map" aria-label="Map" aria-pressed="true">🗺</button>
 					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
 					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
+					<button type="button" id="cs-carsbtn" title="Computer cars: how many and what they do" aria-label="Computer cars" aria-expanded="false">🚗<span class="cs-bl"> Cars</span></button>
 					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
 					<button type="button" id="cs-camreset" title="Camera back behind the car (double-click the picture)" hidden>↺🎥<span class="cs-bl"> Behind</span></button>
@@ -52,6 +53,7 @@
 						<button type="button" data-mm="rot" id="cs-mmrot" aria-label="Map direction">⬆</button>
 						<button type="button" data-mm="big" title="Bigger / smaller map" aria-label="Bigger or smaller map">⤢</button>
 						<button type="button" data-mm="edit" title="Edit the map: ramps, loops, roads (B)" aria-label="Edit the map">✎</button>
+						<button type="button" data-mm="home" id="cs-mmhome" title="Put the map back in its corner" aria-label="Put the map back in its corner" hidden>⌂</button>
 						<button type="button" data-mm="hide" title="Hide the map" aria-label="Hide the map">✕</button>
 					</div>
 				</div>
@@ -65,6 +67,17 @@
 					<select id="cs-rpspeed" aria-label="Replay speed"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">⅒×</option></select>
 					<select id="cs-rpcam" aria-label="Replay camera"><option value="tv">TV cameras</option><option value="chase">Chase</option><option value="orbit">Orbit (drag)</option></select>
 					<button type="button" id="cs-rpx">✕ Back to driving</button>
+				</div>
+				<div class="cs-pop cs-cpop" id="cs-cpop" hidden>
+					<b>Computer cars: <span id="cs-ctnum">3</span></b>
+					<div class="cs-prow"><button type="button" class="cs-cstep" data-cstep="-1" aria-label="One car fewer">−</button><input type="range" id="cs-ctraffic" min="0" max="12" step="1" aria-label="Number of computer cars"><button type="button" class="cs-cstep" data-cstep="1" aria-label="One more car">＋</button></div>
+					<b>What they do</b>
+					<div class="cs-cai" id="cs-cai" role="group" aria-label="What the computer cars do">
+						<button type="button" data-ai="cruise">🛣 Drive around</button>
+						<button type="button" data-ai="chase">💥 Chase &amp; ram me</button>
+						<button type="button" data-ai="park">🅿 Parked</button>
+					</div>
+					<div class="cs-prow"><button type="button" class="cs-mini" id="cs-cswitch">⇄ Drive one of them (Tab)</button><button type="button" class="cs-mini" id="cs-cpopx">Close</button></div>
 				</div>
 				<div class="cs-pop" id="cs-pop" hidden>
 					<b>Sound</b>
@@ -94,6 +107,7 @@
 						<li><kbd>R</kbd> back on your wheels · <kbd>X</kbd> 🔧 repair · <kbd>T</kbd> ⟲ restart at the start · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
 						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
+						<li>🚗 Cars (top right): how many computer cars and what they do (drive around, chase and ram you, or park) · drag the round map anywhere on the picture (⌂ puts it back)</li>
 						<li><kbd>B</kbd> map editor: place ramps, loops, springs, launch pads, boost strips and draw your own roads · <kbd>L</kbd> fire a launch pad · <kbd>[</kbd> <kbd>]</kbd> slower / faster game</li>
 						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>

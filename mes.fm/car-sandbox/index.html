@@ -448,7 +448,10 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	/* mini-map */
 	.cs-mm {position:absolute;left:0.6em;bottom:0.7em;width:150px;height:150px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.55);box-shadow:0 2px 10px rgba(0,0,0,.45);background:#222;z-index:2;}
 	.cs-mm.big {width:230px;height:230px;}
-	.cs-mm canvas {width:100%;height:100%;display:block;cursor:pointer;}
+	.cs-mm canvas {width:100%;height:100%;display:block;cursor:grab;touch-action:none;}
+	.cs-mm.cs-mmdrag {box-shadow:0 0 0 3px #4dabf7, 0 6px 18px rgba(0,0,0,.5);transition:none;}
+	.cs-mm.cs-mmdrag canvas {cursor:grabbing;}
+	.cs-mm.cs-mmdrag .cs-mmb {opacity:0 !important;}
 	.cs-mmscale {position:absolute;left:50%;bottom:6%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px #000;pointer-events:none;}
 	.cs-mmb {position:absolute;inset:0;display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;gap:2px;padding-top:12%;opacity:0;transition:opacity .2s;pointer-events:none;}
 	.cs-mm:hover .cs-mmb, .cs-mm:focus-within .cs-mmb {opacity:1;pointer-events:auto;}
@@ -585,6 +588,15 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #cs .cs-fhelp #cs-fhok {background:#1c7ed6;border-color:#1c7ed6;color:#fff;}
 	#cs .cs-card .tu-btn--ghost[aria-pressed="true"] {background:#d9480f;border-color:#d9480f;color:#fff;}
 	html body.dark-mode #cs .cs-card .tu-btn--ghost[aria-pressed="true"] {background:#ff8a50;border-color:#ff8a50;color:#111;}
+	/* Cars pop-up on the picture (2026-11-25) */
+	.cs-cpop {min-width:15em;}
+	.cs-cstep {width:2em;height:2em;flex:none;cursor:pointer;border-radius:0.5em;border:1px solid var(--cs-line);background:rgba(255,255,255,0.1);color:var(--cs-ink);font:inherit;font-weight:700;}
+	.cs-cai {display:flex;flex-direction:column;gap:0.3em;}
+	.cs-cai button {cursor:pointer;text-align:left;font:inherit;padding:0.4em 0.6em;border-radius:0.5em;border:1px solid var(--cs-line);background:rgba(255,255,255,0.08);color:var(--cs-ink);}
+	.cs-cai button[aria-pressed="true"] {background:#d9480f;border-color:#ffa94d;color:#fff;font-weight:700;}
+	.cs-cpop .cs-prow .cs-mini {align-self:auto;margin-top:0.4em;color:var(--cs-ink);border-color:var(--cs-line);}
+	html body.dark-mode #cs .cs-cpop .cs-mini, html body.dark-mode #cs .cs-cai button, html body.dark-mode #cs .cs-cstep {color:#f2f5fa;}
+	html body.dark-mode #cs .cs-cai button[aria-pressed="true"] {color:#fff;}
 
 
 	@media print {
@@ -757,6 +769,9 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .cs-fhelp .cs-mini{border-color:rgba(51,51,51,0.40)}
 	body.dark-mode .cs-fhelp #cs-fhok{border-color:#1e85e1}
 	body.dark-mode #cs .cs-card .tu-btn--ghost[aria-pressed="true"]{border-color:#ef4f10}
+	body.dark-mode .cs-cstep{background:rgba(26,26,26,0.10)}
+	body.dark-mode .cs-cai button{background:rgba(26,26,26,0.08)}
+	body.dark-mode .cs-cai button[aria-pressed="true"]{border-color:#cc6900}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1006,6 +1021,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" id="cs-mapbtn" title="Show or hide the map" aria-label="Map" aria-pressed="true">🗺</button>
 					<button type="button" id="cs-rpbtn" title="Instant replay of the last 12 seconds (Y)" aria-label="Instant replay">🎬</button>
 					<button type="button" id="cs-mute" title="Sound on / off (M)" aria-label="Sound on or off">🔊</button>
+					<button type="button" id="cs-carsbtn" title="Computer cars: how many and what they do" aria-label="Computer cars" aria-expanded="false">🚗<span class="cs-bl"> Cars</span></button>
 					<button type="button" id="cs-optbtn" title="Sound volume and what to show on screen" aria-label="Sound and display options" aria-expanded="false">⚙</button>
 					<button type="button" id="cs-camnext" title="Next camera (C)">🎥</button>
 					<button type="button" id="cs-camreset" title="Camera back behind the car (double-click the picture)" hidden>↺🎥<span class="cs-bl"> Behind</span></button>
@@ -1023,6 +1039,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<button type="button" data-mm="rot" id="cs-mmrot" aria-label="Map direction">⬆</button>
 						<button type="button" data-mm="big" title="Bigger / smaller map" aria-label="Bigger or smaller map">⤢</button>
 						<button type="button" data-mm="edit" title="Edit the map: ramps, loops, roads (B)" aria-label="Edit the map">✎</button>
+						<button type="button" data-mm="home" id="cs-mmhome" title="Put the map back in its corner" aria-label="Put the map back in its corner" hidden>⌂</button>
 						<button type="button" data-mm="hide" title="Hide the map" aria-label="Hide the map">✕</button>
 					</div>
 				</div>
@@ -1036,6 +1053,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<select id="cs-rpspeed" aria-label="Replay speed"><option value="1">1×</option><option value="0.5">½×</option><option value="0.25">¼×</option><option value="0.1">⅒×</option></select>
 					<select id="cs-rpcam" aria-label="Replay camera"><option value="tv">TV cameras</option><option value="chase">Chase</option><option value="orbit">Orbit (drag)</option></select>
 					<button type="button" id="cs-rpx">✕ Back to driving</button>
+				</div>
+				<div class="cs-pop cs-cpop" id="cs-cpop" hidden>
+					<b>Computer cars: <span id="cs-ctnum">3</span></b>
+					<div class="cs-prow"><button type="button" class="cs-cstep" data-cstep="-1" aria-label="One car fewer">−</button><input type="range" id="cs-ctraffic" min="0" max="12" step="1" aria-label="Number of computer cars"><button type="button" class="cs-cstep" data-cstep="1" aria-label="One more car">＋</button></div>
+					<b>What they do</b>
+					<div class="cs-cai" id="cs-cai" role="group" aria-label="What the computer cars do">
+						<button type="button" data-ai="cruise">🛣 Drive around</button>
+						<button type="button" data-ai="chase">💥 Chase &amp; ram me</button>
+						<button type="button" data-ai="park">🅿 Parked</button>
+					</div>
+					<div class="cs-prow"><button type="button" class="cs-mini" id="cs-cswitch">⇄ Drive one of them (Tab)</button><button type="button" class="cs-mini" id="cs-cpopx">Close</button></div>
 				</div>
 				<div class="cs-pop" id="cs-pop" hidden>
 					<b>Sound</b>
@@ -1065,6 +1093,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<li><kbd>R</kbd> back on your wheels · <kbd>X</kbd> 🔧 repair · <kbd>T</kbd> ⟲ restart at the start · <kbd>C</kbd> camera · <kbd>Tab</kbd> drive another car</li>
 						<li>Laps are timed on the track: cross the chequered line, keep to the track, sector times show how you compare with your best, and a see-through ghost car drives your best lap</li>
 						<li>Flip or roll in the air and land on your wheels for a stunt</li>
+						<li>🚗 Cars (top right): how many computer cars and what they do (drive around, chase and ram you, or park) · drag the round map anywhere on the picture (⌂ puts it back)</li>
 						<li><kbd>B</kbd> map editor: place ramps, loops, springs, launch pads, boost strips and draw your own roads · <kbd>L</kbd> fire a launch pad · <kbd>[</kbd> <kbd>]</kbd> slower / faster game</li>
 						<li><kbd>Y</kbd> instant replay of the last 12 s · <kbd>N</kbd> night / day · <kbd>K</kbd> weather</li>
 						<li><kbd>G</kbd> flip gravity · <kbd>O</kbd> drop a random object · <kbd>H</kbd> horn · <kbd>M</kbd> sound · <kbd>P</kbd> pause</li>
@@ -1295,7 +1324,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/car-sandbox/js/car-sandbox.js?v=13" defer></script>
+	<script src="/car-sandbox/js/car-sandbox.js?v=14" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

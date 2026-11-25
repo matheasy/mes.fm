@@ -1958,11 +1958,21 @@
 		$("cs-gnum").addEventListener("change", function () { var g = Math.max(0, Math.min(300, +this.value || 0)); setGravity(g); syncUrl(); });
 		$("cs-flip").addEventListener("click", flipGravity);
 		/* traffic */
-		$("cs-traffic").value = S.traffic; $("cs-tnum").textContent = S.traffic;
-		$("cs-traffic").addEventListener("input", function () { S.traffic = +this.value; $("cs-tnum").textContent = S.traffic; setTraffic(S.traffic); save(); });
-		$("cs-traffic").addEventListener("change", syncUrl);
+		/* the same car controls in the panel and in the 🚗 Cars pop-up on the picture stay in step */
+		function trafficUI() { $("cs-traffic").value = S.traffic; $("cs-tnum").textContent = S.traffic; $("cs-ctraffic").value = S.traffic; $("cs-ctnum").textContent = S.traffic; $("cs-ai").value = S.ai; root.querySelectorAll("#cs-cai [data-ai]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.ai === S.ai)); }); }
+		function setTrafficN(n) { n = Math.max(0, Math.min(12, n | 0)); if (n === S.traffic && cars.length - 1 === n) return; S.traffic = n; setTraffic(n); save(); trafficUI(); }
+		function setAi(v) { S.ai = v; save(); syncUrl(); trafficUI(); toast(v === "chase" ? "💥 Demolition derby: they are coming for you" + (S.traffic ? "" : " (add some cars)") : v === "park" ? "🅿 Computer cars parked" : "🛣 Computer cars drive around the track"); }
 		opt($("cs-ai"), [["cruise", "Drive around"], ["chase", "Chase and ram me (derby)"], ["park", "Parked"]], S.ai);
-		$("cs-ai").addEventListener("change", function () { S.ai = this.value; save(); syncUrl(); toast(S.ai === "chase" ? "Demolition derby: they are coming for you" : "Computer cars: " + this.options[this.selectedIndex].text); });
+		trafficUI();
+		$("cs-traffic").addEventListener("input", function () { setTrafficN(+this.value); });
+		$("cs-ctraffic").addEventListener("input", function () { setTrafficN(+this.value); });
+		$("cs-traffic").addEventListener("change", syncUrl); $("cs-ctraffic").addEventListener("change", syncUrl);
+		root.querySelectorAll("[data-cstep]").forEach(function (b) { b.addEventListener("click", function () { setTrafficN(S.traffic + +b.dataset.cstep); syncUrl(); toast(S.traffic ? S.traffic + " computer car" + (S.traffic > 1 ? "s" : "") : "No computer cars"); }); });
+		$("cs-ai").addEventListener("change", function () { setAi(this.value); });
+		$("cs-cai").addEventListener("click", function (e) { var b = e.target.closest("[data-ai]"); if (b) setAi(b.dataset.ai); });
+		$("cs-carsbtn").addEventListener("click", function () { var p = $("cs-cpop"); p.hidden = !p.hidden; this.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) { $("cs-pop").hidden = true; trafficUI(); } });
+		$("cs-cpopx").addEventListener("click", function () { $("cs-cpop").hidden = true; $("cs-carsbtn").setAttribute("aria-expanded", "false"); });
+		$("cs-cswitch").addEventListener("click", function () { switchCar(1); });
 		$("cs-switch").addEventListener("click", function () { switchCar(1); });
 		/* objects */
 		$("cs-objs").innerHTML = C.OBJ_ORDER.map(function (k) { var o = C.OBJECTS[k]; return '<button type="button" data-k="' + k + '"><span aria-hidden="true">' + o.icon + "</span> " + o.name + "</button>"; }).join("");
@@ -1983,7 +1993,7 @@
 		});
 		root.addEventListener("input", function (e) { if (e.target.matches("[data-vol]")) setVolume(+e.target.value / 100); });
 		$("cs-mute").addEventListener("click", function () { setSound(!S.sound); toast(S.sound ? "Sound on" : "Sound off"); });
-		$("cs-optbtn").addEventListener("click", function () { var p = $("cs-pop"); p.hidden = !p.hidden; this.setAttribute("aria-expanded", String(!p.hidden)); });
+		$("cs-optbtn").addEventListener("click", function () { var p = $("cs-pop"); p.hidden = !p.hidden; this.setAttribute("aria-expanded", String(!p.hidden)); if (!p.hidden) $("cs-cpop").hidden = true; });
 		$("cs-popx").addEventListener("click", function () { $("cs-pop").hidden = true; $("cs-optbtn").setAttribute("aria-expanded", "false"); });
 		applyShow(); syncSoundUI();
 		$("cs-rpbtn").addEventListener("click", replayStart);
@@ -2126,13 +2136,39 @@
 		$("cs-mmscale").textContent = r * 2 >= 1000 ? (r * 2 / 1000) + " km" : r * 2 + " m";
 	}
 	function applyMini() {
-		var on = S.show.map !== false; $("cs-mm").hidden = !on; $("cs-mm").classList.toggle("big", !!S.mm.big);
+		var on = S.show.map !== false; $("cs-mm").hidden = !on; $("cs-mm").classList.toggle("big", !!S.mm.big); mmPlace();
 		$("cs-mmrot").textContent = S.mm.rot ? "⬆" : "N"; $("cs-mmrot").title = S.mm.rot ? "The map turns with the car (click: north up)" : "North is up (click: turn with the car)";
 		var mb = $("cs-mapbtn"); if (mb) mb.setAttribute("aria-pressed", String(on));
 		root.querySelectorAll("[data-show=map]").forEach(function (b) { b.checked = on; });
 		mmT = 0;
 	}
 
+	/* the mini-map can be dragged anywhere on the picture; its spot (S.mm.pos = share of the free room across / down) is kept */
+	function mmPlace() {
+		var el = $("cs-mm"), p = S.mm.pos; $("cs-mmhome").hidden = !p;
+		if (!p) { el.style.left = el.style.top = el.style.right = el.style.bottom = ""; return; }
+		var W2 = stage.clientWidth - el.offsetWidth, H2 = stage.clientHeight - el.offsetHeight;
+		el.style.right = el.style.bottom = "auto"; el.style.left = Math.round(Math.max(0, W2) * p.x) + "px"; el.style.top = Math.round(Math.max(0, H2) * p.y) + "px";
+	}
+	function setupMiniDrag() {
+		var el = $("cs-mm"), cv = $("cs-mmc"), d = null, dragged = false;
+		cv.addEventListener("pointerdown", function (e) {
+			var r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+			d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, l: r.left - sr.left, t: r.top - sr.top, on: false }; dragged = false;
+			try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+		});
+		cv.addEventListener("pointermove", function (e) {
+			if (!d || e.pointerId !== d.id) return; var dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+			if (!d.on && Math.hypot(dx, dy) < 7) return;
+			if (!d.on) { d.on = true; el.classList.add("cs-mmdrag"); }
+			var W2 = Math.max(1, stage.clientWidth - el.offsetWidth), H2 = Math.max(1, stage.clientHeight - el.offsetHeight);
+			S.mm.pos = { x: Math.max(0, Math.min(1, (d.l + dx) / W2)), y: Math.max(0, Math.min(1, (d.t + dy) / H2)) }; mmPlace();
+		});
+		function end(e) { if (!d || (e && e.pointerId !== d.id)) return; if (d.on) { dragged = true; el.classList.remove("cs-mmdrag"); save(); toast("Map moved · ⌂ on the map puts it back"); } d = null; }
+		cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end); cv.addEventListener("lostpointercapture", end);
+		/* a drag is not a click (a click still opens the editor) */
+		cv.addEventListener("click", function (e) { if (dragged) { dragged = false; e.stopImmediatePropagation(); } }, true);
+	}
 	/* ---------- the map editor ---------- */
 	var edOpen = false, ed = null;
 	function emap() { return ed.m; }
@@ -2332,7 +2368,7 @@
 		$("cs-mmb").addEventListener("click", function (e) {
 			var b = e.target.closest("button"); if (!b) return; var a = b.dataset.mm;
 			if (a === "in") S.mm.z = Math.max(0, S.mm.z - 1); else if (a === "out") S.mm.z = Math.min(MM_R.length - 1, S.mm.z + 1);
-			else if (a === "rot") S.mm.rot = !S.mm.rot; else if (a === "big") S.mm.big = !S.mm.big; else if (a === "edit") edOpenNow(); else if (a === "hide") { S.show.map = false; toast("Map hidden · bring it back with 🗺"); }
+			else if (a === "rot") S.mm.rot = !S.mm.rot; else if (a === "big") S.mm.big = !S.mm.big; else if (a === "home") { delete S.mm.pos; toast("Map back in its corner"); } else if (a === "edit") edOpenNow(); else if (a === "hide") { S.show.map = false; toast("Map hidden · bring it back with 🗺"); }
 			save(); applyMini();
 		});
 		$("cs-mmc").addEventListener("click", function () { edOpenNow(); });
@@ -2344,7 +2380,9 @@
 		ls.addEventListener("change", function () { if (this.value) applyLayout(this.value); this.value = ""; });
 		var el = $("cs-edlay"); el.innerHTML = '<option value="">Layout…</option>' + C.MAP_PRESETS.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + "</option>"; }).join("");
 		$("cs-mapreset").addEventListener("click", function () { delete MAPS[S.world]; sharedMap = null; saveMaps(); buildMapContent(true); toast("Back to the original map of " + W.name); });
-		window.addEventListener("resize", function () { mmT = 0; });
+		window.addEventListener("resize", function () { mmT = 0; mmPlace(); });
+		if (window.ResizeObserver) new ResizeObserver(function () { mmPlace(); }).observe(stage);
+		setupMiniDrag();
 		applyMini();
 		if (sharedMap) setTimeout(function () { toast("A shared map is loaded · edit it to keep it, or ⟲ Original map in the panel"); }, 1200);
 	}
