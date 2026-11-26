@@ -565,6 +565,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-sync {display:flex;flex-wrap:wrap;align-items:center;gap:0.3em 0.4em;margin:0 0 0.45em;padding:0.35em 0.45em;border:1px dashed var(--vd-line);border-radius:6px;font-size:0.8em;color:var(--vd-dim);}
 	#vd .vd-sync-f {color:var(--vd-fg);font-weight:700;max-width:12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} #vd .vd-sync-t {line-height:1.3;} #vd .vd-sync-t.is-warn {color:#fbbf24;}
 	#vd .vd-msync {display:inline-block;margin-left:0.35em;font-size:0.92em;white-space:nowrap;} #vd .vd-msync.is-in {color:#4ade80;} #vd .vd-msync.is-warn {color:#fbbf24;}
+	#vd .vd-monly {background:none;border:1px solid #fbbf24;border-radius:6px;padding:0 0.4em;font:inherit;font-size:0.92em;cursor:pointer;} #vd .vd-monly:hover {background:rgba(251,191,36,0.15);}
 	/* bar size (UI.bar): compact = one thin row each, minimal = timeline tools hidden */
 	#vd .vd-ic1 {display:none;} #vd .vd-transport, #vd .vd-tools {cursor:default;} #vd .vd-transport .vd-sp, #vd .vd-tools .vd-sp {cursor:ns-resize;align-self:stretch;}
 	#vd .vd-transport.is-drag, #vd .vd-tools.is-drag {cursor:ns-resize;}
@@ -920,6 +921,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-sync-t.is-warn{color:#fcd05f}
 	body.dark-mode #vd .vd-msync.is-in{color:#75e69e}
 	body.dark-mode #vd .vd-msync.is-warn{color:#fcd05f}
+	body.dark-mode #vd .vd-monly{border:1px solid #c89104}
 	body.dark-mode #vd .vd-dlg .vd-cmp-dn{border:1px solid #3e495b}
 	body.dark-mode #vd .vd-dlg .vd-cmp-rbtn.vd-primary{border-color:#f88807}
 	body.dark-mode #vd .vd-dlg .vd-q{background:#3d4b66}
@@ -1254,7 +1256,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 							<label class="vd-nlab">File type<select id="vd-nfmt" aria-label="File type"><option value="wav">WAV (best for editing)</option><option value="mp3">MP3 (small)</option><option value="m4a">M4A (small)</option></select></label>
 							<p class="vd-hint" id="vd-ndir"></p>
 							<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ndirpick">Choose a folder&hellip;</button><button type="button" class="vd-btn vd-sm" id="vd-ndiroff" hidden>Stop saving there</button></div>
-							<label class="vd-chk" id="vd-ndlrow"><input type="checkbox" id="vd-ndl"> Download each one as a file (goes to your Downloads folder)</label>
+							<label class="vd-chk" id="vd-ndlrow"><input type="checkbox" id="vd-ndl"> Download each one as a file (goes to your Downloads folder; recommended while no folder is chosen)</label>
 						</div>
 					</section>
 					<section class="vd-pane" data-pane="titles" role="tabpanel" aria-label="Titles" hidden><div class="vd-panehead"><b>Titles</b></div><p class="vd-hint">Click to put one at the playhead, or drag it onto the timeline.</p><div class="vd-cards" data-cards="titles"></div></section>
@@ -1446,7 +1448,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=68" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=69" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

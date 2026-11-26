@@ -22,7 +22,7 @@
 		var st = m.state === "ready" ? (m.converted ? "converted from " + esc(m.origName || "") : "") : m.state === "error" ? '<span class="vd-bad">' + esc(m.status) + "</span>" : m.state === "missing" ? '<span class="vd-bad">' + esc(m.status) + "</span>" : esc(m.status || "") + (m.pct ? '<i class="vd-mbar"><i style="width:' + Math.round(m.pct * 100) + '%"></i></i>' : "");
 		var used = VE.P.clips.filter(function (c) { return c.media === m.id; }).length;
 		return '<div class="vd-mi' + (binSel[m.id] ? " is-sel" : "") + (m.state !== "ready" ? " is-wait" : "") + '" role="option" aria-selected="' + !!binSel[m.id] + '" data-mid="' + m.id + '" tabindex="0">' +
-			'<canvas class="vd-mth" width="96" height="54" data-th="' + m.id + '"></canvas><div class="vd-mt"><div class="vd-mn" title="' + esc(m.name) + '">' + esc(m.name) + "</div><div class=\"vd-mm\">" + esc(meta) + (used ? " · on timeline" + (used > 1 ? " ×" + used : "") : "") + "</div><div class=\"vd-mm\">" + st + syncBadge(m) + "</div></div>" +
+			'<canvas class="vd-mth" width="96" height="54" data-th="' + m.id + '"></canvas><div class="vd-mt"><div class="vd-mn" title="' + esc(m.name) + '">' + esc(m.name) + "</div><div class=\"vd-mm\">" + esc(meta) + (used ? " · on timeline" + (used > 1 ? " ×" + used : "") : "") + "</div><div class=\"vd-mm\">" + st + syncBadge(m) + (m.only && m.file ? ' <button type="button" class="vd-msync is-warn vd-monly" data-mdl="' + m.id + '" title="Never saved on your computer: starting a new project would lose it">⚠ only in this browser · Download</button>' : "") + "</div></div>" +
 			'<span class="vd-mact"><button type="button" class="vd-btn vd-ico vd-sm" data-madd="' + m.id + '" title="Put it at the playhead" aria-label="Add ' + esc(m.name) + ' at the playhead"' + (m.state !== "ready" ? " disabled" : "") + '>+</button><button type="button" class="vd-btn vd-ico vd-sm" data-mrm="' + m.id + '" title="Remove from the project" aria-label="Remove ' + esc(m.name) + '">&times;</button></span></div>';
 	}
 	function renderBin() {
@@ -90,7 +90,7 @@
 	$("vd-binlist").addEventListener("click", function (e) {
 		var b = e.target.closest("button"), id;
 		if (b && (id = b.getAttribute("data-madd"))) { var m = VE.media(id); if (m && m.state === "ready") VE.tl.placeMedia(m, null, null, VE.t); return; }
-		if (b && (id = b.getAttribute("data-mrm"))) { removeMedia(id); return; }
+		if (b && (id = b.getAttribute("data-mrm"))) { removeMedia(id); return; } if (b && (id = b.getAttribute("data-mdl"))) { var md = VE.media(id); if (md) { downloadMedia([md]); renderBin(); toast("Downloading " + md.name + "…"); } return; }
 		var it = e.target.closest(".vd-mi"); if (!it) return; id = it.getAttribute("data-mid");
 		if (!(e.ctrlKey || e.metaKey || e.shiftKey)) binSel = {};
 		if (binSel[id]) delete binSel[id]; else binSel[id] = 1;
@@ -102,9 +102,28 @@
 		var list = unusedMedia(); if (!list.length) return;
 		var names = list.slice(0, 12).map(function (m) { return "• " + m.name; }).join("\n") + (list.length > 12 ? "\n… and " + (list.length - 12) + " more" : "");
 		if (!window.confirm("Remove " + list.length + " file" + (list.length > 1 ? "s" : "") + " that no clip on the timeline uses?\n\n" + names + "\n\nThey are taken out of this project only: the files on your computer (and in your media / Narrations folder) stay where they are. This can't be undone.")) return;
-		list.forEach(function (m) { forget(m); });
-		VE.commit("Remove unused media"); renderBin(); toast("Removed " + list.length + " unused file" + (list.length > 1 ? "s" : "") + " from the project.");
+		guardOnly(list, "Removing unused media", function () {
+			list.forEach(function (m) { forget(m); });
+			VE.commit("Remove unused media"); renderBin(); toast("Removed " + list.length + " unused file" + (list.length > 1 ? "s" : "") + " from the project.");
+		});
 	};
+	/* media made in this browser (recordings, typed narrations) that were never written to the computer: m.only.
+	   Anything that deletes stored media asks first and offers to download them, so a recording can't silently vanish. */
+	function onlyHere(list) { return (list || VE.bin).filter(function (m) { return m.only && m.file && m.state !== "missing"; }); }
+	function downloadMedia(list) {
+		list.forEach(function (m, i) { setTimeout(function () { var a = document.createElement("a"); a.href = URL.createObjectURL(m.file); a.download = m.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000); }, i * 500); m.only = false; });
+		if (list.length) VE.save();
+	}
+	function guardOnly(list, what, go) {
+		var o = onlyHere(list); if (!o.length) return go();
+		var names = o.slice(0, 8).map(function (m) { return "<li>" + esc(m.name) + "</li>"; }).join("") + (o.length > 8 ? "<li>… and " + (o.length - 8) + " more</li>" : "");
+		dialog("<h3>" + o.length + " recording" + (o.length > 1 ? "s exist" : " exists") + " only in this browser</h3><p class=\"vd-dtxt\">" + esc(what) + " removes " + (o.length > 1 ? "them" : "it") + " for good: " + (o.length > 1 ? "they were" : "it was") + " never saved on your computer.</p><ul class=\"vd-dtxt\">" + names + "</ul>" +
+			"<div class=\"vd-dlgact\"><button type=\"button\" class=\"vd-btn vd-primary\" id=\"vd-og-dl\">Download " + (o.length > 1 ? "them" : "it") + " first</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-og-go\">Remove anyway</button> <button type=\"button\" class=\"vd-btn\" id=\"vd-og-no\">Cancel</button></div>");
+		$("vd-og-dl").onclick = function () { closeDialog(); downloadMedia(o); toast("Downloading " + o.length + " file" + (o.length > 1 ? "s" : "") + " to your Downloads folder…", 6000); setTimeout(go, o.length * 500 + 1500); };
+		$("vd-og-go").onclick = function () { closeDialog(); go(); };
+		$("vd-og-no").onclick = closeDialog;
+	}
+	VE.guardOnly = guardOnly;
 	function forget(m) {
 		VE.bin = VE.bin.filter(function (x) { return x !== m; }); delete binSel[m.id];
 		VE.idbDel("blobs", "m:" + m.id).catch(function () { }); VE.idbDel("blobs", "t:" + m.id).catch(function () { });
@@ -113,8 +132,10 @@
 	function removeMedia(id) {
 		var m = VE.media(id); if (!m) return; var n = VE.P.clips.filter(function (c) { return c.media === id; }).length;
 		if (n && !window.confirm(m.name + " is used by " + n + " clip" + (n > 1 ? "s" : "") + " on the timeline. Remove it and those clips?")) return;
-		VE.P.clips = VE.P.clips.filter(function (c) { return c.media !== id; }); forget(m);
-		VE.commit("Remove media"); renderBin();
+		guardOnly([m], "Removing " + m.name, function () {
+			VE.P.clips = VE.P.clips.filter(function (c) { return c.media !== id; }); forget(m);
+			VE.commit("Remove media"); renderBin();
+		});
 	}
 	$("vd-addsel").onclick = function () { var list = VE.bin.filter(function (m) { return binSel[m.id] && m.state === "ready"; }); if (list.length) VE.tl.appendAll(list); binSel = {}; renderBin(); };
 	// drag a bin item onto the timeline (pointer events: works with mouse, touch and pen)
@@ -714,7 +735,7 @@
 	fm.addEventListener("click", function (e) {
 		var b = e.target.closest("[data-act]"); if (!b) return; fm.hidden = true; var a = b.getAttribute("data-act");
 		if (a === "import") $("vd-file").click(); else if (a === "title") VE.addTitle(); else if (a === "saveproj") saveProject(); else if (a === "saveprojas") saveProject(true); else if (a === "openproj") pickProject();
-		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) { P.pause(); VE.clearAll().then(function () { if (mdir.h) VE.idbPut("kv", "mediadir", mdir.h).catch(function () { }); }); linkProject(null); cloudUnlink(); } }
+		else if (a === "new") { if (window.confirm("Start a new, empty project? The current one and its media are removed from this browser (save a project file first if you want it).")) guardOnly(null, "Starting a new project", function () { P.pause(); VE.clearAll().then(function () { if (mdir.h) VE.idbPut("kv", "mediadir", mdir.h).catch(function () { }); }); linkProject(null); cloudUnlink(); }); }
 		else if (a === "snapshot") snapshot(); else if (a === "export") openExport(); else if (a === "narrate") openNarrate();
 	});
 
@@ -759,7 +780,7 @@
 	   brave://flags/#file-system-access-api); elsewhere every save is a download. The link survives a reload (handle in IndexedDB). */
 	var proj = { h: null, name: "", lm: 0, savedRev: -1 }, FSA = !!window.showSaveFilePicker, rev = 0;
 	VE.on("change", function (label) { rev++; if (label === "restore") { proj.savedRev = rev; cloudRev = rev; } projState(); if (cloud) cloud.changed(vdoc); renderSync(); });   // the autosave coming back is not a new change
-	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur }; }) }; }
+	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur, only: !!m.only || undefined }; }) }; }
 	function projBlob() { return new Blob([JSON.stringify(projData(), null, 1)], { type: "application/json" }); }
 	function projFileName() { return (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-").replace(/(\.mesvideo)+$/i, "") + ".mesvideo"; }
 	function linkProject(h, lm) {
@@ -835,7 +856,7 @@
 	async function askOpenProject(f0, h) {
 		var rd; try { rd = await readProjectFile(f0, h); } catch (e) { toast("Could not read " + (f0.name || "the project file") + ": " + (e && e.message || e) + " Try opening it again.", 9000); return; }
 		var f = rd.f, txt = rd.txt;
-		function go() { return openProjectText(txt, f.name, h, f.lastModified, false); }
+		function go() { return guardOnly(null, "Opening " + f.name, function () { openProjectText(txt, f.name, h, f.lastModified, false); }); }
 		var n = VE.P.clips.length, nm = VE.bin.length;
 		if (!n && !nm) return go();
 		dialog("<h3>Open " + esc(f.name) + "?</h3><p class=\"vd-dtxt\">A project is already open: <b>" + esc(VE.P.name || "Untitled video") + "</b> (" + n + " clip" + (n === 1 ? "" : "s") + ", " + nm + " media file" + (nm === 1 ? "" : "s") + "). Opening the new one replaces it in this browser. Its media files stay in the library only if the new project uses them.</p>" +
@@ -936,7 +957,7 @@
 			try {
 				var nm = m.name; try { await mdir.h.getFileHandle(nm); nm = nm.replace(/(\.[^.]+)?$/, " (from MES)$1"); } catch (e) { /* free name */ }
 				var fh = await mdir.h.getFileHandle(nm, { create: true }), w = await fh.createWritable(); await w.write(m.file); await w.close();
-				if (nm !== m.name) { m.name = nm; VE.save(); }
+				if (nm !== m.name) m.name = nm; m.only = false; VE.save();
 				done++;
 			} catch (e) { toast("Could not copy " + m.name + ": " + (e && e.message || e)); break; }
 		}
@@ -2527,7 +2548,7 @@
 	   visitor's own voice made on mes.fm/narration) or record a voice-over with the microphone while the timeline plays (like Camtasia).
 	   Every narration becomes a WAV / MP3 / M4A file, is written into the folder the visitor chose (handle in IndexedDB kv "narrdir"),
 	   optionally downloaded too, and added at the playhead as a sound clip. Settings in localStorage mes-video-editor:narrate. ---------- */
-	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "", mode: "type", mic: "", play: true, mute: false, count: true, clean: false, boost: 0, auto: true, fmt: "wav", dl: false };
+	var NKEY = "mes-video-editor:narrate", NS = { eng: "kokoro", voice: "af_heart", cvoice: "", speed: 1, exag: 0.5, gap: 0.25, pgap: 0.7, text: "", mode: "type", mic: "", play: true, mute: false, count: true, clean: false, boost: 0, auto: true, fmt: "wav", dl: false, dl2: true };
 	try { Object.assign(NS, JSON.parse(localStorage.getItem(NKEY)) || {}); } catch (e) { /* ignore */ }
 	function nkeep() { try { localStorage.setItem(NKEY, JSON.stringify(NS)); } catch (e) { /* ignore */ } }
 	function loadNarrate() { if (window.MESNarrate) return Promise.resolve(window.MESNarrate); return new Promise(function (res, rej) { var sc = document.createElement("script"); sc.src = "/main_js/narrate.js?v=1"; sc.onload = function () { res(window.MESNarrate); }; sc.onerror = function () { rej(new Error("Could not load the narration engine.")); }; document.head.appendChild(sc); }); }
@@ -2582,15 +2603,17 @@
 				try { name = await uniqueIn(ndir.h, name); var fh = await ndir.h.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(blob); await w.close(); wrote = true; where = " Saved as " + ndir.h.name + "/" + name + "."; if (mdir.h) rescan(false); }
 				catch (e) { where = " Could not write it into " + ndir.h.name + " (" + (e && e.message || e) + "): it is kept in this browser."; }
 			}
-			if (NS.dl && !wrote) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000); }
+			var dled = false;
+			if (NS.dl2 && !wrote) { dled = true; where += " A copy was downloaded to your Downloads folder."; var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000); }
 			var c = await addAudioFile(new File([blob], name, { type: blob.type || "audio/wav" }), at);
+			if (c && !wrote && !dled) { var mm = VE.media(c.media); if (mm) { mm.only = true; VE.save && VE.save(); } where += " It is kept only in this browser: choose a Narrations folder so it is also saved on your computer.";  }
 			if (c) { VE.sel = [c.id]; VE.emit("select"); }
 			toast("Narration added at " + V.tc(at, VE.P.fps) + " on " + (c && (V.track(VE.P, c.track) || {}).name || "a sound track") + "." + where, 8000);
 			return c;
 		});
 	}
 	var nfmt = $("vd-nfmt"); nfmt.value = NS.fmt; nfmt.onchange = function () { NS.fmt = nfmt.value; nkeep(); };
-	var ndl = $("vd-ndl"); ndl.checked = !!NS.dl; ndl.onchange = function () { NS.dl = ndl.checked; nkeep(); };
+	var ndl = $("vd-ndl"); ndl.checked = !!NS.dl2; ndl.onchange = function () { NS.dl2 = ndl.checked; nkeep(); };
 
 	/* typed script -> speech */
 	var nta = $("vd-nt"), nsel = $("vd-nv"), nsp = $("vd-nsp"), nVoicesDone = false;
