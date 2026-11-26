@@ -364,8 +364,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .au-time { font: 600 1.35em/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; padding: 5px 10px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 7px; min-width: 7.3em; text-align: center; color: var(--au-acc); }
 .au-selbox { display: flex; gap: 4px; align-items: center; color: var(--au-dim); font-size: 0.9em; }
 .au-selbox input { width: 6.6em; font-family: ui-monospace, Menlo, monospace; }
-.au-meter { width: 120px; height: 14px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 4px; }
-.au-vol { display: flex; align-items: center; gap: 4px; color: var(--au-dim); }
+.au-meter { width: 40px; flex: 1 1 40px; max-width: 120px; height: 14px; background: #0b0d11; border: 1px solid var(--au-line); border-radius: 4px; }
+.au-vol { display: flex; flex-wrap: nowrap; flex: 1 1 150px; max-width: 240px; align-items: center; gap: 4px; color: var(--au-dim); }
 .au-vol input { width: 80px; }
 
 /* main */
@@ -373,7 +373,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 .au-tl { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .au-rulerrow { display: flex; height: 28px; border-bottom: 1px solid var(--au-line); background: var(--au-panel); }
 .au-corner { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); display: flex; align-items: center; gap: 4px; padding: 0 6px; font-size: 0.85em; color: var(--au-dim); }
-.au-ruler { flex: 1 1 auto; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
+.au-ruler { flex: 1 1 0; min-width: 0; height: 28px; display: block; cursor: text; touch-action: none; }
 .au-scroll { position: relative; overflow-y: auto; overflow-x: hidden; max-height: min(62vh, 640px); min-height: 160px; }
 .au-rows { display: flex; }
 .au-heads { flex: 0 0 var(--au-hw, 176px); border-right: 1px solid var(--au-line); background: var(--au-panel); }
@@ -477,7 +477,7 @@ body.au-noscroll { overflow: hidden; }
 	.au-head label.au-pan { display: none; }
 	.au-search { order: 5; max-width: none; flex-basis: 100%; }
 	.au-time { font-size: 1.1em; min-width: 6.5em; }
-	.au-meter { width: 70px; }
+	.au-meter { max-width: 70px; }
 	.au-vol input { width: 60px; }
 	.au-selbox input { width: 5.6em; }
 }
@@ -583,6 +583,26 @@ body.au-noscroll { overflow: hidden; }
 .au.au-simple-on .au-main { flex: none; }
 .au-s-intro { display: none; margin: 0; padding: 4px 14px 12px; color: var(--au-dim); font-size: 0.95em; line-height: 1.45; background: var(--au-panel); order: 2; }
 .au.au-simple-on.au-s-empty .au-s-intro { display: block; }
+/* language menu above the editor (the translated pages: build_tool_apps.py _audio_pages) */
+.au-lang { display: flex; justify-content: flex-end; margin: 0 0 .5em; }
+.au-lang details { position: relative; font-size: .92em; }
+.au-lang summary { cursor: pointer; list-style: none; padding: .3em .75em; border: 1px solid #cbd5e1; border-radius: 999px; background: #ffffff; color: #1e293b; font-weight: 600; user-select: none; }
+.au-lang summary::-webkit-details-marker { display: none; }
+.au-lang summary::after { content: " \25BE"; }
+.au-lang ul { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; margin: 0; padding: .35em 0; list-style: none; min-width: 12em; max-height: 70vh; overflow: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.au-lang li a { display: block; padding: .42em 1em; color: #1e293b !important; text-decoration: none !important; }
+.au-lang li a:hover, .au-lang li a:focus { background: #f1f5f9; }
+.au-lang li a[aria-current] { font-weight: 700; color: #0369a1 !important; }
+html body.dark-mode .au-lang summary, html body.dark-mode .au-lang ul { background: #1c1f26; border-color: #333948; color: #e7e9ee; }
+html body.dark-mode .au-lang li a { color: #e7e9ee !important; }
+html body.dark-mode .au-lang li a:hover, html body.dark-mode .au-lang li a:focus { background: #2a2f3c; }
+html body.dark-mode .au-lang li a[aria-current] { color: #7dd3fc !important; }
+/* right-to-left pages (Urdu): text, menus and panels run right to left; the timeline, transport and meters stay left to right (time runs left to right) */
+#au[dir=rtl] .au-main, #au[dir=rtl] .au-trans, #au[dir=rtl] .au-hbar, #au[dir=rtl] .au-recbar { direction: ltr; }
+#au[dir=rtl] .au-side, #au[dir=rtl] .au-empty, #au[dir=rtl] .au-head { direction: rtl; }
+#au[dir=rtl] .au-selbox input, #au[dir=rtl] .au-time, #au[dir=rtl] kbd { direction: ltr; unicode-bidi: isolate; }
+#au:lang(ur) { line-height: 1.7; }
+html[lang=ur] .tu-seo { direction: rtl; text-align: right; line-height: 1.8; }
 
 
 	@media print {
@@ -719,6 +739,11 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #au .au-s-rec[aria-pressed=true] .au-s-dot{background:#1a1a1a}
 	body.dark-mode #au .au-s-magic{border-color:#420bc1}
 	body.dark-mode #au .au-s-primary{border-color:#03a7fc}
+	body.dark-mode .au-lang summary{border:1px solid #293747;background:#1a1a1a;color:#93a7c8}
+	body.dark-mode .au-lang ul{background:#1a1a1a;border:1px solid #293747}
+	body.dark-mode .au-lang li a{color:#93a7c8 !important}
+	body.dark-mode .au-lang li a:hover,body.dark-mode .au-lang li a:focus{background:#151a1e}
+	body.dark-mode .au-lang li a[aria-current]{color:#5fc4fc !important}
 	/* TOOL-DARK:END */
 </style>
 <style>
@@ -830,8 +855,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
 			<button type="button" class="au-ib" id="au-zsel" title="Zoom to the selection (Ctrl+3)">Sel</button>
 			<button type="button" class="au-ib" id="au-spec" aria-pressed="false" title="Spectrogram view (S)">Spectrogram</button>
 			<span class="au-vsep"></span>
-			<span class="au-vol"><span aria-hidden="true">🔊</span><input type="range" id="au-vol" min="0" max="1.5" step="0.01" value="1" aria-label="Playback volume"></span>
-			<canvas class="au-meter" id="au-meter" width="120" height="14" aria-label="Playback level"></canvas>
+			<span class="au-vol"><span aria-hidden="true">🔊</span><input type="range" id="au-vol" min="0" max="1.5" step="0.01" value="1" aria-label="Playback volume"><canvas class="au-meter" id="au-meter" width="120" height="14" role="img" aria-label="Playback level meter" title="Playback level: how loud the sound is while it plays (green fine, yellow loud, red too loud)"></canvas></span>
 		</div>
 		<div class="au-recbar" id="au-recbar" hidden><span class="au-recdot"></span><b>Recording</b><span id="au-rect">0:00</span><canvas class="au-meter" id="au-recmeter" width="160" height="14"></canvas><button type="button" class="au-btn au-btn--sm" id="au-recredo" title="Throw this take away and start recording again (Backspace)">↺ Start over</button><button type="button" class="au-btn au-btn--sm" id="au-recstop">⏹ Stop recording</button></div>
 		<div class="au-cmpbar" id="au-cmpbar" hidden></div>
@@ -884,6 +908,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Ar
   document.body.classList.add("dark-mode");
 })();
 </script>
-<script src="js/app-update.js" data-app="audio" data-ios="6837411404" data-android="fm.mes.audio" data-v-ios="1.0" data-v-android="1.0" data-code-android="1"></script>
+<script src="js/app-update.js" data-app="audio" data-ios="6837411404" data-android="fm.mes.audio" data-v-ios="1.0.1" data-v-android="1.0" data-code-android="1"></script>
 </body>
 </html>

@@ -21,6 +21,22 @@
 			});
 		};
 	}
+	/* China mainland App Store (window.MES_NO_AI, set by MainViewController.swift): the AI noise removal is off there,
+	   so drop "with AI" / "AI" from the page's fixed text too. */
+	if (window.MES_NO_AI) {
+		var fixAI = function () {
+			var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), t, n;
+			while ((n = w.nextNode())) {
+				t = n.nodeValue;
+				if (t.indexOf("AI") < 0) continue;
+				n.nodeValue = t.replace(/the AI noise removal \(DeepFilterNet 3, MIT \/ Apache-2\.0\)/g, "the noise removal")
+					.replace(/ with AI\b/g, "").replace(/ \(AI\)/g, "").replace(/\bAI noise removal\b/g, "noise removal");
+			}
+			[].forEach.call(document.querySelectorAll("[title*='AI']"), function (el) { el.title = el.title.replace(/ with AI\b/g, ""); });
+		};
+		if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fixAI); else fixAI();
+		setTimeout(fixAI, 1500);
+	}
 	function b64(u8) { var s = "", i, CH = 0x8000; for (i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH)); return btoa(s); }
 	function err(e) { return new Error((e && (e.message || e.errorMessage)) || String(e)); }
 	window.MESAudioNative = {
