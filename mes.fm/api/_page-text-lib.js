@@ -47,4 +47,14 @@ function extract(html) {
   if (text.length > 400000) text = text.slice(0, 400000);
   return { title, text };
 }
-module.exports = { decodeEntities, charsetOf, decode, extract, biggest };
+// Picture links of the page (og:image first, then <img> inside the article / main / body), absolute http(s) only, at most 24. Used by mes.fm/ai-detector.
+function pictures(html, base) {
+  const h = String(html || ''), out = [], seen = {};
+  const add = (u) => { if (!u) return; u = decodeEntities(String(u).trim()); let a; try { a = new URL(u, base).href; } catch (e) { return; } if (!/^https?:/i.test(a) || /\.svg(\?|$)|^data:|pixel|spacer|1x1|gravatar|emoji/i.test(a) || seen[a]) return; seen[a] = 1; out.push(a); };
+  add((/<meta[^>]+property=["']og:image["'][^>]*content=["']([^"']+)/i.exec(h) || /<meta[^>]+content=["']([^"']+)["'][^>]*property=["']og:image["']/i.exec(h) || [])[1]);
+  let body = biggest(h, 'article'); if (body.length < 400) body = biggest(h, 'main') || body; if (body.length < 400) body = biggest(h, 'body') || h;
+  const re = /<img\b[^>]*?\s(?:data-src|src)=["']([^"']+)["']/gi; let m;
+  while ((m = re.exec(body)) && out.length < 24) add(m[1]);
+  return out;
+}
+module.exports = { decodeEntities, charsetOf, decode, extract, biggest, pictures };

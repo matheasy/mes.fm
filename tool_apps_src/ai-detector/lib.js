@@ -327,6 +327,109 @@ var MESAID = (function () {
 	};
 	/* frame times for a video: n evenly spread, avoiding the very start / end */
 	A.frameTimes = function (dur, n) { if (!(dur > 0)) return [0]; n = Math.max(1, Math.min(n || 6, 24)); var out = []; for (var i = 0; i < n; i++) out.push(Math.round(dur * (i + 0.5) / n * 100) / 100); return out; };
+
+	/* ---- post links (2026-11-25): check a whole post (Hive / PeakD / InLeo / Ecency / 3Speak, a web article, a YouTube video) ---- */
+	var HIVE_HOSTS = /^(?:www\.)?(peakd\.com|hive\.blog|ecency\.com|inleo\.io|leofinance\.io|3speak\.tv|hiveblog\.io|liketu\.com|waivio\.com|actifit\.io|stemsocial\.com|dbuzz\.com|travelfeed\.io|blog\.openhive\.network|hivel\.ink|splintertalk\.io|hive\.vote|worldmappin\.com)$/i;
+	/* What a pasted link points to: {kind:'hive', author, permlink} | {kind:'youtube', id, url} | {kind:'web', url} | null. A comment link (#@user/permlink) means that comment. */
+	A.parsePostLink = function (s) {
+		s = String(s || '').trim(); if (!s) return null;
+		if (/^@?[a-z0-9.-]{3,16}\/[a-z0-9-]{1,256}$/.test(s)) { var bp = s.replace(/^@/, '').split('/'); return { kind: 'hive', author: bp[0], permlink: bp[1] }; }
+		if (!/^https?:\/\//i.test(s)) { if (/^[\w-]+(\.[\w-]+)+\//.test(s)) s = 'https://' + s; else return null; }
+		var u; try { u = new URL(s); } catch (e) { return null; }
+		var host = u.hostname.toLowerCase(), m;
+		if (/(^|\.)(youtube\.com|youtube-nocookie\.com)$/.test(host)) { m = /[?&]v=([\w-]{11})/.exec(u.search) || /\/(?:shorts|embed|live)\/([\w-]{11})/.exec(u.pathname); if (m) return { kind: 'youtube', id: m[1], url: 'https://www.youtube.com/watch?v=' + m[1] }; }
+		if (host === 'youtu.be') { m = /^\/([\w-]{11})/.exec(u.pathname); if (m) return { kind: 'youtube', id: m[1], url: 'https://www.youtube.com/watch?v=' + m[1] }; }
+		if (HIVE_HOSTS.test(host)) {
+			m = /^#@([a-z0-9.-]{3,16})\/([a-z0-9-]+)/.exec(u.hash); if (m) return { kind: 'hive', author: m[1], permlink: m[2] };
+			if (/3speak\.tv$/.test(host)) { m = /[?&]v=([a-z0-9.-]{3,16})\/([a-z0-9-]+)/.exec(u.search); if (m) return { kind: 'hive', author: m[1], permlink: m[2], video: true }; }
+			m = /\/@([a-z0-9.-]{3,16})\/([a-z0-9-]+)\/?$/.exec(u.pathname) || /\/threads\/view\/([a-z0-9.-]{3,16})\/([a-z0-9-]+)/.exec(u.pathname) || /\/(?:p|post)\/([a-z0-9.-]{3,16})\/([a-z0-9-]+)/.exec(u.pathname);
+			if (m) return { kind: 'hive', author: m[1], permlink: m[2] };
+		}
+		return { kind: 'web', url: u.href };
+	};
+	A.isImageLink = function (s) { return /^https?:\/\/[^\s]+\.(jpe?g|png|webp|avif|gif|heic|bmp)(\?[^\s]*)?$/i.test(String(s || '').trim()) || /^https?:\/\/(images\.hive\.blog|images\.ecency\.com)\//i.test(String(s || '').trim()); };
+	/* Markdown / HTML post body -> plain text for the text check (pictures, links, code and markup removed; link words kept). */
+	A.mdToText = function (md) {
+		var t = String(md || '');
+		t = t.replace(/<!--[\s\S]*?-->/g, ' ').replace(/^\s*\[\/\/\]:\s*#\s*\([^\n]*\)\s*$/gm, ' ').replace(/^\s*Posted (?:Using|using|via|with) \S+\s*$/gm, ' ').replace(/```[\s\S]*?```/g, '\n').replace(/<(script|style|iframe)\b[\s\S]*?<\/\1>/gi, ' ')
+			.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|h\d|li|blockquote|center|tr)>/gi, '\n').replace(/<[^>]+>/g, ' ')
+			.replace(/https?:\/\/\S+/g, ' ').replace(/^\s{0,3}#{1,6}\s*/gm, '').replace(/^\s*>\s?/gm, '').replace(/^\s*[-*_]{3,}\s*$/gm, '').replace(/[*_]{1,3}([^*_\n]+)[*_]{1,3}/g, '$1').replace(/`([^`]*)`/g, '$1')
+			.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+		return t.split('\n').map(function (l) { return l.replace(/[ \t]+/g, ' ').trim(); }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+	};
+	/* Picture links in a post: json_metadata.image first, then markdown / html / bare picture links in the body. Deduped, at most 40. */
+	A.postImages = function (body, meta) {
+		var out = [], seen = {};
+		function add(u) { u = String(u || '').trim().replace(/[)\]>"']+$/, ''); if (!/^https?:\/\//i.test(u) || u.length > 2000) return; var k = A.imageKey(u); if (seen[k]) return; seen[k] = 1; out.push(u); }
+		((meta && Array.isArray(meta.image)) ? meta.image : []).forEach(add);
+		var b = String(body || ''), m, re = /!\[[^\]]*\]\(\s*(https?:\/\/[^)\s]+)[^)]*\)|<img\b[^>]*\bsrc=["'](https?:\/\/[^"']+)["']|(https?:\/\/\S+?\.(?:jpe?g|png|webp|gif|avif)(?:\?\S*)?)(?=[\s)\]<"']|$)/gi;
+		while ((m = re.exec(b))) add(m[1] || m[2] || m[3]);
+		return out.slice(0, 40);
+	};
+	/* The real picture behind Hive image proxies (images.hive.blog/0x0/<url>, /640x0/<url>), so the same picture is found once. */
+	A.imageOrigin = function (u) { var m = /^https?:\/\/(?:images\.hive\.blog|images\.ecency\.com|steemitimages\.com)\/\d+x\d+\/(https?:\/\/.+)$/i.exec(u); return m ? m[1] : u; };
+	A.imageKey = function (u) { return A.imageOrigin(u).replace(/^https?:\/\//i, '').toLowerCase(); };
+	/* What a Hive picture link itself tells: who uploaded it (files.peakd.com keeps the account in the path) and the upload hash (same hash = the same file). */
+	A.hiveImageInfo = function (u) {
+		var o = A.imageOrigin(u), m, r = { url: o, host: '', uploader: '', hash: '' };
+		try { r.host = new URL(o).hostname.toLowerCase(); } catch (e) { return r; }
+		if ((m = /files\.peakd\.com\/file\/peakd-hive\/([a-z0-9.-]{3,16})\/([A-Za-z0-9]{20,})/.exec(o))) { r.uploader = m[1]; r.hash = m[2]; }
+		else if ((m = /\/(DQm[1-9A-HJ-NP-Za-km-z]{40,50}|Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-z2-7]{50,})/.exec(o))) r.hash = m[1];
+		else if ((m = /images\.hive\.blog\/p\/([1-9A-HJ-NP-Za-km-z]{20,})/.exec(o))) r.hash = m[1];
+		return r;
+	};
+	/* A Hive post (bridge.get_post / condenser get_content answer) -> what the page checks. */
+	A.hivePost = function (p) {
+		if (!p || !p.author) return null;
+		var meta = p.json_metadata; if (typeof meta === 'string') { try { meta = JSON.parse(meta); } catch (e) { meta = {}; } } meta = meta || {};
+		var body = String(p.body || ''), video = null, v = meta.video, m;
+		if (v && (v.info || v.content)) { var inf = v.info || {}; video = { kind: '3speak', author: inf.author || p.author, permlink: inf.permlink || p.permlink, thumb: inf.snaphash ? 'https://ipfs-3speak.b-cdn.net/ipfs/' + inf.snaphash : '' }; }
+		if (!video && (m = /3speak\.tv\/(?:watch|embed)\?v=([a-z0-9.-]{3,16})\/([a-z0-9-]+)/i.exec(body))) video = { kind: '3speak', author: m[1], permlink: m[2] };
+		if (!video && (m = /(?:youtube\.com\/(?:watch\?(?:[^\s)"']*&)?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/.exec(body))) video = { kind: 'youtube', id: m[1], thumb: 'https://i.ytimg.com/vi/' + m[1] + '/hqdefault.jpg' };
+		var imgs = A.postImages(body, meta);
+		return { kind: 'hive', author: p.author, permlink: p.permlink, title: p.title || (p.depth ? 'Comment by @' + p.author : ''), created: p.created || '', depth: p.depth || 0, app: String(meta.app || '').split('/')[0], tags: Array.isArray(meta.tags) ? meta.tags.slice(0, 10) : [], text: A.mdToText(body), images: imgs, video: video, link: 'https://peakd.com/@' + p.author + '/' + p.permlink };
+	};
+	/* The sentences most worth searching for word for word: 9-40 words, few common words, no quotes / links / lists, spread through the text. */
+	var COMMON = ' the a an and or but of to in on at for with is are was were be been it this that these those i you he she we they my your his her our their as by from not no so if then than there here have has had do does did will would can could should just very also more most some any all one about into out up what which who when where how why me him them us its im dont ';
+	A.distinctiveSentences = function (text, n) {
+		var sents = String(text || '').replace(/\s+/g, ' ').split(/(?<=[.!?]["”’)]?)\s+(?=[A-Z"“(])/), cand = [];
+		sents.forEach(function (s, i) {
+			s = s.trim(); var w = s.split(' '); if (w.length < 9 || w.length > 40 || /https?:|www\.|[•|]|^\d+[.)]/.test(s) || /^["“]/.test(s)) return;
+			var rare = 0, longw = 0; w.forEach(function (x) { var k = x.toLowerCase().replace(/[^a-z']/g, ''); if (k && COMMON.indexOf(' ' + k + ' ') < 0) rare++; if (k.length >= 8) longw++; });
+			cand.push({ s: s.replace(/[.!?]+$/, ''), i: i, r: rare / w.length, score: rare / w.length + longw * 0.03 + Math.min(w.length, 22) * 0.01 });
+		});
+		cand.sort(function (a, b) { return b.score - a.score; });
+		var good = cand.filter(function (c) { return c.r >= 0.34; }); cand = good.length ? good : cand.slice(0, 1);
+		var pick = [], N = n || 3, gap = Math.max(1, Math.floor(sents.length / (N * 2)));
+		cand.forEach(function (c) { if (pick.length < N && pick.every(function (p) { return Math.abs(p.i - c.i) >= gap; })) pick.push(c); });
+		return pick.sort(function (a, b) { return a.i - b.i; }).map(function (c) { var w = c.s.split(' '); return w.length > 24 ? w.slice(0, 24).join(' ') : c.s; });
+	};
+	/* Exact-phrase searches for one sentence: the whole web, then only Hive front ends. */
+	A.phraseLinks = function (s) {
+		var q = '"' + String(s).replace(/"/g, '') + '"', e = encodeURIComponent;
+		return [
+			{ name: 'Google', url: 'https://www.google.com/search?q=' + e(q) },
+			{ name: 'Bing', url: 'https://www.bing.com/search?q=' + e(q) },
+			{ name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=' + e(q) },
+			{ name: 'Hive sites', url: 'https://www.google.com/search?q=' + e(q + ' (site:peakd.com OR site:hive.blog OR site:ecency.com OR site:inleo.io)') }
+		];
+	};
+	/* Searches for the same Hive upload (by its hash) in other posts. */
+	A.hashLinks = function (h) { var e = encodeURIComponent; return h ? [{ name: 'Same upload on the web', url: 'https://www.google.com/search?q=' + e('"' + h + '"') }] : []; };
+	/* Copy clues from what the post itself shows (dir: look = a reason to check, ok = a small good sign, info). Honest: a picture uploaded by another account is a reason to look, not proof (people re-share with permission). */
+	A.copySignals = function (post) {
+		var S = []; if (!post) return S;
+		var others = {}, own = 0, n = (post.images || []).length;
+		(post.images || []).forEach(function (u) { var i = A.hiveImageInfo(u); if (i.uploader) { if (i.uploader === post.author) own++; else others[i.uploader] = (others[i.uploader] || 0) + 1; } });
+		var ol = Object.keys(others);
+		if (ol.length) S.push(sig('look', 'medium', 'Picture uploaded by another account', ol.map(function (a) { return '@' + a + (others[a] > 1 ? ' (' + others[a] + ')' : ''); }).join(', ') + ': PeakD keeps the uploader\'s name in the picture link. It may be a friend\'s or shared picture; check whether credit is given.', 'copy'));
+		if (own) S.push(sig('ok', 'weak', own + ' picture' + (own > 1 ? 's' : '') + ' uploaded by @' + post.author, 'The uploader in the link is the author. That only shows who uploaded the file, not who made it.', 'copy'));
+		if (n && !own && !ol.length) S.push(sig('info', 'weak', 'Uploader not shown in the picture links', 'Most picture hosts (images.hive.blog, Ecency, InLeo, other sites) don\'t record who uploaded a file. Use the reverse image searches.', 'copy'));
+		var credit = /\b(source|credits?|courtesy|image by|images by|photo by|photos by|picture by|pixabay|unsplash|pexels|wikimedia|made with ai|generated (?:with|by|using)|ai[- ]generated|midjourney|dall-?e|stable diffusion)\b/i.exec(post.text || '');
+		if (n && credit) S.push(sig('info', 'weak', 'The post mentions a source: "' + credit[0] + '"', 'Credit lines are a good sign; open the source to check it really is where the picture came from.', 'copy'));
+		else if (n >= 1) S.push(sig('info', 'weak', 'No picture credit found in the text', 'Not proof of anything: many people post their own photos without saying so.', 'copy'));
+		return S;
+	};
 	return A;
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESAID;

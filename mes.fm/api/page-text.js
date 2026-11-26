@@ -112,7 +112,7 @@ async function handler(req, res, deps) {
       const ct = String(r.headers['content-type'] || '').toLowerCase(), html = T.decode(r.body, ct);
       const out = /text\/plain/.test(ct) ? { title: '', text: html.slice(0, 400000) } : T.extract(html);
       if (out.text.replace(/\s/g, '').length < 40) return fail(res, 422, 'Hardly any text was found on that page (it may build itself with JavaScript or need a sign-in). Open it, copy the text and paste it instead.');
-      return send(res, 200, { title: out.title, text: out.text, url: c.url, cut: !!r.cut });
+      return send(res, 200, { title: out.title, text: out.text, url: c.url, cut: !!r.cut, images: /text\/plain/.test(ct) ? [] : T.pictures(html, c.url) });
     }
   } catch (e) {
     return fail(res, 504, /timeout/.test(String(e && e.message)) ? 'The other site did not answer in time.' : 'Could not fetch that link.');

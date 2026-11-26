@@ -54,7 +54,8 @@
 	document.addEventListener('paste', function (e) {
 		if (/^(TEXTAREA|INPUT)$/.test((document.activeElement || {}).tagName || '')) return;
 		var f = e.clipboardData && e.clipboardData.files && e.clipboardData.files[0]; if (f) { e.preventDefault(); routeFile(f); return; }
-		var t = e.clipboardData && e.clipboardData.getData('text'); if (t && t.length > 40 && !/^https?:\/\//.test(t.trim())) { e.preventDefault(); showTab('text', true); $('aid-text').value = t; checkText(); }
+		var t = e.clipboardData && e.clipboardData.getData('text'); if (t && /^https?:\/\/\S+$/.test(t.trim())) { e.preventDefault(); if (A.isImageLink(t.trim())) { showTab('img', true); loadImageUrl(t.trim()); } else { $('aid-purl').value = t.trim(); loadPost(t.trim()); } return; }
+		if (t && t.length > 40 && !/^https?:\/\//.test(t.trim())) { e.preventDefault(); showTab('text', true); $('aid-text').value = t; checkText(); }
 	});
 	function routeFile(f) {
 		if (/^video\//.test(f.type) || /\.(mp4|mov|m4v|webm|mkv)$/i.test(f.name)) { showTab('vid', true); loadVideo(f); }
@@ -67,11 +68,16 @@
 	var img = { file: null, bmp: null, u8: null, S: [], view: 'orig', ela: null, noise: null, cls: null };
 	dropzone('aid-idrop', 'aid-ifile', function (f) { loadImage(f, f.name); });
 	$('aid-iurlf').onsubmit = function (e) {
-		e.preventDefault(); var u = $('aid-iurl').value.trim(); if (!/^https?:\/\//i.test(u)) return toast('Paste a link that starts with https://');
-		toast('Downloading…');
-		fetch(u, { mode: 'cors' }).then(function (r) { if (!r.ok) throw 0; return r.blob(); }).catch(function () { return fetch('/api/image-fetch?url=' + encodeURIComponent(u)).then(function (r) { if (!r.ok) throw new Error('Could not download that picture (' + r.status + ')'); return r.blob(); }); })
-			.then(function (b) { loadImage(b, u.split(/[?#]/)[0].split('/').pop() || 'picture'); }).catch(function (er) { toast(er && er.message ? er.message : 'Could not download that picture'); });
+		e.preventDefault(); var u = $('aid-iurl').value.trim();
+		var pl = A.parsePostLink(u); if (pl && !A.isImageLink(u) && (pl.kind !== 'web' || !/\.(jpe?g|png|webp|avif|gif)(\?|$)/i.test(u))) { $('aid-purl').value = u; loadPost(u); return; }
+		if (!/^https?:\/\//i.test(u)) return toast('Paste a link that starts with https://');
+		loadImageUrl(u);
 	};
+	function loadImageUrl(u) {
+		toast('Downloading the picture…');
+		return fetch(u, { mode: 'cors', referrerPolicy: 'no-referrer' }).then(function (r) { if (!r.ok) throw 0; return r.blob(); }).catch(function () { return fetch('/api/image-fetch?url=' + encodeURIComponent(u)).then(function (r) { if (!r.ok) throw new Error('Could not download that picture (' + r.status + ')'); return r.blob(); }); })
+			.then(function (b) { loadImage(b, decodeURIComponent(u.split(/[?#]/)[0].split('/').pop() || 'picture')); }).catch(function (er) { toast(er && er.message ? er.message : 'Could not download that picture'); });
+	}
 	function loadImage(file, name) {
 		img = { file: file, name: name || 'picture', bmp: null, u8: null, S: [], view: 'orig', ela: null, noise: null, cls: null };
 		file.arrayBuffer().then(function (buf) {
@@ -221,6 +227,7 @@
 	ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); checkText(); } });
 	function checkText() {
 		var t = ta.value; if (!t.trim()) { toast('Paste some text first'); return; }
+		if (/^\S+$/.test(t.trim()) && /^(https?:\/\/|@?[a-z0-9.-]+\/[a-z0-9-]+$)/i.test(t.trim()) && A.parsePostLink(t.trim()) && !postBusy) { $('aid-purl').value = t.trim(); loadPost(t.trim(), 'text'); return; }
 		txt = { st: A.textStats(t), S: [], lmSig: null, toks: null, view: 'words', text: t }; txt.S = A.textSignals(txt.st);
 		$('aid-tout').hidden = false; renderText(); setTView('words');
 		var lb = $('aid-tview').querySelector('[data-v=lm]'); lb.disabled = true; $('aid-tlm').disabled = false; $('aid-tlm').textContent = 'Measure with a language model';
@@ -283,5 +290,87 @@
 		else { toast('Copy needs a secure page'); go(); }
 	};
 
-	window.MESAIDDebug = { img: function () { return img; }, vid: function () { return vid; }, txt: function () { return txt; }, loadImage: loadImage, loadVideo: loadVideo, checkText: checkText, showTab: showTab };
+	/* ---------- POST LINK (2026-11-25): text + pictures + video of a Hive post, a web article or a YouTube video ---------- */
+	var NODES = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://api.openhive.network', 'https://hive-api.arcange.eu'];
+	var post = null, postBusy = false, IS = typeof MESImgSearch !== 'undefined' ? MESImgSearch : null;
+	function hiveCall(method, params) {
+		var i = 0;
+		function next() {
+			if (i >= NODES.length) return Promise.reject(new Error('The Hive nodes did not answer. Try again in a moment.'));
+			var node = NODES[i++], ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, t = ctl && setTimeout(function () { ctl.abort(); }, 8000);
+			return fetch(node, { method: 'POST', body: JSON.stringify({ jsonrpc: '2.0', method: method, params: params, id: 1 }), signal: ctl && ctl.signal })
+				.then(function (r) { return r.json(); }).then(function (j) { clearTimeout(t); if (j.error) { if (/does not exist|Invalid parameters/i.test(j.error.message || '')) throw Object.assign(new Error('That post was not found on Hive.'), { stop: 1 }); throw new Error(j.error.message); } return j.result; })
+				.catch(function (e) { clearTimeout(t); if (e.stop) throw e; return next(); });
+		}
+		return next();
+	}
+	function thumbOf(u) { var o = A.imageOrigin(u); return /^https?:\/\/(images\.hive\.blog|images\.ecency\.com)\//i.test(o) || /\.(gif)(\?|$)/i.test(o) ? o : 'https://images.hive.blog/320x0/' + o; }
+	function picLinks(u) {
+		var o = A.imageOrigin(u), info = A.hiveImageInfo(u), out = [];
+		if (IS) ['lens', 'tineye', 'yandex', 'bing'].forEach(function (id) { var e = IS.byId(id); if (e) out.push({ name: e.name, url: IS.build(e, o) }); });
+		A.hashLinks(info.hash).forEach(function (x) { out.push(x); });
+		out.push({ name: 'All engines', url: '/reverse-image-search?q=' + encodeURIComponent(o) });
+		return { links: out, info: info };
+	}
+	function tile(u, label) {
+		var p = picLinks(u), up = p.info.uploader ? '<span class="aid-ptag' + (post && post.author && p.info.uploader !== post.author ? ' is-other' : '') + '">uploaded by @' + esc(p.info.uploader) + '</span>' : '';
+		return '<div class="aid-ptile"><button type="button" class="aid-pthumb" data-check="' + esc(A.imageOrigin(u)) + '" title="Check this picture for AI"><img src="' + esc(thumbOf(u)) + '" alt="' + esc(label || 'Picture') + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.visibility=\'hidden\'"></button>' +
+			'<div class="aid-pbody">' + (label ? '<b>' + esc(label) + '</b>' : '') + up + '<button type="button" class="tu-btn tu-btn--ghost aid-sm" data-check="' + esc(A.imageOrigin(u)) + '">Check for AI</button>' +
+			'<details class="aid-pfind"><summary>Find copies</summary>' + p.links.map(function (l) { return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.name) + '</a>'; }).join('') + '</details></div></div>';
+	}
+	var CDIR = { look: ['Worth checking', '&#9888;&#65038;'], ok: ['Small good sign', '&#10003;&#65038;'], info: ['Note', '&#9679;'] };
+	function renderPost() {
+		var P = post, when = P.created ? new Date(/Z$|[+-]\d\d:?\d\d$/.test(P.created) ? P.created : P.created + 'Z') : null;
+		var src = P.kind === 'hive' ? '@' + P.author + (P.app ? ' · posted with ' + P.app : '') : P.kind === 'youtube' ? (P.channel || 'YouTube') : P.host;
+		$('aid-phead').innerHTML = '<div class="aid-post__t">' + esc(P.title || '(no title)') + '</div><div class="aid-post__m">' + esc(src) + (when && !isNaN(when) ? ' · ' + esc(when.toLocaleString()) : '') + ' · <a href="' + esc(P.link) + '" target="_blank" rel="noopener">open it</a></div>';
+		var w = P.text ? A.words(P.text).length : 0, acts = '';
+		acts += w ? '<button type="button" class="tu-btn tu-btn--primary" id="aid-ptext">Check the text for AI (' + w.toLocaleString() + ' words)</button>' : '<span class="tu-note">' + (P.kind === 'youtube' ? 'YouTube doesn\'t share a video\'s description with other sites, so there is no text to check: paste it into the Text tab yourself.' : 'No text found in it.') + '</span>';
+		$('aid-pacts').innerHTML = acts;
+		var h = '';
+		if (P.video) {
+			var vt = P.video.kind === 'youtube' ? 'YouTube video' : '3Speak video', vthumb = P.video.thumb || (P.video.kind === 'youtube' ? 'https://i.ytimg.com/vi/' + P.video.id + '/hqdefault.jpg' : '');
+			h += '<h3 class="aid-h">Video</h3><div class="aid-pvid">' + (vthumb ? tile(P.video.kind === 'youtube' ? 'https://i.ytimg.com/vi/' + P.video.id + '/maxresdefault.jpg' : vthumb, vt + ': thumbnail') : '') +
+				'<p class="tu-note">A page can\'t download the video itself from ' + (P.video.kind === 'youtube' ? 'YouTube' : '3Speak') + ', and those copies have lost their original metadata anyway. Check the thumbnail here; for the video, ask for the original file and drop it on the Video tab, or take a frame (Video Editor) to the reverse image searches. Copies of a video are usually found by searching its title and a few spoken sentences.</p></div>';
+		}
+		var imgs = (P.images || []).filter(function (u) { return !P.video || !P.video.thumb || A.imageKey(u) !== A.imageKey(P.video.thumb); });
+		h += '<h3 class="aid-h">Pictures (' + imgs.length + ')</h3>' + (imgs.length ? '<div class="aid-pimgs">' + imgs.map(function (u, i) { return tile(u, 'Picture ' + (i + 1)); }).join('') + '</div>' : '<p class="tu-note">No pictures in it.</p>');
+		if (imgs.length && P.kind === 'hive') h += '<p class="tu-note">Pictures on Hive usually pass through a re-saving proxy or were saved from another site, so most have lost their camera data and Content Credentials. A picture that still has them says a lot; one without them says nothing.</p>';
+		$('aid-pmedia').innerHTML = h;
+		var C = A.copySignals(P);
+		$('aid-pcopy').innerHTML = C.map(function (s) { return '<div class="aid-sig aid-csig--' + s.dir + '"><div class="aid-sig__top"><span class="aid-sig__dir">' + CDIR[s.dir][1] + ' ' + CDIR[s.dir][0] + '</span></div><div class="aid-sig__t">' + esc(s.title) + '</div><div class="aid-sig__d">' + esc(s.detail) + '</div></div>'; }).join('');
+		var sents = A.distinctiveSentences(P.text, 3), st = '';
+		if (P.title && P.title.length > 15) sents.unshift(P.title);
+		if (sents.length) st = '<h3 class="aid-h">Search for its words elsewhere</h3><ul class="aid-links aid-plinks">' + sents.map(function (s) { return '<li><q>' + esc(s) + '</q><span>' + A.phraseLinks(s).map(function (l) { return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.name) + '</a>'; }).join(' · ') + '</span></li>'; }).join('') + '</ul><p class="tu-note">The title and the sentences with the most unusual words. An exact match on another site, older than this post, means the words were copied (or both copied a third source). No match proves nothing: search engines don\'t index everything, and reworded copies won\'t match.</p>';
+		$('aid-psent').innerHTML = st;
+		$('aid-post').hidden = false;
+	}
+	$('aid-post').addEventListener('click', function (e) {
+		var b = e.target.closest('[data-check]'); if (b) { showTab('img', true); loadImageUrl(b.getAttribute('data-check')).then(function () { $('aid-p-img').scrollIntoView({ behavior: 'smooth', block: 'start' }); }); return; }
+		if (e.target.closest('#aid-ptext')) { showTab('text', true); ta.value = post.text; count(); checkText(); $('aid-p-text').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+	});
+	function loadPost(link, then) {
+		var L = A.parsePostLink(link); if (!L) { toast('That doesn\'t look like a link'); return Promise.resolve(); }
+		postBusy = true; var btn = $('aid-postf').querySelector('button'); btn.disabled = true; btn.textContent = 'Loading…';
+		var job;
+		if (L.kind === 'hive') job = hiveCall('bridge.get_post', { author: L.author, permlink: L.permlink }).then(function (p) { if (!p || !p.author) throw new Error('That post was not found on Hive.'); return A.hivePost(p); });
+		else if (L.kind === 'youtube') job = fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(L.url)).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }).then(function (o) {
+			return { kind: 'youtube', title: o.title || 'YouTube video', channel: o.author_name || '', text: '', images: [], video: { kind: 'youtube', id: L.id }, link: L.url };
+		});
+		else job = fetch('/api/page-text?url=' + encodeURIComponent(L.url)).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.error) throw new Error(j.error || (r.status === 404 ? 'The page reader is not available here.' : 'Could not read that page (' + r.status + ').')); return j; }); }).then(function (j) {
+			if (j.redo) throw new Error('That link is a ' + (j.redo === 'pdf' ? 'PDF' : 'Word') + ' file: open it in the ' + (j.redo === 'pdf' ? 'PDF Editor' : 'Word Viewer') + ' and paste the text here.');
+			var host = ''; try { host = new URL(j.url || L.url).hostname.replace(/^www\./, ''); } catch (e) {}
+			return { kind: 'web', title: j.title || host, host: host, text: j.text || '', images: j.images || [], link: j.url || L.url };
+		});
+		return job.then(function (P) {
+			post = P; renderPost();
+			if (then === 'text' && P.text) { ta.value = P.text; count(); checkText(); }
+			else if (curTab() === 'text' && P.text) { ta.value = P.text; count(); checkText(); }
+			$('aid-post').scrollIntoView({ behavior: 'smooth', block: 'start' });
+			try { var u = new URL(location.href); u.searchParams.set('u', link); history.replaceState(null, '', u); } catch (e) {}
+		}).catch(function (e) { toast(e && e.message ? e.message : 'Could not load that link'); }).then(function () { postBusy = false; btn.disabled = false; btn.textContent = 'Load the post'; });
+	}
+	$('aid-postf').onsubmit = function (e) { e.preventDefault(); var u = $('aid-purl').value.trim(); if (!u) return toast('Paste a link first'); if (A.isImageLink(u)) { showTab('img', true); loadImageUrl(u); return; } loadPost(u); };
+	var qu = /[?&]u=([^&]+)/.exec(location.search); if (qu) { try { var qv = decodeURIComponent(qu[1]); $('aid-purl').value = qv; loadPost(qv); } catch (e) {} }
+
+	window.MESAIDDebug = { post: function () { return post; }, loadPost: loadPost, img: function () { return img; }, vid: function () { return vid; }, txt: function () { return txt; }, loadImage: loadImage, loadVideo: loadVideo, checkText: checkText, showTab: showTab };
 })();

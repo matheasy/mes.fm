@@ -106,4 +106,53 @@ var W = 32, H = 32, img = new Uint8ClampedArray(W * H * 4); for (var i = 0; i < 
 var nm = A.noiseMap(img, W, H); ok(nm.data.length === W * H * 4 && nm.median > 0, 'noise map');
 var flat = new Uint8ClampedArray(W * H * 4).fill(128); ok(A.noiseMap(flat, W, H).median === 0, 'flat = no noise');
 
+
+/* post links */
+var L = A.parsePostLink;
+ok(JSON.stringify(L('https://peakd.com/hive-167922/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea#@gwajnberg/re-mes-tp2v9q')) === '{"kind":"hive","author":"gwajnberg","permlink":"re-mes-tp2v9q"}', 'peakd comment link = the comment');
+ok(L('https://peakd.com/hive-167922/@mes/abc-def').permlink === 'abc-def' && L('https://ecency.com/hive-1/@a.b/x-1').author === 'a.b', 'peakd / ecency post');
+ok(L('https://inleo.io/threads/view/mes/re-leothreads-abc').permlink === 're-leothreads-abc' && L('https://inleo.io/@mes/my-post').permlink === 'my-post', 'inleo thread + post');
+var s3 = L('https://3speak.tv/watch?v=mes/ta0jgic7'); ok(s3.kind === 'hive' && s3.author === 'mes' && s3.video, '3speak watch');
+ok(L('@mes/hello-world').kind === 'hive' && L('mes/hello-world').permlink === 'hello-world', 'bare author/permlink');
+ok(L('https://youtu.be/dQw4w9WgXcQ').id === 'dQw4w9WgXcQ' && L('https://www.youtube.com/shorts/dQw4w9WgXcQ').id === 'dQw4w9WgXcQ' && L('https://m.youtube.com/watch?feature=x&v=dQw4w9WgXcQ').kind === 'youtube', 'youtube links');
+ok(L('https://example.com/news/story').kind === 'web' && L('example.com/a/b').kind === 'web', 'web article');
+ok(L('peakd.com') === null && L('') === null && L('hello there') === null, 'not a link');
+ok(L('https://peakd.com/trending').kind === 'web', 'a peakd page that is not a post falls back to web');
+ok(A.isImageLink('https://files.peakd.com/file/peakd-hive/mes/23x/pic.jpg') && A.isImageLink('https://images.hive.blog/DQmabc/x') && !A.isImageLink('https://peakd.com/@mes/x'), 'image links');
+/* markdown -> text, pictures */
+var body = '# Title\n\nHello **world**, see [my site](https://mes.fm).\n\n![a cat](https://files.peakd.com/file/peakd-hive/mes/23tGabcdefghijklmnopqrstuvwxyz/cat.jpg)\n<center><img src="https://images.hive.blog/DQmZ9vZ7mDqVQf1wN1y3e1tP3Xb5k2y9R8qKxW4aA7nBcD1/dog.png"></center>\nhttps://example.com/x/bird.webp and https://example.com/page\n```code here```';
+var tx = A.mdToText(body); ok(/Hello world, see my site\./.test(tx) && !/https?:|cat\]|code here|\*\*/.test(tx), 'mdToText: ' + JSON.stringify(tx));
+var meta = { image: ['https://files.peakd.com/file/peakd-hive/mes/23tGabcdefghijklmnopqrstuvwxyz/cat.jpg', 'https://images.hive.blog/0x0/https://example.com/x/bird.webp'] };
+var im = A.postImages(body, meta); ok(im.length === 3 && /cat\.jpg$/.test(im[0]) && im.some(function (u) { return /dog\.png$/.test(u); }), 'postImages dedupes proxies: ' + im.join(' '));
+ok(A.imageOrigin('https://images.hive.blog/640x0/https://a.com/b.jpg') === 'https://a.com/b.jpg', 'imageOrigin');
+var hi = A.hiveImageInfo(im[0]); ok(hi.uploader === 'mes' && hi.hash === '23tGabcdefghijklmnopqrstuvwxyz', 'peakd uploader + hash');
+ok(A.hiveImageInfo('https://images.hive.blog/DQmZ9vZ7mDqVQf1wN1y3e1tP3Xb5k2y9R8qKxW4aA7nBcD1/dog.png').hash.indexOf('DQm') === 0 && !A.hiveImageInfo('https://a.com/b.jpg').hash, 'images.hive.blog hash');
+/* hivePost */
+var hp = A.hivePost({ author: 'bob', permlink: 'p1', title: 'My trip', created: '2026-11-20T10:00:00', depth: 0, body: body, json_metadata: JSON.stringify({ app: 'peakd/2026', tags: ['travel'], image: meta.image }) });
+ok(hp.app === 'peakd' && hp.tags[0] === 'travel' && hp.images.length === 3 && /Hello world/.test(hp.text) && !hp.video, 'hivePost');
+var hv = A.hivePost({ author: 'bob', permlink: 'v1', body: 'watch https://www.youtube.com/watch?v=dQw4w9WgXcQ', json_metadata: '{}' }); ok(hv.video && hv.video.kind === 'youtube' && hv.video.id === 'dQw4w9WgXcQ', 'youtube video in a post');
+var h3 = A.hivePost({ author: 'bob', permlink: 'v2', body: 'x', json_metadata: { video: { info: { author: 'bob', permlink: 'abc', snaphash: 'QmSnap' } } } }); ok(h3.video.kind === '3speak' && /QmSnap$/.test(h3.video.thumb), '3speak metadata');
+ok(A.hivePost({ author: 'z', permlink: 'c', depth: 2, body: 'hi', json_metadata: 'not json' }).title === 'Comment by @z', 'comment title + bad metadata');
+/* copy clues */
+var cs = A.copySignals(Object.assign({}, hp, { author: 'mes' })); ok(A.copySignals(hp).some(function (s) { return s.dir === 'look'; }), 'bob posting @mes uploads = worth checking'); ok(cs.some(function (s) { return s.dir === 'look' && /another account/.test(s.title); }) === false && cs.some(function (s) { return s.dir === 'ok'; }), 'own upload = small good sign, not a warning');
+var cs2 = A.copySignals({ author: 'alice', text: 'Nice view', images: [im[0], im[0].replace('/mes/', '/carol/')] });
+ok(cs2.some(function (s) { return s.dir === 'look' && /@carol/.test(s.detail) && /@mes/.test(s.detail); }), 'other uploaders flagged');
+ok(cs2.every(function (s) { return s.dir !== 'ai' && s.dir !== 'real'; }), 'copy clues never claim AI / real');
+ok(A.copySignals({ author: 'a', text: 'Photo by Jane on Unsplash', images: ['https://a.com/b.jpg'] }).some(function (s) { return /mentions a source/.test(s.title); }), 'credit line noticed');
+ok(A.copySignals({ author: 'a', text: 'x', images: [] }).length === 0, 'no pictures, no picture clues');
+/* distinctive sentences + phrase links */
+var art = 'Hi. This is short. The volcanic archipelago supports endemic flightless cormorants that evolved remarkable diving adaptations over millennia. I went there. ' +
+	'It was a lot of fun and we had a good time with all of the people there. Researchers documented unusual thermoregulation behaviour among juvenile marine iguanas during extended El Niño droughts. ' +
+	'Visit https://example.com for the photos and the full story of the long trip we made. "This quoted sentence is long enough to be picked but it is a quote from someone." ' +
+	'Geothermal vents beneath the caldera continuously reshape the surrounding mangrove ecosystems and lagoons. Bye.';
+var ds = A.distinctiveSentences(art, 3);
+ok(ds.length === 3 && ds.every(function (s) { return !/https?:|^"/.test(s) && s.split(' ').length >= 9; }), 'distinctive sentences: ' + JSON.stringify(ds));
+ok(ds.some(function (s) { return /cormorants/.test(s); }) && !ds.some(function (s) { return /lot of fun/.test(s); }), 'unusual words beat plain ones');
+ok(A.distinctiveSentences('Short one. Another.', 3).length === 0, 'nothing to search in short text');
+var pl = A.phraseLinks('He said "hi" to me'); ok(pl.length === 4 && /%22He%20said%20hi%20to%20me%22/.test(pl[0].url) && /site%3Apeakd\.com/.test(pl[3].url), 'phrase links quote the sentence');
+ok(A.hashLinks('DQmX').length === 1 && A.hashLinks('').length === 0, 'hash links');
+/* page-text pictures (shared with api/page-text.js) */
+var PT = require('../mes.fm/api/_page-text-lib.js'), pics = PT.pictures('<meta property="og:image" content="/og.jpg"><body><article>' + 'x'.repeat(500) + '<img src="a.png"><img src="data:x"><img data-src="https://c.com/d.webp"><img src="/icons/logo.svg"><img src="a.png"></article></body>', 'https://e.com/p/q');
+ok(pics.join(' ') === 'https://e.com/og.jpg https://e.com/p/a.png https://c.com/d.webp', 'page-text pictures: ' + pics.join(' '));
+
 console.log(fail ? fail + ' of ' + n + ' failed' : 'all ' + n + ' passed'); process.exit(fail ? 1 : 0);

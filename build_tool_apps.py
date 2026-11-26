@@ -397,7 +397,7 @@ APPS = {
                         tag="Was it made with AI? See the evidence.", accent="#9333ea", dark="#6b21a8", tint="#f5ebfe",
                         desc="Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, and checks text for chatbot patterns. Honest: evidence, not a verdict. Nothing is uploaded.",
                         meta_desc="Free AI detector for pictures, videos and text. Reads C2PA Content Credentials and AI labels, runs an on-device model, checks text patterns. Evidence, not guesses.",
-                        js_v="1", lib_from=["exif-viewer"]),
+                        js_v="2", lib_from=["exif-viewer", "reverse-image-search"]),
     # Domain Lookup (2026-10-14): lib.js = findings from the API answer (tests: tool_apps_src/domain-lookup-tests.js), mes.fm/api/domain-lookup.js = RDAP + DNS over HTTPS + RDAP for IPs + Internet Archive.
     "domain-lookup": dict(title="MES Domain Lookup", page_title="Domain Lookup: Whois, Domain Age, Owner and Hosting",
                           tag="Who is behind a website, and how old is it?", accent="#1d4ed8", dark="#1e3a8a", tint="#e1e9fc",
@@ -789,7 +789,7 @@ APPS = {
                             head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
                                        '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
                                        '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
-                            js_v="18"),
+                            js_v="19"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
@@ -1429,7 +1429,7 @@ APPS = {
     "edits": dict(title="MES Edits", page_title="MES Edits: Fixes and New App Ideas",
                 tag="Fixes and new app ideas, in one list.", accent="#b4234f", dark="#8a1a3c", tint="#fdeaf0",
                 desc="Private list of fixes and new app ideas for mes.fm.",
-                js_v="7", no_ads=True, no_comments=True,
+                js_v="8", no_ads=True, no_comments=True,
                 pre_js=["/main_js/hive.js?v=2", "/main_js/hive-store.js?v=5", "/main_js/select-search.js"],
                 head_extra='<meta name="robots" content="noindex, nofollow">' + PAGE3_HEAD),
     # MES Polls owner page (private, mes.fm/polls-stats, behind the middleware.js password like /ads): polls made over time, votes, /polls page

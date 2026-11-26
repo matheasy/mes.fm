@@ -1,6 +1,20 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu aid" id="aid">
 		<div class="aid-honest" role="note"><b>Evidence, not a verdict.</b> No AI detector is reliable: they miss AI and they wrongly flag real work. This page shows <em>what the file and the text actually contain</em>, says how strong each clue is, and leaves the judgement to you. Everything runs in your browser; nothing is uploaded.</div>
+		<form class="tu-card aid-postf" id="aid-postf">
+			<label class="tu-label" for="aid-purl">&#128279;&#65038; Check a post from its link: its text, pictures and video</label>
+			<div class="aid-url"><input class="tu-input" id="aid-purl" type="text" inputmode="url" autocomplete="off" placeholder="A Hive post or comment (PeakD, InLeo, Ecency, 3Speak&hellip;), a web article or a YouTube link" aria-label="Link to a post"><button class="tu-btn tu-btn--primary" type="submit">Load the post</button></div>
+			<p class="tu-note">Hive posts are read from the Hive blockchain by your browser. Web articles go through mes.fm's page reader: only the text and the picture links come back, nothing is kept.</p>
+		</form>
+		<div class="tu-card aid-post" id="aid-post" hidden>
+			<div class="aid-post__head" id="aid-phead"></div>
+			<div class="tu-row aid-acts" id="aid-pacts"></div>
+			<div id="aid-pmedia"></div>
+			<h3 class="aid-h">Was it copied?</h3>
+			<div class="aid-sigs aid-csigs" id="aid-pcopy"></div>
+			<div id="aid-psent"></div>
+			<p class="tu-note aid-pnote">No page can search every post and picture on the internet, so these are <b>leads, not proof</b>: the links open the big search engines with the exact sentence or picture. Finding the same sentence or picture elsewhere doesn't tell who was first; the older copy, the bigger picture or a credit line usually does. Hive keeps the date of every post, so an earlier Hive copy is solid evidence.</p>
+		</div>
 		<div class="aid-tabs" role="tablist" aria-label="What to check">
 			<button type="button" role="tab" id="aid-t-img" data-tab="img" aria-selected="true">&#128444;&#65038; Picture</button>
 			<button type="button" role="tab" id="aid-t-vid" data-tab="vid" aria-selected="false">&#127916;&#65038; Video</button>
@@ -47,7 +61,7 @@
 					<h3 class="aid-h">Check further</h3>
 					<ul class="aid-links">
 						<li><a href="https://contentcredentials.org/verify" target="_blank" rel="noopener">Content Credentials Verify</a>: checks the C2PA signature and shows every editing step (you upload the file to that site).</li>
-						<li><a href="/reverse-image-search">Reverse Image Search</a>: find where the picture first appeared. An earlier, bigger copy often settles it.</li>
+						<li><a href="/reverse-image-search">Reverse Image Search</a>: find where the picture first appeared. An earlier, bigger copy often settles it. To check the pictures of a whole post, paste the post's link in the box at the top.</li>
 						<li><a href="/exif-viewer">EXIF Viewer</a>: every metadata field, the GPS location, and a clean copy.</li>
 						<li><b>Google SynthID</b>: Google hides an invisible watermark in pictures made by Gemini / Imagen. Only Google can read it: upload the picture to the Gemini app and ask &ldquo;Was this made with Google AI?&rdquo;.</li>
 						<li>Look closely yourself: hands and fingers, text and signs, earrings and glasses that don't match, hair blending into the background, light and shadows that disagree, repeated patterns.</li>
@@ -161,6 +175,7 @@
 				<li><strong>Generator notes</strong>: Stable Diffusion, ComfyUI, NovelAI, InvokeAI and Fooocus save the prompt and settings inside the PNG; Midjourney saves its job ID.</li>
 				<li><strong>Camera data</strong>: make, model, exposure and GPS from the EXIF (a hint toward a real photo, but it can be copied).</li>
 				<li><strong>Error level and noise views</strong>: pictures that show how evenly the file compresses and how the sensor noise is spread. Pasted-in or generated areas sometimes stand out.</li>
+				<li><strong>Whole posts from a link</strong>: paste a Hive post or comment (PeakD, InLeo, Ecency, 3Speak), a web article or a YouTube link and every picture, the video and the text are lined up for checking, with searches for copies of the pictures and of the most distinctive sentences.</li>
 				<li><strong>Text statistics</strong>: sentence-length variety, range of words, words chatbots overuse, leftovers such as &ldquo;Certainly! Here is&rdquo;, and an optional predictability score from a small language model.</li>
 			</ul>
 			<h3>Questions</h3>
@@ -168,6 +183,8 @@
 			<p>Only when the file says so itself (Content Credentials or generator notes), and even those can be removed or, without a signature check, faked. Everything else is a probability. A missing label proves nothing: screenshots, social sites and messaging apps remove metadata.</p>
 			<h4>Why not just give a percentage?</h4>
 			<p>Because the percentages other sites show are not as precise as they look. The same text can score 10% on one site and 90% on another. Showing the clues lets you see how much weight they deserve.</p>
+			<h4>Can it tell if a picture or an article was copied?</h4>
+			<p>It gives you the leads: for each picture, one-click searches on Google Lens, TinEye, Yandex and Bing (TinEye's "Oldest" sort is the best way to find the first copy), the uploader that PeakD records in its picture links, and searches for the same Hive upload in other posts; for the text, exact-phrase searches for its most distinctive sentences. No free tool can search every post and picture, so a search that finds nothing is not proof the work is original.</p>
 			<h4>Is my file uploaded?</h4>
 			<p>No. Files and text are read by your browser. The optional models are downloaded from Hugging Face once and run on your device. Only if you choose &ldquo;Ask MES AI&rdquo; does the text go to MES AI, which you pay for per message.</p>
 			<p class="tu-note">Related: <a href="/ai">MES AI</a> (chat, pictures and video), <a href="/photo">Photo Editor</a>, <a href="/video">Video Editor</a>, <a href="/text">Text Viewer</a>, <a href="/exif-viewer">EXIF Viewer</a>, <a href="/reverse-image-search">Reverse Image Search</a>.</p>
