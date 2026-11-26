@@ -100,3 +100,5 @@
 	.aid-pnote {margin-top:0.8em;}
 	html body.dark-mode #aid.aid .aid-post {border-color:#5b3d86;} html body.dark-mode #aid.aid .aid-pthumb {background:#2a2f37;}
 	html body.dark-mode #aid.aid .aid-csig--look {background:#3a2e12;} html body.dark-mode #aid.aid .aid-ptag.is-other {background:#3a2e12;color:#f5c66b;} html body.dark-mode #aid.aid .aid-ptag {background:#163326;color:#7fdcab;}
+	.aid-dkres {margin-top:0.7em;} .aid-dkbar {margin:0.4em 0;height:0.7em;} .aid-dkerr {margin-top:0.6em;color:#b42318;}
+	html body.dark-mode #aid .aid-dkerr {color:#fca5a5;}

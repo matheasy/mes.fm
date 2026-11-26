@@ -833,6 +833,39 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESAID;
 		var lb = $('aid-tview').querySelector('[data-v=lm]'); lb.disabled = true; $('aid-tlm').disabled = false; $('aid-tlm').textContent = 'Measure with a language model';
 		if (lm) runLM();
 	}
+	/* Second opinion: desklib/ai-text-detector-v1.01 (MIT) on @gwajnberg's Hugging Face Gradio space (CORS allows mes.fm). Only on the button press. */
+	var DK = 'https://gwajnberg-desklib-ai-text-detector-v1-01.hf.space/gradio_api/call/predict';
+	function dkParts(t) { var w = t.trim().split(/\s+/), out = []; for (var i = 0; i < w.length && out.length < 8; i += 350) out.push(w.slice(i, i + 350).join(' ')); return out; }
+	function dkCall(text) {
+		return fetch(DK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [text] }) }).then(function (r) { if (!r.ok) throw new Error('The detector answered ' + r.status); return r.json(); }).then(function (j) {
+			if (!j.event_id) throw new Error('The detector did not start');
+			return fetch(DK + '/' + j.event_id).then(function (r) { return r.text(); });
+		}).then(function (sse) {
+			var m = /event:\s*complete\s*\ndata:\s*(.+)/.exec(sse); if (!m) throw new Error(/event:\s*error/.test(sse) ? 'The detector reported an error' : 'No answer from the detector');
+			var d = JSON.parse(m[1])[0], ai = 0; (d.confidences || []).forEach(function (c) { if (/ai/i.test(c.label)) ai = c.confidence; });
+			return ai;
+		});
+	}
+	function dkRun() {
+		var t = (txt && txt.text) || ta.value; if (!t.trim()) { toast('Paste some text first'); return; }
+		var parts = dkParts(t), res = [], btn = $('aid-dkgo'), pr = progress('aid-dkprog', 'Asking the detector… (the first check can take a minute)'), i = 0;
+		btn.disabled = true; $('aid-dkout').innerHTML = '';
+		(function next() {
+			if (i >= parts.length) {
+				pr.done(); btn.disabled = false;
+				var words = 0, sum = 0; res.forEach(function (r) { words += r.w; sum += r.ai * r.w; }); var avg = sum / words, pc = Math.round(avg * 100);
+				$('aid-dkout').innerHTML = '<div class="aid-dkres"><b>' + pc + '% likely AI-written</b> <span class="tu-note">according to this detector' + (parts.length > 1 ? ' (average of ' + parts.length + ' parts)' : '') + '</span><div class="aid-prog__bar aid-dkbar"><i style="width:' + pc + '%"></i></div>' +
+					(parts.length > 1 ? '<div class="tu-note">' + res.map(function (r, k) { return 'Part ' + (k + 1) + ': ' + Math.round(r.ai * 100) + '%'; }).join(' · ') + '</div>' : '') +
+					'<p class="tu-note">One model\'s score, not proof: trained detectors can be fooled by light editing and sometimes flag human writing, especially formal or non-native English.</p></div>';
+				return;
+			}
+			pr.set(i / parts.length, parts.length > 1 ? 'Checking part ' + (i + 1) + ' of ' + parts.length + '…' : 'Asking the detector… (the first check can take a minute)');
+			dkCall(parts[i]).then(function (ai) { res.push({ ai: ai, w: parts[i].split(/\s+/).length }); i++; next(); }).catch(function (e) {
+				pr.done(); btn.disabled = false; $('aid-dkout').innerHTML = '<p class="aid-dkerr">Could not reach the detector: ' + esc(e.message || e) + '. The Hugging Face space may be asleep or busy; try again in a minute.</p>';
+			});
+		})();
+	}
+	$('aid-dkgo').onclick = dkRun;
 	function renderText() {
 		var st = txt.st, S = txt.S.slice(); if (txt.lmSig) S.push(txt.lmSig);
 		renderSum('aid-tsum', S); renderSigs('aid-tsigs', S);

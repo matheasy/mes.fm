@@ -151,6 +151,12 @@
 							<div class="aid-prog" id="aid-tprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
 							<p class="tu-note">distilGPT-2 (Apache 2.0) runs on your device and scores how predictable each word is, like the GLTR research tool. Weak against modern chatbots.</p>
 						</div>
+						<div class="tu-card aid-model aid-dk">
+							<div class="aid-model__row"><button type="button" class="tu-btn" id="aid-dkgo">Second opinion: Desklib detector</button><span class="aid-model__size">online, nothing to download</span></div>
+							<div class="aid-prog" id="aid-dkprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
+							<div id="aid-dkout"></div>
+							<p class="tu-note">A trained AI-text classifier (<a href="https://huggingface.co/desklib/ai-text-detector-v1.01" target="_blank" rel="noopener">desklib/ai-text-detector-v1.01</a>, MIT) hosted on Hugging Face by <a href="https://peakd.com/@gwajnberg" target="_blank" rel="noopener">@gwajnberg</a>. Pressing the button sends the text to <a href="https://huggingface.co/spaces/gwajnberg/desklib-ai-text-detector-v1.01" target="_blank" rel="noopener">his Hugging Face space</a>; long texts are checked in parts. The first check can take a minute while the space wakes up.</p>
+						</div>
 						<div class="tu-card aid-askai">
 							<h3 class="aid-h">Ask MES AI for an opinion</h3>
 							<p>Claude reads the text and explains what looks human or machine-written. Paid per message in HBD, no account. <b>Still an opinion, not proof.</b></p>
@@ -192,7 +198,7 @@
 			<h4>Can it tell if a picture or an article was copied?</h4>
 			<p>It gives you the leads: for each picture, one-click searches on Google Lens, TinEye, Yandex and Bing (TinEye's "Oldest" sort is the best way to find the first copy), the uploader that PeakD records in its picture links, and searches for the same Hive upload in other posts; for the text, exact-phrase searches for its most distinctive sentences. It works on a post's link at the top of the page and on text you paste in the Text tab. No free tool can search every post and picture, so a search that finds nothing is not proof the work is original.</p>
 			<h4>Is my file uploaded?</h4>
-			<p>No. Files and text are read by your browser. The optional models are downloaded from Hugging Face once and run on your device. Only if you choose &ldquo;Ask MES AI&rdquo; does the text go to MES AI, which you pay for per message.</p>
+			<p>No. Files and text are read by your browser. The optional models are downloaded from Hugging Face once and run on your device. Only if you choose &ldquo;Ask MES AI&rdquo; does the text go to MES AI, which you pay for per message, and only if you press &ldquo;Second opinion: Desklib detector&rdquo; does it go to that detector on Hugging Face.</p>
 			<p class="tu-note">Related: <a href="/ai">MES AI</a> (chat, pictures and video), <a href="/photo">Photo Editor</a>, <a href="/video">Video Editor</a>, <a href="/text">Text Viewer</a>, <a href="/exif-viewer">EXIF Viewer</a>, <a href="/reverse-image-search">Reverse Image Search</a>.</p>
 		</div>
 	</div>

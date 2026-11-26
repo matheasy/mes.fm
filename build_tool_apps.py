@@ -397,7 +397,7 @@ APPS = {
                         tag="Was it made with AI? Was it copied? See the evidence.", accent="#9333ea", dark="#6b21a8", tint="#f5ebfe",
                         desc="Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, checks text for chatbot patterns, and finds out if a post, article or picture was copied (exact-phrase and reverse image searches). Honest: evidence, not a verdict. Nothing is uploaded.",
                         meta_desc="Free AI detector for pictures, videos and text, plus a was-it-copied check. Reads C2PA Content Credentials and AI labels, checks text patterns. Evidence, not guesses.",
-                        js_v="3", lib_from=["exif-viewer", "reverse-image-search"]),
+                        js_v="4", lib_from=["exif-viewer", "reverse-image-search"]),
     # Domain Lookup (2026-10-14): lib.js = findings from the API answer (tests: tool_apps_src/domain-lookup-tests.js), mes.fm/api/domain-lookup.js = RDAP + DNS over HTTPS + RDAP for IPs + Internet Archive.
     "domain-lookup": dict(title="MES Domain Lookup", page_title="Domain Lookup: Whois, Domain Age, Owner and Hosting",
                           tag="Who is behind a website, and how old is it?", accent="#1d4ed8", dark="#1e3a8a", tint="#e1e9fc",
