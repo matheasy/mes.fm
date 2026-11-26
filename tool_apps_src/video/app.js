@@ -697,6 +697,7 @@
 	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
 	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture
 	VE.stepFrame = function (dir, big) { if (P.playing) P.pause(); P.seek(VE.t + dir * (big ? 1 : 1 / VE.P.fps)); VE.tl.reveal(VE.t); };
+	$("vd-jback").onclick = function () { VE.jump(-1); }; $("vd-jfwd").onclick = function () { VE.jump(1); };
 	var hold = null;
 	function stopHold() { if (hold) { clearTimeout(hold.timer); hold = null; } }
 	document.querySelectorAll("[data-tp]").forEach(function (b) {
@@ -2029,6 +2030,7 @@
 		if ((mod || e.ctrlKey) && e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.goEdit(k === "ArrowRight" ? 1 : -1); return; }
 		if (mod && (k === "g" || k === "G")) { e.preventDefault(); tin.focus(); return; }
 		if (mod && (k === "Home" || k === "End")) { e.preventDefault(); P.seek(k === "Home" ? 0 : V.duration(VE.P)); VE.tl.reveal(VE.t); return; }
+		if (e.altKey && !mod && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.jump(k === "ArrowLeft" ? -1 : 1); return; }
 		if (mod || e.altKey) return;
 		if (VE.kbFocus === "pv" && /^Arrow(Left|Right|Up|Down)$/.test(k)) {
 			var st = e.shiftKey ? 10 : 1;

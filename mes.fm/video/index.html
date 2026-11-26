@@ -773,6 +773,7 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-capres button {display:flex;gap:0.6em;text-align:left;font:inherit;font-size:0.88em;padding:0.3em 0.45em;border:0;border-radius:0.35em;background:transparent;color:inherit;cursor:pointer;line-height:1.35;}
 	#vd .vd-capres button:hover, #vd .vd-capres button:focus-visible {background:rgba(148,163,184,0.16);outline:none;} #vd .vd-capres button.is-now {background:rgba(190,18,60,0.22);}
 	#vd .vd-capres .vd-crt {font-variant-numeric:tabular-nums;color:#93c5fd;white-space:nowrap;flex:0 0 auto;} #vd .vd-capres mark {background:#facc15;color:#111;border-radius:2px;padding:0 1px;}
+	#vd .vd-jbtn {width:auto !important;padding:0 0.5em;gap:0.15em;font-size:1em;} #vd .vd-jbtn .vd-lbl {font-size:0.8em;} #vd .vd-jbtn:disabled {opacity:0.4;cursor:default;}
 
 
 
@@ -1354,6 +1355,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					</div>
 					<div class="vd-transport" role="toolbar" aria-label="Playback"><button type="button" class="vd-btn vd-ico vd-tpgrip" id="vd-tpgrip" title="Drag to move this bar anywhere on the screen (double-click: back to the bottom)" aria-label="Move the playback bar">&#10303;</button><button type="button" class="vd-btn vd-sm vd-tpreset" id="vd-tpreset" hidden title="Put this bar back at the bottom">&#10515; <span class="vd-lbl">Bottom</span></button>
 						<div class="vd-seek" id="vd-seek" role="slider" tabindex="0" aria-label="Position in the video" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00;00" title="Drag to move through the video (arrow keys: a frame, Shift: 1 s, Page Up / Down: 10 s)"><div class="vd-seek-tr"><i class="vd-seek-mk" id="vd-seek-mk"></i><i class="vd-seek-fill" id="vd-seek-fill"></i><span class="vd-seek-ticks" id="vd-seek-ticks"></span></div><b class="vd-seek-th" id="vd-seek-th"></b><span class="vd-seek-tip" id="vd-seek-tip" hidden></span></div>
+						<button type="button" class="vd-btn vd-ico vd-jbtn" id="vd-jback" disabled title="Back to where you were before the last jump (Alt+&larr;): after clicking the timeline, start / end, Home / End or typing a time" aria-label="Back to where you were">&#10229;<span class="vd-lbl"> Back</span></button><button type="button" class="vd-btn vd-ico vd-jbtn" id="vd-jfwd" hidden title="Forward again (Alt+&rarr;)" aria-label="Forward again">&#10230;</button>
 						<button type="button" class="vd-btn vd-ico" data-tp="start" title="To the start (Home)" aria-label="To the start"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="2" height="10"/><path d="M9 3v10L4.5 8zM14 3v10L9.5 8z"/></svg></button>
 						<button type="button" class="vd-btn vd-ico" data-tp="prevclip" title="Previous clip edge (Up arrow, or Ctrl+Alt+Left as in Camtasia)" aria-label="Previous clip edge"><svg class="vd-ti" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3" width="1.8" height="10"/><path d="M12.5 3v10L6.5 8z"/></svg></button>
 						<button type="button" class="vd-btn vd-ico vd-sec1" data-tp="back1s" title="One second back (Z or Shift+Left; hold to keep going)" aria-label="One second back">&minus;1s</button>
@@ -1417,7 +1419,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<dl id="vd-keysdyn"></dl>
 				<b class="vd-keyssub">Always these keys</b>
 				<dl>
-					<dt>&larr; &rarr;</dt><dd>One frame (hold to keep stepping; Shift: 1 second)</dd><dt>&uarr; &darr;, Ctrl+Alt+&larr; &rarr;</dt><dd>Previous / next clip edge (start or end of a clip, or a mark), as in Camtasia</dd><dt>Home / End</dt><dd>Start / end</dd><dt>Ctrl+G</dt><dd>Type a time to go to (also click the time under the preview)</dd>
+					<dt>&larr; &rarr;</dt><dd>One frame (hold to keep stepping; Shift: 1 second)</dd><dt>&uarr; &darr;, Ctrl+Alt+&larr; &rarr;</dt><dd>Previous / next clip edge (start or end of a clip, or a mark), as in Camtasia</dd><dt>Home / End</dt><dd>Start / end</dd><dt>Alt+&larr; / Alt+&rarr;</dt><dd>Back to where you were before a big jump (clicking the timeline, start / end, Home / End, typing a time) / forward again</dd><dt>Ctrl+G</dt><dd>Type a time to go to (also click the time under the preview)</dd>
 					<dt>Delete</dt><dd>Delete; Shift+Delete closes the gap</dd>
 					
 					<dt>Ctrl+Z / Ctrl+Shift+Z</dt><dd>Undo / redo</dd><dt>Ctrl+X / C / V</dt><dd>Cut / copy / paste clips (paste goes to the playhead; right-click a track for &ldquo;Paste here&rdquo;)</dd><dt>Ctrl+D</dt><dd>Duplicate</dd><dt>Arrows after clicking the preview</dt><dd>Move the selected picture or title 1 pixel (Shift: 10); click the timeline to get the frame-stepping arrows back</dd><dt>Alt+&uarr; / &darr;</dt><dd>Move the selected clips up / down a track (or drag them; several clips move together)</dd><dt>Right-click</dt><dd>Menu for a clip, an empty spot or a track</dd>
@@ -1517,7 +1519,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=79" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=80" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

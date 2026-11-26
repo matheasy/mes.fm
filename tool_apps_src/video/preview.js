@@ -76,7 +76,16 @@
 	P.nudgeSpeed = function (dir, inc) { P.setSpeed(V.stepSpeed(P.speed, dir, VE.P.fps, inc)); };
 	function jumpRate(pr) { return pr > 16 + 1e-9 || pr < 0.0625 - 1e-9; }
 	P.jumping = function () { return P.playing && jumpRate(P.rate); };
+	// Back / Forward to where the playhead was before a big jump (VE.jump(-1 | 1))
+	P.hist = V.jumpHist(); var histT = 0, noHist = false;
+	function histBtns() { var bk = document.getElementById("vd-jback"), fw = document.getElementById("vd-jfwd"); if (bk) bk.disabled = !P.hist.back.length && !P.hist.burst; if (fw) fw.hidden = !P.hist.fwd.length; }
+	VE.jump = function (dir) {
+		var t = V.jumpGo(P.hist, VE.t, dir, performance.now()); histBtns();
+		if (t == null) { VE.emit("notice", dir < 0 ? "No earlier place to go back to yet: Back returns to where you were before a big jump (a click on the timeline, start / end, Home / End)." : "Nothing to go forward to."); return; }
+		noHist = true; P.seek(t); noHist = false; VE.tl.reveal(t); histBtns();
+	};
 	P.seek = function (t) {
+		if (!noHist) { V.jumpNote(P.hist, VE.t, Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0))), performance.now()); clearTimeout(histT); histT = setTimeout(function () { V.jumpSettle(P.hist, performance.now()); histBtns(); }, 750); }
 		var was = P.playing && !P.rev; if (P.playing) P.pause();
 		VE.t = Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0)));
 		VE.emit("time", VE.t); sync(); draw();

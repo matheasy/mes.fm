@@ -67,6 +67,29 @@
 		});
 		return out;
 	};
+	/* ---------- jump history: Back / Forward to where the playhead was before a big jump ----------
+	   Seeks close together (a drag, a held frame-step button) count as one move; a move is remembered when it had one jump of more than
+	   1.5 s and ended more than 1.5 s from where it began. */
+	V.jumpHist = function () { return { back: [], fwd: [], burst: null }; };
+	V.jumpSettle = function (h, now, force) {
+		var b = h.burst; if (!b || (!force && now - b.last <= 700)) return false;
+		h.burst = null;
+		if (b.max > 1.5 && Math.abs(b.to - b.pre) > 1.5) { h.back.push(b.pre); if (h.back.length > 50) h.back.shift(); h.fwd = []; return true; }
+		return false;
+	};
+	V.jumpNote = function (h, from, to, now) {
+		V.jumpSettle(h, now);
+		if (!h.burst) h.burst = { pre: from, max: 0 };
+		h.burst.max = Math.max(h.burst.max, Math.abs(to - from)); h.burst.last = now; h.burst.to = to;
+	};
+	// where Back / Forward goes from cur (null = nowhere); places within 0.3 s of cur are skipped
+	V.jumpGo = function (h, cur, dir, now) {
+		V.jumpSettle(h, now || 0, true);
+		var from = dir < 0 ? h.back : h.fwd, to = dir < 0 ? h.fwd : h.back;
+		while (from.length && Math.abs(from[from.length - 1] - cur) < 0.3) from.pop();
+		if (!from.length) return null;
+		var t = from.pop(); to.push(cur); return t;
+	};
 	// loudness of 16 kHz mono sound in 20 ms frames (dB)
 	V.capFrames = function (a16) { var n = Math.floor(a16.length / 320), out = new Float32Array(n); for (var f = 0; f < n; f++) { var e = 0, o = f * 320; for (var i = 0; i < 320; i++) e += a16[o + i] * a16[o + i]; out[f] = 10 * Math.log10(e / 320 + 1e-12); } return out; };
 	// the level that counts as speech: well above the quiet parts, at least -55 dB

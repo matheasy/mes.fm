@@ -460,6 +460,29 @@
 		});
 		return out;
 	};
+	/* ---------- jump history: Back / Forward to where the playhead was before a big jump ----------
+	   Seeks close together (a drag, a held frame-step button) count as one move; a move is remembered when it had one jump of more than
+	   1.5 s and ended more than 1.5 s from where it began. */
+	V.jumpHist = function () { return { back: [], fwd: [], burst: null }; };
+	V.jumpSettle = function (h, now, force) {
+		var b = h.burst; if (!b || (!force && now - b.last <= 700)) return false;
+		h.burst = null;
+		if (b.max > 1.5 && Math.abs(b.to - b.pre) > 1.5) { h.back.push(b.pre); if (h.back.length > 50) h.back.shift(); h.fwd = []; return true; }
+		return false;
+	};
+	V.jumpNote = function (h, from, to, now) {
+		V.jumpSettle(h, now);
+		if (!h.burst) h.burst = { pre: from, max: 0 };
+		h.burst.max = Math.max(h.burst.max, Math.abs(to - from)); h.burst.last = now; h.burst.to = to;
+	};
+	// where Back / Forward goes from cur (null = nowhere); places within 0.3 s of cur are skipped
+	V.jumpGo = function (h, cur, dir, now) {
+		V.jumpSettle(h, now || 0, true);
+		var from = dir < 0 ? h.back : h.fwd, to = dir < 0 ? h.fwd : h.back;
+		while (from.length && Math.abs(from[from.length - 1] - cur) < 0.3) from.pop();
+		if (!from.length) return null;
+		var t = from.pop(); to.push(cur); return t;
+	};
 	// loudness of 16 kHz mono sound in 20 ms frames (dB)
 	V.capFrames = function (a16) { var n = Math.floor(a16.length / 320), out = new Float32Array(n); for (var f = 0; f < n; f++) { var e = 0, o = f * 320; for (var i = 0; i < 320; i++) e += a16[o + i] * a16[o + i]; out[f] = 10 * Math.log10(e / 320 + 1e-12); } return out; };
 	// the level that counts as speech: well above the quiet parts, at least -55 dB
@@ -2627,7 +2650,16 @@
 	P.nudgeSpeed = function (dir, inc) { P.setSpeed(V.stepSpeed(P.speed, dir, VE.P.fps, inc)); };
 	function jumpRate(pr) { return pr > 16 + 1e-9 || pr < 0.0625 - 1e-9; }
 	P.jumping = function () { return P.playing && jumpRate(P.rate); };
+	// Back / Forward to where the playhead was before a big jump (VE.jump(-1 | 1))
+	P.hist = V.jumpHist(); var histT = 0, noHist = false;
+	function histBtns() { var bk = document.getElementById("vd-jback"), fw = document.getElementById("vd-jfwd"); if (bk) bk.disabled = !P.hist.back.length && !P.hist.burst; if (fw) fw.hidden = !P.hist.fwd.length; }
+	VE.jump = function (dir) {
+		var t = V.jumpGo(P.hist, VE.t, dir, performance.now()); histBtns();
+		if (t == null) { VE.emit("notice", dir < 0 ? "No earlier place to go back to yet: Back returns to where you were before a big jump (a click on the timeline, start / end, Home / End)." : "Nothing to go forward to."); return; }
+		noHist = true; P.seek(t); noHist = false; VE.tl.reveal(t); histBtns();
+	};
 	P.seek = function (t) {
+		if (!noHist) { V.jumpNote(P.hist, VE.t, Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0))), performance.now()); clearTimeout(histT); histT = setTimeout(function () { V.jumpSettle(P.hist, performance.now()); histBtns(); }, 750); }
 		var was = P.playing && !P.rev; if (P.playing) P.pause();
 		VE.t = Math.max(0, Math.min(t, Math.max(V.duration(VE.P), 0)));
 		VE.emit("time", VE.t); sync(); draw();
@@ -4425,6 +4457,7 @@
 	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
 	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture
 	VE.stepFrame = function (dir, big) { if (P.playing) P.pause(); P.seek(VE.t + dir * (big ? 1 : 1 / VE.P.fps)); VE.tl.reveal(VE.t); };
+	$("vd-jback").onclick = function () { VE.jump(-1); }; $("vd-jfwd").onclick = function () { VE.jump(1); };
 	var hold = null;
 	function stopHold() { if (hold) { clearTimeout(hold.timer); hold = null; } }
 	document.querySelectorAll("[data-tp]").forEach(function (b) {
@@ -5757,6 +5790,7 @@
 		if ((mod || e.ctrlKey) && e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.goEdit(k === "ArrowRight" ? 1 : -1); return; }
 		if (mod && (k === "g" || k === "G")) { e.preventDefault(); tin.focus(); return; }
 		if (mod && (k === "Home" || k === "End")) { e.preventDefault(); P.seek(k === "Home" ? 0 : V.duration(VE.P)); VE.tl.reveal(VE.t); return; }
+		if (e.altKey && !mod && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.jump(k === "ArrowLeft" ? -1 : 1); return; }
 		if (mod || e.altKey) return;
 		if (VE.kbFocus === "pv" && /^Arrow(Left|Right|Up|Down)$/.test(k)) {
 			var st = e.shiftKey ? 10 : 1;

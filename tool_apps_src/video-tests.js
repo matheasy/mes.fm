@@ -490,5 +490,18 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	ok(V.capThreshold(db) > -60 && V.capThreshold(db) < -25, "speech level between the quiet and the loud parts");
 	const f = V.capFrames(new Float32Array(16000).fill(0.5)); ok(f.length === 50 && Math.abs(f[0] - 10 * Math.log10(0.25)) < 0.01, "20 ms loudness frames");
 }
+{
+	// jump history
+	const h = V.jumpHist();
+	V.jumpNote(h, 120, 0, 1000); V.jumpSettle(h, 2000);
+	ok(h.back.length === 1 && h.back[0] === 120, "a jump to the start remembers where you were");
+	for (let i = 0; i < 90; i++) V.jumpNote(h, i / 30, (i + 1) / 30, 3000 + i * 40); V.jumpSettle(h, 9000);
+	ok(h.back.length === 1, "holding the frame-step button (small steps close together) is not remembered");
+	V.jumpNote(h, 3, 50, 10000); V.jumpNote(h, 50, 52, 10100); V.jumpNote(h, 52, 55, 10200); V.jumpSettle(h, 11000);
+	ok(h.back.length === 2 && h.back[1] === 3, "a click then a drag on the ruler = one move, remembering where it began");
+	ok(V.jumpGo(h, 55, -1, 12000) === 3 && V.jumpGo(h, 3, -1, 12000) === 120 && V.jumpGo(h, 120, -1, 12000) === null, "Back walks back through the places");
+	ok(V.jumpGo(h, 120, 1, 12000) === 3 && V.jumpGo(h, 3, 1, 12000) === 55, "Forward goes again");
+	const h2 = V.jumpHist(); V.jumpNote(h2, 40, 0, 0); ok(V.jumpGo(h2, 0, -1, 100) === 40, "Back right after the jump (not settled yet) still works");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
