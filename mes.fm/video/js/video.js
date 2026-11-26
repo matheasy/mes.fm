@@ -4474,6 +4474,19 @@
 			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); VE.stepFrame(dir, sec || e.shiftKey); } });
 			return;
 		}
+		if (a === "prevclip" || a === "nextclip") {   // hold to keep jumping: one jump at once, then every 0.3 s, getting faster
+			var edir = a === "nextclip" ? 1 : -1;
+			b.addEventListener("pointerdown", function (e) {
+				if (e.button > 0) return; e.preventDefault(); stopHold(); VE.goEdit(edir);
+				var h = hold = { n: 0 };
+				(function next(delay) { h.timer = setTimeout(function () { if (hold !== h) return; h.n++; VE.goEdit(edir); next(Math.max(110, 300 - h.n * 20)); }, delay); })(450);
+				try { b.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+			});
+			["pointerup", "pointercancel", "lostpointercapture"].forEach(function (ev) { b.addEventListener(ev, stopHold); });
+			b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); VE.goEdit(edir); } });
+			b.title += " Hold to keep jumping.";
+			return;
+		}
 		b.onclick = function () { if (a === "start") { P.seek(0); VE.tl.reveal(0); } else if (a === "end") { P.seek(V.duration(VE.P)); VE.tl.reveal(VE.t); } else if (a === "prevclip") VE.goEdit(-1); else if (a === "nextclip") VE.goEdit(1); };
 	});
 	// the time under the preview is a box: type a time (4:23;13, 1:02:03, 263, 2m30s, +10, -5) and press Enter to go there
