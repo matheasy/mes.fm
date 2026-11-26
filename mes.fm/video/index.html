@@ -1311,6 +1311,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<div class="vd-capfind"><b>Search the words</b><input type="search" id="vd-cap-q" placeholder="Find a word or phrase in the captions…" aria-label="Search the captions" autocomplete="off"><span class="vd-sub" id="vd-cap-qn" aria-live="polite"></span><div class="vd-capres" id="vd-cap-res" role="list"></div></div>
 						<div class="vd-capmore"><b>All captions</b>
 							<button type="button" class="vd-btn vd-sm" id="vd-cap-apply" title="Use the look, colour, place and size above on every caption">Use these settings on all captions</button>
+							<button type="button" class="vd-btn vd-sm" id="vd-cap-fix" title="Listens to the sound again and trims every word to where it is really said, so no caption shows over silence. Captions made before this fix need it once.">Fix timing (no text over silence)</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-cap-srt">Save as SRT</button> <button type="button" class="vd-btn vd-sm" id="vd-cap-vtt">Save as VTT</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-cap-imp">Open an SRT / VTT file</button><input type="file" id="vd-cap-file" accept=".srt,.vtt,text/vtt" hidden>
 							<button type="button" class="vd-btn vd-sm" id="vd-cap-del">Delete all captions</button>
@@ -1516,7 +1517,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=78" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=79" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

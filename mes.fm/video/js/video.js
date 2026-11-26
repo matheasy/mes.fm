@@ -460,6 +460,30 @@
 		});
 		return out;
 	};
+	// loudness of 16 kHz mono sound in 20 ms frames (dB)
+	V.capFrames = function (a16) { var n = Math.floor(a16.length / 320), out = new Float32Array(n); for (var f = 0; f < n; f++) { var e = 0, o = f * 320; for (var i = 0; i < 320; i++) e += a16[o + i] * a16[o + i]; out[f] = 10 * Math.log10(e / 320 + 1e-12); } return out; };
+	// the level that counts as speech: well above the quiet parts, at least -55 dB
+	V.capThreshold = function (db) {
+		var v = Array.prototype.slice.call(db).filter(function (x) { return isFinite(x); }).sort(function (x, y) { return x - y; }); if (!v.length) return -45;
+		var lo = v[Math.floor(v.length * 0.15)], hi = v[Math.min(v.length - 1, Math.floor(v.length * 0.98))];
+		return Math.max(-55, lo + Math.max(10, 0.3 * (hi - lo)));
+	};
+	// Whisper sometimes stretches a word over the silence before (or after) it: trim every word to where the sound is really loud,
+	// and never let one word last much longer than it takes to say (db = V.capFrames of the sound that starts at timeline time t0)
+	V.capWordMax = function (w) { return Math.max(1.2, 0.6 + 0.13 * String(w).length); };
+	V.capTrimWords = function (words, db, t0, thr) {
+		if (thr == null) thr = V.capThreshold(db);
+		var prevA = -Infinity;
+		return words.map(function (x) {
+			var a = x.a, b = x.b, fa = Math.max(0, Math.floor((a - t0) * 50)), fb = Math.min(db.length, Math.ceil((b - t0) * 50)), f1 = -1, f2 = -1;
+			for (var f = fa; f < fb; f++) if (db[f] >= thr) { if (f1 < 0) f1 = f; f2 = f; }
+			if (f1 >= 0) { a = Math.max(a, t0 + f1 / 50 - 0.04); b = Math.min(b, t0 + (f2 + 1) / 50 + 0.06); }
+			else if (db.length && fb > fa) { var est = Math.min(V.capWordMax(x.w), 0.2 + 0.06 * x.w.length); a = Math.max(a, b - est); }   // never loud: keep only its end
+			var mx = V.capWordMax(x.w); if (b - a > mx) a = b - mx;
+			a = Math.max(a, prevA); if (b < a + 0.05) b = a + 0.05; prevA = a;
+			return { w: x.w, a: Math.round(a * 1000) / 1000, b: Math.round(b * 1000) / 1000 };
+		});
+	};
 	// group words into caption lines: at most maxChars x lines letters, a new caption after a pause, after a sentence end, or past 6 s
 	V.capChunks = function (words, o) {
 		o = o || {}; var max = (o.maxChars || 42) * (o.lines || 2), gap = o.gap || 0.7, out = [], cur = null;
@@ -6299,6 +6323,7 @@
 				words = words.concat(V.capWordsFrom(res.chunks, a + bl.s, a + bl.keepFrom, a + bl.keepTo));
 			}
 			if (!words.length) throw new Error("No speech was found in that part.");
+			words = V.capTrimWords(words, V.capFrames(audio), a);   // no word shown over silence
 			var tr = capTrack(), list = V.capChunks(words, { maxChars: CS.chars, lines: CS.lines }).map(function (ch) { return capClip(tr, ch.a, ch.b, ch.txt, ch.w); });
 			var n = placeCaps(list, a, b); VE.commit("Make captions");
 			toast(n + " captions made (" + words.length + " words). Click one to fix a word or change its look.", 5000);
@@ -6353,6 +6378,26 @@
 	VE.on("change", function () { clearTimeout(capQT); capQT = setTimeout(capFind, 200); });
 	VE.on("time", capNow);
 	capFind();
+	// existing captions: listen to their sound again (no speech model needed), trim each word to where it is really said, and re-split the lines
+	$("vd-cap-fix").onclick = async function () {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		if (capJob) return; var job = capJob = { cancel: false }, btn = this; btn.disabled = true;
+		try {
+			var a = L[0].start, b = V.end(L[L.length - 1]), words = [];
+			L.forEach(function (c) { (c.text.cap.w || []).forEach(function (x) { words.push({ w: x[0], a: c.start + x[1], b: c.start + x[2] }); }); });
+			var audio = await capAudio(a, b, job); words = V.capTrimWords(words, V.capFrames(audio), a);
+			var keep = JSON.parse(JSON.stringify(L[0])), tr = V.track(VE.P, L[0].track);
+			var list = V.capChunks(words, { maxChars: CS.chars, lines: CS.lines }).map(function (ch) {
+				var c = V.clipDefaults(Object.assign(JSON.parse(JSON.stringify(keep)), { id: V.uid("c"), start: ch.a, in: 0, out: Math.max(0.2, ch.b - ch.a) }));
+				c.text.s = ch.txt; c.text.cap.w = ch.w; return c;
+			});
+			var ids = {}; L.forEach(function (c) { ids[c.id] = 1; }); VE.P.clips = VE.P.clips.filter(function (c) { return !ids[c.id]; });
+			var n = 0; list.forEach(function (c) { if (V.canPlace(VE.P, tr.id, c.start, V.dur(c))) { c.track = tr.id; VE.P.clips.push(c); n++; } });
+			VE.commit("Fix caption timing"); $("vd-cap-prog").hidden = true;
+			toast("Caption timing fixed: " + n + " captions, none shown over silence (Ctrl+Z undoes it).", 5000);
+		} catch (e) { if (/Cancelled/.test(e.message)) $("vd-cap-prog").hidden = true; else capProg(e.message || String(e), 0); }
+		finally { capJob = null; btn.disabled = false; }
+	};
 	$("vd-cap-del").onclick = function () {
 		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
 		VE.P.clips = VE.P.clips.filter(function (c) { return !V.isCap(c); }); VE.commit("Delete captions"); toast(L.length + " captions deleted (Ctrl+Z brings them back).");

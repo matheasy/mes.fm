@@ -477,5 +477,18 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	ok(tw.length === 2 && tw[0].t === 0 && tw[1].t === 1 && tw[1].hl[0][0] === 11, "said twice in one caption = two places, each with its own time");
 	ok(V.capSearch(P, "").length === 2 && V.capSearch(P, "zebra").length === 0, "empty = whole transcript; nothing found");
 }
+{
+	// words stretched over silence are trimmed to the sound
+	const db = new Float32Array(500).fill(-70); for (let f = 290; f < 315; f++) db[f] = -20; for (let f = 320; f < 340; f++) db[f] = -22;   // speech at 5.8-6.3 s and 6.4-6.8 s (t0 = 0)
+	const tw = V.capTrimWords([{ w: "And", a: 0.5, b: 6.3 }, { w: "flighty", a: 6.3, b: 6.8 }], db, 0);
+	ok(Math.abs(tw[0].a - 5.76) < 0.02 && tw[0].b <= 6.3 && tw[1].a >= 6.36, "a word spread over 6 s of silence starts where it is said");
+	const cs = V.capChunks([{ w: "Before", a: 0.1, b: 0.4 }].concat(tw), { maxChars: 32, lines: 2 });
+	ok(cs.length === 2 && cs[1].a > 5.7 && cs[0].b < 1.1, "the silence starts a new caption, so nothing is shown during it");
+	const quiet = V.capTrimWords([{ w: "Hi", a: 1, b: 9 }], new Float32Array(500).fill(-70), 0);
+	ok(quiet[0].b - quiet[0].a <= 1.2 && quiet[0].b === 9, "never loud: only the word's end is kept");
+	ok(V.capTrimWords([{ w: "word", a: 0, b: 10 }], new Float32Array(0), 0)[0].a === 10 - V.capWordMax("word"), "no sound info: a word is never longer than it takes to say");
+	ok(V.capThreshold(db) > -60 && V.capThreshold(db) < -25, "speech level between the quiet and the loud parts");
+	const f = V.capFrames(new Float32Array(16000).fill(0.5)); ok(f.length === 50 && Math.abs(f[0] - 10 * Math.log10(0.25)) < 0.01, "20 ms loudness frames");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

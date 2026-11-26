@@ -2595,6 +2595,7 @@
 				words = words.concat(V.capWordsFrom(res.chunks, a + bl.s, a + bl.keepFrom, a + bl.keepTo));
 			}
 			if (!words.length) throw new Error("No speech was found in that part.");
+			words = V.capTrimWords(words, V.capFrames(audio), a);   // no word shown over silence
 			var tr = capTrack(), list = V.capChunks(words, { maxChars: CS.chars, lines: CS.lines }).map(function (ch) { return capClip(tr, ch.a, ch.b, ch.txt, ch.w); });
 			var n = placeCaps(list, a, b); VE.commit("Make captions");
 			toast(n + " captions made (" + words.length + " words). Click one to fix a word or change its look.", 5000);
@@ -2649,6 +2650,26 @@
 	VE.on("change", function () { clearTimeout(capQT); capQT = setTimeout(capFind, 200); });
 	VE.on("time", capNow);
 	capFind();
+	// existing captions: listen to their sound again (no speech model needed), trim each word to where it is really said, and re-split the lines
+	$("vd-cap-fix").onclick = async function () {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		if (capJob) return; var job = capJob = { cancel: false }, btn = this; btn.disabled = true;
+		try {
+			var a = L[0].start, b = V.end(L[L.length - 1]), words = [];
+			L.forEach(function (c) { (c.text.cap.w || []).forEach(function (x) { words.push({ w: x[0], a: c.start + x[1], b: c.start + x[2] }); }); });
+			var audio = await capAudio(a, b, job); words = V.capTrimWords(words, V.capFrames(audio), a);
+			var keep = JSON.parse(JSON.stringify(L[0])), tr = V.track(VE.P, L[0].track);
+			var list = V.capChunks(words, { maxChars: CS.chars, lines: CS.lines }).map(function (ch) {
+				var c = V.clipDefaults(Object.assign(JSON.parse(JSON.stringify(keep)), { id: V.uid("c"), start: ch.a, in: 0, out: Math.max(0.2, ch.b - ch.a) }));
+				c.text.s = ch.txt; c.text.cap.w = ch.w; return c;
+			});
+			var ids = {}; L.forEach(function (c) { ids[c.id] = 1; }); VE.P.clips = VE.P.clips.filter(function (c) { return !ids[c.id]; });
+			var n = 0; list.forEach(function (c) { if (V.canPlace(VE.P, tr.id, c.start, V.dur(c))) { c.track = tr.id; VE.P.clips.push(c); n++; } });
+			VE.commit("Fix caption timing"); $("vd-cap-prog").hidden = true;
+			toast("Caption timing fixed: " + n + " captions, none shown over silence (Ctrl+Z undoes it).", 5000);
+		} catch (e) { if (/Cancelled/.test(e.message)) $("vd-cap-prog").hidden = true; else capProg(e.message || String(e), 0); }
+		finally { capJob = null; btn.disabled = false; }
+	};
 	$("vd-cap-del").onclick = function () {
 		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
 		VE.P.clips = VE.P.clips.filter(function (c) { return !V.isCap(c); }); VE.commit("Delete captions"); toast(L.length + " captions deleted (Ctrl+Z brings them back).");
