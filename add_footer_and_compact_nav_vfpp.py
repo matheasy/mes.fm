@@ -145,6 +145,14 @@ FOOTER_HTML = '''<div id="footer" class="footer" role="contentinfo">
         <div class="footer__item footer__item--extra-padding">
           <a class="footer__text footer__text--title" href="/mobile-apps">Mobile Apps</a>
         </div>
+
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="/browser">Extensions</a>
+        </div>
+
+        <div class="footer__item">
+          <a class="footer__text footer__text--title" href="/all">All Apps</a>
+        </div>
         <div class="footer__item">
           <a class="footer__text footer__text--title" href="https://mes.fm">MES.fm</a>
         </div>
