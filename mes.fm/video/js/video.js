@@ -6954,9 +6954,32 @@
 
 	/* ---------- start ---------- */
 	VE.hist.push(JSON.stringify(VE.P));
+	/* where you were: playhead, timeline zoom and scroll, kept in localStorage so a reload comes back to the same spot */
+	var POSKEY = "mes-video-editor:pos", posTimer = 0, posReady = false;
+	function savePos() {
+		if (!posReady) return;
+		var sc = $("vd-tlscroll");
+		try { localStorage.setItem(POSKEY, JSON.stringify({ t: VE.t, pps: VE.pps, sl: sc ? sc.scrollLeft : 0, st: sc ? sc.scrollTop : 0 })); } catch (e) { /* ignore */ }
+	}
+	function savePosSoon() { clearTimeout(posTimer); posTimer = setTimeout(savePos, 400); }
+	VE.on("time", savePosSoon); VE.on("zoom", savePosSoon);
+	if ($("vd-tlscroll")) $("vd-tlscroll").addEventListener("scroll", savePosSoon, { passive: true });
+	window.addEventListener("pagehide", savePos);
+	document.addEventListener("visibilitychange", function () { if (document.hidden) savePos(); });
+	function restorePos() {
+		var p = null; try { p = JSON.parse(localStorage.getItem(POSKEY) || "null"); } catch (e) { /* ignore */ }
+		var d = V.duration(VE.P);
+		if (!p || !d || !(p.t >= 0)) { if (d) VE.tl.fit(); return; }
+		if (p.pps > 0) VE.tl.zoom(p.pps); else VE.tl.fit();
+		var sc = $("vd-tlscroll");
+		if (sc) { sc.scrollLeft = p.sl || 0; sc.scrollTop = p.st || 0; }
+		VE.preview.seek(Math.min(p.t, d));
+		VE.tl.render(); timeText();
+	}
 	VE.restore().then(function (had) {
 		renderBin(); renderInsp(); updateButtons(); VE.tl.render(); VE.preview.fit(); timeText();
-		if (had) { toast("Your last project is back."); setTimeout(function () { if (V.duration(VE.P)) VE.tl.fit(); }, 400); }
+		if (had) { toast("Your last project is back."); setTimeout(function () { restorePos(); posReady = true; }, 400); }
+		else posReady = true;
 		receiveHandoff();
 	});
 	// sound handed over by another MES page (MES Narration's "Add to the Video Editor"): added at the playhead
