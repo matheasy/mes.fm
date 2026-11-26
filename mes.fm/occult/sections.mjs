@@ -57,7 +57,7 @@ export const IMPORTANT_LINKS_HTML = `<h3>Links to Playlists and Notes</h3>
 </ul></li>
 <li>&#128591; <a href="https://x.com/MathEasySolns/status/1054947652071239680">Illuminati Hand Gang Signs</a>
 <ul>
-<li><a href="https://mes.fm/hands">mes.fm/hands</a></li>
+<li><a href="https://mes.fm/hands">Illuminati Hand Signs Database</a> (mes.fm/hands) &middot; X thread: <a href="https://mes.fm/hands-x">mes.fm/hands-x</a></li>
 </ul></li>
 <li><a href="https://mes.fm/livestreams#occult">MES Occult Livestreams</a> (mes.fm/livestreams#occult)</li>
 </ul>

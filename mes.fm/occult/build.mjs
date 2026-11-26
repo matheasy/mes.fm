@@ -60,6 +60,13 @@ const PAGES = [
       "MES occult posts, newest first: Hive and Telegram posts on numbers, symbols and strange coincidences in the news, like 33 countries telling citizens to stockpile emergency supplies.",
   },
   {
+    // Tile only: no page is written. Links to the Illuminati Hand Signs Database (mes.fm/hands, build_hands_database.py); icon = img/hands-icon.jpg, bump iconVersion if replaced.
+    slug: "hands",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Illuminati Hand Signs Database",
+  },
+  {
     // Tile only: no page is written. Links to the "Occult" chip of mes.fm/livestreams; icon = img/occult-livestreams-icon.jpg (Trailer for MES Livestream 134, the newest video in that filter).
     slug: "occult-livestreams",
     href: "/livestreams#occult",

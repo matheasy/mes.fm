@@ -372,7 +372,7 @@ SECTIONS = [
       R('Gematria Calculator', 'https://mes.fm/gematria', '7 English ciphers and Hebrew.', [('Spreadsheet', 'https://1drv.ms/x/s!As32ynv0LoaIiKto0HBi5417FpcFqg')]),
       R('Musicians selling their souls to the devil', 'https://x.com/MathEasySolns/status/1828558964327620983', 'X thread.'),
       R('Weird eye anomalies', 'https://mes.fm/eyes', 'X thread.'),
-      R('Illuminati hand gang signs', 'https://mes.fm/hands', 'X thread.'),
+      R('Illuminati Hand Signs Database', 'https://mes.fm/hands', 'Searchable, with pictures.', [('X thread', 'https://mes.fm/hands-x')]),
     ]),
     ('MH370', [
       R('MH370 Teleportation Psyop hub', 'https://mes.fm/mh370', 'Videos and posts on the MH370 videos.', [('Playlist', YT + 'PLai3U8-WIK0EJGgDKXr-wW8z1jd7pZ069')]),

@@ -103,6 +103,13 @@ const PAGES = [
       "MES conspiracy videos: disinfo agents as energy vampires, Stephen A. Smith's presidential bid, the one-armed twin in Star Wars, 9/11 and The Matrix, and Ashton Forbes' letter.",
   },
   {
+    // Tile only: no page is written. Links to the Illuminati Hand Signs Database (mes.fm/hands, build_hands_database.py); icon = img/hands-icon.jpg, bump iconVersion if replaced.
+    slug: "hands",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Illuminati Hand Signs Database",
+  },
+  {
     // Tile only: no page is written. Links to the PizzaGate Video Series hub (mes.fm/pg, its own build.mjs); icon = img/pg-icon.jpg, bump iconVersion if replaced.
     slug: "pg",
     icon: "pg",
