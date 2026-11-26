@@ -438,9 +438,82 @@
 	};
 	// a piece cut out of a timer (split, cut range) keeps counting where the whole clip was at the piece's start time t0
 	V.timerCut = function (c, piece, t0) { var tm = piece && piece.text && piece.text.tm; if (!tm) return; tm.from = V.timerValue(c, t0); tm.fit = false; };
+	/* ---------- captions: a title with text.cap.w = [[word, start, end], ...] (seconds from the clip start) ---------- */
+	// style: hl = the spoken word in another colour, box = a coloured box behind it, reveal = words appear as spoken, word = one word at a time, plain
+	V.CAP_DEFAULT = { style: "hl", hl: "#facc15", w: [] };
+	V.CAP_STYLES = [["hl", "Spoken word in colour"], ["box", "Box behind the spoken word"], ["reveal", "Words appear as they are spoken"], ["word", "One word at a time"], ["plain", "Plain (whole line)"]];
+	V.CAP_LANGS = [["", "Detect automatically"], ["english", "English"], ["spanish", "Spanish"], ["french", "French"], ["german", "German"], ["portuguese", "Portuguese"], ["italian", "Italian"], ["dutch", "Dutch"], ["russian", "Russian"], ["polish", "Polish"], ["turkish", "Turkish"], ["arabic", "Arabic"], ["hindi", "Hindi"], ["vietnamese", "Vietnamese"], ["indonesian", "Indonesian"], ["chinese", "Chinese"], ["japanese", "Japanese"], ["korean", "Korean"], ["tagalog", "Tagalog"]];
+	V.CAP_MODELS = { tiny: { id: "onnx-community/whisper-tiny_timestamped", name: "Fast (tiny, ~40-120 MB)" }, base: { id: "onnx-community/whisper-base_timestamped", name: "Better (base, ~80-200 MB)" }, small: { id: "onnx-community/whisper-small_timestamped", name: "Best (small, ~250-600 MB, slow)" } };
+	// long sound is listened to in blocks with an overlap; a word belongs to the block whose middle-of-overlap rule claims its start
+	V.capBlocks = function (total, size, overlap) {
+		var out = [], s = 0; size = size || 120; overlap = overlap || 5;
+		while (s < total) { var e = Math.min(total, s + size); out.push({ s: Math.max(0, s - (out.length ? overlap : 0)), e: e, keepFrom: out.length ? s - overlap / 2 : 0, keepTo: e >= total ? Infinity : e - overlap / 2 }); s = e; }
+		return out;
+	};
+	// Whisper word chunks ({text, timestamp: [a, b]}) of one block -> [{w, a, b}] on the timeline (offset = where the block starts)
+	V.capWordsFrom = function (chunks, offset, keepFrom, keepTo) {
+		var out = [];
+		(chunks || []).forEach(function (c) {
+			var ts = c.timestamp || [0, null], a = (ts[0] || 0) + offset, b = ts[1] != null ? ts[1] + offset : a + 0.3, w = String(c.text || "").trim();
+			if (!w || /^[\[(].*[\])]$/.test(w) || a < (keepFrom || 0) || a >= (keepTo == null ? Infinity : keepTo)) return;
+			out.push({ w: w, a: Math.round(a * 1000) / 1000, b: Math.round(Math.max(a + 0.05, b) * 1000) / 1000 });
+		});
+		return out;
+	};
+	// group words into caption lines: at most maxChars x lines letters, a new caption after a pause, after a sentence end, or past 6 s
+	V.capChunks = function (words, o) {
+		o = o || {}; var max = (o.maxChars || 42) * (o.lines || 2), gap = o.gap || 0.7, out = [], cur = null;
+		words.forEach(function (x, i) {
+			var len = cur ? cur.txt.length + 1 + x.w.length : x.w.length, prev = i ? words[i - 1] : null;
+			var brk = !cur || len > max || (prev && x.a - prev.b > gap) || x.b - cur.a > 6 || (cur.words.length >= 3 && /[.?!…]["')\]]*$/.test(prev.w));
+			if (brk) { cur = { a: x.a, b: x.b, words: [], txt: "" }; out.push(cur); }
+			cur.words.push(x); cur.txt = cur.txt ? cur.txt + " " + x.w : x.w; cur.b = x.b;
+		});
+		out.forEach(function (c, i) { var nx = out[i + 1]; c.b = Math.min(nx ? nx.a : Infinity, c.b + (o.hold == null ? 0.6 : o.hold)); c.w = c.words.map(function (x) { return [x.w, Math.round((x.a - c.a) * 1000) / 1000, Math.round((x.b - c.a) * 1000) / 1000]; }); delete c.words; });
+		return out;
+	};
+	// which word is being spoken lt seconds into the clip (-1 before the first); a word stays lit until the next one starts
+	V.capActive = function (w, lt) { var k = -1; for (var i = 0; i < w.length; i++) { if (w[i][1] <= lt + 1e-6) k = i; else break; } return k; };
+	// new text typed for a caption: same number of words keeps their times, otherwise they are spread over the same span by length
+	V.capRetime = function (cap, text, dur) {
+		var ws = String(text || "").split(/\s+/).filter(Boolean), old = cap.w || [];
+		if (ws.length === old.length) { cap.w = old.map(function (x, i) { return [ws[i], x[1], x[2]]; }); return cap; }
+		var a = old.length ? old[0][1] : 0, b = old.length ? old[old.length - 1][2] : dur || ws.length * 0.35, tot = 0;
+		ws.forEach(function (w) { tot += w.length + 1; });
+		var t = a; cap.w = ws.map(function (w) { var d = (b - a) * (w.length + 1) / (tot || 1), r = [w, Math.round(t * 1000) / 1000, Math.round((t + d) * 1000) / 1000]; t += d; return r; });
+		return cap;
+	};
+	// a piece of a caption cut at piece-start t0 keeps only its own words, shifted to the piece
+	V.capCut = function (c, piece, t0) {
+		var cap = piece && piece.text && piece.text.cap; if (!cap) return;
+		var off = t0 - c.start, d = V.dur(piece);
+		cap.w = (c.text.cap.w || []).filter(function (x) { return x[1] >= off - 1e-6 && x[1] < off + d - 1e-6; }).map(function (x) { return [x[0], Math.round((x[1] - off) * 1000) / 1000, Math.round((x[2] - off) * 1000) / 1000]; });
+		piece.text.s = cap.w.map(function (x) { return x[0]; }).join(" ") || piece.text.s;
+	};
+	// dark or white letters, whichever reads better on colour hex
+	V.capInk = function (hex) { var m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#000"; var n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, bl = n & 255; return 0.299 * r + 0.587 * g + 0.114 * bl > 150 ? "#111111" : "#ffffff"; };
+	V.isCap = function (c) { return !!(c && c.type === "text" && c.text && c.text.cap); };
+	// subtitle files
+	function srtTime(t, dot) { t = Math.max(0, t); var ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, f = ms % 1000; return pad2(h) + ":" + pad2(m) + ":" + pad2(s) + (dot ? "." : ",") + String(1000 + f).slice(1); }
+	V.capList = function (p) { return p.clips.filter(V.isCap).sort(function (a, b) { return a.start - b.start; }); };
+	V.toSRT = function (p) { return V.capList(p).map(function (c, i) { return (i + 1) + "\n" + srtTime(c.start) + " --> " + srtTime(V.end(c)) + "\n" + c.text.s + "\n"; }).join("\n"); };
+	V.toVTT = function (p) { return "WEBVTT\n\n" + V.capList(p).map(function (c) { return srtTime(c.start, true) + " --> " + srtTime(V.end(c), true) + "\n" + c.text.s + "\n"; }).join("\n"); };
+	// SRT / VTT text -> [{a, b, s}]
+	V.parseSubs = function (txt) {
+		var out = [], re = /(\d+:)?(\d{1,2}):(\d{2})[,.](\d{1,3})\s*-->\s*(\d+:)?(\d{1,2}):(\d{2})[,.](\d{1,3})[^\n]*\n([\s\S]*?)(?=\n\s*\n|$)/g, m;
+		function sec(h, mi, s, f) { return (h ? parseInt(h, 10) : 0) * 3600 + (+mi) * 60 + (+s) + (+(f + "00").slice(0, 3)) / 1000; }
+		var t = String(txt || "").replace(/\r/g, "");
+		while ((m = re.exec(t))) { var s = m[9].replace(/<[^>]+>/g, "").replace(/\{[^}]*\}/g, "").trim(); if (s) out.push({ a: sec(m[1], m[2], m[3], m[4]), b: sec(m[5], m[6], m[7], m[8]), s: s }); }
+		return out;
+	};
 	// the text a title shows at time t (its own text, or the timer's time)
 	V.titleStr = function (c, t) {
-		var T = c.text || V.TEXT_DEFAULT, tm = T.tm; if (!tm) return T.s;
+		var T = c.text || V.TEXT_DEFAULT, tm = T.tm, cap = T.cap;
+		if (cap && cap.w && cap.w.length && (cap.style === "reveal" || cap.style === "word")) {
+			var k = V.capActive(cap.w, t - c.start); if (k < 0) return "";
+			return cap.style === "word" ? cap.w[k][0] : cap.w.slice(0, k + 1).map(function (x) { return x[0]; }).join(" ");
+		}
+		if (!tm) return T.s;
 		var v = V.timerValue(c, t), down = tm.mode === "down";
 		if (down && v <= 1e-9 && tm.end) return tm.end;
 		var top = down ? V.timerStart(c) : V.timerStart(c) + V.dur(c) * (tm.rate || 1);
@@ -455,7 +528,7 @@
 	V.clipDefaults = function (c) {
 		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
-		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); if (c.text.tm) c.text.tm = Object.assign({}, V.TIMER_DEFAULT, c.text.tm); }
+		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); if (c.text.tm) c.text.tm = Object.assign({}, V.TIMER_DEFAULT, c.text.tm); if (c.text.cap) c.text.cap = Object.assign({}, V.CAP_DEFAULT, c.text.cap); }
 		if (c.type === "shape") { c.shape = Object.assign({}, V.SHAPE_DEFAULT, c.shape || {}); }
 		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
@@ -580,7 +653,7 @@
 		if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
 		L.fout = 0; L.fin = Math.min(c.fin || 0, V.dur(L)); R.fin = 0; R.xin = 0; R.fout = Math.min(c.fout || 0, V.dur(R));
 		if (c.anims && c.anims.length) { var sa = V.splitAnims(c, t - c.start); L.anims = sa.left; V.setBase(R, sa.base); R.anims = sa.right; }
-		V.timerCut(c, L, c.start); V.timerCut(c, R, t);
+		V.timerCut(c, L, c.start); V.timerCut(c, R, t); V.capCut(c, L, c.start); V.capCut(c, R, t);
 		return [L, R];
 	};
 	// drag an edge: edge "l" moves the start (and the in point), "r" the end. t = wanted timeline time of that edge.
@@ -631,8 +704,8 @@
 			var s = c.start, e = V.end(c);
 			if (e <= a + 1e-6) { out.push(c); return; }
 			if (s >= b - 1e-6) { c.start = s - (b - a); out.push(c); return; }
-			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; V.timerCut(c, L, s); out.push(L); }
-			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } V.timerCut(c, R, b); out.push(R); }
+			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; V.timerCut(c, L, s); V.capCut(c, L, s); out.push(L); }
+			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } V.timerCut(c, R, b); V.capCut(c, R, b); out.push(R); }
 		});
 		p.clips = out;
 		return p;
@@ -2225,18 +2298,34 @@
 		return { px: px, lines: lines, lh: lh, pad: pad, wrapW: wrapW, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, th: th, ty: ty, T: T };
 	}
 	function drawText(ctx, c, W, H, pos, t) {
-		var b = textBox(ctx, c, W, H, pos, V.titleStr(c, t == null ? VE.t : t)), T = b.T, rot = pos && pos.rot;
+		var str = V.titleStr(c, t == null ? VE.t : t); if (str === "" && c.text && c.text.cap) return null;   // a word-by-word caption before its first word
+		var b = textBox(ctx, c, W, H, pos, str), T = b.T, rot = pos && pos.rot;
 		if (rot) { ctx.save(); ctx.translate(b.dx + b.dw / 2, b.dy + b.dh / 2); ctx.rotate(rot * Math.PI / 180); ctx.translate(-(b.dx + b.dw / 2), -(b.dy + b.dh / 2)); }
 		if (T.bgOn) { ctx.save(); ctx.globalAlpha *= T.bgOp == null ? 0.55 : T.bgOp; ctx.fillStyle = T.bg || "#000"; roundRect(ctx, b.dx, b.dy, b.dw, b.dh, b.px * 0.25); ctx.fill(); ctx.restore(); }
 		setFont(ctx, T, b.px); ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
 		// letter spacing adds space after the last letter too: shift so centred / right-aligned lines stay put
 		var lsx = "letterSpacing" in ctx ? (T.ls || 0) * b.px : 0;
 		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad + lsx : b.dx + b.dw / 2 + lsx / 2;
+		// captions: the word being spoken in its own colour (hl) or with a box behind it (box)
+		var cap = T.cap, act = -1, wi = 0, mark = null;
+		if (cap && cap.w && cap.w.length && (cap.style === "hl" || cap.style === "box")) {
+			act = V.capActive(cap.w, (t == null ? VE.t : t) - c.start);
+			var nw = 0; b.lines.forEach(function (l) { nw += l.split(/ +/).filter(Boolean).length; }); if (nw !== cap.w.length) act = -1;
+		}
+		function lineMark(l, x, y) {   // where the active word of this line sits, or null
+			var ws = l.split(/ +/).filter(Boolean), at = act - wi; wi += ws.length;
+			if (act < 0 || at < 0 || at >= ws.length) return null;
+			var lw = ctx.measureText(l).width, x0 = T.align === "left" ? x : T.align === "right" ? x - lw : x - lw / 2, before = ws.slice(0, at).join(" ");
+			return { x: x0 + (before ? ctx.measureText(before + " ").width : 0), w: ctx.measureText(ws[at]).width, y: y, word: ws[at] };
+		}
 		b.lines.forEach(function (l, k) {
 			var y = b.dy + (b.ty || 0) + b.pad * 0.6 + b.lh * (k + 0.5);
+			mark = lineMark(l, x, y);
+			if (mark && cap.style === "box") { ctx.save(); ctx.fillStyle = cap.hl || "#facc15"; roundRect(ctx, mark.x - b.px * 0.12, y - b.px * 0.62, mark.w + b.px * 0.24, b.px * 1.22, b.px * 0.18); ctx.fill(); ctx.restore(); }
 			if (T.shadow) { ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = b.px * 0.12; ctx.shadowOffsetY = b.px * 0.05; ctx.fillStyle = T.color; ctx.fillText(l, x, y); ctx.restore(); }
 			if (T.outline > 0) { ctx.lineWidth = T.outline * b.px * 0.08; ctx.strokeStyle = T.ocolor || "#000"; ctx.lineJoin = "round"; ctx.strokeText(l, x, y); }
 			ctx.fillStyle = T.color || "#fff"; ctx.fillText(l, x, y);
+			if (mark) { ctx.save(); ctx.textAlign = "left"; ctx.fillStyle = cap.style === "box" ? V.capInk(cap.hl) : (cap.hl || "#facc15"); ctx.fillText(mark.word, mark.x, y); ctx.restore(); }
 		});
 		unsetFont(ctx);
 		if (rot) ctx.restore();
@@ -2907,7 +2996,7 @@
 	P.endEdit = function () {
 		if (!ed) return; var e0 = ed; ed = null; VE.editingTextId = null;
 		if (e0.ta.parentNode) e0.ta.parentNode.removeChild(e0.ta);
-		if (e0.c.text.s !== e0.before) VE.commit("Title text"); else draw();
+		if (e0.c.text.s !== e0.before) { if (e0.c.text.cap) V.capRetime(e0.c.text.cap, e0.c.text.s, V.dur(e0.c)); VE.commit("Title text"); } else draw();
 	};
 	function place() {
 		if (!ed) return; var c = ed.c, ta = ed.ta, T = c.text;
@@ -2967,7 +3056,7 @@
 				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic layer: clips close up with no gaps (click to turn off)" : "Make this layer magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +
 				(canDel ? '<button type="button" data-tact="del" title="Delete this empty layer">&times;</button>' : "") + "</span>" + (h >= 70 && hasSnd ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
-				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? (c.text && c.text.tm ? "\u23F1  " + V.titleStr(c, c.start) + (c.text.tm.mode === "down" ? " \u2192 0" : " \u2192") : "T  " + (c.text && c.text.s || "").split("\n")[0]) : c.type === "shape" ? "\u25B2  " + ((V.SHAPE_KINDS.filter(function (q) { return q[0] === (c.shape && c.shape.k); })[0] || [0, "Shape"])[1]) + (c.shape && c.shape.k === "badge" ? " " + c.shape.n : "") : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
+				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? (c.text && c.text.cap ? "CC  " + (c.text.s || "") : c.text && c.text.tm ? "\u23F1  " + V.titleStr(c, c.start) + (c.text.tm.mode === "down" ? " \u2192 0" : " \u2192") : "T  " + (c.text && c.text.s || "").split("\n")[0]) : c.type === "shape" ? "\u25B2  " + ((V.SHAPE_KINDS.filter(function (q) { return q[0] === (c.shape && c.shape.k); })[0] || [0, "Shape"])[1]) + (c.shape && c.shape.k === "badge" ? " " + c.shape.n : "") : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
 				var badges = (c.link ? "🔗 " : "") + (c.grp ? "📎 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
 				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + (c.grp ? " is-grp" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
@@ -4811,6 +4900,9 @@
 			var T = c.text;
 			if (T.tm) h += timerSec(c, T.tm);
 			else h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there. The white handles on its sides set the box width (where lines wrap), the top / bottom ones its height.</p>';
+			if (T.cap) h += '<label class="vd-f"><span>Caption look</span><select id="vd-ci-style">' + V.CAP_STYLES.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === T.cap.style ? " selected" : "") + ">" + esc(q[1]) + "</option>"; }).join("") + '</select></label>' +
+				((T.cap.style === "hl" || T.cap.style === "box") ? '<label class="vd-f"><span>Spoken word colour</span><input type="color" id="vd-ci-hl" value="' + esc(T.cap.hl || "#facc15") + '"></label>' : "") +
+				'<p class="vd-sub">A caption made from the speech: each word keeps its own time. Fixing spelling keeps the times; adding or removing words spreads them evenly. The Captions tab on the left changes all captions at once.</p>';
 			var fInfo = VE.fontInfo(T.font);
 			h += '<div class="vd-f vd-fontpick"><span>Font</span><button type="button" class="vd-btn vd-fontbtn" id="vd-t-fontbtn" aria-haspopup="listbox" aria-expanded="false" style="font-family:' + esc(T.font) + '"><span>' + esc(fInfo[0]) + '</span><span aria-hidden="true">&#9662;</span></button></div>';
 			h += sld("vd-t-size", "Size", Math.round(T.size * 1000) / 10, 0.5, 1, 60, "%", "Height of the letters as a share of the picture height", 2, 30);
@@ -4970,6 +5062,11 @@
 				on("vd-tm-fmt", "change", function () { tm.fmt = this.value; VE.commit("Timer format"); renderInsp(); });
 				on("vd-tm-rate", "change", function () { var v = parseFloat(this.value); tm.rate = isFinite(v) && v > 0 ? V.clamp(v, 0.01, 1000) : 1; VE.commit("Timer speed"); renderInsp(); });
 				[["pre", "Text before the time"], ["suf", "Text after the time"], ["end", "Text at 0"]].forEach(function (q) { on("vd-tm-" + q[0], "input", function () { tm[q[0]] = this.value; live(); }); on("vd-tm-" + q[0], "change", function () { VE.commit(q[1]); }); });
+			}
+			if (T.cap) {
+				on("vd-ci-style", "change", function () { T.cap.style = this.value; VE.commit("Caption look"); renderInsp(); });
+				on("vd-ci-hl", "input", function () { T.cap.hl = this.value; live(); }); on("vd-ci-hl", "change", function () { T.cap.hl = this.value; VE.commit("Caption colour"); });
+				on("vd-ttext", "change", function () { V.capRetime(T.cap, T.s, V.dur(c)); });
 			}
 			on("vd-ttext", "input", function () { T.s = this.value; live(); }); on("vd-ttext", "change", function () { VE.commit("Title text"); });
 			setNum("vd-t-size", function (v) { T.size = V.clamp(v / 100, 0.01, 0.6); }, "Text size");
@@ -6005,6 +6102,125 @@
 	function waveBtn() { $("vd-wavemode").textContent = "Waveform: " + (VE.tl.wave === "db" ? "dB" : "linear"); }
 	$("vd-wavemode").onclick = function () { VE.tl.wave = UI.wave = VE.tl.wave === "db" ? "lin" : "db"; saveUI(); waveBtn(); VE.tl.render(); };
 	waveBtn();
+
+	/* ---------- captions: Whisper (transformers.js, word times) listens to the timeline's sound in this browser ---------- */
+	var CKEY = "mes-video-editor:caps", CS = { src: "all", lang: "", model: "base", style: "hl", hl: "#facc15", chars: 32, lines: 2, pos: "0.88", size: "0.055" };
+	try { Object.assign(CS, JSON.parse(localStorage.getItem(CKEY) || "{}")); } catch (x) { /* ignore */ }
+	function cKeep() { try { localStorage.setItem(CKEY, JSON.stringify(CS)); } catch (x) { /* ignore */ } }
+	(function () {
+		var opt = function (q, cur) { return '<option value="' + q[0] + '"' + (String(q[0]) === String(cur) ? " selected" : "") + ">" + esc(q[1]) + "</option>"; };
+		$("vd-cap-lang").innerHTML = V.CAP_LANGS.map(function (q) { return opt(q, CS.lang); }).join("");
+		$("vd-cap-model").innerHTML = Object.keys(V.CAP_MODELS).map(function (k) { return opt([k, V.CAP_MODELS[k].name], CS.model); }).join("");
+		$("vd-cap-style").innerHTML = V.CAP_STYLES.map(function (q) { return opt(q, CS.style); }).join("");
+		$("vd-cap-src").value = CS.src; $("vd-cap-hl").value = CS.hl; $("vd-cap-chars").value = CS.chars; $("vd-cap-lines").value = String(CS.lines); $("vd-cap-pos").value = CS.pos; $("vd-cap-size").value = CS.size;
+		function hlRow() { $("vd-cap-hlrow").hidden = !(CS.style === "hl" || CS.style === "box"); }
+		hlRow();
+		[["src", "vd-cap-src"], ["lang", "vd-cap-lang"], ["model", "vd-cap-model"], ["style", "vd-cap-style"], ["hl", "vd-cap-hl"], ["chars", "vd-cap-chars"], ["lines", "vd-cap-lines"], ["pos", "vd-cap-pos"], ["size", "vd-cap-size"]].forEach(function (q) {
+			$(q[1]).addEventListener("change", function () { var v = this.value; CS[q[0]] = q[0] === "chars" ? V.clamp(parseInt(v, 10) || 32, 12, 80) : q[0] === "lines" ? +v : v; cKeep(); hlRow(); });
+		});
+	})();
+	var capJob = null, asr = null, asrKey = "";
+	function capProg(msg, f) { $("vd-cap-prog").hidden = false; $("vd-cap-msg").textContent = msg; $("vd-cap-bar").value = f == null ? 0 : Math.max(0, Math.min(1, f)); }
+	async function loadAsr(job) {
+		var M = V.CAP_MODELS[CS.model] || V.CAP_MODELS.base, gpu = false;
+		try { gpu = !!(navigator.gpu && await navigator.gpu.requestAdapter()); } catch (e) { gpu = false; }
+		var key = M.id + (gpu ? "|gpu" : "|cpu"); if (asr && asrKey === key) return asr;
+		capProg("Loading speech recognition…", 0);
+		var imp = new Function("u", "return import(u)"), T = await imp("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js").catch(function () { return imp("https://unpkg.com/@huggingface/transformers@3.7.6/dist/transformers.min.js"); });
+		var files = {}, cb = function (p) {
+			if (job.cancel || p.status !== "progress" || !p.file) return; files[p.file] = [p.loaded || 0, p.total || 0]; var a = 0, b = 0; for (var k in files) { a += files[k][0]; b += files[k][1]; }
+			capProg("Downloading the speech model (once; your browser keeps it)… " + (a / 1e6).toFixed(0) + (b ? " of " + (b / 1e6).toFixed(0) : "") + " MB", b ? a / b : 0);
+		};
+		try { asr = await T.pipeline("automatic-speech-recognition", M.id, gpu ? { device: "webgpu", dtype: { encoder_model: "fp32", decoder_model_merged: "q4" }, progress_callback: cb } : { device: "wasm", dtype: "q8", progress_callback: cb }); }
+		catch (e) { if (!gpu) throw e; asr = await T.pipeline("automatic-speech-recognition", M.id, { device: "wasm", dtype: "q8", progress_callback: cb }); key = M.id + "|cpu"; }
+		asrKey = key; asr.__gpu = /gpu/.test(key); return asr;
+	}
+	// the stretch of the timeline to listen to
+	function capRange() {
+		var d = V.duration(VE.P), m = VE.P.marks || {};
+		if (CS.src === "marks") { if (!(m.in != null && m.out != null && m.out > m.in)) throw new Error("Set an In mark (I) and an Out mark (O) first, or choose “The whole video”."); return [m.in, m.out]; }
+		if (CS.src === "sel") { var sel = VE.selected(); if (!sel.length) throw new Error("Select the clips to caption first, or choose “The whole video”."); return [Math.min.apply(null, sel.map(function (c) { return c.start; })), Math.max.apply(null, sel.map(V.end))]; }
+		return [0, d];
+	}
+	// the mixed sound of [a, b] as 16 kHz mono (what Whisper wants), in 20 s pieces
+	async function capAudio(a, b, job) {
+		var out = new Float32Array(Math.ceil((b - a) * 16000)), step = 20;
+		for (var t = a; t < b - 1e-6; t += step) {
+			if (job.cancel) throw new Error("Cancelled");
+			capProg("Getting the sound… " + V.tc(t - a, VE.P.fps).split(";")[0] + " of " + V.tc(b - a, VE.P.fps).split(";")[0], (t - a) / (b - a) * 0.15);
+			var n = Math.round(Math.min(step, b - t) * 48000), mx = await VE.mixAudio(t, n), L = mx[0], R = mx[1], o = Math.round((t - a) * 16000), k = n / 3 | 0;
+			for (var i = 0; i < k && o + i < out.length; i++) { var j = i * 3; out[o + i] = (L[j] + L[j + 1] + L[j + 2] + R[j] + R[j + 1] + R[j + 2]) / 6; }
+		}
+		return out;
+	}
+	function capTrack() {
+		var tr = VE.P.tracks.filter(function (x) { return x.name === "Captions" && !x.lock; })[0];
+		if (!tr) { tr = VE.addTrack("v"); tr.name = "Captions"; }
+		return tr;
+	}
+	function capClip(tr, a, b, s, w) {
+		return V.clipDefaults({ id: V.uid("c"), type: "text", track: tr.id, start: a, in: 0, out: Math.max(0.2, b - a), fin: 0, fout: 0, x: 0.5, y: +CS.pos,
+			text: { s: s, size: +CS.size, bgOn: true, bgOp: 0.6, wrap: 0.9, shadow: true, cap: { style: CS.style, hl: CS.hl, w: w } } });
+	}
+	// put new caption clips on the Captions layer, replacing captions already there in [a, b]
+	function placeCaps(list, a, b) {
+		var tr = capTrack();
+		VE.P.clips = VE.P.clips.filter(function (c) { return !(c.track === tr.id && V.isCap(c) && c.start < b - 1e-6 && V.end(c) > a + 1e-6); });
+		var n = 0; list.forEach(function (c) { if (V.canPlace(VE.P, tr.id, c.start, V.dur(c))) { c.track = tr.id; VE.P.clips.push(c); n++; } });
+		return n;
+	}
+	$("vd-cap-go").onclick = async function () {
+		if (capJob) return;
+		var job = capJob = { cancel: false }; $("vd-cap-go").disabled = true; $("vd-cap-stop").hidden = false;
+		try {
+			var r = capRange(), a = r[0], b = r[1]; if (!(b - a > 0.5)) throw new Error("There is nothing to listen to: add a video or sound first.");
+			if (!VE.P.clips.some(function (c) { return VE.hasSound(c); })) throw new Error("No clip on the timeline has sound.");
+			var audio = await capAudio(a, b, job), p = await loadAsr(job); if (job.cancel) throw new Error("Cancelled");
+			var total = audio.length / 16000, blocks = V.capBlocks(total, 120, 5), words = [], t0 = Date.now();
+			for (var i = 0; i < blocks.length; i++) {
+				if (job.cancel) throw new Error("Cancelled");
+				var bl = blocks[i], el = (Date.now() - t0) / 1000, done = bl.s / total, left = i && done > 0 ? el / done * (1 - done) : 0;
+				capProg("Listening (" + (p.__gpu ? "graphics card" : "processor") + ")… " + V.tc(bl.s, VE.P.fps).split(";")[0] + " of " + V.tc(total, VE.P.fps).split(";")[0] + (left ? " · about " + Math.ceil(left / 60) + " min left" : ""), 0.15 + 0.85 * done);
+				await new Promise(function (res) { setTimeout(res, 0); });
+				var o = { return_timestamps: "word", chunk_length_s: 30, stride_length_s: 5 }; if (CS.lang) { o.language = CS.lang; o.task = "transcribe"; }
+				var res = await p(audio.subarray(Math.floor(bl.s * 16000), Math.floor(bl.e * 16000)), o);
+				words = words.concat(V.capWordsFrom(res.chunks, a + bl.s, a + bl.keepFrom, a + bl.keepTo));
+			}
+			if (!words.length) throw new Error("No speech was found in that part.");
+			var tr = capTrack(), list = V.capChunks(words, { maxChars: CS.chars, lines: CS.lines }).map(function (ch) { return capClip(tr, ch.a, ch.b, ch.txt, ch.w); });
+			var n = placeCaps(list, a, b); VE.commit("Make captions");
+			toast(n + " captions made (" + words.length + " words). Click one to fix a word or change its look.", 5000);
+			$("vd-cap-prog").hidden = true;
+		} catch (e) {
+			if (/Cancelled/.test(e.message)) $("vd-cap-prog").hidden = true; else capProg((e && e.message) || String(e), 0);
+		} finally { capJob = null; $("vd-cap-go").disabled = false; $("vd-cap-stop").hidden = true; }
+	};
+	$("vd-cap-stop").onclick = function () { if (capJob) { capJob.cancel = true; capProg("Stopping after this part…", +$("vd-cap-bar").value); } };
+	$("vd-cap-apply").onclick = function () {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		L.forEach(function (c) { c.text.cap.style = CS.style; c.text.cap.hl = CS.hl; c.text.size = +CS.size; c.y = +CS.pos; });
+		VE.commit("Caption look"); toast("Changed " + L.length + " captions.");
+	};
+	function capSave(kind) {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		var txt = kind === "srt" ? V.toSRT(VE.P) : V.toVTT(VE.P);
+		download(new Blob([txt], { type: kind === "srt" ? "application/x-subrip" : "text/vtt" }), (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + "." + kind);
+	}
+	$("vd-cap-srt").onclick = function () { capSave("srt"); }; $("vd-cap-vtt").onclick = function () { capSave("vtt"); };
+	$("vd-cap-imp").onclick = function () { $("vd-cap-file").click(); };
+	$("vd-cap-file").onchange = function () {
+		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
+		f.text().then(function (t) {
+			var subs = V.parseSubs(t); if (!subs.length) { toast("No captions found in that file."); return; }
+			var tr = capTrack(), list = subs.map(function (q) { var cap = V.capRetime({ w: [] }, q.s.replace(/\n/g, " "), q.b - q.a); return capClip(tr, q.a, q.b, q.s.replace(/\n/g, " "), cap.w); });
+			var n = placeCaps(list, subs[0].a, subs[subs.length - 1].b); VE.commit("Open captions");
+			toast(n + " captions added from " + f.name + ". Words light up evenly spread, since the file has no word times.", 5000);
+		});
+	};
+	$("vd-cap-del").onclick = function () {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		VE.P.clips = VE.P.clips.filter(function (c) { return !V.isCap(c); }); VE.commit("Delete captions"); toast(L.length + " captions deleted (Ctrl+Z brings them back).");
+	};
 
 	/* ---------- library cards: titles, transitions, audio and visual effects ---------- */
 	var TITLES = [

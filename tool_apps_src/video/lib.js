@@ -45,9 +45,82 @@
 	};
 	// a piece cut out of a timer (split, cut range) keeps counting where the whole clip was at the piece's start time t0
 	V.timerCut = function (c, piece, t0) { var tm = piece && piece.text && piece.text.tm; if (!tm) return; tm.from = V.timerValue(c, t0); tm.fit = false; };
+	/* ---------- captions: a title with text.cap.w = [[word, start, end], ...] (seconds from the clip start) ---------- */
+	// style: hl = the spoken word in another colour, box = a coloured box behind it, reveal = words appear as spoken, word = one word at a time, plain
+	V.CAP_DEFAULT = { style: "hl", hl: "#facc15", w: [] };
+	V.CAP_STYLES = [["hl", "Spoken word in colour"], ["box", "Box behind the spoken word"], ["reveal", "Words appear as they are spoken"], ["word", "One word at a time"], ["plain", "Plain (whole line)"]];
+	V.CAP_LANGS = [["", "Detect automatically"], ["english", "English"], ["spanish", "Spanish"], ["french", "French"], ["german", "German"], ["portuguese", "Portuguese"], ["italian", "Italian"], ["dutch", "Dutch"], ["russian", "Russian"], ["polish", "Polish"], ["turkish", "Turkish"], ["arabic", "Arabic"], ["hindi", "Hindi"], ["vietnamese", "Vietnamese"], ["indonesian", "Indonesian"], ["chinese", "Chinese"], ["japanese", "Japanese"], ["korean", "Korean"], ["tagalog", "Tagalog"]];
+	V.CAP_MODELS = { tiny: { id: "onnx-community/whisper-tiny_timestamped", name: "Fast (tiny, ~40-120 MB)" }, base: { id: "onnx-community/whisper-base_timestamped", name: "Better (base, ~80-200 MB)" }, small: { id: "onnx-community/whisper-small_timestamped", name: "Best (small, ~250-600 MB, slow)" } };
+	// long sound is listened to in blocks with an overlap; a word belongs to the block whose middle-of-overlap rule claims its start
+	V.capBlocks = function (total, size, overlap) {
+		var out = [], s = 0; size = size || 120; overlap = overlap || 5;
+		while (s < total) { var e = Math.min(total, s + size); out.push({ s: Math.max(0, s - (out.length ? overlap : 0)), e: e, keepFrom: out.length ? s - overlap / 2 : 0, keepTo: e >= total ? Infinity : e - overlap / 2 }); s = e; }
+		return out;
+	};
+	// Whisper word chunks ({text, timestamp: [a, b]}) of one block -> [{w, a, b}] on the timeline (offset = where the block starts)
+	V.capWordsFrom = function (chunks, offset, keepFrom, keepTo) {
+		var out = [];
+		(chunks || []).forEach(function (c) {
+			var ts = c.timestamp || [0, null], a = (ts[0] || 0) + offset, b = ts[1] != null ? ts[1] + offset : a + 0.3, w = String(c.text || "").trim();
+			if (!w || /^[\[(].*[\])]$/.test(w) || a < (keepFrom || 0) || a >= (keepTo == null ? Infinity : keepTo)) return;
+			out.push({ w: w, a: Math.round(a * 1000) / 1000, b: Math.round(Math.max(a + 0.05, b) * 1000) / 1000 });
+		});
+		return out;
+	};
+	// group words into caption lines: at most maxChars x lines letters, a new caption after a pause, after a sentence end, or past 6 s
+	V.capChunks = function (words, o) {
+		o = o || {}; var max = (o.maxChars || 42) * (o.lines || 2), gap = o.gap || 0.7, out = [], cur = null;
+		words.forEach(function (x, i) {
+			var len = cur ? cur.txt.length + 1 + x.w.length : x.w.length, prev = i ? words[i - 1] : null;
+			var brk = !cur || len > max || (prev && x.a - prev.b > gap) || x.b - cur.a > 6 || (cur.words.length >= 3 && /[.?!…]["')\]]*$/.test(prev.w));
+			if (brk) { cur = { a: x.a, b: x.b, words: [], txt: "" }; out.push(cur); }
+			cur.words.push(x); cur.txt = cur.txt ? cur.txt + " " + x.w : x.w; cur.b = x.b;
+		});
+		out.forEach(function (c, i) { var nx = out[i + 1]; c.b = Math.min(nx ? nx.a : Infinity, c.b + (o.hold == null ? 0.6 : o.hold)); c.w = c.words.map(function (x) { return [x.w, Math.round((x.a - c.a) * 1000) / 1000, Math.round((x.b - c.a) * 1000) / 1000]; }); delete c.words; });
+		return out;
+	};
+	// which word is being spoken lt seconds into the clip (-1 before the first); a word stays lit until the next one starts
+	V.capActive = function (w, lt) { var k = -1; for (var i = 0; i < w.length; i++) { if (w[i][1] <= lt + 1e-6) k = i; else break; } return k; };
+	// new text typed for a caption: same number of words keeps their times, otherwise they are spread over the same span by length
+	V.capRetime = function (cap, text, dur) {
+		var ws = String(text || "").split(/\s+/).filter(Boolean), old = cap.w || [];
+		if (ws.length === old.length) { cap.w = old.map(function (x, i) { return [ws[i], x[1], x[2]]; }); return cap; }
+		var a = old.length ? old[0][1] : 0, b = old.length ? old[old.length - 1][2] : dur || ws.length * 0.35, tot = 0;
+		ws.forEach(function (w) { tot += w.length + 1; });
+		var t = a; cap.w = ws.map(function (w) { var d = (b - a) * (w.length + 1) / (tot || 1), r = [w, Math.round(t * 1000) / 1000, Math.round((t + d) * 1000) / 1000]; t += d; return r; });
+		return cap;
+	};
+	// a piece of a caption cut at piece-start t0 keeps only its own words, shifted to the piece
+	V.capCut = function (c, piece, t0) {
+		var cap = piece && piece.text && piece.text.cap; if (!cap) return;
+		var off = t0 - c.start, d = V.dur(piece);
+		cap.w = (c.text.cap.w || []).filter(function (x) { return x[1] >= off - 1e-6 && x[1] < off + d - 1e-6; }).map(function (x) { return [x[0], Math.round((x[1] - off) * 1000) / 1000, Math.round((x[2] - off) * 1000) / 1000]; });
+		piece.text.s = cap.w.map(function (x) { return x[0]; }).join(" ") || piece.text.s;
+	};
+	// dark or white letters, whichever reads better on colour hex
+	V.capInk = function (hex) { var m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#000"; var n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, bl = n & 255; return 0.299 * r + 0.587 * g + 0.114 * bl > 150 ? "#111111" : "#ffffff"; };
+	V.isCap = function (c) { return !!(c && c.type === "text" && c.text && c.text.cap); };
+	// subtitle files
+	function srtTime(t, dot) { t = Math.max(0, t); var ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, f = ms % 1000; return pad2(h) + ":" + pad2(m) + ":" + pad2(s) + (dot ? "." : ",") + String(1000 + f).slice(1); }
+	V.capList = function (p) { return p.clips.filter(V.isCap).sort(function (a, b) { return a.start - b.start; }); };
+	V.toSRT = function (p) { return V.capList(p).map(function (c, i) { return (i + 1) + "\n" + srtTime(c.start) + " --> " + srtTime(V.end(c)) + "\n" + c.text.s + "\n"; }).join("\n"); };
+	V.toVTT = function (p) { return "WEBVTT\n\n" + V.capList(p).map(function (c) { return srtTime(c.start, true) + " --> " + srtTime(V.end(c), true) + "\n" + c.text.s + "\n"; }).join("\n"); };
+	// SRT / VTT text -> [{a, b, s}]
+	V.parseSubs = function (txt) {
+		var out = [], re = /(\d+:)?(\d{1,2}):(\d{2})[,.](\d{1,3})\s*-->\s*(\d+:)?(\d{1,2}):(\d{2})[,.](\d{1,3})[^\n]*\n([\s\S]*?)(?=\n\s*\n|$)/g, m;
+		function sec(h, mi, s, f) { return (h ? parseInt(h, 10) : 0) * 3600 + (+mi) * 60 + (+s) + (+(f + "00").slice(0, 3)) / 1000; }
+		var t = String(txt || "").replace(/\r/g, "");
+		while ((m = re.exec(t))) { var s = m[9].replace(/<[^>]+>/g, "").replace(/\{[^}]*\}/g, "").trim(); if (s) out.push({ a: sec(m[1], m[2], m[3], m[4]), b: sec(m[5], m[6], m[7], m[8]), s: s }); }
+		return out;
+	};
 	// the text a title shows at time t (its own text, or the timer's time)
 	V.titleStr = function (c, t) {
-		var T = c.text || V.TEXT_DEFAULT, tm = T.tm; if (!tm) return T.s;
+		var T = c.text || V.TEXT_DEFAULT, tm = T.tm, cap = T.cap;
+		if (cap && cap.w && cap.w.length && (cap.style === "reveal" || cap.style === "word")) {
+			var k = V.capActive(cap.w, t - c.start); if (k < 0) return "";
+			return cap.style === "word" ? cap.w[k][0] : cap.w.slice(0, k + 1).map(function (x) { return x[0]; }).join(" ");
+		}
+		if (!tm) return T.s;
 		var v = V.timerValue(c, t), down = tm.mode === "down";
 		if (down && v <= 1e-9 && tm.end) return tm.end;
 		var top = down ? V.timerStart(c) : V.timerStart(c) + V.dur(c) * (tm.rate || 1);
@@ -62,7 +135,7 @@
 	V.clipDefaults = function (c) {
 		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
-		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); if (c.text.tm) c.text.tm = Object.assign({}, V.TIMER_DEFAULT, c.text.tm); }
+		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); if (c.text.tm) c.text.tm = Object.assign({}, V.TIMER_DEFAULT, c.text.tm); if (c.text.cap) c.text.cap = Object.assign({}, V.CAP_DEFAULT, c.text.cap); }
 		if (c.type === "shape") { c.shape = Object.assign({}, V.SHAPE_DEFAULT, c.shape || {}); }
 		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
@@ -187,7 +260,7 @@
 		if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
 		L.fout = 0; L.fin = Math.min(c.fin || 0, V.dur(L)); R.fin = 0; R.xin = 0; R.fout = Math.min(c.fout || 0, V.dur(R));
 		if (c.anims && c.anims.length) { var sa = V.splitAnims(c, t - c.start); L.anims = sa.left; V.setBase(R, sa.base); R.anims = sa.right; }
-		V.timerCut(c, L, c.start); V.timerCut(c, R, t);
+		V.timerCut(c, L, c.start); V.timerCut(c, R, t); V.capCut(c, L, c.start); V.capCut(c, R, t);
 		return [L, R];
 	};
 	// drag an edge: edge "l" moves the start (and the in point), "r" the end. t = wanted timeline time of that edge.
@@ -238,8 +311,8 @@
 			var s = c.start, e = V.end(c);
 			if (e <= a + 1e-6) { out.push(c); return; }
 			if (s >= b - 1e-6) { c.start = s - (b - a); out.push(c); return; }
-			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; V.timerCut(c, L, s); out.push(L); }
-			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } V.timerCut(c, R, b); out.push(R); }
+			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; V.timerCut(c, L, s); V.capCut(c, L, s); out.push(L); }
+			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } V.timerCut(c, R, b); V.capCut(c, R, b); out.push(R); }
 		});
 		p.clips = out;
 		return p;

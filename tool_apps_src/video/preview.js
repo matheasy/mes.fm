@@ -509,7 +509,7 @@
 	P.endEdit = function () {
 		if (!ed) return; var e0 = ed; ed = null; VE.editingTextId = null;
 		if (e0.ta.parentNode) e0.ta.parentNode.removeChild(e0.ta);
-		if (e0.c.text.s !== e0.before) VE.commit("Title text"); else draw();
+		if (e0.c.text.s !== e0.before) { if (e0.c.text.cap) V.capRetime(e0.c.text.cap, e0.c.text.s, V.dur(e0.c)); VE.commit("Title text"); } else draw();
 	};
 	function place() {
 		if (!ed) return; var c = ed.c, ta = ed.ta, T = c.text;

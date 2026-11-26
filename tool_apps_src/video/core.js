@@ -441,18 +441,34 @@
 		return { px: px, lines: lines, lh: lh, pad: pad, wrapW: wrapW, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, th: th, ty: ty, T: T };
 	}
 	function drawText(ctx, c, W, H, pos, t) {
-		var b = textBox(ctx, c, W, H, pos, V.titleStr(c, t == null ? VE.t : t)), T = b.T, rot = pos && pos.rot;
+		var str = V.titleStr(c, t == null ? VE.t : t); if (str === "" && c.text && c.text.cap) return null;   // a word-by-word caption before its first word
+		var b = textBox(ctx, c, W, H, pos, str), T = b.T, rot = pos && pos.rot;
 		if (rot) { ctx.save(); ctx.translate(b.dx + b.dw / 2, b.dy + b.dh / 2); ctx.rotate(rot * Math.PI / 180); ctx.translate(-(b.dx + b.dw / 2), -(b.dy + b.dh / 2)); }
 		if (T.bgOn) { ctx.save(); ctx.globalAlpha *= T.bgOp == null ? 0.55 : T.bgOp; ctx.fillStyle = T.bg || "#000"; roundRect(ctx, b.dx, b.dy, b.dw, b.dh, b.px * 0.25); ctx.fill(); ctx.restore(); }
 		setFont(ctx, T, b.px); ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
 		// letter spacing adds space after the last letter too: shift so centred / right-aligned lines stay put
 		var lsx = "letterSpacing" in ctx ? (T.ls || 0) * b.px : 0;
 		var x = T.align === "left" ? b.dx + b.pad : T.align === "right" ? b.dx + b.dw - b.pad + lsx : b.dx + b.dw / 2 + lsx / 2;
+		// captions: the word being spoken in its own colour (hl) or with a box behind it (box)
+		var cap = T.cap, act = -1, wi = 0, mark = null;
+		if (cap && cap.w && cap.w.length && (cap.style === "hl" || cap.style === "box")) {
+			act = V.capActive(cap.w, (t == null ? VE.t : t) - c.start);
+			var nw = 0; b.lines.forEach(function (l) { nw += l.split(/ +/).filter(Boolean).length; }); if (nw !== cap.w.length) act = -1;
+		}
+		function lineMark(l, x, y) {   // where the active word of this line sits, or null
+			var ws = l.split(/ +/).filter(Boolean), at = act - wi; wi += ws.length;
+			if (act < 0 || at < 0 || at >= ws.length) return null;
+			var lw = ctx.measureText(l).width, x0 = T.align === "left" ? x : T.align === "right" ? x - lw : x - lw / 2, before = ws.slice(0, at).join(" ");
+			return { x: x0 + (before ? ctx.measureText(before + " ").width : 0), w: ctx.measureText(ws[at]).width, y: y, word: ws[at] };
+		}
 		b.lines.forEach(function (l, k) {
 			var y = b.dy + (b.ty || 0) + b.pad * 0.6 + b.lh * (k + 0.5);
+			mark = lineMark(l, x, y);
+			if (mark && cap.style === "box") { ctx.save(); ctx.fillStyle = cap.hl || "#facc15"; roundRect(ctx, mark.x - b.px * 0.12, y - b.px * 0.62, mark.w + b.px * 0.24, b.px * 1.22, b.px * 0.18); ctx.fill(); ctx.restore(); }
 			if (T.shadow) { ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = b.px * 0.12; ctx.shadowOffsetY = b.px * 0.05; ctx.fillStyle = T.color; ctx.fillText(l, x, y); ctx.restore(); }
 			if (T.outline > 0) { ctx.lineWidth = T.outline * b.px * 0.08; ctx.strokeStyle = T.ocolor || "#000"; ctx.lineJoin = "round"; ctx.strokeText(l, x, y); }
 			ctx.fillStyle = T.color || "#fff"; ctx.fillText(l, x, y);
+			if (mark) { ctx.save(); ctx.textAlign = "left"; ctx.fillStyle = cap.style === "box" ? V.capInk(cap.hl) : (cap.hl || "#facc15"); ctx.fillText(mark.word, mark.x, y); ctx.restore(); }
 		});
 		unsetFont(ctx);
 		if (rot) ctx.restore();

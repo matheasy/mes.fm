@@ -1236,6 +1236,9 @@
 			var T = c.text;
 			if (T.tm) h += timerSec(c, T.tm);
 			else h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there. The white handles on its sides set the box width (where lines wrap), the top / bottom ones its height.</p>';
+			if (T.cap) h += '<label class="vd-f"><span>Caption look</span><select id="vd-ci-style">' + V.CAP_STYLES.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === T.cap.style ? " selected" : "") + ">" + esc(q[1]) + "</option>"; }).join("") + '</select></label>' +
+				((T.cap.style === "hl" || T.cap.style === "box") ? '<label class="vd-f"><span>Spoken word colour</span><input type="color" id="vd-ci-hl" value="' + esc(T.cap.hl || "#facc15") + '"></label>' : "") +
+				'<p class="vd-sub">A caption made from the speech: each word keeps its own time. Fixing spelling keeps the times; adding or removing words spreads them evenly. The Captions tab on the left changes all captions at once.</p>';
 			var fInfo = VE.fontInfo(T.font);
 			h += '<div class="vd-f vd-fontpick"><span>Font</span><button type="button" class="vd-btn vd-fontbtn" id="vd-t-fontbtn" aria-haspopup="listbox" aria-expanded="false" style="font-family:' + esc(T.font) + '"><span>' + esc(fInfo[0]) + '</span><span aria-hidden="true">&#9662;</span></button></div>';
 			h += sld("vd-t-size", "Size", Math.round(T.size * 1000) / 10, 0.5, 1, 60, "%", "Height of the letters as a share of the picture height", 2, 30);
@@ -1395,6 +1398,11 @@
 				on("vd-tm-fmt", "change", function () { tm.fmt = this.value; VE.commit("Timer format"); renderInsp(); });
 				on("vd-tm-rate", "change", function () { var v = parseFloat(this.value); tm.rate = isFinite(v) && v > 0 ? V.clamp(v, 0.01, 1000) : 1; VE.commit("Timer speed"); renderInsp(); });
 				[["pre", "Text before the time"], ["suf", "Text after the time"], ["end", "Text at 0"]].forEach(function (q) { on("vd-tm-" + q[0], "input", function () { tm[q[0]] = this.value; live(); }); on("vd-tm-" + q[0], "change", function () { VE.commit(q[1]); }); });
+			}
+			if (T.cap) {
+				on("vd-ci-style", "change", function () { T.cap.style = this.value; VE.commit("Caption look"); renderInsp(); });
+				on("vd-ci-hl", "input", function () { T.cap.hl = this.value; live(); }); on("vd-ci-hl", "change", function () { T.cap.hl = this.value; VE.commit("Caption colour"); });
+				on("vd-ttext", "change", function () { V.capRetime(T.cap, T.s, V.dur(c)); });
 			}
 			on("vd-ttext", "input", function () { T.s = this.value; live(); }); on("vd-ttext", "change", function () { VE.commit("Title text"); });
 			setNum("vd-t-size", function (v) { T.size = V.clamp(v / 100, 0.01, 0.6); }, "Text size");
@@ -2430,6 +2438,125 @@
 	function waveBtn() { $("vd-wavemode").textContent = "Waveform: " + (VE.tl.wave === "db" ? "dB" : "linear"); }
 	$("vd-wavemode").onclick = function () { VE.tl.wave = UI.wave = VE.tl.wave === "db" ? "lin" : "db"; saveUI(); waveBtn(); VE.tl.render(); };
 	waveBtn();
+
+	/* ---------- captions: Whisper (transformers.js, word times) listens to the timeline's sound in this browser ---------- */
+	var CKEY = "mes-video-editor:caps", CS = { src: "all", lang: "", model: "base", style: "hl", hl: "#facc15", chars: 32, lines: 2, pos: "0.88", size: "0.055" };
+	try { Object.assign(CS, JSON.parse(localStorage.getItem(CKEY) || "{}")); } catch (x) { /* ignore */ }
+	function cKeep() { try { localStorage.setItem(CKEY, JSON.stringify(CS)); } catch (x) { /* ignore */ } }
+	(function () {
+		var opt = function (q, cur) { return '<option value="' + q[0] + '"' + (String(q[0]) === String(cur) ? " selected" : "") + ">" + esc(q[1]) + "</option>"; };
+		$("vd-cap-lang").innerHTML = V.CAP_LANGS.map(function (q) { return opt(q, CS.lang); }).join("");
+		$("vd-cap-model").innerHTML = Object.keys(V.CAP_MODELS).map(function (k) { return opt([k, V.CAP_MODELS[k].name], CS.model); }).join("");
+		$("vd-cap-style").innerHTML = V.CAP_STYLES.map(function (q) { return opt(q, CS.style); }).join("");
+		$("vd-cap-src").value = CS.src; $("vd-cap-hl").value = CS.hl; $("vd-cap-chars").value = CS.chars; $("vd-cap-lines").value = String(CS.lines); $("vd-cap-pos").value = CS.pos; $("vd-cap-size").value = CS.size;
+		function hlRow() { $("vd-cap-hlrow").hidden = !(CS.style === "hl" || CS.style === "box"); }
+		hlRow();
+		[["src", "vd-cap-src"], ["lang", "vd-cap-lang"], ["model", "vd-cap-model"], ["style", "vd-cap-style"], ["hl", "vd-cap-hl"], ["chars", "vd-cap-chars"], ["lines", "vd-cap-lines"], ["pos", "vd-cap-pos"], ["size", "vd-cap-size"]].forEach(function (q) {
+			$(q[1]).addEventListener("change", function () { var v = this.value; CS[q[0]] = q[0] === "chars" ? V.clamp(parseInt(v, 10) || 32, 12, 80) : q[0] === "lines" ? +v : v; cKeep(); hlRow(); });
+		});
+	})();
+	var capJob = null, asr = null, asrKey = "";
+	function capProg(msg, f) { $("vd-cap-prog").hidden = false; $("vd-cap-msg").textContent = msg; $("vd-cap-bar").value = f == null ? 0 : Math.max(0, Math.min(1, f)); }
+	async function loadAsr(job) {
+		var M = V.CAP_MODELS[CS.model] || V.CAP_MODELS.base, gpu = false;
+		try { gpu = !!(navigator.gpu && await navigator.gpu.requestAdapter()); } catch (e) { gpu = false; }
+		var key = M.id + (gpu ? "|gpu" : "|cpu"); if (asr && asrKey === key) return asr;
+		capProg("Loading speech recognition…", 0);
+		var imp = new Function("u", "return import(u)"), T = await imp("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/dist/transformers.min.js").catch(function () { return imp("https://unpkg.com/@huggingface/transformers@3.7.6/dist/transformers.min.js"); });
+		var files = {}, cb = function (p) {
+			if (job.cancel || p.status !== "progress" || !p.file) return; files[p.file] = [p.loaded || 0, p.total || 0]; var a = 0, b = 0; for (var k in files) { a += files[k][0]; b += files[k][1]; }
+			capProg("Downloading the speech model (once; your browser keeps it)… " + (a / 1e6).toFixed(0) + (b ? " of " + (b / 1e6).toFixed(0) : "") + " MB", b ? a / b : 0);
+		};
+		try { asr = await T.pipeline("automatic-speech-recognition", M.id, gpu ? { device: "webgpu", dtype: { encoder_model: "fp32", decoder_model_merged: "q4" }, progress_callback: cb } : { device: "wasm", dtype: "q8", progress_callback: cb }); }
+		catch (e) { if (!gpu) throw e; asr = await T.pipeline("automatic-speech-recognition", M.id, { device: "wasm", dtype: "q8", progress_callback: cb }); key = M.id + "|cpu"; }
+		asrKey = key; asr.__gpu = /gpu/.test(key); return asr;
+	}
+	// the stretch of the timeline to listen to
+	function capRange() {
+		var d = V.duration(VE.P), m = VE.P.marks || {};
+		if (CS.src === "marks") { if (!(m.in != null && m.out != null && m.out > m.in)) throw new Error("Set an In mark (I) and an Out mark (O) first, or choose “The whole video”."); return [m.in, m.out]; }
+		if (CS.src === "sel") { var sel = VE.selected(); if (!sel.length) throw new Error("Select the clips to caption first, or choose “The whole video”."); return [Math.min.apply(null, sel.map(function (c) { return c.start; })), Math.max.apply(null, sel.map(V.end))]; }
+		return [0, d];
+	}
+	// the mixed sound of [a, b] as 16 kHz mono (what Whisper wants), in 20 s pieces
+	async function capAudio(a, b, job) {
+		var out = new Float32Array(Math.ceil((b - a) * 16000)), step = 20;
+		for (var t = a; t < b - 1e-6; t += step) {
+			if (job.cancel) throw new Error("Cancelled");
+			capProg("Getting the sound… " + V.tc(t - a, VE.P.fps).split(";")[0] + " of " + V.tc(b - a, VE.P.fps).split(";")[0], (t - a) / (b - a) * 0.15);
+			var n = Math.round(Math.min(step, b - t) * 48000), mx = await VE.mixAudio(t, n), L = mx[0], R = mx[1], o = Math.round((t - a) * 16000), k = n / 3 | 0;
+			for (var i = 0; i < k && o + i < out.length; i++) { var j = i * 3; out[o + i] = (L[j] + L[j + 1] + L[j + 2] + R[j] + R[j + 1] + R[j + 2]) / 6; }
+		}
+		return out;
+	}
+	function capTrack() {
+		var tr = VE.P.tracks.filter(function (x) { return x.name === "Captions" && !x.lock; })[0];
+		if (!tr) { tr = VE.addTrack("v"); tr.name = "Captions"; }
+		return tr;
+	}
+	function capClip(tr, a, b, s, w) {
+		return V.clipDefaults({ id: V.uid("c"), type: "text", track: tr.id, start: a, in: 0, out: Math.max(0.2, b - a), fin: 0, fout: 0, x: 0.5, y: +CS.pos,
+			text: { s: s, size: +CS.size, bgOn: true, bgOp: 0.6, wrap: 0.9, shadow: true, cap: { style: CS.style, hl: CS.hl, w: w } } });
+	}
+	// put new caption clips on the Captions layer, replacing captions already there in [a, b]
+	function placeCaps(list, a, b) {
+		var tr = capTrack();
+		VE.P.clips = VE.P.clips.filter(function (c) { return !(c.track === tr.id && V.isCap(c) && c.start < b - 1e-6 && V.end(c) > a + 1e-6); });
+		var n = 0; list.forEach(function (c) { if (V.canPlace(VE.P, tr.id, c.start, V.dur(c))) { c.track = tr.id; VE.P.clips.push(c); n++; } });
+		return n;
+	}
+	$("vd-cap-go").onclick = async function () {
+		if (capJob) return;
+		var job = capJob = { cancel: false }; $("vd-cap-go").disabled = true; $("vd-cap-stop").hidden = false;
+		try {
+			var r = capRange(), a = r[0], b = r[1]; if (!(b - a > 0.5)) throw new Error("There is nothing to listen to: add a video or sound first.");
+			if (!VE.P.clips.some(function (c) { return VE.hasSound(c); })) throw new Error("No clip on the timeline has sound.");
+			var audio = await capAudio(a, b, job), p = await loadAsr(job); if (job.cancel) throw new Error("Cancelled");
+			var total = audio.length / 16000, blocks = V.capBlocks(total, 120, 5), words = [], t0 = Date.now();
+			for (var i = 0; i < blocks.length; i++) {
+				if (job.cancel) throw new Error("Cancelled");
+				var bl = blocks[i], el = (Date.now() - t0) / 1000, done = bl.s / total, left = i && done > 0 ? el / done * (1 - done) : 0;
+				capProg("Listening (" + (p.__gpu ? "graphics card" : "processor") + ")… " + V.tc(bl.s, VE.P.fps).split(";")[0] + " of " + V.tc(total, VE.P.fps).split(";")[0] + (left ? " · about " + Math.ceil(left / 60) + " min left" : ""), 0.15 + 0.85 * done);
+				await new Promise(function (res) { setTimeout(res, 0); });
+				var o = { return_timestamps: "word", chunk_length_s: 30, stride_length_s: 5 }; if (CS.lang) { o.language = CS.lang; o.task = "transcribe"; }
+				var res = await p(audio.subarray(Math.floor(bl.s * 16000), Math.floor(bl.e * 16000)), o);
+				words = words.concat(V.capWordsFrom(res.chunks, a + bl.s, a + bl.keepFrom, a + bl.keepTo));
+			}
+			if (!words.length) throw new Error("No speech was found in that part.");
+			var tr = capTrack(), list = V.capChunks(words, { maxChars: CS.chars, lines: CS.lines }).map(function (ch) { return capClip(tr, ch.a, ch.b, ch.txt, ch.w); });
+			var n = placeCaps(list, a, b); VE.commit("Make captions");
+			toast(n + " captions made (" + words.length + " words). Click one to fix a word or change its look.", 5000);
+			$("vd-cap-prog").hidden = true;
+		} catch (e) {
+			if (/Cancelled/.test(e.message)) $("vd-cap-prog").hidden = true; else capProg((e && e.message) || String(e), 0);
+		} finally { capJob = null; $("vd-cap-go").disabled = false; $("vd-cap-stop").hidden = true; }
+	};
+	$("vd-cap-stop").onclick = function () { if (capJob) { capJob.cancel = true; capProg("Stopping after this part…", +$("vd-cap-bar").value); } };
+	$("vd-cap-apply").onclick = function () {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		L.forEach(function (c) { c.text.cap.style = CS.style; c.text.cap.hl = CS.hl; c.text.size = +CS.size; c.y = +CS.pos; });
+		VE.commit("Caption look"); toast("Changed " + L.length + " captions.");
+	};
+	function capSave(kind) {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		var txt = kind === "srt" ? V.toSRT(VE.P) : V.toVTT(VE.P);
+		download(new Blob([txt], { type: kind === "srt" ? "application/x-subrip" : "text/vtt" }), (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + "." + kind);
+	}
+	$("vd-cap-srt").onclick = function () { capSave("srt"); }; $("vd-cap-vtt").onclick = function () { capSave("vtt"); };
+	$("vd-cap-imp").onclick = function () { $("vd-cap-file").click(); };
+	$("vd-cap-file").onchange = function () {
+		var f = this.files && this.files[0]; this.value = ""; if (!f) return;
+		f.text().then(function (t) {
+			var subs = V.parseSubs(t); if (!subs.length) { toast("No captions found in that file."); return; }
+			var tr = capTrack(), list = subs.map(function (q) { var cap = V.capRetime({ w: [] }, q.s.replace(/\n/g, " "), q.b - q.a); return capClip(tr, q.a, q.b, q.s.replace(/\n/g, " "), cap.w); });
+			var n = placeCaps(list, subs[0].a, subs[subs.length - 1].b); VE.commit("Open captions");
+			toast(n + " captions added from " + f.name + ". Words light up evenly spread, since the file has no word times.", 5000);
+		});
+	};
+	$("vd-cap-del").onclick = function () {
+		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
+		VE.P.clips = VE.P.clips.filter(function (c) { return !V.isCap(c); }); VE.commit("Delete captions"); toast(L.length + " captions deleted (Ctrl+Z brings them back).");
+	};
 
 	/* ---------- library cards: titles, transitions, audio and visual effects ---------- */
 	var TITLES = [

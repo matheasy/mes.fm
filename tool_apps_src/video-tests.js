@@ -428,5 +428,32 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	const pr = V.split(c, 15, "t1r"); ok(pr && V.titleStr(pr[0], 10) === "0:20" && V.titleStr(pr[0], 15) === "0:15" && V.titleStr(pr[1], 15) === "0:15" && V.titleStr(pr[1], 29.5) === "0:01", "split keeps the countdown going across both pieces");
 	ok(V.titleStr({ type: "text", text: { s: "Hi" } }, 3) === "Hi", "plain title text unchanged");
 }
+{
+	// captions
+	const ch = [{ text: " Hello", timestamp: [0.5, 0.9] }, { text: " world.", timestamp: [0.9, 1.4] }, { text: " [Music]", timestamp: [1.5, 3] }, { text: " This", timestamp: [3.2, 3.4] }, { text: " is", timestamp: [3.4, 3.5] }, { text: " MES.", timestamp: [3.5, null] }];
+	const w = V.capWordsFrom(ch, 10, 0, Infinity);
+	ok(w.length === 5 && w[0].a === 10.5 && w[4].b > w[4].a, "Whisper word chunks: offset added, [Music] dropped, missing end filled");
+	ok(V.capWordsFrom(ch, 0, 1, 3.4).map(function (x) { return x.w; }).join(" ") === "This", "only words whose start is in the block's keep range");
+	const cs = V.capChunks(w, { maxChars: 32, lines: 2 });
+	ok(cs.length === 2 && cs[0].txt === "Hello world." && cs[1].txt === "This is MES.", "a pause starts a new caption");
+	ok(cs[0].b <= cs[1].a && cs[1].w[0][1] === 0 && cs[0].w[1][1] === 0.4, "captions never overlap; word times are from the caption start");
+	const many = []; for (let i = 0; i < 40; i++) many.push({ w: "word", a: i * 0.3, b: i * 0.3 + 0.25 });
+	ok(V.capChunks(many, { maxChars: 20, lines: 1 }).every(function (c) { return c.txt.length <= 20; }), "letters per line respected");
+	ok(V.capActive([["a", 0, 0.2], ["b", 0.3, 0.5]], -0.1) === -1 && V.capActive([["a", 0, 0.2], ["b", 0.3, 0.5]], 0.25) === 0 && V.capActive([["a", 0, 0.2], ["b", 0.3, 0.5]], 9) === 1, "spoken word stays lit until the next");
+	const cap = { w: [["helo", 0, 0.4], ["wrld", 0.5, 1]] }; V.capRetime(cap, "hello world", 1);
+	ok(cap.w[0][0] === "hello" && cap.w[1][1] === 0.5, "spelling fix keeps the times");
+	V.capRetime(cap, "hello big world", 1); ok(cap.w.length === 3 && cap.w[0][1] === 0 && Math.abs(cap.w[2][2] - 1) < 1e-3, "added word: times spread over the same span");
+	const cc = V.clipDefaults({ id: "k1", type: "text", track: "v1", start: 10, in: 0, out: 2, text: { s: "one two three", cap: { style: "reveal", w: [["one", 0, 0.5], ["two", 0.6, 1], ["three", 1.2, 1.8]] } } });
+	ok(V.titleStr(cc, 9.9) === "" && V.titleStr(cc, 10.7) === "one two" && V.titleStr(cc, 11.9) === "one two three", "reveal: words appear as spoken");
+	cc.text.cap.style = "word"; ok(V.titleStr(cc, 10.7) === "two", "one word at a time");
+	cc.text.cap.style = "hl"; ok(V.titleStr(cc, 10.7) === "one two three", "highlight shows the whole line");
+	const sp = V.split(cc, 11, "k2"); ok(sp[0].text.s === "one two" && sp[1].text.s === "three" && sp[1].text.cap.w[0][1] === 0.2, "split: each piece keeps its own words");
+	const P = { clips: [cc, V.clipDefaults({ id: "k0", type: "text", track: "v1", start: 1, in: 0, out: 1.5, text: { s: "First", cap: { w: [["First", 0, 1]] } } })] };
+	const srt = V.toSRT(P); ok(/^1\n00:00:01,000 --> 00:00:02,500\nFirst\n/.test(srt) && /2\n00:00:10,000 --> 00:00:12,000/.test(srt), "SRT in time order");
+	ok(/^WEBVTT\n\n00:00:01\.000 --> /.test(V.toVTT(P)), "VTT header and dots");
+	const back = V.parseSubs(srt); ok(back.length === 2 && back[1].a === 10 && back[1].b === 12 && back[0].s === "First", "SRT read back");
+	ok(V.parseSubs("WEBVTT\n\n01:02.500 --> 01:04.000 align:start\n<b>Hi</b> there\n").map(function (x) { return x.a + "|" + x.s; })[0] === "62.5|Hi there", "VTT short times, tags removed");
+	ok(V.capInk("#facc15") === "#111111" && V.capInk("#1d4ed8") === "#ffffff", "box text colour readable");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);
