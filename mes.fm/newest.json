@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-24",
+ "generated": "2026-11-25",
  "calculators": [
   {
    "href": "/expense-splitter",
@@ -100,6 +100,14 @@
  ],
  "tools": [
   {
+   "href": "/solitaire",
+   "title": "Solitaire",
+   "icon": "/img/solitaire-logo.png",
+   "desc": "Klondike, Spider and FreeCell: winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline.",
+   "added": "2026-11-25",
+   "kind": "tool"
+  },
+  {
    "href": "/flights",
    "title": "Flight Tracker: Live Air Traffic",
    "icon": "/img/flights-logo.png",
@@ -186,17 +194,17 @@
    "desc": "Clicks per second for mouse, taps (every finger counts) or Space bar; 1 to 100 s, chart, best scores, world record.",
    "added": "2026-11-18",
    "kind": "tool"
-  },
-  {
-   "href": "/email",
-   "title": "MES Mail",
-   "icon": "/img/email-logo.png",
-   "desc": "Quantum-safe encrypted email between Hive accounts: threads, replies, Sent folder and a classic memo reader. No server, no sign-up.",
-   "added": "2026-11-17",
-   "kind": "tool"
   }
  ],
  "latest": [
+  {
+   "href": "/solitaire",
+   "title": "Solitaire",
+   "icon": "/img/solitaire-logo.png",
+   "desc": "Klondike, Spider and FreeCell: winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline.",
+   "added": "2026-11-25",
+   "kind": "tool"
+  },
   {
    "href": "/flights",
    "title": "Flight Tracker: Live Air Traffic",
@@ -250,14 +258,6 @@
    "title": "Screen Recorder",
    "icon": "/img/screen-recorder-logo.png",
    "desc": "Record your screen, a window or a tab with your camera and microphone, take screenshots, mix the sound and save MP4. No install, nothing uploaded.",
-   "added": "2026-11-20",
-   "kind": "tool"
-  },
-  {
-   "href": "/ai-detector",
-   "title": "AI Detector",
-   "icon": "/img/ai-detector-logo.png",
-   "desc": "Was a picture, video or text made with AI? Reads Content Credentials and AI labels, runs an on-device model and checks text patterns. Evidence, not guesses.",
    "added": "2026-11-20",
    "kind": "tool"
   }

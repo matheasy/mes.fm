@@ -5,13 +5,22 @@
   <link>https://mes.fm/feeds</link>
   <description>Every new post on mes.fm: 9/11, Hutchison Effect, conspiracy, science and crypto.</description>
   <language>en</language>
-  <lastBuildDate>Tue, 24 Nov 2026 21:36:16 GMT</lastBuildDate>
+  <lastBuildDate>Thu, 26 Nov 2026 04:59:53 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/posts.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Posts</title><link>https://mes.fm/feeds</link></image>
   <podcast:guid>3b3fc869-e01c-5372-a1c0-dd48025d2f57</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Telegram Founder Rockin&#x27; the Illuminati Hand Sign 👐👀</title>
+    <link>https://mes.fm/telegram-founder-hands</link>
+    <guid isPermaLink="true">https://mes.fm/telegram-founder-hands</guid>
+    <pubDate>Thu, 26 Nov 2026 04:59:53 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Telegram founder Pavel Durov rockin&#x27; the illuminati hand sign in a super tight shirt during a speech on government censorship: the MES Truth Hive thread and Telegram post.</description>
+    <media:thumbnail url="https://mes.fm/telegram-founder-hands/img/telegram-founder-hands.jpg"/>
+  </item>
   <item>
     <title>Scam Alert: Fake &quot;Community Reward&quot; Comments Are Stealing Hive Keys</title>
     <link>https://mes.fm/hive-rewards-scam</link>
@@ -452,15 +461,6 @@
     <category>9/11 Truth</category>
     <description>YouTube reinstated my edited Curt Weldon 9/11 directed energy video after I muted the &quot;hate speech&quot; part. Mirrored from the Hive blockchain.</description>
     <media:thumbnail url="https://mes.fm/curt-weldon-911-dew-muted/img/youtube-reinstated-email.jpg"/>
-  </item>
-  <item>
-    <title>USA Launches America.gov, an AI Chat Site for Government Services</title>
-    <link>https://mes.fm/america-gov-ai-chat</link>
-    <guid isPermaLink="true">https://mes.fm/america-gov-ai-chat</guid>
-    <pubDate>Thu, 01 Oct 2026 21:14:10 GMT</pubDate>
-    <category>Science</category>
-    <description>USA launched America.gov, an AI chat site where users can ask about government services. Mirrored from the Hive blockchain and Telegram.</description>
-    <media:thumbnail url="https://mes.fm/america-gov-ai-chat/img/america-gov-ai-chat.jpg"/>
   </item>
 </channel>
 </rss>

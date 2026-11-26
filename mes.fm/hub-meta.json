@@ -936,6 +936,11 @@
 "updated":"2026-10-21",
 "type":"Tool"
 },
+"/solitaire":{
+"added":"2026-11-25",
+"updated":"2026-11-25",
+"type":"Game"
+},
 "/space-shuttle-simulator":{
 "added":"2026-11-19",
 "updated":"2026-11-19",

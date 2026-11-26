@@ -5,13 +5,22 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Tue, 24 Nov 2026 21:38:25 GMT</lastBuildDate>
+  <lastBuildDate>Thu, 26 Nov 2026 04:59:53 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Telegram Founder Rockin&#x27; the Illuminati Hand Sign 👐👀</title>
+    <link>https://mes.fm/telegram-founder-hands</link>
+    <guid isPermaLink="true">https://mes.fm/telegram-founder-hands</guid>
+    <pubDate>Thu, 26 Nov 2026 04:59:53 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Telegram founder Pavel Durov rockin&#x27; the illuminati hand sign in a super tight shirt during a speech on government censorship: the MES Truth Hive thread and Telegram post.</description>
+    <media:thumbnail url="https://mes.fm/telegram-founder-hands/img/telegram-founder-hands.jpg"/>
+  </item>
   <item>
     <title>Flight Tracker: Live Air Traffic</title>
     <link>https://mes.fm/flights</link>
@@ -722,15 +731,6 @@
     <category>Tools</category>
     <description>Dr. Hamer&#x27;s two-phase chart with a draggable marker, organs by germ layer and brain relay, a describe-your-symptoms reader, the 5 Biological Laws and a glossary.</description>
     <media:thumbnail url="https://mes.fm/img/gnm-logo.png"/>
-  </item>
-  <item>
-    <title>Space Shuttle Columbia Disaster Shook a House on Earth 🌪️🏠🚀</title>
-    <link>https://mes.fm/space-shuttle-columbia-disaster-shook-house</link>
-    <guid isPermaLink="true">https://mes.fm/space-shuttle-columbia-disaster-shook-house</guid>
-    <pubDate>Sun, 01 Nov 2026 05:09:48 GMT</pubDate>
-    <category>Conspiracy</category>
-    <description>Fox News live footage of the Space Shuttle Columbia disaster on February 1, 2003: residents far below said their house and windows shook like a tornado.</description>
-    <media:thumbnail url="https://mes.fm/space-shuttle-columbia-disaster-shook-house/img/thumb.jpg"/>
   </item>
 </channel>
 </rss>

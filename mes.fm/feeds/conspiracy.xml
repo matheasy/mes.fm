@@ -5,13 +5,22 @@
   <link>https://mes.fm/conspiracy</link>
   <description>New MES Conspiracy posts on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Mon, 23 Nov 2026 06:00:04 GMT</lastBuildDate>
+  <lastBuildDate>Thu, 26 Nov 2026 04:59:53 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/conspiracy.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>MES Conspiracy Posts</title><link>https://mes.fm/conspiracy</link></image>
   <podcast:guid>c6365fa1-fb56-5f6b-bd3a-07535c18f2b2</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Telegram Founder Rockin&#x27; the Illuminati Hand Sign 👐👀</title>
+    <link>https://mes.fm/telegram-founder-hands</link>
+    <guid isPermaLink="true">https://mes.fm/telegram-founder-hands</guid>
+    <pubDate>Thu, 26 Nov 2026 04:59:53 GMT</pubDate>
+    <category>Conspiracy</category>
+    <description>Telegram founder Pavel Durov rockin&#x27; the illuminati hand sign in a super tight shirt during a speech on government censorship: the MES Truth Hive thread and Telegram post.</description>
+    <media:thumbnail url="https://mes.fm/telegram-founder-hands/img/telegram-founder-hands.jpg"/>
+  </item>
   <item>
     <title>33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚</title>
     <link>https://mes.fm/33-countries-supplies</link>
