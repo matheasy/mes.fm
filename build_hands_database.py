@@ -406,6 +406,11 @@ def page(people, imgs, today):
     b = s.index("<!-- FASTCOMMENTS-BLOCK")
     s = s[:a] + f'<div id="main-content">\n{content(people, imgs, today)}\n' + "        </div>\n        " + s[b:]
     s = s.replace("      wireViewToggle('occult-posts', []);\n", "")
+    # The page's own hand logo (img/hands-logo.jpg, a square crop of the hands art) instead of the occult logo
+    # in the favicon, the header and the floating bar.
+    s = s.replace("https://mes.fm/img/occult-logo.jpg?v=1", f"https://mes.fm/img/{SLUG}-logo.jpg?v=1")
+    s = s.replace("https://mes.fm/img/occult-logo.jpg", f"https://mes.fm/img/{SLUG}-logo.jpg?v=1")
+    s = s.replace('alt="MES Occult logo"', 'alt="Illuminati Hand Signs logo"')
     s = re.sub(r"info_bar_tab:\s*\d+", "info_bar_tab:0", s, 1)
     s = s.replace("</head>", CSS + "</head>", 1)
     s = s.replace("</body>", JS + "</body>", 1)

@@ -225,6 +225,15 @@ const PAGES = [
     tileLabel: "Andrew Johnson's 9/11 Books",
   },
   {
+    // Tile only: the Illuminati Hand Signs Database (mes.fm/hands, build_hands_database.py), also a tile on /occult and
+    // /conspiracy. Icon = img/hands-icon.jpg; bump iconVersion if replaced.
+    slug: "hands",
+    href: "/hands",
+    iconVersion: 1,
+    tileOnly: true,
+    tileLabel: "Illuminati Hand Signs",
+  },
+  {
     // Tile only: no page is written. Links to the "9/11 Spooks" chip of mes.fm/livestreams (CATEGORIES id "spooks" in
     // livestreams/build.mjs). Icon = img/911spooks-livestreams-icon.jpg, a 900x600 crop of the newest spook stream's
     // thumbnail (Livestream 143); refresh it by hand (and bump iconVersion) when a newer one goes up.
