@@ -442,8 +442,8 @@
 
 	/* ---------- spawnable objects ---------- */
 	C.OBJECTS = {
-		crate: { name: "Crate", icon: "📦", shape: "box", size: [1, 1, 1], mass: 25, color: "#b07a3c" },
-		bigcrate: { name: "Big crate", icon: "🟫", shape: "box", size: [2.2, 2.2, 2.2], mass: 160, color: "#9a6630" },
+		crate: { name: "Crate", icon: "📦", shape: "box", size: [1, 1, 1], mass: 25, color: "#b07a3c", breaks: 7.5, wood: true },
+		bigcrate: { name: "Big crate", icon: "🟫", shape: "box", size: [2.2, 2.2, 2.2], mass: 160, color: "#9a6630", breaks: 9.5, wood: true },
 		barrel: { name: "Barrel", icon: "🛢️", shape: "cyl", size: [0.42, 1.2], mass: 40, color: "#c0392b" },
 		ball: { name: "Beach ball", icon: "🏐", shape: "ball", size: [0.6], mass: 1.5, color: "#f5f5f5", bounce: 0.85 },
 		bigball: { name: "Giant ball", icon: "🔴", shape: "ball", size: [2.6], mass: 400, color: "#e63946", bounce: 0.6 },
