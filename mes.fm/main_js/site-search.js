@@ -748,6 +748,13 @@
         var s = document.createElement("script"); s.id = "mes-vspeed-js"; s.src = "/main_js/video-speed.js?v=1"; s.async = true; document.head.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", vspeedLoader); else vspeedLoader();
+    /* Hide / show bar above the explanation text of tool pages (.tu-seo) + remembered classic Important Notes boxes, main_js/seo-fold.js. */
+    function seoFoldLoader() {
+        if (window.MESSeoFold || document.getElementById("mes-seofold-js")) return;
+        if (!document.querySelector(".tu-seo") && !document.querySelector(".hide-div-button.button + .box-border")) return;
+        var s = document.createElement("script"); s.id = "mes-seofold-js"; s.src = "/main_js/seo-fold.js?v=1"; s.async = true; document.head.appendChild(s);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", seoFoldLoader); else seoFoldLoader();
 
     /* Standard | Wide | Theatre (| Show sidebar) in the floating compact bar (2026-11-02). On big screens (>= 1400px), while #compact-nav is
        showing, a small copy of the page's own width switch (aside.js .mes-mode, toc-flip.js .toc-mode, hub-theatre.js .hub-mode) sits in the
