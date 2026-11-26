@@ -60,18 +60,29 @@
 	}
 	var missEl = document.createElement("div"); missEl.id = "vd-miss"; missEl.className = "vd-miss"; var bh = app.querySelector(".vd-binhead"); bh.parentNode.insertBefore(missEl, bh.nextSibling);   // first, so it is seen even in a short panel
 	var missFile = document.createElement("input"); missFile.type = "file"; missFile.hidden = true; missFile.accept = "video/*,audio/*,image/*,.avi,.mkv,.wmv,.flv,.mts,.m2ts,.trec"; document.body.appendChild(missFile);
+	var missAll = document.createElement("input"); missAll.type = "file"; missAll.multiple = true; missAll.hidden = true; missAll.accept = missFile.accept; document.body.appendChild(missAll);
+	missAll.onchange = function () { var fs = [].slice.call(missAll.files || []); missAll.value = ""; if (fs.length) importFiles(fs); };
+	var missOpen = null;   // null = automatic: the list starts open for up to 3 missing files
 	function renderMiss() {
 		var gs = missGroups();
 		missEl.hidden = !gs.length; if (!gs.length) { missEl.innerHTML = ""; return; }
-		missEl.innerHTML = gs.map(function (gr) {
+		var nc = gs.reduce(function (a, g) { return a + g.n; }, 0), open = missOpen == null ? gs.length <= 3 : missOpen;
+		var head = '<div class="vd-missh"><b>⚠ ' + (gs.length > 1 ? gs.length + " files are missing" : "1 file is missing") + " (" + nc + " clip" + (nc > 1 ? "s" : "") + ")</b>" +
+			'<span class="vd-misst">' + (mdir.h ? "They are not in " + esc(mdir.h.name) + ". Link the folder they are in, or choose the files (same names relink by themselves)." : "Link the folder they are in and they come back by themselves (same file names), or choose the files.") + "</span>" +
+			'<div class="vd-missr"><button type="button" class="vd-btn vd-sm vd-primary" data-mx="link">&#128193; ' + (mdir.h ? "Link another folder" : "Link the folder they are in") + "</button>" +
+			'<button type="button" class="vd-btn vd-sm" data-mx="files">Choose the files…</button>' +
+			(gs.length > 1 ? '<button type="button" class="vd-btn vd-sm" data-mx="tog" aria-expanded="' + open + '">' + (open ? "Hide the list ▴" : "Show the list (" + gs.length + ") ▾") + "</button>" : "") + "</div></div>";
+		missEl.innerHTML = head + (open || gs.length === 1 ? '<div class="vd-missl">' + gs.map(function (gr) {
 			var cands = missCands(gr), g = missGuess(gr, cands);
-			return '<div class="vd-missg"><b>⚠ ' + gr.n + " clip" + (gr.n > 1 ? "s" : "") + " can't find " + esc(gr.m ? gr.m.origName || gr.m.name : gr.n > 1 ? "their file" : "its file") + "</b>" +
+			return '<div class="vd-missg"><b>' + gr.n + " clip" + (gr.n > 1 ? "s" : "") + ": " + esc(gr.m ? gr.m.origName || gr.m.name : gr.n > 1 ? "their file" : "its file") + "</b>" +
 				'<div class="vd-missr">' + (cands.length ? '<select data-ms="' + gr.id + '" aria-label="Use this file">' + cands.map(function (m) { return '<option value="' + m.id + '"' + (m === g ? " selected" : "") + ">" + esc(m.name) + "</option>"; }).join("") + '</select><button type="button" class="vd-btn vd-sm vd-primary" data-mc="' + gr.id + '">Use it</button>' : "") +
 				'<button type="button" class="vd-btn vd-sm" data-mf="' + gr.id + '">' + (cands.length ? "Other file…" : "Choose the file…") + "</button></div></div>";
-		}).join("");
+		}).join("") + "</div>" : "");
 	}
 	missEl.addEventListener("click", function (e) {
-		var b = e.target.closest("button"); if (!b) return; var id;
+		var b = e.target.closest("button"); if (!b) return; var id, x = b.getAttribute("data-mx");
+		if (x === "link") { linkFolder(); return; } if (x === "files") { missAll.click(); return; }
+		if (x === "tog") { missOpen = b.getAttribute("aria-expanded") !== "true"; renderMiss(); return; }
 		if ((id = b.getAttribute("data-mc"))) { var sel = missEl.querySelector('select[data-ms="' + id + '"]'), to = sel && VE.media(sel.value); if (to) { var n = VE.repoint(id, to.id); toast(n + " clip" + (n > 1 ? "s" : "") + " now use " + to.name + "."); } }
 		else if ((id = b.getAttribute("data-mf"))) { missFile.dataset.id = id; missFile.click(); }
 	});
