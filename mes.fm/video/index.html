@@ -748,6 +748,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-fx .vd-seg {flex-wrap:wrap;}
 	html body.dark-mode #vd .vd-lvinfo {color:var(--vd-fg);} html body.dark-mode #vd .vd-lvbad {color:#fca5a5;}
 	html body.dark-mode #vd .vd-lvpic {background:#0b0f15;}
+	@keyframes vd-mflash {0%,60% {box-shadow:0 0 0 2px #fbbf24 inset; background:rgba(251,191,36,.18);} 100% {box-shadow:none;}}
+	#vd .vd-mi.is-flash {animation:vd-mflash 1.6s ease-out;}
 
 
 	@media print {
@@ -1448,7 +1450,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=69" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=70" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

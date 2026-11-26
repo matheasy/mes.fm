@@ -369,6 +369,7 @@
 		if (!where && !V.active(c, VE.t)) { toast("Put the playhead over a video clip first."); return; }
 		var t = where === "end" ? V.end(c) : where === "start" ? c.start : VE.t, grab = where === "end" ? Math.max(c.start, V.end(c) - fr1) : t;
 		var tr = V.track(VE.P, c.track); if (tr && tr.lock) { toast("That layer is locked."); return; }
+		var L0 = V.layersAt(VE.P, grab).filter(function (l) { return l.clip.id === c.id; })[0], fsrc = L0 ? L0.src : c.in + (grab - c.start) * (c.speed || 1), fmedia = c.media;
 		if (P.playing) P.pause();
 		toast("Making a still of this frame…", 2500);
 		VE.clipFrame(c, grab).then(function (blob) {
@@ -384,10 +385,73 @@
 			var tracks = {}; ids.forEach(function (id) { var q = V.clip(VE.P, id); if (q) tracks[q.track] = 1; });
 			VE.P.clips.forEach(function (q) { if (tracks[q.track] && q.start >= t - eps) q.start += secs; });
 			var still = V.clipDefaults({ id: V.uid("c"), type: "image", media: m.id, track: cc.track, start: t, in: 0, out: secs });
-			["x", "y", "scale", "rot", "op"].forEach(function (k) { still[k] = cc[k]; }); still.crop = JSON.parse(JSON.stringify(cc.crop || { l: 0, t: 0, r: 0, b: 0 }));
+			["x", "y", "scale", "rot", "op"].forEach(function (k) { still[k] = cc[k]; }); still.crop = JSON.parse(JSON.stringify(cc.crop || { l: 0, t: 0, r: 0, b: 0 })); still.frame = { media: fmedia, src: fsrc };
 			VE.P.clips.push(still); VE.sel = [still.id]; VE.commit("Hold frame");
 			toast("Held the frame for " + (+secs.toFixed(2)) + " s. Drag the still's edge to change it (Alt+drag a video's end or start does this in one move).", 6000);
 		}).catch(function (e) { toast("Could not hold the frame: " + e.message, 7000); });
+	};
+	/* a held frame is a picture clip whose PNG lives only in this browser; it remembers its video (c.frame = {media, src}).
+	   When the PNG is missing it is made again from that video, so a held frame is tied to the video file, not to the browser.
+	   Older stills without c.frame: the video clip right after it (held first frame) or right before it (held last frame)
+	   on the same layer tells where the frame came from. */
+	var stillBusy = {}, stillTimer = null;
+	function stillSource(c) {
+		if (c.frame && c.frame.media && isFinite(c.frame.src)) return c.frame;
+		var fr = 1 / VE.P.fps, a = c.start, b = V.end(c), nm = ((VE.media(c.media) || {}).name || "");
+		var vids = VE.P.clips.filter(function (q) { var m = VE.media(q.media); return q.type === "video" && q.track === c.track && m && (!/ still of /.test(nm) || nm.indexOf(m.name.replace(/[\/:*?"<>|.]+/g, "-").slice(0, 30)) >= 0); });
+		var nx = vids.filter(function (q) { return Math.abs(q.start - b) <= fr * 1.5; })[0]; if (nx) return { media: nx.media, src: nx.in };
+		var pv = vids.filter(function (q) { return Math.abs(V.end(q) - a) <= fr * 1.5; })[0]; if (pv) return { media: pv.media, src: Math.max(pv.in, pv.out - fr * (pv.speed || 1)) };
+		return null;
+	}
+	function repairStills() {
+		clearTimeout(stillTimer);
+		stillTimer = setTimeout(async function () {
+			var todo = {};
+			VE.P.clips.forEach(function (c) {
+				if (c.type !== "image" || !c.media || stillBusy[c.media]) return; var m = VE.media(c.media); if (m && m.state !== "missing") return;
+				var f = stillSource(c); if (!f) return; var vm = VE.media(f.media); if (!vm || vm.state !== "ready") return;
+				if (!todo[c.media]) todo[c.media] = { f: f, vm: vm, name: m ? m.name : "still.png" };
+			});
+			for (var id in todo) {
+				stillBusy[id] = 1; var t = todo[id];
+				try {
+					var blob = await VE.mediaFrame(t.vm, t.f.src), out = await VE.addFiles([new File([blob], t.name.replace(/\.[^.]+$/, "") + ".png", { type: "image/png" })]), nm = out && out[0];
+					if (!nm) throw new Error("not added");
+					await new Promise(function (res) { (function w(n) { if (nm.state === "ready" || n > 200) res(); else setTimeout(function () { w(n + 1); }, 100); })(0); });
+					VE.P.clips.forEach(function (c) { if (c.media === id && !c.frame) c.frame = { media: t.f.media, src: t.f.src }; });
+					VE.repoint(id, nm.id); toast("Remade a held frame from " + t.vm.name + ".", 5000);
+				} catch (e) { if (window.console) console.warn("[video editor] held frame", e); }
+			}
+		}, 600);
+	}
+	VE.on("mediaReady", repairStills); VE.on("bin", repairStills);
+	// show a clip's file in the Media panel
+	VE.showInMedia = function (c) {
+		var m = VE.media(c.media); if (!m) return toast("This clip has no file in the Media list.");
+		UI.cat = "media"; UI.noLeft = false; relayout(); var q = $("vd-binsearch"); if (q && q.value) { q.value = ""; renderBin(); }
+		binSel = {}; binSel[m.id] = 1; renderBin();
+		setTimeout(function () { var el = $("vd-binlist").querySelector('[data-mid="' + m.id + '"]'); if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("is-flash"); el.focus({ preventScroll: true }); setTimeout(function () { el.classList.remove("is-flash"); }, 1600); } }, 80);
+	};
+	// swap the file a clip (and its linked partner) uses, keeping its place, trim and settings
+	var swapIds = null, swapIn = document.createElement("input"); swapIn.type = "file"; swapIn.accept = "video/*,audio/*,image/*"; swapIn.hidden = true; document.body.appendChild(swapIn);
+	function swapTo(ids, m) {
+		var n = 0; ids.forEach(function (id) { var q = V.clip(VE.P, id); if (!q || V.isGfx(q)) return; q.media = m.id; if (q.type === "image") q.frame = null; n++; });
+		if (n) { VE.commit("Change media file"); toast((n > 1 ? "These clips" : "This clip") + " now use" + (n > 1 ? "" : "s") + " " + m.name + ".", 5000); }
+	}
+	swapIn.onchange = function () {
+		var f = swapIn.files && swapIn.files[0], ids = swapIds; swapIn.value = ""; if (!f || !ids) return;
+		VE.addFiles([f]).then(function (out) { var m = out && out[0]; if (!m) return; (function w(n) { if (m.state === "ready") swapTo(ids, m); else if (m.state === "error" || n > 600) toast("Could not read " + f.name + "."); else setTimeout(function () { w(n + 1); }, 100); })(0); });
+	};
+	VE.changeMedia = function (c) {
+		var ids = V.withLinks(VE.P, [c.id]), cur = VE.media(c.media), kind = c.type === "image" ? "image" : c.type === "audio" ? null : "video";
+		var list = VE.bin.filter(function (m) { return m.state === "ready" && m.id !== c.media && (!kind || m.kind === kind) && (kind || m.kind !== "image"); });
+		dialog("<h3>Change the file this clip uses</h3><p class=\"vd-dtxt\">Now: <b>" + esc(cur ? cur.name : "missing file") + "</b>. The clip keeps its place, length, trim and settings" + (ids.length > 1 ? " (its linked sound changes too)" : "") + ".</p>" +
+			(list.length ? '<p class="vd-dtxt"><select id="vd-swsel" style="width:100%">' + list.map(function (m) { return '<option value="' + m.id + '">' + esc(m.name) + "</option>"; }).join("") + "</select></p>" : "") +
+			'<div class="vd-dlgact">' + (list.length ? '<button type="button" class="vd-btn vd-primary" id="vd-sw-use">Use this one</button> ' : "") + '<button type="button" class="vd-btn' + (list.length ? "" : " vd-primary") + '" id="vd-sw-file">Choose a file…</button> <button type="button" class="vd-btn" id="vd-sw-no">Cancel</button></div>');
+		if (list.length && window.MESSelect && list.length >= 10) MESSelect.enhance($("vd-swsel"), { placeholder: "Search media…", noun: "files" });
+		if ($("vd-sw-use")) $("vd-sw-use").onclick = function () { var m = VE.media($("vd-swsel").value); closeDialog(); if (m) swapTo(ids, m); };
+		$("vd-sw-file").onclick = function () { closeDialog(); swapIds = ids; swapIn.click(); };
+		$("vd-sw-no").onclick = closeDialog;
 	};
 	VE.ctxMenu = function (x, y, info) {
 		ctxClose();
@@ -417,6 +481,8 @@
 			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
 			else { var lp = V.linkCandidate(VE.P, sel.length > 1 ? sel : [c]); if (lp) it("Link video and sound", "", function () { VE.linkBack(lp); }); }
 			if (!c.link && c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
+			if (c.media && !V.isGfx(c)) { sep(); it("Show in Media", "", function () { VE.showInMedia(c); }, !VE.media(c.media)); it("Change media file…", "", function () { VE.changeMedia(c); }); }
+			sep();
 			it("Select everything on " + tname, "", function () { VE.sel = V.onTrack(VE.P, tr.id).map(function (q) { return q.id; }); VE.emit("select"); });
 		} else if (tr) {
 			it("Paste here (" + V.short(info.t) + ", " + tname + ")", "", function () { VE.paste(info.t, tr); }, !cb || tr.lock);

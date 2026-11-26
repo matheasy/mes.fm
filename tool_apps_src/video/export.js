@@ -145,6 +145,13 @@
 		try { var fr = await rd.frameAt(src); if (!fr) throw new Error("The frame could not be read."); VE.drawFrame(cv.getContext("2d"), fr, m.rot || 0, 0, 0, m.w, m.h); } finally { rd.close(); }
 		return new Promise(function (r) { cv.toBlob(r, "image/png"); });
 	};
+	// a video file's picture at source time src as a PNG (held frames are remade from their video this way)
+	VE.mediaFrame = async function (m, src) {
+		if (!m || !m.vt) throw new Error("The video is not ready yet.");
+		var rd = new VReader(m), cv = document.createElement("canvas"); cv.width = m.w; cv.height = m.h;
+		try { var fr = await rd.frameAt(Math.max(0, src)); if (!fr) throw new Error("The frame could not be read."); VE.drawFrame(cv.getContext("2d"), fr, m.rot || 0, 0, 0, m.w, m.h); } finally { rd.close(); }
+		return new Promise(function (r) { cv.toBlob(r, "image/png"); });
+	};
 	// one frame at project size from the preview's current state ("snapshot"); type = image/png (default), image/jpeg or image/webp
 	VE.snapshot = async function (type, quality) {
 		await VE.ensureFonts(); var p = VE.P, c = document.createElement("canvas"); c.width = p.w; c.height = p.h;

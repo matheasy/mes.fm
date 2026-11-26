@@ -441,3 +441,5 @@
 	#vd .vd-fx .vd-seg {flex-wrap:wrap;}
 	html body.dark-mode #vd .vd-lvinfo {color:var(--vd-fg);} html body.dark-mode #vd .vd-lvbad {color:#fca5a5;}
 	html body.dark-mode #vd .vd-lvpic {background:#0b0f15;}
+	@keyframes vd-mflash {0%,60% {box-shadow:0 0 0 2px #fbbf24 inset; background:rgba(251,191,36,.18);} 100% {box-shadow:none;}}
+	#vd .vd-mi.is-flash {animation:vd-mflash 1.6s ease-out;}
