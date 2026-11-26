@@ -38,7 +38,7 @@
 },
 "/alarm-clock":{
 "added":"2026-10-06",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/archive":{
@@ -228,12 +228,12 @@
 },
 "/countdown-timer":{
 "added":"2026-10-06",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/countdown-to-date":{
 "added":"2026-10-06",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/crash-physics":{
@@ -523,7 +523,7 @@
 },
 "/interval-timer":{
 "added":"2026-10-06",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/investment-tracker":{
@@ -768,7 +768,7 @@
 },
 "/pomodoro-timer":{
 "added":"2026-10-06",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/practice-tests":{
@@ -978,7 +978,7 @@
 },
 "/stopwatch":{
 "added":"2026-10-06",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/storage":{
@@ -1038,7 +1038,7 @@
 },
 "/timer":{
 "added":"2026-08-31",
-"updated":"2026-11-18",
+"updated":"2026-11-26",
 "type":"Tool"
 },
 "/timezone":{

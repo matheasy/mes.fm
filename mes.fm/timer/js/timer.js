@@ -1103,7 +1103,13 @@
 		if (ms) { var t0 = S.timers[0].st === "idle" ? S.timers[0] : (S.timers.push(newTimer(ms)), S.timers[S.timers.length - 1]); t0.total = t0.rem = ms; t0.label = (q.get("label") || "").slice(0, 60); if (q.get("start") === "1") { t0.st = "run"; t0.end = Date.now() + ms; } renderTimers(); }
 	}
 	if (q.get("date") && $("tm-events")) { var at = TM.parseDateTime(q.get("date"), q.get("time") || ""); if (at && !S.ev.some(function (x) { return x.at === at && x.name === (q.get("name") || ""); })) { S.ev.push({ id: uid(), name: (q.get("name") || "").slice(0, 60), at: at }); renderEvents(); } }
-	if (q.toString()) history.replaceState(null, "", location.pathname);
+	/* drop the timer's own settings from the address bar, but leave ad / campaign tags (gclid, utm_*...): track.js reads them and removes them itself */
+	if (q.toString()) {
+		var keep = new URLSearchParams();
+		q.forEach(function (v, k) { if (/^(gclid|gbraid|wbraid|gad_source|gad_campaignid|msclkid|fbclid)$/i.test(k) || /^utm_/i.test(k)) keep.append(k, v); });
+		var ks = keep.toString();
+		history.replaceState(null, "", location.pathname + (ks ? "?" + ks : "") + location.hash);
+	}
 	if (S.win || q.get("window") === "1") setWin(true);
 	save(); updateAwake();
 	if (q.get("display") === "1") setTimeout(function () { try { openDisplay(); } catch (e) {} }, 300);
