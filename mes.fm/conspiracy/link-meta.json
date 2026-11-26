@@ -1,4 +1,22 @@
 {
+  "https://mes.fm/telegram-founder-hands": {
+    "image": "https://mes.fm/telegram-founder-hands/img/telegram-founder-hands.jpg",
+    "watchLinks": [],
+    "namedLinks": [
+      {
+        "label": "Hive (inleo)",
+        "href": "https://inleo.io/threads/view/mestruth/re-leothreads-rfj5ddd6"
+      },
+      {
+        "label": "Telegram",
+        "href": "https://t.me/meslinks/35728"
+      },
+      {
+        "label": "Video",
+        "href": "https://www.youtube.com/watch?v=VAuDJ3yrhDM"
+      }
+    ]
+  },
   "https://mes.fm/33-countries-supplies": {
     "image": "https://mes.fm/33-countries-supplies/img/33-countries-stockpile-supplies.jpg",
     "watchLinks": [],

@@ -54,7 +54,7 @@ const PAGES = [
     slug: "occult-posts",
     sectionId: "occult-posts",
     tileLabel: "Posts",
-    iconVersion: 2, // icon = img/occult-posts-icon.jpg, remade from the newest post by syncPostsTile() (set_posts_tile.py --auto, version in img/posts-tiles.json)
+    iconVersion: 4, // icon = img/occult-posts-icon.jpg, remade from the newest post by syncPostsTile() (set_posts_tile.py --auto, version in img/posts-tiles.json)
     title: "MES Occult Posts",
     description:
       "MES occult posts, newest first: Hive and Telegram posts on numbers, symbols and strange coincidences in the news, like 33 countries telling citizens to stockpile emergency supplies.",

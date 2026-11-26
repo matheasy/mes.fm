@@ -21,6 +21,7 @@ export const SECTIONS = [
     id: "occult-posts",
     title: "Posts",
     items: [
+  { href: "https://mes.fm/telegram-founder-hands", title: "Telegram Founder Rockin' the Illuminati Hand Sign 👐👀" },
   { href: "https://mes.fm/33-countries-supplies", title: "33 Countries Tell Citizens to Stockpile Emergency Supplies 🌚" },
     ],
   },
