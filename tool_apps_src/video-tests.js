@@ -465,5 +465,17 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	ok(V.musicItem({ id: "x4", title: "A", license: "cc0", url: "https://x/a.mp3" }).needsCredit === false, "CC0 needs no credit");
 	const p2 = V.normalize ? null : null; ok(V.creditsText({ credits: [{ id: "x1", text: "T1" }] }) === "Music and sounds:\nT1" && V.creditsText({ credits: [] }) === "", "credits text");
 }
+{
+	// search the captions
+	const mk = function (id, st, txt, w) { return V.clipDefaults({ id: id, type: "text", track: "v1", start: st, in: 0, out: 3, text: { s: txt, cap: { w: w } } }); };
+	const P = { clips: [mk("a", 20, "The Café is open", [["The", 0, 0.2], ["Café", 0.3, 0.6], ["is", 0.7, 0.8], ["open", 0.9, 1.2]]), mk("b", 5, "cafe time again", [["cafe", 0.1, 0.4], ["time", 0.5, 0.8], ["again", 1, 1.3]])] };
+	const r = V.capSearch(P, "CAFE");
+	ok(r.length === 2 && r[0].id === "b" && r[0].t === 5.1 && r[1].t === 20.3, "accents / case ignored, in time order, jumps to the word's own time");
+	ok(r[1].s.slice(r[1].hl[0][0], r[1].hl[0][1]) === "Café", "highlight covers the original letters");
+	ok(V.capSearch(P, "is  open")[0].t === 20.7, "phrase: jumps to its first word");
+	const tw = V.capSearch({ clips: [mk("c", 0, "nature and nature", [["nature", 0, 0.4], ["and", 0.5, 0.6], ["nature", 1, 1.4]])] }, "nature");
+	ok(tw.length === 2 && tw[0].t === 0 && tw[1].t === 1 && tw[1].hl[0][0] === 11, "said twice in one caption = two places, each with its own time");
+	ok(V.capSearch(P, "").length === 2 && V.capSearch(P, "zebra").length === 0, "empty = whole transcript; nothing found");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

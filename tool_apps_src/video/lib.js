@@ -121,6 +121,23 @@
 			credit: "\u201C" + title + "\u201D" + (by ? " by " + by : "") + " (" + name + (r.license_url ? ", " + r.license_url : "") + ")" + (r.foreign_landing_url ? " " + r.foreign_landing_url : "") };
 	};
 	V.creditsText = function (p) { var c = (p.credits || []); if (!c.length) return ""; return "Music and sounds:\n" + c.map(function (x) { return x.text; }).join("\n"); };
+	// search the captions' words (case and accents ignored); empty = every caption. -> [{id, t (jump here), s, hl: [[from, to], ...] in s}]
+	function fold(s) { var out = "", map = []; for (var i = 0; i < s.length; i++) { var f = s[i].normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); for (var k = 0; k < f.length; k++) { out += f[k]; map.push(i); } } return { s: out, map: map }; }
+	V.capSearch = function (p, q) {
+		var L = V.capList(p), qq = fold(String(q || "").trim().replace(/\s+/g, " ")).s, out = [];
+		L.forEach(function (c) {
+			var s = c.text.s || "", w = c.text.cap.w || [];
+			if (!qq) { out.push({ id: c.id, t: c.start, s: s, hl: [] }); return; }
+			var F = fold(s), at = 0, hits = [];
+			while ((at = F.s.indexOf(qq, at)) >= 0) { hits.push([F.map[at], F.map[at + qq.length - 1] + 1]); at += qq.length; }
+			var same = w.length === s.split(/\s+/).filter(Boolean).length;
+			hits.forEach(function (h) {   // one result per place it is said, each with that word's own time
+				var pre = s.slice(0, h[0]), k = pre.split(/\s+/).filter(Boolean).length - (/\S$/.test(pre) ? 1 : 0);
+				out.push({ id: c.id, t: c.start + (same && w[k] ? w[k][1] : V.dur(c) * h[0] / Math.max(1, s.length)), s: s, hl: [h] });
+			});
+		});
+		return out;
+	};
 	V.isCap = function (c) { return !!(c && c.type === "text" && c.text && c.text.cap); };
 	// subtitle files
 	function srtTime(t, dot) { t = Math.max(0, t); var ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, f = ms % 1000; return pad2(h) + ":" + pad2(m) + ":" + pad2(s) + (dot ? "." : ",") + String(1000 + f).slice(1); }

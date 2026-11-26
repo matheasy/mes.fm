@@ -2625,6 +2625,30 @@
 			toast(n + " captions added from " + f.name + ". Words light up evenly spread, since the file has no word times.", 5000);
 		});
 	};
+	// search the captions: every hit with its time; click = jump there (empty box = the whole transcript, the line being spoken is marked)
+	var capQT = 0, capNowId = null;
+	function capFind() {
+		var q = $("vd-cap-q").value, R = V.capSearch(VE.P, q), box = $("vd-cap-res"), all = V.capList(VE.P).length;
+		$("vd-cap-qn").textContent = !all ? "No captions yet: make them above." : q.trim() ? (R.length ? R.length + " place" + (R.length > 1 ? "s" : "") + " · click one to jump there" : "Not found") : all + " captions · click a line to jump there";
+		box.innerHTML = R.slice(0, 400).map(function (r) {
+			var h = "", at = 0; r.hl.forEach(function (x) { h += esc(r.s.slice(at, x[0])) + "<mark>" + esc(r.s.slice(x[0], x[1])) + "</mark>"; at = x[1]; }); h += esc(r.s.slice(at));
+			return '<button type="button" role="listitem" data-id="' + r.id + '" data-t="' + r.t + '"><span class="vd-crt">' + esc(V.tc(r.t, VE.P.fps).split(";")[0] + "." + Math.floor((r.t % 1) * 10 + 1e-6)) + "</span><span>" + h + "</span></button>";
+		}).join("") + (R.length > 400 ? '<p class="vd-sub">… and ' + (R.length - 400) + " more: type more words.</p>" : "");
+		capNowId = null; capNow();
+	}
+	function capNow() {
+		var c = V.capList(VE.P).filter(function (x) { return V.active(x, VE.t); })[0], id = c ? c.id : null; if (id === capNowId) return; capNowId = id;
+		$("vd-cap-res").querySelectorAll("button").forEach(function (b) { b.classList.toggle("is-now", b.getAttribute("data-id") === id); });
+	}
+	$("vd-cap-q").addEventListener("input", function () { clearTimeout(capQT); capQT = setTimeout(capFind, 120); });
+	$("vd-cap-q").addEventListener("keydown", function (e) { if (e.key === "Enter") { var b = $("vd-cap-res").querySelector("button"); if (b) b.click(); e.preventDefault(); } if (e.key === "Escape" && this.value) { this.value = ""; capFind(); e.stopPropagation(); } });
+	$("vd-cap-res").addEventListener("click", function (e) {
+		var b = e.target.closest("button[data-t]"); if (!b) return; var t = +b.getAttribute("data-t");
+		if (P.playing) P.pause(); P.seek(t); VE.tl.reveal(t); VE.sel = [b.getAttribute("data-id")]; VE.emit("select");
+	});
+	VE.on("change", function () { clearTimeout(capQT); capQT = setTimeout(capFind, 200); });
+	VE.on("time", capNow);
+	capFind();
 	$("vd-cap-del").onclick = function () {
 		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
 		VE.P.clips = VE.P.clips.filter(function (c) { return !V.isCap(c); }); VE.commit("Delete captions"); toast(L.length + " captions deleted (Ctrl+Z brings them back).");

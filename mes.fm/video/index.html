@@ -768,6 +768,11 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#vd .vd-mur .vd-murt {flex:1;min-width:0;} #vd .vd-mur .vd-murt b {display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} #vd .vd-mur .vd-murt small {display:block;color:var(--vd-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 	#vd .vd-mulic {font-size:0.72em;padding:0.05em 0.4em;border-radius:3px;background:#14532d;color:#dcfce7;white-space:nowrap;} #vd .vd-mulic.is-by {background:#1e3a8a;color:#dbeafe;}
 	#vd .vd-mucred textarea {width:100%;box-sizing:border-box;margin:0.4em 0;font-size:0.85em;}
+	#vd .vd-capfind {margin-top:0.9em;padding-top:0.7em;border-top:1px solid var(--vd-line);display:flex;flex-direction:column;gap:0.35em;} #vd .vd-capfind input {width:100%;box-sizing:border-box;}
+	#vd .vd-capres {max-height:22em;overflow:auto;display:flex;flex-direction:column;gap:2px;}
+	#vd .vd-capres button {display:flex;gap:0.6em;text-align:left;font:inherit;font-size:0.88em;padding:0.3em 0.45em;border:0;border-radius:0.35em;background:transparent;color:inherit;cursor:pointer;line-height:1.35;}
+	#vd .vd-capres button:hover, #vd .vd-capres button:focus-visible {background:rgba(148,163,184,0.16);outline:none;} #vd .vd-capres button.is-now {background:rgba(190,18,60,0.22);}
+	#vd .vd-capres .vd-crt {font-variant-numeric:tabular-nums;color:#93c5fd;white-space:nowrap;flex:0 0 auto;} #vd .vd-capres mark {background:#facc15;color:#111;border-radius:2px;padding:0 1px;}
 
 
 
@@ -969,6 +974,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #vd .vd-lvk-c::before{border-color:#bf0909 !important}
 	body.dark-mode #vd .vd-cvtm{background:#525252}
 	body.dark-mode #vd .vd-muchips button[aria-pressed="true"]{border-color:#e9164a}
+	body.dark-mode #vd .vd-capres button:hover,body.dark-mode #vd .vd-capres button:focus-visible{background:rgba(33,39,49,0.16)}
+	body.dark-mode #vd .vd-capres mark{color:#eeeeee}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1301,6 +1308,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 						<label class="vd-f"><span>Text size</span><select id="vd-cap-size"><option value="0.045">Small</option><option value="0.055">Medium</option><option value="0.07">Large</option><option value="0.09">Huge</option></select></label>
 						<div class="vd-capgo"><button type="button" class="vd-btn vd-primary" id="vd-cap-go">&#127897; Make captions</button><button type="button" class="vd-btn" id="vd-cap-stop" hidden>Stop</button></div>
 						<div class="vd-capprog" id="vd-cap-prog" hidden><progress id="vd-cap-bar" max="1" value="0"></progress><span id="vd-cap-msg"></span></div>
+						<div class="vd-capfind"><b>Search the words</b><input type="search" id="vd-cap-q" placeholder="Find a word or phrase in the captions…" aria-label="Search the captions" autocomplete="off"><span class="vd-sub" id="vd-cap-qn" aria-live="polite"></span><div class="vd-capres" id="vd-cap-res" role="list"></div></div>
 						<div class="vd-capmore"><b>All captions</b>
 							<button type="button" class="vd-btn vd-sm" id="vd-cap-apply" title="Use the look, colour, place and size above on every caption">Use these settings on all captions</button>
 							<button type="button" class="vd-btn vd-sm" id="vd-cap-srt">Save as SRT</button> <button type="button" class="vd-btn vd-sm" id="vd-cap-vtt">Save as VTT</button>
@@ -1508,7 +1516,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=76" defer></script>
+	<script src="/main_js/tab-progress.js?v=1" defer></script><script src="/main_js/cloud-files.js?v=3" defer></script><script src="/main_js/select-search.js?v=1" defer></script><script src="/video/js/video.js?v=78" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
