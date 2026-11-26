@@ -670,7 +670,7 @@
 		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
 		el.addEventListener("click", function (e) { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });   // keyboard Enter / Space
 	});
-	// keys like the Video Speed Controller: [ ] = 0.05 slower / faster, Y (or U) = back to 1x, P = the speed you had before.
+	// keys like the Video Speed Controller: [ ] = 0.05 slower / faster, Y (or U) = 1x, P = 2x; pressing Y or P again goes back to the speed you had.
 	// "Before" = the last speed that stayed put for 0.6 s, so holding - / + (many small steps) counts as one change.
 	var spSettled = P.speed, spPrev = Math.abs(P.speed - 1) > 1e-9 ? 1 : 2, spSetT = 0;
 	function spSettle() { clearTimeout(spSetT); spSetT = 0; if (Math.abs(P.speed - spSettled) > 1e-9) { spPrev = spSettled; spSettled = P.speed; } }
@@ -679,10 +679,9 @@
 		if (Math.abs(to - spSettled) < 1e-9) return false;
 		spPrev = spSettled; spSettled = to; P.setSpeed(to); return true;
 	};
-	VE.speedKey = function (to) {   // 2x key (no key by default now): pressing it again goes back
+	VE.speedKey = function (to) {   // Y = 1x, P = 2x: pressing it again goes back to the speed before
 		spSettle(); if (Math.abs(P.speed - to) < 1e-9) VE.goSpeed(spPrev); else VE.goSpeed(to);
 	};
-	VE.speed1 = function () { if (!VE.goSpeed(1)) toast("Already at 1× (P goes back to " + V.speedLabel(spPrev, VE.P.fps) + ")", 1800); };
 	VE.prevSpeed = function () { VE.goSpeed(spPrev); };
 
 	var spToastT = 0;
@@ -1892,8 +1891,8 @@
 		["secBack", "One second back", "Playback", ["Z"]], ["secFwd", "One second forward", "Playback", ["X"]],
 		["frameBack", "One frame back", "Playback", ["C", ","]], ["frameFwd", "One frame forward", "Playback", ["V", "."]],
 		["slower", "Speed 0.05× slower", "Preview speed", ["["]], ["faster", "Speed 0.05× faster", "Preview speed", ["]"]],
-		["speed1", "Back to 1× speed", "Preview speed", ["Y", "U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", []],
-		["prevSpeed", "Back to the previous speed (again: toggles)", "Preview speed", ["P"]], ["keys", "Show / hide this list of keys", "View", ["?"]],
+		["speed1", "Speed 1× (press again: back)", "Preview speed", ["Y", "U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", ["P"]],
+		["prevSpeed", "Back to the previous speed", "Preview speed", []], ["keys", "Show / hide this list of keys", "View", ["?"]],
 		["presetDown", "Previous speed in the list", "Preview speed", ["<"]], ["presetUp", "Next speed in the list", "Preview speed", [">"]],
 		["split", "Split at the playhead", "Editing", ["S"]], ["markIn", "Mark in", "Editing", ["I"]], ["markOut", "Mark out", "Editing", ["O"]],
 		["title", "Add a title", "Editing", ["T"]], ["narrate", "Narration pane", "Editing", ["N"]], ["record", "Record narration (again: stop)", "Editing", ["R"]],
@@ -1909,7 +1908,7 @@
 		secBack: function () { VE.stepFrame(-1, true); }, secFwd: function () { VE.stepFrame(1, true); },
 		frameBack: function () { VE.stepFrame(-1); }, frameFwd: function () { VE.stepFrame(1); },
 		slower: function () { P.nudgeSpeed(-1); }, faster: function () { P.nudgeSpeed(1); },
-		speed1: function () { VE.speed1(); }, speed2: function () { VE.speedKey(2); }, prevSpeed: function () { VE.prevSpeed(); }, keys: function () { VE.toggleKeys(); },
+		speed1: function () { VE.speedKey(1); }, speed2: function () { VE.speedKey(2); }, prevSpeed: function () { VE.prevSpeed(); }, keys: function () { VE.toggleKeys(); },
 		presetDown: function () { P.stepSpeed(-1); }, presetUp: function () { P.stepSpeed(1); },
 		split: function () { VE.split(); }, markIn: function () { mark("in"); }, markOut: function () { mark("out"); },
 		title: function () { VE.addTitle(); }, narrate: function () { openNarrate(); }, record: function () { VE.recToggle(); },
@@ -2036,8 +2035,8 @@
 			case "k": case "K": P.pause(); break;
 			case "[": P.nudgeSpeed(-1); break;
 			case "]": P.nudgeSpeed(1); break;
-			case "y": case "Y": case "u": case "U": VE.speed1(); break;
-			case "p": case "P": VE.prevSpeed(); break;
+			case "y": case "Y": case "u": case "U": VE.speedKey(1); break;
+			case "p": case "P": VE.speedKey(2); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
 			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else VE.stepFrame(1); break;
 			case "ArrowUp": VE.goEdit(-1); break; case "ArrowDown": VE.goEdit(1); break;
