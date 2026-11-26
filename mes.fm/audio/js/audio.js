@@ -1677,9 +1677,20 @@
 		{ id: "reverse", name: T("Reverse"), icon: "⇆", keys: "reverse backwards", desc: T("Play it backwards"), params: [], run: function (buf) { return A.reverse(buf); } }
 	];
 	function fxById(id) { for (var i = 0; i < EFFECTS.length; i++) if (EFFECTS[i].id === id) return EFFECTS[i]; return null; }
+	/* window.MES_NO_AI (set by the iPhone app when its App Store country is China mainland): no AI models at all, only the
+	   classic spectral gate. China requires AI filings Apple can't take from us, so the AI is switched off there instead. */
+	var NOAI = !!window.MES_NO_AI;
+	if (NOAI) (function () {
+		var n = fxById("noise"), e = fxById("enhance");
+		n.name = T("Noise removal"); n.keys = "denoise background hiss fan hum clean voice spectral";
+		n.params[0] = { k: "model", type: "select", label: T("Method"), def: "spectral", opts: [["spectral", T("Spectral gate (classic, uses a noise sample)")]] };
+		delete n.params[1].help;
+		e.params[0].label = T("Noise removal");
+	})();
 	var noiseProfile = null, wetCache = null;
 	function denoiseRun(buf, v, ctl) {
 		if (!DN) return Promise.reject(new Error(T("Noise removal did not load")));
+		if (NOAI && v.model !== "spectral") v = Object.assign({}, v, { model: "spectral" });
 		var hum = v.hum && v.hum !== "0" ? v.hum : 0, s = (v.strength == null ? 100 : v.strength) / 100;
 		function deHum(x) { return hum ? D.humRemove(x, S.sr, { base: hum === "auto" ? "auto" : +hum }) : x; }
 		if (v.model === "spectral") return DN.process(buf, S.sr, { model: "spectral", strength: s, noise: noiseProfile, onProgress: ctl && ctl.prog, signal: ctl && ctl.signal }).then(deHum);
@@ -2140,7 +2151,7 @@
 		{ m: "View", name: T("Spectrogram on / off"), kb: "S", fn: function () { S.spec = !S.spec; store("spec", S.spec); draw(); } },
 		{ m: "View", name: T("Taller tracks"), keys: "track height bigger resize", fn: function () { setLaneH(S.laneH + 30, true); } }, { m: "View", name: T("Shorter tracks"), keys: "track height smaller resize", fn: function () { setLaneH(S.laneH - 30, true); } },
 		{ m: "View", name: T("Fill window"), kb: "F", fn: toggleWin }, { m: "View", name: T("Full screen"), kb: "Shift+F", fn: toggleFs },
-		{ m: "Help", name: T("Keyboard shortcuts"), kb: "?", fn: showHelp }, { m: "Help", name: T("About the noise removal"), fn: function () { openPanel(T("About the noise removal"), '<div class="au-note">' + DN.models.map(function (m) { return "<p><b>" + esc(m.name) + "</b> · " + esc(m.licence) + " · " + esc(m.size) + "<br>" + esc(m.note) + "</p>"; }).join("") + "<p>" + T("Everything runs on this device; nothing is uploaded. DeepFilterNet runs on the processor with WebAssembly (one thread).") + "</p></div>"); panel = "about"; } }
+		{ m: "Help", name: T("Keyboard shortcuts"), kb: "?", fn: showHelp }, { m: "Help", name: T("About the noise removal"), fn: function () { openPanel(T("About the noise removal"), '<div class="au-note">' + DN.models.filter(function (m) { return !NOAI || m.id === "spectral"; }).map(function (m) { return "<p><b>" + esc(m.name) + "</b> · " + esc(m.licence) + " · " + esc(m.size) + "<br>" + esc(m.note) + "</p>"; }).join("") + (NOAI ? "" : "<p>" + T("Everything runs on this device; nothing is uploaded. DeepFilterNet runs on the processor with WebAssembly (one thread).") + "</p>") + "</div>"); panel = "about"; } }
 	]);
 	function buildMenus() {
 		var bar = $("au-menus"); bar.innerHTML = "";
