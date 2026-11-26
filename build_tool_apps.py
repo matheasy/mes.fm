@@ -789,7 +789,7 @@ APPS = {
                             head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
                                        '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
                                        '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
-                            js_v="19"),
+                            js_v="20"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
@@ -1707,6 +1707,14 @@ APPS = {
                 tag="Classic Minesweeper, a daily board and best times.", accent="#475569", dark="#334155", tint="#e7ebf0",
                 desc="Play Minesweeper free in your browser: Beginner, Intermediate, Expert and custom boards, a daily board that is the same for everyone, no-guess boards, chording, flags, touch controls and your best times, with the option to save results to the Hive blockchain for a verified leaderboard.",
                 js_v="2", pre_js=["/main_js/hive.js?v=2"]),
+    # MES Solitaire (2026-11-25, mes.fm/solitaire): tool_apps_src/solitaire (lib.js = MESSolitaire rules / seeded deals / Klondike solver /
+    # replay check, also mes.fm/api/_solitaire-lib.js for api/solitaire.js: cp after editing). Hive custom_json id mes_solitaire, verified
+    # leaderboard in api/solitaire.js. Offline: mes.fm/solitaire-sw.js (service worker for this page only). Tests: solitaire-tests.js.
+    "solitaire": dict(title="MES Solitaire", page_title="Solitaire: Play Klondike, Spider and FreeCell Free Online (Works Offline)",
+                tag="Klondike, Spider and FreeCell, even offline.", accent="#15803d", dark="#14532d", tint="#e3f4e8",
+                desc="Play Solitaire free in your browser: Klondike (draw 1 or draw 3), Spider (1, 2 or 4 suits) and FreeCell with numbered deals, three levels, winnable deals only, undo, hints, auto-finish, drag or tap to move, keyboard controls, statistics and a daily deal that is the same for everyone, with a Hive-verified leaderboard. Works offline after your first visit.",
+                meta_desc="Free Solitaire: Klondike, Spider and FreeCell with winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline.",
+                js_v="1", pre_js=["/main_js/hive.js?v=2"]),
     # MES Falling Blocks (2026-11-20, mes.fm/blocks; never call it "Tetris": a trademark of The Tetris Company): tool_apps_src/blocks
     # (lib.js = MESBlocks rules / SRS / scoring / replay check, also mes.fm/api/_blocks-lib.js for api/blocks.js: cp after editing;
     # view3d.js = the 3D well; app.js = the page). Hive custom_json id mes_blocks, verified leaderboard + live races in api/blocks.js. Tests: blocks-tests.js.

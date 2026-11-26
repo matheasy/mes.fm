@@ -378,25 +378,34 @@
 		if (ch) { treeInst.trunk.instanceMatrix.needsUpdate = treeInst.crown.instanceMatrix.needsUpdate = true; treeInst.trunk.computeBoundingSphere(); treeInst.crown.computeBoundingSphere(); }
 	}
 	/* smashed crates leave planks: loose little bodies that fade away after a while */
-	var debris = [], plankGeo = {}, plankMat = null;
-	function woodPlanks(o) {
-		var t = o.body.translation(), lv = o.body.linvel(), s = o.def.size[0], n = s > 1.5 ? 8 : 6, key = s.toFixed(2);
-		if (!plankGeo[key]) plankGeo[key] = new THREE.BoxGeometry(s * 0.95, s * 0.07, s * 0.22);
-		if (!plankMat) plankMat = new THREE.MeshStandardMaterial({ color: "#a8743a", roughness: 0.9 });
+	var debris = [];
+	/* the pieces a broken object leaves: "plank" = boards of a crate, "chunk" = n pieces of size d (scaled for big objects),
+	   "rock" = smaller boulders, "pop" = nothing left (a burst ball) */
+	var fragMat = {};
+	function fragments(o) {
+		var F = o.def.frag; if (!F || F.t === "pop") return;
+		var t = o.body.translation(), lv = o.body.linvel(), s = o.def.size[0], n = F.n || 4, sz = o.def.size;
+		var col = F.t === "plank" ? "#a8743a" : o.def.color, mk = col + (F.metal ? "m" : "");
+		if (!fragMat[mk]) fragMat[mk] = new THREE.MeshStandardMaterial(F.metal ? { color: col, metalness: 0.5, roughness: 0.45, side: THREE.DoubleSide } : F.t === "rock" ? { color: col, roughness: 1, flatShading: true } : { color: col, roughness: 0.85 });
+		var span = Math.max(sz[0], sz[1] || 0, sz[2] || 0);
 		for (var i = 0; i < n; i++) {
-			if (debris.length >= 96) { var old = debris.shift(); phys.removeRigidBody(old.body); scene.remove(old.mesh); }
-			var q = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.random() * 3, Math.random() * 3, Math.random() * 3));
-			var b = phys.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(t.x + (Math.random() - 0.5) * s * 0.6, t.y + (Math.random() - 0.3) * s * 0.6, t.z + (Math.random() - 0.5) * s * 0.6).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
-				.setLinvel(lv.x * 0.55 + (Math.random() - 0.5) * 4, lv.y * 0.4 + 1 + Math.random() * 3, lv.z * 0.55 + (Math.random() - 0.5) * 4).setAngvel({ x: (Math.random() - 0.5) * 10, y: (Math.random() - 0.5) * 10, z: (Math.random() - 0.5) * 10 }).setAngularDamping(0.3));
-			phys.createCollider(RAPIER.ColliderDesc.cuboid(s * 0.475, s * 0.035, s * 0.11).setMass(o.def.mass / n).setFriction(0.8).setRestitution(0.15), b);
-			var m = new THREE.Mesh(plankGeo[key], plankMat); m.castShadow = true; scene.add(m);
+			if (debris.length >= 120) { var old = debris.shift(); phys.removeRigidBody(old.body); scene.remove(old.mesh); old.mesh.geometry.dispose(); }
+			var geo, cd, k = Math.random() * 0.4 + 0.8;
+			if (F.t === "plank") { geo = new THREE.BoxGeometry(s * 0.95, s * 0.07, s * 0.22); cd = RAPIER.ColliderDesc.cuboid(s * 0.475, s * 0.035, s * 0.11); }
+			else if (F.t === "rock") { var r = s * 0.42 * k; geo = new THREE.DodecahedronGeometry(r, 0); cd = RAPIER.ColliderDesc.ball(r * 0.85); }
+			else { var d = F.d; geo = new THREE.BoxGeometry(d[0] * k, d[1] * k, d[2] * k); cd = RAPIER.ColliderDesc.cuboid(d[0] * k / 2, d[1] * k / 2, Math.max(0.02, d[2] * k / 2)); }
+			var q = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.random() * 3, Math.random() * 3, Math.random() * 3)), sp = F.t === "rock" ? 2 : 4;
+			var b = phys.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(t.x + (Math.random() - 0.5) * span * 0.6, t.y + (Math.random() - 0.3) * span * 0.5, t.z + (Math.random() - 0.5) * span * 0.6).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
+				.setLinvel(lv.x * 0.55 + (Math.random() - 0.5) * sp, lv.y * 0.4 + 1 + Math.random() * sp * 0.7, lv.z * 0.55 + (Math.random() - 0.5) * sp).setAngvel({ x: (Math.random() - 0.5) * 10, y: (Math.random() - 0.5) * 10, z: (Math.random() - 0.5) * 10 }).setAngularDamping(0.3).setCcdEnabled(o.def.mass / n < 10));
+			phys.createCollider(cd.setMass(o.def.mass / n).setFriction(0.8).setRestitution(0.15), b);
+			var m = new THREE.Mesh(geo, fragMat[mk]); m.castShadow = true; m.userData.own = true; scene.add(m);
 			debris.push({ body: b, mesh: m, t0: simT });
 		}
 	}
 	function debrisSync() {
 		for (var i = debris.length - 1; i >= 0; i--) {
 			var d = debris[i];
-			if (simT - d.t0 > 20) { phys.removeRigidBody(d.body); scene.remove(d.mesh); debris.splice(i, 1); continue; }
+			if (simT - d.t0 > 20) { phys.removeRigidBody(d.body); scene.remove(d.mesh); d.mesh.geometry.dispose(); debris.splice(i, 1); continue; }
 			var t = d.body.translation(), r = d.body.rotation(); d.mesh.position.set(t.x, t.y, t.z); d.mesh.quaternion.set(r.x, r.y, r.z, r.w);
 		}
 	}
@@ -974,7 +983,7 @@
 	}
 
 	/* ===================== loose objects ===================== */
-	var brickDef = { name: "Brick", shape: "box", size: [1, 0.5, 0.5], mass: 8, color: "#a2412b" };
+	var brickDef = { name: "Brick", shape: "box", size: [1, 0.5, 0.5], mass: 8, color: "#a2412b", breaks: 10, frag: { t: "chunk", n: 3, d: [0.34, 0.45, 0.45] }, snd: "thud", bits: ["#a2412b", "#7d2f1f", "#c9a68f"] };
 	var objGeoCache = {};
 	function objMesh(def) {
 		var s = def.size, geo;
@@ -1567,7 +1576,7 @@
 		});
 		objs.forEach(function (o) {
 			var lv = o.body.linvel();
-			if (o.def.breaks && o.lastV) { var dv = Math.hypot(lv.x - o.lastV.x, lv.y - o.lastV.y - gy * dt, lv.z - o.lastV.z); if (o.def.wood) { /* a car pushes a crate over a few hundredths of a second: judge wood by the velocity change over the last 0.15 s (free fall changes it only ~1.5 m/s in that time) */ var hh = o.hist || (o.hist = []); hh.push({ t: simT, x: lv.x, y: lv.y, z: lv.z }); while (hh.length > 2 && simT - hh[1].t >= 0.15) hh.shift(); var h0 = hh[0]; dv = Math.hypot(lv.x - h0.x, lv.y - h0.y, lv.z - h0.z); if (simT - o.bornT > 1.2) o.dvMax = Math.max(o.dvMax || 0, dv); } if (dv > o.def.breaks && simT - o.bornT > (o.def.wood ? 1.2 : 0.4)) { o.broken = true; } }
+			if (o.def.breaks && o.lastV) { var dv = Math.hypot(lv.x - o.lastV.x, lv.y - o.lastV.y - gy * dt, lv.z - o.lastV.z); if (o.def.frag) { /* a car pushes a crate over a few hundredths of a second: judge wood by the velocity change over the last 0.15 s (free fall changes it only ~1.5 m/s in that time) */ var hh = o.hist || (o.hist = []), av = o.def.spinK ? o.body.angvel() : null; hh.push({ t: simT, x: lv.x, y: lv.y, z: lv.z, a: av ? { x: av.x, y: av.y, z: av.z } : null }); while (hh.length > 2 && simT - hh[1].t >= 0.15) hh.shift(); var h0 = hh[0]; dv = Math.hypot(lv.x - h0.x, lv.y - h0.y, lv.z - h0.z); if (av && h0.a) dv = Math.max(dv, Math.hypot(av.x - h0.a.x, av.y - h0.a.y, av.z - h0.a.z) * o.def.spinK); /* a tall slab is knocked over, not shoved: count how fast its ends were jolted */ if (simT - o.bornT > 1.2) o.dvMax = Math.max(o.dvMax || 0, dv); } if (dv > o.def.breaks && simT - o.bornT > (o.def.frag ? 1.2 : 0.4)) { o.broken = true; } }
 			o.lastV = { x: lv.x, y: lv.y, z: lv.z };
 		});
 		for (var i = objs.length - 1; i >= 0; i--) if (objs[i].broken) breakObj(objs[i], i);
@@ -1599,10 +1608,10 @@
 	function dist2(a, b) { return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z); }
 	function breakObj(o, i) {
 		var t = o.body.translation(), lv = o.body.linvel();
-		var cols = o.def.glass ? ["#d7efff", "#a8dcff", "#ffffff"] : o.def.wood ? ["#c89456", "#8a5a2b", "#e0b47a"] : ["#e63946", "#ff6b81", "#2f8f3a", "#1b5e20", "#111"];
+		var cols = o.def.glass ? ["#d7efff", "#a8dcff", "#ffffff"] : o.def.wood ? ["#c89456", "#8a5a2b", "#e0b47a"] : o.def.bits || ["#e63946", "#ff6b81", "#2f8f3a", "#1b5e20", "#111"];
 		parts.burst(t.x, t.y, t.z, o.def.glass ? 60 : o.def.wood ? 30 : 45, { speed: 4, vx: lv.x * 0.5, vy: lv.y * 0.5 + 1, vz: lv.z * 0.5, life: 3, size: o.def.glass ? 0.12 : 0.09, cols: cols, bounce: 0.25 });
-		sfx(o.def.glass ? "glass" : o.def.wood ? "crash" : "splat", 0.8);
-		if (o.def.wood) woodPlanks(o);
+		sfx(o.def.glass ? "glass" : o.def.wood ? "crash" : o.def.snd || "splat", 0.8);
+		if (o.def.frag) fragments(o);
 		phys.removeRigidBody(o.body); scene.remove(o.mesh); objs.splice(i, 1);
 	}
 	/* air time + jump distance for the player */

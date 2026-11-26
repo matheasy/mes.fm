@@ -442,18 +442,18 @@
 
 	/* ---------- spawnable objects ---------- */
 	C.OBJECTS = {
-		crate: { name: "Crate", icon: "📦", shape: "box", size: [1, 1, 1], mass: 25, color: "#b07a3c", breaks: 7.5, wood: true },
-		bigcrate: { name: "Big crate", icon: "🟫", shape: "box", size: [2.2, 2.2, 2.2], mass: 160, color: "#9a6630", breaks: 9.5, wood: true },
-		barrel: { name: "Barrel", icon: "🛢️", shape: "cyl", size: [0.42, 1.2], mass: 40, color: "#c0392b" },
-		ball: { name: "Beach ball", icon: "🏐", shape: "ball", size: [0.6], mass: 1.5, color: "#f5f5f5", bounce: 0.85 },
-		bigball: { name: "Giant ball", icon: "🔴", shape: "ball", size: [2.6], mass: 400, color: "#e63946", bounce: 0.6 },
-		cone: { name: "Traffic cone", icon: "🔺", shape: "cone", size: [0.25, 0.75], mass: 3, color: "#ff6b00" },
+		crate: { name: "Crate", icon: "📦", shape: "box", size: [1, 1, 1], mass: 25, color: "#b07a3c", breaks: 7.5, wood: true, frag: { t: "plank", n: 6 } },
+		bigcrate: { name: "Big crate", icon: "🟫", shape: "box", size: [2.2, 2.2, 2.2], mass: 160, color: "#9a6630", breaks: 9.5, wood: true, frag: { t: "plank", n: 8 } },
+		barrel: { name: "Barrel", icon: "🛢️", shape: "cyl", size: [0.42, 1.2], mass: 40, color: "#c0392b", breaks: 12, frag: { t: "chunk", n: 6, d: [0.42, 0.5, 0.03], metal: true }, snd: "crash", bits: ["#c0392b", "#8e2a20", "#9aa0a6"] },
+		ball: { name: "Beach ball", icon: "🏐", shape: "ball", size: [0.6], mass: 1.5, color: "#f5f5f5", bounce: 0.85, breaks: 24, frag: { t: "pop" }, snd: "pop", bits: ["#e63946", "#ffbe0b", "#3a86ff", "#06d6a0", "#f1faee"] },
+		bigball: { name: "Giant ball", icon: "🔴", shape: "ball", size: [2.6], mass: 400, color: "#e63946", bounce: 0.6, breaks: 16, frag: { t: "pop" }, snd: "pop", bits: ["#e63946", "#b02a35", "#ffffff"] },
+		cone: { name: "Traffic cone", icon: "🔺", shape: "cone", size: [0.25, 0.75], mass: 3, color: "#ff6b00", breaks: 10, frag: { t: "chunk", n: 4, d: [0.22, 0.3, 0.05] }, snd: "thud", bits: ["#ff6b00", "#ffffff", "#e05500"] },
 		tyre: { name: "Tyre", icon: "⭕", shape: "tyre", size: [0.5, 0.28], mass: 12, color: "#1c1c1c", bounce: 0.5 },
-		boulder: { name: "Boulder", icon: "🪨", shape: "rock", size: [1.6], mass: 4000, color: "#7a7470" },
+		boulder: { name: "Boulder", icon: "🪨", shape: "rock", size: [1.6], mass: 4000, color: "#7a7470", breaks: 5, frag: { t: "rock", n: 6 }, snd: "thud", bits: ["#7a7470", "#a39d98", "#5c5753"] },
 		melon: { name: "Watermelon", icon: "🍉", shape: "ball", size: [0.22], mass: 7, color: "#2f8f3a", breaks: 7 },
 		glass: { name: "Glass pane", icon: "🪟", shape: "box", size: [2.4, 1.8, 0.06], mass: 30, color: "#9fd3ff", breaks: 4, glass: true },
-		pin: { name: "Giant bowling pin", icon: "🎳", shape: "pin", size: [0.4, 2.0], mass: 30, color: "#fafafa" },
-		domino: { name: "Domino", icon: "🁢", shape: "box", size: [1.2, 2.4, 0.3], mass: 60, color: "#f1f1f1" }
+		pin: { name: "Giant bowling pin", icon: "🎳", shape: "pin", size: [0.4, 2.0], mass: 30, color: "#fafafa", breaks: 11, frag: { t: "chunk", n: 3, d: [0.36, 0.65, 0.36] }, snd: "crash", bits: ["#fafafa", "#d62828", "#e8dcc8"] },
+		domino: { name: "Domino", icon: "🁢", shape: "box", size: [1.2, 2.4, 0.3], mass: 60, color: "#f1f1f1", breaks: 6.5, spinK: 1.2, frag: { t: "chunk", n: 3, d: [1.15, 0.8, 0.28] }, snd: "crash", bits: ["#f1f1f1", "#cfcfcf", "#222"] }
 	};
 	C.OBJ_ORDER = ["crate", "bigcrate", "barrel", "ball", "bigball", "cone", "tyre", "boulder", "melon", "glass", "pin"];
 	/* group layouts, relative to a base point; the base faces +z (rows go across x) */
