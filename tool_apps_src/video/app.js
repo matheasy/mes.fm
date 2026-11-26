@@ -697,6 +697,17 @@
 	VE.goEdit = function (dir) { if (P.playing) P.pause(); var t = V.nextEdit(VE.P, VE.t, dir, 0.5 / VE.P.fps); if (t == null) t = dir > 0 ? V.duration(VE.P) : 0; P.seek(t); VE.tl.reveal(t); };
 	// one frame back / forward; pressing and holding keeps stepping, waiting for each frame to show so it never runs ahead of the picture
 	VE.stepFrame = function (dir, big) { if (P.playing) P.pause(); P.seek(VE.t + dir * (big ? 1 : 1 / VE.P.fps)); VE.tl.reveal(VE.t); };
+	// C / the CC button: hide or show the layers that hold captions (a hidden layer is also left out of the exported video)
+	function capTracks() { var ids = {}; V.capList(VE.P).forEach(function (c) { ids[c.track] = 1; }); return VE.P.tracks.filter(function (t) { return ids[t.id]; }); }
+	function ccBtn() { var b = $("vd-cc"), T = capTracks(); b.hidden = !T.length; var on = T.some(function (t) { return !t.hide; }); b.setAttribute("aria-pressed", String(on)); b.title = (on ? "Hide" : "Show") + " the captions (C)"; }
+	VE.toggleCaps = function () {
+		var T = capTracks(); if (!T.length) { toast("No captions yet: make them in the Captions tab on the left."); return; }
+		var show = T.every(function (t) { return t.hide; }); T.forEach(function (t) { t.hide = !show; });
+		VE.commit(show ? "Show captions" : "Hide captions");
+		toast(show ? "Captions shown (C hides them)." : "Captions hidden (C shows them again). Hidden captions are not in the exported video.", 2600);
+	};
+	$("vd-cc").onclick = function () { VE.toggleCaps(); };
+	VE.on("change", ccBtn); ccBtn();
 	$("vd-jback").onclick = function () { VE.jump(-1); }; $("vd-jfwd").onclick = function () { VE.jump(1); };
 	var hold = null;
 	function stopHold() { if (hold) { clearTimeout(hold.timer); hold = null; } }
@@ -1911,10 +1922,10 @@
 		["play", "Play / pause", "Playback", ["Space"]], ["pause", "Stop", "Playback", ["K"]],
 		["fwd", "Play forward (again: 2×, 4×)", "Playback", ["L"]], ["rev", "Play backwards (again: 2×, 4×)", "Playback", ["J"]],
 		["secBack", "One second back", "Playback", ["Z"]], ["secFwd", "One second forward", "Playback", ["X"]],
-		["frameBack", "One frame back", "Playback", ["C", ","]], ["frameFwd", "One frame forward", "Playback", ["V", "."]],
+		["frameBack", "One frame back", "Playback", [","]], ["frameFwd", "One frame forward", "Playback", ["V", "."]],
 		["slower", "Speed 0.05× slower", "Preview speed", ["["]], ["faster", "Speed 0.05× faster", "Preview speed", ["]"]],
 		["speed1", "Speed 1× (press again: back)", "Preview speed", ["Y", "U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", ["P"]],
-		["prevSpeed", "Back to the previous speed", "Preview speed", []], ["keys", "Show / hide this list of keys", "View", ["?"]],
+		["prevSpeed", "Back to the previous speed", "Preview speed", []], ["captions", "Show / hide the captions (like YouTube)", "View", ["C"]], ["keys", "Show / hide this list of keys", "View", ["?"]],
 		["presetDown", "Previous speed in the list", "Preview speed", ["<"]], ["presetUp", "Next speed in the list", "Preview speed", [">"]],
 		["split", "Split at the playhead", "Editing", ["S"]], ["markIn", "Mark in", "Editing", ["I"]], ["markOut", "Mark out", "Editing", ["O"]],
 		["title", "Add a title", "Editing", ["T"]], ["narrate", "Narration pane", "Editing", ["N"]], ["record", "Record narration (again: stop)", "Editing", ["R"]],
@@ -1930,7 +1941,7 @@
 		secBack: function () { VE.stepFrame(-1, true); }, secFwd: function () { VE.stepFrame(1, true); },
 		frameBack: function () { VE.stepFrame(-1); }, frameFwd: function () { VE.stepFrame(1); },
 		slower: function () { P.nudgeSpeed(-1); }, faster: function () { P.nudgeSpeed(1); },
-		speed1: function () { VE.speedKey(1); }, speed2: function () { VE.speedKey(2); }, prevSpeed: function () { VE.prevSpeed(); }, keys: function () { VE.toggleKeys(); },
+		speed1: function () { VE.speedKey(1); }, speed2: function () { VE.speedKey(2); }, prevSpeed: function () { VE.prevSpeed(); }, captions: function () { VE.toggleCaps(); }, keys: function () { VE.toggleKeys(); },
 		presetDown: function () { P.stepSpeed(-1); }, presetUp: function () { P.stepSpeed(1); },
 		split: function () { VE.split(); }, markIn: function () { mark("in"); }, markOut: function () { mark("out"); },
 		title: function () { VE.addTitle(); }, narrate: function () { openNarrate(); }, record: function () { VE.recToggle(); },
