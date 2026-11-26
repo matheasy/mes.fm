@@ -492,6 +492,28 @@
 	};
 	// dark or white letters, whichever reads better on colour hex
 	V.capInk = function (hex) { var m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#000"; var n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, bl = n & 255; return 0.299 * r + 0.587 * g + 0.114 * bl > 150 ? "#111111" : "#ffffff"; };
+	/* ---------- free music and sound effects (Openverse: music = its 'music' category (Jamendo), sound effects = Freesound, which has no category there) ---------- */
+	// only licences that allow using it in a video, also one with ads: CC0, public domain, CC BY, CC BY-SA (BY = give credit)
+	V.MUSIC_LIC = "cc0,pdm,by,by-sa";
+	V.MUSIC_CATS = {
+		music: [["background", "Background"], ["calm ambient", "Calm"], ["happy upbeat", "Happy"], ["cinematic epic", "Cinematic"], ["piano", "Piano"], ["acoustic guitar", "Acoustic"], ["lofi chill", "Lo-fi"], ["electronic", "Electronic"], ["hip hop beat", "Hip hop"], ["rock", "Rock"], ["jazz", "Jazz"], ["classical", "Classical"], ["corporate", "Corporate"], ["sad emotional", "Sad"], ["suspense dark", "Suspense"], ["funny comedy", "Funny"], ["kids children", "Kids"], ["christmas", "Christmas"]],
+		sound_effect: [["whoosh", "Whoosh"], ["click", "Click"], ["pop", "Pop"], ["ding notification", "Ding"], ["applause", "Applause"], ["laugh", "Laugh"], ["typing keyboard", "Typing"], ["camera shutter", "Camera"], ["swoosh transition", "Transition"], ["drum roll", "Drum roll"], ["explosion", "Boom"], ["footsteps", "Footsteps"], ["door", "Door"], ["rain", "Rain"], ["birds nature", "Nature"], ["crowd", "Crowd"], ["bell", "Bell"], ["error buzzer", "Buzzer"]]
+	};
+	V.MUSIC_LENS = [["", "Any length"], ["shortest", "Under 30 s"], ["short", "30 s to 2 min"], ["medium", "2 to 10 min"], ["long", "Over 10 min"]];
+	V.musicUrl = function (o) {
+		var q = ["q=" + encodeURIComponent(String(o.q || "").trim().slice(0, 200) || "background"), "license=" + V.MUSIC_LIC, o.kind === "sound_effect" ? "source=freesound" : "category=music", "page_size=" + (o.size || 20), "page=" + (o.page || 1)];
+		if (o.len) q.push("length=" + encodeURIComponent(o.len));
+		return "https://api.openverse.org/v1/audio/?" + q.join("&");
+	};
+	// one Openverse result -> what the list shows (null when it can't be used: no file, or a licence we don't offer)
+	V.musicItem = function (r) {
+		if (!r || !r.url || !/^https:\/\//.test(r.url) || ["cc0", "pdm", "by", "by-sa"].indexOf(String(r.license || "").toLowerCase()) < 0) return null;
+		var lic = String(r.license).toLowerCase(), name = lic === "cc0" ? "CC0" : lic === "pdm" ? "Public domain" : "CC " + lic.toUpperCase() + (r.license_version ? " " + r.license_version : "");
+		var by = r.creator ? String(r.creator) : "", title = String(r.title || "Untitled").slice(0, 120);
+		return { id: String(r.id), title: title, by: by, dur: r.duration ? r.duration / 1000 : 0, url: r.url, page: r.foreign_landing_url || "", src: r.source || r.provider || "", lic: lic, licName: name, needsCredit: lic === "by" || lic === "by-sa", genres: (r.genres || []).slice(0, 3),
+			credit: "\u201C" + title + "\u201D" + (by ? " by " + by : "") + " (" + name + (r.license_url ? ", " + r.license_url : "") + ")" + (r.foreign_landing_url ? " " + r.foreign_landing_url : "") };
+	};
+	V.creditsText = function (p) { var c = (p.credits || []); if (!c.length) return ""; return "Music and sounds:\n" + c.map(function (x) { return x.text; }).join("\n"); };
 	V.isCap = function (c) { return !!(c && c.type === "text" && c.text && c.text.cap); };
 	// subtitle files
 	function srtTime(t, dot) { t = Math.max(0, t); var ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, f = ms % 1000; return pad2(h) + ":" + pad2(m) + ":" + pad2(s) + (dot ? "." : ",") + String(1000 + f).slice(1); }
@@ -548,6 +570,7 @@
 		var ids = {}; q.tracks.forEach(function (t) { ids[t.id] = t; });
 		q.clips = (Array.isArray(p.clips) ? p.clips : []).filter(function (c) { return c && c.id && ids[c.track] && isFinite(c.start) && isFinite(c.in) && isFinite(c.out) && c.out > c.in; }).map(function (c) { return V.clipDefaults(JSON.parse(JSON.stringify(c))); });
 		q.marks = { in: p.marks && isFinite(p.marks.in) ? p.marks.in : null, out: p.marks && isFinite(p.marks.out) ? p.marks.out : null };
+		q.credits = (Array.isArray(p.credits) ? p.credits : []).filter(function (c) { return c && c.id && c.text; }).slice(0, 500).map(function (c) { return { id: String(c.id).slice(0, 80), text: String(c.text).slice(0, 600), lic: String(c.lic || "").slice(0, 20) }; });
 		return q;
 	};
 	V.ROW_MIN = 28; V.ROW_MAX = 420; V.ROW_DEFAULT = { v: 62, a: 84 };
@@ -6102,6 +6125,78 @@
 	function waveBtn() { $("vd-wavemode").textContent = "Waveform: " + (VE.tl.wave === "db" ? "dB" : "linear"); }
 	$("vd-wavemode").onclick = function () { VE.tl.wave = UI.wave = VE.tl.wave === "db" ? "lin" : "db"; saveUI(); waveBtn(); VE.tl.render(); };
 	waveBtn();
+
+	/* ---------- free music and sound effects: Openverse search, listen, add to the timeline ---------- */
+	var MKEY = "mes-video-editor:music", MS = { kind: "music", q: "background", len: "" }, muPage = 1, muTok = 0, muAudio = null, muItems = {};
+	try { Object.assign(MS, JSON.parse(localStorage.getItem(MKEY) || "{}")); } catch (x) { /* ignore */ }
+	function mKeep() { try { localStorage.setItem(MKEY, JSON.stringify(MS)); } catch (x) { /* ignore */ } }
+	$("vd-mu-len").innerHTML = V.MUSIC_LENS.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === MS.len ? " selected" : "") + ">" + esc(q[1]) + "</option>"; }).join("");
+	function muChips() {
+		$("vd-mu-chips").innerHTML = V.MUSIC_CATS[MS.kind].map(function (q) { return '<button type="button" data-q="' + esc(q[0]) + '" aria-pressed="' + (q[0] === MS.q) + '">' + esc(q[1]) + "</button>"; }).join("");
+		app.querySelectorAll("#vd-mu-kind [data-v]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === MS.kind)); });
+	}
+	function muStop() { if (muAudio) { muAudio.pause(); muAudio = null; } app.querySelectorAll(".vd-muplay").forEach(function (b) { b.innerHTML = "&#9654;"; b.setAttribute("aria-label", "Listen"); }); }
+	function muRow(it) {
+		var sec = Math.round(it.dur || 0), d = !it.dur ? "" : it.dur < 10 ? (Math.round(it.dur * 10) / 10) + " s" : Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+		return '<div class="vd-mur" data-mu="' + esc(it.id) + '"><button type="button" class="vd-btn vd-ico vd-muplay" aria-label="Listen" title="Listen">&#9654;</button><span class="vd-murt"><b title="' + esc(it.title) + '">' + esc(it.title) + "</b><small>" + esc([it.by, d, it.genres.join(", "), it.src].filter(Boolean).join(" · ")) + '</small></span><span class="vd-mulic' + (it.needsCredit ? " is-by" : "") + '" title="' + (it.needsCredit ? "Free to use; give credit (added to the credits below)" : "Free to use, no credit needed") + '">' + esc(it.licName) + '</span><button type="button" class="vd-btn vd-sm vd-primary vd-muadd" title="Put it on the timeline at the playhead">+ Add</button></div>';
+	}
+	async function muSearch(more) {
+		var list = $("vd-mu-list"), tok = ++muTok; muPage = more ? muPage + 1 : 1;
+		if (!more) { muStop(); muItems = {}; list.innerHTML = '<p class="vd-sub">Searching…</p>'; }
+		$("vd-mu-more").hidden = true;
+		try {
+			var r = await fetch(V.musicUrl({ q: MS.q, kind: MS.kind, len: MS.len, page: muPage }));
+			if (r.status === 429) throw new Error("Too many searches for now (the free music library allows about 100 a minute). Try again in a minute.");
+			if (!r.ok) throw new Error("The music library did not answer (" + r.status + "). Try again in a moment.");
+			var j = await r.json(), its = (j.results || []).map(V.musicItem).filter(Boolean); if (tok !== muTok) return;   // an older search answering late
+			its.forEach(function (it) { muItems[it.id] = it; });
+			if (!more) list.innerHTML = "";
+			if (!its.length && !more) list.innerHTML = '<p class="vd-sub">Nothing found. Try another word or a category.</p>';
+			list.insertAdjacentHTML("beforeend", its.map(muRow).join(""));
+			$("vd-mu-more").hidden = !(j.page_count > muPage);
+		} catch (e) { if (tok !== muTok) return; if (!more) list.innerHTML = ""; list.insertAdjacentHTML("beforeend", '<p class="vd-sub">' + esc(e.message || String(e)) + "</p>"); }
+	}
+	function muCredits() {
+		var c = VE.P.credits || [], t = V.creditsText(VE.P);
+		$("vd-mu-ctext").value = t || "No tracks that need a credit yet."; $("vd-mu-ccount").textContent = c.length ? "(" + c.length + ")" : "";
+	}
+	async function muAdd(it, btn) {
+		btn.disabled = true; btn.textContent = "Adding…";
+		try {
+			var r = await fetch(it.url); if (!r.ok) throw new Error("Could not download it (" + r.status + ").");
+			var blob = await r.blob(), ext = /ogg/.test(blob.type) ? "ogg" : /wav/.test(blob.type) ? "wav" : /flac/.test(blob.type) ? "flac" : "mp3";
+			var name = (it.title + (it.by ? " - " + it.by : "")).replace(/[\\/:*?"<>|]+/g, "-").slice(0, 90) + "." + ext;
+			var m = (await VE.addFiles([new File([blob], name, { type: blob.type || "audio/mpeg" })]))[0];
+			for (var i = 0; i < 120 && m && m.state !== "ready" && m.state !== "error"; i++) await new Promise(function (res) { setTimeout(res, 250); });
+			if (!m || m.state !== "ready") throw new Error("That file could not be opened.");
+			VE.P.credits = VE.P.credits || [];
+			if (it.needsCredit && !VE.P.credits.some(function (c) { return c.id === it.id; })) VE.P.credits.push({ id: it.id, text: it.credit, lic: it.lic });
+			VE.tl.placeMedia(m, null, null, VE.t);
+			muCredits(); btn.textContent = "✓ Added";
+			toast("“" + it.title + "” added at the playhead" + (it.needsCredit ? ". Its credit is in “Credits for your video description”." : " (no credit needed)."), 4500);
+		} catch (e) { btn.disabled = false; btn.textContent = "+ Add"; toast(e.message || String(e), 5000); }
+	}
+	$("vd-mu-list").addEventListener("click", function (e) {
+		var row = e.target.closest(".vd-mur"); if (!row) return; var it = muItems[row.getAttribute("data-mu")]; if (!it) return;
+		var pb = e.target.closest(".vd-muplay");
+		if (pb) {
+			if (muAudio && muAudio.__id === it.id) { muStop(); return; }
+			muStop(); muAudio = new Audio(it.url); muAudio.__id = it.id; muAudio.volume = 0.8;
+			muAudio.play().catch(function () { toast("This one could not be played here."); muStop(); });
+			muAudio.onended = muStop; pb.innerHTML = "&#10074;&#10074;"; pb.setAttribute("aria-label", "Stop"); return;
+		}
+		var ab = e.target.closest(".vd-muadd"); if (ab && !ab.disabled) muAdd(it, ab);
+	});
+	$("vd-mu-chips").addEventListener("click", function (e) { var b = e.target.closest("[data-q]"); if (!b) return; MS.q = b.getAttribute("data-q"); $("vd-mu-q").value = ""; mKeep(); muChips(); muSearch(); });
+	$("vd-mu-kind").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (!b || b.getAttribute("data-v") === MS.kind) return; MS.kind = b.getAttribute("data-v"); MS.q = V.MUSIC_CATS[MS.kind][0][0]; $("vd-mu-q").value = ""; mKeep(); muChips(); muSearch(); });
+	$("vd-mu-form").addEventListener("submit", function (e) { e.preventDefault(); var q = $("vd-mu-q").value.trim(); if (!q) return; MS.q = q; mKeep(); muChips(); muSearch(); });
+	$("vd-mu-len").onchange = function () { MS.len = this.value; mKeep(); muSearch(); };
+	$("vd-mu-more").onclick = function () { muSearch(true); };
+	$("vd-mu-ccopy").onclick = function () { var t = V.creditsText(VE.P); if (!t) { toast("No tracks that need a credit yet."); return; } navigator.clipboard.writeText(t).then(function () { toast("Credits copied: paste them into your video description."); }, function () { $("vd-mu-ctext").select(); }); };
+	muChips(); muCredits();
+	var muStarted = false;
+	app.querySelector("#vd-rail").addEventListener("click", function (e) { var b = e.target.closest('[data-cat="music"]'); if (b && !muStarted) { muStarted = true; muSearch(); } });
+	VE.on("change", function () { if (!$("vd-mu-cred").hidden) muCredits(); });
 
 	/* ---------- captions: Whisper (transformers.js, word times) listens to the timeline's sound in this browser ---------- */
 	var CKEY = "mes-video-editor:caps", CS = { src: "all", lang: "", model: "base", style: "hl", hl: "#facc15", chars: 32, lines: 2, pos: "0.88", size: "0.055" };

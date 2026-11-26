@@ -455,5 +455,15 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	ok(V.parseSubs("WEBVTT\n\n01:02.500 --> 01:04.000 align:start\n<b>Hi</b> there\n").map(function (x) { return x.a + "|" + x.s; })[0] === "62.5|Hi there", "VTT short times, tags removed");
 	ok(V.capInk("#facc15") === "#111111" && V.capInk("#1d4ed8") === "#ffffff", "box text colour readable");
 }
+{
+	// free music library
+	const u = V.musicUrl({ q: "lofi chill", kind: "sound_effect", len: "short", page: 2 });
+	ok(/q=lofi%20chill/.test(u) && /license=cc0,pdm,by,by-sa/.test(u) && /source=freesound/.test(u) && /category=music/.test(V.musicUrl({ q: "a" })) && /length=short/.test(u) && /page=2/.test(u), "Openverse query: licences that allow any video, category, length, page");
+	const it = V.musicItem({ id: "x1", title: "Calm", creator: "Ann", license: "by", license_version: "4.0", license_url: "https://creativecommons.org/licenses/by/4.0/", url: "https://cdn.freesound.org/a.mp3", foreign_landing_url: "https://freesound.org/s/1", duration: 95000, source: "freesound", genres: ["ambient"] });
+	ok(it && it.needsCredit && it.licName === "CC BY 4.0" && it.dur === 95 && /Calm.*by Ann/.test(it.credit), "CC BY item needs a credit, text made");
+	ok(V.musicItem({ id: "x2", title: "A", license: "by-nd", url: "https://x/a.mp3" }) === null && V.musicItem({ id: "x3", title: "A", license: "by-nc", url: "https://x/a.mp3" }) === null, "ND / NC licences never offered");
+	ok(V.musicItem({ id: "x4", title: "A", license: "cc0", url: "https://x/a.mp3" }).needsCredit === false, "CC0 needs no credit");
+	const p2 = V.normalize ? null : null; ok(V.creditsText({ credits: [{ id: "x1", text: "T1" }] }) === "Music and sounds:\nT1" && V.creditsText({ credits: [] }) === "", "credits text");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

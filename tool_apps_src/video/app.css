@@ -451,4 +451,14 @@
 	#vd .vd-rail .vd-ri-cc {font:800 0.75em Arial,sans-serif;border:2px solid currentColor;border-radius:4px;padding:0.1em 0.25em;filter:none;}
 	#vd .vd-caps .vd-f {margin:0.35em 0;} #vd .vd-capgo {display:flex;gap:0.5em;margin:0.7em 0 0.4em;} #vd .vd-capprog {display:flex;flex-direction:column;gap:0.3em;margin:0.4em 0;font-size:0.85em;color:var(--vd-dim);} #vd .vd-capprog progress {width:100%;}
 	#vd .vd-capmore {display:flex;flex-wrap:wrap;gap:0.4em;margin-top:0.9em;padding-top:0.7em;border-top:1px solid var(--vd-line);} #vd .vd-capmore b {flex:1 0 100%;}
+	#vd .vd-mukind {display:flex;margin:0.2em 0 0.5em;} #vd .vd-mukind button {flex:1;}
+	#vd .vd-musearch {display:flex;gap:0.4em;margin-bottom:0.5em;} #vd .vd-musearch input {flex:1;min-width:0;}
+	#vd .vd-muchips {display:flex;flex-wrap:wrap;gap:0.3em;margin-bottom:0.5em;}
+	#vd .vd-muchips button {font:inherit;font-size:0.8em;padding:0.2em 0.6em;border-radius:999px;border:1px solid var(--vd-line);background:transparent;color:inherit;cursor:pointer;}
+	#vd .vd-muchips button[aria-pressed="true"] {background:#be123c;border-color:#be123c;color:#fff;}
+	#vd .vd-mulist {display:flex;flex-direction:column;gap:0.35em;margin:0.5em 0;}
+	#vd .vd-mur {display:flex;align-items:center;gap:0.5em;padding:0.4em 0.5em;border:1px solid var(--vd-line);border-radius:0.45em;}
+	#vd .vd-mur .vd-murt {flex:1;min-width:0;} #vd .vd-mur .vd-murt b {display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} #vd .vd-mur .vd-murt small {display:block;color:var(--vd-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	#vd .vd-mulic {font-size:0.72em;padding:0.05em 0.4em;border-radius:3px;background:#14532d;color:#dcfce7;white-space:nowrap;} #vd .vd-mulic.is-by {background:#1e3a8a;color:#dbeafe;}
+	#vd .vd-mucred textarea {width:100%;box-sizing:border-box;margin:0.4em 0;font-size:0.85em;}
 

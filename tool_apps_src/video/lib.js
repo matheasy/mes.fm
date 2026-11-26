@@ -99,6 +99,28 @@
 	};
 	// dark or white letters, whichever reads better on colour hex
 	V.capInk = function (hex) { var m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#000"; var n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, bl = n & 255; return 0.299 * r + 0.587 * g + 0.114 * bl > 150 ? "#111111" : "#ffffff"; };
+	/* ---------- free music and sound effects (Openverse: music = its 'music' category (Jamendo), sound effects = Freesound, which has no category there) ---------- */
+	// only licences that allow using it in a video, also one with ads: CC0, public domain, CC BY, CC BY-SA (BY = give credit)
+	V.MUSIC_LIC = "cc0,pdm,by,by-sa";
+	V.MUSIC_CATS = {
+		music: [["background", "Background"], ["calm ambient", "Calm"], ["happy upbeat", "Happy"], ["cinematic epic", "Cinematic"], ["piano", "Piano"], ["acoustic guitar", "Acoustic"], ["lofi chill", "Lo-fi"], ["electronic", "Electronic"], ["hip hop beat", "Hip hop"], ["rock", "Rock"], ["jazz", "Jazz"], ["classical", "Classical"], ["corporate", "Corporate"], ["sad emotional", "Sad"], ["suspense dark", "Suspense"], ["funny comedy", "Funny"], ["kids children", "Kids"], ["christmas", "Christmas"]],
+		sound_effect: [["whoosh", "Whoosh"], ["click", "Click"], ["pop", "Pop"], ["ding notification", "Ding"], ["applause", "Applause"], ["laugh", "Laugh"], ["typing keyboard", "Typing"], ["camera shutter", "Camera"], ["swoosh transition", "Transition"], ["drum roll", "Drum roll"], ["explosion", "Boom"], ["footsteps", "Footsteps"], ["door", "Door"], ["rain", "Rain"], ["birds nature", "Nature"], ["crowd", "Crowd"], ["bell", "Bell"], ["error buzzer", "Buzzer"]]
+	};
+	V.MUSIC_LENS = [["", "Any length"], ["shortest", "Under 30 s"], ["short", "30 s to 2 min"], ["medium", "2 to 10 min"], ["long", "Over 10 min"]];
+	V.musicUrl = function (o) {
+		var q = ["q=" + encodeURIComponent(String(o.q || "").trim().slice(0, 200) || "background"), "license=" + V.MUSIC_LIC, o.kind === "sound_effect" ? "source=freesound" : "category=music", "page_size=" + (o.size || 20), "page=" + (o.page || 1)];
+		if (o.len) q.push("length=" + encodeURIComponent(o.len));
+		return "https://api.openverse.org/v1/audio/?" + q.join("&");
+	};
+	// one Openverse result -> what the list shows (null when it can't be used: no file, or a licence we don't offer)
+	V.musicItem = function (r) {
+		if (!r || !r.url || !/^https:\/\//.test(r.url) || ["cc0", "pdm", "by", "by-sa"].indexOf(String(r.license || "").toLowerCase()) < 0) return null;
+		var lic = String(r.license).toLowerCase(), name = lic === "cc0" ? "CC0" : lic === "pdm" ? "Public domain" : "CC " + lic.toUpperCase() + (r.license_version ? " " + r.license_version : "");
+		var by = r.creator ? String(r.creator) : "", title = String(r.title || "Untitled").slice(0, 120);
+		return { id: String(r.id), title: title, by: by, dur: r.duration ? r.duration / 1000 : 0, url: r.url, page: r.foreign_landing_url || "", src: r.source || r.provider || "", lic: lic, licName: name, needsCredit: lic === "by" || lic === "by-sa", genres: (r.genres || []).slice(0, 3),
+			credit: "\u201C" + title + "\u201D" + (by ? " by " + by : "") + " (" + name + (r.license_url ? ", " + r.license_url : "") + ")" + (r.foreign_landing_url ? " " + r.foreign_landing_url : "") };
+	};
+	V.creditsText = function (p) { var c = (p.credits || []); if (!c.length) return ""; return "Music and sounds:\n" + c.map(function (x) { return x.text; }).join("\n"); };
 	V.isCap = function (c) { return !!(c && c.type === "text" && c.text && c.text.cap); };
 	// subtitle files
 	function srtTime(t, dot) { t = Math.max(0, t); var ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, f = ms % 1000; return pad2(h) + ":" + pad2(m) + ":" + pad2(s) + (dot ? "." : ",") + String(1000 + f).slice(1); }
@@ -155,6 +177,7 @@
 		var ids = {}; q.tracks.forEach(function (t) { ids[t.id] = t; });
 		q.clips = (Array.isArray(p.clips) ? p.clips : []).filter(function (c) { return c && c.id && ids[c.track] && isFinite(c.start) && isFinite(c.in) && isFinite(c.out) && c.out > c.in; }).map(function (c) { return V.clipDefaults(JSON.parse(JSON.stringify(c))); });
 		q.marks = { in: p.marks && isFinite(p.marks.in) ? p.marks.in : null, out: p.marks && isFinite(p.marks.out) ? p.marks.out : null };
+		q.credits = (Array.isArray(p.credits) ? p.credits : []).filter(function (c) { return c && c.id && c.text; }).slice(0, 500).map(function (c) { return { id: String(c.id).slice(0, 80), text: String(c.text).slice(0, 600), lic: String(c.lic || "").slice(0, 20) }; });
 		return q;
 	};
 	V.ROW_MIN = 28; V.ROW_MAX = 420; V.ROW_DEFAULT = { v: 62, a: 84 };

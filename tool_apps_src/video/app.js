@@ -2439,6 +2439,78 @@
 	$("vd-wavemode").onclick = function () { VE.tl.wave = UI.wave = VE.tl.wave === "db" ? "lin" : "db"; saveUI(); waveBtn(); VE.tl.render(); };
 	waveBtn();
 
+	/* ---------- free music and sound effects: Openverse search, listen, add to the timeline ---------- */
+	var MKEY = "mes-video-editor:music", MS = { kind: "music", q: "background", len: "" }, muPage = 1, muTok = 0, muAudio = null, muItems = {};
+	try { Object.assign(MS, JSON.parse(localStorage.getItem(MKEY) || "{}")); } catch (x) { /* ignore */ }
+	function mKeep() { try { localStorage.setItem(MKEY, JSON.stringify(MS)); } catch (x) { /* ignore */ } }
+	$("vd-mu-len").innerHTML = V.MUSIC_LENS.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === MS.len ? " selected" : "") + ">" + esc(q[1]) + "</option>"; }).join("");
+	function muChips() {
+		$("vd-mu-chips").innerHTML = V.MUSIC_CATS[MS.kind].map(function (q) { return '<button type="button" data-q="' + esc(q[0]) + '" aria-pressed="' + (q[0] === MS.q) + '">' + esc(q[1]) + "</button>"; }).join("");
+		app.querySelectorAll("#vd-mu-kind [data-v]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-v") === MS.kind)); });
+	}
+	function muStop() { if (muAudio) { muAudio.pause(); muAudio = null; } app.querySelectorAll(".vd-muplay").forEach(function (b) { b.innerHTML = "&#9654;"; b.setAttribute("aria-label", "Listen"); }); }
+	function muRow(it) {
+		var sec = Math.round(it.dur || 0), d = !it.dur ? "" : it.dur < 10 ? (Math.round(it.dur * 10) / 10) + " s" : Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+		return '<div class="vd-mur" data-mu="' + esc(it.id) + '"><button type="button" class="vd-btn vd-ico vd-muplay" aria-label="Listen" title="Listen">&#9654;</button><span class="vd-murt"><b title="' + esc(it.title) + '">' + esc(it.title) + "</b><small>" + esc([it.by, d, it.genres.join(", "), it.src].filter(Boolean).join(" · ")) + '</small></span><span class="vd-mulic' + (it.needsCredit ? " is-by" : "") + '" title="' + (it.needsCredit ? "Free to use; give credit (added to the credits below)" : "Free to use, no credit needed") + '">' + esc(it.licName) + '</span><button type="button" class="vd-btn vd-sm vd-primary vd-muadd" title="Put it on the timeline at the playhead">+ Add</button></div>';
+	}
+	async function muSearch(more) {
+		var list = $("vd-mu-list"), tok = ++muTok; muPage = more ? muPage + 1 : 1;
+		if (!more) { muStop(); muItems = {}; list.innerHTML = '<p class="vd-sub">Searching…</p>'; }
+		$("vd-mu-more").hidden = true;
+		try {
+			var r = await fetch(V.musicUrl({ q: MS.q, kind: MS.kind, len: MS.len, page: muPage }));
+			if (r.status === 429) throw new Error("Too many searches for now (the free music library allows about 100 a minute). Try again in a minute.");
+			if (!r.ok) throw new Error("The music library did not answer (" + r.status + "). Try again in a moment.");
+			var j = await r.json(), its = (j.results || []).map(V.musicItem).filter(Boolean); if (tok !== muTok) return;   // an older search answering late
+			its.forEach(function (it) { muItems[it.id] = it; });
+			if (!more) list.innerHTML = "";
+			if (!its.length && !more) list.innerHTML = '<p class="vd-sub">Nothing found. Try another word or a category.</p>';
+			list.insertAdjacentHTML("beforeend", its.map(muRow).join(""));
+			$("vd-mu-more").hidden = !(j.page_count > muPage);
+		} catch (e) { if (tok !== muTok) return; if (!more) list.innerHTML = ""; list.insertAdjacentHTML("beforeend", '<p class="vd-sub">' + esc(e.message || String(e)) + "</p>"); }
+	}
+	function muCredits() {
+		var c = VE.P.credits || [], t = V.creditsText(VE.P);
+		$("vd-mu-ctext").value = t || "No tracks that need a credit yet."; $("vd-mu-ccount").textContent = c.length ? "(" + c.length + ")" : "";
+	}
+	async function muAdd(it, btn) {
+		btn.disabled = true; btn.textContent = "Adding…";
+		try {
+			var r = await fetch(it.url); if (!r.ok) throw new Error("Could not download it (" + r.status + ").");
+			var blob = await r.blob(), ext = /ogg/.test(blob.type) ? "ogg" : /wav/.test(blob.type) ? "wav" : /flac/.test(blob.type) ? "flac" : "mp3";
+			var name = (it.title + (it.by ? " - " + it.by : "")).replace(/[\\/:*?"<>|]+/g, "-").slice(0, 90) + "." + ext;
+			var m = (await VE.addFiles([new File([blob], name, { type: blob.type || "audio/mpeg" })]))[0];
+			for (var i = 0; i < 120 && m && m.state !== "ready" && m.state !== "error"; i++) await new Promise(function (res) { setTimeout(res, 250); });
+			if (!m || m.state !== "ready") throw new Error("That file could not be opened.");
+			VE.P.credits = VE.P.credits || [];
+			if (it.needsCredit && !VE.P.credits.some(function (c) { return c.id === it.id; })) VE.P.credits.push({ id: it.id, text: it.credit, lic: it.lic });
+			VE.tl.placeMedia(m, null, null, VE.t);
+			muCredits(); btn.textContent = "✓ Added";
+			toast("“" + it.title + "” added at the playhead" + (it.needsCredit ? ". Its credit is in “Credits for your video description”." : " (no credit needed)."), 4500);
+		} catch (e) { btn.disabled = false; btn.textContent = "+ Add"; toast(e.message || String(e), 5000); }
+	}
+	$("vd-mu-list").addEventListener("click", function (e) {
+		var row = e.target.closest(".vd-mur"); if (!row) return; var it = muItems[row.getAttribute("data-mu")]; if (!it) return;
+		var pb = e.target.closest(".vd-muplay");
+		if (pb) {
+			if (muAudio && muAudio.__id === it.id) { muStop(); return; }
+			muStop(); muAudio = new Audio(it.url); muAudio.__id = it.id; muAudio.volume = 0.8;
+			muAudio.play().catch(function () { toast("This one could not be played here."); muStop(); });
+			muAudio.onended = muStop; pb.innerHTML = "&#10074;&#10074;"; pb.setAttribute("aria-label", "Stop"); return;
+		}
+		var ab = e.target.closest(".vd-muadd"); if (ab && !ab.disabled) muAdd(it, ab);
+	});
+	$("vd-mu-chips").addEventListener("click", function (e) { var b = e.target.closest("[data-q]"); if (!b) return; MS.q = b.getAttribute("data-q"); $("vd-mu-q").value = ""; mKeep(); muChips(); muSearch(); });
+	$("vd-mu-kind").addEventListener("click", function (e) { var b = e.target.closest("[data-v]"); if (!b || b.getAttribute("data-v") === MS.kind) return; MS.kind = b.getAttribute("data-v"); MS.q = V.MUSIC_CATS[MS.kind][0][0]; $("vd-mu-q").value = ""; mKeep(); muChips(); muSearch(); });
+	$("vd-mu-form").addEventListener("submit", function (e) { e.preventDefault(); var q = $("vd-mu-q").value.trim(); if (!q) return; MS.q = q; mKeep(); muChips(); muSearch(); });
+	$("vd-mu-len").onchange = function () { MS.len = this.value; mKeep(); muSearch(); };
+	$("vd-mu-more").onclick = function () { muSearch(true); };
+	$("vd-mu-ccopy").onclick = function () { var t = V.creditsText(VE.P); if (!t) { toast("No tracks that need a credit yet."); return; } navigator.clipboard.writeText(t).then(function () { toast("Credits copied: paste them into your video description."); }, function () { $("vd-mu-ctext").select(); }); };
+	muChips(); muCredits();
+	var muStarted = false;
+	app.querySelector("#vd-rail").addEventListener("click", function (e) { var b = e.target.closest('[data-cat="music"]'); if (b && !muStarted) { muStarted = true; muSearch(); } });
+	VE.on("change", function () { if (!$("vd-mu-cred").hidden) muCredits(); });
+
 	/* ---------- captions: Whisper (transformers.js, word times) listens to the timeline's sound in this browser ---------- */
 	var CKEY = "mes-video-editor:caps", CS = { src: "all", lang: "", model: "base", style: "hl", hl: "#facc15", chars: 32, lines: 2, pos: "0.88", size: "0.055" };
 	try { Object.assign(CS, JSON.parse(localStorage.getItem(CKEY) || "{}")); } catch (x) { /* ignore */ }
