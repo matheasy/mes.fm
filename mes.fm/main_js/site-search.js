@@ -742,6 +742,27 @@
         var s = document.createElement("script"); s.id = "mes-tsize-js"; s.src = "/main_js/text-size.js?v=2"; s.async = true; document.head.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", tsizeLoader); else tsizeLoader();
+    /* Offline copies (2026-11-25): pages that need no server get a service worker (main_js/offline.js -> /offline-sw.js), so they open
+       with no connection after the first visit. Add a page here when it works without /api (leaderboards / sharing may need it). */
+    var OFFLINE_PAGES = ["minesweeper", "chess", "connect-four", "backgammon", "blocks", "tic-tac-toe", "poker", "billiards", "free-kick", "click-test",
+        "dice-roller", "random-number-generator", "timer", "countdown-timer", "stopwatch", "alarm-clock", "pomodoro-timer", "interval-timer", "countdown-to-date",
+        "clock", "calendar", "calculator", "unit-conversion", "2d-graphing-calculator", "3d-graphing-calculator", "matrix-calculator", "primes", "shapes-calculator",
+        "geometry", "trigonometry", "statistics-calculator", "percentagecalculator", "gradecalculator", "weighted-average-calculator", "gpacalculator",
+        "bmicalculator", "bmi-calculator-kids", "bmr-calculator", "tdee-calculator", "body-fat-calculator", "macro-calculator", "ideal-weight-calculator",
+        "water-intake-calculator", "heart-rate-zone-calculator", "protein-intake-calculator", "calories-burned-calculator", "one-rep-max-calculator",
+        "sleep-calculator", "pace-calculator", "tip-calculator", "age-calculator", "time-calculator", "days-between-dates-calculator", "fuel-cost-calculator",
+        "compound-interest-calculator", "loan-calculator", "mortgagecalculator", "vatcalculator", "expense-splitter", "gematria", "earth-curvature-calculator",
+        "copy-text", "speedreader", "typing-test", "emoji", "symbols", "latex", "enigma", "cryptography", "workout-planner", "practice-tests",
+        "fsa-grade-4-numeracy", "fsa-grade-4-literacy", "fsa-grade-7-numeracy", "fsa-grade-7-literacy",
+        "kids", "kids-flashcards", "kids-animal-sounds", "kids-abc", "kids-shapes", "kids-numbers", "kids-math",
+        "draw", "photo", "image-converter", "pdf", "pdf-tools", "merge-pdf", "split-pdf", "organize-pdf", "jpg-to-pdf", "pdf-to-jpg",
+        "mandelbrot", "julia-set-explorer", "double-pendulum", "orbit-simulator", "fluid-simulator", "light-in-a-medium", "time-dilation"];
+    function offlineLoader() {
+        var p = location.pathname.replace(/\/index\.html$/, "").replace(/\.html$/, "").replace(/^\/+|\/+$/g, "");
+        if (OFFLINE_PAGES.indexOf(p) < 0 || document.getElementById("mes-offline-js") || !("serviceWorker" in navigator)) return;
+        var s = document.createElement("script"); s.id = "mes-offline-js"; s.src = "/main_js/offline.js?v=1"; s.async = true; document.head.appendChild(s);
+    }
+    if (document.readyState === "complete") offlineLoader(); else window.addEventListener("load", offlineLoader);
     /* "− 1.00× +" speed buttons under every .video-embed (3Speak / YouTube players on mirror pages), main_js/video-speed.js. */
     function vspeedLoader() {
         if (window.MESVideoSpeed || !document.querySelector(".video-embed") || document.getElementById("mes-vspeed-js")) return;

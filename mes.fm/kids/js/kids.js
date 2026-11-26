@@ -1184,4 +1184,18 @@
 		render(false);
 	} else if (q) setPlay("quiz");
 	if (!synth) hint("This browser can't speak. Pictures and animal recordings still work.");
+	// Offline copies (main_js/offline.js): the "Save pictures and sounds too" button fetches these through the page's service worker.
+	window.MESOfflineFiles = function () {
+		var out = [], seen = {};
+		function add(u) { if (u && !seen[u]) { seen[u] = 1; out.push(u); } }
+		K.ITEMS.forEach(function (it) { if (MODE.cats.indexOf(it.cat) < 0) return; if (it.ph) add(it.ph); add(K.soundFor(it)); });
+		if (MODE.cats.indexOf("numbers") >= 0 || mode === "math") Object.keys(K.COUNT_PH).forEach(function (k) { add(K.COUNT_PH[k]); });
+		if (!S.ai) return Promise.resolve(out);
+		var v = S.ai;
+		return fetch("/kids/voice/" + v + "/index.json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) {
+			add("/kids/voice/" + v + "/index.json");
+			((j && j.keys) || []).forEach(function (k) { add("/kids/voice/" + v + "/" + k + ".mp3"); });
+			return out;
+		});
+	};
 })();
