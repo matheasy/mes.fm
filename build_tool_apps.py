@@ -394,10 +394,10 @@ APPS = {
     # signals, MP4 container walk, text statistics, ELA + noise maps; tests: node tool_apps_src/ai-detector-tests.js). Optional in-browser models via transformers.js 3.7.6:
     # onnx-community/ai-image-detect-distilled-ONNX (MIT, 15 MB) and Xenova/distilgpt2 (Apache 2.0, ~85 MB). Paid opinion = copies a prompt and opens /ai.
     "ai-detector": dict(title="MES AI Detector", page_title="AI Detector for Pictures, Videos and Text: Evidence, Not Guesses",
-                        tag="Was it made with AI? See the evidence.", accent="#9333ea", dark="#6b21a8", tint="#f5ebfe",
-                        desc="Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, and checks text for chatbot patterns. Honest: evidence, not a verdict. Nothing is uploaded.",
-                        meta_desc="Free AI detector for pictures, videos and text. Reads C2PA Content Credentials and AI labels, runs an on-device model, checks text patterns. Evidence, not guesses.",
-                        js_v="2", lib_from=["exif-viewer", "reverse-image-search"]),
+                        tag="Was it made with AI? Was it copied? See the evidence.", accent="#9333ea", dark="#6b21a8", tint="#f5ebfe",
+                        desc="Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, checks text for chatbot patterns, and finds out if a post, article or picture was copied (exact-phrase and reverse image searches). Honest: evidence, not a verdict. Nothing is uploaded.",
+                        meta_desc="Free AI detector for pictures, videos and text, plus a was-it-copied check. Reads C2PA Content Credentials and AI labels, checks text patterns. Evidence, not guesses.",
+                        js_v="3", lib_from=["exif-viewer", "reverse-image-search"]),
     # Domain Lookup (2026-10-14): lib.js = findings from the API answer (tests: tool_apps_src/domain-lookup-tests.js), mes.fm/api/domain-lookup.js = RDAP + DNS over HTTPS + RDAP for IPs + Internet Archive.
     "domain-lookup": dict(title="MES Domain Lookup", page_title="Domain Lookup: Whois, Domain Age, Owner and Hosting",
                           tag="Who is behind a website, and how old is it?", accent="#1d4ed8", dark="#1e3a8a", tint="#e1e9fc",

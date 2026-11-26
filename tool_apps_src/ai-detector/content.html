@@ -1,8 +1,13 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu aid" id="aid">
 		<div class="aid-honest" role="note"><b>Evidence, not a verdict.</b> No AI detector is reliable: they miss AI and they wrongly flag real work. This page shows <em>what the file and the text actually contain</em>, says how strong each clue is, and leaves the judgement to you. Everything runs in your browser; nothing is uploaded.</div>
+		<div class="aid-checks" role="list" aria-label="What this page checks">
+			<div class="aid-check" role="listitem"><b>&#129302;&#65038; Was it made with AI?</b><span>Pictures, videos and text: Content Credentials, AI labels, generator traces, an on-device model and chatbot writing patterns.</span></div>
+			<a class="aid-check aid-check--copy" role="listitem" href="#copied" id="aid-gocopy"><b>&#128203;&#65038; Was it copied?</b><span>Paste a post's link (or text below): one-click searches for its sentences and pictures on Google, Bing, TinEye, Yandex and Hive, to find an older copy.</span></a>
+		</div>
 		<form class="tu-card aid-postf" id="aid-postf">
-			<label class="tu-label" for="aid-purl">&#128279;&#65038; Check a post from its link: its text, pictures and video</label>
+			<span id="copied" class="aid-anchor"></span>
+			<label class="tu-label" for="aid-purl">&#128279;&#65038; Check a post from its link: was it made with AI, and was it copied?</label>
 			<div class="aid-url"><input class="tu-input" id="aid-purl" type="text" inputmode="url" autocomplete="off" placeholder="A Hive post or comment (PeakD, InLeo, Ecency, 3Speak&hellip;), a web article or a YouTube link" aria-label="Link to a post"><button class="tu-btn tu-btn--primary" type="submit">Load the post</button></div>
 			<p class="tu-note">Hive posts are read from the Hive blockchain by your browser. Web articles go through mes.fm's page reader: only the text and the picture links come back, nothing is kept.</p>
 		</form>
@@ -140,6 +145,7 @@
 					<div class="aid-side">
 						<h3 class="aid-h">What we found</h3>
 						<div class="aid-sigs" id="aid-tsigs"></div>
+						<div class="tu-card aid-tcopy" id="aid-tcopy"></div>
 						<div class="tu-card aid-model">
 							<div class="aid-model__row"><button type="button" class="tu-btn tu-btn--primary" id="aid-tlm">Measure with a language model</button><span class="aid-model__size">about 85 MB download, once</span></div>
 							<div class="aid-prog" id="aid-tprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
@@ -184,7 +190,7 @@
 			<h4>Why not just give a percentage?</h4>
 			<p>Because the percentages other sites show are not as precise as they look. The same text can score 10% on one site and 90% on another. Showing the clues lets you see how much weight they deserve.</p>
 			<h4>Can it tell if a picture or an article was copied?</h4>
-			<p>It gives you the leads: for each picture, one-click searches on Google Lens, TinEye, Yandex and Bing (TinEye's "Oldest" sort is the best way to find the first copy), the uploader that PeakD records in its picture links, and searches for the same Hive upload in other posts; for the text, exact-phrase searches for its most distinctive sentences. No free tool can search every post and picture, so a search that finds nothing is not proof the work is original.</p>
+			<p>It gives you the leads: for each picture, one-click searches on Google Lens, TinEye, Yandex and Bing (TinEye's "Oldest" sort is the best way to find the first copy), the uploader that PeakD records in its picture links, and searches for the same Hive upload in other posts; for the text, exact-phrase searches for its most distinctive sentences. It works on a post's link at the top of the page and on text you paste in the Text tab. No free tool can search every post and picture, so a search that finds nothing is not proof the work is original.</p>
 			<h4>Is my file uploaded?</h4>
 			<p>No. Files and text are read by your browser. The optional models are downloaded from Hugging Face once and run on your device. Only if you choose &ldquo;Ask MES AI&rdquo; does the text go to MES AI, which you pay for per message.</p>
 			<p class="tu-note">Related: <a href="/ai">MES AI</a> (chat, pictures and video), <a href="/photo">Photo Editor</a>, <a href="/video">Video Editor</a>, <a href="/text">Text Viewer</a>, <a href="/exif-viewer">EXIF Viewer</a>, <a href="/reverse-image-search">Reverse Image Search</a>.</p>

@@ -380,6 +380,16 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	html body.dark-mode #aid mark {background:var(--aid-mark);}
 	@media (max-width: 600px) {#aid .aid-stats {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:0.5em;} #aid .aid-stats .tu-stat {margin:0;}}
 	/* post links (2026-11-25) */
+	.aid-checks {display:grid;grid-template-columns:repeat(auto-fit,minmax(16em,1fr));gap:0.7em;margin-bottom:1em;}
+	.aid-check {display:flex;flex-direction:column;gap:0.25em;padding:0.75em 0.9em;border-radius:0.6em;border:1px solid #d9c6f2;background:#faf5ff;color:#3b1d5c;line-height:1.45;text-decoration:none;}
+	.aid-check b {font-size:1.05em;} .aid-check span {font-size:0.93em;}
+	#main-content #aid a.aid-check, #aid a.aid-check * {color:#3b1d5c;text-decoration:none !important;}
+	html body.dark-mode #main-content #aid a.aid-check, html body.dark-mode #aid a.aid-check * {color:#eadcfb;}
+	a.aid-check:hover, a.aid-check:focus-visible {border-color:#9333ea;box-shadow:0 0 0 2px rgba(147,51,234,0.25);}
+	html body.dark-mode #aid .aid-check {background:#2a1d3a;border-color:#5b3d80;color:#eadcfb;}
+	html body.dark-mode #aid a.aid-check:hover {border-color:#c084fc;}
+	.aid-anchor {display:block;position:relative;top:-90px;visibility:hidden;}
+	.aid-tcopy {margin-top:1em;}
 	.aid-postf {margin-bottom:1em;} .aid-postf .aid-url {margin-top:0.3em;}
 	.aid-post {margin-bottom:1em;border-color:#c4a5ec;}
 	.aid-post__t {font-size:1.2em;font-weight:700;line-height:1.3;} .aid-post__m {color:var(--aid-mute);font-size:0.92em;margin:0.2em 0 0.6em;}
@@ -535,6 +545,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #aid .k100{color:#eeeeee}
 	body.dark-mode #aid .k1000{color:#eeeeee}
 	body.dark-mode #aid .kmore{color:#eeeeee}
+	body.dark-mode .aid-check{border:1px solid #371663;background:#190e25;color:#ab83d8}
+	body.dark-mode #main-content #aid a.aid-check,body.dark-mode #aid a.aid-check *{color:#ab83d8}
 	body.dark-mode .aid-post{border-color:#491c84}
 	body.dark-mode .aid-pthumb{background:#34383d}
 	body.dark-mode .aid-csig--look{border-left:4px solid #ffa600}
@@ -545,15 +557,15 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
         <meta name="author" content="Math Easy Solutions Staff">
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://mes.fm/ai-detector" />            <meta property="og:title" content="MES AI Detector | Math Easy Solutions" />        <meta property="og:image" content="https://mes.fm/ai-detector/img/logo-big.png" />
-        <meta property="og:description" content="Free AI detector for pictures, videos and text. Reads C2PA Content Credentials and AI labels, runs an on-device model, checks text patterns. Evidence, not guesses." />
+        <meta property="og:description" content="Free AI detector for pictures, videos and text, plus a was-it-copied check. Reads C2PA Content Credentials and AI labels, checks text patterns. Evidence, not guesses." />
 
-        <meta name="description" content="Free AI detector for pictures, videos and text. Reads C2PA Content Credentials and AI labels, runs an on-device model, checks text patterns. Evidence, not guesses.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
+        <meta name="description" content="Free AI detector for pictures, videos and text, plus a was-it-copied check. Reads C2PA Content Credentials and AI labels, checks text patterns. Evidence, not guesses.">            <meta name="twitter:card" content="summary">        <meta name="twitter:site" content="@MathEasySolns">
         <meta name="twitter:title" content="MES AI Detector">
-        <meta name="twitter:description" content="Free AI detector for pictures, videos and text. Reads C2PA Content Credentials and AI labels, runs an on-device model, checks text patterns. Evidence, not guesses.">
+        <meta name="twitter:description" content="Free AI detector for pictures, videos and text, plus a was-it-copied check. Reads C2PA Content Credentials and AI labels, checks text patterns. Evidence, not guesses.">
         <meta name="twitter:image" content="https://mes.fm/ai-detector/img/logo-big.png">
         <meta name="twitter:image:alt" content="MES AI Detector">
         <script type="application/ld+json">
-        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES AI Detector", "url": "https://mes.fm/ai-detector", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, and checks text for chatbot patterns. Honest: evidence, not a verdict. Nothing is uploaded."}
+        {"@context": "https://schema.org", "@type": "WebApplication", "name": "MES AI Detector", "url": "https://mes.fm/ai-detector", "applicationCategory": "UtilitiesApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, checks text for chatbot patterns, and finds out if a post, article or picture was copied (exact-phrase and reverse image searches). Honest: evidence, not a verdict. Nothing is uploaded."}
         </script>            <!-- Google Tag Manager -->
             <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -737,7 +749,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                 <a class="calculator-title-link" href='/ai-detector'>
                                     <p class="calculator-title">MES AI Detector</p>
                                 </a>
-                                <p class="tag-line">Was it made with AI? See the evidence.</p>                            </div>
+                                <p class="tag-line">Was it made with AI? Was it copied? See the evidence.</p>                            </div>
 
                             <div class="social-container"><ul class="social">	<li class="social__logo social__hive"><a class="social__link" href="https://peakd.com/@mes" target="_blank"></a></li></a></li>
     <li class="social__logo social__telegram"><a class="social__link" href="https://t.me/meslinks" target="_blank"></a></li></a></li></ul><a class="info-bar__logo-container" href="https://mes.fm/" title="Math Easy Solutions"><img id="mes-logo" class="info-bar__logo lazyload" alt="math easy solutions logo" height="29" width="126" data-src="https://mes.fm/main_img/mes-logo-small.png"></a>                            </div>                                                        </div>
@@ -750,12 +762,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
                                                         <!-- (Responsive) Horizontal -->
                                                         <div class="outer-page-content">
                             <div class="page-content" role="main">                                    <div class="color-box"></div>
-                                    <h1 class="page-title">AI Detector for Pictures, Videos and Text: Evidence, Not Guesses</h1>                                        <p class="page-description">Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, and checks text for chatbot patterns. Honest: evidence, not a verdict. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
+                                    <h1 class="page-title">AI Detector for Pictures, Videos and Text: Evidence, Not Guesses</h1>                                        <p class="page-description">Free AI detector for pictures, videos and text: reads Content Credentials (C2PA), the IPTC AI label and Stable Diffusion / Midjourney / ComfyUI traces, runs an optional on-device model, shows error-level and noise views, checks text for chatbot patterns, and finds out if a post, article or picture was copied (exact-phrase and reverse image searches). Honest: evidence, not a verdict. Nothing is uploaded.</p>                                    	<div id="main-content" data-tool data-text-scale>
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
 	<div class="tu aid" id="aid">
 		<div class="aid-honest" role="note"><b>Evidence, not a verdict.</b> No AI detector is reliable: they miss AI and they wrongly flag real work. This page shows <em>what the file and the text actually contain</em>, says how strong each clue is, and leaves the judgement to you. Everything runs in your browser; nothing is uploaded.</div>
+		<div class="aid-checks" role="list" aria-label="What this page checks">
+			<div class="aid-check" role="listitem"><b>&#129302;&#65038; Was it made with AI?</b><span>Pictures, videos and text: Content Credentials, AI labels, generator traces, an on-device model and chatbot writing patterns.</span></div>
+			<a class="aid-check aid-check--copy" role="listitem" href="#copied" id="aid-gocopy"><b>&#128203;&#65038; Was it copied?</b><span>Paste a post's link (or text below): one-click searches for its sentences and pictures on Google, Bing, TinEye, Yandex and Hive, to find an older copy.</span></a>
+		</div>
 		<form class="tu-card aid-postf" id="aid-postf">
-			<label class="tu-label" for="aid-purl">&#128279;&#65038; Check a post from its link: its text, pictures and video</label>
+			<span id="copied" class="aid-anchor"></span>
+			<label class="tu-label" for="aid-purl">&#128279;&#65038; Check a post from its link: was it made with AI, and was it copied?</label>
 			<div class="aid-url"><input class="tu-input" id="aid-purl" type="text" inputmode="url" autocomplete="off" placeholder="A Hive post or comment (PeakD, InLeo, Ecency, 3Speak&hellip;), a web article or a YouTube link" aria-label="Link to a post"><button class="tu-btn tu-btn--primary" type="submit">Load the post</button></div>
 			<p class="tu-note">Hive posts are read from the Hive blockchain by your browser. Web articles go through mes.fm's page reader: only the text and the picture links come back, nothing is kept.</p>
 		</form>
@@ -893,6 +910,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<div class="aid-side">
 						<h3 class="aid-h">What we found</h3>
 						<div class="aid-sigs" id="aid-tsigs"></div>
+						<div class="tu-card aid-tcopy" id="aid-tcopy"></div>
 						<div class="tu-card aid-model">
 							<div class="aid-model__row"><button type="button" class="tu-btn tu-btn--primary" id="aid-tlm">Measure with a language model</button><span class="aid-model__size">about 85 MB download, once</span></div>
 							<div class="aid-prog" id="aid-tprog" hidden><div class="aid-prog__bar"><i></i></div><span></span></div>
@@ -937,7 +955,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<h4>Why not just give a percentage?</h4>
 			<p>Because the percentages other sites show are not as precise as they look. The same text can score 10% on one site and 90% on another. Showing the clues lets you see how much weight they deserve.</p>
 			<h4>Can it tell if a picture or an article was copied?</h4>
-			<p>It gives you the leads: for each picture, one-click searches on Google Lens, TinEye, Yandex and Bing (TinEye's "Oldest" sort is the best way to find the first copy), the uploader that PeakD records in its picture links, and searches for the same Hive upload in other posts; for the text, exact-phrase searches for its most distinctive sentences. No free tool can search every post and picture, so a search that finds nothing is not proof the work is original.</p>
+			<p>It gives you the leads: for each picture, one-click searches on Google Lens, TinEye, Yandex and Bing (TinEye's "Oldest" sort is the best way to find the first copy), the uploader that PeakD records in its picture links, and searches for the same Hive upload in other posts; for the text, exact-phrase searches for its most distinctive sentences. It works on a post's link at the top of the page and on text you paste in the Text tab. No free tool can search every post and picture, so a search that finds nothing is not proof the work is original.</p>
 			<h4>Is my file uploaded?</h4>
 			<p>No. Files and text are read by your browser. The optional models are downloaded from Hugging Face once and run on your device. Only if you choose &ldquo;Ask MES AI&rdquo; does the text go to MES AI, which you pay for per message.</p>
 			<p class="tu-note">Related: <a href="/ai">MES AI</a> (chat, pictures and video), <a href="/photo">Photo Editor</a>, <a href="/video">Video Editor</a>, <a href="/text">Text Viewer</a>, <a href="/exif-viewer">EXIF Viewer</a>, <a href="/reverse-image-search">Reverse Image Search</a>.</p>
@@ -1010,7 +1028,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/ai-detector/js/ai-detector.js?v=2" defer></script>
+	<script src="/ai-detector/js/ai-detector.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

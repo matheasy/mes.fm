@@ -836,6 +836,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESAID;
 	function renderText() {
 		var st = txt.st, S = txt.S.slice(); if (txt.lmSig) S.push(txt.lmSig);
 		renderSum('aid-tsum', S); renderSigs('aid-tsigs', S);
+		var cs = A.distinctiveSentences(txt.text, 4);
+		$('aid-tcopy').innerHTML = '<h3 class="aid-h">&#128203;&#65038; Was it copied?</h3>' + (cs.length ? '<ul class="aid-links aid-plinks">' + cs.map(function (s) { return '<li><q>' + esc(s) + '</q><span>' + A.phraseLinks(s).map(function (l) { return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.name) + '</a>'; }).join(' · ') + '</span></li>'; }).join('') + '</ul><p class="tu-note">The sentences with the most unusual words, as exact-phrase searches. A match on an older page means the words were copied (or both copied a third source). No match proves nothing: reworded copies won\'t match.</p>' : '<p class="tu-note">Paste a few full sentences to get exact-phrase searches.</p>');
 		var card = function (k, v, sub) { return '<div class="tu-stat"><div class="tu-stat__label">' + k + '</div><div class="tu-stat__value">' + v + '</div>' + (sub ? '<div class="tu-stat__sub">' + sub + '</div>' : '') + '</div>'; };
 		var c = card('Words', st.words.toLocaleString(), st.sentences + ' sentences') + card('Average sentence', st.mean.toFixed(1), 'words') + card('Length variety', Math.round(st.cv * 100) + '%', 'people: often 50%+') + card('Word variety', st.ttr ? Math.round(st.ttr * 100) + '%' : '—', 'different words per 100') + card('Chatbot words', st.aiWordRate.toFixed(1), 'per 1,000 words');
 		if (txt.lmStats) c += card('Perplexity', txt.lmStats.ppl.toFixed(1), 'lower = more predictable');
@@ -969,6 +971,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESAID;
 			try { var u = new URL(location.href); u.searchParams.set('u', link); history.replaceState(null, '', u); } catch (e) {}
 		}).catch(function (e) { toast(e && e.message ? e.message : 'Could not load that link'); }).then(function () { postBusy = false; btn.disabled = false; btn.textContent = 'Load the post'; });
 	}
+	$('aid-gocopy').onclick = function (e) { e.preventDefault(); $('aid-postf').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(function () { $('aid-purl').focus({ preventScroll: true }); }, 350); };
 	$('aid-postf').onsubmit = function (e) { e.preventDefault(); var u = $('aid-purl').value.trim(); if (!u) return toast('Paste a link first'); if (A.isImageLink(u)) { showTab('img', true); loadImageUrl(u); return; } loadPost(u); };
 	var qu = /[?&]u=([^&]+)/.exec(location.search); if (qu) { try { var qv = decodeURIComponent(qu[1]); $('aid-purl').value = qv; loadPost(qv); } catch (e) {} }
 
