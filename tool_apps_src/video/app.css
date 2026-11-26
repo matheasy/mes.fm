@@ -443,3 +443,9 @@
 	html body.dark-mode #vd .vd-lvpic {background:#0b0f15;}
 	@keyframes vd-mflash {0%,60% {box-shadow:0 0 0 2px #fbbf24 inset; background:rgba(251,191,36,.18);} 100% {box-shadow:none;}}
 	#vd .vd-mi.is-flash {animation:vd-mflash 1.6s ease-out;}
+	/* Keys list in Fill window: the playback bar has its own Keys button there, and the list sits above the full-window preview */
+	#vd .vd-help2 {display:none;} #vd .vd.vd-pvfill .vd-help2 {display:inline-flex;}
+	#vd .vd.vd-pvfill .vd-keys {position:fixed;top:0.8em;right:0.8em;z-index:100010;max-height:calc(100vh - 1.6em);}
+	#vd .vd-keyshead .vd-sp {flex:1;}
+	#vd .vd-cvtm {font:700 15px Arial,sans-serif;color:#fff;background:#000;padding:0.1em 0.35em;border-radius:3px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+

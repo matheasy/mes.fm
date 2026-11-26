@@ -17,6 +17,42 @@
 	V.SHAPE_KINDS = [["arrow", "Arrow"], ["line", "Line"], ["rect", "Box"], ["ellipse", "Circle / oval"], ["highlight", "Highlight"], ["spotlight", "Spotlight"], ["pixelate", "Hide (pixelate)"], ["badge", "Number badge"]];
 	V.isGfx = function (c) { return !!c && (c.type === "text" || c.type === "shape"); };   // made in the editor: no media file
 	V.TEXT_DEFAULT = { s: "Your title", font: "Arial, Helvetica, sans-serif", size: 0.09, color: "#ffffff", bgOn: true, bg: "#000000", bgOp: 0.55, bold: true, italic: false, align: "center", shadow: true, outline: 0, ocolor: "#000000", wrap: 0.8, ls: 0, lh: 1.22, boxH: 0, valign: "middle" };
+	// timers: a title whose text is a running clock. mode up = counts up from "from"; down = counts down (fit: from the clip length, so it reaches 0
+	// at the clip end); fmt auto | s | ms (m:ss) | mmss | hmmss | hhmmss; dec = digits after the point (0-3); rate = clock speed (2 = twice as fast);
+	// pre / suf = text before / after the time; end = text shown once a countdown reaches 0 (empty = keep showing 0)
+	V.TIMER_DEFAULT = { mode: "up", from: 0, fit: false, fmt: "auto", dec: 0, rate: 1, pre: "", suf: "", end: "" };
+	V.TIMER_FMTS = [["auto", "Automatic (m:ss, h:mm:ss over an hour)"], ["ms", "m:ss"], ["mmss", "mm:ss"], ["hmmss", "h:mm:ss"], ["hhmmss", "hh:mm:ss"], ["s", "Seconds only"]];
+	function pad2(n) { return n < 10 ? "0" + n : String(n); }
+	// a number of seconds as a timer shows it; down = round the hidden part up (a countdown shows 1 until it really reaches 0); big = use hours in "auto"
+	V.fmtTimer = function (v, fmt, dec, down, big) {
+		dec = Math.max(0, Math.min(3, Math.round(dec || 0))); var u = Math.pow(10, dec), neg = v < 0, a = Math.abs(v);
+		var n = down ? Math.ceil(a * u - 1e-6) : Math.floor(a * u + 1e-6), whole = Math.floor(n / u), frac = n - whole * u;
+		var h = Math.floor(whole / 3600), m = Math.floor((whole % 3600) / 60), sec = whole % 60, out;
+		fmt = fmt === "auto" || !fmt ? (big || h > 0 ? "hmmss" : "ms") : fmt;
+		if (fmt === "s") out = String(whole);
+		else if (fmt === "ms") out = Math.floor(whole / 60) + ":" + pad2(sec);
+		else if (fmt === "mmss") out = pad2(Math.floor(whole / 60)) + ":" + pad2(sec);
+		else out = (fmt === "hhmmss" ? pad2(h) : String(h)) + ":" + pad2(m) + ":" + pad2(sec);
+		if (dec) out += "." + String(frac + u).slice(1);
+		return (neg && n > 0 ? "-" : "") + out;
+	};
+	// the timer's value (seconds) at project time t, or null for a plain title
+	V.timerStart = function (c) { var tm = c.text && c.text.tm; if (!tm) return 0; return tm.mode === "down" && tm.fit ? V.dur(c) * (tm.rate || 1) : (+tm.from || 0); };
+	V.timerValue = function (c, t) {
+		var tm = c.text && c.text.tm; if (!tm) return null;
+		var lt = Math.max(0, Math.min(V.dur(c), t - c.start)) * (tm.rate || 1), f = V.timerStart(c);
+		return tm.mode === "down" ? Math.max(0, f - lt) : f + lt;
+	};
+	// a piece cut out of a timer (split, cut range) keeps counting where the whole clip was at the piece's start time t0
+	V.timerCut = function (c, piece, t0) { var tm = piece && piece.text && piece.text.tm; if (!tm) return; tm.from = V.timerValue(c, t0); tm.fit = false; };
+	// the text a title shows at time t (its own text, or the timer's time)
+	V.titleStr = function (c, t) {
+		var T = c.text || V.TEXT_DEFAULT, tm = T.tm; if (!tm) return T.s;
+		var v = V.timerValue(c, t), down = tm.mode === "down";
+		if (down && v <= 1e-9 && tm.end) return tm.end;
+		var top = down ? V.timerStart(c) : V.timerStart(c) + V.dur(c) * (tm.rate || 1);
+		return (tm.pre || "") + V.fmtTimer(v, tm.fmt, tm.dec, down, top >= 3600) + (tm.suf || "");
+	};
 	// wrap: box width for automatic line breaks as a share of the frame width at scale 1 (0 = only your own line breaks); ls = letter spacing in em; lh = line height (x the text size)
 	V.newProject = function (o) {
 		o = o || {};
@@ -26,7 +62,7 @@
 	V.clipDefaults = function (c) {
 		var d = { speed: 1, vol: 1, mute: false, fin: 0, fout: 0, xin: 0, x: 0.5, y: 0.5, scale: 1, op: 1, crop: { l: 0, t: 0, r: 0, b: 0 }, rot: 0, anims: null, clean: null, lufs: null, link: null, noAudio: false, afx: null };
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
-		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); }
+		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); if (c.text.tm) c.text.tm = Object.assign({}, V.TIMER_DEFAULT, c.text.tm); }
 		if (c.type === "shape") { c.shape = Object.assign({}, V.SHAPE_DEFAULT, c.shape || {}); }
 		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
@@ -151,6 +187,7 @@
 		if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = s - c.in; R.in = 0; R.out = c.out - s; }
 		L.fout = 0; L.fin = Math.min(c.fin || 0, V.dur(L)); R.fin = 0; R.xin = 0; R.fout = Math.min(c.fout || 0, V.dur(R));
 		if (c.anims && c.anims.length) { var sa = V.splitAnims(c, t - c.start); L.anims = sa.left; V.setBase(R, sa.base); R.anims = sa.right; }
+		V.timerCut(c, L, c.start); V.timerCut(c, R, t);
 		return [L, R];
 	};
 	// drag an edge: edge "l" moves the start (and the in point), "r" the end. t = wanted timeline time of that edge.
@@ -201,8 +238,8 @@
 			var s = c.start, e = V.end(c);
 			if (e <= a + 1e-6) { out.push(c); return; }
 			if (s >= b - 1e-6) { c.start = s - (b - a); out.push(c); return; }
-			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; out.push(L); }
-			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } out.push(R); }
+			if (s < a) { var L = JSON.parse(JSON.stringify(c)); L.out = V.srcAt(c, a); L.fout = 0; if (V.isGfx(c) || c.type === "image") { L.in = 0; L.out = (a - s) * (c.speed || 1); } if (c.anims && c.anims.length) L.anims = V.splitAnims(c, a - s).left; V.timerCut(c, L, s); out.push(L); }
+			if (e > b) { var R = JSON.parse(JSON.stringify(c)); R.id = newId ? newId() : c.id + "r"; R.in = V.srcAt(c, b); R.start = a; R.fin = 0; R.xin = 0; if (V.isGfx(c) || c.type === "image") { R.in = 0; R.out = (e - b) * (c.speed || 1); } if (s >= a) R.id = c.id; if (c.anims && c.anims.length) { var sr = V.splitAnims(c, b - s); V.setBase(R, sr.base); R.anims = sr.right; } V.timerCut(c, R, b); out.push(R); }
 		});
 		p.clips = out;
 		return p;

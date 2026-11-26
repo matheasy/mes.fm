@@ -410,5 +410,23 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	ok(Math.abs(y[1] - 0.5) < 1e-4 && Math.abs(y[2] + 0.5) < 1e-4 && y[3] === 1 && y[4] === -1 && y[5] === 1 && y[6] === -1, "16-bit storage round trip, clipped at +-1");
 	const big = new Float32Array(20); V.fromI16(new Int16Array([16384, -16384]), big, 10); ok(Math.abs(big[10] - 0.5) < 1e-4 && Math.abs(big[11] + 0.5) < 1e-4 && big[9] === 0, "16-bit piece written at its offset");
 }
+{
+	// timers
+	ok(V.fmtTimer(7.9, "auto", 0) === "0:07", "count up floors: 7.9 s = 0:07");
+	ok(V.fmtTimer(7.1, "auto", 0, true) === "0:08", "countdown rounds up: 7.1 s left = 0:08");
+	ok(V.fmtTimer(0, "auto", 0, true) === "0:00", "countdown at 0");
+	ok(V.fmtTimer(7.4256, "mmss", 2) === "00:07.42" && V.fmtTimer(7.4256, "ms", 3) === "0:07.425", "hundredths / milliseconds");
+	ok(V.fmtTimer(3723, "auto", 0) === "1:02:03" && V.fmtTimer(5, "auto", 0, false, true) === "0:00:05" && V.fmtTimer(5, "hhmmss", 1) === "00:00:05.0", "hours");
+	ok(V.fmtTimer(125, "s", 0) === "125" && V.fmtTimer(125, "ms", 0) === "2:05", "seconds only / m:ss over an hour of minutes");
+	ok(V.fmtTimer(0.0999, "auto", 1) === "0:00.0" && V.fmtTimer(0.1, "auto", 1) === "0:00.1", "no float slip at a tenth");
+	const c = V.clipDefaults({ id: "t1", type: "text", track: "v1", start: 10, in: 0, out: 20, text: { tm: { mode: "down", fit: true } } });
+	ok(c.text.tm.dec === 0 && c.text.tm.rate === 1, "timer defaults filled in");
+	ok(V.titleStr(c, 10) === "0:20" && V.titleStr(c, 20) === "0:10" && V.titleStr(c, 30) === "0:00" && V.titleStr(c, 99) === "0:00", "fit countdown: 20 s clip, 0 at the end");
+	c.text.tm.end = "Time's up!"; ok(V.titleStr(c, 30) === "Time's up!" && V.titleStr(c, 29.5) === "0:01", "end message only at 0");
+	const u = V.clipDefaults({ id: "t2", type: "text", track: "v1", start: 0, in: 0, out: 10, text: { tm: { mode: "up", from: 60, rate: 2, pre: "T+", suf: " s", fmt: "s" } } });
+	ok(V.titleStr(u, 0) === "T+60 s" && V.titleStr(u, 5) === "T+70 s" && V.titleStr(u, 10) === "T+80 s", "count up from 60 at 2x with text around it");
+	const pr = V.split(c, 15, "t1r"); ok(pr && V.titleStr(pr[0], 10) === "0:20" && V.titleStr(pr[0], 15) === "0:15" && V.titleStr(pr[1], 15) === "0:15" && V.titleStr(pr[1], 29.5) === "0:01", "split keeps the countdown going across both pieces");
+	ok(V.titleStr({ type: "text", text: { s: "Hi" } }, 3) === "Hi", "plain title text unchanged");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

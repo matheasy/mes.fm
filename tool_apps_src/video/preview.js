@@ -489,6 +489,7 @@
 	P.editing = function () { return ed ? ed.c : null; };
 	P.editText = function (c, ev) {
 		if (!c || c.type !== "text") return; if (ed) P.endEdit();
+		if (c.text && c.text.tm) { VE.emit("editText", c); return; }   // a timer: its settings are in the properties panel
 		if (!V.active(c, VE.t)) { VE.emit("notice", "Move the playhead over the title to type in it."); return; }
 		if (P.playing) P.pause();
 		var ta = document.createElement("textarea"); ta.className = "vd-tedit"; ta.spellcheck = true; ta.setAttribute("aria-label", "Title text: Esc or click outside when done");

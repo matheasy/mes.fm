@@ -400,7 +400,7 @@
 		var L = V.layersAt(VE.P, t);
 		for (var j = 0; j < L.length; j++) {
 			var c = L[j].clip, pos = L[j].pos || V.posAt(c, t); ctx.globalAlpha = L[j].alpha;
-			if (c.type === "text") { if (VE.editingTextId !== c.id || opt.export) drawText(ctx, c, W, H, pos); continue; }
+			if (c.type === "text") { if (VE.editingTextId !== c.id || opt.export) drawText(ctx, c, W, H, pos, t); continue; }
 			if (c.type === "shape") { drawShape(ctx, c, W, H, pos); continue; }
 			var s = src(c, L[j].src); if (!s || !s.img) continue;
 			var r = V.place(s.w, s.h, pos, W, H), turned = !!pos.rot;
@@ -427,12 +427,12 @@
 	VE.textFont = function (T, px) { return (T.italic ? "italic " : "") + (T.bold ? "700 " : "400 ") + px + "px " + (T.font || "Arial, sans-serif"); };
 	function setFont(ctx, T, px) { ctx.font = VE.textFont(T, px); if ("letterSpacing" in ctx) ctx.letterSpacing = ((T.ls || 0) * px).toFixed(2) + "px"; }
 	function unsetFont(ctx) { if ("letterSpacing" in ctx) ctx.letterSpacing = "0px"; }
-	function textBox(ctx, c, W, H, pos) {
+	function textBox(ctx, c, W, H, pos, str) {
 		pos = pos || c;
 		var T = c.text || V.TEXT_DEFAULT, sc = pos.scale || 1, px = Math.max(4, T.size * H * sc);
 		setFont(ctx, T, px);
 		var pad = px * 0.4, wrapW = T.wrap > 0 ? T.wrap * W * sc : 0, inner = wrapW ? Math.max(px, wrapW - pad * 2) : 0;
-		var meas = function (l) { return ctx.measureText(l).width; }, lines = V.wrapText(meas, T.s, inner);
+		var meas = function (l) { return ctx.measureText(l).width; }, lines = V.wrapText(meas, str != null ? str : T.s, inner);
 		var wmax = 0; lines.forEach(function (l) { wmax = Math.max(wmax, meas(l)); });
 		unsetFont(ctx);
 		// T.boxH (a share of the frame height, 0 = fit the text) makes the box taller than the text; T.valign places the lines in it
@@ -440,8 +440,8 @@
 		var ty = T.valign === "top" ? 0 : T.valign === "bottom" ? bh - th : (bh - th) / 2;
 		return { px: px, lines: lines, lh: lh, pad: pad, wrapW: wrapW, dx: pos.x * W - bw / 2, dy: pos.y * H - bh / 2, dw: bw, dh: bh, th: th, ty: ty, T: T };
 	}
-	function drawText(ctx, c, W, H, pos) {
-		var b = textBox(ctx, c, W, H, pos), T = b.T, rot = pos && pos.rot;
+	function drawText(ctx, c, W, H, pos, t) {
+		var b = textBox(ctx, c, W, H, pos, V.titleStr(c, t == null ? VE.t : t)), T = b.T, rot = pos && pos.rot;
 		if (rot) { ctx.save(); ctx.translate(b.dx + b.dw / 2, b.dy + b.dh / 2); ctx.rotate(rot * Math.PI / 180); ctx.translate(-(b.dx + b.dw / 2), -(b.dy + b.dh / 2)); }
 		if (T.bgOn) { ctx.save(); ctx.globalAlpha *= T.bgOp == null ? 0.55 : T.bgOp; ctx.fillStyle = T.bg || "#000"; roundRect(ctx, b.dx, b.dy, b.dw, b.dh, b.px * 0.25); ctx.fill(); ctx.restore(); }
 		setFont(ctx, T, b.px); ctx.textBaseline = "middle"; ctx.textAlign = T.align || "center";
@@ -562,7 +562,7 @@
 	VE.rectOf = function (ctx, c, W, H, pos) {
 		pos = pos || V.posAt(c, VE.t);
 		var r;
-		if (c.type === "text") r = textBox(ctx, c, W, H, pos);
+		if (c.type === "text") r = textBox(ctx, c, W, H, pos, V.titleStr(c, VE.t));
 		else if (c.type === "shape") r = VE.shapeBox(c, W, H, pos);
 		else { var m = VE.media(c.media); if (!m || !m.w) return null; r = V.place(m.w, m.h, pos, W, H); }
 		r.rot = pos.rot || 0; r.pos = pos;

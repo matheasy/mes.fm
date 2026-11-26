@@ -588,6 +588,7 @@
 		var c = V.clipDefaults({ id: V.uid("c"), type: "text", track: tr.id, start: t0, in: 0, out: dur, fin: 0.3, fout: 0.3, x: pr.x != null ? pr.x : 0.5, y: pr.y != null ? pr.y : 0.82, text: Object.assign({}, pr.text || {}) });
 		if (tr.mag) { VE.P.clips.push(c); V.magnetInsert(VE.P, tr.id, c.id, t0); VE.sel = [c.id]; VE.commit("Add title"); return; }
 		VE.P.clips.push(c); VE.sel = [c.id]; VE.commit("Add title");
+		if (c.text.tm) return;   // timers: nothing to type
 		setTimeout(function () { if (V.active(c, VE.t)) VE.preview.editText(c); else { var ta = $("vd-ttext"); if (ta) { ta.focus(); ta.select(); } } }, 60);
 	};
 	// a shape / annotation clip at the playhead (or where it was dropped), on the first unlocked layer with room; a number badge
@@ -669,16 +670,25 @@
 		["pointerup", "pointerleave", "pointercancel"].forEach(function (ev) { el.addEventListener(ev, stop); });
 		el.addEventListener("click", function (e) { if (held) { held = false; return; } P.nudgeSpeed(b[1]); });   // keyboard Enter / Space
 	});
-	// keys like the Video Speed Controller: [ ] = 0.05 slower / faster, U = 1x, P = 2x; pressing U or P again goes back to the speed you had
-	var spBack = 1;
-	VE.speedKey = function (to) {
-		if (Math.abs(P.speed - to) < 1e-9) { if (Math.abs(spBack - to) > 1e-9) P.setSpeed(spBack); return; }
-		spBack = P.speed; P.setSpeed(to);
+	// keys like the Video Speed Controller: [ ] = 0.05 slower / faster, Y (or U) = back to 1x, P = the speed you had before.
+	// "Before" = the last speed that stayed put for 0.6 s, so holding - / + (many small steps) counts as one change.
+	var spSettled = P.speed, spPrev = Math.abs(P.speed - 1) > 1e-9 ? 1 : 2, spSetT = 0;
+	function spSettle() { clearTimeout(spSetT); spSetT = 0; if (Math.abs(P.speed - spSettled) > 1e-9) { spPrev = spSettled; spSettled = P.speed; } }
+	VE.goSpeed = function (to) {
+		spSettle(); to = V.clampSpeed(to, VE.P.fps);
+		if (Math.abs(to - spSettled) < 1e-9) return false;
+		spPrev = spSettled; spSettled = to; P.setSpeed(to); return true;
 	};
+	VE.speedKey = function (to) {   // 2x key (no key by default now): pressing it again goes back
+		spSettle(); if (Math.abs(P.speed - to) < 1e-9) VE.goSpeed(spPrev); else VE.goSpeed(to);
+	};
+	VE.speed1 = function () { if (!VE.goSpeed(1)) toast("Already at 1× (P goes back to " + V.speedLabel(spPrev, VE.P.fps) + ")", 1800); };
+	VE.prevSpeed = function () { VE.goSpeed(spPrev); };
 
 	var spToastT = 0;
 	VE.on("speed", function (s) {
 		UI.speed = s; saveUI(); fillSpeed();
+		if (Math.abs(s - spSettled) > 1e-9) { clearTimeout(spSetT); spSetT = setTimeout(spSettle, 600); }
 		leftText();
 		clearTimeout(spToastT);
 		spToastT = setTimeout(function () { if (Math.abs(s - 1) > 1e-9) toast("Preview speed " + V.speedLabel(s, VE.P.fps) + (s > 16 + 1e-9 || s < 0.0625 - 1e-9 ? ": the browser can't play this fast or slow, so frames are skipped and there is no sound" : "") + " (the exported video is not changed)", 3500); }, 250);
@@ -803,7 +813,14 @@
 	function setWin(on) { UI.win = on; saveUI(); app.classList.toggle("vd-winmode", on); document.documentElement.classList.toggle("vd-noscroll", on); $("vd-win").setAttribute("aria-pressed", on); $("vd-win").innerHTML = on ? "&#10006; Leave window" : "&#10530; Fill window"; setTimeout(function () { P.fit(); VE.tl.render(); }, 30); }
 	$("vd-win").onclick = function () { setWin(!UI.win); };
 	if (UI.win) setWin(true);
-	$("vd-help").onclick = function () { var k = $("vd-keys"); k.hidden = !k.hidden; this.setAttribute("aria-expanded", !k.hidden); };
+	// Keys list: the top-bar button, the playback bar's button (shown in Fill window, where the top bar is hidden) or the ? key
+	VE.toggleKeys = function (show) {
+		var k = $("vd-keys"); if (show == null) show = k.hidden; k.hidden = !show;
+		["vd-help", "vd-help2"].forEach(function (id) { var b = $(id); if (b) b.setAttribute("aria-expanded", String(show)); });
+	};
+	$("vd-help").onclick = function () { VE.toggleKeys(); };
+	$("vd-help2").onclick = function () { VE.toggleKeys(); };
+	$("vd-keysx").onclick = function () { VE.toggleKeys(false); };
 
 	/* ---------- file menu ---------- */
 	var fm = $("vd-filemenu");
@@ -1172,6 +1189,21 @@
 		return '<div class="vd-f vd-sl" title="' + esc(title || "") + '"><span>' + label + '</span><div class="vd-slrow"><input type="range" class="vd-rng" data-for="' + id + '" aria-label="' + esc(label) + '" min="' + rmin + '" max="' + rmax + '" step="' + step + '" value="' + v + '"><span class="vd-slnum"><input type="number" id="' + id + '" value="' + val + '" step="' + step + '"' + (min != null ? ' min="' + min + '"' : "") + (max != null ? ' max="' + max + '"' : "") + ' aria-label="' + esc(label) + '">' + (unit ? "<em>" + unit + "</em>" : "") + "</span></div></div>";
 	}
 	function seg(id, items, cur, label) { return '<div class="vd-seg" role="group" aria-label="' + esc(label) + '" id="' + id + '">' + items.map(function (q) { return '<button type="button" data-v="' + q[0] + '" aria-pressed="' + (q[0] === cur) + '" title="' + esc(q[2] || q[1]) + '">' + q[1] + "</button>"; }).join("") + "</div>"; }
+	// the timer part of a title's properties (opens the text section; the font / size / colour controls follow in it)
+	function timerSec(c, tm) {
+		var down = tm.mode === "down", a = V.titleStr(c, c.start), b = V.titleStr(c, V.end(c) - 1e-6), fr = V.fmtTimer(+tm.from || 0, tm.fmt === "s" ? "s" : "auto", tm.dec, false, (+tm.from || 0) >= 3600);
+		var h = '<div class="vd-sec vd-txt" id="vd-tmsec"><b>Timer</b><p class="vd-sub">Shows <b>' + esc(a) + "</b> at the start of the clip and <b>" + esc(b) + "</b> at its end. Make the clip longer or shorter on the timeline to change how long it runs.</p>";
+		h += '<div class="vd-f"><span>Counts</span>' + seg("vd-tm-mode", [["up", "Up"], ["down", "Down"]], down ? "down" : "up", "Count up or count down") + "</div>";
+		if (down) h += '<label class="vd-chk"><input type="checkbox" id="vd-tm-fit"' + (tm.fit ? " checked" : "") + "> Count down from the clip length (reaches 0 at the end)</label>";
+		if (!down || !tm.fit) h += '<label class="vd-f" title="Type 90, 1:30, 1:02:03 or 2m30s"><span>' + (down ? "Count down from" : "Start at") + '</span><input type="text" id="vd-tm-from" value="' + esc(fr) + '" spellcheck="false" autocomplete="off"></label>';
+		h += '<label class="vd-f"><span>Shown as</span><select id="vd-tm-fmt">' + V.TIMER_FMTS.map(function (q) { return '<option value="' + q[0] + '"' + (q[0] === (tm.fmt || "auto") ? " selected" : "") + ">" + esc(q[1]) + "</option>"; }).join("") + "</select></label>";
+		h += '<div class="vd-f"><span>Fractions</span>' + seg("vd-tm-dec", [["0", "None"], ["1", ".0", "Tenths of a second"], ["2", ".00", "Hundredths of a second"], ["3", ".000", "Milliseconds"]], String(tm.dec || 0), "Digits after the seconds") + "</div>";
+		h += '<label class="vd-f" title="How fast the timer runs: 2 = twice as fast as the video (handy for a sped-up part), 0.5 = half as fast"><span>Clock speed</span><input type="number" id="vd-tm-rate" min="0.01" max="1000" step="0.25" value="' + (tm.rate || 1) + '"> &times;</label>';
+		h += '<label class="vd-f"><span>Text before</span><input type="text" id="vd-tm-pre" maxlength="60" value="' + esc(tm.pre || "") + '" placeholder="e.g. Time left: "></label>';
+		h += '<label class="vd-f"><span>Text after</span><input type="text" id="vd-tm-suf" maxlength="60" value="' + esc(tm.suf || "") + '" placeholder="e.g.  s"></label>';
+		if (down) h += '<label class="vd-f"><span>At 0, show</span><input type="text" id="vd-tm-end" maxlength="80" value="' + esc(tm.end || "") + '" placeholder="Nothing: keep showing 0"></label>';
+		return h;
+	}
 	function tog(id, html, on, title) { return '<button type="button" class="vd-tog" id="' + id + '" aria-pressed="' + !!on + '" title="' + esc(title || "") + '">' + html + "</button>"; }
 	var SWATCH = ["#ffffff", "#000000", "#facc15", "#ef4444", "#22c55e", "#3b82f6", "#a855f7", "#f97316"];
 	function swatches(id, cur, label) { cur = String(cur || "").toLowerCase(); return '<div class="vd-swr" role="group" aria-label="' + esc(label) + '" data-sw="' + id + '">' + SWATCH.map(function (c) { return '<button type="button" data-c="' + c + '" style="background:' + c + '" aria-label="' + c + '" aria-pressed="' + (cur === c) + '"></button>'; }).join("") + '<label class="vd-swc" title="Any colour"><input type="color" id="' + id + '" value="' + esc(cur || "#ffffff") + '" aria-label="' + esc(label) + ': any colour"></label></div>'; }
@@ -1203,7 +1235,8 @@
 		h += "</div>";
 		if (c.type === "text") {
 			var T = c.text;
-			h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there. The white handles on its sides set the box width (where lines wrap), the top / bottom ones its height.</p>';
+			if (T.tm) h += timerSec(c, T.tm);
+			else h += '<div class="vd-sec vd-txt"><b>Text</b><textarea id="vd-ttext" rows="4" aria-label="Title text">' + esc(T.s) + '</textarea><p class="vd-sub">Or double-click the title in the preview and type there. The white handles on its sides set the box width (where lines wrap), the top / bottom ones its height.</p>';
 			var fInfo = VE.fontInfo(T.font);
 			h += '<div class="vd-f vd-fontpick"><span>Font</span><button type="button" class="vd-btn vd-fontbtn" id="vd-t-fontbtn" aria-haspopup="listbox" aria-expanded="false" style="font-family:' + esc(T.font) + '"><span>' + esc(fInfo[0]) + '</span><span aria-hidden="true">&#9662;</span></button></div>';
 			h += sld("vd-t-size", "Size", Math.round(T.size * 1000) / 10, 0.5, 1, 60, "%", "Height of the letters as a share of the picture height", 2, 30);
@@ -1354,6 +1387,16 @@
 		}
 		if (c.type === "text") {
 			var T = c.text, live = function () { VE.preview.draw(); };
+			if (T.tm) {
+				var tm = T.tm;
+				insp.querySelectorAll("#vd-tm-mode [data-v]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute("data-v"); if (v === tm.mode) return; tm.mode = v; if (v === "down" && !(+tm.from > 0)) tm.fit = true; VE.commit(v === "down" ? "Count down" : "Count up"); renderInsp(); }; });
+				insp.querySelectorAll("#vd-tm-dec [data-v]").forEach(function (b) { b.onclick = function () { tm.dec = +b.getAttribute("data-v"); VE.commit("Timer fractions"); renderInsp(); }; });
+				on("vd-tm-fit", "change", function () { if (!this.checked && !(+tm.from > 0)) tm.from = Math.round(V.dur(c) * (tm.rate || 1)); tm.fit = this.checked; VE.commit("Timer start"); renderInsp(); });
+				on("vd-tm-from", "change", function () { var v = V.parseGoto(this.value.replace(/^-/, ""), VE.P.fps); if (v == null) { toast("Type a time like 90, 1:30, 1:02:03 or 2m30s."); renderInsp(); return; } tm.from = Math.max(0, v); VE.commit("Timer start"); renderInsp(); });
+				on("vd-tm-fmt", "change", function () { tm.fmt = this.value; VE.commit("Timer format"); renderInsp(); });
+				on("vd-tm-rate", "change", function () { var v = parseFloat(this.value); tm.rate = isFinite(v) && v > 0 ? V.clamp(v, 0.01, 1000) : 1; VE.commit("Timer speed"); renderInsp(); });
+				[["pre", "Text before the time"], ["suf", "Text after the time"], ["end", "Text at 0"]].forEach(function (q) { on("vd-tm-" + q[0], "input", function () { tm[q[0]] = this.value; live(); }); on("vd-tm-" + q[0], "change", function () { VE.commit(q[1]); }); });
+			}
 			on("vd-ttext", "input", function () { T.s = this.value; live(); }); on("vd-ttext", "change", function () { VE.commit("Title text"); });
 			setNum("vd-t-size", function (v) { T.size = V.clamp(v / 100, 0.01, 0.6); }, "Text size");
 			on("vd-t-fontbtn", "click", function () { fontPicker(this, T.font, function (stack) { T.font = stack; VE.ensureFont(T).then(function () { VE.preview.draw(); }); VE.commit("Font"); }); });
@@ -1396,7 +1439,7 @@
 	var tInsp = 0;
 	VE.on("time", function () { if (VE.preview.playing) return; var c = VE.selected()[0]; if (!c || c.type === "audio" || !c.anims) return; clearTimeout(tInsp); tInsp = setTimeout(function () { if (!insp.contains(document.activeElement) || document.activeElement.type === "button") renderInsp(); }, 90); });
 	var fontT = 0; VE.on("change", function () { clearTimeout(fontT); fontT = setTimeout(function () { VE.ensureFonts().then(function () { VE.preview.draw(); }); }, 200); });
-	VE.on("editText", function (c) { VE.sel = [c.id]; renderInsp(); var ta = $("vd-ttext"); if (ta) { ta.focus(); ta.select(); } });
+	VE.on("editText", function (c) { VE.sel = [c.id]; renderInsp(); var ta = $("vd-ttext"); if (ta) { ta.focus(); ta.select(); } else { var tf = $("vd-tm-from") || $("vd-tm-pre"); if (tf) { tf.scrollIntoView({ block: "nearest" }); tf.focus(); } } });
 	function updateButtons() {
 		$("vd-undo").disabled = $("vd-undo2").disabled = !VE.hist.canUndo(); $("vd-redo").disabled = $("vd-redo2").disabled = !VE.hist.canRedo();
 		var ul = VE.hist.undoLabel(), rl = VE.hist.redoLabel();
@@ -1849,7 +1892,8 @@
 		["secBack", "One second back", "Playback", ["Z"]], ["secFwd", "One second forward", "Playback", ["X"]],
 		["frameBack", "One frame back", "Playback", ["C", ","]], ["frameFwd", "One frame forward", "Playback", ["V", "."]],
 		["slower", "Speed 0.05× slower", "Preview speed", ["["]], ["faster", "Speed 0.05× faster", "Preview speed", ["]"]],
-		["speed1", "Speed 1× (press again: back)", "Preview speed", ["U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", ["P"]],
+		["speed1", "Back to 1× speed", "Preview speed", ["Y", "U"]], ["speed2", "Speed 2× (press again: back)", "Preview speed", []],
+		["prevSpeed", "Back to the previous speed (again: toggles)", "Preview speed", ["P"]], ["keys", "Show / hide this list of keys", "View", ["?"]],
 		["presetDown", "Previous speed in the list", "Preview speed", ["<"]], ["presetUp", "Next speed in the list", "Preview speed", [">"]],
 		["split", "Split at the playhead", "Editing", ["S"]], ["markIn", "Mark in", "Editing", ["I"]], ["markOut", "Mark out", "Editing", ["O"]],
 		["title", "Add a title", "Editing", ["T"]], ["narrate", "Narration pane", "Editing", ["N"]], ["record", "Record narration (again: stop)", "Editing", ["R"]],
@@ -1865,7 +1909,7 @@
 		secBack: function () { VE.stepFrame(-1, true); }, secFwd: function () { VE.stepFrame(1, true); },
 		frameBack: function () { VE.stepFrame(-1); }, frameFwd: function () { VE.stepFrame(1); },
 		slower: function () { P.nudgeSpeed(-1); }, faster: function () { P.nudgeSpeed(1); },
-		speed1: function () { VE.speedKey(1); }, speed2: function () { VE.speedKey(2); },
+		speed1: function () { VE.speed1(); }, speed2: function () { VE.speedKey(2); }, prevSpeed: function () { VE.prevSpeed(); }, keys: function () { VE.toggleKeys(); },
 		presetDown: function () { P.stepSpeed(-1); }, presetUp: function () { P.stepSpeed(1); },
 		split: function () { VE.split(); }, markIn: function () { mark("in"); }, markOut: function () { mark("out"); },
 		title: function () { VE.addTitle(); }, narrate: function () { openNarrate(); }, record: function () { VE.recToggle(); },
@@ -1992,8 +2036,8 @@
 			case "k": case "K": P.pause(); break;
 			case "[": P.nudgeSpeed(-1); break;
 			case "]": P.nudgeSpeed(1); break;
-			case "u": case "U": VE.speedKey(1); break;
-			case "p": case "P": VE.speedKey(2); break;
+			case "y": case "Y": case "u": case "U": VE.speed1(); break;
+			case "p": case "P": VE.prevSpeed(); break;
 			case "<": case ",": if (k === "<" || e.shiftKey) P.stepSpeed(-1); else VE.stepFrame(-1); break;
 			case ">": case ".": if (k === ">" || e.shiftKey) P.stepSpeed(1); else VE.stepFrame(1); break;
 			case "ArrowUp": VE.goEdit(-1); break; case "ArrowDown": VE.goEdit(1); break;
@@ -2398,6 +2442,19 @@
 		{ id: "step", name: "Step label", desc: "Top left corner", x: 0.14, y: 0.1, text: { s: "Step 1", size: 0.055, bg: "#1d4ed8", bgOp: 0.95 } },
 		{ id: "end", name: "End card", desc: "Centred, 5 s", y: 0.5, dur: 5, text: { s: "Thanks for watching!\nmes.fm", size: 0.08, bgOp: 0.7 } }
 	];
+	// timers: titles whose text is a running clock (count up, countdown, stopwatch). TM = settings, sample = what the card shows
+	var TB = { font: "Arial, Helvetica, sans-serif", wrap: 0 };
+	var TIMERS = [
+		{ id: "up", name: "Count up", desc: "0:00, 0:01, 0:02 ...", sample: "0:07", y: 0.12, dur: 10, text: Object.assign({ s: "Count up", size: 0.08, tm: { mode: "up" } }, TB) },
+		{ id: "down", name: "Countdown", desc: "Reaches 0 when the clip ends", sample: "0:10", y: 0.12, dur: 10, text: Object.assign({ s: "Countdown", size: 0.08, tm: { mode: "down", fit: true } }, TB) },
+		{ id: "stop", name: "Stopwatch", desc: "With hundredths: 00:07.42", sample: "00:07.42", y: 0.12, dur: 10, text: Object.assign({ s: "Stopwatch", size: 0.08, tm: { mode: "up", fmt: "mmss", dec: 2 } }, TB) },
+		{ id: "ms", name: "Milliseconds", desc: "0:07.425", sample: "0:07.425", y: 0.12, dur: 10, text: Object.assign({ s: "Milliseconds", size: 0.07, tm: { mode: "up", dec: 3 } }, TB) },
+		{ id: "msg", name: "Countdown + message", desc: "5, 4, 3, 2, 1, Time's up!", sample: "5", y: 0.5, dur: 7, text: Object.assign({ s: "Countdown", size: 0.16, bgOn: false, outline: 1.5, tm: { mode: "down", from: 5, fmt: "s", end: "Time's up!" } }, TB) },
+		{ id: "big", name: "Big centred timer", desc: "Large, outlined, no box", sample: "1:23", y: 0.5, dur: 10, text: Object.assign({ s: "Timer", size: 0.22, bgOn: false, outline: 1.5, tm: { mode: "up" } }, TB) },
+		{ id: "corner", name: "Corner timer", desc: "Small, top right", sample: "0:42", x: 0.92, y: 0.07, dur: 10, text: Object.assign({ s: "Timer", size: 0.045, bgOp: 0.65, tm: { mode: "up" } }, TB) },
+		{ id: "hours", name: "Hours", desc: "h:mm:ss, for long videos", sample: "1:02:03", y: 0.12, dur: 10, text: Object.assign({ s: "Hours", size: 0.07, tm: { mode: "up", fmt: "hmmss" } }, TB) },
+		{ id: "label", name: "Time with a label", desc: "Time left: 2:00", sample: "Left 2:00", y: 0.12, dur: 10, text: Object.assign({ s: "Time left", size: 0.07, tm: { mode: "down", fit: true, pre: "Time left: " } }, TB) }
+	];
 	var SHAPES = [
 		{ id: "arrow", name: "Arrow", desc: "Point at something", x: 0.42, y: 0.42, rot: 30, shape: { k: "arrow" }, svg: '<path d="M6 30 L34 10" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/><path d="M38 7 L26 9 L33 17 Z" fill="#e11d48"/>' },
 		{ id: "arrow2", name: "Double arrow", desc: "Both ends", shape: { k: "arrow", heads: "both", color: "#f59e0b" }, svg: '<path d="M9 20 H35" stroke="#f59e0b" stroke-width="4"/><path d="M41 20 L31 14 V26 Z M3 20 L13 14 V26 Z" fill="#f59e0b"/>' },
@@ -2413,6 +2470,7 @@
 	var ANIM_ICO = { zoomin: "&#8853;", zoomout: "&#8854;", zoompan: "&#11034;", "slidein-l": "&#8680;", "slidein-r": "&#8678;", "slidein-b": "&#8679;", "slideout-l": "&#8678;", "slideout-r": "&#8680;", fadein: "&#9680;", fadeout: "&#9681;", scaleup: "&#10530;", scaledown: "&#10529;", popin: "&#10040;", spin: "&#10227;", tilt: "&#8635;", custom: "&#10148;" };
 	var CARDS = {
 		titles: TITLES.map(function (t) { return { id: t.id, name: t.name, desc: t.desc, title: t }; }),
+		timers: TIMERS.map(function (t) { return { id: t.id, name: t.name, desc: t.desc, title: t }; }),
 		shapes: SHAPES.map(function (s) { return { id: s.id, name: s.name, desc: s.desc, preset: s, svg: s.svg }; }),
 		trans: [
 			{ id: "fin", ico: "&#9698;", name: "Fade in", desc: "From black / silence" }, { id: "fout", ico: "&#9699;", name: "Fade out", desc: "To black / silence" },
@@ -2435,7 +2493,7 @@
 		anim: V.ANIM_PRESETS.map(function (q) { return { id: q.id, name: q.name, desc: q.desc, ico: ANIM_ICO[q.id] || "&#10148;" }; })
 	};
 	function cardHtml(cat, c) {
-		var vis = cat === "shapes" ? '<svg viewBox="0 0 44 40" width="44" height="40">' + c.svg + "</svg>" : cat === "titles" ? '<span style="font:' + (c.title.text.bold === false ? "400" : "700") + " " + Math.round(10 + (c.title.text.size || 0.09) * 70) + "px Arial,sans-serif;color:#fff;padding:0 0.3em;border-radius:3px;" + (c.title.text.bgOn === false ? "text-shadow:0 0 3px #000,0 0 1px #000;" : "background:" + (c.title.text.bg || "#000") + ";") + '">' + esc(c.name.split(" ")[0]) + "</span>" : c.ico;
+		var vis = cat === "timers" ? '<span class="vd-cvtm">' + esc(c.title.sample) + "</span>" : cat === "shapes" ? '<svg viewBox="0 0 44 40" width="44" height="40">' + c.svg + "</svg>" : cat === "titles" ? '<span style="font:' + (c.title.text.bold === false ? "400" : "700") + " " + Math.round(10 + (c.title.text.size || 0.09) * 70) + "px Arial,sans-serif;color:#fff;padding:0 0.3em;border-radius:3px;" + (c.title.text.bgOn === false ? "text-shadow:0 0 3px #000,0 0 1px #000;" : "background:" + (c.title.text.bg || "#000") + ";") + '">' + esc(c.name.split(" ")[0]) + "</span>" : c.ico;
 		return '<button type="button" class="vd-card" data-card="' + cat + ":" + c.id + '" title="' + esc(c.desc) + '"><span class="vd-cv" aria-hidden="true">' + vis + "</span><b>" + esc(c.name) + "</b><small>" + esc(c.desc) + "</small></button>";
 	}
 	app.querySelectorAll("[data-cards]").forEach(function (box) { var cat = box.getAttribute("data-cards"); box.innerHTML = CARDS[cat].map(function (c) { return cardHtml(cat, c); }).join(""); });
@@ -2444,7 +2502,7 @@
 	// use a card on clips (the selected ones, or the clip it was dropped on); a title card makes a title (at the drop place)
 	function applyCard(key, clips, drop) {
 		var q = cardOf(key), cat = q.cat, cd = q.c; if (!cd) return;
-		if (cat === "titles") { VE.addTitle(cd.title, drop ? drop.t : null, drop ? drop.track : null); return; }
+		if (cat === "titles" || cat === "timers") { VE.addTitle(cd.title, drop ? drop.t : null, drop ? drop.track : null); return; }
 		if (cat === "shapes") { VE.addShape(cd.preset, drop ? drop.t : null, drop ? drop.track : null); return; }
 		if (cat === "anim") {
 			var tgt = (clips || VE.selected()).filter(function (c) { var tr = V.track(VE.P, c.track); return c.type !== "audio" && !(tr && tr.lock); })[0];
@@ -2499,7 +2557,7 @@
 		cdrag.ghost.style.left = e.clientX + 12 + "px"; cdrag.ghost.style.top = e.clientY + 8 + "px";
 		var el = document.elementFromPoint(e.clientX, e.clientY), ce = el && el.closest && el.closest(".vd-clip");
 		app.querySelectorAll(".vd-clip.is-target").forEach(function (x) { if (x !== ce) x.classList.remove("is-target"); }); if (ce) ce.classList.add("is-target");
-		VE.tl.dragHint(e.clientX, e.clientY, /^(titles|shapes):/.test(cdrag.key) && VE.tl.inside(e.clientX, e.clientY));
+		VE.tl.dragHint(e.clientX, e.clientY, /^(titles|timers|shapes):/.test(cdrag.key) && VE.tl.inside(e.clientX, e.clientY));
 	});
 	document.addEventListener("pointerup", function (e) {
 		if (!cdrag || e.pointerId !== cdrag.id) return;
@@ -2507,7 +2565,7 @@
 		app.querySelectorAll(".vd-clip.is-target").forEach(function (x) { x.classList.remove("is-target"); });
 		if (!d.on) { applyCard(d.key); return; }
 		var el = document.elementFromPoint(e.clientX, e.clientY), ce = el && el.closest && el.closest(".vd-clip");
-		if (/^(titles|shapes):/.test(d.key)) { if (VE.tl.inside(e.clientX, e.clientY)) { var row = el && el.closest && el.closest(".vd-trow"); applyCard(d.key, null, { t: VE.tl.x2t(e.clientX), track: row ? row.getAttribute("data-track") : null }); } return; }
+		if (/^(titles|timers|shapes):/.test(d.key)) { if (VE.tl.inside(e.clientX, e.clientY)) { var row = el && el.closest && el.closest(".vd-trow"); applyCard(d.key, null, { t: VE.tl.x2t(e.clientX), track: row ? row.getAttribute("data-track") : null }); } return; }
 		if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c) applyCard(d.key, [c], d.key.indexOf("anim:") === 0 ? { t: VE.tl.x2t(e.clientX) } : null); }
 	});
 	app.addEventListener("keydown", function (e) { var cb = e.target.closest && e.target.closest(".vd-card"); if (cb && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); applyCard(cb.getAttribute("data-card")); } }, true);
