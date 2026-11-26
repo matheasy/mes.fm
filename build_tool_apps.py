@@ -428,7 +428,7 @@ APPS = {
                        tag="Practise the clamp order, read your battery's date code and see why it died.", accent="#b4261c", dark="#861b14", tint="#fbe7e5",
                        desc="Free interactive guide to jump-starting a car: drag the jumper cable clamps in the right order on a simulated engine bay and see what goes wrong if you don't, use a jump pack, push-start a manual, decode your battery's date code (like F-15), see how cold cuts cranking power, and check the battery's voltage.",
                        meta_desc="Jump-start a car step by step: drag the clamps in order on a simulator, decode your battery's date code, and check its voltage and cold cranking power.",
-                       js_v="4"),
+                       js_v="5"),
     # MES Flight Tracker (2026-11-24, mes.fm/flights): live air traffic on a MapLibre GL 5.24.1 map (OpenFreeMap tiles). Positions = mes.fm/api/flights.js
     # (adsb.lol, ODbL; grid-snapped cells cached in Upstash so visitors share upstream calls); lib.js = MESFlights, byte-identical copy at
     # mes.fm/api/_flights-lib.js; tests: node tool_apps_src/flights-tests.js. Local / ?mock=1 = mes.fm/flights/data/sample.json (node mes.fm/api/flights.js --sample).

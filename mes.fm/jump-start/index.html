@@ -1063,6 +1063,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</table></div>
 			<div class="jp-causes">
 				<div class="jp-cause"><b>🧵 Cable gauge</b><p>Lower number = thicker wire. <strong>6 gauge</strong> is fine for small cars, <strong>4 gauge</strong> for most cars and SUVs, <strong>2 or 1 gauge</strong> for trucks, V8s and diesels. 4&ndash;6 m (12&ndash;20 ft) long lets you reach without parking nose to nose. Thin cheap cables get hot and may not start a big engine.</p></div>
+				<div class="jp-cause"><b>🚙 Cables won&rsquo;t reach?</b><p>If the dead car is facing a wall, nose-in to a garage or too far from the helper car, move it instead of buying longer cables. With the engine off, key in the "on" position (so the steering unlocks and the brake light works), shift to <strong>Neutral</strong> (automatics: press the brake to move the lever out of Park) and push it a few metres with a helper steering and ready on the brake. Power steering and brakes need much more effort with the engine off. Only on level ground or a gentle slope, never on a hill or busy road, and put it back in Park with the handbrake on before connecting. Some cars have a shift-lock release slot near the lever for a fully dead battery (see the manual). A jump pack avoids the problem: it goes wherever the car is.</p></div>
 				<div class="jp-cause"><b>⚡ Hybrids and electric cars</b><p>They still have a small 12 V battery that wakes the car up. Use the 12 V battery or the jump points under the hood shown in the manual, never the orange high-voltage parts. Many makers say <strong>not</strong> to use a hybrid or EV to jump another car (its small 12 V system and converter are not built for a starter motor): check the manual first.</p></div>
 				<div class="jp-cause"><b>🧊 Frozen battery</b><p>A flat battery can freeze at about &minus;8 °C (a full one only near &minus;58 °C). Bulging sides or ice in the cells means <strong>never jump or charge it</strong>: it can burst. Let it thaw indoors, away from people, then test it, or replace it.</p></div>
 				<div class="jp-cause"><b>🛑 Cracked, leaking, swollen</b><p>Don&rsquo;t jump it. The acid burns skin and eyes and eats paint. A rotten-egg smell or a hissing battery means stop and step away.</p></div>
@@ -1077,6 +1078,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<div class="jp-chead"><h2 id="jp-check-h">Printable checklist: jumper cables</h2><button type="button" class="tu-btn" id="jp-print">🖨 Print</button><button type="button" class="tu-btn" id="jp-check-reset">Untick all</button></div>
 			<ol class="jp-checklist" id="jp-checklist">
 				<li><label><input type="checkbox"> Both cars off, in Park / Neutral, handbrakes on, keys out. Cars close but <strong>not touching</strong>.</label></li>
+				<li><label><input type="checkbox"> Cables won&rsquo;t reach? Shift the dead car to <strong>Neutral</strong> and push it closer on flat ground (helper steering, ready on the brake), then back to Park / handbrake on.</label></li>
 				<li><label><input type="checkbox"> Lights, heater, radio and chargers off in both cars. Glasses and gloves on.</label></li>
 				<li><label><input type="checkbox"> Check the dead battery: not cracked, leaking, bulging or frozen. Find + and &minus; (and the manual&rsquo;s jump points).</label></li>
 				<li><label><input type="checkbox"> Take one end of the cable set to the dead car: its <span class="jp-red">red</span> clamp on the <strong>dead</strong> battery&rsquo;s <strong>+</strong>.</label></li>
@@ -1095,6 +1097,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<p>Connect the cables in this order: red to the dead battery&rsquo;s +, red to the good battery&rsquo;s +, black to the good battery&rsquo;s &minus;, and the last black clamp to bare metal on the dead car&rsquo;s engine. Start the good car, wait a few minutes, start the dead car, then remove the clamps in the reverse order.</p>
 			<h3>Questions</h3>
 			<dl>
+				<dt>The cars can&rsquo;t get close enough. What now?</dt>
+				<dd>Push the dead car closer. Key to "on" (not start) so the steering unlocks, shift to Neutral (with an automatic, hold the brake to leave Park; if the battery is too flat for that, use the shift-lock release described in the manual), and have one person steer and brake while others push. Steering and brakes are heavy without the engine running. Do it only on level ground away from traffic, then set Park and the handbrake. Or use a portable jump pack, which needs no second car at all.</dd>
 				<dt>Why not put the last black clamp on the dead battery&rsquo;s &minus; post?</dt>
 				<dd>The last connection closes the circuit and can make a small spark. Lead-acid batteries can give off hydrogen gas from their vents, more so while being charged, and hydrogen ignites easily. Making that spark on engine metal away from the battery keeps it away from the gas. Some owner&rsquo;s manuals do allow &minus; to &minus;; follow yours.</dd>
 				<dt>Does the order really matter?</dt>
@@ -1181,7 +1185,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/jump-start/js/jump-start.js?v=4" defer></script>
+	<script src="/jump-start/js/jump-start.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

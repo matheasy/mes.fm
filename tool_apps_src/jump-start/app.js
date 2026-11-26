@@ -356,7 +356,7 @@
 	}
 	function reset() {
 		S.conn = {}; S.phase = "connect"; S.donorOn = false; S.deadOn = false; S.mins = 0; S.fails = 0; S.packOn = false; S.sel = null; dragPos = {};
-		say(null, '<span>' + (S.mode === "pack" ? "Jump pack: connect the red clamp to the dead battery's + first, with the pack switched off." : "Start with step 1: take one end of the cable set to the dead car and put its red clamp on the dead battery's + post.") + "</span>");
+		say(null, '<span>' + (S.mode === "pack" ? "Jump pack: connect the red clamp to the dead battery's + first, with the pack switched off." : "Start with step 1: take one end of the cable set to the dead car and put its red clamp on the dead battery's + post. (Cables won't reach in real life? Put the dead car in Neutral and push it closer on flat ground, then Park + handbrake.)") + "</span>");
 		scene(); renderSteps();
 	}
 	function showNext() {
