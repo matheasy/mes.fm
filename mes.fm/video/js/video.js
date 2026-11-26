@@ -2592,13 +2592,22 @@
 	}
 	function connect(e) { if (!ac || e.gain) return; try { e.node = ac.createMediaElementSource(e.el); e.gain = ac.createGain(); e.gain.gain.value = 0; e.node.connect(e.gain).connect(ac.destination); } catch (x) { /* already connected */ } }
 	function elFor(c) {
-		var e = els[c.id], m = VE.media(c.media);
-		if (e && e.media === c.media) { e.used = performance.now(); return e; }
+		var e = els[c.id], m = VE.media(c.media), now = performance.now();
+		// a decode error kills the element for good (Brave / Chrome sometimes fail on one packet, and the picture then froze while the clock
+		// went on): drop it and make a fresh one, which seeks past the bad spot; a file that keeps failing gets one notice
+		if (e && e.el.error && e.media === c.media) {
+			var er = errs[c.media] = errs[c.media] || { n: 0, at: 0, told: false };
+			if (now - er.at > 30000) er.n = 0; er.n++; er.at = now;
+			if (er.n > 4) { if (!er.told) { er.told = true; VE.emit("notice", "The browser keeps failing to decode " + ((m && (m.origName || m.name)) || "this video") + " here. Converting it with the Video Converter (mes.fm/convert-video) usually fixes it."); } if (er.n > 12) return e; }
+			if (window.console) console.warn("[video editor] decode error, new player for", c.id, e.el.error.message);
+			release(c.id); e = null;
+		}
+		if (e && e.media === c.media) { e.used = now; return e; }
 		if (e) release(c.id);
 		if (!m || !m.url) return null;
 		var el = document.createElement(c.type === "audio" ? "audio" : "video");
 		el.preload = "auto"; el.playsInline = true; el.muted = false; el.preservesPitch = false; el.src = m.url;
-		el.addEventListener("seeked", draw); el.addEventListener("loadeddata", draw);
+		el.addEventListener("seeked", draw); el.addEventListener("loadeddata", draw); el.addEventListener("error", function () { setTimeout(function () { if (els[c.id] && els[c.id].el === el) { sync(); draw(); } }, 50); });
 		e = els[c.id] = { el: el, media: c.media, used: performance.now() };
 		connect(e);
 		return e;
@@ -2611,6 +2620,7 @@
 		if (e.el.requestVideoFrameCallback) { var n = e.vfc = (e.vfc || 0) + 1; e.el.requestVideoFrameCallback(function () { if (e.vfc === n) done(); }); setTimeout(function () { if (e.vfc === n && !e.el.seeking) done(); }, 400); }
 		else e.el.addEventListener("seeked", done, { once: true });
 	}
+	var errs = {};   // per media id: decode errors in the last 30 s
 	function release(id) { var e = els[id]; delete frames[id]; if (!e) return; try { e.el.pause(); e.el.removeAttribute("src"); e.el.load(); if (e.node) e.node.disconnect(); if (e.gain) e.gain.disconnect(); } catch (x) { /* ignore */ } delete els[id]; }
 
 	/* ---------- clock ---------- */

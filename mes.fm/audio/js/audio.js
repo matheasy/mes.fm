@@ -1321,7 +1321,19 @@
 	var raf = 0;
 	function draw() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; drawNow(); }); }
 	function sizeCanvas(c, w, h) { if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); } c.style.width = w + "px"; c.style.height = h + "px"; }
+	/* where you were (cursor, zoom, scroll): localStorage mes-audio:pos, put back when the last session is restored */
+	var POSKEY = "mes-audio:pos", posT = 0, posLast = "";
+	function savePos() { if (!S.tracks.length) return; var v = JSON.stringify({ c: S.cursor, s: S.start, z: S.spp, sr: S.sr }); if (v === posLast) return; posLast = v; try { localStorage.setItem(POSKEY, v); } catch (e) { /* ignore */ } }
+	function savePosSoon() { if (!posT) posT = setTimeout(function () { posT = 0; savePos(); }, 500); }
+	window.addEventListener("pagehide", savePos);
+	document.addEventListener("visibilitychange", function () { if (document.hidden) savePos(); });
+	function restorePos() {
+		var p = null; try { p = JSON.parse(localStorage.getItem(POSKEY) || "null"); } catch (e) { /* ignore */ }
+		if (!p || p.sr !== S.sr || !(p.z > 0)) return false;
+		var end = projEnd(); S.cursor = Math.max(0, Math.min(Math.round(p.c || 0), end)); S.spp = p.z; S.start = p.s || 0; clampView(); draw(); return true;
+	}
 	function drawNow() {
+		savePosSoon();
 		dpr = window.devicePixelRatio || 1; W = laneW(); clampView();
 		var nT = S.tracks.length, h = Math.max(1, nT) * S.laneH;
 		sizeCanvas(cv, W, h); sizeCanvas(over, W, h); sizeCanvas(ruler, W, 28);
@@ -2122,7 +2134,7 @@
 			var len = d.tracks.reduce(function (m, t) { return Math.max(m, t.clips.reduce(function (mm, c) { return Math.max(mm, c.start + c.ch[0].length); }, 0)); }, 0), ago = Math.round((Date.now() - d.t) / 60000);
 			var box = $("au-restore"); box.hidden = false; box.innerHTML = '<button type="button" class="au-btn">' + T("↺ Restore last session") + '</button> <span class="au-note">' + esc(d.name || T("Untitled")) + " · " + T(d.tracks.length > 1 ? "{n} tracks" : "{n} track", { n: d.tracks.length }) + " · " + A.fmtTime(len / d.sr, 0) + " · " + (ago < 1 ? T("saved just now") : ago < 120 ? T("saved {n} min ago", { n: ago }) : T("saved {n} h ago", { n: Math.round(ago / 60) })) + ' </span><button type="button" class="au-btn au-btn--sm" title="' + esc(T("Delete the saved session")) + '">' + T("Forget") + '</button>';
 			var bs = box.querySelectorAll("button");
-			bs[0].onclick = function () { S.sr = d.sr; S.name = d.name || ""; S.markers = d.markers || []; S.tracks = d.tracks.map(function (t) { return A.track(t); }); H = new A.History(1.5e9); H.push(T("Restore"), snap()); box.hidden = true; afterChange(); zoomFit(); toast(T("Session restored")); };
+			bs[0].onclick = function () { S.sr = d.sr; S.name = d.name || ""; S.markers = d.markers || []; S.tracks = d.tracks.map(function (t) { return A.track(t); }); H = new A.History(1.5e9); H.push(T("Restore"), snap()); box.hidden = true; afterChange(); if (!restorePos()) zoomFit(); toast(T("Session restored")); };
 			bs[1].onclick = function () { idb("readwrite", function (s) { return s.delete("auto"); }); box.hidden = true; };
 		}).catch(function () {});
 	}
