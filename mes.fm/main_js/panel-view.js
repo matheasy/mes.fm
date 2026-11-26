@@ -13,13 +13,15 @@
   if (window.MESPanel) return;
   var css = '.mes-pbtns{display:inline-flex;gap:.35em;flex-wrap:wrap}' +
     '.mes-pbtn,.mes-ptb{font:inherit;font-size:.82em;line-height:1.2;padding:.3em .7em;border-radius:999px;border:1px solid #b9c2cc;background:transparent;color:inherit;cursor:pointer;white-space:nowrap}' +
-    /* 2026-11-24: Fill window / Full screen are easy to miss, so they are blue-outlined, bold pills (pressed = filled blue) */
-    '.mes-pbtn{border-color:#1d6fd1;color:#1559ad;font-weight:700}body.dark-mode .mes-pbtn:not([aria-pressed="true"]):not(.mes-presume){border-color:#6ea8fe;color:#9cc4ff}' +
-    '.mes-pbtn:hover,.mes-ptb:hover{background:rgba(128,128,128,.12)}' +
-    '.mes-pbtn[aria-pressed="true"]{background:#1d6fd1;border-color:#1d6fd1;color:#fff}' +
-    '.mes-pbtn.mes-presume{background:#1d6fd1;border-color:#1d6fd1;color:#fff;font-weight:700;animation:mesPres 1.4s ease-in-out infinite}@keyframes mesPres{50%{box-shadow:0 0 0 6px rgba(29,111,209,.35)}}' +
-    'body.dark-mode .mes-pbtn,body.dark-mode .mes-ptb{border-color:#555;color:#e3e7ec}' +
-    'body.dark-mode .mes-pbtn[aria-pressed="true"]{background:#6ea8fe;border-color:#6ea8fe;color:#111}' +
+    /* 2026-11-26: Fill window / Full screen stand out like /photo's: a solid pill in the page's accent (--accent on tool pages, else blue),
+       white bold text; dark mode = the lightened accent with dark text. Pressed (= in that mode) adds a ring. */
+    '.mes-pbtn{background:#1d6fd1;background:color-mix(in srgb,var(--accent,#1d6fd1) 88%,#000);border-color:transparent;color:#fff;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.22)}' +
+    '.mes-ptb:hover{background:rgba(128,128,128,.12)}.mes-pbtn:hover{filter:brightness(1.12)}' +
+    '.mes-pbtn[aria-pressed="true"]{box-shadow:0 0 0 2px #fff inset,0 0 0 2px var(--accent,#1d6fd1)}' +
+    '.mes-pbtn.mes-presume{animation:mesPres 1.4s ease-in-out infinite}@keyframes mesPres{50%{box-shadow:0 0 0 6px rgba(29,111,209,.35)}}' +
+    'body.dark-mode .mes-ptb{border-color:#555;color:#e3e7ec}' +
+    'body.dark-mode .mes-pbtn{background:#6ea8fe;background:color-mix(in srgb,var(--accent,#6ea8fe) 85%,#fff);border-color:transparent;color:#111}' +
+    'body.dark-mode .mes-pbtn[aria-pressed="true"]{box-shadow:0 0 0 2px #1a1a1a inset,0 0 0 2px var(--accent,#6ea8fe)}' +
     '.mes-pfill{position:fixed!important;inset:0!important;z-index:2147483000!important;margin:0!important;max-width:none!important;width:auto!important;height:auto!important;' +
     'border-radius:0!important;overflow:auto!important;box-sizing:border-box!important;padding:12px 16px!important;background:#fff!important;display:flex!important;flex-direction:column}' +
     'body.dark-mode .mes-pfill{background:#1a1a1a!important}' +

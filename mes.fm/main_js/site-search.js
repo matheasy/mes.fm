@@ -876,8 +876,9 @@
         function css() {
             if (document.getElementById("mes-fillsc-css")) return;
             var st = document.createElement("style"); st.id = "mes-fillsc-css";
-            st.textContent = ".mes-mode .mes-fillsc,.hub-mode .mes-fillsc,.toc-mode .mes-fillsc,#mes-barmode .mes-fillsc{font-weight:700;color:#1559ad}" +
-                ":is(body.dark-mode,body.dark) :is(.mes-mode,.hub-mode,.toc-mode,#mes-barmode) .mes-fillsc{color:#9cc4ff}" +
+            st.textContent = ":is(.mes-mode,.hub-mode,.toc-mode,#mes-barmode) button.mes-fillsc{font-weight:700;color:#fff;background:#6d28d9}" +
+                ":is(.mes-mode,.hub-mode,.toc-mode,#mes-barmode) button.mes-fillsc:hover{background:#7c3aed}" +
+                ":is(body.dark-mode,body.dark) :is(.mes-mode,.hub-mode,.toc-mode,#mes-barmode) button.mes-fillsc{color:#111;background:#b69cff}" +
                 ".mes-fillhint{position:fixed;z-index:2147483600;max-width:270px;background:#1d6fd1;color:#fff;font:14px/1.4 Arial,Helvetica,sans-serif;padding:10px 32px 10px 12px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3)}" +
                 ".mes-fillhint b{color:#fff}.mes-fillhint::before{content:'';position:absolute;top:-7px;left:var(--ax,24px);border:7px solid transparent;border-top:0;border-bottom-color:#1d6fd1}" +
                 ".mes-fillhint button{position:absolute;top:4px;right:6px;background:none;border:0;color:#fff;font:400 20px/1 system-ui,sans-serif;cursor:pointer;padding:2px 4px}";
@@ -912,6 +913,67 @@
         var n = 0;
         function retry() { add(); if (++n < 6) setTimeout(retry, 900 * n); }   /* pages build their buttons late; the width switch / floating bar copy also come later */
         if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(retry, 500); }); else setTimeout(retry, 500);
+    })();
+
+    /* 2026-11-26: every tool / simulator page's own "Fill window" / "Full window" / "Full width" / "Full screen" button stands out like /photo's:
+       a solid pill in the page's accent (--accent on tool pages, else blue) with bold text in whichever of white / near-black reads
+       better on it (the accent is darkened until white reaches 4.5:1 when neither does). Found by its words (or data-mes-fill);
+       menu items, long labels, icon-only buttons, /photo's own and the width-switch shortcut are left alone; data-mes-nofill opts out. */
+    (function fillButtons() {
+        var RX = /^[\s⤢⛶↗⇱⛶︎️]*(fill (the )?(browser )?window|full window|full width|full ?screen|fullscreen)\b/i;
+        var SKIP = "[role=menu],[role=menuitem],[role=listbox],[class*=menu],[class*=Menu],[class*=pop],[class*=drop],select,.mes-fillhint,#hdrMorePanel,#mes-barmode";
+        var probe = null, sc = 0;
+        function rgb(v) {
+            if (!v) return null;
+            if (!probe) { probe = document.createElement("i"); probe.style.display = "none"; document.body.appendChild(probe); }
+            probe.style.color = ""; probe.style.color = v.trim(); if (!probe.style.color) return null;
+            var m = getComputedStyle(probe).color.match(/[\d.]+/g); return m && m.length >= 3 ? [+m[0], +m[1], +m[2]] : null;
+        }
+        function lum(c) { return c.map(function (x) { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }).reduce(function (s, x, i) { return s + x * [0.2126, 0.7152, 0.0722][i]; }, 0); }
+        function cr(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+        function hex(c) { return "#" + c.map(function (x) { return ("0" + Math.round(x).toString(16)).slice(-2); }).join(""); }
+        function paint(b) {
+            var dark = /(^|\s)dark(-mode)?(\s|$)/.test(document.body.className);
+            var c = rgb(getComputedStyle(b).getPropertyValue("--accent")) || rgb(dark ? "#6ea8fe" : "#1d6fd1");
+            var W = [255, 255, 255], K = [17, 17, 17], fg;
+            if (cr(c, W) >= 4.5) fg = W; else if (cr(c, K) >= 6) fg = K;
+            else { for (var i = 0; i < 12 && cr(c, W) < 4.5; i++) c = c.map(function (x) { return x * 0.9; }); fg = W; }
+            b.style.setProperty("--mes-fb", hex(c)); b.style.setProperty("--mes-ft", hex(fg));
+        }
+        function css() {
+            if (document.getElementById("mes-fillbtn-css")) return;
+            var st = document.createElement("style"); st.id = "mes-fillbtn-css";
+            st.textContent = "button.mes-fillbtn.mes-fillbtn{background:var(--mes-fb,#1d6fd1)!important;color:var(--mes-ft,#fff)!important;border-color:var(--mes-fb,#1d6fd1)!important;font-weight:700!important;box-shadow:0 1px 3px rgba(0,0,0,.25)!important;opacity:1!important}" +
+                "button.mes-fillbtn.mes-fillbtn *{color:inherit!important}button.mes-fillbtn.mes-fillbtn:hover{filter:brightness(1.12)}" +
+                "button.mes-fillbtn.mes-fillbtn:focus-visible{outline:2px solid var(--mes-fb,#1d6fd1)!important;outline-offset:2px}" +
+                "button.mes-fillbtn.mes-fillbtn[aria-pressed=true],button.mes-fillbtn.mes-fillbtn.is-on,button.mes-fillbtn.mes-fillbtn.on,button.mes-fillbtn.mes-fillbtn.active{box-shadow:0 0 0 2px var(--mes-ft,#fff) inset,0 0 0 2px var(--mes-fb,#1d6fd1)!important}";
+            document.head.appendChild(st);
+        }
+        function want(b) {
+            if (b.classList.contains("mes-fillsc") || b.hasAttribute("data-mes-nofill") || /^pe-(winbtn|fsbtn)$/.test(b.id)) return false;
+            var t = (b.textContent || "").replace(/\s+/g, " ").trim();
+            if (!b.hasAttribute("data-mes-fill") && (t.length > 24 || !RX.test(t))) return false;
+            return !b.closest(SKIP);
+        }
+        function scan() {
+            sc = 0;
+            var list = document.querySelectorAll("button:not(.mes-fillbtn):not([data-mes-fchk])");
+            for (var i = 0; i < list.length; i++) {
+                var b = list[i];
+                if (!(b.textContent || "").trim()) continue;   // filled in later: look again next scan
+                if (want(b)) { css(); b.classList.add("mes-fillbtn"); paint(b); } else if (RX.test(b.textContent.trim()) === false) b.setAttribute("data-mes-fchk", "");
+            }
+        }
+        function repaint() { Array.prototype.forEach.call(document.querySelectorAll("button.mes-fillbtn"), paint); }
+        function later() { if (!sc) sc = setTimeout(scan, 400); }
+        function start() {
+            scan(); setTimeout(scan, 1500); setTimeout(scan, 4000);
+            try {
+                new MutationObserver(later).observe(document.body, { childList: true, subtree: true });
+                new MutationObserver(function () { setTimeout(repaint, 60); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+            } catch (e) { /* ignore */ }
+        }
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
     })();
 
     /* Typing on a phone held sideways (2026-11-07): with the keyboard open the visible strip is only ~100-200px tall, the

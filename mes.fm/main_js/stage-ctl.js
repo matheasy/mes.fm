@@ -16,8 +16,11 @@
 	var css = '.mes-sbar{display:flex;flex-wrap:wrap;gap:0.3em;align-items:center;justify-content:flex-end;margin:0 auto 0.35em;font-size:0.8em;color:#667}' +
 		'.mes-sbar .mes-sl{margin-right:0.3em;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;font-size:0.85em}' +
 		'.mes-sbar button{cursor:pointer;font:inherit;padding:0.2em 0.7em;border-radius:0.35em;border:1px solid #c9d2dc;background:#f4f7fa;color:#223}' +
-		'.mes-sbar button[data-fill]{font-weight:700;border-color:#1d6fd1;color:#1559ad;background:#eef5fd}body.dark-mode .mes-sbar button[data-fill]:not([aria-pressed="true"]){border-color:#6ea8fe;color:#9cc4ff;background:#1d2733}' +   /* 2026-11-24: make Fill window easy to spot */
 		'.mes-sbar button:hover{border-color:var(--accent,#277bb6)}.mes-sbar button[aria-pressed="true"]{background:var(--accent,#277bb6);border-color:var(--accent,#277bb6);color:#fff}' +
+		/* 2026-11-26: Fill window stands out like /photo's: solid pill in the page's accent, bold white text (dark mode: lightened accent, dark text) */
+		'.mes-sbar button[data-fill]{font-weight:700;border-color:transparent;background:#1d6fd1;background:color-mix(in srgb,var(--accent,#1d6fd1) 88%,#000);color:#fff;border-radius:999px;padding:0.25em 0.95em;box-shadow:0 1px 3px rgba(0,0,0,.22)}' +
+		'.mes-sbar button[data-fill]:hover{filter:brightness(1.12)}.mes-sbar button[data-fill][aria-pressed="true"]{box-shadow:0 0 0 2px #fff inset,0 0 0 2px var(--accent,#1d6fd1)}' +
+		'body.dark-mode .mes-sbar button[data-fill]{background:#6ea8fe;background:color-mix(in srgb,var(--accent,#6ea8fe) 85%,#fff);color:#111}' +
 		'.mes-grip{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;z-index:30;touch-action:none;opacity:0.65;background:linear-gradient(135deg,transparent 0 52%,rgba(255,255,255,0.75) 52% 58%,transparent 58% 70%,rgba(255,255,255,0.75) 70% 76%,transparent 76%)}' +
 		'.mes-grip:hover{opacity:1}' +
 		'@media (max-width:700px){.mes-sbar button[data-s],.mes-sbar .mes-sl{display:none}.mes-sbar button{min-height:36px;padding:0.3em 0.9em}.tu .tu-chip,.tu .tu-tool,.tu .tu-run{min-height:36px}}' +
