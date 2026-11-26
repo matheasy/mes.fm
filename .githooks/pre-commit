@@ -23,4 +23,9 @@ fi
 if git diff --cached --name-only | grep -qE '^mes\.fm/((tools|calculators)\.html|[^/]+/sections\.mjs|livestreams/playlist\.json|math/youtube(-mestruth)?-videos\.json)$' || git diff --cached --name-only --diff-filter=A | grep -qE '^mes\.fm/[^/]+/index\.html$'; then
   python3 build_feeds.py --offline --apply >/dev/null 2>&1 && git add mes.fm/feeds
 fi
+# mes.fm/all.html, games.html, simulators.html (every card in one place, see build_all_apps.py): rebuilt from the cards of the
+# hub pages whenever a commit touches one of them, so a new calculator / tool / app / extension shows up there by itself
+if git diff --cached --name-only | grep -qE '^mes\.fm/((tools|calculators|mobile-apps)\.html|browser/index\.html)$'; then
+  python3 build_all_apps.py --apply >/dev/null 2>&1 && git add mes.fm/all.html mes.fm/games.html mes.fm/simulators.html
+fi
 exit 0
