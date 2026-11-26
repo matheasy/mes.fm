@@ -159,6 +159,25 @@
         if (/^https:\/\/(www\.)?mes\.fm\/api\/edits\?img=[a-f0-9]{16}\.jpg$/i.test(h)) return h.replace(/^https:\/\/(www\.)?mes\.fm/i, "");
         return "";
     }
+    /* Link preview kind (pictures are shown as pictures instead, so they get none). */
+    function previewOf(u) {
+        if (!u || imageOf(u)) return null;
+        var h = hrefOf(u), m;
+        if ((m = h.match(/^https?:\/\/(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i))) return { k: "yt", id: m[1], u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.|mobile\.)?(?:x|twitter)\.com\/[A-Za-z0-9_]+\/status\/(\d{5,25})/i))) return { k: "x", id: m[1], u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.)?inleo\.io\/threads\/view\/([a-z0-9.-]{3,16})\/([a-z0-9-]{1,255})/i))) return { k: "hive", a: m[1].toLowerCase(), p: m[2].toLowerCase(), u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.)?(?:peakd\.com|ecency\.com|hive\.blog|inleo\.io|3speak\.tv\/watch\?v=)(?:\/[a-z0-9-]+)?\/@([a-z0-9.-]{3,16})\/([a-z0-9-]{1,255})/i))) return { k: "hive", a: m[1].toLowerCase(), p: m[2].toLowerCase(), u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.)?mes\.fm(\/[^?#\s]*)?/i))) { var path = m[1] || "/"; if (/^\/api\//i.test(path)) return null; return { k: "mes", path: path, u: h }; }
+        if (/^https?:\/\/[^\/\s]+\.[a-z]{2,}/i.test(h)) return { k: "web", u: h };
+        return null;
+    }
+    /* The links of a text that get a preview card (no repeats, at most n). */
+    function previewLinks(t, n) {
+        var seen = {}, out = [];
+        links(t).forEach(function (u) { var p = previewOf(u); if (p && !seen[p.u] && out.length < (n || 3)) { seen[p.u] = 1; out.push(p); } });
+        return out;
+    }
+    function siteName(u) { var m = hrefOf(u).match(/^https?:\/\/(?:www\.|m\.|mobile\.)?([^\/:?#]+)/i); return m ? m[1].toLowerCase() : ""; }
     function links(t) { var out = []; String(t).replace(URL_RE, function (u) { out.push(trimUrl(u)[0]); return u; }); return out; }
     /* Safe HTML: everything escaped, links made clickable (new tab). */
     function linkify(t) {
@@ -314,7 +333,7 @@
         KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, cleanMeta: cleanMeta, cleanName: cleanName, sortTabs: sortTabs, kindOne: kindOne, kindsOf: kindsOf, orderTabs: orderTabs,
         orderKey: orderKey, between: between, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
         cleanText: cleanText, cleanItem: cleanItem, textKey: textKey, apply: apply, sortNewest: sortNewest,
-        esc: esc, linkify: linkify, links: links, imageOf: imageOf, tools: tools, itemTools: itemTools, filter: filter, counts: counts,
+        esc: esc, linkify: linkify, links: links, imageOf: imageOf, previewOf: previewOf, previewLinks: previewLinks, siteName: siteName, tools: tools, itemTools: itemTools, filter: filter, counts: counts,
         tgText: tgText, tgChats: tgChats, guessKind: guessKind, fromTelegramChat: fromTelegramChat, fromTelegram: fromTelegram,
         backupText: backupText, readBackup: readBackup, ago: ago
     };
@@ -337,7 +356,7 @@
     function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* full or blocked */ } }
     function lsJson(k, d) { try { var v = JSON.parse(lsGet(k, "null")); return v == null ? d : v; } catch (e) { return d; } }
 
-    var pref = Object.assign({ k: "fix", st: "open", sort: "new", star: false, tool: "", cols: 1, picEdit: true }, lsJson(PREF, {}));
+    var pref = Object.assign({ k: "fix", st: "open", sort: "new", star: false, tool: "", cols: 1, picEdit: true, pv: true, pvHide: {}, pvShow: {} }, lsJson(PREF, {}));
     var KINDS_KEY = "mes-edits:kinds";      /* the user's own lists that have no items yet */
     function userKinds() { var a = lsJson(KINDS_KEY, []); return Array.isArray(a) ? a.filter(E.okKind) : []; }
     var exp = {};           /* id -> true while "Show more" is open */
@@ -441,6 +460,64 @@
         });
     }
 
+    /* ---------- link previews: YouTube / X / Hive / mes.fm / other sites get a small card (title + picture).
+       Answers are kept in localStorage "mes-edits:prev" (url -> {t, d, img, at}), so a page load only fetches new links.
+       Global on / off = pref.pv ("Link previews" tick), per item = pref.pvHide / pref.pvShow. ---------- */
+    var PVKEY = "mes-edits:prev", pvc = lsJson(PVKEY, {}), pvBusy = {}, pvQueue = [], pvRun = 0;
+    function pvSave() {
+        var ks = Object.keys(pvc); if (ks.length > 400) ks.sort(function (a, b) { return (pvc[a].at || 0) - (pvc[b].at || 0); }).slice(0, ks.length - 400).forEach(function (k) { delete pvc[k]; });
+        lsSet(PVKEY, JSON.stringify(pvc));
+    }
+    function pvOn(it) { return pref.pv !== false ? !(pref.pvHide || {})[it.id] : !!(pref.pvShow || {})[it.id]; }
+    function okImg(u) { return typeof u === "string" && /^https:\/\/[^\s"'<>]+$/.test(u) ? u : ""; }
+    function cut(t, n) { t = String(t || "").replace(/\s+/g, " ").trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : t; }
+    function pvFetch(p) {
+        var J = function (r) { if (!r.ok) throw new Error(r.status); return r.json(); };
+        if (p.k === "yt") return fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + p.id)).then(J)
+            .then(function (d) { return { t: d.title, d: d.author_name ? "YouTube · " + d.author_name : "YouTube", img: "https://i.ytimg.com/vi/" + p.id + "/mqdefault.jpg" }; },
+                function () { return { t: "", d: "YouTube", img: "https://i.ytimg.com/vi/" + p.id + "/mqdefault.jpg" }; });
+        if (p.k === "x") return fetch("/api/x-media?id=" + p.id).then(J).then(function (d) { return { t: d.title, d: "X", img: d.thumb }; });
+        if (p.k === "hive") return fetch("https://api.hive.blog", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "bridge.get_post", params: { author: p.a, permlink: p.p } }) }).then(J).then(function (d) {
+            var r = d.result || {}, md = r.json_metadata || {}, im = (md.image && md.image[0]) || "";
+            if (!im) { var m = String(r.body || "").match(/https:\/\/[^\s)"'\]]+\.(?:png|jpe?g|gif|webp)/i); if (m) im = m[0]; }
+            return { t: r.title || cut(String(r.body || "").replace(/!\[[^\]]*\]\([^)]*\)|<[^>]+>|[#*_>`]/g, ""), 140), d: "Hive · @" + p.a, img: okImg(im) ? "https://images.hive.blog/320x0/" + im : "" };
+        });
+        if (p.k === "mes") return fetch(p.path, { credentials: "same-origin" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); }).then(function (h) {
+            var doc = new DOMParser().parseFromString(h, "text/html"), mt = function (q) { var e = doc.querySelector(q); return e ? e.getAttribute("content") || "" : ""; };
+            return { t: (mt('meta[property="og:title"]') || doc.title || "").split(" | ")[0], d: cut(mt('meta[name="description"]'), 140), img: mt('meta[property="og:image"]') };
+        });
+        return fetch("/api/page-text?url=" + encodeURIComponent(p.u)).then(J).then(function (d) { return { t: d.title, d: cut(d.text, 140) }; });
+    }
+    function pvNext() {
+        while (pvRun < 3 && pvQueue.length) {
+            var p = pvQueue.shift(); pvRun++;
+            (function (p) {
+                pvFetch(p).then(function (v) { v = v || {}; pvc[p.u] = { t: cut(v.t, 160), d: cut(v.d, 160), img: okImg(v.img), at: Date.now() }; },
+                    function () { pvc[p.u] = { t: "", d: "", img: "", at: Date.now(), bad: 1 }; })
+                    .then(function () { pvRun--; delete pvBusy[p.u]; pvSave(); pvPaint(p.u); pvNext(); });
+            })(p);
+        }
+    }
+    function pvCard(p) {
+        var v = pvc[p.u], site = E.siteName(p.u), ico = { yt: "▶", x: "𝕏", hive: "⬢", mes: "√", web: "🔗" }[p.k] || "🔗";
+        return '<a class="ed-pv' + (v ? "" : " is-load") + (v && v.img ? "" : " no-img") + '" data-pu="' + esc(p.u) + '" href="' + esc(p.u) + '" target="_blank" rel="noopener">'
+            + (v && v.img ? '<span class="ed-pvimg"><img src="' + esc(v.img) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()">' + (p.k === "yt" ? '<span class="ed-pvplay">▶</span>' : "") + "</span>" : "")
+            + '<span class="ed-pvtx"><span class="ed-pvsite">' + ico + " " + esc(site) + "</span>"
+            + '<span class="ed-pvt">' + esc(v && v.t ? v.t : v ? p.u.replace(/^https?:\/\/(www\.)?/i, "") : "Loading preview…") + "</span>"
+            + (v && v.d ? '<span class="ed-pvd">' + esc(v.d) + "</span>" : "") + "</span></a>";
+    }
+    function pvPaint(u) {
+        $("ed-list").querySelectorAll('.ed-pv[data-pu]').forEach(function (a) {
+            if (a.getAttribute("data-pu") !== u) return;
+            var p = E.previewOf(u); if (p) a.outerHTML = pvCard(p);
+        });
+    }
+    function pvHtml(it) {
+        var ps = E.previewLinks(it.t + "\n" + (it.note || ""), 3); if (!ps.length || !pvOn(it)) return "";
+        ps.forEach(function (p) { if (!pvc[p.u] && !pvBusy[p.u]) { pvBusy[p.u] = 1; pvQueue.push(p); } });
+        return '<div class="ed-pvs">' + ps.map(pvCard).join("") + "</div>";
+    }
+
     /* ---------- rendering ---------- */
     function fullDate(ms) { return new Date(ms).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
     /* editable = pictures in the item's own text get a ✂ Edit button (crop / rotate / mark up, saved as a new picture) */
@@ -472,6 +549,7 @@
         } else {
             h += '<div class="ed-txt">' + E.linkify(it.t) + '</div><button type="button" class="ed-more-btn" data-a="more" hidden>' + (exp[it.id] ? "Show less ▴" : "Show more ▾") + "</button>";
             var p = pics(it.t, true); if (p) h += '<div class="ed-pics">' + p + "</div>";
+            h += pvHtml(it);
             if (it.note) h += '<div class="ed-noteb"><b>Note:</b> ' + E.linkify(it.note) + "</div>";
         }
         if (it.rs && it.rs.length) {
@@ -489,6 +567,7 @@
                 + (it.qo ? (pref.k === "queue" ? '<button type="button" class="tu-btn tu-btn--ghost" data-a="qup" title="Do this sooner">↑</button><button type="button" class="tu-btn tu-btn--ghost" data-a="qdown" title="Do this later">↓</button><button type="button" class="tu-btn tu-btn--ghost" data-a="qtop" title="Do this first">⤒ First</button>' : "")
                     + '<button type="button" class="tu-btn tu-btn--ghost ed-qon" data-a="qoff" title="Take it off the queue">✓ Queued' + (qPos[it.id] ? " #" + qPos[it.id] : "") + "</button>"
                     : '<button type="button" class="tu-btn tu-btn--ghost" data-a="qon" title="Add to the end of the queue">＋ Queue</button>')
+                + (E.previewLinks(it.t + "\n" + (it.note || ""), 1).length ? '<button type="button" class="tu-btn tu-btn--ghost" data-a="pv" title="Show or hide the link previews of this item">' + (pvOn(it) ? "🔗 Hide previews" : "🔗 Previews") + "</button>" : "")
                 + '<button type="button" class="tu-btn tu-btn--ghost" data-a="copy" title="Copy the text of this item">📋 Copy</button><button type="button" class="tu-btn tu-btn--ghost" data-a="reply">💬 Reply</button><button type="button" class="tu-btn tu-btn--ghost" data-a="edit">✎ Edit</button>'
                 + moveSelect(it) + '<button type="button" class="tu-btn tu-btn--ghost ed-del" data-a="del" title="Delete">🗑</button></div>';
         }
@@ -520,13 +599,14 @@
         $("ed-addlbl").textContent = pref.k === "app" ? "New app idea" : pref.k === "fix" ? "New fix" : pref.k === "mirror" ? "New mirror to make" : pref.k === "all" || pref.k === "queue" ? "New item" : "New item in " + KN(pref.k);
         $("ed-listact").hidden = !isUserList(pref.k);
         $("ed-fstar").checked = !!pref.star; $("ed-sort").value = pref.sort; $("ed-sort").disabled = pref.k === "queue";
-        $("ed-cols").value = String(pref.cols || 1); $("ed-picedit-on").checked = pref.picEdit !== false;
+        $("ed-cols").value = String(pref.cols || 1); $("ed-picedit-on").checked = pref.picEdit !== false; $("ed-pvon").checked = pref.pv !== false;
         paintTools();
         var f = { k: pref.k, st: pref.st, sort: pref.sort, star: pref.star, tool: pref.tool, q: $("ed-q").value };
         var list = E.filter(items, f);
         var L = $("ed-list");
         L.innerHTML = list.map(itemHtml).join("");
         L.className = "ed-list cols-" + (pref.cols || 1);
+        pvNext();
         paintMore();
         var em = $("ed-empty");
         em.hidden = list.length > 0;
@@ -795,6 +875,7 @@
     });
     $("ed-cols").onchange = function () { pref.cols = +this.value || 1; savePref(); render(); };
     $("ed-picedit-on").onchange = function () { pref.picEdit = this.checked; savePref(); };
+    $("ed-pvon").onchange = function () { pref.pv = this.checked; pref.pvHide = {}; pref.pvShow = {}; savePref(); render(); };
     root.querySelector(".ed-chips").addEventListener("click", function (e) { var b = e.target.closest(".ed-chip"); if (!b) return; pref.st = b.dataset.st; savePref(); render(); });
     $("ed-fstar").onchange = function () { pref.star = this.checked; savePref(); render(); };
     $("ed-sort").onchange = function () { pref.sort = this.value; savePref(); render(); };
@@ -835,6 +916,7 @@
         }
         else if (a === "done" || a === "doing") change({ op: "update", id: id, st: a }).then(function (r) { if (r && a === "done" && pref.st === "open") toast("Marked done", function () { change({ op: "update", id: id, st: it.st }); }); });
         else if (a === "reopen") change({ op: "update", id: id, st: "todo" });
+        else if (a === "pv") { var hid = pref.pv !== false ? (pref.pvHide = pref.pvHide || {}) : (pref.pvShow = pref.pvShow || {}); if (hid[id]) delete hid[id]; else hid[id] = 1; savePref(); render(); }
         else if (a === "more") { if (exp[id]) delete exp[id]; else exp[id] = true; li.classList.toggle("is-exp", !!exp[id]); b.textContent = exp[id] ? "Show less ▴" : "Show more ▾"; if (!exp[id]) li.scrollIntoView({ block: "nearest" }); }
         else if (a === "picedit") editPicture(it, b.dataset.u);
         else if (a === "copy") copyText(it.t + (it.note ? "\n\nNote: " + it.note : "")).then(function (ok) { toast(ok ? "Copied" : "Couldn't copy: select the text and press Ctrl+C"); });

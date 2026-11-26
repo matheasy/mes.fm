@@ -60,6 +60,20 @@ t('import skips duplicates, newer copy wins', () => {
   assert.strictEqual(E.apply(m, { op: 'import', items: 'x' }).status, 400);
 });
 
+t('link previews', () => {
+  assert.deepStrictEqual(E.previewOf('https://youtu.be/dQw4w9WgXcQ?t=3'), { k: 'yt', id: 'dQw4w9WgXcQ', u: 'https://youtu.be/dQw4w9WgXcQ?t=3' });
+  assert.strictEqual(E.previewOf('https://www.youtube.com/watch?feature=x&v=dQw4w9WgXcQ').id, 'dQw4w9WgXcQ');
+  assert.strictEqual(E.previewOf('https://x.com/mes/status/1234567890123').id, '1234567890123');
+  assert.deepStrictEqual(E.previewOf('https://peakd.com/hive-167922/@mes/my-post'), { k: 'hive', a: 'mes', p: 'my-post', u: 'https://peakd.com/hive-167922/@mes/my-post' });
+  assert.strictEqual(E.previewOf('https://inleo.io/threads/view/mestruth/re-leothreads-rfj5ddd6').p, 're-leothreads-rfj5ddd6');
+  assert.strictEqual(E.previewOf('mes.fm/photo').k, 'mes');
+  assert.strictEqual(E.previewOf('https://mes.fm/api/edits?img=40a4701514b76260.jpg'), null);
+  assert.strictEqual(E.previewOf('https://snipboard.io/AbC123.jpg'), null);
+  assert.strictEqual(E.previewOf('https://example.com/page').k, 'web');
+  assert.strictEqual(E.previewLinks('a https://example.com/x b https://example.com/x https://a.com https://b.com https://c.com').length, 3);
+  assert.strictEqual(E.siteName('https://www.Example.com/x'), 'example.com');
+});
+
 t('links, pictures, tools, filter', () => {
   const txt = 'Fix mes.fm/photo text box, see https://snipboard.io/AbC123.jpg and https://example.com/a.png. Also mes.fm/api/x';
   assert.deepStrictEqual(E.tools(txt), ['photo']);

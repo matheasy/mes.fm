@@ -456,6 +456,24 @@ html body.dark-mode #ed .ed-tctl, html body.dark-mode #ed .ed-tfind {background:
 html body.dark-mode #ed .ed-tctl[aria-pressed="true"] {color:#ff8fb1; border-color:#ff8fb1;}
 @media (max-width: 640px) { #ed .ed-tabctl {margin-left:0; width:100%;} #ed .ed-tfind {flex:1; width:auto;} }
 
+	/* link preview cards */
+	.ed-pvs {display:flex;flex-wrap:wrap;gap:0.5em;margin:0.5em 0 0.2em;}
+	#ed .ed-pv {display:flex;gap:0.6em;align-items:stretch;flex:1 1 18em;max-width:30em;min-width:0;border:1px solid var(--ed-line, #8884);border-radius:0.5em;overflow:hidden;text-decoration:none;color:inherit;background:rgba(128,128,128,0.06);}
+	#ed .ed-pv:hover {border-color:currentColor;}
+	#ed .ed-pv.is-load {opacity:0.7;}
+	.ed-pvimg {position:relative;flex:0 0 7.5em;background:#0002;}
+	.ed-pvimg img {width:100%;height:100%;object-fit:cover;display:block;min-height:4.2em;}
+	.ed-pvplay {position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3em;text-shadow:0 1px 4px #000;}
+	.ed-pvtx {display:flex;flex-direction:column;gap:0.15em;padding:0.45em 0.6em 0.45em 0;min-width:0;font-size:0.88em;line-height:1.35;}
+	#ed .no-img .ed-pvtx {padding-left:0.7em;}
+	#ed .ed-pvsite {font-size:0.82em;opacity:0.7;}
+	#ed .ed-pvt {font-weight:700;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;}
+	#ed .ed-pvd {opacity:0.8;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+	@media (max-width:600px) {.ed-pvimg {flex-basis:6em;} #ed .ed-pv {flex-basis:100%;}}
+	html body #ed a.ed-pv, html body #ed a.ed-pv span {text-decoration:none;color:var(--ed-fg);}
+	html body #ed a.ed-pv .ed-pvsite, html body #ed a.ed-pv .ed-pvd {color:var(--ed-mute);}
+	html body #ed a.ed-pv .ed-pvplay {color:#fff;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -597,6 +615,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #ed .ed-kind.k-mirror{background:#1b2725;color:#73e8d6}
 	body.dark-mode #ed .ed-more-btn{color:#74abe7}
 	body.dark-mode #ed .ed-picedit{background:rgba(65,78,98,0.78)}
+	body.dark-mode #ed .ed-pv{background:rgba(82,82,82,0.06)}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -702,6 +721,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<option value="2">2 columns</option>
 				<option value="3">3 columns</option>
 			</select>
+			<label class="ed-chk" title="Show a small card (title and picture) for YouTube, X, Hive, mes.fm and other links"><input type="checkbox" id="ed-pvon" checked> 🔗 Link previews</label>
 		</div>
 		<p class="ed-count" id="ed-count" aria-live="polite"></p>
 		<p class="ed-qnote" id="ed-qnote" hidden>Your picks from Fixes and New apps, in the order to do them. Press <b>＋ Queue</b> on any item to add it; drag the &#10303; handle (or ↑ ↓ / ⤒ First) to change the order. Then just tell Claude “do the queue” (it works through it top to bottom and marks each one done, which takes it off here).</p>
@@ -788,7 +808,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=7" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/hive-store.js?v=5" defer></script><script src="/main_js/select-search.js" defer></script><script src="/edits/js/edits.js?v=8" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

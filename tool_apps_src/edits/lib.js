@@ -159,6 +159,25 @@
         if (/^https:\/\/(www\.)?mes\.fm\/api\/edits\?img=[a-f0-9]{16}\.jpg$/i.test(h)) return h.replace(/^https:\/\/(www\.)?mes\.fm/i, "");
         return "";
     }
+    /* Link preview kind (pictures are shown as pictures instead, so they get none). */
+    function previewOf(u) {
+        if (!u || imageOf(u)) return null;
+        var h = hrefOf(u), m;
+        if ((m = h.match(/^https?:\/\/(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:watch\?(?:[^#\s]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i))) return { k: "yt", id: m[1], u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.|mobile\.)?(?:x|twitter)\.com\/[A-Za-z0-9_]+\/status\/(\d{5,25})/i))) return { k: "x", id: m[1], u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.)?inleo\.io\/threads\/view\/([a-z0-9.-]{3,16})\/([a-z0-9-]{1,255})/i))) return { k: "hive", a: m[1].toLowerCase(), p: m[2].toLowerCase(), u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.)?(?:peakd\.com|ecency\.com|hive\.blog|inleo\.io|3speak\.tv\/watch\?v=)(?:\/[a-z0-9-]+)?\/@([a-z0-9.-]{3,16})\/([a-z0-9-]{1,255})/i))) return { k: "hive", a: m[1].toLowerCase(), p: m[2].toLowerCase(), u: h };
+        if ((m = h.match(/^https?:\/\/(?:www\.)?mes\.fm(\/[^?#\s]*)?/i))) { var path = m[1] || "/"; if (/^\/api\//i.test(path)) return null; return { k: "mes", path: path, u: h }; }
+        if (/^https?:\/\/[^\/\s]+\.[a-z]{2,}/i.test(h)) return { k: "web", u: h };
+        return null;
+    }
+    /* The links of a text that get a preview card (no repeats, at most n). */
+    function previewLinks(t, n) {
+        var seen = {}, out = [];
+        links(t).forEach(function (u) { var p = previewOf(u); if (p && !seen[p.u] && out.length < (n || 3)) { seen[p.u] = 1; out.push(p); } });
+        return out;
+    }
+    function siteName(u) { var m = hrefOf(u).match(/^https?:\/\/(?:www\.|m\.|mobile\.)?([^\/:?#]+)/i); return m ? m[1].toLowerCase() : ""; }
     function links(t) { var out = []; String(t).replace(URL_RE, function (u) { out.push(trimUrl(u)[0]); return u; }); return out; }
     /* Safe HTML: everything escaped, links made clickable (new tab). */
     function linkify(t) {
@@ -314,7 +333,7 @@
         KINDS: KINDS, STATES: STATES, KIND_NAME: KIND_NAME, okKind: okKind, kindSlug: kindSlug, kindName: kindName, cleanMeta: cleanMeta, cleanName: cleanName, sortTabs: sortTabs, kindOne: kindOne, kindsOf: kindsOf, orderTabs: orderTabs,
         orderKey: orderKey, between: between, STATE_NAME: STATE_NAME, MAX_T: MAX_T, MAX_IMPORT: MAX_IMPORT,
         cleanText: cleanText, cleanItem: cleanItem, textKey: textKey, apply: apply, sortNewest: sortNewest,
-        esc: esc, linkify: linkify, links: links, imageOf: imageOf, tools: tools, itemTools: itemTools, filter: filter, counts: counts,
+        esc: esc, linkify: linkify, links: links, imageOf: imageOf, previewOf: previewOf, previewLinks: previewLinks, siteName: siteName, tools: tools, itemTools: itemTools, filter: filter, counts: counts,
         tgText: tgText, tgChats: tgChats, guessKind: guessKind, fromTelegramChat: fromTelegramChat, fromTelegram: fromTelegram,
         backupText: backupText, readBackup: readBackup, ago: ago
     };
