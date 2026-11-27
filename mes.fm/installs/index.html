@@ -343,7 +343,14 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	#in .in-lab {color:var(--in-muted);font-size:0.9em;}
 	.in-chart {position:relative;width:100%;height:240px;touch-action:pan-y;}
 	.in-chart svg {display:block;width:100%;height:100%;}
-	.in-legend {display:flex;gap:1.2em;flex-wrap:wrap;font-size:0.85em;color:var(--in-muted);margin-top:0.3em;}
+	.in-legend {display:flex;gap:0.35em 0.5em;flex-wrap:wrap;font-size:0.85em;color:var(--in-muted);margin-top:0.4em;}
+	#in .in-lg {font:inherit;color:var(--in-ink);background:transparent;border:1px solid var(--in-line);border-radius:999px;padding:0.2em 0.65em;cursor:pointer;line-height:1.4;}
+	#in .in-lg:hover {border-color:var(--in-muted);}
+	#in .in-lg b {font-weight:600;color:var(--in-muted);margin-left:0.15em;}
+	#in .in-lg.is-off {opacity:0.45;text-decoration:line-through;}
+	#in .in-lg.is-off .in-key {background:transparent !important;outline:1.5px solid var(--in-muted);outline-offset:-1.5px;}
+	#in .in-lg--all {color:var(--in-muted);border-style:dashed;}
+	#in-svg rect[data-k] {transition:opacity 0.15s;}
 	.in-key {display:inline-block;width:0.8em;height:0.8em;border-radius:2px;margin-right:0.35em;vertical-align:-0.08em;}
 	#in .in-tip {position:absolute;top:6px;pointer-events:none;background:#1e2733;color:#ffffff;font-size:0.85em;line-height:1.5;padding:0.45em 0.65em;border-radius:0.35em;white-space:nowrap;display:none;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 	body.dark-mode #in.tu .in-tip {background:#2e343b;color:#f2f4f6;border:1px solid #4a525c;}
@@ -632,7 +639,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			</div>
 			<div class="in-chart" id="in-chart"><svg id="in-svg" preserveAspectRatio="none" role="img" aria-label="Installs per day"></svg><div class="in-tip" id="in-tip"></div></div>
 			<div class="in-legend" id="in-legend"></div>
-			<p class="tu-note">Hover or tap a day for its numbers. Installs = first downloads + re-downloads on iPhone and iPad, and device installs on Android. Updates are not installs, so they are counted on their own.</p>
+			<p class="tu-note">Hover or tap a day for its numbers. Click a name under the chart to hide or show it (double-click: only that one). Installs = first downloads + re-downloads on iPhone and iPad, and device installs on Android. Updates are not installs, so they are counted on their own.</p>
 		</section>
 
 		<section class="tu-card in-sec" id="in-appsec">
@@ -735,7 +742,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/installs/js/installs.js?v=4" defer></script>
+	<script src="/installs/js/installs.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

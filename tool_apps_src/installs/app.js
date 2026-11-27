@@ -8,14 +8,24 @@
   var esc = function (s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; };
   var int = function (v) { return v == null ? '–' : Math.round(v).toLocaleString(); };
   var MOCK = /^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname) || /[?&]mock=1/.test(location.search);
-  var ST = { r: '30d', app: '', plat: '', split: 'plat' };
+  var ST = { r: '30d', app: '', plat: '', split: 'plat', hide: [] };
   try { var sv = JSON.parse(localStorage.getItem('mes-installs:v1') || '{}'); if (sv && typeof sv === 'object') ST = Object.assign(ST, sv); } catch (e) {}
   if (!I.RANGES.hasOwnProperty(ST.r)) ST.r = '30d';
+  if (!Array.isArray(ST.hide)) ST.hide = [];
   var save = function () { try { localStorage.setItem('mes-installs:v1', JSON.stringify(ST)); } catch (e) {} };
   var DATA = null, SUM = null, PREV = null, DATES = [];
   var SHOW = { cc: 15, dev: 15, os: 15, ver: 15 };
   var SORT = {};
-  var APPC = { pct: '#2563eb', bmi: '#b3529d', grade: '#575fab', gpa: '#5a812d', fit: '#e8590c' };
+  // one clearly different colour per app (hues spread round the wheel, readable on light and dark); an app added later
+  // without an entry gets a colour from the golden angle, so it still never matches its neighbours
+  var APPC = { pct: '#2563eb', bmi: '#c026d3', grade: '#8b5cf6', gpa: '#65a30d', fit: '#f97316', polls: '#06b6d4', timer: '#eab308',
+    copytext: '#e11d48', audio: '#10b981', dimvolume: '#a16207', openlimits: '#f9a8d4' };
+  var appCol = function (k) {
+    if (APPC[k]) return APPC[k];
+    var i = DATA ? DATA.apps.map(function (a) { return a.k; }).indexOf(k) : 0;
+    return APPC[k] = 'hsl(' + Math.round((i < 0 ? 7 : i) * 137.508 % 360) + ',62%,52%)';
+  };
+  var HOT = '';   // app / platform the pointer is on in the legend: the other bars fade
   var css = function (n) { return getComputedStyle($('in')).getPropertyValue(n).trim(); };
 
   var regionName = (function () { try { var dn = new Intl.DisplayNames([navigator.language || 'en'], { type: 'region' }); return function (c) { try { return dn.of(c) || c; } catch (e) { return c; } }; } catch (e) { return function (c) { return c; }; } })();
@@ -45,7 +55,7 @@
 
   function buildAppChips() {
     var h = '<button type="button" class="tu-chip" data-a="">All apps</button>';
-    DATA.apps.forEach(function (a) { h += '<button type="button" class="tu-chip" data-a="' + esc(a.k) + '"><span class="in-sw" style="background:' + (APPC[a.k] || '#888') + '"></span>' + esc(a.name.replace(/ Calculators?$/, '')) + '</button>'; });
+    DATA.apps.forEach(function (a) { h += '<button type="button" class="tu-chip" data-a="' + esc(a.k) + '"><span class="in-sw" style="background:' + appCol(a.k) + '"></span>' + esc(a.name.replace(/ Calculators?$/, '')) + '</button>'; });
     $('in-app').innerHTML = h;
     if (ST.app && !DATA.apps.some(function (a) { return a.k === ST.app; })) ST.app = '';
   }
@@ -127,7 +137,7 @@
   function series() {
     if (ST.split === 'app') {
       var keys = DATA.apps.map(function (a) { return a.k; }).filter(function (k) { return !ST.app || k === ST.app; });
-      return keys.map(function (k) { return { k: k, name: appName(k), col: APPC[k] || '#888', v: function (day) { return (day && day.byApp[k]) || 0; } }; });
+      return keys.map(function (k) { return { k: k, name: appName(k), col: appCol(k), v: function (day) { return (day && day.byApp[k]) || 0; } }; });
     }
     var out = [];
     if (ST.plat !== 'a') out.push({ k: 'i', name: 'iPhone & iPad', col: css('--in-ios'), v: function (day) { return day ? day.i : 0; } });
@@ -137,11 +147,37 @@
   function drawChart() {
     var svg = $('in-svg'), box = $('in-chart'), tip = $('in-tip');
     var byD = {}; SUM.days.forEach(function (x) { byD[x.d] = x; });
-    var S = series();
-    $('in-legend').innerHTML = S.map(function (s) { return '<span><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + '</span>'; }).join('');
+    var ALL = series();
+    // totals in this range: the legend lists only series with installs (biggest first, with its count) and the
+    // biggest series sits at the bottom of every bar, so the colours stack in the same order on every day
+    ALL.forEach(function (s) { s.tot = 0; DATES.forEach(function (d) { s.tot += s.v(byD[d]); }); });
+    ALL = ALL.filter(function (s) { return s.tot > 0; }).sort(function (a, b) { return b.tot - a.tot; });
+    var S = ALL.filter(function (s) { return ST.hide.indexOf(s.k) < 0; });
+    var lg = $('in-legend');
+    lg.innerHTML = ALL.map(function (s) {
+      var off = ST.hide.indexOf(s.k) >= 0;
+      return '<button type="button" class="in-lg' + (off ? ' is-off' : '') + '" data-k="' + esc(s.k) + '" aria-pressed="' + (off ? 'false' : 'true') + '" title="' + (off ? 'Show' : 'Hide') + ' ' + esc(s.name) + ' (double-click: only this one)"><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name.replace(/ Calculators?$/, '')) + ' <b>' + int(s.tot) + '</b></button>';
+    }).join('') + (ST.hide.length ? '<button type="button" class="in-lg in-lg--all" data-k="">Show all</button>' : '');
+    lg.onclick = function (e) {
+      var b = e.target.closest('button.in-lg'); if (!b) return;
+      var k = b.dataset.k;
+      if (!k) ST.hide = [];
+      else if (ST.hide.indexOf(k) >= 0) ST.hide = ST.hide.filter(function (x) { return x !== k; });
+      else if (ALL.length - ALL.filter(function (s) { return ST.hide.indexOf(s.k) >= 0; }).length > 1) ST.hide.push(k);
+      save(); drawChart();
+    };
+    lg.ondblclick = function (e) {
+      var b = e.target.closest('button.in-lg'); if (!b || !b.dataset.k) return;
+      var k = b.dataset.k, only = ST.hide.length === ALL.length - 1 && ST.hide.indexOf(k) < 0;
+      ST.hide = only ? [] : ALL.map(function (s) { return s.k; }).filter(function (x) { return x !== k; });
+      save(); drawChart();
+    };
+    var hot = function (k) { HOT = k; svg.querySelectorAll('rect[data-k]').forEach(function (r) { r.style.opacity = !k || r.dataset.k === k ? '' : '0.18'; }); };
+    lg.onmouseover = function (e) { var b = e.target.closest('button.in-lg'); hot(b && b.dataset.k && ST.hide.indexOf(b.dataset.k) < 0 ? b.dataset.k : ''); };
+    lg.onmouseleave = function () { hot(''); };
     var W = box.clientWidth || 600, H = box.clientHeight || 220, padL = 40, padR = 8, padT = 8, padB = 22;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    var cMuted = css('--in-muted'), cLine = css('--in-line');
+    var cMuted = css('--in-muted'), cLine = css('--in-line'), cCard = css('--in-card') || 'transparent';
     if (!DATES.length) { svg.innerHTML = '<text x="' + W / 2 + '" y="' + H / 2 + '" text-anchor="middle" font-size="13" fill="' + cMuted + '">No installs yet</text>'; return; }
     var max = 0; DATES.forEach(function (d) { var t = 0; S.forEach(function (s) { t += s.v(byD[d]); }); max = Math.max(max, t); });
     var top = niceTop(max), iw = W - padL - padR, ih = H - padT - padB, bw = iw / DATES.length;
@@ -150,7 +186,8 @@
     for (var g = 0; g <= 4; g++) { var gv = top * g / 4, gy = y(gv); h += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + gy + '" y2="' + gy + '" stroke="' + cLine + '"/><text x="' + (padL - 6) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="' + cMuted + '">' + (gv % 1 ? gv.toFixed(1) : gv.toLocaleString()) + '</text>'; }
     DATES.forEach(function (d, i) {
       var base = 0, bx = padL + i * bw + bw * 0.12, w = Math.max(1, bw * 0.76);
-      S.forEach(function (s) { var v = s.v(byD[d]); if (!v) return; h += '<rect x="' + bx.toFixed(1) + '" y="' + y(base + v).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + Math.max(0.5, y(base) - y(base + v)).toFixed(1) + '" fill="' + s.col + '"/>'; base += v; });
+      // a thin gap between the pieces of a bar (stroke in the card colour) keeps neighbouring colours apart
+      S.forEach(function (s) { var v = s.v(byD[d]); if (!v) return; h += '<rect data-k="' + esc(s.k) + '" x="' + bx.toFixed(1) + '" y="' + y(base + v).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + Math.max(0.5, y(base) - y(base + v)).toFixed(1) + '" rx="' + Math.min(2, w / 4).toFixed(1) + '" fill="' + s.col + '" stroke="' + cCard + '" stroke-width="1"/>'; base += v; });
     });
     var every = Math.ceil(DATES.length / Math.max(2, Math.floor(iw / 62)));
     DATES.forEach(function (d, i) { if (i % every === 0) h += '<text x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="11" fill="' + cMuted + '">' + d.slice(5) + '</text>'; });
@@ -169,12 +206,12 @@
       var d = DATES[i], day = byD[d], tot = 0, lines = '';
       var dl = new Date(d + 'T12:00:00Z').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
       if (phone) {
-        S.forEach(function (s) { var v = s.v(day); tot += v; if (v) lines += '<span><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ' ' + int(v) + '</span>'; });
+        S.slice().sort(function (a, b) { return b.v(day) - a.v(day); }).forEach(function (s) { var v = s.v(day); tot += v; if (v) lines += '<span><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ' ' + int(v) + '</span>'; });
         tip.innerHTML = '<b>' + dl + '</b><span>' + int(tot) + ' installs</span>' + lines +
           (day && day.up ? '<span>' + int(day.up) + ' updates</span>' : '') + (day && day.un ? '<span>' + int(day.un) + ' uninstalls</span>' : '');
         tip.dataset.on = '1';
       } else {
-        S.forEach(function (s) { var v = s.v(day); tot += v; lines += '<br><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ': ' + int(v); });
+        S.slice().sort(function (a, b) { return b.v(day) - a.v(day); }).forEach(function (s) { var v = s.v(day); tot += v; if (v || S.length < 4) lines += '<br><i class="in-key" style="background:' + s.col + '"></i>' + esc(s.name) + ': ' + int(v); });
         tip.innerHTML = '<b>' + dl + '</b><br>' + int(tot) + ' installs' + lines +
           (day && day.up ? '<br>' + int(day.up) + ' updates' : '') + (day && day.un ? '<br>' + int(day.un) + ' uninstalls (Android)' : '');
       }
@@ -279,8 +316,8 @@
     });
     var star = function (v, n) { return v ? '★ ' + v.toFixed(1) + (n ? ' <small>(' + n + ')</small>' : '') : '<span class="in-dim">–</span>'; };
     var cols = [
-      { k: 'n', label: 'App', v: function (r) { return r.a.name; }, f: function (r) { return '<span class="in-sw" style="background:' + (APPC[r.a.k] || '#888') + '"></span><a href="' + esc(r.a.web) + '">' + esc(r.a.name) + '</a>'; } },
-      { k: 't', label: 'Installs', v: function (r) { return r.tot; }, b: function (r) { return APPC[r.a.k] || '#888'; }, f: function (r) { return int(r.tot); } }
+      { k: 'n', label: 'App', v: function (r) { return r.a.name; }, f: function (r) { return '<span class="in-sw" style="background:' + appCol(r.a.k) + '"></span><a href="' + esc(r.a.web) + '">' + esc(r.a.name) + '</a>'; } },
+      { k: 't', label: 'Installs', v: function (r) { return r.tot; }, b: function (r) { return appCol(r.a.k); }, f: function (r) { return int(r.tot); } }
     ];
     if (ST.plat !== 'a') cols.push({ k: 'i', label: 'iPhone', b: 'var(--in-ios)', v: function (r) { return r.s.iosIns; }, f: function (r) { return int(r.s.iosIns); } },
       { k: 'dl', label: 'First<small>iPhone</small>', title: 'First-time downloads', b: 'var(--in-ios)', v: function (r) { return r.s.dl; }, f: function (r) { return int(r.s.dl); } },
