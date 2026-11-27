@@ -147,3 +147,15 @@ body.dark-mode #em .em-pre.is-on { color: #fff; background: #4f5fe0; }
 .em-toast .em-undo { font: inherit; font-weight: 700; margin-left: .6em; border: 1px solid rgba(255,255,255,.6); background: transparent; color: inherit; border-radius: .5em; padding: .1em .7em; cursor: pointer; }
 .em-toast.tu-toast--show { pointer-events: auto; }
 #em.em-w1 .em-swpop, #em.em-w1 .em-switch .mh-sw-pop { left: 0; right: auto; }
+
+/* Fill window / Full screen (main_js/panel-view.js adds .mes-pfill to #em): the mail grid takes the rest of the window, columns scroll on their own */
+#em.mes-pfill > .em-howto, #em.mes-pfill > .tu-seo, #em.mes-pfill > .mes-sfwrap, #em.mes-pfill > .mes-sfbar { display: none !important; }
+#em.mes-pfill > .em-app:not([hidden]) { flex: 1 1 auto; min-height: 0; margin-bottom: 0; grid-template-rows: minmax(0, 1fr); }
+#em.mes-pfill.em-w2 > .em-app:not([hidden]) { grid-template-rows: auto minmax(0, 1fr); }
+#em.mes-pfill.em-w1 > .em-app:not([hidden]) { grid-template-rows: auto minmax(0, 1fr); }
+#em.mes-pfill.em-w1.em-reading > .em-app:not([hidden]) { grid-template-rows: minmax(0, 1fr); }
+#em.mes-pfill .em-nav { overflow-y: auto; }
+#em.mes-pfill .em-list { max-height: none; min-height: 0; }
+#em.mes-pfill .em-read { overflow-y: auto; min-height: 0; }
+#em.mes-pfill .em-body { min-height: 12em; }
+html body.dark-mode #em.tu.mes-pfill { background: #1a1a1a !important; }

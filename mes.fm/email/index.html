@@ -455,6 +455,18 @@ body.dark-mode #em .em-pre.is-on { color: #fff; background: #4f5fe0; }
 .em-toast.tu-toast--show { pointer-events: auto; }
 #em.em-w1 .em-swpop, #em.em-w1 .em-switch .mh-sw-pop { left: 0; right: auto; }
 
+/* Fill window / Full screen (main_js/panel-view.js adds .mes-pfill to #em): the mail grid takes the rest of the window, columns scroll on their own */
+#em.mes-pfill > .em-howto, #em.mes-pfill > .tu-seo, #em.mes-pfill > .mes-sfwrap, #em.mes-pfill > .mes-sfbar { display: none !important; }
+#em.mes-pfill > .em-app:not([hidden]) { flex: 1 1 auto; min-height: 0; margin-bottom: 0; grid-template-rows: minmax(0, 1fr); }
+#em.mes-pfill.em-w2 > .em-app:not([hidden]) { grid-template-rows: auto minmax(0, 1fr); }
+#em.mes-pfill.em-w1 > .em-app:not([hidden]) { grid-template-rows: auto minmax(0, 1fr); }
+#em.mes-pfill.em-w1.em-reading > .em-app:not([hidden]) { grid-template-rows: minmax(0, 1fr); }
+#em.mes-pfill .em-nav { overflow-y: auto; }
+#em.mes-pfill .em-list { max-height: none; min-height: 0; }
+#em.mes-pfill .em-read { overflow-y: auto; min-height: 0; }
+#em.mes-pfill .em-body { min-height: 12em; }
+html body.dark-mode #em.tu.mes-pfill { background: #1a1a1a !important; }
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -1025,7 +1037,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/email/js/email.js?v=5" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/main_js/panel-view.js" defer></script><script src="/email/js/email.js?v=6" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

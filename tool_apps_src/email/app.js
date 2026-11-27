@@ -835,6 +835,9 @@
 	if (window.ResizeObserver) new ResizeObserver(fit).observe(root); else window.addEventListener("resize", fit);
 	fit();
 
+	/* Fill window / Full screen of the whole mail box (buttons beside Log out); the mail grid then fills the window */
+	if (window.MESPanel) window.MESPanel.add(root, { bar: document.querySelector("#em .em-topbtns"), onChange: fit });
+
 	/* ?to=name opens a new message */
 	var qTo = (location.search.match(/[?&]to=([^&]+)/) || [])[1];
 	start();

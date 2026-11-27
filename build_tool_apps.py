@@ -270,7 +270,7 @@ APPS = {
                   tag="Private, end-to-end encrypted mail between Hive accounts.", accent="#3b4cca", dark="#2c3a9e", tint="#e6e9fb",
                   desc="Free encrypted email for Hive: send end-to-end encrypted messages to any Hive account, stored on the blockchain and readable only by the people you write to. Quantum-safe (ML-KEM-768 + X25519 and AES-256), threads and replies, Sent folder, classic memo reader. No server, no sign-up.",
                   meta_desc="Free quantum-safe encrypted email for Hive accounts: end-to-end encrypted messages on the blockchain, threads, replies and a classic memo reader.",
-                  js_v="5", pre_js=["/main_js/hive.js?v=2"]),
+                  js_v="6", pre_js=["/main_js/hive.js?v=2", "/main_js/panel-view.js"]),
     "polls": dict(title="MES Polls", page_title="Make a Poll: Free Online Poll Maker, No Sign-Up",
                   tag="Ask a question, share one link, watch the votes come in.", accent="#3b5bdb", dark="#2c47b0", tint="#e7ecfb",
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",
@@ -1635,7 +1635,7 @@ APPS = {
     "video": dict(title="MES Video Editor", page_title="Free Online Video Editor: Cut, Join, Add Titles, Clean Up Sound",
                        tag="Cut, join, add titles, clean up the sound. No upload.", accent="#be123c", dark="#9f1239", tint="#fde4ea",
                        desc="Free online video editor in your browser: put videos, sound and pictures on a multi-track timeline, trim and split clips, join many videos in order, add titles and overlays, cross-fade, remove background noise, even out the loudness and export MP4 up to 4K. Opens AVI, MKV, WMV and MOV too. Nothing is uploaded.",
-                       js_v="85", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
+                       js_v="86", pre_js=["/main_js/tab-progress.js?v=1", "/main_js/cloud-files.js?v=3", "/main_js/select-search.js?v=1"], lib_from=["convert-video"], js_parts=["../convert-video/engine.js", "core.js", "preview.js", "timeline.js", "export.js"]),
     # MES Font Preview and Finder (2026-10-19): text in every font the browser really has (+ optional Google Fonts), effects, PNG / CSS export, compare, and a picture matcher. lib.js = MESFont (node tests tool_apps_src/fonts-tests.js).
     "fonts": dict(title="MES Font Preview and Finder", page_title="Font Preview: See Your Text in Every Font, and Find a Font from a Picture",
                   tag="See your text in every font.", accent="#7c2d92", dark="#5f2070", tint="#f3e5f8",
