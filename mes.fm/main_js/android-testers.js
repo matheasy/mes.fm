@@ -38,7 +38,11 @@
     dimvolume: { name: "MES Dim & Volume", pkg: "fm.mes.dimvolume", key: "dimvolumeAppBannerHidden",
       ios: "https://apps.apple.com/us/app/id6836920574", extra: " (dim the screen below its lowest brightness, set the volume in small steps)" },
     audio: { name: "MES Audio Editor & Recorder", pkg: "fm.mes.audio", key: "audioAppBannerHidden",
-      ios: "https://apps.apple.com/us/app/id6837411404", extra: " (record, edit and remove background noise with AI)" }
+      ios: "https://apps.apple.com/us/app/id6837411404", extra: " (record, edit and remove background noise with AI)" },
+    upscale: { name: "MES Upscale", pkg: "fm.mes.upscale", key: "upscaleAppBannerHidden",
+      ios: "", extra: " (make small or blurry pictures bigger and sharper with AI, right on your phone)" },
+    ai: { name: "MES AI", pkg: "fm.mes.ai", key: "aiAppBannerHidden",
+      ios: "", extra: " (free AI chat and pictures)" }
   };
   function joinUrl(a) { return "https://play.google.com/apps/testing/" + a.pkg; }
   function ext(href, text) { return '<a href="' + href + '" target="_blank" rel="noopener">' + text + "</a>"; }
