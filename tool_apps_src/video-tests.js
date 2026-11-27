@@ -300,6 +300,7 @@ function proj(clips) { const p = V.newProject(); p.clips = clips; return p; }
 	near(V.parseGoto("0,5", 30), 0.5, 1e-9, "decimal comma"); ok(V.parseGoto("abc", 30) === null && V.parseGoto("", 30) === null && V.parseGoto("1:x", 30) === null, "bad input");
 	const p = proj([clip({ id: "a", start: 0, out: 5 }), clip({ id: "b", start: 8, out: 4 })]);
 	eq(V.editPoints(p), [0, 5, 8, 12], "edit points"); eq(V.nextEdit(p, 5, 1), 8, "next"); eq(V.nextEdit(p, 5, -1), 0, "previous"); eq(V.nextEdit(p, 6, -1), 5, "previous from inside a gap"); eq(V.nextEdit(p, 12, 1), null, "nothing after the end");
+	{ const q = JSON.parse(JSON.stringify(p)); q.tracks.push({ id: "hid", kind: "v", name: "Hidden", hide: true }); q.clips.push(clip({ id: "h", track: "hid", start: 6, out: 1 })); eq(V.editPoints(q), [0, 5, 8, 12], "hidden layer skipped"); eq(V.nextEdit(q, 5, 1), 8, "next skips hidden layer"); }
 	const c = clip({ start: 0, in: 20, out: 30 }), o = V.trim(c, "l", -4, { mediaDur: 100, mag: true, minDur: 1 / 30 });
 	near(o.start, 0, 0, "magnetic left trim keeps the start"); near(o.in, 16, 1e-9, "and brings back 4 s of media"); near(o.out, 30, 0, "end of media unchanged");
 	const o2 = V.trim(clip({ start: 10, in: 2, out: 30 }), "l", 0, { mediaDur: 100, mag: true }); near(o2.in, 0, 0, "cannot go before the start of the media");

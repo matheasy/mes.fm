@@ -1269,10 +1269,10 @@
 		if (t == null || !isFinite(t)) return null;
 		return rel ? (now || 0) + rel * t : t;
 	};
-	// every place something starts or ends (clips on shown / heard tracks, the I / O marks, 0), sorted: for "previous / next clip"
+	// every place something starts or ends (clips on shown tracks: hidden layers are skipped, the I / O marks, 0), sorted: for "previous / next clip"
 	V.editPoints = function (p) {
 		var pts = [0];
-		p.clips.forEach(function (c) { var tr = V.track(p, c.track); if (!tr) return; pts.push(c.start, V.end(c)); });
+		p.clips.forEach(function (c) { var tr = V.track(p, c.track); if (!tr || tr.hide) return; pts.push(c.start, V.end(c)); });
 		if (p.marks) { if (p.marks.in != null) pts.push(p.marks.in); if (p.marks.out != null) pts.push(p.marks.out); }
 		pts.sort(function (a, b) { return a - b; });
 		return pts.filter(function (x, i) { return i === 0 || x - pts[i - 1] > 1e-6; });
