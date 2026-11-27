@@ -1,9 +1,10 @@
 /* MES Storage Analyzer UI. Core (scan, model, layouts, lists, reports) = MESStorage in lib.js (prepended above).
-   Settings in localStorage mes-storage:v1 (views and filters only: no file names or sizes are ever stored or sent). */
+   Settings in localStorage mes-storage:v1 (views and filters, plus where each picked folder is on the disk if you type it: no file names or sizes are ever stored or sent). */
 (function () {
 	'use strict';
 	var L = MESStorage, $ = function (id) { return document.getElementById(id); }, KEY = 'mes-storage:v1';
-	var P = { view: 'sun', col: 'folder', rings: 6, tab: 'big', sort: 'size', dir: -1, oldMin: 100e6, oldDays: 365, dupMin: 1e6, loc: 'all' };
+	var P = { view: 'sun', col: 'folder', rings: 6, tab: 'big', sort: 'size', dir: -1, oldMin: 100e6, oldDays: 365, dupMin: 1e6, loc: 'all', bases: {}, how: false };
+	/* bases = where each picked folder is on the disk (folder name -> location), typed or guessed: the only paths kept, and only in this browser */
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in P) P[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} }
 	function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -543,19 +544,61 @@
 			'<div class="tu-row">' +
 			(d && i !== zoom ? '<button type="button" class="tu-btn st-small" data-act="zoom">Zoom in</button>' : '') +
 			(i === zoom && zoom > 0 ? '<button type="button" class="tu-btn st-small" data-act="up">⬆ Up</button>' : '') +
-			'<button type="button" class="tu-btn tu-btn--ghost st-small" data-act="copy">Copy path</button>' +
-			(sel >= 0 ? '<button type="button" class="tu-btn tu-btn--ghost st-small" data-act="table">Show in table</button>' : '') + '</div>';
+			(fullOf(i) ? '<button type="button" class="tu-btn st-small" data-act="copyfull">📋 Copy full path</button><button type="button" class="tu-btn tu-btn--ghost st-small" data-act="copy">Copy short path</button>' : '<button type="button" class="tu-btn tu-btn--ghost st-small" data-act="copy">Copy path</button>') +
+			(sel >= 0 ? '<button type="button" class="tu-btn tu-btn--ghost st-small" data-act="table">Show in table</button>' : '') + '</div>' + howHtml(i);
 	}
+	/* ---------- open it on the computer: a web page can't open Finder / File Explorer, so copy the full path and paste it there ---------- */
+	function baseOf() { if (!M) return ''; var r = M.names[0], b = P.bases && P.bases[OS + '|' + r]; return b != null ? b : L.guessRootPath(OS, r); }
+	function fullOf(i) { var b = baseOf(); return b ? L.fullPath(OS, b, L.pathOf(M, i)) : ''; }
+	function howHtml(i) {
+		var r = esc(M.names[0]), b = baseOf(), f = fullOf(i), isF = !M.isDir[i], mac = OS === 'mac', guessed = !(P.bases && (OS + '|' + M.names[0]) in P.bases) && !!b;
+		var first = b ? 'Press <b>📋 Copy full path</b>.' : 'First type where <b>' + r + '</b> is on this computer in the box below and press <b>Save</b>. Then press <b>📋 Copy full path</b>.';
+		var steps = mac ? [
+			first,
+			'Click the desktop or any Finder window, then press <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> (on a PC keyboard: <kbd>Windows key</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>). Or use the menu <b>Go → Go to Folder…</b>',
+			'Paste with <kbd>Cmd</kbd> + <kbd>V</kbd> and press <kbd>Return</kbd>. ' + (isF ? 'Finder opens the folder with this file selected.' : 'Finder opens the folder.')
+		] : [
+			first,
+			'Open File Explorer (<kbd>Windows key</kbd> + <kbd>E</kbd>) and click the address bar at the top (or press <kbd>Ctrl</kbd> + <kbd>L</kbd>).',
+			'Paste with <kbd>Ctrl</kbd> + <kbd>V</kbd> and press <kbd>Enter</kbd>.' + (isF ? ' (For a file, paste it into the Run box instead, <kbd>Windows key</kbd> + <kbd>R</kbd>, to open the file itself.)' : '')
+		];
+		var find = mac ? 'To find it: in Finder, right-click <b>' + r + '</b>, hold <kbd>Option</kbd> and pick <b>Copy "' + r + '" as Pathname</b>, then paste it here.'
+			: 'To find it: in File Explorer, hold <kbd>Shift</kbd>, right-click <b>' + r + '</b> and pick <b>Copy as path</b>, then paste it here.';
+		return '<details class="st-how"' + (P.how ? ' open' : '') + '><summary>How to open this on my ' + (mac ? 'Mac' : 'PC') + '</summary>' +
+			'<div class="tu-seg st-seg st-hos" role="group" aria-label="Your computer"><button type="button" data-hos="mac" aria-pressed="' + mac + '">Mac</button><button type="button" data-hos="win" aria-pressed="' + !mac + '">Windows</button></div>' +
+			'<p class="st-hnote">Browsers don\'t let a web page open folders on your computer, so copy the full path and paste it ' + (mac ? 'into Finder' : 'into File Explorer') + ':</p>' +
+			'<ol class="st-hsteps">' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>' +
+			(f && mac ? '<p class="st-hnote">Or in Terminal:</p><div class="st-hcmd"><code>' + esc(L.macOpenCmd(f, isF)) + '</code><button type="button" class="tu-btn tu-btn--ghost st-small" data-act="copycmd">Copy</button></div>' : '') +
+			'<label class="st-hbase"><span>Where is <b>' + r + '</b> on this computer?' + (guessed ? ' <i>(our guess: check it)</i>' : '') + '</span>' +
+			'<span class="st-hrow"><input type="text" id="st-hbase" spellcheck="false" autocomplete="off" value="' + esc(b) + '" placeholder="' + (mac ? '~/Library/CloudStorage/' + r : 'C:\\Users\\you\\' + r) + '"><button type="button" class="tu-btn st-small" data-act="savebase">Save</button></span></label>' +
+			'<p class="st-hnote st-muted">' + find + ' The short path starts at <b>' + r + '</b>, which is why pasting it on its own finds nothing.</p></details>';
+	}
+	function saveBase() {
+		var el = $('st-hbase'); if (!el || !M) return;
+		P.bases = P.bases || {}; P.bases[OS + '|' + M.names[0]] = L.cleanRootPath(OS, el.value); save(); renderInfo();
+		toast(P.bases[OS + '|' + M.names[0]] ? 'Saved. "Copy full path" now gives the whole location.' : 'Cleared.');
+	}
+	function copyText(t, msg) {
+		function ok() { toast(msg); }
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { prompt('Copy this:', t); });
+		else prompt('Copy this:', t);
+	}
+	$('st-info').addEventListener('toggle', function (e) { if (e.target.classList && e.target.classList.contains('st-how')) { P.how = e.target.open; save(); } }, true);
+	$('st-info').addEventListener('keydown', function (e) { if (e.target.id === 'st-hbase' && e.key === 'Enter') { e.preventDefault(); saveBase(); } });
 	$('st-info').onclick = function (e) {
+		var ho = e.target.closest('[data-hos]'); if (ho) { OS = ho.getAttribute('data-hos'); paintOS(); renderInfo(); return; }
 		var b = e.target.closest('[data-act]'); if (!b) return;
 		var i = sel >= 0 ? sel : zoom, a = b.getAttribute('data-act');
+		if (a === 'copyfull') { copyText(fullOf(i), 'Copied. ' + (OS === 'mac' ? 'In Finder press Cmd+Shift+G, paste, Return.' : 'Paste it into the File Explorer address bar and press Enter.')); return; }
+		if (a === 'copycmd') { copyText(L.macOpenCmd(fullOf(i), !M.isDir[i]), 'Copied. Paste it into Terminal and press Return.'); return; }
+		if (a === 'savebase') { saveBase(); return; }
 		if (a === 'zoom') { sel = -1; setZoom(i); } else if (a === 'up') up(); else if (a === 'copy') copyPath(i);
 		else if (a === 'table') { reveal(i); $('st-tablesec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 	};
 	function fileIcon(i) { return ['🎬', '🖼️', '🎵', '📄', '🗜️', '🧩', '📦', '🗄️', '📄'][M.cat[i]] || '📄'; }
 	function copyPath(i) {
-		var t = L.pathOf(M, i);
-		function ok() { toast('Copied: ' + t + '. (The path starts at the folder you picked; browsers don\'t show where that folder is on your disk.)'); }
+		var f = fullOf(i), t = f || L.pathOf(M, i);
+		function ok() { toast(f ? 'Copied the full path. ' + (OS === 'mac' ? 'In Finder press Cmd+Shift+G, paste, Return.' : 'Paste it into the File Explorer address bar.') : 'Copied: ' + t + '. It starts at the folder you picked: open "How to open this" beside the chart to add where that folder is.'); }
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { prompt('Copy this path:', t); });
 		else prompt('Copy this path:', t);
 	}
@@ -874,7 +917,7 @@
 	}
 	$('st-cloudsec').addEventListener('click', function (e) {
 		var o = e.target.closest('[data-os]');
-		if (o) { OS = o.getAttribute('data-os'); paintOS(); return; }
+		if (o) { OS = o.getAttribute('data-os'); paintOS(); if (M) renderInfo(); return; }
 		var id = e.target.closest('button') && e.target.closest('button').id;
 		if (id === 'st-cmdcopy') copyCmd();
 		else if (id === 'st-cfile') $('st-cinput').click();

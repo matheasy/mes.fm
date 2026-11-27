@@ -472,11 +472,49 @@ var MESStorage = (function () {
 		return { cmd: out, guessed: !!cdw };
 	}
 
+	/* where the picked folder is on the disk: browsers never say, so guess the usual cloud folders and let the person correct it */
+	function guessRootPath(os, rootName) {
+		var r = String(rootName || '').trim();
+		if (!r) return '';
+		if (os === 'mac') {
+			if (/^(onedrive|dropbox|googledrive|box)/i.test(r)) return '~/Library/CloudStorage/' + r;
+			if (/^icloud/i.test(r)) return '~/Library/Mobile Documents/com~apple~CloudDocs';
+			return '';
+		}
+		if (/^onedrive$/i.test(r)) return '%OneDrive%';
+		if (/^(onedrive|dropbox|google drive|icloud)/i.test(r)) return '%USERPROFILE%\\' + r;
+		return '';
+	}
+	/* tidy a typed / pasted location: quotes from "Copy as path", file:// links, the home folder written out, a trailing slash */
+	function cleanRootPath(os, t) {
+		t = String(t || '').trim().replace(/^["']+|["']+$/g, '').trim();
+		if (/^file:\/\//i.test(t)) { try { t = decodeURIComponent(t.replace(/^file:\/\/(localhost)?/i, '')); } catch (e) {} if (os === 'win') t = t.replace(/^\/([A-Za-z]:)/, '$1'); }
+		if (os === 'mac') t = t.replace(/^\/Users\/[^\/]+(?=\/|$)/, '~');
+		else t = t.replace(/\//g, '\\');
+		if (t.length > 1) t = t.replace(/[\/\\]+$/, '');
+		return t;
+	}
+	/* rel = pathOf(...) = "Root/a/b"; base = where Root itself is */
+	function fullPath(os, base, rel) {
+		var parts = String(rel || '').split('/').slice(1), b = String(base || '');
+		if (!b) return '';
+		var sep = os === 'win' ? '\\' : '/';
+		return parts.length ? b + (/[\/\\]$/.test(b) ? '' : sep) + parts.join(sep) : b;
+	}
+	/* a Terminal line that opens a folder (or shows a file in Finder) */
+	function macOpenCmd(path, isFile) {
+		var p = String(path || ''), home = /^~(\/|$)/.test(p);
+		if (home) p = p.replace(/^~/, '');
+		var q = '"' + (home ? '$HOME' : '') + p.replace(/(["\\$`])/g, '\\$1') + '"';
+		return 'open ' + (isFile ? '-R ' : '') + q;
+	}
+
 	return { scanHandle: scanHandle, WORKER_SRC: WORKER_SRC, fromPaths: fromPaths, build: build, children: children, pathOf: pathOf,
 		ancestors: ancestors, isInside: isInside, topN: topN, largestFiles: largestFiles, byType: byType, oldLarge: oldLarge,
 		emptyFolders: emptyFolders, sameSizeGroups: sameSizeGroups, splitByHash: splitByHash, matcher: matcher, search: search,
 		squarify: squarify, sunburst: sunburst, ext: ext, catOf: catOf, CATS: CATS, fmtBytes: fmtBytes, fmtInt: fmtInt, pct: pct,
 		fmtPct: fmtPct, fmtDate: fmtDate, ageText: ageText, parseSize: parseSize, csvCell: csvCell, toCSV: toCSV, toJSON: toJSON,
-		looksCloud: looksCloud, parseLocation: parseLocation, applyLocation: applyLocation, largestLocal: largestLocal, locationCommand: locationCommand };
+		looksCloud: looksCloud, parseLocation: parseLocation, applyLocation: applyLocation, largestLocal: largestLocal, locationCommand: locationCommand,
+		guessRootPath: guessRootPath, cleanRootPath: cleanRootPath, fullPath: fullPath, macOpenCmd: macOpenCmd };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage;

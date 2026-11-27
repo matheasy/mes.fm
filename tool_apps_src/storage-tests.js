@@ -182,6 +182,20 @@ function Locked(name) { return { kind: 'directory', name: name, values: function
 		ok(/\$env:OneDrive/.test(S.locationCommand('win', 'OneDrive').cmd), 'win cd guess');
 	})();
 
-	console.log(pass + ' passed, ' + fail + ' failed');
+		/* full path / open in Finder */
+	eq(S.guessRootPath('mac', 'OneDrive-Personal'), '~/Library/CloudStorage/OneDrive-Personal', 'mac OneDrive guess');
+	eq(S.guessRootPath('mac', 'Movies'), '', 'no guess for a plain folder');
+	eq(S.guessRootPath('win', 'OneDrive'), '%OneDrive%', 'win OneDrive guess');
+	eq(S.fullPath('mac', '~/Library/CloudStorage/OneDrive-Personal', 'OneDrive-Personal/MathEasySolutions/YouTube/Video Files'), '~/Library/CloudStorage/OneDrive-Personal/MathEasySolutions/YouTube/Video Files', 'mac full path');
+	eq(S.fullPath('mac', '/Volumes/X', 'X'), '/Volumes/X', 'root itself');
+	eq(S.fullPath('win', 'C:\\Users\\m\\OneDrive', 'OneDrive/a/b.mp4'), 'C:\\Users\\m\\OneDrive\\a\\b.mp4', 'win full path');
+	eq(S.fullPath('mac', '', 'X/a'), '', 'no base = no full path');
+	eq(S.cleanRootPath('mac', '"/Users/mes/Library/CloudStorage/OneDrive-Personal/"'), '~/Library/CloudStorage/OneDrive-Personal', 'mac clean');
+	eq(S.cleanRootPath('win', '"C:/Users/m/OneDrive/"'), 'C:\\Users\\m\\OneDrive', 'win clean');
+	eq(S.cleanRootPath('mac', 'file:///Users/mes/My%20Stuff/'), '~/My Stuff', 'file link');
+	eq(S.macOpenCmd('~/A B/#x $y', false), 'open "$HOME/A B/#x \\$y"', 'terminal open, home + escaping');
+	eq(S.macOpenCmd('/Volumes/X/f.mp4', true), 'open -R "/Volumes/X/f.mp4"', 'terminal reveal file');
+
+console.log(pass + ' passed, ' + fail + ' failed');
 	process.exit(fail ? 1 : 0);
 })();

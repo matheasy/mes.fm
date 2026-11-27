@@ -370,7 +370,7 @@ APPS = {
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
                     tag="Find what fills your disk.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
                     desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded.",
-                    js_v="3", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
+                    js_v="4", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
     # Browser Storage & Memory (2026-11-07, mes.fm/browser-storage): a sub-page of the Storage Analyzer brand. Measures what mes.fm keeps in this browser
     # (localStorage, sessionStorage, IndexedDB, Cache storage, OPFS, cookies, service workers), names the tool each piece belongs to, deletes per item / tool,
     # asks for persistent storage, backs up / restores saved settings; this tab's JS memory (performance.memory) with a live chart; a per-browser guide
