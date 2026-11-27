@@ -189,8 +189,15 @@
 	// subtitle files
 	function srtTime(t, dot) { t = Math.max(0, t); var ms = Math.round(t * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, f = ms % 1000; return pad2(h) + ":" + pad2(m) + ":" + pad2(s) + (dot ? "." : ",") + String(1000 + f).slice(1); }
 	V.capList = function (p) { return p.clips.filter(V.isCap).sort(function (a, b) { return a.start - b.start; }); };
-	V.toSRT = function (p) { return V.capList(p).map(function (c, i) { return (i + 1) + "\n" + srtTime(c.start) + " --> " + srtTime(V.end(c)) + "\n" + c.text.s + "\n"; }).join("\n"); };
-	V.toVTT = function (p) { return "WEBVTT\n\n" + V.capList(p).map(function (c) { return srtTime(c.start, true) + " --> " + srtTime(V.end(c), true) + "\n" + c.text.s + "\n"; }).join("\n"); };
+	// every caption as it plays on the timeline: the ones inside groups too, at their timeline time and cut to where their group shows
+	V.capCues = function (p) {
+		return V.flat(p).clips.filter(V.isCap).map(function (c) {
+			var a = c._w1 != null ? Math.max(c.start, c._w0) : c.start, b = c._w1 != null ? Math.min(V.end(c), c._w1) : V.end(c);
+			return { s: a, e: b, text: c.text.s };
+		}).filter(function (q) { return q.e > q.s + 1e-3; }).sort(function (x, y) { return x.s - y.s; });
+	};
+	V.toSRT = function (p) { return V.capCues(p).map(function (q, i) { return (i + 1) + "\n" + srtTime(q.s) + " --> " + srtTime(q.e) + "\n" + q.text + "\n"; }).join("\n"); };
+	V.toVTT = function (p) { return "WEBVTT\n\n" + V.capCues(p).map(function (q) { return srtTime(q.s, true) + " --> " + srtTime(q.e, true) + "\n" + q.text + "\n"; }).join("\n"); };
 	// SRT / VTT text -> [{a, b, s}]
 	V.parseSubs = function (txt) {
 		var out = [], re = /(\d+:)?(\d{1,2}):(\d{2})[,.](\d{1,3})\s*-->\s*(\d+:)?(\d{1,2}):(\d{2})[,.](\d{1,3})[^\n]*\n([\s\S]*?)(?=\n\s*\n|$)/g, m;

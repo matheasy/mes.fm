@@ -547,5 +547,16 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	const back = V.normalize(JSON.parse(JSON.stringify(p)));
 	ok(back.clips[0].type === "group" && back.clips[0].sub.clips.some(V.isGroup), "nested groups survive saving and opening");
 }
+// captions inside groups go into the SRT at their timeline time, cut to where the group shows
+{
+	const cap = (id, tr, st, out, txt) => V.clipDefaults({ id: id, type: "text", track: tr, start: st, in: 0, out: out, text: { s: txt, cap: { w: [] } } });
+	const p = proj([cap("k1", "v1", 0, 2, "Outside"), cap("k2", "v2", 3, 2, "Inside one"), cap("k3", "v2", 6, 3, "Inside two")]);
+	const g = V.makeGroup(p, ["k2", "k3"], "KG", "G"); g.out = 4;   // shows 3..7 only
+	const srt = V.toSRT(p);
+	ok(/1\n00:00:00,000 --> 00:00:02,000\nOutside/.test(srt), "top-level caption kept");
+	ok(/2\n00:00:03,000 --> 00:00:05,000\nInside one/.test(srt), "caption inside a group at its timeline time");
+	ok(/3\n00:00:06,000 --> 00:00:07,000\nInside two/.test(srt), "caption cut where the group ends");
+	ok(V.capCues(p).length === 3 && /^WEBVTT/.test(V.toVTT(p)), "VTT too");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

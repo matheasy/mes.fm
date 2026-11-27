@@ -2735,9 +2735,10 @@
 		VE.commit("Caption look"); toast("Changed " + L.length + " captions.");
 	};
 	function capSave(kind) {
-		var L = V.capList(VE.P); if (!L.length) { toast("There are no captions yet."); return; }
-		var txt = kind === "srt" ? V.toSRT(VE.P) : V.toVTT(VE.P);
-		download(new Blob([txt], { type: kind === "srt" ? "application/x-subrip" : "text/vtt" }), (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + "." + kind);
+		// the whole project, also while a group is open, with the captions inside groups at their timeline times
+		if (!V.capCues(VE.root).length) { toast("There are no captions yet."); return; }
+		var txt = kind === "srt" ? V.toSRT(VE.root) : V.toVTT(VE.root);
+		download(new Blob([txt], { type: kind === "srt" ? "application/x-subrip" : "text/vtt" }), (VE.root.name || "video").replace(/[\\/:*?"<>|]+/g, "-") + "." + kind);
 	}
 	$("vd-cap-srt").onclick = function () { capSave("srt"); }; $("vd-cap-vtt").onclick = function () { capSave("vtt"); };
 	$("vd-cap-imp").onclick = function () { $("vd-cap-file").click(); };
