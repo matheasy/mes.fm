@@ -90,7 +90,7 @@
 				P.t0 = P.time(); P.p0 = performance.now(); P.rate = s;
 				var oldEl = Math.abs(old - 1) > 1e-3 && Math.abs(old - was) < 1e-3, newEl = Math.abs(s - 1) > 1e-3;
 				if (cleanNodes.length && oldEl && newEl) cleanNodes.forEach(function (n) { if (n.el) n.el.playbackRate = Math.max(0.0625, Math.min(16, (n.cs || 1) * s)); });
-				else if (cleanNodes.length || VE.P.clips.some(function (c) { return c.clean && c.clean.key; })) scheduleClean();
+				else if (cleanNodes.length || V.allClips(VE.P).some(function (c) { return c.clean && c.clean.key; })) scheduleClean();
 				sync();
 			} else { P.pause(); P.play(s); }
 		}
@@ -130,7 +130,7 @@
 
 	/* ---------- keeping the elements in step ---------- */
 	function sync() {
-		var t = VE.t, p = VE.P, playing = P.playing && !P.rev, want = {}, now = performance.now();
+		var t = VE.t, p = VE.flat(VE.P), playing = P.playing && !P.rev, want = {}, now = performance.now();
 		if (playing && ac && ac.state !== "running" && ac.state !== "closed" && now - (P.resumeAt || 0) > 1000) { P.resumeAt = now; ac.resume().catch(function () { }); }
 		p.clips.forEach(function (c) {
 			if (c.type !== "video" && c.type !== "audio") return;
@@ -169,10 +169,10 @@
 				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
 			if (e.gain && ac && (e.ch || "") !== (c.ch || "")) { try { e.gain.disconnect(); } catch (x) { /* ignore */ } e.gain.connect(chanIn(ac, c.ch)); e.ch = c.ch || ""; }
-			if (e.gain && ac) { var g = playing && active && !jump && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; if (P.muted) g = 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
+			if (e.gain && ac) { var g = playing && active && !jump && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015, p) : 0; if (P.muted) g = 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
 		Object.keys(els).forEach(function (k) { if (!want[k] && now - els[k].used > 4000) release(k); else if (!want[k]) { els[k].el.pause(); if (els[k].gain && ac) els[k].gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); } });
-		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(P.muted ? 0 : V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015), ac.currentTime, 0.012); });
+		cleanNodes.forEach(function (n) { var c = V.clip(p, n.id); if (!c || !ac) return; n.gain.gain.setTargetAtTime(P.muted ? 0 : V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015, p), ac.currentTime, 0.012); });
 	}
 	P.sync = sync;
 	P.seeking = function () { return Object.keys(els).some(function (k) { return els[k].el.seeking; }); };
@@ -188,7 +188,7 @@
 	var cleanGen = 0;
 	async function scheduleClean() {
 		stopClean();
-		var gen = ++cleanGen, p = VE.P, t = VE.t, a = audio(); if (!a) return;
+		var gen = ++cleanGen, p = VE.flat(VE.P), t = VE.t, a = audio(); if (!a) return;
 		var list = p.clips.filter(function (c) { return c.clean && c.clean.key && VE.hasSound(c) && V.end(c) > t; });
 		for (var j = 0; j < list.length; j++) {
 			var c = list[j], cp = await VE.cleanPcm(c.clean.key); if (gen !== cleanGen || !P.playing || P.rev) return; if (!cp) continue;
@@ -515,7 +515,7 @@
 		drag = null;
 	}
 	cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
-	cv.addEventListener("dblclick", function (e) { var c = VE.selected()[0]; if (c && c.type === "text" && V.active(c, VE.t)) P.editText(c, e); });
+	cv.addEventListener("dblclick", function (e) { var c = VE.selected()[0]; if (c && c.type === "text" && V.active(c, VE.t)) P.editText(c, e); else if (V.isGroup(c) && V.active(c, VE.t)) VE.enterGroup(c.id); });
 
 	/* ---------- type a title straight into the picture ---------- */
 	// a text box laid over the title (same font, size, spacing, colours, turned with it); the canvas leaves that title out while you type

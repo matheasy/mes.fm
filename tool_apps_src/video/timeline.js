@@ -16,7 +16,20 @@
 	T.x2t = x2t;
 
 	/* ---------- render ---------- */
+	/* ---------- group tabs (Camtasia): Main timeline > Group 1 > ... over the layers while a group is open ---------- */
+	var tlBox = $("vd-tl"), gtabs = document.createElement("div"); gtabs.className = "vd-gtabs"; gtabs.id = "vd-gtabs"; gtabs.hidden = true; tlBox.insertBefore(gtabs, tlBox.firstChild);
+	function renderTabs() {
+		var trail = VE.groupTrail ? VE.groupTrail() : [];
+		tlBox.classList.toggle("has-gtabs", trail.length > 0); gtabs.hidden = !trail.length; if (!trail.length) { gtabs.innerHTML = ""; return; }
+		var h = '<button type="button" class="vd-gtab" data-glevel="0" title="Back to the main timeline (Esc)">&#9664; Main timeline</button>';
+		trail.forEach(function (g, i) { var last = i === trail.length - 1; h += '<span class="vd-gsep" aria-hidden="true">&#8250;</span>' + (last ? '<span class="vd-gtab is-on" title="You are editing what is inside this group. The preview shows only the group.">&#9635; ' + VE.esc(g.name || "Group") + '</span>' : '<button type="button" class="vd-gtab" data-glevel="' + (i + 1) + '">&#9635; ' + VE.esc(g.name || "Group") + "</button>"); });
+		h += '<span class="vd-gnote">Editing inside the group: the preview shows only the group.</span><button type="button" class="vd-gtab vd-gclose" data-glevel="' + (trail.length - 1) + '" title="Close this group (Esc)">Close group &times;</button>';
+		gtabs.innerHTML = h;
+	}
+	gtabs.addEventListener("click", function (e) { var b = e.target.closest("[data-glevel]"); if (b) VE.leaveGroup(+b.getAttribute("data-glevel")); });
+	VE.on("scope", function () { renderTabs(); });
 	T.render = function () {
+		renderTabs();
 		var p = VE.P, dur = V.duration(p), total = Math.max(dur + 20, (sc.clientWidth - HEAD) / VE.pps + 5);
 		inner.style.width = (HEAD + total * VE.pps) + "px";
 		var html = "", sel = {}; VE.sel.forEach(function (i) { sel[i] = 1; });
@@ -30,12 +43,12 @@
 				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic layer: clips close up with no gaps (click to turn off)" : "Make this layer magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +
 				(canDel ? '<button type="button" data-tact="del" title="Delete this empty layer">&times;</button>' : "") + "</span>" + (h >= 70 && hasSnd ? '<span class="vd-tsub">' + (T.wave === "db" ? "dB scale" : "linear scale") + "</span>" : "") + "</div><div class=\"vd-lane\">";
 			V.onTrack(p, tr.id).forEach(function (c) {
-				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? (c.text && c.text.cap ? "CC  " + (c.text.s || "") : c.text && c.text.tm ? "\u23F1  " + V.titleStr(c, c.start) + (c.text.tm.mode === "down" ? " \u2192 0" : " \u2192") : "T  " + (c.text && c.text.s || "").split("\n")[0]) : c.type === "shape" ? "\u25B2  " + ((V.SHAPE_KINDS.filter(function (q) { return q[0] === (c.shape && c.shape.k); })[0] || [0, "Shape"])[1]) + (c.shape && c.shape.k === "badge" ? " " + c.shape.n : "") : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
+				var m = VE.media(c.media), x = c.start * VE.pps, w = Math.max(4, V.dur(c) * VE.pps), label = c.type === "text" ? (c.text && c.text.cap ? "CC  " + (c.text.s || "") : c.text && c.text.tm ? "\u23F1  " + V.titleStr(c, c.start) + (c.text.tm.mode === "down" ? " \u2192 0" : " \u2192") : "T  " + (c.text && c.text.s || "").split("\n")[0]) : V.isGroup(c) ? "\u25A3  " + (c.name || "Group") + " \u00B7 " + c.sub.clips.length + " clip" + (c.sub.clips.length === 1 ? "" : "s") : c.type === "shape" ? "\u25B2  " + ((V.SHAPE_KINDS.filter(function (q) { return q[0] === (c.shape && c.shape.k); })[0] || [0, "Shape"])[1]) + (c.shape && c.shape.k === "badge" ? " " + c.shape.n : "") : m && m.state !== "missing" ? m.name : "⚠ missing file (fix it in Media)";
 				var badges = (c.link ? "🔗 " : "") + (c.grp ? "📎 " : "") + (c.speed && c.speed !== 1 ? c.speed + "×  " : "") + (c.clean && c.clean.key ? "✓ clean  " : "") + (V.afxOn(c) ? "fx  " : "") + (c.mute ? "muted  " : "") + (c.type === "video" && c.noAudio ? "no sound  " : "");
-				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + (c.grp ? " is-grp" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
+				html += '<div class="vd-clip vd-clip--' + c.type + (sel[c.id] ? " is-sel" : "") + (m && m.state === "missing" ? " is-missing" : "") + (c.grp ? " is-grp" : "") + '" data-id="' + c.id + '" style="left:' + x + "px;width:" + w + 'px" title="' + VE.esc(label) + " · " + V.short(V.dur(c)) + (V.isGroup(c) ? " · double-click to open it" : "") + (V.hasSource(c) ? " · from " + VE.esc(V.srcText(c, p.fps)) + " of the file" : "") + '">' +
 					(c.xin > 0 ? '<i class="vd-xf" style="width:' + c.xin * VE.pps + 'px"></i>' : "") +
 					'<canvas class="vd-cc" data-h="' + (h - 4) + '"></canvas><span class="vd-cl">' + VE.esc(badges + label) + "</span>" + (V.hasSource(c) && w >= 150 && h >= 40 ? '<span class="vd-cst">' + VE.esc(V.srcText(c, p.fps)) + "</span>" : "") +
-					(c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
+					(V.isGroup(c) && w >= 46 ? '<button type="button" class="vd-gopen" data-gopen="' + c.id + '" title="Open this group to edit what is inside (or double-click it)">Open &#9656;</button>' : "") + (c.fin > 0 ? '<i class="vd-fade vd-fade--in" style="width:' + c.fin * VE.pps + 'px"></i>' : "") + (c.fout > 0 ? '<i class="vd-fade vd-fade--out" style="width:' + c.fout * VE.pps + 'px"></i>' : "") + animMarks(c, w) + "</div>";
 			});
 			html += '</div><i class="vd-rgrip" data-rgrip="' + tr.id + '" title="Drag the top edge to make this layer taller or shorter (double-click: normal height)"></i></div>';
 		});
@@ -69,6 +82,7 @@
 		var g = cv.getContext("2d"); g.setTransform(cv.width / W, 0, 0, dpr, -a * cv.width / W, 0); g.clearRect(a, 0, W, H);
 		var tiny = w < 26;   // squeezed far out: plain coloured block (pictures / waveform come back when zoomed in)
 		if (tiny) return;
+		if (V.isGroup(c)) { paintGroup(g, c, a, b, H); return; }
 		if (c.type === "video" && m && m.thumbImg && m.thumbTimes) {
 			var th = H - (VE.hasSound(c) ? 18 : 0), tw = Math.max(8, th * m.thumbW / m.thumbH);
 			for (var x = Math.floor(a / tw) * tw; x < b; x += tw) {
@@ -83,6 +97,22 @@
 			if (!big) { g.fillStyle = "rgba(2,6,23,0.6)"; g.fillRect(a, top, W, hh); }
 			paintWave(g, c, m, a, b, top, hh, big);
 		}
+	}
+	// a group: a small bar per clip inside it, one row per layer inside, coloured by kind (what you would see opening it)
+	var GCOL = { video: "#60a5fa", audio: "#6ee7b7", image: "#c4b5fd", text: "#fbbf24", shape: "#fb7185", group: "#e2e8f0" };
+	function paintGroup(g, c, A, B, H) {
+		var sub = c.sub, tr = sub.tracks, n = Math.max(1, tr.length), top = 16, rh = Math.max(3, Math.min(14, (H - top - 2) / n));
+		tr.forEach(function (t, i) {
+			var y = top + i * rh;
+			g.fillStyle = "rgba(2,6,23,0.35)"; g.fillRect(A, y, B - A, rh - 1);
+			sub.clips.forEach(function (q) {
+				if (q.track !== t.id) return;
+				var x0 = (q.start - c.in) * VE.pps, x1 = (V.end(q) - c.in) * VE.pps; if (x1 < A || x0 > B) return;
+				g.fillStyle = GCOL[q.type] || "#cbd5e1"; g.globalAlpha = t.hide && q.type !== "audio" ? 0.35 : 0.85;
+				g.fillRect(Math.max(A, x0), y + 1, Math.max(1, Math.min(B, x1) - Math.max(A, x0) - 1), rh - 3);
+			});
+			g.globalAlpha = 1;
+		});
 	}
 	var scrollRaf = 0;
 	function repaintVisible() { scrollRaf = 0; rows.querySelectorAll(".vd-clip").forEach(function (el) { paintClip(el); }); }
@@ -167,6 +197,7 @@
 		var ae = document.activeElement; if (ae && ae !== document.body && !inner.contains(ae) && ae.blur) ae.blur();
 		if (e.button > 0) return;
 		var tb = e.target.closest("[data-tact]"); if (tb) return trackAction(tb);
+		var gob = e.target.closest("[data-gopen]"); if (gob) { e.preventDefault(); VE.enterGroup(gob.getAttribute("data-gopen")); return; }
 		var rg = e.target.closest("[data-rgrip]");
 		if (rg) { var rtr = V.track(VE.P, rg.getAttribute("data-rgrip")); drag = { mode: "rowh", tr: rtr, y0: e.clientY, h0: V.rowH(rtr, VE.P), moved: false }; inner.setPointerCapture(e.pointerId); e.preventDefault(); return; }
 		var th = e.target.closest(".vd-thead");
@@ -195,6 +226,11 @@
 			inner.setPointerCapture(e.pointerId); e.preventDefault(); return;
 		}
 		var c = V.clip(VE.P, clipEl.getAttribute("data-id")); if (!c) return;
+		// a second press on the same group within a moment opens it (the timeline redraws between the clicks, so the browser's own
+		// double-click never arrives on the same element)
+		var nowD = performance.now(), ld = T.lastDown;
+		T.lastDown = { id: c.id, at: nowD, x: e.clientX, y: e.clientY };
+		if (V.isGroup(c) && ld && ld.id === c.id && nowD - ld.at < 450 && Math.abs(ld.x - e.clientX) < 6 && Math.abs(ld.y - e.clientY) < 6 && !e.shiftKey && !e.ctrlKey && !e.metaKey) { T.lastDown = null; e.preventDefault(); VE.enterGroup(c.id); return; }
 		var tr = V.track(VE.P, c.track);
 		if (e.shiftKey || e.ctrlKey || e.metaKey) { var i = VE.sel.indexOf(c.id); if (i >= 0) VE.sel.splice(i, 1); else VE.sel.push(c.id); }
 		else if (VE.sel.indexOf(c.id) < 0) VE.sel = e.altKey ? [c.id] : V.withGroup(VE.P, [c.id]);   // a click selects the whole group (Alt: just this clip)
@@ -401,7 +437,7 @@
 	rows.addEventListener("dblclick", function (e) {
 		var rg = e.target.closest("[data-rgrip]"); if (rg) { var gt = V.track(VE.P, rg.getAttribute("data-rgrip")); delete gt.h; VE.commit("Layer height"); return; }
 		var n = e.target.closest(".vd-tname"); if (n) { var tr = V.track(VE.P, n.closest(".vd-trow").getAttribute("data-track")), nm = window.prompt("Track name", tr.name); if (nm) { tr.name = nm.slice(0, 40); VE.commit("Rename layer"); } return; }
-		var ce = e.target.closest(".vd-clip"); if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c && c.type === "text") VE.emit("editText", c); }
+		var ce = e.target.closest(".vd-clip"); if (ce) { var c = V.clip(VE.P, ce.getAttribute("data-id")); if (c && c.type === "text") VE.emit("editText", c); else if (V.isGroup(c)) VE.enterGroup(c.id); }
 	});
 
 	/* ---------- dropping media from the bin ---------- */

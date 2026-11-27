@@ -20,7 +20,7 @@
 	function binRow(m) {
 		var meta = m.kind === "image" ? (m.w ? m.w + "×" + m.h : "picture") : (m.dur ? V.short(m.dur).replace(/\.\d$/, "") : "") + (m.w ? " · " + m.w + "×" + m.h : "") + (m.kind === "audio" ? " · sound" : "");
 		var st = m.state === "ready" ? (m.converted ? "converted from " + esc(m.origName || "") : "") : m.state === "error" ? '<span class="vd-bad">' + esc(m.status) + "</span>" : m.state === "missing" ? '<span class="vd-bad">' + esc(m.status) + "</span>" : esc(m.status || "") + (m.pct ? '<i class="vd-mbar"><i style="width:' + Math.round(m.pct * 100) + '%"></i></i>' : "");
-		var used = VE.P.clips.filter(function (c) { return c.media === m.id; }).length;
+		var used = V.allClips(VE.root).filter(function (c) { return c.media === m.id; }).length;
 		return '<div class="vd-mi' + (binSel[m.id] ? " is-sel" : "") + (m.state !== "ready" ? " is-wait" : "") + '" role="option" aria-selected="' + !!binSel[m.id] + '" data-mid="' + m.id + '" tabindex="0">' +
 			'<canvas class="vd-mth" width="96" height="54" data-th="' + m.id + '"></canvas><div class="vd-mt"><div class="vd-mn" title="' + esc(m.name) + '">' + esc(m.name) + "</div><div class=\"vd-mm\">" + esc(meta) + (used ? " · on timeline" + (used > 1 ? " ×" + used : "") : "") + "</div><div class=\"vd-mm\">" + st + syncBadge(m) + (m.only && m.file ? ' <button type="button" class="vd-msync is-warn vd-monly" data-mdl="' + m.id + '" title="Never saved on your computer: starting a new project would lose it">⚠ only in this browser · Download</button>' : "") + "</div></div>" +
 			'<span class="vd-mact"><button type="button" class="vd-btn vd-ico vd-sm" data-madd="' + m.id + '" title="Put it at the playhead" aria-label="Add ' + esc(m.name) + ' at the playhead"' + (m.state !== "ready" ? " disabled" : "") + '>+</button><button type="button" class="vd-btn vd-ico vd-sm" data-mrm="' + m.id + '" title="Remove from the project" aria-label="Remove ' + esc(m.name) + '">&times;</button></span></div>';
@@ -33,7 +33,7 @@
 		$("vd-binhint").hidden = VE.bin.length > 2;
 		var nu = unusedMedia().length, rb = $("vd-rmunused"); rb.hidden = !nu; rb.textContent = "Remove unused (" + nu + ")";
 	}
-	function unusedMedia() { return VE.bin.filter(function (m) { return m.state !== "working" && !VE.P.clips.some(function (c) { return c.media === m.id; }); }); }
+	function unusedMedia() { var all = V.allClips(VE.root); return VE.bin.filter(function (m) { return m.state !== "working" && !all.some(function (c) { return c.media === m.id; }); }); }
 	function paintThumb(m) {
 		var cv = $("vd-binlist").querySelector('canvas[data-th="' + m.id + '"]'); if (!cv) return;
 		var g = cv.getContext("2d"); g.fillStyle = "#1e293b"; g.fillRect(0, 0, 96, 54);
@@ -45,8 +45,8 @@
 	/* clips whose file is missing: pick a file from the bin (or your computer) and every one of them uses it */
 	function missGroups() {
 		var g = {}, out = [];
-		VE.P.clips.forEach(function (c) {
-			if (V.isGfx(c) || !c.media) return; var m = VE.media(c.media); if (m && m.state !== "missing") return;
+		V.allClips(VE.root).forEach(function (c) {
+			if (V.isGfx(c) || V.isGroup(c) || !c.media) return; var m = VE.media(c.media); if (m && m.state !== "missing") return;
 			var x = g[c.media]; if (!x) { x = g[c.media] = { id: c.media, m: m, n: 0, end: 0, img: c.type === "image" }; out.push(x); }
 			x.n++; x.end = Math.max(x.end, c.out || 0);
 		});
@@ -94,7 +94,7 @@
 	VE.on("bin", renderBin);
 	// keep "on timeline ×N" and the Remove unused count right when clips are added / deleted
 	var useKey = "";
-	VE.on("change", function () { var k = VE.P.clips.map(function (c) { return c.media || ""; }).sort().join(","); if (k !== useKey) { useKey = k; renderBin(); } });
+	VE.on("change", function () { var k = V.allClips(VE.root).map(function (c) { return c.media || ""; }).sort().join(","); if (k !== useKey) { useKey = k; renderBin(); } });
 	VE.on("binItem", function (m) { var el = $("vd-binlist").querySelector('[data-mid="' + m.id + '"]'); if (!el) return renderBin(); var tmp = document.createElement("div"); tmp.innerHTML = binRow(m); el.replaceWith(tmp.firstChild); paintThumb(m); $("vd-addsel").disabled = !Object.keys(binSel).length; });
 	VE.on("thumbs", function (m) { paintThumb(m); });
 	$("vd-binsearch").addEventListener("input", renderBin);
@@ -141,10 +141,10 @@
 		if (m.url) try { URL.revokeObjectURL(m.url); } catch (x) { /* ignore */ }
 	}
 	function removeMedia(id) {
-		var m = VE.media(id); if (!m) return; var n = VE.P.clips.filter(function (c) { return c.media === id; }).length;
+		var m = VE.media(id); if (!m) return; var n = V.allClips(VE.root).filter(function (c) { return c.media === id; }).length;
 		if (n && !window.confirm(m.name + " is used by " + n + " clip" + (n > 1 ? "s" : "") + " on the timeline. Remove it and those clips?")) return;
 		guardOnly([m], "Removing " + m.name, function () {
-			VE.P.clips = VE.P.clips.filter(function (c) { return c.media !== id; }); forget(m);
+			(function strip(p) { p.clips = p.clips.filter(function (c) { return c.media !== id; }); p.clips.forEach(function (c) { if (V.isGroup(c)) strip(c.sub); }); })(VE.root); forget(m);
 			VE.commit("Remove media"); renderBin();
 		});
 	}
@@ -486,9 +486,10 @@
 			sep();
 			it("Move up a layer", "Alt+↑", function () { VE.moveRow(-1); }); it("Move down a layer", "Alt+↓", function () { VE.moveRow(1); });
 			sep();
-			var gsel = V.withGroup(VE.P, sel.map(function (q) { return q.id; })), oneGrp = c.grp && gsel.every(function (id) { return (V.clip(VE.P, id) || {}).grp === c.grp; });
-			if (sel.length > 1 && !oneGrp) it("Group these " + sel.length + " clips", K + "G", function () { VE.groupSel(); });
-			if (c.grp) it("Ungroup", K + "Shift+G", function () { VE.ungroupSel(); });
+			if (V.isGroup(c)) it("Open the group", "double-click", function () { VE.enterGroup(c.id); });
+			if (!(sel.length === 1 && V.isGroup(c))) it(sel.length > 1 ? "Group these " + sel.length + " clips" : "Make a group of this clip", K + "G", function () { VE.groupSel(); });
+			if (sel.some(V.isGroup)) it("Ungroup", K + "Shift+G", function () { VE.ungroupSel(); });
+			if (V.isGroup(c)) it("Rename the group…", "", function () { var nm = window.prompt("Group name", c.name || "Group"); if (nm && nm.trim()) { c.name = nm.trim().slice(0, 60); VE.commit("Rename group"); } });
 			var csel = sel.length > 1 ? sel : [c], canC = VE.canCombine(csel), avPair = sel.length === 2 && sel.some(function (q) { return q.type === "video"; }) && sel.some(function (q) { return q.type === "audio"; });
 			if (canC || avPair) it("Combine video and sound into one clip", K + "Shift+A", function () { VE.combine(csel); });
 			if (c.link) it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); });
@@ -562,12 +563,25 @@
 		if (!ids.length) { toast("Select a clip first."); return; }
 		V.removeClips(VE.P, ids, ripple); VE.sel = []; VE.commit(ripple ? "Ripple delete" : "Delete");
 	};
+	// group (Camtasia): the selected clips (and the sound linked to them) become one clip on one layer; double-click it to edit inside
 	VE.groupSel = function () {
-		var ids = V.withGroup(VE.P, targets().map(function (c) { return c.id; }));
-		if (ids.length < 2) { toast("Select two or more clips first (Shift- or Ctrl-click them, or drag a box round them), then group them."); return; }
-		V.group(VE.P, ids, V.uid("G")); VE.sel = ids; VE.commit("Group"); toast("Grouped " + ids.length + " clips: clicking one selects them all, and they move and delete together. Alt + click picks just one.", 6000);
+		var ids = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).filter(function (id) { var c = V.clip(VE.P, id), tr = c && V.track(VE.P, c.track); return c && !(tr && tr.lock); });
+		if (!ids.length) { toast("Select the clips to group first (Shift- or Ctrl-click them, or drag a box round them), then group them."); return; }
+		var g = V.makeGroup(VE.P, ids, V.uid("g"), V.groupName(VE.root)); if (!g) return;
+		VE.sel = [g.id]; VE.commit("Group");
+		toast("Grouped " + ids.length + " clip" + (ids.length === 1 ? "" : "s") + " into " + g.name + ": one clip on one layer. Double-click it (or press Open) to edit what is inside. " + (/Mac|iP/.test(navigator.platform || "") ? "⌘" : "Ctrl+") + "Shift+G takes them out again.", 7000);
 	};
-	VE.ungroupSel = function () { var ids = targets().map(function (c) { return c.id; }); if (!ids.some(function (id) { return (V.clip(VE.P, id) || {}).grp; })) { toast("Nothing grouped is selected."); return; } V.ungroup(VE.P, ids); VE.commit("Ungroup"); toast("Ungrouped."); };
+	VE.ungroupSel = function (list) {
+		var gs = (list || targets()).filter(V.isGroup); if (!gs.length) { toast("Select a group first."); return; }
+		var ids = [], lost = false;
+		gs.forEach(function (g) {
+			var cr = g.crop || {};
+			if (Math.abs(g.x - 0.5) > 1e-6 || Math.abs(g.y - 0.5) > 1e-6 || Math.abs(g.scale - 1) > 1e-6 || g.rot || g.op < 1 || (g.anims && g.anims.length) || g.fin || g.fout || g.xin || cr.l || cr.t || cr.r || cr.b) lost = true;
+			(V.ungroupClip(VE.P, g.id) || []).forEach(function (k) { ids.push(k.id); });
+		});
+		VE.sel = ids; VE.commit("Ungroup");
+		toast(lost ? "Ungrouped. The group's position, size, fades and animations were not carried over to the clips (its volume was)." : "Ungrouped: the clips are back on their own layers.", lost ? 7000 : 3500);
+	};
 	VE.duplicate = function () {
 		var list = V.withLinks(VE.P, targets().map(function (c) { return c.id; })).map(function (id) { return V.clip(VE.P, id); }).filter(Boolean); if (!list.length) return; var ns = [], links = {};
 		var a0 = Math.min.apply(null, list.map(function (c) { return c.start; })), shift = Math.max.apply(null, list.map(V.end)) - a0;
@@ -900,7 +914,7 @@
 	   brave://flags/#file-system-access-api); elsewhere every save is a download. The link survives a reload (handle in IndexedDB). */
 	var proj = { h: null, name: "", lm: 0, savedRev: -1 }, FSA = !!window.showSaveFilePicker, rev = 0;
 	VE.on("change", function (label) { rev++; if (label === "restore") { proj.savedRev = rev; cloudRev = rev; } projState(); if (cloud) cloud.changed(vdoc); renderSync(); });   // the autosave coming back is not a new change
-	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.P, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur, only: !!m.only || undefined }; }) }; }
+	function projData() { return { format: "mes-video", v: 1, saved: new Date().toISOString(), project: VE.root, media: VE.bin.map(function (m) { return { id: m.id, name: m.name, origName: m.origName || "", size: m.size, kind: m.kind, dur: m.dur, only: !!m.only || undefined }; }) }; }
 	function projBlob() { return new Blob([JSON.stringify(projData(), null, 1)], { type: "application/json" }); }
 	function projFileName() { return (VE.P.name || "video").replace(/[\\/:*?"<>|]+/g, "-").replace(/(\.mesvideo)+$/i, "") + ".mesvideo"; }
 	function linkProject(h, lm) {
@@ -1002,7 +1016,7 @@
 				if (blob) m.file = blob instanceof File ? blob : new File([blob], x.name);
 				bin.push(m);
 			}
-			VE.bin = bin; VE.P = p; VE.sel = []; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(p));
+			VE.bin = bin; VE.leaveGroup(0); VE.root = p; VE.sel = []; VE.hist = new V.History(200); VE.hist.push(JSON.stringify(p));
 			VE.bin.forEach(function (m) { if (m.state === "working" && m.file && !m.url) VE.prepare(m, false); });
 			VE.emit("bin"); VE.commit("Open project");
 			var hh = h && typeof h.then === "function" ? await h.catch(function () { return null; }) : h;   // a dropped file's handle arrives as a promise
@@ -1249,7 +1263,8 @@
 		var sel = VE.selected();
 		if (!sel.length) return renderProject();
 		if (sel.length > 1) return renderMulti(sel);
-		var c = sel[0], m = VE.media(c.media), skind = c.type === "shape" ? (V.SHAPE_KINDS.filter(function (q) { return q[0] === c.shape.k; })[0] || [0, "Shape"])[1] : "", h = '<h3>' + esc(c.type === "text" ? "Title" : c.type === "shape" ? skind : m ? m.name : "Clip") + '</h3><p class="vd-sub">' + ({ video: "Video clip", audio: "Sound clip", image: "Picture", text: "Title", shape: "Shape / annotation" })[c.type] + " · " + V.short(V.dur(c)) + "</p>";
+		var c = sel[0], m = VE.media(c.media), skind = c.type === "shape" ? (V.SHAPE_KINDS.filter(function (q) { return q[0] === c.shape.k; })[0] || [0, "Shape"])[1] : "", h = '<h3>' + esc(c.type === "text" ? "Title" : c.type === "shape" ? skind : V.isGroup(c) ? c.name || "Group" : m ? m.name : "Clip") + '</h3><p class="vd-sub">' + ({ video: "Video clip", audio: "Sound clip", image: "Picture", text: "Title", shape: "Shape / annotation", group: "Group of " + (c.sub ? c.sub.clips.length : 0) + " clip" + (c.sub && c.sub.clips.length === 1 ? "" : "s") })[c.type] + " · " + V.short(V.dur(c)) + "</p>";
+		if (V.isGroup(c)) h += groupSection(c);
 		h += '<div class="vd-sec"><b>Time</b><div class="vd-grid">' + num("vd-i-start", "Starts at", r1(c.start), 0.01, 0, null, "s") + num("vd-i-dur", "Length", r1(V.dur(c)), 0.01, 0.05, null, "s") + "</div>";
 		if (V.hasSource(c)) h += '<div class="vd-src"><b class="vd-srch">Source times <small>(where this clip is in its file)</small></b><div class="vd-grid">' + tcBox("vd-i-sin", "Begins at", c.in, "Where the clip begins in " + (m ? m.name : "its file") + ". Type a time (1:02:03;15, 263, 4m23s) and press Enter to trim the start.") + tcBox("vd-i-sout", "Ends at", c.out, "Where the clip ends in its file. Type a time and press Enter to trim the end.") + '</div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-i-scopy" title="Copy the begin and end times in the file">Copy source times</button>' + (VE.P.clips.filter(V.hasSource).length > 1 ? '<button type="button" class="vd-btn vd-sm" id="vd-i-scopyall" title="Copy the source times of every video and sound clip, in timeline order">Copy for all clips</button>' : "") + "</div></div>";
 		var fmax = Math.max(0.5, Math.min(5, Math.floor(V.dur(c) / 2 * 10) / 10));
@@ -1312,10 +1327,33 @@
 			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-pos="center">Centre</button><button type="button" class="vd-btn vd-sm" data-pos="fit">Fit the frame</button>' + (!V.isGfx(c) ? '<button type="button" class="vd-btn vd-sm" data-pos="fill">Fill the frame</button><button type="button" class="vd-btn vd-sm" data-pos="pip">Corner (picture in picture)</button>' : "") + "</div></div>";
 		}
 		if (c.type !== "audio") h += animSection(c);
+		if (V.isGroup(c)) h += groupSound(c);
 		h += linkSection(c);
 		if (VE.hasSound(c)) h += soundSection([c]);
 		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; INSP_LIVE = {}; bindInsp(c); bindLink(c); bindAnims(c); wireRanges();
+		insp.innerHTML = h; INSP_LIVE = {}; bindInsp(c); bindLink(c); bindAnims(c); if (V.isGroup(c)) bindGroup(c); wireRanges();
+	}
+	// a group: its name, open / ungroup, and its volume (it multiplies the sound of everything inside)
+	function groupSection(c) {
+		return '<div class="vd-sec vd-gsec"><b>Group</b><label class="vd-f vd-wide"><span>Name</span><input type="text" id="vd-g-name" maxlength="60" value="' + esc(c.name || "Group") + '"></label>' +
+			'<p class="vd-sub">One clip on one layer that holds its own layers. Move, trim, split, fade and animate it like any clip: what is inside goes along. Trimming hides part of it, nothing inside is deleted.</p>' +
+			'<div class="vd-row"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-g-open">&#9635; Open the group</button><button type="button" class="vd-btn vd-sm" id="vd-g-ungrp">Ungroup</button></div></div>';
+	}
+	function groupSound(c) {
+		var db = Math.round(V.db(c.vol == null ? 1 : c.vol) * 10) / 10;
+		return '<div class="vd-sec"><b>Sound of the group</b><label class="vd-f vd-wide"><span>Volume <output id="vd-g-volout">' + (isFinite(db) ? (db > 0 ? "+" : "") + db + " dB" : "off") + '</output></span><input type="range" id="vd-g-vol" min="-40" max="20" step="0.5" value="' + (isFinite(db) ? db : -40) + '"></label><div class="vd-checks"><label><input type="checkbox" id="vd-g-mute"' + (c.mute ? " checked" : "") + '> Mute the whole group</label></div><p class="vd-sub">Changes the sound of every clip inside. To change one of them, open the group.</p></div>';
+	}
+	function bindGroup(c) {
+		var nm = $("vd-g-name"); if (nm) nm.addEventListener("change", function () { c.name = nm.value.trim().slice(0, 60) || "Group"; VE.commit("Rename group"); });
+		var op = $("vd-g-open"); if (op) op.onclick = function () { VE.enterGroup(c.id); };
+		var ug = $("vd-g-ungrp"); if (ug) ug.onclick = function () { VE.ungroupSel([c]); };
+		var vol = $("vd-g-vol"), out = $("vd-g-volout");
+		if (vol) {
+			vol.addEventListener("input", function () { var d = +vol.value; c.vol = d <= -40 ? 0 : V.fromDb(d); if (out) out.textContent = d <= -40 ? "off" : (d > 0 ? "+" : "") + d + " dB"; if (VE.preview.sync) VE.preview.sync(); });
+			vol.addEventListener("change", function () { VE.commit("Group volume"); });
+			vol.addEventListener("dblclick", function () { c.vol = 1; VE.commit("Group volume"); });
+		}
+		var mu = $("vd-g-mute"); if (mu) mu.onchange = function () { c.mute = mu.checked; VE.commit(c.mute ? "Mute group" : "Unmute group"); };
 	}
 	function soundSection(list) {
 		var c = list[0], db = Math.round(V.db(c.vol == null ? 1 : c.vol) * 10) / 10;
@@ -1335,8 +1373,8 @@
 		var snd = sel.filter(VE.hasSound);
 		var h = "<h3>" + sel.length + ' clips selected</h3><p class="vd-sub">Shift- or Ctrl-click clips to add or remove them.</p>';
 		if (snd.length) h += soundSection(snd);
-		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-grpbtn">&#128206; Group them</button><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; INSP_LIVE = {}; var gb = $("vd-grpbtn"); if (gb) { var gs = sel.filter(function (q) { return q.grp; }); if (gs.length === sel.length && gs.every(function (q) { return q.grp === gs[0].grp; })) { gb.innerHTML = "Ungroup"; gb.classList.remove("vd-primary"); gb.onclick = function () { VE.ungroupSel(); }; } else gb.onclick = function () { VE.groupSel(); }; } bindSound(snd); bindActs(); wireRanges();
+		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-grpbtn">&#9635; Group them</button><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
+		insp.innerHTML = h; INSP_LIVE = {}; var gb = $("vd-grpbtn"); if (gb) { if (sel.every(V.isGroup)) { gb.innerHTML = "Ungroup"; gb.classList.remove("vd-primary"); gb.onclick = function () { VE.ungroupSel(); }; } else gb.onclick = function () { VE.groupSel(); }; } bindSound(snd); bindActs(); wireRanges();
 	}
 	function renderProject() {
 		var p = VE.P, d = V.duration(p);
@@ -2096,7 +2134,7 @@
 			case "f": case "F": if (e.shiftKey) $("vd-fs").click(); else setPv(!app.classList.contains("vd-pvfill")); break;
 			case "+": case "=": VE.tl.zoom(VE.pps * 1.5); break; case "-": case "_": VE.tl.zoom(VE.pps / 1.5); break;
 			case "w": case "W": setWin(!UI.win); break;
-			case "Escape": if (P.picking()) P.cancelPick(); else if (app.classList.contains("vd-pvfill")) setPv(false); else if (UI.win) setWin(false); else { VE.sel = []; VE.emit("select"); } break;
+			case "Escape": if (P.picking()) P.cancelPick(); else if (app.classList.contains("vd-pvfill")) setPv(false); else if (UI.win) setWin(false); else if (VE.sel.length || !VE.path().length) { VE.sel = []; VE.emit("select"); } else VE.leaveGroup(); break;
 			default: h = false;
 		}
 		if (h) e.preventDefault();

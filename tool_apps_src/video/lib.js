@@ -223,9 +223,29 @@
 		for (var k in d) if (c[k] == null) c[k] = typeof d[k] === "object" && d[k] ? JSON.parse(JSON.stringify(d[k])) : d[k];
 		if (c.type === "text") { c.text = Object.assign({}, V.TEXT_DEFAULT, c.text || {}); if (c.text.tm) c.text.tm = Object.assign({}, V.TIMER_DEFAULT, c.text.tm); if (c.text.cap) c.text.cap = Object.assign({}, V.CAP_DEFAULT, c.text.cap); }
 		if (c.type === "shape") { c.shape = Object.assign({}, V.SHAPE_DEFAULT, c.shape || {}); }
+		if (c.type === "group") { c.speed = 1; c.name = String(c.name || "Group").slice(0, 60); c.noAudio = false; c.clean = null; c.afx = null; c.link = null; }
 		c.anims = V.cleanAnims(c.anims); c.rot = isFinite(+c.rot) ? +c.rot : 0;
 		return c;
 	};
+	function normTracks(list, fallback) {
+		if (!Array.isArray(list) || !list.length) return fallback;
+		var out = list.filter(function (t) { return t && t.id && (t.kind === "v" || t.kind === "a"); }).map(function (t) { var o = { id: String(t.id), kind: "v", name: String(t.name || "Layer").slice(0, 40), mute: !!t.mute, hide: !!t.hide, lock: !!t.lock, mag: !!t.mag }; if (isFinite(t.h) && t.h > 0) o.h = V.clamp(Math.round(t.h), V.ROW_MIN, V.ROW_MAX); return o; });
+		if (!out.length) return fallback;
+		var nT = out.length; out.forEach(function (t, i) { if (/^(Video|Audio|Track) \d+$/.test(t.name)) t.name = "Layer " + (nT - i); });
+		return out;
+	}
+	function normClips(list, tracks, depth) {
+		var ids = {}; tracks.forEach(function (t) { ids[t.id] = t; });
+		return (Array.isArray(list) ? list : []).filter(function (c) { return c && c.id && ids[c.track] && isFinite(c.start) && isFinite(c.in) && isFinite(c.out) && c.out > c.in && (c.type !== "group" || (c.sub && typeof c.sub === "object" && depth < 8)); }).map(function (c) {
+			var d = V.clipDefaults(JSON.parse(JSON.stringify(c)));
+			if (d.type === "group") d.sub = normSub(d.sub, depth + 1);
+			return d;
+		});
+	}
+	function normSub(s, depth) {
+		var tracks = normTracks(s.tracks, [{ id: "v1", kind: "v", name: "Layer 1" }]);
+		return { tracks: tracks, clips: normClips(s.clips, tracks, depth), marks: { in: s.marks && isFinite(s.marks.in) ? s.marks.in : null, out: s.marks && isFinite(s.marks.out) ? s.marks.out : null } };
+	}
 	// a project read from a file / storage: fill in defaults, drop clips whose track is gone, keep numbers sane
 	V.normalize = function (p) {
 		if (!p || typeof p !== "object") throw new Error("Not a project.");
@@ -234,14 +254,14 @@
 		q.w = V.clamp(Math.round(+p.w || 1920), 16, 7680) & ~1; q.h = V.clamp(Math.round(+p.h || 1080), 16, 4320) & ~1; q.fps = V.clamp(+p.fps || 30, 1, 120);
 		// every track is a "layer" that can hold anything (video, pictures, titles, sound); old video / audio tracks keep their order,
 		// and their default names ("Video 2", "Audio 1") become "Layer N", counted from the bottom like Camtasia
-		if (Array.isArray(p.tracks) && p.tracks.length) {
-			q.tracks = p.tracks.filter(function (t) { return t && t.id && (t.kind === "v" || t.kind === "a"); }).map(function (t) { var o = { id: String(t.id), kind: "v", name: String(t.name || "Layer").slice(0, 40), mute: !!t.mute, hide: !!t.hide, lock: !!t.lock, mag: !!t.mag }; if (isFinite(t.h) && t.h > 0) o.h = V.clamp(Math.round(t.h), V.ROW_MIN, V.ROW_MAX); return o; });
-			var nT = q.tracks.length; q.tracks.forEach(function (t, i) { if (/^(Video|Audio|Track) \d+$/.test(t.name)) t.name = "Layer " + (nT - i); });
-		}
-		var ids = {}; q.tracks.forEach(function (t) { ids[t.id] = t; });
-		q.clips = (Array.isArray(p.clips) ? p.clips : []).filter(function (c) { return c && c.id && ids[c.track] && isFinite(c.start) && isFinite(c.in) && isFinite(c.out) && c.out > c.in; }).map(function (c) { return V.clipDefaults(JSON.parse(JSON.stringify(c))); });
+		q.tracks = normTracks(p.tracks, q.tracks);
+		q.clips = normClips(p.clips, q.tracks, 0);
 		q.marks = { in: p.marks && isFinite(p.marks.in) ? p.marks.in : null, out: p.marks && isFinite(p.marks.out) ? p.marks.out : null };
 		q.credits = (Array.isArray(p.credits) ? p.credits : []).filter(function (c) { return c && c.id && c.text; }).slice(0, 500).map(function (c) { return { id: String(c.id).slice(0, 80), text: String(c.text).slice(0, 600), lic: String(c.lic || "").slice(0, 20) }; });
+		// groups of the older kind (clips tagged c.grp that stayed on their own layers) become real groups: one clip on one layer
+		var old = {}; q.clips.forEach(function (c) { if (c.grp) (old[c.grp] = old[c.grp] || []).push(c.id); });
+		Object.keys(old).forEach(function (k) { if (old[k].length > 1) V.makeGroup(q, old[k], V.uid("g"), V.groupName(q)); });
+		V.allClips(q).forEach(function (c) { if (c.grp) c.grp = null; });
 		return q;
 	};
 	V.ROW_MIN = 28; V.ROW_MAX = 420; V.ROW_DEFAULT = { v: 62, a: 84 };
@@ -420,6 +440,7 @@
 	// fade-in / fade-out / cross-fade envelope of a clip at timeline time t (0..1). Cross-fade: the clip starts showing xin seconds early
 	// (its pre-roll) over the clip before it, fading in; the clip before keeps going to its end underneath.
 	V.envelope = function (c, t) {
+		if (c._w1 != null && (t < c._w0 - EPS || t >= c._w1 - EPS)) return 0;   // a clip inside a group shows only where the group does
 		var s = c.start, e = V.end(c), g = 1;
 		if (c.xin > 0 && t < s) g *= V.clamp((t - (s - c.xin)) / c.xin, 0, 1);
 		else if (t < s) return 0;
@@ -428,7 +449,7 @@
 		if (c.fout > 0) g *= V.clamp((e - t) / c.fout, 0, 1);
 		return g;
 	};
-	V.active = function (c, t) { return t >= c.start - (c.xin || 0) - EPS && t < V.end(c) - EPS; };
+	V.active = function (c, t) { return t >= c.start - (c.xin || 0) - EPS && t < V.end(c) - EPS && (c._w1 == null || (t >= c._w0 - EPS && t < c._w1 - EPS)); };
 	// visible layers at t, bottom first: [{ clip, src, alpha }]. tracks[0] is the top track.
 	V.layersAt = function (p, t) {
 		var out = [];
@@ -450,6 +471,7 @@
 		var g = V.envelope(c, t) * (c.vol == null ? 1 : c.vol);
 		var nx = V.nextTouching(p, c);
 		if (nx && nx.xin > 0) { var e = V.end(c); if (t > e - nx.xin) g *= V.clamp((e - t) / nx.xin, 0, 1); }
+		if (c._g) for (var i = 0; i < c._g.length && g > 0; i++) { var q = c._g[i]; g *= V.envelope(q, t) * (q.vol == null ? 1 : q.vol); }   // the groups it is in: their fades and volume
 		return g;
 	};
 	V.audibleAt = function (p, t, hasAudio) {
@@ -849,6 +871,79 @@
 	V.ungroup = function (p, ids) { var g = {}; ids.forEach(function (i) { var c = V.clip(p, i); if (c && c.grp) g[c.grp] = 1; }); p.clips.forEach(function (c) { if (c.grp && g[c.grp]) c.grp = null; }); return p; };
 	// a group left with one clip (the others deleted) is no group
 	V.cleanGroups = function (p) { var n = {}; p.clips.forEach(function (c) { if (c.grp) n[c.grp] = (n[c.grp] || 0) + 1; }); p.clips.forEach(function (c) { if (c.grp && n[c.grp] < 2) c.grp = null; }); return p; };
+
+	/* ---------- groups (Camtasia): one clip on one layer that holds its own layers of clips (c.type "group", c.sub = { tracks, clips, marks }).
+	   c.in / c.out = the part of the group's own timeline that shows (inner seconds); a group never changes speed. ---------- */
+	V.isGroup = function (c) { return !!c && c.type === "group"; };
+	V.groupLen = function (c) { return c && c.sub ? V.duration(c.sub) : 0; };
+	// every clip of the project, the ones inside groups too (for "which files are used" and the like)
+	V.allClips = function (p) { var out = []; (function walk(cs) { cs.forEach(function (c) { out.push(c); if (V.isGroup(c) && c.sub) walk(c.sub.clips); }); })(p.clips); return out; };
+	V.groupName = function (p) { var n = 0; V.allClips(p).forEach(function (c) { var m = V.isGroup(c) && /^Group (\d+)$/.exec(c.name || ""); if (m) n = Math.max(n, +m[1]); }); return "Group " + (n + 1); };
+	// put clips (ids) in a new group: one clip on the topmost layer they used (or a new layer above when that is taken there); the layers
+	// they came from close up when nothing else is on them. A video's linked sound left outside the group is unlinked. -> the group clip
+	V.makeGroup = function (p, ids, gid, name, newTrackId) {
+		var set = {}; ids.forEach(function (i) { set[i] = 1; });
+		var cs = p.clips.filter(function (c) { return set[c.id]; }); if (!cs.length) return null;
+		var lk = {}; cs.forEach(function (c) { if (c.link) lk[c.link] = 1; });
+		p.clips.forEach(function (c) { if (!set[c.id] && c.link && lk[c.link]) { var k = c.link; V.allClips(p).forEach(function (x) { if (x.link === k) x.link = null; }); } });
+		var t0 = Infinity, t1 = 0; cs.forEach(function (c) { t0 = Math.min(t0, Math.max(0, c.start - (c.xin || 0))); t1 = Math.max(t1, V.end(c)); });
+		var used = p.tracks.filter(function (t) { return cs.some(function (c) { return c.track === t.id; }); });
+		var sub = { tracks: used.map(function (t) { var o = { id: t.id, kind: "v", name: t.name, mute: !!t.mute, hide: !!t.hide, lock: false, mag: !!t.mag }; if (t.h) o.h = t.h; return o; }),
+			clips: cs.map(function (c) { var d = JSON.parse(JSON.stringify(c)); d.start = Math.round((d.start - t0) * 1e6) / 1e6; d.grp = null; return d; }), marks: { in: null, out: null } };
+		p.clips = p.clips.filter(function (c) { return !set[c.id]; });
+		var trk = null; for (var j = 0; j < used.length; j++) if (V.canPlace(p, used[j].id, t0, t1 - t0)) { trk = used[j]; break; }
+		if (!trk) { trk = { id: newTrackId || V.uid("t"), kind: "v", name: "Layer " + (p.tracks.length + 1) }; p.tracks.splice(p.tracks.indexOf(used[0]), 0, trk); }
+		var g = V.clipDefaults({ id: gid, type: "group", track: trk.id, start: t0, in: 0, out: Math.max(1e-3, t1 - t0), name: name || "Group", sub: sub, cl: t1 - t0 });
+		p.clips.push(g);
+		used.forEach(function (t) { if (t !== trk && p.tracks.length > 1 && !p.clips.some(function (c) { return c.track === t.id; })) p.tracks.splice(p.tracks.indexOf(t), 1); });
+		return g;
+	};
+	// take the clips out of a group again, at the same times, cut to the part the group showed; the group's layers come back where the
+	// group's layer is. The group's volume is kept (multiplied in); its position, size and animations are not. -> the clips put back
+	V.ungroupClip = function (p, gid) {
+		var g = V.clip(p, gid); if (!V.isGroup(g)) return null;
+		var off = g.start - g.in, a = g.in, b = g.out, kids = [], idm = {}, lm = {};
+		g.sub.clips.forEach(function (c) {
+			var s = c.start - (c.xin || 0), e = V.end(c); if (e <= a + 1e-6 || s >= b - 1e-6) return;
+			var d = JSON.parse(JSON.stringify(c));
+			if (d.start < a - 1e-6) { var sp = V.split(d, a, d.id, 1e-4); if (sp) d = sp[1]; d.xin = 0; }
+			if (V.end(d) > b + 1e-6) { var sp2 = V.split(d, b, d.id, 1e-4); if (sp2) d = sp2[0]; }
+			d.start = Math.round((d.start + off) * 1e6) / 1e6; d.vol = (d.vol == null ? 1 : d.vol) * (g.vol == null ? 1 : g.vol);
+			d.id = idm[c.id] = V.uid(V.isGroup(d) ? "g" : "c"); if (d.link) d.link = lm[d.link] || (lm[d.link] = V.uid("L"));
+			kids.push(d);
+		});
+		var gi = p.tracks.indexOf(V.track(p, g.track));
+		p.clips = p.clips.filter(function (c) { return c !== g; });
+		var map = {}, add = g.sub.tracks.filter(function (t) { return kids.some(function (k) { return k.track === t.id; }); }).map(function (t) { var o = JSON.parse(JSON.stringify(t)); o.id = map[t.id] = V.uid("t"); return o; });
+		var empty = !p.clips.some(function (c) { return c.track === g.track; });
+		if (add.length) Array.prototype.splice.apply(p.tracks, [Math.max(0, gi), empty ? 1 : 0].concat(add));
+		kids.forEach(function (k) { k.track = map[k.track]; p.clips.push(k); });
+		return kids;
+	};
+	// the project as plain clips for playing and exporting sound and reading video frames: every clip inside a group becomes a copy at its
+	// timeline time (id "<group id>/<clip id>", its layer likewise) that only plays where its groups show (_w0 / _w1) and carries the groups
+	// (_g, timeline-time copies) whose fades and volume multiply its sound. A project with no groups comes back as it is.
+	V.flat = function (p) {
+		if (!p.clips.some(V.isGroup)) return p;
+		var tracks = [], clips = [];
+		function walk(sub, pre, chain, flags, w0, w1) {
+			sub.tracks.forEach(function (t) { if (!pre) { tracks.push(t); return; } var o = Object.assign({}, t); o.id = pre + t.id; o.mute = !!(t.mute || flags.mute); o.hide = !!(t.hide || flags.hide); tracks.push(o); });
+			sub.clips.forEach(function (c) {
+				var off = chain.length ? chain[chain.length - 1]._off : 0;
+				if (V.isGroup(c)) {
+					var tr = V.track(sub, c.track) || {}, ga = Object.assign({}, c); ga.start = c.start + off; ga._off = ga.start - c.in;
+					walk(c.sub, pre + c.id + "/", chain.concat([ga]), { mute: !!(flags.mute || tr.mute || c.mute), hide: !!(flags.hide || tr.hide) }, Math.max(w0, ga.start - (c.xin || 0)), Math.min(w1, V.end(ga)));
+					return;
+				}
+				if (!chain.length) { clips.push(c); return; }
+				var L = Object.assign({}, c); L.id = pre + c.id; L.track = pre + c.track; L.start = c.start + off; L._o = c; L._g = chain; L._w0 = w0; L._w1 = w1;
+				if (L.link) L.link = pre + L.link;
+				clips.push(L);
+			});
+		}
+		walk(p, "", [], { mute: false, hide: false }, -Infinity, Infinity);
+		return { v: p.v, name: p.name, w: p.w, h: p.h, fps: p.fps, bg: p.bg, tracks: tracks, clips: clips, marks: p.marks, _flat: true };
+	};
 
 	/* ---------- linked clips (a video and its separated sound) ---------- */
 	V.partners = function (p, c) { return c && c.link ? p.clips.filter(function (x) { return x !== c && x.link === c.link; }) : []; };

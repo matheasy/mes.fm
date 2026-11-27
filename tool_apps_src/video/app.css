@@ -100,6 +100,24 @@
 	#vd .vd-tools {background:var(--vd-panel);border-top:1px solid var(--vd-line);border-bottom:1px solid var(--vd-line);} #vd #vd-zoom {width:9em;}
 	#vd .vd-tl {position:relative;min-height:0;background:#0b0e13;}
 	#vd .vd-tlscroll {position:absolute;inset:0;overflow:auto;}
+	#vd .vd-tl.has-gtabs .vd-tlscroll {top:32px;}
+	#vd .vd-gtabs {position:absolute;left:0;right:0;top:0;height:32px;display:flex;align-items:center;gap:4px;padding:0 8px;background:#1e1b4b;border-bottom:2px solid #818cf8;z-index:6;overflow-x:auto;white-space:nowrap;}
+	#vd .vd-gtab {font:inherit;font-size:13px;color:#e0e7ff;background:transparent;border:1px solid transparent;border-radius:6px;padding:3px 9px;cursor:pointer;}
+	#vd button.vd-gtab:hover {background:rgba(129,140,248,0.25);border-color:#818cf8;}
+	#vd .vd-gtab.is-on {background:#4f46e5;color:#fff;font-weight:700;cursor:default;}
+	#vd .vd-gsep {color:#a5b4fc;font-size:15px;}
+	#vd .vd-gnote {color:#c7d2fe;font-size:12px;margin-left:8px;opacity:.85;}
+	#vd .vd-gclose {margin-left:auto;border-color:#818cf8;}
+	#vd .vd-clip--group {background:#3f3f8f;background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 8px, transparent 8px 16px);outline:1px solid #a5b4fc;outline-offset:-1px;}
+	#vd .vd-gopen {position:absolute;right:4px;top:2px;z-index:3;font:inherit;font-size:11px;line-height:1;color:#1e1b4b;background:#c7d2fe;border:0;border-radius:4px;padding:3px 6px;cursor:pointer;}
+	#vd .vd-gopen:hover {background:#fff;}
+	/* the workspace is always dark: keep these colours when the site is in dark mode (the derived dark block would change them) */
+	html body.dark-mode #vd .vd-gtabs {border-bottom:2px solid #818cf8;background:#1e1b4b;}
+	html body.dark-mode #vd button.vd-gtab:hover {background:rgba(129,140,248,0.25);border-color:#818cf8;}
+	html body.dark-mode #vd .vd-gtab {color:#e0e7ff;} html body.dark-mode #vd .vd-gtab.is-on {background:#4f46e5;color:#fff;}
+	html body.dark-mode #vd .vd-gclose {border-color:#818cf8;}
+	html body.dark-mode #vd .vd-clip--group {background-color:#3f3f8f;background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 8px, transparent 8px 16px);outline:1px solid #a5b4fc;}
+	html body.dark-mode #vd .vd-gopen {color:#1e1b4b;background:#c7d2fe;} html body.dark-mode #vd .vd-gopen:hover {background:#fff;}
 	#vd .vd-tlinner {position:relative;min-height:100%;}
 	#vd .vd-marquee {position:absolute;z-index:30;pointer-events:none;border:1px solid #38bdf8;background:rgba(56,189,248,0.16);border-radius:2px;}
 	#vd .vd-tlinner.is-drop {background:rgba(56,189,248,0.06);}

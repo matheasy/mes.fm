@@ -503,5 +503,49 @@ ok(V.customSlot(3, 12, 1, 10) === null && V.customSlot(3, -1, 1, 10) === null, "
 	ok(V.jumpGo(h, 120, 1, 12000) === 3 && V.jumpGo(h, 3, 1, 12000) === 55, "Forward goes again");
 	const h2 = V.jumpHist(); V.jumpNote(h2, 40, 0, 0); ok(V.jumpGo(h2, 0, -1, 100) === 40, "Back right after the jump (not settled yet) still works");
 }
+// groups (Camtasia): one clip on one layer holding its own layers
+{
+	const vid = clip({ id: "gv", track: "v1", start: 10, out: 20, noAudio: true, x: 0.3 }), mus = clip({ id: "gm", type: "audio", track: "v2", start: 12, out: 8, vol: 0.5 }), other = clip({ id: "go", track: "a1", start: 0, out: 5 });
+	const p = proj([vid, mus, other]);
+	const g = V.makeGroup(p, ["gv", "gm"], "G1", "Group 1");
+	ok(g && g.type === "group", "makeGroup returns the group clip"); eq([g.track, g.start, g.in, g.out], ["v1", 10, 0, 20], "group sits on the topmost layer, spans its clips");
+	eq(p.tracks.map(function (t) { return t.id; }), ["v1", "a1"], "the layer only the music used closes up");
+	eq(p.clips.map(function (c) { return c.id; }).sort(), ["G1", "go"], "the grouped clips left the main timeline");
+	eq(g.sub.clips.map(function (c) { return [c.id, c.track, c.start]; }), [["gv", "v1", 0], ["gm", "v2", 2]], "inside: own layers, times from the group's start");
+	ok(V.duration(p) === 30, "project length counts the group");
+	// flat view: copies at timeline time, ids with the group's id in front
+	g.vol = 0.5; g.fin = 2; g.in = 1; g.out = 15; g.start = 11;   // trimmed 1 s at the front, 5 s at the end
+	const F = V.flat(p), fm = F.clips.filter(function (c) { return c.id === "G1/gm"; })[0];
+	ok(F.clips.length === 3 && !F.clips.some(V.isGroup), "flat: group replaced by its clips");
+	near(fm.start, 12, 1e-9, "inner music starts at group start - in + inner start"); ok(V.track(F, "G1/v2"), "flat layer for the inner layer");
+	ok(!V.active(fm, 26.5), "nothing plays after the group's end"); ok(V.active(fm, 16), "plays inside the group");
+	near(V.gainAt(F, fm, 12), 0.5 * 0.5 * 0.5, 1e-9, "group fade-in (half way) x group volume x clip volume");
+	near(V.gainAt(F, fm, 16), 0.25, 1e-9, "after the fade: group volume x clip volume");
+	const fv = F.clips.filter(function (c) { return c.id === "G1/gv"; })[0]; near(V.srcAt(fv, 11), 1, 1e-9, "video source time at the group start = in");
+	ok(V.layersAt(p, 12).some(function (l) { return l.clip === g; }), "the group itself is one picture layer");
+	// split the group: both halves keep the contents
+	const parts = V.split(g, 18, "G2"); ok(parts && parts[1].in === 8 && parts[0].out === 8 && parts[1].sub.clips.length === 2, "split a group: right half starts 7 s into it");
+	// ungroup: clips back, cut to what the group showed, volume kept
+	const kids = V.ungroupClip(p, "G1");
+	ok(kids.length === 2 && !p.clips.some(V.isGroup), "ungroup puts the clips back");
+	const kv = kids.filter(function (k) { return k.type === "video"; })[0], km = kids.filter(function (k) { return k.type === "audio"; })[0];
+	near(kv.start, 11, 1e-9, "video back at its timeline time"); near(kv.in, 1, 1e-9, "front trim kept"); near(V.end(kv), 25, 1e-9, "end trim kept");
+	near(km.vol, 0.25, 1e-9, "group volume multiplied in"); ok(p.tracks.length === 3, "the group's two layers come back");
+	ok(kids.every(function (k) { return V.track(p, k.track); }), "every clip back on a real layer");
+}
+// nested groups + old-style groups become real ones
+{
+	const a = clip({ id: "na", start: 0, out: 4 }), b = clip({ id: "nb", track: "v2", start: 2, out: 4 }), p = proj([a, b]);
+	const g1 = V.makeGroup(p, ["na"], "N1", "Inner"); g1.start = 3;
+	const g2 = V.makeGroup(p, ["N1", "nb"], "N2", "Outer");
+	eq([g2.start, g2.out], [2, 5], "outer group spans both");
+	const F = V.flat(p), fa = F.clips.filter(function (c) { return c.id === "N2/N1/na"; })[0];
+	ok(fa && Math.abs(fa.start - 3) < 1e-9 && fa._g.length === 2, "nested: id path, timeline time and both groups carried");
+	ok(V.allClips(p).length === 4, "allClips walks into groups");
+	const old = V.normalize({ tracks: [{ id: "v1", kind: "v" }, { id: "v2", kind: "v" }], clips: [clip({ id: "o1", start: 1, out: 3, grp: "G" }), clip({ id: "o2", track: "v2", start: 2, out: 3, grp: "G" })] });
+	ok(old.clips.length === 1 && old.clips[0].type === "group" && old.clips[0].sub.clips.length === 2, "an old tagged group opens as one group clip");
+	const back = V.normalize(JSON.parse(JSON.stringify(p)));
+	ok(back.clips[0].type === "group" && back.clips[0].sub.clips.some(V.isGroup), "nested groups survive saving and opening");
+}
 console.log(pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

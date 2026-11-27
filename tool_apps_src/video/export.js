@@ -41,11 +41,11 @@
 	/* ---------- sound ---------- */
 	var RATE = 48000;
 	async function mix(t0, n) {
-		var out = [new Float32Array(n), new Float32Array(n)], p = VE.P, t1 = t0 + n / RATE;
+		var out = [new Float32Array(n), new Float32Array(n)], p = VE.flat(VE.root), t1 = t0 + n / RATE;
 		for (var j = 0; j < p.clips.length; j++) {
 			var c = p.clips[j]; if (!VE.hasSound(c)) continue;
 			if (t1 <= c.start - (c.xin || 0) || t0 >= V.end(c)) continue;
-			var g = V.gainCurve(p, c, t0, n, RATE, VE.fxFn(c)), any = false; for (var k = 0; k < n; k += 64) if (g[k] > 0) { any = true; break; }
+			var g = V.gainCurve(p, c, t0, n, RATE, VE.fxFn(c, p)), any = false; for (var k = 0; k < n; k += 64) if (g[k] > 0) { any = true; break; }
 			if (!any) continue;
 			var sp = c.speed || 1, s0 = V.srcAt(c, t0), s1 = V.srcAt(c, t1), buf = await VE.clipPcm(c, Math.max(0, s0 - 0.02), Math.max(0, s1) + 0.02);
 			if (buf) V.mixInto(out, 0, n, buf, s0, sp / RATE, g);
@@ -59,16 +59,16 @@
 	// o: { w, h, fps, quality, a, b (timeline range), handle (FileSystemFileHandle), onProgress(frac, text), cancelled() }
 	VE.exportVideo = async function (o) {
 		await VE.loadScript(VE.LIB.mp4);
-		var p = VE.P, W = o.w, H = o.h, fps = o.fps, a = o.a || 0, b = o.b || V.duration(p), N = Math.max(1, Math.round((b - a) * fps)), failed = null, t00 = performance.now();
+		var p = VE.root, F = VE.flat(p), W = o.w, H = o.h, fps = o.fps, a = o.a || 0, b = o.b || V.duration(p), N = Math.max(1, Math.round((b - a) * fps)), failed = null, t00 = performance.now();
 		if (!(b > a)) throw new Error("There is nothing to export: the timeline is empty.");
 		if (o.onProgress) o.onProgress(0, "Loading fonts and analysing the sound for the audio effects..."); await VE.ensureFonts(); await VE.ensureAllFx();
-		var missing = p.clips.filter(function (c) { if (V.isGfx(c)) return false; var m = VE.media(c.media); return !m || m.state !== "ready"; });
+		var missing = F.clips.filter(function (c) { if (V.isGfx(c)) return false; var m = VE.media(c.media); return !m || m.state !== "ready"; });
 		if (missing.length) throw new Error("Some clips' media is missing or still being prepared (" + missing.map(function (c) { var m = VE.media(c.media); return m ? m.name : "?"; }).filter(function (x, i, s) { return s.indexOf(x) === i; }).slice(0, 3).join(", ") + "). Wait for it, or add the file again.");
 		var cfg = { codec: V.avcCodec(W, H, fps), width: W, height: H, bitrate: V.bitrate(W, H, fps, o.quality), bitrateMode: "variable", framerate: fps, latencyMode: "quality", avc: { format: "avc" } }, sup = null;
 		var hws = ["prefer-hardware", "no-preference", "prefer-software"];
 		for (var q = 0; q < hws.length; q++) { cfg.hardwareAcceleration = hws[q]; try { sup = await VideoEncoder.isConfigSupported(cfg); } catch (e) { sup = null; } if (sup && sup.supported) break; }
 		if (!sup || !sup.supported) throw new Error("This browser cannot make H.264 video at " + W + "×" + H + ". Choose a smaller size.");
-		var hasSound = p.clips.some(function (c) { return VE.hasSound(c); }), aOk = false;
+		var hasSound = F.clips.some(function (c) { return VE.hasSound(c); }), aOk = false;
 		if (hasSound && window.AudioEncoder) { try { var as = await AudioEncoder.isConfigSupported({ codec: "mp4a.40.2", sampleRate: RATE, numberOfChannels: 2, bitrate: 192000 }); aOk = !!(as && as.supported); } catch (e) { aOk = false; } }
 		var writable = null, target;
 		if (o.handle) { writable = await o.handle.createWritable(); target = new Mp4Muxer.FileSystemWritableFileStreamTarget(writable); } else target = new Mp4Muxer.ArrayBufferTarget();
@@ -98,7 +98,7 @@
 			for (var i = 0; i < N; i++) {
 				if (failed) throw failed;
 				if (o.cancelled && o.cancelled()) throw new Error("Cancelled.");
-				var t = a + i / fps, layers = V.layersAt(p, t), frames = {};
+				var t = a + i / fps, layers = V.layersAt(F, t), frames = {};
 				for (var j = 0; j < layers.length; j++) {
 					var c = layers[j].clip; if (c.type !== "video") continue;
 					var m = VE.media(c.media), rd = readers[c.id] || (readers[c.id] = new VReader(m));
@@ -108,12 +108,12 @@
 					var m2 = VE.media(cl.media); if (!m2) return null;
 					if (m2.kind === "image") return { img: m2.bitmap, w: m2.w, h: m2.h };
 					var f = frames[cl.id]; return f ? { img: f, w: m2.w, h: m2.h, rot: m2.rot || 0 } : null;
-				}, { export: true });
+				}, { export: true, project: p });
 				var vf = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
 				venc.encode(vf, { keyFrame: i % keyEvery === 0 }); vf.close();
 				while (!failed && venc.encodeQueueSize > 4) await sig.wait(200);
 				// readers of clips that are over
-				Object.keys(readers).forEach(function (id) { var cc = V.clip(p, id); if (!cc || V.end(cc) < t - 0.2) { readers[id].close(); delete readers[id]; } });
+				Object.keys(readers).forEach(function (id) { var cc = V.clip(F, id); if (!cc || !(V.end(cc) >= t - 0.2) || (cc._w1 != null && cc._w1 < t - 0.2)) { readers[id].close(); delete readers[id]; } });
 				await audioUpTo((i + 1) / fps);
 				if (o.onProgress && (i % 3 === 0 || i === N - 1)) {
 					var el = (performance.now() - t00) / 1000, fr = (i + 1) / N;
@@ -155,7 +155,7 @@
 	// one frame at project size from the preview's current state ("snapshot"); type = image/png (default), image/jpeg or image/webp
 	VE.snapshot = async function (type, quality) {
 		await VE.ensureFonts(); var p = VE.P, c = document.createElement("canvas"); c.width = p.w; c.height = p.h;
-		var layers = V.layersAt(p, VE.t), frames = {}, readers = [];
+		var layers = V.layersAt(VE.flat(p), VE.t), frames = {}, readers = [];
 		for (var j = 0; j < layers.length; j++) { var cl = layers[j].clip; if (cl.type !== "video") continue; var m = VE.media(cl.media); if (!m || !m.vt) continue; var rd = new VReader(m); readers.push(rd); frames[cl.id] = await rd.frameAt(layers[j].src); }
 		VE.draw(c.getContext("2d"), p.w, p.h, VE.t, function (cl) { var m = VE.media(cl.media); if (!m) return null; if (m.kind === "image") return { img: m.bitmap, w: m.w, h: m.h }; var f = frames[cl.id]; return f ? { img: f, w: m.w, h: m.h, rot: m.rot || 0 } : null; }, { export: true });
 		readers.forEach(function (r) { r.close(); });
