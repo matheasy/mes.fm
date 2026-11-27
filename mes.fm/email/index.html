@@ -834,10 +834,17 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<button type="button" class="tu-btn" id="em-gen">Make one for me</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-show">Show</button>
 			</div>
+			<div class="em-row em-prow">
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-copy">📋 Copy passphrase</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-save">💾 Save as a text file</button>
+			</div>
 			<div class="em-meter"><span id="em-bar"></span></div>
 			<p class="tu-note" id="em-bits"></p>
 			<label class="tu-label" for="em-p2">Type it again</label>
-			<input class="tu-input em-pass" id="em-p2" type="password" autocomplete="new-password" spellcheck="false">
+			<div class="em-row">
+				<input class="tu-input em-pass" id="em-p2" type="password" autocomplete="new-password" spellcheck="false">
+				<button type="button" class="tu-btn tu-btn--ghost em-paste" data-for="em-p2">📋 Paste</button>
+			</div>
 			<label class="em-check"><input type="checkbox" id="em-wrote"> I wrote my passphrase down somewhere safe</label>
 			<label class="em-check"><input type="checkbox" id="em-rem1"> Remember it on this device (don't tick on a shared computer)</label>
 			<div class="em-row"><button type="button" class="tu-btn tu-btn--primary" id="em-publish" disabled>Publish my mail key</button></div>
@@ -850,6 +857,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 			<form id="em-unlockf">
 				<div class="em-row">
 					<input class="tu-input em-pass" id="em-up" type="password" autocomplete="current-password" spellcheck="false" aria-label="Mail passphrase">
+					<button type="button" class="tu-btn tu-btn--ghost em-paste" data-for="em-up">📋 Paste</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-ushow">Show</button>
 					<button type="submit" class="tu-btn tu-btn--primary">Unlock</button>
 				</div>
 				<label class="em-check"><input type="checkbox" id="em-rem2"> Remember it on this device</label>
@@ -958,7 +967,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/ai"><img class="mes-aside__img mes-aside__img--logo" src="/ai/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">MES AI: Chat with Top AI Models, Pay per Message in HBD</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/text"><img class="mes-aside__img mes-aside__img--logo" src="/text/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Text File Viewer: Open TXT, RTF, Markdown, CSV and Code Online</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/ai"><img class="mes-aside__img mes-aside__img--logo" src="/ai/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">MES AI: Free AI Chat or Top Models, Pay per Message in HBD</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/text"><img class="mes-aside__img mes-aside__img--logo" src="/text/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Text File Viewer: Open TXT, RTF, Markdown, CSV and Code Online</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/mortgagecalculator"><img class="mes-aside__img mes-aside__img--logo" src="/mortgagecalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Mortgage Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1016,7 +1025,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/main_js/hive.js?v=2" defer></script><script src="/email/js/email.js?v=4" defer></script>
+	<script src="/main_js/hive.js?v=2" defer></script><script src="/email/js/email.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

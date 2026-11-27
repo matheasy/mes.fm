@@ -36,10 +36,17 @@
 				<button type="button" class="tu-btn" id="em-gen">Make one for me</button>
 				<button type="button" class="tu-btn tu-btn--ghost" id="em-show">Show</button>
 			</div>
+			<div class="em-row em-prow">
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-copy">📋 Copy passphrase</button>
+				<button type="button" class="tu-btn tu-btn--ghost" id="em-save">💾 Save as a text file</button>
+			</div>
 			<div class="em-meter"><span id="em-bar"></span></div>
 			<p class="tu-note" id="em-bits"></p>
 			<label class="tu-label" for="em-p2">Type it again</label>
-			<input class="tu-input em-pass" id="em-p2" type="password" autocomplete="new-password" spellcheck="false">
+			<div class="em-row">
+				<input class="tu-input em-pass" id="em-p2" type="password" autocomplete="new-password" spellcheck="false">
+				<button type="button" class="tu-btn tu-btn--ghost em-paste" data-for="em-p2">📋 Paste</button>
+			</div>
 			<label class="em-check"><input type="checkbox" id="em-wrote"> I wrote my passphrase down somewhere safe</label>
 			<label class="em-check"><input type="checkbox" id="em-rem1"> Remember it on this device (don't tick on a shared computer)</label>
 			<div class="em-row"><button type="button" class="tu-btn tu-btn--primary" id="em-publish" disabled>Publish my mail key</button></div>
@@ -52,6 +59,8 @@
 			<form id="em-unlockf">
 				<div class="em-row">
 					<input class="tu-input em-pass" id="em-up" type="password" autocomplete="current-password" spellcheck="false" aria-label="Mail passphrase">
+					<button type="button" class="tu-btn tu-btn--ghost em-paste" data-for="em-up">📋 Paste</button>
+					<button type="button" class="tu-btn tu-btn--ghost" id="em-ushow">Show</button>
 					<button type="submit" class="tu-btn tu-btn--primary">Unlock</button>
 				</div>
 				<label class="em-check"><input type="checkbox" id="em-rem2"> Remember it on this device</label>

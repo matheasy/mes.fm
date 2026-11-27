@@ -270,7 +270,7 @@ APPS = {
                   tag="Private, end-to-end encrypted mail between Hive accounts.", accent="#3b4cca", dark="#2c3a9e", tint="#e6e9fb",
                   desc="Free encrypted email for Hive: send end-to-end encrypted messages to any Hive account, stored on the blockchain and readable only by the people you write to. Quantum-safe (ML-KEM-768 + X25519 and AES-256), threads and replies, Sent folder, classic memo reader. No server, no sign-up.",
                   meta_desc="Free quantum-safe encrypted email for Hive accounts: end-to-end encrypted messages on the blockchain, threads, replies and a classic memo reader.",
-                  js_v="4", pre_js=["/main_js/hive.js?v=2"]),
+                  js_v="5", pre_js=["/main_js/hive.js?v=2"]),
     "polls": dict(title="MES Polls", page_title="Make a Poll: Free Online Poll Maker, No Sign-Up",
                   tag="Ask a question, share one link, watch the votes come in.", accent="#3b5bdb", dark="#2c47b0", tint="#e7ecfb",
                   desc="Free online poll maker: type a question and up to 20 answers, choose one or several picks, when voting ends and who sees the results, then share one short link. Live result bars and a pie chart, one vote per person, no sign-up.",
@@ -370,7 +370,7 @@ APPS = {
     "storage": dict(title="MES Storage Analyzer", page_title="Storage Analyzer: See What Is Taking Up Space in a Folder",
                     tag="Find what fills your disk.", accent="#0d7a5f", dark="#0a5c48", tint="#dff2ec",
                     desc="Free disk usage analyzer in your browser, like WinDirStat or DaisyDisk: pick a folder and see what takes up the space as a sunburst or treemap, with a folder table, largest files, file types, old and large files, duplicates, empty folders, and which OneDrive / iCloud / Dropbox files are only in the cloud. Nothing is uploaded.",
-                    js_v="2", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
+                    js_v="3", nav_extra=ST_NAV_INFO, menu_extra=ST_NAV_MENU),
     # Browser Storage & Memory (2026-11-07, mes.fm/browser-storage): a sub-page of the Storage Analyzer brand. Measures what mes.fm keeps in this browser
     # (localStorage, sessionStorage, IndexedDB, Cache storage, OPFS, cookies, service workers), names the tool each piece belongs to, deletes per item / tool,
     # asks for persistent storage, backs up / restores saved settings; this tab's JS memory (performance.memory) with a live chart; a per-browser guide

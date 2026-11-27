@@ -278,6 +278,46 @@
 	$("em-wrote").addEventListener("change", checkSetup);
 	$("em-gen").onclick = function () { var g = M.generatePass(); $("em-p1").value = $("em-p2").value = g; $("em-p1").type = $("em-p2").type = "text"; $("em-show").textContent = "Hide"; checkSetup(); };
 	$("em-show").onclick = function () { var t = $("em-p1").type === "password" ? "text" : "password"; $("em-p1").type = $("em-p2").type = t; this.textContent = t === "text" ? "Hide" : "Show"; };
+	function copyText(t) {
+		if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t).catch(function () { return copyOld(t); });
+		return copyOld(t);
+	}
+	function copyOld(t) {
+		return new Promise(function (ok, no) {
+			var ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+			document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, t.length);
+			var done = false; try { done = document.execCommand("copy"); } catch (e) {}
+			ta.remove(); done ? ok() : no(new Error("copy"));
+		});
+	}
+	$("em-copy").onclick = function () {
+		var p = $("em-p1").value;
+		if (!p) { toast("Type a passphrase or press Make one for me first."); return; }
+		copyText(p).then(function () { toast("Passphrase copied. Paste it somewhere safe (a password manager or a note), and keep a written copy too."); },
+			function () { $("em-p1").type = "text"; $("em-p1").select(); toast("Your browser would not copy it. It is selected: copy it by hand."); });
+	};
+	$("em-save").onclick = function () {
+		var p = $("em-p1").value;
+		if (!p) { toast("Type a passphrase or press Make one for me first."); return; }
+		var txt = "MES Mail passphrase for @" + (S.me || "") + "\n\n" + p + "\n\nKeep this file somewhere safe. Anyone with it can read your mail on mes.fm/email.\n";
+		var a = document.createElement("a");
+		a.href = URL.createObjectURL(new Blob([txt], { type: "text/plain" }));
+		a.download = "mes-mail-passphrase-" + (S.me || "hive") + ".txt";
+		document.body.appendChild(a); a.click(); a.remove();
+		setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+	};
+	Array.prototype.forEach.call(document.querySelectorAll("#em .em-paste"), function (b) {
+		var inp = $(b.getAttribute("data-for"));
+		if (!(navigator.clipboard && navigator.clipboard.readText)) { b.hidden = true; return; }
+		b.onclick = function () {
+			navigator.clipboard.readText().then(function (t) {
+				t = (t || "").trim();
+				if (!t) { toast("The clipboard is empty."); return; }
+				inp.value = t; inp.dispatchEvent(new Event("input", { bubbles: true })); inp.focus();
+			}, function () { inp.focus(); toast("Your browser did not allow it. Long-press the box and pick Paste."); });
+		};
+	});
+	$("em-ushow").onclick = function () { var u = $("em-up"); u.type = u.type === "password" ? "text" : "password"; this.textContent = u.type === "text" ? "Hide" : "Show"; };
 	$("em-publish").onclick = function () {
 		var btn = this, pass = $("em-p1").value, g = gen, me = S.me;
 		btn.disabled = true;
