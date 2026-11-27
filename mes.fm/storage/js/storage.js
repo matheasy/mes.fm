@@ -486,7 +486,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 (function () {
 	'use strict';
 	var L = MESStorage, $ = function (id) { return document.getElementById(id); }, KEY = 'mes-storage:v1';
-	var P = { view: 'sun', col: 'folder', rings: 6, tab: 'big', sort: 'size', dir: -1, oldMin: 100e6, oldDays: 365, dupMin: 1e6 };
+	var P = { view: 'sun', col: 'folder', rings: 6, tab: 'big', sort: 'size', dir: -1, oldMin: 100e6, oldDays: 365, dupMin: 1e6, loc: 'all' };
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in P) P[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} }
 	function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -789,6 +789,10 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		return '💻 ' + B(lo.localB[i]) + ' on this computer · ☁️ ' + B(lo.cloudB[i]) + ' only in the cloud' + (lo.cloudN[i] ? ' (' + N(lo.cloudN[i]) + ' files)' : '');
 	}
 	function cloudBadge(i) { return M.loc && !M.isDir[i] && M.loc.where[i] === 2 ? ' <span class="st-cbadge" title="Only in the cloud">☁️</span>' : ''; }
+	/* Cloud or here filter: size the chart / table by only the cloud or only the downloaded bytes */
+	function locF() { return P.col === 'where' && M && M.loc && P.loc !== 'all' ? P.loc : ''; }
+	function VT() { var f = locF(); return f === 'cloud' ? M.loc.cloudB : f === 'here' ? M.loc.localB : M.total; }
+	function VM() { if (!locF()) return M; var v = Object.create(M); v.total = VT(); return v; }
 	function faded(i) { return focusCat >= 0 && (M.isDir[i] || M.cat[i] !== focusCat); }
 
 	/* ---------- chart ---------- */
@@ -805,6 +809,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	}
 	function drawChart() {
 		if (!M || $('st-res').hidden) return;
+		renderNeed();
 		/* on a narrow screen a sunburst is round: make the box square instead of leaving empty space above and below */
 		var fill = $('st-chartsec').classList.contains('mes-pfill'), want = '';
 		if (P.view === 'sun' && !fill && box.clientWidth < 700) want = Math.round(Math.max(260, Math.min(box.clientWidth, window.innerHeight * 0.75))) + 'px';
@@ -819,7 +824,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 
 	function drawSun() {
 		var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 6, rings = P.rings, r0 = Math.max(26, R * 0.2), dr = (R - r0) / rings;
-		var arcs = L.sunburst(M, zoom, rings, Math.max(0.003, 1.2 / R)), byRing = [], bg = cssVar('--st-chartbg');
+		var arcs = L.sunburst(VM(), zoom, rings, Math.max(0.003, 1.2 / R)), byRing = [], bg = cssVar('--st-chartbg');
 		/* a shallow folder uses fewer, wider rings so the chart still fills its circle */
 		var deepest = 1; arcs.forEach(function (a) { if (a.ring > deepest) deepest = a.ring; });
 		if (deepest < rings) { rings = deepest; dr = (R - r0) / rings; }
@@ -855,7 +860,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		/* middle: the folder shown */
 		ctx.beginPath(); ctx.arc(cx, cy, r0 - 2, 0, Math.PI * 2); ctx.fillStyle = cssVar('--st-soft'); ctx.fill();
 		ctx.fillStyle = cssVar('--st-fg'); ctx.font = '700 ' + Math.max(11, Math.min(18, r0 * 0.28)) + 'px system-ui, sans-serif';
-		ctx.fillText(B(M.total[zoom]), cx, cy - (r0 > 40 ? 8 : 0));
+		ctx.fillText(B(VT()[zoom]), cx, cy - (r0 > 40 ? 8 : 0));
 		if (r0 > 40) { ctx.font = Math.max(10, Math.min(13, r0 * 0.2)) + 'px system-ui, sans-serif'; ctx.fillStyle = cssVar('--st-muted'); ctx.fillText(fit(zoom ? '⬆ ' + M.names[zoom] : M.names[zoom], r0 * 1.6, ctx), cx, cy + 12); }
 		geo = { kind: 'sun', cx: cx, cy: cy, r0: r0, dr: dr, rings: rings, byRing: byRing };
 	}
@@ -872,7 +877,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		function colOf(i, d, h) { return P.col === 'type' ? typeCol(i, d) : P.col === 'where' ? whereCol(i, d) : folderCol(h, d, !M.isDir[i]); }
 		function rec(i, x, y, w, h, d, hue) {
 			var ks = L.children(M, i), vals = new Array(ks.length);
-			for (var k = 0; k < ks.length; k++) vals[k] = M.total[ks[k]];
+			var vt = VT(); for (var k = 0; k < ks.length; k++) vals[k] = vt[ks[k]];
 			var rs = L.squarify(vals, x, y, w, h);
 			for (k = 0; k < rs.length; k++) {
 				var r = rs[k], c = ks[r.i], hh = d === 0 ? hueOfTop(topIx.get(c) || 0) : hue;
@@ -1041,9 +1046,13 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	/* legend */
 	function renderLegend() {
 		var el = $('st-legend');
+		renderNeed();
+		if (P.col === 'where' && !M.loc) { el.innerHTML = ''; return; }
 		if (P.col === 'where') {
 			var lo = M.loc, z = zoom, un = M.total[z] - lo.localB[z] - lo.cloudB[z];
-			el.innerHTML = [['here', '💻 On this computer', lo.localB[z]], ['cloud', '☁️ Only in the cloud', lo.cloudB[z]], ['none', 'Not in the list', un]].filter(function (x) { return x[2] > 0 || x[0] !== 'none'; })
+			el.innerHTML = '<span class="st-lgf" role="group" aria-label="Show">Show: ' + [['all', 'Everything'], ['cloud', '☁️ Only in the cloud'], ['here', '💻 Only on this computer']].map(function (x) {
+				return '<button type="button" data-loc="' + x[0] + '" aria-pressed="' + (P.loc === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</span>' +
+				(locF() ? '<span class="st-lg st-lgnote">The chart and the table now count ' + (P.loc === 'cloud' ? 'only files that are in the cloud and not downloaded' : 'only files that are downloaded to this computer') + ': ' + B(VT()[z]) + ' here.</span>' : '') + [['here', '💻 On this computer', lo.localB[z]], ['cloud', '☁️ Only in the cloud', lo.cloudB[z]], ['none', 'Not in the list', un]].filter(function (x) { return x[2] > 0 || x[0] !== 'none'; })
 				.map(function (x) { return '<span class="st-lg"><span class="st-sw" style="background:rgb(' + LOC_COL[x[0]].join(',') + ')"></span>' + x[1] + ' · ' + B(x[2]) + ' (' + L.fmtPct(L.pct(x[2], M.total[z])) + ')</span>'; }).join('') +
 				'<span class="st-lg st-lgnote">Folders are coloured from blue (all cloud) to green (all downloaded).</span>';
 		} else if (P.col === 'type') {
@@ -1057,7 +1066,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		}
 	}
 	$('st-legend').onclick = function (e) {
-		var b = e.target.closest('[data-cat]'), z = e.target.closest('[data-zz]');
+		var b = e.target.closest('[data-cat]'), z = e.target.closest('[data-zz]'), lf = e.target.closest('[data-loc]');
+		if (lf) { P.loc = lf.getAttribute('data-loc'); save(); drawChart(); renderLegend(); renderTable(); return; }
 		if (b) { var c = +b.getAttribute('data-cat'); focusCat = focusCat === c ? -1 : c; drawChart(); renderLegend(); }
 		if (z) { var i = +z.getAttribute('data-zz'); if (M.isDir[i]) setZoom(i); else { sel = i; drawOverlay(); renderInfo(); } }
 	};
@@ -1071,8 +1081,16 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 	document.querySelector('#st-chartsec').addEventListener('click', function (e) {
 		var v = e.target.closest('[data-view]'), c = e.target.closest('[data-col]');
 		if (v) { P.view = v.getAttribute('data-view'); save(); paintSeg(); drawChart(); }
-		if (c && c.getAttribute('data-col') === 'where' && !M.loc) { toast('First load the cloud list: see the box "In the cloud or on this computer?" above.'); var hw = $('st-cloudhow'); hw.open = true; $('st-cloudsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
-		if (c) { P.col = c.getAttribute('data-col'); if (P.col !== 'type') focusCat = -1; save(); paintSeg(); drawChart(); renderLegend(); }
+		if (c) { P.col = c.getAttribute('data-col'); if (P.col !== 'type') focusCat = -1; save(); paintSeg(); drawChart(); renderLegend(); renderTable(); }
+		var nb = e.target.closest('#st-cneed button');
+		if (nb) {
+			var nid = nb.id;
+			if (nb.hasAttribute('data-os')) { OS = nb.getAttribute('data-os'); paintOS(); }
+			else if (nid === 'st-ncopy') copyCmd();
+			else if (nid === 'st-nfile') $('st-cinput').click();
+			else if (nid === 'st-ndemo') demoLoc();
+			else if (nid === 'st-nback') { P.col = 'folder'; save(); paintSeg(); drawChart(); renderLegend(); renderTable(); }
+		}
 	});
 	$('st-rings').oninput = function () { P.rings = +this.value; $('st-ringsv').textContent = P.rings; save(); drawChart(); };
 	paintSeg();
@@ -1086,7 +1104,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		local: function (a, b) { return M.loc ? M.loc.localB[b] - M.loc.localB[a] : 0; }
 	};
 	function sortedKids(i) {
-		var ks = L.children(M, i);
+		var ks = L.children(M, i), f = locF();
+		if (f) { var vt = VT(); ks = ks.filter(function (c) { return vt[c] > 0; }); if (P.sort === 'size') { ks.sort(function (a, b) { return vt[b] - vt[a]; }); if (P.dir > 0) ks.reverse(); return ks; } }
 		if (P.sort === 'size' && P.dir < 0) return ks;   // already biggest first
 		ks.sort(SORTS[P.sort] || SORTS.size);
 		if ((P.sort === 'name' ? 1 : -1) !== P.dir) ks.reverse();
@@ -1332,52 +1351,78 @@ if (typeof module !== 'undefined' && module.exports) module.exports = MESStorage
 		else steps = ['Open <b>PowerShell</b> (press the Windows key, type PowerShell, press Enter).',
 			c.guessed ? 'Copy the command below, paste it into PowerShell (right-click pastes) and press Enter. It goes into <b>' + root + '</b> by itself.' : 'Type <code>cd </code> and a space, drag the <b>' + root + '</b> folder from File Explorer onto the window, and press Enter. Then copy the command below, paste it and press Enter.',
 			'File Explorer opens Downloads with <b>mes-storage-cloud.txt</b> selected. Drag it onto the box below.'];
-		$('st-steps').innerHTML = steps.map(function (x) { return '<li>' + x + '</li>'; }).join('');
-		$('st-cmd').textContent = c.cmd;
+		var sh = steps.map(function (x) { return '<li>' + x + '</li>'; }).join('').replace('onto the box below', 'onto the box below (or onto the box at the top of the chart)');
+		$('st-steps').innerHTML = sh; $('st-cmd').textContent = c.cmd;
+		if ($('st-nsteps')) { $('st-nsteps').innerHTML = steps.map(function (x) { return '<li>' + x + '</li>'; }).join(''); $('st-ncmd').textContent = c.cmd; }
 	}
 	$('st-cloudsec').addEventListener('click', function (e) {
 		var o = e.target.closest('[data-os]');
 		if (o) { OS = o.getAttribute('data-os'); paintOS(); return; }
 		var id = e.target.closest('button') && e.target.closest('button').id;
-		if (id === 'st-cmdcopy') {
-			var t = $('st-cmd').textContent;
-			if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(function () { toast('Command copied. Paste it into ' + (OS === 'mac' ? 'Terminal' : 'PowerShell') + '.'); }, function () { prompt('Copy this command:', t); });
-			else prompt('Copy this command:', t);
-		} else if (id === 'st-cfile') $('st-cinput').click();
+		if (id === 'st-cmdcopy') copyCmd();
+		else if (id === 'st-cfile') $('st-cinput').click();
 		else if (id === 'st-locchart') { P.col = 'where'; save(); paintSeg(); drawChart(); renderLegend(); $('st-chartsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 		else if (id === 'st-loclist') { setTab('local'); $('st-listsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 		else if (id === 'st-locclear') { locParsed = null; M.loc = null; if (P.col === 'where') P.col = 'folder'; if (P.tab === 'local') P.tab = 'big'; renderAll(); }
-		else if (id === 'st-cdemobtn') {
-			/* made-up: big media mostly in the cloud, recent and small files downloaded */
-			var map = new Map(), s = 7;
-			function rnd() { s = (s * 16807) % 2147483647; return s / 2147483647; }
-			for (var i = 1; i < M.n; i++) if (!M.isDir[i]) { var age = (Date.now() - M.mtime[i]) / 864e5; map.set(L.pathOf(M, i).split('/').slice(1).join('/'), (M.size[i] > 5e7 && rnd() < 0.85) || (age > 900 && rnd() < 0.7) ? 2 : rnd() < 0.05 ? 3 : 1); }
-			useLocation({ kind: 'mac', map: map, count: map.size, bad: 0 });
-		}
+		else if (id === 'st-cdemobtn') demoLoc();
 	});
+	function copyCmd() {
+		var t = L.locationCommand(OS, M ? M.names[0] : '').cmd, msg = 'Command copied. Paste it into ' + (OS === 'mac' ? 'Terminal' : 'PowerShell') + '.';
+		function ok() { toast(msg); var n = $('st-nmsg'); if (n) { n.className = 'st-nmsg st-nok'; n.textContent = '✓ ' + msg + ' Then drop the file it makes below.'; } }
+		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { prompt('Copy this command:', t); });
+		else prompt('Copy this command:', t);
+	}
+	function demoLoc() {
+		/* made-up: big media mostly in the cloud, recent and small files downloaded */
+		var map = new Map(), s = 7;
+		function rnd() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+		for (var i = 1; i < M.n; i++) if (!M.isDir[i]) { var age = (Date.now() - M.mtime[i]) / 864e5; map.set(L.pathOf(M, i).split('/').slice(1).join('/'), (M.size[i] > 5e7 && rnd() < 0.85) || (age > 900 && rnd() < 0.7) ? 2 : rnd() < 0.05 ? 3 : 1); }
+		useLocation({ kind: 'mac', map: map, count: map.size, bad: 0 });
+	}
+	/* the same steps inside the chart card, so "Cloud or here" works in Fill window / Full screen too */
+	function renderNeed() {
+		var el = $('st-cneed'), on = !!(M && P.col === 'where' && !M.loc);
+		el.hidden = !on; $('st-chartwrap').hidden = on; $('st-chint').hidden = on;
+		if (!on) { el.innerHTML = ''; return; }
+		if (el.innerHTML) return paintOS();
+		var looks = L.looksCloud(M.names[0]);
+		el.innerHTML = '<h3 class="st-nh">☁️ "Cloud or here" needs one step on your computer</h3>' +
+			'<p>A web page can\'t see whether a file in OneDrive, iCloud Drive, Dropbox or Google Drive is <b>downloaded</b> or <b>only in the cloud</b>: the browser reports every file at its full size. Your computer knows. Run one read-only command in ' + (OS === 'mac' ? 'Terminal' : 'PowerShell') + ' (it changes nothing and downloads nothing), then drop the list it makes here.' +
+			(looks ? '' : ' <span class="st-muted">(' + esc(M.names[0]) + ' doesn\'t look like a cloud folder: if it isn\'t one, everything will simply show as on this computer.)</span>') + '</p>' +
+			(isIOS ? '<p class="st-nmsg st-nerr">This needs a Mac or Windows computer: phones and tablets can\'t run the command.</p>' : '') +
+			'<div class="tu-seg st-seg" role="group" aria-label="Your computer"><button type="button" data-os="mac" aria-pressed="true">Mac</button><button type="button" data-os="win" aria-pressed="false">Windows</button></div>' +
+			'<ol class="st-steps" id="st-nsteps"></ol>' +
+			'<div class="st-cmdbox"><code class="st-cmd" id="st-ncmd"></code><button type="button" class="tu-btn tu-btn--primary st-small" id="st-ncopy">Copy command</button></div>' +
+			'<div class="st-cdrop" id="st-ndrop"><b>Drop mes-storage-cloud.txt here</b> or <button type="button" class="tu-btn tu-btn--ghost st-small" id="st-nfile">Choose the file</button></div>' +
+			'<p class="st-nmsg" id="st-nmsg" role="status" aria-live="polite"></p>' +
+			'<div class="tu-row">' + (mode === 'demo' ? '<button type="button" class="tu-btn st-small" id="st-ndemo">Try it with made-up cloud data</button>' : '') + '<button type="button" class="tu-btn tu-btn--ghost st-small" id="st-nback">Back to "By folder"</button></div>';
+		wireDrop($('st-ndrop'));
+		paintOS();
+	}
+	function locErr(m) { toast(m); var n = $('st-nmsg'); if (n && !$('st-cneed').hidden) { n.className = 'st-nmsg st-nerr'; n.textContent = '⚠ ' + m; } }
 	function useLocation(parsed) {
 		parsed.root = M.names[0]; locParsed = parsed;
 		var lo = L.applyLocation(M, parsed);
-		if (!lo.matched) { M.loc = null; locParsed = null; toast('None of the ' + N(parsed.count) + ' files in that list are in this folder. Was the command run inside ' + M.names[0] + '?'); return; }
+		if (!lo.matched) { M.loc = null; locParsed = null; locErr('None of the ' + N(parsed.count) + ' files in that list are in this folder. Was the command run inside ' + M.names[0] + '? Run it again from inside that folder (step 2) and drop the new file.'); return; }
 		P.col = 'where'; save(); renderAll();
 		toast('Loaded: ' + N(lo.matched) + ' files matched. ' + B(lo.localB[0]) + ' is on this computer, ' + B(lo.cloudB[0]) + ' only in the cloud.');
-		$('st-cloudsec').scrollIntoView({ block: 'start', behavior: 'smooth' });
+		if (!$('st-chartsec').classList.contains('mes-pfill')) $('st-cloudsec').scrollIntoView({ block: 'start', behavior: 'smooth' });
 	}
 	function readLocFile(f) {
 		if (!f || !M) return;
 		f.text().then(function (txt) {
 			var p = L.parseLocation(txt);
-			if (p.error) { toast(p.error); return; }
+			if (p.error) { locErr(p.error + ' Use the file the command saved: mes-storage-cloud.txt in Downloads.'); return; }
 			useLocation(p);
-		}, function () { toast('Could not read that file.'); });
+		}, function () { locErr('Could not read that file.'); });
 	}
 	$('st-cinput').onchange = function () { readLocFile(this.files && this.files[0]); this.value = ''; };
-	(function () {
-		var dz = $('st-cdrop');
+	function wireDrop(dz) {
 		['dragenter', 'dragover'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('st-over'); }); });
 		['dragleave', 'drop'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.stopPropagation(); if (ev === 'dragleave' && dz.contains(e.relatedTarget)) return; dz.classList.remove('st-over'); }); });
 		dz.addEventListener('drop', function (e) { e.preventDefault(); readLocFile(e.dataTransfer.files && e.dataTransfer.files[0]); });
-	})();
+	}
+	wireDrop($('st-cdrop'));
 
 	/* ---------- reports ---------- */
 	function download(name, text, type) {

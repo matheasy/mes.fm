@@ -501,6 +501,19 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.st-lgnote {color:var(--st-muted);font-size:0.9em;}
 	body.dark-mode #st.st {--st-here:#4ade80;--st-cloud:#7dd3fc;--st-cloudbg:#10283a;--st-cloudb:#24506e;}
 
+	/* Cloud or here: setup inside the chart card + Show filter */
+	.st-cneed {border:1px solid var(--st-cloudb);background:var(--st-cloudbg);border-radius:0.7em;padding:0.9em 1.1em;margin-top:0.6em;line-height:1.55;overflow:auto;}
+	.st-chartcard.mes-pfill .st-cneed {flex:1 1 auto;min-height:0;}
+	#st .st-nh {font-size:1.1em;margin:0 0 0.4em;}
+	.st-nmsg:empty {display:none;}
+	.st-nmsg {margin:0.7em 0 0;font-weight:600;}
+	#st .st-nerr {color:#b42318;}
+	#st .st-nok {color:#15803d;}
+	html body.dark-mode #st .st-nerr {color:#fca5a5;}
+	html body.dark-mode #st .st-nok {color:#86efac;}
+	#st [hidden].st-chartwrap, #st .st-chint[hidden] {display:none;}
+	.st-lgf {display:inline-flex;flex-wrap:wrap;align-items:center;gap:0.35em;margin-right:0.6em;font-weight:600;}
+
 
 	@media print {
 		.header, .info-bar-container, .side-bar, #footer, #comments-button, #comments-box, .color-box { display:none !important; }
@@ -625,6 +638,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .st{--st-bar:#22e7b6;--st-tipbg:rgba(85,115,181,0.94);--st-sel:#f5a214;--st-err:#df2a2a}
 	body.dark-mode #st code{background:rgba(82,82,82,0.15)}
 	body.dark-mode .st{--st-here:#2ddc6e;--st-cloud:#0fa7fb}
+	body.dark-mode #st .st-nerr{color:#ec786f}
+	body.dark-mode #st .st-nok{color:#73e89f}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -905,7 +920,8 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<span class="st-cbtns" id="st-cbtns"></span>
 				</div>
 				<nav class="st-crumbs" id="st-crumbs" aria-label="Folder path"></nav>
-				<div class="st-chartwrap">
+				<div class="st-cneed" id="st-cneed" hidden></div>
+				<div class="st-chartwrap" id="st-chartwrap">
 					<div class="st-chart" id="st-chartbox" data-mes-grip="mes-storage:h" data-mes-grip-min="240">
 						<canvas id="st-canvas" role="img" aria-label="Chart of folder sizes. The table below lists the same folders."></canvas>
 						<div class="st-tip" id="st-tip" hidden></div>
@@ -1077,7 +1093,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/storage/js/storage.js?v=2" defer></script>
+	<script src="/storage/js/storage.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

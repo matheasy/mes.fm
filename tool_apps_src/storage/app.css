@@ -193,3 +193,16 @@
 	.st-lg {display:inline-flex;align-items:center;gap:0.35em;padding:0.25em 0.6em;}
 	.st-lgnote {color:var(--st-muted);font-size:0.9em;}
 	body.dark-mode #st.st {--st-here:#4ade80;--st-cloud:#7dd3fc;--st-cloudbg:#10283a;--st-cloudb:#24506e;}
+
+	/* Cloud or here: setup inside the chart card + Show filter */
+	.st-cneed {border:1px solid var(--st-cloudb);background:var(--st-cloudbg);border-radius:0.7em;padding:0.9em 1.1em;margin-top:0.6em;line-height:1.55;overflow:auto;}
+	.st-chartcard.mes-pfill .st-cneed {flex:1 1 auto;min-height:0;}
+	#st .st-nh {font-size:1.1em;margin:0 0 0.4em;}
+	.st-nmsg:empty {display:none;}
+	.st-nmsg {margin:0.7em 0 0;font-weight:600;}
+	#st .st-nerr {color:#b42318;}
+	#st .st-nok {color:#15803d;}
+	html body.dark-mode #st .st-nerr {color:#fca5a5;}
+	html body.dark-mode #st .st-nok {color:#86efac;}
+	#st [hidden].st-chartwrap, #st .st-chint[hidden] {display:none;}
+	.st-lgf {display:inline-flex;flex-wrap:wrap;align-items:center;gap:0.35em;margin-right:0.6em;font-weight:600;}
