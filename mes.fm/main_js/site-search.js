@@ -773,7 +773,7 @@
     function seoFoldLoader() {
         if (window.MESSeoFold || document.getElementById("mes-seofold-js")) return;
         if (!document.querySelector(".tu-seo") && !document.querySelector(".hide-div-button.button + .box-border")) return;
-        var s = document.createElement("script"); s.id = "mes-seofold-js"; s.src = "/main_js/seo-fold.js?v=1"; s.async = true; document.head.appendChild(s);
+        var s = document.createElement("script"); s.id = "mes-seofold-js"; s.src = "/main_js/seo-fold.js?v=2"; s.async = true; document.head.appendChild(s);
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", seoFoldLoader); else seoFoldLoader();
 
