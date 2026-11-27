@@ -452,6 +452,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 		#mp .mp-thumbs {grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
 	}
 	@media (prefers-reduced-motion:reduce) {#mp .mp-info {animation:none;} #mp .mp-th {transition:none;}}
+	#mp .mp-tb button.mp-stbtn {width:auto;padding:0 8px;font-size:0.82em;font-weight:600;}
+	#mp .mp-tb button.mp-stbtn.on {background:#1c7ed6;border-color:#1c7ed6;}
 
 
 	@media print {
@@ -589,6 +591,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode #mp .mp-qopts button.no{border-color:#b11b1b}
 	body.dark-mode #mp .mp-qfb.ok{color:#83d894}
 	body.dark-mode #mp .mp-qfb.no{color:#e37878}
+	body.dark-mode #mp .mp-tb button.mp-stbtn.on{border-color:#1e85e1}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -820,6 +823,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 					<button type="button" id="mp-zin" title="Zoom in" aria-label="Zoom in">+</button>
 					<button type="button" id="mp-zout" title="Zoom out" aria-label="Zoom out">−</button>
 					<button type="button" id="mp-zreset" title="Reset the view" aria-label="Reset the view">⟲</button>
+					<button type="button" id="mp-stbtn" class="mp-stbtn" title="States &amp; provinces (USA, Canada, Australia, Brazil, China, India, Indonesia, Russia, South Africa)" aria-label="Show states and provinces" aria-pressed="true">States</button>
 					<button type="button" id="mp-png" title="Save as a picture (PNG)" aria-label="Save as a picture">⤓</button>
 					<button type="button" id="mp-fill" title="Fill window" aria-label="Fill window" aria-pressed="false">⤢</button>
 					<button type="button" id="mp-fs" title="Full screen" aria-label="Full screen">⛶</button>
@@ -904,7 +908,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 				<thead id="mp-cthead"><tr><th>#</th><th data-s="n" tabindex="0">Country ▾</th><th data-s="cap" tabindex="0">Capital ▾</th><th data-s="p" tabindex="0" class="r">People ▾</th><th data-s="a" tabindex="0" class="r">Area ▾</th><th data-s="d" tabindex="0" class="r">Density ▾</th></tr></thead>
 				<tbody id="mp-ctable"></tbody>
 			</table></div>
-			<p class="tu-note">Click a row or a country on the map. Population and GDP are 2019 estimates (Natural Earth); areas are worked out from the map outline, so they are close but not official. Turn on <b>States &amp; provinces</b> to see the states, provinces and their capitals of the USA, Canada, Australia, Brazil, China, India, Indonesia, Russia and South Africa.</p>
+			<p class="tu-note">Click a row or a country on the map. Population and GDP are 2019 estimates (Natural Earth); areas are worked out from the map outline, so they are close but not official. <b>States &amp; provinces</b> (on by default; the <b>States</b> button on the map turns them off) shows the states, provinces and their capitals of the USA, Canada, Australia, Brazil, China, India, Indonesia, Russia and South Africa.</p>
 		</section>
 
 		<!-- ============ TRUE SIZE ============ -->
@@ -996,7 +1000,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 <!-- /MES-BOTTOM-AD -->
                             </div>
                         <!-- MES-ASIDE -->
-<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/domain-lookup"><img class="mes-aside__img mes-aside__img--logo" src="/domain-lookup/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Domain Lookup: Whois, Domain Age, Owner and Hosting</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/search-engines"><img class="mes-aside__img mes-aside__img--logo" src="/search-engines/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Search Engines</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
+<aside id="mes-aside" class="mes-aside" data-aside-family="tools" aria-label="More from MES Tools"><div class="mes-aside__sticky"><div class="mes-aside__ad" data-ad-slot="8429975111"></div><div class="mes-aside__head"><h2 class="mes-aside__title-h">More like this</h2><button type="button" class="mes-aside__flip" aria-label="Move this sidebar to the other side" title="Move sidebar to the other side">&#8644;</button></div><ul class="mes-aside__list"><li><a class="mes-aside__card" href="/flights"><img class="mes-aside__img mes-aside__img--logo" src="/flights/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Flight Tracker: Live Air Traffic Map of Planes Near You</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/search-engines"><img class="mes-aside__img mes-aside__img--logo" src="/search-engines/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">Search Engines</span><span class="mes-aside__tag">Tool</span></span></a></li><li><a class="mes-aside__card" href="/tools"><img class="mes-aside__img" src="/img/tools-icon.jpg" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">All MES Tools</span><span class="mes-aside__tag">Gallery</span></span></a></li><li><a class="mes-aside__card" href="/gpacalculator"><img class="mes-aside__img mes-aside__img--logo" src="/gpacalculator/img/logo.png" width="56" height="56" loading="lazy" alt=""><span class="mes-aside__text"><span class="mes-aside__name">GPA Calculator</span><span class="mes-aside__tag">Calculator</span></span></a></li></ul></div></aside>
 <!-- /MES-ASIDE -->
 </div>
 
@@ -1054,7 +1058,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/maps/js/maps.js?v=2" defer></script>
+	<script src="/maps/js/maps.js?v=3" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit

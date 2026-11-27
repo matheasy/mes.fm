@@ -17,13 +17,16 @@
 
   /* ---------------- settings ---------------- */
   var S = {tab: "proj", p: "equal-earth", ep: "equal-earth", tp: "mercator", dp: "equal-earth", qp: "ortho", flat: "equirect",
-    color: "continent", grat: true, labels: true, caps: true, states: false, night: false, tissot: false, dist: false,
+    color: "continent", grat: true, labels: true, caps: true, states: true, night: false, tissot: false, dist: false,
     animate: true, spin: true, speed: 4, unit: "km", qmode: "find", qreg: "World", small: false};
-  try { var sv = JSON.parse(localStorage.getItem(KEY) || "{}"); for (var k in sv) if (k in S) S[k] = sv[k]; } catch (e) {}
+  try { var sv = JSON.parse(localStorage.getItem(KEY) || "{}"); for (var k in sv) if (k in S) S[k] = sv[k]; if (!sv.st2) S.states = true; } catch (e) {}
   var Q0 = new URLSearchParams(location.search);
   if (TABS.indexOf(Q0.get("tab")) >= 0) S.tab = Q0.get("tab");
   if (Q0.get("p") && L.proj(Q0.get("p"))) S.p = Q0.get("p");
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function save() { try { var o = JSON.parse(JSON.stringify(S)); o.st2 = 1; localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+  /* States / provinces are on by default (2026-11-27, owner: "include states for USA and provinces for Canada");
+     st2 marks settings saved after that, so an older saved "off" is switched on once. */
+  function stateSize(f, pp) { var b = pp.bounds(f); return Math.max(b[1][0] - b[0][0], b[1][1] - b[0][1]); }
 
   /* ---------------- state ---------------- */
   var data = null;            // {feats110, feats50, mesh110, mesh50, coast50, byId, list}
@@ -313,7 +316,7 @@
     if (S.dist && S.tab === "proj" && !anim) drawDistortion(g, path, proj);
     // states / provinces
     if (S.states && admin1 && !fast) {
-      g.beginPath(); admin1.forEach(function (f) { path(f); }); g.strokeStyle = P.d ? "rgba(255,255,255,.28)" : "rgba(60,60,60,.35)"; g.lineWidth = 0.6; g.stroke();
+      g.beginPath(); admin1.forEach(function (f) { path(f); }); g.strokeStyle = P.d ? "rgba(255,255,255,.45)" : "rgba(40,40,40,.5)"; g.lineWidth = 0.8; g.stroke();
     }
     // borders and coast
     g.beginPath(); path(lite ? data.mesh110 : data.mesh50); g.strokeStyle = P.border; g.lineWidth = lite ? 0.6 : 0.8; g.stroke();
@@ -424,7 +427,7 @@
     // state capitals
     if (S.states && admin1) {
       admin1.forEach(function (f) {
-        if (!f.m.cap) return; var xy = visible(proj, [f.m.cap[1], f.m.cap[2]]); if (!xy) return;
+        if (!f.m.cap || stateSize(f, pp) < 34) return; var xy = visible(proj, [f.m.cap[1], f.m.cap[2]]); if (!xy) return;
         g.beginPath(); g.arc(xy[0], xy[1], 2.6, 0, 7); g.fillStyle = P.d ? "#9be7ff" : "#1864ab"; g.fill();
       });
     }
@@ -452,7 +455,7 @@
         var b = pp.bounds(f), bw = b[1][0] - b[0][0];
         g.font = "italic 500 10.5px system-ui,sans-serif";
         if (g.measureText(f.m.n).width < bw * 0.9) textBox(g, f.m.n, xy[0], xy[1], 10.5, P, "italic 500", placed);
-        if (f.m.cap) { var c = visible(proj, [f.m.cap[1], f.m.cap[2]]); if (c) textBox(g, f.m.cap[0], c[0], c[1] + 9, 9.5, P, 400, placed); }
+        if (f.m.cap && Math.max(bw, b[1][1] - b[0][1]) >= 60) { var c = visible(proj, [f.m.cap[1], f.m.cap[2]]); if (c) textBox(g, f.m.cap[0], c[0], c[1] + 9, 9.5, P, 400, placed); }
       });
     }
   }
@@ -693,7 +696,7 @@
     $("mp-ifly").onclick = function () { focusFeature(f, true); };
     $("mp-ilink").onclick = function () { copyLink({c: m.a3}); };
     if ($("mp-its")) $("mp-its").onclick = function () { setTab("truesize"); addGhost(f.id); };
-    if ($("mp-ishow")) $("mp-ishow").onclick = function () { S.states = true; $("mp-o-states").checked = true; save(); loadAdmin1(); };
+    if ($("mp-ishow")) $("mp-ishow").onclick = function () { S.states = true; $("mp-o-states").checked = true; save(); loadAdmin1(); var b = $("mp-stbtn"); if (b) { b.classList.add("on"); b.setAttribute("aria-pressed", "true"); } };
     qa("[data-a1]", box).forEach(function (b) { b.onclick = function () { selA1 = admin1[+b.dataset.a1]; renderInfo(); redraw(); if (selA1.m.cap) pulses.push({p: [selA1.m.cap[1], selA1.m.cap[2]], t0: performance.now(), c: "#1c7ed6"}); focusFeature(selA1, true); loop(); }; });
   }
 
@@ -1068,7 +1071,10 @@
     // layers
     var cs = $("mp-color"); cs.value = S.color; cs.onchange = function () { S.color = cs.value; save(); renderLegend(); redraw(); };
     check("mp-o-labels", "labels"); check("mp-o-caps", "caps"); check("mp-o-grat", "grat"); check("mp-o-night", "night");
-    check("mp-o-states", "states", function () { if (S.states) loadAdmin1(); });
+    function paintStBtn() { var b = $("mp-stbtn"); if (b) { b.setAttribute("aria-pressed", S.states ? "true" : "false"); b.classList.toggle("on", !!S.states); } }
+    check("mp-o-states", "states", function () { if (S.states) loadAdmin1(); paintStBtn(); });
+    $("mp-stbtn").onclick = function () { S.states = !S.states; $("mp-o-states").checked = S.states; save(); if (S.states) loadAdmin1(); paintStBtn(); renderInfo(); redraw(); toast(S.states ? "States & provinces on" : "States & provinces off"); };
+    paintStBtn();
     $("mp-o-legend").onchange = renderLegend;
     var us = $("mp-unit"); us.value = S.unit; us.onchange = function () { S.unit = us.value; save(); renderInfo(); renderTable(); renderDist(); renderGhosts(); };
     $("mp-link").onclick = function () { copyLink(sel ? {c: data.byId[sel].m.a3} : null); };

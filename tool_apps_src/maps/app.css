@@ -145,3 +145,5 @@
 		#mp .mp-thumbs {grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
 	}
 	@media (prefers-reduced-motion:reduce) {#mp .mp-info {animation:none;} #mp .mp-th {transition:none;}}
+	#mp .mp-tb button.mp-stbtn {width:auto;padding:0 8px;font-size:0.82em;font-weight:600;}
+	#mp .mp-tb button.mp-stbtn.on {background:#1c7ed6;border-color:#1c7ed6;}

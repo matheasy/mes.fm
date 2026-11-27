@@ -645,7 +645,7 @@ APPS = {
     "maps": dict(title="MES Maps", page_title="World Map Projections, Globe, Countries and Capitals: Interactive Maps",
                  tag="Every way to flatten the Earth.", accent="#1c7ed6", dark="#1864ab", tint="#d0ebff",
                  desc="Free interactive world maps: morph between 28 map projections (Mercator, Equal Earth, Robinson, Winkel tripel, the azimuthal 'flat earth' map...) and see what each one stretches with Tissot circles, spin a globe with day and night, explore every country with its capital, population and states or provinces, drag countries to compare their true size, measure great-circle routes and play a geography quiz.",
-                 js_v="2"),
+                 js_v="3"),
     "hologram": dict(title="MES Hologram Simulator", page_title="Hologram Simulator: How Holograms Are Recorded and Played Back",
                      tag="Record light. Play it back in 3D.", accent="#0d9488", dark="#0f766e", tint="#ccfbf1",
                      desc="A free hologram simulator: record the interference fringes of a reference beam and object points live, play the hologram back with real wave optics to see the virtual image, the twin and parallax, explore coherence, compare transmission, reflection, rainbow and embossed holograms and Pepper's ghost, and compute a phase hologram of your own drawing.",
