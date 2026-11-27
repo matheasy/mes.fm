@@ -8,6 +8,7 @@ import { useSWRConfig } from 'swr';
 import FreshNote from '@/components/FreshNote';
 import SyncStatus from '@/components/SyncStatus';
 import LpCard from '@/components/LpCard';
+import PortfolioCharts from '@/components/PortfolioCharts';
 import SovCard from '@/components/SovCard';
 import StateView from '@/components/StateView';
 import WalletBreakdown from '@/components/WalletBreakdown';
@@ -52,6 +53,8 @@ export default function OverviewPage() {
 
       <AssetsTotalCard />
 
+      <PortfolioCharts />
+
       <FreshNote savedAt={savedAt} updating={updating} error={error} />
       <StateView loading={isLoading} error={portfolio ? null : error} onRetry={refreshPrices}>
         {portfolio && <WalletBreakdown wallets={portfolio.wallets.filter((w) => w.key === 'ai' || w.key === 'mfa')} />}
@@ -64,10 +67,10 @@ export default function OverviewPage() {
         <BucketCard path="/api/tokens" href="https://mes.fm/tokens" label="Tokens · every other token worth $10+" />
         <a href="https://mes.fm/strategy" className="panel block transition hover:border-accent">
           <div className="flex items-center justify-between">
-            <p className="stat-label">Strategy · Cash LP → Tokens → Store of Value</p>
+            <p className="stat-label">Strategy · the Friday routine</p>
             <span className="text-xs text-accent">Open &rarr;</span>
           </div>
-          <p className="mt-2 text-sm text-gray-400">This month&apos;s moves, sized from these balances, with market signals, targets and a backtest.</p>
+          <p className="mt-2 text-sm text-gray-400">Check on Fridays, move on the first Friday of the month when a section leaves its band, review each quarter.</p>
         </a>
         <RandomWalletsCard />
       </div>

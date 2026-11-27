@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 },
                 strategy: {
                   title: 'MES Strategy',
-                  tagline: 'Your Cash LP → Tokens → Store of Value rotation: what to move, when, and why.',
+                  tagline: 'Check on Fridays, rebalance on the first Friday of the month, review each quarter.',
                   homeHref: 'https://mes.fm/strategy',
                 },
                 tokens: {
