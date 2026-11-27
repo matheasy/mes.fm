@@ -9,9 +9,14 @@
    "group": "site",
    "url": "https://mes.fm/feeds/everything.xml",
    "count": 80,
-   "updated": "2026-11-25T21:59:53-07:00",
-   "newest": "Telegram Founder Rockin' the Illuminati Hand Sign 👐👀",
+   "updated": "2026-11-25T22:19:34-07:00",
+   "newest": "Solitaire",
    "latest": [
+    {
+     "t": "Solitaire",
+     "l": "https://mes.fm/solitaire",
+     "d": "2026-11-25"
+    },
     {
      "t": "Telegram Founder Rockin' the Illuminati Hand Sign 👐👀",
      "l": "https://mes.fm/telegram-founder-hands",
@@ -31,11 +36,6 @@
      "t": "Gyroscope & Spinning Top Simulator",
      "l": "https://mes.fm/gyroscope-simulator",
      "d": "2026-11-24"
-    },
-    {
-     "t": "Free Kicks & Penalties",
-     "l": "https://mes.fm/free-kick",
-     "d": "2026-11-23"
     }
    ]
   },
@@ -48,9 +48,14 @@
    "group": "site",
    "url": "https://mes.fm/feeds/tools.xml",
    "count": 50,
-   "updated": "2026-11-24T14:38:25-07:00",
-   "newest": "Flight Tracker: Live Air Traffic",
+   "updated": "2026-11-25T22:19:34-07:00",
+   "newest": "Solitaire",
    "latest": [
+    {
+     "t": "Solitaire",
+     "l": "https://mes.fm/solitaire",
+     "d": "2026-11-25"
+    },
     {
      "t": "Flight Tracker: Live Air Traffic",
      "l": "https://mes.fm/flights",
@@ -69,11 +74,6 @@
     {
      "t": "Investment Tracker",
      "l": "https://mes.fm/investment-tracker",
-     "d": "2026-11-23"
-    },
-    {
-     "t": "RSS Feeds",
-     "l": "https://mes.fm/feeds",
      "d": "2026-11-23"
     }
    ]

@@ -1,5 +1,5 @@
 	<script>try{if(!localStorage.getItem('pageMode')){document.documentElement.classList.add('page-wide')}}catch(e){}</script>
-	<div class="tu sl" id="sl">
+	<div class="tu sl" id="sl" data-start="{{START}}">
 		<div class="sl-tabs" id="sl-tabs" role="tablist" aria-label="Solitaire sections">
 			<button type="button" class="sl-tab" role="tab" data-t="play" aria-selected="true" aria-controls="sl-p-play">Play</button><button type="button" class="sl-tab" role="tab" data-t="lb" aria-selected="false" aria-controls="sl-p-lb" tabindex="-1">Leaderboard</button><button type="button" class="sl-tab" role="tab" data-t="stats" aria-selected="false" aria-controls="sl-p-stats" tabindex="-1">Statistics</button>
 		</div>
@@ -69,27 +69,6 @@
 
 		<div class="tu-toast sl-toast" id="sl-toast" role="status" aria-live="polite"></div>
 
-		<div class="tu-seo">
-			<h2>Solitaire, free in your browser: Klondike, Spider and FreeCell</h2>
-			<p>Three classic patience games in one page, with no install, no account and no ads in the way of the cards. Pick a game and a level, deal, and play with the mouse, a finger or the keyboard. Undo as often as you like, ask for a hint, and let the page finish the game for you once every card is showing. Once the page has loaded it keeps working with no internet connection.</p>
-			<h3>Klondike</h3>
-			<p>The solitaire most people know. Build four foundations from Ace to King, one per suit. In the seven columns, put cards in descending order with alternating colours (red on black). Only a King can go into an empty column. Turn cards from the stock: Easy turns one card at a time, Medium three at a time, Hard three at a time with only three passes through the stock. Scoring follows the usual rules: +10 for a card to a foundation, +5 for a card from the waste to a column, +5 for turning a card over, −15 for taking a card back off a foundation, and a penalty each time you go through the stock again.</p>
-			<h3>Spider</h3>
-			<p>Two decks, ten columns. Any card can go on a card one rank higher, but only cards of the same suit in order move together. Build a full run from King down to Ace in one suit and it goes up by itself. When you are stuck, deal a new row of ten cards from the stock (every column needs at least one card first). Easy uses one suit, Medium two, Hard all four. You start with 500 points, lose one per move and gain 100 for each finished run.</p>
-			<h3>FreeCell</h3>
-			<p>Every card is face up from the start, so it is a game of planning, not luck. Use the free cells to park single cards. Columns are built down in alternating colours, and a group of cards can move together if there are enough free cells and empty columns to move them one at a time. The deals are numbered like the classic Microsoft FreeCell (type a deal number to replay a famous one: deal 11982 is the one that cannot be won). Medium and Hard take away free cells.</p>
-			<h3>Winnable deals and the daily deal</h3>
-			<p>With "Winnable deals only" ticked, the page plays each Klondike deal through by itself before you see it (knowing where every card is) and only gives you deals it could win, so a lost game is never the deal's fault. FreeCell skips the eight deals of the first million that cannot be won. Each UTC day there is one daily deal per game (Klondike draw 1, Spider one suit, FreeCell) that is the same for everyone in the world, and the daily Klondike deal is always winnable: the leaderboard shows who cleared it fastest.</p>
-			<h3>Saving to Hive</h3>
-			<p>After a win you can save it to the Hive blockchain with "Save to Hive". It sends one small public message (a custom_json operation with the id mes_solitaire) from your Hive account, signed with your posting key through Hive Keychain (the browser extension or the phone app). It holds the game, the deal, your time, moves and score and the list of your moves with their timing, and nothing else. It costs no HIVE (only a little of your account's free Resource Credits), and like everything on Hive it is public and permanent. mes.fm replays your moves on the same deal before the win goes on the leaderboard.</p>
-			<h3>Questions</h3>
-			<dl>
-				<dt>Does it work offline?</dt><dd>Yes. After your first visit the page, its script and its look are kept in your browser, so you can open mes.fm/solitaire on a plane or with no signal and keep playing. The leaderboard and Save to Hive need a connection.</dd>
-				<dt>Is my game kept if I close the page?</dt><dd>Yes: the game in progress is kept in this browser and comes back when you open the page again.</dd>
-				<dt>Can I play against other people?</dt><dd>Play the daily deal: everyone gets the same cards that day, and the Hive leaderboard ranks the fastest wins. You can also send a friend a link to any deal with the Link button and compare times.</dd>
-				<dt>Does undo or a hint count against me?</dt><dd>No, but the number of undos is shown next to your time on the leaderboard.</dd>
-			</dl>
-			<p>Related: <a href="/minesweeper">Minesweeper</a> &middot; <a href="/chess">Chess</a> &middot; <a href="/backgammon">Backgammon</a> &middot; <a href="/poker">Poker</a> &middot; <a href="/tools">All MES tools</a></p>
-		</div>
+{{SEO}}
 	</div>
 	<script src="/main_js/panel-view.js?v=1" defer></script>

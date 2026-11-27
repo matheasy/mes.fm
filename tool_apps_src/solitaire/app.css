@@ -118,3 +118,4 @@
 		#sl .sl-info {gap:0.7em;}
 		#sl .sl-vb {font-size:0.82em;padding:0.3em 0.5em;}
 	}
+	#sl .sl-slot.is-suit {font-weight:400;opacity:.45;}

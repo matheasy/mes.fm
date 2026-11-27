@@ -13,15 +13,20 @@
 	var LEVELS = { k: ["k1", "k3", "k3p"], s: ["s1", "s2", "s4"], f: ["f4", "f3", "f2"] };
 
 	/* ---------- settings + stats ---------- */
-	var S = { v: "k1", deal: "r", win: true, auto: true, back: "b", stats: {}, daily: {}, cur: null, last: null, lbk: "d", lbv: "k1" };
+	var S = { v: "k1", deal: "r", win: true, auto: true, back: "b", stats: {}, daily: {}, cur: null, curs: {}, last: null, lbk: "d", lbv: "k1" };
 	try { var saved = JSON.parse(localStorage.getItem(LS) || "null"); if (saved && typeof saved === "object") for (var k in S) if (saved[k] !== undefined) S[k] = saved[k]; } catch (e) {}
 	if (!M.VARIANTS[S.v]) S.v = "k1";
+	var forcedGame = "";
+	(function startPage() { // a game's own page (e.g. /spider-solitaire, data-start="s1") opens in that game, keeping a saved level of it
+		var st = ($("sl") && $("sl").getAttribute("data-start")) || "";
+		if (st && M.VARIANTS[st]) { forcedGame = st.charAt(0); if (S.v.charAt(0) !== forcedGame) S.v = st; }
+	})();
 	function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} }
 	var urlDeal = null;
 	(function fromQuery() {
 		var q = new URLSearchParams(location.search);
 		var v = q.get("v"), s = q.get("s");
-		if (v && M.VARIANTS[v]) S.v = v;
+		if (v && M.VARIANTS[v]) { S.v = v; forcedGame = v.charAt(0); }
 		if (q.get("daily") === "1") S.deal = "d";
 		if (s && s.length <= 24) urlDeal = s;
 		if (v || s || q.get("daily")) try { history.replaceState(null, "", location.pathname); } catch (e) {}
@@ -90,7 +95,7 @@
 		persist();
 		updateInfo();
 		var V = M.VARIANTS[v];
-		status(note || (date ? "Today's " + V.name + " deal (" + date + ", UTC): the same cards for everyone." : V.name + ", deal " + seed + "."));
+		status(note || (date ? "Today's " + V.name + " deal (" + date + ", UTC): the same cards for everyone." : V.name + " · game no. " + seed));
 		describe();
 		syncSetup();
 		if (date) dailyPlayers();
@@ -103,10 +108,13 @@
 	function persist() {
 		if (!cur) return;
 		S.cur = { v: cur.v, seed: cur.seed, d: cur.d, mv: M.encMoves(cur.list), groups: cur.groups, u: cur.u, h: cur.h, carry: cur.carry, won: cur.won };
+		if (!S.curs || typeof S.curs !== "object") S.curs = {};
+		S.curs[cur.v.charAt(0)] = S.cur; // one saved game per game type (k / s / f), so each game's own page resumes its own game
 		save();
 	}
 	function resume() {
-		var c = S.cur;
+		var c = S.cur, want = forcedGame || (c && c.v ? c.v.charAt(0) : "");
+		if (want && (!c || !c.v || c.v.charAt(0) !== want)) c = (S.curs || {})[want] || null;
 		if (!c || c.won || !M.VARIANTS[c.v]) return false;
 		if (c.d && c.d !== M.utcDate()) return false;
 		var list = M.decMoves(c.mv || "");
@@ -395,11 +403,18 @@
 			var s = slots[pi], r = slotRect(+pi), i2 = +pi, k = G.kind(i2);
 			s.style.left = r.x + "px"; s.style.top = r.y + "px"; s.style.width = L.cw + "px"; s.style.height = L.ch + "px"; s.style.borderRadius = Math.round(L.cw * 0.08) + "px";
 			var label = "";
-			if (k === "found") label = G.g === "s" ? "K→A" : "A" + M.SUITS[G.foundSuit(i2)] + "︎";
-			else if (k === "stock") label = G.g === "k" ? (G.p[1].length && !(G.V.passes && G.passes >= G.V.passes - 1) ? "↻" : "") : "";
-			else if (k === "tab" && G.g === "k") label = "K";
+			// Foundations show only a faint suit (an "A♠ A♥ A♦ A♣" row read as "all Aces" to players, 2026-11-27).
+			var tip = "", big = false;
+			if (k === "found") {
+				if (G.g === "s") { label = "K→A"; tip = "A finished run, King down to Ace, goes here by itself"; }
+				else { var su = M.SUITS[G.foundSuit(i2)]; label = su + "︎"; big = true; tip = "Put the Ace of " + SUIT_NAME[su] + " here, then 2, 3 … up to the King"; }
+			}
+			else if (k === "stock") { label = G.g === "k" ? (G.p[1].length && !(G.V.passes && G.passes >= G.V.passes - 1) ? "↻" : "") : ""; tip = label ? "Turn the pile over again" : ""; }
+			else if (k === "tab" && G.g === "k") { label = "K"; tip = "Only a King can go in an empty column"; }
 			s.textContent = label;
-			s.style.fontSize = Math.round(L.cw * (label.length > 2 ? 0.2 : 0.32)) + "px";
+			s.title = tip;
+			s.classList.toggle("is-suit", big);
+			s.style.fontSize = Math.round(L.cw * (big ? 0.55 : label.length > 2 ? 0.2 : 0.32)) + "px";
 			s.classList.toggle("is-click", k === "stock");
 			s.classList.toggle("is-cur", !!(kbCur && kbCur.pile === i2 && !G.p[i2].length));
 		});
@@ -409,6 +424,8 @@
 		$("sl-table").style.height = H + "px";
 		$("sl-table").style.width = "100%";
 	}
+
+	var SUIT_NAME = {"♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs"};
 
 	/* ---------- pointer: drag and tap ---------- */
 	var drag = null;
@@ -818,7 +835,7 @@
 	function offline() {
 		var note = $("sl-offline");
 		if (!("serviceWorker" in navigator) || MOCK) { note.textContent = ""; return; }
-		navigator.serviceWorker.register("/solitaire-sw.js", { scope: "/solitaire" }).then(function (reg) {
+		(/^\/spider-solitaire/.test(location.pathname) ? navigator.serviceWorker.register("/offline-sw.js?p=/spider-solitaire", { scope: "/spider-solitaire" }) : navigator.serviceWorker.register("/solitaire-sw.js", { scope: "/solitaire" })).then(function (reg) {
 			var done = function () { note.textContent = "✓ Works offline: this page is saved in your browser, so you can open mes.fm/solitaire with no connection."; };
 			if (reg.active) done(); else { note.textContent = "Saving the page for offline play…"; navigator.serviceWorker.ready.then(done); }
 		}, function () { note.textContent = ""; });

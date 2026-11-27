@@ -5,13 +5,22 @@
   <link>https://mes.fm/tools</link>
   <description>New free calculators and tools on mes.fm.</description>
   <language>en</language>
-  <lastBuildDate>Tue, 24 Nov 2026 21:38:25 GMT</lastBuildDate>
+  <lastBuildDate>Thu, 26 Nov 2026 05:19:34 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/tools.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>New MES Calculators &amp; Tools</title><link>https://mes.fm/tools</link></image>
   <podcast:guid>d20538e6-7ed6-5439-8d17-06a28a7778f2</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Solitaire</title>
+    <link>https://mes.fm/solitaire</link>
+    <guid isPermaLink="true">https://mes.fm/solitaire</guid>
+    <pubDate>Thu, 26 Nov 2026 05:19:34 GMT</pubDate>
+    <category>Tools</category>
+    <description>Klondike, Spider and FreeCell: winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline.</description>
+    <media:thumbnail url="https://mes.fm/img/solitaire-logo.png"/>
+  </item>
   <item>
     <title>Flight Tracker: Live Air Traffic</title>
     <link>https://mes.fm/flights</link>
@@ -452,15 +461,6 @@
     <category>Tools</category>
     <description>A double-slit pattern forms in a crowd that waves with the wave, a 360° spin flipper swaps bright and dark stripes (720° brings them back), and a 3D wave field with tracer particles.</description>
     <media:thumbnail url="https://mes.fm/img/spin-wave-field-logo.png"/>
-  </item>
-  <item>
-    <title>Spin-½ Lab</title>
-    <link>https://mes.fm/spin-half</link>
-    <guid isPermaLink="true">https://mes.fm/spin-half</guid>
-    <pubDate>Wed, 04 Nov 2026 03:04:45 GMT</pubDate>
-    <category>Tools</category>
-    <description>Dirac&#x27;s belt trick in 3D: one turn tangles the ribbons, two turns untangle them, plus five pictures of why spin ½ needs 720°, a phase-coloured torus and an elastic sheet that lies flat only after 720°.</description>
-    <media:thumbnail url="https://mes.fm/img/spin-half-logo.png"/>
   </item>
 </channel>
 </rss>

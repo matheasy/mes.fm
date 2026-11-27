@@ -5,13 +5,22 @@
   <link>https://mes.fm</link>
   <description>New calculators, tools, posts, livestreams and videos from MES.</description>
   <language>en</language>
-  <lastBuildDate>Thu, 26 Nov 2026 04:59:53 GMT</lastBuildDate>
+  <lastBuildDate>Thu, 26 Nov 2026 05:19:34 GMT</lastBuildDate>
   <atom:link href="https://mes.fm/feeds/everything.xml" rel="self" type="application/rss+xml"/>
   <image><url>https://mes.fm/img/logo-mark.png</url><title>Everything new on MES</title><link>https://mes.fm</link></image>
   <podcast:guid>03507b1a-39b2-589d-a981-78282814b3f3</podcast:guid>
   <podcast:medium>blog</podcast:medium>
   <podcast:funding url="https://mes.fm/donate">Support MES</podcast:funding>
   <generator>mes.fm build_feeds.py</generator>
+  <item>
+    <title>Solitaire</title>
+    <link>https://mes.fm/solitaire</link>
+    <guid isPermaLink="true">https://mes.fm/solitaire</guid>
+    <pubDate>Thu, 26 Nov 2026 05:19:34 GMT</pubDate>
+    <category>Tools</category>
+    <description>Klondike, Spider and FreeCell: winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline.</description>
+    <media:thumbnail url="https://mes.fm/img/solitaire-logo.png"/>
+  </item>
   <item>
     <title>Telegram Founder Rockin&#x27; the Illuminati Hand Sign 👐👀</title>
     <link>https://mes.fm/telegram-founder-hands</link>
@@ -722,15 +731,6 @@
     <category>Tools</category>
     <description>Negative refraction, the flat and perfect lens, a live Maxwell simulation of a metamaterial, diffraction gratings and ten things light can do.</description>
     <media:thumbnail url="https://mes.fm/img/negative-index-logo.png"/>
-  </item>
-  <item>
-    <title>German New Medicine Explorer</title>
-    <link>https://mes.fm/gnm</link>
-    <guid isPermaLink="true">https://mes.fm/gnm</guid>
-    <pubDate>Mon, 02 Nov 2026 03:24:54 GMT</pubDate>
-    <category>Tools</category>
-    <description>Dr. Hamer&#x27;s two-phase chart with a draggable marker, organs by germ layer and brain relay, a describe-your-symptoms reader, the 5 Biological Laws and a glossary.</description>
-    <media:thumbnail url="https://mes.fm/img/gnm-logo.png"/>
   </item>
 </channel>
 </rss>

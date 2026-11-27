@@ -119,6 +119,19 @@ def _bl(slug, start, title, page_title, desc, tab, meta_desc):
     if slug != "billiards":
         d.update(js_path="billiards/js/billiards.js", brand=BL_BRAND, tab=tab)
     return d
+# MES Solitaire (2026-11-25) + Spider Solitaire's own page (2026-11-27): one source tool_apps_src/solitaire, one script solitaire/js/solitaire.js;
+# data-start on #sl = the game a page opens in, seo/<slug>.html = its own text. Rebuild both together, bump js_v on both.
+SOL_BRAND = dict(slug="solitaire", title="MES Solitaire", tag="Klondike, Spider and FreeCell, even offline.")
+SOL_PAGES = [("solitaire", "Solitaire"), ("spider-solitaire", "Spider")]
+SOL_NAV_INFO = "".join("<li class=\"info-bar__item\"><a class=\"info-bar__item__text\" href='/%s'>%s</a></li>" % (sl, nm) for sl, nm in SOL_PAGES[1:])
+SOL_NAV_MENU = "".join('<li class="navbar__item"><a class="navbar__link" href="/%s">%s Solitaire</a></li>' % (sl, nm) for sl, nm in SOL_PAGES[1:])
+def _sol(slug, start, title, page_title, desc, tab, meta_desc):
+    d = dict(title=title, page_title=page_title, tag=SOL_BRAND["tag"], accent="#15803d", dark="#14532d", tint="#e3f4e8", desc=desc, meta_desc=meta_desc,
+             js_v="3", src="solitaire", pre_js=["/main_js/hive.js?v=2"], nav_extra=SOL_NAV_INFO, menu_extra=SOL_NAV_MENU,
+             vars={"START": start, "SEO": "@seo/%s.html" % slug})
+    if slug != "solitaire":
+        d.update(js_path="solitaire/js/solitaire.js", brand=SOL_BRAND, tab=tab)
+    return d
 # MES GTA 6 Hub (2026-11-07): one source (tool_apps_src/gta: lib.js = MESGTA physics + countdown + download maths, also mes.fm/api/_gta-lib.js for the
 # news function api/gta-news.js; sim.js = the stunt jump simulator UI; app.js = hub / countdown / download / jump calculator) for the hub /gta and three pages.
 # data-page on #gt picks the page. Unofficial fan pages (no Rockstar art or names beyond the game title). Rebuild all four together, bump js_v on all.
@@ -1710,11 +1723,12 @@ APPS = {
     # MES Solitaire (2026-11-25, mes.fm/solitaire): tool_apps_src/solitaire (lib.js = MESSolitaire rules / seeded deals / Klondike solver /
     # replay check, also mes.fm/api/_solitaire-lib.js for api/solitaire.js: cp after editing). Hive custom_json id mes_solitaire, verified
     # leaderboard in api/solitaire.js. Offline: mes.fm/solitaire-sw.js (service worker for this page only). Tests: solitaire-tests.js.
-    "solitaire": dict(title="MES Solitaire", page_title="Solitaire: Play Klondike, Spider and FreeCell Free Online (Works Offline)",
-                tag="Klondike, Spider and FreeCell, even offline.", accent="#15803d", dark="#14532d", tint="#e3f4e8",
-                desc="Play Solitaire free in your browser: Klondike (draw 1 or draw 3), Spider (1, 2 or 4 suits) and FreeCell with numbered deals, three levels, winnable deals only, undo, hints, auto-finish, drag or tap to move, keyboard controls, statistics and a daily deal that is the same for everyone, with a Hive-verified leaderboard. Works offline after your first visit.",
-                meta_desc="Free Solitaire: Klondike, Spider and FreeCell with winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline.",
-                js_v="1", pre_js=["/main_js/hive.js?v=2"]),
+    "solitaire": _sol("solitaire", "", "MES Solitaire", "Solitaire: Play Klondike, Spider and FreeCell Free Online (Works Offline)",
+                "Play Solitaire free in your browser: Klondike (draw 1 or draw 3), Spider (1, 2 or 4 suits) and FreeCell with numbered deals, three levels, winnable deals only, undo, hints, auto-finish, drag or tap to move, keyboard controls, statistics and a daily deal that is the same for everyone, with a Hive-verified leaderboard. Works offline after your first visit.",
+                0, "Free Solitaire: Klondike, Spider and FreeCell with winnable deals, undo, hints, a daily deal for everyone and a Hive leaderboard. Works offline."),
+    "spider-solitaire": _sol("spider-solitaire", "s1", "Spider Solitaire", "Spider Solitaire: Play Free Online, 1, 2 or 4 Suits (Works Offline)",
+                "Play Spider Solitaire free in your browser: one suit (easy), two suits or four suits, two decks in ten columns, unlimited undo, hints, drag or tap to move, keyboard controls, statistics and a daily Spider deal that is the same for everyone, with a Hive-verified leaderboard. Works offline after your first visit.",
+                1, "Free Spider Solitaire: 1, 2 or 4 suits, unlimited undo, hints, a daily deal for everyone and a Hive leaderboard. No sign-up, works offline."),
     # MES Falling Blocks (2026-11-20, mes.fm/blocks; never call it "Tetris": a trademark of The Tetris Company): tool_apps_src/blocks
     # (lib.js = MESBlocks rules / SRS / scoring / replay check, also mes.fm/api/_blocks-lib.js for api/blocks.js: cp after editing;
     # view3d.js = the 3D well; app.js = the page). Hive custom_json id mes_blocks, verified leaderboard + live races in api/blocks.js. Tests: blocks-tests.js.

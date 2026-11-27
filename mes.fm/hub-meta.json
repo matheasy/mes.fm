@@ -883,7 +883,7 @@
 },
 "/search":{
 "added":"2026-09-28",
-"updated":"2026-11-25",
+"updated":"2026-11-27",
 "type":"Tool"
 },
 "/search-engines":{
@@ -938,7 +938,7 @@
 },
 "/solitaire":{
 "added":"2026-11-25",
-"updated":"2026-11-25",
+"updated":"2026-11-27",
 "type":"Game"
 },
 "/space-shuttle-simulator":{
