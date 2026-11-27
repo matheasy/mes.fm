@@ -2,6 +2,10 @@
  * drag an edge to trim, click / drag the ruler to move the playhead, Ctrl + wheel or the slider to zoom, I / O marks, drop media from the bin. */
 (function () {
 	"use strict";
+	// layer eye: an open eye when the layer shows; a dimmed eye with a red line across it when hidden
+	var EYE_PATH = '<path d="M1.5 8C3.2 4.9 5.4 3.4 8 3.4s4.8 1.5 6.5 4.6C12.8 11.1 10.6 12.6 8 12.6S3.2 11.1 1.5 8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.3" fill="currentColor"/>';
+	var EYE_ON = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">' + EYE_PATH + "</svg>";
+	var EYE_OFF = '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><g opacity=".45">' + EYE_PATH + '</g><path d="M2.5 13.5 13.5 2.5" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>';
 	var VE = window.VE; if (!VE) return;
 	var V = VE.V, $ = function (id) { return document.getElementById(id); };
 	var HEAD = 150, RULER = 26;
@@ -20,7 +24,7 @@
 			var h = V.rowH(tr, p), canDel = p.tracks.length > 1 && !p.clips.some(function (c) { return c.track === tr.id; }), snd = V.soundOnly(p, tr), hasSnd = p.clips.some(function (c) { return c.track === tr.id && (c.type === "audio" || (c.type === "video" && VE.hasSound(c))); });
 			html += '<div class="vd-trow vd-trow--' + (snd ? "a" : "v") + (tr.hide || tr.mute ? " is-off" : "") + (tr.lock ? " is-lock" : "") + (tr.mag ? " is-mag" : "") + '" data-track="' + tr.id + '" style="height:' + h + 'px">' +
 				'<div class="vd-thead"><span class="vd-tgrip" title="Drag to move this layer up or down" aria-hidden="true"></span><span class="vd-tname" title="Double-click to rename. Drag the empty part of this header up or down to move the layer; right-click for more">' + VE.esc(tr.name) + "</span><span class=\"vd-tbtns\">" +
-				(snd ? "" : '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' the pictures on this layer">' + (tr.hide ? "&#128065;&#824;" : "&#128065;") + "</button>") +
+				(snd ? "" : '<button type="button" data-tact="hide" aria-pressed="' + !!tr.hide + '" title="' + (tr.hide ? "Show" : "Hide") + ' the pictures on this layer">' + (tr.hide ? EYE_OFF : EYE_ON) + "</button>") +
 				'<button type="button" data-tact="mute" aria-pressed="' + !!tr.mute + '" title="' + (tr.mute ? "Unmute" : "Mute") + ' this layer">' + (tr.mute ? "&#128263;" : "&#128266;") + "</button>" +
 				'<button type="button" data-tact="lock" aria-pressed="' + !!tr.lock + '" title="' + (tr.lock ? "Unlock" : "Lock") + ' this layer">' + (tr.lock ? "&#128274;" : "&#128275;") + "</button>" +
 				'<button type="button" data-tact="mag" aria-pressed="' + !!tr.mag + '" title="' + (tr.mag ? "Magnetic layer: clips close up with no gaps (click to turn off)" : "Make this layer magnetic: clips close up to the left with no gaps") + '"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 2h3v6a2 2 0 0 0 4 0V2h3v6a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M3 2h3v2H3zM10 2h3v2h-3z" fill="#f87171"/></svg></button>' +

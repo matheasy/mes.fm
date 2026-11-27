@@ -16,6 +16,20 @@
 		if (ac.state === "suspended") ac.resume();
 		return ac;
 	}
+	// the input to send a clip's sound into so it plays in the right ears (c.ch; see V.CHANNELS); one shared splitter/merger per mode
+	var chanNodes = {};
+	function chanIn(a, mode) {
+		if (!mode || !a.createChannelSplitter) return a.destination;
+		var k = mode, cn = chanNodes[k]; if (cn && cn.ctx === a) return cn.input;
+		var sp = a.createChannelSplitter(2), mg = a.createChannelMerger(2), inp = a.createGain(); inp.channelCount = 2; inp.channelCountMode = "explicit"; inp.channelInterpretation = "speakers";
+		inp.connect(sp);
+		if (mode === "left") { sp.connect(mg, 0, 0); sp.connect(mg, 0, 1); }
+		else if (mode === "right") { sp.connect(mg, 1, 0); sp.connect(mg, 1, 1); }
+		else if (mode === "swap") { sp.connect(mg, 1, 0); sp.connect(mg, 0, 1); }
+		else { var h = a.createGain(); h.gain.value = 0.5; sp.connect(h, 0); sp.connect(h, 1); h.connect(mg, 0, 0); h.connect(mg, 0, 1); }
+		mg.connect(a.destination);
+		chanNodes[k] = { ctx: a, input: inp }; return inp;
+	}
 	function connect(e) { if (!ac || e.gain) return; try { e.node = ac.createMediaElementSource(e.el); e.gain = ac.createGain(); e.gain.gain.value = 0; e.node.connect(e.gain).connect(ac.destination); } catch (x) { /* already connected */ } }
 	function elFor(c) {
 		var e = els[c.id], m = VE.media(c.media), now = performance.now();
@@ -154,6 +168,7 @@
 				var fps = (m && m.fps) || 30;
 				if (Math.abs(e.el.currentTime - src) > 0.5 / fps && !e.el.seeking) setTime(e, src);
 			}
+			if (e.gain && ac && (e.ch || "") !== (c.ch || "")) { try { e.gain.disconnect(); } catch (x) { /* ignore */ } e.gain.connect(chanIn(ac, c.ch)); e.ch = c.ch || ""; }
 			if (e.gain && ac) { var g = playing && active && !jump && !cleanCovers(c, t) ? V.gainAt(p, c, t) * VE.fxGainAt(c, t + 0.015) : 0; if (P.muted) g = 0; e.gain.gain.setTargetAtTime(g, ac.currentTime, 0.012); }
 		});
 		Object.keys(els).forEach(function (k) { if (!want[k] && now - els[k].used > 4000) release(k); else if (!want[k]) { els[k].el.pause(); if (els[k].gain && ac) els[k].gain.gain.setTargetAtTime(0, ac.currentTime, 0.01); } });
@@ -187,7 +202,7 @@
 			if (!buf) { buf = a.createBuffer(cp.ch.length, cp.ch[0].length, cp.rate); cp.ch.forEach(function (x, k) { buf.copyToChannel(x, k); }); cleanBufs[c.clean.key] = buf; }
 			if (Math.abs(P.rate - 1) > 1e-3 && Math.abs(P.rate - P.speed) < 1e-3 && window.HTMLMediaElement) { cleanEl(a, c, cp, from, now, off, len); continue; }
 			var node = a.createBufferSource(), gain = a.createGain(); node.buffer = buf; node.playbackRate.value = (c.speed || 1) * P.rate; gain.gain.value = 0;
-			node.connect(gain).connect(a.destination);
+			node.connect(gain).connect(chanIn(a, c.ch));
 			node.start(a.currentTime + Math.max(0, (from - now) / P.rate), off, Math.min(len, buf.duration - off));
 			cleanNodes.push({ id: c.id, node: node, gain: gain });
 		}
@@ -198,7 +213,7 @@
 	var LONG = 600, SEG = 120;
 	function cleanChain(a, c, cp, from, now, off, len) {
 		var rate = (c.speed || 1) * P.rate, end = Math.min(off + len, cp.ch[0].length / cp.rate), t0 = a.currentTime + Math.max(0, (from - now) / P.rate), pos = off;
-		var gain = a.createGain(); gain.gain.value = 0; gain.connect(a.destination);
+		var gain = a.createGain(); gain.gain.value = 0; gain.connect(chanIn(a, c.ch));
 		var e = { id: c.id, gain: gain, nodes: [], timer: 0, dead: false };
 		function more() {
 			if (e.dead) return;
@@ -220,7 +235,7 @@
 	function cleanEl(a, c, cp, from, now, off, len) {
 		var url = cleanUrls[c.clean.key] || (cleanUrls[c.clean.key] = URL.createObjectURL(new Blob([V.wav16(cp.ch, cp.rate)], { type: "audio/wav" })));
 		var el = new Audio(); el.preload = "auto"; el.src = url; el.preservesPitch = true; el.playbackRate = Math.max(0.0625, Math.min(16, (c.speed || 1) * P.rate));
-		var sn = a.createMediaElementSource(el), gain = a.createGain(); gain.gain.value = 0; sn.connect(gain).connect(a.destination);
+		var sn = a.createMediaElementSource(el), gain = a.createGain(); gain.gain.value = 0; sn.connect(gain).connect(chanIn(a, c.ch));
 		var timer = setTimeout(function () { el.currentTime = off; var pp = el.play(); if (pp && pp.catch) pp.catch(function () { }); }, Math.max(0, (from - now) / P.rate * 1000));
 		cleanNodes.push({ id: c.id, gain: gain, el: el, cs: c.speed || 1, node: { stop: function () { clearTimeout(timer); el.pause(); el.removeAttribute("src"); }, disconnect: function () { sn.disconnect(); } } });
 		void len;

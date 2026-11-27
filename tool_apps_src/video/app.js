@@ -489,8 +489,10 @@
 			var gsel = V.withGroup(VE.P, sel.map(function (q) { return q.id; })), oneGrp = c.grp && gsel.every(function (id) { return (V.clip(VE.P, id) || {}).grp === c.grp; });
 			if (sel.length > 1 && !oneGrp) it("Group these " + sel.length + " clips", K + "G", function () { VE.groupSel(); });
 			if (c.grp) it("Ungroup", K + "Shift+G", function () { VE.ungroupSel(); });
-			if (c.link) { it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); }); it("Put the sound back into the video", "", function () { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }); }
-			else { var lp = V.linkCandidate(VE.P, sel.length > 1 ? sel : [c]); if (lp) it("Link video and sound", "", function () { VE.linkBack(lp); }); }
+			var csel = sel.length > 1 ? sel : [c], canC = VE.canCombine(csel), avPair = sel.length === 2 && sel.some(function (q) { return q.type === "video"; }) && sel.some(function (q) { return q.type === "audio"; });
+			if (canC || avPair) it("Combine video and sound into one clip", K + "Shift+A", function () { VE.combine(csel); });
+			if (c.link) it("Unlink (move them apart)", "", function () { V.unlink(VE.P, c.id); VE.commit("Unlink"); });
+			else { var lp = V.linkCandidate(VE.P, csel); if (lp) it("Link video and sound", "", function () { VE.linkBack(lp); }); }
 			if (!c.link && c.type === "video" && VE.hasSound(c)) it("Separate video and audio", K + "Shift+A", function () { VE.separate(sel); });
 			if (c.media && !V.isGfx(c)) { sep(); it("Show in Media", "", function () { VE.showInMedia(c); }, !VE.media(c.media)); it("Change media file…", "", function () { VE.changeMedia(c); }); }
 			sep();
@@ -867,7 +869,7 @@
 			["cut", "Cut", MK + "X", !has], ["copy", "Copy", MK + "C", !has], ["paste", "Paste at the playhead", MK + "V", !cb], ["dup", "Duplicate", MK + "D", !has], "-",
 			["del", "Delete", "Del", !has], ["ripple", "Ripple delete (close the gap)", "Shift+Del", !has], ["split", "Split at the playhead", "S", !inClip], ["cutrange", "Cut out the marked part (I to O)", "", !marksOk()], "-",
 			["all", "Select all", MK + "A", !VE.P.clips.length], ["track", "Select everything on " + (tr0 ? tr0.name : "this layer"), "", !tr0], ["after", "Select everything after the playhead", "", !VE.P.clips.length], ["none", "Select nothing", "Esc", !has], "-",
-			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["noempty", "Delete empty layers", "", !V.emptyTracks(VE.P).length], ["sep", c0 && c0.link ? "Unlink video and sound" : "Separate video and audio", c0 && c0.link ? "" : MK + "⇧A", !(c0 && (c0.link || (c0.type === "video" && VE.hasSound(c0))))], ["link", "Link video and sound", "", !V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])], "-",
+			["up", "Move up a layer", "Alt+↑", !has], ["down", "Move down a layer", "Alt+↓", !has], ["addlayer", "Add a layer", "", false], ["noempty", "Delete empty layers", "", !V.emptyTracks(VE.P).length], ["sep", c0 && VE.canCombine(sel.length > 1 ? sel : [c0]) ? "Combine video and sound into one clip" : "Separate video and audio", MK + "⇧A", !(c0 && (VE.canCombine(sel.length > 1 ? sel : [c0]) || (c0.type === "video" && VE.hasSound(c0))))], ["link", "Link video and sound", "", !V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])], "-",
 			["narrate", "Narration (type or record)…", "N", false], ["title", "Add a title", "T", false], ["markin", "Mark in here", "I", false], ["markout", "Mark out here", "O", false], ["goto", "Go to a time…", MK + "G", false],
 		];
 	}
@@ -889,7 +891,7 @@
 			none: function () { VE.sel = []; VE.emit("select"); },
 			up: function () { VE.moveRow(-1); }, down: function () { VE.moveRow(1); }, addlayer: function () { VE.addTrack("v", c0 ? V.track(VE.P, c0.track) : null, "above"); VE.commit("Add layer"); }, noempty: VE.deleteEmptyTracks,
 			link: function () { VE.linkBack(V.linkCandidate(VE.P, sel.length > 1 ? sel : [c0])); },
-			sep: function () { if (c0.link) { V.unlink(VE.P, c0.id); VE.commit("Unlink"); } else VE.separate(sel); },
+			sep: function () { var cs = sel.length > 1 ? sel : [c0]; if (VE.canCombine(cs)) VE.combine(cs); else VE.separate(sel); },
 			narrate: function () { openNarrate(); }, title: function () { VE.addTitle(); }, markin: function () { mark("in"); }, markout: function () { mark("out"); }, goto: function () { tin.focus(); },
 		})[a]();
 	});
@@ -1319,6 +1321,9 @@
 		var c = list[0], db = Math.round(V.db(c.vol == null ? 1 : c.vol) * 10) / 10;
 		var h = '<div class="vd-sec"><b>Sound</b>';
 		if (list.length === 1) h += '<label class="vd-f vd-wide"><span>Volume <output id="vd-volout">' + (isFinite(db) ? (db > 0 ? "+" : "") + db + " dB" : "off") + '</output></span><input type="range" id="vd-i-vol" min="-40" max="20" step="0.5" value="' + (isFinite(db) ? db : -40) + '"></label><div class="vd-checks"><label><input type="checkbox" id="vd-i-mute"' + (c.mute ? " checked" : "") + "> Mute this clip</label></div>";
+		var chv = list.every(function (x) { return (x.ch || "") === (c.ch || ""); }) ? (c.ch || "") : null;
+		h += '<label class="vd-f vd-wide"><span>Plays in</span><select id="vd-i-ch">' + (chv == null ? '<option value="*" selected>(mixed)</option>' : "") + V.CHANNELS.map(function (q) { return '<option value="' + q[0] + '"' + (chv === q[0] ? " selected" : "") + ">" + esc(q[1]) + "</option>"; }).join("") + '</select></label>' +
+			'<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-i-ear" title="Finds clips whose sound is only in the left or right ear and plays that side in both">Fix sound in one ear</button></div>';
 		h += "</div>" + fxSection(list) + '<div class="vd-sec"><b>Clean up</b>';
 		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length;
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label>' + "</div>" + sld("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") + "<div>" + "</div>" +
@@ -1460,6 +1465,8 @@
 		var st = $("vd-dn-str"); if (st) st.onchange = function () { UI.dnStr = V.clamp((st.value === "" ? 100 : +st.value) / 100, 0, 1); saveUI(); };
 		var go = $("vd-dn-go"); if (go) go.onclick = function () { denoise(list); };
 		var off = $("vd-dn-off"); if (off) off.onclick = function () { list.forEach(function (c) { c.clean = null; }); VE.commit("Original sound"); };
+		var chs = $("vd-i-ch"); if (chs) chs.onchange = function () { if (chs.value === "*") return; list.forEach(function (x) { x.ch = chs.value || null; }); VE.commit(chs.value ? "Sound: " + chs.options[chs.selectedIndex].text : "Sound as recorded"); };
+		var ear = $("vd-i-ear"); if (ear) ear.onclick = function () { VE.fixEar(list); };
 		var lt = $("vd-ln-tgt"); if (lt) lt.onchange = function () { UI.lnTgt = +lt.value; saveUI(); };
 		var lg = $("vd-ln-go"); if (lg) lg.onclick = function () { normalize(list); };
 		bindFx(list);
@@ -2049,7 +2056,7 @@
 		if (mod && !e.shiftKey && !e.altKey && /^[cx]$/i.test(k) && !String(window.getSelection && window.getSelection() || "")) { if (VE.selected().length) { e.preventDefault(); if (/x/i.test(k)) VE.cut(); else VE.copy(); } return; }
 		if (mod && !e.shiftKey && !e.altKey && (k === "v" || k === "V")) { VE.pasteKey(); return; }   // the paste event (if the browser sends one) cancels this and decides
 		if (e.altKey && !mod && (k === "ArrowUp" || k === "ArrowDown")) { e.preventDefault(); VE.moveRow(k === "ArrowUp" ? -1 : 1); return; }
-		if (mod && e.shiftKey && (k === "a" || k === "A")) { e.preventDefault(); VE.separate(VE.selected()); return; }
+		if (mod && e.shiftKey && (k === "a" || k === "A")) { e.preventDefault(); var ss = VE.selected(); if (VE.canCombine(ss)) VE.combine(ss); else VE.separate(ss); return; }
 		if (mod && (k === "a" || k === "A")) { e.preventDefault(); VE.sel = VE.P.clips.map(function (c) { return c.id; }); VE.emit("select"); return; }
 		if ((mod || e.ctrlKey) && e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); VE.goEdit(k === "ArrowRight" ? 1 : -1); return; }
 		if (mod && (k === "g" || k === "G")) { e.preventDefault(); tin.focus(); return; }
@@ -2106,6 +2113,47 @@
 		toast("The sound is now its own clip on the layer below, linked to the video: moving, trimming, splitting or deleting one does the other too (Alt + drag moves just one). Drag the bottom edge of the track to make the waveform taller.", 9000);
 	};
 	$("vd-sep").onclick = function () { VE.separate(VE.selected()); };
+	// "Fix sound in one ear": each clip's sound is sampled in a few places; a clip whose one channel is over 12 dB louder plays that side in both ears
+	VE.fixEar = async function (list) {
+		list = (list || []).filter(VE.hasSound); if (!list.length) { toast("Select a clip with sound first."); return; }
+		var fixed = 0, ok = 0;
+		for (var i = 0; i < list.length; i++) {
+			var c = list[i], m = VE.media(c.media), d = c.out - c.in, votes = { left: 0, right: 0, "": 0 };
+			for (var k = 0; k < 5; k++) { var s = c.in + d * (k + 0.5) / 5 - 1; try { var b = await VE.pcm(m, Math.max(c.in, s), Math.min(c.out, Math.max(c.in, s) + 2)); votes[V.oneEar(b)]++; } catch (e) { /* ignore */ } }
+			var side = votes.left >= 3 ? "left" : votes.right >= 3 ? "right" : "";
+			if (side && c.ch !== side) { c.ch = side; fixed++; } else if (!side) ok++;
+		}
+		if (fixed) { VE.commit("Fix sound in one ear"); toast(fixed + " clip" + (fixed > 1 ? "s" : "") + " now play" + (fixed > 1 ? "" : "s") + " the " + (list.length === 1 ? (list[0].ch === "left" ? "left" : "right") + " channel" : "louder side") + " in both ears.", 6000); }
+		else toast(ok === list.length ? "The sound is in both ears already." : "Nothing to change.", 5000);
+	};
+	// "Combine into one clip": a video and its own sound (linked, or the same file side by side) become one clip again on the video's layer;
+	// the sound's now-empty layer is removed. A video can only carry its own file's sound, so other pairs are explained (and offered a group).
+	VE.canCombine = function (list) {
+		list = (list || []).filter(Boolean); if (!list.length) return false;
+		if (list.some(function (c) { return c.link && V.partners(VE.P, c).some(function (o) { return o.type !== c.type; }); })) return true;
+		return !!V.linkCandidate(VE.P, list.length > 1 ? list : [list[0]]);
+	};
+	VE.combine = function (list) {
+		list = (list || []).filter(Boolean);
+		var v = list.filter(function (c) { return c.type === "video"; }), a = list.filter(function (c) { return c.type === "audio"; });
+		if (!VE.canCombine(list)) {
+			if (v.length && a.length && a.some(function (x) { return !v.some(function (y) { return y.media === x.media; }); }))
+				toast("A video clip can only carry the sound from its own file, so a different sound (music, narration) stays on its own layer. Use Group (" + MK + "G) to keep them together: they then select, move and delete as one.", 9000);
+			else toast("Select a video clip and its own sound (one that was separated) to combine them.", 6000);
+			return;
+		}
+		var keys = {}, done = [], emptied = {};
+		list.forEach(function (c) {
+			if (!c.link) { var pr = V.linkCandidate(VE.P, list.length > 1 ? list : [c]); if (pr && !pr.v.link && !pr.a.link) V.linkPair(VE.P, pr, V.uid("L")); }
+			if (!c.link || keys[c.link]) return; keys[c.link] = 1;
+			V.partners(VE.P, c).concat([c]).forEach(function (x) { if (x.type === "audio") emptied[x.track] = 1; });
+			var vv = V.joinAudio(VE.P, c.id); if (vv) done.push(vv.id);
+		});
+		if (!done.length) { toast("Those clips could not be combined."); return; }
+		Object.keys(emptied).forEach(function (tid) { var t = V.track(VE.P, tid); if (t && !t.lock && !V.onTrack(VE.P, tid).length && VE.P.tracks.length > 1) VE.P.tracks = VE.P.tracks.filter(function (x) { return x !== t; }); });
+		VE.sel = done; VE.commit("Combine into one clip");
+		toast(done.length === 1 ? "Combined: the video plays its own sound again, on one layer." : done.length + " clips combined with their sound.", 5000);
+	};
 	VE.linkBack = function (pair) {
 		if (!V.linkPair(VE.P, pair, V.uid("L"))) return;
 		VE.sel = [pair.v.id, pair.a.id]; VE.commit("Link video and sound");
@@ -2117,13 +2165,13 @@
 		if (c.link && parts.length) {
 			var o = parts[0], ot = V.track(VE.P, o.track);
 			h += '<div class="vd-linkrow">&#128279; Linked to its ' + (o.type === "audio" ? "sound" : "video") + " on " + esc(ot ? ot.name : "another track") + '. Moving, trimming, splitting and deleting one does the other too (Alt + drag moves just this one).<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="unlink">Unlink</button>' +
-				(c.type === "video" || o.type === "video" ? '<button type="button" class="vd-btn vd-sm" data-lk="join">Put the sound back into the video</button>' : "") + "</div></div>";
+				(c.type === "video" || o.type === "video" ? '<button type="button" class="vd-btn vd-sm" data-lk="join" title="Ctrl+Shift+A">Combine into one clip</button>' : "") + "</div></div>";
 		} else if (c.type === "video" && c.noAudio) {
-			h += '<div class="vd-linkrow">This clip plays no sound (it was separated).<div class="vd-row">' + (V.linkCandidate(VE.P, [c]) ? '<button type="button" class="vd-btn vd-sm" data-lk="relink">&#128279; Link to its sound again</button>' : "") + '<button type="button" class="vd-btn vd-sm" data-lk="sndon">Play its own sound again</button></div></div>';
+			h += '<div class="vd-linkrow">This clip plays no sound (it was separated).<div class="vd-row">' + (V.linkCandidate(VE.P, [c]) ? '<button type="button" class="vd-btn vd-sm" data-lk="join" title="Ctrl+Shift+A">Combine with its sound</button><button type="button" class="vd-btn vd-sm" data-lk="relink">&#128279; Link to its sound again</button>' : "") + '<button type="button" class="vd-btn vd-sm" data-lk="sndon">Play its own sound again</button></div></div>';
 		} else if (c.type === "video" && VE.hasSound(c)) {
 			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="sep" title="Ctrl+Shift+A">Separate video and audio</button></div>';
 		} else if (c.type === "audio" && !c.link && V.linkCandidate(VE.P, [c])) {
-			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="relink">&#128279; Link to its video again</button></div>';
+			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-lk="join" title="Ctrl+Shift+A">Combine with its video</button><button type="button" class="vd-btn vd-sm" data-lk="relink">&#128279; Link to its video again</button></div>';
 		}
 		return h;
 	}
@@ -2134,7 +2182,7 @@
 				var a = b.getAttribute("data-lk");
 				if (a === "sep") VE.separate([c]);
 				else if (a === "unlink") { V.unlink(VE.P, c.id); VE.commit("Unlink"); }
-				else if (a === "join") { var v = V.joinAudio(VE.P, c.id); VE.sel = v ? [v.id] : []; VE.commit("Put the sound back"); }
+				else if (a === "join") VE.combine([c]);
 				else if (a === "relink") VE.linkBack(V.linkCandidate(VE.P, [c]));
 				else if (a === "sndon") { c.noAudio = false; VE.commit("Sound on"); }
 			};
@@ -2751,7 +2799,7 @@
 			{ id: "comp", ico: "&#9636;", name: "Compressor", desc: "Tames the loud peaks", snd: 1 }, { id: "noise", ico: "&#10024;", name: "Remove noise", desc: "Hum, hiss, room noise (AI)", snd: 1 },
 			{ id: "duck", ico: "&#127925;", name: "Ducking", desc: "Music dips under a voice", snd: 1 }, { id: "norm", ico: "&#128266;", name: "Normalize loudness", desc: "To -16 LUFS (or your choice)", snd: 1 },
 			{ id: "afin", ico: "&#9698;", name: "Fade in", desc: "Sound and picture", snd: 1 }, { id: "afout", ico: "&#9699;", name: "Fade out", desc: "Sound and picture", snd: 1 },
-			{ id: "sep", ico: "&#9986;", name: "Separate video and audio", desc: "Sound on its own track" }, { id: "off", ico: "&#10006;", name: "Remove audio effects", desc: "Leveler, compressor, ducking", snd: 1 }
+			{ id: "ear", ico: "&#127911;", name: "Fix sound in one ear", desc: "Plays it in both ears", snd: 1 }, { id: "sep", ico: "&#9986;", name: "Separate video and audio", desc: "Sound on its own track" }, { id: "off", ico: "&#10006;", name: "Remove audio effects", desc: "Leveler, compressor, ducking", snd: 1 }
 		],
 		vfx: [
 			{ id: "fit", ico: "&#9634;", name: "Fit the frame", desc: "Whole picture, bars if needed" }, { id: "fill", ico: "&#9635;", name: "Fill the frame", desc: "No bars, edges cut" },
@@ -2788,6 +2836,7 @@
 		function fx(c, g, patch) { var A = V.afxOf(c); c.afx = c.afx || {}; c.afx[g] = Object.assign(A[g], patch); }
 		if (cd.id === "noise") { denoise(list); return; }
 		if (cd.id === "norm") { normalize(list); return; }
+		if (cd.id === "ear") { VE.fixEar(list); return; }
 		list.forEach(function (c) {
 			var len = V.dur(c), m = VE.media(c.media);
 			switch (cd.id) {

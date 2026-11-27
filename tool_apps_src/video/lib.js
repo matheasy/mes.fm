@@ -880,8 +880,8 @@
 		for (var j = 0; j < as.length; j++) if (as[j].mag ? !V.onTrack(p, as[j].id).length : V.canPlace(p, as[j].id, c.start, d)) { tr = as[j]; break; }
 		if (!tr) tr = makeTrack ? makeTrack(c) : null; if (!tr) return null;
 		var a = V.clipDefaults({ id: newId, type: "audio", media: c.media, track: tr.id, start: c.start, in: c.in, out: c.out, speed: c.speed, vol: c.vol, mute: c.mute, fin: c.fin, fout: c.fout, xin: c.xin,
-			clean: c.clean ? JSON.parse(JSON.stringify(c.clean)) : null, lufs: c.lufs, afx: c.afx ? JSON.parse(JSON.stringify(c.afx)) : null, link: linkId });
-		c.link = linkId; c.noAudio = true; c.clean = null; c.afx = null; c.lufs = null;
+			clean: c.clean ? JSON.parse(JSON.stringify(c.clean)) : null, lufs: c.lufs, afx: c.afx ? JSON.parse(JSON.stringify(c.afx)) : null, ch: c.ch || null, link: linkId });
+		c.link = linkId; c.noAudio = true; c.clean = null; c.afx = null; c.lufs = null; c.ch = null;
 		p.clips.push(a);
 		return a;
 	};
@@ -890,7 +890,7 @@
 		var c = V.clip(p, id); if (!c) return null;
 		var g = [c].concat(V.partners(p, c)), v = g.filter(function (x) { return x.type === "video"; })[0], a = g.filter(function (x) { return x.type === "audio" && x.media === (v && v.media); })[0];
 		if (!v) return null;
-		if (a) { v.vol = a.vol; v.mute = a.mute; v.clean = a.clean; v.afx = a.afx; v.lufs = a.lufs; p.clips = p.clips.filter(function (x) { return x !== a; }); }
+		if (a) { v.vol = a.vol; v.mute = a.mute; v.clean = a.clean; v.afx = a.afx; v.lufs = a.lufs; v.ch = a.ch || null; p.clips = p.clips.filter(function (x) { return x !== a; }); }
 		v.noAudio = false; if (!V.partners(p, v).length) v.link = null;
 		return v;
 	};
@@ -924,6 +924,26 @@
 	};
 
 	/* ---------- audio effects (non-destructive: a gain envelope worked out from the clip's own sound) ---------- */
+	// which ears a clip's sound plays in: "" = as recorded; "left" / "right" = that channel in both ears (fixes sound stuck in one ear);
+	// "mono" = both channels mixed; "swap" = left and right swapped
+	V.CHANNELS = [["", "As recorded (stereo)"], ["left", "Left channel in both ears"], ["right", "Right channel in both ears"], ["mono", "Mix to mono (both ears the same)"], ["swap", "Swap left and right"]];
+	V.chanFix = function (buf, mode) {
+		if (!buf || !mode || !buf.ch || !buf.ch.length) return buf;
+		var L = buf.ch[0], R = buf.ch[1] || L, n = L.length, o;
+		if (mode === "left") o = [L, L];
+		else if (mode === "right") o = [R, R];
+		else if (mode === "swap") o = [R, L];
+		else if (mode === "mono") { var m = new Float32Array(n); for (var i = 0; i < n; i++) m[i] = (L[i] + R[i]) * 0.5; o = [m, m]; }
+		else return buf;
+		return Object.assign({}, buf, { ch: o });
+	};
+	// one-ear check from the energy of each channel: -> "left" / "right" when one side is over 12 dB louder than the other, else ""
+	V.oneEar = function (buf) {
+		if (!buf || !buf.ch || buf.ch.length < 2) return "";
+		var L = buf.ch[0], R = buf.ch[1], el = 0, er = 0; for (var i = 0; i < L.length; i += 2) { el += L[i] * L[i]; er += R[i] * R[i]; }
+		if (el + er < 1e-9) return ""; var db = 10 * Math.log10((el + 1e-12) / (er + 1e-12));
+		return db > 12 ? "left" : db < -12 ? "right" : "";
+	};
 	V.AFX_DEFAULT = {
 		level: { on: false, target: -20, maxUp: 12, maxDown: 12, win: 3, gate: -50, lim: true, ceil: -1 },   // lim = limiter: no peak goes above ceil dBFS   // leveler: brings the loudness over a few seconds to the target (dBFS RMS)
 		comp: { on: false, thr: -24, ratio: 3, knee: 6, att: 0.01, rel: 0.2, makeup: null },   // compressor (makeup null = automatic)

@@ -323,8 +323,8 @@
 	// the sound buffer a clip plays at source time s: noise-removed when it has one covering s
 	VE.clipPcm = async function (c, s0, s1) {
 		var m = VE.media(c.media); if (!m) return null;
-		if (c.clean && c.clean.key) { var cp = await VE.cleanPcm(c.clean.key); if (cp && s0 >= cp.start - 0.01 && s1 <= cp.start + cp.ch[0].length / cp.rate + 0.35) return cp; }   // a little past the end = silence (the decoded sound can be a few frames shorter than the clip)
-		return VE.pcm(m, s0, s1);
+		if (c.clean && c.clean.key) { var cp = await VE.cleanPcm(c.clean.key); if (cp && s0 >= cp.start - 0.01 && s1 <= cp.start + cp.ch[0].length / cp.rate + 0.35) return c.ch ? V.chanFix(cp, c.ch) : cp; }   // a little past the end = silence (the decoded sound can be a few frames shorter than the clip)
+		var pb = await VE.pcm(m, s0, s1); return c.ch ? V.chanFix(pb, c.ch) : pb;
 	};
 
 
