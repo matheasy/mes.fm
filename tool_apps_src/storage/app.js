@@ -8,7 +8,14 @@
 	try { var sv = JSON.parse(localStorage.getItem(KEY) || 'null'); if (sv) for (var k in sv) if (k in P) P[k] = sv[k]; } catch (e) {}
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} }
 	function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-	var toastT; function toast(m) { var t = $('st-toast'); t.textContent = m; t.classList.add('tu-toast--show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('tu-toast--show'); }, 3200); }
+	/* the toast moves into an open dialog or the full-screen element, or it would be hidden behind them */
+	var toastT; function toast(m) {
+		var t = $('st-toast'), st = $('st'); if (!t) return;
+		var fs = document.fullscreenElement, dl = $('st-hdlg');
+		var host = dl && dl.open ? dl : fs && st.contains(fs) ? fs : st;
+		if (t.parentNode !== host) host.appendChild(t);
+		t.textContent = m; t.classList.add('tu-toast--show'); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('tu-toast--show'); }, 3200);
+	}
 	function dark() { return document.body.classList.contains('dark-mode'); }
 	var B = L.fmtBytes, N = L.fmtInt;
 
@@ -34,7 +41,10 @@
 
 	/* ---------- progress ---------- */
 	var t0 = 0, progTimer = 0, lastP = null;
+	/* Refresh: scan the same folder again while the results (and a Fill window / full screen) stay on screen; the zoomed folder and the picked item come back */
+	var refreshing = null;     // {zoom: path, sel: path, total, files} while a refresh runs
 	function showProg(on) {
+		if (refreshing) { clearInterval(progTimer); if (on) { t0 = Date.now(); lastP = { files: 0, dirs: 0, bytes: 0, path: '' }; paintRefresh(); progTimer = setInterval(paintRefresh, 250); } else paintRefresh(); return; }
 		$('st-prog').hidden = !on;
 		$('st-pick').hidden = on;
 		if (on) { $('st-res').hidden = true; t0 = Date.now(); lastP = { files: 0, dirs: 0, bytes: 0, path: '' }; paintProg(); clearInterval(progTimer); progTimer = setInterval(paintProg, 250); }
@@ -47,6 +57,33 @@
 		$('st-ptime').textContent = Math.round((Date.now() - t0) / 1000) + ' s'; $('st-ppath').textContent = p.path ? '‎' + p.path + '‎' : '';
 	}
 	$('st-cancel').onclick = function () { if (busy) busy.cancel(); };
+	function paintRefresh() {
+		[].forEach.call(document.querySelectorAll('#st .st-refresh'), function (b) {
+			b.textContent = refreshing && busy ? '⏹ ' + N((lastP && lastP.files) || 0) + ' files… (stop)' : '↻ Refresh';
+			b.classList.toggle('st-busy', !!(refreshing && busy));
+			b.title = refreshing && busy ? 'Adding up sizes again. Click to stop.' : (src && src.kind === 'handle' ? 'Scan the folder again to see your changes' : 'Pick the folder again to see your changes');
+		});
+	}
+	function addRefresh() {
+		['st-cbtns', 'st-tbtns', 'st-lbtns'].forEach(function (id) {
+			var bar = $(id); if (!bar || bar.querySelector('.st-refresh')) return;
+			var b = document.createElement('button'); b.type = 'button'; b.className = 'tu-btn tu-btn--ghost st-small st-refresh';
+			bar.insertBefore(b, bar.firstChild);
+		});
+		paintRefresh();
+	}
+	function doRefresh() {
+		if (busy) { if (refreshing) busy.cancel(); return; }
+		if (!src || !M) return;
+		if (src.kind === 'demo') { toast('The made-up example has nothing to refresh.'); return; }
+		if (src.kind !== 'handle') { toast('This browser can\'t look at the folder again by itself: pick it again.'); $('st-choose').click(); return; }
+		refreshing = { zoom: L.pathOf(M, zoom), sel: sel >= 0 ? L.pathOf(M, sel) : '', total: M.total[0], files: M.files[0] };
+		var h = src.h, go = function () { scanFromHandle(h); };
+		if (h.queryPermission) h.queryPermission({ mode: 'read' }).then(function (st) {
+			if (st === 'granted') go(); else h.requestPermission({ mode: 'read' }).then(function (r) { if (r === 'granted') go(); else { refreshing = null; paintRefresh(); toast('The browser didn\'t allow reading the folder again.'); } }, function () { refreshing = null; paintRefresh(); });
+		}, go); else go();
+	}
+	document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#st .st-refresh')) doRefresh(); });
 
 	/* ---------- scanning ---------- */
 	function scanFromHandle(h) {
@@ -58,8 +95,8 @@
 		function done(raw, err) {
 			if (settled) return; settled = true; busy = null;
 			if (w) { w.terminate(); w = null; }
-			if (err) { showProg(false); toast('The scan stopped: ' + err); return; }
-			if (!raw) { showProg(false); toast('Scan cancelled.'); return; }
+			if (err) { var r0 = refreshing; refreshing = null; showProg(false); if (r0) paintRefresh(); toast('The scan stopped: ' + err); return; }
+			if (!raw) { var r1 = refreshing; refreshing = null; showProg(false); if (r1) paintRefresh(); toast(r1 ? 'Refresh stopped. Showing the last scan.' : 'Scan cancelled.'); return; }
 			finish(raw, 'handle');
 		}
 		function mainThread() {
@@ -213,7 +250,23 @@
 	$('st-demo').onclick = function () { src = { kind: 'demo' }; finish(demoRaw(), 'demo'); toast('A made-up folder of about 20,000 files, so you can try the charts.'); };
 
 	/* ---------- after a scan ---------- */
+	function findPath(path) { if (!path) return -1; for (var i = 0; i < M.n; i++) if (L.pathOf(M, i) === path) return i; return -1; }
 	function finish(raw, how) {
+		var rf = refreshing; refreshing = null;
+		if (rf) {
+			clearInterval(progTimer);
+			var keepOpen = new Set(); expanded.forEach(function (i) { keepOpen.add(L.pathOf(M, i)); });
+			mode = how; M = L.build(raw); hover = -1; moreN = new Map(); hashes = {}; hashRun = null;
+			if (locParsed && locParsed.root === M.names[0]) L.applyLocation(M, locParsed); else locParsed = null;
+			if (!M.loc && P.col === 'where') P.col = 'folder';
+			if (!M.loc && P.tab === 'local') P.tab = 'big';
+			var z = findPath(rf.zoom); zoom = z >= 0 && M.isDir[z] ? z : 0; sel = findPath(rf.sel);
+			expanded = new Set(); for (var k = 0; k < M.n; k++) if (M.isDir[k] && keepOpen.has(L.pathOf(M, k))) expanded.add(k);
+			renderAll(); paintRefresh();
+			var d = M.total[0] - rf.total, df = M.files[0] - rf.files;
+			toast('Refreshed: ' + B(M.total[0]) + ' · ' + N(M.files[0]) + ' files' + (d || df ? ' (' + (d >= 0 ? '+' : '−') + B(Math.abs(d)) + ', ' + (df >= 0 ? '+' : '−') + N(Math.abs(df)) + ' files)' : ' (no change)') + (z < 0 && rf.zoom.indexOf('/') > 0 ? '. The folder you were in is gone, so this shows the top.' : '.'));
+			return;
+		}
 		showProg(false);
 		mode = how; M = L.build(raw); zoom = 0; sel = -1; hover = -1; expanded = new Set(); moreN = new Map(); focusCat = -1; hashes = {}; hashRun = null;
 		if (locParsed && locParsed.root === M.names[0]) L.applyLocation(M, locParsed); else locParsed = null;
@@ -227,7 +280,7 @@
 	$('st-new').onclick = function () { $('st-res').hidden = true; $('st-pick').hidden = false; M = null; $('st-pick').scrollIntoView({ block: 'center' }); };
 	$('st-again').onclick = function () {
 		if (!src) return;
-		if (src.kind === 'handle') scanFromHandle(src.h);
+		if (src.kind === 'handle') doRefresh();
 		else if (src.kind === 'demo') $('st-demo').click();
 		else { toast('The browser needs you to pick the folder again.'); $('st-choose').click(); }
 	};
@@ -540,7 +593,7 @@
 			(d ? '<div>' + N(M.files[i]) + ' files · ' + N(M.dirs[i]) + ' folders</div>' : '<div>' + esc(L.CATS[M.cat[i]].name) + (M.exts[M.extId[i]] ? ' · .' + esc(M.exts[M.extId[i]]) : '') + ' · ' + N(M.size[i]) + ' bytes</div>') +
 			(M.newest[i] > 0 ? '<div>' + (d ? 'Newest change ' : 'Last changed ') + L.fmtDate(M.newest[i]) + ' (' + L.ageText(M.newest[i], Date.now()) + ')</div>' : '') +
 			(M.loc ? '<div class="st-iloc">' + locLine(i) + '</div>' : '') +
-			'<div class="st-ipath">' + esc(L.pathOf(M, i)) + '</div>' +
+			'<div class="st-ipath">' + esc(fullOf(i) || L.pathOf(M, i)) + '</div>' +
 			'<div class="tu-row">' +
 			(d && i !== zoom ? '<button type="button" class="tu-btn st-small" data-act="zoom">Zoom in</button>' : '') +
 			(i === zoom && zoom > 0 ? '<button type="button" class="tu-btn st-small" data-act="up">⬆ Up</button>' : '') +
@@ -550,7 +603,7 @@
 	/* ---------- open it on the computer: a web page can't open Finder / File Explorer, so copy the full path and paste it there ---------- */
 	function baseOf() { if (!M) return ''; var r = M.names[0], b = P.bases && P.bases[OS + '|' + r]; return b != null ? b : L.guessRootPath(OS, r); }
 	function fullOf(i) { var b = baseOf(); return b ? L.fullPath(OS, b, L.pathOf(M, i)) : ''; }
-	function howHtml(i) {
+	function howHtml(i, inDlg) {
 		var r = esc(M.names[0]), b = baseOf(), f = fullOf(i), isF = !M.isDir[i], mac = OS === 'mac', guessed = !(P.bases && (OS + '|' + M.names[0]) in P.bases) && !!b;
 		var first = b ? 'Press <b>📋 Copy full path</b>.' : 'First type where <b>' + r + '</b> is on this computer in the box below and press <b>Save</b>. Then press <b>📋 Copy full path</b>.';
 		var steps = mac ? [
@@ -564,17 +617,17 @@
 		];
 		var find = mac ? 'To find it: in Finder, right-click <b>' + r + '</b>, hold <kbd>Option</kbd> and pick <b>Copy "' + r + '" as Pathname</b>, then paste it here.'
 			: 'To find it: in File Explorer, hold <kbd>Shift</kbd>, right-click <b>' + r + '</b> and pick <b>Copy as path</b>, then paste it here.';
-		return '<details class="st-how"' + (P.how ? ' open' : '') + '><summary>How to open this on my ' + (mac ? 'Mac' : 'PC') + '</summary>' +
+		return '<details class="st-how"' + (P.how || inDlg ? ' open' : '') + '><summary>How to open this on my ' + (mac ? 'Mac' : 'PC') + '</summary>' +
 			'<div class="tu-seg st-seg st-hos" role="group" aria-label="Your computer"><button type="button" data-hos="mac" aria-pressed="' + mac + '">Mac</button><button type="button" data-hos="win" aria-pressed="' + !mac + '">Windows</button></div>' +
 			'<p class="st-hnote">Browsers don\'t let a web page open folders on your computer, so copy the full path and paste it ' + (mac ? 'into Finder' : 'into File Explorer') + ':</p>' +
 			'<ol class="st-hsteps">' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>' +
 			(f && mac ? '<p class="st-hnote">Or in Terminal:</p><div class="st-hcmd"><code>' + esc(L.macOpenCmd(f, isF)) + '</code><button type="button" class="tu-btn tu-btn--ghost st-small" data-act="copycmd">Copy</button></div>' : '') +
 			'<label class="st-hbase"><span>Where is <b>' + r + '</b> on this computer?' + (guessed ? ' <i>(our guess: check it)</i>' : '') + '</span>' +
-			'<span class="st-hrow"><input type="text" id="st-hbase" spellcheck="false" autocomplete="off" value="' + esc(b) + '" placeholder="' + (mac ? '~/Library/CloudStorage/' + r : 'C:\\Users\\you\\' + r) + '"><button type="button" class="tu-btn st-small" data-act="savebase">Save</button></span></label>' +
+			'<span class="st-hrow"><input type="text" id="st-hbase' + (inDlg ? '2' : '') + '" spellcheck="false" autocomplete="off" value="' + esc(b) + '" placeholder="' + (mac ? '~/Library/CloudStorage/' + r : 'C:\\Users\\you\\' + r) + '"><button type="button" class="tu-btn st-small" data-act="savebase">Save</button></span></label>' +
 			'<p class="st-hnote st-muted">' + find + ' The short path starts at <b>' + r + '</b>, which is why pasting it on its own finds nothing.</p></details>';
 	}
-	function saveBase() {
-		var el = $('st-hbase'); if (!el || !M) return;
+	function saveBase(el) {
+		el = el || $('st-hbase'); if (!el || !M) return;
 		P.bases = P.bases || {}; P.bases[OS + '|' + M.names[0]] = L.cleanRootPath(OS, el.value); save(); renderInfo();
 		toast(P.bases[OS + '|' + M.names[0]] ? 'Saved. "Copy full path" now gives the whole location.' : 'Cleared.');
 	}
@@ -583,21 +636,60 @@
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { prompt('Copy this:', t); });
 		else prompt('Copy this:', t);
 	}
-	$('st-info').addEventListener('toggle', function (e) { if (e.target.classList && e.target.classList.contains('st-how')) { P.how = e.target.open; save(); } }, true);
-	$('st-info').addEventListener('keydown', function (e) { if (e.target.id === 'st-hbase' && e.key === 'Enter') { e.preventDefault(); saveBase(); } });
-	$('st-info').onclick = function (e) {
-		var ho = e.target.closest('[data-hos]'); if (ho) { OS = ho.getAttribute('data-hos'); paintOS(); renderInfo(); return; }
-		var b = e.target.closest('[data-act]'); if (!b) return;
-		var i = sel >= 0 ? sel : zoom, a = b.getAttribute('data-act');
-		if (a === 'copyfull') { copyText(fullOf(i), 'Copied. ' + (OS === 'mac' ? 'In Finder press Cmd+Shift+G, paste, Return.' : 'Paste it into the File Explorer address bar and press Enter.')); return; }
-		if (a === 'copycmd') { copyText(L.macOpenCmd(fullOf(i), !M.isDir[i]), 'Copied. Paste it into Terminal and press Return.'); return; }
-		if (a === 'savebase') { saveBase(); return; }
-		if (a === 'zoom') { sel = -1; setZoom(i); } else if (a === 'up') up(); else if (a === 'copy') copyPath(i);
-		else if (a === 'table') { reveal(i); $('st-tablesec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
-	};
+	/* the same "how to open" box also opens as a dialog (from the table / lists, and in a narrow Fill window where the side panel is hidden).
+	   A modal <dialog> sits in the top layer, so it shows over Fill window and real full screen too. */
+	var dlgI = -1;
+	function dlgEl() {
+		var d = $('st-hdlg');
+		if (!d) {
+			d = document.createElement('dialog'); d.id = 'st-hdlg'; d.className = 'st-info st-hdlg';
+			d.setAttribute('aria-label', 'Open this on your computer');
+			$('st').appendChild(d); wireHow(d, function () { return dlgI; }, renderDlg);
+			d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+		}
+		return d;
+	}
+	function renderDlg() {
+		var d = dlgEl(), i = dlgI; if (i < 0 || !M) return;
+		var f = fullOf(i), tst = $('st-toast');
+		if (tst && d.contains(tst)) $('st').appendChild(tst);   /* keep the toast: innerHTML below would delete it */
+		d.innerHTML = '<button type="button" class="st-hx" data-act="close" aria-label="Close">✕</button>' +
+			'<h3>' + (M.isDir[i] ? '📁 ' : fileIcon(i) + ' ') + esc(M.names[i]) + '</h3>' +
+			'<div class="st-ipath">' + esc(f || L.pathOf(M, i)) + '</div>' +
+			'<div class="tu-row">' + (f ? '<button type="button" class="tu-btn st-small" data-act="copyfull">📋 Copy full path</button>' : '') +
+			'<button type="button" class="tu-btn tu-btn--ghost st-small" data-act="copy">Copy ' + (f ? 'short ' : '') + 'path</button></div>' +
+			howHtml(i, true);
+		if (tst && d.open && tst.classList.contains('tu-toast--show')) d.appendChild(tst);
+	}
+	function openHow(i) {
+		dlgI = i; var d = dlgEl(); renderDlg();
+		if (!d.open) { if (d.showModal) d.showModal(); else d.setAttribute('open', ''); }
+		if (!fullOf(i)) { var el = $('st-hbase2'); if (el) el.focus(); }
+	}
+	function wireHow(root, idx, rerender) {
+		root.addEventListener('toggle', function (e) { if (e.target.classList && e.target.classList.contains('st-how') && root.id === 'st-info') { P.how = e.target.open; save(); } }, true);
+		root.addEventListener('keydown', function (e) { if (/^st-hbase/.test(e.target.id) && e.key === 'Enter') { e.preventDefault(); saveBase(e.target); rerender(); } });
+		root.addEventListener('click', function (e) {
+			var ho = e.target.closest('[data-hos]'); if (ho) { OS = ho.getAttribute('data-hos'); paintOS(); renderInfo(); if (root.id !== 'st-info') rerender(); return; }
+			var b = e.target.closest('[data-act]'); if (!b) return;
+			var i = idx(), a = b.getAttribute('data-act');
+			if (a === 'close') { root.close(); return; }
+			if (a === 'copyfull') { copyText(fullOf(i), 'Copied. ' + (OS === 'mac' ? 'In Finder press Cmd+Shift+G, paste, Return.' : 'Paste it into the File Explorer address bar and press Enter.')); return; }
+			if (a === 'copycmd') { copyText(L.macOpenCmd(fullOf(i), !M.isDir[i]), 'Copied. Paste it into Terminal and press Return.'); return; }
+			if (a === 'savebase') { saveBase(root.querySelector('[id^="st-hbase"]')); rerender(); return; }
+			if (a === 'how') { openHow(i); return; }
+			if (a === 'copy') { copyShort(i); return; }
+			if (root.id !== 'st-info') return;
+			if (a === 'zoom') { sel = -1; setZoom(i); } else if (a === 'up') up();
+			else if (a === 'table') { reveal(i); $('st-tablesec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+		});
+	}
+	wireHow($('st-info'), function () { return sel >= 0 ? sel : zoom; }, renderInfo);
+	function copyShort(i) { copyText(L.pathOf(M, i), 'Copied the short path (it starts at ' + M.names[0] + ').'); }
 	function fileIcon(i) { return ['🎬', '🖼️', '🎵', '📄', '🗜️', '🧩', '📦', '🗄️', '📄'][M.cat[i]] || '📄'; }
 	function copyPath(i) {
 		var f = fullOf(i), t = f || L.pathOf(M, i);
+		if (!f) { openHow(i); return; }   /* no location yet: show the box to add it (works in Fill window / full screen too) */
 		function ok() { toast(f ? 'Copied the full path. ' + (OS === 'mac' ? 'In Finder press Cmd+Shift+G, paste, Return.' : 'Paste it into the File Explorer address bar.') : 'Copied: ' + t + '. It starts at the folder you picked: open "How to open this" beside the chart to add where that folder is.'); }
 		if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, function () { prompt('Copy this path:', t); });
 		else prompt('Copy this path:', t);
@@ -752,7 +844,7 @@
 	$('st-tabs').onclick = function (e) { var b = e.target.closest('[data-tab]'); if (b) setTab(b.getAttribute('data-tab')); };
 	function itemCell(i, base) {
 		var p = M.parent[i];
-		return '<button type="button" class="st-linkbtn" data-reveal="' + i + '">' + (M.isDir[i] ? '📁 ' : fileIcon(i) + ' ') + esc(M.names[i]) + '</button>' + cloudBadge(i) + '<button type="button" class="st-copy" data-copy="' + i + '" title="Copy the path">Copy path</button>' +
+		return '<button type="button" class="st-linkbtn" data-reveal="' + i + '">' + (M.isDir[i] ? '📁 ' : fileIcon(i) + ' ') + esc(M.names[i]) + '</button>' + cloudBadge(i) + '<button type="button" class="st-copy" data-copy="' + i + '" title="Copy the full path">Copy path</button><button type="button" class="st-copy" data-how="' + i + '" title="How to open this on my computer">Open…</button>' +
 			'<span class="st-pathsm">' + esc(p >= 0 ? L.pathOf(M, p) : '') + '</span>';
 	}
 	function sel_(id, opts, v) { return '<select class="tu-select" id="' + id + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (String(o[0]) === String(v) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>'; }
@@ -813,6 +905,7 @@
 		var rv = e.target.closest('[data-reveal]'), cp = e.target.closest('[data-copy]'), fc = e.target.closest('[data-fcat]'), ex = e.target.closest('[data-ext]'), hb = e.target.closest('#st-hash'), hc = e.target.closest('#st-hashstop');
 		if (rv) { reveal(+rv.getAttribute('data-reveal')); $('st-chartsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 		else if (cp) copyPath(+cp.getAttribute('data-copy'));
+		else if (e.target.closest('[data-how]')) openHow(+e.target.closest('[data-how]').getAttribute('data-how'));
 		else if (fc) { focusCat = +fc.getAttribute('data-fcat'); P.col = 'type'; save(); paintSeg(); drawChart(); renderLegend(); $('st-chartsec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 		else if (ex) { var x = ex.getAttribute('data-ext'); $('st-q').value = x ? '*.' + x : ''; renderTable(); $('st-tablesec').scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 		else if (hb) startHash();
@@ -1009,8 +1102,10 @@
 		window.MESPanel.add($('st-chartsec'), { bar: $('st-cbtns'), onChange: function () { setTimeout(drawChart, 40); } });
 		window.MESPanel.add($('st-tablesec'), { bar: $('st-tbtns') });
 		window.MESPanel.add($('st-listsec'), { bar: $('st-lbtns') });
+		addRefresh();
 	})();
+	addRefresh();
 
 	/* testing hook (?debug=1): window.MESStorageDebug */
-	if (/[?&]debug=1/.test(location.search)) window.MESStorageDebug = { model: function () { return M; }, finish: finish, demoRaw: demoRaw, fromPaths: L.fromPaths, state: function () { return { zoom: zoom, sel: sel, P: P, geo: geo && geo.kind }; }, setZoom: setZoom, hit: hit };
+	if (/[?&]debug=1/.test(location.search)) window.MESStorageDebug = { model: function () { return M; }, finish: finish, demoRaw: demoRaw, fromPaths: L.fromPaths, state: function () { return { zoom: zoom, sel: sel, P: P, geo: geo && geo.kind }; }, setZoom: setZoom, hit: hit, scan: scanFromHandle };
 })();

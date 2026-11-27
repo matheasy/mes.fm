@@ -447,7 +447,8 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	@media (max-width:900px) {
 		.st-chartwrap {grid-template-columns:minmax(0, 1fr);}
 		.st-info {min-height:0;}
-		.st-chartcard.mes-pfill .st-info {display:none;}
+		.st-chartcard.mes-pfill .st-chartwrap {grid-template-rows:minmax(0, 1fr) auto;}
+		.st-chartcard.mes-pfill .st-info {max-height:34vh;}
 	}
 	@media (max-width:600px) {
 		.st-pstats {grid-template-columns:repeat(2, minmax(0, 1fr));}
@@ -529,6 +530,21 @@ body.dark-mode .tu .rw-head {color:#a0a8b3;border-bottom-color:#555;} body.dark-
 	.st-info .st-hrow input {flex:1;min-width:0;font:inherit;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:0.85em;padding:0.35em 0.5em;border:1px solid rgba(127,127,127,0.45);border-radius:0.4em;background:transparent;color:inherit;}
 	#st .st-info .st-how summary {color:#0d7a5f;}
 	body.dark-mode #st .st-info .st-how summary {color:#4fd1a5;}
+	/* Fill window / full screen / Wide / Theatre: the side panel scrolls on its own, so Copy path and the open steps stay reachable */
+	.st-chartcard.mes-pfill .st-info {overflow:auto;min-height:0;align-self:stretch;}
+	#st-toast {z-index:2147483600;}
+	/* the same box as a dialog (table / lists, and anywhere the side panel is out of view) */
+	.st-hdlg {position:fixed;inset:0;margin:auto;width:min(34em, calc(100vw - 2em));max-height:calc(100vh - 3em);overflow:auto;border:1px solid var(--st-line);color:var(--st-fg);box-shadow:0 1em 3em rgba(0,0,0,0.35);padding:1em 1.1em;}
+	.st-hdlg::backdrop {background:rgba(10,14,20,0.5);}
+	.st-hdlg[open] {display:block;}
+	.st-hdlg .st-hx {position:absolute;top:0.5em;right:0.6em;font:inherit;font-size:1.1em;background:transparent;border:0;color:inherit;cursor:pointer;padding:0.2em 0.4em;}
+	.st-hdlg h3 {padding-right:1.6em;}
+	.st-hdlg .st-how summary {pointer-events:none;list-style:none;}
+	.st-hdlg .st-how summary::-webkit-details-marker {display:none;}
+	#st .st-hdlg div, #st .st-hdlg li, #st .st-hdlg p, #st .st-hdlg span, #st .st-hdlg label {color:inherit;}
+	#st .st-hdlg .st-ipath {color:var(--st-muted);}
+	.st-refresh.st-busy {border-color:#f59e0b;}
+	.st-refresh {white-space:nowrap;}
 
 
 	@media print {
@@ -660,6 +676,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
 	body.dark-mode .st-info kbd{border:1px solid rgba(127,127,127,0.50)}
 	body.dark-mode .st-info .st-hcmd code{background:rgba(82,82,82,0.12)}
 	body.dark-mode #st .st-info .st-how summary{color:#6cefcf}
+	body.dark-mode .st-refresh.st-busy{border-color:#c47e08}
 	/* TOOL-DARK:END */
 </style>
         <meta property="fb:app_id" content="" />
@@ -1113,7 +1130,7 @@ body.is-stuck #navbar.hide { position: fixed; top: 56px; right: 8px; }
             hide_search:false,
             current_tab:0
         }        </script><!-- FASTCOMMENTS-LAZY: widget init moved to main_js/main.js -- it pulls embed.min.js only when #fastcomments-widget nears the viewport or on the first Comments-toggle click, so it no longer blocks first render -->                <script src="https://mes.fm/main_js/lazysizes.min.js?v=1.0.3" async></script>
-	<script src="/storage/js/storage.js?v=4" defer></script>
+	<script src="/storage/js/storage.js?v=5" defer></script>
             <script src="https://mes.fm/main_js/main.js?v=1.0.5"></script>    <!-- PAGEVIEW-TRACKING-INSERTED --><script src="https://mes.fm/main_js/track.js" defer></script><script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script><script src="/main_js/info-bar-fit.js" defer></script><script>
   // Floating compact header bar (see #compact-nav CSS): appears once the
   // header + nav bar have scrolled off the top; nav links that don't fit
