@@ -8,6 +8,7 @@ export const SECTIONS = [
     id: "crypto-posts",
     title: "Posts",
     items: [
+  { title: "MES AI Is Now Free for Hive Users: Private On-Device AI, 10 Free Messages a Day, Browser Tasks and More", image: "https://mes.fm/ai-free-features/img/share.jpg", links: [["mes.fm", "https://mes.fm/ai-free-features"], ["InLeo", "https://inleo.io/@mes/mes-ai-is-now-free-for-hive-users-private-ondevice-ai-10-free-messages-a-day-browser-tasks-and-more-jnz"], ["MES AI", "https://mes.fm/ai"]] },
   { title: "Scam Alert: Fake \"Community Reward\" Comments Are Stealing Hive Keys", image: "https://mes.fm/hive-rewards-scam/img/hive-rewards-scam.jpg", links: [["mes.fm", "https://mes.fm/hive-rewards-scam"], ["Hive", "https://peakd.com/hive-167922/@mes/scam-alert-fake-community-reward-comments-are-stealing-hive-keys-55b"], ["InLeo", "https://inleo.io/@mes/scam-alert-fake-community-reward-comments-are-stealing-hive-keys-55b"]] },
   { title: "MES AI: Use Claude, ChatGPT & Grok With Just Your Hive Account (No KYC, No Subscription)", image: "https://mes.fm/ai/img/logo-big.png", links: [["mes.fm", "https://mes.fm/ai-claude-grok-chatgpt"], ["InLeo", "https://inleo.io/@mes/mes-ai-use-claude-chatgpt-grok-with-hive-jea"], ["MES AI", "https://mes.fm/ai"]] },
   { title: "New Hive Games & Apps on mes.fm: Chess, Billiards, Tic-Tac-Toe, Connect Four, Quantum-Safe Backups (Testers Wanted)", image: "https://mes.fm/hive-games-apps/img/hive-games-apps.jpg", links: [["mes.fm", "https://mes.fm/hive-games-apps"], ["Hive", "https://peakd.com/hive/@mes/new-hive-games-apps-on-mesfm-kwv"]] },
