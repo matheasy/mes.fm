@@ -5344,11 +5344,11 @@
 			h += '<div class="vd-row"><button type="button" class="vd-btn vd-sm" data-pos="center">Centre</button><button type="button" class="vd-btn vd-sm" data-pos="fit">Fit the frame</button>' + (!V.isGfx(c) ? '<button type="button" class="vd-btn vd-sm" data-pos="fill">Fill the frame</button><button type="button" class="vd-btn vd-sm" data-pos="pip">Corner (picture in picture)</button>' : "") + "</div></div>";
 		}
 		if (c.type !== "audio") h += animSection(c);
-		if (V.isGroup(c)) h += groupSound(c);
+		if (V.isGroup(c)) { h += groupSound(c); var gsnd = soundsIn([c]); if (gsnd.length) h += soundSection(gsnd, c); }
 		h += linkSection(c);
 		if (VE.hasSound(c)) h += soundSection([c]);
 		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
-		insp.innerHTML = h; INSP_LIVE = {}; bindInsp(c); bindLink(c); bindAnims(c); if (V.isGroup(c)) bindGroup(c); wireRanges();
+		insp.innerHTML = h; INSP_LIVE = {}; bindInsp(c); bindLink(c); bindAnims(c); if (V.isGroup(c)) { bindGroup(c); var gs2 = soundsIn([c]); if (gs2.length) bindSound(gs2); } wireRanges();
 	}
 	// a group: its name, open / ungroup, and its volume (it multiplies the sound of everything inside)
 	function groupSection(c) {
@@ -5372,8 +5372,12 @@
 		}
 		var mu = $("vd-g-mute"); if (mu) mu.onchange = function () { c.mute = mu.checked; VE.commit(c.mute ? "Mute group" : "Unmute group"); };
 	}
-	function soundSection(list) {
+	// the clips with sound in a selection, the ones inside selected groups too (a group's own Clean up works on them)
+	function soundsIn(sel) { var out = []; sel.forEach(function (c) { if (V.isGroup(c)) V.allClips(c.sub).forEach(function (q) { if (VE.hasSound(q) && out.indexOf(q) < 0) out.push(q); }); else if (VE.hasSound(c) && out.indexOf(c) < 0) out.push(c); }); return out; }
+	// grp = the group these clips are in: only the Clean up part (noise removal, loudness), worded for the group
+	function soundSection(list, grp) {
 		var c = list[0], db = Math.round(V.db(c.vol == null ? 1 : c.vol) * 10) / 10;
+		if (grp) return groupClean(list, grp);
 		var h = '<div class="vd-sec"><b>Sound</b>';
 		if (list.length === 1) h += '<label class="vd-f vd-wide"><span>Volume <output id="vd-volout">' + (isFinite(db) ? (db > 0 ? "+" : "") + db + " dB" : "off") + '</output></span><input type="range" id="vd-i-vol" min="-40" max="20" step="0.5" value="' + (isFinite(db) ? db : -40) + '"></label><div class="vd-checks"><label><input type="checkbox" id="vd-i-mute"' + (c.mute ? " checked" : "") + "> Mute this clip</label></div>";
 		var chv = list.every(function (x) { return (x.ch || "") === (c.ch || ""); }) ? (c.ch || "") : null;
@@ -5386,8 +5390,16 @@
 		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness' + (list.length > 1 ? " (" + list.length + " clips)" : "") + '</button></div><p class="vd-sub" id="vd-ln-st">' + (c.lufs != null ? "Set to " + c.lufs + " LUFS." : "Sets the volume so the clip is as loud as the target, never clipping.") + "</p></div>" + (list.length === 1 ? '<div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-cmp-go" title="See and hear the original and the edited sound one above the other">&#8645; Compare before / after</button></div>' : "") + "</div>";
 		return h;
 	}
+	function groupClean(list, g) {
+		var cleaned = list.filter(function (x) { return x.clean && x.clean.key; }).length, n = list.length, what = n + " sound clip" + (n === 1 ? "" : "s") + " inside";
+		var h = '<div class="vd-sec"><b>Clean up the group&rsquo;s sound</b><p class="vd-sub">Works on the ' + what + " " + esc(g.name || "the group") + ". Each one is cleaned on its own, so every voice and room gets its own noise profile.</p>";
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Noise removal</span><select id="vd-dn-model"><option value="auto">Automatic (best available)</option><option value="deepfilter">DeepFilterNet (AI, best)</option><option value="rnnoise">RNNoise (AI, fast)</option><option value="spectral">Spectral (no download)</option></select></label></div>' + sld("vd-dn-str", "Strength", Math.round((UI.dnStr == null ? 1 : UI.dnStr) * 100), 5, 0, 100, "%") +
+			'<div class="vd-row"><button type="button" class="vd-btn vd-sm' + (cleaning ? "" : " vd-primary") + '" id="vd-dn-go" data-label="Remove noise (' + what + ')">' + (cleaning ? "Cancel" : "Remove noise (" + what + ")") + "</button>" + (cleaned ? '<button type="button" class="vd-btn vd-sm" id="vd-dn-off">Use the original sound</button>' : "") + '</div><p class="vd-sub" id="vd-dn-st">' + (cleaned ? cleaned + " of " + n + " have noise removed." : "Takes out hum, hiss and room noise. The first time, the AI model downloads (a few MB).") + "</p></div>";
+		h += '<div class="vd-clean"><div class="vd-grid"><label class="vd-f"><span>Normalize loudness to</span><select id="vd-ln-tgt">' + [[-14, "-14 LUFS (YouTube, loud)"], [-16, "-16 LUFS (videos, podcasts)"], [-19, "-19 LUFS (quieter)"], [-23, "-23 LUFS (TV, EBU R128)"]].map(function (q) { return '<option value="' + q[0] + '"' + ((UI.lnTgt || -16) === q[0] ? " selected" : "") + ">" + q[1] + "</option>"; }).join("") + '</select></label></div><div class="vd-row"><button type="button" class="vd-btn vd-sm" id="vd-ln-go">Normalize loudness (' + what + ')</button></div><p class="vd-sub" id="vd-ln-st">Sets each clip inside to the target loudness, never clipping. The group&rsquo;s own volume still applies on top.</p></div></div>';
+		return h;
+	}
 	function renderMulti(sel) {
-		var snd = sel.filter(VE.hasSound);
+		var snd = soundsIn(sel);
 		var h = "<h3>" + sel.length + ' clips selected</h3><p class="vd-sub">Shift- or Ctrl-click clips to add or remove them.</p>';
 		if (snd.length) h += soundSection(snd);
 		h += '<div class="vd-row vd-acts"><button type="button" class="vd-btn vd-sm vd-primary" id="vd-grpbtn">&#9635; Group them</button><button type="button" class="vd-btn vd-sm" data-ca="split">Split at playhead</button><button type="button" class="vd-btn vd-sm" data-ca="dup">Duplicate</button><button type="button" class="vd-btn vd-sm" data-ca="del">Delete</button></div>';
