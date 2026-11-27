@@ -156,11 +156,15 @@
 		var card = h('<section class="tu-card gl-gate"><p class="gl-from">' + esc(brand.name || "") + "</p><h2>" + esc(g.title) + "</h2>" + (g.date ? '<p class="tu-note">' + esc(g.date) + "</p>" : "") + "</section>");
 		box.appendChild(card);
 		if (!info.open) { card.appendChild(h('<p>This gallery is not open right now. Please contact your photographer.</p>')); return; }
-		var f = h('<form class="gl-gform"><label class="tu-label">Your email address<input class="tu-input" type="email" id="gl-em" autocomplete="email" required></label><p><button class="tu-btn tu-btn--primary" type="submit">Email me a code</button></p><p class="tu-note">Only the email addresses your photographer added can open this gallery.</p></form>');
+		var f = h('<form class="gl-gform"><label class="tu-label">Your email address<input class="tu-input" type="email" id="gl-em" autocomplete="email" required></label><p><button class="tu-btn tu-btn--primary" type="submit">' + (g.access === "code" ? "Email me a code" : "Open the gallery") + '</button></p><p class="tu-note">' + (g.access === "any" ? "Type your email to open the gallery." : "Only the email addresses your photographer added can open this gallery.") + '</p></form>');
 		card.appendChild(f);
 		f.onsubmit = async function (e) {
 			e.preventDefault(); var em = $("#gl-em").value, r = await api({ op: "code", gid: gid, email: em });
 			if (!r.ok) return toast(r.error);
+			if (r.token) {
+				CL.tok = r.token; try { localStorage.setItem(tokKey(), r.token); } catch (x) { }
+				var o0 = await api({ op: "open", token: r.token }); if (!o0.ok) return toast(o0.error); return showGallery(o0);
+			}
 			f.innerHTML = '<p>If <strong>' + esc(em) + '</strong> is on this gallery\'s list, a 6-digit code is on its way. Check spam too.</p><label class="tu-label">Code<input class="tu-input gl-code" id="gl-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" required></label><p><button class="tu-btn tu-btn--primary" type="submit">Open the gallery</button> <button class="tu-btn tu-btn--ghost" type="button" id="gl-back">Use another email</button></p>';
 			if (r.mock) $("#gl-code").value = r.mock;
 			$("#gl-back").onclick = clientGallery;
@@ -274,8 +278,9 @@
 		var link = location.origin + "/galleries?g=" + (g.id || "");
 		var f = h('<section class="tu-card gl-edit"><p><button type="button" class="tu-btn tu-btn--ghost" id="gl-eback">‹ All galleries</button></p>' +
 			'<div class="gl-erow"><label class="tu-label">Title<input class="tu-input" id="gl-etitle"></label><label class="tu-label">Date<input class="tu-input" type="date" id="gl-edate"></label></div>' +
-			'<div class="gl-erow"><label class="gl-agree"><input type="checkbox" id="gl-eact"> Active (clients can open it)</label><label class="tu-label">Closes on (optional)<input class="tu-input" type="date" id="gl-eexp"></label></div>' +
-			'<label class="tu-label">Client emails (one per line or comma)<textarea class="tu-input" id="gl-eem" rows="3"></textarea></label>' +
+			'<div class="gl-erow"><label class="gl-agree"><input type="checkbox" id="gl-eact"> Active: clients can open it now <span class="tu-note">(untick to close it without deleting)</span></label><label class="tu-label">Closes on (optional)<input class="tu-input" type="date" id="gl-eexp"></label></div>' +
+			'<label class="tu-label">How clients get in<select class="tu-input" id="gl-eacc"><option value="code">Email + a code we email them (safest)</option><option value="email">Email only, no code (must be on the list)</option><option value="any">Anyone who types an email (no list, every email is logged)</option></select></label><p class="tu-note" id="gl-eaccn"></p>' +
+			'<label class="tu-label" id="gl-eeml">Client emails (one per line or comma)<textarea class="tu-input" id="gl-eem" rows="3"></textarea></label>' +
 			'<div class="gl-erow"><label class="tu-label">Clients may download<select class="tu-input" id="gl-edl"><option value="none">Nothing (view only)</option><option value="web">Web size (2048 px)</option><option value="full">Full size originals</option></select></label>' +
 			'<label class="gl-agree"><input type="checkbox" id="gl-ewm"> Watermark on view</label><label class="tu-label">Watermark text<input class="tu-input" id="gl-ewmt"></label></div>' +
 			'<p><button type="button" class="tu-btn tu-btn--primary" id="gl-esave">Save</button> <button type="button" class="tu-btn" id="gl-einv"' + (g.id ? "" : " disabled") + '>✉ Email the link to the clients</button> <button type="button" class="tu-btn tu-btn--ghost" id="gl-ecopy"' + (g.id ? "" : " disabled") + '>🔗 Copy link</button> <button type="button" class="tu-btn tu-btn--ghost gl-danger" id="gl-edel"' + (g.id ? "" : " hidden") + ">Delete gallery</button></p>" +
@@ -284,8 +289,12 @@
 		pane.appendChild(f);
 		$("#gl-etitle").value = g.title || ""; $("#gl-edate").value = g.date || ""; $("#gl-eact").checked = !!g.active; $("#gl-eexp").value = g.expires ? new Date(g.expires).toISOString().slice(0, 10) : "";
 		$("#gl-eem").value = (g.emails || []).join("\n"); $("#gl-edl").value = g.dl || "web"; $("#gl-ewm").checked = !!g.wm; $("#gl-ewmt").value = g.wmText || "";
+		$("#gl-eacc").value = G.access(g);
+		var ACCN = { code: "They type their email, get a 6-digit code by email, and type it. Proves the email is really theirs.", email: "They type their email and are in straight away if it is on the list below. Quicker, but anyone who knows a client's email could open it.", any: "Anyone with the link who types an email gets in; the list below is only used for \u201cEmail the link\u201d. Emails are not checked, so treat it like a guest book." };
+		function accNote() { $("#gl-eaccn").textContent = ACCN[$("#gl-eacc").value]; $("#gl-eeml").firstChild.textContent = $("#gl-eacc").value === "any" ? "Emails to send the link to (optional)" : "Client emails (one per line or comma)"; }
+		$("#gl-eacc").onchange = accNote; accNote();
 		function read() {
-			g.title = $("#gl-etitle").value; g.date = $("#gl-edate").value; g.active = $("#gl-eact").checked;
+			g.title = $("#gl-etitle").value; g.date = $("#gl-edate").value; g.active = $("#gl-eact").checked; g.access = $("#gl-eacc").value;
 			var ex = $("#gl-eexp").value; g.expires = ex ? new Date(ex + "T23:59:59").getTime() : 0;
 			g.emails = $("#gl-eem").value.split(/[\s,;]+/).filter(Boolean); g.dl = $("#gl-edl").value; g.wm = $("#gl-ewm").checked; g.wmText = $("#gl-ewmt").value;
 		}
@@ -307,7 +316,7 @@
 		drop.addEventListener("drop", function (e) { e.preventDefault(); drop.classList.remove("over"); addFiles(g, [].slice.call(e.dataTransfer.files)); });
 		ownerGrid(g);
 		if (g.id) api({ op: "stats", gid: g.id }, true).then(function (r) {
-			if (!r.ok) return; var rows = Object.keys(r.views).map(function (e) { return "<tr><td>" + esc(e) + "</td><td>" + r.views[e].n + "</td><td>" + esc(fmtDate(r.views[e].last)) + "</td><td>" + ((r.favs[e] || []).length) + "</td></tr>"; });
+			if (!r.ok) return; var rows = Object.keys(r.views).map(function (e) { return "<tr><td>" + esc(e) + (r.views[e].nc ? ' <span class="tu-note" title="Signed in without a code, so the email was not checked">(no code)</span>' : "") + "</td><td>" + r.views[e].n + "</td><td>" + esc(fmtDate(r.views[e].last)) + "</td><td>" + ((r.favs[e] || []).length) + "</td></tr>"; });
 			$("#gl-estats").innerHTML = "<h3>Who opened it</h3>" + (rows.length ? '<table class="gl-tbl"><tr><th>Client</th><th>Visits</th><th>Last visit</th><th>Favourites</th></tr>' + rows.join("") + "</table>" : '<p class="tu-note">Nobody yet.</p>') +
 				(Object.keys(r.favs).length ? '<p><button type="button" class="tu-btn tu-btn--ghost" id="gl-favcopy">Copy favourite file names</button></p>' : "");
 			if ($("#gl-favcopy")) $("#gl-favcopy").onclick = function () { var t = Object.keys(r.favs).map(function (e) { return e + ":\n" + r.favs[e].map(function (id) { var it = g.items.find(function (x) { return x.id === id; }); return it ? it.name : id; }).join("\n"); }).join("\n\n"); navigator.clipboard.writeText(t); toast("Copied."); };

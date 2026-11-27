@@ -74,6 +74,23 @@ function fakeCtx(owner) {
   // removing an item deletes its files
   g.items = []; await G.handle({ op: 'save', gallery: g }, o); t(o.blob.deleted.length === 5, 'files deleted (thumb, web, 3 pieces)');
 
+  // no-code galleries
+  g.access = 'email'; g.emails = ['bob@example.com']; g.items = []; await G.handle({ op: 'save', gallery: g }, o);
+  let m0 = o.mails.length;
+  r = await G.handle({ op: 'code', gid, email: 'stranger@x.com' }, c); t(!r.ok && r.status === 403, 'email mode: not on list refused');
+  r = await G.handle({ op: 'code', gid, email: 'Bob@example.com' }, c); t(r.ok && /^[a-f0-9]{40}$/.test(r.token) && o.mails.length === m0, 'email mode: straight in, no mail');
+  const ntok = r.token;
+  r = await G.handle({ op: 'open', token: ntok }, c); t(r.ok && r.gallery.access === 'email', 'email mode open');
+  r = await G.handle({ op: 'stats', gid }, o); t(r.views['bob@example.com'].nc === true, 'logged as no code');
+  r = await G.handle({ op: 'verify', gid, email: 'bob@example.com', code: '123456' }, c); t(!r.ok, 'verify refused in no-code mode');
+  g.access = 'any'; await G.handle({ op: 'save', gallery: g }, o);
+  r = await G.handle({ op: 'code', gid, email: 'guest@y.org' }, c); t(r.ok && r.token, 'any mode: any email');
+  r = await G.handle({ op: 'code', gid, email: 'nope' }, c); t(!r.ok, 'any mode: needs a real email');
+  r = await G.handle({ op: 'open', token: r.token || 'x' }, c); t(!r.ok, 'bad token');
+  g.access = 'code'; await G.handle({ op: 'save', gallery: g }, o);
+  r = await G.handle({ op: 'open', token: ntok }, c); t(!r.ok, 'codes back on: no-code sign-ins end');
+  g.access = 'weird'; r = await G.handle({ op: 'save', gallery: g }, o); t(r.gallery.access === 'code', 'unknown access -> code');
+
   // contracts
   await G.handle({ op: 'brand', name: 'AWC', email: 'karo@example.com' }, o);
   r = await G.handle({ op: 'csend', email: 'ann@example.com', title: 'Agreement', body: 'Has {{field}}' }, o); t(!r.ok, 'unfilled field refused');

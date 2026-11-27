@@ -19,6 +19,10 @@
 	G.MAX_ITEMS = 2000;
 	G.MAX_FILE = 8 * 1024 * 1024 * 1024; // 8 GB per original
 	G.DL = ["none", "web", "full"];
+	/** how a client gets in: code = email + emailed 6-digit code; email = an email on the list, no code; any = anyone who types an email (each one logged) */
+	G.ACCESS = ["code", "email", "any"];
+	G.access = function (g) { return g && G.ACCESS.indexOf(g.access) >= 0 ? g.access : "code"; };
+	G.allowed = function (g, email) { return G.access(g) === "any" ? G.validEmail(email) : (g.emails || []).indexOf(G.normEmail(email)) >= 0; };
 	G.ID_RE = /^[a-z0-9]{10}$/;
 	G.ITEM_RE = /^[a-z0-9]{10}$/;
 	G.EMAIL_RE = /^[^\s@<>()",;:]{1,64}@[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
@@ -75,7 +79,7 @@
 
 	function ok(v) { v = v || {}; v.ok = true; return v; }
 	function err(code, msg) { return { ok: false, status: code, error: msg }; }
-	function pubGallery(g) { return { id: g.id, title: g.title, date: g.date, active: !!g.active, expires: g.expires || 0, by: g.by || "" }; }
+	function pubGallery(g) { return { id: g.id, title: g.title, date: g.date, active: !!g.active, expires: g.expires || 0, by: g.by || "", access: G.access(g) }; }
 	function mailWrap(title, lines, btn) {
 		var html = '<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#222;line-height:1.5">' +
 			'<h2 style="font-weight:600;color:#3a3a3a">' + G.esc(title) + '</h2>' +
@@ -91,7 +95,8 @@
 		var s = await ctx.db.get("gal:tok:" + tok); if (!s) return null;
 		var g = await getGal(ctx, s.gid); if (!g) return null;
 		if (!G.isOpen(g, ctx.now())) return { g: g, closed: true, s: s };
-		if ((g.emails || []).indexOf(s.email) < 0) return null;
+		if (!G.allowed(g, s.email)) return null;
+		if (s.nc && G.access(g) === "code") return null; // she turned codes back on: no-code sign-ins end
 		return { g: g, s: s };
 	}
 	async function rate(ctx, key, max, sec) { var n = await ctx.db.incr("gal:rl:" + key, sec); return n <= max; }
@@ -119,6 +124,13 @@
 			if (!G.validEmail(email)) return err(400, "Type a full email address.");
 			if (!G.isOpen(g, now)) return err(403, "This gallery is not open right now. Please contact your photographer.");
 			if (!(await rate(ctx, "c:" + ipk, 20, 3600)) || !(await rate(ctx, "ce:" + ctx.sha(email).slice(0, 20), 6, 3600))) return err(429, "Too many codes asked for. Try again later.");
+			// no-code galleries: an allowed email gets straight in (the photographer chose to skip the code)
+			if (G.access(g) !== "code") {
+				if (!G.allowed(g, email)) return err(403, "That email is not on this gallery's list. Use the email your photographer has, or contact them.");
+				var t0 = ctx.rand(20);
+				await ctx.db.set("gal:tok:" + t0, { gid: g.id, email: email, at: now, nc: 1 }, G.TOKEN_TTL);
+				return ok({ token: t0 });
+			}
 			// same answer whether or not the email is on the list, so the list can't be guessed
 			if ((g.emails || []).indexOf(email) < 0) return ok({ sent: true });
 			var code = String(parseInt(ctx.rand(4), 16) % 1000000).padStart(6, "0");
@@ -131,6 +143,7 @@
 		verify: async function (b, ctx, now) {
 			var g = await getGal(ctx, b.gid), email = G.normEmail(b.email);
 			if (!g || !G.isOpen(g, now)) return err(403, "This gallery is not open right now.");
+			if (G.access(g) !== "code") return err(400, "This gallery does not use codes. Go back and type your email.");
 			var k = "gal:code:" + g.id + ":" + ctx.sha(email).slice(0, 24), c = await ctx.db.get(k);
 			if (!c) return err(400, "That code ran out. Ask for a new one.");
 			if (c.h !== ctx.sha("code|" + String(b.code || "").replace(/\D/g, ""))) {
@@ -151,7 +164,7 @@
 			var day = new Date(now).toISOString().slice(0, 10);
 			await ctx.db.incr("gal:v:" + g.id + ":" + eh + ":" + day, 400 * 86400);
 			var log = (await ctx.db.get("gal:vl:" + g.id)) || {};
-			log[email] = { n: ((log[email] || {}).n || 0) + 1, last: now };
+			log[email] = { n: ((log[email] || {}).n || 0) + 1, last: now, nc: !!se.s.nc };
 			await ctx.db.set("gal:vl:" + g.id, log);
 			var items = [];
 			for (var i = 0; i < (g.items || []).length; i++) {
@@ -237,7 +250,7 @@
 				return { id: it.id, kind: it.kind, name: G.text(it.name, 160), w: +it.w || 0, h: +it.h || 0, type: G.text(it.type, 60), size: +it.size || 0, wsize: +it.wsize || 0, tsize: +it.tsize || 0, chunks: Math.min(2000, +it.chunks || 1), dur: +it.dur || 0, at: +it.at || now };
 			});
 			var rec = {
-				id: id, title: G.text(g.title, 120) || "Untitled gallery", date: G.text(g.date, 20), active: !!g.active,
+				id: id, title: G.text(g.title, 120) || "Untitled gallery", date: G.text(g.date, 20), active: !!g.active, access: G.access(g),
 				expires: +g.expires || 0, emails: emails, dl: G.DL.indexOf(g.dl) >= 0 ? g.dl : "web", wm: !!g.wm, wmText: G.text(g.wmText, 60),
 				key: old ? old.key : g.key, items: items, cover: G.ITEM_RE.test(g.cover || "") ? g.cover : "", notes: G.text(g.notes, 2000, true),
 				by: G.text(g.by, 80), created: old ? old.created : now, updated: now
@@ -289,11 +302,12 @@
 		invite: async function (b, ctx) {
 			var g = await getGal(ctx, b.gid); if (!g) return err(404, "not found");
 			var to = b.email ? [G.normEmail(b.email)].filter(function (e) { return g.emails.indexOf(e) >= 0; }) : g.emails;
+			var how = G.access(g) === "code" ? "; we will email you a code to get in." : " to get in.";
 			if (!to.length) return err(400, "Add a client email first.");
 			var brand = (await ctx.db.get("gal:brand")) || {}, link = ctx.base + "/galleries?g=" + g.id, sent = 0;
 			var note = G.text(b.message, 1000, true);
 			for (var i = 0; i < to.length; i++) {
-				var m = mailWrap(g.title, [(brand.name || "Your photographer") + " shared a private gallery with you.", note, "Open the link and type this email address (" + to[i] + "); we will email you a code to get in."].filter(Boolean), ["Open the gallery", link]);
+				var m = mailWrap(g.title, [(brand.name || "Your photographer") + " shared a private gallery with you.", note, "Open the link and type this email address (" + to[i] + ")" + how].filter(Boolean), ["Open the gallery", link]);
 				var r = await ctx.mail.send({ to: to[i], subject: (brand.name ? brand.name + ": " : "") + g.title, text: m.text, html: m.html }); if (r && r.ok !== false) sent++;
 			}
 			return ok({ sent: sent, link: link });
