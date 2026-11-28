@@ -3377,7 +3377,7 @@
 		gtabs.innerHTML = h;
 	}
 	gtabs.addEventListener("click", function (e) { var b = e.target.closest("[data-glevel]"); if (b) VE.leaveGroup(+b.getAttribute("data-glevel")); });
-	VE.on("scope", function () { renderTabs(); });
+	VE.on("scope", function () { renderTabs(); setTimeout(function () { if (T.reveal) T.reveal(VE.t); }, 0); });
 	T.render = function () {
 		renderTabs();
 		var p = VE.P, dur = V.duration(p), total = Math.max(dur + 20, (sc.clientWidth - HEAD) / VE.pps + 5);
