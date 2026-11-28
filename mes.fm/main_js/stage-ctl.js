@@ -27,6 +27,7 @@
 		'@media (pointer:coarse){.mes-grip{width:32px;height:32px}}' +
 		'@media (max-width:700px),(pointer:coarse){.tu button:not(.mes-grip),.tu summary{min-height:36px}.tu summary{display:list-item}.tu .xx-chips button,.tu [role=group] button{padding-top:0.35em;padding-bottom:0.35em}}' +   /* phone-sized tap targets for every simulator's own buttons / chips */
 		'html.mes-fill-on{overflow:hidden !important}' +
+		'html.mes-fill-on ins.adsbygoogle[data-anchor-status],html.mes-fill-on ins.adsbygoogle[data-vignette-loaded]{display:none !important}' +
 		'.mes-fill-bd{position:fixed;inset:0;background:#05070d;z-index:2147482000}' +
 		'.mes-fill{position:fixed !important;left:50%;top:34px;transform:translateX(-50%);z-index:2147482500;max-width:none !important;width:var(--mes-fw,100vw) !important;height:calc(100vh - 34px);height:calc(100dvh - 34px);margin:0 !important;border-radius:0 !important;border:0 !important;overflow:auto;display:flex !important;flex-direction:column;justify-content:center}' +
 		'.mes-fs{padding-top:34px !important;box-sizing:border-box;overflow:auto}' +

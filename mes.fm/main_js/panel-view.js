@@ -27,6 +27,7 @@
     'body.dark-mode .mes-pfill{background:#1a1a1a!important}' +
     '.mes-pfill:fullscreen{padding:16px 20px!important}' +
     'html.mes-pfill-on,html.mes-pfill-on body{overflow:hidden!important}' +
+    'html.mes-pfill-on ins.adsbygoogle[data-anchor-status],html.mes-pfill-on ins.adsbygoogle[data-vignette-loaded],html.mes-pfill-on .google-auto-placed,:fullscreen ins.adsbygoogle[data-anchor-status]{display:none!important}' +
     '@media (max-width:600px){.mes-pbtn{font-size:.78em;padding:.3em .55em}}' +
     '@media (max-height:520px){.mes-pfill{padding:6px 10px!important}.mes-pfill:fullscreen{padding:8px 12px!important}}' +
     '.mes-ptools{display:none}' +

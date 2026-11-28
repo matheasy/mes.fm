@@ -375,3 +375,19 @@
 	.cs-hide-top .cs-top .cs-sel {display:none !important;}
 	.cs-hide-top .cs-topfold {margin-left:0;}
 	html body.dark-mode #cs .cs-topfold {color:#e6eaf0;border-color:#3a414c;}
+	/* phones (2026-11-27): Fill window gives the picture the window's height; World / Vehicle / Camera / Weather sit in two compact columns */
+	.mes-pfill:not(.mes-pside) .cs-stage {flex:0 0 auto;height:var(--cs-fh, 70vh);min-height:240px;}
+	@media (max-width:640px) {
+		.mes-pfill .cs-top {display:grid;grid-template-columns:1fr 1fr;gap:0.3em 0.5em;align-items:end;}
+		.mes-pfill .cs-top .cs-sel {font-size:0.75em;}
+		.mes-pfill .cs-top .cs-sel select {min-width:0;width:100%;font-size:1.05em;padding:0.25em 0.3em;}
+		.mes-pfill .cs-top > .cs-topfold {grid-column:1;justify-self:start;font-size:0.85em;}
+		.mes-pfill .cs-top > .mes-pbtns {grid-column:2;justify-self:end;margin:0;font-size:0.78em;white-space:nowrap;}
+	}
+	/* the mini-map sits under the picture's button rows on touch screens (it used to cover Reset / Boost / Brake / Gas on a phone) */
+	.cs-has-touch .cs-mm {top:var(--cs-spt, 3.4em);}
+	@media (max-width:640px) { .cs-has-touch .cs-mm {width:96px;height:96px;} .cs-has-touch .cs-mm.big {width:140px;height:140px;} }
+	/* phone width: the button rows span the whole picture, so the car / flight boxes start under them */
+	.cs-stage .cs-hud.cs-low, .cs-stage .cs-fhud.cs-low {top:var(--cs-spt, 0.5em);}
+	.cs-short.cs-has-touch .cs-mm {width:84px;height:84px;} .cs-short.cs-has-touch .cs-mm.big {width:120px;height:120px;}
+	.cs-narrow.cs-has-touch .cs-mm {top:calc(var(--cs-spt, 3.4em) + 3.1em);}

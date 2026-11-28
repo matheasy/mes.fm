@@ -9,6 +9,8 @@
 	var C = window.MESCar, root = document.getElementById("cs");
 	if (!C || !root) return;
 	function $(id) { return document.getElementById(id); }
+	/* a phone / tablet: smaller shadow map, lower pixel ratio, coarser far ground */
+	var TOUCH_DEV = !!(window.matchMedia && matchMedia("(pointer:coarse)").matches);
 	var KEY = "mes-car-sandbox:v1", RKEY = "mes-car-sandbox:rec";
 	function load(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v && typeof v === "object" ? Object.assign(d, v) : d; } catch (e) { return d; } }
 	function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
@@ -57,28 +59,44 @@
 
 	function initRenderer() {
 		renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-		renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, matchMedia("(pointer:coarse)").matches ? 1.5 : 2));
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, TOUCH_DEV ? 1.25 : 2));
 		renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
-		renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		renderer.shadowMap.enabled = true; renderer.shadowMap.type = TOUCH_DEV ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
 		var cv = renderer.domElement; cv.className = "cs-canvas"; cv.tabIndex = 0; cv.setAttribute("aria-label", "3D driving view. Click it, then drive with W A S D or the arrow keys.");
 		stage.insertBefore(cv, stage.firstChild);
 		scene = new THREE.Scene();
 		camera = new THREE.PerspectiveCamera(62, 16 / 9, 0.1, 7000);
 		sunLight = new THREE.DirectionalLight(0xffffff, 2.4); sunLight.castShadow = true;
 		var sc = sunLight.shadow.camera; sc.left = -60; sc.right = 60; sc.top = 60; sc.bottom = -60; sc.near = 1; sc.far = 400;
-		sunLight.shadow.mapSize.set(2048, 2048); sunLight.shadow.bias = -0.0004; sunLight.shadow.normalBias = 0.03;
+		sunLight.shadow.mapSize.set(TOUCH_DEV ? 1024 : 2048, TOUCH_DEV ? 1024 : 2048); sunLight.shadow.bias = -0.0004; sunLight.shadow.normalBias = 0.03;
 		scene.add(sunLight); scene.add(sunLight.target);
 		hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); scene.add(hemi);
 		tmpV = new THREE.Vector3(); tmpQ = new THREE.Quaternion(); tmpM = new THREE.Matrix4();
 		resize();
 		new ResizeObserver(resize).observe(stage);
+		setInterval(function () { if (!document.hidden) hudFit(); }, 1000);
+		window.addEventListener("resize", function () { setTimeout(resize, 60); }); if (window.visualViewport) visualViewport.addEventListener("resize", function () { setTimeout(resize, 60); });
 	}
 	function resize() {
 		if (!renderer) return;
 		var w = stage.clientWidth || 640, h = stage.clientHeight || 360;
-		root.classList.toggle("cs-narrow", w < 900);
+		root.classList.toggle("cs-narrow", w < 900); root.classList.toggle("cs-short", h < 430);
 		var sb = stage.querySelector(".cs-sbtns"); if (sb) stage.style.setProperty("--cs-spt", (sb.offsetTop + sb.offsetHeight + 8) + "px");
+		/* Fill window on a tall phone: the picture gets the window's height under the World / Vehicle bar (the settings cards scroll below it) */
+		if (view.classList.contains("mes-pfill") && !view.classList.contains("mes-pside")) { var tp = view.querySelector(".cs-top"), th = tp && tp.offsetParent ? tp.offsetHeight + 16 : 8, want = Math.max(240, Math.round((window.visualViewport ? visualViewport.height : innerHeight) - th - 14)); if (view.style.getPropertyValue("--cs-fh") !== want + "px") view.style.setProperty("--cs-fh", want + "px"); }
 		renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+		hudFit();
+	}
+	/* the car / flight box drops under the picture's button rows when the two would overlap (narrow or short screens) */
+	function hudFit() {
+		var sb = stage.querySelector(".cs-sbtns"); if (!sb) return;
+		["cs-hud", "cs-fhud"].forEach(function (cl) {
+			var el = stage.querySelector("." + cl); if (!el) return;
+			el.classList.remove("cs-low"); if (!el.offsetParent) return;
+			var a = el.getBoundingClientRect(), b = sb.getBoundingClientRect();
+			var hit = [].some.call(sb.children, function (x) { if (!x.offsetParent) return false; var r = x.getBoundingClientRect(); return r.left < a.right + 4 && r.right > a.left - 4 && r.top < a.bottom && r.bottom > a.top; });
+			if (hit && b.bottom > a.top) el.classList.add("cs-low");
+		});
 	}
 
 	/* ---------- textures drawn on a canvas ---------- */
@@ -102,7 +120,7 @@
 		if (worldGroup) { scene.remove(worldGroup); worldGroup.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (m) { if (m.map) m.map.dispose(); m.dispose(); }); } }); }
 		if (skyGroup) scene.remove(skyGroup); skyGroup = null; skyRef = null;
 		cars.forEach(function (c) { scene.remove(c.group); }); objs.forEach(function (o) { scene.remove(o.mesh); }); netWorldCleared();
-		cars = []; objs = []; statics = []; pieceBodies = []; ovalBodies = []; lampPoles = []; lampInst = null; treeList = []; treeInst = null; debris.forEach(function (d) { scene.remove(d.mesh); }); debris = []; lapPath = null; mmBg = null; parts.clear(); lampMat = null; groundMat = trackMat = null; envMats = []; envKey = ""; clouds = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
+		cars = []; objs = []; statics = []; pieceBodies = []; ovalBodies = []; lampPoles = []; lampInst = null; treeList = []; treeInst = null; terChunks = []; debris.forEach(function (d) { scene.remove(d.mesh); }); debris = []; lapPath = null; mmBg = null; parts.clear(); lampMat = null; groundMat = trackMat = null; envMats = []; envKey = ""; clouds = null; if (heads && heads.group.parent) heads.group.parent.remove(heads.group); replayStop(true); recFrames = [];
 		if (phys) { phys.free(); phys = null; }
 	}
 
@@ -316,16 +334,57 @@
 		var geo = new THREE.BufferGeometry();
 		geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.BufferAttribute(col, 3)); geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 		geo.setIndex(idx); geo.computeVertexNormals();
+		var nor = geo.attributes.normal.array; geo.dispose();
 		var tex = new THREE.TextureLoader().load("/car-sandbox/img/tex-" + TX[0] + ".jpg?v=1", function () { /* drawn on the next frame */ });
 		tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 		groundMap = tex; groundMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 0.97, metalness: 0 });
-		var mesh = new THREE.Mesh(geo, groundMat);
-		mesh.receiveShadow = true; worldGroup.add(mesh);
+		buildTerrainChunks(n, s, pos, col, uv, nor);
 		buildBeyond(n, s, k, TX[1], tint);
 		/* physics */
 		var body = phys.createRigidBody(RAPIER.RigidBodyDesc.fixed());
 		phys.createCollider(RAPIER.ColliderDesc.heightfield(n, n, groundH, { x: s, y: 1, z: s }).setFriction(W.track ? 1.0 : 0.85).setRestitution(0.05), body);
 		if (W.track) buildTrack();
+	}
+	/* The ground is drawn as a grid of chunks, each with 3 levels of detail (every grid point, every 2nd, every 4th): near the camera
+	   full detail, far away coarser, so a 2.4 km world costs a phone about 60k triangles instead of 460k. Off-screen chunks are culled.
+	   Each chunk has a skirt (its edge copied 4 m straight down) so the small steps where two levels of detail meet never show as gaps. */
+	var terChunks = [], terLodAt = 0;
+	function buildTerrainChunks(n, s, pos, col, uv, nor) {
+		terChunks = [];
+		var k = n + 1, NC = Math.max(1, Math.round(n / 80)), CH = Math.ceil(n / NC);
+		function strideList(a, b, st) { var L = []; for (var q = a; q < b; q += st) L.push(q); L.push(b); return L; }
+		for (var cx = 0; cx < NC; cx++) for (var cz = 0; cz < NC; cz++) {
+			var x0 = cx * CH, x1 = Math.min(n, x0 + CH), z0 = cz * CH, z1 = Math.min(n, z0 + CH); if (x0 >= n || z0 >= n) continue;
+			var lods = [1, 2, 4].map(function (st) {
+				var xs = strideList(x0, x1, st), zs = strideList(z0, z1, st), nx = xs.length, nz = zs.length, P = [], Cc = [], U = [], N = [], I = [];
+				function put(gi, dy) { P.push(pos[gi * 3], pos[gi * 3 + 1] - dy, pos[gi * 3 + 2]); Cc.push(col[gi * 3] * (dy ? 0.7 : 1), col[gi * 3 + 1] * (dy ? 0.7 : 1), col[gi * 3 + 2] * (dy ? 0.7 : 1)); U.push(uv[gi * 2], uv[gi * 2 + 1]); N.push(nor[gi * 3], nor[gi * 3 + 1], nor[gi * 3 + 2]); return P.length / 3 - 1; }
+				for (var a = 0; a < nx; a++) for (var b = 0; b < nz; b++) put(xs[a] * k + zs[b], 0);
+				for (a = 0; a < nx - 1; a++) for (b = 0; b < nz - 1; b++) { var v00 = a * nz + b, v10 = (a + 1) * nz + b, v01 = a * nz + b + 1, v11 = (a + 1) * nz + b + 1; I.push(v00, v01, v10, v10, v01, v11); }
+				/* skirt: walk the border, each edge gets a strip down (drawn both ways round) */
+				var ring = [];
+				for (b = 0; b < nz; b++) ring.push([0, b]); for (a = 1; a < nx; a++) ring.push([a, nz - 1]); for (b = nz - 2; b >= 0; b--) ring.push([nx - 1, b]); for (a = nx - 2; a > 0; a--) ring.push([a, 0]);
+				var dn = ring.map(function (rc) { return put(xs[rc[0]] * k + zs[rc[1]], 4); });
+				for (var r2 = 0; r2 < ring.length; r2++) { var r3 = (r2 + 1) % ring.length, t0 = ring[r2][0] * nz + ring[r2][1], t1 = ring[r3][0] * nz + ring[r3][1]; I.push(t0, t1, dn[r3], t0, dn[r3], dn[r2], t0, dn[r3], t1, t0, dn[r2], dn[r3]); }
+				var g = new THREE.BufferGeometry();
+				g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(Cc, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(U, 2)); g.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3)); g.setIndex(I);
+				g.computeBoundingSphere(); g.computeBoundingBox();
+				var m = new THREE.Mesh(g, groundMat); m.receiveShadow = true; m.visible = st === 1; m.matrixAutoUpdate = false; worldGroup.add(m); return m;
+			});
+			var bb = lods[0].geometry.boundingBox, c = new THREE.Vector3(); bb.getCenter(c);
+			terChunks.push({ m: lods, cx: c.x, cz: c.z, cy: c.y, half: Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) / 2, lod: 0 });
+		}
+		terLodAt = 0;
+	}
+	/* pick each chunk's level of detail from its distance to the camera (checked a few times a second; cheap) */
+	function terrainLOD(force) {
+		if (!terChunks.length || !camera) return;
+		var now = performance.now(); if (!force && now - terLodAt < 150) return; terLodAt = now;
+		var p = camera.position, mob = TOUCH_DEV ? 0.75 : 1;
+		for (var i = 0; i < terChunks.length; i++) {
+			var T = terChunks[i], dx = Math.max(0, Math.abs(p.x - T.cx) - T.half), dz = Math.max(0, Math.abs(p.z - T.cz) - T.half), d = Math.hypot(dx, dz, Math.max(0, p.y - T.cy - 40));
+			var L = d < 220 * mob ? 0 : d < 620 * mob ? 1 : 2;
+			if (L !== T.lod) { T.m[T.lod].visible = false; T.m[L].visible = true; T.lod = L; }
+		}
 	}
 	/* past the edge of the map: a skirt down from the terrain's border and flat land to the horizon (looks only, no physics) */
 	function buildBeyond(n, s, k, tx, tint) {
@@ -383,14 +442,14 @@
 	function treeSync(all) {
 		if (!treeInst) return;
 		if (!lpM) { lpM = new THREE.Matrix4(); lpQ = new THREE.Quaternion(); lpV = new THREE.Vector3(); lpS = new THREE.Vector3(1, 1, 1); }
-		var ch = false, sv = new THREE.Vector3(), off = new THREE.Vector3();
+		var dirty = new Set(), sv = new THREE.Vector3(), off = new THREE.Vector3();
 		treeList.forEach(function (L) {
 			if (!L.down && !all) return;
 			var t = L.body.translation(), r = L.body.rotation(); lpQ.set(r.x, r.y, r.z, r.w); lpV.set(t.x, t.y, t.z); sv.set(L.sc, L.sc, L.sc);
-			off.set(0, 1.2 * L.sc - 1.5, 0).applyQuaternion(lpQ).add(lpV); lpM.compose(off, lpQ, sv); treeInst.trunk.setMatrixAt(L.i, lpM);
-			off.set(0, 5 * L.sc - 1.5, 0).applyQuaternion(lpQ).add(lpV); lpM.compose(off, lpQ, sv); (L.round && treeInst.ball ? treeInst.ball : treeInst.crown).setMatrixAt(L.i, lpM); ch = true;
+			off.set(0, 1.2 * L.sc - 1.5, 0).applyQuaternion(lpQ).add(lpV); lpM.compose(off, lpQ, sv); L.tm.setMatrixAt(L.ti, lpM); dirty.add(L.tm);
+			off.set(0, 5 * L.sc - 1.5, 0).applyQuaternion(lpQ).add(lpV); lpM.compose(off, lpQ, sv); L.cm.setMatrixAt(L.ci, lpM); dirty.add(L.cm);
 		});
-		if (ch) { treeInst.trunk.instanceMatrix.needsUpdate = treeInst.crown.instanceMatrix.needsUpdate = true; treeInst.trunk.computeBoundingSphere(); treeInst.crown.computeBoundingSphere(); if (treeInst.ball) { treeInst.ball.instanceMatrix.needsUpdate = true; treeInst.ball.computeBoundingSphere(); } }
+		dirty.forEach(function (m) { m.instanceMatrix.needsUpdate = true; m.computeBoundingSphere(); });
 	}
 	/* smashed crates leave planks: loose little bodies that fade away after a while */
 	var debris = [];
@@ -701,32 +760,47 @@
 		if (W.trees) {
 			var N = 1600, cg = new THREE.ConeGeometry(2.2, 6, 9), bg = new THREE.IcosahedronGeometry(2.6, 1);
 			[cg, bg].forEach(function (gg) { var pp = gg.attributes.position, rr = C.rng(5); for (var q = 0; q < pp.count; q++) { var f = 0.88 + rr() * 0.24; pp.setXYZ(q, pp.getX(q) * f, pp.getY(q) * (gg === bg ? 0.85 : 1), pp.getZ(q) * f); } gg.computeVertexNormals(); });
-			var trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.35, 2.4, 6), mat("#5e4127", { roughness: 0.95 }), N), crown = new THREE.InstancedMesh(cg, mat("#ffffff", { roughness: 0.9, flatShading: true }), N), ball = new THREE.InstancedMesh(bg, mat("#ffffff", { roughness: 0.9, flatShading: true }), N), n = 0, zero = new THREE.Matrix4().makeScale(0, 0, 0), tc = new THREE.Color();
+			var n = 0, tc = new THREE.Color(), TD = [];
 			for (var t = 0; t < 12000 && n < N; t++) {
 				var x = (r() * 2 - 1) * half, z = (r() * 2 - 1) * half;
 				if (C.trackDist(x, z) < 22 || Math.hypot(x, z - 70) < 55 || C.onRunway(x, z, 45) || (Math.abs(x) < C.TRACK.half + C.TRACK.r && Math.abs(z - C.TRACK.cz) < C.TRACK.r)) continue;
 				var y = hAt(x, z), sc = 0.7 + r() * 0.8, round = r() < 0.45;
 				if (y > 150 || C.noise(x / 160, z / 160, 31) < 0.42 && r() < 0.8) continue; /* woods and open meadows; no trees high up the mountains */
-				tmpM.compose(new THREE.Vector3(x, y + 1.2 * sc, z), new THREE.Quaternion(), new THREE.Vector3(sc, sc, sc)); trunk.setMatrixAt(n, tmpM);
-				tmpM.compose(new THREE.Vector3(x, y + 5 * sc, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6), new THREE.Vector3(sc, sc, sc));
-				if (round) { ball.setMatrixAt(n, tmpM); crown.setMatrixAt(n, zero); } else { crown.setMatrixAt(n, tmpM); ball.setMatrixAt(n, zero); }
-				tc.setHSL(round ? 0.24 + r() * 0.06 : 0.31 + r() * 0.04, round ? 0.45 : 0.5, round ? 0.27 + r() * 0.08 : 0.2 + r() * 0.06); (round ? ball : crown).setColorAt(n, tc); (round ? crown : ball).setColorAt(n, tc);
+				var mT = new THREE.Matrix4().compose(new THREE.Vector3(x, y + 1.2 * sc, z), new THREE.Quaternion(), new THREE.Vector3(sc, sc, sc));
+				var mC = new THREE.Matrix4().compose(new THREE.Vector3(x, y + 5 * sc, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6), new THREE.Vector3(sc, sc, sc));
+				tc.setHSL(round ? 0.24 + r() * 0.06 : 0.31 + r() * 0.04, round ? 0.45 : 0.5, round ? 0.27 + r() * 0.08 : 0.2 + r() * 0.06);
 				var b = phys.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y + 1.5, z).setCcdEnabled(true)); phys.createCollider(RAPIER.ColliderDesc.cylinder(1.5, 0.35 * sc).setDensity(130 * sc).setFriction(0.7), b);
 				var cc = phys.createCollider(RAPIER.ColliderDesc.cone(3 * sc, 0.9 * sc).setTranslation(0, 5 * sc - 1.5, 0).setDensity(5).setFriction(0.9).setSensor(true), b);
-				treeList.push({ body: b, crown: cc, solid: false, i: n, x: x, z: z, y0: y + 1.5, sc: sc, need: 5, r: 1.6 + 0.35 * sc, mom: 3000 * sc * sc, down: false, round: round });
+				var L = { body: b, crown: cc, solid: false, i: n, x: x, z: z, y0: y + 1.5, sc: sc, need: 5, r: 1.6 + 0.35 * sc, mom: 3000 * sc * sc, down: false, round: round };
+				treeList.push(L); TD.push({ L: L, mT: mT, mC: mC, col: tc.clone() });
 				n++;
 			}
-			trunk.count = crown.count = ball.count = n; trunk.castShadow = crown.castShadow = ball.castShadow = true; worldGroup.add(trunk, crown, ball); treeInst = { trunk: trunk, crown: crown, ball: ball };
+			/* the trees go into a 3 x 3 grid of cells (one trunk / cone / ball mesh each), so off-screen cells and cells outside the
+			   sun's small shadow box are skipped: one mesh for the whole forest was drawn twice every frame, all 1,600 trees */
+			var GC = 3, cells = {}, tmat = mat("#5e4127", { roughness: 0.95 }), cmat = mat("#ffffff", { roughness: 0.9, flatShading: true }), trunkG = new THREE.CylinderGeometry(0.25, 0.35, 2.4, 6);
+			TD.forEach(function (o) { var key = Math.min(GC - 1, Math.floor((o.L.x + half) / (2 * half) * GC)) + "," + Math.min(GC - 1, Math.floor((o.L.z + half) / (2 * half) * GC)); (cells[key] = cells[key] || []).push(o); });
+			treeInst = { meshes: [] };
+			Object.keys(cells).forEach(function (key) {
+				var list = cells[key], nb = list.filter(function (o) { return o.L.round; }).length, ncn = list.length - nb;
+				var tm = new THREE.InstancedMesh(trunkG, tmat, list.length), cm = ncn ? new THREE.InstancedMesh(cg, cmat, ncn) : null, bm = nb ? new THREE.InstancedMesh(bg, cmat, nb) : null, it = 0, ic = 0, ib = 0;
+				list.forEach(function (o) {
+					o.L.tm = tm; o.L.ti = it; tm.setMatrixAt(it++, o.mT);
+					if (o.L.round) { o.L.cm = bm; o.L.ci = ib; bm.setMatrixAt(ib, o.mC); bm.setColorAt(ib++, o.col); } else { o.L.cm = cm; o.L.ci = ic; cm.setMatrixAt(ic, o.mC); cm.setColorAt(ic++, o.col); }
+				});
+				[tm, cm, bm].forEach(function (m) { if (!m) return; m.castShadow = true; m.computeBoundingSphere(); worldGroup.add(m); treeInst.meshes.push(m); });
+			});
 			/* bushes (looks only) */
-			var NB = 2200, bush = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.9, 0), mat("#ffffff", { roughness: 0.95, flatShading: true }), NB), nb = 0;
+			var NB = 2200, nb = 0, BD = {}, bushG = new THREE.IcosahedronGeometry(0.9, 0), bushM = mat("#ffffff", { roughness: 0.95, flatShading: true });
 			for (t = 0; t < 9000 && nb < NB; t++) {
 				x = (r() * 2 - 1) * half; z = (r() * 2 - 1) * half;
 				if (C.trackDist(x, z) < 14 || C.onRunway(x, z, 20) || (Math.abs(x) < C.TRACK.half + C.TRACK.r - 12 && Math.abs(z - C.TRACK.cz) < C.TRACK.r - 12)) continue;
 				y = hAt(x, z); if (y > 170) continue; var bs = 0.5 + r() * 1.1;
-				tmpM.compose(new THREE.Vector3(x, y + 0.25 * bs, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6), new THREE.Vector3(bs * 1.3, bs * 0.7, bs)); bush.setMatrixAt(nb, tmpM);
-				tc.setHSL(0.2 + r() * 0.1, 0.4, 0.22 + r() * 0.1); bush.setColorAt(nb, tc); nb++;
+				var bm4 = new THREE.Matrix4().compose(new THREE.Vector3(x, y + 0.25 * bs, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * 6), new THREE.Vector3(bs * 1.3, bs * 0.7, bs));
+				tc.setHSL(0.2 + r() * 0.1, 0.4, 0.22 + r() * 0.1);
+				var bk = Math.min(GC - 1, Math.floor((x + half) / (2 * half) * GC)) + "," + Math.min(GC - 1, Math.floor((z + half) / (2 * half) * GC));
+				(BD[bk] = BD[bk] || []).push([bm4, tc.clone()]); nb++;
 			}
-			bush.count = nb; bush.receiveShadow = true; worldGroup.add(bush);
+			Object.keys(BD).forEach(function (bk) { var list = BD[bk], bush = new THREE.InstancedMesh(bushG, bushM, list.length); list.forEach(function (o, j) { bush.setMatrixAt(j, o[0]); bush.setColorAt(j, o[1]); }); bush.receiveShadow = true; bush.computeBoundingSphere(); worldGroup.add(bush); });
 			/* lamp posts along the track: their heads glow at night */
 			lampMat = new THREE.MeshStandardMaterial({ color: 0xfff6d8, emissive: 0xffe2a0, emissiveIntensity: 0 });
 			var LN = Math.floor(C.trackLength() / 40), poles = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.12, 7, 6), mat("#8a9099", { metalness: 0.6 }), LN), lamps = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.18, 0.4), lampMat, LN);
@@ -805,6 +879,33 @@
 		});
 		void g; return body;
 	}
+	/* merge a group's fixed child meshes that share a material (and shadow settings) into one mesh: a car was 36-54 draw calls
+	   (each wheel alone was 8 pieces), which is what made phones stutter. Moving / flashing / denting parts are passed in `keep`. */
+	function mergeStatic(parent, keep) {
+		var bins = {};
+		parent.children.slice().forEach(function (m) {
+			if (!m.isMesh || m.isInstancedMesh || !m.visible || (keep && keep.indexOf(m) >= 0) || Array.isArray(m.material)) return;
+			var key = m.material.uuid + "|" + (m.castShadow ? 1 : 0) + (m.receiveShadow ? 1 : 0) + "|" + (m.renderOrder || 0);
+			(bins[key] = bins[key] || []).push(m);
+		});
+		Object.keys(bins).forEach(function (key) {
+			var list = bins[key]; if (list.length < 2) return;
+			var hasUv = list.every(function (m) { return !!m.geometry.attributes.uv; }), P = [], N = [], U = [];
+			list.forEach(function (m) {
+				m.updateMatrix(); var g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+				if (!g.attributes.normal) g.computeVertexNormals();
+				g.applyMatrix4(m.matrix);
+				var pa = g.attributes.position.array, na = g.attributes.normal.array, ua = hasUv ? g.attributes.uv.array : null, flip = m.matrix.determinant() < 0;
+				for (var t = 0; t < pa.length / 9; t++) for (var v = 0; v < 3; v++) {
+					var vv = flip && v ? 3 - v : v, o = t * 3 + vv;
+					P.push(pa[o * 3], pa[o * 3 + 1], pa[o * 3 + 2]); N.push(na[o * 3], na[o * 3 + 1], na[o * 3 + 2]); if (ua) U.push(ua[o * 2], ua[o * 2 + 1]);
+				}
+				g.dispose(); parent.remove(m);
+			});
+			var mg = new THREE.BufferGeometry(); mg.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); mg.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3)); if (hasUv) mg.setAttribute("uv", new THREE.Float32BufferAttribute(U, 2));
+			var mm = new THREE.Mesh(mg, list[0].material); mm.castShadow = list[0].castShadow; mm.receiveShadow = list[0].receiveShadow; mm.renderOrder = list[0].renderOrder; parent.add(mm);
+		});
+	}
 	function makeCarMesh(d, color) {
 		if (d.fly) return makePlaneMesh(d, color);
 		var g = new THREE.Group(), paint = carPaint(color), dents = [];
@@ -855,6 +956,8 @@
 		var flame = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.9, 10), new THREE.MeshBasicMaterial({ color: 0x66ccff, transparent: true, opacity: 0.85 }));
 		flame.rotation.x = -Math.PI / 2; flame.position.set(0, -hh * 0.3, -hl - 0.45); flame.visible = false; g.add(flame);
 		dents.forEach(function (m) { m.userData.orig = m.geometry.attributes.position.array.slice(); });
+		wheels.forEach(function (w) { mergeStatic(w.spin); });
+		mergeStatic(g, dents.concat([flame]));
 		return { group: g, wheels: wheels, dents: dents, flame: flame, paint: paint, lightF: lightF, lightR: lightR, siren: siren };
 	}
 	/* shiny car paint with a clear coat that reflects the sky (envMats get the sky picture whenever it changes) */
@@ -1028,6 +1131,8 @@
 		var flame = new THREE.Mesh(new THREE.ConeGeometry(0.34, jet ? 2.2 : 0.1, 12), new THREE.MeshBasicMaterial({ color: 0xffa04a, transparent: true, opacity: 0.85 }));
 		flame.rotation.x = -Math.PI / 2; flame.position.set(0, 0.05, jet ? -7.8 : -5); flame.visible = false; g.add(flame);
 		dents.forEach(function (m) { m.userData.orig = m.geometry.attributes.position.array.slice(); });
+		var keepP = dents.concat([flame]); Object.keys(surf).forEach(function (k) { [].concat(surf[k]).forEach(function (o) { if (o && o.isObject3D) keepP.push(o); }); });
+		wheels.forEach(function (w) { if (w.spin) mergeStatic(w.spin); }); mergeStatic(g, keepP);
 		return { group: g, wheels: wheels, dents: dents, flame: flame, paint: paint, lightF: lightF, lightR: lightR, surf: surf };
 	}
 
@@ -2151,7 +2256,7 @@
 		netSync(); lampSync(false); treeSync(false); debrisSync();
 		headlights();
 	}
-	function render() { fogLift(); renderer.render(scene, camera); }
+	function render() { fogLift(); terrainLOD(); renderer.render(scene, camera); }
 	function togglePause() { paused = !paused; $("cs-pause").textContent = paused ? "▶ Play" : "❚❚ Pause"; toast(paused ? "Paused" : "Playing"); }
 	function switchCar(dir) {
 		if (cars.length < 2) { toast("Add computer cars to switch between them"); return; }
@@ -3208,6 +3313,8 @@
 		objs: function () { return objs.map(function (o) { var t = o.body.translation(); return { k: o.kind, x: +t.x.toFixed(1), y: +t.y.toFixed(1), z: +t.z.toFixed(1), dv: o.dvMax ? +o.dvMax.toFixed(1) : 0 }; }); },
 		lamps: function () { return lampPoles.map(function (L) { var t = L.body.translation(); return { x: L.x, z: L.z, down: L.down, tipped: !!L.tipped, y: +t.y.toFixed(2), px: +t.x.toFixed(1), pz: +t.z.toFixed(1) }; }); },
 		net: function () { return NET ? { code: NET.code, host: NET.host, slot: NET.slot, live: NET.live, roster: NET.roster, race: NET.race, remotes: Object.keys(remotes).map(function (k) { var R = remotes[k], s = remoteSample(R, performance.now()); return { slot: R.slot, name: R.name, type: R.type, n: R.buf.length, p: s && s.p.map(function (x) { return +x.toFixed(2); }), body: !!R.body }; }), log: $("cs-nlog").textContent, board: $("cs-nboard").textContent } : null; }, netMake: netMake, netJoin: netJoin, netLeave: netLeave, netChat: netChatSend, netRace: function (n) { $("cs-nlaps").value = String(n || 1); netRaceStart(); }, netSend: netSend,
+		scene: function () { return scene; }, cars: function () { return cars; },
+		info: function () { var i = renderer.info; return { calls: i.render.calls, tris: i.render.triangles, pts: i.render.points, geo: i.memory.geometries, tex: i.memory.textures, pr: renderer.getPixelRatio(), w: renderer.domElement.width, h: renderer.domElement.height, shadow: renderer.shadowMap.enabled }; },
 		render: function () { render(); drawMini(); }, editor: function () { edOpenNow(); return ed; }, editorDraw: function () { drawEditor(); }, advance: function (dt) { advance(dt); }, camera: function () { return camera; }, spawn: spawnKind, layout: spawnLayout, gravity: setGravity, cam: function (m) { S.cam = m; camSnap = true; }
 	};
 })();
