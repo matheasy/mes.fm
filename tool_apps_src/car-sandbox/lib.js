@@ -15,20 +15,20 @@
 
 	/* ---------- worlds ---------- */
 	C.WORLDS = {
-		earth: { name: "Test track (Earth)", g: 9.81, rho: 1.225, car: "sports", seed: 7, size: 640, n: 160,
-			sky: ["#5d9be0", "#cfe3f5"], fog: ["#cfe3f5", 220, 700], ground: ["#5f8f3e", "#7aa64e", "#8a7c55"], sun: [0.55, 0.75, 0.35], sunCol: "#fff6e5", amb: 0.55,
-			track: true, trees: true, desc: "Grass, an asphalt oval, jumps, a loop and a stunt park." },
-		moon: { name: "The Moon", g: 1.62, rho: 0, car: "rover", seed: 11, size: 700, n: 175,
+		earth: { name: "Test track (Earth)", g: 9.81, rho: 1.225, car: "sports", seed: 7, size: 2400, n: 480,
+			sky: ["#5d9be0", "#cfe3f5"], fog: ["#cfe3f5", 380, 1700], ground: ["#5f8f3e", "#7aa64e", "#8a7c55"], sun: [0.55, 0.75, 0.35], sunCol: "#fff6e5", amb: 0.55,
+			track: true, trees: true, mountains: true, desc: "Grass, an asphalt oval, jumps, a loop, a stunt park and 2.4 km of hills and mountains to fly over." },
+		moon: { name: "The Moon", g: 1.62, rho: 0, car: "rover", seed: 11, size: 2400, n: 480,
 			sky: ["#000000", "#05060a"], fog: null, ground: ["#8d8d8a", "#a8a8a3", "#6e6e6b"], sun: [-0.4, 0.45, 0.6], sunCol: "#ffffff", amb: 0.18,
-			stars: true, planet: "earth", craters: 70, desc: "1/6 of Earth's gravity, no air, craters and the Earth in a black sky." },
-		mars: { name: "Mars", g: 3.71, rho: 0.020, car: "rover", seed: 23, size: 700, n: 175,
-			sky: ["#c9905f", "#e8c49a"], fog: ["#d9ad80", 160, 640], ground: ["#a5532c", "#c06b3c", "#7d3d22"], sun: [0.3, 0.6, -0.5], sunCol: "#fff0dc", amb: 0.5,
-			dunes: true, rocks: 60, craters: 18, desc: "38% of Earth's gravity, thin air, red dunes and rocks." },
-		ceres: { name: "Ceres (dwarf planet)", g: 0.28, rho: 0, car: "buggy", seed: 31, size: 600, n: 150,
+			stars: true, planet: "earth", craters: 420, desc: "1/6 of Earth's gravity, no air, craters and the Earth in a black sky." },
+		mars: { name: "Mars", g: 3.71, rho: 0.020, car: "rover", seed: 23, size: 2400, n: 480,
+			sky: ["#c9905f", "#e8c49a"], fog: ["#d9ad80", 260, 1300], ground: ["#a5532c", "#c06b3c", "#7d3d22"], sun: [0.3, 0.6, -0.5], sunCol: "#fff0dc", amb: 0.5,
+			dunes: true, rocks: 420, craters: 110, desc: "38% of Earth's gravity, thin air, red dunes and rocks." },
+		ceres: { name: "Ceres (dwarf planet)", g: 0.28, rho: 0, car: "buggy", seed: 31, size: 2000, n: 400,
 			sky: ["#000000", "#020205"], fog: null, ground: ["#55524f", "#6c6864", "#3e3c3a"], sun: [0.7, 0.3, 0.3], sunCol: "#ffffff", amb: 0.16,
-			stars: true, planet: "saturn", craters: 110, bumpy: true, desc: "3% of Earth's gravity: one bump and you fly for half a minute." },
-		jupiter: { name: "Heavy world (Jupiter g)", g: 24.79, rho: 1.225, car: "monster", seed: 41, size: 640, n: 160,
-			sky: ["#b08a5d", "#e6cfa6"], fog: ["#dcc39a", 180, 640], ground: ["#8c7a5a", "#a08c66", "#6b5c43"], sun: [0.5, 0.7, 0.2], sunCol: "#fff3d6", amb: 0.5,
+			stars: true, planet: "saturn", craters: 520, bumpy: true, desc: "3% of Earth's gravity: one bump and you fly for half a minute." },
+		jupiter: { name: "Heavy world (Jupiter g)", g: 24.79, rho: 1.225, car: "monster", seed: 41, size: 2400, n: 480,
+			sky: ["#b08a5d", "#e6cfa6"], fog: ["#dcc39a", 300, 1400], ground: ["#8c7a5a", "#a08c66", "#6b5c43"], sun: [0.5, 0.7, 0.2], sunCol: "#fff3d6", amb: 0.5,
 			track: true, desc: "An imaginary solid surface with Jupiter's gravity (2.5 times Earth's): everything is heavy." }
 	};
 	C.WORLD_ORDER = ["earth", "moon", "mars", "ceres", "jupiter"];
@@ -46,6 +46,17 @@
 		monster: { name: "Monster truck", mass: 4200, l: 4.6, w: 2.2, h: 0.75, cab: [0.7, 0.45, -0.05], wr: 0.95, ww: 0.75, wx: 1.35, wf: 1.65, wb: -1.65, ry: 0.15, rest: 0.85, k: 22, drive: "awd", F: 7500, vmax: 42, cdA: 1.6, grip: 2.6, steer: 0.55, color: "#7b2cbf" },
 		buggy: { name: "Dune buggy", mass: 700, l: 3.3, w: 1.7, h: 0.4, cab: null, cage: true, wr: 0.42, ww: 0.32, wx: 0.85, wf: 1.15, wb: -1.1, ry: 0.0, rest: 0.5, k: 26, drive: "rwd", F: 2200, vmax: 45, cdA: 0.8, grip: 2.4, steer: 0.6, color: "#ff8800" },
 		rover: { name: "Lunar rover", mass: 700, l: 3.1, w: 1.9, h: 0.3, cab: null, rover: true, wr: 0.41, ww: 0.24, wx: 0.95, wf: 1.15, wb: -1.15, ry: 0.0, rest: 0.45, k: 22, drive: "awd", F: 1200, vmax: 22, cdA: 0.9, grip: 2.2, steer: 0.6, color: "#c9b27c" },
+		sedan: { name: "Family car", mass: 1450, l: 4.7, w: 1.83, h: 0.6, cab: [0.5, 0.48, -0.05], wr: 0.33, ww: 0.24, wx: 0.8, wf: 1.42, wb: -1.38, ry: -0.08, rest: 0.30, k: 30, drive: "fwd", F: 2600, vmax: 58, cdA: 0.66, grip: 2.2, steer: 0.55, color: "#4a6f8a" },
+		hatch: { name: "Hatchback", mass: 1150, l: 4.0, w: 1.76, h: 0.6, cab: [0.52, 0.55, -0.12], wr: 0.31, ww: 0.22, wx: 0.77, wf: 1.25, wb: -1.25, ry: -0.08, rest: 0.28, k: 32, drive: "fwd", F: 2200, vmax: 52, cdA: 0.62, grip: 2.2, steer: 0.58, color: "#e9e4d4" },
+		police: { name: "Police car", mass: 1700, l: 4.9, w: 1.9, h: 0.6, cab: [0.52, 0.46, -0.05], wr: 0.34, ww: 0.26, wx: 0.82, wf: 1.48, wb: -1.42, ry: -0.08, rest: 0.30, k: 32, drive: "rwd", F: 3600, vmax: 68, cdA: 0.7, grip: 2.3, steer: 0.55, color: "#f4f6f8", siren: "police", livery: "police" },
+		taxi: { name: "Taxi", mass: 1550, l: 4.8, w: 1.85, h: 0.6, cab: [0.5, 0.48, -0.05], wr: 0.33, ww: 0.24, wx: 0.8, wf: 1.45, wb: -1.4, ry: -0.08, rest: 0.30, k: 30, drive: "fwd", F: 2600, vmax: 56, cdA: 0.68, grip: 2.2, steer: 0.55, color: "#f5c518", taxi: true, livery: "taxi" },
+		muscle: { name: "Muscle car", mass: 1650, l: 4.9, w: 1.95, h: 0.62, cab: [0.48, 0.4, -0.12], wr: 0.36, ww: 0.3, wx: 0.84, wf: 1.5, wb: -1.4, ry: -0.06, rest: 0.30, k: 32, drive: "rwd", F: 4400, vmax: 72, cdA: 0.72, grip: 2.3, steer: 0.52, color: "#1b4d9b", livery: "stripes" },
+		rally: { name: "Rally car", mass: 1250, l: 4.1, w: 1.82, h: 0.6, cab: [0.52, 0.55, -0.12], wr: 0.33, ww: 0.26, wx: 0.8, wf: 1.28, wb: -1.25, ry: -0.04, rest: 0.38, k: 30, drive: "awd", F: 2700, vmax: 62, cdA: 0.7, grip: 2.7, steer: 0.6, color: "#0f8a5f", livery: "rally" },
+		race: { name: "Race car", mass: 760, l: 5.0, w: 1.9, h: 0.42, cab: null, f1: true, wr: 0.33, ww: 0.38, wx: 0.78, wf: 1.75, wb: -1.55, ry: -0.04, rest: 0.13, k: 70, drive: "rwd", F: 4600, vmax: 88, cdA: 0.95, grip: 2.9, steer: 0.5, color: "#c1121f" },
+		limo: { name: "Limousine", mass: 2800, l: 6.8, w: 1.95, h: 0.62, cab: [0.52, 0.66, -0.06], wr: 0.35, ww: 0.26, wx: 0.84, wf: 2.4, wb: -2.3, ry: -0.08, rest: 0.30, k: 30, drive: "rwd", F: 3800, vmax: 55, cdA: 0.85, grip: 2.2, steer: 0.5, color: "#111111" },
+		van: { name: "Delivery van", mass: 2400, l: 5.4, w: 2.0, h: 0.95, cab: [1.0, 0.78, -0.08], wr: 0.36, ww: 0.26, wx: 0.86, wf: 1.75, wb: -1.75, ry: -0.2, rest: 0.34, k: 30, drive: "rwd", F: 3300, vmax: 44, cdA: 2.1, grip: 2.0, steer: 0.5, color: "#f4f4f4" },
+		ambulance: { name: "Ambulance", mass: 3300, l: 5.9, w: 2.1, h: 1.0, cab: [1.15, 0.8, -0.08], wr: 0.38, ww: 0.28, wx: 0.9, wf: 1.95, wb: -1.9, ry: -0.22, rest: 0.36, k: 30, drive: "rwd", F: 3800, vmax: 46, cdA: 2.4, grip: 2.0, steer: 0.5, color: "#f7f7f2", siren: "ems", livery: "ems" },
+		fire: { name: "Fire truck", mass: 13000, l: 9.6, w: 2.5, h: 1.1, cab: [1.3, 0.86, -0.05], wr: 0.52, ww: 0.36, wx: 1.05, wf: 3.4, wb: -3.0, ry: -0.42, rest: 0.4, k: 34, drive: "rwd", F: 19000, vmax: 33, cdA: 7, grip: 2.0, steer: 0.48, color: "#c8102e", siren: "fire", ladder: true },
 		kart: { name: "Go-kart", mass: 160, l: 1.8, w: 1.25, h: 0.25, cab: null, kart: true, wr: 0.15, ww: 0.18, wx: 0.58, wf: 0.6, wb: -0.6, ry: -0.05, rest: 0.12, k: 60, drive: "rwd", F: 520, vmax: 28, cdA: 0.5, grip: 2.6, steer: 0.55, color: "#16a34a" }
 	};
 	/* side profiles for the closed cars (drawn by extruding them across the car's width): z from the rear (-0.5) to the front (+0.5) of the length,
@@ -54,10 +65,20 @@
 		coupe: { body: [[-.5, .12], [-.5, .45], [-.46, .52], [-.3, .55], [-.13, .88], [.06, .92], [.24, .6], [.46, .47], [.5, .38], [.5, .12]], win: [[-.12, .6], [-.05, .82], [.06, .85], [.2, .6]], ws: [[.235, .6], [.075, .905]], rs: [[-.29, .56], [-.135, .875]] },
 		suv: { body: [[-.5, .1], [-.5, .82], [-.46, .93], [.16, .95], [.3, .62], [.47, .55], [.5, .45], [.5, .1]], win: [[-.44, .62], [-.42, .86], [.14, .88], [.26, .63]], ws: [[.295, .63], [.165, .935]] },
 		pickup: { body: [[-.5, .1], [-.5, .55], [-.06, .55], [-.05, .94], [.14, .95], [.27, .62], [.47, .55], [.5, .45], [.5, .1]], win: [[-.03, .62], [-.025, .86], [.12, .88], [.235, .63]], ws: [[.265, .63], [.145, .935]] },
-		bus: { body: [[-.5, .06], [-.5, .96], [-.48, 1], [.47, 1], [.5, .95], [.5, .06]], win: [[-.46, .55], [-.46, .86], [.38, .86], [.38, .55]], ws: [[.5, .5], [.5, .9]] }
+		bus: { body: [[-.5, .06], [-.5, .96], [-.48, 1], [.47, 1], [.5, .95], [.5, .06]], win: [[-.46, .55], [-.46, .86], [.38, .86], [.38, .55]], ws: [[.5, .5], [.5, .9]] },
+		sedan: { body: [[-.5, .12], [-.5, .5], [-.47, .56], [-.33, .58], [-.2, .9], [.1, .93], [.27, .6], [.47, .52], [.5, .42], [.5, .12]], win: [[-.18, .62], [-.13, .84], [.09, .86], [.23, .62]], ws: [[.265, .62], [.115, .915]], rs: [[-.32, .6], [-.205, .885]] },
+		hatch: { body: [[-.5, .12], [-.5, .62], [-.44, .88], [.08, .93], [.27, .6], [.47, .52], [.5, .42], [.5, .12]], win: [[-.38, .62], [-.33, .84], [.06, .86], [.22, .62]], ws: [[.265, .62], [.095, .915]], rs: [[-.49, .64], [-.445, .86]] },
+		muscle: { body: [[-.5, .15], [-.5, .5], [-.47, .55], [-.28, .57], [-.14, .88], [.05, .9], [.2, .6], [.46, .55], [.5, .45], [.5, .15]], win: [[-.12, .6], [-.07, .82], [.04, .84], [.16, .6]], ws: [[.195, .6], [.065, .885]], rs: [[-.275, .58], [-.145, .865]] },
+		limo: { body: [[-.5, .12], [-.5, .5], [-.47, .55], [-.38, .58], [-.3, .9], [.17, .92], [.3, .6], [.47, .52], [.5, .42], [.5, .12]], win: [[-.28, .62], [-.24, .84], [.15, .86], [.27, .62]], ws: [[.295, .62], [.18, .905]], rs: [[-.37, .6], [-.305, .88]] },
+		van: { body: [[-.5, .1], [-.5, .97], [-.48, 1], [.18, 1], [.34, .6], [.47, .52], [.5, .42], [.5, .1]], win: [[.02, .62], [.02, .9], [.17, .92], [.3, .62]], ws: [[.335, .62], [.19, .98]] },
+		fire: { body: [[-.5, .1], [-.5, .78], [.16, .78], [.18, 1], [.44, 1], [.5, .82], [.5, .1]], win: [[.2, .62], [.2, .92], [.42, .92], [.46, .62]], ws: [[.5, .6], [.5, .95]] }
 	};
-	C.STYLE = { sports: "coupe", suv: "suv", truck: "pickup", bus: "bus", monster: "suv" };
-	C.CAR_ORDER = ["sports", "suv", "truck", "bus", "monster", "buggy", "rover", "kart"];
+	C.STYLE = { sports: "coupe", suv: "suv", truck: "pickup", bus: "bus", monster: "suv", sedan: "sedan", hatch: "hatch", police: "sedan", taxi: "sedan", muscle: "muscle", rally: "hatch", limo: "limo", van: "van", ambulance: "van", fire: "fire" };
+	/* how the car menu groups them */
+	C.CAR_GROUPS = [["Everyday cars", ["sedan", "hatch", "taxi", "suv", "truck", "van", "limo"]], ["Fast cars", ["sports", "muscle", "rally", "race", "kart"]],
+		["Big and emergency", ["police", "ambulance", "fire", "bus", "monster"]], ["Off-road and space", ["buggy", "rover"]]];
+	/* new cars go at the END of this list: online play sends a car as its index here */
+	C.CAR_ORDER = ["sports", "suv", "truck", "bus", "monster", "buggy", "rover", "kart", "sedan", "hatch", "police", "taxi", "muscle", "rally", "race", "limo", "van", "ambulance", "fire"];
 
 	/* ---------- aircraft ----------
 	   A plane is a "car" with fly: {...}: the same Rapier vehicle controller carries it on its wheels (two main wheels + a twin nose wheel,
@@ -337,10 +358,27 @@
 			if (Math.hypot(x, z) < 30 + R) continue; /* keep the start clear */
 			out.push({ x: x, z: z, R: R, d: R * (0.18 + r() * 0.12) });
 		}
+		/* a few giant old craters far from the start (worth flying over) */
+		for (i = 0; i < Math.floor(W.craters / 45); i++) {
+			var GR = 70 + r() * 90, gx = (r() * 2 - 1) * (half - GR), gz = (r() * 2 - 1) * (half - GR);
+			if (Math.hypot(gx, gz) < 380 + GR) continue;
+			out.push({ x: gx, z: gz, R: GR, d: GR * (0.1 + r() * 0.05) });
+		}
 		return out;
 	};
+	/* bucket grid of craters (cell 64 m): a crater sits in every cell its 1.6 R reach touches */
+	function craterGrid(cs, size) {
+		var cell = 64, n = Math.ceil(size / cell) + 1, half = size / 2, cells = new Array(n * n);
+		cs.forEach(function (c) {
+			var R = c.R * 1.6, x0 = Math.max(0, Math.floor((c.x - R + half) / cell)), x1 = Math.min(n - 1, Math.floor((c.x + R + half) / cell)),
+				z0 = Math.max(0, Math.floor((c.z - R + half) / cell)), z1 = Math.min(n - 1, Math.floor((c.z + R + half) / cell));
+			for (var i = x0; i <= x1; i++) for (var j = z0; j <= z1; j++) (cells[i * n + j] = cells[i * n + j] || []).push(c);
+		});
+		return function (x, z) { var i = Math.floor((x + half) / cell), j = Math.floor((z + half) / cell); return i < 0 || j < 0 || i >= n || j >= n ? null : cells[i * n + j] || null; };
+	}
+	C.craterGrid = craterGrid;
 	function craterH(cs, x, z) {
-		var h = 0;
+		var h = 0; if (cs.near) { cs = cs.near(x, z); if (!cs) return 0; }
 		for (var i = 0; i < cs.length; i++) {
 			var c = cs[i], q = Math.hypot(x - c.x, z - c.z) / c.R; if (q > 1.6) continue;
 			if (q < 1) h += c.d * (q * q - 1) + c.d * 0.25 * Math.pow(q, 8); /* bowl, rim rising at the edge */
@@ -351,7 +389,7 @@
 
 	/* ---------- terrain height (deterministic per world) ---------- */
 	C.makeTerrain = function (wid) {
-		var W = C.WORLDS[wid], seed = W.seed, cs = C.craters(wid), half = W.size / 2;
+		var W = C.WORLDS[wid], seed = W.seed, cs = C.craters(wid), half = W.size / 2, csq = { near: craterGrid(cs, W.size) };
 		function edge(x, z) { var e = Math.max(Math.abs(x), Math.abs(z)) - (half - 60); return e > 0 ? e * e * 0.012 : 0; } /* the land rises at the border */
 		var f;
 		if (W.track) {
@@ -363,22 +401,26 @@
 				if (Math.hypot(x, z - 70) < 50) flat = Math.min(flat, Math.max(0, (Math.hypot(x, z - 70) - 30) / 20));
 				var R = C.RUNWAY, rd = Math.max(Math.abs(x - R.x) - R.len / 2, Math.abs(z - R.z) - R.w / 2); /* the runway and its grass strip are flat */
 				if (rd < 40) flat = Math.min(flat, Math.max(0, (rd - 10) / 30));
-				return Math.max(0, hills + 3) * flat * flat + edge(x, z);
+				var rr = Math.hypot(x, z - 40), mk = W.mountains ? Math.min(1, Math.max(0, (rr - 560) / 420)) : 0, mtn = 0;
+				if (mk > 0) { var ridge = 1 - Math.abs(C.fbm(x / 260, z / 260, seed + 21, 4)); mtn = (Math.pow(ridge, 2.2) * 150 + Math.max(0, C.fbm(x / 520, z / 520, seed + 23, 3)) * 90) * mk * mk; }
+				return Math.max(0, hills + 3) * flat * flat + mtn + edge(x, z);
 			};
 		} else if (W.dunes) {
 			f = function (x, z) {
 				var start = Math.min(1, Math.hypot(x, z) / 45);
 				var dune = Math.pow(Math.abs(Math.sin(x / 26 + C.fbm(x / 120, z / 120, seed, 3) * 3)), 1.6) * 5;
-				return (dune + C.fbm(x / 70, z / 70, seed + 2, 4) * 7 + C.fbm(x / 9, z / 9, seed + 5, 2) * 0.35) * start + craterH(cs, x, z) + edge(x, z);
+				return (dune + C.fbm(x / 70, z / 70, seed + 2, 4) * 7 + C.fbm(x / 9, z / 9, seed + 5, 2) * 0.35) * start + craterH(csq, x, z) + edge(x, z);
 			};
 		} else {
 			var amp = W.bumpy ? 12 : 4;
 			f = function (x, z) {
 				var start = Math.min(1, Math.hypot(x, z) / 45); start *= start;
-				return (C.fbm(x / 80, z / 80, seed, 5) * amp + C.fbm(x / 12, z / 12, seed + 9, 2) * (W.bumpy ? 0.9 : 0.35)) * start + craterH(cs, x, z) + edge(x, z);
+				return (C.fbm(x / 80, z / 80, seed, 5) * amp + C.fbm(x / 12, z / 12, seed + 9, 2) * (W.bumpy ? 0.9 : 0.35)) * start + craterH(csq, x, z) + edge(x, z);
 			};
 		}
-		return { size: W.size, n: W.n, height: f, craters: cs };
+		/* how deep inside a crater (0 outside, 1 at the middle), for shading the ground */
+		function shade(x, z) { var l = csq.near(x, z), m = 0; if (l) for (var i = 0; i < l.length; i++) { var d = Math.hypot(x - l[i].x, z - l[i].z) / l[i].R; if (d < 1) m = Math.max(m, 1 - d); } return m; }
+		return { size: W.size, n: W.n, height: f, craters: cs, craterShade: shade };
 	};
 	/* the height grid laid out the way Rapier's heightfield wants it: index = ix * (n + 1) + iz, x and z from -size/2 to +size/2 */
 	C.heightGrid = function (ter) {
@@ -720,7 +762,7 @@
 	   Events (names, chat, room settings, race start, laps) are small JSON objects on a second, reliable channel. Star layout:
 	   joiners connect only to the host, who passes every packet / event on to the others. */
 	C.NET = { V: 1, ABC: "abcdefghjkmnpqrstuvwxyz23456789", HZ: 15, DELAY: 120, MAXP: 8, EXTRA: 250, STALE: 8000, LEN: 68 };
-	C.NET.TYPES = C.CAR_ORDER.concat(C.PLANE_ORDER);
+	C.NET.TYPES = C.CAR_ORDER.slice(0, 8).concat(C.PLANE_ORDER, C.CAR_ORDER.slice(8)); /* keep old indexes stable */
 	C.netCodeOk = function (s) { return typeof s === "string" && /^[a-hj-km-np-z2-9]{6}$/.test(s); };
 	C.netPeerOk = function (s) { return typeof s === "string" && /^[A-Za-z0-9]{12}$/.test(s); };
 	C.netCode = function (rnd) { rnd = rnd || Math.random; var s = ""; for (var i = 0; i < 6; i++) s += C.NET.ABC[Math.floor(rnd() * C.NET.ABC.length) % C.NET.ABC.length]; return s; };

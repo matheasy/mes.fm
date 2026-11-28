@@ -796,13 +796,13 @@ APPS = {
     # half pipe, loose objects, computer cars, dents) on Earth / Moon / Mars / Ceres / Jupiter-g worlds with a gravity slider. lib.js = MESCar (tests tool_apps_src/car-sandbox-tests.js).
     "car-sandbox": dict(title="MES Car Sandbox", page_title="3D Car Sandbox: Drive on the Moon, Mars and a Test Track with Real Physics",
                             tag="Drive anywhere. Crash anything. Change gravity.", accent="#d9480f", dark="#a63a0b", tint="#ffe8d9",
-                            desc="A free 3D driving sandbox with real physics: drive sports cars, trucks, a bus, a monster truck, a buggy or a lunar rover on an Earth test track, the Moon, Mars or Ceres, fly a light plane or a stunt jet off the runway, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.",
+                            desc="A free 3D driving sandbox with real physics: drive 19 vehicles (sports, family and muscle cars, a race car, police car, taxi, limo, ambulance, fire truck, bus, monster truck, buggy, lunar rover ...) across 2.4 km worlds: an Earth test track with mountains, the Moon, Mars or Ceres, fly a light plane or a stunt jet off the runway, jump ramps, loop the loop, crash into computer cars and knock over crates, walls, dominoes and watermelons, and change gravity from zero to the Sun's.",
                             meta_desc="Free 3D car sandbox with real physics: drive on a test track, the Moon, Mars or Ceres, crash into cars and objects, jump ramps and change gravity.",
                             # manifest + apple-mobile-web-app-capable: on iPhone (no Fullscreen API) Add to Home Screen opens it with no Safari bars.
                             head_extra='<link rel="manifest" href="/car-sandbox/manifest.webmanifest"><meta name="theme-color" content="#d9480f">'
                                        '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
                                        '<meta name="apple-mobile-web-app-title" content="Car Sandbox"><link rel="apple-touch-icon" href="/car-sandbox/img/logo.png">',
-                            js_v="20"),
+                            js_v="21"),
     "double-pendulum": dict(title="MES Double Pendulum", page_title="Double Pendulum Simulator: Chaos and the Butterfly Effect",
                             tag="Two arms. One butterfly effect.", accent="#7e22ce", dark="#6b21a8", tint="#f3e8ff",
                             desc="A free double pendulum simulator: drag the balls to set the start, watch the chaotic motion and its colourful trail, launch a fan of copies to see the butterfly effect, read the divergence graph, and explore the fractal chaos map of how long it takes to flip.",
